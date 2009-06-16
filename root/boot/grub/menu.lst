@@ -1,0 +1,6 @@
+# Grub boot info
+
+title		Fudge
+root		(cd)
+kernel		/boot/kernel
+module		/boot/initrd
