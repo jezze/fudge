@@ -3,9 +3,18 @@
 #include <isr.h>
 #include <screen.h>
 
-static void *syscalls[3] = {&puts, &puts_hex, &puts_dec}
-
+static void *syscalls[3] = {&puts, &puts_hex, &puts_dec};
 uint32_t num_syscalls = 3;
+
+int syscall_write(char *text)
+{
+
+	int a;
+//	__asm__ __volatile__ ("int $0x80" : "=a" (a) : "0" (num));
+
+	puts(text);
+
+}
 
 void syscall_handler(registers_t *r)
 {
@@ -38,7 +47,7 @@ void syscall_handler(registers_t *r)
 void syscalls_init()
 {
 
-	isr_register_handler(0x80, &syscall_handler);
+	isr_register_handler(0x80, syscall_handler);
 
 }
 
