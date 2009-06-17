@@ -5,8 +5,8 @@ GCCFLAGS=-c -I./include -Wall -Wextra -ffreestanding -nostdlib -nostartfiles -no
 LD=ld
 LDFLAGS=-T linker.ld
 
-all: loader.o kernel.o string.o gdt.o tss.o idt.o isr.o isrs.o irq.o irqs.o pit.o screen.o keyboard.o heap.o paging.o fs.o initrd.o syscall.o
-	$(LD) $(LDFLAGS) obj/loader.o obj/kernel.o obj/string.o obj/gdt.o obj/tss.o obj/idt.o obj/isr.o obj/isrs.o obj/irq.o obj/irqs.o obj/pit.o obj/screen.o obj/keyboard.o obj/heap.o obj/paging.o obj/fs.o obj/initrd.o obj/syscall.o -o root/boot/kernel
+all: loader.o kernel.o string.o gdt.o tss.o idt.o isr.o isrs.o irq.o irqs.o pit.o screen.o keyboard.o heap.o paging.o fs.o initrd.o syscall.o console.o
+	$(LD) $(LDFLAGS) obj/loader.o obj/kernel.o obj/string.o obj/gdt.o obj/tss.o obj/idt.o obj/isr.o obj/isrs.o obj/irq.o obj/irqs.o obj/pit.o obj/screen.o obj/keyboard.o obj/heap.o obj/paging.o obj/fs.o obj/initrd.o obj/syscall.o obj/console.o -o root/boot/kernel
 
 cd:
 	genisoimage -R -b boot/grub/stage2_eltorito -no-emul-boot -boot-load-size 4 -boot-info-table -o fudge.iso root
@@ -67,6 +67,9 @@ initrd.o:
 
 syscall.o:
 	$(GCC) $(GCCFLAGS) src/syscall.c -o obj/syscall.o
+
+console.o:
+	$(GCC) $(GCCFLAGS) src/console.c -o obj/console.o
 
 clean:
 	rm jinx.iso

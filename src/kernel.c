@@ -10,6 +10,7 @@
 #include <paging.h>
 #include <fs.h>
 #include <initrd.h>
+#include <console.h>
 
 extern uint32_t placement_address;
 
@@ -136,43 +137,7 @@ void kmain(struct multiboot *mboot_ptr)
 
 	fs_root = initialise_initrd(initrd_location);
 
-	puts("Welcome to Fudge!\n\n");
-
-	int i = 0;
-	struct dirent *node = 0;
-
-	while ((node = readdir_fs(fs_root, i)) != 0)
-	{
-
-		puts("Found file ");
-		puts(node->name);
-		fs_node_t *fsnode = finddir_fs(fs_root, node->name);
-
-		if ((fsnode->flags & 0x7) == FS_DIRECTORY)
-		{
-
-			puts("\n\t(directory)\n");
-
-		}
-
-		else
-		{
-
-			puts("\n\t contents: \"");
-			char buf[256];
-			uint32_t sz = read_fs(fsnode, 0, 256, buf);
-
-			int j;
-			for (j = 0; j < sz; j++)
-				putc(buf[j]);
-
-			puts("\"\n");
-
-		}
-
-		i++;
-
-	}
+	console_init();
 
 	for (;;);
 
