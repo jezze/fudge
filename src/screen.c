@@ -1,4 +1,5 @@
 #include <system.h>
+#include <mem.h>
 #include <screen.h>
 
 uint16_t *textmemptr;
@@ -148,7 +149,7 @@ void puts_hex(uint32_t n)
 
 }
 
-void settextcolor(uint8_t forecolor, uint8_t backcolor)
+void screen_set_text_color(uint8_t forecolor, uint8_t backcolor)
 {
 
 	attrib = (backcolor << 4) | (forecolor & 0x0F);

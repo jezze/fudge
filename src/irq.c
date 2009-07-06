@@ -1,4 +1,5 @@
 #include <system.h>
+#include <mem.h>
 #include <irq.h>
 
 extern void irq0();

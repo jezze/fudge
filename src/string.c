@@ -3,9 +3,17 @@
 char *strcat(char *dest, const char *src)
 {
 
-	while (*dest != 0) *dest = *dest++;
+	while (*dest != 0)
+		*dest = *dest++;
 
-	return strcpy(dest, src);
+	do
+	{
+
+		*dest++ = *src++;
+
+	} while (*src != 0);
+
+	return dest;
 
 }
 
@@ -42,9 +50,10 @@ char *strcpy(char *dest, const char *src)
 
 	do
 	{
+
 		*dest++ = *src++;
-	}
-	while (*src != 0);
+
+	} while (*src != 0);
 
 	return dest;
 
@@ -54,7 +63,10 @@ int strlen(const char *str)
 {
 
 	int32_t length;
-	for (length = 0; *str != '\0'; str++) length++;
+
+	for (length = 0; *str != '\0'; str++)
+		length++;
+
 	return length;
 
 }

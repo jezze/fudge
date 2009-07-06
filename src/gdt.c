@@ -1,4 +1,5 @@
 #include <system.h>
+#include <mem.h>
 #include <tss.h>
 #include <gdt.h>
 

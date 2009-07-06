@@ -1,8 +1,9 @@
 #include <system.h>
-#include <paging.h>
+#include <mem.h>
 #include <isr.h>
 #include <heap.h>
 #include <screen.h>
+#include <paging.h>
 
 page_directory_t *kernel_directory = 0;
 page_directory_t *current_directory = 0;

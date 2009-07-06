@@ -1,4 +1,5 @@
 #include <system.h>
+#include <mem.h>
 #include <idt.h>
 
 extern void idt_flush();
