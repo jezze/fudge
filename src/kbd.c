@@ -2,8 +2,9 @@
 #include <mem.h>
 #include <irq.h>
 #include <screen.h>
+#include <kbd.h>
 
-uint8_t kbdus[128] =
+uint8_t kbdMapLowerUS[128] =
 {
 	0, 27,
 	'1', '2', '3', '4', '5', '6', '7', '8',	'9', '0', '-', '=', '\b', '\t',
@@ -41,17 +42,59 @@ uint8_t kbdus[128] =
 	0,
 };
 
-uint8_t buffer[256];
-uint16_t buffer_num = 0;
+uint8_t kbdMapUpperUS[128] =
+{
+	0, 27,
+	'!', '"', '#', '¤', '%', '&', '/', '(',	')', '=', '-', '=', '\b', '\t',
+	'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '[', ']', '\n',
+	0,
+	'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', ';', '\'', '`',
+	0,
+	'\\', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', ',', '.', '/',
+	0,
+	'*',
+	0,
+	' ',
+	0,
+	0,
+	0, 0, 0, 0, 0, 0, 0, 0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	'-',
+	0,
+	0,
+	0,
+	'+',
+	0,
+	0,
+	0,
+	0,
+	0,
+	0, 0, 0,
+	0,
+	0,
+	0,
+};
+
+uint8_t kbdBuffer[KBD_BUFFER_SIZE];
+uint16_t kbdBufferSize = 0;
+
+uint8_t kbdToggleShift = 0;
+uint8_t kbdToggleCtrl = 0;
+uint8_t kbdToggleAlt = 0;
 
 void kbd_buffer_write(uint8_t c)
 {
 
-	if (buffer_num < 256)
+	if (kbdBufferSize < KBD_BUFFER_SIZE)
 	{
 
-		buffer[buffer_num] = c;
-		buffer_num++;
+		kbdBuffer[kbdBufferSize] = c;
+		kbdBufferSize++;
 
 	}
 
@@ -62,11 +105,11 @@ uint8_t kbd_buffer_read()
 
 	uint8_t c;
 
-	if (buffer_num > 0)
+	if (kbdBufferSize)
 	{
 
-		buffer_num--;
-		c = buffer[buffer_num];
+		kbdBufferSize--;
+		c = kbdBuffer[kbdBufferSize];
 
 	}
 
@@ -77,7 +120,7 @@ uint8_t kbd_buffer_read()
 uint16_t kbd_buffer_size()
 {
 
-	return buffer_num;
+	return kbdBufferSize;
 
 }
 
@@ -88,17 +131,22 @@ void kbd_handler(registers_t *r)
 
 	scancode = inb(0x60);
 
+	if (scancode == 0x2A) kbdToggleShift = 1;
+	if (scancode == 0xAA) kbdToggleShift = 0;
+
 	if (scancode & 0x80)
 	{
+
+		// Break codes
 
 	}
 
 	else
 	{
 
-		kbd_buffer_write(kbdus[scancode]);
-
-//		putc(kbdus[scancode]);
+		// Make codes
+		if (kbdToggleShift) kbd_buffer_write(kbdMapUpperUS[scancode]);
+		else kbd_buffer_write(kbdMapLowerUS[scancode]);
 
 	}
 
