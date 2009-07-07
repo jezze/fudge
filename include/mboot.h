@@ -13,7 +13,7 @@
 #define MULTIBOOT_FLAG_APM	0x200
 #define MULTIBOOT_FLAG_VBE	0x400
 
-typedef struct multiboot
+typedef struct mboot_header
 {
 
 	uint32_t flags;
@@ -40,6 +40,6 @@ typedef struct multiboot
 	uint32_t vbe_interface_off;
 	uint32_t vbe_interface_len;
 
-} __attribute__((packed)) multiboot_header_t;
+} __attribute__((packed)) mboot_header_t;
 
 #endif

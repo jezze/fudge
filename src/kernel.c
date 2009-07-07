@@ -62,7 +62,7 @@ void kpanic_assert(char *file, uint32_t line, char *description)
 
 }
 
-void kmain(struct multiboot *mboot_ptr)
+void kmain(mboot_header_t *mboot_ptr)
 {
 
 	gdt_init();
