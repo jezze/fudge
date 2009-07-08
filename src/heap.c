@@ -1,7 +1,7 @@
 #include <system.h>
 #include <heap.h>
 
-uint32_t placement_address = ADDRESS_VIRTUAL;
+uint32_t placement_address;
 
 uint32_t kmalloc_page(uint32_t size, int align, uint32_t *physical)
 {

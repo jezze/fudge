@@ -216,7 +216,7 @@ void screen_scroll()
 void screen_init()
 {
 
-	textmemptr = (uint16_t *)ADDRESS_VIDEO;
+	textmemptr = (uint16_t *)SCREEN_ADDRESS;
 	screen_clear();
 
 }

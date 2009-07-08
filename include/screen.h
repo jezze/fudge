@@ -1,6 +1,8 @@
 #ifndef SCREEN_H
 #define SCREEN_H
 
+#define SCREEN_ADDRESS 0xB8000
+
 extern void putc(char);
 extern void puts(char *);
 extern void puts_dec(uint32_t);
