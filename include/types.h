@@ -1,5 +1,5 @@
-#ifndef CONFIG_H
-#define CONFIG_H
+#ifndef TYPES_H
+#define TYPES_H
 
 typedef signed char int8_t;
 typedef unsigned char uint8_t;

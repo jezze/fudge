@@ -1,7 +1,7 @@
 #ifndef SYSTEM_H
 #define SYSTEM_H
 
-#include <config.h>
+#include <types.h>
 #include <string.h>
 
 typedef struct registers
