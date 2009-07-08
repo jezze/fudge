@@ -1,7 +1,6 @@
 #include <system.h>
 #include <mem.h>
 #include <irq.h>
-#include <screen.h>
 #include <kbd.h>
 
 uint8_t kbdMapLowerUS[128] =

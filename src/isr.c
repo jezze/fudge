@@ -1,6 +1,7 @@
 #include <system.h>
 #include <idt.h>
 #include <screen.h>
+#include <isr.h>
 
 extern void isr0();
 extern void isr1();

@@ -1,4 +1,5 @@
 #include <system.h>
+#include <mem.h>
 
 void *memcpy(void *dest, const void *src, int32_t count)
 {
