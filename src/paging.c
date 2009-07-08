@@ -17,8 +17,8 @@ static void set_frame(uint32_t frame_address)
 {
 
 	uint32_t frame = frame_address / 0x1000;
-	uint32_t idx = (frame / (8 * 4));
-	uint32_t off = (frame % (8 * 4));
+	uint32_t idx = frame / 32;
+	uint32_t off = frame % 32;
 	frames[idx] |= (0x1 << off);
 
 }
@@ -27,8 +27,8 @@ static void clear_frame(uint32_t frame_address)
 {
 
 	uint32_t frame = frame_address / 0x1000;
-	uint32_t idx = (frame / (8 * 4));
-	uint32_t off = (frame % (8 * 4));
+	uint32_t idx = frame / 32;
+	uint32_t off = frame % 32;
 	frames[idx] &= ~(0x1 << off);
 
 }
@@ -37,8 +37,8 @@ static uint32_t test_frame(uint32_t frame_address)
 {
 
 	uint32_t frame = frame_address / 0x1000;
-	uint32_t idx = (frame / (8 * 4));
-	uint32_t off = (frame % (8 * 4));
+	uint32_t idx = frame / 32;
+	uint32_t off = frame % 32;
 
 	return (frames[idx] & (0x1 << off));
 
@@ -49,7 +49,7 @@ static uint32_t first_frame()
 
 	uint32_t i, j;
 
-	for (i = 0; i < (framesNum / (8 * 4)); i++)
+	for (i = 0; i < (framesNum / 32); i++)
 	{
 
 		if (frames[i] != 0xFFFFFFFF)
@@ -61,7 +61,7 @@ static uint32_t first_frame()
 				uint32_t toTest = 0x1 << j;
 
 				if (!(frames[i] & toTest))
-					return (i * 4 * 8 + j);
+					return (i * 32 + j);
 
 			}
 
@@ -215,8 +215,8 @@ void paging_init()
 	uint32_t mem_end_page = 0x1000000;
 
 	framesNum = mem_end_page / 0x1000;
-	frames = (uint32_t *)kmalloc((framesNum / (8 * 4)));
-	memset(frames, 0, (framesNum / (8 * 4)));
+	frames = (uint32_t *)kmalloc(framesNum / 32);
+	memset(frames, 0, framesNum / 32);
 
 	kernel_directory = (page_directory_t *)kmalloc_aligned(sizeof (page_directory_t));
 	memset(kernel_directory, 0, sizeof (page_directory_t));
