@@ -45,7 +45,7 @@ uint8_t kbdMapLowerUS[128] =
 uint8_t kbdMapUpperUS[128] =
 {
 	0, 27,
-	'!', '"', '#', '¤', '%', '&', '/', '(',	')', '=', '-', '=', '\b', '\t',
+	'!', ' ', '#', ' ', '%', '&', '/', '(',	')', '=', '-', '=', '\b', '\t',
 	'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '[', ']', '\n',
 	0,
 	'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', ';', '\'', '`',
@@ -131,8 +131,11 @@ void kbd_handler(registers_t *r)
 
 	scancode = inb(0x60);
 
-	if (scancode == 0x2A) kbdToggleShift = 1;
-	if (scancode == 0xAA) kbdToggleShift = 0;
+	if (scancode == 0x2A)
+		kbdToggleShift = 1;
+
+	if (scancode == 0xAA)
+		kbdToggleShift = 0;
 
 	if (scancode & 0x80)
 	{
@@ -145,8 +148,10 @@ void kbd_handler(registers_t *r)
 	{
 
 		// Make codes
-		if (kbdToggleShift) kbd_buffer_write(kbdMapUpperUS[scancode]);
-		else kbd_buffer_write(kbdMapLowerUS[scancode]);
+		if (kbdToggleShift)
+			kbd_buffer_write(kbdMapUpperUS[scancode]);
+		else
+			kbd_buffer_write(kbdMapLowerUS[scancode]);
 
 	}
 

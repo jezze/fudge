@@ -15,11 +15,7 @@ uint32_t kmalloc_page(uint32_t size, int align, uint32_t *physical)
 	}
 
 	if (physical)
-	{
-
 		*physical = placement_address;
-
-	}
 
 	uint32_t tmp = placement_address;
 	placement_address += size;

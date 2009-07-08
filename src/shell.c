@@ -24,10 +24,10 @@ void shell_init()
 			if (c == '\n')
 			{
 
+				// Read console buffer and execute
 				puts("fudge:/$ ");
 
 			}
-
 
 		}
 

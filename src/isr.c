@@ -94,7 +94,9 @@ void isr_handler(registers_t *r)
 	{
 
 		void (*handler)(registers_t *r) = isr_routines[r->int_no];
-		if (handler) handler(r);
+
+		if (handler)
+			handler(r);
 	
 	}
 

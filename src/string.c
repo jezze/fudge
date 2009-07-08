@@ -30,6 +30,7 @@ int strcmp(char *str1, char *str2)
 		{
 
 			failed = 1;
+
 			break;
 
 		}

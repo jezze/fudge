@@ -15,7 +15,8 @@ void putc(char c)
 	if (c == 0x08)
 	{
 
-		if (csr_x != 0)	csr_x--;
+		if (csr_x != 0)
+			csr_x--;
 
 	}
 
@@ -68,7 +69,8 @@ void puts(char *text)
 
 	int i;
 
-	for (i = 0; i < strlen(text); i++) putc(text[i]);
+	for (i = 0; i < strlen(text); i++)
+		putc(text[i]);
 
 }
 
@@ -100,7 +102,8 @@ void puts_dec(uint32_t n)
 	c2[i--] = 0;
 	int j = 0;
 
-	while (i >= 0) c2[i--] = c[j++];
+	while (i >= 0)
+		c2[i--] = c[j++];
 
 	puts(c2);
 
@@ -122,7 +125,8 @@ void puts_hex(uint32_t n)
 
 		tmp = (n >> i) &0xF;
 
-		if (tmp == 0 && noZeroes != 0) continue;
+		if (tmp == 0 && noZeroes != 0)
+			continue;
 
 		if (tmp >= 0xA)
 		{
@@ -144,8 +148,10 @@ void puts_hex(uint32_t n)
 
 	tmp = n & 0xF;
 
-	if (tmp >= 0xA) putc(tmp - 0xA + 'a');
-	else putc(tmp + '0');
+	if (tmp >= 0xA)
+		putc(tmp - 0xA + 'a');
+	else
+		putc(tmp + '0');
 
 }
 
@@ -164,7 +170,8 @@ void screen_clear()
 
 	blank = 0x20 | (attrib << 8);
 
-	for (i = 0; i < 25; i++) memsetw(textmemptr + i * 80, blank, 80);
+	for (i = 0; i < 25; i++)
+		memsetw(textmemptr + i * 80, blank, 80);
 
 	csr_x = 0;
 	csr_y = 0;

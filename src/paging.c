@@ -39,6 +39,7 @@ static uint32_t test_frame(uint32_t frame_address)
 	uint32_t frame = frame_address / 0x1000;
 	uint32_t idx = (frame / (8 * 4));
 	uint32_t off = (frame % (8 * 4));
+
 	return (frames[idx] & (0x1 << off));
 
 }
@@ -59,13 +60,16 @@ static uint32_t first_frame()
 
 				uint32_t toTest = 0x1 << j;
 
-				if (!(frames[i] & toTest)) return (i * 4 * 8 + j);
+				if (!(frames[i] & toTest))
+					return (i * 4 * 8 + j);
 
 			}
 
 		}
 
 	}
+
+	return -1;
 
 }
 
@@ -85,10 +89,7 @@ void alloc_frame(page_t *page, int is_kernel, int is_writeable)
 		uint32_t idx = first_frame();
 
 		if (idx == (uint32_t)-1)
-		{
-
-
-		}
+			PANIC("No frames free");
 
 		set_frame(idx * 0x1000);
 		page->present = 1;
@@ -152,6 +153,7 @@ page_t *get_page(uint32_t address, int make, page_directory_t *dir)
 	{
 
 		uint32_t tmp;
+
 		dir->tables[table_idx] = (page_table_t *)kmalloc_physical_aligned(sizeof (page_table_t), &tmp);
 		memset(dir->tables[table_idx], 0, 0x1000);
 		dir->tablesPhysical[table_idx] = tmp | 0x7;
@@ -173,19 +175,32 @@ void page_fault(registers_t *r)
 {
 
 	uint32_t faulting_address;
+
 	__asm__ __volatile__ ("mov %%cr2, %0" : "=r" (faulting_address));
 
 	int present = !(r->err_code & 0x1);
 	int rw = r->err_code & 0x2;
 	int us = r->err_code & 0x4;
 	int reserved = r->err_code & 0x8;
-	int id = r->err_code &0x10;
+	int id = r->err_code & 0x10;
 
 	puts("PAGE FAULT ( ");
-	if (present) puts("present ");
-	if (rw) puts("read-only ");
-	if (us) puts("user-mode ");
-	if (reserved) puts("reserved ");
+
+	if (present)
+		puts("present ");
+
+	if (rw)
+		puts("read-only ");
+
+	if (us)
+		puts("user-mode ");
+
+	if (reserved)
+		puts("reserved ");
+
+	if (id)
+		puts("fetch");
+
 	puts(") at 0x");
 	puts_hex(faulting_address);
 	puts("\n");
@@ -207,12 +222,14 @@ void paging_init()
 	memset(kernel_directory, 0, sizeof (page_directory_t));
 	current_directory = kernel_directory;
 
-	int i = 0;
+	uint32_t i = 0;
 
 	while (i < placement_address + 0x1000)
 	{
+
 		alloc_frame(get_page(i, 1, kernel_directory), 0, 0);
 		i += 0x1000;
+
 	}
 
 	isr_register_handler(14, page_fault);

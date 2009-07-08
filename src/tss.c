@@ -19,7 +19,6 @@ static void tss_init(int32_t num, uint16_t ss0, uint32_t esp0)
 
 	tss_entry.ss0 = ss0;
 	tss_entry.esp0 = esp0;
-
 	tss_entry.cs = 0x0b;
 	tss_entry.ss = tss_entry.ds = tss_entry.es = tss_entry.fs = tss_entry.gs = 0x13;
 
