@@ -22,7 +22,7 @@ void shell_buffer_write(uint8_t c)
 uint8_t *shell_buffer_read()
 {
 
-	shellBuffer[shellBufferSize] = '\0';
+	shellBuffer[shellBufferSize - 1] = '\0';
 
 	return shellBuffer;
 
@@ -61,17 +61,26 @@ void shell_init()
 
 				uint8_t *command = shell_buffer_read();
 
-				if (strcmp(command, "help"))
+				if (strcmp(command, "help") == 0)
 				{
 
-					puts("Help is not available!\n");
+					puts("Command list\n\n");
+					puts("help - Show this dialog\n");
+					puts("clear - Clear screen\n");
+
+				}
+
+				else if (strcmp(command, "clear") == 0)
+				{
+
+					screen_clear();
 
 				}
 
 				else
 				{
 
-					puts("Command not recognized");
+					puts("Command not found\n");
 
 				}
 
