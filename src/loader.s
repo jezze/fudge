@@ -1,6 +1,4 @@
 extern kmain
-extern gdtp
-extern idtp
 
 MULTIBOOT_PAGE_ALIGN	equ 1<<0
 MULTIBOOT_MEMORY_INFO	equ 1<<1
@@ -21,31 +19,6 @@ loader:
 	cli
 	call kmain
 	hlt
-
-global gdt_flush
-gdt_flush:
-	lgdt [gdtp]
-	mov ax, 0x10
-	mov ds, ax
-	mov es, ax
-	mov fs, ax
-	mov gs, ax
-	mov ss, ax
-	jmp 0x08:gdt_flush_high
-
-gdt_flush_high:
-	ret
-
-global idt_flush
-idt_flush:
-	lidt [idtp]
-	ret
-
-global tss_flush
-tss_flush:
-	mov ax, 0x2B
-	ltr ax
-	ret
 
 section .bss
 align 32
