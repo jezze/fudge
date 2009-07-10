@@ -1,10 +1,10 @@
 #ifndef STRING_H
 #define STRING_H
 
-extern int strlen(const char *);
-extern int strcmp(char *, char *);
-extern char *strcpy(char *, const char *);
-extern char *strcat(char *, const char *);
+extern char *strcat(char *dest, const char *src);
+extern int strcmp(char *str1, char *str2);
+extern char *strcpy(char *dest, const char *src);
+extern int strlen(const char *str);
 
 #endif
 

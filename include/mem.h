@@ -1,12 +1,12 @@
 #ifndef MEM_H
 #define MEM_H
 
-extern void *memcpy(void *, const void *, int32_t);
-extern void *memset(void *, int8_t, int32_t);
-extern uint16_t *memsetw(uint16_t *, uint16_t, int32_t);
-extern uint8_t inb(uint16_t);
-extern uint16_t inw(uint16_t);
-extern void outb(uint16_t, uint8_t);
+extern void *memcpy(void *dest, const void *src, int32_t count);
+extern void *memset(void *dest, int8_t val, int32_t count);
+extern uint16_t *memsetw(uint16_t *dest, uint16_t val, int32_t count);
+extern uint8_t inb(uint16_t port);
+extern uint16_t inw(uint16_t port);
+extern void outb(uint16_t port, uint8_t data);
 
 #endif
 

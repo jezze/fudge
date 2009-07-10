@@ -3,13 +3,13 @@
 #include <kbd.h>
 #include <shell.h>
 
-uint8_t shellBuffer[256];
+uint8_t shellBuffer[SHELL_BUFFER_SIZE];
 uint16_t shellBufferSize = 0;
 
 void shell_buffer_write(uint8_t c)
 {
 
-	if (shellBufferSize < 256)
+	if (shellBufferSize < SHELL_BUFFER_SIZE)
 	{
 
 		shellBuffer[shellBufferSize] = c;

@@ -36,7 +36,7 @@ extern void isr29();
 extern void isr30();
 extern void isr31();
 
-void *isr_routines[256];
+void *isr_routines[ISR_ROUTINES_SIZE];
 
 char *exception_messages[] =
 {

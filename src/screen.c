@@ -64,13 +64,13 @@ void putc(char c)
 
 }
 
-void puts(char *text)
+void puts(char *s)
 {
 
 	int i;
 
-	for (i = 0; i < strlen(text); i++)
-		putc(text[i]);
+	for (i = 0; i < strlen(s); i++)
+		putc(s[i]);
 
 }
 

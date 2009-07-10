@@ -1,5 +1,6 @@
 #include <system.h>
 #include <mem.h>
+#include <idt.h>
 #include <irq.h>
 
 extern void irq0();
@@ -19,7 +20,7 @@ extern void irq13();
 extern void irq14();
 extern void irq15();
 
-void *irq_routines[16];
+void *irq_routines[IRQ_ROUTINES_SIZE];
 
 void irq_register_handler(uint8_t num, void (*handler)(registers_t *r))
 {
