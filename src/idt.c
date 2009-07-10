@@ -4,7 +4,7 @@
 
 extern void idt_flush();
 
-idt_entry_t idt[256];
+idt_entry_t idt[IDT_TABLE_SIZE];
 idt_ptr_t idtp;
 
 void idt_set_gate(uint8_t num, uint32_t base, uint16_t sel, uint8_t flags)
@@ -22,10 +22,10 @@ void idt_set_gate(uint8_t num, uint32_t base, uint16_t sel, uint8_t flags)
 void idt_init()
 {
 
-	idtp.limit = (sizeof (idt_entry_t) * 256) - 1;
 	idtp.base = (uint32_t)&idt;
+	idtp.limit = (sizeof (idt_entry_t) * IDT_TABLE_SIZE) - 1;
 
-	memset(&idt, 0, sizeof (idt_entry_t) * 256);
+	memset(&idt, 0, sizeof (idt_entry_t) * IDT_TABLE_SIZE);
 
 	idt_flush();
 

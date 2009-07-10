@@ -3,10 +3,10 @@
 #include <kbd.h>
 #include <shell.h>
 
-uint8_t shellBuffer[SHELL_BUFFER_SIZE];
+int8_t shellBuffer[SHELL_BUFFER_SIZE];
 uint16_t shellBufferSize = 0;
 
-void shell_buffer_write(uint8_t c)
+void shell_buffer_write(int8_t c)
 {
 
 	if (shellBufferSize < SHELL_BUFFER_SIZE)
@@ -19,7 +19,7 @@ void shell_buffer_write(uint8_t c)
 
 }
 
-uint8_t *shell_buffer_read()
+int8_t *shell_buffer_read()
 {
 
 	shellBuffer[shellBufferSize - 1] = '\0';
@@ -59,7 +59,7 @@ void shell_init()
 			if (c == '\n')
 			{
 
-				uint8_t *command = shell_buffer_read();
+				int8_t *command = shell_buffer_read();
 
 				if (strcmp(command, "help") == 0)
 				{

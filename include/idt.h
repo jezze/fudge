@@ -1,6 +1,8 @@
 #ifndef IDT_H
 #define IDT_H
 
+#define IDT_TABLE_SIZE 256
+
 typedef struct idt_entry
 {
 
