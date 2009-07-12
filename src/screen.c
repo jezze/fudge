@@ -2,60 +2,57 @@
 #include <mem.h>
 #include <screen.h>
 
-uint16_t *textmemptr;
-int32_t attrib = 0x0F;
-int32_t csr_x = 0, csr_y = 0;
+screen_t screen;
 
 void putc(char c)
 {
 
 	uint16_t *where;
-	uint32_t att = attrib << 8;
 
 	if (c == 0x08)
 	{
 
-		if (csr_x != 0)
-			csr_x--;
+		if (screen.cursorX != 0)
+			screen.cursorX--;
 
 	}
 
 	else if (c == 0x09)
 	{
 
-		csr_x = (csr_x + 8) & ~(8 - 1);
+		screen.cursorX = (screen.cursorX + 8) & ~(8 - 1);
 
 	}
 
 	else if (c == '\r')
 	{
 
-		csr_x = 0;
+		screen.cursorX = 0;
 
 	}
 
 	else if (c == '\n')
 	{
 
-		csr_x = 0;
-		csr_y++;
+		screen.cursorX = 0;
+		screen.cursorY++;
 
 	}
 	
 	else if (c >= ' ')
 	{
 
-		where = textmemptr + (csr_y * 80 + csr_x);
-		*where = c | att;
-		csr_x++;
+		where = screen.address + (screen.cursorY * 80 + screen.cursorX);
+		*where = c | screen.context.attribute << 8;
+		screen.cursorX++;
 
 	}
 
-	if (csr_x >= 80)
+	if (screen.cursorX >= 80)
 	{
 
-		csr_x = 0;
-		csr_y++;
+		screen.cursorX = 0;
+		screen.cursorY++;
 
 	}
 
@@ -158,7 +155,7 @@ void puts_hex(uint32_t n)
 void screen_set_text_color(uint8_t forecolor, uint8_t backcolor)
 {
 
-	attrib = (backcolor << 4) | (forecolor & 0x0F);
+	screen.context.attribute = (backcolor << 4) | (forecolor & 0x0F);
 
 }
 
@@ -168,13 +165,13 @@ void screen_clear()
 	uint32_t blank;
 	int32_t i;
 
-	blank = 0x20 | (attrib << 8);
+	blank = 0x20 | (screen.context.attribute << 8);
 
 	for (i = 0; i < 25; i++)
-		memsetw(textmemptr + i * 80, blank, 80);
+		memsetw(screen.address + i * 80, blank, 80);
 
-	csr_x = 0;
-	csr_y = 0;
+	screen.cursorX = 0;
+	screen.cursorY = 0;
 
 	screen_move_cursor();
 
@@ -185,7 +182,7 @@ void screen_move_cursor()
 
 	uint32_t temp;
 
-	temp = csr_y * 80 + csr_x;
+	temp = screen.cursorY * 80 + screen.cursorX;
 
 	outb(0x3D4, 14);
 	outb(0x3D5, temp >> 8);
@@ -199,15 +196,15 @@ void screen_scroll()
 
 	uint32_t blank, temp;
 
-	blank = 0x20 | (attrib << 8);
+	blank = 0x20 | (screen.context.attribute << 8);
 
-	if (csr_y >= 25)
+	if (screen.cursorY >= 25)
 	{
 
-		temp = csr_y - 25 + 1;
-		memcpy(textmemptr, textmemptr + temp * 80, (25 - temp) * 80 * 2);
-		memsetw(textmemptr + (25 - temp) * 80, blank, 80);
-		csr_y = 25 - 1;
+		temp = screen.cursorY - 25 + 1;
+		memcpy(screen.address, screen.address + temp * 80, (25 - temp) * 80 * 2);
+		memsetw(screen.address + (25 - temp) * 80, blank, 80);
+		screen.cursorY = 25 - 1;
 
 	}
 
@@ -216,7 +213,14 @@ void screen_scroll()
 void screen_init()
 {
 
-	textmemptr = (uint16_t *)SCREEN_ADDRESS;
+	screen_context_t context;
+	context.attribute = 0x0F;
+
+	screen.address = (uint16_t *)SCREEN_ADDRESS;
+	screen.cursorX = 0;
+	screen.cursorY = 0;
+	screen.context = context;
+
 	screen_clear();
 
 }

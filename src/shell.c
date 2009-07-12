@@ -41,7 +41,9 @@ void shell_init()
 
 	screen_clear();
 
-	puts("Welcome to Fudge! Type help for more information.\n\n");
+	puts("Fudge\n");
+	puts("Copyright (c) 2009 Jens Nyberg\n\n");
+	puts("Type `help` for a list of commands.\n\n");
 
 	shell_buffer_clear();
 

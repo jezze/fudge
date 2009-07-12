@@ -1,7 +1,7 @@
 ASM=nasm
 ASMFLAGS=-f elf
 GCC=gcc
-GCCFLAGS=-c -I./include -Wall -Wextra -ffreestanding -nostdlib -nostartfiles -nodefaultlibs
+GCCFLAGS=-c -O2 -I./include -Wall -Wextra -ffreestanding -nostdlib -nostartfiles -nodefaultlibs
 LD=ld
 LDFLAGS=-T linker.ld
 
