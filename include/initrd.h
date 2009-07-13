@@ -1,8 +1,6 @@
 #ifndef INITRD_H
 #define INITRD_H
 
-#include <fs.h>
-
 typedef struct
 {
 
@@ -20,7 +18,7 @@ typedef struct
 
 } initrd_file_header_t;
 
-extern fs_node_t *initialise_initrd(uint32_t location);
+extern fs_node_t *initrd_init(uint32_t location);
 
 #endif
 

@@ -87,8 +87,7 @@ void kmain(mboot_header_t *mboot_ptr)
 
 	sti();
 
-	fs_root = initialise_initrd(initrd_location);
-
+	fs_root = initrd_init(initrd_location);
 
 //	switch_to_user_mode();
 

@@ -1,6 +1,7 @@
 #include <system.h>
 #include <mem.h>
 #include <heap.h>
+#include <fs.h>
 #include <initrd.h>
 
 initrd_header_t *initrd_header;
@@ -75,7 +76,7 @@ static fs_node_t *initrd_finddir(fs_node_t *node, char *name)
 
 }
 
-fs_node_t *initialise_initrd(uint32_t location)
+fs_node_t *initrd_init(uint32_t location)
 {
 
 	initrd_header = (initrd_header_t *)location;
