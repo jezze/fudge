@@ -26,7 +26,7 @@ extern void puts_dec(uint32_t n);
 extern void puts_hex(uint32_t n);
 
 extern void screen_clear();
-extern void screen_move_cursor();
+extern void screen_cursor_move();
 extern void screen_scroll();
 extern void screen_init();
 

@@ -57,7 +57,7 @@ void putc(char c)
 	}
 
 	screen_scroll();
-	screen_move_cursor();
+	screen_cursor_move();
 
 }
 
@@ -173,11 +173,11 @@ void screen_clear()
 	screen.cursorX = 0;
 	screen.cursorY = 0;
 
-	screen_move_cursor();
+	screen_cursor_move();
 
 }
 
-void screen_move_cursor()
+void screen_cursor_move()
 {
 
 	uint32_t temp;

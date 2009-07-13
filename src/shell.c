@@ -6,33 +6,46 @@
 int8_t shellBuffer[SHELL_BUFFER_SIZE];
 uint16_t shellBufferSize = 0;
 
-void shell_buffer_write(int8_t c)
+void shell_buffer_clear()
 {
 
-	if (shellBufferSize < SHELL_BUFFER_SIZE)
-	{
+	puts("fudge:/$ ");
+	shellBufferSize = 0;
 
-		shellBuffer[shellBufferSize] = c;
+}
+
+void shell_buffer_push(int8_t c)
+{
+
+	shellBuffer[shellBufferSize] = c;
+
+	if (shellBufferSize < SHELL_BUFFER_SIZE)
 		shellBufferSize++;
 
-	}
+
+}
+
+void shell_buffer_pop()
+{
+
+	if (shellBufferSize)
+		shellBufferSize--;
 
 }
 
 int8_t *shell_buffer_read()
 {
 
-	shellBuffer[shellBufferSize - 1] = '\0';
+	shell_buffer_push('\0');
 
 	return shellBuffer;
 
 }
 
-void shell_buffer_clear()
+uint16_t shell_buffer_size()
 {
 
-	puts("fudge:/$ ");
-	shellBufferSize = 0;
+	return shellBufferSize;
 
 }
 
@@ -55,15 +68,35 @@ void shell_init()
 
 			uint8_t c = kbd_buffer_read();
 
-			shell_buffer_write(c);
-			putc(c);
-
-			if (c == '\n')
+			if (c == '\b')
 			{
+
+				if (shell_buffer_size())
+				{
+
+					putc('\b');
+					putc(' ');
+					putc('\b');
+
+					shell_buffer_pop();
+
+				}
+
+			}
+
+			else if (c == '\n')
+			{
+
+				putc('\n');
 
 				int8_t *command = shell_buffer_read();
 
-				if (strcmp(command, "help") == 0)
+				if (strcmp(command, "") == 0)
+				{
+
+				}
+
+				else if (strcmp(command, "help") == 0)
 				{
 
 					puts("Command list\n\n");
@@ -87,6 +120,14 @@ void shell_init()
 				}
 
 				shell_buffer_clear();
+
+			}
+
+			else
+			{
+
+				putc(c);
+				shell_buffer_push(c);
 
 			}
 
