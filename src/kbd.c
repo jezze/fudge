@@ -3,7 +3,7 @@
 #include <irq.h>
 #include <kbd.h>
 
-uint8_t kbdMapLowerUS[128] =
+char kbdMapLowerUS[128] =
 {
 	0, 27,
 	'1', '2', '3', '4', '5', '6', '7', '8',	'9', '0', '-', '=', '\b', '\t',
@@ -41,7 +41,7 @@ uint8_t kbdMapLowerUS[128] =
 	0,
 };
 
-uint8_t kbdMapUpperUS[128] =
+char kbdMapUpperUS[128] =
 {
 	0, 27,
 	'!', ' ', '#', ' ', '%', '&', '/', '(',	')', '=', '-', '=', '\b', '\t',
@@ -79,14 +79,14 @@ uint8_t kbdMapUpperUS[128] =
 	0,
 };
 
-uint8_t kbdBuffer[KBD_BUFFER_SIZE];
+char kbdBuffer[KBD_BUFFER_SIZE];
 uint16_t kbdBufferSize = 0;
 
 uint8_t kbdToggleShift = 0;
 uint8_t kbdToggleCtrl = 0;
 uint8_t kbdToggleAlt = 0;
 
-void kbd_buffer_write(uint8_t c)
+void kbd_buffer_write(char c)
 {
 
 	if (kbdBufferSize < KBD_BUFFER_SIZE)
@@ -99,20 +99,18 @@ void kbd_buffer_write(uint8_t c)
 
 }
 
-uint8_t kbd_buffer_read()
+char kbd_buffer_read()
 {
-
-	uint8_t c;
 
 	if (kbdBufferSize)
 	{
 
 		kbdBufferSize--;
-		c = kbdBuffer[kbdBufferSize];
+		return kbdBuffer[kbdBufferSize];
 
 	}
 
-	return c;
+	return 0;
 
 }
 

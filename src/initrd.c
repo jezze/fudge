@@ -8,7 +8,7 @@ initrd_file_header_t *file_headers;
 fs_node_t *initrd_root;
 fs_node_t *initrd_dev;
 fs_node_t *root_nodes;
-int nroot_nodes;
+uint32_t nroot_nodes;
 
 struct dirent dirent;
 
@@ -60,7 +60,7 @@ static fs_node_t *initrd_finddir(fs_node_t *node, char *name)
 	if (node == initrd_root && !strcmp(name, "dev"))
 		return initrd_dev;
 
-	int i;
+	uint32_t i;
 
 	for (i = 0; i < nroot_nodes; i++)
 	{
@@ -110,7 +110,7 @@ fs_node_t *initialise_initrd(uint32_t location)
 	root_nodes = (fs_node_t*)kmalloc(sizeof (fs_node_t) * initrd_header->nfiles);
 	nroot_nodes = initrd_header->nfiles;
 
-	int i;
+	uint32_t i;
 
 	for (i = 0; i < initrd_header->nfiles; i++)
 	{

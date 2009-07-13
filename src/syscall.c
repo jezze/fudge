@@ -9,10 +9,14 @@ uint32_t num_syscalls = 3;
 int syscall_write(char *text)
 {
 
+	int num;
 	int a;
-//	__asm__ __volatile__ ("int $0x80" : "=a" (a) : "0" (num));
 
-	puts(text);
+	num = 0;
+
+	__asm__ __volatile__ ("int $0x80" : "=a" (a) : "0" (num), "b" ((int)text));
+
+	return a;
 
 }
 
@@ -32,7 +36,7 @@ void syscall_handler(registers_t *r)
 		push %3; \
 		push %4; \
 		push %5; \
-		call %6; \
+		call *%6; \
 		pop %%ebx; \
 		pop %%ebx; \
 		pop %%ebx; \
@@ -44,7 +48,7 @@ void syscall_handler(registers_t *r)
 
 }
 
-void syscalls_init()
+void syscall_init()
 {
 
 	isr_register_handler(0x80, syscall_handler);

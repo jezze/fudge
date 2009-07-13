@@ -1,4 +1,5 @@
 #include <system.h>
+#include <task.h>
 
 void switch_to_user_mode()
 {
@@ -10,14 +11,11 @@ void switch_to_user_mode()
 		mov %ax, %es; \
 		mov %ax, %fs; \
 		mov %ax, %gs; \
-
+		\
 		mov %esp, %eax; \
 		pushl $023; \
-		pushl %eax; \
+		pushl %esp; \
 		pushf; \
-		pop %eax; \
-		or %eax, $0x200; \
-		push %eax; \
 		pushl $0x1B; \
 		push $1f; \
 		iret; \
@@ -26,5 +24,3 @@ void switch_to_user_mode()
 
 }
 
-
-}

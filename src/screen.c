@@ -9,7 +9,7 @@ void putc(char c)
 
 	uint16_t *where;
 
-	if (c == 0x08)
+	if (c == '\b')
 	{
 
 		if (screen.cursorX != 0)
@@ -17,7 +17,7 @@ void putc(char c)
 
 	}
 
-	else if (c == 0x09)
+	else if (c == '\t')
 	{
 
 		screen.cursorX = (screen.cursorX + 8) & ~(8 - 1);

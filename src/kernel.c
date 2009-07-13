@@ -11,6 +11,8 @@
 #include <fs.h>
 #include <initrd.h>
 #include <shell.h>
+#include <syscall.h>
+#include <task.h>
 
 extern uint32_t placement_address;
 
@@ -81,10 +83,16 @@ void kmain(mboot_header_t *mboot_ptr)
 	placement_address = initrd_end;
 
 	paging_init();
+	syscall_init();
 
 	sti();
 
 	fs_root = initialise_initrd(initrd_location);
+
+
+//	switch_to_user_mode();
+
+//	syscall_write("Hello user world!\n");
 
 	shell_init();
 
