@@ -11,7 +11,7 @@ fs_node_t *initrd_dev;
 fs_node_t *root_nodes;
 uint32_t nroot_nodes;
 
-struct dirent dirent;
+directory_entry_t dirent;
 
 static uint32_t initrd_read(fs_node_t *node, uint32_t offset, uint32_t size, uint32_t *buffer)
 {
@@ -30,7 +30,7 @@ static uint32_t initrd_read(fs_node_t *node, uint32_t offset, uint32_t size, uin
 
 }
 
-static struct dirent *initrd_readdir(fs_node_t *node, uint32_t index)
+static directory_entry_t *initrd_readdir(fs_node_t *node, uint32_t index)
 {
 
 	if (node == initrd_root && index == 0)

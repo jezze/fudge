@@ -57,7 +57,7 @@ void shell_command_cat(fs_node_t *fsnode)
 
 	uint32_t j;
 
-	for (j = 0; j < read_fs(fsnode, 0, 256, buffer); j++)
+	for (j = 0; j < fs_read(fsnode, 0, 256, buffer); j++)
 		putc(buffer[j]);
 
 	putc('\n');
@@ -85,12 +85,12 @@ void shell_command_ls()
 {
 
 	int i = 0;
-	struct dirent *node = 0;
+	directory_entry_t *node = 0;
 
-	while ((node = readdir_fs(fs_root, i)) != 0)
+	while ((node = fs_directory_read(fs_root, i)) != 0)
 	{
 
-		fs_node_t *fsnode = finddir_fs(fs_root, node->name);
+		fs_node_t *fsnode = fs_directory_find(fs_root, node->name);
 
 		if ((fsnode->flags & 0x7) == FS_DIRECTORY)
 		{
@@ -128,8 +128,8 @@ void shell_init()
 	screen_clear();
 
 	puts("Fudge\n");
-	puts("Copyright (c) 2009 Jens Nyberg\n\n");
-	puts("Type `help` for a list of commands.\n\n");
+	puts("Copyright (c) 2009 Jens Nyberg\n");
+	puts("Type 'help' for a list of commands.\n\n");
 
 	shell_buffer_clear();
 
@@ -168,7 +168,7 @@ void shell_init()
 					shell_command_null();
 
 				else if (strcmp(command, "cat") == 0)
-					shell_command_cat(finddir_fs(fs_root, "test.txt"));
+					shell_command_cat(fs_directory_find(fs_root, "test.txt"));
 
 				else if (strcmp(command, "clear") == 0)
 					shell_command_clear();

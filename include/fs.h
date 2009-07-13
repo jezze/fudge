@@ -11,11 +11,11 @@
 
 struct fs_node;
 
-typedef uint32_t (*read_type_t)(struct fs_node*, uint32_t, uint32_t, uint8_t*);
-typedef uint32_t (*write_type_t)(struct fs_node*, uint32_t, uint32_t, uint8_t*);
+typedef uint32_t (*read_type_t)(struct fs_node*, uint32_t offset, uint32_t size, uint8_t *buffer);
+typedef uint32_t (*write_type_t)(struct fs_node*, uint32_t offset, uint32_t size, uint8_t *buffer);
 typedef void (*open_type_t)(struct fs_node*);
 typedef void (*close_type_t)(struct fs_node*);
-typedef struct dirent * (*readdir_type_t)(struct fs_node*, uint32_t);
+typedef struct directory_entry * (*readdir_type_t)(struct fs_node*, uint32_t);
 typedef struct fs_node * (*finddir_type_t)(struct fs_node*, char *name);
 
 typedef struct fs_node
@@ -39,22 +39,22 @@ typedef struct fs_node
 
 } fs_node_t;
 
-struct dirent
+typedef struct directory_entry
 {
 
 	char name[128];
 	uint32_t ino;
 
-};
+} directory_entry_t;
 
 extern fs_node_t *fs_root;
 
-uint32_t read_fs(fs_node_t *node, uint32_t offset, uint32_t size, uint8_t *buffer);
-uint32_t write_fs(fs_node_t *node, uint32_t offset, uint32_t size, uint8_t *buffer);
-void open_fs(fs_node_t *node, uint8_t read, uint8_t write);
-void close_fs(fs_node_t *node);
-struct dirent *readdir_fs(fs_node_t *node, uint32_t index);
-fs_node_t *finddir_fs(fs_node_t *node, char *name);
+extern uint32_t fs_read(fs_node_t *node, uint32_t offset, uint32_t size, uint8_t *buffer);
+extern uint32_t fs_write(fs_node_t *node, uint32_t offset, uint32_t size, uint8_t *buffer);
+extern void fs_open(fs_node_t *node, uint8_t read, uint8_t write);
+extern void fs_close(fs_node_t *node);
+extern directory_entry_t *fs_directory_read(fs_node_t *node, uint32_t index);
+extern fs_node_t *fs_directory_find(fs_node_t *node, char *name);
 
 #endif
 
