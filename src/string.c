@@ -46,7 +46,7 @@ int strcmp(char *str1, char *str2)
 
 }
 
-char *strcpy(char *dest, const char *src)
+char *strcpy(char *dest, char *src)
 {
 
 	do

@@ -77,17 +77,17 @@ void kmain(mboot_header_t *mboot_ptr)
 
 	//MULTIBOOT
 	ASSERT(mboot_ptr->mods_count > 0);
-	uint32_t initrd_location = *((uint32_t*)mboot_ptr->mods_addr);
-	uint32_t initrd_end = *(uint32_t*)(mboot_ptr->mods_addr + 4);
+	uint32_t initrdLocation = *((uint32_t*)mboot_ptr->mods_addr);
+	uint32_t initrdEnd = *(uint32_t*)(mboot_ptr->mods_addr + 4);
 
-	placement_address = initrd_end;
+	placement_address = initrdEnd;
 
 	paging_init();
 	syscall_init();
 
 	sti();
 
-	fs_root = initrd_init(initrd_location);
+	fsRoot = initrd_init(initrdLocation);
 
 //	switch_to_user_mode();
 

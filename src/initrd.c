@@ -117,7 +117,7 @@ fs_node_t *initrd_init(uint32_t location)
 	{
 
 		file_headers[i].offset += location;
-		strcpy(root_nodes[i].name, &file_headers[i].name);
+		strcpy(root_nodes[i].name, file_headers[i].name);
 		root_nodes[i].mask = root_nodes[i].uid = root_nodes[i].gid = 0;
 		root_nodes[i].length = file_headers[i].length;
 		root_nodes[i].inode = i;

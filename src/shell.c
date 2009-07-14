@@ -87,10 +87,10 @@ void shell_command_ls()
 	int i = 0;
 	directory_entry_t *node = 0;
 
-	while ((node = fs_directory_read(fs_root, i)) != 0)
+	while ((node = fs_directory_read(fsRoot, i)) != 0)
 	{
 
-		fs_node_t *fsnode = fs_directory_find(fs_root, node->name);
+		fs_node_t *fsnode = fs_directory_find(fsRoot, node->name);
 
 		if ((fsnode->flags & 0x7) == FS_DIRECTORY)
 		{
@@ -168,7 +168,7 @@ void shell_init()
 					shell_command_null();
 
 				else if (strcmp(command, "cat") == 0)
-					shell_command_cat(fs_directory_find(fs_root, "test.txt"));
+					shell_command_cat(fs_directory_find(fsRoot, "test.txt"));
 
 				else if (strcmp(command, "clear") == 0)
 					shell_command_clear();

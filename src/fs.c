@@ -1,9 +1,9 @@
 #include <system.h>
 #include <fs.h>
 
-fs_node_t *fs_root = 0;
+fs_node_t *fsRoot = 0;
 
-uint32_t fs_read(fs_node_t *node, uint32_t offset, uint32_t size, uint8_t *buffer)
+uint32_t fs_read(fs_node_t *node, uint32_t offset, uint32_t size, char *buffer)
 {
 
 	if (node->read != 0)
@@ -13,7 +13,7 @@ uint32_t fs_read(fs_node_t *node, uint32_t offset, uint32_t size, uint8_t *buffe
 
 }
 
-uint32_t fs_write(fs_node_t *node, uint32_t offset, uint32_t size, uint8_t *buffer)
+uint32_t fs_write(fs_node_t *node, uint32_t offset, uint32_t size, char *buffer)
 {
 
 	if (node->write != 0)

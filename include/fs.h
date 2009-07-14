@@ -11,8 +11,8 @@
 
 struct fs_node;
 
-typedef uint32_t (*read_type_t)(struct fs_node*, uint32_t offset, uint32_t size, uint8_t *buffer);
-typedef uint32_t (*write_type_t)(struct fs_node*, uint32_t offset, uint32_t size, uint8_t *buffer);
+typedef uint32_t (*read_type_t)(struct fs_node*, uint32_t offset, uint32_t size, char *buffer);
+typedef uint32_t (*write_type_t)(struct fs_node*, uint32_t offset, uint32_t size, char *buffer);
 typedef void (*open_type_t)(struct fs_node*);
 typedef void (*close_type_t)(struct fs_node*);
 typedef struct directory_entry * (*readdir_type_t)(struct fs_node*, uint32_t);
@@ -47,10 +47,10 @@ typedef struct directory_entry
 
 } directory_entry_t;
 
-extern fs_node_t *fs_root;
+extern fs_node_t *fsRoot;
 
-extern uint32_t fs_read(fs_node_t *node, uint32_t offset, uint32_t size, uint8_t *buffer);
-extern uint32_t fs_write(fs_node_t *node, uint32_t offset, uint32_t size, uint8_t *buffer);
+extern uint32_t fs_read(fs_node_t *node, uint32_t offset, uint32_t size, char *buffer);
+extern uint32_t fs_write(fs_node_t *node, uint32_t offset, uint32_t size, char *buffer);
 extern void fs_open(fs_node_t *node, uint8_t read, uint8_t write);
 extern void fs_close(fs_node_t *node);
 extern directory_entry_t *fs_directory_read(fs_node_t *node, uint32_t index);
