@@ -65,7 +65,7 @@ void kernel_assert(char *file, uint32_t line, char *description)
 
 }
 
-void kernel_main(mboot_header_t *mboot_ptr)
+void kernel_main(mboot_header_t *mbootHeader)
 {
 
 	gdt_init();
@@ -77,16 +77,16 @@ void kernel_main(mboot_header_t *mboot_ptr)
 	kbd_init();
 
 	// BE SURE INITRD MODULE IS LOADED
-	ASSERT(mboot_ptr->mods_count > 0);
+	ASSERT(mbootHeader->modulesCount > 0);
 
-	heap_init(*((uint32_t *)(mboot_ptr->mods_addr + 4)));
+	heap_init(*((uint32_t *)(mbootHeader->modulesAddresses + 4)));
 
 	paging_init();
 	syscall_init();
 
 	sti();
 
-	fsRoot = initrd_init(*((uint32_t *)mboot_ptr->mods_addr));
+	fsRoot = initrd_init(*((uint32_t *)mbootHeader->modulesAddresses));
 
 //	switch_to_user_mode();
 
