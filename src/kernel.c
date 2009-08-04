@@ -7,6 +7,7 @@
 #include <screen.h>
 #include <pit.h>
 #include <kbd.h>
+#include <heap.h>
 #include <paging.h>
 #include <fs.h>
 #include <initrd.h>
@@ -14,7 +15,7 @@
 #include <syscall.h>
 #include <task.h>
 
-extern uint32_t placement_address;
+extern uint32_t heap_address;
 
 void cli()
 {
@@ -75,19 +76,17 @@ void kernel_main(mboot_header_t *mboot_ptr)
 	pit_init(PIT_FREQUENCY);
 	kbd_init();
 
-	//MULTIBOOT
+	// BE SURE INITRD MODULE IS LOADED
 	ASSERT(mboot_ptr->mods_count > 0);
-	uint32_t initrdLocation = *((uint32_t*)mboot_ptr->mods_addr);
-	uint32_t initrdEnd = *(uint32_t*)(mboot_ptr->mods_addr + 4);
 
-	placement_address = initrdEnd;
+	heap_init(*((uint32_t *)(mboot_ptr->mods_addr + 4)));
 
 	paging_init();
 	syscall_init();
 
 	sti();
 
-	fsRoot = initrd_init(initrdLocation);
+	fsRoot = initrd_init(*((uint32_t *)mboot_ptr->mods_addr));
 
 //	switch_to_user_mode();
 

@@ -1,24 +1,24 @@
 #include <system.h>
 #include <heap.h>
 
-uint32_t placement_address;
+uint32_t heap_address;
 
 uint32_t kmalloc_page(uint32_t size, int align, uint32_t *physical)
 {
 
-	if (align == 1 && (placement_address & 0xFFFFF000))
+	if (align == 1 && (heap_address & 0xFFFFF000))
 	{
 
-		placement_address &= 0xFFFFF000;
-		placement_address += 0x1000;
+		heap_address &= 0xFFFFF000;
+		heap_address += 0x1000;
 
 	}
 
 	if (physical)
-		*physical = placement_address;
+		*physical = heap_address;
 
-	uint32_t tmp = placement_address;
-	placement_address += size;
+	uint32_t tmp = heap_address;
+	heap_address += size;
 
 	return tmp;
 
@@ -49,6 +49,13 @@ uint32_t kmalloc_physical_aligned(uint32_t size, uint32_t *physical)
 {
 
 	return kmalloc_page(size, 1, physical);
+
+}
+
+void heap_init(uint32_t address)
+{
+
+	heap_address = address;
 
 }
 

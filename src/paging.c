@@ -11,7 +11,7 @@ page_directory_t *current_directory = 0;
 uint32_t *frames;
 uint32_t framesNum;
 
-extern uint32_t placement_address;
+extern uint32_t heap_address;
 
 static void frame_set(uint32_t frame_address)
 {
@@ -219,7 +219,7 @@ void frame_init()
 
 	uint32_t i = 0;
 
-	while (i < placement_address + 0x1000)
+	while (i < heap_address + 0x1000)
 	{
 
 		frame_alloc(page_get(i, 1, kernel_directory), 0, 0);
