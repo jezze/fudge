@@ -1,4 +1,4 @@
-extern kmain
+extern kernel_main
 
 MULTIBOOT_PAGE_ALIGN	equ 1<<0
 MULTIBOOT_MEMORY_INFO	equ 1<<1
@@ -17,7 +17,7 @@ global loader
 loader:
 	push ebx
 	cli
-	call kmain
+	call kernel_main
 	hlt
 
 section .bss

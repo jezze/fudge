@@ -30,7 +30,7 @@ void sti()
 
 }
 
-void kpanic(char *message, char *file, uint32_t line)
+void kernel_panic(char *message, char *file, uint32_t line)
 {
 
 	cli();
@@ -47,7 +47,7 @@ void kpanic(char *message, char *file, uint32_t line)
 
 }
 
-void kpanic_assert(char *file, uint32_t line, char *description)
+void kernel_assert(char *file, uint32_t line, char *description)
 {
 
 	cli();
@@ -64,7 +64,7 @@ void kpanic_assert(char *file, uint32_t line, char *description)
 
 }
 
-void kmain(mboot_header_t *mboot_ptr)
+void kernel_main(mboot_header_t *mboot_ptr)
 {
 
 	gdt_init();
