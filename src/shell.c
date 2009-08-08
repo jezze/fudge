@@ -50,38 +50,45 @@ uint16_t shell_buffer_size()
 
 }
 
-void shell_command_cat(fs_node_t *fsnode)
+void shell_command_cat(int argc, char *argv[])
 {
 
-	char buffer[256];
+	if (argc > 1)
+	{
 
-	uint32_t j;
+		fs_node_t *fsnode = fs_directory_find(fsRoot, argv[1]);
 
-	for (j = 0; j < fs_read(fsnode, 0, 256, buffer); j++)
-		putc(buffer[j]);
+		char buffer[256];
 
-	putc('\n');
+		uint32_t j;
+
+		for (j = 0; j < fs_read(fsnode, 0, 256, buffer); j++)
+			putc(buffer[j]);
+
+		putc('\n');
+
+	}
 
 }
 
-void shell_command_clear()
+void shell_command_clear(int argc, char *argv[])
 {
 
 	screen_clear();
 
 }
 
-void shell_command_help()
+void shell_command_help(int argc, char *argv[])
 {
 
-	puts("cat - Show content of test.txt file\n");
+	puts("cat - Show content of a file\n");
 	puts("clear - Clear screen\n");
 	puts("help - Show this dialog\n");
 	puts("ls - List files and directories\n");
 
 }
 
-void shell_command_ls()
+void shell_command_ls(int argc, char *argv[])
 {
 
 	int i = 0;
@@ -115,10 +122,76 @@ void shell_command_ls()
 
 }
 
-void shell_command_null()
+void shell_command_null(int argc, char *argv[])
 {
 
 	return;
+
+}
+
+void shell_interpret(char *command)
+{
+
+	int argc = 0;
+	char *argv[32];
+
+	int start = 0;
+	int current = 0;
+
+	int i;
+	int j = 0;
+
+	while (command[current] != '\0')
+	{
+
+		if (command[current] == ' ' || command[current] == '\n')
+		{
+
+			j = 0;
+
+			for (i = start; i < current; i++)
+			{
+
+				argv[argc][j] = command[i];
+
+				j++;
+
+			}
+
+			argv[argc][j] = '\0';
+			argc++;
+
+			start = current + 1;
+
+		}
+
+		current++;
+
+	}
+
+	if (strcmp(argv[0], "") == 0)
+		shell_command_null(argc, argv);
+
+	else if (strcmp(argv[0], "cat") == 0)
+		shell_command_cat(argc, (char **)argv);
+
+	else if (strcmp(argv[0], "clear") == 0)
+		shell_command_clear(argc, argv);
+
+	else if (strcmp(argv[0], "help") == 0)
+		shell_command_help(argc, argv);
+
+	else if (strcmp(argv[0], "ls") == 0)
+		shell_command_ls(argc, argv);
+
+	else
+	{
+
+		puts(argv[0]);
+		puts(": ");
+		puts("Command not found\n");
+
+	}
 
 }
 
@@ -133,7 +206,7 @@ void shell_init()
 
 	shell_buffer_clear();
 
-	while(1)
+	while (1)
 	{
 
 		if (kbd_buffer_size())
@@ -150,7 +223,6 @@ void shell_init()
 					putc('\b');
 					putc(' ');
 					putc('\b');
-
 					shell_buffer_pop();
 
 				}
@@ -161,27 +233,11 @@ void shell_init()
 			{
 
 				putc('\n');
+				shell_buffer_push(c);
 
 				char *command = shell_buffer_read();
 
-				if (strcmp(command, "") == 0)
-					shell_command_null();
-
-				else if (strcmp(command, "cat") == 0)
-					shell_command_cat(fs_directory_find(fsRoot, "test.txt"));
-
-				else if (strcmp(command, "clear") == 0)
-					shell_command_clear();
-
-				else if (strcmp(command, "help") == 0)
-					shell_command_help();
-
-				else if (strcmp(command, "ls") == 0)
-					shell_command_ls();
-
-				else
-					puts("Command not found\n");
-
+				shell_interpret(command);
 				shell_buffer_clear();
 
 			}
