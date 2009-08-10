@@ -3,15 +3,7 @@
 char *strcat(char *dest, const char *src)
 {
 
-	while (*dest != 0)
-		*dest = *dest++;
-
-	do
-	{
-
-		*dest++ = *src++;
-
-	} while (*src != 0);
+	strcpy(dest + strlen(dest), src);
 
 	return dest;
 
@@ -46,7 +38,7 @@ int strcmp(char *str1, char *str2)
 
 }
 
-char *strcpy(char *dest, char *src)
+char *strcpy(char *dest, const char *src)
 {
 
 	do
@@ -54,7 +46,7 @@ char *strcpy(char *dest, char *src)
 
 		*dest++ = *src++;
 
-	} while (*src != 0);
+	} while (*src != '\0');
 
 	return dest;
 
