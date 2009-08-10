@@ -86,6 +86,13 @@ uint8_t kbdToggleShift = 0;
 uint8_t kbdToggleCtrl = 0;
 uint8_t kbdToggleAlt = 0;
 
+void kbd_buffer_clear()
+{
+
+	kbdBufferSize = 0;
+
+}
+
 void kbd_buffer_write(char c)
 {
 
@@ -111,13 +118,6 @@ char kbd_buffer_read()
 	}
 
 	return 0;
-
-}
-
-uint16_t kbd_buffer_size()
-{
-
-	return kbdBufferSize;
 
 }
 

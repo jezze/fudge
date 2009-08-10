@@ -10,27 +10,34 @@ uint16_t shellBufferSize = 0;
 void shell_buffer_clear()
 {
 
-	puts("fudge:/$ ");
 	shellBufferSize = 0;
 
 }
 
-void shell_buffer_push(int8_t c)
+void shell_buffer_push(char c)
 {
 
-	shellBuffer[shellBufferSize] = c;
-
 	if (shellBufferSize < SHELL_BUFFER_SIZE)
+	{
+
+		shellBuffer[shellBufferSize] = c;
 		shellBufferSize++;
 
+	}
 
 }
 
-void shell_buffer_pop()
+char shell_buffer_pop()
 {
 
 	if (shellBufferSize)
+	{
+
 		shellBufferSize--;
+		return shellBuffer[shellBufferSize];
+	}
+
+	return 0;
 
 }
 
@@ -43,10 +50,11 @@ char *shell_buffer_read()
 
 }
 
-uint16_t shell_buffer_size()
+void shell_clear()
 {
 
-	return shellBufferSize;
+	puts("fudge:/$ ");
+	shell_buffer_clear();
 
 }
 
@@ -173,7 +181,7 @@ void shell_interpret(char *command)
 		shell_command_null(argc, argv);
 
 	else if (strcmp(argv[0], "cat") == 0)
-		shell_command_cat(argc, (char **)argv);
+		shell_command_cat(argc, argv);
 
 	else if (strcmp(argv[0], "clear") == 0)
 		shell_command_clear(argc, argv);
@@ -188,10 +196,11 @@ void shell_interpret(char *command)
 	{
 
 		puts(argv[0]);
-		puts(": ");
-		puts("Command not found\n");
+		puts(": Command not found\n");
 
 	}
+
+	shell_clear();
 
 }
 
@@ -204,51 +213,40 @@ void shell_init()
 	puts("Copyright (c) 2009 Jens Nyberg\n");
 	puts("Type 'help' for a list of commands.\n\n");
 
-	shell_buffer_clear();
+	shell_clear();
 
 	while (1)
 	{
 
-		if (kbd_buffer_size())
-		{
+		char c;
 
-			char c = kbd_buffer_read();
+		if ((c = kbd_buffer_read()))
+		{
 
 			if (c == '\b')
 			{
 
-				if (shell_buffer_size())
+				if (shell_buffer_pop())
 				{
 
 					putc('\b');
 					putc(' ');
 					putc('\b');
-					shell_buffer_pop();
 
 				}
-
-			}
-
-			else if (c == '\n')
-			{
-
-				putc('\n');
-				shell_buffer_push(c);
-
-				char *command = shell_buffer_read();
-
-				shell_interpret(command);
-				shell_buffer_clear();
 
 			}
 
 			else
 			{
 
-				putc(c);
 				shell_buffer_push(c);
+				putc(c);
 
 			}
+
+			if (c == '\n')
+				shell_interpret(shell_buffer_read());
 
 		}
 
