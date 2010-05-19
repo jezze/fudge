@@ -12,62 +12,62 @@ cd:
 	genisoimage -R -b boot/grub/stage2_eltorito -no-emul-boot -boot-load-size 4 -boot-info-table -o fudge.iso root
 
 loader:
-	$(ASM) $(ASMFLAGS) src/loader.s -o obj/loader.o
+	$(ASM) $(ASMFLAGS) src/kernel/loader.s -o obj/loader.o
 
 kernel:
-	$(GCC) $(GCCFLAGS) src/kernel.c -o obj/kernel.o
+	$(GCC) $(GCCFLAGS) src/kernel/kernel.c -o obj/kernel.o
 
 mem:
-	$(GCC) $(GCCFLAGS) src/mem.c -o obj/mem.o
+	$(GCC) $(GCCFLAGS) src/kernel/mem.c -o obj/mem.o
 
 string:
-	$(GCC) $(GCCFLAGS) src/string.c -o obj/string.o
+	$(GCC) $(GCCFLAGS) src/kernel/string.c -o obj/string.o
 
 gdt:
-	$(GCC) $(GCCFLAGS) src/gdt.c -o obj/gdt.o
-	$(ASM) $(ASMFLAGS) src/gdts.s -o obj/gdts.o
+	$(GCC) $(GCCFLAGS) src/kernel/gdt.c -o obj/gdt.o
+	$(ASM) $(ASMFLAGS) src/kernel/gdts.s -o obj/gdts.o
 
 idt:
-	$(GCC) $(GCCFLAGS) src/idt.c -o obj/idt.o
-	$(ASM) $(ASMFLAGS) src/idts.s -o obj/idts.o
+	$(GCC) $(GCCFLAGS) src/kernel/idt.c -o obj/idt.o
+	$(ASM) $(ASMFLAGS) src/kernel/idts.s -o obj/idts.o
 
 isr:
-	$(GCC) $(GCCFLAGS) src/isr.c -o obj/isr.o
-	$(ASM) $(ASMFLAGS) src/isrs.s -o obj/isrs.o
+	$(GCC) $(GCCFLAGS) src/kernel/isr.c -o obj/isr.o
+	$(ASM) $(ASMFLAGS) src/kernel/isrs.s -o obj/isrs.o
 
 irq:
-	$(GCC) $(GCCFLAGS) src/irq.c -o obj/irq.o
-	$(ASM) $(ASMFLAGS) src/irqs.s -o obj/irqs.o
+	$(GCC) $(GCCFLAGS) src/kernel/irq.c -o obj/irq.o
+	$(ASM) $(ASMFLAGS) src/kernel/irqs.s -o obj/irqs.o
 
 pit:
-	$(GCC) $(GCCFLAGS) src/pit.c -o obj/pit.o
+	$(GCC) $(GCCFLAGS) src/kernel/pit.c -o obj/pit.o
 
 screen:
-	$(GCC) $(GCCFLAGS) src/screen.c -o obj/screen.o
+	$(GCC) $(GCCFLAGS) src/kernel/screen.c -o obj/screen.o
 
 kbd:
-	$(GCC) $(GCCFLAGS) src/kbd.c -o obj/kbd.o
+	$(GCC) $(GCCFLAGS) src/kernel/kbd.c -o obj/kbd.o
 
 heap:
-	$(GCC) $(GCCFLAGS) src/heap.c -o obj/heap.o
+	$(GCC) $(GCCFLAGS) src/kernel/heap.c -o obj/heap.o
 
 paging:
-	$(GCC) $(GCCFLAGS) src/paging.c -o obj/paging.o
+	$(GCC) $(GCCFLAGS) src/kernel/paging.c -o obj/paging.o
 
 fs:
-	$(GCC) $(GCCFLAGS) src/fs.c -o obj/fs.o
+	$(GCC) $(GCCFLAGS) src/kernel/fs.c -o obj/fs.o
 
 initrd:
-	$(GCC) $(GCCFLAGS) src/initrd.c -o obj/initrd.o
+	$(GCC) $(GCCFLAGS) src/kernel/initrd.c -o obj/initrd.o
 
 syscall:
-	$(GCC) $(GCCFLAGS) src/syscall.c -o obj/syscall.o
+	$(GCC) $(GCCFLAGS) src/kernel/syscall.c -o obj/syscall.o
 
 task:
-	$(GCC) $(GCCFLAGS) src/task.c -o obj/task.o
+	$(GCC) $(GCCFLAGS) src/kernel/task.c -o obj/task.o
 
 shell:
-	$(GCC) $(GCCFLAGS) src/shell.c -o obj/shell.o
+	$(GCC) $(GCCFLAGS) src/kernel/shell.c -o obj/shell.o
 
 clean:
 	rm obj/*
