@@ -20,81 +20,81 @@ extern uint32_t heap_address;
 void cli()
 {
 
-	__asm__ __volatile__ ("cli");
+    __asm__ __volatile__ ("cli");
 
 }
 
 void sti()
 {
 
-	__asm__ __volatile__ ("sti");
+    __asm__ __volatile__ ("sti");
 
 }
 
 void kernel_panic(char *message, char *file, uint32_t line)
 {
 
-	cli();
+    cli();
 
-	puts("PANIC(");
-	puts(message);
-	puts(") at ( ");
-	puts(file);
-	puts(":");
-	puts_dec(line);
-	puts("\n");
+    puts("PANIC(");
+    puts(message);
+    puts(") at ( ");
+    puts(file);
+    puts(":");
+    puts_dec(line);
+    puts("\n");
 
-	for (;;);
+    for (;;);
 
 }
 
 void kernel_assert(char *file, uint32_t line, char *description)
 {
 
-	cli();
+    cli();
 
-	puts("ASSERTION FAIL(");
-	puts(description);
-	puts(") at (");
-	puts(file);
-	puts(":");
-	puts_dec(line);
-	puts("\n");
+    puts("ASSERTION FAIL(");
+    puts(description);
+    puts(") at (");
+    puts(file);
+    puts(":");
+    puts_dec(line);
+    puts("\n");
 
-	for (;;);
+    for (;;);
 
 }
 
 void kernel_main(mboot_header_t *mbootHeader)
 {
 
-	gdt_init();
-	idt_init();
-	isr_init();
-	irq_init();
-	screen_init();
-	pit_init(PIT_FREQUENCY);
-	kbd_init();
+    gdt_init();
+    idt_init();
+    isr_init();
+    irq_init();
+    screen_init();
+    pit_init(PIT_FREQUENCY);
+    kbd_init();
 
-	// BE SURE INITRD MODULE IS LOADED
-	ASSERT(mbootHeader->modulesCount > 0);
+    // BE SURE INITRD MODULE IS LOADED
+    ASSERT(mbootHeader->modulesCount > 0);
 
-	heap_init(*((uint32_t *)(mbootHeader->modulesAddresses + 4)));
+    heap_init(*((uint32_t *)(mbootHeader->modulesAddresses + 4)));
 
-	paging_init();
-	syscall_init();
+    paging_init();
+    syscall_init();
 
-	sti();
+    sti();
 
-	fsRoot = initrd_init(*((uint32_t *)mbootHeader->modulesAddresses));
+    fsRoot = initrd_init(*((uint32_t *)mbootHeader->modulesAddresses));
 
-//	switch_to_user_mode();
+//    switch_to_user_mode();
 
-//	syscall_write("Hello user world!\n");
+//    syscall_write("Hello user world!\n");
 
-	shell_init();
+    shell_init();
 
-	for (;;);
+    for (;;);
 
 }
 

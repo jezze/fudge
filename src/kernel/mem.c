@@ -4,66 +4,66 @@
 void *memcpy(void *dest, const void *src, int32_t count)
 {
 
-	const int8_t *sp = (const int8_t *)src;
-	int8_t *dp = (int8_t *)dest;
+    const int8_t *sp = (const int8_t *)src;
+    int8_t *dp = (int8_t *)dest;
 
-	for (; count != 0; count--)
-		*dp++ = *sp++;
+    for (; count != 0; count--)
+        *dp++ = *sp++;
 
-	return dest;
+    return dest;
 
 }
 
 void *memset(void *dest, int8_t val, int32_t count)
 {
 
-	int8_t *temp = (int8_t *)dest;
+    int8_t *temp = (int8_t *)dest;
 
-	for (; count != 0; count--)
-		*temp++ = val;
+    for (; count != 0; count--)
+        *temp++ = val;
 
-	return dest;
+    return dest;
 
 }
 
 uint16_t *memsetw(uint16_t *dest, uint16_t val, int32_t count)
 {
 
-	uint16_t *temp = (uint16_t *)dest;
+    uint16_t *temp = (uint16_t *)dest;
 
-	for (; count != 0; count--)
-		*temp++ = val;
+    for (; count != 0; count--)
+        *temp++ = val;
 
-	return dest;
+    return dest;
 
 }
 
 uint8_t inb(uint16_t port)
 {
 
-	uint8_t rv;
+    uint8_t rv;
 
-	__asm__ __volatile__ ("inb %1, %0" : "=a" (rv) : "dN" (port));
+    __asm__ __volatile__ ("inb %1, %0" : "=a" (rv) : "dN" (port));
 
-	return rv;
+    return rv;
 
 }
 
 uint16_t inw(uint16_t port)
 {
 
-	uint16_t rv;
+    uint16_t rv;
 
-	__asm__ __volatile__ ("inw %1, %0" : "=a" (rv) : "dN" (port));
+    __asm__ __volatile__ ("inw %1, %0" : "=a" (rv) : "dN" (port));
 
-	return rv;
+    return rv;
 
 }
 
 void outb(uint16_t port, uint8_t data)
 {
 
-	__asm__ __volatile__ ("outb %1, %0" : : "dN" (port), "a" (data));
+    __asm__ __volatile__ ("outb %1, %0" : : "dN" (port), "a" (data));
 
 }
 

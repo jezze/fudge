@@ -20,8 +20,11 @@ kernel:
 mem:
 	$(GCC) $(GCCFLAGS) src/kernel/mem.c -o obj/mem.o
 
+cbuffer:
+	$(GCC) $(GCCFLAGS) src/lib/cbuffer.c -o obj/cbuffer.o
+
 string:
-	$(GCC) $(GCCFLAGS) src/kernel/string.c -o obj/string.o
+	$(GCC) $(GCCFLAGS) src/lib/string.c -o obj/string.o
 
 gdt:
 	$(GCC) $(GCCFLAGS) src/kernel/gdt.c -o obj/gdt.o
