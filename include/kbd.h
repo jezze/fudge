@@ -3,6 +3,15 @@
 
 #define KBD_BUFFER_SIZE 256
 
+typedef struct kbd_device
+{
+
+    char buffer[KBD_BUFFER_SIZE];
+    int head;
+    int tail;
+
+} kbd_device_t;
+
 extern uint16_t kbd_buffer_size();
 extern char kbd_buffer_read();
 extern void kbd_init();

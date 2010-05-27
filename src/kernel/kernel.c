@@ -37,13 +37,13 @@ void kernel_panic(char *message, char *file, uint32_t line)
 
     cli();
 
-    puts("KERNEL PANIC (");
-    puts(message);
-    puts(") at (");
-    puts(file);
-    puts(":");
-    puts_dec(line);
-    puts(")\n");
+    screen_puts("KERNEL PANIC (");
+    screen_puts(message);
+    screen_puts(") at (");
+    screen_puts(file);
+    screen_puts(":");
+    screen_puts_dec(line);
+    screen_puts(")\n");
 
     for (;;);
 
@@ -54,13 +54,13 @@ void kernel_assert(char *message, char *file, uint32_t line)
 
     cli();
 
-    puts("ASSERTION FAIL (");
-    puts(message);
-    puts(") at (");
-    puts(file);
-    puts(":");
-    puts_dec(line);
-    puts(")\n");
+    screen_puts("ASSERTION FAIL (");
+    screen_puts(message);
+    screen_puts(") at (");
+    screen_puts(file);
+    screen_puts(":");
+    screen_puts_dec(line);
+    screen_puts(")\n");
 
     for (;;);
 

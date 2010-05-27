@@ -58,7 +58,8 @@ void irq_handler(registers_t *r)
 
     void (*handler)(registers_t *r) = irq_routines[r->int_no - 32];
 
-    if (handler) handler(r);
+    if (handler)
+        handler(r);
 
     if (r->int_no >= 40)
         outb(0xA0, 0x20);

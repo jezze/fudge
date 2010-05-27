@@ -5,7 +5,7 @@
 
 screen_t screen;
 
-void putc(char c)
+void screen_putc(char c)
 {
 
     uint16_t *where;
@@ -62,23 +62,25 @@ void putc(char c)
 
 }
 
-void puts(char *s)
+void screen_puts(char *s)
 {
 
     int i;
 
     for (i = 0; i < strlen(s); i++)
-        putc(s[i]);
+        screen_putc(s[i]);
 
 }
 
-void puts_dec(uint32_t n)
+void screen_puts_dec(uint32_t n)
 {
 
     if (n == 0)
     {
-        putc('0');
+
+        screen_putc('0');
         return;
+
     }
 
     int32_t acc = n;
@@ -95,7 +97,6 @@ void puts_dec(uint32_t n)
     }
 
     c[i] = 0;
-
     char c2[32];
     c2[i--] = 0;
     int j = 0;
@@ -103,16 +104,16 @@ void puts_dec(uint32_t n)
     while (i >= 0)
         c2[i--] = c[j++];
 
-    puts(c2);
+    screen_puts(c2);
 
 }
 
-void puts_hex(uint32_t n)
+void screen_puts_hex(uint32_t n)
 {
 
     int32_t tmp;
 
-    puts("0x");
+    screen_puts("0x");
 
     char noZeroes = 1;
 
@@ -130,7 +131,7 @@ void puts_hex(uint32_t n)
         {
 
             noZeroes = 0;
-            putc(tmp - 0xA + 'a');
+            screen_putc(tmp - 0xA + 'a');
 
         }
 
@@ -138,7 +139,7 @@ void puts_hex(uint32_t n)
         {
 
             noZeroes = 0;
-            putc(tmp + '0');
+            screen_putc(tmp + '0');
 
         }
 
@@ -147,9 +148,9 @@ void puts_hex(uint32_t n)
     tmp = n & 0xF;
 
     if (tmp >= 0xA)
-        putc(tmp - 0xA + 'a');
+        screen_putc(tmp - 0xA + 'a');
     else
-        putc(tmp + '0');
+        screen_putc(tmp + '0');
 
 }
 

@@ -4,7 +4,7 @@
 #include <screen.h>
 #include <syscall.h>
 
-static void *syscalls[3] = {&puts, &puts_hex, &puts_dec};
+static void *syscalls[3] = {&screen_puts, &screen_puts_hex, &screen_puts_dec};
 uint32_t num_syscalls = 3;
 
 int syscall_write(char *text)

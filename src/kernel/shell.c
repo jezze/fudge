@@ -36,6 +36,7 @@ char shell_buffer_pop()
 
         shellBufferSize--;
         return shellBuffer[shellBufferSize];
+
     }
 
     return 0;
@@ -54,7 +55,7 @@ char *shell_buffer_read()
 void shell_clear()
 {
 
-    puts("fudge:/$ ");
+    screen_puts("fudge:/$ ");
     shell_buffer_clear();
 
 }
@@ -72,9 +73,9 @@ void shell_command_cat(int argc, char *argv[])
         uint32_t j;
 
         for (j = 0; j < fs_read(fsnode, 0, 256, buffer); j++)
-            putc(buffer[j]);
+            screen_putc(buffer[j]);
 
-        putc('\n');
+        screen_putc('\n');
 
     }
 
@@ -90,10 +91,10 @@ void shell_command_clear(int argc, char *argv[])
 void shell_command_help(int argc, char *argv[])
 {
 
-    puts("cat - Show content of a file\n");
-    puts("clear - Clear screen\n");
-    puts("help - Show this dialog\n");
-    puts("ls - List files and directories\n");
+    screen_puts("cat - Show content of a file\n");
+    screen_puts("clear - Clear screen\n");
+    screen_puts("help - Show this dialog\n");
+    screen_puts("ls - List files and directories\n");
 
 }
 
@@ -111,17 +112,17 @@ void shell_command_ls(int argc, char *argv[])
         if ((fsnode->flags & 0x7) == FS_DIRECTORY)
         {
 
-            puts("/");
-            puts(node->name);
-            puts("\n");
+            screen_puts("/");
+            screen_puts(node->name);
+            screen_puts("\n");
 
         }
 
         else
         {
 
-            puts(node->name);
-            puts("\n");
+            screen_puts(node->name);
+            screen_puts("\n");
 
         }
 
@@ -196,8 +197,8 @@ void shell_interpret(char *command)
     else
     {
 
-        puts(argv[0]);
-        puts(": Command not found\n");
+        screen_puts(argv[0]);
+        screen_puts(": Command not found\n");
 
     }
 
@@ -210,9 +211,9 @@ void shell_init()
 
     screen_clear();
 
-    puts("Fudge\n");
-    puts("Copyright (c) 2009 Jens Nyberg\n");
-    puts("Type 'help' for a list of commands.\n\n");
+    screen_puts("Fudge\n");
+    screen_puts("Copyright (c) 2009 Jens Nyberg\n");
+    screen_puts("Type 'help' for a list of commands.\n\n");
 
     shell_clear();
 
@@ -230,9 +231,9 @@ void shell_init()
                 if (shell_buffer_pop())
                 {
 
-                    putc('\b');
-                    putc(' ');
-                    putc('\b');
+                    screen_putc('\b');
+                    screen_putc(' ');
+                    screen_putc('\b');
 
                 }
 
@@ -242,7 +243,7 @@ void shell_init()
             {
 
                 shell_buffer_push(c);
-                putc(c);
+                screen_putc(c);
 
             }
 
@@ -254,3 +255,4 @@ void shell_init()
     }
 
 }
+

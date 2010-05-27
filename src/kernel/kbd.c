@@ -2,6 +2,7 @@
 #include <regs.h>
 #include <mem.h>
 #include <irq.h>
+#include <cbuffer.h>
 #include <kbd.h>
 
 char kbdMapLowerUS[128] =

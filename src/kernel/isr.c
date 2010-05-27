@@ -105,8 +105,8 @@ void isr_handler(registers_t *r)
     else
     {
 
-        puts("Unhandled interrupt: ");
-        puts(exception_messages[r->int_no]);
+        screen_puts("Unhandled interrupt: ");
+        screen_puts(exception_messages[r->int_no]);
 
     }
 
