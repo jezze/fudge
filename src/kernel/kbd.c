@@ -81,41 +81,36 @@ char kbdMapUpperUS[128] =
     0,
 };
 
-char kbdBuffer[KBD_BUFFER_SIZE];
-uint16_t kbdBufferSize = 0;
+kbd_device_t keyboard;
 
-uint8_t kbdToggleShift = 0;
-uint8_t kbdToggleCtrl = 0;
-uint8_t kbdToggleAlt = 0;
-
-void kbd_buffer_clear()
+void kbd_buffer_clear(kbd_device_t *device)
 {
 
-    kbdBufferSize = 0;
+    device->bufferSize = 0;
 
 }
 
-void kbd_buffer_write(char c)
+void kbd_buffer_write(kbd_device_t *device, char c)
 {
 
-    if (kbdBufferSize < KBD_BUFFER_SIZE)
+    if (device->bufferSize < KBD_BUFFER_SIZE)
     {
 
-        kbdBuffer[kbdBufferSize] = c;
-        kbdBufferSize++;
+        device->buffer[device->bufferSize] = c;
+        device->bufferSize++;
 
     }
 
 }
 
-char kbd_buffer_read()
+char kbd_buffer_read(kbd_device_t *device)
 {
 
-    if (kbdBufferSize)
+    if (device->bufferSize)
     {
 
-        kbdBufferSize--;
-        return kbdBuffer[kbdBufferSize];
+        device->bufferSize--;
+        return device->buffer[device->bufferSize];
 
     }
 
@@ -131,10 +126,10 @@ void kbd_handler(registers_t *r)
     scancode = inb(0x60);
 
     if (scancode == 0x2A)
-        kbdToggleShift = 1;
+        keyboard.toggleShift = 1;
 
     if (scancode == 0xAA)
-        kbdToggleShift = 0;
+        keyboard.toggleShift = 0;
 
     if (scancode & 0x80)
     {
@@ -147,10 +142,10 @@ void kbd_handler(registers_t *r)
     {
 
         // Make codes
-        if (kbdToggleShift)
-            kbd_buffer_write(kbdMapUpperUS[scancode]);
+        if (keyboard.toggleShift)
+            kbd_buffer_write(&keyboard, kbdMapUpperUS[scancode]);
         else
-            kbd_buffer_write(kbdMapLowerUS[scancode]);
+            kbd_buffer_write(&keyboard, kbdMapLowerUS[scancode]);
 
     }
 
@@ -158,6 +153,11 @@ void kbd_handler(registers_t *r)
 
 void kbd_init()
 {
+
+    keyboard.bufferSize = 0;
+    keyboard.toggleAlt = 0;
+    keyboard.toggleCtrl = 0;
+    keyboard.toggleShift = 0;
 
     irq_register_handler(1, kbd_handler);
 
