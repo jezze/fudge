@@ -1,4 +1,5 @@
 #include <system.h>
+#include <regs.h>
 #include <isr.h>
 #include <screen.h>
 #include <syscall.h>

@@ -1,5 +1,6 @@
 #include <system.h>
 #include <mem.h>
+#include <string.h>
 #include <screen.h>
 
 screen_t screen;

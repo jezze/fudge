@@ -1,4 +1,5 @@
 #include <system.h>
+#include <regs.h>
 #include <mboot.h>
 #include <gdt.h>
 #include <idt.h>
@@ -36,30 +37,30 @@ void kernel_panic(char *message, char *file, uint32_t line)
 
     cli();
 
-    puts("PANIC(");
+    puts("KERNEL PANIC (");
     puts(message);
-    puts(") at ( ");
+    puts(") at (");
     puts(file);
     puts(":");
     puts_dec(line);
-    puts("\n");
+    puts(")\n");
 
     for (;;);
 
 }
 
-void kernel_assert(char *file, uint32_t line, char *description)
+void kernel_assert(char *message, char *file, uint32_t line)
 {
 
     cli();
 
-    puts("ASSERTION FAIL(");
-    puts(description);
+    puts("ASSERTION FAIL (");
+    puts(message);
     puts(") at (");
     puts(file);
     puts(":");
     puts_dec(line);
-    puts("\n");
+    puts(")\n");
 
     for (;;);
 

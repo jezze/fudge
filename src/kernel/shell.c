@@ -2,6 +2,7 @@
 #include <screen.h>
 #include <kbd.h>
 #include <fs.h>
+#include <string.h>
 #include <shell.h>
 
 char shellBuffer[SHELL_BUFFER_SIZE];

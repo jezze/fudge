@@ -1,4 +1,5 @@
 #include <system.h>
+#include <regs.h>
 #include <mem.h>
 #include <irq.h>
 #include <pit.h>

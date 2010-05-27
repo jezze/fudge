@@ -1,4 +1,5 @@
 #include <system.h>
+#include <regs.h>
 #include <mem.h>
 #include <isr.h>
 #include <heap.h>
@@ -189,19 +190,19 @@ void paging_handler(registers_t *r)
     int reserved = r->err_code & 0x8;
     int fetch = r->err_code & 0x10;
 
-    puts("PAGE FAULT ( ");
+    puts("PAGE FAULT (");
 
     if (present)
-        puts("present ");
+        puts("present");
 
     if (rw)
-        puts("read-only ");
+        puts("read-only");
 
     if (us)
-        puts("user-mode ");
+        puts("user-mode");
 
     if (reserved)
-        puts("reserved ");
+        puts("reserved");
 
     if (fetch)
         puts("fetch");
