@@ -181,19 +181,19 @@ void shell_interpret(char *command)
 
     }
 
-    if (strcmp(argv[0], "") == 0)
+    if (string_compare(argv[0], "") == 0)
         shell_command_null(argc, argv);
 
-    else if (strcmp(argv[0], "cat") == 0)
+    else if (string_compare(argv[0], "cat") == 0)
         shell_command_cat(argc, argv);
 
-    else if (strcmp(argv[0], "clear") == 0)
+    else if (string_compare(argv[0], "clear") == 0)
         shell_command_clear(argc, argv);
 
-    else if (strcmp(argv[0], "help") == 0)
+    else if (string_compare(argv[0], "help") == 0)
         shell_command_help(argc, argv);
 
-    else if (strcmp(argv[0], "ls") == 0)
+    else if (string_compare(argv[0], "ls") == 0)
         shell_command_ls(argc, argv);
 
     else

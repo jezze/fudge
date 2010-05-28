@@ -37,7 +37,7 @@ static directory_entry_t *initrd_readdir(fs_node_t *node, uint32_t index)
     if (node == initrd_root && index == 0)
     {
 
-        strcpy(dirent.name, "dev");
+        string_copy(dirent.name, "dev");
         dirent.name[3] = 0;
         dirent.ino = 0;
 
@@ -48,8 +48,8 @@ static directory_entry_t *initrd_readdir(fs_node_t *node, uint32_t index)
     if (index - 1 >= nroot_nodes)
         return 0;
 
-    strcpy(dirent.name, root_nodes[index - 1].name);
-    dirent.name[strlen(root_nodes[index - 1].name)] = 0;
+    string_copy(dirent.name, root_nodes[index - 1].name);
+    dirent.name[string_length(root_nodes[index - 1].name)] = 0;
     dirent.ino = root_nodes[index - 1].inode;
 
     return &dirent;
@@ -59,7 +59,7 @@ static directory_entry_t *initrd_readdir(fs_node_t *node, uint32_t index)
 static fs_node_t *initrd_finddir(fs_node_t *node, char *name)
 {
 
-    if (node == initrd_root && !strcmp(name, "dev"))
+    if (node == initrd_root && !string_compare(name, "dev"))
         return initrd_dev;
 
     uint32_t i;
@@ -67,7 +67,7 @@ static fs_node_t *initrd_finddir(fs_node_t *node, char *name)
     for (i = 0; i < nroot_nodes; i++)
     {
 
-        if (!strcmp(name, root_nodes[i].name))
+        if (!string_compare(name, root_nodes[i].name))
             return &root_nodes[i];
 
     }
@@ -83,7 +83,7 @@ fs_node_t *initrd_init(uint32_t location)
     file_headers = (initrd_file_header_t *)(location + sizeof (initrd_header_t));
 
     initrd_root = (fs_node_t *)kmalloc(sizeof (fs_node_t));
-    strcpy(initrd_root->name, "initrd");
+    string_copy(initrd_root->name, "initrd");
     initrd_root->mask = initrd_root->uid = initrd_root->gid = initrd_root->inode = initrd_root->length = 0;
     initrd_root->flags = FS_DIRECTORY;
     initrd_root->read = 0;
@@ -96,7 +96,7 @@ fs_node_t *initrd_init(uint32_t location)
     initrd_root->impl = 0;
 
     initrd_dev = (fs_node_t*)kmalloc(sizeof (fs_node_t));
-    strcpy(initrd_dev->name, "dev");
+    string_copy(initrd_dev->name, "dev");
     initrd_dev->mask = initrd_dev->uid = initrd_dev->gid = initrd_dev->inode = initrd_dev->length = 0;
     initrd_dev->flags = FS_DIRECTORY;
     initrd_dev->read = 0;
@@ -117,7 +117,7 @@ fs_node_t *initrd_init(uint32_t location)
     {
 
         file_headers[i].offset += location;
-        strcpy(root_nodes[i].name, file_headers[i].name);
+        string_copy(root_nodes[i].name, file_headers[i].name);
         root_nodes[i].mask = root_nodes[i].uid = root_nodes[i].gid = 0;
         root_nodes[i].length = file_headers[i].length;
         root_nodes[i].inode = i;

@@ -1,16 +1,16 @@
 #include <system.h>
 #include <string.h>
 
-char *strcat(char *dest, const char *src)
+char *string_concat(char *dest, const char *src)
 {
 
-    strcpy(dest + strlen(dest), src);
+    string_copy(dest + string_length(dest), src);
 
     return dest;
 
 }
 
-int strcmp(char *str1, char *str2)
+int string_compare(char *str1, char *str2)
 {
 
     int i = 0;
@@ -39,7 +39,7 @@ int strcmp(char *str1, char *str2)
 
 }
 
-char *strcpy(char *dest, const char *src)
+char *string_copy(char *dest, const char *src)
 {
 
     do
@@ -53,7 +53,7 @@ char *strcpy(char *dest, const char *src)
 
 }
 
-int strlen(const char *str)
+int string_length(const char *str)
 {
 
     int32_t length;
