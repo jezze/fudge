@@ -143,9 +143,20 @@ void kbd_handler(registers_t *r)
 
         // Make codes
         if (keyboard.toggleShift)
+        {
+
             kbd_buffer_write(&keyboard, kbdMapUpperUS[scancode]);
+            cbuffer_write(&keyboard.cbuffer, kbdMapUpperUS[scancode]);
+
+        }
+
         else
+        {
+
             kbd_buffer_write(&keyboard, kbdMapLowerUS[scancode]);
+            cbuffer_write(&keyboard.cbuffer, kbdMapLowerUS[scancode]);
+
+        }
 
     }
 
@@ -154,7 +165,10 @@ void kbd_handler(registers_t *r)
 void kbd_init()
 {
 
-    keyboard.cbuffer = cbuffer_create(keyboard.buffer, KBD_BUFFER_SIZE);
+    keyboard.cbuffer.buffer = keyboard.buffer;
+    keyboard.cbuffer.size = KBD_BUFFER_SIZE;
+    keyboard.cbuffer.head = 0;
+    keyboard.cbuffer.tail = 0;
     keyboard.bufferSize = 0;
     keyboard.toggleAlt = 0;
     keyboard.toggleCtrl = 0;
