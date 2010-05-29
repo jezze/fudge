@@ -1,5 +1,6 @@
 #include <system.h>
 #include <screen.h>
+#include <cbuffer.h>
 #include <kbd.h>
 #include <fs.h>
 #include <string.h>
@@ -106,7 +107,7 @@ void shell_command_ls(int argc, char *argv[])
     int i = 0;
     directory_entry_t *node = 0;
 
-    while ((node = fs_directory_read(fsRoot, i)) != 0)
+    while (node = fs_directory_read(fsRoot, i))
     {
 
         fs_node_t *fsnode = fs_directory_find(fsRoot, node->name);

@@ -7,6 +7,7 @@
 #include <irq.h>
 #include <screen.h>
 #include <pit.h>
+#include <cbuffer.h>
 #include <kbd.h>
 #include <heap.h>
 #include <paging.h>

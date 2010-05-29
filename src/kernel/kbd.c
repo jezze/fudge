@@ -154,6 +154,7 @@ void kbd_handler(registers_t *r)
 void kbd_init()
 {
 
+    keyboard.cbuffer = cbuffer_create(keyboard.buffer, KBD_BUFFER_SIZE);
     keyboard.bufferSize = 0;
     keyboard.toggleAlt = 0;
     keyboard.toggleCtrl = 0;

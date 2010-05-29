@@ -7,6 +7,7 @@ typedef struct kbd_device
 {
 
     char buffer[KBD_BUFFER_SIZE];
+    cbuffer_t cbuffer;
     uint16_t bufferSize;
     uint8_t toggleAlt;
     uint8_t toggleCtrl;

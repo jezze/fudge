@@ -2,26 +2,45 @@
 #include <string.h>
 #include <cbuffer.h>
 
-void cbuffer_write(char *buffer, uint32_t size, uint32_t head, uint32_t tail, char c)
+cbuffer_t cbuffer_create(char *buffer, uint32_t size)
 {
 
-    if ((tail + 1) % size != head)
+    cbuffer_t cbuffer;
+    cbuffer.buffer = buffer;
+    cbuffer.size = size;
+    cbuffer.head = 0;
+    cbuffer.tail = 0;
+
+    return cbuffer;
+
+}
+
+void cbuffer_write(cbuffer_t *cbuffer, char c)
+{
+
+    if ((cbuffer->tail + 1) % cbuffer->size != cbuffer->head)
     {
 
-        buffer[tail] = c;
-        tail = (tail + 1) % size;
+        cbuffer->buffer[cbuffer->tail] = c;
+        cbuffer->tail = (cbuffer->tail + 1) % cbuffer->size;
 
     }
 
 }
 
-char cbuffer_read(char *buffer, uint32_t size, uint32_t head)
+char cbuffer_read(cbuffer_t *cbuffer)
 {
 
-    char c = buffer[head];
-    head = (head + 1) % size;
+    char c = cbuffer->buffer[cbuffer->head];
+    cbuffer->head = (cbuffer->head + 1) % cbuffer->size;
 
     return c;
 
 }
 
+uint8_t cbuffer_full(cbuffer_t *cbuffer)
+{
+
+    return cbuffer->head != cbuffer->tail;
+
+}
