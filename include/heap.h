@@ -4,17 +4,17 @@
 typedef struct
 {
 
-	uint32_t magic;
-	uint8_t is_hole;
-	uint32_t size;
+    uint32_t magic;
+    uint8_t is_hole;
+    uint32_t size;
 
 } header_t;
 
 typedef struct
 {
 
-	uint32_t magic;
-	header_t *header;
+    uint32_t magic;
+    header_t *header;
 
 } footer_t;
 

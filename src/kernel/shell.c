@@ -1,53 +1,19 @@
 #include <system.h>
 #include <screen.h>
 #include <cbuffer.h>
+#include <stack.h>
 #include <kbd.h>
 #include <fs.h>
 #include <string.h>
 #include <shell.h>
 
 char shellBuffer[SHELL_BUFFER_SIZE];
-uint16_t shellBufferSize = 0;
-
-void shell_buffer_clear()
-{
-
-    shellBufferSize = 0;
-
-}
-
-void shell_buffer_push(char c)
-{
-
-    if (shellBufferSize < SHELL_BUFFER_SIZE)
-    {
-
-        shellBuffer[shellBufferSize] = c;
-        shellBufferSize++;
-
-    }
-
-}
-
-char shell_buffer_pop()
-{
-
-    if (shellBufferSize)
-    {
-
-        shellBufferSize--;
-        return shellBuffer[shellBufferSize];
-
-    }
-
-    return 0;
-
-}
+stack_t shellStack;
 
 char *shell_buffer_read()
 {
 
-    shell_buffer_push('\0');
+    stack_push(&shellStack, '\0');
 
     return shellBuffer;
 
@@ -57,7 +23,7 @@ void shell_clear()
 {
 
     screen_puts("fudge:/$ ");
-    shell_buffer_clear();
+    stack_clear(&shellStack);
 
 }
 
@@ -68,6 +34,9 @@ void shell_command_cat(int argc, char *argv[])
     {
 
         fs_node_t *fsnode = fs_directory_find(fsRoot, argv[1]);
+
+        if (!fsnode)
+            return;
 
         char buffer[256];
 
@@ -218,6 +187,8 @@ void shell_init()
 
     shell_clear();
 
+    shellStack = stack_create(shellBuffer, SHELL_BUFFER_SIZE);
+
     while (1)
     {
 
@@ -235,7 +206,7 @@ void shell_init()
 
                 case '\b':
 
-                    if (shell_buffer_pop())
+                    if (stack_pop(&shellStack))
                     {
 
                         screen_putc('\b');
@@ -248,7 +219,7 @@ void shell_init()
 
                 case '\n':
 
-                    shell_buffer_push(c);
+                    stack_push(&shellStack, c);
                     screen_putc(c);
                     shell_interpret(shell_buffer_read());
 
@@ -256,7 +227,7 @@ void shell_init()
 
                 default:
 
-                    shell_buffer_push(c);
+                    stack_push(&shellStack, c);
                     screen_putc(c);
 
                     break;

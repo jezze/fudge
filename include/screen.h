@@ -6,17 +6,17 @@
 typedef struct screen_context
 {
 
-	uint16_t attribute;
+    uint16_t attribute;
 
 } screen_context_t;
 
 typedef struct screen
 {
 
-	uint16_t *address;
-	uint32_t cursorX;
-	uint32_t cursorY;
-	screen_context_t context;
+    uint16_t *address;
+    uint32_t cursorX;
+    uint32_t cursorY;
+    screen_context_t context;
 
 } screen_t;
 

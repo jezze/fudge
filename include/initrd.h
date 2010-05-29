@@ -4,17 +4,17 @@
 typedef struct
 {
 
-	uint32_t nfiles;
+    uint32_t nfiles;
 
 } initrd_header_t;
 
 typedef struct
 {
 
-	uint8_t magic;
-	char name[64];
-	uint32_t offset;
-	uint32_t length;
+    uint8_t magic;
+    char name[64];
+    uint32_t offset;
+    uint32_t length;
 
 } initrd_file_header_t;
 

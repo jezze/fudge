@@ -1,5 +1,4 @@
 #include <system.h>
-#include <string.h>
 #include <cbuffer.h>
 
 cbuffer_t cbuffer_create(char *buffer, uint32_t size)
@@ -45,9 +44,3 @@ char cbuffer_read(cbuffer_t *cbuffer)
 
 }
 
-uint8_t cbuffer_full(cbuffer_t *cbuffer)
-{
-
-    return cbuffer->head != cbuffer->tail;
-
-}
