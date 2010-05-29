@@ -228,30 +228,42 @@ void shell_init()
         if ((c = kbd_buffer_read(&keyboard)))
         {
 
-            if (c == '\b')
+            switch (c)
             {
 
-                if (shell_buffer_pop())
-                {
+                case '\t':
 
-                    screen_putc('\b');
-                    screen_putc(' ');
-                    screen_putc('\b');
+                    break;
 
-                }
+                case '\b':
+
+                    if (shell_buffer_pop())
+                    {
+
+                        screen_putc('\b');
+                        screen_putc(' ');
+                        screen_putc('\b');
+
+                    }
+
+                    break;
+
+                case '\n':
+
+                    shell_buffer_push(c);
+                    screen_putc(c);
+                    shell_interpret(shell_buffer_read());
+
+                    break;
+
+                default:
+
+                    shell_buffer_push(c);
+                    screen_putc(c);
+
+                    break;
 
             }
-
-            else
-            {
-
-                shell_buffer_push(c);
-                screen_putc(c);
-
-            }
-
-            if (c == '\n')
-                shell_interpret(shell_buffer_read());
 
         }
 
