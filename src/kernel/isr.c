@@ -1,8 +1,8 @@
-#include <system.h>
-#include <regs.h>
-#include <idt.h>
-#include <screen.h>
-#include <isr.h>
+#include <types.h>
+#include <kernel/regs.h>
+#include <kernel/idt.h>
+#include <kernel/screen.h>
+#include <kernel/isr.h>
 
 extern void isr0();
 extern void isr1();

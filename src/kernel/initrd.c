@@ -1,9 +1,9 @@
-#include <system.h>
-#include <mem.h>
-#include <heap.h>
-#include <fs.h>
-#include <string.h>
-#include <initrd.h>
+#include <types.h>
+#include <lib/string.h>
+#include <kernel/mem.h>
+#include <kernel/heap.h>
+#include <kernel/fs.h>
+#include <kernel/initrd.h>
 
 initrd_header_t *initrd_header;
 initrd_file_header_t *file_headers;

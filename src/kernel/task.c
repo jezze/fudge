@@ -1,5 +1,5 @@
-#include <system.h>
-#include <task.h>
+#include <types.h>
+#include <kernel/task.h>
 
 void switch_to_user_mode()
 {

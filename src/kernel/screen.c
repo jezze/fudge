@@ -1,7 +1,7 @@
-#include <system.h>
-#include <mem.h>
-#include <string.h>
-#include <screen.h>
+#include <types.h>
+#include <lib/string.h>
+#include <kernel/mem.h>
+#include <kernel/screen.h>
 
 screen_t screen;
 

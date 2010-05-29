@@ -1,6 +1,6 @@
-#include <system.h>
-#include <mem.h>
-#include <idt.h>
+#include <types.h>
+#include <kernel/mem.h>
+#include <kernel/idt.h>
 
 extern void idt_flush();
 

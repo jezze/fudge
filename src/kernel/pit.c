@@ -1,8 +1,8 @@
-#include <system.h>
-#include <regs.h>
-#include <mem.h>
-#include <irq.h>
-#include <pit.h>
+#include <types.h>
+#include <kernel/regs.h>
+#include <kernel/mem.h>
+#include <kernel/irq.h>
+#include <kernel/pit.h>
 
 int32_t timer_ticks = 0;
 

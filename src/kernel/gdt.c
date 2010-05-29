@@ -1,6 +1,6 @@
-#include <system.h>
-#include <mem.h>
-#include <gdt.h>
+#include <types.h>
+#include <kernel/mem.h>
+#include <kernel/gdt.h>
 
 extern void gdt_flush();
 extern void tss_flush();

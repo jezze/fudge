@@ -1,5 +1,5 @@
-#include <system.h>
-#include <string.h>
+#include <types.h>
+#include <lib/string.h>
 
 char *string_concat(char *dest, const char *src)
 {

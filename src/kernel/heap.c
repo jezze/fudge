@@ -1,5 +1,5 @@
-#include <system.h>
-#include <heap.h>
+#include <types.h>
+#include <kernel/heap.h>
 
 uint32_t heap_address;
 

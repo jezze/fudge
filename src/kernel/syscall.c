@@ -1,8 +1,8 @@
-#include <system.h>
-#include <regs.h>
-#include <isr.h>
-#include <screen.h>
-#include <syscall.h>
+#include <types.h>
+#include <kernel/regs.h>
+#include <kernel/isr.h>
+#include <kernel/screen.h>
+#include <kernel/syscall.h>
 
 static void *syscalls[3] = {&screen_puts, &screen_puts_hex, &screen_puts_dec};
 uint32_t num_syscalls = 3;

@@ -1,9 +1,9 @@
-#include <system.h>
-#include <regs.h>
-#include <mem.h>
-#include <irq.h>
-#include <cbuffer.h>
-#include <kbd.h>
+#include <types.h>
+#include <lib/cbuffer.h>
+#include <kernel/regs.h>
+#include <kernel/mem.h>
+#include <kernel/irq.h>
+#include <kernel/kbd.h>
 
 char kbdMapLowerUS[128] =
 {

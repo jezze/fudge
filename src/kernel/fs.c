@@ -1,5 +1,5 @@
-#include <system.h>
-#include <fs.h>
+#include <types.h>
+#include <kernel/fs.h>
 
 fs_node_t *fsRoot = 0;
 

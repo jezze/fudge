@@ -1,11 +1,11 @@
-#include <system.h>
-#include <screen.h>
-#include <cbuffer.h>
-#include <stack.h>
-#include <kbd.h>
-#include <fs.h>
-#include <string.h>
-#include <shell.h>
+#include <types.h>
+#include <lib/cbuffer.h>
+#include <lib/stack.h>
+#include <lib/string.h>
+#include <kernel/screen.h>
+#include <kernel/kbd.h>
+#include <kernel/fs.h>
+#include <kernel/shell.h>
 
 char shellBuffer[SHELL_BUFFER_SIZE];
 stack_t shellStack;

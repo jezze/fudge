@@ -1,8 +1,8 @@
-#include <system.h>
-#include <regs.h>
-#include <mem.h>
-#include <idt.h>
-#include <irq.h>
+#include <types.h>
+#include <kernel/regs.h>
+#include <kernel/mem.h>
+#include <kernel/idt.h>
+#include <kernel/irq.h>
 
 extern void irq0();
 extern void irq1();
