@@ -6,8 +6,6 @@
 #include <string.h>
 #include <shell.h>
 
-extern kbd_device_t keyboard;
-
 char shellBuffer[SHELL_BUFFER_SIZE];
 uint16_t shellBufferSize = 0;
 
@@ -225,7 +223,7 @@ void shell_init()
 
         char c;
 
-        if ((c = kbd_buffer_read(&keyboard)))
+        if ((c = cbuffer_read(&keyboard.cbuffer)))
         {
 
             switch (c)
