@@ -4,7 +4,7 @@
 #include <lib/string.h>
 #include <kernel/screen.h>
 #include <kernel/kbd.h>
-#include <kernel/fs.h>
+#include <kernel/vfs.h>
 #include <kernel/shell.h>
 
 char shellBuffer[SHELL_BUFFER_SIZE];

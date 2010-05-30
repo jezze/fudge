@@ -2,7 +2,7 @@
 #include <lib/string.h>
 #include <kernel/mem.h>
 #include <kernel/heap.h>
-#include <kernel/fs.h>
+#include <kernel/vfs.h>
 #include <kernel/initrd.h>
 
 initrd_header_t *initrd_header;

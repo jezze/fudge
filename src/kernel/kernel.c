@@ -13,7 +13,7 @@
 #include <kernel/kbd.h>
 #include <kernel/heap.h>
 #include <kernel/paging.h>
-#include <kernel/fs.h>
+#include <kernel/vfs.h>
 #include <kernel/initrd.h>
 #include <kernel/shell.h>
 #include <kernel/syscall.h>
