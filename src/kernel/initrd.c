@@ -7,14 +7,14 @@
 
 initrd_header_t *initrd_header;
 initrd_file_header_t *file_headers;
-fs_node_t *initrd_root;
-fs_node_t *initrd_dev;
-fs_node_t *root_nodes;
+vfs_node_t *initrd_root;
+vfs_node_t *initrd_dev;
+vfs_node_t *root_nodes;
 uint32_t nroot_nodes;
 
-directory_entry_t dirent;
+vfs_directory_entry_t dirent;
 
-static uint32_t initrd_read(fs_node_t *node, uint32_t offset, uint32_t size, uint32_t *buffer)
+static uint32_t initrd_read(vfs_node_t *node, uint32_t offset, uint32_t size, uint32_t *buffer)
 {
 
     initrd_file_header_t header = file_headers[node->inode];
@@ -31,7 +31,7 @@ static uint32_t initrd_read(fs_node_t *node, uint32_t offset, uint32_t size, uin
 
 }
 
-static directory_entry_t *initrd_readdir(fs_node_t *node, uint32_t index)
+static vfs_directory_entry_t *initrd_readdir(vfs_node_t *node, uint32_t index)
 {
 
     if (node == initrd_root && index == 0)
@@ -56,7 +56,7 @@ static directory_entry_t *initrd_readdir(fs_node_t *node, uint32_t index)
 
 }
 
-static fs_node_t *initrd_finddir(fs_node_t *node, char *name)
+static vfs_node_t *initrd_finddir(vfs_node_t *node, char *name)
 {
 
     if (node == initrd_root && !string_compare(name, "dev"))
@@ -76,16 +76,16 @@ static fs_node_t *initrd_finddir(fs_node_t *node, char *name)
 
 }
 
-fs_node_t *initrd_init(uint32_t location)
+vfs_node_t *initrd_init(uint32_t location)
 {
 
     initrd_header = (initrd_header_t *)location;
     file_headers = (initrd_file_header_t *)(location + sizeof (initrd_header_t));
 
-    initrd_root = (fs_node_t *)kmalloc(sizeof (fs_node_t));
+    initrd_root = (vfs_node_t *)kmalloc(sizeof (vfs_node_t));
     string_copy(initrd_root->name, "initrd");
     initrd_root->mask = initrd_root->uid = initrd_root->gid = initrd_root->inode = initrd_root->length = 0;
-    initrd_root->flags = FS_DIRECTORY;
+    initrd_root->flags = VFS_DIRECTORY;
     initrd_root->read = 0;
     initrd_root->write = 0;
     initrd_root->open = 0;
@@ -95,10 +95,10 @@ fs_node_t *initrd_init(uint32_t location)
     initrd_root->ptr = 0;
     initrd_root->impl = 0;
 
-    initrd_dev = (fs_node_t*)kmalloc(sizeof (fs_node_t));
+    initrd_dev = (vfs_node_t*)kmalloc(sizeof (vfs_node_t));
     string_copy(initrd_dev->name, "dev");
     initrd_dev->mask = initrd_dev->uid = initrd_dev->gid = initrd_dev->inode = initrd_dev->length = 0;
-    initrd_dev->flags = FS_DIRECTORY;
+    initrd_dev->flags = VFS_DIRECTORY;
     initrd_dev->read = 0;
     initrd_dev->write = 0;
     initrd_dev->open = 0;
@@ -108,7 +108,7 @@ fs_node_t *initrd_init(uint32_t location)
     initrd_dev->ptr = 0;
     initrd_dev->impl = 0;
 
-    root_nodes = (fs_node_t*)kmalloc(sizeof (fs_node_t) * initrd_header->nfiles);
+    root_nodes = (vfs_node_t*)kmalloc(sizeof (vfs_node_t) * initrd_header->nfiles);
     nroot_nodes = initrd_header->nfiles;
 
     uint32_t i;
@@ -121,7 +121,7 @@ fs_node_t *initrd_init(uint32_t location)
         root_nodes[i].mask = root_nodes[i].uid = root_nodes[i].gid = 0;
         root_nodes[i].length = file_headers[i].length;
         root_nodes[i].inode = i;
-        root_nodes[i].flags = FS_FILE;
+        root_nodes[i].flags = VFS_FILE;
         root_nodes[i].read = &initrd_read;
         root_nodes[i].write = 0;
         root_nodes[i].readdir = 0;

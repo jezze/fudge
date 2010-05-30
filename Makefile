@@ -5,8 +5,8 @@ GCCFLAGS=-c -O2 -I./include -Wall -Wextra -ffreestanding -nostdlib -nostartfiles
 LD=ld
 LDFLAGS=-T linker.ld
 
-all: library loader kernel mem gdt idt isr irq pit screen kbd heap paging fs initrd syscall task shell
-	$(LD) $(LDFLAGS) obj/loader.o obj/kernel.o obj/mem.o obj/string.o obj/cbuffer.o obj/stack.o obj/gdt.o obj/gdts.o obj/idt.o obj/idts.o obj/isr.o obj/isrs.o obj/irq.o obj/irqs.o obj/pit.o obj/screen.o obj/kbd.o obj/heap.o obj/paging.o obj/fs.o obj/initrd.o obj/syscall.o obj/task.o obj/shell.o -o root/boot/kernel
+all: library loader kernel assert mem gdt idt isr irq pit screen kbd heap paging fs initrd syscall task shell
+	$(LD) $(LDFLAGS) obj/loader.o obj/kernel.o obj/assert.o obj/mem.o obj/string.o obj/cbuffer.o obj/stack.o obj/gdt.o obj/gdts.o obj/idt.o obj/idts.o obj/isr.o obj/isrs.o obj/irq.o obj/irqs.o obj/pit.o obj/screen.o obj/kbd.o obj/heap.o obj/paging.o obj/fs.o obj/initrd.o obj/syscall.o obj/task.o obj/shell.o -o root/boot/kernel
 
 cd:
 	genisoimage -R -b boot/grub/stage2_eltorito -no-emul-boot -boot-load-size 4 -boot-info-table -o fudge.iso root
@@ -21,6 +21,9 @@ loader:
 
 kernel:
 	$(GCC) $(GCCFLAGS) src/kernel/kernel.c -o obj/kernel.o
+
+assert:
+	$(GCC) $(GCCFLAGS) src/kernel/assert.c -o obj/assert.o
 
 mem:
 	$(GCC) $(GCCFLAGS) src/kernel/mem.c -o obj/mem.o

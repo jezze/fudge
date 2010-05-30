@@ -33,7 +33,7 @@ void shell_command_cat(int argc, char *argv[])
     if (argc > 1)
     {
 
-        fs_node_t *fsnode = fs_directory_find(fsRoot, argv[1]);
+        vfs_node_t *fsnode = vfs_directory_find(fsRoot, argv[1]);
 
         if (!fsnode)
             return;
@@ -42,7 +42,7 @@ void shell_command_cat(int argc, char *argv[])
 
         uint32_t j;
 
-        for (j = 0; j < fs_read(fsnode, 0, 256, buffer); j++)
+        for (j = 0; j < vfs_read(fsnode, 0, 256, buffer); j++)
             screen_putc(buffer[j]);
 
         screen_putc('\n');
@@ -72,14 +72,14 @@ void shell_command_ls(int argc, char *argv[])
 {
 
     int i = 0;
-    directory_entry_t *node = 0;
+    vfs_directory_entry_t *node = 0;
 
-    while (node = fs_directory_read(fsRoot, i))
+    while (node = vfs_directory_read(fsRoot, i))
     {
 
-        fs_node_t *fsnode = fs_directory_find(fsRoot, node->name);
+        vfs_node_t *fsnode = vfs_directory_find(fsRoot, node->name);
 
-        if ((fsnode->flags & 0x7) == FS_DIRECTORY)
+        if ((fsnode->flags & 0x7) == VFS_DIRECTORY)
         {
 
             screen_puts("/");

@@ -18,7 +18,7 @@ typedef struct
 
 } initrd_file_header_t;
 
-extern fs_node_t *initrd_init(uint32_t location);
+extern vfs_node_t *initrd_init(uint32_t location);
 
 #endif
 

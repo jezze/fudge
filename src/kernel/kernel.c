@@ -1,5 +1,6 @@
 #include <types.h>
 #include <lib/cbuffer.h>
+#include <kernel/assert.h>
 #include <kernel/system.h>
 #include <kernel/regs.h>
 #include <kernel/mboot.h>
@@ -31,40 +32,6 @@ void sti()
 {
 
     __asm__ __volatile__ ("sti");
-
-}
-
-void kernel_panic(char *message, char *file, uint32_t line)
-{
-
-    cli();
-
-    screen_puts("KERNEL PANIC (");
-    screen_puts(message);
-    screen_puts(") at (");
-    screen_puts(file);
-    screen_puts(":");
-    screen_puts_dec(line);
-    screen_puts(")\n");
-
-    for (;;);
-
-}
-
-void kernel_assert(char *message, char *file, uint32_t line)
-{
-
-    cli();
-
-    screen_puts("ASSERTION FAIL (");
-    screen_puts(message);
-    screen_puts(") at (");
-    screen_puts(file);
-    screen_puts(":");
-    screen_puts_dec(line);
-    screen_puts(")\n");
-
-    for (;;);
 
 }
 

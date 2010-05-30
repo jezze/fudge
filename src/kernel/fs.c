@@ -1,9 +1,9 @@
 #include <types.h>
 #include <kernel/fs.h>
 
-fs_node_t *fsRoot = 0;
+vfs_node_t *fsRoot = 0;
 
-uint32_t fs_read(fs_node_t *node, uint32_t offset, uint32_t size, char *buffer)
+uint32_t vfs_read(vfs_node_t *node, uint32_t offset, uint32_t size, char *buffer)
 {
 
     if (node->read != 0)
@@ -13,7 +13,7 @@ uint32_t fs_read(fs_node_t *node, uint32_t offset, uint32_t size, char *buffer)
 
 }
 
-uint32_t fs_write(fs_node_t *node, uint32_t offset, uint32_t size, char *buffer)
+uint32_t vfs_write(vfs_node_t *node, uint32_t offset, uint32_t size, char *buffer)
 {
 
     if (node->write != 0)
@@ -23,7 +23,7 @@ uint32_t fs_write(fs_node_t *node, uint32_t offset, uint32_t size, char *buffer)
 
 }
 
-void fs_open(fs_node_t *node, uint8_t read, uint8_t write)
+void vfs_open(vfs_node_t *node, uint8_t read, uint8_t write)
 {
 
     if (node->open != 0)
@@ -31,7 +31,7 @@ void fs_open(fs_node_t *node, uint8_t read, uint8_t write)
 
 }
 
-void fs_close(fs_node_t *node)
+void vfs_close(vfs_node_t *node)
 {
 
     if (node->close != 0)
@@ -39,20 +39,20 @@ void fs_close(fs_node_t *node)
 
 }
 
-directory_entry_t *fs_directory_read(fs_node_t *node, uint32_t index)
+vfs_directory_entry_t *vfs_directory_read(vfs_node_t *node, uint32_t index)
 {
 
-    if ((node->flags & 0x7) == FS_DIRECTORY && node->readdir != 0)
+    if ((node->flags & 0x7) == VFS_DIRECTORY && node->readdir != 0)
         return node->readdir(node, index);
     else
         return 0;
 
 }
 
-fs_node_t *fs_directory_find(fs_node_t *node, char *name)
+vfs_node_t *vfs_directory_find(vfs_node_t *node, char *name)
 {
 
-    if ((node->flags & 0x7) == FS_DIRECTORY && node->finddir != 0)
+    if ((node->flags & 0x7) == VFS_DIRECTORY && node->finddir != 0)
         return node->finddir(node, name);
     else
         return 0;
