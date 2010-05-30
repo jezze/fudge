@@ -15,7 +15,7 @@ typedef uint32_t (*read_type_t)(struct vfs_node*, uint32_t offset, uint32_t size
 typedef uint32_t (*write_type_t)(struct vfs_node*, uint32_t offset, uint32_t size, char *buffer);
 typedef void (*open_type_t)(struct vfs_node*);
 typedef void (*close_type_t)(struct vfs_node*);
-typedef struct directory_entry * (*readdir_type_t)(struct vfs_node*, uint32_t);
+typedef struct vfs_directory_entry * (*readdir_type_t)(struct vfs_node*, uint32_t);
 typedef struct vfs_node * (*finddir_type_t)(struct vfs_node*, char *name);
 
 typedef struct vfs_node

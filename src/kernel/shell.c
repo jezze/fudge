@@ -74,7 +74,7 @@ void shell_command_ls(int argc, char *argv[])
     int i = 0;
     vfs_directory_entry_t *node = 0;
 
-    while (node = vfs_directory_read(fsRoot, i))
+    while ((node = vfs_directory_read(fsRoot, i)))
     {
 
         vfs_node_t *fsnode = vfs_directory_find(fsRoot, node->name);
