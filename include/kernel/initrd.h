@@ -1,14 +1,14 @@
 #ifndef INITRD_H
 #define INITRD_H
 
-typedef struct
+typedef struct initrd_header
 {
 
     uint32_t nfiles;
 
 } initrd_header_t;
 
-typedef struct
+typedef struct initrd_file_header
 {
 
     uint8_t magic;
