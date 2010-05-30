@@ -84,7 +84,8 @@ vfs_node_t *initrd_init(uint32_t location)
 
     initrd_root = (vfs_node_t *)kmalloc(sizeof (vfs_node_t));
     string_copy(initrd_root->name, "initrd");
-    initrd_root->mask = initrd_root->uid = initrd_root->gid = initrd_root->inode = initrd_root->length = 0;
+    initrd_root->inode = 0;
+    initrd_root->length = 0;
     initrd_root->flags = VFS_DIRECTORY;
     initrd_root->read = 0;
     initrd_root->write = 0;
@@ -92,12 +93,11 @@ vfs_node_t *initrd_init(uint32_t location)
     initrd_root->close = 0;
     initrd_root->readdir = &initrd_readdir;
     initrd_root->finddir = &initrd_finddir;
-    initrd_root->ptr = 0;
-    initrd_root->impl = 0;
 
     initrd_dev = (vfs_node_t*)kmalloc(sizeof (vfs_node_t));
     string_copy(initrd_dev->name, "dev");
-    initrd_dev->mask = initrd_dev->uid = initrd_dev->gid = initrd_dev->inode = initrd_dev->length = 0;
+    initrd_dev->inode = 0;
+    initrd_dev->length = 0;
     initrd_dev->flags = VFS_DIRECTORY;
     initrd_dev->read = 0;
     initrd_dev->write = 0;
@@ -105,8 +105,6 @@ vfs_node_t *initrd_init(uint32_t location)
     initrd_dev->close = 0;
     initrd_dev->readdir = &initrd_readdir;
     initrd_dev->finddir = &initrd_finddir;
-    initrd_dev->ptr = 0;
-    initrd_dev->impl = 0;
 
     root_nodes = (vfs_node_t*)kmalloc(sizeof (vfs_node_t) * initrd_header->nfiles);
     nroot_nodes = initrd_header->nfiles;
@@ -118,17 +116,15 @@ vfs_node_t *initrd_init(uint32_t location)
 
         file_headers[i].offset += location;
         string_copy(root_nodes[i].name, file_headers[i].name);
-        root_nodes[i].mask = root_nodes[i].uid = root_nodes[i].gid = 0;
-        root_nodes[i].length = file_headers[i].length;
         root_nodes[i].inode = i;
+        root_nodes[i].length = file_headers[i].length;
         root_nodes[i].flags = VFS_FILE;
         root_nodes[i].read = &initrd_read;
         root_nodes[i].write = 0;
-        root_nodes[i].readdir = 0;
-        root_nodes[i].finddir = 0;
         root_nodes[i].open = 0;
         root_nodes[i].close = 0;
-        root_nodes[i].impl = 0;
+        root_nodes[i].readdir = 0;
+        root_nodes[i].finddir = 0;
 
     }
 

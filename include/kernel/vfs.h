@@ -22,20 +22,15 @@ typedef struct vfs_node
 {
 
     char name[128];
-    uint32_t mask;
-    uint32_t uid;
-    uint32_t gid;
     uint32_t flags;
     uint32_t inode;
     uint32_t length;
-    uint32_t impl;
     read_type_t read;
     read_type_t write;
     open_type_t open;
     close_type_t close;
     readdir_type_t readdir;
     finddir_type_t finddir;
-    struct vfs_node *ptr;
 
 } vfs_node_t;
 
