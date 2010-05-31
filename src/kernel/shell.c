@@ -62,30 +62,18 @@ void shell_command_help(int argc, char *argv[])
 void shell_command_ls(int argc, char *argv[])
 {
 
-    int i = 0;
     vfs_node_t *node = 0;
 
-    while ((node = vfs_directory_read(fsRoot, i)))
+    int i;
+
+    for (i = 0; node = vfs_directory_read(fsRoot, i); i++)
     {
 
-        if ((node->flags & VFS_DIRECTORY))
-        {
-
+        if (node->flags == VFS_DIRECTORY)
             screen_puts(&screen, "/");
-            screen_puts(&screen, node->name);
-            screen_puts(&screen, "\n");
 
-        }
-
-        else
-        {
-
-            screen_puts(&screen, node->name);
-            screen_puts(&screen, "\n");
-
-        }
-
-        i++;
+        screen_puts(&screen, node->name);
+        screen_puts(&screen, "\n");
 
     }
 
@@ -138,19 +126,19 @@ void shell_interpret(char *command)
 
     }
 
-    if (string_compare(argv[0], "") == 0)
+    if (!string_compare(argv[0], ""))
         shell_command_null(argc, argv);
 
-    else if (string_compare(argv[0], "cat") == 0)
+    else if (!string_compare(argv[0], "cat"))
         shell_command_cat(argc, argv);
 
-    else if (string_compare(argv[0], "clear") == 0)
+    else if (!string_compare(argv[0], "clear"))
         shell_command_clear(argc, argv);
 
-    else if (string_compare(argv[0], "help") == 0)
+    else if (!string_compare(argv[0], "help"))
         shell_command_help(argc, argv);
 
-    else if (string_compare(argv[0], "ls") == 0)
+    else if (!string_compare(argv[0], "ls"))
         shell_command_ls(argc, argv);
 
     else
