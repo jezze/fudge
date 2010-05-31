@@ -67,7 +67,7 @@ void screen_puts(screen_t *screen, char *s)
 
     uint32_t i;
 
-    for (i = 0; i < string_length(s); i++)
+    for (i = 0; s[i] != '\0'; i++)
         screen_putc(screen, s[i]);
 
 }
