@@ -1,7 +1,7 @@
 #include <lib/types.h>
+#include <lib/mem.h>
 #include <lib/cbuffer.h>
 #include <kernel/regs.h>
-#include <kernel/mem.h>
 #include <kernel/irq.h>
 #include <kernel/kbd.h>
 

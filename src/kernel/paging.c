@@ -1,8 +1,8 @@
 #include <lib/types.h>
+#include <lib/mem.h>
 #include <kernel/assert.h>
 #include <kernel/kernel.h>
 #include <kernel/regs.h>
-#include <kernel/mem.h>
 #include <kernel/isr.h>
 #include <kernel/heap.h>
 #include <kernel/screen.h>

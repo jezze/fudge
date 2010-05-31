@@ -5,7 +5,7 @@ GCCFLAGS=-c -O2 -I./include -Wall -Wextra -ffreestanding -nostdlib -nostartfiles
 LD=ld
 LDFLAGS=-T linker.ld
 
-all: library loader kernel assert mem gdt idt isr irq pit screen kbd heap paging vfs initrd syscall task shell
+all: library loader kernel assert gdt idt isr irq pit screen kbd heap paging vfs initrd syscall task shell
 	$(LD) $(LDFLAGS) obj/loader.o obj/kernel.o obj/assert.o obj/mem.o obj/string.o obj/cbuffer.o obj/stack.o obj/gdt.o obj/gdts.o obj/idt.o obj/idts.o obj/isr.o obj/isrs.o obj/irq.o obj/irqs.o obj/pit.o obj/screen.o obj/kbd.o obj/heap.o obj/paging.o obj/vfs.o obj/initrd.o obj/syscall.o obj/task.o obj/shell.o -o root/boot/kernel
 
 cd:
@@ -15,6 +15,7 @@ library:
 	$(GCC) $(GCCFLAGS) src/lib/stack.c -o obj/stack.o
 	$(GCC) $(GCCFLAGS) src/lib/cbuffer.c -o obj/cbuffer.o
 	$(GCC) $(GCCFLAGS) src/lib/string.c -o obj/string.o
+	$(GCC) $(GCCFLAGS) src/lib/mem.c -o obj/mem.o
 
 loader:
 	$(ASM) $(ASMFLAGS) src/kernel/loader.s -o obj/loader.o
@@ -24,9 +25,6 @@ kernel:
 
 assert:
 	$(GCC) $(GCCFLAGS) src/kernel/assert.c -o obj/assert.o
-
-mem:
-	$(GCC) $(GCCFLAGS) src/kernel/mem.c -o obj/mem.o
 
 gdt:
 	$(GCC) $(GCCFLAGS) src/kernel/gdt.c -o obj/gdt.o

@@ -1,5 +1,5 @@
 #include <lib/types.h>
-#include <kernel/mem.h>
+#include <lib/mem.h>
 #include <kernel/idt.h>
 
 extern void idt_flush();

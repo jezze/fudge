@@ -1,6 +1,6 @@
 #include <lib/types.h>
+#include <lib/mem.h>
 #include <kernel/regs.h>
-#include <kernel/mem.h>
 #include <kernel/idt.h>
 #include <kernel/irq.h>
 

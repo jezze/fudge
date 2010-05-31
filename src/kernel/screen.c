@@ -1,6 +1,6 @@
 #include <lib/types.h>
+#include <lib/mem.h>
 #include <lib/string.h>
-#include <kernel/mem.h>
 #include <kernel/screen.h>
 
 screen_t screen;
