@@ -6,12 +6,12 @@
 
 struct vfs_node;
 
-typedef uint32_t (*read_type_t)(struct vfs_node*, uint32_t offset, uint32_t size, char *buffer);
-typedef uint32_t (*write_type_t)(struct vfs_node*, uint32_t offset, uint32_t size, char *buffer);
-typedef void (*open_type_t)(struct vfs_node*);
-typedef void (*close_type_t)(struct vfs_node*);
-typedef struct vfs_node * (*readdir_type_t)(struct vfs_node*, uint32_t);
-typedef struct vfs_node * (*finddir_type_t)(struct vfs_node*, char *name);
+typedef void (*vfs_open_t)(struct vfs_node*);
+typedef void (*vfs_close_t)(struct vfs_node*);
+typedef uint32_t (*vfs_read_t)(struct vfs_node*, uint32_t offset, uint32_t size, char *buffer);
+typedef uint32_t (*vfs_write_t)(struct vfs_node*, uint32_t offset, uint32_t size, char *buffer);
+typedef struct vfs_node * (*vfs_walk_t)(struct vfs_node*, uint32_t);
+typedef struct vfs_node * (*vfs_find_t)(struct vfs_node*, char *name);
 
 typedef struct vfs_node
 {
@@ -20,23 +20,23 @@ typedef struct vfs_node
     uint32_t flags;
     uint32_t inode;
     uint32_t length;
-    read_type_t read;
-    read_type_t write;
-    open_type_t open;
-    close_type_t close;
-    readdir_type_t readdir;
-    finddir_type_t finddir;
+    vfs_open_t open;
+    vfs_close_t close;
+    vfs_read_t read;
+    vfs_write_t write;
+    vfs_walk_t walk;
+    vfs_find_t find;
 
 } vfs_node_t;
 
 extern vfs_node_t *fsRoot;
 
-extern uint32_t vfs_read(vfs_node_t *node, uint32_t offset, uint32_t size, char *buffer);
-extern uint32_t vfs_write(vfs_node_t *node, uint32_t offset, uint32_t size, char *buffer);
 extern void vfs_open(vfs_node_t *node, uint8_t read, uint8_t write);
 extern void vfs_close(vfs_node_t *node);
-extern vfs_node_t *vfs_directory_read(vfs_node_t *node, uint32_t index);
-extern vfs_node_t *vfs_directory_find(vfs_node_t *node, char *name);
+extern uint32_t vfs_read(vfs_node_t *node, uint32_t offset, uint32_t size, char *buffer);
+extern uint32_t vfs_write(vfs_node_t *node, uint32_t offset, uint32_t size, char *buffer);
+extern vfs_node_t *vfs_walk(vfs_node_t *node, uint32_t index);
+extern vfs_node_t *vfs_find(vfs_node_t *node, char *name);
 
 #endif
 

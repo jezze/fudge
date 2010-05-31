@@ -24,17 +24,19 @@ void shell_command_cat(int argc, char *argv[])
     if (argc > 1)
     {
 
-        vfs_node_t *fsnode = vfs_directory_find(fsRoot, argv[1]);
+        vfs_node_t *node = vfs_find(fsRoot, argv[1]);
 
-        if (!fsnode)
+        if (!node)
             return;
 
         char buffer[256];
 
-        uint32_t j;
+        uint32_t size = vfs_read(node, 0, 256, buffer);
+        
+        uint32_t i;
 
-        for (j = 0; j < vfs_read(fsnode, 0, 256, buffer); j++)
-            screen_putc(&screen, buffer[j]);
+        for (i = 0; i < size; i++)
+            screen_putc(&screen, buffer[i]);
 
         screen_putc(&screen, '\n');
 
@@ -62,11 +64,10 @@ void shell_command_help(int argc, char *argv[])
 void shell_command_ls(int argc, char *argv[])
 {
 
-    vfs_node_t *node = 0;
-
     uint32_t i;
+    vfs_node_t *node;
 
-    for (i = 0; node = vfs_directory_read(fsRoot, i); i++)
+    for (i = 0; node = vfs_walk(fsRoot, i); i++)
     {
 
         if (node->flags == VFS_DIRECTORY)

@@ -28,7 +28,7 @@ static uint32_t initrd_read(vfs_node_t *node, uint32_t offset, uint32_t size, ui
 
 }
 
-static vfs_node_t *initrd_readdir(vfs_node_t *node, uint32_t index)
+static vfs_node_t *initrd_walk(vfs_node_t *node, uint32_t index)
 {
 
     if (index < nroot_nodes)
@@ -38,7 +38,7 @@ static vfs_node_t *initrd_readdir(vfs_node_t *node, uint32_t index)
 
 }
 
-static vfs_node_t *initrd_finddir(vfs_node_t *node, char *name)
+static vfs_node_t *initrd_find(vfs_node_t *node, char *name)
 {
 
     uint32_t i;
@@ -66,12 +66,12 @@ vfs_node_t *initrd_init(uint32_t location)
     initrd_root->inode = 0;
     initrd_root->length = 0;
     initrd_root->flags = VFS_DIRECTORY;
-    initrd_root->read = 0;
-    initrd_root->write = 0;
     initrd_root->open = 0;
     initrd_root->close = 0;
-    initrd_root->readdir = &initrd_readdir;
-    initrd_root->finddir = &initrd_finddir;
+    initrd_root->read = 0;
+    initrd_root->write = 0;
+    initrd_root->walk = &initrd_walk;
+    initrd_root->find = &initrd_find;
 
     root_nodes = (vfs_node_t*)kmalloc(sizeof (vfs_node_t) * initrd_header->nfiles);
     nroot_nodes = initrd_header->nfiles;
@@ -86,12 +86,12 @@ vfs_node_t *initrd_init(uint32_t location)
         root_nodes[i].inode = i;
         root_nodes[i].length = file_headers[i].length;
         root_nodes[i].flags = VFS_FILE;
-        root_nodes[i].read = &initrd_read;
-        root_nodes[i].write = 0;
         root_nodes[i].open = 0;
         root_nodes[i].close = 0;
-        root_nodes[i].readdir = 0;
-        root_nodes[i].finddir = 0;
+        root_nodes[i].read = &initrd_read;
+        root_nodes[i].write = 0;
+        root_nodes[i].walk = 0;
+        root_nodes[i].find = 0;
 
     }
 
