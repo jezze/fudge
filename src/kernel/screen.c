@@ -43,13 +43,13 @@ void screen_putc(screen_t *screen, char c)
     else if (c >= ' ')
     {
 
-        where = screen->address + (screen->cursorY * 80 + screen->cursorX);
+        where = screen->address + (screen->cursorY * SCREEN_CHARACTER_WIDTH + screen->cursorX);
         *where = c | screen->context.attribute << 8;
         screen->cursorX++;
 
     }
 
-    if (screen->cursorX >= 80)
+    if (screen->cursorX >= SCREEN_CHARACTER_WIDTH)
     {
 
         screen->cursorX = 0;
@@ -169,8 +169,8 @@ void screen_clear(screen_t *screen)
 
     blank = 0x20 | (screen->context.attribute << 8);
 
-    for (i = 0; i < 25; i++)
-        memsetw(screen->address + i * 80, blank, 80);
+    for (i = 0; i < SCREEN_CHARACTER_HEIGHT; i++)
+        memsetw(screen->address + i * SCREEN_CHARACTER_WIDTH, blank, SCREEN_CHARACTER_WIDTH);
 
     screen->cursorX = 0;
     screen->cursorY = 0;
@@ -184,7 +184,7 @@ void screen_cursor_move(screen_t *screen)
 
     uint32_t temp;
 
-    temp = screen->cursorY * 80 + screen->cursorX;
+    temp = screen->cursorY * SCREEN_CHARACTER_WIDTH + screen->cursorX;
 
     outb(0x3D4, 14);
     outb(0x3D5, temp >> 8);
@@ -200,13 +200,13 @@ void screen_scroll(screen_t *screen)
 
     blank = 0x20 | (screen->context.attribute << 8);
 
-    if (screen->cursorY >= 25)
+    if (screen->cursorY >= SCREEN_CHARACTER_HEIGHT)
     {
 
-        temp = screen->cursorY - 25 + 1;
-        memcpy(screen->address, screen->address + temp * 80, (25 - temp) * 80 * 2);
-        memsetw(screen->address + (25 - temp) * 80, blank, 80);
-        screen->cursorY = 25 - 1;
+        temp = screen->cursorY - SCREEN_CHARACTER_HEIGHT + 1;
+        memcpy(screen->address, screen->address + temp * SCREEN_CHARACTER_WIDTH, (SCREEN_CHARACTER_HEIGHT - temp) * SCREEN_CHARACTER_WIDTH * 2);
+        memsetw(screen->address + (SCREEN_CHARACTER_HEIGHT - temp) * SCREEN_CHARACTER_WIDTH, blank, SCREEN_CHARACTER_WIDTH);
+        screen->cursorY = SCREEN_CHARACTER_HEIGHT - 1;
 
     }
 
