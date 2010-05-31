@@ -1,6 +1,6 @@
 #include <types.h>
 #include <kernel/assert.h>
-#include <kernel/system.h>
+#include <kernel/kernel.h>
 #include <kernel/regs.h>
 #include <kernel/mem.h>
 #include <kernel/isr.h>
