@@ -65,7 +65,7 @@ void screen_putc(screen_t *screen, char c)
 void screen_puts(screen_t *screen, char *s)
 {
 
-    int i;
+    uint32_t i;
 
     for (i = 0; i < string_length(s); i++)
         screen_putc(screen, s[i]);
@@ -117,7 +117,7 @@ void screen_puts_hex(screen_t *screen, uint32_t n)
 
     char noZeroes = 1;
 
-    int i;
+    uint32_t i;
 
     for (i = 28; i > 0; i -= 4)
     {
@@ -165,9 +165,10 @@ void screen_clear(screen_t *screen)
 {
 
     uint32_t blank;
-    int32_t i;
 
     blank = 0x20 | (screen->context.attribute << 8);
+
+    uint32_t i;
 
     for (i = 0; i < SCREEN_CHARACTER_HEIGHT; i++)
         memsetw(screen->address + i * SCREEN_CHARACTER_WIDTH, blank, SCREEN_CHARACTER_WIDTH);
