@@ -1,4 +1,4 @@
-#include <types.h>
+#include <lib/types.h>
 #include <kernel/assert.h>
 #include <kernel/kernel.h>
 #include <kernel/regs.h>

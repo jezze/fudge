@@ -1,4 +1,4 @@
-#include <types.h>
+#include <lib/types.h>
 #include <kernel/vfs.h>
 
 vfs_node_t *fsRoot = 0;

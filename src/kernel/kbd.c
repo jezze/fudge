@@ -1,4 +1,4 @@
-#include <types.h>
+#include <lib/types.h>
 #include <lib/cbuffer.h>
 #include <kernel/regs.h>
 #include <kernel/mem.h>

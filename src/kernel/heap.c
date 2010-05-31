@@ -1,4 +1,4 @@
-#include <types.h>
+#include <lib/types.h>
 #include <kernel/heap.h>
 
 uint32_t heap_address;

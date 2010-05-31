@@ -1,4 +1,4 @@
-#include <types.h>
+#include <lib/types.h>
 #include <kernel/mem.h>
 #include <kernel/idt.h>
 

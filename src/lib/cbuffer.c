@@ -1,4 +1,4 @@
-#include <types.h>
+#include <lib/types.h>
 #include <lib/cbuffer.h>
 
 cbuffer_t cbuffer_create(char *buffer, uint32_t size)

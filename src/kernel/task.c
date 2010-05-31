@@ -1,4 +1,4 @@
-#include <types.h>
+#include <lib/types.h>
 #include <kernel/task.h>
 
 void switch_to_user_mode()
