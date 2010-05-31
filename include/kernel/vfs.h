@@ -17,8 +17,8 @@ typedef struct vfs_node
 {
 
     char name[128];
-    uint32_t flags;
     uint32_t inode;
+    uint32_t flags;
     uint32_t length;
     vfs_open_t open;
     vfs_close_t close;
