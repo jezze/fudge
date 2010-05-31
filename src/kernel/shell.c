@@ -10,19 +10,10 @@
 char shellBuffer[SHELL_BUFFER_SIZE];
 stack_t shellStack;
 
-char *shell_buffer_read()
-{
-
-    stack_push(&shellStack, '\0');
-
-    return shellBuffer;
-
-}
-
 void shell_clear()
 {
 
-    screen_puts("fudge:/$ ");
+    screen_puts(&screen, "fudge:/$ ");
     stack_clear(&shellStack);
 
 }
@@ -43,9 +34,9 @@ void shell_command_cat(int argc, char *argv[])
         uint32_t j;
 
         for (j = 0; j < vfs_read(fsnode, 0, 256, buffer); j++)
-            screen_putc(buffer[j]);
+            screen_putc(&screen, buffer[j]);
 
-        screen_putc('\n');
+        screen_putc(&screen, '\n');
 
     }
 
@@ -54,17 +45,17 @@ void shell_command_cat(int argc, char *argv[])
 void shell_command_clear(int argc, char *argv[])
 {
 
-    screen_clear();
+    screen_clear(&screen);
 
 }
 
 void shell_command_help(int argc, char *argv[])
 {
 
-    screen_puts("cat - Show content of a file\n");
-    screen_puts("clear - Clear screen\n");
-    screen_puts("help - Show this dialog\n");
-    screen_puts("ls - List files and directories\n");
+    screen_puts(&screen, "cat - Show content of a file\n");
+    screen_puts(&screen, "clear - Clear screen\n");
+    screen_puts(&screen, "help - Show this dialog\n");
+    screen_puts(&screen, "ls - List files and directories\n");
 
 }
 
@@ -80,17 +71,17 @@ void shell_command_ls(int argc, char *argv[])
         if ((node->flags & VFS_DIRECTORY))
         {
 
-            screen_puts("/");
-            screen_puts(node->name);
-            screen_puts("\n");
+            screen_puts(&screen, "/");
+            screen_puts(&screen, node->name);
+            screen_puts(&screen, "\n");
 
         }
 
         else
         {
 
-            screen_puts(node->name);
-            screen_puts("\n");
+            screen_puts(&screen, node->name);
+            screen_puts(&screen, "\n");
 
         }
 
@@ -165,8 +156,8 @@ void shell_interpret(char *command)
     else
     {
 
-        screen_puts(argv[0]);
-        screen_puts(": Command not found\n");
+        screen_puts(&screen, argv[0]);
+        screen_puts(&screen, ": Command not found\n");
 
     }
 
@@ -177,11 +168,11 @@ void shell_interpret(char *command)
 void shell_init()
 {
 
-    screen_clear();
+    screen_clear(&screen);
 
-    screen_puts("Fudge\n");
-    screen_puts("Copyright (c) 2009 Jens Nyberg\n");
-    screen_puts("Type 'help' for a list of commands.\n\n");
+    screen_puts(&screen, "Fudge\n");
+    screen_puts(&screen, "Copyright (c) 2009 Jens Nyberg\n");
+    screen_puts(&screen, "Type 'help' for a list of commands.\n\n");
 
     shell_clear();
 
@@ -207,9 +198,9 @@ void shell_init()
                     if (stack_pop(&shellStack))
                     {
 
-                        screen_putc('\b');
-                        screen_putc(' ');
-                        screen_putc('\b');
+                        screen_putc(&screen, '\b');
+                        screen_putc(&screen, ' ');
+                        screen_putc(&screen, '\b');
 
                     }
 
@@ -218,15 +209,16 @@ void shell_init()
                 case '\n':
 
                     stack_push(&shellStack, c);
-                    screen_putc(c);
-                    shell_interpret(shell_buffer_read());
+                    stack_push(&shellStack, '\0');
+                    screen_putc(&screen, c);
+                    shell_interpret(shellBuffer);
 
                     break;
 
                 default:
 
                     stack_push(&shellStack, c);
-                    screen_putc(c);
+                    screen_putc(&screen, c);
 
                     break;
 

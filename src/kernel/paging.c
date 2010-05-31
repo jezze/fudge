@@ -192,26 +192,26 @@ void paging_handler(registers_t *r)
     int reserved = r->err_code & 0x8;
     int fetch = r->err_code & 0x10;
 
-    screen_puts("PAGE FAULT (");
+    screen_puts(&screen, "PAGE FAULT (");
 
     if (present)
-        screen_puts("present");
+        screen_puts(&screen, "present");
 
     if (rw)
-        screen_puts("read-only");
+        screen_puts(&screen, "read-only");
 
     if (us)
-        screen_puts("user-mode");
+        screen_puts(&screen, "user-mode");
 
     if (reserved)
-        screen_puts("reserved");
+        screen_puts(&screen, "reserved");
 
     if (fetch)
-        screen_puts("fetch");
+        screen_puts(&screen, "fetch");
 
-    screen_puts(") at 0x");
-    screen_puts_hex(address);
-    screen_puts("\n");
+    screen_puts(&screen, ") at 0x");
+    screen_puts_hex(&screen, address);
+    screen_puts(&screen, "\n");
 
     PANIC("PAGE FAULT");
 

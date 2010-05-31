@@ -5,7 +5,7 @@
 
 screen_t screen;
 
-void screen_putc(char c)
+void screen_putc(screen_t *screen, char c)
 {
 
     uint16_t *where;
@@ -13,72 +13,72 @@ void screen_putc(char c)
     if (c == '\b')
     {
 
-        if (screen.cursorX != 0)
-            screen.cursorX--;
+        if (screen->cursorX != 0)
+            screen->cursorX--;
 
     }
 
     else if (c == '\t')
     {
 
-        screen.cursorX = (screen.cursorX + 8) & ~(8 - 1);
+        screen->cursorX = (screen->cursorX + 8) & ~(8 - 1);
 
     }
 
     else if (c == '\r')
     {
 
-        screen.cursorX = 0;
+        screen->cursorX = 0;
 
     }
 
     else if (c == '\n')
     {
 
-        screen.cursorX = 0;
-        screen.cursorY++;
+        screen->cursorX = 0;
+        screen->cursorY++;
 
     }
     
     else if (c >= ' ')
     {
 
-        where = screen.address + (screen.cursorY * 80 + screen.cursorX);
-        *where = c | screen.context.attribute << 8;
-        screen.cursorX++;
+        where = screen->address + (screen->cursorY * 80 + screen->cursorX);
+        *where = c | screen->context.attribute << 8;
+        screen->cursorX++;
 
     }
 
-    if (screen.cursorX >= 80)
+    if (screen->cursorX >= 80)
     {
 
-        screen.cursorX = 0;
-        screen.cursorY++;
+        screen->cursorX = 0;
+        screen->cursorY++;
 
     }
 
-    screen_scroll();
-    screen_cursor_move();
+    screen_scroll(screen);
+    screen_cursor_move(screen);
 
 }
 
-void screen_puts(char *s)
+void screen_puts(screen_t *screen, char *s)
 {
 
     int i;
 
     for (i = 0; i < string_length(s); i++)
-        screen_putc(s[i]);
+        screen_putc(screen, s[i]);
 
 }
 
-void screen_puts_dec(uint32_t n)
+void screen_puts_dec(screen_t *screen, uint32_t n)
 {
 
     if (n == 0)
     {
 
-        screen_putc('0');
+        screen_putc(screen, '0');
         return;
 
     }
@@ -104,16 +104,16 @@ void screen_puts_dec(uint32_t n)
     while (i >= 0)
         c2[i--] = c[j++];
 
-    screen_puts(c2);
+    screen_puts(screen, c2);
 
 }
 
-void screen_puts_hex(uint32_t n)
+void screen_puts_hex(screen_t *screen, uint32_t n)
 {
 
     int32_t tmp;
 
-    screen_puts("0x");
+    screen_puts(screen, "0x");
 
     char noZeroes = 1;
 
@@ -131,7 +131,7 @@ void screen_puts_hex(uint32_t n)
         {
 
             noZeroes = 0;
-            screen_putc(tmp - 0xA + 'a');
+            screen_putc(screen, tmp - 0xA + 'a');
 
         }
 
@@ -139,7 +139,7 @@ void screen_puts_hex(uint32_t n)
         {
 
             noZeroes = 0;
-            screen_putc(tmp + '0');
+            screen_putc(screen, tmp + '0');
 
         }
 
@@ -148,43 +148,43 @@ void screen_puts_hex(uint32_t n)
     tmp = n & 0xF;
 
     if (tmp >= 0xA)
-        screen_putc(tmp - 0xA + 'a');
+        screen_putc(screen, tmp - 0xA + 'a');
     else
-        screen_putc(tmp + '0');
+        screen_putc(screen, tmp + '0');
 
 }
 
-void screen_set_text_color(uint8_t forecolor, uint8_t backcolor)
+void screen_set_text_color(screen_t *screen, uint8_t forecolor, uint8_t backcolor)
 {
 
-    screen.context.attribute = (backcolor << 4) | (forecolor & 0x0F);
+    screen->context.attribute = (backcolor << 4) | (forecolor & 0x0F);
 
 }
 
-void screen_clear()
+void screen_clear(screen_t *screen)
 {
 
     uint32_t blank;
     int32_t i;
 
-    blank = 0x20 | (screen.context.attribute << 8);
+    blank = 0x20 | (screen->context.attribute << 8);
 
     for (i = 0; i < 25; i++)
-        memsetw(screen.address + i * 80, blank, 80);
+        memsetw(screen->address + i * 80, blank, 80);
 
-    screen.cursorX = 0;
-    screen.cursorY = 0;
+    screen->cursorX = 0;
+    screen->cursorY = 0;
 
-    screen_cursor_move();
+    screen_cursor_move(screen);
 
 }
 
-void screen_cursor_move()
+void screen_cursor_move(screen_t *screen)
 {
 
     uint32_t temp;
 
-    temp = screen.cursorY * 80 + screen.cursorX;
+    temp = screen->cursorY * 80 + screen->cursorX;
 
     outb(0x3D4, 14);
     outb(0x3D5, temp >> 8);
@@ -193,20 +193,20 @@ void screen_cursor_move()
 
 }
 
-void screen_scroll()
+void screen_scroll(screen_t *screen)
 {
 
     uint32_t blank, temp;
 
-    blank = 0x20 | (screen.context.attribute << 8);
+    blank = 0x20 | (screen->context.attribute << 8);
 
-    if (screen.cursorY >= 25)
+    if (screen->cursorY >= 25)
     {
 
-        temp = screen.cursorY - 25 + 1;
-        memcpy(screen.address, screen.address + temp * 80, (25 - temp) * 80 * 2);
-        memsetw(screen.address + (25 - temp) * 80, blank, 80);
-        screen.cursorY = 25 - 1;
+        temp = screen->cursorY - 25 + 1;
+        memcpy(screen->address, screen->address + temp * 80, (25 - temp) * 80 * 2);
+        memsetw(screen->address + (25 - temp) * 80, blank, 80);
+        screen->cursorY = 25 - 1;
 
     }
 
@@ -223,7 +223,7 @@ void screen_init()
     screen.cursorY = 0;
     screen.context = context;
 
-    screen_clear();
+    screen_clear(&screen);
 
 }
 
