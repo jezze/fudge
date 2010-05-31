@@ -1,11 +1,11 @@
 #include <lib/types.h>
 #include <lib/mem.h>
 #include <kernel/assert.h>
+#include <kernel/screen.h>
 #include <kernel/kernel.h>
 #include <kernel/regs.h>
 #include <kernel/isr.h>
 #include <kernel/heap.h>
-#include <kernel/screen.h>
 #include <kernel/paging.h>
 
 page_directory_t *kernel_directory = 0;

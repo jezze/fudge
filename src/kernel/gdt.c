@@ -44,11 +44,11 @@ void gdt_init()
     tss.cs = 0x0b;
     tss.ss = tss.ds = tss.es = tss.fs = tss.gs = 0x13;
 
-    gdt_set_gate(0, 0, 0, 0, 0);            // Null segment
-    gdt_set_gate(1, 0, 0xFFFFFFFF, 0x9A, 0xCF);    // Kernel code segment
-    gdt_set_gate(2, 0, 0xFFFFFFFF, 0x92, 0xCF);    // Kernel data segment
-    gdt_set_gate(3, 0, 0xFFFFFFFF, 0xFA, 0xCF);    // User code segment
-    gdt_set_gate(4, 0, 0xFFFFFFFF, 0xF2, 0xCF);    // User data segment
+    gdt_set_gate(0, 0, 0, 0, 0);                // Null segment
+    gdt_set_gate(1, 0, 0xFFFFFFFF, 0x9A, 0xCF); // Kernel code segment
+    gdt_set_gate(2, 0, 0xFFFFFFFF, 0x92, 0xCF); // Kernel data segment
+    gdt_set_gate(3, 0, 0xFFFFFFFF, 0xFA, 0xCF); // User code segment
+    gdt_set_gate(4, 0, 0xFFFFFFFF, 0xF2, 0xCF); // User data segment
 
     uint32_t base = (uint32_t)&tss;
     uint32_t limit = base + sizeof (tss_entry_t);

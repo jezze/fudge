@@ -1,6 +1,7 @@
 #include <lib/types.h>
 #include <lib/cbuffer.h>
 #include <kernel/assert.h>
+#include <kernel/screen.h>
 #include <kernel/kernel.h>
 #include <kernel/regs.h>
 #include <kernel/mboot.h>
@@ -8,7 +9,6 @@
 #include <kernel/idt.h>
 #include <kernel/isr.h>
 #include <kernel/irq.h>
-#include <kernel/screen.h>
 #include <kernel/pit.h>
 #include <kernel/kbd.h>
 #include <kernel/heap.h>
@@ -20,6 +20,8 @@
 #include <kernel/task.h>
 
 extern uint32_t heap_address;
+
+kernel_t kernel;
 
 void cli()
 {

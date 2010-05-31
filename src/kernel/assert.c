@@ -1,6 +1,6 @@
 #include <lib/types.h>
-#include <kernel/kernel.h>
 #include <kernel/screen.h>
+#include <kernel/kernel.h>
 #include <kernel/assert.h>
 
 void kernel_panic(char *message, char *file, uint32_t line)
