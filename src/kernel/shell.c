@@ -64,7 +64,7 @@ void shell_command_ls(int argc, char *argv[])
 
     vfs_node_t *node = 0;
 
-    int i;
+    uint32_t i;
 
     for (i = 0; node = vfs_directory_read(fsRoot, i); i++)
     {
@@ -89,16 +89,16 @@ void shell_command_null(int argc, char *argv[])
 void shell_interpret(char *command)
 {
 
-    int argc = 0;
+    uint32_t argc = 0;
     char *argv[32];
 
-    int start = 0;
-    int current = 0;
+    uint32_t start = 0;
+    uint32_t current;
 
-    int i;
-    int j = 0;
+    uint32_t i;
+    uint32_t j = 0;
 
-    while (command[current] != '\0')
+    for (current = 0; command[current] != '\0'; current++)
     {
 
         if (command[current] == ' ' || command[current] == '\n')
@@ -121,8 +121,6 @@ void shell_interpret(char *command)
             start = current + 1;
 
         }
-
-        current++;
 
     }
 
