@@ -1,0 +1,3 @@
+Fudge is a simple operating system.
+
+Play with it!

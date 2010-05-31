@@ -73,6 +73,6 @@ shell:
 	$(GCC) $(GCCFLAGS) src/kernel/shell.c -o obj/shell.o
 
 clean:
-	rm obj/*
-	rm root/boot/kernel
-	rm fudge.iso
+	rm -f obj/*
+	rm -f root/boot/kernel
+	rm -f fudge.iso
