@@ -5,15 +5,15 @@
 #include <kernel/vfs.h>
 #include <kernel/initrd.h>
 
-initrd_header_t *initrd_header;
-initrd_file_header_t *file_headers;
-vfs_node_t initrd_root;
-vfs_node_t root_nodes[32];
+initrd_header_t *initrdHeader;
+initrd_file_header_t *initrdFileHeaders;
+vfs_node_t initrdRoot;
+vfs_node_t initrdNodes[32];
 
 static uint32_t initrd_read(vfs_node_t *node, uint32_t offset, uint32_t size, uint32_t *buffer)
 {
 
-    initrd_file_header_t header = file_headers[node->inode];
+    initrd_file_header_t header = initrdFileHeaders[node->inode];
 
     if (offset > header.length)
         return 0;
@@ -30,8 +30,8 @@ static uint32_t initrd_read(vfs_node_t *node, uint32_t offset, uint32_t size, ui
 static vfs_node_t *initrd_walk(vfs_node_t *node, uint32_t index)
 {
 
-    if (index < initrd_header->nfiles)
-        return &root_nodes[index];
+    if (index < initrdHeader->nfiles)
+        return &initrdNodes[index];
     else
         return 0;
 
@@ -42,11 +42,11 @@ static vfs_node_t *initrd_find(vfs_node_t *node, char *name)
 
     uint32_t i;
 
-    for (i = 0; i < initrd_header->nfiles; i++)
+    for (i = 0; i < initrdHeader->nfiles; i++)
     {
 
-        if (!string_compare(name, root_nodes[i].name))
-            return &root_nodes[i];
+        if (!string_compare(name, initrdNodes[i].name))
+            return &initrdNodes[i];
 
     }
 
@@ -57,40 +57,40 @@ static vfs_node_t *initrd_find(vfs_node_t *node, char *name)
 vfs_node_t *initrd_init(uint32_t location)
 {
 
-    initrd_header = (initrd_header_t *)location;
-    file_headers = (initrd_file_header_t *)(location + sizeof (initrd_header_t));
+    initrdHeader = (initrd_header_t *)location;
+    initrdFileHeaders = (initrd_file_header_t *)(location + sizeof (initrd_header_t));
 
-    string_copy(initrd_root.name, "initrd");
-    initrd_root.inode = 0;
-    initrd_root.length = 0;
-    initrd_root.flags = VFS_DIRECTORY;
-    initrd_root.open = 0;
-    initrd_root.close = 0;
-    initrd_root.read = 0;
-    initrd_root.write = 0;
-    initrd_root.walk = &initrd_walk;
-    initrd_root.find = &initrd_find;
+    string_copy(initrdRoot.name, "initrd");
+    initrdRoot.inode = 0;
+    initrdRoot.length = 0;
+    initrdRoot.flags = VFS_DIRECTORY;
+    initrdRoot.open = 0;
+    initrdRoot.close = 0;
+    initrdRoot.read = 0;
+    initrdRoot.write = 0;
+    initrdRoot.walk = &initrd_walk;
+    initrdRoot.find = &initrd_find;
 
     uint32_t i;
 
-    for (i = 0; i < initrd_header->nfiles; i++)
+    for (i = 0; i < initrdHeader->nfiles; i++)
     {
 
-        file_headers[i].offset += location;
-        string_copy(root_nodes[i].name, file_headers[i].name);
-        root_nodes[i].inode = i;
-        root_nodes[i].length = file_headers[i].length;
-        root_nodes[i].flags = VFS_FILE;
-        root_nodes[i].open = 0;
-        root_nodes[i].close = 0;
-        root_nodes[i].read = &initrd_read;
-        root_nodes[i].write = 0;
-        root_nodes[i].walk = 0;
-        root_nodes[i].find = 0;
+        initrdFileHeaders[i].offset += location;
+        string_copy(initrdNodes[i].name, initrdFileHeaders[i].name);
+        initrdNodes[i].inode = i;
+        initrdNodes[i].length = initrdFileHeaders[i].length;
+        initrdNodes[i].flags = VFS_FILE;
+        initrdNodes[i].open = 0;
+        initrdNodes[i].close = 0;
+        initrdNodes[i].read = &initrd_read;
+        initrdNodes[i].write = 0;
+        initrdNodes[i].walk = 0;
+        initrdNodes[i].find = 0;
 
     }
 
-    return &initrd_root;
+    return &initrdRoot;
 
 }
 

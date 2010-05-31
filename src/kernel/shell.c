@@ -67,7 +67,7 @@ void shell_command_ls(int argc, char *argv[])
     uint32_t i;
     vfs_node_t *node;
 
-    for (i = 0; node = vfs_walk(fsRoot, i); i++)
+    for (i = 0; (node = vfs_walk(fsRoot, i)); i++)
     {
 
         if (node->flags == VFS_DIRECTORY)
