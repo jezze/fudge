@@ -31,10 +31,10 @@ static uint32_t initrd_read(vfs_node_t *node, uint32_t offset, uint32_t size, ui
 static vfs_node_t *initrd_readdir(vfs_node_t *node, uint32_t index)
 {
 
-    if (index >= nroot_nodes)
+    if (index < nroot_nodes)
+        return &root_nodes[index];
+    else
         return 0;
-
-    return &root_nodes[index];
 
 }
 
