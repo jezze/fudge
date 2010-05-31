@@ -8,11 +8,8 @@
 initrd_header_t *initrd_header;
 initrd_file_header_t *file_headers;
 vfs_node_t *initrd_root;
-vfs_node_t *initrd_dev;
 vfs_node_t *root_nodes;
 uint32_t nroot_nodes;
-
-vfs_directory_entry_t dirent;
 
 static uint32_t initrd_read(vfs_node_t *node, uint32_t offset, uint32_t size, uint32_t *buffer)
 {
@@ -31,36 +28,18 @@ static uint32_t initrd_read(vfs_node_t *node, uint32_t offset, uint32_t size, ui
 
 }
 
-static vfs_directory_entry_t *initrd_readdir(vfs_node_t *node, uint32_t index)
+static vfs_node_t *initrd_readdir(vfs_node_t *node, uint32_t index)
 {
 
-    if (node == initrd_root && index == 0)
-    {
-
-        string_copy(dirent.name, "dev");
-        dirent.name[3] = 0;
-        dirent.ino = 0;
-
-        return &dirent;
-
-    }
-
-    if (index - 1 >= nroot_nodes)
+    if (index >= nroot_nodes)
         return 0;
 
-    string_copy(dirent.name, root_nodes[index - 1].name);
-    dirent.name[string_length(root_nodes[index - 1].name)] = 0;
-    dirent.ino = root_nodes[index - 1].inode;
-
-    return &dirent;
+    return &root_nodes[index];
 
 }
 
 static vfs_node_t *initrd_finddir(vfs_node_t *node, char *name)
 {
-
-    if (node == initrd_root && !string_compare(name, "dev"))
-        return initrd_dev;
 
     uint32_t i;
 
@@ -93,18 +72,6 @@ vfs_node_t *initrd_init(uint32_t location)
     initrd_root->close = 0;
     initrd_root->readdir = &initrd_readdir;
     initrd_root->finddir = &initrd_finddir;
-
-    initrd_dev = (vfs_node_t*)kmalloc(sizeof (vfs_node_t));
-    string_copy(initrd_dev->name, "dev");
-    initrd_dev->inode = 0;
-    initrd_dev->length = 0;
-    initrd_dev->flags = VFS_DIRECTORY;
-    initrd_dev->read = 0;
-    initrd_dev->write = 0;
-    initrd_dev->open = 0;
-    initrd_dev->close = 0;
-    initrd_dev->readdir = &initrd_readdir;
-    initrd_dev->finddir = &initrd_finddir;
 
     root_nodes = (vfs_node_t*)kmalloc(sizeof (vfs_node_t) * initrd_header->nfiles);
     nroot_nodes = initrd_header->nfiles;

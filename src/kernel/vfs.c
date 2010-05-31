@@ -39,7 +39,7 @@ void vfs_close(vfs_node_t *node)
 
 }
 
-vfs_directory_entry_t *vfs_directory_read(vfs_node_t *node, uint32_t index)
+vfs_node_t *vfs_directory_read(vfs_node_t *node, uint32_t index)
 {
 
     if (node->readdir != 0)

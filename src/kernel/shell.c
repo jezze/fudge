@@ -72,14 +72,12 @@ void shell_command_ls(int argc, char *argv[])
 {
 
     int i = 0;
-    vfs_directory_entry_t *node = 0;
+    vfs_node_t *node = 0;
 
     while ((node = vfs_directory_read(fsRoot, i)))
     {
 
-        vfs_node_t *fsnode = vfs_directory_find(fsRoot, node->name);
-
-        if ((fsnode->flags & 0x7) == VFS_DIRECTORY)
+        if ((node->flags & VFS_DIRECTORY))
         {
 
             screen_puts("/");
