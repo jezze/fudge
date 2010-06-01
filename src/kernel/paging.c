@@ -209,7 +209,7 @@ void paging_handler(registers_t *r)
     if (fetch)
         screen_puts(&screen, "fetch");
 
-    screen_puts(&screen, ") at 0x");
+    screen_puts(&screen, ") at ");
     screen_puts_hex(&screen, address);
     screen_puts(&screen, "\n");
 
@@ -222,7 +222,7 @@ void frame_init()
 
     uint32_t i = 0;
 
-    while (i < heap_address + 0x1000)
+    while (i < heap_address)
     {
 
         frame_alloc(page_get(i, 1, kernel_directory), 0, 0);
@@ -245,6 +245,8 @@ void paging_init()
     kernel_directory = (page_directory_t *)kmalloc_aligned(sizeof (page_directory_t));
 
     memset(kernel_directory, 0, sizeof (page_directory_t));
+
+    current_directory = kernel_directory;
 
     frame_init();
 
