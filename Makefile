@@ -21,7 +21,7 @@ clean:
 	rm -f fudge.iso
 
 initrd:
-	$(MKINITRD) root/initrd/about.txt about.txt root/initrd/hello.c hello.c root/initrd/help help
+	$(MKINITRD) root/initrd/about.txt about.txt root/initrd/help.s help.s root/initrd/help help
 
 kernel: library
 	$(GCC) $(GCCFLAGS) src/kernel/assert.c -o obj/assert.o
