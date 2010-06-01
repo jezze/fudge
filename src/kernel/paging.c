@@ -61,9 +61,7 @@ static uint32_t frame_find()
             for (j = 0; j < 32; j++)
             {
 
-                uint32_t toTest = 0x1 << j;
-
-                if (!(frames[i] & toTest))
+                if (!(frames[i] & (0x1 << j)))
                     return (i * 32 + j);
 
             }
@@ -80,27 +78,18 @@ void frame_alloc(page_t *page, int is_kernel, int is_writeable)
 {
 
     if (page->frame != 0)
-    {
-
         return;
 
-    }
+    uint32_t idx = frame_find();
 
-    else
-    {
+    if (idx == (uint32_t)-1)
+        PANIC("No frames free");
 
-        uint32_t idx = frame_find();
-
-        if (idx == (uint32_t)-1)
-            PANIC("No frames free");
-
-        frame_set(idx * 0x1000);
-        page->present = 1;
-        page->rw = (is_writeable) ? 1 : 0;
-        page->user = (is_kernel) ? 0 : 1;
-        page->frame = idx;
-
-    }
+    frame_set(idx * 0x1000);
+    page->present = 1;
+    page->rw = (is_writeable) ? 1 : 0;
+    page->user = (is_kernel) ? 0 : 1;
+    page->frame = idx;
 
 }
 
@@ -110,19 +99,10 @@ void frame_free(page_t *page)
     uint32_t frame;
 
     if (!(frame = page->frame))
-    {
-
         return;
 
-    }
-
-    else
-    {
-
-        frame_unset(frame);
-        page->frame = 0x0;
-
-    }
+    frame_unset(frame);
+    page->frame = 0x0;
 
 }
 
@@ -239,19 +219,11 @@ void paging_init()
 
     framesNum = mem_end_page / 0x1000;
     frames = (uint32_t *)kmalloc(framesNum / 32);
-
     memset(frames, 0, framesNum / 32);
-
     kernel_directory = (page_directory_t *)kmalloc_aligned(sizeof (page_directory_t));
-
     memset(kernel_directory, 0, sizeof (page_directory_t));
-
-    current_directory = kernel_directory;
-
     frame_init();
-
     isr_register_handler(14, paging_handler);
-
     page_directory_switch(kernel_directory);
 
 }
