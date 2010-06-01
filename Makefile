@@ -72,6 +72,9 @@ task:
 shell:
 	$(GCC) $(GCCFLAGS) src/kernel/shell.c -o obj/shell.o
 
+bin:
+	$(GCC) -emain -O2 -I./include -Wall -Wextra -ffreestanding -nostdlib -nostartfiles -nodefaultlibs src/bin/help.c -o src/initrd/files/help obj/mem.o obj/screen.o
+
 clean:
 	rm -f obj/*
 	rm -f root/boot/kernel

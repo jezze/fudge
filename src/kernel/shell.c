@@ -51,6 +51,29 @@ void shell_command_clear(int argc, char *argv[])
 
 }
 
+void shell_command_exec(int argc, char *argv[])
+{
+
+    if (argc > 1)
+    {
+
+        vfs_node_t *node = vfs_find(fsRoot, argv[1]);
+
+        if (!node)
+            return;
+
+        char buffer[256];
+
+        uint32_t size = vfs_read(node, 0, 256, buffer);
+        
+        int (*func)() = &buffer;
+
+        func();
+
+    }
+
+}
+
 void shell_command_help(int argc, char *argv[])
 {
 
@@ -133,6 +156,9 @@ void shell_interpret(char *command)
 
     else if (!string_compare(argv[0], "clear"))
         shell_command_clear(argc, argv);
+
+    else if (!string_compare(argv[0], "exec"))
+        shell_command_exec(argc, argv);
 
     else if (!string_compare(argv[0], "help"))
         shell_command_help(argc, argv);

@@ -5,7 +5,7 @@ all:
 	$(GCC) $(GCCFLAGS) mkinitrd.c -o mkinitrd
 
 disk:
-	./mkinitrd files/about.txt about.txt files/hello.c hello.c
+	./mkinitrd files/about.txt about.txt files/hello.c hello.c files/help help
 
 clean:
 	rm -f mkinitrd
