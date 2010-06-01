@@ -29,9 +29,9 @@ void shell_command_cat(int argc, char *argv[])
         if (!node)
             return;
 
-        char buffer[256];
+        char buffer[2000];
 
-        uint32_t size = vfs_read(node, 0, 256, buffer);
+        uint32_t size = vfs_read(node, 0, 2000, buffer);
         
         uint32_t i;
 
@@ -77,10 +77,10 @@ void shell_command_exec(int argc, char *argv[])
 void shell_command_help(int argc, char *argv[])
 {
 
-    screen_puts(&screen, "cat - Show content of a file\n");
-    screen_puts(&screen, "clear - Clear screen\n");
-    screen_puts(&screen, "help - Show this dialog\n");
-    screen_puts(&screen, "ls - List files and directories\n");
+    argv[0] = "cat";
+    argv[1] = "help.txt";
+
+    shell_command_cat(2, argv);
 
 }
 
