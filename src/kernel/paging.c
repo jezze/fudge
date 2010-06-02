@@ -16,30 +16,30 @@ uint32_t framesNum;
 
 extern uint32_t heap_address;
 
-static void frame_set(uint32_t frame_address)
+static void frame_set(uint32_t address)
 {
 
-    uint32_t frame = frame_address / 0x1000;
+    uint32_t frame = address / 0x1000;
     uint32_t index = frame / 32;
     uint32_t off = frame % 32;
     frames[index] |= (0x1 << off);
 
 }
 
-static void frame_unset(uint32_t frame_address)
+static void frame_unset(uint32_t address)
 {
 
-    uint32_t frame = frame_address / 0x1000;
+    uint32_t frame = address / 0x1000;
     uint32_t index = frame / 32;
     uint32_t off = frame % 32;
     frames[index] &= ~(0x1 << off);
 
 }
 
-static uint32_t frame_test(uint32_t frame_address)
+static uint32_t frame_test(uint32_t address)
 {
 
-    uint32_t frame = frame_address / 0x1000;
+    uint32_t frame = address / 0x1000;
     uint32_t index = frame / 32;
     uint32_t off = frame % 32;
 
@@ -74,7 +74,7 @@ static uint32_t frame_find()
 
 }
 
-void frame_alloc(page_t *page, int is_kernel, int is_writeable)
+void frame_alloc(page_t *page, int kernel, int writeable)
 {
 
     if (page->frame != 0)
@@ -87,8 +87,8 @@ void frame_alloc(page_t *page, int is_kernel, int is_writeable)
 
     frame_set(index * 0x1000);
     page->present = 1;
-    page->rw = (is_writeable) ? 1 : 0;
-    page->user = (is_kernel) ? 0 : 1;
+    page->rw = (writeable) ? 1 : 0;
+    page->user = (kernel) ? 0 : 1;
     page->frame = index;
 
 }
@@ -102,7 +102,7 @@ void frame_free(page_t *page)
         return;
 
     frame_unset(frame);
-    page->frame = 0x0;
+    page->frame = 0;
 
 }
 
@@ -191,15 +191,10 @@ void paging_handler(registers_t *r)
 void frame_init()
 {
 
-    uint32_t i = 0;
+    uint32_t i;
 
-    while (i < heap_address)
-    {
-
+    for (i = 0; i < heap_address; i += 0x1000)
         frame_alloc(page_get(i, 1, kernel_directory), 0, 0);
-        i += 0x1000;
-
-    }
 
 }
 
