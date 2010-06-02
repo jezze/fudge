@@ -6,7 +6,7 @@ LD=ld
 LDFLAGS=-T linker.ld
 ISO=genisoimage
 ISOFLAGS=-R -b boot/grub/stage2_eltorito -no-emul-boot -boot-load-size 4 -boot-info-table 
-MKINITRD=./mkinitrd
+MKINITRD=./tools/mkinitrd
 
 all: kernel cd
 
@@ -15,12 +15,13 @@ cd:
 
 clean:
 	rm -f obj/*
+	rm -f tools/mkinitrd
 	rm -f root/boot/kernel
 	rm -f root/boot/initrd
-	rm -f mkinitrd
 	rm -f fudge.iso
 
-initrd:
+ramdisk:
+	$(GCC) -O2 tools/mkinitrd.c -o tools/mkinitrd
 	$(MKINITRD) root/initrd/about.txt about.txt root/initrd/help.txt help.txt root/initrd/hello.s hello.s root/initrd/hello hello
 
 kernel: library
@@ -52,7 +53,4 @@ library:
 	$(GCC) $(GCCFLAGS) src/lib/cbuffer.c -o obj/cbuffer.o
 	$(GCC) $(GCCFLAGS) src/lib/string.c -o obj/string.o
 	$(GCC) $(GCCFLAGS) src/lib/mem.c -o obj/mem.o
-
-tools:
-	$(GCC) -O2 src/initrd/mkinitrd.c -o mkinitrd
 
