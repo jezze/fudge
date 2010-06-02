@@ -1,6 +1,12 @@
 #ifndef PAGING_H
 #define PAGING_H
 
+#define PAGING_ERROR_PRESENT 0x01
+#define PAGING_ERROR_RW 0x02
+#define PAGING_ERROR_USER 0x04
+#define PAGING_ERROR_RESERVED 0x08
+#define PAGING_ERROR_FETCH 0x16
+
 typedef struct page
 {
 

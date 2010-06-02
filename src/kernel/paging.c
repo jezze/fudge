@@ -166,11 +166,11 @@ void paging_handler(registers_t *r)
 
     __asm__ __volatile__ ("mov %%cr2, %0" : "=r" (address));
 
-    int present = !(r->err_code & 0x1);
-    int rw = r->err_code & 0x2;
-    int us = r->err_code & 0x4;
-    int reserved = r->err_code & 0x8;
-    int fetch = r->err_code & 0x10;
+    int present = !(r->err_code & PAGING_ERROR_PRESENT);
+    int rw = r->err_code & PAGING_ERROR_RW;
+    int us = r->err_code & PAGING_ERROR_USER;
+    int reserved = r->err_code & PAGING_ERROR_RESERVED;
+    int fetch = r->err_code & PAGING_ERROR_FETCH;
 
     screen_puts(&screen, "PAGE FAULT (");
 
