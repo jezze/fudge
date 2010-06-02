@@ -180,7 +180,7 @@ void paging_handler(registers_t *r)
     if (fetch)
         screen_puts(&screen, "fetch");
 
-    screen_puts(&screen, ") at ");
+    screen_puts(&screen, ") at 0x");
     screen_puts_hex(&screen, address);
     screen_puts(&screen, "\n");
 

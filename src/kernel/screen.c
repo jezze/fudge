@@ -112,17 +112,13 @@ void screen_puts_hex(screen_t *screen, uint32_t n)
 {
 
     int32_t tmp;
-
-    screen_puts(screen, "0x");
-
     char noZeroes = 1;
-
     uint32_t i;
 
     for (i = 28; i > 0; i -= 4)
     {
 
-        tmp = (n >> i) &0xF;
+        tmp = (n >> i) & 0xF;
 
         if (tmp == 0 && noZeroes != 0)
             continue;
