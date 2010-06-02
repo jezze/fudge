@@ -20,9 +20,9 @@ static void frame_set(uint32_t frame_address)
 {
 
     uint32_t frame = frame_address / 0x1000;
-    uint32_t idx = frame / 32;
+    uint32_t index = frame / 32;
     uint32_t off = frame % 32;
-    frames[idx] |= (0x1 << off);
+    frames[index] |= (0x1 << off);
 
 }
 
@@ -30,9 +30,9 @@ static void frame_unset(uint32_t frame_address)
 {
 
     uint32_t frame = frame_address / 0x1000;
-    uint32_t idx = frame / 32;
+    uint32_t index = frame / 32;
     uint32_t off = frame % 32;
-    frames[idx] &= ~(0x1 << off);
+    frames[index] &= ~(0x1 << off);
 
 }
 
@@ -40,10 +40,10 @@ static uint32_t frame_test(uint32_t frame_address)
 {
 
     uint32_t frame = frame_address / 0x1000;
-    uint32_t idx = frame / 32;
+    uint32_t index = frame / 32;
     uint32_t off = frame % 32;
 
-    return (frames[idx] & (0x1 << off));
+    return (frames[index] & (0x1 << off));
 
 }
 
@@ -80,16 +80,16 @@ void frame_alloc(page_t *page, int is_kernel, int is_writeable)
     if (page->frame != 0)
         return;
 
-    uint32_t idx = frame_find();
+    uint32_t index = frame_find();
 
-    if (idx == (uint32_t)-1)
+    if (index == (uint32_t)-1)
         PANIC("No frames free");
 
-    frame_set(idx * 0x1000);
+    frame_set(index * 0x1000);
     page->present = 1;
     page->rw = (is_writeable) ? 1 : 0;
     page->user = (is_kernel) ? 0 : 1;
-    page->frame = idx;
+    page->frame = index;
 
 }
 
@@ -128,34 +128,25 @@ page_t *page_get(uint32_t address, int make, page_directory_t *dir)
 
     address /= 0x1000;
 
-    uint32_t table_idx = address / 1024;
+    uint32_t index = address / 1024;
 
-    if (dir->tables[table_idx])
-    {
+    if (dir->tables[index])
+        return &dir->tables[index]->pages[address % 1024];
 
-        return &dir->tables[table_idx]->pages[address % 1024];
-
-    }
-
-    else if (make)
+    if (make)
     {
 
         uint32_t tmp;
 
-        dir->tables[table_idx] = (page_table_t *)kmalloc_physical_aligned(sizeof (page_table_t), &tmp);
-        memset(dir->tables[table_idx], 0, 0x1000);
-        dir->tablesPhysical[table_idx] = tmp | 0x7;
+        dir->tables[index] = (page_table_t *)kmalloc_physical_aligned(sizeof (page_table_t), &tmp);
+        memset(dir->tables[index], 0, 0x1000);
+        dir->tablesPhysical[index] = tmp | 0x7;
 
-        return &dir->tables[table_idx]->pages[address % 1024];
-
-    }
-
-    else
-    {
-
-        return 0;
+        return &dir->tables[index]->pages[address % 1024];
 
     }
+
+    return 0;
 
 }
 
