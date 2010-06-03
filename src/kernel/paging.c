@@ -16,7 +16,7 @@ uint32_t framesNum;
 
 extern uint32_t heap_address;
 
-static void paging_frame_set(uint32_t address)
+static void paging_set_frame(uint32_t address)
 {
 
     uint32_t frame = address / 0x1000;
@@ -26,7 +26,7 @@ static void paging_frame_set(uint32_t address)
 
 }
 
-static void paging_frame_unset(uint32_t address)
+static void paging_unset_frame(uint32_t address)
 {
 
     uint32_t frame = address / 0x1000;
@@ -36,7 +36,7 @@ static void paging_frame_unset(uint32_t address)
 
 }
 
-static uint32_t paging_frame_test(uint32_t address)
+static uint32_t paging_test_frame(uint32_t address)
 {
 
     uint32_t frame = address / 0x1000;
@@ -47,7 +47,7 @@ static uint32_t paging_frame_test(uint32_t address)
 
 }
 
-static uint32_t paging_frame_find()
+static uint32_t paging_find_frame()
 {
 
     uint32_t i, j;
@@ -80,12 +80,12 @@ void paging_frame_alloc(page_t *page, int kernel, int writeable)
     if (page->frame != 0)
         return;
 
-    uint32_t index = paging_frame_find();
+    uint32_t index = paging_find_frame();
 
     if (index == (uint32_t)-1)
         PANIC("No frames free");
 
-    paging_frame_set(index * 0x1000);
+    paging_set_frame(index * 0x1000);
     page->present = 1;
     page->rw = (writeable) ? 1 : 0;
     page->user = (kernel) ? 0 : 1;
@@ -101,7 +101,7 @@ void paging_frame_free(page_t *page)
     if (!(frame = page->frame))
         return;
 
-    paging_frame_unset(frame);
+    paging_unset_frame(frame);
     page->frame = 0;
 
 }
@@ -157,27 +157,21 @@ void paging_handler(registers_t *r)
 
     __asm__ __volatile__ ("mov %%cr2, %0" : "=r" (address));
 
-    int present = !(r->err_code & PAGING_ERROR_PRESENT);
-    int rw = r->err_code & PAGING_ERROR_RW;
-    int us = r->err_code & PAGING_ERROR_USER;
-    int reserved = r->err_code & PAGING_ERROR_RESERVED;
-    int fetch = r->err_code & PAGING_ERROR_FETCH;
-
     screen_puts(&screen, "PAGE FAULT (");
 
-    if (present)
+    if (!(r->err_code & PAGING_ERROR_PRESENT))
         screen_puts(&screen, "present");
 
-    if (rw)
+    if (r->err_code & PAGING_ERROR_RW)
         screen_puts(&screen, "read-only");
 
-    if (us)
+    if (r->err_code & PAGING_ERROR_USER)
         screen_puts(&screen, "user-mode");
 
-    if (reserved)
+    if (r->err_code & PAGING_ERROR_RESERVED)
         screen_puts(&screen, "reserved");
 
-    if (fetch)
+    if (r->err_code & PAGING_ERROR_FETCH)
         screen_puts(&screen, "fetch");
 
     screen_puts(&screen, ") at 0x");
@@ -188,8 +182,11 @@ void paging_handler(registers_t *r)
 
 }
 
-void paging_frame_init()
+void paging_init_kernel()
 {
+
+    kernel_directory = (page_directory_t *)kmalloc_aligned(sizeof (page_directory_t));
+    memset(kernel_directory, 0, sizeof (page_directory_t));
 
     uint32_t i;
 
@@ -198,17 +195,23 @@ void paging_frame_init()
 
 }
 
-void paging_init()
+void paging_init_frames()
 {
 
     uint32_t mem_end_page = 0x1000000;
 
     framesNum = mem_end_page / 0x1000;
     frames = (uint32_t *)kmalloc(framesNum / 32);
+
     memset(frames, 0, framesNum / 32);
-    kernel_directory = (page_directory_t *)kmalloc_aligned(sizeof (page_directory_t));
-    memset(kernel_directory, 0, sizeof (page_directory_t));
-    paging_frame_init();
+
+}
+
+void paging_init()
+{
+
+    paging_init_frames();
+    paging_init_kernel();
     isr_register_handler(14, paging_handler);
     paging_set_directory(kernel_directory);
 
