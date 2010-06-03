@@ -53,16 +53,17 @@ void kernel_main(mboot_header_t *mbootHeader)
 
     heap_init(*((uint32_t *)(mbootHeader->modulesAddresses + 4)));
 
-    paging_init();
+    // 16MB RAM
+    paging_init(0x1000000);
     syscall_init();
 
     sti();
 
     fsRoot = initrd_init(*((uint32_t *)mbootHeader->modulesAddresses));
 
-//    switch_to_user_mode();
+//  switch_to_user_mode();
 
-//    syscall_write("Hello user world!\n");
+//  syscall_write("Hello user world!\n");
 
     shell_init();
 

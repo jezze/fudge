@@ -182,6 +182,16 @@ void paging_handler(registers_t *r)
 
 }
 
+void paging_init_frames(uint32_t size)
+{
+
+    framesNum = size / 0x1000;
+    frames = (uint32_t *)kmalloc(framesNum / 32);
+
+    memset(frames, 0, framesNum / 32);
+
+}
+
 void paging_init_kernel()
 {
 
@@ -195,22 +205,10 @@ void paging_init_kernel()
 
 }
 
-void paging_init_frames()
+void paging_init(uint32_t size)
 {
 
-    uint32_t mem_end_page = 0x1000000;
-
-    framesNum = mem_end_page / 0x1000;
-    frames = (uint32_t *)kmalloc(framesNum / 32);
-
-    memset(frames, 0, framesNum / 32);
-
-}
-
-void paging_init()
-{
-
-    paging_init_frames();
+    paging_init_frames(size);
     paging_init_kernel();
     isr_register_handler(14, paging_handler);
     paging_set_directory(kernel_directory);
