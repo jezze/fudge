@@ -74,7 +74,7 @@ static uint32_t paging_find_frame()
 
 }
 
-void paging_frame_alloc(page_t *page, int kernel, int writeable)
+void paging_alloc_frame(page_t *page, int kernel, int writeable)
 {
 
     if (page->frame != 0)
@@ -93,7 +93,7 @@ void paging_frame_alloc(page_t *page, int kernel, int writeable)
 
 }
 
-void paging_frame_free(page_t *page)
+void paging_free_frame(page_t *page)
 {
 
     uint32_t frame;
@@ -106,12 +106,12 @@ void paging_frame_free(page_t *page)
 
 }
 
-void paging_set_directory(page_directory_t *dir)
+void paging_set_directory(page_directory_t *directory)
 {
 
-    current_directory = dir;
+    current_directory = directory;
 
-    __asm__ __volatile__ ("mov %0, %%cr3" : : "r" (&dir->tablesPhysical));
+    __asm__ __volatile__ ("mov %0, %%cr3" : : "r" (&directory->tablesPhysical));
 
     uint32_t cr0;
 
@@ -123,26 +123,26 @@ void paging_set_directory(page_directory_t *dir)
 
 }
 
-page_t *paging_get_page(uint32_t address, int make, page_directory_t *dir)
+page_t *paging_get_page(uint32_t address, int make, page_directory_t *directory)
 {
 
     address /= 0x1000;
 
     uint32_t index = address / 1024;
 
-    if (dir->tables[index])
-        return &dir->tables[index]->pages[address % 1024];
+    if (directory->tables[index])
+        return &directory->tables[index]->pages[address % 1024];
 
     if (make)
     {
 
         uint32_t tmp;
 
-        dir->tables[index] = (page_table_t *)kmalloc_physical_aligned(sizeof (page_table_t), &tmp);
-        memset(dir->tables[index], 0, 0x1000);
-        dir->tablesPhysical[index] = tmp | 0x7;
+        directory->tables[index] = (page_table_t *)kmalloc_physical_aligned(sizeof (page_table_t), &tmp);
+        memset(directory->tables[index], 0, 0x1000);
+        directory->tablesPhysical[index] = tmp | 0x7;
 
-        return &dir->tables[index]->pages[address % 1024];
+        return &directory->tables[index]->pages[address % 1024];
 
     }
 
@@ -201,7 +201,7 @@ void paging_init_kernel()
     uint32_t i;
 
     for (i = 0; i < heap_address; i += 0x1000)
-        paging_frame_alloc(paging_get_page(i, 1, kernel_directory), 0, 0);
+        paging_alloc_frame(paging_get_page(i, 1, kernel_directory), 0, 0);
 
 }
 
