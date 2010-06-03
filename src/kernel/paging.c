@@ -74,7 +74,7 @@ static uint32_t paging_find_frame()
 
 }
 
-void paging_alloc_frame(page_t *page, int kernel, int writeable)
+static void paging_alloc_frame(page_t *page, uint8_t kernel, uint8_t writeable)
 {
 
     if (page->frame != 0)
@@ -93,7 +93,7 @@ void paging_alloc_frame(page_t *page, int kernel, int writeable)
 
 }
 
-void paging_free_frame(page_t *page)
+static void paging_free_frame(page_t *page)
 {
 
     uint32_t frame;
@@ -123,7 +123,7 @@ void paging_set_directory(page_directory_t *directory)
 
 }
 
-page_t *paging_get_page(uint32_t address, int make, page_directory_t *directory)
+static page_t *paging_get_page(uint32_t address, uint8_t make, page_directory_t *directory)
 {
 
     address /= 0x1000;
@@ -182,7 +182,7 @@ void paging_handler(registers_t *r)
 
 }
 
-void paging_init_frames(uint32_t size)
+static void paging_init_frames(uint32_t size)
 {
 
     framesNum = size / 0x1000;
@@ -192,7 +192,7 @@ void paging_init_frames(uint32_t size)
 
 }
 
-void paging_init_kernel()
+static void paging_init_kernel()
 {
 
     kernel_directory = (page_directory_t *)kmalloc_aligned(sizeof (page_directory_t));

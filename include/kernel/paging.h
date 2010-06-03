@@ -37,7 +37,8 @@ typedef struct page_directory
 } page_directory_t;
 
 extern void paging_init();
-extern void paging_set_directory(page_directory_t *dir);
+extern void paging_set_directory(page_directory_t *directory);
+extern void paging_handler(registers_t *registers);
 
 #endif
 

@@ -10,7 +10,7 @@
 char shellBuffer[SHELL_BUFFER_SIZE];
 stack_t shellStack;
 
-void shell_clear()
+static void shell_clear()
 {
 
     screen_puts(&screen, "fudge:/$ ");
@@ -18,7 +18,30 @@ void shell_clear()
 
 }
 
-void shell_command_cat(int argc, char *argv[])
+static void shell_command_call(int argc, char *argv[])
+{
+
+    if (argc > 1)
+    {
+
+        vfs_node_t *node = vfs_find(fsRoot, argv[1]);
+
+        if (!node)
+            return;
+
+        char buffer[256];
+
+        uint32_t size = vfs_read(node, 0, 256, buffer);
+        
+        int (*func)() = &buffer;
+
+        func();
+
+    }
+
+}
+
+static void shell_command_cat(int argc, char *argv[])
 {
 
     if (argc > 1)
@@ -44,37 +67,14 @@ void shell_command_cat(int argc, char *argv[])
 
 }
 
-void shell_command_clear(int argc, char *argv[])
+static void shell_command_clear(int argc, char *argv[])
 {
 
     screen_clear(&screen);
 
 }
 
-void shell_command_exec(int argc, char *argv[])
-{
-
-    if (argc > 1)
-    {
-
-        vfs_node_t *node = vfs_find(fsRoot, argv[1]);
-
-        if (!node)
-            return;
-
-        char buffer[256];
-
-        uint32_t size = vfs_read(node, 0, 256, buffer);
-        
-        int (*func)() = &buffer;
-
-        func();
-
-    }
-
-}
-
-void shell_command_help(int argc, char *argv[])
+static shell_command_help(int argc, char *argv[])
 {
 
     argv[0] = "cat";
@@ -84,7 +84,7 @@ void shell_command_help(int argc, char *argv[])
 
 }
 
-void shell_command_ls(int argc, char *argv[])
+static shell_command_ls(int argc, char *argv[])
 {
 
     uint32_t i;
@@ -103,14 +103,14 @@ void shell_command_ls(int argc, char *argv[])
 
 }
 
-void shell_command_null(int argc, char *argv[])
+static void shell_command_null(int argc, char *argv[])
 {
 
     return;
 
 }
 
-void shell_interpret(char *command)
+static void shell_interpret(char *command)
 {
 
     uint32_t argc = 0;
@@ -151,14 +151,14 @@ void shell_interpret(char *command)
     if (!string_compare(argv[0], ""))
         shell_command_null(argc, argv);
 
+    else if (!string_compare(argv[0], "call"))
+        shell_command_call(argc, argv);
+
     else if (!string_compare(argv[0], "cat"))
         shell_command_cat(argc, argv);
 
     else if (!string_compare(argv[0], "clear"))
         shell_command_clear(argc, argv);
-
-    else if (!string_compare(argv[0], "exec"))
-        shell_command_exec(argc, argv);
 
     else if (!string_compare(argv[0], "help"))
         shell_command_help(argc, argv);

@@ -1,5 +1,5 @@
+call FILE       : Execute program
 cat FILE        : Print file content
 clear           : Clear screen
 help            : Print help
-exec FILE       : Execute program
 ls              : List directory content
