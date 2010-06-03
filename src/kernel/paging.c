@@ -16,7 +16,7 @@ uint32_t framesNum;
 
 extern uint32_t heap_address;
 
-static void frame_set(uint32_t address)
+static void paging_frame_set(uint32_t address)
 {
 
     uint32_t frame = address / 0x1000;
@@ -26,7 +26,7 @@ static void frame_set(uint32_t address)
 
 }
 
-static void frame_unset(uint32_t address)
+static void paging_frame_unset(uint32_t address)
 {
 
     uint32_t frame = address / 0x1000;
@@ -36,7 +36,7 @@ static void frame_unset(uint32_t address)
 
 }
 
-static uint32_t frame_test(uint32_t address)
+static uint32_t paging_frame_test(uint32_t address)
 {
 
     uint32_t frame = address / 0x1000;
@@ -47,7 +47,7 @@ static uint32_t frame_test(uint32_t address)
 
 }
 
-static uint32_t frame_find()
+static uint32_t paging_frame_find()
 {
 
     uint32_t i, j;
@@ -74,18 +74,18 @@ static uint32_t frame_find()
 
 }
 
-void frame_alloc(page_t *page, int kernel, int writeable)
+void paging_frame_alloc(page_t *page, int kernel, int writeable)
 {
 
     if (page->frame != 0)
         return;
 
-    uint32_t index = frame_find();
+    uint32_t index = paging_frame_find();
 
     if (index == (uint32_t)-1)
         PANIC("No frames free");
 
-    frame_set(index * 0x1000);
+    paging_frame_set(index * 0x1000);
     page->present = 1;
     page->rw = (writeable) ? 1 : 0;
     page->user = (kernel) ? 0 : 1;
@@ -93,7 +93,7 @@ void frame_alloc(page_t *page, int kernel, int writeable)
 
 }
 
-void frame_free(page_t *page)
+void paging_frame_free(page_t *page)
 {
 
     uint32_t frame;
@@ -101,12 +101,12 @@ void frame_free(page_t *page)
     if (!(frame = page->frame))
         return;
 
-    frame_unset(frame);
+    paging_frame_unset(frame);
     page->frame = 0;
 
 }
 
-void page_directory_switch(page_directory_t *dir)
+void paging_set_directory(page_directory_t *dir)
 {
 
     current_directory = dir;
@@ -123,7 +123,7 @@ void page_directory_switch(page_directory_t *dir)
 
 }
 
-page_t *page_get(uint32_t address, int make, page_directory_t *dir)
+page_t *paging_get_page(uint32_t address, int make, page_directory_t *dir)
 {
 
     address /= 0x1000;
@@ -188,13 +188,13 @@ void paging_handler(registers_t *r)
 
 }
 
-void frame_init()
+void paging_frame_init()
 {
 
     uint32_t i;
 
     for (i = 0; i < heap_address; i += 0x1000)
-        frame_alloc(page_get(i, 1, kernel_directory), 0, 0);
+        paging_frame_alloc(paging_get_page(i, 1, kernel_directory), 0, 0);
 
 }
 
@@ -208,9 +208,9 @@ void paging_init()
     memset(frames, 0, framesNum / 32);
     kernel_directory = (page_directory_t *)kmalloc_aligned(sizeof (page_directory_t));
     memset(kernel_directory, 0, sizeof (page_directory_t));
-    frame_init();
+    paging_frame_init();
     isr_register_handler(14, paging_handler);
-    page_directory_switch(kernel_directory);
+    paging_set_directory(kernel_directory);
 
 }
 
