@@ -181,8 +181,6 @@ static void shell_interpret(char *command)
 void shell_init()
 {
 
-    screen_clear(&screen);
-
     screen_puts(&screen, "Fudge\n");
     screen_puts(&screen, "Copyright (c) 2009 Jens Nyberg\n");
     screen_puts(&screen, "Type 'help' for a list of commands.\n\n");

@@ -37,7 +37,36 @@ void sti()
 
 }
 
-void kernel_main(mboot_header_t *mbootHeader)
+void kernel_memory(multiboot_header_t *header)
+{
+
+    if (header->flags & MULTIBOOT_FLAG_MEM)
+    {
+
+        screen_puts(&screen, "Lower memory: ");
+        screen_puts_dec(&screen, header->memoryLower);
+        screen_puts(&screen, "KB\n");
+
+        screen_puts(&screen, "Upper memory: ");
+        screen_puts_dec(&screen, header->memoryUpper);
+        screen_puts(&screen, "KB\n");
+
+    }
+
+    if (header->flags & MULTIBOOT_FLAG_MMAP)
+    {
+
+    }
+
+    if (header->flags & MULTIBOOT_FLAG_VBE)
+    {
+
+
+    }
+
+}
+
+void kernel_main(multiboot_header_t *header)
 {
 
     gdt_init();
@@ -49,9 +78,9 @@ void kernel_main(mboot_header_t *mbootHeader)
     kbd_init();
 
     // BE SURE INITRD MODULE IS LOADED
-    ASSERT(mbootHeader->modulesCount > 0);
+    ASSERT(header->modulesCount > 0);
 
-    heap_init(*((uint32_t *)(mbootHeader->modulesAddresses + 4)));
+    heap_init(*((uint32_t *)(header->modulesAddresses + 4)));
 
     // 16MB RAM
     paging_init(0x1000000);
@@ -59,11 +88,13 @@ void kernel_main(mboot_header_t *mbootHeader)
 
     sti();
 
-    fsRoot = initrd_init(*((uint32_t *)mbootHeader->modulesAddresses));
+    fsRoot = initrd_init(*((uint32_t *)header->modulesAddresses));
 
 //  switch_to_user_mode();
 
 //  syscall_write("Hello user world!\n");
+
+    kernel_memory(header);
 
     shell_init();
 
