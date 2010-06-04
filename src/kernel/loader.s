@@ -15,6 +15,8 @@ multiboot:
 
 global loader
 loader:
+    mov esp, stack + 0x1000
+    ; push eax - if need of mboot magic
 	push ebx
 	cli
 	call kernel_main
@@ -22,4 +24,5 @@ loader:
 
 section .bss
 align 32
-
+stack:
+    resb 0x1000
