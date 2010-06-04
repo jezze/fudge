@@ -17,7 +17,7 @@ multiboot:
 global loader
 loader:
     mov esp, stack
-    ; push eax - if need of mboot magic
+    push eax
 	push ebx
 	cli
 	call kernel_main

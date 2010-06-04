@@ -66,7 +66,7 @@ void kernel_memory(multiboot_header_t *header)
 
 }
 
-void kernel_main(multiboot_header_t *header)
+void kernel_main(multiboot_header_t *header, uint32_t magic)
 {
 
     gdt_init();
