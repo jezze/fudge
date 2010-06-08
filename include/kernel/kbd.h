@@ -15,6 +15,7 @@ typedef struct kbd_device
 } kbd_device_t;
 
 extern kbd_device_t keyboard;
+
 extern void kbd_init();
 
 #endif

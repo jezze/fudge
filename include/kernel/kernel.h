@@ -8,6 +8,8 @@ typedef struct kernel
 
 } kernel_t;
 
+extern kernel_t kernel;
+
 extern void cli();
 extern void sli();
 
