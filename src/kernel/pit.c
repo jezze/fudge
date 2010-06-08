@@ -4,12 +4,12 @@
 #include <kernel/irq.h>
 #include <kernel/pit.h>
 
-int32_t timer_ticks = 0;
+int32_t pit_timer = 0;
 
 void pit_handler(registers_t *r)
 {
 
-    timer_ticks++;
+    pit_timer++;
 
 }
 
@@ -18,9 +18,9 @@ void pit_wait(int32_t ticks)
 
     int32_t eticks;
 
-    eticks = timer_ticks + ticks;
+    eticks = pit_timer + ticks;
 
-    while (timer_ticks < eticks);
+    while (pit_timer < eticks);
 
 }
 
@@ -29,7 +29,7 @@ void pit_init(uint32_t freq)
 
     irq_register_handler(0, pit_handler);
 
-    uint32_t divisor = 1193180 / freq;
+    uint32_t divisor = PIT_HERTZ / freq;
 
     outb(0x43, 0x36);
 
