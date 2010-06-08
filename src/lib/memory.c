@@ -1,7 +1,7 @@
 #include <lib/types.h>
-#include <lib/mem.h>
+#include <lib/memory.h>
 
-void *memcpy(void *dest, const void *src, int32_t count)
+void *memory_copy(void *dest, const void *src, int32_t count)
 {
 
     const int8_t *sp = (const int8_t *)src;
@@ -14,7 +14,7 @@ void *memcpy(void *dest, const void *src, int32_t count)
 
 }
 
-void *memset(void *dest, int8_t val, int32_t count)
+void *memory_set(void *dest, int8_t val, int32_t count)
 {
 
     int8_t *temp = (int8_t *)dest;
@@ -26,7 +26,7 @@ void *memset(void *dest, int8_t val, int32_t count)
 
 }
 
-uint16_t *memsetw(uint16_t *dest, uint16_t val, int32_t count)
+uint16_t *memory_setw(uint16_t *dest, uint16_t val, int32_t count)
 {
 
     uint16_t *temp = (uint16_t *)dest;

@@ -1,5 +1,5 @@
 #include <lib/types.h>
-#include <lib/mem.h>
+#include <lib/memory.h>
 #include <kernel/idt.h>
 
 idt_entry_t idt[IDT_TABLE_SIZE];
@@ -23,7 +23,7 @@ void idt_init()
     idtp.base = (uint32_t)&idt;
     idtp.limit = (sizeof (idt_entry_t) * IDT_TABLE_SIZE) - 1;
 
-    memset(&idt, 0, sizeof (idt_entry_t) * IDT_TABLE_SIZE);
+    memory_set(&idt, 0, sizeof (idt_entry_t) * IDT_TABLE_SIZE);
 
     idt_flush();
 

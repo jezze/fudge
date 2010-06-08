@@ -1,5 +1,5 @@
 #include <lib/types.h>
-#include <lib/mem.h>
+#include <lib/memory.h>
 #include <lib/string.h>
 #include <kernel/screen.h>
 
@@ -167,7 +167,7 @@ void screen_clear(screen_t *screen)
     uint32_t i;
 
     for (i = 0; i < SCREEN_CHARACTER_HEIGHT; i++)
-        memsetw(screen->address + i * SCREEN_CHARACTER_WIDTH, blank, SCREEN_CHARACTER_WIDTH);
+        memory_setw(screen->address + i * SCREEN_CHARACTER_WIDTH, blank, SCREEN_CHARACTER_WIDTH);
 
     screen->cursorX = 0;
     screen->cursorY = 0;
@@ -201,8 +201,8 @@ void screen_scroll(screen_t *screen)
     {
 
         temp = screen->cursorY - SCREEN_CHARACTER_HEIGHT + 1;
-        memcpy(screen->address, screen->address + temp * SCREEN_CHARACTER_WIDTH, (SCREEN_CHARACTER_HEIGHT - temp) * SCREEN_CHARACTER_WIDTH * 2);
-        memsetw(screen->address + (SCREEN_CHARACTER_HEIGHT - temp) * SCREEN_CHARACTER_WIDTH, blank, SCREEN_CHARACTER_WIDTH);
+        memory_copy(screen->address, screen->address + temp * SCREEN_CHARACTER_WIDTH, (SCREEN_CHARACTER_HEIGHT - temp) * SCREEN_CHARACTER_WIDTH * 2);
+        memory_setw(screen->address + (SCREEN_CHARACTER_HEIGHT - temp) * SCREEN_CHARACTER_WIDTH, blank, SCREEN_CHARACTER_WIDTH);
         screen->cursorY = SCREEN_CHARACTER_HEIGHT - 1;
 
     }

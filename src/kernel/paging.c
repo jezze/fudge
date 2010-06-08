@@ -1,5 +1,5 @@
 #include <lib/types.h>
-#include <lib/mem.h>
+#include <lib/memory.h>
 #include <kernel/assert.h>
 #include <kernel/screen.h>
 #include <kernel/kernel.h>
@@ -137,7 +137,7 @@ static page_t *paging_get_page(uint32_t address, uint8_t make, page_directory_t 
         uint32_t tmp;
 
         directory->tables[index] = (page_table_t *)kmalloc_physical_aligned(sizeof (page_table_t), &tmp);
-        memset(directory->tables[index], 0, 0x1000);
+        memory_set(directory->tables[index], 0, 0x1000);
         directory->tablesPhysical[index] = tmp | 0x7;
 
         return &directory->tables[index]->pages[address % 1024];
@@ -186,7 +186,7 @@ static void paging_init_frames(uint32_t size)
     framesNum = size / 0x1000;
     frames = (uint32_t *)kmalloc(framesNum / 32);
 
-    memset(frames, 0, framesNum / 32);
+    memory_set(frames, 0, framesNum / 32);
 
 }
 
@@ -194,7 +194,7 @@ static void paging_init_kernel()
 {
 
     kernel_directory = (page_directory_t *)kmalloc_aligned(sizeof (page_directory_t));
-    memset(kernel_directory, 0, sizeof (page_directory_t));
+    memory_set(kernel_directory, 0, sizeof (page_directory_t));
 
     uint32_t i;
 

@@ -1,5 +1,5 @@
 #include <lib/types.h>
-#include <lib/mem.h>
+#include <lib/memory.h>
 #include <kernel/gdt.h>
 
 gdt_entry_t gdt[6];
@@ -33,8 +33,8 @@ void gdt_init()
     gdtp.base = (uint32_t)&gdt;
     gdtp.limit = (sizeof (gdt_entry_t) * 6) - 1;
 
-    memset(&gdt, 0, sizeof (gdt_entry_t) * 6);
-    memset(&tss, 0, sizeof (tss_entry_t));
+    memory_set(&gdt, 0, sizeof (gdt_entry_t) * 6);
+    memory_set(&tss, 0, sizeof (tss_entry_t));
 
     tss.ss0 = 0x10;
     tss.esp0 = 0x0;

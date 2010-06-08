@@ -46,11 +46,11 @@ kernel: library
 	$(GCC) $(GCCFLAGS) src/kernel/syscall.c -o obj/syscall.o
 	$(GCC) $(GCCFLAGS) src/kernel/task.c -o obj/task.o
 	$(GCC) $(GCCFLAGS) src/kernel/shell.c -o obj/shell.o
-	$(LD) $(LDFLAGS) obj/loader.o obj/kernel.o obj/assert.o obj/mem.o obj/string.o obj/cbuffer.o obj/stack.o obj/gdt.o obj/gdts.o obj/idt.o obj/idts.o obj/isr.o obj/isrs.o obj/irq.o obj/irqs.o obj/pit.o obj/screen.o obj/kbd.o obj/heap.o obj/paging.o obj/vfs.o obj/initrd.o obj/syscall.o obj/task.o obj/shell.o -o root/boot/kernel
+	$(LD) $(LDFLAGS) obj/loader.o obj/kernel.o obj/assert.o obj/memory.o obj/string.o obj/cbuffer.o obj/stack.o obj/gdt.o obj/gdts.o obj/idt.o obj/idts.o obj/isr.o obj/isrs.o obj/irq.o obj/irqs.o obj/pit.o obj/screen.o obj/kbd.o obj/heap.o obj/paging.o obj/vfs.o obj/initrd.o obj/syscall.o obj/task.o obj/shell.o -o root/boot/kernel
 
 library:
 	$(GCC) $(GCCFLAGS) src/lib/stack.c -o obj/stack.o
 	$(GCC) $(GCCFLAGS) src/lib/cbuffer.c -o obj/cbuffer.o
 	$(GCC) $(GCCFLAGS) src/lib/string.c -o obj/string.o
-	$(GCC) $(GCCFLAGS) src/lib/mem.c -o obj/mem.o
+	$(GCC) $(GCCFLAGS) src/lib/memory.c -o obj/memory.o
 

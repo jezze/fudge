@@ -1,5 +1,5 @@
 #include <lib/types.h>
-#include <lib/mem.h>
+#include <lib/memory.h>
 #include <kernel/regs.h>
 #include <kernel/irq.h>
 #include <kernel/pit.h>

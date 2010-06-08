@@ -1,5 +1,5 @@
 #include <lib/types.h>
-#include <lib/mem.h>
+#include <lib/memory.h>
 #include <lib/string.h>
 #include <kernel/heap.h>
 #include <kernel/vfs.h>
@@ -21,7 +21,7 @@ static uint32_t initrd_read(vfs_node_t *node, uint32_t offset, uint32_t size, ui
     if (offset + size > header.length)
         size = header.length - offset;
 
-    memcpy(buffer, (uint8_t*) (header.offset + offset), size);
+    memory_copy(buffer, (uint8_t*) (header.offset + offset), size);
 
     return size;
 
