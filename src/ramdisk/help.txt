@@ -3,3 +3,4 @@ cat FILE        : Print file content
 clear           : Clear screen
 help            : Print help
 ls              : List directory content
+time            : Get time

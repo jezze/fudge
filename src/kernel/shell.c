@@ -3,6 +3,7 @@
 #include <lib/stack.h>
 #include <lib/string.h>
 #include <kernel/screen.h>
+#include <kernel/pit.h>
 #include <kernel/kbd.h>
 #include <kernel/vfs.h>
 #include <kernel/shell.h>
@@ -110,6 +111,15 @@ static void shell_command_null(uint32_t argc, char *argv[])
 
 }
 
+static void shell_command_time(uint32_t argc, char *argv[])
+{
+
+    screen_puts(&screen, "Timer: ");
+    screen_puts_dec(&screen, &pit_timer);
+    screen_puts(&screen, "\n");
+
+}
+
 static void shell_interpret(char *command)
 {
 
@@ -165,6 +175,9 @@ static void shell_interpret(char *command)
 
     else if (!string_compare(argv[0], "ls"))
         shell_command_ls(argc, argv);
+
+    else if (!string_compare(argv[0], "time"))
+        shell_command_time(argc, argv);
 
     else
     {
