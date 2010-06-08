@@ -19,8 +19,6 @@
 #include <kernel/task.h>
 #include <kernel/kernel.h>
 
-extern uint32_t heap_address;
-
 kernel_t kernel;
 
 void cli()
