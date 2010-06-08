@@ -18,7 +18,7 @@ static void shell_clear()
 
 }
 
-static void shell_command_call(int argc, char *argv[])
+static void shell_command_call(uint32_t argc, char *argv[])
 {
 
     if (argc > 1)
@@ -31,9 +31,9 @@ static void shell_command_call(int argc, char *argv[])
 
         char buffer[256];
 
-        uint32_t size = vfs_read(node, 0, 256, buffer);
+        vfs_read(node, 0, 256, buffer);
         
-        int (*func)() = &buffer;
+        void (*func)() = &buffer;
 
         func();
 
@@ -41,7 +41,7 @@ static void shell_command_call(int argc, char *argv[])
 
 }
 
-static void shell_command_cat(int argc, char *argv[])
+static void shell_command_cat(uint32_t argc, char *argv[])
 {
 
     if (argc > 1)
@@ -67,14 +67,14 @@ static void shell_command_cat(int argc, char *argv[])
 
 }
 
-static void shell_command_clear(int argc, char *argv[])
+static void shell_command_clear(uint32_t argc, char *argv[])
 {
 
     screen_clear(&screen);
 
 }
 
-static shell_command_help(int argc, char *argv[])
+static void shell_command_help(uint32_t argc, char *argv[])
 {
 
     argv[0] = "cat";
@@ -84,7 +84,7 @@ static shell_command_help(int argc, char *argv[])
 
 }
 
-static shell_command_ls(int argc, char *argv[])
+static void shell_command_ls(uint32_t argc, char *argv[])
 {
 
     uint32_t i;
@@ -103,7 +103,7 @@ static shell_command_ls(int argc, char *argv[])
 
 }
 
-static void shell_command_null(int argc, char *argv[])
+static void shell_command_null(uint32_t argc, char *argv[])
 {
 
     return;
