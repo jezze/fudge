@@ -54,6 +54,9 @@ typedef struct tss_entry
 
 } __attribute__((packed)) tss_entry_t;
 
+extern void gdt_flush();
+extern void tss_flush();
+
 extern void gdt_set_gate(int32_t num, uint32_t base, uint32_t limit, uint8_t access, uint8_t gran);
 extern void gdt_init();
 

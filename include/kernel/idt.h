@@ -22,6 +22,8 @@ typedef struct idt_ptr
 
 } __attribute__((packed)) idt_ptr_t;
 
+extern void idt_flush();
+
 extern void idt_set_gate(uint8_t, uint32_t, uint16_t, uint8_t);
 extern void idt_init();
 

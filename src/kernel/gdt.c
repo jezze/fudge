@@ -2,9 +2,6 @@
 #include <lib/mem.h>
 #include <kernel/gdt.h>
 
-extern void gdt_flush();
-extern void tss_flush();
-
 gdt_entry_t gdt[6];
 gdt_ptr_t gdtp;
 

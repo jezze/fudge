@@ -2,8 +2,6 @@
 #include <lib/mem.h>
 #include <kernel/idt.h>
 
-extern void idt_flush();
-
 idt_entry_t idt[IDT_TABLE_SIZE];
 idt_ptr_t idtp;
 
