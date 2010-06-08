@@ -14,8 +14,6 @@ page_directory_t *current_directory = 0;
 uint32_t *frames;
 uint32_t framesNum;
 
-extern uint32_t heap_address;
-
 static void paging_set_frame(uint32_t address)
 {
 
