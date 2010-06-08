@@ -22,7 +22,7 @@ clean:
 
 ramdisk:
 	$(GCC) -O2 tools/mkinitrd.c -o tools/mkinitrd
-	$(MKINITRD) root/initrd/about.txt about.txt root/initrd/help.txt help.txt root/initrd/hello.s hello.s root/initrd/hello hello root/initrd/hello2.c hello2.c root/initrd/hello2 hello2
+	$(MKINITRD) src/ramdisk/about.txt about.txt src/ramdisk/help.txt help.txt src/ramdisk/hello.s hello.s src/ramdisk/hello hello src/ramdisk/hello2.c hello2.c src/ramdisk/hello2 hello2
 
 kernel: library
 	$(GCC) $(GCCFLAGS) src/kernel/assert.c -o obj/assert.o

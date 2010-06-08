@@ -1,0 +1,5 @@
+call FILE       : Execute program
+cat FILE        : Print file content
+clear           : Clear screen
+help            : Print help
+ls              : List directory content
