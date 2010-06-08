@@ -8,8 +8,6 @@ typedef struct kernel
 
 } kernel_t;
 
-extern uint32_t heap_address;
-
 extern void cli();
 extern void sli();
 
