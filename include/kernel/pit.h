@@ -2,7 +2,7 @@
 #define PIT_H
 
 #define PIT_HERTZ 1193180
-#define PIT_FREQUENCY 100
+#define PIT_FREQUENCY 1000
 
 extern int32_t pit_timer;
 

@@ -115,7 +115,7 @@ static void shell_command_time(uint32_t argc, char *argv[])
 {
 
     screen_puts(&screen, "Timer: ");
-    screen_puts_dec(&screen, &pit_timer);
+    screen_puts_dec(&screen, pit_timer);
     screen_puts(&screen, "\n");
 
 }
