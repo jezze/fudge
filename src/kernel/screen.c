@@ -1,6 +1,5 @@
 #include <lib/types.h>
 #include <lib/memory.h>
-#include <lib/string.h>
 #include <kernel/screen.h>
 
 screen_t screen;

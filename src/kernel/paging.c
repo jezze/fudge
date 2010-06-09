@@ -2,7 +2,6 @@
 #include <lib/memory.h>
 #include <kernel/assert.h>
 #include <kernel/screen.h>
-#include <kernel/kernel.h>
 #include <kernel/regs.h>
 #include <kernel/isr.h>
 #include <kernel/heap.h>
