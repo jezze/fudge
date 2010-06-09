@@ -17,6 +17,7 @@
 #include <kernel/shell.h>
 #include <kernel/syscall.h>
 #include <kernel/task.h>
+#include <kernel/vbe.h>
 #include <kernel/kernel.h>
 
 kernel_t kernel;
