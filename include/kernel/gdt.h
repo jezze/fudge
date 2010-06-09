@@ -1,6 +1,8 @@
 #ifndef GDT_H
 #define GDT_H
 
+#define GDT_TABLE_SIZE 6
+
 typedef struct gdt_entry
 {
 

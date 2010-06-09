@@ -2,7 +2,7 @@
 #include <lib/memory.h>
 #include <kernel/gdt.h>
 
-gdt_entry_t gdt[6];
+gdt_entry_t gdt[GDT_TABLE_SIZE];
 gdt_ptr_t gdtp;
 
 tss_entry_t tss;
@@ -31,9 +31,9 @@ void gdt_init()
 {
 
     gdtp.base = (uint32_t)&gdt;
-    gdtp.limit = (sizeof (gdt_entry_t) * 6) - 1;
+    gdtp.limit = (sizeof (gdt_entry_t) * GDT_TABLE_SIZE) - 1;
 
-    memory_set(&gdt, 0, sizeof (gdt_entry_t) * 6);
+    memory_set(&gdt, 0, sizeof (gdt_entry_t) * GDT_TABLE_SIZE);
     memory_set(&tss, 0, sizeof (tss_entry_t));
 
     tss.ss0 = 0x10;
