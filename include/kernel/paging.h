@@ -8,7 +8,7 @@
 #define PAGING_ERROR_RESERVED 0x08
 #define PAGING_ERROR_FETCH    0x16
 
-typedef struct page
+typedef struct paging_page
 {
 
     uint32_t present : 1;
@@ -19,26 +19,26 @@ typedef struct page
     uint32_t unused : 7;
     uint32_t frame : 20;
 
-} page_t;
+} paging_page_t;
 
-typedef struct page_table
+typedef struct paging_table
 {
 
-    page_t pages[1024];
+    paging_page_t pages[1024];
 
-} page_table_t;
+} paging_table_t;
 
-typedef struct page_directory
+typedef struct paging_directory
 {
 
-    page_table_t *tables[1024];
+    paging_table_t *tables[1024];
     uint32_t tablesPhysical[1024];
     uint32_t physicalAddress;
 
-} page_directory_t;
+} paging_directory_t;
 
 extern void paging_init();
-extern void paging_set_directory(page_directory_t *directory);
+extern void paging_set_directory(paging_directory_t *directory);
 extern void paging_handler(registers_t *registers);
 
 #endif

@@ -7,8 +7,8 @@
 #include <kernel/heap.h>
 #include <kernel/paging.h>
 
-page_directory_t *kernel_directory = 0;
-page_directory_t *current_directory = 0;
+paging_directory_t *kernel_directory = 0;
+paging_directory_t *current_directory = 0;
 
 uint32_t *frames;
 uint32_t framesNum;
@@ -71,7 +71,7 @@ static uint32_t paging_find_frame()
 
 }
 
-static void paging_alloc_frame(page_t *page, uint8_t kernel, uint8_t writeable)
+static void paging_alloc_frame(paging_page_t *page, uint8_t kernel, uint8_t writeable)
 {
 
     if (page->frame)
@@ -90,7 +90,7 @@ static void paging_alloc_frame(page_t *page, uint8_t kernel, uint8_t writeable)
 
 }
 
-static void paging_free_frame(page_t *page)
+static void paging_free_frame(paging_page_t *page)
 {
 
     uint32_t frame;
@@ -103,7 +103,7 @@ static void paging_free_frame(page_t *page)
 
 }
 
-void paging_set_directory(page_directory_t *directory)
+void paging_set_directory(paging_directory_t *directory)
 {
 
     current_directory = directory;
@@ -120,7 +120,7 @@ void paging_set_directory(page_directory_t *directory)
 
 }
 
-static page_t *paging_get_page(uint32_t address, uint8_t make, page_directory_t *directory)
+static paging_page_t *paging_get_page(uint32_t address, uint8_t make, paging_directory_t *directory)
 {
 
     address /= PAGING_FRAME_SIZE;
@@ -135,7 +135,7 @@ static page_t *paging_get_page(uint32_t address, uint8_t make, page_directory_t 
 
         uint32_t tmp;
 
-        directory->tables[index] = (page_table_t *)kmalloc_physical_aligned(sizeof (page_table_t), &tmp);
+        directory->tables[index] = (paging_table_t *)kmalloc_physical_aligned(sizeof (paging_table_t), &tmp);
         memory_set(directory->tables[index], 0, PAGING_FRAME_SIZE);
         directory->tablesPhysical[index] = tmp | 0x7;
 
@@ -192,8 +192,8 @@ static void paging_init_frames(uint32_t size)
 static void paging_init_kernel()
 {
 
-    kernel_directory = (page_directory_t *)kmalloc_aligned(sizeof (page_directory_t));
-    memory_set(kernel_directory, 0, sizeof (page_directory_t));
+    kernel_directory = (paging_directory_t *)kmalloc_aligned(sizeof (paging_directory_t));
+    memory_set(kernel_directory, 0, sizeof (paging_directory_t));
 
     uint32_t i;
 
