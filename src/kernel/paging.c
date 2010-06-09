@@ -16,7 +16,7 @@ uint32_t framesNum;
 static void paging_set_frame(uint32_t address)
 {
 
-    uint32_t frame = address / 0x1000;
+    uint32_t frame = address / PAGING_FRAME_SIZE;
     uint32_t index = frame / 32;
     uint32_t off = frame % 32;
     frames[index] |= (0x1 << off);
@@ -26,7 +26,7 @@ static void paging_set_frame(uint32_t address)
 static void paging_unset_frame(uint32_t address)
 {
 
-    uint32_t frame = address / 0x1000;
+    uint32_t frame = address / PAGING_FRAME_SIZE;
     uint32_t index = frame / 32;
     uint32_t off = frame % 32;
     frames[index] &= ~(0x1 << off);
@@ -36,7 +36,7 @@ static void paging_unset_frame(uint32_t address)
 static uint32_t paging_test_frame(uint32_t address)
 {
 
-    uint32_t frame = address / 0x1000;
+    uint32_t frame = address / PAGING_FRAME_SIZE;
     uint32_t index = frame / 32;
     uint32_t off = frame % 32;
 
@@ -74,7 +74,7 @@ static uint32_t paging_find_frame()
 static void paging_alloc_frame(page_t *page, uint8_t kernel, uint8_t writeable)
 {
 
-    if (page->frame != 0)
+    if (page->frame)
         return;
 
     uint32_t index = paging_find_frame();
@@ -82,7 +82,7 @@ static void paging_alloc_frame(page_t *page, uint8_t kernel, uint8_t writeable)
     if (index == (uint32_t)-1)
         PANIC("No frames free");
 
-    paging_set_frame(index * 0x1000);
+    paging_set_frame(index * PAGING_FRAME_SIZE);
     page->present = 1;
     page->rw = (writeable) ? 1 : 0;
     page->user = (kernel) ? 0 : 1;
@@ -123,7 +123,7 @@ void paging_set_directory(page_directory_t *directory)
 static page_t *paging_get_page(uint32_t address, uint8_t make, page_directory_t *directory)
 {
 
-    address /= 0x1000;
+    address /= PAGING_FRAME_SIZE;
 
     uint32_t index = address / 1024;
 
@@ -136,7 +136,7 @@ static page_t *paging_get_page(uint32_t address, uint8_t make, page_directory_t 
         uint32_t tmp;
 
         directory->tables[index] = (page_table_t *)kmalloc_physical_aligned(sizeof (page_table_t), &tmp);
-        memory_set(directory->tables[index], 0, 0x1000);
+        memory_set(directory->tables[index], 0, PAGING_FRAME_SIZE);
         directory->tablesPhysical[index] = tmp | 0x7;
 
         return &directory->tables[index]->pages[address % 1024];
@@ -182,7 +182,7 @@ void paging_handler(registers_t *r)
 static void paging_init_frames(uint32_t size)
 {
 
-    framesNum = size / 0x1000;
+    framesNum = size / PAGING_FRAME_SIZE;
     frames = (uint32_t *)kmalloc(framesNum / 32);
 
     memory_set(frames, 0, framesNum / 32);
@@ -197,7 +197,7 @@ static void paging_init_kernel()
 
     uint32_t i;
 
-    for (i = 0; i < heap_address; i += 0x1000)
+    for (i = 0; i < heap_address; i += PAGING_FRAME_SIZE)
         paging_alloc_frame(paging_get_page(i, 1, kernel_directory), 0, 0);
 
 }
