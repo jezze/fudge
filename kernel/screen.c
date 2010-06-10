@@ -215,7 +215,8 @@ void screen_init()
     screen.address = (uint16_t *)SCREEN_ADDRESS;
     screen.cursorX = 0;
     screen.cursorY = 0;
-    screen.context.attribute = 0x0F;
+
+    screen_set_text_color(SCREEN_COLOR_WHITE, SCREEN_COLOR_BLACK);
 
     screen_clear();
 
