@@ -1,5 +1,5 @@
 #include <lib/types.h>
-#include <lib/memory.h>
+#include <lib/io.h>
 #include <lib/cbuffer.h>
 #include <kernel/regs.h>
 #include <kernel/irq.h>

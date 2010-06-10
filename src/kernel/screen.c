@@ -1,4 +1,5 @@
 #include <lib/types.h>
+#include <lib/io.h>
 #include <lib/memory.h>
 #include <kernel/screen.h>
 
