@@ -6,42 +6,6 @@
 
 void *isr_routines[ISR_ROUTINES_SIZE];
 
-char *exception_messages[] =
-{
-    "Division By Zero",
-    "Debug",
-    "Non Maskable Interrupt",
-    "Breakpoint",
-    "Into Detected Overflow",
-    "Out of Bounds",
-    "Invalid Opcode",
-    "No Coprocessor",
-    "Double Fault",
-    "Coprocessor Segment Overrun",
-    "Bad TSS",
-    "Segment Not Present",
-    "Stack Fault",
-    "General Protection Fault",
-    "Page Fault",
-    "Unknown Interrupt",
-    "Coprocessor Fault",
-    "Alignment Check",
-    "Machine Check",
-    "Reserverd",
-    "Reserverd",
-    "Reserverd",
-    "Reserverd",
-    "Reserverd",
-    "Reserverd",
-    "Reserverd",
-    "Reserverd",
-    "Reserverd",
-    "Reserverd",
-    "Reserverd",
-    "Reserverd",
-    "Reserverd"
-};
-
 void isr_register_handler(uint8_t num, void (*handler)(registers_t *r))
 {
 
@@ -72,8 +36,8 @@ void isr_handler(registers_t *r)
     else
     {
 
-        screen_puts("Unhandled interrupt: ");
-        screen_puts(exception_messages[r->int_no]);
+        screen_puts("Unhandled interrupt: 0x");
+        screen_puts_hex(r->int_no);
 
     }
 
