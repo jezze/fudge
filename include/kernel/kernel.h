@@ -10,8 +10,5 @@ typedef struct kernel
 
 extern kernel_t kernel;
 
-extern void cli();
-extern void sli();
-
 #endif
 

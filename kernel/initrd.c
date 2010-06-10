@@ -68,8 +68,8 @@ vfs_node_t *initrd_init(uint32_t location)
     initrdRoot.close = 0;
     initrdRoot.read = 0;
     initrdRoot.write = 0;
-    initrdRoot.walk = &initrd_walk;
-    initrdRoot.find = &initrd_find;
+    initrdRoot.walk = initrd_walk;
+    initrdRoot.find = initrd_find;
 
     uint32_t i;
 
@@ -83,7 +83,7 @@ vfs_node_t *initrd_init(uint32_t location)
         initrdNodes[i].length = initrdFileHeaders[i].length;
         initrdNodes[i].open = 0;
         initrdNodes[i].close = 0;
-        initrdNodes[i].read = &initrd_read;
+        initrdNodes[i].read = initrd_read;
         initrdNodes[i].write = 0;
         initrdNodes[i].walk = 0;
         initrdNodes[i].find = 0;
