@@ -154,26 +154,26 @@ void paging_handler(registers_t *r)
 
     __asm__ __volatile__ ("mov %%cr2, %0" : "=r" (address));
 
-    screen_puts(&screen, "PAGE FAULT (");
+    screen_puts("PAGE FAULT (");
 
     if (!(r->err_code & PAGING_ERROR_PRESENT))
-        screen_puts(&screen, "present");
+        screen_puts("present");
 
     if (r->err_code & PAGING_ERROR_RW)
-        screen_puts(&screen, "read-only");
+        screen_puts("read-only");
 
     if (r->err_code & PAGING_ERROR_USER)
-        screen_puts(&screen, "user-mode");
+        screen_puts("user-mode");
 
     if (r->err_code & PAGING_ERROR_RESERVED)
-        screen_puts(&screen, "reserved");
+        screen_puts("reserved");
 
     if (r->err_code & PAGING_ERROR_FETCH)
-        screen_puts(&screen, "fetch");
+        screen_puts("fetch");
 
-    screen_puts(&screen, ") at 0x");
-    screen_puts_hex(&screen, address);
-    screen_puts(&screen, "\n");
+    screen_puts(") at 0x");
+    screen_puts_hex(address);
+    screen_puts("\n");
 
     PANIC("PAGE FAULT");
 

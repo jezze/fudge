@@ -24,13 +24,13 @@ typedef struct screen
 
 extern screen_t screen;
 
-extern void screen_putc(screen_t *screen, char c);
-extern void screen_puts(screen_t *screen, char *s);
-extern void screen_puts_dec(screen_t *screen, uint32_t n);
-extern void screen_puts_hex(screen_t *screen, uint32_t n);
-extern void screen_clear(screen_t *screen);
-extern void screen_cursor_move(screen_t *screen);
-extern void screen_scroll(screen_t *screen);
+extern void screen_putc(char c);
+extern void screen_puts(char *s);
+extern void screen_puts_dec(uint32_t n);
+extern void screen_puts_hex(uint32_t n);
+extern void screen_clear();
+extern void screen_cursor_move();
+extern void screen_scroll();
 extern void screen_init();
 
 #endif

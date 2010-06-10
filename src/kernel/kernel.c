@@ -42,13 +42,13 @@ static void kernel_memory(multiboot_header_t *header)
     if (header->flags & MULTIBOOT_FLAG_MEM)
     {
 
-        screen_puts(&screen, "Lower memory: ");
-        screen_puts_dec(&screen, header->memoryLower);
-        screen_puts(&screen, "KB\n");
+        screen_puts("Lower memory: ");
+        screen_puts_dec(header->memoryLower);
+        screen_puts("KB\n");
 
-        screen_puts(&screen, "Upper memory: ");
-        screen_puts_dec(&screen, header->memoryUpper);
-        screen_puts(&screen, "KB\n");
+        screen_puts("Upper memory: ");
+        screen_puts_dec(header->memoryUpper);
+        screen_puts("KB\n");
 
     }
 

@@ -15,7 +15,7 @@ stack_t shellStack;
 static void shell_clear()
 {
 
-    screen_puts(&screen, "fudge:/$ ");
+    screen_puts("fudge:/$ ");
     stack_clear(&shellStack);
 
 }
@@ -61,9 +61,9 @@ static void shell_command_cat(uint32_t argc, char *argv[])
         uint32_t i;
 
         for (i = 0; i < size; i++)
-            screen_putc(&screen, buffer[i]);
+            screen_putc(buffer[i]);
 
-        screen_putc(&screen, '\n');
+        screen_putc('\n');
 
     }
 
@@ -72,7 +72,7 @@ static void shell_command_cat(uint32_t argc, char *argv[])
 static void shell_command_clear(uint32_t argc, char *argv[])
 {
 
-    screen_clear(&screen);
+    screen_clear();
 
 }
 
@@ -96,10 +96,10 @@ static void shell_command_ls(uint32_t argc, char *argv[])
     {
 
         if (node->flags == VFS_DIRECTORY)
-            screen_puts(&screen, "/");
+            screen_puts("/");
 
-        screen_puts(&screen, node->name);
-        screen_puts(&screen, "\n");
+        screen_puts(node->name);
+        screen_puts("\n");
 
     }
 
@@ -115,9 +115,9 @@ static void shell_command_null(uint32_t argc, char *argv[])
 static void shell_command_time(uint32_t argc, char *argv[])
 {
 
-    screen_puts(&screen, "Timer: ");
-    screen_puts_dec(&screen, pit_timer);
-    screen_puts(&screen, "\n");
+    screen_puts("Timer: ");
+    screen_puts_dec(pit_timer);
+    screen_puts("\n");
 
 }
 
@@ -183,8 +183,8 @@ static void shell_interpret(char *command)
     else
     {
 
-        screen_puts(&screen, argv[0]);
-        screen_puts(&screen, ": Command not found\n");
+        screen_puts(argv[0]);
+        screen_puts(": Command not found\n");
 
     }
 
@@ -195,9 +195,9 @@ static void shell_interpret(char *command)
 void shell_init()
 {
 
-    screen_puts(&screen, "Fudge\n");
-    screen_puts(&screen, "Copyright (c) 2009 Jens Nyberg\n");
-    screen_puts(&screen, "Type 'help' for a list of commands.\n\n");
+    screen_puts("Fudge\n");
+    screen_puts("Copyright (c) 2009 Jens Nyberg\n");
+    screen_puts("Type 'help' for a list of commands.\n\n");
 
     shell_clear();
 
@@ -223,9 +223,9 @@ void shell_init()
                     if (stack_pop(&shellStack))
                     {
 
-                        screen_putc(&screen, '\b');
-                        screen_putc(&screen, ' ');
-                        screen_putc(&screen, '\b');
+                        screen_putc('\b');
+                        screen_putc(' ');
+                        screen_putc('\b');
 
                     }
 
@@ -235,7 +235,7 @@ void shell_init()
 
                     stack_push(&shellStack, c);
                     stack_push(&shellStack, '\0');
-                    screen_putc(&screen, c);
+                    screen_putc(c);
                     shell_interpret(shellBuffer);
 
                     break;
@@ -243,7 +243,7 @@ void shell_init()
                 default:
 
                     stack_push(&shellStack, c);
-                    screen_putc(&screen, c);
+                    screen_putc(c);
 
                     break;
 
