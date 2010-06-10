@@ -1,8 +1,11 @@
 #ifndef SYSCALL_H
 #define SYSCALL_H
 
-int syscall_write(char *text);
-void syscall_init();
+#define SYSCALL_ROUTINES_SIZE 3
+
+extern int syscall_write(char *text);
+extern void syscall_handler(registers_t *r);
+extern void syscall_init();
 
 #endif
 

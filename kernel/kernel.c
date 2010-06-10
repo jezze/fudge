@@ -55,6 +55,8 @@ static void kernel_register_handlers()
 {
 
     isr_register_handler(14, paging_handler);
+    isr_register_handler(0x80, syscall_handler);
+    
     irq_register_handler(0, pit_handler);
     irq_register_handler(1, kbd_handler);
 

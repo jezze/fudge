@@ -4,8 +4,7 @@
 #include <kernel/screen.h>
 #include <kernel/syscall.h>
 
-static void *syscalls[3] = {&screen_puts, &screen_puts_hex, &screen_puts_dec};
-uint32_t num_syscalls = 3;
+static void *syscalls[SYSCALL_ROUTINES_SIZE];
 
 int syscall_write(char *text)
 {
@@ -21,10 +20,10 @@ int syscall_write(char *text)
 
 }
 
-void syscall_handler(registers_t *r)
+void syscall_handler2(registers_t *r)
 {
 
-    if (r->eax >= num_syscalls)
+    if (r->eax >= SYSCALL_ROUTINES_SIZE)
         return;
 
     void *location = syscalls[r->eax];
@@ -49,10 +48,23 @@ void syscall_handler(registers_t *r)
 
 }
 
+void syscall_handler(registers_t *r)
+{
+
+    screen_puts("Syscall: ");
+    screen_puts_hex(r->eax);
+    screen_puts("\n");
+
+    r->eax = 1;
+
+}
+
 void syscall_init()
 {
 
-    isr_register_handler(0x80, syscall_handler);
+    syscalls[0] = &screen_puts;
+    syscalls[1] = &screen_puts_dec;
+    syscalls[2] = &screen_puts_hex;
 
 }
 
