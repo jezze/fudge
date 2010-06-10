@@ -1,11 +1,13 @@
 #include <lib/types.h>
+#include <kernel/regs.h>
+#include <kernel/isr.h>
 #include <kernel/screen.h>
 #include <kernel/assert.h>
 
 void kernel_panic(char *message, char *file, uint32_t line)
 {
 
-    cli();
+    isr_disable();
 
     screen_puts("KERNEL PANIC (");
     screen_puts(message);
@@ -22,7 +24,7 @@ void kernel_panic(char *message, char *file, uint32_t line)
 void kernel_assert(char *message, char *file, uint32_t line)
 {
 
-    cli();
+    isr_disable();
 
     screen_puts("ASSERTION FAIL (");
     screen_puts(message);

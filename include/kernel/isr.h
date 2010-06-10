@@ -35,6 +35,8 @@ extern void isr28();
 extern void isr29();
 extern void isr30();
 extern void isr31();
+extern void isr_enable();
+extern void isr_disable();
 
 extern void isr_register_handler(uint8_t num, void (*handler)(registers_t *r));
 extern void isr_unregister_handler(uint8_t num);

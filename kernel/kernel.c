@@ -22,20 +22,6 @@
 
 kernel_t kernel;
 
-void cli()
-{
-
-    __asm__ __volatile__ ("cli");
-
-}
-
-void sti()
-{
-
-    __asm__ __volatile__ ("sti");
-
-}
-
 static void kernel_memory(multiboot_header_t *header)
 {
 
@@ -72,7 +58,7 @@ static void kernel_register_handlers()
     irq_register_handler(0, pit_handler);
     irq_register_handler(1, kbd_handler);
 
-    sti();
+    isr_enable();
 
 }
 

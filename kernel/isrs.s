@@ -274,3 +274,13 @@ isr_common:
 	add esp, 8
 	iret
 
+global isr_enable
+isr_enable:
+    sti
+    ret
+
+global isr_disable
+isr_disable:
+    cli
+    ret
+
