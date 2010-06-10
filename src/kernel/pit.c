@@ -24,10 +24,10 @@ void pit_wait(int32_t ticks)
 
 }
 
-void pit_init(uint32_t freq)
+void pit_init()
 {
 
-    uint32_t divisor = PIT_HERTZ / freq;
+    uint32_t divisor = PIT_HERTZ / PIT_FREQUENCY;
 
     outb(0x43, 0x36);
 

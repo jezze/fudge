@@ -36,7 +36,7 @@ void sti()
 
 }
 
-void kernel_memory(multiboot_header_t *header)
+static void kernel_memory(multiboot_header_t *header)
 {
 
     if (header->flags & MULTIBOOT_FLAG_MEM)
@@ -65,7 +65,7 @@ void kernel_memory(multiboot_header_t *header)
 
 }
 
-void kernel_register_handlers()
+static void kernel_register_handlers()
 {
 
     isr_register_handler(14, paging_handler);
@@ -83,9 +83,9 @@ void kernel_main(multiboot_header_t *header, uint32_t magic)
     idt_init();
     isr_init();
     irq_init();
-    screen_init();
-    pit_init(PIT_FREQUENCY);
+    pit_init();
     kbd_init();
+    screen_init();
 
     // BE SURE INITRD MODULE IS LOADED
     ASSERT(header->modulesCount > 0);
@@ -96,6 +96,7 @@ void kernel_main(multiboot_header_t *header, uint32_t magic)
     paging_init(0x1000000);
     syscall_init();
 
+    kernel_memory(header);
     kernel_register_handlers();
 
     fsRoot = initrd_init(*((uint32_t *)header->modulesAddresses));
@@ -103,8 +104,6 @@ void kernel_main(multiboot_header_t *header, uint32_t magic)
 //  switch_to_user_mode();
 
 //  syscall_write("Hello user world!\n");
-
-    kernel_memory(header);
 
     shell_init();
 
