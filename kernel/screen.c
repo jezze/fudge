@@ -212,13 +212,10 @@ void screen_scroll()
 void screen_init()
 {
 
-    screen_context_t context;
-    context.attribute = 0x0F;
-
     screen.address = (uint16_t *)SCREEN_ADDRESS;
     screen.cursorX = 0;
     screen.cursorY = 0;
-    screen.context = context;
+    screen.context.attribute = 0x0F;
 
     screen_clear();
 
