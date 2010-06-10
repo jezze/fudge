@@ -68,6 +68,7 @@ void kernel_memory(multiboot_header_t *header)
 void kernel_register_handlers()
 {
 
+    isr_register_handler(14, paging_handler);
     irq_register_handler(0, pit_handler);
     irq_register_handler(1, kbd_handler);
 

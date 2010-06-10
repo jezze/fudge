@@ -207,7 +207,6 @@ void paging_init(uint32_t size)
 
     paging_init_frames(size);
     paging_init_kernel();
-    isr_register_handler(14, paging_handler);
     paging_set_directory(kernel_directory);
 
 }
