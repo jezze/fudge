@@ -68,7 +68,5 @@ void kbd_init()
     keyboard.toggleCtrl = 0;
     keyboard.toggleShift = 0;
 
-    irq_register_handler(1, kbd_handler);
-
 }
 

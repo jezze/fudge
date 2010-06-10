@@ -27,8 +27,6 @@ void pit_wait(int32_t ticks)
 void pit_init(uint32_t freq)
 {
 
-    irq_register_handler(0, pit_handler);
-
     uint32_t divisor = PIT_HERTZ / freq;
 
     outb(0x43, 0x36);

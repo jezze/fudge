@@ -65,6 +65,16 @@ void kernel_memory(multiboot_header_t *header)
 
 }
 
+void kernel_register_handlers()
+{
+
+    irq_register_handler(0, pit_handler);
+    irq_register_handler(1, kbd_handler);
+
+    sti();
+
+}
+
 void kernel_main(multiboot_header_t *header, uint32_t magic)
 {
 
@@ -85,7 +95,7 @@ void kernel_main(multiboot_header_t *header, uint32_t magic)
     paging_init(0x1000000);
     syscall_init();
 
-    sti();
+    kernel_register_handlers();
 
     fsRoot = initrd_init(*((uint32_t *)header->modulesAddresses));
 

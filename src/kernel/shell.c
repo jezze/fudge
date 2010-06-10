@@ -2,6 +2,7 @@
 #include <lib/cbuffer.h>
 #include <lib/stack.h>
 #include <lib/string.h>
+#include <kernel/regs.h>
 #include <kernel/screen.h>
 #include <kernel/pit.h>
 #include <kernel/kbd.h>
