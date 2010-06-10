@@ -14,75 +14,76 @@ cd:
 	$(ISO) $(ISOFLAGS) -o fudge.iso root
 
 clean:
-	rm -f obj/*
+	rm -f lib/*.o
+	rm -f kernel/*.o
 	rm -f tools/mkinitrd
 	rm -f root/boot/kernel
 	rm -f root/boot/initrd
 	rm -f fudge.iso
 
-ramdisk:
+initrd:
 	$(GCC) -O2 tools/mkinitrd.c -o tools/mkinitrd
-	$(MKINITRD) src/ramdisk/about.txt about.txt src/ramdisk/help.txt help.txt src/ramdisk/hello.s hello.s src/ramdisk/hello hello src/ramdisk/hello2.c hello2.c src/ramdisk/hello2 hello2
+	$(MKINITRD) ramdisk/about.txt about.txt ramdisk/help.txt help.txt ramdisk/hello.s hello.s ramdisk/hello hello ramdisk/hello2.c hello2.c ramdisk/hello2 hello2
 
 kernel: library
-	$(GCC) $(GCCFLAGS) src/kernel/assert.c -o obj/assert.o
-	$(GCC) $(GCCFLAGS) src/kernel/kernel.c -o obj/kernel.o
-	$(ASM) $(ASMFLAGS) src/kernel/loader.s -o obj/loader.o
-	$(GCC) $(GCCFLAGS) src/kernel/gdt.c -o obj/gdt.o
-	$(ASM) $(ASMFLAGS) src/kernel/gdts.s -o obj/gdts.o
-	$(GCC) $(GCCFLAGS) src/kernel/idt.c -o obj/idt.o
-	$(ASM) $(ASMFLAGS) src/kernel/idts.s -o obj/idts.o
-	$(GCC) $(GCCFLAGS) src/kernel/isr.c -o obj/isr.o
-	$(ASM) $(ASMFLAGS) src/kernel/isrs.s -o obj/isrs.o
-	$(GCC) $(GCCFLAGS) src/kernel/irq.c -o obj/irq.o
-	$(ASM) $(ASMFLAGS) src/kernel/irqs.s -o obj/irqs.o
-	$(GCC) $(GCCFLAGS) src/kernel/pit.c -o obj/pit.o
-	$(GCC) $(GCCFLAGS) src/kernel/screen.c -o obj/screen.o
-	$(GCC) $(GCCFLAGS) src/kernel/kbd.c -o obj/kbd.o
-	$(GCC) $(GCCFLAGS) src/kernel/heap.c -o obj/heap.o
-	$(GCC) $(GCCFLAGS) src/kernel/paging.c -o obj/paging.o
-	$(GCC) $(GCCFLAGS) src/kernel/vfs.c -o obj/vfs.o
-	$(GCC) $(GCCFLAGS) src/kernel/initrd.c -o obj/initrd.o
-	$(GCC) $(GCCFLAGS) src/kernel/syscall.c -o obj/syscall.o
-	$(GCC) $(GCCFLAGS) src/kernel/task.c -o obj/task.o
-	$(ASM) $(ASMFLAGS) src/kernel/vbes.s -o obj/vbes.o
-	$(GCC) $(GCCFLAGS) src/kernel/vbe.c -o obj/vbe.o
-	$(GCC) $(GCCFLAGS) src/kernel/shell.c -o obj/shell.o
+	$(GCC) $(GCCFLAGS) kernel/assert.c -o kernel/assert.o
+	$(GCC) $(GCCFLAGS) kernel/kernel.c -o kernel/kernel.o
+	$(ASM) $(ASMFLAGS) kernel/loader.s -o kernel/loader.o
+	$(GCC) $(GCCFLAGS) kernel/gdt.c -o kernel/gdt.o
+	$(ASM) $(ASMFLAGS) kernel/gdts.s -o kernel/gdts.o
+	$(GCC) $(GCCFLAGS) kernel/idt.c -o kernel/idt.o
+	$(ASM) $(ASMFLAGS) kernel/idts.s -o kernel/idts.o
+	$(GCC) $(GCCFLAGS) kernel/isr.c -o kernel/isr.o
+	$(ASM) $(ASMFLAGS) kernel/isrs.s -o kernel/isrs.o
+	$(GCC) $(GCCFLAGS) kernel/irq.c -o kernel/irq.o
+	$(ASM) $(ASMFLAGS) kernel/irqs.s -o kernel/irqs.o
+	$(GCC) $(GCCFLAGS) kernel/pit.c -o kernel/pit.o
+	$(GCC) $(GCCFLAGS) kernel/screen.c -o kernel/screen.o
+	$(GCC) $(GCCFLAGS) kernel/kbd.c -o kernel/kbd.o
+	$(GCC) $(GCCFLAGS) kernel/heap.c -o kernel/heap.o
+	$(GCC) $(GCCFLAGS) kernel/paging.c -o kernel/paging.o
+	$(GCC) $(GCCFLAGS) kernel/vfs.c -o kernel/vfs.o
+	$(GCC) $(GCCFLAGS) kernel/initrd.c -o kernel/initrd.o
+	$(GCC) $(GCCFLAGS) kernel/syscall.c -o kernel/syscall.o
+	$(GCC) $(GCCFLAGS) kernel/task.c -o kernel/task.o
+	$(ASM) $(ASMFLAGS) kernel/vbes.s -o kernel/vbes.o
+	$(GCC) $(GCCFLAGS) kernel/vbe.c -o kernel/vbe.o
+	$(GCC) $(GCCFLAGS) kernel/shell.c -o kernel/shell.o
 	$(LD) $(LDFLAGS) \
-    obj/loader.o \
-    obj/kernel.o \
-    obj/assert.o \
-    obj/memory.o \
-    obj/string.o \
-    obj/cbuffer.o \
-    obj/stack.o \
-    obj/gdt.o \
-    obj/gdts.o \
-    obj/idt.o \
-    obj/idts.o \
-    obj/isr.o \
-    obj/isrs.o \
-    obj/irq.o \
-    obj/irqs.o \
-    obj/pit.o \
-    obj/screen.o \
-    obj/kbd.o \
-    obj/heap.o \
-    obj/paging.o \
-    obj/vfs.o \
-    obj/initrd.o \
-    obj/syscall.o \
-    obj/task.o \
-    obj/vbes.o \
-    obj/io.o \
-    obj/vbe.o \
-    obj/shell.o \
+    kernel/loader.o \
+    kernel/kernel.o \
+    kernel/assert.o \
+    lib/memory.o \
+    lib/string.o \
+    lib/cbuffer.o \
+    lib/stack.o \
+    kernel/gdt.o \
+    kernel/gdts.o \
+    kernel/idt.o \
+    kernel/idts.o \
+    kernel/isr.o \
+    kernel/isrs.o \
+    kernel/irq.o \
+    kernel/irqs.o \
+    kernel/pit.o \
+    kernel/screen.o \
+    kernel/kbd.o \
+    kernel/heap.o \
+    kernel/paging.o \
+    kernel/vfs.o \
+    kernel/initrd.o \
+    kernel/syscall.o \
+    kernel/task.o \
+    kernel/vbes.o \
+    lib/io.o \
+    kernel/vbe.o \
+    kernel/shell.o \
     -o root/boot/kernel
 
 library:
-	$(GCC) $(GCCFLAGS) src/lib/stack.c -o obj/stack.o
-	$(GCC) $(GCCFLAGS) src/lib/cbuffer.c -o obj/cbuffer.o
-	$(GCC) $(GCCFLAGS) src/lib/string.c -o obj/string.o
-	$(GCC) $(GCCFLAGS) src/lib/memory.c -o obj/memory.o
-	$(GCC) $(GCCFLAGS) src/lib/io.c -o obj/io.o
+	$(GCC) $(GCCFLAGS) lib/stack.c -o lib/stack.o
+	$(GCC) $(GCCFLAGS) lib/cbuffer.c -o lib/cbuffer.o
+	$(GCC) $(GCCFLAGS) lib/string.c -o lib/string.o
+	$(GCC) $(GCCFLAGS) lib/memory.c -o lib/memory.o
+	$(GCC) $(GCCFLAGS) lib/io.c -o lib/io.o
 
