@@ -32,7 +32,7 @@ void kbd_handler(registers_t *r)
 
     uint8_t scancode;
 
-    scancode = inb(0x60);
+    scancode = inb(IO_PORT_KEYBOARD);
 
     if (scancode == 0x2A)
         keyboard.toggleShift = 1;
