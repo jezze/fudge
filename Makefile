@@ -42,6 +42,7 @@ kernel: library
 	$(GCC) $(GCCFLAGS) kernel/kbd.c -o kernel/kbd.o
 	$(GCC) $(GCCFLAGS) kernel/heap.c -o kernel/heap.o
 	$(GCC) $(GCCFLAGS) kernel/paging.c -o kernel/paging.o
+	$(ASM) $(ASMFLAGS) kernel/pagings.s -o kernel/pagings.o
 	$(GCC) $(GCCFLAGS) kernel/vfs.c -o kernel/vfs.o
 	$(GCC) $(GCCFLAGS) kernel/initrd.c -o kernel/initrd.o
 	$(GCC) $(GCCFLAGS) kernel/syscall.c -o kernel/syscall.o
@@ -70,6 +71,7 @@ kernel: library
     kernel/kbd.o \
     kernel/heap.o \
     kernel/paging.o \
+    kernel/pagings.o \
     kernel/vfs.o \
     kernel/initrd.o \
     kernel/syscall.o \

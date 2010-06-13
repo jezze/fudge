@@ -108,15 +108,7 @@ void paging_set_directory(paging_directory_t *directory)
 
     current_directory = directory;
 
-    __asm__ __volatile__ ("mov %0, %%cr3" : : "r" (&directory->tablesPhysical));
-
-    uint32_t cr0;
-
-    __asm__ __volatile__ ("mov %%cr0, %0" : "=r" (cr0));
-
-    cr0 |= 0x80000000;
-
-    __asm__ __volatile__ ("mov %0, %%cr0" : : "r" (cr0));
+    paging_flush(directory->tablesPhysical);
 
 }
 
