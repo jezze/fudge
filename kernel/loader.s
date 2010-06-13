@@ -16,10 +16,10 @@ multiboot:
 
 global loader
 loader:
+    cli
     mov esp, stack
     push eax
     push ebx
-    cli
     call kernel_main
     hlt
 
