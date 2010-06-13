@@ -13,30 +13,27 @@ tlb_directory_t *current_directory = 0;
 uint32_t *frames;
 uint32_t framesNum;
 
-static void tlb_set_frame(uint32_t address)
+static void tlb_set_frame(uint32_t frame)
 {
 
-    uint32_t frame = address / TLB_FRAME_SIZE;
     uint32_t index = frame / 32;
     uint32_t off = frame % 32;
     frames[index] |= (0x1 << off);
 
 }
 
-static void tlb_unset_frame(uint32_t address)
+static void tlb_unset_frame(uint32_t frame)
 {
 
-    uint32_t frame = address / TLB_FRAME_SIZE;
     uint32_t index = frame / 32;
     uint32_t off = frame % 32;
     frames[index] &= ~(0x1 << off);
 
 }
 
-static uint32_t tlb_test_frame(uint32_t address)
+static uint32_t tlb_test_frame(uint32_t frame)
 {
 
-    uint32_t frame = address / TLB_FRAME_SIZE;
     uint32_t index = frame / 32;
     uint32_t off = frame % 32;
 
@@ -82,7 +79,7 @@ static void tlb_alloc_frame(tlb_page_t *page, uint8_t kernel, uint8_t writeable)
     if (index == (uint32_t)-1)
         PANIC("No frames free");
 
-    tlb_set_frame(index * TLB_FRAME_SIZE);
+    tlb_set_frame(index);
     page->present = 1;
     page->rw = (writeable) ? 1 : 0;
     page->user = (kernel) ? 0 : 1;
