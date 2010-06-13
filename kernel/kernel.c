@@ -70,19 +70,19 @@ void kernel_main(multiboot_header_t *header, uint32_t magic)
     gdt_init();
     idt_init();
     isr_init();
+    screen_init();
+
+    ASSERT(magic == 0x2BADB002);
+    ASSERT(header->modulesCount > 0);
+
     irq_init();
     pit_init();
     kbd_init();
-    screen_init();
-
-    // BE SURE INITRD MODULE IS LOADED
-    ASSERT(header->modulesCount > 0);
 
     heap_init(*((uint32_t *)(header->modulesAddresses + 4)));
-
-    // 16MB RAM
     tlb_init(0x1000000);
     syscall_init();
+
 
     kernel_memory(header);
     kernel_register_handlers();
