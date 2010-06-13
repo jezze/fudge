@@ -11,7 +11,7 @@
 #include <kernel/pit.h>
 #include <kernel/kbd.h>
 #include <kernel/heap.h>
-#include <kernel/paging.h>
+#include <kernel/tlb.h>
 #include <kernel/vfs.h>
 #include <kernel/initrd.h>
 #include <kernel/shell.h>
@@ -54,7 +54,7 @@ static void kernel_memory(multiboot_header_t *header)
 static void kernel_register_handlers()
 {
 
-    isr_register_handler(14, paging_handler);
+    isr_register_handler(14, tlb_handler);
     isr_register_handler(0x80, syscall_handler);
     
     irq_register_handler(0, pit_handler);
@@ -81,7 +81,7 @@ void kernel_main(multiboot_header_t *header, uint32_t magic)
     heap_init(*((uint32_t *)(header->modulesAddresses + 4)));
 
     // 16MB RAM
-    paging_init(0x1000000);
+    tlb_init(0x1000000);
     syscall_init();
 
     kernel_memory(header);
