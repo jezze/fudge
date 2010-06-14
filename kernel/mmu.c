@@ -81,8 +81,8 @@ static void mmu_alloc_frame(mmu_page_t *page, uint8_t usermode, uint8_t writeabl
 
     mmu_set_frame(index);
     page->present = 1;
-    page->writeable = (writeable) ? 1 : 0;
-    page->usermode = (usermode) ? 1 : 0;
+    page->writeable = writeable;
+    page->usermode = usermode;
     page->frame = index;
 
 }
