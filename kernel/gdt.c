@@ -6,16 +6,16 @@ gdt_entry_t gdt[GDT_TABLE_SIZE];
 gdt_ptr_t gdtp;
 tss_entry_t tss;
 
-void gdt_set_gate(int32_t num, uint32_t base, uint32_t limit, uint8_t access, uint8_t gran)
+void gdt_set_gate(int32_t index, uint32_t base, uint32_t limit, uint8_t access, uint8_t gran)
 {
 
-    gdt[num].base_low = (base & 0xFFFF);
-    gdt[num].base_middle = (base >> 16) & 0xFF;
-    gdt[num].base_high = (base >> 24) & 0xFF;
-    gdt[num].limit_low = (limit & 0xFFFF);
-    gdt[num].granularity = (limit >> 16) & 0x0F;
-    gdt[num].granularity |= (gran & 0xF0);
-    gdt[num].access = access;    
+    gdt[index].baseLow = (base & 0xFFFF);
+    gdt[index].baseMiddle = (base >> 16) & 0xFF;
+    gdt[index].baseHigh = (base >> 24) & 0xFF;
+    gdt[index].limitLow = (limit & 0xFFFF);
+    gdt[index].granularity = (limit >> 16) & 0x0F;
+    gdt[index].granularity |= (gran & 0xF0);
+    gdt[index].access = access;    
 
 }
 

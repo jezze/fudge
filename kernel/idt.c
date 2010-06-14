@@ -5,14 +5,14 @@
 idt_entry_t idt[IDT_TABLE_SIZE];
 idt_ptr_t idtp;
 
-void idt_set_gate(uint8_t num, uint32_t base, uint16_t sel, uint8_t flags)
+void idt_set_gate(uint8_t index, uint32_t base, uint16_t selector, uint8_t flags)
 {
 
-    idt[num].base_lo = (base & 0xFFFF);
-    idt[num].base_hi = (base >> 16) & 0xFFFF;
-    idt[num].sel = sel;
-    idt[num].always0 = 0;
-    idt[num].flags = flags;
+    idt[index].baseLow = (base & 0xFFFF);
+    idt[index].baseHigh = (base >> 16) & 0xFFFF;
+    idt[index].selector = selector;
+    idt[index].zero = 0;
+    idt[index].flags = flags;
 
 }
 

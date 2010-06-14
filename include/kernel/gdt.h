@@ -6,12 +6,12 @@
 typedef struct gdt_entry
 {
 
-    uint16_t limit_low;
-    uint16_t base_low;
-    uint8_t base_middle;
+    uint16_t limitLow;
+    uint16_t baseLow;
+    uint8_t baseMiddle;
     uint8_t access;
     uint8_t granularity;
-    uint8_t base_high;
+    uint8_t baseHigh;
 
 } __attribute__((packed)) gdt_entry_t;
 
@@ -26,7 +26,7 @@ typedef struct gdt_ptr
 typedef struct tss_entry
 {
 
-    uint32_t prev_tss;
+    uint32_t previous;
     uint32_t esp0;
     uint32_t ss0;
     uint32_t esp1;
