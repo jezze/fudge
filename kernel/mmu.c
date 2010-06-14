@@ -68,7 +68,7 @@ static uint32_t mmu_find_frame()
 
 }
 
-static void mmu_alloc_frame(mmu_page_t *page, uint8_t kernel, uint8_t writeable)
+static void mmu_alloc_frame(mmu_page_t *page, uint8_t usermode, uint8_t writeable)
 {
 
     if (page->frame)
@@ -81,8 +81,8 @@ static void mmu_alloc_frame(mmu_page_t *page, uint8_t kernel, uint8_t writeable)
 
     mmu_set_frame(index);
     page->present = 1;
-    page->rw = (writeable) ? 1 : 0;
-    page->user = (kernel) ? 0 : 1;
+    page->writeable = (writeable) ? 1 : 0;
+    page->usermode = (usermode) ? 1 : 0;
     page->frame = index;
 
 }
@@ -187,7 +187,7 @@ static void mmu_init_kernel()
     uint32_t i;
 
     for (i = 0; i < heap_address; i += MMU_FRAME_SIZE)
-        mmu_alloc_frame(mmu_get_page(i, 1, kernel_directory), 0, 0);
+        mmu_alloc_frame(mmu_get_page(i, 1, kernel_directory), 1, 0);
 
 }
 

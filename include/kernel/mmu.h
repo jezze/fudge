@@ -11,13 +11,13 @@
 typedef struct mmu_page
 {
 
-    uint32_t present : 1;
-    uint32_t rw : 1;
-    uint32_t user : 1;
-    uint32_t accessed : 1;
-    uint32_t dirty : 1;
-    uint32_t unused : 7;
-    uint32_t frame : 20;
+    uint32_t present   : 1;
+    uint32_t writeable : 1;
+    uint32_t usermode  : 1;
+    uint32_t accessed  : 1;
+    uint32_t dirty     : 1;
+    uint32_t unused    : 7;
+    uint32_t frame     : 20;
 
 } mmu_page_t;
 
