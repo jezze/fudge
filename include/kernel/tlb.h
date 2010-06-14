@@ -37,7 +37,7 @@ typedef struct tlb_directory
 
 } tlb_directory_t;
 
-extern void tlb_flush(tlb_directory_t *directory);
+extern void tlb_flush(uint32_t *tablesPhysical);
 
 extern void tlb_set_directory(tlb_directory_t *directory);
 extern void tlb_handler(registers_t *r);
