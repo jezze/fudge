@@ -114,21 +114,22 @@ static mmu_page_t *mmu_get_page(uint32_t address, uint8_t make, mmu_directory_t 
 
     address /= MMU_FRAME_SIZE;
 
-    uint32_t index = address / 1024;
+    uint32_t tableIndex = address / 1024;
+    uint32_t pageIndex = address % 1024;
 
-    if (directory->tables[index])
-        return &directory->tables[index]->pages[address % 1024];
+    if (directory->tables[tableIndex])
+        return &directory->tables[tableIndex]->pages[pageIndex];
 
     if (make)
     {
 
         uint32_t tmp;
 
-        directory->tables[index] = (mmu_table_t *)kmalloc_physical_aligned(sizeof (mmu_table_t), &tmp);
-        memory_set(directory->tables[index], 0, MMU_FRAME_SIZE);
-        directory->tablesPhysical[index] = tmp | 0x7;
+        directory->tables[tableIndex] = (mmu_table_t *)kmalloc_physical_aligned(sizeof (mmu_table_t), &tmp);
+        memory_set(directory->tables[tableIndex], 0, MMU_FRAME_SIZE);
+        directory->tablesPhysical[tableIndex] = tmp | 0x7;
 
-        return &directory->tables[index]->pages[address % 1024];
+        return &directory->tables[tableIndex]->pages[pageIndex];
 
     }
 
