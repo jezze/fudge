@@ -171,9 +171,9 @@ static void mmu_init_frames(uint32_t size)
 {
 
     framesNum = size / MMU_FRAME_SIZE;
-    frames = (uint32_t *)kmalloc(framesNum / 32);
+    frames = (uint32_t *)kmalloc(framesNum);
 
-    memory_set(frames, 0, framesNum / 32);
+    memory_set(frames, 0, framesNum);
 
 }
 
