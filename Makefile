@@ -14,7 +14,7 @@ all: kernel cd
 
 cd:
 	@echo "Creating iso..."
-	$(ISO) $(ISOFLAGS) -o fudge.iso root
+	@$(ISO) $(ISOFLAGS) -o fudge.iso root
 
 clean:
 	@echo "Cleaning..."
