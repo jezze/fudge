@@ -46,7 +46,7 @@ static uint32_t mmu_find_frame()
 
     uint32_t i, j;
 
-    for (i = 0; i < (framesNum / 32); i++)
+    for (i = 0; i < framesNum; i++)
     {
 
         if (frames[i] != 0xFFFFFFFF)
