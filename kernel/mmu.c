@@ -5,15 +5,15 @@
 #include <kernel/regs.h>
 #include <kernel/isr.h>
 #include <kernel/heap.h>
-#include <kernel/tlb.h>
+#include <kernel/mmu.h>
 
-tlb_directory_t *kernel_directory = 0;
-tlb_directory_t *current_directory = 0;
+mmu_directory_t *kernel_directory = 0;
+mmu_directory_t *current_directory = 0;
 
 uint32_t *frames;
 uint32_t framesNum;
 
-static void tlb_set_frame(uint32_t frame)
+static void mmu_set_frame(uint32_t frame)
 {
 
     uint32_t index = frame / 32;
@@ -22,7 +22,7 @@ static void tlb_set_frame(uint32_t frame)
 
 }
 
-static void tlb_unset_frame(uint32_t frame)
+static void mmu_unset_frame(uint32_t frame)
 {
 
     uint32_t index = frame / 32;
@@ -31,7 +31,7 @@ static void tlb_unset_frame(uint32_t frame)
 
 }
 
-static uint32_t tlb_test_frame(uint32_t frame)
+static uint32_t mmu_test_frame(uint32_t frame)
 {
 
     uint32_t index = frame / 32;
@@ -41,7 +41,7 @@ static uint32_t tlb_test_frame(uint32_t frame)
 
 }
 
-static uint32_t tlb_find_frame()
+static uint32_t mmu_find_frame()
 {
 
     uint32_t i, j;
@@ -68,18 +68,18 @@ static uint32_t tlb_find_frame()
 
 }
 
-static void tlb_alloc_frame(tlb_page_t *page, uint8_t kernel, uint8_t writeable)
+static void mmu_alloc_frame(mmu_page_t *page, uint8_t kernel, uint8_t writeable)
 {
 
     if (page->frame)
         return;
 
-    uint32_t index = tlb_find_frame();
+    uint32_t index = mmu_find_frame();
 
     if (index == (uint32_t)-1)
         PANIC("No frames free");
 
-    tlb_set_frame(index);
+    mmu_set_frame(index);
     page->present = 1;
     page->rw = (writeable) ? 1 : 0;
     page->user = (kernel) ? 0 : 1;
@@ -87,7 +87,7 @@ static void tlb_alloc_frame(tlb_page_t *page, uint8_t kernel, uint8_t writeable)
 
 }
 
-static void tlb_free_frame(tlb_page_t *page)
+static void mmu_free_frame(mmu_page_t *page)
 {
 
     uint32_t frame;
@@ -95,24 +95,24 @@ static void tlb_free_frame(tlb_page_t *page)
     if (!(frame = page->frame))
         return;
 
-    tlb_unset_frame(frame);
+    mmu_unset_frame(frame);
     page->frame = 0;
 
 }
 
-void tlb_set_directory(tlb_directory_t *directory)
+void mmu_set_directory(mmu_directory_t *directory)
 {
 
     current_directory = directory;
 
-    tlb_flush(directory->tablesPhysical);
+    mmu_flush(directory->tablesPhysical);
 
 }
 
-static tlb_page_t *tlb_get_page(uint32_t address, uint8_t make, tlb_directory_t *directory)
+static mmu_page_t *mmu_get_page(uint32_t address, uint8_t make, mmu_directory_t *directory)
 {
 
-    address /= TLB_FRAME_SIZE;
+    address /= MMU_FRAME_SIZE;
 
     uint32_t index = address / 1024;
 
@@ -124,8 +124,8 @@ static tlb_page_t *tlb_get_page(uint32_t address, uint8_t make, tlb_directory_t 
 
         uint32_t tmp;
 
-        directory->tables[index] = (tlb_table_t *)kmalloc_physical_aligned(sizeof (tlb_table_t), &tmp);
-        memory_set(directory->tables[index], 0, TLB_FRAME_SIZE);
+        directory->tables[index] = (mmu_table_t *)kmalloc_physical_aligned(sizeof (mmu_table_t), &tmp);
+        memory_set(directory->tables[index], 0, MMU_FRAME_SIZE);
         directory->tablesPhysical[index] = tmp | 0x7;
 
         return &directory->tables[index]->pages[address % 1024];
@@ -136,7 +136,7 @@ static tlb_page_t *tlb_get_page(uint32_t address, uint8_t make, tlb_directory_t 
 
 }
 
-void tlb_handler(registers_t *r)
+void mmu_handler(registers_t *r)
 {
 
     uint32_t address;
@@ -145,19 +145,19 @@ void tlb_handler(registers_t *r)
 
     screen_puts("PAGE FAULT (");
 
-    if (!(r->err_code & TLB_ERROR_PRESENT))
+    if (!(r->err_code & MMU_ERROR_PRESENT))
         screen_puts("present");
 
-    if (r->err_code & TLB_ERROR_RW)
+    if (r->err_code & MMU_ERROR_RW)
         screen_puts("read-only");
 
-    if (r->err_code & TLB_ERROR_USER)
+    if (r->err_code & MMU_ERROR_USER)
         screen_puts("user-mode");
 
-    if (r->err_code & TLB_ERROR_RESERVED)
+    if (r->err_code & MMU_ERROR_RESERVED)
         screen_puts("reserved");
 
-    if (r->err_code & TLB_ERROR_FETCH)
+    if (r->err_code & MMU_ERROR_FETCH)
         screen_puts("fetch");
 
     screen_puts(") at 0x");
@@ -168,35 +168,35 @@ void tlb_handler(registers_t *r)
 
 }
 
-static void tlb_init_frames(uint32_t size)
+static void mmu_init_frames(uint32_t size)
 {
 
-    framesNum = size / TLB_FRAME_SIZE;
+    framesNum = size / MMU_FRAME_SIZE;
     frames = (uint32_t *)kmalloc(framesNum / 32);
 
     memory_set(frames, 0, framesNum / 32);
 
 }
 
-static void tlb_init_kernel()
+static void mmu_init_kernel()
 {
 
-    kernel_directory = (tlb_directory_t *)kmalloc_aligned(sizeof (tlb_directory_t));
-    memory_set(kernel_directory, 0, sizeof (tlb_directory_t));
+    kernel_directory = (mmu_directory_t *)kmalloc_aligned(sizeof (mmu_directory_t));
+    memory_set(kernel_directory, 0, sizeof (mmu_directory_t));
 
     uint32_t i;
 
-    for (i = 0; i < heap_address; i += TLB_FRAME_SIZE)
-        tlb_alloc_frame(tlb_get_page(i, 1, kernel_directory), 0, 0);
+    for (i = 0; i < heap_address; i += MMU_FRAME_SIZE)
+        mmu_alloc_frame(mmu_get_page(i, 1, kernel_directory), 0, 0);
 
 }
 
-void tlb_init(uint32_t size)
+void mmu_init(uint32_t size)
 {
 
-    tlb_init_frames(size);
-    tlb_init_kernel();
-    tlb_set_directory(kernel_directory);
+    mmu_init_frames(size);
+    mmu_init_kernel();
+    mmu_set_directory(kernel_directory);
 
 }
 

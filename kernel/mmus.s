@@ -1,5 +1,5 @@
-global tlb_flush
-tlb_flush:
+global mmu_flush
+mmu_flush:
     push ebp
     mov ebp, esp
     mov eax, [ebp + 8]

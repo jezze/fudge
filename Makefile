@@ -47,8 +47,8 @@ kernel: library
 	@$(GCC) $(GCCFLAGS) kernel/screen.c -o kernel/screen.o
 	@$(GCC) $(GCCFLAGS) kernel/kbd.c -o kernel/kbd.o
 	@$(GCC) $(GCCFLAGS) kernel/heap.c -o kernel/heap.o
-	@$(GCC) $(GCCFLAGS) kernel/tlb.c -o kernel/tlb.o
-	@$(ASM) $(ASMFLAGS) kernel/tlbs.s -o kernel/tlbs.o
+	@$(GCC) $(GCCFLAGS) kernel/mmu.c -o kernel/mmu.o
+	@$(ASM) $(ASMFLAGS) kernel/mmus.s -o kernel/mmus.o
 	@$(GCC) $(GCCFLAGS) kernel/vfs.c -o kernel/vfs.o
 	@$(GCC) $(GCCFLAGS) kernel/initrd.c -o kernel/initrd.o
 	@$(GCC) $(GCCFLAGS) kernel/syscall.c -o kernel/syscall.o
@@ -76,8 +76,8 @@ kernel: library
     kernel/screen.o \
     kernel/kbd.o \
     kernel/heap.o \
-    kernel/tlb.o \
-    kernel/tlbs.o \
+    kernel/mmu.o \
+    kernel/mmus.o \
     kernel/vfs.o \
     kernel/initrd.o \
     kernel/syscall.o \
