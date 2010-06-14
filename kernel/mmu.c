@@ -49,16 +49,14 @@ static uint32_t mmu_find_frame()
     for (i = 0; i < framesNum; i++)
     {
 
-        if (frames[i] != 0xFFFFFFFF)
+        if (frames[i] == 0xFFFFFFFF)
+            continue;
+
+        for (j = 0; j < 32; j++)
         {
 
-            for (j = 0; j < 32; j++)
-            {
-
-                if (!(frames[i] & (0x1 << j)))
-                    return (i * 32 + j);
-
-            }
+            if (!(frames[i] & (0x1 << j)))
+                return (i * 32 + j);
 
         }
 
