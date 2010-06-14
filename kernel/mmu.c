@@ -13,31 +13,31 @@ mmu_directory_t *current_directory = 0;
 uint32_t *frames;
 uint32_t framesNum;
 
-static void mmu_set_frame(uint32_t frame)
+static void mmu_set_bit(uint32_t address)
 {
 
-    uint32_t index = frame / 32;
-    uint32_t off = frame % 32;
-    frames[index] |= (0x1 << off);
+    uint32_t index = address / 32;
+    uint32_t offset = address % 32;
+    frames[index] |= (0x1 << offset);
 
 }
 
-static void mmu_unset_frame(uint32_t frame)
+static void mmu_unset_bit(uint32_t address)
 {
 
-    uint32_t index = frame / 32;
-    uint32_t off = frame % 32;
-    frames[index] &= ~(0x1 << off);
+    uint32_t index = address / 32;
+    uint32_t offset = address % 32;
+    frames[index] &= ~(0x1 << offset);
 
 }
 
-static uint32_t mmu_test_frame(uint32_t frame)
+static uint32_t mmu_test_bit(uint32_t address)
 {
 
-    uint32_t index = frame / 32;
-    uint32_t off = frame % 32;
+    uint32_t index = address / 32;
+    uint32_t offset = address % 32;
 
-    return (frames[index] & (0x1 << off));
+    return (frames[index] & (0x1 << offset));
 
 }
 
@@ -77,7 +77,7 @@ static void mmu_alloc_frame(mmu_page_t *page, uint8_t usermode, uint8_t writeabl
     if (index == (uint32_t)-1)
         PANIC("No frames free");
 
-    mmu_set_frame(index);
+    mmu_set_bit(index);
     page->present = 1;
     page->writeable = writeable;
     page->usermode = usermode;
@@ -93,7 +93,7 @@ static void mmu_free_frame(mmu_page_t *page)
     if (!(frame = page->frame))
         return;
 
-    mmu_unset_frame(frame);
+    mmu_unset_bit(frame);
     page->frame = 0;
 
 }
