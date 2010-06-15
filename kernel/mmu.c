@@ -89,7 +89,7 @@ static void mmu_init_directory_table()
         for (j = 0; j < 1024; j++)
         {
 
-            mmu_init_page_entry(pageTable + i, i * j * 0x1000);
+            mmu_init_page_entry(pageTable + i, i * 1024 * 0x1000 + j * 0x1000);
 
         }
 
