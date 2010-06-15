@@ -79,19 +79,20 @@ static void mmu_init_directory_entry(mmu_directory_entry_t *entry, uint32_t addr
 static void mmu_init_directory_table()
 {
 
-    int i;
-
-    for (i = 0; i < 1024; i++)
-    {
-
-        mmu_init_page_entry(pageTable + i, i * 0x1000);
-
-    }
+    int i, j ;
 
     for (i = 0; i < 1024; i++)
     {
 
         mmu_init_directory_entry(directoryTable, pageTable + i);
+
+        for (j = 0; j < 1024; j++)
+        {
+
+            mmu_init_page_entry(pageTable + i, i * j * 0x1000);
+
+        }
+
 
     }
 
