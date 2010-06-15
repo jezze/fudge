@@ -1,12 +1,13 @@
 #ifndef MMU_H
 #define MMU_H
 
-#define MMU_FRAME_SIZE     0x1000
 #define MMU_ERROR_PRESENT  0x01
 #define MMU_ERROR_RW       0x02
 #define MMU_ERROR_USER     0x04
 #define MMU_ERROR_RESERVED 0x08
 #define MMU_ERROR_FETCH    0x16
+#define MMU_FRAME_SIZE     0x1000
+#define MMU_PAGE_SIZE      0x1000
 
 typedef struct mmu_page
 {

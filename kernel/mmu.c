@@ -10,8 +10,7 @@
 mmu_directory_t *kernel_directory = 0;
 mmu_directory_t *current_directory = 0;
 
-uint32_t *frames;
-uint32_t framesNum;
+uint32_t frames[0x1000];
 
 static void mmu_set_bit(uint32_t address)
 {
@@ -46,7 +45,7 @@ static uint32_t mmu_find_frame()
 
     uint32_t i, j;
 
-    for (i = 0; i < framesNum; i++)
+    for (i = 0; i < MMU_FRAME_SIZE; i++)
     {
 
         if (frames[i] == 0xFFFFFFFF)
@@ -110,7 +109,7 @@ void mmu_set_directory(mmu_directory_t *directory)
 static mmu_page_t *mmu_get_page(uint32_t address, uint8_t make, mmu_directory_t *directory)
 {
 
-    address /= MMU_FRAME_SIZE;
+    address /= MMU_PAGE_SIZE;
 
     uint32_t tableIndex = address / 1024;
     uint32_t pageIndex = address % 1024;
@@ -124,7 +123,7 @@ static mmu_page_t *mmu_get_page(uint32_t address, uint8_t make, mmu_directory_t 
         uint32_t tmp;
 
         directory->tables[tableIndex] = (mmu_table_t *)kmalloc_physical_aligned(sizeof (mmu_table_t), &tmp);
-        memory_set(directory->tables[tableIndex], 0, MMU_FRAME_SIZE);
+        memory_set(directory->tables[tableIndex], 0, MMU_PAGE_SIZE);
         directory->tablesPhysical[tableIndex] = tmp | 0x7;
 
         return &directory->tables[tableIndex]->pages[pageIndex];
@@ -170,10 +169,7 @@ void mmu_handler(registers_t *r)
 static void mmu_init_frames(uint32_t size)
 {
 
-    framesNum = size / MMU_FRAME_SIZE;
-    frames = (uint32_t *)kmalloc(framesNum);
-
-    memory_set(frames, 0, framesNum);
+    memory_set(frames, 0, MMU_FRAME_SIZE);
 
 }
 
@@ -185,7 +181,7 @@ static void mmu_init_kernel()
 
     uint32_t i;
 
-    for (i = 0; i < heap_address; i += MMU_FRAME_SIZE)
+    for (i = 0; i < heap_address; i += MMU_PAGE_SIZE)
         mmu_alloc_frame(mmu_get_page(i, 1, kernel_directory), 1, 0);
 
 }
