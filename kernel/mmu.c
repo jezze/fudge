@@ -107,8 +107,7 @@ void mmu_init(uint32_t size)
 {
 
     mmu_init_directory();
-    mmu_write_cr3(pageDirectory);
-    mmu_write_cr0(mmu_read_cr0() | 0x8000000);
+    mmu_flush(pageDirectory);
 
 }
 
