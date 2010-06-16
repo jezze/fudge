@@ -47,6 +47,7 @@ typedef struct mmu_directory_entry
 extern void mmu_flush(mmu_directory_entry_t *directory);
 extern uint32_t mmu_read_cr0();
 extern void mmu_write_cr0(uint32_t value);
+extern uint32_t mmu_read_cr2();
 extern uint32_t mmu_read_cr3();
 extern void mmu_write_cr3(uint32_t value);
 

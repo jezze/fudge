@@ -15,7 +15,7 @@ void mmu_handler(registers_t *r)
 
     uint32_t address;
 
-    __asm__ __volatile__ ("mov %%cr2, %0" : "=r" (address));
+    address = mmu_read_cr2();
 
     screen_puts("PAGE FAULT (");
 
