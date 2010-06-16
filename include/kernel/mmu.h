@@ -27,13 +27,6 @@ typedef struct mmu_table_entry
 
 } mmu_table_entry_t;
 
-typedef struct mmu_table
-{
-
-    mmu_table_entry_t *entries[MMU_PAGE_TABLE_SIZE];
-
-} mmu_table_t;
-
 typedef struct mmu_directory_entry
 {
 
@@ -51,14 +44,11 @@ typedef struct mmu_directory_entry
 
 } mmu_directory_entry_t;
 
-typedef struct mmu_directory
-{
-
-    mmu_directory_entry_t *entries[MMU_PAGE_DIRECTORY_SIZE];
-
-} mmu_directory_t;
-
 extern void mmu_flush(mmu_directory_entry_t *directory);
+extern uint32_t mmu_read_cr0();
+extern void mmu_write_cr0(uint32_t value);
+extern uint32_t mmu_read_cr3();
+extern void mmu_write_cr3(uint32_t value);
 
 extern void mmu_handler(registers_t *r);
 extern void mmu_init();

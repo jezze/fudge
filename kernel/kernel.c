@@ -80,7 +80,7 @@ void kernel_main(multiboot_header_t *header, uint32_t magic)
     kbd_init();
 
     heap_init(*((uint32_t *)(header->modulesAddresses + 4)));
-//    mmu_init(0x1000000);
+    mmu_init(0x1000000);
     syscall_init();
 
     kernel_memory(header);

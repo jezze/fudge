@@ -7,8 +7,8 @@
 #include <kernel/heap.h>
 #include <kernel/mmu.h>
 
-mmu_directory_entry_t *pageDirectory = 0x00100000;
-mmu_table_entry_t *pageTable = 0x00200000;
+uint32_t *pageDirectory = 0x9C000;
+uint32_t *pageTable = 0x9D000;
 
 void mmu_handler(registers_t *r)
 {
@@ -79,19 +79,25 @@ static void mmu_init_directory_entry(mmu_directory_entry_t *entry, uint32_t addr
 static void mmu_init_directory()
 {
 
-    int i, j;
+    uint32_t address = 0;
 
-    for (i = 0; i < MMU_PAGE_DIRECTORY_SIZE; i++)
+    uint32_t i;
+
+    for (i = 0; i < 1024; i++)
     {
 
-        for (j = 0; j < MMU_PAGE_TABLE_SIZE; j++)
-        {
+        pageTable[i] = address | 3;
+        address = address + 4096;
 
-            mmu_init_directory_entry(pageDirectory + i, pageTable + i * MMU_PAGE_DIRECTORY_SIZE + j);
-            mmu_init_table_entry(pageTable + i, i * MMU_PAGE_TABLE_SIZE * MMU_PAGE_SIZE + j * MMU_PAGE_SIZE);
+    }
 
-        }
+    pageDirectory[0] = pageTable;
+    pageDirectory[0] = pageDirectory[0] | 3;
 
+    for (i = 1; i < 1024; i++)
+    {
+
+        pageDirectory[i] = 0 | 2;
 
     }
 
@@ -101,7 +107,8 @@ void mmu_init(uint32_t size)
 {
 
     mmu_init_directory();
-    mmu_flush(pageDirectory);
+    mmu_write_cr3(pageDirectory);
+    mmu_write_cr0(mmu_read_cr0() | 0x8000000);
 
 }
 
