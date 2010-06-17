@@ -59,11 +59,11 @@ static void kernel_memory(multiboot_header_t *header)
 static void kernel_register_handlers()
 {
 
-    isr_register_handler(14, mmu_handler);
+    isr_register_handler(0x0E, mmu_handler);
     isr_register_handler(0x80, syscall_handler);
     
-    irq_register_handler(0, pit_handler);
-    irq_register_handler(1, kbd_handler);
+    irq_register_handler(0x00, pit_handler);
+    irq_register_handler(0x01, kbd_handler);
 
     isr_enable();
 
