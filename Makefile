@@ -49,6 +49,8 @@ kernel: library
 	@$(GCC) $(GCCFLAGS) kernel/heap.c -o kernel/heap.o
 	@$(GCC) $(GCCFLAGS) kernel/mmu.c -o kernel/mmu.o
 	@$(ASM) $(ASMFLAGS) kernel/mmus.s -o kernel/mmus.o
+	@$(GCC) $(GCCFLAGS) kernel/cpu.c -o kernel/cpu.o
+	@$(ASM) $(ASMFLAGS) kernel/cpus.s -o kernel/cpus.o
 	@$(GCC) $(GCCFLAGS) kernel/vfs.c -o kernel/vfs.o
 	@$(GCC) $(GCCFLAGS) kernel/initrd.c -o kernel/initrd.o
 	@$(GCC) $(GCCFLAGS) kernel/syscall.c -o kernel/syscall.o
@@ -78,6 +80,8 @@ kernel: library
     kernel/heap.o \
     kernel/mmu.o \
     kernel/mmus.o \
+    kernel/cpu.o \
+    kernel/cpus.o \
     kernel/vfs.o \
     kernel/initrd.o \
     kernel/syscall.o \

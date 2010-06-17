@@ -12,6 +12,7 @@
 #include <kernel/kbd.h>
 #include <kernel/heap.h>
 #include <kernel/mmu.h>
+#include <kernel/cpu.h>
 #include <kernel/vfs.h>
 #include <kernel/initrd.h>
 #include <kernel/shell.h>
@@ -78,6 +79,8 @@ void kernel_main(multiboot_header_t *header, uint32_t magic)
     irq_init();
     pit_init();
     kbd_init();
+
+    cpu_init();
 
     heap_init(*((uint32_t *)(header->modulesAddresses + 4)));
     mmu_init(0x1000000);
