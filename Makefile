@@ -65,24 +65,24 @@ kernel: library i386
     kernel/arch/i386/loader.o \
     kernel/arch/i386/mmu.o \
     kernel/arch/i386/vbe.o \
-    kernel/kernel.o \
     kernel/assert.o \
+    kernel/cpu.o \
     kernel/gdt.o \
+    kernel/heap.o \
     kernel/idt.o \
-    kernel/isr.o \
+    kernel/initrd.o \
     kernel/irq.o \
+    kernel/isr.o \
+    kernel/kbd.o \
+    kernel/kernel.o \
+    kernel/mmu.o \
     kernel/pit.o \
     kernel/screen.o \
-    kernel/kbd.o \
-    kernel/heap.o \
-    kernel/mmu.o \
-    kernel/cpu.o \
-    kernel/vfs.o \
-    kernel/initrd.o \
+    kernel/shell.o \
     kernel/syscall.o \
     kernel/task.o \
     kernel/vbe.o \
-    kernel/shell.o \
+    kernel/vfs.o \
     -o root/boot/kernel
 
 i386:
