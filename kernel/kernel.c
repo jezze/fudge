@@ -80,17 +80,16 @@ void kernel_main(multiboot_header_t *header, uint32_t magic)
     pit_init();
     kbd_init();
 
-    cpu_init();
-
     heap_init(*((uint32_t *)(header->modulesAddresses + 4)));
     mmu_init(0x1000000);
     syscall_init();
 
-    kernel_memory(header);
     kernel_register_handlers();
+    kernel_memory(header);
 
     fsRoot = initrd_init(*((uint32_t *)header->modulesAddresses));
 
+    cpu_init();
     shell_init();
 
     for (;;);

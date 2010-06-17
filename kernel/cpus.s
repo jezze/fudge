@@ -13,3 +13,15 @@ cpu_check_cpuid:
     and eax, 1
     retn
 
+global cpu_get_vendor
+cpu_get_vendor:
+    push ebp
+    mov ebp, esp
+    mov eax, 0x0
+    cpuid
+    ;mov [ebp + 8], ebx
+    ;mov [ebp + 12], edx
+    ;mov [ebp + 16], ecx
+    pop ebp
+    retn
+
