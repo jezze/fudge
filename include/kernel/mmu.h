@@ -1,14 +1,16 @@
 #ifndef MMU_H
 #define MMU_H
 
-#define MMU_ERROR_PRESENT       0x01
-#define MMU_ERROR_RW            0x02
-#define MMU_ERROR_USER          0x04
-#define MMU_ERROR_RESERVED      0x08
-#define MMU_ERROR_FETCH         0x16
-#define MMU_PAGE_SIZE           0x1000
-#define MMU_PAGE_DIRECTORY_SIZE 1024
-#define MMU_PAGE_TABLE_SIZE     1024
+#define MMU_ERROR_PRESENT          0x01
+#define MMU_ERROR_RW               0x02
+#define MMU_ERROR_USER             0x04
+#define MMU_ERROR_RESERVED         0x08
+#define MMU_ERROR_FETCH            0x16
+#define MMU_PAGE_SIZE              0x1000
+#define MMU_PAGE_DIRECTORY_ADDRESS 0x9C000;
+#define MMU_PAGE_DIRECTORY_SIZE    1024
+#define MMU_PAGE_TABLE_ADDRESS     0x9D000;
+#define MMU_PAGE_TABLE_SIZE        1024
 
 typedef struct mmu_table_entry
 {

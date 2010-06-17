@@ -7,8 +7,8 @@
 #include <kernel/heap.h>
 #include <kernel/mmu.h>
 
-uint32_t *pageDirectory = 0x9C000;
-uint32_t *pageTable = 0x9D000;
+uint32_t *pageDirectory = MMU_PAGE_DIRECTORY_ADDRESS;
+uint32_t *pageTable = MMU_PAGE_TABLE_ADDRESS;
 
 void mmu_handler(registers_t *r)
 {
