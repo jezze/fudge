@@ -17,7 +17,7 @@
 
 extern uint32_t cpu_check_cpuid();
 
-extern void cpu_get_vendor();
+extern void cpu_get_vendor(char *destination);
 extern void cpu_init();
 
 #endif

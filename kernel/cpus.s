@@ -17,11 +17,14 @@ global cpu_get_vendor
 cpu_get_vendor:
     push ebp
     mov ebp, esp
+    push edi
+    mov edi, [ebp + 8]
     mov eax, 0x0
     cpuid
-    ;mov [ebp + 8], ebx
-    ;mov [ebp + 12], edx
-    ;mov [ebp + 16], ecx
+    mov [edi + 0], ebx
+    mov [edi + 4], edx
+    mov [edi + 8], ecx
+    pop edi
     pop ebp
     retn
 
