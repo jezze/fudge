@@ -6,8 +6,10 @@
 void cpu_init()
 {
 
-    if (cpu_check_cpuid())
-        screen_puts("CPU\n");
+    if (!cpu_check_cpuid())
+        return;
+
+    screen_puts("CPU\n");
 
     char vendor[12];
 
