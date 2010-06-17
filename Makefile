@@ -8,7 +8,7 @@ ISO=genisoimage
 ISOFLAGS=-R -b boot/grub/stage2_eltorito -no-emul-boot -boot-load-size 4 -boot-info-table 
 MKINITRD=./tools/mkinitrd
 
-.PHONY: all kernel library cd innitrd clean
+.PHONY: all i386 kernel library cd innitrd clean
 
 all: kernel cd
 
@@ -20,6 +20,7 @@ clean:
 	@echo "Cleaning..."
 	@rm -f lib/*.o
 	@rm -f kernel/*.o
+	@rm -f kernel/arch/i386/*.o
 	@rm -f tools/mkinitrd
 	@rm -f root/boot/kernel
 	@rm -f root/boot/initrd
@@ -30,16 +31,8 @@ initrd:
 	@$(GCC) -O2 tools/mkinitrd.c -o tools/mkinitrd
 	$(MKINITRD) ramdisk/about.txt about.txt ramdisk/help.txt help.txt ramdisk/hello.s hello.s ramdisk/hello hello ramdisk/hello2.c hello2.c ramdisk/hello2 hello2
 
-kernel: library
+kernel: library i386
 	@echo "Building kernel..."
-	@$(ASM) $(ASMFLAGS) kernel/cpus.s -o kernel/cpus.o
-	@$(ASM) $(ASMFLAGS) kernel/gdts.s -o kernel/gdts.o
-	@$(ASM) $(ASMFLAGS) kernel/idts.s -o kernel/idts.o
-	@$(ASM) $(ASMFLAGS) kernel/irqs.s -o kernel/irqs.o
-	@$(ASM) $(ASMFLAGS) kernel/isrs.s -o kernel/isrs.o
-	@$(ASM) $(ASMFLAGS) kernel/loader.s -o kernel/loader.o
-	@$(ASM) $(ASMFLAGS) kernel/mmus.s -o kernel/mmus.o
-	@$(ASM) $(ASMFLAGS) kernel/vbes.s -o kernel/vbes.o
 	@$(GCC) $(GCCFLAGS) kernel/assert.c -o kernel/assert.o
 	@$(GCC) $(GCCFLAGS) kernel/cpu.c -o kernel/cpu.o
 	@$(GCC) $(GCCFLAGS) kernel/gdt.c -o kernel/gdt.o
@@ -64,33 +57,44 @@ kernel: library
     lib/memory.o \
     lib/stack.o \
     lib/string.o \
-    kernel/loader.o \
+    kernel/arch/i386/cpu.o \
+    kernel/arch/i386/gdt.o \
+    kernel/arch/i386/idt.o \
+    kernel/arch/i386/irq.o \
+    kernel/arch/i386/isr.o \
+    kernel/arch/i386/loader.o \
+    kernel/arch/i386/mmu.o \
+    kernel/arch/i386/vbe.o \
     kernel/kernel.o \
     kernel/assert.o \
     kernel/gdt.o \
-    kernel/gdts.o \
     kernel/idt.o \
-    kernel/idts.o \
     kernel/isr.o \
-    kernel/isrs.o \
     kernel/irq.o \
-    kernel/irqs.o \
     kernel/pit.o \
     kernel/screen.o \
     kernel/kbd.o \
     kernel/heap.o \
     kernel/mmu.o \
-    kernel/mmus.o \
     kernel/cpu.o \
-    kernel/cpus.o \
     kernel/vfs.o \
     kernel/initrd.o \
     kernel/syscall.o \
     kernel/task.o \
-    kernel/vbes.o \
     kernel/vbe.o \
     kernel/shell.o \
     -o root/boot/kernel
+
+i386:
+	@echo "Building i386..."
+	@$(ASM) $(ASMFLAGS) kernel/arch/i386/cpu.s -o kernel/arch/i386/cpu.o
+	@$(ASM) $(ASMFLAGS) kernel/arch/i386/gdt.s -o kernel/arch/i386/gdt.o
+	@$(ASM) $(ASMFLAGS) kernel/arch/i386/idt.s -o kernel/arch/i386/idt.o
+	@$(ASM) $(ASMFLAGS) kernel/arch/i386/irq.s -o kernel/arch/i386/irq.o
+	@$(ASM) $(ASMFLAGS) kernel/arch/i386/isr.s -o kernel/arch/i386/isr.o
+	@$(ASM) $(ASMFLAGS) kernel/arch/i386/loader.s -o kernel/arch/i386/loader.o
+	@$(ASM) $(ASMFLAGS) kernel/arch/i386/mmu.s -o kernel/arch/i386/mmu.o
+	@$(ASM) $(ASMFLAGS) kernel/arch/i386/vbe.s -o kernel/arch/i386/vbe.o
 
 library:
 	@echo "Building library..."
