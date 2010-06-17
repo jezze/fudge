@@ -59,13 +59,14 @@ kernel: library
 	@$(GCC) $(GCCFLAGS) kernel/vbe.c -o kernel/vbe.o
 	@$(GCC) $(GCCFLAGS) kernel/shell.c -o kernel/shell.o
 	@$(LD) $(LDFLAGS) \
+    lib/cbuffer.o \
+    lib/io.o \
+    lib/memory.o \
+    lib/stack.o \
+    lib/string.o \
     kernel/loader.o \
     kernel/kernel.o \
     kernel/assert.o \
-    lib/memory.o \
-    lib/string.o \
-    lib/cbuffer.o \
-    lib/stack.o \
     kernel/gdt.o \
     kernel/gdts.o \
     kernel/idt.o \
@@ -87,7 +88,6 @@ kernel: library
     kernel/syscall.o \
     kernel/task.o \
     kernel/vbes.o \
-    lib/io.o \
     kernel/vbe.o \
     kernel/shell.o \
     -o root/boot/kernel
