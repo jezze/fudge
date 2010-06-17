@@ -11,7 +11,7 @@ cpu_check_cpuid:
     xor eax, ecx
     shr eax, 21
     and eax, 1
-    retn
+    ret
 
 global cpu_get_vendor
 cpu_get_vendor:
@@ -26,5 +26,5 @@ cpu_get_vendor:
     mov [edi + 8], ecx
     pop edi
     pop ebp
-    retn
+    ret
 

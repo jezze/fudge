@@ -8,12 +8,22 @@ mmu_flush:
     or eax, 0x80000000
     mov cr0, eax
     pop ebp
-    retn
+    ret
 
 global mmu_read_cr0
 mmu_read_cr0:
     mov eax, cr0
-    retn
+    ret
+
+global mmu_read_cr2
+mmu_read_cr2:
+    mov eax, cr2
+    ret
+
+global mmu_read_cr3
+mmu_read_cr3:
+    mov eax, cr3
+    ret
 
 global mmu_write_cr0
 mmu_write_cr0:
@@ -22,17 +32,7 @@ mmu_write_cr0:
     mov eax, [ebp + 8]
     mov cr0, eax
     pop ebp
-    retn
-
-global mmu_read_cr2
-mmu_read_cr2:
-    mov eax, cr2
-    retn
-
-global mmu_read_cr3
-mmu_read_cr3:
-    mov eax, cr3
-    retn
+    ret
 
 global mmu_write_cr3
 mmu_write_cr3:
@@ -41,5 +41,5 @@ mmu_write_cr3:
     mov eax, [ebp + 8]
     mov cr3, eax
     pop ebp
-    retn
+    ret
 
