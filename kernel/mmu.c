@@ -42,57 +42,21 @@ void mmu_handler(registers_t *r)
 
 }
 
-static void mmu_init_table_entry(mmu_table_entry_t *entry, uint32_t address)
+static void mmu_init_directory(uint32_t *directory, uint32_t base, uint32_t size, uint32_t flags)
 {
-
-    entry->present = 1;
-    entry->writeable = 1;
-    entry->usermode = 0;
-    entry->cacheWritethrough = 0;
-    entry->cacheDisabled = 0;
-    entry->accessed = 0;
-    entry->dirty = 0;
-    entry->zero = 0;
-    entry->global = 0;
-    entry->unused = 0;
-    entry->frame = address;
-
-}
-
-static void mmu_init_directory_entry(mmu_directory_entry_t *entry, uint32_t address)
-{
-
-    entry->present = 1;
-    entry->writeable = 1;
-    entry->usermode = 0;
-    entry->cacheWritethrough = 0;
-    entry->cacheDisabled = 0;
-    entry->accessed = 0;
-    entry->zero = 0;
-    entry->large = 0;
-    entry->ignored = 0;
-    entry->unused = 0;
-    entry->table = address;
-
-}
-
-static void mmu_init_directory()
-{
-
-    uint32_t address = 0;
 
     uint32_t i;
 
     for (i = 0; i < 1024; i++)
     {
 
-        pageTable[i] = address | 3;
-        address = address + 4096;
+        pageTable[i] = base | 3;
+        base = base + 4096;
 
     }
 
-    pageDirectory[0] = pageTable;
-    pageDirectory[0] = pageDirectory[0] | 3;
+    directory[0] = pageTable;
+    directory[0] = directory[0] | flags;
 
     for (i = 1; i < 1024; i++)
     {
@@ -106,7 +70,7 @@ static void mmu_init_directory()
 void mmu_init(uint32_t size)
 {
 
-    mmu_init_directory();
+    mmu_init_directory(pageDirectory, 0, size, 3);
     mmu_flush(pageDirectory);
 
 }
