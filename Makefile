@@ -18,13 +18,13 @@ cd:
 
 clean:
 	@echo "Cleaning..."
-	@rm -f lib/*.o
+	@rm -f fudge.iso
 	@rm -f kernel/*.o
 	@rm -f kernel/arch/i386/*.o
-	@rm -f tools/mkinitrd
+	@rm -f lib/*.o
 	@rm -f root/boot/kernel
 	@rm -f root/boot/initrd
-	@rm -f fudge.iso
+	@rm -f tools/mkinitrd
 
 i386:
 	@echo "Building i386..."
