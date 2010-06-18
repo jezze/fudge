@@ -67,10 +67,10 @@ static void mmu_init_directory(uint32_t *directory, uint32_t base, uint32_t size
 
 }
 
-void mmu_init(uint32_t size)
+void mmu_init()
 {
 
-    mmu_init_directory(pageDirectory, 0, size, 3);
+    mmu_init_directory(pageDirectory, 0, 0x100000, MMU_PAGE_DIRECTORY_FLAG_PRESENT | MMU_PAGE_DIRECTORY_FLAG_WRITEABLE);
     mmu_flush(pageDirectory);
 
 }

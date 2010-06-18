@@ -12,39 +12,23 @@
 #define MMU_PAGE_TABLE_ADDRESS     0x9D000;
 #define MMU_PAGE_TABLE_SIZE        1024
 
-typedef struct mmu_table_entry
-{
+#define MMU_PAGE_DIRECTORY_FLAG_PRESENT      1
+#define MMU_PAGE_DIRECTORY_FLAG_WRITEABLE    2
+#define MMU_PAGE_DIRECTORY_FLAG_USERMODE     4
+#define MMU_PAGE_DIRECTORY_FLAG_CACHEWRITE   8
+#define MMU_PAGE_DIRECTORY_FLAG_CACHEDISABLE 16
+#define MMU_PAGE_DIRECTORY_FLAG_ACCESSED     32
+#define MMU_PAGE_DIRECTORY_FLAG_LARGE        128
+#define MMU_PAGE_DIRECTORY_FLAG_IGNORED      256
 
-    uint32_t present           : 1;
-    uint32_t writeable         : 1;
-    uint32_t usermode          : 1;
-    uint32_t cacheWritethrough : 1;
-    uint32_t cacheDisabled     : 1;
-    uint32_t accessed          : 1;
-    uint32_t dirty             : 1;
-    uint32_t zero              : 1;
-    uint32_t global            : 1;
-    uint32_t unused            : 3;
-    uint32_t frame             : 20;
-
-} mmu_table_entry_t;
-
-typedef struct mmu_directory_entry
-{
-
-    uint32_t present           : 1;
-    uint32_t writeable         : 1;
-    uint32_t usermode          : 1;
-    uint32_t cacheWritethrough : 1;
-    uint32_t cacheDisabled     : 1;
-    uint32_t accessed          : 1;
-    uint32_t zero              : 1;
-    uint32_t large             : 1;
-    uint32_t ignored           : 1;
-    uint32_t unused            : 3;
-    uint32_t table             : 20;
-
-} mmu_directory_entry_t;
+#define MMU_PAGE_TABLE_FLAG_PRESENT      1
+#define MMU_PAGE_TABLE_FLAG_WRITEABLE    2
+#define MMU_PAGE_TABLE_FLAG_USERMODE     4
+#define MMU_PAGE_TABLE_FLAG_CACHEWRITE   8
+#define MMU_PAGE_TABLE_FLAG_CACHEDISABLE 16
+#define MMU_PAGE_TABLE_FLAG_ACCESSED     32
+#define MMU_PAGE_TABLE_FLAG_DIRTY        64
+#define MMU_PAGE_TABLE_FLAG_GLOBAL       256
 
 extern void mmu_flush(uint32_t *directory);
 extern uint32_t mmu_read_cr0();
