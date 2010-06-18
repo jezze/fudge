@@ -56,7 +56,7 @@ static void mmu_init_directory(uint32_t *directory)
 
 }
 
-static void mmu_set_directory(uint32_t *directory, uint32_t base, uint32_t size, uint32_t flags)
+static void mmu_set_directory(uint32_t *directory, uint32_t base, uint32_t limit, uint32_t flags)
 {
 
     directory[0] = pageTable;
@@ -78,7 +78,7 @@ void mmu_init()
 {
 
     mmu_init_directory(pageDirectory);
-    mmu_set_directory(pageDirectory, 0, 0x100000, MMU_PAGE_DIRECTORY_FLAG_PRESENT | MMU_PAGE_DIRECTORY_FLAG_WRITEABLE);
+    mmu_set_directory(pageDirectory, 0x0, 0x100000, MMU_PAGE_DIRECTORY_FLAG_PRESENT | MMU_PAGE_DIRECTORY_FLAG_WRITEABLE);
     mmu_flush(pageDirectory);
 
 }
