@@ -8,9 +8,9 @@ ISO=genisoimage
 ISOFLAGS=-R -b boot/grub/stage2_eltorito -no-emul-boot -boot-load-size 4 -boot-info-table 
 MKINITRD=./tools/mkinitrd
 
-.PHONY: all i386 kernel library cd innitrd clean
+.PHONY: all cd clean i386 initrd kernel library
 
-all: kernel cd
+all: initrd kernel cd
 
 cd:
 	@echo "Creating iso..."
@@ -25,6 +25,17 @@ clean:
 	@rm -f root/boot/kernel
 	@rm -f root/boot/initrd
 	@rm -f fudge.iso
+
+i386:
+	@echo "Building i386..."
+	@$(ASM) $(ASMFLAGS) kernel/arch/i386/cpu.s -o kernel/arch/i386/cpu.o
+	@$(ASM) $(ASMFLAGS) kernel/arch/i386/gdt.s -o kernel/arch/i386/gdt.o
+	@$(ASM) $(ASMFLAGS) kernel/arch/i386/idt.s -o kernel/arch/i386/idt.o
+	@$(ASM) $(ASMFLAGS) kernel/arch/i386/irq.s -o kernel/arch/i386/irq.o
+	@$(ASM) $(ASMFLAGS) kernel/arch/i386/isr.s -o kernel/arch/i386/isr.o
+	@$(ASM) $(ASMFLAGS) kernel/arch/i386/loader.s -o kernel/arch/i386/loader.o
+	@$(ASM) $(ASMFLAGS) kernel/arch/i386/mmu.s -o kernel/arch/i386/mmu.o
+	@$(ASM) $(ASMFLAGS) kernel/arch/i386/vbe.s -o kernel/arch/i386/vbe.o
 
 initrd:
 	@echo "Creating ramdisk..."
@@ -84,17 +95,6 @@ kernel: library i386
     kernel/vbe.o \
     kernel/vfs.o \
     -o root/boot/kernel
-
-i386:
-	@echo "Building i386..."
-	@$(ASM) $(ASMFLAGS) kernel/arch/i386/cpu.s -o kernel/arch/i386/cpu.o
-	@$(ASM) $(ASMFLAGS) kernel/arch/i386/gdt.s -o kernel/arch/i386/gdt.o
-	@$(ASM) $(ASMFLAGS) kernel/arch/i386/idt.s -o kernel/arch/i386/idt.o
-	@$(ASM) $(ASMFLAGS) kernel/arch/i386/irq.s -o kernel/arch/i386/irq.o
-	@$(ASM) $(ASMFLAGS) kernel/arch/i386/isr.s -o kernel/arch/i386/isr.o
-	@$(ASM) $(ASMFLAGS) kernel/arch/i386/loader.s -o kernel/arch/i386/loader.o
-	@$(ASM) $(ASMFLAGS) kernel/arch/i386/mmu.s -o kernel/arch/i386/mmu.o
-	@$(ASM) $(ASMFLAGS) kernel/arch/i386/vbe.s -o kernel/arch/i386/vbe.o
 
 library:
 	@echo "Building library..."

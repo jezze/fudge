@@ -42,8 +42,25 @@ void mmu_handler(registers_t *r)
 
 }
 
-static void mmu_init_directory(uint32_t *directory, uint32_t base, uint32_t size, uint32_t flags)
+static void mmu_init_directory(uint32_t *directory)
 {
+
+    uint32_t i;
+
+    for (i = 0; i < 1024; i++)
+    {
+
+        pageDirectory[i] = 0 | MMU_PAGE_DIRECTORY_FLAG_WRITEABLE;
+
+    }
+
+}
+
+static void mmu_set_directory(uint32_t *directory, uint32_t base, uint32_t size, uint32_t flags)
+{
+
+    directory[0] = pageTable;
+    directory[0] = directory[0] | flags;
 
     uint32_t i;
 
@@ -55,22 +72,13 @@ static void mmu_init_directory(uint32_t *directory, uint32_t base, uint32_t size
 
     }
 
-    directory[0] = pageTable;
-    directory[0] = directory[0] | flags;
-
-    for (i = 1; i < 1024; i++)
-    {
-
-        pageDirectory[i] = 0 | 2;
-
-    }
-
 }
 
 void mmu_init()
 {
 
-    mmu_init_directory(pageDirectory, 0, 0x100000, MMU_PAGE_DIRECTORY_FLAG_PRESENT | MMU_PAGE_DIRECTORY_FLAG_WRITEABLE);
+    mmu_init_directory(pageDirectory);
+    mmu_set_directory(pageDirectory, 0, 0x100000, MMU_PAGE_DIRECTORY_FLAG_PRESENT | MMU_PAGE_DIRECTORY_FLAG_WRITEABLE);
     mmu_flush(pageDirectory);
 
 }
