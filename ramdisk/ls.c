@@ -2,14 +2,10 @@
 #include <lib/cbuffer.h>
 #include <lib/stack.h>
 #include <lib/string.h>
-#include <kernel/regs.h>
 #include <kernel/screen.h>
-#include <kernel/pit.h>
-#include <kernel/kbd.h>
 #include <kernel/vfs.h>
-#include <kernel/shell.h>
 
-uint32_t main(uint32_t argc, char *argv[])
+uint32_t main()
 {
 
     uint32_t i;
