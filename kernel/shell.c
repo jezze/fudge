@@ -31,9 +31,9 @@ static void shell_command_call(uint32_t argc, char *argv[])
         if (!node)
             return;
 
-        char buffer[4096];
+        char buffer[512];
 
-        vfs_read(node, 0, 4096, buffer);
+        vfs_read(node, 0, 512, buffer);
         
         void (*func)() = &buffer;
 
