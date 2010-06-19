@@ -6,11 +6,14 @@ LD=ld
 LDFLAGS=--oformat binary
 
 all:
+	$(GCC) $(GCCFLAGS) cat.c -o cat.o
+	$(LD) $(LDFLAGS) ../lib/io.o ../lib/memory.o ../kernel/screen.o ../kernel/vfs.o cat.o -o cat
 	$(GCC) $(GCCFLAGS) hello2.c -o hello2.o
 	$(LD) $(LDFLAGS) hello2.o -o hello2
 	$(ASM) $(ASMFLAGS) hello.s -o hello
 
 clean:
 	rm -f *.o
+	rm -f cat
 	rm -f hello
 	rm -f hello2
