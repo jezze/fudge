@@ -9,6 +9,7 @@
 
 uint32_t *pageDirectory = MMU_PAGE_DIRECTORY_ADDRESS;
 uint32_t *pageTable = MMU_PAGE_TABLE_ADDRESS;
+uint32_t *pageTable2 = 0x9E000;
 
 void mmu_handler(registers_t *r)
 {
@@ -59,15 +60,26 @@ static void mmu_init_directory(uint32_t *directory)
 static void mmu_set_directory(uint32_t *directory, uint32_t base, uint32_t limit, uint32_t flags)
 {
 
+    uint32_t i;
+
     directory[0] = pageTable;
     directory[0] = directory[0] | flags;
-
-    uint32_t i;
 
     for (i = 0; i < 1024; i++)
     {
 
         pageTable[i] = base | 3;
+        base = base + 4096;
+
+    }
+
+    directory[1] = pageTable2;
+    directory[1] = directory[1] | flags;
+
+    for (i = 0; i < 1024; i++)
+    {
+
+        pageTable2[i] = base | 3;
         base = base + 4096;
 
     }
