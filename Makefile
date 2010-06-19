@@ -10,7 +10,7 @@ MKINITRD=./tools/mkinitrd
 
 .PHONY: all cd clean i386 initrd kernel library
 
-all: initrd kernel cd
+all: kernel initrd cd
 
 cd:
 	@echo "Creating iso..."
@@ -37,7 +37,7 @@ i386:
 	@$(ASM) $(ASMFLAGS) kernel/arch/i386/mmu.s -o kernel/arch/i386/mmu.o
 	@$(ASM) $(ASMFLAGS) kernel/arch/i386/vbe.s -o kernel/arch/i386/vbe.o
 
-initrd:
+initrd: library
 	@echo "Creating ramdisk..."
 	@$(GCC) -O2 tools/mkinitrd.c -o tools/mkinitrd
 	$(MKINITRD) ramdisk/about.txt about.txt ramdisk/help.txt help.txt ramdisk/hello.s hello.s ramdisk/hello hello ramdisk/hello2.c hello2.c ramdisk/hello2 hello2
