@@ -145,50 +145,48 @@ void shell_init()
 
     shellStack = stack_create(shellBuffer, SHELL_BUFFER_SIZE);
 
-    while (1)
+    for (;;)
     {
 
         char c;
 
-        if ((c = cbuffer_read(&keyboard.cbuffer)))
+        if (!(c = cbuffer_read(&keyboard.cbuffer)))
+            continue;
+
+        switch (c)
         {
 
-            switch (c)
-            {
+            case '\t':
 
-                case '\t':
+                break;
 
-                    break;
+            case '\b':
 
-                case '\b':
+                if (stack_pop(&shellStack))
+                {
 
-                    if (stack_pop(&shellStack))
-                    {
+                    screen_putc('\b');
+                    screen_putc(' ');
+                    screen_putc('\b');
 
-                        screen_putc('\b');
-                        screen_putc(' ');
-                        screen_putc('\b');
+                }
 
-                    }
+                break;
 
-                    break;
+            case '\n':
 
-                case '\n':
+                stack_push(&shellStack, '\0');
+                screen_putc(c);
+                shell_interpret(shellBuffer);
 
-                    stack_push(&shellStack, '\0');
-                    screen_putc(c);
-                    shell_interpret(shellBuffer);
+                break;
 
-                    break;
+            default:
 
-                default:
+                stack_push(&shellStack, c);
+                screen_putc(c);
 
-                    stack_push(&shellStack, c);
-                    screen_putc(c);
-
-                    break;
-
-            }
+                break;
 
         }
 
