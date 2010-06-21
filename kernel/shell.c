@@ -23,49 +23,45 @@ static void shell_clear()
 static void shell_command_call(uint32_t argc, char *argv[])
 {
 
-    if (argc > 1)
-    {
+    if (argc < 2)
+        return;
 
-        vfs_node_t *node = vfs_find(fsRoot, argv[1]);
+    vfs_node_t *node = vfs_find(fsRoot, argv[1]);
 
-        if (!node)
-            return;
+    if (!node)
+        return;
 
-        char buffer[512];
+    char buffer[512];
 
-        vfs_read(node, 0, 512, buffer);
+    vfs_read(node, 0, 512, buffer);
         
-        void (*func)() = &buffer;
+    void (*func)() = &buffer;
 
-        func();
-
-    }
+    func();
 
 }
 
 static void shell_command_cat(uint32_t argc, char *argv[])
 {
 
-    if (argc > 1)
-    {
+    if (argc < 2)
+        return;
 
-        vfs_node_t *node = vfs_find(fsRoot, argv[1]);
+    vfs_node_t *node = vfs_find(fsRoot, argv[1]);
 
-        if (!node)
-            return;
+    if (!node)
+        return;
 
-        char buffer[2000];
+    char buffer[2000];
 
-        uint32_t size = vfs_read(node, 0, 2000, buffer);
+    uint32_t size = vfs_read(node, 0, 2000, buffer);
         
-        uint32_t i;
+    uint32_t i;
 
-        for (i = 0; i < size; i++)
-            screen_putc(buffer[i]);
+    for (i = 0; i < size; i++)
+        screen_putc(buffer[i]);
 
-        screen_putc('\n');
-
-    }
+    screen_putc('\n');
 
 }
 
@@ -73,16 +69,6 @@ static void shell_command_clear(uint32_t argc, char *argv[])
 {
 
     screen_clear();
-
-}
-
-static void shell_command_help(uint32_t argc, char *argv[])
-{
-
-    argv[0] = "cat";
-    argv[1] = "help.txt";
-
-    shell_command_cat(2, argv);
 
 }
 
@@ -170,9 +156,6 @@ static void shell_interpret(char *command)
 
     else if (!string_compare(argv[0], "clear"))
         shell_command_clear(argc, argv);
-
-    else if (!string_compare(argv[0], "help"))
-        shell_command_help(argc, argv);
 
     else if (!string_compare(argv[0], "ls"))
         shell_command_ls(argc, argv);
