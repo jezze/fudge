@@ -36,7 +36,7 @@ static void kernel_register_handlers()
 
 }
 
-void kernel_main(mboot_header_t *header, uint32_t magic)
+void kernel_main(mboot_info_t *header, uint32_t magic)
 {
 
     gdt_init();

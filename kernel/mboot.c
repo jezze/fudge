@@ -1,7 +1,8 @@
 #include <lib/types.h>
+#include <kernel/screen.h>
 #include <kernel/mboot.h>
 
-void mboot_init(mboot_header_t *header)
+void mboot_init(mboot_info_t *header)
 {
 
     if (header->flags & MBOOT_FLAG_MEM)

@@ -13,7 +13,7 @@
 #define MBOOT_FLAG_APM     0x200
 #define MBOOT_FLAG_VBE     0x400
 
-typedef struct mboot_header
+typedef struct mboot_info
 {
 
     uint32_t flags;
@@ -40,9 +40,9 @@ typedef struct mboot_header
     uint32_t vbeInterfaceOffset;
     uint32_t vbeInterfaceLength;
 
-} __attribute__((packed)) mboot_header_t;
+} __attribute__((packed)) mboot_info_t;
 
-typedef struct mboot_memorymap
+typedef struct mboot_mmap
 {
 
     uint32_t size;
@@ -52,8 +52,8 @@ typedef struct mboot_memorymap
     uint32_t lengthHigh;
     uint32_t type;
 
-} mboot_memorymap_t;
+} mboot_mmap_t;
 
-extern void mboot_init(mboot_header_t *mboot);
+extern void mboot_init(mboot_info_t *mboot);
 
 #endif
