@@ -31,7 +31,7 @@ typedef struct vfs_node
 
 extern vfs_node_t *fsRoot;
 
-extern void vfs_open(vfs_node_t *node, uint8_t read, uint8_t write);
+extern void vfs_open(vfs_node_t *node);
 extern void vfs_close(vfs_node_t *node);
 extern uint32_t vfs_read(vfs_node_t *node, uint32_t offset, uint32_t size, char *buffer);
 extern uint32_t vfs_write(vfs_node_t *node, uint32_t offset, uint32_t size, char *buffer);

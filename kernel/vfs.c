@@ -3,7 +3,7 @@
 
 vfs_node_t *fsRoot = 0;
 
-void vfs_open(vfs_node_t *node, uint8_t read, uint8_t write)
+void vfs_open(vfs_node_t *node)
 {
 
     if (node->open)
