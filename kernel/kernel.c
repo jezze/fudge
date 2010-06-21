@@ -23,7 +23,17 @@
 
 kernel_t kernel;
 
-static void kernel_register_handlers()
+static void kernel_init_tables()
+{
+
+    gdt_init();
+    idt_init();
+    isr_init();
+    irq_init();
+
+}
+
+static void kernel_init_handlers()
 {
 
     isr_register_handler(0x0E, mmu_handler);
@@ -36,19 +46,16 @@ static void kernel_register_handlers()
 void kernel_main(mboot_info_t *header, uint32_t magic)
 {
 
-    gdt_init();
-    idt_init();
-    isr_init();
+    kernel_init_tables();
+    kernel_init_handlers();
+
     screen_init();
 
     ASSERT(magic == 0x2BADB002);
     ASSERT(header->modulesCount > 0);
 
-    irq_init();
     pit_init();
     kbd_init();
-
-    kernel_register_handlers();
 
     fsRoot = initrd_init(*((uint32_t *)header->modulesAddresses));
 
