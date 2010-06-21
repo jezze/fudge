@@ -1,19 +1,19 @@
-#ifndef MULTIBOOT_H
-#define MULTIBOOT_H
+#ifndef MBOOT_H
+#define MBOOT_H
 
-#define MULTIBOOT_FLAG_MEM     0x001
-#define MULTIBOOT_FLAG_DEVICE  0x002
-#define MULTIBOOT_FLAG_CMDLINE 0x004
-#define MULTIBOOT_FLAG_MODS    0x008
-#define MULTIBOOT_FLAG_AOUT    0x010
-#define MULTIBOOT_FLAG_ELF     0x020
-#define MULTIBOOT_FLAG_MMAP    0x040
-#define MULTIBOOT_FLAG_CONFIG  0x080
-#define MULTIBOOT_FLAG_LOADER  0x100
-#define MULTIBOOT_FLAG_APM     0x200
-#define MULTIBOOT_FLAG_VBE     0x400
+#define MBOOT_FLAG_MEM     0x001
+#define MBOOT_FLAG_DEVICE  0x002
+#define MBOOT_FLAG_CMDLINE 0x004
+#define MBOOT_FLAG_MODS    0x008
+#define MBOOT_FLAG_AOUT    0x010
+#define MBOOT_FLAG_ELF     0x020
+#define MBOOT_FLAG_MMAP    0x040
+#define MBOOT_FLAG_CONFIG  0x080
+#define MBOOT_FLAG_LOADER  0x100
+#define MBOOT_FLAG_APM     0x200
+#define MBOOT_FLAG_VBE     0x400
 
-typedef struct multiboot_header
+typedef struct mboot_header
 {
 
     uint32_t flags;
@@ -40,9 +40,9 @@ typedef struct multiboot_header
     uint32_t vbeInterfaceOffset;
     uint32_t vbeInterfaceLength;
 
-} __attribute__((packed)) multiboot_header_t;
+} __attribute__((packed)) mboot_header_t;
 
-typedef struct multiboot_memorymap
+typedef struct mboot_memorymap
 {
 
     uint32_t size;
@@ -52,6 +52,6 @@ typedef struct multiboot_memorymap
     uint32_t lengthHigh;
     uint32_t type;
 
-} multiboot_memorymap_t;
+} mboot_memorymap_t;
 
 #endif

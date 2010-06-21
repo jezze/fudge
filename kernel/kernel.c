@@ -23,10 +23,10 @@
 
 kernel_t kernel;
 
-static void kernel_memory(multiboot_header_t *header)
+static void kernel_memory(mboot_header_t *header)
 {
 
-    if (header->flags & MULTIBOOT_FLAG_MEM)
+    if (header->flags & MBOOT_FLAG_MEM)
     {
 
         screen_puts("MEMORY\n");
@@ -43,12 +43,12 @@ static void kernel_memory(multiboot_header_t *header)
 
     }
 
-    if (header->flags & MULTIBOOT_FLAG_MMAP)
+    if (header->flags & MBOOT_FLAG_MMAP)
     {
 
     }
 
-    if (header->flags & MULTIBOOT_FLAG_VBE)
+    if (header->flags & MBOOT_FLAG_VBE)
     {
 
 
@@ -69,7 +69,7 @@ static void kernel_register_handlers()
 
 }
 
-void kernel_main(multiboot_header_t *header, uint32_t magic)
+void kernel_main(mboot_header_t *header, uint32_t magic)
 {
 
     gdt_init();
