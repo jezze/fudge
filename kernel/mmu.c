@@ -8,8 +8,8 @@
 #include <kernel/mmu.h>
 
 mmu_directory_t *pageDirectory = MMU_PAGE_DIRECTORY_ADDRESS;
-uint32_t *pageTable = MMU_PAGE_TABLE_ADDRESS;
-uint32_t *pageTable2 = 0x9E000;
+mmu_table_t *pageTable = MMU_PAGE_TABLE_ADDRESS;
+mmu_table_t *pageTable2 = 0x9E000;
 
 void mmu_handler(registers_t *r)
 {
@@ -68,7 +68,7 @@ static void mmu_set_directory(mmu_directory_t *directory, uint32_t base, uint32_
     for (i = 0; i < 1024; i++)
     {
 
-        pageTable[i] = base | 3;
+        pageTable->entries[i] = base | 3;
         base = base + 4096;
 
     }
@@ -79,7 +79,7 @@ static void mmu_set_directory(mmu_directory_t *directory, uint32_t base, uint32_
     for (i = 0; i < 1024; i++)
     {
 
-        pageTable2[i] = base | 3;
+        pageTable2->entries[i] = base | 3;
         base = base + 4096;
 
     }
