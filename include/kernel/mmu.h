@@ -1,11 +1,11 @@
 #ifndef MMU_H
 #define MMU_H
 
-#define MMU_ERROR_PRESENT          0x01
-#define MMU_ERROR_RW               0x02
-#define MMU_ERROR_USER             0x04
-#define MMU_ERROR_RESERVED         0x08
-#define MMU_ERROR_FETCH            0x16
+#define MMU_ERROR_PRESENT          1
+#define MMU_ERROR_RW               2
+#define MMU_ERROR_USER             4
+#define MMU_ERROR_RESERVED         8
+#define MMU_ERROR_FETCH            16
 #define MMU_PAGE_SIZE              0x1000
 #define MMU_PAGE_DIRECTORY_ADDRESS 0x9C000;
 #define MMU_PAGE_DIRECTORY_SIZE    1024
@@ -30,7 +30,21 @@
 #define MMU_PAGE_TABLE_FLAG_DIRTY        64
 #define MMU_PAGE_TABLE_FLAG_GLOBAL       256
 
-extern void mmu_flush(uint32_t *directory);
+typedef struct mmu_table
+{
+
+    uint32_t entries[1024];
+
+} mmu_table_t;
+
+typedef struct mmu_directory
+{
+
+    uint32_t tables[1024];
+
+} mmu_directory_t;
+
+extern void mmu_flush(mmu_directory_t *directory);
 extern uint32_t mmu_read_cr0();
 extern void mmu_write_cr0(uint32_t value);
 extern uint32_t mmu_read_cr2();

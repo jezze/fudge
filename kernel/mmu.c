@@ -7,7 +7,7 @@
 #include <kernel/heap.h>
 #include <kernel/mmu.h>
 
-uint32_t *pageDirectory = MMU_PAGE_DIRECTORY_ADDRESS;
+mmu_directory_t *pageDirectory = MMU_PAGE_DIRECTORY_ADDRESS;
 uint32_t *pageTable = MMU_PAGE_TABLE_ADDRESS;
 uint32_t *pageTable2 = 0x9E000;
 
@@ -43,7 +43,7 @@ void mmu_handler(registers_t *r)
 
 }
 
-static void mmu_init_directory(uint32_t *directory)
+static void mmu_init_directory(mmu_directory_t *directory)
 {
 
     uint32_t i;
@@ -51,19 +51,19 @@ static void mmu_init_directory(uint32_t *directory)
     for (i = 0; i < 1024; i++)
     {
 
-        pageDirectory[i] = 0 | MMU_PAGE_DIRECTORY_FLAG_WRITEABLE;
+        directory->tables[i] = 0 | MMU_PAGE_DIRECTORY_FLAG_WRITEABLE;
 
     }
 
 }
 
-static void mmu_set_directory(uint32_t *directory, uint32_t base, uint32_t limit, uint32_t flags)
+static void mmu_set_directory(mmu_directory_t *directory, uint32_t base, uint32_t limit, uint32_t flags)
 {
 
     uint32_t i;
 
-    directory[0] = pageTable;
-    directory[0] = directory[0] | flags;
+    directory->tables[0] = pageTable;
+    directory->tables[0] = directory->tables[0] | flags;
 
     for (i = 0; i < 1024; i++)
     {
@@ -73,8 +73,8 @@ static void mmu_set_directory(uint32_t *directory, uint32_t base, uint32_t limit
 
     }
 
-    directory[1] = pageTable2;
-    directory[1] = directory[1] | flags;
+    directory->tables[1] = pageTable2;
+    directory->tables[1] = directory->tables[1] | flags;
 
     for (i = 0; i < 1024; i++)
     {
