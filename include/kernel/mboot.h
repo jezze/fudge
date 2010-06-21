@@ -28,7 +28,7 @@ typedef struct mboot_info
     uint32_t addr;
     uint32_t shndx;
     uint32_t mmapLength;
-    uint32_t mmapAddresses;
+    uint32_t mmapAddress;
     uint32_t drivesLength;
     uint32_t drivesAddresses;
     uint32_t configTable;
@@ -46,13 +46,23 @@ typedef struct mboot_mmap
 {
 
     uint32_t size;
-    uint32_t baseAddressLow;
-    uint32_t baseAddressHigh;
+    uint32_t baseLow;
+    uint32_t baseHigh;
     uint32_t lengthLow;
     uint32_t lengthHigh;
     uint32_t type;
 
 } mboot_mmap_t;
+
+typedef struct mboot_module
+{
+
+    uint32_t base;
+    uint32_t length;
+    uint32_t string;
+    uint32_t reserved;
+
+} mboot_module_t;
 
 extern void mboot_init(mboot_info_t *mboot);
 
