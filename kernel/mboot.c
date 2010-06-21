@@ -32,7 +32,7 @@ void mboot_init(mboot_info_t *info)
     if (info->flags & MBOOT_FLAG_MMAP)
     {
 
-        mboot_mmap_t *mmap = info->mmapAddress;
+        mboot_mmap_t *mmap = (mboot_mmap_t *)info->mmapAddress;
 
         screen_puts("Memorymap size: 0x");
         screen_puts_hex(mmap->size);
