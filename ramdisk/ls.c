@@ -5,7 +5,7 @@
 #include <kernel/screen.h>
 #include <kernel/vfs.h>
 
-uint32_t main()
+void main()
 {
 
     uint32_t i;

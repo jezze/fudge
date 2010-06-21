@@ -5,7 +5,7 @@
 #include <kernel/screen.h>
 #include <kernel/vfs.h>
 
-uint32_t main(uint32_t argc, char *argv[])
+void main(uint32_t argc, char *argv[])
 {
 
     if (argc > 1)
@@ -14,7 +14,7 @@ uint32_t main(uint32_t argc, char *argv[])
         vfs_node_t *node = vfs_find(fsRoot, argv[1]);
 
         if (!node)
-            return 0;
+            return;
 
         char buffer[400];
 
@@ -28,8 +28,6 @@ uint32_t main(uint32_t argc, char *argv[])
         screen_putc('\n');
 
     }
-
-    return 0;
 
 }
 
