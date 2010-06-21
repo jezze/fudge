@@ -20,13 +20,10 @@ static void shell_clear()
 
 }
 
-static void shell_command_call(uint32_t argc, char *argv[])
+static void shell_command_call()
 {
 
-    if (argc < 2)
-        return;
-
-    vfs_node_t *node = vfs_find(fsRoot, argv[1]);
+    vfs_node_t *node = vfs_find(fsRoot, "hello");
 
     if (!node)
         return;
@@ -41,13 +38,10 @@ static void shell_command_call(uint32_t argc, char *argv[])
 
 }
 
-static void shell_command_cat(uint32_t argc, char *argv[])
+static void shell_command_cat()
 {
 
-    if (argc < 2)
-        return;
-
-    vfs_node_t *node = vfs_find(fsRoot, argv[1]);
+    vfs_node_t *node = vfs_find(fsRoot, "about.txt");
 
     if (!node)
         return;
@@ -65,14 +59,14 @@ static void shell_command_cat(uint32_t argc, char *argv[])
 
 }
 
-static void shell_command_clear(uint32_t argc, char *argv[])
+static void shell_command_clear()
 {
 
     screen_clear();
 
 }
 
-static void shell_command_ls(uint32_t argc, char *argv[])
+static void shell_command_ls()
 {
 
     uint32_t i;
@@ -91,14 +85,14 @@ static void shell_command_ls(uint32_t argc, char *argv[])
 
 }
 
-static void shell_command_null(uint32_t argc, char *argv[])
+static void shell_command_null()
 {
 
     return;
 
 }
 
-static void shell_command_time(uint32_t argc, char *argv[])
+static void shell_command_time()
 {
 
     screen_puts("Timer: ");
@@ -110,63 +104,28 @@ static void shell_command_time(uint32_t argc, char *argv[])
 static void shell_interpret(char *command)
 {
 
-    uint32_t argc = 0;
-    char *argv[32];
+    if (!string_compare(command, ""))
+        shell_command_null();
 
-    uint32_t start = 0;
-    uint32_t current;
+    else if (!string_compare(command, "call"))
+        shell_command_call();
 
-    uint32_t i;
-    uint32_t j = 0;
+    else if (!string_compare(command, "cat"))
+        shell_command_cat();
 
-    for (current = 0; command[current] != '\0'; current++)
-    {
+    else if (!string_compare(command, "clear"))
+        shell_command_clear();
 
-        if (command[current] == ' ' || command[current] == '\n')
-        {
+    else if (!string_compare(command, "ls"))
+        shell_command_ls();
 
-            j = 0;
-
-            for (i = start; i < current; i++)
-            {
-
-                argv[argc][j] = command[i];
-
-                j++;
-
-            }
-
-            argv[argc][j] = '\0';
-            argc++;
-
-            start = current + 1;
-
-        }
-
-    }
-
-    if (!string_compare(argv[0], ""))
-        shell_command_null(argc, argv);
-
-    else if (!string_compare(argv[0], "call"))
-        shell_command_call(argc, argv);
-
-    else if (!string_compare(argv[0], "cat"))
-        shell_command_cat(argc, argv);
-
-    else if (!string_compare(argv[0], "clear"))
-        shell_command_clear(argc, argv);
-
-    else if (!string_compare(argv[0], "ls"))
-        shell_command_ls(argc, argv);
-
-    else if (!string_compare(argv[0], "time"))
-        shell_command_time(argc, argv);
+    else if (!string_compare(command, "time"))
+        shell_command_time();
 
     else
     {
 
-        screen_puts(argv[0]);
+        screen_puts(command);
         screen_puts(": Command not found\n");
 
     }
@@ -216,7 +175,6 @@ void shell_init()
 
                 case '\n':
 
-                    stack_push(&shellStack, c);
                     stack_push(&shellStack, '\0');
                     screen_putc(c);
                     shell_interpret(shellBuffer);
