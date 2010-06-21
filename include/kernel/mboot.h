@@ -54,4 +54,6 @@ typedef struct mboot_memorymap
 
 } mboot_memorymap_t;
 
+extern void mboot_init(mboot_header_t *mboot);
+
 #endif

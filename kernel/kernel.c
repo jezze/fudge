@@ -23,39 +23,6 @@
 
 kernel_t kernel;
 
-static void kernel_memory(mboot_header_t *header)
-{
-
-    if (header->flags & MBOOT_FLAG_MEM)
-    {
-
-        screen_puts("MEMORY\n");
-
-        screen_puts("Lower memory: ");
-        screen_puts_dec(header->memoryLower);
-        screen_puts("KB\n");
-
-        screen_puts("Upper memory: ");
-        screen_puts_dec(header->memoryUpper);
-        screen_puts("KB\n");
-
-        screen_puts("\n");
-
-    }
-
-    if (header->flags & MBOOT_FLAG_MMAP)
-    {
-
-    }
-
-    if (header->flags & MBOOT_FLAG_VBE)
-    {
-
-
-    }
-
-}
-
 static void kernel_register_handlers()
 {
 
@@ -89,7 +56,8 @@ void kernel_main(mboot_header_t *header, uint32_t magic)
     syscall_init();
 
     kernel_register_handlers();
-    kernel_memory(header);
+
+    mboot_init(header);
 
     fsRoot = initrd_init(*((uint32_t *)header->modulesAddresses));
 
