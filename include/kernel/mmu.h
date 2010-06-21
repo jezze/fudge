@@ -40,7 +40,7 @@ typedef struct mmu_table
 typedef struct mmu_directory
 {
 
-    uint32_t tables[1024];
+    mmu_table_t *tables[1024];
 
 } mmu_directory_t;
 
