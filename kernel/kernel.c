@@ -31,8 +31,6 @@ static void kernel_register_handlers()
     irq_register_handler(0x00, pit_handler);
     irq_register_handler(0x01, kbd_handler);
 
-    isr_enable();
-
 }
 
 void kernel_main(mboot_info_t *header, uint32_t magic)
@@ -49,14 +47,18 @@ void kernel_main(mboot_info_t *header, uint32_t magic)
     irq_init();
     pit_init();
     kbd_init();
-    //cpu_init();
+
+    kernel_register_handlers();
 
     fsRoot = initrd_init(*((uint32_t *)header->modulesAddresses));
 
     mmu_init();
-    //mboot_init(header);
 
-    kernel_register_handlers();
+    mboot_init(header);
+    cpu_init();
+
+    isr_enable();
+
     shell_init();
 
     for (;;);
