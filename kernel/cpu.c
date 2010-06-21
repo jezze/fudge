@@ -9,7 +9,7 @@ void cpu_init()
     if (!cpu_check_cpuid())
         return;
 
-    screen_puts("CPU\n");
+    screen_puts("CPU INFO\n");
 
     char vendor[12];
 
