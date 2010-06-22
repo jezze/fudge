@@ -57,6 +57,7 @@ kernel: library i386
 	@$(GCC) $(GCCFLAGS) kernel/mboot.c -o kernel/mboot.o
 	@$(GCC) $(GCCFLAGS) kernel/mmu.c -o kernel/mmu.o
 	@$(GCC) $(GCCFLAGS) kernel/pit.c -o kernel/pit.o
+	@$(GCC) $(GCCFLAGS) kernel/rtc.c -o kernel/rtc.o
 	@$(GCC) $(GCCFLAGS) kernel/screen.c -o kernel/screen.o
 	@$(GCC) $(GCCFLAGS) kernel/shell.c -o kernel/shell.o
 	@$(GCC) $(GCCFLAGS) kernel/syscall.c -o kernel/syscall.o
@@ -90,6 +91,7 @@ kernel: library i386
     kernel/mboot.o \
     kernel/mmu.o \
     kernel/pit.o \
+    kernel/rtc.o \
     kernel/screen.o \
     kernel/shell.o \
     kernel/syscall.o \

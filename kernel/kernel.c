@@ -18,6 +18,7 @@
 #include <kernel/shell.h>
 #include <kernel/syscall.h>
 #include <kernel/task.h>
+#include <kernel/rtc.h>
 #include <kernel/vbe.h>
 #include <kernel/kernel.h>
 
@@ -69,6 +70,7 @@ void kernel_main(mboot_info_t *header, uint32_t magic)
     fsRoot = initrd_init(*((uint32_t *)header->modulesAddresses));
 
     mboot_init(header);
+    rtc_init();
     cpu_init();
 
     isr_enable();

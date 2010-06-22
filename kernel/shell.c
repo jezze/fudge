@@ -72,6 +72,14 @@ static void shell_command_clear()
 
 }
 
+static void shell_command_clock()
+{
+
+    rtc_init();
+
+}
+
+
 static void shell_command_ls()
 {
 
@@ -156,6 +164,9 @@ static void shell_interpret(char *command)
 
     else if (!string_compare(argv[0], "clear"))
         shell_command_clear();
+
+    else if (!string_compare(argv[0], "clock"))
+        shell_command_clock();
 
     else if (!string_compare(argv[0], "ls"))
         shell_command_ls();
