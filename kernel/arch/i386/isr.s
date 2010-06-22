@@ -1,4 +1,5 @@
 extern isr_handler
+extern syscall_handler
 
 ; Divide By Zero Exception
 global isr0
@@ -249,6 +250,31 @@ isr31:
 	push byte 0
 	push byte 31
 	jmp isr_common
+
+global syscall
+syscall:
+    cli
+	pusha
+	push ds
+	push es
+	push fs
+	push gs
+	mov ax, 0x10
+	mov ds, ax
+	mov es, ax
+	mov fs, ax
+	mov gs, ax
+	mov eax, esp
+	push eax
+	mov eax, syscall_handler
+	call eax
+	pop eax
+	pop gs
+	pop fs
+	pop es
+	pop ds
+	popa
+	iret
 
 isr_common:
 	pusha

@@ -78,6 +78,7 @@ void isr_init()
     idt_set_gate(29, (uint32_t)isr29, 0x08, 0x8E);
     idt_set_gate(30, (uint32_t)isr30, 0x08, 0x8E);
     idt_set_gate(31, (uint32_t)isr31, 0x08, 0x8E);
+    idt_set_gate(0x80, (uint32_t)syscall, 0x08, 0x8E);
 
 }
 

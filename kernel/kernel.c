@@ -35,6 +35,7 @@ static void kernel_init_handlers()
 {
 
     isr_register_handler(0x0E, mmu_handler);
+    isr_register_handler(0x80, syscall_handler);
     irq_register_handler(0x00, pit_handler);
     irq_register_handler(0x01, kbd_handler);
 
@@ -71,6 +72,9 @@ void kernel_main(mboot_info_t *header, uint32_t magic)
     cpu_init();
 
     isr_enable();
+
+    syscall_init();
+    syscall_write("hejsan");
 
     shell_init();
 

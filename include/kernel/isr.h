@@ -35,6 +35,7 @@ extern void isr28();
 extern void isr29();
 extern void isr30();
 extern void isr31();
+extern void syscall();
 extern void isr_enable();
 extern void isr_disable();
 

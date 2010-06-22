@@ -14,7 +14,7 @@ int syscall_write(char *text)
 
     num = 0;
 
-    __asm__ __volatile__ ("int $0x80" : "=a" (a) : "0" (num), "b" ((int)text));
+    __asm__ __volatile__ ("int $0x80");
 
     return a;
 
