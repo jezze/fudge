@@ -29,20 +29,28 @@ char *string_copy(char *dest, const char *src)
 {
 
     char *save = dest;
+
     while ((*dest++ = *src++));
+
     return save;
+
+}
+
+int string_index(const char *str, char c)
+{
+
+    int length;
+
+    for (length = 0; *str != c; str++, length++);
+
+    return length;
 
 }
 
 int string_length(const char *str)
 {
 
-    int32_t length;
-
-    for (length = 0; *str != '\0'; str++)
-        length++;
-
-    return length;
+    return string_index(str, '\0');
 
 }
 
