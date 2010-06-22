@@ -20,10 +20,13 @@ static void shell_clear()
 
 }
 
-static void shell_command_call()
+static void shell_command_call(int argc, char *argv[])
 {
 
-    vfs_node_t *node = vfs_find(fsRoot, "hello");
+    if (argc != 2)
+        return;
+
+    vfs_node_t *node = vfs_find(fsRoot, argv[1]);
 
     if (!node)
         return;
@@ -38,10 +41,13 @@ static void shell_command_call()
 
 }
 
-static void shell_command_cat()
+static void shell_command_cat(int argc, char *argv[])
 {
 
-    vfs_node_t *node = vfs_find(fsRoot, "about.txt");
+    if (argc != 2)
+        return;
+
+    vfs_node_t *node = vfs_find(fsRoot, argv[1]);
 
     if (!node)
         return;
@@ -101,31 +107,66 @@ static void shell_command_time()
 
 }
 
+static int shell_get_arguments(char *argv[], char *command)
+{
+
+    int argc = 0;
+    int length = string_length(command);
+    char *base = command;
+
+    int i = 0;
+
+    for (i = 0; i < length; i++)
+    {
+
+        if (command[i] == ' ')
+        {
+
+            argv[argc] = base;
+            argc++;
+
+            command[i] = 0;
+            base = &command[i + 1];
+
+        }
+
+    }
+
+    argv[argc] = base;
+    argc++;
+
+    return argc;
+
+}
+
 static void shell_interpret(char *command)
 {
 
-    if (!string_compare(command, ""))
+    char *argv[32];
+    int argc = shell_get_arguments(argv, command);
+
+    if (!string_compare(argv[0], ""))
         shell_command_null();
 
-    else if (!string_compare(command, "call"))
-        shell_command_call();
+    else if (!string_compare(argv[0], "call"))
+        shell_command_call(argc, argv);
 
-    else if (!string_compare(command, "cat"))
-        shell_command_cat();
+    else if (!string_compare(argv[0], "cat"))
+        shell_command_cat(argc, argv);
 
-    else if (!string_compare(command, "clear"))
+    else if (!string_compare(argv[0], "clear"))
         shell_command_clear();
 
-    else if (!string_compare(command, "ls"))
+    else if (!string_compare(argv[0], "ls"))
         shell_command_ls();
 
-    else if (!string_compare(command, "time"))
+    else if (!string_compare(argv[0], "time"))
         shell_command_time();
 
     else
     {
 
-        screen_puts(command);
+        screen_puts(argv[0]);
         screen_puts(": Command not found\n");
 
     }
