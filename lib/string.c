@@ -1,12 +1,12 @@
 #include <lib/types.h>
 #include <lib/string.h>
 
-char *string_concat(char *dest, const char *src)
+char *string_concat(char *base, const char *str)
 {
 
-    string_copy(dest + string_length(dest), src);
+    string_copy(base + string_length(base), str);
 
-    return dest;
+    return base;
 
 }
 
@@ -21,36 +21,53 @@ int string_compare(const char *str1, const char *str2)
 
     }
 
-    return *(unsigned char *)str1 < *(unsigned char *)str2 ? -1 : 1;
+    return *str1 - *str2;
 
 }
 
-char *string_copy(char *dest, const char *src)
+char *string_copy(char *base, const char *str)
 {
 
-    char *save = dest;
+    char *current = base;
 
-    while ((*dest++ = *src++));
+    while ((*current++ = *str++));
 
-    return save;
+    return base;
 
 }
 
-int string_index(const char *str, char c)
+int string_offset(const char *base, char c)
 {
 
-    int length;
+    int offset;
 
-    for (length = 0; *str != c; str++, length++);
+    for (offset = 0; *base != c; base++, offset++);
 
-    return length;
+    return offset;
 
 }
 
-int string_length(const char *str)
+int string_length(const char *base)
 {
 
-    return string_index(str, '\0');
+    return string_offset(base, 0);
+
+}
+
+char *string_replace(char *base, char c1, char c2)
+{
+
+    char *current = base;
+
+    for (; *current != 0; current++)
+    {
+
+        if (*current == c1)
+            *current = c2;
+
+    }
+
+    return base;
 
 }
 
