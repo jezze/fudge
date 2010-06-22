@@ -10,46 +10,27 @@ char *string_concat(char *dest, const char *src)
 
 }
 
-int string_compare(char *str1, char *str2)
+int string_compare(const char *str1, const char *str2)
 {
 
-    int i = 0;
-    int failed = 0;
-
-    while (str1[i] != '\0' && str2[i] != '\0')
+    for (; *str1 == *str2; ++str1, ++str2)
     {
 
-        if (str1[i] != str2[i])
-        {
-
-            failed = 1;
-
-            break;
-
-        }
-
-        i++;
+        if (*str1 == 0)
+            return 0;
 
     }
 
-    if ((str1[i] == '\0' && str2[i] != '\0') || (str1[i] != '\0' && str2[i] == '\0'))
-        failed = 1;
-
-    return failed;
+    return *(unsigned char *)str1 < *(unsigned char *)str2 ? -1 : 1;
 
 }
 
 char *string_copy(char *dest, const char *src)
 {
 
-    do
-    {
-
-        *dest++ = *src++;
-
-    } while (*src != '\0');
-
-    return dest;
+    char *save = dest;
+    while ((*dest++ = *src++));
+    return save;
 
 }
 
