@@ -9,22 +9,15 @@ static void *syscalls[SYSCALL_ROUTINES_SIZE];
 int syscall_write(char *text)
 {
 
-    int num;
-    int a;
-
-    num = 0;
-
-    __asm__ __volatile__ ("int $0x80");
-
-    return a;
+    call_send(6, 0);
 
 }
 
-void syscall_handler(int num)
+void syscall_handler(uint32_t num, void *data)
 {
 
     screen_puts("Syscall: ");
-    screen_puts_hex(num);
+    screen_puts_dec(num);
     screen_puts("\n");
 
 }

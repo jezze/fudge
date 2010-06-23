@@ -66,6 +66,7 @@ void kernel_main(mboot_info_t *header, uint32_t magic)
     kernel_init_devices();
     mmu_init();
     syscall_init();
+    syscall_write("Hejsan");
 
     fsRoot = initrd_init(*((uint32_t *)header->modulesAddresses));
 
