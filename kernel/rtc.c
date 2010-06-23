@@ -24,18 +24,18 @@ void rtc_init()
 
     rtc_ready();
 
-    screen_puts("Date: ");
-    screen_puts_dec(rtc_read(RTC_FLAG_YEAR));
+    screen_puts("Date: 20");
+    screen_puts_bcd(rtc_read(RTC_FLAG_YEAR));
     screen_puts("-");
-    screen_puts_dec(rtc_read(RTC_FLAG_MONTH));
+    screen_puts_bcd(rtc_read(RTC_FLAG_MONTH));
     screen_puts("-");
-    screen_puts_dec(rtc_read(RTC_FLAG_DAY));
+    screen_puts_bcd(rtc_read(RTC_FLAG_DAY));
     screen_puts(" ");
-    screen_puts_dec(rtc_read(RTC_FLAG_HOURS));
+    screen_puts_bcd(rtc_read(RTC_FLAG_HOURS));
     screen_puts(":");
-    screen_puts_dec(rtc_read(RTC_FLAG_MINUTES));
+    screen_puts_bcd(rtc_read(RTC_FLAG_MINUTES));
     screen_puts(":");
-    screen_puts_dec(rtc_read(RTC_FLAG_SECONDS));
+    screen_puts_bcd(rtc_read(RTC_FLAG_SECONDS));
     screen_puts("\n");
 
 }

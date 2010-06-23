@@ -150,6 +150,14 @@ void screen_puts_hex(uint32_t n)
 
 }
 
+void screen_puts_bcd(uint8_t n)
+{
+
+    screen_puts_dec(n >> 4);
+    screen_puts_dec(n & 0x0F);
+
+}
+
 void screen_set_text_color(uint8_t forecolor, uint8_t backcolor)
 {
 
