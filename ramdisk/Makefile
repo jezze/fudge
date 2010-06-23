@@ -11,7 +11,7 @@ all:
 	$(GCC) $(GCCFLAGS) ls.c -o ls.o
 	$(LD) $(LDFLAGS) ../lib/io.o ../lib/memory.o ../kernel/screen.o ../kernel/vfs.o ls.o -o ls
 	$(GCC) $(GCCFLAGS) hello2.c -o hello2.o
-	$(LD) $(LDFLAGS) hello2.o -o hello2
+	$(LD) $(LDFLAGS) hello2.o ../kernel/arch/i386/call.o -o hello2
 	$(ASM) $(ASMFLAGS) hello.s -o hello
 
 clean:
