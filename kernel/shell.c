@@ -7,6 +7,8 @@
 #include <kernel/pit.h>
 #include <kernel/kbd.h>
 #include <kernel/vfs.h>
+#include <kernel/cpu.h>
+#include <kernel/rtc.h>
 #include <kernel/shell.h>
 
 char shellBuffer[SHELL_BUFFER_SIZE];
@@ -72,13 +74,19 @@ static void shell_command_clear()
 
 }
 
-static void shell_command_clock()
+static void shell_command_cpu()
+{
+
+    cpu_init();
+
+}
+
+static void shell_command_date()
 {
 
     rtc_init();
 
 }
-
 
 static void shell_command_ls()
 {
@@ -106,7 +114,7 @@ static void shell_command_null()
 
 }
 
-static void shell_command_time()
+static void shell_command_timer()
 {
 
     screen_puts("Timer: ");
@@ -165,14 +173,17 @@ static void shell_interpret(char *command)
     else if (!string_compare(argv[0], "clear"))
         shell_command_clear();
 
-    else if (!string_compare(argv[0], "clock"))
-        shell_command_clock();
+    else if (!string_compare(argv[0], "cpu"))
+        shell_command_cpu();
+
+    else if (!string_compare(argv[0], "date"))
+        shell_command_date();
 
     else if (!string_compare(argv[0], "ls"))
         shell_command_ls();
 
-    else if (!string_compare(argv[0], "time"))
-        shell_command_time();
+    else if (!string_compare(argv[0], "timer"))
+        shell_command_timer();
 
     else
     {

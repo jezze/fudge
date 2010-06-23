@@ -65,17 +65,13 @@ void kernel_main(mboot_info_t *header, uint32_t magic)
 
     kernel_init_devices();
     mmu_init();
+    syscall_init();
 
     fsRoot = initrd_init(*((uint32_t *)header->modulesAddresses));
 
     mboot_init(header);
-    rtc_init();
-    cpu_init();
 
     isr_enable();
-
-    syscall_init();
-    syscall_write("hejsan");
 
     shell_init();
 

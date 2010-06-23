@@ -9,8 +9,6 @@ void cpu_init()
     if (!cpu_check_cpuid())
         return;
 
-    screen_puts("CPU INFO\n");
-
     char vendor[12];
 
     cpu_get_vendor(vendor);
@@ -29,8 +27,6 @@ void cpu_init()
     screen_putc(vendor[10]);
     screen_putc(vendor[11]);
     screen_putc('\n');
-
-    screen_puts("\n");
 
 }
 

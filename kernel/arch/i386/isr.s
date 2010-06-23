@@ -254,6 +254,7 @@ isr31:
 global syscall
 syscall:
     cli
+    mov eax, 4
     push eax
     call syscall_handler
     pop eax
