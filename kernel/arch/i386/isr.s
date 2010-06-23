@@ -254,26 +254,9 @@ isr31:
 global syscall
 syscall:
     cli
-	pusha
-	push ds
-	push es
-	push fs
-	push gs
-	mov ax, 0x10
-	mov ds, ax
-	mov es, ax
-	mov fs, ax
-	mov gs, ax
-	mov eax, esp
-	push eax
-	mov eax, syscall_handler
-	call eax
-	pop eax
-	pop gs
-	pop fs
-	pop es
-	pop ds
-	popa
+    push eax
+    call syscall_handler
+    pop eax
 	iret
 
 isr_common:
