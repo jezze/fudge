@@ -31,12 +31,16 @@ void rtc_init()
     screen_puts("-");
     screen_puts_bcd(rtc_read(RTC_FLAG_DAY));
     screen_puts(" ");
-    screen_puts_bcd(rtc_read(RTC_FLAG_HOURS));
+    screen_puts_bcd(rtc_read(RTC_FLAG_HOURS) & 0x0F);
     screen_puts(":");
     screen_puts_bcd(rtc_read(RTC_FLAG_MINUTES));
     screen_puts(":");
     screen_puts_bcd(rtc_read(RTC_FLAG_SECONDS));
-    screen_puts("\n");
+
+    if (rtc_read(RTC_FLAG_HOURS) >> 4)
+        screen_puts("PM\n");
+    else
+        screen_puts("AM\n");
 
 }
 
