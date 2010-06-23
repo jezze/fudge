@@ -66,7 +66,7 @@ void kernel_main(mboot_info_t *header, uint32_t magic)
     kernel_init_devices();
     mmu_init();
     syscall_init();
-    syscall_write("Hejsan");
+    call_send(SYSCALL_STRING_PUTS, "Verkar fungera!\n");
 
     fsRoot = initrd_init(*((uint32_t *)header->modulesAddresses));
 
