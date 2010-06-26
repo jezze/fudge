@@ -274,8 +274,7 @@ isr_common:
 	mov gs, ax
 	mov eax, esp
 	push eax
-	mov eax, isr_handler
-	call eax
+	call isr_handler
 	pop eax
 	pop gs
 	pop fs
