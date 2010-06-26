@@ -4,7 +4,7 @@
 #include <kernel/screen.h>
 #include <kernel/assert.h>
 
-void kernel_panic(char *message, char *file, uint32_t line)
+void kernel_panic(char *message, char *file, unsigned int line)
 {
 
     isr_disable();
@@ -21,7 +21,7 @@ void kernel_panic(char *message, char *file, uint32_t line)
 
 }
 
-void kernel_assert(char *message, char *file, uint32_t line)
+void kernel_assert(char *message, char *file, unsigned int line)
 {
 
     isr_disable();

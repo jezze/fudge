@@ -24,7 +24,7 @@ typedef struct idt_ptr
 
 extern void idt_flush();
 
-extern void idt_set_gate(uint8_t, uint32_t, uint16_t, uint8_t);
+extern void idt_set_gate(uint8_t index, uint32_t base, uint16_t selector, uint8_t flags);
 extern void idt_init();
 
 #endif

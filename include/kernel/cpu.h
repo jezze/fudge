@@ -15,7 +15,7 @@
 #define CPU_VENDOR_UMC              "UMC UMC UMC "
 #define CPU_VENDOR_VIA              "CentaurHauls"
 
-extern uint32_t cpu_check_cpuid();
+extern unsigned int cpu_check_cpuid();
 
 extern void cpu_get_vendor(char *destination);
 extern void cpu_init();
