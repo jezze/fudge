@@ -4,7 +4,7 @@
 #include <kernel/irq.h>
 #include <kernel/pit.h>
 
-int32_t pit_timer = 0;
+int pit_timer = 0;
 
 void pit_handler(registers_t *r)
 {
@@ -13,10 +13,10 @@ void pit_handler(registers_t *r)
 
 }
 
-void pit_wait(int32_t ticks)
+void pit_wait(int ticks)
 {
 
-    int32_t eticks;
+    int eticks;
 
     eticks = pit_timer + ticks;
 

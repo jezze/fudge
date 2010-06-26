@@ -14,9 +14,7 @@ mmu_table_t *pageTable2 = (mmu_table_t *)0x9E000;
 void mmu_handler(registers_t *r)
 {
 
-    uint32_t address;
-
-    address = mmu_read_cr2();
+    unsigned int address = mmu_read_cr2();
 
     screen_puts("PAGE FAULT (");
 
@@ -46,7 +44,7 @@ void mmu_handler(registers_t *r)
 static void mmu_init_directory(mmu_directory_t *directory)
 {
 
-    uint32_t i;
+    unsigned int i;
 
     for (i = 0; i < 1024; i++)
     {
@@ -78,7 +76,7 @@ void mmu_map(mmu_directory_t *directory, uint32_t base, uint32_t limit, uint32_t
 static void mmu_set_directory(mmu_directory_t *directory, uint32_t base, uint32_t limit, uint32_t flags)
 {
 
-    uint32_t i;
+    unsigned int i;
 
     directory->tables[0] = pageTable;
     directory->tables[0] = (mmu_table_t *)((uint32_t)directory->tables[0] | flags);
