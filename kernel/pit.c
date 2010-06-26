@@ -27,15 +27,11 @@ void pit_wait(int32_t ticks)
 void pit_init()
 {
 
-    uint32_t divisor = PIT_HERTZ / PIT_FREQUENCY;
+    uint16_t divisor = PIT_HERTZ / PIT_FREQUENCY;
 
     outb(0x43, 0x36);
-
-    uint8_t l = (uint8_t)(divisor & 0xFF);
-    uint8_t h = (uint8_t)((divisor >> 8) & 0xFF);
-
-    outb(0x40, l);
-    outb(0x40, h);
+    outb(0x40, (uint8_t)(divisor & 0xFF));
+    outb(0x40, (uint8_t)((divisor >> 8) & 0xFF));
 
 }
 
