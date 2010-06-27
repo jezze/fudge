@@ -42,9 +42,9 @@ extern screen_t screen;
 
 extern void screen_putc(char c);
 extern void screen_puts(char *s);
-extern void screen_puts_dec(uint32_t n);
-extern void screen_puts_hex(uint32_t n);
-extern void screen_puts_bcd(uint8_t n);
+extern void screen_puts_dec(unsigned int n);
+extern void screen_puts_hex(unsigned int n);
+extern void screen_puts_bcd(unsigned char n);
 extern void screen_clear();
 extern void screen_cursor_move();
 extern void screen_scroll();

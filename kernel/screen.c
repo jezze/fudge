@@ -65,14 +65,14 @@ void screen_putc(char c)
 void screen_puts(char *s)
 {
 
-    uint32_t i;
+    unsigned int i;
 
     for (i = 0; s[i] != '\0'; i++)
         screen_putc(s[i]);
 
 }
 
-void screen_puts_dec(uint32_t n)
+void screen_puts_dec(unsigned int n)
 {
 
     if (n == 0)
@@ -83,7 +83,7 @@ void screen_puts_dec(uint32_t n)
 
     }
 
-    int32_t acc = n;
+    unsigned int acc = n;
     char c[32];
     int i = 0;
 
@@ -108,12 +108,12 @@ void screen_puts_dec(uint32_t n)
 
 }
 
-void screen_puts_hex(uint32_t n)
+void screen_puts_hex(unsigned int n)
 {
 
-    int32_t tmp;
-    uint8_t noZeroes = 1;
-    uint32_t i;
+    int tmp;
+    unsigned char noZeroes = 1;
+    unsigned int i;
 
     for (i = 28; i > 0; i -= 4)
     {
@@ -150,7 +150,7 @@ void screen_puts_hex(uint32_t n)
 
 }
 
-void screen_puts_bcd(uint8_t n)
+void screen_puts_bcd(unsigned char n)
 {
 
     screen_puts_dec(n >> 4);
@@ -172,7 +172,7 @@ void screen_clear()
 
     blank = 0x20 | (screen.context.attribute << 8);
 
-    uint32_t i;
+    unsigned int i;
 
     for (i = 0; i < SCREEN_CHARACTER_HEIGHT; i++)
         memory_setw(screen.address + i * SCREEN_CHARACTER_WIDTH, blank, SCREEN_CHARACTER_WIDTH);
