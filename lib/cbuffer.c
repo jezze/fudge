@@ -1,7 +1,7 @@
 #include <lib/types.h>
 #include <lib/cbuffer.h>
 
-cbuffer_t cbuffer_create(char *buffer, uint32_t size)
+cbuffer_t cbuffer_create(char *buffer, unsigned int size)
 {
 
     cbuffer_t cbuffer;

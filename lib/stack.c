@@ -1,7 +1,7 @@
 #include <lib/types.h>
 #include <lib/stack.h>
 
-stack_t stack_create(char *buffer, uint32_t size)
+stack_t stack_create(char *buffer, unsigned int size)
 {
 
     stack_t stack;
