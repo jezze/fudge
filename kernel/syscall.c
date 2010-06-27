@@ -20,11 +20,7 @@ unsigned int syscall_handler(uint32_t edi, uint32_t esi, uint32_t ebp, uint32_t 
         screen_puts_hex(ecx);
 
     if (eax == SYSCALL_VFS_WALK)
-    {
-
-        edi = (uint32_t)vfs_walk(fsRoot, 0);
-
-    }
+        return (unsigned int)vfs_walk(fsRoot, ecx);
 
     return 0;
 

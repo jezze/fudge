@@ -44,7 +44,6 @@ call_vfs_walk:
     mov ebp, esp
     mov eax, 0x12
     mov ecx, [ebp + 8]
-    mov edi, [ebp + 12]
     int 0x80
     pop ebp
     ret

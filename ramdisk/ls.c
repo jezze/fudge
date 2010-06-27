@@ -6,14 +6,14 @@
 void main()
 {
 
-    vfs_node_t *node = 0;
+    vfs_node_t *node;
 
     unsigned int i;
 
     for (i = 0; i < 4; i++)
     {
 
-        call_vfs_walk(i, node);
+        node = call_vfs_walk(i);
 
         if (node->flags == VFS_DIRECTORY)
             call_puts("/");
