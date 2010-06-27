@@ -4,6 +4,6 @@
 void main()
 {
 
-    call_send(SYSCALL_SCREEN_PUTS, "Hello World!\n");
+    call_puts("Hello World!\n");
 
 }

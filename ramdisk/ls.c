@@ -6,18 +6,20 @@
 void main()
 {
 
-    vfs_node_t *node;
+    vfs_node_t *node = 0;
 
     unsigned int i;
 
-    for (i = 1; (node = (vfs_node_t *)call_send(SYSCALL_VFS_WALK, &i)); i++)
+    for (i = 0; i < 4; i++)
     {
 
-        if (node->flags == VFS_DIRECTORY)
-            call_send(SYSCALL_SCREEN_PUTS, "/");
+        call_vfs_walk(i, node);
 
-        call_send(SYSCALL_SCREEN_PUTS, node->name);
-        call_send(SYSCALL_SCREEN_PUTS, "\n");
+        if (node->flags == VFS_DIRECTORY)
+            call_puts("/");
+
+        call_puts(node->name);
+        call_puts("\n");
 
     }
 
