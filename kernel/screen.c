@@ -83,21 +83,14 @@ void screen_puts_num(unsigned int n, unsigned int base)
 
     }
 
+    char s[32] = {0};
+
     int i;
-    int first = 0;
 
-    for (i = 1000000000; i > 0; i /= base)
-    {
+    for (i = 30; n && i; --i, n /= base)
+        s[i] = "0123456789abcdef"[n % base];
 
-        if (first || (first = n / i))
-        {
-
-            screen_putc("0123456789abcdef"[n / i]);
-            n -= (n - (n % i));
-
-        }
-
-    }
+    screen_puts(s + i + 1);
 
 }
 
@@ -111,42 +104,7 @@ void screen_puts_dec(unsigned int n)
 void screen_puts_hex(unsigned int n)
 {
 
-    int tmp;
-    unsigned char noZeroes = 1;
-    unsigned int i;
-
-    for (i = 28; i > 0; i -= 4)
-    {
-
-        tmp = (n >> i) & 0xF;
-
-        if (tmp == 0 && noZeroes != 0)
-            continue;
-
-        if (tmp >= 0xA)
-        {
-
-            noZeroes = 0;
-            screen_putc(tmp - 0xA + 'a');
-
-        }
-
-        else
-        {
-
-            noZeroes = 0;
-            screen_putc(tmp + '0');
-
-        }
-
-    }
-
-    tmp = n & 0xF;
-
-    if (tmp >= 0xA)
-        screen_putc(tmp - 0xA + 'a');
-    else
-        screen_putc(tmp + '0');
+    return screen_puts_num(n, 16);
 
 }
 
