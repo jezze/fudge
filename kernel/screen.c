@@ -72,10 +72,10 @@ void screen_puts(char *s)
 
 }
 
-void screen_puts_dec(unsigned int n)
+void screen_puts_num(unsigned int n, unsigned int base)
 {
 
-    if (n == 0)
+    if (!n)
     {
 
         screen_putc('0');
@@ -83,28 +83,28 @@ void screen_puts_dec(unsigned int n)
 
     }
 
-    unsigned int acc = n;
-    char c[32];
-    int i = 0;
+    int i;
+    int first = 0;
 
-    while (acc > 0)
+    for (i = 1000000000; i > 0; i /= base)
     {
 
-        c[i] = '0' + acc % 10;
-        acc /= 10;
-        i++;
+        if (first || (first = n / i))
+        {
+
+            screen_putc("0123456789abcdef"[n / i]);
+            n -= (n - (n % i));
+
+        }
 
     }
 
-    c[i] = 0;
-    char c2[32];
-    c2[i--] = 0;
-    int j = 0;
+}
 
-    while (i >= 0)
-        c2[i--] = c[j++];
+void screen_puts_dec(unsigned int n)
+{
 
-    screen_puts(c2);
+    return screen_puts_num(n, 10);
 
 }
 
