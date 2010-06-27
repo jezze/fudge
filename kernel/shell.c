@@ -197,6 +197,63 @@ static void shell_interpret(char *command)
 
 }
 
+static void shell_handle_input(char c)
+{
+
+    switch (c)
+    {
+
+        case '\t':
+
+            break;
+
+        case '\b':
+
+            if (stack_pop(&shellStack))
+            {
+
+                screen_putc('\b');
+                screen_putc(' ');
+                screen_putc('\b');
+
+             }
+
+            break;
+
+        case '\n':
+
+            stack_push(&shellStack, '\0');
+            screen_putc(c);
+            shell_interpret(shellBuffer);
+
+            break;
+
+        default:
+
+            stack_push(&shellStack, c);
+            screen_putc(c);
+
+            break;
+
+    }
+
+}
+
+static void shell_poll()
+{
+
+    for (;;)
+    {
+
+        char c;
+
+        if ((c = cbuffer_read(&keyboard.cbuffer)))
+            shell_handle_input(c);
+
+    }
+
+}
+
 void shell_init()
 {
 
@@ -208,52 +265,7 @@ void shell_init()
 
     shellStack = stack_create(shellBuffer, SHELL_BUFFER_SIZE);
 
-    for (;;)
-    {
-
-        char c;
-
-        if (!(c = cbuffer_read(&keyboard.cbuffer)))
-            continue;
-
-        switch (c)
-        {
-
-            case '\t':
-
-                break;
-
-            case '\b':
-
-                if (stack_pop(&shellStack))
-                {
-
-                    screen_putc('\b');
-                    screen_putc(' ');
-                    screen_putc('\b');
-
-                }
-
-                break;
-
-            case '\n':
-
-                stack_push(&shellStack, '\0');
-                screen_putc(c);
-                shell_interpret(shellBuffer);
-
-                break;
-
-            default:
-
-                stack_push(&shellStack, c);
-                screen_putc(c);
-
-                break;
-
-        }
-
-    }
+    shell_poll();
 
 }
 
