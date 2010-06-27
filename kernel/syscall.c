@@ -23,7 +23,7 @@ unsigned int syscall_handler(unsigned int num, void *data)
         rtc_init();
 
     if (num == SYSCALL_PIT_READ)
-        return pitTimer;
+        *((unsigned int *)data) = pitTimer;
 
     if (num == SYSCALL_VFS_WALK)
         return (unsigned int)vfs_walk(fsRoot, *((unsigned int *)data));
