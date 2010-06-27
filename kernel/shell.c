@@ -257,14 +257,13 @@ static void shell_poll()
 void shell_init()
 {
 
+    shellStack = stack_create(shellBuffer, SHELL_BUFFER_SIZE);
+
     screen_puts("Fudge\n");
     screen_puts("Copyright (c) 2009 Jens Nyberg\n");
     screen_puts("Type 'help' for a list of commands.\n\n");
 
     shell_clear();
-
-    shellStack = stack_create(shellBuffer, SHELL_BUFFER_SIZE);
-
     shell_poll();
 
 }
