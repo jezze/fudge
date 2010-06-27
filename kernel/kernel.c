@@ -65,15 +65,13 @@ void kernel_main(mboot_info_t *header, uint32_t magic)
 
     kernel_init_devices();
     mmu_init();
-    syscall_init();
-    call_send(SYSCALL_STRING_PUTS, "Verkar fungera!\n");
-
     fsRoot = initrd_init(*((unsigned int *)header->modulesAddresses));
 
     mboot_init(header);
 
     isr_enable();
 
+    syscall_init();
     shell_init();
 
     for (;;);
