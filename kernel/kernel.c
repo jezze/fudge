@@ -68,7 +68,7 @@ void kernel_main(mboot_info_t *header, uint32_t magic)
     syscall_init();
     call_send(SYSCALL_STRING_PUTS, "Verkar fungera!\n");
 
-    fsRoot = initrd_init(*((uint32_t *)header->modulesAddresses));
+    fsRoot = initrd_init(*((unsigned int *)header->modulesAddresses));
 
     mboot_init(header);
 

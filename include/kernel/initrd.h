@@ -4,21 +4,21 @@
 typedef struct initrd_header
 {
 
-    uint32_t nfiles;
+    unsigned int nfiles;
 
 } initrd_header_t;
 
 typedef struct initrd_file_header
 {
 
-    uint8_t magic;
+    unsigned char magic;
     char name[64];
-    uint32_t offset;
-    uint32_t length;
+    unsigned int offset;
+    unsigned int length;
 
 } initrd_file_header_t;
 
-extern vfs_node_t *initrd_init(uint32_t location);
+extern vfs_node_t *initrd_init(unsigned int location);
 
 #endif
 

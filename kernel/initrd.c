@@ -10,7 +10,7 @@ initrd_file_header_t *initrdFileHeaders;
 vfs_node_t initrdRoot;
 vfs_node_t initrdNodes[32];
 
-static uint32_t initrd_read(vfs_node_t *node, uint32_t offset, uint32_t size, uint32_t *buffer)
+static unsigned int initrd_read(vfs_node_t *node, unsigned int offset, unsigned int size, unsigned char *buffer)
 {
 
     initrd_file_header_t header = initrdFileHeaders[node->inode];
@@ -21,13 +21,13 @@ static uint32_t initrd_read(vfs_node_t *node, uint32_t offset, uint32_t size, ui
     if (offset + size > header.length)
         size = header.length - offset;
 
-    memory_copy(buffer, (uint8_t*) (header.offset + offset), size);
+    memory_copy(buffer, (unsigned char*)(header.offset + offset), size);
 
     return size;
 
 }
 
-static vfs_node_t *initrd_walk(vfs_node_t *node, uint32_t index)
+static vfs_node_t *initrd_walk(vfs_node_t *node, unsigned int index)
 {
 
     if (index < initrdHeader->nfiles)
@@ -40,7 +40,7 @@ static vfs_node_t *initrd_walk(vfs_node_t *node, uint32_t index)
 static vfs_node_t *initrd_find(vfs_node_t *node, char *name)
 {
 
-    uint32_t i;
+    unsigned int i;
 
     for (i = 0; i < initrdHeader->nfiles; i++)
     {
@@ -54,7 +54,7 @@ static vfs_node_t *initrd_find(vfs_node_t *node, char *name)
 
 }
 
-vfs_node_t *initrd_init(uint32_t location)
+vfs_node_t *initrd_init(unsigned int location)
 {
 
     initrdHeader = (initrd_header_t *)location;
@@ -71,7 +71,7 @@ vfs_node_t *initrd_init(uint32_t location)
     initrdRoot.walk = initrd_walk;
     initrdRoot.find = initrd_find;
 
-    uint32_t i;
+    unsigned int i;
 
     for (i = 0; i < initrdHeader->nfiles; i++)
     {
