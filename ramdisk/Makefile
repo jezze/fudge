@@ -6,6 +6,8 @@ LD=ld
 LDFLAGS=--oformat binary -Ttext 0x200000 -e main
 
 all:
+	@$(GCC) $(GCCFLAGS) cat.c -o cat.o
+	@$(LD) $(LDFLAGS) cat.o ../lib/io.o ../lib/memory.o ../kernel/screen.o ../kernel/vfs.o ../kernel/arch/i386/call.o -o cat
 	@$(GCC) $(GCCFLAGS) date.c -o date.o
 	@$(LD) $(LDFLAGS) date.o ../kernel/arch/i386/call.o -o date
 	@$(GCC) $(GCCFLAGS) hello.c -o hello.o
@@ -17,7 +19,8 @@ all:
 
 clean:
 	rm -f *.o
-	rm -f hello
+	rm -f cat
 	rm -f date
+	rm -f hello
 	rm -f ls
 	rm -f timer

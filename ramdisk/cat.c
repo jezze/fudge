@@ -1,7 +1,4 @@
 #include <lib/types.h>
-#include <lib/cbuffer.h>
-#include <lib/stack.h>
-#include <lib/string.h>
 #include <kernel/screen.h>
 #include <kernel/vfs.h>
 
