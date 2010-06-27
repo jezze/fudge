@@ -56,9 +56,9 @@ static void shell_command_cat(int argc, char *argv[])
 
     char buffer[2000];
 
-    uint32_t size = vfs_read(node, 0, 2000, buffer);
+    unsigned int size = vfs_read(node, 0, 2000, buffer);
         
-    uint32_t i;
+    unsigned int i;
 
     for (i = 0; i < size; i++)
         screen_putc(buffer[i]);
@@ -91,7 +91,7 @@ static void shell_command_date()
 static void shell_command_ls()
 {
 
-    uint32_t i;
+    unsigned int i;
     vfs_node_t *node;
 
     for (i = 0; (node = vfs_walk(fsRoot, i)); i++)
