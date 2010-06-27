@@ -5,7 +5,7 @@
 idt_entry_t idt[IDT_TABLE_SIZE];
 idt_ptr_t idtp;
 
-void idt_set_gate(uint8_t index, uint32_t base, uint16_t selector, uint8_t flags)
+void idt_set_gate(unsigned char index, uint32_t base, uint16_t selector, uint8_t flags)
 {
 
     idt[index].baseLow = (base & 0xFFFF);
