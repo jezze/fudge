@@ -6,17 +6,17 @@
 
 void *isr_routines[ISR_ROUTINES_SIZE];
 
-void isr_register_handler(uint8_t num, void (*handler)(registers_t *r))
+void isr_register_handler(unsigned char index, void (*handler)(registers_t *r))
 {
 
-    isr_routines[num] = handler;
+    isr_routines[index] = handler;
 
 }
 
-void isr_unregister_handler(uint8_t num)
+void isr_unregister_handler(unsigned char index)
 {
 
-    isr_routines[num] = 0;
+    isr_routines[index] = 0;
 
 }
 

@@ -6,17 +6,17 @@
 
 void *irq_routines[IRQ_ROUTINES_SIZE];
 
-void irq_register_handler(uint8_t num, void (*handler)(registers_t *r))
+void irq_register_handler(unsigned char index, void (*handler)(registers_t *r))
 {
 
-    irq_routines[num] = handler;
+    irq_routines[index] = handler;
 
 }
 
-void irq_unregister_handler(uint8_t num)
+void irq_unregister_handler(unsigned char index)
 {
 
-    irq_routines[num] = 0;
+    irq_routines[index] = 0;
 
 }
 

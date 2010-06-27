@@ -39,8 +39,8 @@ extern void syscall();
 extern void isr_enable();
 extern void isr_disable();
 
-extern void isr_register_handler(uint8_t num, void (*handler)(registers_t *r));
-extern void isr_unregister_handler(uint8_t num);
+extern void isr_register_handler(unsigned char index, void (*handler)(registers_t *r));
+extern void isr_unregister_handler(unsigned char index);
 extern void isr_init();
 
 #endif

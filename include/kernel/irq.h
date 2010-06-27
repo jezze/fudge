@@ -20,8 +20,8 @@ extern void irq13();
 extern void irq14();
 extern void irq15();
 
-extern void irq_register_handler(uint8_t num, void (*handler)(registers_t *r));
-extern void irq_unregister_handler(uint8_t num);
+extern void irq_register_handler(unsigned char index, void (*handler)(registers_t *r));
+extern void irq_unregister_handler(unsigned char index);
 extern void irq_init();
 
 #endif
