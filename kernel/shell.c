@@ -74,20 +74,6 @@ static void shell_command_clear()
 
 }
 
-static void shell_command_cpu()
-{
-
-    cpu_init();
-
-}
-
-static void shell_command_date()
-{
-
-    rtc_init();
-
-}
-
 static void shell_command_ls()
 {
 
@@ -111,15 +97,6 @@ static void shell_command_null()
 {
 
     return;
-
-}
-
-static void shell_command_timer()
-{
-
-    screen_puts("Timer: ");
-    screen_puts_dec(pit_timer);
-    screen_puts("\n");
 
 }
 
@@ -173,17 +150,8 @@ static void shell_interpret(char *command)
     else if (!string_compare(argv[0], "clear"))
         shell_command_clear();
 
-    else if (!string_compare(argv[0], "cpu"))
-        shell_command_cpu();
-
-    else if (!string_compare(argv[0], "date"))
-        shell_command_date();
-
     else if (!string_compare(argv[0], "ls"))
         shell_command_ls();
-
-    else if (!string_compare(argv[0], "timer"))
-        shell_command_timer();
 
     else
     {

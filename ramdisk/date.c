@@ -4,6 +4,7 @@
 void main()
 {
 
-    call_send(SYSCALL_STRING_PUTS, "Hello World!\n");
+    call_send(SYSCALL_RTC_DATE, 0);
 
 }
+

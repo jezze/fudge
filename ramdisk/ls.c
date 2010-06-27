@@ -14,10 +14,10 @@ void main()
     {
 
         if (node->flags == VFS_DIRECTORY)
-            call_send(SYSCALL_STRING_PUTS, "/");
+            call_send(SYSCALL_SCREEN_PUTS, "/");
 
-        call_send(SYSCALL_STRING_PUTS, node->name);
-        call_send(SYSCALL_STRING_PUTS, "\n");
+        call_send(SYSCALL_SCREEN_PUTS, node->name);
+        call_send(SYSCALL_SCREEN_PUTS, "\n");
 
     }
 

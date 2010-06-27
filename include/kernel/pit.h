@@ -4,7 +4,7 @@
 #define PIT_HERTZ 1193180
 #define PIT_FREQUENCY 1000
 
-extern int pit_timer;
+extern int pitTimer;
 
 extern void pit_handler(registers_t *r);
 extern void pit_wait(int ticks);

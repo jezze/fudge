@@ -41,7 +41,7 @@ i386:
 initrd: library
 	@echo "Creating ramdisk..."
 	@$(GCC) -O2 tools/mkinitrd.c -o tools/mkinitrd
-	$(MKINITRD) ramdisk/about.txt about.txt ramdisk/help.txt help.txt ramdisk/hello.s hello.s ramdisk/hello hello ramdisk/hello2.c hello2.c ramdisk/hello2 hello2 ramdisk/cat cat ramdisk/ls ls
+	$(MKINITRD) ramdisk/about.txt about.txt ramdisk/date date ramdisk/hello hello ramdisk/help.txt help.txt ramdisk/ls ls ramdisk/timer timer
 
 kernel: library i386
 	@echo "Building kernel..."
