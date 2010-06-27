@@ -33,11 +33,11 @@ static void shell_command_call(int argc, char *argv[])
     if (!node)
         return;
 
-    char buffer[2000];
+    char *buffer = 0x200000;
 
     vfs_read(node, 0, 2000, buffer);
         
-    void (*func)() = &buffer;
+    void (*func)() = buffer;
 
     func();
 

@@ -3,7 +3,7 @@ ASMFLAGS=-f bin
 GCC=gcc
 GCCFLAGS=-c -O2 -I../include -Wall -Wextra -ffreestanding -nostdlib -nostartfiles -nodefaultlibs
 LD=ld
-LDFLAGS=--oformat binary -e main
+LDFLAGS=--oformat binary -Ttext 0x200000 -e main
 
 all:
 	$(GCC) $(GCCFLAGS) cat.c -o cat.o
