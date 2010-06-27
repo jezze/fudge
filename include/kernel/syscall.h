@@ -17,7 +17,7 @@
 
 extern int call_send(unsigned int num, void *data);
 
-extern unsigned int syscall_handler(unsigned int num, void *data);
+extern unsigned int syscall_handler(uint32_t edi, uint32_t esi, uint32_t ebp, uint32_t esp, uint32_t ebx, uint32_t edx, uint32_t ecx, uint32_t eax);
 extern void syscall_init();
 
 #endif

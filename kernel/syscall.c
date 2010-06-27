@@ -7,26 +7,26 @@
 #include <kernel/pit.h>
 #include <kernel/syscall.h>
 
-unsigned int syscall_handler(unsigned int num, void *data)
+unsigned int syscall_handler(uint32_t edi, uint32_t esi, uint32_t ebp, uint32_t esp, uint32_t ebx, uint32_t edx, uint32_t ecx, uint32_t eax)
 {
 
-    if (num == SYSCALL_SCREEN_PUTS)
-        screen_puts((char *)data);
+    if (eax == SYSCALL_SCREEN_PUTS)
+        screen_puts((char *)ecx);
 
-    if (num == SYSCALL_SCREEN_PUTS_DEC)
-        screen_puts_dec(*((unsigned int *)data));
+    if (eax == SYSCALL_SCREEN_PUTS_DEC)
+        screen_puts_dec(*((unsigned int *)ecx));
 
-    if (num == SYSCALL_SCREEN_PUTS_HEX)
-        screen_puts_hex(*((unsigned int *)data));
+    if (eax == SYSCALL_SCREEN_PUTS_HEX)
+        screen_puts_hex(*((unsigned int *)ecx));
 
-    if (num == SYSCALL_RTC_DATE)
+    if (eax == SYSCALL_RTC_DATE)
         rtc_init();
 
-    if (num == SYSCALL_PIT_READ)
-        *((unsigned int *)data) = pitTimer;
+    if (eax == SYSCALL_PIT_READ)
+        *((unsigned int *)ecx) = pitTimer;
 
-    if (num == SYSCALL_VFS_WALK)
-        return (unsigned int)vfs_walk(fsRoot, *((unsigned int *)data));
+    if (eax == SYSCALL_VFS_WALK)
+        return (unsigned int)vfs_walk(fsRoot, *((unsigned int *)ecx));
 
     return 0;
 
