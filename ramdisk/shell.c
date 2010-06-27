@@ -7,6 +7,8 @@
 #include <kernel/pit.h>
 #include <kernel/kbd.h>
 #include <kernel/vfs.h>
+#include <kernel/cpu.h>
+#include <kernel/rtc.h>
 #include <kernel/shell.h>
 
 char shellBuffer[SHELL_BUFFER_SIZE];
@@ -20,76 +22,76 @@ static void shell_clear()
 
 }
 
-static void shell_command_call(uint32_t argc, char *argv[])
+static void shell_command_call(int argc, char *argv[])
 {
 
-    if (argc > 1)
-    {
+    if (argc != 2)
+        return;
 
-        vfs_node_t *node = vfs_find(fsRoot, argv[1]);
+    vfs_node_t *node = vfs_find(fsRoot, argv[1]);
 
-        if (!node)
-            return;
+    if (!node)
+        return;
 
-        char buffer[256];
+    char *buffer = 0x200000;
 
-        vfs_read(node, 0, 256, buffer);
+    vfs_read(node, 0, 2000, buffer);
         
-        void (*func)() = &buffer;
+    void (*func)() = buffer;
 
-        func();
-
-    }
+    func();
 
 }
 
-static void shell_command_cat(uint32_t argc, char *argv[])
+static void shell_command_cat(int argc, char *argv[])
 {
 
-    if (argc > 1)
-    {
+    if (argc != 2)
+        return;
 
-        vfs_node_t *node = vfs_find(fsRoot, argv[1]);
+    vfs_node_t *node = vfs_find(fsRoot, argv[1]);
 
-        if (!node)
-            return;
+    if (!node)
+        return;
 
-        char buffer[2000];
+    char buffer[2000];
 
-        uint32_t size = vfs_read(node, 0, 2000, buffer);
+    unsigned int size = vfs_read(node, 0, 2000, buffer);
         
-        uint32_t i;
+    unsigned int i;
 
-        for (i = 0; i < size; i++)
-            screen_putc(buffer[i]);
+    for (i = 0; i < size; i++)
+        screen_putc(buffer[i]);
 
-        screen_putc('\n');
-
-    }
+    screen_putc('\n');
 
 }
 
-static void shell_command_clear(uint32_t argc, char *argv[])
+static void shell_command_clear()
 {
 
     screen_clear();
 
 }
 
-static void shell_command_help(uint32_t argc, char *argv[])
+static void shell_command_cpu()
 {
 
-    argv[0] = "cat";
-    argv[1] = "help.txt";
-
-    shell_command_cat(2, argv);
+    cpu_init();
 
 }
 
-static void shell_command_ls(uint32_t argc, char *argv[])
+static void shell_command_date()
 {
 
-    uint32_t i;
+    rtc_init();
+
+}
+
+static void shell_command_ls()
+{
+
+    unsigned int i;
     vfs_node_t *node;
 
     for (i = 0; (node = vfs_walk(fsRoot, i)); i++)
@@ -105,14 +107,14 @@ static void shell_command_ls(uint32_t argc, char *argv[])
 
 }
 
-static void shell_command_null(uint32_t argc, char *argv[])
+static void shell_command_null()
 {
 
     return;
 
 }
 
-static void shell_command_time(uint32_t argc, char *argv[])
+static void shell_command_timer()
 {
 
     screen_puts("Timer: ");
@@ -121,46 +123,46 @@ static void shell_command_time(uint32_t argc, char *argv[])
 
 }
 
-static void shell_interpret(char *command)
+static int shell_get_arguments(char *argv[], char *command)
 {
 
-    uint32_t argc = 0;
-    char *argv[32];
+    int argc = 0;
+    int length = string_length(command);
+    char *base = command;
 
-    uint32_t start = 0;
-    uint32_t current;
+    int i = 0;
 
-    uint32_t i;
-    uint32_t j = 0;
-
-    for (current = 0; command[current] != '\0'; current++)
+    for (i = 0; i < length; i++)
     {
 
-        if (command[current] == ' ' || command[current] == '\n')
+        if (command[i] == ' ')
         {
 
-            j = 0;
-
-            for (i = start; i < current; i++)
-            {
-
-                argv[argc][j] = command[i];
-
-                j++;
-
-            }
-
-            argv[argc][j] = '\0';
+            argv[argc] = base;
             argc++;
 
-            start = current + 1;
+            command[i] = 0;
+            base = &command[i + 1];
 
         }
 
     }
 
+    argv[argc] = base;
+    argc++;
+
+    return argc;
+
+}
+
+static void shell_interpret(char *command)
+{
+
+    char *argv[32];
+    int argc = shell_get_arguments(argv, command);
+
     if (!string_compare(argv[0], ""))
-        shell_command_null(argc, argv);
+        shell_command_null();
 
     else if (!string_compare(argv[0], "call"))
         shell_command_call(argc, argv);
@@ -169,16 +171,19 @@ static void shell_interpret(char *command)
         shell_command_cat(argc, argv);
 
     else if (!string_compare(argv[0], "clear"))
-        shell_command_clear(argc, argv);
+        shell_command_clear();
 
-    else if (!string_compare(argv[0], "help"))
-        shell_command_help(argc, argv);
+    else if (!string_compare(argv[0], "cpu"))
+        shell_command_cpu();
+
+    else if (!string_compare(argv[0], "date"))
+        shell_command_date();
 
     else if (!string_compare(argv[0], "ls"))
-        shell_command_ls(argc, argv);
+        shell_command_ls();
 
-    else if (!string_compare(argv[0], "time"))
-        shell_command_time(argc, argv);
+    else if (!string_compare(argv[0], "timer"))
+        shell_command_timer();
 
     else
     {
@@ -192,66 +197,74 @@ static void shell_interpret(char *command)
 
 }
 
+static void shell_handle_input(char c)
+{
+
+    switch (c)
+    {
+
+        case '\t':
+
+            break;
+
+        case '\b':
+
+            if (stack_pop(&shellStack))
+            {
+
+                screen_putc('\b');
+                screen_putc(' ');
+                screen_putc('\b');
+
+             }
+
+            break;
+
+        case '\n':
+
+            stack_push(&shellStack, '\0');
+            screen_putc(c);
+            shell_interpret(shellBuffer);
+
+            break;
+
+        default:
+
+            stack_push(&shellStack, c);
+            screen_putc(c);
+
+            break;
+
+    }
+
+}
+
+static void shell_poll()
+{
+
+    for (;;)
+    {
+
+        char c;
+
+        if ((c = cbuffer_read(&keyboard.cbuffer)))
+            shell_handle_input(c);
+
+    }
+
+}
+
 void shell_init()
 {
+
+    shellStack = stack_create(shellBuffer, SHELL_BUFFER_SIZE);
 
     screen_puts("Fudge\n");
     screen_puts("Copyright (c) 2009 Jens Nyberg\n");
     screen_puts("Type 'help' for a list of commands.\n\n");
 
     shell_clear();
-
-    shellStack = stack_create(shellBuffer, SHELL_BUFFER_SIZE);
-
-    while (1)
-    {
-
-        char c;
-
-        if ((c = cbuffer_read(&keyboard.cbuffer)))
-        {
-
-            switch (c)
-            {
-
-                case '\t':
-
-                    break;
-
-                case '\b':
-
-                    if (stack_pop(&shellStack))
-                    {
-
-                        screen_putc('\b');
-                        screen_putc(' ');
-                        screen_putc('\b');
-
-                    }
-
-                    break;
-
-                case '\n':
-
-                    stack_push(&shellStack, c);
-                    stack_push(&shellStack, '\0');
-                    screen_putc(c);
-                    shell_interpret(shellBuffer);
-
-                    break;
-
-                default:
-
-                    stack_push(&shellStack, c);
-                    screen_putc(c);
-
-                    break;
-
-            }
-
-        }
-
-    }
+    shell_poll();
 
 }
 
