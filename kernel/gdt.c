@@ -41,15 +41,15 @@ void gdt_init()
 
     tss.ss0 = 0x10;
     tss.esp0 = 0x0;
-    tss.cs = 0x0b;
+    tss.cs = 0x0B;
     tss.ss = tss.ds = tss.es = tss.fs = tss.gs = 0x13;
 
-    gdt_set_gate(0, 0, 0x00000000, 0x00, 0x00); // Null segment
-    gdt_set_gate(1, 0, 0xFFFFFFFF, 0x9A, 0xCF); // Kernel code segment
-    gdt_set_gate(2, 0, 0xFFFFFFFF, 0x92, 0xCF); // Kernel data segment
-    gdt_set_gate(3, 0, 0xFFFFFFFF, 0xFA, 0xCF); // User code segment
-    gdt_set_gate(4, 0, 0xFFFFFFFF, 0xF2, 0xCF); // User data segment
-    gdt_set_gate(5, tssp.base, tssp.limit, 0xE9, 0x00); // TSS segment
+    gdt_set_gate(0x00, 0x00000000, 0x00000000, 0x00, 0x00); // Null segment
+    gdt_set_gate(0x01, 0x00000000, 0xFFFFFFFF, 0x9A, 0xCF); // Kernel code segment
+    gdt_set_gate(0x02, 0x00000000, 0xFFFFFFFF, 0x92, 0xCF); // Kernel data segment
+    gdt_set_gate(0x03, 0x00000000, 0xFFFFFFFF, 0xFA, 0xCF); // User code segment
+    gdt_set_gate(0x04, 0x00000000, 0xFFFFFFFF, 0xF2, 0xCF); // User data segment
+    gdt_set_gate(0x05, tssp.base, tssp.limit, 0xE9, 0x00); // TSS segment
 
     gdt_flush();
     tss_flush();
