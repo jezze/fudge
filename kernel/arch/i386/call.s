@@ -10,7 +10,7 @@ call_send:
 
 global call_puts
 call_puts:
-    push ebp,
+    push ebp
     mov ebp, esp
     mov eax, 0x01
     mov ecx, [ebp + 8]
@@ -20,7 +20,7 @@ call_puts:
 
 global call_puts_dec
 call_puts_dec:
-    push ebp,
+    push ebp
     mov ebp, esp
     mov eax, 0x02
     mov ecx, [ebp + 8]
@@ -30,7 +30,7 @@ call_puts_dec:
 
 global call_puts_hex
 call_puts_hex:
-    push ebp,
+    push ebp
     mov ebp, esp
     mov eax, 0x03
     mov ecx, [ebp + 8]
@@ -40,7 +40,7 @@ call_puts_hex:
 
 global call_vfs_walk
 call_vfs_walk:
-    push ebp,
+    push ebp
     mov ebp, esp
     mov eax, 0x12
     mov ecx, [ebp + 8]
