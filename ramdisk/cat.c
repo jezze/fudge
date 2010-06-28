@@ -3,7 +3,7 @@
 #include <kernel/syscall.h>
 #include <kernel/vfs.h>
 
-void main()
+void main(int argc, char *argv[])
 {
 
     vfs_node_t *node = call_vfs_find("about.txt");

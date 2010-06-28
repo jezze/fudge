@@ -36,9 +36,9 @@ static void shell_command_call(int argc, char *argv[])
 
     vfs_read(node, 0, 2000, buffer);
         
-    void (*func)() = buffer;
+    void (*func)(int argc, char *argv[]) = buffer;
 
-    func();
+    func(argc, argv);
 
 }
 

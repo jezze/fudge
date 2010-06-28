@@ -1,7 +1,7 @@
 #include <lib/types.h>
 #include <kernel/syscall.h>
 
-void main()
+void main(int argc, char *argv[])
 {
 
     unsigned int timer;

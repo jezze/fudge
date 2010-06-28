@@ -3,7 +3,7 @@
 #include <kernel/syscall.h>
 #include "cpu.h"
 
-void main()
+void main(int argc, char *argv[])
 {
 
     // CHECK CPUID
