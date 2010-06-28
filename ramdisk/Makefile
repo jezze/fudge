@@ -23,6 +23,7 @@ all:
 clean:
 	rm -f *.o
 	rm -f cat
+	rm -f cpu
 	rm -f date
 	rm -f hello
 	rm -f ls
