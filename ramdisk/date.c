@@ -1,4 +1,3 @@
-#include <lib/types.h>
 #include <kernel/syscall.h>
 
 void main(int argc, char *argv[])

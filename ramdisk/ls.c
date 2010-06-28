@@ -1,5 +1,3 @@
-#include <lib/types.h>
-#include <lib/string.h>
 #include <kernel/syscall.h>
 #include <kernel/vfs.h>
 

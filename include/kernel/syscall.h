@@ -25,7 +25,7 @@ extern vfs_node_t *call_vfs_walk(unsigned int index);
 extern vfs_node_t *call_vfs_find(char *name);
 extern unsigned int call_vfs_read(vfs_node_t *node, char *buffer);
 
-extern unsigned int syscall_handler(uint32_t eax, uint32_t ebx, uint32_t ecx, uint32_t edx, uint32_t edi);
+extern unsigned int syscall_handler(unsigned int eax, unsigned int ebx, unsigned int ecx, unsigned int edx, unsigned int edi);
 extern void syscall_init();
 
 #endif

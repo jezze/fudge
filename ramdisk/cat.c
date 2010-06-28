@@ -1,5 +1,3 @@
-#include <lib/types.h>
-#include <lib/string.h>
 #include <kernel/syscall.h>
 #include <kernel/vfs.h>
 
@@ -13,7 +11,7 @@ void main(int argc, char *argv[])
 
     char buffer[400];
 
-    uint32_t size = call_vfs_read(node, buffer);
+    unsigned int size = call_vfs_read(node, buffer);
         
     buffer[399] = '\0';
 
