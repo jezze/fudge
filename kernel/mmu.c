@@ -4,7 +4,6 @@
 #include <kernel/screen.h>
 #include <kernel/regs.h>
 #include <kernel/isr.h>
-#include <kernel/heap.h>
 #include <kernel/mmu.h>
 
 mmu_directory_t *pageDirectory = (mmu_directory_t *)MMU_PAGE_DIRECTORY_ADDRESS;

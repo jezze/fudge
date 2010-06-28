@@ -1,7 +1,6 @@
 #include <lib/types.h>
 #include <lib/memory.h>
 #include <lib/string.h>
-#include <kernel/heap.h>
 #include <kernel/vfs.h>
 #include <kernel/initrd.h>
 

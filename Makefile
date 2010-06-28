@@ -36,7 +36,6 @@ i386:
 	@$(ASM) $(ASMFLAGS) kernel/arch/i386/isr.s -o kernel/arch/i386/isr.o
 	@$(ASM) $(ASMFLAGS) kernel/arch/i386/loader.s -o kernel/arch/i386/loader.o
 	@$(ASM) $(ASMFLAGS) kernel/arch/i386/mmu.s -o kernel/arch/i386/mmu.o
-	@$(ASM) $(ASMFLAGS) kernel/arch/i386/vbe.s -o kernel/arch/i386/vbe.o
 
 initrd: library
 	@echo "Creating ramdisk..."
@@ -48,7 +47,6 @@ kernel: library i386
 	@$(GCC) $(GCCFLAGS) kernel/assert.c -o kernel/assert.o
 	@$(GCC) $(GCCFLAGS) kernel/cpu.c -o kernel/cpu.o
 	@$(GCC) $(GCCFLAGS) kernel/gdt.c -o kernel/gdt.o
-	@$(GCC) $(GCCFLAGS) kernel/heap.c -o kernel/heap.o
 	@$(GCC) $(GCCFLAGS) kernel/idt.c -o kernel/idt.o
 	@$(GCC) $(GCCFLAGS) kernel/initrd.c -o kernel/initrd.o
 	@$(GCC) $(GCCFLAGS) kernel/irq.c -o kernel/irq.o
@@ -62,8 +60,6 @@ kernel: library i386
 	@$(GCC) $(GCCFLAGS) kernel/screen.c -o kernel/screen.o
 	@$(GCC) $(GCCFLAGS) kernel/shell.c -o kernel/shell.o
 	@$(GCC) $(GCCFLAGS) kernel/syscall.c -o kernel/syscall.o
-	@$(GCC) $(GCCFLAGS) kernel/task.c -o kernel/task.o
-	@$(GCC) $(GCCFLAGS) kernel/vbe.c -o kernel/vbe.o
 	@$(GCC) $(GCCFLAGS) kernel/vfs.c -o kernel/vfs.o
 	@$(LD) $(LDFLAGS) \
     lib/cbuffer.o \
@@ -79,11 +75,9 @@ kernel: library i386
     kernel/arch/i386/isr.o \
     kernel/arch/i386/loader.o \
     kernel/arch/i386/mmu.o \
-    kernel/arch/i386/vbe.o \
     kernel/assert.o \
     kernel/cpu.o \
     kernel/gdt.o \
-    kernel/heap.o \
     kernel/idt.o \
     kernel/initrd.o \
     kernel/irq.o \
@@ -97,8 +91,6 @@ kernel: library i386
     kernel/screen.o \
     kernel/shell.o \
     kernel/syscall.o \
-    kernel/task.o \
-    kernel/vbe.o \
     kernel/vfs.o \
     -o root/boot/kernel
 

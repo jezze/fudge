@@ -10,16 +10,13 @@
 #include <kernel/irq.h>
 #include <kernel/pit.h>
 #include <kernel/kbd.h>
-#include <kernel/heap.h>
 #include <kernel/mmu.h>
 #include <kernel/cpu.h>
 #include <kernel/vfs.h>
 #include <kernel/initrd.h>
 #include <kernel/shell.h>
 #include <kernel/syscall.h>
-#include <kernel/task.h>
 #include <kernel/rtc.h>
-#include <kernel/vbe.h>
 #include <kernel/kernel.h>
 
 kernel_t kernel;
