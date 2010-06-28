@@ -21,54 +21,37 @@
 
 kernel_t kernel;
 
-static void kernel_init_devices()
-{
-
-    pit_init();
-    kbd_init();
-
-}
-
-static void kernel_init_handlers()
-{
-
-    isr_register_handler(0x0E, mmu_handler);
-    irq_register_handler(0x00, pit_handler);
-    irq_register_handler(0x01, kbd_handler);
-
-}
-
-
-static void kernel_init_tables()
+void kernel_main(mboot_info_t *header, uint32_t magic)
 {
 
     gdt_init();
     idt_init();
-    isr_init();
-    irq_init();
-
-}
-
-void kernel_main(mboot_info_t *header, uint32_t magic)
-{
-
-    kernel_init_tables();
-    kernel_init_handlers();
 
     screen_init();
 
-    ASSERT(magic == 0x2BADB002);
-    ASSERT(header->modulesCount > 0);
+    ASSERT(magic == MBOOT_MAGIC);
+    ASSERT(header->modulesCount);
 
-    kernel_init_devices();
+    isr_init();
+    isr_register_handler(0x0E, mmu_handler);
+
+    irq_init();
+    irq_register_handler(0x00, pit_handler);
+    irq_register_handler(0x01, kbd_handler);
+
+    syscall_init();
+
     mmu_init();
+    
+    pit_init();
+    kbd_init();
+
+    isr_enable();
+
     fsRoot = initrd_init(*((unsigned int *)header->modulesAddresses));
 
     mboot_init(header);
 
-    isr_enable();
-
-    syscall_init();
     shell_init();
 
     for (;;);

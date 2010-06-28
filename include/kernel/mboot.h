@@ -13,6 +13,8 @@
 #define MBOOT_FLAG_APM     0x200
 #define MBOOT_FLAG_VBE     0x400
 
+#define MBOOT_MAGIC 0x2BADB002
+
 typedef struct mboot_info
 {
 
