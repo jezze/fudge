@@ -9,23 +9,13 @@ void cpu_init()
     if (!cpu_check_cpuid())
         return;
 
-    char vendor[12];
+    char vendor[13];
+    vendor[12] = '\0';
 
     cpu_get_vendor(vendor);
 
     screen_puts("Processor: ");
-    screen_putc(vendor[0]);
-    screen_putc(vendor[1]);
-    screen_putc(vendor[2]);
-    screen_putc(vendor[3]);
-    screen_putc(vendor[4]);
-    screen_putc(vendor[5]);
-    screen_putc(vendor[6]);
-    screen_putc(vendor[7]);
-    screen_putc(vendor[8]);
-    screen_putc(vendor[9]);
-    screen_putc(vendor[10]);
-    screen_putc(vendor[11]);
+    screen_puts(vendor);
     screen_putc('\n');
 
 }

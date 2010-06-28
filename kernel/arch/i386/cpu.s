@@ -18,12 +18,18 @@ cpu_get_vendor:
     push ebp
     mov ebp, esp
     push edi
+    push ebx
+    push ecx
+    push edx
     mov edi, [ebp + 8]
     mov eax, 0x0
     cpuid
     mov [edi + 0], ebx
     mov [edi + 4], edx
     mov [edi + 8], ecx
+    pop edx
+    pop ecx
+    pop ebx
     pop edi
     pop ebp
     ret
