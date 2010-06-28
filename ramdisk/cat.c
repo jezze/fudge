@@ -1,25 +1,24 @@
 #include <lib/types.h>
-#include <kernel/screen.h>
+#include <lib/string.h>
+#include <kernel/syscall.h>
 #include <kernel/vfs.h>
 
 void main()
 {
 
-    vfs_node_t *node = vfs_find(fsRoot, "about.txt");
+    vfs_node_t *node = call_vfs_find("about.txt");
 
     if (!node)
         return;
 
     char buffer[400];
 
-    uint32_t size = vfs_read(node, 0, 400, buffer);
+    uint32_t size = call_vfs_read(node, buffer);
         
-    uint32_t i;
+    buffer[399] = '\0';
 
-    for (i = 0; i < size; i++)
-        screen_putc(buffer[i]);
-
-    screen_putc('\n');
+    call_puts(buffer);
+    call_puts("\n");
 
 }
 
