@@ -29,7 +29,6 @@ clean:
 i386:
 	@echo "Building i386..."
 	@$(ASM) $(ASMFLAGS) kernel/arch/i386/call.s -o kernel/arch/i386/call.o
-	@$(ASM) $(ASMFLAGS) kernel/arch/i386/cpu.s -o kernel/arch/i386/cpu.o
 	@$(ASM) $(ASMFLAGS) kernel/arch/i386/gdt.s -o kernel/arch/i386/gdt.o
 	@$(ASM) $(ASMFLAGS) kernel/arch/i386/idt.s -o kernel/arch/i386/idt.o
 	@$(ASM) $(ASMFLAGS) kernel/arch/i386/irq.s -o kernel/arch/i386/irq.o
@@ -40,12 +39,11 @@ i386:
 initrd: library
 	@echo "Creating ramdisk..."
 	@$(GCC) -O2 tools/mkinitrd.c -o tools/mkinitrd
-	$(MKINITRD) ramdisk/about.txt about.txt ramdisk/cat cat ramdisk/date date ramdisk/hello hello ramdisk/help.txt help.txt ramdisk/ls ls ramdisk/timer timer
+	$(MKINITRD) ramdisk/about.txt about.txt ramdisk/cat cat ramdisk/cpu cpu ramdisk/date date ramdisk/hello hello ramdisk/help.txt help.txt ramdisk/ls ls ramdisk/timer timer
 
 kernel: library i386
 	@echo "Building kernel..."
 	@$(GCC) $(GCCFLAGS) kernel/assert.c -o kernel/assert.o
-	@$(GCC) $(GCCFLAGS) kernel/cpu.c -o kernel/cpu.o
 	@$(GCC) $(GCCFLAGS) kernel/gdt.c -o kernel/gdt.o
 	@$(GCC) $(GCCFLAGS) kernel/idt.c -o kernel/idt.o
 	@$(GCC) $(GCCFLAGS) kernel/initrd.c -o kernel/initrd.o
@@ -68,7 +66,6 @@ kernel: library i386
     lib/stack.o \
     lib/string.o \
     kernel/arch/i386/call.o \
-    kernel/arch/i386/cpu.o \
     kernel/arch/i386/gdt.o \
     kernel/arch/i386/idt.o \
     kernel/arch/i386/irq.o \
@@ -76,7 +73,6 @@ kernel: library i386
     kernel/arch/i386/loader.o \
     kernel/arch/i386/mmu.o \
     kernel/assert.o \
-    kernel/cpu.o \
     kernel/gdt.o \
     kernel/idt.o \
     kernel/initrd.o \

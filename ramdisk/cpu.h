@@ -16,9 +16,7 @@
 #define CPU_VENDOR_VIA              "CentaurHauls"
 
 extern unsigned int cpu_check_cpuid();
-
 extern void cpu_get_vendor(char *destination);
-extern void cpu_init();
 
 #endif
 

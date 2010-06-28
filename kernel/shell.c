@@ -7,7 +7,6 @@
 #include <kernel/pit.h>
 #include <kernel/kbd.h>
 #include <kernel/vfs.h>
-#include <kernel/cpu.h>
 #include <kernel/rtc.h>
 #include <kernel/shell.h>
 

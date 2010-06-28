@@ -11,7 +11,6 @@
 #include <kernel/pit.h>
 #include <kernel/kbd.h>
 #include <kernel/mmu.h>
-#include <kernel/cpu.h>
 #include <kernel/vfs.h>
 #include <kernel/initrd.h>
 #include <kernel/shell.h>
