@@ -10,10 +10,8 @@ void main()
 
     unsigned int i;
 
-    for (i = 0; i < 4; i++)
+    for (i = 0; (node = call_vfs_walk(i)); i++)
     {
-
-        node = call_vfs_walk(i);
 
         if (node->flags == VFS_DIRECTORY)
             call_puts("/");

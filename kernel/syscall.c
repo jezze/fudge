@@ -7,7 +7,7 @@
 #include <kernel/pit.h>
 #include <kernel/syscall.h>
 
-unsigned int syscall_handler(uint32_t edi, uint32_t esi, uint32_t ebp, uint32_t esp, uint32_t ebx, uint32_t edx, uint32_t ecx, uint32_t eax)
+unsigned int syscall_handler(uint32_t ecx, uint32_t eax)
 {
 
     if (eax == SYSCALL_SCREEN_PUTS)

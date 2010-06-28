@@ -254,9 +254,10 @@ isr31:
 global syscall
 syscall:
     cli
-    pusha
+    push eax
+    push ecx
     call syscall_handler
-    popa
+    add esp, 8
 	iret
 
 isr_common:

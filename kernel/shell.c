@@ -73,25 +73,6 @@ static void shell_command_clear()
 
 }
 
-static void shell_command_ls()
-{
-
-    unsigned int i;
-    vfs_node_t *node;
-
-    for (i = 0; (node = vfs_walk(fsRoot, i)); i++)
-    {
-
-        if (node->flags == VFS_DIRECTORY)
-            screen_puts("/");
-
-        screen_puts(node->name);
-        screen_puts("\n");
-
-    }
-
-}
-
 static void shell_command_null()
 {
 
@@ -148,9 +129,6 @@ static void shell_interpret(char *command)
 
     else if (!string_compare(argv[0], "clear"))
         shell_command_clear();
-
-    else if (!string_compare(argv[0], "ls"))
-        shell_command_ls();
 
     else
     {
