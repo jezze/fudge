@@ -23,7 +23,7 @@ extern int call_puts_dec(unsigned int n);
 extern int call_puts_hex(unsigned int n);
 extern vfs_node_t* call_vfs_walk(unsigned int index);
 
-extern unsigned int syscall_handler(uint32_t ecx, uint32_t eax);
+extern unsigned int syscall_handler(uint32_t eax, uint32_t ebx, uint32_t ecx, uint32_t edx);
 extern void syscall_init();
 
 #endif
