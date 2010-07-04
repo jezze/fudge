@@ -6,8 +6,6 @@
 #include <kernel/isr.h>
 #include <kernel/mmu.h>
 
-mmu_directory_t *pageDirectory = (mmu_directory_t *)MMU_PAGE_DIRECTORY_ADDRESS;
-
 void mmu_handler(registers_t *r)
 {
 
@@ -66,9 +64,11 @@ static void mmu_set_directory(mmu_directory_t *directory, uint32_t base, uint32_
 void mmu_init()
 {
 
-    mmu_init_directory(pageDirectory);
-    mmu_set_directory(pageDirectory, 0x0, 0x400000, MMU_PAGE_DIRECTORY_FLAG_PRESENT | MMU_PAGE_DIRECTORY_FLAG_WRITEABLE);
-    mmu_flush(pageDirectory);
+    mmu_directory_t *directory = (mmu_directory_t *)MMU_PAGE_DIRECTORY_ADDRESS;
+
+    mmu_init_directory(directory);
+    mmu_set_directory(directory, 0x0, 0x400000, MMU_PAGE_DIRECTORY_FLAG_PRESENT | MMU_PAGE_DIRECTORY_FLAG_WRITEABLE);
+    mmu_flush(directory);
 
 }
 
