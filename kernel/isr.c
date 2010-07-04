@@ -4,29 +4,29 @@
 #include <kernel/screen.h>
 #include <kernel/isr.h>
 
-void *isr_routines[ISR_ROUTINES_SIZE];
+void *isrRoutines[ISR_ROUTINES_SIZE];
 
 void isr_register_handler(unsigned char index, void (*handler)(registers_t *r))
 {
 
-    isr_routines[index] = handler;
+    isrRoutines[index] = handler;
 
 }
 
 void isr_unregister_handler(unsigned char index)
 {
 
-    isr_routines[index] = 0;
+    isrRoutines[index] = 0;
 
 }
 
 void isr_handler(registers_t *r)
 {
 
-    if (isr_routines[r->int_no] != 0)
+    if (isrRoutines[r->int_no] != 0)
     {
 
-        void (*handler)(registers_t *r) = isr_routines[r->int_no];
+        void (*handler)(registers_t *r) = isrRoutines[r->int_no];
 
         if (handler)
             handler(r);

@@ -4,19 +4,19 @@
 #include <kernel/idt.h>
 #include <kernel/irq.h>
 
-void *irq_routines[IRQ_ROUTINES_SIZE];
+void *irqRoutines[IRQ_ROUTINES_SIZE];
 
 void irq_register_handler(unsigned char index, void (*handler)(registers_t *r))
 {
 
-    irq_routines[index] = handler;
+    irqRoutines[index] = handler;
 
 }
 
 void irq_unregister_handler(unsigned char index)
 {
 
-    irq_routines[index] = 0;
+    irqRoutines[index] = 0;
 
 }
 
@@ -39,7 +39,7 @@ void irq_remap()
 void irq_handler(registers_t *r)
 {
 
-    void (*handler)(registers_t *r) = irq_routines[r->int_no - 32];
+    void (*handler)(registers_t *r) = irqRoutines[r->int_no - 32];
 
     if (handler)
         handler(r);
