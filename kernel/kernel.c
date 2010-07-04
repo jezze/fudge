@@ -49,8 +49,6 @@ void kernel_main(mboot_info_t *header, uint32_t magic)
 
     fsRoot = initrd_init(*((unsigned int *)header->modulesAddresses));
 
-    mboot_init(header);
-
     shell_init();
 
     for (;;);
