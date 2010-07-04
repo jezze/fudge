@@ -79,13 +79,8 @@ static void mmu_set_directory(mmu_directory_t *directory, uint32_t base, uint32_
     directory->tables[0] = pageTable;
     directory->tables[0] = (mmu_table_t *)((uint32_t)directory->tables[0] | flags);
 
-    for (i = 0; i < 1024; i++)
-    {
-
+    for (i = 0; i < 1024; i++, base += 0x1000)
         pageTable->entries[i] = base | 3;
-        base = base + 0x1000;
-
-    }
 
 }
 
