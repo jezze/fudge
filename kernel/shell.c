@@ -183,7 +183,7 @@ void shell_init()
 
     screen_puts("Fudge\n");
     screen_puts("Copyright (c) 2009 Jens Nyberg\n");
-    screen_puts("Type 'help' for a list of commands.\n\n");
+    screen_puts("Type 'cat help.txt' to read the help section.\n\n");
 
     shell_clear();
     shell_poll();
