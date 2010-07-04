@@ -21,10 +21,11 @@ all:
 	@$(LD) $(LDFLAGS) timer.o ../kernel/arch/i386/call.o -o timer
 
 clean:
-	rm -f *.o
-	rm -f cat
-	rm -f cpu
-	rm -f date
-	rm -f hello
-	rm -f ls
-	rm -f timer
+	@rm -f *.o
+	@rm -f cat
+	@rm -f cpu
+	@rm -f date
+	@rm -f hello
+	@rm -f ls
+	@rm -f timer
+

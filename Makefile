@@ -25,6 +25,7 @@ clean:
 	@rm -f root/boot/kernel
 	@rm -f root/boot/initrd
 	@rm -f tools/mkinitrd
+	@cd ramdisk; make clean
 
 i386:
 	@echo "Building i386..."
@@ -38,6 +39,7 @@ i386:
 
 initrd: library
 	@echo "Creating ramdisk..."
+	@cd ramdisk; make
 	@$(GCC) -O2 tools/mkinitrd.c -o tools/mkinitrd
 	$(MKINITRD) ramdisk/about.txt about.txt ramdisk/cat cat ramdisk/cpu cpu ramdisk/date date ramdisk/hello hello ramdisk/help.txt help.txt ramdisk/ls ls ramdisk/timer timer
 
