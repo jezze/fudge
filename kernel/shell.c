@@ -24,10 +24,7 @@ static void shell_clear()
 static void shell_command_call(int argc, char *argv[])
 {
 
-    if (argc != 2)
-        return;
-
-    vfs_node_t *node = vfs_find(fsRoot, argv[1]);
+    vfs_node_t *node = vfs_find(fsRoot, argv[0]);
 
     if (!node)
         return;
@@ -39,30 +36,6 @@ static void shell_command_call(int argc, char *argv[])
     void (*func)(int argc, char *argv[]) = buffer;
 
     func(argc, argv);
-
-}
-
-static void shell_command_cat(int argc, char *argv[])
-{
-
-    if (argc != 2)
-        return;
-
-    vfs_node_t *node = vfs_find(fsRoot, argv[1]);
-
-    if (!node)
-        return;
-
-    char buffer[2000];
-
-    unsigned int size = vfs_read(node, 0, 2000, buffer);
-        
-    unsigned int i;
-
-    for (i = 0; i < size; i++)
-        screen_putc(buffer[i]);
-
-    screen_putc('\n');
 
 }
 
@@ -121,20 +94,24 @@ static void shell_interpret(char *command)
     if (!string_compare(argv[0], ""))
         shell_command_null();
 
-    else if (!string_compare(argv[0], "call"))
-        shell_command_call(argc, argv);
-
-    else if (!string_compare(argv[0], "cat"))
-        shell_command_cat(argc, argv);
-
     else if (!string_compare(argv[0], "clear"))
         shell_command_clear();
 
     else
     {
 
-        screen_puts(argv[0]);
-        screen_puts(": Command not found\n");
+        vfs_node_t *node = vfs_find(fsRoot, argv[0]);
+
+        if (node)
+            shell_command_call(argc, argv);
+
+        else
+        {
+
+            screen_puts(argv[0]);
+            screen_puts(": Command not found\n");
+
+        }
 
     }
 

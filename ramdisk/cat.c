@@ -4,7 +4,10 @@
 void main(int argc, char *argv[])
 {
 
-    vfs_node_t *node = call_vfs_find("about.txt");
+    if (argc != 2)
+        return;
+
+    vfs_node_t *node = call_vfs_find(argv[1]);
 
     if (!node)
         return;
