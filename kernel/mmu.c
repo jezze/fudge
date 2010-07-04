@@ -53,24 +53,6 @@ static void mmu_init_directory(mmu_directory_t *directory)
 
 }
 
-static void mmu_map(mmu_directory_t *directory, uint32_t base, uint32_t limit, uint32_t tableFlags, uint32_t entryFlags)
-{
-/*
-    base /= 0x1000;
-    limit /= 0x1000;
-
-    uint32_t i;
-
-    for (i = base; i < limit; i++)
-    {
-
-        directory->tables[i / 1024] = (mmu_table_t *)(MMU_PAGE_TABLE_ADDRESS + ((i / 1024) * 0x1000) | tableFlags);
-        directory->tables[i / 1024]->entries[i % 1024] = (i * 0x1000) | entryFlags;
-
-    }
-*/
-}
-
 static void mmu_set_directory(mmu_directory_t *directory, uint32_t base, uint32_t limit, uint32_t flags)
 {
 
