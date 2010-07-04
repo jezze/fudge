@@ -21,13 +21,8 @@ static void shell_clear()
 
 }
 
-static void shell_command_call(int argc, char *argv[])
+static void shell_call(vfs_node_t *node, int argc, char *argv[])
 {
-
-    vfs_node_t *node = vfs_find(fsRoot, argv[0]);
-
-    if (!node)
-        return;
 
     char *buffer = (char *)0x200000;
 
@@ -36,20 +31,6 @@ static void shell_command_call(int argc, char *argv[])
     void (*func)(int argc, char *argv[]) = buffer;
 
     func(argc, argv);
-
-}
-
-static void shell_command_clear()
-{
-
-    screen_clear();
-
-}
-
-static void shell_command_null()
-{
-
-    return;
 
 }
 
@@ -92,10 +73,16 @@ static void shell_interpret(char *command)
     int argc = shell_get_arguments(argv, command);
 
     if (!string_compare(argv[0], ""))
-        shell_command_null();
+    {
+
+    }
 
     else if (!string_compare(argv[0], "clear"))
-        shell_command_clear();
+    {
+
+        screen_clear();
+
+    }
 
     else
     {
@@ -103,7 +90,7 @@ static void shell_interpret(char *command)
         vfs_node_t *node = vfs_find(fsRoot, argv[0]);
 
         if (node)
-            shell_command_call(argc, argv);
+            shell_call(node, argc, argv);
 
         else
         {
