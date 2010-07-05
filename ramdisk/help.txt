@@ -4,8 +4,9 @@ clear           : Clear screen
 
 To execute a program simply type the name of the program.
 
-cat             : Show content of file
-ls              : Show files in directory
-timer           : Show timer value
-date            : Show current date
-
+cat             : Display content of file
+cpu             : Display cpu information
+date            : Display date
+hello           : Hello world!
+ls              : Display files in directory
+timer           : Display current timer value

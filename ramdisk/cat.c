@@ -22,7 +22,6 @@ void main(int argc, char *argv[])
         buffer[size] = '\0';
 
     call_puts(buffer);
-    call_puts("\n");
 
 }
 
