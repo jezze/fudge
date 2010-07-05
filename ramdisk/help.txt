@@ -1,6 +1,11 @@
-To execute a program simply type the name of the program.
-
 List of built-in functions for the shell:
 
 clear           : Clear screen
-help            : Prints help section found in help.txt
+
+To execute a program simply type the name of the program.
+
+cat             : Show content of file
+ls              : Show files in directory
+timer           : Show timer value
+date            : Show current date
+
