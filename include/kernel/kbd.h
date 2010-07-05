@@ -1,6 +1,7 @@
 #ifndef KBD_H
 #define KBD_H
 
+#define KBD_PORT_READ 0x60
 #define KBD_BUFFER_SIZE 256
 
 typedef struct kbd_device
