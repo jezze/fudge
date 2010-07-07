@@ -8,7 +8,7 @@ ISO=genisoimage
 ISOFLAGS=-R -b boot/grub/stage2_eltorito -no-emul-boot -boot-load-size 4 -boot-info-table 
 MKINITRD=./tools/mkinitrd
 
-.PHONY: all cd i386 initrd kernel library
+.PHONY: all cd clean i386 initrd kernel library
 
 all: kernel initrd cd
 
