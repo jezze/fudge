@@ -6,26 +6,26 @@
 #include <kernel/isr.h>
 #include <kernel/mmu.h>
 
-void mmu_handler(registers_t *r)
+void mmu_handler(unsigned int error)
 {
 
     unsigned int address = mmu_read_cr2();
 
     screen_puts("PAGE FAULT (");
 
-    if (!(r->err_code & MMU_ERROR_PRESENT))
+    if (!(error & MMU_ERROR_PRESENT))
         screen_puts("present");
 
-    if (r->err_code & MMU_ERROR_RW)
+    if (error & MMU_ERROR_RW)
         screen_puts("read-only");
 
-    if (r->err_code & MMU_ERROR_USER)
+    if (error & MMU_ERROR_USER)
         screen_puts("user-mode");
 
-    if (r->err_code & MMU_ERROR_RESERVED)
+    if (error & MMU_ERROR_RESERVED)
         screen_puts("reserved");
 
-    if (r->err_code & MMU_ERROR_FETCH)
+    if (error & MMU_ERROR_FETCH)
         screen_puts("fetch");
 
     screen_puts(") at 0x");
