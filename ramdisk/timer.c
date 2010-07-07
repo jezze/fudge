@@ -1,4 +1,4 @@
-#include <kernel/syscall.h>
+#include <kernel/call.h>
 
 void main(int argc, char *argv[])
 {

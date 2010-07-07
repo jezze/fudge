@@ -36,6 +36,7 @@ i386:
 	@$(ASM) $(ASMFLAGS) kernel/arch/i386/isr.s -o kernel/arch/i386/isr.o
 	@$(ASM) $(ASMFLAGS) kernel/arch/i386/loader.s -o kernel/arch/i386/loader.o
 	@$(ASM) $(ASMFLAGS) kernel/arch/i386/mmu.s -o kernel/arch/i386/mmu.o
+	@$(ASM) $(ASMFLAGS) kernel/arch/i386/syscall.s -o kernel/arch/i386/syscall.o
 
 initrd: library
 	@echo "Creating ramdisk..."
@@ -74,6 +75,7 @@ kernel: library i386
     kernel/arch/i386/isr.o \
     kernel/arch/i386/loader.o \
     kernel/arch/i386/mmu.o \
+    kernel/arch/i386/syscall.o \
     kernel/assert.o \
     kernel/gdt.o \
     kernel/idt.o \

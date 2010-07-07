@@ -251,18 +251,6 @@ isr31:
 	push byte 31
 	jmp isr_common
 
-global syscall
-syscall:
-    cli
-    push edi
-    push edx
-    push ecx
-    push ebx
-    push eax
-    call syscall_handler
-    add esp, 20
-	iret
-
 isr_common:
 	pusha
 	push ds
