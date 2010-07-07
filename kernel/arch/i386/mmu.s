@@ -1,3 +1,12 @@
+extern mmu_handler
+
+global mmu_interrupt
+mmu_interrupt:
+	cli
+	jmp mmu_handler
+    pop eax
+    iret
+
 global mmu_flush
 mmu_flush:
     push ebp

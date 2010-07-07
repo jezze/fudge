@@ -1,7 +1,7 @@
 extern syscall_handler
 
-global syscall
-syscall:
+global syscall_interrupt
+syscall_interrupt:
     cli
     push edi
     push edx
