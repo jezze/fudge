@@ -36,29 +36,27 @@ void kbd_handler(registers_t *r)
 
     unsigned char scancode = inb(KBD_PORT_READ);
 
+    if (scancode == 0x2A)
+        keyboard.toggleShift = 1;
+
+    if (scancode == 0xAA)
+        keyboard.toggleShift = 0;
+
     if (scancode & 0x80)
     {
 
-        if (scancode == 0xAA)
-            keyboard.toggleShift = 0;
+        // Break codes
 
     }
 
     else
     {
 
-        if (scancode == 0x2A)
-            keyboard.toggleShift = 1;
-
+        // Make codes
+        if (keyboard.toggleShift)
+            cbuffer_write(&keyboard.cbuffer, kbdMapUpperUS[scancode]);
         else
-        {
-
-            if (keyboard.toggleShift)
-                cbuffer_write(&keyboard.cbuffer, kbdMapUpperUS[scancode]);
-            else
-                cbuffer_write(&keyboard.cbuffer, kbdMapLowerUS[scancode]);
-
-        }
+            cbuffer_write(&keyboard.cbuffer, kbdMapLowerUS[scancode]);
 
     }
 
