@@ -32,7 +32,7 @@ void kernel_main(mboot_info_t *header, uint32_t magic)
     ASSERT(header->modulesCount);
 
     isr_init();
-    idt_set_gate(0x0E, (uint32_t)mmu_interrupt, 0x08, 0x8E);
+    isr_register_handler(0x0E, mmu_handler);
     idt_set_gate(0x80, (uint32_t)syscall_interrupt, 0x08, 0x8E);
 
     irq_init();

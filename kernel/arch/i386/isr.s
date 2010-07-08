@@ -1,5 +1,4 @@
 extern isr_handler
-extern syscall_handler
 
 ; Divide By Zero Exception
 global isr0

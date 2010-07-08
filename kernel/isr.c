@@ -6,7 +6,7 @@
 
 void *isrRoutines[ISR_ROUTINES_SIZE];
 
-void isr_register_handler(unsigned char index, void (*handler)(registers_t *r))
+void isr_register_handler(unsigned char index, void (*handler)(registers_t *registers))
 {
 
     isrRoutines[index] = handler;
@@ -20,16 +20,16 @@ void isr_unregister_handler(unsigned char index)
 
 }
 
-void isr_handler(registers_t *r)
+void isr_handler(registers_t *registers)
 {
 
-    if (isrRoutines[r->int_no] != 0)
+    if (isrRoutines[registers->int_no] != 0)
     {
 
-        void (*handler)(registers_t *r) = isrRoutines[r->int_no];
+        void (*handler)(registers_t *registers) = isrRoutines[registers->int_no];
 
         if (handler)
-            handler(r);
+            handler(registers);
     
     }
 
@@ -37,7 +37,7 @@ void isr_handler(registers_t *r)
     {
 
         screen_puts("Unhandled interrupt: 0x");
-        screen_puts_hex(r->int_no);
+        screen_puts_hex(registers->int_no);
 
     }
 
@@ -60,6 +60,7 @@ void isr_init()
     idt_set_gate(0x0B, (uint32_t)isr11, 0x08, 0x8E);
     idt_set_gate(0x0C, (uint32_t)isr12, 0x08, 0x8E);
     idt_set_gate(0x0D, (uint32_t)isr13, 0x08, 0x8E);
+    idt_set_gate(0x0E, (uint32_t)isr14, 0x08, 0x8E);
     idt_set_gate(0x0F, (uint32_t)isr15, 0x08, 0x8E);
     idt_set_gate(0x10, (uint32_t)isr16, 0x08, 0x8E);
     idt_set_gate(0x11, (uint32_t)isr17, 0x08, 0x8E);
