@@ -8,6 +8,22 @@
 #include <kernel/pit.h>
 #include <kernel/syscall.h>
 
+void *syscallRoutines[SYSCALL_TABLE_SIZE];
+
+void syscall_register_handler(unsigned char index, void (*handler)(registers_t *registers))
+{
+
+    syscallRoutines[index] = handler;
+
+}
+
+void syscall_unregister_handler(unsigned char index)
+{
+
+    syscallRoutines[index] = 0;
+
+}
+
 unsigned int syscall_handler(unsigned int eax, unsigned int ebx, unsigned int ecx, unsigned int edx, unsigned int edi)
 {
 
