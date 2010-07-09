@@ -29,7 +29,6 @@ clean:
 
 i386:
 	@echo "Building i386..."
-	@$(ASM) $(ASMFLAGS) kernel/arch/i386/call.s -o kernel/arch/i386/call.o
 	@$(ASM) $(ASMFLAGS) kernel/arch/i386/gdt.s -o kernel/arch/i386/gdt.o
 	@$(ASM) $(ASMFLAGS) kernel/arch/i386/idt.s -o kernel/arch/i386/idt.o
 	@$(ASM) $(ASMFLAGS) kernel/arch/i386/irq.s -o kernel/arch/i386/irq.o
@@ -61,14 +60,14 @@ kernel: library i386
 	@$(GCC) $(GCCFLAGS) kernel/screen.c -o kernel/screen.o
 	@$(GCC) $(GCCFLAGS) kernel/shell.c -o kernel/shell.o
 	@$(GCC) $(GCCFLAGS) kernel/syscall.c -o kernel/syscall.o
-	@$(GCC) $(GCCFLAGS) kernel/vfs.c -o kernel/vfs.o
 	@$(LD) $(LDFLAGS) \
+    lib/call.o \
     lib/cbuffer.o \
     lib/io.o \
     lib/memory.o \
     lib/stack.o \
     lib/string.o \
-    kernel/arch/i386/call.o \
+    lib/vfs.o \
     kernel/arch/i386/gdt.o \
     kernel/arch/i386/idt.o \
     kernel/arch/i386/irq.o \
@@ -91,14 +90,15 @@ kernel: library i386
     kernel/screen.o \
     kernel/shell.o \
     kernel/syscall.o \
-    kernel/vfs.o \
     -o root/boot/kernel
 
 library:
 	@echo "Building library..."
-	@$(GCC) $(GCCFLAGS) lib/stack.c -o lib/stack.o
+	@$(ASM) $(ASMFLAGS) lib/call.s -o lib/call.o
 	@$(GCC) $(GCCFLAGS) lib/cbuffer.c -o lib/cbuffer.o
-	@$(GCC) $(GCCFLAGS) lib/string.c -o lib/string.o
-	@$(GCC) $(GCCFLAGS) lib/memory.c -o lib/memory.o
 	@$(GCC) $(GCCFLAGS) lib/io.c -o lib/io.o
+	@$(GCC) $(GCCFLAGS) lib/memory.c -o lib/memory.o
+	@$(GCC) $(GCCFLAGS) lib/stack.c -o lib/stack.o
+	@$(GCC) $(GCCFLAGS) lib/string.c -o lib/string.o
+	@$(GCC) $(GCCFLAGS) lib/vfs.c -o lib/vfs.o
 

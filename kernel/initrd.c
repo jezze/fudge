@@ -1,7 +1,7 @@
 #include <lib/types.h>
 #include <lib/memory.h>
 #include <lib/string.h>
-#include <kernel/vfs.h>
+#include <lib/vfs.h>
 #include <kernel/initrd.h>
 
 initrd_header_t *initrdHeader;

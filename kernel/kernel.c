@@ -1,5 +1,6 @@
 #include <lib/types.h>
 #include <lib/cbuffer.h>
+#include <lib/vfs.h>
 #include <kernel/assert.h>
 #include <kernel/screen.h>
 #include <kernel/regs.h>
@@ -11,7 +12,6 @@
 #include <kernel/pit.h>
 #include <kernel/kbd.h>
 #include <kernel/mmu.h>
-#include <kernel/vfs.h>
 #include <kernel/initrd.h>
 #include <kernel/shell.h>
 #include <kernel/syscall.h>

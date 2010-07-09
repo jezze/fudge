@@ -1,4 +1,4 @@
-#include <kernel/call.h>
+#include <lib/call.h>
 #include "cpu.h"
 
 void main(int argc, char *argv[])

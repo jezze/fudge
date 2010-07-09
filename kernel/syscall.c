@@ -1,11 +1,11 @@
 #include <lib/types.h>
+#include <lib/call.h>
+#include <lib/vfs.h>
 #include <kernel/regs.h>
 #include <kernel/isr.h>
 #include <kernel/screen.h>
-#include <kernel/vfs.h>
 #include <kernel/rtc.h>
 #include <kernel/pit.h>
-#include <kernel/call.h>
 #include <kernel/syscall.h>
 
 unsigned int syscall_handler(unsigned int eax, unsigned int ebx, unsigned int ecx, unsigned int edx, unsigned int edi)

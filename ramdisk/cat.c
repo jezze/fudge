@@ -1,5 +1,5 @@
-#include <kernel/call.h>
-#include <kernel/vfs.h>
+#include <lib/call.h>
+#include <lib/vfs.h>
 
 void main(int argc, char *argv[])
 {
