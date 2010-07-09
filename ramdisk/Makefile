@@ -1,7 +1,7 @@
 ASM=nasm
 ASMFLAGS=-f elf
 GCC=gcc
-GCCFLAGS=-c -O2 -I../include -Wall -ffreestanding -nostdlib -nostartfiles -nodefaultlibs
+GCCFLAGS=-c -O2 -I../include/lib -Wall -ffreestanding -nostdlib -nostartfiles -nodefaultlibs
 LD=ld
 LDFLAGS=--oformat binary -Ttext 0x200000 -e main
 

@@ -1,4 +1,5 @@
-#include <lib/call.h>
+#include <vfs.h>
+#include <call.h>
 #include "cpu.h"
 
 void main(int argc, char *argv[])

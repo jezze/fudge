@@ -1,8 +1,6 @@
 #ifndef CALL_H
 #define CALL_H
 
-#include <lib/vfs.h>
-
 #define SYSCALL_SCREEN_PUTS     0x01
 #define SYSCALL_SCREEN_PUTS_DEC 0x02
 #define SYSCALL_SCREEN_PUTS_HEX 0x03
