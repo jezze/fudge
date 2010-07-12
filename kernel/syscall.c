@@ -24,7 +24,7 @@ void syscall_unregister_handler(unsigned char index)
 
 }
 
-unsigned int syscall_handler(unsigned int eax, unsigned int ebx, unsigned int ecx, unsigned int edx, unsigned int edi)
+unsigned int syscall_handler(unsigned int eax, unsigned int ebx, unsigned int ecx, unsigned int edx, unsigned int esi, unsigned int edi)
 {
 
     if (eax == SYSCALL_SCREEN_PUTS)
