@@ -3,7 +3,7 @@
 #include <lib/stack.h>
 #include <lib/string.h>
 #include <lib/vfs.h>
-#include <kernel/regs.h>
+#include <kernel/isr.h>
 #include <kernel/screen.h>
 #include <kernel/kbd.h>
 #include <kernel/shell.h>

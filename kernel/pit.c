@@ -1,6 +1,6 @@
 #include <lib/types.h>
 #include <lib/io.h>
-#include <kernel/regs.h>
+#include <kernel/isr.h>
 #include <kernel/irq.h>
 #include <kernel/pit.h>
 

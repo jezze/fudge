@@ -3,7 +3,6 @@
 #include <lib/vfs.h>
 #include <kernel/assert.h>
 #include <kernel/screen.h>
-#include <kernel/regs.h>
 #include <kernel/mboot.h>
 #include <kernel/gdt.h>
 #include <kernel/idt.h>

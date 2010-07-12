@@ -1,7 +1,7 @@
 #include <lib/types.h>
 #include <lib/io.h>
-#include <kernel/regs.h>
 #include <kernel/idt.h>
+#include <kernel/isr.h>
 #include <kernel/irq.h>
 
 void *irqRoutines[IRQ_ROUTINES_SIZE];

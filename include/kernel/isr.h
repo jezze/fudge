@@ -3,6 +3,16 @@
 
 #define ISR_ROUTINES_SIZE 256
 
+typedef struct registers
+{
+
+    uint32_t gs, fs, es, ds;
+    uint32_t edi, esi, ebp, esp, ebx, edx, ecx, eax;
+    uint32_t int_no, err_code;
+    uint32_t eip, cs, eflags, useresp, ss;
+
+} registers_t;
+
 extern void isr0();
 extern void isr1();
 extern void isr2();
