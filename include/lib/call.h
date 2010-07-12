@@ -15,12 +15,17 @@
 
 #define SYSCALL_PIT_READ 0x30
 
+#define SYSCALL_KERNEL_HALT    0x50
+#define SYSCALL_KERNEL_REBOOT 0x51
+
 extern int call_puts(char *s);
 extern int call_puts_dec(unsigned int n);
 extern int call_puts_hex(unsigned int n);
 extern vfs_node_t *call_vfs_walk(unsigned int index);
 extern vfs_node_t *call_vfs_find(char *name);
 extern unsigned int call_vfs_read(vfs_node_t *node, char *buffer);
+extern int call_halt();
+extern int call_reboot();
 
 #endif
 

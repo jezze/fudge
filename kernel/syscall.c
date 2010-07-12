@@ -45,6 +45,9 @@ unsigned int syscall_handler(syscall_registers_t registers)
     if (registers.eax == SYSCALL_VFS_FIND)
         return (unsigned int)vfs_find(fsRoot, (char *)registers.ecx);
 
+    if (registers.eax == SYSCALL_KERNEL_REBOOT)
+        kernel_reboot();
+
     return 0;
 
 }

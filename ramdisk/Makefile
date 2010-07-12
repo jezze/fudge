@@ -13,10 +13,14 @@ all:
 	@$(LD) $(LDFLAGS) cpu.o cpus.o ../lib/call.o -o cpu
 	@$(GCC) $(GCCFLAGS) date.c -o date.o
 	@$(LD) $(LDFLAGS) date.o ../lib/call.o -o date
+	@$(GCC) $(GCCFLAGS) halt.c -o halt.o
+	@$(LD) $(LDFLAGS) halt.o ../lib/call.o -o halt
 	@$(GCC) $(GCCFLAGS) hello.c -o hello.o
 	@$(LD) $(LDFLAGS) hello.o ../lib/call.o -o hello
 	@$(GCC) $(GCCFLAGS) ls.c -o ls.o
 	@$(LD) $(LDFLAGS) ls.o ../lib/call.o -o ls
+	@$(GCC) $(GCCFLAGS) reboot.c -o reboot.o
+	@$(LD) $(LDFLAGS) reboot.o ../lib/call.o -o reboot
 	@$(GCC) $(GCCFLAGS) timer.c -o timer.o
 	@$(LD) $(LDFLAGS) timer.o ../lib/call.o -o timer
 
@@ -25,7 +29,9 @@ clean:
 	@rm -f cat
 	@rm -f cpu
 	@rm -f date
+	@rm -f halt
 	@rm -f hello
 	@rm -f ls
+	@rm -f reboot
 	@rm -f timer
 

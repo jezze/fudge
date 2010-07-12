@@ -9,5 +9,7 @@ typedef struct kernel
 extern kernel_t kernel;
 extern vfs_node_t *fsRoot;
 
+extern unsigned int kernel_reboot();
+
 #endif
 

@@ -1,5 +1,6 @@
 #include <lib/types.h>
 #include <lib/cbuffer.h>
+#include <lib/io.h>
 #include <lib/vfs.h>
 #include <kernel/assert.h>
 #include <kernel/screen.h>
@@ -19,6 +20,22 @@
 
 kernel_t kernel;
 vfs_node_t *fsRoot = 0;
+
+unsigned int kernel_reboot()
+{
+
+    isr_disable();
+
+    unsigned char ready = 0x02;
+
+    while ((ready & 0x02) != 0)
+        ready = inb(0x64);
+
+    outb(0x64, 0xFE);
+
+    return 0;
+
+}
 
 void kernel_main(mboot_info_t *header, uint32_t magic)
 {

@@ -41,7 +41,7 @@ initrd: library
 	@echo "Creating ramdisk..."
 	@cd ramdisk; make
 	@$(GCC) -O2 tools/mkinitrd.c -o tools/mkinitrd
-	$(MKINITRD) ramdisk/about.txt about.txt ramdisk/cat cat ramdisk/cpu cpu ramdisk/date date ramdisk/hello hello ramdisk/help.txt help.txt ramdisk/ls ls ramdisk/timer timer
+	$(MKINITRD) ramdisk/about.txt about.txt ramdisk/cat cat ramdisk/cpu cpu ramdisk/date date ramdisk/halt halt ramdisk/hello hello ramdisk/help.txt help.txt ramdisk/ls ls ramdisk/reboot reboot ramdisk/timer timer
 
 kernel: library i386
 	@echo "Building kernel..."

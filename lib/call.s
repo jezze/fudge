@@ -41,3 +41,15 @@ call_vfs_find:
     int 0x80
     ret
 
+global call_halt
+call_halt:
+    mov eax, 0x50
+    int 0x80
+    ret
+
+global call_reboot
+call_reboot:
+    mov eax, 0x51
+    int 0x80
+    ret
+
