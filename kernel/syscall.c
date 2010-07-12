@@ -24,26 +24,26 @@ void syscall_unregister_handler(unsigned char index)
 
 }
 
-unsigned int syscall_handler(unsigned int eax, unsigned int ebx, unsigned int ecx, unsigned int edx, unsigned int esi, unsigned int edi)
+unsigned int syscall_handler(syscall_registers_t registers)
 {
 
-    if (eax == SYSCALL_SCREEN_PUTS)
-        screen_puts((char *)ecx);
+    if (registers.eax == SYSCALL_SCREEN_PUTS)
+        screen_puts((char *)registers.ecx);
 
-    if (eax == SYSCALL_SCREEN_PUTS_DEC)
-        screen_puts_dec(ecx);
+    if (registers.eax == SYSCALL_SCREEN_PUTS_DEC)
+        screen_puts_dec(registers.ecx);
 
-    if (eax == SYSCALL_SCREEN_PUTS_HEX)
-        screen_puts_hex(ecx);
+    if (registers.eax == SYSCALL_SCREEN_PUTS_HEX)
+        screen_puts_hex(registers.ecx);
 
-    if (eax == SYSCALL_VFS_READ)
-        return vfs_read((vfs_node_t *)ebx, 0, 400, (char *)edi);
+    if (registers.eax == SYSCALL_VFS_READ)
+        return vfs_read((vfs_node_t *)registers.ebx, 0, 400, (char *)registers.edi);
 
-    if (eax == SYSCALL_VFS_WALK)
-        return (unsigned int)vfs_walk(fsRoot, ecx);
+    if (registers.eax == SYSCALL_VFS_WALK)
+        return (unsigned int)vfs_walk(fsRoot, registers.ecx);
 
-    if (eax == SYSCALL_VFS_FIND)
-        return (unsigned int)vfs_find(fsRoot, (char *)ecx);
+    if (registers.eax == SYSCALL_VFS_FIND)
+        return (unsigned int)vfs_find(fsRoot, (char *)registers.ecx);
 
     return 0;
 
