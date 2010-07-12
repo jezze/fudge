@@ -9,7 +9,7 @@ initrd_file_header_t *initrdFileHeaders;
 vfs_node_t initrdRoot;
 vfs_node_t initrdNodes[32];
 
-static unsigned int initrd_read(vfs_node_t *node, unsigned int offset, unsigned int size, unsigned char *buffer)
+static unsigned int initrd_read(vfs_node_t *node, unsigned int offset, unsigned int size, char *buffer)
 {
 
     initrd_file_header_t header = initrdFileHeaders[node->inode];
