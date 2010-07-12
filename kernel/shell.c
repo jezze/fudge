@@ -27,7 +27,7 @@ static void shell_call(vfs_node_t *node, int argc, char *argv[])
 
     vfs_read(node, 0, 2000, buffer);
         
-    void (*func)(int argc, char *argv[]) = buffer;
+    void (*func)(int argc, char *argv[]) = (void (*)(int argc, char *argv[]))0x200000;
 
     func(argc, argv);
 
