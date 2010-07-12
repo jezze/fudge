@@ -1,8 +1,6 @@
 #include <lib/types.h>
 #include <lib/vfs.h>
 
-vfs_node_t *fsRoot = 0;
-
 void vfs_open(vfs_node_t *node)
 {
 

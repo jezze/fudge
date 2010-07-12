@@ -18,6 +18,7 @@
 #include <kernel/kernel.h>
 
 kernel_t kernel;
+vfs_node_t *fsRoot = 0;
 
 void kernel_main(mboot_info_t *header, uint32_t magic)
 {

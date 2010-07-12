@@ -29,8 +29,6 @@ typedef struct vfs_node
 
 } vfs_node_t;
 
-extern vfs_node_t *fsRoot;
-
 extern void vfs_open(vfs_node_t *node);
 extern void vfs_close(vfs_node_t *node);
 extern unsigned int vfs_read(vfs_node_t *node, unsigned int offset, unsigned int size, char *buffer);

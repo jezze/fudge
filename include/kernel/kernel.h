@@ -4,11 +4,10 @@
 typedef struct kernel
 {
 
-    screen_t screen;
-
 } kernel_t;
 
 extern kernel_t kernel;
+extern vfs_node_t *fsRoot;
 
 #endif
 

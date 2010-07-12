@@ -1,6 +1,7 @@
 #include <lib/types.h>
 #include <lib/vfs.h>
 #include <lib/call.h>
+#include <kernel/kernel.h>
 #include <kernel/isr.h>
 #include <kernel/screen.h>
 #include <kernel/rtc.h>
