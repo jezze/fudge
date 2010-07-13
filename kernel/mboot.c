@@ -50,6 +50,15 @@ void mboot_init(mboot_info_t *info)
 
     }
 
+    if (info->flags & MBOOT_FLAG_CMDLINE)
+    {
+
+        screen_puts("Command: ");
+        screen_puts((char *)info->cmdline);
+        screen_puts("\n");
+
+    }
+
     if (info->flags & MBOOT_FLAG_MMAP)
     {
 
