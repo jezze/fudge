@@ -1,112 +1,112 @@
 extern irq_handler
 
-global irq0
-irq0:
+global irq00
+irq00:
 	cli
 	push byte 0
 	push byte 32
 	jmp irq_common
 
-global irq1
-irq1:
+global irq01
+irq01:
 	cli
 	push byte 0
 	push byte 33
 	jmp irq_common
 
-global irq2
-irq2:
+global irq02
+irq02:
 	cli
 	push byte 0
 	push byte 34
 	jmp irq_common
 
-global irq3
-irq3:
+global irq03
+irq03:
 	cli
 	push byte 0
 	push byte 35
 	jmp irq_common
 
-global irq4
-irq4:
+global irq04
+irq04:
 	cli
 	push byte 0
 	push byte 36
 	jmp irq_common
 
-global irq5
-irq5:
+global irq05
+irq05:
 	cli
 	push byte 0
 	push byte 37
 	jmp irq_common
 
-global irq6
-irq6:
+global irq06
+irq06:
 	cli
 	push byte 0
 	push byte 38
 	jmp irq_common
 
-global irq7
-irq7:
+global irq07
+irq07:
 	cli
 	push byte 0
 	push byte 39
 	jmp irq_common
 
-global irq8
-irq8:
+global irq08
+irq08:
 	cli
 	push byte 0
 	push byte 40
 	jmp irq_common
 
-global irq9
-irq9:
+global irq09
+irq09:
 	cli
 	push byte 0
 	push byte 41
 	jmp irq_common
 
-global irq10
-irq10:
+global irq0A
+irq0A:
 	cli
 	push byte 0
 	push byte 42
 	jmp irq_common
 
-global irq11
-irq11:
+global irq0B
+irq0B:
 	cli
 	push byte 0
 	push byte 43
 	jmp irq_common
 
-global irq12
-irq12:
+global irq0C
+irq0C:
 	cli
 	push byte 0
 	push byte 44
 	jmp irq_common
 
-global irq13
-irq13:
+global irq0D
+irq0D:
 	cli
 	push byte 0
 	push byte 45
 	jmp irq_common
 
-global irq14
-irq14:
+global irq0E
+irq0E:
 	cli
 	push byte 0
 	push byte 46
 	jmp irq_common
 
-global irq15
-irq15:
+global irq0F
+irq0F:
 	cli
 	push byte 0
 	push byte 47

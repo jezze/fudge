@@ -3,22 +3,22 @@
 
 #define IRQ_ROUTINES_SIZE 16
 
-extern void irq0();
-extern void irq1();
-extern void irq2();
-extern void irq3();
-extern void irq4();
-extern void irq5();
-extern void irq6();
-extern void irq7();
-extern void irq8();
-extern void irq9();
-extern void irq10();
-extern void irq11();
-extern void irq12();
-extern void irq13();
-extern void irq14();
-extern void irq15();
+extern void irq00();
+extern void irq01();
+extern void irq02();
+extern void irq03();
+extern void irq04();
+extern void irq05();
+extern void irq06();
+extern void irq07();
+extern void irq08();
+extern void irq09();
+extern void irq0A();
+extern void irq0B();
+extern void irq0C();
+extern void irq0D();
+extern void irq0E();
+extern void irq0F();
 
 extern void irq_register_handler(unsigned char index, void (*handler)(isr_registers_t *registers));
 extern void irq_unregister_handler(unsigned char index);
