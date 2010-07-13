@@ -23,8 +23,31 @@ void mboot_init(mboot_info_t *info)
     if (info->flags & MBOOT_FLAG_DEVICE)
     {
 
-        screen_puts("Device: 0x");
-        screen_puts_hex(info->device);
+        screen_puts("Boot device: ");
+
+        switch (info->device >> 24)
+        {
+
+            case 0xE0:
+                screen_puts("CD-ROM");
+                break;
+
+            case 0x00:
+                screen_puts("Floppy drive");
+                break;
+
+            case 0x80:
+                screen_puts("Hard drive");
+                break;
+
+            default:
+                screen_puts("Unknown (");
+                screen_puts_hex(info->device >> 24);
+                screen_puts(")");
+                break;
+
+        }
+
         screen_puts("\n");
 
     }
