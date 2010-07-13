@@ -10,7 +10,7 @@
 
 void *syscallRoutines[SYSCALL_TABLE_SIZE];
 
-void syscall_register_handler(unsigned char index, void (*handler)(registers_t *registers))
+void syscall_register_handler(unsigned char index, void (*handler)(syscall_registers_t *registers))
 {
 
     syscallRoutines[index] = handler;

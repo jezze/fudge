@@ -17,7 +17,7 @@ typedef struct kbd_device
 
 extern kbd_device_t keyboard;
 
-extern void kbd_handler(registers_t *r);
+extern void kbd_handler(isr_registers_t *registers);
 extern void kbd_init();
 
 #endif

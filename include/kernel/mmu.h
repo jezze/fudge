@@ -51,7 +51,7 @@ extern uint32_t mmu_read_cr2();
 extern uint32_t mmu_read_cr3();
 extern void mmu_write_cr3(uint32_t value);
 
-extern void mmu_handler(registers_t *registers);
+extern void mmu_handler(isr_registers_t *registers);
 extern void mmu_init();
 
 #endif

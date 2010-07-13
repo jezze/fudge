@@ -31,7 +31,7 @@ char kbdMapUpperUS[128] =
 
 kbd_device_t keyboard;
 
-void kbd_handler(registers_t *r)
+void kbd_handler(isr_registers_t *registers)
 {
 
     unsigned char scancode = inb(KBD_PORT_READ);

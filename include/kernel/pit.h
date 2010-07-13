@@ -6,7 +6,7 @@
 
 extern int pitTimer;
 
-extern void pit_handler(registers_t *r);
+extern void pit_handler(isr_registers_t *registers);
 extern void pit_wait(int ticks);
 extern void pit_init();
 

@@ -5,7 +5,7 @@
 
 void *isrRoutines[ISR_ROUTINES_SIZE];
 
-void isr_register_handler(unsigned char index, void (*handler)(registers_t *registers))
+void isr_register_handler(unsigned char index, void (*handler)(isr_registers_t *registers))
 {
 
     isrRoutines[index] = handler;
@@ -19,13 +19,13 @@ void isr_unregister_handler(unsigned char index)
 
 }
 
-void isr_handler(registers_t *registers)
+void isr_handler(isr_registers_t *registers)
 {
 
     if (isrRoutines[registers->int_no] != 0)
     {
 
-        void (*handler)(registers_t *registers) = isrRoutines[registers->int_no];
+        void (*handler)(isr_registers_t *registers) = isrRoutines[registers->int_no];
 
         if (handler)
             handler(registers);

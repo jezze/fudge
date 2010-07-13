@@ -5,7 +5,7 @@
 #include <kernel/isr.h>
 #include <kernel/mmu.h>
 
-void mmu_handler(registers_t *registers)
+void mmu_handler(isr_registers_t *registers)
 {
 
     unsigned int address = mmu_read_cr2();

@@ -20,7 +20,7 @@ extern void irq13();
 extern void irq14();
 extern void irq15();
 
-extern void irq_register_handler(unsigned char index, void (*handler)(registers_t *registers));
+extern void irq_register_handler(unsigned char index, void (*handler)(isr_registers_t *registers));
 extern void irq_unregister_handler(unsigned char index);
 extern void irq_init();
 
