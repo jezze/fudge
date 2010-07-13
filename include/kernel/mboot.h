@@ -1,17 +1,17 @@
 #ifndef MBOOT_H
 #define MBOOT_H
 
-#define MBOOT_FLAG_MEM     0x001
-#define MBOOT_FLAG_DEVICE  0x002
-#define MBOOT_FLAG_CMDLINE 0x004
-#define MBOOT_FLAG_MODS    0x008
-#define MBOOT_FLAG_AOUT    0x010
-#define MBOOT_FLAG_ELF     0x020
-#define MBOOT_FLAG_MMAP    0x040
-#define MBOOT_FLAG_CONFIG  0x080
-#define MBOOT_FLAG_LOADER  0x100
-#define MBOOT_FLAG_APM     0x200
-#define MBOOT_FLAG_VBE     0x400
+#define MBOOT_FLAG_MEM     1 << 0
+#define MBOOT_FLAG_DEVICE  1 << 1
+#define MBOOT_FLAG_CMDLINE 1 << 2
+#define MBOOT_FLAG_MODS    1 << 3
+#define MBOOT_FLAG_AOUT    1 << 4
+#define MBOOT_FLAG_ELF     1 << 5
+#define MBOOT_FLAG_MMAP    1 << 6
+#define MBOOT_FLAG_CONFIG  1 << 7
+#define MBOOT_FLAG_LOADER  1 << 8
+#define MBOOT_FLAG_APM     1 << 9
+#define MBOOT_FLAG_VBE     1 << 10
 
 #define MBOOT_MAGIC 0x2BADB002
 
