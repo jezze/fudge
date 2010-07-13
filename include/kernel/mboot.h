@@ -1,10 +1,10 @@
 #ifndef MBOOT_H
 #define MBOOT_H
 
-#define MBOOT_FLAG_MEM     1 << 0
+#define MBOOT_FLAG_MEMORY  1 << 0
 #define MBOOT_FLAG_DEVICE  1 << 1
 #define MBOOT_FLAG_CMDLINE 1 << 2
-#define MBOOT_FLAG_MODS    1 << 3
+#define MBOOT_FLAG_MODULES 1 << 3
 #define MBOOT_FLAG_AOUT    1 << 4
 #define MBOOT_FLAG_ELF     1 << 5
 #define MBOOT_FLAG_MMAP    1 << 6

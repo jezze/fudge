@@ -5,9 +5,10 @@
 void mboot_init(mboot_info_t *info)
 {
 
-    screen_puts("MULTIBOOT INFO\n");
+    screen_puts("System information\n");
+    screen_puts("------------------\n");
 
-    if (info->flags & MBOOT_FLAG_MEM)
+    if (info->flags & MBOOT_FLAG_MEMORY)
     {
 
         screen_puts("Lower memory: ");
@@ -59,6 +60,25 @@ void mboot_init(mboot_info_t *info)
 
     }
 
+    if (info->flags & MBOOT_FLAG_AOUT)
+    {
+
+        screen_puts("Kernel format: AOUT\n");
+
+    }
+
+    if (info->flags & MBOOT_FLAG_ELF)
+    {
+
+        screen_puts("Kernel format: ELF\n");
+
+    }
+
+    if (info->flags & MBOOT_FLAG_MODULES)
+    {
+
+    }
+
     if (info->flags & MBOOT_FLAG_MMAP)
     {
 
@@ -89,10 +109,21 @@ void mboot_init(mboot_info_t *info)
 
     }
 
+    if (info->flags & MBOOT_FLAG_LOADER)
+    {
+
+        screen_puts("Loader: ");
+        screen_puts((char *)info->name);
+        screen_puts("\n");
+
+    }
+
     if (info->flags & MBOOT_FLAG_VBE)
     {
 
 
     }
+
+    screen_puts("\n");
 
 }

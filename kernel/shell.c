@@ -168,6 +168,7 @@ void shell_init()
     shellStack = stack_create(shellBuffer, SHELL_BUFFER_SIZE);
 
     screen_puts("Fudge\n");
+    screen_puts("-----\n");
     screen_puts("Copyright (c) 2009 Jens Nyberg\n");
     screen_puts("Type 'cat help.txt' to read the help section.\n\n");
 
