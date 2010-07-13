@@ -64,23 +64,28 @@ void mboot_init(mboot_info_t *info)
 
         mboot_mmap_t *mmap = (mboot_mmap_t *)info->mmapAddress;
 
-        screen_puts("Memorymap size: 0x");
-        screen_puts_hex(mmap->size);
-        screen_puts("\n");
+        screen_puts("Memory map:\n");
 
-        screen_puts("Memorymap base: 0x");
-        screen_puts_hex(mmap->baseHigh);
-        screen_puts_hex(mmap->baseLow);
-        screen_puts("\n");
+        while (mmap < info->mmapAddress + info->mmapLength)
+        {
 
-        screen_puts("Memorymap length: 0x");
-        screen_puts_hex(mmap->lengthHigh);
-        screen_puts_hex(mmap->lengthLow);
-        screen_puts("\n");
+            screen_puts("Size: 0x");
+            screen_puts_hex(mmap->size);
+            screen_puts(", Base: 0x");
+            screen_puts_hex(mmap->baseLow);
+            screen_puts(":");
+            screen_puts_hex(mmap->baseHigh);
+            screen_puts(", Length: 0x");
+            screen_puts_hex(mmap->lengthLow);
+            screen_puts(":");
+            screen_puts_hex(mmap->lengthHigh);
+            screen_puts(", Type: 0x");
+            screen_puts_hex(mmap->type);
+            screen_puts("\n");
 
-        screen_puts("Memorymap type: 0x");
-        screen_puts_hex(mmap->type);
-        screen_puts("\n");
+            mmap = (mboot_mmap_t *)((unsigned int)mmap + mmap->size + sizeof (unsigned int));
+
+        }
 
     }
 
