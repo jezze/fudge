@@ -29,26 +29,24 @@ void mboot_init(mboot_info_t *info)
         {
 
             case 0xE0:
-                screen_puts("CD-ROM");
+                screen_puts("CD-ROM\n");
                 break;
 
             case 0x00:
-                screen_puts("Floppy drive");
+                screen_puts("Floppy drive\n");
                 break;
 
             case 0x80:
-                screen_puts("Hard drive");
+                screen_puts("Hard drive\n");
                 break;
 
             default:
                 screen_puts("Unknown (");
                 screen_puts_hex(info->device >> 24);
-                screen_puts(")");
+                screen_puts(")\n");
                 break;
 
         }
-
-        screen_puts("\n");
 
     }
 
