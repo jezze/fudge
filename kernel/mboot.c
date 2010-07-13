@@ -91,14 +91,21 @@ void mboot_init(mboot_info_t *info)
 
             screen_puts("Size: 0x");
             screen_puts_hex(mmap->size);
+
             screen_puts(", Base: 0x");
+
+            if (mmap->baseHigh)
+                screen_puts_hex(mmap->baseHigh);
+
             screen_puts_hex(mmap->baseLow);
-            screen_puts(":");
-            screen_puts_hex(mmap->baseHigh);
+
             screen_puts(", Length: 0x");
+
+            if (mmap->lengthHigh)
+                screen_puts_hex(mmap->lengthHigh);
+
             screen_puts_hex(mmap->lengthLow);
-            screen_puts(":");
-            screen_puts_hex(mmap->lengthHigh);
+
             screen_puts(", Type: 0x");
             screen_puts_hex(mmap->type);
             screen_puts("\n");
