@@ -89,10 +89,7 @@ void mboot_init(mboot_info_t *info)
         while (mmap < info->mmapAddress + info->mmapLength)
         {
 
-            screen_puts("Size: 0x");
-            screen_puts_hex(mmap->size);
-
-            screen_puts(", Base: 0x");
+            screen_puts("Base: 0x");
 
             if (mmap->baseHigh)
                 screen_puts_hex(mmap->baseHigh);
