@@ -89,22 +89,31 @@ void mboot_init(mboot_info_t *info)
         while (mmap < info->mmapAddress + info->mmapLength)
         {
 
-            screen_puts("Base 0x");
+            screen_puts("0x");
 
             if (mmap->baseHigh)
                 screen_puts_hex(mmap->baseHigh);
 
             screen_puts_hex(mmap->baseLow);
 
-            screen_puts(", Length 0x");
+            screen_puts("-0x");
+
+            screen_puts_hex(mmap->baseLow + mmap->lengthLow);
+
+            screen_puts(" (0x");
 
             if (mmap->lengthHigh)
                 screen_puts_hex(mmap->lengthHigh);
 
             screen_puts_hex(mmap->lengthLow);
 
-            screen_puts(", Type 0x");
-            screen_puts_hex(mmap->type);
+            screen_puts(" bytes) ");
+
+            if (mmap->type == 1)
+                screen_puts("Available");
+            else
+                screen_puts("Reserved");
+
             screen_puts("\n");
 
             mmap = (mboot_mmap_t *)((unsigned int)mmap + mmap->size + sizeof (unsigned int));
