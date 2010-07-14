@@ -24,7 +24,7 @@ void syscall_unregister_handler(unsigned char index)
 
 }
 
-unsigned int syscall_puts(syscall_registers_t *registers)
+static unsigned int syscall_puts(syscall_registers_t *registers)
 {
 
     screen_puts((char *)registers->ecx);
@@ -33,7 +33,7 @@ unsigned int syscall_puts(syscall_registers_t *registers)
 
 }
 
-unsigned int syscall_puts_dec(syscall_registers_t *registers)
+static unsigned int syscall_puts_dec(syscall_registers_t *registers)
 {
 
     screen_puts_dec(registers->ecx);
@@ -42,7 +42,7 @@ unsigned int syscall_puts_dec(syscall_registers_t *registers)
 
 }
 
-unsigned int syscall_puts_hex(syscall_registers_t *registers)
+static unsigned int syscall_puts_hex(syscall_registers_t *registers)
 {
 
     screen_puts_hex(registers->ecx);
@@ -51,28 +51,28 @@ unsigned int syscall_puts_hex(syscall_registers_t *registers)
 
 }
 
-unsigned int syscall_vfs_read(syscall_registers_t *registers)
+static unsigned int syscall_vfs_read(syscall_registers_t *registers)
 {
 
     return vfs_read((vfs_node_t *)registers->ebx, 0, 400, (char *)registers->edi);
 
 }
 
-unsigned int syscall_vfs_walk(syscall_registers_t *registers)
+static unsigned int syscall_vfs_walk(syscall_registers_t *registers)
 {
 
     return (unsigned int)vfs_walk(fsRoot, registers->ecx);
 
 }
 
-unsigned int syscall_vfs_find(syscall_registers_t *registers)
+static unsigned int syscall_vfs_find(syscall_registers_t *registers)
 {
 
     return (unsigned int)vfs_find(fsRoot, (char *)registers->ecx);
 
 }
 
-unsigned int syscall_reboot(syscall_registers_t *registers)
+static unsigned int syscall_reboot(syscall_registers_t *registers)
 {
 
     kernel_reboot();
