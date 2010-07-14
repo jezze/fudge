@@ -72,7 +72,7 @@ unsigned int syscall_vfs_find(syscall_registers_t *registers)
 
 }
 
-unsigned int syscall_kernel_reboot(syscall_registers_t *registers)
+unsigned int syscall_reboot(syscall_registers_t *registers)
 {
 
     kernel_reboot();
@@ -102,7 +102,7 @@ void syscall_init()
     syscallRoutines[CALL_VFS_READ] = syscall_vfs_read;
     syscallRoutines[CALL_VFS_WALK] = syscall_vfs_walk;
     syscallRoutines[CALL_VFS_FIND] = syscall_vfs_find;
-    syscallRoutines[CALL_REBOOT] = syscall_kernel_reboot;
+    syscallRoutines[CALL_REBOOT] = syscall_reboot;
 
 }
 
