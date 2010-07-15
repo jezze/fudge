@@ -15,8 +15,6 @@ all:
 	@$(LD) $(LDFLAGS) date.o ../lib/string.o ../lib/vfs.o ../lib/call.o ../lib/calls.o -o date
 	@$(GCC) $(GCCFLAGS) echo.c -o echo.o
 	@$(LD) $(LDFLAGS) echo.o ../lib/string.o ../lib/vfs.o ../lib/call.o ../lib/calls.o -o echo
-	@$(GCC) $(GCCFLAGS) halt.c -o halt.o
-	@$(LD) $(LDFLAGS) halt.o ../lib/string.o ../lib/vfs.o ../lib/call.o ../lib/calls.o -o halt
 	@$(GCC) $(GCCFLAGS) hello.c -o hello.o
 	@$(LD) $(LDFLAGS) hello.o ../lib/string.o ../lib/vfs.o ../lib/call.o ../lib/calls.o -o hello
 	@$(GCC) $(GCCFLAGS) ls.c -o ls.o
@@ -32,7 +30,6 @@ clean:
 	@rm -f cpu
 	@rm -f date
 	@rm -f echo
-	@rm -f halt
 	@rm -f hello
 	@rm -f ls
 	@rm -f reboot
