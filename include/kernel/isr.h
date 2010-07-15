@@ -45,6 +45,7 @@ extern void isr1C();
 extern void isr1D();
 extern void isr1E();
 extern void isr1F();
+extern void isr_syscall();
 extern void isr_enable();
 extern void isr_disable();
 

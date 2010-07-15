@@ -50,7 +50,6 @@ void kernel_main(mboot_info_t *header, uint32_t magic)
 
     isr_init();
     isr_register_handler(0x0E, mmu_handler);
-    idt_set_gate(0x80, (uint32_t)syscall_interrupt, 0x08, 0x8E);
 
     irq_init();
     irq_register_handler(0x00, pit_handler);
