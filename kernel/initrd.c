@@ -36,23 +36,6 @@ static vfs_node_t *initrd_walk(vfs_node_t *node, unsigned int index)
 
 }
 
-static vfs_node_t *initrd_find(vfs_node_t *node, char *name)
-{
-
-    unsigned int i;
-
-    for (i = 0; i < initrdHeader->nfiles; i++)
-    {
-
-        if (!string_compare(name, initrdNodes[i].name))
-            return &initrdNodes[i];
-
-    }
-
-    return 0;
-
-}
-
 vfs_node_t *initrd_init(unsigned int location)
 {
 
@@ -68,7 +51,6 @@ vfs_node_t *initrd_init(unsigned int location)
     initrdRoot.read = 0;
     initrdRoot.write = 0;
     initrdRoot.walk = initrd_walk;
-    initrdRoot.find = initrd_find;
 
     unsigned int i;
 
@@ -85,7 +67,6 @@ vfs_node_t *initrd_init(unsigned int location)
         initrdNodes[i].read = initrd_read;
         initrdNodes[i].write = 0;
         initrdNodes[i].walk = 0;
-        initrdNodes[i].find = 0;
 
     }
 

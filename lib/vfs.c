@@ -1,4 +1,5 @@
 #include <lib/types.h>
+#include <lib/string.h>
 #include <lib/vfs.h>
 
 void vfs_open(vfs_node_t *node)
@@ -50,10 +51,18 @@ vfs_node_t *vfs_walk(vfs_node_t *node, unsigned int index)
 vfs_node_t *vfs_find(vfs_node_t *node, char *name)
 {
 
-    if (node->find)
-        return node->find(node, name);
-    else
-        return 0;
+    unsigned int i;
+    vfs_node_t *current;
+
+    for (i = 0; (current = vfs_walk(node, i)); i++)
+    {
+
+        if (!string_compare(name, current->name))
+            return current;
+
+    }
+
+    return 0;
 
 }
 

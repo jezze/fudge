@@ -11,7 +11,6 @@ typedef void (*vfs_close_t)(struct vfs_node*);
 typedef unsigned int (*vfs_read_t)(struct vfs_node*, unsigned int offset, unsigned int size, char *buffer);
 typedef unsigned int (*vfs_write_t)(struct vfs_node*, unsigned int offset, unsigned int size, char *buffer);
 typedef struct vfs_node * (*vfs_walk_t)(struct vfs_node*, unsigned int index);
-typedef struct vfs_node * (*vfs_find_t)(struct vfs_node*, char *name);
 
 typedef struct vfs_node
 {
@@ -25,7 +24,6 @@ typedef struct vfs_node
     vfs_read_t read;
     vfs_write_t write;
     vfs_walk_t walk;
-    vfs_find_t find;
 
 } vfs_node_t;
 
