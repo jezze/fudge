@@ -69,7 +69,9 @@ void mmu_init()
 
     mmu_init_directory(directory);
     mmu_set_directory(directory, 0x0, 0x400000, MMU_PAGE_DIRECTORY_FLAG_PRESENT | MMU_PAGE_DIRECTORY_FLAG_WRITEABLE);
-    mmu_flush(directory);
+
+    cr3_write((unsigned int)directory);
+    cr0_write(cr0_read() | 0x80000000);
 
 }
 
