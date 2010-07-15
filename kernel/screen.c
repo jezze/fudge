@@ -184,7 +184,7 @@ unsigned int screen_write(vfs_node_t *node, unsigned int offset, unsigned int si
 
     screen_puts(buffer);
 
-    return 0;
+    return size;
 
 }
 
