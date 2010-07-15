@@ -48,7 +48,6 @@ vfs_node_t *initrd_init(unsigned int location)
 
     string_copy(initrdRoot.name, "initrd");
     initrdRoot.inode = 0;
-    initrdRoot.flags = VFS_DIRECTORY;
     initrdRoot.length = 0;
     initrdRoot.open = 0;
     initrdRoot.close = 0;
@@ -64,7 +63,6 @@ vfs_node_t *initrd_init(unsigned int location)
         initrdFileHeaders[i].offset += location;
         string_copy(initrdNodes[i].name, initrdFileHeaders[i].name);
         initrdNodes[i].inode = i;
-        initrdNodes[i].flags = VFS_FILE;
         initrdNodes[i].length = initrdFileHeaders[i].length;
         initrdNodes[i].open = 0;
         initrdNodes[i].close = 0;

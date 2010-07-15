@@ -83,7 +83,6 @@ void kbd_init()
 
     string_copy(vfsKeyboard.name, "stdin");
     vfsKeyboard.inode = 0;
-    vfsKeyboard.flags = VFS_FILE;
     vfsKeyboard.length = 0;
     vfsKeyboard.open = 0;
     vfsKeyboard.close = 0;

@@ -11,9 +11,6 @@ void main(int argc, char *argv[])
     for (i = 0; (node = call_vfs_walk(i)); i++)
     {
 
-        if (node->flags == VFS_DIRECTORY)
-            call_puts("/");
-
         call_puts(node->name);
         call_puts("\n");
 

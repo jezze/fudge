@@ -199,7 +199,6 @@ void screen_init()
 
     string_copy(vfsScreen.name, "stdout");
     vfsScreen.inode = 0;
-    vfsScreen.flags = VFS_FILE;
     vfsScreen.length = 0;
     vfsScreen.open = 0;
     vfsScreen.close = 0;

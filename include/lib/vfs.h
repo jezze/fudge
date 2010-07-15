@@ -1,9 +1,6 @@
 #ifndef VFS_H
 #define VFS_H
 
-#define VFS_FILE      0x01
-#define VFS_DIRECTORY 0x02
-
 struct vfs_node;
 
 typedef void (*vfs_open_t)(struct vfs_node*);
@@ -17,7 +14,6 @@ typedef struct vfs_node
 
     char name[128];
     unsigned int inode;
-    unsigned int flags;
     unsigned int length;
     vfs_open_t open;
     vfs_close_t close;
