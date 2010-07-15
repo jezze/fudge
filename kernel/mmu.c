@@ -2,6 +2,7 @@
 #include <lib/memory.h>
 #include <lib/vfs.h>
 #include <kernel/assert.h>
+#include <kernel/cr.h>
 #include <kernel/screen.h>
 #include <kernel/isr.h>
 #include <kernel/mmu.h>
@@ -9,7 +10,7 @@
 void mmu_handler(isr_registers_t *registers)
 {
 
-    unsigned int address = mmu_read_cr2();
+    unsigned int address = cr2_read();
 
     screen_puts("PAGE FAULT (");
 

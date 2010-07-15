@@ -29,6 +29,7 @@ clean:
 
 i386:
 	@echo "Building i386..."
+	@$(ASM) $(ASMFLAGS) kernel/arch/i386/cr.s -o kernel/arch/i386/cr.o
 	@$(ASM) $(ASMFLAGS) kernel/arch/i386/gdt.s -o kernel/arch/i386/gdt.o
 	@$(ASM) $(ASMFLAGS) kernel/arch/i386/idt.s -o kernel/arch/i386/idt.o
 	@$(ASM) $(ASMFLAGS) kernel/arch/i386/irq.s -o kernel/arch/i386/irq.o
@@ -68,6 +69,7 @@ kernel: library i386
     lib/stack.o \
     lib/string.o \
     lib/vfs.o \
+    kernel/arch/i386/cr.o \
     kernel/arch/i386/gdt.o \
     kernel/arch/i386/idt.o \
     kernel/arch/i386/irq.o \
