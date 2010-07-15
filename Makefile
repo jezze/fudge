@@ -62,6 +62,7 @@ kernel: library i386
 	@$(GCC) $(GCCFLAGS) kernel/syscall.c -o kernel/syscall.o
 	@$(LD) $(LDFLAGS) \
     lib/call.o \
+    lib/calls.o \
     lib/cbuffer.o \
     lib/io.o \
     lib/memory.o \
@@ -94,7 +95,8 @@ kernel: library i386
 
 library:
 	@echo "Building library..."
-	@$(ASM) $(ASMFLAGS) lib/call.s -o lib/call.o
+	@$(GCC) $(GCCFLAGS) lib/call.c -o lib/call.o
+	@$(ASM) $(ASMFLAGS) lib/calls.s -o lib/calls.o
 	@$(GCC) $(GCCFLAGS) lib/cbuffer.c -o lib/cbuffer.o
 	@$(GCC) $(GCCFLAGS) lib/io.c -o lib/io.o
 	@$(GCC) $(GCCFLAGS) lib/memory.c -o lib/memory.o

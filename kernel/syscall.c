@@ -24,33 +24,6 @@ void syscall_unregister_handler(unsigned char index)
 
 }
 
-static unsigned int syscall_puts(syscall_registers_t *registers)
-{
-
-    screen_puts((char *)registers->ecx);
-
-    return 0;
-
-}
-
-static unsigned int syscall_puts_dec(syscall_registers_t *registers)
-{
-
-    screen_puts_dec(registers->ecx);
-
-    return 0;
-
-}
-
-static unsigned int syscall_puts_hex(syscall_registers_t *registers)
-{
-
-    screen_puts_hex(registers->ecx);
-
-    return 0;
-
-}
-
 static unsigned int syscall_vfs_read(syscall_registers_t *registers)
 {
 
@@ -96,9 +69,6 @@ unsigned int syscall_handler(syscall_registers_t registers)
 void syscall_init()
 {
 
-    syscallRoutines[CALL_PUTS] = syscall_puts;
-    syscallRoutines[CALL_PUTS_DEC] = syscall_puts_dec;
-    syscallRoutines[CALL_PUTS_HEX] = syscall_puts_hex;
     syscallRoutines[CALL_VFS_READ] = syscall_vfs_read;
     syscallRoutines[CALL_VFS_WALK] = syscall_vfs_walk;
     syscallRoutines[CALL_VFS_FIND] = syscall_vfs_find;
