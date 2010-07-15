@@ -14,7 +14,7 @@ void main(int argc, char *argv[])
 
     char buffer[2000];
 
-    unsigned int size = node->read(node, 0, 2000, buffer);
+    unsigned int size = vfs_read(node, 0, 2000, buffer);
     
     if (size == 2000)
         buffer[size - 1] = '\0';

@@ -12,7 +12,7 @@ void main(int argc, char *argv[])
     if (!node)
         return;
 
-    node->write(node, 0, 0, argv[1]);
+    vfs_write(node, 0, 0, argv[1]);
 
 }
 
