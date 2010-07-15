@@ -24,13 +24,6 @@ void syscall_unregister_handler(unsigned char index)
 
 }
 
-static unsigned int syscall_vfs_read(syscall_registers_t *registers)
-{
-
-    return vfs_read((vfs_node_t *)registers->ebx, 0, 400, (char *)registers->edi);
-
-}
-
 static unsigned int syscall_vfs_walk(syscall_registers_t *registers)
 {
 
@@ -69,7 +62,6 @@ unsigned int syscall_handler(syscall_registers_t registers)
 void syscall_init()
 {
 
-    syscallRoutines[CALL_VFS_READ] = syscall_vfs_read;
     syscallRoutines[CALL_VFS_WALK] = syscall_vfs_walk;
     syscallRoutines[CALL_VFS_FIND] = syscall_vfs_find;
     syscallRoutines[CALL_REBOOT] = syscall_reboot;

@@ -1,11 +1,3 @@
-global call_vfs_read
-call_vfs_read:
-    mov eax, 0x10
-    mov ebx, [esp + 4]
-    mov edi, [esp + 8]
-    int 0x80
-    ret
-
 global call_vfs_walk
 call_vfs_walk:
     mov eax, 0x12

@@ -12,7 +12,6 @@
 extern int call_puts(char *s);
 extern vfs_node_t *call_vfs_walk(unsigned int index);
 extern vfs_node_t *call_vfs_find(char *name);
-extern unsigned int call_vfs_read(vfs_node_t *node, char *buffer);
 extern int call_halt();
 extern int call_reboot();
 
