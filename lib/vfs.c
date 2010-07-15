@@ -18,7 +18,7 @@ void vfs_close(vfs_node_t *node)
 
 }
 
-unsigned int vfs_read(vfs_node_t *node, unsigned int offset, unsigned int size, char *buffer)
+unsigned int vfs_read(vfs_node_t *node, unsigned int offset, unsigned int size, void *buffer)
 {
 
     if (node->read)
@@ -28,7 +28,7 @@ unsigned int vfs_read(vfs_node_t *node, unsigned int offset, unsigned int size, 
 
 }
 
-unsigned int vfs_write(vfs_node_t *node, unsigned int offset, unsigned int size, char *buffer)
+unsigned int vfs_write(vfs_node_t *node, unsigned int offset, unsigned int size, void *buffer)
 {
 
     if (node->write)

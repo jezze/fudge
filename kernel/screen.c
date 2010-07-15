@@ -179,10 +179,10 @@ void screen_scroll()
 
 }
 
-unsigned int screen_write(vfs_node_t *node, unsigned int offset, unsigned int size, char *buffer)
+unsigned int screen_write(vfs_node_t *node, unsigned int offset, unsigned int size, void *buffer)
 {
 
-    screen_puts(buffer);
+    screen_puts((char *)buffer);
 
     return size;
 
