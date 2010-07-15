@@ -56,7 +56,7 @@ typedef struct tss_entry
 
 } __attribute__((packed)) tss_entry_t;
 
-extern void gdt_flush();
+extern void gdt_flush(gdt_ptr_t *pointer);
 extern void tss_flush();
 
 extern void gdt_set_gate(unsigned char index, uint32_t base, uint32_t limit, uint8_t access, uint8_t granularity);

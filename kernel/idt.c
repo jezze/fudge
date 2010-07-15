@@ -24,7 +24,7 @@ void idt_init()
 
     memory_set(&idt, 0, sizeof (idt_entry_t) * IDT_TABLE_SIZE);
 
-    idt_flush();
+    idt_flush(&idtp);
 
 }
 

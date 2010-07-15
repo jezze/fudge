@@ -51,7 +51,7 @@ void gdt_init()
     gdt_set_gate(0x04, 0x00000000, 0xFFFFFFFF, 0xF2, 0xCF); // User data segment
     gdt_set_gate(0x05, tssp.base, tssp.limit, 0xE9, 0x00); // TSS segment
 
-    gdt_flush();
+    gdt_flush(&gdtp);
     tss_flush();
 
 }
