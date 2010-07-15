@@ -3,7 +3,7 @@
 #include <kernel/idt.h>
 
 idt_entry_t idt[IDT_TABLE_SIZE];
-idt_ptr_t idtp;
+idt_ptr_t idtPointer;
 
 void idt_set_gate(unsigned char index, uint32_t base, uint16_t selector, uint8_t flags)
 {
@@ -19,12 +19,12 @@ void idt_set_gate(unsigned char index, uint32_t base, uint16_t selector, uint8_t
 void idt_init()
 {
 
-    idtp.base = (uint32_t)&idt;
-    idtp.limit = (sizeof (idt_entry_t) * IDT_TABLE_SIZE) - 1;
+    idtPointer.base = (uint32_t)&idt;
+    idtPointer.limit = (sizeof (idt_entry_t) * IDT_TABLE_SIZE) - 1;
 
     memory_set(&idt, 0, sizeof (idt_entry_t) * IDT_TABLE_SIZE);
 
-    idt_flush(&idtp);
+    idt_flush(&idtPointer);
 
 }
 

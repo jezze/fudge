@@ -3,7 +3,7 @@
 #include <kernel/gdt.h>
 
 gdt_entry_t gdt[GDT_TABLE_SIZE];
-gdt_ptr_t gdtp;
+gdt_ptr_t gdtPointer;
 tss_entry_t tss;
 
 void gdt_set_gate(unsigned char index, uint32_t base, uint32_t limit, uint8_t access, uint8_t granularity)
@@ -29,8 +29,8 @@ void set_kernel_stack(uint32_t stack)
 void gdt_init()
 {
 
-    gdtp.base = (uint32_t)&gdt;
-    gdtp.limit = (sizeof (gdt_entry_t) * GDT_TABLE_SIZE) - 1;
+    gdtPointer.base = (uint32_t)&gdt;
+    gdtPointer.limit = (sizeof (gdt_entry_t) * GDT_TABLE_SIZE) - 1;
 
     gdt_ptr_t tssp;
     tssp.base = (uint32_t)&tss;
@@ -51,7 +51,7 @@ void gdt_init()
     gdt_set_gate(0x04, 0x00000000, 0xFFFFFFFF, 0xF2, 0xCF); // User data segment
     gdt_set_gate(0x05, tssp.base, tssp.limit, 0xE9, 0x00); // TSS segment
 
-    gdt_flush(&gdtp);
+    gdt_flush(&gdtPointer);
     tss_flush();
 
 }
