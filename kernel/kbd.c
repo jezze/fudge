@@ -1,6 +1,8 @@
 #include <lib/types.h>
-#include <lib/io.h>
 #include <lib/cbuffer.h>
+#include <lib/io.h>
+#include <lib/string.h>
+#include <lib/vfs.h>
 #include <kernel/isr.h>
 #include <kernel/irq.h>
 #include <kernel/kbd.h>
@@ -30,6 +32,8 @@ char kbdMapUpperUS[128] =
 };
 
 kbd_device_t keyboard;
+
+vfs_node_t vfsKeyboard;
 
 void kbd_handler(isr_registers_t *registers)
 {
@@ -62,6 +66,13 @@ void kbd_handler(isr_registers_t *registers)
 
 }
 
+unsigned int keyboard_read(vfs_node_t *node, unsigned int offset, unsigned int size, char *buffer)
+{
+
+    return cbuffer_read(&keyboard.cbuffer);
+
+}
+
 void kbd_init()
 {
 
@@ -69,6 +80,16 @@ void kbd_init()
     keyboard.toggleAlt = 0;
     keyboard.toggleCtrl = 0;
     keyboard.toggleShift = 0;
+
+    string_copy(vfsKeyboard.name, "stdin");
+    vfsKeyboard.inode = 0;
+    vfsKeyboard.flags = VFS_FILE;
+    vfsKeyboard.length = 0;
+    vfsKeyboard.open = 0;
+    vfsKeyboard.close = 0;
+    vfsKeyboard.read = keyboard_read;
+    vfsKeyboard.write = 0;
+    vfsKeyboard.walk = 0;
 
 }
 

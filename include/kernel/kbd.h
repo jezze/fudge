@@ -17,6 +17,8 @@ typedef struct kbd_device
 
 extern kbd_device_t keyboard;
 
+extern vfs_node_t vfsKeyboard;
+
 extern void kbd_handler(isr_registers_t *registers);
 extern void kbd_init();
 

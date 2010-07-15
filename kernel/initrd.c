@@ -1,7 +1,10 @@
 #include <lib/types.h>
+#include <lib/cbuffer.h>
 #include <lib/memory.h>
 #include <lib/string.h>
 #include <lib/vfs.h>
+#include <kernel/isr.h>
+#include <kernel/kbd.h>
 #include <kernel/screen.h>
 #include <kernel/initrd.h>
 
@@ -70,6 +73,9 @@ vfs_node_t *initrd_init(unsigned int location)
         initrdNodes[i].walk = 0;
 
     }
+
+    initrdHeader->nfiles++;
+    initrdNodes[i++] = vfsKeyboard;
 
     initrdHeader->nfiles++;
     initrdNodes[i++] = vfsScreen;
