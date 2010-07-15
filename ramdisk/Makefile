@@ -13,6 +13,8 @@ all:
 	@$(LD) $(LDFLAGS) cpu.o cpus.o ../lib/call.o -o cpu
 	@$(GCC) $(GCCFLAGS) date.c -o date.o
 	@$(LD) $(LDFLAGS) date.o ../lib/call.o -o date
+	@$(GCC) $(GCCFLAGS) echo.c -o echo.o
+	@$(LD) $(LDFLAGS) echo.o ../lib/call.o -o echo
 	@$(GCC) $(GCCFLAGS) halt.c -o halt.o
 	@$(LD) $(LDFLAGS) halt.o ../lib/call.o -o halt
 	@$(GCC) $(GCCFLAGS) hello.c -o hello.o
@@ -29,6 +31,7 @@ clean:
 	@rm -f cat
 	@rm -f cpu
 	@rm -f date
+	@rm -f echo
 	@rm -f halt
 	@rm -f hello
 	@rm -f ls

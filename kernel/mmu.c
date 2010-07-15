@@ -1,5 +1,6 @@
 #include <lib/types.h>
 #include <lib/memory.h>
+#include <lib/vfs.h>
 #include <kernel/assert.h>
 #include <kernel/screen.h>
 #include <kernel/isr.h>

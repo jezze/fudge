@@ -1,5 +1,6 @@
 #include <lib/types.h>
 #include <lib/io.h>
+#include <lib/vfs.h>
 #include <kernel/screen.h>
 #include <kernel/rtc.h>
 

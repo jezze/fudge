@@ -40,6 +40,8 @@ typedef struct screen
 
 extern screen_t screen;
 
+extern vfs_node_t vfsScreen;
+
 extern void screen_putc(char c);
 extern void screen_puts(char *s);
 extern void screen_puts_dec(unsigned int n);

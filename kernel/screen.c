@@ -1,9 +1,13 @@
 #include <lib/types.h>
 #include <lib/io.h>
 #include <lib/memory.h>
+#include <lib/string.h>
+#include <lib/vfs.h>
 #include <kernel/screen.h>
 
 screen_t screen;
+
+vfs_node_t vfsScreen;
 
 void screen_putc(char c)
 {
@@ -175,6 +179,15 @@ void screen_scroll()
 
 }
 
+unsigned int screen_write(vfs_node_t *node, unsigned int offset, unsigned int size, char *buffer)
+{
+
+    screen_puts(buffer);
+
+    return 0;
+
+}
+
 void screen_init()
 {
 
@@ -183,6 +196,16 @@ void screen_init()
     screen.cursorY = 0;
 
     screen_set_text_color(SCREEN_COLOR_WHITE, SCREEN_COLOR_BLACK);
+
+    string_copy(vfsScreen.name, "stdout");
+    vfsScreen.inode = 0;
+    vfsScreen.flags = VFS_FILE;
+    vfsScreen.length = 0;
+    vfsScreen.open = 0;
+    vfsScreen.close = 0;
+    vfsScreen.read = 0;
+    vfsScreen.write = screen_write;
+    vfsScreen.walk = 0;
 
     screen_clear();
 

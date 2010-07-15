@@ -2,6 +2,7 @@
 #include <lib/memory.h>
 #include <lib/string.h>
 #include <lib/vfs.h>
+#include <kernel/screen.h>
 #include <kernel/initrd.h>
 
 initrd_header_t *initrdHeader;
@@ -69,6 +70,9 @@ vfs_node_t *initrd_init(unsigned int location)
         initrdNodes[i].walk = 0;
 
     }
+
+    initrdHeader->nfiles++;
+    initrdNodes[i++] = vfsScreen;
 
     return &initrdRoot;
 
