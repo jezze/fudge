@@ -34,7 +34,7 @@ static void syscall_vfs_walk(syscall_registers_t *registers)
 static void syscall_vfs_find(syscall_registers_t *registers)
 {
 
-    registers->eax = (unsigned int)vfs_find(fsRoot, (char *)registers->ecx);
+    registers->eax = (unsigned int)vfs_find(fsRoot, (char *)registers->esi);
 
 }
 
