@@ -66,7 +66,7 @@ void kbd_handler(isr_registers_t *registers)
 
 }
 
-unsigned int keyboard_read(vfs_node_t *node, unsigned int offset, unsigned int size, void *buffer)
+unsigned int keyboard_read(vfs_node_t *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
     return cbuffer_read(&keyboard.cbuffer);

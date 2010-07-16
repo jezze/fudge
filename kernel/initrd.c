@@ -13,7 +13,7 @@ initrd_file_header_t *initrdFileHeaders;
 vfs_node_t initrdRoot;
 vfs_node_t initrdNodes[32];
 
-static unsigned int initrd_read(vfs_node_t *node, unsigned int offset, unsigned int size, void *buffer)
+static unsigned int initrd_read(vfs_node_t *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
     initrd_file_header_t header = initrdFileHeaders[node->inode];
@@ -21,12 +21,12 @@ static unsigned int initrd_read(vfs_node_t *node, unsigned int offset, unsigned 
     if (offset > header.length)
         return 0;
 
-    if (offset + size > header.length)
-        size = header.length - offset;
+    if (offset + count > header.length)
+        count = header.length - offset;
 
-    memory_copy(buffer, (unsigned char*)(header.offset + offset), size);
+    memory_copy(buffer, (unsigned char*)(header.offset + offset), count);
 
-    return size;
+    return count;
 
 }
 
