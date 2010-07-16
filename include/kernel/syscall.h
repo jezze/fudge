@@ -10,7 +10,7 @@ typedef struct syscall_registers
 
 } syscall_registers_t;
 
-extern void syscall_handler(syscall_registers_t registers);
+extern void syscall_handler(syscall_registers_t *registers);
 extern void syscall_init();
 
 #endif

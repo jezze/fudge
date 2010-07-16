@@ -260,8 +260,16 @@ isr_syscall:
     push ecx
     push ebx
     push eax
+    mov eax, esp
+    push eax
     call syscall_handler
-    add esp, 24
+    pop eax
+    pop eax
+    pop ebx
+    pop ecx
+    pop edx
+    pop esi
+    pop edi
 	iret
 
 isr_common:

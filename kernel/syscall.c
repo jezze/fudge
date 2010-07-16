@@ -45,13 +45,13 @@ static void syscall_reboot(syscall_registers_t *registers)
 
 }
 
-void syscall_handler(syscall_registers_t registers)
+void syscall_handler(syscall_registers_t *registers)
 {
 
-    void (*handler)(syscall_registers_t *registers) = syscallRoutines[registers.eax];
+    void (*handler)(syscall_registers_t *registers) = syscallRoutines[registers->eax];
 
     if (handler)
-        handler(&registers);
+        handler(registers);
 
 }
 
