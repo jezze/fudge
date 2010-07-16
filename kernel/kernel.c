@@ -2,6 +2,7 @@
 #include <lib/cbuffer.h>
 #include <lib/io.h>
 #include <lib/vfs.h>
+#include <lib/call.h>
 #include <kernel/assert.h>
 #include <kernel/screen.h>
 #include <kernel/mboot.h>
@@ -34,6 +35,21 @@ unsigned int kernel_reboot()
     outb(0x64, 0xFE);
 
     return 0;
+
+}
+
+static void kernel_init_shell()
+{
+
+    vfs_node_t *node = call_vfs_find("shell");
+
+    char *buffer = (char *)0x1F0000;
+
+    vfs_read(node, 0, 2000, buffer);
+        
+    void (*func)(int argc, char *argv[]) = (void (*)(int argc, char *argv[]))0x1F0000;
+
+    func(0, 0);
 
 }
 

@@ -15,6 +15,18 @@ int call_puts(char *s)
 
 }
 
+int call_putc(char c)
+{
+
+    char buffer[2];
+
+    buffer[0] = c;
+    buffer[1] = '\0';
+
+    return call_puts(buffer);
+
+}
+
 char call_getc()
 {
 

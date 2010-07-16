@@ -21,6 +21,8 @@ all:
 	@$(LD) $(LDFLAGS) ls.o ../lib/string.o ../lib/vfs.o ../lib/call.o ../lib/calls.o -o ls
 	@$(GCC) $(GCCFLAGS) reboot.c -o reboot.o
 	@$(LD) $(LDFLAGS) reboot.o ../lib/string.o ../lib/vfs.o ../lib/call.o ../lib/calls.o -o reboot
+	@$(GCC) $(GCCFLAGS) shell.c -o shell.o
+	@ld --oformat binary -Ttext 0x1F0000 -e main shell.o ../lib/string.o ../lib/vfs.o ../lib/stack.o ../lib/call.o ../lib/calls.o -o shell
 	@$(GCC) $(GCCFLAGS) timer.c -o timer.o
 	@$(LD) $(LDFLAGS) timer.o ../lib/string.o ../lib/vfs.o ../lib/call.o ../lib/calls.o -o timer
 
@@ -33,5 +35,6 @@ clean:
 	@rm -f hello
 	@rm -f ls
 	@rm -f reboot
+	@rm -f shell
 	@rm -f timer
 

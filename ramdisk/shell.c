@@ -1,21 +1,17 @@
-#include <lib/types.h>
-#include <lib/cbuffer.h>
-#include <lib/stack.h>
-#include <lib/string.h>
-#include <lib/vfs.h>
-#include <kernel/kernel.h>
-#include <kernel/isr.h>
-#include <kernel/screen.h>
-#include <kernel/kbd.h>
-#include <kernel/shell.h>
+#include <types.h>
+#include <cbuffer.h>
+#include <stack.h>
+#include <string.h>
+#include <vfs.h>
+#include <call.h>
 
-char shellBuffer[SHELL_BUFFER_SIZE];
+char shellBuffer[256];
 stack_t shellStack;
 
 static void shell_clear()
 {
 
-    screen_puts("fudge:/$ ");
+    call_puts("fudge:/$ ");
     stack_clear(&shellStack);
 
 }
@@ -76,17 +72,10 @@ static void shell_interpret(char *command)
 
     }
 
-    else if (!string_compare(argv[0], "clear"))
-    {
-
-        screen_clear();
-
-    }
-
     else
     {
 
-        vfs_node_t *node = vfs_find(fsRoot, argv[0]);
+        vfs_node_t *node = call_vfs_find(argv[0]);
 
         if (node)
             shell_call(node, argc, argv);
@@ -94,8 +83,8 @@ static void shell_interpret(char *command)
         else
         {
 
-            screen_puts(argv[0]);
-            screen_puts(": Command not found\n");
+            call_puts(argv[0]);
+            call_puts(": Command not found\n");
 
         }
 
@@ -120,9 +109,9 @@ static void shell_handle_input(char c)
             if (stack_pop(&shellStack))
             {
 
-                screen_putc('\b');
-                screen_putc(' ');
-                screen_putc('\b');
+                call_putc('\b');
+                call_putc(' ');
+                call_putc('\b');
 
              }
 
@@ -131,7 +120,7 @@ static void shell_handle_input(char c)
         case '\n':
 
             stack_push(&shellStack, '\0');
-            screen_putc(c);
+            call_putc(c);
             shell_interpret(shellBuffer);
 
             break;
@@ -139,7 +128,7 @@ static void shell_handle_input(char c)
         default:
 
             stack_push(&shellStack, c);
-            screen_putc(c);
+            call_putc(c);
 
             break;
 
@@ -153,24 +142,24 @@ static void shell_poll()
     for (;;)
     {
 
-        char c;
+        char c = 0;
 
-        if ((c = cbuffer_read(&keyboard.cbuffer)))
+        if ((c = call_getc()))
             shell_handle_input(c);
 
     }
 
 }
 
-void shell_init()
+void main(int argc, char *argv[])
 {
 
-    shellStack = stack_create(shellBuffer, SHELL_BUFFER_SIZE);
+    shellStack = stack_create(shellBuffer, 256);
 
-    screen_puts("Fudge\n");
-    screen_puts("-----\n");
-    screen_puts("Copyright (c) 2009 Jens Nyberg\n");
-    screen_puts("Type 'cat help.txt' to read the help section.\n\n");
+    call_puts("Fudge\n");
+    call_puts("-----\n");
+    call_puts("Copyright (c) 2009 Jens Nyberg\n");
+    call_puts("Type 'cat help.txt' to read the help section.\n\n");
 
     shell_clear();
     shell_poll();
