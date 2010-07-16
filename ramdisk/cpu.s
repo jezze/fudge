@@ -17,22 +17,24 @@ global cpu_get_vendor
 cpu_get_vendor:
     push ebp
     mov ebp, esp
-    push edi
     push eax
     push ebx
     push ecx
     push edx
+    push esi
+    push edi
     mov edi, [ebp + 8]
     mov eax, 0x00
     cpuid
     mov [edi + 0], ebx
     mov [edi + 4], edx
     mov [edi + 8], ecx
+    pop edi
+    pop esi
     pop edx
     pop ecx
     pop ebx
     pop eax
-    pop edi
     pop ebp
     ret
 
@@ -68,11 +70,12 @@ global cpu_get_brand
 cpu_get_brand:
     push ebp
     mov ebp, esp
-    push edi
     push eax
     push ebx
     push ecx
     push edx
+    push esi
+    push edi
     mov edi, [ebp + 8]
     mov eax, 0x80000002
     cpuid
@@ -92,11 +95,12 @@ cpu_get_brand:
     mov [edi + 36], ebx
     mov [edi + 40], ecx
     mov [edi + 44], edx
+    pop edi
+    pop esi
     pop edx
     pop ecx
     pop ebx
     pop eax
-    pop edi
     pop ebp
     ret
 
