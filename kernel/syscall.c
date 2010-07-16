@@ -24,38 +24,34 @@ void syscall_unregister_handler(unsigned char index)
 
 }
 
-static unsigned int syscall_vfs_walk(syscall_registers_t *registers)
+static void syscall_vfs_walk(syscall_registers_t *registers)
 {
 
-    return (unsigned int)vfs_walk(fsRoot, registers->ecx);
+    registers->eax = (unsigned int)vfs_walk(fsRoot, registers->ecx);
 
 }
 
-static unsigned int syscall_vfs_find(syscall_registers_t *registers)
+static void syscall_vfs_find(syscall_registers_t *registers)
 {
 
-    return (unsigned int)vfs_find(fsRoot, (char *)registers->ecx);
+    registers->eax = (unsigned int)vfs_find(fsRoot, (char *)registers->ecx);
 
 }
 
-static unsigned int syscall_reboot(syscall_registers_t *registers)
+static void syscall_reboot(syscall_registers_t *registers)
 {
 
     kernel_reboot();
 
-    return 0;
-
 }
 
-unsigned int syscall_handler(syscall_registers_t registers)
+void syscall_handler(syscall_registers_t registers)
 {
 
-    unsigned int (*handler)(syscall_registers_t *registers) = syscallRoutines[registers.eax];
+    void (*handler)(syscall_registers_t *registers) = syscallRoutines[registers.eax];
 
     if (handler)
-        return handler(&registers);
-
-    return 0;
+        handler(&registers);
 
 }
 
