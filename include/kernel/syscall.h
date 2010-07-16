@@ -6,7 +6,7 @@
 typedef struct syscall_registers
 {
 
-    unsigned int eax, ebx, ecx, edx, esi, edi;
+    uint32_t edi, esi, ebp, esp, ebx, edx, ecx, eax;
 
 } syscall_registers_t;
 

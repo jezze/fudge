@@ -254,22 +254,12 @@ isr1F:
 global isr_syscall
 isr_syscall:
     cli
-    push edi
-    push esi
-    push edx
-    push ecx
-    push ebx
-    push eax
+    pusha
     mov eax, esp
     push eax
     call syscall_handler
     pop eax
-    pop eax
-    pop ebx
-    pop ecx
-    pop edx
-    pop esi
-    pop edi
+    popa
 	iret
 
 isr_common:
