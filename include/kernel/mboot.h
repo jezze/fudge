@@ -61,7 +61,7 @@ typedef struct mboot_module
 
     uint32_t base;
     uint32_t length;
-    uint32_t string;
+    uint32_t name;
     uint32_t reserved;
 
 } mboot_module_t;

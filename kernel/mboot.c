@@ -78,6 +78,14 @@ void mboot_init(mboot_info_t *info)
     if (info->flags & MBOOT_FLAG_MODULES)
     {
 
+        mboot_module_t *module = (mboot_module_t *)info->modulesAddresses;
+
+        screen_puts("Modules:");
+
+        screen_puts(" ");
+        screen_puts((char *)module->name);
+        screen_puts("\n");
+
     }
 
     if (info->flags & MBOOT_FLAG_MMAP)
