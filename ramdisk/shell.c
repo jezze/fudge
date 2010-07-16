@@ -2,13 +2,11 @@
 #include <lib/cbuffer.h>
 #include <lib/stack.h>
 #include <lib/string.h>
-#include <kernel/regs.h>
+#include <lib/vfs.h>
+#include <kernel/kernel.h>
+#include <kernel/isr.h>
 #include <kernel/screen.h>
-#include <kernel/pit.h>
 #include <kernel/kbd.h>
-#include <kernel/vfs.h>
-#include <kernel/cpu.h>
-#include <kernel/rtc.h>
 #include <kernel/shell.h>
 
 char shellBuffer[SHELL_BUFFER_SIZE];
@@ -22,104 +20,16 @@ static void shell_clear()
 
 }
 
-static void shell_command_call(int argc, char *argv[])
+static void shell_call(vfs_node_t *node, int argc, char *argv[])
 {
 
-    if (argc != 2)
-        return;
-
-    vfs_node_t *node = vfs_find(fsRoot, argv[1]);
-
-    if (!node)
-        return;
-
-    char *buffer = 0x200000;
+    char *buffer = (char *)0x200000;
 
     vfs_read(node, 0, 2000, buffer);
         
-    void (*func)() = buffer;
+    void (*func)(int argc, char *argv[]) = (void (*)(int argc, char *argv[]))0x200000;
 
-    func();
-
-}
-
-static void shell_command_cat(int argc, char *argv[])
-{
-
-    if (argc != 2)
-        return;
-
-    vfs_node_t *node = vfs_find(fsRoot, argv[1]);
-
-    if (!node)
-        return;
-
-    char buffer[2000];
-
-    unsigned int size = vfs_read(node, 0, 2000, buffer);
-        
-    unsigned int i;
-
-    for (i = 0; i < size; i++)
-        screen_putc(buffer[i]);
-
-    screen_putc('\n');
-
-}
-
-static void shell_command_clear()
-{
-
-    screen_clear();
-
-}
-
-static void shell_command_cpu()
-{
-
-    cpu_init();
-
-}
-
-static void shell_command_date()
-{
-
-    rtc_init();
-
-}
-
-static void shell_command_ls()
-{
-
-    unsigned int i;
-    vfs_node_t *node;
-
-    for (i = 0; (node = vfs_walk(fsRoot, i)); i++)
-    {
-
-        if (node->flags == VFS_DIRECTORY)
-            screen_puts("/");
-
-        screen_puts(node->name);
-        screen_puts("\n");
-
-    }
-
-}
-
-static void shell_command_null()
-{
-
-    return;
-
-}
-
-static void shell_command_timer()
-{
-
-    screen_puts("Timer: ");
-    screen_puts_dec(pit_timer);
-    screen_puts("\n");
+    func(argc, argv);
 
 }
 
@@ -162,34 +72,32 @@ static void shell_interpret(char *command)
     int argc = shell_get_arguments(argv, command);
 
     if (!string_compare(argv[0], ""))
-        shell_command_null();
+    {
 
-    else if (!string_compare(argv[0], "call"))
-        shell_command_call(argc, argv);
-
-    else if (!string_compare(argv[0], "cat"))
-        shell_command_cat(argc, argv);
+    }
 
     else if (!string_compare(argv[0], "clear"))
-        shell_command_clear();
+    {
 
-    else if (!string_compare(argv[0], "cpu"))
-        shell_command_cpu();
+        screen_clear();
 
-    else if (!string_compare(argv[0], "date"))
-        shell_command_date();
-
-    else if (!string_compare(argv[0], "ls"))
-        shell_command_ls();
-
-    else if (!string_compare(argv[0], "timer"))
-        shell_command_timer();
+    }
 
     else
     {
 
-        screen_puts(argv[0]);
-        screen_puts(": Command not found\n");
+        vfs_node_t *node = vfs_find(fsRoot, argv[0]);
+
+        if (node)
+            shell_call(node, argc, argv);
+
+        else
+        {
+
+            screen_puts(argv[0]);
+            screen_puts(": Command not found\n");
+
+        }
 
     }
 
@@ -260,8 +168,9 @@ void shell_init()
     shellStack = stack_create(shellBuffer, SHELL_BUFFER_SIZE);
 
     screen_puts("Fudge\n");
+    screen_puts("-----\n");
     screen_puts("Copyright (c) 2009 Jens Nyberg\n");
-    screen_puts("Type 'help' for a list of commands.\n\n");
+    screen_puts("Type 'cat help.txt' to read the help section.\n\n");
 
     shell_clear();
     shell_poll();

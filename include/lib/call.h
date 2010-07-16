@@ -10,6 +10,8 @@
 #define CALL_REBOOT 0x51
 
 extern int call_puts(char *s);
+extern char call_getc();
+
 extern vfs_node_t *call_vfs_walk(unsigned int index);
 extern vfs_node_t *call_vfs_find(char *name);
 extern int call_halt();
