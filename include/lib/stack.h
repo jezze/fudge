@@ -1,19 +1,19 @@
 #ifndef STACK_H
 #define STACK_H
 
-typedef struct stack
+struct stack
 {
 
     char *buffer;
     unsigned int size;
     unsigned int head;
 
-} stack_t;
+};
 
-extern stack_t stack_create(char *buffer, unsigned int size);
-extern void stack_push(stack_t *stack, char c);
-extern char stack_pop(stack_t *stack);
-extern void stack_clear(stack_t *stack);
+extern struct stack stack_create(char *buffer, unsigned int size);
+extern void stack_push(struct stack *stack, char c);
+extern char stack_pop(struct stack *stack);
+extern void stack_clear(struct stack *stack);
 
 #endif
 

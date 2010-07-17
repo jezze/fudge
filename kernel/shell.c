@@ -10,7 +10,7 @@
 #include <kernel/shell.h>
 
 char shellBuffer[SHELL_BUFFER_SIZE];
-stack_t shellStack;
+struct stack shellStack;
 
 static void shell_clear()
 {

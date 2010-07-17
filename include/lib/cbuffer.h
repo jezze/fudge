@@ -1,7 +1,7 @@
 #ifndef CBUFFER_H
 #define CBUFFER_H
 
-typedef struct cbuffer
+struct cbuffer
 {
 
     char *buffer;
@@ -9,11 +9,11 @@ typedef struct cbuffer
     unsigned int head;
     unsigned int tail;
 
-} cbuffer_t;
+};
 
-extern cbuffer_t cbuffer_create(char *buffer, unsigned int size);
-extern void cbuffer_write(cbuffer_t *cbuffer, char c);
-extern char cbuffer_read(cbuffer_t *cbuffer);
+extern struct cbuffer cbuffer_create(char *buffer, unsigned int size);
+extern void cbuffer_write(struct cbuffer *cbuffer, char c);
+extern char cbuffer_read(struct cbuffer *cbuffer);
 
 #endif
 

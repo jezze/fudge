@@ -1,9 +1,9 @@
 #include <lib/stack.h>
 
-stack_t stack_create(char *buffer, unsigned int size)
+struct stack stack_create(char *buffer, unsigned int size)
 {
 
-    stack_t stack;
+    struct stack stack;
     stack.buffer = buffer;
     stack.size = size;
     stack.head = 0;
@@ -12,7 +12,7 @@ stack_t stack_create(char *buffer, unsigned int size)
 
 }
 
-void stack_push(stack_t *stack, char c)
+void stack_push(struct stack *stack, char c)
 {
 
     if (stack->head < stack->size)
@@ -25,7 +25,7 @@ void stack_push(stack_t *stack, char c)
 
 }
 
-char stack_pop(stack_t *stack)
+char stack_pop(struct stack *stack)
 {
 
     if (stack->head > 0)
@@ -42,7 +42,7 @@ char stack_pop(stack_t *stack)
 
 }
 
-void stack_clear(stack_t *stack)
+void stack_clear(struct stack *stack)
 {
 
     stack->head = 0;

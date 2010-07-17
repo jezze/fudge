@@ -5,7 +5,7 @@
 #include <call.h>
 
 char shellBuffer[256];
-stack_t shellStack;
+struct stack shellStack;
 int run;
 
 static void shell_clear()

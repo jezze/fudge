@@ -1,9 +1,9 @@
 #include <lib/cbuffer.h>
 
-cbuffer_t cbuffer_create(char *buffer, unsigned int size)
+struct cbuffer cbuffer_create(char *buffer, unsigned int size)
 {
 
-    cbuffer_t cbuffer;
+    struct cbuffer cbuffer;
     cbuffer.buffer = buffer;
     cbuffer.size = size;
     cbuffer.head = 0;
@@ -13,7 +13,7 @@ cbuffer_t cbuffer_create(char *buffer, unsigned int size)
 
 }
 
-void cbuffer_write(cbuffer_t *cbuffer, char c)
+void cbuffer_write(struct cbuffer *cbuffer, char c)
 {
 
     if ((cbuffer->head + 1) % cbuffer->size != cbuffer->tail)
@@ -26,7 +26,7 @@ void cbuffer_write(cbuffer_t *cbuffer, char c)
 
 }
 
-char cbuffer_read(cbuffer_t *cbuffer)
+char cbuffer_read(struct cbuffer *cbuffer)
 {
 
     if (cbuffer->head != cbuffer->tail)
