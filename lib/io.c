@@ -1,10 +1,9 @@
-#include <lib/types.h>
 #include <lib/io.h>
 
-uint8_t inb(uint16_t port)
+unsigned char inb(unsigned short port)
 {
 
-    uint8_t rv;
+    unsigned char rv;
 
     __asm__ __volatile__ ("inb %1, %0" : "=a" (rv) : "dN" (port));
 
@@ -12,10 +11,10 @@ uint8_t inb(uint16_t port)
 
 }
 
-uint16_t inw(uint16_t port)
+unsigned short inw(unsigned short port)
 {
 
-    uint16_t rv;
+    unsigned short rv;
 
     __asm__ __volatile__ ("inw %1, %0" : "=a" (rv) : "dN" (port));
 
@@ -23,7 +22,7 @@ uint16_t inw(uint16_t port)
 
 }
 
-void outb(uint16_t port, uint8_t data)
+void outb(unsigned short port, unsigned char data)
 {
 
     __asm__ __volatile__ ("outb %1, %0" : : "dN" (port), "a" (data));

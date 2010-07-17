@@ -1,4 +1,3 @@
-#include <lib/types.h>
 #include <lib/stack.h>
 
 stack_t stack_create(char *buffer, unsigned int size)

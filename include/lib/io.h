@@ -1,9 +1,9 @@
 #ifndef IO_H
 #define IO_H
 
-extern uint8_t inb(uint16_t port);
-extern uint16_t inw(uint16_t port);
-extern void outb(uint16_t port, uint8_t data);
+extern unsigned char inb(unsigned short port);
+extern unsigned short inw(unsigned short port);
+extern void outb(unsigned short port, unsigned char data);
 
 #endif
 

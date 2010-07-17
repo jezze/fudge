@@ -1,11 +1,10 @@
-#include <lib/types.h>
 #include <lib/memory.h>
 
 void *memory_copy(void *dest, const void *src, unsigned int count)
 {
 
-    const int8_t *sp = (const int8_t *)src;
-    int8_t *dp = (int8_t *)dest;
+    const char *sp = (const char *)src;
+    char *dp = (char *)dest;
 
     for (; count != 0; count--)
         *dp++ = *sp++;
@@ -14,10 +13,10 @@ void *memory_copy(void *dest, const void *src, unsigned int count)
 
 }
 
-void *memory_set(void *dest, int8_t value, unsigned int count)
+void *memory_set(void *dest, char value, unsigned int count)
 {
 
-    int8_t *temp = (int8_t *)dest;
+    char *temp = (char *)dest;
 
     for (; count != 0; count--)
         *temp++ = value;
@@ -26,10 +25,10 @@ void *memory_set(void *dest, int8_t value, unsigned int count)
 
 }
 
-uint16_t *memory_setw(uint16_t *dest, uint16_t value, unsigned int count)
+unsigned short *memory_setw(unsigned short *dest, unsigned short value, unsigned int count)
 {
 
-    uint16_t *temp = (uint16_t *)dest;
+    unsigned short *temp = (unsigned short *)dest;
 
     for (; count != 0; count--)
         *temp++ = value;

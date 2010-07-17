@@ -1,4 +1,3 @@
-#include <lib/types.h>
 #include <lib/string.h>
 
 char *string_concat(char *base, const char *str)
