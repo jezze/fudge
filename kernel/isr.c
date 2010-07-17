@@ -1,4 +1,3 @@
-#include <lib/vfs.h>
 #include <kernel/idt.h>
 #include <kernel/screen.h>
 #include <kernel/isr.h>
