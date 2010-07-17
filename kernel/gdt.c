@@ -1,4 +1,3 @@
-#include <lib/types.h>
 #include <lib/memory.h>
 #include <kernel/gdt.h>
 
@@ -6,7 +5,7 @@ struct gdt_entry gdt[GDT_TABLE_SIZE];
 struct gdt_ptr gdtPointer;
 struct tss_entry tss;
 
-void gdt_set_gate(unsigned char index, uint32_t base, uint32_t limit, uint8_t access, uint8_t granularity)
+void gdt_set_gate(unsigned char index, unsigned int base, unsigned int limit, unsigned char access, unsigned char granularity)
 {
 
     gdt[index].baseLow = (base & 0xFFFF);
@@ -19,7 +18,7 @@ void gdt_set_gate(unsigned char index, uint32_t base, uint32_t limit, uint8_t ac
 
 }
 
-void set_kernel_stack(uint32_t stack)
+void set_kernel_stack(unsigned int stack)
 {
 
     tss.esp0 = stack;
@@ -29,11 +28,11 @@ void set_kernel_stack(uint32_t stack)
 void gdt_init()
 {
 
-    gdtPointer.base = (uint32_t)&gdt;
+    gdtPointer.base = (unsigned int)&gdt;
     gdtPointer.limit = (sizeof (struct gdt_entry) * GDT_TABLE_SIZE) - 1;
 
     struct gdt_ptr tssPointer;
-    tssPointer.base = (uint32_t)&tss;
+    tssPointer.base = (unsigned int)&tss;
     tssPointer.limit = tssPointer.base + sizeof (struct tss_entry);
 
     memory_set(&gdt, 0, sizeof (struct gdt_entry) * GDT_TABLE_SIZE);

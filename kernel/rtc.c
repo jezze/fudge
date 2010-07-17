@@ -1,10 +1,9 @@
-#include <lib/types.h>
 #include <lib/io.h>
 #include <lib/vfs.h>
 #include <kernel/screen.h>
 #include <kernel/rtc.h>
 
-uint8_t rtc_read(uint8_t type)
+unsigned char rtc_read(unsigned char type)
 {
 
     outb(RTC_PORT_WRITE, type);

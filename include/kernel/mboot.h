@@ -18,51 +18,51 @@
 struct mboot_info
 {
 
-    uint32_t flags;
-    uint32_t memoryLower;
-    uint32_t memoryUpper;
-    uint32_t device;
-    uint32_t cmdline;
-    uint32_t modulesCount;
-    uint32_t modulesAddresses;
-    uint32_t num;
-    uint32_t size;
-    uint32_t addr;
-    uint32_t shndx;
-    uint32_t mmapLength;
-    uint32_t mmapAddress;
-    uint32_t drivesLength;
-    uint32_t drivesAddresses;
-    uint32_t configTable;
-    uint32_t name;
-    uint32_t apmTable;
-    uint32_t vbeControlInfo;
-    uint32_t vbeModeInfo;
-    uint32_t vbeInterfaceSegment;
-    uint32_t vbeInterfaceOffset;
-    uint32_t vbeInterfaceLength;
+    unsigned int flags;
+    unsigned int memoryLower;
+    unsigned int memoryUpper;
+    unsigned int device;
+    unsigned int cmdline;
+    unsigned int modulesCount;
+    unsigned int modulesAddresses;
+    unsigned int num;
+    unsigned int size;
+    unsigned int addr;
+    unsigned int shndx;
+    unsigned int mmapLength;
+    unsigned int mmapAddress;
+    unsigned int drivesLength;
+    unsigned int drivesAddresses;
+    unsigned int configTable;
+    unsigned int name;
+    unsigned int apmTable;
+    unsigned int vbeControlInfo;
+    unsigned int vbeModeInfo;
+    unsigned int vbeInterfaceSegment;
+    unsigned int vbeInterfaceOffset;
+    unsigned int vbeInterfaceLength;
 
 } __attribute__((packed));
 
 struct mboot_mmap
 {
 
-    uint32_t size;
-    uint32_t baseLow;
-    uint32_t baseHigh;
-    uint32_t lengthLow;
-    uint32_t lengthHigh;
-    uint32_t type;
+    unsigned int size;
+    unsigned int baseLow;
+    unsigned int baseHigh;
+    unsigned int lengthLow;
+    unsigned int lengthHigh;
+    unsigned int type;
 
 };
 
 struct mboot_module
 {
 
-    uint32_t base;
-    uint32_t length;
-    uint32_t name;
-    uint32_t reserved;
+    unsigned int base;
+    unsigned int length;
+    unsigned int name;
+    unsigned int reserved;
 
 };
 

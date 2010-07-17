@@ -1,4 +1,3 @@
-#include <lib/types.h>
 #include <lib/memory.h>
 #include <lib/vfs.h>
 #include <kernel/assert.h>
@@ -47,7 +46,7 @@ static void mmu_init_directory(struct mmu_directory *directory)
 
 }
 
-static void mmu_set_directory(struct mmu_directory *directory, uint32_t base, uint32_t limit, uint32_t flags)
+static void mmu_set_directory(struct mmu_directory *directory, unsigned int base, unsigned int limit, unsigned int flags)
 {
 
     unsigned int i;
@@ -55,7 +54,7 @@ static void mmu_set_directory(struct mmu_directory *directory, uint32_t base, ui
     struct mmu_table *pageTable = (struct mmu_table *)MMU_PAGE_TABLE_ADDRESS;
 
     directory->tables[0] = pageTable;
-    directory->tables[0] = (struct mmu_table *)((uint32_t)directory->tables[0] | flags);
+    directory->tables[0] = (struct mmu_table *)((unsigned int)directory->tables[0] | flags);
 
     for (i = 0; i < 1024; i++, base += 0x1000)
         pageTable->entries[i] = base | 3;

@@ -26,16 +26,16 @@ struct vfs_node;
 struct screen_context
 {
 
-    uint16_t attribute;
+    unsigned short attribute;
 
 };
 
 struct screen
 {
 
-    uint16_t *address;
-    uint32_t cursorX;
-    uint32_t cursorY;
+    unsigned short *address;
+    unsigned int cursorX;
+    unsigned int cursorY;
     struct screen_context context;
 
 };

@@ -1,4 +1,3 @@
-#include <lib/types.h>
 #include <lib/io.h>
 #include <lib/memory.h>
 #include <lib/string.h>
@@ -12,7 +11,7 @@ struct vfs_node vfsScreen;
 void screen_putc(char c)
 {
 
-    uint16_t *where;
+    unsigned short *where;
 
     if (c == '\b')
     {
@@ -120,7 +119,7 @@ void screen_puts_bcd(unsigned char n)
 
 }
 
-void screen_set_text_color(uint8_t forecolor, uint8_t backcolor)
+void screen_set_text_color(unsigned char forecolor, unsigned char backcolor)
 {
 
     screen.context.attribute = (backcolor << 4) | (forecolor & 0x0F);
@@ -130,7 +129,7 @@ void screen_set_text_color(uint8_t forecolor, uint8_t backcolor)
 void screen_clear()
 {
 
-    uint32_t blank;
+    unsigned int blank;
 
     blank = 0x20 | (screen.context.attribute << 8);
 
@@ -149,7 +148,7 @@ void screen_clear()
 void screen_cursor_move()
 {
 
-    uint32_t temp;
+    unsigned int temp;
 
     temp = screen.cursorY * SCREEN_CHARACTER_WIDTH + screen.cursorX;
 
@@ -163,7 +162,7 @@ void screen_cursor_move()
 void screen_scroll()
 {
 
-    uint32_t blank, temp;
+    unsigned int blank, temp;
 
     blank = 0x20 | (screen.context.attribute << 8);
 
@@ -211,7 +210,7 @@ struct vfs_node *screen_get_node()
 void screen_init()
 {
 
-    screen.address = (uint16_t *)SCREEN_ADDRESS;
+    screen.address = (unsigned short *)SCREEN_ADDRESS;
     screen.cursorX = 0;
     screen.cursorY = 0;
 

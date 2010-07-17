@@ -1,4 +1,3 @@
-#include <lib/types.h>
 #include <lib/cbuffer.h>
 #include <lib/io.h>
 #include <lib/vfs.h>
@@ -53,7 +52,7 @@ static void kernel_init_shell()
 
 }
 
-void kernel_main(struct mboot_info *header, uint32_t magic)
+void kernel_main(struct mboot_info *header, unsigned int magic)
 {
 
     gdt_init();

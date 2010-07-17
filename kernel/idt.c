@@ -1,11 +1,10 @@
-#include <lib/types.h>
 #include <lib/memory.h>
 #include <kernel/idt.h>
 
 struct idt_entry idt[IDT_TABLE_SIZE];
 struct idt_ptr idtPointer;
 
-void idt_set_gate(unsigned char index, uint32_t base, uint16_t selector, uint8_t flags)
+void idt_set_gate(unsigned char index, unsigned int base, unsigned short selector, unsigned char flags)
 {
 
     idt[index].baseLow = (base & 0xFFFF);
@@ -19,7 +18,7 @@ void idt_set_gate(unsigned char index, uint32_t base, uint16_t selector, uint8_t
 void idt_init()
 {
 
-    idtPointer.base = (uint32_t)&idt;
+    idtPointer.base = (unsigned int)&idt;
     idtPointer.limit = (sizeof (struct idt_entry) * IDT_TABLE_SIZE) - 1;
 
     memory_set(&idt, 0, sizeof (struct idt_entry) * IDT_TABLE_SIZE);

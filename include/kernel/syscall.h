@@ -6,7 +6,7 @@
 struct syscall_registers
 {
 
-    uint32_t edi, esi, ebp, esp, ebx, edx, ecx, eax;
+    unsigned int edi, esi, ebp, esp, ebx, edx, ecx, eax;
 
 };
 

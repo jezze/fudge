@@ -6,60 +6,60 @@
 struct gdt_entry
 {
 
-    uint16_t limitLow;
-    uint16_t baseLow;
-    uint8_t baseMiddle;
-    uint8_t access;
-    uint8_t granularity;
-    uint8_t baseHigh;
+    unsigned short limitLow;
+    unsigned short baseLow;
+    unsigned char baseMiddle;
+    unsigned char access;
+    unsigned char granularity;
+    unsigned char baseHigh;
 
 } __attribute__((packed));
 
 struct gdt_ptr
 {
 
-    uint16_t limit;
-    uint32_t base;
+    unsigned short limit;
+    unsigned int base;
 
 } __attribute__((packed));
 
 struct tss_entry
 {
 
-    uint32_t previous;
-    uint32_t esp0;
-    uint32_t ss0;
-    uint32_t esp1;
-    uint32_t ss1;
-    uint32_t esp2;
-    uint32_t ss2;
-    uint32_t cr3;
-    uint32_t eip;
-    uint32_t eflags;
-    uint32_t eax;
-    uint32_t ecx;
-    uint32_t edx;
-    uint32_t ebx;
-    uint32_t esp;
-    uint32_t ebp;
-    uint32_t esi;
-    uint32_t edi;
-    uint32_t es;
-    uint32_t cs;
-    uint32_t ss;
-    uint32_t ds;
-    uint32_t fs;
-    uint32_t gs;
-    uint32_t ldt;
-    uint16_t trap;
-    uint16_t iomap_base;
+    unsigned int previous;
+    unsigned int esp0;
+    unsigned int ss0;
+    unsigned int esp1;
+    unsigned int ss1;
+    unsigned int esp2;
+    unsigned int ss2;
+    unsigned int cr3;
+    unsigned int eip;
+    unsigned int eflags;
+    unsigned int eax;
+    unsigned int ecx;
+    unsigned int edx;
+    unsigned int ebx;
+    unsigned int esp;
+    unsigned int ebp;
+    unsigned int esi;
+    unsigned int edi;
+    unsigned int es;
+    unsigned int cs;
+    unsigned int ss;
+    unsigned int ds;
+    unsigned int fs;
+    unsigned int gs;
+    unsigned int ldt;
+    unsigned short trap;
+    unsigned short iomap_base;
 
 } __attribute__((packed));
 
 extern void gdt_flush(struct gdt_ptr *pointer);
 extern void tss_flush();
 
-extern void gdt_set_gate(unsigned char index, uint32_t base, uint32_t limit, uint8_t access, uint8_t granularity);
+extern void gdt_set_gate(unsigned char index, unsigned int base, unsigned int limit, unsigned char access, unsigned char granularity);
 extern void gdt_init();
 
 #endif

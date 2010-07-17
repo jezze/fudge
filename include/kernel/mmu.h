@@ -35,7 +35,7 @@ struct isr_registers;
 struct mmu_table
 {
 
-    uint32_t entries[1024];
+    unsigned int entries[1024];
 
 };
 
@@ -47,11 +47,11 @@ struct mmu_directory
 };
 
 extern void mmu_flush(struct mmu_directory *directory);
-extern uint32_t mmu_read_cr0();
-extern void mmu_write_cr0(uint32_t value);
-extern uint32_t mmu_read_cr2();
-extern uint32_t mmu_read_cr3();
-extern void mmu_write_cr3(uint32_t value);
+extern unsigned int mmu_read_cr0();
+extern void mmu_write_cr0(unsigned int value);
+extern unsigned int mmu_read_cr2();
+extern unsigned int mmu_read_cr3();
+extern void mmu_write_cr3(unsigned int value);
 
 extern void mmu_handler(struct isr_registers *registers);
 extern void mmu_init();

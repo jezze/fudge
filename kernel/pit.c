@@ -1,4 +1,3 @@
-#include <lib/types.h>
 #include <lib/io.h>
 #include <kernel/isr.h>
 #include <kernel/irq.h>
@@ -27,11 +26,11 @@ void pit_wait(int ticks)
 void pit_init()
 {
 
-    uint16_t divisor = PIT_HERTZ / PIT_FREQUENCY;
+    unsigned short divisor = PIT_HERTZ / PIT_FREQUENCY;
 
     outb(0x43, 0x36);
-    outb(0x40, (uint8_t)(divisor & 0xFF));
-    outb(0x40, (uint8_t)((divisor >> 8) & 0xFF));
+    outb(0x40, (unsigned char)(divisor & 0xFF));
+    outb(0x40, (unsigned char)((divisor >> 8) & 0xFF));
 
 }
 

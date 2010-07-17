@@ -1,4 +1,3 @@
-#include <lib/types.h>
 #include <lib/io.h>
 #include <kernel/idt.h>
 #include <kernel/isr.h>
@@ -56,22 +55,22 @@ void irq_init()
 
     irq_remap();
 
-    idt_set_gate(0x20, (uint32_t)irq00, 0x08, 0x8E);
-    idt_set_gate(0x21, (uint32_t)irq01, 0x08, 0x8E);
-    idt_set_gate(0x22, (uint32_t)irq02, 0x08, 0x8E);
-    idt_set_gate(0x23, (uint32_t)irq03, 0x08, 0x8E);
-    idt_set_gate(0x24, (uint32_t)irq04, 0x08, 0x8E);
-    idt_set_gate(0x25, (uint32_t)irq05, 0x08, 0x8E);
-    idt_set_gate(0x26, (uint32_t)irq06, 0x08, 0x8E);
-    idt_set_gate(0x27, (uint32_t)irq07, 0x08, 0x8E);
-    idt_set_gate(0x28, (uint32_t)irq08, 0x08, 0x8E);
-    idt_set_gate(0x29, (uint32_t)irq09, 0x08, 0x8E);
-    idt_set_gate(0x2A, (uint32_t)irq0A, 0x08, 0x8E);
-    idt_set_gate(0x2B, (uint32_t)irq0B, 0x08, 0x8E);
-    idt_set_gate(0x2C, (uint32_t)irq0C, 0x08, 0x8E);
-    idt_set_gate(0x2D, (uint32_t)irq0D, 0x08, 0x8E);
-    idt_set_gate(0x2E, (uint32_t)irq0E, 0x08, 0x8E);
-    idt_set_gate(0x2F, (uint32_t)irq0F, 0x08, 0x8E);
+    idt_set_gate(0x20, (unsigned int)irq00, 0x08, 0x8E);
+    idt_set_gate(0x21, (unsigned int)irq01, 0x08, 0x8E);
+    idt_set_gate(0x22, (unsigned int)irq02, 0x08, 0x8E);
+    idt_set_gate(0x23, (unsigned int)irq03, 0x08, 0x8E);
+    idt_set_gate(0x24, (unsigned int)irq04, 0x08, 0x8E);
+    idt_set_gate(0x25, (unsigned int)irq05, 0x08, 0x8E);
+    idt_set_gate(0x26, (unsigned int)irq06, 0x08, 0x8E);
+    idt_set_gate(0x27, (unsigned int)irq07, 0x08, 0x8E);
+    idt_set_gate(0x28, (unsigned int)irq08, 0x08, 0x8E);
+    idt_set_gate(0x29, (unsigned int)irq09, 0x08, 0x8E);
+    idt_set_gate(0x2A, (unsigned int)irq0A, 0x08, 0x8E);
+    idt_set_gate(0x2B, (unsigned int)irq0B, 0x08, 0x8E);
+    idt_set_gate(0x2C, (unsigned int)irq0C, 0x08, 0x8E);
+    idt_set_gate(0x2D, (unsigned int)irq0D, 0x08, 0x8E);
+    idt_set_gate(0x2E, (unsigned int)irq0E, 0x08, 0x8E);
+    idt_set_gate(0x2F, (unsigned int)irq0F, 0x08, 0x8E);
 
 }
 
