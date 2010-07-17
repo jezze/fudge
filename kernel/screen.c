@@ -192,14 +192,8 @@ unsigned int screen_write(vfs_node_t *node, unsigned int offset, unsigned int co
 
 }
 
-void screen_init()
+vfs_node_t *screen_get_node()
 {
-
-    screen.address = (uint16_t *)SCREEN_ADDRESS;
-    screen.cursorX = 0;
-    screen.cursorY = 0;
-
-    screen_set_text_color(SCREEN_COLOR_WHITE, SCREEN_COLOR_BLACK);
 
     string_copy(vfsScreen.name, "stdout");
     vfsScreen.inode = 0;
@@ -209,6 +203,19 @@ void screen_init()
     vfsScreen.read = 0;
     vfsScreen.write = screen_write;
     vfsScreen.walk = 0;
+
+    return &vfsScreen;
+
+}
+
+void screen_init()
+{
+
+    screen.address = (uint16_t *)SCREEN_ADDRESS;
+    screen.cursorX = 0;
+    screen.cursorY = 0;
+
+    screen_set_text_color(SCREEN_COLOR_WHITE, SCREEN_COLOR_BLACK);
 
     screen_clear();
 

@@ -21,6 +21,8 @@
 #define SCREEN_COLOR_RED2       0x0c
 #define SCREEN_COLOR_WHITE      0x0f
 
+struct vfs_node_t;
+
 typedef struct screen_context
 {
 
@@ -40,8 +42,6 @@ typedef struct screen
 
 extern screen_t screen;
 
-extern vfs_node_t vfsScreen;
-
 extern void screen_putc(char c);
 extern void screen_puts(char *s);
 extern void screen_puts_dec(unsigned int n);
@@ -51,6 +51,7 @@ extern void screen_clear();
 extern void screen_cursor_move();
 extern void screen_scroll();
 extern void screen_init();
+extern vfs_node_t *screen_get_node();
 
 #endif
 

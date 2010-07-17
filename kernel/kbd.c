@@ -75,13 +75,8 @@ unsigned int keyboard_read(vfs_node_t *node, unsigned int offset, unsigned int c
 
 }
 
-void kbd_init()
+vfs_node_t *kbd_get_node()
 {
-
-    keyboard.cbuffer = cbuffer_create(keyboard.buffer, KBD_BUFFER_SIZE);
-    keyboard.toggleAlt = 0;
-    keyboard.toggleCtrl = 0;
-    keyboard.toggleShift = 0;
 
     string_copy(vfsKeyboard.name, "stdin");
     vfsKeyboard.inode = 0;
@@ -91,6 +86,18 @@ void kbd_init()
     vfsKeyboard.read = keyboard_read;
     vfsKeyboard.write = 0;
     vfsKeyboard.walk = 0;
+
+    return &vfsKeyboard;
+
+}
+
+void kbd_init()
+{
+
+    keyboard.cbuffer = cbuffer_create(keyboard.buffer, KBD_BUFFER_SIZE);
+    keyboard.toggleAlt = 0;
+    keyboard.toggleCtrl = 0;
+    keyboard.toggleShift = 0;
 
 }
 

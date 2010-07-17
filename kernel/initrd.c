@@ -73,10 +73,10 @@ vfs_node_t *initrd_init(unsigned int location)
     }
 
     initrdHeader->nfiles++;
-    initrdNodes[i++] = vfsKeyboard;
+    initrdNodes[i++] = *kbd_get_node();
 
     initrdHeader->nfiles++;
-    initrdNodes[i++] = vfsScreen;
+    initrdNodes[i++] = *screen_get_node();
 
     return &initrdRoot;
 
