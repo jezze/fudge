@@ -9,6 +9,8 @@
 #define CALL_HALT    0x50
 #define CALL_REBOOT 0x51
 
+struct vfs_node_t;
+
 extern int call_putc(char c);
 extern int call_puts(char *s);
 extern char call_getc();

@@ -3,6 +3,8 @@
 
 #define IRQ_ROUTINES_SIZE 16
 
+struct isr_registers_t;
+
 extern void irq00();
 extern void irq01();
 extern void irq02();

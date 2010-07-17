@@ -4,6 +4,8 @@
 #define PIT_HERTZ 1193180
 #define PIT_FREQUENCY 1000
 
+struct isr_registers_t;
+
 extern int pitTimer;
 
 extern void pit_handler(isr_registers_t *registers);

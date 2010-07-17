@@ -30,6 +30,8 @@
 #define MMU_PAGE_TABLE_FLAG_DIRTY        64
 #define MMU_PAGE_TABLE_FLAG_GLOBAL       256
 
+struct isr_registers_t;
+
 typedef struct mmu_table
 {
 

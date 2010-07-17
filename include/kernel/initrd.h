@@ -1,6 +1,8 @@
 #ifndef INITRD_H
 #define INITRD_H
 
+struct vfs_node_t;
+
 typedef struct initrd_header
 {
 

@@ -1,6 +1,8 @@
 #ifndef KERNEL_H
 #define KERNEL_H
 
+struct vfs_node_t;
+
 typedef struct kernel
 {
 

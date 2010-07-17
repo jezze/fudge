@@ -4,6 +4,10 @@
 #define KBD_PORT_READ 0x60
 #define KBD_BUFFER_SIZE 256
 
+struct cbuffer_t;
+struct isr_registers_t;
+struct vfs_node_t;
+
 typedef struct kbd_device
 {
 
