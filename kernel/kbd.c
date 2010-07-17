@@ -30,7 +30,7 @@ char kbdMapUpperUS[128] =
        0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0
 };
 
-kbd_device_t keyboard;
+struct kbd_device keyboard;
 
 struct vfs_node vfsKeyboard;
 

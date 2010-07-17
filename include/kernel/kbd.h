@@ -8,7 +8,7 @@ struct cbuffer;
 struct isr_registers;
 struct vfs_node;
 
-typedef struct kbd_device
+struct kbd_device
 {
 
     char buffer[KBD_BUFFER_SIZE];
@@ -17,9 +17,9 @@ typedef struct kbd_device
     unsigned char toggleCtrl;
     unsigned char toggleShift;
 
-} kbd_device_t;
+};
 
-extern kbd_device_t keyboard;
+extern struct kbd_device keyboard;
 
 extern void kbd_handler(struct isr_registers *registers);
 extern void kbd_init();
