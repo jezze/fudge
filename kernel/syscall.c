@@ -10,7 +10,7 @@
 
 void *syscallRoutines[SYSCALL_TABLE_SIZE];
 
-void syscall_register_handler(unsigned char index, unsigned int (*handler)(syscall_registers_t *registers))
+void syscall_register_handler(unsigned char index, unsigned int (*handler)(struct syscall_registers *registers))
 {
 
     syscallRoutines[index] = handler;
@@ -24,31 +24,31 @@ void syscall_unregister_handler(unsigned char index)
 
 }
 
-static void syscall_vfs_walk(syscall_registers_t *registers)
+static void syscall_vfs_walk(struct syscall_registers *registers)
 {
 
     registers->eax = (unsigned int)vfs_walk(fsRoot, registers->ecx);
 
 }
 
-static void syscall_vfs_find(syscall_registers_t *registers)
+static void syscall_vfs_find(struct syscall_registers *registers)
 {
 
     registers->eax = (unsigned int)vfs_find(fsRoot, (char *)registers->esi);
 
 }
 
-static void syscall_reboot(syscall_registers_t *registers)
+static void syscall_reboot(struct syscall_registers *registers)
 {
 
     kernel_reboot();
 
 }
 
-void syscall_handler(syscall_registers_t *registers)
+void syscall_handler(struct syscall_registers *registers)
 {
 
-    void (*handler)(syscall_registers_t *registers) = syscallRoutines[registers->eax];
+    void (*handler)(struct syscall_registers *registers) = syscallRoutines[registers->eax];
 
     if (handler)
         handler(registers);

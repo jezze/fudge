@@ -8,15 +8,15 @@
 #include <kernel/screen.h>
 #include <kernel/initrd.h>
 
-initrd_header_t *initrdHeader;
-initrd_file_header_t *initrdFileHeaders;
-vfs_node_t initrdRoot;
-vfs_node_t initrdNodes[32];
+struct initrd_header *initrdHeader;
+struct initrd_file_header *initrdFileHeaders;
+struct vfs_node initrdRoot;
+struct vfs_node initrdNodes[32];
 
-static unsigned int initrd_read(vfs_node_t *node, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int initrd_read(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    initrd_file_header_t header = initrdFileHeaders[node->inode];
+    struct initrd_file_header header = initrdFileHeaders[node->inode];
 
     if (offset > header.length)
         return 0;
@@ -30,7 +30,7 @@ static unsigned int initrd_read(vfs_node_t *node, unsigned int offset, unsigned 
 
 }
 
-static vfs_node_t *initrd_walk(vfs_node_t *node, unsigned int index)
+static struct vfs_node *initrd_walk(struct vfs_node *node, unsigned int index)
 {
 
     if (index < initrdHeader->nfiles)
@@ -40,11 +40,11 @@ static vfs_node_t *initrd_walk(vfs_node_t *node, unsigned int index)
 
 }
 
-vfs_node_t *initrd_init(unsigned int location)
+struct vfs_node *initrd_init(unsigned int location)
 {
 
-    initrdHeader = (initrd_header_t *)location;
-    initrdFileHeaders = (initrd_file_header_t *)(location + sizeof (initrd_header_t));
+    initrdHeader = (struct initrd_header *)location;
+    initrdFileHeaders = (struct initrd_file_header *)(location + sizeof (struct initrd_header));
 
     string_copy(initrdRoot.name, "initrd");
     initrdRoot.inode = 0;

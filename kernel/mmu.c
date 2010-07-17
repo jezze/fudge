@@ -7,7 +7,7 @@
 #include <kernel/isr.h>
 #include <kernel/mmu.h>
 
-void mmu_handler(isr_registers_t *registers)
+void mmu_handler(struct isr_registers *registers)
 {
 
     unsigned int address = cr2_read();
@@ -37,25 +37,25 @@ void mmu_handler(isr_registers_t *registers)
 
 }
 
-static void mmu_init_directory(mmu_directory_t *directory)
+static void mmu_init_directory(struct mmu_directory *directory)
 {
 
     unsigned int i;
 
     for (i = 0; i < 1024; i++)
-        directory->tables[i] = (mmu_table_t *)(0 | MMU_PAGE_DIRECTORY_FLAG_WRITEABLE);
+        directory->tables[i] = (struct mmu_table *)(0 | MMU_PAGE_DIRECTORY_FLAG_WRITEABLE);
 
 }
 
-static void mmu_set_directory(mmu_directory_t *directory, uint32_t base, uint32_t limit, uint32_t flags)
+static void mmu_set_directory(struct mmu_directory *directory, uint32_t base, uint32_t limit, uint32_t flags)
 {
 
     unsigned int i;
 
-    mmu_table_t *pageTable = (mmu_table_t *)MMU_PAGE_TABLE_ADDRESS;
+    struct mmu_table *pageTable = (struct mmu_table *)MMU_PAGE_TABLE_ADDRESS;
 
     directory->tables[0] = pageTable;
-    directory->tables[0] = (mmu_table_t *)((uint32_t)directory->tables[0] | flags);
+    directory->tables[0] = (struct mmu_table *)((uint32_t)directory->tables[0] | flags);
 
     for (i = 0; i < 1024; i++, base += 0x1000)
         pageTable->entries[i] = base | 3;
@@ -65,7 +65,7 @@ static void mmu_set_directory(mmu_directory_t *directory, uint32_t base, uint32_
 void mmu_init()
 {
 
-    mmu_directory_t *directory = (mmu_directory_t *)MMU_PAGE_DIRECTORY_ADDRESS;
+    struct mmu_directory *directory = (struct mmu_directory *)MMU_PAGE_DIRECTORY_ADDRESS;
 
     mmu_init_directory(directory);
     mmu_set_directory(directory, 0x0, 0x400000, MMU_PAGE_DIRECTORY_FLAG_PRESENT | MMU_PAGE_DIRECTORY_FLAG_WRITEABLE);

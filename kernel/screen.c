@@ -5,9 +5,9 @@
 #include <lib/vfs.h>
 #include <kernel/screen.h>
 
-screen_t screen;
+struct screen screen;
 
-vfs_node_t vfsScreen;
+struct vfs_node vfsScreen;
 
 void screen_putc(char c)
 {
@@ -179,7 +179,7 @@ void screen_scroll()
 
 }
 
-unsigned int screen_write(vfs_node_t *node, unsigned int offset, unsigned int count, void *buffer)
+unsigned int screen_write(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
     unsigned int i;
@@ -192,7 +192,7 @@ unsigned int screen_write(vfs_node_t *node, unsigned int offset, unsigned int co
 
 }
 
-vfs_node_t *screen_get_node()
+struct vfs_node *screen_get_node()
 {
 
     string_copy(vfsScreen.name, "stdout");

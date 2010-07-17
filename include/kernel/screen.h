@@ -23,24 +23,24 @@
 
 struct vfs_node;
 
-typedef struct screen_context
+struct screen_context
 {
 
     uint16_t attribute;
 
-} screen_context_t;
+};
 
-typedef struct screen
+struct screen
 {
 
     uint16_t *address;
     uint32_t cursorX;
     uint32_t cursorY;
-    screen_context_t context;
+    struct screen_context context;
 
-} screen_t;
+};
 
-extern screen_t screen;
+extern struct screen screen;
 
 extern void screen_putc(char c);
 extern void screen_puts(char *s);

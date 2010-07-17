@@ -3,14 +3,14 @@
 
 struct vfs_node;
 
-typedef struct initrd_header
+struct initrd_header
 {
 
     unsigned int nfiles;
 
-} initrd_header_t;
+};
 
-typedef struct initrd_file_header
+struct initrd_file_header
 {
 
     unsigned char magic;
@@ -18,7 +18,7 @@ typedef struct initrd_file_header
     unsigned int offset;
     unsigned int length;
 
-} initrd_file_header_t;
+};
 
 extern struct vfs_node *initrd_init(unsigned int location);
 

@@ -15,7 +15,7 @@
 
 #define MBOOT_MAGIC 0x2BADB002
 
-typedef struct mboot_info
+struct mboot_info
 {
 
     uint32_t flags;
@@ -42,9 +42,9 @@ typedef struct mboot_info
     uint32_t vbeInterfaceOffset;
     uint32_t vbeInterfaceLength;
 
-} __attribute__((packed)) mboot_info_t;
+} __attribute__((packed));
 
-typedef struct mboot_mmap
+struct mboot_mmap
 {
 
     uint32_t size;
@@ -54,9 +54,9 @@ typedef struct mboot_mmap
     uint32_t lengthHigh;
     uint32_t type;
 
-} mboot_mmap_t;
+};
 
-typedef struct mboot_module
+struct mboot_module
 {
 
     uint32_t base;
@@ -64,8 +64,8 @@ typedef struct mboot_module
     uint32_t name;
     uint32_t reserved;
 
-} mboot_module_t;
+};
 
-extern void mboot_init(mboot_info_t *mboot);
+extern void mboot_init(struct mboot_info *info);
 
 #endif

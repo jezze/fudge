@@ -6,7 +6,7 @@
 
 void *irqRoutines[IRQ_ROUTINES_SIZE];
 
-void irq_register_handler(unsigned char index, void (*handler)(isr_registers_t *registers))
+void irq_register_handler(unsigned char index, void (*handler)(struct isr_registers *registers))
 {
 
     irqRoutines[index] = handler;
@@ -36,10 +36,10 @@ void irq_remap()
 
 }
 
-void irq_handler(isr_registers_t *registers)
+void irq_handler(struct isr_registers *registers)
 {
 
-    void (*handler)(isr_registers_t *registers) = irqRoutines[registers->int_no - 32];
+    void (*handler)(struct isr_registers *registers) = irqRoutines[registers->int_no - 32];
 
     if (handler)
         handler(registers);

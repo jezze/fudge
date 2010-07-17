@@ -19,8 +19,8 @@
 #include <kernel/rtc.h>
 #include <kernel/kernel.h>
 
-kernel_t kernel;
-vfs_node_t *fsRoot = 0;
+struct kernel kernel;
+struct vfs_node *fsRoot = 0;
 
 unsigned int kernel_reboot()
 {
@@ -41,7 +41,7 @@ unsigned int kernel_reboot()
 static void kernel_init_shell()
 {
 
-    vfs_node_t *node = call_vfs_find("shell");
+    struct vfs_node *node = call_vfs_find("shell");
 
     char *buffer = (char *)0x1F0000;
 
@@ -53,7 +53,7 @@ static void kernel_init_shell()
 
 }
 
-void kernel_main(mboot_info_t *header, uint32_t magic)
+void kernel_main(struct mboot_info *header, uint32_t magic)
 {
 
     gdt_init();

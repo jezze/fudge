@@ -3,7 +3,7 @@
 
 #define ISR_ROUTINES_SIZE 256
 
-typedef struct isr_registers
+struct isr_registers
 {
 
     uint32_t gs, fs, es, ds;
@@ -11,7 +11,7 @@ typedef struct isr_registers
     uint32_t int_no, err_code;
     uint32_t eip, cs, eflags, useresp, ss;
 
-} isr_registers_t;
+};
 
 extern void isr00();
 extern void isr01();
@@ -49,7 +49,7 @@ extern void isr_syscall();
 extern void isr_enable();
 extern void isr_disable();
 
-extern void isr_register_handler(unsigned char index, void (*handler)(isr_registers_t *registers));
+extern void isr_register_handler(unsigned char index, void (*handler)(struct isr_registers *registers));
 extern void isr_unregister_handler(unsigned char index);
 extern void isr_init();
 

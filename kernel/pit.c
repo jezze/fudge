@@ -6,7 +6,7 @@
 
 int pitTimer = 0;
 
-void pit_handler(isr_registers_t *registers)
+void pit_handler(struct isr_registers *registers)
 {
 
     pitTimer++;

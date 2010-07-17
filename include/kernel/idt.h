@@ -3,7 +3,7 @@
 
 #define IDT_TABLE_SIZE 256
 
-typedef struct idt_entry
+struct idt_entry
 {
 
     uint16_t baseLow;
@@ -12,17 +12,17 @@ typedef struct idt_entry
     uint8_t flags;
     uint16_t baseHigh;
 
-} __attribute__((packed)) idt_entry_t;
+} __attribute__((packed));
 
-typedef struct idt_ptr
+struct idt_ptr
 {
 
     uint16_t limit;
     uint32_t base;
 
-} __attribute__((packed)) idt_ptr_t;
+} __attribute__((packed));
 
-extern void idt_flush(idt_ptr_t *pointer);
+extern void idt_flush(struct idt_ptr *pointer);
 
 extern void idt_set_gate(unsigned char index, uint32_t base, uint16_t selector, uint8_t flags);
 extern void idt_init();

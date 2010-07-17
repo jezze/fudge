@@ -32,21 +32,21 @@
 
 struct isr_registers;
 
-typedef struct mmu_table
+struct mmu_table
 {
 
     uint32_t entries[1024];
 
-} mmu_table_t;
+};
 
-typedef struct mmu_directory
+struct mmu_directory
 {
 
-    mmu_table_t *tables[1024];
+    struct mmu_table *tables[1024];
 
-} mmu_directory_t;
+};
 
-extern void mmu_flush(mmu_directory_t *directory);
+extern void mmu_flush(struct mmu_directory *directory);
 extern uint32_t mmu_read_cr0();
 extern void mmu_write_cr0(uint32_t value);
 extern uint32_t mmu_read_cr2();

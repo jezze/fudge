@@ -33,9 +33,9 @@ char kbdMapUpperUS[128] =
 
 kbd_device_t keyboard;
 
-vfs_node_t vfsKeyboard;
+struct vfs_node vfsKeyboard;
 
-void kbd_handler(isr_registers_t *registers)
+void kbd_handler(struct isr_registers *registers)
 {
 
     unsigned char scancode = inb(KBD_PORT_READ);
@@ -66,7 +66,7 @@ void kbd_handler(isr_registers_t *registers)
 
 }
 
-unsigned int keyboard_read(vfs_node_t *node, unsigned int offset, unsigned int count, void *buffer)
+unsigned int keyboard_read(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
     ((char *)buffer)[0] = cbuffer_read(&keyboard.cbuffer);
@@ -75,7 +75,7 @@ unsigned int keyboard_read(vfs_node_t *node, unsigned int offset, unsigned int c
 
 }
 
-vfs_node_t *kbd_get_node()
+struct vfs_node *kbd_get_node()
 {
 
     string_copy(vfsKeyboard.name, "stdin");

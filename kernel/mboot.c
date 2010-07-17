@@ -3,7 +3,7 @@
 #include <kernel/screen.h>
 #include <kernel/mboot.h>
 
-void mboot_init(mboot_info_t *info)
+void mboot_init(struct mboot_info *info)
 {
 
     screen_puts("System information\n");
@@ -78,7 +78,7 @@ void mboot_init(mboot_info_t *info)
     if (info->flags & MBOOT_FLAG_MODULES)
     {
 
-        mboot_module_t *module = (mboot_module_t *)info->modulesAddresses;
+        struct mboot_module *module = (struct mboot_module *)info->modulesAddresses;
 
         screen_puts("Modules:");
 
@@ -91,7 +91,7 @@ void mboot_init(mboot_info_t *info)
     if (info->flags & MBOOT_FLAG_MMAP)
     {
 
-        mboot_mmap_t *mmap = (mboot_mmap_t *)info->mmapAddress;
+        struct mboot_mmap *mmap = (struct mboot_mmap *)info->mmapAddress;
 
         screen_puts("Memory map:\n");
 
@@ -125,7 +125,7 @@ void mboot_init(mboot_info_t *info)
 
             screen_puts("\n");
 
-            mmap = (mboot_mmap_t *)((unsigned int)mmap + mmap->size + sizeof (unsigned int));
+            mmap = (struct mboot_mmap *)((unsigned int)mmap + mmap->size + sizeof (unsigned int));
 
         }
 
