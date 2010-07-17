@@ -12,7 +12,7 @@ all:
 	@$(GCC) $(GCCFLAGS) cpu.c -o cpu.o
 	@$(LD) $(LDFLAGS) cpu.o cpus.o ../lib/string.o ../lib/vfs.o ../lib/call.o ../lib/calls.o -o cpu
 	@$(GCC) $(GCCFLAGS) date.c -o date.o
-	@$(LD) $(LDFLAGS) date.o ../lib/string.o ../lib/vfs.o ../lib/call.o ../lib/calls.o -o date
+	@$(LD) $(LDFLAGS) date.o ../lib/stack.o ../lib/string.o ../lib/vfs.o ../lib/call.o ../lib/calls.o -o date
 	@$(GCC) $(GCCFLAGS) echo.c -o echo.o
 	@$(LD) $(LDFLAGS) echo.o ../lib/string.o ../lib/vfs.o ../lib/call.o ../lib/calls.o -o echo
 	@$(GCC) $(GCCFLAGS) hello.c -o hello.o
@@ -22,7 +22,7 @@ all:
 	@$(GCC) $(GCCFLAGS) reboot.c -o reboot.o
 	@$(LD) $(LDFLAGS) reboot.o ../lib/string.o ../lib/vfs.o ../lib/call.o ../lib/calls.o -o reboot
 	@$(GCC) $(GCCFLAGS) shell.c -o shell.o
-	@ld --oformat binary -Ttext 0x1F0000 -e main shell.o ../lib/string.o ../lib/vfs.o ../lib/stack.o ../lib/call.o ../lib/calls.o -o shell
+	@ld --oformat binary -Ttext 0x1F0000 -e main shell.o ../lib/stack.o ../lib/string.o ../lib/vfs.o ../lib/call.o ../lib/calls.o -o shell
 	@$(GCC) $(GCCFLAGS) timer.c -o timer.o
 	@$(LD) $(LDFLAGS) timer.o ../lib/string.o ../lib/vfs.o ../lib/call.o ../lib/calls.o -o timer
 

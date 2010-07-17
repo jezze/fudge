@@ -18,12 +18,12 @@ int call_puts(char *s)
 int call_putc(char c)
 {
 
-    char buffer[2];
+    vfs_node_t *node = call_vfs_find("stdout");
 
-    buffer[0] = c;
-    buffer[1] = '\0';
+    if (!node)
+        return 0;
 
-    return call_puts(buffer);
+    return vfs_write(node, 0, 1, &c);
 
 }
 

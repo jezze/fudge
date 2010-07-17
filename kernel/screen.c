@@ -182,7 +182,11 @@ void screen_scroll()
 unsigned int screen_write(vfs_node_t *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    screen_puts((char *)buffer);
+    unsigned int i;
+    unsigned int j = 0;
+
+    for (i = offset; i < count; i++, j++)
+        screen_putc(((char *)buffer)[j]);
 
     return count;
 
