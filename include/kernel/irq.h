@@ -3,7 +3,7 @@
 
 #define IRQ_ROUTINES_SIZE 16
 
-struct isr_registers_t;
+struct isr_registers;
 
 extern void irq00();
 extern void irq01();
@@ -22,7 +22,7 @@ extern void irq0D();
 extern void irq0E();
 extern void irq0F();
 
-extern void irq_register_handler(unsigned char index, void (*handler)(isr_registers_t *registers));
+extern void irq_register_handler(unsigned char index, void (*handler)(struct isr_registers *registers));
 extern void irq_unregister_handler(unsigned char index);
 extern void irq_init();
 

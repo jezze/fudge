@@ -30,7 +30,7 @@
 #define MMU_PAGE_TABLE_FLAG_DIRTY        64
 #define MMU_PAGE_TABLE_FLAG_GLOBAL       256
 
-struct isr_registers_t;
+struct isr_registers;
 
 typedef struct mmu_table
 {
@@ -53,7 +53,7 @@ extern uint32_t mmu_read_cr2();
 extern uint32_t mmu_read_cr3();
 extern void mmu_write_cr3(uint32_t value);
 
-extern void mmu_handler(isr_registers_t *registers);
+extern void mmu_handler(struct isr_registers *registers);
 extern void mmu_init();
 
 #endif

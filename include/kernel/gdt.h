@@ -3,7 +3,7 @@
 
 #define GDT_TABLE_SIZE 6
 
-typedef struct gdt_entry
+struct gdt_entry
 {
 
     uint16_t limitLow;
@@ -13,17 +13,17 @@ typedef struct gdt_entry
     uint8_t granularity;
     uint8_t baseHigh;
 
-} __attribute__((packed)) gdt_entry_t;
+} __attribute__((packed));
 
-typedef struct gdt_ptr
+struct gdt_ptr
 {
 
     uint16_t limit;
     uint32_t base;
 
-} __attribute__((packed)) gdt_ptr_t;
+} __attribute__((packed));
 
-typedef struct tss_entry
+struct tss_entry
 {
 
     uint32_t previous;
@@ -54,9 +54,9 @@ typedef struct tss_entry
     uint16_t trap;
     uint16_t iomap_base;
 
-} __attribute__((packed)) tss_entry_t;
+} __attribute__((packed));
 
-extern void gdt_flush(gdt_ptr_t *pointer);
+extern void gdt_flush(struct gdt_ptr *pointer);
 extern void tss_flush();
 
 extern void gdt_set_gate(unsigned char index, uint32_t base, uint32_t limit, uint8_t access, uint8_t granularity);

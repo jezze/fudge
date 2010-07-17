@@ -1,7 +1,7 @@
 #ifndef INITRD_H
 #define INITRD_H
 
-struct vfs_node_t;
+struct vfs_node;
 
 typedef struct initrd_header
 {
@@ -20,7 +20,7 @@ typedef struct initrd_file_header
 
 } initrd_file_header_t;
 
-extern vfs_node_t *initrd_init(unsigned int location);
+extern struct vfs_node *initrd_init(unsigned int location);
 
 #endif
 

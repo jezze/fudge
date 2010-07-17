@@ -4,15 +4,15 @@
 #define KBD_PORT_READ 0x60
 #define KBD_BUFFER_SIZE 256
 
-struct cbuffer_t;
-struct isr_registers_t;
-struct vfs_node_t;
+struct cbuffer;
+struct isr_registers;
+struct vfs_node;
 
 typedef struct kbd_device
 {
 
     char buffer[KBD_BUFFER_SIZE];
-    cbuffer_t cbuffer;
+    struct cbuffer cbuffer;
     unsigned char toggleAlt;
     unsigned char toggleCtrl;
     unsigned char toggleShift;
@@ -21,9 +21,9 @@ typedef struct kbd_device
 
 extern kbd_device_t keyboard;
 
-extern void kbd_handler(isr_registers_t *registers);
+extern void kbd_handler(struct isr_registers *registers);
 extern void kbd_init();
-extern vfs_node_t *kbd_get_node();
+extern struct vfs_node *kbd_get_node();
 
 #endif
 

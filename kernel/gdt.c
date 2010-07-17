@@ -2,9 +2,9 @@
 #include <lib/memory.h>
 #include <kernel/gdt.h>
 
-gdt_entry_t gdt[GDT_TABLE_SIZE];
-gdt_ptr_t gdtPointer;
-tss_entry_t tss;
+struct gdt_entry gdt[GDT_TABLE_SIZE];
+struct gdt_ptr gdtPointer;
+struct tss_entry tss;
 
 void gdt_set_gate(unsigned char index, uint32_t base, uint32_t limit, uint8_t access, uint8_t granularity)
 {
@@ -30,14 +30,14 @@ void gdt_init()
 {
 
     gdtPointer.base = (uint32_t)&gdt;
-    gdtPointer.limit = (sizeof (gdt_entry_t) * GDT_TABLE_SIZE) - 1;
+    gdtPointer.limit = (sizeof (struct gdt_entry) * GDT_TABLE_SIZE) - 1;
 
-    gdt_ptr_t tssp;
-    tssp.base = (uint32_t)&tss;
-    tssp.limit = tssp.base + sizeof (tss_entry_t);
+    struct gdt_ptr tssPointer;
+    tssPointer.base = (uint32_t)&tss;
+    tssPointer.limit = tssPointer.base + sizeof (struct tss_entry);
 
-    memory_set(&gdt, 0, sizeof (gdt_entry_t) * GDT_TABLE_SIZE);
-    memory_set(&tss, 0, sizeof (tss_entry_t));
+    memory_set(&gdt, 0, sizeof (struct gdt_entry) * GDT_TABLE_SIZE);
+    memory_set(&tss, 0, sizeof (struct tss_entry));
 
     tss.ss0 = 0x10;
     tss.esp0 = 0x0;
@@ -49,7 +49,7 @@ void gdt_init()
     gdt_set_gate(0x02, 0x00000000, 0xFFFFFFFF, 0x92, 0xCF); // Kernel data segment
     gdt_set_gate(0x03, 0x00000000, 0xFFFFFFFF, 0xFA, 0xCF); // User code segment
     gdt_set_gate(0x04, 0x00000000, 0xFFFFFFFF, 0xF2, 0xCF); // User data segment
-    gdt_set_gate(0x05, tssp.base, tssp.limit, 0xE9, 0x00); // TSS segment
+    gdt_set_gate(0x05, tssPointer.base, tssPointer.limit, 0xE9, 0x00); // TSS segment
 
     gdt_flush(&gdtPointer);
     tss_flush();
