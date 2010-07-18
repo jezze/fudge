@@ -8,7 +8,7 @@ ISO=genisoimage
 ISOFLAGS=-R -b boot/grub/stage2_eltorito -no-emul-boot -boot-load-size 4 -boot-info-table 
 MKINITRD=./tools/mkinitrd
 
-.PHONY: all cd clean i386 initrd kernel library
+.PHONY: all cd clean i386 initrd kernel lib
 
 all: kernel initrd cd
 
@@ -21,10 +21,10 @@ clean:
 	@rm -f fudge.iso
 	@rm -f kernel/*.o
 	@rm -f kernel/arch/i386/*.o
-	@rm -f lib/*.o
 	@rm -f root/boot/kernel
 	@rm -f root/boot/initrd
 	@rm -f tools/mkinitrd
+	@cd lib; make clean
 	@cd ramdisk; make clean
 
 i386:
@@ -36,13 +36,13 @@ i386:
 	@$(ASM) $(ASMFLAGS) kernel/arch/i386/isr.s -o kernel/arch/i386/isr.o
 	@$(ASM) $(ASMFLAGS) kernel/arch/i386/loader.s -o kernel/arch/i386/loader.o
 
-initrd: library
+initrd: lib
 	@echo "Creating ramdisk..."
 	@cd ramdisk; make
 	@$(GCC) -O2 tools/mkinitrd.c -o tools/mkinitrd
 	$(MKINITRD) ramdisk/about.txt about.txt ramdisk/cat cat ramdisk/cpu cpu ramdisk/date date ramdisk/echo echo ramdisk/hello hello ramdisk/help.txt help.txt ramdisk/ls ls ramdisk/reboot reboot ramdisk/shell shell ramdisk/timer timer
 
-kernel: library i386
+kernel: lib i386
 	@echo "Building kernel..."
 	@$(GCC) $(GCCFLAGS) kernel/assert.c -o kernel/assert.o
 	@$(GCC) $(GCCFLAGS) kernel/gdt.c -o kernel/gdt.o
@@ -91,14 +91,7 @@ kernel: library i386
     kernel/syscall.o \
     -o root/boot/kernel
 
-library:
+lib:
 	@echo "Building library..."
-	@$(GCC) $(GCCFLAGS) lib/call.c -o lib/call.o
-	@$(ASM) $(ASMFLAGS) lib/calls.s -o lib/calls.o
-	@$(GCC) $(GCCFLAGS) lib/cbuffer.c -o lib/cbuffer.o
-	@$(GCC) $(GCCFLAGS) lib/io.c -o lib/io.o
-	@$(GCC) $(GCCFLAGS) lib/memory.c -o lib/memory.o
-	@$(GCC) $(GCCFLAGS) lib/stack.c -o lib/stack.o
-	@$(GCC) $(GCCFLAGS) lib/string.c -o lib/string.o
-	@$(GCC) $(GCCFLAGS) lib/vfs.c -o lib/vfs.o
+	@cd lib; make
 
