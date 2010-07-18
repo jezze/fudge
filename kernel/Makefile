@@ -5,8 +5,6 @@ GCCFLAGS=-c -O2 -I../include -Wall -Wextra -ffreestanding -nostdlib -nostartfile
 
 all:
 	@$(GCC) $(GCCFLAGS) assert.c -o assert.o
-	@$(GCC) $(GCCFLAGS) gdt.c -o gdt.o
-	@$(GCC) $(GCCFLAGS) idt.c -o idt.o
 	@$(GCC) $(GCCFLAGS) initrd.c -o initrd.o
 	@$(GCC) $(GCCFLAGS) irq.c -o irq.o
 	@$(GCC) $(GCCFLAGS) isr.c -o isr.o

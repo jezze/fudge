@@ -29,14 +29,14 @@ arch-i386: lib kernel
     lib/vfs.o \
     kernel/arch/i386/cr.o \
     kernel/arch/i386/gdt.o \
+    kernel/arch/i386/gdts.o \
     kernel/arch/i386/idt.o \
+    kernel/arch/i386/idts.o \
     kernel/arch/i386/io.o \
-    kernel/arch/i386/irq.o \
-    kernel/arch/i386/isr.o \
+    kernel/arch/i386/irqs.o \
+    kernel/arch/i386/isrs.o \
     kernel/arch/i386/loader.o \
     kernel/assert.o \
-    kernel/gdt.o \
-    kernel/idt.o \
     kernel/initrd.o \
     kernel/irq.o \
     kernel/isr.o \

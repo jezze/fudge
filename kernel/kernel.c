@@ -2,11 +2,11 @@
 #include <lib/vfs.h>
 #include <lib/call.h>
 #include <kernel/arch/i386/io.h>
+#include <kernel/arch/i386/idt.h>
+#include <kernel/arch/i386/gdt.h>
 #include <kernel/assert.h>
 #include <kernel/screen.h>
 #include <kernel/mboot.h>
-#include <kernel/gdt.h>
-#include <kernel/idt.h>
 #include <kernel/isr.h>
 #include <kernel/irq.h>
 #include <kernel/pit.h>

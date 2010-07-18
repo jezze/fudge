@@ -1,5 +1,5 @@
 #include <lib/memory.h>
-#include <kernel/idt.h>
+#include <kernel/arch/i386/idt.h>
 
 struct idt_entry idt[IDT_TABLE_SIZE];
 struct idt_ptr idtPointer;

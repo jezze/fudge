@@ -5,11 +5,13 @@ GCCFLAGS=-c -O2 -I../../../include -Wall -Wextra -ffreestanding -nostdlib -nosta
 
 all:
 	@$(ASM) $(ASMFLAGS) cr.s -o cr.o
-	@$(ASM) $(ASMFLAGS) gdt.s -o gdt.o
-	@$(ASM) $(ASMFLAGS) idt.s -o idt.o
+	@$(GCC) $(GCCFLAGS) gdt.c -o gdt.o
+	@$(ASM) $(ASMFLAGS) gdts.s -o gdts.o
+	@$(GCC) $(GCCFLAGS) idt.c -o idt.o
+	@$(ASM) $(ASMFLAGS) idts.s -o idts.o
 	@$(GCC) $(GCCFLAGS) io.c -o io.o
-	@$(ASM) $(ASMFLAGS) irq.s -o irq.o
-	@$(ASM) $(ASMFLAGS) isr.s -o isr.o
+	@$(ASM) $(ASMFLAGS) irqs.s -o irqs.o
+	@$(ASM) $(ASMFLAGS) isrs.s -o isrs.o
 	@$(ASM) $(ASMFLAGS) loader.s -o loader.o
 
 clean:

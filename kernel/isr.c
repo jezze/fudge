@@ -1,4 +1,4 @@
-#include <kernel/idt.h>
+#include <kernel/arch/i386/idt.h>
 #include <kernel/screen.h>
 #include <kernel/isr.h>
 
