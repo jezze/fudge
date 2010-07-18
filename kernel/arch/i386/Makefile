@@ -4,6 +4,7 @@ GCC=gcc
 GCCFLAGS=-c -O2 -I../../../include -Wall -Wextra -ffreestanding -nostdlib -nostartfiles -nodefaultlibs
 
 all:
+	@$(GCC) $(GCCFLAGS) arch.c -o arch.o
 	@$(ASM) $(ASMFLAGS) cr.s -o cr.o
 	@$(GCC) $(GCCFLAGS) gdt.c -o gdt.o
 	@$(ASM) $(ASMFLAGS) gdts.s -o gdts.o

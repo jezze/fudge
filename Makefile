@@ -27,6 +27,7 @@ arch-i386: lib kernel
     lib/stack.o \
     lib/string.o \
     lib/vfs.o \
+    kernel/arch/i386/arch.o \
     kernel/arch/i386/cr.o \
     kernel/arch/i386/gdt.o \
     kernel/arch/i386/gdts.o \

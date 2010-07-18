@@ -1,9 +1,8 @@
 #include <lib/cbuffer.h>
 #include <lib/vfs.h>
 #include <lib/call.h>
+#include <kernel/arch/i386/arch.h>
 #include <kernel/arch/i386/io.h>
-#include <kernel/arch/i386/idt.h>
-#include <kernel/arch/i386/gdt.h>
 #include <kernel/assert.h>
 #include <kernel/screen.h>
 #include <kernel/mboot.h>
@@ -55,9 +54,7 @@ static void kernel_init_shell()
 void kernel_main(struct mboot_info *header, unsigned int magic)
 {
 
-    gdt_init();
-    idt_init();
-
+    arch_init();
     screen_init();
 
     ASSERT(magic == MBOOT_MAGIC);
