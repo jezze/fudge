@@ -19,22 +19,17 @@ cd:
 clean:
 	@echo "Cleaning..."
 	@rm -f fudge.iso
-	@rm -f kernel/arch/i386/*.o
 	@rm -f root/boot/kernel
 	@rm -f root/boot/initrd
 	@rm -f tools/mkinitrd
 	@cd kernel; make clean
+	@cd kernel/arch/i386; make clean
 	@cd lib; make clean
 	@cd ramdisk; make clean
 
 i386:
 	@echo "Building i386..."
-	@$(ASM) $(ASMFLAGS) kernel/arch/i386/cr.s -o kernel/arch/i386/cr.o
-	@$(ASM) $(ASMFLAGS) kernel/arch/i386/gdt.s -o kernel/arch/i386/gdt.o
-	@$(ASM) $(ASMFLAGS) kernel/arch/i386/idt.s -o kernel/arch/i386/idt.o
-	@$(ASM) $(ASMFLAGS) kernel/arch/i386/irq.s -o kernel/arch/i386/irq.o
-	@$(ASM) $(ASMFLAGS) kernel/arch/i386/isr.s -o kernel/arch/i386/isr.o
-	@$(ASM) $(ASMFLAGS) kernel/arch/i386/loader.s -o kernel/arch/i386/loader.o
+	@cd kernel/arch/i386; make
 
 initrd: lib
 	@echo "Creating ramdisk..."
