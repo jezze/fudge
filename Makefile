@@ -3,7 +3,7 @@ ASMFLAGS=-f elf
 GCC=gcc
 GCCFLAGS=-c -O2 -I./include -Wall -Wextra -ffreestanding -nostdlib -nostartfiles -nodefaultlibs
 LD=ld
-LDFLAGS=-T linker.ld
+LDFLAGS=-T./linker.ld
 ISO=genisoimage
 ISOFLAGS=-R -b boot/grub/stage2_eltorito -no-emul-boot -boot-load-size 4 -boot-info-table 
 MKINITRD=./tools/mkinitrd
@@ -19,11 +19,11 @@ cd:
 clean:
 	@echo "Cleaning..."
 	@rm -f fudge.iso
-	@rm -f kernel/*.o
 	@rm -f kernel/arch/i386/*.o
 	@rm -f root/boot/kernel
 	@rm -f root/boot/initrd
 	@rm -f tools/mkinitrd
+	@cd kernel; make clean
 	@cd lib; make clean
 	@cd ramdisk; make clean
 
@@ -44,21 +44,7 @@ initrd: lib
 
 kernel: lib i386
 	@echo "Building kernel..."
-	@$(GCC) $(GCCFLAGS) kernel/assert.c -o kernel/assert.o
-	@$(GCC) $(GCCFLAGS) kernel/gdt.c -o kernel/gdt.o
-	@$(GCC) $(GCCFLAGS) kernel/idt.c -o kernel/idt.o
-	@$(GCC) $(GCCFLAGS) kernel/initrd.c -o kernel/initrd.o
-	@$(GCC) $(GCCFLAGS) kernel/irq.c -o kernel/irq.o
-	@$(GCC) $(GCCFLAGS) kernel/isr.c -o kernel/isr.o
-	@$(GCC) $(GCCFLAGS) kernel/kbd.c -o kernel/kbd.o
-	@$(GCC) $(GCCFLAGS) kernel/kernel.c -o kernel/kernel.o
-	@$(GCC) $(GCCFLAGS) kernel/mboot.c -o kernel/mboot.o
-	@$(GCC) $(GCCFLAGS) kernel/mmu.c -o kernel/mmu.o
-	@$(GCC) $(GCCFLAGS) kernel/pit.c -o kernel/pit.o
-	@$(GCC) $(GCCFLAGS) kernel/rtc.c -o kernel/rtc.o
-	@$(GCC) $(GCCFLAGS) kernel/screen.c -o kernel/screen.o
-	@$(GCC) $(GCCFLAGS) kernel/shell.c -o kernel/shell.o
-	@$(GCC) $(GCCFLAGS) kernel/syscall.c -o kernel/syscall.o
+	@cd kernel; make
 	@$(LD) $(LDFLAGS) \
     lib/call.o \
     lib/calls.o \
