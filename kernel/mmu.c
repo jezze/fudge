@@ -1,7 +1,7 @@
 #include <lib/memory.h>
 #include <lib/vfs.h>
+#include <kernel/arch/i386/cr.h>
 #include <kernel/assert.h>
-#include <kernel/cr.h>
 #include <kernel/screen.h>
 #include <kernel/isr.h>
 #include <kernel/mmu.h>
