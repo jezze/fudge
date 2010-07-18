@@ -10,36 +10,15 @@ MKINITRD=./tools/mkinitrd
 
 .PHONY: all cd clean i386 initrd kernel lib
 
-all: kernel initrd cd
+all: system-i386
+system-arm: lib kernel arch-arm initrd
+system-i386: lib kernel arch-i386 initrd cd
 
-cd:
-	@echo "Creating iso..."
-	@$(ISO) $(ISOFLAGS) -o fudge.iso root
+arch-arm: lib kernel
 
-clean:
-	@echo "Cleaning..."
-	@rm -f fudge.iso
-	@rm -f root/boot/kernel
-	@rm -f root/boot/initrd
-	@rm -f tools/mkinitrd
-	@cd kernel; make clean
-	@cd kernel/arch/i386; make clean
-	@cd lib; make clean
-	@cd ramdisk; make clean
-
-i386:
+arch-i386: lib kernel
 	@echo "Building i386..."
 	@cd kernel/arch/i386; make
-
-initrd: lib
-	@echo "Creating ramdisk..."
-	@cd ramdisk; make
-	@$(GCC) -O2 tools/mkinitrd.c -o tools/mkinitrd
-	$(MKINITRD) ramdisk/about.txt about.txt ramdisk/cat cat ramdisk/cpu cpu ramdisk/date date ramdisk/echo echo ramdisk/hello hello ramdisk/help.txt help.txt ramdisk/ls ls ramdisk/reboot reboot ramdisk/shell shell ramdisk/timer timer
-
-kernel: lib i386
-	@echo "Building kernel..."
-	@cd kernel; make
 	@$(LD) $(LDFLAGS) \
     lib/call.o \
     lib/calls.o \
@@ -71,6 +50,32 @@ kernel: lib i386
     kernel/shell.o \
     kernel/syscall.o \
     -o root/boot/kernel
+
+cd:
+	@echo "Creating iso..."
+	@$(ISO) $(ISOFLAGS) -o fudge.iso root
+
+clean:
+	@echo "Cleaning..."
+	@rm -f fudge.iso
+	@rm -f root/boot/kernel
+	@rm -f root/boot/initrd
+	@rm -f tools/mkinitrd
+	@cd kernel; make clean
+	@cd kernel/arch/i386; make clean
+	@cd lib; make clean
+	@cd ramdisk; make clean
+
+initrd: lib
+	@echo "Building ramdisk..."
+	@cd ramdisk; make
+	@echo "Creating ramdisk..."
+	@$(GCC) -O2 tools/mkinitrd.c -o tools/mkinitrd
+	$(MKINITRD) ramdisk/about.txt about.txt ramdisk/cat cat ramdisk/cpu cpu ramdisk/date date ramdisk/echo echo ramdisk/hello hello ramdisk/help.txt help.txt ramdisk/ls ls ramdisk/reboot reboot ramdisk/shell shell ramdisk/timer timer
+
+kernel:
+	@echo "Building kernel..."
+	@cd kernel; make
 
 lib:
 	@echo "Building library..."
