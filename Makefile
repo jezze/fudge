@@ -23,7 +23,6 @@ arch-i386: lib kernel
     lib/call.o \
     lib/calls.o \
     lib/cbuffer.o \
-    lib/io.o \
     lib/memory.o \
     lib/stack.o \
     lib/string.o \
@@ -31,6 +30,7 @@ arch-i386: lib kernel
     kernel/arch/i386/cr.o \
     kernel/arch/i386/gdt.o \
     kernel/arch/i386/idt.o \
+    kernel/arch/i386/io.o \
     kernel/arch/i386/irq.o \
     kernel/arch/i386/isr.o \
     kernel/arch/i386/loader.o \
@@ -71,7 +71,7 @@ initrd: lib
 	@cd ramdisk; make
 	@echo "Creating ramdisk..."
 	@$(GCC) -O2 tools/mkinitrd.c -o tools/mkinitrd
-	$(MKINITRD) ramdisk/about.txt about.txt ramdisk/cat cat ramdisk/cpu cpu ramdisk/date date ramdisk/echo echo ramdisk/hello hello ramdisk/help.txt help.txt ramdisk/ls ls ramdisk/reboot reboot ramdisk/shell shell ramdisk/timer timer
+	@$(MKINITRD) ramdisk/about.txt about.txt ramdisk/cat cat ramdisk/cpu cpu ramdisk/date date ramdisk/echo echo ramdisk/hello hello ramdisk/help.txt help.txt ramdisk/ls ls ramdisk/reboot reboot ramdisk/shell shell ramdisk/timer timer
 
 kernel:
 	@echo "Building kernel..."

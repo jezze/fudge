@@ -1,4 +1,4 @@
-#include <lib/io.h>
+#include <kernel/arch/i386/io.h>
 
 unsigned char inb(unsigned short port)
 {

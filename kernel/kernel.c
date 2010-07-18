@@ -1,7 +1,7 @@
 #include <lib/cbuffer.h>
-#include <lib/io.h>
 #include <lib/vfs.h>
 #include <lib/call.h>
+#include <kernel/arch/i386/io.h>
 #include <kernel/assert.h>
 #include <kernel/screen.h>
 #include <kernel/mboot.h>

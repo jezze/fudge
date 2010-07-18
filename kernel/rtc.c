@@ -1,5 +1,5 @@
-#include <lib/io.h>
 #include <lib/vfs.h>
+#include <kernel/arch/i386/io.h>
 #include <kernel/screen.h>
 #include <kernel/rtc.h>
 

@@ -7,7 +7,6 @@ all:
 	@$(GCC) $(GCCFLAGS) call.c -o call.o
 	@$(ASM) $(ASMFLAGS) calls.s -o calls.o
 	@$(GCC) $(GCCFLAGS) cbuffer.c -o cbuffer.o
-	@$(GCC) $(GCCFLAGS) io.c -o io.o
 	@$(GCC) $(GCCFLAGS) memory.c -o memory.o
 	@$(GCC) $(GCCFLAGS) stack.c -o stack.o
 	@$(GCC) $(GCCFLAGS) string.c -o string.o

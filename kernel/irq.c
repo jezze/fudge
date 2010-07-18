@@ -1,4 +1,4 @@
-#include <lib/io.h>
+#include <kernel/arch/i386/io.h>
 #include <kernel/idt.h>
 #include <kernel/isr.h>
 #include <kernel/irq.h>
