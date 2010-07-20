@@ -3,6 +3,7 @@
 
 #define SHELL_BUFFER_SIZE 256
 
+extern char arch_getc();
 extern void arch_clear();
 extern void arch_putc(char c);
 extern void arch_puts(char *s);

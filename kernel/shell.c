@@ -2,7 +2,6 @@
 #include <lib/stack.h>
 #include <lib/string.h>
 #include <lib/vfs.h>
-#include <kernel/arch/i386/kbd.h>
 #include <kernel/kernel.h>
 #include <kernel/shell.h>
 
@@ -150,10 +149,9 @@ static void shell_poll()
     for (;;)
     {
 
-        char c;
+        char c = arch_getc();
 
-        if ((c = cbuffer_read(&keyboard.cbuffer)))
-            shell_handle_input(c);
+        shell_handle_input(c);
 
     }
 

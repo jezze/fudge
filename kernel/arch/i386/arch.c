@@ -12,6 +12,17 @@
 #include <kernel/arch/i386/syscall.h>
 #include <kernel/assert.h>
 
+char arch_getc()
+{
+
+    char c = 0;
+
+    while(!(c = cbuffer_read(&keyboard.cbuffer)));
+
+    return c;
+
+}
+
 void arch_clear()
 {
 
