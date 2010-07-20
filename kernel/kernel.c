@@ -30,6 +30,8 @@ void kernel_main(struct mboot_info *header, unsigned int magic)
 {
 
     arch_init();
+    arch_init_devices();
+    arch_init_interrupts();
 
     ASSERT(magic == MBOOT_MAGIC);
     ASSERT(header->modulesCount);

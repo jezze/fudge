@@ -34,6 +34,19 @@ void arch_init()
     screen_init();
     mmu_init();
 
+}
+
+void arch_init_devices()
+{
+
+    pit_init();
+    kbd_init();
+
+}
+
+void arch_init_interrupts()
+{
+
     isr_init();
     isr_register_handler(0x0E, mmu_handler);
 
@@ -43,9 +56,6 @@ void arch_init()
 
     syscall_init();
     
-    pit_init();
-    kbd_init();
-
     isr_enable();
 
 }
