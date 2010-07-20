@@ -3,23 +3,13 @@
 #include <kernel/arch/i386/irq.h>
 #include <kernel/arch/i386/pit.h>
 
-int pitTimer = 0;
-
 void pit_handler(struct isr_registers *registers)
 {
-
-    pitTimer++;
 
 }
 
 void pit_wait(int ticks)
 {
-
-    int eticks;
-
-    eticks = pitTimer + ticks;
-
-    while (pitTimer < eticks);
 
 }
 
