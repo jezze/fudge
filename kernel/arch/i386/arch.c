@@ -1,9 +1,11 @@
+#include <lib/call.h>
 #include <lib/cbuffer.h>
 #include <lib/string.h>
 #include <lib/vfs.h>
 #include <kernel/arch/i386/arch.h>
 #include <kernel/arch/i386/gdt.h>
 #include <kernel/arch/i386/idt.h>
+#include <kernel/arch/i386/io.h>
 #include <kernel/arch/i386/isr.h>
 #include <kernel/arch/i386/irq.h>
 #include <kernel/arch/i386/kbd.h>

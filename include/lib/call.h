@@ -9,14 +9,14 @@
 #define CALL_HALT    0x50
 #define CALL_REBOOT 0x51
 
-struct vfs_node_t;
+struct vfs_node;
 
 extern int call_putc(char c);
 extern int call_puts(char *s);
 extern char call_getc();
 
-extern vfs_node_t *call_vfs_walk(unsigned int index);
-extern vfs_node_t *call_vfs_find(char *name);
+extern struct vfs_node *call_vfs_walk(unsigned int index);
+extern struct vfs_node *call_vfs_find(char *name);
 extern int call_halt();
 extern int call_reboot();
 
