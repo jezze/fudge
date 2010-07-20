@@ -3,6 +3,9 @@
 
 struct vfs_node;
 
+extern struct vfs_node *arch_get_stdin();
+extern struct vfs_node *arch_get_stdout();
+
 struct initrd_header
 {
 

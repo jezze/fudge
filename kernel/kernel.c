@@ -1,7 +1,6 @@
 #include <lib/cbuffer.h>
 #include <lib/vfs.h>
 #include <lib/call.h>
-#include <kernel/arch/i386/arch.h>
 #include <kernel/assert.h>
 #include <kernel/initrd.h>
 #include <kernel/kernel.h>

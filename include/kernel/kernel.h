@@ -3,6 +3,10 @@
 
 struct vfs_node;
 
+extern void arch_init();
+extern void arch_init_devices();
+extern void arch_init_interrupts();
+
 typedef struct kernel
 {
 
