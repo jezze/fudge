@@ -10,6 +10,11 @@ struct syscall_registers
 
 };
 
+extern void syscall_vfs_walk(struct syscall_registers *registers);
+extern void syscall_vfs_find(struct syscall_registers *registers);
+extern void syscall_reboot(struct syscall_registers *registers);
+extern void syscall_register_handler(unsigned char index, void (*handler)(struct syscall_registers *registers));
+extern void syscall_unregister_handler(unsigned char index);
 extern void syscall_handler(struct syscall_registers *registers);
 extern void syscall_init();
 
