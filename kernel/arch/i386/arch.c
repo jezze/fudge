@@ -34,20 +34,19 @@ void arch_putc(char c)
 
 }
 
+void arch_puts(char *s)
+{
+
+    struct vfs_node *out = arch_get_stdout();
+
+    vfs_write(out, 0, string_length(s), s);
+
+}
+
 void arch_clear()
 {
 
     screen_clear();
-
-}
-
-void arch_puts(char *s)
-{
-
-    unsigned int i;
-
-    for (i = 0; s[i] != '\0'; i++)
-        arch_putc(s[i]);
 
 }
 
