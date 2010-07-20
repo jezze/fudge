@@ -42,7 +42,6 @@ struct screen
 
 extern struct screen screen;
 
-extern void screen_putc(char c);
 extern void screen_clear();
 extern void screen_cursor_move();
 extern void screen_scroll();

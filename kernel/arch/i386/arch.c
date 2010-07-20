@@ -1,4 +1,5 @@
 #include <lib/cbuffer.h>
+#include <lib/string.h>
 #include <lib/vfs.h>
 #include <kernel/arch/i386/arch.h>
 #include <kernel/arch/i386/gdt.h>

@@ -8,7 +8,7 @@ struct screen screen;
 
 struct vfs_node vfsScreen;
 
-void screen_putc(char c)
+static void screen_putc(char c)
 {
 
     unsigned short *where;
