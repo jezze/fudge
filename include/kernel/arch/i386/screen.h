@@ -43,10 +43,6 @@ struct screen
 extern struct screen screen;
 
 extern void screen_putc(char c);
-extern void screen_puts(char *s);
-extern void screen_puts_dec(unsigned int n);
-extern void screen_puts_hex(unsigned int n);
-extern void screen_puts_bcd(unsigned char n);
 extern void screen_clear();
 extern void screen_cursor_move();
 extern void screen_scroll();
