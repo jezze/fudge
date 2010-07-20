@@ -1,5 +1,6 @@
 #include <lib/vfs.h>
 #include <lib/call.h>
+#include <kernel/arch/i386/arch.h>
 #include <kernel/arch/i386/io.h>
 #include <kernel/arch/i386/isr.h>
 #include <kernel/arch/i386/pit.h>
@@ -38,28 +39,10 @@ static void syscall_vfs_find(struct syscall_registers *registers)
 
 }
 
-unsigned int kernel_reboot()
-{
-
-    isr_disable();
-
-    unsigned char ready = 0x02;
-
-    while ((ready & 0x02) != 0)
-        ready = inb(0x64);
-
-    outb(0x64, 0xFE);
-
-    return 0;
-
-}
-
-
-
 static void syscall_reboot(struct syscall_registers *registers)
 {
 
-    kernel_reboot();
+    arch_reboot();
 
 }
 

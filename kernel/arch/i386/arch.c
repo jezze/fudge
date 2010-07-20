@@ -123,6 +123,20 @@ void arch_enable_interrupts()
 
 }
 
+void arch_reboot()
+{
+
+    isr_disable();
+
+    unsigned char ready = 0x02;
+
+    while ((ready & 0x02) != 0)
+        ready = inb(0x64);
+
+    outb(0x64, 0xFE);
+
+}
+
 void arch_init()
 {
 
