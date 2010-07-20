@@ -34,10 +34,11 @@ char call_getc()
     if (!node)
         return 0;
 
-    char buffer[32];
+    char scancode;
 
-    vfs_read(node, 0, 1, buffer);
+    vfs_read(node, 0, 1, &scancode);
 
-    return buffer[0];
+    return scancode;
 
 }
+
