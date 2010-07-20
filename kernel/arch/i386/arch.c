@@ -68,9 +68,12 @@ void arch_init_interrupts()
     irq_register_handler(0x00, pit_handler);
     irq_register_handler(0x01, kbd_handler);
 
+}
+
+void arch_init_syscalls()
+{
+
     syscall_init();
-    
-    isr_enable();
 
 }
 

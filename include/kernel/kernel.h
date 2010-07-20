@@ -6,6 +6,8 @@ struct vfs_node;
 extern void arch_init();
 extern void arch_init_devices();
 extern void arch_init_interrupts();
+extern void arch_init_syscalls();
+extern void arch_enable_interrupts();
 
 typedef struct kernel
 {
@@ -14,8 +16,6 @@ typedef struct kernel
 
 extern kernel_t kernel;
 extern vfs_node_t *fsRoot;
-
-extern unsigned int kernel_reboot();
 
 #endif
 
