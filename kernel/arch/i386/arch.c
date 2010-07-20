@@ -15,9 +15,11 @@
 char arch_getc()
 {
 
-    char c = 0;
+    struct vfs_node *in = arch_get_stdin();
 
-    while(!(c = cbuffer_read(&keyboard.cbuffer)));
+    char c;
+
+    while (!(vfs_read(in, 0, 1, &c)));
 
     return c;
 

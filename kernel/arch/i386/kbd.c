@@ -68,9 +68,17 @@ void kbd_handler(struct isr_registers *registers)
 static unsigned int kbd_read(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    ((char *)buffer)[0] = cbuffer_read(&keyboard.cbuffer);
+    char c = cbuffer_read(&keyboard.cbuffer);
 
-    return 1;
+    if (c)
+    {
+
+        ((char *)buffer)[0] = c;
+        return 1;
+
+    }
+
+    return 0;
 
 }
 
