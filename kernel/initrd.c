@@ -2,9 +2,8 @@
 #include <lib/memory.h>
 #include <lib/string.h>
 #include <lib/vfs.h>
-#include <kernel/arch/i386/kbd.h>
-#include <kernel/arch/i386/screen.h>
-#include <kernel/arch/i386/initrd.h>
+#include <kernel/arch/i386/arch.h>
+#include <kernel/initrd.h>
 
 struct initrd_header *initrdHeader;
 struct initrd_file_header *initrdFileHeaders;
@@ -71,10 +70,10 @@ struct vfs_node *initrd_init(unsigned int location)
     }
 
     initrdHeader->nfiles++;
-    initrdNodes[i++] = *kbd_get_node();
+    initrdNodes[i++] = *arch_get_stdin();
 
     initrdHeader->nfiles++;
-    initrdNodes[i++] = *screen_get_node();
+    initrdNodes[i++] = *arch_get_stdout();
 
     return &initrdRoot;
 

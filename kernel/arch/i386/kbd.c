@@ -65,7 +65,7 @@ void kbd_handler(struct isr_registers *registers)
 
 }
 
-unsigned int keyboard_read(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int kbd_read(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
     ((char *)buffer)[0] = cbuffer_read(&keyboard.cbuffer);
@@ -82,7 +82,7 @@ struct vfs_node *kbd_get_node()
     vfsKeyboard.length = 0;
     vfsKeyboard.open = 0;
     vfsKeyboard.close = 0;
-    vfsKeyboard.read = keyboard_read;
+    vfsKeyboard.read = kbd_read;
     vfsKeyboard.write = 0;
     vfsKeyboard.walk = 0;
 

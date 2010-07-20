@@ -1,4 +1,5 @@
 #include <lib/cbuffer.h>
+#include <lib/vfs.h>
 #include <kernel/assert.h>
 #include <kernel/arch/i386/screen.h>
 #include <kernel/arch/i386/gdt.h>
@@ -10,6 +11,20 @@
 #include <kernel/arch/i386/pit.h>
 #include <kernel/arch/i386/kbd.h>
 #include <kernel/arch/i386/arch.h>
+
+struct vfs_node *arch_get_stdin()
+{
+
+    return kbd_get_node();
+
+}
+
+struct vfs_node *arch_get_stdout()
+{
+
+    return screen_get_node();
+
+}
 
 void arch_init()
 {

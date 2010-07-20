@@ -37,7 +37,6 @@ arch-i386: lib kernel
     kernel/arch/i386/irqs.o \
     kernel/arch/i386/isrs.o \
     kernel/arch/i386/loader.o \
-    kernel/arch/i386/initrd.o \
     kernel/arch/i386/irq.o \
     kernel/arch/i386/isr.o \
     kernel/arch/i386/kbd.o \
@@ -47,6 +46,7 @@ arch-i386: lib kernel
     kernel/arch/i386/screen.o \
     kernel/arch/i386/syscall.o \
     kernel/assert.o \
+    kernel/initrd.o \
     kernel/kernel.o \
     kernel/mboot.o \
     kernel/shell.o \
