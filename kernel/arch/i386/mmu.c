@@ -1,10 +1,10 @@
 #include <lib/memory.h>
 #include <lib/vfs.h>
-#include <kernel/assert.h>
 #include <kernel/arch/i386/cr.h>
-#include <kernel/arch/i386/screen.h>
 #include <kernel/arch/i386/isr.h>
 #include <kernel/arch/i386/mmu.h>
+#include <kernel/arch/i386/screen.h>
+#include <kernel/assert.h>
 
 void mmu_handler(struct isr_registers *registers)
 {

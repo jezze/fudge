@@ -1,7 +1,7 @@
 #include <lib/vfs.h>
 #include <kernel/arch/i386/io.h>
-#include <kernel/arch/i386/screen.h>
 #include <kernel/arch/i386/rtc.h>
+#include <kernel/arch/i386/screen.h>
 
 unsigned char rtc_read(unsigned char type)
 {

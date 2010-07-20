@@ -2,8 +2,8 @@
 #include <lib/string.h>
 #include <lib/vfs.h>
 #include <kernel/arch/i386/io.h>
-#include <kernel/arch/i386/isr.h>
 #include <kernel/arch/i386/irq.h>
+#include <kernel/arch/i386/isr.h>
 #include <kernel/arch/i386/kbd.h>
 
 char kbdMapLowerUS[128] =

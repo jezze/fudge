@@ -2,11 +2,11 @@
 #include <lib/vfs.h>
 #include <lib/call.h>
 #include <kernel/arch/i386/arch.h>
-#include <kernel/initrd.h>
 #include <kernel/assert.h>
+#include <kernel/initrd.h>
+#include <kernel/kernel.h>
 #include <kernel/mboot.h>
 #include <kernel/shell.h>
-#include <kernel/kernel.h>
 
 struct kernel kernel;
 struct vfs_node *fsRoot = 0;
