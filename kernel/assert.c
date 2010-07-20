@@ -1,11 +1,10 @@
-#include <kernel/arch/i386/isr.h>
 #include <kernel/arch/i386/screen.h>
 #include <kernel/assert.h>
 
 void kernel_panic(char *message, char *file, unsigned int line)
 {
 
-    isr_disable();
+    arch_disable_interrupts();
 
     screen_puts("KERNEL PANIC (");
     screen_puts(message);
@@ -22,7 +21,7 @@ void kernel_panic(char *message, char *file, unsigned int line)
 void kernel_assert(char *message, char *file, unsigned int line)
 {
 
-    isr_disable();
+    arch_disable_interrupts();
 
     screen_puts("ASSERTION FAIL (");
     screen_puts(message);

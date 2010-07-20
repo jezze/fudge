@@ -26,6 +26,20 @@ struct vfs_node *arch_get_stdout()
 
 }
 
+void arch_disable_interrupts()
+{
+
+    isr_disable();
+
+}
+
+void arch_enable_interrupts()
+{
+
+    isr_enable();
+
+}
+
 void arch_init()
 {
 
