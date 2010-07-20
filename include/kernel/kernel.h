@@ -9,12 +9,6 @@ extern void arch_init_interrupts();
 extern void arch_init_syscalls();
 extern void arch_enable_interrupts();
 
-typedef struct kernel
-{
-
-} kernel_t;
-
-extern kernel_t kernel;
 extern vfs_node_t *fsRoot;
 
 #endif
