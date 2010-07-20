@@ -3,7 +3,6 @@
 #include <lib/string.h>
 #include <lib/vfs.h>
 #include <kernel/arch/i386/kbd.h>
-#include <kernel/arch/i386/screen.h>
 #include <kernel/kernel.h>
 #include <kernel/shell.h>
 
@@ -13,7 +12,7 @@ struct stack shellStack;
 static void shell_clear()
 {
 
-    screen_puts("fudge:/$ ");
+    arch_puts("fudge:/$ ");
     stack_clear(&shellStack);
 
 }
@@ -77,7 +76,7 @@ static void shell_interpret(char *command)
     else if (!string_compare(argv[0], "clear"))
     {
 
-        screen_clear();
+        arch_clear();
 
     }
 
@@ -92,8 +91,8 @@ static void shell_interpret(char *command)
         else
         {
 
-            screen_puts(argv[0]);
-            screen_puts(": Command not found\n");
+            arch_puts(argv[0]);
+            arch_puts(": Command not found\n");
 
         }
 
@@ -118,9 +117,9 @@ static void shell_handle_input(char c)
             if (stack_pop(&shellStack))
             {
 
-                screen_putc('\b');
-                screen_putc(' ');
-                screen_putc('\b');
+                arch_putc('\b');
+                arch_putc(' ');
+                arch_putc('\b');
 
              }
 
@@ -129,7 +128,7 @@ static void shell_handle_input(char c)
         case '\n':
 
             stack_push(&shellStack, '\0');
-            screen_putc(c);
+            arch_putc(c);
             shell_interpret(shellBuffer);
 
             break;
@@ -137,7 +136,7 @@ static void shell_handle_input(char c)
         default:
 
             stack_push(&shellStack, c);
-            screen_putc(c);
+            arch_putc(c);
 
             break;
 
@@ -165,10 +164,10 @@ void shell_init()
 
     shellStack = stack_create(shellBuffer, SHELL_BUFFER_SIZE);
 
-    screen_puts("Fudge\n");
-    screen_puts("-----\n");
-    screen_puts("Copyright (c) 2009 Jens Nyberg\n");
-    screen_puts("Type 'cat help.txt' to read the help section.\n\n");
+    arch_puts("Fudge\n");
+    arch_puts("-----\n");
+    arch_puts("Copyright (c) 2009 Jens Nyberg\n");
+    arch_puts("Type 'cat help.txt' to read the help section.\n\n");
 
     shell_clear();
     shell_poll();

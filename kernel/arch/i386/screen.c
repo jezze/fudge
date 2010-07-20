@@ -65,60 +65,6 @@ void screen_putc(char c)
 
 }
 
-void screen_puts(char *s)
-{
-
-    unsigned int i;
-
-    for (i = 0; s[i] != '\0'; i++)
-        screen_putc(s[i]);
-
-}
-
-void screen_puts_num(unsigned int n, unsigned int base)
-{
-
-    if (!n)
-    {
-
-        screen_putc('0');
-        return;
-
-    }
-
-    char s[32] = {0};
-
-    int i;
-
-    for (i = 30; n && i; --i, n /= base)
-        s[i] = "0123456789abcdef"[n % base];
-
-    screen_puts(s + i + 1);
-
-}
-
-void screen_puts_dec(unsigned int n)
-{
-
-    return screen_puts_num(n, 10);
-
-}
-
-void screen_puts_hex(unsigned int n)
-{
-
-    return screen_puts_num(n, 16);
-
-}
-
-void screen_puts_bcd(unsigned char n)
-{
-
-    screen_puts_dec(n >> 4);
-    screen_puts_dec(n & 0x0F);
-
-}
-
 void screen_set_text_color(unsigned char forecolor, unsigned char backcolor)
 {
 

@@ -1,6 +1,6 @@
+#include <kernel/arch/i386/arch.h>
 #include <kernel/arch/i386/idt.h>
 #include <kernel/arch/i386/isr.h>
-#include <kernel/arch/i386/screen.h>
 
 void *isrRoutines[ISR_ROUTINES_SIZE];
 
@@ -34,8 +34,8 @@ void isr_handler(struct isr_registers *registers)
     else
     {
 
-        screen_puts("Unhandled interrupt: 0x");
-        screen_puts_hex(registers->int_no);
+        arch_puts("Unhandled interrupt: 0x");
+        arch_puts_hex(registers->int_no);
 
     }
 

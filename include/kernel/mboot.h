@@ -15,6 +15,10 @@
 
 #define MBOOT_MAGIC 0x2BADB002
 
+extern void arch_puts(char *s);
+extern void arch_puts_dec(unsigned int n);
+extern void arch_puts_hex(unsigned int n);
+
 struct mboot_info
 {
 

@@ -12,6 +12,74 @@
 #include <kernel/arch/i386/syscall.h>
 #include <kernel/assert.h>
 
+void arch_clear()
+{
+
+    screen_clear();
+
+}
+
+void arch_putc(char c)
+{
+
+    screen_putc(c);
+
+}
+
+void arch_puts(char *s)
+{
+
+    unsigned int i;
+
+    for (i = 0; s[i] != '\0'; i++)
+        arch_putc(s[i]);
+
+}
+
+void arch_puts_num(unsigned int n, unsigned int base)
+{
+
+    if (!n)
+    {
+
+        arch_putc('0');
+        return;
+
+    }
+
+    char s[32] = {0};
+
+    int i;
+
+    for (i = 30; n && i; --i, n /= base)
+        s[i] = "0123456789abcdef"[n % base];
+
+    arch_puts(s + i + 1);
+
+}
+
+void arch_puts_dec(unsigned int n)
+{
+
+    arch_puts_num(n, 10);
+
+}
+
+void arch_puts_hex(unsigned int n)
+{
+
+    arch_puts_num(n, 16);
+
+}
+
+void arch_puts_bcd(unsigned char n)
+{
+
+    arch_puts_dec(n >> 4);
+    arch_puts_dec(n & 0x0F);
+
+}
+
 struct vfs_node *arch_get_stdin()
 {
 

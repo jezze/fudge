@@ -1,7 +1,7 @@
 #include <lib/vfs.h>
+#include <kernel/arch/i386/arch.h>
 #include <kernel/arch/i386/io.h>
 #include <kernel/arch/i386/rtc.h>
-#include <kernel/arch/i386/screen.h>
 
 unsigned char rtc_read(unsigned char type)
 {
@@ -24,23 +24,23 @@ void rtc_init()
 
     rtc_ready();
 
-    screen_puts("Date: 20");
-    screen_puts_bcd(rtc_read(RTC_FLAG_YEAR));
-    screen_puts("-");
-    screen_puts_bcd(rtc_read(RTC_FLAG_MONTH));
-    screen_puts("-");
-    screen_puts_bcd(rtc_read(RTC_FLAG_DAY));
-    screen_puts(" ");
-    screen_puts_bcd(rtc_read(RTC_FLAG_HOURS) & 0x0F);
-    screen_puts(":");
-    screen_puts_bcd(rtc_read(RTC_FLAG_MINUTES));
-    screen_puts(":");
-    screen_puts_bcd(rtc_read(RTC_FLAG_SECONDS));
+    arch_puts("Date: 20");
+    arch_puts_bcd(rtc_read(RTC_FLAG_YEAR));
+    arch_puts("-");
+    arch_puts_bcd(rtc_read(RTC_FLAG_MONTH));
+    arch_puts("-");
+    arch_puts_bcd(rtc_read(RTC_FLAG_DAY));
+    arch_puts(" ");
+    arch_puts_bcd(rtc_read(RTC_FLAG_HOURS) & 0x0F);
+    arch_puts(":");
+    arch_puts_bcd(rtc_read(RTC_FLAG_MINUTES));
+    arch_puts(":");
+    arch_puts_bcd(rtc_read(RTC_FLAG_SECONDS));
 
     if (rtc_read(RTC_FLAG_HOURS) >> 4)
-        screen_puts("PM\n");
+        arch_puts("PM\n");
     else
-        screen_puts("AM\n");
+        arch_puts("AM\n");
 
 }
 
