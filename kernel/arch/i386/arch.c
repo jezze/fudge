@@ -25,17 +25,19 @@ char arch_getc()
 
 }
 
+void arch_putc(char c)
+{
+
+    struct vfs_node *out = arch_get_stdout();
+
+    vfs_write(out, 0, 1, &c);
+
+}
+
 void arch_clear()
 {
 
     screen_clear();
-
-}
-
-void arch_putc(char c)
-{
-
-    screen_putc(c);
 
 }
 
