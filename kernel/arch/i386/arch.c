@@ -32,6 +32,7 @@ void arch_init()
     gdt_init();
     idt_init();
     screen_init();
+    mmu_init();
 
     isr_init();
     isr_register_handler(0x0E, mmu_handler);
@@ -41,8 +42,6 @@ void arch_init()
     irq_register_handler(0x01, kbd_handler);
 
     syscall_init();
-
-    mmu_init();
     
     pit_init();
     kbd_init();
