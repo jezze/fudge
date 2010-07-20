@@ -2,9 +2,9 @@
 #include <lib/memory.h>
 #include <lib/string.h>
 #include <lib/vfs.h>
-#include <kernel/kbd.h>
-#include <kernel/screen.h>
-#include <kernel/initrd.h>
+#include <kernel/arch/i386/kbd.h>
+#include <kernel/arch/i386/screen.h>
+#include <kernel/arch/i386/initrd.h>
 
 struct initrd_header *initrdHeader;
 struct initrd_file_header *initrdFileHeaders;

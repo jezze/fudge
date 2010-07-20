@@ -1,7 +1,7 @@
 #include <kernel/arch/i386/io.h>
-#include <kernel/isr.h>
-#include <kernel/irq.h>
-#include <kernel/pit.h>
+#include <kernel/arch/i386/isr.h>
+#include <kernel/arch/i386/irq.h>
+#include <kernel/arch/i386/pit.h>
 
 int pitTimer = 0;
 

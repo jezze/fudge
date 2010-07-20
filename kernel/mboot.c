@@ -1,4 +1,4 @@
-#include <kernel/screen.h>
+#include <kernel/arch/i386/screen.h>
 #include <kernel/mboot.h>
 
 void mboot_init(struct mboot_info *info)

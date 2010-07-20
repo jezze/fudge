@@ -2,10 +2,10 @@
 #include <lib/stack.h>
 #include <lib/string.h>
 #include <lib/vfs.h>
+#include <kernel/arch/i386/isr.h>
+#include <kernel/arch/i386/screen.h>
+#include <kernel/arch/i386/kbd.h>
 #include <kernel/kernel.h>
-#include <kernel/isr.h>
-#include <kernel/screen.h>
-#include <kernel/kbd.h>
 #include <kernel/shell.h>
 
 char shellBuffer[SHELL_BUFFER_SIZE];

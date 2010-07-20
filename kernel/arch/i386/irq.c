@@ -1,7 +1,7 @@
 #include <kernel/arch/i386/io.h>
 #include <kernel/arch/i386/idt.h>
-#include <kernel/isr.h>
-#include <kernel/irq.h>
+#include <kernel/arch/i386/isr.h>
+#include <kernel/arch/i386/irq.h>
 
 void *irqRoutines[IRQ_ROUTINES_SIZE];
 

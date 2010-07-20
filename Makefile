@@ -37,19 +37,19 @@ arch-i386: lib kernel
     kernel/arch/i386/irqs.o \
     kernel/arch/i386/isrs.o \
     kernel/arch/i386/loader.o \
+    kernel/arch/i386/initrd.o \
+    kernel/arch/i386/irq.o \
+    kernel/arch/i386/isr.o \
+    kernel/arch/i386/kbd.o \
+    kernel/arch/i386/mmu.o \
+    kernel/arch/i386/pit.o \
+    kernel/arch/i386/rtc.o \
+    kernel/arch/i386/screen.o \
+    kernel/arch/i386/syscall.o \
     kernel/assert.o \
-    kernel/initrd.o \
-    kernel/irq.o \
-    kernel/isr.o \
-    kernel/kbd.o \
     kernel/kernel.o \
     kernel/mboot.o \
-    kernel/mmu.o \
-    kernel/pit.o \
-    kernel/rtc.o \
-    kernel/screen.o \
     kernel/shell.o \
-    kernel/syscall.o \
     -o root/boot/kernel
 
 cd:

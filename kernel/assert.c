@@ -1,5 +1,5 @@
-#include <kernel/isr.h>
-#include <kernel/screen.h>
+#include <kernel/arch/i386/isr.h>
+#include <kernel/arch/i386/screen.h>
 #include <kernel/assert.h>
 
 void kernel_panic(char *message, char *file, unsigned int line)

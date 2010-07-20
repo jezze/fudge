@@ -1,11 +1,12 @@
 #include <lib/vfs.h>
 #include <lib/call.h>
 #include <kernel/kernel.h>
-#include <kernel/isr.h>
-#include <kernel/screen.h>
-#include <kernel/rtc.h>
-#include <kernel/pit.h>
-#include <kernel/syscall.h>
+#include <kernel/arch/i386/io.h>
+#include <kernel/arch/i386/isr.h>
+#include <kernel/arch/i386/screen.h>
+#include <kernel/arch/i386/rtc.h>
+#include <kernel/arch/i386/pit.h>
+#include <kernel/arch/i386/syscall.h>
 
 void *syscallRoutines[SYSCALL_TABLE_SIZE];
 
@@ -36,6 +37,24 @@ static void syscall_vfs_find(struct syscall_registers *registers)
     registers->eax = (unsigned int)vfs_find(fsRoot, (char *)registers->esi);
 
 }
+
+unsigned int kernel_reboot()
+{
+
+    isr_disable();
+
+    unsigned char ready = 0x02;
+
+    while ((ready & 0x02) != 0)
+        ready = inb(0x64);
+
+    outb(0x64, 0xFE);
+
+    return 0;
+
+}
+
+
 
 static void syscall_reboot(struct syscall_registers *registers)
 {

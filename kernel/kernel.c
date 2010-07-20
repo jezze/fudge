@@ -3,38 +3,22 @@
 #include <lib/call.h>
 #include <kernel/arch/i386/arch.h>
 #include <kernel/arch/i386/io.h>
+#include <kernel/arch/i386/screen.h>
+#include <kernel/arch/i386/isr.h>
+#include <kernel/arch/i386/irq.h>
+#include <kernel/arch/i386/pit.h>
+#include <kernel/arch/i386/kbd.h>
+#include <kernel/arch/i386/mmu.h>
+#include <kernel/arch/i386/initrd.h>
+#include <kernel/arch/i386/syscall.h>
+#include <kernel/arch/i386/rtc.h>
 #include <kernel/assert.h>
-#include <kernel/screen.h>
 #include <kernel/mboot.h>
-#include <kernel/isr.h>
-#include <kernel/irq.h>
-#include <kernel/pit.h>
-#include <kernel/kbd.h>
-#include <kernel/mmu.h>
-#include <kernel/initrd.h>
 #include <kernel/shell.h>
-#include <kernel/syscall.h>
-#include <kernel/rtc.h>
 #include <kernel/kernel.h>
 
 struct kernel kernel;
 struct vfs_node *fsRoot = 0;
-
-unsigned int kernel_reboot()
-{
-
-    isr_disable();
-
-    unsigned char ready = 0x02;
-
-    while ((ready & 0x02) != 0)
-        ready = inb(0x64);
-
-    outb(0x64, 0xFE);
-
-    return 0;
-
-}
 
 static void kernel_init_shell()
 {
