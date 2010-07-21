@@ -1,14 +1,5 @@
 #include <lib/string.h>
 
-char *string_concat(char *base, const char *str)
-{
-
-    string_copy(base + string_length(base), str);
-
-    return base;
-
-}
-
 int string_compare(const char *str1, const char *str2)
 {
 
@@ -24,49 +15,59 @@ int string_compare(const char *str1, const char *str2)
 
 }
 
-char *string_copy(char *base, const char *str)
+char *string_concat(char *dest, const char *src)
 {
 
-    char *current = base;
+    string_copy(dest + string_length(dest), src);
 
-    while ((*current++ = *str++));
-
-    return base;
+    return dest;
 
 }
 
-int string_offset(const char *base, char c)
+char *string_copy(char *dest, const char *src)
 {
 
-    int offset;
+    char *dp = dest;
+    const char *sp = src;
 
-    for (offset = 0; *base != c; base++, offset++);
+    while ((*dp++ = *sp++) != '\0');
 
-    return offset;
+    return dest;
 
 }
 
-int string_length(const char *base)
+int string_offset(const char *dest, char c)
 {
 
-    return string_offset(base, 0);
+    int count;
+
+    for (count = 0; *dest != c; dest++, count++);
+
+    return count;
 
 }
 
-char *string_replace(char *base, char c1, char c2)
+int string_length(const char *dest)
 {
 
-    char *current = base;
+    return string_offset(dest, '\0');
 
-    for (; *current != 0; current++)
+}
+
+char *string_replace(char *dest, char c1, char c2)
+{
+
+    char *dp;
+
+    for (dp = dest; *dp != '\0'; dp++)
     {
 
-        if (*current == c1)
-            *current = c2;
+        if (*dp == c1)
+            *dp = c2;
 
     }
 
-    return base;
+    return dest;
 
 }
 
