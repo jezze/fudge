@@ -8,17 +8,17 @@ ISO=genisoimage
 ISOFLAGS=-R -b boot/grub/stage2_eltorito -no-emul-boot -boot-load-size 4 -boot-info-table 
 MKINITRD=./tools/mkinitrd
 
-.PHONY: all cd clean i386 initrd kernel lib
+.PHONY: all cd clean x86 initrd kernel lib
 
-all: system-i386
+all: system-x86
 system-arm: lib kernel arch-arm initrd
-system-i386: lib kernel arch-i386 initrd cd
+system-x86: lib kernel arch-x86 initrd cd
 
 arch-arm: lib kernel
 
-arch-i386: lib kernel
-	@echo "Building i386..."
-	@cd kernel/arch/i386; make
+arch-x86: lib kernel
+	@echo "Building x86..."
+	@cd kernel/arch/x86; make
 	@$(LD) $(LDFLAGS) \
     lib/call.o \
     lib/calls.o \
@@ -27,24 +27,24 @@ arch-i386: lib kernel
     lib/stack.o \
     lib/string.o \
     lib/vfs.o \
-    kernel/arch/i386/arch.o \
-    kernel/arch/i386/cr.o \
-    kernel/arch/i386/gdt.o \
-    kernel/arch/i386/gdts.o \
-    kernel/arch/i386/idt.o \
-    kernel/arch/i386/idts.o \
-    kernel/arch/i386/io.o \
-    kernel/arch/i386/irqs.o \
-    kernel/arch/i386/isrs.o \
-    kernel/arch/i386/loader.o \
-    kernel/arch/i386/irq.o \
-    kernel/arch/i386/isr.o \
-    kernel/arch/i386/kbd.o \
-    kernel/arch/i386/mmu.o \
-    kernel/arch/i386/pit.o \
-    kernel/arch/i386/rtc.o \
-    kernel/arch/i386/screen.o \
-    kernel/arch/i386/syscall.o \
+    kernel/arch/x86/arch.o \
+    kernel/arch/x86/cr.o \
+    kernel/arch/x86/gdt.o \
+    kernel/arch/x86/gdts.o \
+    kernel/arch/x86/idt.o \
+    kernel/arch/x86/idts.o \
+    kernel/arch/x86/io.o \
+    kernel/arch/x86/irqs.o \
+    kernel/arch/x86/isrs.o \
+    kernel/arch/x86/loader.o \
+    kernel/arch/x86/irq.o \
+    kernel/arch/x86/isr.o \
+    kernel/arch/x86/kbd.o \
+    kernel/arch/x86/mmu.o \
+    kernel/arch/x86/pit.o \
+    kernel/arch/x86/rtc.o \
+    kernel/arch/x86/screen.o \
+    kernel/arch/x86/syscall.o \
     kernel/assert.o \
     kernel/initrd.o \
     kernel/kernel.o \
@@ -63,7 +63,7 @@ clean:
 	@rm -f root/boot/initrd
 	@rm -f tools/mkinitrd
 	@cd kernel; make clean
-	@cd kernel/arch/i386; make clean
+	@cd kernel/arch/x86; make clean
 	@cd lib; make clean
 	@cd ramdisk; make clean
 
