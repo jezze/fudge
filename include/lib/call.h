@@ -6,7 +6,7 @@
 #define CALL_VFS_WALK  0x12
 #define CALL_VFS_FIND  0x13
 
-#define CALL_HALT    0x50
+#define CALL_HALT   0x50
 #define CALL_REBOOT 0x51
 
 struct vfs_node;
