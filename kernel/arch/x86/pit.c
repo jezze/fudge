@@ -1,7 +1,7 @@
-#include <kernel/arch/i386/io.h>
-#include <kernel/arch/i386/irq.h>
-#include <kernel/arch/i386/isr.h>
-#include <kernel/arch/i386/pit.h>
+#include <kernel/arch/x86/io.h>
+#include <kernel/arch/x86/irq.h>
+#include <kernel/arch/x86/isr.h>
+#include <kernel/arch/x86/pit.h>
 
 void pit_handler(struct isr_registers *registers)
 {

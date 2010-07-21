@@ -1,8 +1,8 @@
 #include <lib/memory.h>
 #include <lib/string.h>
 #include <lib/vfs.h>
-#include <kernel/arch/i386/io.h>
-#include <kernel/arch/i386/screen.h>
+#include <kernel/arch/x86/io.h>
+#include <kernel/arch/x86/screen.h>
 
 struct screen screen;
 

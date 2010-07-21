@@ -1,9 +1,9 @@
 #include <lib/memory.h>
 #include <lib/vfs.h>
-#include <kernel/arch/i386/arch.h>
-#include <kernel/arch/i386/cr.h>
-#include <kernel/arch/i386/isr.h>
-#include <kernel/arch/i386/mmu.h>
+#include <kernel/arch/x86/arch.h>
+#include <kernel/arch/x86/cr.h>
+#include <kernel/arch/x86/isr.h>
+#include <kernel/arch/x86/mmu.h>
 #include <kernel/assert.h>
 
 void mmu_handler(struct isr_registers *registers)

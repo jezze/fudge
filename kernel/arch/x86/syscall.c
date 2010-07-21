@@ -1,12 +1,12 @@
 #include <lib/vfs.h>
 #include <lib/call.h>
-#include <kernel/arch/i386/arch.h>
-#include <kernel/arch/i386/io.h>
-#include <kernel/arch/i386/isr.h>
-#include <kernel/arch/i386/pit.h>
-#include <kernel/arch/i386/rtc.h>
-#include <kernel/arch/i386/screen.h>
-#include <kernel/arch/i386/syscall.h>
+#include <kernel/arch/x86/arch.h>
+#include <kernel/arch/x86/io.h>
+#include <kernel/arch/x86/isr.h>
+#include <kernel/arch/x86/pit.h>
+#include <kernel/arch/x86/rtc.h>
+#include <kernel/arch/x86/screen.h>
+#include <kernel/arch/x86/syscall.h>
 #include <kernel/kernel.h>
 
 void *syscallRoutines[SYSCALL_TABLE_SIZE];

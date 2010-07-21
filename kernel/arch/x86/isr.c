@@ -1,6 +1,6 @@
-#include <kernel/arch/i386/arch.h>
-#include <kernel/arch/i386/idt.h>
-#include <kernel/arch/i386/isr.h>
+#include <kernel/arch/x86/arch.h>
+#include <kernel/arch/x86/idt.h>
+#include <kernel/arch/x86/isr.h>
 
 void *isrRoutines[ISR_ROUTINES_SIZE];
 

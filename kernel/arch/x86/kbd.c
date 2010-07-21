@@ -1,10 +1,10 @@
 #include <lib/cbuffer.h>
 #include <lib/string.h>
 #include <lib/vfs.h>
-#include <kernel/arch/i386/io.h>
-#include <kernel/arch/i386/irq.h>
-#include <kernel/arch/i386/isr.h>
-#include <kernel/arch/i386/kbd.h>
+#include <kernel/arch/x86/io.h>
+#include <kernel/arch/x86/irq.h>
+#include <kernel/arch/x86/isr.h>
+#include <kernel/arch/x86/kbd.h>
 
 char kbdMapLowerUS[128] =
 {
