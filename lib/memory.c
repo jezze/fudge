@@ -3,23 +3,23 @@
 void *memory_copy(void *dest, const void *src, unsigned int count)
 {
 
-    const char *sp = (const char *)src;
-    char *dp = (char *)dest;
+    char *dp = dest;
+    const char *sp = src;
 
-    for (; count != 0; count--)
+    while (count-- != 0)
         *dp++ = *sp++;
 
     return dest;
 
 }
 
-void *memory_set(void *dest, char value, unsigned int count)
+void *memory_set(void *dest, int value, unsigned int count)
 {
 
-    char *temp = (char *)dest;
+    unsigned char *dp = dest;
 
-    for (; count != 0; count--)
-        *temp++ = value;
+    while (count-- != 0)
+        *dp++ = value;
 
     return dest;
 
@@ -28,10 +28,10 @@ void *memory_set(void *dest, char value, unsigned int count)
 unsigned short *memory_setw(unsigned short *dest, unsigned short value, unsigned int count)
 {
 
-    unsigned short *temp = (unsigned short *)dest;
+    unsigned short *dp = dest;
 
-    for (; count != 0; count--)
-        *temp++ = value;
+    while (count-- != 0)
+        *dp++ = value;
 
     return dest;
 
