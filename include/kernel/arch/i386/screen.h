@@ -1,7 +1,7 @@
 #ifndef SCREEN_H
 #define SCREEN_H
 
-#define SCREEN_ADDRESS          0xb8000
+#define SCREEN_ADDRESS          0xB8000
 #define SCREEN_CHARACTER_WIDTH  80
 #define SCREEN_CHARACTER_HEIGHT 25
 #define SCREEN_COLOR_BLACK      0x00

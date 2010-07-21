@@ -1,7 +1,7 @@
 #ifndef PIT_H
 #define PIT_H
 
-#define PIT_HERTZ 1193180
+#define PIT_HERTZ     1193180
 #define PIT_FREQUENCY 1000
 
 struct isr_registers;
