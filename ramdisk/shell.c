@@ -4,18 +4,18 @@
 #include <string.h>
 #include <vfs.h>
 
-char shellBuffer[256];
-struct stack shellStack;
+char consoleBuffer[256];
+struct stack consoleStack;
 
-static void shell_clear()
+static void console_clear()
 {
 
     call_puts("fudge:/$ ");
-    stack_clear(&shellStack);
+    stack_clear(&consoleStack);
 
 }
 
-static void shell_call(vfs_node_t *node, int argc, char *argv[])
+static void console_call(vfs_node_t *node, int argc, char *argv[])
 {
 
     char *buffer = (char *)0x200000;
@@ -28,7 +28,7 @@ static void shell_call(vfs_node_t *node, int argc, char *argv[])
 
 }
 
-static int shell_get_arguments(char *argv[], char *command)
+static int console_get_arguments(char *argv[], char *command)
 {
 
     int argc = 0;
@@ -60,11 +60,11 @@ static int shell_get_arguments(char *argv[], char *command)
 
 }
 
-static void shell_interpret(char *command)
+static void console_interpret(char *command)
 {
 
     char *argv[32];
-    int argc = shell_get_arguments(argv, command);
+    int argc = console_get_arguments(argv, command);
 
     if (!string_compare(argv[0], ""))
     {
@@ -77,7 +77,7 @@ static void shell_interpret(char *command)
         vfs_node_t *node = call_vfs_find(argv[0]);
 
         if (node)
-            shell_call(node, argc, argv);
+            console_call(node, argc, argv);
 
         else
         {
@@ -89,11 +89,11 @@ static void shell_interpret(char *command)
 
     }
 
-    shell_clear();
+    console_clear();
 
 }
 
-static void shell_handle_input(char c)
+static void console_handle_input(char c)
 {
 
     switch (c)
@@ -105,7 +105,7 @@ static void shell_handle_input(char c)
 
         case '\b':
 
-            if (stack_pop(&shellStack))
+            if (stack_pop(&consoleStack))
             {
 
                 call_putc('\b');
@@ -118,15 +118,15 @@ static void shell_handle_input(char c)
 
         case '\n':
 
-            stack_push(&shellStack, '\0');
+            stack_push(&consoleStack, '\0');
             call_putc(c);
-            shell_interpret(shellBuffer);
+            console_interpret(consoleBuffer);
 
             break;
 
         default:
 
-            stack_push(&shellStack, c);
+            stack_push(&consoleStack, c);
             call_putc(c);
 
             break;
@@ -135,15 +135,13 @@ static void shell_handle_input(char c)
 
 }
 
-static void shell_poll()
+static void console_poll()
 {
 
     for (;;)
     {
 
-        char c = call_getc();
-
-        shell_handle_input(c);
+        console_handle_input(call_getc());
 
     }
 
@@ -152,15 +150,15 @@ static void shell_poll()
 void main(int argc, char *argv[])
 {
 
-    stack_init(&shellStack, shellBuffer, 256);
+    stack_init(&consoleStack, consoleBuffer, 256);
 
     call_puts("Fudge\n");
     call_puts("-----\n");
     call_puts("Copyright (c) 2009 Jens Nyberg\n");
     call_puts("Type 'cat help.txt' to read the help section.\n\n");
 
-    shell_clear();
-    shell_poll();
+    console_clear();
+    console_poll();
 
 }
 
