@@ -101,7 +101,7 @@ struct vfs_node *kbd_get_node()
 void kbd_init()
 {
 
-    keyboard.cbuffer = cbuffer_create(keyboard.buffer, KBD_BUFFER_SIZE);
+    cbuffer_init(&keyboard.cbuffer, keyboard.buffer, KBD_BUFFER_SIZE);
     keyboard.toggleAlt = 0;
     keyboard.toggleCtrl = 0;
     keyboard.toggleShift = 0;

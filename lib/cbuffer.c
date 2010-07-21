@@ -1,15 +1,12 @@
 #include <lib/cbuffer.h>
 
-struct cbuffer cbuffer_create(char *buffer, unsigned int size)
+void cbuffer_init(struct cbuffer *cbuffer, char *buffer, unsigned int size)
 {
 
-    struct cbuffer cbuffer;
-    cbuffer.buffer = buffer;
-    cbuffer.size = size;
-    cbuffer.head = 0;
-    cbuffer.tail = 0;
-
-    return cbuffer;
+    cbuffer->buffer = buffer;
+    cbuffer->size = size;
+    cbuffer->head = 0;
+    cbuffer->tail = 0;
 
 }
 

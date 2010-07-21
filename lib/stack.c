@@ -1,14 +1,11 @@
 #include <lib/stack.h>
 
-struct stack stack_create(char *buffer, unsigned int size)
+void stack_init(struct stack *stack, char *buffer, unsigned int size)
 {
 
-    struct stack stack;
-    stack.buffer = buffer;
-    stack.size = size;
-    stack.head = 0;
-
-    return stack;
+    stack->buffer = buffer;
+    stack->size = size;
+    stack->head = 0;
 
 }
 

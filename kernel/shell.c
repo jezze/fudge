@@ -160,7 +160,7 @@ static void shell_poll()
 void shell_init()
 {
 
-    shellStack = stack_create(shellBuffer, SHELL_BUFFER_SIZE);
+    stack_init(&shellStack, shellBuffer, SHELL_BUFFER_SIZE);
 
     arch_puts("Fudge\n");
     arch_puts("-----\n");
