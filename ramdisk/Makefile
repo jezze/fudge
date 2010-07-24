@@ -16,13 +16,13 @@ all:
 	@$(GCC) $(GCCFLAGS) echo.c -o echo.o
 	@$(LD) $(LDFLAGS) echo.o ../lib/string.o ../lib/vfs.o ../lib/call.o ../lib/calls.o -o echo
 	@$(GCC) $(GCCFLAGS) hello.c -o hello.o
-	@$(LD) $(LDFLAGS) hello.o ../lib/string.o ../lib/vfs.o ../lib/call.o ../lib/calls.o -o hello
+	@$(LD) -Ttext 0x200000 -e main hello.o ../lib/string.o ../lib/vfs.o ../lib/call.o ../lib/calls.o -o hello
 	@$(GCC) $(GCCFLAGS) ls.c -o ls.o
 	@$(LD) $(LDFLAGS) ls.o ../lib/string.o ../lib/vfs.o ../lib/call.o ../lib/calls.o -o ls
 	@$(GCC) $(GCCFLAGS) reboot.c -o reboot.o
 	@$(LD) $(LDFLAGS) reboot.o ../lib/string.o ../lib/vfs.o ../lib/call.o ../lib/calls.o -o reboot
 	@$(GCC) $(GCCFLAGS) shell.c -o shell.o
-	@ld --oformat binary -Ttext 0x300000 -e main shell.o ../lib/stack.o ../lib/string.o ../lib/vfs.o ../lib/call.o ../lib/calls.o -o shell
+	@$(LD) --oformat binary -Ttext 0x300000 -e main shell.o ../lib/stack.o ../lib/string.o ../lib/vfs.o ../lib/call.o ../lib/calls.o -o shell
 	@$(GCC) $(GCCFLAGS) timer.c -o timer.o
 	@$(LD) $(LDFLAGS) timer.o ../lib/string.o ../lib/vfs.o ../lib/call.o ../lib/calls.o -o timer
 

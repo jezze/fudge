@@ -22,10 +22,22 @@ static void shell_call(vfs_node_t *node, int argc, char *argv[])
     char *buffer = (char *)0x200000;
 
     vfs_read(node, 0, 5000, buffer);
-        
-    void (*func)(int argc, char *argv[]) = (void (*)(int argc, char *argv[]))0x200000;
 
-    func(argc, argv);
+    if (buffer[0] == 0x7f)
+    {
+
+        arch_puts("Can not execute ELF binary\n");
+
+    }
+
+    else
+    {
+
+        void (*func)(int argc, char *argv[]) = (void (*)(int argc, char *argv[]))0x200000;
+
+        func(argc, argv);
+
+    }
 
 }
 
