@@ -1,4 +1,5 @@
 #include <lib/cbuffer.h>
+#include <lib/elf.h>
 #include <lib/stack.h>
 #include <lib/string.h>
 #include <lib/vfs.h>
@@ -26,7 +27,37 @@ static void shell_call(vfs_node_t *node, int argc, char *argv[])
     if (buffer[0] == 0x7f)
     {
 
-        arch_puts("Can not execute ELF binary\n");
+        struct elf_header *header = (struct elf_header *)0x200000;
+        //unsigned char identify[16];
+
+        arch_puts("ELF header\n");
+        arch_puts("\nType: ");
+        arch_puts_dec(header->type);
+        arch_puts("\nMachine: ");
+        arch_puts_dec(header->machine);
+        arch_puts("\nVersion: ");
+        arch_puts_dec(header->version);
+        arch_puts("\nEntry: 0x");
+        arch_puts_hex(header->entry);
+        arch_puts("\nProgram Header Offset: ");
+        arch_puts_dec(header->programHeaderOffset);
+        arch_puts("\nSection Header Offset: ");
+        arch_puts_dec(header->sectionHeaderOffset);
+        arch_puts("\nFlags: ");
+        arch_puts_dec(header->flags);
+        arch_puts("\nHeader Size: ");
+        arch_puts_dec(header->headerSize);
+        arch_puts("\nProgram Header Entry Size: ");
+        arch_puts_dec(header->programHeaderEntrySize);
+        arch_puts("\nProgram Header Count: ");
+        arch_puts_dec(header->programHeaderCount);
+        arch_puts("\nSection Header Entry Size: ");
+        arch_puts_dec(header->sectionHeaderEntrySize);
+        arch_puts("\nSection Header Count: ");
+        arch_puts_dec(header->sectionHeaderCount);
+        arch_puts("\nSection Header String Index: ");
+        arch_puts_dec(header->sectionHeaderStringIndex);
+        arch_puts("\n");
 
     }
 
