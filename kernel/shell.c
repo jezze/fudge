@@ -17,6 +17,54 @@ static void shell_clear()
 
 }
 
+static void shell_execute_elf(unsigned int *address, int argc, char *argv[])
+{
+
+    struct elf_header *header = (struct elf_header *)address;
+    //unsigned char identify[16];
+
+    arch_puts("ELF header\n");
+    arch_puts("\nType: ");
+    arch_puts_dec(header->type);
+    arch_puts("\nMachine: ");
+    arch_puts_dec(header->machine);
+    arch_puts("\nVersion: ");
+    arch_puts_dec(header->version);
+    arch_puts("\nEntry: 0x");
+    arch_puts_hex(header->entry);
+    arch_puts("\nProgram Header Offset: ");
+    arch_puts_dec(header->programHeaderOffset);
+    arch_puts("\nSection Header Offset: ");
+    arch_puts_dec(header->sectionHeaderOffset);
+    arch_puts("\nFlags: ");
+    arch_puts_dec(header->flags);
+    arch_puts("\nHeader Size: ");
+    arch_puts_dec(header->headerSize);
+    arch_puts("\nProgram Header Entry Size: ");
+    arch_puts_dec(header->programHeaderEntrySize);
+    arch_puts("\nProgram Header Count: ");
+    arch_puts_dec(header->programHeaderCount);
+    arch_puts("\nSection Header Entry Size: ");
+    arch_puts_dec(header->sectionHeaderEntrySize);
+    arch_puts("\nSection Header Count: ");
+    arch_puts_dec(header->sectionHeaderCount);
+    arch_puts("\nSection Header String Index: ");
+    arch_puts_dec(header->sectionHeaderStringIndex);
+    arch_puts("\n");
+
+}
+
+static void shell_execute_flat(unsigned int *address, int argc, char *argv[])
+{
+
+    void (*func)(int argc, char *argv[]) = (void (*)(int argc, char *argv[]))address;
+
+    func(argc, argv);
+
+
+
+}
+
 static void shell_call(vfs_node_t *node, int argc, char *argv[])
 {
 
@@ -24,51 +72,10 @@ static void shell_call(vfs_node_t *node, int argc, char *argv[])
 
     vfs_read(node, 0, 5000, buffer);
 
-    if (buffer[0] == 0x7f)
-    {
-
-        struct elf_header *header = (struct elf_header *)0x200000;
-        //unsigned char identify[16];
-
-        arch_puts("ELF header\n");
-        arch_puts("\nType: ");
-        arch_puts_dec(header->type);
-        arch_puts("\nMachine: ");
-        arch_puts_dec(header->machine);
-        arch_puts("\nVersion: ");
-        arch_puts_dec(header->version);
-        arch_puts("\nEntry: 0x");
-        arch_puts_hex(header->entry);
-        arch_puts("\nProgram Header Offset: ");
-        arch_puts_dec(header->programHeaderOffset);
-        arch_puts("\nSection Header Offset: ");
-        arch_puts_dec(header->sectionHeaderOffset);
-        arch_puts("\nFlags: ");
-        arch_puts_dec(header->flags);
-        arch_puts("\nHeader Size: ");
-        arch_puts_dec(header->headerSize);
-        arch_puts("\nProgram Header Entry Size: ");
-        arch_puts_dec(header->programHeaderEntrySize);
-        arch_puts("\nProgram Header Count: ");
-        arch_puts_dec(header->programHeaderCount);
-        arch_puts("\nSection Header Entry Size: ");
-        arch_puts_dec(header->sectionHeaderEntrySize);
-        arch_puts("\nSection Header Count: ");
-        arch_puts_dec(header->sectionHeaderCount);
-        arch_puts("\nSection Header String Index: ");
-        arch_puts_dec(header->sectionHeaderStringIndex);
-        arch_puts("\n");
-
-    }
-
+    if (buffer[0] == ELF_IDENTITY_MAGIC0)
+        shell_execute_elf((unsigned int *)0x200000, argc, argv);
     else
-    {
-
-        void (*func)(int argc, char *argv[]) = (void (*)(int argc, char *argv[]))0x200000;
-
-        func(argc, argv);
-
-    }
+        shell_execute_flat((unsigned int *)0x200000, argc, argv);
 
 }
 
