@@ -17,10 +17,9 @@ static void shell_clear()
 
 }
 
-static void shell_execute_elf(unsigned int *address, int argc, char *argv[])
+static void shell_execute_elf(struct elf_header *header, int argc, char *argv[])
 {
 
-    struct elf_header *header = (struct elf_header *)address;
     //unsigned char identify[16];
 
     arch_puts("ELF header\n");
@@ -61,8 +60,6 @@ static void shell_execute_flat(unsigned int *address, int argc, char *argv[])
 
     func(argc, argv);
 
-
-
 }
 
 static void shell_call(vfs_node_t *node, int argc, char *argv[])
@@ -73,7 +70,7 @@ static void shell_call(vfs_node_t *node, int argc, char *argv[])
     vfs_read(node, 0, 5000, buffer);
 
     if (buffer[0] == ELF_IDENTITY_MAGIC0)
-        shell_execute_elf((unsigned int *)0x200000, argc, argv);
+        shell_execute_elf((struct elf_header *)0x200000, argc, argv);
     else
         shell_execute_flat((unsigned int *)0x200000, argc, argv);
 
