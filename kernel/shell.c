@@ -29,57 +29,7 @@ static void shell_execute_flat(unsigned int *address, int argc, char *argv[])
 static void shell_execute_elf(struct vfs_node *node, struct elf_header *header, int argc, char *argv[])
 {
 
-    //unsigned char identify[16];
-
-    arch_puts("ELF header");
-    arch_puts("\nType: ");
-    arch_puts_dec(header->type);
-    arch_puts("\nMachine: ");
-    arch_puts_dec(header->machine);
-    arch_puts("\nVersion: ");
-    arch_puts_dec(header->version);
-    arch_puts("\nEntry: 0x");
-    arch_puts_hex(header->entry);
-    arch_puts("\nProgram Header Offset: ");
-    arch_puts_dec(header->programHeaderOffset);
-    arch_puts("\nSection Header Offset: ");
-    arch_puts_dec(header->sectionHeaderOffset);
-    arch_puts("\nFlags: ");
-    arch_puts_dec(header->flags);
-    arch_puts("\nHeader Size: ");
-    arch_puts_dec(header->headerSize);
-    arch_puts("\nProgram Header Entry Size: ");
-    arch_puts_dec(header->programHeaderEntrySize);
-    arch_puts("\nProgram Header Count: ");
-    arch_puts_dec(header->programHeaderCount);
-    arch_puts("\nSection Header Entry Size: ");
-    arch_puts_dec(header->sectionHeaderEntrySize);
-    arch_puts("\nSection Header Count: ");
-    arch_puts_dec(header->sectionHeaderCount);
-    arch_puts("\nSection Header String Index: ");
-    arch_puts_dec(header->sectionHeaderStringIndex);
-    arch_puts("\n\n");
-
     struct elf_program_header *pHeader = (struct elf_program_header *)(0x200000 + header->programHeaderOffset);
-
-    arch_puts("ELF program header:");
-    arch_puts("\nType: ");
-    arch_puts_dec(pHeader->type);
-    arch_puts("\nOffset: ");
-    arch_puts_dec(pHeader->offset);
-    arch_puts("\nVirtual address: 0x");
-    arch_puts_hex(pHeader->virtualAddress);
-    arch_puts("\nPhysical address: 0x");
-    arch_puts_hex(pHeader->physicalAddress);
-    arch_puts("\nFile size: ");
-    arch_puts_dec(pHeader->fileSize);
-    arch_puts("\nMemory size: ");
-    arch_puts_dec(pHeader->memorySize);
-    arch_puts("\nFlags: ");
-    arch_puts_dec(pHeader->flags);
-    arch_puts("\nAlign: ");
-    arch_puts_dec(pHeader->align);
-    arch_puts("\n");
 
     vfs_read(node, pHeader->offset, pHeader->memorySize, pHeader->virtualAddress);
 

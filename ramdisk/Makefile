@@ -15,6 +15,8 @@ all:
 	@$(LD) $(LDFLAGS) date.o ../lib/stack.o ../lib/string.o ../lib/vfs.o ../lib/call.o ../lib/calls.o -o date
 	@$(GCC) $(GCCFLAGS) echo.c -o echo.o
 	@$(LD) $(LDFLAGS) echo.o ../lib/string.o ../lib/vfs.o ../lib/call.o ../lib/calls.o -o echo
+	@$(GCC) $(GCCFLAGS) elf.c -o elf.o
+	@$(LD) $(LDFLAGS) elf.o ../lib/string.o ../lib/vfs.o ../lib/call.o ../lib/calls.o -o elf
 	@$(GCC) $(GCCFLAGS) hello.c -o hello.o
 	@$(LD) -Ttext 0x210000 -e main hello.o ../lib/string.o ../lib/vfs.o ../lib/call.o ../lib/calls.o -o hello
 	@$(GCC) $(GCCFLAGS) ls.c -o ls.o
@@ -32,6 +34,7 @@ clean:
 	@rm -f cpu
 	@rm -f date
 	@rm -f echo
+	@rm -f elf
 	@rm -f hello
 	@rm -f ls
 	@rm -f reboot
