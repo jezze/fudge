@@ -45,9 +45,29 @@ static void shell_call(struct vfs_node *node, int argc, char *argv[])
     vfs_read(node, 0, 0x10000, buffer);
 
     if (buffer[0] == ELF_IDENTITY_MAGIC0)
+    {
+
         shell_execute_elf(node, (struct elf_header *)0x200000, argc, argv);
+
+    }
+
     else
-        shell_execute_flat((unsigned int *)0x200000, argc, argv);
+    {
+
+        arch_puts("Unrecognized binary format. Continue? (y/n): ");
+
+        char c = arch_getc();
+
+        arch_puts("\n");
+
+        if (c == 'y')
+        {
+
+            shell_execute_flat((unsigned int *)0x200000, argc, argv);
+
+        }
+
+    }
 
 }
 
