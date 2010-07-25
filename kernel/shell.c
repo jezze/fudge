@@ -81,11 +81,9 @@ static void shell_execute_elf(struct vfs_node *node, struct elf_header *header, 
     arch_puts_dec(pHeader->align);
     arch_puts("\n");
 
-//    char *buffer = (char *)0x210000;
+    vfs_read(node, pHeader->offset, pHeader->memorySize, pHeader->virtualAddress);
 
-//    vfs_read(node, header->programHeaderOffset + pHeader->offset, 0x10000, buffer);
-
-//    shell_execute_flat(0x210000, argc, argv);
+    shell_execute_flat(pHeader->virtualAddress, argc, argv);
 
 }
 
