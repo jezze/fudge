@@ -17,7 +17,7 @@ static void shell_clear()
 
 }
 
-static void shell_execute_elf(struct elf_header *header, int argc, char *argv[])
+static void shell_execute_elf(vfs_node_t *node, struct elf_header *header, int argc, char *argv[])
 {
 
     //unsigned char identify[16];
@@ -88,10 +88,10 @@ static void shell_call(vfs_node_t *node, int argc, char *argv[])
 
     char *buffer = (char *)0x200000;
 
-    vfs_read(node, 0, 5000, buffer);
+    vfs_read(node, 0, 0x10000, buffer);
 
     if (buffer[0] == ELF_IDENTITY_MAGIC0)
-        shell_execute_elf((struct elf_header *)0x200000, argc, argv);
+        shell_execute_elf(node, (struct elf_header *)0x200000, argc, argv);
     else
         shell_execute_flat((unsigned int *)0x200000, argc, argv);
 
