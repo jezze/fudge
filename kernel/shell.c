@@ -17,7 +17,16 @@ static void shell_clear()
 
 }
 
-static void shell_execute_elf(vfs_node_t *node, struct elf_header *header, int argc, char *argv[])
+static void shell_execute_flat(unsigned int *address, int argc, char *argv[])
+{
+
+    void (*func)(int argc, char *argv[]) = (void (*)(int argc, char *argv[]))address;
+
+    func(argc, argv);
+
+}
+
+static void shell_execute_elf(struct vfs_node *node, struct elf_header *header, int argc, char *argv[])
 {
 
     //unsigned char identify[16];
@@ -51,7 +60,7 @@ static void shell_execute_elf(vfs_node_t *node, struct elf_header *header, int a
     arch_puts_dec(header->sectionHeaderStringIndex);
     arch_puts("\n\n");
 
-    struct elf_program_header *pHeader = (struct elf_program_header *)(header->entry + header->programHeaderOffset);
+    struct elf_program_header *pHeader = (struct elf_program_header *)(0x200000 + header->programHeaderOffset);
 
     arch_puts("ELF program header:");
     arch_puts("\nType: ");
@@ -72,18 +81,15 @@ static void shell_execute_elf(vfs_node_t *node, struct elf_header *header, int a
     arch_puts_dec(pHeader->align);
     arch_puts("\n");
 
-}
+//    char *buffer = (char *)0x210000;
 
-static void shell_execute_flat(unsigned int *address, int argc, char *argv[])
-{
+//    vfs_read(node, header->programHeaderOffset + pHeader->offset, 0x10000, buffer);
 
-    void (*func)(int argc, char *argv[]) = (void (*)(int argc, char *argv[]))address;
-
-    func(argc, argv);
+//    shell_execute_flat(0x210000, argc, argv);
 
 }
 
-static void shell_call(vfs_node_t *node, int argc, char *argv[])
+static void shell_call(struct vfs_node *node, int argc, char *argv[])
 {
 
     char *buffer = (char *)0x200000;
@@ -150,7 +156,7 @@ static void shell_interpret(char *command)
     else
     {
 
-        vfs_node_t *node = vfs_find(fsRoot, argv[0]);
+        struct vfs_node *node = vfs_find(fsRoot, argv[0]);
 
         if (node)
             shell_call(node, argc, argv);

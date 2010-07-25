@@ -9,7 +9,7 @@ typedef unsigned int (*vfs_read_t)(struct vfs_node*, unsigned int offset, unsign
 typedef unsigned int (*vfs_write_t)(struct vfs_node*, unsigned int offset, unsigned int count, void *buffer);
 typedef struct vfs_node * (*vfs_walk_t)(struct vfs_node*, unsigned int index);
 
-typedef struct vfs_node
+struct vfs_node
 {
 
     char name[128];
@@ -21,14 +21,14 @@ typedef struct vfs_node
     vfs_write_t write;
     vfs_walk_t walk;
 
-} vfs_node_t;
+};
 
-extern void vfs_open(vfs_node_t *node);
-extern void vfs_close(vfs_node_t *node);
-extern unsigned int vfs_read(vfs_node_t *node, unsigned int offset, unsigned int count, void *buffer);
-extern unsigned int vfs_write(vfs_node_t *node, unsigned int offset, unsigned int count, void *buffer);
-extern vfs_node_t *vfs_walk(vfs_node_t *node, unsigned int index);
-extern vfs_node_t *vfs_find(vfs_node_t *node, char *name);
+extern void vfs_open(struct vfs_node *node);
+extern void vfs_close(struct vfs_node *node);
+extern unsigned int vfs_read(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer);
+extern unsigned int vfs_write(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer);
+extern struct vfs_node *vfs_walk(struct vfs_node *node, unsigned int index);
+extern struct vfs_node *vfs_find(struct vfs_node *node, char *name);
 
 #endif
 

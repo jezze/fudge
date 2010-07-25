@@ -16,7 +16,7 @@ all:
 	@$(GCC) $(GCCFLAGS) echo.c -o echo.o
 	@$(LD) $(LDFLAGS) echo.o ../lib/string.o ../lib/vfs.o ../lib/call.o ../lib/calls.o -o echo
 	@$(GCC) $(GCCFLAGS) hello.c -o hello.o
-	@$(LD) -Ttext 0x200000 -e main hello.o ../lib/string.o ../lib/vfs.o ../lib/call.o ../lib/calls.o -o hello
+	@$(LD) -Ttext 0x210000 -e main hello.o ../lib/string.o ../lib/vfs.o ../lib/call.o ../lib/calls.o -o hello
 	@$(GCC) $(GCCFLAGS) ls.c -o ls.o
 	@$(LD) $(LDFLAGS) ls.o ../lib/string.o ../lib/vfs.o ../lib/call.o ../lib/calls.o -o ls
 	@$(GCC) $(GCCFLAGS) reboot.c -o reboot.o

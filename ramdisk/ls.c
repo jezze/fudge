@@ -4,7 +4,7 @@
 void main(int argc, char *argv[])
 {
 
-    vfs_node_t *node;
+    struct vfs_node *node;
 
     unsigned int i;
 

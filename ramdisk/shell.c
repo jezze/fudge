@@ -15,7 +15,7 @@ static void console_clear()
 
 }
 
-static void console_call(vfs_node_t *node, int argc, char *argv[])
+static void console_call(struct vfs_node *node, int argc, char *argv[])
 {
 
     char *buffer = (char *)0x200000;
@@ -74,7 +74,7 @@ static void console_interpret(char *command)
     else
     {
 
-        vfs_node_t *node = call_vfs_find(argv[0]);
+        struct vfs_node *node = call_vfs_find(argv[0]);
 
         if (node)
             console_call(node, argc, argv);

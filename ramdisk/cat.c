@@ -7,7 +7,7 @@ void main(int argc, char *argv[])
     if (argc != 2)
         return;
 
-    vfs_node_t *node = call_vfs_find(argv[1]);
+    struct vfs_node *node = call_vfs_find(argv[1]);
 
     if (!node)
         return;

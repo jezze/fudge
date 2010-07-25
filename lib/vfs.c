@@ -1,7 +1,7 @@
 #include <lib/string.h>
 #include <lib/vfs.h>
 
-void vfs_open(vfs_node_t *node)
+void vfs_open(struct vfs_node *node)
 {
 
     if (node->open)
@@ -9,7 +9,7 @@ void vfs_open(vfs_node_t *node)
 
 }
 
-void vfs_close(vfs_node_t *node)
+void vfs_close(struct vfs_node *node)
 {
 
     if (node->close)
@@ -17,7 +17,7 @@ void vfs_close(vfs_node_t *node)
 
 }
 
-unsigned int vfs_read(vfs_node_t *node, unsigned int offset, unsigned int count, void *buffer)
+unsigned int vfs_read(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
     if (node->read)
@@ -27,7 +27,7 @@ unsigned int vfs_read(vfs_node_t *node, unsigned int offset, unsigned int count,
 
 }
 
-unsigned int vfs_write(vfs_node_t *node, unsigned int offset, unsigned int count, void *buffer)
+unsigned int vfs_write(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
     if (node->write)
@@ -37,7 +37,7 @@ unsigned int vfs_write(vfs_node_t *node, unsigned int offset, unsigned int count
 
 }
 
-vfs_node_t *vfs_walk(vfs_node_t *node, unsigned int index)
+struct vfs_node *vfs_walk(struct vfs_node *node, unsigned int index)
 {
 
     if (node->walk)
@@ -47,11 +47,11 @@ vfs_node_t *vfs_walk(vfs_node_t *node, unsigned int index)
 
 }
 
-vfs_node_t *vfs_find(vfs_node_t *node, char *name)
+struct vfs_node *vfs_find(struct vfs_node *node, char *name)
 {
 
     unsigned int i;
-    vfs_node_t *current;
+    struct vfs_node *current;
 
     for (i = 0; (current = vfs_walk(node, i)); i++)
     {
