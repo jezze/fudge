@@ -1,4 +1,3 @@
-#include <lib/cbuffer.h>
 #include <lib/elf.h>
 #include <lib/stack.h>
 #include <lib/string.h>

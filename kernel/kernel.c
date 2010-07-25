@@ -7,17 +7,6 @@
 
 struct vfs_node *fsRoot = 0;
 
-static void shell_load()
-{
-
-    vfs_read(vfs_find(fsRoot, "shell"), 0, 5000, (void *)0x300000);
-
-    void (*func)(int argc, char *argv[]) = (void (*)(int argc, char *argv[]))0x300000;
-
-    func(0, 0);
-
-}
-
 void kernel_main(struct mboot_info *header, unsigned int magic)
 {
 
@@ -34,7 +23,6 @@ void kernel_main(struct mboot_info *header, unsigned int magic)
 
     mboot_init(header);
 
-    //shell_load();
     shell_init();
 
     for (;;);
