@@ -72,6 +72,7 @@ void main(int argc, char *argv[])
     //call_puts_dec(pHeader.flags);
     call_puts("\nAlign: ");
     //call_puts_dec(pHeader.align);
+    call_puts("\n");
 
 }
 
