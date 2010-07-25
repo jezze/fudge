@@ -22,7 +22,7 @@ static void shell_execute_elf(struct elf_header *header, int argc, char *argv[])
 
     //unsigned char identify[16];
 
-    arch_puts("ELF header\n");
+    arch_puts("ELF header");
     arch_puts("\nType: ");
     arch_puts_dec(header->type);
     arch_puts("\nMachine: ");
@@ -49,6 +49,27 @@ static void shell_execute_elf(struct elf_header *header, int argc, char *argv[])
     arch_puts_dec(header->sectionHeaderCount);
     arch_puts("\nSection Header String Index: ");
     arch_puts_dec(header->sectionHeaderStringIndex);
+    arch_puts("\n\n");
+
+    struct elf_program_header *pHeader = (struct elf_program_header *)(header->entry + header->programHeaderOffset);
+
+    arch_puts("ELF program header:");
+    arch_puts("\nType: ");
+    arch_puts_dec(pHeader->type);
+    arch_puts("\nOffset: ");
+    arch_puts_dec(pHeader->offset);
+    arch_puts("\nVirtual address: 0x");
+    arch_puts_hex(pHeader->virtualAddress);
+    arch_puts("\nPhysical address: 0x");
+    arch_puts_hex(pHeader->physicalAddress);
+    arch_puts("\nFile size: ");
+    arch_puts_dec(pHeader->fileSize);
+    arch_puts("\nMemory size: ");
+    arch_puts_dec(pHeader->memorySize);
+    arch_puts("\nFlags: ");
+    arch_puts_dec(pHeader->flags);
+    arch_puts("\nAlign: ");
+    arch_puts_dec(pHeader->align);
     arch_puts("\n");
 
 }
