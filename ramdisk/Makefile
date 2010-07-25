@@ -3,7 +3,7 @@ ASMFLAGS=-f elf
 GCC=gcc
 GCCFLAGS=-c -O2 -I../include/lib -Wall -ffreestanding -nostdlib -nostartfiles -nodefaultlibs
 LD=ld
-LDFLAGS=--oformat binary -Ttext 0x200000 -e main
+LDFLAGS=-Ttext 0x210000 -e main
 
 all:
 	@$(GCC) $(GCCFLAGS) cat.c -o cat.o
@@ -18,13 +18,13 @@ all:
 	@$(GCC) $(GCCFLAGS) elf.c -o elf.o
 	@$(LD) $(LDFLAGS) elf.o ../lib/string.o ../lib/vfs.o ../lib/call.o ../lib/calls.o -o elf
 	@$(GCC) $(GCCFLAGS) hello.c -o hello.o
-	@$(LD) -Ttext 0x210000 -e main hello.o ../lib/string.o ../lib/vfs.o ../lib/call.o ../lib/calls.o -o hello
+	@$(LD) $(LDFLAGS) -e main hello.o ../lib/string.o ../lib/vfs.o ../lib/call.o ../lib/calls.o -o hello
 	@$(GCC) $(GCCFLAGS) ls.c -o ls.o
 	@$(LD) $(LDFLAGS) ls.o ../lib/string.o ../lib/vfs.o ../lib/call.o ../lib/calls.o -o ls
 	@$(GCC) $(GCCFLAGS) reboot.c -o reboot.o
 	@$(LD) $(LDFLAGS) reboot.o ../lib/string.o ../lib/vfs.o ../lib/call.o ../lib/calls.o -o reboot
 	@$(GCC) $(GCCFLAGS) shell.c -o shell.o
-	@$(LD) --oformat binary -Ttext 0x300000 -e main shell.o ../lib/stack.o ../lib/string.o ../lib/vfs.o ../lib/call.o ../lib/calls.o -o shell
+	@$(LD) -Ttext 0x300000 -e main shell.o ../lib/stack.o ../lib/string.o ../lib/vfs.o ../lib/call.o ../lib/calls.o -o shell
 	@$(GCC) $(GCCFLAGS) timer.c -o timer.o
 	@$(LD) $(LDFLAGS) timer.o ../lib/string.o ../lib/vfs.o ../lib/call.o ../lib/calls.o -o timer
 
