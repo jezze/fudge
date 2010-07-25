@@ -1,8 +1,5 @@
-#include <cbuffer.h>
-#include <stack.h>
-#include <string.h>
-#include <vfs.h>
 #include <call.h>
+#include <vfs.h>
 
 void main(int argc, char *argv[])
 {

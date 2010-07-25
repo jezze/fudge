@@ -1,6 +1,6 @@
+#include <lib/call.h>
 #include <lib/string.h>
 #include <lib/vfs.h>
-#include <lib/call.h>
 
 int call_putc(char c)
 {

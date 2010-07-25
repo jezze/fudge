@@ -1,6 +1,6 @@
+#include <call.h>
 #include <elf.h>
 #include <vfs.h>
-#include <call.h>
 
 void main(int argc, char *argv[])
 {
