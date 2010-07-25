@@ -1,34 +1,75 @@
-#include <call.h>
 #include <cbuffer.h>
+#include <elf.h>
 #include <stack.h>
 #include <string.h>
 #include <vfs.h>
 
-char consoleBuffer[256];
-struct stack consoleStack;
+char shellBuffer[256];
+struct stack shellStack;
 
-static void console_clear()
+static void shell_clear()
 {
 
-    call_puts("fudge:/$ ");
-    stack_clear(&consoleStack);
+    call_puts("console:/$ ");
+    stack_clear(&shellStack);
 
 }
 
-static void console_call(struct vfs_node *node, int argc, char *argv[])
+static void shell_execute_flat(unsigned int *address, int argc, char *argv[])
 {
 
-    char *buffer = (char *)0x200000;
-
-    vfs_read(node, 0, 5000, buffer);
-        
-    void (*func)(int argc, char *argv[]) = (void (*)(int argc, char *argv[]))0x200000;
+    void (*func)(int argc, char *argv[]) = (void (*)(int argc, char *argv[]))address;
 
     func(argc, argv);
 
 }
 
-static int console_get_arguments(char *argv[], char *command)
+static void shell_execute_elf(struct vfs_node *node, struct elf_header *header, int argc, char *argv[])
+{
+
+    struct elf_program_header *pHeader = (struct elf_program_header *)(0x200000 + header->programHeaderOffset);
+
+    vfs_read(node, pHeader->offset, pHeader->memorySize, (void *)pHeader->virtualAddress);
+
+    shell_execute_flat((unsigned int *)pHeader->virtualAddress, argc, argv);
+
+}
+
+static void shell_call(struct vfs_node *node, int argc, char *argv[])
+{
+
+    char *buffer = (char *)0x200000;
+
+    vfs_read(node, 0, 0x10000, buffer);
+
+    if (buffer[0] == ELF_IDENTITY_MAGIC0)
+    {
+
+        shell_execute_elf(node, (struct elf_header *)0x200000, argc, argv);
+
+    }
+
+    else
+    {
+
+        call_puts("Unrecognized binary format. Continue? (y/n): ");
+
+        char c = call_getc();
+
+        call_puts("\n");
+
+        if (c == 'y')
+        {
+
+            shell_execute_flat((unsigned int *)0x200000, argc, argv);
+
+        }
+
+    }
+
+}
+
+static int shell_get_arguments(char *argv[], char *command)
 {
 
     int argc = 0;
@@ -60,11 +101,11 @@ static int console_get_arguments(char *argv[], char *command)
 
 }
 
-static void console_interpret(char *command)
+static void shell_interpret(char *command)
 {
 
     char *argv[32];
-    int argc = console_get_arguments(argv, command);
+    int argc = shell_get_arguments(argv, command);
 
     if (!string_compare(argv[0], ""))
     {
@@ -77,7 +118,7 @@ static void console_interpret(char *command)
         struct vfs_node *node = call_vfs_find(argv[0]);
 
         if (node)
-            console_call(node, argc, argv);
+            shell_call(node, argc, argv);
 
         else
         {
@@ -89,11 +130,11 @@ static void console_interpret(char *command)
 
     }
 
-    console_clear();
+    shell_clear();
 
 }
 
-static void console_handle_input(char c)
+static void shell_handle_input(char c)
 {
 
     switch (c)
@@ -105,7 +146,7 @@ static void console_handle_input(char c)
 
         case '\b':
 
-            if (stack_pop(&consoleStack))
+            if (stack_pop(&shellStack))
             {
 
                 call_putc('\b');
@@ -118,15 +159,15 @@ static void console_handle_input(char c)
 
         case '\n':
 
-            stack_push(&consoleStack, '\0');
+            stack_push(&shellStack, '\0');
             call_putc(c);
-            console_interpret(consoleBuffer);
+            shell_interpret(shellBuffer);
 
             break;
 
         default:
 
-            stack_push(&consoleStack, c);
+            stack_push(&shellStack, c);
             call_putc(c);
 
             break;
@@ -135,13 +176,15 @@ static void console_handle_input(char c)
 
 }
 
-static void console_poll()
+static void shell_poll()
 {
 
     for (;;)
     {
 
-        console_handle_input(call_getc());
+        char c = call_getc();
+
+        shell_handle_input(c);
 
     }
 
@@ -150,15 +193,15 @@ static void console_poll()
 void main(int argc, char *argv[])
 {
 
-    stack_init(&consoleStack, consoleBuffer, 256);
+    stack_init(&shellStack, shellBuffer, 256);
 
     call_puts("Fudge\n");
     call_puts("-----\n");
     call_puts("Copyright (c) 2009 Jens Nyberg\n");
     call_puts("Type 'cat help.txt' to read the help section.\n\n");
 
-    console_clear();
-    console_poll();
+    shell_clear();
+    shell_poll();
 
 }
 
