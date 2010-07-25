@@ -31,9 +31,9 @@ static void shell_execute_elf(struct vfs_node *node, struct elf_header *header, 
 
     struct elf_program_header *pHeader = (struct elf_program_header *)(0x200000 + header->programHeaderOffset);
 
-    vfs_read(node, pHeader->offset, pHeader->memorySize, pHeader->virtualAddress);
+    vfs_read(node, pHeader->offset, pHeader->memorySize, (void *)pHeader->virtualAddress);
 
-    shell_execute_flat(pHeader->virtualAddress, argc, argv);
+    shell_execute_flat((unsigned int *)pHeader->virtualAddress, argc, argv);
 
 }
 
