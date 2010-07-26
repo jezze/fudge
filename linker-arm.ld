@@ -1,6 +1,7 @@
 ENTRY (loader)
 
-SECTIONS {
+SECTIONS
+{
 
 	. = 0x0;
 
@@ -17,8 +18,7 @@ SECTIONS {
 
 	.bss :
 	{
-		*(.bss)
-        *(COMMON*)
+        *(.bss)
 	}
 
 }
