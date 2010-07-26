@@ -15,6 +15,13 @@ system-arm: lib kernel arch-arm initrd
 system-x86: lib kernel arch-x86 initrd cd
 
 arch-arm: lib kernel
+	@echo "Building ARM..."
+	@cd kernel/arch/arm; make
+	@$(LD) $(LDFLAGS) \
+    kernel/arch/x86/arch.o \
+    kernel/arch/x86/loader.o \
+    kernel/kernel.o \
+    -o root/boot/kernel
 
 arch-x86: lib kernel
 	@echo "Building x86..."
@@ -64,6 +71,7 @@ clean:
 	@rm -f root/boot/initrd
 	@rm -f tools/mkinitrd
 	@cd kernel; make clean
+	@cd kernel/arch/arm; make clean
 	@cd kernel/arch/x86; make clean
 	@cd lib; make clean
 	@cd ramdisk; make clean
