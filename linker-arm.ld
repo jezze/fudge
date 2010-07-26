@@ -3,22 +3,22 @@ ENTRY (loader)
 SECTIONS
 {
 
-	. = 0x0;
+    . = 0x0;
 
-	.text :
-	{
-		*(.text)
-		*(.rodata)
-	}
+    .text :
+    {
+        *(.text)
+        *(.rodata)
+    }
 
-	.data :
-	{
-		*(.data)
-	}
+    .data :
+    {
+        *(.data)
+    }
 
-	.bss :
-	{
+    .bss :
+    {
         *(.bss)
-	}
+    }
 
 }
