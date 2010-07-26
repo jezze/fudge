@@ -5,7 +5,7 @@ GCCFLAGS=-c -O2 -I./include -Wall -Wextra -ffreestanding -nostdlib -nostartfiles
 LD=ld
 LDFLAGS=-T./linker.ld
 ISO=genisoimage
-ISOFLAGS=-R -b boot/grub/stage2_eltorito -no-emul-boot -boot-load-size 4 -boot-info-table 
+ISOFLAGS=-R -b boot/grub/iso9660_stage1_5 -no-emul-boot -boot-load-size 4 -boot-info-table 
 MKINITRD=./tools/mkinitrd
 
 .PHONY: all cd clean x86 initrd kernel lib
