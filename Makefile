@@ -8,7 +8,7 @@ LDFLAGS=-T./linker-x86.ld
 ARM_ASM=arm-elf-as
 ARM_ASMFLAGS=
 ARM_GCC=arm-elf-gcc
-ARM_GCCFLAGS=-c -I./include -Wall -Wextra -ffreestanding -nostdlib -nostartfiles -std=gnu99
+ARM_GCCFLAGS=-c -I./include -Wall -Wextra -ffreestanding -nostdlib -nostartfiles -std=gnu99 -mhard-float
 ARM_LD=arm-elf-ld
 ARM_LDFLAGS=-T./linker-arm.ld
 
