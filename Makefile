@@ -8,7 +8,7 @@ LDFLAGS=-T./linker-x86.ld
 ARM_ASM=arm-elf-as
 ARM_ASMFLAGS=
 ARM_GCC=arm-elf-gcc
-ARM_GCCFLAGS=-c -I./include -Wall -Wextra -Werror -ffreestanding -nostdlib -nostartfiles -std=gnu99
+ARM_GCCFLAGS=-c -I./include -Wall -Wextra -ffreestanding -nostdlib -nostartfiles -std=gnu99
 ARM_LD=arm-elf-ld
 ARM_LDFLAGS=-T./linker-arm.ld
 
@@ -24,19 +24,13 @@ system-x86: lib kernel arch-x86 initrd cd
 
 arch-arm:
 	@echo "Building ARM..."
-	@cd kernel/arch/arm; make
+	@$(ARM_GCC) $(ARM_GCCFLAGS) kernel/arch/arm/arch.c -o kernel/arch/arm/arch.o
+	@$(ARM_ASM) $(ARM_ASMFLAGS) kernel/arch/arm/loader.s -o kernel/arch/arm/loader.o
 	@$(ARM_GCC) $(ARM_GCCFLAGS) lib/string.c -o lib/string.o
 	@$(ARM_GCC) $(ARM_GCCFLAGS) lib/vfs.c -o lib/vfs.o
 	@$(ARM_GCC) $(ARM_GCCFLAGS) kernel/assert.c -o kernel/assert.o
 	@$(ARM_GCC) $(ARM_GCCFLAGS) kernel/kernel.c -o kernel/kernel.o
-	@$(ARM_LD) $(ARM_LDFLAGS) \
-    lib/string.o \
-    lib/vfs.o \
-    kernel/arch/arm/arch.o \
-    kernel/arch/arm/loader.o \
-    kernel/assert.o \
-    kernel/kernel.o \
-    -o root/boot/kernel
+	@$(ARM_LD) $(ARM_LDFLAGS) lib/string.o lib/vfs.o kernel/arch/arm/arch.o kernel/arch/arm/loader.o kernel/assert.o kernel/kernel.o -o root/boot/kernel
 
 arch-x86: lib kernel
 	@echo "Building x86..."
