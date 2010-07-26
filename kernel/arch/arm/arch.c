@@ -1,15 +1,28 @@
+#include <kernel/arch/arm/arch.h>
+
 #define SERIAL_BASE 0x16000000
 #define SERIAL_FLAG_REGISTER 0x18
 #define SERIAL_BUFFER_FULL (1 << 5)
 
-void screen_putc(char c)
+struct vfs_node *initrd_init(unsigned int location)
 {
 
-    *((unsigned long*)0xC0000000) = c;
+    location++;
+    return 0;
 
 }
 
-void putc(char c)
+void mboot_init()
+{
+
+}
+
+void shell_init()
+{
+
+}
+
+void arch_putc(char c)
 {
 
     while (*(volatile unsigned long*)(SERIAL_BASE + SERIAL_FLAG_REGISTER) & (SERIAL_BUFFER_FULL));
@@ -18,20 +31,49 @@ void putc(char c)
 
 }
 
-void puts(const char *str)
+void arch_puts(char *s)
 {
 
-    while (*str) putc(*str++);
+    while (*s) arch_putc(*s++);
 
 }
 
-int arch_init(void)
+void arch_puts_dec(unsigned int n)
 {
 
-    screen_putc('h');
-    puts("Hello World!\n");
+    n++;
 
-    return 0;
+}
+
+void arch_enable_interrupts()
+{
+
+}
+
+void arch_disable_interrupts()
+{
+
+}
+
+void arch_init()
+{
+
+    arch_puts("Hello World!\n");
+
+}
+
+void arch_init_devices()
+{
+
+}
+
+void arch_init_interrupts()
+{
+
+}
+
+void arch_init_syscalls()
+{
 
 }
 
