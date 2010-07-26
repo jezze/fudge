@@ -53,11 +53,12 @@ arch-x86: lib kernel
     -o root/boot/kernel
 
 cd:
-	@echo "Creating iso..."
+	@echo "Creating fudge.iso..."
 	@$(ISO) $(ISOFLAGS) -o fudge.iso root
 
 clean:
 	@echo "Cleaning..."
+	@rm -f fudge.img
 	@rm -f fudge.iso
 	@rm -f root/boot/kernel
 	@rm -f root/boot/initrd
@@ -66,6 +67,14 @@ clean:
 	@cd kernel/arch/x86; make clean
 	@cd lib; make clean
 	@cd ramdisk; make clean
+
+img:
+	@echo "Creating fudge.img..."
+	@dd if=/dev/zero of=fudge.img bs=512 count=8000
+	@dd if=root/boot/grub/stage1 conv=notrunc of=fudge.img bs=512 seek=0
+	@dd if=root/boot/grub/stage2 conv=notrunc of=fudge.img bs=512 seek=1
+	@dd if=root/boot/kernel conv=notrunc of=fudge.img bs=512 seek=200
+	@dd if=root/boot/initrd conv=notrunc of=fudge.img bs=512 seek=300
 
 initrd: lib
 	@echo "Building ramdisk..."
