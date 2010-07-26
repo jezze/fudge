@@ -3,7 +3,15 @@ ASMFLAGS=-f elf
 GCC=gcc
 GCCFLAGS=-c -O2 -I./include -Wall -Wextra -ffreestanding -nostdlib -nostartfiles -nodefaultlibs
 LD=ld
-LDFLAGS=-T./linker.ld
+LDFLAGS=-T./linker-x86.ld
+
+ARM_ASM=arm-elf-as
+ARM_ASMFLAGS=
+ARM_GCC=arm-elf-gcc
+ARM_GCCFLAGS=-c -Wall -Wextra -Werror -ffreestanding -nostdlib -nostartfiles -std=gnu99
+ARM_LD=arm-elf-ld
+ARM_LDFLAGS=-T./linker-arm.ld
+
 ISO=genisoimage
 ISOFLAGS=-R -b boot/grub/iso9660_stage1_5 -no-emul-boot -boot-load-size 4 -boot-info-table 
 MKINITRD=./tools/mkinitrd
