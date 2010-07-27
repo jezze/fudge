@@ -3,7 +3,7 @@ ASMFLAGS=-f elf
 GCC=gcc
 GCCFLAGS=-c -O2 -I../include/lib -Wall -ffreestanding -nostdlib -nostartfiles -nodefaultlibs
 LD=ld
-LDFLAGS=-Ttext 0x210000 -e main
+LDFLAGS=-Ttext 0x300000 -e main
 
 all:
 	@$(GCC) $(GCCFLAGS) cat.c -o cat.o
@@ -24,7 +24,7 @@ all:
 	@$(GCC) $(GCCFLAGS) reboot.c -o reboot.o
 	@$(LD) $(LDFLAGS) reboot.o ../lib/string.o ../lib/vfs.o ../lib/call.o ../lib/calls.o -o reboot
 	@$(GCC) $(GCCFLAGS) shell.c -o shell.o
-	@$(LD) -Ttext 0x300000 -e main shell.o ../lib/stack.o ../lib/string.o ../lib/vfs.o ../lib/call.o ../lib/calls.o -o shell
+	@$(LD) $(LDFLAGS) shell.o ../lib/stack.o ../lib/string.o ../lib/vfs.o ../lib/call.o ../lib/calls.o -o shell
 	@$(GCC) $(GCCFLAGS) timer.c -o timer.o
 	@$(LD) $(LDFLAGS) timer.o ../lib/string.o ../lib/vfs.o ../lib/call.o ../lib/calls.o -o timer
 

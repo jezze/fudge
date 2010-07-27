@@ -9,7 +9,7 @@
 
 #define MMU_PAGE_SIZE 0x1000
 
-#define MMU_DIRECTORY_ADDRESS           0x9C000
+#define MMU_DIRECTORY_ADDRESS           0x196000
 #define MMU_DIRECTORY_SIZE              1024
 #define MMU_DIRECTORY_FLAG_PRESENT      1 << 0
 #define MMU_DIRECTORY_FLAG_WRITEABLE    1 << 1
@@ -20,7 +20,7 @@
 #define MMU_DIRECTORY_FLAG_LARGE        1 << 6
 #define MMU_DIRECTORY_FLAG_IGNORED      1 << 7
 
-#define MMU_TABLE_ADDRESS           0x9D000
+#define MMU_TABLE_ADDRESS           0x197000
 #define MMU_TABLE_SIZE              1024
 #define MMU_TABLE_FLAG_PRESENT      1 << 0
 #define MMU_TABLE_FLAG_WRITEABLE    1 << 1

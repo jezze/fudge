@@ -28,7 +28,7 @@ static void shell_execute_flat(unsigned int *address, int argc, char *argv[])
 static void shell_execute_elf(struct vfs_node *node, struct elf_header *header, int argc, char *argv[])
 {
 
-    struct elf_program_header *pHeader = (struct elf_program_header *)(0x200000 + header->programHeaderOffset);
+    struct elf_program_header *pHeader = (struct elf_program_header *)(0x280000 + header->programHeaderOffset);
 
     vfs_read(node, pHeader->offset, pHeader->memorySize, (void *)pHeader->virtualAddress);
 
@@ -39,14 +39,14 @@ static void shell_execute_elf(struct vfs_node *node, struct elf_header *header, 
 static void shell_call(struct vfs_node *node, int argc, char *argv[])
 {
 
-    char *buffer = (char *)0x200000;
+    char *buffer = (char *)0x280000;
 
-    vfs_read(node, 0, 0x10000, buffer);
+    vfs_read(node, 0, 0x20000, buffer);
 
     if (buffer[0] == ELF_IDENTITY_MAGIC0)
     {
 
-        shell_execute_elf(node, (struct elf_header *)0x200000, argc, argv);
+        shell_execute_elf(node, (struct elf_header *)0x280000, argc, argv);
 
     }
 
@@ -62,7 +62,7 @@ static void shell_call(struct vfs_node *node, int argc, char *argv[])
         if (c == 'y')
         {
 
-            shell_execute_flat((unsigned int *)0x200000, argc, argv);
+            shell_execute_flat((unsigned int *)0x280000, argc, argv);
 
         }
 
