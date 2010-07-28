@@ -74,8 +74,8 @@ cd:
 
 clean:
 	@echo "Cleaning..."
-	@rm -f fudge.img
-	@rm -f fudge.iso
+	@rm -f build/fudge.img
+	@rm -f build/fudge.iso
 	@rm -f build/root/boot/kernel
 	@rm -f build/root/boot/initrd
 	@rm -f tools/mkinitrd
