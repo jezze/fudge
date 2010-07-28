@@ -30,7 +30,7 @@ arch-arm:
 	@$(ARM_GCC) $(ARM_GCCFLAGS) lib/vfs.c -o lib/vfs.o
 	@$(ARM_GCC) $(ARM_GCCFLAGS) kernel/assert.c -o kernel/assert.o
 	@$(ARM_GCC) $(ARM_GCCFLAGS) kernel/kernel.c -o kernel/kernel.o
-	@$(ARM_LD) $(ARM_LDFLAGS) lib/string.o lib/vfs.o kernel/arch/arm/arch.o kernel/arch/arm/loader.o kernel/assert.o kernel/kernel.o -o root/boot/kernel
+	@$(ARM_LD) $(ARM_LDFLAGS) lib/string.o lib/vfs.o kernel/arch/arm/arch.o kernel/arch/arm/loader.o kernel/assert.o kernel/kernel.o -o build/root/boot/kernel
 
 arch-x86: lib kernel
 	@echo "Building x86..."
@@ -66,18 +66,18 @@ arch-x86: lib kernel
     kernel/kernel.o \
     kernel/mboot.o \
     kernel/shell.o \
-    -o root/boot/kernel
+    -o build/root/boot/kernel
 
 cd:
 	@echo "Creating fudge.iso..."
-	@$(ISO) $(ISOFLAGS) -o fudge.iso root
+	@$(ISO) $(ISOFLAGS) -o build/fudge.iso build/root
 
 clean:
 	@echo "Cleaning..."
 	@rm -f fudge.img
 	@rm -f fudge.iso
-	@rm -f root/boot/kernel
-	@rm -f root/boot/initrd
+	@rm -f build/root/boot/kernel
+	@rm -f build/root/boot/initrd
 	@rm -f tools/mkinitrd
 	@cd kernel; make clean
 	@cd kernel/arch/arm; make clean
@@ -88,10 +88,10 @@ clean:
 img:
 	@echo "Creating fudge.img..."
 	@dd if=/dev/zero of=fudge.img bs=512 count=8000
-	@dd if=root/boot/grub/stage1 conv=notrunc of=fudge.img bs=512 seek=0
-	@dd if=root/boot/grub/stage2 conv=notrunc of=fudge.img bs=512 seek=1
-	@dd if=root/boot/kernel conv=notrunc of=fudge.img bs=512 seek=200
-	@dd if=root/boot/initrd conv=notrunc of=fudge.img bs=512 seek=300
+	@dd if=build/root/boot/grub/stage1 conv=notrunc of=fudge.img bs=512 seek=0
+	@dd if=build/root/boot/grub/stage2 conv=notrunc of=fudge.img bs=512 seek=1
+	@dd if=build/root/boot/kernel conv=notrunc of=fudge.img bs=512 seek=200
+	@dd if=build/root/boot/initrd conv=notrunc of=fudge.img bs=512 seek=300
 
 initrd: lib
 	@echo "Building ramdisk..."
