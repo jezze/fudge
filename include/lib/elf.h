@@ -1,16 +1,16 @@
 #ifndef ELF_H
 #define ELF_H
 
-#define ELF_IDENTITY_MAGIC0 0x7F
-#define ELF_IDENTITY_MAGIC1 'E'
-#define ELF_IDENTITY_MAGIC2 'L'
-#define ELF_IDENTITY_MAGIC3 'F'
+#define ELF_IDENTITY_MAGIC0     0x7F
+#define ELF_IDENTITY_MAGIC1     'E'
+#define ELF_IDENTITY_MAGIC2     'L'
+#define ELF_IDENTITY_MAGIC3     'F'
 #define ELF_IDENTITY_CLASS_NONE 0
 #define ELF_IDENTITY_CLASS_32   1
 #define ELF_IDENTITY_CLASS_64   2
-#define ELF_IDENTITY_DATA_NONE 0
-#define ELF_IDENTITY_DATA_2LSB 1
-#define ELF_IDENTITY_DATA_2MSB 2
+#define ELF_IDENTITY_DATA_NONE  0
+#define ELF_IDENTITY_DATA_2LSB  1
+#define ELF_IDENTITY_DATA_2MSB  2
 
 #define ELF_TYPE_NONE        0x0000
 #define ELF_TYPE_RELOCATABLE 0x0001
@@ -28,6 +28,36 @@
 #define ELF_MACHINE_88K   0x0005
 #define ELF_MACHINE_860   0x0007
 #define ELF_MACHINE_MIPS  0x0008
+
+#define ELF_SECTION_INDEX_UNDEFINED 0x0000
+#define ELF_SECTION_INDEX_LORESERVE 0xFF00
+#define ELF_SECTION_INDEX_LOPROC    0xFF00
+#define ELF_SECTION_INDEX_HIPROC    0xFF1F
+#define ELF_SECTION_INDEX_ABS       0xFFF1
+#define ELF_SECTION_INDEX_COMMON    0xFFF2
+#define ELF_SECTION_INDEX_HIRESERVE 0xFFFF
+
+#define ELF_SECTION_TYPE_NULL     0x00000000
+#define ELF_SECTION_TYPE_PROGBITS 0x00000001
+#define ELF_SECTION_TYPE_SYMTAB   0x00000002
+#define ELF_SECTION_TYPE_STRTAB   0x00000003
+#define ELF_SECTION_TYPE_RELA     0x00000004
+#define ELF_SECTION_TYPE_HASH     0x00000005
+#define ELF_SECTION_TYPE_DYNAMIC  0x00000006
+#define ELF_SECTION_TYPE_NOTE     0x00000007
+#define ELF_SECTION_TYPE_NOBITS   0x00000008
+#define ELF_SECTION_TYPE_REL      0x00000009
+#define ELF_SECTION_TYPE_SHLIB    0x0000000A
+#define ELF_SECTION_TYPE_DYNSYM   0x0000000B
+#define ELF_SECTION_TYPE_LOPROC   0x70000000
+#define ELF_SECTION_TYPE_HIPROC   0x7FFFFFFF
+#define ELF_SECTION_TYPE_LOUSER   0x80000000
+#define ELF_SECTION_TYPE_HIUSER   0xFFFFFFFF
+
+#define ELF_SECTION_FLAG_WRITE 0x00000001
+#define ELF_SECTION_FLAG_ALLOC 0x00000002
+#define ELF_SECTION_FLAG_EXEC  0x00000004
+#define ELF_SECTION_FLAG_MASK  0xF0000000
 
 struct elf_header
 {
@@ -79,7 +109,34 @@ struct elf_section_header
 
 };
 
+struct elf_symbol
+{
 
+    unsigned int name;
+    unsigned int value;
+    unsigned int size;
+    unsigned char info;
+    unsigned char other;
+    unsigned short shndx;
+
+};
+
+struct elf_relocate
+{
+
+    unsigned int offset;
+    unsigned int info;
+
+};
+
+struct elf_relocatea
+{
+
+    unsigned int offset;
+    unsigned int info;
+    unsigned int addend;
+
+};
 
 #endif
 

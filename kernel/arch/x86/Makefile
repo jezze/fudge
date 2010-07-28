@@ -10,7 +10,7 @@ all:
 	@$(ASM) $(ASMFLAGS) gdts.s -o gdts.o
 	@$(GCC) $(GCCFLAGS) idt.c -o idt.o
 	@$(ASM) $(ASMFLAGS) idts.s -o idts.o
-	@$(GCC) $(GCCFLAGS) io.c -o io.o
+	@$(ASM) $(ASMFLAGS) io.s -o io.o
 	@$(GCC) $(GCCFLAGS) irq.c -o irq.o
 	@$(ASM) $(ASMFLAGS) irqs.s -o irqs.o
 	@$(GCC) $(GCCFLAGS) isr.c -o isr.o
