@@ -21,7 +21,7 @@ struct vfs_node *stdout;
 char arch_getc()
 {
 
-    struct vfs_node *in = arch_get_stdin();
+    struct vfs_node *in = stdin;
 
     char c;
 
@@ -34,7 +34,7 @@ char arch_getc()
 void arch_putc(char c)
 {
 
-    struct vfs_node *out = arch_get_stdout();
+    struct vfs_node *out = stdout;
 
     vfs_write(out, 0, 1, &c);
 
@@ -43,7 +43,7 @@ void arch_putc(char c)
 void arch_puts(char *s)
 {
 
-    struct vfs_node *out = arch_get_stdout();
+    struct vfs_node *out = stdout;
 
     vfs_write(out, 0, string_length(s), s);
 
@@ -97,20 +97,6 @@ void arch_puts_bcd(unsigned char n)
 
     arch_puts_dec(n >> 4);
     arch_puts_dec(n & 0x0F);
-
-}
-
-struct vfs_node *arch_get_stdin()
-{
-
-    return stdin;
-
-}
-
-struct vfs_node *arch_get_stdout()
-{
-
-    return stdout;
 
 }
 
