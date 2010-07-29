@@ -5,28 +5,66 @@ void main(int argc, char *argv[])
 {
 
     struct vfs_node *node;
+    struct vfs_node *current;
 
-    unsigned int i;
-
-    for (i = 0; (node = call_vfs_walk(i)); i++)
+    if (argc == 2)
     {
 
-        if (node->walk)
+        node = call_vfs_find(argv[1]);
+
+        unsigned int i;
+
+        for (i = 0; (current = vfs_walk(node, i)); i++)
         {
 
-            call_puts("/");
-            call_puts(node->name);
+            if (current->walk)
+            {
+
+                call_puts("/");
+                call_puts(current->name);
+
+            }
+
+            else
+            {
+
+                call_puts(current->name);
+
+            }
+
+            call_puts("\n");
 
         }
 
-        else
+    }
+
+    else
+    {
+
+
+        unsigned int i;
+
+        for (i = 0; (current = call_vfs_walk(i)); i++)
         {
 
-            call_puts(node->name);
+            if (current->walk)
+            {
+
+                call_puts("/");
+                call_puts(current->name);
+
+            }
+
+            else
+            {
+
+                call_puts(current->name);
+
+            }
+
+            call_puts("\n");
 
         }
-
-        call_puts("\n");
 
     }
 

@@ -9,6 +9,9 @@ struct initrd_file_header *initrdFileHeaders;
 struct vfs_node initrdRoot;
 struct vfs_node initrdNodes[32];
 
+struct vfs_node devNodes[32];
+unsigned int devNodesCount;
+
 static unsigned int initrd_read(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
@@ -31,6 +34,16 @@ static struct vfs_node *initrd_walk(struct vfs_node *node, unsigned int index)
 
     if (index < initrdHeader->nfiles)
         return &initrdNodes[index];
+    else
+        return 0;
+
+}
+
+static struct vfs_node *dev_walk(struct vfs_node *node, unsigned int index)
+{
+
+    if (index < devNodesCount)
+        return &devNodes[index];
     else
         return 0;
 
@@ -74,6 +87,9 @@ struct vfs_node *initrd_init(unsigned int location)
     arch_set_stdout(&initrdNodes[initrdHeader->nfiles]);
     initrdHeader->nfiles++;
 
+
+    devNodesCount = 0;
+
     struct vfs_node *dev = &initrdNodes[initrdHeader->nfiles];
 
     string_copy(dev->name, "dev");
@@ -83,9 +99,42 @@ struct vfs_node *initrd_init(unsigned int location)
     dev->close = 0;
     dev->read = 0;
     dev->write = 0;
-    dev->walk = initrd_walk;
+    dev->walk = dev_walk;
 
     initrdHeader->nfiles++;
+
+    string_copy(devNodes[devNodesCount].name, "..");
+    devNodes[devNodesCount].inode = 0;
+    devNodes[devNodesCount].length = 0;
+    devNodes[devNodesCount].open = 0;
+    devNodes[devNodesCount].close = 0;
+    devNodes[devNodesCount].read = 0;
+    devNodes[devNodesCount].write = 0;
+    devNodes[devNodesCount].walk = initrd_walk;
+
+    devNodesCount++;
+
+    string_copy(devNodes[devNodesCount].name, "file1");
+    devNodes[devNodesCount].inode = 0;
+    devNodes[devNodesCount].length = 0;
+    devNodes[devNodesCount].open = 0;
+    devNodes[devNodesCount].close = 0;
+    devNodes[devNodesCount].read = 0;
+    devNodes[devNodesCount].write = 0;
+    devNodes[devNodesCount].walk = 0;
+
+    devNodesCount++;
+
+    string_copy(devNodes[devNodesCount].name, "file2");
+    devNodes[devNodesCount].inode = 0;
+    devNodes[devNodesCount].length = 0;
+    devNodes[devNodesCount].open = 0;
+    devNodes[devNodesCount].close = 0;
+    devNodes[devNodesCount].read = 0;
+    devNodes[devNodesCount].write = 0;
+    devNodes[devNodesCount].walk = 0;
+
+    devNodesCount++;
 
     return &initrdRoot;
 
