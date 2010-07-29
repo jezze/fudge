@@ -20,8 +20,8 @@ void main(int argc, char *argv[])
             if (current->walk)
             {
 
-                call_puts("/");
                 call_puts(current->name);
+                call_puts(" [DIR]");
 
             }
 
@@ -50,8 +50,8 @@ void main(int argc, char *argv[])
             if (current->walk)
             {
 
-                call_puts("/");
                 call_puts(current->name);
+                call_puts(" [DIR]");
 
             }
 
