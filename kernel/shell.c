@@ -123,7 +123,7 @@ static void shell_interpret(char *command)
     else
     {
 
-        struct vfs_node *node = vfs_find(fsRoot, argv[0]);
+        struct vfs_node *node = vfs_find(kernel_get_vfs_root(), argv[0]);
 
         if (node)
             shell_call(node, argc, argv);

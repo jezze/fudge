@@ -9,7 +9,7 @@ extern void arch_init_interrupts();
 extern void arch_init_syscalls();
 extern void arch_enable_interrupts();
 
-extern struct vfs_node *fsRoot;
+extern struct vfs_node *kernel_get_vfs_root();
 
 #endif
 
