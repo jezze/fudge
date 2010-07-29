@@ -6,8 +6,6 @@
 
 struct screen screen;
 
-struct vfs_node vfsScreen;
-
 static void screen_putc(char c)
 {
 
@@ -137,19 +135,17 @@ unsigned int screen_write(struct vfs_node *node, unsigned int offset, unsigned i
 
 }
 
-struct vfs_node *screen_get_node()
+void screen_set_node(struct vfs_node *node)
 {
 
-    string_copy(vfsScreen.name, "stdout");
-    vfsScreen.inode = 0;
-    vfsScreen.length = 0;
-    vfsScreen.open = 0;
-    vfsScreen.close = 0;
-    vfsScreen.read = 0;
-    vfsScreen.write = screen_write;
-    vfsScreen.walk = 0;
-
-    return &vfsScreen;
+    string_copy(node->name, "stdout");
+    node->inode = 0;
+    node->length = 0;
+    node->open = 0;
+    node->close = 0;
+    node->read = 0;
+    node->write = screen_write;
+    node->walk = 0;
 
 }
 

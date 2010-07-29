@@ -14,6 +14,8 @@ extern void arch_puts_bcd(unsigned char n);
 
 extern struct vfs_node *arch_get_stdin();
 extern struct vfs_node *arch_get_stdout();
+extern void arch_set_stdin(struct vfs_node *node);
+extern void arch_set_stdout(struct vfs_node *node);
 extern void arch_disable_interrupts();
 extern void arch_enable_interrupts();
 extern void arch_reboot();

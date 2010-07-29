@@ -46,7 +46,7 @@ extern void screen_clear();
 extern void screen_cursor_move();
 extern void screen_scroll();
 extern void screen_init();
-extern struct vfs_node *screen_get_node();
+extern void screen_set_node(struct vfs_node *node);
 
 #endif
 

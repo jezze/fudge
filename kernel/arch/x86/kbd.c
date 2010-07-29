@@ -32,8 +32,6 @@ char kbdMapUpperUS[128] =
 
 struct kbd_device keyboard;
 
-struct vfs_node vfsKeyboard;
-
 void kbd_handler(struct isr_registers *registers)
 {
 
@@ -82,19 +80,17 @@ static unsigned int kbd_read(struct vfs_node *node, unsigned int offset, unsigne
 
 }
 
-struct vfs_node *kbd_get_node()
+void kbd_set_node(struct vfs_node *node)
 {
 
-    string_copy(vfsKeyboard.name, "stdin");
-    vfsKeyboard.inode = 0;
-    vfsKeyboard.length = 0;
-    vfsKeyboard.open = 0;
-    vfsKeyboard.close = 0;
-    vfsKeyboard.read = kbd_read;
-    vfsKeyboard.write = 0;
-    vfsKeyboard.walk = 0;
-
-    return &vfsKeyboard;
+    string_copy(node->name, "stdin");
+    node->inode = 0;
+    node->length = 0;
+    node->open = 0;
+    node->close = 0;
+    node->read = kbd_read;
+    node->write = 0;
+    node->walk = 0;
 
 }
 

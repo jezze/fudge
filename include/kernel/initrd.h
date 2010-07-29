@@ -5,6 +5,8 @@ struct vfs_node;
 
 extern struct vfs_node *arch_get_stdin();
 extern struct vfs_node *arch_get_stdout();
+extern void arch_set_stdin(struct vfs_node *node);
+extern void arch_set_stdout(struct vfs_node *node);
 
 struct initrd_header
 {

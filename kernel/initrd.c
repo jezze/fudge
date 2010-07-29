@@ -68,11 +68,13 @@ struct vfs_node *initrd_init(unsigned int location)
 
     }
 
+    arch_set_stdin(&initrdNodes[initrdHeader->nfiles]);
     initrdHeader->nfiles++;
-    initrdNodes[i++] = *arch_get_stdin();
+    //initrdNodes[i++] = *arch_get_stdin();
 
+    arch_set_stdout(&initrdNodes[initrdHeader->nfiles]);
     initrdHeader->nfiles++;
-    initrdNodes[i++] = *arch_get_stdout();
+    //initrdNodes[i++] = *arch_get_stdout();
 
     return &initrdRoot;
 

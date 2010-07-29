@@ -97,17 +97,39 @@ void arch_puts_bcd(unsigned char n)
 
 }
 
+struct vfs_node *stdin;
+struct vfs_node *stdout;
+
+
 struct vfs_node *arch_get_stdin()
 {
 
-    return kbd_get_node();
+    return stdin;
 
 }
 
 struct vfs_node *arch_get_stdout()
 {
 
-    return screen_get_node();
+    return stdout;
+
+}
+
+void arch_set_stdin(struct vfs_node *node)
+{
+
+    stdin = node;
+
+    kbd_set_node(node);
+
+}
+
+void arch_set_stdout(struct vfs_node *node)
+{
+
+    stdout = node;
+
+    screen_set_node(node);
 
 }
 
