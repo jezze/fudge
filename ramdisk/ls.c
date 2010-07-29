@@ -11,7 +11,21 @@ void main(int argc, char *argv[])
     for (i = 0; (node = call_vfs_walk(i)); i++)
     {
 
-        call_puts(node->name);
+        if (node->walk)
+        {
+
+            call_puts("/");
+            call_puts(node->name);
+
+        }
+
+        else
+        {
+
+            call_puts(node->name);
+
+        }
+
         call_puts("\n");
 
     }

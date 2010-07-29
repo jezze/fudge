@@ -74,6 +74,19 @@ struct vfs_node *initrd_init(unsigned int location)
     arch_set_stdout(&initrdNodes[initrdHeader->nfiles]);
     initrdHeader->nfiles++;
 
+    struct vfs_node *dev = &initrdNodes[initrdHeader->nfiles];
+
+    string_copy(dev->name, "dev");
+    dev->inode = 0;
+    dev->length = 0;
+    dev->open = 0;
+    dev->close = 0;
+    dev->read = 0;
+    dev->write = 0;
+    dev->walk = initrd_walk;
+
+    initrdHeader->nfiles++;
+
     return &initrdRoot;
 
 }
