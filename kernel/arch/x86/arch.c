@@ -15,6 +15,9 @@
 #include <kernel/arch/x86/syscall.h>
 #include <kernel/assert.h>
 
+struct vfs_node *stdin;
+struct vfs_node *stdout;
+
 char arch_getc()
 {
 
@@ -96,10 +99,6 @@ void arch_puts_bcd(unsigned char n)
     arch_puts_dec(n & 0x0F);
 
 }
-
-struct vfs_node *stdin;
-struct vfs_node *stdout;
-
 
 struct vfs_node *arch_get_stdin()
 {
