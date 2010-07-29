@@ -12,6 +12,14 @@ void main(int argc, char *argv[])
 
         node = call_vfs_find(argv[1]);
 
+        if (!node)
+        {
+
+            call_puts("Directory does not exist.\n");
+            return;
+
+        }
+
         unsigned int i;
 
         for (i = 0; (current = vfs_walk(node, i)); i++)
