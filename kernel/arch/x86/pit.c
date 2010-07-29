@@ -18,9 +18,9 @@ void pit_init()
 
     unsigned short divisor = PIT_HERTZ / PIT_FREQUENCY;
 
-    outb(0x43, 0x36);
-    outb(0x40, (unsigned char)(divisor & 0xFF));
-    outb(0x40, (unsigned char)((divisor >> 8) & 0xFF));
+    io_outb(0x43, 0x36);
+    io_outb(0x40, (unsigned char)(divisor & 0xFF));
+    io_outb(0x40, (unsigned char)((divisor >> 8) & 0xFF));
 
 }
 

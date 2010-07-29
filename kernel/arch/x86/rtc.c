@@ -6,16 +6,16 @@
 unsigned char rtc_read(unsigned char type)
 {
 
-    outb(RTC_PORT_WRITE, type);
-    return inb(RTC_PORT_READ);
+    io_outb(RTC_PORT_WRITE, type);
+    return io_inb(RTC_PORT_READ);
 
 }
 
 void rtc_ready()
 {
 
-//    do { outb(RTC_PORT_WRITE, 0x0A); }
-//    while (inb(RTC_PORT_READ) != 0x80);
+//    do { io_outb(RTC_PORT_WRITE, 0x0A); }
+//    while (io_inb(RTC_PORT_READ) != 0x80);
 
 }
 

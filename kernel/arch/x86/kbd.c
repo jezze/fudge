@@ -35,7 +35,7 @@ struct kbd_device keyboard;
 void kbd_handler(struct isr_registers *registers)
 {
 
-    unsigned char scancode = inb(KBD_PORT_READ);
+    unsigned char scancode = io_inb(KBD_PORT_READ);
 
     if (scancode == 0x2A)
         keyboard.toggleShift = 1;

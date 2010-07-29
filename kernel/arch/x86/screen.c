@@ -96,10 +96,10 @@ void screen_cursor_move()
 
     temp = screen.cursorY * SCREEN_CHARACTER_WIDTH + screen.cursorX;
 
-    outb(0x3D4, 14);
-    outb(0x3D5, temp >> 8);
-    outb(0x3D4, 15);
-    outb(0x3D5, temp);
+    io_outb(0x3D4, 14);
+    io_outb(0x3D5, temp >> 8);
+    io_outb(0x3D4, 15);
+    io_outb(0x3D5, temp);
 
 }
 
