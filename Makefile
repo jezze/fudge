@@ -12,15 +12,13 @@ ARM_GCCFLAGS=-c -I./include -Wall -Wextra -ffreestanding -nostdlib -nostartfiles
 ARM_LD=arm-elf-ld
 ARM_LDFLAGS=-T./linker-arm.ld
 
-ISO=genisoimage
-ISOFLAGS=-R -b boot/grub/iso9660_stage1_5 -no-emul-boot -boot-load-size 4 -boot-info-table 
 MKINITRD=./tools/mkinitrd
 
 .PHONY: all cd clean x86 initrd kernel lib
 
 all: system-x86
 system-arm: arch-arm
-system-x86: lib kernel arch-x86 initrd cd
+system-x86: lib kernel arch-x86 initrd
 
 arch-arm:
 	@echo "Building ARM..."
@@ -68,10 +66,6 @@ arch-x86: lib kernel
     kernel/shell.o \
     -o build/root/boot/kernel
 
-cd:
-	@echo "Creating fudge.iso..."
-	@$(ISO) $(ISOFLAGS) -o build/fudge.iso build/root
-
 clean:
 	@echo "Cleaning..."
 	@rm -f build/fudge.img
@@ -84,14 +78,6 @@ clean:
 	@cd kernel/arch/x86; make clean
 	@cd lib; make clean
 	@cd ramdisk; make clean
-
-img:
-	@echo "Creating fudge.img..."
-	@dd if=/dev/zero of=fudge.img bs=512 count=8000
-	@dd if=build/root/boot/grub/stage1 conv=notrunc of=fudge.img bs=512 seek=0
-	@dd if=build/root/boot/grub/stage2 conv=notrunc of=fudge.img bs=512 seek=1
-	@dd if=build/root/boot/kernel conv=notrunc of=fudge.img bs=512 seek=200
-	@dd if=build/root/boot/initrd conv=notrunc of=fudge.img bs=512 seek=300
 
 initrd: lib
 	@echo "Building ramdisk..."
