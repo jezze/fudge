@@ -35,7 +35,10 @@ void syscall_vfs_walk(struct syscall_registers *registers)
 void syscall_vfs_find(struct syscall_registers *registers)
 {
 
-    registers->eax = (unsigned int)vfs_find(kernel_get_vfs_root(), (char *)registers->esi);
+    if (*((char *)registers->esi) == '/')
+        registers->eax = (unsigned int)kernel_get_vfs_root();
+    else
+        registers->eax = (unsigned int)vfs_find(kernel_get_vfs_root(), (char *)registers->esi);
 
 }
 
