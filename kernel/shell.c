@@ -70,42 +70,13 @@ static void shell_call(struct vfs_node *node, int argc, char *argv[])
 
 }
 
-static int shell_get_arguments(char *argv[], char *command)
-{
-
-    if (command[0] == '\0')
-        return 0;
-
-    unsigned int count = 1;
-    argv[0] = command;
-
-    unsigned int i;
-
-    for (i = 1; command[i] != '\0'; i++)
-    {
-
-        if (command[i - 1] == ' ')
-        {
-
-            command[i - 1] = '\0';
-            argv[count] = command + i;
-            count++;
-
-        }
-
-    }
-
-    return count;
-
-}
-
 static void shell_interpret(char *command)
 {
 
     char *argv[32];
-    int argc = shell_get_arguments(argv, command);
+    int argc = string_split(argv, command, ' ');
 
-    if (!string_compare(argv[0], ""))
+    if (!argc)
     {
 
     }
