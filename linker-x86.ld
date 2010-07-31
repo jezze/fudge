@@ -5,6 +5,11 @@ SECTIONS
 
     . = 0x00100000;
 
+    .mboot :
+    {
+        *(.mboot)
+    }
+
     .text :
     {
         *(.text)

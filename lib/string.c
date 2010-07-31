@@ -71,3 +71,32 @@ char *string_replace(char *dest, char c1, char c2)
 
 }
 
+int string_split(char *dest[], char *src, char c)
+{
+
+    if (src[0] == '\0')
+        return 0;
+
+    unsigned int count = 1;
+    dest[0] = src;
+
+    unsigned int i;
+
+    for (i = 1; src[i] != '\0'; i++)
+    {
+
+        if (src[i - 1] == c)
+        {
+
+            src[i - 1] = '\0';
+            dest[count] = src + i;
+            count++;
+
+        }
+
+    }
+
+    return count;
+
+}
+
