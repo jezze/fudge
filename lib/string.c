@@ -41,9 +41,9 @@ int string_offset(const char *dest, char c)
 
     int count;
 
-    for (count = 0; *dest != c; dest++, count++);
+    for (count = 0; *dest != '\0' && *dest != c; dest++, count++);
 
-    return count;
+    return (*dest == c) ? count : -1;
 
 }
 
