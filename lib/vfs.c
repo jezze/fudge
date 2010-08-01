@@ -53,15 +53,44 @@ struct vfs_node *vfs_find(struct vfs_node *node, char *name)
     unsigned int i;
     struct vfs_node *current;
 
-    for (i = 0; (current = vfs_walk(node, i)); i++)
+    int index = string_offset(name, '/');
+
+    if (index >= 0)
     {
 
-        if (!string_compare(name, current->name))
-            return current;
+        name[index] = '\0';
+
+        for (i = 0; (current = vfs_walk(node, i)); i++)
+        {
+
+            if (!string_compare(name, current->name))
+            {
+
+                return vfs_find(current, name + index + 1);
+
+            }
+
+        }
+
+    }
+
+    else
+    {
+
+        for (i = 0; (current = vfs_walk(node, i)); i++)
+        {
+
+            if (!string_compare(name, current->name))
+                return current;
+
+        }
 
     }
 
     return 0;
 
 }
+
+
+
 

@@ -51,6 +51,15 @@ static struct vfs_node *dev_walk(struct vfs_node *node, unsigned int index)
 
 }
 
+static unsigned int test_read(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    memory_copy(buffer, "hejsan", 5);
+
+    return 5;
+
+}
+
 struct vfs_node *initrd_init(unsigned int location)
 {
 
@@ -157,7 +166,7 @@ struct vfs_node *initrd_init(unsigned int location)
     devNodes[devNodesCount].length = 0;
     devNodes[devNodesCount].open = 0;
     devNodes[devNodesCount].close = 0;
-    devNodes[devNodesCount].read = 0;
+    devNodes[devNodesCount].read = test_read;
     devNodes[devNodesCount].write = 0;
     devNodes[devNodesCount].walk = 0;
     devNodesCount++;
