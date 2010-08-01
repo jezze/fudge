@@ -81,9 +81,9 @@ struct vfs_node *vfs_find(struct vfs_node *node, char *name)
 
         }
 
-        return 0;
-
     }
+
+    return 0;
 
 }
 
