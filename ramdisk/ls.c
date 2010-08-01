@@ -9,7 +9,7 @@ void main(int argc, char *argv[])
     if (argc == 2)
         node = call_vfs_find(argv[1]);
     else
-        node = call_vfs_find("/");
+        node = call_vfs_find(".");
 
     if (!node)
         return;
@@ -24,14 +24,15 @@ void main(int argc, char *argv[])
         if (current->walk)
         {
 
+            call_puts("D ");
             call_puts(current->name);
-            call_puts(" [DIR]");
 
         }
 
         else
         {
 
+            call_puts("F ");
             call_puts(current->name);
 
         }
