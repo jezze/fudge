@@ -6,9 +6,10 @@
 
 struct initrd_header *initrdHeader;
 struct initrd_file_header *initrdFileHeaders;
-struct vfs_node initrdRoot;
-struct vfs_node initrdNodes[32];
-unsigned int initrdNodesCount;
+
+struct vfs_node root;
+struct vfs_node rootNodes[32];
+unsigned int rootNodesCount;
 
 struct vfs_node devNodes[32];
 unsigned int devNodesCount;
@@ -33,8 +34,8 @@ static unsigned int initrd_read(struct vfs_node *node, unsigned int offset, unsi
 static struct vfs_node *initrd_walk(struct vfs_node *node, unsigned int index)
 {
 
-    if (index < initrdNodesCount)
-        return &initrdNodes[index];
+    if (index < rootNodesCount)
+        return &rootNodes[index];
     else
         return 0;
 
@@ -53,55 +54,59 @@ static struct vfs_node *dev_walk(struct vfs_node *node, unsigned int index)
 struct vfs_node *initrd_init(unsigned int location)
 {
 
+    // ROOT
+
+    string_copy(root.name, "root");
+    root.inode = 0;
+    root.length = 0;
+    root.open = 0;
+    root.close = 0;
+    root.read = 0;
+    root.write = 0;
+    root.walk = initrd_walk;
+
+    rootNodesCount = 0;
+
+    string_copy(rootNodes[rootNodesCount].name, ".");
+    rootNodes[rootNodesCount].inode = 0;
+    rootNodes[rootNodesCount].length = 0;
+    rootNodes[rootNodesCount].open = 0;
+    rootNodes[rootNodesCount].close = 0;
+    rootNodes[rootNodesCount].read = 0;
+    rootNodes[rootNodesCount].write = 0;
+    rootNodes[rootNodesCount].walk = initrd_walk;
+    rootNodesCount++;
+
+    string_copy(rootNodes[rootNodesCount].name, "..");
+    rootNodes[rootNodesCount].inode = 0;
+    rootNodes[rootNodesCount].length = 0;
+    rootNodes[rootNodesCount].open = 0;
+    rootNodes[rootNodesCount].close = 0;
+    rootNodes[rootNodesCount].read = 0;
+    rootNodes[rootNodesCount].write = 0;
+    rootNodes[rootNodesCount].walk = initrd_walk;
+    rootNodesCount++;
+
+    string_copy(rootNodes[rootNodesCount].name, "dev");
+    rootNodes[rootNodesCount].inode = 0;
+    rootNodes[rootNodesCount].length = 0;
+    rootNodes[rootNodesCount].open = 0;
+    rootNodes[rootNodesCount].close = 0;
+    rootNodes[rootNodesCount].read = 0;
+    rootNodes[rootNodesCount].write = 0;
+    rootNodes[rootNodesCount].walk = dev_walk;
+    rootNodesCount++;
+
+    arch_set_stdin(&rootNodes[rootNodesCount]);
+    rootNodesCount++;
+
+    arch_set_stdout(&rootNodes[rootNodesCount]);
+    rootNodesCount++;
+
+    // INITRD
+
     initrdHeader = (struct initrd_header *)location;
     initrdFileHeaders = (struct initrd_file_header *)(location + sizeof (struct initrd_header));
-
-    string_copy(initrdRoot.name, "initrd");
-    initrdRoot.inode = 0;
-    initrdRoot.length = 0;
-    initrdRoot.open = 0;
-    initrdRoot.close = 0;
-    initrdRoot.read = 0;
-    initrdRoot.write = 0;
-    initrdRoot.walk = initrd_walk;
-
-    initrdNodesCount = 0;
-
-    string_copy(initrdNodes[initrdNodesCount].name, ".");
-    initrdNodes[initrdNodesCount].inode = 0;
-    initrdNodes[initrdNodesCount].length = 0;
-    initrdNodes[initrdNodesCount].open = 0;
-    initrdNodes[initrdNodesCount].close = 0;
-    initrdNodes[initrdNodesCount].read = 0;
-    initrdNodes[initrdNodesCount].write = 0;
-    initrdNodes[initrdNodesCount].walk = initrd_walk;
-    initrdNodesCount++;
-
-    string_copy(initrdNodes[initrdNodesCount].name, "..");
-    initrdNodes[initrdNodesCount].inode = 0;
-    initrdNodes[initrdNodesCount].length = 0;
-    initrdNodes[initrdNodesCount].open = 0;
-    initrdNodes[initrdNodesCount].close = 0;
-    initrdNodes[initrdNodesCount].read = 0;
-    initrdNodes[initrdNodesCount].write = 0;
-    initrdNodes[initrdNodesCount].walk = initrd_walk;
-    initrdNodesCount++;
-
-    string_copy(initrdNodes[initrdNodesCount].name, "dev");
-    initrdNodes[initrdNodesCount].inode = 0;
-    initrdNodes[initrdNodesCount].length = 0;
-    initrdNodes[initrdNodesCount].open = 0;
-    initrdNodes[initrdNodesCount].close = 0;
-    initrdNodes[initrdNodesCount].read = 0;
-    initrdNodes[initrdNodesCount].write = 0;
-    initrdNodes[initrdNodesCount].walk = dev_walk;
-    initrdNodesCount++;
-
-    arch_set_stdin(&initrdNodes[initrdNodesCount]);
-    initrdNodesCount++;
-
-    arch_set_stdout(&initrdNodes[initrdNodesCount]);
-    initrdNodesCount++;
 
     unsigned int i;
 
@@ -110,18 +115,20 @@ struct vfs_node *initrd_init(unsigned int location)
 
         initrdFileHeaders[i].offset += location;
 
-        string_copy(initrdNodes[initrdNodesCount].name, initrdFileHeaders[i].name);
-        initrdNodes[initrdNodesCount].inode = i;
-        initrdNodes[initrdNodesCount].length = initrdFileHeaders[i].length;
-        initrdNodes[initrdNodesCount].open = 0;
-        initrdNodes[initrdNodesCount].close = 0;
-        initrdNodes[initrdNodesCount].read = initrd_read;
-        initrdNodes[initrdNodesCount].write = 0;
-        initrdNodes[initrdNodesCount].walk = 0;
+        string_copy(rootNodes[rootNodesCount].name, initrdFileHeaders[i].name);
+        rootNodes[rootNodesCount].inode = i;
+        rootNodes[rootNodesCount].length = initrdFileHeaders[i].length;
+        rootNodes[rootNodesCount].open = 0;
+        rootNodes[rootNodesCount].close = 0;
+        rootNodes[rootNodesCount].read = initrd_read;
+        rootNodes[rootNodesCount].write = 0;
+        rootNodes[rootNodesCount].walk = 0;
 
-        initrdNodesCount++;
+        rootNodesCount++;
 
     }
+
+    // DEV
 
     devNodesCount = 0;
 
@@ -165,7 +172,7 @@ struct vfs_node *initrd_init(unsigned int location)
     devNodes[devNodesCount].walk = 0;
     devNodesCount++;
 
-    return &initrdRoot;
+    return &root;
 
 }
 
