@@ -64,11 +64,7 @@ struct vfs_node *vfs_find(struct vfs_node *node, char *name)
         {
 
             if (!string_compare(name, current->name))
-            {
-
                 return vfs_find(current, name + index + 1);
-
-            }
 
         }
 
@@ -85,12 +81,9 @@ struct vfs_node *vfs_find(struct vfs_node *node, char *name)
 
         }
 
+        return 0;
+
     }
 
-    return 0;
-
 }
-
-
-
 
