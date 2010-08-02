@@ -42,7 +42,7 @@ static void shell_call(struct vfs_node *node, int argc, char *argv[])
 
     char *buffer = (char *)0x280000;
 
-    vfs_read(node, 0, 0x20000, buffer);
+    vfs_read(node, 0, node->length, buffer);
 
     if (buffer[0] == ELF_IDENTITY_MAGIC0)
     {

@@ -1,5 +1,23 @@
 #include <lib/memory.h>
 
+int memory_compare(void *dest, void *src, unsigned int count)
+{
+
+    char *dp = dest;
+    char *sp = src;
+
+    for (; count; dp++, sp++, count--)
+    {
+
+        if (*dp != *sp)
+            return *dp - *sp;
+
+    }
+
+    return 0;
+
+}
+
 void *memory_copy(void *dest, const void *src, unsigned int count)
 {
 
