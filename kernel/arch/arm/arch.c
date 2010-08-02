@@ -12,17 +12,12 @@ struct vfs_node *initrd_init(unsigned int location)
 
 }
 
-void mboot_init()
-{
-
-}
-
 void shell_init()
 {
 
 }
 
-void arch_putc(char c)
+static void arch_putc(char c)
 {
 
     while (*(volatile unsigned long*)(SERIAL_BASE + SERIAL_FLAG_REGISTER) & (SERIAL_BUFFER_FULL));
@@ -31,17 +26,10 @@ void arch_putc(char c)
 
 }
 
-void arch_puts(char *s)
+static void arch_puts(char *s)
 {
 
     while (*s) arch_putc(*s++);
-
-}
-
-void arch_puts_dec(unsigned int n)
-{
-
-    n++;
 
 }
 
@@ -55,7 +43,7 @@ void arch_disable_interrupts()
 
 }
 
-void arch_put_pixel(volatile unsigned short *address, unsigned short value)
+static void arch_put_pixel(volatile unsigned short *address, unsigned short value)
 {
 
     *address = value;
