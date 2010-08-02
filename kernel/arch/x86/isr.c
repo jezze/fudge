@@ -36,7 +36,7 @@ void isr_handler(struct isr_registers *registers)
     {
 
         call_puts("Unhandled interrupt: 0x");
-        arch_puts_hex(registers->int_no);
+        call_puts_hex(registers->int_no);
 
     }
 

@@ -26,17 +26,17 @@ void rtc_init()
     rtc_ready();
 
     call_puts("Date: 20");
-    arch_puts_bcd(rtc_read(RTC_FLAG_YEAR));
+    call_puts_bcd(rtc_read(RTC_FLAG_YEAR));
     call_puts("-");
-    arch_puts_bcd(rtc_read(RTC_FLAG_MONTH));
+    call_puts_bcd(rtc_read(RTC_FLAG_MONTH));
     call_puts("-");
-    arch_puts_bcd(rtc_read(RTC_FLAG_DAY));
+    call_puts_bcd(rtc_read(RTC_FLAG_DAY));
     call_puts(" ");
-    arch_puts_bcd(rtc_read(RTC_FLAG_HOURS) & 0x0F);
+    call_puts_bcd(rtc_read(RTC_FLAG_HOURS) & 0x0F);
     call_puts(":");
-    arch_puts_bcd(rtc_read(RTC_FLAG_MINUTES));
+    call_puts_bcd(rtc_read(RTC_FLAG_MINUTES));
     call_puts(":");
-    arch_puts_bcd(rtc_read(RTC_FLAG_SECONDS));
+    call_puts_bcd(rtc_read(RTC_FLAG_SECONDS));
 
     if (rtc_read(RTC_FLAG_HOURS) >> 4)
         call_puts("PM\n");

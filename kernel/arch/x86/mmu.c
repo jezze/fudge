@@ -30,7 +30,7 @@ void mmu_handler(struct isr_registers *registers)
         call_puts("fetch");
 
     call_puts(") at 0x");
-    arch_puts_hex(address);
+    call_puts_hex(address);
     call_puts("\n");
 
     PANIC("PAGE FAULT");

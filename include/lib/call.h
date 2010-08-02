@@ -11,9 +11,13 @@
 
 struct vfs_node;
 
+extern char call_getc();
 extern int call_putc(char c);
 extern int call_puts(char *s);
-extern char call_getc();
+extern void call_puts_num(unsigned int n, unsigned int base);
+extern void call_puts_dec(unsigned int n);
+extern void call_puts_hex(unsigned int n);
+extern void call_puts_bcd(unsigned char n);
 
 extern struct vfs_node *call_vfs_walk(unsigned int index);
 extern struct vfs_node *call_vfs_find(char *name);

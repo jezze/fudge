@@ -11,7 +11,7 @@ void kernel_assert(char *message, char *file, unsigned int line)
     call_puts(") at (");
     call_puts(file);
     call_puts(":");
-    arch_puts_dec(line);
+    call_puts_dec(line);
     call_puts(")\n");
 
     for (;;);
@@ -28,7 +28,7 @@ void kernel_panic(char *message, char *file, unsigned int line)
     call_puts(") at (");
     call_puts(file);
     call_puts(":");
-    arch_puts_dec(line);
+    call_puts_dec(line);
     call_puts(")\n");
 
     for (;;);

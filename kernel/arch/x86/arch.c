@@ -38,50 +38,6 @@ void arch_clear()
 
 }
 
-void arch_puts_num(unsigned int n, unsigned int base)
-{
-
-    if (!n)
-    {
-
-        call_putc('0');
-        return;
-
-    }
-
-    char s[32] = {0};
-
-    int i;
-
-    for (i = 30; n && i; --i, n /= base)
-        s[i] = "0123456789abcdef"[n % base];
-
-    call_puts(s + i + 1);
-
-}
-
-void arch_puts_dec(unsigned int n)
-{
-
-    arch_puts_num(n, 10);
-
-}
-
-void arch_puts_hex(unsigned int n)
-{
-
-    arch_puts_num(n, 16);
-
-}
-
-void arch_puts_bcd(unsigned char n)
-{
-
-    arch_puts_dec(n >> 4);
-    arch_puts_dec(n & 0x0F);
-
-}
-
 void arch_set_stdin(struct vfs_node *node)
 {
 

@@ -11,11 +11,11 @@ void mboot_init(struct mboot_info *info)
     {
 
         call_puts("Lower memory: ");
-        arch_puts_dec(info->memoryLower);
+        call_puts_dec(info->memoryLower);
         call_puts("KB\n");
 
         call_puts("Upper memory: ");
-        arch_puts_dec(info->memoryUpper);
+        call_puts_dec(info->memoryUpper);
         call_puts("KB\n");
 
     }
@@ -42,7 +42,7 @@ void mboot_init(struct mboot_info *info)
 
             default:
                 call_puts("Unknown (");
-                arch_puts_hex(info->device >> 24);
+                call_puts_hex(info->device >> 24);
                 call_puts(")\n");
                 break;
 
@@ -99,20 +99,20 @@ void mboot_init(struct mboot_info *info)
             call_puts("0x");
 
             if (mmap->baseHigh)
-                arch_puts_hex(mmap->baseHigh);
+                call_puts_hex(mmap->baseHigh);
 
-            arch_puts_hex(mmap->baseLow);
+            call_puts_hex(mmap->baseLow);
 
             call_puts("-0x");
 
-            arch_puts_hex(mmap->baseLow + mmap->lengthLow);
+            call_puts_hex(mmap->baseLow + mmap->lengthLow);
 
             call_puts(" (0x");
 
             if (mmap->lengthHigh)
-                arch_puts_hex(mmap->lengthHigh);
+                call_puts_hex(mmap->lengthHigh);
 
-            arch_puts_hex(mmap->lengthLow);
+            call_puts_hex(mmap->lengthLow);
 
             call_puts(" bytes) ");
 
