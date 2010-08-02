@@ -16,7 +16,7 @@ void main(int argc, char *argv[])
 
     unsigned int size = vfs_read(node, 0, 2000, buffer);
 
-    struct vfs_node *out = call_vfs_find("stdout");
+    struct vfs_node *out = call_vfs_find("dev/stdout");
 
     vfs_write(out, 0, size, buffer);
 

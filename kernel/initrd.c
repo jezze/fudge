@@ -51,15 +51,6 @@ static struct vfs_node *dev_walk(struct vfs_node *node, unsigned int index)
 
 }
 
-static unsigned int test_read(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
-{
-
-    memory_copy(buffer, "hejsan", 5);
-
-    return 5;
-
-}
-
 struct vfs_node *initrd_init(unsigned int location)
 {
 
@@ -104,12 +95,6 @@ struct vfs_node *initrd_init(unsigned int location)
     rootNodes[rootNodesCount].read = 0;
     rootNodes[rootNodesCount].write = 0;
     rootNodes[rootNodesCount].walk = dev_walk;
-    rootNodesCount++;
-
-    arch_set_stdin(&rootNodes[rootNodesCount]);
-    rootNodesCount++;
-
-    arch_set_stdout(&rootNodes[rootNodesCount]);
     rootNodesCount++;
 
     // INITRD
@@ -161,24 +146,10 @@ struct vfs_node *initrd_init(unsigned int location)
     devNodes[devNodesCount].walk = initrd_walk;
     devNodesCount++;
 
-    string_copy(devNodes[devNodesCount].name, "file1");
-    devNodes[devNodesCount].inode = 0;
-    devNodes[devNodesCount].length = 0;
-    devNodes[devNodesCount].open = 0;
-    devNodes[devNodesCount].close = 0;
-    devNodes[devNodesCount].read = test_read;
-    devNodes[devNodesCount].write = 0;
-    devNodes[devNodesCount].walk = 0;
+    arch_set_stdin(&devNodes[devNodesCount]);
     devNodesCount++;
 
-    string_copy(devNodes[devNodesCount].name, "file2");
-    devNodes[devNodesCount].inode = 0;
-    devNodes[devNodesCount].length = 0;
-    devNodes[devNodesCount].open = 0;
-    devNodes[devNodesCount].close = 0;
-    devNodes[devNodesCount].read = 0;
-    devNodes[devNodesCount].write = 0;
-    devNodes[devNodesCount].walk = 0;
+    arch_set_stdout(&devNodes[devNodesCount]);
     devNodesCount++;
 
     return &root;

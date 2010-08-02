@@ -5,7 +5,7 @@
 int call_putc(char c)
 {
 
-    struct vfs_node *node = call_vfs_find("stdout");
+    struct vfs_node *node = call_vfs_find("dev/stdout");
 
     if (!node)
         return 0;
@@ -17,7 +17,7 @@ int call_putc(char c)
 int call_puts(char *s)
 {
 
-    struct vfs_node *node = call_vfs_find("stdout");
+    struct vfs_node *node = call_vfs_find("dev/stdout");
 
     if (!node)
         return 0;
@@ -29,7 +29,7 @@ int call_puts(char *s)
 char call_getc()
 {
 
-    struct vfs_node *node = call_vfs_find("stdin");
+    struct vfs_node *node = call_vfs_find("dev/stdin");
 
     if (!node)
         return 0;

@@ -47,8 +47,11 @@ struct vfs_node *vfs_walk(struct vfs_node *node, unsigned int index)
 
 }
 
-struct vfs_node *vfs_find(struct vfs_node *node, char *name)
+struct vfs_node *vfs_find(struct vfs_node *node, char *path)
 {
+
+    char name[128];
+    string_copy(name, path);
 
     unsigned int i;
     struct vfs_node *current;
