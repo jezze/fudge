@@ -3,9 +3,6 @@
 
 struct vfs_node;
 
-extern void arch_set_stdin(struct vfs_node *node);
-extern void arch_set_stdout(struct vfs_node *node);
-
 struct initrd_header
 {
 
