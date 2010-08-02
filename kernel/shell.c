@@ -56,7 +56,7 @@ static void shell_call(struct vfs_node *node, int argc, char *argv[])
 
         call_puts("Unrecognized binary format. Continue? (y/n): ");
 
-        char c = arch_getc();
+        char c = call_getc();
 
         call_puts("\n");
 
@@ -159,7 +159,7 @@ static void shell_poll()
     for (;;)
     {
 
-        char c = arch_getc();
+        char c = call_getc();
 
         shell_handle_input(c);
 

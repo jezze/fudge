@@ -15,22 +15,6 @@
 #include <kernel/arch/x86/syscall.h>
 #include <kernel/assert.h>
 
-struct vfs_node *stdin;
-struct vfs_node *stdout;
-
-char arch_getc()
-{
-
-    struct vfs_node *in = stdin;
-
-    char c;
-
-    while (!(vfs_read(in, 0, 1, &c)));
-
-    return c;
-
-}
-
 void arch_clear()
 {
 
@@ -41,16 +25,12 @@ void arch_clear()
 void arch_set_stdin(struct vfs_node *node)
 {
 
-    stdin = node;
-
     kbd_set_node(node);
 
 }
 
 void arch_set_stdout(struct vfs_node *node)
 {
-
-    stdout = node;
 
     screen_set_node(node);
 
