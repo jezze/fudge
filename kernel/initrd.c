@@ -146,9 +146,25 @@ struct vfs_node *initrd_init(unsigned int location)
     devNodes[devNodesCount].walk = initrd_walk;
     devNodesCount++;
 
+    string_copy(devNodes[devNodesCount].name, "stdin");
+    devNodes[devNodesCount].inode = 0;
+    devNodes[devNodesCount].length = 0;
+    devNodes[devNodesCount].open = 0;
+    devNodes[devNodesCount].close = 0;
+    devNodes[devNodesCount].read = 0;
+    devNodes[devNodesCount].write = 0;
+    devNodes[devNodesCount].walk = 0;
     arch_set_stdin(&devNodes[devNodesCount]);
     devNodesCount++;
 
+    string_copy(devNodes[devNodesCount].name, "stdout");
+    devNodes[devNodesCount].inode = 0;
+    devNodes[devNodesCount].length = 0;
+    devNodes[devNodesCount].open = 0;
+    devNodes[devNodesCount].close = 0;
+    devNodes[devNodesCount].read = 0;
+    devNodes[devNodesCount].write = 0;
+    devNodes[devNodesCount].walk = 0;
     arch_set_stdout(&devNodes[devNodesCount]);
     devNodesCount++;
 

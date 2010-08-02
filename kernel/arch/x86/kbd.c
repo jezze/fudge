@@ -83,14 +83,7 @@ static unsigned int kbd_read(struct vfs_node *node, unsigned int offset, unsigne
 void kbd_set_node(struct vfs_node *node)
 {
 
-    string_copy(node->name, "stdin");
-    node->inode = 0;
-    node->length = 0;
-    node->open = 0;
-    node->close = 0;
     node->read = kbd_read;
-    node->write = 0;
-    node->walk = 0;
 
 }
 

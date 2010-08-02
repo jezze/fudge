@@ -138,14 +138,7 @@ unsigned int screen_write(struct vfs_node *node, unsigned int offset, unsigned i
 void screen_set_node(struct vfs_node *node)
 {
 
-    string_copy(node->name, "stdout");
-    node->inode = 0;
-    node->length = 0;
-    node->open = 0;
-    node->close = 0;
-    node->read = 0;
     node->write = screen_write;
-    node->walk = 0;
 
 }
 
