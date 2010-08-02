@@ -69,14 +69,14 @@ void arch_init()
 
     gdt_init();
     idt_init();
-    screen_init();
-    mmu_init();
 
 }
 
 void arch_init_devices()
 {
 
+    screen_init();
+    mmu_init();
     pit_init();
     kbd_init();
 

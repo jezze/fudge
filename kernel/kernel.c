@@ -25,9 +25,9 @@ void kernel_main(struct mboot_info *header, unsigned int magic)
 
     arch_init();
     arch_init_syscalls();
-    arch_init_devices();
     arch_init_interrupts();
     arch_enable_interrupts();
+    arch_init_devices();
 
     shell_init();
 
