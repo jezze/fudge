@@ -1,3 +1,4 @@
+#include <lib/call.h>
 #include <lib/elf.h>
 #include <lib/stack.h>
 #include <lib/string.h>
@@ -11,7 +12,7 @@ struct stack shellStack;
 static void shell_clear()
 {
 
-    arch_puts("fudge:/$ ");
+    call_puts("fudge:/$ ");
     stack_clear(&shellStack);
 
 }
@@ -53,11 +54,11 @@ static void shell_call(struct vfs_node *node, int argc, char *argv[])
     else
     {
 
-        arch_puts("Unrecognized binary format. Continue? (y/n): ");
+        call_puts("Unrecognized binary format. Continue? (y/n): ");
 
         char c = arch_getc();
 
-        arch_puts("\n");
+        call_puts("\n");
 
         if (c == 'y')
         {
@@ -99,8 +100,8 @@ static void shell_interpret(char *command)
         else
         {
 
-            arch_puts(argv[0]);
-            arch_puts(": Command not found\n");
+            call_puts(argv[0]);
+            call_puts(": Command not found\n");
 
         }
 
@@ -125,9 +126,9 @@ static void shell_handle_input(char c)
             if (stack_pop(&shellStack))
             {
 
-                arch_putc('\b');
-                arch_putc(' ');
-                arch_putc('\b');
+                call_putc('\b');
+                call_putc(' ');
+                call_putc('\b');
 
              }
 
@@ -136,7 +137,7 @@ static void shell_handle_input(char c)
         case '\n':
 
             stack_push(&shellStack, '\0');
-            arch_putc(c);
+            call_putc(c);
             shell_interpret(shellBuffer);
 
             break;
@@ -144,7 +145,7 @@ static void shell_handle_input(char c)
         default:
 
             stack_push(&shellStack, c);
-            arch_putc(c);
+            call_putc(c);
 
             break;
 
@@ -171,10 +172,10 @@ void shell_init()
 
     stack_init(&shellStack, shellBuffer, SHELL_BUFFER_SIZE);
 
-    arch_puts("Fudge\n");
-    arch_puts("-----\n");
-    arch_puts("Copyright (c) 2009 Jens Nyberg\n");
-    arch_puts("Type 'cat help.txt' to read the help section.\n\n");
+    call_puts("Fudge\n");
+    call_puts("-----\n");
+    call_puts("Copyright (c) 2009 Jens Nyberg\n");
+    call_puts("Type 'cat help.txt' to read the help section.\n\n");
 
     shell_clear();
     shell_poll();

@@ -1,3 +1,4 @@
+#include <lib/call.h>
 #include <lib/vfs.h>
 #include <kernel/arch/x86/arch.h>
 #include <kernel/arch/x86/io.h>
@@ -24,23 +25,23 @@ void rtc_init()
 
     rtc_ready();
 
-    arch_puts("Date: 20");
+    call_puts("Date: 20");
     arch_puts_bcd(rtc_read(RTC_FLAG_YEAR));
-    arch_puts("-");
+    call_puts("-");
     arch_puts_bcd(rtc_read(RTC_FLAG_MONTH));
-    arch_puts("-");
+    call_puts("-");
     arch_puts_bcd(rtc_read(RTC_FLAG_DAY));
-    arch_puts(" ");
+    call_puts(" ");
     arch_puts_bcd(rtc_read(RTC_FLAG_HOURS) & 0x0F);
-    arch_puts(":");
+    call_puts(":");
     arch_puts_bcd(rtc_read(RTC_FLAG_MINUTES));
-    arch_puts(":");
+    call_puts(":");
     arch_puts_bcd(rtc_read(RTC_FLAG_SECONDS));
 
     if (rtc_read(RTC_FLAG_HOURS) >> 4)
-        arch_puts("PM\n");
+        call_puts("PM\n");
     else
-        arch_puts("AM\n");
+        call_puts("AM\n");
 
 }
 

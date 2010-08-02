@@ -1,3 +1,4 @@
+#include <lib/call.h>
 #include <kernel/assert.h>
 
 void kernel_assert(char *message, char *file, unsigned int line)
@@ -5,13 +6,13 @@ void kernel_assert(char *message, char *file, unsigned int line)
 
     arch_disable_interrupts();
 
-    arch_puts("ASSERTION FAIL (");
-    arch_puts(message);
-    arch_puts(") at (");
-    arch_puts(file);
-    arch_puts(":");
+    call_puts("ASSERTION FAIL (");
+    call_puts(message);
+    call_puts(") at (");
+    call_puts(file);
+    call_puts(":");
     arch_puts_dec(line);
-    arch_puts(")\n");
+    call_puts(")\n");
 
     for (;;);
 
@@ -22,13 +23,13 @@ void kernel_panic(char *message, char *file, unsigned int line)
 
     arch_disable_interrupts();
 
-    arch_puts("KERNEL PANIC (");
-    arch_puts(message);
-    arch_puts(") at (");
-    arch_puts(file);
-    arch_puts(":");
+    call_puts("KERNEL PANIC (");
+    call_puts(message);
+    call_puts(") at (");
+    call_puts(file);
+    call_puts(":");
     arch_puts_dec(line);
-    arch_puts(")\n");
+    call_puts(")\n");
 
     for (;;);
 

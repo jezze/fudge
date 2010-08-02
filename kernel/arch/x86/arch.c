@@ -31,24 +31,6 @@ char arch_getc()
 
 }
 
-void arch_putc(char c)
-{
-
-    struct vfs_node *out = stdout;
-
-    vfs_write(out, 0, 1, &c);
-
-}
-
-void arch_puts(char *s)
-{
-
-    struct vfs_node *out = stdout;
-
-    vfs_write(out, 0, string_length(s), s);
-
-}
-
 void arch_clear()
 {
 
@@ -62,7 +44,7 @@ void arch_puts_num(unsigned int n, unsigned int base)
     if (!n)
     {
 
-        arch_putc('0');
+        call_putc('0');
         return;
 
     }
@@ -74,7 +56,7 @@ void arch_puts_num(unsigned int n, unsigned int base)
     for (i = 30; n && i; --i, n /= base)
         s[i] = "0123456789abcdef"[n % base];
 
-    arch_puts(s + i + 1);
+    call_puts(s + i + 1);
 
 }
 

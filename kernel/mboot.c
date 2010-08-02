@@ -1,48 +1,49 @@
+#include <lib/call.h>
 #include <kernel/mboot.h>
 
 void mboot_init(struct mboot_info *info)
 {
 
-    arch_puts("System information\n");
-    arch_puts("------------------\n");
+    call_puts("System information\n");
+    call_puts("------------------\n");
 
     if (info->flags & MBOOT_FLAG_MEMORY)
     {
 
-        arch_puts("Lower memory: ");
+        call_puts("Lower memory: ");
         arch_puts_dec(info->memoryLower);
-        arch_puts("KB\n");
+        call_puts("KB\n");
 
-        arch_puts("Upper memory: ");
+        call_puts("Upper memory: ");
         arch_puts_dec(info->memoryUpper);
-        arch_puts("KB\n");
+        call_puts("KB\n");
 
     }
 
     if (info->flags & MBOOT_FLAG_DEVICE)
     {
 
-        arch_puts("Boot device: ");
+        call_puts("Boot device: ");
 
         switch (info->device >> 24)
         {
 
             case 0xE0:
-                arch_puts("CD-ROM\n");
+                call_puts("CD-ROM\n");
                 break;
 
             case 0x00:
-                arch_puts("Floppy drive\n");
+                call_puts("Floppy drive\n");
                 break;
 
             case 0x80:
-                arch_puts("Hard drive\n");
+                call_puts("Hard drive\n");
                 break;
 
             default:
-                arch_puts("Unknown (");
+                call_puts("Unknown (");
                 arch_puts_hex(info->device >> 24);
-                arch_puts(")\n");
+                call_puts(")\n");
                 break;
 
         }
@@ -52,23 +53,23 @@ void mboot_init(struct mboot_info *info)
     if (info->flags & MBOOT_FLAG_CMDLINE)
     {
 
-        arch_puts("Command: ");
-        arch_puts((char *)info->cmdline);
-        arch_puts("\n");
+        call_puts("Command: ");
+        call_puts((char *)info->cmdline);
+        call_puts("\n");
 
     }
 
     if (info->flags & MBOOT_FLAG_AOUT)
     {
 
-        arch_puts("Kernel format: AOUT\n");
+        call_puts("Kernel format: AOUT\n");
 
     }
 
     if (info->flags & MBOOT_FLAG_ELF)
     {
 
-        arch_puts("Kernel format: ELF\n");
+        call_puts("Kernel format: ELF\n");
 
     }
 
@@ -77,11 +78,11 @@ void mboot_init(struct mboot_info *info)
 
         struct mboot_module *module = (struct mboot_module *)info->modulesAddresses;
 
-        arch_puts("Modules:");
+        call_puts("Modules:");
 
-        arch_puts(" ");
-        arch_puts((char *)module->name);
-        arch_puts("\n");
+        call_puts(" ");
+        call_puts((char *)module->name);
+        call_puts("\n");
 
     }
 
@@ -90,37 +91,37 @@ void mboot_init(struct mboot_info *info)
 
         struct mboot_mmap *mmap = (struct mboot_mmap *)info->mmapAddress;
 
-        arch_puts("Memory map:\n");
+        call_puts("Memory map:\n");
 
         while (mmap < info->mmapAddress + info->mmapLength)
         {
 
-            arch_puts("0x");
+            call_puts("0x");
 
             if (mmap->baseHigh)
                 arch_puts_hex(mmap->baseHigh);
 
             arch_puts_hex(mmap->baseLow);
 
-            arch_puts("-0x");
+            call_puts("-0x");
 
             arch_puts_hex(mmap->baseLow + mmap->lengthLow);
 
-            arch_puts(" (0x");
+            call_puts(" (0x");
 
             if (mmap->lengthHigh)
                 arch_puts_hex(mmap->lengthHigh);
 
             arch_puts_hex(mmap->lengthLow);
 
-            arch_puts(" bytes) ");
+            call_puts(" bytes) ");
 
             if (mmap->type == 1)
-                arch_puts("Available");
+                call_puts("Available");
             else
-                arch_puts("Reserved");
+                call_puts("Reserved");
 
-            arch_puts("\n");
+            call_puts("\n");
 
             mmap = (struct mboot_mmap *)((unsigned int)mmap + mmap->size + sizeof (unsigned int));
 
@@ -131,9 +132,9 @@ void mboot_init(struct mboot_info *info)
     if (info->flags & MBOOT_FLAG_LOADER)
     {
 
-        arch_puts("Loader: ");
-        arch_puts((char *)info->name);
-        arch_puts("\n");
+        call_puts("Loader: ");
+        call_puts((char *)info->name);
+        call_puts("\n");
 
     }
 
@@ -143,6 +144,6 @@ void mboot_init(struct mboot_info *info)
 
     }
 
-    arch_puts("\n");
+    call_puts("\n");
 
 }
