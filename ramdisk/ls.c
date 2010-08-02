@@ -12,7 +12,22 @@ void main(int argc, char *argv[])
         node = call_vfs_find(".");
 
     if (!node)
+    {
+
+        call_puts("Directory does not exist.\n");
+
         return;
+
+    }
+
+    if (!node->walk)
+    {
+
+        call_puts("Not a directory.\n");
+
+        return;
+
+    }
 
     struct vfs_node *current;
 

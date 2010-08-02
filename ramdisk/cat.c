@@ -5,12 +5,24 @@ void main(int argc, char *argv[])
 {
 
     if (argc != 2)
+    {
+
+        call_puts("You need to supply filename.\n");
+
         return;
+
+    }
 
     struct vfs_node *node = call_vfs_find(argv[1]);
 
     if (!node)
+    {
+
+        call_puts("File does not exist.\n");
+
         return;
+
+    }
 
     char buffer[2000];
 
