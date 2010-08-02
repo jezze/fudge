@@ -19,7 +19,6 @@ extern void call_puts_dec(unsigned int n);
 extern void call_puts_hex(unsigned int n);
 extern void call_puts_bcd(unsigned char n);
 
-extern struct vfs_node *call_vfs_walk(unsigned int index);
 extern struct vfs_node *call_vfs_find(char *name);
 extern int call_halt();
 extern int call_reboot();

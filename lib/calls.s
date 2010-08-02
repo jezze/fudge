@@ -1,17 +1,3 @@
-global call_vfs_walk
-call_vfs_walk:
-    push ebp
-    mov ebp, esp
-    push esi
-    push edi
-    mov eax, 0x12
-    mov ecx, [ebp + 8]
-    int 0x80
-    pop edi
-    pop esi
-    pop ebp
-    ret
-
 global call_vfs_find
 call_vfs_find:
     push ebp
