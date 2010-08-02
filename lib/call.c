@@ -2,6 +2,22 @@
 #include <lib/string.h>
 #include <lib/vfs.h>
 
+char call_getc()
+{
+
+    struct vfs_node *node = call_vfs_find("dev/stdin");
+
+    if (!node)
+        return 0;
+
+    char c;
+
+    while (!(vfs_read(node, 0, 1, &c)));
+
+    return c;
+
+}
+
 int call_putc(char c)
 {
 
@@ -67,23 +83,6 @@ void call_puts_bcd(unsigned char n)
 
     call_puts_dec(n >> 4);
     call_puts_dec(n & 0x0F);
-
-}
-
-
-char call_getc()
-{
-
-    struct vfs_node *node = call_vfs_find("dev/stdin");
-
-    if (!node)
-        return 0;
-
-    char c;
-
-    while (!(vfs_read(node, 0, 1, &c)));
-
-    return c;
 
 }
 
