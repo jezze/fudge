@@ -23,7 +23,6 @@ extern struct kbd_device keyboard;
 
 extern void kbd_handler(struct isr_registers *registers);
 extern void kbd_init();
-extern void kbd_set_node(struct vfs_node *node);
 
 #endif
 

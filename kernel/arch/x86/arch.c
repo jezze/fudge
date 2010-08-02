@@ -22,20 +22,6 @@ void arch_clear()
 
 }
 
-void arch_set_stdin(struct vfs_node *node)
-{
-
-    kbd_set_node(node);
-
-}
-
-void arch_set_stdout(struct vfs_node *node)
-{
-
-    screen_set_node(node);
-
-}
-
 void arch_disable_interrupts()
 {
 

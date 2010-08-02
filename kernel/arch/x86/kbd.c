@@ -1,3 +1,4 @@
+#include <lib/call.h>
 #include <lib/cbuffer.h>
 #include <lib/string.h>
 #include <lib/vfs.h>
@@ -80,13 +81,6 @@ static unsigned int kbd_read(struct vfs_node *node, unsigned int offset, unsigne
 
 }
 
-void kbd_set_node(struct vfs_node *node)
-{
-
-    node->read = kbd_read;
-
-}
-
 void kbd_init()
 {
 
@@ -94,6 +88,10 @@ void kbd_init()
     keyboard.toggleAlt = 0;
     keyboard.toggleCtrl = 0;
     keyboard.toggleShift = 0;
+
+    struct vfs_node *node = call_vfs_find("dev/stdin");
+    node->read = kbd_read;
+
 
 }
 

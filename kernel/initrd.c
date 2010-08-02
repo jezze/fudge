@@ -154,7 +154,6 @@ struct vfs_node *initrd_init(unsigned int location)
     devNodes[devNodesCount].read = 0;
     devNodes[devNodesCount].write = 0;
     devNodes[devNodesCount].walk = 0;
-    arch_set_stdin(&devNodes[devNodesCount]);
     devNodesCount++;
 
     string_copy(devNodes[devNodesCount].name, "stdout");
@@ -165,7 +164,6 @@ struct vfs_node *initrd_init(unsigned int location)
     devNodes[devNodesCount].read = 0;
     devNodes[devNodesCount].write = 0;
     devNodes[devNodesCount].walk = 0;
-    arch_set_stdout(&devNodes[devNodesCount]);
     devNodesCount++;
 
     return &root;

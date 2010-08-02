@@ -1,3 +1,4 @@
+#include <lib/call.h>
 #include <lib/memory.h>
 #include <lib/string.h>
 #include <lib/vfs.h>
@@ -135,13 +136,6 @@ unsigned int screen_write(struct vfs_node *node, unsigned int offset, unsigned i
 
 }
 
-void screen_set_node(struct vfs_node *node)
-{
-
-    node->write = screen_write;
-
-}
-
 void screen_init()
 {
 
@@ -150,6 +144,9 @@ void screen_init()
     screen.cursorY = 0;
 
     screen_set_text_color(SCREEN_COLOR_WHITE, SCREEN_COLOR_BLACK);
+
+    struct vfs_node *node = call_vfs_find("dev/stdout");
+    node->write = screen_write;
 
     screen_clear();
 
