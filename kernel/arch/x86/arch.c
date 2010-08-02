@@ -11,6 +11,7 @@
 #include <kernel/arch/x86/kbd.h>
 #include <kernel/arch/x86/mmu.h>
 #include <kernel/arch/x86/pit.h>
+#include <kernel/arch/x86/rtc.h>
 #include <kernel/arch/x86/screen.h>
 #include <kernel/arch/x86/syscall.h>
 #include <kernel/assert.h>
@@ -65,6 +66,7 @@ void arch_init_devices()
     mmu_init();
     pit_init();
     kbd_init();
+    rtc_init();
 
 }
 

@@ -4,7 +4,7 @@
 #include <kernel/arch/x86/io.h>
 #include <kernel/arch/x86/rtc.h>
 
-unsigned char rtc_read(unsigned char type)
+unsigned char rtc_get(unsigned char type)
 {
 
     io_outb(RTC_PORT_WRITE, type);
@@ -20,28 +20,64 @@ void rtc_ready()
 
 }
 
-void rtc_init()
+static unsigned int rtc_read(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
     rtc_ready();
 
-    call_puts("Date: 20");
-    call_puts_bcd(rtc_read(RTC_FLAG_YEAR));
-    call_puts("-");
-    call_puts_bcd(rtc_read(RTC_FLAG_MONTH));
-    call_puts("-");
-    call_puts_bcd(rtc_read(RTC_FLAG_DAY));
-    call_puts(" ");
-    call_puts_bcd(rtc_read(RTC_FLAG_HOURS) & 0x0F);
-    call_puts(":");
-    call_puts_bcd(rtc_read(RTC_FLAG_MINUTES));
-    call_puts(":");
-    call_puts_bcd(rtc_read(RTC_FLAG_SECONDS));
+    switch (offset)
+    {
 
-    if (rtc_read(RTC_FLAG_HOURS) >> 4)
-        call_puts("PM\n");
-    else
-        call_puts("AM\n");
+        case 0x00:
+
+            *(char *)buffer = rtc_get(RTC_FLAG_YEAR);
+
+            break;
+
+        case 0x01:
+
+            *(char *)buffer = rtc_get(RTC_FLAG_MONTH);
+
+            break;
+
+        case 0x02:
+
+            *(char *)buffer = rtc_get(RTC_FLAG_DAY);
+
+            break;
+
+        case 0x03:
+
+            *(char *)buffer = rtc_get(RTC_FLAG_HOURS);
+
+            break;
+
+        case 0x04:
+
+            *(char *)buffer = rtc_get(RTC_FLAG_MINUTES);
+
+            break;
+
+        case 0x05:
+
+            *(char *)buffer = rtc_get(RTC_FLAG_SECONDS);
+
+            break;
+
+        default:
+
+            return 0;
+
+    }
+
+    return 1;
 
 }
 
+void rtc_init()
+{
+
+    struct vfs_node *node = call_vfs_find("dev/rtc");
+    node->read = rtc_read;
+
+}

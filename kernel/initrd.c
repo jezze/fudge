@@ -166,6 +166,16 @@ struct vfs_node *initrd_init(unsigned int location)
     devNodes[devNodesCount].walk = 0;
     devNodesCount++;
 
+    string_copy(devNodes[devNodesCount].name, "rtc");
+    devNodes[devNodesCount].inode = 0;
+    devNodes[devNodesCount].length = 0;
+    devNodes[devNodesCount].open = 0;
+    devNodes[devNodesCount].close = 0;
+    devNodes[devNodesCount].read = 0;
+    devNodes[devNodesCount].write = 0;
+    devNodes[devNodesCount].walk = 0;
+    devNodesCount++;
+
     return &root;
 
 }
