@@ -43,7 +43,7 @@ struct screen
 extern struct screen screen;
 
 extern void screen_clear();
-extern void screen_cursor_move();
+extern void screen_cursor_move(unsigned int offset);
 extern void screen_scroll();
 extern void screen_init();
 

@@ -60,7 +60,7 @@ static void screen_putc(char c)
     }
 
     screen_scroll();
-    screen_cursor_move();
+    screen_cursor_move(screen.cursorY * SCREEN_CHARACTER_WIDTH + screen.cursorX);
 
 }
 
@@ -86,21 +86,17 @@ void screen_clear()
     screen.cursorX = 0;
     screen.cursorY = 0;
 
-    screen_cursor_move();
+    screen_cursor_move(screen.cursorY * SCREEN_CHARACTER_WIDTH + screen.cursorX);
 
 }
 
-void screen_cursor_move()
+void screen_cursor_move(unsigned int offset)
 {
 
-    unsigned int temp;
-
-    temp = screen.cursorY * SCREEN_CHARACTER_WIDTH + screen.cursorX;
-
     io_outb(0x3D4, 14);
-    io_outb(0x3D5, temp >> 8);
+    io_outb(0x3D5, offset >> 8);
     io_outb(0x3D4, 15);
-    io_outb(0x3D5, temp);
+    io_outb(0x3D5, offset);
 
 }
 
