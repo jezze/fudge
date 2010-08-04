@@ -1,5 +1,5 @@
-#ifndef ELF_H
-#define ELF_H
+#ifndef LIB_ELF_H
+#define LIB_ELF_H
 
 #define ELF_IDENTITY_MAGIC0     0x7F
 #define ELF_IDENTITY_MAGIC1     'E'

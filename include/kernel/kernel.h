@@ -1,5 +1,5 @@
-#ifndef KERNEL_H
-#define KERNEL_H
+#ifndef KERNEL_KERNEL_H
+#define KERNEL_KERNEL_H
 
 struct vfs_node;
 

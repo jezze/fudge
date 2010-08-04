@@ -1,5 +1,5 @@
-#ifndef GDT_H
-#define GDT_H
+#ifndef ARCH_GDT_H
+#define ARCH_GDT_H
 
 #define GDT_TABLE_SIZE 6
 

@@ -1,5 +1,5 @@
-#ifndef KBD_H
-#define KBD_H
+#ifndef ARCH_KBD_H
+#define ARCH_KBD_H
 
 #define KBD_PORT_READ 0x60
 #define KBD_BUFFER_SIZE 256

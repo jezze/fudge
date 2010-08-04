@@ -1,5 +1,5 @@
-#ifndef MBOOT_H
-#define MBOOT_H
+#ifndef KERNEL_MBOOT_H
+#define KERNEL_MBOOT_H
 
 #define MBOOT_FLAG_MEMORY  1 << 0
 #define MBOOT_FLAG_DEVICE  1 << 1

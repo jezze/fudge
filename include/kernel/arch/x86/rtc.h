@@ -1,5 +1,5 @@
-#ifndef RTC_H
-#define RTC_H
+#ifndef ARCH_RTC_H
+#define ARCH_RTC_H
 
 #define RTC_PORT_WRITE 0x70
 #define RTC_PORT_READ  0x71

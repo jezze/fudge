@@ -1,5 +1,5 @@
-#ifndef PIT_H
-#define PIT_H
+#ifndef ARCH_PIT_H
+#define ARCH_PIT_H
 
 #define PIT_HERTZ     1193180
 #define PIT_FREQUENCY 1000

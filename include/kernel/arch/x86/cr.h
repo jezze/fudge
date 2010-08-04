@@ -1,5 +1,5 @@
-#ifndef CR_H
-#define CR_H
+#ifndef ARCH_CR_H
+#define ARCH_CR_H
 
 extern unsigned int cr0_read();
 extern void cr0_write(unsigned int value);

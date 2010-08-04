@@ -1,5 +1,5 @@
-#ifndef IRQ_H
-#define IRQ_H
+#ifndef ARCH_IRQ_H
+#define ARCH_IRQ_H
 
 #define IRQ_ROUTINES_SIZE 16
 

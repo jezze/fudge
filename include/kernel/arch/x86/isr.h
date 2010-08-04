@@ -1,5 +1,5 @@
-#ifndef ISR_H
-#define ISR_H
+#ifndef ARCH_ISR_H
+#define ARCH_ISR_H
 
 #define ISR_ROUTINES_SIZE 256
 

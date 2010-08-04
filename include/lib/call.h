@@ -1,5 +1,5 @@
-#ifndef CALL_H
-#define CALL_H
+#ifndef LIB_CALL_H
+#define LIB_CALL_H
 
 #define CALL_VFS_READ  0x10
 #define CALL_VFS_WRITE 0x11

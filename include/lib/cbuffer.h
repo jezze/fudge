@@ -1,5 +1,5 @@
-#ifndef CBUFFER_H
-#define CBUFFER_H
+#ifndef LIB_CBUFFER_H
+#define LIB_CBUFFER_H
 
 struct cbuffer
 {

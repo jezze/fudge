@@ -1,5 +1,5 @@
-#ifndef SHELL_H
-#define SHELL_H
+#ifndef KERNEL_SHELL_H
+#define KERNEL_SHELL_H
 
 #define SHELL_BUFFER_SIZE 256
 

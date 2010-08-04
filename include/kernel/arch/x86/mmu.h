@@ -1,5 +1,5 @@
-#ifndef MMU_H
-#define MMU_H
+#ifndef ARCH_MMU_H
+#define ARCH_MMU_H
 
 #define MMU_ERROR_PRESENT  1 << 0
 #define MMU_ERROR_RW       1 << 1

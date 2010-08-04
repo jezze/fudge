@@ -1,5 +1,5 @@
-#ifndef STRING_H
-#define STRING_H
+#ifndef LIB_STRING_H
+#define LIB_STRING_H
 
 extern int string_compare(const char *str1, const char *str2);
 extern char *string_concat(char *dest, const char *src);

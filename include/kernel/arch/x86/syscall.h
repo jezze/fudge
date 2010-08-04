@@ -1,5 +1,5 @@
-#ifndef SYSCALL_H
-#define SYSCALL_H
+#ifndef ARCH_SYSCALL_H
+#define ARCH_SYSCALL_H
 
 #define SYSCALL_TABLE_SIZE 256
 

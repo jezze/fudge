@@ -1,5 +1,5 @@
-#ifndef VFS_H
-#define VFS_H
+#ifndef LIB_VFS_H
+#define LIB_VFS_H
 
 struct vfs_node;
 

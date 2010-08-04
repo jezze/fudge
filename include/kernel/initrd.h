@@ -1,5 +1,5 @@
-#ifndef INITRD_H
-#define INITRD_H
+#ifndef KERNEL_INITRD_H
+#define KERNEL_INITRD_H
 
 struct vfs_node;
 

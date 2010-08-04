@@ -1,5 +1,5 @@
-#ifndef SCREEN_H
-#define SCREEN_H
+#ifndef ARCH_SCREEN_H
+#define ARCH_SCREEN_H
 
 #define SCREEN_ADDRESS          0xB8000
 #define SCREEN_CHARACTER_WIDTH  80

@@ -1,5 +1,5 @@
-#ifndef STACK_H
-#define STACK_H
+#ifndef LIB_STACK_H
+#define LIB_STACK_H
 
 struct stack
 {
