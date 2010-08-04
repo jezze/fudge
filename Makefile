@@ -60,6 +60,7 @@ arch-x86: lib kernel
     kernel/arch/x86/screen.o \
     kernel/arch/x86/syscall.o \
     kernel/assert.o \
+    kernel/elf.o \
     kernel/initrd.o \
     kernel/kernel.o \
     kernel/mboot.o \

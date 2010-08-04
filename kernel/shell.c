@@ -3,6 +3,7 @@
 #include <lib/stack.h>
 #include <lib/string.h>
 #include <lib/vfs.h>
+#include <kernel/elf.h>
 #include <kernel/kernel.h>
 #include <kernel/shell.h>
 
@@ -44,7 +45,7 @@ static void shell_call(struct vfs_node *node, int argc, char *argv[])
 
     vfs_read(node, 0, node->length, buffer);
 
-    if (buffer[0] == ELF_IDENTITY_MAGIC0)
+    if (elf_check((struct elf_header *)buffer))
     {
 
         shell_execute_elf(node, (struct elf_header *)0x280000, argc, argv);
