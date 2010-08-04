@@ -1,0 +1,7 @@
+# Grub boot info
+
+title   Fudge
+root    (fd0)
+kernel  300+100
+module  400+300
+
