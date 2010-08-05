@@ -10,10 +10,10 @@ interrupt_vector_table:
 
 .comm stack, 0x10000
 
-.global loader
-loader:
+.global init
+init:
     ldr sp, =stack+0x10000
-    bl kernel_main
+    bl kernel_init
 1:
     b 1b
 

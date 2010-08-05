@@ -10,6 +10,7 @@ all:
 	@$(ASM) $(ASMFLAGS) gdts.s -o gdts.o
 	@$(GCC) $(GCCFLAGS) idt.c -o idt.o
 	@$(ASM) $(ASMFLAGS) idts.s -o idts.o
+	@$(ASM) $(ASMFLAGS) init.s -o init.o
 	@$(ASM) $(ASMFLAGS) ios.s -o io.o
 	@$(GCC) $(GCCFLAGS) irq.c -o irq.o
 	@$(ASM) $(ASMFLAGS) irqs.s -o irqs.o
@@ -17,7 +18,6 @@ all:
 	@$(ASM) $(ASMFLAGS) isrs.s -o isrs.o
 	@$(GCC) $(GCCFLAGS) kbd.c -o kbd.o
 	@$(GCC) $(GCCFLAGS) mmu.c -o mmu.o
-	@$(ASM) $(ASMFLAGS) loader.s -o loader.o
 	@$(GCC) $(GCCFLAGS) pit.c -o pit.o
 	@$(GCC) $(GCCFLAGS) rtc.c -o rtc.o
 	@$(GCC) $(GCCFLAGS) screen.c -o screen.o

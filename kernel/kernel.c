@@ -15,7 +15,7 @@ struct vfs_node *kernel_get_vfs_root()
 
 }
 
-void kernel_main(struct mboot_info *header, unsigned int magic)
+void kernel_init(struct mboot_info *header, unsigned int magic)
 {
 
     vfsRoot = initrd_init(*((unsigned int *)header->modulesAddresses));

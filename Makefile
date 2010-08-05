@@ -23,12 +23,12 @@ system-x86: lib kernel arch-x86 initrd
 arch-arm:
 	@echo "Building ARM..."
 	@$(ARM_GCC) $(ARM_GCCFLAGS) kernel/arch/arm/arch.c -o kernel/arch/arm/arch.o
-	@$(ARM_ASM) $(ARM_ASMFLAGS) kernel/arch/arm/loader.s -o kernel/arch/arm/loader.o
+	@$(ARM_ASM) $(ARM_ASMFLAGS) kernel/arch/arm/init.s -o kernel/arch/arm/init.o
 	@$(ARM_GCC) $(ARM_GCCFLAGS) lib/string.c -o lib/string.o
 	@$(ARM_GCC) $(ARM_GCCFLAGS) lib/vfs.c -o lib/vfs.o
 	@$(ARM_GCC) $(ARM_GCCFLAGS) kernel/assert.c -o kernel/assert.o
 	@$(ARM_GCC) $(ARM_GCCFLAGS) kernel/kernel.c -o kernel/kernel.o
-	@$(ARM_LD) $(ARM_LDFLAGS) lib/string.o lib/vfs.o kernel/arch/arm/arch.o kernel/arch/arm/loader.o kernel/assert.o kernel/kernel.o -o build/root/boot/kernel
+	@$(ARM_LD) $(ARM_LDFLAGS) lib/string.o lib/vfs.o kernel/arch/arm/arch.o kernel/arch/arm/init.o kernel/assert.o kernel/kernel.o -o build/root/boot/kernel
 
 arch-x86: lib kernel
 	@echo "Building x86..."
@@ -47,10 +47,10 @@ arch-x86: lib kernel
     kernel/arch/x86/gdts.o \
     kernel/arch/x86/idt.o \
     kernel/arch/x86/idts.o \
+    kernel/arch/x86/init.o \
     kernel/arch/x86/io.o \
     kernel/arch/x86/irqs.o \
     kernel/arch/x86/isrs.o \
-    kernel/arch/x86/loader.o \
     kernel/arch/x86/irq.o \
     kernel/arch/x86/isr.o \
     kernel/arch/x86/kbd.o \

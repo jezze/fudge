@@ -4,7 +4,7 @@ GCC=arm-elf-gcc
 GCCFLAGS=-c -I../../../include -Wall -Wextra -Werror -ffreestanding -nostdlib -nostartfiles -std=gnu99
 
 all:
-	@$(ASM) $(ASMFLAGS) loader.s -o loader.o
+	@$(ASM) $(ASMFLAGS) init.s -o init.o
 	@$(GCC) $(GCCFLAGS) arch.c -o arch.o
 
 clean:
