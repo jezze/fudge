@@ -3,13 +3,13 @@
 int memory_compare(void *dest, void *src, unsigned int count)
 {
 
-    char *dp = dest;
-    char *sp = src;
+    unsigned char *dp = dest;
+    unsigned char *sp = src;
 
-    for (; count; dp++, sp++, count--)
+    while (count--)
     {
 
-        if (*dp != *sp)
+        if (*dp++ != *sp++)
             return *dp - *sp;
 
     }
@@ -18,13 +18,13 @@ int memory_compare(void *dest, void *src, unsigned int count)
 
 }
 
-void *memory_copy(void *dest, const void *src, unsigned int count)
+void *memory_copy(void *dest, void *src, unsigned int count)
 {
 
-    char *dp = dest;
-    const char *sp = src;
+    unsigned char *dp = dest;
+    unsigned char *sp = src;
 
-    while (count-- != 0)
+    while (count--)
         *dp++ = *sp++;
 
     return dest;
@@ -36,19 +36,19 @@ void *memory_set(void *dest, int value, unsigned int count)
 
     unsigned char *dp = dest;
 
-    while (count-- != 0)
+    while (count--)
         *dp++ = value;
 
     return dest;
 
 }
 
-unsigned short *memory_setw(unsigned short *dest, unsigned short value, unsigned int count)
+unsigned short *memory_setw(void *dest, unsigned short value, unsigned int count)
 {
 
     unsigned short *dp = dest;
 
-    while (count-- != 0)
+    while (count--)
         *dp++ = value;
 
     return dest;
