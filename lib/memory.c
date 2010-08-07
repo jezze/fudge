@@ -31,7 +31,25 @@ void *memory_copy(void *dest, void *src, unsigned int count)
 
 }
 
-void *memory_set(void *dest, int value, unsigned int count)
+void *memory_replace(void *dest, char value1, char value2, unsigned int count)
+{
+
+    unsigned char *dp = dest;
+
+    while (count--)
+    {
+
+        if (*dp++ == value1)
+            *dp = value2;
+
+    }
+
+    return dest;
+
+}
+
+
+void *memory_set(void *dest, char value, unsigned int count)
 {
 
     unsigned char *dp = dest;
@@ -43,7 +61,7 @@ void *memory_set(void *dest, int value, unsigned int count)
 
 }
 
-unsigned short *memory_setw(void *dest, unsigned short value, unsigned int count)
+unsigned short *memory_setw(void *dest, short value, unsigned int count)
 {
 
     unsigned short *dp = dest;
