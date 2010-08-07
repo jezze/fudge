@@ -78,10 +78,14 @@ void mboot_init(struct mboot_info *info)
 
         struct mboot_module *module = (struct mboot_module *)info->modulesAddresses;
 
-        call_puts("Modules:");
-
-        call_puts(" ");
+        call_puts("Modules: ");
         call_puts((char *)module->name);
+        call_puts(" Base: 0x");
+        call_puts_hex(module->base);
+        call_puts(" Length: 0x");
+        call_puts_hex(module->length);
+        call_puts(" Reserved: ");
+        call_puts_dec(module->reserved);
         call_puts("\n");
 
     }
