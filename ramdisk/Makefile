@@ -18,7 +18,7 @@ all:
 	@$(GCC) $(GCCFLAGS) elf.c -o elf.o
 	@$(LD) $(LDFLAGS) elf.o ../lib/string.o ../lib/vfs.o ../lib/call.o ../lib/calls.o -o elf
 	@$(GCC) $(GCCFLAGS) hello.c -o hello.o
-	@$(LD) $(LDFLAGS) -e main hello.o ../lib/string.o ../lib/vfs.o ../lib/call.o ../lib/calls.o -o hello
+	@$(LD) $(LDFLAGS) hello.o ../lib/string.o ../lib/vfs.o ../lib/call.o ../lib/calls.o -o hello
 	@$(GCC) $(GCCFLAGS) ls.c -o ls.o
 	@$(LD) $(LDFLAGS) ls.o ../lib/string.o ../lib/vfs.o ../lib/call.o ../lib/calls.o -o ls
 	@$(GCC) $(GCCFLAGS) reboot.c -o reboot.o
