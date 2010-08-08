@@ -64,7 +64,7 @@ char *string_replace(char *dest, char value1, char value2)
 
 }
 
-int string_split(char *dest[], char *src, char value)
+unsigned int string_split(char *dest[], char *src, char value)
 {
 
     if (src[0] == '\0')
