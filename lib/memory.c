@@ -1,16 +1,16 @@
 #include <lib/memory.h>
 
-int memory_compare(const void *out, const void *in, unsigned int count)
+int memory_compare(const void *in1, const void *in2, unsigned int count)
 {
 
-    const char *op = out;
-    const char *ip = in;
+    const char *ip1 = in1;
+    const char *ip2 = in2;
 
-    for (; count; op++, ip++, count--)
+    for (; count; ip1++, ip2++, count--)
     {
 
-        if (*op != *ip)
-            return *op - *ip;
+        if (*ip1 != *ip2)
+            return *ip1 - *ip2;
 
     }
 

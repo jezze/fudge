@@ -1,10 +1,10 @@
 #include <lib/memory.h>
 #include <lib/string.h>
 
-int string_compare(const char *out, const char *in)
+int string_compare(const char *in1, const char *in2)
 {
 
-    return memory_compare(out, in, string_length(in));
+    return memory_compare(in1, in2, string_length(in2));
 
 }
 
