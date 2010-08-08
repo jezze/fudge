@@ -50,15 +50,7 @@ unsigned int string_length(const char *dest)
 char *string_replace(char *dest, char value1, char value2)
 {
 
-    char *dp;
-
-    for (dp = dest; *dp != '\0'; dp++)
-    {
-
-        if (*dp == value1)
-            *dp = value2;
-
-    }
+    memory_replace(dest, value1, value2, string_length(dest));
 
     return dest;
 
