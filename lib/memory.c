@@ -31,6 +31,23 @@ void *memory_copy(void *dest, const void *src, unsigned int count)
 
 }
 
+int memory_index(void *dest, char value, unsigned int count)
+{
+
+    char *dp = dest;
+
+    for (; count; dp++, count--)
+    {
+
+        if (*dp == value)
+            return dp - (char *)dest;
+
+    }
+
+    return -1;
+
+}
+
 void *memory_replace(void *dest, char value1, char value2, unsigned int count)
 {
 
