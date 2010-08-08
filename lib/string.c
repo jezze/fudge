@@ -1,10 +1,10 @@
 #include <lib/memory.h>
 #include <lib/string.h>
 
-int string_compare(const char *str1, const char *str2)
+int string_compare(const char *dest, const char *src)
 {
 
-    return memory_compare((void *)str1, (void *)str2, string_length(str1));
+    return memory_compare(dest, src, string_length(dest));
 
 }
 
@@ -29,14 +29,14 @@ char *string_copy(char *dest, const char *src)
 
 }
 
-int string_offset(const char *dest, char c)
+int string_offset(const char *dest, char value)
 {
 
     int count;
 
-    for (count = 0; *dest != '\0' && *dest != c; dest++, count++);
+    for (count = 0; *dest != '\0' && *dest != value; dest++, count++);
 
-    return (*dest == c) ? count : -1;
+    return (*dest == value) ? count : -1;
 
 }
 
@@ -47,7 +47,7 @@ int string_length(const char *dest)
 
 }
 
-char *string_replace(char *dest, char c1, char c2)
+char *string_replace(char *dest, char value1, char value2)
 {
 
     char *dp;
@@ -55,8 +55,8 @@ char *string_replace(char *dest, char c1, char c2)
     for (dp = dest; *dp != '\0'; dp++)
     {
 
-        if (*dp == c1)
-            *dp = c2;
+        if (*dp == value1)
+            *dp = value2;
 
     }
 
@@ -64,7 +64,7 @@ char *string_replace(char *dest, char c1, char c2)
 
 }
 
-int string_split(char *dest[], char *src, char c)
+int string_split(char *dest[], char *src, char value)
 {
 
     if (src[0] == '\0')
@@ -78,7 +78,7 @@ int string_split(char *dest[], char *src, char c)
     for (i = 1; src[i] != '\0'; i++)
     {
 
-        if (src[i - 1] == c)
+        if (src[i - 1] == value)
         {
 
             src[i - 1] = '\0';
