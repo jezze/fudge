@@ -3,8 +3,8 @@
 int memory_compare(const void *dest, const void *src, unsigned int count)
 {
 
-    unsigned const char *dp = dest;
-    unsigned const char *sp = src;
+    const char *dp = dest;
+    const char *sp = src;
 
     for (; count--; dp++, sp++)
     {
@@ -21,8 +21,8 @@ int memory_compare(const void *dest, const void *src, unsigned int count)
 void *memory_copy(void *dest, const void *src, unsigned int count)
 {
 
-    unsigned char *dp = dest;
-    unsigned const char *sp = src;
+    char *dp = dest;
+    const char *sp = src;
 
     for (; count--; dp++, sp++)
         *dp = *sp;
@@ -34,7 +34,7 @@ void *memory_copy(void *dest, const void *src, unsigned int count)
 void *memory_replace(void *dest, char value1, char value2, unsigned int count)
 {
 
-    unsigned char *dp = dest;
+    char *dp = dest;
 
     for (; count--; dp++)
     {
@@ -52,7 +52,7 @@ void *memory_replace(void *dest, char value1, char value2, unsigned int count)
 void *memory_set(void *dest, char value, unsigned int count)
 {
 
-    unsigned char *dp = dest;
+    char *dp = dest;
 
     for (; count--; dp++)
         *dp = value;
@@ -61,10 +61,10 @@ void *memory_set(void *dest, char value, unsigned int count)
 
 }
 
-unsigned short *memory_setw(void *dest, short value, unsigned int count)
+short *memory_setw(void *dest, short value, unsigned int count)
 {
 
-    unsigned short *dp = dest;
+    short *dp = dest;
 
     for (; count--; dp++)
         *dp = value;
