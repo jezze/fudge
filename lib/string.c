@@ -1,77 +1,77 @@
 #include <lib/memory.h>
 #include <lib/string.h>
 
-int string_compare(const char *dest, const char *src)
+int string_compare(const char *out, const char *in)
 {
 
-    return memory_compare(dest, src, string_length(src));
+    return memory_compare(out, in, string_length(in));
 
 }
 
-char *string_concat(char *dest, const char *src)
+char *string_concat(char *out, const char *in)
 {
 
-    memory_copy(dest + string_length(dest), src, string_length(src));
+    memory_copy(out + string_length(out), in, string_length(in));
 
-    return dest;
+    return out;
 
 }
 
-char *string_copy(char *dest, const char *src)
+char *string_copy(char *out, const char *in)
 {
 
-    memory_copy(dest, src, string_length(src));
+    memory_copy(out, in, string_length(in));
 
-    return dest;
+    return out;
 
 }
 
-unsigned int string_index(const char *dest, char value)
+unsigned int string_index(const char *in, char value)
 {
 
-    return memory_index(dest, value, string_length(dest));
+    return memory_index(in, value, string_length(in));
 
 }
 
-unsigned int string_length(const char *dest)
+unsigned int string_length(const char *in)
 {
 
-    const char *dp = dest;
+    const char *ip = in;
 
-    for (; *dp != '\0'; dp++);
+    for (; *ip != '\0'; ip++);
 
-    return dp - dest;
+    return ip - in;
 
 }
 
-char *string_replace(char *dest, char value1, char value2)
+char *string_replace(char *out, char value1, char value2)
 {
 
-    memory_replace(dest, value1, value2, string_length(dest));
+    memory_replace(out, value1, value2, string_length(out));
 
-    return dest;
+    return out;
 
 }
 
-unsigned int string_split(char *dest[], char *src, char value)
+unsigned int string_split(char *out[], char *in, char value)
 {
 
-    if (src[0] == '\0')
+    if (in[0] == '\0')
         return 0;
 
     unsigned int count = 1;
-    dest[0] = src;
+    out[0] = in;
 
     unsigned int i;
 
-    for (i = 1; src[i] != '\0'; i++)
+    for (i = 1; in[i] != '\0'; i++)
     {
 
-        if (src[i - 1] == value)
+        if (in[i - 1] == value)
         {
 
-            src[i - 1] = '\0';
-            dest[count] = src + i;
+            in[i - 1] = '\0';
+            out[count] = in + i;
             count++;
 
         }

@@ -1,16 +1,16 @@
 #include <lib/memory.h>
 
-int memory_compare(const void *dest, const void *src, unsigned int count)
+int memory_compare(const void *out, const void *in, unsigned int count)
 {
 
-    const char *dp = dest;
-    const char *sp = src;
+    const char *op = out;
+    const char *ip = in;
 
-    for (; count; dp++, sp++, count--)
+    for (; count; op++, ip++, count--)
     {
 
-        if (*dp != *sp)
-            return *dp - *sp;
+        if (*op != *ip)
+            return *op - *ip;
 
     }
 
@@ -18,75 +18,75 @@ int memory_compare(const void *dest, const void *src, unsigned int count)
 
 }
 
-void *memory_copy(void *dest, const void *src, unsigned int count)
+void *memory_copy(void *out, const void *in, unsigned int count)
 {
 
-    char *dp = dest;
-    const char *sp = src;
+    char *op = out;
+    const char *ip = in;
 
-    for (; count; dp++, sp++, count--)
-        *dp = *sp;
+    for (; count; op++, ip++, count--)
+        *op = *ip;
 
-    return dest;
+    return out;
 
 }
 
-unsigned int memory_index(const void *dest, char value, unsigned int count)
+unsigned int memory_index(const void *in, char value, unsigned int count)
 {
 
-    const char *dp = dest;
+    const char *ip = in;
 
-    for (; count; dp++, count--)
+    for (; count; ip++, count--)
     {
 
-        if (*dp == value)
+        if (*ip == value)
             break;
 
     }
 
-    return dp - (char *)dest;
+    return ip - (char *)in;
 
 }
 
-void *memory_replace(void *dest, char value1, char value2, unsigned int count)
+void *memory_replace(void *out, char value1, char value2, unsigned int count)
 {
 
-    char *dp = dest;
+    char *op = out;
 
-    for (; count; dp++, count--)
+    for (; count; op++, count--)
     {
 
-        if (*dp == value1)
-            *dp = value2;
+        if (*op == value1)
+            *op = value2;
 
     }
 
-    return dest;
+    return out;
 
 }
 
 
-void *memory_set(void *dest, char value, unsigned int count)
+void *memory_set(void *out, char value, unsigned int count)
 {
 
-    char *dp = dest;
+    char *op = out;
 
-    for (; count; dp++, count--)
-        *dp = value;
+    for (; count; op++, count--)
+        *op = value;
 
-    return dest;
+    return out;
 
 }
 
-short *memory_setw(void *dest, short value, unsigned int count)
+short *memory_setw(void *out, short value, unsigned int count)
 {
 
-    short *dp = dest;
+    short *op = out;
 
-    for (; count; dp++, count--)
-        *dp = value;
+    for (; count; op++, count--)
+        *op = value;
 
-    return dest;
+    return out;
 
 }
 
