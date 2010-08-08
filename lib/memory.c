@@ -6,10 +6,10 @@ int memory_compare(void *dest, void *src, unsigned int count)
     unsigned char *dp = dest;
     unsigned char *sp = src;
 
-    while (count--)
+    for (; count--; dp++, sp++)
     {
 
-        if (*dp++ != *sp++)
+        if (*dp != *sp)
             return *dp - *sp;
 
     }
@@ -24,8 +24,8 @@ void *memory_copy(void *dest, void *src, unsigned int count)
     unsigned char *dp = dest;
     unsigned char *sp = src;
 
-    while (count--)
-        *dp++ = *sp++;
+    for (; count--; dp++, sp++)
+        *dp = *sp;
 
     return dest;
 
@@ -36,10 +36,10 @@ void *memory_replace(void *dest, char value1, char value2, unsigned int count)
 
     unsigned char *dp = dest;
 
-    while (count--)
+    for (; count--; dp++)
     {
 
-        if (*dp++ == value1)
+        if (*dp == value1)
             *dp = value2;
 
     }
@@ -54,8 +54,8 @@ void *memory_set(void *dest, char value, unsigned int count)
 
     unsigned char *dp = dest;
 
-    while (count--)
-        *dp++ = value;
+    for (; count--; dp++)
+        *dp = value;
 
     return dest;
 
@@ -66,8 +66,8 @@ unsigned short *memory_setw(void *dest, short value, unsigned int count)
 
     unsigned short *dp = dest;
 
-    while (count--)
-        *dp++ = value;
+    for (; count--; dp++)
+        *dp = value;
 
     return dest;
 

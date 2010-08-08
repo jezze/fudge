@@ -1,17 +1,10 @@
+#include <lib/memory.h>
 #include <lib/string.h>
 
 int string_compare(const char *str1, const char *str2)
 {
 
-    for (; *str1 == *str2; ++str1, ++str2)
-    {
-
-        if (*str1 == 0)
-            return 0;
-
-    }
-
-    return *str1 - *str2;
+    return memory_compare((void *)str1, (void *)str2, string_length(str1));
 
 }
 
