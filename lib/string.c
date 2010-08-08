@@ -29,14 +29,10 @@ char *string_copy(char *dest, const char *src)
 
 }
 
-int string_offset(const char *dest, char value)
+int string_index(const char *dest, char value)
 {
 
-    int count;
-
-    for (count = 0; *dest != '\0' && *dest != value; dest++, count++);
-
-    return (*dest == value) ? count : -1;
+    return memory_index(dest, value, string_length(dest));
 
 }
 

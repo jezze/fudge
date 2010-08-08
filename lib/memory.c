@@ -31,10 +31,10 @@ void *memory_copy(void *dest, const void *src, unsigned int count)
 
 }
 
-int memory_index(void *dest, char value, unsigned int count)
+int memory_index(const void *dest, char value, unsigned int count)
 {
 
-    char *dp = dest;
+    const char *dp = dest;
 
     for (; count; dp++, count--)
     {
