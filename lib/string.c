@@ -43,7 +43,11 @@ int string_offset(const char *dest, char value)
 int string_length(const char *dest)
 {
 
-    return string_offset(dest, '\0');
+    const char *dp = dest;
+
+    for (; *dp != '\0'; dp++);
+
+    return dp - dest;
 
 }
 
