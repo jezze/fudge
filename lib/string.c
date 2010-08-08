@@ -4,7 +4,7 @@
 int string_compare(const char *dest, const char *src)
 {
 
-    return memory_compare(dest, src, string_length(dest));
+    return memory_compare(dest, src, string_length(src));
 
 }
 
@@ -20,10 +20,7 @@ char *string_concat(char *dest, const char *src)
 char *string_copy(char *dest, const char *src)
 {
 
-    char *dp = dest;
-    const char *sp = src;
-
-    while ((*dp++ = *sp++) != '\0');
+    memory_copy(dest, src, string_length(src));
 
     return dest;
 
