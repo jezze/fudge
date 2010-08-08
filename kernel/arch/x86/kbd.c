@@ -72,7 +72,7 @@ static unsigned int kbd_read(struct vfs_node *node, unsigned int offset, unsigne
     if (c)
     {
 
-        ((char *)buffer)[0] = c;
+        memory_copy(buffer, &c, 1);
         return 1;
 
     }
