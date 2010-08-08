@@ -31,7 +31,7 @@ void *memory_copy(void *dest, const void *src, unsigned int count)
 
 }
 
-int memory_index(const void *dest, char value, unsigned int count)
+unsigned int memory_index(const void *dest, char value, unsigned int count)
 {
 
     const char *dp = dest;
@@ -40,11 +40,11 @@ int memory_index(const void *dest, char value, unsigned int count)
     {
 
         if (*dp == value)
-            return dp - (char *)dest;
+            break;
 
     }
 
-    return -1;
+    return dp - (char *)dest;
 
 }
 

@@ -29,14 +29,14 @@ char *string_copy(char *dest, const char *src)
 
 }
 
-int string_index(const char *dest, char value)
+unsigned int string_index(const char *dest, char value)
 {
 
     return memory_index(dest, value, string_length(dest));
 
 }
 
-int string_length(const char *dest)
+unsigned int string_length(const char *dest)
 {
 
     const char *dp = dest;
