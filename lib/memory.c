@@ -1,10 +1,10 @@
 #include <lib/memory.h>
 
-int memory_compare(void *dest, void *src, unsigned int count)
+int memory_compare(const void *dest, const void *src, unsigned int count)
 {
 
-    unsigned char *dp = dest;
-    unsigned char *sp = src;
+    unsigned const char *dp = dest;
+    unsigned const char *sp = src;
 
     for (; count--; dp++, sp++)
     {
@@ -18,11 +18,11 @@ int memory_compare(void *dest, void *src, unsigned int count)
 
 }
 
-void *memory_copy(void *dest, void *src, unsigned int count)
+void *memory_copy(void *dest, const void *src, unsigned int count)
 {
 
     unsigned char *dp = dest;
-    unsigned char *sp = src;
+    unsigned const char *sp = src;
 
     for (; count--; dp++, sp++)
         *dp = *sp;

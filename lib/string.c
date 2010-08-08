@@ -11,7 +11,7 @@ int string_compare(const char *str1, const char *str2)
 char *string_concat(char *dest, const char *src)
 {
 
-    string_copy(dest + string_length(dest), src);
+    memory_copy(dest + string_length(dest), src, string_length(src));
 
     return dest;
 
