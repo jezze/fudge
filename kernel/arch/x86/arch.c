@@ -16,13 +16,6 @@
 #include <kernel/arch/x86/syscall.h>
 #include <kernel/assert.h>
 
-void arch_clear()
-{
-
-    screen_clear();
-
-}
-
 void arch_disable_interrupts()
 {
 

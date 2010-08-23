@@ -78,19 +78,7 @@ static void shell_interpret(char *command)
     char *argv[32];
     int argc = string_split(argv, command, ' ');
 
-    if (!argc)
-    {
-
-    }
-
-    else if (!string_compare(argv[0], "clear"))
-    {
-
-        arch_clear();
-
-    }
-
-    else
+    if (argc)
     {
 
         struct vfs_node *node = vfs_find(kernel_get_vfs_root(), argv[0]);

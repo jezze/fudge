@@ -3,7 +3,6 @@
 
 struct vfs_node;
 
-extern void arch_clear();
 extern void arch_disable_interrupts();
 extern void arch_enable_interrupts();
 extern void arch_reboot();
