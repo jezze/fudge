@@ -19,7 +19,7 @@ void irq_unregister_handler(unsigned char index)
 
 }
 
-void irq_remap()
+static void irq_remap()
 {
 
     io_outb(0x20, 0x11);
