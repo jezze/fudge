@@ -3,6 +3,7 @@
 #include <lib/string.h>
 #include <lib/vfs.h>
 #include <kernel/arch/x86/arch.h>
+#include <kernel/arch/x86/fpu.h>
 #include <kernel/arch/x86/gdt.h>
 #include <kernel/arch/x86/idt.h>
 #include <kernel/arch/x86/io.h>
@@ -49,6 +50,7 @@ void arch_init()
 
     gdt_init();
     idt_init();
+    fpu_init();
 
 }
 

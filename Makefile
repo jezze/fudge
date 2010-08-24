@@ -43,6 +43,8 @@ arch-x86: lib kernel
     lib/vfs.o \
     kernel/arch/x86/arch.o \
     kernel/arch/x86/cr.o \
+    kernel/arch/x86/fpu.o \
+    kernel/arch/x86/fpus.o \
     kernel/arch/x86/gdt.o \
     kernel/arch/x86/gdts.o \
     kernel/arch/x86/idt.o \

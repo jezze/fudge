@@ -31,6 +31,9 @@ void kernel_init(struct mboot_info *header, unsigned int magic)
 
     mboot_init(header);
 
+    float s = 0.456;
+    s += 0.12;
+
     shell_init();
 
     for (;;);
