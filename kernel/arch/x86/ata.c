@@ -35,16 +35,8 @@ void ata_set_command(struct ata_device *device, unsigned char command)
 
 }
 
-void ata_init()
+unsigned char ata_identify(struct ata_device *device)
 {
-
-    call_puts("CHECK ATA... ");
-
-    struct ata_device primaryMaster;
-    primaryMaster.control = ATA_PRIMARY_MASTER_CONTROL;
-    primaryMaster.data = ATA_PRIMARY_MASTER_DATA;
-
-    struct ata_device *device = &primaryMaster;
 
     ata_select(device, 0);
     ata_set_command(device, 0xEC);
@@ -70,8 +62,6 @@ void ata_init()
         if (!(status & 0x01))
         {
 
-            call_puts("READY TO READ");
-
             unsigned short buffer[256];
 
             unsigned int i;
@@ -83,16 +73,50 @@ void ata_init()
 
             }
 
+            return 1;
+
         }
 
         else
         {
 
-            call_puts("ERROR");
-
         }
 
     }
+
+    return 0;
+
+}
+
+void ata_init()
+{
+
+    call_puts("CHECKING ATA\n");
+
+    struct ata_device devices[4];
+
+    devices[0].control = ATA_PRIMARY_MASTER_CONTROL;
+    devices[0].data = ATA_PRIMARY_MASTER_DATA;
+    devices[1].control = ATA_PRIMARY_SLAVE_CONTROL;
+    devices[1].data = ATA_PRIMARY_SLAVE_DATA;
+    devices[2].control = ATA_SECONDARY_MASTER_CONTROL;
+    devices[2].data = ATA_SECONDARY_MASTER_DATA;
+    devices[3].control = ATA_SECONDARY_SLAVE_CONTROL;
+    devices[3].data = ATA_SECONDARY_SLAVE_DATA;
+
+    if (ata_identify(&devices[0]))
+        call_puts("hda found\n");
+
+    if (ata_identify(&devices[1]))
+        call_puts("hdb found\n");
+
+    if (ata_identify(&devices[2]))
+        call_puts("hdc found\n");
+
+    if (ata_identify(&devices[3]))
+        call_puts("hdd found\n");
+
+    call_puts("\n");
 
 }
 
