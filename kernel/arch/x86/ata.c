@@ -71,7 +71,7 @@ unsigned char ata_identify(struct ata_device *device)
 {
 
     ata_select(device);
-    ata_set_command(device, ATA_COMMAND_IDENTIFY);
+    ata_set_command(device, ATA_COMMAND_ID);
 
     unsigned char status = ata_get_command(device);
 
