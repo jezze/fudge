@@ -48,10 +48,10 @@ unsigned char ata_read_identity(struct ata_device *device)
 
         unsigned char status = ata_get_command(device);
 
-        if (status & ATA_STATUS_ERROR)
+        if (status & ATA_STATUS_FLAG_ERROR)
             return 0;
             
-        if (!(status & 0x80) && (status & 0x08))
+        if (!(status & ATA_STATUS_FLAG_BUSY) && (status & ATA_STATUS_FLAG_DRQ))
             break;
 
     }
