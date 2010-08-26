@@ -42,6 +42,7 @@ arch-x86: lib kernel
     lib/string.o \
     lib/vfs.o \
     kernel/arch/x86/arch.o \
+    kernel/arch/x86/ata.o \
     kernel/arch/x86/cr.o \
     kernel/arch/x86/fpu.o \
     kernel/arch/x86/fpus.o \

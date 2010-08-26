@@ -5,6 +5,7 @@ GCCFLAGS=-c -O2 -I../../../include -Wall -Wextra -ffreestanding -nostdlib -nosta
 
 all:
 	@$(GCC) $(GCCFLAGS) arch.c -o arch.o
+	@$(GCC) $(GCCFLAGS) ata.c -o ata.o
 	@$(ASM) $(ASMFLAGS) cr.s -o cr.o
 	@$(GCC) $(GCCFLAGS) fpu.c -o fpu.o
 	@$(ASM) $(ASMFLAGS) fpus.s -o fpus.o

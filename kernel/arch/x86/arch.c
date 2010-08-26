@@ -3,6 +3,7 @@
 #include <lib/string.h>
 #include <lib/vfs.h>
 #include <kernel/arch/x86/arch.h>
+#include <kernel/arch/x86/ata.h>
 #include <kernel/arch/x86/fpu.h>
 #include <kernel/arch/x86/gdt.h>
 #include <kernel/arch/x86/idt.h>
@@ -62,6 +63,7 @@ void arch_init_devices()
     pit_init();
     kbd_init();
     rtc_init();
+    ata_init();
 
 }
 
