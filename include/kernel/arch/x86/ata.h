@@ -21,6 +21,7 @@ struct ata_device
 
     unsigned short control;
     unsigned short data;
+    unsigned char secondary;
 
 };
 
