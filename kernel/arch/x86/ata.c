@@ -40,7 +40,7 @@ void ata_set_command(struct ata_device *device, unsigned char command)
 
 }
 
-unsigned char ata_identify_pata(struct ata_device *device)
+unsigned char ata_read_identity(struct ata_device *device)
 {
 
     while (1)
@@ -56,8 +56,6 @@ unsigned char ata_identify_pata(struct ata_device *device)
 
     }
 
-    device->type = ATA_DEVICE_TYPE_PATA;
-
     unsigned short buffer[256];
 
     unsigned int i;
@@ -69,12 +67,30 @@ unsigned char ata_identify_pata(struct ata_device *device)
 
 }
 
-unsigned char ata_identify_other(struct ata_device *device)
+unsigned char ata_identify(struct ata_device *device)
 {
+
+    ata_select(device);
+    ata_set_command(device, ATA_COMMAND_IDENTIFY);
+
+    unsigned char status = ata_get_command(device);
+
+    if (!status)
+        return 0;
 
     unsigned short lba = io_inb(device->data + ATA_DATA_LBA1) | (io_inb(device->data + ATA_DATA_LBA2) << 8);
 
-    if (lba == 0xEB14 || lba == 0x9669)
+    if (lba == 0x0000)
+    {
+
+        device->type = ATA_DEVICE_TYPE_ATA;
+        ata_read_identity(device);
+
+        return 1;
+
+    }
+
+    if (lba == 0xEB14)
     {
 
         device->type = ATA_DEVICE_TYPE_ATAPI;
@@ -92,25 +108,16 @@ unsigned char ata_identify_other(struct ata_device *device)
 
     }
 
+    if (lba == 0x9669)
+    {
+
+        device->type = ATA_DEVICE_TYPE_SATAPI;
+
+        return 1;
+
+    }
+
     return 0;
-
-}
-
-unsigned char ata_identify(struct ata_device *device)
-{
-
-    ata_select(device);
-    ata_set_command(device, ATA_COMMAND_IDENTIFY);
-
-    unsigned char status = ata_get_command(device);
-
-    if (!status)
-        return 0;
-
-    if (status & ATA_STATUS_ERROR)
-        return ata_identify_other(device);
-    else
-        return ata_identify_pata(device);
 
 }
 
@@ -120,16 +127,20 @@ void ata_print_info(struct ata_device *device)
     switch (device->type)
     {
 
-        case ATA_DEVICE_TYPE_PATA:
-            call_puts("parallell ata\n");
+        case ATA_DEVICE_TYPE_ATA:
+            call_puts("ata\n");
+            break;
+
+        case ATA_DEVICE_TYPE_ATAPI:
+            call_puts("atapi\n");
             break;
 
         case ATA_DEVICE_TYPE_SATA:
             call_puts("serial ata\n");
             break;
 
-        case ATA_DEVICE_TYPE_ATAPI:
-            call_puts("atapi\n");
+        case ATA_DEVICE_TYPE_SATAPI:
+            call_puts("serial atapi\n");
             break;
 
         default:
