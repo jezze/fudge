@@ -29,7 +29,7 @@ void kernel_init(struct mboot_info *header, unsigned int magic)
     arch_enable_interrupts();
     arch_init_devices();
 
-    mboot_init(header);
+//    mboot_init(header);
 
     shell_init();
 
