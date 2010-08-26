@@ -72,10 +72,7 @@ unsigned char ata_identify_pata(struct ata_device *device)
 unsigned char ata_identify_other(struct ata_device *device)
 {
 
-    unsigned char lba1 = io_inb(device->data + ATA_DATA_LBA1);
-    unsigned char lba2 = io_inb(device->data + ATA_DATA_LBA2);
-
-    unsigned short lba = lba1 | (lba2 << 8);
+    unsigned short lba = io_inb(device->data + ATA_DATA_LBA1) | (io_inb(device->data + ATA_DATA_LBA2) << 8);
 
     if (lba == 0xEB14 || lba == 0x9669)
     {
@@ -103,7 +100,7 @@ unsigned char ata_identify(struct ata_device *device)
 {
 
     ata_select(device);
-    ata_set_command(device, 0xEC);
+    ata_set_command(device, ATA_COMMAND_IDENTIFY);
 
     unsigned char status = ata_get_command(device);
 
@@ -170,7 +167,6 @@ void ata_init()
 
     }
 
-
     secondaryMaster.control = ATA_SECONDARY_MASTER_CONTROL;
     secondaryMaster.data = ATA_SECONDARY_MASTER_DATA;
 
@@ -181,7 +177,6 @@ void ata_init()
         ata_print_info(&secondaryMaster);        
 
     }
-
 
     secondarySlave.control = ATA_SECONDARY_SLAVE_CONTROL;
     secondarySlave.data = ATA_SECONDARY_SLAVE_DATA;
