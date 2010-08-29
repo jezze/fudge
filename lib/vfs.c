@@ -75,7 +75,7 @@ struct vfs_node *vfs_find(struct vfs_node *node, char *path)
         for (i = 0; (current = vfs_walk(node, i)); i++)
         {
 
-            if (!memory_compare(path, current->name, index))
+            if (string_length(current->name) == index && !memory_compare(path, current->name, index))
                 return current;
 
         }
