@@ -1,3 +1,7 @@
+ASM=nasm
+ASMFLAGS=-f elf
+GCC=gcc
+GCCFLAGS=-c -O2 -I../include -Wall -Wextra -ffreestanding -nostdlib -nostartfiles -nodefaultlibs
 LD=ld
 LDFLAGS=-T./linker-x86.ld
 
@@ -8,13 +12,11 @@ ARM_GCCFLAGS=-c -I./include -Wall -Wextra -ffreestanding -nostdlib -nostartfiles
 ARM_LD=arm-elf-ld
 ARM_LDFLAGS=-T./linker-arm.ld
 
-MKINITRD=./tools/mkinitrd
-
-.PHONY: all clean initrd kernel lib tools
+.PHONY: all clean initrd kernel lib link tools
 
 all: system-x86
-system-arm: arch-arm
-system-x86: arch-x86 initrd
+system-arm: arch-arm link-arm
+system-x86: arch-x86 link-x86 initrd
 
 arch-arm:
 	@echo "Building ARM..."
@@ -24,11 +26,22 @@ arch-arm:
 	@$(ARM_GCC) $(ARM_GCCFLAGS) lib/vfs.c -o lib/vfs.o
 	@$(ARM_GCC) $(ARM_GCCFLAGS) kernel/assert.c -o kernel/assert.o
 	@$(ARM_GCC) $(ARM_GCCFLAGS) kernel/kernel.c -o kernel/kernel.o
-	@$(ARM_LD) $(ARM_LDFLAGS) lib/string.o lib/vfs.o kernel/arch/arm/arch.o kernel/arch/arm/init.o kernel/assert.o kernel/kernel.o -o build/root/boot/kernel
 
 arch-x86: lib kernel
 	@echo "Building x86..."
 	@cd kernel/arch/x86; make
+
+link-arm: arch-arm
+	@$(ARM_LD) $(ARM_LDFLAGS) \
+    lib/string.o \
+    lib/vfs.o \
+    kernel/arch/arm/arch.o \
+    kernel/arch/arm/init.o \
+    kernel/assert.o \
+    kernel/kernel.o \
+    -o build/root/boot/kernel
+
+link-x86: arch-x86
 	@$(LD) $(LDFLAGS) \
     lib/call.o \
     lib/calls.o \
@@ -83,7 +96,7 @@ initrd: lib tools
 	@echo "Building ramdisk..."
 	@cd ramdisk; make
 	@echo "Creating ramdisk..."
-	@$(MKINITRD) ramdisk/about.txt about.txt ramdisk/cat cat ramdisk/cpu cpu ramdisk/date date ramdisk/echo echo ramdisk/elf elf ramdisk/hello hello ramdisk/help.txt help.txt ramdisk/ls ls ramdisk/reboot reboot ramdisk/shell shell ramdisk/timer timer
+	@tools/mkinitrd ramdisk/about.txt about.txt ramdisk/cat cat ramdisk/cpu cpu ramdisk/date date ramdisk/echo echo ramdisk/elf elf ramdisk/hello hello ramdisk/help.txt help.txt ramdisk/ls ls ramdisk/reboot reboot ramdisk/shell shell ramdisk/timer timer
 
 kernel: lib
 	@echo "Building kernel..."
@@ -96,3 +109,4 @@ lib:
 tools:
 	@echo "Building tools..."
 	@cd tools; make
+
