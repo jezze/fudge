@@ -1,7 +1,3 @@
-ASM=nasm
-ASMFLAGS=-f elf
-GCC=gcc
-GCCFLAGS=-c -O2 -I./include -Wall -Wextra -ffreestanding -nostdlib -nostartfiles -nodefaultlibs
 LD=ld
 LDFLAGS=-T./linker-x86.ld
 
@@ -14,11 +10,11 @@ ARM_LDFLAGS=-T./linker-arm.ld
 
 MKINITRD=./tools/mkinitrd
 
-.PHONY: all cd clean x86 initrd kernel lib
+.PHONY: all clean initrd kernel lib tools
 
 all: system-x86
 system-arm: arch-arm
-system-x86: lib kernel arch-x86 initrd
+system-x86: arch-x86 initrd
 
 arch-arm:
 	@echo "Building ARM..."
@@ -83,14 +79,13 @@ clean:
 	@cd lib; make clean
 	@cd ramdisk; make clean
 
-initrd: lib
+initrd: lib tools
 	@echo "Building ramdisk..."
 	@cd ramdisk; make
 	@echo "Creating ramdisk..."
-	@$(GCC) -O2 tools/mkinitrd.c -o tools/mkinitrd
 	@$(MKINITRD) ramdisk/about.txt about.txt ramdisk/cat cat ramdisk/cpu cpu ramdisk/date date ramdisk/echo echo ramdisk/elf elf ramdisk/hello hello ramdisk/help.txt help.txt ramdisk/ls ls ramdisk/reboot reboot ramdisk/shell shell ramdisk/timer timer
 
-kernel:
+kernel: lib
 	@echo "Building kernel..."
 	@cd kernel; make
 
@@ -98,3 +93,6 @@ lib:
 	@echo "Building library..."
 	@cd lib; make
 
+tools:
+	@echo "Building tools..."
+	@cd tools; make
