@@ -1,3 +1,5 @@
+#!/bin/sh
+
 ASM=arm-elf-as
 ASMFLAGS=
 GCC=arm-elf-gcc

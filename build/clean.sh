@@ -1,3 +1,5 @@
+#!/bin/sh
+
 rm -f fudge.img
 rm -f fudge.iso
 rm -f root/boot/kernel

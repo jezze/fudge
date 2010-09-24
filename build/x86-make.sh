@@ -1,3 +1,5 @@
+#!/bin/sh
+
 ASM="nasm"
 ASMFLAGS="-f elf"
 GCC="gcc"
@@ -124,3 +126,4 @@ DIR="../tools"
 $GCC $GCCFLAGS $DIR/mkinitrd.c -o $DIR/mkinitrd
 
 ../tools/mkinitrd ../ramdisk/about.txt about.txt ../ramdisk/cat cat ../ramdisk/cpu cpu ../ramdisk/date date ../ramdisk/echo echo ../ramdisk/elf elf ../ramdisk/hello hello ../ramdisk/help.txt help.txt ../ramdisk/ls ls ../ramdisk/reboot reboot ../ramdisk/shell shell ../ramdisk/timer timer
+
