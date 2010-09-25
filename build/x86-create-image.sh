@@ -1,5 +1,17 @@
 #!/bin/sh
 
+if [ ! -f root/boot/kernel ]
+then
+    echo "ERROR: Kernel not found. Did you forget to compile?"
+    exit
+fi
+
+if [ ! -f root/boot/initrd ]
+then
+    echo "ERROR: Ramdisk image not found. Did you forget to compile?"
+    exit
+fi
+
 dd if=/dev/zero of=fudge.img bs=512 count=2880
 dd if=root/boot/grub/stage1 conv=notrunc of=fudge.img bs=512 seek=0
 dd if=root/boot/grub/stage2 conv=notrunc of=fudge.img bs=512 seek=1
