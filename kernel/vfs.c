@@ -31,12 +31,8 @@ static unsigned int vfs_root_write(struct vfs_node *node, unsigned int offset, u
 struct vfs_node *vfs_init()
 {
 
+    memory_set(&root, 0, sizeof (struct vfs_node));
     string_copy(root.name, "root");
-    root.inode = 0;
-    root.length = 0;
-    root.open = 0;
-    root.close = 0;
-    root.read = 0;
     root.write = vfs_root_write;
     root.walk = vfs_root_walk;
 

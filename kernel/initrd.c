@@ -53,12 +53,8 @@ static unsigned int initrd_write(struct vfs_node *node, unsigned int offset, uns
 void initrd_init(unsigned int location)
 {
 
+    memory_set(&initrd, 0, sizeof (struct vfs_node));
     string_copy(initrd.name, "initrd");
-    initrd.inode = 0;
-    initrd.length = 0;
-    initrd.open = 0;
-    initrd.close = 0;
-    initrd.read = 0;
     initrd.write = initrd_write;
     initrd.walk = initrd_walk;
 
@@ -74,14 +70,11 @@ void initrd_init(unsigned int location)
 
         initrdFileHeaders[i].offset += location;
 
+        memory_set(&initrdNodes[initrdNodesCount], 0, sizeof (struct vfs_node));
         string_copy(initrdNodes[initrdNodesCount].name, initrdFileHeaders[i].name);
         initrdNodes[initrdNodesCount].inode = i;
         initrdNodes[initrdNodesCount].length = initrdFileHeaders[i].length;
-        initrdNodes[initrdNodesCount].open = 0;
-        initrdNodes[initrdNodesCount].close = 0;
         initrdNodes[initrdNodesCount].read = initrd_read;
-        initrdNodes[initrdNodesCount].write = 0;
-        initrdNodes[initrdNodesCount].walk = 0;
 
         vfs_write(&initrd, 0, 1, &initrdNodes[initrdNodesCount]);
 

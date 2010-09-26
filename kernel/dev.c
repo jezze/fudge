@@ -34,41 +34,19 @@ static unsigned int dev_write(struct vfs_node *node, unsigned int offset, unsign
 void dev_init()
 {
 
+    memory_set(&dev, 0, sizeof (struct vfs_node));
     string_copy(dev.name, "dev");
-    dev.inode = 0;
-    dev.length = 0;
-    dev.open = 0;
-    dev.close = 0;
-    dev.read = 0;
     dev.write = dev_write;
     dev.walk = dev_walk;
 
+    memory_set(&devStdin, 0, sizeof (struct vfs_node));
     string_copy(devStdin.name, "stdin");
-    devStdin.inode = 0;
-    devStdin.length = 0;
-    devStdin.open = 0;
-    devStdin.close = 0;
-    devStdin.read = 0;
-    devStdin.write = 0;
-    devStdin.walk = 0;
 
+    memory_set(&devStdout, 0, sizeof (struct vfs_node));
     string_copy(devStdout.name, "stdout");
-    devStdout.inode = 0;
-    devStdout.length = 0;
-    devStdout.open = 0;
-    devStdout.close = 0;
-    devStdout.read = 0;
-    devStdout.write = 0;
-    devStdout.walk = 0;
 
+    memory_set(&devRtc, 0, sizeof (struct vfs_node));
     string_copy(devRtc.name, "rtc");
-    devRtc.inode = 0;
-    devRtc.length = 0;
-    devRtc.open = 0;
-    devRtc.close = 0;
-    devRtc.read = 0;
-    devRtc.write = 0;
-    devRtc.walk = 0;
 
     vfs_write(&dev, 0, 1, &devStdin);
     vfs_write(&dev, 0, 1, &devStdout);
