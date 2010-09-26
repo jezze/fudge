@@ -1,5 +1,4 @@
 #include <lib/call.h>
-#include <lib/cbuffer.h>
 #include <lib/memory.h>
 #include <lib/string.h>
 #include <lib/vfs.h>
