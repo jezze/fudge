@@ -29,7 +29,7 @@ static unsigned int vfs_root_write(struct vfs_node *node, unsigned int offset, u
 
 }
 
-struct vfs_node *vfs_init(unsigned int location)
+struct vfs_node *vfs_init()
 {
 
     string_copy(root.name, "root");
@@ -40,9 +40,6 @@ struct vfs_node *vfs_init(unsigned int location)
     root.read = 0;
     root.write = vfs_root_write;
     root.walk = vfs_root_walk;
-
-    vfs_write(&root, 0, 1, dev_init());
-    vfs_write(&root, 0, 1, initrd_init(location));
 
     return &root;
 

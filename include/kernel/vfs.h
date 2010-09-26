@@ -3,7 +3,7 @@
 
 struct vfs_node;
 
-extern struct vfs_node *vfs_init(unsigned int location);
+extern struct vfs_node *vfs_init();
 
 #endif
 
