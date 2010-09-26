@@ -2,7 +2,7 @@
 #include <lib/memory.h>
 #include <lib/string.h>
 #include <lib/vfs.h>
-#include <kernel/initrd.h>
+#include <kernel/vfs.h>
 
 struct initrd_header *initrdHeader;
 struct initrd_file_header *initrdFileHeaders;
@@ -31,7 +31,7 @@ static unsigned int initrd_read(struct vfs_node *node, unsigned int offset, unsi
 
 }
 
-static struct vfs_node *initrd_walk(struct vfs_node *node, unsigned int index)
+static struct vfs_node *vfs_root_walk(struct vfs_node *node, unsigned int index)
 {
 
     if (index < rootNodesCount)
@@ -51,7 +51,7 @@ static struct vfs_node *dev_walk(struct vfs_node *node, unsigned int index)
 
 }
 
-struct vfs_node *initrd_init(unsigned int location)
+struct vfs_node *vfs_init(unsigned int location)
 {
 
     // ROOT
@@ -63,7 +63,7 @@ struct vfs_node *initrd_init(unsigned int location)
     root.close = 0;
     root.read = 0;
     root.write = 0;
-    root.walk = initrd_walk;
+    root.walk = vfs_root_walk;
 
     rootNodesCount = 0;
 
@@ -74,7 +74,7 @@ struct vfs_node *initrd_init(unsigned int location)
     rootNodes[rootNodesCount].close = 0;
     rootNodes[rootNodesCount].read = 0;
     rootNodes[rootNodesCount].write = 0;
-    rootNodes[rootNodesCount].walk = initrd_walk;
+    rootNodes[rootNodesCount].walk = vfs_root_walk;
     rootNodesCount++;
 
     string_copy(rootNodes[rootNodesCount].name, "..");
@@ -84,7 +84,7 @@ struct vfs_node *initrd_init(unsigned int location)
     rootNodes[rootNodesCount].close = 0;
     rootNodes[rootNodesCount].read = 0;
     rootNodes[rootNodesCount].write = 0;
-    rootNodes[rootNodesCount].walk = initrd_walk;
+    rootNodes[rootNodesCount].walk = vfs_root_walk;
     rootNodesCount++;
 
     string_copy(rootNodes[rootNodesCount].name, "dev");
@@ -143,7 +143,7 @@ struct vfs_node *initrd_init(unsigned int location)
     devNodes[devNodesCount].close = 0;
     devNodes[devNodesCount].read = 0;
     devNodes[devNodesCount].write = 0;
-    devNodes[devNodesCount].walk = initrd_walk;
+    devNodes[devNodesCount].walk = vfs_root_walk;
     devNodesCount++;
 
     string_copy(devNodes[devNodesCount].name, "stdin");

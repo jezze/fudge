@@ -1,7 +1,7 @@
 #include <lib/string.h>
 #include <lib/vfs.h>
 #include <kernel/assert.h>
-#include <kernel/initrd.h>
+#include <kernel/vfs.h>
 #include <kernel/kernel.h>
 #include <kernel/mboot.h>
 #include <kernel/shell.h>
@@ -18,7 +18,7 @@ struct vfs_node *kernel_get_vfs_root()
 void kernel_init(struct mboot_info *header, unsigned int magic)
 {
 
-    vfsRoot = initrd_init(*((unsigned int *)header->modulesAddresses));
+    vfsRoot = vfs_init(*((unsigned int *)header->modulesAddresses));
 
     ASSERT(magic == MBOOT_MAGIC);
     ASSERT(header->modulesCount);
