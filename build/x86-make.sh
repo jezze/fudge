@@ -14,11 +14,13 @@ LD="ld"
 LDFLAGS=-"T./linker-x86.ld"
 
 $GCC $GCCFLAGS $DIR_KERNEL/assert.c -o $DIR_KERNEL/assert.o
+$GCC $GCCFLAGS $DIR_KERNEL/dev.c -o $DIR_KERNEL/dev.o
 $GCC $GCCFLAGS $DIR_KERNEL/elf.c -o $DIR_KERNEL/elf.o
-$GCC $GCCFLAGS $DIR_KERNEL/vfs.c -o $DIR_KERNEL/vfs.o
+$GCC $GCCFLAGS $DIR_KERNEL/initrd.c -o $DIR_KERNEL/initrd.o
 $GCC $GCCFLAGS $DIR_KERNEL/kernel.c -o $DIR_KERNEL/kernel.o
 $GCC $GCCFLAGS $DIR_KERNEL/mboot.c -o $DIR_KERNEL/mboot.o
 $GCC $GCCFLAGS $DIR_KERNEL/shell.c -o $DIR_KERNEL/shell.o
+$GCC $GCCFLAGS $DIR_KERNEL/vfs.c -o $DIR_KERNEL/vfs.o
 $GCC $GCCFLAGS $DIR_KERNEL_ARCH/arch.c -o $DIR_KERNEL_ARCH/arch.o
 $GCC $GCCFLAGS $DIR_KERNEL_ARCH/ata.c -o $DIR_KERNEL_ARCH/ata.o
 $ASM $ASMFLAGS $DIR_KERNEL_ARCH/cr.s -o $DIR_KERNEL_ARCH/cr.o
@@ -50,11 +52,13 @@ $GCC $GCCFLAGS $DIR_LIB/vfs.c -o $DIR_LIB/vfs.o
 
 $LD $LDFLAGS \
     $DIR_KERNEL/assert.o \
+    $DIR_KERNEL/dev.o \
     $DIR_KERNEL/elf.o \
-    $DIR_KERNEL/vfs.o \
+    $DIR_KERNEL/initrd.o \
     $DIR_KERNEL/kernel.o \
     $DIR_KERNEL/mboot.o \
     $DIR_KERNEL/shell.o \
+    $DIR_KERNEL/vfs.o \
     $DIR_KERNEL_ARCH/arch.o \
     $DIR_KERNEL_ARCH/ata.o \
     $DIR_KERNEL_ARCH/cr.o \
