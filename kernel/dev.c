@@ -1,3 +1,4 @@
+#include <lib/call.h>
 #include <lib/cbuffer.h>
 #include <lib/memory.h>
 #include <lib/string.h>
@@ -31,7 +32,7 @@ static unsigned int dev_write(struct vfs_node *node, unsigned int offset, unsign
 
 }
 
-struct vfs_node *dev_init()
+void dev_init()
 {
 
     string_copy(dev.name, "dev");
@@ -74,7 +75,8 @@ struct vfs_node *dev_init()
     vfs_write(&dev, 0, 1, &devStdout);
     vfs_write(&dev, 0, 1, &devRtc);
 
-    return &dev;
+    struct vfs_node *root = call_vfs_find(".");
+    vfs_write(root, 0, 1, &dev);
 
 }
 

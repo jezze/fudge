@@ -1,3 +1,4 @@
+#include <lib/call.h>
 #include <lib/cbuffer.h>
 #include <lib/memory.h>
 #include <lib/string.h>
@@ -50,7 +51,7 @@ static unsigned int initrd_write(struct vfs_node *node, unsigned int offset, uns
 
 }
 
-struct vfs_node *initrd_init(unsigned int location)
+void initrd_init(unsigned int location)
 {
 
     string_copy(initrd.name, "initrd");
@@ -89,7 +90,8 @@ struct vfs_node *initrd_init(unsigned int location)
 
     }
 
-    return &initrd;
+    struct vfs_node *root = call_vfs_find(".");
+    vfs_write(root, 0, 1, &initrd);
 
 }
 

@@ -1,8 +1,6 @@
 #ifndef KERNEL_INITRD_H
 #define KERNEL_INITRD_H
 
-struct vfs_node;
-
 struct initrd_header
 {
 
@@ -20,7 +18,7 @@ struct initrd_file_header
 
 };
 
-extern struct vfs_node *initrd_init(unsigned int location);
+extern void initrd_init(unsigned int location);
 
 #endif
 

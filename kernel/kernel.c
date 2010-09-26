@@ -21,20 +21,19 @@ void kernel_init(struct mboot_info *header, unsigned int magic)
 {
 
     vfsRoot = vfs_init();
-    
-    vfs_write(vfsRoot, 0, 1, dev_init());
-    vfs_write(vfsRoot, 0, 1, initrd_init(*((unsigned int *)header->modulesAddresses)));
-
-    ASSERT(magic == MBOOT_MAGIC);
-    ASSERT(header->modulesCount);
 
     arch_init();
     arch_init_syscalls();
     arch_init_interrupts();
     arch_enable_interrupts();
+
+    dev_init();
     arch_init_devices();
 
-//    mboot_init(header);
+    ASSERT(magic == MBOOT_MAGIC);
+    ASSERT(header->modulesCount);
+
+    initrd_init(*((unsigned int *)header->modulesAddresses));
 
     shell_init();
 
