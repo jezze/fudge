@@ -64,6 +64,113 @@ static struct vfs_node *initrd_walk(struct vfs_node *node, unsigned int index)
 
 }
 
+void dev_init()
+{
+
+    devNodesCount = 0;
+
+    string_copy(devNodes[devNodesCount].name, ".");
+    devNodes[devNodesCount].inode = 0;
+    devNodes[devNodesCount].length = 0;
+    devNodes[devNodesCount].open = 0;
+    devNodes[devNodesCount].close = 0;
+    devNodes[devNodesCount].read = 0;
+    devNodes[devNodesCount].write = 0;
+    devNodes[devNodesCount].walk = dev_walk;
+    devNodesCount++;
+
+    string_copy(devNodes[devNodesCount].name, "..");
+    devNodes[devNodesCount].inode = 0;
+    devNodes[devNodesCount].length = 0;
+    devNodes[devNodesCount].open = 0;
+    devNodes[devNodesCount].close = 0;
+    devNodes[devNodesCount].read = 0;
+    devNodes[devNodesCount].write = 0;
+    devNodes[devNodesCount].walk = vfs_root_walk;
+    devNodesCount++;
+
+    string_copy(devNodes[devNodesCount].name, "stdin");
+    devNodes[devNodesCount].inode = 0;
+    devNodes[devNodesCount].length = 0;
+    devNodes[devNodesCount].open = 0;
+    devNodes[devNodesCount].close = 0;
+    devNodes[devNodesCount].read = 0;
+    devNodes[devNodesCount].write = 0;
+    devNodes[devNodesCount].walk = 0;
+    devNodesCount++;
+
+    string_copy(devNodes[devNodesCount].name, "stdout");
+    devNodes[devNodesCount].inode = 0;
+    devNodes[devNodesCount].length = 0;
+    devNodes[devNodesCount].open = 0;
+    devNodes[devNodesCount].close = 0;
+    devNodes[devNodesCount].read = 0;
+    devNodes[devNodesCount].write = 0;
+    devNodes[devNodesCount].walk = 0;
+    devNodesCount++;
+
+    string_copy(devNodes[devNodesCount].name, "rtc");
+    devNodes[devNodesCount].inode = 0;
+    devNodes[devNodesCount].length = 0;
+    devNodes[devNodesCount].open = 0;
+    devNodes[devNodesCount].close = 0;
+    devNodes[devNodesCount].read = 0;
+    devNodes[devNodesCount].write = 0;
+    devNodes[devNodesCount].walk = 0;
+    devNodesCount++;
+
+}
+
+void initrd_init(unsigned int location)
+{
+
+    initrdNodesCount = 0;
+
+    string_copy(initrdNodes[initrdNodesCount].name, ".");
+    initrdNodes[initrdNodesCount].inode = 0;
+    initrdNodes[initrdNodesCount].length = 0;
+    initrdNodes[initrdNodesCount].open = 0;
+    initrdNodes[initrdNodesCount].close = 0;
+    initrdNodes[initrdNodesCount].read = 0;
+    initrdNodes[initrdNodesCount].write = 0;
+    initrdNodes[initrdNodesCount].walk = initrd_walk;
+    initrdNodesCount++;
+
+    string_copy(initrdNodes[initrdNodesCount].name, "..");
+    initrdNodes[initrdNodesCount].inode = 0;
+    initrdNodes[initrdNodesCount].length = 0;
+    initrdNodes[initrdNodesCount].open = 0;
+    initrdNodes[initrdNodesCount].close = 0;
+    initrdNodes[initrdNodesCount].read = 0;
+    initrdNodes[initrdNodesCount].write = 0;
+    initrdNodes[initrdNodesCount].walk = vfs_root_walk;
+    initrdNodesCount++;
+
+    initrdHeader = (struct initrd_header *)location;
+    initrdFileHeaders = (struct initrd_file_header *)(location + sizeof (struct initrd_header));
+
+    unsigned int i;
+
+    for (i = 0; i < initrdHeader->nfiles; i++)
+    {
+
+        initrdFileHeaders[i].offset += location;
+
+        string_copy(initrdNodes[initrdNodesCount].name, initrdFileHeaders[i].name);
+        initrdNodes[initrdNodesCount].inode = i;
+        initrdNodes[initrdNodesCount].length = initrdFileHeaders[i].length;
+        initrdNodes[initrdNodesCount].open = 0;
+        initrdNodes[initrdNodesCount].close = 0;
+        initrdNodes[initrdNodesCount].read = initrd_read;
+        initrdNodes[initrdNodesCount].write = 0;
+        initrdNodes[initrdNodesCount].walk = 0;
+
+        initrdNodesCount++;
+
+    }
+
+}
+
 struct vfs_node *vfs_init(unsigned int location)
 {
 
@@ -120,106 +227,8 @@ struct vfs_node *vfs_init(unsigned int location)
     rootNodes[rootNodesCount].walk = initrd_walk;
     rootNodesCount++;
 
-    // DEV
-
-    devNodesCount = 0;
-
-    string_copy(devNodes[devNodesCount].name, ".");
-    devNodes[devNodesCount].inode = 0;
-    devNodes[devNodesCount].length = 0;
-    devNodes[devNodesCount].open = 0;
-    devNodes[devNodesCount].close = 0;
-    devNodes[devNodesCount].read = 0;
-    devNodes[devNodesCount].write = 0;
-    devNodes[devNodesCount].walk = dev_walk;
-    devNodesCount++;
-
-    string_copy(devNodes[devNodesCount].name, "..");
-    devNodes[devNodesCount].inode = 0;
-    devNodes[devNodesCount].length = 0;
-    devNodes[devNodesCount].open = 0;
-    devNodes[devNodesCount].close = 0;
-    devNodes[devNodesCount].read = 0;
-    devNodes[devNodesCount].write = 0;
-    devNodes[devNodesCount].walk = vfs_root_walk;
-    devNodesCount++;
-
-    string_copy(devNodes[devNodesCount].name, "stdin");
-    devNodes[devNodesCount].inode = 0;
-    devNodes[devNodesCount].length = 0;
-    devNodes[devNodesCount].open = 0;
-    devNodes[devNodesCount].close = 0;
-    devNodes[devNodesCount].read = 0;
-    devNodes[devNodesCount].write = 0;
-    devNodes[devNodesCount].walk = 0;
-    devNodesCount++;
-
-    string_copy(devNodes[devNodesCount].name, "stdout");
-    devNodes[devNodesCount].inode = 0;
-    devNodes[devNodesCount].length = 0;
-    devNodes[devNodesCount].open = 0;
-    devNodes[devNodesCount].close = 0;
-    devNodes[devNodesCount].read = 0;
-    devNodes[devNodesCount].write = 0;
-    devNodes[devNodesCount].walk = 0;
-    devNodesCount++;
-
-    string_copy(devNodes[devNodesCount].name, "rtc");
-    devNodes[devNodesCount].inode = 0;
-    devNodes[devNodesCount].length = 0;
-    devNodes[devNodesCount].open = 0;
-    devNodes[devNodesCount].close = 0;
-    devNodes[devNodesCount].read = 0;
-    devNodes[devNodesCount].write = 0;
-    devNodes[devNodesCount].walk = 0;
-    devNodesCount++;
-
-    // INITRD
-
-    initrdNodesCount = 0;
-
-    string_copy(initrdNodes[initrdNodesCount].name, ".");
-    initrdNodes[initrdNodesCount].inode = 0;
-    initrdNodes[initrdNodesCount].length = 0;
-    initrdNodes[initrdNodesCount].open = 0;
-    initrdNodes[initrdNodesCount].close = 0;
-    initrdNodes[initrdNodesCount].read = 0;
-    initrdNodes[initrdNodesCount].write = 0;
-    initrdNodes[initrdNodesCount].walk = initrd_walk;
-    initrdNodesCount++;
-
-    string_copy(initrdNodes[initrdNodesCount].name, "..");
-    initrdNodes[initrdNodesCount].inode = 0;
-    initrdNodes[initrdNodesCount].length = 0;
-    initrdNodes[initrdNodesCount].open = 0;
-    initrdNodes[initrdNodesCount].close = 0;
-    initrdNodes[initrdNodesCount].read = 0;
-    initrdNodes[initrdNodesCount].write = 0;
-    initrdNodes[initrdNodesCount].walk = vfs_root_walk;
-    initrdNodesCount++;
-
-    initrdHeader = (struct initrd_header *)location;
-    initrdFileHeaders = (struct initrd_file_header *)(location + sizeof (struct initrd_header));
-
-    unsigned int i;
-
-    for (i = 0; i < initrdHeader->nfiles; i++)
-    {
-
-        initrdFileHeaders[i].offset += location;
-
-        string_copy(initrdNodes[initrdNodesCount].name, initrdFileHeaders[i].name);
-        initrdNodes[initrdNodesCount].inode = i;
-        initrdNodes[initrdNodesCount].length = initrdFileHeaders[i].length;
-        initrdNodes[initrdNodesCount].open = 0;
-        initrdNodes[initrdNodesCount].close = 0;
-        initrdNodes[initrdNodesCount].read = initrd_read;
-        initrdNodes[initrdNodesCount].write = 0;
-        initrdNodes[initrdNodesCount].walk = 0;
-
-        initrdNodesCount++;
-
-    }
+    dev_init();
+    initrd_init(location);
 
     return &root;
 
