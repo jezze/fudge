@@ -1,8 +1,12 @@
 #include <lib/call.h>
+#include <lib/memory.h>
+#include <lib/string.h>
 #include <lib/vfs.h>
 #include <kernel/arch/x86/arch.h>
 #include <kernel/arch/x86/io.h>
 #include <kernel/arch/x86/rtc.h>
+
+struct vfs_node rtc;
 
 unsigned char rtc_get(unsigned char type)
 {
@@ -77,7 +81,11 @@ static unsigned int rtc_read(struct vfs_node *node, unsigned int offset, unsigne
 void rtc_init()
 {
 
-    struct vfs_node *node = call_vfs_find("dev/rtc");
-    node->read = rtc_read;
+    memory_set(&rtc, 0, sizeof (struct vfs_node));
+    string_copy(rtc.name, "rtc");
+    rtc.read = rtc_read;
+
+    struct vfs_node *node = call_vfs_find("dev");
+    vfs_write(node, 0, 1, &rtc);
 
 }
