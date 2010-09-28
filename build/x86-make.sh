@@ -1,7 +1,7 @@
 #!/bin/sh
 
 DIR_KERNEL="../kernel"
-DIR_KERNEL_ARCH="../kernel/arch/x86"
+DIR_ARCH_KERNEL="../arch/x86/kernel"
 DIR_LIB="../lib"
 DIR_RAMDISK="../ramdisk"
 DIR_TOOLS="../tools"
@@ -21,27 +21,27 @@ $GCC $GCCFLAGS $DIR_KERNEL/kernel.c -o $DIR_KERNEL/kernel.o
 $GCC $GCCFLAGS $DIR_KERNEL/mboot.c -o $DIR_KERNEL/mboot.o
 $GCC $GCCFLAGS $DIR_KERNEL/shell.c -o $DIR_KERNEL/shell.o
 $GCC $GCCFLAGS $DIR_KERNEL/vfs.c -o $DIR_KERNEL/vfs.o
-$GCC $GCCFLAGS $DIR_KERNEL_ARCH/arch.c -o $DIR_KERNEL_ARCH/arch.o
-$GCC $GCCFLAGS $DIR_KERNEL_ARCH/ata.c -o $DIR_KERNEL_ARCH/ata.o
-$ASM $ASMFLAGS $DIR_KERNEL_ARCH/cr.s -o $DIR_KERNEL_ARCH/cr.o
-$GCC $GCCFLAGS $DIR_KERNEL_ARCH/fpu.c -o $DIR_KERNEL_ARCH/fpu.o
-$ASM $ASMFLAGS $DIR_KERNEL_ARCH/fpus.s -o $DIR_KERNEL_ARCH/fpus.o
-$GCC $GCCFLAGS $DIR_KERNEL_ARCH/gdt.c -o $DIR_KERNEL_ARCH/gdt.o
-$ASM $ASMFLAGS $DIR_KERNEL_ARCH/gdts.s -o $DIR_KERNEL_ARCH/gdts.o
-$GCC $GCCFLAGS $DIR_KERNEL_ARCH/idt.c -o $DIR_KERNEL_ARCH/idt.o
-$ASM $ASMFLAGS $DIR_KERNEL_ARCH/idts.s -o $DIR_KERNEL_ARCH/idts.o
-$ASM $ASMFLAGS $DIR_KERNEL_ARCH/init.s -o $DIR_KERNEL_ARCH/init.o
-$ASM $ASMFLAGS $DIR_KERNEL_ARCH/ios.s -o $DIR_KERNEL_ARCH/io.o
-$GCC $GCCFLAGS $DIR_KERNEL_ARCH/irq.c -o $DIR_KERNEL_ARCH/irq.o
-$ASM $ASMFLAGS $DIR_KERNEL_ARCH/irqs.s -o $DIR_KERNEL_ARCH/irqs.o
-$GCC $GCCFLAGS $DIR_KERNEL_ARCH/isr.c -o $DIR_KERNEL_ARCH/isr.o
-$ASM $ASMFLAGS $DIR_KERNEL_ARCH/isrs.s -o $DIR_KERNEL_ARCH/isrs.o
-$GCC $GCCFLAGS $DIR_KERNEL_ARCH/kbd.c -o $DIR_KERNEL_ARCH/kbd.o
-$GCC $GCCFLAGS $DIR_KERNEL_ARCH/mmu.c -o $DIR_KERNEL_ARCH/mmu.o
-$GCC $GCCFLAGS $DIR_KERNEL_ARCH/pit.c -o $DIR_KERNEL_ARCH/pit.o
-$GCC $GCCFLAGS $DIR_KERNEL_ARCH/rtc.c -o $DIR_KERNEL_ARCH/rtc.o
-$GCC $GCCFLAGS $DIR_KERNEL_ARCH/screen.c -o $DIR_KERNEL_ARCH/screen.o
-$GCC $GCCFLAGS $DIR_KERNEL_ARCH/syscall.c -o $DIR_KERNEL_ARCH/syscall.o
+$GCC $GCCFLAGS $DIR_ARCH_KERNEL/arch.c -o $DIR_ARCH_KERNEL/arch.o
+$GCC $GCCFLAGS $DIR_ARCH_KERNEL/ata.c -o $DIR_ARCH_KERNEL/ata.o
+$ASM $ASMFLAGS $DIR_ARCH_KERNEL/cr.s -o $DIR_ARCH_KERNEL/cr.o
+$GCC $GCCFLAGS $DIR_ARCH_KERNEL/fpu.c -o $DIR_ARCH_KERNEL/fpu.o
+$ASM $ASMFLAGS $DIR_ARCH_KERNEL/fpus.s -o $DIR_ARCH_KERNEL/fpus.o
+$GCC $GCCFLAGS $DIR_ARCH_KERNEL/gdt.c -o $DIR_ARCH_KERNEL/gdt.o
+$ASM $ASMFLAGS $DIR_ARCH_KERNEL/gdts.s -o $DIR_ARCH_KERNEL/gdts.o
+$GCC $GCCFLAGS $DIR_ARCH_KERNEL/idt.c -o $DIR_ARCH_KERNEL/idt.o
+$ASM $ASMFLAGS $DIR_ARCH_KERNEL/idts.s -o $DIR_ARCH_KERNEL/idts.o
+$ASM $ASMFLAGS $DIR_ARCH_KERNEL/init.s -o $DIR_ARCH_KERNEL/init.o
+$ASM $ASMFLAGS $DIR_ARCH_KERNEL/ios.s -o $DIR_ARCH_KERNEL/io.o
+$GCC $GCCFLAGS $DIR_ARCH_KERNEL/irq.c -o $DIR_ARCH_KERNEL/irq.o
+$ASM $ASMFLAGS $DIR_ARCH_KERNEL/irqs.s -o $DIR_ARCH_KERNEL/irqs.o
+$GCC $GCCFLAGS $DIR_ARCH_KERNEL/isr.c -o $DIR_ARCH_KERNEL/isr.o
+$ASM $ASMFLAGS $DIR_ARCH_KERNEL/isrs.s -o $DIR_ARCH_KERNEL/isrs.o
+$GCC $GCCFLAGS $DIR_ARCH_KERNEL/kbd.c -o $DIR_ARCH_KERNEL/kbd.o
+$GCC $GCCFLAGS $DIR_ARCH_KERNEL/mmu.c -o $DIR_ARCH_KERNEL/mmu.o
+$GCC $GCCFLAGS $DIR_ARCH_KERNEL/pit.c -o $DIR_ARCH_KERNEL/pit.o
+$GCC $GCCFLAGS $DIR_ARCH_KERNEL/rtc.c -o $DIR_ARCH_KERNEL/rtc.o
+$GCC $GCCFLAGS $DIR_ARCH_KERNEL/screen.c -o $DIR_ARCH_KERNEL/screen.o
+$GCC $GCCFLAGS $DIR_ARCH_KERNEL/syscall.c -o $DIR_ARCH_KERNEL/syscall.o
 $GCC $GCCFLAGS $DIR_LIB/call.c -o $DIR_LIB/call.o
 $ASM $ASMFLAGS $DIR_LIB/calls.s -o $DIR_LIB/calls.o
 $GCC $GCCFLAGS $DIR_LIB/cbuffer.c -o $DIR_LIB/cbuffer.o
@@ -59,27 +59,27 @@ $LD $LDFLAGS \
     $DIR_KERNEL/mboot.o \
     $DIR_KERNEL/shell.o \
     $DIR_KERNEL/vfs.o \
-    $DIR_KERNEL_ARCH/arch.o \
-    $DIR_KERNEL_ARCH/ata.o \
-    $DIR_KERNEL_ARCH/cr.o \
-    $DIR_KERNEL_ARCH/fpu.o \
-    $DIR_KERNEL_ARCH/fpus.o \
-    $DIR_KERNEL_ARCH/gdt.o \
-    $DIR_KERNEL_ARCH/gdts.o \
-    $DIR_KERNEL_ARCH/idt.o \
-    $DIR_KERNEL_ARCH/idts.o \
-    $DIR_KERNEL_ARCH/init.o \
-    $DIR_KERNEL_ARCH/io.o \
-    $DIR_KERNEL_ARCH/irqs.o \
-    $DIR_KERNEL_ARCH/isrs.o \
-    $DIR_KERNEL_ARCH/irq.o \
-    $DIR_KERNEL_ARCH/isr.o \
-    $DIR_KERNEL_ARCH/kbd.o \
-    $DIR_KERNEL_ARCH/mmu.o \
-    $DIR_KERNEL_ARCH/pit.o \
-    $DIR_KERNEL_ARCH/rtc.o \
-    $DIR_KERNEL_ARCH/screen.o \
-    $DIR_KERNEL_ARCH/syscall.o \
+    $DIR_ARCH_KERNEL/arch.o \
+    $DIR_ARCH_KERNEL/ata.o \
+    $DIR_ARCH_KERNEL/cr.o \
+    $DIR_ARCH_KERNEL/fpu.o \
+    $DIR_ARCH_KERNEL/fpus.o \
+    $DIR_ARCH_KERNEL/gdt.o \
+    $DIR_ARCH_KERNEL/gdts.o \
+    $DIR_ARCH_KERNEL/idt.o \
+    $DIR_ARCH_KERNEL/idts.o \
+    $DIR_ARCH_KERNEL/init.o \
+    $DIR_ARCH_KERNEL/io.o \
+    $DIR_ARCH_KERNEL/irqs.o \
+    $DIR_ARCH_KERNEL/isrs.o \
+    $DIR_ARCH_KERNEL/irq.o \
+    $DIR_ARCH_KERNEL/isr.o \
+    $DIR_ARCH_KERNEL/kbd.o \
+    $DIR_ARCH_KERNEL/mmu.o \
+    $DIR_ARCH_KERNEL/pit.o \
+    $DIR_ARCH_KERNEL/rtc.o \
+    $DIR_ARCH_KERNEL/screen.o \
+    $DIR_ARCH_KERNEL/syscall.o \
     $DIR_LIB/call.o \
     $DIR_LIB/calls.o \
     $DIR_LIB/cbuffer.o \

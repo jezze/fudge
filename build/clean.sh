@@ -5,8 +5,8 @@ rm -f fudge.iso
 rm -f root/boot/kernel
 rm -f root/boot/initrd
 rm -f ../kernel/*.o
-rm -f ../kernel/arch/arm/*.o
-rm -f ../kernel/arch/x86/*.o
+rm -f ../arch/arm/kernel/*.o
+rm -f ../arch/x86/kernel/*.o
 rm -f ../lib/*.o
 rm -f ../ramdisk/*.o
 rm -f ../ramdisk/cat
