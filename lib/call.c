@@ -49,6 +49,7 @@ void call_puts_num(unsigned int n, unsigned int base)
     {
 
         call_putc('0');
+
         return;
 
     }
