@@ -1,6 +1,6 @@
 #include <lib/call.h>
-#include <kernel/arch/x86/ata.h>
-#include <kernel/arch/x86/io.h>
+#include <arch/x86/kernel/ata.h>
+#include <arch/x86/kernel/io.h>
 
 struct ata_device primaryMaster;
 struct ata_device primarySlave;

@@ -1,7 +1,7 @@
 #include <lib/call.h>
-#include <kernel/arch/x86/arch.h>
-#include <kernel/arch/x86/idt.h>
-#include <kernel/arch/x86/isr.h>
+#include <arch/x86/kernel/arch.h>
+#include <arch/x86/kernel/idt.h>
+#include <arch/x86/kernel/isr.h>
 
 void *isrRoutines[ISR_ROUTINES_SIZE];
 

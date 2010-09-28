@@ -3,10 +3,10 @@
 #include <lib/memory.h>
 #include <lib/string.h>
 #include <lib/vfs.h>
-#include <kernel/arch/x86/io.h>
-#include <kernel/arch/x86/irq.h>
-#include <kernel/arch/x86/isr.h>
-#include <kernel/arch/x86/kbd.h>
+#include <arch/x86/kernel/io.h>
+#include <arch/x86/kernel/irq.h>
+#include <arch/x86/kernel/isr.h>
+#include <arch/x86/kernel/kbd.h>
 
 char kbdMapLowerUS[128] =
 {

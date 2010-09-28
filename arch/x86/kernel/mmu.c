@@ -1,10 +1,10 @@
 #include <lib/call.h>
 #include <lib/memory.h>
 #include <lib/vfs.h>
-#include <kernel/arch/x86/arch.h>
-#include <kernel/arch/x86/cr.h>
-#include <kernel/arch/x86/isr.h>
-#include <kernel/arch/x86/mmu.h>
+#include <arch/x86/kernel/arch.h>
+#include <arch/x86/kernel/cr.h>
+#include <arch/x86/kernel/isr.h>
+#include <arch/x86/kernel/mmu.h>
 #include <kernel/assert.h>
 
 void mmu_handler(struct isr_registers *registers)

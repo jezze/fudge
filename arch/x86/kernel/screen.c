@@ -2,8 +2,8 @@
 #include <lib/memory.h>
 #include <lib/string.h>
 #include <lib/vfs.h>
-#include <kernel/arch/x86/io.h>
-#include <kernel/arch/x86/screen.h>
+#include <arch/x86/kernel/io.h>
+#include <arch/x86/kernel/screen.h>
 
 struct vfs_node devStdout;
 struct screen screen;

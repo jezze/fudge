@@ -1,5 +1,5 @@
-#include <kernel/arch/x86/cr.h>
-#include <kernel/arch/x86/fpu.h>
+#include <arch/x86/kernel/cr.h>
+#include <arch/x86/kernel/fpu.h>
 
 void fpu_init()
 {

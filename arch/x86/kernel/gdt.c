@@ -1,5 +1,5 @@
 #include <lib/memory.h>
-#include <kernel/arch/x86/gdt.h>
+#include <arch/x86/kernel/gdt.h>
 
 struct gdt_entry gdt[GDT_TABLE_SIZE];
 struct gdt_ptr gdtPointer;

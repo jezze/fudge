@@ -1,4 +1,4 @@
-#include <kernel/arch/arm/arch.h>
+#include <arch/arm/kernel/arch.h>
 
 #define SERIAL_BASE 0x16000000
 #define SERIAL_FLAG_REGISTER 0x18
