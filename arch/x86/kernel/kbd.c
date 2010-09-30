@@ -8,7 +8,7 @@
 #include <arch/x86/kernel/isr.h>
 #include <arch/x86/kernel/kbd.h>
 
-char kbdMapLowerUS[128] =
+char kbd_mapLowerUS[128] =
 {
        0,   27,  '1',  '2',  '3',  '4',  '5',  '6',  '7',  '8',  '9',  '0',  '-',  '=', '\b', '\t',
      'q',  'w',  'e',  'r',  't',  'y',  'u',  'i',  'o',  'p',  '[',  ']', '\n',    0,  'a',  's',
@@ -20,7 +20,7 @@ char kbdMapLowerUS[128] =
        0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0
 };
 
-char kbdMapUpperUS[128] =
+char kbd_mapUpperUS[128] =
 {
        0,   27,  '!',  ' ',  '#',  ' ',  '%',  '&',  '/',  '(',  ')',  '=',  '-',  '=', '\b', '\t',
      'Q',  'W',  'E',  'R',  'T',  'Y',  'U',  'I',  'O',  'P',  '[',  ']', '\n',    0,  'A',  'S',
@@ -32,7 +32,7 @@ char kbdMapUpperUS[128] =
        0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0
 };
 
-struct vfs_node devStdin;
+struct vfs_node kbd_node;
 struct kbd_device keyboard;
 
 void kbd_handler(struct isr_registers *registers)
@@ -58,9 +58,9 @@ void kbd_handler(struct isr_registers *registers)
 
         // Make codes
         if (keyboard.toggleShift)
-            cbuffer_write(&keyboard.cbuffer, kbdMapUpperUS[scancode]);
+            cbuffer_write(&keyboard.cbuffer, kbd_mapUpperUS[scancode]);
         else
-            cbuffer_write(&keyboard.cbuffer, kbdMapLowerUS[scancode]);
+            cbuffer_write(&keyboard.cbuffer, kbd_mapLowerUS[scancode]);
 
     }
 
@@ -91,12 +91,12 @@ void kbd_init()
     keyboard.toggleCtrl = 0;
     keyboard.toggleShift = 0;
 
-    memory_set(&devStdin, 0, sizeof (struct vfs_node));
-    string_copy(devStdin.name, "stdin");
-    devStdin.read = kbd_read;
+    memory_set(&kbd_node, 0, sizeof (struct vfs_node));
+    string_copy(kbd_node.name, "stdin");
+    kbd_node.read = kbd_read;
 
     struct vfs_node *node = call_vfs_find("dev");
-    vfs_write(node, 0, 1, &devStdin);
+    vfs_write(node, 0, 1, &kbd_node);
 
 }
 

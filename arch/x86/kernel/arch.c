@@ -58,6 +58,7 @@ void arch_init()
 void arch_init_devices()
 {
 
+    io_init();
     screen_init();
     mmu_init();
     pit_init();

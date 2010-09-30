@@ -7,6 +7,7 @@ extern unsigned int io_ind(unsigned short port);
 extern void io_outb(unsigned short port, unsigned char data);
 extern void io_outw(unsigned short port, unsigned short data);
 extern void io_outd(unsigned short port, unsigned int data);
+extern void io_init();
 
 #endif
 
