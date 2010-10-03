@@ -8,7 +8,7 @@
 #include <arch/x86/kernel/isr.h>
 #include <arch/x86/kernel/kbd.h>
 
-char kbd_mapLowerUS[128] =
+char kbdMapLowerUS[128] =
 {
        0,   27,  '1',  '2',  '3',  '4',  '5',  '6',  '7',  '8',  '9',  '0',  '-',  '=', '\b', '\t',
      'q',  'w',  'e',  'r',  't',  'y',  'u',  'i',  'o',  'p',  '[',  ']', '\n',    0,  'a',  's',
@@ -20,7 +20,7 @@ char kbd_mapLowerUS[128] =
        0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0
 };
 
-char kbd_mapUpperUS[128] =
+char kbdMapUpperUS[128] =
 {
        0,   27,  '!',  ' ',  '#',  ' ',  '%',  '&',  '/',  '(',  ')',  '=',  '-',  '=', '\b', '\t',
      'Q',  'W',  'E',  'R',  'T',  'Y',  'U',  'I',  'O',  'P',  '[',  ']', '\n',    0,  'A',  'S',
@@ -32,8 +32,8 @@ char kbd_mapUpperUS[128] =
        0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0
 };
 
-struct vfs_node kbd_node;
-struct kbd_device keyboard;
+struct vfs_node kbdNode;
+struct kbd_device kbdDevice;
 
 void kbd_handler(struct isr_registers *registers)
 {
@@ -41,10 +41,10 @@ void kbd_handler(struct isr_registers *registers)
     unsigned char scancode = io_inb(KBD_PORT_READ);
 
     if (scancode == 0x2A)
-        keyboard.toggleShift = 1;
+        kbdDevice.toggleShift = 1;
 
     if (scancode == 0xAA)
-        keyboard.toggleShift = 0;
+        kbdDevice.toggleShift = 0;
 
     if (scancode & 0x80)
     {
@@ -57,10 +57,10 @@ void kbd_handler(struct isr_registers *registers)
     {
 
         // Make codes
-        if (keyboard.toggleShift)
-            cbuffer_write(&keyboard.cbuffer, kbd_mapUpperUS[scancode]);
+        if (kbdDevice.toggleShift)
+            cbuffer_write(&kbdDevice.cbuffer, kbdMapUpperUS[scancode]);
         else
-            cbuffer_write(&keyboard.cbuffer, kbd_mapLowerUS[scancode]);
+            cbuffer_write(&kbdDevice.cbuffer, kbdMapLowerUS[scancode]);
 
     }
 
@@ -69,7 +69,7 @@ void kbd_handler(struct isr_registers *registers)
 static unsigned int kbd_read(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    char c = cbuffer_read(&keyboard.cbuffer);
+    char c = cbuffer_read(&kbdDevice.cbuffer);
 
     if (c)
     {
@@ -86,17 +86,17 @@ static unsigned int kbd_read(struct vfs_node *node, unsigned int offset, unsigne
 void kbd_init()
 {
 
-    cbuffer_init(&keyboard.cbuffer, keyboard.buffer, KBD_BUFFER_SIZE);
-    keyboard.toggleAlt = 0;
-    keyboard.toggleCtrl = 0;
-    keyboard.toggleShift = 0;
+    cbuffer_init(&kbdDevice.cbuffer, kbdDevice.buffer, KBD_BUFFER_SIZE);
+    kbdDevice.toggleAlt = 0;
+    kbdDevice.toggleCtrl = 0;
+    kbdDevice.toggleShift = 0;
 
-    memory_set(&kbd_node, 0, sizeof (struct vfs_node));
-    string_copy(kbd_node.name, "stdin");
-    kbd_node.read = kbd_read;
+    memory_set(&kbdNode, 0, sizeof (struct vfs_node));
+    string_copy(kbdNode.name, "stdin");
+    kbdNode.read = kbd_read;
 
     struct vfs_node *node = call_vfs_find("dev");
-    vfs_write(node, node->length, 1, &kbd_node);
+    vfs_write(node, node->length, 1, &kbdNode);
 
 }
 

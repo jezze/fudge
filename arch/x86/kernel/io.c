@@ -4,7 +4,7 @@
 #include <lib/vfs.h>
 #include <arch/x86/kernel/io.h>
 
-struct vfs_node io_node;
+struct vfs_node ioNode;
 
 unsigned int io_read(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
@@ -35,13 +35,13 @@ unsigned int io_write(struct vfs_node *node, unsigned int offset, unsigned int c
 void io_init()
 {
 
-    memory_set(&io_node, 0, sizeof (struct vfs_node));
-    string_copy(io_node.name, "io");
-    io_node.read = io_read;
-    io_node.write = io_write;
+    memory_set(&ioNode, 0, sizeof (struct vfs_node));
+    string_copy(ioNode.name, "io");
+    ioNode.read = io_read;
+    ioNode.write = io_write;
 
     struct vfs_node *node = call_vfs_find("dev");
-    vfs_write(node, node->length, 1, &io_node);
+    vfs_write(node, node->length, 1, &ioNode);
 
 }
 

@@ -5,7 +5,7 @@
 #include <arch/x86/kernel/io.h>
 #include <arch/x86/kernel/screen.h>
 
-struct vfs_node screen_node;
+struct vfs_node screenNode;
 struct screen screen;
 
 static void screen_putc(char c)
@@ -142,12 +142,12 @@ void screen_init()
 
     screen_set_text_color(SCREEN_COLOR_WHITE, SCREEN_COLOR_BLACK);
 
-    memory_set(&screen_node, 0, sizeof (struct vfs_node));
-    string_copy(screen_node.name, "stdout");
-    screen_node.write = screen_write;
+    memory_set(&screenNode, 0, sizeof (struct vfs_node));
+    string_copy(screenNode.name, "stdout");
+    screenNode.write = screen_write;
 
     struct vfs_node *node = call_vfs_find("dev");
-    vfs_write(node, node->length, 1, &screen_node);
+    vfs_write(node, node->length, 1, &screenNode);
 
     screen_clear();
 
