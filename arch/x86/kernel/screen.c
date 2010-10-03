@@ -147,7 +147,7 @@ void screen_init()
     screen_node.write = screen_write;
 
     struct vfs_node *node = call_vfs_find("dev");
-    vfs_write(node, 0, 1, &screen_node);
+    vfs_write(node, node->length, 1, &screen_node);
 
     screen_clear();
 

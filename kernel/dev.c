@@ -10,7 +10,7 @@ struct vfs_node *devEntries[32];
 static struct vfs_node *dev_walk(struct vfs_node *node, unsigned int index)
 {
 
-    if (index < dev.length)
+    if (index < node->length)
         return devEntries[index];
     else
         return 0;
@@ -20,8 +20,8 @@ static struct vfs_node *dev_walk(struct vfs_node *node, unsigned int index)
 static unsigned int dev_write(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    devEntries[dev.length] = (struct vfs_node *)buffer;
-    dev.length++;
+    devEntries[offset] = (struct vfs_node *)buffer;
+    node->length++;
 
     return count;
 
@@ -36,7 +36,7 @@ void dev_init()
     dev.walk = dev_walk;
 
     struct vfs_node *root = call_vfs_find(".");
-    vfs_write(root, 0, 1, &dev);
+    vfs_write(root, root->length, 1, &dev);
 
 }
 

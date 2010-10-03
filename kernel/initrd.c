@@ -33,7 +33,7 @@ static unsigned int initrd_read(struct vfs_node *node, unsigned int offset, unsi
 static struct vfs_node *initrd_walk(struct vfs_node *node, unsigned int index)
 {
 
-    if (index < initrd.length)
+    if (index < node->length)
         return initrdEntries[index];
     else
         return 0;
@@ -43,8 +43,8 @@ static struct vfs_node *initrd_walk(struct vfs_node *node, unsigned int index)
 static unsigned int initrd_write(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    initrdEntries[initrd.length] = (struct vfs_node *)buffer;
-    initrd.length++;
+    initrdEntries[offset] = (struct vfs_node *)buffer;
+    node->length++;
 
     return count;
 
@@ -76,14 +76,14 @@ void initrd_init(unsigned int location)
         initrdNodes[initrdNodesCount].length = initrdFileHeaders[i].length;
         initrdNodes[initrdNodesCount].read = initrd_read;
 
-        vfs_write(&initrd, 0, 1, &initrdNodes[initrdNodesCount]);
+        vfs_write(&initrd, initrd.length, 1, &initrdNodes[initrdNodesCount]);
 
         initrdNodesCount++;
 
     }
 
     struct vfs_node *root = call_vfs_find(".");
-    vfs_write(root, 0, 1, &initrd);
+    vfs_write(root, root->length, 1, &initrd);
 
 }
 

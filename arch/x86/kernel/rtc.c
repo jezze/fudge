@@ -86,6 +86,6 @@ void rtc_init()
     rtc_node.read = rtc_read;
 
     struct vfs_node *node = call_vfs_find("dev");
-    vfs_write(node, 0, 1, &rtc_node);
+    vfs_write(node, node->length, 1, &rtc_node);
 
 }

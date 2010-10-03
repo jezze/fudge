@@ -11,7 +11,7 @@ struct vfs_node *rootEntries[32];
 static struct vfs_node *vfs_root_walk(struct vfs_node *node, unsigned int index)
 {
 
-    if (index < root.length)
+    if (index < node->length)
         return rootEntries[index];
     else
         return 0;
@@ -21,8 +21,8 @@ static struct vfs_node *vfs_root_walk(struct vfs_node *node, unsigned int index)
 static unsigned int vfs_root_write(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    rootEntries[root.length] = (struct vfs_node *)buffer;
-    root.length++;
+    rootEntries[offset] = (struct vfs_node *)buffer;
+    node->length++;
 
     return count;
 
