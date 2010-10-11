@@ -95,7 +95,7 @@ void kbd_init()
     string_copy(kbdNode.name, "stdin");
     kbdNode.read = kbd_read;
 
-    struct vfs_node *node = call_vfs_open("dev");
+    struct vfs_node *node = call_open("dev");
     vfs_write(node, node->length, 1, &kbdNode);
 
 }

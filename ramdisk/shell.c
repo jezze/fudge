@@ -115,7 +115,7 @@ static void shell_interpret(char *command)
     else
     {
 
-        struct vfs_node *node = call_vfs_open(argv[0]);
+        struct vfs_node *node = call_open(argv[0]);
 
         if (node)
             shell_call(node, argc, argv);

@@ -40,7 +40,7 @@ void io_init()
     ioNode.read = io_read;
     ioNode.write = io_write;
 
-    struct vfs_node *node = call_vfs_open("dev");
+    struct vfs_node *node = call_open("dev");
     vfs_write(node, node->length, 1, &ioNode);
 
 }

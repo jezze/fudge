@@ -1,5 +1,5 @@
-global call_vfs_open
-call_vfs_open:
+global call_open
+call_open:
     push ebp
     mov ebp, esp
     push esi

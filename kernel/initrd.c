@@ -82,7 +82,7 @@ void initrd_init(unsigned int location)
 
     }
 
-    struct vfs_node *root = call_vfs_open(".");
+    struct vfs_node *root = call_open(".");
     vfs_write(root, root->length, 1, &initrdNode);
 
 }

@@ -7,9 +7,9 @@ void main(int argc, char *argv[])
     struct vfs_node *node;
 
     if (argc == 2)
-        node = call_vfs_open(argv[1]);
+        node = call_open(argv[1]);
     else
-        node = call_vfs_open(".");
+        node = call_open(".");
 
     if (!node)
     {
