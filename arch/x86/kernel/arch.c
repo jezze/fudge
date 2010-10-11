@@ -84,7 +84,7 @@ void arch_init_syscalls()
 {
 
     syscall_init();
-    syscall_register_handler(CALL_VFS_FIND, syscall_vfs_find);
+    syscall_register_handler(CALL_VFS_OPEN, syscall_vfs_open);
     syscall_register_handler(CALL_REBOOT, syscall_reboot);
 
 }

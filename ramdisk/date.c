@@ -4,7 +4,7 @@
 void main(int argc, char *argv[])
 {
 
-    struct vfs_node *node = call_vfs_find("dev/rtc");
+    struct vfs_node *node = call_vfs_open("dev/rtc");
 
     unsigned char buffer;
 

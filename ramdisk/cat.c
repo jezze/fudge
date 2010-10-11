@@ -13,7 +13,7 @@ void main(int argc, char *argv[])
 
     }
 
-    struct vfs_node *node = call_vfs_find(argv[1]);
+    struct vfs_node *node = call_vfs_open(argv[1]);
 
     if (!node)
     {
@@ -28,7 +28,7 @@ void main(int argc, char *argv[])
 
     unsigned int size = vfs_read(node, 0, 2000, buffer);
 
-    struct vfs_node *out = call_vfs_find("dev/stdout");
+    struct vfs_node *out = call_vfs_open("dev/stdout");
 
     vfs_write(out, 0, size, buffer);
 

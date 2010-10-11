@@ -25,7 +25,7 @@ void syscall_unregister_handler(unsigned char index)
 
 }
 
-void syscall_vfs_find(struct syscall_registers *registers)
+void syscall_vfs_open(struct syscall_registers *registers)
 {
 
     registers->eax = (unsigned int)vfs_find(kernel_get_vfs_root(), (char *)registers->esi);

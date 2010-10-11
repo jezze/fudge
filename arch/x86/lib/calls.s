@@ -1,10 +1,10 @@
-global call_vfs_find
-call_vfs_find:
+global call_vfs_open
+call_vfs_open:
     push ebp
     mov ebp, esp
     push esi
     push edi
-    mov eax, 0x13
+    mov eax, 0x00
     mov esi, [ebp + 8]
     int 0x80
     pop edi
@@ -18,7 +18,7 @@ call_halt:
     mov ebp, esp
     push esi
     push edi
-    mov eax, 0x50
+    mov eax, 0x20
     int 0x80
     pop edi
     pop esi
@@ -31,7 +31,7 @@ call_reboot:
     mov ebp, esp
     push esi
     push edi
-    mov eax, 0x51
+    mov eax, 0x21
     int 0x80
     pop edi
     pop esi

@@ -1,13 +1,13 @@
 #ifndef LIB_CALL_H
 #define LIB_CALL_H
 
-#define CALL_VFS_READ  0x10
-#define CALL_VFS_WRITE 0x11
-#define CALL_VFS_WALK  0x12
-#define CALL_VFS_FIND  0x13
+#define CALL_VFS_OPEN  0x00
+#define CALL_VFS_CLOSE 0x01
+#define CALL_VFS_READ  0x02
+#define CALL_VFS_WRITE 0x03
 
-#define CALL_HALT   0x50
-#define CALL_REBOOT 0x51
+#define CALL_HALT   0x20
+#define CALL_REBOOT 0x21
 
 struct vfs_node;
 
@@ -19,7 +19,7 @@ extern void call_puts_dec(unsigned int n);
 extern void call_puts_hex(unsigned int n);
 extern void call_puts_bcd(unsigned char n);
 
-extern struct vfs_node *call_vfs_find(char *name);
+extern struct vfs_node *call_vfs_open(char *name);
 extern int call_halt();
 extern int call_reboot();
 
