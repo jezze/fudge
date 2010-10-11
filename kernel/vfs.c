@@ -8,6 +8,13 @@
 struct vfs_node vfsNode;
 struct vfs_node *vfsEntries[32];
 
+struct vfs_node *vfs_get_root(struct vfs_node *node, unsigned int index)
+{
+
+    return &vfsNode;
+
+}
+
 static struct vfs_node *vfs_node_walk(struct vfs_node *node, unsigned int index)
 {
 
@@ -28,15 +35,13 @@ static unsigned int vfs_node_write(struct vfs_node *node, unsigned int offset, u
 
 }
 
-struct vfs_node *vfs_init()
+void vfs_init()
 {
 
     memory_set(&vfsNode, 0, sizeof (struct vfs_node));
     string_copy(vfsNode.name, "root");
     vfsNode.walk = vfs_node_walk;
     vfsNode.write = vfs_node_write;
-
-    return &vfsNode;
 
 }
 

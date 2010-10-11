@@ -8,19 +8,10 @@
 #include <kernel/shell.h>
 #include <kernel/vfs.h>
 
-struct vfs_node *kernelNode;
-
-struct vfs_node *kernel_get_vfs_root()
-{
-
-    return kernelNode;
-
-}
-
 void kernel_init(struct mboot_info *header, unsigned int magic)
 {
 
-    kernelNode = vfs_init();
+    vfs_init();
 
     arch_init();
     arch_init_syscalls();

@@ -3,7 +3,8 @@
 
 struct vfs_node;
 
-extern struct vfs_node *vfs_init();
+extern struct vfs_node *vfs_get_root();
+extern void vfs_init();
 
 #endif
 
