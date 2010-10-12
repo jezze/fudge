@@ -13,6 +13,7 @@
 #include <arch/x86/kernel/rtc.h>
 #include <arch/x86/kernel/screen.h>
 #include <arch/x86/kernel/syscall.h>
+#include <arch/x86/kernel/vga.h>
 #include <kernel/assert.h>
 #include <kernel/dev.h>
 #include <kernel/initrd.h>
@@ -76,6 +77,7 @@ void arch_init_devices()
 {
 
     io_init();
+    vga_init();
     screen_init();
     mmu_init();
     pit_init();
