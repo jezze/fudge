@@ -1,8 +1,6 @@
 #ifndef ARCH_ARCH_H
 #define ARCH_ARCH_H
 
-struct vfs_node;
-
 extern void arch_disable_interrupts();
 extern void arch_enable_interrupts();
 extern void arch_reboot();

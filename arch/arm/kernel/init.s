@@ -13,7 +13,7 @@ interrupt_vector_table:
 .global init
 init:
     ldr sp, =stack+0x10000
-    bl kernel_init
+    bl arch_init
 1:
     b 1b
 

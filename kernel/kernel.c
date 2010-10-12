@@ -8,23 +8,8 @@
 #include <kernel/shell.h>
 #include <kernel/vfs.h>
 
-void kernel_init(struct mboot_info *header, unsigned int magic)
+void kernel_init()
 {
-
-    vfs_init();
-
-    arch_init();
-    arch_init_syscalls();
-    arch_init_interrupts();
-    arch_enable_interrupts();
-
-    dev_init();
-    arch_init_devices();
-
-    ASSERT(magic == MBOOT_MAGIC);
-    ASSERT(header->modulesCount);
-
-    initrd_init(*((unsigned int *)header->modulesAddresses));
 
     shell_init();
 

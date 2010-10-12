@@ -17,6 +17,11 @@
 #include <arch/x86/kernel/screen.h>
 #include <arch/x86/kernel/syscall.h>
 #include <kernel/assert.h>
+#include <kernel/dev.h>
+#include <kernel/initrd.h>
+#include <kernel/kernel.h>
+#include <kernel/mboot.h>
+#include <kernel/vfs.h>
 
 void arch_disable_interrupts()
 {
@@ -46,12 +51,27 @@ void arch_reboot()
 
 }
 
-void arch_init()
+void arch_init(struct mboot_info *header, unsigned int magic)
 {
 
     gdt_init();
     idt_init();
     fpu_init();
+    vfs_init();
+
+    arch_init_syscalls();
+    arch_init_interrupts();
+    arch_enable_interrupts();
+
+    dev_init();
+    arch_init_devices();
+
+    ASSERT(magic == MBOOT_MAGIC);
+    ASSERT(header->modulesCount);
+
+    initrd_init(*((unsigned int *)header->modulesAddresses));
+
+    kernel_init();
 
 }
 
