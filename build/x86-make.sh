@@ -44,6 +44,7 @@ $GCC $GCCFLAGS $DIR_ARCH_KERNEL/pit.c -o $DIR_ARCH_KERNEL/pit.o
 $GCC $GCCFLAGS $DIR_ARCH_KERNEL/rtc.c -o $DIR_ARCH_KERNEL/rtc.o
 $GCC $GCCFLAGS $DIR_ARCH_KERNEL/screen.c -o $DIR_ARCH_KERNEL/screen.o
 $GCC $GCCFLAGS $DIR_ARCH_KERNEL/syscall.c -o $DIR_ARCH_KERNEL/syscall.o
+$GCC $GCCFLAGS $DIR_ARCH_KERNEL/vga.c -o $DIR_ARCH_KERNEL/vga.o
 $GCC $GCCFLAGS $DIR_LIB/cbuffer.c -o $DIR_LIB/cbuffer.o
 $GCC $GCCFLAGS $DIR_LIB/memory.c -o $DIR_LIB/memory.o
 $GCC $GCCFLAGS $DIR_LIB/stdin.c -o $DIR_LIB/stdin.o
@@ -84,6 +85,7 @@ $LD $LDFLAGS \
     $DIR_ARCH_KERNEL/rtc.o \
     $DIR_ARCH_KERNEL/screen.o \
     $DIR_ARCH_KERNEL/syscall.o \
+    $DIR_ARCH_KERNEL/vga.o \
     $DIR_LIB/cbuffer.o \
     $DIR_LIB/memory.o \
     $DIR_LIB/stdin.o \
