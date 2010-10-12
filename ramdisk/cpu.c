@@ -1,4 +1,4 @@
-#include <call.h>
+#include <write.h>
 #include <vfs.h>
 #include "cpu.h"
 
@@ -17,9 +17,9 @@ void main(int argc, char *argv[])
 
     cpu_get_vendor(vendor);
 
-    call_puts("Vendor: ");
-    call_puts(vendor);
-    call_puts("\n");
+    write_string("Vendor: ");
+    write_string(vendor);
+    write_string("\n");
 
     // ECX FEATURES
 
@@ -29,15 +29,15 @@ void main(int argc, char *argv[])
 
     unsigned int edx = cpu_get_feature_edx();
 
-    call_puts("Features: ");
+    write_string("Features: ");
 
     if (edx & CPU_FEATURE_EDX_FPU)
-        call_puts("FDU ");
+        write_string("FDU ");
 
     if (edx & CPU_FEATURE_EDX_MMX)
-        call_puts("MMX ");
+        write_string("MMX ");
 
-    call_puts("\n");
+    write_string("\n");
 
     // BRAND
 
@@ -45,9 +45,9 @@ void main(int argc, char *argv[])
 
     cpu_get_brand(brand);
 
-    call_puts("Brand: ");
-    call_puts(brand);
-    call_puts("\n");
+    write_string("Brand: ");
+    write_string(brand);
+    write_string("\n");
 
 }
 

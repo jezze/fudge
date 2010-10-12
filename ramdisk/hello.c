@@ -1,9 +1,9 @@
-#include <call.h>
 #include <vfs.h>
+#include <write.h>
 
 void main(int argc, char *argv[])
 {
 
-    call_puts("Hello World!\n");
+    write_string("Hello World!\n");
 
 }

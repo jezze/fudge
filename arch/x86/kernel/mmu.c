@@ -1,4 +1,4 @@
-#include <lib/call.h>
+#include <lib/write.h>
 #include <lib/memory.h>
 #include <lib/vfs.h>
 #include <arch/x86/kernel/arch.h>
@@ -12,26 +12,26 @@ void mmu_handler(struct isr_registers *registers)
 
     unsigned int address = cr2_read();
 
-    call_puts("PAGE FAULT (");
+    write_string("PAGE FAULT (");
 
     if (!(registers->err_code & MMU_ERROR_PRESENT))
-        call_puts("present");
+        write_string("present");
 
     if (registers->err_code & MMU_ERROR_RW)
-        call_puts("read-only");
+        write_string("read-only");
 
     if (registers->err_code & MMU_ERROR_USER)
-        call_puts("user-mode");
+        write_string("user-mode");
 
     if (registers->err_code & MMU_ERROR_RESERVED)
-        call_puts("reserved");
+        write_string("reserved");
 
     if (registers->err_code & MMU_ERROR_FETCH)
-        call_puts("fetch");
+        write_string("fetch");
 
-    call_puts(") at 0x");
-    call_puts_hex(address);
-    call_puts("\n");
+    write_string(") at 0x");
+    write_string_hex(address);
+    write_string("\n");
 
     PANIC("PAGE FAULT");
 

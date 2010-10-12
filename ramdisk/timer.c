@@ -1,13 +1,13 @@
-#include <call.h>
 #include <vfs.h>
+#include <write.h>
 
 void main(int argc, char *argv[])
 {
 
     unsigned int timer;
 
-    call_puts("Timer: ");
-    call_puts("\n");
+    write_string("Timer: ");
+    write_string("\n");
 
 }
 

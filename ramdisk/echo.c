@@ -1,5 +1,5 @@
-#include <call.h>
 #include <vfs.h>
+#include <write.h>
 
 void main(int argc, char *argv[])
 {
@@ -7,7 +7,7 @@ void main(int argc, char *argv[])
     if (argc != 2)
         return;
 
-    call_puts(argv[1]);
+    write_string(argv[1]);
 
 }
 

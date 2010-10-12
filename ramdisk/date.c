@@ -1,5 +1,6 @@
 #include <call.h>
 #include <vfs.h>
+#include <write.h>
 
 void main(int argc, char *argv[])
 {
@@ -8,41 +9,41 @@ void main(int argc, char *argv[])
 
     unsigned char buffer;
 
-    call_puts("20");
+    write_string("20");
     vfs_read(node, 0, 1, &buffer);
-    call_puts_bcd(buffer);
+    write_string_bcd(buffer);
 
-    call_puts("-");
+    write_string("-");
 
     vfs_read(node, 1, 1, &buffer);
-    call_puts_bcd(buffer);
+    write_string_bcd(buffer);
 
-    call_puts("-");
+    write_string("-");
 
     vfs_read(node, 2, 1, &buffer);
-    call_puts_bcd(buffer);
+    write_string_bcd(buffer);
 
-    call_puts(" ");
+    write_string(" ");
 
     vfs_read(node, 3, 1, &buffer);
-    call_puts_bcd(buffer);
+    write_string_bcd(buffer);
 
-    call_puts(":");
+    write_string(":");
 
     vfs_read(node, 4, 1, &buffer);
-    call_puts_bcd(buffer);
+    write_string_bcd(buffer);
 
-    call_puts(":");
+    write_string(":");
 
     vfs_read(node, 5, 1, &buffer);
-    call_puts_bcd(buffer);
+    write_string_bcd(buffer);
 
     vfs_read(node, 3, 1, &buffer);
 
     if (buffer >> 4)
-        call_puts("PM\n");
+        write_string("PM\n");
     else
-        call_puts("AM\n");
+        write_string("AM\n");
 
 }
 

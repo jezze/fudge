@@ -44,12 +44,13 @@ $GCC $GCCFLAGS $DIR_ARCH_KERNEL/pit.c -o $DIR_ARCH_KERNEL/pit.o
 $GCC $GCCFLAGS $DIR_ARCH_KERNEL/rtc.c -o $DIR_ARCH_KERNEL/rtc.o
 $GCC $GCCFLAGS $DIR_ARCH_KERNEL/screen.c -o $DIR_ARCH_KERNEL/screen.o
 $GCC $GCCFLAGS $DIR_ARCH_KERNEL/syscall.c -o $DIR_ARCH_KERNEL/syscall.o
-$GCC $GCCFLAGS $DIR_LIB/call.c -o $DIR_LIB/call.o
 $GCC $GCCFLAGS $DIR_LIB/cbuffer.c -o $DIR_LIB/cbuffer.o
 $GCC $GCCFLAGS $DIR_LIB/memory.c -o $DIR_LIB/memory.o
+$GCC $GCCFLAGS $DIR_LIB/read.c -o $DIR_LIB/read.o
 $GCC $GCCFLAGS $DIR_LIB/stack.c -o $DIR_LIB/stack.o
 $GCC $GCCFLAGS $DIR_LIB/string.c -o $DIR_LIB/string.o
 $GCC $GCCFLAGS $DIR_LIB/vfs.c -o $DIR_LIB/vfs.o
+$GCC $GCCFLAGS $DIR_LIB/write.c -o $DIR_LIB/write.o
 $ASM $ASMFLAGS $DIR_ARCH_LIB/calls.s -o $DIR_ARCH_LIB/calls.o
 
 $LD $LDFLAGS \
@@ -83,12 +84,13 @@ $LD $LDFLAGS \
     $DIR_ARCH_KERNEL/rtc.o \
     $DIR_ARCH_KERNEL/screen.o \
     $DIR_ARCH_KERNEL/syscall.o \
-    $DIR_LIB/call.o \
     $DIR_LIB/cbuffer.o \
     $DIR_LIB/memory.o \
+    $DIR_LIB/read.o \
     $DIR_LIB/stack.o \
     $DIR_LIB/string.o \
     $DIR_LIB/vfs.o \
+    $DIR_LIB/write.o \
     $DIR_ARCH_LIB/calls.o \
     -o root/boot/kernel
 
@@ -100,40 +102,37 @@ LD="ld"
 LDFLAGS="-Ttext 0x300000 -e main"
 
 $GCC $GCCFLAGS $DIR_RAMDISK/cat.c -o $DIR_RAMDISK/cat.o
-$LD $LDFLAGS $DIR_RAMDISK/cat.o $DIR_LIB/memory.o $DIR_LIB/string.o $DIR_LIB/vfs.o $DIR_LIB/call.o $DIR_ARCH_LIB/calls.o -o $DIR_RAMDISK/cat
+$LD $LDFLAGS $DIR_RAMDISK/cat.o $DIR_LIB/memory.o $DIR_LIB/read.o $DIR_LIB/string.o $DIR_LIB/vfs.o $DIR_LIB/write.o $DIR_ARCH_LIB/calls.o -o $DIR_RAMDISK/cat
 
 $ASM $ASMFLAGS $DIR_RAMDISK/cpu.s -o $DIR_RAMDISK/cpus.o
 $GCC $GCCFLAGS $DIR_RAMDISK/cpu.c -o $DIR_RAMDISK/cpu.o
-$LD $LDFLAGS $DIR_RAMDISK/cpu.o $DIR_RAMDISK/cpus.o $DIR_LIB/memory.o $DIR_LIB/string.o $DIR_LIB/vfs.o $DIR_LIB/call.o $DIR_ARCH_LIB/calls.o -o $DIR_RAMDISK/cpu
+$LD $LDFLAGS $DIR_RAMDISK/cpu.o $DIR_RAMDISK/cpus.o $DIR_LIB/memory.o $DIR_LIB/read.o $DIR_LIB/string.o $DIR_LIB/vfs.o $DIR_LIB/write.o $DIR_ARCH_LIB/calls.o -o $DIR_RAMDISK/cpu
 
 $GCC $GCCFLAGS $DIR_RAMDISK/date.c -o $DIR_RAMDISK/date.o
-$LD $LDFLAGS $DIR_RAMDISK/date.o $DIR_LIB/memory.o $DIR_LIB/stack.o $DIR_LIB/string.o $DIR_LIB/vfs.o $DIR_LIB/call.o $DIR_ARCH_LIB/calls.o -o $DIR_RAMDISK/date
+$LD $LDFLAGS $DIR_RAMDISK/date.o $DIR_LIB/memory.o $DIR_LIB/read.o $DIR_LIB/string.o $DIR_LIB/vfs.o $DIR_LIB/write.o $DIR_ARCH_LIB/calls.o -o $DIR_RAMDISK/date
 
 $GCC $GCCFLAGS $DIR_RAMDISK/echo.c -o $DIR_RAMDISK/echo.o
-$LD $LDFLAGS $DIR_RAMDISK/echo.o $DIR_LIB/memory.o $DIR_LIB/string.o $DIR_LIB/vfs.o $DIR_LIB/call.o $DIR_ARCH_LIB/calls.o -o $DIR_RAMDISK/echo
+$LD $LDFLAGS $DIR_RAMDISK/echo.o $DIR_LIB/memory.o $DIR_LIB/read.o $DIR_LIB/string.o $DIR_LIB/vfs.o $DIR_LIB/write.o $DIR_ARCH_LIB/calls.o -o $DIR_RAMDISK/echo
 
 $GCC $GCCFLAGS $DIR_RAMDISK/elf.c -o $DIR_RAMDISK/elf.o
-$LD $LDFLAGS $DIR_RAMDISK/elf.o $DIR_LIB/memory.o $DIR_LIB/string.o $DIR_LIB/vfs.o $DIR_LIB/call.o $DIR_ARCH_LIB/calls.o -o $DIR_RAMDISK/elf
+$LD $LDFLAGS $DIR_RAMDISK/elf.o $DIR_LIB/memory.o $DIR_LIB/read.o $DIR_LIB/string.o $DIR_LIB/vfs.o $DIR_LIB/write.o $DIR_ARCH_LIB/calls.o -o $DIR_RAMDISK/elf
 
 $GCC $GCCFLAGS $DIR_RAMDISK/hello.c -o $DIR_RAMDISK/hello.o
-$LD $LDFLAGS $DIR_RAMDISK/hello.o $DIR_LIB/memory.o $DIR_LIB/string.o $DIR_LIB/vfs.o $DIR_LIB/call.o $DIR_ARCH_LIB/calls.o -o $DIR_RAMDISK/hello
+$LD $LDFLAGS $DIR_RAMDISK/hello.o $DIR_LIB/memory.o $DIR_LIB/read.o $DIR_LIB/string.o $DIR_LIB/vfs.o $DIR_LIB/write.o $DIR_ARCH_LIB/calls.o -o $DIR_RAMDISK/hello
 
 $GCC $GCCFLAGS $DIR_RAMDISK/ls.c -o $DIR_RAMDISK/ls.o
-$LD $LDFLAGS $DIR_RAMDISK/ls.o $DIR_LIB/memory.o $DIR_LIB/string.o $DIR_LIB/vfs.o $DIR_LIB/call.o $DIR_ARCH_LIB/calls.o -o $DIR_RAMDISK/ls
+$LD $LDFLAGS $DIR_RAMDISK/ls.o $DIR_LIB/memory.o $DIR_LIB/read.o $DIR_LIB/string.o $DIR_LIB/vfs.o $DIR_LIB/write.o $DIR_ARCH_LIB/calls.o -o $DIR_RAMDISK/ls
 
 $GCC $GCCFLAGS $DIR_RAMDISK/reboot.c -o $DIR_RAMDISK/reboot.o
-$LD $LDFLAGS $DIR_RAMDISK/reboot.o $DIR_LIB/memory.o $DIR_LIB/string.o $DIR_LIB/vfs.o $DIR_LIB/call.o $DIR_ARCH_LIB/calls.o -o $DIR_RAMDISK/reboot
-
-$GCC $GCCFLAGS $DIR_RAMDISK/shell.c -o $DIR_RAMDISK/shell.o
-$LD $LDFLAGS $DIR_RAMDISK/shell.o $DIR_LIB/memory.o $DIR_LIB/stack.o $DIR_LIB/string.o $DIR_LIB/vfs.o $DIR_LIB/call.o $DIR_ARCH_LIB/calls.o -o $DIR_RAMDISK/shell
+$LD $LDFLAGS $DIR_RAMDISK/reboot.o $DIR_LIB/memory.o $DIR_LIB/read.o $DIR_LIB/string.o $DIR_LIB/vfs.o $DIR_LIB/write.o $DIR_ARCH_LIB/calls.o -o $DIR_RAMDISK/reboot
 
 $GCC $GCCFLAGS $DIR_RAMDISK/timer.c -o $DIR_RAMDISK/timer.o
-$LD $LDFLAGS $DIR_RAMDISK/timer.o $DIR_LIB/memory.o $DIR_LIB/string.o $DIR_LIB/vfs.o $DIR_LIB/call.o $DIR_ARCH_LIB/calls.o -o $DIR_RAMDISK/timer
+$LD $LDFLAGS $DIR_RAMDISK/timer.o $DIR_LIB/memory.o $DIR_LIB/read.o $DIR_LIB/string.o $DIR_LIB/vfs.o $DIR_LIB/write.o $DIR_ARCH_LIB/calls.o -o $DIR_RAMDISK/timer
 
 GCC="gcc"
 GCCFLAGS="-O2"
 
 $GCC $GCCFLAGS $DIR_TOOLS/mkinitrd.c -o $DIR_TOOLS/mkinitrd
 
-$DIR_TOOLS/mkinitrd $DIR_RAMDISK/about.txt about.txt $DIR_RAMDISK/cat cat $DIR_RAMDISK/cpu cpu $DIR_RAMDISK/date date $DIR_RAMDISK/echo echo $DIR_RAMDISK/elf elf $DIR_RAMDISK/hello hello $DIR_RAMDISK/help.txt help.txt $DIR_RAMDISK/ls ls $DIR_RAMDISK/reboot reboot $DIR_RAMDISK/shell shell $DIR_RAMDISK/timer timer
+$DIR_TOOLS/mkinitrd $DIR_RAMDISK/about.txt about.txt $DIR_RAMDISK/cat cat $DIR_RAMDISK/cpu cpu $DIR_RAMDISK/date date $DIR_RAMDISK/echo echo $DIR_RAMDISK/elf elf $DIR_RAMDISK/hello hello $DIR_RAMDISK/help.txt help.txt $DIR_RAMDISK/ls ls $DIR_RAMDISK/reboot reboot $DIR_RAMDISK/timer timer
 
