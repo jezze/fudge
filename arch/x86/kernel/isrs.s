@@ -1,7 +1,6 @@
 extern isr_handler
 extern syscall_handler
 
-; Divide By Zero Exception
 global isr00
 isr00:
     cli
@@ -9,7 +8,6 @@ isr00:
     push 0x00
     jmp isr_common
 
-; Debug Exception
 global isr01
 isr01:
     cli
@@ -17,7 +15,6 @@ isr01:
     push 0x01
     jmp isr_common
 
-; Non Maskable Interrupt Exception
 global isr02
 isr02:
     cli
@@ -25,7 +22,6 @@ isr02:
     push 0x02
     jmp isr_common
 
-; Int 3 Exception
 global isr03
 isr03:
     cli
@@ -33,7 +29,6 @@ isr03:
     push 0x03
     jmp isr_common
 
-; INTO Exception
 global isr04
 isr04:
     cli
@@ -41,7 +36,6 @@ isr04:
     push 0x04
     jmp isr_common
 
-; Out of Bounds Exception
 global isr05
 isr05:
     cli
@@ -49,7 +43,6 @@ isr05:
     push 0x05
     jmp isr_common
 
-; Invalid Opcode Exception
 global isr06
 isr06:
     cli
@@ -57,7 +50,6 @@ isr06:
     push 0x06
     jmp isr_common
 
-; Coprocessor Not Available Exception
 global isr07
 isr07:
     cli
@@ -65,14 +57,12 @@ isr07:
     push 0x07
     jmp isr_common
 
-; Double Fault Exception
 global isr08
 isr08:
     cli
     push 0x08
     jmp isr_common
 
-; Coprocessor Segment Overrun Exception
 global isr09
 isr09:
     cli
@@ -80,42 +70,36 @@ isr09:
     push 0x09
     jmp isr_common
 
-; Bad TSS Exception
 global isr0A
 isr0A:
     cli
     push 0x0A
     jmp isr_common
 
-; Segment Not Present Exception
 global isr0B
 isr0B:
     cli
     push 0x0B
     jmp isr_common
 
-; Stack Fault Exception Exception
 global isr0C
 isr0C:
     cli
     push 0x0C
     jmp isr_common
 
-; General Protection Fault Exception
 global isr0D
 isr0D:
     cli
     push 0x0D
     jmp isr_common
 
-; Page Fault Exception
 global isr0E
 isr0E:
     cli
     push 0x0E
     jmp isr_common
 
-; Reserved Exception Exception
 global isr0F
 isr0F:
     cli
@@ -123,7 +107,6 @@ isr0F:
     push 0x0F
     jmp isr_common
 
-; Floating Point Exception
 global isr10
 isr10:
     cli
@@ -131,7 +114,6 @@ isr10:
     push 0x10
     jmp isr_common
 
-; Alignment Check Exception
 global isr11
 isr11:
     cli
@@ -139,7 +121,6 @@ isr11:
     push 0x11
     jmp isr_common
 
-; Machine Check Exception
 global isr12
 isr12:
     cli
@@ -147,7 +128,6 @@ isr12:
     push 0x12
     jmp isr_common
 
-; Reserved Exception
 global isr13
 isr13:
     cli
@@ -155,7 +135,6 @@ isr13:
     push 0x13
     jmp isr_common
 
-; Reserved Exception
 global isr14
 isr14:
     cli
@@ -163,7 +142,6 @@ isr14:
     push 0x14
     jmp isr_common
 
-; Reserved Exception
 global isr15
 isr15:
     cli
@@ -171,7 +149,6 @@ isr15:
     push 0x15
     jmp isr_common
 
-; Reserved Exception
 global isr16
 isr16:
     cli
@@ -179,7 +156,6 @@ isr16:
     push 0x16
     jmp isr_common
 
-; Reserved Exception
 global isr17
 isr17:
     cli
@@ -187,7 +163,6 @@ isr17:
     push 0x17
     jmp isr_common
 
-; Reserved Exception
 global isr18
 isr18:
     cli
@@ -195,7 +170,6 @@ isr18:
     push 0x18
     jmp isr_common
 
-; Reserved Exception
 global isr19
 isr19:
     cli
@@ -203,7 +177,6 @@ isr19:
     push 0x19
     jmp isr_common
 
-; Reserved Exception
 global isr1A
 isr1A:
     cli
@@ -211,7 +184,6 @@ isr1A:
     push 0x1A
     jmp isr_common
 
-; Reserved Exception
 global isr1B
 isr1B:
     cli
@@ -219,7 +191,6 @@ isr1B:
     push 0x1B
     jmp isr_common
 
-; Reserved Exception
 global isr1C
 isr1C:
     cli
@@ -227,7 +198,6 @@ isr1C:
     push 0x1C
     jmp isr_common
 
-; Reserved Exception
 global isr1D
 isr1D:
     cli
@@ -235,7 +205,6 @@ isr1D:
     push 0x1D
     jmp isr_common
 
-; Reserved Exception
 global isr1E
 isr1E:
     cli
@@ -243,7 +212,6 @@ isr1E:
     push 0x1E
     jmp isr_common
 
-; Reserved Exception
 global isr1F
 isr1F:
     cli

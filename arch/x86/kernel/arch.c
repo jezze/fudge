@@ -92,11 +92,11 @@ void arch_init_interrupts()
 {
 
     isr_init();
-    isr_register_handler(0x0E, mmu_handler);
+    isr_register_handler(ISR_ROUTINE_PAGEFAULT, mmu_handler);
 
     irq_init();
-    irq_register_handler(0x00, pit_handler);
-    irq_register_handler(0x01, kbd_handler);
+    irq_register_handler(IRQ_ROUTINE_PIT, pit_handler);
+    irq_register_handler(IRQ_ROUTINE_KBD, kbd_handler);
 
 }
 
@@ -104,7 +104,7 @@ void arch_init_syscalls()
 {
 
     syscall_init();
-    syscall_register_handler(CALL_VFS_OPEN, syscall_open);
+    syscall_register_handler(CALL_OPEN, syscall_open);
     syscall_register_handler(CALL_REBOOT, syscall_reboot);
 
 }

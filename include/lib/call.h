@@ -1,11 +1,10 @@
 #ifndef LIB_CALL_H
 #define LIB_CALL_H
 
-#define CALL_VFS_OPEN  0x00
-#define CALL_VFS_CLOSE 0x01
-#define CALL_VFS_READ  0x02
-#define CALL_VFS_WRITE 0x03
-
+#define CALL_OPEN   0x00
+#define CALL_CLOSE  0x01
+#define CALL_READ   0x02
+#define CALL_WRITE  0x03
 #define CALL_HALT   0x20
 #define CALL_REBOOT 0x21
 
