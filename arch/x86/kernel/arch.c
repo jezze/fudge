@@ -1,7 +1,4 @@
-#include <lib/call.h>
 #include <lib/cbuffer.h>
-#include <lib/string.h>
-#include <lib/vfs.h>
 #include <arch/x86/kernel/arch.h>
 #include <arch/x86/kernel/ata.h>
 #include <arch/x86/kernel/fpu.h>
@@ -104,8 +101,8 @@ void arch_init_syscalls()
 {
 
     syscall_init();
-    syscall_register_handler(CALL_OPEN, syscall_open);
-    syscall_register_handler(CALL_REBOOT, syscall_reboot);
+    syscall_register_handler(SYSCALL_ROUTINE_OPEN, syscall_open);
+    syscall_register_handler(SYSCALL_ROUTINE_REBOOT, syscall_reboot);
 
 }
 

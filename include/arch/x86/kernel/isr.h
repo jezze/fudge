@@ -1,7 +1,7 @@
 #ifndef ARCH_ISR_H
 #define ARCH_ISR_H
 
-#define ISR_ROUTINES_SIZE                      0xFF
+#define ISR_ROUTINES_SIZE                      256
 #define ISR_ROUTINE_DIVIDEBYZERO               0x00
 #define ISR_ROUTINE_DEBUG                      0x01
 #define ISR_ROUTINE_NONMASKABLE                0x02

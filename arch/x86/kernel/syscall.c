@@ -10,7 +10,7 @@
 #include <kernel/kernel.h>
 #include <kernel/vfs.h>
 
-void *syscallRoutines[SYSCALL_TABLE_SIZE];
+void *syscallRoutines[SYSCALL_ROUTINES_SIZE];
 
 void syscall_register_handler(unsigned char index, void (*handler)(struct syscall_registers *registers))
 {

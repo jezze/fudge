@@ -1,7 +1,7 @@
 #ifndef ARCH_IRQ_H
 #define ARCH_IRQ_H
 
-#define IRQ_ROUTINES_SIZE 0x10
+#define IRQ_ROUTINES_SIZE 16
 #define IRQ_ROUTINE_PIT   0x00
 #define IRQ_ROUTINE_KBD   0x01
 
