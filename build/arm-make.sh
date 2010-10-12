@@ -20,8 +20,10 @@ $GCC $GCCFLAGS $DIR_ARCH_KERNEL/arch.c -o $DIR_ARCH_KERNEL/arch.o
 $ASM $ASMFLAGS $DIR_ARCH_KERNEL/init.s -o $DIR_ARCH_KERNEL/init.o
 $GCC $GCCFLAGS $DIR_LIB/call.c -o $DIR_LIB/call.o
 $GCC $GCCFLAGS $DIR_LIB/memory.c -o $DIR_LIB/memory.o
+$GCC $GCCFLAGS $DIR_LIB/read.c -o $DIR_LIB/read.o
 $GCC $GCCFLAGS $DIR_LIB/string.c -o $DIR_LIB/string.o
 $GCC $GCCFLAGS $DIR_LIB/vfs.c -o $DIR_LIB/vfs.o
+$GCC $GCCFLAGS $DIR_LIB/write.c -o $DIR_LIB/write.o
 $GCC $GCCFLAGS $DIR_ARCH_LIB/call.c -o $DIR_ARCH_LIB/call.o
 
 $LD $LDFLAGS \
@@ -31,10 +33,11 @@ $LD $LDFLAGS \
     $DIR_KERNEL/vfs.o \
     $DIR_ARCH_KERNEL/arch.o \
     $DIR_ARCH_KERNEL/init.o \
-    $DIR_LIB/call.o \
     $DIR_LIB/memory.o \
+    $DIR_LIB/read.o \
     $DIR_LIB/string.o \
     $DIR_LIB/vfs.o \
+    $DIR_LIB/write.o \
     $DIR_ARCH_LIB/call.o \
     -o root/boot/kernel
 
