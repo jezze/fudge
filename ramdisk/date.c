@@ -1,6 +1,6 @@
 #include <call.h>
+#include <stdout.h>
 #include <vfs.h>
-#include <write.h>
 
 void main(int argc, char *argv[])
 {
@@ -9,41 +9,41 @@ void main(int argc, char *argv[])
 
     unsigned char buffer;
 
-    write_string("20");
+    stdout_write("20");
     vfs_read(node, 0, 1, &buffer);
-    write_string_bcd(buffer);
+    stdout_write_bcd(buffer);
 
-    write_string("-");
+    stdout_write("-");
 
     vfs_read(node, 1, 1, &buffer);
-    write_string_bcd(buffer);
+    stdout_write_bcd(buffer);
 
-    write_string("-");
+    stdout_write("-");
 
     vfs_read(node, 2, 1, &buffer);
-    write_string_bcd(buffer);
+    stdout_write_bcd(buffer);
 
-    write_string(" ");
+    stdout_write(" ");
 
     vfs_read(node, 3, 1, &buffer);
-    write_string_bcd(buffer);
+    stdout_write_bcd(buffer);
 
-    write_string(":");
+    stdout_write(":");
 
     vfs_read(node, 4, 1, &buffer);
-    write_string_bcd(buffer);
+    stdout_write_bcd(buffer);
 
-    write_string(":");
+    stdout_write(":");
 
     vfs_read(node, 5, 1, &buffer);
-    write_string_bcd(buffer);
+    stdout_write_bcd(buffer);
 
     vfs_read(node, 3, 1, &buffer);
 
     if (buffer >> 4)
-        write_string("PM\n");
+        stdout_write("PM\n");
     else
-        write_string("AM\n");
+        stdout_write("AM\n");
 
 }
 

@@ -1,4 +1,4 @@
-#include <lib/write.h>
+#include <lib/stdout.h>
 #include <arch/x86/kernel/arch.h>
 #include <arch/x86/kernel/idt.h>
 #include <arch/x86/kernel/isr.h>
@@ -35,8 +35,8 @@ void isr_handler(struct isr_registers *registers)
     else
     {
 
-        write_string("Unhandled interrupt: 0x");
-        write_string_hex(registers->int_no);
+        stdout_write("Unhandled interrupt: 0x");
+        stdout_write_hex(registers->int_no);
 
     }
 

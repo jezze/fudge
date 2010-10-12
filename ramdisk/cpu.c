@@ -1,4 +1,4 @@
-#include <write.h>
+#include <stdout.h>
 #include <vfs.h>
 #include "cpu.h"
 
@@ -17,9 +17,9 @@ void main(int argc, char *argv[])
 
     cpu_get_vendor(vendor);
 
-    write_string("Vendor: ");
-    write_string(vendor);
-    write_string("\n");
+    stdout_write("Vendor: ");
+    stdout_write(vendor);
+    stdout_write("\n");
 
     // ECX FEATURES
 
@@ -29,15 +29,15 @@ void main(int argc, char *argv[])
 
     unsigned int edx = cpu_get_feature_edx();
 
-    write_string("Features: ");
+    stdout_write("Features: ");
 
     if (edx & CPU_FEATURE_EDX_FPU)
-        write_string("FDU ");
+        stdout_write("FDU ");
 
     if (edx & CPU_FEATURE_EDX_MMX)
-        write_string("MMX ");
+        stdout_write("MMX ");
 
-    write_string("\n");
+    stdout_write("\n");
 
     // BRAND
 
@@ -45,9 +45,9 @@ void main(int argc, char *argv[])
 
     cpu_get_brand(brand);
 
-    write_string("Brand: ");
-    write_string(brand);
-    write_string("\n");
+    stdout_write("Brand: ");
+    stdout_write(brand);
+    stdout_write("\n");
 
 }
 

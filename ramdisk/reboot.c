@@ -1,10 +1,10 @@
 #include <call.h>
-#include <write.h>
+#include <stdout.h>
 
 void main(int argc, char *argv[])
 {
 
-    write_string("System is rebooting...");
+    stdout_write("System is rebooting...");
     call_reboot();
 
 }

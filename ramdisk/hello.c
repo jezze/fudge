@@ -1,9 +1,9 @@
+#include <stdout.h>
 #include <vfs.h>
-#include <write.h>
 
 void main(int argc, char *argv[])
 {
 
-    write_string("Hello World!\n");
+    stdout_write("Hello World!\n");
 
 }

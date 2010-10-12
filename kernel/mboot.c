@@ -1,49 +1,49 @@
-#include <lib/write.h>
+#include <lib/stdout.h>
 #include <kernel/mboot.h>
 
 void mboot_init(struct mboot_info *info)
 {
 
-    write_string("System information\n");
-    write_string("------------------\n");
+    stdout_write("System information\n");
+    stdout_write("------------------\n");
 
     if (info->flags & MBOOT_FLAG_MEMORY)
     {
 
-        write_string("Lower memory: ");
-        write_string_dec(info->memoryLower);
-        write_string("KB\n");
+        stdout_write("Lower memory: ");
+        stdout_write_dec(info->memoryLower);
+        stdout_write("KB\n");
 
-        write_string("Upper memory: ");
-        write_string_dec(info->memoryUpper);
-        write_string("KB\n");
+        stdout_write("Upper memory: ");
+        stdout_write_dec(info->memoryUpper);
+        stdout_write("KB\n");
 
     }
 
     if (info->flags & MBOOT_FLAG_DEVICE)
     {
 
-        write_string("Boot device: ");
+        stdout_write("Boot device: ");
 
         switch (info->device >> 24)
         {
 
             case 0xE0:
-                write_string("CD-ROM\n");
+                stdout_write("CD-ROM\n");
                 break;
 
             case 0x00:
-                write_string("Floppy drive\n");
+                stdout_write("Floppy drive\n");
                 break;
 
             case 0x80:
-                write_string("Hard drive\n");
+                stdout_write("Hard drive\n");
                 break;
 
             default:
-                write_string("Unknown (");
-                write_string_hex(info->device >> 24);
-                write_string(")\n");
+                stdout_write("Unknown (");
+                stdout_write_hex(info->device >> 24);
+                stdout_write(")\n");
                 break;
 
         }
@@ -53,23 +53,23 @@ void mboot_init(struct mboot_info *info)
     if (info->flags & MBOOT_FLAG_CMDLINE)
     {
 
-        write_string("Command: ");
-        write_string((char *)info->cmdline);
-        write_string("\n");
+        stdout_write("Command: ");
+        stdout_write((char *)info->cmdline);
+        stdout_write("\n");
 
     }
 
     if (info->flags & MBOOT_FLAG_AOUT)
     {
 
-        write_string("Kernel format: AOUT\n");
+        stdout_write("Kernel format: AOUT\n");
 
     }
 
     if (info->flags & MBOOT_FLAG_ELF)
     {
 
-        write_string("Kernel format: ELF\n");
+        stdout_write("Kernel format: ELF\n");
 
     }
 
@@ -78,15 +78,15 @@ void mboot_init(struct mboot_info *info)
 
         struct mboot_module *module = (struct mboot_module *)info->modulesAddresses;
 
-        write_string("Modules: ");
-        write_string((char *)module->name);
-        write_string(" Base: 0x");
-        write_string_hex(module->base);
-        write_string(" Length: 0x");
-        write_string_hex(module->length);
-        write_string(" Reserved: ");
-        write_string_dec(module->reserved);
-        write_string("\n");
+        stdout_write("Modules: ");
+        stdout_write((char *)module->name);
+        stdout_write(" Base: 0x");
+        stdout_write_hex(module->base);
+        stdout_write(" Length: 0x");
+        stdout_write_hex(module->length);
+        stdout_write(" Reserved: ");
+        stdout_write_dec(module->reserved);
+        stdout_write("\n");
 
     }
 
@@ -95,37 +95,37 @@ void mboot_init(struct mboot_info *info)
 
         struct mboot_mmap *mmap = (struct mboot_mmap *)info->mmapAddress;
 
-        write_string("Memory map:\n");
+        stdout_write("Memory map:\n");
 
         while (mmap < info->mmapAddress + info->mmapLength)
         {
 
-            write_string("0x");
+            stdout_write("0x");
 
             if (mmap->baseHigh)
-                write_string_hex(mmap->baseHigh);
+                stdout_write_hex(mmap->baseHigh);
 
-            write_string_hex(mmap->baseLow);
+            stdout_write_hex(mmap->baseLow);
 
-            write_string("-0x");
+            stdout_write("-0x");
 
-            write_string_hex(mmap->baseLow + mmap->lengthLow);
+            stdout_write_hex(mmap->baseLow + mmap->lengthLow);
 
-            write_string(" (0x");
+            stdout_write(" (0x");
 
             if (mmap->lengthHigh)
-                write_string_hex(mmap->lengthHigh);
+                stdout_write_hex(mmap->lengthHigh);
 
-            write_string_hex(mmap->lengthLow);
+            stdout_write_hex(mmap->lengthLow);
 
-            write_string(" bytes) ");
+            stdout_write(" bytes) ");
 
             if (mmap->type == 1)
-                write_string("Available");
+                stdout_write("Available");
             else
-                write_string("Reserved");
+                stdout_write("Reserved");
 
-            write_string("\n");
+            stdout_write("\n");
 
             mmap = (struct mboot_mmap *)((unsigned int)mmap + mmap->size + sizeof (unsigned int));
 
@@ -136,9 +136,9 @@ void mboot_init(struct mboot_info *info)
     if (info->flags & MBOOT_FLAG_LOADER)
     {
 
-        write_string("Loader: ");
-        write_string((char *)info->name);
-        write_string("\n");
+        stdout_write("Loader: ");
+        stdout_write((char *)info->name);
+        stdout_write("\n");
 
     }
 
@@ -148,6 +148,6 @@ void mboot_init(struct mboot_info *info)
 
     }
 
-    write_string("\n");
+    stdout_write("\n");
 
 }

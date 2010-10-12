@@ -1,7 +1,7 @@
 #include <call.h>
 #include <elf.h>
+#include <stdout.h>
 #include <vfs.h>
-#include <write.h>
 
 void main(int argc, char *argv[])
 {
@@ -23,57 +23,57 @@ void main(int argc, char *argv[])
 
     //unsigned char identify[16];
 
-    write_string("ELF header");
-    write_string("\nType: ");
-    write_string_dec(header.type);
-    write_string("\nMachine: ");
-    write_string_dec(header.machine);
-    write_string("\nVersion: ");
-    write_string_dec(header.version);
-    write_string("\nEntry: 0x");
-    write_string_hex(header.entry);
-    write_string("\nProgram Header Offset: ");
-    write_string_dec(header.programHeaderOffset);
-    write_string("\nSection Header Offset: ");
-    write_string_dec(header.sectionHeaderOffset);
-    write_string("\nFlags: ");
-    write_string_dec(header.flags);
-    write_string("\nHeader Size: ");
-    write_string_dec(header.headerSize);
-    write_string("\nProgram Header Entry Size: ");
-    write_string_dec(header.programHeaderEntrySize);
-    write_string("\nProgram Header Count: ");
-    write_string_dec(header.programHeaderCount);
-    write_string("\nSection Header Entry Size: ");
-    write_string_dec(header.sectionHeaderEntrySize);
-    write_string("\nSection Header Count: ");
-    write_string_dec(header.sectionHeaderCount);
-    write_string("\nSection Header String Index: ");
-    write_string_dec(header.sectionHeaderStringIndex);
-    write_string("\n\n");
+    stdout_write("ELF header");
+    stdout_write("\nType: ");
+    stdout_write_dec(header.type);
+    stdout_write("\nMachine: ");
+    stdout_write_dec(header.machine);
+    stdout_write("\nVersion: ");
+    stdout_write_dec(header.version);
+    stdout_write("\nEntry: 0x");
+    stdout_write_hex(header.entry);
+    stdout_write("\nProgram Header Offset: ");
+    stdout_write_dec(header.programHeaderOffset);
+    stdout_write("\nSection Header Offset: ");
+    stdout_write_dec(header.sectionHeaderOffset);
+    stdout_write("\nFlags: ");
+    stdout_write_dec(header.flags);
+    stdout_write("\nHeader Size: ");
+    stdout_write_dec(header.headerSize);
+    stdout_write("\nProgram Header Entry Size: ");
+    stdout_write_dec(header.programHeaderEntrySize);
+    stdout_write("\nProgram Header Count: ");
+    stdout_write_dec(header.programHeaderCount);
+    stdout_write("\nSection Header Entry Size: ");
+    stdout_write_dec(header.sectionHeaderEntrySize);
+    stdout_write("\nSection Header Count: ");
+    stdout_write_dec(header.sectionHeaderCount);
+    stdout_write("\nSection Header String Index: ");
+    stdout_write_dec(header.sectionHeaderStringIndex);
+    stdout_write("\n\n");
 
     struct elf_program_header pHeader;
 
     vfs_read(node, header.programHeaderOffset, sizeof (struct elf_program_header), &pHeader);
 
-    write_string("ELF program header:");
-    write_string("\nType: ");
-    write_string_dec(pHeader.type);
-    write_string("\nOffset: ");
-    write_string_dec(pHeader.offset);
-    write_string("\nVirtual address: 0x");
-    write_string_hex(pHeader.virtualAddress);
-    write_string("\nPhysical address: 0x");
-    write_string_hex(pHeader.physicalAddress);
-    write_string("\nFile size: ");
-    write_string_dec(pHeader.fileSize);
-    write_string("\nMemory size: ");
-    write_string_dec(pHeader.memorySize);
-    write_string("\nFlags: ");
-    write_string_dec(pHeader.flags);
-    write_string("\nAlign: ");
-    write_string_dec(pHeader.align);
-    write_string("\n");
+    stdout_write("ELF program header:");
+    stdout_write("\nType: ");
+    stdout_write_dec(pHeader.type);
+    stdout_write("\nOffset: ");
+    stdout_write_dec(pHeader.offset);
+    stdout_write("\nVirtual address: 0x");
+    stdout_write_hex(pHeader.virtualAddress);
+    stdout_write("\nPhysical address: 0x");
+    stdout_write_hex(pHeader.physicalAddress);
+    stdout_write("\nFile size: ");
+    stdout_write_dec(pHeader.fileSize);
+    stdout_write("\nMemory size: ");
+    stdout_write_dec(pHeader.memorySize);
+    stdout_write("\nFlags: ");
+    stdout_write_dec(pHeader.flags);
+    stdout_write("\nAlign: ");
+    stdout_write_dec(pHeader.align);
+    stdout_write("\n");
 
 }
 

@@ -1,8 +1,8 @@
 #include <lib/call.h>
-#include <lib/read.h>
+#include <lib/stdin.h>
 #include <lib/vfs.h>
 
-char read_char()
+char stdin_read_single()
 {
 
     struct vfs_node *node = call_open("dev/stdin");

@@ -1,6 +1,6 @@
 #include <call.h>
+#include <stdout.h>
 #include <vfs.h>
-#include <write.h>
 
 void main(int argc, char *argv[])
 {
@@ -15,7 +15,7 @@ void main(int argc, char *argv[])
     if (!node)
     {
 
-        write_string("Directory does not exist.\n");
+        stdout_write("Directory does not exist.\n");
 
         return;
 
@@ -24,7 +24,7 @@ void main(int argc, char *argv[])
     if (!node->walk)
     {
 
-        write_string("Not a directory.\n");
+        stdout_write("Not a directory.\n");
 
         return;
 
@@ -40,20 +40,20 @@ void main(int argc, char *argv[])
         if (current->walk)
         {
 
-            write_string("D ");
-            write_string(current->name);
+            stdout_write("D ");
+            stdout_write(current->name);
 
         }
 
         else
         {
 
-            write_string("F ");
-            write_string(current->name);
+            stdout_write("F ");
+            stdout_write(current->name);
 
         }
 
-        write_string("\n");
+        stdout_write("\n");
 
     }
 

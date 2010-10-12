@@ -1,4 +1,4 @@
-#include <lib/write.h>
+#include <lib/stdout.h>
 #include <arch/x86/kernel/ata.h>
 #include <arch/x86/kernel/io.h>
 
@@ -128,23 +128,23 @@ void ata_print_info(struct ata_device *device)
     {
 
         case ATA_DEVICE_TYPE_ATA:
-            write_string("ata\n");
+            stdout_write("ata\n");
             break;
 
         case ATA_DEVICE_TYPE_ATAPI:
-            write_string("atapi\n");
+            stdout_write("atapi\n");
             break;
 
         case ATA_DEVICE_TYPE_SATA:
-            write_string("serial ata\n");
+            stdout_write("serial ata\n");
             break;
 
         case ATA_DEVICE_TYPE_SATAPI:
-            write_string("serial atapi\n");
+            stdout_write("serial atapi\n");
             break;
 
         default:
-            write_string("unknown\n");
+            stdout_write("unknown\n");
             break;
 
     }
@@ -154,7 +154,7 @@ void ata_print_info(struct ata_device *device)
 void ata_init()
 {
 
-    write_string("CHECKING ATA\n");
+    stdout_write("CHECKING ATA\n");
 
     primaryMaster.control = ATA_PRIMARY_MASTER_CONTROL;
     primaryMaster.data = ATA_PRIMARY_MASTER_DATA;
@@ -162,7 +162,7 @@ void ata_init()
     if (ata_identify(&primaryMaster))
     {
 
-        write_string("hda: ");
+        stdout_write("hda: ");
         ata_print_info(&primaryMaster);        
 
     }
@@ -173,7 +173,7 @@ void ata_init()
     if (ata_identify(&primarySlave))
     {
 
-        write_string("hdb: ");
+        stdout_write("hdb: ");
         ata_print_info(&primarySlave);        
 
     }
@@ -184,7 +184,7 @@ void ata_init()
     if (ata_identify(&secondaryMaster))
     {
 
-        write_string("hdc: ");
+        stdout_write("hdc: ");
         ata_print_info(&secondaryMaster);        
 
     }
@@ -195,12 +195,12 @@ void ata_init()
     if (ata_identify(&secondarySlave))
     {
 
-        write_string("hdd: ");
+        stdout_write("hdd: ");
         ata_print_info(&secondarySlave);        
 
     }
 
-    write_string("\n");
+    stdout_write("\n");
 
 }
 
