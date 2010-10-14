@@ -13,10 +13,10 @@ unsigned int vga_fb_write(struct vfs_node *node, unsigned int offset, unsigned i
     unsigned int i;
     unsigned int j = 0;
 
-    for (i = offset; i < count; i++, j++)
+    for (i = offset; i < offset + count; i++, j++)
     {
 
-        unsigned short *position = (unsigned short *)(VGA_FB_ADDRESS + i);
+        unsigned short *position = (unsigned short *)(VGA_FB_ADDRESS + i * 2);
         *position = ((char *)buffer)[j] | ((VGA_FB_COLOR_BLACK << 4) | (VGA_FB_COLOR_WHITE & 0x0F) << 8);
 
     }

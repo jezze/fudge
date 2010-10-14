@@ -2,14 +2,18 @@
 
 if [ ! -f root/boot/kernel ]
 then
+
     echo "ERROR: Kernel not found. Did you forget to compile?"
     exit
+
 fi
 
 if [ ! -f root/boot/initrd ]
 then
+
     echo "ERROR: Ramdisk image not found. Did you forget to compile?"
     exit
+
 fi
 
 dd if=/dev/zero of=fudge.img bs=512 count=2880

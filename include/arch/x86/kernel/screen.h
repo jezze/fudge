@@ -21,29 +21,8 @@
 #define SCREEN_COLOR_RED2       0x0c
 #define SCREEN_COLOR_WHITE      0x0f
 
-struct vfs_node;
-
-struct screen_context
-{
-
-    unsigned short attribute;
-
-};
-
-struct screen
-{
-
-    unsigned short *address;
-    unsigned int cursorX;
-    unsigned int cursorY;
-    struct screen_context context;
-
-};
-
-extern struct screen screen;
-
 extern void screen_clear();
-extern void screen_cursor_move(unsigned int offset);
+extern void screen_cursor_move();
 extern void screen_scroll();
 extern void screen_init();
 

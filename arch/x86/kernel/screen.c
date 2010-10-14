@@ -6,117 +6,94 @@
 #include <arch/x86/kernel/screen.h>
 
 struct vfs_node screenNode;
-struct screen screen;
+unsigned int screenOffset;
+unsigned short screenColor;
 
 static void screen_putc(char c)
 {
 
-    unsigned short *where;
-
     if (c == '\b')
     {
 
-        if (screen.cursorX != 0)
-            screen.cursorX--;
+        screenOffset--;
 
     }
 
     else if (c == '\t')
     {
 
-        screen.cursorX = (screen.cursorX + 8) & ~(8 - 1);
+        screenOffset = (screenOffset + 8) & ~(8 - 1);
 
     }
 
     else if (c == '\r')
     {
 
-        screen.cursorX = 0;
+        screenOffset -= (screenOffset % SCREEN_CHARACTER_WIDTH);
 
     }
 
     else if (c == '\n')
     {
 
-        screen.cursorX = 0;
-        screen.cursorY++;
+        screenOffset += SCREEN_CHARACTER_WIDTH - (screenOffset % SCREEN_CHARACTER_WIDTH);
 
     }
     
     else if (c >= ' ')
     {
 
-        where = screen.address + (screen.cursorY * SCREEN_CHARACTER_WIDTH + screen.cursorX);
-        *where = c | screen.context.attribute << 8;
-        screen.cursorX++;
+        struct vfs_node *node = call_open("dev/vga");
+        vfs_write(node, screenOffset, 1, &c);
+
+        screenOffset++;
 
     }
 
-    if (screen.cursorX >= SCREEN_CHARACTER_WIDTH)
-    {
+    if (screenOffset >= SCREEN_CHARACTER_WIDTH * SCREEN_CHARACTER_HEIGHT - SCREEN_CHARACTER_WIDTH)
+        screen_scroll();
 
-        screen.cursorX = 0;
-        screen.cursorY++;
-
-    }
-
-    screen_scroll();
-    screen_cursor_move(screen.cursorY * SCREEN_CHARACTER_WIDTH + screen.cursorX);
+    screen_cursor_move();
 
 }
 
 void screen_set_text_color(unsigned char forecolor, unsigned char backcolor)
 {
 
-    screen.context.attribute = (backcolor << 4) | (forecolor & 0x0F);
+    screenColor = (backcolor << 4) | (forecolor & 0x0F);
 
 }
 
 void screen_clear()
 {
 
-    unsigned int blank;
+    unsigned short blank = ' ' | (screenColor << 8);
 
-    blank = 0x20 | (screen.context.attribute << 8);
+    memory_setw((void *)SCREEN_ADDRESS, blank, SCREEN_CHARACTER_WIDTH * SCREEN_CHARACTER_HEIGHT * 2);
 
-    unsigned int i;
-
-    for (i = 0; i < SCREEN_CHARACTER_HEIGHT; i++)
-        memory_setw(screen.address + i * SCREEN_CHARACTER_WIDTH, blank, SCREEN_CHARACTER_WIDTH);
-
-    screen.cursorX = 0;
-    screen.cursorY = 0;
-
-    screen_cursor_move(screen.cursorY * SCREEN_CHARACTER_WIDTH + screen.cursorX);
+    screenOffset = 0;
 
 }
 
-void screen_cursor_move(unsigned int offset)
+void screen_cursor_move()
 {
 
     io_outb(0x3D4, 14);
-    io_outb(0x3D5, offset >> 8);
+    io_outb(0x3D5, screenOffset >> 8);
     io_outb(0x3D4, 15);
-    io_outb(0x3D5, offset);
+    io_outb(0x3D5, screenOffset);
 
 }
 
 void screen_scroll()
 {
 
-    unsigned int blank, temp;
+    unsigned short blank = ' ' | (screenColor << 8);
 
-    blank = 0x20 | (screen.context.attribute << 8);
+    memory_copy((void *)SCREEN_ADDRESS, (void *)(SCREEN_ADDRESS + SCREEN_CHARACTER_WIDTH * 2), SCREEN_CHARACTER_WIDTH * SCREEN_CHARACTER_HEIGHT * 2 - SCREEN_CHARACTER_WIDTH * 2);
+    memory_setw((void *)(SCREEN_CHARACTER_WIDTH * SCREEN_CHARACTER_HEIGHT * 2 - SCREEN_CHARACTER_WIDTH * 2), blank, SCREEN_CHARACTER_WIDTH);
 
-    if (screen.cursorY >= SCREEN_CHARACTER_HEIGHT)
-    {
-
-        temp = screen.cursorY - SCREEN_CHARACTER_HEIGHT + 1;
-        memory_copy(screen.address, screen.address + temp * SCREEN_CHARACTER_WIDTH, (SCREEN_CHARACTER_HEIGHT - temp) * SCREEN_CHARACTER_WIDTH * 2);
-        memory_setw(screen.address + (SCREEN_CHARACTER_HEIGHT - temp) * SCREEN_CHARACTER_WIDTH, blank, SCREEN_CHARACTER_WIDTH);
-        screen.cursorY = SCREEN_CHARACTER_HEIGHT - 1;
-
-    }
+    screenOffset -= SCREEN_CHARACTER_WIDTH;
 
 }
 
@@ -126,7 +103,7 @@ unsigned int screen_write(struct vfs_node *node, unsigned int offset, unsigned i
     unsigned int i;
     unsigned int j = 0;
 
-    for (i = offset; i < count; i++, j++)
+    for (i = offset; i < offset + count; i++, j++)
         screen_putc(((char *)buffer)[j]);
 
     return count;
@@ -135,10 +112,6 @@ unsigned int screen_write(struct vfs_node *node, unsigned int offset, unsigned i
 
 void screen_init()
 {
-
-    screen.address = (unsigned short *)SCREEN_ADDRESS;
-    screen.cursorX = 0;
-    screen.cursorY = 0;
 
     screen_set_text_color(SCREEN_COLOR_WHITE, SCREEN_COLOR_BLACK);
 
