@@ -1,5 +1,5 @@
 #include <vfs.h>
-#include <stdout.h>
+#include <file.h>
 
 void main(int argc, char *argv[])
 {
@@ -7,7 +7,7 @@ void main(int argc, char *argv[])
     if (argc != 2)
         return;
 
-    stdout_write(argv[1]);
+    file_write(argv[1]);
 
 }
 

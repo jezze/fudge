@@ -1,6 +1,6 @@
 #include <call.h>
 #include <elf.h>
-#include <stdout.h>
+#include <file.h>
 #include <vfs.h>
 
 void main(int argc, char *argv[])
@@ -23,57 +23,57 @@ void main(int argc, char *argv[])
 
     //unsigned char identify[16];
 
-    stdout_write("ELF header");
-    stdout_write("\nType: ");
-    stdout_write_dec(header.type);
-    stdout_write("\nMachine: ");
-    stdout_write_dec(header.machine);
-    stdout_write("\nVersion: ");
-    stdout_write_dec(header.version);
-    stdout_write("\nEntry: 0x");
-    stdout_write_hex(header.entry);
-    stdout_write("\nProgram Header Offset: ");
-    stdout_write_dec(header.programHeaderOffset);
-    stdout_write("\nSection Header Offset: ");
-    stdout_write_dec(header.sectionHeaderOffset);
-    stdout_write("\nFlags: ");
-    stdout_write_dec(header.flags);
-    stdout_write("\nHeader Size: ");
-    stdout_write_dec(header.headerSize);
-    stdout_write("\nProgram Header Entry Size: ");
-    stdout_write_dec(header.programHeaderEntrySize);
-    stdout_write("\nProgram Header Count: ");
-    stdout_write_dec(header.programHeaderCount);
-    stdout_write("\nSection Header Entry Size: ");
-    stdout_write_dec(header.sectionHeaderEntrySize);
-    stdout_write("\nSection Header Count: ");
-    stdout_write_dec(header.sectionHeaderCount);
-    stdout_write("\nSection Header String Index: ");
-    stdout_write_dec(header.sectionHeaderStringIndex);
-    stdout_write("\n\n");
+    file_write("ELF header");
+    file_write("\nType: ");
+    file_write_dec(header.type);
+    file_write("\nMachine: ");
+    file_write_dec(header.machine);
+    file_write("\nVersion: ");
+    file_write_dec(header.version);
+    file_write("\nEntry: 0x");
+    file_write_hex(header.entry);
+    file_write("\nProgram Header Offset: ");
+    file_write_dec(header.programHeaderOffset);
+    file_write("\nSection Header Offset: ");
+    file_write_dec(header.sectionHeaderOffset);
+    file_write("\nFlags: ");
+    file_write_dec(header.flags);
+    file_write("\nHeader Size: ");
+    file_write_dec(header.headerSize);
+    file_write("\nProgram Header Entry Size: ");
+    file_write_dec(header.programHeaderEntrySize);
+    file_write("\nProgram Header Count: ");
+    file_write_dec(header.programHeaderCount);
+    file_write("\nSection Header Entry Size: ");
+    file_write_dec(header.sectionHeaderEntrySize);
+    file_write("\nSection Header Count: ");
+    file_write_dec(header.sectionHeaderCount);
+    file_write("\nSection Header String Index: ");
+    file_write_dec(header.sectionHeaderStringIndex);
+    file_write("\n\n");
 
     struct elf_program_header pHeader;
 
     vfs_read(node, header.programHeaderOffset, sizeof (struct elf_program_header), &pHeader);
 
-    stdout_write("ELF program header:");
-    stdout_write("\nType: ");
-    stdout_write_dec(pHeader.type);
-    stdout_write("\nOffset: ");
-    stdout_write_dec(pHeader.offset);
-    stdout_write("\nVirtual address: 0x");
-    stdout_write_hex(pHeader.virtualAddress);
-    stdout_write("\nPhysical address: 0x");
-    stdout_write_hex(pHeader.physicalAddress);
-    stdout_write("\nFile size: ");
-    stdout_write_dec(pHeader.fileSize);
-    stdout_write("\nMemory size: ");
-    stdout_write_dec(pHeader.memorySize);
-    stdout_write("\nFlags: ");
-    stdout_write_dec(pHeader.flags);
-    stdout_write("\nAlign: ");
-    stdout_write_dec(pHeader.align);
-    stdout_write("\n");
+    file_write("ELF program header:");
+    file_write("\nType: ");
+    file_write_dec(pHeader.type);
+    file_write("\nOffset: ");
+    file_write_dec(pHeader.offset);
+    file_write("\nVirtual address: 0x");
+    file_write_hex(pHeader.virtualAddress);
+    file_write("\nPhysical address: 0x");
+    file_write_hex(pHeader.physicalAddress);
+    file_write("\nFile size: ");
+    file_write_dec(pHeader.fileSize);
+    file_write("\nMemory size: ");
+    file_write_dec(pHeader.memorySize);
+    file_write("\nFlags: ");
+    file_write_dec(pHeader.flags);
+    file_write("\nAlign: ");
+    file_write_dec(pHeader.align);
+    file_write("\n");
 
 }
 

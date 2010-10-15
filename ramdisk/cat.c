@@ -1,5 +1,5 @@
 #include <call.h>
-#include <stdout.h>
+#include <file.h>
 #include <vfs.h>
 
 void main(int argc, char *argv[])
@@ -8,7 +8,7 @@ void main(int argc, char *argv[])
     if (argc != 2)
     {
 
-        stdout_write("You need to supply filename.\n");
+        file_write("You need to supply filename.\n");
 
         return;
 
@@ -19,7 +19,7 @@ void main(int argc, char *argv[])
     if (!node)
     {
 
-        stdout_write("File does not exist.\n");
+        file_write("File does not exist.\n");
 
         return;
 

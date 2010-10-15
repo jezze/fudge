@@ -1,4 +1,4 @@
-#include <lib/stdout.h>
+#include <lib/file.h>
 #include <arch/x86/kernel/ata.h>
 #include <arch/x86/kernel/io.h>
 
@@ -128,23 +128,23 @@ void ata_print_info(struct ata_device *device)
     {
 
         case ATA_DEVICE_TYPE_ATA:
-            stdout_write("ata\n");
+            file_write("ata\n");
             break;
 
         case ATA_DEVICE_TYPE_ATAPI:
-            stdout_write("atapi\n");
+            file_write("atapi\n");
             break;
 
         case ATA_DEVICE_TYPE_SATA:
-            stdout_write("serial ata\n");
+            file_write("serial ata\n");
             break;
 
         case ATA_DEVICE_TYPE_SATAPI:
-            stdout_write("serial atapi\n");
+            file_write("serial atapi\n");
             break;
 
         default:
-            stdout_write("unknown\n");
+            file_write("unknown\n");
             break;
 
     }
@@ -154,7 +154,7 @@ void ata_print_info(struct ata_device *device)
 void ata_init()
 {
 
-    stdout_write("CHECKING ATA\n");
+    file_write("CHECKING ATA\n");
 
     primaryMaster.control = ATA_PRIMARY_MASTER_CONTROL;
     primaryMaster.data = ATA_PRIMARY_MASTER_DATA;
@@ -162,7 +162,7 @@ void ata_init()
     if (ata_identify(&primaryMaster))
     {
 
-        stdout_write("hda: ");
+        file_write("hda: ");
         ata_print_info(&primaryMaster);        
 
     }
@@ -173,7 +173,7 @@ void ata_init()
     if (ata_identify(&primarySlave))
     {
 
-        stdout_write("hdb: ");
+        file_write("hdb: ");
         ata_print_info(&primarySlave);        
 
     }
@@ -184,7 +184,7 @@ void ata_init()
     if (ata_identify(&secondaryMaster))
     {
 
-        stdout_write("hdc: ");
+        file_write("hdc: ");
         ata_print_info(&secondaryMaster);        
 
     }
@@ -195,12 +195,12 @@ void ata_init()
     if (ata_identify(&secondarySlave))
     {
 
-        stdout_write("hdd: ");
+        file_write("hdd: ");
         ata_print_info(&secondarySlave);        
 
     }
 
-    stdout_write("\n");
+    file_write("\n");
 
 }
 

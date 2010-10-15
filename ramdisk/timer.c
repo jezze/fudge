@@ -1,4 +1,4 @@
-#include <stdout.h>
+#include <file.h>
 #include <vfs.h>
 
 void main(int argc, char *argv[])
@@ -6,8 +6,8 @@ void main(int argc, char *argv[])
 
     unsigned int timer;
 
-    stdout_write("Timer: ");
-    stdout_write("\n");
+    file_write("Timer: ");
+    file_write("\n");
 
 }
 

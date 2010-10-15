@@ -1,8 +1,7 @@
 #include <lib/call.h>
 #include <lib/elf.h>
 #include <lib/stack.h>
-#include <lib/stdin.h>
-#include <lib/stdout.h>
+#include <lib/file.h>
 #include <lib/string.h>
 #include <lib/vfs.h>
 #include <kernel/elf.h>
@@ -15,7 +14,7 @@ struct stack shellStack;
 static void shell_clear()
 {
 
-    stdout_write("fudge:/$ ");
+    file_write("fudge:/$ ");
     stack_clear(&shellStack);
 
 }
@@ -57,11 +56,11 @@ static void shell_call(struct vfs_node *node, int argc, char *argv[])
     else
     {
 
-        stdout_write("Unrecognized binary format. Continue? (y/n): ");
+        file_write("Unrecognized binary format. Continue? (y/n): ");
 
-        char c = stdin_read_single();
+        char c = file_read_single();
 
-        stdout_write("\n");
+        file_write("\n");
 
         if (c == 'y')
         {
@@ -92,8 +91,8 @@ static void shell_interpret(char *command)
         else
         {
 
-            stdout_write(argv[0]);
-            stdout_write(": Command not found\n");
+            file_write(argv[0]);
+            file_write(": Command not found\n");
 
         }
 
@@ -118,9 +117,9 @@ static void shell_handle_input(char c)
             if (stack_pop(&shellStack))
             {
 
-                stdout_write_single('\b');
-                stdout_write_single(' ');
-                stdout_write_single('\b');
+                file_write_single('\b');
+                file_write_single(' ');
+                file_write_single('\b');
 
              }
 
@@ -129,7 +128,7 @@ static void shell_handle_input(char c)
         case '\n':
 
             stack_push(&shellStack, '\0');
-            stdout_write_single(c);
+            file_write_single(c);
             shell_interpret(shellBuffer);
 
             break;
@@ -137,7 +136,7 @@ static void shell_handle_input(char c)
         default:
 
             stack_push(&shellStack, c);
-            stdout_write_single(c);
+            file_write_single(c);
 
             break;
 
@@ -151,7 +150,7 @@ static void shell_poll()
     for (;;)
     {
 
-        char c = stdin_read_single();
+        char c = file_read_single();
 
         shell_handle_input(c);
 
@@ -164,10 +163,10 @@ void shell_init()
 
     stack_init(&shellStack, shellBuffer, SHELL_BUFFER_SIZE);
 
-    stdout_write("Fudge\n");
-    stdout_write("-----\n");
-    stdout_write("Copyright (c) 2009 Jens Nyberg\n");
-    stdout_write("Type 'cat help.txt' to read the help section.\n\n");
+    file_write("Fudge\n");
+    file_write("-----\n");
+    file_write("Copyright (c) 2009 Jens Nyberg\n");
+    file_write("Type 'cat help.txt' to read the help section.\n\n");
 
     shell_clear();
     shell_poll();
