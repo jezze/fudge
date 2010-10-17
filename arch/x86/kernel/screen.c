@@ -4,10 +4,11 @@
 #include <lib/vfs.h>
 #include <arch/x86/kernel/io.h>
 #include <arch/x86/kernel/screen.h>
+#include <arch/x86/kernel/vga.h>
 
 struct vfs_node screenNode;
 unsigned int screenOffset;
-unsigned short screenColor;
+unsigned char screenColor;
 
 static void screen_putc(char c)
 {
@@ -53,7 +54,7 @@ static void screen_putc(char c)
     if (screenOffset >= SCREEN_CHARACTER_WIDTH * SCREEN_CHARACTER_HEIGHT - SCREEN_CHARACTER_WIDTH)
         screen_scroll();
 
-    screen_cursor_move();
+    vga_fb_set_cursor_offset(screenOffset);
 
 }
 
@@ -61,27 +62,6 @@ void screen_set_text_color(unsigned char forecolor, unsigned char backcolor)
 {
 
     screenColor = (backcolor << 4) | (forecolor & 0x0F);
-
-}
-
-void screen_clear()
-{
-
-    unsigned short blank = ' ' | (screenColor << 8);
-
-    memory_setw((void *)SCREEN_ADDRESS, blank, SCREEN_CHARACTER_WIDTH * SCREEN_CHARACTER_HEIGHT * 2);
-
-    screenOffset = 0;
-
-}
-
-void screen_cursor_move()
-{
-
-    io_outb(0x3D4, 14);
-    io_outb(0x3D5, screenOffset >> 8);
-    io_outb(0x3D4, 15);
-    io_outb(0x3D5, screenOffset);
 
 }
 
@@ -130,8 +110,6 @@ void screen_init()
 
     struct vfs_node *node = call_open("dev");
     vfs_write(node, node->length, 1, &screenNode);
-
-    screen_clear();
 
 }
 

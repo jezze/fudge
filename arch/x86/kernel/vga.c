@@ -6,21 +6,30 @@
 #include <arch/x86/kernel/vga.h>
 
 struct vfs_node vgaFbNode;
-unsigned short vgaFbColor;
 
-void vga_fb_set_color(unsigned char forecolor, unsigned char backcolor)
+unsigned char vga_fb_get_color(unsigned char forecolor, unsigned char backcolor)
 {
 
-    vgaFbColor = (backcolor << 4) | (forecolor & 0x0F);
+    return (backcolor << 4) | (forecolor & 0x0F);
 
 }
 
-void vga_fb_clear()
+void vga_fb_clear(unsigned char color)
 {
 
-    unsigned short blank = ' ' | (vgaFbColor << 8);
+    unsigned short blank = ' ' | (color << 8);
 
     memory_setw((void *)VGA_FB_ADDRESS, blank, 2000);
+
+}
+
+void vga_fb_set_cursor_offset(unsigned short offset)
+{
+
+    io_outb(0x3D4, 14);
+    io_outb(0x3D5, offset >> 8);
+    io_outb(0x3D4, 15);
+    io_outb(0x3D5, offset);
 
 }
 
@@ -67,8 +76,7 @@ static unsigned int vga_fb_write(struct vfs_node *node, unsigned int offset, uns
 static void vga_fb_init()
 {
 
-    vga_fb_set_color(VGA_FB_COLOR_WHITE, VGA_FB_COLOR_BLACK);
-    vga_fb_clear();
+    vga_fb_clear(vga_fb_get_color(VGA_FB_COLOR_WHITE, VGA_FB_COLOR_BLACK));
 
 }
 

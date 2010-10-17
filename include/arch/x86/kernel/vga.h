@@ -21,6 +21,7 @@
 #define VGA_FB_COLOR_RED2       0x0c
 #define VGA_FB_COLOR_WHITE      0x0f
 
+extern void vga_fb_set_cursor_offset(unsigned short offset);
 extern void vga_init();
 
 #endif
