@@ -25,9 +25,9 @@ void main(int argc, char *argv[])
 
     }
 
-    char buffer[2000];
+    char buffer[5000];
 
-    unsigned int size = vfs_read(node, 0, 2000, buffer);
+    unsigned int size = vfs_read(node, 0, 5000, buffer);
 
     struct vfs_node *out = call_open("dev/stdout");
 
