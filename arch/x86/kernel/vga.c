@@ -9,22 +9,6 @@ struct vfs_node vgaFbNode;
 struct vfs_node vgaFbColorNode;
 unsigned char vgaFbColor;
 
-unsigned char vga_fb_get_color(unsigned char forecolor, unsigned char backcolor)
-{
-
-    return (backcolor << 4) | (forecolor & 0x0F);
-
-}
-
-void vga_fb_clear(unsigned char color)
-{
-
-    unsigned short blank = ' ' | (color << 8);
-
-    memory_setw((void *)VGA_FB_ADDRESS, blank, 2000);
-
-}
-
 void vga_fb_set_cursor_offset(unsigned short offset)
 {
 
@@ -68,6 +52,7 @@ static unsigned int vga_fb_write(struct vfs_node *node, unsigned int offset, uns
             break;
 
         memory_copy((void *)(VGA_FB_ADDRESS + i * 2), buffer + j, 1);
+        memory_set((void *)(VGA_FB_ADDRESS + i * 2 + 1), vgaFbColor, 1);
 
     }
 
@@ -81,7 +66,7 @@ static unsigned int vga_fb_color_read(struct vfs_node *node, unsigned int offset
     if (count != 1)
         return 0;
 
-    vgaFbColor = ((char *)buffer)[0];
+    ((char *)buffer)[0] = vgaFbColor;
 
     return 1;
 
@@ -93,26 +78,17 @@ static unsigned int vga_fb_color_write(struct vfs_node *node, unsigned int offse
     if (count != 1)
         return 0;
 
-    ((char *)buffer)[0] = vgaFbColor;
+    vgaFbColor = ((char *)buffer)[0];
 
     return 1;
-
-}
-
-static void vga_fb_init()
-{
-
-    vga_fb_clear(vga_fb_get_color(VGA_FB_COLOR_WHITE, VGA_FB_COLOR_BLACK));
 
 }
 
 void vga_init()
 {
 
-    vga_fb_init();
-
     memory_set(&vgaFbNode, 0, sizeof (struct vfs_node));
-    string_copy(vgaFbNode.name, "vga");
+    string_copy(vgaFbNode.name, "vga_fb");
     vgaFbNode.read = vga_fb_read;
     vgaFbNode.write = vga_fb_write;
 

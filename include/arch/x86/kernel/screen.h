@@ -21,9 +21,6 @@
 #define SCREEN_COLOR_RED2       0x0c
 #define SCREEN_COLOR_WHITE      0x0f
 
-extern void screen_clear();
-extern void screen_cursor_move();
-extern void screen_scroll();
 extern void screen_init();
 
 #endif
