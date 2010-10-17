@@ -9,7 +9,8 @@
 struct vfs_node screenNode;
 struct vfs_node *screenVgaNode;
 struct vfs_node *screenVgaColorNode;
-unsigned int screenOffset;
+struct vfs_node *screenVgaCursorNode;
+unsigned short screenOffset;
 unsigned char screenColor;
 
 static void screen_scroll()
@@ -75,22 +76,18 @@ static void screen_putc(char c)
     if (screenOffset >= SCREEN_CHARACTER_WIDTH * SCREEN_CHARACTER_HEIGHT - SCREEN_CHARACTER_WIDTH)
         screen_scroll();
 
-    vga_fb_set_cursor_offset(screenOffset);
+    vfs_write(screenVgaCursorNode, 0, 1, &screenOffset);
 
 }
 
 static void screen_clear()
 {
 
+    char c = ' ';
     int i;
 
     for (i = 0; i < 2000; i++)
-    {
-
-        char c = ' ';
         vfs_write(screenVgaNode, i, 1, &c);
-
-    }
 
 }
 
@@ -112,6 +109,7 @@ void screen_init()
 
     screenVgaNode = call_open("dev/vga_fb");
     screenVgaColorNode = call_open("dev/vga_fb_color");
+    screenVgaCursorNode = call_open("dev/vga_fb_cursor");
 
     unsigned char color = (SCREEN_COLOR_BLACK << 4) | (SCREEN_COLOR_WHITE & 0x0F);
     vfs_write(screenVgaColorNode, 0, 1, &color);

@@ -7,17 +7,8 @@
 
 struct vfs_node vgaFbNode;
 struct vfs_node vgaFbColorNode;
+struct vfs_node vgaFbCursorNode;
 unsigned char vgaFbColor;
-
-void vga_fb_set_cursor_offset(unsigned short offset)
-{
-
-    io_outb(0x3D4, 14);
-    io_outb(0x3D5, offset >> 8);
-    io_outb(0x3D4, 15);
-    io_outb(0x3D5, offset);
-
-}
 
 static unsigned int vga_fb_read(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
@@ -84,6 +75,23 @@ static unsigned int vga_fb_color_write(struct vfs_node *node, unsigned int offse
 
 }
 
+static unsigned int vga_fb_cursor_write(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    if (count != 1)
+        return 0;
+
+    short position = ((short *)buffer)[0];
+
+    io_outb(0x3D4, 14);
+    io_outb(0x3D5, position >> 8);
+    io_outb(0x3D4, 15);
+    io_outb(0x3D5, position);
+
+    return 1;
+
+}
+
 void vga_init()
 {
 
@@ -99,9 +107,15 @@ void vga_init()
     vgaFbColorNode.read = vga_fb_color_read;
     vgaFbColorNode.write = vga_fb_color_write;
 
+    memory_set(&vgaFbCursorNode, 0, sizeof (struct vfs_node));
+    string_copy(vgaFbCursorNode.name, "vga_fb_cursor");
+    vgaFbCursorNode.length = 1;
+    vgaFbCursorNode.write = vga_fb_cursor_write;
+
     struct vfs_node *node = call_open("dev");
     vfs_write(node, node->length, 1, &vgaFbNode);
     vfs_write(node, node->length, 1, &vgaFbColorNode);
+    vfs_write(node, node->length, 1, &vgaFbCursorNode);
 
 }
 
