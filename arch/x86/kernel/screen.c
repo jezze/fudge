@@ -120,6 +120,7 @@ void screen_init()
 
     memory_set(&screenNode, 0, sizeof (struct vfs_node));
     string_copy(screenNode.name, "stdout");
+    screenNode.length = 2000;
     screenNode.write = screen_write;
 
     struct vfs_node *node = call_open("dev");
