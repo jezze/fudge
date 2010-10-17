@@ -1,5 +1,6 @@
 #include <lib/call.h>
 #include <lib/elf.h>
+#include <lib/memory.h>
 #include <lib/stack.h>
 #include <lib/file.h>
 #include <lib/string.h>
@@ -8,8 +9,85 @@
 #include <kernel/kernel.h>
 #include <kernel/shell.h>
 
+struct vfs_node shellNode;
+struct vfs_node *shellVgaNode;
+struct vfs_node *shellVgaColorNode;
+struct vfs_node *shellVgaCursorNode;
+unsigned short shellOffset;
+unsigned char shellColor;
+
 char shellBuffer[SHELL_BUFFER_SIZE];
 struct stack shellStack;
+
+static void shell_scroll()
+{
+
+    char buffer[2000];
+
+    vfs_read(shellVgaNode, 80, 1920, buffer);
+    memory_set(buffer + 1920, ' ', 80);
+    vfs_write(shellVgaNode, 0, 2000, buffer);
+
+    shellOffset -= SHELL_CHARACTER_WIDTH;
+
+}
+
+static void shell_putc(char c)
+{
+
+    if (c == '\b')
+    {
+
+        shellOffset--;
+
+    }
+
+    else if (c == '\t')
+    {
+
+        shellOffset = (shellOffset + 8) & ~(8 - 1);
+
+    }
+
+    else if (c == '\r')
+    {
+
+        shellOffset -= (shellOffset % SHELL_CHARACTER_WIDTH);
+
+    }
+
+    else if (c == '\n')
+    {
+
+        shellOffset += SHELL_CHARACTER_WIDTH - (shellOffset % SHELL_CHARACTER_WIDTH);
+
+    }
+    
+    else if (c >= ' ')
+    {
+
+        vfs_write(shellVgaNode, shellOffset, 1, &c);
+        shellOffset++;
+
+    }
+
+    if (shellOffset >= SHELL_CHARACTER_WIDTH * SHELL_CHARACTER_HEIGHT - SHELL_CHARACTER_WIDTH)
+        shell_scroll();
+
+    vfs_write(shellVgaCursorNode, 0, 1, &shellOffset);
+
+}
+
+static void shell_vga_clear()
+{
+
+    char c = ' ';
+    int i;
+
+    for (i = 0; i < 2000; i++)
+        vfs_write(shellVgaNode, i, 1, &c);
+
+}
 
 static void shell_clear()
 {
@@ -158,8 +236,38 @@ static void shell_poll()
 
 }
 
+static unsigned int shell_write(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    unsigned int i;
+    unsigned int j = 0;
+
+    for (i = offset; i < offset + count; i++, j++)
+        shell_putc(((char *)buffer)[j]);
+
+    return count;
+
+}
+
 void shell_init()
 {
+
+    shellVgaNode = call_open("dev/vga_fb");
+    shellVgaColorNode = call_open("dev/vga_fb_color");
+    shellVgaCursorNode = call_open("dev/vga_fb_cursor");
+
+    unsigned char color = (SHELL_COLOR_BLACK << 4) | (SHELL_COLOR_WHITE & 0x0F);
+    vfs_write(shellVgaColorNode, 0, 1, &color);
+
+    shell_vga_clear();
+
+    memory_set(&shellNode, 0, sizeof (struct vfs_node));
+    string_copy(shellNode.name, "stdout");
+    shellNode.length = 2000;
+    shellNode.write = shell_write;
+
+    struct vfs_node *node = call_open("dev");
+    vfs_write(node, node->length, 1, &shellNode);
 
     stack_init(&shellStack, shellBuffer, SHELL_BUFFER_SIZE);
 

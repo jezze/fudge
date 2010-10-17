@@ -5,7 +5,6 @@
 #include <arch/x86/kernel/isr.h>
 #include <arch/x86/kernel/pit.h>
 #include <arch/x86/kernel/rtc.h>
-#include <arch/x86/kernel/screen.h>
 #include <arch/x86/kernel/syscall.h>
 #include <kernel/kernel.h>
 #include <kernel/vfs.h>
