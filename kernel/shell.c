@@ -13,8 +13,7 @@ struct vfs_node shellNode;
 struct vfs_node *shellVgaNode;
 struct vfs_node *shellVgaColorNode;
 struct vfs_node *shellVgaCursorNode;
-unsigned short shellOffset;
-unsigned char shellColor;
+unsigned short shellVgaCursorOffset;
 
 char shellBuffer[SHELL_BUFFER_SIZE];
 struct stack shellStack;
@@ -22,13 +21,13 @@ struct stack shellStack;
 static void shell_scroll()
 {
 
-    char buffer[2000];
+    char buffer[SHELL_CHARACTER_SIZE];
 
-    vfs_read(shellVgaNode, 80, 1920, buffer);
-    memory_set(buffer + 1920, ' ', 80);
-    vfs_write(shellVgaNode, 0, 2000, buffer);
+    vfs_read(shellVgaNode, SHELL_CHARACTER_WIDTH, SHELL_CHARACTER_SIZE - SHELL_CHARACTER_WIDTH, buffer);
+    memory_set(buffer + SHELL_CHARACTER_SIZE - SHELL_CHARACTER_WIDTH, ' ', SHELL_CHARACTER_WIDTH);
+    vfs_write(shellVgaNode, 0, SHELL_CHARACTER_SIZE, buffer);
 
-    shellOffset -= SHELL_CHARACTER_WIDTH;
+    shellVgaCursorOffset -= SHELL_CHARACTER_WIDTH;
 
 }
 
@@ -38,43 +37,43 @@ static void shell_putc(char c)
     if (c == '\b')
     {
 
-        shellOffset--;
+        shellVgaCursorOffset--;
 
     }
 
     else if (c == '\t')
     {
 
-        shellOffset = (shellOffset + 8) & ~(8 - 1);
+        shellVgaCursorOffset = (shellVgaCursorOffset + 8) & ~(8 - 1);
 
     }
 
     else if (c == '\r')
     {
 
-        shellOffset -= (shellOffset % SHELL_CHARACTER_WIDTH);
+        shellVgaCursorOffset -= (shellVgaCursorOffset % SHELL_CHARACTER_WIDTH);
 
     }
 
     else if (c == '\n')
     {
 
-        shellOffset += SHELL_CHARACTER_WIDTH - (shellOffset % SHELL_CHARACTER_WIDTH);
+        shellVgaCursorOffset += SHELL_CHARACTER_WIDTH - (shellVgaCursorOffset % SHELL_CHARACTER_WIDTH);
 
     }
     
     else if (c >= ' ')
     {
 
-        vfs_write(shellVgaNode, shellOffset, 1, &c);
-        shellOffset++;
+        vfs_write(shellVgaNode, shellVgaCursorOffset, 1, &c);
+        shellVgaCursorOffset++;
 
     }
 
-    if (shellOffset >= SHELL_CHARACTER_WIDTH * SHELL_CHARACTER_HEIGHT - SHELL_CHARACTER_WIDTH)
+    if (shellVgaCursorOffset >= SHELL_CHARACTER_WIDTH * SHELL_CHARACTER_HEIGHT - SHELL_CHARACTER_WIDTH)
         shell_scroll();
 
-    vfs_write(shellVgaCursorNode, 0, 1, &shellOffset);
+    vfs_write(shellVgaCursorNode, 0, 1, &shellVgaCursorOffset);
 
 }
 
@@ -84,7 +83,7 @@ static void shell_vga_clear()
     char c = ' ';
     int i;
 
-    for (i = 0; i < 2000; i++)
+    for (i = 0; i < SHELL_CHARACTER_SIZE; i++)
         vfs_write(shellVgaNode, i, 1, &c);
 
 }
@@ -249,7 +248,7 @@ static unsigned int shell_write(struct vfs_node *node, unsigned int offset, unsi
 
 }
 
-void shell_init()
+static void shell_init_vga()
 {
 
     shellVgaNode = call_open("dev/vga_fb");
@@ -261,9 +260,16 @@ void shell_init()
 
     shell_vga_clear();
 
+}
+
+void shell_init()
+{
+
+    shell_init_vga();
+
     memory_set(&shellNode, 0, sizeof (struct vfs_node));
     string_copy(shellNode.name, "stdout");
-    shellNode.length = 2000;
+    shellNode.length = SHELL_CHARACTER_SIZE;
     shellNode.write = shell_write;
 
     struct vfs_node *node = call_open("dev");
