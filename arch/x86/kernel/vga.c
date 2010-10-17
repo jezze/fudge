@@ -6,6 +6,8 @@
 #include <arch/x86/kernel/vga.h>
 
 struct vfs_node vgaFbNode;
+struct vfs_node vgaFbColorNode;
+unsigned char vgaFbColor;
 
 unsigned char vga_fb_get_color(unsigned char forecolor, unsigned char backcolor)
 {
@@ -73,6 +75,30 @@ static unsigned int vga_fb_write(struct vfs_node *node, unsigned int offset, uns
 
 }
 
+static unsigned int vga_fb_color_read(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    if (count != 1)
+        return 0;
+
+    vgaFbColor = ((char *)buffer)[0];
+
+    return 1;
+
+}
+
+static unsigned int vga_fb_color_write(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    if (count != 1)
+        return 0;
+
+    ((char *)buffer)[0] = vgaFbColor;
+
+    return 1;
+
+}
+
 static void vga_fb_init()
 {
 
@@ -90,8 +116,14 @@ void vga_init()
     vgaFbNode.read = vga_fb_read;
     vgaFbNode.write = vga_fb_write;
 
+    memory_set(&vgaFbColorNode, 0, sizeof (struct vfs_node));
+    string_copy(vgaFbColorNode.name, "vga_fb_color");
+    vgaFbColorNode.read = vga_fb_color_read;
+    vgaFbColorNode.write = vga_fb_color_write;
+
     struct vfs_node *node = call_open("dev");
     vfs_write(node, node->length, 1, &vgaFbNode);
+    vfs_write(node, node->length, 1, &vgaFbColorNode);
 
 }
 
