@@ -55,9 +55,16 @@ struct vfs_node *vfs_find(struct vfs_node *node, char *path)
     struct vfs_node *current;
 
     unsigned int index = string_index(path, '/');
+    unsigned int length = string_length(path);
 
-    if (index != string_length(path))
+    if (index != length)
     {
+
+        if (length == 1)
+            return node;
+
+        if (length == index + 1)
+            return node;
 
         for (i = 0; (current = vfs_walk(node, i)); i++)
         {

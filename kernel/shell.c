@@ -9,7 +9,8 @@
 #include <kernel/kernel.h>
 #include <kernel/shell.h>
 
-struct vfs_node shellNode;
+struct vfs_node shellLocationNode;
+struct vfs_node shellStdoutNode;
 struct vfs_node *shellVgaNode;
 struct vfs_node *shellVgaColorNode;
 struct vfs_node *shellVgaCursorNode;
@@ -17,6 +18,8 @@ unsigned short shellVgaCursorOffset;
 
 char shellBuffer[SHELL_BUFFER_SIZE];
 struct stack shellStack;
+
+char shellLocation[256];
 
 static void shell_scroll()
 {
@@ -248,6 +251,28 @@ static unsigned int shell_write(struct vfs_node *node, unsigned int offset, unsi
 
 }
 
+static unsigned int shell_location_read(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    count = string_length(shellLocation) - offset;
+
+    string_copy(buffer, shellLocation + offset);
+
+    return count;
+
+}
+
+static unsigned int shell_location_write(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    count = string_length(shellLocation) - offset;
+
+    string_copy(shellLocation + offset, buffer);
+
+    return count;
+
+}
+
 static void shell_init_vga()
 {
 
@@ -267,13 +292,22 @@ void shell_init()
 
     shell_init_vga();
 
-    memory_set(&shellNode, 0, sizeof (struct vfs_node));
-    string_copy(shellNode.name, "stdout");
-    shellNode.length = SHELL_CHARACTER_SIZE;
-    shellNode.write = shell_write;
+    string_copy(shellLocation, "/");
+
+    memory_set(&shellStdoutNode, 0, sizeof (struct vfs_node));
+    string_copy(shellStdoutNode.name, "stdout");
+    shellStdoutNode.length = SHELL_CHARACTER_SIZE;
+    shellStdoutNode.write = shell_write;
+
+    memory_set(&shellLocationNode, 0, sizeof (struct vfs_node));
+    string_copy(shellLocationNode.name, "location");
+    shellLocationNode.length = 256;
+    shellLocationNode.read = shell_location_read;
+    shellLocationNode.write = shell_location_write;
 
     struct vfs_node *node = call_open("dev");
-    vfs_write(node, node->length, 1, &shellNode);
+    vfs_write(node, node->length, 1, &shellStdoutNode);
+    vfs_write(node, node->length, 1, &shellLocationNode);
 
     stack_init(&shellStack, shellBuffer, SHELL_BUFFER_SIZE);
 
