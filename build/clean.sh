@@ -12,6 +12,7 @@ rm -f ../arch/x86/lib/*.o
 rm -f ../lib/*.o
 rm -f ../ramdisk/*.o
 rm -f ../ramdisk/cat
+rm -f ../ramdisk/clear
 rm -f ../ramdisk/cpu
 rm -f ../ramdisk/date
 rm -f ../ramdisk/echo
