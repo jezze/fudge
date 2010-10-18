@@ -21,38 +21,26 @@ void vfs_close(struct vfs_node *node)
 unsigned int vfs_read(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    if (node->read)
-        return node->read(node, offset, count, buffer);
-    else
-        return 0;
+    return (node->read) ? node->read(node, offset, count, buffer) : 0;
 
 }
 
 unsigned int vfs_write(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    if (node->write)
-        return node->write(node, offset, count, buffer);
-    else
-        return 0;
+    return (node->write) ? node->write(node, offset, count, buffer) : 0;
 
 }
 
 struct vfs_node *vfs_walk(struct vfs_node *node, unsigned int index)
 {
 
-    if (node->walk)
-        return node->walk(node, index);
-    else
-        return 0;
+    return (node->walk) ? node->walk(node, index) : 0;
 
 }
 
 struct vfs_node *vfs_find(struct vfs_node *node, char *path)
 {
-
-    unsigned int i;
-    struct vfs_node *current;
 
     unsigned int index = string_index(path, '/');
     unsigned int length = string_length(path);
@@ -60,18 +48,14 @@ struct vfs_node *vfs_find(struct vfs_node *node, char *path)
     if (!index)
         return node;
 
+    struct vfs_node *current;
+    unsigned int i;
+
     for (i = 0; (current = vfs_walk(node, i)); i++)
     {
 
         if (!memory_compare(path, current->name, index))
-        {
-
-            if (index == length)
-                return current;
-            else
-                return vfs_find(current, path + index + 1);
-
-        }
+            return (index == length) ? current : vfs_find(current, path + index + 1);
 
     }
 
