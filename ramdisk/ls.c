@@ -10,7 +10,7 @@ void main(int argc, char *argv[])
     if (argc == 2)
         node = call_open(argv[1]);
     else
-        node = call_open(".");
+        node = call_open("/");
 
     if (!node)
     {

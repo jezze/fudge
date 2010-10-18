@@ -35,7 +35,7 @@ void dev_init()
     devNode.walk = dev_node_walk;
     devNode.write = dev_node_write;
 
-    struct vfs_node *root = call_open(".");
+    struct vfs_node *root = call_open("/");
     vfs_write(root, root->length, 1, &devNode);
 
 }
