@@ -22,10 +22,30 @@ void main(int argc, char *argv[])
 
     }
 
+    struct vfs_node *base;
+    struct vfs_node *directory;
+
     if (argv[1][0] == '/')
-        vfs_write(node, 0, string_length(argv[1]), argv[1]);
+    {
+
+        base = call_open("/");
+        directory = vfs_find(base, argv[1]);
+
+        if (directory && directory->walk)
+            vfs_write(node, 0, string_length(argv[1]), argv[1]);
+
+    }
+
     else
-        vfs_write(node, string_length(buffer), string_length(argv[1]), argv[1]);
+    {
+
+        base = call_open(buffer);
+        directory = vfs_find(base, argv[1]);
+
+        if (directory && directory->walk)
+            vfs_write(node, string_length(buffer), string_length(argv[1]), argv[1]);
+
+    }
 
 }
 
