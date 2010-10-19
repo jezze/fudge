@@ -34,6 +34,7 @@
 #define ISR_ROUTINE_RESERVED1D                 0x1D
 #define ISR_ROUTINE_RESERVED1E                 0x1E
 #define ISR_ROUTINE_RESERVED1F                 0x1F
+#define ISR_ROUTINE_SYSCALL                    0x80
 
 struct isr_registers
 {
