@@ -4,7 +4,7 @@
 struct vfs_node *session_get_location()
 {
 
-    struct vfs_node *location = call_open("dev/location");
+    struct vfs_node *location = call_open("/dev/location");
 
     char buffer[256];
 
@@ -17,14 +17,14 @@ struct vfs_node *session_get_location()
 struct vfs_node *session_get_in()
 {
 
-    return call_open("dev/kbd");
+    return call_open("/dev/kbd");
 
 }
 
 struct vfs_node *session_get_out()
 {
 
-    return call_open("dev/tty");
+    return call_open("/dev/tty");
 
 }
 

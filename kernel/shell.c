@@ -84,7 +84,7 @@ static void shell_interpret(char *command)
     if (argc)
     {
 
-        struct vfs_node *initrd = call_open("initrd");
+        struct vfs_node *initrd = call_open("/initrd");
         struct vfs_node *node = vfs_find(initrd, argv[0]);
 
         if (node)

@@ -5,8 +5,8 @@
 void main(int argc, char *argv[])
 {
 
-    struct vfs_node *vgaCursor = call_open("dev/vga_fb_cursor");
-    struct vfs_node *node = call_open("dev/vga_fb");
+    struct vfs_node *vgaCursor = call_open("/dev/vga_fb_cursor");
+    struct vfs_node *node = call_open("/dev/vga_fb");
 
     unsigned offset;
 

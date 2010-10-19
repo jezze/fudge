@@ -6,12 +6,10 @@
 void main(int argc, char *argv[])
 {
 
-    struct vfs_node *node;
+    struct vfs_node *node = session_get_location();
 
     if (argc == 2)
-        node = call_open(argv[1]);
-    else
-        node = call_open("/");
+        node = vfs_find(node, argv[1]);
 
     if (!node)
     {

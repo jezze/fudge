@@ -112,7 +112,7 @@ void vga_init()
     vgaFbCursorNode.length = 1;
     vgaFbCursorNode.write = vga_fb_cursor_write;
 
-    struct vfs_node *node = call_open("dev");
+    struct vfs_node *node = call_open("/dev");
     vfs_write(node, node->length, 1, &vgaFbNode);
     vfs_write(node, node->length, 1, &vgaFbColorNode);
     vfs_write(node, node->length, 1, &vgaFbCursorNode);

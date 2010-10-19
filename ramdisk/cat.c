@@ -30,7 +30,7 @@ void main(int argc, char *argv[])
 
     unsigned int size = vfs_read(node, 0, 5000, buffer);
 
-    struct vfs_node *out = call_open("dev/tty");
+    struct vfs_node *out = call_open("/dev/tty");
 
     vfs_write(out, 0, size, buffer);
 

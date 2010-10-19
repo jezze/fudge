@@ -126,9 +126,9 @@ static unsigned int tty_location_write(struct vfs_node *node, unsigned int offse
 static void tty_init_vga()
 {
 
-    ttyVgaNode = call_open("dev/vga_fb");
-    ttyVgaColorNode = call_open("dev/vga_fb_color");
-    ttyVgaCursorNode = call_open("dev/vga_fb_cursor");
+    ttyVgaNode = call_open("/dev/vga_fb");
+    ttyVgaColorNode = call_open("/dev/vga_fb_color");
+    ttyVgaCursorNode = call_open("/dev/vga_fb_cursor");
 
     unsigned char color = (TTY_COLOR_BLACK << 4) | (TTY_COLOR_WHITE & 0x0F);
     vfs_write(ttyVgaColorNode, 0, 1, &color);
@@ -155,7 +155,7 @@ void tty_init()
     ttyLocationNode.read = tty_location_read;
     ttyLocationNode.write = tty_location_write;
 
-    struct vfs_node *node = call_open("dev");
+    struct vfs_node *node = call_open("/dev");
     vfs_write(node, node->length, 1, &ttyStdoutNode);
     vfs_write(node, node->length, 1, &ttyLocationNode);
 
