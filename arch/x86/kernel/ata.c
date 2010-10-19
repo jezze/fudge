@@ -1,4 +1,5 @@
 #include <lib/file.h>
+#include <lib/session.h>
 #include <arch/x86/kernel/ata.h>
 #include <arch/x86/kernel/io.h>
 
@@ -128,23 +129,23 @@ void ata_print_info(struct ata_device *device)
     {
 
         case ATA_DEVICE_TYPE_ATA:
-            file_write("ata\n");
+            file_write(session_get_out(), "ata\n");
             break;
 
         case ATA_DEVICE_TYPE_ATAPI:
-            file_write("atapi\n");
+            file_write(session_get_out(), "atapi\n");
             break;
 
         case ATA_DEVICE_TYPE_SATA:
-            file_write("serial ata\n");
+            file_write(session_get_out(), "serial ata\n");
             break;
 
         case ATA_DEVICE_TYPE_SATAPI:
-            file_write("serial atapi\n");
+            file_write(session_get_out(), "serial atapi\n");
             break;
 
         default:
-            file_write("unknown\n");
+            file_write(session_get_out(), "unknown\n");
             break;
 
     }
@@ -154,7 +155,7 @@ void ata_print_info(struct ata_device *device)
 void ata_init()
 {
 
-    file_write("CHECKING ATA\n");
+    file_write(session_get_out(), "CHECKING ATA\n");
 
     primaryMaster.control = ATA_PRIMARY_MASTER_CONTROL;
     primaryMaster.data = ATA_PRIMARY_MASTER_DATA;
@@ -162,7 +163,7 @@ void ata_init()
     if (ata_identify(&primaryMaster))
     {
 
-        file_write("hda: ");
+        file_write(session_get_out(), "hda: ");
         ata_print_info(&primaryMaster);        
 
     }
@@ -173,7 +174,7 @@ void ata_init()
     if (ata_identify(&primarySlave))
     {
 
-        file_write("hdb: ");
+        file_write(session_get_out(), "hdb: ");
         ata_print_info(&primarySlave);        
 
     }
@@ -184,7 +185,7 @@ void ata_init()
     if (ata_identify(&secondaryMaster))
     {
 
-        file_write("hdc: ");
+        file_write(session_get_out(), "hdc: ");
         ata_print_info(&secondaryMaster);        
 
     }
@@ -195,12 +196,12 @@ void ata_init()
     if (ata_identify(&secondarySlave))
     {
 
-        file_write("hdd: ");
+        file_write(session_get_out(), "hdd: ");
         ata_print_info(&secondarySlave);        
 
     }
 
-    file_write("\n");
+    file_write(session_get_out(), "\n");
 
 }
 

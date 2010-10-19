@@ -1,5 +1,6 @@
-#include <vfs.h>
 #include <file.h>
+#include <session.h>
+#include <vfs.h>
 
 void main(int argc, char *argv[])
 {
@@ -7,7 +8,7 @@ void main(int argc, char *argv[])
     if (argc != 2)
         return;
 
-    file_write(argv[1]);
+    file_write(session_get_out(), argv[1]);
 
 }
 

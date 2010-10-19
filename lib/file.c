@@ -3,10 +3,8 @@
 #include <lib/string.h>
 #include <lib/vfs.h>
 
-char file_read_single()
+char file_read_single(struct vfs_node *node)
 {
-
-    struct vfs_node *node = call_open("dev/kbd");
 
     if (!node)
         return 0;
@@ -19,10 +17,8 @@ char file_read_single()
 
 }
 
-int file_write_single(char c)
+int file_write_single(struct vfs_node *node, char c)
 {
-
-    struct vfs_node *node = call_open("dev/tty");
 
     if (!node)
         return 0;
@@ -31,60 +27,58 @@ int file_write_single(char c)
 
 }
 
-int file_write(char *s)
+int file_write(struct vfs_node *node, char *buffer)
 {
-
-    struct vfs_node *node = call_open("dev/tty");
 
     if (!node)
         return 0;
 
-    return vfs_write(node, 0, string_length(s), s);
+    return vfs_write(node, 0, string_length(buffer), buffer);
 
 }
 
-void file_write_num(unsigned int n, unsigned int base)
+void file_write_num(struct vfs_node *node, unsigned int num, unsigned int base)
 {
 
-    if (!n)
+    if (!num)
     {
 
-        file_write_single('0');
+        file_write_single(node, '0');
 
         return;
 
     }
 
-    char s[32] = {0};
+    char buffer[32] = {0};
 
     int i;
 
-    for (i = 30; n && i; --i, n /= base)
-        s[i] = "0123456789abcdef"[n % base];
+    for (i = 30; num && i; --i, num /= base)
+        buffer[i] = "0123456789abcdef"[num % base];
 
-    file_write(s + i + 1);
-
-}
-
-void file_write_dec(unsigned int n)
-{
-
-    file_write_num(n, 10);
+    file_write(node, buffer + i + 1);
 
 }
 
-void file_write_hex(unsigned int n)
+void file_write_dec(struct vfs_node *node, unsigned int num)
 {
 
-    file_write_num(n, 16);
+    file_write_num(node, num, 10);
 
 }
 
-void file_write_bcd(unsigned char n)
+void file_write_hex(struct vfs_node *node, unsigned int num)
 {
 
-    file_write_dec(n >> 4);
-    file_write_dec(n & 0x0F);
+    file_write_num(node, num, 16);
+
+}
+
+void file_write_bcd(struct vfs_node *node, unsigned char num)
+{
+
+    file_write_dec(node, num >> 4);
+    file_write_dec(node, num & 0x0F);
 
 }
 

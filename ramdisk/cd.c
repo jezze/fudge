@@ -1,5 +1,6 @@
 #include <call.h>
 #include <file.h>
+#include <session.h>
 #include <string.h>
 #include <vfs.h>
 
@@ -15,8 +16,8 @@ void main(int argc, char *argv[])
     if (argc == 1)
     {
 
-        file_write(buffer);
-        file_write("\n");
+        file_write(session_get_out(), buffer);
+        file_write(session_get_out(), "\n");
 
         return;
 

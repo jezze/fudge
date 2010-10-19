@@ -1,4 +1,5 @@
 #include <lib/file.h>
+#include <lib/session.h>
 #include <kernel/assert.h>
 
 void kernel_assert(char *message, char *file, unsigned int line)
@@ -6,13 +7,13 @@ void kernel_assert(char *message, char *file, unsigned int line)
 
     arch_disable_interrupts();
 
-    file_write("ASSERTION FAIL (");
-    file_write(message);
-    file_write(") at (");
-    file_write(file);
-    file_write(":");
-    file_write_dec(line);
-    file_write(")\n");
+    file_write(session_get_out(), "ASSERTION FAIL (");
+    file_write(session_get_out(), message);
+    file_write(session_get_out(), ") at (");
+    file_write(session_get_out(), file);
+    file_write(session_get_out(), ":");
+    file_write_dec(session_get_out(), line);
+    file_write(session_get_out(), ")\n");
 
     for (;;);
 
@@ -23,13 +24,13 @@ void kernel_panic(char *message, char *file, unsigned int line)
 
     arch_disable_interrupts();
 
-    file_write("KERNEL PANIC (");
-    file_write(message);
-    file_write(") at (");
-    file_write(file);
-    file_write(":");
-    file_write_dec(line);
-    file_write(")\n");
+    file_write(session_get_out(), "KERNEL PANIC (");
+    file_write(session_get_out(), message);
+    file_write(session_get_out(), ") at (");
+    file_write(session_get_out(), file);
+    file_write(session_get_out(), ":");
+    file_write_dec(session_get_out(), line);
+    file_write(session_get_out(), ")\n");
 
     for (;;);
 

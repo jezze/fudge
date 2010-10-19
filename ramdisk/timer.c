@@ -1,4 +1,5 @@
 #include <file.h>
+#include <session.h>
 #include <vfs.h>
 
 void main(int argc, char *argv[])
@@ -6,8 +7,8 @@ void main(int argc, char *argv[])
 
     unsigned int timer;
 
-    file_write("Timer: ");
-    file_write("\n");
+    file_write(session_get_out(), "Timer: ");
+    file_write(session_get_out(), "\n");
 
 }
 

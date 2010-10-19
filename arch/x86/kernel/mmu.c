@@ -1,5 +1,6 @@
 #include <lib/file.h>
 #include <lib/memory.h>
+#include <lib/session.h>
 #include <lib/vfs.h>
 #include <arch/x86/kernel/arch.h>
 #include <arch/x86/kernel/cr.h>
@@ -12,26 +13,26 @@ void mmu_handler(struct isr_registers *registers)
 
     unsigned int address = cr2_read();
 
-    file_write("PAGE FAULT (");
+    file_write(session_get_out(), "PAGE FAULT (");
 
     if (!(registers->err_code & MMU_ERROR_PRESENT))
-        file_write("present");
+        file_write(session_get_out(), "present");
 
     if (registers->err_code & MMU_ERROR_RW)
-        file_write("read-only");
+        file_write(session_get_out(), "read-only");
 
     if (registers->err_code & MMU_ERROR_USER)
-        file_write("user-mode");
+        file_write(session_get_out(), "user-mode");
 
     if (registers->err_code & MMU_ERROR_RESERVED)
-        file_write("reserved");
+        file_write(session_get_out(), "reserved");
 
     if (registers->err_code & MMU_ERROR_FETCH)
-        file_write("fetch");
+        file_write(session_get_out(), "fetch");
 
-    file_write(") at 0x");
-    file_write_hex(address);
-    file_write("\n");
+    file_write(session_get_out(), ") at 0x");
+    file_write_hex(session_get_out(), address);
+    file_write(session_get_out(), "\n");
 
     PANIC("PAGE FAULT");
 
