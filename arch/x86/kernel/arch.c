@@ -1,3 +1,4 @@
+#include <lib/assert.h>
 #include <lib/cbuffer.h>
 #include <arch/x86/kernel/arch.h>
 #include <arch/x86/kernel/ata.h>
@@ -13,7 +14,6 @@
 #include <arch/x86/kernel/rtc.h>
 #include <arch/x86/kernel/syscall.h>
 #include <arch/x86/kernel/vga.h>
-#include <kernel/assert.h>
 #include <kernel/dev.h>
 #include <kernel/initrd.h>
 #include <kernel/kernel.h>

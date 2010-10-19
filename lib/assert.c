@@ -1,6 +1,6 @@
+#include <lib/assert.h>
 #include <lib/file.h>
 #include <lib/session.h>
-#include <kernel/assert.h>
 
 void kernel_assert(char *message, char *file, unsigned int line)
 {

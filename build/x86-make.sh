@@ -14,7 +14,6 @@ GCCFLAGS="-c -O2 -I../include -Wall -Wextra -ffreestanding -nostdlib -nostartfil
 LD="ld"
 LDFLAGS=-"T./linker-x86.ld"
 
-$GCC $GCCFLAGS $DIR_KERNEL/assert.c -o $DIR_KERNEL/assert.o
 $GCC $GCCFLAGS $DIR_KERNEL/dev.c -o $DIR_KERNEL/dev.o
 $GCC $GCCFLAGS $DIR_KERNEL/elf.c -o $DIR_KERNEL/elf.o
 $GCC $GCCFLAGS $DIR_KERNEL/initrd.c -o $DIR_KERNEL/initrd.o
@@ -45,6 +44,7 @@ $GCC $GCCFLAGS $DIR_ARCH_KERNEL/pit.c -o $DIR_ARCH_KERNEL/pit.o
 $GCC $GCCFLAGS $DIR_ARCH_KERNEL/rtc.c -o $DIR_ARCH_KERNEL/rtc.o
 $GCC $GCCFLAGS $DIR_ARCH_KERNEL/syscall.c -o $DIR_ARCH_KERNEL/syscall.o
 $GCC $GCCFLAGS $DIR_ARCH_KERNEL/vga.c -o $DIR_ARCH_KERNEL/vga.o
+$GCC $GCCFLAGS $DIR_LIB/assert.c -o $DIR_LIB/assert.o
 $GCC $GCCFLAGS $DIR_LIB/cbuffer.c -o $DIR_LIB/cbuffer.o
 $GCC $GCCFLAGS $DIR_LIB/file.c -o $DIR_LIB/file.o
 $GCC $GCCFLAGS $DIR_LIB/memory.c -o $DIR_LIB/memory.o
@@ -55,7 +55,6 @@ $GCC $GCCFLAGS $DIR_LIB/vfs.c -o $DIR_LIB/vfs.o
 $ASM $ASMFLAGS $DIR_ARCH_LIB/calls.s -o $DIR_ARCH_LIB/calls.o
 
 $LD $LDFLAGS \
-    $DIR_KERNEL/assert.o \
     $DIR_KERNEL/dev.o \
     $DIR_KERNEL/elf.o \
     $DIR_KERNEL/initrd.o \
@@ -86,6 +85,7 @@ $LD $LDFLAGS \
     $DIR_ARCH_KERNEL/rtc.o \
     $DIR_ARCH_KERNEL/syscall.o \
     $DIR_ARCH_KERNEL/vga.o \
+    $DIR_LIB/assert.o \
     $DIR_LIB/cbuffer.o \
     $DIR_LIB/memory.o \
     $DIR_LIB/file.o \
