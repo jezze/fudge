@@ -1,5 +1,5 @@
-#ifndef KERNEL_ASSERT_H
-#define KERNEL_ASSERT_H
+#ifndef LIB_ASSERT_H
+#define LIB_ASSERT_H
 
 #define ASSERT(x) ((x) ? (void)0 : kernel_assert(#x, __FILE__, __LINE__))
 #define PANIC(x) kernel_panic(x, __FILE__, __LINE__)
