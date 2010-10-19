@@ -104,6 +104,9 @@ LDFLAGS="-Ttext 0x300000 -e main"
 $GCC $GCCFLAGS $DIR_RAMDISK/cat.c -o $DIR_RAMDISK/cat.o
 $LD $LDFLAGS $DIR_RAMDISK/cat.o $DIR_LIB/memory.o $DIR_LIB/string.o $DIR_LIB/vfs.o $DIR_LIB/file.o $DIR_ARCH_LIB/calls.o -o $DIR_RAMDISK/cat
 
+$GCC $GCCFLAGS $DIR_RAMDISK/cd.c -o $DIR_RAMDISK/cd.o
+$LD $LDFLAGS $DIR_RAMDISK/cd.o $DIR_LIB/memory.o $DIR_LIB/string.o $DIR_LIB/vfs.o $DIR_LIB/file.o $DIR_ARCH_LIB/calls.o -o $DIR_RAMDISK/cd
+
 $GCC $GCCFLAGS $DIR_RAMDISK/clear.c -o $DIR_RAMDISK/clear.o
 $LD $LDFLAGS $DIR_RAMDISK/clear.o $DIR_LIB/memory.o $DIR_LIB/string.o $DIR_LIB/vfs.o $DIR_LIB/file.o $DIR_ARCH_LIB/calls.o -o $DIR_RAMDISK/clear
 
@@ -137,5 +140,5 @@ GCCFLAGS="-O2"
 
 $GCC $GCCFLAGS $DIR_TOOLS/mkinitrd.c -o $DIR_TOOLS/mkinitrd
 
-$DIR_TOOLS/mkinitrd $DIR_RAMDISK/about.txt about.txt $DIR_RAMDISK/cat cat $DIR_RAMDISK/clear clear $DIR_RAMDISK/cpu cpu $DIR_RAMDISK/date date $DIR_RAMDISK/echo echo $DIR_RAMDISK/elf elf $DIR_RAMDISK/hello hello $DIR_RAMDISK/help.txt help.txt $DIR_RAMDISK/ls ls $DIR_RAMDISK/reboot reboot $DIR_RAMDISK/timer timer
+$DIR_TOOLS/mkinitrd $DIR_RAMDISK/about.txt about.txt $DIR_RAMDISK/cat cat $DIR_RAMDISK/cd cd $DIR_RAMDISK/clear clear $DIR_RAMDISK/cpu cpu $DIR_RAMDISK/date date $DIR_RAMDISK/echo echo $DIR_RAMDISK/elf elf $DIR_RAMDISK/hello hello $DIR_RAMDISK/help.txt help.txt $DIR_RAMDISK/ls ls $DIR_RAMDISK/reboot reboot $DIR_RAMDISK/timer timer
 

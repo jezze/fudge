@@ -11,7 +11,7 @@ int string_compare(const char *in1, const char *in2)
 char *string_concat(char *out, const char *in)
 {
 
-    memory_copy(out + string_length(out), in, string_length(in));
+    memory_copy(out + string_length(out), in, string_length(in) + 1);
 
     return out;
 
@@ -20,7 +20,7 @@ char *string_concat(char *out, const char *in)
 char *string_copy(char *out, const char *in)
 {
 
-    memory_copy(out, in, string_length(in));
+    memory_copy(out, in, string_length(in) + 1);
 
     return out;
 
