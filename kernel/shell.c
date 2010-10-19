@@ -9,17 +9,8 @@
 #include <kernel/kernel.h>
 #include <kernel/shell.h>
 
-struct vfs_node shellLocationNode;
-struct vfs_node shellStdoutNode;
-struct vfs_node *shellVgaNode;
-struct vfs_node *shellVgaColorNode;
-struct vfs_node *shellVgaCursorNode;
-unsigned short shellVgaCursorOffset;
-
 char shellBuffer[SHELL_BUFFER_SIZE];
 struct stack shellStack;
-
-char shellLocation[256];
 
 static void shell_clear()
 {
