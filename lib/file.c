@@ -6,7 +6,7 @@
 char file_read_single()
 {
 
-    struct vfs_node *node = call_open("dev/stdin");
+    struct vfs_node *node = call_open("dev/kbd");
 
     if (!node)
         return 0;
@@ -22,7 +22,7 @@ char file_read_single()
 int file_write_single(char c)
 {
 
-    struct vfs_node *node = call_open("dev/stdout");
+    struct vfs_node *node = call_open("dev/tty");
 
     if (!node)
         return 0;
@@ -34,7 +34,7 @@ int file_write_single(char c)
 int file_write(char *s)
 {
 
-    struct vfs_node *node = call_open("dev/stdout");
+    struct vfs_node *node = call_open("dev/tty");
 
     if (!node)
         return 0;

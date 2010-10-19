@@ -21,76 +21,6 @@ struct stack shellStack;
 
 char shellLocation[256];
 
-static void shell_scroll()
-{
-
-    char buffer[SHELL_CHARACTER_SIZE];
-
-    vfs_read(shellVgaNode, SHELL_CHARACTER_WIDTH, SHELL_CHARACTER_SIZE - SHELL_CHARACTER_WIDTH, buffer);
-    memory_set(buffer + SHELL_CHARACTER_SIZE - SHELL_CHARACTER_WIDTH, ' ', SHELL_CHARACTER_WIDTH);
-    vfs_write(shellVgaNode, 0, SHELL_CHARACTER_SIZE, buffer);
-
-    shellVgaCursorOffset -= SHELL_CHARACTER_WIDTH;
-
-}
-
-static void shell_putc(char c)
-{
-
-    if (c == '\b')
-    {
-
-        shellVgaCursorOffset--;
-
-    }
-
-    else if (c == '\t')
-    {
-
-        shellVgaCursorOffset = (shellVgaCursorOffset + 8) & ~(8 - 1);
-
-    }
-
-    else if (c == '\r')
-    {
-
-        shellVgaCursorOffset -= (shellVgaCursorOffset % SHELL_CHARACTER_WIDTH);
-
-    }
-
-    else if (c == '\n')
-    {
-
-        shellVgaCursorOffset += SHELL_CHARACTER_WIDTH - (shellVgaCursorOffset % SHELL_CHARACTER_WIDTH);
-
-    }
-    
-    else if (c >= ' ')
-    {
-
-        vfs_write(shellVgaNode, shellVgaCursorOffset, 1, &c);
-        shellVgaCursorOffset++;
-
-    }
-
-    if (shellVgaCursorOffset >= SHELL_CHARACTER_WIDTH * SHELL_CHARACTER_HEIGHT - SHELL_CHARACTER_WIDTH)
-        shell_scroll();
-
-    vfs_write(shellVgaCursorNode, 0, 1, &shellVgaCursorOffset);
-
-}
-
-static void shell_vga_clear()
-{
-
-    char c = ' ';
-    int i;
-
-    for (i = 0; i < SHELL_CHARACTER_SIZE; i++)
-        vfs_write(shellVgaNode, i, 1, &c);
-
-}
-
 static void shell_clear()
 {
 
@@ -238,76 +168,8 @@ static void shell_poll()
 
 }
 
-static unsigned int shell_write(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
-{
-
-    unsigned int i;
-    unsigned int j = 0;
-
-    for (i = offset; i < offset + count; i++, j++)
-        shell_putc(((char *)buffer)[j]);
-
-    return count;
-
-}
-
-static unsigned int shell_location_read(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
-{
-
-    count = string_length(shellLocation) - offset;
-
-    string_copy(buffer, shellLocation + offset);
-
-    return count;
-
-}
-
-static unsigned int shell_location_write(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
-{
-
-    count = string_length(shellLocation) - offset;
-
-    string_copy(shellLocation + offset, buffer);
-
-    return count;
-
-}
-
-static void shell_init_vga()
-{
-
-    shellVgaNode = call_open("dev/vga_fb");
-    shellVgaColorNode = call_open("dev/vga_fb_color");
-    shellVgaCursorNode = call_open("dev/vga_fb_cursor");
-
-    unsigned char color = (SHELL_COLOR_BLACK << 4) | (SHELL_COLOR_WHITE & 0x0F);
-    vfs_write(shellVgaColorNode, 0, 1, &color);
-
-    shell_vga_clear();
-
-}
-
 void shell_init()
 {
-
-    shell_init_vga();
-
-    string_copy(shellLocation, "/");
-
-    memory_set(&shellStdoutNode, 0, sizeof (struct vfs_node));
-    string_copy(shellStdoutNode.name, "stdout");
-    shellStdoutNode.length = SHELL_CHARACTER_SIZE;
-    shellStdoutNode.write = shell_write;
-
-    memory_set(&shellLocationNode, 0, sizeof (struct vfs_node));
-    string_copy(shellLocationNode.name, "location");
-    shellLocationNode.length = 256;
-    shellLocationNode.read = shell_location_read;
-    shellLocationNode.write = shell_location_write;
-
-    struct vfs_node *node = call_open("dev");
-    vfs_write(node, node->length, 1, &shellStdoutNode);
-    vfs_write(node, node->length, 1, &shellLocationNode);
 
     stack_init(&shellStack, shellBuffer, SHELL_BUFFER_SIZE);
 

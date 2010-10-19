@@ -92,7 +92,7 @@ void kbd_init()
     kbdDevice.toggleShift = 0;
 
     memory_set(&kbdNode, 0, sizeof (struct vfs_node));
-    string_copy(kbdNode.name, "stdin");
+    string_copy(kbdNode.name, "kbd");
     kbdNode.read = kbd_read;
 
     struct vfs_node *node = call_open("dev");

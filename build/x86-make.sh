@@ -21,6 +21,7 @@ $GCC $GCCFLAGS $DIR_KERNEL/initrd.c -o $DIR_KERNEL/initrd.o
 $GCC $GCCFLAGS $DIR_KERNEL/kernel.c -o $DIR_KERNEL/kernel.o
 $GCC $GCCFLAGS $DIR_KERNEL/mboot.c -o $DIR_KERNEL/mboot.o
 $GCC $GCCFLAGS $DIR_KERNEL/shell.c -o $DIR_KERNEL/shell.o
+$GCC $GCCFLAGS $DIR_KERNEL/tty.c -o $DIR_KERNEL/tty.o
 $GCC $GCCFLAGS $DIR_KERNEL/vfs.c -o $DIR_KERNEL/vfs.o
 $GCC $GCCFLAGS $DIR_ARCH_KERNEL/arch.c -o $DIR_ARCH_KERNEL/arch.o
 $GCC $GCCFLAGS $DIR_ARCH_KERNEL/ata.c -o $DIR_ARCH_KERNEL/ata.o
@@ -60,6 +61,7 @@ $LD $LDFLAGS \
     $DIR_KERNEL/kernel.o \
     $DIR_KERNEL/mboot.o \
     $DIR_KERNEL/shell.o \
+    $DIR_KERNEL/tty.o \
     $DIR_KERNEL/vfs.o \
     $DIR_ARCH_KERNEL/arch.o \
     $DIR_ARCH_KERNEL/ata.o \
