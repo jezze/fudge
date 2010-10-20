@@ -7,8 +7,8 @@ void main(int argc, char *argv[])
 
     unsigned int timer;
 
-    file_write(session_get_out(), "Timer: ");
-    file_write(session_get_out(), "\n");
+    file_write_string(session_get_out(), "Timer: ");
+    file_write_string(session_get_out(), "\n");
 
 }
 

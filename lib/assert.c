@@ -7,13 +7,13 @@ void kernel_assert(char *message, char *file, unsigned int line)
 
     arch_disable_interrupts();
 
-    file_write(session_get_out(), "ASSERTION FAIL (");
-    file_write(session_get_out(), message);
-    file_write(session_get_out(), ") at (");
-    file_write(session_get_out(), file);
-    file_write(session_get_out(), ":");
+    file_write_string(session_get_out(), "ASSERTION FAIL (");
+    file_write_string(session_get_out(), message);
+    file_write_string(session_get_out(), ") at (");
+    file_write_string(session_get_out(), file);
+    file_write_string(session_get_out(), ":");
     file_write_dec(session_get_out(), line);
-    file_write(session_get_out(), ")\n");
+    file_write_string(session_get_out(), ")\n");
 
     for (;;);
 
@@ -24,13 +24,13 @@ void kernel_panic(char *message, char *file, unsigned int line)
 
     arch_disable_interrupts();
 
-    file_write(session_get_out(), "KERNEL PANIC (");
-    file_write(session_get_out(), message);
-    file_write(session_get_out(), ") at (");
-    file_write(session_get_out(), file);
-    file_write(session_get_out(), ":");
+    file_write_string(session_get_out(), "KERNEL PANIC (");
+    file_write_string(session_get_out(), message);
+    file_write_string(session_get_out(), ") at (");
+    file_write_string(session_get_out(), file);
+    file_write_string(session_get_out(), ":");
     file_write_dec(session_get_out(), line);
-    file_write(session_get_out(), ")\n");
+    file_write_string(session_get_out(), ")\n");
 
     for (;;);
 

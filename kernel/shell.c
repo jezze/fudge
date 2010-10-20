@@ -16,7 +16,7 @@ struct stack shellStack;
 static void shell_clear()
 {
 
-    file_write(session_get_out(), "fudge:/$ ");
+    file_write_string(session_get_out(), "fudge:/$ ");
     stack_clear(&shellStack);
 
 }
@@ -58,11 +58,11 @@ static void shell_call(struct vfs_node *node, int argc, char *argv[])
     else
     {
 
-        file_write(session_get_out(), "Unrecognized binary format. Continue? (y/n): ");
+        file_write_string(session_get_out(), "Unrecognized binary format. Continue? (y/n): ");
 
-        char c = file_read_single(session_get_in());
+        char c = file_read_byte(session_get_in());
 
-        file_write(session_get_out(), "\n");
+        file_write_string(session_get_out(), "\n");
 
         if (c == 'y')
         {
@@ -93,8 +93,8 @@ static void shell_interpret(char *command)
         else
         {
 
-            file_write(session_get_out(), argv[0]);
-            file_write(session_get_out(), ": Command not found\n");
+            file_write_string(session_get_out(), argv[0]);
+            file_write_string(session_get_out(), ": Command not found\n");
 
         }
 
@@ -119,9 +119,9 @@ static void shell_handle_input(char c)
             if (stack_pop(&shellStack))
             {
 
-                file_write_single(session_get_out(), '\b');
-                file_write_single(session_get_out(), ' ');
-                file_write_single(session_get_out(), '\b');
+                file_write_byte(session_get_out(), '\b');
+                file_write_byte(session_get_out(), ' ');
+                file_write_byte(session_get_out(), '\b');
 
              }
 
@@ -130,7 +130,7 @@ static void shell_handle_input(char c)
         case '\n':
 
             stack_push(&shellStack, '\0');
-            file_write_single(session_get_out(), c);
+            file_write_byte(session_get_out(), c);
             shell_interpret(shellBuffer);
 
             break;
@@ -138,7 +138,7 @@ static void shell_handle_input(char c)
         default:
 
             stack_push(&shellStack, c);
-            file_write_single(session_get_out(), c);
+            file_write_byte(session_get_out(), c);
 
             break;
 
@@ -152,7 +152,7 @@ static void shell_poll()
     for (;;)
     {
 
-        char c = file_read_single(session_get_in());
+        char c = file_read_byte(session_get_in());
 
         shell_handle_input(c);
 
@@ -165,10 +165,10 @@ void shell_init()
 
     stack_init(&shellStack, shellBuffer, SHELL_BUFFER_SIZE);
 
-    file_write(session_get_out(), "Fudge\n");
-    file_write(session_get_out(), "-----\n");
-    file_write(session_get_out(), "Copyright (c) 2009 Jens Nyberg\n");
-    file_write(session_get_out(), "Type 'cat help.txt' to read the help section.\n\n");
+    file_write_string(session_get_out(), "Fudge\n");
+    file_write_string(session_get_out(), "-----\n");
+    file_write_string(session_get_out(), "Copyright (c) 2009 Jens Nyberg\n");
+    file_write_string(session_get_out(), "Type 'cat help.txt' to read the help section.\n\n");
 
     shell_clear();
     shell_poll();

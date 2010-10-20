@@ -5,7 +5,7 @@
 void main(int argc, char *argv[])
 {
 
-    file_write(session_get_out(), "System is rebooting...");
+    file_write_string(session_get_out(), "System is rebooting...");
     call_reboot();
 
 }

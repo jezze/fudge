@@ -3,7 +3,7 @@
 #include <lib/string.h>
 #include <lib/vfs.h>
 
-char file_read_single(struct vfs_node *node)
+char file_read_byte(struct vfs_node *node)
 {
 
     if (!node)
@@ -17,7 +17,14 @@ char file_read_single(struct vfs_node *node)
 
 }
 
-int file_write_single(struct vfs_node *node, char c)
+unsigned int file_write_bcd(struct vfs_node *node, unsigned char num)
+{
+
+    return file_write_dec(node, num >> 4) + file_write_dec(node, num & 0x0F);
+
+}
+
+unsigned int file_write_byte(struct vfs_node *node, char c)
 {
 
     if (!node)
@@ -27,27 +34,25 @@ int file_write_single(struct vfs_node *node, char c)
 
 }
 
-int file_write(struct vfs_node *node, char *buffer)
+unsigned int file_write_dec(struct vfs_node *node, unsigned int num)
 {
 
-    if (!node)
-        return 0;
-
-    return vfs_write(node, 0, string_length(buffer), buffer);
+    return file_write_num(node, num, 10);
 
 }
 
-void file_write_num(struct vfs_node *node, unsigned int num, unsigned int base)
+unsigned int file_write_hex(struct vfs_node *node, unsigned int num)
+{
+
+    return file_write_num(node, num, 16);
+
+}
+
+unsigned int file_write_num(struct vfs_node *node, unsigned int num, unsigned int base)
 {
 
     if (!num)
-    {
-
-        file_write_single(node, '0');
-
-        return;
-
-    }
+        return file_write_byte(node, '0');
 
     char buffer[32] = {0};
 
@@ -56,29 +61,17 @@ void file_write_num(struct vfs_node *node, unsigned int num, unsigned int base)
     for (i = 30; num && i; --i, num /= base)
         buffer[i] = "0123456789abcdef"[num % base];
 
-    file_write(node, buffer + i + 1);
+    return file_write_string(node, buffer + i + 1);
 
 }
 
-void file_write_dec(struct vfs_node *node, unsigned int num)
+unsigned int file_write_string(struct vfs_node *node, char *buffer)
 {
 
-    file_write_num(node, num, 10);
+    if (!node)
+        return 0;
 
-}
-
-void file_write_hex(struct vfs_node *node, unsigned int num)
-{
-
-    file_write_num(node, num, 16);
-
-}
-
-void file_write_bcd(struct vfs_node *node, unsigned char num)
-{
-
-    file_write_dec(node, num >> 4);
-    file_write_dec(node, num & 0x0F);
+    return vfs_write(node, 0, string_length(buffer), buffer);
 
 }
 

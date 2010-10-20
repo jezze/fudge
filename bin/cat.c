@@ -9,7 +9,7 @@ void main(int argc, char *argv[])
     if (argc != 2)
     {
 
-        file_write(session_get_out(), "You need to supply filename.\n");
+        file_write_string(session_get_out(), "You need to supply filename.\n");
 
         return;
 
@@ -20,7 +20,7 @@ void main(int argc, char *argv[])
     if (!node)
     {
 
-        file_write(session_get_out(), "File does not exist.\n");
+        file_write_string(session_get_out(), "File does not exist.\n");
 
         return;
 

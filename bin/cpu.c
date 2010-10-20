@@ -18,9 +18,9 @@ void main(int argc, char *argv[])
 
     cpu_get_vendor(vendor);
 
-    file_write(session_get_out(), "Vendor: ");
-    file_write(session_get_out(), vendor);
-    file_write(session_get_out(), "\n");
+    file_write_string(session_get_out(), "Vendor: ");
+    file_write_string(session_get_out(), vendor);
+    file_write_string(session_get_out(), "\n");
 
     // ECX FEATURES
 
@@ -30,15 +30,15 @@ void main(int argc, char *argv[])
 
     unsigned int edx = cpu_get_feature_edx();
 
-    file_write(session_get_out(), "Features: ");
+    file_write_string(session_get_out(), "Features: ");
 
     if (edx & CPU_FEATURE_EDX_FPU)
-        file_write(session_get_out(), "FDU ");
+        file_write_string(session_get_out(), "FDU ");
 
     if (edx & CPU_FEATURE_EDX_MMX)
-        file_write(session_get_out(), "MMX ");
+        file_write_string(session_get_out(), "MMX ");
 
-    file_write(session_get_out(), "\n");
+    file_write_string(session_get_out(), "\n");
 
     // BRAND
 
@@ -46,9 +46,9 @@ void main(int argc, char *argv[])
 
     cpu_get_brand(brand);
 
-    file_write(session_get_out(), "Brand: ");
-    file_write(session_get_out(), brand);
-    file_write(session_get_out(), "\n");
+    file_write_string(session_get_out(), "Brand: ");
+    file_write_string(session_get_out(), brand);
+    file_write_string(session_get_out(), "\n");
 
 }
 

@@ -13,26 +13,26 @@ void mmu_handler(struct isr_registers *registers)
 
     unsigned int address = cr2_read();
 
-    file_write(session_get_out(), "PAGE FAULT (");
+    file_write_string(session_get_out(), "PAGE FAULT (");
 
     if (!(registers->err_code & MMU_ERROR_PRESENT))
-        file_write(session_get_out(), "present");
+        file_write_string(session_get_out(), "present");
 
     if (registers->err_code & MMU_ERROR_RW)
-        file_write(session_get_out(), "read-only");
+        file_write_string(session_get_out(), "read-only");
 
     if (registers->err_code & MMU_ERROR_USER)
-        file_write(session_get_out(), "user-mode");
+        file_write_string(session_get_out(), "user-mode");
 
     if (registers->err_code & MMU_ERROR_RESERVED)
-        file_write(session_get_out(), "reserved");
+        file_write_string(session_get_out(), "reserved");
 
     if (registers->err_code & MMU_ERROR_FETCH)
-        file_write(session_get_out(), "fetch");
+        file_write_string(session_get_out(), "fetch");
 
-    file_write(session_get_out(), ") at 0x");
+    file_write_string(session_get_out(), ") at 0x");
     file_write_hex(session_get_out(), address);
-    file_write(session_get_out(), "\n");
+    file_write_string(session_get_out(), "\n");
 
     PANIC("PAGE FAULT");
 

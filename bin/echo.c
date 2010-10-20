@@ -8,7 +8,7 @@ void main(int argc, char *argv[])
     if (argc != 2)
         return;
 
-    file_write(session_get_out(), argv[1]);
+    file_write_string(session_get_out(), argv[1]);
 
 }
 
