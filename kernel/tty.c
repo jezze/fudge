@@ -144,12 +144,10 @@ void tty_init()
 
     string_copy(ttyLocation, "/");
 
-    memory_set(&ttyStdoutNode, 0, sizeof (struct vfs_node));
     string_copy(ttyStdoutNode.name, "tty");
     ttyStdoutNode.length = TTY_CHARACTER_SIZE;
     ttyStdoutNode.write = tty_write;
 
-    memory_set(&ttyLocationNode, 0, sizeof (struct vfs_node));
     string_copy(ttyLocationNode.name, "location");
     ttyLocationNode.length = 256;
     ttyLocationNode.read = tty_location_read;
