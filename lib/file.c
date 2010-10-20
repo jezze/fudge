@@ -51,17 +51,13 @@ unsigned int file_read(struct vfs_node *node, unsigned int offset, unsigned int 
 
 }
 
-char file_read_byte(struct vfs_node *node)
+unsigned int file_read_byte(struct vfs_node *node, char c)
 {
 
     if (!node)
         return 0;
 
-    char c;
-
-    while (!(file_read(node, 0, 1, &c)));
-
-    return c;
+    return file_read(node, 0, 1, &c);
 
 }
 

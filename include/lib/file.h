@@ -7,7 +7,7 @@ extern void file_close(struct vfs_node *node);
 extern struct vfs_node *file_find(struct vfs_node *node, char *name);
 extern void file_open(struct vfs_node *node);
 extern unsigned int file_read(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer);
-extern char file_read_byte(struct vfs_node *node);
+extern unsigned int file_read_byte(struct vfs_node *node, char c);
 extern struct vfs_node *file_walk(struct vfs_node *node, unsigned int index);
 extern unsigned int file_write(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer);
 extern unsigned int file_write_bcd(struct vfs_node *node, unsigned char num);

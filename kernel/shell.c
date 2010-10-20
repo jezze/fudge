@@ -58,18 +58,7 @@ static void shell_call(struct vfs_node *node, int argc, char *argv[])
     else
     {
 
-        file_write_string(session_get_out(), "Unrecognized binary format. Continue? (y/n): ");
-
-        char c = file_read_byte(session_get_in());
-
-        file_write_string(session_get_out(), "\n");
-
-        if (c == 'y')
-        {
-
-            shell_execute_flat((unsigned int *)0x280000, argc, argv);
-
-        }
+        shell_execute_flat((unsigned int *)0x280000, argc, argv);
 
     }
 
@@ -149,10 +138,12 @@ static void shell_handle_input(char c)
 static void shell_poll()
 {
 
+    char c;
+
     for (;;)
     {
 
-        char c = file_read_byte(session_get_in());
+        while (!file_read(session_get_in(), 0, 1, &c));
 
         shell_handle_input(c);
 
