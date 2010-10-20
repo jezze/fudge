@@ -9,26 +9,24 @@ struct vfs_node ioNode;
 unsigned int io_read(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    unsigned int i;
-    unsigned int j = 0;
+    unsigned int i = 0;
 
-    for (i = offset; i < count; i++, j++)
-        ((char *)buffer)[j] = io_inb(offset);
+    for (; count; count--, i++)
+        ((char *)buffer)[i] = io_inb(offset);
 
-    return count;
+    return i;
 
 }
 
 unsigned int io_write(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    unsigned int i;
-    unsigned int j = 0;
+    unsigned int i = 0;
 
-    for (i = offset; i < count; i++, j++)
-        io_outb(offset, ((char *)buffer)[j]);
+    for (; count; count--, i++)
+        io_outb(offset, ((char *)buffer)[i]);
 
-    return count;
+    return i;
 
 }
 
