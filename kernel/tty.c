@@ -23,9 +23,9 @@ static void tty_scroll()
 
     char buffer[TTY_CHARACTER_SIZE];
 
-    vfs_read(ttyVgaNode, TTY_CHARACTER_WIDTH, TTY_CHARACTER_SIZE - TTY_CHARACTER_WIDTH, buffer);
+    file_read(ttyVgaNode, TTY_CHARACTER_WIDTH, TTY_CHARACTER_SIZE - TTY_CHARACTER_WIDTH, buffer);
     memory_set(buffer + TTY_CHARACTER_SIZE - TTY_CHARACTER_WIDTH, ' ', TTY_CHARACTER_WIDTH);
-    vfs_write(ttyVgaNode, 0, TTY_CHARACTER_SIZE, buffer);
+    file_write(ttyVgaNode, 0, TTY_CHARACTER_SIZE, buffer);
 
     ttyVgaCursorOffset -= TTY_CHARACTER_WIDTH;
 
@@ -65,7 +65,7 @@ static void tty_putc(char c)
     else if (c >= ' ')
     {
 
-        vfs_write(ttyVgaNode, ttyVgaCursorOffset, 1, &c);
+        file_write(ttyVgaNode, ttyVgaCursorOffset, 1, &c);
         ttyVgaCursorOffset++;
 
     }
@@ -73,7 +73,7 @@ static void tty_putc(char c)
     if (ttyVgaCursorOffset >= TTY_CHARACTER_WIDTH * TTY_CHARACTER_HEIGHT - TTY_CHARACTER_WIDTH)
         tty_scroll();
 
-    vfs_write(ttyVgaCursorNode, 0, 1, &ttyVgaCursorOffset);
+    file_write(ttyVgaCursorNode, 0, 1, &ttyVgaCursorOffset);
 
 }
 
@@ -84,7 +84,7 @@ static void tty_vga_clear()
     int i;
 
     for (i = 0; i < TTY_CHARACTER_SIZE; i++)
-        vfs_write(ttyVgaNode, i, 1, &c);
+        file_write(ttyVgaNode, i, 1, &c);
 
 }
 
@@ -131,7 +131,7 @@ static void tty_init_vga()
     ttyVgaCursorNode = call_open("/dev/vga_fb_cursor");
 
     unsigned char color = (TTY_COLOR_BLACK << 4) | (TTY_COLOR_WHITE & 0x0F);
-    vfs_write(ttyVgaColorNode, 0, 1, &color);
+    file_write(ttyVgaColorNode, 0, 1, &color);
 
     tty_vga_clear();
 
@@ -154,8 +154,8 @@ void tty_init()
     ttyLocationNode.write = tty_location_write;
 
     struct vfs_node *node = call_open("/dev");
-    vfs_write(node, node->length, 1, &ttyStdoutNode);
-    vfs_write(node, node->length, 1, &ttyLocationNode);
+    file_write(node, node->length, 1, &ttyStdoutNode);
+    file_write(node, node->length, 1, &ttyLocationNode);
 
 }
 

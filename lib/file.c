@@ -1,7 +1,55 @@
 #include <lib/call.h>
 #include <lib/file.h>
+#include <lib/memory.h>
 #include <lib/string.h>
 #include <lib/vfs.h>
+
+void file_close(struct vfs_node *node)
+{
+
+    if (node->close)
+        return node->close(node);
+
+}
+
+struct vfs_node *file_find(struct vfs_node *node, char *path)
+{
+
+    unsigned int index = string_index(path, '/');
+    unsigned int length = string_length(path);
+
+    if (!index)
+        return node;
+
+    struct vfs_node *current;
+    unsigned int i;
+
+    for (i = 0; (current = file_walk(node, i)); i++)
+    {
+
+        if (!memory_compare(path, current->name, index))
+            return (index == length) ? current : file_find(current, path + index + 1);
+
+    }
+
+    return 0;
+
+}
+
+void file_open(struct vfs_node *node)
+{
+
+    if (node->open)
+        return node->open(node);
+
+}
+
+unsigned int file_read(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    return (node->read) ? node->read(node, offset, count, buffer) : 0;
+
+}
 
 char file_read_byte(struct vfs_node *node)
 {
@@ -11,9 +59,23 @@ char file_read_byte(struct vfs_node *node)
 
     char c;
 
-    while (!(vfs_read(node, 0, 1, &c)));
+    while (!(file_read(node, 0, 1, &c)));
 
     return c;
+
+}
+
+struct vfs_node *file_walk(struct vfs_node *node, unsigned int index)
+{
+
+    return (node->walk) ? node->walk(node, index) : 0;
+
+}
+
+unsigned int file_write(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    return (node->write) ? node->write(node, offset, count, buffer) : 0;
 
 }
 
@@ -30,7 +92,7 @@ unsigned int file_write_byte(struct vfs_node *node, char c)
     if (!node)
         return 0;
 
-    return vfs_write(node, 0, 1, &c);
+    return file_write(node, 0, 1, &c);
 
 }
 
@@ -71,7 +133,7 @@ unsigned int file_write_string(struct vfs_node *node, char *buffer)
     if (!node)
         return 0;
 
-    return vfs_write(node, 0, string_length(buffer), buffer);
+    return file_write(node, 0, string_length(buffer), buffer);
 
 }
 

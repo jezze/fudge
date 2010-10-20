@@ -12,7 +12,7 @@ void main(int argc, char *argv[])
     unsigned int i;
 
     for (i = 2000; i; i--)
-        vfs_write(vgaFb, i - 1, 1, &c);
+        file_write(vgaFb, i - 1, 1, &c);
 
 }
 

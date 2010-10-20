@@ -1,4 +1,5 @@
 #include <lib/call.h>
+#include <lib/file.h>
 #include <lib/cbuffer.h>
 #include <lib/memory.h>
 #include <lib/string.h>
@@ -95,7 +96,7 @@ void kbd_init()
     kbdNode.read = kbd_read;
 
     struct vfs_node *node = call_open("/dev");
-    vfs_write(node, node->length, 1, &kbdNode);
+    file_write(node, node->length, 1, &kbdNode);
 
 }
 

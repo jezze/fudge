@@ -1,4 +1,5 @@
 #include <lib/call.h>
+#include <lib/file.h>
 #include <lib/memory.h>
 #include <lib/string.h>
 #include <lib/vfs.h>
@@ -38,7 +39,7 @@ void io_init()
     ioNode.write = io_write;
 
     struct vfs_node *node = call_open("/dev");
-    vfs_write(node, node->length, 1, &ioNode);
+    file_write(node, node->length, 1, &ioNode);
 
 }
 

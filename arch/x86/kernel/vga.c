@@ -1,4 +1,5 @@
 #include <lib/call.h>
+#include <lib/file.h>
 #include <lib/memory.h>
 #include <lib/string.h>
 #include <lib/vfs.h>
@@ -111,9 +112,9 @@ void vga_init()
     vgaFbCursorNode.write = vga_fb_cursor_write;
 
     struct vfs_node *node = call_open("/dev");
-    vfs_write(node, node->length, 1, &vgaFbNode);
-    vfs_write(node, node->length, 1, &vgaFbColorNode);
-    vfs_write(node, node->length, 1, &vgaFbCursorNode);
+    file_write(node, node->length, 1, &vgaFbNode);
+    file_write(node, node->length, 1, &vgaFbColorNode);
+    file_write(node, node->length, 1, &vgaFbCursorNode);
 
 }
 

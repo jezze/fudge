@@ -11,7 +11,7 @@ void main(int argc, char *argv[])
 
     char buffer[256];
 
-    unsigned int size = vfs_read(location, 0, 256, buffer);
+    unsigned int size = file_read(location, 0, 256, buffer);
 
     if (argc == 1)
     {
@@ -23,7 +23,7 @@ void main(int argc, char *argv[])
 
     }
 
-    struct vfs_node *node = vfs_find(session_get_location(), argv[1]);
+    struct vfs_node *node = file_find(session_get_location(), argv[1]);
 
     if (!node)
     {
@@ -44,9 +44,9 @@ void main(int argc, char *argv[])
     }
 
     if (argv[1][0] == '/')
-        vfs_write(location, 0, string_length(argv[1]), argv[1]);
+        file_write(location, 0, string_length(argv[1]), argv[1]);
     else
-        vfs_write(location, size, string_length(argv[1]), argv[1]);
+        file_write(location, size, string_length(argv[1]), argv[1]);
 
 }
 

@@ -1,4 +1,5 @@
 #include <lib/call.h>
+#include <lib/file.h>
 #include <lib/vfs.h>
 
 struct vfs_node *sessionIn;
@@ -12,7 +13,7 @@ struct vfs_node *session_get_location()
         sessionLocation = call_open("/dev/location");
 
     char buffer[256];
-    vfs_read(sessionLocation, 0, 256, buffer);
+    file_read(sessionLocation, 0, 256, buffer);
 
     return call_open(buffer);
 

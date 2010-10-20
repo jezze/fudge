@@ -1,5 +1,6 @@
-#include <lib/vfs.h>
 #include <lib/call.h>
+#include <lib/file.h>
+#include <lib/vfs.h>
 #include <arch/x86/kernel/arch.h>
 #include <arch/x86/kernel/io.h>
 #include <arch/x86/kernel/isr.h>
@@ -28,7 +29,7 @@ void syscall_unregister_handler(unsigned char index)
 void syscall_open(struct syscall_registers *registers)
 {
 
-    registers->eax = (unsigned int)vfs_find(vfs_get_root(), (char *)registers->esi + 1);
+    registers->eax = (unsigned int)file_find(vfs_get_root(), (char *)registers->esi + 1);
 
 }
 

@@ -1,4 +1,5 @@
 #include <lib/call.h>
+#include <lib/file.h>
 #include <lib/memory.h>
 #include <lib/string.h>
 #include <lib/vfs.h>
@@ -85,6 +86,6 @@ void rtc_init()
     rtcNode.read = rtc_read;
 
     struct vfs_node *node = call_open("/dev");
-    vfs_write(node, node->length, 1, &rtcNode);
+    file_write(node, node->length, 1, &rtcNode);
 
 }

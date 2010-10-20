@@ -23,12 +23,5 @@ struct vfs_node
 
 };
 
-extern void vfs_open(struct vfs_node *node);
-extern void vfs_close(struct vfs_node *node);
-extern unsigned int vfs_read(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer);
-extern unsigned int vfs_write(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer);
-extern struct vfs_node *vfs_walk(struct vfs_node *node, unsigned int index);
-extern struct vfs_node *vfs_find(struct vfs_node *node, char *name);
-
 #endif
 

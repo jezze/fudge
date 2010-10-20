@@ -15,7 +15,7 @@ void main(int argc, char *argv[])
 
     }
 
-    struct vfs_node *node = vfs_find(session_get_location(), argv[1]);
+    struct vfs_node *node = file_find(session_get_location(), argv[1]);
 
     if (!node)
     {
@@ -28,9 +28,9 @@ void main(int argc, char *argv[])
 
     char buffer[5000];
 
-    unsigned int size = vfs_read(node, 0, 5000, buffer);
+    unsigned int size = file_read(node, 0, 5000, buffer);
 
-    vfs_write(session_get_out(), 0, size, buffer);
+    file_write(session_get_out(), 0, size, buffer);
 
 }
 

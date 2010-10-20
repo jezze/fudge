@@ -11,17 +11,17 @@ void main(int argc, char *argv[])
 
     char c = 0x10;
 
-    vfs_write(node, 0x3C0, 1, &c);
-    vfs_read(node, 0x3C1, 1, &c);
-    vfs_read(node, 0x3DA, 1, &c);
+    file_write(node, 0x3C0, 1, &c);
+    file_read(node, 0x3C1, 1, &c);
+    file_read(node, 0x3DA, 1, &c);
 
     c = 0x10;
 
-    vfs_write(node, 0x3C0, 1, &c);
+    file_write(node, 0x3C0, 1, &c);
     
     c = 0x41;
 
-    vfs_write(node, 0x3C0, 1, &c);
+    file_write(node, 0x3C0, 1, &c);
 
     for(;;);
 

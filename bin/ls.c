@@ -9,7 +9,7 @@ void main(int argc, char *argv[])
     struct vfs_node *node = session_get_location();
 
     if (argc == 2)
-        node = vfs_find(node, argv[1]);
+        node = file_find(node, argv[1]);
 
     if (!node)
     {
@@ -32,7 +32,7 @@ void main(int argc, char *argv[])
     struct vfs_node *current;
     unsigned int i;
 
-    for (i = 0; (current = vfs_walk(node, i)); i++)
+    for (i = 0; (current = file_walk(node, i)); i++)
     {
 
         if (current->walk)

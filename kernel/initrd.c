@@ -1,4 +1,5 @@
 #include <lib/call.h>
+#include <lib/file.h>
 #include <lib/memory.h>
 #include <lib/string.h>
 #include <lib/vfs.h>
@@ -75,14 +76,14 @@ void initrd_init(unsigned int location)
         initrdFiles[initrdFilesCount].length = initrdFileHeaders[i].length;
         initrdFiles[initrdFilesCount].read = initrd_file_read;
 
-        vfs_write(&initrdNode, initrdNode.length, 1, &initrdFiles[initrdFilesCount]);
+        file_write(&initrdNode, initrdNode.length, 1, &initrdFiles[initrdFilesCount]);
 
         initrdFilesCount++;
 
     }
 
     struct vfs_node *root = call_open("/");
-    vfs_write(root, root->length, 1, &initrdNode);
+    file_write(root, root->length, 1, &initrdNode);
 
 }
 

@@ -9,6 +9,6 @@ void main(int argc, char *argv[])
     char *hw = "Hello world!";
 
     struct vfs_node *node = call_open("/dev/vga_fb");
-    vfs_write(node, 0, string_length(hw), hw);
+    file_write(node, 0, string_length(hw), hw);
 
 }

@@ -35,7 +35,7 @@ static void shell_execute_elf(struct vfs_node *node, struct elf_header *header, 
 
     struct elf_program_header *pHeader = (struct elf_program_header *)(0x280000 + header->programHeaderOffset);
 
-    vfs_read(node, pHeader->offset, pHeader->memorySize, (void *)pHeader->virtualAddress);
+    file_read(node, pHeader->offset, pHeader->memorySize, (void *)pHeader->virtualAddress);
 
     shell_execute_flat((unsigned int *)pHeader->virtualAddress, argc, argv);
 
@@ -46,7 +46,7 @@ static void shell_call(struct vfs_node *node, int argc, char *argv[])
 
     char *buffer = (char *)0x280000;
 
-    vfs_read(node, 0, node->length, buffer);
+    file_read(node, 0, node->length, buffer);
 
     if (elf_check((struct elf_header *)buffer))
     {
@@ -85,7 +85,7 @@ static void shell_interpret(char *command)
     {
 
         struct vfs_node *initrd = call_open("/initrd");
-        struct vfs_node *node = vfs_find(initrd, argv[0]);
+        struct vfs_node *node = file_find(initrd, argv[0]);
 
         if (node)
             shell_call(node, argc, argv);

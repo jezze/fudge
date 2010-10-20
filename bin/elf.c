@@ -10,14 +10,14 @@ void main(int argc, char *argv[])
     if (argc != 2)
         return;
 
-    struct vfs_node *node = vfs_find(session_get_location(), argv[1]);
+    struct vfs_node *node = file_find(session_get_location(), argv[1]);
 
     if (!node)
         return;
 
     struct elf_header header;
 
-    vfs_read(node, 0, sizeof (struct elf_header), &header);
+    file_read(node, 0, sizeof (struct elf_header), &header);
 
     if (header.identify[0] != ELF_IDENTITY_MAGIC0)
         return;
@@ -55,7 +55,7 @@ void main(int argc, char *argv[])
 
     struct elf_program_header pHeader;
 
-    vfs_read(node, header.programHeaderOffset, sizeof (struct elf_program_header), &pHeader);
+    file_read(node, header.programHeaderOffset, sizeof (struct elf_program_header), &pHeader);
 
     file_write_string(session_get_out(), "ELF program header:");
     file_write_string(session_get_out(), "\nType: ");
