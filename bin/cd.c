@@ -7,11 +7,11 @@
 void main(int argc, char *argv[])
 {
 
-    struct vfs_node *node = call_open("/dev/location");
+    struct vfs_node *location = call_open("/dev/location");
 
     char buffer[256];
 
-    unsigned int size = vfs_read(node, 0, 256, buffer);
+    unsigned int size = vfs_read(location, 0, 256, buffer);
 
     if (argc == 1)
     {
@@ -23,30 +23,30 @@ void main(int argc, char *argv[])
 
     }
 
-    struct vfs_node *base;
-    struct vfs_node *directory;
+    struct vfs_node *node = vfs_find(session_get_location(), argv[1]);
+
+    if (!node)
+    {
+
+        file_write(session_get_out(), "Directory does not exist.\n");
+
+        return;
+
+    }
+
+    if (!node->walk)
+    {
+
+        file_write(session_get_out(), "Not a directory.\n");
+
+        return;
+
+    }
 
     if (argv[1][0] == '/')
-    {
-
-        base = call_open("/");
-        directory = vfs_find(base, argv[1]);
-
-        if (directory && directory->walk)
-            vfs_write(node, 0, string_length(argv[1]), argv[1]);
-
-    }
-
+        vfs_write(location, 0, string_length(argv[1]), argv[1]);
     else
-    {
-
-        base = call_open(buffer);
-        directory = vfs_find(base, argv[1]);
-
-        if (directory && directory->walk)
-            vfs_write(node, string_length(buffer), string_length(argv[1]), argv[1]);
-
-    }
+        vfs_write(location, string_length(buffer), string_length(argv[1]), argv[1]);
 
 }
 
