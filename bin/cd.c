@@ -46,7 +46,7 @@ void main(int argc, char *argv[])
     if (argv[1][0] == '/')
         vfs_write(location, 0, string_length(argv[1]), argv[1]);
     else
-        vfs_write(location, string_length(buffer), string_length(argv[1]), argv[1]);
+        vfs_write(location, size, string_length(argv[1]), argv[1]);
 
 }
 
