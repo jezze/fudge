@@ -30,8 +30,8 @@ static unsigned int dev_node_write(struct vfs_node *node, unsigned int offset, u
 void dev_init()
 {
 
-    memory_set(&devNode, 0, sizeof (struct vfs_node));
     string_copy(devNode.name, "dev");
+    devNode.length = 0;
     devNode.walk = dev_node_walk;
     devNode.write = dev_node_write;
 

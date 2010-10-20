@@ -81,7 +81,6 @@ static unsigned int rtc_read(struct vfs_node *node, unsigned int offset, unsigne
 void rtc_init()
 {
 
-    memory_set(&rtcNode, 0, sizeof (struct vfs_node));
     string_copy(rtcNode.name, "rtc");
     rtcNode.read = rtc_read;
 

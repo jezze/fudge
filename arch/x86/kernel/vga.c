@@ -95,19 +95,17 @@ static unsigned int vga_fb_cursor_write(struct vfs_node *node, unsigned int offs
 void vga_init()
 {
 
-    memory_set(&vgaFbNode, 0, sizeof (struct vfs_node));
     string_copy(vgaFbNode.name, "vga_fb");
     vgaFbColorNode.length = VGA_FB_SIZE;
+    vgaFbNode.length =  2000;
     vgaFbNode.read = vga_fb_read;
     vgaFbNode.write = vga_fb_write;
 
-    memory_set(&vgaFbColorNode, 0, sizeof (struct vfs_node));
     string_copy(vgaFbColorNode.name, "vga_fb_color");
     vgaFbColorNode.length = 1;
     vgaFbColorNode.read = vga_fb_color_read;
     vgaFbColorNode.write = vga_fb_color_write;
 
-    memory_set(&vgaFbCursorNode, 0, sizeof (struct vfs_node));
     string_copy(vgaFbCursorNode.name, "vga_fb_cursor");
     vgaFbCursorNode.length = 1;
     vgaFbCursorNode.write = vga_fb_cursor_write;

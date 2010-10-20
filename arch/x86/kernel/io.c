@@ -35,7 +35,6 @@ unsigned int io_write(struct vfs_node *node, unsigned int offset, unsigned int c
 void io_init()
 {
 
-    memory_set(&ioNode, 0, sizeof (struct vfs_node));
     string_copy(ioNode.name, "io");
     ioNode.read = io_read;
     ioNode.write = io_write;
