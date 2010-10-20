@@ -15,9 +15,11 @@ void main(int argc, char *argv[])
 
     }
 
-    struct vfs_node *node = call_open(argv[1]);
+    struct vfs_node *location = session_get_location();
 
-    if (!node)
+    location = vfs_find(location, (argv[1]));
+
+    if (!location)
     {
 
         file_write(session_get_out(), "File does not exist.\n");
@@ -28,7 +30,7 @@ void main(int argc, char *argv[])
 
     char buffer[5000];
 
-    unsigned int size = vfs_read(node, 0, 5000, buffer);
+    unsigned int size = vfs_read(location, 0, 5000, buffer);
 
     struct vfs_node *out = call_open("/dev/tty");
 
