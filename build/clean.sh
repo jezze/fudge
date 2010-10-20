@@ -13,6 +13,7 @@ rm -f root/bin/hello
 rm -f root/bin/ls
 rm -f root/bin/reboot
 rm -f root/bin/timer
+rm -f root/bin/vga
 rm -f root/boot/kernel
 rm -f root/boot/initrd
 rm -f ../arch/arm/kernel/*.o
