@@ -15,9 +15,7 @@ void main(int argc, char *argv[])
 
     }
 
-    struct vfs_node *location = session_get_location();
-
-    location = vfs_find(location, (argv[1]));
+    struct vfs_node *location = vfs_find(session_get_location(), argv[1]);
 
     if (!location)
     {
@@ -32,9 +30,7 @@ void main(int argc, char *argv[])
 
     unsigned int size = vfs_read(location, 0, 5000, buffer);
 
-    struct vfs_node *out = call_open("/dev/tty");
-
-    vfs_write(out, 0, size, buffer);
+    vfs_write(session_get_out(), 0, size, buffer);
 
 }
 

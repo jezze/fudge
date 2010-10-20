@@ -30,7 +30,6 @@ void main(int argc, char *argv[])
     }
 
     struct vfs_node *current;
-
     unsigned int i;
 
     for (i = 0; (current = vfs_walk(node, i)); i++)
@@ -39,7 +38,7 @@ void main(int argc, char *argv[])
         if (current->walk)
         {
 
-            file_write(session_get_out(), "D ");
+            file_write(session_get_out(), "drwxrwxrwx ");
             file_write(session_get_out(), current->name);
 
         }
@@ -47,7 +46,7 @@ void main(int argc, char *argv[])
         else
         {
 
-            file_write(session_get_out(), "F ");
+            file_write(session_get_out(), "-rwxrwxrwx ");
             file_write(session_get_out(), current->name);
 
         }
