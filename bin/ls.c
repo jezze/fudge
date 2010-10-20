@@ -36,21 +36,14 @@ void main(int argc, char *argv[])
     {
 
         if (current->walk)
-        {
-
-            file_write(session_get_out(), "drwxrwxrwx ");
-            file_write(session_get_out(), current->name);
-
-        }
-
+            file_write(session_get_out(), "d");
         else
-        {
+            file_write(session_get_out(), "-");
 
-            file_write(session_get_out(), "-rwxrwxrwx ");
-            file_write(session_get_out(), current->name);
-
-        }
-
+        file_write(session_get_out(), "rwxrwxrwx ");
+        file_write_dec(session_get_out(), current->length);
+        file_write(session_get_out(), "\t");
+        file_write(session_get_out(), current->name);
         file_write(session_get_out(), "\n");
 
     }
