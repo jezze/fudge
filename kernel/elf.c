@@ -6,8 +6,10 @@ void elf_execute(struct elf_header *header, int argc, char *argv[])
 
 }
 
-unsigned int elf_check(struct elf_header *header)
+unsigned int elf_check(void *address)
 {
+
+    struct elf_header *header = (struct elf_header *)address;
 
     if (header->identify[0] != ELF_IDENTITY_MAGIC0)
         return 0;

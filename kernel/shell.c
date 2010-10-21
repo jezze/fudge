@@ -21,7 +21,7 @@ static void shell_clear()
 
 }
 
-static void shell_execute_flat(unsigned int *address, int argc, char *argv[])
+static void shell_execute_flat(void *address, int argc, char *argv[])
 {
 
     void (*func)(int argc, char *argv[]) = (void (*)(int argc, char *argv[]))address;
@@ -30,37 +30,27 @@ static void shell_execute_flat(unsigned int *address, int argc, char *argv[])
 
 }
 
-static void shell_execute_elf(struct vfs_node *node, struct elf_header *header, int argc, char *argv[])
+static void shell_execute_elf(struct vfs_node *node, void *address, int argc, char *argv[])
 {
 
-    struct elf_program_header *pHeader = (struct elf_program_header *)(0x280000 + header->programHeaderOffset);
+    struct elf_header *header = (struct elf_header *)address;
+    struct elf_program_header *programHeader = (struct elf_program_header *)(address + header->programHeaderOffset);
 
-    file_read(node, pHeader->offset, pHeader->memorySize, (void *)pHeader->virtualAddress);
-
-    shell_execute_flat((unsigned int *)pHeader->virtualAddress, argc, argv);
+    file_read(node, programHeader->offset, programHeader->memorySize, (void *)programHeader->virtualAddress);
+    shell_execute_flat((void *)programHeader->virtualAddress, argc, argv);
 
 }
 
 static void shell_call(struct vfs_node *node, int argc, char *argv[])
 {
 
-    char *buffer = (char *)0x280000;
-
+    void *buffer = (void *)0x280000;
     file_read(node, 0, node->length, buffer);
 
-    if (elf_check((struct elf_header *)buffer))
-    {
-
-        shell_execute_elf(node, (struct elf_header *)0x280000, argc, argv);
-
-    }
-
+    if (elf_check(buffer))
+        shell_execute_elf(node, buffer, argc, argv);
     else
-    {
-
-        shell_execute_flat((unsigned int *)0x280000, argc, argv);
-
-    }
+        shell_execute_flat(buffer, argc, argv);
 
 }
 
