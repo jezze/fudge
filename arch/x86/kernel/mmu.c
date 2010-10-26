@@ -38,8 +38,17 @@ void mmu_handler(struct isr_registers *registers)
 
 }
 
-static void mmu_init_directory(struct mmu_directory *directory)
+static struct mmu_table *mmu_get_true_table_address(struct mmu_table *table)
 {
+
+    return (struct mmu_table *)((unsigned int)table & 0xFFFFF000);
+
+}
+
+static void mmu_init_directory()
+{
+
+    struct mmu_directory *directory = (struct mmu_directory *)MMU_DIRECTORY_ADDRESS;
 
     unsigned int i;
 
@@ -48,19 +57,20 @@ static void mmu_init_directory(struct mmu_directory *directory)
 
 }
 
-static void mmu_set_directory(struct mmu_directory *directory, unsigned int base, unsigned int limit, unsigned int directoryFlags, unsigned int tableFlags)
+static void mmu_set_directory(unsigned int base, unsigned int limit, unsigned int directoryFlags, unsigned int tableFlags)
 {
 
-    unsigned int i;
-
+    struct mmu_directory *directory = (struct mmu_directory *)MMU_DIRECTORY_ADDRESS;
     directory->tables[0] = (struct mmu_table *)(MMU_TABLE_ADDRESS | directoryFlags);
 
     struct mmu_table *pageTable = (struct mmu_table *)((unsigned int)directory->tables[0] & 0xFFFFF000);
 
+    unsigned int i;
+
     for (i = 0; i < 1024; i++, base += 0x1000)
     {
 
-        pageTable->entries[i] = base | tableFlags;
+        mmu_get_true_table_address(directory->tables[0])->entries[i] = base | tableFlags;
 
     }
 
@@ -69,12 +79,10 @@ static void mmu_set_directory(struct mmu_directory *directory, unsigned int base
 void mmu_init()
 {
 
-    struct mmu_directory *directory = (struct mmu_directory *)MMU_DIRECTORY_ADDRESS;
+    mmu_init_directory();
+    mmu_set_directory(0x00000000, 0x00400000, MMU_DIRECTORY_FLAG_PRESENT | MMU_DIRECTORY_FLAG_WRITEABLE, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE);
 
-    mmu_init_directory(directory);
-    mmu_set_directory(directory, 0x00000000, 0x00400000, MMU_DIRECTORY_FLAG_PRESENT | MMU_DIRECTORY_FLAG_WRITEABLE, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE);
-
-    cr3_write((unsigned int)directory);
+    cr3_write(MMU_DIRECTORY_ADDRESS);
     cr0_write(cr0_read() | 0x80000000);
 
 }
