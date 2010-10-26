@@ -61,16 +61,14 @@ static void mmu_set_directory(unsigned int base, unsigned int limit, unsigned in
 {
 
     struct mmu_directory *directory = (struct mmu_directory *)MMU_DIRECTORY_ADDRESS;
-    directory->tables[0] = (struct mmu_table *)(MMU_TABLE_ADDRESS | directoryFlags);
-
-    struct mmu_table *pageTable = (struct mmu_table *)((unsigned int)directory->tables[0] & 0xFFFFF000);
 
     unsigned int i;
 
-    for (i = 0; i < 1024; i++, base += 0x1000)
+    for (i = 0; base < limit; base += 0x1000, i++)
     {
 
-        mmu_get_true_table_address(directory->tables[0])->entries[i] = base | tableFlags;
+        directory->tables[i / 1024] = (struct mmu_table *)(MMU_TABLE_ADDRESS | directoryFlags);
+        mmu_get_true_table_address(directory->tables[i / 1024])->entries[i % 1024] = base | tableFlags;
 
     }
 
@@ -81,6 +79,7 @@ void mmu_init()
 
     mmu_init_directory();
     mmu_set_directory(0x00000000, 0x00400000, MMU_DIRECTORY_FLAG_PRESENT | MMU_DIRECTORY_FLAG_WRITEABLE, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE);
+//    mmu_set_directory(0x00400000, 0x00800000, MMU_DIRECTORY_FLAG_PRESENT | MMU_DIRECTORY_FLAG_WRITEABLE | MMU_DIRECTORY_FLAG_USERMODE, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE);
 
     cr3_write(MMU_DIRECTORY_ADDRESS);
     cr0_write(cr0_read() | 0x80000000);
