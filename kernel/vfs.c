@@ -40,6 +40,7 @@ void vfs_init()
 
     memory_set(&vfsNode, 0, sizeof (struct vfs_node));
     string_copy(vfsNode.name, "root");
+    vfsNode.length = 0;
     vfsNode.walk = vfs_node_walk;
     vfsNode.write = vfs_node_write;
 
