@@ -54,9 +54,6 @@ unsigned int file_read(struct vfs_node *node, unsigned int offset, unsigned int 
 unsigned int file_read_byte(struct vfs_node *node, char c)
 {
 
-    if (!node)
-        return 0;
-
     return file_read(node, 0, 1, &c);
 
 }
@@ -84,9 +81,6 @@ unsigned int file_write_bcd(struct vfs_node *node, unsigned char num)
 
 unsigned int file_write_byte(struct vfs_node *node, char c)
 {
-
-    if (!node)
-        return 0;
 
     return file_write(node, 0, 1, &c);
 
