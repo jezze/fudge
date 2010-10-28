@@ -73,8 +73,6 @@ static void tty_putc(char c)
     if (ttyVgaCursorOffset >= TTY_CHARACTER_WIDTH * TTY_CHARACTER_HEIGHT - TTY_CHARACTER_WIDTH)
         tty_scroll();
 
-    file_write(ttyVgaCursorNode, 0, 1, &ttyVgaCursorOffset);
-
 }
 
 static void tty_vga_clear()
@@ -96,6 +94,8 @@ static unsigned int tty_write(struct vfs_node *node, unsigned int offset, unsign
 
     for (i = offset; i < offset + count; i++, j++)
         tty_putc(((char *)buffer)[j]);
+
+    file_write(ttyVgaCursorNode, 0, 1, &ttyVgaCursorOffset);
 
     return count;
 
