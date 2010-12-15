@@ -8,6 +8,8 @@
 #include <arch/x86/kernel/isr.h>
 #include <arch/x86/kernel/mmu.h>
 
+struct mmu_directory mmuDirectory;
+
 void mmu_handler(struct isr_registers *registers)
 {
 
@@ -45,44 +47,44 @@ static struct mmu_table *mmu_get_true_table_address(struct mmu_table *table)
 
 }
 
-static void mmu_init_directory()
+static void mmu_map(unsigned int base, unsigned int limit, unsigned int directoryFlags, unsigned int tableFlags)
 {
-
-    struct mmu_directory *directory = (struct mmu_directory *)MMU_DIRECTORY_ADDRESS;
-
-    unsigned int i;
-
-    for (i = 0; i < 1024; i++)
-        directory->tables[i] = (struct mmu_table *)(0 | MMU_DIRECTORY_FLAG_WRITEABLE);
-
-}
-
-static void mmu_set_directory(unsigned int base, unsigned int limit, unsigned int directoryFlags, unsigned int tableFlags)
-{
-
-    struct mmu_directory *directory = (struct mmu_directory *)MMU_DIRECTORY_ADDRESS;
 
     unsigned int i;
 
     for (i = 0; base < limit; base += 0x1000, i++)
     {
 
-        directory->tables[i / 1024] = (struct mmu_table *)(MMU_TABLE_ADDRESS | directoryFlags);
-        mmu_get_true_table_address(directory->tables[i / 1024])->entries[i % 1024] = base | tableFlags;
+        mmuDirectory.tables[i / 1024] = (struct mmu_table *)(MMU_TABLE_ADDRESS | directoryFlags);
+        mmu_get_true_table_address(mmuDirectory.tables[i / 1024])->entries[i % 1024] = base | tableFlags;
 
     }
+
+}
+
+static void mmu_flush_directory(struct mmu_directory *directory)
+{
+
+    cr3_write((unsigned int)directory);
+    cr0_write(cr0_read() | 0x80000000);
+
+}
+
+static void mmu_init_directory(struct mmu_directory *directory)
+{
+
+    memory_set(directory, 0, sizeof (struct mmu_directory));
 
 }
 
 void mmu_init()
 {
 
-    mmu_init_directory();
-    mmu_set_directory(0x00000000, 0x00400000, MMU_DIRECTORY_FLAG_PRESENT | MMU_DIRECTORY_FLAG_WRITEABLE, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE);
-//    mmu_set_directory(0x00400000, 0x00800000, MMU_DIRECTORY_FLAG_PRESENT | MMU_DIRECTORY_FLAG_WRITEABLE | MMU_DIRECTORY_FLAG_USERMODE, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE);
+    mmu_init_directory(&mmuDirectory);
+    mmu_map(0x00000000, 0x00400000, MMU_DIRECTORY_FLAG_PRESENT | MMU_DIRECTORY_FLAG_WRITEABLE, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE);
+//    mmu_map(0x00400000, 0x00800000, MMU_DIRECTORY_FLAG_PRESENT | MMU_DIRECTORY_FLAG_WRITEABLE | MMU_DIRECTORY_FLAG_USERMODE, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE);
 
-    cr3_write(MMU_DIRECTORY_ADDRESS);
-    cr0_write(cr0_read() | 0x80000000);
+    mmu_flush_directory(&mmuDirectory);
 
 }
 

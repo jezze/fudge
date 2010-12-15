@@ -38,14 +38,14 @@ struct mmu_table
 
     unsigned int entries[MMU_TABLE_SIZE];
 
-};
+} __attribute__((aligned(4096)));
 
 struct mmu_directory
 {
 
     struct mmu_table *tables[MMU_DIRECTORY_SIZE];
 
-};
+} __attribute__((aligned(4096)));
 
 extern void mmu_handler(struct isr_registers *registers);
 extern void mmu_init();
