@@ -47,7 +47,7 @@ static struct mmu_table *mmu_get_true_table_address(struct mmu_table *table)
 
 }
 
-static void mmu_map(unsigned int base, unsigned int limit, unsigned int tableFlags, unsigned int pageFlags)
+static void mmu_map(struct mmu_directory *directory, unsigned int base, unsigned int limit, unsigned int tableFlags, unsigned int pageFlags)
 {
 
     unsigned int i;
@@ -55,8 +55,8 @@ static void mmu_map(unsigned int base, unsigned int limit, unsigned int tableFla
     for (i = 0; base < limit; base += 0x1000, i++)
     {
 
-        mmuDirectory.tables[i / 1024] = (struct mmu_table *)(MMU_TABLE_ADDRESS | tableFlags);
-        mmu_get_true_table_address(mmuDirectory.tables[i / 1024])->entries[i % 1024] = base | pageFlags;
+        directory->tables[i / 1024] = (struct mmu_table *)(MMU_TABLE_ADDRESS | tableFlags);
+        mmu_get_true_table_address(directory->tables[i / 1024])->entries[i % 1024] = base | pageFlags;
 
     }
 
@@ -81,8 +81,8 @@ void mmu_init()
 {
 
     mmu_init_directory(&mmuDirectory);
-    mmu_map(0x00000000, 0x00400000, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE);
-//    mmu_map(0x00400000, 0x00800000, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);
+    mmu_map(&mmuDirectory, 0x00000000, 0x00400000, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE);
+//    mmu_map(&mmuDirectory, 0x00400000, 0x00800000, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);
 
     mmu_flush_directory(&mmuDirectory);
 
