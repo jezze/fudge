@@ -47,6 +47,9 @@ struct mmu_directory
 
 extern void mmu_handler(struct isr_registers *registers);
 extern void mmu_init();
+extern void mmu_set_directory(struct mmu_directory *directory);
+extern void mmu_enable();
+extern void mmu_clear_directory(struct mmu_directory *directory);
 
 #endif
 

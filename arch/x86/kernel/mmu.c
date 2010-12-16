@@ -8,7 +8,7 @@
 #include <arch/x86/kernel/isr.h>
 #include <arch/x86/kernel/mmu.h>
 
-struct mmu_directory mmuDirectory;
+struct mmu_directory mmuKernelDirectory;
 
 void mmu_handler(struct isr_registers *registers)
 {
@@ -62,15 +62,21 @@ static void mmu_map(struct mmu_directory *directory, unsigned int base, unsigned
 
 }
 
-static void mmu_flush_directory(struct mmu_directory *directory)
+void mmu_set_directory(struct mmu_directory *directory)
 {
 
     cr3_write((unsigned int)directory);
+
+}
+
+void mmu_enable()
+{
+
     cr0_write(cr0_read() | 0x80000000);
 
 }
 
-static void mmu_init_directory(struct mmu_directory *directory)
+void mmu_clear_directory(struct mmu_directory *directory)
 {
 
     memory_set(directory, 0, sizeof (struct mmu_directory));
@@ -80,11 +86,10 @@ static void mmu_init_directory(struct mmu_directory *directory)
 void mmu_init()
 {
 
-    mmu_init_directory(&mmuDirectory);
-    mmu_map(&mmuDirectory, 0x00000000, 0x00400000, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE);
-//    mmu_map(&mmuDirectory, 0x00400000, 0x00800000, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);
-
-    mmu_flush_directory(&mmuDirectory);
+    mmu_clear_directory(&mmuKernelDirectory);
+    mmu_map(&mmuKernelDirectory, 0x00000000, 0x00400000, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE);
+    mmu_set_directory(&mmuKernelDirectory);
+    mmu_enable();
 
 }
 
