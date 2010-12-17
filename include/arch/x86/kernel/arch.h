@@ -3,13 +3,10 @@
 
 struct mboot_info;
 
-extern void arch_disable_interrupts();
-extern void arch_enable_interrupts();
-extern void arch_reboot();
 extern void arch_init(struct mboot_info *header, unsigned int magic);
-extern void arch_init_devices();
-extern void arch_init_interrupts();
-extern void arch_init_syscalls();
+extern void arch_interrupts_disable();
+extern void arch_interrupts_enable();
+extern void arch_reboot();
 
 #endif
 

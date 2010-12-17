@@ -33,16 +33,6 @@ static void arch_puts(char *s)
 
 }
 
-void arch_enable_interrupts()
-{
-
-}
-
-void arch_disable_interrupts()
-{
-
-}
-
 static void arch_put_pixel(volatile unsigned short *address, unsigned short value)
 {
 
@@ -101,17 +91,17 @@ void arch_init()
 
 }
 
-void arch_init_devices()
+void arch_interrupts_disable()
 {
 
 }
 
-void arch_init_interrupts()
+void arch_interrupts_enable()
 {
 
 }
 
-void arch_init_syscalls()
+void arch_reboot()
 {
 
 }

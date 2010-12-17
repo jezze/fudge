@@ -20,14 +20,73 @@
 #include <kernel/mboot.h>
 #include <kernel/vfs.h>
 
-void arch_disable_interrupts()
+static void arch_init_devices()
+{
+
+    io_init();
+    vga_init();
+    mmu_init();
+    pit_init();
+    kbd_init();
+    rtc_init();
+    ata_init();
+
+}
+
+static void arch_init_interrupts()
+{
+
+    isr_init();
+    isr_register_handler(ISR_ROUTINE_PAGEFAULT, mmu_handler);
+
+    irq_init();
+    irq_register_handler(IRQ_ROUTINE_PIT, pit_handler);
+    irq_register_handler(IRQ_ROUTINE_KBD, kbd_handler);
+
+}
+
+static void arch_init_syscalls()
+{
+
+    syscall_init();
+    syscall_register_handler(SYSCALL_ROUTINE_OPEN, syscall_open);
+    syscall_register_handler(SYSCALL_ROUTINE_REBOOT, syscall_reboot);
+
+}
+
+void arch_init(struct mboot_info *header, unsigned int magic)
+{
+
+    gdt_init();
+    idt_init();
+    fpu_init();
+    vfs_init();
+
+    arch_init_syscalls();
+    arch_init_interrupts();
+
+    isr_enable();
+
+    dev_init();
+    arch_init_devices();
+
+    ASSERT(magic == MBOOT_MAGIC);
+    ASSERT(header->modulesCount);
+
+    initrd_init(*((unsigned int *)header->modulesAddresses));
+
+    kernel_init();
+
+}
+
+void arch_interrupts_disable()
 {
 
     isr_disable();
 
 }
 
-void arch_enable_interrupts()
+void arch_interrupts_enable()
 {
 
     isr_enable();
@@ -45,64 +104,6 @@ void arch_reboot()
         ready = io_inb(0x64);
 
     io_outb(0x64, 0xFE);
-
-}
-
-void arch_init(struct mboot_info *header, unsigned int magic)
-{
-
-    gdt_init();
-    idt_init();
-    fpu_init();
-    vfs_init();
-
-    arch_init_syscalls();
-    arch_init_interrupts();
-    arch_enable_interrupts();
-
-    dev_init();
-    arch_init_devices();
-
-    ASSERT(magic == MBOOT_MAGIC);
-    ASSERT(header->modulesCount);
-
-    initrd_init(*((unsigned int *)header->modulesAddresses));
-
-    kernel_init();
-
-}
-
-void arch_init_devices()
-{
-
-    io_init();
-    vga_init();
-    mmu_init();
-    pit_init();
-    kbd_init();
-    rtc_init();
-    ata_init();
-
-}
-
-void arch_init_interrupts()
-{
-
-    isr_init();
-    isr_register_handler(ISR_ROUTINE_PAGEFAULT, mmu_handler);
-
-    irq_init();
-    irq_register_handler(IRQ_ROUTINE_PIT, pit_handler);
-    irq_register_handler(IRQ_ROUTINE_KBD, kbd_handler);
-
-}
-
-void arch_init_syscalls()
-{
-
-    syscall_init();
-    syscall_register_handler(SYSCALL_ROUTINE_OPEN, syscall_open);
-    syscall_register_handler(SYSCALL_ROUTINE_REBOOT, syscall_reboot);
 
 }
 

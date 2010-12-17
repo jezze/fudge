@@ -5,7 +5,7 @@
 void kernel_assert(char *message, char *file, unsigned int line)
 {
 
-    arch_disable_interrupts();
+    arch_interrupts_disable();
 
     file_write_string(session_get_out(), "ASSERTION FAIL (");
     file_write_string(session_get_out(), message);
@@ -22,7 +22,7 @@ void kernel_assert(char *message, char *file, unsigned int line)
 void kernel_panic(char *message, char *file, unsigned int line)
 {
 
-    arch_disable_interrupts();
+    arch_interrupts_disable();
 
     file_write_string(session_get_out(), "KERNEL PANIC (");
     file_write_string(session_get_out(), message);
