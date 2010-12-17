@@ -20,9 +20,20 @@
 #include <kernel/mboot.h>
 #include <kernel/vfs.h>
 
+static void arch_init_base()
+{
+
+    gdt_init();
+    idt_init();
+    fpu_init();
+    vfs_init();
+
+}
+
 static void arch_init_devices()
 {
 
+    dev_init();
     io_init();
     vga_init();
     mmu_init();
@@ -43,6 +54,8 @@ static void arch_init_interrupts()
     irq_register_handler(IRQ_ROUTINE_PIT, pit_handler);
     irq_register_handler(IRQ_ROUTINE_KBD, kbd_handler);
 
+    isr_enable();
+
 }
 
 static void arch_init_syscalls()
@@ -57,17 +70,9 @@ static void arch_init_syscalls()
 void arch_init(struct mboot_info *header, unsigned int magic)
 {
 
-    gdt_init();
-    idt_init();
-    fpu_init();
-    vfs_init();
-
+    arch_init_base();
     arch_init_syscalls();
     arch_init_interrupts();
-
-    isr_enable();
-
-    dev_init();
     arch_init_devices();
 
     ASSERT(magic == MBOOT_MAGIC);
