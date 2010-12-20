@@ -48,10 +48,10 @@ static void mmu_map(struct mmu_table *table, unsigned int base, unsigned int lim
 
     unsigned int i;
 
-    for (i = 0; base < limit; base += 0x1000, i++)
+    for (i = 0; base < limit; base += MMU_PAGE_SIZE, i++)
     {
 
-        itable->entries[i % 1024] = base | flags;
+        itable->entries[i % MMU_TABLE_SIZE] = base | flags;
 
     }
 

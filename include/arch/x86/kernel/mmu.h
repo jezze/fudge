@@ -19,6 +19,7 @@
 #define MMU_TABLE_FLAG_LARGE        1 << 6
 #define MMU_TABLE_FLAG_IGNORED      1 << 7
 
+#define MMU_PAGE_SIZE              4096
 #define MMU_PAGE_FLAG_PRESENT      1 << 0
 #define MMU_PAGE_FLAG_WRITEABLE    1 << 1
 #define MMU_PAGE_FLAG_USERMODE     1 << 2
@@ -49,6 +50,7 @@ extern void mmu_init();
 extern void mmu_set_directory(struct mmu_directory *directory);
 extern void mmu_enable();
 extern void mmu_clear_directory(struct mmu_directory *directory);
+extern void mmu_clear_table(struct mmu_table *table);
 
 #endif
 
