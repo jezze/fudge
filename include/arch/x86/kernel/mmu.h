@@ -9,7 +9,6 @@
 
 #define MMU_DIRECTORY_SIZE    1024
 
-#define MMU_TABLE_ADDRESS           0x197000
 #define MMU_TABLE_SIZE              1024
 #define MMU_TABLE_FLAG_PRESENT      1 << 0
 #define MMU_TABLE_FLAG_WRITEABLE    1 << 1

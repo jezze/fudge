@@ -9,6 +9,7 @@
 #include <arch/x86/kernel/mmu.h>
 
 struct mmu_directory mmuKernelDirectory;
+struct mmu_table mmuKernelTables[2];
 
 void mmu_handler(struct isr_registers *registers)
 {
@@ -40,23 +41,17 @@ void mmu_handler(struct isr_registers *registers)
 
 }
 
-static struct mmu_table *mmu_get_true_table_address(struct mmu_table *table)
+static void mmu_map(struct mmu_table *table, unsigned int base, unsigned int limit, unsigned int flags)
 {
 
-    return (struct mmu_table *)((unsigned int)table & 0xFFFFF000);
-
-}
-
-static void mmu_map(struct mmu_directory *directory, unsigned int base, unsigned int limit, unsigned int tableFlags, unsigned int pageFlags)
-{
+    struct mmu_table *itable = (struct mmu_table *)((unsigned int)table & 0xFFFFF000);
 
     unsigned int i;
 
     for (i = 0; base < limit; base += 0x1000, i++)
     {
 
-        directory->tables[i / 1024] = (struct mmu_table *)(MMU_TABLE_ADDRESS | tableFlags);
-        mmu_get_true_table_address(directory->tables[i / 1024])->entries[i % 1024] = base | pageFlags;
+        itable->entries[i % 1024] = base | flags;
 
     }
 
@@ -83,11 +78,39 @@ void mmu_clear_directory(struct mmu_directory *directory)
 
 }
 
+void mmu_clear_table(struct mmu_table *table)
+{
+
+    memory_set(table, 0, sizeof (struct mmu_table));
+
+}
+
+static void mmu_add_table(struct mmu_directory *directory, unsigned int index, struct mmu_table *table, unsigned int flags)
+{
+
+    directory->tables[index] = (struct mmu_table *)((unsigned int)table | flags);
+
+}
+
+static void mmu_init_kernel_directory()
+{
+
+    mmu_clear_table(&mmuKernelTables[0]);
+    mmu_map(&mmuKernelTables[0], 0x00000000, 0x00400000, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE);
+
+    mmu_clear_table(&mmuKernelTables[1]);
+    mmu_map(&mmuKernelTables[1], 0x00400000, 0x00800000, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE);
+
+    mmu_clear_directory(&mmuKernelDirectory);
+    mmu_add_table(&mmuKernelDirectory, 0, &mmuKernelTables[0], MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE);
+    mmu_add_table(&mmuKernelDirectory, 1, &mmuKernelTables[1], MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE);
+
+}
+
 void mmu_init()
 {
 
-    mmu_clear_directory(&mmuKernelDirectory);
-    mmu_map(&mmuKernelDirectory, 0x00000000, 0x00400000, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE);
+    mmu_init_kernel_directory();
     mmu_set_directory(&mmuKernelDirectory);
     mmu_enable();
 
