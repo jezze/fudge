@@ -47,18 +47,18 @@ static void shell_execute_elf(struct vfs_node *node, void *address, int argc, ch
     mmu_clear_table(&shellProgramTables[1]);
     mmu_clear_table(&shellProgramTables[2]);
 
-    unsigned int position = programHeader->virtualAddress / 0x00400000;
+    unsigned int index = (programHeader->virtualAddress / MMU_PAGE_SIZE) / MMU_DIRECTORY_SIZE;
 
     mmu_add_table(&shellProgramDirectory, 0, &shellProgramTables[0], MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE);
-    mmu_add_table(&shellProgramDirectory, position, &shellProgramTables[1], MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE);
-    mmu_add_table(&shellProgramDirectory, position + 1, &shellProgramTables[2], MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE);
+    mmu_add_table(&shellProgramDirectory, index, &shellProgramTables[1], MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE);
+    mmu_add_table(&shellProgramDirectory, index + 1, &shellProgramTables[2], MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE);
 
     mmu_map(&shellProgramDirectory, 0x00000000, 0x00000000, 0x00400000, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE);
     mmu_map(&shellProgramDirectory, programHeader->virtualAddress, 0x00400000, 0x00400000, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE);
 
     mmu_set_directory(&shellProgramDirectory);
 
-    void (*func)(int argc, char *argv[]) = (void (*)(int argc, char *argv[]))programHeader->virtualAddress;
+    void (*func)(int argc, char *argv[]) = (void (*)(int argc, char *argv[]))header->entry;
 
     func(argc, argv);
 
