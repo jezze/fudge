@@ -54,7 +54,7 @@ static void shell_execute_elf(struct vfs_node *node, void *address, int argc, ch
     mmu_add_table(&shellProgramDirectory, index + 1, &shellProgramTables[2], MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE);
 
     mmu_map(&shellProgramDirectory, 0x00000000, 0x00000000, 0x00400000, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE);
-    mmu_map(&shellProgramDirectory, programHeader->virtualAddress, 0x00400000, 0x00400000, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE);
+    mmu_map(&shellProgramDirectory, programHeader->virtualAddress, 0x00400000, programHeader->memorySize, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE);
 
     mmu_set_directory(&shellProgramDirectory);
 

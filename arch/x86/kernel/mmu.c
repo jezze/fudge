@@ -45,9 +45,9 @@ void mmu_map(struct mmu_directory *directory, unsigned int virtualAddress, unsig
 {
 
     unsigned int i = virtualAddress / 4096;
-    unsigned int count;
+    unsigned int count = (size % 4096) ? (size / 4096) + 4096 : (size / 4096);
 
-    for (count = size / 4096; count; count--)
+    for (; count; count--)
     {
 
         struct mmu_table *itable = (struct mmu_table *)((unsigned int)directory->tables[i / MMU_DIRECTORY_SIZE] & 0xFFFFF000);
