@@ -48,6 +48,9 @@ struct mmu_directory
 extern void mmu_handler(struct isr_registers *registers);
 extern void mmu_init();
 extern void mmu_set_directory(struct mmu_directory *directory);
+extern void mmu_default_directory();
+extern void mmu_map(struct mmu_directory *directory, unsigned int virtualAddress, unsigned int physicalAddress, unsigned int size, unsigned int flags);
+extern void mmu_add_table(struct mmu_directory *directory, unsigned int index, struct mmu_table *table, unsigned int flags);
 extern void mmu_enable();
 extern void mmu_clear_directory(struct mmu_directory *directory);
 extern void mmu_clear_table(struct mmu_table *table);

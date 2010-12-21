@@ -8,7 +8,11 @@
 #include <lib/vfs.h>
 #include <kernel/elf.h>
 #include <kernel/kernel.h>
+#include <arch/x86/kernel/mmu.h>
 #include <kernel/shell.h>
+
+struct mmu_directory shellProgramDirectory;
+struct mmu_table shellProgramTables[3];
 
 char shellBuffer[SHELL_BUFFER_SIZE];
 struct stack shellStack;
@@ -36,8 +40,29 @@ static void shell_execute_elf(struct vfs_node *node, void *address, int argc, ch
     struct elf_header *header = (struct elf_header *)address;
     struct elf_program_header *programHeader = (struct elf_program_header *)(address + header->programHeaderOffset);
 
-    file_read(node, programHeader->offset, programHeader->memorySize, (void *)programHeader->virtualAddress);
-    shell_execute_flat((void *)programHeader->virtualAddress, argc, argv);
+    file_read(node, programHeader->offset, programHeader->memorySize, (void *)0x00400000);
+
+    mmu_clear_directory(&shellProgramDirectory);
+    mmu_clear_table(&shellProgramTables[0]);
+    mmu_clear_table(&shellProgramTables[1]);
+    mmu_clear_table(&shellProgramTables[2]);
+
+    unsigned int position = programHeader->virtualAddress / 0x00400000;
+
+    mmu_add_table(&shellProgramDirectory, 0, &shellProgramTables[0], MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE);
+    mmu_add_table(&shellProgramDirectory, position, &shellProgramTables[1], MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE);
+    mmu_add_table(&shellProgramDirectory, position + 1, &shellProgramTables[2], MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE);
+
+    mmu_map(&shellProgramDirectory, 0x00000000, 0x00000000, 0x00400000, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE);
+    mmu_map(&shellProgramDirectory, programHeader->virtualAddress, 0x00400000, 0x00400000, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE);
+
+    mmu_set_directory(&shellProgramDirectory);
+
+    void (*func)(int argc, char *argv[]) = (void (*)(int argc, char *argv[]))programHeader->virtualAddress;
+
+    func(argc, argv);
+
+    mmu_default_directory();
 
 }
 

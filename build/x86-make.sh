@@ -102,7 +102,7 @@ ASMFLAGS="-f elf"
 GCC="gcc"
 GCCFLAGS="-c -O2 -I../include/lib -Wall -ffreestanding -nostdlib -nostartfiles -nodefaultlibs"
 LD="ld"
-LDFLAGS="-Ttext 0x300000 -e main"
+LDFLAGS="-Ttext 0x00800000 -e main"
 
 $GCC $GCCFLAGS $DIR_SOURCE_BIN/cat.c -o $DIR_SOURCE_BIN/cat.o
 $LD $LDFLAGS $DIR_SOURCE_BIN/cat.o $DIR_SOURCE_LIB/memory.o $DIR_SOURCE_LIB/session.o $DIR_SOURCE_LIB/string.o $DIR_SOURCE_LIB/file.o $DIR_SOURCE_ARCH_LIB/calls.o -o $DIR_IMAGE_BIN/cat

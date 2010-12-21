@@ -41,17 +41,22 @@ void mmu_handler(struct isr_registers *registers)
 
 }
 
-static void mmu_map(struct mmu_table *table, unsigned int base, unsigned int limit, unsigned int flags)
+void mmu_map(struct mmu_directory *directory, unsigned int virtualAddress, unsigned int physicalAddress, unsigned int size, unsigned int flags)
 {
 
-    struct mmu_table *itable = (struct mmu_table *)((unsigned int)table & 0xFFFFF000);
+    unsigned int i = virtualAddress / 4096;
+    unsigned int count;
 
-    unsigned int i;
-
-    for (i = 0; base < limit; base += MMU_PAGE_SIZE, i++)
+    for (count = size / 4096; count; count--)
     {
 
-        itable->entries[i % MMU_TABLE_SIZE] = base | flags;
+        struct mmu_table *itable = (struct mmu_table *)((unsigned int)directory->tables[i / MMU_DIRECTORY_SIZE] & 0xFFFFF000);
+
+        itable->entries[i % MMU_TABLE_SIZE] = physicalAddress | flags;
+
+        virtualAddress += MMU_PAGE_SIZE;
+        physicalAddress += MMU_PAGE_SIZE;
+        i++;
 
     }
 
@@ -61,6 +66,13 @@ void mmu_set_directory(struct mmu_directory *directory)
 {
 
     cr3_write((unsigned int)directory);
+
+}
+
+void mmu_default_directory()
+{
+
+    mmu_set_directory(&mmuKernelDirectory);
 
 }
 
@@ -85,7 +97,7 @@ void mmu_clear_table(struct mmu_table *table)
 
 }
 
-static void mmu_add_table(struct mmu_directory *directory, unsigned int index, struct mmu_table *table, unsigned int flags)
+void mmu_add_table(struct mmu_directory *directory, unsigned int index, struct mmu_table *table, unsigned int flags)
 {
 
     directory->tables[index] = (struct mmu_table *)((unsigned int)table | flags);
@@ -95,15 +107,14 @@ static void mmu_add_table(struct mmu_directory *directory, unsigned int index, s
 static void mmu_init_kernel_directory()
 {
 
-    mmu_clear_table(&mmuKernelTables[0]);
-    mmu_map(&mmuKernelTables[0], 0x00000000, 0x00400000, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE);
-
-    mmu_clear_table(&mmuKernelTables[1]);
-    mmu_map(&mmuKernelTables[1], 0x00400000, 0x00800000, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE);
-
     mmu_clear_directory(&mmuKernelDirectory);
+    mmu_clear_table(&mmuKernelTables[0]);
+    mmu_clear_table(&mmuKernelTables[1]);
+
     mmu_add_table(&mmuKernelDirectory, 0, &mmuKernelTables[0], MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE);
     mmu_add_table(&mmuKernelDirectory, 1, &mmuKernelTables[1], MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE);
+
+    mmu_map(&mmuKernelDirectory, 0x00000000, 0x00000000, 0x00800000, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE);
 
 }
 
