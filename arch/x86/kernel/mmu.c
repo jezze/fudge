@@ -1,4 +1,3 @@
-#include <lib/assert.h>
 #include <lib/file.h>
 #include <lib/memory.h>
 #include <lib/session.h>
@@ -7,6 +6,7 @@
 #include <arch/x86/kernel/cr.h>
 #include <arch/x86/kernel/isr.h>
 #include <arch/x86/kernel/mmu.h>
+#include <kernel/kernel.h>
 
 struct mmu_directory mmuKernelDirectory;
 struct mmu_table mmuKernelTables[2];

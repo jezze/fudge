@@ -1,4 +1,3 @@
-#include <lib/assert.h>
 #include <lib/cbuffer.h>
 #include <arch/x86/kernel/arch.h>
 #include <arch/x86/kernel/fpu.h>
