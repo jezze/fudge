@@ -7,7 +7,7 @@
 #include <arch/x86/kernel/io.h>
 #include <arch/x86/kernel/irq.h>
 #include <arch/x86/kernel/isr.h>
-#include <arch/x86/kernel/kbd.h>
+#include <arch/x86/modules/kbd/kbd.h>
 
 char kbdMapLowerUS[128] =
 {

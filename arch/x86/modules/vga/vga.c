@@ -4,7 +4,7 @@
 #include <lib/string.h>
 #include <lib/vfs.h>
 #include <arch/x86/kernel/io.h>
-#include <arch/x86/kernel/vga.h>
+#include <arch/x86/modules/vga/vga.h>
 
 struct vfs_node vgaFbNode;
 struct vfs_node vgaFbColorNode;
