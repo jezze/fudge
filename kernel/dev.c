@@ -3,9 +3,9 @@
 #include <lib/memory.h>
 #include <lib/string.h>
 #include <lib/vfs.h>
+#include <kernel/vfs.h>
 #include <kernel/dev.h>
 
-struct vfs_node devNode;
 struct vfs_node *devEntries[32];
 
 static struct vfs_node *dev_node_walk(struct vfs_node *node, unsigned int index)
@@ -31,13 +31,12 @@ static unsigned int dev_node_write(struct vfs_node *node, unsigned int offset, u
 void dev_init()
 {
 
-    string_copy(devNode.name, "dev");
-    devNode.length = 0;
-    devNode.walk = dev_node_walk;
-    devNode.write = dev_node_write;
+    struct vfs_node *node = vfs_add_node("dev", 0);
+    node->walk = dev_node_walk;
+    node->write = dev_node_write;
 
     struct vfs_node *root = call_open("/");
-    file_write(root, root->length, 1, &devNode);
+    file_write(root, root->length, 1, node);
 
 }
 

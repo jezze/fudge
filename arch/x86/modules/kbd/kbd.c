@@ -8,6 +8,7 @@
 #include <arch/x86/kernel/irq.h>
 #include <arch/x86/kernel/isr.h>
 #include <arch/x86/modules/kbd/kbd.h>
+#include <kernel/vfs.h>
 
 char kbdMapLowerUS[128] =
 {
@@ -33,7 +34,6 @@ char kbdMapUpperUS[128] =
        0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0
 };
 
-struct vfs_node kbdNode;
 struct kbd_device kbdDevice;
 
 void kbd_handler(struct isr_registers *registers)
@@ -92,11 +92,11 @@ void kbd_init()
     kbdDevice.toggleCtrl = 0;
     kbdDevice.toggleShift = 0;
 
-    string_copy(kbdNode.name, "kbd");
-    kbdNode.read = kbd_read;
+    struct vfs_node *kbdNode = vfs_add_node("kbd", 0);
+    kbdNode->read = kbd_read;
 
-    struct vfs_node *node = call_open("/dev");
-    file_write(node, node->length, 1, &kbdNode);
+    struct vfs_node *devNode = call_open("/dev");
+    file_write(devNode, devNode->length, 1, kbdNode);
 
 }
 

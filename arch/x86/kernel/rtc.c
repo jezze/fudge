@@ -6,8 +6,7 @@
 #include <arch/x86/kernel/arch.h>
 #include <arch/x86/kernel/io.h>
 #include <arch/x86/kernel/rtc.h>
-
-struct vfs_node rtcNode;
+#include <kernel/vfs.h>
 
 unsigned char rtc_get(unsigned char type)
 {
@@ -82,10 +81,10 @@ static unsigned int rtc_read(struct vfs_node *node, unsigned int offset, unsigne
 void rtc_init()
 {
 
-    string_copy(rtcNode.name, "rtc");
-    rtcNode.read = rtc_read;
+    struct vfs_node *rtcNode = vfs_add_node("rtc", 0);
+    rtcNode->read = rtc_read;
 
-    struct vfs_node *node = call_open("/dev");
-    file_write(node, node->length, 1, &rtcNode);
+    struct vfs_node *devNode = call_open("/dev");
+    file_write(devNode, devNode->length, 1, rtcNode);
 
 }

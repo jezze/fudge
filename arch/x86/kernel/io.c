@@ -4,10 +4,9 @@
 #include <lib/string.h>
 #include <lib/vfs.h>
 #include <arch/x86/kernel/io.h>
+#include <kernel/vfs.h>
 
-struct vfs_node ioNode;
-
-unsigned int io_read(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int io_read(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
     unsigned int i = 0;
@@ -19,7 +18,7 @@ unsigned int io_read(struct vfs_node *node, unsigned int offset, unsigned int co
 
 }
 
-unsigned int io_write(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int io_write(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
     unsigned int i = 0;
@@ -34,12 +33,12 @@ unsigned int io_write(struct vfs_node *node, unsigned int offset, unsigned int c
 void io_init()
 {
 
-    string_copy(ioNode.name, "io");
-    ioNode.read = io_read;
-    ioNode.write = io_write;
+    struct vfs_node *ioNode = vfs_add_node("io", 0);
+    ioNode->read = io_read;
+    ioNode->write = io_write;
 
-    struct vfs_node *node = call_open("/dev");
-    file_write(node, node->length, 1, &ioNode);
+    struct vfs_node *devNode = call_open("/dev");
+    file_write(devNode, devNode->length, 1, ioNode);
 
 }
 

@@ -4,6 +4,7 @@
 #include <lib/string.h>
 #include <lib/vfs.h>
 #include <kernel/initrd.h>
+#include <kernel/vfs.h>
 
 struct vfs_node initrdNode;
 struct vfs_node *initrdEntries[32];
@@ -54,10 +55,9 @@ static unsigned int initrd_node_write(struct vfs_node *node, unsigned int offset
 void initrd_init(unsigned int location)
 {
 
-    string_copy(initrdNode.name, "initrd");
-    initrdNode.length = 0;
-    initrdNode.walk = initrd_node_walk;
-    initrdNode.write = initrd_node_write;
+    struct vfs_node *initrdNode = vfs_add_node("initrd", 0);
+    initrdNode->walk = initrd_node_walk;
+    initrdNode->write = initrd_node_write;
 
     initrdFilesCount = 0;
 
@@ -76,14 +76,14 @@ void initrd_init(unsigned int location)
         initrdFiles[initrdFilesCount].length = initrdFileHeaders[i].length;
         initrdFiles[initrdFilesCount].read = initrd_file_read;
 
-        file_write(&initrdNode, initrdNode.length, 1, &initrdFiles[initrdFilesCount]);
+        file_write(initrdNode, initrdNode->length, 1, &initrdFiles[initrdFilesCount]);
 
         initrdFilesCount++;
 
     }
 
-    struct vfs_node *root = call_open("/");
-    file_write(root, root->length, 1, &initrdNode);
+    struct vfs_node *rootNode = call_open("/");
+    file_write(rootNode, rootNode->length, 1, initrdNode);
 
 }
 

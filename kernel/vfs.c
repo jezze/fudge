@@ -5,13 +5,15 @@
 #include <kernel/initrd.h>
 #include <kernel/vfs.h>
 
-struct vfs_node vfsNode;
-struct vfs_node *vfsEntries[32];
+struct vfs_node vfsNodes[256];
+unsigned int vfsNodesCount;
+
+struct vfs_node *vfsRootEntries[32];
 
 struct vfs_node *vfs_get_root(struct vfs_node *node, unsigned int index)
 {
 
-    return &vfsNode;
+    return &vfsNodes[0];
 
 }
 
@@ -19,7 +21,7 @@ static struct vfs_node *vfs_node_walk(struct vfs_node *node, unsigned int index)
 {
 
     if (index < node->length)
-        return vfsEntries[index];
+        return vfsRootEntries[index];
     else
         return 0;
 
@@ -28,21 +30,33 @@ static struct vfs_node *vfs_node_walk(struct vfs_node *node, unsigned int index)
 static unsigned int vfs_node_write(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    vfsEntries[offset] = (struct vfs_node *)buffer;
+    vfsRootEntries[offset] = (struct vfs_node *)buffer;
     node->length++;
 
     return count;
 
 }
 
+struct vfs_node *vfs_add_node(char *name, unsigned int length)
+{
+
+    struct vfs_node *node = &vfsNodes[vfsNodesCount];
+    memory_set(node, 0, sizeof (struct vfs_node));
+    string_copy(node->name, name);
+    node->length = length;
+
+    vfsNodesCount++;
+
+    return node;
+
+}
+
 void vfs_init()
 {
 
-    memory_set(&vfsNode, 0, sizeof (struct vfs_node));
-    string_copy(vfsNode.name, "root");
-    vfsNode.length = 0;
-    vfsNode.walk = vfs_node_walk;
-    vfsNode.write = vfs_node_write;
+    struct vfs_node *node = vfs_add_node("root", 0);
+    node->walk = vfs_node_walk;
+    node->write = vfs_node_write;
 
 }
 

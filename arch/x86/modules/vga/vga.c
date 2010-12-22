@@ -5,10 +5,8 @@
 #include <lib/vfs.h>
 #include <arch/x86/kernel/io.h>
 #include <arch/x86/modules/vga/vga.h>
+#include <kernel/vfs.h>
 
-struct vfs_node vgaFbNode;
-struct vfs_node vgaFbColorNode;
-struct vfs_node vgaFbCursorNode;
 unsigned char vgaFbColor;
 
 static unsigned int vga_fb_read(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
@@ -96,25 +94,21 @@ static unsigned int vga_fb_cursor_write(struct vfs_node *node, unsigned int offs
 void vga_init()
 {
 
-    string_copy(vgaFbNode.name, "vga_fb");
-    vgaFbColorNode.length = VGA_FB_SIZE;
-    vgaFbNode.length =  2000;
-    vgaFbNode.read = vga_fb_read;
-    vgaFbNode.write = vga_fb_write;
+    struct vfs_node *vgaFbNode = vfs_add_node("vga_fb", VGA_FB_SIZE);
+    vgaFbNode->read = vga_fb_read;
+    vgaFbNode->write = vga_fb_write;
 
-    string_copy(vgaFbColorNode.name, "vga_fb_color");
-    vgaFbColorNode.length = 1;
-    vgaFbColorNode.read = vga_fb_color_read;
-    vgaFbColorNode.write = vga_fb_color_write;
+    struct vfs_node *vgaFbColorNode = vfs_add_node("vga_fb_color", 1);
+    vgaFbColorNode->read = vga_fb_color_read;
+    vgaFbColorNode->write = vga_fb_color_write;
 
-    string_copy(vgaFbCursorNode.name, "vga_fb_cursor");
-    vgaFbCursorNode.length = 1;
-    vgaFbCursorNode.write = vga_fb_cursor_write;
+    struct vfs_node *vgaFbCursorNode = vfs_add_node("vga_fb_cursor", 1);
+    vgaFbCursorNode->write = vga_fb_cursor_write;
 
-    struct vfs_node *node = call_open("/dev");
-    file_write(node, node->length, 1, &vgaFbNode);
-    file_write(node, node->length, 1, &vgaFbColorNode);
-    file_write(node, node->length, 1, &vgaFbCursorNode);
+    struct vfs_node *devNode = call_open("/dev");
+    file_write(devNode, devNode->length, 1, vgaFbNode);
+    file_write(devNode, devNode->length, 1, vgaFbColorNode);
+    file_write(devNode, devNode->length, 1, vgaFbCursorNode);
 
 }
 

@@ -8,9 +8,8 @@
 #include <kernel/elf.h>
 #include <kernel/kernel.h>
 #include <kernel/tty.h>
+#include <kernel/vfs.h>
 
-struct vfs_node ttyLocationNode;
-struct vfs_node ttyStdoutNode;
 struct vfs_node *ttyVgaNode;
 struct vfs_node *ttyVgaColorNode;
 struct vfs_node *ttyVgaCursorNode;
@@ -144,18 +143,16 @@ void tty_init()
 
     string_copy(ttyLocation, "/");
 
-    string_copy(ttyStdoutNode.name, "tty");
-    ttyStdoutNode.length = TTY_CHARACTER_SIZE;
-    ttyStdoutNode.write = tty_write;
+    struct vfs_node *ttyStdoutNode = vfs_add_node("tty", TTY_CHARACTER_SIZE);
+    ttyStdoutNode->write = tty_write;
 
-    string_copy(ttyLocationNode.name, "location");
-    ttyLocationNode.length = 256;
-    ttyLocationNode.read = tty_location_read;
-    ttyLocationNode.write = tty_location_write;
+    struct vfs_node *ttyLocationNode = vfs_add_node("location", 256);
+    ttyLocationNode->read = tty_location_read;
+    ttyLocationNode->write = tty_location_write;
 
-    struct vfs_node *node = call_open("/dev");
-    file_write(node, node->length, 1, &ttyStdoutNode);
-    file_write(node, node->length, 1, &ttyLocationNode);
+    struct vfs_node *devNode = call_open("/dev");
+    file_write(devNode, devNode->length, 1, ttyStdoutNode);
+    file_write(devNode, devNode->length, 1, ttyLocationNode);
 
 }
 
