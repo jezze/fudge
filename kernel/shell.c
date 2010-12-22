@@ -8,11 +8,7 @@
 #include <lib/vfs.h>
 #include <kernel/elf.h>
 #include <kernel/kernel.h>
-#include <arch/x86/kernel/mmu.h>
 #include <kernel/shell.h>
-
-struct mmu_directory shellProgramDirectory;
-struct mmu_table shellProgramTables[3];
 
 char shellBuffer[SHELL_BUFFER_SIZE];
 struct stack shellStack;
