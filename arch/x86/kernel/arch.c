@@ -64,6 +64,9 @@ static void arch_init_syscalls()
     syscall_init();
     syscall_register_handler(SYSCALL_ROUTINE_OPEN, syscall_open);
     syscall_register_handler(SYSCALL_ROUTINE_REBOOT, syscall_reboot);
+    syscall_register_handler(SYSCALL_ROUTINE_EXECUTE, syscall_execute);
+    syscall_register_handler(SYSCALL_ROUTINE_LOAD, syscall_load);
+    syscall_register_handler(SYSCALL_ROUTINE_UNLOAD, syscall_unload);
 
 }
 
