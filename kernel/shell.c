@@ -1,12 +1,10 @@
 #include <lib/call.h>
-#include <lib/elf.h>
 #include <lib/memory.h>
 #include <lib/stack.h>
 #include <lib/file.h>
 #include <lib/session.h>
 #include <lib/string.h>
 #include <lib/vfs.h>
-#include <kernel/elf.h>
 #include <kernel/kernel.h>
 #include <kernel/shell.h>
 
@@ -21,39 +19,18 @@ static void shell_clear()
 
 }
 
-static void shell_execute_flat(void *address, int argc, char *argv[])
-{
-
-    void (*func)(int argc, char *argv[]) = (void (*)(int argc, char *argv[]))address;
-
-    func(argc, argv);
-
-}
-
-static void shell_execute_elf(void *address, int argc, char *argv[])
-{
-
-    struct elf_header *header = (struct elf_header *)address;
-
-    call_load((unsigned int)address);
-
-    void (*func)(int argc, char *argv[]) = (void (*)(int argc, char *argv[]))header->entry;
-    func(argc, argv);
-
-    call_unload();
-
-}
-
 static void shell_call(struct vfs_node *node, int argc, char *argv[])
 {
 
     void *buffer = (void *)0x00300000;
     file_read(node, 0, node->length, buffer);
 
-    if (elf_check(buffer))
-        shell_execute_elf(buffer, argc, argv);
-    else
-        shell_execute_flat(buffer, argc, argv);
+    unsigned int start = call_load((unsigned int)buffer);
+
+    void (*func)(int argc, char *argv[]) = (void (*)(int argc, char *argv[]))start;
+    func(argc, argv);
+
+    call_unload();
 
 }
 
