@@ -37,7 +37,7 @@ void mmu_handler(struct isr_registers *registers)
     file_write_hex(session_get_out(), address);
     file_write_string(session_get_out(), "\n");
 
-    PANIC("PAGE FAULT");
+    kernel_panic("PAGE FAULT", __FILE__, __LINE__);
 
 }
 

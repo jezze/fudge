@@ -2,8 +2,11 @@
 #include <lib/file.h>
 #include <lib/session.h>
 
-void kernel_assert(char *message, char *file, unsigned int line)
+void kernel_assert(unsigned int condition, char *message, char *file, unsigned int line)
 {
+
+    if (condition)
+        return;
 
     arch_interrupts_disable();
 
