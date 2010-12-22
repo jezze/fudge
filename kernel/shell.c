@@ -34,7 +34,7 @@ static void shell_execute_flat(void *address, int argc, char *argv[])
 
 }
 
-static void shell_execute_elf(struct vfs_node *node, void *address, int argc, char *argv[])
+static void shell_execute_elf(void *address, int argc, char *argv[])
 {
 
     struct elf_header *header = (struct elf_header *)address;
@@ -71,7 +71,7 @@ static void shell_call(struct vfs_node *node, int argc, char *argv[])
     file_read(node, 0, node->length, buffer);
 
     if (elf_check(buffer))
-        shell_execute_elf(node, buffer, argc, argv);
+        shell_execute_elf(buffer, argc, argv);
     else
         shell_execute_flat(buffer, argc, argv);
 
