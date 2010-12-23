@@ -64,6 +64,7 @@ static void arch_init_base()
     gdt_init();
     idt_init();
     fpu_init();
+    mmu_init();
     vfs_init();
 
 }
@@ -74,7 +75,6 @@ static void arch_init_devices()
     dev_init();
     io_init();
     vga_init();
-    mmu_init();
     pit_init();
     kbd_init();
     rtc_init();
