@@ -6,7 +6,7 @@ void elf_execute(struct elf_header *header, int argc, char *argv[])
 
 }
 
-unsigned int elf_check(void *address)
+unsigned int elf_check(unsigned int address)
 {
 
     struct elf_header *header = (struct elf_header *)address;

@@ -11,6 +11,7 @@
 #include <arch/x86/kernel/syscall.h>
 #include <kernel/kernel.h>
 #include <kernel/vfs.h>
+#include <modules/elf/elf.h>
 
 void *syscallRoutines[SYSCALL_ROUTINES_SIZE];
 
@@ -49,6 +50,15 @@ void syscall_load(struct syscall_registers *registers)
 {
 
     unsigned int address = registers->ebx;
+
+    if (!elf_check(address))
+    {
+
+        registers->eax = 0;
+
+        return;
+
+    }
 
     struct elf_header *header = (struct elf_header *)address;
     struct elf_program_header *programHeader = (struct elf_program_header *)(address + header->programHeaderOffset);
