@@ -22,6 +22,8 @@ rm -f ../arch/x86/kernel/*.o
 rm -f ../arch/x86/lib/*.o
 rm -f ../arch/x86/modules/ata/*.o
 rm -f ../arch/x86/modules/kbd/*.o
+rm -f ../arch/x86/modules/pit/*.o
+rm -f ../arch/x86/modules/rtc/*.o
 rm -f ../arch/x86/modules/vga/*.o
 rm -f ../bin/*.o
 rm -f ../kernel/*.o

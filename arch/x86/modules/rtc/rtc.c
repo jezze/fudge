@@ -5,7 +5,7 @@
 #include <lib/vfs.h>
 #include <arch/x86/kernel/arch.h>
 #include <arch/x86/kernel/io.h>
-#include <arch/x86/kernel/rtc.h>
+#include <arch/x86/modules/rtc/rtc.h>
 #include <kernel/vfs.h>
 
 unsigned char rtc_get(unsigned char type)

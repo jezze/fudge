@@ -92,6 +92,8 @@ void kbd_init()
     kbdDevice.toggleCtrl = 0;
     kbdDevice.toggleShift = 0;
 
+    irq_register_handler(IRQ_ROUTINE_KBD, kbd_handler);
+
     struct vfs_node *kbdNode = vfs_add_node("kbd", 0);
     kbdNode->read = kbd_read;
 
