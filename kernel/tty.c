@@ -5,10 +5,10 @@
 #include <lib/file.h>
 #include <lib/string.h>
 #include <lib/vfs.h>
-#include <kernel/elf.h>
 #include <kernel/kernel.h>
 #include <kernel/tty.h>
 #include <kernel/vfs.h>
+#include <modules/elf/elf.h>
 
 struct vfs_node *ttyVgaNode;
 struct vfs_node *ttyVgaColorNode;

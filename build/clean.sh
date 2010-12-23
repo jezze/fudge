@@ -26,5 +26,6 @@ rm -f ../arch/x86/modules/vga/*.o
 rm -f ../bin/*.o
 rm -f ../kernel/*.o
 rm -f ../lib/*.o
+rm -f ../lib/modules/elf/*.o
 rm -f ../tools/mkinitrd
 

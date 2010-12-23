@@ -1,5 +1,5 @@
 #include <lib/elf.h>
-#include <kernel/elf.h>
+#include <modules/elf/elf.h>
 
 void elf_execute(struct elf_header *header, int argc, char *argv[])
 {

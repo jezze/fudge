@@ -88,3 +88,4 @@ void rtc_init()
     file_write(devNode, devNode->length, 1, rtcNode);
 
 }
+
