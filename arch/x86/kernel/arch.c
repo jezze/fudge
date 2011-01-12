@@ -8,10 +8,8 @@
 #include <arch/x86/kernel/irq.h>
 #include <arch/x86/kernel/mmu.h>
 #include <arch/x86/kernel/syscall.h>
-#include <kernel/initrd.h>
 #include <kernel/kernel.h>
 #include <kernel/mboot.h>
-#include <kernel/vfs.h>
 
 void arch_assert(unsigned int condition, char *message, char *file, unsigned int line)
 {
@@ -59,33 +57,9 @@ static void arch_init_base()
     isr_init();
     irq_init();
     mmu_init();
+    syscall_init();
 
     isr_enable();
-
-
-}
-
-static void arch_init_syscalls()
-{
-
-    syscall_init();
-    syscall_register_handler(SYSCALL_ROUTINE_OPEN, syscall_open);
-    syscall_register_handler(SYSCALL_ROUTINE_REBOOT, syscall_reboot);
-    syscall_register_handler(SYSCALL_ROUTINE_EXECUTE, syscall_execute);
-    syscall_register_handler(SYSCALL_ROUTINE_LOAD, syscall_load);
-    syscall_register_handler(SYSCALL_ROUTINE_UNLOAD, syscall_unload);
-
-}
-
-static void arch_init_vfs(struct mboot_info *header, unsigned int magic)
-{
-
-    vfs_init();
-
-    arch_assert(magic == MBOOT_MAGIC, "MBOOT_MAGIC is not correct", __FILE__, __LINE__);
-    arch_assert(header->modulesCount, "Module does not exist", __FILE__, __LINE__);
-
-    initrd_init(*((unsigned int *)header->modulesAddresses));
 
 }
 
@@ -93,9 +67,11 @@ void arch_init(struct mboot_info *header, unsigned int magic)
 {
 
     arch_init_base();
-    arch_init_syscalls();
-    arch_init_vfs(header, magic);
 
+    arch_assert(magic == MBOOT_MAGIC, "MBOOT_MAGIC is not correct", __FILE__, __LINE__);
+    arch_assert(header->modulesCount, "Module does not exist", __FILE__, __LINE__);
+
+    kernel_set_initrd(*(unsigned int *)header->modulesAddresses);
     kernel_init();
 
 }
