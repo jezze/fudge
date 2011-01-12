@@ -6,10 +6,10 @@
 #include <arch/x86/kernel/idt.h>
 #include <arch/x86/kernel/isr.h>
 #include <arch/x86/kernel/irq.h>
+#include <arch/x86/kernel/mboot.h>
 #include <arch/x86/kernel/mmu.h>
 #include <arch/x86/kernel/syscall.h>
 #include <kernel/kernel.h>
-#include <kernel/mboot.h>
 
 void arch_assert(unsigned int condition, char *message, char *file, unsigned int line)
 {
