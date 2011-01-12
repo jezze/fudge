@@ -1,3 +1,4 @@
+#include <lib/cbuffer.h>
 #include <lib/call.h>
 #include <lib/file.h>
 #include <lib/memory.h>
@@ -5,6 +6,12 @@
 #include <lib/vfs.h>
 #include <kernel/vfs.h>
 #include <kernel/dev.h>
+#include <arch/x86/kernel/io.h>
+#include <arch/x86/modules/pit/pit.h>
+#include <arch/x86/modules/rtc/rtc.h>
+#include <arch/x86/modules/ata/ata.h>
+#include <arch/x86/modules/kbd/kbd.h>
+#include <arch/x86/modules/vga/vga.h>
 
 struct vfs_node *devEntries[32];
 
@@ -28,6 +35,18 @@ static unsigned int dev_node_write(struct vfs_node *node, unsigned int offset, u
 
 }
 
+static void dev_init_devices()
+{
+
+    io_init();
+    vga_init();
+    pit_init();
+    kbd_init();
+    rtc_init();
+    ata_init();
+
+}
+
 void dev_init()
 {
 
@@ -37,6 +56,8 @@ void dev_init()
 
     struct vfs_node *root = call_open("/");
     file_write(root, root->length, 1, node);
+
+    dev_init_devices();
 
 }
 
