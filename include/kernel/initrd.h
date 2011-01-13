@@ -18,7 +18,7 @@ struct initrd_file_header
 
 };
 
-extern void initrd_init(unsigned int location);
+extern void initrd_init(struct initrd_header *header);
 
 #endif
 
