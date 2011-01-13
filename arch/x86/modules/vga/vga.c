@@ -19,7 +19,7 @@ static unsigned int vga_fb_read(struct vfs_node *node, unsigned int offset, unsi
     {
 
         if (i == VGA_FB_SIZE)
-            return j - 1;
+            return j;
 
         memory_copy(buffer + j, (void *)(VGA_FB_ADDRESS + i * 2), 1);
 
@@ -39,7 +39,7 @@ static unsigned int vga_fb_write(struct vfs_node *node, unsigned int offset, uns
     {
 
         if (i == VGA_FB_SIZE)
-            return j - 1;
+            return j;
 
         memory_copy((void *)(VGA_FB_ADDRESS + i * 2), buffer + j, 1);
         memory_set((void *)(VGA_FB_ADDRESS + i * 2 + 1), vgaFbColor, 1);
