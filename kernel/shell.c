@@ -34,11 +34,42 @@ static void shell_call(struct vfs_node *node, int argc, char *argv[])
 
 }
 
+static void change_stdout(char *file)
+{
+
+    struct vfs_node *fileNode = call_open(file);
+
+    if (!fileNode)
+        return;
+
+    struct vfs_node *stdoutNode = call_open("/dev/stdout");
+    stdoutNode->write = fileNode->write;
+
+}
+
 static void shell_interpret(char *command)
 {
 
     char *argv[32];
-    int argc = string_split(argv, command, ' ');
+    unsigned int argc = string_split(argv, command, ' ');
+
+    unsigned int i;
+
+    for (i = 0; i < argc; i++)
+        string_trim(argv[i], ' ');
+
+    for (i = 0; i < argc; i++)
+    {
+
+        if (argv[i][0] == '>')
+        {
+
+            change_stdout(argv[i + 1]);
+            argc = i;
+
+         }
+
+    }
 
     if (argc)
     {
@@ -58,6 +89,8 @@ static void shell_interpret(char *command)
         }
 
     }
+
+    change_stdout("/dev/tty");
 
     shell_clear();
 
