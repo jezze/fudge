@@ -53,26 +53,25 @@ static void shell_interpret(char *command)
     char *argv[32];
     unsigned int argc = string_split(argv, command, ' ');
 
-    unsigned int i;
-
-    for (i = 0; i < argc; i++)
-        string_trim(argv[i], ' ');
-
-    for (i = 0; i < argc; i++)
-    {
-
-        if (argv[i][0] == '>')
-        {
-
-            change_stdout(argv[i + 1]);
-            argc = i;
-
-         }
-
-    }
-
     if (argc)
     {
+
+        unsigned int i;
+
+        for (i = 0; i < argc; i++)
+        {
+
+            string_trim(argv[i], ' ');
+
+            if (argv[i][0] == '>')
+            {
+
+                change_stdout(argv[i + 1]);
+                argc = i;
+
+            }
+
+        }
 
         struct vfs_node *initrd = call_open("/initrd");
         struct vfs_node *node = file_find(initrd, argv[0]);

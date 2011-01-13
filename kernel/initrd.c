@@ -22,7 +22,24 @@ static unsigned int initrd_file_read(struct vfs_node *node, unsigned int offset,
     if (offset + count > header.length)
         count = header.length - offset;
 
-    memory_copy(buffer, (unsigned char*)(header.offset + offset), count);
+    memory_copy(buffer, (unsigned char *)(header.offset + offset), count);
+
+    return count;
+
+}
+
+static unsigned int initrd_file_write(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    struct initrd_file_header header = initrdFileHeaders[node->inode];
+
+    if (offset > header.length)
+        return 0;
+
+    if (offset + count > header.length)
+        count = header.length - offset;
+
+    memory_copy((unsigned char *)(header.offset + offset), buffer, count);
 
     return count;
 
@@ -67,6 +84,7 @@ void initrd_init(struct initrd_header *header)
         struct vfs_node *initrdFileNode = vfs_add_node(initrdFileHeaders[i].name, initrdFileHeaders[i].length);
         initrdFileNode->inode = i;
         initrdFileNode->read = initrd_file_read;
+        initrdFileNode->write = initrd_file_write;
 
         file_write(initrdNode, initrdNode->length, 1, initrdFileNode);
 
