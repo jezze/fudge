@@ -27,7 +27,12 @@ struct vfs_node *file_find(struct vfs_node *node, char *path)
     for (i = 0; (current = file_walk(node, i)); i++)
     {
 
-        if (!memory_compare(path, current->name, index))
+        unsigned int count = string_length(current->name);
+
+        if (index > count)
+            count = index;
+
+        if (!memory_compare(path, current->name, count))
             return (index == length) ? current : file_find(current, path + index + 1);
 
     }
