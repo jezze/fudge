@@ -23,7 +23,7 @@ struct vfs_node *session_get_in()
 {
 
     if (!sessionIn)
-        sessionIn = call_open("/dev/kbd");
+        sessionIn = call_open("/dev/stdin");
 
     return sessionIn;
 
@@ -33,7 +33,7 @@ struct vfs_node *session_get_out()
 {
 
     if (!sessionOut)
-        sessionOut = call_open("/dev/tty");
+        sessionOut = call_open("/dev/stdout");
 
     return sessionOut;
 

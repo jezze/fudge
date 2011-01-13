@@ -50,14 +50,29 @@ static void dev_init_devices()
 void dev_init()
 {
 
-    struct vfs_node *node = vfs_add_node("dev", 0);
-    node->walk = dev_node_walk;
-    node->write = dev_node_write;
+    struct vfs_node *devNode = vfs_add_node("dev", 0);
+    devNode->walk = dev_node_walk;
+    devNode->write = dev_node_write;
 
     struct vfs_node *root = call_open("/");
-    file_write(root, root->length, 1, node);
+    file_write(root, root->length, 1, devNode);
 
     dev_init_devices();
+
+    struct vfs_node *kbdNode = call_open("/dev/kbd");
+    struct vfs_node *ttyNode = call_open("/dev/tty");
+
+    struct vfs_node *stdinNode = vfs_add_node("stdin", kbdNode->length);
+    stdinNode->read = kbdNode->read;
+    file_write(devNode, devNode->length, 1, stdinNode);
+
+    struct vfs_node *stdoutNode = vfs_add_node("stdout", ttyNode->length);
+    stdoutNode->write = ttyNode->write;
+    file_write(devNode, devNode->length, 1, stdoutNode);
+
+    struct vfs_node *stderrNode = vfs_add_node("stderr", ttyNode->length);
+    stderrNode->write = ttyNode->write;
+    file_write(devNode, devNode->length, 1, stderrNode);
 
 }
 
