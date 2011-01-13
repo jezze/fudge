@@ -6,9 +6,9 @@
 #include <lib/string.h>
 #include <lib/vfs.h>
 #include <kernel/kernel.h>
-#include <kernel/tty.h>
 #include <kernel/vfs.h>
 #include <modules/elf/elf.h>
+#include <modules/tty//tty.h>
 
 struct vfs_node *ttyVgaNode;
 struct vfs_node *ttyVgaColorNode;

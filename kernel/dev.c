@@ -12,6 +12,7 @@
 #include <arch/x86/modules/ata/ata.h>
 #include <arch/x86/modules/kbd/kbd.h>
 #include <arch/x86/modules/vga/vga.h>
+#include <modules/tty/tty.h>
 
 struct vfs_node *devEntries[32];
 
@@ -44,6 +45,7 @@ static void dev_init_devices()
     kbd_init();
     rtc_init();
     ata_init();
+    tty_init();
 
 }
 
