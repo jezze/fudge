@@ -5,12 +5,12 @@
 #include <kernel/tty.h>
 #include <kernel/vfs.h>
 
-unsigned int kernelInitrdAddress;
+unsigned int *kernelInitrd;
 
-void kernel_set_initrd(unsigned int initrdAddress)
+void kernel_set_initrd(unsigned int *initrd)
 {
 
-    kernelInitrdAddress = initrdAddress;
+    kernelInitrd = initrd;
 
 }
 
@@ -18,7 +18,7 @@ void kernel_init()
 {
 
     vfs_init();
-    initrd_init(kernelInitrdAddress);
+    initrd_init(*kernelInitrd);
     dev_init();
     tty_init();
     shell_init();

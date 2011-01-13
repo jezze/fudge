@@ -71,7 +71,7 @@ void arch_init(struct mboot_info *header, unsigned int magic)
     arch_assert(magic == MBOOT_MAGIC, "MBOOT_MAGIC is not correct", __FILE__, __LINE__);
     arch_assert(header->modulesCount, "Module does not exist", __FILE__, __LINE__);
 
-    kernel_set_initrd(*(unsigned int *)header->modulesAddresses);
+    kernel_set_initrd((unsigned int *)header->modulesAddresses);
     kernel_init();
 
 }
