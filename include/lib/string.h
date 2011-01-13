@@ -8,6 +8,9 @@ extern unsigned int string_index(const char *in, char value);
 extern unsigned int string_length(const char *in);
 extern char *string_replace(char *out, char value1, char value2);
 extern unsigned int string_split(char *out[], char *in, char value);
+extern char *string_triml(char *in, char c);
+extern char *string_trimr(char *in, char c);
+extern char *string_trim(char *in, char c);
 
 #endif
 
