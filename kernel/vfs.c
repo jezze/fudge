@@ -20,10 +20,7 @@ struct vfs_node *vfs_get_root(struct vfs_node *node, unsigned int index)
 static struct vfs_node *vfs_node_walk(struct vfs_node *node, unsigned int index)
 {
 
-    if (index < node->length)
-        return vfsRootEntries[index];
-    else
-        return 0;
+    return (index < node->length) ? vfsRootEntries[index] : 0;
 
 }
 

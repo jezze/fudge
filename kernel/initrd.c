@@ -48,10 +48,7 @@ static unsigned int initrd_file_write(struct vfs_node *node, unsigned int offset
 static struct vfs_node *initrd_node_walk(struct vfs_node *node, unsigned int index)
 {
 
-    if (index < node->length)
-        return initrdEntries[index];
-    else
-        return 0;
+    return (index < node->length) ? initrdEntries[index] : 0;
 
 }
 

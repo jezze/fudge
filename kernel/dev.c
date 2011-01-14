@@ -17,10 +17,7 @@ struct vfs_node *devEntries[32];
 static struct vfs_node *dev_node_walk(struct vfs_node *node, unsigned int index)
 {
 
-    if (index < node->length)
-        return devEntries[index];
-    else
-        return 0;
+    return (index < node->length) ? devEntries[index] : 0;
 
 }
 

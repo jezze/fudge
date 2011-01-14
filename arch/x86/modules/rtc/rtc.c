@@ -12,6 +12,7 @@ unsigned char rtc_get(unsigned char type)
 {
 
     io_outb(RTC_PORT_WRITE, type);
+
     return io_inb(RTC_PORT_READ);
 
 }
