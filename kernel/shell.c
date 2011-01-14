@@ -27,8 +27,13 @@ static void shell_call(struct vfs_node *node, int argc, char *argv[])
 
     unsigned int start = call_load((unsigned int)buffer);
 
-    void (*func)(int argc, char *argv[]) = (void (*)(int argc, char *argv[]))start;
-    func(argc, argv);
+    if (start)
+    {
+
+        void (*func)(int argc, char *argv[]) = (void (*)(int argc, char *argv[]))start;
+        func(argc, argv);
+
+    }
 
     call_unload();
 
