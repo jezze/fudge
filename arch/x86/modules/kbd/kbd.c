@@ -1,6 +1,5 @@
 #include <lib/call.h>
 #include <lib/file.h>
-#include <lib/cbuffer.h>
 #include <lib/memory.h>
 #include <lib/string.h>
 #include <lib/vfs.h>
@@ -36,6 +35,36 @@ char kbdMapUpperUS[128] =
 
 struct kbd_device kbdDevice;
 
+void kbd_cbuffer_write(struct kbd_device *device, char c)
+{
+
+    if ((device->bufferHead + 1) % KBD_BUFFER_SIZE != device->bufferTail)
+    {
+
+        device->buffer[device->bufferHead] = c;
+        device->bufferHead = (device->bufferHead + 1) % KBD_BUFFER_SIZE;
+
+    }
+
+}
+
+char kbd_cbuffer_read(struct kbd_device *device)
+{
+
+    if (device->bufferHead != device->bufferTail)
+    {
+
+        char c = device->buffer[device->bufferTail];
+        device->bufferTail = (device->bufferTail + 1) % KBD_BUFFER_SIZE;
+
+        return c;
+
+    }
+
+    return 0;
+
+}
+
 void kbd_handler(struct isr_registers *registers)
 {
 
@@ -59,9 +88,9 @@ void kbd_handler(struct isr_registers *registers)
 
         // Make codes
         if (kbdDevice.toggleShift)
-            cbuffer_write(&kbdDevice.cbuffer, kbdMapUpperUS[scancode]);
+            kbd_cbuffer_write(&kbdDevice, kbdMapUpperUS[scancode]);
         else
-            cbuffer_write(&kbdDevice.cbuffer, kbdMapLowerUS[scancode]);
+            kbd_cbuffer_write(&kbdDevice, kbdMapLowerUS[scancode]);
 
     }
 
@@ -70,7 +99,7 @@ void kbd_handler(struct isr_registers *registers)
 static unsigned int kbd_read(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    char c = cbuffer_read(&kbdDevice.cbuffer);
+    char c = kbd_cbuffer_read(&kbdDevice);
 
     if (c)
     {
@@ -88,7 +117,8 @@ static unsigned int kbd_read(struct vfs_node *node, unsigned int offset, unsigne
 void kbd_init()
 {
 
-    cbuffer_init(&kbdDevice.cbuffer, kbdDevice.buffer, KBD_BUFFER_SIZE);
+    kbdDevice.bufferHead = 0;
+    kbdDevice.bufferTail = 0;
     kbdDevice.toggleAlt = 0;
     kbdDevice.toggleCtrl = 0;
     kbdDevice.toggleShift = 0;

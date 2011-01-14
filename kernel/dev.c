@@ -1,4 +1,3 @@
-#include <lib/cbuffer.h>
 #include <lib/call.h>
 #include <lib/file.h>
 #include <lib/vfs.h>
