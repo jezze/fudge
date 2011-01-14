@@ -63,7 +63,7 @@ static void shell_interpret(char *command)
 
             string_trim(argv[i], ' ');
 
-            if (argv[i][0] == '>')
+            if (!string_compare(argv[i], ">"))
             {
 
                 change_stdout(argv[i + 1]);
@@ -77,7 +77,11 @@ static void shell_interpret(char *command)
         struct vfs_node *node = file_find(initrd, argv[0]);
 
         if (node)
+        {
+
             shell_call(node, argc, argv);
+
+        }
 
         else
         {
