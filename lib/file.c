@@ -7,7 +7,7 @@
 void file_close(struct vfs_node *node)
 {
 
-    if (node->close)
+    if (node && node->close)
         return node->close(node);
 
 }
@@ -44,7 +44,7 @@ struct vfs_node *file_find(struct vfs_node *node, char *path)
 void file_open(struct vfs_node *node)
 {
 
-    if (node->open)
+    if (node && node->open)
         return node->open(node);
 
 }
@@ -52,7 +52,7 @@ void file_open(struct vfs_node *node)
 unsigned int file_read(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    return (node->read) ? node->read(node, offset, count, buffer) : 0;
+    return (node && node->read) ? node->read(node, offset, count, buffer) : 0;
 
 }
 
@@ -66,14 +66,14 @@ unsigned int file_read_byte(struct vfs_node *node, char c)
 struct vfs_node *file_walk(struct vfs_node *node, unsigned int index)
 {
 
-    return (node->walk) ? node->walk(node, index) : 0;
+    return (node && node->walk) ? node->walk(node, index) : 0;
 
 }
 
 unsigned int file_write(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    return (node->write) ? node->write(node, offset, count, buffer) : 0;
+    return (node && node->write) ? node->write(node, offset, count, buffer) : 0;
 
 }
 
@@ -124,9 +124,6 @@ unsigned int file_write_num(struct vfs_node *node, unsigned int num, unsigned in
 
 unsigned int file_write_string(struct vfs_node *node, char *buffer)
 {
-
-    if (!node)
-        return 0;
 
     return file_write(node, 0, string_length(buffer), buffer);
 
