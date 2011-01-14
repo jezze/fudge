@@ -1,6 +1,5 @@
 #include <lib/call.h>
 #include <lib/memory.h>
-#include <lib/stack.h>
 #include <lib/file.h>
 #include <lib/session.h>
 #include <lib/string.h>
@@ -9,13 +8,50 @@
 #include <kernel/shell.h>
 
 char shellBuffer[SHELL_BUFFER_SIZE];
-struct stack shellStack;
+unsigned int shellBufferHead;
+
+void shell_stack_push(char c)
+{
+
+    if (shellBufferHead < SHELL_BUFFER_SIZE)
+    {
+
+        shellBuffer[shellBufferHead] = c;
+        shellBufferHead++;
+
+    }
+
+}
+
+char shell_stack_pop()
+{
+
+    if (shellBufferHead > 0)
+    {
+
+        char c = shellBuffer[shellBufferHead - 1];
+        shellBufferHead--;
+
+        return c;
+
+    }
+
+    return 0;
+
+}
+
+void shell_stack_clear()
+{
+
+    shellBufferHead = 0;
+
+}
 
 static void shell_clear()
 {
 
     file_write_string(session_get_out(), "fudge:/$ ");
-    stack_clear(&shellStack);
+    shell_stack_clear();
 
 }
 
@@ -116,7 +152,7 @@ static void shell_handle_input(char c)
 
         case '\b':
 
-            if (stack_pop(&shellStack))
+            if (shell_stack_pop())
             {
 
                 file_write_byte(session_get_out(), '\b');
@@ -129,7 +165,7 @@ static void shell_handle_input(char c)
 
         case '\n':
 
-            stack_push(&shellStack, '\0');
+            shell_stack_push('\0');
             file_write_byte(session_get_out(), c);
             shell_interpret(shellBuffer);
 
@@ -137,7 +173,7 @@ static void shell_handle_input(char c)
 
         default:
 
-            stack_push(&shellStack, c);
+            shell_stack_push(c);
             file_write_byte(session_get_out(), c);
 
             break;
@@ -165,7 +201,7 @@ static void shell_poll()
 void shell_init()
 {
 
-    stack_init(&shellStack, shellBuffer, SHELL_BUFFER_SIZE);
+    shellBufferHead = 0;
 
     file_write_string(session_get_out(), "Fudge\n");
     file_write_string(session_get_out(), "-----\n");

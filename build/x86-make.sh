@@ -51,7 +51,6 @@ $GCC $GCCFLAGS $DIR_SOURCE_ARCH_MODULES/vga/vga.c -o $DIR_SOURCE_ARCH_MODULES/vg
 $GCC $GCCFLAGS $DIR_SOURCE_LIB/file.c -o $DIR_SOURCE_LIB/file.o
 $GCC $GCCFLAGS $DIR_SOURCE_LIB/memory.c -o $DIR_SOURCE_LIB/memory.o
 $GCC $GCCFLAGS $DIR_SOURCE_LIB/session.c -o $DIR_SOURCE_LIB/session.o
-$GCC $GCCFLAGS $DIR_SOURCE_LIB/stack.c -o $DIR_SOURCE_LIB/stack.o
 $GCC $GCCFLAGS $DIR_SOURCE_LIB/string.c -o $DIR_SOURCE_LIB/string.o
 $ASM $ASMFLAGS $DIR_SOURCE_ARCH_LIB/calls.s -o $DIR_SOURCE_ARCH_LIB/calls.o
 
@@ -88,7 +87,6 @@ $LD $LDFLAGS \
     $DIR_SOURCE_LIB/memory.o \
     $DIR_SOURCE_LIB/file.o \
     $DIR_SOURCE_LIB/session.o \
-    $DIR_SOURCE_LIB/stack.o \
     $DIR_SOURCE_LIB/string.o \
     $DIR_SOURCE_ARCH_LIB/calls.o \
     -o root/boot/kernel

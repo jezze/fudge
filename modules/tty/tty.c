@@ -1,7 +1,6 @@
 #include <lib/call.h>
 #include <lib/elf.h>
 #include <lib/memory.h>
-#include <lib/stack.h>
 #include <lib/file.h>
 #include <lib/string.h>
 #include <lib/vfs.h>
