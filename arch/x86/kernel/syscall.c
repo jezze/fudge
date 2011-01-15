@@ -30,21 +30,14 @@ void syscall_unregister_handler(unsigned char index)
 
 }
 
-void syscall_open(struct syscall_registers *registers)
+static void syscall_open(struct syscall_registers *registers)
 {
 
     registers->eax = (unsigned int)file_find(vfs_get_root(), (char *)registers->esi + 1);
 
 }
 
-void syscall_reboot(struct syscall_registers *registers)
-{
-
-    arch_reboot();
-
-}
-
-void syscall_load(struct syscall_registers *registers)
+static void syscall_execute(struct syscall_registers *registers)
 {
 
     unsigned int address = registers->ebx;
@@ -77,28 +70,21 @@ void syscall_load(struct syscall_registers *registers)
 
     mmu_set_directory(&syscallProgramDirectory);
 
-    registers->eax = header->entry;
+    void (*func)(int argc, char **argv) = (void (*)(int argc, char **argv))header->entry;
 
-}
-
-void syscall_execute(struct syscall_registers *registers)
-{
-
-    int argc = (int)registers->ecx;
-    char **argv = (char **)registers->esi;
-
-    void (*func)(int argc, char **argv) = (void (*)(int argc, char **argv))registers->ebx;
-
-    func(argc, argv);
-
-}
-
-void syscall_unload(struct syscall_registers *registers)
-{
+    func(registers->ecx, (char **)registers->esi);
 
     mmu_default_directory();
 
 }
+
+static void syscall_reboot(struct syscall_registers *registers)
+{
+
+    arch_reboot();
+
+}
+
 
 void syscall_handler(struct syscall_registers *registers)
 {
@@ -114,10 +100,8 @@ void syscall_init()
 {
 
     syscall_register_handler(SYSCALL_ROUTINE_OPEN, syscall_open);
-    syscall_register_handler(SYSCALL_ROUTINE_REBOOT, syscall_reboot);
     syscall_register_handler(SYSCALL_ROUTINE_EXECUTE, syscall_execute);
-    syscall_register_handler(SYSCALL_ROUTINE_LOAD, syscall_load);
-    syscall_register_handler(SYSCALL_ROUTINE_UNLOAD, syscall_unload);
+    syscall_register_handler(SYSCALL_ROUTINE_REBOOT, syscall_reboot);
 
 }
 
