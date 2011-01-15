@@ -44,8 +44,8 @@ void mmu_handler(struct isr_registers *registers)
 void mmu_map(struct mmu_directory *directory, unsigned int virtualAddress, unsigned int physicalAddress, unsigned int size, unsigned int flags)
 {
 
-    unsigned int i = virtualAddress / 4096;
-    unsigned int count = (size % 4096) ? (size / 4096) + 4096 : (size / 4096);
+    unsigned int i = virtualAddress / MMU_PAGE_SIZE;
+    unsigned int count = (size % MMU_PAGE_SIZE) ? (size / MMU_PAGE_SIZE) + MMU_PAGE_SIZE : (size / MMU_PAGE_SIZE);
 
     for (; count; count--)
     {
@@ -108,13 +108,18 @@ static void mmu_init_kernel_directory()
 {
 
     mmu_clear_directory(&mmuKernelDirectory);
-    mmu_clear_table(&mmuKernelTables[0]);
-    mmu_clear_table(&mmuKernelTables[1]);
 
-    mmu_add_table(&mmuKernelDirectory, 0, &mmuKernelTables[0], MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE);
-    mmu_add_table(&mmuKernelDirectory, 1, &mmuKernelTables[1], MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE);
+    unsigned int i;
 
-    mmu_map(&mmuKernelDirectory, 0x00000000, 0x00000000, 0x00800000, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE);
+    for (i = 0; i < 2; i++)
+    {
+
+        mmu_clear_table(&mmuKernelTables[i]);
+        mmu_add_table(&mmuKernelDirectory, i, &mmuKernelTables[i], MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE);
+
+    }
+
+    mmu_map(&mmuKernelDirectory, 0x00000000, 0x00000000, 2 * 0x00400000, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE);
 
 }
 
