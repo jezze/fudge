@@ -26,17 +26,7 @@ void shell_stack_push(char c)
 char shell_stack_pop()
 {
 
-    if (shellBufferHead > 0)
-    {
-
-        char c = shellBuffer[shellBufferHead - 1];
-        shellBufferHead--;
-
-        return c;
-
-    }
-
-    return 0;
+    return (shellBufferHead > 0) ? shellBuffer[shellBufferHead--] : 0;
 
 }
 
