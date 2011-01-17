@@ -17,8 +17,8 @@ $GCC $GCCFLAGS $DIR_KERNEL/kernel.c -o $DIR_KERNEL/kernel.o
 $GCC $GCCFLAGS $DIR_KERNEL/vfs.c -o $DIR_KERNEL/vfs.o
 $GCC $GCCFLAGS $DIR_ARCH_KERNEL/arch.c -o $DIR_ARCH_KERNEL/arch.o
 $ASM $ASMFLAGS $DIR_ARCH_KERNEL/init.s -o $DIR_ARCH_KERNEL/init.o
-$GCC $GCCFLAGS $DIR_LIB/memory.c -o $DIR_LIB/memory.o
 $GCC $GCCFLAGS $DIR_LIB/file.c -o $DIR_LIB/file.o
+$GCC $GCCFLAGS $DIR_LIB/memory.c -o $DIR_LIB/memory.o
 $GCC $GCCFLAGS $DIR_LIB/string.c -o $DIR_LIB/string.o
 $GCC $GCCFLAGS $DIR_ARCH_LIB/call.c -o $DIR_ARCH_LIB/call.o
 
