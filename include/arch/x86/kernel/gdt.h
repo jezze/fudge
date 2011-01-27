@@ -62,5 +62,7 @@ extern void tss_flush();
 extern void gdt_set_gate(unsigned char index, unsigned int base, unsigned int limit, unsigned char access, unsigned char granularity);
 extern void gdt_init();
 
+extern void usermode_init();
+
 #endif
 
