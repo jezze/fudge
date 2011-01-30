@@ -48,16 +48,16 @@ void isr_init()
 
     idt_set_gate(ISR_ROUTINE_DIVIDEBYZERO, (unsigned int)isr00, 0x08, 0x8E);
     idt_set_gate(ISR_ROUTINE_DEBUG, (unsigned int)isr01, 0x08, 0x8E);
-    idt_set_gate(ISR_ROUTINE_NONMASKABLE, (unsigned int)isr02, 0x08, 0x8E);
+    idt_set_gate(ISR_ROUTINE_NONMASKABLEINTERRUPT, (unsigned int)isr02, 0x08, 0x8E);
     idt_set_gate(ISR_ROUTINE_BREAKPOINT, (unsigned int)isr03, 0x08, 0x8E);
     idt_set_gate(ISR_ROUTINE_INTODETECTED, (unsigned int)isr04, 0x08, 0x8E);
     idt_set_gate(ISR_ROUTINE_OUTOFBOUNDS, (unsigned int)isr05, 0x08, 0x8E);
-    idt_set_gate(ISR_ROUTINE_OPCODE, (unsigned int)isr06, 0x08, 0x8E);
+    idt_set_gate(ISR_ROUTINE_INVALIDOPCODE, (unsigned int)isr06, 0x08, 0x8E);
     idt_set_gate(ISR_ROUTINE_NOCOPROCESSOR, (unsigned int)isr07, 0x08, 0x8E);
     idt_set_gate(ISR_ROUTINE_DOUBLEFAULT, (unsigned int)isr08, 0x08, 0x8E);
-    idt_set_gate(ISR_ROUTINE_COPROSSESSORSEGMENTOVERRUN, (unsigned int)isr09, 0x08, 0x8E);
+    idt_set_gate(ISR_ROUTINE_COPROCESSORSEGMENTOVERRUN, (unsigned int)isr09, 0x08, 0x8E);
     idt_set_gate(ISR_ROUTINE_TSS, (unsigned int)isr0A, 0x08, 0x8E);
-    idt_set_gate(ISR_ROUTINE_NOSEGMENTNOTPRESENT, (unsigned int)isr0B, 0x08, 0x8E);
+    idt_set_gate(ISR_ROUTINE_NOSEGMENT, (unsigned int)isr0B, 0x08, 0x8E);
     idt_set_gate(ISR_ROUTINE_STACKFAULT, (unsigned int)isr0C, 0x08, 0x8E);
     idt_set_gate(ISR_ROUTINE_GENERALPROTECTIONFAULT, (unsigned int)isr0D, 0x08, 0x8E);
     idt_set_gate(ISR_ROUTINE_PAGEFAULT, (unsigned int)isr0E, 0x08, 0x8E);
