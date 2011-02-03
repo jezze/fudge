@@ -83,6 +83,13 @@ struct mmu_directory *mmu_get_kernel_directory()
 
 }
 
+struct mmu_table *mmu_get_kernel_table()
+{
+
+    return &mmuKernelTable;
+
+}
+
 struct mmu_table *mmu_get_program_table()
 {
 
