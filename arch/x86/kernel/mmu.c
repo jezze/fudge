@@ -97,6 +97,13 @@ struct mmu_table *mmu_get_program_table()
 
 }
 
+unsigned int mmu_get_physical_address(struct mmu_directory *directory, unsigned int virtualAddress)
+{
+
+    return directory->tables[virtualAddress / MMU_TABLE_SIZE]->entries[virtualAddress % MMU_PAGE_SIZE];
+
+}
+
 void mmu_clear_directory(struct mmu_directory *directory)
 {
 
