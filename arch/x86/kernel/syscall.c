@@ -13,9 +13,6 @@
 
 void *syscallRoutines[SYSCALL_ROUTINES_SIZE];
 
-struct mmu_directory syscallProgramDirectory;
-struct mmu_table syscallProgramTables[3];
-
 void syscall_register_handler(unsigned char index, void (*handler)(struct syscall_registers *registers))
 {
 
@@ -54,27 +51,18 @@ static void syscall_execute(struct syscall_registers *registers)
     struct elf_header *header = (struct elf_header *)address;
     struct elf_program_header *programHeader = (struct elf_program_header *)(address + header->programHeaderOffset);
 
-    mmu_clear_directory(&syscallProgramDirectory);
-    mmu_clear_table(&syscallProgramTables[0]);
-    mmu_clear_table(&syscallProgramTables[1]);
-    mmu_clear_table(&syscallProgramTables[2]);
-
     unsigned int index = (programHeader->virtualAddress / MMU_PAGE_SIZE) / MMU_DIRECTORY_SIZE;
 
-    mmu_add_table(&syscallProgramDirectory, 0, &syscallProgramTables[0], MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE);
-    mmu_add_table(&syscallProgramDirectory, index, &syscallProgramTables[1], MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE);
-    mmu_add_table(&syscallProgramDirectory, index + 1, &syscallProgramTables[2], MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE);
+    struct mmu_directory *kernelDirectory = mmu_get_kernel_directory();
+    struct mmu_table *programTable = mmu_get_program_table();
 
-    mmu_map(&syscallProgramDirectory, 0x00000000, 0x00000000, 0x00400000, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);
-    mmu_map(&syscallProgramDirectory, programHeader->virtualAddress, address, programHeader->memorySize, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);
-
-    mmu_set_directory(&syscallProgramDirectory);
+    mmu_clear_table(programTable);
+    mmu_add_table(kernelDirectory, index, programTable, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE);
+    mmu_map(kernelDirectory, programHeader->virtualAddress, address, programHeader->memorySize, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);
 
     void (*func)(int argc, char **argv) = (void (*)(int argc, char **argv))header->entry;
 
     func(registers->ecx, (char **)registers->esi);
-
-    mmu_default_directory();
 
 }
 

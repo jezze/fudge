@@ -8,7 +8,8 @@
 #include <arch/x86/kernel/mmu.h>
 
 struct mmu_directory mmuKernelDirectory;
-struct mmu_table mmuKernelTables[2];
+struct mmu_table mmuKernelTable;
+struct mmu_table mmuProgramTable;
 
 void mmu_handler(struct isr_registers *registers)
 {
@@ -68,17 +69,24 @@ void mmu_set_directory(struct mmu_directory *directory)
 
 }
 
-void mmu_default_directory()
-{
-
-    mmu_set_directory(&mmuKernelDirectory);
-
-}
-
 void mmu_enable()
 {
 
     cr0_write(cr0_read() | 0x80000000);
+
+}
+
+struct mmu_directory *mmu_get_kernel_directory()
+{
+
+    return &mmuKernelDirectory;
+
+}
+
+struct mmu_table *mmu_get_program_table()
+{
+
+    return &mmuProgramTable;
 
 }
 
@@ -107,18 +115,9 @@ static void mmu_init_kernel_directory()
 {
 
     mmu_clear_directory(&mmuKernelDirectory);
-
-    unsigned int i;
-
-    for (i = 0; i < 2; i++)
-    {
-
-        mmu_clear_table(&mmuKernelTables[i]);
-        mmu_add_table(&mmuKernelDirectory, i, &mmuKernelTables[i], MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE);
-
-    }
-
-    mmu_map(&mmuKernelDirectory, 0x00000000, 0x00000000, 2 * 0x00400000, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE);
+    mmu_clear_table(&mmuKernelTable);
+    mmu_add_table(&mmuKernelDirectory, 0, &mmuKernelTable, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE);
+    mmu_map(&mmuKernelDirectory, 0x00000000, 0x00000000, 0x00400000, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE);
 
 }
 
