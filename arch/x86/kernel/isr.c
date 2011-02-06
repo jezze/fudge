@@ -38,6 +38,7 @@ void isr_handler(struct isr_registers *registers)
 
         file_write_string(session_get_out(), "Unhandled interrupt: 0x");
         file_write_hex(session_get_out(), registers->int_no);
+        for(;;);
 
     }
 

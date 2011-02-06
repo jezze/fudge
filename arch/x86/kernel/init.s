@@ -30,5 +30,6 @@ init:
 section .bss
 align 4
 
+global init_stack
 init_stack:
     resb INIT_STACK_SIZE

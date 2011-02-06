@@ -1,3 +1,5 @@
+extern shell_init
+
 global gdt_flush
 gdt_flush:
     mov eax, [esp + 4]
@@ -19,8 +21,8 @@ tss_flush:
     ltr ax
     ret
 
-global usermode_init
-usermode_init:
+global gdt_usermode_init
+gdt_usermode_init:
     cli
     mov ax, 0x23
     mov ds, ax
@@ -35,9 +37,6 @@ usermode_init:
     or eax, 0x200
     push eax
     push 0x1B
-    push usermode_next
+    push shell_init
     iret
 
-usermode_next:
-    pop eax
-    jmp 0xffffffff

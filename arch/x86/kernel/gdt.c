@@ -18,7 +18,7 @@ void gdt_set_gate(unsigned char index, unsigned int base, unsigned int limit, un
 
 }
 
-void set_kernel_stack(unsigned int stack)
+void gdt_set_kernel_stack(unsigned int stack)
 {
 
     tss.esp0 = stack;
