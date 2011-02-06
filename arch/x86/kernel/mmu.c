@@ -100,7 +100,7 @@ struct mmu_table *mmu_get_program_table()
 unsigned int mmu_get_physical_address(struct mmu_directory *directory, unsigned int virtualAddress)
 {
 
-    return directory->tables[virtualAddress / MMU_TABLE_SIZE]->entries[virtualAddress % MMU_PAGE_SIZE];
+    return (directory->tables[virtualAddress / MMU_DIRECTORY_SIZE]->entries[virtualAddress % MMU_TABLE_SIZE] & 0xFFFFF000) + (~(0x00400000) & virtualAddress);
 
 }
 
