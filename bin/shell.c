@@ -1,11 +1,10 @@
-#include <call.h>
-#include <memory.h>
-#include <file.h>
-#include <session.h>
-#include <string.h>
-#include <vfs.h>
-
-#define SHELL_BUFFER_SIZE 256
+#include <lib/call.h>
+#include <lib/memory.h>
+#include <lib/file.h>
+#include <lib/session.h>
+#include <lib/string.h>
+#include <lib/vfs.h>
+#include <kernel/shell.h>
 
 char shellBuffer[SHELL_BUFFER_SIZE];
 unsigned int shellBufferHead;
@@ -26,7 +25,7 @@ void shell_stack_push(char c)
 char shell_stack_pop()
 {
 
-    return (shellBufferHead > 0) ? shellBuffer[shellBufferHead--] : 0;
+    return (shellBufferHead > 0) ? shellBuffer[--shellBufferHead] : 0;
 
 }
 
@@ -165,7 +164,7 @@ static void shell_handle_input(char c)
 static void shell_poll()
 {
 
-    char c;
+    char c = 0;
 
     for (;;)
     {
@@ -178,7 +177,7 @@ static void shell_poll()
 
 }
 
-void main(int argc, char *argv[])
+void shell_init()
 {
 
     shellBufferHead = 0;

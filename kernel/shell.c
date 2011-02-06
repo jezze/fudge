@@ -25,7 +25,7 @@ void shell_stack_push(char c)
 char shell_stack_pop()
 {
 
-    return (shellBufferHead > 0) ? shellBuffer[shellBufferHead--] : 0;
+    return (shellBufferHead > 0) ? shellBuffer[--shellBufferHead] : 0;
 
 }
 
@@ -164,7 +164,7 @@ static void shell_handle_input(char c)
 static void shell_poll()
 {
 
-    char c;
+    char c = 0;
 
     for (;;)
     {
