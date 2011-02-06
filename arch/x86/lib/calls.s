@@ -12,16 +12,14 @@ call_open:
     pop ebp
     ret
 
-global call_execute
-call_execute:
+global call_map
+call_map:
     push ebp
     mov ebp, esp
     push esi
     push edi
-    mov eax, 0x04
+    mov eax, 0x10
     mov ebx, [ebp + 8]
-    mov ecx, [ebp + 12]
-    mov esi, [ebp + 16]
     int 0x80
     pop edi
     pop esi

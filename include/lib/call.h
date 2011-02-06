@@ -4,9 +4,7 @@
 struct vfs_node;
 
 extern struct vfs_node *call_open(char *name);
-extern int call_execute(unsigned int address, int argc, char *argv[]);
-extern int call_load(unsigned int address);
-extern int call_unload();
+extern int call_map(unsigned int address);
 extern int call_halt();
 extern int call_reboot();
 

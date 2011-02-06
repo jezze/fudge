@@ -34,7 +34,7 @@ static void syscall_open(struct syscall_registers *registers)
 
 }
 
-static void syscall_execute(struct syscall_registers *registers)
+static void syscall_map(struct syscall_registers *registers)
 {
 
     unsigned int address = registers->ebx;
@@ -57,12 +57,11 @@ static void syscall_execute(struct syscall_registers *registers)
     struct mmu_table *programTable = mmu_get_program_table();
 
     mmu_clear_table(programTable);
+
     mmu_add_table(kernelDirectory, index, programTable, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE);
     mmu_map(kernelDirectory, programHeader->virtualAddress, address, programHeader->memorySize, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);
 
-    void (*func)(int argc, char **argv) = (void (*)(int argc, char **argv))header->entry;
-
-    func(registers->ecx, (char **)registers->esi);
+    registers->eax = header->entry;
 
 }
 
@@ -88,7 +87,7 @@ void syscall_init()
 {
 
     syscall_register_handler(SYSCALL_ROUTINE_OPEN, syscall_open);
-    syscall_register_handler(SYSCALL_ROUTINE_EXECUTE, syscall_execute);
+    syscall_register_handler(SYSCALL_ROUTINE_MAP, syscall_map);
     syscall_register_handler(SYSCALL_ROUTINE_REBOOT, syscall_reboot);
 
 }

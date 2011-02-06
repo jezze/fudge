@@ -2,15 +2,10 @@
 #include <lib/file.h>
 #include <lib/vfs.h>
 
-struct vfs_node *sessionIn;
-struct vfs_node *sessionLocation;
-struct vfs_node *sessionOut;
-
 struct vfs_node *session_get_location()
 {
 
-    if (!sessionLocation)
-        sessionLocation = call_open("/dev/location");
+    struct vfs_node *sessionLocation = call_open("/dev/location");
 
     char buffer[256];
     file_read(sessionLocation, 0, 256, buffer);
@@ -22,8 +17,7 @@ struct vfs_node *session_get_location()
 struct vfs_node *session_get_in()
 {
 
-    if (!sessionIn)
-        sessionIn = call_open("/dev/stdin");
+    struct vfs_node *sessionIn = call_open("/dev/stdin");
 
     return sessionIn;
 
@@ -32,8 +26,7 @@ struct vfs_node *session_get_in()
 struct vfs_node *session_get_out()
 {
 
-    if (!sessionOut)
-        sessionOut = call_open("/dev/stdout");
+    struct vfs_node *sessionOut = call_open("/dev/stdout");
 
     return sessionOut;
 
