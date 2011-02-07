@@ -1,4 +1,4 @@
-extern shell_init
+extern kernel_init_usermode
 
 global gdt_flush
 gdt_flush:
@@ -37,6 +37,6 @@ gdt_usermode_init:
     or eax, 0x200
     push eax
     push 0x1B
-    push shell_init
+    push kernel_init_usermode
     iret
 

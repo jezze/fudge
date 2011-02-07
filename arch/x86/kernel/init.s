@@ -22,6 +22,7 @@ global init
 init:
     cli
     mov esp, init_stack + INIT_STACK_SIZE
+    push esp
     push eax
     push ebx
     call arch_init

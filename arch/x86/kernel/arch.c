@@ -63,7 +63,7 @@ static void arch_init_base()
 
 }
 
-void arch_init(struct mboot_info *header, unsigned int magic)
+void arch_init(struct mboot_info *header, unsigned int magic, unsigned int stack)
 {
 
     arch_init_base();
@@ -72,7 +72,7 @@ void arch_init(struct mboot_info *header, unsigned int magic)
     arch_assert(header->modulesCount, "Module does not exist", __FILE__, __LINE__);
 
     kernel_set_initrd(*(unsigned int **)header->modulesAddresses);
-    kernel_init();
+    kernel_init(stack);
 
 }
 
