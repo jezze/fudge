@@ -60,9 +60,7 @@ extern void gdt_flush(struct gdt_ptr *pointer);
 extern void tss_flush();
 
 extern void gdt_set_gate(unsigned char index, unsigned int base, unsigned int limit, unsigned char access, unsigned char granularity);
-extern void gdt_init();
-
-extern void gdt_set_kernel_stack(unsigned int address);
+extern void gdt_init(unsigned int stack);
 extern void gdt_usermode_init();
 
 #endif

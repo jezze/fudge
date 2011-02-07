@@ -30,6 +30,8 @@ void kernel_init(unsigned int stack)
     initrd_init(kernelInitrd);
     dev_init();
 
+//    gdt_usermode_init();
+
     kernel_init_usermode();
 
     for (;;);

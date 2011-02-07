@@ -18,21 +18,14 @@ void gdt_set_gate(unsigned char index, unsigned int base, unsigned int limit, un
 
 }
 
-void gdt_set_kernel_stack(unsigned int stack)
-{
-
-    tss.esp0 = stack;
-
-}
-
-void gdt_init()
+void gdt_init(unsigned int stack)
 {
 
     memory_set(&gdt, 0, sizeof (struct gdt_entry) * GDT_TABLE_SIZE);
     memory_set(&tss, 0, sizeof (struct tss_entry));
 
     tss.ss0 = 0x10;
-    tss.esp0 = 0x00;
+    tss.esp0 = stack;
     tss.cs = 0x0B;
     tss.ss = tss.ds = tss.es = tss.fs = tss.gs = 0x13;
 
