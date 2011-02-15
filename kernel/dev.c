@@ -4,10 +4,11 @@
 #include <kernel/vfs.h>
 #include <kernel/dev.h>
 #include <arch/x86/kernel/io.h>
-#include <arch/x86/modules/pit/pit.h>
-#include <arch/x86/modules/rtc/rtc.h>
 #include <arch/x86/modules/ata/ata.h>
 #include <arch/x86/modules/kbd/kbd.h>
+#include <arch/x86/modules/pit/pit.h>
+#include <arch/x86/modules/rtc/rtc.h>
+#include <arch/x86/modules/serial/serial.h>
 #include <arch/x86/modules/vga/vga.h>
 #include <modules/tty/tty.h>
 
@@ -39,6 +40,7 @@ static void dev_init_devices()
     kbd_init();
     rtc_init();
     ata_init();
+    serial_init();
     tty_init();
 
 }
