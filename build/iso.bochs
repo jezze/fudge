@@ -1,0 +1,2 @@
+boot: cdrom
+ata0-slave: type=cdrom, path=fudge.iso, status=inserted
