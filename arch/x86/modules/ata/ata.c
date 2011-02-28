@@ -1,6 +1,6 @@
 #include <lib/file.h>
 #include <lib/session.h>
-#include <arch/x86/kernel/io.h>
+#include <arch/x86/modules/io/io.h>
 #include <arch/x86/modules/ata/ata.h>
 
 struct ata_device primaryMaster;

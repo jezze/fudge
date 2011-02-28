@@ -4,7 +4,7 @@
 #include <lib/string.h>
 #include <lib/vfs.h>
 #include <arch/x86/kernel/arch.h>
-#include <arch/x86/kernel/io.h>
+#include <arch/x86/modules/io/io.h>
 #include <arch/x86/modules/serial/serial.h>
 #include <kernel/vfs.h>
 

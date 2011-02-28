@@ -3,10 +3,10 @@
 #include <lib/memory.h>
 #include <lib/string.h>
 #include <lib/vfs.h>
-#include <arch/x86/kernel/io.h>
 #include <arch/x86/kernel/irq.h>
 #include <arch/x86/kernel/isr.h>
 #include <arch/x86/kernel/mmu.h>
+#include <arch/x86/modules/io/io.h>
 #include <arch/x86/modules/kbd/kbd.h>
 #include <kernel/vfs.h>
 

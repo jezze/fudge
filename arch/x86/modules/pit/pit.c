@@ -1,6 +1,6 @@
-#include <arch/x86/kernel/io.h>
 #include <arch/x86/kernel/irq.h>
 #include <arch/x86/kernel/isr.h>
+#include <arch/x86/modules/io/io.h>
 #include <arch/x86/modules/pit/pit.h>
 
 void pit_handler(struct isr_registers *registers)

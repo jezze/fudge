@@ -1,4 +1,4 @@
-#include <arch/x86/kernel/io.h>
+#include <arch/x86/modules/io/io.h>
 #include <arch/x86/modules/pci/pci.h>
 
 unsigned short pci_read(unsigned short bus, unsigned short slot, unsigned short func, unsigned short offset)

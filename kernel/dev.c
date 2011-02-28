@@ -3,7 +3,7 @@
 #include <lib/vfs.h>
 #include <kernel/vfs.h>
 #include <kernel/dev.h>
-#include <arch/x86/kernel/io.h>
+#include <arch/x86/modules/io/io.h>
 #include <arch/x86/modules/ata/ata.h>
 #include <arch/x86/modules/kbd/kbd.h>
 #include <arch/x86/modules/pit/pit.h>
