@@ -15,12 +15,6 @@ gdt_flush:
 gdt_flush_high:
     ret
 
-global tss_flush
-tss_flush:
-    mov ax, 0x2B
-    ltr ax
-    ret
-
 global gdt_usermode_init
 gdt_usermode_init:
     cli

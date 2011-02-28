@@ -48,10 +48,10 @@ void arch_panic(char *message, char *file, unsigned int line)
 
 }
 
-static void arch_init_base(unsigned int stack)
+static void arch_init_base()
 {
 
-    gdt_init(stack);
+    gdt_init();
     idt_init();
     fpu_init();
     isr_init();
@@ -66,7 +66,7 @@ static void arch_init_base(unsigned int stack)
 void arch_init(struct mboot_info *header, unsigned int magic, unsigned int stack)
 {
 
-    arch_init_base(stack);
+    arch_init_base();
 
     arch_assert(magic == MBOOT_MAGIC, "MBOOT_MAGIC is not correct", __FILE__, __LINE__);
     arch_assert(header->modulesCount, "Module does not exist", __FILE__, __LINE__);

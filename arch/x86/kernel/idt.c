@@ -18,11 +18,10 @@ void idt_set_gate(unsigned char index, unsigned int base, unsigned short selecto
 void idt_init()
 {
 
-    idtPointer.base = (unsigned int)&idt;
-    idtPointer.limit = (sizeof (struct idt_entry) * IDT_TABLE_SIZE) - 1;
-
     memory_set(&idt, 0, sizeof (struct idt_entry) * IDT_TABLE_SIZE);
 
+    idtPointer.base = (unsigned int)&idt;
+    idtPointer.limit = (sizeof (struct idt_entry) * IDT_TABLE_SIZE) - 1;
     idt_flush(&idtPointer);
 
 }
