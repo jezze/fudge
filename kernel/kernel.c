@@ -1,6 +1,6 @@
-#include <kernel/dev.h>
 #include <kernel/initrd.h>
 #include <kernel/kernel.h>
+#include <kernel/modules.h>
 #include <kernel/shell.h>
 #include <kernel/vfs.h>
 
@@ -28,7 +28,7 @@ void kernel_init(unsigned int stack)
 
     vfs_init();
     initrd_init(kernelInitrd);
-    dev_init();
+    modules_init();
 
 //    gdt_usermode_init();
 

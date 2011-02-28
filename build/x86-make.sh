@@ -45,9 +45,9 @@ ASMFLAGS="-f elf"
 GCC="gcc"
 GCCFLAGS="-c -O2 -I../include -Wall -Wextra -ffreestanding -nostdlib -nostartfiles -nodefaultlibs"
 
-$GCC $GCCFLAGS $DIR_SOURCE_KERNEL/dev.c -o $DIR_SOURCE_KERNEL/dev.o
 $GCC $GCCFLAGS $DIR_SOURCE_KERNEL/initrd.c -o $DIR_SOURCE_KERNEL/initrd.o
 $GCC $GCCFLAGS $DIR_SOURCE_KERNEL/kernel.c -o $DIR_SOURCE_KERNEL/kernel.o
+$GCC $GCCFLAGS $DIR_SOURCE_KERNEL/modules.c -o $DIR_SOURCE_KERNEL/modules.o
 $GCC $GCCFLAGS $DIR_SOURCE_KERNEL/shell.c -o $DIR_SOURCE_KERNEL/shell.o
 $GCC $GCCFLAGS $DIR_SOURCE_KERNEL/vfs.c -o $DIR_SOURCE_KERNEL/vfs.o
 $GCC $GCCFLAGS $DIR_SOURCE_ARCH_KERNEL/arch.c -o $DIR_SOURCE_ARCH_KERNEL/arch.o
@@ -72,9 +72,9 @@ LD="ld"
 LDFLAGS=-"T./linker-x86.ld"
 
 $LD $LDFLAGS \
-    $DIR_SOURCE_KERNEL/dev.o \
     $DIR_SOURCE_KERNEL/initrd.o \
     $DIR_SOURCE_KERNEL/kernel.o \
+    $DIR_SOURCE_KERNEL/modules.o \
     $DIR_SOURCE_KERNEL/shell.o \
     $DIR_SOURCE_KERNEL/vfs.o \
     $DIR_SOURCE_MODULES/elf/elf.o \
