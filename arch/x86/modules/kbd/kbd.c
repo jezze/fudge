@@ -80,6 +80,13 @@ static unsigned int kbd_device_write(char *buffer)
 
 }
 
+static unsigned int kbd_node_read(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    return kbdDevice.base.read(buffer);
+
+}
+
 void kbd_handler(struct isr_registers *registers)
 {
 
@@ -108,13 +115,6 @@ void kbd_handler(struct isr_registers *registers)
             kbdDevice.base.write(&kbdMapLowerUS[scancode]);
 
     }
-
-}
-
-static unsigned int kbd_node_read(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
-{
-
-    return kbd_device_read(buffer);
 
 }
 
