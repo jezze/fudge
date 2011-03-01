@@ -2,14 +2,14 @@
 #include <lib/elf.h>
 #include <lib/file.h>
 #include <lib/vfs.h>
+#include <kernel/kernel.h>
+#include <kernel/vfs.h>
+#include <modules/elf/elf.h>
 #include <arch/x86/modules/io/io.h>
 #include <arch/x86/kernel/arch.h>
 #include <arch/x86/kernel/isr.h>
 #include <arch/x86/kernel/mmu.h>
 #include <arch/x86/kernel/syscall.h>
-#include <kernel/kernel.h>
-#include <kernel/vfs.h>
-#include <modules/elf/elf.h>
 
 void *syscallRoutines[SYSCALL_ROUTINES_SIZE];
 

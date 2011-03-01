@@ -1,5 +1,6 @@
 #include <lib/file.h>
 #include <lib/session.h>
+#include <kernel/kernel.h>
 #include <arch/x86/kernel/arch.h>
 #include <arch/x86/kernel/fpu.h>
 #include <arch/x86/kernel/gdt.h>
@@ -9,7 +10,6 @@
 #include <arch/x86/kernel/mboot.h>
 #include <arch/x86/kernel/mmu.h>
 #include <arch/x86/kernel/syscall.h>
-#include <kernel/kernel.h>
 
 void arch_assert(unsigned int condition, char *message, char *file, unsigned int line)
 {

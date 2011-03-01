@@ -3,12 +3,13 @@
 #include <lib/memory.h>
 #include <lib/string.h>
 #include <lib/vfs.h>
+#include <kernel/modules.h>
+#include <kernel/vfs.h>
 #include <arch/x86/kernel/irq.h>
 #include <arch/x86/kernel/isr.h>
 #include <arch/x86/kernel/mmu.h>
 #include <arch/x86/modules/io/io.h>
 #include <arch/x86/modules/kbd/kbd.h>
-#include <kernel/vfs.h>
 
 char kbdMapLowerUS[128] =
 {
@@ -97,24 +98,8 @@ void kbd_handler(struct isr_registers *registers)
 
 }
 
-static unsigned int kbd_read(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int kbd_device_read(char *buffer)
 {
-
-/*
-    struct mmu_directory *directory = mmu_get_kernel_directory();
-    unsigned int virtual = *(unsigned int *)buffer;
-
-    file_write_hex(session_get_out(), virtual);
-
-    virtual = virtual + (virtual % 4096);
-
-    file_write_hex(session_get_out(), virtual);
-
-    unsigned int physical = mmu_get_physical_address(directory, virtual);
-
-    file_write_hex(session_get_out(), physical);
-
-*/
 
     char c = kbd_cbuffer_read(&kbdDevice);
 
@@ -131,9 +116,17 @@ static unsigned int kbd_read(struct vfs_node *node, unsigned int offset, unsigne
 
 }
 
+static unsigned int kbd_node_read(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    return kbd_device_read(buffer);
+
+}
+
 void kbd_init()
 {
 
+    kbdDevice.base.read = kbd_device_read;
     kbdDevice.bufferHead = 0;
     kbdDevice.bufferTail = 0;
     kbdDevice.toggleAlt = 0;
@@ -142,8 +135,10 @@ void kbd_init()
 
     irq_register_handler(IRQ_ROUTINE_KBD, kbd_handler);
 
+    modules_add_device((struct modules_device *)&kbdDevice);
+
     struct vfs_node *kbdNode = vfs_add_node("kbd", 0);
-    kbdNode->read = kbd_read;
+    kbdNode->read = kbd_node_read;
 
     struct vfs_node *devNode = call_open("/dev");
     file_write(devNode, devNode->length, 1, kbdNode);

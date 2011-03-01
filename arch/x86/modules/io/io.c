@@ -1,8 +1,8 @@
 #include <lib/call.h>
 #include <lib/file.h>
 #include <lib/vfs.h>
-#include <arch/x86/modules/io/io.h>
 #include <kernel/vfs.h>
+#include <arch/x86/modules/io/io.h>
 
 static unsigned int io_read(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
 {

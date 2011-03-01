@@ -3,6 +3,7 @@
 #include <lib/vfs.h>
 #include <kernel/vfs.h>
 #include <kernel/modules.h>
+#include <modules/tty/tty.h>
 #include <arch/x86/modules/io/io.h>
 #include <arch/x86/modules/ata/ata.h>
 #include <arch/x86/modules/kbd/kbd.h>
@@ -10,9 +11,19 @@
 #include <arch/x86/modules/rtc/rtc.h>
 #include <arch/x86/modules/serial/serial.h>
 #include <arch/x86/modules/vga/vga.h>
-#include <modules/tty/tty.h>
+
+struct modules_device *devices[32];
+unsigned int devicesCount;
 
 struct vfs_node *devEntries[32];
+
+void modules_add_device(struct modules_device *device)
+{
+
+    devices[devicesCount] = device;
+    devicesCount++;
+
+}
 
 static struct vfs_node *modules_node_walk(struct vfs_node *node, unsigned int index)
 {
@@ -33,6 +44,8 @@ static unsigned int modules_node_write(struct vfs_node *node, unsigned int offse
 
 static void modules_init_devices()
 {
+
+    devicesCount = 0;
 
     io_init();
     vga_init();

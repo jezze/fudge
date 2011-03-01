@@ -28,6 +28,7 @@ struct modules_device_output
 
 };
 
+extern void modules_add_device(struct modules_device *device);
 extern void modules_init();
 
 #endif
