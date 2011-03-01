@@ -2,7 +2,7 @@
 #include <kernel/modules.h>
 #include <modules/elf/elf.h>
 
-struct modules_device_binary_format elfDevice;
+struct modules_module_binary elfModule;
 
 unsigned int elf_check(void *address)
 {
@@ -33,8 +33,9 @@ void elf_execute(struct elf_header *header, int argc, char *argv[])
 void elf_init()
 {
 
-    elfDevice.check = elf_check;
+    elfModule.check = elf_check;
 
-    modules_add_device((struct modules_device *)&elfDevice);
+    modules_register_module((struct modules_module *)&elfModule);
 
 }
+

@@ -131,7 +131,7 @@ void kbd_init()
 
     irq_register_handler(IRQ_ROUTINE_KBD, kbd_handler);
 
-    modules_add_device((struct modules_device *)&kbdDevice);
+    modules_register_module((struct modules_module *)&kbdDevice);
 
     struct vfs_node *kbdNode = vfs_add_node("kbd", 0);
     kbdNode->read = kbd_node_read;

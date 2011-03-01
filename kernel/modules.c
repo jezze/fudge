@@ -13,16 +13,16 @@
 #include <arch/x86/modules/serial/serial.h>
 #include <arch/x86/modules/vga/vga.h>
 
-struct modules_device *devices[32];
-unsigned int devicesCount;
+struct modules_module *modules[32];
+unsigned int modulesCount;
 
 struct vfs_node *devEntries[32];
 
-void modules_add_device(struct modules_device *device)
+void modules_register_module(struct modules_module *module)
 {
 
-    devices[devicesCount] = device;
-    devicesCount++;
+    modules[modulesCount] = module;
+    modulesCount++;
 
 }
 
@@ -46,7 +46,7 @@ static unsigned int modules_node_write(struct vfs_node *node, unsigned int offse
 static void modules_init_devices()
 {
 
-    devicesCount = 0;
+    modulesCount = 0;
 
     io_init();
     vga_init();
