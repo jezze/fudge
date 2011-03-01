@@ -111,3 +111,44 @@ char *string_trim(char *in, char c)
 
 }
 
+void string_num(char *out, unsigned int num, unsigned int base)
+{
+
+    if (!num)
+    {
+
+        out[0] = '0';
+        out[1] = '\0';
+
+        return;
+
+    }
+
+    unsigned int i;
+
+    for (i = 0; num; i++)
+    {
+
+        out[i] = "0123456789ABCDEF"[num % base];
+        num /= base;
+
+    }
+
+    out[i] = '\0';
+    unsigned int size = i;
+
+    char temp;
+
+    for (i = 0; i < (size / 2); i++)
+    {
+
+        temp = out[size - i - 1];
+        out[size - i - 1] = out[i];
+        out[i] = temp;
+
+    }
+
+    return;
+
+}
+
