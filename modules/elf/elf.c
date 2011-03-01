@@ -1,12 +1,10 @@
 #include <lib/elf.h>
+#include <kernel/modules.h>
 #include <modules/elf/elf.h>
 
-void elf_execute(struct elf_header *header, int argc, char *argv[])
-{
+struct modules_device_binary_format elfDevice;
 
-}
-
-unsigned int elf_check(unsigned int address)
+unsigned int elf_check(void *address)
 {
 
     struct elf_header *header = (struct elf_header *)address;
@@ -27,3 +25,16 @@ unsigned int elf_check(unsigned int address)
 
 }
 
+void elf_execute(struct elf_header *header, int argc, char *argv[])
+{
+
+}
+
+void elf_init()
+{
+
+    elfDevice.check = elf_check;
+
+    modules_add_device((struct modules_device *)&elfDevice);
+
+}

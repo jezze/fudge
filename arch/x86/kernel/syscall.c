@@ -37,7 +37,7 @@ static void syscall_open(struct syscall_registers *registers)
 static void syscall_map(struct syscall_registers *registers)
 {
 
-    unsigned int address = registers->ebx;
+    void *address = (void *)registers->ebx;
 
     if (!elf_check(address))
     {
@@ -59,7 +59,7 @@ static void syscall_map(struct syscall_registers *registers)
     mmu_clear_table(programTable);
 
     mmu_add_table(kernelDirectory, index, programTable, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE);
-    mmu_map(kernelDirectory, programHeader->virtualAddress, address, programHeader->memorySize, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);
+    mmu_map(kernelDirectory, programHeader->virtualAddress, registers->ebx, programHeader->memorySize, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);
 
     registers->eax = header->entry;
 

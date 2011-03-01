@@ -28,6 +28,14 @@ struct modules_device_output
 
 };
 
+struct modules_device_binary_format
+{
+
+    struct modules_device base;
+    unsigned int (*check)(void *address);
+
+};
+
 extern void modules_add_device(struct modules_device *device);
 extern void modules_init();
 

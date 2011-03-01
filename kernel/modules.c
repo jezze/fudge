@@ -3,6 +3,7 @@
 #include <lib/vfs.h>
 #include <kernel/vfs.h>
 #include <kernel/modules.h>
+#include <modules/elf/elf.h>
 #include <modules/tty/tty.h>
 #include <arch/x86/modules/io/io.h>
 #include <arch/x86/modules/ata/ata.h>
@@ -55,6 +56,7 @@ static void modules_init_devices()
     ata_init();
     serial_init();
     tty_init();
+    elf_init();
 
 }
 
