@@ -12,18 +12,11 @@ struct modules_device
 
 };
 
-struct modules_device_input
+struct modules_device_stream
 {
 
     struct modules_device base;
     unsigned int (*read)(char *buffer);
-
-};
-
-struct modules_device_output
-{
-
-    struct modules_device base;
     unsigned int (*write)(char *buffer);
 
 };

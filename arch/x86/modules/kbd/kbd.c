@@ -37,29 +37,42 @@ char kbdMapUpperUS[128] =
 
 struct kbd_device kbdDevice;
 
-void kbd_cbuffer_write(struct kbd_device *device, char c)
+static unsigned int kbd_device_read(char *buffer)
 {
 
-    if ((device->bufferHead + 1) % KBD_BUFFER_SIZE != device->bufferTail)
+    char c = 0;
+
+    if (kbdDevice.bufferHead != kbdDevice.bufferTail)
     {
 
-        device->buffer[device->bufferHead] = c;
-        device->bufferHead = (device->bufferHead + 1) % KBD_BUFFER_SIZE;
+        c = kbdDevice.buffer[kbdDevice.bufferTail];
+        kbdDevice.bufferTail = (kbdDevice.bufferTail + 1) % KBD_BUFFER_SIZE;
 
     }
 
-}
-
-char kbd_cbuffer_read(struct kbd_device *device)
-{
-
-    if (device->bufferHead != device->bufferTail)
+    if (c)
     {
 
-        char c = device->buffer[device->bufferTail];
-        device->bufferTail = (device->bufferTail + 1) % KBD_BUFFER_SIZE;
+        memory_copy(buffer, &c, 1);
 
-        return c;
+        return 1;
+
+    }
+
+    return 0;
+
+}
+
+static unsigned int kbd_device_write(char *buffer)
+{
+
+    if ((kbdDevice.bufferHead + 1) % KBD_BUFFER_SIZE != kbdDevice.bufferTail)
+    {
+
+        kbdDevice.buffer[kbdDevice.bufferHead] = buffer[0];
+        kbdDevice.bufferHead = (kbdDevice.bufferHead + 1) % KBD_BUFFER_SIZE;
+
+        return 1;
 
     }
 
@@ -90,29 +103,11 @@ void kbd_handler(struct isr_registers *registers)
 
         // Make codes
         if (kbdDevice.toggleShift)
-            kbd_cbuffer_write(&kbdDevice, kbdMapUpperUS[scancode]);
+            kbdDevice.base.write(&kbdMapUpperUS[scancode]);
         else
-            kbd_cbuffer_write(&kbdDevice, kbdMapLowerUS[scancode]);
+            kbdDevice.base.write(&kbdMapLowerUS[scancode]);
 
     }
-
-}
-
-static unsigned int kbd_device_read(char *buffer)
-{
-
-    char c = kbd_cbuffer_read(&kbdDevice);
-
-    if (c)
-    {
-
-        memory_copy(buffer, &c, 1);
-
-        return 1;
-
-    }
-
-    return 0;
 
 }
 
@@ -127,6 +122,7 @@ void kbd_init()
 {
 
     kbdDevice.base.read = kbd_device_read;
+    kbdDevice.base.write = kbd_device_write;
     kbdDevice.bufferHead = 0;
     kbdDevice.bufferTail = 0;
     kbdDevice.toggleAlt = 0;

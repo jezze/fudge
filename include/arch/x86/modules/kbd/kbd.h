@@ -5,12 +5,12 @@
 #define KBD_BUFFER_SIZE 256
 
 struct isr_registers;
-struct modules_device_input;
+struct modules_device_stream;
 
 struct kbd_device
 {
 
-    struct modules_device_input base;
+    struct modules_device_stream base;
     char buffer[KBD_BUFFER_SIZE];
     unsigned int bufferSize;
     unsigned int bufferHead;
