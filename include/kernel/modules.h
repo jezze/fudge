@@ -21,6 +21,16 @@ struct modules_module_binary
 
 };
 
+struct modules_serial_device
+{
+
+    struct modules_module base;
+    unsigned int port;
+    unsigned int (*read)(struct modules_serial_device *serial, char *buffer, unsigned int count);
+    unsigned int (*write)(struct modules_serial_device *serial, char *buffer, unsigned int count);
+
+};
+
 struct modules_module_stream_buffered
 {
 

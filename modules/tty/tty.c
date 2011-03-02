@@ -3,13 +3,15 @@
 #include <lib/file.h>
 #include <lib/string.h>
 #include <lib/vfs.h>
+#include <kernel/modules.h>
 #include <kernel/vfs.h>
 #include <modules/tty/tty.h>
+
+struct tty_device ttyDevice;
 
 struct vfs_node *ttyVgaNode;
 struct vfs_node *ttyVgaColorNode;
 struct vfs_node *ttyVgaCursorNode;
-unsigned short ttyVgaCursorOffset;
 
 char ttyLocation[256];
 
@@ -22,7 +24,7 @@ static void tty_scroll()
     memory_set(buffer + TTY_CHARACTER_SIZE - TTY_CHARACTER_WIDTH, ' ', TTY_CHARACTER_WIDTH);
     file_write(ttyVgaNode, 0, TTY_CHARACTER_SIZE, buffer);
 
-    ttyVgaCursorOffset -= TTY_CHARACTER_WIDTH;
+    ttyDevice.cursorOffset -= TTY_CHARACTER_WIDTH;
 
 }
 
@@ -32,40 +34,40 @@ static void tty_putc(char c)
     if (c == '\b')
     {
 
-        ttyVgaCursorOffset--;
+        ttyDevice.cursorOffset--;
 
     }
 
     else if (c == '\t')
     {
 
-        ttyVgaCursorOffset = (ttyVgaCursorOffset + 8) & ~(8 - 1);
+        ttyDevice.cursorOffset = (ttyDevice.cursorOffset + 8) & ~(8 - 1);
 
     }
 
     else if (c == '\r')
     {
 
-        ttyVgaCursorOffset -= (ttyVgaCursorOffset % TTY_CHARACTER_WIDTH);
+        ttyDevice.cursorOffset -= (ttyDevice.cursorOffset % TTY_CHARACTER_WIDTH);
 
     }
 
     else if (c == '\n')
     {
 
-        ttyVgaCursorOffset += TTY_CHARACTER_WIDTH - (ttyVgaCursorOffset % TTY_CHARACTER_WIDTH);
+        ttyDevice.cursorOffset += TTY_CHARACTER_WIDTH - (ttyDevice.cursorOffset % TTY_CHARACTER_WIDTH);
 
     }
     
     else if (c >= ' ')
     {
 
-        file_write(ttyVgaNode, ttyVgaCursorOffset, 1, &c);
-        ttyVgaCursorOffset++;
+        file_write(ttyVgaNode, ttyDevice.cursorOffset, 1, &c);
+        ttyDevice.cursorOffset++;
 
     }
 
-    if (ttyVgaCursorOffset >= TTY_CHARACTER_WIDTH * TTY_CHARACTER_HEIGHT - TTY_CHARACTER_WIDTH)
+    if (ttyDevice.cursorOffset >= TTY_CHARACTER_WIDTH * TTY_CHARACTER_HEIGHT - TTY_CHARACTER_WIDTH)
         tty_scroll();
 
 }
@@ -90,7 +92,7 @@ static unsigned int tty_write(struct vfs_node *node, unsigned int offset, unsign
     for (i = offset; i < offset + count; i++, j++)
         tty_putc(((char *)buffer)[j]);
 
-    file_write(ttyVgaCursorNode, 0, 1, &ttyVgaCursorOffset);
+    file_write(ttyVgaCursorNode, 0, 1, &ttyDevice.cursorOffset);
 
     return count;
 
@@ -118,17 +120,25 @@ static unsigned int tty_location_write(struct vfs_node *node, unsigned int offse
 
 }
 
+static void tty_set_color(unsigned char fg, unsigned char bg)
+{
+
+    ttyDevice.cursorColor = (bg << 4) | (fg & 0x0F);
+
+}
+
 static void tty_init_vga()
 {
 
-    ttyVgaCursorOffset = 0;
+    ttyDevice.cursorOffset = 0;
+    ttyDevice.set_color = tty_set_color;
+    ttyDevice.set_color(TTY_COLOR_WHITE, TTY_COLOR_BLACK);
 
     ttyVgaNode = call_open("/dev/vga_fb");
     ttyVgaColorNode = call_open("/dev/vga_fb_color");
     ttyVgaCursorNode = call_open("/dev/vga_fb_cursor");
 
-    unsigned char color = (TTY_COLOR_BLACK << 4) | (TTY_COLOR_WHITE & 0x0F);
-    file_write(ttyVgaColorNode, 0, 1, &color);
+    file_write(ttyVgaColorNode, 0, 1, &ttyDevice.cursorColor);
 
     tty_vga_clear();
 
