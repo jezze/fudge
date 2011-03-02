@@ -27,13 +27,13 @@ static char serial_inb(unsigned short port)
 
 }
 
-static unsigned int serial_read(struct modules_serial_device *serial, char *buffer, unsigned int count)
+static unsigned int serial_read(struct modules_serial_device *device, char *buffer, unsigned int count)
 {
 
     unsigned int i;
 
     for (i = 0; i < count; i++)
-        buffer[i] = serial_inb(serial->port);
+        buffer[i] = serial_inb(device->port);
 
     return i;
 
@@ -55,13 +55,13 @@ static void serial_outb(unsigned short port, char c)
 
 }
 
-static unsigned int serial_write(struct modules_serial_device *serial, char *buffer, unsigned int count)
+static unsigned int serial_write(struct modules_serial_device *device, char *buffer, unsigned int count)
 {
 
     unsigned int i;
 
     for (i = 0; i < count; i++)
-        serial_outb(serial->port, buffer[i]);
+        serial_outb(device->port, buffer[i]);
 
     return i;
 

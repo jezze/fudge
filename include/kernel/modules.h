@@ -26,8 +26,8 @@ struct modules_serial_device
 
     struct modules_module base;
     unsigned int port;
-    unsigned int (*read)(struct modules_serial_device *serial, char *buffer, unsigned int count);
-    unsigned int (*write)(struct modules_serial_device *serial, char *buffer, unsigned int count);
+    unsigned int (*read)(struct modules_serial_device *device, char *buffer, unsigned int count);
+    unsigned int (*write)(struct modules_serial_device *device, char *buffer, unsigned int count);
 
 };
 
@@ -46,6 +46,19 @@ struct modules_module_stream_unbuffered
     struct modules_module base;
     unsigned int (*read)(char *buffer);
     unsigned int (*write)(char *buffer);
+
+};
+
+struct modules_vga_device
+{
+
+    struct modules_module base;
+    unsigned char cursorColor;
+    unsigned short cursorOffset;
+    unsigned int (*read_framebuffer)(char *buffer, unsigned int count, unsigned int offset);
+    unsigned int (*write_framebuffer)(char *buffer, unsigned int count, unsigned int offset);
+    void (*set_cursor_color)(unsigned char fg, unsigned char bg);
+    void (*set_cursor_offset)(unsigned short offset);
 
 };
 
