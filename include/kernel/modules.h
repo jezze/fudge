@@ -63,6 +63,8 @@ struct modules_vga_device
 };
 
 extern void modules_register_module(struct modules_module *module);
+extern struct modules_vga_device *modules_get_vga_device();
+extern void modules_set_vga_device(struct modules_vga_device *device);
 extern void modules_init();
 
 #endif

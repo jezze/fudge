@@ -16,6 +16,8 @@
 struct modules_module *modules[32];
 unsigned int modulesCount;
 
+struct modules_vga_device *modulesVgaDevice;
+
 struct vfs_node *devEntries[32];
 
 void modules_register_module(struct modules_module *module)
@@ -23,6 +25,20 @@ void modules_register_module(struct modules_module *module)
 
     modules[modulesCount] = module;
     modulesCount++;
+
+}
+
+void modules_set_vga_device(struct modules_vga_device *device)
+{
+
+    modulesVgaDevice = device;
+
+}
+
+struct modules_vga_device *modules_get_vga_device()
+{
+
+    return modulesVgaDevice;
 
 }
 
