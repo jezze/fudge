@@ -31,21 +31,12 @@ struct modules_serial_device
 
 };
 
-struct modules_module_stream_buffered
+struct modules_io_device
 {
 
     struct modules_module base;
     unsigned int (*read)(char *buffer, unsigned int count, unsigned int offset);
     unsigned int (*write)(char *buffer, unsigned int count, unsigned int offset);
-
-};
-
-struct modules_module_stream_unbuffered
-{
-
-    struct modules_module base;
-    unsigned int (*read)(char *buffer);
-    unsigned int (*write)(char *buffer);
 
 };
 
@@ -59,6 +50,34 @@ struct modules_vga_device
     unsigned int (*write_framebuffer)(char *buffer, unsigned int count, unsigned int offset);
     void (*set_cursor_color)(unsigned char fg, unsigned char bg);
     void (*set_cursor_offset)(unsigned short offset);
+
+};
+
+struct modules_tty_device
+{
+
+    struct modules_module base;
+    unsigned short cursorOffset;
+    unsigned char cursorColor;
+    unsigned int (*read)(char *buffer, unsigned int count, unsigned int offset);
+    unsigned int (*write)(char *buffer, unsigned int count, unsigned int offset);
+    void (*set_color)(unsigned char fg, unsigned char bg);
+
+};
+
+struct modules_kbd_device
+{
+
+    struct modules_module base;
+    char buffer[256];
+    unsigned int bufferSize;
+    unsigned int bufferHead;
+    unsigned int bufferTail;
+    unsigned char toggleAlt;
+    unsigned char toggleCtrl;
+    unsigned char toggleShift;
+    unsigned int (*read)(char *buffer);
+    unsigned int (*write)(char *buffer);
 
 };
 

@@ -35,7 +35,7 @@ char kbdMapUpperUS[128] =
        0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0
 };
 
-struct kbd_device kbdDevice;
+struct modules_kbd_device kbdDevice;
 
 static unsigned int kbd_device_read(char *buffer)
 {
@@ -83,7 +83,7 @@ static unsigned int kbd_device_write(char *buffer)
 static unsigned int kbd_node_read(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    return kbdDevice.base.read(buffer);
+    return kbdDevice.read(buffer);
 
 }
 
@@ -110,9 +110,9 @@ void kbd_handler(struct isr_registers *registers)
 
         // Make codes
         if (kbdDevice.toggleShift)
-            kbdDevice.base.write(&kbdMapUpperUS[scancode]);
+            kbdDevice.write(&kbdMapUpperUS[scancode]);
         else
-            kbdDevice.base.write(&kbdMapLowerUS[scancode]);
+            kbdDevice.write(&kbdMapLowerUS[scancode]);
 
     }
 
@@ -121,13 +121,13 @@ void kbd_handler(struct isr_registers *registers)
 void kbd_init()
 {
 
-    kbdDevice.base.read = kbd_device_read;
-    kbdDevice.base.write = kbd_device_write;
     kbdDevice.bufferHead = 0;
     kbdDevice.bufferTail = 0;
     kbdDevice.toggleAlt = 0;
     kbdDevice.toggleCtrl = 0;
     kbdDevice.toggleShift = 0;
+    kbdDevice.read = kbd_device_read;
+    kbdDevice.write = kbd_device_write;
 
     irq_register_handler(IRQ_ROUTINE_KBD, kbd_handler);
 

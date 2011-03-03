@@ -5,7 +5,7 @@
 #include <kernel/vfs.h>
 #include <arch/x86/modules/io/io.h>
 
-struct modules_module_stream_buffered ioDevice;
+struct modules_io_device ioDevice;
 
 static unsigned int io_device_read(char *buffer, unsigned int count, unsigned int offset)
 {

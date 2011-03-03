@@ -5,21 +5,6 @@
 #define KBD_BUFFER_SIZE 256
 
 struct isr_registers;
-struct modules_module_stream_unbuffered;
-
-struct kbd_device
-{
-
-    struct modules_module_stream_unbuffered base;
-    char buffer[KBD_BUFFER_SIZE];
-    unsigned int bufferSize;
-    unsigned int bufferHead;
-    unsigned int bufferTail;
-    unsigned char toggleAlt;
-    unsigned char toggleCtrl;
-    unsigned char toggleShift;
-
-};
 
 extern void kbd_handler(struct isr_registers *registers);
 extern void kbd_init();
