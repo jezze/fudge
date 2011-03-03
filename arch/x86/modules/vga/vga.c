@@ -121,7 +121,7 @@ void vga_init()
     vgaDevice.write_framebuffer = vga_write_framebuffer;
     vgaDevice.set_cursor_offset = vga_set_cursor_offset;
 
-    modules_register_module((struct modules_module *)&vgaDevice);
+    modules_register_module(&vgaDevice.base);
     modules_set_vga_device(&vgaDevice);
 
     struct vfs_node *vgaFbNode = vfs_add_node("vga_fb", VGA_FB_SIZE);

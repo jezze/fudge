@@ -35,7 +35,7 @@ void elf_init()
 
     elfModule.check = elf_check;
 
-    modules_register_module((struct modules_module *)&elfModule);
+    modules_register_module(&elfModule.base);
 
 }
 

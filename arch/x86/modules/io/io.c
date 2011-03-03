@@ -51,7 +51,7 @@ void io_init()
     ioDevice.read = io_device_read;
     ioDevice.write = io_device_write;
 
-    modules_register_module((struct modules_module *)&ioDevice);
+    modules_register_module(&ioDevice.base);
 
     struct vfs_node *ioNode = vfs_add_node("io", 0);
     ioNode->read = io_node_read;
