@@ -13,12 +13,48 @@
 #include <arch/x86/modules/serial/serial.h>
 #include <arch/x86/modules/vga/vga.h>
 
-struct modules_module *modules[32];
-unsigned int modulesCount;
-
+struct modules_io_device *modulesIoDevice;
+struct modules_kbd_device *modulesKbdDevice;
+struct modules_serial_device *modulesSerialDevice;
+struct modules_tty_device *modulesTtyDevice;
 struct modules_vga_device *modulesVgaDevice;
 
 struct vfs_node *devEntries[32];
+
+unsigned int modules_binary_module_check(struct modules_binary_module *module, void *address)
+{
+
+    return module->check(module, address);
+
+}
+
+unsigned int modules_io_device_read(struct modules_io_device *device, char *buffer, unsigned int count, unsigned int offset)
+{
+
+    return device->read(buffer, count, offset);
+
+}
+
+unsigned int modules_io_device_write(struct modules_io_device *device, char *buffer, unsigned int count, unsigned int offset)
+{
+
+    return device->write(buffer, count, offset);
+
+}
+
+unsigned int modules_kbd_device_read(struct modules_kbd_device *device, char *buffer)
+{
+
+    return device->read(buffer);
+
+}
+
+unsigned int modules_kbd_device_write(struct modules_kbd_device *device, char *buffer)
+{
+
+    return device->write(buffer);
+
+}
 
 unsigned int modules_serial_device_read(struct modules_serial_device *device, char *buffer, unsigned int count)
 {
@@ -34,24 +70,24 @@ unsigned int modules_serial_device_write(struct modules_serial_device *device, c
 
 }
 
-unsigned int modules_binary_module_check(struct modules_binary_module *module, void *address)
+unsigned int modules_tty_device_read(struct modules_tty_device *device, char *buffer, unsigned int count, unsigned int offset)
 {
 
-    return module->check(module, address);
+    return device->read(buffer, count, offset);
 
 }
 
-unsigned int modules_kbd_device_read(struct modules_kbd_device *device, char *buffer)
+unsigned int modules_tty_device_write(struct modules_tty_device *device, char *buffer, unsigned int count, unsigned int offset)
 {
 
-    return device->read(buffer);
+    return device->write(buffer, count, offset);
 
 }
 
-unsigned int modules_kbd_device_write(struct modules_kbd_device *device, char *buffer)
+void modules_tty_device_set_color(struct modules_tty_device *device, unsigned char fg, unsigned char bg)
 {
 
-    return device->write(buffer);
+    device->set_color(fg, bg);
 
 }
 
@@ -83,47 +119,31 @@ void modules_vga_device_set_cursor_offset(struct modules_vga_device *device, uns
 
 }
 
-
-unsigned int modules_tty_device_read(struct modules_tty_device *device, char *buffer, unsigned int count, unsigned int offset)
+void modules_set_io_device(struct modules_io_device *device)
 {
 
-    return device->read(buffer, count, offset);
+    modulesIoDevice = device;
 
 }
 
-unsigned int modules_tty_device_write(struct modules_tty_device *device, char *buffer, unsigned int count, unsigned int offset)
+void modules_set_kbd_device(struct modules_kbd_device *device)
 {
 
-    return device->write(buffer, count, offset);
+    modulesKbdDevice = device;
 
 }
 
-void modules_tty_device_set_color(struct modules_tty_device *device, unsigned char fg, unsigned char bg)
+void modules_set_serial_device(struct modules_serial_device *device)
 {
 
-    device->set_color(fg, bg);
+    modulesSerialDevice = device;
 
 }
 
-unsigned int modules_io_device_read(struct modules_io_device *device, char *buffer, unsigned int count, unsigned int offset)
+void modules_set_tty_device(struct modules_tty_device *device)
 {
 
-    return device->read(buffer, count, offset);
-
-}
-
-unsigned int modules_io_device_write(struct modules_io_device *device, char *buffer, unsigned int count, unsigned int offset)
-{
-
-    return device->write(buffer, count, offset);
-
-}
-
-void modules_register_module(struct modules_module *module)
-{
-
-    modules[modulesCount] = module;
-    modulesCount++;
+    modulesTtyDevice = device;
 
 }
 
@@ -131,6 +151,33 @@ void modules_set_vga_device(struct modules_vga_device *device)
 {
 
     modulesVgaDevice = device;
+
+}
+struct modules_io_device *modules_get_io_device()
+{
+
+    return modulesIoDevice;
+
+}
+
+struct modules_kbd_device *modules_get_kbd_device()
+{
+
+    return modulesKbdDevice;
+
+}
+
+struct modules_serial_device *modules_get_serial_device()
+{
+
+    return modulesSerialDevice;
+
+}
+
+struct modules_tty_device *modules_get_tty_device()
+{
+
+    return modulesTtyDevice;
 
 }
 
@@ -160,8 +207,6 @@ static unsigned int modules_node_write(struct vfs_node *node, unsigned int offse
 
 static void modules_init_devices()
 {
-
-    modulesCount = 0;
 
     io_init();
     vga_init();

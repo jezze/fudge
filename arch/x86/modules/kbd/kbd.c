@@ -136,7 +136,7 @@ void kbd_init()
     struct vfs_node *devNode = call_open("/dev");
     file_write(devNode, devNode->length, 1, &kbdDevice.node);
 
-    modules_register_module(&kbdDevice.base);
+    modules_set_kbd_device(&kbdDevice);
 
     irq_register_handler(IRQ_ROUTINE_KBD, kbd_handler);
 

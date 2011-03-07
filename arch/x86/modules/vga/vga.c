@@ -140,7 +140,6 @@ void vga_init()
     file_write(devNode, devNode->length, 1, &vgaDevice.nodeCursorColor);
     file_write(devNode, devNode->length, 1, &vgaDevice.nodeCursorOffset);
 
-    modules_register_module(&vgaDevice.base);
     modules_set_vga_device(&vgaDevice);
 
 }

@@ -36,7 +36,5 @@ void elf_init()
 
     elfModule.check = elf_check;
 
-    modules_register_module(&elfModule.base);
-
 }
 

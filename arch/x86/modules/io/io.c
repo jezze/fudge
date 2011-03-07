@@ -60,7 +60,7 @@ void io_init()
     struct vfs_node *devNode = call_open("/dev");
     file_write(devNode, devNode->length, 1, &ioDevice.node);
 
-    modules_register_module(&ioDevice.base);
+    modules_set_io_device(&ioDevice);
 
 }
 
