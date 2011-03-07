@@ -121,24 +121,27 @@ void vga_init()
     vgaDevice.write_framebuffer = vga_write_framebuffer;
     vgaDevice.set_cursor_offset = vga_set_cursor_offset;
 
-    modules_register_module(&vgaDevice.base);
-    modules_set_vga_device(&vgaDevice);
+    string_copy(vgaDevice.nodeFramebuffer.name, "vga_fb");
+    vgaDevice.nodeFramebuffer.length = VGA_FB_SIZE;
+    vgaDevice.nodeFramebuffer.read = vga_fb_node_read;
+    vgaDevice.nodeFramebuffer.write = vga_fb_node_write;
 
-    struct vfs_node *vgaFbNode = vfs_add_node("vga_fb", VGA_FB_SIZE);
-    vgaFbNode->read = vga_fb_node_read;
-    vgaFbNode->write = vga_fb_node_write;
+    string_copy(vgaDevice.nodeCursorColor.name, "vga_fb_color");
+    vgaDevice.nodeCursorColor.length = 1;
+    vgaDevice.nodeCursorColor.read = vga_fb_color_node_read;
+    vgaDevice.nodeCursorColor.write = vga_fb_color_node_write;
 
-    struct vfs_node *vgaFbColorNode = vfs_add_node("vga_fb_color", 1);
-    vgaFbColorNode->read = vga_fb_color_node_read;
-    vgaFbColorNode->write = vga_fb_color_node_write;
-
-    struct vfs_node *vgaFbCursorNode = vfs_add_node("vga_fb_cursor", 1);
-    vgaFbCursorNode->write = vga_fb_cursor_node_write;
+    string_copy(vgaDevice.nodeCursorOffset.name, "vga_fb_cursor");
+    vgaDevice.nodeCursorOffset.length = 1;
+    vgaDevice.nodeCursorOffset.write = vga_fb_cursor_node_write;
 
     struct vfs_node *devNode = call_open("/dev");
-    file_write(devNode, devNode->length, 1, vgaFbNode);
-    file_write(devNode, devNode->length, 1, vgaFbColorNode);
-    file_write(devNode, devNode->length, 1, vgaFbCursorNode);
+    file_write(devNode, devNode->length, 1, &vgaDevice.nodeFramebuffer);
+    file_write(devNode, devNode->length, 1, &vgaDevice.nodeCursorColor);
+    file_write(devNode, devNode->length, 1, &vgaDevice.nodeCursorOffset);
+
+    modules_register_module(&vgaDevice.base);
+    modules_set_vga_device(&vgaDevice);
 
 }
 

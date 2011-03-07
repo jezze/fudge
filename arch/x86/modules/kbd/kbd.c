@@ -129,15 +129,16 @@ void kbd_init()
     kbdDevice.read = kbd_device_read;
     kbdDevice.write = kbd_device_write;
 
-    irq_register_handler(IRQ_ROUTINE_KBD, kbd_handler);
+    string_copy(kbdDevice.node.name, "kbd");
+    kbdDevice.node.length = 0;
+    kbdDevice.node.read = kbd_node_read;
+
+    struct vfs_node *devNode = call_open("/dev");
+    file_write(devNode, devNode->length, 1, &kbdDevice.node);
 
     modules_register_module(&kbdDevice.base);
 
-    struct vfs_node *kbdNode = vfs_add_node("kbd", 0);
-    kbdNode->read = kbd_node_read;
-
-    struct vfs_node *devNode = call_open("/dev");
-    file_write(devNode, devNode->length, 1, kbdNode);
+    irq_register_handler(IRQ_ROUTINE_KBD, kbd_handler);
 
 }
 

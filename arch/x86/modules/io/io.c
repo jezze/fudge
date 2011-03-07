@@ -1,5 +1,6 @@
 #include <lib/call.h>
 #include <lib/file.h>
+#include <lib/string.h>
 #include <lib/vfs.h>
 #include <kernel/modules.h>
 #include <kernel/vfs.h>
@@ -51,14 +52,15 @@ void io_init()
     ioDevice.read = io_device_read;
     ioDevice.write = io_device_write;
 
-    modules_register_module(&ioDevice.base);
-
-    struct vfs_node *ioNode = vfs_add_node("io", 0);
-    ioNode->read = io_node_read;
-    ioNode->write = io_node_write;
+    string_copy(ioDevice.node.name, "io");
+    ioDevice.node.length = 0;
+    ioDevice.node.read = io_node_read;
+    ioDevice.node.write = io_node_write;
 
     struct vfs_node *devNode = call_open("/dev");
-    file_write(devNode, devNode->length, 1, ioNode);
+    file_write(devNode, devNode->length, 1, &ioDevice.node);
+
+    modules_register_module(&ioDevice.base);
 
 }
 
