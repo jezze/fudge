@@ -2,7 +2,7 @@
 #include <kernel/modules.h>
 #include <modules/elf/elf.h>
 
-struct modules_module_binary elfModule;
+struct modules_binary_module elfModule;
 
 unsigned int elf_check(void *address)
 {

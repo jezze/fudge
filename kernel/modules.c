@@ -20,6 +20,105 @@ struct modules_vga_device *modulesVgaDevice;
 
 struct vfs_node *devEntries[32];
 
+unsigned int modules_serial_device_read(struct modules_serial_device *device, char *buffer, unsigned int count)
+{
+
+    return device->read(device, buffer, count);
+
+}
+
+unsigned int modules_serial_device_write(struct modules_serial_device *device, char *buffer, unsigned int count)
+{
+
+    return device->write(device, buffer, count);
+
+}
+
+unsigned int modules_binary_module_check(struct modules_binary_module *module, void *address)
+{
+
+    return module->check(module, address);
+
+}
+
+unsigned int modules_kbd_device_read(struct modules_kbd_device *device, char *buffer)
+{
+
+    return device->read(buffer);
+
+}
+
+unsigned int modules_kbd_device_write(struct modules_kbd_device *device, char *buffer)
+{
+
+    return device->write(buffer);
+
+}
+
+unsigned int modules_vga_device_read_framebuffer(struct modules_vga_device *device, char *buffer, unsigned int count, unsigned int offset)
+{
+
+    return device->read_framebuffer(buffer, count, offset);
+
+}
+
+unsigned int modules_vga_device_write_framebuffer(struct modules_vga_device *device, char *buffer, unsigned int count, unsigned int offset)
+{
+
+    return device->write_framebuffer(buffer, count, offset);
+
+}
+
+void modules_vga_device_set_cursor_color(struct modules_vga_device *device, unsigned char fg, unsigned char bg)
+{
+
+    return device->set_cursor_color(fg, bg);
+
+}
+
+void modules_vga_device_set_cursor_offset(struct modules_vga_device *device, unsigned short offset)
+{
+
+    return device->set_cursor_offset(offset);
+
+}
+
+
+unsigned int modules_tty_device_read(struct modules_tty_device *device, char *buffer, unsigned int count, unsigned int offset)
+{
+
+    return device->read(buffer, count, offset);
+
+}
+
+unsigned int modules_tty_device_write(struct modules_tty_device *device, char *buffer, unsigned int count, unsigned int offset)
+{
+
+    return device->write(buffer, count, offset);
+
+}
+
+void modules_tty_device_set_color(struct modules_tty_device *device, unsigned char fg, unsigned char bg)
+{
+
+    device->set_color(fg, bg);
+
+}
+
+unsigned int modules_io_device_read(struct modules_io_device *device, char *buffer, unsigned int count, unsigned int offset)
+{
+
+    return device->read(buffer, count, offset);
+
+}
+
+unsigned int modules_io_device_write(struct modules_io_device *device, char *buffer, unsigned int count, unsigned int offset)
+{
+
+    return device->write(buffer, count, offset);
+
+}
+
 void modules_register_module(struct modules_module *module)
 {
 
