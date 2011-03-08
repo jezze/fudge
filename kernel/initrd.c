@@ -62,21 +62,22 @@ static unsigned int initrd_node_write(struct vfs_node *node, unsigned int offset
 
 }
 
-void initrd_init(struct initrd_header *header)
+void initrd_init(unsigned int address)
 {
 
     struct vfs_node *initrdNode = vfs_add_node("initrd", 0);
     initrdNode->walk = initrd_node_walk;
     initrdNode->write = initrd_node_write;
 
-    initrdFileHeaders = (struct initrd_file_header *)((unsigned int)header + sizeof (struct initrd_header));
+    initrdHeader = (struct initrd_header*)address;
+    initrdFileHeaders = (struct initrd_file_header *)(address + sizeof (struct initrd_header));
 
     unsigned int i;
 
-    for (i = 0; i < header->nfiles; i++)
+    for (i = 0; i < initrdHeader->nfiles; i++)
     {
 
-        initrdFileHeaders[i].offset += (unsigned int)header;
+        initrdFileHeaders[i].offset += address;
 
         struct vfs_node *initrdFileNode = vfs_add_node(initrdFileHeaders[i].name, initrdFileHeaders[i].length);
         initrdFileNode->inode = i;

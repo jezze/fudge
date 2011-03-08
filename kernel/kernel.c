@@ -5,13 +5,13 @@
 #include <kernel/shell.h>
 #include <kernel/vfs.h>
 
-struct initrd_header *kernelInitrd;
-unsigned int kernelStack;
+unsigned int kernelInitrdAddress;
+unsigned int kernelStackAddress;
 
-void kernel_set_initrd(unsigned int *initrd)
+void kernel_set_initrd(unsigned int address)
 {
 
-    kernelInitrd = (struct initrd_header *)initrd;
+    kernelInitrdAddress = address;
 
 }
 
@@ -22,13 +22,13 @@ void kernel_init_usermode()
 
 }
 
-void kernel_init(unsigned int stack)
+void kernel_init(unsigned int stackAddress)
 {
 
-    kernelStack = stack;
+    kernelStackAddress = stackAddress;
 
     vfs_init();
-    initrd_init(kernelInitrd);
+    initrd_init(kernelInitrdAddress);
     modules_init();
 
 //    gdt_usermode_init();
