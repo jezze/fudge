@@ -11,6 +11,7 @@
 #define TAR_SIZE_COUNT     12
 #define TAR_MTIME_COUNT    12
 #define TAR_CHECKSUM_COUNT 8
+#define TAR_TYPEFLAG_COUNT 1
 #define TAR_MAGIC_COUNT    6
 #define TAR_VERSION_COUNT  2
 #define TAR_UNAME_COUNT    32
@@ -39,7 +40,7 @@ struct tar_header
     char size[TAR_SIZE_COUNT];
     char mtime[TAR_MTIME_COUNT];
     char chksum[TAR_CHECKSUM_COUNT];
-    char typeflag;
+    char typeflag[TAR_TYPEFLAG_COUNT];
     char linkname[TAR_NAME_COUNT];
     char magic[TAR_MAGIC_COUNT];
     char version[TAR_VERSION_COUNT];

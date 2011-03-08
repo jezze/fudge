@@ -27,40 +27,36 @@ void main(int argc, char *argv[])
 
     }
 
-    unsigned int i = 6;
+    char buffer[512];
+    struct tar_header *header = (struct tar_header *)&buffer;
+
     unsigned int offset = 0;
 
-    while (i--)
+    while (1)
     {
 
-        char buffer[512];
+        file_read(node, offset, 512, header);
 
-        file_read(node, offset, 512, buffer);
-
-        struct tar_header *header = (struct tar_header *)&buffer;
+        if (header->name[0] == '\0' || header->name[0] == ' ')
+            break;
 
         file_write_string(session_get_out(), header->name);
         file_write_string(session_get_out(), "\t ");
-        file_write(session_get_out(), 0, 12, header->size);
-        file_write_string(session_get_out(), "x\t ");
 
         unsigned int j;
         unsigned int count = 1;
         unsigned int size = 0;
 
-        for (j = 11; j > 0; j--, count *= 10)
+        for (j = 11; j > 0; j--, count *= 8)
             size += ((header->size[j - 1] - '0') * count);
 
         file_write_dec(session_get_out(), size);
-
         file_write_string(session_get_out(), "\n");
 
-        unsigned int blocks = size / 512;
+        offset += ((size / 512) + 1) * 512;
 
         if (size % 512)
-            blocks++;
-
-        offset += blocks * 512 + 512;
+            offset += 512;
 
     }
 
