@@ -129,6 +129,7 @@ $GCC $GCCFLAGS $DIR_SOURCE_BIN/hello.c -o $DIR_SOURCE_BIN/hello.o
 $GCC $GCCFLAGS $DIR_SOURCE_BIN/ls.c -o $DIR_SOURCE_BIN/ls.o
 $GCC $GCCFLAGS $DIR_SOURCE_BIN/reboot.c -o $DIR_SOURCE_BIN/reboot.o
 $GCC $GCCFLAGS $DIR_SOURCE_BIN/shell.c -o $DIR_SOURCE_BIN/shell.o
+$GCC $GCCFLAGS $DIR_SOURCE_BIN/tar.c -o $DIR_SOURCE_BIN/tar.o
 $GCC $GCCFLAGS $DIR_SOURCE_BIN/timer.c -o $DIR_SOURCE_BIN/timer.o
 $GCC $GCCFLAGS $DIR_SOURCE_BIN/vga.c -o $DIR_SOURCE_BIN/vga.o
 
@@ -146,6 +147,7 @@ $LD $LDFLAGS $DIR_SOURCE_BIN/hello.o $DIR_SOURCE_LIB/memory.o $DIR_SOURCE_LIB/se
 $LD $LDFLAGS $DIR_SOURCE_BIN/ls.o $DIR_SOURCE_LIB/memory.o $DIR_SOURCE_LIB/session.o $DIR_SOURCE_LIB/string.o $DIR_SOURCE_LIB/file.o $DIR_SOURCE_ARCH_LIB/calls.o -o $DIR_IMAGE_BIN/ls
 $LD $LDFLAGS $DIR_SOURCE_BIN/reboot.o $DIR_SOURCE_LIB/memory.o $DIR_SOURCE_LIB/session.o $DIR_SOURCE_LIB/string.o $DIR_SOURCE_LIB/file.o $DIR_SOURCE_ARCH_LIB/calls.o -o $DIR_IMAGE_BIN/reboot
 $LD $LDFLAGS $DIR_SOURCE_BIN/shell.o $DIR_SOURCE_LIB/memory.o $DIR_SOURCE_LIB/session.o $DIR_SOURCE_LIB/string.o $DIR_SOURCE_LIB/file.o $DIR_SOURCE_ARCH_LIB/calls.o -o $DIR_IMAGE_BIN/shell
+$LD $LDFLAGS $DIR_SOURCE_BIN/tar.o $DIR_SOURCE_LIB/memory.o $DIR_SOURCE_LIB/session.o $DIR_SOURCE_LIB/string.o $DIR_SOURCE_LIB/file.o $DIR_SOURCE_ARCH_LIB/calls.o -o $DIR_IMAGE_BIN/tar
 $LD $LDFLAGS $DIR_SOURCE_BIN/timer.o $DIR_SOURCE_LIB/memory.o $DIR_SOURCE_LIB/session.o $DIR_SOURCE_LIB/string.o $DIR_SOURCE_LIB/file.o $DIR_SOURCE_ARCH_LIB/calls.o -o $DIR_IMAGE_BIN/timer
 $LD $LDFLAGS $DIR_SOURCE_BIN/vga.o $DIR_SOURCE_LIB/memory.o $DIR_SOURCE_LIB/session.o $DIR_SOURCE_LIB/string.o $DIR_SOURCE_LIB/file.o $DIR_SOURCE_ARCH_LIB/calls.o -o $DIR_IMAGE_BIN/vga
 
@@ -154,5 +156,5 @@ GCCFLAGS="-O2"
 
 $GCC $GCCFLAGS $DIR_SOURCE_TOOLS/mkinitrd.c -o $DIR_SOURCE_TOOLS/mkinitrd
 
-$DIR_SOURCE_TOOLS/mkinitrd $DIR_IMAGE_BIN/cat cat $DIR_IMAGE_BIN/cd cd $DIR_IMAGE_BIN/clear clear $DIR_IMAGE_BIN/cpu cpu $DIR_IMAGE_BIN/date date $DIR_IMAGE_BIN/echo echo $DIR_IMAGE_BIN/elf elf $DIR_IMAGE_BIN/hello hello $DIR_IMAGE_BIN/ls ls $DIR_IMAGE_BIN/reboot reboot $DIR_IMAGE_BIN/shell shell $DIR_IMAGE_BIN/timer timer $DIR_IMAGE_BIN/vga vga $DIR_IMAGE_TXT/about.txt about.txt $DIR_IMAGE_TXT/help.txt help.txt
+$DIR_SOURCE_TOOLS/mkinitrd $DIR_IMAGE_BIN/cat cat $DIR_IMAGE_BIN/cd cd $DIR_IMAGE_BIN/clear clear $DIR_IMAGE_BIN/cpu cpu $DIR_IMAGE_BIN/date date $DIR_IMAGE_BIN/echo echo $DIR_IMAGE_BIN/elf elf $DIR_IMAGE_BIN/hello hello $DIR_IMAGE_BIN/ls ls $DIR_IMAGE_BIN/reboot reboot $DIR_IMAGE_BIN/shell shell $DIR_IMAGE_BIN/tar tar $DIR_IMAGE_BIN/timer timer $DIR_IMAGE_BIN/vga vga $DIR_IMAGE_TXT/about.txt about.txt $DIR_IMAGE_TXT/help.txt help.txt $DIR_IMAGE_TXT/initrdtar initrdtar
 
