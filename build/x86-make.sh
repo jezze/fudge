@@ -3,7 +3,6 @@
 DIR_IMAGE="root"
 DIR_IMAGE_BIN="root/bin"
 DIR_IMAGE_BOOT="root/boot"
-DIR_IMAGE_TXT="root/txt"
 DIR_SOURCE_ARCH_KERNEL="../arch/x86/kernel"
 DIR_SOURCE_ARCH_LIB="../arch/x86/lib"
 DIR_SOURCE_ARCH_MODULES="../arch/x86/modules"
@@ -11,7 +10,6 @@ DIR_SOURCE_BIN="../bin"
 DIR_SOURCE_KERNEL="../kernel"
 DIR_SOURCE_LIB="../lib"
 DIR_SOURCE_MODULES="../modules"
-DIR_SOURCE_TOOLS="../tools"
 
 ASM="nasm"
 ASMFLAGS="-f elf"
@@ -156,3 +154,4 @@ TAR="tar"
 TARFLAGS="-cvf"
 
 $TAR $TARFLAGS $DIR_IMAGE_BOOT/initrd.tar $DIR_IMAGE_BIN
+
