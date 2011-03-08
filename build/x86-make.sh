@@ -157,7 +157,7 @@ GCCFLAGS="-O2"
 
 $GCC $GCCFLAGS $DIR_SOURCE_TOOLS/mkinitrd.c -o $DIR_SOURCE_TOOLS/mkinitrd
 
-$DIR_SOURCE_TOOLS/mkinitrd $DIR_IMAGE_BIN/cat cat $DIR_IMAGE_BIN/cd cd $DIR_IMAGE_BIN/clear clear $DIR_IMAGE_BIN/cpu cpu $DIR_IMAGE_BIN/date date $DIR_IMAGE_BIN/echo echo $DIR_IMAGE_BIN/elf elf $DIR_IMAGE_BIN/hello hello $DIR_IMAGE_BIN/ls ls $DIR_IMAGE_BIN/reboot reboot $DIR_IMAGE_BIN/shell shell $DIR_IMAGE_BIN/tar tar $DIR_IMAGE_BIN/timer timer $DIR_IMAGE_BIN/vga vga $DIR_IMAGE_TXT/about.txt about.txt $DIR_IMAGE_TXT/help.txt help.txt $DIR_IMAGE_TXT/initrdtar initrdtar
+$DIR_SOURCE_TOOLS/mkinitrd $DIR_IMAGE_BIN/cat cat $DIR_IMAGE_BIN/cd cd $DIR_IMAGE_BIN/clear clear $DIR_IMAGE_BIN/cpu cpu $DIR_IMAGE_BIN/date date $DIR_IMAGE_BIN/echo echo $DIR_IMAGE_BIN/elf elf $DIR_IMAGE_BIN/hello hello $DIR_IMAGE_BIN/ls ls $DIR_IMAGE_BIN/reboot reboot $DIR_IMAGE_BIN/shell shell $DIR_IMAGE_BIN/tar tar $DIR_IMAGE_BIN/timer timer $DIR_IMAGE_BIN/vga vga $DIR_IMAGE_TXT/about.txt about.txt $DIR_IMAGE_TXT/help.txt help.txt $DIR_IMAGE_TXT/initrd.tar initrd.tar
 
 TAR="tar"
 TARFLAGS="-cvf"
