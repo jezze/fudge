@@ -2,6 +2,7 @@
 
 DIR_IMAGE="root"
 DIR_IMAGE_BIN="root/bin"
+DIR_IMAGE_BOOT="root/boot"
 DIR_IMAGE_TXT="root/txt"
 DIR_SOURCE_ARCH_KERNEL="../arch/x86/kernel"
 DIR_SOURCE_ARCH_LIB="../arch/x86/lib"
@@ -158,3 +159,7 @@ $GCC $GCCFLAGS $DIR_SOURCE_TOOLS/mkinitrd.c -o $DIR_SOURCE_TOOLS/mkinitrd
 
 $DIR_SOURCE_TOOLS/mkinitrd $DIR_IMAGE_BIN/cat cat $DIR_IMAGE_BIN/cd cd $DIR_IMAGE_BIN/clear clear $DIR_IMAGE_BIN/cpu cpu $DIR_IMAGE_BIN/date date $DIR_IMAGE_BIN/echo echo $DIR_IMAGE_BIN/elf elf $DIR_IMAGE_BIN/hello hello $DIR_IMAGE_BIN/ls ls $DIR_IMAGE_BIN/reboot reboot $DIR_IMAGE_BIN/shell shell $DIR_IMAGE_BIN/tar tar $DIR_IMAGE_BIN/timer timer $DIR_IMAGE_BIN/vga vga $DIR_IMAGE_TXT/about.txt about.txt $DIR_IMAGE_TXT/help.txt help.txt $DIR_IMAGE_TXT/initrdtar initrdtar
 
+TAR="tar"
+TARFLAGS="-cvf"
+
+$TAR $TARFLAGS $DIR_IMAGE_BOOT/initrd.tar $DIR_IMAGE_BIN

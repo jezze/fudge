@@ -18,6 +18,7 @@ rm -f root/bin/timer
 rm -f root/bin/vga
 rm -f root/boot/kernel
 rm -f root/boot/initrd
+rm -f root/boot/initrd.tar
 rm -f ../arch/arm/kernel/*.o
 rm -f ../arch/arm/lib/*.o
 rm -f ../arch/x86/kernel/*.o
