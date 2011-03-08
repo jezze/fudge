@@ -36,5 +36,4 @@ rm -f ../kernel/*.o
 rm -f ../lib/*.o
 rm -f ../modules/elf/*.o
 rm -f ../modules/tty/*.o
-rm -f ../tools/mkinitrd
 
