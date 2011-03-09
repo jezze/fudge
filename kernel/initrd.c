@@ -10,6 +10,9 @@
 struct tar_header *initrdFileHeaders[64];
 struct vfs_node *initrdEntries[64];
 
+struct tar_header *testFileHeaders[64];
+struct vfs_node *testEntries[64];
+
 static unsigned int initrd_file_read(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
@@ -79,14 +82,9 @@ static unsigned int initrd_get_file_size(const char *in)
 
 }
 
-void initrd_init(unsigned int address)
+void initrd_parse(unsigned int address, struct vfs_node *initrdNode)
 {
 
-    struct vfs_node *initrdNode = vfs_add_node("initrd", 0);
-    initrdNode->walk = initrd_node_walk;
-    initrdNode->write = initrd_node_write;
-
-    unsigned int offset = 0;
     unsigned int inode = 0;
 
     while (1)
@@ -117,8 +115,19 @@ void initrd_init(unsigned int address)
 
     }
 
+}
+
+void initrd_init(unsigned int address)
+{
+
+    struct vfs_node *initrdNode = vfs_add_node("initrd", 0);
+    initrdNode->walk = initrd_node_walk;
+    initrdNode->write = initrd_node_write;
+
     struct vfs_node *rootNode = call_open("/");
     file_write(rootNode, rootNode->length, 1, initrdNode);
+
+    initrd_parse(address, initrdNode);
 
 }
 
