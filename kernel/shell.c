@@ -97,7 +97,7 @@ static void shell_interpret(char *command)
 
         }
 
-        struct vfs_node *initrd = call_open("/initrd");
+        struct vfs_node *initrd = call_open("/bin");
         struct vfs_node *node = file_find(initrd, argv[0]);
 
         if (node)
