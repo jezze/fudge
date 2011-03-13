@@ -10,6 +10,7 @@
 struct tar_header *initrdFileHeaders[64];
 struct vfs_node *initrdEntries[64];
 struct vfs_node *initrdTestEntries[64];
+unsigned int initrdTestCount;
 
 static unsigned int initrd_file_read(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
@@ -134,14 +135,15 @@ static void initrd_create_nodes(struct vfs_node *rootNode, unsigned int numEntri
 static struct vfs_node *initrd_node_walk2(struct vfs_node *node, unsigned int index)
 {
 
-    return (index < node->length) ? initrdTestEntries[node->inode + index + 1] : 0;
+    return (index < node->length) ? initrdTestEntries[node->inode + index] : 0;
 
 }
 
 static unsigned int initrd_node_write2(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    initrdTestEntries[offset] = (struct vfs_node *)buffer;
+    initrdTestEntries[initrdTestCount] = (struct vfs_node *)buffer;
+    initrdTestCount++;
     node->length++;
 
     return count;
@@ -163,7 +165,6 @@ static unsigned int initrd_create_nodes2(struct vfs_node *rootNode, unsigned int
 
         struct vfs_node *initrdFileNode = vfs_add_node(header->name + start, size);
         initrdFileNode->inode = i;
-        string_replace(initrdFileNode->name, '/', '\0');
 
         file_write(rootNode, rootNode->length, 1, initrdFileNode);
 
@@ -178,10 +179,11 @@ static unsigned int initrd_create_nodes2(struct vfs_node *rootNode, unsigned int
         else
         {
 
+            string_replace(initrdFileNode->name, '/', '\0');
             initrdFileNode->walk = initrd_node_walk2;
             initrdFileNode->write = initrd_node_write2;
 
-            i = initrd_create_nodes2(initrdFileNode, i + 1, numEntries);
+            i = initrd_create_nodes2(initrdFileNode, i + 1, numEntries) + 1;
 
         }
 
@@ -194,6 +196,7 @@ static unsigned int initrd_create_nodes2(struct vfs_node *rootNode, unsigned int
 void initrd_init(unsigned int address)
 {
 
+    initrdTestCount = 0;
     unsigned int numEntries = initrd_parse(address);
 
     struct vfs_node *initrdNode = vfs_add_node("initrd", 0);
