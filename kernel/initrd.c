@@ -7,8 +7,8 @@
 #include <kernel/initrd.h>
 #include <kernel/vfs.h>
 
-struct tar_header *initrdFileHeaders[64];
-struct vfs_node *initrdEntries[64];
+struct tar_header *initrdFileHeaders[INITRD_HEADER_SIZE];
+struct vfs_node *initrdEntries[INITRD_HEADER_SIZE];
 
 static unsigned int initrd_file_read(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
@@ -21,7 +21,7 @@ static unsigned int initrd_file_read(struct vfs_node *node, unsigned int offset,
     if (offset + count > node->length)
         count = node->length - offset;
 
-    unsigned int address = (unsigned int)header + 512;
+    unsigned int address = (unsigned int)header + TAR_BLOCK_SIZE;
 
     memory_copy(buffer, (unsigned char *)(address + offset), count);
 
@@ -40,7 +40,7 @@ static unsigned int initrd_file_write(struct vfs_node *node, unsigned int offset
     if (offset + count > node->length)
         count = node->length - offset;
 
-    unsigned int address = (unsigned int)header + 512;
+    unsigned int address = (unsigned int)header + TAR_BLOCK_SIZE;
 
     memory_copy((unsigned char *)(address + offset), buffer, count);
 
@@ -79,10 +79,10 @@ static unsigned int initrd_parse(unsigned int address)
 
         initrdFileHeaders[i] = header;
 
-        address += ((size / 512) + 1) * 512;
+        address += ((size / TAR_BLOCK_SIZE) + 1) * TAR_BLOCK_SIZE;
 
-        if (size % 512)
-            address += 512;
+        if (size % TAR_BLOCK_SIZE)
+            address += TAR_BLOCK_SIZE;
 
     }
 
@@ -115,28 +115,31 @@ static void initrd_create_nodes(unsigned int numEntries)
     {
 
         struct tar_header *header = initrdFileHeaders[i];
+
+        unsigned int isDirectory = header->name[string_length(header->name) - 1] == '/';
+
         unsigned int size = initrd_get_file_size(header->size);
-        unsigned int start = string_index_reversed(header->name, '/', (size) ? 0 : 1) + 1;
+        unsigned int start = string_index_reversed(header->name, '/', (isDirectory) ? 1 : 0) + 1;
 
         struct vfs_node *initrdFileNode = vfs_add_node(header->name + start, size);
         initrdFileNode->inode = i;
 
         initrdEntries[i] = initrdFileNode;
 
-        if (size)
+        if (isDirectory)
         {
 
-            initrdFileNode->read = initrd_file_read;
-            initrdFileNode->write = initrd_file_write;
+            string_replace(initrdFileNode->name, '/', '\0');
+            initrdFileNode->walk = initrd_node_walk;
+            initrdFileNode->write = initrd_node_write;
 
         }
 
         else
         {
 
-            string_replace(initrdFileNode->name, '/', '\0');
-            initrdFileNode->walk = initrd_node_walk;
-            initrdFileNode->write = initrd_node_write;
+            initrdFileNode->read = initrd_file_read;
+            initrdFileNode->write = initrd_file_write;
 
         }
 
@@ -154,7 +157,7 @@ static void initrd_create_nodes(unsigned int numEntries)
 void initrd_init(unsigned int address)
 {
 
-    unsigned int numEntries = initrd_parse(address + 512);
+    unsigned int numEntries = initrd_parse(address + TAR_BLOCK_SIZE);
 
     initrd_create_nodes(numEntries);
 
