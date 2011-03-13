@@ -6,7 +6,7 @@
 struct vfs_node vfsNodes[256];
 unsigned int vfsNodesCount;
 
-struct vfs_node *vfsRootEntries[32];
+struct vfs_node *vfsRootEntries[64];
 
 struct vfs_node *vfs_get_root(struct vfs_node *node, unsigned int index)
 {
