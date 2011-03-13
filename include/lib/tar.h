@@ -21,14 +21,14 @@
 #define TAR_PREFIX_SIZE   155
 #define TAR_FILL_SIZE     12
 
-#define TAR_FILETYPE_NORMAL  0
-#define TAR_FILETYPE_LINK    1
-#define TAR_FILETYPE_SYMLINK 2
-#define TAR_FILETYPE_CHAR    3
-#define TAR_FILETYPE_BLOCK   4
-#define TAR_FILETYPE_DIR     5
-#define TAR_FILETYPE_FIFO    6
-#define TAR_FILETYPE_CONT    7
+#define TAR_FILETYPE_NORMAL  '0'
+#define TAR_FILETYPE_LINK    '1'
+#define TAR_FILETYPE_SYMLINK '2'
+#define TAR_FILETYPE_CHAR    '3'
+#define TAR_FILETYPE_BLOCK   '4'
+#define TAR_FILETYPE_DIR     '5'
+#define TAR_FILETYPE_FIFO    '6'
+#define TAR_FILETYPE_CONT    '7'
 
 struct tar_header
 {

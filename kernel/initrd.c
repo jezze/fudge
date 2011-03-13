@@ -116,17 +116,15 @@ static void initrd_create_nodes(unsigned int numEntries)
 
         struct tar_header *header = initrdFileHeaders[i];
 
-        unsigned int isDirectory = header->name[string_length(header->name) - 1] == '/';
-
         unsigned int size = initrd_get_file_size(header->size);
-        unsigned int start = string_index_reversed(header->name, '/', (isDirectory) ? 1 : 0) + 1;
+        unsigned int start = string_index_reversed(header->name, '/', (header->typeflag[0] == TAR_FILETYPE_DIR) ? 1 : 0) + 1;
 
         struct vfs_node *initrdFileNode = vfs_add_node(header->name + start, size);
         initrdFileNode->inode = i;
 
         initrdEntries[i] = initrdFileNode;
 
-        if (isDirectory)
+        if (header->typeflag[0] == TAR_FILETYPE_DIR)
         {
 
             string_replace(initrdFileNode->name, '/', '\0');
