@@ -15,7 +15,7 @@ void file_close(struct vfs_node *node)
 struct vfs_node *file_find(struct vfs_node *node, char *path)
 {
 
-    unsigned int index = string_index(path, '/');
+    unsigned int index = string_index(path, '/', 0);
     unsigned int length = string_length(path);
 
     if (!index)

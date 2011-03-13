@@ -31,7 +31,7 @@ void *memory_copy(void *out, const void *in, unsigned int count)
 
 }
 
-unsigned int memory_index(const void *in, char value, unsigned int count)
+unsigned int memory_index(const void *in, char value, unsigned int count, unsigned int skip)
 {
 
     const char *ip = in;
@@ -40,7 +40,14 @@ unsigned int memory_index(const void *in, char value, unsigned int count)
     {
 
         if (*ip == value)
-            break;
+        {
+
+            if (skip)
+                skip--;
+            else
+                break;
+
+        }
 
     }
 
@@ -102,10 +109,22 @@ void *memory_set(void *out, char value, unsigned int count)
 
 }
 
-short *memory_setw(void *out, short value, unsigned int count)
+void *memory_setw(void *out, short value, unsigned int count)
 {
 
     short *op = out;
+
+    for (; count; op++, count--)
+        *op = value;
+
+    return out;
+
+}
+
+void *memory_setd(void *out, int value, unsigned int count)
+{
+
+    int *op = out;
 
     for (; count; op++, count--)
         *op = value;

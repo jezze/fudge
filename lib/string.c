@@ -26,10 +26,10 @@ char *string_copy(char *out, const char *in)
 
 }
 
-unsigned int string_index(const char *in, char value)
+unsigned int string_index(const char *in, char value, unsigned int skip)
 {
 
-    return memory_index(in, value, string_length(in));
+    return memory_index(in, value, string_length(in), skip);
 
 }
 
