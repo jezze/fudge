@@ -6,7 +6,7 @@
 void main(int argc, char *argv[])
 {
 
-    struct vfs_node *node = session_get_location();
+    struct vfs_node *node = session_get_cwd();
 
     if (argc == 2)
         node = file_find(node, argv[1]);

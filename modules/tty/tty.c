@@ -13,7 +13,7 @@ struct vfs_node *ttyVgaNode;
 struct vfs_node *ttyVgaColorNode;
 struct vfs_node *ttyVgaCursorNode;
 
-char ttyLocation[256];
+char ttyCwd[256];
 
 static void tty_scroll()
 {
@@ -98,23 +98,23 @@ static unsigned int tty_write(struct vfs_node *node, unsigned int offset, unsign
 
 }
 
-static unsigned int tty_location_read(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int tty_cwd_read(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    count = string_length(ttyLocation) - offset;
+    count = string_length(ttyCwd) - offset;
 
-    string_copy(buffer, ttyLocation + offset);
+    string_copy(buffer, ttyCwd + offset);
 
     return count;
 
 }
 
-static unsigned int tty_location_write(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int tty_cwd_write(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    count = string_length(ttyLocation) - offset;
+    count = string_length(ttyCwd) - offset;
 
-    string_copy(ttyLocation + offset, buffer);
+    string_copy(ttyCwd + offset, buffer);
 
     return count;
 
@@ -151,18 +151,18 @@ void tty_init()
 
     tty_init_vga();
 
-    string_copy(ttyLocation, "/");
+    string_copy(ttyCwd, "/");
 
     struct vfs_node *ttyStdoutNode = vfs_add_node("tty", TTY_CHARACTER_SIZE);
     ttyStdoutNode->write = tty_write;
 
-    struct vfs_node *ttyLocationNode = vfs_add_node("location", 256);
-    ttyLocationNode->read = tty_location_read;
-    ttyLocationNode->write = tty_location_write;
+    struct vfs_node *ttyCwdNode = vfs_add_node("cwd", 256);
+    ttyCwdNode->read = tty_cwd_read;
+    ttyCwdNode->write = tty_cwd_write;
 
     struct vfs_node *devNode = call_open("/dev");
     file_write(devNode, devNode->length, 1, ttyStdoutNode);
-    file_write(devNode, devNode->length, 1, ttyLocationNode);
+    file_write(devNode, devNode->length, 1, ttyCwdNode);
 
 }
 

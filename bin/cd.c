@@ -7,11 +7,11 @@
 void main(int argc, char *argv[])
 {
 
-    struct vfs_node *location = call_open("/dev/location");
+    struct vfs_node *cwd = call_open("/dev/cwd");
 
     char buffer[256];
 
-    unsigned int size = file_read(location, 0, 256, buffer);
+    unsigned int size = file_read(cwd, 0, 256, buffer);
 
     if (argc == 1)
     {
@@ -23,7 +23,7 @@ void main(int argc, char *argv[])
 
     }
 
-    struct vfs_node *node = file_find(session_get_location(), argv[1]);
+    struct vfs_node *node = file_find(session_get_cwd(), argv[1]);
 
     if (!node)
     {
@@ -44,9 +44,9 @@ void main(int argc, char *argv[])
     }
 
     if (argv[1][0] == '/')
-        file_write(location, 0, string_length(argv[1]), argv[1]);
+        file_write(cwd, 0, string_length(argv[1]), argv[1]);
     else
-        file_write(location, size, string_length(argv[1]), argv[1]);
+        file_write(cwd, size, string_length(argv[1]), argv[1]);
 
 }
 

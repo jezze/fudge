@@ -3,7 +3,7 @@
 
 struct vfs_node;
 
-struct vfs_node *session_get_location();
+struct vfs_node *session_get_cwd();
 struct vfs_node *session_get_in();
 struct vfs_node *session_get_out();
 
