@@ -9,6 +9,7 @@
 
 struct tar_header *initrdFileHeaders[64];
 struct vfs_node *initrdEntries[64];
+struct vfs_node *initrdTestEntries[64];
 
 static unsigned int initrd_file_read(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
@@ -133,13 +134,14 @@ static void initrd_create_nodes(struct vfs_node *rootNode, unsigned int numEntri
 static struct vfs_node *initrd_node_walk2(struct vfs_node *node, unsigned int index)
 {
 
-    return (index < node->length) ? initrdEntries[node->inode + index + 1] : 0;
+    return (index < node->length) ? initrdTestEntries[node->inode + index + 1] : 0;
 
 }
 
 static unsigned int initrd_node_write2(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
+    initrdTestEntries[offset] = (struct vfs_node *)buffer;
     node->length++;
 
     return count;
@@ -156,11 +158,12 @@ static unsigned int initrd_create_nodes2(struct vfs_node *rootNode, unsigned int
 
         unsigned int size = initrd_get_file_size(header->size);
 
-        unsigned int rootLength = string_length(rootNode->name) + 1;
-        unsigned int headerLength = string_length(header->name);
+        unsigned int skip = (size) ? 0 : 1;
+        unsigned int start = string_index_reversed(header->name, '/', skip) + 1;
 
-        struct vfs_node *initrdFileNode = vfs_add_node(header->name + rootLength, size);
+        struct vfs_node *initrdFileNode = vfs_add_node(header->name + start, size);
         initrdFileNode->inode = i;
+        string_replace(initrdFileNode->name, '/', '\0');
 
         file_write(rootNode, rootNode->length, 1, initrdFileNode);
 
