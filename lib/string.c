@@ -4,7 +4,12 @@
 int string_compare(const char *in1, const char *in2)
 {
 
-    return memory_compare(in1, in2, string_length(in2));
+    unsigned int count1 = string_length(in1);
+    unsigned int count2 = string_length(in2);
+
+    unsigned int count = (count1 > count2) ? count2 : count1;
+
+    return memory_compare(in1, in2, count);
 
 }
 

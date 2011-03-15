@@ -43,10 +43,28 @@ void main(int argc, char *argv[])
 
     }
 
+    char c = '/';
+
     if (argv[1][0] == '/')
+    {
         file_write(cwd, 0, string_length(argv[1]), argv[1]);
+
+    }
+
     else
+    {
+
+        if (size > 1)
+        {
+
+            file_write(cwd, size, 1, &c);
+            size++;
+
+        }
+
         file_write(cwd, size, string_length(argv[1]), argv[1]);
+
+    }
 
 }
 
