@@ -96,35 +96,10 @@ void *memory_replace(void *out, char value1, char value2, unsigned int count)
 
 }
 
-
 void *memory_set(void *out, char value, unsigned int count)
 {
 
     char *op = out;
-
-    for (; count; op++, count--)
-        *op = value;
-
-    return out;
-
-}
-
-void *memory_setw(void *out, short value, unsigned int count)
-{
-
-    short *op = out;
-
-    for (; count; op++, count--)
-        *op = value;
-
-    return out;
-
-}
-
-void *memory_setd(void *out, int value, unsigned int count)
-{
-
-    int *op = out;
 
     for (; count; op++, count--)
         *op = value;
