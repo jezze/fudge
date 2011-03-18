@@ -46,6 +46,7 @@ GCCFLAGS="-c -O2 -I../include -Wall -Wextra -ffreestanding -nostdlib -nostartfil
 
 $GCC $GCCFLAGS $DIR_SOURCE_KERNEL/initrd.c -o $DIR_SOURCE_KERNEL/initrd.o
 $GCC $GCCFLAGS $DIR_SOURCE_KERNEL/kernel.c -o $DIR_SOURCE_KERNEL/kernel.o
+$GCC $GCCFLAGS $DIR_SOURCE_KERNEL/log.c -o $DIR_SOURCE_KERNEL/log.o
 $GCC $GCCFLAGS $DIR_SOURCE_KERNEL/modules.c -o $DIR_SOURCE_KERNEL/modules.o
 $GCC $GCCFLAGS $DIR_SOURCE_KERNEL/shell.c -o $DIR_SOURCE_KERNEL/shell.o
 $GCC $GCCFLAGS $DIR_SOURCE_KERNEL/vfs.c -o $DIR_SOURCE_KERNEL/vfs.o
@@ -73,6 +74,7 @@ LDFLAGS=-"T./linker-x86.ld"
 $LD $LDFLAGS \
     $DIR_SOURCE_KERNEL/initrd.o \
     $DIR_SOURCE_KERNEL/kernel.o \
+    $DIR_SOURCE_KERNEL/log.o \
     $DIR_SOURCE_KERNEL/modules.o \
     $DIR_SOURCE_KERNEL/shell.o \
     $DIR_SOURCE_KERNEL/vfs.o \

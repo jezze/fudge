@@ -1,6 +1,7 @@
 #include <lib/file.h>
 #include <lib/session.h>
 #include <kernel/kernel.h>
+#include <kernel/log.h>
 #include <arch/x86/kernel/arch.h>
 #include <arch/x86/kernel/fpu.h>
 #include <arch/x86/kernel/gdt.h>
@@ -51,6 +52,7 @@ void arch_panic(char *message, char *file, unsigned int line)
 static void arch_init_base()
 {
 
+    log_init();
     gdt_init();
     idt_init();
     fpu_init();
