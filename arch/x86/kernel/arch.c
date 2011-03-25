@@ -20,13 +20,8 @@ void arch_assert(unsigned int condition, char *message, char *file, unsigned int
 
     arch_interrupts_disable();
 
-    file_write_string(session_get_out(), "ASSERTION FAIL (");
-    file_write_string(session_get_out(), message);
-    file_write_string(session_get_out(), ") at (");
-    file_write_string(session_get_out(), file);
-    file_write_string(session_get_out(), ":");
-    file_write_dec(session_get_out(), line);
-    file_write_string(session_get_out(), ")\n");
+    void *args[] = {message, file, &line};
+    file_write_string_format(session_get_out(), "ASSERTION FAIL (%s) at (%s:%d)\n", args);
 
     for (;;);
 
@@ -37,13 +32,8 @@ void arch_panic(char *message, char *file, unsigned int line)
 
     arch_interrupts_disable();
 
-    file_write_string(session_get_out(), "KERNEL PANIC (");
-    file_write_string(session_get_out(), message);
-    file_write_string(session_get_out(), ") at (");
-    file_write_string(session_get_out(), file);
-    file_write_string(session_get_out(), ":");
-    file_write_dec(session_get_out(), line);
-    file_write_string(session_get_out(), ")\n");
+    void *args[] = {message, file, &line};
+    file_write_string_format(session_get_out(), "KERNEL PANIC (%s) at (%s:%d)\n", args);
 
     for (;;);
 
