@@ -186,8 +186,8 @@ void shell_init()
 
     shellBufferHead = 0;
 
-    file_write_string(session_get_out(), "Fudge\n");
-    file_write_string(session_get_out(), "-----\n");
+    void *version[1] = {"PRE-ALPHA"};
+    file_write_string_format(session_get_out(), "Fudge (%s)\n\n", version);
     file_write_string(session_get_out(), "Copyright (c) 2009 Jens Nyberg\n");
     file_write_string(session_get_out(), "Type 'cat help.txt' to read the help section.\n\n");
 

@@ -16,6 +16,7 @@ extern unsigned int file_write_dec(struct vfs_node *node, unsigned int num);
 extern unsigned int file_write_hex(struct vfs_node *node, unsigned int num);
 extern unsigned int file_write_num(struct vfs_node *node, unsigned int num, unsigned int base);
 extern unsigned int file_write_string(struct vfs_node *node, char *buffer);
+extern unsigned int file_write_string_format(struct vfs_node *node, char *buffer, void **args);
 
 #endif
 

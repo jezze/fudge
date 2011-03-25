@@ -129,3 +129,58 @@ unsigned int file_write_string(struct vfs_node *node, char *buffer)
 
 }
 
+unsigned int file_write_string_format(struct vfs_node *node, char *buffer, void **args)
+{
+
+    if (!args)
+        return file_write(node, 0, string_length(buffer), buffer);
+
+    unsigned int i;
+    unsigned int length = string_length(buffer);
+    unsigned int size = 0;
+
+    for (i = 0; i < length; i++)
+    {
+
+        if (buffer[i] != '%')
+        {
+
+            size += file_write_byte(node, buffer[i]);
+
+            continue;
+
+        }
+
+        i++;
+
+        switch (buffer[i])
+        {
+
+            case 'c':
+
+                size += file_write_byte(node, **(char **)args);
+
+                break;
+
+            case 'd':
+
+                size += file_write_dec(node, **(int **)args);
+
+                break;
+
+            case 's':
+
+                size += file_write_string(node, *(char **)args);
+
+                break;
+
+        }
+
+        args++;
+
+    }
+
+    return size + i;
+
+}
+
