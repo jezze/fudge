@@ -38,12 +38,12 @@ static void irq_remap()
 void irq_handler(struct isr_registers *registers)
 {
 
-    void (*handler)(struct isr_registers *registers) = irqRoutines[registers->int_no - 32];
+    void (*handler)(struct isr_registers *registers) = irqRoutines[registers->number - 32];
 
     if (handler)
         handler(registers);
 
-    if (registers->int_no >= 40)
+    if (registers->number >= 40)
         io_outb(0xA0, 0x20);
 
     io_outb(0x20, 0x20);

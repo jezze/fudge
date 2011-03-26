@@ -16,19 +16,19 @@ void mmu_handler(struct isr_registers *registers)
 
     log_message(LOG_TYPE_ERROR, "PAGE FAULT", 0);
 
-    if (!(registers->err_code & MMU_ERROR_PRESENT))
+    if (!(registers->error & MMU_ERROR_PRESENT))
         log_message(LOG_TYPE_ERROR, "present", 0);
 
-    if (registers->err_code & MMU_ERROR_RW)
+    if (registers->error & MMU_ERROR_RW)
         log_message(LOG_TYPE_ERROR, "read-only", 0);
 
-    if (registers->err_code & MMU_ERROR_USER)
+    if (registers->error & MMU_ERROR_USER)
         log_message(LOG_TYPE_ERROR, "user-mode", 0);
 
-    if (registers->err_code & MMU_ERROR_RESERVED)
+    if (registers->error & MMU_ERROR_RESERVED)
         log_message(LOG_TYPE_ERROR, "reserved", 0);
 
-    if (registers->err_code & MMU_ERROR_FETCH)
+    if (registers->error & MMU_ERROR_FETCH)
         log_message(LOG_TYPE_ERROR, "fetch", 0);
 
     void *args[] = {&address};

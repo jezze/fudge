@@ -21,10 +21,10 @@ void isr_unregister_handler(unsigned char index)
 void isr_handler(struct isr_registers *registers)
 {
 
-    if (isrRoutines[registers->int_no] != 0)
+    if (isrRoutines[registers->number] != 0)
     {
 
-        void (*handler)(struct isr_registers *registers) = isrRoutines[registers->int_no];
+        void (*handler)(struct isr_registers *registers) = isrRoutines[registers->number];
 
         if (handler)
             handler(registers);
@@ -34,7 +34,7 @@ void isr_handler(struct isr_registers *registers)
     else
     {
 
-        void *args[] = {&registers->int_no, &registers->err_code};
+        void *args[] = {&registers->number, &registers->error};
         log_message(LOG_TYPE_ERROR, "Unhandled interrupt: 0x%x, Error code: %d", args);
 
         for(;;);
