@@ -7,7 +7,33 @@
 void log_message(unsigned int type, char *message, void **args)
 {
 
-    file_write_string_format(session_get_out(), message, args);
+    struct vfs_node *node = session_get_out();
+
+    switch (type)
+    {
+
+        case LOG_TYPE_INFO:
+
+            file_write_string(node, "INFO: ");
+
+            break;
+
+        case LOG_TYPE_WARNING:
+
+            file_write_string(node, "WARNING: ");
+
+            break;
+
+        case LOG_TYPE_ERROR:
+
+            file_write_string(node, "ERROR: ");
+
+            break;
+
+    }
+
+    file_write_string_format(node, message, args);
+    file_write_string(node, "\n");
 
 }
 

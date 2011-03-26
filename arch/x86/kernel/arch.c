@@ -19,7 +19,7 @@ void arch_assert(unsigned int condition, char *message, char *file, unsigned int
     arch_interrupts_disable();
 
     void *args[] = {message, file, &line};
-    log_message(LOG_TYPE_ERROR, "ASSERTION FAIL (%s) at (%s:%d)\n", args);
+    log_message(LOG_TYPE_ERROR, "ASSERTION FAIL (%s) at (%s:%d)", args);
 
     for (;;);
 
@@ -31,7 +31,7 @@ void arch_panic(char *message, char *file, unsigned int line)
     arch_interrupts_disable();
 
     void *args[] = {message, file, &line};
-    log_message(LOG_TYPE_ERROR, "KERNEL PANIC (%s) at (%s:%d)\n", args);
+    log_message(LOG_TYPE_ERROR, "KERNEL PANIC (%s) at (%s:%d)", args);
 
     for (;;);
 

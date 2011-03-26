@@ -1,5 +1,4 @@
 #include <kernel/log.h>
-#include <arch/x86/kernel/arch.h>
 #include <arch/x86/kernel/idt.h>
 #include <arch/x86/kernel/isr.h>
 
