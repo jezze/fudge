@@ -35,7 +35,7 @@ void isr_handler(struct isr_registers *registers)
     {
 
         void *args[] = {&registers->int_no, &registers->err_code};
-        log_message(LOG_TYPE_ERROR, "Unhandled interrupt: 0x%h, Error code: %d", args);
+        log_message(LOG_TYPE_ERROR, "Unhandled interrupt: 0x%x, Error code: %d", args);
 
         for(;;);
 

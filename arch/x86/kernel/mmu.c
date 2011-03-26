@@ -32,7 +32,7 @@ void mmu_handler(struct isr_registers *registers)
         log_message(LOG_TYPE_ERROR, "fetch", 0);
 
     void *args[] = {&address};
-    log_message(LOG_TYPE_ERROR, "Address: 0x%h", args);
+    log_message(LOG_TYPE_ERROR, "Address: 0x%x", args);
 
     arch_panic("PAGE FAULT", __FILE__, __LINE__);
 

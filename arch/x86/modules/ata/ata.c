@@ -1,5 +1,4 @@
-#include <lib/file.h>
-#include <lib/session.h>
+#include <kernel/log.h>
 #include <arch/x86/modules/io/io.h>
 #include <arch/x86/modules/ata/ata.h>
 
@@ -129,23 +128,23 @@ void ata_print_info(struct ata_device *device)
     {
 
         case ATA_DEVICE_TYPE_ATA:
-            file_write_string(session_get_out(), "ata\n");
+            log_message(LOG_TYPE_INFO, "ata", 0);
             break;
 
         case ATA_DEVICE_TYPE_ATAPI:
-            file_write_string(session_get_out(), "atapi\n");
+            log_message(LOG_TYPE_INFO, "atapi", 0);
             break;
 
         case ATA_DEVICE_TYPE_SATA:
-            file_write_string(session_get_out(), "serial ata\n");
+            log_message(LOG_TYPE_INFO, "serial ata", 0);
             break;
 
         case ATA_DEVICE_TYPE_SATAPI:
-            file_write_string(session_get_out(), "serial atapi\n");
+            log_message(LOG_TYPE_INFO, "serial atapi", 0);
             break;
 
         default:
-            file_write_string(session_get_out(), "unknown\n");
+            log_message(LOG_TYPE_INFO, "unknown", 0);
             break;
 
     }
@@ -155,7 +154,7 @@ void ata_print_info(struct ata_device *device)
 void ata_init()
 {
 
-    file_write_string(session_get_out(), "CHECKING ATA\n");
+    log_message(LOG_TYPE_INFO, "ATA", 0);
 
     primaryMaster.control = ATA_PRIMARY_MASTER_CONTROL;
     primaryMaster.data = ATA_PRIMARY_MASTER_DATA;
@@ -163,8 +162,8 @@ void ata_init()
     if (ata_identify(&primaryMaster))
     {
 
-        file_write_string(session_get_out(), "hda: ");
-        ata_print_info(&primaryMaster);        
+        log_message(LOG_TYPE_INFO, "hda:", 0);
+        ata_print_info(&primaryMaster);
 
     }
 
@@ -174,7 +173,7 @@ void ata_init()
     if (ata_identify(&primarySlave))
     {
 
-        file_write_string(session_get_out(), "hdb: ");
+        log_message(LOG_TYPE_INFO, "hdb:", 0);
         ata_print_info(&primarySlave);        
 
     }
@@ -185,7 +184,7 @@ void ata_init()
     if (ata_identify(&secondaryMaster))
     {
 
-        file_write_string(session_get_out(), "hdc: ");
+        log_message(LOG_TYPE_INFO, "hdc:", 0);
         ata_print_info(&secondaryMaster);        
 
     }
@@ -196,12 +195,10 @@ void ata_init()
     if (ata_identify(&secondarySlave))
     {
 
-        file_write_string(session_get_out(), "hdd: ");
+        log_message(LOG_TYPE_INFO, "hdd:", 0);
         ata_print_info(&secondarySlave);        
 
     }
-
-    file_write_string(session_get_out(), "\n");
 
 }
 

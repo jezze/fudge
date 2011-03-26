@@ -1,51 +1,55 @@
-#include <lib/file.h>
-#include <lib/session.h>
 #include <kernel/log.h>
 #include <arch/x86/kernel/mboot.h>
 
 void mboot_init(struct mboot_info *info)
 {
 
-    file_write_string(session_get_out(), "System information\n");
-    file_write_string(session_get_out(), "------------------\n");
+    log_message(LOG_TYPE_INFO, "System information", 0);
 
     if (info->flags & MBOOT_FLAG_MEMORY)
     {
 
-        file_write_string(session_get_out(), "Lower memory: ");
-        file_write_dec(session_get_out(), info->memoryLower);
-        file_write_string(session_get_out(), "KB\n");
+        void *args1[] = {&info->memoryLower};
+        log_message(LOG_TYPE_INFO, "Lower memory: %dKB", args1);
 
-        file_write_string(session_get_out(), "Upper memory: ");
-        file_write_dec(session_get_out(), info->memoryUpper);
-        file_write_string(session_get_out(), "KB\n");
+        void *args2[] = {&info->memoryUpper};
+        log_message(LOG_TYPE_INFO, "Upper memory: %dKB", args2);
 
     }
 
     if (info->flags & MBOOT_FLAG_DEVICE)
     {
 
-        file_write_string(session_get_out(), "Boot device: ");
+        unsigned int deviceNumber = info->device >> 24;
 
-        switch (info->device >> 24)
+        log_message(LOG_TYPE_INFO, "Boot devices", 0);
+
+        switch (deviceNumber)
         {
 
             case 0xE0:
-                file_write_string(session_get_out(), "CD-ROM\n");
+
+                log_message(LOG_TYPE_INFO, "CD-ROM", 0);
+
                 break;
 
             case 0x00:
-                file_write_string(session_get_out(), "Floppy drive\n");
+
+                log_message(LOG_TYPE_INFO, "Floppy drive", 0);
+
                 break;
 
             case 0x80:
-                file_write_string(session_get_out(), "Hard drive\n");
+
+                log_message(LOG_TYPE_INFO, "Hard drive", 0);
+
                 break;
 
             default:
-                file_write_string(session_get_out(), "Unknown (");
-                file_write_hex(session_get_out(), info->device >> 24);
-                file_write_string(session_get_out(), ")\n");
+
+                void *args[] = {&deviceNumber};
+                log_message(LOG_TYPE_INFO, "Unknown (%d)", args);
+
                 break;
 
         }
@@ -55,23 +59,22 @@ void mboot_init(struct mboot_info *info)
     if (info->flags & MBOOT_FLAG_CMDLINE)
     {
 
-        file_write_string(session_get_out(), "Command: ");
-        file_write_string(session_get_out(), (char *)info->cmdline);
-        file_write_string(session_get_out(), "\n");
+        void *args[] = {(char *)info->cmdline};
+        log_message(LOG_TYPE_INFO, "Command: %s", args);
 
     }
 
     if (info->flags & MBOOT_FLAG_AOUT)
     {
 
-        file_write_string(session_get_out(), "Kernel format: AOUT\n");
+        log_message(LOG_TYPE_INFO, "Kernel format: AOUT", 0);
 
     }
 
     if (info->flags & MBOOT_FLAG_ELF)
     {
 
-        file_write_string(session_get_out(), "Kernel format: ELF\n");
+        log_message(LOG_TYPE_INFO, "Kernel format: ELF", 0);
 
     }
 
@@ -80,15 +83,8 @@ void mboot_init(struct mboot_info *info)
 
         struct mboot_module *module = (struct mboot_module *)info->modulesAddresses;
 
-        file_write_string(session_get_out(), "Modules: ");
-        file_write_string(session_get_out(), (char *)module->name);
-        file_write_string(session_get_out(), " Base: 0x");
-        file_write_hex(session_get_out(), module->base);
-        file_write_string(session_get_out(), " Length: 0x");
-        file_write_hex(session_get_out(), module->length);
-        file_write_string(session_get_out(), " Reserved: ");
-        file_write_dec(session_get_out(), module->reserved);
-        file_write_string(session_get_out(), "\n");
+        void *args[] = {(char *)module->name, &module->base, &module->length, &module->reserved};
+        log_message(LOG_TYPE_INFO, "Modules: %s Base: 0x%x Length: 0x%x Reserved:%d", args);
 
     }
 
@@ -97,37 +93,17 @@ void mboot_init(struct mboot_info *info)
 
         struct mboot_mmap *mmap = (struct mboot_mmap *)info->mmapAddress;
 
-        file_write_string(session_get_out(), "Memory map:\n");
+        log_message(LOG_TYPE_INFO, "Memory map", 0);
 
         while (mmap < info->mmapAddress + info->mmapLength)
         {
 
-            file_write_string(session_get_out(), "0x");
-
-            if (mmap->baseHigh)
-                file_write_hex(session_get_out(), mmap->baseHigh);
-
-            file_write_hex(session_get_out(), mmap->baseLow);
-
-            file_write_string(session_get_out(), "-0x");
-
-            file_write_hex(session_get_out(), mmap->baseLow + mmap->lengthLow);
-
-            file_write_string(session_get_out(), " (0x");
-
-            if (mmap->lengthHigh)
-                file_write_hex(session_get_out(), mmap->lengthHigh);
-
-            file_write_hex(session_get_out(), mmap->lengthLow);
-
-            file_write_string(session_get_out(), " bytes) ");
+            void *args[] = {&mmap->baseHigh, &mmap->baseLow};
 
             if (mmap->type == 1)
-                file_write_string(session_get_out(), "Available");
+                log_message(LOG_TYPE_INFO, "Available: BaseHigh: 0x%x BaseLow: 0x%x", args);
             else
-                file_write_string(session_get_out(), "Reserved");
-
-            file_write_string(session_get_out(), "\n");
+                log_message(LOG_TYPE_INFO, "Reserved: BaseHigh: 0x%x BaseLow: 0x%x", args);
 
             mmap = (struct mboot_mmap *)((unsigned int)mmap + mmap->size + sizeof (unsigned int));
 
@@ -138,9 +114,8 @@ void mboot_init(struct mboot_info *info)
     if (info->flags & MBOOT_FLAG_LOADER)
     {
 
-        file_write_string(session_get_out(), "Loader: ");
-        file_write_string(session_get_out(), (char *)info->name);
-        file_write_string(session_get_out(), "\n");
+        void *args[] = {(char *)info->name};
+        log_message(LOG_TYPE_INFO, "Loader: %s", args);
 
     }
 
@@ -149,7 +124,5 @@ void mboot_init(struct mboot_info *info)
 
 
     }
-
-    file_write_string(session_get_out(), "\n");
 
 }

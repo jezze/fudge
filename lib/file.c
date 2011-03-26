@@ -164,13 +164,19 @@ unsigned int file_write_string_format(struct vfs_node *node, char *buffer, void 
 
             case 'd':
 
-                size += file_write_dec(node, **(int **)args);
+                size += file_write_num(node, **(int **)args, 10);
 
                 break;
 
             case 's':
 
                 size += file_write_string(node, *(char **)args);
+
+                break;
+
+            case 'x':
+
+                size += file_write_num(node, **(int **)args, 16);
 
                 break;
 
