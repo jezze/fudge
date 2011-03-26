@@ -24,7 +24,7 @@ void rtc_ready()
 
 }
 
-static unsigned int rtc_read(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int rtc_read(struct file_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
     rtc_ready();
@@ -81,10 +81,10 @@ static unsigned int rtc_read(struct vfs_node *node, unsigned int offset, unsigne
 void rtc_init()
 {
 
-    struct vfs_node *rtcNode = vfs_add_node("rtc", 0);
+    struct file_node *rtcNode = vfs_add_node("rtc", 0);
     rtcNode->read = rtc_read;
 
-    struct vfs_node *devNode = call_open("/dev");
+    struct file_node *devNode = call_open("/dev");
     file_write(devNode, devNode->length, 1, rtcNode);
 
 }

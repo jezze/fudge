@@ -6,7 +6,7 @@
 void main(int argc, char *argv[])
 {
 
-    struct vfs_node *cwd = call_open("/dev/cwd");
+    struct file_node *cwd = call_open("/dev/cwd");
 
     char buffer[256];
 
@@ -22,7 +22,7 @@ void main(int argc, char *argv[])
 
     }
 
-    struct vfs_node *node = file_find(session_get_cwd(), argv[1]);
+    struct file_node *node = file_find(session_get_cwd(), argv[1]);
 
     if (!node)
     {

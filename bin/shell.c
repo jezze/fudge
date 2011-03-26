@@ -44,7 +44,7 @@ static void shell_clear()
 
 }
 
-static void shell_call(struct vfs_node *node, int argc, char *argv[])
+static void shell_call(struct file_node *node, int argc, char *argv[])
 {
 
     void *buffer = (void *)0x00300000;
@@ -61,12 +61,12 @@ static void shell_call(struct vfs_node *node, int argc, char *argv[])
 static void change_stdout(char *file)
 {
 
-    struct vfs_node *fileNode = call_open(file);
+    struct file_node *fileNode = call_open(file);
 
     if (!fileNode)
         return;
 
-    struct vfs_node *stdoutNode = call_open("/dev/stdout");
+    struct file_node *stdoutNode = call_open("/dev/stdout");
     stdoutNode->write = fileNode->write;
 
 }
@@ -97,8 +97,8 @@ static void shell_interpret(char *command)
 
         }
 
-        struct vfs_node *initrd = call_open("/initrd");
-        struct vfs_node *node = file_find(initrd, argv[0]);
+        struct file_node *initrd = call_open("/initrd");
+        struct file_node *node = file_find(initrd, argv[0]);
 
         if (node)
         {

@@ -5,7 +5,7 @@
 void main(int argc, char *argv[])
 {
 
-    struct vfs_node *vgaFb = call_open("/dev/tty");
+    struct file_node *vgaFb = call_open("/dev/tty");
 
     char c = ' ';
     unsigned int i;

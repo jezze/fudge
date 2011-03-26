@@ -6,7 +6,7 @@
 void main(int argc, char *argv[])
 {
 
-    struct vfs_node *node = call_open("/dev/io");
+    struct file_node *node = call_open("/dev/io");
 
     char c = 0x10;
 

@@ -5,7 +5,7 @@
 void main(int argc, char *argv[])
 {
 
-    struct vfs_node *node = call_open("/dev/rtc");
+    struct file_node *node = call_open("/dev/rtc");
 
     unsigned char buffer;
 

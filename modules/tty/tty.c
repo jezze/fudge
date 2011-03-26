@@ -8,9 +8,9 @@
 
 struct modules_tty_device ttyDevice;
 
-struct vfs_node *ttyVgaNode;
-struct vfs_node *ttyVgaColorNode;
-struct vfs_node *ttyVgaCursorNode;
+struct file_node *ttyVgaNode;
+struct file_node *ttyVgaColorNode;
+struct file_node *ttyVgaCursorNode;
 
 char ttyCwd[256];
 
@@ -82,7 +82,7 @@ static void tty_vga_clear()
 
 }
 
-static unsigned int tty_write(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int tty_write(struct file_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
     unsigned int i;
@@ -97,7 +97,7 @@ static unsigned int tty_write(struct vfs_node *node, unsigned int offset, unsign
 
 }
 
-static unsigned int tty_cwd_read(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int tty_cwd_read(struct file_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
     count = string_length(ttyCwd) - offset;
@@ -108,7 +108,7 @@ static unsigned int tty_cwd_read(struct vfs_node *node, unsigned int offset, uns
 
 }
 
-static unsigned int tty_cwd_write(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int tty_cwd_write(struct file_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
     count = string_length(ttyCwd) - offset;
@@ -152,14 +152,14 @@ void tty_init()
 
     string_copy(ttyCwd, "/");
 
-    struct vfs_node *ttyStdoutNode = vfs_add_node("tty", TTY_CHARACTER_SIZE);
+    struct file_node *ttyStdoutNode = vfs_add_node("tty", TTY_CHARACTER_SIZE);
     ttyStdoutNode->write = tty_write;
 
-    struct vfs_node *ttyCwdNode = vfs_add_node("cwd", 256);
+    struct file_node *ttyCwdNode = vfs_add_node("cwd", 256);
     ttyCwdNode->read = tty_cwd_read;
     ttyCwdNode->write = tty_cwd_write;
 
-    struct vfs_node *devNode = call_open("/dev");
+    struct file_node *devNode = call_open("/dev");
     file_write(devNode, devNode->length, 1, ttyStdoutNode);
     file_write(devNode, devNode->length, 1, ttyCwdNode);
 

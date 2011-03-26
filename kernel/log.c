@@ -6,7 +6,7 @@
 void log_message(unsigned int type, char *message, void **args)
 {
 
-    struct vfs_node *node = session_get_out();
+    struct file_node *node = session_get_out();
 
     switch (type)
     {

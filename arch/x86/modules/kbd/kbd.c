@@ -79,7 +79,7 @@ static unsigned int kbd_device_write(char *buffer)
 
 }
 
-static unsigned int kbd_node_read(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int kbd_node_read(struct file_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
     return kbdDevice.read(buffer);
@@ -132,7 +132,7 @@ void kbd_init()
     kbdDevice.node.length = 0;
     kbdDevice.node.read = kbd_node_read;
 
-    struct vfs_node *devNode = call_open("/dev");
+    struct file_node *devNode = call_open("/dev");
     file_write(devNode, devNode->length, 1, &kbdDevice.node);
 
     modules_set_kbd_device(&kbdDevice);

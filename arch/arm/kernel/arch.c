@@ -4,7 +4,7 @@
 #define SERIAL_FLAG_REGISTER 0x18
 #define SERIAL_BUFFER_FULL (1 << 5)
 
-struct vfs_node *initrd_init(unsigned int location)
+struct file_node *initrd_init(unsigned int location)
 {
 
     location++;

@@ -5,7 +5,7 @@
 void main(int argc, char *argv[])
 {
 
-    struct vfs_node *node = session_get_cwd();
+    struct file_node *node = session_get_cwd();
 
     if (argc == 2)
         node = file_find(node, argv[1]);
@@ -28,7 +28,7 @@ void main(int argc, char *argv[])
 
     }
 
-    struct vfs_node *current;
+    struct file_node *current;
     unsigned int i;
 
     for (i = 0; (current = file_walk(node, i)); i++)

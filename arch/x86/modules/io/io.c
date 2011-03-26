@@ -31,14 +31,14 @@ static unsigned int io_device_write(char *buffer, unsigned int count, unsigned i
 
 }
 
-static unsigned int io_node_read(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int io_node_read(struct file_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
     return ioDevice.read((char *)buffer, count, offset);
 
 }
 
-static unsigned int io_node_write(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int io_node_write(struct file_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
     return ioDevice.write((char *)buffer, count, offset);
@@ -56,7 +56,7 @@ void io_init()
     ioDevice.node.read = io_node_read;
     ioDevice.node.write = io_node_write;
 
-    struct vfs_node *devNode = call_open("/dev");
+    struct file_node *devNode = call_open("/dev");
     file_write(devNode, devNode->length, 1, &ioDevice.node);
 
     modules_set_io_device(&ioDevice);

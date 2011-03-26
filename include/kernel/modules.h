@@ -3,7 +3,7 @@
 
 #define MODULES_TYPE_BASE              0
 
-struct vfs_node;
+struct file_node;
 
 struct modules_module
 {
@@ -26,7 +26,7 @@ struct modules_io_device
     struct modules_module base;
     unsigned int (*read)(char *buffer, unsigned int count, unsigned int offset);
     unsigned int (*write)(char *buffer, unsigned int count, unsigned int offset);
-    struct vfs_node node;
+    struct file_node node;
 
 };
 
@@ -43,7 +43,7 @@ struct modules_kbd_device
     unsigned char toggleShift;
     unsigned int (*read)(char *buffer);
     unsigned int (*write)(char *buffer);
-    struct vfs_node node;
+    struct file_node node;
 
 };
 
@@ -54,7 +54,7 @@ struct modules_serial_device
     unsigned int port;
     unsigned int (*read)(struct modules_serial_device *device, char *buffer, unsigned int count);
     unsigned int (*write)(struct modules_serial_device *device, char *buffer, unsigned int count);
-    struct vfs_node node;
+    struct file_node node;
 
 };
 
@@ -67,7 +67,7 @@ struct modules_tty_device
     unsigned int (*read)(char *buffer, unsigned int count, unsigned int offset);
     unsigned int (*write)(char *buffer, unsigned int count, unsigned int offset);
     void (*set_color)(unsigned char fg, unsigned char bg);
-    struct vfs_node node;
+    struct file_node node;
 
 };
 
@@ -81,9 +81,9 @@ struct modules_vga_device
     unsigned int (*write_framebuffer)(char *buffer, unsigned int count, unsigned int offset);
     void (*set_cursor_color)(unsigned char fg, unsigned char bg);
     void (*set_cursor_offset)(unsigned short offset);
-    struct vfs_node nodeFramebuffer;
-    struct vfs_node nodeCursorColor;
-    struct vfs_node nodeCursorOffset;
+    struct file_node nodeFramebuffer;
+    struct file_node nodeCursorColor;
+    struct file_node nodeCursorOffset;
 
 };
 

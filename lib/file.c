@@ -3,7 +3,7 @@
 #include <lib/memory.h>
 #include <lib/string.h>
 
-void file_close(struct vfs_node *node)
+void file_close(struct file_node *node)
 {
 
     if (node && node->close)
@@ -11,7 +11,7 @@ void file_close(struct vfs_node *node)
 
 }
 
-struct vfs_node *file_find(struct vfs_node *node, char *path)
+struct file_node *file_find(struct file_node *node, char *path)
 {
 
     unsigned int index = string_index(path, '/', 0);
@@ -20,7 +20,7 @@ struct vfs_node *file_find(struct vfs_node *node, char *path)
     if (!index)
         return node;
 
-    struct vfs_node *current;
+    struct file_node *current;
     unsigned int i;
 
     for (i = 0; (current = file_walk(node, i)); i++)
@@ -40,7 +40,7 @@ struct vfs_node *file_find(struct vfs_node *node, char *path)
 
 }
 
-void file_open(struct vfs_node *node)
+void file_open(struct file_node *node)
 {
 
     if (node && node->open)
@@ -48,63 +48,63 @@ void file_open(struct vfs_node *node)
 
 }
 
-unsigned int file_read(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
+unsigned int file_read(struct file_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
     return (node && node->read) ? node->read(node, offset, count, buffer) : 0;
 
 }
 
-unsigned int file_read_byte(struct vfs_node *node, char c)
+unsigned int file_read_byte(struct file_node *node, char c)
 {
 
     return file_read(node, 0, 1, &c);
 
 }
 
-struct vfs_node *file_walk(struct vfs_node *node, unsigned int index)
+struct file_node *file_walk(struct file_node *node, unsigned int index)
 {
 
     return (node && node->walk) ? node->walk(node, index) : 0;
 
 }
 
-unsigned int file_write(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
+unsigned int file_write(struct file_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
     return (node && node->write) ? node->write(node, offset, count, buffer) : 0;
 
 }
 
-unsigned int file_write_bcd(struct vfs_node *node, unsigned char num)
+unsigned int file_write_bcd(struct file_node *node, unsigned char num)
 {
 
     return file_write_dec(node, num >> 4) + file_write_dec(node, num & 0x0F);
 
 }
 
-unsigned int file_write_byte(struct vfs_node *node, char c)
+unsigned int file_write_byte(struct file_node *node, char c)
 {
 
     return file_write(node, 0, 1, &c);
 
 }
 
-unsigned int file_write_dec(struct vfs_node *node, unsigned int num)
+unsigned int file_write_dec(struct file_node *node, unsigned int num)
 {
 
     return file_write_num(node, num, 10);
 
 }
 
-unsigned int file_write_hex(struct vfs_node *node, unsigned int num)
+unsigned int file_write_hex(struct file_node *node, unsigned int num)
 {
 
     return file_write_num(node, num, 16);
 
 }
 
-unsigned int file_write_num(struct vfs_node *node, unsigned int num, unsigned int base)
+unsigned int file_write_num(struct file_node *node, unsigned int num, unsigned int base)
 {
 
     if (!num)
@@ -121,14 +121,14 @@ unsigned int file_write_num(struct vfs_node *node, unsigned int num, unsigned in
 
 }
 
-unsigned int file_write_string(struct vfs_node *node, char *buffer)
+unsigned int file_write_string(struct file_node *node, char *buffer)
 {
 
     return file_write(node, 0, string_length(buffer), buffer);
 
 }
 
-unsigned int file_write_string_format(struct vfs_node *node, char *buffer, void **args)
+unsigned int file_write_string_format(struct file_node *node, char *buffer, void **args)
 {
 
     if (!args)

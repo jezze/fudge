@@ -1,6 +1,6 @@
 #include <lib/call.h>
 
-struct vfs_node *call_open(char *name)
+struct file_node *call_open(char *name)
 {
 
     return 0;

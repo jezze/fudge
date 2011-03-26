@@ -30,7 +30,7 @@ static unsigned int vga_read_framebuffer(char *buffer, unsigned int count, unsig
 
 }
 
-static unsigned int vga_fb_node_read(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int vga_fb_node_read(struct file_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
     return vgaDevice.read_framebuffer(buffer, count, offset);
@@ -58,14 +58,14 @@ static unsigned int vga_write_framebuffer(char *buffer, unsigned int count, unsi
 
 }
 
-static unsigned int vga_fb_node_write(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int vga_fb_node_write(struct file_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
     return vgaDevice.write_framebuffer(buffer, count, offset);
 
 }
 
-static unsigned int vga_fb_color_node_read(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int vga_fb_color_node_read(struct file_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
     if (count != 1)
@@ -77,7 +77,7 @@ static unsigned int vga_fb_color_node_read(struct vfs_node *node, unsigned int o
 
 }
 
-static unsigned int vga_fb_color_node_write(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int vga_fb_color_node_write(struct file_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
     if (count != 1)
@@ -99,7 +99,7 @@ static void vga_set_cursor_offset(unsigned short offset)
 
 }
 
-static unsigned int vga_fb_cursor_node_write(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int vga_fb_cursor_node_write(struct file_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
     if (count != 1)
@@ -134,7 +134,7 @@ void vga_init()
     vgaDevice.nodeCursorOffset.length = 1;
     vgaDevice.nodeCursorOffset.write = vga_fb_cursor_node_write;
 
-    struct vfs_node *devNode = call_open("/dev");
+    struct file_node *devNode = call_open("/dev");
     file_write(devNode, devNode->length, 1, &vgaDevice.nodeFramebuffer);
     file_write(devNode, devNode->length, 1, &vgaDevice.nodeCursorColor);
     file_write(devNode, devNode->length, 1, &vgaDevice.nodeCursorOffset);

@@ -15,7 +15,7 @@ void main(int argc, char *argv[])
 
     }
 
-    struct vfs_node *node = file_find(session_get_cwd(), argv[1]);
+    struct file_node *node = file_find(session_get_cwd(), argv[1]);
 
     if (!node)
     {
