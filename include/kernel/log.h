@@ -5,7 +5,7 @@
 #define LOG_TYPE_ERROR   1
 #define LOG_TYPE_WARNING 2
 
-extern void log_message(unsigned int type, char *message);
+extern void log_message(unsigned int type, char *message, void **args);
 extern void log_init();
 
 #endif

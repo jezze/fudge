@@ -1,5 +1,6 @@
 #include <lib/file.h>
 #include <lib/session.h>
+#include <kernel/log.h>
 #include <arch/x86/kernel/mboot.h>
 
 void mboot_init(struct mboot_info *info)
