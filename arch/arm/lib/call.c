@@ -1,5 +1,4 @@
 #include <lib/call.h>
-#include <lib/vfs.h>
 
 struct vfs_node *call_open(char *name)
 {

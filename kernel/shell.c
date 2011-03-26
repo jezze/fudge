@@ -3,7 +3,6 @@
 #include <lib/file.h>
 #include <lib/session.h>
 #include <lib/string.h>
-#include <lib/vfs.h>
 #include <kernel/shell.h>
 
 char shellBuffer[SHELL_BUFFER_SIZE];

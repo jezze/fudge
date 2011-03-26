@@ -3,7 +3,6 @@
 #include <file.h>
 #include <session.h>
 #include <string.h>
-#include <vfs.h>
 
 #define SHELL_BUFFER_SIZE 256
 

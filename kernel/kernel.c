@@ -1,4 +1,4 @@
-#include <lib/vfs.h>
+#include <lib/file.h>
 #include <kernel/initrd.h>
 #include <kernel/kernel.h>
 #include <kernel/modules.h>

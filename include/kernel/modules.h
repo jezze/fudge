@@ -3,6 +3,8 @@
 
 #define MODULES_TYPE_BASE              0
 
+struct vfs_node;
+
 struct modules_module
 {
 

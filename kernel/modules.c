@@ -1,6 +1,5 @@
 #include <lib/call.h>
 #include <lib/file.h>
-#include <lib/vfs.h>
 #include <kernel/vfs.h>
 #include <kernel/modules.h>
 #include <modules/elf/elf.h>

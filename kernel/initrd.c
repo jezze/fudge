@@ -3,7 +3,6 @@
 #include <lib/memory.h>
 #include <lib/string.h>
 #include <lib/tar.h>
-#include <lib/vfs.h>
 #include <kernel/initrd.h>
 #include <kernel/vfs.h>
 

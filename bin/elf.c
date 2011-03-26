@@ -2,7 +2,6 @@
 #include <elf.h>
 #include <file.h>
 #include <session.h>
-#include <vfs.h>
 
 void main(int argc, char *argv[])
 {

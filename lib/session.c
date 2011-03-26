@@ -1,6 +1,5 @@
 #include <lib/call.h>
 #include <lib/file.h>
-#include <lib/vfs.h>
 
 struct vfs_node *session_get_cwd()
 {

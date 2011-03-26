@@ -2,7 +2,6 @@
 #include <lib/memory.h>
 #include <lib/file.h>
 #include <lib/string.h>
-#include <lib/vfs.h>
 #include <kernel/modules.h>
 #include <kernel/vfs.h>
 #include <modules/tty/tty.h>

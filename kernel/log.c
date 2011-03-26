@@ -1,5 +1,4 @@
 #include <lib/file.h>
-#include <lib/vfs.h>
 #include <lib/session.h>
 #include <kernel/log.h>
 #include <kernel/modules.h>
