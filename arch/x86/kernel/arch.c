@@ -1,5 +1,3 @@
-#include <lib/file.h>
-#include <lib/session.h>
 #include <kernel/kernel.h>
 #include <kernel/log.h>
 #include <arch/x86/kernel/arch.h>

@@ -1,7 +1,5 @@
-#include <lib/file.h>
 #include <lib/memory.h>
-#include <lib/session.h>
-#include <lib/vfs.h>
+#include <kernel/log.h>
 #include <arch/x86/kernel/arch.h>
 #include <arch/x86/kernel/cr.h>
 #include <arch/x86/kernel/isr.h>
@@ -16,26 +14,25 @@ void mmu_handler(struct isr_registers *registers)
 
     unsigned int address = cr2_read();
 
-    file_write_string(session_get_out(), "PAGE FAULT (");
+    log_message(LOG_TYPE_ERROR, "PAGE FAULT", 0);
 
     if (!(registers->err_code & MMU_ERROR_PRESENT))
-        file_write_string(session_get_out(), "present");
+        log_message(LOG_TYPE_ERROR, "present", 0);
 
     if (registers->err_code & MMU_ERROR_RW)
-        file_write_string(session_get_out(), "read-only");
+        log_message(LOG_TYPE_ERROR, "read-only", 0);
 
     if (registers->err_code & MMU_ERROR_USER)
-        file_write_string(session_get_out(), "user-mode");
+        log_message(LOG_TYPE_ERROR, "user-mode", 0);
 
     if (registers->err_code & MMU_ERROR_RESERVED)
-        file_write_string(session_get_out(), "reserved");
+        log_message(LOG_TYPE_ERROR, "reserved", 0);
 
     if (registers->err_code & MMU_ERROR_FETCH)
-        file_write_string(session_get_out(), "fetch");
+        log_message(LOG_TYPE_ERROR, "fetch", 0);
 
-    file_write_string(session_get_out(), ") at 0x");
-    file_write_hex(session_get_out(), address);
-    file_write_string(session_get_out(), "\n");
+    void *args[] = {&address};
+    log_message(LOG_TYPE_ERROR, "Address: 0x%h", args);
 
     arch_panic("PAGE FAULT", __FILE__, __LINE__);
 

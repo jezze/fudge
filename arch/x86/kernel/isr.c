@@ -1,5 +1,4 @@
-#include <lib/file.h>
-#include <lib/session.h>
+#include <kernel/log.h>
 #include <arch/x86/kernel/arch.h>
 #include <arch/x86/kernel/idt.h>
 #include <arch/x86/kernel/isr.h>
@@ -36,16 +35,8 @@ void isr_handler(struct isr_registers *registers)
     else
     {
 
-        file_write_string(session_get_out(), "Unhandled interrupt: 0x");
-        file_write_hex(session_get_out(), registers->int_no);
-
-        if (registers->err_code)
-        {
-
-            file_write_string(session_get_out(), " - ");
-            file_write_hex(session_get_out(), registers->err_code);
-
-        }
+        void *args[] = {&registers->int_no, &registers->err_code};
+        log_message(LOG_TYPE_ERROR, "Unhandled interrupt: 0x%h, Error code: %d", args);
 
         for(;;);
 
