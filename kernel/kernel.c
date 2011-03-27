@@ -33,12 +33,10 @@ void kernel_init(unsigned int stackAddress)
     initrd_init(kernelInitrdAddress);
     modules_init();
 
-/*
     unsigned int address = gdt_get_stack();
-
     tss_set_stack(address);
-    gdt_usermode_init();
-*/
+
+//    gdt_usermode_init();
 
     kernel_init_usermode();
 
