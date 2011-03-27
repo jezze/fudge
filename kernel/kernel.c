@@ -4,6 +4,7 @@
 #include <kernel/modules.h>
 #include <kernel/shell.h>
 #include <kernel/vfs.h>
+#include <arch/x86/kernel/gdt.h>
 #include <arch/x86/kernel/tss.h>
 
 unsigned int kernelInitrdAddress;
@@ -32,7 +33,12 @@ void kernel_init(unsigned int stackAddress)
     initrd_init(kernelInitrdAddress);
     modules_init();
 
-//    gdt_usermode_init();
+/*
+    unsigned int address = gdt_get_stack();
+
+    tss_set_stack(address);
+    gdt_usermode_init();
+*/
 
     kernel_init_usermode();
 
