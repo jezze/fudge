@@ -4,6 +4,13 @@
 
 struct tss_entry tss;
 
+void tss_set_stack(unsigned int address)
+{
+
+    tss.esp0 = address;
+
+}
+
 void tss_init()
 {
 

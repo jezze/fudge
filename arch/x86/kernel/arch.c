@@ -9,6 +9,7 @@
 #include <arch/x86/kernel/mboot.h>
 #include <arch/x86/kernel/mmu.h>
 #include <arch/x86/kernel/syscall.h>
+#include <arch/x86/kernel/tss.h>
 
 void arch_assert(unsigned int condition, char *message, char *file, unsigned int line)
 {
@@ -42,6 +43,7 @@ static void arch_init_base()
 
     log_init();
     gdt_init();
+    tss_init();
     idt_init();
     fpu_init();
     isr_init();

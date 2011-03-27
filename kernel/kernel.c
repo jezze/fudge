@@ -4,6 +4,7 @@
 #include <kernel/modules.h>
 #include <kernel/shell.h>
 #include <kernel/vfs.h>
+#include <arch/x86/kernel/tss.h>
 
 unsigned int kernelInitrdAddress;
 unsigned int kernelStackAddress;

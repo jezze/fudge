@@ -27,6 +27,8 @@ extern void gdt_flush(struct gdt_ptr *pointer);
 extern void gdt_init();
 extern void gdt_set_gate(unsigned char index, unsigned int base, unsigned int limit, unsigned char access, unsigned char granularity);
 extern void gdt_usermode_init();
+extern unsigned int gdt_get_stack();
+extern void gdt_set_stack(unsigned int address);
 
 #endif
 
