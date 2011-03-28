@@ -12,33 +12,6 @@
 #include <arch/x86/kernel/syscall.h>
 #include <arch/x86/kernel/tss.h>
 
-void arch_assert(unsigned int condition, char *message, char *file, unsigned int line)
-{
-
-    if (condition)
-        return;
-
-    arch_interrupts_disable();
-
-    void *args[] = {message, file, &line};
-    log_message(LOG_TYPE_ERROR, "ASSERTION FAIL (%s) at (%s:%d)", args);
-
-    for (;;);
-
-}
-
-void arch_panic(char *message, char *file, unsigned int line)
-{
-
-    arch_interrupts_disable();
-
-    void *args[] = {message, file, &line};
-    log_message(LOG_TYPE_ERROR, "KERNEL PANIC (%s) at (%s:%d)", args);
-
-    for (;;);
-
-}
-
 static void arch_init_base()
 {
 
@@ -61,9 +34,8 @@ void arch_init(struct mboot_info *header, unsigned int magic, unsigned int stack
 
     arch_init_base();
 
-    arch_assert(magic == MBOOT_MAGIC, "MBOOT_MAGIC is not correct", __FILE__, __LINE__);
-    arch_assert(header->modulesCount, "Module does not exist", __FILE__, __LINE__);
-
+    kernel_assert(magic == MBOOT_MAGIC, "MBOOT_MAGIC is not correct", __FILE__, __LINE__);
+    kernel_assert(header->modulesCount, "Module does not exist", __FILE__, __LINE__);
     kernel_set_initrd(*(unsigned int *)header->modulesAddresses);
     kernel_init(stack);
 

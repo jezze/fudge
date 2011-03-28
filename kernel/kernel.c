@@ -1,14 +1,43 @@
 #include <lib/file.h>
 #include <kernel/initrd.h>
 #include <kernel/kernel.h>
+#include <kernel/log.h>
 #include <kernel/modules.h>
 #include <kernel/shell.h>
 #include <kernel/vfs.h>
+#include <arch/x86/kernel/arch.h>
 #include <arch/x86/kernel/cpu.h>
 #include <arch/x86/kernel/tss.h>
 
 unsigned int kernelInitrdAddress;
 unsigned int kernelStackAddress;
+
+void kernel_assert(unsigned int condition, char *message, char *file, unsigned int line)
+{
+
+    if (condition)
+        return;
+
+    arch_interrupts_disable();
+
+    void *args[] = {message, file, &line};
+    log_message(LOG_TYPE_ERROR, "ASSERTION FAIL (%s) at (%s:%d)", args);
+
+    for (;;);
+
+}
+
+void kernel_panic(char *message, char *file, unsigned int line)
+{
+
+    arch_interrupts_disable();
+
+    void *args[] = {message, file, &line};
+    log_message(LOG_TYPE_ERROR, "KERNEL PANIC (%s) at (%s:%d)", args);
+
+    for (;;);
+
+}
 
 void kernel_set_initrd(unsigned int address)
 {

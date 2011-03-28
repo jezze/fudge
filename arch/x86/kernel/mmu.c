@@ -1,6 +1,6 @@
 #include <lib/memory.h>
+#include <kernel/kernel.h>
 #include <kernel/log.h>
-#include <arch/x86/kernel/arch.h>
 #include <arch/x86/kernel/cpu.h>
 #include <arch/x86/kernel/isr.h>
 #include <arch/x86/kernel/mmu.h>
@@ -34,7 +34,7 @@ void mmu_handler(struct isr_registers *registers)
     void *args[] = {&address};
     log_message(LOG_TYPE_ERROR, "Address: 0x%x", args);
 
-    arch_panic("PAGE FAULT", __FILE__, __LINE__);
+    kernel_panic("PAGE FAULT", __FILE__, __LINE__);
 
 }
 
