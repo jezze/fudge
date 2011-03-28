@@ -1,4 +1,5 @@
 #include <kernel/log.h>
+#include <arch/x86/kernel/arch.h>
 #include <arch/x86/kernel/idt.h>
 #include <arch/x86/kernel/isr.h>
 
@@ -35,9 +36,9 @@ void isr_handler(struct isr_registers *registers)
     {
 
         void *args[] = {&registers->number, &registers->error};
-        log_message(LOG_TYPE_ERROR, "Unhandled interrupt: 0x%x, Error code: %d", args);
+        log_message(LOG_TYPE_ERROR, "Interrupt: 0x%x, Error code: %d", args);
 
-        for(;;);
+        arch_panic("UNHANDLED INTERRUPT", __FILE__, __LINE__);
 
     }
 

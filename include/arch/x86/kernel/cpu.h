@@ -8,6 +8,8 @@ extern unsigned int cpu_get_cr4();
 extern unsigned int cpu_get_eflags();
 extern void cpu_halt();
 extern void cpu_idle();
+extern void cpu_interrupts_off();
+extern void cpu_interrupts_on();
 extern void cpu_set_cr0(unsigned int value);
 extern void cpu_set_cr2(unsigned int value);
 extern void cpu_set_cr3(unsigned int value);

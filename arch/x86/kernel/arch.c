@@ -1,6 +1,7 @@
 #include <kernel/kernel.h>
 #include <kernel/log.h>
 #include <arch/x86/kernel/arch.h>
+#include <arch/x86/kernel/cpu.h>
 #include <arch/x86/kernel/fpu.h>
 #include <arch/x86/kernel/gdt.h>
 #include <arch/x86/kernel/idt.h>
@@ -51,7 +52,7 @@ static void arch_init_base()
     mmu_init();
     syscall_init();
 
-    isr_enable();
+    cpu_interrupts_on();
 
 }
 
@@ -71,21 +72,21 @@ void arch_init(struct mboot_info *header, unsigned int magic, unsigned int stack
 void arch_interrupts_disable()
 {
 
-    isr_disable();
+    cpu_interrupts_off();
 
 }
 
 void arch_interrupts_enable()
 {
 
-    isr_enable();
+    cpu_interrupts_on();
 
 }
 
 void arch_reboot()
 {
 
-    isr_disable();
+    cpu_interrupts_off();
 /*
     unsigned char ready = 0x02;
 

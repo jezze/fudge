@@ -35,6 +35,16 @@ cpu_idle:
     sti
     jmp $
 
+global cpu_interrupts_off
+cpu_interrupts_off:
+    cli
+    ret
+
+global cpu_interrupts_on
+cpu_interrupts_on:
+    sti
+    ret
+
 global cpu_set_cr0
 cpu_set_cr0:
     mov eax, [esp + 4]
