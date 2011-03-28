@@ -12,7 +12,7 @@ struct mmu_table mmuProgramTable;
 void mmu_handler(struct isr_registers *registers)
 {
 
-    unsigned int address = cpu_read_cr2();
+    unsigned int address = cpu_get_cr2();
 
     log_message(LOG_TYPE_ERROR, "PAGE FAULT", 0);
 
@@ -62,14 +62,14 @@ void mmu_map(struct mmu_directory *directory, unsigned int virtualAddress, unsig
 void mmu_set_directory(struct mmu_directory *directory)
 {
 
-    cpu_write_cr3((unsigned int)directory);
+    cpu_set_cr3((unsigned int)directory);
 
 }
 
 void mmu_enable()
 {
 
-    cpu_write_cr0(cpu_read_cr0() | 0x80000000);
+    cpu_set_cr0(cpu_get_cr0() | 0x80000000);
 
 }
 
