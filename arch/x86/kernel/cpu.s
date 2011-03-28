@@ -1,3 +1,5 @@
+extern kernel_init_usermode
+
 global cpu_get_cr0
 cpu_get_cr0:
     mov eax, cr0
@@ -22,6 +24,11 @@ global cpu_get_eflags
 cpu_get_eflags:
     pushf
     pop eax
+    ret
+
+global cpu_get_stack
+cpu_get_stack:
+    mov eax, esp
     ret
 
 global cpu_halt
@@ -75,4 +82,34 @@ cpu_set_eflags:
     push eax
     popf
     ret
+
+global cpu_set_stack
+cpu_set_stack:
+    mov eax, [esp + 4]
+    mov ecx, [esp] 
+    mov esp, eax
+    push ecx
+    ret
+
+global cpu_usermode
+cpu_usermode:
+    cli
+    mov ax, 0x23
+    mov ds, ax
+    mov es, ax
+    mov fs, ax
+    mov gs, ax
+    mov eax, esp
+    push 0x23
+    push eax
+    pushf
+    pop eax
+    or eax, 0x200
+    push eax
+    push 0x1B
+    push cpu_usermode_entry
+    iret
+
+cpu_usermode_entry:
+    jmp kernel_init_usermode
 
