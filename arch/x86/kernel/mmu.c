@@ -1,7 +1,7 @@
 #include <lib/memory.h>
 #include <kernel/log.h>
 #include <arch/x86/kernel/arch.h>
-#include <arch/x86/kernel/cr.h>
+#include <arch/x86/kernel/cpu.h>
 #include <arch/x86/kernel/isr.h>
 #include <arch/x86/kernel/mmu.h>
 
@@ -12,7 +12,7 @@ struct mmu_table mmuProgramTable;
 void mmu_handler(struct isr_registers *registers)
 {
 
-    unsigned int address = cr2_read();
+    unsigned int address = cpu_read_cr2();
 
     log_message(LOG_TYPE_ERROR, "PAGE FAULT", 0);
 
@@ -62,14 +62,14 @@ void mmu_map(struct mmu_directory *directory, unsigned int virtualAddress, unsig
 void mmu_set_directory(struct mmu_directory *directory)
 {
 
-    cr3_write((unsigned int)directory);
+    cpu_write_cr3((unsigned int)directory);
 
 }
 
 void mmu_enable()
 {
 
-    cr0_write(cr0_read() | 0x80000000);
+    cpu_write_cr0(cpu_read_cr0() | 0x80000000);
 
 }
 
