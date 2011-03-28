@@ -24,6 +24,17 @@ cpu_get_eflags:
     pop eax
     ret
 
+global cpu_halt
+cpu_halt:
+    cli
+    hlt
+
+global cpu_idle
+cpu_idle:
+    mov eax, [esp]
+    sti
+    jmp $
+
 global cpu_set_cr0
 cpu_set_cr0:
     mov eax, [esp + 4]
