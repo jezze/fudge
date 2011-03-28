@@ -1,0 +1,5 @@
+io.ko
+kbd.ko
+serial.ko
+io.ko
+vga.ko
