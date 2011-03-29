@@ -56,7 +56,7 @@ void mmu_map(struct mmu_directory *directory, unsigned int virtualAddress, unsig
 {
 
     unsigned int frame = virtualAddress / MMU_PAGE_SIZE;
-    unsigned int count = (size % MMU_PAGE_SIZE) ? (size / MMU_PAGE_SIZE) + MMU_PAGE_SIZE : (size / MMU_PAGE_SIZE);
+    unsigned int count = size / MMU_PAGE_SIZE + ((size & 0xFFF) > 0);
     unsigned int i;
 
     for (i = 0; i < count; i++)
