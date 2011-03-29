@@ -38,22 +38,32 @@ void mmu_handler(struct isr_registers *registers)
 
 }
 
+static struct mmu_table *mmu_get_table(struct mmu_directory *directory, unsigned int frame)
+{
+
+    return (struct mmu_table *)((unsigned int)directory->tables[frame / MMU_DIRECTORY_SIZE] & 0xFFFFF000);
+
+}
+
+static unsigned int *mmu_get_entry(struct mmu_directory *directory, unsigned int frame)
+{
+
+    return &mmu_get_table(directory, frame)->entries[frame % MMU_TABLE_SIZE];
+
+}
+
 void mmu_map(struct mmu_directory *directory, unsigned int virtualAddress, unsigned int physicalAddress, unsigned int size, unsigned int flags)
 {
 
-    unsigned int i = virtualAddress / MMU_PAGE_SIZE;
+    unsigned int frame = virtualAddress / MMU_PAGE_SIZE;
     unsigned int count = (size % MMU_PAGE_SIZE) ? (size / MMU_PAGE_SIZE) + MMU_PAGE_SIZE : (size / MMU_PAGE_SIZE);
 
-    for (; count; count--)
+    for (; count; frame++, count--)
     {
 
-        struct mmu_table *itable = (struct mmu_table *)((unsigned int)directory->tables[i / MMU_DIRECTORY_SIZE] & 0xFFFFF000);
+        *mmu_get_entry(directory, frame) = physicalAddress | flags;
 
-        itable->entries[i % MMU_TABLE_SIZE] = physicalAddress | flags;
-
-        virtualAddress += MMU_PAGE_SIZE;
         physicalAddress += MMU_PAGE_SIZE;
-        i++;
 
     }
 
@@ -91,13 +101,6 @@ struct mmu_table *mmu_get_program_table()
 {
 
     return &mmuProgramTable;
-
-}
-
-unsigned int mmu_get_physical_address(struct mmu_directory *directory, unsigned int virtualAddress)
-{
-
-    return (directory->tables[virtualAddress / MMU_DIRECTORY_SIZE]->entries[virtualAddress % MMU_TABLE_SIZE] & 0xFFFFF000) + (~(0x00400000) & virtualAddress);
 
 }
 
