@@ -24,7 +24,7 @@ struct idt_ptr
 
 extern void idt_flush(struct idt_ptr *pointer);
 
-extern void idt_set_gate(unsigned char index, unsigned int base, unsigned short selector, unsigned char flags);
+extern void idt_set_gate(unsigned char index, void (*callback)(), unsigned short selector, unsigned char flags);
 extern void idt_init();
 
 #endif

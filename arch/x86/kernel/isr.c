@@ -47,39 +47,39 @@ void isr_handler(struct isr_registers *registers)
 void isr_init()
 {
 
-    idt_set_gate(ISR_ROUTINE_DIVIDEBYZERO, (unsigned int)isr00, 0x08, 0x8E);
-    idt_set_gate(ISR_ROUTINE_DEBUG, (unsigned int)isr01, 0x08, 0x8E);
-    idt_set_gate(ISR_ROUTINE_NONMASKABLEINTERRUPT, (unsigned int)isr02, 0x08, 0x8E);
-    idt_set_gate(ISR_ROUTINE_BREAKPOINT, (unsigned int)isr03, 0x08, 0x8E);
-    idt_set_gate(ISR_ROUTINE_INTODETECTED, (unsigned int)isr04, 0x08, 0x8E);
-    idt_set_gate(ISR_ROUTINE_OUTOFBOUNDS, (unsigned int)isr05, 0x08, 0x8E);
-    idt_set_gate(ISR_ROUTINE_INVALIDOPCODE, (unsigned int)isr06, 0x08, 0x8E);
-    idt_set_gate(ISR_ROUTINE_NOCOPROCESSOR, (unsigned int)isr07, 0x08, 0x8E);
-    idt_set_gate(ISR_ROUTINE_DOUBLEFAULT, (unsigned int)isr08, 0x08, 0x8E);
-    idt_set_gate(ISR_ROUTINE_COPROCESSORSEGMENTOVERRUN, (unsigned int)isr09, 0x08, 0x8E);
-    idt_set_gate(ISR_ROUTINE_TSS, (unsigned int)isr0A, 0x08, 0x8E);
-    idt_set_gate(ISR_ROUTINE_NOSEGMENT, (unsigned int)isr0B, 0x08, 0x8E);
-    idt_set_gate(ISR_ROUTINE_STACKFAULT, (unsigned int)isr0C, 0x08, 0x8E);
-    idt_set_gate(ISR_ROUTINE_GENERALPROTECTIONFAULT, (unsigned int)isr0D, 0x08, 0x8E);
-    idt_set_gate(ISR_ROUTINE_PAGEFAULT, (unsigned int)isr0E, 0x08, 0x8E);
-    idt_set_gate(ISR_ROUTINE_UNKNOWNINTERRUPT, (unsigned int)isr0F, 0x08, 0x8E);
-    idt_set_gate(ISR_ROUTINE_COPROCESSORFAULT, (unsigned int)isr10, 0x08, 0x8E);
-    idt_set_gate(ISR_ROUTINE_ALIGNMENTCHECK, (unsigned int)isr11, 0x08, 0x8E);
-    idt_set_gate(ISR_ROUTINE_MACHINECHECK, (unsigned int)isr12, 0x08, 0x8E);
-    idt_set_gate(ISR_ROUTINE_RESERVED13, (unsigned int)isr13, 0x08, 0x8E);
-    idt_set_gate(ISR_ROUTINE_RESERVED14, (unsigned int)isr14, 0x08, 0x8E);
-    idt_set_gate(ISR_ROUTINE_RESERVED15, (unsigned int)isr15, 0x08, 0x8E);
-    idt_set_gate(ISR_ROUTINE_RESERVED16, (unsigned int)isr16, 0x08, 0x8E);
-    idt_set_gate(ISR_ROUTINE_RESERVED17, (unsigned int)isr17, 0x08, 0x8E);
-    idt_set_gate(ISR_ROUTINE_RESERVED18, (unsigned int)isr18, 0x08, 0x8E);
-    idt_set_gate(ISR_ROUTINE_RESERVED19, (unsigned int)isr19, 0x08, 0x8E);
-    idt_set_gate(ISR_ROUTINE_RESERVED1A, (unsigned int)isr1A, 0x08, 0x8E);
-    idt_set_gate(ISR_ROUTINE_RESERVED1B, (unsigned int)isr1B, 0x08, 0x8E);
-    idt_set_gate(ISR_ROUTINE_RESERVED1C, (unsigned int)isr1C, 0x08, 0x8E);
-    idt_set_gate(ISR_ROUTINE_RESERVED1D, (unsigned int)isr1D, 0x08, 0x8E);
-    idt_set_gate(ISR_ROUTINE_RESERVED1E, (unsigned int)isr1E, 0x08, 0x8E);
-    idt_set_gate(ISR_ROUTINE_RESERVED1F, (unsigned int)isr1F, 0x08, 0x8E);
-    idt_set_gate(ISR_ROUTINE_SYSCALL, (unsigned int)isr_syscall, 0x08, 0x8E);
+    idt_set_gate(ISR_ROUTINE_DE, isr00, 0x08, 0x8E);
+    idt_set_gate(ISR_ROUTINE_DB, isr01, 0x08, 0x8E);
+    idt_set_gate(ISR_ROUTINE_NI, isr02, 0x08, 0x8E);
+    idt_set_gate(ISR_ROUTINE_BP, isr03, 0x08, 0x8E);
+    idt_set_gate(ISR_ROUTINE_OF, isr04, 0x08, 0x8E);
+    idt_set_gate(ISR_ROUTINE_BR, isr05, 0x08, 0x8E);
+    idt_set_gate(ISR_ROUTINE_UD, isr06, 0x08, 0x8E);
+    idt_set_gate(ISR_ROUTINE_NM, isr07, 0x08, 0x8E);
+    idt_set_gate(ISR_ROUTINE_DF, isr08, 0x08, 0x8E);
+    idt_set_gate(ISR_ROUTINE_CO, isr09, 0x08, 0x8E);
+    idt_set_gate(ISR_ROUTINE_TS, isr0A, 0x08, 0x8E);
+    idt_set_gate(ISR_ROUTINE_NP, isr0B, 0x08, 0x8E);
+    idt_set_gate(ISR_ROUTINE_SS, isr0C, 0x08, 0x8E);
+    idt_set_gate(ISR_ROUTINE_GP, isr0D, 0x08, 0x8E);
+    idt_set_gate(ISR_ROUTINE_PF, isr0E, 0x08, 0x8E);
+    idt_set_gate(0x0F, isr0F, 0x08, 0x8E);
+    idt_set_gate(ISR_ROUTINE_MF, isr10, 0x08, 0x8E);
+    idt_set_gate(ISR_ROUTINE_AC, isr11, 0x08, 0x8E);
+    idt_set_gate(ISR_ROUTINE_MC, isr12, 0x08, 0x8E);
+    idt_set_gate(ISR_ROUTINE_XM, isr13, 0x08, 0x8E);
+    idt_set_gate(0x14, isr14, 0x08, 0x8E);
+    idt_set_gate(0x15, isr15, 0x08, 0x8E);
+    idt_set_gate(0x16, isr16, 0x08, 0x8E);
+    idt_set_gate(0x17, isr17, 0x08, 0x8E);
+    idt_set_gate(0x18, isr18, 0x08, 0x8E);
+    idt_set_gate(0x19, isr19, 0x08, 0x8E);
+    idt_set_gate(0x1A, isr1A, 0x08, 0x8E);
+    idt_set_gate(0x1B, isr1B, 0x08, 0x8E);
+    idt_set_gate(0x1C, isr1C, 0x08, 0x8E);
+    idt_set_gate(0x1D, isr1D, 0x08, 0x8E);
+    idt_set_gate(0x1E, isr1E, 0x08, 0x8E);
+    idt_set_gate(0x1F, isr1F, 0x08, 0x8E);
+    idt_set_gate(ISR_ROUTINE_SYSCALL, isr_syscall, 0x08, 0x8E);
 
 }
 

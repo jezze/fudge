@@ -138,7 +138,7 @@ void mmu_init()
     mmu_init_kernel_directory();
     mmu_set_directory(&mmuKernelDirectory);
 
-    isr_register_handler(ISR_ROUTINE_PAGEFAULT, mmu_handler);
+    isr_register_handler(ISR_ROUTINE_PF, mmu_handler);
 
     mmu_enable();
 

@@ -1,40 +1,27 @@
 #ifndef ARCH_ISR_H
 #define ARCH_ISR_H
 
-#define ISR_ROUTINES_SIZE                      256
-#define ISR_ROUTINE_DIVIDEBYZERO               0x00
-#define ISR_ROUTINE_DEBUG                      0x01
-#define ISR_ROUTINE_NONMASKABLEINTERRUPT       0x02
-#define ISR_ROUTINE_BREAKPOINT                 0x03
-#define ISR_ROUTINE_INTODETECTED               0x04
-#define ISR_ROUTINE_OUTOFBOUNDS                0x05
-#define ISR_ROUTINE_INVALIDOPCODE              0x06
-#define ISR_ROUTINE_NOCOPROCESSOR              0x07
-#define ISR_ROUTINE_DOUBLEFAULT                0x08
-#define ISR_ROUTINE_COPROCESSORSEGMENTOVERRUN  0x09
-#define ISR_ROUTINE_TSS                        0x0A
-#define ISR_ROUTINE_NOSEGMENT                  0x0B
-#define ISR_ROUTINE_STACKFAULT                 0x0C
-#define ISR_ROUTINE_GENERALPROTECTIONFAULT     0x0D
-#define ISR_ROUTINE_PAGEFAULT                  0x0E
-#define ISR_ROUTINE_UNKNOWNINTERRUPT           0x0F
-#define ISR_ROUTINE_COPROCESSORFAULT           0x10
-#define ISR_ROUTINE_ALIGNMENTCHECK             0x11
-#define ISR_ROUTINE_MACHINECHECK               0x12
-#define ISR_ROUTINE_RESERVED13                 0x13
-#define ISR_ROUTINE_RESERVED14                 0x14
-#define ISR_ROUTINE_RESERVED15                 0x15
-#define ISR_ROUTINE_RESERVED16                 0x16
-#define ISR_ROUTINE_RESERVED17                 0x17
-#define ISR_ROUTINE_RESERVED18                 0x18
-#define ISR_ROUTINE_RESERVED19                 0x19
-#define ISR_ROUTINE_RESERVED1A                 0x1A
-#define ISR_ROUTINE_RESERVED1B                 0x1B
-#define ISR_ROUTINE_RESERVED1C                 0x1C
-#define ISR_ROUTINE_RESERVED1D                 0x1D
-#define ISR_ROUTINE_RESERVED1E                 0x1E
-#define ISR_ROUTINE_RESERVED1F                 0x1F
-#define ISR_ROUTINE_SYSCALL                    0x80
+#define ISR_ROUTINES_SIZE    256
+#define ISR_ROUTINE_DE      0x00
+#define ISR_ROUTINE_DB      0x01
+#define ISR_ROUTINE_NI      0x02
+#define ISR_ROUTINE_BP      0x03
+#define ISR_ROUTINE_OF      0x04
+#define ISR_ROUTINE_BR      0x05
+#define ISR_ROUTINE_UD      0x06
+#define ISR_ROUTINE_NM      0x07
+#define ISR_ROUTINE_DF      0x08
+#define ISR_ROUTINE_CO      0x09
+#define ISR_ROUTINE_TS      0x0A
+#define ISR_ROUTINE_NP      0x0B
+#define ISR_ROUTINE_SS      0x0C
+#define ISR_ROUTINE_GP      0x0D
+#define ISR_ROUTINE_PF      0x0E
+#define ISR_ROUTINE_MF      0x10
+#define ISR_ROUTINE_AC      0x11
+#define ISR_ROUTINE_MC      0x12
+#define ISR_ROUTINE_XM      0x13
+#define ISR_ROUTINE_SYSCALL 0x80
 
 struct isr_registers
 {
