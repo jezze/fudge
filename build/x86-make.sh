@@ -155,5 +155,6 @@ $LD $LDFLAGS $DIR_SOURCE_BIN/vga.o $DIR_SOURCE_LIB/memory.o $DIR_SOURCE_LIB/sess
 TAR="tar"
 TARFLAGS="-cvf"
 
-$TAR $TARFLAGS $DIR_IMAGE_BOOT/initrd.tar $DIR_IMAGE
+$TAR $TARFLAGS initrd.tar $DIR_IMAGE
+mv initrd.tar $DIR_IMAGE_BOOT
 
