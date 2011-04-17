@@ -66,7 +66,7 @@ static void tty_putc(char c)
 
     }
 
-    if (ttyDevice.cursorOffset >= TTY_CHARACTER_WIDTH * TTY_CHARACTER_HEIGHT - TTY_CHARACTER_WIDTH)
+    if (ttyDevice.cursorOffset >= TTY_CHARACTER_WIDTH * TTY_CHARACTER_HEIGHT)
         tty_scroll();
 
 }
