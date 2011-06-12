@@ -71,26 +71,21 @@ $ git clone git://github.com/Jezze/fudge.git fudge
 COMPILING
 
 $ cd build
-$ sh x86-make.sh
+$ make
 
 If everything went well these files should have appeared:
 
 build/root/boot/kernel
 build/root/boot/initrd.tar
 
-Alt 1. Create image and run in Qemu
+Create an iso and run in Qemu
 
-$ sh x86-create-image.sh
-$ sh x86-qemu-image.sh
-
-Alt 2. Create iso and run in Qemu
-
-$ sh x86-create-iso.sh
+$ make iso
 $ sh x86-qemu-iso.sh
 
 CLEANING
 
 This will remove all post-compiled content.
 
-$ sh clean.sh
+$ make clean
 
