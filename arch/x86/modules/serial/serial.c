@@ -8,7 +8,7 @@
 #include <arch/x86/modules/io/io.h>
 #include <arch/x86/modules/serial/serial.h>
 
-struct modules_serial_device serialDeviceCom1;
+struct serial_device serialDeviceCom1;
 
 static int serial_in_ready(unsigned short port)
 {
@@ -26,7 +26,7 @@ static char serial_inb(unsigned short port)
 
 }
 
-static unsigned int serial_read(struct modules_serial_device *device, char *buffer, unsigned int count)
+static unsigned int serial_read(struct serial_device *device, char *buffer, unsigned int count)
 {
 
     unsigned int i;
@@ -54,7 +54,7 @@ static void serial_outb(unsigned short port, char c)
 
 }
 
-static unsigned int serial_write(struct modules_serial_device *device, char *buffer, unsigned int count)
+static unsigned int serial_write(struct serial_device *device, char *buffer, unsigned int count)
 {
 
     unsigned int i;

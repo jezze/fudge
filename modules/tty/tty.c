@@ -6,7 +6,7 @@
 #include <kernel/vfs.h>
 #include <modules/tty/tty.h>
 
-struct modules_tty_device ttyDevice;
+struct tty_device ttyDevice;
 
 struct file_node *ttyVgaNode;
 struct file_node *ttyVgaColorNode;

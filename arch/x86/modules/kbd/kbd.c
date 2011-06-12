@@ -34,7 +34,7 @@ char kbdMapUpperUS[128] =
        0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0
 };
 
-struct modules_kbd_device kbdDevice;
+struct kbd_device kbdDevice;
 
 static unsigned int kbd_device_read(char *buffer)
 {
@@ -135,7 +135,7 @@ void kbd_init()
     struct file_node *devNode = call_open("/dev");
     file_write(devNode, devNode->length, 1, &kbdDevice.node);
 
-    modules_register(MODULES_TYPE_KEYBOARD, &kbdDevice.base);
+    modules_register(MODULES_TYPE_KEYBOARD, &kbdDevice.base.base);
 
     irq_register_handler(IRQ_ROUTINE_KBD, kbd_handler);
 

@@ -4,7 +4,7 @@
 #define VGA_FB_ADDRESS 0xB8000
 #define VGA_FB_SIZE    2000
 
-struct modules_vga_device
+struct vga_device
 {
 
     struct modules_module base;

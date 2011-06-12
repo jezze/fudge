@@ -21,7 +21,7 @@
 #define TTY_COLOR_RED2       0x0c
 #define TTY_COLOR_WHITE      0x0f
 
-struct modules_tty_device
+struct tty_device
 {
 
     struct modules_module base;

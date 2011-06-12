@@ -6,10 +6,10 @@
 
 struct isr_registers;
 
-struct modules_kbd_device
+struct kbd_device
 {
 
-    struct modules_io_device base;
+    struct io_device base;
     char buffer[256];
     unsigned int bufferSize;
     unsigned int bufferHead;

@@ -1,7 +1,7 @@
 #ifndef ARCH_IO_H
 #define ARCH_IO_H
 
-struct modules_io_device
+struct io_device
 {
 
     struct modules_module base;
