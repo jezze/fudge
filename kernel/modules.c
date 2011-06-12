@@ -15,8 +15,6 @@
 struct modules_module *modules[32];
 unsigned int modulesCount;
 
-struct modules_serial_device *modulesSerialDevice;
-struct modules_tty_device *modulesTtyDevice;
 struct modules_vga_device *modulesVgaDevice;
 
 struct file_node *devEntries[32];
@@ -54,27 +52,6 @@ unsigned int modules_binary_module_check(struct modules_binary_module *module, v
 
 }
 
-unsigned int modules_tty_device_read(struct modules_tty_device *device, char *buffer, unsigned int count, unsigned int offset)
-{
-
-    return device->read(buffer, count, offset);
-
-}
-
-unsigned int modules_tty_device_write(struct modules_tty_device *device, char *buffer, unsigned int count, unsigned int offset)
-{
-
-    return device->write(buffer, count, offset);
-
-}
-
-void modules_tty_device_set_color(struct modules_tty_device *device, unsigned char fg, unsigned char bg)
-{
-
-    device->set_color(fg, bg);
-
-}
-
 unsigned int modules_vga_device_read_framebuffer(struct modules_vga_device *device, char *buffer, unsigned int count, unsigned int offset)
 {
 
@@ -103,24 +80,10 @@ void modules_vga_device_set_cursor_offset(struct modules_vga_device *device, uns
 
 }
 
-void modules_set_tty_device(struct modules_tty_device *device)
-{
-
-    modulesTtyDevice = device;
-
-}
-
 void modules_set_vga_device(struct modules_vga_device *device)
 {
 
     modulesVgaDevice = device;
-
-}
-
-struct modules_tty_device *modules_get_tty_device()
-{
-
-    return modulesTtyDevice;
 
 }
 

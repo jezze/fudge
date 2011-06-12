@@ -27,19 +27,6 @@ struct modules_binary_module
 
 };
 
-struct modules_tty_device
-{
-
-    struct modules_module base;
-    unsigned short cursorOffset;
-    unsigned char cursorColor;
-    unsigned int (*read)(char *buffer, unsigned int count, unsigned int offset);
-    unsigned int (*write)(char *buffer, unsigned int count, unsigned int offset);
-    void (*set_color)(unsigned char fg, unsigned char bg);
-    struct file_node node;
-
-};
-
 struct modules_vga_device
 {
 

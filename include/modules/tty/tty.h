@@ -21,6 +21,19 @@
 #define TTY_COLOR_RED2       0x0c
 #define TTY_COLOR_WHITE      0x0f
 
+struct modules_tty_device
+{
+
+    struct modules_module base;
+    unsigned short cursorOffset;
+    unsigned char cursorColor;
+    unsigned int (*read)(char *buffer, unsigned int count, unsigned int offset);
+    unsigned int (*write)(char *buffer, unsigned int count, unsigned int offset);
+    void (*set_color)(unsigned char fg, unsigned char bg);
+    struct file_node node;
+
+};
+
 extern void tty_init();
 
 #endif
