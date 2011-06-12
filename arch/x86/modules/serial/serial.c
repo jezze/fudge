@@ -81,7 +81,7 @@ void serial_init()
     serialDeviceCom1.read = serial_read;
     serialDeviceCom1.write = serial_write;
 
-    modules_set_serial_device(&serialDeviceCom1);
+    modules_register(MODULES_TYPE_SERIAL, &serialDeviceCom1.base);
 
 }
 

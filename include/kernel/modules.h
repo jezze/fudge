@@ -27,17 +27,6 @@ struct modules_binary_module
 
 };
 
-struct modules_serial_device
-{
-
-    struct modules_module base;
-    unsigned int port;
-    unsigned int (*read)(struct modules_serial_device *device, char *buffer, unsigned int count);
-    unsigned int (*write)(struct modules_serial_device *device, char *buffer, unsigned int count);
-    struct file_node node;
-
-};
-
 struct modules_tty_device
 {
 
@@ -71,13 +60,9 @@ extern void modules_register(unsigned int type, struct modules_module *module);
 extern struct modules_module *modules_find(unsigned int type);
 
 extern unsigned int modules_binary_module_check(struct modules_binary_module *module, void *address);
-extern struct modules_serial_device *modules_get_serial_device();
 extern struct modules_tty_device *modules_get_tty_device();
 extern struct modules_vga_device *modules_get_vga_device();
 extern void modules_init();
-extern unsigned int modules_serial_device_read(struct modules_serial_device *device, char *buffer, unsigned int count);
-extern unsigned int modules_serial_device_write(struct modules_serial_device *device, char *buffer, unsigned int count);
-extern void modules_set_serial_device(struct modules_serial_device *device);
 extern void modules_set_tty_device(struct modules_tty_device *device);
 extern void modules_set_vga_device(struct modules_vga_device *device);
 extern unsigned int modules_tty_device_read(struct modules_tty_device *device, char *buffer, unsigned int count, unsigned int offset);
