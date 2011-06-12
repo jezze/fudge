@@ -42,13 +42,6 @@ struct modules_module *modules_find(unsigned int type)
 
 }
 
-unsigned int modules_binary_module_check(struct modules_binary_module *module, void *address)
-{
-
-    return module->check(module, address);
-
-}
-
 static struct file_node *modules_node_walk(struct file_node *node, unsigned int index)
 {
 

@@ -1,5 +1,6 @@
 #include <lib/elf.h>
 #include <lib/file.h>
+#include <kernel/modules.h>
 #include <kernel/vfs.h>
 #include <modules/elf/elf.h>
 #include <arch/x86/kernel/arch.h>
