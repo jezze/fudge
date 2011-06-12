@@ -135,7 +135,7 @@ void kbd_init()
     struct file_node *devNode = call_open("/dev");
     file_write(devNode, devNode->length, 1, &kbdDevice.node);
 
-    modules_set_kbd_device(&kbdDevice);
+    modules_register(MODULES_TYPE_KEYBOARD, &kbdDevice.base);
 
     irq_register_handler(IRQ_ROUTINE_KBD, kbd_handler);
 

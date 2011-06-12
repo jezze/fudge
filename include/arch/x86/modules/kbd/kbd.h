@@ -6,6 +6,23 @@
 
 struct isr_registers;
 
+struct modules_kbd_device
+{
+
+    struct modules_io_device base;
+    char buffer[256];
+    unsigned int bufferSize;
+    unsigned int bufferHead;
+    unsigned int bufferTail;
+    unsigned char toggleAlt;
+    unsigned char toggleCtrl;
+    unsigned char toggleShift;
+    unsigned int (*read)(char *buffer);
+    unsigned int (*write)(char *buffer);
+    struct file_node node;
+
+};
+
 extern void kbd_handler(struct isr_registers *registers);
 extern void kbd_init();
 

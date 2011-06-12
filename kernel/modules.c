@@ -12,13 +12,41 @@
 #include <arch/x86/modules/serial/serial.h>
 #include <arch/x86/modules/vga/vga.h>
 
+struct modules_module *modules[32];
+unsigned int modulesCount;
+
 struct modules_io_device *modulesIoDevice;
-struct modules_kbd_device *modulesKbdDevice;
 struct modules_serial_device *modulesSerialDevice;
 struct modules_tty_device *modulesTtyDevice;
 struct modules_vga_device *modulesVgaDevice;
 
 struct file_node *devEntries[32];
+
+void modules_register(unsigned int type, struct modules_module *module)
+{
+
+    module->type = type;
+    modules[modulesCount] = module;
+    modulesCount++;
+
+}
+
+struct modules_module *modules_find(unsigned int type)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < modulesCount; i++)
+    {
+
+        if (modules[i]->type == type)
+            return modules[i];
+
+    }
+
+    return 0;
+
+}
 
 unsigned int modules_binary_module_check(struct modules_binary_module *module, void *address)
 {
@@ -38,20 +66,6 @@ unsigned int modules_io_device_write(struct modules_io_device *device, char *buf
 {
 
     return device->write(buffer, count, offset);
-
-}
-
-unsigned int modules_kbd_device_read(struct modules_kbd_device *device, char *buffer)
-{
-
-    return device->read(buffer);
-
-}
-
-unsigned int modules_kbd_device_write(struct modules_kbd_device *device, char *buffer)
-{
-
-    return device->write(buffer);
 
 }
 
@@ -125,13 +139,6 @@ void modules_set_io_device(struct modules_io_device *device)
 
 }
 
-void modules_set_kbd_device(struct modules_kbd_device *device)
-{
-
-    modulesKbdDevice = device;
-
-}
-
 void modules_set_serial_device(struct modules_serial_device *device)
 {
 
@@ -156,13 +163,6 @@ struct modules_io_device *modules_get_io_device()
 {
 
     return modulesIoDevice;
-
-}
-
-struct modules_kbd_device *modules_get_kbd_device()
-{
-
-    return modulesKbdDevice;
 
 }
 

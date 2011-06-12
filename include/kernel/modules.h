@@ -1,7 +1,10 @@
 #ifndef KERNEL_MODULES_H
 #define KERNEL_MODULES_H
 
-#define MODULES_TYPE_BASE              0
+#define MODULES_TYPE_BASE     0
+#define MODULES_TYPE_TIMER    1
+#define MODULES_TYPE_KEYBOARD 2
+#define MODULES_TYPE_DISPLAY  3
 
 struct file_node;
 
@@ -26,23 +29,6 @@ struct modules_io_device
     struct modules_module base;
     unsigned int (*read)(char *buffer, unsigned int count, unsigned int offset);
     unsigned int (*write)(char *buffer, unsigned int count, unsigned int offset);
-    struct file_node node;
-
-};
-
-struct modules_kbd_device
-{
-
-    struct modules_module base;
-    char buffer[256];
-    unsigned int bufferSize;
-    unsigned int bufferHead;
-    unsigned int bufferTail;
-    unsigned char toggleAlt;
-    unsigned char toggleCtrl;
-    unsigned char toggleShift;
-    unsigned int (*read)(char *buffer);
-    unsigned int (*write)(char *buffer);
     struct file_node node;
 
 };
@@ -86,6 +72,9 @@ struct modules_vga_device
     struct file_node nodeCursorOffset;
 
 };
+
+extern void modules_register(unsigned int type, struct modules_module *module);
+extern struct modules_module *modules_find(unsigned int type);
 
 extern unsigned int modules_binary_module_check(struct modules_binary_module *module, void *address);
 extern struct modules_io_device *modules_get_io_device();
