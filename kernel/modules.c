@@ -15,7 +15,6 @@
 struct modules_module *modules[32];
 unsigned int modulesCount;
 
-struct modules_io_device *modulesIoDevice;
 struct modules_serial_device *modulesSerialDevice;
 struct modules_tty_device *modulesTtyDevice;
 struct modules_vga_device *modulesVgaDevice;
@@ -52,20 +51,6 @@ unsigned int modules_binary_module_check(struct modules_binary_module *module, v
 {
 
     return module->check(module, address);
-
-}
-
-unsigned int modules_io_device_read(struct modules_io_device *device, char *buffer, unsigned int count, unsigned int offset)
-{
-
-    return device->read(buffer, count, offset);
-
-}
-
-unsigned int modules_io_device_write(struct modules_io_device *device, char *buffer, unsigned int count, unsigned int offset)
-{
-
-    return device->write(buffer, count, offset);
 
 }
 
@@ -132,13 +117,6 @@ void modules_vga_device_set_cursor_offset(struct modules_vga_device *device, uns
 
 }
 
-void modules_set_io_device(struct modules_io_device *device)
-{
-
-    modulesIoDevice = device;
-
-}
-
 void modules_set_serial_device(struct modules_serial_device *device)
 {
 
@@ -157,12 +135,6 @@ void modules_set_vga_device(struct modules_vga_device *device)
 {
 
     modulesVgaDevice = device;
-
-}
-struct modules_io_device *modules_get_io_device()
-{
-
-    return modulesIoDevice;
 
 }
 

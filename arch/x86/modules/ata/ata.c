@@ -1,4 +1,6 @@
+#include <lib/file.h>
 #include <kernel/log.h>
+#include <kernel/modules.h>
 #include <arch/x86/modules/io/io.h>
 #include <arch/x86/modules/ata/ata.h>
 

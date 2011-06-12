@@ -1,3 +1,5 @@
+#include <lib/file.h>
+#include <kernel/modules.h>
 #include <arch/x86/modules/io/io.h>
 #include <arch/x86/modules/pci/pci.h>
 

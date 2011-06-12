@@ -59,7 +59,7 @@ void io_init()
     struct file_node *devNode = call_open("/dev");
     file_write(devNode, devNode->length, 1, &ioDevice.node);
 
-    modules_set_io_device(&ioDevice);
+    modules_register(MODULES_TYPE_IO, &ioDevice.base);
 
 }
 

@@ -1,3 +1,5 @@
+#include <lib/file.h>
+#include <kernel/modules.h>
 #include <arch/x86/kernel/irq.h>
 #include <arch/x86/kernel/isr.h>
 #include <arch/x86/modules/io/io.h>

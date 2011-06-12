@@ -1,10 +1,14 @@
 #ifndef KERNEL_MODULES_H
 #define KERNEL_MODULES_H
 
-#define MODULES_TYPE_BASE     0
-#define MODULES_TYPE_TIMER    1
-#define MODULES_TYPE_KEYBOARD 2
-#define MODULES_TYPE_DISPLAY  3
+#define MODULES_TYPE_BASE       0
+#define MODULES_TYPE_TIMER      1
+#define MODULES_TYPE_KEYBOARD   2
+#define MODULES_TYPE_VGA        3
+#define MODULES_TYPE_IO         4
+#define MODULES_TYPE_SERIAL     5
+#define MODULES_TYPE_TTY        6
+#define MODULES_TYPE_FILESYSTEM 7
 
 struct file_node;
 
@@ -20,16 +24,6 @@ struct modules_binary_module
 
     struct modules_module base;
     unsigned int (*check)(struct modules_binary_module *module, void *address);
-
-};
-
-struct modules_io_device
-{
-
-    struct modules_module base;
-    unsigned int (*read)(char *buffer, unsigned int count, unsigned int offset);
-    unsigned int (*write)(char *buffer, unsigned int count, unsigned int offset);
-    struct file_node node;
 
 };
 
@@ -77,20 +71,12 @@ extern void modules_register(unsigned int type, struct modules_module *module);
 extern struct modules_module *modules_find(unsigned int type);
 
 extern unsigned int modules_binary_module_check(struct modules_binary_module *module, void *address);
-extern struct modules_io_device *modules_get_io_device();
-extern struct modules_kbd_device *modules_get_kbd_device();
 extern struct modules_serial_device *modules_get_serial_device();
 extern struct modules_tty_device *modules_get_tty_device();
 extern struct modules_vga_device *modules_get_vga_device();
-extern unsigned int modules_io_device_read(struct modules_io_device *device, char *buffer, unsigned int count, unsigned int offset);
-extern unsigned int modules_io_device_write(struct modules_io_device *device, char *buffer, unsigned int count, unsigned int offset);
 extern void modules_init();
-extern unsigned int modules_kbd_device_read(struct modules_kbd_device *device, char *buffer);
-extern unsigned int modules_kbd_device_write(struct modules_kbd_device *device, char *buffer);
 extern unsigned int modules_serial_device_read(struct modules_serial_device *device, char *buffer, unsigned int count);
 extern unsigned int modules_serial_device_write(struct modules_serial_device *device, char *buffer, unsigned int count);
-extern void modules_set_io_device(struct modules_io_device *device);
-extern void modules_set_kbd_device(struct modules_kbd_device *device);
 extern void modules_set_serial_device(struct modules_serial_device *device);
 extern void modules_set_tty_device(struct modules_tty_device *device);
 extern void modules_set_vga_device(struct modules_vga_device *device);
