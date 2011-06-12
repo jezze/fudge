@@ -36,7 +36,7 @@ char kbdMapUpperUS[128] =
 
 struct kbd_device kbdDevice;
 
-static unsigned int kbd_device_read(char *buffer)
+static unsigned int kbd_device_read(struct file_node *node, unsigned int offset, unsigned int count, char *buffer)
 {
 
     char c = 0;
@@ -62,7 +62,7 @@ static unsigned int kbd_device_read(char *buffer)
 
 }
 
-static unsigned int kbd_device_write(char *buffer)
+static unsigned int kbd_device_write(struct file_node *node, unsigned int offset, unsigned int count, char *buffer)
 {
 
     if ((kbdDevice.bufferHead + 1) % KBD_BUFFER_SIZE != kbdDevice.bufferTail)
@@ -76,13 +76,6 @@ static unsigned int kbd_device_write(char *buffer)
     }
 
     return 0;
-
-}
-
-static unsigned int kbd_node_read(struct file_node *node, unsigned int offset, unsigned int count, void *buffer)
-{
-
-    return kbdDevice.read(buffer);
 
 }
 
@@ -109,9 +102,9 @@ void kbd_handler(struct isr_registers *registers)
 
         // Make codes
         if (kbdDevice.toggleShift)
-            kbdDevice.write(&kbdMapUpperUS[scancode]);
+            kbdDevice.node.write(&kbdDevice.node, 0, 1, &kbdMapUpperUS[scancode]);
         else
-            kbdDevice.write(&kbdMapLowerUS[scancode]);
+            kbdDevice.node.write(&kbdDevice.node, 0, 1, &kbdMapLowerUS[scancode]);
 
     }
 
@@ -125,17 +118,16 @@ void kbd_init()
     kbdDevice.toggleAlt = 0;
     kbdDevice.toggleCtrl = 0;
     kbdDevice.toggleShift = 0;
-    kbdDevice.read = kbd_device_read;
-    kbdDevice.write = kbd_device_write;
 
     string_copy(kbdDevice.node.name, "kbd");
     kbdDevice.node.length = 0;
-    kbdDevice.node.read = kbd_node_read;
+    kbdDevice.node.read = kbd_device_read;
+    kbdDevice.node.write = kbd_device_write;
 
     struct file_node *devNode = call_open("/dev");
     file_write(devNode, devNode->length, 1, &kbdDevice.node);
 
-    modules_register(MODULES_TYPE_KEYBOARD, &kbdDevice.base.base);
+    modules_register(MODULES_TYPE_KEYBOARD, &kbdDevice.base.module);
 
     irq_register_handler(IRQ_ROUTINE_KBD, kbd_handler);
 

@@ -9,7 +9,7 @@ struct isr_registers;
 struct kbd_device
 {
 
-    struct io_device base;
+    struct modules_device base;
     char buffer[256];
     unsigned int bufferSize;
     unsigned int bufferHead;
@@ -17,8 +17,6 @@ struct kbd_device
     unsigned char toggleAlt;
     unsigned char toggleCtrl;
     unsigned char toggleShift;
-    unsigned int (*read)(char *buffer);
-    unsigned int (*write)(char *buffer);
     struct file_node node;
 
 };

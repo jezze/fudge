@@ -19,6 +19,14 @@ struct modules_module
 
 };
 
+struct modules_device
+{
+
+    struct modules_module module;
+    struct file_node node;
+
+};
+
 extern void modules_register(unsigned int type, struct modules_module *module);
 extern struct modules_module *modules_find(unsigned int type);
 extern void modules_init();
