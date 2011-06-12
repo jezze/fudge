@@ -13,11 +13,8 @@
 #include <arch/x86/modules/vga/vga.h>
 
 struct modules_module *modules[32];
-unsigned int modulesCount;
-
-struct modules_vga_device *modulesVgaDevice;
-
 struct file_node *devEntries[32];
+unsigned int modulesCount;
 
 void modules_register(unsigned int type, struct modules_module *module)
 {
@@ -49,48 +46,6 @@ unsigned int modules_binary_module_check(struct modules_binary_module *module, v
 {
 
     return module->check(module, address);
-
-}
-
-unsigned int modules_vga_device_read_framebuffer(struct modules_vga_device *device, char *buffer, unsigned int count, unsigned int offset)
-{
-
-    return device->read_framebuffer(buffer, count, offset);
-
-}
-
-unsigned int modules_vga_device_write_framebuffer(struct modules_vga_device *device, char *buffer, unsigned int count, unsigned int offset)
-{
-
-    return device->write_framebuffer(buffer, count, offset);
-
-}
-
-void modules_vga_device_set_cursor_color(struct modules_vga_device *device, unsigned char fg, unsigned char bg)
-{
-
-    return device->set_cursor_color(fg, bg);
-
-}
-
-void modules_vga_device_set_cursor_offset(struct modules_vga_device *device, unsigned short offset)
-{
-
-    return device->set_cursor_offset(offset);
-
-}
-
-void modules_set_vga_device(struct modules_vga_device *device)
-{
-
-    modulesVgaDevice = device;
-
-}
-
-struct modules_vga_device *modules_get_vga_device()
-{
-
-    return modulesVgaDevice;
 
 }
 

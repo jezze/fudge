@@ -27,22 +27,6 @@ struct modules_binary_module
 
 };
 
-struct modules_vga_device
-{
-
-    struct modules_module base;
-    unsigned char cursorColor;
-    unsigned short cursorOffset;
-    unsigned int (*read_framebuffer)(char *buffer, unsigned int count, unsigned int offset);
-    unsigned int (*write_framebuffer)(char *buffer, unsigned int count, unsigned int offset);
-    void (*set_cursor_color)(unsigned char fg, unsigned char bg);
-    void (*set_cursor_offset)(unsigned short offset);
-    struct file_node nodeFramebuffer;
-    struct file_node nodeCursorColor;
-    struct file_node nodeCursorOffset;
-
-};
-
 extern void modules_register(unsigned int type, struct modules_module *module);
 extern struct modules_module *modules_find(unsigned int type);
 
