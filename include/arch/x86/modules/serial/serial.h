@@ -9,11 +9,8 @@
 struct serial_device
 {
 
-    struct modules_module base;
+    struct modules_device base;
     unsigned int port;
-    unsigned int (*read)(struct serial_device *device, char *buffer, unsigned int count);
-    unsigned int (*write)(struct serial_device *device, char *buffer, unsigned int count);
-    struct file_node node;
 
 };
 

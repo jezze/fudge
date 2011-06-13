@@ -17,7 +17,6 @@ struct kbd_device
     unsigned char toggleAlt;
     unsigned char toggleCtrl;
     unsigned char toggleShift;
-    struct file_node node;
 
 };
 

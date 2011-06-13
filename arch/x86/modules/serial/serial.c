@@ -26,18 +26,6 @@ static char serial_inb(unsigned short port)
 
 }
 
-static unsigned int serial_read(struct serial_device *device, char *buffer, unsigned int count)
-{
-
-    unsigned int i;
-
-    for (i = 0; i < count; i++)
-        buffer[i] = serial_inb(device->port);
-
-    return i;
-
-}
-
 static int serial_out_ready(unsigned short port)
 {
 
@@ -54,13 +42,25 @@ static void serial_outb(unsigned short port, char c)
 
 }
 
-static unsigned int serial_write(struct serial_device *device, char *buffer, unsigned int count)
+static unsigned int serial_read(struct file_node *node, unsigned int offset, unsigned int count, char *buffer)
 {
 
     unsigned int i;
 
     for (i = 0; i < count; i++)
-        serial_outb(device->port, buffer[i]);
+        buffer[i] = serial_inb(serialDeviceCom1.port);
+
+    return i;
+
+}
+
+static unsigned int serial_write(struct file_node *node, unsigned int offset, unsigned int count, char *buffer)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < count; i++)
+        serial_outb(serialDeviceCom1.port, buffer[i]);
 
     return i;
 
@@ -78,10 +78,10 @@ void serial_init()
     io_outb(SERIAL_COM1 + 4, 0x0B);
 
     serialDeviceCom1.port = SERIAL_COM1;
-    serialDeviceCom1.read = serial_read;
-    serialDeviceCom1.write = serial_write;
+    serialDeviceCom1.base.node.read = serial_read;
+    serialDeviceCom1.base.node.write = serial_write;
 
-    modules_register(MODULES_TYPE_SERIAL, &serialDeviceCom1.base);
+    modules_register(MODULES_TYPE_SERIAL, &serialDeviceCom1.base.module);
 
 }
 

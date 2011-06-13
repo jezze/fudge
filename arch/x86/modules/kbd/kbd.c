@@ -102,9 +102,9 @@ void kbd_handler(struct isr_registers *registers)
 
         // Make codes
         if (kbdDevice.toggleShift)
-            kbdDevice.node.write(&kbdDevice.node, 0, 1, &kbdMapUpperUS[scancode]);
+            kbdDevice.base.node.write(&kbdDevice.base.node, 0, 1, &kbdMapUpperUS[scancode]);
         else
-            kbdDevice.node.write(&kbdDevice.node, 0, 1, &kbdMapLowerUS[scancode]);
+            kbdDevice.base.node.write(&kbdDevice.base.node, 0, 1, &kbdMapLowerUS[scancode]);
 
     }
 
@@ -119,13 +119,13 @@ void kbd_init()
     kbdDevice.toggleCtrl = 0;
     kbdDevice.toggleShift = 0;
 
-    string_copy(kbdDevice.node.name, "kbd");
-    kbdDevice.node.length = 0;
-    kbdDevice.node.read = kbd_device_read;
-    kbdDevice.node.write = kbd_device_write;
+    string_copy(kbdDevice.base.node.name, "kbd");
+    kbdDevice.base.node.length = 0;
+    kbdDevice.base.node.read = kbd_device_read;
+    kbdDevice.base.node.write = kbd_device_write;
 
     struct file_node *devNode = call_open("/dev");
-    file_write(devNode, devNode->length, 1, &kbdDevice.node);
+    file_write(devNode, devNode->length, 1, &kbdDevice.base.node);
 
     modules_register(MODULES_TYPE_KEYBOARD, &kbdDevice.base.module);
 
