@@ -6,13 +6,13 @@
 #include <kernel/vfs.h>
 #include <modules/tty/tty.h>
 
-struct tty_device ttyDevice;
+static struct tty_device ttyDevice;
 
-struct file_node *ttyVgaNode;
-struct file_node *ttyVgaColorNode;
-struct file_node *ttyVgaCursorNode;
+static struct file_node *ttyVgaNode;
+static struct file_node *ttyVgaColorNode;
+static struct file_node *ttyVgaCursorNode;
 
-char ttyCwd[256];
+static char ttyCwd[256];
 
 static void tty_scroll()
 {

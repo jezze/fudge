@@ -3,7 +3,7 @@
 #include <kernel/modules.h>
 #include <modules/elf/elf.h>
 
-struct elf_module elfModule;
+static struct elf_module elfModule;
 
 unsigned int elf_check(void *address)
 {
