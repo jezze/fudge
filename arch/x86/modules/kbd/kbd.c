@@ -10,7 +10,7 @@
 #include <arch/x86/modules/io/io.h>
 #include <arch/x86/modules/kbd/kbd.h>
 
-char kbdMapLowerUS[128] =
+char kbdMapUS[256] =
 {
        0,   27,  '1',  '2',  '3',  '4',  '5',  '6',  '7',  '8',  '9',  '0',  '-',  '+', '\b', '\t',
      'q',  'w',  'e',  'r',  't',  'y',  'u',  'i',  'o',  'p',  '[',  ']', '\n',    0,  'a',  's',
@@ -19,11 +19,7 @@ char kbdMapLowerUS[128] =
        0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
        0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
        0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-       0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0
-};
-
-char kbdMapUpperUS[128] =
-{
+       0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
        0,   27,  '!',  '@',  '#',  '$',  '%',  '^',  '&',  '*',  '(',  ')',  '_',  '=', '\b', '\t',
      'Q',  'W',  'E',  'R',  'T',  'Y',  'U',  'I',  'O',  'P',  '{',  '}', '\n',    0,  'A',  'S',
      'D',  'F',  'G',  'H',  'J',  'K',  'L',  ':', '\"',  '~',    0,  '|',  'Z',  'X',  'C',  'V',
@@ -100,11 +96,10 @@ static void kbd_handler(struct isr_registers *registers)
     else
     {
 
-        // Make codes
         if (kbdDevice.toggleShift)
-            kbdDevice.base.node.write(&kbdDevice.base.node, 0, 1, &kbdMapUpperUS[scancode]);
-        else
-            kbdDevice.base.node.write(&kbdDevice.base.node, 0, 1, &kbdMapLowerUS[scancode]);
+            scancode += 128;
+            
+        kbdDevice.base.node.write(&kbdDevice.base.node, 0, 1, &kbdMapUS[scancode]);
 
     }
 
