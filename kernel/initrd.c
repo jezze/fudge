@@ -6,8 +6,8 @@
 #include <kernel/initrd.h>
 #include <kernel/vfs.h>
 
-struct tar_header *initrdFileHeaders[INITRD_HEADER_SIZE];
-struct file_node *initrdEntries[INITRD_HEADER_SIZE];
+static struct tar_header *initrdFileHeaders[INITRD_HEADER_SIZE];
+static struct file_node *initrdEntries[INITRD_HEADER_SIZE];
 
 static unsigned int initrd_file_read(struct file_node *node, unsigned int offset, unsigned int count, void *buffer)
 {

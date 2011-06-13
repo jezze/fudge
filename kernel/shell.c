@@ -5,10 +5,10 @@
 #include <lib/string.h>
 #include <kernel/shell.h>
 
-char shellBuffer[SHELL_BUFFER_SIZE];
-unsigned int shellBufferHead;
+static char shellBuffer[SHELL_BUFFER_SIZE];
+static unsigned int shellBufferHead;
 
-void shell_stack_push(char c)
+static void shell_stack_push(char c)
 {
 
     if (shellBufferHead < SHELL_BUFFER_SIZE)
@@ -21,14 +21,14 @@ void shell_stack_push(char c)
 
 }
 
-char shell_stack_pop()
+static char shell_stack_pop()
 {
 
     return (shellBufferHead > 0) ? shellBuffer[--shellBufferHead] : 0;
 
 }
 
-void shell_stack_clear()
+static void shell_stack_clear()
 {
 
     shellBufferHead = 0;

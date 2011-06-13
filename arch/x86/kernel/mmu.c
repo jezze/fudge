@@ -5,11 +5,11 @@
 #include <arch/x86/kernel/isr.h>
 #include <arch/x86/kernel/mmu.h>
 
-struct mmu_directory mmuKernelDirectory;
-struct mmu_table mmuKernelTable;
-struct mmu_table mmuProgramTable;
+static struct mmu_directory mmuKernelDirectory;
+static struct mmu_table mmuKernelTable;
+static struct mmu_table mmuProgramTable;
 
-void mmu_handler(struct isr_registers *registers)
+static void mmu_handler(struct isr_registers *registers)
 {
 
     unsigned int address = cpu_get_cr2();

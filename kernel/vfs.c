@@ -3,10 +3,10 @@
 #include <lib/string.h>
 #include <kernel/vfs.h>
 
-struct file_node vfsNodes[256];
-unsigned int vfsNodesCount;
+static struct file_node vfsNodes[256];
+static unsigned int vfsNodesCount;
 
-struct file_node *vfsRootEntries[64];
+static struct file_node *vfsRootEntries[64];
 
 struct file_node *vfs_get_root(struct file_node *node, unsigned int index)
 {
