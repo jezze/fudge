@@ -5,7 +5,7 @@
 #include <arch/x86/kernel/isr.h>
 #include <arch/x86/modules/io/io.h>
 
-void *irqRoutines[IRQ_ROUTINES_SIZE];
+static void *irqRoutines[IRQ_ROUTINES_SIZE];
 
 void irq_register_handler(unsigned char index, void (*handler)(struct isr_registers *registers))
 {

@@ -3,7 +3,7 @@
 #include <arch/x86/kernel/idt.h>
 #include <arch/x86/kernel/isr.h>
 
-void *isrRoutines[ISR_ROUTINES_SIZE];
+static void *isrRoutines[ISR_ROUTINES_SIZE];
 
 void isr_register_handler(unsigned char index, void (*handler)(struct isr_registers *registers))
 {

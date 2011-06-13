@@ -2,7 +2,7 @@
 #include <arch/x86/kernel/gdt.h>
 #include <arch/x86/kernel/tss.h>
 
-struct tss_entry tss;
+static struct tss_entry tss;
 
 void tss_set_stack(unsigned int address)
 {

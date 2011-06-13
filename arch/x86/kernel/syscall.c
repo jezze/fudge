@@ -8,7 +8,7 @@
 #include <arch/x86/kernel/mmu.h>
 #include <arch/x86/kernel/syscall.h>
 
-void *syscallRoutines[SYSCALL_ROUTINES_SIZE];
+static void *syscallRoutines[SYSCALL_ROUTINES_SIZE];
 
 void syscall_register_handler(unsigned char index, void (*handler)(struct syscall_registers *registers))
 {
