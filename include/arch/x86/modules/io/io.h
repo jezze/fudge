@@ -4,10 +4,7 @@
 struct io_device
 {
 
-    struct modules_module base;
-    unsigned int (*read)(char *buffer, unsigned int count, unsigned int offset);
-    unsigned int (*write)(char *buffer, unsigned int count, unsigned int offset);
-    struct file_node node;
+    struct modules_device base;
 
 };
 

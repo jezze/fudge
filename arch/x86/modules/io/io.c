@@ -7,7 +7,7 @@
 
 struct io_device ioDevice;
 
-static unsigned int io_device_read(char *buffer, unsigned int count, unsigned int offset)
+static unsigned int io_node_read(struct file_node *node, unsigned int offset, unsigned int count, char *buffer)
 {
 
     unsigned int i = 0;
@@ -19,7 +19,7 @@ static unsigned int io_device_read(char *buffer, unsigned int count, unsigned in
 
 }
 
-static unsigned int io_device_write(char *buffer, unsigned int count, unsigned int offset)
+static unsigned int io_node_write(struct file_node *node, unsigned int offset, unsigned int count, char *buffer)
 {
 
     unsigned int i = 0;
@@ -31,35 +31,18 @@ static unsigned int io_device_write(char *buffer, unsigned int count, unsigned i
 
 }
 
-static unsigned int io_node_read(struct file_node *node, unsigned int offset, unsigned int count, void *buffer)
-{
-
-    return ioDevice.read((char *)buffer, count, offset);
-
-}
-
-static unsigned int io_node_write(struct file_node *node, unsigned int offset, unsigned int count, void *buffer)
-{
-
-    return ioDevice.write((char *)buffer, count, offset);
-
-}
-
 void io_init()
 {
 
-    ioDevice.read = io_device_read;
-    ioDevice.write = io_device_write;
-
-    string_copy(ioDevice.node.name, "io");
-    ioDevice.node.length = 0;
-    ioDevice.node.read = io_node_read;
-    ioDevice.node.write = io_node_write;
+    string_copy(ioDevice.base.node.name, "io");
+    ioDevice.base.node.length = 0;
+    ioDevice.base.node.read = io_node_read;
+    ioDevice.base.node.write = io_node_write;
 
     struct file_node *devNode = call_open("/dev");
-    file_write(devNode, devNode->length, 1, &ioDevice.node);
+    file_write(devNode, devNode->length, 1, &ioDevice.base.node);
 
-    modules_register(MODULES_TYPE_IO, &ioDevice.base);
+    modules_register(MODULES_TYPE_IO, &ioDevice.base.module);
 
 }
 

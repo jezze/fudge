@@ -79,7 +79,7 @@ static unsigned int kbd_device_write(struct file_node *node, unsigned int offset
 
 }
 
-void kbd_handler(struct isr_registers *registers)
+static void kbd_handler(struct isr_registers *registers)
 {
 
     unsigned char scancode = io_inb(KBD_PORT_READ);
