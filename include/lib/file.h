@@ -1,6 +1,20 @@
 #ifndef LIB_FILE_H
 #define LIB_FILE_H
 
+struct file_node;
+
+struct file_operations
+{
+
+    void (*open)(struct file_node *node);
+    void (*close)(struct file_node *node);
+    unsigned int (*read)(struct file_node *node, unsigned int offset, unsigned int count, void *buffer);
+    unsigned int (*write)(struct file_node *node, unsigned int offset, unsigned int count, void *buffer);
+    void (*seek)(struct file_node *node, unsigned int offset);
+    struct file_node *(*walk)(struct file_node *node, unsigned int index);
+
+};
+
 struct file_node
 {
 
