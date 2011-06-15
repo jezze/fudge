@@ -27,7 +27,7 @@ void syscall_unregister_handler(unsigned char index)
 static void syscall_open(struct syscall_registers *registers)
 {
 
-    registers->eax = (unsigned int)file_find(vfs_get_root(), (char *)registers->esi + 1);
+    registers->eax = (unsigned int)vfs_find(vfs_get_root(), (char *)registers->esi + 1);
 
 }
 

@@ -11,6 +11,28 @@ void file_close(struct file_node *node)
 
 }
 
+void file_open(struct file_node *node)
+{
+
+    if (node && node->open)
+        return node->open(node);
+
+}
+
+unsigned int file_read(struct file_node *node, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    return (node && node->read) ? node->read(node, offset, count, buffer) : 0;
+
+}
+
+unsigned int file_read_byte(struct file_node *node, char c)
+{
+
+    return file_read(node, 0, 1, &c);
+
+}
+
 struct file_node *file_find(struct file_node *node, char *path)
 {
 
@@ -37,28 +59,6 @@ struct file_node *file_find(struct file_node *node, char *path)
     }
 
     return 0;
-
-}
-
-void file_open(struct file_node *node)
-{
-
-    if (node && node->open)
-        return node->open(node);
-
-}
-
-unsigned int file_read(struct file_node *node, unsigned int offset, unsigned int count, void *buffer)
-{
-
-    return (node && node->read) ? node->read(node, offset, count, buffer) : 0;
-
-}
-
-unsigned int file_read_byte(struct file_node *node, char c)
-{
-
-    return file_read(node, 0, 1, &c);
 
 }
 
