@@ -1,13 +1,15 @@
 #include <lib/file.h>
+#include <lib/string.h>
 #include <kernel/log.h>
 #include <kernel/modules.h>
 #include <arch/x86/modules/io/io.h>
 #include <arch/x86/modules/ata/ata.h>
 
-struct ata_device primaryMaster;
-struct ata_device primarySlave;
-struct ata_device secondaryMaster;
-struct ata_device secondarySlave;
+struct modules_bus ataBus;
+struct ata_device ataPrimaryMaster;
+struct ata_device ataPrimarySlave;
+struct ata_device ataSecondaryMaster;
+struct ata_device ataSecondarySlave;
 
 void ata_sleep(struct ata_device *device)
 {
@@ -126,29 +128,32 @@ unsigned char ata_identify(struct ata_device *device)
 void ata_init()
 {
 
-    primaryMaster.control = ATA_PRIMARY_MASTER_CONTROL;
-    primaryMaster.data = ATA_PRIMARY_MASTER_DATA;
+    string_copy(ataBus.name, "ata");
+    modules_register_bus(MODULES_BUS_TYPE_ATA, &ataBus);
 
-    if (ata_identify(&primaryMaster))
-        modules_register_device(MODULES_BUS_TYPE_ATA, &primaryMaster.base);
+    ataPrimaryMaster.control = ATA_PRIMARY_MASTER_CONTROL;
+    ataPrimaryMaster.data = ATA_PRIMARY_MASTER_DATA;
 
-    primarySlave.control = ATA_PRIMARY_SLAVE_CONTROL;
-    primarySlave.data = ATA_PRIMARY_SLAVE_DATA;
+    if (ata_identify(&ataPrimaryMaster))
+        modules_register_device(MODULES_BUS_TYPE_ATA, &ataPrimaryMaster.base);
 
-    if (ata_identify(&primarySlave))
-        modules_register_device(MODULES_BUS_TYPE_ATA, &primarySlave.base);
+    ataPrimarySlave.control = ATA_PRIMARY_SLAVE_CONTROL;
+    ataPrimarySlave.data = ATA_PRIMARY_SLAVE_DATA;
 
-    secondaryMaster.control = ATA_SECONDARY_MASTER_CONTROL;
-    secondaryMaster.data = ATA_SECONDARY_MASTER_DATA;
+    if (ata_identify(&ataPrimarySlave))
+        modules_register_device(MODULES_BUS_TYPE_ATA, &ataPrimarySlave.base);
 
-    if (ata_identify(&secondaryMaster))
-        modules_register_device(MODULES_BUS_TYPE_ATA, &secondaryMaster.base);
+    ataSecondaryMaster.control = ATA_SECONDARY_MASTER_CONTROL;
+    ataSecondaryMaster.data = ATA_SECONDARY_MASTER_DATA;
 
-    secondarySlave.control = ATA_SECONDARY_SLAVE_CONTROL;
-    secondarySlave.data = ATA_SECONDARY_SLAVE_DATA;
+    if (ata_identify(&ataSecondaryMaster))
+        modules_register_device(MODULES_BUS_TYPE_ATA, &ataSecondaryMaster.base);
 
-    if (ata_identify(&secondarySlave))
-        modules_register_device(MODULES_BUS_TYPE_ATA, &secondarySlave.base);
+    ataSecondarySlave.control = ATA_SECONDARY_SLAVE_CONTROL;
+    ataSecondarySlave.data = ATA_SECONDARY_SLAVE_DATA;
+
+    if (ata_identify(&ataSecondarySlave))
+        modules_register_device(MODULES_BUS_TYPE_ATA, &ataSecondarySlave.base);
 
 }
 
