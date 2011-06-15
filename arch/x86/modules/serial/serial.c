@@ -8,7 +8,8 @@
 #include <arch/x86/modules/io/io.h>
 #include <arch/x86/modules/serial/serial.h>
 
-struct serial_device serialDeviceCom1;
+struct modules_bus serialBus;
+struct serial_device serialDevice1;
 
 static int serial_in_ready(unsigned short port)
 {
@@ -48,7 +49,7 @@ static unsigned int serial_read(struct file_node *node, unsigned int offset, uns
     unsigned int i;
 
     for (i = 0; i < count; i++)
-        buffer[i] = serial_inb(serialDeviceCom1.port);
+        buffer[i] = serial_inb(serialDevice1.port);
 
     return i;
 
@@ -60,7 +61,7 @@ static unsigned int serial_write(struct file_node *node, unsigned int offset, un
     unsigned int i;
 
     for (i = 0; i < count; i++)
-        serial_outb(serialDeviceCom1.port, buffer[i]);
+        serial_outb(serialDevice1.port, buffer[i]);
 
     return i;
 
@@ -68,6 +69,9 @@ static unsigned int serial_write(struct file_node *node, unsigned int offset, un
 
 void serial_init()
 {
+
+    string_copy(serialBus.name, "serial");
+    modules_register_bus(MODULES_BUS_TYPE_SERIAL, &serialBus);
 
     io_outb(SERIAL_COM1 + 1, 0x00);
     io_outb(SERIAL_COM1 + 3, 0x80);
@@ -77,11 +81,11 @@ void serial_init()
     io_outb(SERIAL_COM1 + 2, 0xC7);
     io_outb(SERIAL_COM1 + 4, 0x0B);
 
-    serialDeviceCom1.port = SERIAL_COM1;
-    serialDeviceCom1.base.node.read = serial_read;
-    serialDeviceCom1.base.node.write = serial_write;
+    serialDevice1.port = SERIAL_COM1;
+    serialDevice1.base.node.read = serial_read;
+    serialDevice1.base.node.write = serial_write;
 
-    modules_register(MODULES_TYPE_SERIAL, &serialDeviceCom1.base.module);
+    modules_register(MODULES_TYPE_SERIAL, &serialDevice1.base.module);
 
 }
 
