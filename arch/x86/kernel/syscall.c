@@ -27,7 +27,19 @@ void syscall_unregister_handler(unsigned char index)
 static void syscall_open(struct syscall_registers *registers)
 {
 
+    // CHANGE
+    // registers->eax = vfs_open((char *)registers->esi + 1, registers->ebx);
+
     registers->eax = (unsigned int)vfs_find(vfs_get_root(), (char *)registers->esi + 1);
+
+}
+
+static void syscall_close(struct syscall_registers *registers)
+{
+
+    vfs_close(registers->ebx);
+
+    registers->eax = 0;
 
 }
 
@@ -85,6 +97,7 @@ void syscall_init()
 {
 
     syscall_register_handler(SYSCALL_ROUTINE_OPEN, syscall_open);
+    syscall_register_handler(SYSCALL_ROUTINE_CLOSE, syscall_close);
     syscall_register_handler(SYSCALL_ROUTINE_MAP, syscall_map);
     syscall_register_handler(SYSCALL_ROUTINE_REBOOT, syscall_reboot);
 
