@@ -12,9 +12,11 @@
 #include <arch/x86/modules/serial/serial.h>
 #include <arch/x86/modules/vga/vga.h>
 
-struct modules_module *modules[32];
-struct file_node *devEntries[32];
-unsigned int modulesCount;
+static struct modules_bus *busses[32];
+
+static struct modules_module *modules[32];
+static struct file_node *devEntries[32];
+static unsigned int modulesCount;
 
 void modules_register(unsigned int type, struct modules_module *module)
 {
@@ -22,6 +24,36 @@ void modules_register(unsigned int type, struct modules_module *module)
     module->type = type;
     modules[modulesCount] = module;
     modulesCount++;
+
+}
+
+extern void modules_register_bus(unsigned int type, struct modules_bus *bus)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < 32; i++)
+    {
+
+        if (!busses[i])
+        {
+
+            busses[i] = bus;
+            return;
+
+        }
+
+    }
+
+}
+
+extern void modules_register_device(unsigned int type, struct modules_device *device)
+{
+
+}
+
+extern void modules_register_driver(unsigned int type, struct modules_driver *driver)
+{
 
 }
 
@@ -59,6 +91,13 @@ static unsigned int modules_node_write(struct file_node *node, unsigned int offs
 
 }
 
+static struct file_node *modules_sysnode_walk(struct file_node *node, unsigned int index)
+{
+
+    return 0;
+
+}
+
 static void modules_init_devices()
 {
 
@@ -81,8 +120,12 @@ void modules_init()
     devNode->walk = modules_node_walk;
     devNode->write = modules_node_write;
 
+    struct file_node *sysNode = vfs_add_node("sys", 0);
+    sysNode->walk = modules_sysnode_walk;
+
     struct file_node *root = call_open("/");
     file_write(root, root->length, 1, devNode);
+    file_write(root, root->length, 1, sysNode);
 
     modules_init_devices();
 
