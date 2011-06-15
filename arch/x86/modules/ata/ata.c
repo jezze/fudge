@@ -123,84 +123,32 @@ unsigned char ata_identify(struct ata_device *device)
 
 }
 
-void ata_print_info(struct ata_device *device)
-{
-
-    switch (device->type)
-    {
-
-        case ATA_DEVICE_TYPE_ATA:
-            log_message(LOG_TYPE_INFO, "ata", 0);
-            break;
-
-        case ATA_DEVICE_TYPE_ATAPI:
-            log_message(LOG_TYPE_INFO, "atapi", 0);
-            break;
-
-        case ATA_DEVICE_TYPE_SATA:
-            log_message(LOG_TYPE_INFO, "serial ata", 0);
-            break;
-
-        case ATA_DEVICE_TYPE_SATAPI:
-            log_message(LOG_TYPE_INFO, "serial atapi", 0);
-            break;
-
-        default:
-            log_message(LOG_TYPE_INFO, "unknown", 0);
-            break;
-
-    }
-
-}
-
 void ata_init()
 {
-
-    log_message(LOG_TYPE_INFO, "ATA", 0);
 
     primaryMaster.control = ATA_PRIMARY_MASTER_CONTROL;
     primaryMaster.data = ATA_PRIMARY_MASTER_DATA;
 
     if (ata_identify(&primaryMaster))
-    {
-
-        log_message(LOG_TYPE_INFO, "hda:", 0);
-        ata_print_info(&primaryMaster);
-
-    }
+        modules_register_device(MODULES_BUS_TYPE_ATA, &primaryMaster.base);
 
     primarySlave.control = ATA_PRIMARY_SLAVE_CONTROL;
     primarySlave.data = ATA_PRIMARY_SLAVE_DATA;
 
     if (ata_identify(&primarySlave))
-    {
-
-        log_message(LOG_TYPE_INFO, "hdb:", 0);
-        ata_print_info(&primarySlave);        
-
-    }
+        modules_register_device(MODULES_BUS_TYPE_ATA, &primarySlave.base);
 
     secondaryMaster.control = ATA_SECONDARY_MASTER_CONTROL;
     secondaryMaster.data = ATA_SECONDARY_MASTER_DATA;
 
     if (ata_identify(&secondaryMaster))
-    {
-
-        log_message(LOG_TYPE_INFO, "hdc:", 0);
-        ata_print_info(&secondaryMaster);        
-
-    }
+        modules_register_device(MODULES_BUS_TYPE_ATA, &secondaryMaster.base);
 
     secondarySlave.control = ATA_SECONDARY_SLAVE_CONTROL;
     secondarySlave.data = ATA_SECONDARY_SLAVE_DATA;
 
     if (ata_identify(&secondarySlave))
-    {
-
-        log_message(LOG_TYPE_INFO, "hdd:", 0);
-        ata_print_info(&secondarySlave);        
-
-    }
+        modules_register_device(MODULES_BUS_TYPE_ATA, &secondarySlave.base);
 
 }
 

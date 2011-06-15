@@ -58,6 +58,7 @@
 struct ata_device
 {
 
+    struct modules_device base;
     unsigned short control;
     unsigned short data;
     unsigned char secondary;
