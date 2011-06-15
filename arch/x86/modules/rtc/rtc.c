@@ -8,7 +8,7 @@
 #include <arch/x86/modules/io/io.h>
 #include <arch/x86/modules/rtc/rtc.h>
 
-unsigned char rtc_get(unsigned char type)
+static unsigned char rtc_get(unsigned char type)
 {
 
     io_outb(RTC_PORT_WRITE, type);
@@ -17,7 +17,7 @@ unsigned char rtc_get(unsigned char type)
 
 }
 
-void rtc_ready()
+static void rtc_ready()
 {
 
 //    do { io_outb(RTC_PORT_WRITE, 0x0A); }

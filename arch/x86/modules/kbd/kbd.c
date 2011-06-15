@@ -10,7 +10,7 @@
 #include <arch/x86/modules/io/io.h>
 #include <arch/x86/modules/kbd/kbd.h>
 
-char kbdMapUS[256] =
+static char kbdMapUS[256] =
 {
        0,   27,  '1',  '2',  '3',  '4',  '5',  '6',  '7',  '8',  '9',  '0',  '-',  '+', '\b', '\t',
      'q',  'w',  'e',  'r',  't',  'y',  'u',  'i',  'o',  'p',  '[',  ']', '\n',    0,  'a',  's',
@@ -30,7 +30,7 @@ char kbdMapUS[256] =
        0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0
 };
 
-struct kbd_device kbdDevice;
+static struct kbd_device kbdDevice;
 
 static unsigned int kbd_device_read(struct file_node *node, unsigned int offset, unsigned int count, char *buffer)
 {

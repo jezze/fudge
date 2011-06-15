@@ -5,7 +5,7 @@
 #include <arch/x86/modules/io/io.h>
 #include <arch/x86/modules/pit/pit.h>
 
-void pit_handler(struct isr_registers *registers)
+static void pit_handler(struct isr_registers *registers)
 {
 
 }

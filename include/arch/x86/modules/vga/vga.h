@@ -7,7 +7,7 @@
 struct vga_device
 {
 
-    struct modules_module base;
+    struct modules_device base;
     unsigned char cursorColor;
     unsigned short cursorOffset;
     unsigned int (*read_framebuffer)(char *buffer, unsigned int count, unsigned int offset);

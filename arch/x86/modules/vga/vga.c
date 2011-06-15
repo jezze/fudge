@@ -7,8 +7,8 @@
 #include <arch/x86/modules/io/io.h>
 #include <arch/x86/modules/vga/vga.h>
 
-struct vga_device vgaDevice;
-unsigned char vgaFbColor;
+static struct vga_device vgaDevice;
+static unsigned char vgaFbColor;
 
 static unsigned int vga_read_framebuffer(char *buffer, unsigned int count, unsigned int offset)
 {
@@ -139,7 +139,7 @@ void vga_init()
     file_write(devNode, devNode->length, 1, &vgaDevice.nodeCursorColor);
     file_write(devNode, devNode->length, 1, &vgaDevice.nodeCursorOffset);
 
-    modules_register(MODULES_TYPE_VGA, &vgaDevice.base);
+    modules_register_device(MODULES_BUS_TYPE_VGA, &vgaDevice.base);
 
 }
 

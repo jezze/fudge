@@ -3,7 +3,7 @@
 #include <arch/x86/modules/io/io.h>
 #include <arch/x86/modules/pci/pci.h>
 
-unsigned short pci_read(unsigned short bus, unsigned short slot, unsigned short func, unsigned short offset)
+static unsigned short pci_read(unsigned short bus, unsigned short slot, unsigned short func, unsigned short offset)
 {
 
     unsigned int lbus = (unsigned int)bus;
@@ -21,7 +21,7 @@ unsigned short pci_read(unsigned short bus, unsigned short slot, unsigned short 
 
 }
 
-unsigned short pci_check_vendor(unsigned short bus, unsigned short slot)
+static unsigned short pci_check_vendor(unsigned short bus, unsigned short slot)
 {
 
     unsigned short vendor;

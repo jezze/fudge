@@ -5,7 +5,7 @@
 #include <kernel/vfs.h>
 #include <arch/x86/modules/io/io.h>
 
-struct io_device ioDevice;
+static struct io_device ioDevice;
 
 static unsigned int io_node_read(struct file_node *node, unsigned int offset, unsigned int count, char *buffer)
 {

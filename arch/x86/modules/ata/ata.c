@@ -5,13 +5,13 @@
 #include <arch/x86/modules/io/io.h>
 #include <arch/x86/modules/ata/ata.h>
 
-struct modules_bus ataBus;
-struct ata_device ataPrimaryMaster;
-struct ata_device ataPrimarySlave;
-struct ata_device ataSecondaryMaster;
-struct ata_device ataSecondarySlave;
+static struct modules_bus ataBus;
+static struct ata_device ataPrimaryMaster;
+static struct ata_device ataPrimarySlave;
+static struct ata_device ataSecondaryMaster;
+static struct ata_device ataSecondarySlave;
 
-void ata_sleep(struct ata_device *device)
+static void ata_sleep(struct ata_device *device)
 {
 
     io_inb(device->control + ATA_CONTROL_STATUS);
@@ -21,7 +21,7 @@ void ata_sleep(struct ata_device *device)
 
 }
 
-void ata_select(struct ata_device *device)
+static void ata_select(struct ata_device *device)
 {
 
     io_outb(device->data + ATA_DATA_SELECT, device->secondary ? 0xB0 : 0xA0);
@@ -29,14 +29,14 @@ void ata_select(struct ata_device *device)
 
 }
 
-unsigned char ata_get_command(struct ata_device *device)
+static unsigned char ata_get_command(struct ata_device *device)
 {
 
     return io_inb(device->data + ATA_DATA_COMMAND);
 
 }
 
-void ata_set_command(struct ata_device *device, unsigned char command)
+static void ata_set_command(struct ata_device *device, unsigned char command)
 {
 
     io_outb(device->data + ATA_DATA_COMMAND, command);
@@ -44,7 +44,7 @@ void ata_set_command(struct ata_device *device, unsigned char command)
 
 }
 
-unsigned char ata_read_identity(struct ata_device *device)
+static unsigned char ata_read_identity(struct ata_device *device)
 {
 
     while (1)
@@ -71,7 +71,7 @@ unsigned char ata_read_identity(struct ata_device *device)
 
 }
 
-unsigned char ata_identify(struct ata_device *device)
+static unsigned char ata_identify(struct ata_device *device)
 {
 
     ata_select(device);
