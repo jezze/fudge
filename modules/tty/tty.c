@@ -133,8 +133,6 @@ static void tty_init_vga()
     ttyDevice.set_color = tty_set_color;
     ttyDevice.set_color(TTY_COLOR_WHITE, TTY_COLOR_BLACK);
 
-    modules_register(MODULES_TYPE_TTY, &ttyDevice.base);
-
     ttyVgaNode = call_open("/dev/vga_fb");
     ttyVgaColorNode = call_open("/dev/vga_fb_color");
     ttyVgaCursorNode = call_open("/dev/vga_fb_cursor");

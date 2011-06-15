@@ -42,7 +42,7 @@ void io_init()
     struct file_node *devNode = call_open("/dev");
     file_write(devNode, devNode->length, 1, &ioDevice.base.node);
 
-    modules_register(MODULES_TYPE_IO, &ioDevice.base.module);
+    modules_register_device(MODULES_DEVICE_TYPE_IO, &ioDevice.base);
 
 }
 

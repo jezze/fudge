@@ -135,25 +135,25 @@ void ata_init()
     ataPrimaryMaster.data = ATA_PRIMARY_MASTER_DATA;
 
     if (ata_identify(&ataPrimaryMaster))
-        modules_register_device(MODULES_BUS_TYPE_ATA, &ataPrimaryMaster.base);
+        modules_register_device(MODULES_DEVICE_TYPE_ATA, &ataPrimaryMaster.base);
 
     ataPrimarySlave.control = ATA_PRIMARY_SLAVE_CONTROL;
     ataPrimarySlave.data = ATA_PRIMARY_SLAVE_DATA;
 
     if (ata_identify(&ataPrimarySlave))
-        modules_register_device(MODULES_BUS_TYPE_ATA, &ataPrimarySlave.base);
+        modules_register_device(MODULES_DEVICE_TYPE_ATA, &ataPrimarySlave.base);
 
     ataSecondaryMaster.control = ATA_SECONDARY_MASTER_CONTROL;
     ataSecondaryMaster.data = ATA_SECONDARY_MASTER_DATA;
 
     if (ata_identify(&ataSecondaryMaster))
-        modules_register_device(MODULES_BUS_TYPE_ATA, &ataSecondaryMaster.base);
+        modules_register_device(MODULES_DEVICE_TYPE_ATA, &ataSecondaryMaster.base);
 
     ataSecondarySlave.control = ATA_SECONDARY_SLAVE_CONTROL;
     ataSecondarySlave.data = ATA_SECONDARY_SLAVE_DATA;
 
     if (ata_identify(&ataSecondarySlave))
-        modules_register_device(MODULES_BUS_TYPE_ATA, &ataSecondarySlave.base);
+        modules_register_device(MODULES_DEVICE_TYPE_ATA, &ataSecondarySlave.base);
 
 }
 

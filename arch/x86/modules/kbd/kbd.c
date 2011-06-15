@@ -122,9 +122,9 @@ void kbd_init()
     struct file_node *devNode = call_open("/dev");
     file_write(devNode, devNode->length, 1, &kbdDevice.base.node);
 
-    modules_register(MODULES_TYPE_KEYBOARD, &kbdDevice.base.module);
-
     irq_register_handler(IRQ_ROUTINE_KBD, kbd_handler);
+
+    modules_register_device(MODULES_DEVICE_TYPE_KEYBOARD, &kbdDevice.base);
 
 }
 
