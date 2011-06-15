@@ -74,6 +74,13 @@ struct file_node *vfs_find(struct file_node *node, char *path)
 
 }
 
+struct file_node *vfs_get(unsigned int index)
+{
+
+    return &vfsOpenTable[index].node;
+
+}
+
 struct file_node *vfs_get_root(struct file_node *node, unsigned int index)
 {
 

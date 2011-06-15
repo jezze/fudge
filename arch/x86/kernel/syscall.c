@@ -43,6 +43,50 @@ static void syscall_close(struct syscall_registers *registers)
 
 }
 
+static void syscall_read(struct syscall_registers *registers)
+{
+
+    unsigned int index = registers->ebx;
+    char *buffer = (char *)registers->esi;
+    unsigned int count = registers->ecx;
+
+    struct file_node *node = vfs_get(index);
+
+    if (!node)
+    {
+
+        registers->eax = 0;
+
+        return;
+
+    }
+
+    return node->read(node, 0, count, buffer);
+
+}
+
+static void syscall_write(struct syscall_registers *registers)
+{
+
+    unsigned int index = registers->ebx;
+    char *buffer = (char *)registers->esi;
+    unsigned int count = registers->ecx;
+
+    struct file_node *node = vfs_get(index);
+
+    if (!node)
+    {
+
+        registers->eax = 0;
+
+        return;
+
+    }
+
+    return node->write(node, 0, count, buffer);
+
+}
+
 static void syscall_map(struct syscall_registers *registers)
 {
 
@@ -98,6 +142,8 @@ void syscall_init()
 
     syscall_register_handler(SYSCALL_ROUTINE_OPEN, syscall_open);
     syscall_register_handler(SYSCALL_ROUTINE_CLOSE, syscall_close);
+    syscall_register_handler(SYSCALL_ROUTINE_READ, syscall_read);
+    syscall_register_handler(SYSCALL_ROUTINE_WRITE, syscall_write);
     syscall_register_handler(SYSCALL_ROUTINE_MAP, syscall_map);
     syscall_register_handler(SYSCALL_ROUTINE_REBOOT, syscall_reboot);
 
