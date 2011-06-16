@@ -26,9 +26,9 @@ void main(int argc, char *argv[])
 
     char buffer[2000];
 
-    unsigned int count = call_read(fd, buffer, 1000);
+    unsigned int count = call_read(fd, buffer, 10);
 
-    file_write2(FILE_STDOUT, 0, count, buffer);
+    call_write(FILE_STDOUT, buffer, 10);
 
     call_close(fd);
 

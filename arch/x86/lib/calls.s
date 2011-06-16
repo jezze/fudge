@@ -2,6 +2,8 @@ global call_open
 call_open:
     push ebp
     mov ebp, esp
+    push ebx
+    push ecx
     push esi
     push edi
     mov eax, 0x00
@@ -9,6 +11,9 @@ call_open:
     int 0x80
     pop edi
     pop esi
+    pop ecx
+    pop ebx
+    mov esp, ebp
     pop ebp
     ret
 
@@ -16,6 +21,8 @@ global call_open2
 call_open2:
     push ebp
     mov ebp, esp
+    push ebx
+    push ecx
     push esi
     push edi
     mov eax, 0x55
@@ -23,6 +30,9 @@ call_open2:
     int 0x80
     pop edi
     pop esi
+    pop ecx
+    pop ebx
+    mov esp, ebp
     pop ebp
     ret
 
@@ -30,6 +40,8 @@ global call_close
 call_close:
     push ebp
     mov ebp, esp
+    push ebx
+    push ecx
     push esi
     push edi
     mov eax, 0x01
@@ -37,6 +49,9 @@ call_close:
     int 0x80
     pop edi
     pop esi
+    pop ecx
+    pop ebx
+    mov esp, ebp
     pop ebp
     ret
 
@@ -105,12 +120,17 @@ global call_halt
 call_halt:
     push ebp
     mov ebp, esp
+    push ebx
+    push ecx
     push esi
     push edi
     mov eax, 0x20
     int 0x80
     pop edi
     pop esi
+    pop ecx
+    pop ebx
+    mov esp, ebp
     pop ebp
     ret
 
@@ -118,12 +138,17 @@ global call_reboot
 call_reboot:
     push ebp
     mov ebp, esp
+    push ebx
+    push ecx
     push esi
     push edi
     mov eax, 0x21
     int 0x80
     pop edi
     pop esi
+    pop ecx
+    pop ebx
+    mov esp, ebp
     pop ebp
     ret
 
