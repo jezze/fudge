@@ -66,7 +66,7 @@ static void syscall_read(struct syscall_registers *registers)
 
     }
 
-    return node->read(node, 0, count, buffer);
+    registers->eax = node->read(node, 0, count, buffer);
 
 }
 
@@ -88,7 +88,7 @@ static void syscall_write(struct syscall_registers *registers)
 
     }
 
-    return node->write(node, 0, count, buffer);
+    registers->eax = node->write(node, 0, count, buffer);
 
 }
 
