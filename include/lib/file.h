@@ -25,8 +25,6 @@ struct file_descriptor
 
 };
 
-extern void file_close(struct file_node *node);
-extern void file_open(struct file_node *node);
 extern struct file_node *file_find(struct file_node *node, char *name);
 extern unsigned int file_read(struct file_node *node, unsigned int offset, unsigned int count, void *buffer);
 extern unsigned int file_read_byte(struct file_node *node, char c);

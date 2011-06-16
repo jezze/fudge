@@ -3,22 +3,6 @@
 #include <lib/memory.h>
 #include <lib/string.h>
 
-void file_close(struct file_node *node)
-{
-
-    if (node && node->close)
-        return node->close(node);
-
-}
-
-void file_open(struct file_node *node)
-{
-
-    if (node && node->open)
-        return node->open(node);
-
-}
-
 unsigned int file_read(struct file_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
