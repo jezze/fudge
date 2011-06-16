@@ -9,7 +9,7 @@ void main(int argc, char *argv[])
     if (argc != 2)
     {
 
-        file_write_string(session_get_out(), "You need to supply filename.\n");
+        file_write_string2(FILE_STDOUT, "You need to supply filename.\n");
 
         return;
 
@@ -20,7 +20,7 @@ void main(int argc, char *argv[])
     if (!node)
     {
 
-        file_write_string(session_get_out(), "File does not exist.\n");
+        file_write_string2(FILE_STDOUT, "File does not exist.\n");
 
         return;
 
@@ -39,8 +39,8 @@ void main(int argc, char *argv[])
         if (header->name[0] == '\0' || header->name[0] == ' ')
             break;
 
-        file_write_string(session_get_out(), header->name);
-        file_write_string(session_get_out(), "\t ");
+        file_write_string2(FILE_STDOUT, header->name);
+        file_write_string2(FILE_STDOUT, "\t ");
 
         unsigned int j;
         unsigned int count = 1;
@@ -49,8 +49,8 @@ void main(int argc, char *argv[])
         for (j = 11; j > 0; j--, count *= 8)
             size += ((header->size[j - 1] - '0') * count);
 
-        file_write_dec(session_get_out(), size);
-        file_write_string(session_get_out(), "\n");
+        file_write_dec2(FILE_STDOUT, size);
+        file_write_string2(FILE_STDOUT, "\n");
 
         offset += ((size / 512) + 1) * 512;
 

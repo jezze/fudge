@@ -13,17 +13,3 @@ struct file_node *session_get_cwd()
 
 }
 
-struct file_node *session_get_in()
-{
-
-    return call_open("/dev/stdin");
-
-}
-
-struct file_node *session_get_out()
-{
-
-    return call_open("/dev/stdout");
-
-}
-

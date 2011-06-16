@@ -15,8 +15,8 @@ void main(int argc, char *argv[])
     if (argc == 1)
     {
 
-        file_write_string(session_get_out(), buffer);
-        file_write_string(session_get_out(), "\n");
+        file_write_string2(FILE_STDOUT, buffer);
+        file_write_string2(FILE_STDOUT, "\n");
 
         return;
 
@@ -27,7 +27,7 @@ void main(int argc, char *argv[])
     if (!node)
     {
 
-        file_write_string(session_get_out(), "Directory does not exist.\n");
+        file_write_string2(FILE_STDOUT, "Directory does not exist.\n");
 
         return;
 
@@ -36,7 +36,7 @@ void main(int argc, char *argv[])
     if (!node->walk)
     {
 
-        file_write_string(session_get_out(), "Not a directory.\n");
+        file_write_string2(FILE_STDOUT, "Not a directory.\n");
 
         return;
 

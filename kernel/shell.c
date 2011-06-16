@@ -1,7 +1,6 @@
 #include <lib/call.h>
 #include <lib/file.h>
 #include <lib/memory.h>
-#include <lib/session.h>
 #include <lib/string.h>
 #include <kernel/shell.h>
 
@@ -38,7 +37,7 @@ static void shell_stack_clear()
 static void shell_clear()
 {
 
-    file_write_string(session_get_out(), "fudge:/$ ");
+    file_write_string2(FILE_STDOUT, "fudge:/$ ");
     shell_stack_clear();
 
 }
@@ -109,8 +108,8 @@ static void shell_interpret(char *command)
         else
         {
 
-            file_write_string(session_get_out(), argv[0]);
-            file_write_string(session_get_out(), ": Command not found\n");
+            file_write_string2(FILE_STDOUT, argv[0]);
+            file_write_string2(FILE_STDOUT, ": Command not found\n");
 
         }
 
@@ -137,9 +136,9 @@ static void shell_handle_input(char c)
             if (shell_stack_pop())
             {
 
-                file_write_byte(session_get_out(), '\b');
-                file_write_byte(session_get_out(), ' ');
-                file_write_byte(session_get_out(), '\b');
+                file_write_byte2(FILE_STDOUT, '\b');
+                file_write_byte2(FILE_STDOUT, ' ');
+                file_write_byte2(FILE_STDOUT, '\b');
 
              }
 
@@ -148,7 +147,7 @@ static void shell_handle_input(char c)
         case '\n':
 
             shell_stack_push('\0');
-            file_write_byte(session_get_out(), c);
+            file_write_byte2(FILE_STDOUT, c);
             shell_interpret(shellBuffer);
 
             break;
@@ -156,7 +155,7 @@ static void shell_handle_input(char c)
         default:
 
             shell_stack_push(c);
-            file_write_byte(session_get_out(), c);
+            file_write_byte2(FILE_STDOUT, c);
 
             break;
 
@@ -172,7 +171,7 @@ static void shell_poll()
     for (;;)
     {
 
-        while (!file_read(session_get_in(), 0, 1, &c));
+        while (file_read2(FILE_STDIN, 0, 1, &c) == 0);
 
         shell_handle_input(c);
 

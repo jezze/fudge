@@ -4,8 +4,6 @@
 struct file_node;
 
 struct file_node *session_get_cwd();
-struct file_node *session_get_in();
-struct file_node *session_get_out();
 
 #endif
 

@@ -1,6 +1,5 @@
 #include <call.h>
 #include <file.h>
-#include <session.h>
 
 void main(int argc, char *argv[])
 {
@@ -8,28 +7,30 @@ void main(int argc, char *argv[])
     if (argc != 2)
     {
 
-        file_write_string(session_get_out(), "You need to supply filename.\n");
+        file_write_string2(FILE_STDOUT, "You need to supply filename.\n");
 
         return;
 
     }
 
-    struct file_node *node = file_find(session_get_cwd(), argv[1]);
+    int fd = call_open2(argv[1]);
 
-    if (!node)
+    if (fd == -1)
     {
 
-        file_write_string(session_get_out(), "File does not exist.\n");
+        file_write_string2(FILE_STDOUT, "File does not exist.\n");
 
         return;
 
     }
 
-    char buffer[5000];
+    char buffer[2000];
 
-    unsigned int size = file_read(node, 0, 5000, buffer);
+    unsigned int count = call_read(fd, buffer, 1000);
 
-    file_write(session_get_out(), 0, size, buffer);
+    file_write2(FILE_STDOUT, 0, count, buffer);
+
+    call_close(fd);
 
 }
 

@@ -42,25 +42,29 @@ static void serial_outb(unsigned short port, char c)
 
 }
 
-static unsigned int serial_read(struct file_node *node, unsigned int offset, unsigned int count, char *buffer)
+static unsigned int serial_read(struct file_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
+
+    char *b = (char *)buffer;
 
     unsigned int i;
 
     for (i = 0; i < count; i++)
-        buffer[i] = serial_inb(serialDevice1.port);
+        b[i] = serial_inb(serialDevice1.port);
 
     return i;
 
 }
 
-static unsigned int serial_write(struct file_node *node, unsigned int offset, unsigned int count, char *buffer)
+static unsigned int serial_write(struct file_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
+
+    char *b = (char *)buffer;
 
     unsigned int i;
 
     for (i = 0; i < count; i++)
-        serial_outb(serialDevice1.port, buffer[i]);
+        serial_outb(serialDevice1.port, b[i]);
 
     return i;
 

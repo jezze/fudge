@@ -1,38 +1,35 @@
 #include <lib/file.h>
-#include <lib/session.h>
 #include <kernel/log.h>
 #include <kernel/modules.h>
 
 void log_message(unsigned int type, char *message, void **args)
 {
 
-    struct file_node *node = session_get_out();
-
     switch (type)
     {
 
         case LOG_TYPE_INFO:
 
-            file_write_string(node, "INFO: ");
+            file_write_string2(FILE_STDOUT, "INFO: ");
 
             break;
 
         case LOG_TYPE_WARNING:
 
-            file_write_string(node, "WARNING: ");
+            file_write_string2(FILE_STDOUT, "WARNING: ");
 
             break;
 
         case LOG_TYPE_ERROR:
 
-            file_write_string(node, "ERROR: ");
+            file_write_string2(FILE_STDOUT, "ERROR: ");
 
             break;
 
     }
 
-    file_write_string_format(node, message, args);
-    file_write_string(node, "\n");
+    file_write_string_format2(FILE_STDOUT, message, args);
+    file_write_string2(FILE_STDOUT, "\n");
 
 }
 

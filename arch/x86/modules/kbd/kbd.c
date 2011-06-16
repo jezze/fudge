@@ -32,8 +32,10 @@ static char kbdMapUS[256] =
 
 static struct kbd_device kbdDevice;
 
-static unsigned int kbd_device_read(struct file_node *node, unsigned int offset, unsigned int count, char *buffer)
+static unsigned int kbd_device_read(struct file_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
+
+    char *b = (char *)buffer;
 
     char c = 0;
 
@@ -48,7 +50,7 @@ static unsigned int kbd_device_read(struct file_node *node, unsigned int offset,
     if (c)
     {
 
-        memory_copy(buffer, &c, 1);
+        memory_copy(b, &c, 1);
 
         return 1;
 
@@ -58,13 +60,15 @@ static unsigned int kbd_device_read(struct file_node *node, unsigned int offset,
 
 }
 
-static unsigned int kbd_device_write(struct file_node *node, unsigned int offset, unsigned int count, char *buffer)
+static unsigned int kbd_device_write(struct file_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
+
+    char *b = (char *)buffer;
 
     if ((kbdDevice.bufferHead + 1) % KBD_BUFFER_SIZE != kbdDevice.bufferTail)
     {
 
-        kbdDevice.buffer[kbdDevice.bufferHead] = buffer[0];
+        kbdDevice.buffer[kbdDevice.bufferHead] = b[0];
         kbdDevice.bufferHead = (kbdDevice.bufferHead + 1) % KBD_BUFFER_SIZE;
 
         return 1;

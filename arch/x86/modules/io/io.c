@@ -7,25 +7,29 @@
 
 static struct io_device ioDevice;
 
-static unsigned int io_node_read(struct file_node *node, unsigned int offset, unsigned int count, char *buffer)
+static unsigned int io_node_read(struct file_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
+
+    char *b = (char *)buffer;
 
     unsigned int i = 0;
 
     for (; count; count--, i++)
-        buffer[i] = io_inb(offset);
+        b[i] = io_inb(offset);
 
     return i;
 
 }
 
-static unsigned int io_node_write(struct file_node *node, unsigned int offset, unsigned int count, char *buffer)
+static unsigned int io_node_write(struct file_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
+
+    char *b = (char *)buffer;
 
     unsigned int i = 0;
 
     for (; count; count--, i++)
-        io_outb(offset, buffer[i]);
+        io_outb(offset, b[i]);
 
     return i;
 

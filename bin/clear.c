@@ -1,6 +1,5 @@
 #include <call.h>
 #include <file.h>
-#include <session.h>
 
 void main(int argc, char *argv[])
 {
