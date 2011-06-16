@@ -44,6 +44,8 @@ global call_read
 call_read:
     push ebp
     mov ebp, esp
+    push ebx
+    push ecx
     push esi
     push edi
     mov eax, 0x02
@@ -53,6 +55,9 @@ call_read:
     int 0x80
     pop edi
     pop esi
+    pop ecx
+    pop ebx
+    mov esp, ebp
     pop ebp
     ret
 
@@ -60,6 +65,8 @@ global call_write
 call_write:
     push ebp
     mov ebp, esp
+    push ebx
+    push ecx
     push esi
     push edi
     mov eax, 0x03
@@ -69,6 +76,9 @@ call_write:
     int 0x80
     pop edi
     pop esi
+    pop ecx
+    pop ebx
+    mov esp, ebp
     pop ebp
     ret
 
@@ -76,6 +86,8 @@ global call_map
 call_map:
     push ebp
     mov ebp, esp
+    push ebx
+    push ecx
     push esi
     push edi
     mov eax, 0x10
@@ -83,6 +95,9 @@ call_map:
     int 0x80
     pop edi
     pop esi
+    pop ecx
+    pop ebx
+    mov esp, ebp
     pop ebp
     ret
 

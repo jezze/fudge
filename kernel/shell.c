@@ -56,19 +56,6 @@ static void shell_call(struct file_node *node, int argc, char *argv[])
 
 }
 
-static void change_stdout(char *file)
-{
-
-    struct file_node *fileNode = call_open(file);
-
-    if (!fileNode)
-        return;
-
-    struct file_node *stdoutNode = call_open("/dev/stdout");
-    stdoutNode->write = fileNode->write;
-
-}
-
 static void shell_interpret(char *command)
 {
 
@@ -77,23 +64,6 @@ static void shell_interpret(char *command)
 
     if (argc)
     {
-
-        unsigned int i;
-
-        for (i = 0; i < argc; i++)
-        {
-
-            string_trim(argv[i], ' ');
-
-            if (!string_compare(argv[i], ">"))
-            {
-
-                change_stdout(argv[i + 1]);
-                argc = i;
-
-            }
-
-        }
 
         struct file_node *initrd = call_open("/bin");
         struct file_node *node = file_find(initrd, argv[0]);
@@ -114,8 +84,6 @@ static void shell_interpret(char *command)
         }
 
     }
-
-    change_stdout("/dev/tty");
 
     shell_clear();
 
@@ -166,12 +134,12 @@ static void shell_handle_input(char c)
 static void shell_poll()
 {
 
-    char c = 0;
+    char c;
 
     for (;;)
     {
 
-        while (file_read2(FILE_STDIN, 0, 1, &c) == 0);
+        while (!call_read(FILE_STDIN, &c, 1));
 
         shell_handle_input(c);
 
@@ -184,8 +152,8 @@ void shell_init()
 
     shellBufferHead = 0;
 
-    int sin = call_open2("/dev/stdin");
-    int sout = call_open2("/dev/stdout");
+    int sin = call_open2("/dev/kbd");
+    int sout = call_open2("/dev/tty");
 
     file_write_string2(FILE_STDOUT, "Fudge\n\n");
     file_write_string2(FILE_STDOUT, "Copyright (c) 2009 Jens Nyberg\n");

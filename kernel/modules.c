@@ -129,20 +129,5 @@ void modules_init()
 
     modules_init_devices();
 
-    struct file_node *kbdNode = call_open("/dev/kbd");
-    struct file_node *ttyNode = call_open("/dev/tty");
-
-    struct file_node *stdinNode = vfs_add_node("stdin", kbdNode->length);
-    stdinNode->read = kbdNode->read;
-    file_write(devNode, devNode->length, 1, stdinNode);
-
-    struct file_node *stdoutNode = vfs_add_node("stdout", ttyNode->length);
-    stdoutNode->write = ttyNode->write;
-    file_write(devNode, devNode->length, 1, stdoutNode);
-
-    struct file_node *stderrNode = vfs_add_node("stderr", ttyNode->length);
-    stderrNode->write = ttyNode->write;
-    file_write(devNode, devNode->length, 1, stderrNode);
-
 }
 
