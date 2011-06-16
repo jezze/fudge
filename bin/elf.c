@@ -1,7 +1,7 @@
 #include <call.h>
 #include <elf.h>
 #include <file.h>
-#include <session.h>
+#include <string.h>
 
 void main(int argc, char *argv[])
 {
@@ -9,14 +9,28 @@ void main(int argc, char *argv[])
     if (argc != 2)
         return;
 
-    struct file_node *node = file_find(session_get_cwd(), argv[1]);
+    int cwd = call_open2("/dev/cwd");
 
-    if (!node)
+    char path[256];
+
+    unsigned int count = call_read(cwd, path, 256);
+    string_concat(path, argv[1]);
+
+    int file = call_open2(path);
+
+    if (!file)
+    {
+
+        call_close(file);
+        call_close(cwd);
+
         return;
+
+    }
 
     struct elf_header header;
 
-    file_read(node, 0, sizeof (struct elf_header), &header);
+    file_read2(file, 0, sizeof (struct elf_header), &header);
 
     if (header.identify[0] != ELF_IDENTITY_MAGIC0)
         return;
@@ -54,7 +68,7 @@ void main(int argc, char *argv[])
 
     struct elf_program_header pHeader;
 
-    file_read(node, header.programHeaderOffset, sizeof (struct elf_program_header), &pHeader);
+    file_read2(file, header.programHeaderOffset, sizeof (struct elf_program_header), &pHeader);
 
     file_write_string2(FILE_STDOUT, "ELF program header:");
     file_write_string2(FILE_STDOUT, "\nType: ");
@@ -74,6 +88,9 @@ void main(int argc, char *argv[])
     file_write_string2(FILE_STDOUT, "\nAlign: ");
     file_write_dec2(FILE_STDOUT, pHeader.align);
     file_write_string2(FILE_STDOUT, "\n");
+
+    call_close(file);
+    call_close(cwd);
 
 }
 

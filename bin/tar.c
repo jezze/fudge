@@ -1,6 +1,5 @@
 #include <call.h>
 #include <file.h>
-#include <session.h>
 #include <tar.h>
 
 void main(int argc, char *argv[])
@@ -15,16 +14,29 @@ void main(int argc, char *argv[])
 
     }
 
-    struct file_node *node = file_find(session_get_cwd(), argv[1]);
+    int cwd = call_open2("/dev/cwd");
 
-    if (!node)
+    char path[256];
+
+    unsigned int count = call_read(cwd, path, 256);
+    string_concat(path, argv[1]);
+
+    int file = call_open2(path);
+
+    if (!file)
     {
 
-        file_write_string2(FILE_STDOUT, "File does not exist.\n");
+        call_close(file);
+        call_close(cwd);
 
         return;
 
     }
+
+    call_close(file);
+    call_close(cwd);
+
+/*
 
     char buffer[512];
     struct tar_header *header = (struct tar_header *)&buffer;
@@ -58,6 +70,6 @@ void main(int argc, char *argv[])
             offset += 512;
 
     }
-
+*/
 }
 

@@ -7,14 +7,14 @@ void main(int argc, char *argv[])
 
     int cwd = call_open2("/dev/cwd");
 
-    char buffer[256];
+    char path[256];
 
-    unsigned int count = call_read(cwd, buffer, 10);
+    unsigned int count = call_read(cwd, path, 256);
 
     if (argc == 1)
     {
 
-        file_write_string2(FILE_STDOUT, buffer);
+        file_write_string2(FILE_STDOUT, path);
         file_write_string2(FILE_STDOUT, "\n");
 
         call_close(cwd);
@@ -27,11 +27,11 @@ void main(int argc, char *argv[])
         string_concat(argv[1], "/");
 
     if (argv[1][0] == '/')
-        string_copy(buffer, argv[1]);
+        string_copy(path, argv[1]);
     else
-        string_concat(buffer, argv[1]);
+        string_concat(path, argv[1]);
 
-    int new = call_open2(buffer);
+    int new = call_open2(path);
 
     if (new == -1)
     {
@@ -45,7 +45,7 @@ void main(int argc, char *argv[])
 
     }
 
-    file_write_string2(cwd, buffer);
+    file_write_string2(cwd, path);
 
     call_close(new);
     call_close(cwd);
