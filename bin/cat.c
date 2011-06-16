@@ -24,11 +24,11 @@ void main(int argc, char *argv[])
 
     }
 
-    char buffer[2000];
+    char buffer[500];
 
-    unsigned int count = call_read(fd, buffer, 10);
+    unsigned int count = call_read(fd, buffer, 500);
 
-    call_write(FILE_STDOUT, buffer, 10);
+    call_write(FILE_STDOUT, buffer, count);
 
     call_close(fd);
 
