@@ -12,6 +12,20 @@ call_open:
     pop ebp
     ret
 
+global call_open2
+call_open2:
+    push ebp
+    mov ebp, esp
+    push esi
+    push edi
+    mov eax, 0x55
+    mov esi, [ebp + 8]
+    int 0x80
+    pop edi
+    pop esi
+    pop ebp
+    ret
+
 global call_close
 call_close:
     push ebp
@@ -35,7 +49,7 @@ call_read:
     mov eax, 0x02
     mov ebx, [ebp + 8]
     mov esi, [ebp + 12]
-    mov ecx, [ebp + 14]
+    mov ecx, [ebp + 16]
     int 0x80
     pop edi
     pop esi
@@ -51,7 +65,7 @@ call_write:
     mov eax, 0x03
     mov ebx, [ebp + 8]
     mov esi, [ebp + 12]
-    mov ecx, [ebp + 14]
+    mov ecx, [ebp + 16]
     int 0x80
     pop edi
     pop esi

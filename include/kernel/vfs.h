@@ -3,7 +3,7 @@
 
 struct file_node;
 
-extern unsigned int vfs_open(char *name, unsigned int permissions);
+extern unsigned int vfs_open(char *name);
 extern void vfs_close(unsigned int index);
 extern struct file_node *vfs_get(unsigned int index);
 extern struct file_node *vfs_find(struct file_node *node, char *name);

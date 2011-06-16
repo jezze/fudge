@@ -185,6 +185,9 @@ void shell_init()
 
     shellBufferHead = 0;
 
+    int sin = call_open2("/dev/stdin");
+    int sout = call_open2("/dev/stdout");
+
     void *version[] = {"PRE-ALPHA"};
     file_write_string_format(session_get_out(), "Fudge (%s)\n\n", version);
     file_write_string(session_get_out(), "Copyright (c) 2009 Jens Nyberg\n");
@@ -192,6 +195,9 @@ void shell_init()
 
     shell_clear();
     shell_poll();
+
+    call_close(sin);
+    call_close(sout);
 
 }
 

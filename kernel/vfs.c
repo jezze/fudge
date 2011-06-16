@@ -9,7 +9,7 @@ static unsigned int vfsNodesCount;
 
 static struct file_node *vfsRootEntries[64];
 
-unsigned int vfs_open(char *name, unsigned int permissions)
+unsigned int vfs_open(char *name)
 {
 
     struct file_node *node = vfs_find(vfs_get_root(), name);
@@ -26,7 +26,7 @@ unsigned int vfs_open(char *name, unsigned int permissions)
         {
 
             vfsOpenTable[i].node = node;
-            vfsOpenTable[i].permissions = permissions;
+            vfsOpenTable[i].permissions = 0;
 
             return i;
 
@@ -77,7 +77,7 @@ struct file_node *vfs_find(struct file_node *node, char *path)
 struct file_node *vfs_get(unsigned int index)
 {
 
-    return &vfsOpenTable[index].node;
+    return vfsOpenTable[index].node;
 
 }
 
