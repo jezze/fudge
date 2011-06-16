@@ -42,11 +42,11 @@ static void shell_clear()
 
 }
 
-static void shell_call(struct file_node *node, int argc, char *argv[])
+static void shell_call(int file, int argc, char *argv[])
 {
 
     void *buffer = (void *)0x00300000;
-    file_read(node, 0, node->length, buffer);
+    file_read2(file, 0, 0x100000, buffer);
 
     unsigned int address = call_map((unsigned int)buffer);
 
@@ -62,30 +62,28 @@ static void shell_interpret(char *command)
     char *argv[32];
     unsigned int argc = string_split(argv, command, ' ');
 
-    if (argc)
+    if (!argc)
+        return;
+
+    char path[256];
+
+    string_copy(path, "/bin/");
+    string_concat(path, argv[0]);
+
+    int file = call_open2(path);
+
+    if (file == -1)
     {
 
-        struct file_node *initrd = call_open("/bin");
-        struct file_node *node = file_find(initrd, argv[0]);
+        file_write_string2(FILE_STDOUT, argv[0]);
+        file_write_string2(FILE_STDOUT, ": Command not found\n");
 
-        if (node)
-        {
-
-            shell_call(node, argc, argv);
-
-        }
-
-        else
-        {
-
-            file_write_string2(FILE_STDOUT, argv[0]);
-            file_write_string2(FILE_STDOUT, ": Command not found\n");
-
-        }
+        return;
 
     }
 
-    shell_clear();
+    shell_call(file, argc, argv);
+    call_close(file);
 
 }
 
@@ -117,6 +115,7 @@ static void shell_handle_input(char c)
             shell_stack_push('\0');
             file_write_byte2(FILE_STDOUT, c);
             shell_interpret(shellBuffer);
+            shell_clear();
 
             break;
 
