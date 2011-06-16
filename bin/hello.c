@@ -5,9 +5,13 @@
 void main(int argc, char *argv[])
 {
 
+    int fd = call_open2("/dev/vga_fb");
+
     char *hw = "Hello world!";
 
-    struct file_node *node = call_open("/dev/vga_fb");
-    file_write(node, 0, string_length(hw), hw);
+    file_write2(fd, 0, string_length(hw), hw);
+
+    call_close(fd);
 
 }
+
