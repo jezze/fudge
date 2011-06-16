@@ -5,7 +5,7 @@
 void main(int argc, char *argv[])
 {
 
-    int fd = call_open2("/dev/io");
+    int fd = file_open("/dev/io");
 
     char c = 0x10;
 
@@ -21,7 +21,7 @@ void main(int argc, char *argv[])
 
     file_write2(fd, 0x3C0, 1, &c);
 
-    call_close(fd);
+    file_close(fd);
 
     for(;;);
 

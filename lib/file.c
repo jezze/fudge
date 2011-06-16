@@ -176,6 +176,20 @@ unsigned int file_write_string_format(struct file_node *node, char *buffer, void
 
 // NEW
 
+void file_close(unsigned int fd)
+{
+
+    return call_close(fd);
+
+}
+
+int file_open(char *name)
+{
+
+    return call_open2(name);
+
+}
+
 unsigned int file_read2(unsigned int fd, unsigned int offset, unsigned int count, void *buffer)
 {
 

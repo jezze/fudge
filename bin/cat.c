@@ -13,7 +13,7 @@ void main(int argc, char *argv[])
 
     }
 
-    int fd = call_open2(argv[1]);
+    int fd = file_open(argv[1]);
 
     if (fd == -1)
     {
@@ -26,11 +26,11 @@ void main(int argc, char *argv[])
 
     char buffer[500];
 
-    unsigned int count = call_read(fd, buffer, 500);
+    unsigned int count = file_read2(fd, 0, 500, buffer);
 
-    call_write(FILE_STDOUT, buffer, count);
+    file_write2(FILE_STDOUT, 0, count, buffer);
 
-    call_close(fd);
+    file_close(fd);
 
 }
 

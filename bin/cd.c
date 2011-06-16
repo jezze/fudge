@@ -5,11 +5,11 @@
 void main(int argc, char *argv[])
 {
 
-    int cwd = call_open2("/dev/cwd");
+    int cwd = file_open("/dev/cwd");
 
     char path[256];
 
-    unsigned int count = call_read(cwd, path, 256);
+    unsigned int count = file_read2(cwd, 0, 256, path);
 
     if (argc == 1)
     {
@@ -17,7 +17,7 @@ void main(int argc, char *argv[])
         file_write_string2(FILE_STDOUT, path);
         file_write_string2(FILE_STDOUT, "\n");
 
-        call_close(cwd);
+        file_close(cwd);
 
         return;
 
@@ -31,15 +31,15 @@ void main(int argc, char *argv[])
     else
         string_concat(path, argv[1]);
 
-    int new = call_open2(path);
+    int new = file_open(path);
 
     if (new == -1)
     {
 
         file_write_string2(FILE_STDOUT, "Directory does not exist.\n");
 
-        call_close(new);
-        call_close(cwd);
+        file_close(new);
+        file_close(cwd);
 
         return;
 
@@ -47,8 +47,8 @@ void main(int argc, char *argv[])
 
     file_write_string2(cwd, path);
 
-    call_close(new);
-    call_close(cwd);
+    file_close(new);
+    file_close(cwd);
 
     return;
 

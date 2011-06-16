@@ -4,7 +4,7 @@
 void main(int argc, char *argv[])
 {
 
-    int fd = call_open2("/dev/tty");
+    int fd = file_open("/dev/tty");
 
     char c = ' ';
     unsigned int i;
@@ -12,7 +12,7 @@ void main(int argc, char *argv[])
     for (i = 2000; i; i--)
         file_write2(fd, i - 1, 1, &c);
 
-    call_close(fd);
+    file_close(fd);
 
 }
 

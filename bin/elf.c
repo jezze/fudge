@@ -9,20 +9,19 @@ void main(int argc, char *argv[])
     if (argc != 2)
         return;
 
-    int cwd = call_open2("/dev/cwd");
+    int cwd = file_open("/dev/cwd");
 
     char path[256];
 
-    unsigned int count = call_read(cwd, path, 256);
+    unsigned int count = file_read2(cwd, 0, 256, path);
     string_concat(path, argv[1]);
 
-    int file = call_open2(path);
+    int file = file_open(path);
 
-    if (!file)
+    if (file = -1)
     {
 
-        call_close(file);
-        call_close(cwd);
+        file_close(cwd);
 
         return;
 
@@ -89,8 +88,8 @@ void main(int argc, char *argv[])
     file_write_dec2(FILE_STDOUT, pHeader.align);
     file_write_string2(FILE_STDOUT, "\n");
 
-    call_close(file);
-    call_close(cwd);
+    file_close(file);
+    file_close(cwd);
 
 }
 

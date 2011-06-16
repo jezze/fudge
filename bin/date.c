@@ -4,7 +4,7 @@
 void main(int argc, char *argv[])
 {
 
-    int fd = call_open2("/dev/rtc");
+    int fd = file_open("/dev/rtc");
 
     unsigned char buffer;
 
@@ -44,7 +44,7 @@ void main(int argc, char *argv[])
     else
         file_write_string2(FILE_STDOUT, "AM\n");
 
-    call_close(fd);
+    file_close(fd);
 
 }
 

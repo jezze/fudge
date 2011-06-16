@@ -14,27 +14,27 @@ void main(int argc, char *argv[])
 
     }
 
-    int cwd = call_open2("/dev/cwd");
+    int cwd = file_open("/dev/cwd");
 
     char path[256];
 
-    unsigned int count = call_read(cwd, path, 256);
+    unsigned int count = file_read2(cwd, 0, 256, path);
     string_concat(path, argv[1]);
 
-    int file = call_open2(path);
+    int file = file_open(path);
 
     if (!file)
     {
 
-        call_close(file);
-        call_close(cwd);
+        file_close(file);
+        file_close(cwd);
 
         return;
 
     }
 
-    call_close(file);
-    call_close(cwd);
+    file_close(file);
+    file_close(cwd);
 
 /*
 

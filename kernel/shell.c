@@ -70,7 +70,7 @@ static void shell_interpret(char *command)
     string_copy(path, "/bin/");
     string_concat(path, argv[0]);
 
-    int file = call_open2(path);
+    int file = file_open(path);
 
     if (file == -1)
     {
@@ -83,7 +83,7 @@ static void shell_interpret(char *command)
     }
 
     shell_call(file, argc, argv);
-    call_close(file);
+    file_close(file);
 
 }
 
@@ -138,7 +138,7 @@ static void shell_poll()
     for (;;)
     {
 
-        while (!call_read(FILE_STDIN, &c, 1));
+        while (!file_read2(FILE_STDIN, 0, 1, &c));
 
         shell_handle_input(c);
 
@@ -151,8 +151,8 @@ void shell_init()
 
     shellBufferHead = 0;
 
-    int sin = call_open2("/dev/kbd");
-    int sout = call_open2("/dev/tty");
+    int sin = file_open("/dev/kbd");
+    int sout = file_open("/dev/tty");
 
     file_write_string2(FILE_STDOUT, "Fudge\n\n");
     file_write_string2(FILE_STDOUT, "Copyright (c) 2009 Jens Nyberg\n");
@@ -161,8 +161,8 @@ void shell_init()
     shell_clear();
     shell_poll();
 
-    call_close(sin);
-    call_close(sout);
+    file_close(sin);
+    file_close(sout);
 
 }
 

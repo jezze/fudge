@@ -41,6 +41,8 @@ extern unsigned int file_write_num(struct file_node *node, unsigned int num, uns
 extern unsigned int file_write_string(struct file_node *node, char *buffer);
 extern unsigned int file_write_string_format(struct file_node *node, char *buffer, void **args);
 
+extern void file_close(unsigned int fd);
+extern int file_open(char *name);
 extern unsigned int file_read2(unsigned int fd, unsigned int offset, unsigned int count, void *buffer);
 extern unsigned int file_read_byte2(unsigned int fd, char c);
 extern unsigned int file_write2(unsigned int fd, unsigned int offset, unsigned int count, void *buffer);
