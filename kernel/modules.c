@@ -1,5 +1,6 @@
 #include <lib/call.h>
 #include <lib/file.h>
+#include <lib/string.h>
 #include <kernel/vfs.h>
 #include <kernel/modules.h>
 #include <modules/elf/elf.h>
@@ -12,10 +13,13 @@
 #include <arch/x86/modules/serial/serial.h>
 #include <arch/x86/modules/vga/vga.h>
 
-static struct modules_bus *busses[32];
+static struct modules_filesystem modulesFilesystem;
+
+static struct modules_bus *modulesBusses[32];
+static struct modules_filesystem *modulesFilesystems[8];
 
 static struct modules_module *modules[32];
-static struct file_node *devEntries[32];
+static struct file_node *modulesEntries[32];
 static unsigned int modulesCount;
 
 void modules_register(unsigned int type, struct modules_module *module)
@@ -27,7 +31,7 @@ void modules_register(unsigned int type, struct modules_module *module)
 
 }
 
-extern void modules_register_bus(unsigned int type, struct modules_bus *bus)
+void modules_register_bus(unsigned int type, struct modules_bus *bus)
 {
 
     unsigned int i;
@@ -35,10 +39,11 @@ extern void modules_register_bus(unsigned int type, struct modules_bus *bus)
     for (i = 0; i < 32; i++)
     {
 
-        if (!busses[i])
+        if (!modulesBusses[i])
         {
 
-            busses[i] = bus;
+            modulesBusses[i] = bus;
+
             return;
 
         }
@@ -47,13 +52,34 @@ extern void modules_register_bus(unsigned int type, struct modules_bus *bus)
 
 }
 
-extern void modules_register_device(unsigned int type, struct modules_device *device)
+void modules_register_device(unsigned int type, struct modules_device *device)
 {
 
 }
 
-extern void modules_register_driver(unsigned int type, struct modules_driver *driver)
+void modules_register_driver(unsigned int type, struct modules_driver *driver)
 {
+
+}
+
+void modules_register_filesystem(struct modules_filesystem *filesystem)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < 8; i++)
+    {
+
+        if (!modulesFilesystems[i])
+        {
+
+            modulesFilesystems[i] = filesystem;
+
+            return;
+
+        }
+
+    }
 
 }
 
@@ -77,24 +103,17 @@ struct modules_module *modules_find(unsigned int type)
 static struct file_node *modules_node_walk(struct file_node *node, unsigned int index)
 {
 
-    return (index < node->length) ? devEntries[index] : 0;
+    return (index < node->length) ? modulesEntries[index] : 0;
 
 }
 
 static unsigned int modules_node_write(struct file_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    devEntries[offset] = (struct file_node *)buffer;
+    modulesEntries[offset] = (struct file_node *)buffer;
     node->length++;
 
     return count;
-
-}
-
-static struct file_node *modules_sysnode_walk(struct file_node *node, unsigned int index)
-{
-
-    return 0;
 
 }
 
@@ -116,16 +135,15 @@ static void modules_init_devices()
 void modules_init()
 {
 
+    string_copy(modulesFilesystem.name, "sysfs");
+    modules_register_filesystem(&modulesFilesystem);
+
     struct file_node *devNode = vfs_add_node("dev", 0);
     devNode->walk = modules_node_walk;
     devNode->write = modules_node_write;
 
-    struct file_node *sysNode = vfs_add_node("sys", 0);
-    sysNode->walk = modules_sysnode_walk;
-
     struct file_node *root = call_open("/");
     file_write(root, root->length, 1, devNode);
-    file_write(root, root->length, 1, sysNode);
 
     modules_init_devices();
 
