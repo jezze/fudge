@@ -81,7 +81,7 @@ struct file_node *vfs_get(unsigned int index)
 
 }
 
-struct file_node *vfs_get_root(struct file_node *node, unsigned int index)
+struct file_node *vfs_get_root()
 {
 
     return &vfsNodes[0];

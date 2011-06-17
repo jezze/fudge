@@ -3,16 +3,16 @@
 #include <lib/memory.h>
 #include <lib/string.h>
 #include <lib/tar.h>
+#include <kernel/modules.h>
 #include <kernel/initrd.h>
 #include <kernel/vfs.h>
 
-static struct tar_header *initrdFileHeaders[INITRD_HEADER_SIZE];
-static struct file_node *initrdEntries[INITRD_HEADER_SIZE];
+static struct initrd_filesystem initrdFilesystem;
 
 static unsigned int initrd_file_read(struct file_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct tar_header *header = initrdFileHeaders[node->inode];
+    struct tar_header *header = initrdFilesystem.headers[node->inode];
 
     if (offset > node->length)
         return 0;
@@ -31,7 +31,7 @@ static unsigned int initrd_file_read(struct file_node *node, unsigned int offset
 static unsigned int initrd_file_write(struct file_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct tar_header *header = initrdFileHeaders[node->inode];
+    struct tar_header *header = initrdFilesystem.headers[node->inode];
 
     if (offset > node->length)
         return 0;
@@ -76,7 +76,7 @@ static unsigned int initrd_parse(unsigned int address)
 
         unsigned int size = initrd_get_file_size(header->size);
 
-        initrdFileHeaders[i] = header;
+        initrdFilesystem.headers[i] = header;
 
         address += ((size / TAR_BLOCK_SIZE) + 1) * TAR_BLOCK_SIZE;
 
@@ -92,7 +92,7 @@ static unsigned int initrd_parse(unsigned int address)
 static struct file_node *initrd_node_walk(struct file_node *node, unsigned int index)
 {
 
-    return (index < node->length) ? initrdEntries[node->inode + index + 1] : 0;
+    return (index < node->length) ? initrdFilesystem.nodes[node->inode + index + 1] : 0;
 
 }
 
@@ -113,7 +113,7 @@ static void initrd_create_nodes(unsigned int numEntries)
     for (i = 0; i < numEntries; i++)
     {
 
-        struct tar_header *header = initrdFileHeaders[i];
+        struct tar_header *header = initrdFilesystem.headers[i];
 
         unsigned int size = initrd_get_file_size(header->size);
         unsigned int start = string_index_reversed(header->name, '/', (header->typeflag[0] == TAR_FILETYPE_DIR) ? 1 : 0) + 1;
@@ -121,7 +121,7 @@ static void initrd_create_nodes(unsigned int numEntries)
         struct file_node *initrdFileNode = vfs_add_node(header->name + start, size);
         initrdFileNode->inode = i;
 
-        initrdEntries[i] = initrdFileNode;
+        initrdFilesystem.nodes[i] = initrdFileNode;
 
         if (header->typeflag[0] == TAR_FILETYPE_DIR)
         {
@@ -153,6 +153,8 @@ static void initrd_create_nodes(unsigned int numEntries)
 
 void initrd_init(unsigned int address)
 {
+
+    string_copy(initrdFilesystem.base.name, "tar");
 
     unsigned int numEntries = initrd_parse(address + TAR_BLOCK_SIZE);
 
