@@ -1,11 +1,23 @@
 #include <call.h>
 #include <file.h>
-#include <session.h>
+
+struct file_node *get_cwd()
+{
+
+    struct file_node *node = call_open("/dev/cwd");
+
+    char buffer[256];
+    node->read(node, 0, 256, buffer);
+
+    return call_open(buffer);
+
+}
+
 
 void main(int argc, char *argv[])
 {
 
-    struct file_node *node = session_get_cwd();
+    struct file_node *node = get_cwd();
 
     if (argc == 2)
         node = file_find(node, argv[1]);

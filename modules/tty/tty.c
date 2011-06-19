@@ -19,9 +19,9 @@ static void tty_scroll()
 
     char buffer[TTY_CHARACTER_SIZE];
 
-    file_read(ttyVgaNode, TTY_CHARACTER_WIDTH, TTY_CHARACTER_SIZE - TTY_CHARACTER_WIDTH, buffer);
+    ttyVgaNode->read(ttyVgaNode, TTY_CHARACTER_WIDTH, TTY_CHARACTER_SIZE - TTY_CHARACTER_WIDTH, buffer);
     memory_set(buffer + TTY_CHARACTER_SIZE - TTY_CHARACTER_WIDTH, ' ', TTY_CHARACTER_WIDTH);
-    file_write(ttyVgaNode, 0, TTY_CHARACTER_SIZE, buffer);
+    ttyVgaNode->write(ttyVgaNode, 0, TTY_CHARACTER_SIZE, buffer);
 
     ttyDevice.cursorOffset -= TTY_CHARACTER_WIDTH;
 
@@ -61,7 +61,7 @@ static void tty_putc(char c)
     else if (c >= ' ')
     {
 
-        file_write(ttyVgaNode, ttyDevice.cursorOffset, 1, &c);
+        ttyVgaNode->write(ttyVgaNode, ttyDevice.cursorOffset, 1, &c);
         ttyDevice.cursorOffset++;
 
     }
@@ -78,7 +78,7 @@ static void tty_vga_clear()
     int i;
 
     for (i = 0; i < TTY_CHARACTER_SIZE; i++)
-        file_write(ttyVgaNode, i, 1, &c);
+        ttyVgaNode->write(ttyVgaNode, i, 1, &c);
 
 }
 
@@ -91,7 +91,7 @@ static unsigned int tty_write(struct file_node *node, unsigned int offset, unsig
     for (i = offset; i < offset + count; i++, j++)
         tty_putc(((char *)buffer)[j]);
 
-    file_write(ttyVgaCursorNode, 0, 1, &ttyDevice.cursorOffset);
+    ttyVgaCursorNode->write(ttyVgaCursorNode, 0, 1, &ttyDevice.cursorOffset);
 
     return count;
 
@@ -137,7 +137,7 @@ static void tty_init_vga()
     ttyVgaColorNode = vfs_find(vfs_get_root(), "dev/vga_fb_color");
     ttyVgaCursorNode = vfs_find(vfs_get_root(), "dev/vga_fb_cursor");
 
-    file_write(ttyVgaColorNode, 0, 1, &ttyDevice.cursorColor);
+    ttyVgaColorNode->write(ttyVgaColorNode, 0, 1, &ttyDevice.cursorColor);
 
     tty_vga_clear();
 
@@ -158,8 +158,8 @@ void tty_init()
     ttyCwdNode->write = tty_cwd_write;
 
     struct file_node *devNode = vfs_find(vfs_get_root(), "dev");
-    file_write(devNode, devNode->length, 1, ttyStdoutNode);
-    file_write(devNode, devNode->length, 1, ttyCwdNode);
+    devNode->write(devNode, devNode->length, 1, ttyStdoutNode);
+    devNode->write(devNode, devNode->length, 1, ttyCwdNode);
 
 }
 
