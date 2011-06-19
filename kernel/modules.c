@@ -142,7 +142,7 @@ void modules_init()
     devNode->walk = modules_node_walk;
     devNode->write = modules_node_write;
 
-    struct file_node *root = call_open("/");
+    struct file_node *root = vfs_get_root();
     file_write(root, root->length, 1, devNode);
 
     modules_init_devices();

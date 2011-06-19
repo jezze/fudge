@@ -133,9 +133,9 @@ static void tty_init_vga()
     ttyDevice.set_color = tty_set_color;
     ttyDevice.set_color(TTY_COLOR_WHITE, TTY_COLOR_BLACK);
 
-    ttyVgaNode = call_open("/dev/vga_fb");
-    ttyVgaColorNode = call_open("/dev/vga_fb_color");
-    ttyVgaCursorNode = call_open("/dev/vga_fb_cursor");
+    ttyVgaNode = vfs_find(vfs_get_root(), "dev/vga_fb");
+    ttyVgaColorNode = vfs_find(vfs_get_root(), "dev/vga_fb_color");
+    ttyVgaCursorNode = vfs_find(vfs_get_root(), "dev/vga_fb_cursor");
 
     file_write(ttyVgaColorNode, 0, 1, &ttyDevice.cursorColor);
 
@@ -157,7 +157,7 @@ void tty_init()
     ttyCwdNode->read = tty_cwd_read;
     ttyCwdNode->write = tty_cwd_write;
 
-    struct file_node *devNode = call_open("/dev");
+    struct file_node *devNode = vfs_find(vfs_get_root(), "dev");
     file_write(devNode, devNode->length, 1, ttyStdoutNode);
     file_write(devNode, devNode->length, 1, ttyCwdNode);
 
