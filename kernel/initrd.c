@@ -160,7 +160,7 @@ static void initrd_create_nodes(unsigned int numEntries)
         baseName[start - 4] = '\0';
 
         struct file_node *rootNode = call_open(baseName);
-        file_write(rootNode, rootNode->length, 1, initrdFileNode);
+        rootNode->write(rootNode, rootNode->length, 1, initrdFileNode);
 
     }
 

@@ -3,6 +3,15 @@
 #include <lib/memory.h>
 #include <lib/string.h>
 
+// START REMOVE
+
+struct file_node *file_walk(struct file_node *node, unsigned int index)
+{
+
+    return (node && node->walk) ? node->walk(node, index) : 0;
+
+}
+
 struct file_node *file_find(struct file_node *node, char *path)
 {
 
@@ -32,149 +41,7 @@ struct file_node *file_find(struct file_node *node, char *path)
 
 }
 
-unsigned int file_read(struct file_node *node, unsigned int offset, unsigned int count, void *buffer)
-{
-
-    return (node && node->read) ? node->read(node, offset, count, buffer) : 0;
-
-}
-
-unsigned int file_read_byte(struct file_node *node, char c)
-{
-
-    return file_read(node, 0, 1, &c);
-
-}
-
-struct file_node *file_walk(struct file_node *node, unsigned int index)
-{
-
-    return (node && node->walk) ? node->walk(node, index) : 0;
-
-}
-
-unsigned int file_write(struct file_node *node, unsigned int offset, unsigned int count, void *buffer)
-{
-
-    return (node && node->write) ? node->write(node, offset, count, buffer) : 0;
-
-}
-
-unsigned int file_write_bcd(struct file_node *node, unsigned char num)
-{
-
-    return file_write_dec(node, num >> 4) + file_write_dec(node, num & 0x0F);
-
-}
-
-unsigned int file_write_byte(struct file_node *node, char c)
-{
-
-    return file_write(node, 0, 1, &c);
-
-}
-
-unsigned int file_write_dec(struct file_node *node, unsigned int num)
-{
-
-    return file_write_num(node, num, 10);
-
-}
-
-unsigned int file_write_hex(struct file_node *node, unsigned int num)
-{
-
-    return file_write_num(node, num, 16);
-
-}
-
-unsigned int file_write_num(struct file_node *node, unsigned int num, unsigned int base)
-{
-
-    if (!num)
-        return file_write_byte(node, '0');
-
-    char buffer[32] = {0};
-
-    int i;
-
-    for (i = 30; num && i; --i, num /= base)
-        buffer[i] = "0123456789abcdef"[num % base];
-
-    return file_write_string(node, buffer + i + 1);
-
-}
-
-unsigned int file_write_string(struct file_node *node, char *buffer)
-{
-
-    return file_write(node, 0, string_length(buffer), buffer);
-
-}
-
-unsigned int file_write_string_format(struct file_node *node, char *buffer, void **args)
-{
-
-    if (!args)
-        return file_write(node, 0, string_length(buffer), buffer);
-
-    unsigned int i;
-    unsigned int length = string_length(buffer);
-    unsigned int size = 0;
-
-    for (i = 0; i < length; i++)
-    {
-
-        if (buffer[i] != '%')
-        {
-
-            size += file_write_byte(node, buffer[i]);
-
-            continue;
-
-        }
-
-        i++;
-
-        switch (buffer[i])
-        {
-
-            case 'c':
-
-                size += file_write_byte(node, **(char **)args);
-
-                break;
-
-            case 'd':
-
-                size += file_write_num(node, **(int **)args, 10);
-
-                break;
-
-            case 's':
-
-                size += file_write_string(node, *(char **)args);
-
-                break;
-
-            case 'x':
-
-                size += file_write_num(node, **(int **)args, 16);
-
-                break;
-
-        }
-
-        args++;
-
-    }
-
-    return size + i;
-
-}
-
-
-// NEW
+// END REMOVE
 
 void file_close(unsigned int fd)
 {

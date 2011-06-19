@@ -120,7 +120,7 @@ void kbd_init()
     kbdDevice.base.node.write = kbd_device_write;
 
     struct file_node *devNode = vfs_find(vfs_get_root(), "dev");
-    file_write(devNode, devNode->length, 1, &kbdDevice.base.node);
+    devNode->write(devNode, devNode->length, 1, &kbdDevice.base.node);
 
     irq_register_handler(IRQ_ROUTINE_KBD, kbd_handler);
 
