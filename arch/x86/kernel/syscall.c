@@ -56,7 +56,7 @@ static void syscall_read(struct syscall_registers *registers)
 
     struct file_node *node = vfs_get(index);
 
-    if (!node)
+    if (!node || !node->read)
     {
 
         registers->eax = 0;
@@ -78,7 +78,7 @@ static void syscall_write(struct syscall_registers *registers)
 
     struct file_node *node = vfs_get(index);
 
-    if (!node)
+    if (!node || !node->write)
     {
 
         registers->eax = 0;

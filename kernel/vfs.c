@@ -105,6 +105,20 @@ static unsigned int file_node_write(struct file_node *node, unsigned int offset,
 
 }
 
+static unsigned int file_node_read(struct file_node *node, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    unsigned int *b;
+
+    unsigned int i;
+
+    for (i = 0; i < node->length; i++)
+        b[i] = vfsRootEntries[i]->inode;
+
+    return node->length;
+
+}
+
 struct file_node *vfs_add_node(char *name, unsigned int length)
 {
 
@@ -125,6 +139,7 @@ void vfs_init()
 
     struct file_node *node = vfs_add_node("root", 0);
     node->walk = file_node_walk;
+    node->read = file_node_read;
     node->write = file_node_write;
 
 }

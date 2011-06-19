@@ -1,6 +1,7 @@
 #include <call.h>
 #include <file.h>
 #include <tar.h>
+#include <string.h>
 
 void main(int argc, char *argv[])
 {

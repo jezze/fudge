@@ -18,7 +18,7 @@ void main(int argc, char *argv[])
 
     int file = file_open(path);
 
-    if (file = -1)
+    if (file == -1)
     {
 
         file_close(cwd);

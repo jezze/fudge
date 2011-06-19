@@ -105,6 +105,20 @@ static unsigned int initrd_node_write(struct file_node *node, unsigned int offse
 
 }
 
+static unsigned int initrd_node_read(struct file_node *node, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    unsigned int *b;
+
+    unsigned int i;
+
+    for (i = 0; i < node->length; i++)
+        b[i] = initrdFilesystem.nodes[node->inode + 1]->inode;
+
+    return node->length;
+
+}
+
 static void initrd_create_nodes(unsigned int numEntries)
 {
 
@@ -128,6 +142,7 @@ static void initrd_create_nodes(unsigned int numEntries)
 
             string_replace(initrdFileNode->name, '/', '\0');
             initrdFileNode->walk = initrd_node_walk;
+            initrdFileNode->read = initrd_node_read;
             initrdFileNode->write = initrd_node_write;
 
         }
