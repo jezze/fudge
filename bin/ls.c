@@ -4,12 +4,12 @@
 struct file_node *get_cwd()
 {
 
-    struct file_node *node = call_open("/dev/cwd");
+    struct file_node *node = call_open_legacy("/dev/cwd");
 
     char buffer[256];
     node->read(node, 0, 256, buffer);
 
-    return call_open(buffer);
+    return call_open_legacy(buffer);
 
 }
 

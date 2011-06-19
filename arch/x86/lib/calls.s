@@ -17,25 +17,6 @@ call_open:
     pop ebp
     ret
 
-global call_open2
-call_open2:
-    push ebp
-    mov ebp, esp
-    push ebx
-    push ecx
-    push esi
-    push edi
-    mov eax, 0x55
-    mov esi, [ebp + 8]
-    int 0x80
-    pop edi
-    pop esi
-    pop ecx
-    pop ebx
-    mov esp, ebp
-    pop ebp
-    ret
-
 global call_close
 call_close:
     push ebp
@@ -143,6 +124,25 @@ call_reboot:
     push esi
     push edi
     mov eax, 0x21
+    int 0x80
+    pop edi
+    pop esi
+    pop ecx
+    pop ebx
+    mov esp, ebp
+    pop ebp
+    ret
+
+global call_open_legacy
+call_open_legacy:
+    push ebp
+    mov ebp, esp
+    push ebx
+    push ecx
+    push esi
+    push edi
+    mov eax, 0x55
+    mov esi, [ebp + 8]
     int 0x80
     pop edi
     pop esi

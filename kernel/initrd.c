@@ -159,7 +159,7 @@ static void initrd_create_nodes(unsigned int numEntries)
         memory_copy(baseName, header->name + 4, start);
         baseName[start - 4] = '\0';
 
-        struct file_node *rootNode = call_open(baseName);
+        struct file_node *rootNode = call_open_legacy(baseName);
         rootNode->write(rootNode, rootNode->length, 1, initrdFileNode);
 
     }

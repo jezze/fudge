@@ -53,7 +53,7 @@ void file_close(unsigned int fd)
 int file_open(char *name)
 {
 
-    return call_open2(name);
+    return call_open(name);
 
 }
 

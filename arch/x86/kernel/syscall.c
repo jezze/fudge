@@ -27,14 +27,14 @@ void syscall_unregister_handler(unsigned char index)
 static void syscall_open(struct syscall_registers *registers)
 {
 
-    registers->eax = (unsigned int)vfs_find(vfs_get_root(), (char *)registers->esi + 1);
+    registers->eax = vfs_open((char *)registers->esi + 1);
 
 }
 
-static void syscall_open2(struct syscall_registers *registers)
+static void syscall_open_legacy(struct syscall_registers *registers)
 {
 
-    registers->eax = vfs_open((char *)registers->esi + 1);
+    registers->eax = (unsigned int)vfs_find(vfs_get_root(), (char *)registers->esi + 1);
 
 }
 
@@ -145,12 +145,12 @@ void syscall_init()
 {
 
     syscall_register_handler(SYSCALL_ROUTINE_OPEN, syscall_open);
-    syscall_register_handler(SYSCALL_ROUTINE_OPEN2, syscall_open2);
     syscall_register_handler(SYSCALL_ROUTINE_CLOSE, syscall_close);
     syscall_register_handler(SYSCALL_ROUTINE_READ, syscall_read);
     syscall_register_handler(SYSCALL_ROUTINE_WRITE, syscall_write);
     syscall_register_handler(SYSCALL_ROUTINE_MAP, syscall_map);
     syscall_register_handler(SYSCALL_ROUTINE_REBOOT, syscall_reboot);
+    syscall_register_handler(SYSCALL_ROUTINE_OPEN_LEGACY, syscall_open_legacy);
 
 }
 
