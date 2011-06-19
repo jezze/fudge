@@ -43,7 +43,7 @@ void main(int argc, char *argv[])
     struct file_node *current;
     unsigned int i;
 
-    for (i = 0; (current = file_walk(node, i)); i++)
+    for (i = 0; (current = node->walk(node, i)); i++)
     {
 
         if (current->walk)

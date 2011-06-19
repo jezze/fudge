@@ -31,7 +31,6 @@ struct file_descriptor
 // START REMOVE
 
 extern struct file_node *file_find(struct file_node *node, char *name);
-extern struct file_node *file_walk(struct file_node *node, unsigned int index);
 
 // END REMOVE
 

@@ -5,13 +5,6 @@
 
 // START REMOVE
 
-struct file_node *file_walk(struct file_node *node, unsigned int index)
-{
-
-    return (node && node->walk) ? node->walk(node, index) : 0;
-
-}
-
 struct file_node *file_find(struct file_node *node, char *path)
 {
 
@@ -24,7 +17,7 @@ struct file_node *file_find(struct file_node *node, char *path)
     struct file_node *current;
     unsigned int i;
 
-    for (i = 0; (current = file_walk(node, i)); i++)
+    for (i = 0; (current = node->walk(node, i)); i++)
     {
 
         unsigned int count = string_length(current->name);
