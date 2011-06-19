@@ -25,7 +25,7 @@ void main(int argc, char *argv[])
     if (!node)
     {
 
-        file_write_string2(FILE_STDOUT, "Directory does not exist.\n");
+        file_write_string(FILE_STDOUT, "Directory does not exist.\n");
 
         return;
 
@@ -34,7 +34,7 @@ void main(int argc, char *argv[])
     if (!node->walk)
     {
 
-        file_write_string2(FILE_STDOUT, "Not a directory.\n");
+        file_write_string(FILE_STDOUT, "Not a directory.\n");
 
         return;
 
@@ -47,15 +47,15 @@ void main(int argc, char *argv[])
     {
 
         if (current->walk)
-            file_write_string2(FILE_STDOUT, "d");
+            file_write_string(FILE_STDOUT, "d");
         else
-            file_write_string2(FILE_STDOUT, "-");
+            file_write_string(FILE_STDOUT, "-");
 
-        file_write_string2(FILE_STDOUT, "rwxrwxrwx ");
-        file_write_dec2(FILE_STDOUT, current->length);
-        file_write_string2(FILE_STDOUT, "\t");
-        file_write_string2(FILE_STDOUT, current->name);
-        file_write_string2(FILE_STDOUT, "\n");
+        file_write_string(FILE_STDOUT, "rwxrwxrwx ");
+        file_write_dec(FILE_STDOUT, current->length);
+        file_write_string(FILE_STDOUT, "\t");
+        file_write_string(FILE_STDOUT, current->name);
+        file_write_string(FILE_STDOUT, "\n");
 
     }
 

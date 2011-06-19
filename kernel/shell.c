@@ -37,7 +37,7 @@ static void shell_stack_clear()
 static void shell_clear()
 {
 
-    file_write_string2(FILE_STDOUT, "fudge:/$ ");
+    file_write_string(FILE_STDOUT, "fudge:/$ ");
     shell_stack_clear();
 
 }
@@ -46,7 +46,7 @@ static void shell_call(int file, int argc, char *argv[])
 {
 
     void *buffer = (void *)0x00300000;
-    file_read2(file, 0, 0x100000, buffer);
+    file_read(file, 0, 0x100000, buffer);
 
     unsigned int address = call_map((unsigned int)buffer);
 
@@ -75,8 +75,8 @@ static void shell_interpret(char *command)
     if (file == -1)
     {
 
-        file_write_string2(FILE_STDOUT, argv[0]);
-        file_write_string2(FILE_STDOUT, ": Command not found\n");
+        file_write_string(FILE_STDOUT, argv[0]);
+        file_write_string(FILE_STDOUT, ": Command not found\n");
 
         return;
 
@@ -102,9 +102,9 @@ static void shell_handle_input(char c)
             if (shell_stack_pop())
             {
 
-                file_write_byte2(FILE_STDOUT, '\b');
-                file_write_byte2(FILE_STDOUT, ' ');
-                file_write_byte2(FILE_STDOUT, '\b');
+                file_write_byte(FILE_STDOUT, '\b');
+                file_write_byte(FILE_STDOUT, ' ');
+                file_write_byte(FILE_STDOUT, '\b');
 
              }
 
@@ -113,7 +113,7 @@ static void shell_handle_input(char c)
         case '\n':
 
             shell_stack_push('\0');
-            file_write_byte2(FILE_STDOUT, c);
+            file_write_byte(FILE_STDOUT, c);
             shell_interpret(shellBuffer);
             shell_clear();
 
@@ -122,7 +122,7 @@ static void shell_handle_input(char c)
         default:
 
             shell_stack_push(c);
-            file_write_byte2(FILE_STDOUT, c);
+            file_write_byte(FILE_STDOUT, c);
 
             break;
 
@@ -138,7 +138,7 @@ static void shell_poll()
     for (;;)
     {
 
-        while (!file_read2(FILE_STDIN, 0, 1, &c));
+        while (!file_read(FILE_STDIN, 0, 1, &c));
 
         shell_handle_input(c);
 
@@ -154,9 +154,9 @@ void shell_init()
     int sin = file_open("/dev/kbd");
     int sout = file_open("/dev/tty");
 
-    file_write_string2(FILE_STDOUT, "Fudge\n\n");
-    file_write_string2(FILE_STDOUT, "Copyright (c) 2009 Jens Nyberg\n");
-    file_write_string2(FILE_STDOUT, "Type 'cat help.txt' to read the help section.\n\n");
+    file_write_string(FILE_STDOUT, "Fudge\n\n");
+    file_write_string(FILE_STDOUT, "Copyright (c) 2009 Jens Nyberg\n");
+    file_write_string(FILE_STDOUT, "Type 'cat help.txt' to read the help section.\n\n");
 
     shell_clear();
     shell_poll();

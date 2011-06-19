@@ -8,41 +8,41 @@ void main(int argc, char *argv[])
 
     unsigned char buffer;
 
-    file_write_string2(FILE_STDOUT, "20");
-    file_read2(fd, 0, 1, &buffer);
-    file_write_bcd2(FILE_STDOUT, buffer);
+    file_write_string(FILE_STDOUT, "20");
+    file_read(fd, 0, 1, &buffer);
+    file_write_bcd(FILE_STDOUT, buffer);
 
-    file_write_string2(FILE_STDOUT, "-");
+    file_write_string(FILE_STDOUT, "-");
 
-    file_read2(fd, 1, 1, &buffer);
-    file_write_bcd2(FILE_STDOUT, buffer);
+    file_read(fd, 1, 1, &buffer);
+    file_write_bcd(FILE_STDOUT, buffer);
 
-    file_write_string2(FILE_STDOUT, "-");
+    file_write_string(FILE_STDOUT, "-");
 
-    file_read2(fd, 2, 1, &buffer);
-    file_write_bcd2(FILE_STDOUT, buffer);
+    file_read(fd, 2, 1, &buffer);
+    file_write_bcd(FILE_STDOUT, buffer);
 
-    file_write_string2(FILE_STDOUT, " ");
+    file_write_string(FILE_STDOUT, " ");
 
-    file_read2(fd, 3, 1, &buffer);
-    file_write_bcd2(FILE_STDOUT, buffer);
+    file_read(fd, 3, 1, &buffer);
+    file_write_bcd(FILE_STDOUT, buffer);
 
-    file_write_string2(FILE_STDOUT, ":");
+    file_write_string(FILE_STDOUT, ":");
 
-    file_read2(fd, 4, 1, &buffer);
-    file_write_bcd2(FILE_STDOUT, buffer);
+    file_read(fd, 4, 1, &buffer);
+    file_write_bcd(FILE_STDOUT, buffer);
 
-    file_write_string2(FILE_STDOUT, ":");
+    file_write_string(FILE_STDOUT, ":");
 
-    file_read2(fd, 5, 1, &buffer);
-    file_write_bcd2(FILE_STDOUT, buffer);
+    file_read(fd, 5, 1, &buffer);
+    file_write_bcd(FILE_STDOUT, buffer);
 
-    file_read2(fd, 3, 1, &buffer);
+    file_read(fd, 3, 1, &buffer);
 
     if (buffer >> 4)
-        file_write_string2(FILE_STDOUT, "PM\n");
+        file_write_string(FILE_STDOUT, "PM\n");
     else
-        file_write_string2(FILE_STDOUT, "AM\n");
+        file_write_string(FILE_STDOUT, "AM\n");
 
     file_close(fd);
 

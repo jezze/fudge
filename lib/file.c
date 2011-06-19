@@ -57,60 +57,60 @@ int file_open(char *name)
 
 }
 
-unsigned int file_read2(unsigned int fd, unsigned int offset, unsigned int count, void *buffer)
+unsigned int file_read(unsigned int fd, unsigned int offset, unsigned int count, void *buffer)
 {
 
     return call_read(fd, buffer, count);
 
 }
 
-unsigned int file_read_byte2(unsigned int fd, char c)
+unsigned int file_read_byte(unsigned int fd, char c)
 {
 
-    return file_read2(fd, 0, 1, &c);
+    return file_read(fd, 0, 1, &c);
 
 }
 
-unsigned int file_write2(unsigned int fd, unsigned int offset, unsigned int count, void *buffer)
+unsigned int file_write(unsigned int fd, unsigned int offset, unsigned int count, void *buffer)
 {
 
     return call_write(fd, buffer, count);
 
 }
 
-unsigned int file_write_bcd2(unsigned int fd, unsigned char num)
+unsigned int file_write_bcd(unsigned int fd, unsigned char num)
 {
 
-    return file_write_dec2(fd, num >> 4) + file_write_dec2(fd, num & 0x0F);
+    return file_write_dec(fd, num >> 4) + file_write_dec(fd, num & 0x0F);
 
 }
 
-unsigned int file_write_byte2(unsigned int fd, char c)
+unsigned int file_write_byte(unsigned int fd, char c)
 {
 
-    return file_write2(fd, 0, 1, &c);
+    return file_write(fd, 0, 1, &c);
 
 }
 
-unsigned int file_write_dec2(unsigned int fd, unsigned int num)
+unsigned int file_write_dec(unsigned int fd, unsigned int num)
 {
 
-    return file_write_num2(fd, num, 10);
+    return file_write_num(fd, num, 10);
 
 }
 
-unsigned int file_write_hex2(unsigned int fd, unsigned int num)
+unsigned int file_write_hex(unsigned int fd, unsigned int num)
 {
 
-    return file_write_num2(fd, num, 16);
+    return file_write_num(fd, num, 16);
 
 }
 
-unsigned int file_write_num2(unsigned int fd, unsigned int num, unsigned int base)
+unsigned int file_write_num(unsigned int fd, unsigned int num, unsigned int base)
 {
 
     if (!num)
-        return file_write_byte2(fd, '0');
+        return file_write_byte(fd, '0');
 
     char buffer[32] = {0};
 
@@ -119,22 +119,22 @@ unsigned int file_write_num2(unsigned int fd, unsigned int num, unsigned int bas
     for (i = 30; num && i; --i, num /= base)
         buffer[i] = "0123456789abcdef"[num % base];
 
-    return file_write_string2(fd, buffer + i + 1);
+    return file_write_string(fd, buffer + i + 1);
 
 }
 
-unsigned int file_write_string2(unsigned int fd, char *buffer)
+unsigned int file_write_string(unsigned int fd, char *buffer)
 {
 
-    return file_write2(fd, 0, string_length(buffer), buffer);
+    return file_write(fd, 0, string_length(buffer), buffer);
 
 }
 
-unsigned int file_write_string_format2(unsigned int fd, char *buffer, void **args)
+unsigned int file_write_string_format(unsigned int fd, char *buffer, void **args)
 {
 
     if (!args)
-        return file_write2(fd, 0, string_length(buffer), buffer);
+        return file_write(fd, 0, string_length(buffer), buffer);
 
     unsigned int i;
     unsigned int length = string_length(buffer);
@@ -146,7 +146,7 @@ unsigned int file_write_string_format2(unsigned int fd, char *buffer, void **arg
         if (buffer[i] != '%')
         {
 
-            size += file_write_byte2(fd, buffer[i]);
+            size += file_write_byte(fd, buffer[i]);
 
             continue;
 
@@ -159,25 +159,25 @@ unsigned int file_write_string_format2(unsigned int fd, char *buffer, void **arg
 
             case 'c':
 
-                size += file_write_byte2(fd, **(char **)args);
+                size += file_write_byte(fd, **(char **)args);
 
                 break;
 
             case 'd':
 
-                size += file_write_num2(fd, **(int **)args, 10);
+                size += file_write_num(fd, **(int **)args, 10);
 
                 break;
 
             case 's':
 
-                size += file_write_string2(fd, *(char **)args);
+                size += file_write_string(fd, *(char **)args);
 
                 break;
 
             case 'x':
 
-                size += file_write_num2(fd, **(int **)args, 16);
+                size += file_write_num(fd, **(int **)args, 16);
 
                 break;
 

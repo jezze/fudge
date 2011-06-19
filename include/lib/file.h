@@ -37,16 +37,16 @@ extern struct file_node *file_walk(struct file_node *node, unsigned int index);
 
 extern void file_close(unsigned int fd);
 extern int file_open(char *name);
-extern unsigned int file_read2(unsigned int fd, unsigned int offset, unsigned int count, void *buffer);
-extern unsigned int file_read_byte2(unsigned int fd, char c);
-extern unsigned int file_write2(unsigned int fd, unsigned int offset, unsigned int count, void *buffer);
-extern unsigned int file_write_bcd2(unsigned int fd, unsigned char num);
-extern unsigned int file_write_byte2(unsigned int fd, char c);
-extern unsigned int file_write_dec2(unsigned int fd, unsigned int num);
-extern unsigned int file_write_hex2(unsigned int fd, unsigned int num);
-extern unsigned int file_write_num2(unsigned int fd, unsigned int num, unsigned int base);
-extern unsigned int file_write_string2(unsigned int fd, char *buffer);
-extern unsigned int file_write_string_format2(unsigned int fd, char *buffer, void **args);
+extern unsigned int file_read(unsigned int fd, unsigned int offset, unsigned int count, void *buffer);
+extern unsigned int file_read_byte(unsigned int fd, char c);
+extern unsigned int file_write(unsigned int fd, unsigned int offset, unsigned int count, void *buffer);
+extern unsigned int file_write_bcd(unsigned int fd, unsigned char num);
+extern unsigned int file_write_byte(unsigned int fd, char c);
+extern unsigned int file_write_dec(unsigned int fd, unsigned int num);
+extern unsigned int file_write_hex(unsigned int fd, unsigned int num);
+extern unsigned int file_write_num(unsigned int fd, unsigned int num, unsigned int base);
+extern unsigned int file_write_string(unsigned int fd, char *buffer);
+extern unsigned int file_write_string_format(unsigned int fd, char *buffer, void **args);
 
 #endif
 

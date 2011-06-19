@@ -9,7 +9,7 @@ void main(int argc, char *argv[])
 
     char *hw = "Hello world!";
 
-    file_write2(fd, 0, string_length(hw), hw);
+    file_write(fd, 0, string_length(hw), hw);
 
     file_close(fd);
 

@@ -10,26 +10,26 @@ void log_message(unsigned int type, char *message, void **args)
 
         case LOG_TYPE_INFO:
 
-            file_write_string2(FILE_STDOUT, "INFO: ");
+            file_write_string(FILE_STDOUT, "INFO: ");
 
             break;
 
         case LOG_TYPE_WARNING:
 
-            file_write_string2(FILE_STDOUT, "WARNING: ");
+            file_write_string(FILE_STDOUT, "WARNING: ");
 
             break;
 
         case LOG_TYPE_ERROR:
 
-            file_write_string2(FILE_STDOUT, "ERROR: ");
+            file_write_string(FILE_STDOUT, "ERROR: ");
 
             break;
 
     }
 
-    file_write_string_format2(FILE_STDOUT, message, args);
-    file_write_string2(FILE_STDOUT, "\n");
+    file_write_string_format(FILE_STDOUT, message, args);
+    file_write_string(FILE_STDOUT, "\n");
 
 }
 

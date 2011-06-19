@@ -9,13 +9,13 @@ void main(int argc, char *argv[])
 
     char path[256];
 
-    unsigned int count = file_read2(cwd, 0, 256, path);
+    unsigned int count = file_read(cwd, 0, 256, path);
 
     if (argc == 1)
     {
 
-        file_write_string2(FILE_STDOUT, path);
-        file_write_string2(FILE_STDOUT, "\n");
+        file_write_string(FILE_STDOUT, path);
+        file_write_string(FILE_STDOUT, "\n");
 
         file_close(cwd);
 
@@ -36,7 +36,7 @@ void main(int argc, char *argv[])
     if (new == -1)
     {
 
-        file_write_string2(FILE_STDOUT, "Directory does not exist.\n");
+        file_write_string(FILE_STDOUT, "Directory does not exist.\n");
 
         file_close(new);
         file_close(cwd);
@@ -45,7 +45,7 @@ void main(int argc, char *argv[])
 
     }
 
-    file_write_string2(cwd, path);
+    file_write_string(cwd, path);
 
     file_close(new);
     file_close(cwd);
