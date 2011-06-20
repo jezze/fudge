@@ -9,7 +9,7 @@
 #include <arch/x86/kernel/cpu.h>
 #include <arch/x86/kernel/tss.h>
 
-unsigned int kernelInitrdAddress;
+unsigned int *kernelInitrdAddress;
 unsigned int kernelStackAddress;
 
 void kernel_assert(unsigned int condition, char *message, char *file, unsigned int line)
@@ -39,7 +39,7 @@ void kernel_panic(char *message, char *file, unsigned int line)
 
 }
 
-void kernel_set_initrd(unsigned int address)
+void kernel_set_initrd(unsigned int *address)
 {
 
     kernelInitrdAddress = address;

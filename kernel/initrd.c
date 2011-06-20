@@ -166,13 +166,13 @@ static void initrd_create_nodes(unsigned int numEntries)
 
 }
 
-void initrd_init(unsigned int address)
+void initrd_init(unsigned int *address)
 {
 
     string_copy(initrdFilesystem.base.name, "tarfs");
     modules_register_filesystem(&initrdFilesystem.base);
 
-    unsigned int numEntries = initrd_parse(address + TAR_BLOCK_SIZE);
+    unsigned int numEntries = initrd_parse(*address + TAR_BLOCK_SIZE);
 
     initrd_create_nodes(numEntries);
 

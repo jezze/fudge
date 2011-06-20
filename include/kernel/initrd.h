@@ -14,7 +14,7 @@ struct initrd_filesystem
 
 };
 
-extern void initrd_init(unsigned int address);
+extern void initrd_init(unsigned int *address);
 
 #endif
 
