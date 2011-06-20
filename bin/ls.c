@@ -1,26 +1,41 @@
 #include <call.h>
 #include <file.h>
+#include <string.h>
 
-struct file_node *get_cwd()
+void get_path(char *buffer, char *arg)
 {
 
-    struct file_node *node = call_open_legacy("/dev/cwd");
+    int cwd = file_open("/dev/cwd");
+    unsigned int count = file_read(cwd, 0, 256, buffer);
 
-    char buffer[256];
-    node->read(node, 0, 256, buffer);
+    if (arg)
+    {
 
-    return call_open_legacy(buffer);
+        if (arg[0] == '/')
+            string_copy(buffer, arg);
+        else
+            string_concat(buffer, arg);
+
+    }
+
+    if (buffer[string_length(buffer) - 1] != '/')
+        string_concat(buffer, "/");
+
+    file_close(cwd);
 
 }
-
 
 void main(int argc, char *argv[])
 {
 
-    struct file_node *node = get_cwd();
+    char path[256];
 
-    if (argc == 2)
-        node = file_find(node, argv[1]);
+    if (argc == 1)
+        get_path(path, 0);
+    else
+        get_path(path, argv[1]);
+
+    struct file_node *node = call_open_legacy(path);
 
     if (!node)
     {
