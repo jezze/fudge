@@ -62,12 +62,9 @@ void kernel_init(unsigned int stackAddress)
     initrd_init(kernelInitrdAddress);
     modules_init();
 
-    unsigned int address = cpu_get_stack();
-    tss_set_stack(stackAddress);
+    tss_set_stack(0x00400000);
 
-//    cpu_usermode();
-
-    kernel_init_usermode();
+    cpu_usermode();
 
     for (;;);
 
