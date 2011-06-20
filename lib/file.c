@@ -3,39 +3,6 @@
 #include <lib/memory.h>
 #include <lib/string.h>
 
-// START REMOVE
-
-struct file_node *file_find(struct file_node *node, char *path)
-{
-
-    unsigned int index = string_index(path, '/', 0);
-    unsigned int length = string_length(path);
-
-    if (!index)
-        return node;
-
-    struct file_node *current;
-    unsigned int i;
-
-    for (i = 0; (current = node->walk(node, i)); i++)
-    {
-
-        unsigned int count = string_length(current->name);
-
-        if (index > count)
-            count = index;
-
-        if (!memory_compare(path, current->name, count))
-            return (index == length) ? current : file_find(current, path + index + 1);
-
-    }
-
-    return 0;
-
-}
-
-// END REMOVE
-
 void file_close(unsigned int fd)
 {
 
