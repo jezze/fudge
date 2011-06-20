@@ -46,13 +46,6 @@ void kernel_set_initrd(unsigned int address)
 
 }
 
-void kernel_init_usermode()
-{
-
-    shell_init();
-
-}
-
 void kernel_init(unsigned int stackAddress)
 {
 
@@ -63,8 +56,7 @@ void kernel_init(unsigned int stackAddress)
     modules_init();
 
     tss_set_stack(0x00400000);
-
-    cpu_usermode();
+    cpu_usermode((unsigned int)shell_init);
 
     for (;;);
 

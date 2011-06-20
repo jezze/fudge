@@ -1,5 +1,3 @@
-extern kernel_init_usermode
-
 global cpu_get_cr0
 cpu_get_cr0:
     mov eax, cr0
@@ -107,9 +105,7 @@ cpu_usermode:
     or eax, 0x200
     push eax
     push 0x1B
-    push cpu_usermode_entry
+    mov eax, [esp + 20]
+    push eax
     iret
-
-cpu_usermode_entry:
-    jmp kernel_init_usermode
 
