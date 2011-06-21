@@ -1,5 +1,6 @@
 #include <call.h>
 #include <file.h>
+#include <memory.h>
 #include <string.h>
 
 struct file_node *file_find(struct file_node *node, char *path)
