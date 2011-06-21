@@ -94,10 +94,10 @@ static void syscall_write(struct syscall_registers *registers)
 static void syscall_info(struct syscall_registers *registers)
 {
 
-    char *name = (char *)registers->esi;
+    char *name = (char *)registers->esi + 1;
     struct file_info *info = (struct file_info *)registers->edi;
     
-    struct file_node *file = vfs_find(vfs_get_root(), name + 1);
+    struct file_node *file = vfs_find(vfs_get_root(), name);
 
     if (file)
     {
