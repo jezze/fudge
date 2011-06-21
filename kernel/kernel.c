@@ -6,8 +6,6 @@
 #include <kernel/shell.h>
 #include <kernel/vfs.h>
 #include <arch/x86/kernel/arch.h>
-#include <arch/x86/kernel/cpu.h>
-#include <arch/x86/kernel/tss.h>
 
 unsigned int *kernelInitrdAddress;
 unsigned int kernelStackAddress;
@@ -55,8 +53,8 @@ void kernel_init(unsigned int stackAddress)
     initrd_init(kernelInitrdAddress);
     modules_init();
 
-    tss_set_stack(0x00400000);
-    cpu_usermode((unsigned int)shell_init);
+    arch_set_stack(0x00400000);
+    arch_usermode((unsigned int)shell_init);
 
     for (;;);
 

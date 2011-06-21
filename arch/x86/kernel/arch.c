@@ -69,3 +69,17 @@ void arch_reboot()
 */
 }
 
+void arch_set_stack(unsigned int address)
+{
+
+    tss_set_stack(address);
+
+}
+void arch_usermode(unsigned int address)
+{
+
+    cpu_usermode(address);
+
+}
+
+
