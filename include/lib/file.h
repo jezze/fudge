@@ -8,15 +8,23 @@
 struct file_node
 {
 
+    unsigned int id;
     char name[128];
-    unsigned int inode;
-    unsigned int cursor;
     unsigned int length;
     void (*open)(struct file_node *node);
     void (*close)(struct file_node *node);
     unsigned int (*read)(struct file_node *node, unsigned int offset, unsigned int count, void *buffer);
     unsigned int (*write)(struct file_node *node, unsigned int offset, unsigned int count, void *buffer);
     struct file_node *(*walk)(struct file_node *node, unsigned int index);
+
+};
+
+struct file_info
+{
+
+    unsigned int id;
+    char name[128];
+    unsigned int length;
 
 };
 

@@ -12,7 +12,7 @@ static struct initrd_filesystem initrdFilesystem;
 static unsigned int initrd_file_read(struct file_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct tar_header *header = initrdFilesystem.headers[node->inode];
+    struct tar_header *header = initrdFilesystem.headers[node->id];
 
     if (offset > node->length)
         return 0;
@@ -31,7 +31,7 @@ static unsigned int initrd_file_read(struct file_node *node, unsigned int offset
 static unsigned int initrd_file_write(struct file_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct tar_header *header = initrdFilesystem.headers[node->inode];
+    struct tar_header *header = initrdFilesystem.headers[node->id];
 
     if (offset > node->length)
         return 0;
@@ -92,7 +92,7 @@ static unsigned int initrd_parse(unsigned int address)
 static struct file_node *initrd_node_walk(struct file_node *node, unsigned int index)
 {
 
-    return (index < node->length) ? initrdFilesystem.nodes[node->inode + index + 1] : 0;
+    return (index < node->length) ? initrdFilesystem.nodes[node->id + index + 1] : 0;
 
 }
 
@@ -114,7 +114,7 @@ static unsigned int initrd_node_read(struct file_node *node, unsigned int offset
     for (i = 0; i < node->length; i++)
     {
 
-        string_concat(buffer, initrdFilesystem.nodes[node->inode + 1 + i]->name);
+        string_concat(buffer, initrdFilesystem.nodes[node->id + 1 + i]->name);
         string_concat(buffer, "\n");
 
     }
@@ -137,7 +137,7 @@ static void initrd_create_nodes(unsigned int numEntries)
         unsigned int start = string_index_reversed(header->name, '/', (header->typeflag[0] == TAR_FILETYPE_DIR) ? 1 : 0) + 1;
 
         struct file_node *initrdFileNode = vfs_add_node(header->name + start, size);
-        initrdFileNode->inode = i;
+        initrdFileNode->id = i;
 
         initrdFilesystem.nodes[i] = initrdFileNode;
 

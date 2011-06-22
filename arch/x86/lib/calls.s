@@ -78,6 +78,26 @@ call_write:
     pop ebp
     ret
 
+global call_info
+call_info:
+    push ebp
+    mov ebp, esp
+    push ebx
+    push ecx
+    push esi
+    push edi
+    mov eax, 0x05
+    mov esi, [ebp + 8]
+    mov edi, [ebp + 12]
+    int 0x80
+    pop edi
+    pop esi
+    pop ecx
+    pop ebx
+    mov esp, ebp
+    pop ebp
+    ret
+
 global call_map
 call_map:
     push ebp

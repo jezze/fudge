@@ -129,7 +129,6 @@ struct file_node *vfs_add_node(char *name, unsigned int length)
     struct file_node *node = &vfsNodes[vfsNodesCount];
     memory_set(node, 0, sizeof (struct file_node));
     string_copy(node->name, name);
-    node->cursor = 0;
     node->length = length;
 
     vfsNodesCount++;

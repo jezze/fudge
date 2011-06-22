@@ -91,6 +91,31 @@ static void syscall_write(struct syscall_registers *registers)
 
 }
 
+static void syscall_info(struct syscall_registers *registers)
+{
+
+    char *name = (char *)registers->esi;
+    struct file_info *info = (struct file_info *)registers->edi;
+    
+    struct file_node *file = vfs_find(vfs_get_root(), name + 1);
+
+    if (file)
+    {
+
+        info->id = file->id;
+        string_copy(info->name, file->name);
+        info->length = file->length;
+
+        registers->eax = 1;
+
+        return;
+
+    }
+
+    registers->eax = 0;
+
+}
+
 static void syscall_map(struct syscall_registers *registers)
 {
 
@@ -148,6 +173,7 @@ void syscall_init()
     syscall_register_handler(SYSCALL_ROUTINE_CLOSE, syscall_close);
     syscall_register_handler(SYSCALL_ROUTINE_READ, syscall_read);
     syscall_register_handler(SYSCALL_ROUTINE_WRITE, syscall_write);
+    syscall_register_handler(SYSCALL_ROUTINE_INFO, syscall_info);
     syscall_register_handler(SYSCALL_ROUTINE_MAP, syscall_map);
     syscall_register_handler(SYSCALL_ROUTINE_REBOOT, syscall_reboot);
     syscall_register_handler(SYSCALL_ROUTINE_OPEN_LEGACY, syscall_open_legacy);
