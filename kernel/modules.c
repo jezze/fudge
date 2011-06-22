@@ -117,6 +117,24 @@ static unsigned int modules_node_write(struct file_node *node, unsigned int offs
 
 }
 
+static unsigned int modules_node_read(struct file_node *node, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    memory_set(buffer, 0, 1);
+    unsigned int i;
+
+    for (i = 0; i < node->length; i++)
+    {
+
+        string_concat(buffer, modulesEntries[i]->name);
+        string_concat(buffer, "\n");
+
+    }
+
+    return string_length(buffer);
+
+}
+
 static void modules_init_devices()
 {
 
@@ -141,6 +159,7 @@ void modules_init()
     struct file_node *devNode = vfs_add_node("dev", 0);
     devNode->walk = modules_node_walk;
     devNode->write = modules_node_write;
+    devNode->read = modules_node_read;
 
     struct file_node *root = vfs_get_root();
     root->write(root, root->length, 1, devNode);

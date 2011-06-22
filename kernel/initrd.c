@@ -108,14 +108,18 @@ static unsigned int initrd_node_write(struct file_node *node, unsigned int offse
 static unsigned int initrd_node_read(struct file_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    unsigned int *b;
-
+    memory_set(buffer, 0, 1);
     unsigned int i;
 
     for (i = 0; i < node->length; i++)
-        b[i] = initrdFilesystem.nodes[node->inode + 1]->inode;
+    {
 
-    return node->length;
+        string_concat(buffer, initrdFilesystem.nodes[node->inode + 1 + i]->name);
+        string_concat(buffer, "\n");
+
+    }
+
+    return string_length(buffer);
 
 }
 

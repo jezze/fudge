@@ -108,14 +108,18 @@ static unsigned int file_node_write(struct file_node *node, unsigned int offset,
 static unsigned int file_node_read(struct file_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    unsigned int *b;
-
+    memory_set(buffer, 0, 1);
     unsigned int i;
 
     for (i = 0; i < node->length; i++)
-        b[i] = vfsRootEntries[i]->inode;
+    {
 
-    return node->length;
+        string_concat(buffer, vfsRootEntries[i]->name);
+        string_concat(buffer, "\n");
+
+    }
+
+    return string_length(buffer);
 
 }
 
