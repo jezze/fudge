@@ -1,4 +1,4 @@
-#include <lib/file.h>
+#include <kernel/vfs.h>
 #include <kernel/modules.h>
 #include <arch/x86/kernel/irq.h>
 #include <arch/x86/kernel/isr.h>

@@ -1,10 +1,9 @@
-#include <lib/file.h>
+#include <kernel/vfs.h>
 #include <kernel/modules.h>
 #include <kernel/initrd.h>
 #include <kernel/kernel.h>
 #include <kernel/log.h>
 #include <kernel/shell.h>
-#include <kernel/vfs.h>
 #include <arch/x86/kernel/arch.h>
 
 unsigned int *kernelInitrdAddress;

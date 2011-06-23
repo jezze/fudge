@@ -1,5 +1,5 @@
 #include <lib/elf.h>
-#include <lib/file.h>
+#include <kernel/vfs.h>
 #include <kernel/modules.h>
 #include <modules/elf/elf.h>
 

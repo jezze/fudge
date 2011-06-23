@@ -1,5 +1,6 @@
 #include <lib/file.h>
 #include <kernel/log.h>
+#include <kernel/vfs.h>
 #include <kernel/modules.h>
 
 void log_message(unsigned int type, char *message, void **args)

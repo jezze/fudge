@@ -1,6 +1,6 @@
-#include <lib/file.h>
 #include <lib/string.h>
 #include <kernel/log.h>
+#include <kernel/vfs.h>
 #include <kernel/modules.h>
 #include <arch/x86/modules/io/io.h>
 #include <arch/x86/modules/ata/ata.h>

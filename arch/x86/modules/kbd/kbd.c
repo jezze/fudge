@@ -1,9 +1,8 @@
 #include <lib/call.h>
-#include <lib/file.h>
 #include <lib/memory.h>
 #include <lib/string.h>
-#include <kernel/modules.h>
 #include <kernel/vfs.h>
+#include <kernel/modules.h>
 #include <arch/x86/kernel/irq.h>
 #include <arch/x86/kernel/isr.h>
 #include <arch/x86/kernel/mmu.h>

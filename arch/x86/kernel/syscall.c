@@ -1,8 +1,8 @@
 #include <lib/elf.h>
 #include <lib/file.h>
 #include <lib/string.h>
-#include <kernel/modules.h>
 #include <kernel/vfs.h>
+#include <kernel/modules.h>
 #include <modules/elf/elf.h>
 #include <arch/x86/kernel/arch.h>
 #include <arch/x86/kernel/isr.h>

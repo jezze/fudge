@@ -1,11 +1,10 @@
 #include <lib/call.h>
-#include <lib/file.h>
 #include <lib/memory.h>
 #include <lib/string.h>
 #include <lib/tar.h>
+#include <kernel/vfs.h>
 #include <kernel/modules.h>
 #include <kernel/initrd.h>
-#include <kernel/vfs.h>
 
 static struct initrd_filesystem initrdFilesystem;
 

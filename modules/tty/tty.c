@@ -1,9 +1,8 @@
 #include <lib/call.h>
 #include <lib/memory.h>
-#include <lib/file.h>
 #include <lib/string.h>
-#include <kernel/modules.h>
 #include <kernel/vfs.h>
+#include <kernel/modules.h>
 #include <modules/tty/tty.h>
 
 static struct tty_device ttyDevice;
