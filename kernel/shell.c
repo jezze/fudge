@@ -46,7 +46,7 @@ static void shell_call(int file, int argc, char *argv[])
 {
 
     void *buffer = (void *)0x00300000;
-    file_read(file, 0, 0x100000, buffer);
+    file_read(file, 0x100000, buffer);
 
     unsigned int address = call_map((unsigned int)buffer);
 
@@ -138,7 +138,7 @@ static void shell_poll()
     for (;;)
     {
 
-        while (!file_read(FILE_STDIN, 0, 1, &c));
+        while (!file_read(FILE_STDIN, 1, &c));
 
         shell_handle_input(c);
 

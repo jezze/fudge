@@ -13,7 +13,7 @@ void main(int argc, char *argv[])
 
     char path[256];
 
-    unsigned int count = file_read(cwd, 0, 256, path);
+    unsigned int count = file_read(cwd, 256, path);
     string_concat(path, argv[1]);
 
     int file = file_open(path);
@@ -29,7 +29,7 @@ void main(int argc, char *argv[])
 
     struct elf_header header;
 
-    file_read(file, 0, sizeof (struct elf_header), &header);
+    file_read(file, sizeof (struct elf_header), &header);
 
     if (header.identify[0] != ELF_IDENTITY_MAGIC0)
         return;
@@ -67,7 +67,7 @@ void main(int argc, char *argv[])
 
     struct elf_program_header pHeader;
 
-    file_read(file, header.programHeaderOffset, sizeof (struct elf_program_header), &pHeader);
+    file_read(file, sizeof (struct elf_program_header), &pHeader);
 
     file_write_string(FILE_STDOUT, "ELF program header:");
     file_write_string(FILE_STDOUT, "\nType: ");

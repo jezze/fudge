@@ -24,7 +24,7 @@ int file_open(char *name)
 
 }
 
-unsigned int file_read(unsigned int fd, unsigned int offset, unsigned int count, void *buffer)
+unsigned int file_read(unsigned int fd, unsigned int count, void *buffer)
 {
 
     return call_read(fd, buffer, count);
@@ -34,11 +34,11 @@ unsigned int file_read(unsigned int fd, unsigned int offset, unsigned int count,
 unsigned int file_read_byte(unsigned int fd, char c)
 {
 
-    return file_read(fd, 0, 1, &c);
+    return file_read(fd, 1, &c);
 
 }
 
-unsigned int file_write(unsigned int fd, unsigned int offset, unsigned int count, void *buffer)
+unsigned int file_write(unsigned int fd, unsigned int count, void *buffer)
 {
 
     return call_write(fd, buffer, count);
@@ -55,7 +55,7 @@ unsigned int file_write_bcd(unsigned int fd, unsigned char num)
 unsigned int file_write_byte(unsigned int fd, char c)
 {
 
-    return file_write(fd, 0, 1, &c);
+    return file_write(fd, 1, &c);
 
 }
 
@@ -93,7 +93,7 @@ unsigned int file_write_num(unsigned int fd, unsigned int num, unsigned int base
 unsigned int file_write_string(unsigned int fd, char *buffer)
 {
 
-    return file_write(fd, 0, string_length(buffer), buffer);
+    return file_write(fd, string_length(buffer), buffer);
 
 }
 
@@ -101,7 +101,7 @@ unsigned int file_write_string_format(unsigned int fd, char *buffer, void **args
 {
 
     if (!args)
-        return file_write(fd, 0, string_length(buffer), buffer);
+        return file_write(fd, string_length(buffer), buffer);
 
     unsigned int i;
     unsigned int length = string_length(buffer);

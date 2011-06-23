@@ -7,7 +7,7 @@ void get_path(char *buffer, char *arg)
 {
 
     int cwd = file_open("/dev/cwd");
-    unsigned int count = file_read(cwd, 0, 256, buffer);
+    unsigned int count = file_read(cwd, 256, buffer);
 
     if (arg)
     {
@@ -83,7 +83,7 @@ void main(int argc, char *argv[])
 
     char content[256];
 
-    file_read(fd, 0, 256, content);
+    file_read(fd, 256, content);
 
     write_content(path, content);
 

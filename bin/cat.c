@@ -6,7 +6,7 @@ void get_path(char *buffer, char *arg)
 {
 
     int cwd = file_open("/dev/cwd");
-    unsigned int count = file_read(cwd, 0, 256, buffer);
+    unsigned int count = file_read(cwd, 256, buffer);
 
     if (arg)
     {
@@ -53,9 +53,9 @@ void main(int argc, char *argv[])
 
     }
 
-    unsigned int count = file_read(fd, 0, 512, buffer);
+    unsigned int count = file_read(fd, 512, buffer);
 
-    file_write(FILE_STDOUT, 0, count, buffer);
+    file_write(FILE_STDOUT, count, buffer);
     file_close(fd);
 
 }

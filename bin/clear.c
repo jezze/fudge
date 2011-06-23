@@ -10,7 +10,7 @@ void main(int argc, char *argv[])
     unsigned int i;
 
     for (i = 2000; i; i--)
-        file_write(fd, i - 1, 1, &c);
+        file_write_byte(fd, c);
 
     file_close(fd);
 
