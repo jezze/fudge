@@ -12,7 +12,7 @@ static struct vfs_node *vfsRootEntries[64];
 unsigned int vfs_open(char *name)
 {
 
-    struct vfs_node *node = vfs_find(vfs_get_root(), name);
+    struct vfs_node *node = vfs_find_root(name);
 
     if (!node)
         return -1;
@@ -71,6 +71,13 @@ struct vfs_node *vfs_find(struct vfs_node *node, char *path)
     }
 
     return 0;
+
+}
+
+struct vfs_node *vfs_find_root(char *path)
+{
+
+    return vfs_find(vfs_get_root(), path + 1);
 
 }
 

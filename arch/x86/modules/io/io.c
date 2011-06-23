@@ -42,7 +42,7 @@ void io_init()
     ioDevice.base.node.read = io_node_read;
     ioDevice.base.node.write = io_node_write;
 
-    struct vfs_node *devNode = vfs_find(vfs_get_root(), "dev");
+    struct vfs_node *devNode = vfs_find_root("/dev");
     devNode->write(devNode, devNode->length, 1, &ioDevice.base.node);
 
     modules_register_device(MODULES_DEVICE_TYPE_IO, &ioDevice.base);

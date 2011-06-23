@@ -27,6 +27,7 @@ extern unsigned int vfs_open(char *name);
 extern void vfs_close(unsigned int index);
 extern struct vfs_node *vfs_get(unsigned int index);
 extern struct vfs_node *vfs_find(struct vfs_node *node, char *name);
+extern struct vfs_node *vfs_find_root(char *name);
 extern struct vfs_node *vfs_get_root();
 extern struct vfs_node *vfs_add_node(char *name, unsigned int length);
 extern void vfs_init();

@@ -118,7 +118,7 @@ void kbd_init()
     kbdDevice.base.node.read = kbd_device_read;
     kbdDevice.base.node.write = kbd_device_write;
 
-    struct vfs_node *devNode = vfs_find(vfs_get_root(), "dev");
+    struct vfs_node *devNode = vfs_find_root("/dev");
     devNode->write(devNode, devNode->length, 1, &kbdDevice.base.node);
 
     irq_register_handler(IRQ_ROUTINE_KBD, kbd_handler);

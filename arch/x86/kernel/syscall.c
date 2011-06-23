@@ -28,7 +28,7 @@ void syscall_unregister_handler(unsigned char index)
 static void syscall_open(struct syscall_registers *registers)
 {
 
-    registers->eax = vfs_open((char *)registers->esi + 1);
+    registers->eax = vfs_open((char *)registers->esi);
 
 }
 
@@ -88,10 +88,10 @@ static void syscall_write(struct syscall_registers *registers)
 static void syscall_info(struct syscall_registers *registers)
 {
 
-    char *name = (char *)registers->esi + 1;
+    char *name = (char *)registers->esi;
     struct file_info *info = (struct file_info *)registers->edi;
     
-    struct vfs_node *file = vfs_find(vfs_get_root(), name);
+    struct vfs_node *file = vfs_find_root(name);
 
     if (file)
     {

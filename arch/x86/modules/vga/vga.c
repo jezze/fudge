@@ -133,7 +133,7 @@ void vga_init()
     vgaDevice.nodeCursorOffset.length = 1;
     vgaDevice.nodeCursorOffset.write = vga_fb_cursor_node_write;
 
-    struct vfs_node *devNode = vfs_find(vfs_get_root(), "dev");
+    struct vfs_node *devNode = vfs_find_root("/dev");
     devNode->write(devNode, devNode->length, 1, &vgaDevice.nodeFramebuffer);
     devNode->write(devNode, devNode->length, 1, &vgaDevice.nodeCursorColor);
     devNode->write(devNode, devNode->length, 1, &vgaDevice.nodeCursorOffset);
