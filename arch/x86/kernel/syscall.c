@@ -55,7 +55,7 @@ static void syscall_read(struct syscall_registers *registers)
     char *buffer = (char *)registers->esi;
     unsigned int count = registers->ecx;
 
-    struct file_node *node = vfs_get(index);
+    struct vfs_node *node = vfs_get(index);
 
     if (!node || !node->read)
     {
@@ -77,7 +77,7 @@ static void syscall_write(struct syscall_registers *registers)
     char *buffer = (char *)registers->esi;
     unsigned int count = registers->ecx;
 
-    struct file_node *node = vfs_get(index);
+    struct vfs_node *node = vfs_get(index);
 
     if (!node || !node->write)
     {
@@ -98,7 +98,7 @@ static void syscall_info(struct syscall_registers *registers)
     char *name = (char *)registers->esi + 1;
     struct file_info *info = (struct file_info *)registers->edi;
     
-    struct file_node *file = vfs_find(vfs_get_root(), name);
+    struct vfs_node *file = vfs_find(vfs_get_root(), name);
 
     if (file)
     {

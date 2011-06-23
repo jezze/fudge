@@ -31,7 +31,7 @@ static char kbdMapUS[256] =
 
 static struct kbd_device kbdDevice;
 
-static unsigned int kbd_device_read(struct file_node *node, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int kbd_device_read(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
     char c = 0;
@@ -57,7 +57,7 @@ static unsigned int kbd_device_read(struct file_node *node, unsigned int offset,
 
 }
 
-static unsigned int kbd_device_write(struct file_node *node, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int kbd_device_write(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
     if ((kbdDevice.bufferHead + 1) % KBD_BUFFER_SIZE != kbdDevice.bufferTail)
@@ -118,7 +118,7 @@ void kbd_init()
     kbdDevice.base.node.read = kbd_device_read;
     kbdDevice.base.node.write = kbd_device_write;
 
-    struct file_node *devNode = vfs_find(vfs_get_root(), "dev");
+    struct vfs_node *devNode = vfs_find(vfs_get_root(), "dev");
     devNode->write(devNode, devNode->length, 1, &kbdDevice.base.node);
 
     irq_register_handler(IRQ_ROUTINE_KBD, kbd_handler);

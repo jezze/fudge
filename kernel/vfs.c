@@ -3,16 +3,16 @@
 #include <lib/string.h>
 #include <kernel/vfs.h>
 
-static struct file_node vfsNodes[256];
-static struct file_descriptor vfsOpenTable[256];
+static struct vfs_node vfsNodes[256];
+static struct vfs_descriptor vfsOpenTable[256];
 static unsigned int vfsNodesCount;
 
-static struct file_node *vfsRootEntries[64];
+static struct vfs_node *vfsRootEntries[64];
 
 unsigned int vfs_open(char *name)
 {
 
-    struct file_node *node = vfs_find(vfs_get_root(), name);
+    struct vfs_node *node = vfs_find(vfs_get_root(), name);
 
     if (!node)
         return -1;
@@ -41,11 +41,11 @@ unsigned int vfs_open(char *name)
 void vfs_close(unsigned int index)
 {
 
-    memory_set((void *)&vfsOpenTable[index], 0, sizeof (struct file_descriptor));
+    memory_set((void *)&vfsOpenTable[index], 0, sizeof (struct vfs_descriptor));
 
 }
 
-struct file_node *vfs_find(struct file_node *node, char *path)
+struct vfs_node *vfs_find(struct vfs_node *node, char *path)
 {
 
     unsigned int index = string_index(path, '/', 0);
@@ -54,7 +54,7 @@ struct file_node *vfs_find(struct file_node *node, char *path)
     if (!index)
         return node;
 
-    struct file_node *current;
+    struct vfs_node *current;
     unsigned int i;
 
     for (i = 0; (current = node->walk(node, i)); i++)
@@ -74,38 +74,38 @@ struct file_node *vfs_find(struct file_node *node, char *path)
 
 }
 
-struct file_node *vfs_get(unsigned int index)
+struct vfs_node *vfs_get(unsigned int index)
 {
 
     return vfsOpenTable[index].node;
 
 }
 
-struct file_node *vfs_get_root()
+struct vfs_node *vfs_get_root()
 {
 
     return &vfsNodes[0];
 
 }
 
-static struct file_node *file_node_walk(struct file_node *node, unsigned int index)
+static struct vfs_node *file_node_walk(struct vfs_node *node, unsigned int index)
 {
 
     return (index < node->length) ? vfsRootEntries[index] : 0;
 
 }
 
-static unsigned int file_node_write(struct file_node *node, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int file_node_write(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    vfsRootEntries[offset] = (struct file_node *)buffer;
+    vfsRootEntries[offset] = (struct vfs_node *)buffer;
     node->length++;
 
     return count;
 
 }
 
-static unsigned int file_node_read(struct file_node *node, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int file_node_read(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
     memory_set(buffer, 0, 1);
@@ -123,11 +123,11 @@ static unsigned int file_node_read(struct file_node *node, unsigned int offset, 
 
 }
 
-struct file_node *vfs_add_node(char *name, unsigned int length)
+struct vfs_node *vfs_add_node(char *name, unsigned int length)
 {
 
-    struct file_node *node = &vfsNodes[vfsNodesCount];
-    memory_set(node, 0, sizeof (struct file_node));
+    struct vfs_node *node = &vfsNodes[vfsNodesCount];
+    memory_set(node, 0, sizeof (struct vfs_node));
     string_copy(node->name, name);
     node->length = length;
 
@@ -140,7 +140,7 @@ struct file_node *vfs_add_node(char *name, unsigned int length)
 void vfs_init()
 {
 
-    struct file_node *node = vfs_add_node("root", 0);
+    struct vfs_node *node = vfs_add_node("root", 0);
     node->walk = file_node_walk;
     node->read = file_node_read;
     node->write = file_node_write;

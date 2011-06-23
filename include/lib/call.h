@@ -11,7 +11,7 @@ extern unsigned int call_info(char *name, struct file_info *info);
 extern int call_map(unsigned int address);
 extern int call_halt();
 extern int call_reboot();
-extern struct file_node *call_open_legacy(char *name);
+extern struct vfs_node *call_open_legacy(char *name);
 
 #endif
 

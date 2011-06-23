@@ -8,7 +8,7 @@
 
 static struct initrd_filesystem initrdFilesystem;
 
-static unsigned int initrd_file_read(struct file_node *node, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int initrd_file_read(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct tar_header *header = initrdFilesystem.headers[node->id];
@@ -27,7 +27,7 @@ static unsigned int initrd_file_read(struct file_node *node, unsigned int offset
 
 }
 
-static unsigned int initrd_file_write(struct file_node *node, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int initrd_file_write(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct tar_header *header = initrdFilesystem.headers[node->id];
@@ -88,14 +88,14 @@ static unsigned int initrd_parse(unsigned int address)
 
 }
 
-static struct file_node *initrd_node_walk(struct file_node *node, unsigned int index)
+static struct vfs_node *initrd_node_walk(struct vfs_node *node, unsigned int index)
 {
 
     return (index < node->length) ? initrdFilesystem.nodes[node->id + index + 1] : 0;
 
 }
 
-static unsigned int initrd_node_write(struct file_node *node, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int initrd_node_write(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
     node->length++;
@@ -104,7 +104,7 @@ static unsigned int initrd_node_write(struct file_node *node, unsigned int offse
 
 }
 
-static unsigned int initrd_node_read(struct file_node *node, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int initrd_node_read(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
     memory_set(buffer, 0, 1);
@@ -135,7 +135,7 @@ static void initrd_create_nodes(unsigned int numEntries)
         unsigned int size = initrd_get_file_size(header->size);
         unsigned int start = string_index_reversed(header->name, '/', (header->typeflag[0] == TAR_FILETYPE_DIR) ? 1 : 0) + 1;
 
-        struct file_node *initrdFileNode = vfs_add_node(header->name + start, size);
+        struct vfs_node *initrdFileNode = vfs_add_node(header->name + start, size);
         initrdFileNode->id = i;
 
         initrdFilesystem.nodes[i] = initrdFileNode;
@@ -162,7 +162,7 @@ static void initrd_create_nodes(unsigned int numEntries)
         memory_copy(baseName, header->name + 4, start);
         baseName[start - 4] = '\0';
 
-        struct file_node *rootNode = call_open_legacy(baseName);
+        struct vfs_node *rootNode = call_open_legacy(baseName);
         rootNode->write(rootNode, rootNode->length, 1, initrdFileNode);
 
     }

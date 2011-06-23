@@ -1,34 +1,34 @@
 #ifndef KERNEL_VFS_H
 #define KERNEL_VFS_H
 
-struct file_node
+struct vfs_node
 {
 
     unsigned int id;
     char name[128];
     unsigned int length;
-    void (*open)(struct file_node *node);
-    void (*close)(struct file_node *node);
-    unsigned int (*read)(struct file_node *node, unsigned int offset, unsigned int count, void *buffer);
-    unsigned int (*write)(struct file_node *node, unsigned int offset, unsigned int count, void *buffer);
-    struct file_node *(*walk)(struct file_node *node, unsigned int index);
+    void (*open)(struct vfs_node *node);
+    void (*close)(struct vfs_node *node);
+    unsigned int (*read)(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer);
+    unsigned int (*write)(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer);
+    struct vfs_node *(*walk)(struct vfs_node *node, unsigned int index);
 
 };
 
-struct file_descriptor
+struct vfs_descriptor
 {
 
-    struct file_node *node;
+    struct vfs_node *node;
     unsigned int permissions;
 
 };
 
 extern unsigned int vfs_open(char *name);
 extern void vfs_close(unsigned int index);
-extern struct file_node *vfs_get(unsigned int index);
-extern struct file_node *vfs_find(struct file_node *node, char *name);
-extern struct file_node *vfs_get_root();
-extern struct file_node *vfs_add_node(char *name, unsigned int length);
+extern struct vfs_node *vfs_get(unsigned int index);
+extern struct vfs_node *vfs_find(struct vfs_node *node, char *name);
+extern struct vfs_node *vfs_get_root();
+extern struct vfs_node *vfs_add_node(char *name, unsigned int length);
 extern void vfs_init();
 
 #endif

@@ -17,7 +17,7 @@
 #define MODULES_DRIVER_TYPE_VGA      3
 #define MODULES_DRIVER_TYPE_TTY      4
 
-struct file_node;
+struct vfs_node;
 
 struct modules_module
 {
@@ -31,7 +31,7 @@ struct modules_device
 
     struct modules_module module;
     char name[32];
-    struct file_node node; // REMOVE
+    struct vfs_node node; // REMOVE
 
 };
 
@@ -59,8 +59,8 @@ struct modules_filesystem
 
     struct modules_module module;
     char name[32];
-    struct file_node *(*find_by_id)(unsigned int id);
-    struct file_node *(*find_by_path)(char *path);
+    struct vfs_node *(*find_by_id)(unsigned int id);
+    struct vfs_node *(*find_by_path)(char *path);
 
 };
 

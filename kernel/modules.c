@@ -20,7 +20,7 @@ static struct modules_bus *modulesBusses[32];
 static struct modules_filesystem *modulesFilesystems[8];
 
 static struct modules_module *modules[32];
-static struct file_node *modulesEntries[32];
+static struct vfs_node *modulesEntries[32];
 static unsigned int modulesCount;
 
 void modules_register(unsigned int type, struct modules_module *module)
@@ -101,24 +101,24 @@ struct modules_module *modules_find(unsigned int type)
 
 }
 
-static struct file_node *modules_node_walk(struct file_node *node, unsigned int index)
+static struct vfs_node *modules_node_walk(struct vfs_node *node, unsigned int index)
 {
 
     return (index < node->length) ? modulesEntries[index] : 0;
 
 }
 
-static unsigned int modules_node_write(struct file_node *node, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int modules_node_write(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    modulesEntries[offset] = (struct file_node *)buffer;
+    modulesEntries[offset] = (struct vfs_node *)buffer;
     node->length++;
 
     return count;
 
 }
 
-static unsigned int modules_node_read(struct file_node *node, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int modules_node_read(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
     memory_set(buffer, 0, 1);
@@ -157,12 +157,12 @@ void modules_init()
     string_copy(modulesFilesystem.name, "sysfs");
     modules_register_filesystem(&modulesFilesystem);
 
-    struct file_node *devNode = vfs_add_node("dev", 0);
+    struct vfs_node *devNode = vfs_add_node("dev", 0);
     devNode->walk = modules_node_walk;
     devNode->write = modules_node_write;
     devNode->read = modules_node_read;
 
-    struct file_node *root = vfs_get_root();
+    struct vfs_node *root = vfs_get_root();
     root->write(root, root->length, 1, devNode);
 
     modules_init_devices();

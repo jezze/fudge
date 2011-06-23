@@ -30,7 +30,7 @@ struct tty_device
     unsigned int (*read)(char *buffer, unsigned int count, unsigned int offset);
     unsigned int (*write)(char *buffer, unsigned int count, unsigned int offset);
     void (*set_color)(unsigned char fg, unsigned char bg);
-    struct file_node node;
+    struct vfs_node node;
 
 };
 

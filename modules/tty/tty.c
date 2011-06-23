@@ -7,9 +7,9 @@
 
 static struct tty_device ttyDevice;
 
-static struct file_node *ttyVgaNode;
-static struct file_node *ttyVgaColorNode;
-static struct file_node *ttyVgaCursorNode;
+static struct vfs_node *ttyVgaNode;
+static struct vfs_node *ttyVgaColorNode;
+static struct vfs_node *ttyVgaCursorNode;
 
 static char ttyCwd[256];
 
@@ -81,7 +81,7 @@ static void tty_vga_clear()
 
 }
 
-static unsigned int tty_write(struct file_node *node, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int tty_write(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
     unsigned int i;
@@ -96,7 +96,7 @@ static unsigned int tty_write(struct file_node *node, unsigned int offset, unsig
 
 }
 
-static unsigned int tty_cwd_read(struct file_node *node, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int tty_cwd_read(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
     count = string_length(ttyCwd) - offset;
@@ -107,7 +107,7 @@ static unsigned int tty_cwd_read(struct file_node *node, unsigned int offset, un
 
 }
 
-static unsigned int tty_cwd_write(struct file_node *node, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int tty_cwd_write(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
     count = string_length(ttyCwd) - offset;
@@ -149,14 +149,14 @@ void tty_init()
 
     string_copy(ttyCwd, "/");
 
-    struct file_node *ttyStdoutNode = vfs_add_node("tty", TTY_CHARACTER_SIZE);
+    struct vfs_node *ttyStdoutNode = vfs_add_node("tty", TTY_CHARACTER_SIZE);
     ttyStdoutNode->write = tty_write;
 
-    struct file_node *ttyCwdNode = vfs_add_node("cwd", 256);
+    struct vfs_node *ttyCwdNode = vfs_add_node("cwd", 256);
     ttyCwdNode->read = tty_cwd_read;
     ttyCwdNode->write = tty_cwd_write;
 
-    struct file_node *devNode = vfs_find(vfs_get_root(), "dev");
+    struct vfs_node *devNode = vfs_find(vfs_get_root(), "dev");
     devNode->write(devNode, devNode->length, 1, ttyStdoutNode);
     devNode->write(devNode, devNode->length, 1, ttyCwdNode);
 

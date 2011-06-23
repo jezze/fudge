@@ -41,7 +41,7 @@ static void serial_outb(unsigned short port, char c)
 
 }
 
-static unsigned int serial_read(struct file_node *node, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int serial_read(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
     char *b = (char *)buffer;
@@ -55,7 +55,7 @@ static unsigned int serial_read(struct file_node *node, unsigned int offset, uns
 
 }
 
-static unsigned int serial_write(struct file_node *node, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int serial_write(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
     char *b = (char *)buffer;
