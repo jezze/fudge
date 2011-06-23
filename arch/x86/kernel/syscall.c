@@ -32,13 +32,6 @@ static void syscall_open(struct syscall_registers *registers)
 
 }
 
-static void syscall_open_legacy(struct syscall_registers *registers)
-{
-
-    registers->eax = (unsigned int)vfs_find(vfs_get_root(), (char *)registers->esi + 1);
-
-}
-
 static void syscall_close(struct syscall_registers *registers)
 {
 
@@ -177,7 +170,6 @@ void syscall_init()
     syscall_register_handler(SYSCALL_ROUTINE_INFO, syscall_info);
     syscall_register_handler(SYSCALL_ROUTINE_MAP, syscall_map);
     syscall_register_handler(SYSCALL_ROUTINE_REBOOT, syscall_reboot);
-    syscall_register_handler(SYSCALL_ROUTINE_OPEN_LEGACY, syscall_open_legacy);
 
 }
 

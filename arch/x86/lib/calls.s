@@ -153,22 +153,3 @@ call_reboot:
     pop ebp
     ret
 
-global call_open_legacy
-call_open_legacy:
-    push ebp
-    mov ebp, esp
-    push ebx
-    push ecx
-    push esi
-    push edi
-    mov eax, 0x55
-    mov esi, [ebp + 8]
-    int 0x80
-    pop edi
-    pop esi
-    pop ecx
-    pop ebx
-    mov esp, ebp
-    pop ebp
-    ret
-

@@ -10,7 +10,6 @@
 #define SYSCALL_ROUTINE_MAP     0x10
 #define SYSCALL_ROUTINE_HALT    0x20
 #define SYSCALL_ROUTINE_REBOOT  0x21
-#define SYSCALL_ROUTINE_OPEN_LEGACY 0x55
 
 struct syscall_registers
 {

@@ -98,7 +98,7 @@ static struct vfs_node *file_node_walk(struct vfs_node *node, unsigned int index
 static unsigned int file_node_write(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    vfsRootEntries[offset] = (struct vfs_node *)buffer;
+    vfsRootEntries[node->length] = (struct vfs_node *)buffer;
     node->length++;
 
     return count;

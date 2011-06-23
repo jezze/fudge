@@ -162,8 +162,8 @@ void modules_init()
     devNode->write = modules_node_write;
     devNode->read = modules_node_read;
 
-    struct vfs_node *root = vfs_get_root();
-    root->write(root, root->length, 1, devNode);
+    struct vfs_node *rootNode = vfs_get_root();
+    rootNode->write(rootNode, rootNode->length, 1, devNode);
 
     modules_init_devices();
 

@@ -162,7 +162,7 @@ static void initrd_create_nodes(unsigned int numEntries)
         memory_copy(baseName, header->name + 4, start);
         baseName[start - 4] = '\0';
 
-        struct vfs_node *rootNode = call_open_legacy(baseName);
+        struct vfs_node *rootNode = vfs_find(vfs_get_root(), baseName + 1);
         rootNode->write(rootNode, rootNode->length, 1, initrdFileNode);
 
     }
