@@ -3,35 +3,6 @@
 #include <memory.h>
 #include <string.h>
 
-struct file_node *file_find(struct file_node *node, char *path)
-{
-
-    unsigned int index = string_index(path, '/', 0);
-    unsigned int length = string_length(path);
-
-    if (!index)
-        return node;
-
-    struct file_node *current;
-    unsigned int i;
-
-    for (i = 0; (current = node->walk(node, i)); i++)
-    {
-
-        unsigned int count = string_length(current->name);
-
-        if (index > count)
-            count = index;
-
-        if (!memory_compare(path, current->name, count))
-            return (index == length) ? current : file_find(current, path + index + 1);
-
-    }
-
-    return 0;
-
-}
-
 void get_path(char *buffer, char *arg)
 {
 
@@ -55,6 +26,49 @@ void get_path(char *buffer, char *arg)
 
 }
 
+void write_content(char *path, char *content)
+{
+
+    char str[256];
+
+    unsigned int start = 0;
+    unsigned int i;
+
+    for (i = 0; content[i] != '\0'; i++)
+    {
+
+        if (content[i] == '\n')
+        {
+
+            content[i] = '\0';
+
+            memory_set(str, 0, 256);
+            string_concat(str, path);
+            string_concat(str, content + start);
+
+            struct file_info *info = 0;
+
+            call_info(str, info);
+
+            if (1)
+                file_write_string(FILE_STDOUT, "d");
+            else
+                file_write_string(FILE_STDOUT, "-");
+
+            file_write_string(FILE_STDOUT, "rwxrwxrwx ");
+            file_write_dec(FILE_STDOUT, info->length);
+            file_write_string(FILE_STDOUT, "\t");
+            file_write_string(FILE_STDOUT, info->name);
+            file_write_string(FILE_STDOUT, "\n");
+
+            start = i + 1;
+
+        }
+
+    }
+
+}
+
 void main(int argc, char *argv[])
 {
 
@@ -65,44 +79,15 @@ void main(int argc, char *argv[])
     else
         get_path(path, argv[1]);
 
-    struct file_node *node = call_open_legacy(path);
+    int fd = file_open(path);
 
-    if (!node)
-    {
+    char content[256];
 
-        file_write_string(FILE_STDOUT, "Directory does not exist.\n");
+    file_read(fd, 0, 256, content);
 
-        return;
+    write_content(path, content);
 
-    }
-
-    if (!node->walk)
-    {
-
-        file_write_string(FILE_STDOUT, "Not a directory.\n");
-
-        return;
-
-    }
-
-    struct file_node *current;
-    unsigned int i;
-
-    for (i = 0; (current = node->walk(node, i)); i++)
-    {
-
-        if (current->walk)
-            file_write_string(FILE_STDOUT, "d");
-        else
-            file_write_string(FILE_STDOUT, "-");
-
-        file_write_string(FILE_STDOUT, "rwxrwxrwx ");
-        file_write_dec(FILE_STDOUT, current->length);
-        file_write_string(FILE_STDOUT, "\t");
-        file_write_string(FILE_STDOUT, current->name);
-        file_write_string(FILE_STDOUT, "\n");
-
-    }
+    file_close(fd);
 
 }
 

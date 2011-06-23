@@ -37,6 +37,7 @@ struct file_descriptor
 };
 
 extern void file_close(unsigned int fd);
+extern unsigned int file_info(char *name, struct file_info *info);
 extern int file_open(char *name);
 extern unsigned int file_read(unsigned int fd, unsigned int offset, unsigned int count, void *buffer);
 extern unsigned int file_read_byte(unsigned int fd, char c);

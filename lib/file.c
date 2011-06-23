@@ -10,6 +10,13 @@ void file_close(unsigned int fd)
 
 }
 
+unsigned int file_info(char *name, struct file_info *info)
+{
+
+    return call_info(name, info);
+
+}
+
 int file_open(char *name)
 {
 
