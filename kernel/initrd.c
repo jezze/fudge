@@ -159,10 +159,11 @@ static void initrd_create_nodes(unsigned int numEntries)
         }
 
         char baseName[256];
-        memory_copy(baseName, header->name + 4, start);
-        baseName[start - 4] = '\0';
+        unsigned int offset = string_length("/root");
+        memory_copy(baseName, header->name + offset, start - offset);
+        baseName[start - offset] = '\0';
 
-        struct vfs_node *rootNode = vfs_find(vfs_get_root(), baseName + 1);
+        struct vfs_node *rootNode = vfs_find(vfs_get_root(), baseName);
         rootNode->write(rootNode, rootNode->length, 1, initrdFileNode);
 
     }
