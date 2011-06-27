@@ -10,7 +10,7 @@ struct initrd_filesystem
 
     struct modules_filesystem base;
     struct tar_header *headers[INITRD_HEADER_SIZE];
-    struct vfs_node *nodes[INITRD_HEADER_SIZE];
+    struct vfs_node nodes[INITRD_HEADER_SIZE];
 
 };
 

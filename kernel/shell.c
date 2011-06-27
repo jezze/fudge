@@ -67,7 +67,7 @@ static void shell_interpret(char *command)
 
     char path[256];
 
-    string_copy(path, "/bin/");
+    string_copy(path, "/initrd/");
     string_concat(path, argv[0]);
 
     int file = file_open(path);

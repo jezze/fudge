@@ -7,6 +7,7 @@
 #include <kernel/initrd.h>
 
 static struct initrd_filesystem initrdFilesystem;
+static struct vfs_node root;
 
 static unsigned int initrd_file_read(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
@@ -88,23 +89,7 @@ static unsigned int initrd_parse(unsigned int address)
 
 }
 
-static struct vfs_node *initrd_node_walk(struct vfs_node *node, unsigned int index)
-{
-
-    return (index < node->length) ? initrdFilesystem.nodes[node->id + index + 1] : 0;
-
-}
-
-static unsigned int initrd_node_write(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
-{
-
-    node->length++;
-
-    return count;
-
-}
-
-static unsigned int initrd_node_read(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int initrd_root_read(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
     memory_set(buffer, 0, 1);
@@ -113,12 +98,19 @@ static unsigned int initrd_node_read(struct vfs_node *node, unsigned int offset,
     for (i = 0; i < node->length; i++)
     {
 
-        string_concat(buffer, initrdFilesystem.nodes[node->id + 1 + i]->name);
+        string_concat(buffer, initrdFilesystem.nodes[i].name);
         string_concat(buffer, "\n");
 
     }
 
     return string_length(buffer);
+
+}
+
+static struct vfs_node *initrd_root_walk(struct vfs_node *node, unsigned int index)
+{
+
+    return (index < node->length) ? &initrdFilesystem.nodes[index] : 0;
 
 }
 
@@ -135,36 +127,20 @@ static void initrd_create_nodes(unsigned int numEntries)
         unsigned int size = initrd_get_file_size(header->size);
         unsigned int start = string_index_reversed(header->name, '/', (header->typeflag[0] == TAR_FILETYPE_DIR) ? 1 : 0) + 1;
 
-        struct vfs_node *initrdFileNode = vfs_add_node(header->name + start, size);
+        struct vfs_node *initrdFileNode = &initrdFilesystem.nodes[i];
+        string_copy(initrdFileNode->name, header->name + start);
         initrdFileNode->id = i;
-
-        initrdFilesystem.nodes[i] = initrdFileNode;
+        initrdFileNode->length = size;
 
         if (header->typeflag[0] == TAR_FILETYPE_DIR)
         {
 
             string_replace(initrdFileNode->name, '/', '\0');
-            initrdFileNode->walk = initrd_node_walk;
-            initrdFileNode->read = initrd_node_read;
-            initrdFileNode->write = initrd_node_write;
 
         }
 
-        else
-        {
-
-            initrdFileNode->read = initrd_file_read;
-            initrdFileNode->write = initrd_file_write;
-
-        }
-
-        char baseName[256];
-        unsigned int offset = string_length("root");
-        memory_copy(baseName, header->name + offset, start - offset);
-        baseName[start - offset] = '\0';
-
-        struct vfs_node *rootNode = vfs_find_root(baseName);
-        rootNode->write(rootNode, rootNode->length, 1, initrdFileNode);
+        initrdFileNode->read = initrd_file_read;
+        initrdFileNode->write = initrd_file_write;
 
     }
 
@@ -173,12 +149,22 @@ static void initrd_create_nodes(unsigned int numEntries)
 void initrd_init(unsigned int *address)
 {
 
-    string_copy(initrdFilesystem.base.name, "tarfs");
-    modules_register_filesystem(&initrdFilesystem.base);
-
-    unsigned int numEntries = initrd_parse(*address + TAR_BLOCK_SIZE);
+    unsigned int numEntries = initrd_parse(*address) - 4;
 
     initrd_create_nodes(numEntries);
+
+    struct vfs_node *initrdRoot = &root;
+    string_copy(initrdRoot->name, "initrd");
+    initrdRoot->length = numEntries;
+    initrdRoot->read = initrd_root_read;
+    initrdRoot->walk = initrd_root_walk;
+
+    struct vfs_node *rootNode = vfs_get_root();
+    rootNode->write(rootNode, rootNode->length, 1, initrdRoot);
+
+    string_copy(initrdFilesystem.base.name, "tarfs");
+    initrdFilesystem.base.root = initrdRoot;
+    modules_register_filesystem(&initrdFilesystem.base);
 
 }
 
