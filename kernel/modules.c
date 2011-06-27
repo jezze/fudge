@@ -19,18 +19,7 @@ static struct modules_filesystem modulesFilesystem;
 static struct modules_bus *modulesBusses[32];
 static struct modules_filesystem *modulesFilesystems[8];
 
-static struct modules_module *modules[32];
 static struct vfs_node *modulesEntries[32];
-static unsigned int modulesCount;
-
-void modules_register(unsigned int type, struct modules_module *module)
-{
-
-    module->type = type;
-    modules[modulesCount] = module;
-    modulesCount++;
-
-}
 
 void modules_register_bus(unsigned int type, struct modules_bus *bus)
 {
@@ -81,23 +70,6 @@ void modules_register_filesystem(struct modules_filesystem *filesystem)
         }
 
     }
-
-}
-
-struct modules_module *modules_find(unsigned int type)
-{
-
-    unsigned int i;
-
-    for (i = 0; i < modulesCount; i++)
-    {
-
-        if (modules[i]->type == type)
-            return modules[i];
-
-    }
-
-    return 0;
 
 }
 

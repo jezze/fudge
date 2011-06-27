@@ -68,7 +68,6 @@ extern void modules_register_bus(unsigned int type, struct modules_bus *bus);
 extern void modules_register_device(unsigned int type, struct modules_device *device);
 extern void modules_register_driver(unsigned int type, struct modules_driver *driver);
 extern void modules_register_filesystem(struct modules_filesystem *filesystem);
-extern struct modules_module *modules_find(unsigned int type);
 extern void modules_init();
 
 #endif
