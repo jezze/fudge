@@ -20,6 +20,7 @@ static struct modules_bus *modulesBusses[32];
 static struct modules_filesystem *modulesFilesystems[8];
 
 static struct vfs_node *modulesEntries[32];
+static struct vfs_node modulesRoot;
 
 void modules_register_bus(unsigned int type, struct modules_bus *bus)
 {
@@ -108,6 +109,13 @@ static unsigned int modules_node_read(struct vfs_node *node, unsigned int offset
 
 }
 
+struct vfs_node *modules_filesystem_lookup(struct modules_filesystem *filesystem, unsigned int id)
+{
+
+    return modulesEntries[id];
+
+}
+
 static void modules_init_devices()
 {
 
@@ -126,16 +134,20 @@ static void modules_init_devices()
 void modules_init()
 {
 
-    string_copy(modulesFilesystem.name, "sysfs");
-    modules_register_filesystem(&modulesFilesystem);
+    string_copy(modulesRoot.name, "dev");
+    modulesRoot.length = 0;
+    modulesRoot.walk = modules_node_walk;
+    modulesRoot.write = modules_node_write;
+    modulesRoot.read = modules_node_read;
 
-    struct vfs_node *devNode = vfs_add_node("dev", 0);
-    devNode->walk = modules_node_walk;
-    devNode->write = modules_node_write;
-    devNode->read = modules_node_read;
-
+    //TODO remove
     struct vfs_node *rootNode = vfs_get_root();
-    rootNode->write(rootNode, rootNode->length, 1, devNode);
+    rootNode->write(rootNode, rootNode->length, 1, &modulesRoot);
+
+    string_copy(modulesFilesystem.name, "sysfs");
+    modulesFilesystem.root = &modulesRoot;
+    modulesFilesystem.lookup = modules_filesystem_lookup;
+    modules_register_filesystem(&modulesFilesystem);
 
     modules_init_devices();
 

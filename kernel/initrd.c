@@ -7,7 +7,7 @@
 #include <kernel/initrd.h>
 
 static struct initrd_filesystem initrdFilesystem;
-static struct vfs_node root;
+static struct vfs_node initrdRoot;
 
 static unsigned int initrd_file_read(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
@@ -146,24 +146,31 @@ static void initrd_create_nodes(unsigned int numEntries)
 
 }
 
+struct vfs_node *initrd_filesystem_lookup(struct modules_filesystem *filesystem, unsigned int id)
+{
+
+    return &initrdFilesystem.nodes[id];
+
+}
+
 void initrd_init(unsigned int *address)
 {
 
     unsigned int numEntries = initrd_parse(*address);
-
     initrd_create_nodes(numEntries);
 
-    struct vfs_node *initrdRoot = &root;
-    string_copy(initrdRoot->name, "initrd");
-    initrdRoot->length = numEntries;
-    initrdRoot->read = initrd_root_read;
-    initrdRoot->walk = initrd_root_walk;
+    string_copy(initrdRoot.name, "initrd");
+    initrdRoot.length = numEntries;
+    initrdRoot.read = initrd_root_read;
+    initrdRoot.walk = initrd_root_walk;
 
+    //TODO remove
     struct vfs_node *rootNode = vfs_get_root();
-    rootNode->write(rootNode, rootNode->length, 1, initrdRoot);
+    rootNode->write(rootNode, rootNode->length, 1, &initrdRoot);
 
     string_copy(initrdFilesystem.base.name, "tarfs");
-    initrdFilesystem.base.root = initrdRoot;
+    initrdFilesystem.base.root = &initrdRoot;
+    initrdFilesystem.base.lookup = initrd_filesystem_lookup;
     modules_register_filesystem(&initrdFilesystem.base);
 
 }
