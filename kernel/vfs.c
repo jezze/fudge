@@ -10,8 +10,30 @@ static unsigned int vfsNodesCount;
 
 static struct vfs_node *vfsRootEntries[64];
 
-static struct modules_filesystem vfsFilesystem;
+static struct vfs_filesystem *vfsFilesystems[8];
+static struct vfs_filesystem vfsFilesystem;
 static struct vfs_node vfsRoot;
+
+void vfs_register_filesystem(struct vfs_filesystem *filesystem)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < 8; i++)
+    {
+
+        if (!vfsFilesystems[i])
+        {
+
+            vfsFilesystems[i] = filesystem;
+
+            return;
+
+        }
+
+    }
+
+}
 
 unsigned int vfs_open(char *name)
 {
@@ -148,7 +170,7 @@ struct vfs_node *vfs_add_node(char *name, unsigned int length)
 
 }
 
-struct vfs_node *vfs_filesystem_lookup(struct modules_filesystem *filesystem, char *path)
+struct vfs_node *vfs_filesystem_lookup(struct vfs_filesystem *filesystem, char *path)
 {
 
     return 0;
@@ -167,7 +189,7 @@ void vfs_init()
     string_copy(vfsFilesystem.name, "rootfs");
     vfsFilesystem.root = &vfsRoot;
     vfsFilesystem.lookup = vfs_filesystem_lookup;
-    modules_register_filesystem(&vfsFilesystem);
+    vfs_register_filesystem(&vfsFilesystem);
 
 }
 

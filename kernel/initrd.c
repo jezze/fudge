@@ -146,7 +146,7 @@ static void initrd_create_nodes(unsigned int numEntries)
 
 }
 
-struct vfs_node *initrd_filesystem_lookup(struct modules_filesystem *filesystem, char *path)
+struct vfs_node *initrd_filesystem_lookup(struct vfs_filesystem *filesystem, char *path)
 {
 
     unsigned int i;
@@ -181,7 +181,7 @@ void initrd_init(unsigned int *address)
     string_copy(initrdFilesystem.base.name, "tarfs");
     initrdFilesystem.base.root = &initrdRoot;
     initrdFilesystem.base.lookup = initrd_filesystem_lookup;
-    modules_register_filesystem(&initrdFilesystem.base);
+    vfs_register_filesystem(&initrdFilesystem.base);
 
 }
 

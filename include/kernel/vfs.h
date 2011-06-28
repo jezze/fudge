@@ -23,6 +23,16 @@ struct vfs_descriptor
 
 };
 
+struct vfs_filesystem
+{
+
+    char name[32];
+    struct vfs_node *root;
+    struct vfs_node *(*lookup)(struct vfs_filesystem *filesystem, char *path);
+
+};
+
+extern void vfs_register_filesystem(struct vfs_filesystem *filesystem);
 extern unsigned int vfs_open(char *name);
 extern void vfs_close(unsigned int index);
 extern struct vfs_node *vfs_get(unsigned int index);

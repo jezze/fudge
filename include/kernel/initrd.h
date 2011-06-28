@@ -3,12 +3,12 @@
 
 #define INITRD_HEADER_SIZE 64
 
-struct modules_filesystem;
+struct vfs_filesystem;
 
 struct initrd_filesystem
 {
 
-    struct modules_filesystem base;
+    struct vfs_filesystem base;
     struct tar_header *headers[INITRD_HEADER_SIZE];
     struct vfs_node nodes[INITRD_HEADER_SIZE];
 

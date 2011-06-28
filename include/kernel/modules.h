@@ -54,20 +54,9 @@ struct modules_bus
 
 };
 
-struct modules_filesystem
-{
-
-    struct modules_module module;
-    char name[32];
-    struct vfs_node *root;
-    struct vfs_node *(*lookup)(struct modules_filesystem *filesystem, char *path);
-
-};
-
 extern void modules_register_bus(unsigned int type, struct modules_bus *bus);
 extern void modules_register_device(unsigned int type, struct modules_device *device);
 extern void modules_register_driver(unsigned int type, struct modules_driver *driver);
-extern void modules_register_filesystem(struct modules_filesystem *filesystem);
 extern void modules_init();
 
 #endif

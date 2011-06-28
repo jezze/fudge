@@ -14,10 +14,9 @@
 #include <arch/x86/modules/serial/serial.h>
 #include <arch/x86/modules/vga/vga.h>
 
-static struct modules_filesystem modulesFilesystem;
+static struct vfs_filesystem modulesFilesystem;
 
 static struct modules_bus *modulesBusses[32];
-static struct modules_filesystem *modulesFilesystems[8];
 
 static struct vfs_node *modulesEntries[32];
 static struct vfs_node modulesRoot;
@@ -50,27 +49,6 @@ void modules_register_device(unsigned int type, struct modules_device *device)
 
 void modules_register_driver(unsigned int type, struct modules_driver *driver)
 {
-
-}
-
-void modules_register_filesystem(struct modules_filesystem *filesystem)
-{
-
-    unsigned int i;
-
-    for (i = 0; i < 8; i++)
-    {
-
-        if (!modulesFilesystems[i])
-        {
-
-            modulesFilesystems[i] = filesystem;
-
-            return;
-
-        }
-
-    }
 
 }
 
@@ -109,7 +87,7 @@ static unsigned int modules_node_read(struct vfs_node *node, unsigned int offset
 
 }
 
-struct vfs_node *modules_filesystem_lookup(struct modules_filesystem *filesystem, char *path)
+struct vfs_node *modules_filesystem_lookup(struct vfs_filesystem *filesystem, char *path)
 {
 
     unsigned int i;
@@ -157,7 +135,7 @@ void modules_init()
     string_copy(modulesFilesystem.name, "sysfs");
     modulesFilesystem.root = &modulesRoot;
     modulesFilesystem.lookup = modules_filesystem_lookup;
-    modules_register_filesystem(&modulesFilesystem);
+    vfs_register_filesystem(&modulesFilesystem);
 
     modules_init_devices();
 
