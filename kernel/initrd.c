@@ -146,10 +146,20 @@ static void initrd_create_nodes(unsigned int numEntries)
 
 }
 
-struct vfs_node *initrd_filesystem_lookup(struct modules_filesystem *filesystem, unsigned int id)
+struct vfs_node *initrd_filesystem_lookup(struct modules_filesystem *filesystem, char *path)
 {
 
-    return &initrdFilesystem.nodes[id];
+    unsigned int i;
+
+    for (i = 0; initrdFilesystem.nodes[i].name != '\0'; i++)
+    {
+
+        if (string_compare(path, initrdFilesystem.nodes[i].name))
+            return &initrdFilesystem.nodes[i];
+
+    }
+
+    return 0;
 
 }
 

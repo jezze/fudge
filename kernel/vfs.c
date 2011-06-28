@@ -2,12 +2,16 @@
 #include <lib/memory.h>
 #include <lib/string.h>
 #include <kernel/vfs.h>
+#include <kernel/modules.h>
 
 static struct vfs_node vfsNodes[256];
 static struct vfs_descriptor vfsOpenTable[256];
 static unsigned int vfsNodesCount;
 
 static struct vfs_node *vfsRootEntries[64];
+
+static struct modules_filesystem vfsFilesystem;
+static struct vfs_node vfsRoot;
 
 unsigned int vfs_open(char *name)
 {
@@ -91,7 +95,7 @@ struct vfs_node *vfs_get(unsigned int index)
 struct vfs_node *vfs_get_root()
 {
 
-    return &vfsNodes[0];
+    return &vfsRoot;
 
 }
 
@@ -144,13 +148,26 @@ struct vfs_node *vfs_add_node(char *name, unsigned int length)
 
 }
 
+struct vfs_node *vfs_filesystem_lookup(struct modules_filesystem *filesystem, char *path)
+{
+
+    return 0;
+
+}
+
 void vfs_init()
 {
 
-    struct vfs_node *node = vfs_add_node("root", 0);
-    node->walk = file_node_walk;
-    node->read = file_node_read;
-    node->write = file_node_write;
+    string_copy(vfsRoot.name, "root");
+    vfsRoot.length = 0;
+    vfsRoot.walk = file_node_walk;
+    vfsRoot.read = file_node_read;
+    vfsRoot.write = file_node_write;
+
+    string_copy(vfsFilesystem.name, "rootfs");
+    vfsFilesystem.root = &vfsRoot;
+    vfsFilesystem.lookup = vfs_filesystem_lookup;
+    modules_register_filesystem(&vfsFilesystem);
 
 }
 

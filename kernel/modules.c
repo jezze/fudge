@@ -109,10 +109,20 @@ static unsigned int modules_node_read(struct vfs_node *node, unsigned int offset
 
 }
 
-struct vfs_node *modules_filesystem_lookup(struct modules_filesystem *filesystem, unsigned int id)
+struct vfs_node *modules_filesystem_lookup(struct modules_filesystem *filesystem, char *path)
 {
 
-    return modulesEntries[id];
+    unsigned int i;
+
+    for (i = 0; modulesEntries[i]; i++)
+    {
+
+        if (string_compare(path, modulesEntries[i]->name))
+            return modulesEntries[i];
+
+    }
+
+    return 0;
 
 }
 

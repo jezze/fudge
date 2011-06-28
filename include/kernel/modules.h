@@ -60,7 +60,7 @@ struct modules_filesystem
     struct modules_module module;
     char name[32];
     struct vfs_node *root;
-    struct vfs_node *(*lookup)(struct modules_filesystem *filesystem, unsigned int id);
+    struct vfs_node *(*lookup)(struct modules_filesystem *filesystem, char *path);
 
 };
 
