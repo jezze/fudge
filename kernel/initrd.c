@@ -149,7 +149,7 @@ static void initrd_create_nodes(unsigned int numEntries)
 void initrd_init(unsigned int *address)
 {
 
-    unsigned int numEntries = initrd_parse(*address) - 4;
+    unsigned int numEntries = initrd_parse(*address);
 
     initrd_create_nodes(numEntries);
 

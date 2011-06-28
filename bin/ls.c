@@ -81,9 +81,9 @@ void main(int argc, char *argv[])
 
     int fd = file_open(path);
 
-    char content[256];
+    char content[512];
 
-    file_read(fd, 256, content);
+    file_read(fd, 512, content);
 
     write_content(path, content);
 
