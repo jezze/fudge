@@ -95,7 +95,7 @@ struct vfs_node *modules_filesystem_lookup(struct vfs_filesystem *filesystem, ch
     for (i = 0; modulesEntries[i]; i++)
     {
 
-        if (string_compare(path, modulesEntries[i]->name))
+        if (!memory_compare(path, modulesEntries[i]->name, string_length(modulesEntries[i]->name)))
             return modulesEntries[i];
 
     }

@@ -5,7 +5,7 @@
 
 void log_message(unsigned int type, char *message, void **args)
 {
-
+/*
     switch (type)
     {
 
@@ -31,7 +31,7 @@ void log_message(unsigned int type, char *message, void **args)
 
     file_write_string_format(FILE_STDOUT, message, args);
     file_write_string(FILE_STDOUT, "\n");
-
+*/
 }
 
 void log_init()

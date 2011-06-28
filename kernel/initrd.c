@@ -151,10 +151,10 @@ struct vfs_node *initrd_filesystem_lookup(struct vfs_filesystem *filesystem, cha
 
     unsigned int i;
 
-    for (i = 0; initrdFilesystem.nodes[i].name != '\0'; i++)
+    for (i = 0; string_length(initrdFilesystem.nodes[i].name); i++)
     {
 
-        if (string_compare(path, initrdFilesystem.nodes[i].name))
+        if (!memory_compare(path, initrdFilesystem.nodes[i].name, string_length(initrdFilesystem.nodes[i].name)))
             return &initrdFilesystem.nodes[i];
 
     }
