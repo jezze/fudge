@@ -18,9 +18,6 @@ void get_path(char *buffer, char *arg)
 
     }
 
-    if (buffer[string_length(buffer) - 1] != '/')
-        string_concat(buffer, "/");
-
     file_close(cwd);
 
 }
@@ -41,6 +38,8 @@ void main(int argc, char *argv[])
     }
 
     get_path(path, argv[1]);
+
+    file_write_string(FILE_STDOUT, path);
 
     int fd = file_open(path);
 
