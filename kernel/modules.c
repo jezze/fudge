@@ -14,10 +14,10 @@
 #include <arch/x86/modules/serial/serial.h>
 #include <arch/x86/modules/vga/vga.h>
 
-static struct vfs_filesystem modulesFilesystem;
-
 static struct modules_bus *modulesBusses[32];
-
+static struct modules_device *modulesDevices[32];
+static struct modules_driver *modulesDrivers[32];
+static struct vfs_filesystem modulesFilesystem;
 static struct vfs_node *modulesEntries[32];
 static struct vfs_node modulesRoot;
 
@@ -52,16 +52,6 @@ void modules_register_driver(unsigned int type, struct modules_driver *driver)
 
 }
 
-static unsigned int modules_node_write(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
-{
-
-    modulesEntries[offset] = (struct vfs_node *)buffer;
-    node->length++;
-
-    return count;
-
-}
-
 static unsigned int modules_node_read(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
@@ -80,7 +70,17 @@ static unsigned int modules_node_read(struct vfs_node *node, unsigned int offset
 
 }
 
-struct vfs_node *modules_filesystem_lookup(struct vfs_filesystem *filesystem, char *path)
+static unsigned int modules_node_write(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    modulesEntries[offset] = (struct vfs_node *)buffer;
+    node->length++;
+
+    return count;
+
+}
+
+static struct vfs_node *modules_filesystem_lookup(struct vfs_filesystem *filesystem, char *path)
 {
 
     unsigned int i;

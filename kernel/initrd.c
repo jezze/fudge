@@ -70,24 +70,6 @@ static unsigned int initrd_parse(unsigned int address)
 
 }
 
-static unsigned int initrd_root_read(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
-{
-
-    memory_set(buffer, 0, 1);
-    unsigned int i;
-
-    for (i = 0; i < node->length; i++)
-    {
-
-        string_concat(buffer, initrdFilesystem.nodes[i].name);
-        string_concat(buffer, "\n");
-
-    }
-
-    return string_length(buffer);
-
-}
-
 static void initrd_create_nodes(unsigned int numEntries)
 {
 
@@ -107,11 +89,7 @@ static void initrd_create_nodes(unsigned int numEntries)
         initrdFileNode->length = size;
 
         if (header->typeflag[0] == TAR_FILETYPE_DIR)
-        {
-
             string_replace(initrdFileNode->name, '/', '\0');
-
-        }
 
         initrdFileNode->read = initrd_node_read;
 
@@ -119,7 +97,7 @@ static void initrd_create_nodes(unsigned int numEntries)
 
 }
 
-struct vfs_node *initrd_filesystem_lookup(struct vfs_filesystem *filesystem, char *path)
+static struct vfs_node *initrd_filesystem_lookup(struct vfs_filesystem *filesystem, char *path)
 {
 
     unsigned int i;
@@ -138,6 +116,24 @@ struct vfs_node *initrd_filesystem_lookup(struct vfs_filesystem *filesystem, cha
 
 }
 
+static unsigned int initrd_filesystem_node_read(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    memory_set(buffer, 0, 1);
+    unsigned int i;
+
+    for (i = 0; i < node->length; i++)
+    {
+
+        string_concat(buffer, initrdFilesystem.nodes[i].name);
+        string_concat(buffer, "\n");
+
+    }
+
+    return string_length(buffer);
+
+}
+
 void initrd_init(unsigned int *address)
 {
 
@@ -146,7 +142,7 @@ void initrd_init(unsigned int *address)
 
     string_copy(initrdRoot.name, "initrd");
     initrdRoot.length = numEntries;
-    initrdRoot.read = initrd_root_read;
+    initrdRoot.read = initrd_filesystem_node_read;
 
     string_copy(initrdFilesystem.base.name, "tarfs");
     initrdFilesystem.base.root = &initrdRoot;
