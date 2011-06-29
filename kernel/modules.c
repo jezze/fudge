@@ -151,8 +151,8 @@ void modules_init()
 
     string_copy(modulesRoot.name, "dev");
     modulesRoot.length = 0;
-    modulesRoot.write = modules_node_write;
-    modulesRoot.read = modules_node_read;
+    modulesRoot.operations.write = modules_node_write;
+    modulesRoot.operations.read = modules_node_read;
 
     string_copy(modulesFilesystem.name, "sysfs");
     modulesFilesystem.root = &modulesRoot;

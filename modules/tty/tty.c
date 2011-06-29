@@ -18,9 +18,9 @@ static void tty_scroll()
 
     char buffer[TTY_CHARACTER_SIZE];
 
-    ttyVgaNode->read(ttyVgaNode, TTY_CHARACTER_WIDTH, TTY_CHARACTER_SIZE - TTY_CHARACTER_WIDTH, buffer);
+    ttyVgaNode->operations.read(ttyVgaNode, TTY_CHARACTER_WIDTH, TTY_CHARACTER_SIZE - TTY_CHARACTER_WIDTH, buffer);
     memory_set(buffer + TTY_CHARACTER_SIZE - TTY_CHARACTER_WIDTH, ' ', TTY_CHARACTER_WIDTH);
-    ttyVgaNode->write(ttyVgaNode, 0, TTY_CHARACTER_SIZE, buffer);
+    ttyVgaNode->operations.write(ttyVgaNode, 0, TTY_CHARACTER_SIZE, buffer);
 
     ttyDevice.cursorOffset -= TTY_CHARACTER_WIDTH;
 
@@ -60,7 +60,7 @@ static void tty_putc(char c)
     else if (c >= ' ')
     {
 
-        ttyVgaNode->write(ttyVgaNode, ttyDevice.cursorOffset, 1, &c);
+        ttyVgaNode->operations.write(ttyVgaNode, ttyDevice.cursorOffset, 1, &c);
         ttyDevice.cursorOffset++;
 
     }
@@ -77,7 +77,7 @@ static void tty_vga_clear()
     int i;
 
     for (i = 0; i < TTY_CHARACTER_SIZE; i++)
-        ttyVgaNode->write(ttyVgaNode, i, 1, &c);
+        ttyVgaNode->operations.write(ttyVgaNode, i, 1, &c);
 
 }
 
@@ -90,7 +90,7 @@ static unsigned int tty_write(struct vfs_node *node, unsigned int offset, unsign
     for (i = offset; i < offset + count; i++, j++)
         tty_putc(((char *)buffer)[j]);
 
-    ttyVgaCursorNode->write(ttyVgaCursorNode, 0, 1, &ttyDevice.cursorOffset);
+    ttyVgaCursorNode->operations.write(ttyVgaCursorNode, 0, 1, &ttyDevice.cursorOffset);
 
     return count;
 
@@ -136,7 +136,7 @@ static void tty_init_vga()
     ttyVgaColorNode = vfs_find_root("/dev/vga_fb_color");
     ttyVgaCursorNode = vfs_find_root("/dev/vga_fb_cursor");
 
-    ttyVgaColorNode->write(ttyVgaColorNode, 0, 1, &ttyDevice.cursorColor);
+    ttyVgaColorNode->operations.write(ttyVgaColorNode, 0, 1, &ttyDevice.cursorColor);
 
     tty_vga_clear();
 
@@ -150,15 +150,15 @@ void tty_init()
     string_copy(ttyCwd, "/");
 
     struct vfs_node *ttyStdoutNode = vfs_add_node("tty", TTY_CHARACTER_SIZE);
-    ttyStdoutNode->write = tty_write;
+    ttyStdoutNode->operations.write = tty_write;
 
     struct vfs_node *ttyCwdNode = vfs_add_node("cwd", 256);
-    ttyCwdNode->read = tty_cwd_read;
-    ttyCwdNode->write = tty_cwd_write;
+    ttyCwdNode->operations.read = tty_cwd_read;
+    ttyCwdNode->operations.write = tty_cwd_write;
 
     struct vfs_node *devNode = vfs_find_root("/dev");
-    devNode->write(devNode, devNode->length, 1, ttyStdoutNode);
-    devNode->write(devNode, devNode->length, 1, ttyCwdNode);
+    devNode->operations.write(devNode, devNode->length, 1, ttyStdoutNode);
+    devNode->operations.write(devNode, devNode->length, 1, ttyCwdNode);
 
 }
 

@@ -39,11 +39,11 @@ void io_init()
 
     string_copy(ioDevice.base.node.name, "io");
     ioDevice.base.node.length = 0;
-    ioDevice.base.node.read = io_node_read;
-    ioDevice.base.node.write = io_node_write;
+    ioDevice.base.node.operations.read = io_node_read;
+    ioDevice.base.node.operations.write = io_node_write;
 
     struct vfs_node *devNode = vfs_find_root("/dev");
-    devNode->write(devNode, devNode->length, 1, &ioDevice.base.node);
+    devNode->operations.write(devNode, devNode->length, 1, &ioDevice.base.node);
 
     modules_register_device(MODULES_DEVICE_TYPE_IO, &ioDevice.base);
 

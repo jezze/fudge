@@ -91,7 +91,7 @@ static void initrd_create_nodes(unsigned int numEntries)
         if (header->typeflag[0] == TAR_FILETYPE_DIR)
             string_replace(initrdFileNode->name, '/', '\0');
 
-        initrdFileNode->read = initrd_node_read;
+        initrdFileNode->operations.read = initrd_node_read;
 
     }
 
@@ -142,7 +142,7 @@ void initrd_init(unsigned int *address)
 
     string_copy(initrdRoot.name, "initrd");
     initrdRoot.length = numEntries;
-    initrdRoot.read = initrd_filesystem_node_read;
+    initrdRoot.operations.read = initrd_filesystem_node_read;
 
     string_copy(initrdFilesystem.base.name, "tarfs");
     initrdFilesystem.base.root = &initrdRoot;

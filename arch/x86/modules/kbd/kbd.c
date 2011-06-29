@@ -98,7 +98,7 @@ static void kbd_handler(struct isr_registers *registers)
         if (kbdDevice.toggleShift)
             scancode += 128;
             
-        kbdDevice.base.node.write(&kbdDevice.base.node, 0, 1, &kbdMapUS[scancode]);
+        kbdDevice.base.node.operations.write(&kbdDevice.base.node, 0, 1, &kbdMapUS[scancode]);
 
     }
 
@@ -115,11 +115,11 @@ void kbd_init()
 
     string_copy(kbdDevice.base.node.name, "kbd");
     kbdDevice.base.node.length = 0;
-    kbdDevice.base.node.read = kbd_device_read;
-    kbdDevice.base.node.write = kbd_device_write;
+    kbdDevice.base.node.operations.read = kbd_device_read;
+    kbdDevice.base.node.operations.write = kbd_device_write;
 
     struct vfs_node *devNode = vfs_find_root("/dev");
-    devNode->write(devNode, devNode->length, 1, &kbdDevice.base.node);
+    devNode->operations.write(devNode, devNode->length, 1, &kbdDevice.base.node);
 
     irq_register_handler(IRQ_ROUTINE_KBD, kbd_handler);
 

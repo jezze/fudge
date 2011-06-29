@@ -50,7 +50,7 @@ static void syscall_read(struct syscall_registers *registers)
 
     struct vfs_node *node = vfs_get(index);
 
-    if (!node || !node->read)
+    if (!node || !node->operations.read)
     {
 
         registers->eax = 0;
@@ -59,7 +59,7 @@ static void syscall_read(struct syscall_registers *registers)
 
     }
 
-    registers->eax = node->read(node, 0, count, buffer);
+    registers->eax = node->operations.read(node, 0, count, buffer);
 
 }
 
@@ -72,7 +72,7 @@ static void syscall_write(struct syscall_registers *registers)
 
     struct vfs_node *node = vfs_get(index);
 
-    if (!node || !node->write)
+    if (!node || !node->operations.write)
     {
 
         registers->eax = 0;
@@ -81,7 +81,7 @@ static void syscall_write(struct syscall_registers *registers)
 
     }
 
-    registers->eax = node->write(node, 0, count, buffer);
+    registers->eax = node->operations.write(node, 0, count, buffer);
 
 }
 

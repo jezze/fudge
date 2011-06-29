@@ -1,16 +1,26 @@
 #ifndef KERNEL_VFS_H
 #define KERNEL_VFS_H
 
+struct vfs_node;
+struct vfs_node_operations;
+
+struct vfs_node_operations
+{
+
+    void (*open)(struct vfs_node *node);
+    void (*close)(struct vfs_node *node);
+    unsigned int (*read)(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer);
+    unsigned int (*write)(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer);
+
+};
+
 struct vfs_node
 {
 
     unsigned int id;
     char name[128];
     unsigned int length;
-    void (*open)(struct vfs_node *node);
-    void (*close)(struct vfs_node *node);
-    unsigned int (*read)(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer);
-    unsigned int (*write)(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer);
+    struct vfs_node_operations operations;
 
 };
 

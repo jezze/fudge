@@ -81,8 +81,8 @@ void serial_init()
     io_outb(SERIAL_COM1 + 4, 0x0B);
 
     serialDevice1.port = SERIAL_COM1;
-    serialDevice1.base.node.read = serial_read;
-    serialDevice1.base.node.write = serial_write;
+    serialDevice1.base.node.operations.read = serial_read;
+    serialDevice1.base.node.operations.write = serial_write;
 
     modules_register_device(MODULES_DEVICE_TYPE_SERIAL, &serialDevice1.base);
 

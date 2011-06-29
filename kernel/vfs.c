@@ -170,7 +170,7 @@ void vfs_init()
 
     string_copy(vfsRoot.name, "root");
     vfsRoot.length = 0;
-    vfsRoot.read = vfs_node_read;
+    vfsRoot.operations.read = vfs_node_read;
 
     string_copy(vfsFilesystem.name, "rootfs");
     vfsFilesystem.root = &vfsRoot;
