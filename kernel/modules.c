@@ -52,13 +52,6 @@ void modules_register_driver(unsigned int type, struct modules_driver *driver)
 
 }
 
-static struct vfs_node *modules_node_walk(struct vfs_node *node, unsigned int index)
-{
-
-    return (index < node->length) ? modulesEntries[index] : 0;
-
-}
-
 static unsigned int modules_node_write(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
@@ -126,7 +119,6 @@ void modules_init()
 
     string_copy(modulesRoot.name, "dev");
     modulesRoot.length = 0;
-    modulesRoot.walk = modules_node_walk;
     modulesRoot.write = modules_node_write;
     modulesRoot.read = modules_node_read;
 

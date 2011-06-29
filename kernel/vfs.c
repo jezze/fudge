@@ -71,35 +71,6 @@ void vfs_close(unsigned int index)
 
 }
 
-struct vfs_node *vfs_find(struct vfs_node *node, char *path)
-{
-
-    unsigned int index = string_index(path, '/', 0);
-    unsigned int length = string_length(path);
-
-    if (!index)
-        return node;
-
-    struct vfs_node *current;
-    unsigned int i;
-
-    for (i = 0; (current = node->walk(node, i)); i++)
-    {
-
-        unsigned int count = string_length(current->name);
-
-        if (index > count)
-            count = index;
-
-        if (!memory_compare(path, current->name, count))
-            return (index == length) ? current : vfs_find(current, path + index + 1);
-
-    }
-
-    return 0;
-
-}
-
 struct vfs_node *vfs_find_root(char *path)
 {
 
@@ -118,13 +89,6 @@ struct vfs_node *vfs_get_root()
 {
 
     return &vfsRoot;
-
-}
-
-static struct vfs_node *file_node_walk(struct vfs_node *node, unsigned int index)
-{
-
-    return (index < node->length) ? vfsRootEntries[index] : 0;
 
 }
 
@@ -212,7 +176,6 @@ void vfs_init()
 
     string_copy(vfsRoot.name, "root");
     vfsRoot.length = 0;
-    vfsRoot.walk = file_node_walk;
     vfsRoot.read = file_node_read;
     vfsRoot.write = file_node_write;
 

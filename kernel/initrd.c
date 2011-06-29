@@ -107,13 +107,6 @@ static unsigned int initrd_root_read(struct vfs_node *node, unsigned int offset,
 
 }
 
-static struct vfs_node *initrd_root_walk(struct vfs_node *node, unsigned int index)
-{
-
-    return (index < node->length) ? &initrdFilesystem.nodes[index] : 0;
-
-}
-
 static void initrd_create_nodes(unsigned int numEntries)
 {
 
@@ -174,7 +167,6 @@ void initrd_init(unsigned int *address)
     string_copy(initrdRoot.name, "initrd");
     initrdRoot.length = numEntries;
     initrdRoot.read = initrd_root_read;
-    initrdRoot.walk = initrd_root_walk;
 
     //TODO remove
     struct vfs_node *rootNode = vfs_get_root();

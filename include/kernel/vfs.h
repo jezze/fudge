@@ -11,7 +11,6 @@ struct vfs_node
     void (*close)(struct vfs_node *node);
     unsigned int (*read)(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer);
     unsigned int (*write)(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer);
-    struct vfs_node *(*walk)(struct vfs_node *node, unsigned int index);
 
 };
 
