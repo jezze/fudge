@@ -39,6 +39,8 @@ void main(int argc, char *argv[])
 
     get_path(path, argv[1]);
 
+    file_write_string(FILE_STDOUT, path);
+
     int fd = file_open(path);
 
     if (fd == -1)
