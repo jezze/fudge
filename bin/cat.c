@@ -18,9 +18,6 @@ void get_path(char *buffer, char *arg)
 
     }
 
-    if (buffer[string_length(buffer) - 1] != '/')
-        string_concat(buffer, "/");
-
     file_close(cwd);
 
 }
