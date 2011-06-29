@@ -122,10 +122,6 @@ void modules_init()
     modulesRoot.write = modules_node_write;
     modulesRoot.read = modules_node_read;
 
-    //TODO remove
-    struct vfs_node *rootNode = vfs_get_root();
-    rootNode->write(rootNode, rootNode->length, 1, &modulesRoot);
-
     string_copy(modulesFilesystem.name, "sysfs");
     modulesFilesystem.root = &modulesRoot;
     modulesFilesystem.lookup = modules_filesystem_lookup;

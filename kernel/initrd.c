@@ -9,7 +9,7 @@
 static struct initrd_filesystem initrdFilesystem;
 static struct vfs_node initrdRoot;
 
-static unsigned int initrd_file_read(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int initrd_node_read(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct tar_header *header = initrdFilesystem.headers[node->id];
@@ -23,25 +23,6 @@ static unsigned int initrd_file_read(struct vfs_node *node, unsigned int offset,
     unsigned int address = (unsigned int)header + TAR_BLOCK_SIZE;
 
     memory_copy(buffer, (unsigned char *)(address + offset), count);
-
-    return count;
-
-}
-
-static unsigned int initrd_file_write(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
-{
-
-    struct tar_header *header = initrdFilesystem.headers[node->id];
-
-    if (offset > node->length)
-        return 0;
-
-    if (offset + count > node->length)
-        count = node->length - offset;
-
-    unsigned int address = (unsigned int)header + TAR_BLOCK_SIZE;
-
-    memory_copy((unsigned char *)(address + offset), buffer, count);
 
     return count;
 
@@ -132,8 +113,7 @@ static void initrd_create_nodes(unsigned int numEntries)
 
         }
 
-        initrdFileNode->read = initrd_file_read;
-        initrdFileNode->write = initrd_file_write;
+        initrdFileNode->read = initrd_node_read;
 
     }
 
@@ -167,10 +147,6 @@ void initrd_init(unsigned int *address)
     string_copy(initrdRoot.name, "initrd");
     initrdRoot.length = numEntries;
     initrdRoot.read = initrd_root_read;
-
-    //TODO remove
-    struct vfs_node *rootNode = vfs_get_root();
-    rootNode->write(rootNode, rootNode->length, 1, &initrdRoot);
 
     string_copy(initrdFilesystem.base.name, "tarfs");
     initrdFilesystem.base.root = &initrdRoot;

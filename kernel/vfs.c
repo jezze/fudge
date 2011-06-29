@@ -14,6 +14,20 @@ static struct vfs_filesystem *vfsFilesystems[8];
 static struct vfs_filesystem vfsFilesystem;
 static struct vfs_node vfsRoot;
 
+struct vfs_node *vfs_add_node(char *name, unsigned int length)
+{
+
+    struct vfs_node *node = &vfsNodes[vfsNodesCount];
+    memory_set(node, 0, sizeof (struct vfs_node));
+    string_copy(node->name, name);
+    node->length = length;
+
+    vfsNodesCount++;
+
+    return node;
+
+}
+
 void vfs_register_filesystem(struct vfs_filesystem *filesystem)
 {
 
@@ -92,45 +106,25 @@ struct vfs_node *vfs_get_root()
 
 }
 
-static unsigned int file_node_write(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
-{
-
-    vfsRootEntries[node->length] = (struct vfs_node *)buffer;
-    node->length++;
-
-    return count;
-
-}
-
-static unsigned int file_node_read(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int vfs_node_read(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
     memory_set(buffer, 0, 1);
+
     unsigned int i;
 
-    for (i = 0; i < node->length; i++)
+    for (i = 0; vfsFilesystems[i]; i++)
     {
 
-        string_concat(buffer, vfsRootEntries[i]->name);
+        if (vfsFilesystems[i] == &vfsFilesystem)
+            continue;
+
+        string_concat(buffer, vfsFilesystems[i]->root->name);
         string_concat(buffer, "\n");
 
     }
 
     return string_length(buffer);
-
-}
-
-struct vfs_node *vfs_add_node(char *name, unsigned int length)
-{
-
-    struct vfs_node *node = &vfsNodes[vfsNodesCount];
-    memory_set(node, 0, sizeof (struct vfs_node));
-    string_copy(node->name, name);
-    node->length = length;
-
-    vfsNodesCount++;
-
-    return node;
 
 }
 
@@ -176,8 +170,7 @@ void vfs_init()
 
     string_copy(vfsRoot.name, "root");
     vfsRoot.length = 0;
-    vfsRoot.read = file_node_read;
-    vfsRoot.write = file_node_write;
+    vfsRoot.read = vfs_node_read;
 
     string_copy(vfsFilesystem.name, "rootfs");
     vfsFilesystem.root = &vfsRoot;
