@@ -45,10 +45,42 @@ void modules_register_bus(unsigned int type, struct modules_bus *bus)
 void modules_register_device(unsigned int type, struct modules_device *device)
 {
 
+    unsigned int i;
+
+    for (i = 0; i < 32; i++)
+    {
+
+        if (!modulesDevices[i])
+        {
+
+            modulesDevices[i] = device;
+
+            return;
+
+        }
+
+    }
+
 }
 
 void modules_register_driver(unsigned int type, struct modules_driver *driver)
 {
+
+    unsigned int i;
+
+    for (i = 0; i < 32; i++)
+    {
+
+        if (!modulesDrivers[i])
+        {
+
+            modulesDrivers[i] = driver;
+
+            return;
+
+        }
+
+    }
 
 }
 
