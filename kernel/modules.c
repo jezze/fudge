@@ -118,6 +118,22 @@ static unsigned int modules_node_read2(struct vfs_node *node, unsigned int offse
 
     }
 
+    for (i = 0; modulesDevices[i]; i++)
+    {
+
+        string_concat(buffer, modulesDevices[i]->name);
+        string_concat(buffer, "\n");
+
+    }
+
+    for (i = 0; modulesDrivers[i]; i++)
+    {
+
+        string_concat(buffer, modulesDrivers[i]->name);
+        string_concat(buffer, "\n");
+
+    }
+
     return string_length(buffer);
 
 }

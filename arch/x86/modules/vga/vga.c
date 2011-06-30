@@ -138,6 +138,7 @@ void vga_init()
     devNode->operations.write(devNode, devNode->length, 1, &vgaDevice.nodeCursorColor);
     devNode->operations.write(devNode, devNode->length, 1, &vgaDevice.nodeCursorOffset);
 
+    string_copy(vgaDevice.base.name, "vga");
     modules_register_device(MODULES_DEVICE_TYPE_VGA, &vgaDevice.base);
 
 }

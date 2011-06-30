@@ -45,6 +45,7 @@ void io_init()
     struct vfs_node *devNode = vfs_find_root("/dev");
     devNode->operations.write(devNode, devNode->length, 1, &ioDevice.base.node);
 
+    string_copy(ioDevice.base.name, "io");
     modules_register_device(MODULES_DEVICE_TYPE_IO, &ioDevice.base);
 
 }

@@ -84,6 +84,7 @@ void serial_init()
     serialDevice1.base.node.operations.read = serial_read;
     serialDevice1.base.node.operations.write = serial_write;
 
+    string_copy(serialDevice1.base.name, "serial");
     modules_register_device(MODULES_DEVICE_TYPE_SERIAL, &serialDevice1.base);
 
 }

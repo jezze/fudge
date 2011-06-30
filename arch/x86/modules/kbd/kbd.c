@@ -123,6 +123,7 @@ void kbd_init()
 
     irq_register_handler(IRQ_ROUTINE_KBD, kbd_handler);
 
+    string_copy(kbdDevice.base.name, "kbd");
     modules_register_device(MODULES_DEVICE_TYPE_KEYBOARD, &kbdDevice.base);
 
 }

@@ -128,27 +128,34 @@ static unsigned char ata_identify(struct ata_device *device)
 void ata_init()
 {
 
-    string_copy(ataBus.name, "ata");
+    string_copy(ataBus.name, "ata:0");
     modules_register_bus(MODULES_BUS_TYPE_ATA, &ataBus);
 
+    string_copy(ataBus.name, "ata:1");
+    modules_register_bus(MODULES_BUS_TYPE_ATA, &ataBus);
+
+    string_copy(ataPrimaryMaster.base.name, "ata:0:0");
     ataPrimaryMaster.control = ATA_PRIMARY_MASTER_CONTROL;
     ataPrimaryMaster.data = ATA_PRIMARY_MASTER_DATA;
 
     if (ata_identify(&ataPrimaryMaster))
         modules_register_device(MODULES_DEVICE_TYPE_ATA, &ataPrimaryMaster.base);
 
+    string_copy(ataPrimarySlave.base.name, "ata:0:1");
     ataPrimarySlave.control = ATA_PRIMARY_SLAVE_CONTROL;
     ataPrimarySlave.data = ATA_PRIMARY_SLAVE_DATA;
 
     if (ata_identify(&ataPrimarySlave))
         modules_register_device(MODULES_DEVICE_TYPE_ATA, &ataPrimarySlave.base);
 
+    string_copy(ataSecondaryMaster.base.name, "ata:1:0");
     ataSecondaryMaster.control = ATA_SECONDARY_MASTER_CONTROL;
     ataSecondaryMaster.data = ATA_SECONDARY_MASTER_DATA;
 
     if (ata_identify(&ataSecondaryMaster))
         modules_register_device(MODULES_DEVICE_TYPE_ATA, &ataSecondaryMaster.base);
 
+    string_copy(ataSecondarySlave.base.name, "ata:1:1");
     ataSecondarySlave.control = ATA_SECONDARY_SLAVE_CONTROL;
     ataSecondarySlave.data = ATA_SECONDARY_SLAVE_DATA;
 
