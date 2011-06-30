@@ -58,7 +58,7 @@ void write_content(char *path, char *content)
             file_write_string(FILE_STDOUT, "rwxrwxrwx ");
             file_write_dec(FILE_STDOUT, info->length);
             file_write_string(FILE_STDOUT, "\t");
-            file_write_string(FILE_STDOUT, info->name);
+            file_write_string(FILE_STDOUT, content + start);
             file_write_string(FILE_STDOUT, "\n");
 
             start = i + 1;

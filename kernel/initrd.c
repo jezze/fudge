@@ -83,15 +83,15 @@ static void initrd_create_nodes(unsigned int numEntries)
         unsigned int size = initrd_get_file_size(header->size);
         unsigned int start = string_index_reversed(header->name, '/', (header->typeflag[0] == TAR_FILETYPE_DIR) ? 1 : 0) + 1;
 
-        struct vfs_node *initrdFileNode = &initrdFilesystem.nodes[i];
+        struct initrd_node *initrdFileNode = &initrdFilesystem.nodes[i];
         string_copy(initrdFileNode->name, header->name + start);
-        initrdFileNode->id = i;
-        initrdFileNode->length = size;
+        initrdFileNode->base.id = i;
+        initrdFileNode->base.length = size;
 
         if (header->typeflag[0] == TAR_FILETYPE_DIR)
             string_replace(initrdFileNode->name, '/', '\0');
 
-        initrdFileNode->operations.read = initrd_node_read;
+        initrdFileNode->base.operations.read = initrd_node_read;
 
     }
 
@@ -108,7 +108,7 @@ static struct vfs_node *initrd_filesystem_lookup(struct vfs_filesystem *filesyst
         unsigned int count = string_length(initrdFilesystem.nodes[i].name) + 1;
 
         if (!memory_compare(path, initrdFilesystem.nodes[i].name, count))
-            return &initrdFilesystem.nodes[i];
+            return &initrdFilesystem.nodes[i].base;
 
     }
 
@@ -144,7 +144,7 @@ void initrd_init(unsigned int *address)
     initrdRoot.length = numEntries;
     initrdRoot.operations.read = initrd_filesystem_node_read;
 
-    string_copy(initrdFilesystem.base.name, "tarfs");
+    string_copy(initrdFilesystem.base.name, "initrd");
     initrdFilesystem.base.root = &initrdRoot;
     initrdFilesystem.base.lookup = initrd_filesystem_lookup;
     vfs_register_filesystem(&initrdFilesystem.base);

@@ -119,7 +119,7 @@ static unsigned int vfs_node_read(struct vfs_node *node, unsigned int offset, un
         if (vfsFilesystems[i] == &vfsFilesystem)
             continue;
 
-        string_concat(buffer, vfsFilesystems[i]->root->name);
+        string_concat(buffer, vfsFilesystems[i]->name);
         string_concat(buffer, "\n");
 
     }
@@ -146,7 +146,7 @@ struct vfs_node *vfs_filesystem_lookup(struct vfs_filesystem *filesystem, char *
     for (i = 0; vfsFilesystems[i]; i++)
     {
 
-        if (!memory_compare(path, vfsFilesystems[i]->root->name, index))
+        if (!memory_compare(path, vfsFilesystems[i]->name, index))
         {
 
             if (!string_length(path + index + 1))

@@ -154,7 +154,7 @@ void modules_init()
     modulesRoot.operations.write = modules_node_write;
     modulesRoot.operations.read = modules_node_read;
 
-    string_copy(modulesFilesystem.name, "sysfs");
+    string_copy(modulesFilesystem.name, "dev");
     modulesFilesystem.root = &modulesRoot;
     modulesFilesystem.lookup = modules_filesystem_lookup;
     vfs_register_filesystem(&modulesFilesystem);
