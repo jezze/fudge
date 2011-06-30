@@ -168,7 +168,6 @@ struct vfs_node *vfs_filesystem_lookup(struct vfs_filesystem *filesystem, char *
 void vfs_init()
 {
 
-    string_copy(vfsRoot.name, "root");
     vfsRoot.length = 0;
     vfsRoot.operations.read = vfs_node_read;
 
