@@ -1,7 +1,10 @@
+#include <lib/string.h>
 #include <kernel/vfs.h>
 #include <kernel/modules.h>
 #include <arch/x86/modules/io/io.h>
 #include <arch/x86/modules/pci/pci.h>
+
+static struct modules_bus pciBus;
 
 static unsigned short pci_read(unsigned short bus, unsigned short slot, unsigned short func, unsigned short offset)
 {
@@ -40,6 +43,9 @@ static unsigned short pci_check_vendor(unsigned short bus, unsigned short slot)
 
 void pci_init()
 {
+
+    string_copy(pciBus.name, "pci");
+    modules_register_bus(MODULES_BUS_TYPE_PCI, &pciBus);
 
 }
 

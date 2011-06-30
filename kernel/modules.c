@@ -18,8 +18,10 @@ static struct modules_bus *modulesBusses[32];
 static struct modules_device *modulesDevices[32];
 static struct modules_driver *modulesDrivers[32];
 static struct vfs_filesystem modulesFilesystem;
+static struct vfs_filesystem modulesFilesystem2;
 static struct vfs_node *modulesEntries[32];
 static struct vfs_node modulesRoot;
+static struct vfs_node modulesRoot2;
 
 void modules_register_bus(unsigned int type, struct modules_bus *bus)
 {
@@ -102,6 +104,24 @@ static unsigned int modules_node_read(struct vfs_node *node, unsigned int offset
 
 }
 
+static unsigned int modules_node_read2(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    memory_set(buffer, 0, 1);
+    unsigned int i;
+
+    for (i = 0; modulesBusses[i]; i++)
+    {
+
+        string_concat(buffer, modulesBusses[i]->name);
+        string_concat(buffer, "\n");
+
+    }
+
+    return string_length(buffer);
+
+}
+
 static unsigned int modules_node_write(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
@@ -131,6 +151,25 @@ static struct vfs_node *modules_filesystem_lookup(struct vfs_filesystem *filesys
 
 }
 
+static struct vfs_node *modules_filesystem_lookup2(struct vfs_filesystem *filesystem, char *path)
+{
+
+    unsigned int i;
+
+    for (i = 0; modulesBusses[i]; i++)
+    {
+
+        unsigned int count = string_length(modulesBusses[i]->name) + 1;
+
+        if (!memory_compare(path, modulesBusses[i]->name, count))
+            return &modulesBusses[i]->node;
+
+    }
+
+    return 0;
+
+}
+
 static void modules_init_devices()
 {
 
@@ -139,6 +178,7 @@ static void modules_init_devices()
     pit_init();
     kbd_init();
     rtc_init();
+    pci_init();
     ata_init();
     serial_init();
     tty_init();
@@ -149,7 +189,6 @@ static void modules_init_devices()
 void modules_init()
 {
 
-    string_copy(modulesRoot.name, "dev");
     modulesRoot.length = 0;
     modulesRoot.operations.write = modules_node_write;
     modulesRoot.operations.read = modules_node_read;
@@ -158,6 +197,14 @@ void modules_init()
     modulesFilesystem.root = &modulesRoot;
     modulesFilesystem.lookup = modules_filesystem_lookup;
     vfs_register_filesystem(&modulesFilesystem);
+
+    modulesRoot2.length = 0;
+    modulesRoot2.operations.read = modules_node_read2;
+
+    string_copy(modulesFilesystem2.name, "dev2");
+    modulesFilesystem2.root = &modulesRoot2;
+    modulesFilesystem2.lookup = modules_filesystem_lookup2;
+    vfs_register_filesystem(&modulesFilesystem2);
 
     modules_init_devices();
 

@@ -140,7 +140,6 @@ void initrd_init(unsigned int *address)
     unsigned int numEntries = initrd_parse(*address);
     initrd_create_nodes(numEntries);
 
-    string_copy(initrdRoot.name, "initrd");
     initrdRoot.length = numEntries;
     initrdRoot.operations.read = initrd_filesystem_node_read;
 

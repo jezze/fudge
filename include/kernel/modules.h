@@ -31,7 +31,7 @@ struct modules_device
 
     struct modules_module module;
     char name[32];
-    struct vfs_node node; // REMOVE
+    struct vfs_node node;
 
 };
 
@@ -41,6 +41,7 @@ struct modules_driver
     struct modules_module module;
     char name[32];
     struct modules_device *devices[32];
+    struct vfs_node node;
 
 };
 
@@ -51,6 +52,7 @@ struct modules_bus
     char name[32];
     struct modules_device *devices[32];
     struct modules_driver *drivers[32];
+    struct vfs_node node;
 
 };
 
