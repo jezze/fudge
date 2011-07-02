@@ -6,22 +6,16 @@
 #include <modules/tty/tty.h>
 
 static struct tty_device ttyDevice;
-static struct modules_device cwdDevice;
-
-static struct vfs_node *ttyVgaNode;
-static struct vfs_node *ttyVgaColorNode;
-static struct vfs_node *ttyVgaCursorNode;
-
-static char ttyCwd[256];
+static struct cwd_device cwdDevice;
 
 static void tty_scroll()
 {
 
     char buffer[TTY_CHARACTER_SIZE];
 
-    ttyVgaNode->operations.read(ttyVgaNode, TTY_CHARACTER_WIDTH, TTY_CHARACTER_SIZE - TTY_CHARACTER_WIDTH, buffer);
+    ttyDevice.vgaNode->operations.read(ttyDevice.vgaNode, TTY_CHARACTER_WIDTH, TTY_CHARACTER_SIZE - TTY_CHARACTER_WIDTH, buffer);
     memory_set(buffer + TTY_CHARACTER_SIZE - TTY_CHARACTER_WIDTH, ' ', TTY_CHARACTER_WIDTH);
-    ttyVgaNode->operations.write(ttyVgaNode, 0, TTY_CHARACTER_SIZE, buffer);
+    ttyDevice.vgaNode->operations.write(ttyDevice.vgaNode, 0, TTY_CHARACTER_SIZE, buffer);
 
     ttyDevice.cursorOffset -= TTY_CHARACTER_WIDTH;
 
@@ -61,7 +55,7 @@ static void tty_putc(char c)
     else if (c >= ' ')
     {
 
-        ttyVgaNode->operations.write(ttyVgaNode, ttyDevice.cursorOffset, 1, &c);
+        ttyDevice.vgaNode->operations.write(ttyDevice.vgaNode, ttyDevice.cursorOffset, 1, &c);
         ttyDevice.cursorOffset++;
 
     }
@@ -78,7 +72,7 @@ static void tty_vga_clear()
     int i;
 
     for (i = 0; i < TTY_CHARACTER_SIZE; i++)
-        ttyVgaNode->operations.write(ttyVgaNode, i, 1, &c);
+        ttyDevice.vgaNode->operations.write(ttyDevice.vgaNode, i, 1, &c);
 
 }
 
@@ -91,7 +85,7 @@ static unsigned int tty_write(struct vfs_node *node, unsigned int offset, unsign
     for (i = offset; i < offset + count; i++, j++)
         tty_putc(((char *)buffer)[j]);
 
-    ttyVgaCursorNode->operations.write(ttyVgaCursorNode, 0, 1, &ttyDevice.cursorOffset);
+    ttyDevice.vgaCursorNode->operations.write(ttyDevice.vgaCursorNode, 0, 1, &ttyDevice.cursorOffset);
 
     return count;
 
@@ -100,9 +94,9 @@ static unsigned int tty_write(struct vfs_node *node, unsigned int offset, unsign
 static unsigned int tty_cwd_read(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    count = string_length(ttyCwd) - offset;
+    count = string_length(cwdDevice.path) - offset;
 
-    string_copy(buffer, ttyCwd + offset);
+    string_copy(buffer, cwdDevice.path + offset);
 
     return count;
 
@@ -111,9 +105,9 @@ static unsigned int tty_cwd_read(struct vfs_node *node, unsigned int offset, uns
 static unsigned int tty_cwd_write(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    count = string_length(ttyCwd) - offset;
+    count = string_length(cwdDevice.path) - offset;
 
-    string_copy(ttyCwd + offset, buffer);
+    string_copy(cwdDevice.path + offset, buffer);
 
     return count;
 
@@ -132,26 +126,26 @@ void tty_init()
     string_copy(ttyDevice.base.name, "tty");
     string_copy(ttyDevice.base.node.name, "tty");
     ttyDevice.base.node.length = TTY_CHARACTER_SIZE;
+    ttyDevice.base.node.operations.write = tty_write;
     ttyDevice.cursorOffset = 0;
+    ttyDevice.vgaNode = vfs_find_root("/dev/vga_fb");
+    ttyDevice.vgaColorNode = vfs_find_root("/dev/vga_fb_color");
+    ttyDevice.vgaCursorNode = vfs_find_root("/dev/vga_fb_cursor");
     ttyDevice.set_color = tty_set_color;
     ttyDevice.set_color(TTY_COLOR_WHITE, TTY_COLOR_BLACK);
     modules_register_device(MODULES_DEVICE_TYPE_KEYBOARD, &ttyDevice.base);
 
-    string_copy(cwdDevice.name, "cwd");
-    string_copy(cwdDevice.node.name, "cwd");
-    cwdDevice.node.length = 256;
-    cwdDevice.node.operations.read = tty_cwd_read;
-    cwdDevice.node.operations.write = tty_cwd_write;
-    modules_register_device(MODULES_DEVICE_TYPE_KEYBOARD, &cwdDevice);
+    string_copy(cwdDevice.base.name, "cwd");
+    string_copy(cwdDevice.base.node.name, "cwd");
+    cwdDevice.base.node.length = 256;
+    cwdDevice.base.node.operations.read = tty_cwd_read;
+    cwdDevice.base.node.operations.write = tty_cwd_write;
+    string_copy(cwdDevice.path, "/");
+    modules_register_device(MODULES_DEVICE_TYPE_KEYBOARD, &cwdDevice.base);
 
-    ttyVgaNode = vfs_find_root("/dev/vga_fb");
-    ttyVgaColorNode = vfs_find_root("/dev/vga_fb_color");
-    ttyVgaCursorNode = vfs_find_root("/dev/vga_fb_cursor");
-
-    ttyVgaColorNode->operations.write(ttyVgaColorNode, 0, 1, &ttyDevice.cursorColor);
+    ttyDevice.vgaColorNode->operations.write(ttyDevice.vgaColorNode, 0, 1, &ttyDevice.cursorColor);
 
     tty_vga_clear();
-    string_copy(ttyCwd, "/");
 
     // TODO:REMOVE ALL BELOW
     struct vfs_node *ttyStdoutNode = vfs_add_node("tty", TTY_CHARACTER_SIZE);
