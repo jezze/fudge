@@ -5,7 +5,8 @@
 #include <arch/x86/modules/io/io.h>
 #include <arch/x86/modules/ata/ata.h>
 
-static struct modules_bus ataBus;
+static struct modules_bus ataBusPrimary;
+static struct modules_bus ataBusSecondary;
 static struct ata_device ataPrimaryMaster;
 static struct ata_device ataPrimarySlave;
 static struct ata_device ataSecondaryMaster;
@@ -128,11 +129,11 @@ static unsigned char ata_identify(struct ata_device *device)
 void ata_init()
 {
 
-    string_copy(ataBus.name, "ata:0");
-    modules_register_bus(MODULES_BUS_TYPE_ATA, &ataBus);
+    string_copy(ataBusPrimary.name, "ata:0");
+    modules_register_bus(MODULES_BUS_TYPE_ATA, &ataBusPrimary);
 
-    string_copy(ataBus.name, "ata:1");
-    modules_register_bus(MODULES_BUS_TYPE_ATA, &ataBus);
+    string_copy(ataBusSecondary.name, "ata:1");
+    modules_register_bus(MODULES_BUS_TYPE_ATA, &ataBusSecondary);
 
     string_copy(ataPrimaryMaster.base.name, "ata:0:0");
     ataPrimaryMaster.control = ATA_PRIMARY_MASTER_CONTROL;
