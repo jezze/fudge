@@ -24,13 +24,12 @@
 struct tty_device
 {
 
-    struct modules_module base;
+    struct modules_device base;
     unsigned short cursorOffset;
     unsigned char cursorColor;
     unsigned int (*read)(char *buffer, unsigned int count, unsigned int offset);
     unsigned int (*write)(char *buffer, unsigned int count, unsigned int offset);
     void (*set_color)(unsigned char fg, unsigned char bg);
-    struct vfs_node node;
 
 };
 
