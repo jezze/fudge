@@ -9,7 +9,6 @@ struct file_info
 {
 
     unsigned int id;
-    char name[128];
     unsigned int length;
 
 };

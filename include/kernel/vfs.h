@@ -18,7 +18,6 @@ struct vfs_node
 {
 
     unsigned int id;
-    char name[128];
     unsigned int length;
     struct vfs_node_operations operations;
 
@@ -46,7 +45,6 @@ extern unsigned int vfs_open(char *name);
 extern void vfs_close(unsigned int index);
 extern struct vfs_node *vfs_get(unsigned int index);
 extern struct vfs_node *vfs_find_root(char *name);
-extern struct vfs_node *vfs_get_root();
 extern struct vfs_node *vfs_add_node(char *name, unsigned int length);
 extern void vfs_init();
 

@@ -97,7 +97,6 @@ static void syscall_info(struct syscall_registers *registers)
     {
 
         info->id = file->id;
-        string_copy(info->name, file->name);
         info->length = file->length;
 
         registers->eax = 1;

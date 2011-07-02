@@ -4,29 +4,10 @@
 #include <kernel/vfs.h>
 #include <kernel/modules.h>
 
-static struct vfs_node vfsNodes[256];
 static struct vfs_descriptor vfsOpenTable[256];
-static unsigned int vfsNodesCount;
-
-static struct vfs_node *vfsRootEntries[64];
-
 static struct vfs_filesystem *vfsFilesystems[8];
 static struct vfs_filesystem vfsFilesystem;
 static struct vfs_node vfsRoot;
-
-struct vfs_node *vfs_add_node(char *name, unsigned int length)
-{
-
-    struct vfs_node *node = &vfsNodes[vfsNodesCount];
-    memory_set(node, 0, sizeof (struct vfs_node));
-    string_copy(node->name, name);
-    node->length = length;
-
-    vfsNodesCount++;
-
-    return node;
-
-}
 
 void vfs_register_filesystem(struct vfs_filesystem *filesystem)
 {
@@ -96,13 +77,6 @@ struct vfs_node *vfs_get(unsigned int index)
 {
 
     return vfsOpenTable[index].node;
-
-}
-
-struct vfs_node *vfs_get_root()
-{
-
-    return &vfsRoot;
 
 }
 
