@@ -6,7 +6,7 @@
 #include <modules/tty/tty.h>
 
 static struct tty_device ttyDevice;
-static struct cwd_device cwdDevice;
+static struct tty_cwd_device ttyCwdDevice;
 
 static void tty_scroll()
 {
@@ -94,9 +94,9 @@ static unsigned int tty_write(struct vfs_node *node, unsigned int offset, unsign
 static unsigned int tty_cwd_read(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    count = string_length(cwdDevice.path) - offset;
+    count = string_length(ttyCwdDevice.path) - offset;
 
-    string_copy(buffer, cwdDevice.path + offset);
+    string_copy(buffer, ttyCwdDevice.path + offset);
 
     return count;
 
@@ -105,9 +105,9 @@ static unsigned int tty_cwd_read(struct vfs_node *node, unsigned int offset, uns
 static unsigned int tty_cwd_write(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    count = string_length(cwdDevice.path) - offset;
+    count = string_length(ttyCwdDevice.path) - offset;
 
-    string_copy(cwdDevice.path + offset, buffer);
+    string_copy(ttyCwdDevice.path + offset, buffer);
 
     return count;
 
@@ -124,7 +124,7 @@ void tty_init()
 {
 
     string_copy(ttyDevice.base.name, "tty");
-    string_copy(ttyDevice.base.node.name, "tty");
+    string_copy(ttyDevice.base.node.name, "tty"); // TODO:REMOVE
     ttyDevice.base.node.length = TTY_CHARACTER_SIZE;
     ttyDevice.base.node.operations.write = tty_write;
     ttyDevice.cursorOffset = 0;
@@ -135,13 +135,13 @@ void tty_init()
     ttyDevice.set_color(TTY_COLOR_WHITE, TTY_COLOR_BLACK);
     modules_register_device(MODULES_DEVICE_TYPE_KEYBOARD, &ttyDevice.base);
 
-    string_copy(cwdDevice.base.name, "cwd");
-    string_copy(cwdDevice.base.node.name, "cwd");
-    cwdDevice.base.node.length = 256;
-    cwdDevice.base.node.operations.read = tty_cwd_read;
-    cwdDevice.base.node.operations.write = tty_cwd_write;
-    string_copy(cwdDevice.path, "/");
-    modules_register_device(MODULES_DEVICE_TYPE_KEYBOARD, &cwdDevice.base);
+    string_copy(ttyCwdDevice.base.name, "cwd");
+    string_copy(ttyCwdDevice.base.node.name, "cwd"); // TODO:REMOVE
+    ttyCwdDevice.base.node.length = TTY_CWD_SIZE;
+    ttyCwdDevice.base.node.operations.read = tty_cwd_read;
+    ttyCwdDevice.base.node.operations.write = tty_cwd_write;
+    string_copy(ttyCwdDevice.path, "/");
+    modules_register_device(MODULES_DEVICE_TYPE_KEYBOARD, &ttyCwdDevice.base);
 
     ttyDevice.vgaColorNode->operations.write(ttyDevice.vgaColorNode, 0, 1, &ttyDevice.cursorColor);
 
@@ -151,7 +151,7 @@ void tty_init()
     struct vfs_node *ttyStdoutNode = vfs_add_node("tty", TTY_CHARACTER_SIZE);
     ttyStdoutNode->operations.write = tty_write;
 
-    struct vfs_node *ttyCwdNode = vfs_add_node("cwd", 256);
+    struct vfs_node *ttyCwdNode = vfs_add_node("cwd", TTY_CWD_SIZE);
     ttyCwdNode->operations.read = tty_cwd_read;
     ttyCwdNode->operations.write = tty_cwd_write;
 

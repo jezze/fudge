@@ -20,6 +20,7 @@
 #define TTY_COLOR_RED        0x04
 #define TTY_COLOR_RED2       0x0c
 #define TTY_COLOR_WHITE      0x0f
+#define TTY_CWD_SIZE         256
 
 struct tty_device
 {
@@ -36,11 +37,11 @@ struct tty_device
 
 };
 
-struct cwd_device
+struct tty_cwd_device
 {
 
     struct modules_device base;
-    char path[256];
+    char path[TTY_CWD_SIZE];
 
 };
 
