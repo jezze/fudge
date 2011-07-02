@@ -148,16 +148,9 @@ void tty_init()
     tty_vga_clear();
 
     // TODO:REMOVE ALL BELOW
-    struct vfs_node *ttyStdoutNode = vfs_add_node("tty", TTY_CHARACTER_SIZE);
-    ttyStdoutNode->operations.write = tty_write;
-
-    struct vfs_node *ttyCwdNode = vfs_add_node("cwd", TTY_CWD_SIZE);
-    ttyCwdNode->operations.read = tty_cwd_read;
-    ttyCwdNode->operations.write = tty_cwd_write;
-
     struct vfs_node *devNode = vfs_find_root("/dev");
-    devNode->operations.write(devNode, devNode->length, 1, ttyStdoutNode);
-    devNode->operations.write(devNode, devNode->length, 1, ttyCwdNode);
+    devNode->operations.write(devNode, devNode->length, 1, &ttyDevice.base.node);
+    devNode->operations.write(devNode, devNode->length, 1, &ttyCwdDevice.base.node);
 
 }
 

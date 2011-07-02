@@ -81,6 +81,7 @@ static unsigned int rtc_read(struct vfs_node *node, unsigned int offset, unsigne
 void rtc_init()
 {
 
+    //TODO:CREATE PROPER DEVICE
     struct vfs_node *rtcNode = vfs_add_node("rtc", 0);
     rtcNode->operations.read = rtc_read;
 

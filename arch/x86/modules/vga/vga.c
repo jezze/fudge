@@ -7,6 +7,9 @@
 #include <arch/x86/modules/vga/vga.h>
 
 static struct vga_device vgaDevice;
+static struct modules_device vgaFramebufferDevice;
+static struct modules_device vgaFramebufferColorDevice;
+static struct modules_device vgaFramebufferCursorDevice;
 static unsigned char vgaFbColor;
 
 static unsigned int vga_read_framebuffer(char *buffer, unsigned int count, unsigned int offset)
@@ -115,31 +118,37 @@ static unsigned int vga_fb_cursor_node_write(struct vfs_node *node, unsigned int
 void vga_init()
 {
 
+    string_copy(vgaDevice.base.name, "vga");
     vgaDevice.read_framebuffer = vga_read_framebuffer;
     vgaDevice.write_framebuffer = vga_write_framebuffer;
     vgaDevice.set_cursor_offset = vga_set_cursor_offset;
 
-    string_copy(vgaDevice.nodeFramebuffer.name, "vga_fb");
-    vgaDevice.nodeFramebuffer.length = VGA_FB_SIZE;
-    vgaDevice.nodeFramebuffer.operations.read = vga_fb_node_read;
-    vgaDevice.nodeFramebuffer.operations.write = vga_fb_node_write;
+    string_copy(vgaFramebufferDevice.name, "vga_fb");
+    string_copy(vgaFramebufferDevice.node.name, "vga_fb"); //TODO:REMOVE
+    vgaFramebufferDevice.node.length = VGA_FB_SIZE;
+    vgaFramebufferDevice.node.operations.read = vga_fb_node_read;
+    vgaFramebufferDevice.node.operations.write = vga_fb_node_write;
+    modules_register_device(MODULES_DEVICE_TYPE_VGA, &vgaFramebufferDevice);
 
-    string_copy(vgaDevice.nodeCursorColor.name, "vga_fb_color");
-    vgaDevice.nodeCursorColor.length = 1;
-    vgaDevice.nodeCursorColor.operations.read = vga_fb_color_node_read;
-    vgaDevice.nodeCursorColor.operations.write = vga_fb_color_node_write;
+    string_copy(vgaFramebufferColorDevice.name, "vga_fb_color");
+    string_copy(vgaFramebufferColorDevice.node.name, "vga_fb_color"); //TODO:REMOVE
+    vgaFramebufferColorDevice.node.length = 1;
+    vgaFramebufferColorDevice.node.operations.read = vga_fb_color_node_read;
+    vgaFramebufferColorDevice.node.operations.write = vga_fb_color_node_write;
+    modules_register_device(MODULES_DEVICE_TYPE_VGA, &vgaFramebufferColorDevice);
 
-    string_copy(vgaDevice.nodeCursorOffset.name, "vga_fb_cursor");
-    vgaDevice.nodeCursorOffset.length = 1;
-    vgaDevice.nodeCursorOffset.operations.write = vga_fb_cursor_node_write;
+    string_copy(vgaFramebufferCursorDevice.name, "vga_fb_cursor");
+    string_copy(vgaFramebufferCursorDevice.node.name, "vga_fb_cursor"); //TODO:REMOVE
+    vgaFramebufferCursorDevice.node.length = 1;
+    vgaFramebufferCursorDevice.node.operations.write = vga_fb_cursor_node_write;
+    modules_register_device(MODULES_DEVICE_TYPE_VGA, &vgaFramebufferCursorDevice);
 
+    //TODO:REMOVE ALL BELOW
     struct vfs_node *devNode = vfs_find_root("/dev");
-    devNode->operations.write(devNode, devNode->length, 1, &vgaDevice.nodeFramebuffer);
-    devNode->operations.write(devNode, devNode->length, 1, &vgaDevice.nodeCursorColor);
-    devNode->operations.write(devNode, devNode->length, 1, &vgaDevice.nodeCursorOffset);
+    devNode->operations.write(devNode, devNode->length, 1, &vgaFramebufferDevice.node);
+    devNode->operations.write(devNode, devNode->length, 1, &vgaFramebufferColorDevice.node);
+    devNode->operations.write(devNode, devNode->length, 1, &vgaFramebufferCursorDevice.node);
 
-    string_copy(vgaDevice.base.name, "vga");
-    modules_register_device(MODULES_DEVICE_TYPE_VGA, &vgaDevice.base);
 
 }
 

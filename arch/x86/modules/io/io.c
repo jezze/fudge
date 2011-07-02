@@ -37,16 +37,16 @@ static unsigned int io_node_write(struct vfs_node *node, unsigned int offset, un
 void io_init()
 {
 
-    string_copy(ioDevice.base.node.name, "io");
+    string_copy(ioDevice.base.name, "io");
+    string_copy(ioDevice.base.node.name, "io"); // TODO:REMOVE
     ioDevice.base.node.length = 0;
     ioDevice.base.node.operations.read = io_node_read;
     ioDevice.base.node.operations.write = io_node_write;
+    modules_register_device(MODULES_DEVICE_TYPE_IO, &ioDevice.base);
 
+    // TODO:REMOVE ALL BELOW
     struct vfs_node *devNode = vfs_find_root("/dev");
     devNode->operations.write(devNode, devNode->length, 1, &ioDevice.base.node);
-
-    string_copy(ioDevice.base.name, "io");
-    modules_register_device(MODULES_DEVICE_TYPE_IO, &ioDevice.base);
 
 }
 

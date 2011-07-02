@@ -107,24 +107,23 @@ static void kbd_handler(struct isr_registers *registers)
 void kbd_init()
 {
 
+    string_copy(kbdDevice.base.name, "kbd");
+    string_copy(kbdDevice.base.node.name, "kbd"); //TODO:REMOVE
+    kbdDevice.base.node.length = 0;
+    kbdDevice.base.node.operations.read = kbd_device_read;
+    kbdDevice.base.node.operations.write = kbd_device_write;
     kbdDevice.bufferHead = 0;
     kbdDevice.bufferTail = 0;
     kbdDevice.toggleAlt = 0;
     kbdDevice.toggleCtrl = 0;
     kbdDevice.toggleShift = 0;
-
-    string_copy(kbdDevice.base.node.name, "kbd");
-    kbdDevice.base.node.length = 0;
-    kbdDevice.base.node.operations.read = kbd_device_read;
-    kbdDevice.base.node.operations.write = kbd_device_write;
-
-    struct vfs_node *devNode = vfs_find_root("/dev");
-    devNode->operations.write(devNode, devNode->length, 1, &kbdDevice.base.node);
+    modules_register_device(MODULES_DEVICE_TYPE_KEYBOARD, &kbdDevice.base);
 
     irq_register_handler(IRQ_ROUTINE_KBD, kbd_handler);
 
-    string_copy(kbdDevice.base.name, "kbd");
-    modules_register_device(MODULES_DEVICE_TYPE_KEYBOARD, &kbdDevice.base);
+    //TODO:REMOVE ALL BELOW
+    struct vfs_node *devNode = vfs_find_root("/dev");
+    devNode->operations.write(devNode, devNode->length, 1, &kbdDevice.base.node);
 
 }
 

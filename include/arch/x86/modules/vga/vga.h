@@ -14,9 +14,6 @@ struct vga_device
     unsigned int (*write_framebuffer)(char *buffer, unsigned int count, unsigned int offset);
     void (*set_cursor_color)(unsigned char fg, unsigned char bg);
     void (*set_cursor_offset)(unsigned short offset);
-    struct vfs_node nodeFramebuffer;
-    struct vfs_node nodeCursorColor;
-    struct vfs_node nodeCursorOffset;
 
 };
 
