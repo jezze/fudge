@@ -117,13 +117,6 @@ static unsigned int modules_node_read(struct vfs_node *node, unsigned int offset
 
 }
 
-static unsigned int modules_node_write(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
-{
-
-    return 0;
-
-}
-
 static struct vfs_node *modules_filesystem_lookup(struct vfs_filesystem *filesystem, char *path)
 {
 
