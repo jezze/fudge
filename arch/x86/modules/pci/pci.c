@@ -5,6 +5,8 @@
 #include <arch/x86/modules/pci/pci.h>
 
 static struct modules_bus pciBus;
+static struct pci_device pciDevices[256];
+static unsigned int pciDevicesCount;
 
 static unsigned short pci_read(unsigned short bus, unsigned short slot, unsigned short func, unsigned short offset)
 {
@@ -24,20 +26,24 @@ static unsigned short pci_read(unsigned short bus, unsigned short slot, unsigned
 
 }
 
-static unsigned short pci_check_vendor(unsigned short bus, unsigned short slot)
+static void pci_check_vendor(unsigned short bus, unsigned short slot)
 {
 
     unsigned short vendor;
-    unsigned short device;
 
-    if ((vendor == pci_read(bus, slot, 0, 0)) != 0xFFFF)
-    {
+    if ((vendor == pci_read(bus, slot, 0, 0)) == 0xFFFF)
+        return;
 
-        device = pci_read(bus, slot, 0, 2);
+    struct pci_device *device = &pciDevices[pciDevicesCount];
 
-    }
+    string_copy(device->base.name, "pci:0:0");
+    device->base.node.length = 0;
+    device->vendor = vendor;
+    device->device = pci_read(bus, slot, 0, 2);
 
-    return vendor;
+    modules_register_device(MODULES_DEVICE_TYPE_PCI, &device->base);
+
+    pciDevicesCount++;
 
 }
 
@@ -46,6 +52,15 @@ void pci_init()
 
     string_copy(pciBus.name, "pci");
     modules_register_bus(MODULES_BUS_TYPE_PCI, &pciBus);
+
+    pci_check_vendor(0, 0);
+    pci_check_vendor(0, 1);
+    pci_check_vendor(0, 2);
+    pci_check_vendor(0, 3);
+    pci_check_vendor(0, 4);
+    pci_check_vendor(0, 5);
+    pci_check_vendor(0, 6);
+    pci_check_vendor(0, 7);
 
 }
 
