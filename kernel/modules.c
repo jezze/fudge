@@ -18,10 +18,7 @@ static struct modules_bus *modulesBusses[32];
 static struct modules_device *modulesDevices[32];
 static struct modules_driver *modulesDrivers[32];
 static struct vfs_filesystem modulesFilesystem;
-static struct vfs_filesystem modulesFilesystem2;
-static struct vfs_node *modulesEntries[32];
 static struct vfs_node modulesRoot;
-static struct vfs_node modulesRoot2;
 
 void modules_register_bus(unsigned int type, struct modules_bus *bus)
 {
@@ -92,24 +89,6 @@ static unsigned int modules_node_read(struct vfs_node *node, unsigned int offset
     memory_set(buffer, 0, 1);
     unsigned int i;
 
-    for (i = 0; i < node->length; i++)
-    {
-
-        string_concat(buffer, modulesEntries[i]->name);
-        string_concat(buffer, "\n");
-
-    }
-
-    return string_length(buffer);
-
-}
-
-static unsigned int modules_node_read2(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
-{
-
-    memory_set(buffer, 0, 1);
-    unsigned int i;
-
     for (i = 0; modulesBusses[i]; i++)
     {
 
@@ -141,10 +120,7 @@ static unsigned int modules_node_read2(struct vfs_node *node, unsigned int offse
 static unsigned int modules_node_write(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    modulesEntries[offset] = (struct vfs_node *)buffer;
-    node->length++;
-
-    return count;
+    return 0;
 
 }
 
@@ -153,32 +129,13 @@ static struct vfs_node *modules_filesystem_lookup(struct vfs_filesystem *filesys
 
     unsigned int i;
 
-    for (i = 0; modulesEntries[i]; i++)
+    for (i = 0; modulesDevices[i]; i++)
     {
 
-        unsigned int count = string_length(modulesEntries[i]->name) + 1;
+        unsigned int count = string_length(modulesDevices[i]->name) + 1;
 
-        if (!memory_compare(path, modulesEntries[i]->name, count))
-            return modulesEntries[i];
-
-    }
-
-    return 0;
-
-}
-
-static struct vfs_node *modules_filesystem_lookup2(struct vfs_filesystem *filesystem, char *path)
-{
-
-    unsigned int i;
-
-    for (i = 0; modulesBusses[i]; i++)
-    {
-
-        unsigned int count = string_length(modulesBusses[i]->name) + 1;
-
-        if (!memory_compare(path, modulesBusses[i]->name, count))
-            return &modulesBusses[i]->node;
+        if (!memory_compare(path, modulesDevices[i]->name, count))
+            return &modulesDevices[i]->node;
 
     }
 
@@ -206,21 +163,12 @@ void modules_init()
 {
 
     modulesRoot.length = 0;
-    modulesRoot.operations.write = modules_node_write;
     modulesRoot.operations.read = modules_node_read;
 
     string_copy(modulesFilesystem.name, "dev");
     modulesFilesystem.root = &modulesRoot;
     modulesFilesystem.lookup = modules_filesystem_lookup;
     vfs_register_filesystem(&modulesFilesystem);
-
-    modulesRoot2.length = 0;
-    modulesRoot2.operations.read = modules_node_read2;
-
-    string_copy(modulesFilesystem2.name, "dev2");
-    modulesFilesystem2.root = &modulesRoot2;
-    modulesFilesystem2.lookup = modules_filesystem_lookup2;
-    vfs_register_filesystem(&modulesFilesystem2);
 
     modules_init_devices();
 

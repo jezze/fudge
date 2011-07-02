@@ -124,19 +124,17 @@ void tty_init()
 {
 
     string_copy(ttyDevice.base.name, "tty");
-    string_copy(ttyDevice.base.node.name, "tty"); // TODO:REMOVE
     ttyDevice.base.node.length = TTY_CHARACTER_SIZE;
     ttyDevice.base.node.operations.write = tty_write;
     ttyDevice.cursorOffset = 0;
-    ttyDevice.vgaNode = vfs_find_root("/dev/vga_fb");
-    ttyDevice.vgaColorNode = vfs_find_root("/dev/vga_fb_color");
-    ttyDevice.vgaCursorNode = vfs_find_root("/dev/vga_fb_cursor");
+    ttyDevice.vgaNode = vfs_find_root("/dev/fb");
+    ttyDevice.vgaColorNode = vfs_find_root("/dev/color");
+    ttyDevice.vgaCursorNode = vfs_find_root("/dev/cursor");
     ttyDevice.set_color = tty_set_color;
     ttyDevice.set_color(TTY_COLOR_WHITE, TTY_COLOR_BLACK);
     modules_register_device(MODULES_DEVICE_TYPE_KEYBOARD, &ttyDevice.base);
 
     string_copy(ttyCwdDevice.base.name, "cwd");
-    string_copy(ttyCwdDevice.base.node.name, "cwd"); // TODO:REMOVE
     ttyCwdDevice.base.node.length = TTY_CWD_SIZE;
     ttyCwdDevice.base.node.operations.read = tty_cwd_read;
     ttyCwdDevice.base.node.operations.write = tty_cwd_write;
@@ -146,11 +144,6 @@ void tty_init()
     ttyDevice.vgaColorNode->operations.write(ttyDevice.vgaColorNode, 0, 1, &ttyDevice.cursorColor);
 
     tty_vga_clear();
-
-    // TODO:REMOVE ALL BELOW
-    struct vfs_node *devNode = vfs_find_root("/dev");
-    devNode->operations.write(devNode, devNode->length, 1, &ttyDevice.base.node);
-    devNode->operations.write(devNode, devNode->length, 1, &ttyCwdDevice.base.node);
 
 }
 

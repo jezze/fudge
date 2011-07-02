@@ -85,8 +85,5 @@ void rtc_init()
     struct vfs_node *rtcNode = vfs_add_node("rtc", 0);
     rtcNode->operations.read = rtc_read;
 
-    struct vfs_node *devNode = vfs_find_root("/dev");
-    devNode->operations.write(devNode, devNode->length, 1, rtcNode);
-
 }
 
