@@ -156,7 +156,27 @@ void main(int argc, char *argv[])
     if (!string_compare(argv[2], "section"))
     {
 
-        unsigned int offset = (argc == 4) ? (argv[3][0] - '0') : 0;
+        unsigned int offset = 0;
+
+        if (argc == 4)
+        {
+
+            if (string_length(argv[3]) == 2)
+            {
+
+                offset += (argv[3][0] - '0') * 10;
+                offset += (argv[3][1] - '0') * 1;
+
+            }
+
+            else
+            {
+
+                offset += (argv[3][0] - '0') * 1;
+
+            }
+
+        }
 
         if (header->sectionHeaderOffset && (offset < header->sectionHeaderCount))
         {
