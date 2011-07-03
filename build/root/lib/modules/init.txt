@@ -1,5 +1,8 @@
+ata.ko
 io.ko
 kbd.ko
+pci.ko
+pit.ko
+rtc.ko
 serial.ko
-io.ko
 vga.ko

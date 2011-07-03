@@ -115,6 +115,14 @@ kernel: arch-${ARCH}
     -o root/boot/kernel
 
 ramdisk:
+	@cp ${DIR_SOURCE_ARCH_MODULES}/ata/ata.o ${DIR_IMAGE}/lib/modules/ata.ko
+	@cp ${DIR_SOURCE_ARCH_MODULES}/io/io.o ${DIR_IMAGE}/lib/modules/io.ko
+	@cp ${DIR_SOURCE_ARCH_MODULES}/kbd/kbd.o ${DIR_IMAGE}/lib/modules/kbd.ko
+	@cp ${DIR_SOURCE_ARCH_MODULES}/pci/pci.o ${DIR_IMAGE}/lib/modules/pci.ko
+	@cp ${DIR_SOURCE_ARCH_MODULES}/pit/pit.o ${DIR_IMAGE}/lib/modules/pit.ko
+	@cp ${DIR_SOURCE_ARCH_MODULES}/rtc/rtc.o ${DIR_IMAGE}/lib/modules/rtc.ko
+	@cp ${DIR_SOURCE_ARCH_MODULES}/serial/serial.o ${DIR_IMAGE}/lib/modules/serial.ko
+	@cp ${DIR_SOURCE_ARCH_MODULES}/vga/vga.o ${DIR_IMAGE}/lib/modules/vga.ko
 	@${GCC} ${GCCFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/cat.c -o ${DIR_SOURCE_BIN}/cat.o
 	@${GCC} ${GCCFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/cd.c -o ${DIR_SOURCE_BIN}/cd.o
 	@${GCC} ${GCCFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/clear.c -o ${DIR_SOURCE_BIN}/clear.o
@@ -160,6 +168,7 @@ image:
 clean:
 	@rm -f fudge.img
 	@rm -f fudge.iso
+	@rm -f root/lib/modules/*.ko
 	@rm -f root/bin/cat
 	@rm -f root/bin/cd
 	@rm -f root/bin/clear
