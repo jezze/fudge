@@ -3,11 +3,69 @@
 #include <file.h>
 #include <string.h>
 
+void write_header_type(unsigned int type)
+{
+
+    switch (type)
+    {
+
+        case ELF_TYPE_NONE:
+
+            file_write_string(FILE_STDOUT, "none");
+
+            break;
+
+        case ELF_TYPE_RELOCATABLE:
+
+            file_write_string(FILE_STDOUT, "relocatable");
+
+            break;
+
+        case ELF_TYPE_EXECUTABLE:
+
+            file_write_string(FILE_STDOUT, "executable");
+
+            break;
+
+        case ELF_TYPE_DYNAMIC:
+
+            file_write_string(FILE_STDOUT, "dynamic");
+
+            break;
+
+        case ELF_TYPE_CORE:
+
+            file_write_string(FILE_STDOUT, "core");
+
+            break;
+
+        case ELF_TYPE_LOPROC:
+
+            file_write_string(FILE_STDOUT, "loproc");
+
+            break;
+
+        case ELF_TYPE_HIPROC:
+
+            file_write_string(FILE_STDOUT, "hiproc");
+
+            break;
+
+        default:
+
+            file_write_string(FILE_STDOUT, "unknown");
+
+            break;
+
+    }
+
+}
+
 void write_header(struct elf_header *header)
 {
 
     file_write_string(FILE_STDOUT, "Type: ");
-    file_write_dec(FILE_STDOUT, header->type);
+    write_header_type(header->type);
     file_write_string(FILE_STDOUT, "\nMachine: ");
     file_write_dec(FILE_STDOUT, header->machine);
     file_write_string(FILE_STDOUT, "\nVersion: ");
@@ -20,23 +78,23 @@ void write_header(struct elf_header *header)
     file_write_dec(FILE_STDOUT, header->size);
     file_write_string(FILE_STDOUT, "\n");
 
-    file_write_string(FILE_STDOUT, "Program header: ");
-    file_write_string(FILE_STDOUT, "{off: ");
+    file_write_string(FILE_STDOUT, "Program header: {");
+    file_write_string(FILE_STDOUT, "o:");
     file_write_dec(FILE_STDOUT, header->programHeaderOffset);
-    file_write_string(FILE_STDOUT, "; size: ");
+    file_write_string(FILE_STDOUT, " s:");
     file_write_dec(FILE_STDOUT, header->programHeaderSize);
-    file_write_string(FILE_STDOUT, "; count: ");
+    file_write_string(FILE_STDOUT, " c:");
     file_write_dec(FILE_STDOUT, header->programHeaderCount);
     file_write_string(FILE_STDOUT, "}\n");
 
-    file_write_string(FILE_STDOUT, "Section header: ");
-    file_write_string(FILE_STDOUT, "{off: ");
+    file_write_string(FILE_STDOUT, "Section header: {");
+    file_write_string(FILE_STDOUT, "o:");
     file_write_dec(FILE_STDOUT, header->sectionHeaderOffset);
-    file_write_string(FILE_STDOUT, "; size: ");
+    file_write_string(FILE_STDOUT, " s:");
     file_write_dec(FILE_STDOUT, header->sectionHeaderSize);
-    file_write_string(FILE_STDOUT, "; count: ");
+    file_write_string(FILE_STDOUT, " c:");
     file_write_dec(FILE_STDOUT, header->sectionHeaderCount);
-    file_write_string(FILE_STDOUT, "; string index: ");
+    file_write_string(FILE_STDOUT, " si:");
     file_write_dec(FILE_STDOUT, header->sectionHeaderStringIndex);
     file_write_string(FILE_STDOUT, "}\n");
 
@@ -65,33 +123,6 @@ void write_program_header(struct elf_program_header *header)
 
 }
 
-void write_section_header(struct elf_section_header *header)
-{
-
-    file_write_string(FILE_STDOUT, "Name: ");
-    file_write_dec(FILE_STDOUT, header->name);
-    file_write_string(FILE_STDOUT, "\nType: ");
-    file_write_dec(FILE_STDOUT, header->type);
-    file_write_string(FILE_STDOUT, "\nFlags: ");
-    file_write_dec(FILE_STDOUT, header->flags);
-    file_write_string(FILE_STDOUT, "\nAddress: ");
-    file_write_hex(FILE_STDOUT, header->address);
-    file_write_string(FILE_STDOUT, "\nOffset: ");
-    file_write_dec(FILE_STDOUT, header->offset);
-    file_write_string(FILE_STDOUT, "\nSize: ");
-    file_write_dec(FILE_STDOUT, header->size);
-    file_write_string(FILE_STDOUT, "\nLink: ");
-    file_write_dec(FILE_STDOUT, header->link);
-    file_write_string(FILE_STDOUT, "\nInfo: ");
-    file_write_dec(FILE_STDOUT, header->info);
-    file_write_string(FILE_STDOUT, "\nAlign: ");
-    file_write_dec(FILE_STDOUT, header->align);
-    file_write_string(FILE_STDOUT, "\nEntry: ");
-    file_write_dec(FILE_STDOUT, header->entrySize);
-    file_write_string(FILE_STDOUT, "\n");
-
-}
-
 unsigned int get_table(unsigned int address)
 {
 
@@ -113,6 +144,145 @@ unsigned int get_table(unsigned int address)
 
 }
 
+void write_section_header_type(unsigned int type)
+{
+
+    switch (type)
+    {
+
+        case ELF_SECTION_TYPE_NULL:
+
+            file_write_string(FILE_STDOUT, "null");
+
+            break;
+
+        case ELF_SECTION_TYPE_PROGBITS:
+
+            file_write_string(FILE_STDOUT, "progbits");
+
+            break;
+
+        case ELF_SECTION_TYPE_SYMTAB:
+
+            file_write_string(FILE_STDOUT, "symtab");
+
+            break;
+
+        case ELF_SECTION_TYPE_STRTAB:
+
+            file_write_string(FILE_STDOUT, "strtab");
+
+            break;
+
+        case ELF_SECTION_TYPE_RELA:
+
+            file_write_string(FILE_STDOUT, "rela");
+
+            break;
+
+        case ELF_SECTION_TYPE_HASH:
+
+            file_write_string(FILE_STDOUT, "hash");
+
+            break;
+
+        case ELF_SECTION_TYPE_DYNAMIC:
+
+            file_write_string(FILE_STDOUT, "dynamic");
+
+            break;
+
+        case ELF_SECTION_TYPE_NOTE:
+
+            file_write_string(FILE_STDOUT, "note");
+
+            break;
+
+        case ELF_SECTION_TYPE_NOBITS:
+
+            file_write_string(FILE_STDOUT, "nobits");
+
+            break;
+
+        case ELF_SECTION_TYPE_REL:
+
+            file_write_string(FILE_STDOUT, "rel");
+
+            break;
+
+        case ELF_SECTION_TYPE_SHLIB:
+
+            file_write_string(FILE_STDOUT, "shlib");
+
+            break;
+
+        case ELF_SECTION_TYPE_DYNSYM:
+
+            file_write_string(FILE_STDOUT, "dynsym");
+
+            break;
+
+        case ELF_SECTION_TYPE_LOPROC:
+
+            file_write_string(FILE_STDOUT, "loproc");
+
+            break;
+
+        case ELF_SECTION_TYPE_HIPROC:
+
+            file_write_string(FILE_STDOUT, "hiproc");
+
+            break;
+
+        case ELF_SECTION_TYPE_LOUSER:
+
+            file_write_string(FILE_STDOUT, "louser");
+
+            break;
+
+        case ELF_SECTION_TYPE_HIUSER:
+
+            file_write_string(FILE_STDOUT, "hiuser");
+
+            break;
+
+        default:
+
+            file_write_string(FILE_STDOUT, "unknown");
+
+            break;
+
+    }
+
+}
+
+void write_section_header(struct elf_section_header *header)
+{
+
+    file_write_string(FILE_STDOUT, "Name: ");
+    file_write_dec(FILE_STDOUT, header->name);
+    file_write_string(FILE_STDOUT, "\nType: ");
+    write_section_header_type(header->type);
+    file_write_string(FILE_STDOUT, "\nFlags: ");
+    file_write_dec(FILE_STDOUT, header->flags);
+    file_write_string(FILE_STDOUT, "\nAddress: ");
+    file_write_hex(FILE_STDOUT, header->address);
+    file_write_string(FILE_STDOUT, "\nOffset: ");
+    file_write_dec(FILE_STDOUT, header->offset);
+    file_write_string(FILE_STDOUT, "\nSize: ");
+    file_write_dec(FILE_STDOUT, header->size);
+    file_write_string(FILE_STDOUT, "\nLink: ");
+    file_write_dec(FILE_STDOUT, header->link);
+    file_write_string(FILE_STDOUT, "\nInfo: ");
+    file_write_dec(FILE_STDOUT, header->info);
+    file_write_string(FILE_STDOUT, "\nAlign: ");
+    file_write_dec(FILE_STDOUT, header->align);
+    file_write_string(FILE_STDOUT, "\nEntry Size: ");
+    file_write_dec(FILE_STDOUT, header->entrySize);
+    file_write_string(FILE_STDOUT, "\n");
+
+}
+
 void write_section_headers(unsigned int address)
 {
 
@@ -126,6 +296,52 @@ void write_section_headers(unsigned int address)
     {
 
         struct elf_section_header *sheader = (struct elf_section_header *)(address + header->sectionHeaderOffset + i * header->sectionHeaderSize);
+
+        file_write_string(FILE_STDOUT, "sh");
+        file_write_dec(FILE_STDOUT, i);
+        file_write_string(FILE_STDOUT, ": {");
+        file_write_string(FILE_STDOUT, "n:");
+        file_write_dec(FILE_STDOUT, sheader->name);
+        file_write_string(FILE_STDOUT, " t:");
+        write_section_header_type(sheader->type);
+        file_write_string(FILE_STDOUT, " f:");
+        file_write_dec(FILE_STDOUT, sheader->flags);
+        file_write_string(FILE_STDOUT, " ad: 0x");
+        file_write_hex(FILE_STDOUT, sheader->address);
+        file_write_string(FILE_STDOUT, " o:");
+        file_write_dec(FILE_STDOUT, sheader->offset);
+        file_write_string(FILE_STDOUT, " s:");
+        file_write_dec(FILE_STDOUT, sheader->size);
+        file_write_string(FILE_STDOUT, " l:");
+        file_write_dec(FILE_STDOUT, sheader->link);
+        file_write_string(FILE_STDOUT, " i:");
+        file_write_dec(FILE_STDOUT, sheader->info);
+        file_write_string(FILE_STDOUT, " al:");
+        file_write_dec(FILE_STDOUT, sheader->align);
+        file_write_string(FILE_STDOUT, " es:");
+        file_write_dec(FILE_STDOUT, sheader->entrySize);
+        file_write_string(FILE_STDOUT, "}\n");
+
+    }
+
+}
+
+void write_relocation_table(unsigned int address)
+{
+
+    unsigned int table = get_table(address);
+
+    struct elf_header *header = (struct elf_header *)address;
+
+    unsigned int i;
+
+    for (i = 0; i < header->sectionHeaderCount; i++)
+    {
+
+        struct elf_section_header *sheader = (struct elf_section_header *)(address + header->sectionHeaderOffset + i * header->sectionHeaderSize);
+
+        if (sheader->type != 9)
+            continue;
 
         file_write_string(FILE_STDOUT, "Section ");
         file_write_dec(FILE_STDOUT, i);
@@ -145,6 +361,8 @@ void write_section_headers(unsigned int address)
     }
 
 }
+
+
 
 void main(int argc, char *argv[])
 {
@@ -178,7 +396,6 @@ void main(int argc, char *argv[])
     if (argc == 2)
     {
 
-        file_write_string(FILE_STDOUT, "*** ELF header ***\n");
         write_header(header);
         write_section_headers(content);
 
@@ -194,7 +411,6 @@ void main(int argc, char *argv[])
 
             struct elf_program_header *pHeader = (struct elf_program_header *)(content + header->programHeaderOffset);
 
-            file_write_string(FILE_STDOUT, "*** ELF program header ***\n");
             write_program_header(pHeader);
 
         }
@@ -238,10 +454,24 @@ void main(int argc, char *argv[])
 
             struct elf_section_header *sHeader = (struct elf_section_header *)(content + header->sectionHeaderOffset + offset * sizeof (struct elf_section_header));
 
-            file_write_string(FILE_STDOUT, "*** ELF section header ***\n");
             write_section_header(sHeader);
 
         }
+
+        else
+        {
+
+            file_write_string(FILE_STDOUT, "No section header\n");
+
+        }
+
+    }
+
+    if (!string_compare(argv[2], "relocate"))
+    {
+
+
+
 
     }
 
