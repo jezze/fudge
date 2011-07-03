@@ -70,7 +70,7 @@ struct elf_header
     unsigned int programHeaderOffset;
     unsigned int sectionHeaderOffset;
     unsigned int flags;
-    unsigned short headerSize;
+    unsigned short size;
     unsigned short programHeaderEntrySize;
     unsigned short programHeaderCount;
     unsigned short sectionHeaderEntrySize;
