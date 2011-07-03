@@ -41,7 +41,7 @@ static void serial_outb(unsigned short port, char c)
 
 }
 
-static unsigned int serial_read(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int serial_device_read(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
     char *b = (char *)buffer;
@@ -55,7 +55,7 @@ static unsigned int serial_read(struct vfs_node *node, unsigned int offset, unsi
 
 }
 
-static unsigned int serial_write(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int serial_device_write(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
     char *b = (char *)buffer;
@@ -82,8 +82,8 @@ void serial_init()
 
     string_copy(serialDevice1.base.name, "serial");
     serialDevice1.base.node.length = 0;
-    serialDevice1.base.node.operations.read = serial_read;
-    serialDevice1.base.node.operations.write = serial_write;
+    serialDevice1.base.node.operations.read = serial_device_read;
+    serialDevice1.base.node.operations.write = serial_device_write;
     serialDevice1.port = SERIAL_COM1;
     modules_register_device(MODULES_DEVICE_TYPE_SERIAL, &serialDevice1.base);
 

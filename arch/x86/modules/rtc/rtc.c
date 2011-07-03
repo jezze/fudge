@@ -24,7 +24,7 @@ static void rtc_ready()
 
 }
 
-static unsigned int rtc_read(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int rtc_device_read(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
     rtc_ready();

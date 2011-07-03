@@ -6,7 +6,7 @@
 
 static struct io_device ioDevice;
 
-static unsigned int io_node_read(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int io_device_read(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
     char *b = (char *)buffer;
@@ -20,7 +20,7 @@ static unsigned int io_node_read(struct vfs_node *node, unsigned int offset, uns
 
 }
 
-static unsigned int io_node_write(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int io_device_write(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
     char *b = (char *)buffer;
@@ -39,8 +39,8 @@ void io_init()
 
     string_copy(ioDevice.base.name, "io");
     ioDevice.base.node.length = 0;
-    ioDevice.base.node.operations.read = io_node_read;
-    ioDevice.base.node.operations.write = io_node_write;
+    ioDevice.base.node.operations.read = io_device_read;
+    ioDevice.base.node.operations.write = io_device_write;
     modules_register_device(MODULES_DEVICE_TYPE_IO, &ioDevice.base);
 
 }

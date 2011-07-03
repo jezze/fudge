@@ -76,7 +76,14 @@ static void tty_vga_clear()
 
 }
 
-static unsigned int tty_write(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
+static void tty_set_color(unsigned char fg, unsigned char bg)
+{
+
+    ttyDevice.cursorColor = (bg << 4) | (fg & 0x0F);
+
+}
+
+static unsigned int tty_device_write(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
     unsigned int i;
@@ -91,7 +98,7 @@ static unsigned int tty_write(struct vfs_node *node, unsigned int offset, unsign
 
 }
 
-static unsigned int tty_cwd_read(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int tty_cwd_device_read(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
     count = string_length(ttyCwdDevice.path) - offset;
@@ -102,7 +109,7 @@ static unsigned int tty_cwd_read(struct vfs_node *node, unsigned int offset, uns
 
 }
 
-static unsigned int tty_cwd_write(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int tty_cwd_device_write(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
     count = string_length(ttyCwdDevice.path) - offset;
@@ -113,19 +120,12 @@ static unsigned int tty_cwd_write(struct vfs_node *node, unsigned int offset, un
 
 }
 
-static void tty_set_color(unsigned char fg, unsigned char bg)
-{
-
-    ttyDevice.cursorColor = (bg << 4) | (fg & 0x0F);
-
-}
-
 void tty_init()
 {
 
     string_copy(ttyDevice.base.name, "tty");
     ttyDevice.base.node.length = TTY_CHARACTER_SIZE;
-    ttyDevice.base.node.operations.write = tty_write;
+    ttyDevice.base.node.operations.write = tty_device_write;
     ttyDevice.cursorOffset = 0;
     ttyDevice.vgaNode = vfs_find_root("/dev/fb");
     ttyDevice.vgaColorNode = vfs_find_root("/dev/color");
@@ -136,8 +136,8 @@ void tty_init()
 
     string_copy(ttyCwdDevice.base.name, "cwd");
     ttyCwdDevice.base.node.length = TTY_CWD_SIZE;
-    ttyCwdDevice.base.node.operations.read = tty_cwd_read;
-    ttyCwdDevice.base.node.operations.write = tty_cwd_write;
+    ttyCwdDevice.base.node.operations.read = tty_cwd_device_read;
+    ttyCwdDevice.base.node.operations.write = tty_cwd_device_write;
     string_copy(ttyCwdDevice.path, "/");
     modules_register_device(MODULES_DEVICE_TYPE_KEYBOARD, &ttyCwdDevice.base);
 
