@@ -7,10 +7,104 @@
 
 static struct modules_bus ataBusPrimary;
 static struct modules_bus ataBusSecondary;
-static struct ata_device ataPrimaryMaster;
-static struct ata_device ataPrimarySlave;
-static struct ata_device ataSecondaryMaster;
-static struct ata_device ataSecondarySlave;
+static struct ata_device ataDevices[4];
+static unsigned int ataDevicesCount;
+
+static struct ata_device *ata_get_device(struct vfs_node *node)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < ataDevicesCount; i++)
+    {
+
+        if (&ataDevices[i].base.node == node)
+            return &ataDevices[i];
+
+    }
+
+    return 0;
+
+}
+
+static unsigned int ata_write_num(char *out, unsigned int num, unsigned int base)
+{
+
+    if (!num)
+    {
+
+        out[0] = '0';
+
+        return 1;
+
+    }
+
+    char buffer[32] = {0};
+
+    int i;
+
+    for (i = 30; num && i; --i, num /= base)
+        buffer[i] = "0123456789abcdef"[num % base];
+
+    string_copy(out, buffer + i + 1);
+
+    return 32 - i;
+
+}
+
+static unsigned int ata_device_read(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    struct ata_device *device = ata_get_device(node);
+
+    if (!device)
+        return 0;
+
+    char num[32];
+
+    string_copy(buffer, "Type: ");
+
+    switch (device->type)
+    {
+
+        case ATA_DEVICE_TYPE_ATA:
+
+            string_concat(buffer, "ATA\n");
+
+            break;
+
+        case ATA_DEVICE_TYPE_ATAPI:
+
+            string_concat(buffer, "ATAPI\n");
+
+            break;
+
+        case ATA_DEVICE_TYPE_SATA:
+
+            string_concat(buffer, "SATA\n");
+
+            break;
+
+        case ATA_DEVICE_TYPE_SATAPI:
+
+            string_concat(buffer, "SATAPI\n");
+
+            break;
+
+        default:
+
+            string_concat(buffer, "UNKNOWN\n");
+
+            break;
+
+    }
+
+    string_concat(buffer, "Position: ");
+    string_concat(buffer, "\n");
+
+    return string_length(buffer);
+
+}
 
 static void ata_sleep(struct ata_device *device)
 {
@@ -126,7 +220,7 @@ static unsigned char ata_identify(struct ata_device *device)
 
 }
 
-void ata_init()
+void ata_init_busses()
 {
 
     string_copy(ataBusPrimary.name, "ata:0");
@@ -135,33 +229,56 @@ void ata_init()
     string_copy(ataBusSecondary.name, "ata:1");
     modules_register_bus(MODULES_BUS_TYPE_ATA, &ataBusSecondary);
 
-    string_copy(ataPrimaryMaster.base.name, "ata:0:0");
-    ataPrimaryMaster.control = ATA_PRIMARY_MASTER_CONTROL;
-    ataPrimaryMaster.data = ATA_PRIMARY_MASTER_DATA;
+}
 
-    if (ata_identify(&ataPrimaryMaster))
-        modules_register_device(MODULES_DEVICE_TYPE_ATA, &ataPrimaryMaster.base);
+void ata_init_devices()
+{
 
-    string_copy(ataPrimarySlave.base.name, "ata:0:1");
-    ataPrimarySlave.control = ATA_PRIMARY_SLAVE_CONTROL;
-    ataPrimarySlave.data = ATA_PRIMARY_SLAVE_DATA;
+    ataDevicesCount = 4;
 
-    if (ata_identify(&ataPrimarySlave))
-        modules_register_device(MODULES_DEVICE_TYPE_ATA, &ataPrimarySlave.base);
+    string_copy(ataDevices[0].base.name, "ata:0:0");
+    ataDevices[0].base.node.length = 0;
+    ataDevices[0].base.node.operations.read = ata_device_read;
+    ataDevices[0].control = ATA_PRIMARY_MASTER_CONTROL;
+    ataDevices[0].data = ATA_PRIMARY_MASTER_DATA;
 
-    string_copy(ataSecondaryMaster.base.name, "ata:1:0");
-    ataSecondaryMaster.control = ATA_SECONDARY_MASTER_CONTROL;
-    ataSecondaryMaster.data = ATA_SECONDARY_MASTER_DATA;
+    if (ata_identify(&ataDevices[0]))
+        modules_register_device(MODULES_DEVICE_TYPE_ATA, &ataDevices[0].base);
 
-    if (ata_identify(&ataSecondaryMaster))
-        modules_register_device(MODULES_DEVICE_TYPE_ATA, &ataSecondaryMaster.base);
+    string_copy(ataDevices[1].base.name, "ata:0:1");
+    ataDevices[1].base.node.length = 0;
+    ataDevices[1].base.node.operations.read = ata_device_read;
+    ataDevices[1].control = ATA_PRIMARY_SLAVE_CONTROL;
+    ataDevices[1].data = ATA_PRIMARY_SLAVE_DATA;
 
-    string_copy(ataSecondarySlave.base.name, "ata:1:1");
-    ataSecondarySlave.control = ATA_SECONDARY_SLAVE_CONTROL;
-    ataSecondarySlave.data = ATA_SECONDARY_SLAVE_DATA;
+    if (ata_identify(&ataDevices[1]))
+        modules_register_device(MODULES_DEVICE_TYPE_ATA, &ataDevices[1].base);
 
-    if (ata_identify(&ataSecondarySlave))
-        modules_register_device(MODULES_DEVICE_TYPE_ATA, &ataSecondarySlave.base);
+    string_copy(ataDevices[2].base.name, "ata:1:0");
+    ataDevices[2].base.node.length = 0;
+    ataDevices[2].base.node.operations.read = ata_device_read;
+    ataDevices[2].control = ATA_SECONDARY_MASTER_CONTROL;
+    ataDevices[2].data = ATA_SECONDARY_MASTER_DATA;
+
+    if (ata_identify(&ataDevices[2]))
+        modules_register_device(MODULES_DEVICE_TYPE_ATA, &ataDevices[2].base);
+
+    string_copy(ataDevices[3].base.name, "ata:1:1");
+    ataDevices[3].base.node.length = 0;
+    ataDevices[3].base.node.operations.read = ata_device_read;
+    ataDevices[3].control = ATA_SECONDARY_SLAVE_CONTROL;
+    ataDevices[3].data = ATA_SECONDARY_SLAVE_DATA;
+
+    if (ata_identify(&ataDevices[3]))
+        modules_register_device(MODULES_DEVICE_TYPE_ATA, &ataDevices[3].base);
+
+}
+
+void ata_init()
+{
+
+    ata_init_busses();
+    ata_init_devices();
 
 }
 

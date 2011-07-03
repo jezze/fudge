@@ -5,7 +5,7 @@
 #include <arch/x86/modules/pci/pci.h>
 
 static struct modules_bus pciBus;
-static struct pci_device pciDevices[256];
+static struct pci_device pciDevices[16];
 static unsigned int pciDevicesCount;
 
 static struct pci_device *pci_get_device(struct vfs_node *node)
@@ -25,7 +25,7 @@ static struct pci_device *pci_get_device(struct vfs_node *node)
 
 }
 
-unsigned int pci_write_num(char *out, unsigned int num, unsigned int base)
+static unsigned int pci_write_num(char *out, unsigned int num, unsigned int base)
 {
 
     if (!num)
@@ -49,8 +49,6 @@ unsigned int pci_write_num(char *out, unsigned int num, unsigned int base)
     return 32 - i;
 
 }
-
-
 
 static unsigned int pci_device_read(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
@@ -86,8 +84,6 @@ static unsigned int pci_device_read(struct vfs_node *node, unsigned int offset, 
     pci_write_num(num, device->interface, 16);
     string_concat(buffer, num);
     string_concat(buffer, "\n");
-
-
 
     return string_length(buffer);
 
@@ -141,16 +137,31 @@ static void pci_check_vendor(unsigned short bus, unsigned short slot)
 
 }
 
-void pci_init()
+static void pci_init_busses()
 {
 
     string_copy(pciBus.name, "pci:0");
     modules_register_bus(MODULES_BUS_TYPE_PCI, &pciBus);
 
+}
+
+static void pci_init_devices()
+{
+
+    pciDevicesCount = 0;
+
     pci_check_vendor(0, 0);
     pci_check_vendor(0, 1);
     pci_check_vendor(0, 2);
     pci_check_vendor(0, 3);
+
+}
+
+void pci_init()
+{
+
+    pci_init_busses();
+    pci_init_devices();
 
 }
 
