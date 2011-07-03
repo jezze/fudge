@@ -69,7 +69,7 @@ void write_section_header(struct elf_section_header *header)
 {
 
     file_write_string(FILE_STDOUT, "Name: ");
-//    file_write_string(FILE_STDOUT, (char *)header->name);
+    file_write_dec(FILE_STDOUT, header->name);
     file_write_string(FILE_STDOUT, "\nType: ");
     file_write_dec(FILE_STDOUT, header->type);
     file_write_string(FILE_STDOUT, "\nFlags: ");
@@ -95,7 +95,7 @@ void write_section_header(struct elf_section_header *header)
 void main(int argc, char *argv[])
 {
 
-    if (argc != 2)
+    if (argc < 2)
         return;
 
     char path[256];
@@ -106,43 +106,69 @@ void main(int argc, char *argv[])
 
     string_concat(path, argv[1]);
 
+    char *content = 0x00360000;
+
     int file = file_open(path);
 
     if (file == -1)
         return;
 
-    struct elf_header header;
-    file_read(file, sizeof (struct elf_header), &header);
+    file_read(file, 0x4000, content);
+    file_close(file);
 
-    if (header.identify[0] != ELF_IDENTITY_MAGIC0)
+    struct elf_header *header = (struct elf_header *)content;
+
+    if (header->identify[0] != ELF_IDENTITY_MAGIC0)
         return;
 
-    file_write_string(FILE_STDOUT, "*** ELF header ***\n");
-    write_header(&header);
-
-    if (header.programHeaderOffset)
+    if (argc == 2)
     {
 
-        struct elf_program_header pHeader;
-        file_read(file, sizeof (struct elf_program_header), &pHeader);
+        file_write_string(FILE_STDOUT, "*** ELF header ***\n");
+        write_header(header);
 
-        file_write_string(FILE_STDOUT, "*** ELF program header ***\n");
-        write_program_header(&pHeader);
+        return;
 
     }
 
-    if (header.sectionHeaderOffset)
+    if (!string_compare(argv[2], "program"))
     {
 
-        struct elf_section_header sHeader;
-        file_read(file, sizeof (struct elf_section_header), &sHeader);
+        if (header->programHeaderOffset)
+        {
 
-        file_write_string(FILE_STDOUT, "*** ELF section header ***\n");
-        write_section_header(&sHeader);
+            struct elf_program_header *pHeader = (struct elf_program_header *)(content + header->programHeaderOffset);
+
+            file_write_string(FILE_STDOUT, "*** ELF program header ***\n");
+            write_program_header(pHeader);
+
+        }
+
+        else
+        {
+
+            file_write_string(FILE_STDOUT, "No program header\n");
+
+        }
 
     }
 
-    file_close(file);
+    if (!string_compare(argv[2], "section"))
+    {
+
+        unsigned int offset = (argc == 4) ? (argv[3][0] - '0') : 0;
+
+        if (header->sectionHeaderOffset && (offset < header->sectionHeaderCount))
+        {
+
+            struct elf_section_header *sHeader = (struct elf_section_header *)(content + header->sectionHeaderOffset + offset * sizeof (struct elf_section_header));
+
+            file_write_string(FILE_STDOUT, "*** ELF section header ***\n");
+            write_section_header(sHeader);
+
+        }
+
+    }
 
 }
 
