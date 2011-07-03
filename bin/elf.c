@@ -21,19 +21,19 @@ void write_header(struct elf_header *header)
     file_write_string(FILE_STDOUT, "\n");
 
     file_write_string(FILE_STDOUT, "Program header: ");
-    file_write_string(FILE_STDOUT, "{offset: ");
+    file_write_string(FILE_STDOUT, "{off: ");
     file_write_dec(FILE_STDOUT, header->programHeaderOffset);
-    file_write_string(FILE_STDOUT, "; entry size: ");
-    file_write_dec(FILE_STDOUT, header->programHeaderEntrySize);
+    file_write_string(FILE_STDOUT, "; size: ");
+    file_write_dec(FILE_STDOUT, header->programHeaderSize);
     file_write_string(FILE_STDOUT, "; count: ");
     file_write_dec(FILE_STDOUT, header->programHeaderCount);
     file_write_string(FILE_STDOUT, "}\n");
 
     file_write_string(FILE_STDOUT, "Section header: ");
-    file_write_string(FILE_STDOUT, "{offset: ");
+    file_write_string(FILE_STDOUT, "{off: ");
     file_write_dec(FILE_STDOUT, header->sectionHeaderOffset);
-    file_write_string(FILE_STDOUT, "; entry size: ");
-    file_write_dec(FILE_STDOUT, header->sectionHeaderEntrySize);
+    file_write_string(FILE_STDOUT, "; size: ");
+    file_write_dec(FILE_STDOUT, header->sectionHeaderSize);
     file_write_string(FILE_STDOUT, "; count: ");
     file_write_dec(FILE_STDOUT, header->sectionHeaderCount);
     file_write_string(FILE_STDOUT, "; string index: ");
@@ -92,6 +92,60 @@ void write_section_header(struct elf_section_header *header)
 
 }
 
+unsigned int get_table(unsigned int address)
+{
+
+    struct elf_header *header = (struct elf_header *)address;
+
+    unsigned int i;
+
+    for (i = 0; i < header->sectionHeaderCount; i++)
+    {
+
+        struct elf_section_header *sheader = (struct elf_section_header *)(address + header->sectionHeaderOffset + i * header->sectionHeaderSize);
+
+        if (sheader->type == 3)
+            return sheader->offset;
+
+    }
+
+    return 0;
+
+}
+
+void write_section_headers(unsigned int address)
+{
+
+    unsigned int table = get_table(address);
+
+    struct elf_header *header = (struct elf_header *)address;
+
+    unsigned int i;
+
+    for (i = 0; i < header->sectionHeaderCount; i++)
+    {
+
+        struct elf_section_header *sheader = (struct elf_section_header *)(address + header->sectionHeaderOffset + i * header->sectionHeaderSize);
+
+        file_write_string(FILE_STDOUT, "Section ");
+        file_write_dec(FILE_STDOUT, i);
+        file_write_string(FILE_STDOUT, ": {");
+        file_write_string(FILE_STDOUT, "name: ");
+        file_write_dec(FILE_STDOUT, sheader->name);
+        file_write_string(FILE_STDOUT, "; type: ");
+        file_write_dec(FILE_STDOUT, sheader->type);
+        file_write_string(FILE_STDOUT, "; flags: ");
+        file_write_dec(FILE_STDOUT, sheader->flags);
+        file_write_string(FILE_STDOUT, "; addr: ");
+        file_write_hex(FILE_STDOUT, sheader->address);
+        file_write_string(FILE_STDOUT, "; off: ");
+        file_write_dec(FILE_STDOUT, sheader->offset);
+        file_write_string(FILE_STDOUT, "}\n");
+
+    }
+
+}
+
 void main(int argc, char *argv[])
 {
 
@@ -106,14 +160,14 @@ void main(int argc, char *argv[])
 
     string_concat(path, argv[1]);
 
-    char *content = 0x00360000;
+    unsigned int content = 0x00360000;
 
     int file = file_open(path);
 
     if (file == -1)
         return;
 
-    file_read(file, 0x4000, content);
+    file_read(file, 0x4000, (unsigned int *)content);
     file_close(file);
 
     struct elf_header *header = (struct elf_header *)content;
@@ -126,6 +180,7 @@ void main(int argc, char *argv[])
 
         file_write_string(FILE_STDOUT, "*** ELF header ***\n");
         write_header(header);
+        write_section_headers(content);
 
         return;
 

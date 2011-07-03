@@ -71,9 +71,9 @@ struct elf_header
     unsigned int sectionHeaderOffset;
     unsigned int flags;
     unsigned short size;
-    unsigned short programHeaderEntrySize;
+    unsigned short programHeaderSize;
     unsigned short programHeaderCount;
-    unsigned short sectionHeaderEntrySize;
+    unsigned short sectionHeaderSize;
     unsigned short sectionHeaderCount;
     unsigned short sectionHeaderStringIndex;
 
