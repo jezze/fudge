@@ -3,6 +3,10 @@
 #include <file.h>
 #include <string.h>
 
+static struct elf_header *h;
+static struct elf_section_headers *sh[32];
+static struct elf_symbol *sym[64];
+
 void write_header_type(unsigned int type)
 {
 
@@ -120,27 +124,6 @@ void write_program_header(struct elf_program_header *header)
     file_write_string(FILE_STDOUT, "\nAlign: ");
     file_write_dec(FILE_STDOUT, header->align);
     file_write_string(FILE_STDOUT, "\n");
-
-}
-
-unsigned int get_table(unsigned int address)
-{
-
-    struct elf_header *header = (struct elf_header *)address;
-
-    unsigned int i;
-
-    for (i = 0; i < header->sectionHeaderCount; i++)
-    {
-
-        struct elf_section_header *sheader = (struct elf_section_header *)(address + header->sectionHeaderOffset + i * header->sectionHeaderSize);
-
-        if (sheader->type == 3)
-            return sheader->offset;
-
-    }
-
-    return 0;
 
 }
 
@@ -286,8 +269,6 @@ void write_section_header(struct elf_section_header *header)
 void write_section_headers(unsigned int address)
 {
 
-    unsigned int table = get_table(address);
-
     struct elf_header *header = (struct elf_header *)address;
 
     unsigned int i;
@@ -329,8 +310,6 @@ void write_section_headers(unsigned int address)
 void write_relocation_table(unsigned int address)
 {
 
-    unsigned int table = get_table(address);
-
     struct elf_header *header = (struct elf_header *)address;
 
     unsigned int i;
@@ -356,13 +335,83 @@ void write_relocation_table(unsigned int address)
         file_write_hex(FILE_STDOUT, sheader->address);
         file_write_string(FILE_STDOUT, "; off: ");
         file_write_dec(FILE_STDOUT, sheader->offset);
+        file_write_string(FILE_STDOUT, "; esi: ");
+        file_write_dec(FILE_STDOUT, sheader->entrySize);
         file_write_string(FILE_STDOUT, "}\n");
+
+        struct elf_relocate *rheader = (struct elf_relocate *)(address + sheader->offset);
+
+        file_write_string(FILE_STDOUT, "offset:");
+        file_write_dec(FILE_STDOUT, rheader->offset);
+        file_write_string(FILE_STDOUT, " info:");
+        file_write_dec(FILE_STDOUT, rheader->info);
+        file_write_string(FILE_STDOUT, " \n");
 
     }
 
 }
 
+void parse_header(unsigned int address)
+{
 
+    h = (struct elf_header *)address;
+
+/*
+    unsigned int i;
+
+    for (i = 0; i < h->sectionHeaderCount; i++)
+        sh[i] = (struct elf_section_header *)(address + h->sectionHeaderOffset + h->sectionHeaderSize * i);
+*/
+
+}
+
+void write_symbol_table(unsigned int address)
+{
+
+    struct elf_header *header = (struct elf_header *)address;
+
+    unsigned int i;
+
+    for (i = 0; i < header->sectionHeaderCount; i++)
+    {
+
+        struct elf_section_header *sheader = (struct elf_section_header *)(address + header->sectionHeaderOffset + i * header->sectionHeaderSize);
+
+        if (sheader->type != 2)
+            continue;
+
+        file_write_string(FILE_STDOUT, "Section ");
+        file_write_dec(FILE_STDOUT, i);
+        file_write_string(FILE_STDOUT, "\n");
+
+        unsigned int j;
+
+        unsigned int max = sheader->size / sheader->entrySize;
+
+        for (j = 0; j < max; j++)
+        {
+
+            struct elf_symbol *symbols = (struct elf_symbol *)(address + sheader->offset + j * sheader->entrySize);
+
+            file_write_string(FILE_STDOUT, "n:");
+            file_write_dec(FILE_STDOUT, symbols->name);
+            file_write_string(FILE_STDOUT, " v:");
+            file_write_dec(FILE_STDOUT, symbols->value);
+            file_write_string(FILE_STDOUT, " s:");
+            file_write_dec(FILE_STDOUT, symbols->size);
+            file_write_string(FILE_STDOUT, " i:");
+            file_write_dec(FILE_STDOUT, symbols->info);
+            file_write_string(FILE_STDOUT, " o:");
+            file_write_dec(FILE_STDOUT, symbols->other);
+            file_write_string(FILE_STDOUT, " x:");
+            file_write_dec(FILE_STDOUT, symbols->shndx);
+            file_write_string(FILE_STDOUT, " \n");
+
+        }
+
+    }
+
+}
 
 void main(int argc, char *argv[])
 {
@@ -467,11 +516,17 @@ void main(int argc, char *argv[])
 
     }
 
-    if (!string_compare(argv[2], "relocate"))
+    if (!string_compare(argv[2], "relocation"))
     {
 
+        write_relocation_table(content);
 
+    }
 
+    if (!string_compare(argv[2], "symbol"))
+    {
+
+        write_symbol_table(content);
 
     }
 
