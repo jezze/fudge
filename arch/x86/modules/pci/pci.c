@@ -5,7 +5,7 @@
 #include <arch/x86/modules/pci/pci.h>
 
 static struct modules_bus pciBus;
-static struct pci_device pciDevices[16];
+static struct pci_device pciDevices[32];
 static unsigned int pciDevicesCount;
 
 static struct pci_device *pci_get_device(struct vfs_node *node)
@@ -150,14 +150,10 @@ static void pci_init_devices()
 
     pciDevicesCount = 0;
 
-    pci_check_vendor(0, 0);
-    pci_check_vendor(0, 1);
-    pci_check_vendor(0, 2);
-    pci_check_vendor(0, 3);
-    pci_check_vendor(0, 4);
-    pci_check_vendor(0, 5);
-    pci_check_vendor(0, 6);
-    pci_check_vendor(0, 7);
+    unsigned int i = 0;
+
+    for (i = 0; i < 32; i++)
+        pci_check_vendor(0, i);
 
 }
 
