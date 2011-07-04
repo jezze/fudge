@@ -9,6 +9,7 @@
 #include <arch/x86/modules/io/io.h>
 #include <arch/x86/modules/ata/ata.h>
 #include <arch/x86/modules/kbd/kbd.h>
+#include <arch/x86/modules/pci/pci.h>
 #include <arch/x86/modules/pit/pit.h>
 #include <arch/x86/modules/rtc/rtc.h>
 #include <arch/x86/modules/serial/serial.h>

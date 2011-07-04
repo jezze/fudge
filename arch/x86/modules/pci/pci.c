@@ -112,7 +112,7 @@ static void pci_check_vendor(unsigned short bus, unsigned short slot)
 
     unsigned short vendor;
 
-    if ((vendor == pci_read(bus, slot, 0, 0)) == 0xFFFF)
+    if ((vendor = pci_read(bus, slot, 0, 0)) == 0xFFFF)
         return;
 
     struct pci_device *device = &pciDevices[pciDevicesCount];
@@ -154,6 +154,10 @@ static void pci_init_devices()
     pci_check_vendor(0, 1);
     pci_check_vendor(0, 2);
     pci_check_vendor(0, 3);
+    pci_check_vendor(0, 4);
+    pci_check_vendor(0, 5);
+    pci_check_vendor(0, 6);
+    pci_check_vendor(0, 7);
 
 }
 

@@ -153,16 +153,22 @@ void shell_init()
 
     int sin = file_open("/dev/kbd");
     int sout = file_open("/dev/tty");
+    int serr = file_open("/dev/serial");
 
     file_write_string(FILE_STDOUT, "Fudge\n\n");
     file_write_string(FILE_STDOUT, "Copyright (c) 2009 Jens Nyberg\n");
     file_write_string(FILE_STDOUT, "Type 'cat help.txt' to read the help section.\n\n");
+
+    file_write_string(FILE_STDERR, "Fudge\n\n");
+    file_write_string(FILE_STDERR, "Copyright (c) 2009 Jens Nyberg\n");
+    file_write_string(FILE_STDERR, "Debug window.\n\n");
 
     shell_clear();
     shell_poll();
 
     file_close(sin);
     file_close(sout);
+    file_close(serr);
 
 }
 
