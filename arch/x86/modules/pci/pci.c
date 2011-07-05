@@ -85,6 +85,11 @@ static unsigned int pci_device_read(struct vfs_node *node, unsigned int offset, 
     string_concat(buffer, num);
     string_concat(buffer, "\n");
 
+    string_concat(buffer, "Headertype: 0x");
+    pci_write_num(num, device->headertype, 16);
+    string_concat(buffer, num);
+    string_concat(buffer, "\n");
+
     return string_length(buffer);
 
 }
@@ -107,13 +112,8 @@ static unsigned short pci_read(unsigned short bus, unsigned short slot, unsigned
 
 }
 
-static void pci_check_vendor(unsigned short bus, unsigned short slot)
+static void pci_add(unsigned short bus, unsigned short slot, unsigned short function)
 {
-
-    unsigned short vendor;
-
-    if ((vendor = pci_read(bus, slot, 0, 0)) == 0xFFFF)
-        return;
 
     struct pci_device *device = &pciDevices[pciDevicesCount];
 
@@ -121,19 +121,65 @@ static void pci_check_vendor(unsigned short bus, unsigned short slot)
     pci_write_num(device->base.name + 4, bus, 10);
     string_concat(device->base.name, ":");
     pci_write_num(device->base.name + 6, slot, 10);
+    string_concat(device->base.name, ":");
+    pci_write_num(device->base.name + 8, function, 10);
 
     device->base.node.length = 0;
     device->base.node.operations.read = pci_device_read;
-    device->vendor = vendor;
-    device->device = pci_read(bus, slot, 0, 2);
-    device->interface = (pci_read(bus, slot, 0, 8) >> 8);
-    device->revision = (pci_read(bus, slot, 0, 8) & 0xFF);
-    device->classcode = (pci_read(bus, slot, 0, 10) >> 8);
-    device->subclass = (pci_read(bus, slot, 0, 10) & 0xFF);
+    device->vendor = pci_read(bus, slot, function, 0x0);
+    device->device = pci_read(bus, slot, function, 0x2);
+    device->interface = (pci_read(bus, slot, function, 0x8) >> 8);
+    device->revision = (pci_read(bus, slot, function, 0x8) & 0xFF);
+    device->classcode = (pci_read(bus, slot, function, 0xA) >> 8);
+    device->subclass = (pci_read(bus, slot, function, 0xA) & 0xFF);
+    device->headertype = (pci_read(bus, slot, function, 0xE) & 0xFF);
 
     modules_register_device(MODULES_DEVICE_TYPE_PCI, &device->base);
 
     pciDevicesCount++;
+
+}
+
+static void pci_scan_bus(unsigned short bus)
+{
+
+    unsigned short slot;
+
+    for (slot = 0; slot < 32; slot++)
+    {
+
+        unsigned short vendor;
+
+        if ((vendor = pci_read(bus, slot, 0, 0)) == 0xFFFF)
+            continue;
+
+        unsigned short multi;
+
+        if ((multi = (pci_read(bus, slot, 0, 0xE) & 0x80)))
+        {
+
+            unsigned int function;
+
+            for (function = 0; function < 8; function++)
+            {
+
+                if ((vendor = pci_read(bus, slot, function, 0)) == 0xFFFF)
+                    break;
+
+                pci_add(bus, slot, function);
+
+            }
+
+        }
+    
+        else
+        {
+
+            pci_add(bus, slot, 0);
+
+        }
+
+    }
 
 }
 
@@ -150,10 +196,7 @@ static void pci_init_devices()
 
     pciDevicesCount = 0;
 
-    unsigned int i = 0;
-
-    for (i = 0; i < 32; i++)
-        pci_check_vendor(0, i);
+    pci_scan_bus(0);
 
 }
 
