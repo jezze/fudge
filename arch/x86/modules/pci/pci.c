@@ -148,14 +148,18 @@ static void pci_scan_bus(unsigned short bus)
     for (slot = 0; slot < 32; slot++)
     {
 
-        unsigned short vendor;
-
-        if ((vendor = pci_read(bus, slot, 0, 0)) == 0xFFFF)
+        if (pci_read(bus, slot, 0, 0) == 0xFFFF)
             continue;
 
-        unsigned short multi;
+        unsigned short header = pci_read(bus, slot, 0, 0xE);
 
-        if ((multi = (pci_read(bus, slot, 0, 0xE) & 0x80)))
+        if ((header & 0x01))
+            pci_scan_bus(pci_read(bus, slot, 0, 0x18) >> 8);
+
+        if ((header & 0x02))
+            pci_scan_bus(pci_read(bus, slot, 0, 0x18) & 0xFF);
+
+        if ((header & 0x80))
         {
 
             unsigned int function;
@@ -163,7 +167,7 @@ static void pci_scan_bus(unsigned short bus)
             for (function = 0; function < 8; function++)
             {
 
-                if ((vendor = pci_read(bus, slot, function, 0)) == 0xFFFF)
+                if ((pci_read(bus, slot, function, 0)) == 0xFFFF)
                     break;
 
                 pci_add(bus, slot, function);
