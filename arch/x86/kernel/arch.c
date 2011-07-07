@@ -12,6 +12,8 @@
 #include <arch/x86/kernel/syscall.h>
 #include <arch/x86/kernel/tss.h>
 
+static struct kernel_arch arch;
+
 static void arch_interrupts_disable()
 {
 
@@ -81,15 +83,14 @@ void arch_init(struct mboot_info *header, unsigned int magic, unsigned int stack
     kernel_assert(magic == MBOOT_MAGIC, "MBOOT_MAGIC is not correct", __FILE__, __LINE__);
     kernel_assert(header->modulesCount, "Module does not exist", __FILE__, __LINE__);
 
-    struct kernel_arch *arch = kernel_get_arch();
-    arch->enable_interrupts = arch_interrupts_enable;
-    arch->enable_usermode = arch_usermode;
-    arch->disable_interrupts = arch_interrupts_disable;
-    arch->stackAddress = stack;
-    arch->set_stack = arch_set_stack;
-    arch->initrdAddress = (unsigned int *)header->modulesAddresses;
+    arch.enable_interrupts = arch_interrupts_enable;
+    arch.enable_usermode = arch_usermode;
+    arch.disable_interrupts = arch_interrupts_disable;
+    arch.stackAddress = stack;
+    arch.set_stack = arch_set_stack;
+    arch.initrdAddress = (unsigned int *)header->modulesAddresses;
 
-    kernel_init();
+    kernel_init(&arch);
 
 }
 

@@ -5,7 +5,7 @@
 #include <kernel/log.h>
 #include <kernel/shell.h>
 
-static struct kernel_arch kernelArch;
+static struct kernel_arch *kernelArch;
 
 void kernel_assert(unsigned int condition, char *message, char *file, unsigned int line)
 {
@@ -13,7 +13,7 @@ void kernel_assert(unsigned int condition, char *message, char *file, unsigned i
     if (condition)
         return;
 
-    kernelArch.disable_interrupts();
+    kernelArch->disable_interrupts();
 
     void *args[] = {message, file, &line};
     log_message(LOG_TYPE_ERROR, "ASSERTION FAIL (%s) at (%s:%d)", args);
@@ -25,7 +25,7 @@ void kernel_assert(unsigned int condition, char *message, char *file, unsigned i
 void kernel_panic(char *message, char *file, unsigned int line)
 {
 
-    kernelArch.disable_interrupts();
+    kernelArch->disable_interrupts();
 
     void *args[] = {message, file, &line};
     log_message(LOG_TYPE_ERROR, "KERNEL PANIC (%s) at (%s:%d)", args);
@@ -34,22 +34,17 @@ void kernel_panic(char *message, char *file, unsigned int line)
 
 }
 
-struct kernel_arch *kernel_get_arch()
+void kernel_init(struct kernel_arch *arch)
 {
 
-    return &kernelArch;
-
-}
-
-void kernel_init()
-{
+    kernelArch = arch;
 
     vfs_init();
-    initrd_init(kernelArch.initrdAddress);
+    initrd_init(kernelArch->initrdAddress);
     modules_init();
 
-    kernelArch.set_stack(0x00400000);
-    kernelArch.enable_usermode((unsigned int)shell_init);
+    kernelArch->set_stack(0x00400000);
+    kernelArch->enable_usermode((unsigned int)shell_init);
 
     for (;;);
 
