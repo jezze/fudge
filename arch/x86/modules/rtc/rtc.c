@@ -3,7 +3,6 @@
 #include <lib/string.h>
 #include <kernel/vfs.h>
 #include <kernel/modules.h>
-#include <arch/x86/kernel/arch.h>
 #include <arch/x86/modules/io/io.h>
 #include <arch/x86/modules/rtc/rtc.h>
 

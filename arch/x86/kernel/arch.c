@@ -12,6 +12,50 @@
 #include <arch/x86/kernel/syscall.h>
 #include <arch/x86/kernel/tss.h>
 
+static void arch_interrupts_disable()
+{
+
+    cpu_interrupts_off();
+
+}
+
+static void arch_interrupts_enable()
+{
+
+    cpu_interrupts_on();
+
+}
+
+void arch_reboot()
+{
+
+    cpu_interrupts_off();
+
+    /*
+    unsigned char ready = 0x02;
+
+    while ((ready & 0x02) != 0)
+        ready = io_inb(0x64);
+
+    io_outb(0x64, 0xFE);
+    */
+
+}
+
+static void arch_set_stack(unsigned int address)
+{
+
+    tss_set_stack(address);
+
+}
+
+static void arch_usermode(unsigned int address)
+{
+
+    cpu_usermode(address);
+
+}
+
 static void arch_init_base()
 {
 
@@ -36,50 +80,16 @@ void arch_init(struct mboot_info *header, unsigned int magic, unsigned int stack
 
     kernel_assert(magic == MBOOT_MAGIC, "MBOOT_MAGIC is not correct", __FILE__, __LINE__);
     kernel_assert(header->modulesCount, "Module does not exist", __FILE__, __LINE__);
-    kernel_set_initrd((unsigned int *)header->modulesAddresses);
-    kernel_init(stack);
+
+    struct kernel_arch *arch = kernel_get_arch();
+    arch->enable_interrupts = arch_interrupts_enable;
+    arch->enable_usermode = arch_usermode;
+    arch->disable_interrupts = arch_interrupts_disable;
+    arch->stackAddress = stack;
+    arch->set_stack = arch_set_stack;
+    arch->initrdAddress = (unsigned int *)header->modulesAddresses;
+
+    kernel_init();
 
 }
-
-void arch_interrupts_disable()
-{
-
-    cpu_interrupts_off();
-
-}
-
-void arch_interrupts_enable()
-{
-
-    cpu_interrupts_on();
-
-}
-
-void arch_reboot()
-{
-
-    cpu_interrupts_off();
-/*
-    unsigned char ready = 0x02;
-
-    while ((ready & 0x02) != 0)
-        ready = io_inb(0x64);
-
-    io_outb(0x64, 0xFE);
-*/
-}
-
-void arch_set_stack(unsigned int address)
-{
-
-    tss_set_stack(address);
-
-}
-void arch_usermode(unsigned int address)
-{
-
-    cpu_usermode(address);
-
-}
-
 

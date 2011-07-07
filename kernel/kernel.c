@@ -4,10 +4,8 @@
 #include <kernel/kernel.h>
 #include <kernel/log.h>
 #include <kernel/shell.h>
-#include <arch/x86/kernel/arch.h>
 
-unsigned int *kernelInitrdAddress;
-unsigned int kernelStackAddress;
+static struct kernel_arch kernelArch;
 
 void kernel_assert(unsigned int condition, char *message, char *file, unsigned int line)
 {
@@ -15,7 +13,7 @@ void kernel_assert(unsigned int condition, char *message, char *file, unsigned i
     if (condition)
         return;
 
-    arch_interrupts_disable();
+    kernelArch.disable_interrupts();
 
     void *args[] = {message, file, &line};
     log_message(LOG_TYPE_ERROR, "ASSERTION FAIL (%s) at (%s:%d)", args);
@@ -27,7 +25,7 @@ void kernel_assert(unsigned int condition, char *message, char *file, unsigned i
 void kernel_panic(char *message, char *file, unsigned int line)
 {
 
-    arch_interrupts_disable();
+    kernelArch.disable_interrupts();
 
     void *args[] = {message, file, &line};
     log_message(LOG_TYPE_ERROR, "KERNEL PANIC (%s) at (%s:%d)", args);
@@ -36,24 +34,22 @@ void kernel_panic(char *message, char *file, unsigned int line)
 
 }
 
-void kernel_set_initrd(unsigned int *address)
+struct kernel_arch *kernel_get_arch()
 {
 
-    kernelInitrdAddress = address;
+    return &kernelArch;
 
 }
 
-void kernel_init(unsigned int stackAddress)
+void kernel_init()
 {
 
-    kernelStackAddress = stackAddress;
-
     vfs_init();
-    initrd_init(kernelInitrdAddress);
+    initrd_init(kernelArch.initrdAddress);
     modules_init();
 
-    arch_set_stack(0x00400000);
-    arch_usermode((unsigned int)shell_init);
+    kernelArch.set_stack(0x00400000);
+    kernelArch.enable_usermode((unsigned int)shell_init);
 
     for (;;);
 
