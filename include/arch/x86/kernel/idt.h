@@ -14,7 +14,7 @@ struct idt_entry
 
 } __attribute__((packed));
 
-struct idt_ptr
+struct idt_pointer
 {
 
     unsigned short limit;
@@ -22,7 +22,7 @@ struct idt_ptr
 
 } __attribute__((packed));
 
-extern void idt_flush(struct idt_ptr *pointer);
+extern void idt_flush(struct idt_pointer *pointer);
 
 extern void idt_set_gate(unsigned char index, void (*callback)(), unsigned short selector, unsigned char flags);
 extern void idt_init();

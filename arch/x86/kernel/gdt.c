@@ -2,7 +2,7 @@
 #include <arch/x86/kernel/gdt.h>
 
 struct gdt_entry gdt[GDT_TABLE_SIZE];
-struct gdt_ptr gdtPointer;
+struct gdt_pointer gdtPointer;
 
 void gdt_set_gate(unsigned char index, unsigned int base, unsigned int limit, unsigned char access, unsigned char granularity)
 {

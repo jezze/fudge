@@ -15,7 +15,7 @@ struct gdt_entry
 
 } __attribute__((packed));
 
-struct gdt_ptr
+struct gdt_pointer
 {
 
     unsigned short limit;
@@ -23,7 +23,7 @@ struct gdt_ptr
 
 } __attribute__((packed));
 
-extern void gdt_flush(struct gdt_ptr *pointer);
+extern void gdt_flush(struct gdt_pointer *pointer);
 extern void gdt_init();
 extern void gdt_set_gate(unsigned char index, unsigned int base, unsigned int limit, unsigned char access, unsigned char granularity);
 
