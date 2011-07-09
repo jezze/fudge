@@ -56,11 +56,11 @@ static void syscall_close(struct syscall_registers *registers)
 static void syscall_read(struct syscall_registers *registers)
 {
 
-    unsigned int index = registers->ebx;
+    unsigned int fd = registers->ebx;
     char *buffer = (char *)registers->esi;
     unsigned int count = registers->ecx;
 
-    struct vfs_node *node = vfs_get(index);
+    struct vfs_node *node = vfs_get(fd);
 
     if (node && node->operations.read)
     {
@@ -78,11 +78,11 @@ static void syscall_read(struct syscall_registers *registers)
 static void syscall_write(struct syscall_registers *registers)
 {
 
-    unsigned int index = registers->ebx;
+    unsigned int fd = registers->ebx;
     char *buffer = (char *)registers->esi;
     unsigned int count = registers->ecx;
 
-    struct vfs_node *node = vfs_get(index);
+    struct vfs_node *node = vfs_get(fd);
 
     if (node && node->operations.write)
     {
