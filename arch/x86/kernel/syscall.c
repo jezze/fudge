@@ -25,19 +25,31 @@ void syscall_unregister_handler(unsigned char index)
 
 }
 
+void syscall_handler(struct syscall_registers *registers)
+{
+
+    void (*handler)(struct syscall_registers *registers) = syscallRoutines[registers->eax];
+
+    if (handler)
+        handler(registers);
+
+}
+
 static void syscall_open(struct syscall_registers *registers)
 {
 
-    registers->eax = vfs_open((char *)registers->esi);
+    char *path = (char *)registers->esi;
+
+    registers->eax = vfs_open(path);
 
 }
 
 static void syscall_close(struct syscall_registers *registers)
 {
 
-    vfs_close(registers->ebx);
+    unsigned int fd = registers->ebx;
 
-    registers->eax = 0;
+    vfs_close(fd);
 
 }
 
@@ -50,16 +62,16 @@ static void syscall_read(struct syscall_registers *registers)
 
     struct vfs_node *node = vfs_get(index);
 
-    if (!node || !node->operations.read)
+    if (node && node->operations.read)
     {
 
-        registers->eax = 0;
+        registers->eax = node->operations.read(node, 0, count, buffer);
 
         return;
 
     }
 
-    registers->eax = node->operations.read(node, 0, count, buffer);
+    registers->eax = 0;
 
 }
 
@@ -72,16 +84,16 @@ static void syscall_write(struct syscall_registers *registers)
 
     struct vfs_node *node = vfs_get(index);
 
-    if (!node || !node->operations.write)
+    if (node && node->operations.write)
     {
 
-        registers->eax = 0;
+        registers->eax = node->operations.write(node, 0, count, buffer);
 
         return;
 
     }
 
-    registers->eax = node->operations.write(node, 0, count, buffer);
+    registers->eax = 0;
 
 }
 
@@ -91,13 +103,13 @@ static void syscall_info(struct syscall_registers *registers)
     char *name = (char *)registers->esi;
     struct file_info *info = (struct file_info *)registers->edi;
     
-    struct vfs_node *file = vfs_find_root(name);
+    struct vfs_node *node = vfs_find_root(name);
 
-    if (file)
+    if (node)
     {
 
-        info->id = file->id;
-        info->length = file->length;
+        info->id = node->id;
+        info->length = node->length;
 
         registers->eax = 1;
 
@@ -145,17 +157,6 @@ static void syscall_reboot(struct syscall_registers *registers)
 {
 
     arch_reboot();
-
-}
-
-
-void syscall_handler(struct syscall_registers *registers)
-{
-
-    void (*handler)(struct syscall_registers *registers) = syscallRoutines[registers->eax];
-
-    if (handler)
-        handler(registers);
 
 }
 
