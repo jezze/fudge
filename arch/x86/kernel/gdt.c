@@ -28,7 +28,7 @@ void gdt_init()
     gdt_set_gate(0x03, 0x00000000, 0xFFFFFFFF, 0xFA, 0xCF); // User code segment
     gdt_set_gate(0x04, 0x00000000, 0xFFFFFFFF, 0xF2, 0xCF); // User data segment
 
-    gdtPointer.base = (unsigned int)&gdt;
+    gdtPointer.base = gdt;
     gdtPointer.limit = (sizeof (struct gdt_entry) * GDT_TABLE_SIZE) - 1;
     gdt_flush(&gdtPointer);
 

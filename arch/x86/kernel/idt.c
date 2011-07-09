@@ -22,7 +22,7 @@ void idt_init()
 
     memory_set(&idt, 0, sizeof (struct idt_entry) * IDT_TABLE_SIZE);
 
-    idtPointer.base = (unsigned int)&idt;
+    idtPointer.base = idt;
     idtPointer.limit = (sizeof (struct idt_entry) * IDT_TABLE_SIZE) - 1;
     idt_flush(&idtPointer);
 

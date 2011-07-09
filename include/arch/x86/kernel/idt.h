@@ -18,7 +18,7 @@ struct idt_pointer
 {
 
     unsigned short limit;
-    unsigned int base;
+    struct idt_entry *base;
 
 } __attribute__((packed));
 

@@ -19,7 +19,7 @@ struct gdt_pointer
 {
 
     unsigned short limit;
-    unsigned int base;
+    struct gdt_entry *base;
 
 } __attribute__((packed));
 
