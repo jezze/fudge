@@ -1,8 +1,8 @@
 #include <lib/memory.h>
 #include <arch/x86/kernel/idt.h>
 
-struct idt_entry idt[IDT_TABLE_SIZE];
-struct idt_pointer idtPointer;
+static struct idt_entry idt[IDT_TABLE_SIZE];
+static struct idt_pointer idtPointer;
 
 void idt_set_gate(unsigned char index, void (*callback)(), unsigned short selector, unsigned char flags)
 {
