@@ -162,8 +162,8 @@ image:
 	@dd if=root/boot/grub/stage2 conv=notrunc of=fudge.img bs=512 seek=1
 	@dd if=menu.lst conv=notrunc of=fudge.img bs=512 seek=200
 	@dd if=root/boot/kernel conv=notrunc of=fudge.img bs=512 seek=300
-	@dd if=root/boot/initrd conv=notrunc of=fudge.img bs=512 seek=400
-	@grub << device (fd0) fudge.img install (fd0)0+1 (fd0) (fd0)1+199 (fd0)200+1
+	@dd if=root/boot/initrd.tar conv=notrunc of=fudge.img bs=512 seek=400
+	@sh x86-write-image.sh
 
 clean:
 	@rm -f fudge.img
