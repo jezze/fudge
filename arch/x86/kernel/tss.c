@@ -21,10 +21,10 @@ void tss_init()
     tss.cs = 0x0B;
     tss.ss = tss.ds = tss.es = tss.fs = tss.gs = 0x13;
 
-    unsigned int tssBase = (unsigned int)&tss;
-    unsigned int tssLimit = tssBase + sizeof (struct tss_entry);
+    unsigned int base = (unsigned int)&tss;
+    unsigned int limit = base + sizeof (struct tss_entry);
 
-    gdt_set_gate(0x05, tssBase, tssLimit, 0xE9, 0x00);
+    gdt_set_gate(0x05, base, limit, 0xE9, 0x00);
 
     tss_flush();
 
