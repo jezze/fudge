@@ -22,14 +22,13 @@ void isr_unregister_handler(unsigned char index)
 void isr_handler(struct isr_registers *registers)
 {
 
-    if (isrRoutines[registers->number] != 0)
+    void (*handler)(struct isr_registers *registers) = isrRoutines[registers->number];
+
+    if (handler)
     {
 
-        void (*handler)(struct isr_registers *registers) = isrRoutines[registers->number];
+        handler(registers);
 
-        if (handler)
-            handler(registers);
-    
     }
 
     else

@@ -21,6 +21,21 @@ void irq_unregister_handler(unsigned char index)
 
 }
 
+void irq_handler(struct isr_registers *registers)
+{
+
+    void (*handler)(struct isr_registers *registers) = irqRoutines[registers->number - 32];
+
+    if (handler)
+        handler(registers);
+
+    if (registers->number >= 40)
+        io_outb(0xA0, 0x20);
+
+    io_outb(0x20, 0x20);
+
+}
+
 static void irq_remap()
 {
 
@@ -34,21 +49,6 @@ static void irq_remap()
     io_outb(0xA1, 0x01);
     io_outb(0x21, 0x00);
     io_outb(0xA1, 0x00);
-
-}
-
-void irq_handler(struct isr_registers *registers)
-{
-
-    void (*handler)(struct isr_registers *registers) = irqRoutines[registers->number - 32];
-
-    if (handler)
-        handler(registers);
-
-    if (registers->number >= 40)
-        io_outb(0xA0, 0x20);
-
-    io_outb(0x20, 0x20);
 
 }
 
