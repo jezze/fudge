@@ -24,9 +24,9 @@ LDFLAGS_RAMDISK=-e main
 TAR=tar
 TARFLAGS=-cvf
 
-.PHONY: lib modules kernel ramdisk clean iso image
+.PHONY: lib arch-x86 modules kernel ramdisk image iso clean
 
-all: lib modules kernel ramdisk
+all: ramdisk
 
 lib:
 	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_LIB}/file.c -o ${DIR_SOURCE_LIB}/file.o
@@ -34,20 +34,7 @@ lib:
 	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_LIB}/string.c -o ${DIR_SOURCE_LIB}/string.o
 	@${ASM} ${ASMFLAGS} ${DIR_SOURCE_ARCH_LIB}/calls.s -o ${DIR_SOURCE_ARCH_LIB}/calls.o
 
-modules:
-	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_MODULES}/elf/elf.c -o ${DIR_SOURCE_MODULES}/elf/elf.o
-	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_MODULES}/tty/tty.c -o ${DIR_SOURCE_MODULES}/tty/tty.o
-	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_ARCH_MODULES}/ata/ata.c -o ${DIR_SOURCE_ARCH_MODULES}/ata/ata.o
-	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_ARCH_MODULES}/io/io.c -o ${DIR_SOURCE_ARCH_MODULES}/io/io.o
-	@${ASM} ${ASMFLAGS} ${DIR_SOURCE_ARCH_MODULES}/io/ios.s -o ${DIR_SOURCE_ARCH_MODULES}/io/ios.o
-	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_ARCH_MODULES}/kbd/kbd.c -o ${DIR_SOURCE_ARCH_MODULES}/kbd/kbd.o
-	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_ARCH_MODULES}/pci/pci.c -o ${DIR_SOURCE_ARCH_MODULES}/pci/pci.o
-	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_ARCH_MODULES}/pit/pit.c -o ${DIR_SOURCE_ARCH_MODULES}/pit/pit.o
-	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_ARCH_MODULES}/rtc/rtc.c -o ${DIR_SOURCE_ARCH_MODULES}/rtc/rtc.o
-	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_ARCH_MODULES}/serial/serial.c -o ${DIR_SOURCE_ARCH_MODULES}/serial/serial.o
-	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_ARCH_MODULES}/vga/vga.c -o ${DIR_SOURCE_ARCH_MODULES}/vga/vga.o
-
-arch-x86:
+arch-x86: lib
 	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_ARCH_KERNEL}/arch.c -o ${DIR_SOURCE_ARCH_KERNEL}/arch.o
 	@${ASM} ${ASMFLAGS} ${DIR_SOURCE_ARCH_KERNEL}/cpu.s -o ${DIR_SOURCE_ARCH_KERNEL}/cpu.o
 	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_ARCH_KERNEL}/fpu.c -o ${DIR_SOURCE_ARCH_KERNEL}/fpu.o
@@ -66,7 +53,20 @@ arch-x86:
 	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_ARCH_KERNEL}/tss.c -o ${DIR_SOURCE_ARCH_KERNEL}/tss.o
 	@${ASM} ${ASMFLAGS} ${DIR_SOURCE_ARCH_KERNEL}/tsss.s -o ${DIR_SOURCE_ARCH_KERNEL}/tsss.o
 
-kernel: arch-${ARCH}
+modules: lib
+	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_MODULES}/elf/elf.c -o ${DIR_SOURCE_MODULES}/elf/elf.o
+	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_MODULES}/tty/tty.c -o ${DIR_SOURCE_MODULES}/tty/tty.o
+	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_ARCH_MODULES}/ata/ata.c -o ${DIR_SOURCE_ARCH_MODULES}/ata/ata.o
+	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_ARCH_MODULES}/io/io.c -o ${DIR_SOURCE_ARCH_MODULES}/io/io.o
+	@${ASM} ${ASMFLAGS} ${DIR_SOURCE_ARCH_MODULES}/io/ios.s -o ${DIR_SOURCE_ARCH_MODULES}/io/ios.o
+	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_ARCH_MODULES}/kbd/kbd.c -o ${DIR_SOURCE_ARCH_MODULES}/kbd/kbd.o
+	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_ARCH_MODULES}/pci/pci.c -o ${DIR_SOURCE_ARCH_MODULES}/pci/pci.o
+	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_ARCH_MODULES}/pit/pit.c -o ${DIR_SOURCE_ARCH_MODULES}/pit/pit.o
+	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_ARCH_MODULES}/rtc/rtc.c -o ${DIR_SOURCE_ARCH_MODULES}/rtc/rtc.o
+	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_ARCH_MODULES}/serial/serial.c -o ${DIR_SOURCE_ARCH_MODULES}/serial/serial.o
+	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_ARCH_MODULES}/vga/vga.c -o ${DIR_SOURCE_ARCH_MODULES}/vga/vga.o
+
+kernel: arch-${ARCH} modules
 	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_KERNEL}/initrd.c -o ${DIR_SOURCE_KERNEL}/initrd.o
 	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_KERNEL}/kernel.c -o ${DIR_SOURCE_KERNEL}/kernel.o
 	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_KERNEL}/log.c -o ${DIR_SOURCE_KERNEL}/log.o
@@ -114,7 +114,7 @@ kernel: arch-${ARCH}
     ${DIR_SOURCE_ARCH_LIB}/calls.o \
     -o root/boot/kernel
 
-ramdisk:
+ramdisk: kernel
 	@cp ${DIR_SOURCE_ARCH_MODULES}/ata/ata.o ${DIR_IMAGE}/lib/modules/ata.ko
 	@cp ${DIR_SOURCE_ARCH_MODULES}/io/io.o ${DIR_IMAGE}/lib/modules/io.ko
 	@cp ${DIR_SOURCE_ARCH_MODULES}/kbd/kbd.o ${DIR_IMAGE}/lib/modules/kbd.ko
@@ -155,9 +155,6 @@ ramdisk:
 	@${TAR} ${TARFLAGS} initrd.tar ${DIR_IMAGE}
 	@mv initrd.tar ${DIR_IMAGE_BOOT}
 
-iso:
-	@genisoimage -R -b boot/grub/iso9660_stage1_5 -no-emul-boot -boot-load-size 4 -boot-info-table -o fudge.iso root
-
 image:
 	@dd if=/dev/zero of=fudge.img bs=512 count=2880
 	@dd if=root/boot/grub/stage1 conv=notrunc of=fudge.img bs=512 seek=0
@@ -166,6 +163,9 @@ image:
 	@dd if=root/boot/kernel conv=notrunc of=fudge.img bs=512 seek=300
 	@dd if=root/boot/initrd.tar conv=notrunc of=fudge.img bs=512 seek=400
 	@sh x86-write-image.sh
+
+iso:
+	@genisoimage -R -b boot/grub/iso9660_stage1_5 -no-emul-boot -boot-load-size 4 -boot-info-table -o fudge.iso root
 
 clean:
 	@rm -f fudge.img
