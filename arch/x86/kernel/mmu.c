@@ -7,6 +7,7 @@
 
 static struct mmu_directory mmuKernelDirectory;
 static struct mmu_table mmuKernelTable;
+static struct mmu_table mmuUserTable;
 static struct mmu_table mmuProgramTable;
 
 static void mmu_handler(struct isr_registers *registers)
@@ -130,9 +131,14 @@ static void mmu_init_kernel_directory()
 {
 
     mmu_clear_directory(&mmuKernelDirectory);
+
     mmu_clear_table(&mmuKernelTable);
     mmu_add_table(&mmuKernelDirectory, 0, &mmuKernelTable, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE);
     mmu_map(&mmuKernelDirectory, 0x00000000, 0x00000000, 0x00400000, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);
+
+    mmu_clear_table(&mmuUserTable);
+    mmu_add_table(&mmuKernelDirectory, 1, &mmuUserTable, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE);
+    mmu_map(&mmuKernelDirectory, 0x00400000, 0x00400000, 0x00400000, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);
 
 }
 

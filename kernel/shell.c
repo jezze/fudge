@@ -45,7 +45,7 @@ static void shell_clear()
 static void shell_call(int file, int argc, char *argv[])
 {
 
-    void *buffer = (void *)0x00300000;
+    void *buffer = (void *)0x00420000;
     file_read(file, 0x100000, buffer);
 
     unsigned int address = call_map((unsigned int)buffer);
