@@ -1,8 +1,9 @@
-#include <lib/call.h>
-#include <lib/file.h>
-#include <lib/memory.h>
-#include <lib/string.h>
-#include <kernel/shell.h>
+#include <call.h>
+#include <file.h>
+#include <memory.h>
+#include <string.h>
+
+#define SHELL_BUFFER_SIZE 256
 
 static char shellBuffer[SHELL_BUFFER_SIZE];
 static unsigned int shellBufferHead;
@@ -45,7 +46,7 @@ static void shell_clear()
 static void shell_call(int file, int argc, char *argv[])
 {
 
-    void *buffer = (void *)0x00400000;
+    void *buffer = (void *)0x00500000;
     file_read(file, 0x100000, buffer);
 
     unsigned int address = call_map((unsigned int)buffer);
@@ -146,7 +147,7 @@ static void shell_poll()
 
 }
 
-void shell_init()
+void main()
 {
 
     shellBufferHead = 0;
