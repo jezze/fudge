@@ -127,9 +127,9 @@ void tty_init()
     ttyDevice.base.node.length = TTY_CHARACTER_SIZE;
     ttyDevice.base.node.operations.write = tty_device_write;
     ttyDevice.cursorOffset = 0;
-    ttyDevice.vgaNode = vfs_find_root("/dev/fb");
-    ttyDevice.vgaColorNode = vfs_find_root("/dev/color");
-    ttyDevice.vgaCursorNode = vfs_find_root("/dev/cursor");
+    ttyDevice.vgaNode = vfs_find_root("/fb");
+    ttyDevice.vgaColorNode = vfs_find_root("/color");
+    ttyDevice.vgaCursorNode = vfs_find_root("/cursor");
     ttyDevice.set_color = tty_set_color;
     ttyDevice.set_color(TTY_COLOR_WHITE, TTY_COLOR_BLACK);
     modules_register_device(MODULES_DEVICE_TYPE_KEYBOARD, &ttyDevice.base);

@@ -107,11 +107,7 @@ struct vfs_node *vfs_filesystem_lookup(struct vfs_filesystem *filesystem, char *
     if (path[0] != '/')
         return 0;
 
-    path++;
-
-    unsigned int index = string_index(path, '/', 0);
-
-    if (!index)
+    if (string_length(path) == 1)
         return vfsFilesystem.root;
 
     unsigned int i;
@@ -119,18 +115,10 @@ struct vfs_node *vfs_filesystem_lookup(struct vfs_filesystem *filesystem, char *
     for (i = 0; vfsFilesystems[i]; i++)
     {
 
-        if (!memory_compare(path, vfsFilesystems[i]->name, index))
-        {
+        struct vfs_node *node = vfsFilesystems[i]->lookup(vfsFilesystems[i], path + 1);
 
-            if (!string_length(path + index + 1))
-                return vfsFilesystems[i]->root;
-
-            if (path[index] == '/')
-                return vfsFilesystems[i]->lookup(vfsFilesystems[i], path + index + 1);
-            else
-                return vfsFilesystems[i]->root;
-
-        }
+        if (node)
+            return node;
 
     }
 
@@ -144,7 +132,7 @@ void vfs_init()
     vfsRoot.length = 0;
     vfsRoot.operations.read = vfs_node_read;
 
-    string_copy(vfsFilesystem.name, "root");
+    string_copy(vfsFilesystem.name, "/");
     vfsFilesystem.root = &vfsRoot;
     vfsFilesystem.lookup = vfs_filesystem_lookup;
     vfs_register_filesystem(&vfsFilesystem);

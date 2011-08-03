@@ -68,7 +68,7 @@ static void shell_interpret(char *command)
 
     char path[256];
 
-    string_copy(path, "/initrd/");
+    string_copy(path, "/");
     string_concat(path, argv[0]);
 
     int file = file_open(path);
@@ -152,9 +152,9 @@ void main()
 
     shellBufferHead = 0;
 
-    int sin = file_open("/dev/kbd");
-    int sout = file_open("/dev/tty");
-    int serr = file_open("/dev/serial");
+    int sin = file_open("/kbd");
+    int sout = file_open("/tty");
+    int serr = file_open("/serial");
 
     file_write_string(FILE_STDOUT, "Fudge\n\n");
     file_write_string(FILE_STDOUT, "Copyright (c) 2009 Jens Nyberg\n");

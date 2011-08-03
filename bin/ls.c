@@ -6,7 +6,7 @@
 void get_path(char *buffer, char *arg)
 {
 
-    int cwd = file_open("/dev/cwd");
+    int cwd = file_open("/cwd");
     unsigned int count = file_read(cwd, 256, buffer);
 
     if (arg)

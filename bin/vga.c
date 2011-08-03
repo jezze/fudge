@@ -4,7 +4,7 @@
 void main(int argc, char *argv[])
 {
 
-    int fd = file_open("/dev/io");
+    int fd = file_open("/io");
 
     file_close(fd);
 

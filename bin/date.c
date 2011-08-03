@@ -4,7 +4,7 @@
 void main(int argc, char *argv[])
 {
 
-    int fd = file_open("/dev/rtc");
+    int fd = file_open("/rtc");
 
     unsigned char buffer;
 

@@ -421,7 +421,7 @@ void main(int argc, char *argv[])
 
     char path[256];
 
-    int cwd = file_open("/dev/cwd");
+    int cwd = file_open("/cwd");
     unsigned int count = file_read(cwd, 256, path);
     file_close(cwd);
 

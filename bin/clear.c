@@ -4,7 +4,7 @@
 void main(int argc, char *argv[])
 {
 
-    int fd = file_open("/dev/tty");
+    int fd = file_open("/tty");
 
     char c = ' ';
     unsigned int i;

@@ -15,7 +15,7 @@ void main(int argc, char *argv[])
 
     }
 
-    int cwd = file_open("/dev/cwd");
+    int cwd = file_open("/cwd");
 
     char path[256];
 

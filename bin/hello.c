@@ -5,7 +5,7 @@
 void main(int argc, char *argv[])
 {
 
-    int fd = file_open("/dev/vga_fb");
+    int fd = file_open("/vga_fb");
 
     char *hw = "Hello world!";
 
