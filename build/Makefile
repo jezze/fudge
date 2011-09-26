@@ -3,11 +3,7 @@
 ARCH=x86
 
 DIR_IMAGE=root
-DIR_IMAGE_BIN=root/bin
-DIR_IMAGE_BOOT=root/boot
-DIR_SOURCE_ARCH_KERNEL=../arch/${ARCH}/kernel
-DIR_SOURCE_ARCH_LIB=../arch/${ARCH}/lib
-DIR_SOURCE_ARCH_MODULES=../arch/${ARCH}/modules
+DIR_ARCH=../arch/${ARCH}
 DIR_SOURCE_BIN=../bin
 DIR_SOURCE_KERNEL=../kernel
 DIR_SOURCE_LIB=../lib
@@ -30,39 +26,39 @@ lib:
 	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_LIB}/file.c -o ${DIR_SOURCE_LIB}/file.o
 	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_LIB}/memory.c -o ${DIR_SOURCE_LIB}/memory.o
 	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_LIB}/string.c -o ${DIR_SOURCE_LIB}/string.o
-	@${ASM} ${ASMFLAGS} ${DIR_SOURCE_ARCH_LIB}/calls.s -o ${DIR_SOURCE_ARCH_LIB}/calls.o
+	@${ASM} ${ASMFLAGS} ${DIR_ARCH}/lib/calls.s -o ${DIR_ARCH}/lib/calls.o
 
 arch-x86: lib
-	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_ARCH_KERNEL}/arch.c -o ${DIR_SOURCE_ARCH_KERNEL}/arch.o
-	@${ASM} ${ASMFLAGS} ${DIR_SOURCE_ARCH_KERNEL}/cpu.s -o ${DIR_SOURCE_ARCH_KERNEL}/cpu.o
-	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_ARCH_KERNEL}/fpu.c -o ${DIR_SOURCE_ARCH_KERNEL}/fpu.o
-	@${ASM} ${ASMFLAGS} ${DIR_SOURCE_ARCH_KERNEL}/fpus.s -o ${DIR_SOURCE_ARCH_KERNEL}/fpus.o
-	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_ARCH_KERNEL}/gdt.c -o ${DIR_SOURCE_ARCH_KERNEL}/gdt.o
-	@${ASM} ${ASMFLAGS} ${DIR_SOURCE_ARCH_KERNEL}/gdts.s -o ${DIR_SOURCE_ARCH_KERNEL}/gdts.o
-	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_ARCH_KERNEL}/idt.c -o ${DIR_SOURCE_ARCH_KERNEL}/idt.o
-	@${ASM} ${ASMFLAGS} ${DIR_SOURCE_ARCH_KERNEL}/idts.s -o ${DIR_SOURCE_ARCH_KERNEL}/idts.o
-	@${ASM} ${ASMFLAGS} ${DIR_SOURCE_ARCH_KERNEL}/init.s -o ${DIR_SOURCE_ARCH_KERNEL}/init.o
-	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_ARCH_KERNEL}/irq.c -o ${DIR_SOURCE_ARCH_KERNEL}/irq.o
-	@${ASM} ${ASMFLAGS} ${DIR_SOURCE_ARCH_KERNEL}/irqs.s -o ${DIR_SOURCE_ARCH_KERNEL}/irqs.o
-	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_ARCH_KERNEL}/isr.c -o ${DIR_SOURCE_ARCH_KERNEL}/isr.o
-	@${ASM} ${ASMFLAGS} ${DIR_SOURCE_ARCH_KERNEL}/isrs.s -o ${DIR_SOURCE_ARCH_KERNEL}/isrs.o
-	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_ARCH_KERNEL}/mmu.c -o ${DIR_SOURCE_ARCH_KERNEL}/mmu.o
-	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_ARCH_KERNEL}/syscall.c -o ${DIR_SOURCE_ARCH_KERNEL}/syscall.o
-	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_ARCH_KERNEL}/tss.c -o ${DIR_SOURCE_ARCH_KERNEL}/tss.o
-	@${ASM} ${ASMFLAGS} ${DIR_SOURCE_ARCH_KERNEL}/tsss.s -o ${DIR_SOURCE_ARCH_KERNEL}/tsss.o
+	@${GCC} ${GCCFLAGS} ${DIR_ARCH}/kernel/arch.c -o ${DIR_ARCH}/kernel/arch.o
+	@${ASM} ${ASMFLAGS} ${DIR_ARCH}/kernel/cpu.s -o ${DIR_ARCH}/kernel/cpu.o
+	@${GCC} ${GCCFLAGS} ${DIR_ARCH}/kernel/fpu.c -o ${DIR_ARCH}/kernel/fpu.o
+	@${ASM} ${ASMFLAGS} ${DIR_ARCH}/kernel/fpus.s -o ${DIR_ARCH}/kernel/fpus.o
+	@${GCC} ${GCCFLAGS} ${DIR_ARCH}/kernel/gdt.c -o ${DIR_ARCH}/kernel/gdt.o
+	@${ASM} ${ASMFLAGS} ${DIR_ARCH}/kernel/gdts.s -o ${DIR_ARCH}/kernel/gdts.o
+	@${GCC} ${GCCFLAGS} ${DIR_ARCH}/kernel/idt.c -o ${DIR_ARCH}/kernel/idt.o
+	@${ASM} ${ASMFLAGS} ${DIR_ARCH}/kernel/idts.s -o ${DIR_ARCH}/kernel/idts.o
+	@${ASM} ${ASMFLAGS} ${DIR_ARCH}/kernel/init.s -o ${DIR_ARCH}/kernel/init.o
+	@${GCC} ${GCCFLAGS} ${DIR_ARCH}/kernel/irq.c -o ${DIR_ARCH}/kernel/irq.o
+	@${ASM} ${ASMFLAGS} ${DIR_ARCH}/kernel/irqs.s -o ${DIR_ARCH}/kernel/irqs.o
+	@${GCC} ${GCCFLAGS} ${DIR_ARCH}/kernel/isr.c -o ${DIR_ARCH}/kernel/isr.o
+	@${ASM} ${ASMFLAGS} ${DIR_ARCH}/kernel/isrs.s -o ${DIR_ARCH}/kernel/isrs.o
+	@${GCC} ${GCCFLAGS} ${DIR_ARCH}/kernel/mmu.c -o ${DIR_ARCH}/kernel/mmu.o
+	@${GCC} ${GCCFLAGS} ${DIR_ARCH}/kernel/syscall.c -o ${DIR_ARCH}/kernel/syscall.o
+	@${GCC} ${GCCFLAGS} ${DIR_ARCH}/kernel/tss.c -o ${DIR_ARCH}/kernel/tss.o
+	@${ASM} ${ASMFLAGS} ${DIR_ARCH}/kernel/tsss.s -o ${DIR_ARCH}/kernel/tsss.o
 
 modules: lib
 	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_MODULES}/elf/elf.c -o ${DIR_SOURCE_MODULES}/elf/elf.o
 	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_MODULES}/tty/tty.c -o ${DIR_SOURCE_MODULES}/tty/tty.o
-	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_ARCH_MODULES}/ata/ata.c -o ${DIR_SOURCE_ARCH_MODULES}/ata/ata.o
-	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_ARCH_MODULES}/io/io.c -o ${DIR_SOURCE_ARCH_MODULES}/io/io.o
-	@${ASM} ${ASMFLAGS} ${DIR_SOURCE_ARCH_MODULES}/io/ios.s -o ${DIR_SOURCE_ARCH_MODULES}/io/ios.o
-	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_ARCH_MODULES}/kbd/kbd.c -o ${DIR_SOURCE_ARCH_MODULES}/kbd/kbd.o
-	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_ARCH_MODULES}/pci/pci.c -o ${DIR_SOURCE_ARCH_MODULES}/pci/pci.o
-	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_ARCH_MODULES}/pit/pit.c -o ${DIR_SOURCE_ARCH_MODULES}/pit/pit.o
-	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_ARCH_MODULES}/rtc/rtc.c -o ${DIR_SOURCE_ARCH_MODULES}/rtc/rtc.o
-	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_ARCH_MODULES}/serial/serial.c -o ${DIR_SOURCE_ARCH_MODULES}/serial/serial.o
-	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_ARCH_MODULES}/vga/vga.c -o ${DIR_SOURCE_ARCH_MODULES}/vga/vga.o
+	@${GCC} ${GCCFLAGS} ${DIR_ARCH}/modules/ata/ata.c -o ${DIR_ARCH}/modules/ata/ata.o
+	@${GCC} ${GCCFLAGS} ${DIR_ARCH}/modules/io/io.c -o ${DIR_ARCH}/modules/io/io.o
+	@${ASM} ${ASMFLAGS} ${DIR_ARCH}/modules/io/ios.s -o ${DIR_ARCH}/modules/io/ios.o
+	@${GCC} ${GCCFLAGS} ${DIR_ARCH}/modules/kbd/kbd.c -o ${DIR_ARCH}/modules/kbd/kbd.o
+	@${GCC} ${GCCFLAGS} ${DIR_ARCH}/modules/pci/pci.c -o ${DIR_ARCH}/modules/pci/pci.o
+	@${GCC} ${GCCFLAGS} ${DIR_ARCH}/modules/pit/pit.c -o ${DIR_ARCH}/modules/pit/pit.o
+	@${GCC} ${GCCFLAGS} ${DIR_ARCH}/modules/rtc/rtc.c -o ${DIR_ARCH}/modules/rtc/rtc.o
+	@${GCC} ${GCCFLAGS} ${DIR_ARCH}/modules/serial/serial.c -o ${DIR_ARCH}/modules/serial/serial.o
+	@${GCC} ${GCCFLAGS} ${DIR_ARCH}/modules/vga/vga.c -o ${DIR_ARCH}/modules/vga/vga.o
 
 kernel: arch-${ARCH} modules
 	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_KERNEL}/initrd.c -o ${DIR_SOURCE_KERNEL}/initrd.o
@@ -80,47 +76,47 @@ kernel: arch-${ARCH} modules
     ${DIR_SOURCE_KERNEL}/vfs.o \
     ${DIR_SOURCE_MODULES}/elf/elf.o \
     ${DIR_SOURCE_MODULES}/tty/tty.o \
-    ${DIR_SOURCE_ARCH_KERNEL}/arch.o \
-    ${DIR_SOURCE_ARCH_KERNEL}/cpu.o \
-    ${DIR_SOURCE_ARCH_KERNEL}/fpu.o \
-    ${DIR_SOURCE_ARCH_KERNEL}/fpus.o \
-    ${DIR_SOURCE_ARCH_KERNEL}/gdt.o \
-    ${DIR_SOURCE_ARCH_KERNEL}/gdts.o \
-    ${DIR_SOURCE_ARCH_KERNEL}/idt.o \
-    ${DIR_SOURCE_ARCH_KERNEL}/idts.o \
-    ${DIR_SOURCE_ARCH_KERNEL}/init.o \
-    ${DIR_SOURCE_ARCH_KERNEL}/irqs.o \
-    ${DIR_SOURCE_ARCH_KERNEL}/isrs.o \
-    ${DIR_SOURCE_ARCH_KERNEL}/irq.o \
-    ${DIR_SOURCE_ARCH_KERNEL}/isr.o \
-    ${DIR_SOURCE_ARCH_KERNEL}/mmu.o \
-    ${DIR_SOURCE_ARCH_KERNEL}/syscall.o \
-    ${DIR_SOURCE_ARCH_KERNEL}/tss.o \
-    ${DIR_SOURCE_ARCH_KERNEL}/tsss.o \
-    ${DIR_SOURCE_ARCH_MODULES}/ata/ata.o \
-    ${DIR_SOURCE_ARCH_MODULES}/io/io.o \
-    ${DIR_SOURCE_ARCH_MODULES}/io/ios.o \
-    ${DIR_SOURCE_ARCH_MODULES}/kbd/kbd.o \
-    ${DIR_SOURCE_ARCH_MODULES}/pci/pci.o \
-    ${DIR_SOURCE_ARCH_MODULES}/pit/pit.o \
-    ${DIR_SOURCE_ARCH_MODULES}/rtc/rtc.o \
-    ${DIR_SOURCE_ARCH_MODULES}/serial/serial.o \
-    ${DIR_SOURCE_ARCH_MODULES}/vga/vga.o \
+    ${DIR_ARCH}/kernel/arch.o \
+    ${DIR_ARCH}/kernel/cpu.o \
+    ${DIR_ARCH}/kernel/fpu.o \
+    ${DIR_ARCH}/kernel/fpus.o \
+    ${DIR_ARCH}/kernel/gdt.o \
+    ${DIR_ARCH}/kernel/gdts.o \
+    ${DIR_ARCH}/kernel/idt.o \
+    ${DIR_ARCH}/kernel/idts.o \
+    ${DIR_ARCH}/kernel/init.o \
+    ${DIR_ARCH}/kernel/irqs.o \
+    ${DIR_ARCH}/kernel/isrs.o \
+    ${DIR_ARCH}/kernel/irq.o \
+    ${DIR_ARCH}/kernel/isr.o \
+    ${DIR_ARCH}/kernel/mmu.o \
+    ${DIR_ARCH}/kernel/syscall.o \
+    ${DIR_ARCH}/kernel/tss.o \
+    ${DIR_ARCH}/kernel/tsss.o \
+    ${DIR_ARCH}/modules/ata/ata.o \
+    ${DIR_ARCH}/modules/io/io.o \
+    ${DIR_ARCH}/modules/io/ios.o \
+    ${DIR_ARCH}/modules/kbd/kbd.o \
+    ${DIR_ARCH}/modules/pci/pci.o \
+    ${DIR_ARCH}/modules/pit/pit.o \
+    ${DIR_ARCH}/modules/rtc/rtc.o \
+    ${DIR_ARCH}/modules/serial/serial.o \
+    ${DIR_ARCH}/modules/vga/vga.o \
     ${DIR_SOURCE_LIB}/memory.o \
     ${DIR_SOURCE_LIB}/file.o \
     ${DIR_SOURCE_LIB}/string.o \
-    ${DIR_SOURCE_ARCH_LIB}/calls.o \
+    ${DIR_ARCH}/lib/calls.o \
     -o root/boot/kernel
 
 ramdisk: kernel
-	@cp ${DIR_SOURCE_ARCH_MODULES}/ata/ata.o ${DIR_IMAGE}/lib/modules/ata.ko
-	@cp ${DIR_SOURCE_ARCH_MODULES}/io/io.o ${DIR_IMAGE}/lib/modules/io.ko
-	@cp ${DIR_SOURCE_ARCH_MODULES}/kbd/kbd.o ${DIR_IMAGE}/lib/modules/kbd.ko
-	@cp ${DIR_SOURCE_ARCH_MODULES}/pci/pci.o ${DIR_IMAGE}/lib/modules/pci.ko
-	@cp ${DIR_SOURCE_ARCH_MODULES}/pit/pit.o ${DIR_IMAGE}/lib/modules/pit.ko
-	@cp ${DIR_SOURCE_ARCH_MODULES}/rtc/rtc.o ${DIR_IMAGE}/lib/modules/rtc.ko
-	@cp ${DIR_SOURCE_ARCH_MODULES}/serial/serial.o ${DIR_IMAGE}/lib/modules/serial.ko
-	@cp ${DIR_SOURCE_ARCH_MODULES}/vga/vga.o ${DIR_IMAGE}/lib/modules/vga.ko
+	@cp ${DIR_ARCH}/modules/ata/ata.o ${DIR_IMAGE}/lib/modules/ata.ko
+	@cp ${DIR_ARCH}/modules/io/io.o ${DIR_IMAGE}/lib/modules/io.ko
+	@cp ${DIR_ARCH}/modules/kbd/kbd.o ${DIR_IMAGE}/lib/modules/kbd.ko
+	@cp ${DIR_ARCH}/modules/pci/pci.o ${DIR_IMAGE}/lib/modules/pci.ko
+	@cp ${DIR_ARCH}/modules/pit/pit.o ${DIR_IMAGE}/lib/modules/pit.ko
+	@cp ${DIR_ARCH}/modules/rtc/rtc.o ${DIR_IMAGE}/lib/modules/rtc.ko
+	@cp ${DIR_ARCH}/modules/serial/serial.o ${DIR_IMAGE}/lib/modules/serial.ko
+	@cp ${DIR_ARCH}/modules/vga/vga.o ${DIR_IMAGE}/lib/modules/vga.ko
 	@${GCC} ${GCCFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/cat.c -o ${DIR_SOURCE_BIN}/cat.o
 	@${GCC} ${GCCFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/cd.c -o ${DIR_SOURCE_BIN}/cd.o
 	@${GCC} ${GCCFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/clear.c -o ${DIR_SOURCE_BIN}/clear.o
@@ -136,24 +132,24 @@ ramdisk: kernel
 	@${GCC} ${GCCFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/tar.c -o ${DIR_SOURCE_BIN}/tar.o
 	@${GCC} ${GCCFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/timer.c -o ${DIR_SOURCE_BIN}/timer.o
 	@${GCC} ${GCCFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/vga.c -o ${DIR_SOURCE_BIN}/vga.o
-	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/cat.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_SOURCE_ARCH_LIB}/calls.o -o ${DIR_IMAGE_BIN}/cat
-	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/cd.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_SOURCE_ARCH_LIB}/calls.o -o ${DIR_IMAGE_BIN}/cd
-	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/clear.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_SOURCE_ARCH_LIB}/calls.o -o ${DIR_IMAGE_BIN}/clear
-	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/cpu.o ${DIR_SOURCE_BIN}/cpus.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_SOURCE_ARCH_LIB}/calls.o -o ${DIR_IMAGE_BIN}/cpu
-	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/date.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_SOURCE_ARCH_LIB}/calls.o -o ${DIR_IMAGE_BIN}/date
-	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/echo.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_SOURCE_ARCH_LIB}/calls.o -o ${DIR_IMAGE_BIN}/echo
-	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/elf.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_SOURCE_ARCH_LIB}/calls.o -o ${DIR_IMAGE_BIN}/elf
-	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/hello.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_SOURCE_ARCH_LIB}/calls.o -o ${DIR_IMAGE_BIN}/hello
-	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/ls.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_SOURCE_ARCH_LIB}/calls.o -o ${DIR_IMAGE_BIN}/ls
-	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/reboot.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_SOURCE_ARCH_LIB}/calls.o -o ${DIR_IMAGE_BIN}/reboot
-	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/shell.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_SOURCE_ARCH_LIB}/calls.o -o ${DIR_IMAGE_BIN}/shell
-	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/tar.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_SOURCE_ARCH_LIB}/calls.o -o ${DIR_IMAGE_BIN}/tar
-	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/timer.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_SOURCE_ARCH_LIB}/calls.o -o ${DIR_IMAGE_BIN}/timer
-	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/vga.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_SOURCE_ARCH_LIB}/calls.o -o ${DIR_IMAGE_BIN}/vga
+	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/cat.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_ARCH}/lib/calls.o -o ${DIR_IMAGE}/bin/cat
+	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/cd.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_ARCH}/lib/calls.o -o ${DIR_IMAGE}/bin/cd
+	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/clear.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_ARCH}/lib/calls.o -o ${DIR_IMAGE}/bin/clear
+	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/cpu.o ${DIR_SOURCE_BIN}/cpus.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_ARCH}/lib/calls.o -o ${DIR_IMAGE}/bin/cpu
+	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/date.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_ARCH}/lib/calls.o -o ${DIR_IMAGE}/bin/date
+	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/echo.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_ARCH}/lib/calls.o -o ${DIR_IMAGE}/bin/echo
+	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/elf.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_ARCH}/lib/calls.o -o ${DIR_IMAGE}/bin/elf
+	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/hello.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_ARCH}/lib/calls.o -o ${DIR_IMAGE}/bin/hello
+	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/ls.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_ARCH}/lib/calls.o -o ${DIR_IMAGE}/bin/ls
+	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/reboot.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_ARCH}/lib/calls.o -o ${DIR_IMAGE}/bin/reboot
+	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/shell.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_ARCH}/lib/calls.o -o ${DIR_IMAGE}/bin/shell
+	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/tar.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_ARCH}/lib/calls.o -o ${DIR_IMAGE}/bin/tar
+	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/timer.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_ARCH}/lib/calls.o -o ${DIR_IMAGE}/bin/timer
+	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/vga.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_ARCH}/lib/calls.o -o ${DIR_IMAGE}/bin/vga
 	@tar -cvf initrd.tar ${DIR_IMAGE}
 	@find ${DIR_IMAGE} -depth -print | cpio -ov > initrd.cpio
-	@mv initrd.tar ${DIR_IMAGE_BOOT}
-	@mv initrd.cpio ${DIR_IMAGE_BOOT}
+	@mv initrd.tar ${DIR_IMAGE}/boot
+	@mv initrd.cpio ${DIR_IMAGE}/boot
     
 
 image:
