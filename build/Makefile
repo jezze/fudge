@@ -15,7 +15,7 @@ GCC=gcc
 GCCFLAGS=-c -O2 -I../include -Wall -Wextra -ffreestanding -nostdlib -nostartfiles -nodefaultlibs
 GCCFLAGS_RAMDISK=-c -O2 -I../include/lib -Wall -Wextra -ffreestanding -nostdlib -nostartfiles -nodefaultlibs
 LD=ld
-LDFLAGS=-T./linker-${ARCH}.ld
+LDFLAGS=-T${DIR_ARCH}/linker.ld
 LDFLAGS_RAMDISK=-e main
 
 .PHONY: lib arch-x86 modules kernel ramdisk image iso clean
