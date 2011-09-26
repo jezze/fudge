@@ -2,18 +2,18 @@
 
 ARCH=x86
 
-DIR_IMAGE=root
-DIR_ARCH=../arch/${ARCH}
-DIR_SOURCE_BIN=../bin
-DIR_SOURCE_KERNEL=../kernel
-DIR_SOURCE_LIB=../lib
-DIR_SOURCE_MODULES=../modules
+DIR_IMAGE=build/root
+DIR_ARCH=arch/${ARCH}
+DIR_SOURCE_BIN=bin
+DIR_SOURCE_KERNEL=kernel
+DIR_SOURCE_LIB=lib
+DIR_SOURCE_MODULES=modules
 
 ASM=nasm
 ASMFLAGS=-f elf
 GCC=gcc
-GCCFLAGS=-c -O2 -I../include -Wall -Wextra -ffreestanding -nostdlib -nostartfiles -nodefaultlibs
-GCCFLAGS_RAMDISK=-c -O2 -I../include/lib -Wall -Wextra -ffreestanding -nostdlib -nostartfiles -nodefaultlibs
+GCCFLAGS=-c -O2 -Iinclude -Wall -Wextra -ffreestanding -nostdlib -nostartfiles -nodefaultlibs
+GCCFLAGS_RAMDISK=-c -O2 -Iinclude/lib -Wall -Wextra -ffreestanding -nostdlib -nostartfiles -nodefaultlibs
 LD=ld
 LDFLAGS=-T${DIR_ARCH}/linker.ld
 LDFLAGS_RAMDISK=-e main
@@ -185,18 +185,18 @@ clean:
 	@rm -f ${DIR_IMAGE}/boot/initrd
 	@rm -f ${DIR_IMAGE}/boot/initrd.tar
 	@rm -f ${DIR_IMAGE}/boot/initrd.cpio
-	@rm -f ../arch/arm/kernel/*.o
-	@rm -f ../arch/arm/lib/*.o
-	@rm -f ../arch/x86/kernel/*.o
-	@rm -f ../arch/x86/lib/*.o
-	@rm -f ../arch/x86/modules/ata/*.o
-	@rm -f ../arch/x86/modules/io/*.o
-	@rm -f ../arch/x86/modules/kbd/*.o
-	@rm -f ../arch/x86/modules/pci/*.o
-	@rm -f ../arch/x86/modules/pit/*.o
-	@rm -f ../arch/x86/modules/rtc/*.o
-	@rm -f ../arch/x86/modules/serial/*.o
-	@rm -f ../arch/x86/modules/vga/*.o
+	@rm -f arch/arm/kernel/*.o
+	@rm -f arch/arm/lib/*.o
+	@rm -f arch/x86/kernel/*.o
+	@rm -f arch/x86/lib/*.o
+	@rm -f arch/x86/modules/ata/*.o
+	@rm -f arch/x86/modules/io/*.o
+	@rm -f arch/x86/modules/kbd/*.o
+	@rm -f arch/x86/modules/pci/*.o
+	@rm -f arch/x86/modules/pit/*.o
+	@rm -f arch/x86/modules/rtc/*.o
+	@rm -f arch/x86/modules/serial/*.o
+	@rm -f arch/x86/modules/vga/*.o
 	@rm -f ${DIR_SOURCE_BIN}/*.o
 	@rm -f ${DIR_SOURCE_KERNEL}/*.o
 	@rm -f ${DIR_SOURCE_LIB}/*.o
