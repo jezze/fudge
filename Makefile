@@ -29,6 +29,7 @@ lib:
 
 arch-x86: lib
 	@${GCC} ${GCCFLAGS} ${DIR_ARCH}/kernel/arch.c -o ${DIR_ARCH}/kernel/arch.o
+	@${ASM} ${ASMFLAGS} ${DIR_ARCH}/kernel/calls.s -o ${DIR_ARCH}/kernel/calls.o
 	@${ASM} ${ASMFLAGS} ${DIR_ARCH}/kernel/cpu.s -o ${DIR_ARCH}/kernel/cpu.o
 	@${GCC} ${GCCFLAGS} ${DIR_ARCH}/kernel/fpu.c -o ${DIR_ARCH}/kernel/fpu.o
 	@${ASM} ${ASMFLAGS} ${DIR_ARCH}/kernel/fpus.s -o ${DIR_ARCH}/kernel/fpus.o
@@ -43,7 +44,6 @@ arch-x86: lib
 	@${ASM} ${ASMFLAGS} ${DIR_ARCH}/kernel/isrs.s -o ${DIR_ARCH}/kernel/isrs.o
 	@${GCC} ${GCCFLAGS} ${DIR_ARCH}/kernel/mmu.c -o ${DIR_ARCH}/kernel/mmu.o
 	@${GCC} ${GCCFLAGS} ${DIR_ARCH}/kernel/syscall.c -o ${DIR_ARCH}/kernel/syscall.o
-	@${ASM} ${ASMFLAGS} ${DIR_ARCH}/kernel/calls.s -o ${DIR_ARCH}/kernel/calls.o
 	@${GCC} ${GCCFLAGS} ${DIR_ARCH}/kernel/tss.c -o ${DIR_ARCH}/kernel/tss.o
 	@${ASM} ${ASMFLAGS} ${DIR_ARCH}/kernel/tsss.s -o ${DIR_ARCH}/kernel/tsss.o
 
@@ -77,6 +77,7 @@ kernel: arch-${ARCH} modules
 		${DIR_SOURCE_MODULES}/elf/elf.o \
 		${DIR_SOURCE_MODULES}/tty/tty.o \
 		${DIR_ARCH}/kernel/arch.o \
+		${DIR_ARCH}/kernel/calls.o \
 		${DIR_ARCH}/kernel/cpu.o \
 		${DIR_ARCH}/kernel/fpu.o \
 		${DIR_ARCH}/kernel/fpus.o \
@@ -105,7 +106,6 @@ kernel: arch-${ARCH} modules
 		${DIR_SOURCE_LIB}/memory.o \
 		${DIR_SOURCE_LIB}/file.o \
 		${DIR_SOURCE_LIB}/string.o \
-		${DIR_ARCH}/kernel/calls.o \
 		-o ${DIR_IMAGE}/boot/kernel
 
 ramdisk: kernel
