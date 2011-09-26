@@ -151,8 +151,8 @@ ramdisk: kernel
 	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/timer.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_SOURCE_ARCH_LIB}/calls.o -o ${DIR_IMAGE_BIN}/timer
 	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/vga.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_SOURCE_ARCH_LIB}/calls.o -o ${DIR_IMAGE_BIN}/vga
 	@tar -cvf initrd.tar ${DIR_IMAGE}
-	@mv initrd.tar ${DIR_IMAGE_BOOT}
 	@find ${DIR_IMAGE} -depth -print | cpio -ov > initrd.cpio
+	@mv initrd.tar ${DIR_IMAGE_BOOT}
 	@mv initrd.cpio ${DIR_IMAGE_BOOT}
     
 
