@@ -1,7 +1,4 @@
-#include <call.h>
-#include <elf.h>
-#include <file.h>
-#include <string.h>
+#include <fudge.h>
 
 static struct elf_header *h;
 static struct elf_section_headers *sh[32];

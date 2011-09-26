@@ -1,7 +1,4 @@
-#include <call.h>
-#include <file.h>
-#include <memory.h>
-#include <string.h>
+#include <fudge.h>
 
 void get_path(char *buffer, char *arg)
 {

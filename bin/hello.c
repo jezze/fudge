@@ -1,6 +1,4 @@
-#include <call.h>
-#include <file.h>
-#include <string.h>
+#include <fudge.h>
 
 void main(int argc, char *argv[])
 {

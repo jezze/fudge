@@ -1,7 +1,4 @@
-#include <call.h>
-#include <file.h>
-#include <memory.h>
-#include <string.h>
+#include <fudge.h>
 
 #define SHELL_BUFFER_SIZE 256
 
