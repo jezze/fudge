@@ -21,8 +21,6 @@ GCCFLAGS_RAMDISK=-c -O2 -I../include/lib -Wall -Wextra -ffreestanding -nostdlib 
 LD=ld
 LDFLAGS=-T./linker-${ARCH}.ld
 LDFLAGS_RAMDISK=-e main
-TAR=tar
-TARFLAGS=-cvf
 
 .PHONY: lib arch-x86 modules kernel ramdisk image iso clean
 
@@ -152,8 +150,11 @@ ramdisk: kernel
 	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/tar.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_SOURCE_ARCH_LIB}/calls.o -o ${DIR_IMAGE_BIN}/tar
 	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/timer.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_SOURCE_ARCH_LIB}/calls.o -o ${DIR_IMAGE_BIN}/timer
 	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/vga.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_SOURCE_ARCH_LIB}/calls.o -o ${DIR_IMAGE_BIN}/vga
-	@${TAR} ${TARFLAGS} initrd.tar ${DIR_IMAGE}
+	@tar -cvf initrd.tar ${DIR_IMAGE}
 	@mv initrd.tar ${DIR_IMAGE_BOOT}
+	@find ${DIR_IMAGE} -depth -print | cpio -ov > initrd.cpio
+	@mv initrd.cpio ${DIR_IMAGE_BOOT}
+    
 
 image:
 	@dd if=/dev/zero of=fudge.img bs=512 count=2880
@@ -188,6 +189,7 @@ clean:
 	@rm -f root/boot/kernel
 	@rm -f root/boot/initrd
 	@rm -f root/boot/initrd.tar
+	@rm -f root/boot/initrd.cpio
 	@rm -f ../arch/arm/kernel/*.o
 	@rm -f ../arch/arm/lib/*.o
 	@rm -f ../arch/x86/kernel/*.o
