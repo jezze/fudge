@@ -26,7 +26,6 @@ lib:
 	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_LIB}/file.c -o ${DIR_SOURCE_LIB}/file.o
 	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_LIB}/memory.c -o ${DIR_SOURCE_LIB}/memory.o
 	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_LIB}/string.c -o ${DIR_SOURCE_LIB}/string.o
-	@${ASM} ${ASMFLAGS} ${DIR_ARCH}/lib/calls.s -o ${DIR_ARCH}/lib/calls.o
 
 arch-x86: lib
 	@${GCC} ${GCCFLAGS} ${DIR_ARCH}/kernel/arch.c -o ${DIR_ARCH}/kernel/arch.o
@@ -44,6 +43,7 @@ arch-x86: lib
 	@${ASM} ${ASMFLAGS} ${DIR_ARCH}/kernel/isrs.s -o ${DIR_ARCH}/kernel/isrs.o
 	@${GCC} ${GCCFLAGS} ${DIR_ARCH}/kernel/mmu.c -o ${DIR_ARCH}/kernel/mmu.o
 	@${GCC} ${GCCFLAGS} ${DIR_ARCH}/kernel/syscall.c -o ${DIR_ARCH}/kernel/syscall.o
+	@${ASM} ${ASMFLAGS} ${DIR_ARCH}/kernel/calls.s -o ${DIR_ARCH}/kernel/calls.o
 	@${GCC} ${GCCFLAGS} ${DIR_ARCH}/kernel/tss.c -o ${DIR_ARCH}/kernel/tss.o
 	@${ASM} ${ASMFLAGS} ${DIR_ARCH}/kernel/tsss.s -o ${DIR_ARCH}/kernel/tsss.o
 
@@ -105,7 +105,7 @@ kernel: arch-${ARCH} modules
 		${DIR_SOURCE_LIB}/memory.o \
 		${DIR_SOURCE_LIB}/file.o \
 		${DIR_SOURCE_LIB}/string.o \
-		${DIR_ARCH}/lib/calls.o \
+		${DIR_ARCH}/kernel/calls.o \
 		-o ${DIR_IMAGE}/boot/kernel
 
 ramdisk: kernel
@@ -132,20 +132,20 @@ ramdisk: kernel
 	@${GCC} ${GCCFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/tar.c -o ${DIR_SOURCE_BIN}/tar.o
 	@${GCC} ${GCCFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/timer.c -o ${DIR_SOURCE_BIN}/timer.o
 	@${GCC} ${GCCFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/vga.c -o ${DIR_SOURCE_BIN}/vga.o
-	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/cat.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_ARCH}/lib/calls.o -o ${DIR_IMAGE}/bin/cat
-	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/cd.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_ARCH}/lib/calls.o -o ${DIR_IMAGE}/bin/cd
-	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/clear.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_ARCH}/lib/calls.o -o ${DIR_IMAGE}/bin/clear
-	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/cpu.o ${DIR_SOURCE_BIN}/cpus.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_ARCH}/lib/calls.o -o ${DIR_IMAGE}/bin/cpu
-	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/date.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_ARCH}/lib/calls.o -o ${DIR_IMAGE}/bin/date
-	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/echo.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_ARCH}/lib/calls.o -o ${DIR_IMAGE}/bin/echo
-	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/elf.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_ARCH}/lib/calls.o -o ${DIR_IMAGE}/bin/elf
-	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/hello.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_ARCH}/lib/calls.o -o ${DIR_IMAGE}/bin/hello
-	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/ls.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_ARCH}/lib/calls.o -o ${DIR_IMAGE}/bin/ls
-	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/reboot.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_ARCH}/lib/calls.o -o ${DIR_IMAGE}/bin/reboot
-	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/shell.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_ARCH}/lib/calls.o -o ${DIR_IMAGE}/bin/shell
-	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/tar.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_ARCH}/lib/calls.o -o ${DIR_IMAGE}/bin/tar
-	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/timer.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_ARCH}/lib/calls.o -o ${DIR_IMAGE}/bin/timer
-	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/vga.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_ARCH}/lib/calls.o -o ${DIR_IMAGE}/bin/vga
+	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/cat.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_ARCH}/kernel/calls.o -o ${DIR_IMAGE}/bin/cat
+	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/cd.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_ARCH}/kernel/calls.o -o ${DIR_IMAGE}/bin/cd
+	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/clear.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_ARCH}/kernel/calls.o -o ${DIR_IMAGE}/bin/clear
+	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/cpu.o ${DIR_SOURCE_BIN}/cpus.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_ARCH}/kernel/calls.o -o ${DIR_IMAGE}/bin/cpu
+	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/date.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_ARCH}/kernel/calls.o -o ${DIR_IMAGE}/bin/date
+	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/echo.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_ARCH}/kernel/calls.o -o ${DIR_IMAGE}/bin/echo
+	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/elf.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_ARCH}/kernel/calls.o -o ${DIR_IMAGE}/bin/elf
+	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/hello.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_ARCH}/kernel/calls.o -o ${DIR_IMAGE}/bin/hello
+	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/ls.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_ARCH}/kernel/calls.o -o ${DIR_IMAGE}/bin/ls
+	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/reboot.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_ARCH}/kernel/calls.o -o ${DIR_IMAGE}/bin/reboot
+	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/shell.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_ARCH}/kernel/calls.o -o ${DIR_IMAGE}/bin/shell
+	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/tar.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_ARCH}/kernel/calls.o -o ${DIR_IMAGE}/bin/tar
+	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/timer.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_ARCH}/kernel/calls.o -o ${DIR_IMAGE}/bin/timer
+	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/vga.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_ARCH}/kernel/calls.o -o ${DIR_IMAGE}/bin/vga
 	@tar -cvf initrd.tar ${DIR_IMAGE}
 	@find ${DIR_IMAGE} -depth -print | cpio -ov > initrd.cpio
 	@mv initrd.tar ${DIR_IMAGE}/boot
