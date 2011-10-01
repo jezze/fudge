@@ -1,8 +1,6 @@
-FUDGE
-=====
+# FUDGE
 
-ABOUT
------
+## ABOUT
 
 Fudge is a very basic operating system written in C and Assembler. It is inspired by many other projects like Minix, Plan9, L4 and AmigaOS but Fudge is fundamentally different in many aspects.
 
@@ -22,8 +20,7 @@ It is not possible to dynamically allocate memory in run-time. All memory has to
 * Static paging
 Because only one program can run at a time and the amount of memory the entire operating system uses can not exceed the amount of physical RAM there is no need to fetch or store pages to frames or disk. Therefor there are only two page directories set up. One for the kernel and one for any current running program. The kernel page directory runs in kernel space and any program runs in userspace so memory protection do exist to prevent programs to override kernel data.
                                         
-FEATURES
---------
+## FEATURES
 
 I have a long way to go but these are the features I’ve implemented so far. Some of them might not work or are incomplete at the moment but they exist in one way or another.
 
@@ -44,12 +41,11 @@ I have a long way to go but these are the features I’ve implemented so far. So
 * Flat binary support
 * ELF binary support
 
-INSTALL
--------
+## BUILDING
 
 NOTE: The ARM port is not working at the moment so this is for x86 only.
 
-PREREQUISITIES
+### PREREQUISITIES
 
 To try Fudge you need a Unix compatible system like Linux or *BSD. It might work on Windows if you have cygwin installed but this has not been tested.
 
@@ -62,15 +58,14 @@ To compile and run Fudge you need to have the following tools installed.
 * genisoimage (to create cd image)
 * qemu or bochs (emulator)
 
-FETCHING
+### FETCHING
 
 Download the source either directly or by using git.
 
 $ git clone git://github.com/Jezze/fudge.git fudge
 
-COMPILING
+### COMPILING
 
-$ cd build
 $ make
 
 If everything went well these files should have appeared:
@@ -78,12 +73,11 @@ If everything went well these files should have appeared:
 build/root/boot/kernel
 build/root/boot/initrd.tar
 
-Create an iso and run in Qemu
+Create an iso.
 
 $ make iso
-$ sh x86-qemu-iso.sh
 
-CLEANING
+### CLEANING
 
 This will remove all post-compiled content.
 
