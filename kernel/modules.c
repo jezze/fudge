@@ -105,7 +105,26 @@ void modules_register_driver(unsigned int type, struct modules_driver *driver)
 
 }
 
-static unsigned int modules_node_read(struct vfs_node *node, unsigned int count, void *buffer)
+static struct vfs_node *modules_filesystem_lookup(struct vfs_filesystem *filesystem, char *path)
+{
+
+    unsigned int i;
+
+    for (i = 0; modulesDevices[i]; i++)
+    {
+
+        unsigned int count = string_length(modulesDevices[i]->name) + 1;
+
+        if (!memory_compare(path, modulesDevices[i]->name, count))
+            return &modulesDevices[i]->node;
+
+    }
+
+    return 0;
+
+}
+
+static unsigned int modules_filesystem_read(struct vfs_node *node, unsigned int count, void *buffer)
 {
 
     memory_set(buffer, 0, 1);
@@ -139,25 +158,6 @@ static unsigned int modules_node_read(struct vfs_node *node, unsigned int count,
 
 }
 
-static struct vfs_node *modules_filesystem_lookup(struct vfs_filesystem *filesystem, char *path)
-{
-
-    unsigned int i;
-
-    for (i = 0; modulesDevices[i]; i++)
-    {
-
-        unsigned int count = string_length(modulesDevices[i]->name) + 1;
-
-        if (!memory_compare(path, modulesDevices[i]->name, count))
-            return &modulesDevices[i]->node;
-
-    }
-
-    return 0;
-
-}
-
 static void modules_init_devices()
 {
 
@@ -179,7 +179,7 @@ void modules_init()
 
     string_copy(modulesFilesystem.name, "dev");
     modulesFilesystem.root = &modulesRoot;
-    modulesFilesystem.root->operations.read = modules_node_read;
+    modulesFilesystem.root->operations.read = modules_filesystem_read;
     modulesFilesystem.lookup = modules_filesystem_lookup;
     vfs_register_filesystem(&modulesFilesystem);
 

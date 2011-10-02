@@ -57,7 +57,7 @@ static unsigned int initrd_parse(unsigned int address)
         string_copy(initrdFileNode->name, header->name + start);
         initrdFileNode->size = size;
         initrdFileNode->header = header;
-        initrdFileNode->data = (void *)((unsigned int)header + TAR_BLOCK_SIZE);
+        initrdFileNode->data = (void *)(address + TAR_BLOCK_SIZE);
         initrdFileNode->base.id = i;
         initrdFileNode->base.operations.read = initrd_node_read;
 
@@ -91,7 +91,7 @@ static struct vfs_node *initrd_filesystem_lookup(struct vfs_filesystem *filesyst
 
 }
 
-static unsigned int initrd_filesystem_node_read(struct vfs_node *node, unsigned int count, void *buffer)
+static unsigned int initrd_filesystem_read(struct vfs_node *node, unsigned int count, void *buffer)
 {
 
     memory_set(buffer, 0, 1);
@@ -114,7 +114,7 @@ void initrd_init(unsigned int *address)
 
     string_copy(initrdFilesystem.base.name, "initrd");
     initrdFilesystem.base.root = &initrdRoot;
-    initrdFilesystem.base.root->operations.read = initrd_filesystem_node_read;
+    initrdFilesystem.base.root->operations.read = initrd_filesystem_read;
     initrdFilesystem.base.lookup = initrd_filesystem_lookup;
     initrdFilesystem.nodesCount = initrd_parse(*address);
     vfs_register_filesystem(&initrdFilesystem.base);

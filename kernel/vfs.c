@@ -73,27 +73,6 @@ struct vfs_descriptor *vfs_get_descriptor(unsigned int index)
 
 }
 
-static unsigned int vfs_node_read(struct vfs_node *node, unsigned int count, void *buffer)
-{
-
-    memory_set(buffer, 0, 1);
-
-    unsigned int i;
-
-    for (i = 0; vfsFilesystems[i]; i++)
-    {
-
-        if (vfsFilesystems[i] == &vfsFilesystem)
-            continue;
-
-        vfsFilesystems[i]->root->operations.read(vfsFilesystems[i]->root, count, buffer + string_length(buffer));
-
-    }
-
-    return string_length(buffer);
-
-}
-
 static struct vfs_node *vfs_filesystem_lookup(struct vfs_filesystem *filesystem, char *path)
 {
 
@@ -119,13 +98,33 @@ static struct vfs_node *vfs_filesystem_lookup(struct vfs_filesystem *filesystem,
 
 }
 
+static unsigned int vfs_filesystem_read(struct vfs_node *node, unsigned int count, void *buffer)
+{
+
+    memory_set(buffer, 0, 1);
+
+    unsigned int i;
+
+    for (i = 0; vfsFilesystems[i]; i++)
+    {
+
+        if (vfsFilesystems[i] == &vfsFilesystem)
+            continue;
+
+        vfsFilesystems[i]->root->operations.read(vfsFilesystems[i]->root, count, buffer + string_length(buffer));
+
+    }
+
+    return string_length(buffer);
+
+}
+
 void vfs_init()
 {
 
-    vfsRoot.operations.read = vfs_node_read;
-
     string_copy(vfsFilesystem.name, "/");
     vfsFilesystem.root = &vfsRoot;
+    vfsFilesystem.root->operations.read = vfs_filesystem_read;
     vfsFilesystem.lookup = vfs_filesystem_lookup;
     vfs_register_filesystem(&vfsFilesystem);
 
