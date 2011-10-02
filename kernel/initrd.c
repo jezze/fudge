@@ -9,7 +9,7 @@
 static struct initrd_filesystem initrdFilesystem;
 static struct vfs_node initrdRoot;
 
-static unsigned int initrd_node_read(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int initrd_node_read(struct vfs_node *node, unsigned int count, void *buffer)
 {
 
     struct tar_header *header = initrdFilesystem.headers[node->id];
@@ -109,7 +109,7 @@ static struct vfs_node *initrd_filesystem_lookup(struct vfs_filesystem *filesyst
 
 }
 
-static unsigned int initrd_filesystem_node_read(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int initrd_filesystem_node_read(struct vfs_node *node, unsigned int count, void *buffer)
 {
 
     memory_set(buffer, 0, 1);

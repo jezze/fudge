@@ -31,7 +31,7 @@ static char kbdMapUS[256] =
 
 static struct kbd_device kbdDevice;
 
-static unsigned int kbd_device_read(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int kbd_device_read(struct vfs_node *node, unsigned int count, void *buffer)
 {
 
     char c = 0;
@@ -57,7 +57,7 @@ static unsigned int kbd_device_read(struct vfs_node *node, unsigned int offset, 
 
 }
 
-static unsigned int kbd_device_write(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int kbd_device_write(struct vfs_node *node, unsigned int count, void *buffer)
 {
 
     if ((kbdDevice.bufferHead + 1) % KBD_BUFFER_SIZE != kbdDevice.bufferTail)
@@ -98,7 +98,7 @@ static void kbd_handler(struct isr_registers *registers)
         if (kbdDevice.toggleShift)
             scancode += 128;
             
-        kbdDevice.base.node.operations.write(&kbdDevice.base.node, 0, 1, &kbdMapUS[scancode]);
+        kbdDevice.base.node.operations.write(&kbdDevice.base.node, 1, &kbdMapUS[scancode]);
 
     }
 

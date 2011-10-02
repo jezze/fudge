@@ -30,8 +30,6 @@ struct tty_device
     struct modules_device base;
     unsigned short cursorOffset;
     struct vga_device *vgaDevice;
-    unsigned int (*read)(char *buffer, unsigned int count, unsigned int offset);
-    unsigned int (*write)(char *buffer, unsigned int count, unsigned int offset);
 
 };
 

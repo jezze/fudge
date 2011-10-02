@@ -77,7 +77,7 @@ static void tty_putc(char c)
 
 }
 
-static unsigned int tty_device_write(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int tty_device_write(struct vfs_node *node, unsigned int count, void *buffer)
 {
 
     unsigned int i;
@@ -92,7 +92,7 @@ static unsigned int tty_device_write(struct vfs_node *node, unsigned int offset,
 
 }
 
-static unsigned int tty_cwd_device_read(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int tty_cwd_device_read(struct vfs_node *node, unsigned int count, void *buffer)
 {
 
     count = string_length(ttyCwdDevice.path);
@@ -103,7 +103,7 @@ static unsigned int tty_cwd_device_read(struct vfs_node *node, unsigned int offs
 
 }
 
-static unsigned int tty_cwd_device_write(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int tty_cwd_device_write(struct vfs_node *node, unsigned int count, void *buffer)
 {
 
     count = string_length(buffer);

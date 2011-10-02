@@ -102,7 +102,7 @@ void modules_register_driver(unsigned int type, struct modules_driver *driver)
 
 }
 
-static unsigned int modules_node_read(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int modules_node_read(struct vfs_node *node, unsigned int count, void *buffer)
 {
 
     memory_set(buffer, 0, 1);

@@ -65,7 +65,7 @@ static void syscall_read(struct syscall_registers *registers)
     if (node && node->operations.read)
     {
 
-        registers->eax = node->operations.read(node, 0, count, buffer);
+        registers->eax = node->operations.read(node, count, buffer);
 
         return;
 
@@ -87,7 +87,7 @@ static void syscall_write(struct syscall_registers *registers)
     if (node && node->operations.write)
     {
 
-        registers->eax = node->operations.write(node, 0, count, buffer);
+        registers->eax = node->operations.write(node, count, buffer);
 
         return;
 

@@ -52,7 +52,7 @@ static unsigned int ata_write_num(char *out, unsigned int num, unsigned int base
 
 }
 
-static unsigned int ata_device_read(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int ata_device_read(struct vfs_node *node, unsigned int count, void *buffer)
 {
 
     struct ata_device *device = ata_get_device(node);

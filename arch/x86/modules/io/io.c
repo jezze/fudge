@@ -6,7 +6,7 @@
 
 static struct io_device ioDevice;
 
-static unsigned int io_device_read(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int io_device_read(struct vfs_node *node, unsigned int count, void *buffer)
 {
 
     char *b = (char *)buffer;
@@ -20,7 +20,7 @@ static unsigned int io_device_read(struct vfs_node *node, unsigned int offset, u
 
 }
 
-static unsigned int io_device_write(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int io_device_write(struct vfs_node *node, unsigned int count, void *buffer)
 {
 
     char *b = (char *)buffer;

@@ -80,7 +80,7 @@ struct vfs_node *vfs_get(unsigned int index)
 
 }
 
-static unsigned int vfs_node_read(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int vfs_node_read(struct vfs_node *node, unsigned int count, void *buffer)
 {
 
     memory_set(buffer, 0, 1);
@@ -93,7 +93,7 @@ static unsigned int vfs_node_read(struct vfs_node *node, unsigned int offset, un
         if (vfsFilesystems[i] == &vfsFilesystem)
             continue;
 
-        vfsFilesystems[i]->root->operations.read(vfsFilesystems[i]->root, 0, count, buffer + string_length(buffer));
+        vfsFilesystems[i]->root->operations.read(vfsFilesystems[i]->root, count, buffer + string_length(buffer));
 
     }
 

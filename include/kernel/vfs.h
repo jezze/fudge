@@ -9,8 +9,8 @@ struct vfs_node_operations
 
     void (*open)(struct vfs_node *node);
     void (*close)(struct vfs_node *node);
-    unsigned int (*read)(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer);
-    unsigned int (*write)(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer);
+    unsigned int (*read)(struct vfs_node *node, unsigned int count, void *buffer);
+    unsigned int (*write)(struct vfs_node *node, unsigned int count, void *buffer);
 
 };
 
