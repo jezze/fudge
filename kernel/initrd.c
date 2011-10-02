@@ -97,7 +97,7 @@ static unsigned int initrd_filesystem_node_read(struct vfs_node *node, unsigned 
     memory_set(buffer, 0, 1);
     unsigned int i;
 
-    for (i = 0; i < node->length; i++)
+    for (i = 0; i < initrdFilesystem.nodesCount; i++)
     {
 
         string_concat(buffer, initrdFilesystem.nodes[i].name);
@@ -112,13 +112,10 @@ static unsigned int initrd_filesystem_node_read(struct vfs_node *node, unsigned 
 void initrd_init(unsigned int *address)
 {
 
-    unsigned int numEntries = initrd_parse(*address);
-
-    initrdRoot.length = numEntries;
-    initrdRoot.operations.read = initrd_filesystem_node_read;
-
     string_copy(initrdFilesystem.base.name, "initrd");
+    initrdFilesystem.nodesCount = initrd_parse(*address);
     initrdFilesystem.base.root = &initrdRoot;
+    initrdFilesystem.base.root->operations.read = initrd_filesystem_node_read;
     initrdFilesystem.base.lookup = initrd_filesystem_lookup;
     vfs_register_filesystem(&initrdFilesystem.base);
 

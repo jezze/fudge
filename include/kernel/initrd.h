@@ -22,6 +22,7 @@ struct initrd_filesystem
 
     struct vfs_filesystem base;
     struct initrd_node nodes[INITRD_HEADER_SIZE];
+    unsigned int nodesCount;
 
 };
 
