@@ -81,7 +81,6 @@ static unsigned int tty_device_write(struct vfs_node *node, unsigned int count, 
 {
 
     unsigned int i;
-    unsigned int j = 0;
 
     for (i = 0; i < count; i++)
         tty_putc(((char *)buffer)[i]);
