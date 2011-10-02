@@ -83,8 +83,8 @@ static unsigned int tty_device_write(struct vfs_node *node, unsigned int offset,
     unsigned int i;
     unsigned int j = 0;
 
-    for (i = offset; i < offset + count; i++, j++)
-        tty_putc(((char *)buffer)[j]);
+    for (i = 0; i < count; i++)
+        tty_putc(((char *)buffer)[i]);
 
     ttyDevice.vgaDevice->set_cursor_offset(ttyDevice.cursorOffset);
 
