@@ -50,7 +50,7 @@ static unsigned int pci_write_num(char *out, unsigned int num, unsigned int base
 
 }
 
-static unsigned int pci_device_read(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int pci_device_read(struct vfs_node *node, unsigned int count, void *buffer)
 {
 
     struct pci_device *device = pci_get_device(node);
