@@ -32,7 +32,6 @@ struct tty_device
     unsigned char cursorColor;
     struct vga_device *vgaDevice;
     struct vfs_node *vgaColorNode;
-    struct vfs_node *vgaCursorNode;
     unsigned int (*read)(char *buffer, unsigned int count, unsigned int offset);
     unsigned int (*write)(char *buffer, unsigned int count, unsigned int offset);
     void (*set_color)(unsigned char fg, unsigned char bg);

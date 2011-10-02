@@ -93,7 +93,7 @@ static unsigned int tty_device_write(struct vfs_node *node, unsigned int offset,
     for (i = offset; i < offset + count; i++, j++)
         tty_putc(((char *)buffer)[j]);
 
-    ttyDevice.vgaCursorNode->operations.write(ttyDevice.vgaCursorNode, 0, 1, &ttyDevice.cursorOffset);
+    ttyDevice.vgaDevice->set_cursor_offset(ttyDevice.cursorOffset);
 
     return count;
 
@@ -130,7 +130,6 @@ void tty_init()
     ttyDevice.cursorOffset = 0;
     ttyDevice.vgaDevice = (struct vga_device *)modules_get_device(MODULES_DEVICE_TYPE_VGA);
     ttyDevice.vgaColorNode = vfs_find_root("/color");
-    ttyDevice.vgaCursorNode = vfs_find_root("/cursor");
     ttyDevice.set_color = tty_set_color;
     ttyDevice.set_color(TTY_COLOR_WHITE, TTY_COLOR_BLACK);
     modules_register_device(MODULES_DEVICE_TYPE_KEYBOARD, &ttyDevice.base);
