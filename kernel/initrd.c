@@ -113,10 +113,10 @@ void initrd_init(unsigned int *address)
 {
 
     string_copy(initrdFilesystem.base.name, "initrd");
-    initrdFilesystem.nodesCount = initrd_parse(*address);
     initrdFilesystem.base.root = &initrdRoot;
     initrdFilesystem.base.root->operations.read = initrd_filesystem_node_read;
     initrdFilesystem.base.lookup = initrd_filesystem_lookup;
+    initrdFilesystem.nodesCount = initrd_parse(*address);
     vfs_register_filesystem(&initrdFilesystem.base);
 
 }

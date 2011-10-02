@@ -177,10 +177,9 @@ static void modules_init_devices()
 void modules_init()
 {
 
-    modulesRoot.operations.read = modules_node_read;
-
     string_copy(modulesFilesystem.name, "dev");
     modulesFilesystem.root = &modulesRoot;
+    modulesFilesystem.root->operations.read = modules_node_read;
     modulesFilesystem.lookup = modules_filesystem_lookup;
     vfs_register_filesystem(&modulesFilesystem);
 
