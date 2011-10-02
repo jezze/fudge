@@ -14,15 +14,12 @@ static unsigned int initrd_node_read(struct vfs_node *node, unsigned int offset,
 
     struct tar_header *header = initrdFilesystem.headers[node->id];
 
-    if (offset > node->length)
-        return 0;
-
-    if (offset + count > node->length)
-        count = node->length - offset;
+    if (count > node->length)
+        count = node->length;
 
     unsigned int address = (unsigned int)header + TAR_BLOCK_SIZE;
 
-    memory_copy(buffer, (unsigned char *)(address + offset), count);
+    memory_copy(buffer, (unsigned char *)(address), count);
 
     return count;
 
