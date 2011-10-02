@@ -29,6 +29,9 @@ struct modules_device *modules_get_device(unsigned int type)
     for (i = 0; i < 32; i++)
     {
 
+        if (!modulesDevices[i])
+            continue;
+
         if (modulesDevices[i]->module.type == type)
             return modulesDevices[i];
 
