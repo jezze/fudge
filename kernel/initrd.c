@@ -12,10 +12,12 @@ static struct vfs_node initrdRoot;
 static unsigned int initrd_node_read(struct vfs_node *node, unsigned int count, void *buffer)
 {
 
-    if (count > node->length)
-        count = node->length;
+    struct initrd_node *initrdNode = &initrdFilesystem.nodes[node->id];
 
-    memory_copy(buffer, initrdFilesystem.nodes[node->id].data, count);
+    if (count > initrdNode->size)
+        count = initrdNode->size;
+
+    memory_copy(buffer, initrdNode->data, count);
 
     return count;
 
@@ -53,10 +55,10 @@ static unsigned int initrd_parse(unsigned int address)
 
         struct initrd_node *initrdFileNode = &initrdFilesystem.nodes[i];
         string_copy(initrdFileNode->name, header->name + start);
+        initrdFileNode->size = size;
         initrdFileNode->header = header;
         initrdFileNode->data = (unsigned int)header + TAR_BLOCK_SIZE;
         initrdFileNode->base.id = i;
-        initrdFileNode->base.length = size;
         initrdFileNode->base.operations.read = initrd_node_read;
 
         address += ((size / TAR_BLOCK_SIZE) + 1) * TAR_BLOCK_SIZE;
