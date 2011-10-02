@@ -124,7 +124,6 @@ static void pci_add(unsigned short bus, unsigned short slot, unsigned short func
     string_concat(device->base.name, ":");
     pci_write_num(device->base.name + 8, function, 10);
 
-    device->base.node.length = 0;
     device->base.node.operations.read = pci_device_read;
     device->vendor = pci_read(bus, slot, function, 0x0);
     device->device = pci_read(bus, slot, function, 0x2);

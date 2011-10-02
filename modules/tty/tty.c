@@ -118,7 +118,6 @@ void tty_init()
 {
 
     string_copy(ttyDevice.base.name, "tty");
-    ttyDevice.base.node.length = TTY_CHARACTER_SIZE;
     ttyDevice.base.node.operations.write = tty_device_write;
     ttyDevice.cursorOffset = 0;
     ttyDevice.vgaDevice = (struct vga_device *)modules_get_device(MODULES_DEVICE_TYPE_VGA);
@@ -126,7 +125,6 @@ void tty_init()
     modules_register_device(MODULES_DEVICE_TYPE_KEYBOARD, &ttyDevice.base);
 
     string_copy(ttyCwdDevice.base.name, "cwd");
-    ttyCwdDevice.base.node.length = TTY_CWD_SIZE;
     ttyCwdDevice.base.node.operations.read = tty_cwd_device_read;
     ttyCwdDevice.base.node.operations.write = tty_cwd_device_write;
     string_copy(ttyCwdDevice.path, "/");

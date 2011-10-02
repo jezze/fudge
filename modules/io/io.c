@@ -38,7 +38,6 @@ void io_init()
 {
 
     string_copy(ioDevice.base.name, "io");
-    ioDevice.base.node.length = 0;
     ioDevice.base.node.operations.read = io_device_read;
     ioDevice.base.node.operations.write = io_device_write;
     modules_register_device(MODULES_DEVICE_TYPE_IO, &ioDevice.base);

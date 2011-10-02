@@ -80,7 +80,6 @@ void serial_init()
     io_outb(SERIAL_COM1 + 4, 0x0B);
 
     string_copy(serialDevice1.base.name, "serial");
-    serialDevice1.base.node.length = 0;
     serialDevice1.base.node.operations.read = serial_device_read;
     serialDevice1.base.node.operations.write = serial_device_write;
     serialDevice1.port = SERIAL_COM1;

@@ -18,7 +18,6 @@ struct vfs_node
 {
 
     unsigned int id;
-    unsigned int length;
     struct vfs_node_operations operations;
 
 };

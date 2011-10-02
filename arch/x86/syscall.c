@@ -109,7 +109,7 @@ static void syscall_info(struct syscall_registers *registers)
     {
 
         info->id = node->id;
-        info->length = node->length;
+        info->length = 0;
 
         registers->eax = 1;
 

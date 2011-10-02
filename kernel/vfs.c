@@ -122,7 +122,6 @@ static struct vfs_node *vfs_filesystem_lookup(struct vfs_filesystem *filesystem,
 void vfs_init()
 {
 
-    vfsRoot.length = 0;
     vfsRoot.operations.read = vfs_node_read;
 
     string_copy(vfsFilesystem.name, "/");

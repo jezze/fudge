@@ -108,7 +108,6 @@ void kbd_init()
 {
 
     string_copy(kbdDevice.base.name, "kbd");
-    kbdDevice.base.node.length = 0;
     kbdDevice.base.node.operations.read = kbd_device_read;
     kbdDevice.base.node.operations.write = kbd_device_write;
     kbdDevice.bufferHead = 0;

@@ -177,7 +177,6 @@ static void modules_init_devices()
 void modules_init()
 {
 
-    modulesRoot.length = 0;
     modulesRoot.operations.read = modules_node_read;
 
     string_copy(modulesFilesystem.name, "dev");
