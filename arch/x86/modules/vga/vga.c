@@ -113,12 +113,12 @@ void vga_init()
     vgaFramebufferColorDevice.node.length = 1;
     vgaFramebufferColorDevice.node.operations.read = vga_framebuffer_color_device_read;
     vgaFramebufferColorDevice.node.operations.write = vga_framebuffer_color_device_write;
-    modules_register_device(MODULES_DEVICE_TYPE_VGA, &vgaFramebufferColorDevice);
+    modules_register_device(0x1234, &vgaFramebufferColorDevice);
 
     string_copy(vgaFramebufferCursorDevice.name, "cursor");
     vgaFramebufferCursorDevice.node.length = 1;
     vgaFramebufferCursorDevice.node.operations.write = vga_framebuffer_cursor_device_write;
-    modules_register_device(MODULES_DEVICE_TYPE_VGA, &vgaFramebufferCursorDevice);
+    modules_register_device(0x5678, &vgaFramebufferCursorDevice);
 
 }
 

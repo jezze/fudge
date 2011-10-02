@@ -21,6 +21,23 @@ static struct modules_driver *modulesDrivers[32];
 static struct vfs_filesystem modulesFilesystem;
 static struct vfs_node modulesRoot;
 
+struct modules_device *modules_get_device(unsigned int type)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < 32; i++)
+    {
+
+        if (modulesDevices[i]->module.type == type)
+            return modulesDevices[i];
+
+    }
+
+    return 0;
+
+}
+
 void modules_register_bus(unsigned int type, struct modules_bus *bus)
 {
 
@@ -54,6 +71,7 @@ void modules_register_device(unsigned int type, struct modules_device *device)
         {
 
             modulesDevices[i] = device;
+            modulesDevices[i]->module.type = type;
 
             return;
 

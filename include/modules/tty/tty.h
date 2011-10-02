@@ -28,7 +28,7 @@ struct tty_device
     struct modules_device base;
     unsigned short cursorOffset;
     unsigned char cursorColor;
-    struct vfs_node *vgaNode;
+    struct modules_device *vgaDevice;
     struct vfs_node *vgaColorNode;
     struct vfs_node *vgaCursorNode;
     unsigned int (*read)(char *buffer, unsigned int count, unsigned int offset);
