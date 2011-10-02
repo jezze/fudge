@@ -22,13 +22,15 @@
 #define TTY_COLOR_WHITE      0x0f
 #define TTY_CWD_SIZE         256
 
+struct vga_device;
+
 struct tty_device
 {
 
     struct modules_device base;
     unsigned short cursorOffset;
     unsigned char cursorColor;
-    struct modules_device *vgaDevice;
+    struct vga_device *vgaDevice;
     struct vfs_node *vgaColorNode;
     struct vfs_node *vgaCursorNode;
     unsigned int (*read)(char *buffer, unsigned int count, unsigned int offset);
