@@ -12,10 +12,10 @@ static unsigned int io_device_read(struct vfs_node *node, unsigned int offset, u
     char *b = (char *)buffer;
 
     unsigned int i = 0;
-
+/*
     for (; count; count--, i++)
         b[i] = io_inb(offset);
-
+*/
     return i;
 
 }
@@ -26,10 +26,10 @@ static unsigned int io_device_write(struct vfs_node *node, unsigned int offset, 
     char *b = (char *)buffer;
 
     unsigned int i = 0;
-
+/*
     for (; count; count--, i++)
         io_outb(offset, b[i]);
-
+*/
     return i;
 
 }

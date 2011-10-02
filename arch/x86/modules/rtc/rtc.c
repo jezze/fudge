@@ -27,7 +27,7 @@ static unsigned int rtc_device_read(struct vfs_node *node, unsigned int offset, 
 {
 
     rtc_ready();
-
+/*
     switch (offset)
     {
 
@@ -72,7 +72,7 @@ static unsigned int rtc_device_read(struct vfs_node *node, unsigned int offset, 
             return 0;
 
     }
-
+*/
     return 1;
 
 }
