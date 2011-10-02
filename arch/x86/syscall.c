@@ -60,7 +60,7 @@ static void syscall_read(struct syscall_registers *registers)
     char *buffer = (char *)registers->esi;
     unsigned int count = registers->ecx;
 
-    struct vfs_node *node = vfs_get(fd);
+    struct vfs_node *node = vfs_get_descriptor(fd)->node;
 
     if (node && node->operations.read)
     {
@@ -82,7 +82,7 @@ static void syscall_write(struct syscall_registers *registers)
     char *buffer = (char *)registers->esi;
     unsigned int count = registers->ecx;
 
-    struct vfs_node *node = vfs_get(fd);
+    struct vfs_node *node = vfs_get_descriptor(fd)->node;
 
     if (node && node->operations.write)
     {

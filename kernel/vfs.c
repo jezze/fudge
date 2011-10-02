@@ -4,7 +4,7 @@
 #include <kernel/vfs.h>
 #include <kernel/modules.h>
 
-static struct vfs_descriptor vfsOpenTable[256];
+static struct vfs_descriptor vfsDescriptors[256];
 static struct vfs_filesystem *vfsFilesystems[8];
 static struct vfs_filesystem vfsFilesystem;
 static struct vfs_node vfsRoot;
@@ -43,11 +43,11 @@ unsigned int vfs_open(char *name)
     for (i = 0; i < 256; i++)
     {
 
-        if (!vfsOpenTable[i].node)
+        if (!vfsDescriptors[i].node)
         {
 
-            vfsOpenTable[i].node = node;
-            vfsOpenTable[i].permissions = 0;
+            vfsDescriptors[i].node = node;
+            vfsDescriptors[i].permissions = 0;
 
             return i;
 
@@ -62,7 +62,7 @@ unsigned int vfs_open(char *name)
 void vfs_close(unsigned int index)
 {
 
-    memory_set((void *)&vfsOpenTable[index], 0, sizeof (struct vfs_descriptor));
+    memory_set((void *)&vfsDescriptors[index], 0, sizeof (struct vfs_descriptor));
 
 }
 
@@ -73,10 +73,10 @@ struct vfs_node *vfs_find_root(char *path)
 
 }
 
-struct vfs_node *vfs_get(unsigned int index)
+struct vfs_descriptor *vfs_get_descriptor(unsigned int index)
 {
 
-    return vfsOpenTable[index].node;
+    return &vfsDescriptors[index];
 
 }
 
