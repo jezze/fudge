@@ -11,7 +11,7 @@ static struct modules_device vgaFramebufferColorDevice;
 static struct modules_device vgaFramebufferCursorDevice;
 static unsigned char vgaFbColor;
 
-static unsigned int vga_framebuffer_device_read(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int vga_framebuffer_device_read(unsigned int offset, unsigned int count, void *buffer)
 {
 
     unsigned int i;
@@ -31,7 +31,7 @@ static unsigned int vga_framebuffer_device_read(struct vfs_node *node, unsigned 
 
 }
 
-static unsigned int vga_framebuffer_device_write(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int vga_framebuffer_device_write(unsigned int offset, unsigned int count, void *buffer)
 {
 
     unsigned int i;
@@ -104,9 +104,8 @@ void vga_init()
 {
 
     string_copy(vgaFramebufferDevice.base.name, "fb");
-    vgaFramebufferDevice.base.node.length = VGA_FB_SIZE;
-    vgaFramebufferDevice.base.node.operations.read = vga_framebuffer_device_read;
-    vgaFramebufferDevice.base.node.operations.write = vga_framebuffer_device_write;
+    vgaFramebufferDevice.read_framebuffer = vga_framebuffer_device_read;
+    vgaFramebufferDevice.write_framebuffer = vga_framebuffer_device_write;
     modules_register_device(MODULES_DEVICE_TYPE_VGA, &vgaFramebufferDevice.base);
 
     string_copy(vgaFramebufferColorDevice.name, "color");

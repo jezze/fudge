@@ -14,9 +14,9 @@ static void tty_scroll()
 
     char buffer[TTY_CHARACTER_SIZE];
 
-    ttyDevice.vgaDevice->base.node.operations.read(&ttyDevice.vgaDevice->base.node, TTY_CHARACTER_WIDTH, TTY_CHARACTER_SIZE - TTY_CHARACTER_WIDTH, buffer);
+    ttyDevice.vgaDevice->read_framebuffer(TTY_CHARACTER_WIDTH, TTY_CHARACTER_SIZE - TTY_CHARACTER_WIDTH, buffer);
     memory_set(buffer + TTY_CHARACTER_SIZE - TTY_CHARACTER_WIDTH, ' ', TTY_CHARACTER_WIDTH);
-    ttyDevice.vgaDevice->base.node.operations.write(&ttyDevice.vgaDevice->base.node, 0, TTY_CHARACTER_SIZE, buffer);
+    ttyDevice.vgaDevice->write_framebuffer(0, TTY_CHARACTER_SIZE, buffer);
 
     ttyDevice.cursorOffset -= TTY_CHARACTER_WIDTH;
 
@@ -56,7 +56,7 @@ static void tty_putc(char c)
     else if (c >= ' ')
     {
 
-        ttyDevice.vgaDevice->base.node.operations.write(&ttyDevice.vgaDevice->base.node, ttyDevice.cursorOffset, 1, &c);
+        ttyDevice.vgaDevice->write_framebuffer(ttyDevice.cursorOffset, 1, &c);
         ttyDevice.cursorOffset++;
 
     }
@@ -73,7 +73,7 @@ static void tty_vga_clear()
     int i;
 
     for (i = 0; i < TTY_CHARACTER_SIZE; i++)
-        ttyDevice.vgaDevice->base.node.operations.write(&ttyDevice.vgaDevice->base.node, i, 1, &c);
+        ttyDevice.vgaDevice->write_framebuffer(i, 1, &c);
 
 }
 
