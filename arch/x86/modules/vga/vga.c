@@ -6,13 +6,12 @@
 #include <arch/x86/modules/io/io.h>
 #include <arch/x86/modules/vga/vga.h>
 
-static struct vga_device vgaDevice;
 static struct modules_device vgaFramebufferDevice;
 static struct modules_device vgaFramebufferColorDevice;
 static struct modules_device vgaFramebufferCursorDevice;
 static unsigned char vgaFbColor;
 
-static unsigned int vga_read_framebuffer(char *buffer, unsigned int count, unsigned int offset)
+static unsigned int vga_framebuffer_device_read(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
     unsigned int i;
@@ -32,14 +31,7 @@ static unsigned int vga_read_framebuffer(char *buffer, unsigned int count, unsig
 
 }
 
-static unsigned int vga_framebuffer_device_read(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
-{
-
-    return vgaDevice.read_framebuffer(buffer, count, offset);
-
-}
-
-static unsigned int vga_write_framebuffer(char *buffer, unsigned int count, unsigned int offset)
+static unsigned int vga_framebuffer_device_write(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
     unsigned int i;
@@ -57,13 +49,6 @@ static unsigned int vga_write_framebuffer(char *buffer, unsigned int count, unsi
     }
 
     return j;
-
-}
-
-static unsigned int vga_framebuffer_device_write(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
-{
-
-    return vgaDevice.write_framebuffer(buffer, count, offset);
 
 }
 
@@ -109,7 +94,7 @@ static unsigned int vga_framebuffer_cursor_device_write(struct vfs_node *node, u
 
     short position = ((short *)buffer)[0];
 
-    vgaDevice.set_cursor_offset(position);
+    vga_set_cursor_offset(position);
 
     return 1;
 
@@ -117,11 +102,6 @@ static unsigned int vga_framebuffer_cursor_device_write(struct vfs_node *node, u
 
 void vga_init()
 {
-
-    string_copy(vgaDevice.base.name, "vga");
-    vgaDevice.read_framebuffer = vga_read_framebuffer;
-    vgaDevice.write_framebuffer = vga_write_framebuffer;
-    vgaDevice.set_cursor_offset = vga_set_cursor_offset;
 
     string_copy(vgaFramebufferDevice.name, "fb");
     vgaFramebufferDevice.node.length = VGA_FB_SIZE;
