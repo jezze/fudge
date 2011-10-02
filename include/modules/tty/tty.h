@@ -29,12 +29,9 @@ struct tty_device
 
     struct modules_device base;
     unsigned short cursorOffset;
-    unsigned char cursorColor;
     struct vga_device *vgaDevice;
-    struct vfs_node *vgaColorNode;
     unsigned int (*read)(char *buffer, unsigned int count, unsigned int offset);
     unsigned int (*write)(char *buffer, unsigned int count, unsigned int offset);
-    void (*set_color)(unsigned char fg, unsigned char bg);
 
 };
 
