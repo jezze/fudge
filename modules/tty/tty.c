@@ -9,6 +9,17 @@
 static struct tty_device ttyDevice;
 static struct tty_cwd_device ttyCwdDevice;
 
+static void tty_clear()
+{
+
+    char c = ' ';
+    int i;
+
+    for (i = 0; i < TTY_CHARACTER_SIZE; i++)
+        ttyDevice.vgaDevice->write_framebuffer(i, 1, &c);
+
+}
+
 static void tty_scroll()
 {
 
@@ -66,17 +77,6 @@ static void tty_putc(char c)
 
 }
 
-static void tty_vga_clear()
-{
-
-    char c = ' ';
-    int i;
-
-    for (i = 0; i < TTY_CHARACTER_SIZE; i++)
-        ttyDevice.vgaDevice->write_framebuffer(i, 1, &c);
-
-}
-
 static unsigned int tty_device_write(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
@@ -95,9 +95,9 @@ static unsigned int tty_device_write(struct vfs_node *node, unsigned int offset,
 static unsigned int tty_cwd_device_read(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    count = string_length(ttyCwdDevice.path) - offset;
+    count = string_length(ttyCwdDevice.path);
 
-    string_copy(buffer, ttyCwdDevice.path + offset);
+    string_copy(buffer, ttyCwdDevice.path);
 
     return count;
 
@@ -106,9 +106,9 @@ static unsigned int tty_cwd_device_read(struct vfs_node *node, unsigned int offs
 static unsigned int tty_cwd_device_write(struct vfs_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    count = string_length(ttyCwdDevice.path) - offset;
+    count = string_length(buffer);
 
-    string_copy(ttyCwdDevice.path + offset, buffer);
+    string_copy(ttyCwdDevice.path, buffer);
 
     return count;
 
@@ -132,7 +132,7 @@ void tty_init()
     string_copy(ttyCwdDevice.path, "/");
     modules_register_device(MODULES_DEVICE_TYPE_KEYBOARD, &ttyCwdDevice.base);
 
-    tty_vga_clear();
+    tty_clear();
 
 }
 
