@@ -12,7 +12,7 @@ static struct vfs_node initrdRoot;
 static unsigned int initrd_node_read(struct vfs_node *node, unsigned int count, void *buffer)
 {
 
-    struct tar_header *header = initrdFilesystem.headers[node->id];
+    struct tar_header *header = initrdFilesystem.nodes[node->id].header;
 
     if (count > node->length)
         count = node->length;
@@ -53,8 +53,15 @@ static unsigned int initrd_parse(unsigned int address)
             break;
 
         unsigned int size = initrd_get_file_size(header->size);
+        unsigned int start = string_index_reversed(header->name, '/', (header->typeflag[0] == TAR_FILETYPE_DIR) ? 1 : 0) + 1;
 
-        initrdFilesystem.headers[i] = header;
+        struct initrd_node *initrdFileNode = &initrdFilesystem.nodes[i];
+        string_copy(initrdFileNode->name, header->name + start);
+        initrdFileNode->header = header;
+        initrdFileNode->data = header + TAR_BLOCK_SIZE;
+        initrdFileNode->base.id = i;
+        initrdFileNode->base.length = size;
+        initrdFileNode->base.operations.read = initrd_node_read;
 
         address += ((size / TAR_BLOCK_SIZE) + 1) * TAR_BLOCK_SIZE;
 
@@ -64,29 +71,6 @@ static unsigned int initrd_parse(unsigned int address)
     }
 
     return i;
-
-}
-
-static void initrd_create_nodes(unsigned int numEntries)
-{
-
-    unsigned int i;
-
-    for (i = 0; i < numEntries; i++)
-    {
-
-        struct tar_header *header = initrdFilesystem.headers[i];
-
-        unsigned int size = initrd_get_file_size(header->size);
-        unsigned int start = string_index_reversed(header->name, '/', (header->typeflag[0] == TAR_FILETYPE_DIR) ? 1 : 0) + 1;
-
-        struct initrd_node *initrdFileNode = &initrdFilesystem.nodes[i];
-        string_copy(initrdFileNode->name, header->name + start);
-        initrdFileNode->base.id = i;
-        initrdFileNode->base.length = size;
-        initrdFileNode->base.operations.read = initrd_node_read;
-
-    }
 
 }
 
@@ -131,7 +115,6 @@ void initrd_init(unsigned int *address)
 {
 
     unsigned int numEntries = initrd_parse(*address);
-    initrd_create_nodes(numEntries);
 
     initrdRoot.length = numEntries;
     initrdRoot.operations.read = initrd_filesystem_node_read;

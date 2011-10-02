@@ -11,6 +11,8 @@ struct initrd_node
 
     struct vfs_node base;
     char name[64];
+    struct tar_header *header;
+    void *data;
 
 };
 
@@ -18,7 +20,6 @@ struct initrd_filesystem
 {
 
     struct vfs_filesystem base;
-    struct tar_header *headers[INITRD_HEADER_SIZE];
     struct initrd_node nodes[INITRD_HEADER_SIZE];
 
 };
