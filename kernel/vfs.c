@@ -30,10 +30,10 @@ void vfs_register_filesystem(struct vfs_filesystem *filesystem)
 
 }
 
-unsigned int vfs_open(char *name)
+unsigned int vfs_open(char *path)
 {
 
-    struct vfs_node *node = vfs_find_root(name);
+    struct vfs_node *node = vfsFilesystem.lookup(&vfsFilesystem, path);
 
     if (!node)
         return -1;
@@ -66,13 +66,6 @@ void vfs_close(unsigned int index)
 
 }
 
-struct vfs_node *vfs_find_root(char *path)
-{
-
-    return vfsFilesystem.lookup(&vfsFilesystem, path);
-
-}
-
 struct vfs_descriptor *vfs_get_descriptor(unsigned int index)
 {
 
@@ -101,7 +94,7 @@ static unsigned int vfs_node_read(struct vfs_node *node, unsigned int count, voi
 
 }
 
-struct vfs_node *vfs_filesystem_lookup(struct vfs_filesystem *filesystem, char *path)
+static struct vfs_node *vfs_filesystem_lookup(struct vfs_filesystem *filesystem, char *path)
 {
 
     if (path[0] != '/')

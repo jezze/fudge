@@ -10,10 +10,10 @@ void file_close(unsigned int fd)
 
 }
 
-unsigned int file_info(char *name, struct file_info *info)
+unsigned int file_info(unsigned int fd, struct file_info *info)
 {
 
-    return call_info(name, info);
+    return call_info(fd, info);
 
 }
 

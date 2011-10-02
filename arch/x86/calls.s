@@ -87,7 +87,7 @@ call_info:
     push esi
     push edi
     mov eax, 0x04
-    mov esi, [ebp + 8]
+    mov ebx, [ebp + 8]
     mov edi, [ebp + 12]
     int 0x80
     pop edi

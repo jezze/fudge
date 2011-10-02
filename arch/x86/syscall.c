@@ -100,10 +100,10 @@ static void syscall_write(struct syscall_registers *registers)
 static void syscall_info(struct syscall_registers *registers)
 {
 
-    char *name = (char *)registers->esi;
+    unsigned int fd = registers->ebx;
     struct file_info *info = (struct file_info *)registers->edi;
     
-    struct vfs_node *node = vfs_find_root(name);
+    struct vfs_node *node = vfs_get_descriptor(fd)->node;
 
     if (node)
     {

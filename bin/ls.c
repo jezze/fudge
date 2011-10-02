@@ -43,9 +43,9 @@ void write_content(char *path, char *content)
             string_concat(str, path);
             string_concat(str, content + start);
 
-            struct file_info *info = 0;
+//            struct file_info *info = 0;
 
-            call_info(str, info);
+//            file_info(str, info);
 
             if (1)
                 file_write_string(FILE_STDOUT, "d");
@@ -53,7 +53,8 @@ void write_content(char *path, char *content)
                 file_write_string(FILE_STDOUT, "-");
 
             file_write_string(FILE_STDOUT, "rwxrwxrwx ");
-            file_write_dec(FILE_STDOUT, info->length);
+//            file_write_dec(FILE_STDOUT, info->length);
+            file_write_dec(FILE_STDOUT, 0);
             file_write_string(FILE_STDOUT, "\t");
             file_write_string(FILE_STDOUT, content + start);
             file_write_string(FILE_STDOUT, "\n");
