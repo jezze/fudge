@@ -6,14 +6,14 @@
 #include <kernel/modules.h>
 #include <modules/elf/elf.h>
 #include <modules/tty/tty.h>
-#include <arch/x86/modules/io/io.h>
-#include <arch/x86/modules/ata/ata.h>
-#include <arch/x86/modules/kbd/kbd.h>
-#include <arch/x86/modules/pci/pci.h>
-#include <arch/x86/modules/pit/pit.h>
-#include <arch/x86/modules/rtc/rtc.h>
-#include <arch/x86/modules/serial/serial.h>
-#include <arch/x86/modules/vga/vga.h>
+#include <modules/io/io.h>
+#include <modules/ata/ata.h>
+#include <modules/kbd/kbd.h>
+#include <modules/pci/pci.h>
+#include <modules/pit/pit.h>
+#include <modules/rtc/rtc.h>
+#include <modules/serial/serial.h>
+#include <modules/vga/vga.h>
 
 static struct modules_bus *modulesBusses[32];
 static struct modules_device *modulesDevices[32];

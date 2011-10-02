@@ -3,8 +3,8 @@
 #include <lib/string.h>
 #include <kernel/vfs.h>
 #include <kernel/modules.h>
-#include <arch/x86/modules/io/io.h>
-#include <arch/x86/modules/rtc/rtc.h>
+#include <modules/io/io.h>
+#include <modules/rtc/rtc.h>
 
 static unsigned char rtc_get(unsigned char type)
 {

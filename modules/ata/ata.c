@@ -2,8 +2,8 @@
 #include <kernel/log.h>
 #include <kernel/vfs.h>
 #include <kernel/modules.h>
-#include <arch/x86/modules/io/io.h>
-#include <arch/x86/modules/ata/ata.h>
+#include <modules/io/io.h>
+#include <modules/ata/ata.h>
 
 static struct modules_bus ataBusPrimary;
 static struct modules_bus ataBusSecondary;

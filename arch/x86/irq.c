@@ -1,9 +1,9 @@
 #include <kernel/vfs.h>
 #include <kernel/modules.h>
-#include <arch/x86/kernel/idt.h>
-#include <arch/x86/kernel/irq.h>
-#include <arch/x86/kernel/isr.h>
-#include <arch/x86/modules/io/io.h>
+#include <arch/x86/idt.h>
+#include <arch/x86/irq.h>
+#include <arch/x86/isr.h>
+#include <modules/io/io.h>
 
 static void *irqRoutines[IRQ_ROUTINES_SIZE];
 

@@ -1,8 +1,8 @@
 #include <lib/string.h>
 #include <kernel/vfs.h>
 #include <kernel/modules.h>
-#include <arch/x86/modules/io/io.h>
-#include <arch/x86/modules/pci/pci.h>
+#include <modules/io/io.h>
+#include <modules/pci/pci.h>
 
 static struct modules_bus pciBus;
 static struct pci_device pciDevices[32];

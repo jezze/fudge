@@ -3,8 +3,8 @@
 #include <lib/string.h>
 #include <kernel/vfs.h>
 #include <kernel/modules.h>
-#include <arch/x86/modules/io/io.h>
-#include <arch/x86/modules/vga/vga.h>
+#include <modules/io/io.h>
+#include <modules/vga/vga.h>
 
 static struct vga_device vgaDevice;
 

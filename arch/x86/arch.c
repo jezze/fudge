@@ -1,16 +1,16 @@
 #include <kernel/kernel.h>
 #include <kernel/log.h>
-#include <arch/x86/kernel/arch.h>
-#include <arch/x86/kernel/cpu.h>
-#include <arch/x86/kernel/fpu.h>
-#include <arch/x86/kernel/gdt.h>
-#include <arch/x86/kernel/idt.h>
-#include <arch/x86/kernel/isr.h>
-#include <arch/x86/kernel/irq.h>
-#include <arch/x86/kernel/mboot.h>
-#include <arch/x86/kernel/mmu.h>
-#include <arch/x86/kernel/syscall.h>
-#include <arch/x86/kernel/tss.h>
+#include <arch/x86/arch.h>
+#include <arch/x86/cpu.h>
+#include <arch/x86/fpu.h>
+#include <arch/x86/gdt.h>
+#include <arch/x86/idt.h>
+#include <arch/x86/isr.h>
+#include <arch/x86/irq.h>
+#include <arch/x86/mboot.h>
+#include <arch/x86/mmu.h>
+#include <arch/x86/syscall.h>
+#include <arch/x86/tss.h>
 
 static struct kernel_arch arch;
 

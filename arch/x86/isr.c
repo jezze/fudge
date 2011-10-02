@@ -1,7 +1,7 @@
 #include <kernel/kernel.h>
 #include <kernel/log.h>
-#include <arch/x86/kernel/idt.h>
-#include <arch/x86/kernel/isr.h>
+#include <arch/x86/idt.h>
+#include <arch/x86/isr.h>
 
 static void *isrRoutines[ISR_ROUTINES_SIZE];
 

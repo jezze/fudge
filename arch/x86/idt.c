@@ -1,5 +1,5 @@
 #include <lib/memory.h>
-#include <arch/x86/kernel/idt.h>
+#include <arch/x86/idt.h>
 
 static struct idt_entry idt[IDT_TABLE_SIZE];
 static struct idt_pointer idtPointer;

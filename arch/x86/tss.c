@@ -1,6 +1,6 @@
 #include <lib/memory.h>
-#include <arch/x86/kernel/gdt.h>
-#include <arch/x86/kernel/tss.h>
+#include <arch/x86/gdt.h>
+#include <arch/x86/tss.h>
 
 static struct tss_entry tss;
 

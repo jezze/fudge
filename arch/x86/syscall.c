@@ -4,10 +4,10 @@
 #include <kernel/vfs.h>
 #include <kernel/modules.h>
 #include <modules/elf/elf.h>
-#include <arch/x86/kernel/arch.h>
-#include <arch/x86/kernel/isr.h>
-#include <arch/x86/kernel/mmu.h>
-#include <arch/x86/kernel/syscall.h>
+#include <arch/x86/arch.h>
+#include <arch/x86/isr.h>
+#include <arch/x86/mmu.h>
+#include <arch/x86/syscall.h>
 
 static void *syscallRoutines[SYSCALL_ROUTINES_SIZE];
 

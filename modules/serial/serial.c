@@ -3,8 +3,8 @@
 #include <lib/string.h>
 #include <kernel/vfs.h>
 #include <kernel/modules.h>
-#include <arch/x86/modules/io/io.h>
-#include <arch/x86/modules/serial/serial.h>
+#include <modules/io/io.h>
+#include <modules/serial/serial.h>
 
 struct serial_device serialDevice1;
 

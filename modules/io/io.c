@@ -2,7 +2,7 @@
 #include <lib/string.h>
 #include <kernel/vfs.h>
 #include <kernel/modules.h>
-#include <arch/x86/modules/io/io.h>
+#include <modules/io/io.h>
 
 static struct io_device ioDevice;
 

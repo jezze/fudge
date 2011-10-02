@@ -3,7 +3,7 @@
 #include <lib/string.h>
 #include <kernel/vfs.h>
 #include <kernel/modules.h>
-#include <arch/x86/modules/vga/vga.h>
+#include <modules/vga/vga.h>
 #include <modules/tty/tty.h>
 
 static struct tty_device ttyDevice;
