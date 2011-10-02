@@ -2,8 +2,8 @@
 
 #define SHELL_BUFFER_SIZE 256
 
-static char shellBuffer[SHELL_BUFFER_SIZE];
-static unsigned int shellBufferHead;
+char shellBuffer[SHELL_BUFFER_SIZE];
+unsigned int shellBufferHead;
 
 static void shell_stack_push(char c)
 {
@@ -43,7 +43,7 @@ static void shell_clear()
 static void shell_call(int file, int argc, char *argv[])
 {
 
-    void *buffer = (void *)0x00500000;
+    void *buffer = (void *)0x00600000;
     file_read(file, 0x100000, buffer);
 
     unsigned int address = call_map((unsigned int)buffer);
@@ -144,29 +144,15 @@ static void shell_poll()
 
 }
 
-void main()
+void main(int argc, char *argv[])
 {
-
-    shellBufferHead = 0;
-
-    int sin = file_open("/kbd");
-    int sout = file_open("/tty");
-    int serr = file_open("/serial");
 
     file_write_string(FILE_STDOUT, "Fudge\n\n");
     file_write_string(FILE_STDOUT, "Copyright (c) 2009 Jens Nyberg\n");
     file_write_string(FILE_STDOUT, "Type 'cat help.txt' to read the help section.\n\n");
 
-    file_write_string(FILE_STDERR, "Fudge\n\n");
-    file_write_string(FILE_STDERR, "Copyright (c) 2009 Jens Nyberg\n");
-    file_write_string(FILE_STDERR, "Debug window.\n\n");
-
     shell_clear();
     shell_poll();
-
-    file_close(sin);
-    file_close(sout);
-    file_close(serr);
 
 }
 
