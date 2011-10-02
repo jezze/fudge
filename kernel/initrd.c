@@ -57,7 +57,7 @@ static unsigned int initrd_parse(unsigned int address)
         string_copy(initrdFileNode->name, header->name + start);
         initrdFileNode->size = size;
         initrdFileNode->header = header;
-        initrdFileNode->data = (void *)((unsigned int)header + TAR_BLOCK_SIZE);
+        initrdFileNode->data = (void *)(address + TAR_BLOCK_SIZE);
         initrdFileNode->base.id = i;
         initrdFileNode->base.operations.read = initrd_node_read;
 
