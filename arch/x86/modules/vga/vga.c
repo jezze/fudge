@@ -6,7 +6,7 @@
 #include <arch/x86/modules/io/io.h>
 #include <arch/x86/modules/vga/vga.h>
 
-static struct modules_device vgaFramebufferDevice;
+static struct vga_device vgaFramebufferDevice;
 static struct modules_device vgaFramebufferColorDevice;
 static struct modules_device vgaFramebufferCursorDevice;
 static unsigned char vgaFbColor;
@@ -103,11 +103,11 @@ static unsigned int vga_framebuffer_cursor_device_write(struct vfs_node *node, u
 void vga_init()
 {
 
-    string_copy(vgaFramebufferDevice.name, "fb");
-    vgaFramebufferDevice.node.length = VGA_FB_SIZE;
-    vgaFramebufferDevice.node.operations.read = vga_framebuffer_device_read;
-    vgaFramebufferDevice.node.operations.write = vga_framebuffer_device_write;
-    modules_register_device(MODULES_DEVICE_TYPE_VGA, &vgaFramebufferDevice);
+    string_copy(vgaFramebufferDevice.base.name, "fb");
+    vgaFramebufferDevice.base.node.length = VGA_FB_SIZE;
+    vgaFramebufferDevice.base.node.operations.read = vga_framebuffer_device_read;
+    vgaFramebufferDevice.base.node.operations.write = vga_framebuffer_device_write;
+    modules_register_device(MODULES_DEVICE_TYPE_VGA, &vgaFramebufferDevice.base);
 
     string_copy(vgaFramebufferColorDevice.name, "color");
     vgaFramebufferColorDevice.node.length = 1;
