@@ -93,7 +93,7 @@ static unsigned int vfs_node_read(struct vfs_node *node, unsigned int offset, un
         if (vfsFilesystems[i] == &vfsFilesystem)
             continue;
 
-        vfsFilesystems[i]->root->operations.read(vfsFilesystems[i]->root, offset, count, buffer + string_length(buffer));
+        vfsFilesystems[i]->root->operations.read(vfsFilesystems[i]->root, 0, count, buffer + string_length(buffer));
 
     }
 
