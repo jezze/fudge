@@ -36,7 +36,7 @@ struct mboot_info
     unsigned int configTable;
     unsigned int name;
     unsigned int apmTable;
-    unsigned int vbeControlInfo;
+    unsigned int vbeControllerInfo;
     unsigned int vbeModeInfo;
     unsigned int vbeInterfaceSegment;
     unsigned int vbeInterfaceOffset;

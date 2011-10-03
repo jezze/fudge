@@ -1,2 +1,4 @@
 boot: cdrom
 ata0-slave: type=cdrom, path=fudge.iso, status=inserted
+com1: enabled=1, mode=file, dev=serial.txt
+vga: extension=vbe

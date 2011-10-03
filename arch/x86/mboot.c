@@ -1,3 +1,4 @@
+#include <lib/memory.h>
 #include <kernel/log.h>
 #include <arch/x86/mboot.h>
 #include <arch/x86/vbe.h>
@@ -155,6 +156,32 @@ void mboot_init(struct mboot_info *info)
 
         log_string("VESA BIOS Extension\n");
         log_string("-------------------\n\n");
+
+        log_string("Controller info address: 0x");
+        log_num(info->vbeControllerInfo, 16);
+        log_string("\n");
+
+        if (info->vbeControllerInfo)
+        {
+
+            struct vbe_controller_info *controller = (struct vbe_controller_info *)info->vbeControllerInfo;
+
+            log_string("Signature: 0x");
+            log_num(controller->version, 16);
+            log_string("\n");
+
+            char text[5];
+        
+            memory_set(text, 0, 5);
+            memory_copy(text, controller->signature, 4);
+
+            log_string(text);
+
+        }
+
+        log_string("Mode info address: 0x");
+        log_num(info->vbeModeInfo, 16);
+        log_string("\n");
 
         log_string("\n");
 
