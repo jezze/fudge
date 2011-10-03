@@ -34,8 +34,15 @@ void isr_handler(struct isr_registers *registers)
     else
     {
 
-        void *args[] = {&registers->number, &registers->error};
-        log_message(LOG_TYPE_ERROR, "Interrupt: 0x%x, Error code: %d", args);
+        log_string("ERROR!\n");
+
+        log_string("Interrupt: 0x");
+        log_num(registers->number, 16);
+        log_string("\n");
+        
+        log_string("Error code: ");
+        log_num(registers->error, 10);
+        log_string("\n");
 
         error_panic("UNHANDLED INTERRUPT", __FILE__, __LINE__);
 

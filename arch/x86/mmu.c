@@ -15,25 +15,26 @@ static void mmu_handler(struct isr_registers *registers)
 
     unsigned int address = cpu_get_cr2();
 
-    log_message(LOG_TYPE_ERROR, "PAGE FAULT", 0);
+    log_string("ERROR!\n");
 
     if (!(registers->error & MMU_ERROR_PRESENT))
-        log_message(LOG_TYPE_ERROR, "present", 0);
+        log_string("Page: present\n");
 
     if (registers->error & MMU_ERROR_RW)
-        log_message(LOG_TYPE_ERROR, "read-only", 0);
+        log_string("Page: read-only\n");
 
     if (registers->error & MMU_ERROR_USER)
-        log_message(LOG_TYPE_ERROR, "user-mode", 0);
+        log_string("Page: user-mode\n");
 
     if (registers->error & MMU_ERROR_RESERVED)
-        log_message(LOG_TYPE_ERROR, "reserved", 0);
+        log_string("Page: reserved\n");
 
     if (registers->error & MMU_ERROR_FETCH)
-        log_message(LOG_TYPE_ERROR, "fetch", 0);
+        log_string("Page: fetch\n");
 
-    void *args[] = {&address};
-    log_message(LOG_TYPE_ERROR, "Address: 0x%x", args);
+    log_string("Address: 0x");
+    log_num(address, 16);
+    log_string("\n");
 
     error_panic("PAGE FAULT", __FILE__, __LINE__);
 
