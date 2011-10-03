@@ -8,7 +8,7 @@ struct kernel_arch
     void (*enable_interrupts)();
     void (*disable_interrupts)();
     void (*set_stack)(unsigned int address);
-    void (*enable_usermode)(unsigned int address);
+    void (*enable_usermode)(void *callback);
     unsigned int stackAddress;
     unsigned int *mbootAddress;
     unsigned int *initrdAddress;

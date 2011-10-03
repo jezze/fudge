@@ -48,7 +48,7 @@ void kernel_init(struct kernel_arch *arch)
     modules_init();
 
     kernelArch->set_stack(0x00400000);
-    kernelArch->enable_usermode((unsigned int)shell_init);
+    kernelArch->enable_usermode(shell_init);
 
     for (;;);
 

@@ -17,7 +17,7 @@ extern void cpu_set_cr3(unsigned int value);
 extern void cpu_set_cr4(unsigned int value);
 extern void cpu_set_eflags(unsigned int value);
 extern void cpu_set_stack(unsigned int address);
-extern void cpu_usermode(unsigned int address);
+extern void cpu_usermode(void *callback);
 
 #endif
 
