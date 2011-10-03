@@ -2,6 +2,7 @@
 #include <lib/file.h>
 #include <lib/memory.h>
 #include <lib/string.h>
+#include <kernel/log.h>
 #include <kernel/shell.h>
 
 static char shellBuffer[SHELL_BUFFER_SIZE];
@@ -162,6 +163,7 @@ void shell_init()
     file_write_string(FILE_STDERR, "Fudge\n\n");
     file_write_string(FILE_STDERR, "Copyright (c) 2009 Jens Nyberg\n");
     file_write_string(FILE_STDERR, "Debug window.\n\n");
+    file_write_string(FILE_STDERR, log_get());
 
     shell_clear();
     shell_poll();

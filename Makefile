@@ -43,6 +43,7 @@ arch-x86: lib
 	@${GCC} ${GCCFLAGS} ${DIR_ARCH}/isr.c -o ${DIR_ARCH}/isr.o
 	@${ASM} ${ASMFLAGS} ${DIR_ARCH}/isrs.s -o ${DIR_ARCH}/isrs.o
 	@${GCC} ${GCCFLAGS} ${DIR_ARCH}/mmu.c -o ${DIR_ARCH}/mmu.o
+	@${GCC} ${GCCFLAGS} ${DIR_ARCH}/mboot.c -o ${DIR_ARCH}/mboot.o
 	@${GCC} ${GCCFLAGS} ${DIR_ARCH}/syscall.c -o ${DIR_ARCH}/syscall.o
 	@${GCC} ${GCCFLAGS} ${DIR_ARCH}/tss.c -o ${DIR_ARCH}/tss.o
 	@${ASM} ${ASMFLAGS} ${DIR_ARCH}/tsss.s -o ${DIR_ARCH}/tsss.o
@@ -100,6 +101,7 @@ kernel: arch-${ARCH} modules
 		${DIR_ARCH}/irq.o \
 		${DIR_ARCH}/isr.o \
 		${DIR_ARCH}/mmu.o \
+		${DIR_ARCH}/mboot.o \
 		${DIR_ARCH}/syscall.o \
 		${DIR_ARCH}/tss.o \
 		${DIR_ARCH}/tsss.o \

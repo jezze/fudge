@@ -9,6 +9,7 @@ struct kernel_arch
     void (*set_stack)(unsigned int address);
     void (*enable_usermode)(unsigned int address);
     unsigned int stackAddress;
+    unsigned int *mbootAddress;
     unsigned int *initrdAddress;
 
 };

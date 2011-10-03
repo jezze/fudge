@@ -3,35 +3,20 @@
 #include <kernel/vfs.h>
 #include <kernel/modules.h>
 
+static char *log[4096];
+
+char *log_get()
+{
+
+    return log;
+
+}
+
 void log_message(unsigned int type, char *message, void **args)
 {
-/*
-    switch (type)
-    {
 
-        case LOG_TYPE_INFO:
+    string_concat(log, message);
 
-            file_write_string(FILE_STDOUT, "INFO: ");
-
-            break;
-
-        case LOG_TYPE_WARNING:
-
-            file_write_string(FILE_STDOUT, "WARNING: ");
-
-            break;
-
-        case LOG_TYPE_ERROR:
-
-            file_write_string(FILE_STDOUT, "ERROR: ");
-
-            break;
-
-    }
-
-    file_write_string_format(FILE_STDOUT, message, args);
-    file_write_string(FILE_STDOUT, "\n");
-*/
 }
 
 void log_init()
