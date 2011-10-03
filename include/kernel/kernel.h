@@ -22,8 +22,8 @@ struct kernel
 
 };
 
-extern void kernel_assert(unsigned int condition, char *message, char *file, unsigned int line);
-extern void kernel_panic(char *message, char *file, unsigned int line);
+extern void kernel_disable_interrupts();
+extern void kernel_enable_interrupts();
 extern void kernel_init(struct kernel_arch *arch);
 
 #endif

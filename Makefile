@@ -62,6 +62,7 @@ modules: lib
 	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_MODULES}/vga/vga.c -o ${DIR_SOURCE_MODULES}/vga/vga.o
 
 kernel: arch-${ARCH} modules
+	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_KERNEL}/error.c -o ${DIR_SOURCE_KERNEL}/error.o
 	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_KERNEL}/initrd.c -o ${DIR_SOURCE_KERNEL}/initrd.o
 	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_KERNEL}/kernel.c -o ${DIR_SOURCE_KERNEL}/kernel.o
 	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_KERNEL}/log.c -o ${DIR_SOURCE_KERNEL}/log.o
@@ -69,6 +70,7 @@ kernel: arch-${ARCH} modules
 	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_KERNEL}/shell.c -o ${DIR_SOURCE_KERNEL}/shell.o
 	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_KERNEL}/vfs.c -o ${DIR_SOURCE_KERNEL}/vfs.o
 	@${LD} ${LDFLAGS} \
+		${DIR_SOURCE_KERNEL}/error.o \
 		${DIR_SOURCE_KERNEL}/initrd.o \
 		${DIR_SOURCE_KERNEL}/kernel.o \
 		${DIR_SOURCE_KERNEL}/log.o \
