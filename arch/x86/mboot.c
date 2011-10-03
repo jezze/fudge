@@ -1,5 +1,6 @@
 #include <kernel/log.h>
 #include <arch/x86/mboot.h>
+#include <arch/x86/vbe.h>
 
 void mboot_init(struct mboot_info *info)
 {
@@ -152,6 +153,10 @@ void mboot_init(struct mboot_info *info)
     if (info->flags & MBOOT_FLAG_VBE)
     {
 
+        log_string("VESA BIOS Extension\n");
+        log_string("-------------------\n\n");
+
+        log_string("\n");
 
     }
 

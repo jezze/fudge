@@ -1,5 +1,5 @@
-#ifndef KERNEL_MBOOT_H
-#define KERNEL_MBOOT_H
+#ifndef ARCH_MBOOT_H
+#define ARCH_MBOOT_H
 
 #define MBOOT_FLAG_MEMORY  1 << 0
 #define MBOOT_FLAG_DEVICE  1 << 1
@@ -69,3 +69,4 @@ struct mboot_module
 extern void mboot_init(struct mboot_info *info);
 
 #endif
+
