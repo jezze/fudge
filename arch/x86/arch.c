@@ -14,27 +14,6 @@
 
 static struct kernel_arch arch;
 
-static void arch_disable_interrupts()
-{
-
-    cpu_interrupts_off();
-
-}
-
-static void arch_enable_interrupts()
-{
-
-    cpu_interrupts_on();
-
-}
-
-static void arch_enable_usermode(unsigned int address)
-{
-
-    cpu_usermode(address);
-
-}
-
 void arch_reboot()
 {
 
@@ -51,13 +30,6 @@ void arch_reboot()
 
 }
 
-static void arch_set_stack(unsigned int address)
-{
-
-    tss_set_stack(address);
-
-}
-
 static void arch_init_base()
 {
 
@@ -71,17 +43,15 @@ static void arch_init_base()
     mmu_init();
     syscall_init();
 
-    arch.enable_interrupts();
-
 }
 
 void arch_init(struct mboot_info *header, unsigned int magic, unsigned int stack)
 {
 
-    arch.disable_interrupts = arch_disable_interrupts;
-    arch.enable_interrupts = arch_enable_interrupts;
-    arch.enable_usermode = arch_enable_usermode;
-    arch.set_stack = arch_set_stack;
+    arch.disable_interrupts = cpu_interrupts_off;
+    arch.enable_interrupts = cpu_interrupts_on;
+    arch.enable_usermode = cpu_usermode;
+    arch.set_stack = tss_set_stack;
     arch.stackAddress = stack;
     arch.mbootAddress = (unsigned int *)header;
     arch.initrdAddress = (unsigned int *)header->modulesAddresses;
