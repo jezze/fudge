@@ -37,6 +37,8 @@ void kernel_panic(char *message, char *file, unsigned int line)
 void kernel_init(struct kernel_arch *arch)
 {
 
+    log_init();
+
     kernelArch = arch;
     kernelArch->setup(kernelArch);
     kernelArch->enable_interrupts();

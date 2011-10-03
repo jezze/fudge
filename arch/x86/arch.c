@@ -1,5 +1,4 @@
 #include <kernel/kernel.h>
-#include <kernel/log.h>
 #include <arch/x86/arch.h>
 #include <arch/x86/cpu.h>
 #include <arch/x86/fpu.h>
@@ -33,7 +32,6 @@ void arch_reboot()
 static void arch_setup(struct kernel_arch *arch)
 {
 
-    log_init();
     mboot_init((struct mboot_info *)arch->mbootAddress);
     gdt_init();
     tss_init();
