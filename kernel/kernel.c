@@ -38,6 +38,7 @@ void kernel_init(struct kernel_arch *arch)
 {
 
     kernelArch = arch;
+    kernelArch->setup(kernelArch);
     kernelArch->enable_interrupts();
 
     vfs_init();

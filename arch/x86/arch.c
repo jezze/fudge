@@ -30,10 +30,11 @@ void arch_reboot()
 
 }
 
-static void arch_init_base()
+static void arch_setup(struct kernel_arch *arch)
 {
 
     log_init();
+    mboot_init((struct mboot_info *)arch->mbootAddress);
     gdt_init();
     tss_init();
     idt_init();
@@ -48,6 +49,7 @@ static void arch_init_base()
 void arch_init(struct mboot_info *header, unsigned int magic, unsigned int stack)
 {
 
+    arch.setup = arch_setup;
     arch.disable_interrupts = cpu_interrupts_off;
     arch.enable_interrupts = cpu_interrupts_on;
     arch.enable_usermode = cpu_usermode;
@@ -55,10 +57,6 @@ void arch_init(struct mboot_info *header, unsigned int magic, unsigned int stack
     arch.stackAddress = stack;
     arch.mbootAddress = (unsigned int *)header;
     arch.initrdAddress = (unsigned int *)header->modulesAddresses;
-
-    arch_init_base();
-
-    mboot_init(header);
 
     kernel_init(&arch);
 
