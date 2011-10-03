@@ -15,6 +15,13 @@ struct kernel_arch
 
 };
 
+struct kernel
+{
+
+    struct kernel_arch *arch;
+
+};
+
 extern void kernel_assert(unsigned int condition, char *message, char *file, unsigned int line);
 extern void kernel_panic(char *message, char *file, unsigned int line);
 extern void kernel_init(struct kernel_arch *arch);
