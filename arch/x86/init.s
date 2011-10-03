@@ -15,6 +15,15 @@ init_mboot:
     dd INIT_MBOOT_HEADER_MAGIC
     dd INIT_MBOOT_HEADER_FLAGS
     dd INIT_MBOOT_CHECKSUM
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 1
+    dd 320
+    dd 200
+    dd 8
 
 section .text
 align 4

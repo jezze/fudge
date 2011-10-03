@@ -38,9 +38,10 @@ struct mboot_info
     unsigned int apmTable;
     unsigned int vbeControllerInfo;
     unsigned int vbeModeInfo;
-    unsigned int vbeInterfaceSegment;
-    unsigned int vbeInterfaceOffset;
-    unsigned int vbeInterfaceLength;
+    unsigned short vbeMode;
+    unsigned short vbeInterfaceSegment;
+    unsigned short vbeInterfaceOffset;
+    unsigned short vbeInterfaceLength;
 
 } __attribute__((packed));
 

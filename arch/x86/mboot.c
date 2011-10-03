@@ -7,13 +7,25 @@ void mboot_init(struct mboot_info *info)
 {
 
     log_string("Multiboot information\n");
-    log_string("=====================\n\n");
+    log_string("=====================\n");
+
+    if (info->flags & MBOOT_FLAG_LOADER)
+    {
+
+        log_string("Name: ");
+        log_string((char *)info->name);
+        log_string("\n");
+
+
+    }
+
+    log_string("\n");
 
     if (info->flags & MBOOT_FLAG_MEMORY)
     {
 
         log_string("Memory\n");
-        log_string("------\n\n");
+        log_string("------\n");
 
         log_string("Lower memory: ");
         log_num(info->memoryLower, 10);
@@ -31,7 +43,7 @@ void mboot_init(struct mboot_info *info)
     {
 
         log_string("Boot device\n");
-        log_string("-----------\n\n");
+        log_string("-----------\n");
 
         unsigned int deviceNumber = info->device >> 24;
 
@@ -73,7 +85,7 @@ void mboot_init(struct mboot_info *info)
     }
 
     log_string("Kernel\n");
-    log_string("------\n\n");
+    log_string("------\n");
 
     if (info->flags & MBOOT_FLAG_CMDLINE)
     {
@@ -104,7 +116,7 @@ void mboot_init(struct mboot_info *info)
     {
 
         log_string("Modules\n");
-        log_string("-------\n\n");
+        log_string("-------\n");
 
         //struct mboot_module *module = (struct mboot_module *)info->modulesAddresses;
 
@@ -118,7 +130,7 @@ void mboot_init(struct mboot_info *info)
     {
 
         log_string("Memory map\n");
-        log_string("----------\n\n");
+        log_string("----------\n");
 
         struct mboot_mmap *mmap = (struct mboot_mmap *)info->mmapAddress;
 /*
@@ -143,19 +155,11 @@ void mboot_init(struct mboot_info *info)
 
     }
 
-    if (info->flags & MBOOT_FLAG_LOADER)
-    {
-
-//        void *args[] = {(char *)info->name};
-//        log_message(LOG_TYPE_INFO, "Loader: %s\n", args);
-
-    }
-
     if (info->flags & MBOOT_FLAG_VBE)
     {
 
         log_string("VESA BIOS Extension\n");
-        log_string("-------------------\n\n");
+        log_string("-------------------\n");
 
         log_string("Controller info address: 0x");
         log_num(info->vbeControllerInfo, 16);
@@ -181,6 +185,22 @@ void mboot_init(struct mboot_info *info)
 
         log_string("Mode info address: 0x");
         log_num(info->vbeModeInfo, 16);
+        log_string("\n");
+
+        log_string("Mode: 0x");
+        log_num(info->vbeMode, 16);
+        log_string("\n");
+
+        log_string("Interface Segment: 0x");
+        log_num(info->vbeInterfaceSegment, 16);
+        log_string("\n");
+
+        log_string("Interface Offset: 0x");
+        log_num(info->vbeInterfaceOffset, 16);
+        log_string("\n");
+
+        log_string("Interface Length: 0x");
+        log_num(info->vbeInterfaceLength, 16);
         log_string("\n");
 
         log_string("\n");
