@@ -12,10 +12,7 @@ void mboot_init(struct mboot_info *info)
     if (info->flags & MBOOT_FLAG_LOADER)
     {
 
-        log_string("Name: ");
-        log_string((char *)info->name);
-        log_string("\n");
-
+        log_string("Name: %s\n", (char *)info->name);
 
     }
 
@@ -26,15 +23,8 @@ void mboot_init(struct mboot_info *info)
 
         log_string("Memory\n");
         log_string("------\n");
-
-        log_string("Lower memory: ");
-        log_num(info->memoryLower, 10);
-        log_string("KiB\n");
-
-        log_string("Upper memory: ");
-        log_num(info->memoryUpper, 10);
-        log_string("KiB\n");
-
+        log_string("Lower memory: %dKiB\n", info->memoryLower);
+        log_string("Upper memory: %dKiB\n", info->memoryUpper);
         log_string("\n");
 
     }
@@ -47,9 +37,7 @@ void mboot_init(struct mboot_info *info)
 
         unsigned int deviceNumber = info->device >> 24;
 
-        log_string("Id: 0x");
-        log_num(deviceNumber, 16);
-        log_string("\n");
+        log_string("Id: 0x%x\n", deviceNumber);
 
         switch (deviceNumber)
         {
@@ -90,9 +78,7 @@ void mboot_init(struct mboot_info *info)
     if (info->flags & MBOOT_FLAG_CMDLINE)
     {
 
-        log_string("Arguments: ");
-        log_string((char *)info->cmdline);
-        log_string("\n");
+        log_string("Arguments: %s\n", (char *)info->cmdline);
 
     }
 
@@ -160,49 +146,22 @@ void mboot_init(struct mboot_info *info)
 
         log_string("VESA BIOS Extension\n");
         log_string("-------------------\n");
-
-        log_string("Controller info address: 0x");
-        log_num(info->vbeControllerInfo, 16);
-        log_string("\n");
+        log_string("Controller info address: 0x%x\n", info->vbeControllerInfo);
 
         if (info->vbeControllerInfo)
         {
 
             struct vbe_controller_info *controller = (struct vbe_controller_info *)info->vbeControllerInfo;
 
-            log_string("Signature: 0x");
-            log_num(controller->version, 16);
-            log_string("\n");
-
-            char text[5];
-        
-            memory_set(text, 0, 5);
-            memory_copy(text, controller->signature, 4);
-
-            log_string(text);
+            log_string("Signature: 0x%x\n", controller->version);
 
         }
 
-        log_string("Mode info address: 0x");
-        log_num(info->vbeModeInfo, 16);
-        log_string("\n");
-
-        log_string("Mode: 0x");
-        log_num(info->vbeMode, 16);
-        log_string("\n");
-
-        log_string("Interface Segment: 0x");
-        log_num(info->vbeInterfaceSegment, 16);
-        log_string("\n");
-
-        log_string("Interface Offset: 0x");
-        log_num(info->vbeInterfaceOffset, 16);
-        log_string("\n");
-
-        log_string("Interface Length: 0x");
-        log_num(info->vbeInterfaceLength, 16);
-        log_string("\n");
-
+        log_string("Mode info address: 0x%x\n", info->vbeModeInfo);
+        log_string("Mode: 0x%x\n", info->vbeMode);
+        log_string("Interface Segment: 0x%x\n", info->vbeInterfaceSegment);
+        log_string("Interface Offset: 0x%x\n", info->vbeInterfaceOffset);
+        log_string("Interface Length: 0x%x\n", info->vbeInterfaceLength);
         log_string("\n");
 
     }
