@@ -158,3 +158,63 @@ unsigned int file_write_string_format(unsigned int fd, char *buffer, void **args
 
 }
 
+unsigned int file_write_format(unsigned int fd, char *buffer, ...)
+{
+
+    char **arg = (char **)&buffer;
+    arg++;
+
+    int count = 0;
+    char c;
+
+    while ((c = *buffer++))
+    {
+
+        if (c != '%')
+        {
+
+            count += file_write_byte(fd, c);
+            continue;
+
+        }
+
+        c = *buffer++;
+
+        switch (c)
+        {
+
+            case 'c':
+
+                count += file_write_byte(fd, *(char *)arg);
+
+                break;
+
+            case 'd':
+
+                count += file_write_num(fd, *(int *)arg, 10);
+
+                break;
+
+            case 's':
+
+                count += file_write_string(fd, *(char **)arg);
+
+                break;
+
+            case 'x':
+
+                count += file_write_num(fd, *(int *)arg, 16);
+
+                break;
+
+        }
+
+        arg++;
+
+    }
+
+    return count;
+
+}
+
+

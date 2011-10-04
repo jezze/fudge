@@ -11,17 +11,16 @@ char *log_get()
 
 }
 
-void log_putc(char c)
+static void log_putc(char c)
 {
 
     log[logCount] = c;
     log[logCount + 1] = '\0';
-
     logCount++;
 
 }
 
-void log_puts(char *str)
+static void log_puts(char *str)
 {
 
     while (*str)
@@ -29,7 +28,7 @@ void log_puts(char *str)
 
 }
 
-unsigned int log_num(unsigned int num, unsigned int base)
+static unsigned int log_num(unsigned int num, unsigned int base)
 {
 
     if (!num)
@@ -46,15 +45,15 @@ unsigned int log_num(unsigned int num, unsigned int base)
 
 }
 
-void log_string(const char *str, ...)
+void log_write(const char *buffer, ...)
 {
 
-    char **arg = (char **)&str;
+    char **arg = (char **)&buffer;
     arg++;
 
     char c;
 
-    while ((c = *str++))
+    while ((c = *buffer++))
     {
 
         if (c != '%')
@@ -65,7 +64,7 @@ void log_string(const char *str, ...)
 
         }
 
-        c = *str++;
+        c = *buffer++;
 
         switch (c)
         {

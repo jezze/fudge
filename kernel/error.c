@@ -9,14 +9,7 @@ void error_assert(unsigned int condition, char *message, char *file, unsigned in
         return;
 
     kernel_disable_interrupts();
-
-    log_string("ASSERTION FAIL (");
-    log_string(message);
-    log_string(") at (");
-    log_string(file);
-    log_string(":");
-    log_num(line, 10);
-    log_string(")\n");
+    log_write("ASSERTION FAIL (%s) at (%s:%d)\n", message, file, line);
 
     for (;;);
 
@@ -26,15 +19,7 @@ void error_panic(char *message, char *file, unsigned int line)
 {
 
     kernel_disable_interrupts();
-
-    log_string("KERNEL PANIC (");
-    log_string(message);
-    log_string(") at (");
-    log_string(file);
-    log_string(":");
-    log_num(line, 10);
-    log_string(")\n");
-
+    log_write("KERNEL PANIC (%s) at (%s:%d)\n", message, file, line);
 
     for (;;);
 

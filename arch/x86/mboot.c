@@ -6,117 +6,117 @@
 void mboot_init(struct mboot_info *info)
 {
 
-    log_string("Multiboot information\n");
-    log_string("=====================\n");
+    log_write("Multiboot information\n");
+    log_write("=====================\n");
 
     if (info->flags & MBOOT_FLAG_LOADER)
     {
 
-        log_string("Name: %s\n", (char *)info->name);
+        log_write("Name: %s\n", (char *)info->name);
 
     }
 
-    log_string("\n");
+    log_write("\n");
 
     if (info->flags & MBOOT_FLAG_MEMORY)
     {
 
-        log_string("Memory\n");
-        log_string("------\n");
-        log_string("Lower memory: %dKiB\n", info->memoryLower);
-        log_string("Upper memory: %dKiB\n", info->memoryUpper);
-        log_string("\n");
+        log_write("Memory\n");
+        log_write("------\n");
+        log_write("Lower memory: %dKiB\n", info->memoryLower);
+        log_write("Upper memory: %dKiB\n", info->memoryUpper);
+        log_write("\n");
 
     }
 
     if (info->flags & MBOOT_FLAG_DEVICE)
     {
 
-        log_string("Boot device\n");
-        log_string("-----------\n");
+        log_write("Boot device\n");
+        log_write("-----------\n");
 
         unsigned int deviceNumber = info->device >> 24;
 
-        log_string("Id: 0x%x\n", deviceNumber);
+        log_write("Id: 0x%x\n", deviceNumber);
 
         switch (deviceNumber)
         {
 
             case 0xE0:
 
-                log_string("Type: CD\n");
+                log_write("Type: CD\n");
 
                 break;
 
             case 0x00:
 
-                log_string("Type: Floppy Disk\n");
+                log_write("Type: Floppy Disk\n");
 
                 break;
 
             case 0x80:
 
-                log_string("Type: Hard Drive\n");
+                log_write("Type: Hard Drive\n");
 
                 break;
 
             default:
 
-                log_string("Type: Unknown\n");
+                log_write("Type: Unknown\n");
 
                 break;
 
         }
 
-        log_string("\n");
+        log_write("\n");
 
     }
 
-    log_string("Kernel\n");
-    log_string("------\n");
+    log_write("Kernel\n");
+    log_write("------\n");
 
     if (info->flags & MBOOT_FLAG_CMDLINE)
     {
 
-        log_string("Arguments: %s\n", (char *)info->cmdline);
+        log_write("Arguments: %s\n", (char *)info->cmdline);
 
     }
 
     if (info->flags & MBOOT_FLAG_AOUT)
     {
 
-        log_string("Format: AOUT\n");
+        log_write("Format: AOUT\n");
 
     }
 
     if (info->flags & MBOOT_FLAG_ELF)
     {
 
-        log_string("Format: ELF\n");
+        log_write("Format: ELF\n");
 
     }
 
-    log_string("\n");
+    log_write("\n");
 
     if (info->flags & MBOOT_FLAG_MODULES)
     {
 
-        log_string("Modules\n");
-        log_string("-------\n");
+        log_write("Modules\n");
+        log_write("-------\n");
 
         //struct mboot_module *module = (struct mboot_module *)info->modulesAddresses;
 
         //void *args[] = {(char *)module->name, &module->base, &module->length, &module->reserved};
         //log_message(LOG_TYPE_INFO, "Modules: %s Base: 0x%x Length: 0x%x Reserved:%d\n", args);
 
-        log_string("\n");
+        log_write("\n");
     }
 
     if (info->flags & MBOOT_FLAG_MMAP)
     {
 
-        log_string("Memory map\n");
-        log_string("----------\n");
+        log_write("Memory map\n");
+        log_write("----------\n");
 
         struct mboot_mmap *mmap = (struct mboot_mmap *)info->mmapAddress;
 /*
@@ -137,32 +137,32 @@ void mboot_init(struct mboot_info *info)
         }
 */
 
-        log_string("\n");
+        log_write("\n");
 
     }
 
     if (info->flags & MBOOT_FLAG_VBE)
     {
 
-        log_string("VESA BIOS Extension\n");
-        log_string("-------------------\n");
-        log_string("Controller info address: 0x%x\n", info->vbeControllerInfo);
+        log_write("VESA BIOS Extension\n");
+        log_write("-------------------\n");
+        log_write("Controller info address: 0x%x\n", info->vbeControllerInfo);
 
         if (info->vbeControllerInfo)
         {
 
             struct vbe_controller_info *controller = (struct vbe_controller_info *)info->vbeControllerInfo;
 
-            log_string("Signature: 0x%x\n", controller->version);
+            log_write("Signature: 0x%x\n", controller->version);
 
         }
 
-        log_string("Mode info address: 0x%x\n", info->vbeModeInfo);
-        log_string("Mode: 0x%x\n", info->vbeMode);
-        log_string("Interface Segment: 0x%x\n", info->vbeInterfaceSegment);
-        log_string("Interface Offset: 0x%x\n", info->vbeInterfaceOffset);
-        log_string("Interface Length: 0x%x\n", info->vbeInterfaceLength);
-        log_string("\n");
+        log_write("Mode info address: 0x%x\n", info->vbeModeInfo);
+        log_write("Mode: 0x%x\n", info->vbeMode);
+        log_write("Interface Segment: 0x%x\n", info->vbeInterfaceSegment);
+        log_write("Interface Offset: 0x%x\n", info->vbeInterfaceOffset);
+        log_write("Interface Length: 0x%x\n", info->vbeInterfaceLength);
+        log_write("\n");
 
     }
 

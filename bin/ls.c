@@ -52,12 +52,7 @@ void write_content(char *path, char *content)
             else
                 file_write_string(FILE_STDOUT, "-");
 
-            file_write_string(FILE_STDOUT, "rwxrwxrwx ");
-//            file_write_dec(FILE_STDOUT, info->length);
-            file_write_dec(FILE_STDOUT, 0);
-            file_write_string(FILE_STDOUT, "\t");
-            file_write_string(FILE_STDOUT, content + start);
-            file_write_string(FILE_STDOUT, "\n");
+            file_write_format(FILE_STDOUT, "rwxrwxrwx %d\t%s\n", 0, content + start);
 
             start = i + 1;
 

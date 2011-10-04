@@ -6,8 +6,7 @@
 #define LOG_TYPE_WARNING 2
 
 extern char *log_get();
-extern void log_string(const char *str, ...);
-extern unsigned int log_num(unsigned int num, unsigned int base);
+extern void log_write(const char *buffer, ...);
 extern void log_init();
 
 #endif
