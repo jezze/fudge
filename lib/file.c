@@ -1,6 +1,5 @@
 #include <lib/call.h>
 #include <lib/file.h>
-#include <lib/memory.h>
 #include <lib/string.h>
 
 void file_close(unsigned int fd)
@@ -38,6 +37,13 @@ unsigned int file_read_byte(unsigned int fd, char c)
 
 }
 
+unsigned int file_write(unsigned int fd, unsigned int count, void *buffer)
+{
+
+    return call_write(fd, buffer, count);
+
+}
+
 unsigned int file_write_byte(unsigned int fd, char c)
 {
 
@@ -56,7 +62,7 @@ static unsigned int file_write_num(unsigned int fd, unsigned int num, unsigned i
 {
 
     if (!num)
-        return file_write_byte(fd, '0');
+        return file_write_string(fd, "0");
 
     char buffer[32] = {0};
 
@@ -66,13 +72,6 @@ static unsigned int file_write_num(unsigned int fd, unsigned int num, unsigned i
         buffer[i] = "0123456789abcdef"[num % base];
 
     return file_write_string(fd, buffer + i + 1);
-
-}
-
-unsigned int file_write(unsigned int fd, unsigned int count, void *buffer)
-{
-
-    return call_write(fd, buffer, count);
 
 }
 
@@ -134,5 +133,4 @@ unsigned int file_write_format(unsigned int fd, char *buffer, ...)
     return count;
 
 }
-
 
