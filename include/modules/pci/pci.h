@@ -24,10 +24,9 @@
 #define PCI_CLASS_SIGNAL    0x11
 #define PCI_CLASS_OTHER     0xFF
 
-struct pci_device
+struct pci_configuration
 {
 
-    struct modules_device base;
     unsigned short vendor;
     unsigned short device;
     unsigned short command;
@@ -40,6 +39,30 @@ struct pci_device
     unsigned char latencytimer;
     unsigned char headertype;
     unsigned char bist;
+    unsigned int bar0;
+    unsigned int bar1;
+    unsigned int bar2;
+    unsigned int bar3;
+    unsigned int bar4;
+    unsigned int bar5;
+    unsigned int cis;
+    unsigned short subvendor;
+    unsigned short subsystem;
+    unsigned int expansion;
+    unsigned int capabilities;
+    unsigned int reserved;
+    unsigned char interruptline;
+    unsigned char interruptpin;
+    unsigned char mingrant;
+    unsigned char maxlatency;
+
+};
+
+struct pci_device
+{
+
+    struct modules_device base;
+    struct pci_configuration configuration;
 
 };
 
