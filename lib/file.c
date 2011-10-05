@@ -76,13 +76,6 @@ unsigned int file_write(unsigned int fd, unsigned int count, void *buffer)
 
 }
 
-unsigned int file_write_bcd(unsigned int fd, unsigned char num)
-{
-
-    return file_write_num(fd, num >> 4, 10) + file_write_num(fd, num & 0x0F, 10);
-
-}
-
 unsigned int file_write_format(unsigned int fd, char *buffer, ...)
 {
 

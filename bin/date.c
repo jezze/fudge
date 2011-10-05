@@ -1,5 +1,13 @@
 #include <fudge.h>
 
+void write_bcd(unsigned int fd, unsigned char num)
+{
+
+    file_write_format(fd, "%d", num >> 4);
+    file_write_format(fd, "%d", num & 0x0F);
+
+}
+
 void main(int argc, char *argv[])
 {
 
@@ -9,32 +17,32 @@ void main(int argc, char *argv[])
 
     file_write_format(FILE_STDOUT, "20");
     file_read(fd, 1, &buffer);
-    file_write_bcd(FILE_STDOUT, buffer);
+    write_bcd(FILE_STDOUT, buffer);
 
     file_write_format(FILE_STDOUT, "-");
 
     file_read(fd, 1, &buffer);
-    file_write_bcd(FILE_STDOUT, buffer);
+    write_bcd(FILE_STDOUT, buffer);
 
     file_write_format(FILE_STDOUT, "-");
 
     file_read(fd, 1, &buffer);
-    file_write_bcd(FILE_STDOUT, buffer);
+    write_bcd(FILE_STDOUT, buffer);
 
     file_write_format(FILE_STDOUT, " ");
 
     file_read(fd, 1, &buffer);
-    file_write_bcd(FILE_STDOUT, buffer);
+    write_bcd(FILE_STDOUT, buffer);
 
     file_write_format(FILE_STDOUT, ":");
 
     file_read(fd, 1, &buffer);
-    file_write_bcd(FILE_STDOUT, buffer);
+    write_bcd(FILE_STDOUT, buffer);
 
     file_write_format(FILE_STDOUT, ":");
 
     file_read(fd, 1, &buffer);
-    file_write_bcd(FILE_STDOUT, buffer);
+    write_bcd(FILE_STDOUT, buffer);
 
     file_read(fd, 1, &buffer);
 
