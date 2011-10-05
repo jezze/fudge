@@ -57,7 +57,9 @@ struct modules_bus
 
 };
 
+extern struct modules_bus *modules_get_bus(unsigned int type);
 extern struct modules_device *modules_get_device(unsigned int type);
+extern struct modules_driver *modules_get_driver(unsigned int type);
 extern void modules_register_bus(unsigned int type, struct modules_bus *bus);
 extern void modules_register_device(unsigned int type, struct modules_device *device);
 extern void modules_register_driver(unsigned int type, struct modules_driver *driver);

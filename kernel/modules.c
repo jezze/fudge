@@ -21,6 +21,26 @@ static struct modules_driver *modulesDrivers[32];
 static struct vfs_filesystem modulesFilesystem;
 static struct vfs_node modulesRoot;
 
+struct modules_bus *modules_get_bus(unsigned int type)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < 32; i++)
+    {
+
+        if (!modulesBusses[i])
+            continue;
+
+        if (modulesBusses[i]->module.type == type)
+            return modulesBusses[i];
+
+    }
+
+    return 0;
+
+}
+
 struct modules_device *modules_get_device(unsigned int type)
 {
 
@@ -41,6 +61,26 @@ struct modules_device *modules_get_device(unsigned int type)
 
 }
 
+struct modules_driver *modules_get_driver(unsigned int type)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < 32; i++)
+    {
+
+        if (!modulesDrivers[i])
+            continue;
+
+        if (modulesDrivers[i]->module.type == type)
+            return modulesDrivers[i];
+
+    }
+
+    return 0;
+
+}
+
 void modules_register_bus(unsigned int type, struct modules_bus *bus)
 {
 
@@ -53,6 +93,7 @@ void modules_register_bus(unsigned int type, struct modules_bus *bus)
         {
 
             modulesBusses[i] = bus;
+            modulesBusses[i]->module.type = type;
 
             return;
 
@@ -96,6 +137,7 @@ void modules_register_driver(unsigned int type, struct modules_driver *driver)
         {
 
             modulesDrivers[i] = driver;
+            modulesDrivers[i]->module.type = type;
 
             return;
 
