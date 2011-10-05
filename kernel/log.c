@@ -28,29 +28,13 @@ static void log_puts(char *str)
 
 }
 
-static unsigned int log_num(unsigned int num, unsigned int base)
-{
-
-    if (!num)
-        log_puts("0");
-
-    char buffer[32] = {0};
-
-    int i;
-
-    for (i = 30; num && i; --i, num /= base)
-        buffer[i] = "0123456789abcdef"[num % base];
-
-    log_puts(buffer + i + 1);
-
-}
-
 void log_write(const char *buffer, ...)
 {
 
     char **arg = (char **)&buffer;
     arg++;
 
+    char num[32];
     char c;
 
     while ((c = *buffer++))
@@ -71,13 +55,15 @@ void log_write(const char *buffer, ...)
 
             case 'b':
 
-                log_num(*(char *)arg, 10);
+                string_copy_num(num, *(char *)arg, 10);
+                log_puts(num);
 
                 break;
 
             case 'd':
 
-                log_num(*(int *)arg, 10);
+                string_copy_num(num, *(int *)arg, 10);
+                log_puts(num);
 
                 break;
 
@@ -89,13 +75,15 @@ void log_write(const char *buffer, ...)
 
             case 'w':
 
-                log_num(*(short *)arg, 16);
+                string_copy_num(num, *(short *)arg, 16);
+                log_puts(num);
 
                 break;
 
             case 'x':
 
-                log_num(*(int *)arg, 16);
+                string_copy_num(num, *(int *)arg, 16);
+                log_puts(num);
 
                 break;
 
