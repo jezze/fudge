@@ -1,5 +1,6 @@
 #include <lib/call.h>
 #include <lib/file.h>
+#include <lib/memory.h>
 #include <lib/string.h>
 
 void file_close(unsigned int fd)
@@ -64,7 +65,8 @@ static unsigned int file_write_num(unsigned int fd, unsigned int num, unsigned i
     if (!num)
         return file_write_string(fd, "0");
 
-    char buffer[32] = {0};
+    char buffer[32];
+    memory_set(buffer, 0, 32);
 
     int i;
 
