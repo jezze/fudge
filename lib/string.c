@@ -16,18 +16,32 @@ int string_compare(const char *in1, const char *in2)
 char *string_concat(char *out, const char *in)
 {
 
-    memory_copy(out + string_length(out), in, string_length(in) + 1);
-
-    return out;
+    return memory_copy(out + string_length(out), in, string_length(in) + 1);
 
 }
 
 char *string_copy(char *out, const char *in)
 {
 
-    memory_copy(out, in, string_length(in) + 1);
+    return memory_copy(out, in, string_length(in) + 1);
 
-    return out;
+}
+
+char *string_copy_num(char *out, unsigned int num, unsigned int base)
+{
+
+    if (!num)
+        return memory_set(out, 0, 1);
+
+    char buffer[32];
+    memory_set(buffer, 0, 32);
+
+    int i;
+
+    for (i = 30; num && i; --i, num /= base)
+        buffer[i] = "0123456789abcdef"[num % base];
+
+    return string_copy(out, buffer + i + 1);
 
 }
 
