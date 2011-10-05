@@ -31,7 +31,7 @@ char *string_copy_num(char *out, unsigned int num, unsigned int base)
 {
 
     if (!num)
-        return memory_set(out, 0, 1);
+        return string_copy(out, "0");
 
     char buffer[32];
     memory_set(buffer, 0, 32);

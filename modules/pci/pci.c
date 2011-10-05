@@ -25,31 +25,6 @@ static struct pci_device *pci_get_device(struct vfs_node *node)
 
 }
 
-static unsigned int pci_write_num(char *out, unsigned int num, unsigned int base)
-{
-
-    if (!num)
-    {
-
-        out[0] = '0';
-
-        return 1;
-
-    }
-
-    char buffer[32] = {0};
-
-    int i;
-
-    for (i = 30; num && i; --i, num /= base)
-        buffer[i] = "0123456789abcdef"[num % base];
-
-    string_copy(out, buffer + i + 1);
-
-    return 32 - i;
-
-}
-
 static unsigned int pci_device_read(struct vfs_node *node, unsigned int count, void *buffer)
 {
 
@@ -61,32 +36,32 @@ static unsigned int pci_device_read(struct vfs_node *node, unsigned int count, v
     char num[32];
 
     string_copy(buffer, "Vendor: 0x");
-    pci_write_num(num, device->configuration.vendor, 16);
+    string_copy_num(num, device->configuration.vendor, 16);
     string_concat(buffer, num);
     string_concat(buffer, "\n");
 
     string_concat(buffer, "Device: 0x");
-    pci_write_num(num, device->configuration.device, 16);
+    string_copy_num(num, device->configuration.device, 16);
     string_concat(buffer, num);
     string_concat(buffer, "\n");
 
     string_concat(buffer, "Class: 0x");
-    pci_write_num(num, device->configuration.classcode, 16);
+    string_copy_num(num, device->configuration.classcode, 16);
     string_concat(buffer, num);
     string_concat(buffer, "\n");
 
     string_concat(buffer, "Sublass: 0x");
-    pci_write_num(num, device->configuration.subclass, 16);
+    string_copy_num(num, device->configuration.subclass, 16);
     string_concat(buffer, num);
     string_concat(buffer, "\n");
 
     string_concat(buffer, "Interface: 0x");
-    pci_write_num(num, device->configuration.interface, 16);
+    string_copy_num(num, device->configuration.interface, 16);
     string_concat(buffer, num);
     string_concat(buffer, "\n");
 
     string_concat(buffer, "Headertype: 0x");
-    pci_write_num(num, device->configuration.headertype, 16);
+    string_copy_num(num, device->configuration.headertype, 16);
     string_concat(buffer, num);
     string_concat(buffer, "\n");
 
@@ -94,32 +69,32 @@ static unsigned int pci_device_read(struct vfs_node *node, unsigned int count, v
     {
 
         string_concat(buffer, "Bar0: ");
-        pci_write_num(num, device->configuration.bar0, 2);
+        string_copy_num(num, device->configuration.bar0, 2);
         string_concat(buffer, num);
         string_concat(buffer, "\n");
 
         string_concat(buffer, "Bar1: ");
-        pci_write_num(num, device->configuration.bar1, 2);
+        string_copy_num(num, device->configuration.bar1, 2);
         string_concat(buffer, num);
         string_concat(buffer, "\n");
 
         string_concat(buffer, "Bar2: ");
-        pci_write_num(num, device->configuration.bar2, 2);
+        string_copy_num(num, device->configuration.bar2, 2);
         string_concat(buffer, num);
         string_concat(buffer, "\n");
 
         string_concat(buffer, "Bar3: ");
-        pci_write_num(num, device->configuration.bar3, 2);
+        string_copy_num(num, device->configuration.bar3, 2);
         string_concat(buffer, num);
         string_concat(buffer, "\n");
 
         string_concat(buffer, "Bar4: ");
-        pci_write_num(num, device->configuration.bar4, 2);
+        string_copy_num(num, device->configuration.bar4, 2);
         string_concat(buffer, num);
         string_concat(buffer, "\n");
 
         string_concat(buffer, "Bar5: ");
-        pci_write_num(num, device->configuration.bar5, 2);
+        string_copy_num(num, device->configuration.bar5, 2);
         string_concat(buffer, num);
         string_concat(buffer, "\n");
 
@@ -153,11 +128,11 @@ static void pci_add(unsigned short bus, unsigned short slot, unsigned short func
     struct pci_device *device = &pciDevices[pciDevicesCount];
 
     string_copy(device->base.name, "pci:");
-    pci_write_num(device->base.name + 4, bus, 10);
+    string_copy_num(device->base.name + 4, bus, 10);
     string_concat(device->base.name, ":");
-    pci_write_num(device->base.name + 6, slot, 10);
+    string_copy_num(device->base.name + 6, slot, 10);
     string_concat(device->base.name, ":");
-    pci_write_num(device->base.name + 8, function, 10);
+    string_copy_num(device->base.name + 8, function, 10);
 
     device->base.node.operations.read = pci_device_read;
     device->configuration.vendor = pci_read(bus, slot, function, 0x00);
