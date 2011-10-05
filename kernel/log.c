@@ -53,10 +53,9 @@ void log_write(const char *buffer, ...)
         switch (c)
         {
 
-            case 'b':
+            case 'c':
 
-                string_copy_num(num, *(char *)arg, 10);
-                log_puts(num);
+                log_putc(*(char *)arg);
 
                 break;
 
@@ -70,13 +69,6 @@ void log_write(const char *buffer, ...)
             case 's':
 
                 log_puts(*(char **)arg);
-
-                break;
-
-            case 'w':
-
-                string_copy_num(num, *(short *)arg, 16);
-                log_puts(num);
 
                 break;
 
