@@ -72,7 +72,7 @@ void write_header(struct elf_header *header)
     file_write_format(FILE_STDOUT, "Flags: %d\n", header->flags);
     file_write_format(FILE_STDOUT, "Size: %d\n", header->size);
     file_write_format(FILE_STDOUT, "Program header: {o:%d s:%d c:%d}\n", header->programHeaderOffset, header->programHeaderSize, header->programHeaderCount);
-    file_write_format(FILE_STDOUT, "Section header: {o:%d s:%d c:%d si:%d", header->sectionHeaderOffset, header->sectionHeaderSize, header->sectionHeaderCount, header->sectionHeaderStringIndex);
+    file_write_format(FILE_STDOUT, "Section header: {o:%d s:%d c:%d si:%d}\n", header->sectionHeaderOffset, header->sectionHeaderSize, header->sectionHeaderCount, header->sectionHeaderStringIndex);
 
 }
 
@@ -234,7 +234,7 @@ void write_section_headers(unsigned int address)
 
         file_write_format(FILE_STDOUT, "sh%d: {n:%d t:", i, sheader->name);
         write_section_header_type(sheader->type);
-        file_write_format(FILE_STDOUT, " f:%d ad: 0x%x o:%d s:%d l:%d i:%d al:%d es:%d}\n", sheader->flags, sheader->address, sheader->offset, sheader->size, sheader->link, sheader->info, sheader->align, sheader->entrySize);
+        file_write_format(FILE_STDOUT, " f:%d ad:0x%x o:%d s:%d l:%d i:%d al:%d es:%d}\n", sheader->flags, sheader->address, sheader->offset, sheader->size, sheader->link, sheader->info, sheader->align, sheader->entrySize);
 
     }
 
