@@ -90,6 +90,41 @@ static unsigned int pci_device_read(struct vfs_node *node, unsigned int count, v
     string_concat(buffer, num);
     string_concat(buffer, "\n");
 
+    if (device->configuration.headertype == 0x00)
+    {
+
+        string_concat(buffer, "Bar0: ");
+        pci_write_num(num, device->configuration.bar0, 2);
+        string_concat(buffer, num);
+        string_concat(buffer, "\n");
+
+        string_concat(buffer, "Bar1: ");
+        pci_write_num(num, device->configuration.bar1, 2);
+        string_concat(buffer, num);
+        string_concat(buffer, "\n");
+
+        string_concat(buffer, "Bar2: ");
+        pci_write_num(num, device->configuration.bar2, 2);
+        string_concat(buffer, num);
+        string_concat(buffer, "\n");
+
+        string_concat(buffer, "Bar3: ");
+        pci_write_num(num, device->configuration.bar3, 2);
+        string_concat(buffer, num);
+        string_concat(buffer, "\n");
+
+        string_concat(buffer, "Bar4: ");
+        pci_write_num(num, device->configuration.bar4, 2);
+        string_concat(buffer, num);
+        string_concat(buffer, "\n");
+
+        string_concat(buffer, "Bar5: ");
+        pci_write_num(num, device->configuration.bar5, 2);
+        string_concat(buffer, num);
+        string_concat(buffer, "\n");
+
+    }
+
     return string_length(buffer);
 
 }
@@ -125,13 +160,31 @@ static void pci_add(unsigned short bus, unsigned short slot, unsigned short func
     pci_write_num(device->base.name + 8, function, 10);
 
     device->base.node.operations.read = pci_device_read;
-    device->configuration.vendor = pci_read(bus, slot, function, 0x0);
-    device->configuration.device = pci_read(bus, slot, function, 0x2);
-    device->configuration.interface = (pci_read(bus, slot, function, 0x8) >> 8);
-    device->configuration.revision = (pci_read(bus, slot, function, 0x8) & 0xFF);
-    device->configuration.classcode = (pci_read(bus, slot, function, 0xA) >> 8);
-    device->configuration.subclass = (pci_read(bus, slot, function, 0xA) & 0xFF);
-    device->configuration.headertype = (pci_read(bus, slot, function, 0xE) & 0xFF);
+    device->configuration.vendor = pci_read(bus, slot, function, 0x00);
+    device->configuration.device = pci_read(bus, slot, function, 0x02);
+    device->configuration.revision = (pci_read(bus, slot, function, 0x08) & 0xFF);
+    device->configuration.interface = (pci_read(bus, slot, function, 0x08) >> 8);
+    device->configuration.subclass = (pci_read(bus, slot, function, 0x0A) & 0xFF);
+    device->configuration.classcode = (pci_read(bus, slot, function, 0x0A) >> 8);
+    device->configuration.headertype = (pci_read(bus, slot, function, 0x0E) & 0xFF);
+
+    if (device->configuration.headertype == 0x00)
+    {
+
+        device->configuration.bar0 = pci_read(bus, slot, function, 0x10);
+        device->configuration.bar0 |= pci_read(bus, slot, function, 0x12) << 16;
+        device->configuration.bar1 = pci_read(bus, slot, function, 0x14);
+        device->configuration.bar1 |= pci_read(bus, slot, function, 0x16) << 16;
+        device->configuration.bar2 = pci_read(bus, slot, function, 0x18);
+        device->configuration.bar2 |= pci_read(bus, slot, function, 0x1A) << 16;
+        device->configuration.bar3 = pci_read(bus, slot, function, 0x1C);
+        device->configuration.bar3 |= pci_read(bus, slot, function, 0x1E) << 16;
+        device->configuration.bar4 = pci_read(bus, slot, function, 0x20);
+        device->configuration.bar4 |= pci_read(bus, slot, function, 0x22) << 16;
+        device->configuration.bar5 = pci_read(bus, slot, function, 0x24);
+        device->configuration.bar5 |= pci_read(bus, slot, function, 0x26) << 16;
+
+    }
 
     modules_register_device(MODULES_DEVICE_TYPE_PCI, &device->base);
 
