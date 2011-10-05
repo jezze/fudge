@@ -48,9 +48,9 @@ void write_content(char *path, char *content)
 //            file_info(str, info);
 
             if (1)
-                file_write_string(FILE_STDOUT, "d");
+                file_write_format(FILE_STDOUT, "d");
             else
-                file_write_string(FILE_STDOUT, "-");
+                file_write_format(FILE_STDOUT, "-");
 
             file_write_format(FILE_STDOUT, "rwxrwxrwx %d\t%s\n", 0, content + start);
 

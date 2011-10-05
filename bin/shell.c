@@ -35,7 +35,7 @@ static void shell_stack_clear()
 static void shell_clear()
 {
 
-    file_write_string(FILE_STDOUT, "fudge:/$ ");
+    file_write_format(FILE_STDOUT, "fudge:/$ ");
     shell_stack_clear();
 
 }
@@ -73,8 +73,7 @@ static void shell_interpret(char *command)
     if (file == -1)
     {
 
-        file_write_string(FILE_STDOUT, argv[0]);
-        file_write_string(FILE_STDOUT, ": Command not found\n");
+        file_write_format(FILE_STDOUT, "%s: Command not found\n", argv[0]);
 
         return;
 
@@ -147,9 +146,9 @@ static void shell_poll()
 void main(int argc, char *argv[])
 {
 
-    file_write_string(FILE_STDOUT, "Fudge\n\n");
-    file_write_string(FILE_STDOUT, "Copyright (c) 2009 Jens Nyberg\n");
-    file_write_string(FILE_STDOUT, "Type 'cat help.txt' to read the help section.\n\n");
+    file_write_format(FILE_STDOUT, "Fudge\n\n");
+    file_write_format(FILE_STDOUT, "Copyright (c) 2009 Jens Nyberg\n");
+    file_write_format(FILE_STDOUT, "Type 'cat help.txt' to read the help section.\n\n");
 
     shell_clear();
     shell_poll();

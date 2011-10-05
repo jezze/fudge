@@ -3,10 +3,7 @@
 void main(int argc, char *argv[])
 {
 
-    unsigned int timer;
-
-    file_write_string(FILE_STDOUT, "Timer: ");
-    file_write_string(FILE_STDOUT, "\n");
+    file_write_format(FILE_STDOUT, "Timer: %d\n", 0);
 
 }
 

@@ -29,7 +29,7 @@ void main(int argc, char *argv[])
     if (argc != 2)
     {
 
-        file_write_string(FILE_STDOUT, "You need to supply filename.\n");
+        file_write_format(FILE_STDOUT, "You need to supply filename.\n");
 
         return;
 
@@ -42,7 +42,7 @@ void main(int argc, char *argv[])
     if (fd == -1)
     {
 
-        file_write_string(FILE_STDOUT, "File does not exist.\n");
+        file_write_format(FILE_STDOUT, "File does not exist.\n");
 
         return;
 

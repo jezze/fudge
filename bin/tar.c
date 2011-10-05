@@ -6,7 +6,7 @@ void main(int argc, char *argv[])
     if (argc != 2)
     {
 
-        file_write_string(FILE_STDOUT, "You need to supply filename.\n");
+        file_write_format(FILE_STDOUT, "You need to supply filename.\n");
 
         return;
 
@@ -49,8 +49,8 @@ void main(int argc, char *argv[])
         if (header->name[0] == '\0' || header->name[0] == ' ')
             break;
 
-        file_write_string(FILE_STDOUT, header->name);
-        file_write_string(FILE_STDOUT, "\t ");
+        file_write_format(FILE_STDOUT, header->name);
+        file_write_format(FILE_STDOUT, "\t ");
 
         unsigned int j;
         unsigned int count = 1;
@@ -60,7 +60,7 @@ void main(int argc, char *argv[])
             size += ((header->size[j - 1] - '0') * count);
 
         file_write_dec2(FILE_STDOUT, size);
-        file_write_string(FILE_STDOUT, "\n");
+        file_write_format(FILE_STDOUT, "\n");
 
         offset += ((size / 512) + 1) * 512;
 

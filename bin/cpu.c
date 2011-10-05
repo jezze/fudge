@@ -16,9 +16,7 @@ void main(int argc, char *argv[])
 
     cpu_get_vendor(vendor);
 
-    file_write_string(FILE_STDOUT, "Vendor: ");
-    file_write_string(FILE_STDOUT, vendor);
-    file_write_string(FILE_STDOUT, "\n");
+    file_write_format(FILE_STDOUT, "Vendor: %s\n", vendor);
 
     // ECX FEATURES
 
@@ -28,15 +26,15 @@ void main(int argc, char *argv[])
 
     unsigned int edx = cpu_get_feature_edx();
 
-    file_write_string(FILE_STDOUT, "Features: ");
+    file_write_format(FILE_STDOUT, "Features: ");
 
     if (edx & CPU_FEATURE_EDX_FPU)
-        file_write_string(FILE_STDOUT, "FDU ");
+        file_write_format(FILE_STDOUT, "FDU ");
 
     if (edx & CPU_FEATURE_EDX_MMX)
-        file_write_string(FILE_STDOUT, "MMX ");
+        file_write_format(FILE_STDOUT, "MMX ");
 
-    file_write_string(FILE_STDOUT, "\n");
+    file_write_format(FILE_STDOUT, "\n");
 
     // BRAND
 
@@ -44,9 +42,7 @@ void main(int argc, char *argv[])
 
     cpu_get_brand(brand);
 
-    file_write_string(FILE_STDOUT, "Brand: ");
-    file_write_string(FILE_STDOUT, brand);
-    file_write_string(FILE_STDOUT, "\n");
+    file_write_format(FILE_STDOUT, "Brand: %s\n", brand);
 
 }
 

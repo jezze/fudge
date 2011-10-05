@@ -21,11 +21,6 @@ extern unsigned int file_read_byte(unsigned int fd, char c);
 extern unsigned int file_write(unsigned int fd, unsigned int count, void *buffer);
 extern unsigned int file_write_bcd(unsigned int fd, unsigned char num);
 extern unsigned int file_write_byte(unsigned int fd, char c);
-extern unsigned int file_write_dec(unsigned int fd, unsigned int num);
-extern unsigned int file_write_hex(unsigned int fd, unsigned int num);
-extern unsigned int file_write_num(unsigned int fd, unsigned int num, unsigned int base);
-extern unsigned int file_write_string(unsigned int fd, char *buffer);
-extern unsigned int file_write_string_format(unsigned int fd, char *buffer, void **args);
 extern unsigned int file_write_format(unsigned int fd, char *buffer, ...);
 
 #endif

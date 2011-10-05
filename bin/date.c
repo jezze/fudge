@@ -7,31 +7,31 @@ void main(int argc, char *argv[])
 
     unsigned char buffer;
 
-    file_write_string(FILE_STDOUT, "20");
+    file_write_format(FILE_STDOUT, "20");
     file_read(fd, 1, &buffer);
     file_write_bcd(FILE_STDOUT, buffer);
 
-    file_write_string(FILE_STDOUT, "-");
-
-    file_read(fd, 1, &buffer);
-    file_write_bcd(FILE_STDOUT, buffer);
-
-    file_write_string(FILE_STDOUT, "-");
+    file_write_format(FILE_STDOUT, "-");
 
     file_read(fd, 1, &buffer);
     file_write_bcd(FILE_STDOUT, buffer);
 
-    file_write_string(FILE_STDOUT, " ");
+    file_write_format(FILE_STDOUT, "-");
 
     file_read(fd, 1, &buffer);
     file_write_bcd(FILE_STDOUT, buffer);
 
-    file_write_string(FILE_STDOUT, ":");
+    file_write_format(FILE_STDOUT, " ");
 
     file_read(fd, 1, &buffer);
     file_write_bcd(FILE_STDOUT, buffer);
 
-    file_write_string(FILE_STDOUT, ":");
+    file_write_format(FILE_STDOUT, ":");
+
+    file_read(fd, 1, &buffer);
+    file_write_bcd(FILE_STDOUT, buffer);
+
+    file_write_format(FILE_STDOUT, ":");
 
     file_read(fd, 1, &buffer);
     file_write_bcd(FILE_STDOUT, buffer);
@@ -39,9 +39,9 @@ void main(int argc, char *argv[])
     file_read(fd, 1, &buffer);
 
     if (buffer >> 4)
-        file_write_string(FILE_STDOUT, "PM\n");
+        file_write_format(FILE_STDOUT, "PM\n");
     else
-        file_write_string(FILE_STDOUT, "AM\n");
+        file_write_format(FILE_STDOUT, "AM\n");
 
     file_close(fd);
 

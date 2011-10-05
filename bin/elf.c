@@ -12,49 +12,49 @@ void write_header_type(unsigned int type)
 
         case ELF_TYPE_NONE:
 
-            file_write_string(FILE_STDOUT, "none");
+            file_write_format(FILE_STDOUT, "none");
 
             break;
 
         case ELF_TYPE_RELOCATABLE:
 
-            file_write_string(FILE_STDOUT, "relocatable");
+            file_write_format(FILE_STDOUT, "relocatable");
 
             break;
 
         case ELF_TYPE_EXECUTABLE:
 
-            file_write_string(FILE_STDOUT, "executable");
+            file_write_format(FILE_STDOUT, "executable");
 
             break;
 
         case ELF_TYPE_DYNAMIC:
 
-            file_write_string(FILE_STDOUT, "dynamic");
+            file_write_format(FILE_STDOUT, "dynamic");
 
             break;
 
         case ELF_TYPE_CORE:
 
-            file_write_string(FILE_STDOUT, "core");
+            file_write_format(FILE_STDOUT, "core");
 
             break;
 
         case ELF_TYPE_LOPROC:
 
-            file_write_string(FILE_STDOUT, "loproc");
+            file_write_format(FILE_STDOUT, "loproc");
 
             break;
 
         case ELF_TYPE_HIPROC:
 
-            file_write_string(FILE_STDOUT, "hiproc");
+            file_write_format(FILE_STDOUT, "hiproc");
 
             break;
 
         default:
 
-            file_write_string(FILE_STDOUT, "unknown");
+            file_write_format(FILE_STDOUT, "unknown");
 
             break;
 
@@ -65,62 +65,28 @@ void write_header_type(unsigned int type)
 void write_header(struct elf_header *header)
 {
 
-    file_write_string(FILE_STDOUT, "Type: ");
-    write_header_type(header->type);
-    file_write_string(FILE_STDOUT, "\nMachine: ");
-    file_write_dec(FILE_STDOUT, header->machine);
-    file_write_string(FILE_STDOUT, "\nVersion: ");
-    file_write_dec(FILE_STDOUT, header->version);
-    file_write_string(FILE_STDOUT, "\nEntry: 0x");
-    file_write_hex(FILE_STDOUT, header->entry);
-    file_write_string(FILE_STDOUT, "\nFlags: ");
-    file_write_dec(FILE_STDOUT, header->flags);
-    file_write_string(FILE_STDOUT, "\nSize: ");
-    file_write_dec(FILE_STDOUT, header->size);
-    file_write_string(FILE_STDOUT, "\n");
-
-    file_write_string(FILE_STDOUT, "Program header: {");
-    file_write_string(FILE_STDOUT, "o:");
-    file_write_dec(FILE_STDOUT, header->programHeaderOffset);
-    file_write_string(FILE_STDOUT, " s:");
-    file_write_dec(FILE_STDOUT, header->programHeaderSize);
-    file_write_string(FILE_STDOUT, " c:");
-    file_write_dec(FILE_STDOUT, header->programHeaderCount);
-    file_write_string(FILE_STDOUT, "}\n");
-
-    file_write_string(FILE_STDOUT, "Section header: {");
-    file_write_string(FILE_STDOUT, "o:");
-    file_write_dec(FILE_STDOUT, header->sectionHeaderOffset);
-    file_write_string(FILE_STDOUT, " s:");
-    file_write_dec(FILE_STDOUT, header->sectionHeaderSize);
-    file_write_string(FILE_STDOUT, " c:");
-    file_write_dec(FILE_STDOUT, header->sectionHeaderCount);
-    file_write_string(FILE_STDOUT, " si:");
-    file_write_dec(FILE_STDOUT, header->sectionHeaderStringIndex);
-    file_write_string(FILE_STDOUT, "}\n");
+    file_write_format(FILE_STDOUT, "Type: %d\n", header->type);
+    file_write_format(FILE_STDOUT, "Machine: %d\n", header->machine);
+    file_write_format(FILE_STDOUT, "Version: %d\n", header->version);
+    file_write_format(FILE_STDOUT, "Entry: 0x%x\n", header->entry);
+    file_write_format(FILE_STDOUT, "Flags: %d\n", header->flags);
+    file_write_format(FILE_STDOUT, "Size: %d\n", header->size);
+    file_write_format(FILE_STDOUT, "Program header: {o:%d s:%d c:%d}\n", header->programHeaderOffset, header->programHeaderSize, header->programHeaderCount);
+    file_write_format(FILE_STDOUT, "Section header: {o:%d s:%d c:%d si:%d", header->sectionHeaderOffset, header->sectionHeaderSize, header->sectionHeaderCount, header->sectionHeaderStringIndex);
 
 }
 
 void write_program_header(struct elf_program_header *header)
 {
 
-    file_write_string(FILE_STDOUT, "Type: ");
-    file_write_dec(FILE_STDOUT, header->type);
-    file_write_string(FILE_STDOUT, "\nOffset: ");
-    file_write_dec(FILE_STDOUT, header->offset);
-    file_write_string(FILE_STDOUT, "\nVirtual address: 0x");
-    file_write_hex(FILE_STDOUT, header->virtualAddress);
-    file_write_string(FILE_STDOUT, "\nPhysical address: 0x");
-    file_write_hex(FILE_STDOUT, header->physicalAddress);
-    file_write_string(FILE_STDOUT, "\nFile size: ");
-    file_write_dec(FILE_STDOUT, header->fileSize);
-    file_write_string(FILE_STDOUT, "\nMemory size: ");
-    file_write_dec(FILE_STDOUT, header->memorySize);
-    file_write_string(FILE_STDOUT, "\nFlags: ");
-    file_write_dec(FILE_STDOUT, header->flags);
-    file_write_string(FILE_STDOUT, "\nAlign: ");
-    file_write_dec(FILE_STDOUT, header->align);
-    file_write_string(FILE_STDOUT, "\n");
+    file_write_format(FILE_STDOUT, "Type: %d\n", header->type);
+    file_write_format(FILE_STDOUT, "Offset: %d\n", header->offset);
+    file_write_format(FILE_STDOUT, "Virtual address: 0x%x\n", header->virtualAddress);
+    file_write_format(FILE_STDOUT, "Physical address: 0x%x\n", header->physicalAddress);
+    file_write_format(FILE_STDOUT, "File size: %d\n", header->fileSize);
+    file_write_format(FILE_STDOUT, "Memory size: %d\n", header->memorySize);
+    file_write_format(FILE_STDOUT, "Flags: %d\n", header->flags);
+    file_write_format(FILE_STDOUT, "Align: %d\n", header->align);
 
 }
 
@@ -132,103 +98,103 @@ void write_section_header_type(unsigned int type)
 
         case ELF_SECTION_TYPE_NULL:
 
-            file_write_string(FILE_STDOUT, "null");
+            file_write_format(FILE_STDOUT, "null");
 
             break;
 
         case ELF_SECTION_TYPE_PROGBITS:
 
-            file_write_string(FILE_STDOUT, "progbits");
+            file_write_format(FILE_STDOUT, "progbits");
 
             break;
 
         case ELF_SECTION_TYPE_SYMTAB:
 
-            file_write_string(FILE_STDOUT, "symtab");
+            file_write_format(FILE_STDOUT, "symtab");
 
             break;
 
         case ELF_SECTION_TYPE_STRTAB:
 
-            file_write_string(FILE_STDOUT, "strtab");
+            file_write_format(FILE_STDOUT, "strtab");
 
             break;
 
         case ELF_SECTION_TYPE_RELA:
 
-            file_write_string(FILE_STDOUT, "rela");
+            file_write_format(FILE_STDOUT, "rela");
 
             break;
 
         case ELF_SECTION_TYPE_HASH:
 
-            file_write_string(FILE_STDOUT, "hash");
+            file_write_format(FILE_STDOUT, "hash");
 
             break;
 
         case ELF_SECTION_TYPE_DYNAMIC:
 
-            file_write_string(FILE_STDOUT, "dynamic");
+            file_write_format(FILE_STDOUT, "dynamic");
 
             break;
 
         case ELF_SECTION_TYPE_NOTE:
 
-            file_write_string(FILE_STDOUT, "note");
+            file_write_format(FILE_STDOUT, "note");
 
             break;
 
         case ELF_SECTION_TYPE_NOBITS:
 
-            file_write_string(FILE_STDOUT, "nobits");
+            file_write_format(FILE_STDOUT, "nobits");
 
             break;
 
         case ELF_SECTION_TYPE_REL:
 
-            file_write_string(FILE_STDOUT, "rel");
+            file_write_format(FILE_STDOUT, "rel");
 
             break;
 
         case ELF_SECTION_TYPE_SHLIB:
 
-            file_write_string(FILE_STDOUT, "shlib");
+            file_write_format(FILE_STDOUT, "shlib");
 
             break;
 
         case ELF_SECTION_TYPE_DYNSYM:
 
-            file_write_string(FILE_STDOUT, "dynsym");
+            file_write_format(FILE_STDOUT, "dynsym");
 
             break;
 
         case ELF_SECTION_TYPE_LOPROC:
 
-            file_write_string(FILE_STDOUT, "loproc");
+            file_write_format(FILE_STDOUT, "loproc");
 
             break;
 
         case ELF_SECTION_TYPE_HIPROC:
 
-            file_write_string(FILE_STDOUT, "hiproc");
+            file_write_format(FILE_STDOUT, "hiproc");
 
             break;
 
         case ELF_SECTION_TYPE_LOUSER:
 
-            file_write_string(FILE_STDOUT, "louser");
+            file_write_format(FILE_STDOUT, "louser");
 
             break;
 
         case ELF_SECTION_TYPE_HIUSER:
 
-            file_write_string(FILE_STDOUT, "hiuser");
+            file_write_format(FILE_STDOUT, "hiuser");
 
             break;
 
         default:
 
-            file_write_string(FILE_STDOUT, "unknown");
+            file_write_format(FILE_STDOUT, "unknown");
 
             break;
 
@@ -239,27 +205,18 @@ void write_section_header_type(unsigned int type)
 void write_section_header(struct elf_section_header *header)
 {
 
-    file_write_string(FILE_STDOUT, "Name: ");
-    file_write_dec(FILE_STDOUT, header->name);
-    file_write_string(FILE_STDOUT, "\nType: ");
+    file_write_format(FILE_STDOUT, "Name: %d\n", header->name);
+    file_write_format(FILE_STDOUT, "Type: ");
     write_section_header_type(header->type);
-    file_write_string(FILE_STDOUT, "\nFlags: ");
-    file_write_dec(FILE_STDOUT, header->flags);
-    file_write_string(FILE_STDOUT, "\nAddress: ");
-    file_write_hex(FILE_STDOUT, header->address);
-    file_write_string(FILE_STDOUT, "\nOffset: ");
-    file_write_dec(FILE_STDOUT, header->offset);
-    file_write_string(FILE_STDOUT, "\nSize: ");
-    file_write_dec(FILE_STDOUT, header->size);
-    file_write_string(FILE_STDOUT, "\nLink: ");
-    file_write_dec(FILE_STDOUT, header->link);
-    file_write_string(FILE_STDOUT, "\nInfo: ");
-    file_write_dec(FILE_STDOUT, header->info);
-    file_write_string(FILE_STDOUT, "\nAlign: ");
-    file_write_dec(FILE_STDOUT, header->align);
-    file_write_string(FILE_STDOUT, "\nEntry Size: ");
-    file_write_dec(FILE_STDOUT, header->entrySize);
-    file_write_string(FILE_STDOUT, "\n");
+    file_write_format(FILE_STDOUT, "\n");
+    file_write_format(FILE_STDOUT, "Flags: %d\n", header->flags);
+    file_write_format(FILE_STDOUT, "Address: 0x%x\n", header->address);
+    file_write_format(FILE_STDOUT, "Offset: %d\n", header->offset);
+    file_write_format(FILE_STDOUT, "Size: %d\n", header->size);
+    file_write_format(FILE_STDOUT, "Link: %d\n", header->link);
+    file_write_format(FILE_STDOUT, "Info: %d\n", header->info);
+    file_write_format(FILE_STDOUT, "Align: %d\n", header->align);
+    file_write_format(FILE_STDOUT, "Entry Size: %d\n", header->entrySize);
 
 }
 
@@ -275,30 +232,9 @@ void write_section_headers(unsigned int address)
 
         struct elf_section_header *sheader = (struct elf_section_header *)(address + header->sectionHeaderOffset + i * header->sectionHeaderSize);
 
-        file_write_string(FILE_STDOUT, "sh");
-        file_write_dec(FILE_STDOUT, i);
-        file_write_string(FILE_STDOUT, ": {");
-        file_write_string(FILE_STDOUT, "n:");
-        file_write_dec(FILE_STDOUT, sheader->name);
-        file_write_string(FILE_STDOUT, " t:");
+        file_write_format(FILE_STDOUT, "sh%d: {n:%d t:", i, sheader->name);
         write_section_header_type(sheader->type);
-        file_write_string(FILE_STDOUT, " f:");
-        file_write_dec(FILE_STDOUT, sheader->flags);
-        file_write_string(FILE_STDOUT, " ad: 0x");
-        file_write_hex(FILE_STDOUT, sheader->address);
-        file_write_string(FILE_STDOUT, " o:");
-        file_write_dec(FILE_STDOUT, sheader->offset);
-        file_write_string(FILE_STDOUT, " s:");
-        file_write_dec(FILE_STDOUT, sheader->size);
-        file_write_string(FILE_STDOUT, " l:");
-        file_write_dec(FILE_STDOUT, sheader->link);
-        file_write_string(FILE_STDOUT, " i:");
-        file_write_dec(FILE_STDOUT, sheader->info);
-        file_write_string(FILE_STDOUT, " al:");
-        file_write_dec(FILE_STDOUT, sheader->align);
-        file_write_string(FILE_STDOUT, " es:");
-        file_write_dec(FILE_STDOUT, sheader->entrySize);
-        file_write_string(FILE_STDOUT, "}\n");
+        file_write_format(FILE_STDOUT, " f:%d ad: 0x%x o:%d s:%d l:%d i:%d al:%d es:%d}\n", sheader->flags, sheader->address, sheader->offset, sheader->size, sheader->link, sheader->info, sheader->align, sheader->entrySize);
 
     }
 
@@ -319,30 +255,11 @@ void write_relocation_table(unsigned int address)
         if (sheader->type != 9)
             continue;
 
-        file_write_string(FILE_STDOUT, "Section ");
-        file_write_dec(FILE_STDOUT, i);
-        file_write_string(FILE_STDOUT, ": {");
-        file_write_string(FILE_STDOUT, "name: ");
-        file_write_dec(FILE_STDOUT, sheader->name);
-        file_write_string(FILE_STDOUT, "; type: ");
-        file_write_dec(FILE_STDOUT, sheader->type);
-        file_write_string(FILE_STDOUT, "; flags: ");
-        file_write_dec(FILE_STDOUT, sheader->flags);
-        file_write_string(FILE_STDOUT, "; addr: ");
-        file_write_hex(FILE_STDOUT, sheader->address);
-        file_write_string(FILE_STDOUT, "; off: ");
-        file_write_dec(FILE_STDOUT, sheader->offset);
-        file_write_string(FILE_STDOUT, "; esi: ");
-        file_write_dec(FILE_STDOUT, sheader->entrySize);
-        file_write_string(FILE_STDOUT, "}\n");
+        file_write_format(FILE_STDOUT, "Section %d: {name: %d; type: %d; addr: %x; off: %d; esi: %d}\n", sheader->name, sheader->type, sheader->flags, sheader->address, sheader->offset, sheader->entrySize);
 
         struct elf_relocate *rheader = (struct elf_relocate *)(address + sheader->offset);
 
-        file_write_string(FILE_STDOUT, "offset:");
-        file_write_dec(FILE_STDOUT, rheader->offset);
-        file_write_string(FILE_STDOUT, " info:");
-        file_write_dec(FILE_STDOUT, rheader->info);
-        file_write_string(FILE_STDOUT, " \n");
+        file_write_format(FILE_STDOUT, "offset:%d info:%d\n", rheader->offset, rheader->info);
 
     }
 
@@ -377,9 +294,7 @@ void write_symbol_table(unsigned int address)
         if (sheader->type != 2)
             continue;
 
-        file_write_string(FILE_STDOUT, "Section ");
-        file_write_dec(FILE_STDOUT, i);
-        file_write_string(FILE_STDOUT, "\n");
+        file_write_format(FILE_STDOUT, "Section %d\n", i);
 
         unsigned int j;
 
@@ -390,19 +305,7 @@ void write_symbol_table(unsigned int address)
 
             struct elf_symbol *symbols = (struct elf_symbol *)(address + sheader->offset + j * sheader->entrySize);
 
-            file_write_string(FILE_STDOUT, "n:");
-            file_write_dec(FILE_STDOUT, symbols->name);
-            file_write_string(FILE_STDOUT, " v:");
-            file_write_dec(FILE_STDOUT, symbols->value);
-            file_write_string(FILE_STDOUT, " s:");
-            file_write_dec(FILE_STDOUT, symbols->size);
-            file_write_string(FILE_STDOUT, " i:");
-            file_write_dec(FILE_STDOUT, symbols->info);
-            file_write_string(FILE_STDOUT, " o:");
-            file_write_dec(FILE_STDOUT, symbols->other);
-            file_write_string(FILE_STDOUT, " x:");
-            file_write_dec(FILE_STDOUT, symbols->shndx);
-            file_write_string(FILE_STDOUT, " \n");
+            file_write_format(FILE_STDOUT, "n:%d v:%d s:%d i:%d o:%d x:%d\n", symbols->name, symbols->value, symbols->size, symbols->info, symbols->other, symbols->shndx);
 
         }
 
@@ -464,7 +367,7 @@ void main(int argc, char *argv[])
         else
         {
 
-            file_write_string(FILE_STDOUT, "No program header\n");
+            file_write_format(FILE_STDOUT, "No program header\n");
 
         }
 
@@ -507,7 +410,7 @@ void main(int argc, char *argv[])
         else
         {
 
-            file_write_string(FILE_STDOUT, "No section header\n");
+            file_write_format(FILE_STDOUT, "No section header\n");
 
         }
 

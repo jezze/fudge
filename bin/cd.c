@@ -32,7 +32,7 @@ void main(int argc, char *argv[])
     {
 
         get_path(path, 0);
-        file_write_string(FILE_STDOUT, path);
+        file_write_format(FILE_STDOUT, path);
         file_write_byte(FILE_STDOUT, '\n');
 
         return;
@@ -46,7 +46,7 @@ void main(int argc, char *argv[])
     if (new == -1)
     {
 
-        file_write_string(FILE_STDOUT, "Directory does not exist.\n");
+        file_write_format(FILE_STDOUT, "Directory does not exist.\n");
         file_close(new);
 
         return;
@@ -56,7 +56,7 @@ void main(int argc, char *argv[])
     file_close(new);
 
     int cwd = file_open("/cwd");
-    file_write_string(cwd, path);
+    file_write_format(cwd, path);
     file_close(cwd);
 
     return;

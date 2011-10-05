@@ -38,20 +38,6 @@ unsigned int file_read_byte(unsigned int fd, char c)
 
 }
 
-unsigned int file_write(unsigned int fd, unsigned int count, void *buffer)
-{
-
-    return call_write(fd, buffer, count);
-
-}
-
-unsigned int file_write_bcd(unsigned int fd, unsigned char num)
-{
-
-    return file_write_dec(fd, num >> 4) + file_write_dec(fd, num & 0x0F);
-
-}
-
 unsigned int file_write_byte(unsigned int fd, char c)
 {
 
@@ -59,21 +45,14 @@ unsigned int file_write_byte(unsigned int fd, char c)
 
 }
 
-unsigned int file_write_dec(unsigned int fd, unsigned int num)
+static unsigned int file_write_string(unsigned int fd, char *buffer)
 {
 
-    return file_write_num(fd, num, 10);
+    return file_write(fd, string_length(buffer), buffer);
 
 }
 
-unsigned int file_write_hex(unsigned int fd, unsigned int num)
-{
-
-    return file_write_num(fd, num, 16);
-
-}
-
-unsigned int file_write_num(unsigned int fd, unsigned int num, unsigned int base)
+static unsigned int file_write_num(unsigned int fd, unsigned int num, unsigned int base)
 {
 
     if (!num)
@@ -90,71 +69,17 @@ unsigned int file_write_num(unsigned int fd, unsigned int num, unsigned int base
 
 }
 
-unsigned int file_write_string(unsigned int fd, char *buffer)
+unsigned int file_write(unsigned int fd, unsigned int count, void *buffer)
 {
 
-    return file_write(fd, string_length(buffer), buffer);
+    return call_write(fd, buffer, count);
 
 }
 
-unsigned int file_write_string_format(unsigned int fd, char *buffer, void **args)
+unsigned int file_write_bcd(unsigned int fd, unsigned char num)
 {
 
-    if (!args)
-        return file_write(fd, string_length(buffer), buffer);
-
-    unsigned int i;
-    unsigned int length = string_length(buffer);
-    unsigned int size = 0;
-
-    for (i = 0; i < length; i++)
-    {
-
-        if (buffer[i] != '%')
-        {
-
-            size += file_write_byte(fd, buffer[i]);
-
-            continue;
-
-        }
-
-        i++;
-
-        switch (buffer[i])
-        {
-
-            case 'c':
-
-                size += file_write_byte(fd, **(char **)args);
-
-                break;
-
-            case 'd':
-
-                size += file_write_num(fd, **(int **)args, 10);
-
-                break;
-
-            case 's':
-
-                size += file_write_string(fd, *(char **)args);
-
-                break;
-
-            case 'x':
-
-                size += file_write_num(fd, **(int **)args, 16);
-
-                break;
-
-        }
-
-        args++;
-
-    }
-
-    return size + i;
+    return file_write_num(fd, num >> 4, 10) + file_write_num(fd, num & 0x0F, 10);
 
 }
 

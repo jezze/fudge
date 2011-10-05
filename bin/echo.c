@@ -6,7 +6,7 @@ void main(int argc, char *argv[])
     if (argc != 2)
         return;
 
-    file_write_string(FILE_STDOUT, argv[1]);
+    file_write_format(FILE_STDOUT, "%s\n", argv[1]);
 
 }
 
