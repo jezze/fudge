@@ -11,6 +11,9 @@ struct serial_device
 
     struct modules_device base;
     unsigned int port;
+    void (*init)(struct serial_device *device);
+    char (*read)(struct serial_device *device);
+    void (*write)(struct serial_device *device, char c);
 
 };
 
