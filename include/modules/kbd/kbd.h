@@ -15,6 +15,8 @@ struct kbd_device
     unsigned char toggleAlt;
     unsigned char toggleCtrl;
     unsigned char toggleShift;
+    unsigned int (*kbd_getc)(struct kbd_device *device, char *buffer);
+    unsigned int (*kbd_putc)(struct kbd_device *device, char *buffer);
 
 };
 

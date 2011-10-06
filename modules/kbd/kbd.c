@@ -31,23 +31,23 @@ static char kbdMapUS[256] =
 
 static struct kbd_device kbdDevice;
 
-static unsigned int kbd_device_node_read(struct vfs_node *node, unsigned int count, void *buffer)
+static unsigned int kbd_getc(struct kbd_device *device, char *buffer)
 {
 
     char c = 0;
 
-    if (kbdDevice.bufferHead != kbdDevice.bufferTail)
+    if (device->bufferHead != device->bufferTail)
     {
 
-        c = kbdDevice.buffer[kbdDevice.bufferTail];
-        kbdDevice.bufferTail = (kbdDevice.bufferTail + 1) % KBD_BUFFER_SIZE;
+        c = device->buffer[device->bufferTail];
+        device->bufferTail = (device->bufferTail + 1) % KBD_BUFFER_SIZE;
 
     }
 
     if (c)
     {
 
-        ((char *)buffer)[0] = c;
+        buffer[0] = c;
 
         return 1;
 
@@ -57,20 +57,29 @@ static unsigned int kbd_device_node_read(struct vfs_node *node, unsigned int cou
 
 }
 
-static unsigned int kbd_device_node_write(struct vfs_node *node, unsigned int count, void *buffer)
+static unsigned int kbd_putc(struct kbd_device *device, char *buffer)
 {
 
-    if ((kbdDevice.bufferHead + 1) % KBD_BUFFER_SIZE != kbdDevice.bufferTail)
+    if ((device->bufferHead + 1) % KBD_BUFFER_SIZE != device->bufferTail)
     {
 
-        kbdDevice.buffer[kbdDevice.bufferHead] = ((char *)buffer)[0];
-        kbdDevice.bufferHead = (kbdDevice.bufferHead + 1) % KBD_BUFFER_SIZE;
+        device->buffer[device->bufferHead] = buffer[0];
+        device->bufferHead = (device->bufferHead + 1) % KBD_BUFFER_SIZE;
 
         return 1;
 
     }
 
     return 0;
+
+}
+
+static unsigned int kbd_device_node_read(struct vfs_node *node, unsigned int count, void *buffer)
+{
+
+    struct kbd_device *device = &kbdDevice;
+
+    return kbd_getc(device, (char *)buffer);
 
 }
 
@@ -98,7 +107,7 @@ static void kbd_handler(struct isr_registers *registers)
         if (kbdDevice.toggleShift)
             scancode += 128;
             
-        kbdDevice.base.node.operations.write(&kbdDevice.base.node, 1, &kbdMapUS[scancode]);
+        kbd_putc(&kbdDevice, &kbdMapUS[scancode]);
 
     }
 
@@ -111,7 +120,6 @@ void kbd_init()
     kbdDevice.base.type = MODULES_DEVICE_TYPE_KEYBOARD;
     string_copy(kbdDevice.base.name, "kbd");
     kbdDevice.base.node.operations.read = kbd_device_node_read;
-    kbdDevice.base.node.operations.write = kbd_device_node_write;
     kbdDevice.bufferHead = 0;
     kbdDevice.bufferTail = 0;
     kbdDevice.toggleAlt = 0;
