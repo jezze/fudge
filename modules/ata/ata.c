@@ -223,11 +223,13 @@ static unsigned char ata_identify(struct ata_device *device)
 void ata_init_busses()
 {
 
-    ataBusPrimary.base.module.type = MODULES_BUS_TYPE_ATA;
+    ataBusPrimary.base.module.type = MODULES_TYPE_BUS;
+    ataBusPrimary.base.type = MODULES_BUS_TYPE_ATA;
     string_copy(ataBusPrimary.base.name, "ata:0");
     modules_register_bus(&ataBusPrimary.base);
 
-    ataBusSecondary.base.module.type = MODULES_BUS_TYPE_ATA;
+    ataBusSecondary.base.module.type = MODULES_TYPE_BUS;
+    ataBusSecondary.base.type = MODULES_BUS_TYPE_ATA;
     string_copy(ataBusSecondary.base.name, "ata:1");
     modules_register_bus(&ataBusSecondary.base);
 
@@ -238,7 +240,8 @@ void ata_init_devices()
 
     ataDevicesCount = 4;
 
-    ataDevices[0].base.module.type = MODULES_DEVICE_TYPE_ATA;
+    ataDevices[0].base.module.type = MODULES_TYPE_DEVICE;
+    ataDevices[0].base.type = MODULES_DEVICE_TYPE_ATA;
     string_copy(ataDevices[0].base.name, "ata:0:0");
     ataDevices[0].base.node.operations.read = ata_device_read;
     ataDevices[0].control = ATA_PRIMARY_MASTER_CONTROL;
@@ -247,7 +250,8 @@ void ata_init_devices()
     if (ata_identify(&ataDevices[0]))
         modules_register_device(&ataDevices[0].base);
 
-    ataDevices[1].base.module.type = MODULES_DEVICE_TYPE_ATA;
+    ataDevices[1].base.module.type = MODULES_TYPE_DEVICE;
+    ataDevices[1].base.type = MODULES_DEVICE_TYPE_ATA;
     string_copy(ataDevices[1].base.name, "ata:0:1");
     ataDevices[1].base.node.operations.read = ata_device_read;
     ataDevices[1].control = ATA_PRIMARY_SLAVE_CONTROL;
@@ -256,7 +260,8 @@ void ata_init_devices()
     if (ata_identify(&ataDevices[1]))
         modules_register_device(&ataDevices[1].base);
 
-    ataDevices[2].base.module.type = MODULES_DEVICE_TYPE_ATA;
+    ataDevices[2].base.module.type = MODULES_TYPE_DEVICE;
+    ataDevices[2].base.type = MODULES_DEVICE_TYPE_ATA;
     string_copy(ataDevices[2].base.name, "ata:1:0");
     ataDevices[2].base.node.operations.read = ata_device_read;
     ataDevices[2].control = ATA_SECONDARY_MASTER_CONTROL;
@@ -265,7 +270,8 @@ void ata_init_devices()
     if (ata_identify(&ataDevices[2]))
         modules_register_device(&ataDevices[2].base);
 
-    ataDevices[3].base.module.type = MODULES_DEVICE_TYPE_ATA;
+    ataDevices[3].base.module.type = MODULES_TYPE_DEVICE;
+    ataDevices[3].base.type = MODULES_DEVICE_TYPE_ATA;
     string_copy(ataDevices[3].base.name, "ata:1:1");
     ataDevices[3].base.node.operations.read = ata_device_read;
     ataDevices[3].control = ATA_SECONDARY_SLAVE_CONTROL;

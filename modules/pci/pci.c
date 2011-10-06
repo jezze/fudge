@@ -134,7 +134,8 @@ static void pci_add(unsigned short bus, unsigned short slot, unsigned short func
     string_concat(device->base.name, ":");
     string_copy_num(device->base.name + 8, function, 10);
 
-    device->base.module.type = MODULES_DEVICE_TYPE_PCI;
+    device->base.module.type = MODULES_TYPE_DEVICE;
+    device->base.type = MODULES_DEVICE_TYPE_PCI;
     device->base.node.operations.read = pci_device_read;
     device->configuration.vendor = pci_read(bus, slot, function, 0x00);
     device->configuration.device = pci_read(bus, slot, function, 0x02);
@@ -218,7 +219,8 @@ static void pci_scan_bus(unsigned short bus)
 static void pci_init_busses()
 {
 
-    pciBus.base.module.type = MODULES_BUS_TYPE_PCI;
+    pciBus.base.module.type = MODULES_TYPE_BUS;
+    pciBus.base.type = MODULES_BUS_TYPE_PCI;
     string_copy(pciBus.base.name, "pci:0");
     modules_register_bus(&pciBus.base);
 

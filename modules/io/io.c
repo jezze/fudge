@@ -9,7 +9,8 @@ static struct io_device ioDevice;
 void io_init()
 {
 
-    ioDevice.base.module.type = MODULES_DEVICE_TYPE_IO;
+    ioDevice.base.module.type = MODULES_TYPE_DEVICE;
+    ioDevice.base.type = MODULES_DEVICE_TYPE_IO;
     string_copy(ioDevice.base.name, "io");
     ioDevice.inb = io_inb;
     ioDevice.inw = io_inw;

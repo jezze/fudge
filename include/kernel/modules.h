@@ -1,6 +1,10 @@
 #ifndef KERNEL_MODULES_H
 #define KERNEL_MODULES_H
 
+#define MODULES_TYPE_BUS    1
+#define MODULES_TYPE_DEVICE 2
+#define MODULES_TYPE_DRIVER 3
+
 #define MODULES_BUS_TYPE_IO     1
 #define MODULES_BUS_TYPE_ATA    2
 #define MODULES_BUS_TYPE_PCI    4
@@ -27,10 +31,21 @@ struct modules_module
 
 };
 
+struct modules_bus
+{
+
+    struct modules_module module;
+    unsigned int type;
+    char name[32];
+    struct vfs_node node;
+
+};
+
 struct modules_device
 {
 
     struct modules_module module;
+    unsigned int type;
     char name[32];
     struct vfs_node node;
 
@@ -40,17 +55,9 @@ struct modules_driver
 {
 
     struct modules_module module;
+    unsigned int type;
     char name[32];
     struct modules_device *devices[32];
-    struct vfs_node node;
-
-};
-
-struct modules_bus
-{
-
-    struct modules_module module;
-    char name[32];
     struct vfs_node node;
 
 };

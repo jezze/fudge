@@ -107,7 +107,8 @@ static void kbd_handler(struct isr_registers *registers)
 void kbd_init()
 {
 
-    kbdDevice.base.module.type = MODULES_DEVICE_TYPE_KEYBOARD;
+    kbdDevice.base.module.type = MODULES_TYPE_DEVICE;
+    kbdDevice.base.type = MODULES_DEVICE_TYPE_KEYBOARD;
     string_copy(kbdDevice.base.name, "kbd");
     kbdDevice.base.node.operations.read = kbd_device_read;
     kbdDevice.base.node.operations.write = kbd_device_write;

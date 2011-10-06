@@ -32,7 +32,7 @@ struct modules_bus *modules_get_bus(unsigned int type)
         if (!modulesBusses[i])
             continue;
 
-        if (modulesBusses[i]->module.type == type)
+        if (modulesBusses[i]->type == type)
             return modulesBusses[i];
 
     }
@@ -52,7 +52,7 @@ struct modules_device *modules_get_device(unsigned int type)
         if (!modulesDevices[i])
             continue;
 
-        if (modulesDevices[i]->module.type == type)
+        if (modulesDevices[i]->type == type)
             return modulesDevices[i];
 
     }
@@ -72,7 +72,7 @@ struct modules_driver *modules_get_driver(unsigned int type)
         if (!modulesDrivers[i])
             continue;
 
-        if (modulesDrivers[i]->module.type == type)
+        if (modulesDrivers[i]->type == type)
             return modulesDrivers[i];
 
     }
