@@ -118,21 +118,21 @@ static unsigned int pci_ind(unsigned int address, unsigned short offset)
 
     io_outd(PCI_ADDRESS, address);
 
-    return (io_ind(PCI_DATA) >> ((offset & 2) * 8));
+    return io_ind(PCI_DATA);
 
 }
 
 static unsigned char pci_inb(unsigned int address, unsigned short offset)
 {
 
-    return (unsigned char)(pci_ind(address, offset) & 0xFF);
+    return (unsigned char)((pci_ind(address, offset) >> ((offset & 3) * 8)) & 0xFF);
 
 }
 
 static unsigned short pci_inw(unsigned int address, unsigned short offset)
 {
 
-    return (unsigned short)(pci_ind(address, offset) & 0xFFFF);
+    return (unsigned short)((pci_ind(address, offset) >> ((offset & 2) * 8)) & 0xFFFF);
 
 }
 
@@ -155,27 +155,21 @@ static void pci_add(unsigned short bus, unsigned short slot, unsigned short func
     device->base.node.operations.read = pci_device_read;
     device->configuration.vendor = pci_inw(address, 0x00);
     device->configuration.device = pci_inw(address, 0x02);
-    device->configuration.revision = (pci_inw(address, 0x08) & 0xFF);
-    device->configuration.interface = (pci_inw(address, 0x08) >> 8);
-    device->configuration.subclass = (pci_inw(address, 0x0A) & 0xFF);
-    device->configuration.classcode = (pci_inw(address, 0x0A) >> 8);
-    device->configuration.headertype = (pci_inw(address, 0x0E) & 0xFF);
+    device->configuration.revision = pci_inb(address, 0x08);
+    device->configuration.interface = pci_inb(address, 0x09);
+    device->configuration.subclass = pci_inb(address, 0x0A);
+    device->configuration.classcode = pci_inb(address, 0x0B);
+    device->configuration.headertype = pci_inb(address, 0x0E);
 
     if (device->configuration.headertype == 0x00)
     {
 
-        device->configuration.bar0 = pci_inw(address, 0x10);
-        device->configuration.bar0 |= pci_inw(address, 0x12) << 16;
-        device->configuration.bar1 = pci_inw(address, 0x14);
-        device->configuration.bar1 |= pci_inw(address, 0x16) << 16;
-        device->configuration.bar2 = pci_inw(address, 0x18);
-        device->configuration.bar2 |= pci_inw(address, 0x1A) << 16;
-        device->configuration.bar3 = pci_inw(address, 0x1C);
-        device->configuration.bar3 |= pci_inw(address, 0x1E) << 16;
-        device->configuration.bar4 = pci_inw(address, 0x20);
-        device->configuration.bar4 |= pci_inw(address, 0x22) << 16;
-        device->configuration.bar5 = pci_inw(address, 0x24);
-        device->configuration.bar5 |= pci_inw(address, 0x26) << 16;
+        device->configuration.bar0 = pci_ind(address, 0x10);
+        device->configuration.bar1 = pci_ind(address, 0x14);
+        device->configuration.bar2 = pci_ind(address, 0x18);
+        device->configuration.bar3 = pci_ind(address, 0x1C);
+        device->configuration.bar4 = pci_ind(address, 0x20);
+        device->configuration.bar5 = pci_ind(address, 0x24);
 
     }
 
