@@ -31,7 +31,7 @@ static char kbdMapUS[256] =
 
 static struct kbd_device kbdDevice;
 
-static unsigned int kbd_device_read(struct vfs_node *node, unsigned int count, void *buffer)
+static unsigned int kbd_device_node_read(struct vfs_node *node, unsigned int count, void *buffer)
 {
 
     char c = 0;
@@ -57,7 +57,7 @@ static unsigned int kbd_device_read(struct vfs_node *node, unsigned int count, v
 
 }
 
-static unsigned int kbd_device_write(struct vfs_node *node, unsigned int count, void *buffer)
+static unsigned int kbd_device_node_write(struct vfs_node *node, unsigned int count, void *buffer)
 {
 
     if ((kbdDevice.bufferHead + 1) % KBD_BUFFER_SIZE != kbdDevice.bufferTail)
@@ -110,8 +110,8 @@ void kbd_init()
     kbdDevice.base.module.type = MODULES_TYPE_DEVICE;
     kbdDevice.base.type = MODULES_DEVICE_TYPE_KEYBOARD;
     string_copy(kbdDevice.base.name, "kbd");
-    kbdDevice.base.node.operations.read = kbd_device_read;
-    kbdDevice.base.node.operations.write = kbd_device_write;
+    kbdDevice.base.node.operations.read = kbd_device_node_read;
+    kbdDevice.base.node.operations.write = kbd_device_node_write;
     kbdDevice.bufferHead = 0;
     kbdDevice.bufferTail = 0;
     kbdDevice.toggleAlt = 0;

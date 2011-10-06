@@ -77,7 +77,7 @@ static void tty_putc(char c)
 
 }
 
-static unsigned int tty_device_write(struct vfs_node *node, unsigned int count, void *buffer)
+static unsigned int tty_device_node_write(struct vfs_node *node, unsigned int count, void *buffer)
 {
 
     unsigned int i;
@@ -91,7 +91,7 @@ static unsigned int tty_device_write(struct vfs_node *node, unsigned int count, 
 
 }
 
-static unsigned int tty_cwd_device_read(struct vfs_node *node, unsigned int count, void *buffer)
+static unsigned int tty_cwd_device_node_read(struct vfs_node *node, unsigned int count, void *buffer)
 {
 
     count = string_length(ttyCwdDevice.path);
@@ -102,7 +102,7 @@ static unsigned int tty_cwd_device_read(struct vfs_node *node, unsigned int coun
 
 }
 
-static unsigned int tty_cwd_device_write(struct vfs_node *node, unsigned int count, void *buffer)
+static unsigned int tty_cwd_device_node_write(struct vfs_node *node, unsigned int count, void *buffer)
 {
 
     count = string_length(buffer);
@@ -119,7 +119,7 @@ void tty_init()
     ttyDevice.base.module.type = MODULES_TYPE_DEVICE;
     ttyDevice.base.type = 1000;
     string_copy(ttyDevice.base.name, "tty");
-    ttyDevice.base.node.operations.write = tty_device_write;
+    ttyDevice.base.node.operations.write = tty_device_node_write;
     ttyDevice.cursorOffset = 0;
     ttyDevice.vgaDevice = (struct vga_device *)modules_get_device(MODULES_DEVICE_TYPE_VGA);
     ttyDevice.vgaDevice->set_cursor_color(TTY_COLOR_WHITE, TTY_COLOR_BLACK);
@@ -128,8 +128,8 @@ void tty_init()
     ttyDevice.base.module.type = MODULES_TYPE_DEVICE;
     ttyDevice.base.type = 1001;
     string_copy(ttyCwdDevice.base.name, "cwd");
-    ttyCwdDevice.base.node.operations.read = tty_cwd_device_read;
-    ttyCwdDevice.base.node.operations.write = tty_cwd_device_write;
+    ttyCwdDevice.base.node.operations.read = tty_cwd_device_node_read;
+    ttyCwdDevice.base.node.operations.write = tty_cwd_device_node_write;
     string_copy(ttyCwdDevice.path, "/");
     modules_register_device(&ttyCwdDevice.base);
 
