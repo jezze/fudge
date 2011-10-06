@@ -4,8 +4,6 @@
 #include <kernel/vfs.h>
 #include <kernel/modules.h>
 #include <arch/x86/irq.h>
-#include <arch/x86/isr.h>
-#include <arch/x86/mmu.h>
 #include <modules/io/io.h>
 #include <modules/kbd/kbd.h>
 
@@ -74,15 +72,6 @@ static unsigned int kbd_putc(struct kbd_device *device, char *buffer)
 
 }
 
-static unsigned int kbd_device_node_read(struct vfs_node *node, unsigned int count, void *buffer)
-{
-
-    struct kbd_device *device = &kbdDevice;
-
-    return kbd_getc(device, (char *)buffer);
-
-}
-
 static void kbd_handler(struct isr_registers *registers)
 {
 
@@ -119,7 +108,6 @@ void kbd_init()
     kbdDevice.base.module.type = MODULES_TYPE_DEVICE;
     kbdDevice.base.type = MODULES_DEVICE_TYPE_KEYBOARD;
     string_copy(kbdDevice.base.name, "kbd");
-    kbdDevice.base.node.operations.read = kbd_device_node_read;
     kbdDevice.getc = kbd_getc;
     kbdDevice.putc = kbd_putc;
     kbdDevice.bufferHead = 0;
