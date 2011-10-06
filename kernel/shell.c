@@ -151,7 +151,7 @@ void shell_init()
 
     shellBufferHead = 0;
 
-    int sin = file_open("/kbd");
+    int sin = file_open("/tty");
     int sout = file_open("/tty");
     int serr = file_open("/serial");
 

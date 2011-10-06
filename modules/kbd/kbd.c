@@ -120,6 +120,8 @@ void kbd_init()
     kbdDevice.base.type = MODULES_DEVICE_TYPE_KEYBOARD;
     string_copy(kbdDevice.base.name, "kbd");
     kbdDevice.base.node.operations.read = kbd_device_node_read;
+    kbdDevice.getc = kbd_getc;
+    kbdDevice.putc = kbd_putc;
     kbdDevice.bufferHead = 0;
     kbdDevice.bufferTail = 0;
     kbdDevice.toggleAlt = 0;

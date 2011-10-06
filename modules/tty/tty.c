@@ -78,6 +78,27 @@ static void tty_putc(char c)
 
 }
 
+static unsigned int tty_device_node_read(struct vfs_node *node, unsigned int count, void *buffer)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < count; i++)
+    {
+
+        char c;
+
+        if (!ttyDevice.kbdDevice->getc(ttyDevice.kbdDevice, &c))
+            break;
+
+        ((char *)buffer)[i] = c;
+
+    }
+
+    return i;
+
+}
+
 static unsigned int tty_device_node_write(struct vfs_node *node, unsigned int count, void *buffer)
 {
 
@@ -120,6 +141,7 @@ void tty_init()
     ttyDevice.base.module.type = MODULES_TYPE_DEVICE;
     ttyDevice.base.type = 1000;
     string_copy(ttyDevice.base.name, "tty");
+    ttyDevice.base.node.operations.read = tty_device_node_read;
     ttyDevice.base.node.operations.write = tty_device_node_write;
     ttyDevice.cursorOffset = 0;
     ttyDevice.kbdDevice = (struct kbd_device *)modules_get_device(MODULES_DEVICE_TYPE_KEYBOARD);
