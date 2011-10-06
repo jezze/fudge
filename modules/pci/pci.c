@@ -104,25 +104,35 @@ static unsigned int pci_device_read(struct vfs_node *node, unsigned int count, v
 
 }
 
-static unsigned int pci_get_address(unsigned short bus, unsigned short slot, unsigned short func)
+static unsigned int pci_get_address(unsigned short bus, unsigned short slot, unsigned short function)
 {
 
-    unsigned int lbus = (unsigned int)bus;
-    unsigned int lslot = (unsigned int)slot;
-    unsigned int lfunc = (unsigned int)func;
-
-    return (unsigned int)((lbus << 16) | (lslot << 11) | (lfunc << 8) | ((unsigned int)0x80000000));
+    return (0x80000000 | (bus << 16) | (slot << 11) | (function << 8));
 
 }
 
-static unsigned short pci_inw(unsigned int address, unsigned short offset)
+static unsigned int pci_ind(unsigned int address, unsigned short offset)
 {
 
     address |= (offset & 0xFC);
 
     io_outd(PCI_ADDRESS, address);
 
-    return (unsigned short)((io_ind(PCI_DATA) >> ((offset & 2) * 8)) & 0xFFFF);
+    return (io_ind(PCI_DATA) >> ((offset & 2) * 8));
+
+}
+
+static unsigned char pci_inb(unsigned int address, unsigned short offset)
+{
+
+    return (unsigned char)(pci_ind(address, offset) & 0xFF);
+
+}
+
+static unsigned short pci_inw(unsigned int address, unsigned short offset)
+{
+
+    return (unsigned short)(pci_ind(address, offset) & 0xFFFF);
 
 }
 
