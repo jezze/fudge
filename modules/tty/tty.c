@@ -116,18 +116,20 @@ static unsigned int tty_cwd_device_write(struct vfs_node *node, unsigned int cou
 void tty_init()
 {
 
+    ttyDevice.base.module.type = 1000;
     string_copy(ttyDevice.base.name, "tty");
     ttyDevice.base.node.operations.write = tty_device_write;
     ttyDevice.cursorOffset = 0;
     ttyDevice.vgaDevice = (struct vga_device *)modules_get_device(MODULES_DEVICE_TYPE_VGA);
     ttyDevice.vgaDevice->set_cursor_color(TTY_COLOR_WHITE, TTY_COLOR_BLACK);
-    modules_register_device(MODULES_DEVICE_TYPE_KEYBOARD, &ttyDevice.base);
+    modules_register_device(&ttyDevice.base);
 
+    ttyDevice.base.module.type = 1001;
     string_copy(ttyCwdDevice.base.name, "cwd");
     ttyCwdDevice.base.node.operations.read = tty_cwd_device_read;
     ttyCwdDevice.base.node.operations.write = tty_cwd_device_write;
     string_copy(ttyCwdDevice.path, "/");
-    modules_register_device(MODULES_DEVICE_TYPE_KEYBOARD, &ttyCwdDevice.base);
+    modules_register_device(&ttyCwdDevice.base);
 
     tty_clear();
 

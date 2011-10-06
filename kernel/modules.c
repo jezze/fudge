@@ -81,7 +81,7 @@ struct modules_driver *modules_get_driver(unsigned int type)
 
 }
 
-void modules_register_bus(unsigned int type, struct modules_bus *bus)
+void modules_register_bus(struct modules_bus *bus)
 {
 
     unsigned int i;
@@ -89,21 +89,18 @@ void modules_register_bus(unsigned int type, struct modules_bus *bus)
     for (i = 0; i < 32; i++)
     {
 
-        if (!modulesBusses[i])
-        {
+        if (modulesBusses[i])
+            continue;
 
-            modulesBusses[i] = bus;
-            modulesBusses[i]->module.type = type;
+        modulesBusses[i] = bus;
 
-            return;
-
-        }
+        break;
 
     }
 
 }
 
-void modules_register_device(unsigned int type, struct modules_device *device)
+void modules_register_device(struct modules_device *device)
 {
 
     unsigned int i;
@@ -111,21 +108,18 @@ void modules_register_device(unsigned int type, struct modules_device *device)
     for (i = 0; i < 32; i++)
     {
 
-        if (!modulesDevices[i])
-        {
+        if (modulesDevices[i])
+            continue;
 
-            modulesDevices[i] = device;
-            modulesDevices[i]->module.type = type;
+        modulesDevices[i] = device;
 
-            return;
-
-        }
+        break;
 
     }
 
 }
 
-void modules_register_driver(unsigned int type, struct modules_driver *driver)
+void modules_register_driver(struct modules_driver *driver)
 {
 
     unsigned int i;
@@ -133,15 +127,12 @@ void modules_register_driver(unsigned int type, struct modules_driver *driver)
     for (i = 0; i < 32; i++)
     {
 
-        if (!modulesDrivers[i])
-        {
+        if (modulesDrivers[i])
+            continue;
 
-            modulesDrivers[i] = driver;
-            modulesDrivers[i]->module.type = type;
+        modulesDrivers[i] = driver;
 
-            return;
-
-        }
+        break;
 
     }
 

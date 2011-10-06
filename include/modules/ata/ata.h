@@ -66,6 +66,15 @@ struct ata_device
 
 };
 
+struct ata_bus
+{
+
+    struct modules_bus base;
+    void (*register_device)(struct ata_device *device);
+    struct ata_device *(*find_device)(int device);
+
+};
+
 extern void ata_init();
 
 #endif

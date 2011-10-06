@@ -69,12 +69,13 @@ static void vga_set_cursor_offset(unsigned short offset)
 void vga_init()
 {
 
+    vgaDevice.base.module.type = MODULES_DEVICE_TYPE_VGA;
     string_copy(vgaDevice.base.name, "vga");
     vgaDevice.read_framebuffer = vga_framebuffer_device_read;
     vgaDevice.write_framebuffer = vga_framebuffer_device_write;
     vgaDevice.set_cursor_color = vga_set_cursor_color;
     vgaDevice.set_cursor_offset = vga_set_cursor_offset;
-    modules_register_device(MODULES_DEVICE_TYPE_VGA, &vgaDevice.base);
+    modules_register_device(&vgaDevice.base);
 
 }
 

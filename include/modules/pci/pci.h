@@ -66,6 +66,15 @@ struct pci_device
 
 };
 
+struct pci_bus
+{
+
+    struct modules_bus base;
+    void (*register_device)(struct pci_device *device);
+    struct pci_device *(*find_device)(int device);
+
+};
+
 extern void pci_init();
 
 #endif

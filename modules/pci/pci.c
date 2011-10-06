@@ -4,7 +4,7 @@
 #include <modules/io/io.h>
 #include <modules/pci/pci.h>
 
-static struct modules_bus pciBus;
+static struct pci_bus pciBus;
 static struct pci_device pciDevices[32];
 static unsigned int pciDevicesCount;
 
@@ -134,6 +134,7 @@ static void pci_add(unsigned short bus, unsigned short slot, unsigned short func
     string_concat(device->base.name, ":");
     string_copy_num(device->base.name + 8, function, 10);
 
+    device->base.module.type = MODULES_DEVICE_TYPE_PCI;
     device->base.node.operations.read = pci_device_read;
     device->configuration.vendor = pci_read(bus, slot, function, 0x00);
     device->configuration.device = pci_read(bus, slot, function, 0x02);
@@ -161,7 +162,7 @@ static void pci_add(unsigned short bus, unsigned short slot, unsigned short func
 
     }
 
-    modules_register_device(MODULES_DEVICE_TYPE_PCI, &device->base);
+    modules_register_device(&device->base);
 
     pciDevicesCount++;
 
@@ -217,8 +218,9 @@ static void pci_scan_bus(unsigned short bus)
 static void pci_init_busses()
 {
 
-    string_copy(pciBus.name, "pci:0");
-    modules_register_bus(MODULES_BUS_TYPE_PCI, &pciBus);
+    pciBus.base.module.type = MODULES_BUS_TYPE_PCI;
+    string_copy(pciBus.base.name, "pci:0");
+    modules_register_bus(&pciBus.base);
 
 }
 
