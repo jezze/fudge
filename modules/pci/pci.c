@@ -215,14 +215,11 @@ static void pci_scan_bus(unsigned int bus)
 
             }
 
+            continue;
+
         }
     
-        else
-        {
-
-            pci_add(bus, slot, 0);
-
-        }
+        pci_add(bus, slot, 0);
 
     }
 
