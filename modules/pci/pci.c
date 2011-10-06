@@ -114,9 +114,7 @@ static unsigned int pci_get_address(unsigned int bus, unsigned int slot, unsigne
 static unsigned int pci_ind(unsigned int address, unsigned short offset)
 {
 
-    address |= (offset & 0xFC);
-
-    io_outd(PCI_ADDRESS, address);
+    io_outd(PCI_ADDRESS, address | (offset & 0xFC));
 
     return io_ind(PCI_DATA);
 
@@ -187,12 +185,12 @@ static void pci_scan_bus(unsigned int bus)
     for (slot = 0; slot < 32; slot++)
     {
 
-        unsigned int address = pci_get_address(bus, slot, 0);
+        unsigned int address = pci_get_address(bus, slot, 0x00);
 
         if (pci_inw(address, 0x00) == 0xFFFF)
             continue;
 
-        unsigned short header = pci_inw(address, 0x0E);
+        unsigned short header = pci_inb(address, 0x0E);
 
         if ((header & 0x01))
             pci_scan_bus(pci_inb(address, 0x19));
@@ -222,7 +220,7 @@ static void pci_scan_bus(unsigned int bus)
         else
         {
 
-            pci_add(bus, slot, 0x00);
+            pci_add(bus, slot, 0);
 
         }
 
