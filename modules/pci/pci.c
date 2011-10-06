@@ -104,7 +104,7 @@ static unsigned int pci_device_read(struct vfs_node *node, unsigned int count, v
 
 }
 
-static unsigned int pci_get_address(unsigned short bus, unsigned short slot, unsigned short function)
+static unsigned int pci_get_address(unsigned int bus, unsigned int slot, unsigned int function)
 {
 
     return (0x80000000 | (bus << 16) | (slot << 11) | (function << 8));
@@ -179,26 +179,26 @@ static void pci_add(unsigned short bus, unsigned short slot, unsigned short func
 
 }
 
-static void pci_scan_bus(unsigned short bus)
+static void pci_scan_bus(unsigned int bus)
 {
 
-    unsigned short slot;
+    unsigned int slot;
 
     for (slot = 0; slot < 32; slot++)
     {
 
         unsigned int address = pci_get_address(bus, slot, 0);
 
-        if (pci_inw(address, 0) == 0xFFFF)
+        if (pci_inw(address, 0x00) == 0xFFFF)
             continue;
 
-        unsigned short header = pci_inw(address, 0xE);
+        unsigned short header = pci_inw(address, 0x0E);
 
         if ((header & 0x01))
-            pci_scan_bus(pci_inw(address, 0x18) >> 8);
+            pci_scan_bus(pci_inb(address, 0x19));
 
         if ((header & 0x02))
-            pci_scan_bus(pci_inw(address, 0x18) & 0xFF);
+            pci_scan_bus(pci_inb(address, 0x18));
 
         if ((header & 0x80))
         {
@@ -210,7 +210,7 @@ static void pci_scan_bus(unsigned short bus)
 
                 unsigned int address = pci_get_address(bus, slot, function);
 
-                if ((pci_inw(address, 0)) == 0xFFFF)
+                if (pci_inw(address, 0x00) == 0xFFFF)
                     break;
 
                 pci_add(bus, slot, function);
@@ -222,7 +222,7 @@ static void pci_scan_bus(unsigned short bus)
         else
         {
 
-            pci_add(bus, slot, 0);
+            pci_add(bus, slot, 0x00);
 
         }
 
