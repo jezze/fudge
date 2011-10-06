@@ -30,6 +30,7 @@ struct tty_device
     struct modules_device base;
     unsigned short cursorOffset;
     struct vga_device *vgaDevice;
+    struct kbd_device *kbdDevice;
 
 };
 

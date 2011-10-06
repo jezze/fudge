@@ -4,6 +4,7 @@
 #include <kernel/vfs.h>
 #include <kernel/modules.h>
 #include <modules/vga/vga.h>
+#include <modules/kbd/kbd.h>
 #include <modules/tty/tty.h>
 
 static struct tty_device ttyDevice;
@@ -121,6 +122,7 @@ void tty_init()
     string_copy(ttyDevice.base.name, "tty");
     ttyDevice.base.node.operations.write = tty_device_node_write;
     ttyDevice.cursorOffset = 0;
+    ttyDevice.kbdDevice = (struct kbd_device *)modules_get_device(MODULES_DEVICE_TYPE_KEYBOARD);
     ttyDevice.vgaDevice = (struct vga_device *)modules_get_device(MODULES_DEVICE_TYPE_VGA);
     ttyDevice.vgaDevice->set_cursor_color(TTY_COLOR_WHITE, TTY_COLOR_BLACK);
     modules_register_device(&ttyDevice.base);
