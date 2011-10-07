@@ -27,8 +27,8 @@
 struct pci_configuration
 {
 
-    unsigned short vendor;
-    unsigned short device;
+    unsigned short vendorid;
+    unsigned short deviceid;
     unsigned short command;
     unsigned short status;
     unsigned char revision;
@@ -71,7 +71,7 @@ struct pci_bus
 
     struct modules_bus base;
     void (*register_device)(struct pci_device *device);
-    struct pci_device *(*find_device)(int device);
+    struct pci_device *(*find_device)(unsigned short deviceid);
 
 };
 

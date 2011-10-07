@@ -36,12 +36,12 @@ static unsigned int pci_device_read(struct vfs_node *node, unsigned int count, v
     char num[32];
 
     string_copy(buffer, "Vendor: 0x");
-    string_copy_num(num, device->configuration.vendor, 16);
+    string_copy_num(num, device->configuration.vendorid, 16);
     string_concat(buffer, num);
     string_concat(buffer, "\n");
 
     string_concat(buffer, "Device: 0x");
-    string_copy_num(num, device->configuration.device, 16);
+    string_copy_num(num, device->configuration.deviceid, 16);
     string_concat(buffer, num);
     string_concat(buffer, "\n");
 
@@ -151,8 +151,8 @@ static void pci_add(unsigned short bus, unsigned short slot, unsigned short func
     device->base.module.type = MODULES_TYPE_DEVICE;
     device->base.type = MODULES_DEVICE_TYPE_PCI;
     device->base.node.operations.read = pci_device_read;
-    device->configuration.vendor = pci_inw(address, 0x00);
-    device->configuration.device = pci_inw(address, 0x02);
+    device->configuration.vendorid = pci_inw(address, 0x00);
+    device->configuration.deviceid = pci_inw(address, 0x02);
     device->configuration.revision = pci_inb(address, 0x08);
     device->configuration.interface = pci_inb(address, 0x09);
     device->configuration.subclass = pci_inb(address, 0x0A);
@@ -225,11 +225,29 @@ static void pci_scan_bus(unsigned int bus)
 
 }
 
+struct pci_device *pci_bus_find_device(unsigned short deviceid)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < pciDevicesCount; i++)
+    {
+
+        if (pciDevices[i].configuration.deviceid == deviceid)
+            return &pciDevices[i];
+
+    }
+
+    return 0;
+
+}
+
 static void pci_init_busses()
 {
 
     pciBus.base.module.type = MODULES_TYPE_BUS;
     pciBus.base.type = MODULES_BUS_TYPE_PCI;
+    pciBus.find_device = pci_bus_find_device;
     string_copy(pciBus.base.name, "pci:0");
     modules_register_bus(&pciBus.base);
 

@@ -194,6 +194,7 @@ clean:
 	@rm -f ${DIR_SOURCE_MODULES}/pci/*.o
 	@rm -f ${DIR_SOURCE_MODULES}/pit/*.o
 	@rm -f ${DIR_SOURCE_MODULES}/rtc/*.o
+	@rm -f ${DIR_SOURCE_MODULES}/rtl8139/*.o
 	@rm -f ${DIR_SOURCE_MODULES}/serial/*.o
 	@rm -f ${DIR_SOURCE_MODULES}/tty/*.o
 	@rm -f ${DIR_SOURCE_MODULES}/vga/*.o
