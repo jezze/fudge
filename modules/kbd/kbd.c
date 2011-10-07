@@ -29,7 +29,7 @@ static char kbdMapUS[256] =
 
 static struct kbd_device kbdDevice;
 
-static unsigned int kbd_getc(struct kbd_device *device, char *buffer)
+static unsigned int kbd_device_getc(struct kbd_device *device, char *buffer)
 {
 
     char c = 0;
@@ -55,7 +55,7 @@ static unsigned int kbd_getc(struct kbd_device *device, char *buffer)
 
 }
 
-static unsigned int kbd_putc(struct kbd_device *device, char *buffer)
+static unsigned int kbd_device_putc(struct kbd_device *device, char *buffer)
 {
 
     if ((device->bufferHead + 1) % KBD_BUFFER_SIZE != device->bufferTail)
@@ -96,7 +96,7 @@ static void kbd_handler(struct isr_registers *registers)
         if (kbdDevice.toggleShift)
             scancode += 128;
             
-        kbd_putc(&kbdDevice, &kbdMapUS[scancode]);
+        kbd_device_putc(&kbdDevice, &kbdMapUS[scancode]);
 
     }
 
@@ -108,8 +108,8 @@ void kbd_init()
     kbdDevice.base.module.type = MODULES_TYPE_DEVICE;
     kbdDevice.base.type = MODULES_DEVICE_TYPE_KEYBOARD;
     string_copy(kbdDevice.base.name, "kbd");
-    kbdDevice.getc = kbd_getc;
-    kbdDevice.putc = kbd_putc;
+    kbdDevice.getc = kbd_device_getc;
+    kbdDevice.putc = kbd_device_putc;
     kbdDevice.bufferHead = 0;
     kbdDevice.bufferTail = 0;
     kbdDevice.toggleAlt = 0;

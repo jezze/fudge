@@ -8,7 +8,7 @@
 
 static struct vga_device vgaDevice;
 
-static unsigned int vga_framebuffer_device_read(unsigned int offset, unsigned int count, void *buffer)
+static unsigned int vga_device_read_framebuffer(unsigned int offset, unsigned int count, void *buffer)
 {
 
     unsigned int i;
@@ -28,7 +28,7 @@ static unsigned int vga_framebuffer_device_read(unsigned int offset, unsigned in
 
 }
 
-static unsigned int vga_framebuffer_device_write(unsigned int offset, unsigned int count, void *buffer)
+static unsigned int vga_device_write_framebuffer(unsigned int offset, unsigned int count, void *buffer)
 {
 
     unsigned int i;
@@ -49,14 +49,14 @@ static unsigned int vga_framebuffer_device_write(unsigned int offset, unsigned i
 
 }
 
-static void vga_set_cursor_color(unsigned char fg, unsigned char bg)
+static void vga_device_set_cursor_color(unsigned char fg, unsigned char bg)
 {
 
     vgaDevice.cursorColor = (bg << 4) | (fg & 0x0F);
 
 }
 
-static void vga_set_cursor_offset(unsigned short offset)
+static void vga_device_set_cursor_offset(unsigned short offset)
 {
 
     io_outb(0x3D4, 14);
@@ -72,10 +72,10 @@ void vga_init()
     vgaDevice.base.module.type = MODULES_TYPE_DEVICE;
     vgaDevice.base.type = MODULES_DEVICE_TYPE_VGA;
     string_copy(vgaDevice.base.name, "vga");
-    vgaDevice.read_framebuffer = vga_framebuffer_device_read;
-    vgaDevice.write_framebuffer = vga_framebuffer_device_write;
-    vgaDevice.set_cursor_color = vga_set_cursor_color;
-    vgaDevice.set_cursor_offset = vga_set_cursor_offset;
+    vgaDevice.read_framebuffer = vga_device_read_framebuffer;
+    vgaDevice.write_framebuffer = vga_device_write_framebuffer;
+    vgaDevice.set_cursor_color = vga_device_set_cursor_color;
+    vgaDevice.set_cursor_offset = vga_device_set_cursor_offset;
     modules_register_device(&vgaDevice.base);
 
 }
