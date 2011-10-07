@@ -1,5 +1,5 @@
-#ifndef ARCH_IO_H
-#define ARCH_IO_H
+#ifndef MODULES_IO_H
+#define MODULES_IO_H
 
 struct io_device
 {

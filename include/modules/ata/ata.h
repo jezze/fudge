@@ -1,5 +1,5 @@
-#ifndef ARCH_ATA_H
-#define ARCH_ATA_H
+#ifndef MODULES_ATA_H
+#define MODULES_ATA_H
 
 #define ATA_CONTROL_STATUS 0x02
 

@@ -1,5 +1,5 @@
-#ifndef KERNEL_TTY_H
-#define KERNEL_TTY_H
+#ifndef MODULES_TTY_H
+#define MODULES_TTY_H
 
 #define TTY_CHARACTER_WIDTH  80
 #define TTY_CHARACTER_HEIGHT 25

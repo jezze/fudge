@@ -57,6 +57,7 @@ modules: lib
 	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_MODULES}/pci/pci.c -o ${DIR_SOURCE_MODULES}/pci/pci.o
 	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_MODULES}/pit/pit.c -o ${DIR_SOURCE_MODULES}/pit/pit.o
 	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_MODULES}/rtc/rtc.c -o ${DIR_SOURCE_MODULES}/rtc/rtc.o
+	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_MODULES}/rtl8139/rtl8139.c -o ${DIR_SOURCE_MODULES}/rtl8139/rtl8139.o
 	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_MODULES}/serial/serial.c -o ${DIR_SOURCE_MODULES}/serial/serial.o
 	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_MODULES}/tty/tty.c -o ${DIR_SOURCE_MODULES}/tty/tty.o
 	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_MODULES}/vga/vga.c -o ${DIR_SOURCE_MODULES}/vga/vga.o
@@ -85,6 +86,7 @@ kernel: arch-${ARCH} modules
 		${DIR_SOURCE_MODULES}/pci/pci.o \
 		${DIR_SOURCE_MODULES}/pit/pit.o \
 		${DIR_SOURCE_MODULES}/rtc/rtc.o \
+		${DIR_SOURCE_MODULES}/rtl8139/rtl8139.o \
 		${DIR_SOURCE_MODULES}/serial/serial.o \
 		${DIR_SOURCE_MODULES}/tty/tty.o \
 		${DIR_SOURCE_MODULES}/vga/vga.o \

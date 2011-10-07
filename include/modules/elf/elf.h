@@ -1,5 +1,5 @@
-#ifndef KERNEL_ELF_H
-#define KERNEL_ELF_H
+#ifndef MODULES_ELF_H
+#define MODULES_ELF_H
 
 struct elf_header;
 
