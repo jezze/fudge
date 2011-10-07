@@ -6,79 +6,63 @@
 #include <modules/io/io.h>
 #include <modules/rtc/rtc.h>
 
-static unsigned char rtc_get(unsigned char type)
+static struct rtc_device rtcDevice;
+
+static unsigned char rtc_convert(unsigned char num)
 {
 
-    io_outb(RTC_PORT_WRITE, type);
-
-    return io_inb(RTC_PORT_READ);
+    return (num / 16) * 10 + (num & 0xF);
 
 }
 
-static void rtc_ready()
+static unsigned char rtc_get(unsigned int type)
 {
 
 //    do { io_outb(RTC_PORT_WRITE, 0x0A); }
 //    while (io_inb(RTC_PORT_READ) != 0x80);
 
+    io_outb(RTC_PORT_WRITE, type);
+
+    return rtc_convert(io_inb(RTC_PORT_READ));
+
 }
 
-static unsigned int rtc_device_read(struct vfs_node *node, unsigned int count, void *buffer)
+static unsigned int rtc_device_node_read(struct vfs_node *node, unsigned int count, void *buffer)
 {
 
-    rtc_ready();
-/*
-    switch (offset)
-    {
+    char num[32];
 
-        case 0x00:
+    string_copy(buffer, "20");
+    string_copy_num(num, rtc_get(RTC_FLAG_YEAR), 10);
+    string_concat(buffer, num);
+    string_concat(buffer, "-");
+    string_copy_num(num, rtc_get(RTC_FLAG_MONTH), 10);
+    string_concat(buffer, num);
+    string_concat(buffer, "-");
+    string_copy_num(num, rtc_get(RTC_FLAG_DAY), 10);
+    string_concat(buffer, num);
+    string_concat(buffer, " ");
+    string_copy_num(num, rtc_get(RTC_FLAG_HOURS), 10);
+    string_concat(buffer, num);
+    string_concat(buffer, ":");
+    string_copy_num(num, rtc_get(RTC_FLAG_MINUTES), 10);
+    string_concat(buffer, num);
+    string_concat(buffer, ":");
+    string_copy_num(num, rtc_get(RTC_FLAG_SECONDS), 10);
+    string_concat(buffer, num);
 
-            *(char *)buffer = rtc_get(RTC_FLAG_YEAR);
-
-            break;
-
-        case 0x01:
-
-            *(char *)buffer = rtc_get(RTC_FLAG_MONTH);
-
-            break;
-
-        case 0x02:
-
-            *(char *)buffer = rtc_get(RTC_FLAG_DAY);
-
-            break;
-
-        case 0x03:
-
-            *(char *)buffer = rtc_get(RTC_FLAG_HOURS);
-
-            break;
-
-        case 0x04:
-
-            *(char *)buffer = rtc_get(RTC_FLAG_MINUTES);
-
-            break;
-
-        case 0x05:
-
-            *(char *)buffer = rtc_get(RTC_FLAG_SECONDS);
-
-            break;
-
-        default:
-
-            return 0;
-
-    }
-*/
-    return 1;
+    return string_length(buffer);
 
 }
 
 void rtc_init()
 {
+
+    rtcDevice.base.module.type = MODULES_TYPE_DEVICE;
+    rtcDevice.base.type = 2000;
+    string_copy(rtcDevice.base.name, "rtc");
+    rtcDevice.base.node.operations.read = rtc_device_node_read;
+    modules_register_device(&rtcDevice.base);
 
 }
 

@@ -11,6 +11,14 @@
 #define RTC_FLAG_MONTH   0x08
 #define RTC_FLAG_YEAR    0x09
 
+struct rtc_device
+{
+
+    struct modules_device base;
+    unsigned char (*get)(unsigned int type);
+
+};
+
 extern void rtc_init();
 
 #endif
