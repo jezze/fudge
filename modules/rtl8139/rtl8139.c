@@ -29,6 +29,20 @@ void rtl8139_reset(struct rtl8139_driver *driver)
 
 }
 
+void rtl8139_set_rx(struct rtl8139_driver *driver)
+{
+
+    io_outd(driver->io + RTL8139_REGISTER_RBSTART, (unsigned int)driver->rx);
+
+}
+
+void rtl8139_set_interrupt_flags(struct rtl8139_driver *driver, unsigned short flags)
+{
+
+    io_outw(driver->io + RTL8139_REGISTER_IMR, flags);
+
+}
+
 void rtl8139_init()
 {
 
@@ -45,10 +59,12 @@ void rtl8139_init()
     rtl8139Driver.base.device = &device->base;
     rtl8139Driver.io = (device->configuration.bar0 & ~1);
 
+    irq_register_handler(device->configuration.interruptline, rtl8139_handler);
+
     rtl8139_poweron(&rtl8139Driver);
     rtl8139_reset(&rtl8139Driver);
-
-    irq_register_handler(device->configuration.interruptline, rtl8139_handler);
+    rtl8139_set_rx(&rtl8139Driver);
+    rtl8139_set_interrupt_flags(&rtl8139Driver, 0x0005);
 
 }
 
