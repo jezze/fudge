@@ -11,7 +11,7 @@ static struct rtc_device rtcDevice;
 static unsigned char rtc_convert(unsigned char num)
 {
 
-    return (num / 16) * 10 + (num & 0xF);
+    return ((num & 0xF0) >> 1) + ((num & 0xF0) >> 3) + (num & 0x0F);
 
 }
 
