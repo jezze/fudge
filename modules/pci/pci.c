@@ -65,6 +65,16 @@ static unsigned int pci_device_read(struct vfs_node *node, unsigned int count, v
     string_concat(buffer, num);
     string_concat(buffer, "\n");
 
+    string_concat(buffer, "Interrupt line: 0x");
+    string_copy_num(num, device->configuration.interruptline, 16);
+    string_concat(buffer, num);
+    string_concat(buffer, "\n");
+
+    string_concat(buffer, "Interrupt pin: 0x");
+    string_copy_num(num, device->configuration.interruptpin, 16);
+    string_concat(buffer, num);
+    string_concat(buffer, "\n");
+
     if (device->configuration.headertype == 0x00)
     {
 
@@ -158,6 +168,8 @@ static void pci_add(unsigned short bus, unsigned short slot, unsigned short func
     device->configuration.subclass = pci_inb(address, 0x0A);
     device->configuration.classcode = pci_inb(address, 0x0B);
     device->configuration.headertype = pci_inb(address, 0x0E);
+    device->configuration.interruptline = pci_inb(address, 0x3C);
+    device->configuration.interruptpin = pci_inb(address, 0x3D);
 
     if (device->configuration.headertype == 0x00)
     {
