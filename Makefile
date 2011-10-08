@@ -149,7 +149,7 @@ ramdisk: kernel
 	@mv initrd.tar ${DIR_IMAGE}/boot
 	@mv initrd.cpio ${DIR_IMAGE}/boot
 
-image:
+sda:
 	@dd if=/dev/zero of=fudge.img bs=512 count=2880
 	@dd if=${DIR_IMAGE}/boot/grub/stage1 conv=notrunc of=fudge.img bs=512 seek=0
 	@dd if=${DIR_IMAGE}/boot/grub/stage2 conv=notrunc of=fudge.img bs=512 seek=1
@@ -161,9 +161,13 @@ image:
 iso:
 	@genisoimage -R -b boot/grub/iso9660_stage1_5 -no-emul-boot -boot-load-size 4 -boot-info-table -o fudge.iso ${DIR_IMAGE}
 
+hda:
+	@dd if=/dev/zero of=hda.img bs=512 count=2880
+
 clean:
 	@rm -f fudge.img
 	@rm -f fudge.iso
+	@rm -f hda.img
 	@rm -f ${DIR_IMAGE}/bin/cat
 	@rm -f ${DIR_IMAGE}/bin/cd
 	@rm -f ${DIR_IMAGE}/bin/clear
