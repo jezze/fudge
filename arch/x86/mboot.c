@@ -9,15 +9,7 @@ void mboot_init(struct mboot_info *info)
     if (info->flags & MBOOT_FLAG_LOADER)
     {
 
-        log_write("[mboot] Bootloader: %s\n", (char *)info->name);
-
-    }
-
-    if (info->flags & MBOOT_FLAG_MEMORY)
-    {
-
-        log_write("[mboot] Lower memory: %dKiB\n", info->memoryLower);
-        log_write("[mboot] Upper memory: %dKiB\n", info->memoryUpper);
+        log_write("[mboot] Boot loader: %s\n", (char *)info->name);
 
     }
 
@@ -26,26 +18,26 @@ void mboot_init(struct mboot_info *info)
 
         unsigned int deviceNumber = info->device >> 24;
 
-        log_write("[mboot] ");
+        log_write("[mboot] Boot device: ");
 
         switch (deviceNumber)
         {
 
             case 0xE0:
 
-                log_write("Device: CD\n");
+                log_write("CD\n");
 
                 break;
 
             case 0x00:
 
-                log_write("Device: Floppy Disk\n");
+                log_write("Floppy Disk\n");
 
                 break;
 
             case 0x80:
 
-                log_write("Device: Hard Drive\n");
+                log_write("Hard Drive\n");
 
                 break;
 
@@ -62,78 +54,82 @@ void mboot_init(struct mboot_info *info)
     if (info->flags & MBOOT_FLAG_CMDLINE)
     {
 
-        log_write("[mboot] Kernel arguments: %s\n", (char *)info->cmdline);
+        log_write("[mboot] Kernel: %s\n", (char *)info->cmdline);
 
     }
 
     if (info->flags & MBOOT_FLAG_AOUT)
     {
 
-        log_write("[mboot] Kernel format: AOUT\n");
+        log_write("[mboot] Kernel type: AOUT\n");
 
     }
 
     if (info->flags & MBOOT_FLAG_ELF)
     {
 
-        log_write("[mboot] Kernel format: ELF\n");
+        log_write("[mboot] Kernel type: ELF\n");
 
     }
 
     if (info->flags & MBOOT_FLAG_MODULES)
     {
 
-        //struct mboot_module *module = (struct mboot_module *)info->modulesAddresses;
+        struct mboot_module *module = (struct mboot_module *)info->modulesAddresses;
 
-        //void *args[] = {(char *)module->name, &module->base, &module->length, &module->reserved};
-        //log_message(LOG_TYPE_INFO, "Modules: %s Base: 0x%x Length: 0x%x Reserved:%d\n", args);
+        log_write("[mboot] Module: %s\n", (char *)module->name);
+        log_write("[mboot] Module address: 0x%x\n", module->base);
+
+    }
+
+    if (info->flags & MBOOT_FLAG_MEMORY)
+    {
+
+        log_write("[mboot] Lower memory: %dKiB\n", info->memoryLower);
+        log_write("[mboot] Upper memory: %dKiB\n", info->memoryUpper);
 
     }
 
     if (info->flags & MBOOT_FLAG_MMAP)
     {
 
-        struct mboot_mmap *mmap = (struct mboot_mmap *)info->mmapAddress;
+        unsigned int address = info->mmapAddress;
+        unsigned int total = address + info->mmapLength;
 
-/*
-        log_message(LOG_TYPE_INFO, "Memory map\n", 0);
-
-        while (mmap < info->mmapAddress + info->mmapLength)
+        while (address < total)
         {
 
-            void *args[] = {&mmap->baseHigh, &mmap->baseLow};
+            struct mboot_mmap *mmap = (struct mboot_mmap *)address;
 
             if (mmap->type == 1)
-                log_message(LOG_TYPE_INFO, "Available: BaseHigh: 0x%x BaseLow: 0x%x\n", args);
+                log_write("[mboot] Memory available: 0x%x:0x%x\n", mmap->baseLow, mmap->lengthLow);
             else
-                log_message(LOG_TYPE_INFO, "Reserved: BaseHigh: 0x%x BaseLow: 0x%x\n", args);
+                log_write("[mboot] Memory reserved: 0x%x:0x%x\n", mmap->baseLow, mmap->lengthLow);
 
-            mmap = (struct mboot_mmap *)((unsigned int)mmap + mmap->size + sizeof (unsigned int));
+            address += mmap->size + sizeof (unsigned int);
 
         }
-*/
 
     }
 
     if (info->flags & MBOOT_FLAG_VBE)
     {
 
-        log_write("[mboot] VBE controller address: 0x%x\n", info->vbeControllerInfo);
-        log_write("[mboot] VBE mode address: 0x%x\n", info->vbeModeInfo);
+        log_write("[mboot] VBE ctrl address: 0x%x\n", info->vbeControllerInfo);
 
         if (info->vbeControllerInfo)
         {
 
             struct vbe_controller_info *controller = (struct vbe_controller_info *)info->vbeControllerInfo;
 
-            log_write("[mboot] VBE controller signature: 0x%x\n", controller->version);
+            log_write("[mboot] VBE ctrl signature: 0x%x\n", controller->version);
 
         }
 
-        log_write("[mboot] Mode: 0x%x\n", info->vbeMode);
-        log_write("[mboot] Interface Segment: 0x%x\n", info->vbeInterfaceSegment);
-        log_write("[mboot] Interface Offset: 0x%x\n", info->vbeInterfaceOffset);
-        log_write("[mboot] Interface Length: 0x%x\n", info->vbeInterfaceLength);
+        log_write("[mboot] VBE mode address: 0x%x\n", info->vbeModeInfo);
+        log_write("[mboot] VBE interface segment: 0x%x\n", info->vbeInterfaceSegment);
+        log_write("[mboot] VBE interface offset: 0x%x\n", info->vbeInterfaceOffset);
+        log_write("[mboot] VBE interface length: 0x%x\n", info->vbeInterfaceLength);
 
     }
 
