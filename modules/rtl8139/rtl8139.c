@@ -1,5 +1,6 @@
 #include <lib/string.h>
 #include <kernel/vfs.h>
+#include <kernel/log.h>
 #include <kernel/modules.h>
 #include <arch/x86/irq.h>
 #include <modules/io/io.h>
@@ -51,6 +52,18 @@ void rtl8139_enable(struct rtl8139_driver *driver)
 
 }
 
+void rtl8139_get_mac(struct rtl8139_driver *driver)
+{
+
+    rtl8139Driver.mac[0] = io_inb(driver->io + RTL8139_REGISTER_MAC0);
+    rtl8139Driver.mac[1] = io_inb(driver->io + RTL8139_REGISTER_MAC1);
+    rtl8139Driver.mac[2] = io_inb(driver->io + RTL8139_REGISTER_MAC2);
+    rtl8139Driver.mac[3] = io_inb(driver->io + RTL8139_REGISTER_MAC3);
+    rtl8139Driver.mac[4] = io_inb(driver->io + RTL8139_REGISTER_MAC4);
+    rtl8139Driver.mac[5] = io_inb(driver->io + RTL8139_REGISTER_MAC5);
+
+}
+
 void rtl8139_init()
 {
 
@@ -71,9 +84,13 @@ void rtl8139_init()
 
     rtl8139_poweron(&rtl8139Driver);
     rtl8139_reset(&rtl8139Driver);
+    rtl8139_get_mac(&rtl8139Driver);
     rtl8139_set_rx(&rtl8139Driver, 0x0F);
     rtl8139_set_interrupt_flags(&rtl8139Driver, 0x05);
     rtl8139_enable(&rtl8139Driver);
+
+    log_write("rtl8139: Installed\n");
+    log_write("rtl8139: Mac %x:%x:%x:%x:%x:%x\n", rtl8139Driver.mac[0], rtl8139Driver.mac[1], rtl8139Driver.mac[2], rtl8139Driver.mac[3], rtl8139Driver.mac[4], rtl8139Driver.mac[5]);
 
 }
 
