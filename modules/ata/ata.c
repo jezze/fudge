@@ -213,45 +213,58 @@ void ata_init_devices()
 
     ataDevicesCount = 4;
 
-    ataDevices[0].base.module.type = MODULES_TYPE_DEVICE;
-    ataDevices[0].base.type = MODULES_DEVICE_TYPE_ATA;
-    string_copy(ataDevices[0].base.name, "ata:0:0");
-    ataDevices[0].base.node.operations.read = ata_device_node_read;
-    ataDevices[0].control = ATA_PRIMARY_MASTER_CONTROL;
-    ataDevices[0].data = ATA_PRIMARY_MASTER_DATA;
+    unsigned int i;
 
-    if (ata_identify(&ataDevices[0]))
-        modules_register_device(&ataDevices[0].base);
+    for (i = 0; i < ataDevicesCount; i++)
+    {
 
-    ataDevices[1].base.module.type = MODULES_TYPE_DEVICE;
-    ataDevices[1].base.type = MODULES_DEVICE_TYPE_ATA;
-    string_copy(ataDevices[1].base.name, "ata:0:1");
-    ataDevices[1].base.node.operations.read = ata_device_node_read;
-    ataDevices[1].control = ATA_PRIMARY_SLAVE_CONTROL;
-    ataDevices[1].data = ATA_PRIMARY_SLAVE_DATA;
+        struct ata_device *device = &ataDevices[i];
 
-    if (ata_identify(&ataDevices[1]))
-        modules_register_device(&ataDevices[1].base);
+        device->base.module.type = MODULES_TYPE_DEVICE;
+        device->base.type = MODULES_DEVICE_TYPE_ATA;
+        device->base.node.operations.read = ata_device_node_read;
+        
+        switch (i)
+        {
 
-    ataDevices[2].base.module.type = MODULES_TYPE_DEVICE;
-    ataDevices[2].base.type = MODULES_DEVICE_TYPE_ATA;
-    string_copy(ataDevices[2].base.name, "ata:1:0");
-    ataDevices[2].base.node.operations.read = ata_device_node_read;
-    ataDevices[2].control = ATA_SECONDARY_MASTER_CONTROL;
-    ataDevices[2].data = ATA_SECONDARY_MASTER_DATA;
+            case 0:
 
-    if (ata_identify(&ataDevices[2]))
-        modules_register_device(&ataDevices[2].base);
+                string_copy(device->base.name, "ata:0:0");
+                device->control = ATA_PRIMARY_MASTER_CONTROL;
+                device->data = ATA_PRIMARY_MASTER_DATA;
 
-    ataDevices[3].base.module.type = MODULES_TYPE_DEVICE;
-    ataDevices[3].base.type = MODULES_DEVICE_TYPE_ATA;
-    string_copy(ataDevices[3].base.name, "ata:1:1");
-    ataDevices[3].base.node.operations.read = ata_device_node_read;
-    ataDevices[3].control = ATA_SECONDARY_SLAVE_CONTROL;
-    ataDevices[3].data = ATA_SECONDARY_SLAVE_DATA;
+                break;
 
-    if (ata_identify(&ataDevices[3]))
-        modules_register_device(&ataDevices[3].base);
+            case 1:
+
+                string_copy(device->base.name, "ata:0:1");
+                device->control = ATA_PRIMARY_SLAVE_CONTROL;
+                device->data = ATA_PRIMARY_SLAVE_DATA;
+
+                break;
+
+            case 2:
+
+                string_copy(device->base.name, "ata:1:0");
+                device->control = ATA_SECONDARY_MASTER_CONTROL;
+                device->data = ATA_SECONDARY_MASTER_DATA;
+
+                break;
+
+            case 3:
+
+                string_copy(device->base.name, "ata:1:1");
+                device->control = ATA_SECONDARY_SLAVE_CONTROL;
+                device->data = ATA_SECONDARY_SLAVE_DATA;
+
+                break;
+
+        }
+
+        if (ata_identify(device))
+            modules_register_device(&device->base);
+
+    }
 
 }
 
