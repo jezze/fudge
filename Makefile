@@ -12,11 +12,11 @@ DIR_SOURCE_MODULES=modules
 ASM=nasm
 ASMFLAGS=-f elf
 GCC=gcc
-GCCFLAGS=-c -O2 -Iinclude -Wall -Wextra -ffreestanding -nostdlib -nostartfiles -nodefaultlibs
-GCCFLAGS_RAMDISK=-c -O2 -Iinclude/lib -Wall -Wextra -ffreestanding -nostdlib -nostartfiles -nodefaultlibs
+GCCFLAGS=-c -O2 -Iinclude -Wall -Wextra -ffreestanding -nostdlib -nostartfiles -nodefaultlibs -m32
+GCCFLAGS_RAMDISK=-c -O2 -Iinclude/lib -Wall -Wextra -ffreestanding -nostdlib -nostartfiles -nodefaultlibs -m32
 LD=ld
-LDFLAGS=-T${DIR_ARCH}/linker.ld
-LDFLAGS_RAMDISK=-e main
+LDFLAGS=-T${DIR_ARCH}/linker.ld -melf_i386
+LDFLAGS_RAMDISK=-e main -melf_i386
 
 .PHONY: lib arch-x86 modules kernel ramdisk image iso clean
 
