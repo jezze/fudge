@@ -89,8 +89,7 @@ void rtl8139_init()
     rtl8139_set_interrupt_flags(&rtl8139Driver, 0x05);
     rtl8139_enable(&rtl8139Driver);
 
-    log_write("rtl8139: Installed\n");
-    log_write("rtl8139: Mac %x:%x:%x:%x:%x:%x\n", rtl8139Driver.mac[0], rtl8139Driver.mac[1], rtl8139Driver.mac[2], rtl8139Driver.mac[3], rtl8139Driver.mac[4], rtl8139Driver.mac[5]);
+    log_write("[rtl8139] Mac address: %x:%x:%x:%x:%x:%x\n", rtl8139Driver.mac[0], rtl8139Driver.mac[1], rtl8139Driver.mac[2], rtl8139Driver.mac[3], rtl8139Driver.mac[4], rtl8139Driver.mac[5]);
 
 }
 

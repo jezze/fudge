@@ -159,9 +159,7 @@ void shell_init()
     file_write_format(FILE_STDOUT, "Copyright (c) 2009 Jens Nyberg\n");
     file_write_format(FILE_STDOUT, "Type 'cat help.txt' to read the help section.\n\n");
 
-    file_write_format(FILE_STDERR, "Fudge\n\n");
-    file_write_format(FILE_STDERR, "Copyright (c) 2009 Jens Nyberg\n");
-    file_write_format(FILE_STDERR, "Debug window.\n\n");
+    file_write_format(FILE_STDERR, "[log] Debug window\n");
     file_write_format(FILE_STDERR, log_get());
 
     shell_clear();
