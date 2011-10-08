@@ -24,9 +24,9 @@ void rtl8139_poweron(struct rtl8139_driver *driver)
 void rtl8139_reset(struct rtl8139_driver *driver)
 {
 
-    io_outb(driver->io + RTL8139_REGISTER_CMD, 0x10);
+    io_outb(driver->io + RTL8139_REGISTER_CR, 0x10);
 
-    while (io_inb(driver->io + RTL8139_REGISTER_CMD) & 0x10);
+    while (io_inb(driver->io + RTL8139_REGISTER_CR) & 0x10);
 
 }
 
@@ -48,19 +48,19 @@ void rtl8139_set_interrupt_flags(struct rtl8139_driver *driver, unsigned short f
 void rtl8139_enable(struct rtl8139_driver *driver)
 {
 
-    io_outw(driver->io + RTL8139_REGISTER_CMD, 0x0C);
+    io_outw(driver->io + RTL8139_REGISTER_CR, 0x0C);
 
 }
 
 void rtl8139_get_mac(struct rtl8139_driver *driver)
 {
 
-    rtl8139Driver.mac[0] = io_inb(driver->io + RTL8139_REGISTER_MAC0);
-    rtl8139Driver.mac[1] = io_inb(driver->io + RTL8139_REGISTER_MAC1);
-    rtl8139Driver.mac[2] = io_inb(driver->io + RTL8139_REGISTER_MAC2);
-    rtl8139Driver.mac[3] = io_inb(driver->io + RTL8139_REGISTER_MAC3);
-    rtl8139Driver.mac[4] = io_inb(driver->io + RTL8139_REGISTER_MAC4);
-    rtl8139Driver.mac[5] = io_inb(driver->io + RTL8139_REGISTER_MAC5);
+    rtl8139Driver.mac[0] = io_inb(driver->io + RTL8139_REGISTER_IDR0);
+    rtl8139Driver.mac[1] = io_inb(driver->io + RTL8139_REGISTER_IDR1);
+    rtl8139Driver.mac[2] = io_inb(driver->io + RTL8139_REGISTER_IDR2);
+    rtl8139Driver.mac[3] = io_inb(driver->io + RTL8139_REGISTER_IDR3);
+    rtl8139Driver.mac[4] = io_inb(driver->io + RTL8139_REGISTER_IDR4);
+    rtl8139Driver.mac[5] = io_inb(driver->io + RTL8139_REGISTER_IDR5);
 
 }
 
