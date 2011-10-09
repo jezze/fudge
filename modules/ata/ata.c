@@ -130,10 +130,14 @@ static unsigned char ata_read_identity(struct ata_device *device)
 
     unsigned short buffer[256];
 
+    memory_set(buffer, 0, 512);
+
     unsigned int i;
 
     for (i = 0; i < 256; i++)
         buffer[i] = io_inw(device->data);
+
+    log_write("[ata] Ctrl num: %x\n", buffer[0]);
 
     return 1;
 

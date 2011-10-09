@@ -47,6 +47,9 @@
 
 #define ATA_STATUS_FLAG_ERROR 1 << 0
 #define ATA_STATUS_FLAG_DRQ   1 << 3
+#define ATA_STATUS_FLAG_SRV   1 << 4
+#define ATA_STATUS_FLAG_DF    1 << 5
+#define ATA_STATUS_FLAG_RDY   1 << 6
 #define ATA_STATUS_FLAG_BUSY  1 << 7
 
 #define ATA_DEVICE_TYPE_UNKNOWN 0x00
