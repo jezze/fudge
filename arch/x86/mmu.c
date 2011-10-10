@@ -5,10 +5,11 @@
 #include <arch/x86/isr.h>
 #include <arch/x86/mmu.h>
 
-static struct mmu_directory mmuKernelDirectory;
-static struct mmu_table mmuKernelTable;
 static struct mmu_table mmuUserTable;
 static struct mmu_table mmuProgramTable;
+
+static struct mmu_header mmuKernelHeader;
+static struct mmu_header mmuProgramHeaders[16];
 
 static void mmu_handler(struct isr_registers *registers)
 {
@@ -87,14 +88,14 @@ void mmu_enable()
 struct mmu_directory *mmu_get_kernel_directory()
 {
 
-    return &mmuKernelDirectory;
+    return &mmuKernelHeader.directory;
 
 }
 
 struct mmu_table *mmu_get_kernel_table()
 {
 
-    return &mmuKernelTable;
+    return &mmuKernelHeader.table;
 
 }
 
@@ -129,15 +130,15 @@ void mmu_add_table(struct mmu_directory *directory, unsigned int index, struct m
 static void mmu_init_kernel_directory()
 {
 
-    mmu_clear_directory(&mmuKernelDirectory);
+    mmu_clear_directory(&mmuKernelHeader.directory);
 
-    mmu_clear_table(&mmuKernelTable);
-    mmu_add_table(&mmuKernelDirectory, 0, &mmuKernelTable, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE);
-    mmu_map(&mmuKernelDirectory, 0x00000000, 0x00000000, 0x00400000, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);
+    mmu_clear_table(&mmuKernelHeader.table);
+    mmu_add_table(&mmuKernelHeader.directory, 0, &mmuKernelHeader.table, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE);
+    mmu_map(&mmuKernelHeader.directory, 0x00000000, 0x00000000, 0x00400000, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);
 
     mmu_clear_table(&mmuUserTable);
-    mmu_add_table(&mmuKernelDirectory, 1, &mmuUserTable, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE);
-    mmu_map(&mmuKernelDirectory, 0x00400000, 0x00400000, 0x00400000, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);
+    mmu_add_table(&mmuKernelHeader.directory, 1, &mmuUserTable, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE);
+    mmu_map(&mmuKernelHeader.directory, 0x00400000, 0x00400000, 0x00400000, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);
 
 }
 
@@ -145,7 +146,7 @@ void mmu_init()
 {
 
     mmu_init_kernel_directory();
-    mmu_set_directory(&mmuKernelDirectory);
+    mmu_set_directory(&mmuKernelHeader.directory);
 
     isr_register_handler(ISR_ROUTINE_PF, mmu_handler);
 
