@@ -72,12 +72,13 @@ static unsigned int *mmu_get_entry(struct mmu_directory *directory, unsigned int
 void mmu_map(struct mmu_directory *directory, struct mmu_table *table, unsigned int virtualAddress, unsigned int physicalAddress, unsigned int size, unsigned int tableFlags, unsigned int pageFlags)
 {
 
-    unsigned int index = (virtualAddress / MMU_PAGE_SIZE) / MMU_DIRECTORY_SIZE;
+    unsigned int frame = virtualAddress / MMU_PAGE_SIZE;
+    unsigned int index = frame / MMU_DIRECTORY_SIZE;
+    unsigned int count = size / MMU_PAGE_SIZE + ((size & 0xFFF) > 0);
+
     mmu_clear_table(table);
     directory->tables[index] = (struct mmu_table *)((unsigned int)table | tableFlags);
 
-    unsigned int frame = virtualAddress / MMU_PAGE_SIZE;
-    unsigned int count = size / MMU_PAGE_SIZE + ((size & 0xFFF) > 0);
     unsigned int i;
 
     for (i = 0; i < count; i++)
