@@ -124,7 +124,22 @@ static void syscall_info(struct syscall_registers *registers)
 static void syscall_map(struct syscall_registers *registers)
 {
 
-    void *address = (void *)registers->ebx;
+    unsigned int fd = registers->ebx;
+
+    struct vfs_node *node = vfs_get_descriptor(fd)->node;
+
+    if (!(node && node->operations.read))
+    {
+
+        registers->eax = 0;
+
+        return;
+
+    }
+
+    void *address = (void *)0x00400000;
+
+    node->operations.read(node, 0x100000, address);
 
     if (!elf_check(address))
     {
@@ -146,7 +161,7 @@ static void syscall_map(struct syscall_registers *registers)
     mmu_clear_table(programTable);
 
     mmu_add_table(kernelDirectory, index, programTable, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE);
-    mmu_map(kernelDirectory, programHeader->virtualAddress, registers->ebx, programHeader->memorySize + 0x2000, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);
+    mmu_map(kernelDirectory, programHeader->virtualAddress, (unsigned int)address, programHeader->memorySize + 0x2000, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);
     mmu_set_directory(kernelDirectory);
 
     registers->eax = header->entry;
