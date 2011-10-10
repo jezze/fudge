@@ -3,7 +3,7 @@
 #include <lib/string.h>
 #include <kernel/vfs.h>
 #include <kernel/modules.h>
-#include <kernel/arch/x86/irq.h>
+#include <kernel/kernel.h>
 #include <modules/io/io.h>
 #include <modules/kbd/kbd.h>
 
@@ -117,7 +117,7 @@ void kbd_init()
     kbdDevice.toggleShift = 0;
     modules_register_device(&kbdDevice.base);
 
-    irq_register_handler(IRQ_ROUTINE_KBD, kbd_handler);
+    kernel_register_irq(0x01, kbd_handler);
 
 }
 

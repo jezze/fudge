@@ -21,6 +21,20 @@ void kernel_enable_interrupts()
 
 }
 
+void kernel_register_irq(unsigned int index, void (*handler)())
+{
+
+    kernel.arch->register_irq(index, handler);
+
+}
+
+void kernel_unregister_irq(unsigned int index)
+{
+
+    kernel.arch->unregister_irq(index);
+
+}
+
 void kernel_init(struct kernel_arch *arch)
 {
 

@@ -1,7 +1,6 @@
 #include <kernel/vfs.h>
 #include <kernel/modules.h>
-#include <kernel/arch/x86/irq.h>
-#include <kernel/arch/x86/isr.h>
+#include <kernel/kernel.h>
 #include <modules/io/io.h>
 #include <modules/pit/pit.h>
 
@@ -24,7 +23,7 @@ void pit_init()
     io_outb(0x40, (unsigned char)(divisor & 0xFF));
     io_outb(0x40, (unsigned char)((divisor >> 8) & 0xFF));
 
-    irq_register_handler(IRQ_ROUTINE_PIT, pit_handler);
+    kernel_register_irq(0x00, pit_handler);
 
 }
 

@@ -52,6 +52,8 @@ void arch_init(struct mboot_info *header, unsigned int magic, unsigned int stack
     arch.enable_interrupts = cpu_interrupts_on;
     arch.enable_usermode = cpu_usermode;
     arch.set_stack = tss_set_stack;
+    arch.register_irq = irq_register_handler;
+    arch.unregister_irq = irq_unregister_handler;
     arch.stackAddress = stack;
     arch.mbootAddress = (unsigned int *)header;
     arch.initrdAddress = (unsigned int *)header->modulesAddresses;
