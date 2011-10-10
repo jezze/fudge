@@ -46,7 +46,7 @@ static void shell_clear()
 static void shell_call(int fd, int argc, char *argv[])
 {
 
-    unsigned int address = call_map(fd);
+    void *address = file_map(fd);
 
     if (!address)
     {

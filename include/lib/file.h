@@ -15,6 +15,7 @@ struct file_info
 
 extern void file_close(unsigned int fd);
 extern unsigned int file_info(unsigned int fd, struct file_info *info);
+extern void *file_map(unsigned int fd);
 extern int file_open(char *name);
 extern unsigned int file_read(unsigned int fd, unsigned int count, void *buffer);
 extern unsigned int file_read_byte(unsigned int fd, char c);

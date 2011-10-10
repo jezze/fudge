@@ -40,13 +40,19 @@ static void shell_clear()
 
 }
 
-static void shell_call(int file, int argc, char *argv[])
+static void shell_call(int fd, int argc, char *argv[])
 {
 
-    void *buffer = (void *)0x00600000;
-    file_read(file, 0x100000, buffer);
+    void *address = file_map(fd);
 
-    unsigned int address = call_map((unsigned int)buffer);
+    if (!address)
+    {
+
+        file_write_format(FILE_STDOUT, "Could not map program into memory.\n");
+
+        return;
+
+    }
 
     void (*func)(int argc, char **argv) = (void (*)(int argc, char **argv))address;
 
@@ -68,9 +74,9 @@ static void shell_interpret(char *command)
     string_copy(path, "/");
     string_concat(path, argv[0]);
 
-    int file = file_open(path);
+    int fd = file_open(path);
 
-    if (file == -1)
+    if (fd == -1)
     {
 
         file_write_format(FILE_STDOUT, "%s: Command not found\n", argv[0]);
@@ -79,8 +85,8 @@ static void shell_interpret(char *command)
 
     }
 
-    shell_call(file, argc, argv);
-    file_close(file);
+    shell_call(fd, argc, argv);
+    file_close(fd);
 
 }
 
