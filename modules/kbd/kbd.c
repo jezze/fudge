@@ -72,7 +72,7 @@ static unsigned int kbd_device_putc(struct kbd_device *device, char *buffer)
 
 }
 
-static void kbd_handler(struct isr_registers *registers)
+static void kbd_handler()
 {
 
     unsigned char scancode = io_inb(KBD_PORT_READ);

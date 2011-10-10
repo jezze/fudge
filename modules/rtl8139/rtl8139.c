@@ -9,7 +9,7 @@
 
 struct rtl8139_driver rtl8139Driver;
 
-static void rtl8139_handler(struct isr_registers *registers)
+static void rtl8139_handler()
 {
 
 }

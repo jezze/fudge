@@ -7,7 +7,7 @@
 
 static void *irqRoutines[IRQ_ROUTINES_SIZE];
 
-void irq_register_handler(unsigned char index, void (*handler)(struct isr_registers *registers))
+void irq_register_handler(unsigned char index, void (*handler)())
 {
 
     irqRoutines[index] = handler;
@@ -24,10 +24,10 @@ void irq_unregister_handler(unsigned char index)
 void irq_handler(struct isr_registers *registers)
 {
 
-    void (*handler)(struct isr_registers *registers) = irqRoutines[registers->number - 32];
+    void (*handler)() = irqRoutines[registers->number - 32];
 
     if (handler)
-        handler(registers);
+        handler();
 
     if (registers->number >= 40)
         io_outb(0xA0, 0x20);

@@ -24,7 +24,7 @@ extern void irq0D();
 extern void irq0E();
 extern void irq0F();
 
-extern void irq_register_handler(unsigned char index, void (*handler)(struct isr_registers *registers));
+extern void irq_register_handler(unsigned char index, void (*handler)());
 extern void irq_unregister_handler(unsigned char index);
 extern void irq_init();
 
