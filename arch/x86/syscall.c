@@ -62,16 +62,16 @@ static void syscall_read(struct syscall_registers *registers)
 
     struct vfs_node *node = vfs_get_descriptor(fd)->node;
 
-    if (node && node->operations.read)
+    if (!(node && node->operations.read))
     {
 
-        registers->eax = node->operations.read(node, count, buffer);
+        registers->eax = 0;
 
         return;
 
     }
 
-    registers->eax = 0;
+    registers->eax = node->operations.read(node, count, buffer);
 
 }
 
@@ -84,16 +84,16 @@ static void syscall_write(struct syscall_registers *registers)
 
     struct vfs_node *node = vfs_get_descriptor(fd)->node;
 
-    if (node && node->operations.write)
+    if (!(node && node->operations.write))
     {
 
-        registers->eax = node->operations.write(node, count, buffer);
+        registers->eax = 0;
 
         return;
 
     }
 
-    registers->eax = 0;
+    registers->eax = node->operations.write(node, count, buffer);
 
 }
 
@@ -105,19 +105,19 @@ static void syscall_info(struct syscall_registers *registers)
     
     struct vfs_node *node = vfs_get_descriptor(fd)->node;
 
-    if (node)
+    if (!node)
     {
 
-        info->id = node->id;
-        info->length = 0;
-
-        registers->eax = 1;
+        registers->eax = 0;
 
         return;
 
     }
 
-    registers->eax = 0;
+    info->id = node->id;
+    info->length = 0;
+
+    registers->eax = 1;
 
 }
 
