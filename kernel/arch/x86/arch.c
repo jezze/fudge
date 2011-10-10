@@ -50,7 +50,7 @@ void arch_init(struct mboot_info *header, unsigned int magic, unsigned int stack
     arch.setup = arch_setup;
     arch.disable_interrupts = cpu_interrupts_off;
     arch.enable_interrupts = cpu_interrupts_on;
-    arch.enable_usermode = cpu_usermode;
+    arch.enter_usermode = cpu_usermode;
     arch.set_stack = tss_set_stack;
     arch.register_irq = irq_register_handler;
     arch.unregister_irq = irq_unregister_handler;
