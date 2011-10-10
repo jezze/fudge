@@ -11,6 +11,8 @@ static struct mmu_table mmuProgramTable;
 static struct mmu_header mmuKernelHeader;
 static struct mmu_header mmuProgramHeaders[16];
 
+unsigned int mmuSlotCount;
+
 static void mmu_handler(struct isr_registers *registers)
 {
 
@@ -127,6 +129,20 @@ void mmu_add_table(struct mmu_directory *directory, unsigned int index, struct m
 
 }
 
+void *mmu_get_slot()
+{
+
+    void *slot = (void *)(0x00400000 + mmuSlotCount * 0x00100000);
+
+    mmuSlotCount++;
+
+    if (mmuSlotCount == 3)
+        mmuSlotCount = 0;
+
+    return slot;
+
+}
+
 static void mmu_init_kernel_directory()
 {
 
@@ -144,6 +160,8 @@ static void mmu_init_kernel_directory()
 
 void mmu_init()
 {
+
+    mmuSlotCount = 0;
 
     mmu_init_kernel_directory();
     mmu_set_directory(&mmuKernelHeader.directory);

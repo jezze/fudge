@@ -65,6 +65,7 @@ extern struct mmu_table *mmu_get_program_table();
 extern unsigned int mmu_get_physical_address(struct mmu_directory *directory, unsigned int virtualAddress);
 extern void mmu_clear_directory(struct mmu_directory *directory);
 extern void mmu_clear_table(struct mmu_table *table);
+extern void *mmu_get_slot();
 
 #endif
 

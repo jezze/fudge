@@ -137,7 +137,7 @@ static void syscall_map(struct syscall_registers *registers)
 
     }
 
-    void *address = (void *)0x00400000;
+    void *address = mmu_get_slot();
 
     node->operations.read(node, 0x100000, address);
 
