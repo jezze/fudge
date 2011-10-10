@@ -130,11 +130,11 @@ struct mmu_table *mmu_get_program_table()
 void *mmu_get_slot()
 {
 
-    void *slot = (void *)(0x00400000 + mmuSlotCount * 0x00100000);
+    void *slot = (void *)(0x00600000 + mmuSlotCount * 0x00010000);
 
     mmuSlotCount++;
 
-    if (mmuSlotCount == 3)
+    if (mmuSlotCount == 8)
         mmuSlotCount = 0;
 
     return slot;
