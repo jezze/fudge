@@ -1,7 +1,7 @@
 #include <lib/memory.h>
 #include <kernel/log.h>
-#include <arch/x86/mboot.h>
-#include <arch/x86/vbe.h>
+#include <kernel/arch/x86/mboot.h>
+#include <kernel/arch/x86/vbe.h>
 
 void mboot_init(struct mboot_info *info)
 {

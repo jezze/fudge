@@ -1,9 +1,9 @@
 #include <lib/memory.h>
 #include <kernel/error.h>
 #include <kernel/log.h>
-#include <arch/x86/cpu.h>
-#include <arch/x86/isr.h>
-#include <arch/x86/mmu.h>
+#include <kernel/arch/x86/cpu.h>
+#include <kernel/arch/x86/isr.h>
+#include <kernel/arch/x86/mmu.h>
 
 static struct mmu_table mmuUserTable;
 static struct mmu_table mmuProgramTable;

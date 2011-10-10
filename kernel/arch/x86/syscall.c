@@ -3,11 +3,11 @@
 #include <lib/string.h>
 #include <kernel/vfs.h>
 #include <kernel/modules.h>
+#include <kernel/arch/x86/arch.h>
+#include <kernel/arch/x86/isr.h>
+#include <kernel/arch/x86/mmu.h>
+#include <kernel/arch/x86/syscall.h>
 #include <modules/elf/elf.h>
-#include <arch/x86/arch.h>
-#include <arch/x86/isr.h>
-#include <arch/x86/mmu.h>
-#include <arch/x86/syscall.h>
 
 static void *syscallRoutines[SYSCALL_ROUTINES_SIZE];
 

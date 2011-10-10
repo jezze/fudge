@@ -1,7 +1,7 @@
 #include <kernel/vfs.h>
 #include <kernel/modules.h>
-#include <arch/x86/irq.h>
-#include <arch/x86/isr.h>
+#include <kernel/arch/x86/irq.h>
+#include <kernel/arch/x86/isr.h>
 #include <modules/io/io.h>
 #include <modules/pit/pit.h>
 

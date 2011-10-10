@@ -2,7 +2,7 @@
 #include <kernel/vfs.h>
 #include <kernel/log.h>
 #include <kernel/modules.h>
-#include <arch/x86/irq.h>
+#include <kernel/arch/x86/irq.h>
 #include <modules/io/io.h>
 #include <modules/pci/pci.h>
 #include <modules/rtl8139/rtl8139.h>

@@ -3,7 +3,7 @@
 #include <lib/string.h>
 #include <kernel/vfs.h>
 #include <kernel/modules.h>
-#include <arch/x86/irq.h>
+#include <kernel/arch/x86/irq.h>
 #include <modules/io/io.h>
 #include <modules/kbd/kbd.h>
 
