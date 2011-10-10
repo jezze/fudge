@@ -2,7 +2,7 @@
 #include <kernel/vfs.h>
 #include <kernel/log.h>
 #include <kernel/modules.h>
-#include <kernel/arch/x86/irq.h>
+#include <kernel/kernel.h>
 #include <modules/io/io.h>
 #include <modules/pci/pci.h>
 #include <modules/rtl8139/rtl8139.h>
@@ -80,7 +80,7 @@ void rtl8139_init()
     rtl8139Driver.base.device = &device->base;
     rtl8139Driver.io = (device->configuration.bar0 & ~1);
 
-    irq_register_handler(device->configuration.interruptline, rtl8139_handler);
+    kernel_register_irq(device->configuration.interruptline, rtl8139_handler);
 
     rtl8139_poweron(&rtl8139Driver);
     rtl8139_reset(&rtl8139Driver);
