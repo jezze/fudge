@@ -55,16 +55,11 @@ struct mmu_header
 
 extern void mmu_init();
 extern void mmu_set_directory(struct mmu_directory *directory);
-extern void mmu_default_directory();
-extern void mmu_map(struct mmu_directory *directory, unsigned int virtualAddress, unsigned int physicalAddress, unsigned int size, unsigned int flags);
-extern void mmu_add_table(struct mmu_directory *directory, unsigned int index, struct mmu_table *table, unsigned int flags);
+extern void mmu_map(struct mmu_directory *directory, struct mmu_table *table, unsigned int virtualAddress, unsigned int physicalAddress, unsigned int size, unsigned int tableFlags, unsigned int pageFlags);
 extern void mmu_enable();
 extern struct mmu_directory *mmu_get_kernel_directory();
 extern struct mmu_table *mmu_get_kernel_table();
 extern struct mmu_table *mmu_get_program_table();
-extern unsigned int mmu_get_physical_address(struct mmu_directory *directory, unsigned int virtualAddress);
-extern void mmu_clear_directory(struct mmu_directory *directory);
-extern void mmu_clear_table(struct mmu_table *table);
 extern void *mmu_get_slot();
 
 #endif

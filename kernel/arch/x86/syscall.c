@@ -153,16 +153,11 @@ static void syscall_map(struct syscall_registers *registers)
     struct elf_header *header = (struct elf_header *)address;
     struct elf_program_header *programHeader = (struct elf_program_header *)(address + header->programHeaderOffset);
 
-    unsigned int index = (programHeader->virtualAddress / MMU_PAGE_SIZE) / MMU_DIRECTORY_SIZE;
+    struct mmu_directory *directory = mmu_get_kernel_directory();
+    struct mmu_table *table = mmu_get_program_table();
 
-    struct mmu_directory *kernelDirectory = mmu_get_kernel_directory();
-    struct mmu_table *programTable = mmu_get_program_table();
-
-    mmu_clear_table(programTable);
-
-    mmu_add_table(kernelDirectory, index, programTable, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE);
-    mmu_map(kernelDirectory, programHeader->virtualAddress, (unsigned int)address, programHeader->memorySize + 0x2000, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);
-    mmu_set_directory(kernelDirectory);
+    mmu_map(directory, table, programHeader->virtualAddress, (unsigned int)address, programHeader->memorySize + 0x2000, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);
+    mmu_set_directory(directory);
 
     registers->eax = header->entry;
 
