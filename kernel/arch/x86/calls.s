@@ -117,6 +117,27 @@ call_map:
     pop ebp
     ret
 
+global call_execute
+call_execute:
+    push ebp
+    mov ebp, esp
+    push ebx
+    push ecx
+    push esi
+    push edi
+    mov eax, 0x11
+    mov ebx, [ebp + 8]
+    int 0x80
+    pop edi
+    pop esi
+    pop ecx
+    pop ebx
+    mov esp, ebp
+    pop ebp
+    ret
+
+
+
 global call_halt
 call_halt:
     push ebp

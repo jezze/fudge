@@ -156,10 +156,54 @@ static void syscall_map(struct syscall_registers *registers)
     struct mmu_header *pHeader = mmu_get_program_header(address);
 
     mmu_map_header(pHeader, programHeader->virtualAddress, (unsigned int)address, programHeader->memorySize + 0x2000, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);
-    //mmu_map(directory, &pHeader->programTable, programHeader->virtualAddress, (unsigned int)address, programHeader->memorySize + 0x2000, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);
     mmu_set_directory(&pHeader->directory);
 
     registers->eax = header->entry;
+
+}
+
+static void syscall_execute(struct syscall_registers *registers)
+{
+
+    unsigned int fd = registers->ebx;
+
+    struct vfs_node *node = vfs_get_descriptor(fd)->node;
+
+    if (!(node && node->operations.read))
+    {
+
+        registers->eax = 0;
+
+        return;
+
+    }
+
+    void *address = mmu_get_slot();
+
+    node->operations.read(node, 0x10000, address);
+
+    if (!elf_check(address))
+    {
+
+        registers->eax = 0;
+
+        return;
+
+    }
+
+    struct elf_header *header = (struct elf_header *)address;
+    struct elf_program_header *programHeader = (struct elf_program_header *)(address + header->programHeaderOffset);
+
+    struct mmu_header *pHeader = mmu_get_program_header(address);
+
+    mmu_map_header(pHeader, programHeader->virtualAddress, (unsigned int)address, programHeader->memorySize + 0x2000, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);
+    mmu_set_directory(&pHeader->directory);
+
+    void (*func)(int argc, char **argv) = (void (*)(int argc, char **argv))header->entry;
+
+    func(0, 0);
+
+    registers->eax = 0;
 
 }
 
@@ -179,6 +223,7 @@ void syscall_init()
     syscall_register_handler(SYSCALL_ROUTINE_WRITE, syscall_write);
     syscall_register_handler(SYSCALL_ROUTINE_INFO, syscall_info);
     syscall_register_handler(SYSCALL_ROUTINE_MAP, syscall_map);
+    syscall_register_handler(SYSCALL_ROUTINE_EXECUTE, syscall_execute);
     syscall_register_handler(SYSCALL_ROUTINE_REBOOT, syscall_reboot);
 
 }
