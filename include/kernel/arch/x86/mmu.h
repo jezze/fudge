@@ -49,17 +49,20 @@ struct mmu_header
 {
 
     struct mmu_directory directory;
-    struct mmu_table table;
+    struct mmu_table kernelTable;
+    struct mmu_table userTable;
+    struct mmu_table programTable;
 
 };
 
 extern void mmu_init();
 extern void mmu_set_directory(struct mmu_directory *directory);
 extern void mmu_map(struct mmu_directory *directory, struct mmu_table *table, unsigned int virtualAddress, unsigned int physicalAddress, unsigned int size, unsigned int tableFlags, unsigned int pageFlags);
+extern void mmu_map_header(struct mmu_header *header, unsigned int virtualAddress, unsigned int physicalAddress, unsigned int size, unsigned int tableFlags, unsigned int pageFlags);
 extern void mmu_enable();
 extern struct mmu_directory *mmu_get_kernel_directory();
 extern struct mmu_table *mmu_get_kernel_table();
-extern struct mmu_table *mmu_get_program_table();
+extern struct mmu_header *mmu_get_program_header(void *address);
 extern void *mmu_get_slot();
 
 #endif

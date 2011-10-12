@@ -139,7 +139,7 @@ static void syscall_map(struct syscall_registers *registers)
 
     void *address = mmu_get_slot();
 
-    node->operations.read(node, 0x100000, address);
+    node->operations.read(node, 0x10000, address);
 
     if (!elf_check(address))
     {
@@ -153,11 +153,11 @@ static void syscall_map(struct syscall_registers *registers)
     struct elf_header *header = (struct elf_header *)address;
     struct elf_program_header *programHeader = (struct elf_program_header *)(address + header->programHeaderOffset);
 
-    struct mmu_directory *directory = mmu_get_kernel_directory();
-    struct mmu_table *table = mmu_get_program_table();
+    struct mmu_header *pHeader = mmu_get_program_header(address);
 
-    mmu_map(directory, table, programHeader->virtualAddress, (unsigned int)address, programHeader->memorySize + 0x2000, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);
-    mmu_set_directory(directory);
+    mmu_map_header(pHeader, programHeader->virtualAddress, (unsigned int)address, programHeader->memorySize + 0x2000, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);
+    //mmu_map(directory, &pHeader->programTable, programHeader->virtualAddress, (unsigned int)address, programHeader->memorySize + 0x2000, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);
+    mmu_set_directory(&pHeader->directory);
 
     registers->eax = header->entry;
 

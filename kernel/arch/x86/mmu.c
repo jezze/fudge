@@ -5,10 +5,9 @@
 #include <kernel/arch/x86/isr.h>
 #include <kernel/arch/x86/mmu.h>
 
+static struct mmu_directory mmuKernelDirectory;
+static struct mmu_table mmuKernelTable;
 static struct mmu_table mmuUserTable;
-static struct mmu_table mmuProgramTable;
-
-static struct mmu_header mmuKernelHeader;
 static struct mmu_header mmuProgramHeaders[16];
 
 unsigned int mmuSlotCount;
@@ -92,6 +91,29 @@ void mmu_map(struct mmu_directory *directory, struct mmu_table *table, unsigned 
 
 }
 
+void mmu_map_header(struct mmu_header *header, unsigned int virtualAddress, unsigned int physicalAddress, unsigned int size, unsigned int tableFlags, unsigned int pageFlags)
+{
+
+    unsigned int frame = virtualAddress / MMU_PAGE_SIZE;
+    unsigned int index = frame / MMU_DIRECTORY_SIZE;
+    unsigned int count = size / MMU_PAGE_SIZE + ((size & 0xFFF) > 0);
+
+    mmu_clear_table(&header->programTable);
+    header->directory.tables[index] = (struct mmu_table *)((unsigned int)&header->programTable | tableFlags);
+
+    unsigned int i;
+
+    for (i = 0; i < count; i++)
+    {
+
+        *mmu_get_entry(&header->directory, frame + i) = physicalAddress | pageFlags;
+
+        physicalAddress += MMU_PAGE_SIZE;
+
+    }
+
+}
+
 void mmu_set_directory(struct mmu_directory *directory)
 {
 
@@ -109,21 +131,24 @@ void mmu_enable()
 struct mmu_directory *mmu_get_kernel_directory()
 {
 
-    return &mmuKernelHeader.directory;
+    return &mmuKernelDirectory;
 
 }
 
 struct mmu_table *mmu_get_kernel_table()
 {
 
-    return &mmuKernelHeader.table;
+    return &mmuKernelTable;
 
 }
 
-struct mmu_table *mmu_get_program_table()
+struct mmu_header *mmu_get_program_header(void *address)
 {
 
-    return &mmuProgramTable;
+    unsigned int index = (unsigned int)address - 0x00600000;
+    index = index / 0x00010000;
+
+    return &mmuProgramHeaders[index];
 
 }
 
@@ -134,8 +159,8 @@ void *mmu_get_slot()
 
     mmuSlotCount++;
 
-    if (mmuSlotCount == 8)
-        mmuSlotCount = 0;
+    if (mmuSlotCount == 4)
+        mmuSlotCount = 1;
 
     return slot;
 
@@ -146,10 +171,21 @@ void mmu_init()
 
     mmuSlotCount = 0;
 
-    mmu_clear_directory(&mmuKernelHeader.directory);
-    mmu_map(&mmuKernelHeader.directory, &mmuKernelHeader.table, 0x00000000, 0x00000000, 0x00400000, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);
-    mmu_map(&mmuKernelHeader.directory, &mmuUserTable, 0x00400000, 0x00400000, 0x00400000, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);
-    mmu_set_directory(&mmuKernelHeader.directory);
+    mmu_clear_directory(&mmuKernelDirectory);
+    mmu_map(&mmuKernelDirectory, &mmuKernelTable, 0x00000000, 0x00000000, 0x00400000, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);
+    mmu_map(&mmuKernelDirectory, &mmuUserTable, 0x00400000, 0x00400000, 0x00400000, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);
+    mmu_set_directory(&mmuKernelDirectory);
+
+    unsigned int i;
+
+    for (i = 0; i < 16; i++)
+    {
+
+        memory_copy(&mmuProgramHeaders[i].directory, &mmuKernelDirectory, sizeof (struct mmu_directory));
+        memory_copy(&mmuProgramHeaders[i].kernelTable, &mmuKernelTable, sizeof (struct mmu_table));
+        memory_copy(&mmuProgramHeaders[i].userTable, &mmuUserTable, sizeof (struct mmu_table));
+
+    }
 
     isr_register_handler(ISR_ROUTINE_PF, mmu_handler);
 
