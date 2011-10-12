@@ -128,20 +128,6 @@ void mmu_enable()
 
 }
 
-struct mmu_directory *mmu_get_kernel_directory()
-{
-
-    return &mmuKernelDirectory;
-
-}
-
-struct mmu_table *mmu_get_kernel_table()
-{
-
-    return &mmuKernelTable;
-
-}
-
 struct mmu_header *mmu_get_program_header(void *address)
 {
 
