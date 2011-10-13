@@ -17,6 +17,7 @@ struct syscall_registers
 
     unsigned int gs, fs, es, ds;
     unsigned int edi, esi, ebp, esp, ebx, edx, ecx, eax;
+    unsigned int eip, cs, eflags, useresp, ss;
 
 };
 
