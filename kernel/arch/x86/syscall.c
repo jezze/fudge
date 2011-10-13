@@ -1,5 +1,6 @@
 #include <lib/elf.h>
 #include <lib/file.h>
+#include <lib/memory.h>
 #include <lib/string.h>
 #include <kernel/vfs.h>
 #include <kernel/modules.h>
@@ -162,7 +163,13 @@ static void syscall_map(struct syscall_registers *registers)
     if (registers->eip > 0x00800000)
     {
 
+        memory_set(address + 0x7995, 0, 10);
         registers->eip = header->entry;
+        //registers->ebp = address + 0x8000;
+        registers->useresp = (unsigned int)address + 0x8000;
+        registers->eax = 0;
+
+        return;
 
     }
 

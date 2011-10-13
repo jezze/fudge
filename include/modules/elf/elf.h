@@ -7,7 +7,7 @@ struct elf_module
 {
 
     struct modules_module base;
-    unsigned int (*check)(struct elf_module *module, void *address);
+    unsigned int (*check)(void *address);
 
 };
 
