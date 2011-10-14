@@ -5,7 +5,7 @@
 
 static struct elf_module elfModule;
 
-unsigned int elf_check(void *address)
+struct elf_header *elf_get_header(void *address)
 {
 
     struct elf_header *header = (struct elf_header *)address;
@@ -22,19 +22,22 @@ unsigned int elf_check(void *address)
     if (header->identify[3] != ELF_IDENTITY_MAGIC3)
         return 0;
 
-    return 1;
+    return header;
 
 }
 
-void elf_execute(struct elf_header *header, int argc, char *argv[])
+struct elf_program_header *elf_get_program_header(struct elf_header *header)
 {
+
+    void *address = header;
+    address += header->programHeaderOffset;
+
+    return (struct elf_program_header *)address;
 
 }
 
 void elf_init()
 {
-
-    elfModule.check = elf_check;
 
 }
 

@@ -7,12 +7,11 @@ struct elf_module
 {
 
     struct modules_module base;
-    unsigned int (*check)(void *address);
 
 };
 
-extern unsigned int elf_check(void *address);
-extern void elf_execute(struct elf_header *header, int argc, char *argv[]);
+extern struct elf_header *elf_get_header(void *address);
+extern struct elf_program_header *elf_get_program_header(struct elf_header *header);
 extern void elf_init();
 
 #endif

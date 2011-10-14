@@ -154,7 +154,9 @@ static void syscall_map(struct syscall_registers *registers)
 
     node->operations.read(node, 0x10000, address);
 
-    if (!elf_check(address))
+    struct elf_header *header = elf_get_header(address);
+
+    if (!header)
     {
 
         registers->eax = 0;
@@ -163,8 +165,7 @@ static void syscall_map(struct syscall_registers *registers)
 
     }
 
-    struct elf_header *header = (struct elf_header *)address;
-    struct elf_program_header *programHeader = (struct elf_program_header *)(address + header->programHeaderOffset);
+    struct elf_program_header *programHeader = elf_get_program_header(header);
 
     struct mmu_header *pHeader = mmu_get_program_header(address);
 
