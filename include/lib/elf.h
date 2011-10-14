@@ -66,7 +66,7 @@ struct elf_header
     unsigned short type;
     unsigned short machine;
     unsigned int version;
-    unsigned int entry;
+    void *entry;
     unsigned int programHeaderOffset;
     unsigned int sectionHeaderOffset;
     unsigned int flags;
@@ -84,8 +84,8 @@ struct elf_program_header
 
     unsigned int type;
     unsigned int offset;
-    unsigned int virtualAddress;
-    unsigned int physicalAddress;
+    void *virtualAddress;
+    void *physicalAddress;
     unsigned int fileSize;
     unsigned int memorySize;
     unsigned int flags;
@@ -99,7 +99,7 @@ struct elf_section_header
     unsigned int name;
     unsigned int type;
     unsigned int flags;
-    unsigned int address;
+    void *address;
     unsigned int offset;
     unsigned int size;
     unsigned int link;

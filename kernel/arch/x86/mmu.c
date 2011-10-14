@@ -68,10 +68,10 @@ static unsigned int *mmu_get_entry(struct mmu_directory *directory, unsigned int
 
 }
 
-void mmu_map(struct mmu_directory *directory, struct mmu_table *table, unsigned int virtualAddress, unsigned int physicalAddress, unsigned int size, unsigned int tableFlags, unsigned int pageFlags)
+void mmu_map(struct mmu_directory *directory, struct mmu_table *table, void *virtualAddress, void *physicalAddress, unsigned int size, unsigned int tableFlags, unsigned int pageFlags)
 {
 
-    unsigned int frame = virtualAddress / MMU_PAGE_SIZE;
+    unsigned int frame = (unsigned int)virtualAddress / MMU_PAGE_SIZE;
     unsigned int index = frame / MMU_DIRECTORY_SIZE;
     unsigned int count = size / MMU_PAGE_SIZE + ((size & 0xFFF) > 0);
 
@@ -83,7 +83,7 @@ void mmu_map(struct mmu_directory *directory, struct mmu_table *table, unsigned 
     for (i = 0; i < count; i++)
     {
 
-        *mmu_get_entry(directory, frame + i) = physicalAddress | pageFlags;
+        *mmu_get_entry(directory, frame + i) = (unsigned int)physicalAddress | pageFlags;
 
         physicalAddress += MMU_PAGE_SIZE;
 
@@ -91,10 +91,10 @@ void mmu_map(struct mmu_directory *directory, struct mmu_table *table, unsigned 
 
 }
 
-void mmu_map_header(struct mmu_header *header, unsigned int virtualAddress, unsigned int physicalAddress, unsigned int size, unsigned int tableFlags, unsigned int pageFlags)
+void mmu_map_header(struct mmu_header *header, void *virtualAddress, void *physicalAddress, unsigned int size, unsigned int tableFlags, unsigned int pageFlags)
 {
 
-    unsigned int frame = virtualAddress / MMU_PAGE_SIZE;
+    unsigned int frame = (unsigned int)virtualAddress / MMU_PAGE_SIZE;
     unsigned int index = frame / MMU_DIRECTORY_SIZE;
     unsigned int count = size / MMU_PAGE_SIZE + ((size & 0xFFF) > 0);
 
@@ -106,7 +106,7 @@ void mmu_map_header(struct mmu_header *header, unsigned int virtualAddress, unsi
     for (i = 0; i < count; i++)
     {
 
-        *mmu_get_entry(&header->directory, frame + i) = physicalAddress | pageFlags;
+        *mmu_get_entry(&header->directory, frame + i) = (unsigned int)physicalAddress | pageFlags;
 
         physicalAddress += MMU_PAGE_SIZE;
 
@@ -158,8 +158,8 @@ void mmu_init()
     mmuSlotCount = 0;
 
     mmu_clear_directory(&mmuKernelDirectory);
-    mmu_map(&mmuKernelDirectory, &mmuKernelTable, 0x00000000, 0x00000000, 0x00400000, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);
-    mmu_map(&mmuKernelDirectory, &mmuUserTable, 0x00400000, 0x00400000, 0x00400000, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);
+    mmu_map(&mmuKernelDirectory, &mmuKernelTable, (void *)0x00000000, (void *)0x00000000, 0x00400000, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);
+    mmu_map(&mmuKernelDirectory, &mmuUserTable, (void *)0x00400000, (void *)0x00400000, 0x00400000, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);
     mmu_set_directory(&mmuKernelDirectory);
 
     unsigned int i;

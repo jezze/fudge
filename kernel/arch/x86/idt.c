@@ -4,7 +4,7 @@
 static struct idt_entry idt[IDT_TABLE_SIZE];
 static struct idt_pointer idtPointer;
 
-void idt_set_gate(unsigned char index, void (*callback)(), unsigned short selector, unsigned char flags)
+void idt_set_gate(unsigned char index, void *callback, unsigned short selector, unsigned char flags)
 {
 
     unsigned int base = (unsigned int)callback;
