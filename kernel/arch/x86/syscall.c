@@ -122,6 +122,18 @@ static void syscall_info(struct syscall_registers *registers)
 
 }
 
+unsigned int oldEip;
+struct mmu_header *oldHeader;
+
+static void syscall_exit()
+{
+
+    file_write_format(2, "EXIT\n");
+
+    for(;;);
+
+}
+
 static void syscall_map(struct syscall_registers *registers)
 {
 
@@ -163,24 +175,17 @@ static void syscall_map(struct syscall_registers *registers)
     if (registers->eip > 0x00800000)
     {
 
-        //file_write_format(2, "Address: 0x%x\n", address);
-        //file_write_format(2, "Entry: 0x%x\n", header->entry);
-        //file_write_format(2, "ESP: 0x%x\n", registers->useresp);
-        //file_write_format(2, "EIP: 0x%x\n", registers->eip);
-
         memory_set(header->entry + 0x7FFC, 0, 4); // second argument
         memory_set(header->entry + 0x7FF8, 0, 4); // first argument argc
         memory_set(header->entry + 0x7FF8, 1, 1); // first argument argc
-        memory_set(header->entry + 0x7FF4, 0, 4); // ebp
-
-        // need to set ebp to a function that reloads previous task and continues
+        memory_set(header->entry + 0x7FF7, ((unsigned int)syscall_exit & 0xFF000000) >> 24, 1); // eip
+        memory_set(header->entry + 0x7FF6, ((unsigned int)syscall_exit & 0x00FF0000) >> 16, 1); // eip
+        memory_set(header->entry + 0x7FF5, ((unsigned int)syscall_exit & 0x0000FF00) >> 8, 1); // eip
+        memory_set(header->entry + 0x7FF4, ((unsigned int)syscall_exit & 0x000000FF) >> 0, 1); // eip
 
         registers->eip = (unsigned int)header->entry;
-        registers->useresp = (unsigned int)(header->entry + 0x7FF4); // set esp to ebp
+        registers->useresp = (unsigned int)(header->entry + 0x7FF4); // set esp to eip
         registers->eax = 0;
-
-        //file_write_format(2, "ESP: 0x%x\n", registers->useresp);
-        //file_write_format(2, "EIP: 0x%x\n", registers->eip);
 
         return;
 
