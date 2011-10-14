@@ -157,6 +157,7 @@ static void syscall_map(struct syscall_registers *registers)
     struct mmu_header *pHeader = mmu_get_program_header(address);
 
     mmu_map_header(pHeader, programHeader->virtualAddress, address, 0x10000, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);
+    mmu_set_directory(&pHeader->directory);
 
     // This is for testing purposes
     if (registers->eip > 0x00800000)
@@ -167,27 +168,23 @@ static void syscall_map(struct syscall_registers *registers)
         //file_write_format(2, "ESP: 0x%x\n", registers->useresp);
         //file_write_format(2, "EIP: 0x%x\n", registers->eip);
 
-        memory_set(address + 0x7FFC, 0, 4); // second argument
-        memory_set(address + 0x7FF8, 0, 4); // first argument argc
-        memory_set(address + 0x7FF8, 1, 1); // first argument argc
-        memory_set(address + 0x7FF4, 0, 4); // ebp
+        memory_set(header->entry + 0x7FFC, 0, 4); // second argument
+        memory_set(header->entry + 0x7FF8, 0, 4); // first argument argc
+        memory_set(header->entry + 0x7FF8, 1, 1); // first argument argc
+        memory_set(header->entry + 0x7FF4, 0, 4); // ebp
 
         // need to set ebp to a function that reloads previous task and continues
 
         registers->eip = (unsigned int)header->entry;
-        registers->useresp = (unsigned int)(address + 0x7FF4); // set esp to ebp
+        registers->useresp = (unsigned int)(header->entry + 0x7FF4); // set esp to ebp
         registers->eax = 0;
 
         //file_write_format(2, "ESP: 0x%x\n", registers->useresp);
         //file_write_format(2, "EIP: 0x%x\n", registers->eip);
 
-        mmu_set_directory(&pHeader->directory);
-
         return;
 
     }
-
-    mmu_set_directory(&pHeader->directory);
 
     registers->eax = (unsigned int)header->entry;
 
