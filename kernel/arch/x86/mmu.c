@@ -7,7 +7,6 @@
 
 static struct mmu_directory mmuKernelDirectory;
 static struct mmu_table mmuKernelTable;
-static struct mmu_table mmuUserTable;
 static struct mmu_header mmuProgramHeaders[8];
 unsigned int mmuProgramHeadersCount;
 unsigned int mmuSlotCount;
@@ -131,7 +130,7 @@ void mmu_enable()
 struct mmu_header *mmu_get_program_header(void *address)
 {
 
-    unsigned int index = (unsigned int)address - 0x00400000;
+    unsigned int index = (unsigned int)address - 0x00380000;
     index = index / 0x00010000;
 
     return &mmuProgramHeaders[index];
@@ -141,7 +140,7 @@ struct mmu_header *mmu_get_program_header(void *address)
 void *mmu_get_slot()
 {
 
-    void *slot = (void *)(0x00400000 + mmuSlotCount * 0x00010000);
+    void *slot = (void *)(0x00380000 + mmuSlotCount * 0x00010000);
 
     mmuSlotCount++;
 
@@ -160,7 +159,6 @@ void mmu_init()
 
     mmu_clear_directory(&mmuKernelDirectory);
     mmu_map(&mmuKernelDirectory, &mmuKernelTable, (void *)0x00000000, (void *)0x00000000, 0x00400000, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE);
-    mmu_map(&mmuKernelDirectory, &mmuUserTable, (void *)0x00400000, (void *)0x00400000, 0x00400000, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE);
     mmu_set_directory(&mmuKernelDirectory);
 
     unsigned int i;
@@ -170,7 +168,6 @@ void mmu_init()
 
         memory_copy(&mmuProgramHeaders[i].directory, &mmuKernelDirectory, sizeof (struct mmu_directory));
         memory_copy(&mmuProgramHeaders[i].kernelTable, &mmuKernelTable, sizeof (struct mmu_table));
-        memory_copy(&mmuProgramHeaders[i].userTable, &mmuUserTable, sizeof (struct mmu_table));
 
     }
 
