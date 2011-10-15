@@ -5,8 +5,7 @@
 #include <kernel/arch/x86/isr.h>
 #include <kernel/arch/x86/mmu.h>
 
-static struct mmu_directory mmuKernelDirectory;
-static struct mmu_table mmuKernelTable;
+static struct mmu_header mmuKernelHeader;
 static struct mmu_header mmuProgramHeaders[8];
 unsigned int mmuProgramHeadersCount;
 unsigned int mmuSlotCount;
@@ -67,29 +66,6 @@ static unsigned int *mmu_get_entry(struct mmu_directory *directory, unsigned int
 
 }
 
-void mmu_map(struct mmu_directory *directory, struct mmu_table *table, void *virtualAddress, void *physicalAddress, unsigned int size, unsigned int tableFlags, unsigned int pageFlags)
-{
-
-    unsigned int frame = (unsigned int)virtualAddress / MMU_PAGE_SIZE;
-    unsigned int index = frame / MMU_DIRECTORY_SIZE;
-    unsigned int count = size / MMU_PAGE_SIZE + ((size & 0xFFF) > 0);
-
-    mmu_clear_table(table);
-    directory->tables[index] = (struct mmu_table *)((unsigned int)table | tableFlags);
-
-    unsigned int i;
-
-    for (i = 0; i < count; i++)
-    {
-
-        *mmu_get_entry(directory, frame + i) = (unsigned int)physicalAddress | pageFlags;
-
-        physicalAddress += MMU_PAGE_SIZE;
-
-    }
-
-}
-
 void mmu_map_header(struct mmu_header *header, void *virtualAddress, void *physicalAddress, unsigned int size, unsigned int tableFlags, unsigned int pageFlags)
 {
 
@@ -97,8 +73,8 @@ void mmu_map_header(struct mmu_header *header, void *virtualAddress, void *physi
     unsigned int index = frame / MMU_DIRECTORY_SIZE;
     unsigned int count = size / MMU_PAGE_SIZE + ((size & 0xFFF) > 0);
 
-    mmu_clear_table(&header->programTable);
-    header->directory.tables[index] = (struct mmu_table *)((unsigned int)&header->programTable | tableFlags);
+    mmu_clear_table(&header->table);
+    header->directory.tables[index] = (struct mmu_table *)((unsigned int)&header->table | tableFlags);
 
     unsigned int i;
 
@@ -157,19 +133,19 @@ void mmu_init()
     mmuSlotCount = 0;
     mmuProgramHeadersCount = 8;
 
-    mmu_clear_directory(&mmuKernelDirectory);
-    mmu_map(&mmuKernelDirectory, &mmuKernelTable, (void *)0x00000000, (void *)0x00000000, 0x00400000, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE);
-    mmu_set_directory(&mmuKernelDirectory);
+    mmu_clear_directory(&mmuKernelHeader.directory);
+    mmu_map_header(&mmuKernelHeader, (void *)0x00000000, (void *)0x00000000, 0x00400000, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE);
+    mmu_set_directory(&mmuKernelHeader.directory);
 
     unsigned int i;
 
     for (i = 0; i < mmuProgramHeadersCount; i++)
     {
 
-        memory_copy(&mmuProgramHeaders[i].directory, &mmuKernelDirectory, sizeof (struct mmu_directory));
+        memory_copy(&mmuProgramHeaders[i].directory, &mmuKernelHeader.directory, sizeof (struct mmu_directory));
 
         struct mmu_table *table = mmu_get_table(&mmuProgramHeaders[i].directory, 0);
-        table = &mmuKernelTable;
+        table = &mmuKernelHeader.table;
 
     }
 
