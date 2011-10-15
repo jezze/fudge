@@ -146,7 +146,7 @@ void *mmu_get_slot()
     mmuSlotCount++;
 
     if (mmuSlotCount == 4)
-        mmuSlotCount = 1;
+        mmuSlotCount = 0;
 
     return slot;
 

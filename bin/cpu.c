@@ -44,5 +44,7 @@ void main(int argc, char *argv[])
 
     file_write_format(FILE_STDOUT, "Brand: %s\n", brand);
 
+    call_execute("/shell", 1, 0);
+
 }
 

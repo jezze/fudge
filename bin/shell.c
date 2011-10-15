@@ -40,26 +40,6 @@ static void shell_clear()
 
 }
 
-static void shell_call(int fd, int argc, char *argv[])
-{
-
-    void *address = file_map(fd);
-
-    if (!address)
-    {
-
-        file_write_format(FILE_STDOUT, "Could not map program into memory.\n");
-
-        return;
-
-    }
-
-    void (*func)(int argc, char **argv) = (void (*)(int argc, char **argv))address;
-
-    func(argc, argv);
-
-}
-
 static void shell_interpret(char *command)
 {
 
@@ -74,19 +54,7 @@ static void shell_interpret(char *command)
     string_copy(path, "/");
     string_concat(path, argv[0]);
 
-    int fd = file_open(path);
-
-    if (fd == -1)
-    {
-
-        file_write_format(FILE_STDOUT, "%s: Command not found\n", argv[0]);
-
-        return;
-
-    }
-
-    shell_call(fd, argc, argv);
-    file_close(fd);
+    call_execute(path, argc, argv);
 
 }
 

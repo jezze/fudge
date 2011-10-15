@@ -199,6 +199,53 @@ static void syscall_map(struct syscall_registers *registers)
 static void syscall_execute(struct syscall_registers *registers)
 {
 
+    char *path = (char *)registers->esi;
+    unsigned int argc = registers->ecx;
+    char **argv = (char **)registers->ebx;
+
+    struct vfs_node *node = vfs_find(path);
+
+    if (!(node && node->operations.read))
+    {
+
+        registers->eax = 0;
+
+        return;
+
+    }
+
+    void *address = mmu_get_slot();
+
+    node->operations.read(node, 0x10000, address);
+
+    struct elf_header *header = elf_get_header(address);
+
+    if (!header)
+    {
+
+        registers->eax = 0;
+
+        return;
+
+    }
+
+    struct elf_program_header *programHeader = elf_get_program_header(header);
+
+    struct mmu_header *pHeader = mmu_get_program_header(address);
+
+    mmu_map_header(pHeader, programHeader->virtualAddress, address, 0x10000, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);
+    mmu_set_directory(&pHeader->directory);
+
+    memory_set(header->entry + 0x7FFC, 0, 4); // second argument
+    memory_set(header->entry + 0x7FF8, 0, 4); // first argument argc
+    memory_set(header->entry + 0x7FF8, 1, 1); // first argument argc
+    memory_set(header->entry + 0x7FF7, ((unsigned int)syscall_exit & 0xFF000000) >> 24, 1); // eip
+    memory_set(header->entry + 0x7FF6, ((unsigned int)syscall_exit & 0x00FF0000) >> 16, 1); // eip
+    memory_set(header->entry + 0x7FF5, ((unsigned int)syscall_exit & 0x0000FF00) >> 8, 1); // eip
+    memory_set(header->entry + 0x7FF4, ((unsigned int)syscall_exit & 0x000000FF) >> 0, 1); // eip
+
+    registers->eip = (unsigned int)header->entry;
+    registers->useresp = (unsigned int)(header->entry + 0x7FF4); // set esp to eip
     registers->eax = 0;
 
 }

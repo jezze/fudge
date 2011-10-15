@@ -59,7 +59,7 @@ void main(int argc, char *argv[])
     file_write_format(cwd, path);
     file_close(cwd);
 
-    return;
+    call_execute("/shell", 1, 0);
 
 }
 

@@ -13,5 +13,7 @@ void main(int argc, char *argv[])
 
     file_close(fd);
 
+    call_execute("/shell", 1, 0);
+
 }
 

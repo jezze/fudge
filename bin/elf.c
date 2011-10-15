@@ -430,5 +430,7 @@ void main(int argc, char *argv[])
 
     }
 
+    call_execute("/shell", 1, 0);
+
 }
 
