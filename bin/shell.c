@@ -54,7 +54,8 @@ static void shell_interpret(char *command)
     string_copy(path, "/");
     string_concat(path, argv[0]);
 
-    call_execute(path, argc, argv);
+    if (!call_execute(path, argc, argv))
+        file_write_format(FILE_STDOUT, "Could not execute program: %s\n", path);
 
 }
 
