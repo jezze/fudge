@@ -98,25 +98,6 @@ call_info:
     pop ebp
     ret
 
-global call_map
-call_map:
-    push ebp
-    mov ebp, esp
-    push ebx
-    push ecx
-    push esi
-    push edi
-    mov eax, 0x10
-    mov ebx, [ebp + 8]
-    int 0x80
-    pop edi
-    pop esi
-    pop ecx
-    pop ebx
-    mov esp, ebp
-    pop ebp
-    ret
-
 global call_execute
 call_execute:
     push ebp

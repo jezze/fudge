@@ -17,13 +17,6 @@ unsigned int file_info(unsigned int fd, struct file_info *info)
 
 }
 
-void *file_map(unsigned int fd)
-{
-
-    return call_map(fd);
-
-}
-
 int file_open(char *name)
 {
 
