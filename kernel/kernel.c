@@ -68,7 +68,7 @@ void kernel_init(struct kernel_arch *arch)
     vfs_open("/serial");
 
     kernel.arch->set_stack(0x00380000);
-    kernel.arch->enter_usermode(header->entry);
+    kernel.arch->enter_usermode(header->entry, header->entry + 0x7FFF);
 
     for (;;);
 

@@ -97,7 +97,7 @@ cpu_usermode:
     mov es, ax
     mov fs, ax
     mov gs, ax
-    mov eax, esp
+    mov eax, [esp + 8]
     push 0x23
     push eax
     pushf
