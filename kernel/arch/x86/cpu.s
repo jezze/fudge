@@ -1,3 +1,33 @@
+global cpu_disable_interrupts
+cpu_disable_interrupts:
+    cli
+    ret
+
+global cpu_enable_interrupts
+cpu_enable_interrupts:
+    sti
+    ret
+
+global cpu_enter_usermode
+cpu_enter_usermode:
+    cli
+    mov ax, 0x23
+    mov ds, ax
+    mov es, ax
+    mov fs, ax
+    mov gs, ax
+    mov eax, [esp + 8]
+    push 0x23
+    push eax
+    pushf
+    pop eax
+    or eax, 0x200
+    push eax
+    push 0x1B
+    mov eax, [esp + 20]
+    push eax
+    iret
+
 global cpu_get_cr0
 cpu_get_cr0:
     mov eax, cr0
@@ -40,16 +70,6 @@ cpu_idle:
     sti
     jmp $
 
-global cpu_interrupts_off
-cpu_interrupts_off:
-    cli
-    ret
-
-global cpu_interrupts_on
-cpu_interrupts_on:
-    sti
-    ret
-
 global cpu_set_cr0
 cpu_set_cr0:
     mov eax, [esp + 4]
@@ -88,24 +108,4 @@ cpu_set_stack:
     mov esp, eax
     push ecx
     ret
-
-global cpu_usermode
-cpu_usermode:
-    cli
-    mov ax, 0x23
-    mov ds, ax
-    mov es, ax
-    mov fs, ax
-    mov gs, ax
-    mov eax, [esp + 8]
-    push 0x23
-    push eax
-    pushf
-    pop eax
-    or eax, 0x200
-    push eax
-    push 0x1B
-    mov eax, [esp + 20]
-    push eax
-    iret
 

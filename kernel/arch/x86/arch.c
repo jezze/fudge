@@ -16,7 +16,7 @@ static struct kernel_arch arch;
 void arch_reboot()
 {
 
-    cpu_interrupts_off();
+    cpu_disable_interrupts();
 
     /*
     unsigned char ready = 0x02;
@@ -48,9 +48,9 @@ void arch_init(struct mboot_info *header, unsigned int magic, unsigned int stack
 {
 
     arch.setup = arch_setup;
-    arch.disable_interrupts = cpu_interrupts_off;
-    arch.enable_interrupts = cpu_interrupts_on;
-    arch.enter_usermode = cpu_usermode;
+    arch.disable_interrupts = cpu_disable_interrupts;
+    arch.enable_interrupts = cpu_enable_interrupts;
+    arch.enter_usermode = cpu_enter_usermode;
     arch.set_stack = tss_set_stack;
     arch.register_irq = irq_register_handler;
     arch.unregister_irq = irq_unregister_handler;
