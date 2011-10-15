@@ -8,8 +8,8 @@
 static struct mmu_directory mmuKernelDirectory;
 static struct mmu_table mmuKernelTable;
 static struct mmu_table mmuUserTable;
-static struct mmu_header mmuProgramHeaders[16];
-
+static struct mmu_header mmuProgramHeaders[8];
+unsigned int mmuProgramHeadersCount;
 unsigned int mmuSlotCount;
 
 static void mmu_handler(struct isr_registers *registers)
@@ -145,7 +145,7 @@ void *mmu_get_slot()
 
     mmuSlotCount++;
 
-    if (mmuSlotCount == 4)
+    if (mmuSlotCount == mmuProgramHeadersCount)
         mmuSlotCount = 0;
 
     return slot;
@@ -156,6 +156,7 @@ void mmu_init()
 {
 
     mmuSlotCount = 0;
+    mmuProgramHeadersCount = 8;
 
     mmu_clear_directory(&mmuKernelDirectory);
     mmu_map(&mmuKernelDirectory, &mmuKernelTable, (void *)0x00000000, (void *)0x00000000, 0x00400000, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE);
@@ -164,7 +165,7 @@ void mmu_init()
 
     unsigned int i;
 
-    for (i = 0; i < 16; i++)
+    for (i = 0; i < mmuProgramHeadersCount; i++)
     {
 
         memory_copy(&mmuProgramHeaders[i].directory, &mmuKernelDirectory, sizeof (struct mmu_directory));
