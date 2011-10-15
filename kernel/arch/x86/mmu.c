@@ -159,7 +159,7 @@ void mmu_init()
 
     mmu_clear_directory(&mmuKernelDirectory);
     mmu_map(&mmuKernelDirectory, &mmuKernelTable, (void *)0x00000000, (void *)0x00000000, 0x00400000, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);
-    mmu_map(&mmuKernelDirectory, &mmuUserTable, (void *)0x00400000, (void *)0x00400000, 0x00400000, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);
+    mmu_map(&mmuKernelDirectory, &mmuUserTable, (void *)0x00400000, (void *)0x00400000, 0x00400000, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE);
     mmu_set_directory(&mmuKernelDirectory);
 
     unsigned int i;
