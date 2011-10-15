@@ -37,23 +37,12 @@ void kernel_unregister_irq(unsigned int index)
 
 }
 
-void kernel_init(struct kernel_arch *arch)
+static void kernel_init_shell()
 {
-
-    log_init();
-
-    kernel.arch = arch;
-    kernel.arch->setup(kernel.arch);
-    kernel.arch->enable_interrupts();
-
-    vfs_init();
-    initrd_init(kernel.arch->initrdAddress);
-    modules_init();
-
-    struct vfs_node *node = vfs_find("/shell");
 
     void *address = mmu_get_slot();
 
+    struct vfs_node *node = vfs_find("/shell");
     node->operations.read(node, 0x10000, address);
 
     struct elf_header *header = elf_get_header(address);
@@ -67,8 +56,25 @@ void kernel_init(struct kernel_arch *arch)
     vfs_open("/tty");
     vfs_open("/serial");
 
-    kernel.arch->set_stack(0x00340000);
     kernel.arch->enter_usermode(header->entry, header->entry + 0x7FFF);
+
+}
+
+void kernel_init(struct kernel_arch *arch)
+{
+
+    log_init();
+
+    kernel.arch = arch;
+    kernel.arch->setup(kernel.arch);
+    kernel.arch->enable_interrupts();
+
+    vfs_init();
+    initrd_init(kernel.arch->initrdAddress);
+    modules_init();
+
+    kernel.arch->set_stack(0x00340000);
+    kernel_init_shell();
 
     for (;;);
 
