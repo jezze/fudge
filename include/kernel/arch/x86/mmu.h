@@ -49,8 +49,6 @@ struct mmu_header
 {
 
     struct mmu_directory directory;
-    struct mmu_table kernelTable;
-    struct mmu_table userTable;
     struct mmu_table programTable;
 
 };

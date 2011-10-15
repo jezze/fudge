@@ -167,7 +167,9 @@ void mmu_init()
     {
 
         memory_copy(&mmuProgramHeaders[i].directory, &mmuKernelDirectory, sizeof (struct mmu_directory));
-        memory_copy(&mmuProgramHeaders[i].kernelTable, &mmuKernelTable, sizeof (struct mmu_table));
+
+        struct mmu_table *table = mmu_get_table(&mmuProgramHeaders[i].directory, 0);
+        table = &mmuKernelTable;
 
     }
 
