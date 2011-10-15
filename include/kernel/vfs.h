@@ -40,6 +40,7 @@ struct vfs_filesystem
 };
 
 extern void vfs_register_filesystem(struct vfs_filesystem *filesystem);
+extern struct vfs_node *vfs_find(char *path);
 extern unsigned int vfs_open(char *path);
 extern void vfs_close(unsigned int index);
 extern struct vfs_descriptor *vfs_get_descriptor(unsigned int index);

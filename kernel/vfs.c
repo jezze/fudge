@@ -29,10 +29,17 @@ void vfs_register_filesystem(struct vfs_filesystem *filesystem)
 
 }
 
+struct vfs_node *vfs_find(char *path)
+{
+
+    return vfsFilesystem.lookup(&vfsFilesystem, path);
+
+}
+
 unsigned int vfs_open(char *path)
 {
 
-    struct vfs_node *node = vfsFilesystem.lookup(&vfsFilesystem, path);
+    struct vfs_node *node = vfs_find(path);
 
     if (!node)
         return -1;
