@@ -110,13 +110,6 @@ struct mmu_header *mmu_get_program_header()
 
 }
 
-void *mmu_get_slot()
-{
-
-    return mmuProgramHeaders[0].address;
-
-}
-
 void mmu_init()
 {
 
