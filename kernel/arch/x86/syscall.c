@@ -55,7 +55,7 @@ static void syscall_open(struct syscall_registers *registers)
 
     struct runtime_task *task = runtime_get_running_task();    
 
-    registers->eax = runtime_add_descriptor(task, node);
+    registers->eax = task->add_descriptor(task, node);
 
 }
 
@@ -66,7 +66,7 @@ static void syscall_close(struct syscall_registers *registers)
 
     struct runtime_task *task = runtime_get_running_task();    
 
-    runtime_remove_descriptor(task, fd);
+    task->remove_descriptor(task, fd);
 
 }
 
@@ -79,7 +79,7 @@ static void syscall_read(struct syscall_registers *registers)
 
     struct runtime_task *task = runtime_get_running_task();    
 
-    struct vfs_node *node = runtime_get_descriptor(task, fd)->node;
+    struct vfs_node *node = task->get_descriptor(task, fd)->node;
 
     if (!(node && node->operations.read))
     {
@@ -103,7 +103,7 @@ static void syscall_write(struct syscall_registers *registers)
 
     struct runtime_task *task = runtime_get_running_task();    
 
-    struct vfs_node *node = runtime_get_descriptor(task, fd)->node;
+    struct vfs_node *node = task->get_descriptor(task, fd)->node;
 
     if (!(node && node->operations.write))
     {
@@ -126,7 +126,7 @@ static void syscall_info(struct syscall_registers *registers)
     
     struct runtime_task *task = runtime_get_running_task();
 
-    struct vfs_node *node = runtime_get_descriptor(task, fd)->node;
+    struct vfs_node *node = task->get_descriptor(task, fd)->node;
 
     if (!node)
     {

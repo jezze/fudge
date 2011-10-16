@@ -58,9 +58,9 @@ static void kernel_init_shell()
 
     struct runtime_task *task = runtime_get_running_task();
 
-    runtime_add_descriptor(task, sin);
-    runtime_add_descriptor(task, sout);
-    runtime_add_descriptor(task, serror);
+    task->add_descriptor(task, sin);
+    task->add_descriptor(task, sout);
+    task->add_descriptor(task, serror);
 
     kernel.arch->enter_usermode(header->entry, programHeader->virtualAddress + 0xFFF4);
 
@@ -78,6 +78,7 @@ void kernel_init(struct kernel_arch *arch)
     vfs_init();
     initrd_init(kernel.arch->initrdAddress);
     modules_init();
+    runtime_init();
 
     kernel.arch->set_stack(arch->stackAddress);
     kernel_init_shell();
