@@ -55,7 +55,18 @@ static void syscall_open(struct syscall_registers *registers)
 
     struct runtime_task *task = runtime_get_running_task();    
 
-    registers->eax = task->add_descriptor(task, node);
+    struct vfs_descriptor *descriptor = task->add_descriptor(task, node);
+
+    if (!descriptor)
+    {
+
+        registers->eax = -1;
+
+        return;
+
+    }
+
+    registers->eax = descriptor->index;
 
 }
 

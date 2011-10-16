@@ -25,6 +25,7 @@ struct vfs_node
 struct vfs_descriptor
 {
 
+    unsigned int index;
     struct vfs_node *node;
     unsigned int permissions;
 

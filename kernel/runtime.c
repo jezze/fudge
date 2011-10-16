@@ -15,7 +15,7 @@ struct runtime_task *runtime_get_running_task()
 
 }
 
-static unsigned int runtime_add_descriptor(struct runtime_task *task, struct vfs_node *node)
+static struct vfs_descriptor *runtime_add_descriptor(struct runtime_task *task, struct vfs_node *node)
 {
 
     unsigned int i;
@@ -26,16 +26,17 @@ static unsigned int runtime_add_descriptor(struct runtime_task *task, struct vfs
         if (!task->descriptors[i].node)
         {
 
+            task->descriptors[i].index = i;
             task->descriptors[i].node = node;
             task->descriptors[i].permissions = 0;
 
-            return i;
+            return &task->descriptors[i];
 
         }
 
     }
 
-    return -1;
+    return 0;
 
 }
 
