@@ -56,7 +56,7 @@ static void runtime_remove_descriptor(struct runtime_task *task, unsigned int in
 void runtime_init()
 {
 
-    unsigned int i = 0;
+    unsigned int i;
 
     for (i = 0; i < 8; i++)
     {
