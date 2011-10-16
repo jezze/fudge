@@ -142,6 +142,7 @@ void mmu_init()
     for (i = 0; i < mmuProgramHeadersCount; i++)
     {
 
+        mmuProgramHeaders[i].address = (void *)(0x00300000 + i * 0x10000);
         memory_copy(&mmuProgramHeaders[i].directory, &mmuKernelHeader.directory, sizeof (struct mmu_directory));
 
         struct mmu_table *table = mmu_get_table(&mmuProgramHeaders[i].directory, 0);

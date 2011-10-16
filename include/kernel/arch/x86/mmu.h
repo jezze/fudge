@@ -48,6 +48,7 @@ struct mmu_directory
 struct mmu_header
 {
 
+    void *address;
     struct mmu_directory directory;
     struct mmu_table table;
 
