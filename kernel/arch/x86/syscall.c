@@ -129,6 +129,8 @@ static void syscall_execute(struct syscall_registers *registers)
     unsigned int argc = registers->ecx;
     char **argv = (char **)registers->ebx;
 
+    struct mmu_header *pHeader = mmu_get_program_header();
+
     struct vfs_node *node = vfs_find(path);
 
     if (!(node && node->operations.read))
@@ -140,11 +142,9 @@ static void syscall_execute(struct syscall_registers *registers)
 
     }
 
-    void *address = mmu_get_slot();
+    node->operations.read(node, 0x10000, pHeader->address);
 
-    node->operations.read(node, 0x10000, address);
-
-    struct elf_header *header = elf_get_header(address);
+    struct elf_header *header = elf_get_header(pHeader->address);
 
     if (!header)
     {
@@ -156,10 +156,9 @@ static void syscall_execute(struct syscall_registers *registers)
     }
 
     struct elf_program_header *programHeader = elf_get_program_header(header);
-    struct mmu_header *pHeader = mmu_get_program_header(address);
 
-    char **sa = address + 0xFC00;
-    void *ss = address + 0xFD00;
+    char **sa = pHeader->address + 0xFC00;
+    void *ss = pHeader->address + 0xFD00;
 
     unsigned int i;
     unsigned int offset = 0;
@@ -178,20 +177,20 @@ static void syscall_execute(struct syscall_registers *registers)
 
     argv = programHeader->virtualAddress + 0xFC00;
 
-    memory_set(address + 0xFFFF, ((unsigned int)argv & 0xFF000000) >> 24, 1);
-    memory_set(address + 0xFFFE, ((unsigned int)argv & 0x00FF0000) >> 16, 1);
-    memory_set(address + 0xFFFD, ((unsigned int)argv & 0x0000FF00) >> 8, 1);
-    memory_set(address + 0xFFFC, ((unsigned int)argv & 0x000000FF) >> 0, 1);
-    memory_set(address + 0xFFFB, (argc & 0xFF000000) >> 24, 1);
-    memory_set(address + 0xFFFA, (argc & 0x00FF0000) >> 16, 1);
-    memory_set(address + 0xFFF9, (argc & 0x0000FF00) >> 8, 1);
-    memory_set(address + 0xFFF8, (argc & 0x000000FF) >> 0, 1);
-    memory_set(address + 0xFFF7, (registers->eip & 0xFF000000) >> 24, 1);
-    memory_set(address + 0xFFF6, (registers->eip & 0x00FF0000) >> 16, 1);
-    memory_set(address + 0xFFF5, (registers->eip & 0x0000FF00) >> 8, 1);
-    memory_set(address + 0xFFF4, (registers->eip & 0x000000FF) >> 0, 1);
+    memory_set(pHeader->address + 0xFFFF, ((unsigned int)argv & 0xFF000000) >> 24, 1);
+    memory_set(pHeader->address + 0xFFFE, ((unsigned int)argv & 0x00FF0000) >> 16, 1);
+    memory_set(pHeader->address + 0xFFFD, ((unsigned int)argv & 0x0000FF00) >> 8, 1);
+    memory_set(pHeader->address + 0xFFFC, ((unsigned int)argv & 0x000000FF) >> 0, 1);
+    memory_set(pHeader->address + 0xFFFB, (argc & 0xFF000000) >> 24, 1);
+    memory_set(pHeader->address + 0xFFFA, (argc & 0x00FF0000) >> 16, 1);
+    memory_set(pHeader->address + 0xFFF9, (argc & 0x0000FF00) >> 8, 1);
+    memory_set(pHeader->address + 0xFFF8, (argc & 0x000000FF) >> 0, 1);
+    memory_set(pHeader->address + 0xFFF7, (registers->eip & 0xFF000000) >> 24, 1);
+    memory_set(pHeader->address + 0xFFF6, (registers->eip & 0x00FF0000) >> 16, 1);
+    memory_set(pHeader->address + 0xFFF5, (registers->eip & 0x0000FF00) >> 8, 1);
+    memory_set(pHeader->address + 0xFFF4, (registers->eip & 0x000000FF) >> 0, 1);
 
-    mmu_map_header(pHeader, programHeader->virtualAddress, address, 0x10000, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);
+    mmu_map_header(pHeader, programHeader->virtualAddress, pHeader->address, 0x10000, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);
     mmu_set_directory(&pHeader->directory);
 
     registers->eip = (unsigned int)header->entry;

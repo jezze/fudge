@@ -101,7 +101,7 @@ void mmu_enable()
 
 }
 
-struct mmu_header *mmu_get_program_header(void *address)
+struct mmu_header *mmu_get_program_header()
 {
 
     return &mmuProgramHeaders[0];
