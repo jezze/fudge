@@ -7,8 +7,6 @@
 
 static struct mmu_header mmuKernelHeader;
 static struct mmu_header mmuProgramHeaders[8];
-unsigned int mmuProgramHeadersCount;
-unsigned int mmuSlotCount;
 
 static void mmu_handler(struct isr_registers *registers)
 {
@@ -106,32 +104,19 @@ void mmu_enable()
 struct mmu_header *mmu_get_program_header(void *address)
 {
 
-    unsigned int index = (unsigned int)address - 0x00300000;
-    index = index / 0x00010000;
-
-    return &mmuProgramHeaders[index];
+    return &mmuProgramHeaders[0];
 
 }
 
 void *mmu_get_slot()
 {
 
-    void *slot = (void *)(0x00300000 + mmuSlotCount * 0x00010000);
-
-    mmuSlotCount++;
-
-    if (mmuSlotCount == mmuProgramHeadersCount)
-        mmuSlotCount = 0;
-
-    return slot;
+    return mmuProgramHeaders[0].address;
 
 }
 
 void mmu_init()
 {
-
-    mmuSlotCount = 0;
-    mmuProgramHeadersCount = 8;
 
     mmu_clear_directory(&mmuKernelHeader.directory);
     mmu_map_header(&mmuKernelHeader, (void *)0x00000000, (void *)0x00000000, 0x00400000, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE);
@@ -139,7 +124,7 @@ void mmu_init()
 
     unsigned int i;
 
-    for (i = 0; i < mmuProgramHeadersCount; i++)
+    for (i = 0; i < 8; i++)
     {
 
         mmuProgramHeaders[i].address = (void *)(0x00300000 + i * 0x10000);
