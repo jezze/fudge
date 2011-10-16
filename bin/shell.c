@@ -71,14 +71,12 @@ static void shell_handle_input(char c)
 
         case '\b':
 
-            if (shell_stack_pop())
-            {
+            if (!shell_stack_pop())
+                break;
 
-                file_write_byte(FILE_STDOUT, '\b');
-                file_write_byte(FILE_STDOUT, ' ');
-                file_write_byte(FILE_STDOUT, '\b');
-
-             }
+            file_write_byte(FILE_STDOUT, '\b');
+            file_write_byte(FILE_STDOUT, ' ');
+            file_write_byte(FILE_STDOUT, '\b');
 
             break;
 
