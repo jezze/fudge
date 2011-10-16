@@ -106,7 +106,7 @@ void mmu_enable()
 struct mmu_header *mmu_get_program_header(void *address)
 {
 
-    unsigned int index = (unsigned int)address - 0x00380000;
+    unsigned int index = (unsigned int)address - 0x00300000;
     index = index / 0x00010000;
 
     return &mmuProgramHeaders[index];
@@ -116,7 +116,7 @@ struct mmu_header *mmu_get_program_header(void *address)
 void *mmu_get_slot()
 {
 
-    void *slot = (void *)(0x00380000 + mmuSlotCount * 0x00010000);
+    void *slot = (void *)(0x00300000 + mmuSlotCount * 0x00010000);
 
     mmuSlotCount++;
 
