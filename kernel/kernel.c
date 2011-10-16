@@ -73,7 +73,7 @@ void kernel_init(struct kernel_arch *arch)
     initrd_init(kernel.arch->initrdAddress);
     modules_init();
 
-    kernel.arch->set_stack(0x00340000);
+    kernel.arch->set_stack(arch->stackAddress);
     kernel_init_shell();
 
     for (;;);
