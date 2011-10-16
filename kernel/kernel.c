@@ -1,12 +1,9 @@
-#include <lib/elf.h>
 #include <kernel/vfs.h>
 #include <kernel/modules.h>
 #include <kernel/initrd.h>
 #include <kernel/kernel.h>
 #include <kernel/log.h>
 #include <kernel/runtime.h>
-#include <kernel/arch/x86/mmu.h>
-#include <modules/elf/elf.h>
 
 static struct kernel kernel;
 
