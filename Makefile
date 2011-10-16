@@ -68,6 +68,7 @@ kernel: arch-${ARCH} modules
 	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_KERNEL}/kernel.c -o ${DIR_SOURCE_KERNEL}/kernel.o
 	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_KERNEL}/log.c -o ${DIR_SOURCE_KERNEL}/log.o
 	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_KERNEL}/modules.c -o ${DIR_SOURCE_KERNEL}/modules.o
+	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_KERNEL}/runtime.c -o ${DIR_SOURCE_KERNEL}/runtime.o
 	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_KERNEL}/vfs.c -o ${DIR_SOURCE_KERNEL}/vfs.o
 	@${LD} ${LDFLAGS} \
 		${DIR_SOURCE_KERNEL}/error.o \
@@ -75,6 +76,7 @@ kernel: arch-${ARCH} modules
 		${DIR_SOURCE_KERNEL}/kernel.o \
 		${DIR_SOURCE_KERNEL}/log.o \
 		${DIR_SOURCE_KERNEL}/modules.o \
+		${DIR_SOURCE_KERNEL}/runtime.o \
 		${DIR_SOURCE_KERNEL}/vfs.o \
 		${DIR_SOURCE_MODULES}/ata/ata.o \
 		${DIR_SOURCE_MODULES}/elf/elf.o \
