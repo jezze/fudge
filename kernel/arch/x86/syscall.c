@@ -4,6 +4,7 @@
 #include <lib/string.h>
 #include <kernel/vfs.h>
 #include <kernel/modules.h>
+#include <kernel/runtime.h>
 #include <kernel/arch/x86/arch.h>
 #include <kernel/arch/x86/isr.h>
 #include <kernel/arch/x86/mmu.h>
@@ -41,7 +42,9 @@ static void syscall_open(struct syscall_registers *registers)
 
     char *path = (char *)registers->esi;
 
-    registers->eax = vfs_open(path);
+    struct runtime_task *task = runtime_get_running_task();    
+
+    registers->eax = runtime_open_descriptor(task, path);
 
 }
 
@@ -50,7 +53,9 @@ static void syscall_close(struct syscall_registers *registers)
 
     unsigned int fd = registers->ebx;
 
-    vfs_close(fd);
+    struct runtime_task *task = runtime_get_running_task();    
+
+    runtime_close_descriptor(task, fd);
 
 }
 
@@ -61,7 +66,9 @@ static void syscall_read(struct syscall_registers *registers)
     char *buffer = (char *)registers->esi;
     unsigned int count = registers->ecx;
 
-    struct vfs_node *node = vfs_get_descriptor(fd)->node;
+    struct runtime_task *task = runtime_get_running_task();    
+
+    struct vfs_node *node = runtime_get_descriptor(task, fd)->node;
 
     if (!(node && node->operations.read))
     {
@@ -83,7 +90,9 @@ static void syscall_write(struct syscall_registers *registers)
     char *buffer = (char *)registers->esi;
     unsigned int count = registers->ecx;
 
-    struct vfs_node *node = vfs_get_descriptor(fd)->node;
+    struct runtime_task *task = runtime_get_running_task();    
+
+    struct vfs_node *node = runtime_get_descriptor(task, fd)->node;
 
     if (!(node && node->operations.write))
     {
@@ -104,7 +113,9 @@ static void syscall_info(struct syscall_registers *registers)
     unsigned int fd = registers->ebx;
     struct file_info *info = (struct file_info *)registers->edi;
     
-    struct vfs_node *node = vfs_get_descriptor(fd)->node;
+    struct runtime_task *task = runtime_get_running_task();
+
+    struct vfs_node *node = runtime_get_descriptor(task, fd)->node;
 
     if (!node)
     {

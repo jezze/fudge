@@ -4,6 +4,7 @@
 #include <kernel/initrd.h>
 #include <kernel/kernel.h>
 #include <kernel/log.h>
+#include <kernel/runtime.h>
 #include <kernel/arch/x86/mmu.h>
 #include <modules/elf/elf.h>
 
@@ -51,9 +52,11 @@ static void kernel_init_shell()
     mmu_map(pHeader, programHeader->virtualAddress, 0x10000, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);
     mmu_set_directory(&pHeader->directory);
 
-    vfs_open("/tty");
-    vfs_open("/tty");
-    vfs_open("/serial");
+    struct runtime_task *task = runtime_get_running_task();
+
+    runtime_open_descriptor(task, "/tty");
+    runtime_open_descriptor(task, "/tty");
+    runtime_open_descriptor(task, "/serial");
 
     kernel.arch->enter_usermode(header->entry, programHeader->virtualAddress + 0xFFF4);
 

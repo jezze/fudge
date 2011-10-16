@@ -3,7 +3,6 @@
 #include <kernel/vfs.h>
 #include <kernel/modules.h>
 
-static struct vfs_descriptor vfsDescriptors[256];
 static struct vfs_filesystem *vfsFilesystems[8];
 static struct vfs_filesystem vfsFilesystem;
 static struct vfs_node vfsRoot;
@@ -33,49 +32,6 @@ struct vfs_node *vfs_find(char *path)
 {
 
     return vfsFilesystem.lookup(&vfsFilesystem, path);
-
-}
-
-unsigned int vfs_open(char *path)
-{
-
-    struct vfs_node *node = vfs_find(path);
-
-    if (!node)
-        return -1;
-
-    unsigned int i;
-
-    for (i = 0; i < 256; i++)
-    {
-
-        if (!vfsDescriptors[i].node)
-        {
-
-            vfsDescriptors[i].node = node;
-            vfsDescriptors[i].permissions = 0;
-
-            return i;
-
-        }
-
-    }
-
-    return -1;
-
-}
-
-void vfs_close(unsigned int index)
-{
-
-    memory_set((void *)&vfsDescriptors[index], 0, sizeof (struct vfs_descriptor));
-
-}
-
-struct vfs_descriptor *vfs_get_descriptor(unsigned int index)
-{
-
-    return &vfsDescriptors[index];
 
 }
 
