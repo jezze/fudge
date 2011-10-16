@@ -317,7 +317,7 @@ void main(int argc, char *argv[])
 {
 
     if (argc < 2)
-        return;
+        call_execute("/shell", 0, 0);
 
     char path[256];
 
@@ -332,7 +332,7 @@ void main(int argc, char *argv[])
     int file = file_open(path);
 
     if (file == -1)
-        return;
+        call_execute("/shell", 0, 0);
 
     file_read(file, 0x4000, (unsigned int *)content);
     file_close(file);
@@ -340,7 +340,7 @@ void main(int argc, char *argv[])
     struct elf_header *header = (struct elf_header *)content;
 
     if (header->identify[0] != ELF_IDENTITY_MAGIC0)
-        return;
+        call_execute("/shell", 0, 0);
 
     if (argc == 2)
     {
@@ -348,7 +348,7 @@ void main(int argc, char *argv[])
         write_header(header);
         write_section_headers(content);
 
-        return;
+        call_execute("/shell", 0, 0);
 
     }
 
@@ -430,7 +430,7 @@ void main(int argc, char *argv[])
 
     }
 
-    call_execute("/shell", 1, 0);
+    call_execute("/shell", 0, 0);
 
 }
 

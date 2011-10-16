@@ -10,7 +10,7 @@ void main(int argc, char *argv[])
     file_write_format(FILE_STDOUT, "Date: %s\n", buffer);
     file_close(fd);
 
-    call_execute("/shell", 1, 0);
+    call_execute("/shell", 0, 0);
 
 }
 

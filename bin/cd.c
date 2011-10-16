@@ -35,7 +35,7 @@ void main(int argc, char *argv[])
         file_write_format(FILE_STDOUT, path);
         file_write_byte(FILE_STDOUT, '\n');
 
-        call_execute("/shell", 1, 0);
+        call_execute("/shell", 0, 0);
 
     }
 
@@ -49,7 +49,7 @@ void main(int argc, char *argv[])
         file_write_format(FILE_STDOUT, "Directory does not exist.\n");
         file_close(new);
 
-        call_execute("/shell", 1, 0);
+        call_execute("/shell", 0, 0);
 
     }
 
@@ -59,7 +59,7 @@ void main(int argc, char *argv[])
     file_write_format(cwd, path);
     file_close(cwd);
 
-    call_execute("/shell", 1, 0);
+    call_execute("/shell", 0, 0);
 
 }
 

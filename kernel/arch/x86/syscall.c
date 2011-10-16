@@ -158,8 +158,8 @@ static void syscall_execute(struct syscall_registers *registers)
     struct elf_program_header *programHeader = elf_get_program_header(header);
     struct mmu_header *pHeader = mmu_get_program_header(address);
 
-//    char **sa = address + 0xFC00;
-//    void *ss = address + 0xFD00;
+    char **sa = address + 0xFC00;
+    void *ss = address + 0xFD00;
 
     unsigned int i;
     unsigned int offset = 0;
@@ -167,14 +167,16 @@ static void syscall_execute(struct syscall_registers *registers)
     for (i = 0; i < argc; i++)
     {
 
-//        unsigned int length = string_length(argv[i]);
-//        string_copy(ss + offset, argv[i]);
+        sa[i] = programHeader->virtualAddress + 0xFD00 + offset;
 
-//        offset += length + 2;
+        unsigned int length = string_length(argv[i]);
+        string_copy(ss + offset, argv[i]);
+
+        offset += length + 2;
 
     }
 
-    argv = programHeader->virtualAddress + 0xFD00;
+    argv = programHeader->virtualAddress + 0xFC00;
 
     memory_set(address + 0xFFFF, ((unsigned int)argv & 0xFF000000) >> 24, 1);
     memory_set(address + 0xFFFE, ((unsigned int)argv & 0x00FF0000) >> 16, 1);

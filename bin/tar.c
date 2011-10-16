@@ -8,7 +8,7 @@ void main(int argc, char *argv[])
 
         file_write_format(FILE_STDOUT, "You need to supply filename.\n");
 
-        return;
+        call_execute("/shell", 0, 0);
 
     }
 
@@ -71,7 +71,7 @@ void main(int argc, char *argv[])
 
 */
 
-    call_execute("/shell", 1, 0);
+    call_execute("/shell", 0, 0);
 
 }
 

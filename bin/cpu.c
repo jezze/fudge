@@ -7,7 +7,7 @@ void main(int argc, char *argv[])
     // CHECK CPUID
 
     if (!cpu_check_cpuid())
-        return;
+        call_execute("/shell", 0, 0);
 
     // VENDOR
 
@@ -44,7 +44,7 @@ void main(int argc, char *argv[])
 
     file_write_format(FILE_STDOUT, "Brand: %s\n", brand);
 
-    call_execute("/shell", 1, 0);
+    call_execute("/shell", 0, 0);
 
 }
 

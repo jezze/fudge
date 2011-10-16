@@ -31,7 +31,7 @@ void main(int argc, char *argv[])
 
         file_write_format(FILE_STDOUT, "You need to supply filename.\n");
 
-        call_execute("/shell", 1, 0);
+        call_execute("/shell", 0, 0);
 
     }
 
@@ -44,7 +44,7 @@ void main(int argc, char *argv[])
 
         file_write_format(FILE_STDOUT, "File does not exist.\n");
 
-        call_execute("/shell", 1, 0);
+        call_execute("/shell", 0, 0);
 
     }
 
@@ -53,7 +53,7 @@ void main(int argc, char *argv[])
     file_write(FILE_STDOUT, count, buffer);
     file_close(fd);
 
-    call_execute("/shell", 1, 0);
+    call_execute("/shell", 0, 0);
 
 }
 
