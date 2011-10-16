@@ -155,20 +155,21 @@ static void syscall_execute(struct syscall_registers *registers)
 
     }
 
-    memory_set(address + 0xFC03, (registers->eip & 0xFF000000) >> 24, 1);
-    memory_set(address + 0xFC02, (registers->eip & 0x00FF0000) >> 16, 1);
-    memory_set(address + 0xFC01, (registers->eip & 0x0000FF00) >> 8, 1);
-    memory_set(address + 0xFC00, (registers->eip & 0x000000FF) >> 0, 1);
-    memory_set(address + 0xFC07, (argc & 0xFF000000) >> 24, 1);
-    memory_set(address + 0xFC06, (argc & 0x00FF0000) >> 16, 1);
-    memory_set(address + 0xFC05, (argc & 0x0000FF00) >> 8, 1);
-    memory_set(address + 0xFC04, (argc & 0x000000FF) >> 0, 1);
-    memory_set(address + 0xFC08, 0, 4); // second argument
+    void *second = address + 0xFC00;
+    memory_copy(second, argv, argc * 4);
 
-    void *second = address + 0xFC08;
-    memory_copy(second, argv, 0x80);
-
-    // Need to implement a stack push
+    memory_set(address + 0xFFFF, ((unsigned int)second & 0xFF000000) >> 24, 1);
+    memory_set(address + 0xFFFE, ((unsigned int)second & 0x00FF0000) >> 16, 1);
+    memory_set(address + 0xFFFD, ((unsigned int)second & 0x0000FF00) >> 8, 1);
+    memory_set(address + 0xFFFC, ((unsigned int)second & 0x000000FF) >> 0, 1);
+    memory_set(address + 0xFFFB, (argc & 0xFF000000) >> 24, 1);
+    memory_set(address + 0xFFFA, (argc & 0x00FF0000) >> 16, 1);
+    memory_set(address + 0xFFF9, (argc & 0x0000FF00) >> 8, 1);
+    memory_set(address + 0xFFF8, (argc & 0x000000FF) >> 0, 1);
+    memory_set(address + 0xFFF7, (registers->eip & 0xFF000000) >> 24, 1);
+    memory_set(address + 0xFFF6, (registers->eip & 0x00FF0000) >> 16, 1);
+    memory_set(address + 0xFFF5, (registers->eip & 0x0000FF00) >> 8, 1);
+    memory_set(address + 0xFFF4, (registers->eip & 0x000000FF) >> 0, 1);
 
     struct elf_program_header *programHeader = elf_get_program_header(header);
     struct mmu_header *pHeader = mmu_get_program_header(address);
@@ -177,7 +178,7 @@ static void syscall_execute(struct syscall_registers *registers)
     mmu_set_directory(&pHeader->directory);
 
     registers->eip = (unsigned int)header->entry;
-    registers->useresp = (unsigned int)(programHeader->virtualAddress + 0xFC00);
+    registers->useresp = (unsigned int)(programHeader->virtualAddress + 0xFFF4);
     registers->eax = 0;
 
 }

@@ -56,7 +56,7 @@ static void kernel_init_shell()
     vfs_open("/tty");
     vfs_open("/serial");
 
-    kernel.arch->enter_usermode(header->entry, programHeader->virtualAddress + 0xFC00);
+    kernel.arch->enter_usermode(header->entry, programHeader->virtualAddress + 0xFFF4);
 
 }
 
