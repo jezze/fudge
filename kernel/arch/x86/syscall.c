@@ -165,6 +165,11 @@ static void syscall_execute(struct syscall_registers *registers)
     memory_set(address + 0xFC04, (argc & 0x000000FF) >> 0, 1);
     memory_set(address + 0xFC08, 0, 4); // second argument
 
+    void *second = address + 0xFC08;
+    memory_copy(second, argv, 0x80);
+
+    // Need to implement a stack push
+
     struct elf_program_header *programHeader = elf_get_program_header(header);
     struct mmu_header *pHeader = mmu_get_program_header(address);
 
