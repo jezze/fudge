@@ -44,13 +44,6 @@ static void kernel_init_shell()
     struct runtime_task *task = runtime_get_running_task();
     task->load(task, "/shell", 0, 0);
 
-    struct mmu_header *pHeader = mmu_get_program_header();
-    struct elf_header *header = elf_get_header(pHeader->address);
-    struct elf_program_header *programHeader = elf_get_program_header(header);
-
-    mmu_map(pHeader, programHeader->virtualAddress, 0x10000, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);
-    mmu_set_directory(&pHeader->directory);
-
     struct vfs_node *sin = vfs_find("/tty");
     struct vfs_node *sout = vfs_find("/tty");
     struct vfs_node *serror = vfs_find("/serial");
@@ -59,7 +52,7 @@ static void kernel_init_shell()
     task->add_descriptor(task, sout);
     task->add_descriptor(task, serror);
 
-    kernel.arch->enter_usermode(header->entry, programHeader->virtualAddress + 0xFFF4);
+    kernel.arch->enter_usermode(task->eip, task->esp);
 
 }
 

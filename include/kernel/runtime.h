@@ -5,6 +5,8 @@ struct runtime_task
 {
 
     unsigned int running;
+    void *eip;
+    void *esp;
     unsigned int (*load)(struct runtime_task *task, char *path, unsigned int argc, char **argv);
     struct mmu_header *header;
     struct vfs_descriptor descriptors[16];
