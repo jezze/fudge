@@ -5,6 +5,7 @@ struct runtime_task
 {
 
     unsigned int running;
+    unsigned int (*load)(struct runtime_task *task, unsigned int argc, char **argv);
     struct mmu_header *header;
     struct vfs_descriptor descriptors[16];
     struct vfs_descriptor *(*add_descriptor)(struct runtime_task *task, struct vfs_node *node);

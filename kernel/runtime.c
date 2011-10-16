@@ -15,6 +15,27 @@ struct runtime_task *runtime_get_running_task()
 
 }
 
+static unsigned int runtime_load(struct runtime_task *task, unsigned int argc, char **argv)
+{
+
+    struct mmu_header *pHeader = mmu_get_program_header();
+
+    struct vfs_node *node = vfs_find(argv[0]);
+
+    if (!(node && node->operations.read))
+        return 0;
+
+    node->operations.read(node, 0x10000, pHeader->address);
+
+    struct elf_header *header = elf_get_header(pHeader->address);
+
+    if (!header)
+        return 0;
+
+    return 1;
+
+}
+
 static struct vfs_descriptor *runtime_add_descriptor(struct runtime_task *task, struct vfs_node *node)
 {
 
@@ -63,6 +84,7 @@ void runtime_init()
     {
 
         runtimeTasks[i].running = 0;
+        runtimeTasks[i].load = runtime_load;
         runtimeTasks[i].add_descriptor = runtime_add_descriptor;
         runtimeTasks[i].get_descriptor = runtime_get_descriptor;
         runtimeTasks[i].remove_descriptor = runtime_remove_descriptor;
