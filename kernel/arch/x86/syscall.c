@@ -163,7 +163,15 @@ static void syscall_execute(struct syscall_registers *registers)
     char **argv = (char **)registers->ebx;
 
     struct runtime_task *task = runtime_get_running_task();
-    task->load(task, path, argc, argv);
+
+    if (!task->load(task, path, argc, argv))
+    {
+
+        registers->eax = 0;
+
+        return;
+
+    }
 
     struct mmu_header *pHeader = mmu_get_program_header();
     struct elf_header *header = elf_get_header(pHeader->address);
