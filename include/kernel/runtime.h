@@ -4,6 +4,7 @@
 struct runtime_task
 {
 
+    unsigned int running;
     struct mmu_header *header;
     struct vfs_descriptor descriptors[16];
     unsigned int (*add_descriptor)(struct runtime_task *task, struct vfs_node *node);

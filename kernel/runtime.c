@@ -56,9 +56,17 @@ static void runtime_remove_descriptor(struct runtime_task *task, unsigned int in
 void runtime_init()
 {
 
-    runtimeTasks[0].add_descriptor = runtime_add_descriptor;
-    runtimeTasks[0].get_descriptor = runtime_get_descriptor;
-    runtimeTasks[0].remove_descriptor = runtime_remove_descriptor;
+    unsigned int i = 0;
+
+    for (i = 0; i < 8; i++)
+    {
+
+        runtimeTasks[i].running = 0;
+        runtimeTasks[i].add_descriptor = runtime_add_descriptor;
+        runtimeTasks[i].get_descriptor = runtime_get_descriptor;
+        runtimeTasks[i].remove_descriptor = runtime_remove_descriptor;
+
+    }
 
 }
 
