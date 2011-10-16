@@ -190,7 +190,7 @@ static void syscall_execute(struct syscall_registers *registers)
     memory_set(pHeader->address + 0xFFF5, (registers->eip & 0x0000FF00) >> 8, 1);
     memory_set(pHeader->address + 0xFFF4, (registers->eip & 0x000000FF) >> 0, 1);
 
-    mmu_map_header(pHeader, programHeader->virtualAddress, pHeader->address, 0x10000, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);
+    mmu_map(pHeader, programHeader->virtualAddress, 0x10000, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);
     mmu_set_directory(&pHeader->directory);
 
     registers->eip = (unsigned int)header->entry;

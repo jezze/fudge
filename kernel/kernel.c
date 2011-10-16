@@ -48,7 +48,7 @@ static void kernel_init_shell()
     struct elf_header *header = elf_get_header(pHeader->address);
     struct elf_program_header *programHeader = elf_get_program_header(header);
 
-    mmu_map_header(pHeader, programHeader->virtualAddress, pHeader->address, 0x10000, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);
+    mmu_map(pHeader, programHeader->virtualAddress, 0x10000, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);
     mmu_set_directory(&pHeader->directory);
 
     vfs_open("/tty");
