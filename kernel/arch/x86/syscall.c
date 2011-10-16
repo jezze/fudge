@@ -159,19 +159,19 @@ static void syscall_execute(struct syscall_registers *registers)
 
     struct mmu_header *pHeader = mmu_get_program_header(address);
 
+    memory_set(address + 0xFFFC, 0, 4); // second argument
+    memory_set(address + 0xFFF8, 0, 4); // first argument argc
+    memory_set(address + 0xFFF8, 1, 1); // first argument argc
+    memory_set(address + 0xFFF7, (registers->eip & 0xFF000000) >> 24, 1); // eip
+    memory_set(address + 0xFFF6, (registers->eip & 0x00FF0000) >> 16, 1); // eip
+    memory_set(address + 0xFFF5, (registers->eip & 0x0000FF00) >> 8, 1); // eip
+    memory_set(address + 0xFFF4, (registers->eip & 0x000000FF) >> 0, 1); // eip
+
     mmu_map_header(pHeader, programHeader->virtualAddress, address, 0x10000, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);
     mmu_set_directory(&pHeader->directory);
 
-    memory_set(header->entry + 0x7FFC, 0, 4); // second argument
-    memory_set(header->entry + 0x7FF8, 0, 4); // first argument argc
-    memory_set(header->entry + 0x7FF8, 1, 1); // first argument argc
-    memory_set(header->entry + 0x7FF7, (registers->eip & 0xFF000000) >> 24, 1); // eip
-    memory_set(header->entry + 0x7FF6, (registers->eip & 0x00FF0000) >> 16, 1); // eip
-    memory_set(header->entry + 0x7FF5, (registers->eip & 0x0000FF00) >> 8, 1); // eip
-    memory_set(header->entry + 0x7FF4, (registers->eip & 0x000000FF) >> 0, 1); // eip
-
     registers->eip = (unsigned int)header->entry;
-    registers->useresp = (unsigned int)(header->entry + 0x7FF4); // set esp to eip
+    registers->useresp = (unsigned int)(programHeader->virtualAddress + 0xFFF4); // set esp to eip
     registers->eax = 0;
 
 }
