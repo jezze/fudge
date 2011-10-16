@@ -15,12 +15,12 @@ struct runtime_task *runtime_get_running_task()
 
 }
 
-static unsigned int runtime_load(struct runtime_task *task, unsigned int argc, char **argv)
+static unsigned int runtime_load(struct runtime_task *task, char *path, unsigned int argc, char **argv)
 {
 
     struct mmu_header *pHeader = mmu_get_program_header();
 
-    struct vfs_node *node = vfs_find(argv[0]);
+    struct vfs_node *node = vfs_find(path);
 
     if (!(node && node->operations.read))
         return 0;

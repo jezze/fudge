@@ -41,11 +41,10 @@ void kernel_unregister_irq(unsigned int index)
 static void kernel_init_shell()
 {
 
+    struct runtime_task *task = runtime_get_running_task();
+    task->load(task, "/shell", 0, 0);
+
     struct mmu_header *pHeader = mmu_get_program_header();
-
-    struct vfs_node *node = vfs_find("/shell");
-    node->operations.read(node, 0x10000, pHeader->address);
-
     struct elf_header *header = elf_get_header(pHeader->address);
     struct elf_program_header *programHeader = elf_get_program_header(header);
 
@@ -55,8 +54,6 @@ static void kernel_init_shell()
     struct vfs_node *sin = vfs_find("/tty");
     struct vfs_node *sout = vfs_find("/tty");
     struct vfs_node *serror = vfs_find("/serial");
-
-    struct runtime_task *task = runtime_get_running_task();
 
     task->add_descriptor(task, sin);
     task->add_descriptor(task, sout);

@@ -163,34 +163,10 @@ static void syscall_execute(struct syscall_registers *registers)
     char **argv = (char **)registers->ebx;
 
     struct runtime_task *task = runtime_get_running_task();
-    //task->load(task, argc, argv);
+    task->load(task, path, argc, argv);
 
     struct mmu_header *pHeader = mmu_get_program_header();
-
-    struct vfs_node *node = vfs_find(path);
-
-    if (!(node && node->operations.read))
-    {
-
-        registers->eax = 0;
-
-        return;
-
-    }
-
-    node->operations.read(node, 0x10000, pHeader->address);
-
     struct elf_header *header = elf_get_header(pHeader->address);
-
-    if (!header)
-    {
-
-        registers->eax = 0;
-
-        return;
-
-    }
-
     struct elf_program_header *programHeader = elf_get_program_header(header);
 
     char **sa = pHeader->address + 0xFC00;
