@@ -15,13 +15,8 @@ struct runtime_task *runtime_get_running_task()
 
 }
 
-unsigned int runtime_open_descriptor(struct runtime_task *task, char *path)
+unsigned int runtime_add_descriptor(struct runtime_task *task, struct vfs_node *node)
 {
-
-    struct vfs_node *node = vfs_find(path);
-
-    if (!node)
-        return -1;
 
     unsigned int i;
 
@@ -44,7 +39,7 @@ unsigned int runtime_open_descriptor(struct runtime_task *task, char *path)
 
 }
 
-void runtime_close_descriptor(struct runtime_task *task, unsigned int index)
+void runtime_remove_descriptor(struct runtime_task *task, unsigned int index)
 {
 
     memory_set((void *)&task->descriptors[index], 0, sizeof (struct vfs_descriptor));

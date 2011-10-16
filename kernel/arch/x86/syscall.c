@@ -42,9 +42,20 @@ static void syscall_open(struct syscall_registers *registers)
 
     char *path = (char *)registers->esi;
 
+    struct vfs_node *node = vfs_find(path);
+
+    if (!node)
+    {
+
+        registers->eax = -1;
+
+        return;
+
+    }
+
     struct runtime_task *task = runtime_get_running_task();    
 
-    registers->eax = runtime_open_descriptor(task, path);
+    registers->eax = runtime_add_descriptor(task, node);
 
 }
 
@@ -55,7 +66,7 @@ static void syscall_close(struct syscall_registers *registers)
 
     struct runtime_task *task = runtime_get_running_task();    
 
-    runtime_close_descriptor(task, fd);
+    runtime_remove_descriptor(task, fd);
 
 }
 
