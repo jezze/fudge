@@ -5,6 +5,7 @@ struct runtime_task
 {
 
     unsigned int pid;
+    unsigned int parentpid;
     unsigned int running;
     unsigned int used;
     void *eip;

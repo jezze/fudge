@@ -165,6 +165,7 @@ static void syscall_execute(struct syscall_registers *registers)
     oldtask->ebp = (void *)registers->ebp;
 
     struct runtime_task *task = runtime_get_free_task();
+    task->parentpid = oldtask->pid;
 
     if (!task->load(task, path, argc, argv))
     {
@@ -190,7 +191,7 @@ static void syscall_exit(struct syscall_registers *registers)
     struct runtime_task *oldtask = runtime_get_running_task();
     oldtask->unload(oldtask);
 
-    struct runtime_task *task = runtime_get_task(0);
+    struct runtime_task *task = runtime_get_task(oldtask->parentpid);
 
     runtime_activate(task);
 
