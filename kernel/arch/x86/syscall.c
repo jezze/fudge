@@ -170,6 +170,8 @@ static void syscall_execute(struct syscall_registers *registers)
 
     }
 
+    runtime_activate(task);
+
     registers->eip = (unsigned int)task->eip;
     registers->useresp = (unsigned int)task->esp;
     registers->eax = 0;
@@ -178,6 +180,8 @@ static void syscall_execute(struct syscall_registers *registers)
 
 static void syscall_exit(struct syscall_registers *registers)
 {
+
+    struct runtime_task *task = runtime_get_running_task();
 
     registers->eax = 0;
 

@@ -60,6 +60,22 @@ struct runtime_task *runtime_get_free_task()
 
 }
 
+void runtime_activate(struct runtime_task *task)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < 8; i++)
+        runtimeTasks[i].running = 0;
+
+    struct mmu_header *header = mmu_get_program_header(task->pid);
+
+    mmu_set_directory(&header->directory);
+
+    task->running = 1;
+
+}
+
 static unsigned int runtime_load(struct runtime_task *task, char *path, unsigned int argc, char **argv)
 {
 
@@ -114,13 +130,19 @@ static unsigned int runtime_load(struct runtime_task *task, char *path, unsigned
     memory_set(header->address + 0xFFF4, (eip & 0x000000FF) >> 0, 1);
 
     mmu_map(header, virtual, 0x10000, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);
-    mmu_set_directory(&header->directory);
 
     task->used = 1;
     task->eip = entry;
     task->esp = virtual + 0xFFF4;
 
     return 1;
+
+}
+
+static void unload(struct runtime_task *task)
+{
+
+    task->used = 0;
 
 }
 
