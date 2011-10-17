@@ -114,7 +114,6 @@ static unsigned int runtime_load(struct runtime_task *task, char *path, unsigned
     }
 
     unsigned int argvn = (unsigned int)virtual + 0xFC00;
-    unsigned int eip = 0;
 
     memory_set(header->address + 0xFFFF, ((unsigned int)argvn & 0xFF000000) >> 24, 1);
     memory_set(header->address + 0xFFFE, ((unsigned int)argvn & 0x00FF0000) >> 16, 1);
@@ -124,10 +123,10 @@ static unsigned int runtime_load(struct runtime_task *task, char *path, unsigned
     memory_set(header->address + 0xFFFA, (argc & 0x00FF0000) >> 16, 1);
     memory_set(header->address + 0xFFF9, (argc & 0x0000FF00) >> 8, 1);
     memory_set(header->address + 0xFFF8, (argc & 0x000000FF) >> 0, 1);
-    memory_set(header->address + 0xFFF7, (eip & 0xFF000000) >> 24, 1);
-    memory_set(header->address + 0xFFF6, (eip & 0x00FF0000) >> 16, 1);
-    memory_set(header->address + 0xFFF5, (eip & 0x0000FF00) >> 8, 1);
-    memory_set(header->address + 0xFFF4, (eip & 0x000000FF) >> 0, 1);
+    memory_set(header->address + 0xFFF7, ((unsigned int)entry & 0xFF000000) >> 24, 1);
+    memory_set(header->address + 0xFFF6, ((unsigned int)entry & 0x00FF0000) >> 16, 1);
+    memory_set(header->address + 0xFFF5, ((unsigned int)entry & 0x0000FF00) >> 8, 1);
+    memory_set(header->address + 0xFFF4, ((unsigned int)entry & 0x000000FF) >> 0, 1);
 
     mmu_map(header, virtual, 0x10000, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);
 
