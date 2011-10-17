@@ -5,7 +5,7 @@
 
 static struct elf_module elfModule;
 
-struct elf_header *elf_get_header(void *address)
+static struct elf_header *elf_get_header(void *address)
 {
 
     struct elf_header *header = (struct elf_header *)address;
@@ -26,7 +26,7 @@ struct elf_header *elf_get_header(void *address)
 
 }
 
-struct elf_program_header *elf_get_program_header(struct elf_header *header)
+static struct elf_program_header *elf_get_program_header(struct elf_header *header)
 {
 
     void *address = header;
@@ -36,8 +36,37 @@ struct elf_program_header *elf_get_program_header(struct elf_header *header)
 
 }
 
+void *elf_get_entry(void *address)
+{
+
+    struct elf_header *header = elf_get_header(address);
+
+    if (!header)
+        return 0;
+
+    return header->entry;
+
+}
+
+void *elf_get_virtual(void *address)
+{
+
+    struct elf_header *header = elf_get_header(address);
+
+    if (!header)
+        return 0;
+
+    struct elf_program_header *pheader = elf_get_program_header(header);
+
+    return pheader->virtualAddress;
+
+}
+
 void elf_init()
 {
+
+    elfModule.get_entry = elf_get_entry;
+    elfModule.get_virtual = elf_get_virtual;
 
 }
 
