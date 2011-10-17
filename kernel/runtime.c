@@ -80,13 +80,13 @@ static unsigned int runtime_load(struct runtime_task *task, char *path, unsigned
 
     }
 
-    argv = virtual + 0xFC00;
+    unsigned int argvn = (unsigned int)virtual + 0xFC00;
     unsigned int eip = 0;
 
-    memory_set(header->address + 0xFFFF, ((unsigned int)argv & 0xFF000000) >> 24, 1);
-    memory_set(header->address + 0xFFFE, ((unsigned int)argv & 0x00FF0000) >> 16, 1);
-    memory_set(header->address + 0xFFFD, ((unsigned int)argv & 0x0000FF00) >> 8, 1);
-    memory_set(header->address + 0xFFFC, ((unsigned int)argv & 0x000000FF) >> 0, 1);
+    memory_set(header->address + 0xFFFF, ((unsigned int)argvn & 0xFF000000) >> 24, 1);
+    memory_set(header->address + 0xFFFE, ((unsigned int)argvn & 0x00FF0000) >> 16, 1);
+    memory_set(header->address + 0xFFFD, ((unsigned int)argvn & 0x0000FF00) >> 8, 1);
+    memory_set(header->address + 0xFFFC, ((unsigned int)argvn & 0x000000FF) >> 0, 1);
     memory_set(header->address + 0xFFFB, (argc & 0xFF000000) >> 24, 1);
     memory_set(header->address + 0xFFFA, (argc & 0x00FF0000) >> 16, 1);
     memory_set(header->address + 0xFFF9, (argc & 0x0000FF00) >> 8, 1);

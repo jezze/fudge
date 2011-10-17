@@ -6,8 +6,10 @@ struct runtime_task
 
     unsigned int pid;
     unsigned int running;
+    unsigned int used;
     void *eip;
     void *esp;
+    void *ebp;
     unsigned int (*load)(struct runtime_task *task, char *path, unsigned int argc, char **argv);
     struct mmu_header *header;
     struct vfs_descriptor descriptors[16];
