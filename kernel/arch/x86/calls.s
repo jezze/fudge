@@ -106,7 +106,7 @@ call_execute:
     push ecx
     push esi
     push edi
-    mov eax, 0x11
+    mov eax, 0x10
     mov esi, [ebp + 8]
     mov ecx, [ebp + 12]
     mov ebx, [ebp + 16]
@@ -119,7 +119,23 @@ call_execute:
     pop ebp
     ret
 
-
+global call_exit
+call_exit:
+    push ebp
+    mov ebp, esp
+    push ebx
+    push ecx
+    push esi
+    push edi
+    mov eax, 0x11
+    int 0x80
+    pop edi
+    pop esi
+    pop ecx
+    pop ebx
+    mov esp, ebp
+    pop ebp
+    ret
 
 global call_halt
 call_halt:

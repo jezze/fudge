@@ -176,6 +176,13 @@ static void syscall_execute(struct syscall_registers *registers)
 
 }
 
+static void syscall_exit(struct syscall_registers *registers)
+{
+
+    registers->eax = 0;
+
+}
+
 static void syscall_reboot(struct syscall_registers *registers)
 {
 
@@ -192,6 +199,7 @@ void syscall_init()
     syscall_register_handler(SYSCALL_ROUTINE_WRITE, syscall_write);
     syscall_register_handler(SYSCALL_ROUTINE_INFO, syscall_info);
     syscall_register_handler(SYSCALL_ROUTINE_EXECUTE, syscall_execute);
+    syscall_register_handler(SYSCALL_ROUTINE_EXIT, syscall_exit);
     syscall_register_handler(SYSCALL_ROUTINE_REBOOT, syscall_reboot);
 
 }
