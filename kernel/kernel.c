@@ -35,18 +35,6 @@ void kernel_unregister_irq(unsigned int index)
 
 }
 
-static void kernel_init_shell()
-{
-
-    struct runtime_task *task = runtime_get_free_task();
-    task->load(task, "/shell", 0, 0);
-
-    runtime_activate(task);
-
-    kernel.arch->enter_usermode(task->eip, task->esp);
-
-}
-
 void kernel_init(struct kernel_arch *arch)
 {
 
@@ -61,8 +49,13 @@ void kernel_init(struct kernel_arch *arch)
     modules_init();
     runtime_init();
 
+    struct runtime_task *task = runtime_get_free_task();
+
+    task->load(task, "/shell", 0, 0);
+    runtime_activate(task);
+
     kernel.arch->set_stack(arch->stackAddress);
-    kernel_init_shell();
+    kernel.arch->enter_usermode(task->eip, task->esp);
 
     for (;;);
 
