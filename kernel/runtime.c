@@ -139,7 +139,7 @@ static unsigned int runtime_load(struct runtime_task *task, char *path, unsigned
 
 }
 
-static void unload(struct runtime_task *task)
+static void runtime_unload(struct runtime_task *task)
 {
 
     task->used = 0;
@@ -197,6 +197,7 @@ void runtime_init()
         runtimeTasks[i].running = 0;
         runtimeTasks[i].used = 0;
         runtimeTasks[i].load = runtime_load;
+        runtimeTasks[i].unload = runtime_unload;
         runtimeTasks[i].add_descriptor = runtime_add_descriptor;
         runtimeTasks[i].get_descriptor = runtime_get_descriptor;
         runtimeTasks[i].remove_descriptor = runtime_remove_descriptor;
