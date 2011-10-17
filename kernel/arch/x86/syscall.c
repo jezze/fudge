@@ -174,6 +174,7 @@ static void syscall_execute(struct syscall_registers *registers)
 
     registers->eip = (unsigned int)task->eip;
     registers->useresp = (unsigned int)task->esp;
+    registers->ebp = (unsigned int)task->ebp;
     registers->eax = 0;
 
 }
