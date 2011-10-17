@@ -1,6 +1,6 @@
+#include <kernel/error.h>
 #include <kernel/kernel.h>
 #include <kernel/log.h>
-#include <kernel/error.h>
 
 void error_assert(unsigned int condition, char *message, char *file, unsigned int line)
 {

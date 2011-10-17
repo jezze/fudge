@@ -2,7 +2,6 @@
 #include <lib/string.h>
 #include <lib/tar.h>
 #include <kernel/vfs.h>
-#include <kernel/modules.h>
 #include <kernel/initrd.h>
 
 static struct initrd_filesystem initrdFilesystem;

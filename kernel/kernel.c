@@ -1,8 +1,8 @@
 #include <kernel/vfs.h>
-#include <kernel/modules.h>
 #include <kernel/initrd.h>
 #include <kernel/kernel.h>
 #include <kernel/log.h>
+#include <kernel/modules.h>
 #include <kernel/runtime.h>
 
 static struct kernel kernel;

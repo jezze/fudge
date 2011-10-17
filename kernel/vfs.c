@@ -1,7 +1,6 @@
 #include <lib/memory.h>
 #include <lib/string.h>
 #include <kernel/vfs.h>
-#include <kernel/modules.h>
 
 static struct vfs_filesystem *vfsFilesystems[8];
 static struct vfs_filesystem vfsFilesystem;
