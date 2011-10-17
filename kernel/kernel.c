@@ -43,14 +43,6 @@ static void kernel_init_shell()
 
     runtime_activate(task);
 
-    struct vfs_node *sin = vfs_find("/tty");
-    struct vfs_node *sout = vfs_find("/tty");
-    struct vfs_node *serror = vfs_find("/serial");
-
-    task->add_descriptor(task, sin);
-    task->add_descriptor(task, sout);
-    task->add_descriptor(task, serror);
-
     kernel.arch->enter_usermode(task->eip, task->esp);
 
 }

@@ -159,7 +159,12 @@ static void syscall_execute(struct syscall_registers *registers)
     unsigned int argc = registers->ecx;
     char **argv = (char **)registers->ebx;
 
-    struct runtime_task *task = runtime_get_running_task();
+    struct runtime_task *oldtask = runtime_get_running_task();
+    oldtask->eip = (void *)registers->eip;
+    oldtask->esp = (void *)registers->useresp;
+    oldtask->ebp = (void *)registers->ebp;
+
+    struct runtime_task *task = runtime_get_free_task();
 
     if (!task->load(task, path, argc, argv))
     {
@@ -175,16 +180,24 @@ static void syscall_execute(struct syscall_registers *registers)
     registers->eip = (unsigned int)task->eip;
     registers->useresp = (unsigned int)task->esp;
     registers->ebp = (unsigned int)task->ebp;
-    registers->eax = 0;
+    registers->eax = 1;
 
 }
 
 static void syscall_exit(struct syscall_registers *registers)
 {
 
-    struct runtime_task *task = runtime_get_running_task();
+    struct runtime_task *oldtask = runtime_get_running_task();
+    oldtask->unload(oldtask);
 
-    registers->eax = 0;
+    struct runtime_task *task = runtime_get_task(0);
+
+    runtime_activate(task);
+
+    registers->eip = (unsigned int)task->eip;
+    registers->useresp = (unsigned int)task->esp;
+    registers->ebp = (unsigned int)task->ebp;
+    registers->eax = 1;
 
 }
 

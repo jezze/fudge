@@ -134,6 +134,16 @@ static unsigned int runtime_load(struct runtime_task *task, char *path, unsigned
     task->eip = entry;
     task->esp = virtual + 0xFFF4;
 
+    memory_set(task->descriptors, 0, sizeof (struct vfs_descriptor) * 16);
+
+    struct vfs_node *sin = vfs_find("/tty");
+    struct vfs_node *sout = vfs_find("/tty");
+    struct vfs_node *serror = vfs_find("/serial");
+
+    task->add_descriptor(task, sin);
+    task->add_descriptor(task, sout);
+    task->add_descriptor(task, serror);
+
     return 1;
 
 }
