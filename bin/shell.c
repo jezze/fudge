@@ -35,7 +35,7 @@ static void shell_stack_clear()
 static void shell_clear()
 {
 
-    file_write_format(FILE_STDOUT, "shell:/$ ");
+    file_write_format(FILE_STDOUT, "fudge:/$ ");
     shell_stack_clear();
 
 }
@@ -55,7 +55,7 @@ static void shell_interpret(char *command)
     string_concat(path, argv[0]);
 
     if (!call_execute(path, argc, argv))
-        file_write_format(FILE_STDOUT, "Could not execute program: %s\n", path);
+        file_write_format(FILE_STDOUT, "%s: Invalid command\n", argv[0]);
 
 }
 
@@ -118,6 +118,9 @@ static void shell_poll()
 
 void main(int argc, char *argv[])
 {
+
+    file_write_format(FILE_STDOUT, "Fudge operating system\n");
+    file_write_format(FILE_STDOUT, "Write `cat help.txt` for a short list if commands\n\n");
 
     shell_clear();
     shell_poll();

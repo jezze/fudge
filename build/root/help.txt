@@ -1,7 +1,3 @@
-List of built-in functions for the shell:
-
-clear           : Clear screen
-
 To execute a program simply type the name of the program.
 
 cat             : Display content of file

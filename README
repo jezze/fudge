@@ -17,29 +17,27 @@ There will be no scheduler or timeslices to consider. Instead I’ve chose to us
 * No memory allocation
 It is not possible to dynamically allocate memory in run-time. All memory has to be pre-allocated when the operating system starts. In this way there will never be a chance of memory running out and the kernel would be less occupied with allocating and deallocating memory. All pre-allocated areas of RAM will show up as files in the virtual filesystem. If one of these files become full something needs to take care of the written data before more data can be written.
 
-* Static paging
-Because only one program can run at a time and the amount of memory the entire operating system uses can not exceed the amount of physical RAM there is no need to fetch or store pages to frames or disk. Therefor there are only two page directories set up. One for the kernel and one for any current running program. The kernel page directory runs in kernel space and any program runs in userspace so memory protection do exist to prevent programs to override kernel data.
-                                        
 ## FEATURES
 
 I have a long way to go but these are the features I’ve implemented so far. Some of them might not work or are incomplete at the moment but they exist in one way or another.
 
-* Boot and setup code
-* Multi-architectural code – Full x86 and basic ARM support
-* Interrupts
-* Paging
+* Multi-architectural code
+* Memory protection
+* VGA framebuffer
+* PS2 keyboard
+* Serial ports
+* PIT support
+* RTC support
 * FPU support
-* System calls
-* Screen output
-* Keyboard input
-* Serial port communication
-* Programmable interval timer
-* Real time clock
-* Virtual filesystem
-* stdin and stdout
-* Tar ramdisk (NEW)
-* Flat binary support
+* VFS filesystem
 * ELF binary support
+* TAR ramdisk support
+* ATA detection
+* PCI devices
+* TTY devices
+* Module interface
+* Device interface
+* Driver interface
 
 ## BUILDING
 
@@ -76,6 +74,10 @@ build/root/boot/initrd.tar
 Create an iso.
 
 $ make iso
+
+### RUNNING
+
+$ qemu -cdrom fudge.iso [-serial stdio] [-net nic,rtl8139]
 
 ### CLEANING
 
