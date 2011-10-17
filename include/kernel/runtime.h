@@ -19,6 +19,7 @@ struct runtime_task
 
 };
 
+extern struct runtime_task *runtime_get_task(unsigned int pid);
 extern struct runtime_task *runtime_get_running_task();
 extern struct runtime_task *runtime_get_free_task();
 extern void runtime_init();

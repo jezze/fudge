@@ -9,6 +9,23 @@
 
 struct runtime_task runtimeTasks[8];
 
+struct runtime_task *runtime_get_task(unsigned int pid)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < 8; i++)
+    {
+
+        if (runtimeTasks[i].pid == pid)
+            return &runtimeTasks[i];
+
+    }
+
+    return 0;
+
+}
+
 struct runtime_task *runtime_get_running_task()
 {
 
@@ -34,7 +51,7 @@ struct runtime_task *runtime_get_free_task()
     for (i = 0; i < 8; i++)
     {
 
-        if (!runtimeTasks[i].running)
+        if (!runtimeTasks[i].used)
             return &runtimeTasks[i];
 
     }
@@ -99,7 +116,7 @@ static unsigned int runtime_load(struct runtime_task *task, char *path, unsigned
     mmu_map(header, virtual, 0x10000, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);
     mmu_set_directory(&header->directory);
 
-    task->running = 1;
+    task->used = 1;
     task->eip = entry;
     task->esp = virtual + 0xFFF4;
 
@@ -156,6 +173,7 @@ void runtime_init()
 
         runtimeTasks[i].pid = i;
         runtimeTasks[i].running = 0;
+        runtimeTasks[i].used = 0;
         runtimeTasks[i].load = runtime_load;
         runtimeTasks[i].add_descriptor = runtime_add_descriptor;
         runtimeTasks[i].get_descriptor = runtime_get_descriptor;

@@ -40,6 +40,7 @@ static void kernel_init_shell()
 
     struct runtime_task *task = runtime_get_free_task();
     task->load(task, "/shell", 0, 0);
+    task->running = 1;
 
     struct vfs_node *sin = vfs_find("/tty");
     struct vfs_node *sout = vfs_find("/tty");
