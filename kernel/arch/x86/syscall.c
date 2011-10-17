@@ -2,7 +2,6 @@
 #include <lib/memory.h>
 #include <lib/string.h>
 #include <kernel/vfs.h>
-#include <kernel/modules.h>
 #include <kernel/runtime.h>
 #include <kernel/arch/x86/arch.h>
 #include <kernel/arch/x86/isr.h>
@@ -40,6 +39,8 @@ static void syscall_open(struct syscall_registers *registers)
 
     char *path = (char *)registers->esi;
 
+    struct runtime_task *task = runtime_get_running_task();    
+
     struct vfs_node *node = vfs_find(path);
 
     if (!node)
@@ -50,8 +51,6 @@ static void syscall_open(struct syscall_registers *registers)
         return;
 
     }
-
-    struct runtime_task *task = runtime_get_running_task();    
 
     struct vfs_descriptor *descriptor = task->add_descriptor(task, node);
 
