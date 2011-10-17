@@ -38,7 +38,7 @@ void kernel_unregister_irq(unsigned int index)
 static void kernel_init_shell()
 {
 
-    struct runtime_task *task = runtime_get_running_task();
+    struct runtime_task *task = runtime_get_free_task();
     task->load(task, "/shell", 0, 0);
 
     struct vfs_node *sin = vfs_find("/tty");

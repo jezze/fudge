@@ -58,7 +58,7 @@ extern void mmu_init();
 extern void mmu_set_directory(struct mmu_directory *directory);
 extern void mmu_map(struct mmu_header *header, void *virtualAddress, unsigned int size, unsigned int tableFlags, unsigned int pageFlags);
 extern void mmu_enable();
-extern struct mmu_header *mmu_get_program_header();
+extern struct mmu_header *mmu_get_program_header(unsigned int pid);
 
 #endif
 

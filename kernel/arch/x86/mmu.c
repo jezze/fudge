@@ -103,10 +103,10 @@ void mmu_enable()
 
 }
 
-struct mmu_header *mmu_get_program_header()
+struct mmu_header *mmu_get_program_header(unsigned int pid)
 {
 
-    return &mmuProgramHeaders[0];
+    return &mmuProgramHeaders[pid];
 
 }
 

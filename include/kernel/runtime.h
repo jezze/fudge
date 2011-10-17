@@ -4,6 +4,7 @@
 struct runtime_task
 {
 
+    unsigned int pid;
     unsigned int running;
     void *eip;
     void *esp;
@@ -17,6 +18,7 @@ struct runtime_task
 };
 
 extern struct runtime_task *runtime_get_running_task();
+extern struct runtime_task *runtime_get_free_task();
 extern void runtime_init();
 
 #endif

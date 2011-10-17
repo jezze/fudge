@@ -12,14 +12,41 @@ struct runtime_task runtimeTasks[8];
 struct runtime_task *runtime_get_running_task()
 {
 
-    return &runtimeTasks[0];
+    unsigned int i;
+
+    for (i = 0; i < 8; i++)
+    {
+
+        if (runtimeTasks[i].running)
+            return &runtimeTasks[i];
+
+    }
+
+    return 0;
+
+}
+
+struct runtime_task *runtime_get_free_task()
+{
+
+    unsigned int i;
+
+    for (i = 0; i < 8; i++)
+    {
+
+        if (!runtimeTasks[i].running)
+            return &runtimeTasks[i];
+
+    }
+
+    return 0;
 
 }
 
 static unsigned int runtime_load(struct runtime_task *task, char *path, unsigned int argc, char **argv)
 {
 
-    struct mmu_header *header = mmu_get_program_header();
+    struct mmu_header *header = mmu_get_program_header(task->pid);
 
     struct vfs_node *node = vfs_find(path);
 
@@ -72,6 +99,7 @@ static unsigned int runtime_load(struct runtime_task *task, char *path, unsigned
     mmu_map(header, virtual, 0x10000, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);
     mmu_set_directory(&header->directory);
 
+    task->running = 1;
     task->eip = entry;
     task->esp = virtual + 0xFFF4;
 
@@ -126,6 +154,7 @@ void runtime_init()
     for (i = 0; i < 8; i++)
     {
 
+        runtimeTasks[i].pid = i;
         runtimeTasks[i].running = 0;
         runtimeTasks[i].load = runtime_load;
         runtimeTasks[i].add_descriptor = runtime_add_descriptor;
