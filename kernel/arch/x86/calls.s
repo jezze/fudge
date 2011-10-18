@@ -137,6 +137,44 @@ call_exit:
     pop ebp
     ret
 
+global call_load
+call_load:
+    push ebp
+    mov ebp, esp
+    push ebx
+    push ecx
+    push esi
+    push edi
+    mov eax, 0x16
+    mov esi, [ebp + 8]
+    int 0x80
+    pop edi
+    pop esi
+    pop ecx
+    pop ebx
+    mov esp, ebp
+    pop ebp
+    ret
+
+global call_unload
+call_unload:
+    push ebp
+    mov ebp, esp
+    push ebx
+    push ecx
+    push esi
+    push edi
+    mov eax, 0x17
+    mov esi, [ebp + 8]
+    int 0x80
+    pop edi
+    pop esi
+    pop ecx
+    pop ebx
+    mov esp, ebp
+    pop ebp
+    ret
+
 global call_halt
 call_halt:
     push ebp
