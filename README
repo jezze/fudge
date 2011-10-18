@@ -4,18 +4,18 @@
 
 Fudge is a very basic operating system written in C and Assembler. It is inspired by many other projects like Minix, Plan9, L4 and AmigaOS but Fudge is fundamentally different in many aspects.
 
-Keywords for this project is simplicity, clearity and speed.
+Keywords for this project is simplicity, clarity and speed.
 
-At the moment I’m trying to figure out what direction I want this project to go so nothing is so far written in stone. However, it will feature some ideas that are very uncommon in other mainstream operating systems. Wether they are bad ideas or in practice doesn’t actually work is of no concern to me. I still want to see what I’m able to do when thinking outside the box. Here are some brief examples.
+At the moment I’m trying to figure out what direction I want this project to go so nothing is so far written in stone. I know for sure it will feature some ideas that are uncommon in other mainstream operating systems. Even if those features might seem awkward I still want to see what can be done when thinking outside the box. Here are some brief examples.
 
 * Deterministic behaviour
-The main goal of this operating system is to be as determinstic as possible. This is not the same as a real-time operating system that only need to finish workloads within a given timelimit. I’m talking about the actual computation time. I’m trying to accomplish this by removing those parts of a typical operating system that often provides uncertainty such as memory allocation and multitasking to name a few. It not only becomes more deterministic but also less complex because the amount of states in the operating system is lower which makes it easier to predict.
+The main goal of this operating system is to be as determinstic as possible. This is not the same as a real-time operating system that only need to finish workloads within a given timelimit. I’m talking about the actual computation time. I’m trying to accomplish this by removing those parts of a typical operating system that isn't deterministic in nature such as memory allocation and multitasking to name a few. Not only does that make the system more deterministic but also less complex because the of the decreased amount of states the operating system has which makes it easier to analyze and write correct code.
 
 * No multitasking
-There will be no scheduler or timeslices to consider. Instead I’ve chose to use something I call event-driven sequence-tasking. This works by letting every system call trigger a certain event. Any program can attach listeners to these events that will execute when the events are fired. As an example I could attach a listener to the event that fires when the system call call_file_close() is triggered for a certain file. If a program writes to that file and closes it the newly added listener would fire and start an eventhandler that in turn could execute a new program that reads the contents of the file.
+There will be no scheduler or timeslices to consider. Instead I’ve chose to use something I call event-driven sequence-tasking. This works by letting every system call trigger events. Any program can attach listeners to these events, basically a callback, that will execute when the events are fired. As an example I a program could attach a listener to an event that will fire when a certain file is closed. If a second program is writing to that file and when done closes it the first program will get an event that tells it the file has been closed and can now opened for reading.
 
 * No memory allocation
-It is not possible to dynamically allocate memory in run-time. All memory has to be pre-allocated when the operating system starts. In this way there will never be a chance of memory running out and the kernel would be less occupied with allocating and deallocating memory. All pre-allocated areas of RAM will show up as files in the virtual filesystem. If one of these files become full something needs to take care of the written data before more data can be written.
+It is not possible to dynamically allocate memory in run-time. All memory has to be pre-allocated when the operating system starts. In this way there will never be a chance of memory running out and the kernel would be less occupied with allocating and deallocating memory. All pre-allocated areas of RAM will show up as files in the virtual filesystem. If one of these files become full it's content needs to be taken care of before more data can be written.
 
 ## FEATURES
 
