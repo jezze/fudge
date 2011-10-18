@@ -4,6 +4,12 @@
 #define IRQ_ROUTINES_SIZE 16
 #define IRQ_ROUTINE_PIT   0x00
 #define IRQ_ROUTINE_KBD   0x01
+#define IRQ_ROUTINE_COM2  0x03
+#define IRQ_ROUTINE_COM1  0x04
+#define IRQ_ROUTINE_SDA   0x06
+#define IRQ_ROUTINE_RTC   0x08
+#define IRQ_ROUTINE_ATAP  0x0E
+#define IRQ_ROUTINE_ATAS  0x0F
 
 struct isr_registers;
 

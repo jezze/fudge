@@ -2,6 +2,7 @@
 #include <lib/string.h>
 #include <kernel/vfs.h>
 #include <kernel/modules.h>
+#include <kernel/kernel.h>
 #include <modules/io/io.h>
 #include <modules/serial/serial.h>
 
@@ -53,6 +54,13 @@ static unsigned int serial_device_node_write(struct vfs_node *node, unsigned int
 
 }
 
+static void serial_handler()
+{
+
+    serialDevice1.read(&serialDevice1);
+
+}
+
 static void serial_device_init(struct serial_device *device)
 {
 
@@ -81,6 +89,8 @@ void serial_init()
     modules_register_device(&serialDevice1.base);
 
     serialDevice1.init(&serialDevice1);
+
+    kernel_register_irq(0x04, serial_handler);
 
 }
 
