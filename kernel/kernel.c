@@ -51,7 +51,7 @@ void kernel_init(struct kernel_arch *arch)
 
     struct runtime_task *task = runtime_get_free_task();
 
-    task->load(task, "/shell", 0, 0);
+    task->load(task, "/init", 0, 0);
     runtime_activate(task);
 
     kernel.arch->set_stack(arch->stackAddress);
