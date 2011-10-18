@@ -61,6 +61,7 @@ modules: lib
 	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_MODULES}/serial/serial.c -o ${DIR_SOURCE_MODULES}/serial/serial.o
 	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_MODULES}/tty/tty.c -o ${DIR_SOURCE_MODULES}/tty/tty.o
 	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_MODULES}/vga/vga.c -o ${DIR_SOURCE_MODULES}/vga/vga.o
+	@cp ${DIR_SOURCE_MODULES}/ata/ata.o ${DIR_IMAGE}/lib/modules/ata.ko
 
 kernel: arch-${ARCH} modules
 	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_KERNEL}/error.c -o ${DIR_SOURCE_KERNEL}/error.o
@@ -182,24 +183,14 @@ clean:
 	@rm -f ${DIR_IMAGE}/bin/tar
 	@rm -f ${DIR_IMAGE}/bin/timer
 	@rm -f ${DIR_IMAGE}/bin/vga
+	@rm -f ${DIR_IMAGE}/lib/modules/*.ko
 	@rm -f ${DIR_IMAGE}/boot/kernel
 	@rm -f ${DIR_IMAGE}/boot/initrd
 	@rm -f ${DIR_IMAGE}/boot/initrd.tar
 	@rm -f ${DIR_IMAGE}/boot/initrd.cpio
 	@rm -f ${DIR_SOURCE_BIN}/*.o
 	@rm -f ${DIR_SOURCE_KERNEL}/*.o
-	@rm -f ${DIR_SOURCE_KERNEL}/arch/arm/*.o
-	@rm -f ${DIR_SOURCE_KERNEL}/arch/x86/*.o
+	@rm -f ${DIR_SOURCE_KERNEL}/arch/*/*.o
 	@rm -f ${DIR_SOURCE_LIB}/*.o
-	@rm -f ${DIR_SOURCE_MODULES}/ata/*.o
-	@rm -f ${DIR_SOURCE_MODULES}/elf/*.o
-	@rm -f ${DIR_SOURCE_MODULES}/io/*.o
-	@rm -f ${DIR_SOURCE_MODULES}/kbd/*.o
-	@rm -f ${DIR_SOURCE_MODULES}/pci/*.o
-	@rm -f ${DIR_SOURCE_MODULES}/pit/*.o
-	@rm -f ${DIR_SOURCE_MODULES}/rtc/*.o
-	@rm -f ${DIR_SOURCE_MODULES}/rtl8139/*.o
-	@rm -f ${DIR_SOURCE_MODULES}/serial/*.o
-	@rm -f ${DIR_SOURCE_MODULES}/tty/*.o
-	@rm -f ${DIR_SOURCE_MODULES}/vga/*.o
+	@rm -f ${DIR_SOURCE_MODULES}/*/*.o
 
