@@ -1,8 +1,12 @@
 ata.ko
+elf.ko
 io.ko
+ios.ko
 kbd.ko
 pci.ko
 pit.ko
 rtc.ko
+rtl8139.ko
 serial.ko
+tty.ko
 vga.ko
