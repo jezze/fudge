@@ -214,6 +214,76 @@ static void syscall_reboot(struct syscall_registers *registers)
 
 char buffer[0x4000];
 
+static void print_symtab(struct elf_section_header *header)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < header->size / header->entrySize; i++)
+    {
+
+        struct elf_symbol *symHeader = (struct elf_symbol *)(buffer + header->offset + i * header->entrySize);
+
+        unsigned int bind = symHeader->info >> 4;
+        unsigned int type = symHeader->info & 0x0F;
+
+        if (bind == 1)
+        {
+
+            file_write_format(FILE_STDERR, "  SYM - Value: 0x%x Size: %d Info: 0x%x Bind: 0x%x Type: 0x%x\n", symHeader->value, symHeader->size, symHeader->info, bind, type);
+
+        }
+
+    }
+
+}
+
+static void print_rel(struct elf_section_header *header)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < header->size / header->entrySize; i++)
+    {
+
+        struct elf_relocate *rHeader = (struct elf_relocate *)(buffer + header->offset + i * header->entrySize);
+
+        unsigned int sym = rHeader->info >> 4;
+        unsigned int type = rHeader->info & 0x0F;
+
+        if (type == 2)
+        {
+
+            file_write_format(FILE_STDERR, "  REL - Offset: 0x%x Info: 0x%x Sym: 0x%x Type: 0x%x\n", rHeader->offset, rHeader->info, sym, type);
+
+        }
+
+    }
+
+}
+
+static void print_sections(struct elf_header *header)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < header->sectionHeaderCount; i++)
+    {
+
+        struct elf_section_header *sHeader = (struct elf_section_header *)(buffer + header->sectionHeaderOffset + i * header->sectionHeaderSize);
+
+        file_write_format(FILE_STDERR, "SH - Offset: 0x%x Size:0x%x\n", sHeader->offset, sHeader->size);
+
+        if (sHeader->type == 2)
+            print_symtab(sHeader);
+
+        if (sHeader->type == 9)
+            print_rel(sHeader);
+
+    }
+
+}
+
 static void syscall_load(struct syscall_registers *registers)
 {
 
@@ -225,39 +295,7 @@ static void syscall_load(struct syscall_registers *registers)
 
     struct elf_header *header = (struct elf_header *)buffer;
 
-    unsigned int i, j;
-
-    for (i = 0; i < header->sectionHeaderCount; i++)
-    {
-
-        struct elf_section_header *sHeader = (struct elf_section_header *)(buffer + header->sectionHeaderOffset + i * header->sectionHeaderSize);
-
-        if (sHeader->type != 9)
-            continue;
-
-//        file_write_format(FILE_STDOUT, "SH - Offset: 0x%x Size:0x%x\n", sHeader->offset, sHeader->size);
-
-        if (!sHeader->offset)
-            continue;
-
-        for (j = 0; j < sHeader->size / 8; j++)
-        {
-
-            struct elf_relocate *rHeader = (struct elf_relocate *)(buffer + sHeader->offset + j * 8);
-
-            unsigned int sym = rHeader->info >> 4;
-            unsigned int type = rHeader->info & 0x0F;
-
-            if (type == 2)
-            {
-
-//                file_write_format(FILE_STDOUT, "  REL - Offset: 0x%x Info: 0x%x Sym: 0x%x Type: 0x%x\n", rHeader->offset, rHeader->info, sym, type);
-
-            }
-
-        }
-
-    }
+    print_sections(header);
 
     registers->eax = 1;
 
