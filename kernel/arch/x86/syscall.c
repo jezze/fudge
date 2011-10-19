@@ -1,12 +1,15 @@
+#include <lib/elf.h>
 #include <lib/file.h>
 #include <lib/memory.h>
 #include <lib/string.h>
 #include <kernel/vfs.h>
+#include <kernel/modules.h>
 #include <kernel/runtime.h>
 #include <kernel/arch/x86/arch.h>
 #include <kernel/arch/x86/isr.h>
 #include <kernel/arch/x86/mmu.h>
 #include <kernel/arch/x86/syscall.h>
+#include <modules/elf/elf.h>
 
 static void *syscallRoutines[SYSCALL_ROUTINES_SIZE];
 
@@ -209,8 +212,52 @@ static void syscall_reboot(struct syscall_registers *registers)
 
 }
 
+char buffer[0x4000];
+
 static void syscall_load(struct syscall_registers *registers)
 {
+
+    char *path = (char *)registers->esi;
+
+    struct vfs_node *node = vfs_find(path);
+
+    node->operations.read(node, 0x4000, buffer);
+
+    struct elf_header *header = (struct elf_header *)buffer;
+
+    unsigned int i, j;
+
+    for (i = 0; i < header->sectionHeaderCount; i++)
+    {
+
+        struct elf_section_header *sHeader = (struct elf_section_header *)(buffer + header->sectionHeaderOffset + i * header->sectionHeaderSize);
+
+        if (sHeader->type != 9)
+            continue;
+
+//        file_write_format(FILE_STDOUT, "SH - Offset: 0x%x Size:0x%x\n", sHeader->offset, sHeader->size);
+
+        if (!sHeader->offset)
+            continue;
+
+        for (j = 0; j < sHeader->size / 8; j++)
+        {
+
+            struct elf_relocate *rHeader = (struct elf_relocate *)(buffer + sHeader->offset + j * 8);
+
+            unsigned int sym = rHeader->info >> 4;
+            unsigned int type = rHeader->info & 0x0F;
+
+            if (type == 2)
+            {
+
+//                file_write_format(FILE_STDOUT, "  REL - Offset: 0x%x Info: 0x%x Sym: 0x%x Type: 0x%x\n", rHeader->offset, rHeader->info, sym, type);
+
+            }
+
+        }
+
+    }
 
     registers->eax = 1;
 
