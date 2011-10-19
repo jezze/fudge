@@ -76,6 +76,29 @@ static void kbd_handler()
 
     unsigned char scancode = io_inb(KBD_PORT_READ);
 
+    if (kbdDevice.escaped)
+    {
+
+        //scancode += 256;
+        kbdDevice.escaped = 0;
+
+    }
+
+    if (scancode == 0xE0)
+        kbdDevice.escaped = 1;
+
+    if (scancode == 0x38)
+        kbdDevice.toggleAlt = 1;
+
+    if (scancode == 0xB8)
+        kbdDevice.toggleAlt = 0;
+
+    if (scancode == 0x1D)
+        kbdDevice.toggleCtrl = 1;
+
+    if (scancode == 0x9D)
+        kbdDevice.toggleCtrl = 0;
+
     if (scancode == 0x2A)
         kbdDevice.toggleShift = 1;
 
@@ -111,6 +134,7 @@ void kbd_init()
     kbdDevice.putc = kbd_device_putc;
     kbdDevice.bufferHead = 0;
     kbdDevice.bufferTail = 0;
+    kbdDevice.escaped = 0;
     kbdDevice.toggleAlt = 0;
     kbdDevice.toggleCtrl = 0;
     kbdDevice.toggleShift = 0;

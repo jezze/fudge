@@ -12,9 +12,10 @@ struct kbd_device
     unsigned int bufferSize;
     unsigned int bufferHead;
     unsigned int bufferTail;
-    unsigned char toggleAlt;
-    unsigned char toggleCtrl;
-    unsigned char toggleShift;
+    unsigned int escaped;
+    unsigned int toggleAlt;
+    unsigned int toggleCtrl;
+    unsigned int toggleShift;
     unsigned int (*getc)(struct kbd_device *device, char *buffer);
     unsigned int (*putc)(struct kbd_device *device, char *buffer);
 
