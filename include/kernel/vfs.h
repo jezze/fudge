@@ -19,6 +19,7 @@ struct vfs_node
 
     unsigned int id;
     struct vfs_node_operations operations;
+    void *physical;
 
 };
 
