@@ -21,6 +21,8 @@ void error_panic(char *message, char *file, unsigned int line)
     kernel_disable_interrupts();
     log_write("KERNEL PANIC (%s) at (%s:%d)\n", message, file, line);
 
+    file_write_format(2, log_get());
+
     for (;;);
 
 }

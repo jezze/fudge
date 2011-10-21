@@ -212,15 +212,13 @@ static void syscall_reboot(struct syscall_registers *registers)
 
 }
 
-void *buffer[0x4000];
+void *buffer[0x2000];
 void *physical;
 
 void doit()
 {
 
-//    struct vfs_node *node = vfs_find("/tty");
-
-//    file_write(FILE_STDOUT, "Module loaded\n");
+//    file_write_format(FILE_STDOUT, "Module loaded\n");
 
 }
 
@@ -312,7 +310,10 @@ static void syscall_load(struct syscall_registers *registers)
     struct vfs_node *node = vfs_find(path);
     physical = node->physical;
 
-    node->operations.read(node, 0x4000, buffer);
+    node->operations.read(node, 0x2000, buffer);
+
+    file_write_format(FILE_STDERR, "Physical: %d\n", physical);
+    file_write_format(FILE_STDERR, "Buffer: %d\n", buffer);
 
     struct elf_header *header = (struct elf_header *)buffer;
 
