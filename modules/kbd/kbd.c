@@ -127,9 +127,9 @@ static void kbd_handler()
 void kbd_init()
 {
 
+    string_copy(kbdDevice.base.name, "kbd");
     kbdDevice.base.module.type = MODULES_TYPE_DEVICE;
     kbdDevice.base.type = MODULES_DEVICE_TYPE_KEYBOARD;
-    string_copy(kbdDevice.base.name, "kbd");
     kbdDevice.getc = kbd_device_getc;
     kbdDevice.putc = kbd_device_putc;
     kbdDevice.bufferHead = 0;
@@ -138,9 +138,10 @@ void kbd_init()
     kbdDevice.toggleAlt = 0;
     kbdDevice.toggleCtrl = 0;
     kbdDevice.toggleShift = 0;
-    modules_register_device(&kbdDevice.base);
 
     kernel_register_irq(0x01, kbd_handler);
+
+    modules_register_device(&kbdDevice.base);
 
 }
 

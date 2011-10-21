@@ -78,20 +78,20 @@ static void serial_device_init(struct serial_device *device)
 void serial_init()
 {
 
-    kernel_register_irq(0x04, serial_handler);
-
+    string_copy(serialDevice1.base.name, "serial");
     serialDevice1.base.module.type = MODULES_TYPE_DEVICE;
     serialDevice1.base.type = MODULES_DEVICE_TYPE_SERIAL;
-    string_copy(serialDevice1.base.name, "serial");
     serialDevice1.base.node.operations.read = serial_device_node_read;
     serialDevice1.base.node.operations.write = serial_device_node_write;
     serialDevice1.port = SERIAL_COM1;
     serialDevice1.init = serial_device_init;
     serialDevice1.read = serial_device_read;
     serialDevice1.write = serial_device_write;
-    modules_register_device(&serialDevice1.base);
-
     serialDevice1.init(&serialDevice1);
+
+    kernel_register_irq(0x04, serial_handler);
+
+    modules_register_device(&serialDevice1.base);
 
 }
 

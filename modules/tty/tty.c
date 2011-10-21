@@ -137,26 +137,27 @@ static unsigned int tty_cwd_device_node_write(struct vfs_node *node, unsigned in
 void tty_init()
 {
 
+    string_copy(ttyDevice.base.name, "tty");
     ttyDevice.base.module.type = MODULES_TYPE_DEVICE;
     ttyDevice.base.type = 1000;
-    string_copy(ttyDevice.base.name, "tty");
     ttyDevice.base.node.operations.read = tty_device_node_read;
     ttyDevice.base.node.operations.write = tty_device_node_write;
     ttyDevice.cursorOffset = 0;
     ttyDevice.kbdDevice = (struct kbd_device *)modules_get_device(MODULES_DEVICE_TYPE_KEYBOARD);
     ttyDevice.vgaDevice = (struct vga_device *)modules_get_device(MODULES_DEVICE_TYPE_VGA);
     ttyDevice.vgaDevice->set_cursor_color(TTY_COLOR_WHITE, TTY_COLOR_BLACK);
+    tty_clear();
+
     modules_register_device(&ttyDevice.base);
 
+    string_copy(ttyCwdDevice.base.name, "cwd");
     ttyDevice.base.module.type = MODULES_TYPE_DEVICE;
     ttyDevice.base.type = 1001;
-    string_copy(ttyCwdDevice.base.name, "cwd");
     ttyCwdDevice.base.node.operations.read = tty_cwd_device_node_read;
     ttyCwdDevice.base.node.operations.write = tty_cwd_device_node_write;
     string_copy(ttyCwdDevice.path, "/");
-    modules_register_device(&ttyCwdDevice.base);
 
-    tty_clear();
+    modules_register_device(&ttyCwdDevice.base);
 
 }
 

@@ -257,10 +257,11 @@ struct pci_device *pci_bus_find_device(unsigned short deviceid)
 static void pci_init_busses()
 {
 
+    string_copy(pciBus.base.name, "pci:0");
     pciBus.base.module.type = MODULES_TYPE_BUS;
     pciBus.base.type = MODULES_BUS_TYPE_PCI;
     pciBus.find_device = pci_bus_find_device;
-    string_copy(pciBus.base.name, "pci:0");
+
     modules_register_bus(&pciBus.base);
 
 }
