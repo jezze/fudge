@@ -71,11 +71,14 @@ static void serial_device_init(struct serial_device *device)
     io_outb(device->port + 3, 0x03);
     io_outb(device->port + 2, 0xC7);
     io_outb(device->port + 4, 0x0B);
+    io_outb(device->port + 1, 0x01);
 
 }
 
 void serial_init()
 {
+
+    kernel_register_irq(0x04, serial_handler);
 
     serialDevice1.base.module.type = MODULES_TYPE_DEVICE;
     serialDevice1.base.type = MODULES_DEVICE_TYPE_SERIAL;
@@ -89,8 +92,6 @@ void serial_init()
     modules_register_device(&serialDevice1.base);
 
     serialDevice1.init(&serialDevice1);
-
-    kernel_register_irq(0x04, serial_handler);
 
 }
 
