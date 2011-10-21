@@ -212,7 +212,17 @@ static void syscall_reboot(struct syscall_registers *registers)
 
 }
 
-char buffer[0x4000];
+void *buffer[0x4000];
+void *physical;
+
+void doit()
+{
+
+//    struct vfs_node *node = vfs_find("/tty");
+
+//    file_write(FILE_STDOUT, "Module loaded\n");
+
+}
 
 static void print_symtab(struct elf_section_header *header)
 {
@@ -227,10 +237,10 @@ static void print_symtab(struct elf_section_header *header)
         unsigned int bind = symHeader->info >> 4;
         unsigned int type = symHeader->info & 0x0F;
 
-        if (bind == 1)
+        if (bind == 0x01)
         {
 
-            file_write_format(FILE_STDERR, "  SYM - Value: 0x%x Size: %d Info: 0x%x Bind: 0x%x Type: 0x%x\n", symHeader->value, symHeader->size, symHeader->info, bind, type);
+            file_write_format(FILE_STDERR, "  [%d] SYM - Value: 0x%x Size: %d Info: 0x%x Bind: 0x%x Type: 0x%x Shndx: 0x%x\n", i, symHeader->value, symHeader->size, symHeader->info, bind, type, symHeader->shndx);
 
         }
 
@@ -243,6 +253,8 @@ static void print_rel(struct elf_section_header *header)
 
     unsigned int i;
 
+    file_write_format(FILE_STDERR, "  Address 0x%x\n", *((unsigned int *)physical + 0x44));
+
     for (i = 0; i < header->size / header->entrySize; i++)
     {
 
@@ -251,12 +263,20 @@ static void print_rel(struct elf_section_header *header)
         unsigned int sym = rHeader->info >> 4;
         unsigned int type = rHeader->info & 0x0F;
 
-        if (type == 2)
-        {
+        file_write_format(FILE_STDERR, "  [%d] REL - Offset: 0x%x Info: 0x%x Sym: 0x%x Type: 0x%x\n", i, rHeader->offset, rHeader->info, sym, type);
 
-            file_write_format(FILE_STDERR, "  REL - Offset: 0x%x Info: 0x%x Sym: 0x%x Type: 0x%x\n", rHeader->offset, rHeader->info, sym, type);
+        void *offset = physical + 0x40;
 
-        }
+        unsigned int *pdoit = offset + rHeader->offset;
+ 
+        file_write_format(FILE_STDERR, "    Before: 0x%x\n", *pdoit);
+
+        if (sym == 0x90)
+            *pdoit = (unsigned int)physical - (unsigned int)doit + rHeader->offset;
+        else
+            *pdoit = (unsigned int)physical - 0 + rHeader->offset;
+
+        file_write_format(FILE_STDERR, "    Phys: 0x%x Offset: 0x%x pDoit: 0x%x Doit: 0x%x *pDoit: 0x%x\n", physical, offset, pdoit, doit, *pdoit);
 
     }
 
@@ -272,12 +292,12 @@ static void print_sections(struct elf_header *header)
 
         struct elf_section_header *sHeader = (struct elf_section_header *)(buffer + header->sectionHeaderOffset + i * header->sectionHeaderSize);
 
-        file_write_format(FILE_STDERR, "SH - Offset: 0x%x Size:0x%x\n", sHeader->offset, sHeader->size);
+        file_write_format(FILE_STDERR, "[%d] SH - Offset: 0x%x Size:0x%x\n", i, sHeader->offset, sHeader->size);
 
-        if (sHeader->type == 2)
+        if (sHeader->type == 0x02)
             print_symtab(sHeader);
 
-        if (sHeader->type == 9)
+        if (sHeader->type == 0x09)
             print_rel(sHeader);
 
     }
@@ -290,12 +310,26 @@ static void syscall_load(struct syscall_registers *registers)
     char *path = (char *)registers->esi;
 
     struct vfs_node *node = vfs_find(path);
+    physical = node->physical;
 
     node->operations.read(node, 0x4000, buffer);
 
     struct elf_header *header = (struct elf_header *)buffer;
 
-    print_sections(header);
+//    print_sections(header);
+
+    int *s;
+
+    int reloc = (int)buffer + 0x40;
+
+    s = (int *)(reloc + 0x04);
+    *s = (int)&doit - reloc + 0x04;
+
+    s = (int *)(reloc + 0x0C);
+    *s = (int)&doit - reloc + 0x0C;
+
+    void (*minit)() = (void *)reloc;
+    minit();
 
     registers->eax = 1;
 

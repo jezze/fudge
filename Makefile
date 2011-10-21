@@ -49,6 +49,7 @@ arch-x86: lib
 	@${ASM} ${ASMFLAGS} ${DIR_SOURCE_ARCH}/tsss.s -o ${DIR_SOURCE_ARCH}/tsss.o
 
 modules: lib
+	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_MODULES}/test/test.c -o ${DIR_SOURCE_MODULES}/test/test.o
 	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_MODULES}/ata/ata.c -o ${DIR_SOURCE_MODULES}/ata/ata.o
 	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_MODULES}/elf/elf.c -o ${DIR_SOURCE_MODULES}/elf/elf.o
 	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_MODULES}/io/io.c -o ${DIR_SOURCE_MODULES}/io/io.o
@@ -62,6 +63,7 @@ modules: lib
 	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_MODULES}/stream/stream.c -o ${DIR_SOURCE_MODULES}/stream/stream.o
 	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_MODULES}/tty/tty.c -o ${DIR_SOURCE_MODULES}/tty/tty.o
 	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_MODULES}/vga/vga.c -o ${DIR_SOURCE_MODULES}/vga/vga.o
+	@cp ${DIR_SOURCE_MODULES}/test/test.o ${DIR_IMAGE}/lib/modules/test.ko
 	@cp ${DIR_SOURCE_MODULES}/ata/ata.o ${DIR_IMAGE}/lib/modules/ata.ko
 	@cp ${DIR_SOURCE_MODULES}/elf/elf.o ${DIR_IMAGE}/lib/modules/elf.ko
 	@cp ${DIR_SOURCE_MODULES}/io/io.o ${DIR_IMAGE}/lib/modules/io.ko
