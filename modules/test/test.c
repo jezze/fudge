@@ -4,7 +4,6 @@ void init()
 {
 
     doit();
-    doit();
 
 }
 

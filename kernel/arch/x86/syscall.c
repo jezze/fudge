@@ -323,11 +323,8 @@ static void syscall_load(struct syscall_registers *registers)
 
     int reloc = (int)buffer + 0x40;
 
-    s = (int *)(reloc + 0x04);
-    *s = (int)&doit - reloc + 0x04;
-
-    s = (int *)(reloc + 0x0C);
-    *s = (int)&doit - reloc + 0x0C;
+    s = (int *)(reloc + 0x01);
+    *s += (int)doit - reloc;
 
     void (*minit)() = (void *)reloc;
     minit();
