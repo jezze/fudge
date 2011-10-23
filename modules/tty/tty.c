@@ -8,7 +8,6 @@
 #include <modules/tty/tty.h>
 
 static struct tty_device ttyDevice;
-static struct tty_cwd_device ttyCwdDevice;
 
 static void tty_clear()
 {
@@ -116,9 +115,9 @@ static unsigned int tty_device_node_write(struct vfs_node *self, unsigned int co
 static unsigned int tty_cwd_device_node_read(struct vfs_node *self, unsigned int count, void *buffer)
 {
 
-    count = string_length(ttyCwdDevice.path);
+    count = string_length("/");
 
-    string_copy(buffer, ttyCwdDevice.path);
+    string_copy(buffer, "/");
 
     return count;
 
@@ -127,11 +126,7 @@ static unsigned int tty_cwd_device_node_read(struct vfs_node *self, unsigned int
 static unsigned int tty_cwd_device_node_write(struct vfs_node *self, unsigned int count, void *buffer)
 {
 
-    count = string_length(buffer);
-
-    string_copy(ttyCwdDevice.path, buffer);
-
-    return count;
+    return 0;
 
 }
 
@@ -152,26 +147,23 @@ void tty_init()
     ttyDevice.in.base.node.operations.read = tty_device_node_read;
     ttyDevice.out.base.node.operations.write = tty_device_node_write;
     ttyDevice.error.base.node.operations.write = tty_device_node_write;
+    ttyDevice.cwd.base.node.operations.read = tty_cwd_device_node_read;
+    ttyDevice.cwd.base.node.operations.write = tty_cwd_device_node_write;
     ttyDevice.in.node.operations.read = tty_device_node_read;
     ttyDevice.out.node.operations.write = tty_device_node_write;
     ttyDevice.error.node.operations.write = tty_device_node_write;
+    ttyDevice.cwd.node.operations.read = tty_cwd_device_node_read;
+    ttyDevice.cwd.node.operations.write = tty_cwd_device_node_write;
     stream_init(&ttyDevice.in, "stdin");
     stream_init(&ttyDevice.out, "stdout");
     stream_init(&ttyDevice.error, "stderr");
+    stream_init(&ttyDevice.cwd, "cwd");
 
     modules_register_device(&ttyDevice.in.base);
     modules_register_device(&ttyDevice.out.base);
     modules_register_device(&ttyDevice.error.base);
+    modules_register_device(&ttyDevice.cwd.base);
     modules_register_device(&ttyDevice.base);
-
-    string_copy(ttyCwdDevice.base.name, "cwd");
-    ttyDevice.base.module.type = MODULES_TYPE_DEVICE;
-    ttyDevice.base.type = 1001;
-    ttyCwdDevice.base.node.operations.read = tty_cwd_device_node_read;
-    ttyCwdDevice.base.node.operations.write = tty_cwd_device_node_write;
-    string_copy(ttyCwdDevice.path, "/");
-
-    modules_register_device(&ttyCwdDevice.base);
 
 }
 

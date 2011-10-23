@@ -29,18 +29,11 @@ struct tty_device
     struct stream_device in;
     struct stream_device out;
     struct stream_device error;
+    struct stream_device cwd;
     unsigned short cursorOffset;
     struct serial_device *serialDevice;
     struct kbd_device *kbdDevice;
     struct vga_device *vgaDevice;
-
-};
-
-struct tty_cwd_device
-{
-
-    struct modules_device base;
-    char path[TTY_CWD_SIZE];
 
 };
 

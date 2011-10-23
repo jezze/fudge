@@ -146,6 +146,9 @@ static struct vfs_node *modules_filesystem_lookup(struct vfs_filesystem *self, c
     for (i = 0; modulesDevices[i]; i++)
     {
 
+        if (modulesDevices[i]->type != 4000)
+            continue;
+
         unsigned int count = string_length(modulesDevices[i]->name) + 1;
 
         if (!memory_compare(path, modulesDevices[i]->name, count))
@@ -165,6 +168,9 @@ static unsigned int modules_filesystem_node_read(struct vfs_node *self, unsigned
 
     for (i = 0; modulesDevices[i]; i++)
     {
+
+        if (modulesDevices[i]->type != 4000)
+            continue;
 
         string_concat(buffer, modulesDevices[i]->name);
         string_concat(buffer, "\n");
