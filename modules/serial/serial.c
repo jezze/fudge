@@ -28,7 +28,7 @@ static unsigned int serial_buffer_getc(struct serial_buffer *self, char *buffer)
 static unsigned int serial_buffer_putc(struct serial_buffer *self, char *buffer)
 {
 
-    if ((self->head + 1) != self->tail)
+    if ((self->head + 1) % self->size != self->tail)
     {
 
         self->buffer[self->head] = buffer[0];
@@ -91,7 +91,9 @@ static unsigned int serial_device_node_write(struct vfs_node *self, unsigned int
 static void serial_handler()
 {
 
-    serialDevice1.read(&serialDevice1);
+    char c = serialDevice1.read(&serialDevice1);
+
+    serialDevice1.buffer.putc(&serialDevice1.buffer, &c);
 
 }
 

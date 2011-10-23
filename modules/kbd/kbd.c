@@ -48,7 +48,7 @@ static unsigned int kbd_buffer_getc(struct kbd_buffer *self, char *buffer)
 static unsigned int kbd_buffer_putc(struct kbd_buffer *self, char *buffer)
 {
 
-    if ((self->head + 1) != self->tail)
+    if ((self->head + 1) % self->size != self->tail)
     {
 
         self->buffer[self->head] = buffer[0];
