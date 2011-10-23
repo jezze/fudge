@@ -136,9 +136,9 @@ static unsigned int runtime_load(struct runtime_task *self, char *path, unsigned
 
     memory_set(self->descriptors, 0, sizeof (struct vfs_descriptor) * 16);
 
-    struct vfs_node *sin = vfs_find("/tty");
-    struct vfs_node *sout = vfs_find("/tty");
-    struct vfs_node *serror = vfs_find("/serial");
+    struct vfs_node *sin = vfs_find("/stdin");
+    struct vfs_node *sout = vfs_find("/stdout");
+    struct vfs_node *serror = vfs_find("/stderr");
 
     self->add_descriptor(self, sin);
     self->add_descriptor(self, sout);
