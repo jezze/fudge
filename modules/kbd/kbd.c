@@ -33,11 +33,11 @@ static unsigned int kbd_device_getc(struct kbd_device *device, char *buffer)
 
     char c = 0;
 
-    if (device->bufferHead != device->bufferTail)
+    if (device->buffer.head != device->buffer.tail)
     {
 
-        c = device->buffer[device->bufferTail];
-        device->bufferTail = (device->bufferTail + 1) % KBD_BUFFER_SIZE;
+        c = device->buffer.buffer[device->buffer.tail];
+        device->buffer.tail = (device->buffer.tail + 1) % KBD_BUFFER_SIZE;
 
     }
 
@@ -57,11 +57,11 @@ static unsigned int kbd_device_getc(struct kbd_device *device, char *buffer)
 static unsigned int kbd_device_putc(struct kbd_device *device, char *buffer)
 {
 
-    if ((device->bufferHead + 1) % KBD_BUFFER_SIZE != device->bufferTail)
+    if ((device->buffer.head + 1) % KBD_BUFFER_SIZE != device->buffer.tail)
     {
 
-        device->buffer[device->bufferHead] = buffer[0];
-        device->bufferHead = (device->bufferHead + 1) % KBD_BUFFER_SIZE;
+        device->buffer.buffer[device->buffer.head] = buffer[0];
+        device->buffer.head = (device->buffer.head + 1) % KBD_BUFFER_SIZE;
 
         return 1;
 
@@ -130,10 +130,10 @@ void kbd_init()
     string_copy(kbdDevice.base.name, "kbd");
     kbdDevice.base.module.type = MODULES_TYPE_DEVICE;
     kbdDevice.base.type = MODULES_DEVICE_TYPE_KEYBOARD;
+    kbdDevice.buffer.head = 0;
+    kbdDevice.buffer.tail = 0;
     kbdDevice.getc = kbd_device_getc;
     kbdDevice.putc = kbd_device_putc;
-    kbdDevice.bufferHead = 0;
-    kbdDevice.bufferTail = 0;
     kbdDevice.escaped = 0;
     kbdDevice.toggleAlt = 0;
     kbdDevice.toggleCtrl = 0;

@@ -4,14 +4,21 @@
 #define KBD_PORT_READ 0x60
 #define KBD_BUFFER_SIZE 256
 
+struct kbd_buffer
+{
+
+    char buffer[KBD_BUFFER_SIZE];
+    unsigned int size;
+    unsigned int head;
+    unsigned int tail;
+
+};
+
 struct kbd_device
 {
 
     struct modules_device base;
-    char buffer[KBD_BUFFER_SIZE];
-    unsigned int bufferSize;
-    unsigned int bufferHead;
-    unsigned int bufferTail;
+    struct kbd_buffer buffer;
     unsigned int escaped;
     unsigned int toggleAlt;
     unsigned int toggleCtrl;
