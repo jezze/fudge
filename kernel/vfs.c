@@ -2,9 +2,8 @@
 #include <lib/string.h>
 #include <kernel/vfs.h>
 
-static struct vfs_filesystem *vfsFilesystems[8];
+static struct vfs_filesystem *vfsFilesystems[VFS_FILESYSTEM_MAX];
 static struct vfs_filesystem vfsFilesystem;
-static struct vfs_node *vfsNodes[64];
 static struct vfs_node vfsRoot;
 
 void vfs_register_filesystem(struct vfs_filesystem *filesystem)
@@ -12,32 +11,13 @@ void vfs_register_filesystem(struct vfs_filesystem *filesystem)
 
     unsigned int i;
 
-    for (i = 0; i < 8; i++)
+    for (i = 0; i < VFS_FILESYSTEM_MAX; i++)
     {
 
         if (vfsFilesystems[i])
             continue;
 
         vfsFilesystems[i] = filesystem;
-
-        return;
-
-    }
-
-}
-
-void vfs_register_node(struct vfs_node *node)
-{
-
-    unsigned int i;
-
-    for (i = 0; i < 64; i++)
-    {
-
-        if (vfsNodes[i])
-            continue;
-
-        vfsNodes[i] = node;
 
         return;
 
@@ -101,7 +81,6 @@ static unsigned int vfs_filesystem_node_read(struct vfs_node *self, unsigned int
 void vfs_init()
 {
 
-    string_copy(vfsFilesystem.name, "/");
     vfsFilesystem.root = &vfsRoot;
     vfsFilesystem.root->operations.read = vfs_filesystem_node_read;
     vfsFilesystem.lookup = vfs_filesystem_lookup;

@@ -1,6 +1,8 @@
 #ifndef KERNEL_VFS_H
 #define KERNEL_VFS_H
 
+#define VFS_FILESYSTEM_MAX 8
+
 struct vfs_node;
 struct vfs_node_operations;
 
@@ -35,7 +37,6 @@ struct vfs_descriptor
 struct vfs_filesystem
 {
 
-    char name[32];
     struct vfs_node *root;
     struct vfs_node *(*lookup)(struct vfs_filesystem *self, char *path);
 

@@ -111,7 +111,6 @@ static unsigned int initrd_filesystem_node_read(struct vfs_node *self, unsigned 
 void initrd_init(unsigned int *address)
 {
 
-    string_copy(initrdFilesystem.base.name, "initrd");
     initrdFilesystem.base.root = &initrdRoot;
     initrdFilesystem.base.root->operations.read = initrd_filesystem_node_read;
     initrdFilesystem.base.lookup = initrd_filesystem_lookup;
