@@ -90,26 +90,26 @@ static void ata_device_sleep(struct ata_device *self)
 
 }
 
-static void ata_select(struct ata_device *device)
+static void ata_device_select(struct ata_device *self)
 {
 
-    io_outb(device->data + ATA_DATA_SELECT, device->secondary ? 0xB0 : 0xA0);
-    device->sleep(device);
+    io_outb(self->data + ATA_DATA_SELECT, self->secondary ? 0xB0 : 0xA0);
+    self->sleep(self);
 
 }
 
-static unsigned char ata_get_command(struct ata_device *device)
+static unsigned char ata_device_get_command(struct ata_device *self)
 {
 
-    return io_inb(device->data + ATA_DATA_COMMAND);
+    return io_inb(self->data + ATA_DATA_COMMAND);
 
 }
 
-static void ata_set_command(struct ata_device *device, unsigned char command)
+static void ata_device_set_command(struct ata_device *self, unsigned char command)
 {
 
-    io_outb(device->data + ATA_DATA_COMMAND, command);
-    device->sleep(device);
+    io_outb(self->data + ATA_DATA_COMMAND, command);
+    self->sleep(self);
 
 }
 
@@ -119,7 +119,7 @@ static unsigned char ata_read_identity(struct ata_device *device)
     while (1)
     {
 
-        unsigned char status = ata_get_command(device);
+        unsigned char status = device->get_command(device);
 
         if (status & ATA_STATUS_FLAG_ERROR)
             return 0;
@@ -144,24 +144,24 @@ static unsigned char ata_read_identity(struct ata_device *device)
 
 }
 
-static unsigned char ata_identify(struct ata_device *device)
+static unsigned int ata_device_identify(struct ata_device *self)
 {
 
-    ata_select(device);
-    ata_set_command(device, ATA_COMMAND_ID);
+    self->select(self);
+    self->set_command(self, ATA_COMMAND_ID);
 
-    unsigned char status = ata_get_command(device);
+    unsigned char status = self->get_command(self);
 
     if (!status)
         return 0;
 
-    unsigned short lba = io_inb(device->data + ATA_DATA_LBA1) | (io_inb(device->data + ATA_DATA_LBA2) << 8);
+    unsigned short lba = io_inb(self->data + ATA_DATA_LBA1) | (io_inb(self->data + ATA_DATA_LBA2) << 8);
 
     if (lba == 0x0000)
     {
 
-        device->type = ATA_DEVICE_TYPE_ATA;
-        ata_read_identity(device);
+        self->type = ATA_DEVICE_TYPE_ATA;
+        ata_read_identity(self);
 
         return 1;
 
@@ -170,7 +170,7 @@ static unsigned char ata_identify(struct ata_device *device)
     if (lba == 0xEB14)
     {
 
-        device->type = ATA_DEVICE_TYPE_ATAPI;
+        self->type = ATA_DEVICE_TYPE_ATAPI;
 
         return 1;
 
@@ -179,7 +179,7 @@ static unsigned char ata_identify(struct ata_device *device)
     if (lba == 0xC33C)
     {
 
-        device->type = ATA_DEVICE_TYPE_SATA;
+        self->type = ATA_DEVICE_TYPE_SATA;
 
         return 1;
 
@@ -188,7 +188,7 @@ static unsigned char ata_identify(struct ata_device *device)
     if (lba == 0x9669)
     {
 
-        device->type = ATA_DEVICE_TYPE_SATAPI;
+        self->type = ATA_DEVICE_TYPE_SATAPI;
 
         return 1;
 
@@ -224,12 +224,15 @@ void ata_init_devices()
     {
 
         struct ata_device *device = &ataDevices[i];
-        device->sleep = ata_device_sleep;
-
         device->base.module.type = MODULES_TYPE_DEVICE;
         device->base.type = MODULES_DEVICE_TYPE_ATA;
         device->base.node.operations.read = ata_device_node_read;
-        
+        device->get_command = ata_device_get_command;
+        device->identify = ata_device_identify;
+        device->select = ata_device_select;
+        device->sleep = ata_device_sleep;
+        device->set_command = ata_device_set_command;
+       
         switch (i)
         {
 
@@ -267,7 +270,7 @@ void ata_init_devices()
 
         }
 
-        if (ata_identify(device))
+        if (device->identify(device))
             modules_register_device(&device->base);
 
     }

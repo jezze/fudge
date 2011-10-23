@@ -66,7 +66,11 @@ struct ata_device
     unsigned short data;
     unsigned char secondary;
     unsigned char type;
+    unsigned char (*get_command)(struct ata_device *self);
+    unsigned int (*identify)(struct ata_device *self);
+    void (*select)(struct ata_device *self);
     void (*sleep)(struct ata_device *self);
+    void (*set_command)(struct ata_device *self, unsigned char command);
 
 };
 
