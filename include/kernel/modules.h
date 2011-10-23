@@ -31,7 +31,6 @@ struct modules_driver
     unsigned int type;
     char name[32];
     struct modules_device *device;
-    struct vfs_node node;
 
 };
 
@@ -41,7 +40,6 @@ struct modules_bus
     struct modules_module module;
     unsigned int type;
     char name[32];
-    struct vfs_node node;
 
 };
 

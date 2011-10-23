@@ -163,26 +163,10 @@ static unsigned int modules_filesystem_node_read(struct vfs_node *self, unsigned
     memory_set(buffer, 0, 1);
     unsigned int i;
 
-    for (i = 0; modulesBusses[i]; i++)
-    {
-
-        string_concat(buffer, modulesBusses[i]->name);
-        string_concat(buffer, "\n");
-
-    }
-
     for (i = 0; modulesDevices[i]; i++)
     {
 
         string_concat(buffer, modulesDevices[i]->name);
-        string_concat(buffer, "\n");
-
-    }
-
-    for (i = 0; modulesDrivers[i]; i++)
-    {
-
-        string_concat(buffer, modulesDrivers[i]->name);
         string_concat(buffer, "\n");
 
     }
