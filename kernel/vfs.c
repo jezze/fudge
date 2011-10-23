@@ -15,14 +15,12 @@ void vfs_register_filesystem(struct vfs_filesystem *filesystem)
     for (i = 0; i < 8; i++)
     {
 
-        if (!vfsFilesystems[i])
-        {
+        if (vfsFilesystems[i])
+            continue;
 
-            vfsFilesystems[i] = filesystem;
+        vfsFilesystems[i] = filesystem;
 
-            return;
-
-        }
+        return;
 
     }
 
@@ -36,14 +34,12 @@ void vfs_register_node(struct vfs_node *node)
     for (i = 0; i < 64; i++)
     {
 
-        if (!vfsNodes[i])
-        {
+        if (vfsNodes[i])
+            continue;
 
-            vfsNodes[i] = node;
+        vfsNodes[i] = node;
 
-            return;
-
-        }
+        return;
 
     }
 
