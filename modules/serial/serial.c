@@ -51,25 +51,25 @@ static unsigned int serial_buffer_putc(struct serial_buffer *self, char *buffer)
 
 }
 
-static char serial_device_read(struct serial_device *device)
+static char serial_device_read(struct serial_device *self)
 {
 
-    while (!(io_inb(device->port + 5) & 0x01));
+    while (!(io_inb(self->port + 5) & 0x01));
 
-    return io_inb(device->port);
+    return io_inb(self->port);
 
 }
 
-static void serial_device_write(struct serial_device *device, char c)
+static void serial_device_write(struct serial_device *self, char c)
 {
 
-    while (!(io_inb(device->port + 5) & 0x20));
+    while (!(io_inb(self->port + 5) & 0x20));
 
-    io_outb(device->port, c);
+    io_outb(self->port, c);
 
 }
 
-static unsigned int serial_device_node_read(struct vfs_node *node, unsigned int count, void *buffer)
+static unsigned int serial_device_node_read(struct vfs_node *self, unsigned int count, void *buffer)
 {
 
     char *b = (char *)buffer;
@@ -83,7 +83,7 @@ static unsigned int serial_device_node_read(struct vfs_node *node, unsigned int 
 
 }
 
-static unsigned int serial_device_node_write(struct vfs_node *node, unsigned int count, void *buffer)
+static unsigned int serial_device_node_write(struct vfs_node *self, unsigned int count, void *buffer)
 {
 
     char *b = (char *)buffer;
@@ -104,17 +104,17 @@ static void serial_handler()
 
 }
 
-static void serial_device_init(struct serial_device *device)
+static void serial_device_init(struct serial_device *self)
 {
 
-    io_outb(device->port + 1, 0x00);
-    io_outb(device->port + 3, 0x80);
-    io_outb(device->port + 0, 0x03);
-    io_outb(device->port + 1, 0x00);
-    io_outb(device->port + 3, 0x03);
-    io_outb(device->port + 2, 0xC7);
-    io_outb(device->port + 4, 0x0B);
-    io_outb(device->port + 1, 0x01);
+    io_outb(self->port + 1, 0x00);
+    io_outb(self->port + 3, 0x80);
+    io_outb(self->port + 0, 0x03);
+    io_outb(self->port + 1, 0x00);
+    io_outb(self->port + 3, 0x03);
+    io_outb(self->port + 2, 0xC7);
+    io_outb(self->port + 4, 0x0B);
+    io_outb(self->port + 1, 0x01);
 
 }
 

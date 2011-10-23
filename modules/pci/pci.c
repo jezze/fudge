@@ -25,10 +25,10 @@ static struct pci_device *pci_get_device(struct vfs_node *node)
 
 }
 
-static unsigned int pci_device_read(struct vfs_node *node, unsigned int count, void *buffer)
+static unsigned int pci_device_read(struct vfs_node *self, unsigned int count, void *buffer)
 {
 
-    struct pci_device *device = pci_get_device(node);
+    struct pci_device *device = pci_get_device(self);
 
     if (!device)
         return 0;

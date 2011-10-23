@@ -77,7 +77,7 @@ static void tty_putc(char c)
 
 }
 
-static unsigned int tty_device_node_read(struct vfs_node *node, unsigned int count, void *buffer)
+static unsigned int tty_device_node_read(struct vfs_node *self, unsigned int count, void *buffer)
 {
 
     unsigned int i;
@@ -98,7 +98,7 @@ static unsigned int tty_device_node_read(struct vfs_node *node, unsigned int cou
 
 }
 
-static unsigned int tty_device_node_write(struct vfs_node *node, unsigned int count, void *buffer)
+static unsigned int tty_device_node_write(struct vfs_node *self, unsigned int count, void *buffer)
 {
 
     unsigned int i;
@@ -112,7 +112,7 @@ static unsigned int tty_device_node_write(struct vfs_node *node, unsigned int co
 
 }
 
-static unsigned int tty_cwd_device_node_read(struct vfs_node *node, unsigned int count, void *buffer)
+static unsigned int tty_cwd_device_node_read(struct vfs_node *self, unsigned int count, void *buffer)
 {
 
     count = string_length(ttyCwdDevice.path);
@@ -123,7 +123,7 @@ static unsigned int tty_cwd_device_node_read(struct vfs_node *node, unsigned int
 
 }
 
-static unsigned int tty_cwd_device_node_write(struct vfs_node *node, unsigned int count, void *buffer)
+static unsigned int tty_cwd_device_node_write(struct vfs_node *self, unsigned int count, void *buffer)
 {
 
     count = string_length(buffer);

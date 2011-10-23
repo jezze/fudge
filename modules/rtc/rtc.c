@@ -26,7 +26,7 @@ static unsigned char rtc_get(unsigned int type)
 
 }
 
-static unsigned int rtc_device_node_read(struct vfs_node *node, unsigned int count, void *buffer)
+static unsigned int rtc_device_node_read(struct vfs_node *self, unsigned int count, void *buffer)
 {
 
     char num[32];

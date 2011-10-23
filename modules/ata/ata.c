@@ -28,10 +28,10 @@ static struct ata_device *ata_get_device(struct vfs_node *node)
 
 }
 
-static unsigned int ata_device_node_read(struct vfs_node *node, unsigned int count, void *buffer)
+static unsigned int ata_device_node_read(struct vfs_node *self, unsigned int count, void *buffer)
 {
 
-    struct ata_device *device = ata_get_device(node);
+    struct ata_device *device = ata_get_device(self);
 
     if (!device)
         return 0;
@@ -80,13 +80,13 @@ static unsigned int ata_device_node_read(struct vfs_node *node, unsigned int cou
 
 }
 
-static void ata_sleep(struct ata_device *device)
+static void ata_device_sleep(struct ata_device *self)
 {
 
-    io_inb(device->control + ATA_CONTROL_STATUS);
-    io_inb(device->control + ATA_CONTROL_STATUS);
-    io_inb(device->control + ATA_CONTROL_STATUS);
-    io_inb(device->control + ATA_CONTROL_STATUS);
+    io_inb(self->control + ATA_CONTROL_STATUS);
+    io_inb(self->control + ATA_CONTROL_STATUS);
+    io_inb(self->control + ATA_CONTROL_STATUS);
+    io_inb(self->control + ATA_CONTROL_STATUS);
 
 }
 
@@ -94,7 +94,7 @@ static void ata_select(struct ata_device *device)
 {
 
     io_outb(device->data + ATA_DATA_SELECT, device->secondary ? 0xB0 : 0xA0);
-    ata_sleep(device);
+    device->sleep(device);
 
 }
 
@@ -109,7 +109,7 @@ static void ata_set_command(struct ata_device *device, unsigned char command)
 {
 
     io_outb(device->data + ATA_DATA_COMMAND, command);
-    ata_sleep(device);
+    device->sleep(device);
 
 }
 
@@ -224,6 +224,7 @@ void ata_init_devices()
     {
 
         struct ata_device *device = &ataDevices[i];
+        device->sleep = ata_device_sleep;
 
         device->base.module.type = MODULES_TYPE_DEVICE;
         device->base.type = MODULES_DEVICE_TYPE_ATA;

@@ -66,6 +66,7 @@ struct ata_device
     unsigned short data;
     unsigned char secondary;
     unsigned char type;
+    void (*sleep)(struct ata_device *self);
 
 };
 
