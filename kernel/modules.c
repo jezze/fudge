@@ -3,6 +3,7 @@
 #include <kernel/vfs.h>
 #include <kernel/modules.h>
 #include <modules/elf/elf.h>
+#include <modules/stream/stream.h>
 #include <modules/tty/tty.h>
 #include <modules/io/io.h>
 #include <modules/ata/ata.h>
@@ -15,7 +16,7 @@
 #include <modules/vga/vga.h>
 
 static struct modules_bus *modulesBusses[32];
-static struct modules_device *modulesDevices[32];
+static struct modules_device *modulesDevices[64];
 static struct modules_driver *modulesDrivers[32];
 static struct vfs_filesystem modulesFilesystem;
 static struct vfs_node modulesRoot;

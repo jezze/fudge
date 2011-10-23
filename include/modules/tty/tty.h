@@ -22,12 +22,13 @@
 #define TTY_COLOR_WHITE      0x0f
 #define TTY_CWD_SIZE         256
 
-struct vga_device;
-
 struct tty_device
 {
 
     struct modules_device base;
+    struct stream_device in;
+    struct stream_device out;
+    struct stream_device error;
     unsigned short cursorOffset;
     struct serial_device *serialDevice;
     struct kbd_device *kbdDevice;

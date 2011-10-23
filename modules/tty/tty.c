@@ -4,6 +4,7 @@
 #include <kernel/modules.h>
 #include <modules/vga/vga.h>
 #include <modules/kbd/kbd.h>
+#include <modules/stream/stream.h>
 #include <modules/tty/tty.h>
 
 static struct tty_device ttyDevice;
@@ -148,6 +149,13 @@ void tty_init()
     ttyDevice.vgaDevice->set_cursor_color(TTY_COLOR_WHITE, TTY_COLOR_BLACK);
     tty_clear();
 
+    stream_init(&ttyDevice.in, "stdin");
+    stream_init(&ttyDevice.out, "stdout");
+    stream_init(&ttyDevice.error, "stderr");
+
+    modules_register_device(&ttyDevice.in.base);
+    modules_register_device(&ttyDevice.out.base);
+    modules_register_device(&ttyDevice.error.base);
     modules_register_device(&ttyDevice.base);
 
     string_copy(ttyCwdDevice.base.name, "cwd");
