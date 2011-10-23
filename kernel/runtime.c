@@ -76,10 +76,10 @@ void runtime_activate(struct runtime_task *task)
 
 }
 
-static unsigned int runtime_load(struct runtime_task *task, char *path, unsigned int argc, char **argv)
+static unsigned int runtime_load(struct runtime_task *self, char *path, unsigned int argc, char **argv)
 {
 
-    struct mmu_header *header = mmu_get_program_header(task->pid);
+    struct mmu_header *header = mmu_get_program_header(self->pid);
 
     struct vfs_node *node = vfs_find(path);
 
@@ -130,32 +130,32 @@ static unsigned int runtime_load(struct runtime_task *task, char *path, unsigned
 
     mmu_map(header, virtual, 0x10000, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);
 
-    task->used = 1;
-    task->eip = entry;
-    task->esp = virtual + 0xFFF4;
+    self->used = 1;
+    self->eip = entry;
+    self->esp = virtual + 0xFFF4;
 
-    memory_set(task->descriptors, 0, sizeof (struct vfs_descriptor) * 16);
+    memory_set(self->descriptors, 0, sizeof (struct vfs_descriptor) * 16);
 
     struct vfs_node *sin = vfs_find("/tty");
     struct vfs_node *sout = vfs_find("/tty");
     struct vfs_node *serror = vfs_find("/serial");
 
-    task->add_descriptor(task, sin);
-    task->add_descriptor(task, sout);
-    task->add_descriptor(task, serror);
+    self->add_descriptor(self, sin);
+    self->add_descriptor(self, sout);
+    self->add_descriptor(self, serror);
 
     return 1;
 
 }
 
-static void runtime_unload(struct runtime_task *task)
+static void runtime_unload(struct runtime_task *self)
 {
 
-    task->used = 0;
+    self->used = 0;
 
 }
 
-static struct vfs_descriptor *runtime_add_descriptor(struct runtime_task *task, struct vfs_node *node)
+static struct vfs_descriptor *runtime_add_descriptor(struct runtime_task *self, struct vfs_node *node)
 {
 
     unsigned int i;
@@ -163,14 +163,14 @@ static struct vfs_descriptor *runtime_add_descriptor(struct runtime_task *task, 
     for (i = 0; i < 16; i++)
     {
 
-        if (!task->descriptors[i].node)
+        if (!self->descriptors[i].node)
         {
 
-            task->descriptors[i].index = i;
-            task->descriptors[i].node = node;
-            task->descriptors[i].permissions = 0;
+            self->descriptors[i].index = i;
+            self->descriptors[i].node = node;
+            self->descriptors[i].permissions = 0;
 
-            return &task->descriptors[i];
+            return &self->descriptors[i];
 
         }
 
@@ -180,17 +180,17 @@ static struct vfs_descriptor *runtime_add_descriptor(struct runtime_task *task, 
 
 }
 
-static struct vfs_descriptor *runtime_get_descriptor(struct runtime_task *task, unsigned int index)
+static struct vfs_descriptor *runtime_get_descriptor(struct runtime_task *self, unsigned int index)
 {
 
-    return &task->descriptors[index];
+    return &self->descriptors[index];
 
 }
 
-static void runtime_remove_descriptor(struct runtime_task *task, unsigned int index)
+static void runtime_remove_descriptor(struct runtime_task *self, unsigned int index)
 {
 
-    memory_set((void *)&task->descriptors[index], 0, sizeof (struct vfs_descriptor));
+    memory_set((void *)&self->descriptors[index], 0, sizeof (struct vfs_descriptor));
 
 }
 

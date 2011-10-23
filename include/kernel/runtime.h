@@ -11,13 +11,13 @@ struct runtime_task
     void *eip;
     void *esp;
     void *ebp;
-    unsigned int (*load)(struct runtime_task *task, char *path, unsigned int argc, char **argv);
-    void (*unload)(struct runtime_task *task);
+    unsigned int (*load)(struct runtime_task *self, char *path, unsigned int argc, char **argv);
+    void (*unload)(struct runtime_task *self);
     struct mmu_header *header;
     struct vfs_descriptor descriptors[16];
-    struct vfs_descriptor *(*add_descriptor)(struct runtime_task *task, struct vfs_node *node);
-    struct vfs_descriptor *(*get_descriptor)(struct runtime_task *task, unsigned int index);
-    void (*remove_descriptor)(struct runtime_task *task, unsigned int index);
+    struct vfs_descriptor *(*add_descriptor)(struct runtime_task *self, struct vfs_node *node);
+    struct vfs_descriptor *(*get_descriptor)(struct runtime_task *self, unsigned int index);
+    void (*remove_descriptor)(struct runtime_task *self, unsigned int index);
 
 };
 

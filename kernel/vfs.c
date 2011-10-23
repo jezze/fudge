@@ -74,14 +74,14 @@ struct vfs_node *vfs_find(char *path)
 
 }
 
-static struct vfs_node *vfs_filesystem_lookup(struct vfs_filesystem *filesystem, char *path)
+static struct vfs_node *vfs_filesystem_lookup(struct vfs_filesystem *self, char *path)
 {
 
     return 0;
 
 }
 
-static unsigned int vfs_filesystem_node_read(struct vfs_node *node, unsigned int count, void *buffer)
+static unsigned int vfs_filesystem_node_read(struct vfs_node *self, unsigned int count, void *buffer)
 {
 
     memory_set(buffer, 0, 1);

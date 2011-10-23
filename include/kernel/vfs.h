@@ -7,10 +7,10 @@ struct vfs_node_operations;
 struct vfs_node_operations
 {
 
-    void (*open)(struct vfs_node *node);
-    void (*close)(struct vfs_node *node);
-    unsigned int (*read)(struct vfs_node *node, unsigned int count, void *buffer);
-    unsigned int (*write)(struct vfs_node *node, unsigned int count, void *buffer);
+    void (*open)(struct vfs_node *self);
+    void (*close)(struct vfs_node *self);
+    unsigned int (*read)(struct vfs_node *self, unsigned int count, void *buffer);
+    unsigned int (*write)(struct vfs_node *self, unsigned int count, void *buffer);
 
 };
 
@@ -37,7 +37,7 @@ struct vfs_filesystem
 
     char name[32];
     struct vfs_node *root;
-    struct vfs_node *(*lookup)(struct vfs_filesystem *filesystem, char *path);
+    struct vfs_node *(*lookup)(struct vfs_filesystem *self, char *path);
 
 };
 
