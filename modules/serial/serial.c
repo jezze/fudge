@@ -11,20 +11,11 @@ struct serial_device serialDevice1;
 static unsigned int serial_buffer_getc(struct serial_buffer *self, char *buffer)
 {
 
-    char c = 0;
-
     if (self->head != self->tail)
     {
 
-        c = self->buffer[self->tail];
+        buffer[0] = self->buffer[self->tail];
         self->tail = (self->tail + 1) % self->size;
-
-    }
-
-    if (c)
-    {
-
-        buffer[0] = c;
 
         return 1;
 

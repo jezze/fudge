@@ -31,20 +31,11 @@ static struct kbd_device kbdDevice;
 static unsigned int kbd_buffer_getc(struct kbd_buffer *self, char *buffer)
 {
 
-    char c = 0;
-
     if (self->head != self->tail)
     {
 
-        c = self->buffer[self->tail];
+        buffer[0] = self->buffer[self->tail];
         self->tail = (self->tail + 1) % self->size;
-
-    }
-
-    if (c)
-    {
-
-        buffer[0] = c;
 
         return 1;
 
