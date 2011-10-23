@@ -133,7 +133,6 @@ static unsigned int tty_cwd_device_node_write(struct vfs_node *self, unsigned in
 void tty_init()
 {
 
-    string_copy(ttyDevice.base.name, "tty");
     ttyDevice.base.module.type = MODULES_TYPE_DEVICE;
     ttyDevice.base.type = 1000;
     ttyDevice.cursorOffset = 0;

@@ -19,7 +19,6 @@ struct modules_device
 
     struct modules_module module;
     unsigned int type;
-    char name[32];
 
 };
 
@@ -28,7 +27,6 @@ struct modules_driver
 
     struct modules_module module;
     unsigned int type;
-    char name[32];
     struct modules_device *device;
 
 };
@@ -38,7 +36,6 @@ struct modules_bus
 
     struct modules_module module;
     unsigned int type;
-    char name[32];
 
 };
 

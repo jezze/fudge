@@ -203,12 +203,10 @@ void ata_init_busses()
 
     ataBusPrimary.base.module.type = MODULES_TYPE_BUS;
     ataBusPrimary.base.type = ATA_BUS_TYPE;
-    string_copy(ataBusPrimary.base.name, "ata:0");
     modules_register_bus(&ataBusPrimary.base);
 
     ataBusSecondary.base.module.type = MODULES_TYPE_BUS;
     ataBusSecondary.base.type = ATA_BUS_TYPE;
-    string_copy(ataBusSecondary.base.name, "ata:1");
     modules_register_bus(&ataBusSecondary.base);
 
 }
@@ -237,7 +235,6 @@ void ata_init_devices()
 
             case 0:
 
-                string_copy(device->base.name, "ata:0:0");
                 device->control = ATA_PRIMARY_MASTER_CONTROL;
                 device->data = ATA_PRIMARY_MASTER_DATA;
 
@@ -245,7 +242,6 @@ void ata_init_devices()
 
             case 1:
 
-                string_copy(device->base.name, "ata:0:1");
                 device->control = ATA_PRIMARY_SLAVE_CONTROL;
                 device->data = ATA_PRIMARY_SLAVE_DATA;
 
@@ -253,7 +249,6 @@ void ata_init_devices()
 
             case 2:
 
-                string_copy(device->base.name, "ata:1:0");
                 device->control = ATA_SECONDARY_MASTER_CONTROL;
                 device->data = ATA_SECONDARY_MASTER_DATA;
 
@@ -261,7 +256,6 @@ void ata_init_devices()
 
             case 3:
 
-                string_copy(device->base.name, "ata:1:1");
                 device->control = ATA_SECONDARY_SLAVE_CONTROL;
                 device->data = ATA_SECONDARY_SLAVE_DATA;
 

@@ -57,7 +57,6 @@ static unsigned int rtc_device_node_read(struct vfs_node *self, unsigned int cou
 void rtc_init()
 {
 
-    string_copy(rtcDevice.base.name, "rtc");
     rtcDevice.base.module.type = MODULES_TYPE_DEVICE;
     rtcDevice.base.type = 2000;
 

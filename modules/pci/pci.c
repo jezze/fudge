@@ -149,13 +149,6 @@ static void pci_add(unsigned short bus, unsigned short slot, unsigned short func
 
     struct pci_device *device = &pciDevices[pciDevicesCount];
 
-    string_copy(device->base.name, "pci:");
-    string_copy_num(device->base.name + 4, bus, 10);
-    string_concat(device->base.name, ":");
-    string_copy_num(device->base.name + 6, slot, 10);
-    string_concat(device->base.name, ":");
-    string_copy_num(device->base.name + 8, function, 10);
-
     unsigned int address = pci_get_address(bus, slot, function);
 
     device->base.module.type = MODULES_TYPE_DEVICE;
@@ -256,7 +249,6 @@ struct pci_device *pci_bus_find_device(unsigned short deviceid)
 static void pci_init_busses()
 {
 
-    string_copy(pciBus.base.name, "pci:0");
     pciBus.base.module.type = MODULES_TYPE_BUS;
     pciBus.base.type = PCI_BUS_TYPE;
     pciBus.find_device = pci_bus_find_device;

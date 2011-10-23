@@ -7,7 +7,6 @@
 void stream_init(struct stream_device *self, char *name, void *read, void *write)
 {
 
-    string_copy(self->base.name, name);
     self->base.module.type = MODULES_TYPE_DEVICE;
     self->base.type = STREAM_DEVICE_TYPE;
     self->node.operations.read = read;

@@ -117,7 +117,6 @@ static void serial_device_init(struct serial_device *self)
 void serial_init()
 {
 
-    string_copy(serialDevice1.base.name, "serial");
     serialDevice1.base.module.type = MODULES_TYPE_DEVICE;
     serialDevice1.base.type = SERIAL_DEVICE_TYPE;
     serialDevice1.buffer.size = 256;

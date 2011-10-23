@@ -146,12 +146,12 @@ static struct vfs_node *modules_filesystem_lookup(struct vfs_filesystem *self, c
     for (i = 0; modulesDevices[i]; i++)
     {
 
-        if (modulesDevices[i]->type != 4000)
+        if (modulesDevices[i]->type != STREAM_DEVICE_TYPE)
             continue;
 
-        unsigned int count = string_length(modulesDevices[i]->name) + 1;
+        unsigned int count = string_length(((struct stream_device *)modulesDevices[i])->name) + 1;
 
-        if (!memory_compare(path, modulesDevices[i]->name, count))
+        if (!memory_compare(path, ((struct stream_device *)modulesDevices[i])->name, count))
             return &((struct stream_device *)modulesDevices[i])->node;
 
     }
@@ -169,10 +169,10 @@ static unsigned int modules_filesystem_node_read(struct vfs_node *self, unsigned
     for (i = 0; modulesDevices[i]; i++)
     {
 
-        if (modulesDevices[i]->type != 4000)
+        if (modulesDevices[i]->type != STREAM_DEVICE_TYPE)
             continue;
 
-        string_concat(buffer, modulesDevices[i]->name);
+        string_concat(buffer, ((struct stream_device *)modulesDevices[i])->name);
         string_concat(buffer, "\n");
 
     }

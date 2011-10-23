@@ -118,7 +118,6 @@ static void kbd_handler()
 void kbd_init()
 {
 
-    string_copy(kbdDevice.base.name, "kbd");
     kbdDevice.base.module.type = MODULES_TYPE_DEVICE;
     kbdDevice.base.type = KBD_DEVICE_TYPE;
     kbdDevice.buffer.size = 256;

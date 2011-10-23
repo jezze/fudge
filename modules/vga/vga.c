@@ -68,7 +68,6 @@ static void vga_device_set_cursor_offset(unsigned short offset)
 void vga_init()
 {
 
-    string_copy(vgaDevice.base.name, "vga");
     vgaDevice.base.module.type = MODULES_TYPE_DEVICE;
     vgaDevice.base.type = VGA_DEVICE_TYPE;
     vgaDevice.read_framebuffer = vga_device_read_framebuffer;
