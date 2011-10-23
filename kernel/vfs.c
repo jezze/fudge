@@ -4,6 +4,7 @@
 
 static struct vfs_filesystem *vfsFilesystems[8];
 static struct vfs_filesystem vfsFilesystem;
+static struct vfs_node *vfsNodes[64];
 static struct vfs_node vfsRoot;
 
 void vfs_register_filesystem(struct vfs_filesystem *filesystem)
@@ -27,14 +28,28 @@ void vfs_register_filesystem(struct vfs_filesystem *filesystem)
 
 }
 
-struct vfs_node *vfs_find(char *path)
+void vfs_register_node(struct vfs_node *node)
 {
 
-    return vfsFilesystem.lookup(&vfsFilesystem, path);
+    unsigned int i;
+
+    for (i = 0; i < 64; i++)
+    {
+
+        if (!vfsNodes[i])
+        {
+
+            vfsNodes[i] = node;
+
+            return;
+
+        }
+
+    }
 
 }
 
-static struct vfs_node *vfs_filesystem_lookup(struct vfs_filesystem *filesystem, char *path)
+struct vfs_node *vfs_find(char *path)
 {
 
     if (path[0] != '/')
@@ -59,7 +74,14 @@ static struct vfs_node *vfs_filesystem_lookup(struct vfs_filesystem *filesystem,
 
 }
 
-static unsigned int vfs_filesystem_read(struct vfs_node *node, unsigned int count, void *buffer)
+static struct vfs_node *vfs_filesystem_lookup(struct vfs_filesystem *filesystem, char *path)
+{
+
+    return 0;
+
+}
+
+static unsigned int vfs_filesystem_node_read(struct vfs_node *node, unsigned int count, void *buffer)
 {
 
     memory_set(buffer, 0, 1);
@@ -85,7 +107,7 @@ void vfs_init()
 
     string_copy(vfsFilesystem.name, "/");
     vfsFilesystem.root = &vfsRoot;
-    vfsFilesystem.root->operations.read = vfs_filesystem_read;
+    vfsFilesystem.root->operations.read = vfs_filesystem_node_read;
     vfsFilesystem.lookup = vfs_filesystem_lookup;
     vfs_register_filesystem(&vfsFilesystem);
 
