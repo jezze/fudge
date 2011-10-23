@@ -9,8 +9,6 @@
 #define MODULES_DEVICE_MAX 64
 #define MODULES_DRIVER_MAX 64
 
-struct vfs_node;
-
 struct modules_module
 {
 
