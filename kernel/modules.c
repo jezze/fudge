@@ -137,7 +137,7 @@ void modules_register_driver(struct modules_driver *driver)
 
 }
 
-static struct vfs_node *modules_filesystem_lookup(struct vfs_filesystem *filesystem, char *path)
+static struct vfs_node *modules_filesystem_lookup(struct vfs_filesystem *self, char *path)
 {
 
     unsigned int i;
@@ -156,7 +156,7 @@ static struct vfs_node *modules_filesystem_lookup(struct vfs_filesystem *filesys
 
 }
 
-static unsigned int modules_filesystem_read(struct vfs_node *node, unsigned int count, void *buffer)
+static unsigned int modules_filesystem_node_read(struct vfs_node *self, unsigned int count, void *buffer)
 {
 
     memory_set(buffer, 0, 1);
@@ -212,7 +212,7 @@ void modules_init()
 
     string_copy(modulesFilesystem.name, "dev");
     modulesFilesystem.root = &modulesRoot;
-    modulesFilesystem.root->operations.read = modules_filesystem_read;
+    modulesFilesystem.root->operations.read = modules_filesystem_node_read;
     modulesFilesystem.lookup = modules_filesystem_lookup;
     vfs_register_filesystem(&modulesFilesystem);
 
