@@ -63,14 +63,17 @@ static void serial_device_write(struct serial_device *self, char c)
 static unsigned int serial_device_node_read(struct vfs_node *self, unsigned int count, void *buffer)
 {
 
-    char *b = (char *)buffer;
-
     unsigned int i;
 
     for (i = 0; i < count; i++)
-        b[i] = serialDevice1.read(&serialDevice1);
+    {
 
-    return i;
+        if (!serialDevice1.buffer.getc(&serialDevice1.buffer, buffer + i))
+            break;
+
+    }
+
+    return count;
 
 }
 

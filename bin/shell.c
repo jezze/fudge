@@ -81,6 +81,7 @@ static void shell_handle_input(char c)
 
             break;
 
+        case '\r':
         case '\n':
 
             shell_stack_push('\0');
