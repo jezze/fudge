@@ -1,6 +1,8 @@
 #ifndef MODULES_IO_H
 #define MODULES_IO_H
 
+#define IO_DEVICE_TYPE 1
+
 struct io_device
 {
 

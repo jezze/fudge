@@ -70,7 +70,7 @@ void vga_init()
 
     string_copy(vgaDevice.base.name, "vga");
     vgaDevice.base.module.type = MODULES_TYPE_DEVICE;
-    vgaDevice.base.type = MODULES_DEVICE_TYPE_VGA;
+    vgaDevice.base.type = VGA_DEVICE_TYPE;
     vgaDevice.read_framebuffer = vga_device_read_framebuffer;
     vgaDevice.write_framebuffer = vga_device_write_framebuffer;
     vgaDevice.set_cursor_color = vga_device_set_cursor_color;

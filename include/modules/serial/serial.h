@@ -6,6 +6,8 @@
 #define SERIAL_COM3 0x03E8
 #define SERIAL_COM4 0x02E8
 
+#define SERIAL_DEVICE_TYPE 2
+
 struct serial_buffer
 {
 

@@ -59,6 +59,7 @@ modules: lib
 	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_MODULES}/rtc/rtc.c -o ${DIR_SOURCE_MODULES}/rtc/rtc.o
 	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_MODULES}/rtl8139/rtl8139.c -o ${DIR_SOURCE_MODULES}/rtl8139/rtl8139.o
 	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_MODULES}/serial/serial.c -o ${DIR_SOURCE_MODULES}/serial/serial.o
+	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_MODULES}/stream/stream.c -o ${DIR_SOURCE_MODULES}/stream/stream.o
 	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_MODULES}/tty/tty.c -o ${DIR_SOURCE_MODULES}/tty/tty.o
 	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_MODULES}/vga/vga.c -o ${DIR_SOURCE_MODULES}/vga/vga.o
 	@cp ${DIR_SOURCE_MODULES}/ata/ata.o ${DIR_IMAGE}/lib/modules/ata.ko
@@ -100,6 +101,7 @@ kernel: arch-${ARCH} modules
 		${DIR_SOURCE_MODULES}/rtc/rtc.o \
 		${DIR_SOURCE_MODULES}/rtl8139/rtl8139.o \
 		${DIR_SOURCE_MODULES}/serial/serial.o \
+		${DIR_SOURCE_MODULES}/stream/stream.o \
 		${DIR_SOURCE_MODULES}/tty/tty.o \
 		${DIR_SOURCE_MODULES}/vga/vga.o \
 		${DIR_SOURCE_ARCH}/arch.o \

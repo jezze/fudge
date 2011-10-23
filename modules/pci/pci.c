@@ -159,7 +159,7 @@ static void pci_add(unsigned short bus, unsigned short slot, unsigned short func
     unsigned int address = pci_get_address(bus, slot, function);
 
     device->base.module.type = MODULES_TYPE_DEVICE;
-    device->base.type = MODULES_DEVICE_TYPE_PCI;
+    device->base.type = PCI_DEVICE_TYPE;
     device->base.node.operations.read = pci_device_read;
     device->configuration.vendorid = pci_inw(address, 0x00);
     device->configuration.deviceid = pci_inw(address, 0x02);
@@ -259,7 +259,7 @@ static void pci_init_busses()
 
     string_copy(pciBus.base.name, "pci:0");
     pciBus.base.module.type = MODULES_TYPE_BUS;
-    pciBus.base.type = MODULES_BUS_TYPE_PCI;
+    pciBus.base.type = PCI_BUS_TYPE;
     pciBus.find_device = pci_bus_find_device;
 
     modules_register_bus(&pciBus.base);

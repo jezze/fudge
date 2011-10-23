@@ -3,6 +3,8 @@
 
 #define KBD_PORT_READ 0x60
 
+#define KBD_DEVICE_TYPE 5
+
 struct kbd_buffer
 {
 

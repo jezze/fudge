@@ -202,12 +202,12 @@ void ata_init_busses()
 {
 
     ataBusPrimary.base.module.type = MODULES_TYPE_BUS;
-    ataBusPrimary.base.type = MODULES_BUS_TYPE_ATA;
+    ataBusPrimary.base.type = ATA_BUS_TYPE;
     string_copy(ataBusPrimary.base.name, "ata:0");
     modules_register_bus(&ataBusPrimary.base);
 
     ataBusSecondary.base.module.type = MODULES_TYPE_BUS;
-    ataBusSecondary.base.type = MODULES_BUS_TYPE_ATA;
+    ataBusSecondary.base.type = ATA_BUS_TYPE;
     string_copy(ataBusSecondary.base.name, "ata:1");
     modules_register_bus(&ataBusSecondary.base);
 
@@ -225,7 +225,7 @@ void ata_init_devices()
 
         struct ata_device *device = &ataDevices[i];
         device->base.module.type = MODULES_TYPE_DEVICE;
-        device->base.type = MODULES_DEVICE_TYPE_ATA;
+        device->base.type = ATA_DEVICE_TYPE;
         device->base.node.operations.read = ata_device_node_read;
         device->get_command = ata_device_get_command;
         device->identify = ata_device_identify;

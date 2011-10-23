@@ -143,8 +143,8 @@ void tty_init()
     ttyDevice.base.node.operations.read = tty_device_node_read;
     ttyDevice.base.node.operations.write = tty_device_node_write;
     ttyDevice.cursorOffset = 0;
-    ttyDevice.kbdDevice = (struct kbd_device *)modules_get_device(MODULES_DEVICE_TYPE_KEYBOARD);
-    ttyDevice.vgaDevice = (struct vga_device *)modules_get_device(MODULES_DEVICE_TYPE_VGA);
+    ttyDevice.kbdDevice = (struct kbd_device *)modules_get_device(KBD_DEVICE_TYPE);
+    ttyDevice.vgaDevice = (struct vga_device *)modules_get_device(VGA_DEVICE_TYPE);
     ttyDevice.vgaDevice->set_cursor_color(TTY_COLOR_WHITE, TTY_COLOR_BLACK);
     tty_clear();
 

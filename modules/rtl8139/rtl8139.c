@@ -67,7 +67,7 @@ void rtl8139_get_mac(struct rtl8139_driver *driver)
 void rtl8139_init()
 {
 
-    struct pci_bus *bus = (struct pci_bus *)modules_get_bus(MODULES_BUS_TYPE_PCI);
+    struct pci_bus *bus = (struct pci_bus *)modules_get_bus(PCI_BUS_TYPE);
 
     if (!bus)
         return;
