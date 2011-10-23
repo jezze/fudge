@@ -28,16 +28,16 @@ static char kbdMapUS[256] =
 
 static struct kbd_device kbdDevice;
 
-static unsigned int kbd_device_getc(struct kbd_device *device, char *buffer)
+static unsigned int kbd_buffer_getc(struct kbd_buffer *self, char *buffer)
 {
 
     char c = 0;
 
-    if (device->buffer.head != device->buffer.tail)
+    if (self->head != self->tail)
     {
 
-        c = device->buffer.buffer[device->buffer.tail];
-        device->buffer.tail = (device->buffer.tail + 1) % KBD_BUFFER_SIZE;
+        c = self->buffer[self->tail];
+        self->tail = (self->tail + 1) % KBD_BUFFER_SIZE;
 
     }
 
@@ -54,20 +54,34 @@ static unsigned int kbd_device_getc(struct kbd_device *device, char *buffer)
 
 }
 
-static unsigned int kbd_device_putc(struct kbd_device *device, char *buffer)
+static unsigned int kbd_buffer_putc(struct kbd_buffer *self, char *buffer)
 {
 
-    if ((device->buffer.head + 1) % KBD_BUFFER_SIZE != device->buffer.tail)
+    if ((self->head + 1) % KBD_BUFFER_SIZE != self->tail)
     {
 
-        device->buffer.buffer[device->buffer.head] = buffer[0];
-        device->buffer.head = (device->buffer.head + 1) % KBD_BUFFER_SIZE;
+        self->buffer[self->head] = buffer[0];
+        self->head = (self->head + 1) % KBD_BUFFER_SIZE;
 
         return 1;
 
     }
 
     return 0;
+
+}
+
+static unsigned int kbd_device_getc(struct kbd_device *self, char *buffer)
+{
+
+    return self->buffer.getc(&self->buffer, buffer);
+
+}
+
+static unsigned int kbd_device_putc(struct kbd_device *self, char *buffer)
+{
+
+    return self->buffer.putc(&self->buffer, buffer);
 
 }
 
@@ -132,6 +146,8 @@ void kbd_init()
     kbdDevice.base.type = MODULES_DEVICE_TYPE_KEYBOARD;
     kbdDevice.buffer.head = 0;
     kbdDevice.buffer.tail = 0;
+    kbdDevice.buffer.getc = kbd_buffer_getc;
+    kbdDevice.buffer.putc = kbd_buffer_putc;
     kbdDevice.getc = kbd_device_getc;
     kbdDevice.putc = kbd_device_putc;
     kbdDevice.escaped = 0;

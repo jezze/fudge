@@ -11,6 +11,8 @@ struct kbd_buffer
     unsigned int size;
     unsigned int head;
     unsigned int tail;
+    unsigned int (*getc)(struct kbd_buffer *self, char *buffer);
+    unsigned int (*putc)(struct kbd_buffer *self, char *buffer);
 
 };
 
