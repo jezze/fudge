@@ -8,6 +8,49 @@
 
 struct serial_device serialDevice1;
 
+static unsigned int serial_buffer_getc(struct serial_buffer *self, char *buffer)
+{
+
+    char c = 0;
+
+    if (self->head != self->tail)
+    {
+
+        c = self->buffer[self->tail];
+        self->tail = (self->tail + 1) % self->size;
+
+    }
+
+    if (c)
+    {
+
+        buffer[0] = c;
+
+        return 1;
+
+    }
+
+    return 0;
+
+}
+
+static unsigned int serial_buffer_putc(struct serial_buffer *self, char *buffer)
+{
+
+    if ((self->head + 1) % self->size != self->tail)
+    {
+
+        self->buffer[self->head] = buffer[0];
+        self->head = (self->head + 1) % self->size;
+
+        return 1;
+
+    }
+
+    return 0;
+
+}
+
 static char serial_device_read(struct serial_device *device)
 {
 
@@ -83,6 +126,11 @@ void serial_init()
     serialDevice1.base.type = MODULES_DEVICE_TYPE_SERIAL;
     serialDevice1.base.node.operations.read = serial_device_node_read;
     serialDevice1.base.node.operations.write = serial_device_node_write;
+    serialDevice1.buffer.size = 256;
+    serialDevice1.buffer.head = 0;
+    serialDevice1.buffer.tail = 0;
+    serialDevice1.buffer.getc = serial_buffer_getc;
+    serialDevice1.buffer.putc = serial_buffer_putc;
     serialDevice1.port = SERIAL_COM1;
     serialDevice1.init = serial_device_init;
     serialDevice1.read = serial_device_read;

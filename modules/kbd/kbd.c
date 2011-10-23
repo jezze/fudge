@@ -37,7 +37,7 @@ static unsigned int kbd_buffer_getc(struct kbd_buffer *self, char *buffer)
     {
 
         c = self->buffer[self->tail];
-        self->tail = (self->tail + 1) % KBD_BUFFER_SIZE;
+        self->tail = (self->tail + 1) % self->size;
 
     }
 
@@ -57,11 +57,11 @@ static unsigned int kbd_buffer_getc(struct kbd_buffer *self, char *buffer)
 static unsigned int kbd_buffer_putc(struct kbd_buffer *self, char *buffer)
 {
 
-    if ((self->head + 1) % KBD_BUFFER_SIZE != self->tail)
+    if ((self->head + 1) % self->size != self->tail)
     {
 
         self->buffer[self->head] = buffer[0];
-        self->head = (self->head + 1) % KBD_BUFFER_SIZE;
+        self->head = (self->head + 1) % self->size;
 
         return 1;
 
@@ -144,6 +144,7 @@ void kbd_init()
     string_copy(kbdDevice.base.name, "kbd");
     kbdDevice.base.module.type = MODULES_TYPE_DEVICE;
     kbdDevice.base.type = MODULES_DEVICE_TYPE_KEYBOARD;
+    kbdDevice.buffer.size = 256;
     kbdDevice.buffer.head = 0;
     kbdDevice.buffer.tail = 0;
     kbdDevice.buffer.getc = kbd_buffer_getc;

@@ -2,12 +2,11 @@
 #define MODULES_KBD_H
 
 #define KBD_PORT_READ 0x60
-#define KBD_BUFFER_SIZE 256
 
 struct kbd_buffer
 {
 
-    char buffer[KBD_BUFFER_SIZE];
+    char buffer[256];
     unsigned int size;
     unsigned int head;
     unsigned int tail;
