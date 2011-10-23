@@ -13,7 +13,7 @@ static unsigned int ataDevicesCount;
 
 static struct ata_device *ata_get_device(struct vfs_node *node)
 {
-
+/*
     unsigned int i;
 
     for (i = 0; i < ataDevicesCount; i++)
@@ -23,7 +23,7 @@ static struct ata_device *ata_get_device(struct vfs_node *node)
             return &ataDevices[i];
 
     }
-
+*/
     return 0;
 
 }
@@ -226,7 +226,6 @@ void ata_init_devices()
         struct ata_device *device = &ataDevices[i];
         device->base.module.type = MODULES_TYPE_DEVICE;
         device->base.type = ATA_DEVICE_TYPE;
-        device->base.node.operations.read = ata_device_node_read;
         device->get_command = ata_device_get_command;
         device->identify = ata_device_identify;
         device->select = ata_device_select;

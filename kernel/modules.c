@@ -152,7 +152,7 @@ static struct vfs_node *modules_filesystem_lookup(struct vfs_filesystem *self, c
         unsigned int count = string_length(modulesDevices[i]->name) + 1;
 
         if (!memory_compare(path, modulesDevices[i]->name, count))
-            return &modulesDevices[i]->node;
+            return &((struct stream_device *)modulesDevices[i])->node;
 
     }
 

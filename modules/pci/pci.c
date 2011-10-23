@@ -10,7 +10,7 @@ static unsigned int pciDevicesCount;
 
 static struct pci_device *pci_get_device(struct vfs_node *node)
 {
-
+/*
     unsigned int i;
 
     for (i = 0; i < pciDevicesCount; i++)
@@ -20,7 +20,7 @@ static struct pci_device *pci_get_device(struct vfs_node *node)
             return &pciDevices[i];
 
     }
-
+*/
     return 0;
 
 }
@@ -160,7 +160,6 @@ static void pci_add(unsigned short bus, unsigned short slot, unsigned short func
 
     device->base.module.type = MODULES_TYPE_DEVICE;
     device->base.type = PCI_DEVICE_TYPE;
-    device->base.node.operations.read = pci_device_read;
     device->configuration.vendorid = pci_inw(address, 0x00);
     device->configuration.deviceid = pci_inw(address, 0x02);
     device->configuration.revision = pci_inb(address, 0x08);

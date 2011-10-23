@@ -120,8 +120,6 @@ void serial_init()
     string_copy(serialDevice1.base.name, "serial");
     serialDevice1.base.module.type = MODULES_TYPE_DEVICE;
     serialDevice1.base.type = SERIAL_DEVICE_TYPE;
-    serialDevice1.base.node.operations.read = serial_device_node_read;
-    serialDevice1.base.node.operations.write = serial_device_node_write;
     serialDevice1.buffer.size = 256;
     serialDevice1.buffer.head = 0;
     serialDevice1.buffer.tail = 0;

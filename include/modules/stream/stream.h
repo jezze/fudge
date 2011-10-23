@@ -12,7 +12,7 @@ struct stream_device
 
 };
 
-extern void stream_init(struct stream_device *self, char *name);
+extern void stream_init(struct stream_device *self, char *name, void *read, void *write);
 
 #endif
 

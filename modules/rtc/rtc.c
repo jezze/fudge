@@ -60,7 +60,6 @@ void rtc_init()
     string_copy(rtcDevice.base.name, "rtc");
     rtcDevice.base.module.type = MODULES_TYPE_DEVICE;
     rtcDevice.base.type = 2000;
-    rtcDevice.base.node.operations.read = rtc_device_node_read;
 
     modules_register_device(&rtcDevice.base);
 
