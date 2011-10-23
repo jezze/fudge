@@ -134,7 +134,7 @@ void tty_init()
 {
 
     ttyDevice.base.module.type = MODULES_TYPE_DEVICE;
-    ttyDevice.base.type = 1000;
+    ttyDevice.base.type = TTY_DEVICE_TYPE;
     ttyDevice.cursorOffset = 0;
     ttyDevice.kbdDevice = (struct kbd_device *)modules_get_device(KBD_DEVICE_TYPE);
     ttyDevice.vgaDevice = (struct vga_device *)modules_get_device(VGA_DEVICE_TYPE);

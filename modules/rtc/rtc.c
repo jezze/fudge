@@ -58,7 +58,7 @@ void rtc_init()
 {
 
     rtcDevice.base.module.type = MODULES_TYPE_DEVICE;
-    rtcDevice.base.type = 2000;
+    rtcDevice.base.type = RTC_DEVICE_TYPE;
 
     modules_register_device(&rtcDevice.base);
 
