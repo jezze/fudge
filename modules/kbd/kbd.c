@@ -31,20 +31,11 @@ static struct kbd_device kbdDevice;
 static unsigned int kbd_buffer_getc(struct kbd_buffer *self, char *buffer)
 {
 
-    char c = 0;
-
     if (self->head != self->tail)
     {
 
-        c = self->buffer[self->tail];
-        self->tail = (self->tail + 1) % self->size;
-
-    }
-
-    if (c)
-    {
-
-        buffer[0] = c;
+        buffer[0] = self->buffer[self->tail];
+        self->tail = ((self->tail + 1) % self->size);
 
         return 1;
 
@@ -57,31 +48,17 @@ static unsigned int kbd_buffer_getc(struct kbd_buffer *self, char *buffer)
 static unsigned int kbd_buffer_putc(struct kbd_buffer *self, char *buffer)
 {
 
-    if ((self->head + 1) % self->size != self->tail)
+    if ((self->head + 1) != self->tail)
     {
 
         self->buffer[self->head] = buffer[0];
-        self->head = (self->head + 1) % self->size;
+        self->head = ((self->head + 1) % self->size);
 
         return 1;
 
     }
 
     return 0;
-
-}
-
-static unsigned int kbd_device_getc(struct kbd_device *self, char *buffer)
-{
-
-    return self->buffer.getc(&self->buffer, buffer);
-
-}
-
-static unsigned int kbd_device_putc(struct kbd_device *self, char *buffer)
-{
-
-    return self->buffer.putc(&self->buffer, buffer);
 
 }
 
@@ -131,8 +108,8 @@ static void kbd_handler()
 
         if (kbdDevice.toggleShift)
             scancode += 128;
-            
-        kbd_device_putc(&kbdDevice, &kbdMapUS[scancode]);
+
+        kbdDevice.buffer.putc(&kbdDevice.buffer, &kbdMapUS[scancode]);
 
     }
 
@@ -149,8 +126,6 @@ void kbd_init()
     kbdDevice.buffer.tail = 0;
     kbdDevice.buffer.getc = kbd_buffer_getc;
     kbdDevice.buffer.putc = kbd_buffer_putc;
-    kbdDevice.getc = kbd_device_getc;
-    kbdDevice.putc = kbd_device_putc;
     kbdDevice.escaped = 0;
     kbdDevice.toggleAlt = 0;
     kbdDevice.toggleCtrl = 0;

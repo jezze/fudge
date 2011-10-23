@@ -65,6 +65,7 @@ static void shell_handle_input(char c)
     switch (c)
     {
 
+        case '\0':
         case '\t':
 
             break;

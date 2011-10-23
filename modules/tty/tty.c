@@ -87,7 +87,7 @@ static unsigned int tty_device_node_read(struct vfs_node *self, unsigned int cou
 
         char c;
 
-        if (!ttyDevice.kbdDevice->getc(ttyDevice.kbdDevice, &c))
+        if (!ttyDevice.kbdDevice->buffer.getc(&ttyDevice.kbdDevice->buffer, &c))
             break;
 
         ((char *)buffer)[i] = c;
