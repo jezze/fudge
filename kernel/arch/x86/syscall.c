@@ -218,7 +218,7 @@ void *physical;
 void doit()
 {
 
-//    file_write_format(FILE_STDOUT, "Module loaded\n");
+    file_write_format(FILE_STDOUT, "Module loaded\n");
 
 }
 
@@ -324,7 +324,7 @@ static void syscall_load(struct syscall_registers *registers)
     int reloc = (int)buffer + 0x40;
 
     s = (int *)(reloc + 0x01);
-    *s += (int)doit - reloc;
+    *s += (int)doit - reloc - 0x06;
 
     void (*minit)() = (void *)reloc;
     minit();
