@@ -50,7 +50,6 @@ static unsigned int rtc_device_stream_read(struct vfs_node *self, unsigned int c
     string_concat(buffer, ":");
     string_copy_num(num, rtc_get(RTC_FLAG_SECONDS), 10);
     string_concat(buffer, num);
-    string_concat(buffer, "\n");
 
     return string_length(buffer);
 
