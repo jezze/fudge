@@ -219,15 +219,15 @@ void doit()
 
 }
 
-static void print_symtab(struct elf_section_header *header)
+static void print_symtab(void *address, struct elf_section_header *header)
 {
-/*
+
     unsigned int i;
 
     for (i = 0; i < header->size / header->entrySize; i++)
     {
 
-        struct elf_symbol *symHeader = (struct elf_symbol *)(buffer + header->offset + i * header->entrySize);
+        struct elf_symbol *symHeader = (struct elf_symbol *)(address + header->offset + i * header->entrySize);
 
         unsigned int bind = symHeader->info >> 4;
         unsigned int type = symHeader->info & 0x0F;
@@ -235,58 +235,59 @@ static void print_symtab(struct elf_section_header *header)
         if (bind == 0x01)
         {
 
-            file_write_format(FILE_STDERR, "  [%d] SYM - Value: 0x%x Size: %d Info: 0x%x Bind: 0x%x Type: 0x%x Shndx: 0x%x\n", i, symHeader->value, symHeader->size, symHeader->info, bind, type, symHeader->shndx);
+            file_write_format(FILE_STDOUT, "  [%d] SYM - Value: 0x%x Size: %d Info: 0x%x Bind: 0x%x Type: 0x%x Shndx: 0x%x\n", i, symHeader->value, symHeader->size, symHeader->info, bind, type, symHeader->shndx);
 
         }
 
     }
-*/
+
 }
 
-static void print_rel(struct elf_section_header *header)
+static void print_rel(void *address, struct elf_section_header *header)
 {
-/*
+
     unsigned int i;
 
     for (i = 0; i < header->size / header->entrySize; i++)
     {
 
-        struct elf_relocate *rHeader = (struct elf_relocate *)(buffer + header->offset + i * header->entrySize);
+        struct elf_relocate *rHeader = (struct elf_relocate *)(address + header->offset + i * header->entrySize);
 
         unsigned int sym = rHeader->info >> 4;
         unsigned int type = rHeader->info & 0x0F;
 
-        file_write_format(FILE_STDERR, "  [%d] REL - Offset: 0x%x Info: 0x%x Sym: 0x%x Type: 0x%x\n", i, rHeader->offset, rHeader->info, sym, type);
+        file_write_format(FILE_STDOUT, "  [%d] REL - Offset: 0x%x Info: 0x%x Sym: 0x%x Type: 0x%x\n", i, rHeader->offset, rHeader->info, sym, type);
 
-        void *offset = (void *)header + 0x40;
-
+        //void *offset = (void *)header + 0x40;
         //unsigned int *pdoit = offset + rHeader->offset;
  
-        file_write_format(FILE_STDERR, "    Before: 0x%x\n", *pdoit);
-        file_write_format(FILE_STDERR, "    Offset: 0x%x pDoit: 0x%x Doit: 0x%x *pDoit: 0x%x\n", offset, pdoit, doit, *pdoit);
+        //file_write_format(FILE_STDERR, "    Before: 0x%x\n", *pdoit);
+        //file_write_format(FILE_STDERR, "    Offset: 0x%x pDoit: 0x%x Doit: 0x%x *pDoit: 0x%x\n", offset, pdoit, doit, *pdoit);
 
     }
-*/
+
 }
 
-static void print_sections(struct elf_header *header)
+static void print_sections(void *address)
 {
+
+    struct elf_header *header = address;
 
     unsigned int i;
 
     for (i = 0; i < header->sectionHeaderCount; i++)
     {
-/*
-        struct elf_section_header *sHeader = (struct elf_section_header *)(buffer + header->sectionHeaderOffset + i * header->sectionHeaderSize);
 
-        file_write_format(FILE_STDERR, "[%d] SH - Offset: 0x%x Size:0x%x\n", i, sHeader->offset, sHeader->size);
+        struct elf_section_header *sHeader = (struct elf_section_header *)(address + header->sectionHeaderOffset + i * header->sectionHeaderSize);
+
+        file_write_format(FILE_STDOUT, "[%d] SH - Offset: 0x%x Size:0x%x\n", i, sHeader->offset, sHeader->size);
 
         if (sHeader->type == 0x02)
-            print_symtab(sHeader);
+            print_symtab(address, sHeader);
 
         if (sHeader->type == 0x09)
-            print_rel(sHeader);
-*/
+            print_rel(address, sHeader);
+
     }
 
 }
@@ -297,9 +298,8 @@ static void syscall_load(struct syscall_registers *registers)
     char *path = (char *)registers->esi;
 
     struct vfs_node *node = vfs_find(path);
-    struct elf_header *header = (struct elf_header *)node->physical;
 
-//    print_sections(header);
+    //print_sections(node->physical);
 
     int reloc = (int)node->physical + 0x40;
 
