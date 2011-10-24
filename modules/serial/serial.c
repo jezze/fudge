@@ -1,6 +1,5 @@
 #include <lib/memory.h>
 #include <lib/string.h>
-#include <kernel/vfs.h>
 #include <kernel/modules.h>
 #include <kernel/kernel.h>
 #include <modules/io/io.h>
@@ -57,37 +56,6 @@ static void serial_device_write(struct serial_device *self, char c)
     while (!(io_inb(self->port + 5) & 0x20));
 
     io_outb(self->port, c);
-
-}
-
-static unsigned int serial_device_node_read(struct vfs_node *self, unsigned int count, void *buffer)
-{
-
-    unsigned int i;
-
-    for (i = 0; i < count; i++)
-    {
-
-        if (!serialDevice1.buffer.getc(&serialDevice1.buffer, buffer + i))
-            break;
-
-    }
-
-    return count;
-
-}
-
-static unsigned int serial_device_node_write(struct vfs_node *self, unsigned int count, void *buffer)
-{
-
-    char *b = (char *)buffer;
-
-    unsigned int i;
-
-    for (i = 0; i < count; i++)
-        serialDevice1.write(&serialDevice1, b[i]);
-
-    return i;
 
 }
 

@@ -1,123 +1,9 @@
 #include <lib/string.h>
-#include <kernel/vfs.h>
 #include <kernel/modules.h>
 #include <modules/io/io.h>
 #include <modules/pci/pci.h>
 
 static struct pci_bus pciBus;
-
-static struct pci_device *pci_get_device(struct vfs_node *node)
-{
-/*
-    unsigned int i;
-
-    for (i = 0; i < pciDevicesCount; i++)
-    {
-
-        if (&pciDevices[i].base.node == node)
-            return &pciDevices[i];
-
-    }
-*/
-    return 0;
-
-}
-
-static unsigned int pci_device_node_read(struct vfs_node *self, unsigned int count, void *buffer)
-{
-
-    struct pci_device *device = pci_get_device(self);
-
-    if (!device)
-        return 0;
-
-    char num[32];
-
-    string_copy(buffer, "Vendor: 0x");
-    string_copy_num(num, device->configuration.vendorid, 16);
-    string_concat(buffer, num);
-    string_concat(buffer, "\n");
-
-    string_concat(buffer, "Device: 0x");
-    string_copy_num(num, device->configuration.deviceid, 16);
-    string_concat(buffer, num);
-    string_concat(buffer, "\n");
-
-    string_concat(buffer, "Class: 0x");
-    string_copy_num(num, device->configuration.classcode, 16);
-    string_concat(buffer, num);
-    string_concat(buffer, "\n");
-
-    string_concat(buffer, "Sublass: 0x");
-    string_copy_num(num, device->configuration.subclass, 16);
-    string_concat(buffer, num);
-    string_concat(buffer, "\n");
-
-    string_concat(buffer, "Interface: 0x");
-    string_copy_num(num, device->configuration.interface, 16);
-    string_concat(buffer, num);
-    string_concat(buffer, "\n");
-
-    string_concat(buffer, "Headertype: 0x");
-    string_copy_num(num, device->configuration.headertype, 16);
-    string_concat(buffer, num);
-    string_concat(buffer, "\n");
-
-    string_concat(buffer, "Interrupt line: 0x");
-    string_copy_num(num, device->configuration.interruptline, 16);
-    string_concat(buffer, num);
-    string_concat(buffer, "\n");
-
-    string_concat(buffer, "Interrupt pin: 0x");
-    string_copy_num(num, device->configuration.interruptpin, 16);
-    string_concat(buffer, num);
-    string_concat(buffer, "\n");
-
-    if (device->configuration.headertype == 0x00)
-    {
-
-        string_concat(buffer, "Bar0: ");
-        string_copy_num(num, device->configuration.bar0, 2);
-        string_concat(buffer, num);
-        string_concat(buffer, "\n");
-
-        string_concat(buffer, "Bar1: ");
-        string_copy_num(num, device->configuration.bar1, 2);
-        string_concat(buffer, num);
-        string_concat(buffer, "\n");
-
-        string_concat(buffer, "Bar2: ");
-        string_copy_num(num, device->configuration.bar2, 2);
-        string_concat(buffer, num);
-        string_concat(buffer, "\n");
-
-        string_concat(buffer, "Bar3: ");
-        string_copy_num(num, device->configuration.bar3, 2);
-        string_concat(buffer, num);
-        string_concat(buffer, "\n");
-
-        string_concat(buffer, "Bar4: ");
-        string_copy_num(num, device->configuration.bar4, 2);
-        string_concat(buffer, num);
-        string_concat(buffer, "\n");
-
-        string_concat(buffer, "Bar5: ");
-        string_copy_num(num, device->configuration.bar5, 2);
-        string_concat(buffer, num);
-        string_concat(buffer, "\n");
-
-    }
-
-    return string_length(buffer);
-
-}
-
-static unsigned int pci_get_address(unsigned int bus, unsigned int slot, unsigned int function)
-{
-
-    return (0x80000000 | (bus << 16) | (slot << 11) | (function << 8));
-
-}
 
 static unsigned int pci_ind(unsigned int address, unsigned short offset)
 {
@@ -168,6 +54,13 @@ void pci_device_init(struct pci_device *device, unsigned int address)
         device->configuration.bar5 = pci_ind(address, 0x24);
 
     }
+
+}
+
+static unsigned int pci_get_address(unsigned int bus, unsigned int slot, unsigned int function)
+{
+
+    return (0x80000000 | (bus << 16) | (slot << 11) | (function << 8));
 
 }
 

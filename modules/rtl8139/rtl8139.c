@@ -1,5 +1,4 @@
 #include <lib/string.h>
-#include <kernel/vfs.h>
 #include <kernel/log.h>
 #include <kernel/modules.h>
 #include <kernel/kernel.h>

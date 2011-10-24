@@ -1,7 +1,6 @@
 #include <lib/memory.h>
 #include <lib/string.h>
 #include <kernel/log.h>
-#include <kernel/vfs.h>
 #include <kernel/modules.h>
 #include <modules/io/io.h>
 #include <modules/ata/ata.h>
@@ -9,75 +8,6 @@
 static struct ata_bus ataBusPrimary;
 static struct ata_bus ataBusSecondary;
 static struct ata_device ataDevices[4];
-
-static struct ata_device *ata_get_device(struct vfs_node *node)
-{
-/*
-    unsigned int i;
-
-    for (i = 0; i < ataDevicesCount; i++)
-    {
-
-        if (&ataDevices[i].base.node == node)
-            return &ataDevices[i];
-
-    }
-*/
-    return 0;
-
-}
-
-static unsigned int ata_device_node_read(struct vfs_node *self, unsigned int count, void *buffer)
-{
-
-    struct ata_device *device = ata_get_device(self);
-
-    if (!device)
-        return 0;
-
-    string_copy(buffer, "Type: ");
-
-    switch (device->type)
-    {
-
-        case ATA_DEVICE_TYPE_ATA:
-
-            string_concat(buffer, "ATA\n");
-
-            break;
-
-        case ATA_DEVICE_TYPE_ATAPI:
-
-            string_concat(buffer, "ATAPI\n");
-
-            break;
-
-        case ATA_DEVICE_TYPE_SATA:
-
-            string_concat(buffer, "SATA\n");
-
-            break;
-
-        case ATA_DEVICE_TYPE_SATAPI:
-
-            string_concat(buffer, "SATAPI\n");
-
-            break;
-
-        default:
-
-            string_concat(buffer, "UNKNOWN\n");
-
-            break;
-
-    }
-
-    string_concat(buffer, "Position: ");
-    string_concat(buffer, "\n");
-
-    return string_length(buffer);
-
-}
 
 static void ata_device_sleep(struct ata_device *self)
 {

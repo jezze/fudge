@@ -1,8 +1,9 @@
 #include <lib/memory.h>
 #include <lib/string.h>
-#include <kernel/vfs.h>
 #include <kernel/modules.h>
+#include <kernel/vfs.h>
 #include <modules/io/io.h>
+#include <modules/stream/stream.h>
 #include <modules/rtc/rtc.h>
 
 static struct rtc_device rtcDevice;
@@ -26,7 +27,7 @@ static unsigned char rtc_get(unsigned int type)
 
 }
 
-static unsigned int rtc_device_node_read(struct vfs_node *self, unsigned int count, void *buffer)
+static unsigned int rtc_device_stream_read(struct vfs_node *self, unsigned int count, void *buffer)
 {
 
     char num[32];
@@ -49,6 +50,7 @@ static unsigned int rtc_device_node_read(struct vfs_node *self, unsigned int cou
     string_concat(buffer, ":");
     string_copy_num(num, rtc_get(RTC_FLAG_SECONDS), 10);
     string_concat(buffer, num);
+    string_concat(buffer, "\n");
 
     return string_length(buffer);
 
@@ -60,6 +62,8 @@ void rtc_device_init(struct rtc_device *device)
     rtcDevice.base.module.type = MODULES_TYPE_DEVICE;
     rtcDevice.base.type = RTC_DEVICE_TYPE;
 
+    stream_device_init(&rtcDevice.stream, "rtc", rtc_device_stream_read, 0);
+
 }
 
 void rtc_init()
@@ -67,6 +71,7 @@ void rtc_init()
 
     rtc_device_init(&rtcDevice);
 
+    modules_register_device(&rtcDevice.stream.base);
     modules_register_device(&rtcDevice.base);
 
 }
