@@ -229,7 +229,7 @@ static void pci_scan_bus(unsigned int bus)
 
 }
 
-struct pci_device *pci_bus_find_device(unsigned short deviceid)
+static struct pci_device *pci_bus_find_device(unsigned short deviceid)
 {
 
     unsigned int i;
@@ -246,31 +246,24 @@ struct pci_device *pci_bus_find_device(unsigned short deviceid)
 
 }
 
-static void pci_init_busses()
+void pci_bus_init(struct pci_bus *bus)
 {
 
-    pciBus.base.module.type = MODULES_TYPE_BUS;
-    pciBus.base.type = PCI_BUS_TYPE;
-    pciBus.find_device = pci_bus_find_device;
-
-    modules_register_bus(&pciBus.base);
-
-}
-
-static void pci_init_devices()
-{
-
-    pciDevicesCount = 0;
-
-    pci_scan_bus(0);
+    bus->base.module.type = MODULES_TYPE_BUS;
+    bus->base.type = PCI_BUS_TYPE;
+    bus->find_device = pci_bus_find_device;
 
 }
 
 void pci_init()
 {
 
-    pci_init_busses();
-    pci_init_devices();
+    pci_bus_init(&pciBus);
+    modules_register_bus(&pciBus.base);
+
+    pciDevicesCount = 0;
+
+    pci_scan_bus(0);
 
 }
 

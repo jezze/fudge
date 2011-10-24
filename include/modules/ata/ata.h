@@ -86,6 +86,8 @@ struct ata_bus
 
 };
 
+extern void ata_bus_init(struct ata_bus *bus);
+extern void ata_device_init(struct ata_device *device, unsigned int control, unsigned int data);
 extern void ata_init();
 
 #endif

@@ -115,20 +115,28 @@ static void kbd_handler()
 
 }
 
+void kbd_device_init(struct kbd_device *device)
+{
+
+    device->base.module.type = MODULES_TYPE_DEVICE;
+    device->base.type = KBD_DEVICE_TYPE;
+    device->buffer.size = 256;
+    device->buffer.head = 0;
+    device->buffer.tail = 0;
+    device->buffer.getc = kbd_buffer_getc;
+    device->buffer.putc = kbd_buffer_putc;
+    device->escaped = 0;
+    device->toggleAlt = 0;
+    device->toggleCtrl = 0;
+    device->toggleShift = 0;
+
+
+}
+
 void kbd_init()
 {
 
-    kbdDevice.base.module.type = MODULES_TYPE_DEVICE;
-    kbdDevice.base.type = KBD_DEVICE_TYPE;
-    kbdDevice.buffer.size = 256;
-    kbdDevice.buffer.head = 0;
-    kbdDevice.buffer.tail = 0;
-    kbdDevice.buffer.getc = kbd_buffer_getc;
-    kbdDevice.buffer.putc = kbd_buffer_putc;
-    kbdDevice.escaped = 0;
-    kbdDevice.toggleAlt = 0;
-    kbdDevice.toggleCtrl = 0;
-    kbdDevice.toggleShift = 0;
+    kbd_device_init(&kbdDevice);
 
     kernel_register_irq(0x01, kbd_handler);
 

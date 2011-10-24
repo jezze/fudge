@@ -9,7 +9,6 @@
 static struct ata_bus ataBusPrimary;
 static struct ata_bus ataBusSecondary;
 static struct ata_device ataDevices[4];
-static unsigned int ataDevicesCount;
 
 static struct ata_device *ata_get_device(struct vfs_node *node)
 {
@@ -198,83 +197,67 @@ static unsigned int ata_device_identify(struct ata_device *self)
 
 }
 
-void ata_init_busses()
+void ata_bus_init(struct ata_bus *bus)
 {
 
-    ataBusPrimary.base.module.type = MODULES_TYPE_BUS;
-    ataBusPrimary.base.type = ATA_BUS_TYPE;
-    modules_register_bus(&ataBusPrimary.base);
-
-    ataBusSecondary.base.module.type = MODULES_TYPE_BUS;
-    ataBusSecondary.base.type = ATA_BUS_TYPE;
-    modules_register_bus(&ataBusSecondary.base);
+    bus->base.module.type = MODULES_TYPE_BUS;
+    bus->base.type = ATA_BUS_TYPE;
 
 }
 
-void ata_init_devices()
+void ata_device_init(struct ata_device *device, unsigned int control, unsigned int data)
 {
 
-    ataDevicesCount = 4;
-
-    unsigned int i;
-
-    for (i = 0; i < ataDevicesCount; i++)
-    {
-
-        struct ata_device *device = &ataDevices[i];
-        device->base.module.type = MODULES_TYPE_DEVICE;
-        device->base.type = ATA_DEVICE_TYPE;
-        device->get_command = ata_device_get_command;
-        device->identify = ata_device_identify;
-        device->select = ata_device_select;
-        device->sleep = ata_device_sleep;
-        device->set_command = ata_device_set_command;
+    device->base.module.type = MODULES_TYPE_DEVICE;
+    device->base.type = ATA_DEVICE_TYPE;
+    device->control = control;
+    device->data = data;
+    device->get_command = ata_device_get_command;
+    device->identify = ata_device_identify;
+    device->select = ata_device_select;
+    device->sleep = ata_device_sleep;
+    device->set_command = ata_device_set_command;
        
-        switch (i)
-        {
-
-            case 0:
-
-                device->control = ATA_PRIMARY_MASTER_CONTROL;
-                device->data = ATA_PRIMARY_MASTER_DATA;
-
-                break;
-
-            case 1:
-
-                device->control = ATA_PRIMARY_SLAVE_CONTROL;
-                device->data = ATA_PRIMARY_SLAVE_DATA;
-
-                break;
-
-            case 2:
-
-                device->control = ATA_SECONDARY_MASTER_CONTROL;
-                device->data = ATA_SECONDARY_MASTER_DATA;
-
-                break;
-
-            case 3:
-
-                device->control = ATA_SECONDARY_SLAVE_CONTROL;
-                device->data = ATA_SECONDARY_SLAVE_DATA;
-
-                break;
-
-        }
-
-        if (device->identify(device))
-            modules_register_device(&device->base);
-
-    }
-
 }
 
 void ata_init()
 {
 
-    ata_init_busses();
-    ata_init_devices();
+    ata_bus_init(&ataBusPrimary);
+    modules_register_bus(&ataBusPrimary.base);
+
+    ata_bus_init(&ataBusSecondary);
+    modules_register_bus(&ataBusSecondary.base);
+
+    struct ata_device *device;
+    
+    device = &ataDevices[0];
+
+    ata_device_init(device, ATA_PRIMARY_MASTER_CONTROL, ATA_PRIMARY_MASTER_DATA);
+
+    if (device->identify(device))
+        modules_register_device(&device->base);
+
+    device = &ataDevices[1];
+
+    ata_device_init(device, ATA_PRIMARY_SLAVE_CONTROL, ATA_PRIMARY_SLAVE_DATA);
+
+    if (device->identify(device))
+        modules_register_device(&device->base);
+
+    device = &ataDevices[2];
+
+    ata_device_init(device, ATA_SECONDARY_MASTER_CONTROL, ATA_SECONDARY_MASTER_DATA);
+
+    if (device->identify(device))
+        modules_register_device(&device->base);
+
+    device = &ataDevices[3];
+
+    ata_device_init(device, ATA_SECONDARY_SLAVE_CONTROL, ATA_SECONDARY_SLAVE_DATA);
+
+    if (device->identify(device))
+        modules_register_device(&device->base);
 
 }
 
