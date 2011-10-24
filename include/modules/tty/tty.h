@@ -39,6 +39,7 @@ struct tty_device
 
 };
 
+extern void tty_device_init(struct tty_device *device);
 extern void tty_init();
 
 #endif

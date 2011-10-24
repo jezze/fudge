@@ -65,15 +65,22 @@ static void vga_device_set_cursor_offset(unsigned short offset)
 
 }
 
+void vga_device_init(struct vga_device *device)
+{
+
+    device->base.module.type = MODULES_TYPE_DEVICE;
+    device->base.type = VGA_DEVICE_TYPE;
+    device->read_framebuffer = vga_device_read_framebuffer;
+    device->write_framebuffer = vga_device_write_framebuffer;
+    device->set_cursor_color = vga_device_set_cursor_color;
+    device->set_cursor_offset = vga_device_set_cursor_offset;
+
+}
+
 void vga_init()
 {
 
-    vgaDevice.base.module.type = MODULES_TYPE_DEVICE;
-    vgaDevice.base.type = VGA_DEVICE_TYPE;
-    vgaDevice.read_framebuffer = vga_device_read_framebuffer;
-    vgaDevice.write_framebuffer = vga_device_write_framebuffer;
-    vgaDevice.set_cursor_color = vga_device_set_cursor_color;
-    vgaDevice.set_cursor_offset = vga_device_set_cursor_offset;
+    vga_device_init(&vgaDevice);
 
     modules_register_device(&vgaDevice.base);
 

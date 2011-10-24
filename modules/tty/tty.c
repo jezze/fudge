@@ -130,21 +130,28 @@ static unsigned int tty_cwd_device_node_write(struct vfs_node *self, unsigned in
 
 }
 
+void tty_device_init(struct tty_device *device)
+{
+
+    device->base.module.type = MODULES_TYPE_DEVICE;
+    device->base.type = TTY_DEVICE_TYPE;
+    device->cursorOffset = 0;
+    device->kbdDevice = (struct kbd_device *)modules_get_device(KBD_DEVICE_TYPE);
+    device->vgaDevice = (struct vga_device *)modules_get_device(VGA_DEVICE_TYPE);
+    device->vgaDevice->set_cursor_color(TTY_COLOR_WHITE, TTY_COLOR_BLACK);
+    tty_clear();
+
+    stream_device_init(&device->in, "stdin", tty_device_node_read, 0);
+    stream_device_init(&device->out, "stdout", 0, tty_device_node_write);
+    stream_device_init(&device->error, "stderr", 0, tty_device_node_write);
+    stream_device_init(&device->cwd, "cwd", tty_cwd_device_node_read, tty_cwd_device_node_write);
+
+}
+
 void tty_init()
 {
 
-    ttyDevice.base.module.type = MODULES_TYPE_DEVICE;
-    ttyDevice.base.type = TTY_DEVICE_TYPE;
-    ttyDevice.cursorOffset = 0;
-    ttyDevice.kbdDevice = (struct kbd_device *)modules_get_device(KBD_DEVICE_TYPE);
-    ttyDevice.vgaDevice = (struct vga_device *)modules_get_device(VGA_DEVICE_TYPE);
-    ttyDevice.vgaDevice->set_cursor_color(TTY_COLOR_WHITE, TTY_COLOR_BLACK);
-    tty_clear();
-
-    stream_device_init(&ttyDevice.in, "stdin", tty_device_node_read, 0);
-    stream_device_init(&ttyDevice.out, "stdout", 0, tty_device_node_write);
-    stream_device_init(&ttyDevice.error, "stderr", 0, tty_device_node_write);
-    stream_device_init(&ttyDevice.cwd, "cwd", tty_cwd_device_node_read, tty_cwd_device_node_write);
+    tty_device_init(&ttyDevice);
 
     modules_register_device(&ttyDevice.in.base);
     modules_register_device(&ttyDevice.out.base);
