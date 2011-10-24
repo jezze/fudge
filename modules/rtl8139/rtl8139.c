@@ -72,7 +72,7 @@ void rtl8139_init()
     if (!bus)
         return;
 
-    struct pci_device *device = bus->find_device(0x8139);
+    struct pci_device *device = bus->find_device(bus, 0x8139);
 
     if (!device)
         return;

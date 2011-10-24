@@ -73,11 +73,15 @@ struct pci_bus
 {
 
     struct modules_bus base;
+    struct pci_device devices[32];
+    unsigned int devicesCount;
     void (*register_device)(struct pci_device *device);
-    struct pci_device *(*find_device)(unsigned short deviceid);
+    struct pci_device *(*find_device)(struct pci_bus *self, unsigned short deviceid);
+    void (*scan)(unsigned int bus);
 
 };
 
+extern void pci_device_init(struct pci_device *device, unsigned int address);
 extern void pci_init();
 
 #endif

@@ -5,8 +5,6 @@
 #include <modules/pci/pci.h>
 
 static struct pci_bus pciBus;
-static struct pci_device pciDevices[32];
-static unsigned int pciDevicesCount;
 
 static struct pci_device *pci_get_device(struct vfs_node *node)
 {
@@ -25,7 +23,7 @@ static struct pci_device *pci_get_device(struct vfs_node *node)
 
 }
 
-static unsigned int pci_device_read(struct vfs_node *self, unsigned int count, void *buffer)
+static unsigned int pci_device_node_read(struct vfs_node *self, unsigned int count, void *buffer)
 {
 
     struct pci_device *device = pci_get_device(self);
@@ -144,12 +142,8 @@ static unsigned short pci_inw(unsigned int address, unsigned short offset)
 
 }
 
-static void pci_add(unsigned short bus, unsigned short slot, unsigned short function)
+void pci_device_init(struct pci_device *device, unsigned int address)
 {
-
-    struct pci_device *device = &pciDevices[pciDevicesCount];
-
-    unsigned int address = pci_get_address(bus, slot, function);
 
     device->base.module.type = MODULES_TYPE_DEVICE;
     device->base.type = PCI_DEVICE_TYPE;
@@ -175,13 +169,39 @@ static void pci_add(unsigned short bus, unsigned short slot, unsigned short func
 
     }
 
+}
+
+static void pci_bus_add(unsigned short bus, unsigned short slot, unsigned short function)
+{
+
+    struct pci_device *device = &pciBus.devices[pciBus.devicesCount];
+
+    pci_device_init(device, pci_get_address(bus, slot, function));
+
     modules_register_device(&device->base);
 
-    pciDevicesCount++;
+    pciBus.devicesCount++;
 
 }
 
-static void pci_scan_bus(unsigned int bus)
+static struct pci_device *pci_bus_find_device(struct pci_bus *self, unsigned short deviceid)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < self->devicesCount; i++)
+    {
+
+        if (self->devices[i].configuration.deviceid == deviceid)
+            return &self->devices[i];
+
+    }
+
+    return 0;
+
+}
+
+static void pci_bus_scan(unsigned int bus)
 {
 
     unsigned int slot;
@@ -197,10 +217,10 @@ static void pci_scan_bus(unsigned int bus)
         unsigned short header = pci_inb(address, 0x0E);
 
         if ((header & 0x01))
-            pci_scan_bus(pci_inb(address, 0x19));
+            pci_bus_scan(pci_inb(address, 0x19));
 
         if ((header & 0x02))
-            pci_scan_bus(pci_inb(address, 0x18));
+            pci_bus_scan(pci_inb(address, 0x18));
 
         if ((header & 0x80))
         {
@@ -215,7 +235,7 @@ static void pci_scan_bus(unsigned int bus)
                 if (pci_inw(address, 0x00) == 0xFFFF)
                     break;
 
-                pci_add(bus, slot, function);
+                pci_bus_add(bus, slot, function);
 
             }
 
@@ -223,26 +243,9 @@ static void pci_scan_bus(unsigned int bus)
 
         }
     
-        pci_add(bus, slot, 0);
+        pci_bus_add(bus, slot, 0);
 
     }
-
-}
-
-static struct pci_device *pci_bus_find_device(unsigned short deviceid)
-{
-
-    unsigned int i;
-
-    for (i = 0; i < pciDevicesCount; i++)
-    {
-
-        if (pciDevices[i].configuration.deviceid == deviceid)
-            return &pciDevices[i];
-
-    }
-
-    return 0;
 
 }
 
@@ -251,7 +254,10 @@ void pci_bus_init(struct pci_bus *bus)
 
     bus->base.module.type = MODULES_TYPE_BUS;
     bus->base.type = PCI_BUS_TYPE;
+    bus->devicesCount = 0;
     bus->find_device = pci_bus_find_device;
+    bus->scan = pci_bus_scan;
+    bus->scan(0);
 
 }
 
@@ -259,11 +265,8 @@ void pci_init()
 {
 
     pci_bus_init(&pciBus);
+
     modules_register_bus(&pciBus.base);
-
-    pciDevicesCount = 0;
-
-    pci_scan_bus(0);
 
 }
 
