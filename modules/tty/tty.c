@@ -141,10 +141,10 @@ void tty_init()
     ttyDevice.vgaDevice->set_cursor_color(TTY_COLOR_WHITE, TTY_COLOR_BLACK);
     tty_clear();
 
-    stream_init(&ttyDevice.in, "stdin", tty_device_node_read, 0);
-    stream_init(&ttyDevice.out, "stdout", 0, tty_device_node_write);
-    stream_init(&ttyDevice.error, "stderr", 0, tty_device_node_write);
-    stream_init(&ttyDevice.cwd, "cwd", tty_cwd_device_node_read, tty_cwd_device_node_write);
+    stream_device_init(&ttyDevice.in, "stdin", tty_device_node_read, 0);
+    stream_device_init(&ttyDevice.out, "stdout", 0, tty_device_node_write);
+    stream_device_init(&ttyDevice.error, "stderr", 0, tty_device_node_write);
+    stream_device_init(&ttyDevice.cwd, "cwd", tty_cwd_device_node_read, tty_cwd_device_node_write);
 
     modules_register_device(&ttyDevice.in.base);
     modules_register_device(&ttyDevice.out.base);
