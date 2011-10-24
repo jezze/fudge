@@ -100,35 +100,35 @@ static void serial_handler()
 
 }
 
-static void serial_device_init(struct serial_device *self)
+void serial_device_init(struct serial_device *device, unsigned int port)
 {
 
-    io_outb(self->port + 1, 0x00);
-    io_outb(self->port + 3, 0x80);
-    io_outb(self->port + 0, 0x03);
-    io_outb(self->port + 1, 0x00);
-    io_outb(self->port + 3, 0x03);
-    io_outb(self->port + 2, 0xC7);
-    io_outb(self->port + 4, 0x0B);
-    io_outb(self->port + 1, 0x01);
+    device->base.module.type = MODULES_TYPE_DEVICE;
+    device->base.type = SERIAL_DEVICE_TYPE;
+    device->buffer.size = 256;
+    device->buffer.head = 0;
+    device->buffer.tail = 0;
+    device->buffer.getc = serial_buffer_getc;
+    device->buffer.putc = serial_buffer_putc;
+    device->port = port;
+    device->read = serial_device_read;
+    device->write = serial_device_write;
+
+    io_outb(device->port + 1, 0x00);
+    io_outb(device->port + 3, 0x80);
+    io_outb(device->port + 0, 0x03);
+    io_outb(device->port + 1, 0x00);
+    io_outb(device->port + 3, 0x03);
+    io_outb(device->port + 2, 0xC7);
+    io_outb(device->port + 4, 0x0B);
+    io_outb(device->port + 1, 0x01);
 
 }
 
 void serial_init()
 {
 
-    serialDevice1.base.module.type = MODULES_TYPE_DEVICE;
-    serialDevice1.base.type = SERIAL_DEVICE_TYPE;
-    serialDevice1.buffer.size = 256;
-    serialDevice1.buffer.head = 0;
-    serialDevice1.buffer.tail = 0;
-    serialDevice1.buffer.getc = serial_buffer_getc;
-    serialDevice1.buffer.putc = serial_buffer_putc;
-    serialDevice1.port = SERIAL_COM1;
-    serialDevice1.init = serial_device_init;
-    serialDevice1.read = serial_device_read;
-    serialDevice1.write = serial_device_write;
-    serialDevice1.init(&serialDevice1);
+    serial_device_init(&serialDevice1, SERIAL_COM1);
 
     kernel_register_irq(0x04, serial_handler);
 

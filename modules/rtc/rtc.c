@@ -54,11 +54,18 @@ static unsigned int rtc_device_node_read(struct vfs_node *self, unsigned int cou
 
 }
 
-void rtc_init()
+void rtc_device_init(struct rtc_device *device)
 {
 
     rtcDevice.base.module.type = MODULES_TYPE_DEVICE;
     rtcDevice.base.type = RTC_DEVICE_TYPE;
+
+}
+
+void rtc_init()
+{
+
+    rtc_device_init(&rtcDevice);
 
     modules_register_device(&rtcDevice.base);
 

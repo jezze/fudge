@@ -21,6 +21,7 @@ struct rtc_device
 
 };
 
+extern void rtc_device_init(struct rtc_device *device);
 extern void rtc_init();
 
 #endif

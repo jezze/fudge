@@ -26,12 +26,12 @@ struct serial_device
     struct modules_device base;
     struct serial_buffer buffer;
     unsigned int port;
-    void (*init)(struct serial_device *self);
     char (*read)(struct serial_device *self);
     void (*write)(struct serial_device *self, char c);
 
 };
 
+extern void serial_device_init(struct serial_device *device, unsigned int port);
 extern void serial_init();
 
 #endif
