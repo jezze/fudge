@@ -89,10 +89,12 @@ void mmu_map(void *paddress, void *vaddress, unsigned int size, unsigned int tab
 
 }
 
-void mmu_set_directory(struct mmu_directory *directory)
+void mmu_set_directory(void *paddress)
 {
 
-    cpu_set_cr3((unsigned int)directory);
+    struct mmu_header *header = mmu_get_header(paddress);
+
+    cpu_set_cr3((unsigned int)&header->directory);
 
 }
 
@@ -136,7 +138,7 @@ void mmu_init()
     mmu_clear_directory(&mmuKernelHeader.directory);
     mmuKernelHeader.address = 0;
     mmu_map(mmuKernelHeader.address, (void *)0x00000000, 0x00400000, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE);
-    mmu_set_directory(&mmuKernelHeader.directory);
+    mmu_set_directory(mmuKernelHeader.address);
 
     unsigned int i;
 

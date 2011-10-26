@@ -69,9 +69,8 @@ void runtime_activate(struct runtime_task *task)
         runtimeTasks[i].running = 0;
 
     void *paddress = mmu_get_paddress(task->pid);
-    struct mmu_header *header = mmu_get_header(paddress);
 
-    mmu_set_directory(&header->directory);
+    mmu_set_directory(paddress);
 
     task->running = 1;
 
