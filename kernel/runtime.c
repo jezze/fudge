@@ -76,11 +76,11 @@ void runtime_activate(struct runtime_task *task)
 
 }
 
-static void *runtime_copy_argv(void *address, void *virtual, unsigned int argc, char **argv)
+static void *runtime_copy_argv(void *paddress, void *vaddress, unsigned int argc, char **argv)
 {
 
     unsigned int start = 0xFD00;
-    char **nargv = address + start;
+    char **nargv = paddress + start;
 
     unsigned int i;
     unsigned int off = argc * 4;
@@ -88,39 +88,39 @@ static void *runtime_copy_argv(void *address, void *virtual, unsigned int argc, 
     for (i = 0; i < argc; i++)
     {
 
-        nargv[i] = virtual + start + off;
-        string_copy(address + start + off, argv[i]);
+        nargv[i] = vaddress + start + off;
+        string_copy(paddress + start + off, argv[i]);
         off += string_length(argv[i]) + 2;
 
     }
 
-    return virtual + start;
+    return vaddress + start;
 
 }
 
-static void *runtime_create_stack(struct runtime_task *self, void *address, void *virtual, unsigned int argc, char **argv)
+static void runtime_task_create_stack(struct runtime_task *self, void *paddress, void *vaddress, unsigned int argc, char **argv)
 {
 
-    void *nargv = runtime_copy_argv(address, virtual, argc, argv);
+    void *nargv = runtime_copy_argv(paddress, vaddress, argc, argv);
 
-    memory_set(address + 0xFFFF, ((unsigned int)nargv & 0xFF000000) >> 24, 1);
-    memory_set(address + 0xFFFE, ((unsigned int)nargv & 0x00FF0000) >> 16, 1);
-    memory_set(address + 0xFFFD, ((unsigned int)nargv & 0x0000FF00) >> 8, 1);
-    memory_set(address + 0xFFFC, ((unsigned int)nargv & 0x000000FF) >> 0, 1);
-    memory_set(address + 0xFFFB, (argc & 0xFF000000) >> 24, 1);
-    memory_set(address + 0xFFFA, (argc & 0x00FF0000) >> 16, 1);
-    memory_set(address + 0xFFF9, (argc & 0x0000FF00) >> 8, 1);
-    memory_set(address + 0xFFF8, (argc & 0x000000FF) >> 0, 1);
-    memory_set(address + 0xFFF7, ((unsigned int)self->eip & 0xFF000000) >> 24, 1);
-    memory_set(address + 0xFFF6, ((unsigned int)self->eip & 0x00FF0000) >> 16, 1);
-    memory_set(address + 0xFFF5, ((unsigned int)self->eip & 0x0000FF00) >> 8, 1);
-    memory_set(address + 0xFFF4, ((unsigned int)self->eip & 0x000000FF) >> 0, 1);
+    memory_set(paddress + 0xFFFF, ((unsigned int)nargv & 0xFF000000) >> 24, 1);
+    memory_set(paddress + 0xFFFE, ((unsigned int)nargv & 0x00FF0000) >> 16, 1);
+    memory_set(paddress + 0xFFFD, ((unsigned int)nargv & 0x0000FF00) >> 8, 1);
+    memory_set(paddress + 0xFFFC, ((unsigned int)nargv & 0x000000FF) >> 0, 1);
+    memory_set(paddress + 0xFFFB, (argc & 0xFF000000) >> 24, 1);
+    memory_set(paddress + 0xFFFA, (argc & 0x00FF0000) >> 16, 1);
+    memory_set(paddress + 0xFFF9, (argc & 0x0000FF00) >> 8, 1);
+    memory_set(paddress + 0xFFF8, (argc & 0x000000FF) >> 0, 1);
+    memory_set(paddress + 0xFFF7, ((unsigned int)self->eip & 0xFF000000) >> 24, 1);
+    memory_set(paddress + 0xFFF6, ((unsigned int)self->eip & 0x00FF0000) >> 16, 1);
+    memory_set(paddress + 0xFFF5, ((unsigned int)self->eip & 0x0000FF00) >> 8, 1);
+    memory_set(paddress + 0xFFF4, ((unsigned int)self->eip & 0x000000FF) >> 0, 1);
 
-    return virtual + 0xFFF4;
+    self->esp = vaddress + 0xFFF4;
 
 }
 
-static unsigned int runtime_load(struct runtime_task *self, char *path, unsigned int argc, char **argv)
+static unsigned int runtime_task_load(struct runtime_task *self, char *path, unsigned int argc, char **argv)
 {
 
     struct mmu_header *header = mmu_get_program_header(self->pid);
@@ -132,18 +132,21 @@ static unsigned int runtime_load(struct runtime_task *self, char *path, unsigned
 
     node->operations.read(node, 0x10000, header->address);
 
+    void *vaddress = elf_get_virtual(header->address);
+
+    if (!vaddress)
+        return 0;
+
     void *entry = elf_get_entry(header->address);
 
     if (!entry)
         return 0;
 
-    void *virtual = elf_get_virtual(header->address);
-
     self->used = 1;
     self->eip = entry;
-    self->esp = runtime_create_stack(self, header->address, virtual, argc, argv);
+    self->create_stack(self, header->address, vaddress, argc, argv);
 
-    mmu_map(header, virtual, 0x10000, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);
+    mmu_map(header, vaddress, 0x10000, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);
 
     memory_set(self->descriptors, 0, sizeof (struct vfs_descriptor) * 16);
 
@@ -159,14 +162,14 @@ static unsigned int runtime_load(struct runtime_task *self, char *path, unsigned
 
 }
 
-static void runtime_unload(struct runtime_task *self)
+static void runtime_task_unload(struct runtime_task *self)
 {
 
     self->used = 0;
 
 }
 
-static struct vfs_descriptor *runtime_add_descriptor(struct runtime_task *self, struct vfs_node *node)
+static struct vfs_descriptor *runtime_task_add_descriptor(struct runtime_task *self, struct vfs_node *node)
 {
 
     unsigned int i;
@@ -191,14 +194,14 @@ static struct vfs_descriptor *runtime_add_descriptor(struct runtime_task *self, 
 
 }
 
-static struct vfs_descriptor *runtime_get_descriptor(struct runtime_task *self, unsigned int index)
+static struct vfs_descriptor *runtime_task_get_descriptor(struct runtime_task *self, unsigned int index)
 {
 
     return &self->descriptors[index];
 
 }
 
-static void runtime_remove_descriptor(struct runtime_task *self, unsigned int index)
+static void runtime_task_remove_descriptor(struct runtime_task *self, unsigned int index)
 {
 
     memory_set((void *)&self->descriptors[index], 0, sizeof (struct vfs_descriptor));
@@ -216,11 +219,12 @@ void runtime_init()
         runtimeTasks[i].pid = i;
         runtimeTasks[i].running = 0;
         runtimeTasks[i].used = 0;
-        runtimeTasks[i].load = runtime_load;
-        runtimeTasks[i].unload = runtime_unload;
-        runtimeTasks[i].add_descriptor = runtime_add_descriptor;
-        runtimeTasks[i].get_descriptor = runtime_get_descriptor;
-        runtimeTasks[i].remove_descriptor = runtime_remove_descriptor;
+        runtimeTasks[i].create_stack = runtime_task_create_stack;
+        runtimeTasks[i].load = runtime_task_load;
+        runtimeTasks[i].unload = runtime_task_unload;
+        runtimeTasks[i].add_descriptor = runtime_task_add_descriptor;
+        runtimeTasks[i].get_descriptor = runtime_task_get_descriptor;
+        runtimeTasks[i].remove_descriptor = runtime_task_remove_descriptor;
 
     }
 

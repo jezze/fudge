@@ -64,14 +64,14 @@ static unsigned int *mmu_get_entry(struct mmu_directory *directory, unsigned int
 
 }
 
-void mmu_map(struct mmu_header *header, void *virtualAddress, unsigned int size, unsigned int tableFlags, unsigned int pageFlags)
+void mmu_map(struct mmu_header *header, void *vaddress, unsigned int size, unsigned int tableFlags, unsigned int pageFlags)
 {
 
-    unsigned int frame = (unsigned int)virtualAddress / MMU_PAGE_SIZE;
+    unsigned int frame = (unsigned int)vaddress / MMU_PAGE_SIZE;
     unsigned int index = frame / MMU_DIRECTORY_SIZE;
     unsigned int count = size / MMU_PAGE_SIZE + ((size & 0xFFF) > 0);
 
-    unsigned int physicalAddress = (unsigned int)header->address;
+    unsigned int paddress = (unsigned int)header->address;
 
     mmu_clear_table(&header->table);
     header->directory.tables[index] = (struct mmu_table *)((unsigned int)&header->table | tableFlags);
@@ -81,9 +81,9 @@ void mmu_map(struct mmu_header *header, void *virtualAddress, unsigned int size,
     for (i = 0; i < count; i++)
     {
 
-        *mmu_get_entry(&header->directory, frame + i) = physicalAddress | pageFlags;
+        *mmu_get_entry(&header->directory, frame + i) = paddress | pageFlags;
 
-        physicalAddress += MMU_PAGE_SIZE;
+        paddress += MMU_PAGE_SIZE;
 
     }
 
