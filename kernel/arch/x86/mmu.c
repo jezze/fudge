@@ -67,7 +67,7 @@ static unsigned int *mmu_get_entry(struct mmu_directory *directory, unsigned int
 void mmu_map(void *paddress, void *vaddress, unsigned int size, unsigned int tableFlags, unsigned int pageFlags)
 {
 
-    struct mmu_header *header = (paddress == 0) ? &mmuKernelHeader : mmu_get_header(paddress);
+    struct mmu_header *header = mmu_get_header(paddress);
 
     unsigned int frame = (unsigned int)vaddress / MMU_PAGE_SIZE;
     unsigned int index = frame / MMU_DIRECTORY_SIZE;
@@ -105,6 +105,9 @@ void mmu_enable()
 
 struct mmu_header *mmu_get_header(void *paddress)
 {
+
+    if (!paddress)
+        return &mmuKernelHeader;
 
     unsigned int i;
 
