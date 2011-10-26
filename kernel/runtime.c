@@ -76,6 +76,50 @@ void runtime_activate(struct runtime_task *task)
 
 }
 
+static void *runtime_copy_argv(void *address, void *virtual, unsigned int argc, char **argv)
+{
+
+    unsigned int start = 0xFD00;
+    char **nargv = address + start;
+
+    unsigned int i;
+    unsigned int off = argc * 4;
+
+    for (i = 0; i < argc; i++)
+    {
+
+        nargv[i] = virtual + start + off;
+        string_copy(address + start + off, argv[i]);
+        off += string_length(argv[i]) + 2;
+
+    }
+
+    return virtual + start;
+
+}
+
+static void *runtime_create_stack(struct runtime_task *self, void *address, void *virtual, unsigned int argc, char **argv)
+{
+
+    void *nargv = runtime_copy_argv(address, virtual, argc, argv);
+
+    memory_set(address + 0xFFFF, ((unsigned int)nargv & 0xFF000000) >> 24, 1);
+    memory_set(address + 0xFFFE, ((unsigned int)nargv & 0x00FF0000) >> 16, 1);
+    memory_set(address + 0xFFFD, ((unsigned int)nargv & 0x0000FF00) >> 8, 1);
+    memory_set(address + 0xFFFC, ((unsigned int)nargv & 0x000000FF) >> 0, 1);
+    memory_set(address + 0xFFFB, (argc & 0xFF000000) >> 24, 1);
+    memory_set(address + 0xFFFA, (argc & 0x00FF0000) >> 16, 1);
+    memory_set(address + 0xFFF9, (argc & 0x0000FF00) >> 8, 1);
+    memory_set(address + 0xFFF8, (argc & 0x000000FF) >> 0, 1);
+    memory_set(address + 0xFFF7, ((unsigned int)self->eip & 0xFF000000) >> 24, 1);
+    memory_set(address + 0xFFF6, ((unsigned int)self->eip & 0x00FF0000) >> 16, 1);
+    memory_set(address + 0xFFF5, ((unsigned int)self->eip & 0x0000FF00) >> 8, 1);
+    memory_set(address + 0xFFF4, ((unsigned int)self->eip & 0x000000FF) >> 0, 1);
+
+    return virtual + 0xFFF4;
+
+}
+
 static unsigned int runtime_load(struct runtime_task *self, char *path, unsigned int argc, char **argv)
 {
 
@@ -95,44 +139,11 @@ static unsigned int runtime_load(struct runtime_task *self, char *path, unsigned
 
     void *virtual = elf_get_virtual(header->address);
 
-    char **sa = header->address + 0xFC00;
-    void *ss = header->address + 0xFD00;
-
-    unsigned int i;
-    unsigned int offset = 0;
-
-    for (i = 0; i < argc; i++)
-    {
-
-        sa[i] = virtual + 0xFD00 + offset;
-
-        unsigned int length = string_length(argv[i]);
-        string_copy(ss + offset, argv[i]);
-
-        offset += length + 2;
-
-    }
-
-    unsigned int argvn = (unsigned int)virtual + 0xFC00;
-
-    memory_set(header->address + 0xFFFF, ((unsigned int)argvn & 0xFF000000) >> 24, 1);
-    memory_set(header->address + 0xFFFE, ((unsigned int)argvn & 0x00FF0000) >> 16, 1);
-    memory_set(header->address + 0xFFFD, ((unsigned int)argvn & 0x0000FF00) >> 8, 1);
-    memory_set(header->address + 0xFFFC, ((unsigned int)argvn & 0x000000FF) >> 0, 1);
-    memory_set(header->address + 0xFFFB, (argc & 0xFF000000) >> 24, 1);
-    memory_set(header->address + 0xFFFA, (argc & 0x00FF0000) >> 16, 1);
-    memory_set(header->address + 0xFFF9, (argc & 0x0000FF00) >> 8, 1);
-    memory_set(header->address + 0xFFF8, (argc & 0x000000FF) >> 0, 1);
-    memory_set(header->address + 0xFFF7, ((unsigned int)entry & 0xFF000000) >> 24, 1);
-    memory_set(header->address + 0xFFF6, ((unsigned int)entry & 0x00FF0000) >> 16, 1);
-    memory_set(header->address + 0xFFF5, ((unsigned int)entry & 0x0000FF00) >> 8, 1);
-    memory_set(header->address + 0xFFF4, ((unsigned int)entry & 0x000000FF) >> 0, 1);
-
-    mmu_map(header, virtual, 0x10000, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);
-
     self->used = 1;
     self->eip = entry;
-    self->esp = virtual + 0xFFF4;
+    self->esp = runtime_create_stack(self, header->address, virtual, argc, argv);
+
+    mmu_map(header, virtual, 0x10000, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);
 
     memory_set(self->descriptors, 0, sizeof (struct vfs_descriptor) * 16);
 
