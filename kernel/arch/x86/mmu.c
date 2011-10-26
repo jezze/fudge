@@ -64,14 +64,14 @@ static unsigned int *mmu_get_entry(struct mmu_directory *directory, unsigned int
 
 }
 
-void mmu_map(struct mmu_header *header, void *vaddress, unsigned int size, unsigned int tableFlags, unsigned int pageFlags)
+void mmu_map(void *paddress, void *vaddress, unsigned int size, unsigned int tableFlags, unsigned int pageFlags)
 {
+
+    struct mmu_header *header = (paddress == 0) ? &mmuKernelHeader : mmu_get_program_header(paddress);
 
     unsigned int frame = (unsigned int)vaddress / MMU_PAGE_SIZE;
     unsigned int index = frame / MMU_DIRECTORY_SIZE;
     unsigned int count = size / MMU_PAGE_SIZE + ((size & 0xFFF) > 0);
-
-    unsigned int paddress = (unsigned int)header->address;
 
     mmu_clear_table(&header->table);
     header->directory.tables[index] = (struct mmu_table *)((unsigned int)&header->table | tableFlags);
@@ -81,7 +81,7 @@ void mmu_map(struct mmu_header *header, void *vaddress, unsigned int size, unsig
     for (i = 0; i < count; i++)
     {
 
-        *mmu_get_entry(&header->directory, frame + i) = paddress | pageFlags;
+        *mmu_get_entry(&header->directory, frame + i) = (unsigned int)paddress | pageFlags;
 
         paddress += MMU_PAGE_SIZE;
 
@@ -103,10 +103,27 @@ void mmu_enable()
 
 }
 
-struct mmu_header *mmu_get_program_header(unsigned int pid)
+struct mmu_header *mmu_get_program_header(void *physical)
 {
 
-    return &mmuProgramHeaders[pid];
+    unsigned int i;
+
+    for (i = 0; i < 8; i++)
+    {
+
+        if (mmuProgramHeaders[i].address == physical)
+            return &mmuProgramHeaders[i];
+
+    }
+
+    return 0;
+
+}
+
+void *mmu_get_paddress(unsigned int pid)
+{
+
+    return mmuProgramHeaders[pid].address;
 
 }
 
@@ -114,7 +131,8 @@ void mmu_init()
 {
 
     mmu_clear_directory(&mmuKernelHeader.directory);
-    mmu_map(&mmuKernelHeader, (void *)0x00000000, 0x00400000, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE);
+    mmuKernelHeader.address = 0;
+    mmu_map(mmuKernelHeader.address, (void *)0x00000000, 0x00400000, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE);
     mmu_set_directory(&mmuKernelHeader.directory);
 
     unsigned int i;

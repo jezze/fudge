@@ -68,7 +68,8 @@ void runtime_activate(struct runtime_task *task)
     for (i = 0; i < 8; i++)
         runtimeTasks[i].running = 0;
 
-    struct mmu_header *header = mmu_get_program_header(task->pid);
+    void *paddress = mmu_get_paddress(task->pid);
+    struct mmu_header *header = mmu_get_program_header(paddress);
 
     mmu_set_directory(&header->directory);
 
@@ -123,30 +124,30 @@ static void runtime_task_create_stack(struct runtime_task *self, void *paddress,
 static unsigned int runtime_task_load(struct runtime_task *self, char *path, unsigned int argc, char **argv)
 {
 
-    struct mmu_header *header = mmu_get_program_header(self->pid);
+    void *paddress = mmu_get_paddress(self->pid);
 
     struct vfs_node *node = vfs_find(path);
 
     if (!(node && node->operations.read))
         return 0;
 
-    node->operations.read(node, 0x10000, header->address);
+    node->operations.read(node, 0x10000, paddress);
 
-    void *vaddress = elf_get_virtual(header->address);
+    void *vaddress = elf_get_virtual(paddress);
 
     if (!vaddress)
         return 0;
 
-    void *entry = elf_get_entry(header->address);
+    void *entry = elf_get_entry(paddress);
 
     if (!entry)
         return 0;
 
     self->used = 1;
     self->eip = entry;
-    self->create_stack(self, header->address, vaddress, argc, argv);
+    self->create_stack(self, paddress, vaddress, argc, argv);
 
-    mmu_map(header, vaddress, 0x10000, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);
+    mmu_map(paddress, vaddress, 0x10000, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);
 
     memory_set(self->descriptors, 0, sizeof (struct vfs_descriptor) * 16);
 
