@@ -2,9 +2,9 @@
 #include <lib/memory.h>
 #include <lib/string.h>
 #include <kernel/vfs.h>
+#include <kernel/kernel.h>
 #include <kernel/modules.h>
 #include <kernel/runtime.h>
-#include <kernel/arch/x86/mmu.h>
 #include <modules/elf/elf.h>
 
 struct runtime_task runtimeTasks[8];
@@ -68,9 +68,9 @@ void runtime_activate(struct runtime_task *task)
     for (i = 0; i < 8; i++)
         runtimeTasks[i].running = 0;
 
-    void *paddress = mmu_get_paddress(task->pid);
+    void *paddress = kernel_get_task_memory(task->pid);
 
-    mmu_set_directory(paddress);
+    kernel_load_task_memory(paddress);
 
     task->running = 1;
 
@@ -123,7 +123,7 @@ static void runtime_task_create_stack(struct runtime_task *self, void *paddress,
 static unsigned int runtime_task_load(struct runtime_task *self, char *path, unsigned int argc, char **argv)
 {
 
-    void *paddress = mmu_get_paddress(self->pid);
+    void *paddress = kernel_get_task_memory(self->pid);
 
     struct vfs_node *node = vfs_find(path);
 
@@ -146,7 +146,7 @@ static unsigned int runtime_task_load(struct runtime_task *self, char *path, uns
     self->eip = entry;
     self->create_stack(self, paddress, vaddress, argc, argv);
 
-    mmu_map(paddress, vaddress, 0x10000, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);
+    kernel_map_task_memory(paddress, vaddress, 0x10000, 0x7, 0x7);
 
     memory_set(self->descriptors, 0, sizeof (struct vfs_descriptor) * 16);
 

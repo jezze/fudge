@@ -35,6 +35,27 @@ void kernel_unregister_irq(unsigned int index)
 
 }
 
+void *kernel_get_task_memory(unsigned int pid)
+{
+
+    return kernel.arch->get_task_memory(pid);
+
+}
+
+void kernel_load_task_memory(void *paddress)
+{
+
+    kernel.arch->load_task_memory(paddress);
+
+}
+
+void kernel_map_task_memory(void *paddress, void *vaddress, unsigned int size, unsigned int tableFlags, unsigned int pageFlags)
+{
+
+    kernel.arch->map_task_memory(paddress, vaddress, size, tableFlags, pageFlags);
+
+}
+
 void kernel_init(struct kernel_arch *arch)
 {
 

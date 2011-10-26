@@ -54,6 +54,9 @@ void arch_init(struct mboot_info *header, unsigned int magic, unsigned int stack
     arch.set_stack = tss_set_stack;
     arch.register_irq = irq_register_handler;
     arch.unregister_irq = irq_unregister_handler;
+    arch.get_task_memory = mmu_get_paddress;
+    arch.load_task_memory = mmu_set_directory;
+    arch.map_task_memory = mmu_map;
     arch.stackAddress = stack;
     arch.mbootAddress = (unsigned int *)header;
     arch.initrdAddress = (unsigned int *)header->modulesAddresses;
