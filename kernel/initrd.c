@@ -35,7 +35,7 @@ static unsigned int initrd_get_file_size(const char *in)
 
 }
 
-static unsigned int initrd_parse(unsigned int address)
+static unsigned int initrd_parse(void *address)
 {
 
     unsigned int i;
@@ -108,13 +108,19 @@ static unsigned int initrd_filesystem_node_read(struct vfs_node *self, unsigned 
 
 }
 
-void initrd_init(unsigned int *address)
+void initrd_init(unsigned int initrdc, void **initrdv)
 {
 
     initrdFilesystem.base.root = &initrdRoot;
     initrdFilesystem.base.root->operations.read = initrd_filesystem_node_read;
     initrdFilesystem.base.lookup = initrd_filesystem_lookup;
-    initrdFilesystem.nodesCount = initrd_parse(*address);
+    initrdFilesystem.nodesCount = 0;
+
+    unsigned int i;
+
+    for (i = 0; i < initrdc; i++)
+        initrdFilesystem.nodesCount += initrd_parse(*(initrdv + i));
+
     vfs_register_filesystem(&initrdFilesystem.base);
 
 }

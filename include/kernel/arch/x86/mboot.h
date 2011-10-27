@@ -19,7 +19,7 @@ struct mboot_modules_header
 {
 
     unsigned int count;
-    void *address;
+    void **address;
 
 };
 

@@ -16,7 +16,8 @@ struct kernel_arch
     void (*map_task_memory)(void *paddress, void *vaddress, unsigned int size, unsigned int tflags, unsigned int pflags);
     void *stack;
     void *mboot;
-    void *initrd;
+    unsigned int initrdc;
+    void **initrdv;
 
 };
 

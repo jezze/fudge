@@ -66,7 +66,7 @@ void kernel_init(struct kernel_arch *arch)
     kernel.arch->enable_interrupts();
 
     vfs_init();
-    initrd_init(kernel.arch->initrd);
+    initrd_init(kernel.arch->initrdc, kernel.arch->initrdv);
     modules_init();
     runtime_init();
 
