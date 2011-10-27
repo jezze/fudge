@@ -40,7 +40,7 @@ struct elf_section_header *elf_get_section_header_by_index(void *shaddress, unsi
 
 }
 
-struct elf_section_header *elf_get_section_header_by_type(void *shaddress, unsigned int shsize, unsigned int shcount, unsigned int type)
+struct elf_section_header *elf_get_section_header_by_type(void *shaddress, unsigned int shsize, unsigned int shcount, unsigned int type, unsigned int flags)
 {
 
     unsigned int i;
@@ -51,7 +51,15 @@ struct elf_section_header *elf_get_section_header_by_type(void *shaddress, unsig
         struct elf_section_header *sHeader = elf_get_section_header_by_index(shaddress, shsize, i);
 
         if (sHeader->type == type)
-            return sHeader;
+        {
+
+            if (!flags)
+                return sHeader;
+
+            if (sHeader->flags & flags)
+                return sHeader;
+
+        }
 
     }
 
@@ -59,13 +67,14 @@ struct elf_section_header *elf_get_section_header_by_type(void *shaddress, unsig
 
 }
 
+/*
 char *elf_get_string_table(void *address, void *shaddress, unsigned int shsize, unsigned int shstringindex)
 {
 
     return (char *)(address + elf_get_section_header_by_index(shaddress, shsize, shstringindex)->offset);
 
 }
-
+*/
 void *elf_get_entry(void *address)
 {
 
@@ -92,7 +101,7 @@ void *elf_get_virtual(void *address)
 
 }
 
-void elf_print_symtab(void *address, struct elf_section_header *header)
+void elf_print_symtab(void *address, struct elf_section_header *header, char *strtbl)
 {
 
     unsigned int i;
@@ -107,7 +116,7 @@ void elf_print_symtab(void *address, struct elf_section_header *header)
         unsigned int bind = symHeader->info >> 4;
         unsigned int type = symHeader->info & 0x0F;
 
-        file_write_format(FILE_STDOUT, "[%d] Val: 0x%x Sz: %d Info: 0x%x Bind: 0x%x Type: 0x%x Index: %d\n", i, symHeader->value, symHeader->size, symHeader->info, bind, type, symHeader->index);
+        file_write_format(FILE_STDOUT, "[%d] Name: %s Val: 0x%x Sz: %d Info: 0x%x Bind: 0x%x Type: 0x%x Index: %d\n", i, strtbl + symHeader->name, symHeader->value, symHeader->size, symHeader->info, bind, type, symHeader->index);
 
     }
 
@@ -123,7 +132,7 @@ void elf_print_sections(void *shaddress, unsigned int shsize, unsigned int shcou
 
         struct elf_section_header *sHeader = elf_get_section_header_by_index(shaddress, shsize, i);
 
-        file_write_format(FILE_STDOUT, "[%d] Name: %s Off: 0x%x Sz:0x%x\n", i, strtbl + sHeader->name, sHeader->offset, sHeader->size);
+        file_write_format(FILE_STDOUT, "[%d] Name: %s Type: 0x%x Off: 0x%x Sz:0x%x\n", i, strtbl + sHeader->name, sHeader->type, sHeader->offset, sHeader->size);
 
     }
 

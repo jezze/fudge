@@ -220,11 +220,19 @@ static void syscall_load(struct syscall_registers *registers)
     struct vfs_node *node = vfs_find(path);
 
     struct elf_header *header = elf_get_header(node->physical);
-    struct elf_section_header *symHeader = elf_get_section_header_by_type(node->physical + header->shoffset, header->shsize, header->shcount, ELF_SECTION_TYPE_SYMTAB);
-    char *strtbl = elf_get_string_table(node->physical, node->physical + header->shoffset, header->shsize, header->shstringindex);
 
-    //elf_print_sections(node->physical + header->shoffset, header->shsize, header->shcount, strtbl);
-    //elf_print_symtab(node->physical, symHeader);
+    struct elf_section_header *shstrHeader = elf_get_section_header_by_index(node->physical + header->shoffset, header->shsize, header->shstringindex);
+    char *strtbl = (char *)(node->physical + shstrHeader->offset);
+
+    elf_print_sections(node->physical + header->shoffset, header->shsize, header->shcount, strtbl);
+
+    struct elf_section_header *symHeader = elf_get_section_header_by_type(node->physical + header->shoffset, header->shsize, header->shcount, ELF_SECTION_TYPE_SYMTAB, 0);
+
+//    struct elf_section_header *strHeader = elf_get_section_header_by_type(node->physical + header->shoffset, header->shsize, header->shcount, ELF_SECTION_TYPE_STRTAB, 0x2);
+    struct elf_section_header *strHeader = elf_get_section_header_by_index(node->physical + header->shoffset, header->shsize, 11);
+    char *strtbl2 = (char *)(node->physical + strHeader->offset);
+
+    elf_print_symtab(node->physical, symHeader, strtbl2);
 
     elf_relocate(node->physical, header);
 
