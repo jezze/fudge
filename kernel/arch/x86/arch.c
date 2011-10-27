@@ -32,7 +32,7 @@ void arch_reboot()
 static void arch_setup(struct kernel_arch *arch)
 {
 
-    mboot_init((struct mboot_info *)arch->mbootAddress);
+    mboot_init((struct mboot_info *)arch->mboot);
     gdt_init();
     tss_init();
     idt_init();
@@ -44,7 +44,7 @@ static void arch_setup(struct kernel_arch *arch)
 
 }
 
-void arch_init(struct mboot_info *header, unsigned int magic, unsigned int stack)
+void arch_init(struct mboot_info *header, unsigned int magic, void *stack)
 {
 
     arch.setup = arch_setup;
@@ -57,9 +57,9 @@ void arch_init(struct mboot_info *header, unsigned int magic, unsigned int stack
     arch.get_task_memory = mmu_get_paddress;
     arch.load_task_memory = mmu_set_directory;
     arch.map_task_memory = mmu_map;
-    arch.stackAddress = stack;
-    arch.mbootAddress = (unsigned int *)header;
-    arch.initrdAddress = (unsigned int *)header->modulesAddresses;
+    arch.stack = stack;
+    arch.mboot = header;
+    arch.initrd = header->modulesAddresses;
 
     kernel_init(&arch);
 

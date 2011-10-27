@@ -49,10 +49,10 @@ void kernel_load_task_memory(void *paddress)
 
 }
 
-void kernel_map_task_memory(void *paddress, void *vaddress, unsigned int size, unsigned int tableFlags, unsigned int pageFlags)
+void kernel_map_task_memory(void *paddress, void *vaddress, unsigned int size, unsigned int tflags, unsigned int pflags)
 {
 
-    kernel.arch->map_task_memory(paddress, vaddress, size, tableFlags, pageFlags);
+    kernel.arch->map_task_memory(paddress, vaddress, size, tflags, pflags);
 
 }
 
@@ -66,7 +66,7 @@ void kernel_init(struct kernel_arch *arch)
     kernel.arch->enable_interrupts();
 
     vfs_init();
-    initrd_init(kernel.arch->initrdAddress);
+    initrd_init(kernel.arch->initrd);
     modules_init();
     runtime_init();
 
@@ -75,7 +75,7 @@ void kernel_init(struct kernel_arch *arch)
     task->load(task, "/init", 0, 0);
     runtime_activate(task);
 
-    kernel.arch->set_stack(arch->stackAddress);
+    kernel.arch->set_stack(arch->stack);
     kernel.arch->enter_usermode(task->eip, task->esp);
 
     for (;;);

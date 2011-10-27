@@ -3,7 +3,7 @@
 
 struct mboot_info;
 
-extern void arch_init(struct mboot_info *header, unsigned int magic, unsigned int stack);
+extern void arch_init(struct mboot_info *header, unsigned int magic, void *stack);
 extern void arch_reboot();
 
 #endif

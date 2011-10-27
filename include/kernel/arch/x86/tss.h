@@ -36,7 +36,7 @@ struct tss_entry
 
 extern void tss_flush();
 extern void tss_init();
-extern void tss_set_stack(unsigned int address);
+extern void tss_set_stack(void *address);
 
 #endif
 

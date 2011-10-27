@@ -4,10 +4,10 @@
 
 static struct tss_entry tss;
 
-void tss_set_stack(unsigned int address)
+void tss_set_stack(void *address)
 {
 
-    tss.esp0 = address;
+    tss.esp0 = (unsigned int)address;
 
 }
 

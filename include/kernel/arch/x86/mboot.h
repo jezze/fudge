@@ -24,7 +24,7 @@ struct mboot_info
     unsigned int device;
     unsigned int cmdline;
     unsigned int modulesCount;
-    unsigned int modulesAddresses;
+    void *modulesAddresses;
     unsigned int num;
     unsigned int size;
     unsigned int addr;
