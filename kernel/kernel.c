@@ -73,17 +73,17 @@ void kernel_init(struct kernel_arch *arch)
     modules_init();
     runtime_init();
 
-    struct elf_header header;
-    struct mboot_header *mboot = (struct mboot_header *)kernel.arch->mboot;
-    header.shoffset = mboot->elf.shoffset;
-    header.shsize = mboot->elf.shsize;
-    header.shcount = mboot->elf.shcount;
-    header.shstringindex = mboot->elf.shstringindex;
-
     struct runtime_task *task = runtime_get_free_task();
 
     task->load(task, "/init", 0, 0);
     runtime_activate(task);
+
+    struct mboot_header *mboot = (struct mboot_header *)kernel.arch->mboot;
+
+    void *shaddress = mboot->elf.shaddress;
+    unsigned int shsize = mboot->elf.shsize;
+    unsigned int shcount = mboot->elf.shcount;
+    unsigned int shstringindex = mboot->elf.shstringindex;
 
     kernel.arch->set_stack(arch->stack);
     kernel.arch->enter_usermode(task->eip, task->esp);

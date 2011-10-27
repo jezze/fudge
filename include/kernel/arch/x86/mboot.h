@@ -28,7 +28,7 @@ struct mboot_elf_header
 
     unsigned int shcount;
     unsigned int shsize;
-    unsigned int shoffset;
+    void *shaddress;
     unsigned int shstringindex;
 
 };
