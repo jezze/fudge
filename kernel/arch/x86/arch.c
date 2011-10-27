@@ -59,7 +59,7 @@ void arch_init(struct mboot_info *header, unsigned int magic, void *stack)
     arch.map_task_memory = mmu_map;
     arch.stack = stack;
     arch.mboot = header;
-    arch.initrd = header->modulesAddresses;
+    arch.initrd = header->modules.address;
 
     kernel_init(&arch);
 

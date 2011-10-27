@@ -15,33 +15,68 @@
 
 #define MBOOT_MAGIC 0x2BADB002
 
-struct mboot_info
+struct mboot_modules_header
 {
 
-    unsigned int flags;
-    unsigned int memoryLower;
-    unsigned int memoryUpper;
-    unsigned int device;
-    unsigned int cmdline;
-    unsigned int modulesCount;
-    void *modulesAddresses;
+    unsigned int count;
+    void *address;
+
+};
+
+struct mboot_elf_header
+{
+
     unsigned int num;
     unsigned int size;
     unsigned int addr;
     unsigned int shndx;
-    unsigned int mmapLength;
-    unsigned int mmapAddress;
-    unsigned int drivesLength;
-    unsigned int drivesAddresses;
-    unsigned int configTable;
+
+};
+
+struct mboot_mmap_header
+{
+
+    unsigned int count;
+    void *address;
+
+};
+
+struct mboot_drives_header
+{
+
+    unsigned int count;
+    void *address;
+
+};
+
+struct mboot_vbe_header
+{
+
+    unsigned int cinfo;
+    unsigned int minfo;
+    unsigned short mode;
+    unsigned short isegment;
+    unsigned short ioffset;
+    unsigned short ilength;
+
+} __attribute__((packed));
+
+struct mboot_info
+{
+
+    unsigned int flags;
+    unsigned int mlower;
+    unsigned int mupper;
+    unsigned int device;
+    unsigned int cmdline;
+    struct mboot_modules_header modules;
+    struct mboot_elf_header elf;
+    struct mboot_mmap_header mmap;
+    struct mboot_drives_header drives;
+    unsigned int ctable;
     unsigned int name;
-    unsigned int apmTable;
-    unsigned int vbeControllerInfo;
-    unsigned int vbeModeInfo;
-    unsigned short vbeMode;
-    unsigned short vbeInterfaceSegment;
-    unsigned short vbeInterfaceOffset;
-    unsigned short vbeInterfaceLength;
+    unsigned int atable;
+    struct mboot_vbe_header vbe;
 
 } __attribute__((packed));
 
@@ -49,10 +84,10 @@ struct mboot_mmap
 {
 
     unsigned int size;
-    unsigned int baseLow;
-    unsigned int baseHigh;
-    unsigned int lengthLow;
-    unsigned int lengthHigh;
+    unsigned int blow;
+    unsigned int bhigh;
+    unsigned int llow;
+    unsigned int lhigh;
     unsigned int type;
 
 };

@@ -75,7 +75,7 @@ void mboot_init(struct mboot_info *info)
     if (info->flags & MBOOT_FLAG_MODULES)
     {
 
-        struct mboot_module *module = (struct mboot_module *)info->modulesAddresses;
+        struct mboot_module *module = (struct mboot_module *)info->modules.address;
 
         log_write("[mboot] Module: %s\n", (char *)module->name);
         log_write("[mboot] Module address: 0x%x\n", module->base);
@@ -85,16 +85,16 @@ void mboot_init(struct mboot_info *info)
     if (info->flags & MBOOT_FLAG_MEMORY)
     {
 
-        log_write("[mboot] Lower memory: %dKiB\n", info->memoryLower);
-        log_write("[mboot] Upper memory: %dKiB\n", info->memoryUpper);
+        log_write("[mboot] Lower memory: %dKiB\n", info->mlower);
+        log_write("[mboot] Upper memory: %dKiB\n", info->mupper);
 
     }
 
     if (info->flags & MBOOT_FLAG_MMAP)
     {
 
-        unsigned int address = info->mmapAddress;
-        unsigned int total = address + info->mmapLength;
+        void *address = info->mmap.address;
+        unsigned int total = (unsigned int)address + info->mmap.count;
 
         while (address < total)
         {
@@ -102,9 +102,9 @@ void mboot_init(struct mboot_info *info)
             struct mboot_mmap *mmap = (struct mboot_mmap *)address;
 
             if (mmap->type == 1)
-                log_write("[mboot] Memory available: 0x%x:0x%x\n", mmap->baseLow, mmap->lengthLow);
+                log_write("[mboot] Memory available: 0x%x:0x%x\n", mmap->blow, mmap->llow);
             else
-                log_write("[mboot] Memory reserved: 0x%x:0x%x\n", mmap->baseLow, mmap->lengthLow);
+                log_write("[mboot] Memory reserved: 0x%x:0x%x\n", mmap->blow, mmap->llow);
 
             address += mmap->size + sizeof (unsigned int);
 
@@ -115,21 +115,21 @@ void mboot_init(struct mboot_info *info)
     if (info->flags & MBOOT_FLAG_VBE)
     {
 
-        log_write("[mboot] VBE ctrl address: 0x%x\n", info->vbeControllerInfo);
+        log_write("[mboot] VBE ctrl address: 0x%x\n", info->vbe.cinfo);
 
-        if (info->vbeControllerInfo)
+        if (info->vbe.cinfo)
         {
 
-            struct vbe_controller_info *controller = (struct vbe_controller_info *)info->vbeControllerInfo;
+            struct vbe_controller_info *controller = (struct vbe_controller_info *)info->vbe.cinfo;
 
             log_write("[mboot] VBE ctrl signature: 0x%x\n", controller->version);
 
         }
 
-        log_write("[mboot] VBE mode address: 0x%x\n", info->vbeModeInfo);
-        log_write("[mboot] VBE interface segment: 0x%x\n", info->vbeInterfaceSegment);
-        log_write("[mboot] VBE interface offset: 0x%x\n", info->vbeInterfaceOffset);
-        log_write("[mboot] VBE interface length: 0x%x\n", info->vbeInterfaceLength);
+        log_write("[mboot] VBE mode address: 0x%x\n", info->vbe.minfo);
+        log_write("[mboot] VBE interface segment: 0x%x\n", info->vbe.isegment);
+        log_write("[mboot] VBE interface offset: 0x%x\n", info->vbe.ioffset);
+        log_write("[mboot] VBE interface length: 0x%x\n", info->vbe.ilength);
 
     }
 
