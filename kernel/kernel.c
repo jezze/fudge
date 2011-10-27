@@ -1,4 +1,5 @@
 #include <lib/elf.h>
+#include <lib/file.h>
 #include <kernel/vfs.h>
 #include <kernel/initrd.h>
 #include <kernel/kernel.h>
@@ -59,6 +60,13 @@ void kernel_map_task_memory(void *paddress, void *vaddress, unsigned int size, u
 
 }
 
+void *kernel_get_symbol(char *name)
+{
+
+    return 0;
+
+}
+
 void kernel_init(struct kernel_arch *arch)
 {
 
@@ -77,13 +85,6 @@ void kernel_init(struct kernel_arch *arch)
 
     task->load(task, "/init", 0, 0);
     runtime_activate(task);
-
-    struct mboot_header *mboot = (struct mboot_header *)kernel.arch->mboot;
-
-    void *shaddress = mboot->elf.shaddress;
-    unsigned int shsize = mboot->elf.shsize;
-    unsigned int shcount = mboot->elf.shcount;
-    unsigned int shstringindex = mboot->elf.shstringindex;
 
     kernel.arch->set_stack(arch->stack);
     kernel.arch->enter_usermode(task->eip, task->esp);

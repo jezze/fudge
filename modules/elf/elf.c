@@ -141,7 +141,7 @@ void elf_print_sections(void *shaddress, unsigned int shsize, unsigned int shcou
 void doit()
 {
 
-    file_write_format(FILE_STDOUT, "Module loaded\n");
+//    file_write_format(FILE_STDOUT, "Module loaded\n");
 
 }
 
