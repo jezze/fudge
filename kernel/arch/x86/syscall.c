@@ -220,10 +220,10 @@ static void syscall_load(struct syscall_registers *registers)
     struct vfs_node *node = vfs_find(path);
 
     struct elf_header *header = elf_get_header(node->physical);
-    //elf_print_sections(node->physical, header);
+    elf_print_sections(node->physical, header);
 
     struct elf_section_header *symHeader = elf_get_section_header_by_type(node->physical, header, ELF_SECTION_TYPE_SYMTAB);
-    //elf_print_symtab(node->physical, symHeader);
+    elf_print_symtab(node->physical, symHeader);
 
     elf_relocate(node->physical, header);
 

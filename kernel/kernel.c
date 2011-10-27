@@ -1,9 +1,12 @@
+#include <lib/elf.h>
 #include <kernel/vfs.h>
 #include <kernel/initrd.h>
 #include <kernel/kernel.h>
 #include <kernel/log.h>
 #include <kernel/modules.h>
 #include <kernel/runtime.h>
+#include <kernel/arch/x86/mboot.h>
+#include <modules/elf/elf.h>
 
 static struct kernel kernel;
 
@@ -69,6 +72,13 @@ void kernel_init(struct kernel_arch *arch)
     initrd_init(kernel.arch->initrdc, kernel.arch->initrdv);
     modules_init();
     runtime_init();
+
+    struct elf_header header;
+    struct mboot_header *mboot = (struct mboot_header *)kernel.arch->mboot;
+    header.shoffset = mboot->elf.shoffset;
+    header.shsize = mboot->elf.shsize;
+    header.shcount = mboot->elf.shcount;
+    header.shstringindex = mboot->elf.shstringindex;
 
     struct runtime_task *task = runtime_get_free_task();
 

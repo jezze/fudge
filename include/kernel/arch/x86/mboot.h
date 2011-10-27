@@ -26,10 +26,10 @@ struct mboot_modules_header
 struct mboot_elf_header
 {
 
-    unsigned int num;
-    unsigned int size;
-    unsigned int addr;
-    unsigned int shndx;
+    unsigned int shcount;
+    unsigned int shsize;
+    unsigned int shoffset;
+    unsigned int shstringindex;
 
 };
 
