@@ -32,7 +32,7 @@ void arch_reboot()
 static void arch_setup(struct kernel_arch *arch)
 {
 
-    mboot_init((struct mboot_info *)arch->mboot);
+    mboot_init(arch->mboot);
     gdt_init();
     tss_init();
     idt_init();
@@ -44,7 +44,7 @@ static void arch_setup(struct kernel_arch *arch)
 
 }
 
-void arch_init(struct mboot_info *header, unsigned int magic, void *stack)
+void arch_init(struct mboot_header *header, unsigned int magic, void *stack)
 {
 
     arch.setup = arch_setup;

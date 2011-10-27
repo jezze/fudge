@@ -61,7 +61,7 @@ struct mboot_vbe_header
 
 } __attribute__((packed));
 
-struct mboot_info
+struct mboot_header
 {
 
     unsigned int flags;
@@ -102,7 +102,7 @@ struct mboot_module
 
 };
 
-extern void mboot_init(struct mboot_info *info);
+extern void mboot_init(void *address);
 
 #endif
 

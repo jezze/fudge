@@ -3,8 +3,10 @@
 #include <kernel/arch/x86/mboot.h>
 #include <kernel/arch/x86/vbe.h>
 
-void mboot_init(struct mboot_info *info)
+void mboot_init(void *address)
 {
+
+    struct mboot_header *info = address;
 
     if (info->flags & MBOOT_FLAG_LOADER)
     {
@@ -96,7 +98,7 @@ void mboot_init(struct mboot_info *info)
         void *address = info->mmap.address;
         unsigned int total = (unsigned int)address + info->mmap.count;
 
-        while (address < total)
+        while ((unsigned int)address < total)
         {
 
             struct mboot_mmap *mmap = (struct mboot_mmap *)address;

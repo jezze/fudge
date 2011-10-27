@@ -29,14 +29,14 @@ struct elf_header *elf_get_header(void *address)
 struct elf_program_header *elf_get_program_header(void *address, struct elf_header *header)
 {
 
-    return (struct elf_program_header *)(address + header->programHeaderOffset);
+    return (struct elf_program_header *)(address + header->phoffset);
 
 }
 
 struct elf_section_header *elf_get_section_header_by_index(void *address, struct elf_header *header, unsigned int index)
 {
 
-    return (struct elf_section_header *)(address + header->sectionHeaderOffset + index * header->sectionHeaderSize);
+    return (struct elf_section_header *)(address + header->shoffset + index * header->shsize);
 
 }
 
@@ -45,7 +45,7 @@ struct elf_section_header *elf_get_section_header_by_type(void *address, struct 
 
     unsigned int i;
 
-    for (i = 0; i < header->sectionHeaderCount; i++)
+    for (i = 0; i < header->shcount; i++)
     {
 
         struct elf_section_header *sHeader = elf_get_section_header_by_index(address, header, i);
@@ -62,7 +62,7 @@ struct elf_section_header *elf_get_section_header_by_type(void *address, struct 
 char *elf_get_string_table(void *address, struct elf_header *header)
 {
 
-    return (char *)(address + elf_get_section_header_by_index(address, header, header->sectionHeaderStringIndex)->offset);
+    return (char *)(address + elf_get_section_header_by_index(address, header, header->shstringindex)->offset);
 
 }
 
@@ -88,7 +88,7 @@ void *elf_get_virtual(void *address)
 
     struct elf_program_header *pheader = elf_get_program_header(address, header);
 
-    return pheader->virtualAddress;
+    return pheader->vaddress;
 
 }
 
@@ -97,17 +97,17 @@ void elf_print_symtab(void *address, struct elf_section_header *header)
 
     unsigned int i;
 
-    for (i = 0; i < header->size / header->entrySize; i++)
+    for (i = 0; i < header->size / header->esize; i++)
     {
 
-        struct elf_symbol *symHeader = (struct elf_symbol *)(address + header->offset + i * header->entrySize);
+        struct elf_symbol *symHeader = (struct elf_symbol *)(address + header->offset + i * header->esize);
 
 //        struct elf_section_header *ih = elf_get_section_header(address, symHeader->shndx);
 
         unsigned int bind = symHeader->info >> 4;
         unsigned int type = symHeader->info & 0x0F;
 
-        file_write_format(FILE_STDOUT, "[%d] Val: 0x%x Sz: %d Info: 0x%x Bind: 0x%x Type: 0x%x SecIdx: %d\n", i, symHeader->value, symHeader->size, symHeader->info, bind, type, symHeader->shndx);
+        file_write_format(FILE_STDOUT, "[%d] Val: 0x%x Sz: %d Info: 0x%x Bind: 0x%x Type: 0x%x Index: %d\n", i, symHeader->value, symHeader->size, symHeader->info, bind, type, symHeader->index);
 
     }
 
@@ -120,7 +120,7 @@ void elf_print_sections(void *address, struct elf_header *header)
 
     unsigned int i;
 
-    for (i = 0; i < header->sectionHeaderCount; i++)
+    for (i = 0; i < header->shcount; i++)
     {
 
         struct elf_section_header *sHeader = elf_get_section_header_by_index(address, header, i);
@@ -145,10 +145,10 @@ static void elf_relocate_section(void *address, struct elf_section_header *heade
 
     unsigned int i;
 
-    for (i = 0; i < header->size / header->entrySize; i++)
+    for (i = 0; i < header->size / header->esize; i++)
     {
 
-        struct elf_relocate *rHeader = (struct elf_relocate *)(address + header->offset + i * header->entrySize);
+        struct elf_relocate *rHeader = (struct elf_relocate *)(address + header->offset + i * header->esize);
 
         unsigned int sym = rHeader->info >> 4;
         unsigned int type = rHeader->info & 0x0F;
@@ -179,7 +179,7 @@ void elf_relocate(void *address, struct elf_header *header)
 
     unsigned int i;
 
-    for (i = 0; i < header->sectionHeaderCount; i++)
+    for (i = 0; i < header->shcount; i++)
     {
 
         struct elf_section_header *sHeader = elf_get_section_header_by_index(address, header, i);

@@ -3,7 +3,7 @@
 void main(int argc, char *argv[])
 {
 
-    int fd = file_open("/tty");
+    int fd = file_open("/stdout");
 
     char c = ' ';
     unsigned int i;

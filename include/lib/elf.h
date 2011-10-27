@@ -67,15 +67,15 @@ struct elf_header
     unsigned short machine;
     unsigned int version;
     void *entry;
-    unsigned int programHeaderOffset;
-    unsigned int sectionHeaderOffset;
+    unsigned int phoffset;
+    unsigned int shoffset;
     unsigned int flags;
     unsigned short size;
-    unsigned short programHeaderSize;
-    unsigned short programHeaderCount;
-    unsigned short sectionHeaderSize;
-    unsigned short sectionHeaderCount;
-    unsigned short sectionHeaderStringIndex;
+    unsigned short phsize;
+    unsigned short phcount;
+    unsigned short shsize;
+    unsigned short shcount;
+    unsigned short shstringindex;
 
 };
 
@@ -84,10 +84,10 @@ struct elf_program_header
 
     unsigned int type;
     unsigned int offset;
-    void *virtualAddress;
-    void *physicalAddress;
-    unsigned int fileSize;
-    unsigned int memorySize;
+    void *vaddress;
+    void *paddress;
+    unsigned int fsize;
+    unsigned int msize;
     unsigned int flags;
     unsigned int align;
 
@@ -105,7 +105,7 @@ struct elf_section_header
     unsigned int link;
     unsigned int info;
     unsigned int align;
-    unsigned int entrySize;
+    unsigned int esize;
 
 };
 
@@ -117,7 +117,7 @@ struct elf_symbol
     unsigned int size;
     unsigned char info;
     unsigned char other;
-    unsigned short shndx;
+    unsigned short index;
 
 };
 
