@@ -1,5 +1,7 @@
 #include <lib/memory.h>
 #include <kernel/event.h>
+#include <kernel/vfs.h>
+#include <kernel/runtime.h>
 
 struct event_event eventHandlers[32];
 
@@ -30,11 +32,15 @@ void event_run(unsigned int index, unsigned int pid)
     if (!eventHandlers[index].pid)
         return;
 
-//    runtime_activate(task);
+    struct runtime_task *oldtask = runtime_get_task(eventHandlers[index].pid);
+    runtime_activate(oldtask);
 
     void (*handler)() = eventHandlers[index].handler;
 
     handler();
+
+    struct runtime_task *task = runtime_get_task(pid);
+    runtime_activate(task);
 
 }
 
