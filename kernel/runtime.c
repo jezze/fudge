@@ -169,6 +169,15 @@ static void runtime_task_unload(struct runtime_task *self)
 
 }
 
+static void runtime_task_save(struct runtime_task *self, void *eip, void *esp, void *ebp)
+{
+
+    self->eip = eip;
+    self->esp = esp;
+    self->ebp = ebp;
+
+}
+
 static struct vfs_descriptor *runtime_task_add_descriptor(struct runtime_task *self, struct vfs_node *node)
 {
 
@@ -222,6 +231,7 @@ void runtime_init()
         runtimeTasks[i].create_stack = runtime_task_create_stack;
         runtimeTasks[i].load = runtime_task_load;
         runtimeTasks[i].unload = runtime_task_unload;
+        runtimeTasks[i].save = runtime_task_save;
         runtimeTasks[i].add_descriptor = runtime_task_add_descriptor;
         runtimeTasks[i].get_descriptor = runtime_task_get_descriptor;
         runtimeTasks[i].remove_descriptor = runtime_task_remove_descriptor;

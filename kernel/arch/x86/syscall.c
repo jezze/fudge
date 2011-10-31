@@ -168,9 +168,7 @@ static void syscall_execute(struct syscall_registers *registers)
     char **argv = (char **)registers->ebx;
 
     struct runtime_task *oldtask = runtime_get_running_task();
-    oldtask->eip = (void *)registers->eip;
-    oldtask->esp = (void *)registers->useresp;
-    oldtask->ebp = (void *)registers->ebp;
+    oldtask->save(oldtask, (void *)registers->eip, (void *)registers->useresp, (void *)registers->ebp);
 
     struct runtime_task *task = runtime_get_free_task();
     task->parentpid = oldtask->pid;
