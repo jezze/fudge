@@ -1,28 +1,38 @@
+#include <lib/memory.h>
 #include <kernel/event.h>
 
-void *eventHandlers[32];
+struct event_event eventHandlers[32];
 
-void event_register(unsigned int index, void (*handler)())
+void event_register(unsigned int index, unsigned int pid, void (*handler)())
 {
 
-    eventHandlers[index] = handler;
-
-}
-
-void event_unregister(unsigned int index)
-{
-
-    eventHandlers[index] = 0;
-
-}
-
-void event_run(unsigned int index)
-{
-
-    if (!eventHandlers[index])
+    if (eventHandlers[index].pid != 0)
         return;
 
-    void (*handler)() = eventHandlers[index];
+    eventHandlers[index].pid = pid;
+    eventHandlers[index].handler = handler;
+
+}
+
+void event_unregister(unsigned int index, unsigned int pid)
+{
+
+    if (eventHandlers[index].pid != pid)
+        return;
+
+    eventHandlers[index].pid = 0;
+
+}
+
+void event_run(unsigned int index, unsigned int pid)
+{
+
+    if (!eventHandlers[index].pid)
+        return;
+
+//    runtime_activate(task);
+
+    void (*handler)() = eventHandlers[index].handler;
 
     handler();
 

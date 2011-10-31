@@ -67,7 +67,7 @@ static void syscall_open(struct syscall_registers *registers)
 
     }
 
-    event_run(0x01);
+    event_run(0x01, task->pid);
 
     registers->eax = descriptor->index;
 
@@ -82,7 +82,7 @@ static void syscall_close(struct syscall_registers *registers)
 
     task->remove_descriptor(task, fd);
 
-    event_run(0x02);
+    event_run(0x02, task->pid);
 
 }
 
@@ -191,7 +191,7 @@ static void syscall_execute(struct syscall_registers *registers)
     registers->ebp = (unsigned int)task->ebp;
     registers->eax = 1;
 
-    event_run(0x03);
+    event_run(0x03, task->pid);
 
 }
 
@@ -278,7 +278,9 @@ static void syscall_attach(struct syscall_registers *registers)
     unsigned int index = registers->ebx;
     void (*handler)() = (void *)registers->ecx;
 
-    event_register(index, handler);
+    struct runtime_task *task = runtime_get_running_task();    
+
+    event_register(index, task->pid, handler);
 
 }
 
@@ -287,7 +289,9 @@ static void syscall_detach(struct syscall_registers *registers)
 
     unsigned int index = registers->ebx;
 
-    event_unregister(index);
+    struct runtime_task *task = runtime_get_running_task();    
+
+    event_unregister(index, task->pid);
 
 }
 
