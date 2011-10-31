@@ -26,21 +26,10 @@ void event_unregister(unsigned int index, unsigned int pid)
 
 }
 
-void event_run(unsigned int index, unsigned int pid)
+struct event_event *event_get(unsigned int index)
 {
 
-    if (!eventHandlers[index].pid)
-        return;
-
-    struct runtime_task *oldtask = runtime_get_task(eventHandlers[index].pid);
-    runtime_activate(oldtask);
-
-    void (*handler)() = eventHandlers[index].handler;
-
-    handler();
-
-    struct runtime_task *task = runtime_get_task(pid);
-    runtime_activate(task);
+    return &eventHandlers[index];
 
 }
 

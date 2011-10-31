@@ -38,6 +38,28 @@ void syscall_handler(struct syscall_registers *registers)
 
 }
 
+static void syscall_run_event(struct syscall_registers *registers, unsigned int index, struct runtime_task *task)
+{
+
+    task->save(task, (void *)registers->eip, (void *)registers->useresp, (void *)registers->ebp);
+
+    struct event_event *event = event_get(index);
+
+    if (!event->pid)
+        return;
+
+    struct runtime_task *oldtask = runtime_get_task(event->pid);
+
+    runtime_activate(oldtask);
+
+    registers->eip = (unsigned int)event->handler;
+    registers->useresp = (unsigned int)oldtask->esp;
+    registers->ebp = (unsigned int)oldtask->ebp;
+
+    oldtask->parentpid = task->pid;
+
+}
+
 static void syscall_open(struct syscall_registers *registers)
 {
 
@@ -67,7 +89,7 @@ static void syscall_open(struct syscall_registers *registers)
 
     }
 
-    event_run(0x01, task->pid);
+    syscall_run_event(registers, 0x01, task);
 
     registers->eax = descriptor->index;
 
@@ -82,7 +104,7 @@ static void syscall_close(struct syscall_registers *registers)
 
     task->remove_descriptor(task, fd);
 
-    event_run(0x02, task->pid);
+    syscall_run_event(registers, 0x02, task);
 
 }
 
@@ -189,7 +211,7 @@ static void syscall_execute(struct syscall_registers *registers)
     registers->ebp = (unsigned int)task->ebp;
     registers->eax = 1;
 
-    event_run(0x03, task->pid);
+    syscall_run_event(registers, 0x03, task);
 
 }
 
@@ -214,6 +236,8 @@ static void syscall_wait(struct syscall_registers *registers)
 {
 
     struct runtime_task *oldtask = runtime_get_running_task();
+    oldtask->save(oldtask, (void *)registers->eip, (void *)registers->useresp, (void *)registers->ebp);
+
     struct runtime_task *task = runtime_get_task(oldtask->parentpid);
 
     runtime_activate(task);
