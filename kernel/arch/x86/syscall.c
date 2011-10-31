@@ -3,6 +3,7 @@
 #include <lib/memory.h>
 #include <lib/string.h>
 #include <kernel/vfs.h>
+#include <kernel/event.h>
 #include <kernel/modules.h>
 #include <kernel/runtime.h>
 #include <kernel/arch/x86/arch.h>
@@ -66,6 +67,8 @@ static void syscall_open(struct syscall_registers *registers)
 
     }
 
+    event_run(0x01);
+
     registers->eax = descriptor->index;
 
 }
@@ -78,6 +81,8 @@ static void syscall_close(struct syscall_registers *registers)
     struct runtime_task *task = runtime_get_running_task();    
 
     task->remove_descriptor(task, fd);
+
+    event_run(0x02);
 
 }
 
@@ -186,6 +191,8 @@ static void syscall_execute(struct syscall_registers *registers)
     registers->ebp = (unsigned int)task->ebp;
     registers->eax = 1;
 
+    event_run(0x03);
+
 }
 
 static void syscall_exit(struct syscall_registers *registers)
@@ -268,12 +275,19 @@ static void syscall_unload(struct syscall_registers *registers)
 static void syscall_attach(struct syscall_registers *registers)
 {
 
+    unsigned int index = registers->ebx;
+    void (*handler)() = (void *)registers->ecx;
+
+    event_register(index, handler);
 
 }
 
 static void syscall_detach(struct syscall_registers *registers)
 {
 
+    unsigned int index = registers->ebx;
+
+    event_unregister(index);
 
 }
 
