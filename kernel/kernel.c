@@ -1,6 +1,7 @@
 #include <lib/elf.h>
 #include <lib/file.h>
 #include <kernel/vfs.h>
+#include <kernel/event.h>
 #include <kernel/initrd.h>
 #include <kernel/kernel.h>
 #include <kernel/log.h>
@@ -76,6 +77,7 @@ void kernel_init(struct kernel_arch *arch)
     kernel.arch->setup(kernel.arch);
     kernel.arch->enable_interrupts();
 
+    event_init();
     vfs_init();
     initrd_init(kernel.arch->initrdc, kernel.arch->initrdv);
     modules_init();

@@ -79,6 +79,7 @@ modules: lib
 
 kernel: arch-${ARCH} modules
 	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_KERNEL}/error.c -o ${DIR_SOURCE_KERNEL}/error.o
+	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_KERNEL}/event.c -o ${DIR_SOURCE_KERNEL}/event.o
 	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_KERNEL}/initrd.c -o ${DIR_SOURCE_KERNEL}/initrd.o
 	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_KERNEL}/kernel.c -o ${DIR_SOURCE_KERNEL}/kernel.o
 	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_KERNEL}/log.c -o ${DIR_SOURCE_KERNEL}/log.o
@@ -87,6 +88,7 @@ kernel: arch-${ARCH} modules
 	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_KERNEL}/vfs.c -o ${DIR_SOURCE_KERNEL}/vfs.o
 	@${LD} ${LDFLAGS} \
 		${DIR_SOURCE_KERNEL}/error.o \
+		${DIR_SOURCE_KERNEL}/event.o \
 		${DIR_SOURCE_KERNEL}/initrd.o \
 		${DIR_SOURCE_KERNEL}/kernel.o \
 		${DIR_SOURCE_KERNEL}/log.o \
