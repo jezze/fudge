@@ -5,6 +5,8 @@ void explain()
 
     file_write_format(FILE_STDOUT, "You executed a program it seems...\n");
 
+    call_detach(0x03);
+
     call_exit();
 
 }
