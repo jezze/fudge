@@ -205,6 +205,21 @@ static void syscall_exit(struct syscall_registers *registers)
 
 }
 
+static void syscall_wait(struct syscall_registers *registers)
+{
+
+    struct runtime_task *oldtask = runtime_get_running_task();
+    struct runtime_task *task = runtime_get_task(oldtask->parentpid);
+
+    runtime_activate(task);
+
+    registers->eip = (unsigned int)task->eip;
+    registers->useresp = (unsigned int)task->esp;
+    registers->ebp = (unsigned int)task->ebp;
+    registers->eax = 1;
+
+}
+
 static void syscall_reboot(struct syscall_registers *registers)
 {
 
@@ -250,6 +265,18 @@ static void syscall_unload(struct syscall_registers *registers)
 
 }
 
+static void syscall_attach(struct syscall_registers *registers)
+{
+
+
+}
+
+static void syscall_detach(struct syscall_registers *registers)
+{
+
+
+}
+
 void syscall_init()
 {
 
@@ -260,9 +287,12 @@ void syscall_init()
     syscall_register_handler(SYSCALL_ROUTINE_INFO, syscall_info);
     syscall_register_handler(SYSCALL_ROUTINE_EXECUTE, syscall_execute);
     syscall_register_handler(SYSCALL_ROUTINE_EXIT, syscall_exit);
+    syscall_register_handler(SYSCALL_ROUTINE_WAIT, syscall_wait);
     syscall_register_handler(SYSCALL_ROUTINE_LOAD, syscall_load);
     syscall_register_handler(SYSCALL_ROUTINE_UNLOAD, syscall_unload);
     syscall_register_handler(SYSCALL_ROUTINE_REBOOT, syscall_reboot);
+    syscall_register_handler(SYSCALL_ROUTINE_ATTACH, syscall_attach);
+    syscall_register_handler(SYSCALL_ROUTINE_DETACH, syscall_detach);
 
 }
 
