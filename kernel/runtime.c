@@ -217,6 +217,28 @@ static void runtime_task_remove_descriptor(struct runtime_task *self, unsigned i
 
 }
 
+void runtime_relocate(void *paddress)
+{
+
+    struct elf_header *header = elf_get_header(paddress);
+
+//    struct elf_section_header *shstrHeader = elf_get_section_header_by_index(node->physical + header->shoffset, header->shsize, header->shstringindex);
+//    char *strtbl = (char *)(paddress + shstrHeader->offset);
+
+//    elf_print_sections(paddress + header->shoffset, header->shsize, header->shcount, strtbl);
+
+//    struct elf_section_header *symHeader = elf_get_section_header_by_type(paddress + header->shoffset, header->shsize, header->shcount, ELF_SECTION_TYPE_SYMTAB, 0);
+
+//    struct elf_section_header *strHeader = elf_get_section_header_by_type(paddress + header->shoffset, header->shsize, header->shcount, ELF_SECTION_TYPE_STRTAB, 0x2);
+//    struct elf_section_header *strHeader = elf_get_section_header_by_index(paddress + header->shoffset, header->shsize, 11);
+//    char *strtbl2 = (char *)(paddress + strHeader->offset);
+
+//    elf_print_symtab(paddress, symHeader, strtbl2);
+
+    elf_relocate(paddress, header);
+
+}
+
 void runtime_init()
 {
 

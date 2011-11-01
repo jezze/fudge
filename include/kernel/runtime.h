@@ -27,6 +27,7 @@ extern struct runtime_task *runtime_get_task(unsigned int pid);
 extern struct runtime_task *runtime_get_running_task();
 extern struct runtime_task *runtime_get_free_task();
 extern void runtime_activate(struct runtime_task *task);
+extern void runtime_relocate(void *paddress);
 extern void runtime_init();
 
 #endif
