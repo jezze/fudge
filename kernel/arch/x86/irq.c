@@ -1,4 +1,3 @@
-#include <kernel/vfs.h>
 #include <kernel/modules.h>
 #include <kernel/arch/x86/idt.h>
 #include <kernel/arch/x86/irq.h>
