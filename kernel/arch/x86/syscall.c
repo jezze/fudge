@@ -1,6 +1,4 @@
 #include <lib/file.h>
-#include <lib/memory.h>
-#include <lib/string.h>
 #include <kernel/vfs.h>
 #include <kernel/event.h>
 #include <kernel/modules.h>
