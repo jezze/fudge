@@ -148,7 +148,10 @@ static unsigned int runtime_task_load(struct runtime_task *self, char *path, uns
 
     kernel_map_task_memory(paddress, vaddress, 0x10000, 0x7, 0x7);
 
-    memory_set(self->descriptors, 0, sizeof (struct vfs_descriptor) * RUNTIME_TASK_DESCRIPTOR_COUNT);
+    unsigned int i;
+
+    for (i = 0; i < RUNTIME_TASK_DESCRIPTOR_COUNT; i++)
+        self->descriptors[i].node = 0;
 
     struct vfs_node *sin = vfs_find("/stdin");
     struct vfs_node *sout = vfs_find("/stdout");
@@ -189,7 +192,6 @@ static struct vfs_descriptor *runtime_task_add_descriptor(struct runtime_task *s
         if (!self->descriptors[i].node)
         {
 
-            self->descriptors[i].index = i + 1;
             self->descriptors[i].node = node;
             self->descriptors[i].permissions = 0;
 
@@ -243,6 +245,11 @@ void runtime_task_init(struct runtime_task *task, unsigned int pid)
     task->add_descriptor = runtime_task_add_descriptor;
     task->get_descriptor = runtime_task_get_descriptor;
     task->remove_descriptor = runtime_task_remove_descriptor;
+
+    unsigned int i;
+
+    for (i = 0; i < RUNTIME_TASK_DESCRIPTOR_COUNT; i++)
+        task->descriptors[i].index = i + 1;
 
 }
 
