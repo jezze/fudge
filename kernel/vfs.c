@@ -78,6 +78,17 @@ static unsigned int vfs_filesystem_node_read(struct vfs_node *self, unsigned int
 
 }
 
+void vfs_node_init(struct vfs_node *node, unsigned int id, void (*open)(struct vfs_node *self), void (*close)(struct vfs_node *self), unsigned int (*read)(struct vfs_node *self, unsigned int count, void *buffer), unsigned int (*write)(struct vfs_node *self, unsigned int count, void *buffer))
+{
+
+    node->id = id;
+    node->open = open;
+    node->close = close;
+    node->read = read;
+    node->write = write;
+
+}
+
 void vfs_filesystem_init(struct vfs_filesystem *filesystem, struct vfs_node *root, struct vfs_node *(*lookup)(struct vfs_filesystem *self, char *path))
 {
 
@@ -89,8 +100,7 @@ void vfs_filesystem_init(struct vfs_filesystem *filesystem, struct vfs_node *roo
 void vfs_init()
 {
 
-    vfsRoot.read = vfs_filesystem_node_read;
-
+    vfs_node_init(&vfsRoot, 0, 0, 0, vfs_filesystem_node_read, 0);
     vfs_filesystem_init(&vfsFilesystem, &vfsRoot, vfs_filesystem_lookup);
     vfs_register_filesystem(&vfsFilesystem);
 
