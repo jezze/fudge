@@ -217,6 +217,22 @@ static void runtime_task_remove_descriptor(struct runtime_task *self, unsigned i
 
 }
 
+void runtime_task_init(struct runtime_task *task, unsigned int pid)
+{
+
+    task->pid = pid;
+    task->running = 0;
+    task->used = 0;
+    task->create_stack = runtime_task_create_stack;
+    task->load = runtime_task_load;
+    task->unload = runtime_task_unload;
+    task->save = runtime_task_save;
+    task->add_descriptor = runtime_task_add_descriptor;
+    task->get_descriptor = runtime_task_get_descriptor;
+    task->remove_descriptor = runtime_task_remove_descriptor;
+
+}
+
 void runtime_relocate(void *paddress)
 {
 
@@ -245,20 +261,7 @@ void runtime_init()
     unsigned int i;
 
     for (i = 0; i < 8; i++)
-    {
-
-        runtimeTasks[i].pid = i;
-        runtimeTasks[i].running = 0;
-        runtimeTasks[i].used = 0;
-        runtimeTasks[i].create_stack = runtime_task_create_stack;
-        runtimeTasks[i].load = runtime_task_load;
-        runtimeTasks[i].unload = runtime_task_unload;
-        runtimeTasks[i].save = runtime_task_save;
-        runtimeTasks[i].add_descriptor = runtime_task_add_descriptor;
-        runtimeTasks[i].get_descriptor = runtime_task_get_descriptor;
-        runtimeTasks[i].remove_descriptor = runtime_task_remove_descriptor;
-
-    }
+        runtime_task_init(&runtimeTasks[i], i);
 
 }
 
