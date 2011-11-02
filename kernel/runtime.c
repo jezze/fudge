@@ -261,7 +261,7 @@ void runtime_init()
     unsigned int i;
 
     for (i = 0; i < RUNTIME_TASK_COUNT; i++)
-        runtime_task_init(&runtimeTasks[i], i);
+        runtime_task_init(&runtimeTasks[i], i + 1);
 
 }
 
