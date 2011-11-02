@@ -71,8 +71,7 @@ static void serial_handler()
 void serial_device_init(struct serial_device *device, unsigned int port)
 {
 
-    device->base.module.type = MODULES_TYPE_DEVICE;
-    device->base.type = SERIAL_DEVICE_TYPE;
+    modules_device_init(&device->base, SERIAL_DEVICE_TYPE);
     device->buffer.size = 256;
     device->buffer.head = 0;
     device->buffer.tail = 0;

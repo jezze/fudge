@@ -31,8 +31,7 @@ static unsigned short pci_inw(unsigned int address, unsigned short offset)
 void pci_device_init(struct pci_device *device, unsigned int address)
 {
 
-    device->base.module.type = MODULES_TYPE_DEVICE;
-    device->base.type = PCI_DEVICE_TYPE;
+    modules_device_init(&device->base, PCI_DEVICE_TYPE);
     device->configuration.vendorid = pci_inw(address, 0x00);
     device->configuration.deviceid = pci_inw(address, 0x02);
     device->configuration.revision = pci_inb(address, 0x08);
@@ -145,8 +144,7 @@ static void pci_bus_scan(unsigned int bus)
 void pci_bus_init(struct pci_bus *bus)
 {
 
-    bus->base.module.type = MODULES_TYPE_BUS;
-    bus->base.type = PCI_BUS_TYPE;
+    modules_bus_init(&bus->base, PCI_BUS_TYPE);
     bus->devicesCount = 0;
     bus->find_device = pci_bus_find_device;
     bus->scan = pci_bus_scan;

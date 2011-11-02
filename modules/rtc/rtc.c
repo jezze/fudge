@@ -58,9 +58,7 @@ static unsigned int rtc_device_stream_read(struct vfs_node *self, unsigned int c
 void rtc_device_init(struct rtc_device *device)
 {
 
-    rtcDevice.base.module.type = MODULES_TYPE_DEVICE;
-    rtcDevice.base.type = RTC_DEVICE_TYPE;
-
+    modules_device_init(&device->base, RTC_DEVICE_TYPE);
     stream_device_init(&rtcDevice.stream, "rtc", rtc_device_stream_read, 0);
 
 }

@@ -133,8 +133,7 @@ static unsigned int tty_cwd_device_node_write(struct vfs_node *self, unsigned in
 void tty_device_init(struct tty_device *device)
 {
 
-    device->base.module.type = MODULES_TYPE_DEVICE;
-    device->base.type = TTY_DEVICE_TYPE;
+    modules_device_init(&device->base, TTY_DEVICE_TYPE);
     device->cursorOffset = 0;
     device->kbdDevice = (struct kbd_device *)modules_get_device(KBD_DEVICE_TYPE);
     device->vgaDevice = (struct vga_device *)modules_get_device(VGA_DEVICE_TYPE);

@@ -181,6 +181,37 @@ static unsigned int modules_filesystem_node_read(struct vfs_node *self, unsigned
 
 }
 
+void modules_module_init(struct modules_module *module, unsigned int type)
+{
+
+    module->type = type;
+
+}
+
+void modules_bus_init(struct modules_bus *bus, unsigned int type)
+{
+
+    bus->type = type;
+    bus->module.type = MODULES_TYPE_BUS;
+
+}
+
+void modules_device_init(struct modules_device *device, unsigned int type)
+{
+
+    device->type = type;
+    device->module.type = MODULES_TYPE_DEVICE;
+
+}
+
+void modules_driver_init(struct modules_driver *driver, unsigned int type)
+{
+
+    driver->type = type;
+    driver->module.type = MODULES_TYPE_DRIVER;
+
+}
+
 static void modules_init_devices()
 {
 

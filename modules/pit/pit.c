@@ -13,8 +13,7 @@ static void pit_handler()
 void pit_device_init(struct pit_device *device)
 {
 
-    device->base.module.type = MODULES_TYPE_DEVICE;
-    device->base.type = PIT_DEVICE_TYPE;
+    modules_device_init(&device->base, PIT_DEVICE_TYPE);
     device->divisor = PIT_HERTZ / PIT_FREQUENCY;
 
     io_outb(0x43, 0x36);

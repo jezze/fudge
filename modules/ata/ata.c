@@ -130,16 +130,14 @@ static unsigned int ata_device_identify(struct ata_device *self)
 void ata_bus_init(struct ata_bus *bus)
 {
 
-    bus->base.module.type = MODULES_TYPE_BUS;
-    bus->base.type = ATA_BUS_TYPE;
+    modules_bus_init(&bus->base, ATA_BUS_TYPE);
 
 }
 
 void ata_device_init(struct ata_device *device, unsigned int control, unsigned int data)
 {
 
-    device->base.module.type = MODULES_TYPE_DEVICE;
-    device->base.type = ATA_DEVICE_TYPE;
+    modules_device_init(&device->base, ATA_DEVICE_TYPE);
     device->control = control;
     device->data = data;
     device->get_command = ata_device_get_command;

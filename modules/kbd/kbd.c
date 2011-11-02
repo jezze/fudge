@@ -117,8 +117,7 @@ static void kbd_handler()
 void kbd_device_init(struct kbd_device *device)
 {
 
-    device->base.module.type = MODULES_TYPE_DEVICE;
-    device->base.type = KBD_DEVICE_TYPE;
+    modules_device_init(&device->base, KBD_DEVICE_TYPE);
     device->buffer.size = 256;
     device->buffer.head = 0;
     device->buffer.tail = 0;
