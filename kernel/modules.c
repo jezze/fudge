@@ -201,9 +201,9 @@ static void modules_init_devices()
 void modules_init()
 {
 
-    modulesFilesystem.root = &modulesRoot;
-    modulesFilesystem.root->operations.read = modules_filesystem_node_read;
-    modulesFilesystem.lookup = modules_filesystem_lookup;
+    modulesRoot.operations.read = modules_filesystem_node_read;
+
+    vfs_filesystem_init(&modulesFilesystem, &modulesRoot, modules_filesystem_lookup); 
     vfs_register_filesystem(&modulesFilesystem);
 
     modules_init_devices();

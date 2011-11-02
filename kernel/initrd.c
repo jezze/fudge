@@ -111,9 +111,10 @@ static unsigned int initrd_filesystem_node_read(struct vfs_node *self, unsigned 
 void initrd_init(unsigned int initrdc, void **initrdv)
 {
 
-    initrdFilesystem.base.root = &initrdRoot;
-    initrdFilesystem.base.root->operations.read = initrd_filesystem_node_read;
-    initrdFilesystem.base.lookup = initrd_filesystem_lookup;
+    initrdRoot.operations.read = initrd_filesystem_node_read;
+
+    vfs_filesystem_init(&initrdFilesystem.base, &initrdRoot, initrd_filesystem_lookup);
+
     initrdFilesystem.nodesCount = 0;
 
     unsigned int i;

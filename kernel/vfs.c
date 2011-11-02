@@ -78,12 +78,20 @@ static unsigned int vfs_filesystem_node_read(struct vfs_node *self, unsigned int
 
 }
 
+void vfs_filesystem_init(struct vfs_filesystem *filesystem, struct vfs_node *root, struct vfs_node *(*lookup)(struct vfs_filesystem *self, char *path))
+{
+
+    filesystem->root = root;
+    filesystem->lookup = lookup;
+
+}
+
 void vfs_init()
 {
 
-    vfsFilesystem.root = &vfsRoot;
-    vfsFilesystem.root->operations.read = vfs_filesystem_node_read;
-    vfsFilesystem.lookup = vfs_filesystem_lookup;
+    vfsRoot.operations.read = vfs_filesystem_node_read;
+
+    vfs_filesystem_init(&vfsFilesystem, &vfsRoot, vfs_filesystem_lookup);
     vfs_register_filesystem(&vfsFilesystem);
 
 }
