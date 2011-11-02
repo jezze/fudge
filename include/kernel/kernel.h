@@ -22,7 +22,7 @@ struct kernel_arch
 
 };
 
-struct kernel
+struct kernel_core
 {
 
     struct kernel_arch *arch;
@@ -37,6 +37,7 @@ extern void kernel_unregister_irq(unsigned int index);
 extern void *kernel_get_task_memory(unsigned int pid);
 extern void kernel_load_task_memory(void *paddress);
 extern void kernel_map_task_memory(void *paddress, void *vaddress, unsigned int size, unsigned int tflags, unsigned int pflags);
+extern void kernel_core_init(struct kernel_core *core, struct kernel_arch *arch);
 extern void kernel_init(struct kernel_arch *arch);
 
 #endif
