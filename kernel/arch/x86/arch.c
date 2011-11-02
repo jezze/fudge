@@ -61,6 +61,7 @@ void arch_init(struct mboot_header *header, unsigned int magic, void *stack)
     arch.mboot = header;
     arch.initrdc = header->modules.count;
     arch.initrdv = header->modules.address;
+    arch.reboot = arch_reboot;
 
     kernel_init(&arch);
 

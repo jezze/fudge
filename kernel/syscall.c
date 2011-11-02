@@ -1,6 +1,7 @@
 #include <lib/file.h>
 #include <kernel/vfs.h>
 #include <kernel/event.h>
+#include <kernel/kernel.h>
 #include <kernel/modules.h>
 #include <kernel/runtime.h>
 
@@ -96,7 +97,7 @@ unsigned int syscall_read(unsigned int fd, unsigned int count, char *buffer)
 void syscall_reboot()
 {
 
-    arch_reboot();
+    kernel_reboot();
 
 }
 

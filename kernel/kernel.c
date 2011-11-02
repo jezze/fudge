@@ -7,7 +7,6 @@
 #include <kernel/log.h>
 #include <kernel/modules.h>
 #include <kernel/runtime.h>
-#include <kernel/arch/x86/mboot.h>
 #include <modules/elf/elf.h>
 
 static struct kernel kernel;
@@ -23,6 +22,13 @@ void kernel_enable_interrupts()
 {
 
     kernel.arch->enable_interrupts();
+
+}
+
+void kernel_reboot()
+{
+
+    kernel.arch->reboot();
 
 }
 
