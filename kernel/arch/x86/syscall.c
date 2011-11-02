@@ -50,6 +50,8 @@ static void syscall_close_handler(struct syscall_registers *registers)
 
     syscall_close(fd);
 
+    registers->eax = 1;
+
 }
 
 static void syscall_detach_handler(struct syscall_registers *registers)
@@ -90,6 +92,7 @@ static void syscall_execute_handler(struct syscall_registers *registers)
     registers->eip = (unsigned int)task->eip;
     registers->useresp = (unsigned int)task->esp;
     registers->ebp = (unsigned int)task->ebp;
+
     registers->eax = 1;
 
     syscall_run_event(registers, 0x03, task);
@@ -109,6 +112,7 @@ static void syscall_exit_handler(struct syscall_registers *registers)
     registers->eip = (unsigned int)task->eip;
     registers->useresp = (unsigned int)task->esp;
     registers->ebp = (unsigned int)task->ebp;
+
     registers->eax = 1;
 
 }
@@ -185,6 +189,7 @@ static void syscall_wait_handler(struct syscall_registers *registers)
     registers->eip = (unsigned int)task->eip;
     registers->useresp = (unsigned int)task->esp;
     registers->ebp = (unsigned int)task->ebp;
+
     registers->eax = 1;
 
 }
@@ -204,13 +209,6 @@ static void syscall_register_handler(unsigned char index, void (*handler)(struct
 {
 
     syscallRoutines[index] = handler;
-
-}
-
-static void syscall_unregister_handler(unsigned char index)
-{
-
-    syscallRoutines[index] = 0;
 
 }
 
