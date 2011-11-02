@@ -2,7 +2,6 @@
 #include <kernel/vfs.h>
 #include <kernel/event.h>
 #include <kernel/kernel.h>
-#include <kernel/modules.h>
 #include <kernel/runtime.h>
 
 void syscall_attach(unsigned int index, void (*handler)())
