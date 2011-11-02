@@ -78,6 +78,15 @@ static unsigned int vfs_filesystem_node_read(struct vfs_node *self, unsigned int
 
 }
 
+void vfs_descriptor_init(struct vfs_descriptor *descriptor, unsigned int index, struct vfs_node *node, unsigned int permissions)
+{
+
+    descriptor->index = index;
+    descriptor->node = node;
+    descriptor->permissions = permissions;
+
+}
+
 void vfs_node_init(struct vfs_node *node, unsigned int id, void (*open)(struct vfs_node *self), void (*close)(struct vfs_node *self), unsigned int (*read)(struct vfs_node *self, unsigned int count, void *buffer), unsigned int (*write)(struct vfs_node *self, unsigned int count, void *buffer))
 {
 

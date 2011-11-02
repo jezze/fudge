@@ -193,7 +193,6 @@ static struct vfs_descriptor *runtime_task_add_descriptor(struct runtime_task *s
         {
 
             self->descriptors[i].node = node;
-            self->descriptors[i].permissions = 0;
 
             return &self->descriptors[i];
 
@@ -228,7 +227,6 @@ static void runtime_task_remove_descriptor(struct runtime_task *self, unsigned i
     struct vfs_descriptor *descriptor = runtime_task_get_descriptor(self, index);
 
     descriptor->node = 0;
-    descriptor->permissions = 0;
 
 }
 
@@ -249,7 +247,7 @@ void runtime_task_init(struct runtime_task *task, unsigned int pid)
     unsigned int i;
 
     for (i = 0; i < RUNTIME_TASK_DESCRIPTOR_COUNT; i++)
-        task->descriptors[i].index = i + 1;
+        vfs_descriptor_init(&task->descriptors[i], i + 1, 0, 0);
 
 }
 
