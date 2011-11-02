@@ -183,13 +183,13 @@ static struct vfs_descriptor *runtime_task_add_descriptor(struct runtime_task *s
 
     unsigned int i;
 
-    for (i = 1; i < RUNTIME_TASK_DESCRIPTOR_COUNT; i++)
+    for (i = 0; i < RUNTIME_TASK_DESCRIPTOR_COUNT; i++)
     {
 
         if (!self->descriptors[i].node)
         {
 
-            self->descriptors[i].index = i;
+            self->descriptors[i].index = i + 1;
             self->descriptors[i].node = node;
             self->descriptors[i].permissions = 0;
 
@@ -206,14 +206,27 @@ static struct vfs_descriptor *runtime_task_add_descriptor(struct runtime_task *s
 static struct vfs_descriptor *runtime_task_get_descriptor(struct runtime_task *self, unsigned int index)
 {
 
-    return &self->descriptors[index];
+    unsigned int i;
+
+    for (i = 0; i < RUNTIME_TASK_DESCRIPTOR_COUNT; i++)
+    {
+
+        if (self->descriptors[i].index == index && self->descriptors[i].node)
+            return &self->descriptors[i];
+
+    }
+
+    return 0;
 
 }
 
 static void runtime_task_remove_descriptor(struct runtime_task *self, unsigned int index)
 {
 
-    memory_set((void *)&self->descriptors[index], 0, sizeof (struct vfs_descriptor));
+    struct vfs_descriptor *descriptor = runtime_task_get_descriptor(self, index);
+
+    descriptor->node = 0;
+    descriptor->permissions = 0;
 
 }
 
