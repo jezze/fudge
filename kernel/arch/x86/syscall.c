@@ -1,38 +1,13 @@
 #include <lib/file.h>
 #include <kernel/vfs.h>
 #include <kernel/event.h>
-#include <kernel/modules.h>
 #include <kernel/runtime.h>
+#include <kernel/syscall.h>
 #include <kernel/arch/x86/arch.h>
 #include <kernel/arch/x86/isr.h>
-#include <kernel/arch/x86/mmu.h>
 #include <kernel/arch/x86/syscall.h>
 
 static void *syscallRoutines[SYSCALL_ROUTINES_SIZE];
-
-void syscall_register_handler(unsigned char index, void (*handler)(struct syscall_registers *registers))
-{
-
-    syscallRoutines[index] = handler;
-
-}
-
-void syscall_unregister_handler(unsigned char index)
-{
-
-    syscallRoutines[index] = 0;
-
-}
-
-void syscall_handler(struct syscall_registers *registers)
-{
-
-    void (*handler)(struct syscall_registers *registers) = syscallRoutines[registers->eax];
-
-    if (handler)
-        handler(registers);
-
-}
 
 static void syscall_run_event(struct syscall_registers *registers, unsigned int index, struct runtime_task *task)
 {
@@ -56,129 +31,39 @@ static void syscall_run_event(struct syscall_registers *registers, unsigned int 
 
 }
 
-static void syscall_open(struct syscall_registers *registers)
+static void syscall_attach_handler(struct syscall_registers *registers)
 {
 
-    char *path = (char *)registers->esi;
+    unsigned int index = registers->ebx;
+    void (*handler)() = (void *)registers->ecx;
 
-    struct runtime_task *task = runtime_get_running_task();    
-
-    struct vfs_node *node = vfs_find(path);
-
-    if (!node)
-    {
-
-        registers->eax = -1;
-
-        return;
-
-    }
-
-    struct vfs_descriptor *descriptor = task->add_descriptor(task, node);
-
-    if (!descriptor)
-    {
-
-        registers->eax = -1;
-
-        return;
-
-    }
-
-    syscall_run_event(registers, 0x01, task);
-
-    registers->eax = descriptor->index;
-
-}
-
-static void syscall_close(struct syscall_registers *registers)
-{
-
-    unsigned int fd = registers->ebx;
-
-    struct runtime_task *task = runtime_get_running_task();    
-
-    task->remove_descriptor(task, fd);
-
-    syscall_run_event(registers, 0x02, task);
-
-}
-
-static void syscall_read(struct syscall_registers *registers)
-{
-
-    unsigned int fd = registers->ebx;
-    char *buffer = (char *)registers->esi;
-    unsigned int count = registers->ecx;
-
-    struct runtime_task *task = runtime_get_running_task();    
-
-    struct vfs_node *node = task->get_descriptor(task, fd)->node;
-
-    if (!(node && node->operations.read))
-    {
-
-        registers->eax = 0;
-
-        return;
-
-    }
-
-    registers->eax = node->operations.read(node, count, buffer);
-
-}
-
-static void syscall_write(struct syscall_registers *registers)
-{
-
-    unsigned int fd = registers->ebx;
-    char *buffer = (char *)registers->esi;
-    unsigned int count = registers->ecx;
-
-    struct runtime_task *task = runtime_get_running_task();    
-
-    struct vfs_node *node = task->get_descriptor(task, fd)->node;
-
-    if (!(node && node->operations.write))
-    {
-
-        registers->eax = 0;
-
-        return;
-
-    }
-
-    registers->eax = node->operations.write(node, count, buffer);
-
-}
-
-static void syscall_info(struct syscall_registers *registers)
-{
-
-    unsigned int fd = registers->ebx;
-    struct file_info *info = (struct file_info *)registers->edi;
-    
-    struct runtime_task *task = runtime_get_running_task();
-
-    struct vfs_node *node = task->get_descriptor(task, fd)->node;
-
-    if (!node)
-    {
-
-        registers->eax = 0;
-
-        return;
-
-    }
-
-    info->id = node->id;
-    info->length = 0;
+    syscall_attach(index, handler);
 
     registers->eax = 1;
 
 }
 
-static void syscall_execute(struct syscall_registers *registers)
+static void syscall_close_handler(struct syscall_registers *registers)
+{
+
+    unsigned int fd = registers->ebx;
+
+    syscall_close(fd);
+
+}
+
+static void syscall_detach_handler(struct syscall_registers *registers)
+{
+
+    unsigned int index = registers->ebx;
+
+    syscall_detach(index);
+
+    registers->eax = 1;
+
+}
+
+static void syscall_execute_handler(struct syscall_registers *registers)
 {
 
     char *path = (char *)registers->esi;
@@ -211,7 +96,7 @@ static void syscall_execute(struct syscall_registers *registers)
 
 }
 
-static void syscall_exit(struct syscall_registers *registers)
+static void syscall_exit_handler(struct syscall_registers *registers)
 {
 
     struct runtime_task *oldtask = runtime_get_running_task();
@@ -228,7 +113,66 @@ static void syscall_exit(struct syscall_registers *registers)
 
 }
 
-static void syscall_wait(struct syscall_registers *registers)
+static void syscall_info_handler(struct syscall_registers *registers)
+{
+
+    unsigned int fd = registers->ebx;
+    struct file_info *info = (struct file_info *)registers->edi;
+
+    registers->eax = syscall_info(fd, info);
+
+}
+
+static void syscall_load_handler(struct syscall_registers *registers)
+{
+
+    char *path = (char *)registers->esi;
+
+    syscall_load(path);
+
+    registers->eax = 1;
+
+}
+
+static void syscall_open_handler(struct syscall_registers *registers)
+{
+
+    char *path = (char *)registers->esi;
+
+    registers->eax = syscall_open(path);
+
+}
+
+static void syscall_read_handler(struct syscall_registers *registers)
+{
+
+    unsigned int fd = registers->ebx;
+    unsigned int count = registers->ecx;
+    char *buffer = (char *)registers->esi;
+
+    registers->eax = syscall_read(fd, count, buffer);
+
+}
+
+static void syscall_reboot_handler(struct syscall_registers *registers)
+{
+
+    syscall_reboot();
+
+    registers->eax = 1;
+
+}
+
+static void syscall_unload_handler(struct syscall_registers *registers)
+{
+
+    syscall_unload();
+
+    registers->eax = 1;
+
+}
+
+static void syscall_wait_handler(struct syscall_registers *registers)
 {
 
     struct runtime_task *oldtask = runtime_get_running_task();
@@ -245,75 +189,57 @@ static void syscall_wait(struct syscall_registers *registers)
 
 }
 
-static void syscall_reboot(struct syscall_registers *registers)
+static void syscall_write_handler(struct syscall_registers *registers)
 {
 
-    arch_reboot();
+    unsigned int fd = registers->ebx;
+    unsigned int count = registers->ecx;
+    char *buffer = (char *)registers->esi;
+
+    registers->eax = syscall_write(fd, count, buffer);
 
 }
 
-static void syscall_load(struct syscall_registers *registers)
+static void syscall_register_handler(unsigned char index, void (*handler)(struct syscall_registers *registers))
 {
 
-    char *path = (char *)registers->esi;
-
-    struct vfs_node *node = vfs_find(path);
-
-    runtime_relocate(node->physical);
-
-    void (*minit)() = node->physical + 0x40;
-    minit();
-
-    registers->eax = 1;
+    syscallRoutines[index] = handler;
 
 }
 
-static void syscall_unload(struct syscall_registers *registers)
+static void syscall_unregister_handler(unsigned char index)
 {
 
-    registers->eax = 1;
+    syscallRoutines[index] = 0;
 
 }
 
-static void syscall_attach(struct syscall_registers *registers)
+void syscall_handler(struct syscall_registers *registers)
 {
 
-    unsigned int index = registers->ebx;
-    void (*handler)() = (void *)registers->ecx;
+    void (*handler)(struct syscall_registers *registers) = syscallRoutines[registers->eax];
 
-    struct runtime_task *task = runtime_get_running_task();    
-
-    event_register(index, task->pid, handler);
-
-}
-
-static void syscall_detach(struct syscall_registers *registers)
-{
-
-    unsigned int index = registers->ebx;
-
-    struct runtime_task *task = runtime_get_running_task();    
-
-    event_unregister(index, task->pid);
+    if (handler)
+        handler(registers);
 
 }
 
 void syscall_init()
 {
 
-    syscall_register_handler(SYSCALL_ROUTINE_OPEN, syscall_open);
-    syscall_register_handler(SYSCALL_ROUTINE_CLOSE, syscall_close);
-    syscall_register_handler(SYSCALL_ROUTINE_READ, syscall_read);
-    syscall_register_handler(SYSCALL_ROUTINE_WRITE, syscall_write);
-    syscall_register_handler(SYSCALL_ROUTINE_INFO, syscall_info);
-    syscall_register_handler(SYSCALL_ROUTINE_EXECUTE, syscall_execute);
-    syscall_register_handler(SYSCALL_ROUTINE_EXIT, syscall_exit);
-    syscall_register_handler(SYSCALL_ROUTINE_WAIT, syscall_wait);
-    syscall_register_handler(SYSCALL_ROUTINE_LOAD, syscall_load);
-    syscall_register_handler(SYSCALL_ROUTINE_UNLOAD, syscall_unload);
-    syscall_register_handler(SYSCALL_ROUTINE_REBOOT, syscall_reboot);
-    syscall_register_handler(SYSCALL_ROUTINE_ATTACH, syscall_attach);
-    syscall_register_handler(SYSCALL_ROUTINE_DETACH, syscall_detach);
+    syscall_register_handler(SYSCALL_ROUTINE_OPEN, syscall_open_handler);
+    syscall_register_handler(SYSCALL_ROUTINE_CLOSE, syscall_close_handler);
+    syscall_register_handler(SYSCALL_ROUTINE_READ, syscall_read_handler);
+    syscall_register_handler(SYSCALL_ROUTINE_WRITE, syscall_write_handler);
+    syscall_register_handler(SYSCALL_ROUTINE_INFO, syscall_info_handler);
+    syscall_register_handler(SYSCALL_ROUTINE_EXECUTE, syscall_execute_handler);
+    syscall_register_handler(SYSCALL_ROUTINE_EXIT, syscall_exit_handler);
+    syscall_register_handler(SYSCALL_ROUTINE_WAIT, syscall_wait_handler);
+    syscall_register_handler(SYSCALL_ROUTINE_LOAD, syscall_load_handler);
+    syscall_register_handler(SYSCALL_ROUTINE_UNLOAD, syscall_unload_handler);
+    syscall_register_handler(SYSCALL_ROUTINE_REBOOT, syscall_reboot_handler);
+    syscall_register_handler(SYSCALL_ROUTINE_ATTACH, syscall_attach_handler);
+    syscall_register_handler(SYSCALL_ROUTINE_DETACH, syscall_detach_handler);
 
 }
 
