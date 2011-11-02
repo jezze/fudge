@@ -60,7 +60,7 @@ void syscall_load(char *path)
 
 }
 
-int syscall_open(char *path)
+unsigned int syscall_open(char *path)
 {
 
     struct runtime_task *task = runtime_get_running_task();    
@@ -68,12 +68,12 @@ int syscall_open(char *path)
     struct vfs_node *node = vfs_find(path);
 
     if (!node)
-        return -1;
+        return 0;
 
     struct vfs_descriptor *descriptor = task->add_descriptor(task, node);
 
     if (!descriptor)
-        return -1;
+        return 0;
 
     return descriptor->index;
 
