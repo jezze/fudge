@@ -39,7 +39,7 @@ void main(int argc, char *argv[])
 
     int fd = file_open(path);
 
-    if (fd == -1)
+    if (!fd)
     {
 
         file_write_format(FILE_STDOUT, "File does not exist.\n");

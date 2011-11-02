@@ -1,9 +1,9 @@
 #ifndef LIB_FILE_H
 #define LIB_FILE_H
 
-#define FILE_STDIN  0
-#define FILE_STDOUT 1
-#define FILE_STDERR 2
+#define FILE_STDIN  1
+#define FILE_STDOUT 2
+#define FILE_STDERR 3
 
 struct file_info
 {

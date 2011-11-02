@@ -183,7 +183,7 @@ static struct vfs_descriptor *runtime_task_add_descriptor(struct runtime_task *s
 
     unsigned int i;
 
-    for (i = 0; i < 16; i++)
+    for (i = 1; i < 16; i++)
     {
 
         if (!self->descriptors[i].node)

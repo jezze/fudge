@@ -43,7 +43,7 @@ void main(int argc, char *argv[])
 
     int new = file_open(path);
 
-    if (new == -1)
+    if (!new)
     {
 
         file_write_format(FILE_STDOUT, "Directory does not exist.\n");
