@@ -3,25 +3,15 @@
 
 #define VFS_FILESYSTEM_MAX 8
 
-struct vfs_node;
-struct vfs_node_operations;
-
-struct vfs_node_operations
-{
-
-    void (*open)(struct vfs_node *self);
-    void (*close)(struct vfs_node *self);
-    unsigned int (*read)(struct vfs_node *self, unsigned int count, void *buffer);
-    unsigned int (*write)(struct vfs_node *self, unsigned int count, void *buffer);
-
-};
-
 struct vfs_node
 {
 
     unsigned int id;
-    struct vfs_node_operations operations;
     void *physical;
+    void (*open)(struct vfs_node *self);
+    void (*close)(struct vfs_node *self);
+    unsigned int (*read)(struct vfs_node *self, unsigned int count, void *buffer);
+    unsigned int (*write)(struct vfs_node *self, unsigned int count, void *buffer);
 
 };
 

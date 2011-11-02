@@ -127,10 +127,10 @@ static unsigned int runtime_task_load(struct runtime_task *self, char *path, uns
 
     struct vfs_node *node = vfs_find(path);
 
-    if (!(node && node->operations.read))
+    if (!(node && node->read))
         return 0;
 
-    node->operations.read(node, 0x10000, paddress);
+    node->read(node, 0x10000, paddress);
 
     void *vaddress = elf_get_virtual(paddress);
 

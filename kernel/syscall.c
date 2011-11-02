@@ -86,10 +86,10 @@ unsigned int syscall_read(unsigned int fd, unsigned int count, char *buffer)
 
     struct vfs_node *node = task->get_descriptor(task, fd)->node;
 
-    if (!(node && node->operations.read))
+    if (!(node && node->read))
         return 0;
 
-    return node->operations.read(node, count, buffer);
+    return node->read(node, count, buffer);
 
 }
 
@@ -112,10 +112,10 @@ unsigned int syscall_write(unsigned int fd, unsigned int count, char *buffer)
 
     struct vfs_node *node = task->get_descriptor(task, fd)->node;
 
-    if (!(node && node->operations.write))
+    if (!(node && node->write))
         return 0;
 
-    return node->operations.write(node, count, buffer);
+    return node->write(node, count, buffer);
 
 }
 

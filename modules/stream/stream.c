@@ -8,8 +8,8 @@ void stream_device_init(struct stream_device *device, char *name, void *read, vo
 
     device->base.module.type = MODULES_TYPE_DEVICE;
     device->base.type = STREAM_DEVICE_TYPE;
-    device->node.operations.read = read;
-    device->node.operations.write = write;
+    device->node.read = read;
+    device->node.write = write;
     string_copy(device->name, name);
 
 }

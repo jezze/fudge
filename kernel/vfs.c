@@ -70,7 +70,7 @@ static unsigned int vfs_filesystem_node_read(struct vfs_node *self, unsigned int
         if (vfsFilesystems[i] == &vfsFilesystem)
             continue;
 
-        vfsFilesystems[i]->root->operations.read(vfsFilesystems[i]->root, count, buffer + string_length(buffer));
+        vfsFilesystems[i]->root->read(vfsFilesystems[i]->root, count, buffer + string_length(buffer));
 
     }
 
@@ -89,7 +89,7 @@ void vfs_filesystem_init(struct vfs_filesystem *filesystem, struct vfs_node *roo
 void vfs_init()
 {
 
-    vfsRoot.operations.read = vfs_filesystem_node_read;
+    vfsRoot.read = vfs_filesystem_node_read;
 
     vfs_filesystem_init(&vfsFilesystem, &vfsRoot, vfs_filesystem_lookup);
     vfs_register_filesystem(&vfsFilesystem);

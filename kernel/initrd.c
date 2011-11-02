@@ -58,7 +58,7 @@ static unsigned int initrd_parse(void *address)
         initrdFileNode->data = (void *)(address + TAR_BLOCK_SIZE);
         initrdFileNode->base.id = i;
         initrdFileNode->base.physical = (void *)(address + TAR_BLOCK_SIZE);
-        initrdFileNode->base.operations.read = initrd_node_read;
+        initrdFileNode->base.read = initrd_node_read;
 
         address += ((size / TAR_BLOCK_SIZE) + 1) * TAR_BLOCK_SIZE;
 
@@ -111,7 +111,7 @@ static unsigned int initrd_filesystem_node_read(struct vfs_node *self, unsigned 
 void initrd_init(unsigned int initrdc, void **initrdv)
 {
 
-    initrdRoot.operations.read = initrd_filesystem_node_read;
+    initrdRoot.read = initrd_filesystem_node_read;
 
     vfs_filesystem_init(&initrdFilesystem.base, &initrdRoot, initrd_filesystem_lookup);
 
