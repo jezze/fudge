@@ -3,7 +3,12 @@
 void main(int argc, char *argv[])
 {
 
-    file_write_format(FILE_STDOUT, "Timer: %d\n", 0);
+    char buffer[64];
+
+    int fd = file_open("/jiffies");
+    file_read(fd, 64, buffer);
+    file_write_format(FILE_STDOUT, "Timer: %s\n", buffer);
+    file_close(fd);
 
     call_exit();
 
