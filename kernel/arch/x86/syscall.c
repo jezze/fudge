@@ -72,29 +72,17 @@ static void syscall_execute_handler(struct syscall_registers *registers)
     char *path = (char *)registers->esi;
     unsigned int argc = registers->ecx;
     char **argv = (char **)registers->ebx;
+    void *eip = (void *)registers->eip;
+    void *esp = (void *)registers->useresp;
+    void *ebp = (void *)registers->ebp;
 
-    struct runtime_task *oldtask = runtime_get_running_task();
-    oldtask->save(oldtask, (void *)registers->eip, (void *)registers->useresp, (void *)registers->ebp);
+    registers->eax = syscall_execute(path, argc, argv, eip, esp, ebp);
 
-    struct runtime_task *task = runtime_get_free_task();
-    task->parentpid = oldtask->pid;
-
-    if (!task->load(task, path, argc, argv))
-    {
-
-        registers->eax = 0;
-
-        return;
-
-    }
-
-    runtime_activate(task);
+    struct runtime_task *task = runtime_get_running_task();
 
     registers->eip = (unsigned int)task->eip;
     registers->useresp = (unsigned int)task->esp;
     registers->ebp = (unsigned int)task->ebp;
-
-    registers->eax = 1;
 
     syscall_run_event(registers, 0x03, task);
 
@@ -103,12 +91,9 @@ static void syscall_execute_handler(struct syscall_registers *registers)
 static void syscall_exit_handler(struct syscall_registers *registers)
 {
 
-    struct runtime_task *oldtask = runtime_get_running_task();
-    oldtask->unload(oldtask);
+    syscall_exit();
 
-    struct runtime_task *task = runtime_get_task(oldtask->parentpid);
-
-    runtime_activate(task);
+    struct runtime_task *task = runtime_get_running_task();
 
     registers->eip = (unsigned int)task->eip;
     registers->useresp = (unsigned int)task->esp;
@@ -180,18 +165,17 @@ static void syscall_unload_handler(struct syscall_registers *registers)
 static void syscall_wait_handler(struct syscall_registers *registers)
 {
 
-    struct runtime_task *oldtask = runtime_get_running_task();
-    oldtask->save(oldtask, (void *)registers->eip, (void *)registers->useresp, (void *)registers->ebp);
+    void *eip = (void *)registers->eip;
+    void *esp = (void *)registers->useresp;
+    void *ebp = (void *)registers->ebp;
 
-    struct runtime_task *task = runtime_get_task(oldtask->parentpid);
+    registers->eax = syscall_wait(eip, esp, ebp);
 
-    runtime_activate(task);
+    struct runtime_task *task = runtime_get_running_task();
 
     registers->eip = (unsigned int)task->eip;
     registers->useresp = (unsigned int)task->esp;
     registers->ebp = (unsigned int)task->ebp;
-
-    registers->eax = 1;
 
 }
 

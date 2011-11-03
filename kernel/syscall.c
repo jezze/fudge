@@ -31,6 +31,36 @@ void syscall_detach(unsigned int index)
 
 }
 
+unsigned int syscall_execute(char *path, unsigned int argc, char **argv, void *eip, void *esp, void *ebp)
+{
+
+    struct runtime_task *oldtask = runtime_get_running_task();
+    oldtask->save(oldtask, eip, esp, ebp);
+
+    struct runtime_task *task = runtime_get_free_task();
+    task->parentpid = oldtask->pid;
+
+    if (!task->load(task, path, argc, argv))
+        return 0;
+
+    runtime_activate(task);
+
+    return 1;
+
+}
+
+void syscall_exit()
+{
+
+    struct runtime_task *oldtask = runtime_get_running_task();
+    oldtask->unload(oldtask);
+
+    struct runtime_task *task = runtime_get_task(oldtask->parentpid);
+
+    runtime_activate(task);
+
+}
+
 unsigned int syscall_info(unsigned int fd, struct file_info *info)
 {
 
@@ -102,6 +132,20 @@ void syscall_reboot()
 
 void syscall_unload()
 {
+
+}
+
+unsigned int syscall_wait(void *eip, void *esp, void *ebp)
+{
+
+    struct runtime_task *oldtask = runtime_get_running_task();
+    oldtask->save(oldtask, eip, esp, ebp);
+
+    struct runtime_task *task = runtime_get_task(oldtask->parentpid);
+
+    runtime_activate(task);
+
+    return 1;
 
 }
 
