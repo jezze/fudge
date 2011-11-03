@@ -3,7 +3,7 @@
 
 struct file_info;
 
-extern int call_open(char *path);
+extern unsigned int call_open(char *path);
 extern void call_close(unsigned int fd);
 extern unsigned int call_read(unsigned int fd, void *buffer, unsigned int count);
 extern unsigned int call_write(unsigned int fd, void *buffer, unsigned int count);
@@ -15,8 +15,8 @@ extern unsigned int call_exit();
 extern unsigned int call_wait();
 extern unsigned int call_attach(int index, void (*handler)());
 extern unsigned int call_detach(int index);
-extern int call_halt();
-extern int call_reboot();
+extern void call_halt();
+extern void call_reboot();
 
 #endif
 
