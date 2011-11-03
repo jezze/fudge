@@ -46,8 +46,6 @@ static void syscall_execute_handler(struct syscall_registers *registers)
 
     registers->eax = syscall_execute(path, argc, argv, eip, esp, ebp);
 
-    syscall_handle_event(0x03);
-
     struct runtime_task *task = runtime_get_running_task();
 
     registers->eip = (unsigned int)task->eip;

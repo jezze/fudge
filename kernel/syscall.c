@@ -4,7 +4,7 @@
 #include <kernel/kernel.h>
 #include <kernel/runtime.h>
 
-unsigned int syscall_handle_event(unsigned int index)
+static unsigned int syscall_handle_event(unsigned int index)
 {
 
     struct event_event *event = event_get(index);
@@ -94,6 +94,8 @@ unsigned int syscall_execute(char *path, unsigned int argc, char **argv, void *e
         return 0;
 
     runtime_activate(task);
+
+    syscall_handle_event(0x03);
 
     return 1;
 
