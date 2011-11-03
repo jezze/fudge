@@ -144,6 +144,7 @@ ramdisk: kernel
 	@${GCC} ${GCCFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/echo.c -o ${DIR_SOURCE_BIN}/echo.o
 	@${GCC} ${GCCFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/event1.c -o ${DIR_SOURCE_BIN}/event1.o
 	@${GCC} ${GCCFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/event2.c -o ${DIR_SOURCE_BIN}/event2.o
+	@${GCC} ${GCCFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/event3.c -o ${DIR_SOURCE_BIN}/event3.o
 	@${GCC} ${GCCFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/hello.c -o ${DIR_SOURCE_BIN}/hello.o
 	@${GCC} ${GCCFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/init.c -o ${DIR_SOURCE_BIN}/init.o
 	@${GCC} ${GCCFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/ls.c -o ${DIR_SOURCE_BIN}/ls.o
@@ -160,6 +161,7 @@ ramdisk: kernel
 	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/echo.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_SOURCE_ARCH}/calls.o -o ${DIR_IMAGE}/bin/echo
 	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/event1.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_SOURCE_ARCH}/calls.o -o ${DIR_IMAGE}/bin/event1
 	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/event2.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_SOURCE_ARCH}/calls.o -o ${DIR_IMAGE}/bin/event2
+	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/event3.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_SOURCE_ARCH}/calls.o -o ${DIR_IMAGE}/bin/event3
 	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/hello.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_SOURCE_ARCH}/calls.o -o ${DIR_IMAGE}/bin/hello
 	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/init.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_SOURCE_ARCH}/calls.o -o ${DIR_IMAGE}/bin/init
 	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/ls.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_SOURCE_ARCH}/calls.o -o ${DIR_IMAGE}/bin/ls
@@ -200,6 +202,7 @@ clean:
 	@rm -f ${DIR_IMAGE}/bin/echo
 	@rm -f ${DIR_IMAGE}/bin/event1
 	@rm -f ${DIR_IMAGE}/bin/event2
+	@rm -f ${DIR_IMAGE}/bin/event3
 	@rm -f ${DIR_IMAGE}/bin/hello
 	@rm -f ${DIR_IMAGE}/bin/init
 	@rm -f ${DIR_IMAGE}/bin/ls
