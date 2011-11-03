@@ -172,7 +172,7 @@ static void runtime_task_unload(struct runtime_task *self)
 
 }
 
-static void runtime_task_save(struct runtime_task *self, void *ip, void *sp, void *sb)
+static void runtime_task_save_registers(struct runtime_task *self, void *ip, void *sp, void *sb)
 {
 
     self->registers.ip = ip;
@@ -239,7 +239,7 @@ void runtime_task_init(struct runtime_task *task, unsigned int pid)
     task->create_stack = runtime_task_create_stack;
     task->load = runtime_task_load;
     task->unload = runtime_task_unload;
-    task->save = runtime_task_save;
+    task->save_registers = runtime_task_save_registers;
     task->add_descriptor = runtime_task_add_descriptor;
     task->get_descriptor = runtime_task_get_descriptor;
     task->remove_descriptor = runtime_task_remove_descriptor;
