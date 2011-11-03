@@ -1,6 +1,7 @@
 #include <lib/file.h>
 #include <kernel/vfs.h>
 #include <kernel/event.h>
+#include <kernel/kernel.h>
 #include <kernel/runtime.h>
 #include <kernel/syscall.h>
 #include <kernel/arch/x86/arch.h>

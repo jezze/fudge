@@ -11,7 +11,7 @@
 #include <kernel/arch/x86/syscall.h>
 #include <kernel/arch/x86/tss.h>
 
-static struct kernel_arch arch;
+static struct arch_x86 x86;
 
 void arch_reboot()
 {
@@ -32,7 +32,9 @@ void arch_reboot()
 static void arch_setup(struct kernel_arch *arch)
 {
 
-    mboot_init(arch->mboot);
+    struct arch_x86 *x86 = (struct arch_x86 *)arch;
+
+    mboot_init(x86->mboot);
     gdt_init();
     tss_init();
     idt_init();
@@ -47,23 +49,24 @@ static void arch_setup(struct kernel_arch *arch)
 void arch_init(struct mboot_header *header, unsigned int magic, void *stack)
 {
 
-    arch.setup = arch_setup;
-    arch.disable_interrupts = cpu_disable_interrupts;
-    arch.enable_interrupts = cpu_enable_interrupts;
-    arch.enter_usermode = cpu_enter_usermode;
-    arch.set_stack = tss_set_stack;
-    arch.register_irq = irq_register_handler;
-    arch.unregister_irq = irq_unregister_handler;
-    arch.get_task_memory = mmu_get_paddress;
-    arch.load_task_memory = mmu_set_directory;
-    arch.map_task_memory = mmu_map;
-    arch.stack = stack;
-    arch.mboot = header;
-    arch.initrdc = header->modules.count;
-    arch.initrdv = header->modules.address;
-    arch.reboot = arch_reboot;
+    x86.base.setup = arch_setup;
+    x86.base.disable_interrupts = cpu_disable_interrupts;
+    x86.base.enable_interrupts = cpu_enable_interrupts;
+    x86.base.enter_usermode = cpu_enter_usermode;
+    x86.base.set_stack = tss_set_stack;
+    x86.base.register_irq = irq_register_handler;
+    x86.base.unregister_irq = irq_unregister_handler;
+    x86.base.get_task_memory = mmu_get_paddress;
+    x86.base.load_task_memory = mmu_set_directory;
+    x86.base.map_task_memory = mmu_map;
+    x86.base.stack = stack;
+    x86.base.initrdc = header->modules.count;
+    x86.base.initrdv = header->modules.address;
+    x86.base.reboot = arch_reboot;
+    x86.mboot = header;
+    x86.magic = magic;
 
-    kernel_init(&arch);
+    kernel_init(&x86.base);
 
 }
 
