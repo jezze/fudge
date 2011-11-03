@@ -38,9 +38,7 @@ static void syscall_attach_handler(struct syscall_registers *registers)
     unsigned int index = registers->ebx;
     void (*handler)() = (void *)registers->ecx;
 
-    syscall_attach(index, handler);
-
-    registers->eax = 1;
+    registers->eax = syscall_attach(index, handler);
 
 }
 
@@ -49,9 +47,7 @@ static void syscall_close_handler(struct syscall_registers *registers)
 
     unsigned int fd = registers->ebx;
 
-    syscall_close(fd);
-
-    registers->eax = 1;
+    registers->eax = syscall_close(fd);
 
 }
 
@@ -60,9 +56,7 @@ static void syscall_detach_handler(struct syscall_registers *registers)
 
     unsigned int index = registers->ebx;
 
-    syscall_detach(index);
-
-    registers->eax = 1;
+    registers->eax = syscall_detach(index);
 
 }
 
@@ -91,15 +85,13 @@ static void syscall_execute_handler(struct syscall_registers *registers)
 static void syscall_exit_handler(struct syscall_registers *registers)
 {
 
-    syscall_exit();
+    registers->eax = syscall_exit();
 
     struct runtime_task *task = runtime_get_running_task();
 
     registers->eip = (unsigned int)task->eip;
     registers->useresp = (unsigned int)task->esp;
     registers->ebp = (unsigned int)task->ebp;
-
-    registers->eax = 1;
 
 }
 
@@ -118,9 +110,7 @@ static void syscall_load_handler(struct syscall_registers *registers)
 
     char *path = (char *)registers->esi;
 
-    syscall_load(path);
-
-    registers->eax = 1;
+    registers->eax = syscall_load(path);
 
 }
 
@@ -147,18 +137,14 @@ static void syscall_read_handler(struct syscall_registers *registers)
 static void syscall_reboot_handler(struct syscall_registers *registers)
 {
 
-    syscall_reboot();
-
-    registers->eax = 1;
+    registers->eax = syscall_reboot();
 
 }
 
 static void syscall_unload_handler(struct syscall_registers *registers)
 {
 
-    syscall_unload();
-
-    registers->eax = 1;
+    registers->eax = syscall_unload();
 
 }
 

@@ -4,30 +4,36 @@
 #include <kernel/kernel.h>
 #include <kernel/runtime.h>
 
-void syscall_attach(unsigned int index, void (*handler)())
+unsigned int syscall_attach(unsigned int index, void (*handler)())
 {
 
     struct runtime_task *task = runtime_get_running_task();    
 
     event_register(index, task->pid, handler);
 
+    return 1;
+
 }
 
-void syscall_close(unsigned int fd)
+unsigned int syscall_close(unsigned int fd)
 {
 
     struct runtime_task *task = runtime_get_running_task();    
 
     task->remove_descriptor(task, fd);
 
+    return 1;
+
 }
 
-void syscall_detach(unsigned int index)
+unsigned int syscall_detach(unsigned int index)
 {
 
     struct runtime_task *task = runtime_get_running_task();    
 
     event_unregister(index, task->pid);
+
+    return 1;
 
 }
 
@@ -49,7 +55,7 @@ unsigned int syscall_execute(char *path, unsigned int argc, char **argv, void *e
 
 }
 
-void syscall_exit()
+unsigned int syscall_exit()
 {
 
     struct runtime_task *oldtask = runtime_get_running_task();
@@ -58,6 +64,8 @@ void syscall_exit()
     struct runtime_task *task = runtime_get_task(oldtask->parentpid);
 
     runtime_activate(task);
+
+    return 1;
 
 }
 
@@ -78,7 +86,7 @@ unsigned int syscall_info(unsigned int fd, struct file_info *info)
 
 }
 
-void syscall_load(char *path)
+unsigned int syscall_load(char *path)
 {
 
     struct vfs_node *node = vfs_find(path);
@@ -87,6 +95,8 @@ void syscall_load(char *path)
 
     void (*minit)() = node->physical + 0x40;
     minit();
+
+    return 1;
 
 }
 
@@ -123,15 +133,19 @@ unsigned int syscall_read(unsigned int fd, unsigned int count, char *buffer)
 
 }
 
-void syscall_reboot()
+unsigned int syscall_reboot()
 {
 
     kernel_reboot();
 
+    return 1;
+
 }
 
-void syscall_unload()
+unsigned int syscall_unload()
 {
+
+    return 1;
 
 }
 
