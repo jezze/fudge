@@ -77,7 +77,7 @@ $ make iso
 
 ### RUNNING
 
-$ qemu -cdrom fudge.iso [-serial stdio] [-net nic,rtl8139]
+$ qemu -cdrom fudge.iso [-serial stdio] [-net nic,model=rtl8139]
 
 ### CLEANING
 
