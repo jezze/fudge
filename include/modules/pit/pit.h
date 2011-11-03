@@ -2,7 +2,7 @@
 #define MODULES_PIT_H
 
 #define PIT_HERTZ     1193180
-#define PIT_FREQUENCY 1000
+#define PIT_FREQUENCY 100
 
 #define PIT_DEVICE_TYPE 2202
 
