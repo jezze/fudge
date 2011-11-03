@@ -4,7 +4,6 @@
 #include <kernel/event.h>
 #include <kernel/modules.h>
 #include <kernel/kernel.h>
-#include <kernel/syscall.h>
 #include <modules/io/io.h>
 #include <modules/stream/stream.h>
 #include <modules/pit/pit.h>
