@@ -3,7 +3,6 @@
 #include <kernel/event.h>
 #include <kernel/runtime.h>
 #include <kernel/syscall.h>
-#include <kernel/arch/x86/isr.h>
 #include <kernel/arch/x86/syscall.h>
 
 static void *syscallRoutines[SYSCALL_ROUTINES_SIZE];
