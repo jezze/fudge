@@ -15,7 +15,7 @@ static void pit_handler()
 
     pitDevice.jiffies += 1;
 
-    event_handler(0x06);
+    event_handler_interrupt(0x06);
 
 }
 

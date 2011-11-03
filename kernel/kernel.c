@@ -25,6 +25,13 @@ void kernel_enable_interrupts()
 
 }
 
+void kernel_enter_usermode(void *callback, void *stack)
+{
+
+    core.arch->enter_usermode(callback, stack);
+
+}
+
 void kernel_reboot()
 {
 
