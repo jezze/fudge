@@ -40,17 +40,17 @@ static void syscall_execute_handler(struct syscall_registers *registers)
     char *path = (char *)registers->esi;
     unsigned int argc = registers->ecx;
     char **argv = (char **)registers->ebx;
-    void *eip = (void *)registers->eip;
-    void *esp = (void *)registers->useresp;
-    void *ebp = (void *)registers->ebp;
+    void *ip = (void *)registers->eip;
+    void *sp = (void *)registers->useresp;
+    void *sb = (void *)registers->ebp;
 
-    registers->eax = syscall_execute(path, argc, argv, eip, esp, ebp);
+    registers->eax = syscall_execute(path, argc, argv, ip, sp, sb);
 
     struct runtime_task *task = runtime_get_running_task();
 
-    registers->eip = (unsigned int)task->eip;
-    registers->useresp = (unsigned int)task->esp;
-    registers->ebp = (unsigned int)task->ebp;
+    registers->eip = (unsigned int)task->registers.ip;
+    registers->useresp = (unsigned int)task->registers.sp;
+    registers->ebp = (unsigned int)task->registers.sb;
 
 }
 
@@ -61,9 +61,9 @@ static void syscall_exit_handler(struct syscall_registers *registers)
 
     struct runtime_task *task = runtime_get_running_task();
 
-    registers->eip = (unsigned int)task->eip;
-    registers->useresp = (unsigned int)task->esp;
-    registers->ebp = (unsigned int)task->ebp;
+    registers->eip = (unsigned int)task->registers.ip;
+    registers->useresp = (unsigned int)task->registers.sp;
+    registers->ebp = (unsigned int)task->registers.sb;
 
 }
 
@@ -123,17 +123,17 @@ static void syscall_unload_handler(struct syscall_registers *registers)
 static void syscall_wait_handler(struct syscall_registers *registers)
 {
 
-    void *eip = (void *)registers->eip;
-    void *esp = (void *)registers->useresp;
-    void *ebp = (void *)registers->ebp;
+    void *ip = (void *)registers->eip;
+    void *sp = (void *)registers->useresp;
+    void *sb = (void *)registers->ebp;
 
-    registers->eax = syscall_wait(eip, esp, ebp);
+    registers->eax = syscall_wait(ip, sp, sb);
 
     struct runtime_task *task = runtime_get_running_task();
 
-    registers->eip = (unsigned int)task->eip;
-    registers->useresp = (unsigned int)task->esp;
-    registers->ebp = (unsigned int)task->ebp;
+    registers->eip = (unsigned int)task->registers.ip;
+    registers->useresp = (unsigned int)task->registers.sp;
+    registers->ebp = (unsigned int)task->registers.sb;
 
 }
 

@@ -101,7 +101,7 @@ void kernel_init(struct kernel_arch *arch)
     runtime_activate(task);
 
     core.arch->set_stack(core.arch->stack);
-    core.arch->enter_usermode(task->eip, task->esp);
+    core.arch->enter_usermode(task->registers.ip, task->registers.sp);
 
     for (;;);
 

@@ -23,7 +23,7 @@ static unsigned int syscall_handle_event(unsigned int index)
         return 0;
 
     oldtask->parentpid = task->pid;
-    oldtask->eip = event->handler;
+    oldtask->registers.ip = event->handler;
 
     runtime_activate(oldtask);
 
@@ -73,7 +73,7 @@ unsigned int syscall_detach(unsigned int index)
 
 }
 
-unsigned int syscall_execute(char *path, unsigned int argc, char **argv, void *eip, void *esp, void *ebp)
+unsigned int syscall_execute(char *path, unsigned int argc, char **argv, void *ip, void *sp, void *sb)
 {
 
     struct runtime_task *oldtask = runtime_get_running_task();
@@ -81,7 +81,7 @@ unsigned int syscall_execute(char *path, unsigned int argc, char **argv, void *e
     if (!oldtask)
         return 0;
 
-    oldtask->save(oldtask, eip, esp, ebp);
+    oldtask->save(oldtask, ip, sp, sb);
 
     struct runtime_task *task = runtime_get_free_task();
 
@@ -214,7 +214,7 @@ unsigned int syscall_unload()
 
 }
 
-unsigned int syscall_wait(void *eip, void *esp, void *ebp)
+unsigned int syscall_wait(void *ip, void *sp, void *sb)
 {
 
     struct runtime_task *oldtask = runtime_get_running_task();
@@ -222,7 +222,7 @@ unsigned int syscall_wait(void *eip, void *esp, void *ebp)
     if (!oldtask)
         return 0;
 
-    oldtask->save(oldtask, eip, esp, ebp);
+    oldtask->save(oldtask, ip, sp, sb);
 
     struct runtime_task *task = runtime_get_task(oldtask->parentpid);
 

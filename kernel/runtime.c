@@ -111,12 +111,12 @@ static void runtime_task_create_stack(struct runtime_task *self, void *paddress,
     memory_set(paddress + 0xFFFA, (argc & 0x00FF0000) >> 16, 1);
     memory_set(paddress + 0xFFF9, (argc & 0x0000FF00) >> 8, 1);
     memory_set(paddress + 0xFFF8, (argc & 0x000000FF) >> 0, 1);
-    memory_set(paddress + 0xFFF7, ((unsigned int)self->eip & 0xFF000000) >> 24, 1);
-    memory_set(paddress + 0xFFF6, ((unsigned int)self->eip & 0x00FF0000) >> 16, 1);
-    memory_set(paddress + 0xFFF5, ((unsigned int)self->eip & 0x0000FF00) >> 8, 1);
-    memory_set(paddress + 0xFFF4, ((unsigned int)self->eip & 0x000000FF) >> 0, 1);
+    memory_set(paddress + 0xFFF7, ((unsigned int)self->registers.ip & 0xFF000000) >> 24, 1);
+    memory_set(paddress + 0xFFF6, ((unsigned int)self->registers.ip & 0x00FF0000) >> 16, 1);
+    memory_set(paddress + 0xFFF5, ((unsigned int)self->registers.ip & 0x0000FF00) >> 8, 1);
+    memory_set(paddress + 0xFFF4, ((unsigned int)self->registers.ip & 0x000000FF) >> 0, 1);
 
-    self->esp = vaddress + 0xFFF4;
+    self->registers.sp = vaddress + 0xFFF4;
 
 }
 
@@ -143,7 +143,7 @@ static unsigned int runtime_task_load(struct runtime_task *self, char *path, uns
         return 0;
 
     self->used = 1;
-    self->eip = entry;
+    self->registers.ip = entry;
     self->create_stack(self, paddress, vaddress, argc, argv);
 
     kernel_map_task_memory(paddress, vaddress, 0x10000, 0x7, 0x7);
@@ -172,12 +172,12 @@ static void runtime_task_unload(struct runtime_task *self)
 
 }
 
-static void runtime_task_save(struct runtime_task *self, void *eip, void *esp, void *ebp)
+static void runtime_task_save(struct runtime_task *self, void *ip, void *sp, void *sb)
 {
 
-    self->eip = eip;
-    self->esp = esp;
-    self->ebp = ebp;
+    self->registers.ip = ip;
+    self->registers.sp = sp;
+    self->registers.sb = sb;
 
 }
 

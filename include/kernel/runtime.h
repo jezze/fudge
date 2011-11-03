@@ -4,6 +4,15 @@
 #define RUNTIME_TASK_COUNT 8
 #define RUNTIME_TASK_DESCRIPTOR_COUNT 16
 
+struct runtime_registers
+{
+
+    void *ip;
+    void *sp;
+    void *sb;
+
+};
+
 struct runtime_task
 {
 
@@ -11,13 +20,11 @@ struct runtime_task
     unsigned int parentpid;
     unsigned int running;
     unsigned int used;
-    void *eip;
-    void *esp;
-    void *ebp;
+    struct runtime_registers registers;
     void (*create_stack)(struct runtime_task *self, void *address, void *virt, unsigned int argc, char **argv);
     unsigned int (*load)(struct runtime_task *self, char *path, unsigned int argc, char **argv);
     void (*unload)(struct runtime_task *self);
-    void (*save)(struct runtime_task *self, void *eip, void *esp, void *ebp);
+    void (*save)(struct runtime_task *self, void *ip, void *sp, void *sb);
     struct mmu_header *header;
     struct vfs_descriptor descriptors[RUNTIME_TASK_DESCRIPTOR_COUNT];
     struct vfs_descriptor *(*add_descriptor)(struct runtime_task *self, struct vfs_node *node);
