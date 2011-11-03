@@ -1,7 +1,7 @@
 #ifndef KERNEL_VFS_H
 #define KERNEL_VFS_H
 
-#define VFS_FILESYSTEM_MAX 8
+#define VFS_FILESYSTEM_SLOTS 8
 
 struct vfs_node
 {

@@ -7,9 +7,9 @@
 #define MMU_ERROR_RESERVED 1 << 3
 #define MMU_ERROR_FETCH    1 << 4
 
-#define MMU_DIRECTORY_SIZE    1024
+#define MMU_DIRECTORY_SLOTS 1024
 
-#define MMU_TABLE_SIZE              1024
+#define MMU_TABLE_SLOTS 1024
 #define MMU_TABLE_FLAG_PRESENT      1 << 0
 #define MMU_TABLE_FLAG_WRITEABLE    1 << 1
 #define MMU_TABLE_FLAG_USERMODE     1 << 2
@@ -19,7 +19,8 @@
 #define MMU_TABLE_FLAG_LARGE        1 << 6
 #define MMU_TABLE_FLAG_IGNORED      1 << 7
 
-#define MMU_PAGE_SIZE              4096
+#define MMU_PAGE_SLOTS 4096
+#define MMU_PAGE_SIZE 4096
 #define MMU_PAGE_FLAG_PRESENT      1 << 0
 #define MMU_PAGE_FLAG_WRITEABLE    1 << 1
 #define MMU_PAGE_FLAG_USERMODE     1 << 2
@@ -34,16 +35,16 @@ struct isr_registers;
 struct mmu_table
 {
 
-    unsigned int entries[MMU_TABLE_SIZE];
+    unsigned int entries[MMU_TABLE_SLOTS];
 
-} __attribute__((aligned(MMU_PAGE_SIZE)));
+} __attribute__((aligned(MMU_PAGE_SLOTS)));
 
 struct mmu_directory
 {
 
-    struct mmu_table *tables[MMU_DIRECTORY_SIZE];
+    struct mmu_table *tables[MMU_DIRECTORY_SLOTS];
 
-} __attribute__((aligned(MMU_PAGE_SIZE)));
+} __attribute__((aligned(MMU_PAGE_SLOTS)));
 
 struct mmu_header
 {

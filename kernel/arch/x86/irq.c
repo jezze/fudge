@@ -4,7 +4,7 @@
 #include <kernel/arch/x86/isr.h>
 #include <modules/io/io.h>
 
-static void *irqRoutines[IRQ_ROUTINES_SIZE];
+static void *irqRoutines[IRQ_ROUTINE_SLOTS];
 
 void irq_register_handler(unsigned char index, void (*handler)())
 {

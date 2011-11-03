@@ -1,8 +1,8 @@
 #ifndef KERNEL_RUNTIME_H
 #define KERNEL_RUNTIME_H
 
-#define RUNTIME_TASK_COUNT 8
-#define RUNTIME_TASK_DESCRIPTOR_COUNT 16
+#define RUNTIME_TASK_SLOTS 8
+#define RUNTIME_TASK_DESCRIPTOR_SLOTS 16
 
 struct runtime_registers
 {
@@ -26,7 +26,7 @@ struct runtime_task
     unsigned int (*load)(struct runtime_task *self, char *path, unsigned int argc, char **argv);
     void (*unload)(struct runtime_task *self);
     struct mmu_header *header;
-    struct vfs_descriptor descriptors[RUNTIME_TASK_DESCRIPTOR_COUNT];
+    struct vfs_descriptor descriptors[RUNTIME_TASK_DESCRIPTOR_SLOTS];
     struct vfs_descriptor *(*add_descriptor)(struct runtime_task *self, struct vfs_node *node);
     struct vfs_descriptor *(*get_descriptor)(struct runtime_task *self, unsigned int index);
     void (*remove_descriptor)(struct runtime_task *self, unsigned int index);

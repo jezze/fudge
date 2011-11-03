@@ -53,14 +53,14 @@ static void mmu_clear_table(struct mmu_table *table)
 static struct mmu_table *mmu_get_table(struct mmu_directory *directory, unsigned int frame)
 {
 
-    return (struct mmu_table *)((unsigned int)directory->tables[frame / MMU_DIRECTORY_SIZE] & 0xFFFFF000);
+    return (struct mmu_table *)((unsigned int)directory->tables[frame / MMU_DIRECTORY_SLOTS] & 0xFFFFF000);
 
 }
 
 static unsigned int *mmu_get_entry(struct mmu_directory *directory, unsigned int frame)
 {
 
-    return &mmu_get_table(directory, frame)->entries[frame % MMU_TABLE_SIZE];
+    return &mmu_get_table(directory, frame)->entries[frame % MMU_TABLE_SLOTS];
 
 }
 
@@ -69,8 +69,8 @@ void mmu_map(void *paddress, void *vaddress, unsigned int size, unsigned int tfl
 
     struct mmu_header *header = mmu_get_header(paddress);
 
-    unsigned int frame = (unsigned int)vaddress / MMU_PAGE_SIZE;
-    unsigned int index = frame / MMU_DIRECTORY_SIZE;
+    unsigned int frame = (unsigned int)vaddress / MMU_PAGE_SLOTS;
+    unsigned int index = frame / MMU_DIRECTORY_SLOTS;
     unsigned int count = size / MMU_PAGE_SIZE + ((size & 0xFFF) > 0);
 
     mmu_clear_table(&header->table);

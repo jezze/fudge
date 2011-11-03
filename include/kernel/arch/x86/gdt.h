@@ -1,7 +1,7 @@
 #ifndef ARCH_GDT_H
 #define ARCH_GDT_H
 
-#define GDT_TABLE_SIZE 6
+#define GDT_TABLE_SLOTS 6
 
 struct gdt_entry
 {

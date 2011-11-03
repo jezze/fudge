@@ -1,7 +1,7 @@
 #ifndef ARCH_IDT_H
 #define ARCH_IDT_H
 
-#define IDT_TABLE_SIZE 256
+#define IDT_TABLE_SLOTS 256
 
 struct idt_entry
 {

@@ -2,7 +2,7 @@
 #include <lib/string.h>
 #include <kernel/vfs.h>
 
-static struct vfs_filesystem *vfsFilesystems[VFS_FILESYSTEM_MAX];
+static struct vfs_filesystem *vfsFilesystems[VFS_FILESYSTEM_SLOTS];
 static struct vfs_filesystem vfsFilesystem;
 static struct vfs_node vfsRoot;
 
@@ -11,7 +11,7 @@ void vfs_register_filesystem(struct vfs_filesystem *filesystem)
 
     unsigned int i;
 
-    for (i = 0; i < VFS_FILESYSTEM_MAX; i++)
+    for (i = 0; i < VFS_FILESYSTEM_SLOTS; i++)
     {
 
         if (vfsFilesystems[i])

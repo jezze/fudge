@@ -1,7 +1,7 @@
 #include <lib/memory.h>
 #include <kernel/arch/x86/idt.h>
 
-static struct idt_entry idt[IDT_TABLE_SIZE];
+static struct idt_entry idt[IDT_TABLE_SLOTS];
 static struct idt_pointer idtPointer;
 
 void idt_set_gate(unsigned char index, void *callback, unsigned short selector, unsigned char flags)
@@ -20,10 +20,10 @@ void idt_set_gate(unsigned char index, void *callback, unsigned short selector, 
 void idt_init()
 {
 
-    memory_set(&idt, 0, sizeof (struct idt_entry) * IDT_TABLE_SIZE);
+    memory_set(&idt, 0, sizeof (struct idt_entry) * IDT_TABLE_SLOTS);
 
     idtPointer.base = idt;
-    idtPointer.limit = (sizeof (struct idt_entry) * IDT_TABLE_SIZE) - 1;
+    idtPointer.limit = (sizeof (struct idt_entry) * IDT_TABLE_SLOTS) - 1;
     idt_flush(&idtPointer);
 
 }

@@ -15,9 +15,9 @@
 #include <modules/serial/serial.h>
 #include <modules/vga/vga.h>
 
-static struct modules_bus *modulesBusses[MODULES_BUS_MAX];
-static struct modules_device *modulesDevices[MODULES_DEVICE_MAX];
-static struct modules_driver *modulesDrivers[MODULES_DRIVER_MAX];
+static struct modules_bus *modulesBusses[MODULES_BUS_SLOTS];
+static struct modules_device *modulesDevices[MODULES_DEVICE_SLOTS];
+static struct modules_driver *modulesDrivers[MODULES_DRIVER_SLOTS];
 static struct vfs_filesystem modulesFilesystem;
 static struct vfs_node modulesRoot;
 
@@ -26,7 +26,7 @@ struct modules_bus *modules_get_bus(unsigned int type)
 
     unsigned int i;
 
-    for (i = 0; i < MODULES_BUS_MAX; i++)
+    for (i = 0; i < MODULES_BUS_SLOTS; i++)
     {
 
         if (!modulesBusses[i])
@@ -46,7 +46,7 @@ struct modules_device *modules_get_device(unsigned int type)
 
     unsigned int i;
 
-    for (i = 0; i < MODULES_DEVICE_MAX; i++)
+    for (i = 0; i < MODULES_DEVICE_SLOTS; i++)
     {
 
         if (!modulesDevices[i])
@@ -66,7 +66,7 @@ struct modules_driver *modules_get_driver(unsigned int type)
 
     unsigned int i;
 
-    for (i = 0; i < MODULES_DRIVER_MAX; i++)
+    for (i = 0; i < MODULES_DRIVER_SLOTS; i++)
     {
 
         if (!modulesDrivers[i])
@@ -86,7 +86,7 @@ void modules_register_bus(struct modules_bus *bus)
 
     unsigned int i;
 
-    for (i = 0; i < MODULES_BUS_MAX; i++)
+    for (i = 0; i < MODULES_BUS_SLOTS; i++)
     {
 
         if (modulesBusses[i])
@@ -105,7 +105,7 @@ void modules_register_device(struct modules_device *device)
 
     unsigned int i;
 
-    for (i = 0; i < MODULES_DEVICE_MAX; i++)
+    for (i = 0; i < MODULES_DEVICE_SLOTS; i++)
     {
 
         if (modulesDevices[i])
@@ -124,7 +124,7 @@ void modules_register_driver(struct modules_driver *driver)
 
     unsigned int i;
 
-    for (i = 0; i < MODULES_DRIVER_MAX; i++)
+    for (i = 0; i < MODULES_DRIVER_SLOTS; i++)
     {
 
         if (modulesDrivers[i])

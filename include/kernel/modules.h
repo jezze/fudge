@@ -5,9 +5,9 @@
 #define MODULES_TYPE_DEVICE 2
 #define MODULES_TYPE_DRIVER 3
 
-#define MODULES_BUS_MAX    8
-#define MODULES_DEVICE_MAX 64
-#define MODULES_DRIVER_MAX 64
+#define MODULES_BUS_SLOTS    8
+#define MODULES_DEVICE_SLOTS 64
+#define MODULES_DRIVER_SLOTS 64
 
 struct modules_module
 {

@@ -4,7 +4,7 @@
 #include <kernel/syscall.h>
 #include <kernel/arch/x86/syscall.h>
 
-static void *syscallRoutines[SYSCALL_ROUTINES_SIZE];
+static void *syscallRoutines[SYSCALL_ROUTINE_SLOTS];
 
 static void syscall_attach_handler(struct syscall_registers *registers)
 {

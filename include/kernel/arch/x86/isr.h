@@ -1,7 +1,7 @@
 #ifndef ARCH_ISR_H
 #define ARCH_ISR_H
 
-#define ISR_ROUTINES_SIZE    256
+#define ISR_ROUTINE_SLOTS 256
 #define ISR_ROUTINE_DE      0x00
 #define ISR_ROUTINE_DB      0x01
 #define ISR_ROUTINE_NI      0x02
