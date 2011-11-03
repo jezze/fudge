@@ -1,7 +1,10 @@
+#include <lib/file.h>
 #include <lib/string.h>
 #include <kernel/vfs.h>
+#include <kernel/event.h>
 #include <kernel/modules.h>
 #include <kernel/kernel.h>
+#include <kernel/syscall.h>
 #include <modules/io/io.h>
 #include <modules/stream/stream.h>
 #include <modules/pit/pit.h>
@@ -12,6 +15,8 @@ static void pit_handler()
 {
 
     pitDevice.jiffies += 1;
+
+    event_handler(0x06);
 
 }
 

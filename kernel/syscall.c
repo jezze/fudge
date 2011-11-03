@@ -4,33 +4,6 @@
 #include <kernel/kernel.h>
 #include <kernel/runtime.h>
 
-static unsigned int syscall_handle_event(unsigned int index)
-{
-
-    struct event_event *event = event_get(index);
-
-    if (!(event && event->id))
-        return 0;
-
-    struct runtime_task *task = runtime_get_running_task();
-
-    if (!task)
-        return 0;
-
-    struct runtime_task *oldtask = runtime_get_task(event->id);
-
-    if (!oldtask)
-        return 0;
-
-    oldtask->parentid = task->id;
-    oldtask->registers.ip = event->handler;
-
-    runtime_activate(oldtask);
-
-    return 1;
-
-}
-
 unsigned int syscall_attach(unsigned int index, void (*handler)())
 {
 
@@ -95,7 +68,7 @@ unsigned int syscall_execute(char *path, unsigned int argc, char **argv, void *i
 
     runtime_activate(task);
 
-    syscall_handle_event(0x03);
+    event_handler(0x03);
 
     return 1;
 
