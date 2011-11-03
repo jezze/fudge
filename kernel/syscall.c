@@ -9,7 +9,7 @@ unsigned int syscall_handle_event(unsigned int index)
 
     struct event_event *event = event_get(index);
 
-    if (!event->pid)
+    if (!(event && event->pid))
         return 0;
 
     struct runtime_task *task = runtime_get_running_task();
