@@ -2,45 +2,45 @@
 
 #define SHELL_BUFFER_SIZE 256
 
-char shellBuffer[SHELL_BUFFER_SIZE];
-unsigned int shellBufferHead;
+char buffer[SHELL_BUFFER_SIZE];
+unsigned int bufferHead;
 
-static void shell_stack_push(char c)
+static void stack_push(char c)
 {
 
-    if (shellBufferHead < SHELL_BUFFER_SIZE)
+    if (bufferHead < SHELL_BUFFER_SIZE)
     {
 
-        shellBuffer[shellBufferHead] = c;
-        shellBufferHead++;
+        buffer[bufferHead] = c;
+        bufferHead++;
 
     }
 
 }
 
-static char shell_stack_pop()
+static char stack_pop()
 {
 
-    return (shellBufferHead > 0) ? shellBuffer[--shellBufferHead] : 0;
+    return (bufferHead > 0) ? buffer[--bufferHead] : 0;
 
 }
 
-static void shell_stack_clear()
+static void stack_clear()
 {
 
-    shellBufferHead = 0;
+    bufferHead = 0;
 
 }
 
-static void shell_clear()
+static void clear()
 {
 
     file_write_format(FILE_STDOUT, "fudge:/$ ");
-    shell_stack_clear();
+    stack_clear();
 
 }
 
-static void shell_interpret(char *command)
+static void interpret(char *command)
 {
 
     char *argv[32];
@@ -59,7 +59,7 @@ static void shell_interpret(char *command)
 
 }
 
-static void shell_handle_input(char c)
+static void handle_input(char c)
 {
 
     switch (c)
@@ -72,7 +72,7 @@ static void shell_handle_input(char c)
 
         case '\b':
 
-            if (!shell_stack_pop())
+            if (!stack_pop())
                 break;
 
             file_write_byte(FILE_STDOUT, '\b');
@@ -84,16 +84,16 @@ static void shell_handle_input(char c)
         case '\r':
         case '\n':
 
-            shell_stack_push('\0');
+            stack_push('\0');
             file_write_byte(FILE_STDOUT, c);
-            shell_interpret(shellBuffer);
-            shell_clear();
+            interpret(buffer);
+            clear();
 
             break;
 
         default:
 
-            shell_stack_push(c);
+            stack_push(c);
             file_write_byte(FILE_STDOUT, c);
 
             break;
@@ -102,7 +102,7 @@ static void shell_handle_input(char c)
 
 }
 
-static void shell_poll()
+static void poll()
 {
 
     char c;
@@ -112,7 +112,7 @@ static void shell_poll()
 
         while (!file_read(FILE_STDIN, 1, &c));
 
-        shell_handle_input(c);
+        handle_input(c);
 
     }
 
@@ -124,8 +124,8 @@ void main(int argc, char *argv[])
     file_write_format(FILE_STDOUT, "Fudge operating system\n");
     file_write_format(FILE_STDOUT, "Write `cat help.txt` for a short list if commands\n\n");
 
-    shell_clear();
-    shell_poll();
+    clear();
+    poll();
 
 }
 
