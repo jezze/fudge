@@ -9,6 +9,9 @@ unsigned int syscall_attach(unsigned int index, void (*handler)())
 
     struct runtime_task *task = runtime_get_running_task();    
 
+    if (!task)
+        return 0;
+
     event_register(index, task->pid, handler);
 
     return 1;
@@ -19,6 +22,9 @@ unsigned int syscall_close(unsigned int fd)
 {
 
     struct runtime_task *task = runtime_get_running_task();    
+
+    if (!task)
+        return 0;
 
     task->remove_descriptor(task, fd);
 
@@ -31,6 +37,9 @@ unsigned int syscall_detach(unsigned int index)
 
     struct runtime_task *task = runtime_get_running_task();    
 
+    if (!task)
+        return 0;
+
     event_unregister(index, task->pid);
 
     return 1;
@@ -41,9 +50,17 @@ unsigned int syscall_execute(char *path, unsigned int argc, char **argv, void *e
 {
 
     struct runtime_task *oldtask = runtime_get_running_task();
+
+    if (!oldtask)
+        return 0;
+
     oldtask->save(oldtask, eip, esp, ebp);
 
     struct runtime_task *task = runtime_get_free_task();
+
+    if (!task)
+        return 0;
+
     task->parentpid = oldtask->pid;
 
     if (!task->load(task, path, argc, argv))
@@ -59,9 +76,16 @@ unsigned int syscall_exit()
 {
 
     struct runtime_task *oldtask = runtime_get_running_task();
+
+    if (!oldtask)
+        return 0;
+
     oldtask->unload(oldtask);
 
     struct runtime_task *task = runtime_get_task(oldtask->parentpid);
+
+    if (!task)
+        return 0;
 
     runtime_activate(task);
 
@@ -73,6 +97,9 @@ unsigned int syscall_info(unsigned int fd, struct file_info *info)
 {
 
     struct runtime_task *task = runtime_get_running_task();
+
+    if (!task)
+        return 0;
 
     struct vfs_node *node = task->get_descriptor(task, fd)->node;
 
@@ -91,6 +118,9 @@ unsigned int syscall_load(char *path)
 
     struct vfs_node *node = vfs_find(path);
 
+    if (!node)
+        return 0;
+
     runtime_relocate(node->physical);
 
     void (*minit)() = node->physical + 0x40;
@@ -104,6 +134,9 @@ unsigned int syscall_open(char *path)
 {
 
     struct runtime_task *task = runtime_get_running_task();    
+
+    if (!task)
+        return 0;
 
     struct vfs_node *node = vfs_find(path);
 
@@ -123,6 +156,9 @@ unsigned int syscall_read(unsigned int fd, unsigned int count, char *buffer)
 {
 
     struct runtime_task *task = runtime_get_running_task();    
+
+    if (!task)
+        return 0;
 
     struct vfs_node *node = task->get_descriptor(task, fd)->node;
 
@@ -153,9 +189,16 @@ unsigned int syscall_wait(void *eip, void *esp, void *ebp)
 {
 
     struct runtime_task *oldtask = runtime_get_running_task();
+
+    if (!oldtask)
+        return 0;
+
     oldtask->save(oldtask, eip, esp, ebp);
 
     struct runtime_task *task = runtime_get_task(oldtask->parentpid);
+
+    if (!task)
+        return 0;
 
     runtime_activate(task);
 
@@ -167,6 +210,9 @@ unsigned int syscall_write(unsigned int fd, unsigned int count, char *buffer)
 {
 
     struct runtime_task *task = runtime_get_running_task();    
+
+    if (!task)
+        return 0;
 
     struct vfs_node *node = task->get_descriptor(task, fd)->node;
 
