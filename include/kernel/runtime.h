@@ -16,8 +16,8 @@ struct runtime_registers
 struct runtime_task
 {
 
-    unsigned int pid;
-    unsigned int parentpid;
+    unsigned int id;
+    unsigned int parentid;
     unsigned int running;
     unsigned int used;
     struct runtime_registers registers;
@@ -33,12 +33,12 @@ struct runtime_task
 
 };
 
-extern struct runtime_task *runtime_get_task(unsigned int pid);
+extern struct runtime_task *runtime_get_task(unsigned int id);
 extern struct runtime_task *runtime_get_running_task();
 extern struct runtime_task *runtime_get_free_task();
 extern void runtime_activate(struct runtime_task *task);
 extern void runtime_relocate(void *paddress);
-extern void runtime_task_init(struct runtime_task *task, unsigned int pid);
+extern void runtime_task_init(struct runtime_task *task, unsigned int id);
 extern void runtime_init();
 
 #endif

@@ -9,7 +9,7 @@
 
 struct runtime_task runtimeTasks[RUNTIME_TASK_COUNT];
 
-struct runtime_task *runtime_get_task(unsigned int pid)
+struct runtime_task *runtime_get_task(unsigned int id)
 {
 
     unsigned int i;
@@ -17,7 +17,7 @@ struct runtime_task *runtime_get_task(unsigned int pid)
     for (i = 0; i < RUNTIME_TASK_COUNT; i++)
     {
 
-        if (runtimeTasks[i].pid == pid)
+        if (runtimeTasks[i].id == id)
             return &runtimeTasks[i];
 
     }
@@ -68,7 +68,7 @@ void runtime_activate(struct runtime_task *task)
     for (i = 0; i < RUNTIME_TASK_COUNT; i++)
         runtimeTasks[i].running = 0;
 
-    void *paddress = kernel_get_task_memory(task->pid);
+    void *paddress = kernel_get_task_memory(task->id);
 
     kernel_load_task_memory(paddress);
 
@@ -123,7 +123,7 @@ static void runtime_task_create_stack(struct runtime_task *self, void *paddress,
 static unsigned int runtime_task_load(struct runtime_task *self, char *path, unsigned int argc, char **argv)
 {
 
-    void *paddress = kernel_get_task_memory(self->pid);
+    void *paddress = kernel_get_task_memory(self->id);
 
     struct vfs_node *node = vfs_find(path);
 
@@ -204,7 +204,7 @@ static struct vfs_descriptor *runtime_task_add_descriptor(struct runtime_task *s
 
 }
 
-static struct vfs_descriptor *runtime_task_get_descriptor(struct runtime_task *self, unsigned int index)
+static struct vfs_descriptor *runtime_task_get_descriptor(struct runtime_task *self, unsigned int id)
 {
 
     unsigned int i;
@@ -212,7 +212,7 @@ static struct vfs_descriptor *runtime_task_get_descriptor(struct runtime_task *s
     for (i = 0; i < RUNTIME_TASK_DESCRIPTOR_COUNT; i++)
     {
 
-        if (self->descriptors[i].index == index && self->descriptors[i].node)
+        if (self->descriptors[i].id == id && self->descriptors[i].node)
             return &self->descriptors[i];
 
     }
@@ -221,19 +221,19 @@ static struct vfs_descriptor *runtime_task_get_descriptor(struct runtime_task *s
 
 }
 
-static void runtime_task_remove_descriptor(struct runtime_task *self, unsigned int index)
+static void runtime_task_remove_descriptor(struct runtime_task *self, unsigned int id)
 {
 
-    struct vfs_descriptor *descriptor = runtime_task_get_descriptor(self, index);
+    struct vfs_descriptor *descriptor = runtime_task_get_descriptor(self, id);
 
     descriptor->node = 0;
 
 }
 
-void runtime_task_init(struct runtime_task *task, unsigned int pid)
+void runtime_task_init(struct runtime_task *task, unsigned int id)
 {
 
-    task->pid = pid;
+    task->id = id;
     task->running = 0;
     task->used = 0;
     task->create_stack = runtime_task_create_stack;

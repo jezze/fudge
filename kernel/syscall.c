@@ -9,7 +9,7 @@ static unsigned int syscall_handle_event(unsigned int index)
 
     struct event_event *event = event_get(index);
 
-    if (!(event && event->pid))
+    if (!(event && event->id))
         return 0;
 
     struct runtime_task *task = runtime_get_running_task();
@@ -17,12 +17,12 @@ static unsigned int syscall_handle_event(unsigned int index)
     if (!task)
         return 0;
 
-    struct runtime_task *oldtask = runtime_get_task(event->pid);
+    struct runtime_task *oldtask = runtime_get_task(event->id);
 
     if (!oldtask)
         return 0;
 
-    oldtask->parentpid = task->pid;
+    oldtask->parentid = task->id;
     oldtask->registers.ip = event->handler;
 
     runtime_activate(oldtask);
@@ -39,7 +39,7 @@ unsigned int syscall_attach(unsigned int index, void (*handler)())
     if (!task)
         return 0;
 
-    event_register(index, task->pid, handler);
+    event_register(index, task->id, handler);
 
     return 1;
 
@@ -67,7 +67,7 @@ unsigned int syscall_detach(unsigned int index)
     if (!task)
         return 0;
 
-    event_unregister(index, task->pid);
+    event_unregister(index, task->id);
 
     return 1;
 
@@ -88,7 +88,7 @@ unsigned int syscall_execute(char *path, unsigned int argc, char **argv, void *i
     if (!task)
         return 0;
 
-    task->parentpid = oldtask->pid;
+    task->parentid = oldtask->id;
 
     if (!task->load(task, path, argc, argv))
         return 0;
@@ -111,7 +111,7 @@ unsigned int syscall_exit()
 
     oldtask->unload(oldtask);
 
-    struct runtime_task *task = runtime_get_task(oldtask->parentpid);
+    struct runtime_task *task = runtime_get_task(oldtask->parentid);
 
     if (!task)
         return 0;
@@ -177,7 +177,7 @@ unsigned int syscall_open(char *path)
     if (!descriptor)
         return 0;
 
-    return descriptor->index;
+    return descriptor->id;
 
 }
 
@@ -224,7 +224,7 @@ unsigned int syscall_wait(void *ip, void *sp, void *sb)
 
     oldtask->save_registers(oldtask, ip, sp, sb);
 
-    struct runtime_task *task = runtime_get_task(oldtask->parentpid);
+    struct runtime_task *task = runtime_get_task(oldtask->parentid);
 
     if (!task)
         return 0;

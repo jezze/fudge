@@ -125,10 +125,10 @@ struct mmu_header *mmu_get_header(void *paddress)
 
 }
 
-void *mmu_get_paddress(unsigned int pid)
+void *mmu_get_paddress(unsigned int id)
 {
 
-    return mmuProgramHeaders[pid].address;
+    return mmuProgramHeaders[id].address;
 
 }
 

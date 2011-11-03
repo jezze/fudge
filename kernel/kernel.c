@@ -46,10 +46,10 @@ void kernel_unregister_irq(unsigned int index)
 
 }
 
-void *kernel_get_task_memory(unsigned int pid)
+void *kernel_get_task_memory(unsigned int id)
 {
 
-    return core.arch->get_task_memory(pid);
+    return core.arch->get_task_memory(id);
 
 }
 

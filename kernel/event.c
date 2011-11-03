@@ -5,24 +5,24 @@
 
 struct event_event eventHandlers[32];
 
-void event_register(unsigned int index, unsigned int pid, void (*handler)())
+void event_register(unsigned int index, unsigned int id, void (*handler)())
 {
 
-    if (eventHandlers[index].pid != 0)
+    if (eventHandlers[index].id != 0)
         return;
 
-    eventHandlers[index].pid = pid;
+    eventHandlers[index].id = id;
     eventHandlers[index].handler = handler;
 
 }
 
-void event_unregister(unsigned int index, unsigned int pid)
+void event_unregister(unsigned int index, unsigned int id)
 {
 
-    if (eventHandlers[index].pid != pid)
+    if (eventHandlers[index].id != id)
         return;
 
-    eventHandlers[index].pid = 0;
+    eventHandlers[index].id = 0;
 
 }
 
