@@ -1,5 +1,6 @@
 #include <lib/memory.h>
 #include <kernel/error.h>
+#include <kernel/kernel.h>
 #include <kernel/log.h>
 #include <kernel/arch/x86/cpu.h>
 #include <kernel/arch/x86/isr.h>
@@ -94,7 +95,11 @@ void mmu_set_directory(void *paddress)
 
     struct mmu_header *header = mmu_get_header(paddress);
 
+    kernel_disable_interrupts();
+
     cpu_set_cr3((unsigned int)&header->directory);
+
+    kernel_enable_interrupts();
 
 }
 
