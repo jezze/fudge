@@ -4,6 +4,35 @@
 #include <kernel/kernel.h>
 #include <kernel/runtime.h>
 
+unsigned int syscall_handle_event(unsigned int index, void *eip, void *esp, void *ebp)
+{
+
+    struct event_event *event = event_get(index);
+
+    if (!event->pid)
+        return 0;
+
+    struct runtime_task *task = runtime_get_running_task();
+
+    if (!task)
+        return 0;
+
+    task->save(task, eip, esp, ebp);
+
+    struct runtime_task *oldtask = runtime_get_task(event->pid);
+
+    if (!oldtask)
+        return 0;
+
+    oldtask->parentpid = task->pid;
+    oldtask->eip = event->handler;
+
+    runtime_activate(oldtask);
+
+    return 1;
+
+}
+
 unsigned int syscall_attach(unsigned int index, void (*handler)())
 {
 

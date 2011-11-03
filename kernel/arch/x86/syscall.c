@@ -1,35 +1,10 @@
 #include <lib/file.h>
 #include <kernel/vfs.h>
-#include <kernel/event.h>
 #include <kernel/runtime.h>
 #include <kernel/syscall.h>
 #include <kernel/arch/x86/syscall.h>
 
 static void *syscallRoutines[SYSCALL_ROUTINES_SIZE];
-
-static void syscall_run_event(struct syscall_registers *registers, unsigned int index)
-{
-
-    struct runtime_task *task = runtime_get_running_task();
-
-    task->save(task, (void *)registers->eip, (void *)registers->useresp, (void *)registers->ebp);
-
-    struct event_event *event = event_get(index);
-
-    if (!event->pid)
-        return;
-
-    struct runtime_task *oldtask = runtime_get_task(event->pid);
-    oldtask->parentpid = task->pid;
-    oldtask->eip = event->handler;
-
-    runtime_activate(oldtask);
-
-    registers->eip = (unsigned int)oldtask->eip;
-    registers->useresp = (unsigned int)oldtask->esp;
-    registers->ebp = (unsigned int)oldtask->ebp;
-
-}
 
 static void syscall_attach_handler(struct syscall_registers *registers)
 {
@@ -77,7 +52,14 @@ static void syscall_execute_handler(struct syscall_registers *registers)
     registers->useresp = (unsigned int)task->esp;
     registers->ebp = (unsigned int)task->ebp;
 
-    syscall_run_event(registers, 0x03);
+    if (!syscall_handle_event(0x03, (void *)registers->eip, (void *)registers->useresp, (void *)registers->ebp))
+        return;
+
+    struct runtime_task *etask = runtime_get_running_task();
+
+    registers->eip = (unsigned int)etask->eip;
+    registers->useresp = (unsigned int)etask->esp;
+    registers->ebp = (unsigned int)etask->ebp;
 
 }
 
