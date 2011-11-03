@@ -46,24 +46,12 @@ static void syscall_execute_handler(struct syscall_registers *registers)
 
     registers->eax = syscall_execute(path, argc, argv, ip, sp, sb);
 
-    struct runtime_task *task = runtime_get_running_task();
-
-    registers->eip = (unsigned int)task->registers.ip;
-    registers->useresp = (unsigned int)task->registers.sp;
-    registers->ebp = (unsigned int)task->registers.sb;
-
 }
 
 static void syscall_exit_handler(struct syscall_registers *registers)
 {
 
     registers->eax = syscall_exit();
-
-    struct runtime_task *task = runtime_get_running_task();
-
-    registers->eip = (unsigned int)task->registers.ip;
-    registers->useresp = (unsigned int)task->registers.sp;
-    registers->ebp = (unsigned int)task->registers.sb;
 
 }
 
@@ -129,12 +117,6 @@ static void syscall_wait_handler(struct syscall_registers *registers)
 
     registers->eax = syscall_wait(ip, sp, sb);
 
-    struct runtime_task *task = runtime_get_running_task();
-
-    registers->eip = (unsigned int)task->registers.ip;
-    registers->useresp = (unsigned int)task->registers.sp;
-    registers->ebp = (unsigned int)task->registers.sb;
-
 }
 
 static void syscall_write_handler(struct syscall_registers *registers)
@@ -158,10 +140,34 @@ static void syscall_register_handler(unsigned char index, void (*handler)(struct
 void syscall_handler(struct syscall_registers *registers)
 {
 
+    struct runtime_task *task = runtime_get_running_task();
+
+    if (task)
+    {
+
+        void *ip = (void *)registers->eip;
+        void *sp = (void *)registers->useresp;
+        void *sb = (void *)registers->ebp;
+
+        task->save_registers(task, ip, sp, sb);
+
+    }
+
     void (*handler)(struct syscall_registers *registers) = syscallRoutines[registers->eax];
 
     if (handler)
         handler(registers);
+
+    struct runtime_task *atask = runtime_get_running_task();
+
+    if (atask)
+    {
+
+        registers->eip = (unsigned int)atask->registers.ip;
+        registers->useresp = (unsigned int)atask->registers.sp;
+        registers->ebp = (unsigned int)atask->registers.sb;
+
+    }
 
 }
 

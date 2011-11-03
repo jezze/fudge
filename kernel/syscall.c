@@ -54,8 +54,6 @@ unsigned int syscall_execute(char *path, unsigned int argc, char **argv, void *i
     if (!oldtask)
         return 0;
 
-    oldtask->save_registers(oldtask, ip, sp, sb);
-
     struct runtime_task *task = runtime_get_free_task();
 
     if (!task)
@@ -194,8 +192,6 @@ unsigned int syscall_wait(void *ip, void *sp, void *sb)
 
     if (!oldtask)
         return 0;
-
-    oldtask->save_registers(oldtask, ip, sp, sb);
 
     struct runtime_task *task = runtime_get_task(oldtask->parentid);
 
