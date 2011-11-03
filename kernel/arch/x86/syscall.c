@@ -21,10 +21,11 @@ static void syscall_run_event(struct syscall_registers *registers, unsigned int 
 
     struct runtime_task *oldtask = runtime_get_task(event->pid);
     oldtask->parentpid = task->pid;
+    oldtask->eip = event->handler;
 
     runtime_activate(oldtask);
 
-    registers->eip = (unsigned int)event->handler;
+    registers->eip = (unsigned int)oldtask->eip;
     registers->useresp = (unsigned int)oldtask->esp;
     registers->ebp = (unsigned int)oldtask->ebp;
 
