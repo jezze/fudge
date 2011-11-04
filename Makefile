@@ -20,9 +20,7 @@ LDFLAGS_RAMDISK=-e main -melf_i386
 all: ramdisk
 
 lib:
-	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_LIB}/file.c -o ${DIR_SOURCE_LIB}/file.o
-	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_LIB}/memory.c -o ${DIR_SOURCE_LIB}/memory.o
-	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_LIB}/string.c -o ${DIR_SOURCE_LIB}/string.o
+	@make -C lib/
 
 arch-x86: lib
 	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_ARCH}/arch.c -o ${DIR_SOURCE_ARCH}/arch.o
@@ -188,6 +186,7 @@ hda:
 	@dd if=/dev/zero of=hda.img bs=512 count=2880
 
 clean:
+	@make -C lib/ clean
 	@rm -f fudge.img
 	@rm -f fudge.iso
 	@rm -f hda.img
@@ -216,6 +215,5 @@ clean:
 	@rm -f ${DIR_SOURCE_USER}/*.o
 	@rm -f ${DIR_SOURCE_KERNEL}/*.o
 	@rm -f ${DIR_SOURCE_KERNEL}/arch/*/*.o
-	@rm -f ${DIR_SOURCE_LIB}/*.o
 	@rm -f ${DIR_SOURCE_MODULES}/*/*.o
 
