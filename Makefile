@@ -15,7 +15,7 @@ LD=ld
 LDFLAGS=-T${DIR_SOURCE_ARCH}/linker.ld -melf_i386
 LDFLAGS_RAMDISK=-e main -melf_i386
 
-.PHONY: kernel ramdisk image clean
+.PHONY: all clean kernel user ramdisk sda iso hda
 
 all: ramdisk
 
@@ -71,7 +71,7 @@ kernel:
 		${DIR_SOURCE_LIB}/string.o \
 		-o ${DIR_IMAGE}/boot/kernel
 
-ramdisk: kernel
+user:
 	@${GCC} ${GCCFLAGS_RAMDISK} ${DIR_SOURCE_USER}/cat.c -o ${DIR_SOURCE_USER}/cat.o
 	@${GCC} ${GCCFLAGS_RAMDISK} ${DIR_SOURCE_USER}/cd.c -o ${DIR_SOURCE_USER}/cd.o
 	@${GCC} ${GCCFLAGS_RAMDISK} ${DIR_SOURCE_USER}/clear.c -o ${DIR_SOURCE_USER}/clear.o
@@ -107,6 +107,8 @@ ramdisk: kernel
 	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_USER}/tar.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_SOURCE_ARCH}/calls.o -o ${DIR_IMAGE}/bin/tar
 	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_USER}/timer.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_SOURCE_ARCH}/calls.o -o ${DIR_IMAGE}/bin/timer
 	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_USER}/vga.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_SOURCE_ARCH}/calls.o -o ${DIR_IMAGE}/bin/vga
+
+ramdisk: kernel user
 	@cp ${DIR_SOURCE_MODULES}/test/test.o ${DIR_IMAGE}/lib/modules/test.ko
 	@cp ${DIR_SOURCE_MODULES}/ata/ata.o ${DIR_IMAGE}/lib/modules/ata.ko
 	@cp ${DIR_SOURCE_MODULES}/elf/elf.o ${DIR_IMAGE}/lib/modules/elf.ko
