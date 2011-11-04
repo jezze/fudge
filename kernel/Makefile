@@ -1,7 +1,7 @@
 GCC=gcc
 GCCFLAGS=-c -O2 -I../include -Wall -Wextra -ffreestanding -nostdlib -nostartfiles -nodefaultlibs -m32
 
-.PHONY: kernel
+.PHONY: all clean kernel
 
 all: kernel
 

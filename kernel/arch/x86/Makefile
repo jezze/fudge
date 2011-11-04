@@ -3,7 +3,7 @@ ASMFLAGS=-f elf
 GCC=gcc
 GCCFLAGS=-c -O2 -I../../../include -Wall -Wextra -ffreestanding -nostdlib -nostartfiles -nodefaultlibs -m32
 
-.PHONY: arch
+.PHONY: all clean arch
 
 all: arch
 

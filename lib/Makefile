@@ -3,7 +3,7 @@ GCCFLAGS=-c -O2 -I../include -Wall -Wextra -ffreestanding -nostdlib -nostartfile
 LD=ld
 LDFLAGS=-melf_i386
 
-.PHONY: lib
+.PHONY: all clean lib
 
 all: lib
 

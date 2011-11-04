@@ -15,43 +15,15 @@ LD=ld
 LDFLAGS=-T${DIR_SOURCE_ARCH}/linker.ld -melf_i386
 LDFLAGS_RAMDISK=-e main -melf_i386
 
-.PHONY: lib arch-x86 modules kernel ramdisk image iso clean
+.PHONY: kernel ramdisk image clean
 
 all: ramdisk
 
-modules:
-	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_MODULES}/test/test.c -o ${DIR_SOURCE_MODULES}/test/test.o
-	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_MODULES}/ata/ata.c -o ${DIR_SOURCE_MODULES}/ata/ata.o
-	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_MODULES}/elf/elf.c -o ${DIR_SOURCE_MODULES}/elf/elf.o
-	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_MODULES}/io/io.c -o ${DIR_SOURCE_MODULES}/io/io.o
-	@${ASM} ${ASMFLAGS} ${DIR_SOURCE_MODULES}/io/ios.s -o ${DIR_SOURCE_MODULES}/io/ios.o
-	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_MODULES}/kbd/kbd.c -o ${DIR_SOURCE_MODULES}/kbd/kbd.o
-	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_MODULES}/pci/pci.c -o ${DIR_SOURCE_MODULES}/pci/pci.o
-	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_MODULES}/pit/pit.c -o ${DIR_SOURCE_MODULES}/pit/pit.o
-	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_MODULES}/rtc/rtc.c -o ${DIR_SOURCE_MODULES}/rtc/rtc.o
-	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_MODULES}/rtl8139/rtl8139.c -o ${DIR_SOURCE_MODULES}/rtl8139/rtl8139.o
-	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_MODULES}/serial/serial.c -o ${DIR_SOURCE_MODULES}/serial/serial.o
-	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_MODULES}/stream/stream.c -o ${DIR_SOURCE_MODULES}/stream/stream.o
-	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_MODULES}/tty/tty.c -o ${DIR_SOURCE_MODULES}/tty/tty.o
-	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_MODULES}/vga/vga.c -o ${DIR_SOURCE_MODULES}/vga/vga.o
-	@cp ${DIR_SOURCE_MODULES}/test/test.o ${DIR_IMAGE}/lib/modules/test.ko
-	@cp ${DIR_SOURCE_MODULES}/ata/ata.o ${DIR_IMAGE}/lib/modules/ata.ko
-	@cp ${DIR_SOURCE_MODULES}/elf/elf.o ${DIR_IMAGE}/lib/modules/elf.ko
-	@cp ${DIR_SOURCE_MODULES}/io/io.o ${DIR_IMAGE}/lib/modules/io.ko
-	@cp ${DIR_SOURCE_MODULES}/io/ios.o ${DIR_IMAGE}/lib/modules/ios.ko
-	@cp ${DIR_SOURCE_MODULES}/kbd/kbd.o ${DIR_IMAGE}/lib/modules/kbd.ko
-	@cp ${DIR_SOURCE_MODULES}/pci/pci.o ${DIR_IMAGE}/lib/modules/pci.ko
-	@cp ${DIR_SOURCE_MODULES}/pit/pit.o ${DIR_IMAGE}/lib/modules/pit.ko
-	@cp ${DIR_SOURCE_MODULES}/rtc/rtc.o ${DIR_IMAGE}/lib/modules/rtc.ko
-	@cp ${DIR_SOURCE_MODULES}/rtl8139/rtl8139.o ${DIR_IMAGE}/lib/modules/rtl8139.ko
-	@cp ${DIR_SOURCE_MODULES}/serial/serial.o ${DIR_IMAGE}/lib/modules/serial.ko
-	@cp ${DIR_SOURCE_MODULES}/tty/tty.o ${DIR_IMAGE}/lib/modules/tty.ko
-	@cp ${DIR_SOURCE_MODULES}/vga/vga.o ${DIR_IMAGE}/lib/modules/vga.ko
-
-kernel: arch-${ARCH} modules
+kernel:
 	@make -C lib/
 	@make -C kernel/
 	@make -C kernel/arch/x86/
+	@make -C modules/
 	@${LD} ${LDFLAGS} \
 		${DIR_SOURCE_KERNEL}/error.o \
 		${DIR_SOURCE_KERNEL}/event.o \
@@ -135,6 +107,19 @@ ramdisk: kernel
 	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_USER}/tar.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_SOURCE_ARCH}/calls.o -o ${DIR_IMAGE}/bin/tar
 	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_USER}/timer.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_SOURCE_ARCH}/calls.o -o ${DIR_IMAGE}/bin/timer
 	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_USER}/vga.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_SOURCE_ARCH}/calls.o -o ${DIR_IMAGE}/bin/vga
+	@cp ${DIR_SOURCE_MODULES}/test/test.o ${DIR_IMAGE}/lib/modules/test.ko
+	@cp ${DIR_SOURCE_MODULES}/ata/ata.o ${DIR_IMAGE}/lib/modules/ata.ko
+	@cp ${DIR_SOURCE_MODULES}/elf/elf.o ${DIR_IMAGE}/lib/modules/elf.ko
+	@cp ${DIR_SOURCE_MODULES}/io/io.o ${DIR_IMAGE}/lib/modules/io.ko
+	@cp ${DIR_SOURCE_MODULES}/io/ios.o ${DIR_IMAGE}/lib/modules/ios.ko
+	@cp ${DIR_SOURCE_MODULES}/kbd/kbd.o ${DIR_IMAGE}/lib/modules/kbd.ko
+	@cp ${DIR_SOURCE_MODULES}/pci/pci.o ${DIR_IMAGE}/lib/modules/pci.ko
+	@cp ${DIR_SOURCE_MODULES}/pit/pit.o ${DIR_IMAGE}/lib/modules/pit.ko
+	@cp ${DIR_SOURCE_MODULES}/rtc/rtc.o ${DIR_IMAGE}/lib/modules/rtc.ko
+	@cp ${DIR_SOURCE_MODULES}/rtl8139/rtl8139.o ${DIR_IMAGE}/lib/modules/rtl8139.ko
+	@cp ${DIR_SOURCE_MODULES}/serial/serial.o ${DIR_IMAGE}/lib/modules/serial.ko
+	@cp ${DIR_SOURCE_MODULES}/tty/tty.o ${DIR_IMAGE}/lib/modules/tty.ko
+	@cp ${DIR_SOURCE_MODULES}/vga/vga.o ${DIR_IMAGE}/lib/modules/vga.ko
 	@tar -cvf initrd.tar ${DIR_IMAGE}
 	@find ${DIR_IMAGE} -depth -print | cpio -ov > initrd.cpio
 	@mv initrd.tar ${DIR_IMAGE}/boot
@@ -159,6 +144,7 @@ clean:
 	@make -C lib/ clean
 	@make -C kernel/ clean
 	@make -C kernel/arch/x86/ clean
+	@make -C modules/ clean
 	@rm -f fudge.img
 	@rm -f fudge.iso
 	@rm -f hda.img
@@ -186,5 +172,4 @@ clean:
 	@rm -f ${DIR_IMAGE}/boot/initrd.cpio
 	@rm -f ${DIR_SOURCE_USER}/*.o
 	@rm -f ${DIR_SOURCE_KERNEL}/*.o
-	@rm -f ${DIR_SOURCE_MODULES}/*/*.o
 
