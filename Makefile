@@ -23,25 +23,7 @@ lib:
 	@make -C lib/
 
 arch-x86: lib
-	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_ARCH}/arch.c -o ${DIR_SOURCE_ARCH}/arch.o
-	@${ASM} ${ASMFLAGS} ${DIR_SOURCE_ARCH}/calls.s -o ${DIR_SOURCE_ARCH}/calls.o
-	@${ASM} ${ASMFLAGS} ${DIR_SOURCE_ARCH}/cpu.s -o ${DIR_SOURCE_ARCH}/cpu.o
-	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_ARCH}/fpu.c -o ${DIR_SOURCE_ARCH}/fpu.o
-	@${ASM} ${ASMFLAGS} ${DIR_SOURCE_ARCH}/fpus.s -o ${DIR_SOURCE_ARCH}/fpus.o
-	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_ARCH}/gdt.c -o ${DIR_SOURCE_ARCH}/gdt.o
-	@${ASM} ${ASMFLAGS} ${DIR_SOURCE_ARCH}/gdts.s -o ${DIR_SOURCE_ARCH}/gdts.o
-	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_ARCH}/idt.c -o ${DIR_SOURCE_ARCH}/idt.o
-	@${ASM} ${ASMFLAGS} ${DIR_SOURCE_ARCH}/idts.s -o ${DIR_SOURCE_ARCH}/idts.o
-	@${ASM} ${ASMFLAGS} ${DIR_SOURCE_ARCH}/init.s -o ${DIR_SOURCE_ARCH}/init.o
-	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_ARCH}/irq.c -o ${DIR_SOURCE_ARCH}/irq.o
-	@${ASM} ${ASMFLAGS} ${DIR_SOURCE_ARCH}/irqs.s -o ${DIR_SOURCE_ARCH}/irqs.o
-	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_ARCH}/isr.c -o ${DIR_SOURCE_ARCH}/isr.o
-	@${ASM} ${ASMFLAGS} ${DIR_SOURCE_ARCH}/isrs.s -o ${DIR_SOURCE_ARCH}/isrs.o
-	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_ARCH}/mmu.c -o ${DIR_SOURCE_ARCH}/mmu.o
-	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_ARCH}/mboot.c -o ${DIR_SOURCE_ARCH}/mboot.o
-	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_ARCH}/syscall.c -o ${DIR_SOURCE_ARCH}/syscall.o
-	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_ARCH}/tss.c -o ${DIR_SOURCE_ARCH}/tss.o
-	@${ASM} ${ASMFLAGS} ${DIR_SOURCE_ARCH}/tsss.s -o ${DIR_SOURCE_ARCH}/tsss.o
+	@make -C kernel/arch/x86/
 
 modules: lib
 	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_MODULES}/test/test.c -o ${DIR_SOURCE_MODULES}/test/test.o
@@ -187,6 +169,7 @@ hda:
 
 clean:
 	@make -C lib/ clean
+	@make -C kernel/arch/x86/ clean
 	@rm -f fudge.img
 	@rm -f fudge.iso
 	@rm -f hda.img
@@ -214,6 +197,5 @@ clean:
 	@rm -f ${DIR_IMAGE}/boot/initrd.cpio
 	@rm -f ${DIR_SOURCE_USER}/*.o
 	@rm -f ${DIR_SOURCE_KERNEL}/*.o
-	@rm -f ${DIR_SOURCE_KERNEL}/arch/*/*.o
 	@rm -f ${DIR_SOURCE_MODULES}/*/*.o
 
