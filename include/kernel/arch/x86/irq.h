@@ -16,7 +16,7 @@ struct irq_registers
 
     unsigned int gs, fs, es, ds;
     unsigned int edi, esi, ebp, esp, ebx, edx, ecx, eax;
-    unsigned int index, secondary;
+    unsigned int index, slave;
     unsigned int eip, cs, eflags, useresp, ss;
 
 };

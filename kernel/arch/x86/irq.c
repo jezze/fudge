@@ -28,7 +28,7 @@ void irq_handler(struct irq_registers *registers)
     if (handler)
         handler();
 
-    if (registers->secondary)
+    if (registers->slave)
         io_outb(0xA0, 0x20);
 
     io_outb(0x20, 0x20);
