@@ -133,6 +133,11 @@ static void syscall_register_handler(unsigned char index, void (*handler)(struct
 void syscall_handler(struct syscall_registers *registers)
 {
 
+    void (*handler)(struct syscall_registers *registers) = syscallRoutines[registers->eax];
+
+    if (!handler)
+        return;
+
     struct runtime_task *task = runtime_get_running_task();
 
     if (task)
@@ -146,10 +151,7 @@ void syscall_handler(struct syscall_registers *registers)
 
     }
 
-    void (*handler)(struct syscall_registers *registers) = syscallRoutines[registers->eax];
-
-    if (handler)
-        handler(registers);
+    handler(registers);
 
     struct runtime_task *atask = runtime_get_running_task();
 

@@ -1,7 +1,5 @@
 #include <kernel/error.h>
 #include <kernel/log.h>
-#include <kernel/vfs.h>
-#include <kernel/runtime.h>
 #include <kernel/arch/x86/idt.h>
 #include <kernel/arch/x86/isr.h>
 

@@ -1,4 +1,6 @@
 #include <kernel/modules.h>
+#include <kernel/vfs.h>
+#include <kernel/runtime.h>
 #include <kernel/arch/x86/idt.h>
 #include <kernel/arch/x86/irq.h>
 #include <kernel/arch/x86/isr.h>
@@ -23,6 +25,19 @@ void irq_unregister_handler(unsigned char index)
 void irq_handler(struct irq_registers *registers)
 {
 
+    struct runtime_task *task = runtime_get_running_task();
+
+    if (task)
+    {
+
+        void *ip = (void *)registers->eip;
+        void *sp = (void *)registers->useresp;
+        void *sb = (void *)registers->ebp;
+
+        task->save_registers(task, ip, sp, sb);
+
+    }
+
     void (*handler)() = irqRoutines[registers->index];
 
     if (handler)
@@ -32,6 +47,17 @@ void irq_handler(struct irq_registers *registers)
         io_outb(0xA0, 0x20);
 
     io_outb(0x20, 0x20);
+
+    struct runtime_task *atask = runtime_get_running_task();
+
+    if (atask)
+    {
+
+        registers->eip = (unsigned int)atask->registers.ip;
+        registers->useresp = (unsigned int)atask->registers.sp;
+        registers->ebp = (unsigned int)atask->registers.sb;
+
+    }
 
 }
 
