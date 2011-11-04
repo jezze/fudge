@@ -52,10 +52,11 @@ unsigned int event_handler_syscall(unsigned int index)
     if (!oldtask)
         return 0;
 
-    oldtask->parentid = task->id;
+    runtime_activate(oldtask);
     oldtask->registers.ip = event->handler;
 
-    runtime_activate(oldtask);
+    if (oldtask->id != task->id)
+        oldtask->parentid = task->id;
 
     return 1;
 
@@ -79,12 +80,11 @@ unsigned int event_handler_interrupt(unsigned int index)
     if (!oldtask)
         return 0;
 
-    oldtask->parentid = task->id;
+    runtime_activate(oldtask);
     oldtask->registers.ip = event->handler;
 
-    runtime_activate(oldtask);
-
-    kernel_enter_usermode(oldtask->registers.ip, oldtask->registers.sp);
+    if (oldtask->id != task->id)
+        oldtask->parentid = task->id;
 
     return 1;
 

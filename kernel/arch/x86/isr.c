@@ -1,5 +1,7 @@
 #include <kernel/error.h>
 #include <kernel/log.h>
+#include <kernel/vfs.h>
+#include <kernel/runtime.h>
 #include <kernel/arch/x86/idt.h>
 #include <kernel/arch/x86/isr.h>
 
@@ -22,6 +24,19 @@ void isr_unregister_handler(unsigned char index)
 void isr_handler(struct isr_registers *registers)
 {
 
+    struct runtime_task *task = runtime_get_running_task();
+
+    if (task)
+    {
+
+        void *ip = (void *)registers->eip;
+        void *sp = (void *)registers->useresp;
+        void *sb = (void *)registers->ebp;
+
+        task->save_registers(task, ip, sp, sb);
+
+    }
+
     void (*handler)(struct isr_registers *registers) = isrRoutines[registers->number];
 
     if (handler)
@@ -38,6 +53,17 @@ void isr_handler(struct isr_registers *registers)
         log_write("Interrupt: 0x%x\n", registers->number);
         log_write("Error code: %d\n", registers->error);
         error_panic("UNHANDLED INTERRUPT", __FILE__, __LINE__);
+
+    }
+
+    struct runtime_task *atask = runtime_get_running_task();
+
+    if (atask)
+    {
+
+        registers->eip = (unsigned int)atask->registers.ip;
+        registers->useresp = (unsigned int)atask->registers.sp;
+        registers->ebp = (unsigned int)atask->registers.sb;
 
     }
 
