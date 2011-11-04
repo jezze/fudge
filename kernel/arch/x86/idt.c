@@ -13,7 +13,7 @@ void idt_set_gate(unsigned char index, void *callback, unsigned short selector, 
     idtEntries[index].baseHigh = (base >> 16) & 0xFFFF;
     idtEntries[index].selector = selector;
     idtEntries[index].zero = 0;
-    idtEntries[index].flags = flags | 0x60;
+    idtEntries[index].flags = flags;
 
 }
 
