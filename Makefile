@@ -1,9 +1,6 @@
-#!/bin/sh
-
 ARCH=x86
-
 DIR_IMAGE=build/root
-DIR_SOURCE_BIN=bin
+DIR_SOURCE_USER=user
 DIR_SOURCE_KERNEL=kernel
 DIR_SOURCE_ARCH=kernel/arch/${ARCH}
 DIR_SOURCE_LIB=lib
@@ -135,41 +132,41 @@ kernel: arch-${ARCH} modules
 		-o ${DIR_IMAGE}/boot/kernel
 
 ramdisk: kernel
-	@${GCC} ${GCCFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/cat.c -o ${DIR_SOURCE_BIN}/cat.o
-	@${GCC} ${GCCFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/cd.c -o ${DIR_SOURCE_BIN}/cd.o
-	@${GCC} ${GCCFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/clear.c -o ${DIR_SOURCE_BIN}/clear.o
-	@${ASM} ${ASMFLAGS} ${DIR_SOURCE_BIN}/cpu.s -o ${DIR_SOURCE_BIN}/cpus.o
-	@${GCC} ${GCCFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/cpu.c -o ${DIR_SOURCE_BIN}/cpu.o
-	@${GCC} ${GCCFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/date.c -o ${DIR_SOURCE_BIN}/date.o
-	@${GCC} ${GCCFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/echo.c -o ${DIR_SOURCE_BIN}/echo.o
-	@${GCC} ${GCCFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/event1.c -o ${DIR_SOURCE_BIN}/event1.o
-	@${GCC} ${GCCFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/event2.c -o ${DIR_SOURCE_BIN}/event2.o
-	@${GCC} ${GCCFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/event3.c -o ${DIR_SOURCE_BIN}/event3.o
-	@${GCC} ${GCCFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/hello.c -o ${DIR_SOURCE_BIN}/hello.o
-	@${GCC} ${GCCFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/init.c -o ${DIR_SOURCE_BIN}/init.o
-	@${GCC} ${GCCFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/ls.c -o ${DIR_SOURCE_BIN}/ls.o
-	@${GCC} ${GCCFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/reboot.c -o ${DIR_SOURCE_BIN}/reboot.o
-	@${GCC} ${GCCFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/shell.c -o ${DIR_SOURCE_BIN}/shell.o
-	@${GCC} ${GCCFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/tar.c -o ${DIR_SOURCE_BIN}/tar.o
-	@${GCC} ${GCCFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/timer.c -o ${DIR_SOURCE_BIN}/timer.o
-	@${GCC} ${GCCFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/vga.c -o ${DIR_SOURCE_BIN}/vga.o
-	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/cat.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_SOURCE_ARCH}/calls.o -o ${DIR_IMAGE}/bin/cat
-	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/cd.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_SOURCE_ARCH}/calls.o -o ${DIR_IMAGE}/bin/cd
-	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/clear.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_SOURCE_ARCH}/calls.o -o ${DIR_IMAGE}/bin/clear
-	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/cpu.o ${DIR_SOURCE_BIN}/cpus.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_SOURCE_ARCH}/calls.o -o ${DIR_IMAGE}/bin/cpu
-	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/date.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_SOURCE_ARCH}/calls.o -o ${DIR_IMAGE}/bin/date
-	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/echo.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_SOURCE_ARCH}/calls.o -o ${DIR_IMAGE}/bin/echo
-	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/event1.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_SOURCE_ARCH}/calls.o -o ${DIR_IMAGE}/bin/event1
-	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/event2.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_SOURCE_ARCH}/calls.o -o ${DIR_IMAGE}/bin/event2
-	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/event3.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_SOURCE_ARCH}/calls.o -o ${DIR_IMAGE}/bin/event3
-	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/hello.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_SOURCE_ARCH}/calls.o -o ${DIR_IMAGE}/bin/hello
-	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/init.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_SOURCE_ARCH}/calls.o -o ${DIR_IMAGE}/bin/init
-	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/ls.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_SOURCE_ARCH}/calls.o -o ${DIR_IMAGE}/bin/ls
-	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/reboot.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_SOURCE_ARCH}/calls.o -o ${DIR_IMAGE}/bin/reboot
-	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/shell.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_SOURCE_ARCH}/calls.o -o ${DIR_IMAGE}/bin/shell
-	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/tar.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_SOURCE_ARCH}/calls.o -o ${DIR_IMAGE}/bin/tar
-	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/timer.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_SOURCE_ARCH}/calls.o -o ${DIR_IMAGE}/bin/timer
-	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_BIN}/vga.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_SOURCE_ARCH}/calls.o -o ${DIR_IMAGE}/bin/vga
+	@${GCC} ${GCCFLAGS_RAMDISK} ${DIR_SOURCE_USER}/cat.c -o ${DIR_SOURCE_USER}/cat.o
+	@${GCC} ${GCCFLAGS_RAMDISK} ${DIR_SOURCE_USER}/cd.c -o ${DIR_SOURCE_USER}/cd.o
+	@${GCC} ${GCCFLAGS_RAMDISK} ${DIR_SOURCE_USER}/clear.c -o ${DIR_SOURCE_USER}/clear.o
+	@${ASM} ${ASMFLAGS} ${DIR_SOURCE_USER}/cpu.s -o ${DIR_SOURCE_USER}/cpus.o
+	@${GCC} ${GCCFLAGS_RAMDISK} ${DIR_SOURCE_USER}/cpu.c -o ${DIR_SOURCE_USER}/cpu.o
+	@${GCC} ${GCCFLAGS_RAMDISK} ${DIR_SOURCE_USER}/date.c -o ${DIR_SOURCE_USER}/date.o
+	@${GCC} ${GCCFLAGS_RAMDISK} ${DIR_SOURCE_USER}/echo.c -o ${DIR_SOURCE_USER}/echo.o
+	@${GCC} ${GCCFLAGS_RAMDISK} ${DIR_SOURCE_USER}/event1.c -o ${DIR_SOURCE_USER}/event1.o
+	@${GCC} ${GCCFLAGS_RAMDISK} ${DIR_SOURCE_USER}/event2.c -o ${DIR_SOURCE_USER}/event2.o
+	@${GCC} ${GCCFLAGS_RAMDISK} ${DIR_SOURCE_USER}/event3.c -o ${DIR_SOURCE_USER}/event3.o
+	@${GCC} ${GCCFLAGS_RAMDISK} ${DIR_SOURCE_USER}/hello.c -o ${DIR_SOURCE_USER}/hello.o
+	@${GCC} ${GCCFLAGS_RAMDISK} ${DIR_SOURCE_USER}/init.c -o ${DIR_SOURCE_USER}/init.o
+	@${GCC} ${GCCFLAGS_RAMDISK} ${DIR_SOURCE_USER}/ls.c -o ${DIR_SOURCE_USER}/ls.o
+	@${GCC} ${GCCFLAGS_RAMDISK} ${DIR_SOURCE_USER}/reboot.c -o ${DIR_SOURCE_USER}/reboot.o
+	@${GCC} ${GCCFLAGS_RAMDISK} ${DIR_SOURCE_USER}/shell.c -o ${DIR_SOURCE_USER}/shell.o
+	@${GCC} ${GCCFLAGS_RAMDISK} ${DIR_SOURCE_USER}/tar.c -o ${DIR_SOURCE_USER}/tar.o
+	@${GCC} ${GCCFLAGS_RAMDISK} ${DIR_SOURCE_USER}/timer.c -o ${DIR_SOURCE_USER}/timer.o
+	@${GCC} ${GCCFLAGS_RAMDISK} ${DIR_SOURCE_USER}/vga.c -o ${DIR_SOURCE_USER}/vga.o
+	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_USER}/cat.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_SOURCE_ARCH}/calls.o -o ${DIR_IMAGE}/bin/cat
+	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_USER}/cd.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_SOURCE_ARCH}/calls.o -o ${DIR_IMAGE}/bin/cd
+	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_USER}/clear.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_SOURCE_ARCH}/calls.o -o ${DIR_IMAGE}/bin/clear
+	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_USER}/cpu.o ${DIR_SOURCE_USER}/cpus.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_SOURCE_ARCH}/calls.o -o ${DIR_IMAGE}/bin/cpu
+	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_USER}/date.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_SOURCE_ARCH}/calls.o -o ${DIR_IMAGE}/bin/date
+	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_USER}/echo.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_SOURCE_ARCH}/calls.o -o ${DIR_IMAGE}/bin/echo
+	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_USER}/event1.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_SOURCE_ARCH}/calls.o -o ${DIR_IMAGE}/bin/event1
+	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_USER}/event2.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_SOURCE_ARCH}/calls.o -o ${DIR_IMAGE}/bin/event2
+	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_USER}/event3.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_SOURCE_ARCH}/calls.o -o ${DIR_IMAGE}/bin/event3
+	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_USER}/hello.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_SOURCE_ARCH}/calls.o -o ${DIR_IMAGE}/bin/hello
+	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_USER}/init.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_SOURCE_ARCH}/calls.o -o ${DIR_IMAGE}/bin/init
+	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_USER}/ls.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_SOURCE_ARCH}/calls.o -o ${DIR_IMAGE}/bin/ls
+	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_USER}/reboot.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_SOURCE_ARCH}/calls.o -o ${DIR_IMAGE}/bin/reboot
+	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_USER}/shell.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_SOURCE_ARCH}/calls.o -o ${DIR_IMAGE}/bin/shell
+	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_USER}/tar.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_SOURCE_ARCH}/calls.o -o ${DIR_IMAGE}/bin/tar
+	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_USER}/timer.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_SOURCE_ARCH}/calls.o -o ${DIR_IMAGE}/bin/timer
+	@${LD} ${LDFLAGS_RAMDISK} ${DIR_SOURCE_USER}/vga.o ${DIR_SOURCE_LIB}/memory.o ${DIR_SOURCE_LIB}/string.o ${DIR_SOURCE_LIB}/file.o ${DIR_SOURCE_ARCH}/calls.o -o ${DIR_IMAGE}/bin/vga
 	@tar -cvf initrd.tar ${DIR_IMAGE}
 	@find ${DIR_IMAGE} -depth -print | cpio -ov > initrd.cpio
 	@mv initrd.tar ${DIR_IMAGE}/boot
@@ -216,7 +213,7 @@ clean:
 	@rm -f ${DIR_IMAGE}/boot/initrd
 	@rm -f ${DIR_IMAGE}/boot/initrd.tar
 	@rm -f ${DIR_IMAGE}/boot/initrd.cpio
-	@rm -f ${DIR_SOURCE_BIN}/*.o
+	@rm -f ${DIR_SOURCE_USER}/*.o
 	@rm -f ${DIR_SOURCE_KERNEL}/*.o
 	@rm -f ${DIR_SOURCE_KERNEL}/arch/*/*.o
 	@rm -f ${DIR_SOURCE_LIB}/*.o
