@@ -37,7 +37,7 @@ void isr_handler(struct isr_registers *registers)
 
     }
 
-    void (*handler)(struct isr_registers *registers) = isrRoutines[registers->number];
+    void (*handler)(struct isr_registers *registers) = isrRoutines[registers->index];
 
     if (handler)
     {
@@ -50,7 +50,7 @@ void isr_handler(struct isr_registers *registers)
     {
 
         log_write("ERROR!\n");
-        log_write("Interrupt: 0x%x\n", registers->number);
+        log_write("Interrupt: 0x%x\n", registers->index);
         log_write("Error code: %d\n", registers->error);
         error_panic("UNHANDLED INTERRUPT", __FILE__, __LINE__);
 

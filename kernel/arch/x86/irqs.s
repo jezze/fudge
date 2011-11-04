@@ -59,56 +59,56 @@ irq07:
 global irq08
 irq08:
     cli
-    push 0
+    push 1
     push 0x08
     jmp irq_common
 
 global irq09
 irq09:
     cli
-    push 0
+    push 1
     push 0x09
     jmp irq_common
 
 global irq0A
 irq0A:
     cli
-    push 0
+    push 1
     push 0x0A
     jmp irq_common
 
 global irq0B
 irq0B:
     cli
-    push 0
+    push 1
     push 0x0B
     jmp irq_common
 
 global irq0C
 irq0C:
     cli
-    push 0
+    push 1
     push 0x0C
     jmp irq_common
 
 global irq0D
 irq0D:
     cli
-    push 0
+    push 1
     push 0x0D
     jmp irq_common
 
 global irq0E
 irq0E:
     cli
-    push 0
+    push 1
     push 0x0E
     jmp irq_common
 
 global irq0F
 irq0F:
     cli
-    push 0
+    push 1
     push 0x0F
     jmp irq_common
 

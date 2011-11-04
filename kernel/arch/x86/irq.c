@@ -20,15 +20,15 @@ void irq_unregister_handler(unsigned char index)
 
 }
 
-void irq_handler(struct isr_registers *registers)
+void irq_handler(struct irq_registers *registers)
 {
 
-    void (*handler)() = irqRoutines[registers->number];
+    void (*handler)() = irqRoutines[registers->index];
 
     if (handler)
         handler();
 
-    if (registers->number >= 0x08)
+    if (registers->secondary)
         io_outb(0xA0, 0x20);
 
     io_outb(0x20, 0x20);

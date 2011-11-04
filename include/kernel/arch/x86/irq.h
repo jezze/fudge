@@ -11,7 +11,15 @@
 #define IRQ_ROUTINE_ATAP  0x0E
 #define IRQ_ROUTINE_ATAS  0x0F
 
-struct isr_registers;
+struct irq_registers
+{
+
+    unsigned int gs, fs, es, ds;
+    unsigned int edi, esi, ebp, esp, ebx, edx, ecx, eax;
+    unsigned int index, secondary;
+    unsigned int eip, cs, eflags, useresp, ss;
+
+};
 
 extern void irq00();
 extern void irq01();
