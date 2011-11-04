@@ -20,7 +20,7 @@
 extern unsigned int syscall_attach(unsigned int index, void (*handler)());
 extern unsigned int syscall_close(unsigned int fd);
 extern unsigned int syscall_detach(unsigned int index);
-extern unsigned int syscall_execute(char *path, unsigned int argc, char **argv, void *ip, void *sp, void *sb);
+extern unsigned int syscall_execute(char *path, unsigned int argc, char **argv);
 extern unsigned int syscall_exit();
 extern unsigned int syscall_info(unsigned int fd, struct file_info *info);
 extern unsigned int syscall_load(char *path);
@@ -28,7 +28,7 @@ extern unsigned int syscall_open(char *path);
 extern unsigned int syscall_read(unsigned int fd, unsigned int count, char *buffer);
 extern unsigned int syscall_reboot();
 extern unsigned int syscall_unload();
-extern unsigned int syscall_wait(void *ip, void *sp, void *sb);
+extern unsigned int syscall_wait();
 extern unsigned int syscall_write(unsigned int fd, unsigned int count, char *buffer);
 
 #endif

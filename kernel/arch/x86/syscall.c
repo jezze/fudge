@@ -40,11 +40,8 @@ static void syscall_execute_handler(struct syscall_registers *registers)
     char *path = (char *)registers->esi;
     unsigned int argc = registers->ecx;
     char **argv = (char **)registers->ebx;
-    void *ip = (void *)registers->eip;
-    void *sp = (void *)registers->useresp;
-    void *sb = (void *)registers->ebp;
 
-    registers->eax = syscall_execute(path, argc, argv, ip, sp, sb);
+    registers->eax = syscall_execute(path, argc, argv);
 
 }
 
@@ -111,11 +108,7 @@ static void syscall_unload_handler(struct syscall_registers *registers)
 static void syscall_wait_handler(struct syscall_registers *registers)
 {
 
-    void *ip = (void *)registers->eip;
-    void *sp = (void *)registers->useresp;
-    void *sb = (void *)registers->ebp;
-
-    registers->eax = syscall_wait(ip, sp, sb);
+    registers->eax = syscall_wait();
 
 }
 

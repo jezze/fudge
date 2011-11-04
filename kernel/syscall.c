@@ -46,7 +46,7 @@ unsigned int syscall_detach(unsigned int index)
 
 }
 
-unsigned int syscall_execute(char *path, unsigned int argc, char **argv, void *ip, void *sp, void *sb)
+unsigned int syscall_execute(char *path, unsigned int argc, char **argv)
 {
 
     struct runtime_task *oldtask = runtime_get_running_task();
@@ -185,7 +185,7 @@ unsigned int syscall_unload()
 
 }
 
-unsigned int syscall_wait(void *ip, void *sp, void *sb)
+unsigned int syscall_wait()
 {
 
     struct runtime_task *oldtask = runtime_get_running_task();
