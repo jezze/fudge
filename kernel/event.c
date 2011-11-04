@@ -52,11 +52,16 @@ unsigned int event_handler(unsigned int index)
     if (!oldtask)
         return 0;
 
-    runtime_activate(oldtask);
-    oldtask->registers.ip = event->handler;
+    if (task->id != oldtask->id)
+    {
 
-    if (oldtask->id != task->id)
+        runtime_activate(oldtask);
+
         oldtask->parentid = task->id;
+
+    }
+
+    oldtask->registers.ip = event->handler;
 
     return 1;
 
