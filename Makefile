@@ -19,13 +19,7 @@ LDFLAGS_RAMDISK=-e main -melf_i386
 
 all: ramdisk
 
-lib:
-	@make -C lib/
-
-arch-x86: lib
-	@make -C kernel/arch/x86/
-
-modules: lib
+modules:
 	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_MODULES}/test/test.c -o ${DIR_SOURCE_MODULES}/test/test.o
 	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_MODULES}/ata/ata.c -o ${DIR_SOURCE_MODULES}/ata/ata.o
 	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_MODULES}/elf/elf.c -o ${DIR_SOURCE_MODULES}/elf/elf.o
@@ -55,15 +49,9 @@ modules: lib
 	@cp ${DIR_SOURCE_MODULES}/vga/vga.o ${DIR_IMAGE}/lib/modules/vga.ko
 
 kernel: arch-${ARCH} modules
-	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_KERNEL}/error.c -o ${DIR_SOURCE_KERNEL}/error.o
-	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_KERNEL}/event.c -o ${DIR_SOURCE_KERNEL}/event.o
-	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_KERNEL}/initrd.c -o ${DIR_SOURCE_KERNEL}/initrd.o
-	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_KERNEL}/kernel.c -o ${DIR_SOURCE_KERNEL}/kernel.o
-	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_KERNEL}/log.c -o ${DIR_SOURCE_KERNEL}/log.o
-	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_KERNEL}/modules.c -o ${DIR_SOURCE_KERNEL}/modules.o
-	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_KERNEL}/runtime.c -o ${DIR_SOURCE_KERNEL}/runtime.o
-	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_KERNEL}/syscall.c -o ${DIR_SOURCE_KERNEL}/syscall.o
-	@${GCC} ${GCCFLAGS} ${DIR_SOURCE_KERNEL}/vfs.c -o ${DIR_SOURCE_KERNEL}/vfs.o
+	@make -C lib/
+	@make -C kernel/
+	@make -C kernel/arch/x86/
 	@${LD} ${LDFLAGS} \
 		${DIR_SOURCE_KERNEL}/error.o \
 		${DIR_SOURCE_KERNEL}/event.o \
@@ -169,6 +157,7 @@ hda:
 
 clean:
 	@make -C lib/ clean
+	@make -C kernel/ clean
 	@make -C kernel/arch/x86/ clean
 	@rm -f fudge.img
 	@rm -f fudge.iso
