@@ -4,112 +4,112 @@ global irq00
 irq00:
     cli
     push 0
-    push 0x20
+    push 0x00
     jmp irq_common
 
 global irq01
 irq01:
     cli
     push 0
-    push 0x21
+    push 0x01
     jmp irq_common
 
 global irq02
 irq02:
     cli
     push 0
-    push 0x22
+    push 0x02
     jmp irq_common
 
 global irq03
 irq03:
     cli
     push 0
-    push 0x23
+    push 0x03
     jmp irq_common
 
 global irq04
 irq04:
     cli
     push 0
-    push 0x24
+    push 0x04
     jmp irq_common
 
 global irq05
 irq05:
     cli
     push 0
-    push 0x25
+    push 0x05
     jmp irq_common
 
 global irq06
 irq06:
     cli
     push 0
-    push 0x26
+    push 0x06
     jmp irq_common
 
 global irq07
 irq07:
     cli
     push 0
-    push 0x27
+    push 0x07
     jmp irq_common
 
 global irq08
 irq08:
     cli
     push 0
-    push 0x28
+    push 0x08
     jmp irq_common
 
 global irq09
 irq09:
     cli
     push 0
-    push 0x29
+    push 0x09
     jmp irq_common
 
 global irq0A
 irq0A:
     cli
     push 0
-    push 0x2A
+    push 0x0A
     jmp irq_common
 
 global irq0B
 irq0B:
     cli
     push 0
-    push 0x2B
+    push 0x0B
     jmp irq_common
 
 global irq0C
 irq0C:
     cli
     push 0
-    push 0x2C
+    push 0x0C
     jmp irq_common
 
 global irq0D
 irq0D:
     cli
     push 0
-    push 0x2D
+    push 0x0D
     jmp irq_common
 
 global irq0E
 irq0E:
     cli
     push 0
-    push 0x2E
+    push 0x0E
     jmp irq_common
 
 global irq0F
 irq0F:
     cli
     push 0
-    push 0x2F
+    push 0x0F
     jmp irq_common
 
 irq_common:

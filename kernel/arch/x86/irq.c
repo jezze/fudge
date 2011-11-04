@@ -23,12 +23,12 @@ void irq_unregister_handler(unsigned char index)
 void irq_handler(struct isr_registers *registers)
 {
 
-    void (*handler)() = irqRoutines[registers->number - 32];
+    void (*handler)() = irqRoutines[registers->number];
 
     if (handler)
         handler();
 
-    if (registers->number >= 40)
+    if (registers->number >= 0x08)
         io_outb(0xA0, 0x20);
 
     io_outb(0x20, 0x20);
