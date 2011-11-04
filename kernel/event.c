@@ -34,7 +34,7 @@ struct event_event *event_get(unsigned int index)
 
 }
 
-unsigned int event_handler_syscall(unsigned int index)
+unsigned int event_handler(unsigned int index)
 {
 
     struct event_event *event = event_get(index);
@@ -61,36 +61,6 @@ unsigned int event_handler_syscall(unsigned int index)
     return 1;
 
 }
-
-unsigned int event_handler_interrupt(unsigned int index)
-{
-
-    struct event_event *event = event_get(index);
-
-    if (!(event && event->id))
-        return 0;
-
-    struct runtime_task *task = runtime_get_running_task();
-
-    if (!task)
-        return 0;
-
-    struct runtime_task *oldtask = runtime_get_task(event->id);
-
-    if (!oldtask)
-        return 0;
-
-    runtime_activate(oldtask);
-    oldtask->registers.ip = event->handler;
-
-    if (oldtask->id != task->id)
-        oldtask->parentid = task->id;
-
-    return 1;
-
-}
-
-
 
 void event_init()
 {

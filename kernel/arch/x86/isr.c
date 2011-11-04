@@ -26,14 +26,7 @@ void isr_handler(struct isr_registers *registers)
 
     void (*handler)(struct isr_registers *registers) = isrRoutines[registers->index];
 
-    if (handler)
-    {
-
-        handler(registers);
-
-    }
-
-    else
+    if (!handler)
     {
 
         log_write("ERROR!\n");
@@ -42,6 +35,8 @@ void isr_handler(struct isr_registers *registers)
         error_panic("UNHANDLED INTERRUPT", __FILE__, __LINE__);
 
     }
+
+    handler(registers);
 
 }
 

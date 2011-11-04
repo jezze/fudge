@@ -113,7 +113,7 @@ static void kbd_handler()
 
     }
 
-    event_handler_interrupt(0x07);
+    event_handler(0x07);
 
 }
 

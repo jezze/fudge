@@ -16,8 +16,7 @@ struct event_event
 extern void event_register(unsigned int index, unsigned int id, void (*handler)());
 extern void event_unregister(unsigned int index, unsigned int id);
 extern struct event_event *event_get(unsigned int index);
-extern unsigned int event_handler_syscall(unsigned int index);
-extern unsigned int event_handler_interrupt(unsigned int index);
+extern unsigned int event_handler(unsigned int index);
 extern void event_init();
 
 #endif
