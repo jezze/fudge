@@ -6,24 +6,18 @@ DIR_SOURCE_ARCH=kernel/arch/${ARCH}
 DIR_SOURCE_LIB=lib
 DIR_SOURCE_MODULES=modules
 
-ASM=nasm
-ASMFLAGS=-f elf
-GCC=gcc
-GCCFLAGS=-c -O2 -Iinclude -Wall -Wextra -ffreestanding -nostdlib -nostartfiles -nodefaultlibs -m32
-GCCFLAGS_USER=-c -O2 -Iinclude/lib -Wall -Wextra -ffreestanding -nostdlib -nostartfiles -nodefaultlibs -m32
 LD=ld
-LDFLAGS=-Tkernel/arch/x86/linker.ld -melf_i386
-LDFLAGS_USER=-e main -melf_i386 lib/file.o lib/memory.o lib/string.o kernel/arch/x86/calls.o
+LDFLAGS=-T${DIR_SOURCE_ARCH}/linker.ld -melf_i386
 
 .PHONY: all clean kernel user ramdisk sda iso hda
 
 all: ramdisk
 
 kernel:
-	@make -C lib/
-	@make -C kernel/
-	@make -C kernel/arch/x86/
-	@make -C modules/
+	@make -C ${DIR_SOURCE_LIB}/
+	@make -C ${DIR_SOURCE_KERNEL}/
+	@make -C ${DIR_SOURCE_ARCH}/
+	@make -C ${DIR_SOURCE_MODULES}/
 	@${LD} ${LDFLAGS} \
 		${DIR_SOURCE_KERNEL}/error.o \
 		${DIR_SOURCE_KERNEL}/event.o \
@@ -72,41 +66,7 @@ kernel:
 		-o ${DIR_IMAGE}/boot/kernel
 
 user:
-	@${GCC} ${GCCFLAGS_USER} ${DIR_SOURCE_USER}/cat.c -o ${DIR_SOURCE_USER}/cat.o
-	@${GCC} ${GCCFLAGS_USER} ${DIR_SOURCE_USER}/cd.c -o ${DIR_SOURCE_USER}/cd.o
-	@${GCC} ${GCCFLAGS_USER} ${DIR_SOURCE_USER}/clear.c -o ${DIR_SOURCE_USER}/clear.o
-	@${ASM} ${ASMFLAGS} ${DIR_SOURCE_USER}/cpu.s -o ${DIR_SOURCE_USER}/cpus.o
-	@${GCC} ${GCCFLAGS_USER} ${DIR_SOURCE_USER}/cpu.c -o ${DIR_SOURCE_USER}/cpu.o
-	@${GCC} ${GCCFLAGS_USER} ${DIR_SOURCE_USER}/date.c -o ${DIR_SOURCE_USER}/date.o
-	@${GCC} ${GCCFLAGS_USER} ${DIR_SOURCE_USER}/echo.c -o ${DIR_SOURCE_USER}/echo.o
-	@${GCC} ${GCCFLAGS_USER} ${DIR_SOURCE_USER}/event1.c -o ${DIR_SOURCE_USER}/event1.o
-	@${GCC} ${GCCFLAGS_USER} ${DIR_SOURCE_USER}/event2.c -o ${DIR_SOURCE_USER}/event2.o
-	@${GCC} ${GCCFLAGS_USER} ${DIR_SOURCE_USER}/event3.c -o ${DIR_SOURCE_USER}/event3.o
-	@${GCC} ${GCCFLAGS_USER} ${DIR_SOURCE_USER}/hello.c -o ${DIR_SOURCE_USER}/hello.o
-	@${GCC} ${GCCFLAGS_USER} ${DIR_SOURCE_USER}/init.c -o ${DIR_SOURCE_USER}/init.o
-	@${GCC} ${GCCFLAGS_USER} ${DIR_SOURCE_USER}/ls.c -o ${DIR_SOURCE_USER}/ls.o
-	@${GCC} ${GCCFLAGS_USER} ${DIR_SOURCE_USER}/reboot.c -o ${DIR_SOURCE_USER}/reboot.o
-	@${GCC} ${GCCFLAGS_USER} ${DIR_SOURCE_USER}/shell.c -o ${DIR_SOURCE_USER}/shell.o
-	@${GCC} ${GCCFLAGS_USER} ${DIR_SOURCE_USER}/tar.c -o ${DIR_SOURCE_USER}/tar.o
-	@${GCC} ${GCCFLAGS_USER} ${DIR_SOURCE_USER}/timer.c -o ${DIR_SOURCE_USER}/timer.o
-	@${GCC} ${GCCFLAGS_USER} ${DIR_SOURCE_USER}/vga.c -o ${DIR_SOURCE_USER}/vga.o
-	@${LD} ${LDFLAGS_USER} ${DIR_SOURCE_USER}/cat.o -o ${DIR_IMAGE}/bin/cat
-	@${LD} ${LDFLAGS_USER} ${DIR_SOURCE_USER}/cd.o -o ${DIR_IMAGE}/bin/cd
-	@${LD} ${LDFLAGS_USER} ${DIR_SOURCE_USER}/clear.o -o ${DIR_IMAGE}/bin/clear
-	@${LD} ${LDFLAGS_USER} ${DIR_SOURCE_USER}/cpu.o ${DIR_SOURCE_USER}/cpus.o -o ${DIR_IMAGE}/bin/cpu
-	@${LD} ${LDFLAGS_USER} ${DIR_SOURCE_USER}/date.o -o ${DIR_IMAGE}/bin/date
-	@${LD} ${LDFLAGS_USER} ${DIR_SOURCE_USER}/echo.o -o ${DIR_IMAGE}/bin/echo
-	@${LD} ${LDFLAGS_USER} ${DIR_SOURCE_USER}/event1.o -o ${DIR_IMAGE}/bin/event1
-	@${LD} ${LDFLAGS_USER} ${DIR_SOURCE_USER}/event2.o -o ${DIR_IMAGE}/bin/event2
-	@${LD} ${LDFLAGS_USER} ${DIR_SOURCE_USER}/event3.o -o ${DIR_IMAGE}/bin/event3
-	@${LD} ${LDFLAGS_USER} ${DIR_SOURCE_USER}/hello.o -o ${DIR_IMAGE}/bin/hello
-	@${LD} ${LDFLAGS_USER} ${DIR_SOURCE_USER}/init.o -o ${DIR_IMAGE}/bin/init
-	@${LD} ${LDFLAGS_USER} ${DIR_SOURCE_USER}/ls.o -o ${DIR_IMAGE}/bin/ls
-	@${LD} ${LDFLAGS_USER} ${DIR_SOURCE_USER}/reboot.o -o ${DIR_IMAGE}/bin/reboot
-	@${LD} ${LDFLAGS_USER} ${DIR_SOURCE_USER}/shell.o -o ${DIR_IMAGE}/bin/shell
-	@${LD} ${LDFLAGS_USER} ${DIR_SOURCE_USER}/tar.o -o ${DIR_IMAGE}/bin/tar
-	@${LD} ${LDFLAGS_USER} ${DIR_SOURCE_USER}/timer.o -o ${DIR_IMAGE}/bin/timer
-	@${LD} ${LDFLAGS_USER} ${DIR_SOURCE_USER}/vga.o -o ${DIR_IMAGE}/bin/vga
+	@make -C ${DIR_SOURCE_USER}/
 
 ramdisk: kernel user
 	@cp ${DIR_SOURCE_MODULES}/test/test.o ${DIR_IMAGE}/lib/modules/test.ko
@@ -122,6 +82,23 @@ ramdisk: kernel user
 	@cp ${DIR_SOURCE_MODULES}/serial/serial.o ${DIR_IMAGE}/lib/modules/serial.ko
 	@cp ${DIR_SOURCE_MODULES}/tty/tty.o ${DIR_IMAGE}/lib/modules/tty.ko
 	@cp ${DIR_SOURCE_MODULES}/vga/vga.o ${DIR_IMAGE}/lib/modules/vga.ko
+	@cp ${DIR_SOURCE_USER}/cat ${DIR_IMAGE}/bin/cat
+	@cp ${DIR_SOURCE_USER}/cd ${DIR_IMAGE}/bin/cd
+	@cp ${DIR_SOURCE_USER}/clear ${DIR_IMAGE}/bin/clear
+	@cp ${DIR_SOURCE_USER}/cpu ${DIR_IMAGE}/bin/cpu
+	@cp ${DIR_SOURCE_USER}/date ${DIR_IMAGE}/bin/date
+	@cp ${DIR_SOURCE_USER}/echo ${DIR_IMAGE}/bin/echo
+	@cp ${DIR_SOURCE_USER}/event1 ${DIR_IMAGE}/bin/event1
+	@cp ${DIR_SOURCE_USER}/event2 ${DIR_IMAGE}/bin/event2
+	@cp ${DIR_SOURCE_USER}/event3 ${DIR_IMAGE}/bin/event3
+	@cp ${DIR_SOURCE_USER}/hello ${DIR_IMAGE}/bin/hello
+	@cp ${DIR_SOURCE_USER}/init ${DIR_IMAGE}/bin/init
+	@cp ${DIR_SOURCE_USER}/ls ${DIR_IMAGE}/bin/ls
+	@cp ${DIR_SOURCE_USER}/reboot ${DIR_IMAGE}/bin/reboot
+	@cp ${DIR_SOURCE_USER}/shell ${DIR_IMAGE}/bin/shell
+	@cp ${DIR_SOURCE_USER}/tar ${DIR_IMAGE}/bin/tar
+	@cp ${DIR_SOURCE_USER}/timer ${DIR_IMAGE}/bin/timer
+	@cp ${DIR_SOURCE_USER}/vga ${DIR_IMAGE}/bin/vga
 	@tar -cvf initrd.tar ${DIR_IMAGE}
 	@find ${DIR_IMAGE} -depth -print | cpio -ov > initrd.cpio
 	@mv initrd.tar ${DIR_IMAGE}/boot
@@ -143,10 +120,11 @@ hda:
 	@dd if=/dev/zero of=hda.img bs=512 count=2880
 
 clean:
-	@make -C lib/ clean
-	@make -C kernel/ clean
-	@make -C kernel/arch/x86/ clean
-	@make -C modules/ clean
+	@make -C ${DIR_SOURCE_LIB}/ clean
+	@make -C ${DIR_SOURCE_KERNEL}/ clean
+	@make -C ${DIR_SOURCE_ARCH}/ clean
+	@make -C ${DIR_SOURCE_MODULES}/ clean
+	@make -C ${DIR_SOURCE_USER}/ clean
 	@rm -f fudge.img
 	@rm -f fudge.iso
 	@rm -f hda.img
@@ -172,6 +150,4 @@ clean:
 	@rm -f ${DIR_IMAGE}/boot/initrd
 	@rm -f ${DIR_IMAGE}/boot/initrd.tar
 	@rm -f ${DIR_IMAGE}/boot/initrd.cpio
-	@rm -f ${DIR_SOURCE_USER}/*.o
-	@rm -f ${DIR_SOURCE_KERNEL}/*.o
 

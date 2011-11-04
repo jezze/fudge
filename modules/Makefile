@@ -8,11 +8,11 @@ GCCFLAGS=-c -O2 -I../include -Wall -Wextra -ffreestanding -nostdlib -nostartfile
 all: modules
 
 modules:
+	@${ASM} ${ASMFLAGS} io/ios.s -o io/ios.o
 	@${GCC} ${GCCFLAGS} test/test.c -o test/test.o
 	@${GCC} ${GCCFLAGS} ata/ata.c -o ata/ata.o
 	@${GCC} ${GCCFLAGS} elf/elf.c -o elf/elf.o
 	@${GCC} ${GCCFLAGS} io/io.c -o io/io.o
-	@${ASM} ${ASMFLAGS} io/ios.s -o io/ios.o
 	@${GCC} ${GCCFLAGS} kbd/kbd.c -o kbd/kbd.o
 	@${GCC} ${GCCFLAGS} pci/pci.c -o pci/pci.o
 	@${GCC} ${GCCFLAGS} pit/pit.c -o pit/pit.o
