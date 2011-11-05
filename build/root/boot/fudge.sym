@@ -1,1 +1,9 @@
 doit
+modules_bus_init
+modules_device_init
+modules_driver_init
+modules_module_init
+modules_register_bus
+modules_register_device
+modules_register_driver
+kernel_register_irq
