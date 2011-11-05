@@ -1,12 +1,21 @@
 #include <fudge.h>
 
-void explain()
+void before()
 {
 
-    file_write_format(FILE_STDOUT, "You executed a program it seems...\n");
+    file_write_format(FILE_STDOUT, "*** PROGRAM START ***\n");
+
+    call_wait();
+
+}
+
+void after()
+{
+
+    file_write_format(FILE_STDOUT, "*** PROGRAM END ***\n");
 
     call_detach(0x21);
-
+    call_detach(0x22);
     call_exit();
 
 }
@@ -14,8 +23,8 @@ void explain()
 void main(int argc, char *argv[])
 {
 
-    call_attach(0x21, explain);
-
+    call_attach(0x21, before);
+    call_attach(0x22, after);
     call_wait();
 
 }

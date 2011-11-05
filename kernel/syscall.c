@@ -91,6 +91,8 @@ unsigned int syscall_exit()
 
     runtime_activate(task);
 
+    event_handler(EVENT_SYSCALL_EXIT);
+
     return 1;
 
 }
@@ -207,6 +209,8 @@ unsigned int syscall_wait()
         return 0;
 
     runtime_activate(task);
+
+    event_handler(EVENT_SYSCALL_WAIT);
 
     return 1;
 
