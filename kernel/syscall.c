@@ -12,7 +12,7 @@ unsigned int syscall_attach(unsigned int index, void (*handler)())
     if (!task)
         return 0;
 
-    event_register(index, task->id, handler);
+    event_register(index, task, handler);
 
     return 1;
 
@@ -42,7 +42,7 @@ unsigned int syscall_detach(unsigned int index)
     if (!task)
         return 0;
 
-    event_unregister(index, task->id);
+    event_unregister(index, task);
 
     return 1;
 
@@ -171,7 +171,7 @@ unsigned int syscall_read(unsigned int fd, unsigned int count, char *buffer)
 
     unsigned int c = node->read(node, count, buffer);
 
-    //event_handler(EVENT_SYSCALL_READ);
+    event_handler(EVENT_SYSCALL_READ);
 
     return c;
 
@@ -227,7 +227,7 @@ unsigned int syscall_write(unsigned int fd, unsigned int count, char *buffer)
 
     unsigned int c = node->write(node, count, buffer);
 
-    //event_handler(EVENT_SYSCALL_WRITE);
+    event_handler(EVENT_SYSCALL_WRITE);
 
     return c;
 

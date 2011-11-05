@@ -4,26 +4,27 @@
 #include <kernel/vfs.h>
 #include <kernel/runtime.h>
 
-struct event_event eventHandlers[32];
+struct event_event eventHandlers[64];
 
-void event_register(unsigned int index, unsigned int id, void (*handler)())
+void event_register(unsigned int index, struct runtime_task *task, void (*handler)())
 {
 
-    if (eventHandlers[index].id != 0)
+    if (eventHandlers[index].task)
         return;
 
-    eventHandlers[index].id = id;
+    eventHandlers[index].task = task;
     eventHandlers[index].handler = handler;
 
 }
 
-void event_unregister(unsigned int index, unsigned int id)
+void event_unregister(unsigned int index, struct runtime_task *task)
 {
 
-    if (eventHandlers[index].id != id)
+    if (eventHandlers[index].task != task)
         return;
 
-    eventHandlers[index].id = 0;
+    eventHandlers[index].task = 0;
+    eventHandlers[index].handler = 0;
 
 }
 
@@ -37,17 +38,17 @@ struct event_event *event_get(unsigned int index)
 unsigned int event_handler(unsigned int index)
 {
 
-    struct event_event *event = event_get(index);
-
-    if (!(event && event->id))
-        return 0;
-
     struct runtime_task *task = runtime_get_running_task();
 
     if (!task)
         return 0;
 
-    struct runtime_task *oldtask = runtime_get_task(event->id);
+    struct event_event *event = event_get(index);
+
+    if (!event)
+        return 0;
+
+    struct runtime_task *oldtask = runtime_get_task(event->task->id);
 
     if (!oldtask)
         return 0;
