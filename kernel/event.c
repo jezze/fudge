@@ -38,31 +38,31 @@ struct event_event *event_get(unsigned int index)
 unsigned int event_handler(unsigned int index)
 {
 
-    struct runtime_task *task = runtime_get_running_task();
-
-    if (!task)
-        return 0;
-
     struct event_event *event = event_get(index);
 
     if (!event)
         return 0;
 
-    struct runtime_task *oldtask = runtime_get_task(event->task->id);
+    struct runtime_task *ctask = runtime_get_running_task();
 
-    if (!oldtask)
+    if (!ctask)
         return 0;
 
-    if (task->id != oldtask->id)
+    struct runtime_task *etask = runtime_get_task(event->task->id);
+
+    if (!etask)
+        return 0;
+
+    if (ctask->id != etask->id)
     {
 
-        runtime_activate(oldtask);
+        runtime_activate(etask);
 
-        oldtask->parentid = task->id;
+        etask->parentid = ctask->id;
 
     }
 
-    oldtask->registers.ip = event->handler;
+    etask->registers.ip = event->handler;
 
     return 1;
 
