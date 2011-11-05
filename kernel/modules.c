@@ -215,17 +215,17 @@ void modules_driver_init(struct modules_driver *driver, unsigned int type)
 static void modules_init_devices()
 {
 
+    elf_init();
     io_init();
     vga_init();
     pit_init();
     kbd_init();
-    rtc_init();
     pci_init();
     ata_init();
     serial_init();
     tty_init();
-    elf_init();
     rtl8139_init();
+    rtc_init();
 
 }
 
