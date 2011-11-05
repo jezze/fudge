@@ -89,7 +89,7 @@ static void *runtime_copy_argv(void *paddress, void *vaddress, unsigned int argc
     {
 
         nargv[i] = vaddress + start + off;
-        string_copy(paddress + start + off, argv[i]);
+        string_write(paddress + start + off, argv[i]);
         off += string_length(argv[i]) + 2;
 
     }

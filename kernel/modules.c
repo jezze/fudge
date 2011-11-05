@@ -172,8 +172,8 @@ static unsigned int modules_filesystem_node_read(struct vfs_node *self, unsigned
         if (modulesDevices[i]->type != STREAM_DEVICE_TYPE)
             continue;
 
-        string_concat(buffer, ((struct stream_device *)modulesDevices[i])->name);
-        string_concat(buffer, "\n");
+        string_write_concat(buffer, ((struct stream_device *)modulesDevices[i])->name);
+        string_write_concat(buffer, "\n");
 
     }
 

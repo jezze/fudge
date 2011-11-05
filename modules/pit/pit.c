@@ -24,9 +24,9 @@ static unsigned int pit_device_stream_read(struct vfs_node *self, unsigned int c
 
     char num[32];
 
-    string_copy_num(num, pitDevice.jiffies, 10);
+    string_write_num(num, pitDevice.jiffies, 10);
 
-    string_copy(buffer, num);
+    string_write(buffer, num);
 
     return string_length(buffer);
 

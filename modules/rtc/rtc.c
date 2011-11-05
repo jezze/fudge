@@ -32,24 +32,24 @@ static unsigned int rtc_device_stream_read(struct vfs_node *self, unsigned int c
 
     char num[32];
 
-    string_copy(buffer, "20");
-    string_copy_num(num, rtc_get(RTC_FLAG_YEAR), 10);
-    string_concat(buffer, num);
-    string_concat(buffer, "-");
-    string_copy_num(num, rtc_get(RTC_FLAG_MONTH), 10);
-    string_concat(buffer, num);
-    string_concat(buffer, "-");
-    string_copy_num(num, rtc_get(RTC_FLAG_DAY), 10);
-    string_concat(buffer, num);
-    string_concat(buffer, " ");
-    string_copy_num(num, rtc_get(RTC_FLAG_HOURS), 10);
-    string_concat(buffer, num);
-    string_concat(buffer, ":");
-    string_copy_num(num, rtc_get(RTC_FLAG_MINUTES), 10);
-    string_concat(buffer, num);
-    string_concat(buffer, ":");
-    string_copy_num(num, rtc_get(RTC_FLAG_SECONDS), 10);
-    string_concat(buffer, num);
+    string_write(buffer, "20");
+    string_write_num(num, rtc_get(RTC_FLAG_YEAR), 10);
+    string_write_concat(buffer, num);
+    string_write_concat(buffer, "-");
+    string_write_num(num, rtc_get(RTC_FLAG_MONTH), 10);
+    string_write_concat(buffer, num);
+    string_write_concat(buffer, "-");
+    string_write_num(num, rtc_get(RTC_FLAG_DAY), 10);
+    string_write_concat(buffer, num);
+    string_write_concat(buffer, " ");
+    string_write_num(num, rtc_get(RTC_FLAG_HOURS), 10);
+    string_write_concat(buffer, num);
+    string_write_concat(buffer, ":");
+    string_write_num(num, rtc_get(RTC_FLAG_MINUTES), 10);
+    string_write_concat(buffer, num);
+    string_write_concat(buffer, ":");
+    string_write_num(num, rtc_get(RTC_FLAG_SECONDS), 10);
+    string_write_concat(buffer, num);
 
     return string_length(buffer);
 

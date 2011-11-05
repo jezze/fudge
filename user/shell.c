@@ -51,8 +51,8 @@ static void interpret(char *command)
 
     char path[256];
 
-    string_copy(path, "/");
-    string_concat(path, argv[0]);
+    string_write(path, "/");
+    string_write_concat(path, argv[0]);
 
     if (!call_execute(path, argc, argv))
         file_write_format(FILE_STDOUT, "%s: Invalid command\n", argv[0]);

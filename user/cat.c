@@ -12,9 +12,9 @@ void get_path(char *buffer, char *arg)
     {
 
         if (arg[0] == '/')
-            string_copy(buffer, arg);
+            string_write(buffer, arg);
         else
-            string_concat(buffer, arg);
+            string_write_concat(buffer, arg);
 
     }
 

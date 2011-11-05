@@ -117,7 +117,7 @@ static unsigned int tty_cwd_device_node_read(struct vfs_node *self, unsigned int
 
     count = string_length("/");
 
-    string_copy(buffer, "/");
+    string_write(buffer, "/");
 
     return count;
 

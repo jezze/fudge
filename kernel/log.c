@@ -61,7 +61,7 @@ void log_write(const char *buffer, ...)
 
             case 'd':
 
-                string_copy_num(num, *(int *)arg, 10);
+                string_write_num(num, *(int *)arg, 10);
                 log_puts(num);
 
                 break;
@@ -74,7 +74,7 @@ void log_write(const char *buffer, ...)
 
             case 'x':
 
-                string_copy_num(num, *(int *)arg, 16);
+                string_write_num(num, *(int *)arg, 16);
                 log_puts(num);
 
                 break;

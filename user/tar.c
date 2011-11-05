@@ -17,7 +17,7 @@ void main(int argc, char *argv[])
     char path[256];
 
     unsigned int count = file_read(cwd, 256, path);
-    string_concat(path, argv[1]);
+    string_write_concat(path, argv[1]);
 
     int file = file_open(path);
 

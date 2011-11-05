@@ -10,14 +10,14 @@ void get_path(char *buffer, char *arg)
     {
 
         if (arg[0] == '/')
-            string_copy(buffer, arg);
+            string_write(buffer, arg);
         else
-            string_concat(buffer, arg);
+            string_write_concat(buffer, arg);
 
     }
 
     if (buffer[string_length(buffer) - 1] != '/')
-        string_concat(buffer, "/");
+        string_write_concat(buffer, "/");
 
     file_close(cwd);
 
@@ -40,8 +40,8 @@ void write_content(char *path, char *content)
             content[i] = '\0';
 
             memory_set(str, 0, 256);
-            string_concat(str, path);
-            string_concat(str, content + start);
+            string_write_concat(str, path);
+            string_write_concat(str, content + start);
 
 //            struct file_info *info = 0;
 

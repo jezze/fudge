@@ -8,7 +8,7 @@ void stream_device_init(struct stream_device *device, char *name, void *read, vo
 
     modules_device_init(&device->base, STREAM_DEVICE_TYPE);
     vfs_node_init(&device->node, 0, 0, 0, read, write);
-    string_copy(device->name, name);
+    string_write(device->name, name);
 
 }
 
