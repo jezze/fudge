@@ -103,7 +103,8 @@ void kernel_core_init(struct kernel_core *core, struct kernel_arch *arch)
 void doit()
 {
 
-//    file_write_format(FILE_STDOUT, "Module loaded\n");
+    struct vfs_node *node = vfs_find("/stdout");
+    node->write(node, 14, "Module loaded\n");
 
 }
 
@@ -113,7 +114,7 @@ static void kernel_init_symbols()
     struct vfs_node *node = vfs_find("/fudge.map");
 
     string_write(kernelSymbols[0].name, "doit");
-    kernelSymbols[0].paddress = (void *)&doit;
+    kernelSymbols[0].paddress = (void *)doit;
 
 }
 
