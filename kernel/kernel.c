@@ -12,6 +12,7 @@
 
 static struct kernel_core kernelCore;
 static struct kernel_symbol kernelSymbols[32];
+static char kernelSymbolBuffer[512];
 
 void kernel_disable_interrupts()
 {
@@ -112,9 +113,41 @@ static void kernel_init_symbols()
 {
 
     struct vfs_node *node = vfs_find("/fudge.map");
+    node->read(node, 512, kernelSymbolBuffer);
 
-    string_write(kernelSymbols[0].name, "doit");
-    kernelSymbols[0].paddress = (void *)doit;
+    unsigned int i;
+    unsigned int start = 0;
+    unsigned int index = 0;
+
+    for (i = 0; i < 512; i++)
+    {
+
+        char c = kernelSymbolBuffer[i];
+
+        switch (kernelSymbolBuffer[i])
+        {
+
+            case ' ':
+
+                c = '\0';
+
+                break;
+
+            case '\n':
+
+                c = '\0';
+
+                string_write(kernelSymbols[index].name, kernelSymbolBuffer + start + 11);
+                kernelSymbols[index].paddress = (void *)string_read_num(kernelSymbolBuffer + start, 16);
+                index++;
+
+                start = i + 1;
+
+                break;
+
+        }
+
+    }
 
 }
 
