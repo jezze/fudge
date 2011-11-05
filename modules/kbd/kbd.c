@@ -113,7 +113,7 @@ static void kbd_handler()
 
     }
 
-    event_handler(0x07);
+    event_handler(EVENT_IRQ_KBD);
 
 }
 

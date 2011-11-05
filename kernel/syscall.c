@@ -66,7 +66,7 @@ unsigned int syscall_execute(char *path, unsigned int argc, char **argv)
 
     runtime_activate(task);
 
-    event_handler(0x03);
+    event_handler(EVENT_SYSCALL_EXECUTE);
 
     return 1;
 

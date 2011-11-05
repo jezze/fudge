@@ -12,7 +12,7 @@ void explain()
 void main(int argc, char *argv[])
 {
 
-    call_attach(0x07, explain);
+    call_attach(0x01, explain);
 
     call_wait();
 
