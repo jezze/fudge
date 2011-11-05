@@ -63,7 +63,8 @@ kernel:
 		${DIR_SOURCE_LIB}/memory.o \
 		${DIR_SOURCE_LIB}/file.o \
 		${DIR_SOURCE_LIB}/string.o \
-		-o ${DIR_IMAGE}/boot/kernel
+		-o ${DIR_IMAGE}/boot/fudge
+	@nm ${DIR_IMAGE}/boot/fudge >> ${DIR_IMAGE}/boot/fudge.map
 
 user:
 	@make -C ${DIR_SOURCE_USER}/
@@ -109,7 +110,7 @@ sda:
 	@dd if=${DIR_IMAGE}/boot/grub/stage1 conv=notrunc of=fudge.img bs=512 seek=0
 	@dd if=${DIR_IMAGE}/boot/grub/stage2 conv=notrunc of=fudge.img bs=512 seek=1
 	@dd if=menu.lst conv=notrunc of=fudge.img bs=512 seek=200
-	@dd if=${DIR_IMAGE}/boot/kernel conv=notrunc of=fudge.img bs=512 seek=300
+	@dd if=${DIR_IMAGE}/boot/fudge conv=notrunc of=fudge.img bs=512 seek=300
 	@dd if=${DIR_IMAGE}/boot/initrd.tar conv=notrunc of=fudge.img bs=512 seek=400
 	@sh x86-write-image.sh
 
@@ -146,7 +147,8 @@ clean:
 	@rm -f ${DIR_IMAGE}/bin/timer
 	@rm -f ${DIR_IMAGE}/bin/vga
 	@rm -f ${DIR_IMAGE}/lib/modules/*.ko
-	@rm -f ${DIR_IMAGE}/boot/kernel
+	@rm -f ${DIR_IMAGE}/boot/fudge
+	@rm -f ${DIR_IMAGE}/boot/fudge.map
 	@rm -f ${DIR_IMAGE}/boot/initrd
 	@rm -f ${DIR_IMAGE}/boot/initrd.tar
 	@rm -f ${DIR_IMAGE}/boot/initrd.cpio

@@ -2,6 +2,6 @@
 
 title   Fudge
 root    (cd)
-kernel  /boot/kernel
+kernel  /boot/fudge
 module  /boot/initrd.tar
 
