@@ -1,5 +1,7 @@
 #include <fudge.h>
 
+char buffer[0x4000];
+
 void get_path(char *buffer, char *arg)
 {
 
@@ -24,7 +26,6 @@ void main(int argc, char *argv[])
 {
 
     char path[256];
-    char buffer[512];
 
     if (argc != 2)
     {
@@ -48,7 +49,7 @@ void main(int argc, char *argv[])
 
     }
 
-    unsigned int count = file_read(fd, 512, buffer);
+    unsigned int count = file_read(fd, 0x4000, buffer);
 
     file_write(FILE_STDOUT, count, buffer);
     file_close(fd);
