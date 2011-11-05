@@ -1,5 +1,6 @@
 #include <lib/elf.h>
 #include <lib/file.h>
+#include <kernel/kernel.h>
 #include <kernel/modules.h>
 #include <modules/elf/elf.h>
 
@@ -163,6 +164,7 @@ static void elf_relocate_section(void *address, struct elf_section_header *heade
         if (sym == 0x90)
         {
 
+            int paddress = (int)kernel_get_symbol("doit");
 
             int *s = (int *)(reloc + (int)rHeader->offset);
 
