@@ -64,7 +64,7 @@ kernel:
 		${DIR_SOURCE_LIB}/file.o \
 		${DIR_SOURCE_LIB}/string.o \
 		-o ${DIR_IMAGE}/boot/fudge
-	@nm ${DIR_IMAGE}/boot/fudge >> ${DIR_IMAGE}/boot/fudge.map
+	@nm ${DIR_IMAGE}/boot/fudge > ${DIR_IMAGE}/boot/fudge.map
 
 user:
 	@make -C ${DIR_SOURCE_USER}/
