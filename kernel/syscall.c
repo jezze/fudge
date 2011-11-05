@@ -28,6 +28,8 @@ unsigned int syscall_close(unsigned int fd)
 
     task->remove_descriptor(task, fd);
 
+    event_handler(EVENT_SYSCALL_CLOSE);
+
     return 1;
 
 }
@@ -148,6 +150,8 @@ unsigned int syscall_open(char *path)
     if (!descriptor)
         return 0;
 
+    event_handler(EVENT_SYSCALL_OPEN);
+
     return descriptor->id;
 
 }
@@ -165,7 +169,11 @@ unsigned int syscall_read(unsigned int fd, unsigned int count, char *buffer)
     if (!(node && node->read))
         return 0;
 
-    return node->read(node, count, buffer);
+    unsigned int c = node->read(node, count, buffer);
+
+    //event_handler(EVENT_SYSCALL_READ);
+
+    return c;
 
 }
 
@@ -217,7 +225,11 @@ unsigned int syscall_write(unsigned int fd, unsigned int count, char *buffer)
     if (!(node && node->write))
         return 0;
 
-    return node->write(node, count, buffer);
+    unsigned int c = node->write(node, count, buffer);
+
+    //event_handler(EVENT_SYSCALL_WRITE);
+
+    return c;
 
 }
 
