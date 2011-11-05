@@ -139,13 +139,6 @@ void elf_print_sections(void *shaddress, unsigned int shsize, unsigned int shcou
 
 }
 
-void doit()
-{
-
-//    file_write_format(FILE_STDOUT, "Module loaded\n");
-
-}
-
 static void elf_relocate_section(void *address, struct elf_section_header *header)
 {
 
@@ -170,7 +163,7 @@ static void elf_relocate_section(void *address, struct elf_section_header *heade
 
             int displacement = (int)0x00 - (int)*s;
 
-            *s += (int)doit - reloc - (int)displacement - (int)rHeader->offset;
+            *s += (int)paddress - reloc - (int)displacement - (int)rHeader->offset;
 
         }
 

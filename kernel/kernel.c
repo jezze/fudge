@@ -100,13 +100,20 @@ void kernel_core_init(struct kernel_core *core, struct kernel_arch *arch)
 
 }
 
+void doit()
+{
+
+//    file_write_format(FILE_STDOUT, "Module loaded\n");
+
+}
+
 static void kernel_init_symbols()
 {
 
     struct vfs_node *node = vfs_find("/fudge.map");
 
     string_write(kernelSymbols[0].name, "doit");
-    kernelSymbols[0].paddress = (void *)0xdeadbeef;
+    kernelSymbols[0].paddress = (void *)&doit;
 
 }
 
