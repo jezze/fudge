@@ -7,6 +7,7 @@ void main(int argc, char *argv[])
     {
 
         call_load("/test.ko");
+        //call_load("/rtc.ko");
         call_execute("/shell", 0, 0);
 
     }

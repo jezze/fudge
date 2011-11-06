@@ -225,7 +225,6 @@ static void modules_init_devices()
     serial_init();
     tty_init();
     rtl8139_init();
-    rtc_init();
 
 }
 

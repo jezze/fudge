@@ -258,7 +258,7 @@ void *runtime_relocate(void *paddress)
 
     elf_relocate(paddress, header);
 
-    return header->entry = paddress + 0x40 + 0x10;
+    return header->entry = paddress + 0x40 + 0x9d0;
 
 }
 

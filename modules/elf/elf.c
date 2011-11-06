@@ -99,11 +99,11 @@ void *elf_get_virtual(void *address)
 static void elf_relocate_section(void *address, struct elf_header *header, struct elf_section_header *shHeader)
 {
 
-    struct elf_section_header *symHeader = elf_get_section_header_by_index(address + header->shoffset, header->shsize, 10);
-    struct elf_section_header *strHeader = elf_get_section_header_by_index(address + header->shoffset, header->shsize, 11);
+    struct elf_section_header *symHeader = elf_get_section_header_by_index(address + header->shoffset, header->shsize, 11);
+    struct elf_section_header *strHeader = elf_get_section_header_by_index(address + header->shoffset, header->shsize, 12);
     char *strtbl = (char *)(address + strHeader->offset);
 
-    struct vfs_node *out = vfs_find("/stdout");
+    //struct vfs_node *out = vfs_find("/stdout");
 
     int reloc = (int)address + (int)0x40;
 
@@ -123,12 +123,12 @@ static void elf_relocate_section(void *address, struct elf_header *header, struc
         if (*name == '\0')
             continue;
 
-        char num[32];
+        //char num[32];
 
-        string_write_num(num, sym, 16);
+        //string_write_num(num, sym, 16);
 
-        out->write(out, string_length(num), num);
-        out->write(out, 1, "\n");
+        //out->write(out, string_length(num), num);
+        //out->write(out, 1, "\n");
 
         if (symbol->index)
         {
