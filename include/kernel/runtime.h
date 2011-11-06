@@ -37,7 +37,7 @@ extern struct runtime_task *runtime_get_task(unsigned int id);
 extern struct runtime_task *runtime_get_running_task();
 extern struct runtime_task *runtime_get_slot();
 extern void runtime_activate(struct runtime_task *task);
-extern void runtime_relocate(void *paddress);
+extern void *runtime_relocate(void *paddress);
 extern void runtime_task_init(struct runtime_task *task, unsigned int id);
 extern void runtime_init();
 

@@ -125,9 +125,9 @@ unsigned int syscall_load(char *path)
     if (!node)
         return 0;
 
-    runtime_relocate(node->physical);
+    void *entry = runtime_relocate(node->physical);
 
-    void (*minit)() = node->physical + 0x40;
+    void (*minit)() = entry;
     minit();
 
     return 1;
