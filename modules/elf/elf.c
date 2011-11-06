@@ -96,43 +96,6 @@ void *elf_get_virtual(void *address)
 
 }
 
-void elf_print_symtab(void *address, struct elf_section_header *header, char *strtbl)
-{
-
-    unsigned int i;
-
-    for (i = 0; i < header->size / header->esize; i++)
-    {
-
-        struct elf_symbol *symHeader = (struct elf_symbol *)(address + header->offset + i * header->esize);
-
-//        struct elf_section_header *ih = elf_get_section_header(address, symHeader->shndx);
-
-        unsigned int bind = symHeader->info >> 4;
-        unsigned int type = symHeader->info & 0x0F;
-
-        file_write_format(FILE_STDOUT, "[%d] Name: %s Val: 0x%x Sz: %d Info: 0x%x Bind: 0x%x Type: 0x%x Index: %d\n", i, strtbl + symHeader->name, symHeader->value, symHeader->size, symHeader->info, bind, type, symHeader->index);
-
-    }
-
-}
-
-void elf_print_sections(void *shaddress, unsigned int shsize, unsigned int shcount, char *strtbl)
-{
-
-    unsigned int i;
-
-    for (i = 0; i < shcount; i++)
-    {
-
-        struct elf_section_header *sHeader = elf_get_section_header_by_index(shaddress, shsize, i);
-
-        file_write_format(FILE_STDOUT, "[%d] Name: %s Type: 0x%x Off: 0x%x Sz:0x%x\n", i, strtbl + sHeader->name, sHeader->type, sHeader->offset, sHeader->size);
-
-    }
-
-}
-
 static void elf_relocate_section(void *address, struct elf_header *header, struct elf_section_header *shHeader)
 {
 
@@ -151,30 +114,33 @@ static void elf_relocate_section(void *address, struct elf_header *header, struc
 
         struct elf_relocate *rHeader = (struct elf_relocate *)(address + shHeader->offset + i * shHeader->esize);
 
-        unsigned int sym = rHeader->info >> 4;
+        unsigned int sym = rHeader->info >> 8;
         unsigned int type = rHeader->info & 0x0F;
 
-        if (sym == 0x90)
+        struct elf_symbol *symbol = (struct elf_symbol *)(address + symHeader->offset + sym * symHeader->esize);
+        char *name = strtbl + symbol->name;
+
+/*
+        out->write(out, string_length(name), name);
+        out->write(out, 1, "\n");
+
+        char num[32];
+
+        string_write_num(num, sym, 16);
+
+        out->write(out, string_length(num), num);
+        out->write(out, 1, "\n");
+*/
+        if (name)
         {
 
-            struct elf_symbol *symbol = (struct elf_symbol *)(address + symHeader->offset + 9 * symHeader->esize);
-            char *name = strtbl + symbol->name;
-
-            out->write(out, string_length(name), name);
-            out->write(out, 1, "\n");
-
-            int paddress = (int)kernel_get_symbol("doit");
+            int paddress = (int)kernel_get_symbol(name);
 
             int *s = (int *)(reloc + (int)rHeader->offset);
 
             int displacement = (int)0x00 - (int)*s;
 
             *s += (int)paddress - reloc - (int)displacement - (int)rHeader->offset;
-
-        }
-
-        else
-        {
 
         }
 
