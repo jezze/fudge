@@ -43,7 +43,7 @@ struct runtime_task *runtime_get_running_task()
 
 }
 
-struct runtime_task *runtime_get_free_task()
+struct runtime_task *runtime_get_slot()
 {
 
     unsigned int i;

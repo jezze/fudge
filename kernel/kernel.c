@@ -166,7 +166,7 @@ void kernel_init(struct kernel_arch *arch)
     modules_init();
     runtime_init();
 
-    struct runtime_task *task = runtime_get_free_task();
+    struct runtime_task *task = runtime_get_slot();
 
     task->load(task, "/init", 0, 0);
     runtime_activate(task);

@@ -56,7 +56,7 @@ unsigned int syscall_execute(char *path, unsigned int argc, char **argv)
     if (!oldtask)
         return 0;
 
-    struct runtime_task *task = runtime_get_free_task();
+    struct runtime_task *task = runtime_get_slot();
 
     if (!task)
         return 0;
