@@ -109,10 +109,11 @@ void *elf_get_symbol(void *address, struct elf_header *header, char *symname)
     {
 
         struct elf_symbol *symbol = (struct elf_symbol *)(address + symHeader->offset + i * symHeader->esize);
-        char *name = strtbl + symbol->name;
 
-        if (*name == '\0')
+        if (!symbol->name)
             continue;
+
+        char *name = strtbl + symbol->name;
 
         if (!string_compare(symname, name))
             return (void *)symbol->value;
@@ -145,10 +146,11 @@ static void elf_relocate_section(void *address, struct elf_header *header, struc
         unsigned int type = relocate->info & 0x0F;
 
         struct elf_symbol *symbol = (struct elf_symbol *)(address + symHeader->offset + sym * symHeader->esize);
-        char *name = strtbl + symbol->name;
 
-        if (*name == '\0')
+        if (!symbol->name)
             continue;
+
+        char *name = strtbl + symbol->name;
 
         //char num[32];
 
