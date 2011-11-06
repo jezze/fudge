@@ -147,14 +147,14 @@ static void elf_relocate_section(void *address, struct elf_header *header, struc
 
         struct elf_symbol *symbol = (struct elf_symbol *)(address + symHeader->offset + sym * symHeader->esize);
 
+        int *s = (int *)(reloc + (int)relocate->offset);
+
         if (symbol->value)
         {
 
-            int *s = (int *)(reloc + (int)relocate->offset);
+            int p = reloc + relocate->offset;
 
-            int displacement = (int)0x00 - (int)*s;
-
-            *s += 0 - reloc - (int)displacement - (int)relocate->offset;
+            *s = p - reloc + relocate->offset;
 
         }
 
@@ -162,9 +162,6 @@ static void elf_relocate_section(void *address, struct elf_header *header, struc
         {
 
             int paddress = (int)kernel_get_symbol(strtbl + symbol->name);
-
-            int *s = (int *)(reloc + (int)relocate->offset);
-
             int displacement = (int)0x00 - (int)*s;
 
             *s += (int)paddress - reloc - (int)displacement - (int)relocate->offset;
