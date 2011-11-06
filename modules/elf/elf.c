@@ -131,7 +131,7 @@ static void elf_relocate_section(void *address, struct elf_header *header, struc
     struct elf_section_header *strHeader = elf_get_section_header_by_index(address + header->shoffset, header->shsize, 12);
     char *strtbl = (char *)(address + strHeader->offset);
 
-    //struct vfs_node *out = vfs_find("/stdout");
+    struct vfs_node *out = vfs_find("/stdout");
 
     int reloc = (int)address + (int)0x40;
 
@@ -147,31 +147,21 @@ static void elf_relocate_section(void *address, struct elf_header *header, struc
 
         struct elf_symbol *symbol = (struct elf_symbol *)(address + symHeader->offset + sym * symHeader->esize);
 
-        if (!symbol->name)
-            continue;
-
-        char *name = strtbl + symbol->name;
-
-        //char num[32];
-
-        //string_write_num(num, sym, 16);
-
-        //out->write(out, string_length(num), num);
-        //out->write(out, 1, "\n");
-
-        if (symbol->index)
+        if (symbol->value)
         {
 
             int *s = (int *)(reloc + (int)relocate->offset);
 
-            *s += reloc - (int)relocate->offset;
+            int displacement = (int)0x00 - (int)*s;
+
+            *s += 0 - reloc - (int)displacement - (int)relocate->offset;
 
         }
 
         else
         {
 
-            int paddress = (int)kernel_get_symbol(name);
+            int paddress = (int)kernel_get_symbol(strtbl + symbol->name);
 
             int *s = (int *)(reloc + (int)relocate->offset);
 
