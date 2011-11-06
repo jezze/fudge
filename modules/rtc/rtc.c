@@ -59,7 +59,7 @@ void rtc_device_init(struct rtc_device *device)
 {
 
     modules_device_init(&device->base, RTC_DEVICE_TYPE);
-    stream_device_init(&rtcDevice.stream, "rtc", rtc_device_stream_read, 0);
+//    stream_device_init(&rtcDevice.stream, "rtc", rtc_device_stream_read, 0);
 
 }
 
@@ -68,8 +68,8 @@ void init()
 
     rtc_device_init(&rtcDevice);
 
-    modules_register_device(&rtcDevice.stream.base);
-    modules_register_device(&rtcDevice.base);
+//    modules_register_device(&rtcDevice.stream.base);
+//    modules_register_device(&rtcDevice.base);
 
 }
 

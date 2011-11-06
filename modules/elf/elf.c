@@ -133,8 +133,6 @@ static void elf_relocate_section(void *address, struct elf_header *header, struc
 
     struct vfs_node *out = vfs_find("/stdout");
 
-    int reloc = (int)address + (int)0x40;
-
     unsigned int i;
 
     for (i = 0; i < shHeader->size / shHeader->esize; i++)
@@ -147,12 +145,19 @@ static void elf_relocate_section(void *address, struct elf_header *header, struc
 
         struct elf_symbol *symbol = (struct elf_symbol *)(address + symHeader->offset + sym * symHeader->esize);
 
+        //NEED TO GET THE TRUE OFFSET NUMBERS;
+
+        int reloc = (int)address + (int)0x40;
+
         int *s = (int *)(reloc + (int)relocate->offset);
 
         if (symbol->value)
         {
 
             int p = reloc + relocate->offset;
+
+//            if (symbol->index == 7)
+//                p += 0x10c0;
 
             *s = p - reloc + relocate->offset;
 
