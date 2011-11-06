@@ -44,8 +44,16 @@ unsigned int string_read_num(const char *in, unsigned int base)
     const char *ip = in;
     int num = 0;
 
-    while (*ip >= '0' && *ip <= '0' + (char)base)
-        num = num * base + *ip++ - '0';
+    while ((*ip >= '0' && *ip <= '9') || (*ip >= 'a' && *ip <= 'f'))
+    {
+
+        if ((*ip >= '0' && *ip <= '9'))
+            num = num * base + *ip++ - '0';
+
+        if ((*ip >= 'a' && *ip <= 'f'))
+            num = num * base + *ip++ - 'a' + 10;
+
+    }
 
     return num;
 
