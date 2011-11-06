@@ -256,9 +256,11 @@ void *runtime_relocate(void *paddress)
 
     struct elf_header *header = elf_get_header(paddress);
 
+    void *offset = elf_get_symbol(paddress, header, "init");
+
     elf_relocate(paddress, header);
 
-    return header->entry = paddress + 0x40 + 0x9d0;
+    return header->entry = paddress + 0x40 + (unsigned int)offset;
 
 }
 

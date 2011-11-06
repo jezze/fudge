@@ -19,6 +19,7 @@ extern struct elf_section_header *elf_get_section_header_by_type(void *shaddress
 extern void elf_relocate(void *address, struct elf_header *header);
 extern void *elf_get_entry(void *address);
 extern void *elf_get_virtual(void *address);
+extern void *elf_get_symbol(void *address, struct elf_header *header, char *symname);
 extern void elf_init();
 
 #endif

@@ -96,6 +96,33 @@ void *elf_get_virtual(void *address)
 
 }
 
+void *elf_get_symbol(void *address, struct elf_header *header, char *symname)
+{
+
+    struct elf_section_header *symHeader = elf_get_section_header_by_index(address + header->shoffset, header->shsize, 11);
+    struct elf_section_header *strHeader = elf_get_section_header_by_index(address + header->shoffset, header->shsize, 12);
+    char *strtbl = (char *)(address + strHeader->offset);
+
+    unsigned int i;
+
+    for (i = 0; i < symHeader->size / symHeader->esize; i++)
+    {
+
+        struct elf_symbol *symbol = (struct elf_symbol *)(address + symHeader->offset + i * symHeader->esize);
+        char *name = strtbl + symbol->name;
+
+        if (*name == '\0')
+            continue;
+
+        if (!string_compare(symname, name))
+            return (void *)symbol->value;
+
+    }
+
+    return 0;
+
+}
+
 static void elf_relocate_section(void *address, struct elf_header *header, struct elf_section_header *shHeader)
 {
 
