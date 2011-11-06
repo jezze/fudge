@@ -1,7 +1,9 @@
 #include <lib/elf.h>
 #include <lib/file.h>
+#include <lib/string.h>
 #include <kernel/kernel.h>
 #include <kernel/modules.h>
+#include <kernel/vfs.h>
 #include <modules/elf/elf.h>
 
 static struct elf_module elfModule;
@@ -68,14 +70,6 @@ struct elf_section_header *elf_get_section_header_by_type(void *shaddress, unsig
 
 }
 
-/*
-char *elf_get_string_table(void *address, void *shaddress, unsigned int shsize, unsigned int shstringindex)
-{
-
-    return (char *)(address + elf_get_section_header_by_index(shaddress, shsize, shstringindex)->offset);
-
-}
-*/
 void *elf_get_entry(void *address)
 {
 
@@ -139,23 +133,35 @@ void elf_print_sections(void *shaddress, unsigned int shsize, unsigned int shcou
 
 }
 
-static void elf_relocate_section(void *address, struct elf_section_header *header)
+static void elf_relocate_section(void *address, struct elf_header *header, struct elf_section_header *shHeader)
 {
+
+    struct elf_section_header *symHeader = elf_get_section_header_by_index(address + header->shoffset, header->shsize, 10);
+    struct elf_section_header *strHeader = elf_get_section_header_by_index(address + header->shoffset, header->shsize, 11);
+    char *strtbl = (char *)(address + strHeader->offset);
+
+    struct vfs_node *out = vfs_find("/stdout");
 
     int reloc = (int)address + (int)0x40;
 
     unsigned int i;
 
-    for (i = 0; i < header->size / header->esize; i++)
+    for (i = 0; i < shHeader->size / shHeader->esize; i++)
     {
 
-        struct elf_relocate *rHeader = (struct elf_relocate *)(address + header->offset + i * header->esize);
+        struct elf_relocate *rHeader = (struct elf_relocate *)(address + shHeader->offset + i * shHeader->esize);
 
         unsigned int sym = rHeader->info >> 4;
         unsigned int type = rHeader->info & 0x0F;
 
         if (sym == 0x90)
         {
+
+            struct elf_symbol *symbol = (struct elf_symbol *)(address + symHeader->offset + 9 * symHeader->esize);
+            char *name = strtbl + symbol->name;
+
+            out->write(out, string_length(name), name);
+            out->write(out, 1, "\n");
 
             int paddress = (int)kernel_get_symbol("doit");
 
@@ -184,10 +190,10 @@ void elf_relocate(void *address, struct elf_header *header)
     for (i = 0; i < header->shcount; i++)
     {
 
-        struct elf_section_header *sHeader = elf_get_section_header_by_index(address + header->shoffset, header->shsize, i);
+        struct elf_section_header *shHeader = elf_get_section_header_by_index(address + header->shoffset, header->shsize, i);
 
-        if (sHeader->type == 0x09)
-            elf_relocate_section(address, sHeader);
+        if (shHeader->type == 0x09)
+            elf_relocate_section(address, header, shHeader);
 
     }
 
