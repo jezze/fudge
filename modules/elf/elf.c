@@ -162,6 +162,10 @@ static void elf_relocate_section(void *address, struct elf_header *header, struc
         {
 
             int paddress = (int)kernel_get_symbol(strtbl + symbol->name);
+
+            if (!paddress)
+                continue;
+
             int displacement = (int)0x00 - (int)*s;
 
             *s += (int)paddress - reloc - (int)displacement - (int)relocate->offset;
