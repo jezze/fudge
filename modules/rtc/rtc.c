@@ -63,7 +63,7 @@ void rtc_device_init(struct rtc_device *device)
 
 }
 
-void rtc_init()
+void init()
 {
 
     rtc_device_init(&rtcDevice);

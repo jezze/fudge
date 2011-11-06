@@ -10,7 +10,6 @@
 #include <modules/kbd/kbd.h>
 #include <modules/pci/pci.h>
 #include <modules/pit/pit.h>
-#include <modules/rtc/rtc.h>
 #include <modules/rtl8139/rtl8139.h>
 #include <modules/serial/serial.h>
 #include <modules/vga/vga.h>

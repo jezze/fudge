@@ -258,6 +258,9 @@ void *runtime_relocate(void *paddress)
 
     void *offset = elf_get_symbol(paddress, header, "init");
 
+    if (!offset)
+        return 0;
+
     elf_relocate(paddress, header);
 
     return header->entry = paddress + 0x40 + (unsigned int)offset;

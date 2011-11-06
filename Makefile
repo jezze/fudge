@@ -35,7 +35,6 @@ kernel:
 		${DIR_SOURCE_MODULES}/kbd/kbd.o \
 		${DIR_SOURCE_MODULES}/pci/pci.o \
 		${DIR_SOURCE_MODULES}/pit/pit.o \
-		${DIR_SOURCE_MODULES}/rtc/rtc.o \
 		${DIR_SOURCE_MODULES}/rtl8139/rtl8139.o \
 		${DIR_SOURCE_MODULES}/serial/serial.o \
 		${DIR_SOURCE_MODULES}/stream/stream.o \
