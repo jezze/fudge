@@ -112,10 +112,10 @@ static void elf_relocate_section(void *address, struct elf_header *header, struc
     for (i = 0; i < shHeader->size / shHeader->esize; i++)
     {
 
-        struct elf_relocate *rHeader = (struct elf_relocate *)(address + shHeader->offset + i * shHeader->esize);
+        struct elf_relocate *relocate = (struct elf_relocate *)(address + shHeader->offset + i * shHeader->esize);
 
-        unsigned int sym = rHeader->info >> 8;
-        unsigned int type = rHeader->info & 0x0F;
+        unsigned int sym = relocate->info >> 8;
+        unsigned int type = relocate->info & 0x0F;
 
         struct elf_symbol *symbol = (struct elf_symbol *)(address + symHeader->offset + sym * symHeader->esize);
         char *name = strtbl + symbol->name;
@@ -130,17 +130,19 @@ static void elf_relocate_section(void *address, struct elf_header *header, struc
 
         out->write(out, string_length(num), num);
         out->write(out, 1, "\n");
+
 */
+
         if (name)
         {
 
             int paddress = (int)kernel_get_symbol(name);
 
-            int *s = (int *)(reloc + (int)rHeader->offset);
+            int *s = (int *)(reloc + (int)relocate->offset);
 
             int displacement = (int)0x00 - (int)*s;
 
-            *s += (int)paddress - reloc - (int)displacement - (int)rHeader->offset;
+            *s += (int)paddress - reloc - (int)displacement - (int)relocate->offset;
 
         }
 
