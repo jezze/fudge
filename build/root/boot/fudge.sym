@@ -1,5 +1,14 @@
 doit
+event_handler
+io_inb
+io_inw
+io_ind
+io_outb
+io_outw
+io_outd
+kernel_get_symbol
 kernel_register_irq
+log_write
 modules_bus_init
 modules_device_init
 modules_driver_init
@@ -7,3 +16,5 @@ modules_module_init
 modules_register_bus
 modules_register_device
 modules_register_driver
+vfs_find
+vfs_node_init

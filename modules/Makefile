@@ -2,6 +2,8 @@ ASM=nasm
 ASMFLAGS=-f elf
 GCC=gcc
 GCCFLAGS=-c -O2 -I../include -Wall -Wextra -ffreestanding -nostdlib -nostartfiles -nodefaultlibs -m32
+LD=ld
+LDFLAGS=-r ../lib/file.o ../lib/memory.o ../lib/string.o ../kernel/arch/x86/calls.o
 
 .PHONY: all clean modules
 
@@ -9,7 +11,6 @@ all: modules
 
 modules:
 	@${ASM} ${ASMFLAGS} io/ios.s -o io/ios.o
-	@${GCC} ${GCCFLAGS} test/test.c -o test/test.o
 	@${GCC} ${GCCFLAGS} ata/ata.c -o ata/ata.o
 	@${GCC} ${GCCFLAGS} elf/elf.c -o elf/elf.o
 	@${GCC} ${GCCFLAGS} io/io.c -o io/io.o
@@ -20,9 +21,24 @@ modules:
 	@${GCC} ${GCCFLAGS} rtl8139/rtl8139.c -o rtl8139/rtl8139.o
 	@${GCC} ${GCCFLAGS} serial/serial.c -o serial/serial.o
 	@${GCC} ${GCCFLAGS} stream/stream.c -o stream/stream.o
+	@${GCC} ${GCCFLAGS} test/test.c -o test/test.o
 	@${GCC} ${GCCFLAGS} tty/tty.c -o tty/tty.o
 	@${GCC} ${GCCFLAGS} vga/vga.c -o vga/vga.o
+	@${LD} ${LDFLAGS} ata/ata.o io/ios.o io/io.o -o ata/ata.ko
+	@${LD} ${LDFLAGS} elf/elf.o -o elf/elf.ko
+	@${LD} ${LDFLAGS} io/io.o -o io/io.ko
+	@${LD} ${LDFLAGS} io/ios.o io/io.o kbd/kbd.o -o kbd/kbd.ko
+	@${LD} ${LDFLAGS} io/ios.o io/io.o pci/pci.o -o pci/pci.ko
+	@${LD} ${LDFLAGS} io/ios.o io/io.o pit/pit.o stream/stream.o -o pit/pit.ko
+	@${LD} ${LDFLAGS} io/ios.o io/io.o rtc/rtc.o stream/stream.o -o rtc/rtc.ko
+	@${LD} ${LDFLAGS} io/ios.o io/io.o pci/pci.o rtl8139/rtl8139.o -o rtl8139/rtl8139.ko
+	@${LD} ${LDFLAGS} io/ios.o io/io.o serial/serial.o -o serial/serial.ko
+	@${LD} ${LDFLAGS} stream/stream.o -o stream/stream.ko
+	@${LD} ${LDFLAGS} test/test.o -o test/test.ko
+	@${LD} ${LDFLAGS} kbd/kbd.o stream/stream.o vga/vga.o tty/tty.o -o tty/tty.ko
+	@${LD} ${LDFLAGS} io/ios.o io/io.o vga/vga.o -o vga/vga.ko
 
 clean:
 	@rm -f */*.o
+	@rm -f */*.ko
 

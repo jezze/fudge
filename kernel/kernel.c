@@ -122,20 +122,18 @@ static void kernel_init_symbols()
     for (i = 0; i < 512; i++)
     {
 
-        char c = kernelSymbolBuffer[i];
-
         switch (kernelSymbolBuffer[i])
         {
 
             case ' ':
 
-                c = '\0';
+                kernelSymbolBuffer[i] = '\0';
 
                 break;
 
             case '\n':
 
-                c = '\0';
+                kernelSymbolBuffer[i] = '\0';
 
                 string_write(kernelSymbols[index].name, kernelSymbolBuffer + start + 11);
                 kernelSymbols[index].paddress = (void *)string_read_num(kernelSymbolBuffer + start, 16);

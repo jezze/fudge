@@ -120,21 +120,19 @@ static void elf_relocate_section(void *address, struct elf_header *header, struc
         struct elf_symbol *symbol = (struct elf_symbol *)(address + symHeader->offset + sym * symHeader->esize);
         char *name = strtbl + symbol->name;
 
-/*
-        out->write(out, string_length(name), name);
-        out->write(out, 1, "\n");
-
-        char num[32];
-
-        string_write_num(num, sym, 16);
-
-        out->write(out, string_length(num), num);
-        out->write(out, 1, "\n");
-
-*/
-
-        if (name)
+        if (name && symbol->index == 0)
         {
+
+
+            out->write(out, string_length(name), name);
+            out->write(out, 1, "\n");
+
+            char num[32];
+
+            string_write_num(num, sym, 16);
+
+            out->write(out, string_length(num), num);
+            out->write(out, 1, "\n");
 
             int paddress = (int)kernel_get_symbol(name);
 
