@@ -121,12 +121,12 @@ static void elf_relocate_section(void *address, struct elf_header *header, struc
 
         struct elf_symbol *symbol = (struct elf_symbol *)(address + symHeader->offset + sym * symHeader->esize);
 
-        int symReloc = (int)address + (int)txtHeader->offset;
-
-        int *entry = (int *)(symReloc + relocate->offset);
-
         if (symbol->index)
         {
+
+            int symReloc = (int)address + (int)txtHeader->offset;
+
+            int *entry = (int *)(symReloc + relocate->offset);
 
             struct elf_section_header *ssymHeader = elf_get_section_header_by_index(address, symbol->index);
 
@@ -140,6 +140,10 @@ static void elf_relocate_section(void *address, struct elf_header *header, struc
 
         else
         {
+
+            int symReloc = (int)address + (int)txtHeader->offset;
+
+            int *entry = (int *)(symReloc + relocate->offset);
 
             int paddress = (int)kernel_get_symbol(strtbl + symbol->name);
 
