@@ -101,26 +101,27 @@ void *elf_get_symbol(void *address, char *symname)
 
 }
 
-static void elf_relocate_section(void *address, struct elf_header *header, struct elf_section_header *shHeader)
+static void elf_relocate_section(void *address, struct elf_header *header, struct elf_section_header *relHeader)
 {
 
+    struct elf_section_header *txtHeader = elf_get_section_header_by_index(address, 1);
     struct elf_section_header *symHeader = elf_get_section_header_by_index(address, 11);
     struct elf_section_header *strHeader = elf_get_section_header_by_index(address, 12);
     char *strtbl = (char *)(address + strHeader->offset);
 
     unsigned int i;
 
-    for (i = 0; i < shHeader->size / shHeader->esize; i++)
+    for (i = 0; i < relHeader->size / relHeader->esize; i++)
     {
 
-        struct elf_relocate *relocate = (struct elf_relocate *)(address + shHeader->offset + i * shHeader->esize);
+        struct elf_relocate *relocate = (struct elf_relocate *)(address + relHeader->offset + i * relHeader->esize);
 
         unsigned int sym = relocate->info >> 8;
         unsigned int type = relocate->info & 0x0F;
 
         struct elf_symbol *symbol = (struct elf_symbol *)(address + symHeader->offset + sym * symHeader->esize);
 
-        int symReloc = (int)address + (int)0x40;
+        int symReloc = (int)address + (int)txtHeader->offset;
 
         int *entry = (int *)(symReloc + relocate->offset);
 
@@ -168,10 +169,10 @@ void elf_relocate(void *address)
     for (i = 0; i < header->shcount; i++)
     {
 
-        struct elf_section_header *shHeader = elf_get_section_header_by_index(address, i);
+        struct elf_section_header *relHeader = elf_get_section_header_by_index(address, i);
 
         if (i == 0x02)
-            elf_relocate_section(address, header, shHeader);
+            elf_relocate_section(address, header, relHeader);
 
     }
 
