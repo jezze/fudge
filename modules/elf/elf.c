@@ -145,7 +145,7 @@ static void elf_relocate_section(void *address, struct elf_header *header, struc
 
         int symReloc = (int)address + (int)0x40;
 
-        int *s = (int *)(symReloc + (int)relocate->offset);
+        int *entry = (int *)(symReloc + relocate->offset);
 
         if (symbol->index)
         {
@@ -158,7 +158,7 @@ static void elf_relocate_section(void *address, struct elf_header *header, struc
             {
 
                 int paddress = reloc + relocate->offset;
-                *s = paddress - reloc + relocate->offset;
+                *entry = paddress - reloc + relocate->offset;
 
             }
 
@@ -166,7 +166,7 @@ static void elf_relocate_section(void *address, struct elf_header *header, struc
             {
 
                 int paddress = reloc + relocate->offset;
-                *s = paddress - reloc + relocate->offset;
+                *entry = paddress - reloc + relocate->offset;
 
             }
 
@@ -180,9 +180,7 @@ static void elf_relocate_section(void *address, struct elf_header *header, struc
             if (!paddress)
                 continue;
 
-            int displacement = (int)0x00 - (int)*s;
-
-            *s += (int)paddress - symReloc - (int)displacement - (int)relocate->offset;
+            *entry += *entry + paddress - symReloc - relocate->offset;
 
         }
 
@@ -200,7 +198,7 @@ void elf_relocate(void *address, struct elf_header *header)
 
         struct elf_section_header *shHeader = elf_get_section_header_by_index(address + header->shoffset, header->shsize, i);
 
-        if (shHeader->type == 0x09)
+        if (i == 0x02)
             elf_relocate_section(address, header, shHeader);
 
     }
