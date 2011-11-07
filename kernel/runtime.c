@@ -261,9 +261,7 @@ void *runtime_relocate(void *paddress)
 
     elf_relocate(paddress);
 
-    struct elf_header *header = elf_get_header(paddress);
-
-    return header->entry;
+    return elf_get_entry(paddress);
 
 }
 
