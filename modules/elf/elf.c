@@ -131,8 +131,6 @@ static void elf_relocate_section(void *address, struct elf_header *header, struc
     struct elf_section_header *strHeader = elf_get_section_header_by_index(address + header->shoffset, header->shsize, 12);
     char *strtbl = (char *)(address + strHeader->offset);
 
-    struct vfs_node *out = vfs_find("/stdout");
-
     unsigned int i;
 
     for (i = 0; i < shHeader->size / shHeader->esize; i++)
@@ -145,21 +143,32 @@ static void elf_relocate_section(void *address, struct elf_header *header, struc
 
         struct elf_symbol *symbol = (struct elf_symbol *)(address + symHeader->offset + sym * symHeader->esize);
 
-        //NEED TO GET THE TRUE OFFSET NUMBERS;
+        int symReloc = (int)address + (int)0x40;
 
-        int reloc = (int)address + (int)0x40;
+        int *s = (int *)(symReloc + (int)relocate->offset);
 
-        int *s = (int *)(reloc + (int)relocate->offset);
-
-        if (symbol->value)
+        if (symbol->index)
         {
 
-            int p = reloc + relocate->offset;
+            struct elf_section_header *ssymHeader = elf_get_section_header_by_index(address + header->shoffset, header->shsize, symbol->index);
 
-//            if (symbol->index == 7)
-//                p += 0x10c0;
+            int reloc = (int)address + ssymHeader->offset;
 
-            *s = p - reloc + relocate->offset;
+            if (symbol->index == 7)
+            {
+
+                int paddress = reloc + relocate->offset;
+                *s = paddress - reloc + relocate->offset;
+
+            }
+
+            else
+            {
+
+                int paddress = reloc + relocate->offset;
+                *s = paddress - reloc + relocate->offset;
+
+            }
 
         }
 
@@ -173,7 +182,7 @@ static void elf_relocate_section(void *address, struct elf_header *header, struc
 
             int displacement = (int)0x00 - (int)*s;
 
-            *s += (int)paddress - reloc - (int)displacement - (int)relocate->offset;
+            *s += (int)paddress - symReloc - (int)displacement - (int)relocate->offset;
 
         }
 
