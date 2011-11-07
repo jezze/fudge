@@ -116,41 +116,16 @@ static void elf_relocate_section(void *address, struct elf_header *header, struc
 
         struct elf_relocate *relocate = (struct elf_relocate *)(address + relHeader->offset + i * relHeader->esize);
 
-        if (relocate->info == 0x201)
+        unsigned int sym = relocate->info >> 8;
+        unsigned int type = relocate->info & 0x0F;
+
+        if (type == 1)
         {
-
-            int txtReloc = (int)address + txtHeader->offset;
-
-            struct elf_section_header *ssymHeader = elf_get_section_header_by_index(address, 3);
-
-            int reloc = (int)address + ssymHeader->offset;
-            int *entry = (int *)(txtReloc + relocate->offset);
-            int paddress = txtReloc + relocate->offset;
-
-            *entry = paddress - txtReloc + relocate->offset;
 
         }
 
-        else if (relocate->info == 0x501)
+        if (type == 2)
         {
-
-            int txtReloc = (int)address + txtHeader->offset;
-
-            struct elf_section_header *ssymHeader = elf_get_section_header_by_index(address, 7);
-
-            int reloc = (int)address + ssymHeader->offset;
-            int *entry = (int *)(txtReloc + relocate->offset);
-            int paddress = txtReloc + relocate->offset;
-
-            *entry = paddress - txtReloc + relocate->offset;
-
-        }
-
-        else
-        {
-
-            unsigned int sym = relocate->info >> 8;
-            unsigned int type = relocate->info & 0x0F;
 
             struct elf_symbol *symbol = (struct elf_symbol *)(address + symHeader->offset + sym * symHeader->esize);
 
