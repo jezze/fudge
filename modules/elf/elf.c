@@ -77,7 +77,7 @@ void *elf_get_symbol(void *address, char *symname)
 {
 
     struct elf_section_header *symHeader = elf_get_section_header_by_index(address, 11);
-    struct elf_section_header *strHeader = elf_get_section_header_by_index(address, 12);
+    struct elf_section_header *strHeader = elf_get_section_header_by_index(address, symHeader->link);
     char *strtbl = (char *)(address + strHeader->offset);
 
     unsigned int i;
@@ -104,9 +104,9 @@ void *elf_get_symbol(void *address, char *symname)
 static void elf_relocate_section(void *address, struct elf_header *header, struct elf_section_header *relHeader)
 {
 
-    struct elf_section_header *txtHeader = elf_get_section_header_by_index(address, 1);
-    struct elf_section_header *symHeader = elf_get_section_header_by_index(address, 11);
-    struct elf_section_header *strHeader = elf_get_section_header_by_index(address, 12);
+    struct elf_section_header *txtHeader = elf_get_section_header_by_index(address, relHeader->info);
+    struct elf_section_header *symHeader = elf_get_section_header_by_index(address, relHeader->link);
+    struct elf_section_header *strHeader = elf_get_section_header_by_index(address, symHeader->link);
     char *strtbl = (char *)(address + strHeader->offset);
 
     unsigned int i;
@@ -116,37 +116,72 @@ static void elf_relocate_section(void *address, struct elf_header *header, struc
 
         struct elf_relocate *relocate = (struct elf_relocate *)(address + relHeader->offset + i * relHeader->esize);
 
-        unsigned int sym = relocate->info >> 8;
-        unsigned int type = relocate->info & 0x0F;
-
-        struct elf_symbol *symbol = (struct elf_symbol *)(address + symHeader->offset + sym * symHeader->esize);
-
-        if (symbol->index)
+        if (relocate->info == 0x201)
         {
 
             int txtReloc = (int)address + txtHeader->offset;
 
-            struct elf_section_header *ssymHeader = elf_get_section_header_by_index(address, symbol->index);
+            struct elf_section_header *ssymHeader = elf_get_section_header_by_index(address, 3);
 
             int reloc = (int)address + ssymHeader->offset;
             int *entry = (int *)(txtReloc + relocate->offset);
-            int paddress = reloc + relocate->offset;
+            int paddress = txtReloc + relocate->offset;
 
-            *entry = paddress - reloc + relocate->offset;
+            *entry = paddress - txtReloc + relocate->offset;
+
+        }
+
+        else if (relocate->info == 0x501)
+        {
+
+            int txtReloc = (int)address + txtHeader->offset;
+
+            struct elf_section_header *ssymHeader = elf_get_section_header_by_index(address, 7);
+
+            int reloc = (int)address + ssymHeader->offset;
+            int *entry = (int *)(txtReloc + relocate->offset);
+            int paddress = txtReloc + relocate->offset;
+
+            *entry = paddress - txtReloc + relocate->offset;
 
         }
 
         else
         {
 
-            int txtReloc = (int)address + txtHeader->offset;
-            int *entry = (int *)(txtReloc + relocate->offset);
-            int paddress = (int)kernel_get_symbol(strtbl + symbol->name);
+            unsigned int sym = relocate->info >> 8;
+            unsigned int type = relocate->info & 0x0F;
 
-            if (!paddress)
-                continue;
+            struct elf_symbol *symbol = (struct elf_symbol *)(address + symHeader->offset + sym * symHeader->esize);
 
-            *entry += *entry + paddress - txtReloc - relocate->offset;
+            if (symbol->index)
+            {
+
+                int txtReloc = (int)address + txtHeader->offset;
+
+                struct elf_section_header *ssymHeader = elf_get_section_header_by_index(address, symbol->index);
+
+                int reloc = (int)address + ssymHeader->offset;
+                int *entry = (int *)(txtReloc + relocate->offset);
+                int paddress = reloc + relocate->offset;
+
+                *entry = paddress - reloc + relocate->offset;
+
+            }
+
+            else
+            {
+
+                int txtReloc = (int)address + txtHeader->offset;
+                int *entry = (int *)(txtReloc + relocate->offset);
+                int paddress = (int)kernel_get_symbol(strtbl + symbol->name);
+
+                if (!paddress)
+                    continue;
+
+                *entry += *entry + paddress - txtReloc - relocate->offset;
+
+            }
 
         }
 
