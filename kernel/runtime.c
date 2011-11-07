@@ -254,16 +254,16 @@ void runtime_task_init(struct runtime_task *task, unsigned int id)
 void *runtime_relocate(void *paddress)
 {
 
-    struct elf_header *header = elf_get_header(paddress);
-
-    void *offset = elf_get_symbol(paddress, header, "init");
+    void *offset = elf_get_symbol(paddress, "init");
 
     if (!offset)
         return 0;
 
-    elf_relocate(paddress, header);
+    elf_relocate(paddress);
 
-    return header->entry = paddress + 0x40 + (unsigned int)offset;
+    struct elf_header *header = elf_get_header(paddress);
+
+    return header->entry;
 
 }
 
