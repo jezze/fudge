@@ -127,7 +127,8 @@ static void elf_relocate_section(void *address, struct elf_header *header, struc
         if (type == 1)
         {
 
-
+            char num[32];
+            struct vfs_node *out = vfs_find("/stdout");
 
         }
 
@@ -137,6 +138,7 @@ static void elf_relocate_section(void *address, struct elf_header *header, struc
             if (symbol->index)
             {
 
+                int paddress = *entry;
 
                 *entry = (int)entry - reloc + relocate->offset;
 
@@ -150,7 +152,7 @@ static void elf_relocate_section(void *address, struct elf_header *header, struc
                 if (!paddress)
                     continue;
 
-                *entry += *entry + paddress - reloc - relocate->offset;
+                *entry = paddress - (int)entry + *entry;
 
             }
 
