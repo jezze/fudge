@@ -101,10 +101,17 @@ void *elf_get_symbol(void *address, char *symname)
 
 }
 
-static void elf_relocate_section(void *address, struct elf_header *header, struct elf_section_header *relHeader)
+void elf_relocate(void *address)
 {
 
-    struct elf_section_header *txtHeader = elf_get_section_header_by_index(address, relHeader->info);
+    void *ioffset = elf_get_symbol(address, "init");
+
+    if (!ioffset)
+        return;
+
+    struct elf_header *header = elf_get_header(address);
+    struct elf_section_header *relHeader = elf_get_section_header_by_index(address, 2);
+    struct elf_section_header *infoHeader = elf_get_section_header_by_index(address, relHeader->info);
     struct elf_section_header *symHeader = elf_get_section_header_by_index(address, relHeader->link);
     struct elf_section_header *strHeader = elf_get_section_header_by_index(address, symHeader->link);
     char *strtbl = (char *)(address + strHeader->offset);
@@ -120,74 +127,32 @@ static void elf_relocate_section(void *address, struct elf_header *header, struc
         unsigned int type = relocate->info & 0x0F;
 
         struct elf_symbol *symbol = (struct elf_symbol *)(address + symHeader->offset + sym * symHeader->esize);
+        int offset = elf_get_section_header_by_index(address, symbol->index)->offset;
 
-        int reloc = (int)address + txtHeader->offset;
-        int *entry = (int *)(reloc + relocate->offset);
+        int *entry = (int *)((int)address + infoHeader->offset + relocate->offset);
+        int reloc = (symbol->index) ? (int)address + offset : (int)kernel_get_symbol(strtbl + symbol->name);
+        int paddress = reloc + symbol->value;
 
-        if (type == 1)
+        switch (type)
         {
 
-            struct elf_section_header *objHeader = elf_get_section_header_by_index(address, symbol->index);
+            case 1:
 
-            int paddress = (int)address + objHeader->offset + symbol->value;
+                *entry = paddress + *entry;
 
-            *entry = paddress + *entry;
+                break;
 
-        }
-
-        if (type == 2)
-        {
-
-            if (symbol->index)
-            {
-
-                int paddress = (int)reloc + symbol->value;
+            case 2:
 
                 *entry = paddress + *entry - (int)entry;
 
-            }
-
-            else
-            {
-
-                int paddress = (int)kernel_get_symbol(strtbl + symbol->name);
-
-                if (!paddress)
-                    continue;
-
-                *entry = paddress + *entry - (int)entry;
-
-            }
+                break;
 
         }
 
     }
 
-}
-
-void elf_relocate(void *address)
-{
-
-    void *offset = elf_get_symbol(address, "init");
-
-    if (!offset)
-        return;
-
-    struct elf_header *header = elf_get_header(address);
-
-    unsigned int i;
-
-    for (i = 0; i < header->shcount; i++)
-    {
-
-        struct elf_section_header *relHeader = elf_get_section_header_by_index(address, i);
-
-        if (i == 0x02)
-            elf_relocate_section(address, header, relHeader);
-
-    }
-
-    header->entry = (void *)((unsigned int)address + 0x40 + (unsigned int)offset);
+    header->entry = (void *)((int)address + infoHeader->offset + (int)ioffset);
 
 }
 
