@@ -9,7 +9,6 @@
 #include <modules/ata/ata.h>
 #include <modules/kbd/kbd.h>
 #include <modules/pci/pci.h>
-#include <modules/rtl8139/rtl8139.h>
 #include <modules/serial/serial.h>
 #include <modules/vga/vga.h>
 
@@ -221,7 +220,6 @@ static void modules_init_devices()
     ata_init();
     serial_init();
     tty_init();
-    rtl8139_init();
 
 }
 

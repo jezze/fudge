@@ -1,12 +1,12 @@
 #include <lib/string.h>
-#include <kernel/log.h>
+//#include <kernel/log.h>
 #include <kernel/modules.h>
 #include <kernel/kernel.h>
 #include <modules/io/io.h>
 #include <modules/pci/pci.h>
 #include <modules/rtl8139/rtl8139.h>
 
-struct rtl8139_driver rtl8139Driver;
+static struct rtl8139_driver rtl8139Driver;
 
 static void rtl8139_handler()
 {
@@ -63,7 +63,7 @@ void rtl8139_get_mac(struct rtl8139_driver *driver)
 
 }
 
-void rtl8139_init()
+void init()
 {
 
     struct pci_bus *bus = (struct pci_bus *)modules_get_bus(PCI_BUS_TYPE);
@@ -88,7 +88,7 @@ void rtl8139_init()
     rtl8139_set_interrupt_flags(&rtl8139Driver, 0x05);
     rtl8139_enable(&rtl8139Driver);
 
-    log_write("[rtl8139] Mac address: %x:%x:%x:%x:%x:%x\n", rtl8139Driver.mac[0], rtl8139Driver.mac[1], rtl8139Driver.mac[2], rtl8139Driver.mac[3], rtl8139Driver.mac[4], rtl8139Driver.mac[5]);
+//    log_write("[rtl8139] Mac address: %x:%x:%x:%x:%x:%x\n", rtl8139Driver.mac[0], rtl8139Driver.mac[1], rtl8139Driver.mac[2], rtl8139Driver.mac[3], rtl8139Driver.mac[4], rtl8139Driver.mac[5]);
 
 }
 
