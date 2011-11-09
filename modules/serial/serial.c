@@ -5,7 +5,7 @@
 #include <modules/io/io.h>
 #include <modules/serial/serial.h>
 
-struct serial_device serialDevice1;
+static struct serial_device serialDevice1;
 
 static unsigned int serial_buffer_getc(struct serial_buffer *self, char *buffer)
 {
@@ -92,7 +92,7 @@ void serial_device_init(struct serial_device *device, unsigned int port)
 
 }
 
-void serial_init()
+void init()
 {
 
     serial_device_init(&serialDevice1, SERIAL_COM1);

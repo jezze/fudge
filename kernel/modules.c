@@ -7,7 +7,6 @@
 #include <modules/tty/tty.h>
 #include <modules/io/io.h>
 #include <modules/kbd/kbd.h>
-#include <modules/serial/serial.h>
 #include <modules/vga/vga.h>
 
 static struct modules_bus *modulesBusses[MODULES_BUS_SLOTS];
@@ -214,7 +213,6 @@ static void modules_init_devices()
     io_init();
     vga_init();
     kbd_init();
-    serial_init();
     tty_init();
 
 }

@@ -32,7 +32,6 @@ kernel:
 		${DIR_SOURCE_MODULES}/io/io.o \
 		${DIR_SOURCE_MODULES}/io/ios.o \
 		${DIR_SOURCE_MODULES}/kbd/kbd.o \
-		${DIR_SOURCE_MODULES}/serial/serial.o \
 		${DIR_SOURCE_MODULES}/stream/stream.o \
 		${DIR_SOURCE_MODULES}/tty/tty.o \
 		${DIR_SOURCE_MODULES}/vga/vga.o \
@@ -74,7 +73,7 @@ ramdisk: kernel user
 	@cp ${DIR_SOURCE_MODULES}/pit/pit.ko ${DIR_IMAGE}/lib/modules/pit.ko
 	@cp ${DIR_SOURCE_MODULES}/rtc/rtc.ko ${DIR_IMAGE}/lib/modules/rtc.ko
 	@cp ${DIR_SOURCE_MODULES}/rtl8139/rtl8139.ko ${DIR_IMAGE}/lib/modules/rtl8139.ko
-	@cp ${DIR_SOURCE_MODULES}/serial/serial.o ${DIR_IMAGE}/lib/modules/serial.ko
+	@cp ${DIR_SOURCE_MODULES}/serial/serial.ko ${DIR_IMAGE}/lib/modules/serial.ko
 	@cp ${DIR_SOURCE_MODULES}/tty/tty.o ${DIR_IMAGE}/lib/modules/tty.ko
 	@cp ${DIR_SOURCE_MODULES}/vga/vga.o ${DIR_IMAGE}/lib/modules/vga.ko
 	@cp ${DIR_SOURCE_USER}/cat ${DIR_IMAGE}/bin/cat

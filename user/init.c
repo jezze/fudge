@@ -8,6 +8,7 @@ void main(int argc, char *argv[])
 
         call_load("/pci.ko");
         call_load("/ata.ko");
+        call_load("/serial.ko");
         call_load("/pit.ko");
         call_load("/rtc.ko");
         call_load("/rtl8139.ko");

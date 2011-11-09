@@ -32,7 +32,6 @@ struct serial_device
 };
 
 extern void serial_device_init(struct serial_device *device, unsigned int port);
-extern void serial_init();
 
 #endif
 
