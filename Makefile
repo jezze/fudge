@@ -119,11 +119,13 @@ clean:
 	@rm -f ${DIR_IMAGE}/bin/event3
 	@rm -f ${DIR_IMAGE}/bin/hello
 	@rm -f ${DIR_IMAGE}/bin/init
+	@rm -f ${DIR_IMAGE}/bin/load
 	@rm -f ${DIR_IMAGE}/bin/ls
 	@rm -f ${DIR_IMAGE}/bin/reboot
 	@rm -f ${DIR_IMAGE}/bin/shell
 	@rm -f ${DIR_IMAGE}/bin/tar
 	@rm -f ${DIR_IMAGE}/bin/timer
+	@rm -f ${DIR_IMAGE}/bin/unload
 	@rm -f ${DIR_IMAGE}/bin/vga
 	@rm -f ${DIR_IMAGE}/lib/modules/*.ko
 	@rm -f ${DIR_IMAGE}/boot/fudge
