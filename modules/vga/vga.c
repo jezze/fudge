@@ -75,7 +75,7 @@ void vga_device_init(struct vga_device *device)
 
 }
 
-void vga_init()
+void init()
 {
 
     vga_device_init(&vgaDevice);

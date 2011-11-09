@@ -5,7 +5,6 @@
 #include <modules/elf/elf.h>
 #include <modules/stream/stream.h>
 #include <modules/io/io.h>
-#include <modules/vga/vga.h>
 
 static struct modules_bus *modulesBusses[MODULES_BUS_SLOTS];
 static struct modules_device *modulesDevices[MODULES_DEVICE_SLOTS];
@@ -204,15 +203,6 @@ void modules_driver_init(struct modules_driver *driver, unsigned int type)
 
 }
 
-static void modules_init_devices()
-{
-
-    elf_init();
-    io_init();
-    vga_init();
-
-}
-
 void modules_init()
 {
 
@@ -220,7 +210,8 @@ void modules_init()
     vfs_filesystem_init(&modulesFilesystem, &modulesRoot, modules_filesystem_lookup); 
     vfs_register_filesystem(&modulesFilesystem);
 
-    modules_init_devices();
+    elf_init();
+    io_init();
 
 }
 

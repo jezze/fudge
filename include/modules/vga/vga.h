@@ -20,7 +20,6 @@ struct vga_device
 };
 
 extern void vga_device_init(struct vga_device *device);
-extern void vga_init();
 
 #endif
 
