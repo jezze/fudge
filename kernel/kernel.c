@@ -101,14 +101,6 @@ void kernel_core_init(struct kernel_core *core, struct kernel_arch *arch)
 
 }
 
-void doit()
-{
-
-    struct vfs_node *node = vfs_find("/stdout");
-    node->write(node, 14, "Module loaded\n");
-
-}
-
 static void kernel_init_symbols()
 {
 
