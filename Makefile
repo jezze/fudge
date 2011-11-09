@@ -32,7 +32,6 @@ kernel:
 		${DIR_SOURCE_MODULES}/io/io.o \
 		${DIR_SOURCE_MODULES}/io/ios.o \
 		${DIR_SOURCE_MODULES}/kbd/kbd.o \
-		${DIR_SOURCE_MODULES}/stream/stream.o \
 		${DIR_SOURCE_MODULES}/vga/vga.o \
 		${DIR_SOURCE_ARCH}/arch.o \
 		${DIR_SOURCE_ARCH}/calls.o \
