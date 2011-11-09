@@ -148,7 +148,7 @@ void ata_device_init(struct ata_device *device, unsigned int control, unsigned i
        
 }
 
-void ata_init()
+void init()
 {
 
     ata_bus_init(&ataBusPrimary);
