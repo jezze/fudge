@@ -94,7 +94,5 @@ struct rtl8139_driver
 
 };
 
-extern void rtl8139_init();
-
 #endif
 
