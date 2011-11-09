@@ -4,7 +4,6 @@
 #include <kernel/modules.h>
 #include <modules/elf/elf.h>
 #include <modules/stream/stream.h>
-#include <modules/tty/tty.h>
 #include <modules/io/io.h>
 #include <modules/kbd/kbd.h>
 #include <modules/vga/vga.h>
@@ -213,7 +212,6 @@ static void modules_init_devices()
     io_init();
     vga_init();
     kbd_init();
-    tty_init();
 
 }
 

@@ -147,7 +147,7 @@ void tty_device_init(struct tty_device *device)
 
 }
 
-void tty_init()
+void init()
 {
 
     tty_device_init(&ttyDevice);
