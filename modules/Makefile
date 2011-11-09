@@ -25,7 +25,7 @@ modules:
 	@${LD} ${LDFLAGS} pci/pci.o -o pci/pci.ko
 	@${LD} ${LDFLAGS} pit/pit.o stream/stream.o -o pit/pit.ko
 	@${LD} ${LDFLAGS} rtc/rtc.o stream/stream.o -o rtc/rtc.ko
-	@${LD} ${LDFLAGS} pci/pci.o rtl8139/rtl8139.o -o rtl8139/rtl8139.ko
+	@${LD} ${LDFLAGS} rtl8139/rtl8139.o -o rtl8139/rtl8139.ko
 	@${LD} ${LDFLAGS} serial/serial.o -o serial/serial.ko
 	@${LD} ${LDFLAGS} stream/stream.o -o stream/stream.ko
 	@${LD} ${LDFLAGS} stream/stream.o tty/tty.o -o tty/tty.ko

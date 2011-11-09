@@ -59,15 +59,7 @@ user:
 	@make -C ${DIR_SOURCE_USER}/
 
 ramdisk: kernel user
-	@cp ${DIR_SOURCE_MODULES}/ata/ata.ko ${DIR_IMAGE}/lib/modules/ata.ko
-	@cp ${DIR_SOURCE_MODULES}/kbd/kbd.ko ${DIR_IMAGE}/lib/modules/kbd.ko
-	@cp ${DIR_SOURCE_MODULES}/pci/pci.ko ${DIR_IMAGE}/lib/modules/pci.ko
-	@cp ${DIR_SOURCE_MODULES}/pit/pit.ko ${DIR_IMAGE}/lib/modules/pit.ko
-	@cp ${DIR_SOURCE_MODULES}/rtc/rtc.ko ${DIR_IMAGE}/lib/modules/rtc.ko
-	@cp ${DIR_SOURCE_MODULES}/rtl8139/rtl8139.ko ${DIR_IMAGE}/lib/modules/rtl8139.ko
-	@cp ${DIR_SOURCE_MODULES}/serial/serial.ko ${DIR_IMAGE}/lib/modules/serial.ko
-	@cp ${DIR_SOURCE_MODULES}/tty/tty.ko ${DIR_IMAGE}/lib/modules/tty.ko
-	@cp ${DIR_SOURCE_MODULES}/vga/vga.ko ${DIR_IMAGE}/lib/modules/vga.ko
+	@cp ${DIR_SOURCE_MODULES}/*/*.ko ${DIR_IMAGE}/lib/modules/
 	@cp ${DIR_SOURCE_USER}/cat ${DIR_IMAGE}/bin/cat
 	@cp ${DIR_SOURCE_USER}/cd ${DIR_IMAGE}/bin/cd
 	@cp ${DIR_SOURCE_USER}/clear ${DIR_IMAGE}/bin/clear
