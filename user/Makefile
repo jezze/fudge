@@ -22,11 +22,13 @@ user:
 	@${GCC} ${GCCFLAGS} event3.c -o event3.o
 	@${GCC} ${GCCFLAGS} hello.c -o hello.o
 	@${GCC} ${GCCFLAGS} init.c -o init.o
+	@${GCC} ${GCCFLAGS} load.c -o load.o
 	@${GCC} ${GCCFLAGS} ls.c -o ls.o
 	@${GCC} ${GCCFLAGS} reboot.c -o reboot.o
 	@${GCC} ${GCCFLAGS} shell.c -o shell.o
 	@${GCC} ${GCCFLAGS} tar.c -o tar.o
 	@${GCC} ${GCCFLAGS} timer.c -o timer.o
+	@${GCC} ${GCCFLAGS} unload.c -o unload.o
 	@${GCC} ${GCCFLAGS} vga.c -o vga.o
 	@${LD} ${LDFLAGS} cat.o -o cat
 	@${LD} ${LDFLAGS} cd.o -o cd
@@ -39,11 +41,13 @@ user:
 	@${LD} ${LDFLAGS} event3.o -o event3
 	@${LD} ${LDFLAGS} hello.o -o hello
 	@${LD} ${LDFLAGS} init.o -o init
+	@${LD} ${LDFLAGS} load.o -o load
 	@${LD} ${LDFLAGS} ls.o -o ls
 	@${LD} ${LDFLAGS} reboot.o -o reboot
 	@${LD} ${LDFLAGS} shell.o -o shell
 	@${LD} ${LDFLAGS} tar.o -o tar
 	@${LD} ${LDFLAGS} timer.o -o timer
+	@${LD} ${LDFLAGS} unload.o -o unload
 	@${LD} ${LDFLAGS} vga.o -o vga
 
 clean:
@@ -59,10 +63,12 @@ clean:
 	@rm -f event3
 	@rm -f hello
 	@rm -f init
+	@rm -f load
 	@rm -f ls
 	@rm -f reboot
 	@rm -f shell
 	@rm -f tar
 	@rm -f timer
+	@rm -f unload
 	@rm -f vga
 

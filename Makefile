@@ -83,11 +83,13 @@ ramdisk: kernel user
 	@cp ${DIR_SOURCE_USER}/event3 ${DIR_IMAGE}/bin/event3
 	@cp ${DIR_SOURCE_USER}/hello ${DIR_IMAGE}/bin/hello
 	@cp ${DIR_SOURCE_USER}/init ${DIR_IMAGE}/bin/init
+	@cp ${DIR_SOURCE_USER}/load ${DIR_IMAGE}/bin/load
 	@cp ${DIR_SOURCE_USER}/ls ${DIR_IMAGE}/bin/ls
 	@cp ${DIR_SOURCE_USER}/reboot ${DIR_IMAGE}/bin/reboot
 	@cp ${DIR_SOURCE_USER}/shell ${DIR_IMAGE}/bin/shell
 	@cp ${DIR_SOURCE_USER}/tar ${DIR_IMAGE}/bin/tar
 	@cp ${DIR_SOURCE_USER}/timer ${DIR_IMAGE}/bin/timer
+	@cp ${DIR_SOURCE_USER}/unload ${DIR_IMAGE}/bin/unload
 	@cp ${DIR_SOURCE_USER}/vga ${DIR_IMAGE}/bin/vga
 	@tar -cvf initrd.tar ${DIR_IMAGE}
 	@find ${DIR_IMAGE} -depth -print | cpio -ov > initrd.cpio
