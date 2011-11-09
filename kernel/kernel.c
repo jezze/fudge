@@ -146,11 +146,11 @@ void kernel_init(struct kernel_arch *arch)
     kernel_core_init(&kernelCore, arch);
     kernelCore.arch->setup(kernelCore.arch);
 
-    event_init();
     vfs_init();
+    modules_init();
+    event_init();
     initrd_init(kernelCore.arch->initrdc, kernelCore.arch->initrdv);
     kernel_init_symbols();
-    modules_init();
     runtime_init();
 
     struct runtime_task *task = runtime_get_slot();

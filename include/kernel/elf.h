@@ -1,16 +1,5 @@
-#ifndef MODULES_ELF_H
-#define MODULES_ELF_H
-
-struct elf_header;
-
-struct elf_module
-{
-
-    struct modules_module base;
-    void *(*get_entry)(void *address);
-    void *(*get_virtual)(void *address);
-
-};
+#ifndef KERNEL_ELF_H
+#define KERNEL_ELF_H
 
 extern struct elf_header *elf_get_header(void *address);
 extern void *elf_get_entry(void *address);

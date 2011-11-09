@@ -1,12 +1,7 @@
 #include <lib/elf.h>
-#include <lib/file.h>
 #include <lib/string.h>
 #include <kernel/kernel.h>
-#include <kernel/modules.h>
-#include <kernel/vfs.h>
-#include <modules/elf/elf.h>
-
-static struct elf_module elfModule;
+#include <kernel/elf.h>
 
 struct elf_header *elf_get_header(void *address)
 {
@@ -156,14 +151,6 @@ void elf_relocate(void *address)
     }
 
     header->entry = (void *)((int)address + infoHeader->offset + (int)ioffset);
-
-}
-
-void elf_init()
-{
-
-    elfModule.get_entry = elf_get_entry;
-    elfModule.get_virtual = elf_get_virtual;
 
 }
 

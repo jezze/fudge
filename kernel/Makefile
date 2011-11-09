@@ -6,6 +6,7 @@ GCCFLAGS=-c -O2 -I../include -Wall -Wextra -ffreestanding -nostdlib -nostartfile
 all: kernel
 
 kernel:
+	@${GCC} ${GCCFLAGS} elf.c -o elf.o
 	@${GCC} ${GCCFLAGS} error.c -o error.o
 	@${GCC} ${GCCFLAGS} event.c -o event.o
 	@${GCC} ${GCCFLAGS} initrd.c -o initrd.o

@@ -1,11 +1,11 @@
 #include <lib/elf.h>
 #include <lib/memory.h>
 #include <lib/string.h>
+#include <kernel/elf.h>
 #include <kernel/vfs.h>
 #include <kernel/kernel.h>
 #include <kernel/modules.h>
 #include <kernel/runtime.h>
-#include <modules/elf/elf.h>
 
 struct runtime_task runtimeTasks[RUNTIME_TASK_SLOTS];
 

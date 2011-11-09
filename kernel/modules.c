@@ -2,7 +2,6 @@
 #include <lib/string.h>
 #include <kernel/vfs.h>
 #include <kernel/modules.h>
-#include <modules/elf/elf.h>
 #include <modules/stream/stream.h>
 
 static struct modules_bus *modulesBusses[MODULES_BUS_SLOTS];
@@ -208,8 +207,6 @@ void modules_init()
     vfs_node_init(&modulesRoot, 0, 0, 0, modules_filesystem_node_read, 0);
     vfs_filesystem_init(&modulesFilesystem, &modulesRoot, modules_filesystem_lookup); 
     vfs_register_filesystem(&modulesFilesystem);
-
-    elf_init();
 
 }
 

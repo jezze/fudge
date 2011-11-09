@@ -11,7 +11,6 @@ all: modules
 
 modules:
 	@${GCC} ${GCCFLAGS} ata/ata.c -o ata/ata.o
-	@${GCC} ${GCCFLAGS} elf/elf.c -o elf/elf.o
 	@${GCC} ${GCCFLAGS} kbd/kbd.c -o kbd/kbd.o
 	@${GCC} ${GCCFLAGS} pci/pci.c -o pci/pci.o
 	@${GCC} ${GCCFLAGS} pit/pit.c -o pit/pit.o
@@ -22,7 +21,6 @@ modules:
 	@${GCC} ${GCCFLAGS} tty/tty.c -o tty/tty.o
 	@${GCC} ${GCCFLAGS} vga/vga.c -o vga/vga.o
 	@${LD} ${LDFLAGS} ata/ata.o -o ata/ata.ko
-	@${LD} ${LDFLAGS} elf/elf.o -o elf/elf.ko
 	@${LD} ${LDFLAGS} kbd/kbd.o -o kbd/kbd.ko
 	@${LD} ${LDFLAGS} pci/pci.o -o pci/pci.ko
 	@${LD} ${LDFLAGS} pit/pit.o stream/stream.o -o pit/pit.ko
