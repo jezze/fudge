@@ -1,5 +1,7 @@
 #include <fudge.h>
 
+char buffer[0x4000];
+
 void get_path(char *buffer, char *arg)
 {
 
@@ -74,11 +76,18 @@ void main(int argc, char *argv[])
 
     int fd = file_open(path);
 
-    char content[512];
+    if (!fd)
+    {
 
-    file_read(fd, 512, content);
+        file_write_format(FILE_STDOUT, "%s: File does not exist.\n", path);
 
-    write_content(path, content);
+        call_exit();
+
+    }
+
+    file_read(fd, 0x1000, buffer);
+
+    write_content(path, buffer);
 
     file_close(fd);
 

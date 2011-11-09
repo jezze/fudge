@@ -43,7 +43,7 @@ void main(int argc, char *argv[])
     if (!fd)
     {
 
-        file_write_format(FILE_STDOUT, "File does not exist.\n");
+        file_write_format(FILE_STDOUT, "%s: File does not exist.\n", path);
 
         call_exit();
 
