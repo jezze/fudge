@@ -127,37 +127,9 @@ static void elf_relocate_section(void *address, struct elf_header *header, struc
         if (type == 1)
         {
 
-            int paddress = (int)reloc + symbol->value;
+            struct elf_section_header *objHeader = elf_get_section_header_by_index(address, symbol->index);
 
-/*
-            char num[32];
-            struct vfs_node *out = vfs_find("/stdout");
-
-
-            if (sym == 1)
-            {
-
-                out->write(out, 1, "1");
-                paddress = (int)address + 0x40 + symbol->value;
-
-            }
-
-            if (sym == 2)
-            {
-
-                out->write(out, 1, "2");
-                paddress = (int)address + 0x15fc + symbol->value;
-
-            }
-
-            if (sym == 5)
-            {
-
-                out->write(out, 1, "5");
-                paddress = (int)address + 0x185c + symbol->value;
-
-            }
-*/
+            int paddress = (int)address + objHeader->offset + symbol->value;
 
             *entry = paddress + *entry;
 
