@@ -46,7 +46,7 @@ void pit_device_init(struct pit_device *device)
 
 }
 
-void pit_init()
+void init()
 {
 
     pit_device_init(&pitDevice);

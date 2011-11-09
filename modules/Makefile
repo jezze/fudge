@@ -21,7 +21,6 @@ modules:
 	@${GCC} ${GCCFLAGS} rtl8139/rtl8139.c -o rtl8139/rtl8139.o
 	@${GCC} ${GCCFLAGS} serial/serial.c -o serial/serial.o
 	@${GCC} ${GCCFLAGS} stream/stream.c -o stream/stream.o
-	@${GCC} ${GCCFLAGS} test/test.c -o test/test.o
 	@${GCC} ${GCCFLAGS} tty/tty.c -o tty/tty.o
 	@${GCC} ${GCCFLAGS} vga/vga.c -o vga/vga.o
 	@${LD} ${LDFLAGS} ata/ata.o io/ios.o io/io.o -o ata/ata.ko
@@ -34,7 +33,6 @@ modules:
 	@${LD} ${LDFLAGS} io/ios.o io/io.o pci/pci.o rtl8139/rtl8139.o -o rtl8139/rtl8139.ko
 	@${LD} ${LDFLAGS} io/ios.o io/io.o serial/serial.o -o serial/serial.ko
 	@${LD} ${LDFLAGS} stream/stream.o -o stream/stream.ko
-	@${LD} ${LDFLAGS} test/test.o -o test/test.ko
 	@${LD} ${LDFLAGS} kbd/kbd.o stream/stream.o vga/vga.o tty/tty.o -o tty/tty.ko
 	@${LD} ${LDFLAGS} io/ios.o io/io.o vga/vga.o -o vga/vga.ko
 

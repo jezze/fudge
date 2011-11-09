@@ -34,7 +34,6 @@ kernel:
 		${DIR_SOURCE_MODULES}/io/ios.o \
 		${DIR_SOURCE_MODULES}/kbd/kbd.o \
 		${DIR_SOURCE_MODULES}/pci/pci.o \
-		${DIR_SOURCE_MODULES}/pit/pit.o \
 		${DIR_SOURCE_MODULES}/rtl8139/rtl8139.o \
 		${DIR_SOURCE_MODULES}/serial/serial.o \
 		${DIR_SOURCE_MODULES}/stream/stream.o \
@@ -69,14 +68,13 @@ user:
 	@make -C ${DIR_SOURCE_USER}/
 
 ramdisk: kernel user
-	@cp ${DIR_SOURCE_MODULES}/test/test.ko ${DIR_IMAGE}/lib/modules/test.ko
 	@cp ${DIR_SOURCE_MODULES}/ata/ata.o ${DIR_IMAGE}/lib/modules/ata.ko
 	@cp ${DIR_SOURCE_MODULES}/elf/elf.o ${DIR_IMAGE}/lib/modules/elf.ko
 	@cp ${DIR_SOURCE_MODULES}/io/io.o ${DIR_IMAGE}/lib/modules/io.ko
 	@cp ${DIR_SOURCE_MODULES}/io/ios.o ${DIR_IMAGE}/lib/modules/ios.ko
 	@cp ${DIR_SOURCE_MODULES}/kbd/kbd.o ${DIR_IMAGE}/lib/modules/kbd.ko
 	@cp ${DIR_SOURCE_MODULES}/pci/pci.o ${DIR_IMAGE}/lib/modules/pci.ko
-	@cp ${DIR_SOURCE_MODULES}/pit/pit.o ${DIR_IMAGE}/lib/modules/pit.ko
+	@cp ${DIR_SOURCE_MODULES}/pit/pit.ko ${DIR_IMAGE}/lib/modules/pit.ko
 	@cp ${DIR_SOURCE_MODULES}/rtc/rtc.ko ${DIR_IMAGE}/lib/modules/rtc.ko
 	@cp ${DIR_SOURCE_MODULES}/rtl8139/rtl8139.o ${DIR_IMAGE}/lib/modules/rtl8139.ko
 	@cp ${DIR_SOURCE_MODULES}/serial/serial.o ${DIR_IMAGE}/lib/modules/serial.ko

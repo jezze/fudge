@@ -6,7 +6,7 @@ void main(int argc, char *argv[])
     for (;;)
     {
 
-        call_load("/test.ko");
+        call_load("/pit.ko");
         call_load("/rtc.ko");
         call_execute("/shell", 0, 0);
 

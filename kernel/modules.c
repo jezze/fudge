@@ -9,7 +9,6 @@
 #include <modules/ata/ata.h>
 #include <modules/kbd/kbd.h>
 #include <modules/pci/pci.h>
-#include <modules/pit/pit.h>
 #include <modules/rtl8139/rtl8139.h>
 #include <modules/serial/serial.h>
 #include <modules/vga/vga.h>
@@ -217,7 +216,6 @@ static void modules_init_devices()
     elf_init();
     io_init();
     vga_init();
-    pit_init();
     kbd_init();
     pci_init();
     ata_init();
