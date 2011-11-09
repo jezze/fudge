@@ -133,6 +133,8 @@ unsigned int syscall_load(char *path)
     void (*minit)() = entry;
     minit();
 
+    event_handler(EVENT_SYSCALL_LOAD);
+
     return 1;
 
 }
@@ -193,6 +195,8 @@ unsigned int syscall_reboot()
 
 unsigned int syscall_unload()
 {
+
+    event_handler(EVENT_SYSCALL_UNLOAD);
 
     return 1;
 

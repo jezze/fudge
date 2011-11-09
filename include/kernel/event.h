@@ -11,6 +11,8 @@
 #define EVENT_SYSCALL_READ    0x24
 #define EVENT_SYSCALL_WAIT    0x25
 #define EVENT_SYSCALL_WRITE   0x26
+#define EVENT_SYSCALL_LOAD    0x27
+#define EVENT_SYSCALL_UNLOAD  0x28
 
 struct event_event
 {
