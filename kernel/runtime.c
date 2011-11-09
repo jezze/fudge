@@ -254,11 +254,6 @@ void runtime_task_init(struct runtime_task *task, unsigned int id)
 void *runtime_relocate(void *paddress)
 {
 
-    void *offset = elf_get_symbol(paddress, "init");
-
-    if (!offset)
-        return 0;
-
     elf_relocate(paddress);
 
     return elf_get_entry(paddress);
