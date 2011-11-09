@@ -82,7 +82,6 @@ struct pci_bus
 };
 
 extern void pci_device_init(struct pci_device *device, unsigned int address);
-extern void pci_init();
 
 #endif
 

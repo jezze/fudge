@@ -152,7 +152,7 @@ void pci_bus_init(struct pci_bus *bus)
 
 }
 
-void pci_init()
+void pci()
 {
 
     pci_bus_init(&pciBus);
