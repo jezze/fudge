@@ -1,5 +1,3 @@
-#include <lib/elf.h>
-#include <lib/file.h>
 #include <lib/string.h>
 #include <kernel/vfs.h>
 #include <kernel/event.h>
@@ -8,7 +6,6 @@
 #include <kernel/log.h>
 #include <kernel/modules.h>
 #include <kernel/runtime.h>
-#include <modules/elf/elf.h>
 
 static struct kernel_core kernelCore;
 static struct kernel_symbol kernelSymbols[32];
