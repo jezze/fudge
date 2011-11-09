@@ -1,6 +1,6 @@
 #include <lib/string.h>
+#include <kernel/arch/x86/io.h>
 #include <kernel/modules.h>
-#include <modules/io/io.h>
 #include <modules/pci/pci.h>
 
 static struct pci_bus pciBus;

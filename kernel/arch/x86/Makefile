@@ -18,6 +18,7 @@ arch:
 	@${GCC} ${GCCFLAGS} idt.c -o idt.o
 	@${ASM} ${ASMFLAGS} idts.s -o idts.o
 	@${ASM} ${ASMFLAGS} init.s -o init.o
+	@${ASM} ${ASMFLAGS} ios.s -o ios.o
 	@${GCC} ${GCCFLAGS} irq.c -o irq.o
 	@${ASM} ${ASMFLAGS} irqs.s -o irqs.o
 	@${GCC} ${GCCFLAGS} isr.c -o isr.o

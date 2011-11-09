@@ -4,7 +4,6 @@
 #include <kernel/modules.h>
 #include <modules/elf/elf.h>
 #include <modules/stream/stream.h>
-#include <modules/io/io.h>
 
 static struct modules_bus *modulesBusses[MODULES_BUS_SLOTS];
 static struct modules_device *modulesDevices[MODULES_DEVICE_SLOTS];
@@ -211,7 +210,6 @@ void modules_init()
     vfs_register_filesystem(&modulesFilesystem);
 
     elf_init();
-    io_init();
 
 }
 

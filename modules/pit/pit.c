@@ -1,10 +1,9 @@
-#include <lib/file.h>
 #include <lib/string.h>
+#include <kernel/arch/x86/io.h>
 #include <kernel/vfs.h>
 #include <kernel/event.h>
 #include <kernel/modules.h>
 #include <kernel/kernel.h>
-#include <modules/io/io.h>
 #include <modules/stream/stream.h>
 #include <modules/pit/pit.h>
 

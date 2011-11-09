@@ -1,8 +1,8 @@
 #include <lib/memory.h>
 #include <lib/string.h>
+#include <kernel/arch/x86/io.h>
 #include <kernel/modules.h>
 #include <kernel/kernel.h>
-#include <modules/io/io.h>
 #include <modules/serial/serial.h>
 
 static struct serial_device serialDevice1;

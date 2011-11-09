@@ -1,9 +1,9 @@
 #include <lib/memory.h>
 #include <lib/string.h>
+#include <kernel/arch/x86/io.h>
 #include <kernel/event.h>
 #include <kernel/modules.h>
 #include <kernel/kernel.h>
-#include <modules/io/io.h>
 #include <modules/kbd/kbd.h>
 
 static char kbdMapUS[256] =

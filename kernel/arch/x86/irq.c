@@ -2,9 +2,9 @@
 #include <kernel/vfs.h>
 #include <kernel/runtime.h>
 #include <kernel/arch/x86/idt.h>
+#include <kernel/arch/x86/io.h>
 #include <kernel/arch/x86/irq.h>
 #include <kernel/arch/x86/isr.h>
-#include <modules/io/io.h>
 
 static void *irqRoutines[IRQ_ROUTINE_SLOTS];
 

@@ -29,8 +29,6 @@ kernel:
 		${DIR_SOURCE_KERNEL}/syscall.o \
 		${DIR_SOURCE_KERNEL}/vfs.o \
 		${DIR_SOURCE_MODULES}/elf/elf.o \
-		${DIR_SOURCE_MODULES}/io/io.o \
-		${DIR_SOURCE_MODULES}/io/ios.o \
 		${DIR_SOURCE_ARCH}/arch.o \
 		${DIR_SOURCE_ARCH}/calls.o \
 		${DIR_SOURCE_ARCH}/cpu.o \
@@ -41,6 +39,7 @@ kernel:
 		${DIR_SOURCE_ARCH}/idt.o \
 		${DIR_SOURCE_ARCH}/idts.o \
 		${DIR_SOURCE_ARCH}/init.o \
+		${DIR_SOURCE_ARCH}/ios.o \
 		${DIR_SOURCE_ARCH}/irqs.o \
 		${DIR_SOURCE_ARCH}/isrs.o \
 		${DIR_SOURCE_ARCH}/irq.o \
@@ -62,8 +61,6 @@ user:
 ramdisk: kernel user
 	@cp ${DIR_SOURCE_MODULES}/ata/ata.ko ${DIR_IMAGE}/lib/modules/ata.ko
 	@cp ${DIR_SOURCE_MODULES}/elf/elf.o ${DIR_IMAGE}/lib/modules/elf.ko
-	@cp ${DIR_SOURCE_MODULES}/io/io.o ${DIR_IMAGE}/lib/modules/io.ko
-	@cp ${DIR_SOURCE_MODULES}/io/ios.o ${DIR_IMAGE}/lib/modules/ios.ko
 	@cp ${DIR_SOURCE_MODULES}/kbd/kbd.ko ${DIR_IMAGE}/lib/modules/kbd.ko
 	@cp ${DIR_SOURCE_MODULES}/pci/pci.ko ${DIR_IMAGE}/lib/modules/pci.ko
 	@cp ${DIR_SOURCE_MODULES}/pit/pit.ko ${DIR_IMAGE}/lib/modules/pit.ko
