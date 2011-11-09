@@ -30,7 +30,6 @@ struct kbd_device
 };
 
 extern void kbd_device_init(struct kbd_device *device);
-extern void kbd_init();
 
 #endif
 

@@ -31,7 +31,6 @@ kernel:
 		${DIR_SOURCE_MODULES}/elf/elf.o \
 		${DIR_SOURCE_MODULES}/io/io.o \
 		${DIR_SOURCE_MODULES}/io/ios.o \
-		${DIR_SOURCE_MODULES}/kbd/kbd.o \
 		${DIR_SOURCE_MODULES}/vga/vga.o \
 		${DIR_SOURCE_ARCH}/arch.o \
 		${DIR_SOURCE_ARCH}/calls.o \
@@ -66,7 +65,7 @@ ramdisk: kernel user
 	@cp ${DIR_SOURCE_MODULES}/elf/elf.o ${DIR_IMAGE}/lib/modules/elf.ko
 	@cp ${DIR_SOURCE_MODULES}/io/io.o ${DIR_IMAGE}/lib/modules/io.ko
 	@cp ${DIR_SOURCE_MODULES}/io/ios.o ${DIR_IMAGE}/lib/modules/ios.ko
-	@cp ${DIR_SOURCE_MODULES}/kbd/kbd.o ${DIR_IMAGE}/lib/modules/kbd.ko
+	@cp ${DIR_SOURCE_MODULES}/kbd/kbd.ko ${DIR_IMAGE}/lib/modules/kbd.ko
 	@cp ${DIR_SOURCE_MODULES}/pci/pci.ko ${DIR_IMAGE}/lib/modules/pci.ko
 	@cp ${DIR_SOURCE_MODULES}/pit/pit.ko ${DIR_IMAGE}/lib/modules/pit.ko
 	@cp ${DIR_SOURCE_MODULES}/rtc/rtc.ko ${DIR_IMAGE}/lib/modules/rtc.ko

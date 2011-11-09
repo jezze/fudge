@@ -33,7 +33,7 @@ modules:
 	@${LD} ${LDFLAGS} io/ios.o io/io.o pci/pci.o rtl8139/rtl8139.o -o rtl8139/rtl8139.ko
 	@${LD} ${LDFLAGS} io/ios.o io/io.o serial/serial.o -o serial/serial.ko
 	@${LD} ${LDFLAGS} stream/stream.o -o stream/stream.ko
-	@${LD} ${LDFLAGS} kbd/kbd.o stream/stream.o vga/vga.o tty/tty.o -o tty/tty.ko
+	@${LD} ${LDFLAGS} stream/stream.o tty/tty.o -o tty/tty.ko
 	@${LD} ${LDFLAGS} io/ios.o io/io.o vga/vga.o -o vga/vga.ko
 
 clean:

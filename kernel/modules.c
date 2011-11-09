@@ -5,7 +5,6 @@
 #include <modules/elf/elf.h>
 #include <modules/stream/stream.h>
 #include <modules/io/io.h>
-#include <modules/kbd/kbd.h>
 #include <modules/vga/vga.h>
 
 static struct modules_bus *modulesBusses[MODULES_BUS_SLOTS];
@@ -211,7 +210,6 @@ static void modules_init_devices()
     elf_init();
     io_init();
     vga_init();
-    kbd_init();
 
 }
 

@@ -134,7 +134,7 @@ void kbd_device_init(struct kbd_device *device)
 
 }
 
-void kbd_init()
+void init()
 {
 
     kbd_device_init(&kbdDevice);
