@@ -1,64 +1,27 @@
 ARCH=x86
 DIR_IMAGE=build/root
-DIR_SOURCE_USER=user
 DIR_SOURCE_KERNEL=kernel
-DIR_SOURCE_ARCH=kernel/arch/${ARCH}
 DIR_SOURCE_LIB=lib
 DIR_SOURCE_MODULES=modules
+DIR_SOURCE_USER=user
 
-LD=ld
-LDFLAGS=-T${DIR_SOURCE_ARCH}/linker.ld -melf_i386
-
-.PHONY: all clean kernel user ramdisk sda iso hda
+.PHONY: all clean kernel modules user ramdisk sda iso hda
 
 all: ramdisk
 
 kernel:
 	@make -C ${DIR_SOURCE_LIB}/
 	@make -C ${DIR_SOURCE_KERNEL}/
-	@make -C ${DIR_SOURCE_ARCH}/
+
+modules:
 	@make -C ${DIR_SOURCE_MODULES}/
-	@${LD} ${LDFLAGS} \
-		${DIR_SOURCE_KERNEL}/elf.o \
-		${DIR_SOURCE_KERNEL}/error.o \
-		${DIR_SOURCE_KERNEL}/event.o \
-		${DIR_SOURCE_KERNEL}/initrd.o \
-		${DIR_SOURCE_KERNEL}/kernel.o \
-		${DIR_SOURCE_KERNEL}/log.o \
-		${DIR_SOURCE_KERNEL}/modules.o \
-		${DIR_SOURCE_KERNEL}/runtime.o \
-		${DIR_SOURCE_KERNEL}/syscall.o \
-		${DIR_SOURCE_KERNEL}/vfs.o \
-		${DIR_SOURCE_ARCH}/arch.o \
-		${DIR_SOURCE_ARCH}/calls.o \
-		${DIR_SOURCE_ARCH}/cpu.o \
-		${DIR_SOURCE_ARCH}/fpu.o \
-		${DIR_SOURCE_ARCH}/fpus.o \
-		${DIR_SOURCE_ARCH}/gdt.o \
-		${DIR_SOURCE_ARCH}/gdts.o \
-		${DIR_SOURCE_ARCH}/idt.o \
-		${DIR_SOURCE_ARCH}/idts.o \
-		${DIR_SOURCE_ARCH}/init.o \
-		${DIR_SOURCE_ARCH}/ios.o \
-		${DIR_SOURCE_ARCH}/irqs.o \
-		${DIR_SOURCE_ARCH}/isrs.o \
-		${DIR_SOURCE_ARCH}/irq.o \
-		${DIR_SOURCE_ARCH}/isr.o \
-		${DIR_SOURCE_ARCH}/mmu.o \
-		${DIR_SOURCE_ARCH}/mboot.o \
-		${DIR_SOURCE_ARCH}/syscall.o \
-		${DIR_SOURCE_ARCH}/tss.o \
-		${DIR_SOURCE_ARCH}/tsss.o \
-		${DIR_SOURCE_LIB}/memory.o \
-		${DIR_SOURCE_LIB}/file.o \
-		${DIR_SOURCE_LIB}/string.o \
-		-o ${DIR_IMAGE}/boot/fudge
-	@nm ${DIR_IMAGE}/boot/fudge | grep -f ${DIR_IMAGE}/boot/fudge.sym > ${DIR_IMAGE}/boot/fudge.map
 
 user:
 	@make -C ${DIR_SOURCE_USER}/
 
-ramdisk: kernel user
+ramdisk: kernel modules user
+	@cp ${DIR_SOURCE_KERNEL}/fudge ${DIR_IMAGE}/boot/fudge
+	@nm ${DIR_IMAGE}/boot/fudge | grep -f ${DIR_IMAGE}/boot/fudge.sym > ${DIR_IMAGE}/boot/fudge.map
 	@cp ${DIR_SOURCE_MODULES}/*/*.ko ${DIR_IMAGE}/lib/modules/
 	@cp ${DIR_SOURCE_USER}/cat ${DIR_IMAGE}/bin/cat
 	@cp ${DIR_SOURCE_USER}/cd ${DIR_IMAGE}/bin/cd
@@ -102,7 +65,6 @@ hda:
 clean:
 	@make -C ${DIR_SOURCE_LIB}/ clean
 	@make -C ${DIR_SOURCE_KERNEL}/ clean
-	@make -C ${DIR_SOURCE_ARCH}/ clean
 	@make -C ${DIR_SOURCE_MODULES}/ clean
 	@make -C ${DIR_SOURCE_USER}/ clean
 	@rm -f fudge.img
