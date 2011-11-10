@@ -5,13 +5,15 @@ DIR_SOURCE_LIB=lib
 DIR_SOURCE_MODULES=modules
 DIR_SOURCE_USER=user
 
-.PHONY: all clean kernel modules user ramdisk sda iso hda
+.PHONY: all clean kernel lib modules user ramdisk sda iso hda
 
-all: ramdisk
+all: lib kernel modules user ramdisk
 
 kernel:
-	@make -C ${DIR_SOURCE_LIB}/
 	@make -C ${DIR_SOURCE_KERNEL}/
+
+lib:
+	@make -C ${DIR_SOURCE_LIB}/
 
 modules:
 	@make -C ${DIR_SOURCE_MODULES}/
@@ -19,7 +21,7 @@ modules:
 user:
 	@make -C ${DIR_SOURCE_USER}/
 
-ramdisk: kernel modules user
+ramdisk:
 	@cp ${DIR_SOURCE_KERNEL}/fudge ${DIR_IMAGE}/boot/fudge
 	@nm ${DIR_IMAGE}/boot/fudge | grep -f ${DIR_IMAGE}/boot/fudge.sym > ${DIR_IMAGE}/boot/fudge.map
 	@cp ${DIR_SOURCE_MODULES}/*/*.ko ${DIR_IMAGE}/lib/modules/
