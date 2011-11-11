@@ -158,3 +158,72 @@ char *string_write_num(char *out, unsigned int num, unsigned int base)
 
 }
 
+char *string_write_format(char *out, char *in, ...)
+{
+
+    char *ret = out;
+    char **arg = (char **)&in;
+    arg++;
+
+    char num[32];
+    int count = 0;
+    char c;
+
+    while ((c = *in++))
+    {
+
+        if (c != '%')
+        {
+
+            memory_copy(out, &c, 1);
+            out += 1;
+
+            continue;
+
+        }
+
+        c = *in++;
+
+        switch (c)
+        {
+
+            case 'c':
+
+                memory_copy(out, (char *)arg, 1);
+                out += 1;
+
+                break;
+
+            case 'd':
+
+                string_write_num(num, *(int *)arg, 10);
+                string_write(out, num);
+                out += string_length(num);
+
+                break;
+
+            case 's':
+
+                string_write(out, *(char **)arg);
+                out += string_length(*(char **)arg);
+
+                break;
+
+            case 'x':
+
+                string_write_num(num, *(int *)arg, 16);
+                string_write(out, num);
+                out += string_length(num);
+
+                break;
+
+        }
+
+        arg++;
+
+    }
+
+    return ret;
+
+}
+
