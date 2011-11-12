@@ -65,36 +65,38 @@ static unsigned int kbd_buffer_putc(struct kbd_buffer *self, char *buffer)
 static void kbd_handler()
 {
 
+    struct kbd_device *kbd = &kbdDevice;
+
     unsigned char scancode = io_inb(KBD_PORT_READ);
 
-    if (kbdDevice.escaped)
+    if (kbd->escaped)
     {
 
         //scancode += 256;
-        kbdDevice.escaped = 0;
+        kbd->escaped = 0;
 
     }
 
     if (scancode == 0xE0)
-        kbdDevice.escaped = 1;
+        kbd->escaped = 1;
 
     if (scancode == 0x38)
-        kbdDevice.toggleAlt = 1;
+        kbd->toggleAlt = 1;
 
     if (scancode == 0xB8)
-        kbdDevice.toggleAlt = 0;
+        kbd->toggleAlt = 0;
 
     if (scancode == 0x1D)
-        kbdDevice.toggleCtrl = 1;
+        kbd->toggleCtrl = 1;
 
     if (scancode == 0x9D)
-        kbdDevice.toggleCtrl = 0;
+        kbd->toggleCtrl = 0;
 
     if (scancode == 0x2A)
-        kbdDevice.toggleShift = 1;
+        kbd->toggleShift = 1;
 
     if (scancode == 0xAA)
-        kbdDevice.toggleShift = 0;
+        kbd->toggleShift = 0;
 
     if (scancode & 0x80)
     {
@@ -106,10 +108,10 @@ static void kbd_handler()
     else
     {
 
-        if (kbdDevice.toggleShift)
+        if (kbd->toggleShift)
             scancode += 128;
 
-        kbdDevice.buffer.putc(&kbdDevice.buffer, &kbdMapUS[scancode]);
+        kbd->buffer.putc(&kbd->buffer, &kbdMapUS[scancode]);
 
     }
 

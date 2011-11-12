@@ -12,7 +12,9 @@ static struct pit_device pitDevice;
 static void pit_handler()
 {
 
-    pitDevice.jiffies += 1;
+    struct pit_device *pit = &pitDevice;
+
+    pit->jiffies += 1;
 
     event_handler(EVENT_IRQ_PIT);
 
