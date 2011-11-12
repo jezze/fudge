@@ -19,25 +19,27 @@ It is not possible to dynamically allocate memory in runtime. All memory has to 
 
 ## FEATURES
 
-I have a long way to go but these are the features I’ve implemented so far. Some of them might not work or are incomplete at the moment but they exist in one way or another.
+I have a long way to go but these are the features I’ve implemented so far. Some of them might be incomplete at the moment but they exist in one way or another.
 
+Kernel:
 * Multi-architectural code
-* Memory protection
-* VGA framebuffer
-* PS2 keyboard
-* Serial ports
+* Memory protection using paging
+* Virtual filesystem interface
+* ELF binary support incl. relocation
+* TAR ramdisk support
+
+Drivers:
+* VGA support
+* Serial support
 * PIT support
 * RTC support
 * FPU support
-* VFS filesystem
-* ELF binary support
-* TAR ramdisk support
+* PCI detection
 * ATA detection
-* PCI devices
 * TTY devices
-* Module interface
-* Device interface
-* Driver interface
+* PS/2 keyboard
+* PS/2 mouse
+* RTL8139 network card
 
 ## BUILDING
 
