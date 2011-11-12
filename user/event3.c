@@ -1,6 +1,6 @@
 #include <fudge.h>
 
-void explain()
+void keyboard()
 {
 
     file_write_format(FILE_STDOUT, "You pressed a key it seems...\n");
@@ -9,11 +9,20 @@ void explain()
 
 }
 
+void mouse()
+{
+
+    file_write_format(FILE_STDOUT, "You used the mouse it seems...\n");
+
+    call_wait();
+
+}
+
 void main(int argc, char *argv[])
 {
 
-    call_attach(0x01, explain);
-
+    call_attach(0x01, keyboard);
+    call_attach(0x0C, mouse);
     call_wait();
 
 }
