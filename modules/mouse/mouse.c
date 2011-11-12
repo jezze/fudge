@@ -46,12 +46,12 @@ static void mouse_handler()
 static void mouse_wait(unsigned char type)
 {
 
-    unsigned int time_out = 100000;
+    unsigned int timeout = 100000;
 
     if (type == 0)
     {
 
-        while (time_out--)
+        while (timeout--)
         {
 
             if ((io_inb(0x64) & 1) == 1)
@@ -66,7 +66,7 @@ static void mouse_wait(unsigned char type)
     else
     {
 
-        while (time_out--)
+        while (timeout--)
         {
 
             if ((io_inb(0x64) & 2) == 0)
