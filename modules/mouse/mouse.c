@@ -8,7 +8,7 @@
 
 static struct mouse_device mouseDevice;
 
-void mouse_handler()
+static void mouse_handler()
 {
 
     struct mouse_device *mouse = &mouseDevice;
@@ -45,7 +45,7 @@ void mouse_handler()
 
 }
 
-void mouse_wait(unsigned char type)
+static void mouse_wait(unsigned char type)
 {
 
     unsigned int time_out = 100000;
@@ -82,7 +82,7 @@ void mouse_wait(unsigned char type)
 
 }
 
-void mouse_write(unsigned char value)
+static void mouse_write(unsigned char value)
 {
 
     mouse_wait(1);
@@ -92,7 +92,7 @@ void mouse_write(unsigned char value)
 
 }
 
-unsigned char mouse_read()
+static unsigned char mouse_read()
 {
 
     mouse_wait(0);
