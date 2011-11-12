@@ -12,6 +12,7 @@ all: modules
 modules:
 	@${GCC} ${GCCFLAGS} ata/ata.c -o ata/ata.o
 	@${GCC} ${GCCFLAGS} kbd/kbd.c -o kbd/kbd.o
+	@${GCC} ${GCCFLAGS} mouse/mouse.c -o mouse/mouse.o
 	@${GCC} ${GCCFLAGS} pci/pci.c -o pci/pci.o
 	@${GCC} ${GCCFLAGS} pit/pit.c -o pit/pit.o
 	@${GCC} ${GCCFLAGS} rtc/rtc.c -o rtc/rtc.o
@@ -22,6 +23,7 @@ modules:
 	@${GCC} ${GCCFLAGS} vga/vga.c -o vga/vga.o
 	@${LD} ${LDFLAGS} ata/ata.o -o ata/ata.ko
 	@${LD} ${LDFLAGS} kbd/kbd.o -o kbd/kbd.ko
+	@${LD} ${LDFLAGS} mouse/mouse.o -o mouse/mouse.ko
 	@${LD} ${LDFLAGS} pci/pci.o -o pci/pci.ko
 	@${LD} ${LDFLAGS} pit/pit.o stream/stream.o -o pit/pit.ko
 	@${LD} ${LDFLAGS} rtc/rtc.o stream/stream.o -o rtc/rtc.ko
