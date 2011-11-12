@@ -48,13 +48,13 @@ static void mouse_wait(unsigned char type)
 
     unsigned int timeout = 100000;
 
-    if (type == 0)
+    if (type)
     {
 
         while (timeout--)
         {
 
-            if ((io_inb(0x64) & 1) == 1)
+            if ((io_inb(0x64) & 2) == 0)
                 return;
 
         }
@@ -69,7 +69,7 @@ static void mouse_wait(unsigned char type)
         while (timeout--)
         {
 
-            if ((io_inb(0x64) & 2) == 0)
+            if ((io_inb(0x64) & 1) == 1)
                 return;
 
         }
