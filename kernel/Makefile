@@ -50,7 +50,8 @@ kernel:
 		-o fudge
 
 clean:
-	@make -C ${DIR_SOURCE_ARCH}/ clean
+	@make -C arch/arm/ clean
+	@make -C arch/x86/ clean
 	@rm -f fudge
 	@rm -f *.o
 
