@@ -10,10 +10,10 @@ DIR_SOURCE_USER=user
 all: lib kernel modules user ramdisk
 
 kernel:
-	@make -C ${DIR_SOURCE_KERNEL}/
+	@make -C ${DIR_SOURCE_KERNEL}/ all-${ARCH}
 
 lib:
-	@make -C ${DIR_SOURCE_LIB}/
+	@make -C ${DIR_SOURCE_LIB}/ all-${ARCH}
 
 modules:
 	@make -C ${DIR_SOURCE_MODULES}/

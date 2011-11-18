@@ -1,18 +1,24 @@
-ARCH=x86
+all-arm: ARCH=arm
+all-arm: GCC=arm-elf-gcc
+all-arm: GCCFLAGS=-c -O2 -I../include -Wall -Wextra -nostdlib -nostartfiles -ffreestanding -std=gnu99
+all-arm: LD=arm-elf-ld
+all-arm: LDFLAGS=-T${DIR_SOURCE_ARCH}/linker.ld -L/usr/lib/gcc/arm-elf/4.6.0
+all-x86: ARCH=x86
+all-x86: GCC=gcc
+all-x86: GCCFLAGS=-c -O2 -I../include -Wall -Wextra -ffreestanding -nostdlib -nostartfiles -nodefaultlibs -m32
+all-x86: LD=ld
+all-x86: LDFLAGS=-T${DIR_SOURCE_ARCH}/linker.ld -melf_i386
+
 DIR_SOURCE_ARCH=arch/${ARCH}
 DIR_SOURCE_LIB=../lib
 
-GCC=gcc
-GCCFLAGS=-c -O2 -I../include -Wall -Wextra -ffreestanding -nostdlib -nostartfiles -nodefaultlibs -m32
-LD=ld
-LDFLAGS=-T${DIR_SOURCE_ARCH}/linker.ld -melf_i386
-
 .PHONY: all clean kernel
 
-all: kernel
+all: all-x86
+all-arm: kernel arch-arm
+all-x86: kernel arch-x86
 
 kernel:
-	@make -C ${DIR_SOURCE_ARCH}/
 	@${GCC} ${GCCFLAGS} elf.c -o elf.o
 	@${GCC} ${GCCFLAGS} error.c -o error.o
 	@${GCC} ${GCCFLAGS} event.c -o event.o
@@ -23,6 +29,20 @@ kernel:
 	@${GCC} ${GCCFLAGS} runtime.c -o runtime.o
 	@${GCC} ${GCCFLAGS} syscall.c -o syscall.o
 	@${GCC} ${GCCFLAGS} vfs.c -o vfs.o
+
+arch-arm:
+	@make -C ${DIR_SOURCE_ARCH}/
+	@${LD} elf.o error.o event.o initrd.o kernel.o log.o modules.o runtime.o syscall.o vfs.o \
+		${DIR_SOURCE_ARCH}/arch.o \
+		${DIR_SOURCE_ARCH}/call.o \
+		${DIR_SOURCE_ARCH}/init.o \
+		${DIR_SOURCE_LIB}/memory.o \
+		${DIR_SOURCE_LIB}/file.o \
+		${DIR_SOURCE_LIB}/string.o \
+		-o fudge ${LDFLAGS} 
+
+arch-x86:
+	@make -C ${DIR_SOURCE_ARCH}/
 	@${LD} ${LDFLAGS} elf.o error.o event.o initrd.o kernel.o log.o modules.o runtime.o syscall.o vfs.o \
 		${DIR_SOURCE_ARCH}/arch.o \
 		${DIR_SOURCE_ARCH}/calls.o \
