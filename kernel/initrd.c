@@ -4,8 +4,7 @@
 #include <kernel/vfs.h>
 #include <kernel/initrd.h>
 
-static struct vfs_view initrdViewInitrd;
-static struct vfs_view initrdViewBin;
+static struct vfs_view initrdViews[8];
 static struct initrd_filesystem initrdFilesystem;
 
 static unsigned int initrd_node_read(struct vfs_node *self, unsigned int count, void *buffer)
@@ -111,20 +110,29 @@ static unsigned int initrd_filesystem_view_read(struct vfs_view *self, unsigned 
 static struct vfs_view *initrd_filesystem_find_view(struct vfs_filesystem *self, char *name)
 {
 
-    if (!string_compare(initrdViewInitrd.name, name))
-        return &initrdViewInitrd;
-    else if (!string_compare(initrdViewBin.name, name))
-        return &initrdViewBin;
-    else
-        return 0;
+    unsigned int i;
+
+    for (i = 0; i < 6; i++)
+    {
+
+        if (!string_compare(initrdViews[i].name, name))
+            return &initrdViews[i];
+
+    }
+
+    return 0;
 
 }
 
 void initrd_init(unsigned int initrdc, void **initrdv)
 {
 
-    vfs_view_init(&initrdViewInitrd, "initrd", initrd_filesystem_view_find_node, initrd_filesystem_view_read);
-    vfs_view_init(&initrdViewBin, "bin", initrd_filesystem_view_find_node, initrd_filesystem_view_read);
+    vfs_view_init(&initrdViews[0], "initrd", initrd_filesystem_view_find_node, initrd_filesystem_view_read);
+    vfs_view_init(&initrdViews[1], "bin", initrd_filesystem_view_find_node, initrd_filesystem_view_read);
+    vfs_view_init(&initrdViews[2], "boot", initrd_filesystem_view_find_node, initrd_filesystem_view_read);
+    vfs_view_init(&initrdViews[3], "grub", initrd_filesystem_view_find_node, initrd_filesystem_view_read);
+    vfs_view_init(&initrdViews[4], "home", initrd_filesystem_view_find_node, initrd_filesystem_view_read);
+    vfs_view_init(&initrdViews[5], "mod", initrd_filesystem_view_find_node, initrd_filesystem_view_read);
     vfs_filesystem_init(&initrdFilesystem.base, initrd_filesystem_find_view);
 
     initrdFilesystem.nodesCount = 0;
