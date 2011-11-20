@@ -19,7 +19,6 @@ struct vfs_view
 {
 
     char name[32];
-    struct vfs_node *nodes[64];
     struct vfs_node *(*find_node)(struct vfs_view *self, char *name);
 
 };
