@@ -127,7 +127,7 @@ void modules_register_driver(struct modules_driver *driver)
 
 }
 
-static struct vfs_node *modules_filesystem_lookup(struct vfs_filesystem *self, char *view, char *name)
+static struct vfs_node *modules_filesystem_find_node(struct vfs_filesystem *self, char *view, char *name)
 {
 
     unsigned int i;
@@ -205,7 +205,7 @@ void modules_init()
 {
 
     vfs_node_init(&modulesRoot, 0, 0, 0, modules_filesystem_node_read, 0);
-    vfs_filesystem_init(&modulesFilesystem, &modulesRoot, modules_filesystem_lookup); 
+    vfs_filesystem_init(&modulesFilesystem, &modulesRoot, modules_filesystem_find_node, 0); 
     vfs_register_filesystem(&modulesFilesystem);
 
 }
