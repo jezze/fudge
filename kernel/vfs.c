@@ -59,12 +59,16 @@ static unsigned int vfs_node_read(struct vfs_node *self, unsigned int count, voi
 
     memory_set(buffer, 0, 1);
 
+    char xx[32];
+    struct vfs_node *x = vfs_find("dev", "cwd");
+    x->read(x, 32, xx);
+
     unsigned int i;
 
     for (i = 0; vfsFilesystems[i]; i++)
     {
 
-        struct vfs_view *v = vfsFilesystems[i]->find_view(vfsFilesystems[i], "initrd");
+        struct vfs_view *v = vfsFilesystems[i]->find_view(vfsFilesystems[i], xx);
 
         if (!v)
             continue;
