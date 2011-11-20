@@ -98,8 +98,24 @@ static unsigned int initrd_filesystem_view_read(struct vfs_view *self, unsigned 
     for (i = 0; i < initrdFilesystem.nodesCount; i++)
     {
 
-        string_write_concat(buffer, initrdFilesystem.nodes[i].name);
-        string_write_concat(buffer, "\n");
+        if (self == &initrdViews[0])
+        {
+
+            string_write_concat(buffer, initrdFilesystem.nodes[i].name);
+            string_write_concat(buffer, "\n");
+
+        }
+
+        else
+        {
+
+            if (!string_find(initrdFilesystem.nodes[i].header->name, self->name))
+                continue;
+
+            string_write_concat(buffer, initrdFilesystem.nodes[i].name);
+            string_write_concat(buffer, "\n");
+
+        }
 
     }
 

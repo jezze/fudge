@@ -4,6 +4,7 @@
 extern int string_compare(const char *in1, const char *in2);
 extern unsigned int string_index(const char *in, char value, unsigned int skip);
 extern unsigned int string_index_reversed(const char *in, char value, unsigned int skip);
+extern char *string_find(const char *in, const char *str);
 extern unsigned int string_length(const char *in);
 extern unsigned int string_read_num(const char *in, unsigned int base);
 extern char *string_replace(char *out, char value1, char value2);

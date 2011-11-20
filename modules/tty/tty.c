@@ -156,7 +156,7 @@ void tty_device_init(struct tty_device *device, char *cwdname)
 void init()
 {
 
-    tty_device_init(&ttyDevice, "initrd");
+    tty_device_init(&ttyDevice, "home");
 
     modules_register_device(&ttyDevice.in.base);
     modules_register_device(&ttyDevice.out.base);
