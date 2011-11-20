@@ -129,7 +129,7 @@ void initrd_init(unsigned int initrdc, void **initrdv)
     vfs_view_init(&initrdViewInitrd, "initrd", initrd_filesystem_view_find_node);
     vfs_view_init(&initrdViewBin, "bin", initrd_filesystem_view_find_node);
     vfs_node_init(&initrdRoot, 0, 0, 0, initrd_filesystem_node_read, 0);
-    vfs_filesystem_init(&initrdFilesystem.base, &initrdRoot, initrd_filesystem_find_node, initrd_filesystem_find_view);
+    vfs_filesystem_init(&initrdFilesystem.base, &initrdRoot, initrd_filesystem_find_view, initrd_filesystem_find_node);
 
     initrdFilesystem.nodesCount = 0;
 

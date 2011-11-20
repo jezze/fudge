@@ -91,12 +91,12 @@ void vfs_view_init(struct vfs_view *view, char *name, struct vfs_node *(*find_no
 
 }
 
-void vfs_filesystem_init(struct vfs_filesystem *filesystem, struct vfs_node *root, struct vfs_node *(*find_node)(struct vfs_filesystem *self, char *view, char *name), struct vfs_view *(find_view)(struct vfs_filesystem *self, char *name))
+void vfs_filesystem_init(struct vfs_filesystem *filesystem, struct vfs_node *root, struct vfs_view *(find_view)(struct vfs_filesystem *self, char *name), struct vfs_node *(*find_node)(struct vfs_filesystem *self, char *view, char *name))
 {
 
     filesystem->root = root;
-    filesystem->find_node = find_node;
     filesystem->find_view = find_view;
+    filesystem->find_node = find_node;
 
 }
 

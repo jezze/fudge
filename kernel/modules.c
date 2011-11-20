@@ -205,7 +205,7 @@ void modules_init()
 {
 
     vfs_node_init(&modulesRoot, 0, 0, 0, modules_filesystem_node_read, 0);
-    vfs_filesystem_init(&modulesFilesystem, &modulesRoot, modules_filesystem_find_node, 0); 
+    vfs_filesystem_init(&modulesFilesystem, &modulesRoot, 0, modules_filesystem_find_node); 
     vfs_register_filesystem(&modulesFilesystem);
 
 }
