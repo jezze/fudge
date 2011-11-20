@@ -38,7 +38,12 @@ struct vfs_node *vfs_find(char *view, char *name)
     for (i = 0; vfsFilesystems[i]; i++)
     {
 
-        struct vfs_node *node = vfsFilesystems[i]->find_node(vfsFilesystems[i], view, name + 1);
+        struct vfs_view *v = vfsFilesystems[i]->find_view(vfsFilesystems[i], view);
+
+        if (!v)
+            continue;
+
+        struct vfs_node *node = v->find_node(v, name + 1);
 
         if (node)
             return node;
@@ -92,12 +97,11 @@ void vfs_view_init(struct vfs_view *view, char *name, struct vfs_node *(*find_no
 
 }
 
-void vfs_filesystem_init(struct vfs_filesystem *filesystem, struct vfs_node *root, struct vfs_view *(find_view)(struct vfs_filesystem *self, char *name), struct vfs_node *(*find_node)(struct vfs_filesystem *self, char *view, char *name))
+void vfs_filesystem_init(struct vfs_filesystem *filesystem, struct vfs_node *root, struct vfs_view *(find_view)(struct vfs_filesystem *self, char *name))
 {
 
     filesystem->root = root;
     filesystem->find_view = find_view;
-    filesystem->find_node = find_node;
 
 }
 
