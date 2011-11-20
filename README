@@ -17,6 +17,9 @@ There will be no scheduler or timeslices to consider. Instead I’ve chose to us
 * No memory allocation
 It is not possible to dynamically allocate memory in runtime. All memory has to be preallocated when the operating system starts. In this way there will never be a chance of memory running out and the kernel would be less occupied with allocating and deallocating memory. All preallocated areas of RAM will show up as files in the virtual filesystem. If one of these files becomes full it's content needs to be taken care of before more data can be written.
 
+* No directories
+Fudge does not have directories in the classical sense. Instead it has views which works simular like branches in git. This has a lot of advantages because you never have to think about where one file exist in relation to another and if you should use relative or absolute paths to reference it. The fopen(char *path) call in posix would be file_open(char *view, char *name) in fudge. No paths to worry about. It is actually very intuitive and I feel it goes a lot faster.
+
 ## FEATURES
 
 I have a long way to go but these are the features I’ve implemented so far. Some of them might be incomplete at the moment but they exist in one way or another.
