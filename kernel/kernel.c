@@ -101,7 +101,7 @@ void kernel_core_init(struct kernel_core *core, struct kernel_arch *arch)
 static void kernel_init_symbols()
 {
 
-    struct vfs_node *node = vfs_find("initrd", "/fudge.map");
+    struct vfs_node *node = vfs_find("initrd", "fudge.map");
     node->read(node, 1024, kernelSymbolBuffer);
 
     unsigned int i;
@@ -155,7 +155,7 @@ void kernel_init(struct kernel_arch *arch)
 
     struct runtime_task *task = runtime_get_slot();
 
-    task->load(task, "/init", 0, 0);
+    task->load(task, "init", 0, 0);
     runtime_activate(task);
 
     kernelCore.arch->set_stack(kernelCore.arch->stack);

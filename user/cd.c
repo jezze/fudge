@@ -3,7 +3,7 @@
 void get_path(char *buffer)
 {
 
-    int fd = file_open("dev", "/cwd");
+    int fd = file_open("dev", "cwd");
     unsigned int count = file_read(fd, 256, buffer);
     file_close(fd);
 
@@ -12,7 +12,7 @@ void get_path(char *buffer)
 void set_path(char *buffer)
 {
 
-    int fd = file_open("dev", "/cwd");
+    int fd = file_open("dev", "cwd");
     file_write_format(fd, buffer);
     file_close(fd);
 

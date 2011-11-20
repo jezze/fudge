@@ -153,9 +153,9 @@ static unsigned int runtime_task_load(struct runtime_task *self, char *path, uns
     for (i = 0; i < RUNTIME_TASK_DESCRIPTOR_SLOTS; i++)
         self->descriptors[i].node = 0;
 
-    struct vfs_node *sin = vfs_find("dev", "/stdin");
-    struct vfs_node *sout = vfs_find("dev", "/stdout");
-    struct vfs_node *serror = vfs_find("dev", "/stderr");
+    struct vfs_node *sin = vfs_find("dev", "stdin");
+    struct vfs_node *sout = vfs_find("dev", "stdout");
+    struct vfs_node *serror = vfs_find("dev", "stderr");
 
     self->add_descriptor(self, sin);
     self->add_descriptor(self, sout);

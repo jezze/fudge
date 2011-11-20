@@ -49,12 +49,7 @@ static void interpret(char *command)
     if (!argc)
         return;
 
-    char path[256];
-
-    string_write(path, "/");
-    string_write_concat(path, argv[0]);
-
-    if (!call_execute(path, argc, argv))
+    if (!call_execute(argv[0], argc, argv))
         file_write_format(FILE_STDOUT, "%s: Invalid command\n", argv[0]);
 
 }

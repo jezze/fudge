@@ -43,7 +43,7 @@ struct vfs_node *vfs_find(char *view, char *name)
         if (!v)
             continue;
 
-        struct vfs_node *node = v->find_node(v, name + 1);
+        struct vfs_node *node = v->find_node(v, name);
 
         if (node)
             return node;
