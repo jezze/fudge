@@ -37,7 +37,6 @@ struct vfs_filesystem
 {
 
     struct vfs_view *(*find_view)(struct vfs_filesystem *self, char *name);
-    struct vfs_node *(*find_node)(struct vfs_filesystem *self, char *view, char *name);
 
 };
 
