@@ -24,7 +24,7 @@ user:
 ramdisk:
 	@cp ${DIR_SOURCE_KERNEL}/fudge ${DIR_IMAGE}/boot/fudge
 	@nm ${DIR_IMAGE}/boot/fudge | grep -f ${DIR_IMAGE}/boot/fudge.sym > ${DIR_IMAGE}/boot/fudge.map
-	@cp ${DIR_SOURCE_MODULES}/*/*.ko ${DIR_IMAGE}/lib/modules/
+	@cp ${DIR_SOURCE_MODULES}/*/*.ko ${DIR_IMAGE}/mod/
 	@cp ${DIR_SOURCE_USER}/cat ${DIR_IMAGE}/bin/cat
 	@cp ${DIR_SOURCE_USER}/cd ${DIR_IMAGE}/bin/cd
 	@cp ${DIR_SOURCE_USER}/clear ${DIR_IMAGE}/bin/clear
@@ -89,7 +89,7 @@ clean:
 	@rm -f ${DIR_IMAGE}/bin/timer
 	@rm -f ${DIR_IMAGE}/bin/unload
 	@rm -f ${DIR_IMAGE}/bin/vga
-	@rm -f ${DIR_IMAGE}/lib/modules/*.ko
+	@rm -f ${DIR_IMAGE}/mod/*.ko
 	@rm -f ${DIR_IMAGE}/boot/fudge
 	@rm -f ${DIR_IMAGE}/boot/fudge.map
 	@rm -f ${DIR_IMAGE}/boot/initrd
