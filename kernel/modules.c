@@ -173,7 +173,12 @@ static unsigned int modules_filesystem_view_read(struct vfs_view *self, unsigned
 static struct vfs_view *modules_filesystem_find_view(struct vfs_filesystem *self, char *name)
 {
 
-    return &modulesViewDev;
+    if (!string_compare(modulesViewDev.name, name))
+        return &modulesViewDev;
+    else
+        return &modulesViewDev;
+
+    // FIX: return 0;
 
 }
 

@@ -111,7 +111,12 @@ static unsigned int initrd_filesystem_view_read(struct vfs_view *self, unsigned 
 static struct vfs_view *initrd_filesystem_find_view(struct vfs_filesystem *self, char *name)
 {
 
-    return &initrdViewInitrd;
+    if (!string_compare(initrdViewInitrd.name, name))
+        return &initrdViewInitrd;
+    else if (!string_compare(initrdViewBin.name, name))
+        return &initrdViewBin;
+    else
+        return 0;
 
 }
 
