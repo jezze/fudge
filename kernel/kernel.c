@@ -101,7 +101,7 @@ void kernel_core_init(struct kernel_core *core, struct kernel_arch *arch)
 static void kernel_init_symbols()
 {
 
-    struct vfs_node *node = vfs_find("/fudge.map");
+    struct vfs_node *node = vfs_find("initrd", "/fudge.map");
     node->read(node, 1024, kernelSymbolBuffer);
 
     unsigned int i;

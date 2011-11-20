@@ -25,13 +25,13 @@ void vfs_register_filesystem(struct vfs_filesystem *filesystem)
 
 }
 
-struct vfs_node *vfs_find(char *path)
+struct vfs_node *vfs_find(char *view, char *name)
 {
 
-    if (path[0] != '/')
+    if (name[0] != '/')
         return 0;
 
-    if (string_length(path) == 1)
+    if (string_length(name) == 1)
         return vfsFilesystem.root;
 
     unsigned int i;
@@ -39,7 +39,7 @@ struct vfs_node *vfs_find(char *path)
     for (i = 0; vfsFilesystems[i]; i++)
     {
 
-        struct vfs_node *node = vfsFilesystems[i]->lookup(vfsFilesystems[i], path + 1);
+        struct vfs_node *node = vfsFilesystems[i]->lookup(vfsFilesystems[i], view, name + 1);
 
         if (node)
             return node;
@@ -50,7 +50,7 @@ struct vfs_node *vfs_find(char *path)
 
 }
 
-static struct vfs_node *vfs_filesystem_lookup(struct vfs_filesystem *self, char *path)
+static struct vfs_node *vfs_filesystem_lookup(struct vfs_filesystem *self, char *view, char *name)
 {
 
     return 0;
@@ -98,7 +98,7 @@ void vfs_node_init(struct vfs_node *node, unsigned int id, void (*open)(struct v
 
 }
 
-void vfs_filesystem_init(struct vfs_filesystem *filesystem, struct vfs_node *root, struct vfs_node *(*lookup)(struct vfs_filesystem *self, char *path))
+void vfs_filesystem_init(struct vfs_filesystem *filesystem, struct vfs_node *root, struct vfs_node *(*lookup)(struct vfs_filesystem *self, char *view, char *name))
 {
 
     filesystem->root = root;

@@ -70,7 +70,7 @@ static unsigned int initrd_parse(void *address)
 
 }
 
-static struct vfs_node *initrd_filesystem_lookup(struct vfs_filesystem *self, char *path)
+static struct vfs_node *initrd_filesystem_lookup(struct vfs_filesystem *self, char *view, char *name)
 {
 
     unsigned int i;
@@ -80,7 +80,7 @@ static struct vfs_node *initrd_filesystem_lookup(struct vfs_filesystem *self, ch
 
         unsigned int count = string_length(initrdFilesystem.nodes[i].name) + 1;
 
-        if (!memory_compare(path, initrdFilesystem.nodes[i].name, count))
+        if (!memory_compare(name, initrdFilesystem.nodes[i].name, count))
             return &initrdFilesystem.nodes[i].base;
 
     }

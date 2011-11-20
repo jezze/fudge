@@ -127,7 +127,7 @@ void modules_register_driver(struct modules_driver *driver)
 
 }
 
-static struct vfs_node *modules_filesystem_lookup(struct vfs_filesystem *self, char *path)
+static struct vfs_node *modules_filesystem_lookup(struct vfs_filesystem *self, char *view, char *name)
 {
 
     unsigned int i;
@@ -140,7 +140,7 @@ static struct vfs_node *modules_filesystem_lookup(struct vfs_filesystem *self, c
 
         unsigned int count = string_length(((struct stream_device *)modulesDevices[i])->name) + 1;
 
-        if (!memory_compare(path, ((struct stream_device *)modulesDevices[i])->name, count))
+        if (!memory_compare(name, ((struct stream_device *)modulesDevices[i])->name, count))
             return &((struct stream_device *)modulesDevices[i])->node;
 
     }
