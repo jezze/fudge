@@ -26,7 +26,6 @@ user:
 	@${GCC} ${GCCFLAGS} ls.c -o ls.o
 	@${GCC} ${GCCFLAGS} reboot.c -o reboot.o
 	@${GCC} ${GCCFLAGS} shell.c -o shell.o
-	@${GCC} ${GCCFLAGS} tar.c -o tar.o
 	@${GCC} ${GCCFLAGS} timer.c -o timer.o
 	@${GCC} ${GCCFLAGS} unload.c -o unload.o
 	@${GCC} ${GCCFLAGS} vga.c -o vga.o
@@ -45,7 +44,6 @@ user:
 	@${LD} ${LDFLAGS} ls.o -o ls
 	@${LD} ${LDFLAGS} reboot.o -o reboot
 	@${LD} ${LDFLAGS} shell.o -o shell
-	@${LD} ${LDFLAGS} tar.o -o tar
 	@${LD} ${LDFLAGS} timer.o -o timer
 	@${LD} ${LDFLAGS} unload.o -o unload
 	@${LD} ${LDFLAGS} vga.o -o vga
@@ -67,7 +65,6 @@ clean:
 	@rm -f ls
 	@rm -f reboot
 	@rm -f shell
-	@rm -f tar
 	@rm -f timer
 	@rm -f unload
 	@rm -f vga

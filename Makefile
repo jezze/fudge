@@ -40,7 +40,6 @@ ramdisk:
 	@cp ${DIR_SOURCE_USER}/ls ${DIR_IMAGE}/bin/ls
 	@cp ${DIR_SOURCE_USER}/reboot ${DIR_IMAGE}/bin/reboot
 	@cp ${DIR_SOURCE_USER}/shell ${DIR_IMAGE}/bin/shell
-	@cp ${DIR_SOURCE_USER}/tar ${DIR_IMAGE}/bin/tar
 	@cp ${DIR_SOURCE_USER}/timer ${DIR_IMAGE}/bin/timer
 	@cp ${DIR_SOURCE_USER}/unload ${DIR_IMAGE}/bin/unload
 	@cp ${DIR_SOURCE_USER}/vga ${DIR_IMAGE}/bin/vga
@@ -87,7 +86,6 @@ clean:
 	@rm -f ${DIR_IMAGE}/bin/ls
 	@rm -f ${DIR_IMAGE}/bin/reboot
 	@rm -f ${DIR_IMAGE}/bin/shell
-	@rm -f ${DIR_IMAGE}/bin/tar
 	@rm -f ${DIR_IMAGE}/bin/timer
 	@rm -f ${DIR_IMAGE}/bin/unload
 	@rm -f ${DIR_IMAGE}/bin/vga
