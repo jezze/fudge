@@ -32,6 +32,7 @@ struct tty_device
     struct stream_device out;
     struct stream_device error;
     struct stream_device cwd;
+    char cwdname[32];
     unsigned short cursorOffset;
     struct serial_device *serialDevice;
     struct kbd_device *kbdDevice;
@@ -39,6 +40,6 @@ struct tty_device
 
 };
 
-extern void tty_device_init(struct tty_device *device);
+extern void tty_device_init(struct tty_device *device, char *cwdname);
 
 #endif

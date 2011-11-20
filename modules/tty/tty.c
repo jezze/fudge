@@ -115,9 +115,9 @@ static unsigned int tty_device_node_write(struct vfs_node *self, unsigned int co
 static unsigned int tty_cwd_device_node_read(struct vfs_node *self, unsigned int count, void *buffer)
 {
 
-    count = string_length("/");
+    count = string_length(ttyDevice.cwdname);
 
-    string_write(buffer, "/");
+    string_write(buffer, ttyDevice.cwdname);
 
     return count;
 
@@ -126,11 +126,15 @@ static unsigned int tty_cwd_device_node_read(struct vfs_node *self, unsigned int
 static unsigned int tty_cwd_device_node_write(struct vfs_node *self, unsigned int count, void *buffer)
 {
 
-    return 0;
+    count = string_length(buffer);
+
+    string_write(ttyDevice.cwdname, buffer);
+
+    return count;
 
 }
 
-void tty_device_init(struct tty_device *device)
+void tty_device_init(struct tty_device *device, char *cwdname)
 {
 
     modules_device_init(&device->base, TTY_DEVICE_TYPE);
@@ -139,6 +143,8 @@ void tty_device_init(struct tty_device *device)
     device->vgaDevice = (struct vga_device *)modules_get_device(VGA_DEVICE_TYPE);
     device->vgaDevice->set_cursor_color(TTY_COLOR_WHITE, TTY_COLOR_BLACK);
     tty_clear();
+
+    string_write(device->cwdname, cwdname);
 
     stream_device_init(&device->in, "stdin", tty_device_node_read, 0);
     stream_device_init(&device->out, "stdout", 0, tty_device_node_write);
@@ -150,7 +156,7 @@ void tty_device_init(struct tty_device *device)
 void init()
 {
 
-    tty_device_init(&ttyDevice);
+    tty_device_init(&ttyDevice, "initrd");
 
     modules_register_device(&ttyDevice.in.base);
     modules_register_device(&ttyDevice.out.base);
