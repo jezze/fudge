@@ -9,7 +9,6 @@ static struct modules_bus *modulesBusses[MODULES_BUS_SLOTS];
 static struct modules_device *modulesDevices[MODULES_DEVICE_SLOTS];
 static struct modules_driver *modulesDrivers[MODULES_DRIVER_SLOTS];
 static struct vfs_filesystem modulesFilesystem;
-static struct vfs_node modulesRoot;
 
 struct modules_bus *modules_get_bus(unsigned int type)
 {
@@ -171,27 +170,6 @@ static unsigned int modules_filesystem_view_read(struct vfs_view *self, unsigned
 
 }
 
-static unsigned int modules_filesystem_node_read(struct vfs_node *self, unsigned int count, void *buffer)
-{
-
-    memory_set(buffer, 0, 1);
-    unsigned int i;
-
-    for (i = 0; modulesDevices[i]; i++)
-    {
-
-        if (modulesDevices[i]->type != STREAM_DEVICE_TYPE)
-            continue;
-
-        string_write_concat(buffer, ((struct stream_device *)modulesDevices[i])->name);
-        string_write_concat(buffer, "\n");
-
-    }
-
-    return string_length(buffer);
-
-}
-
 static struct vfs_view *modules_filesystem_find_view(struct vfs_filesystem *self, char *name)
 {
 
@@ -234,8 +212,7 @@ void modules_init()
 {
 
     vfs_view_init(&modulesViewDev, "dev", modules_filesystem_view_find_node, modules_filesystem_view_read);
-    vfs_node_init(&modulesRoot, 0, 0, 0, modules_filesystem_node_read, 0);
-    vfs_filesystem_init(&modulesFilesystem, &modulesRoot, modules_filesystem_find_view); 
+    vfs_filesystem_init(&modulesFilesystem, modules_filesystem_find_view); 
     vfs_register_filesystem(&modulesFilesystem);
 
 }
