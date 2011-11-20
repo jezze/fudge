@@ -98,24 +98,11 @@ static unsigned int initrd_filesystem_view_read(struct vfs_view *self, unsigned 
     for (i = 0; i < initrdFilesystem.nodesCount; i++)
     {
 
-        if (self == &initrdViews[0])
-        {
+        if (!string_find(initrdFilesystem.nodes[i].header->name, self->name))
+            continue;
 
-            string_write_concat(buffer, initrdFilesystem.nodes[i].name);
-            string_write_concat(buffer, "\n");
-
-        }
-
-        else
-        {
-
-            if (!string_find(initrdFilesystem.nodes[i].header->name, self->name))
-                continue;
-
-            string_write_concat(buffer, initrdFilesystem.nodes[i].name);
-            string_write_concat(buffer, "\n");
-
-        }
+        string_write_concat(buffer, initrdFilesystem.nodes[i].name);
+        string_write_concat(buffer, "\n");
 
     }
 
@@ -128,7 +115,7 @@ static struct vfs_view *initrd_filesystem_find_view(struct vfs_filesystem *self,
 
     unsigned int i;
 
-    for (i = 0; i < 6; i++)
+    for (i = 0; i < 5; i++)
     {
 
         if (!string_compare(initrdViews[i].name, name))
@@ -143,12 +130,11 @@ static struct vfs_view *initrd_filesystem_find_view(struct vfs_filesystem *self,
 void initrd_init(unsigned int initrdc, void **initrdv)
 {
 
-    vfs_view_init(&initrdViews[0], "initrd", initrd_filesystem_view_find_node, initrd_filesystem_view_read);
-    vfs_view_init(&initrdViews[1], "bin", initrd_filesystem_view_find_node, initrd_filesystem_view_read);
-    vfs_view_init(&initrdViews[2], "boot", initrd_filesystem_view_find_node, initrd_filesystem_view_read);
-    vfs_view_init(&initrdViews[3], "grub", initrd_filesystem_view_find_node, initrd_filesystem_view_read);
-    vfs_view_init(&initrdViews[4], "home", initrd_filesystem_view_find_node, initrd_filesystem_view_read);
-    vfs_view_init(&initrdViews[5], "mod", initrd_filesystem_view_find_node, initrd_filesystem_view_read);
+    vfs_view_init(&initrdViews[0], "bin", initrd_filesystem_view_find_node, initrd_filesystem_view_read);
+    vfs_view_init(&initrdViews[1], "boot", initrd_filesystem_view_find_node, initrd_filesystem_view_read);
+    vfs_view_init(&initrdViews[2], "grub", initrd_filesystem_view_find_node, initrd_filesystem_view_read);
+    vfs_view_init(&initrdViews[3], "home", initrd_filesystem_view_find_node, initrd_filesystem_view_read);
+    vfs_view_init(&initrdViews[4], "mod", initrd_filesystem_view_find_node, initrd_filesystem_view_read);
     vfs_filesystem_init(&initrdFilesystem.base, initrd_filesystem_find_view);
 
     initrdFilesystem.nodesCount = 0;
