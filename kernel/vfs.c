@@ -62,7 +62,16 @@ static unsigned int vfs_node_read(struct vfs_node *self, unsigned int count, voi
     unsigned int i;
 
     for (i = 0; vfsFilesystems[i]; i++)
-        vfsFilesystems[i]->root->read(vfsFilesystems[i]->root, count, buffer + string_length(buffer));
+    {
+
+        struct vfs_view *v = vfsFilesystems[i]->find_view(vfsFilesystems[i], "");
+
+        if (!v)
+            continue;
+
+        v->read(v, count, buffer + string_length(buffer));
+
+    }
 
     return string_length(buffer);
 

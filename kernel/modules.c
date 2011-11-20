@@ -128,10 +128,25 @@ void modules_register_driver(struct modules_driver *driver)
 
 }
 
-static struct vfs_view *modules_filesystem_find_view(struct vfs_filesystem *self, char *name)
+static struct vfs_node *modules_filesystem_view_find_node(struct vfs_view *self, char *name)
 {
 
-    return &modulesViewDev;
+    unsigned int i;
+
+    for (i = 0; modulesDevices[i]; i++)
+    {
+
+        if (modulesDevices[i]->type != STREAM_DEVICE_TYPE)
+            continue;
+
+        unsigned int count = string_length(((struct stream_device *)modulesDevices[i])->name) + 1;
+
+        if (!memory_compare(name, ((struct stream_device *)modulesDevices[i])->name, count))
+            return &((struct stream_device *)modulesDevices[i])->node;
+
+    }
+
+    return 0;
 
 }
 
@@ -156,28 +171,6 @@ static unsigned int modules_filesystem_view_read(struct vfs_view *self, unsigned
 
 }
 
-static struct vfs_node *modules_filesystem_view_find_node(struct vfs_view *self, char *name)
-{
-
-    unsigned int i;
-
-    for (i = 0; modulesDevices[i]; i++)
-    {
-
-        if (modulesDevices[i]->type != STREAM_DEVICE_TYPE)
-            continue;
-
-        unsigned int count = string_length(((struct stream_device *)modulesDevices[i])->name) + 1;
-
-        if (!memory_compare(name, ((struct stream_device *)modulesDevices[i])->name, count))
-            return &((struct stream_device *)modulesDevices[i])->node;
-
-    }
-
-    return 0;
-
-}
-
 static unsigned int modules_filesystem_node_read(struct vfs_node *self, unsigned int count, void *buffer)
 {
 
@@ -196,6 +189,13 @@ static unsigned int modules_filesystem_node_read(struct vfs_node *self, unsigned
     }
 
     return string_length(buffer);
+
+}
+
+static struct vfs_view *modules_filesystem_find_view(struct vfs_filesystem *self, char *name)
+{
+
+    return &modulesViewDev;
 
 }
 
