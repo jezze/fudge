@@ -123,11 +123,29 @@ static unsigned int initrd_filesystem_node_read(struct vfs_node *self, unsigned 
 
 }
 
+static unsigned int initrd_filesystem_view_read(struct vfs_view *self, unsigned int count, void *buffer)
+{
+
+    memory_set(buffer, 0, 1);
+    unsigned int i;
+
+    for (i = 0; i < initrdFilesystem.nodesCount; i++)
+    {
+
+        string_write_concat(buffer, initrdFilesystem.nodes[i].name);
+        string_write_concat(buffer, "\n");
+
+    }
+
+    return string_length(buffer);
+
+}
+
 void initrd_init(unsigned int initrdc, void **initrdv)
 {
 
-    vfs_view_init(&initrdViewInitrd, "initrd", initrd_filesystem_view_find_node);
-    vfs_view_init(&initrdViewBin, "bin", initrd_filesystem_view_find_node);
+    vfs_view_init(&initrdViewInitrd, "initrd", initrd_filesystem_view_find_node, initrd_filesystem_view_read);
+    vfs_view_init(&initrdViewBin, "bin", initrd_filesystem_view_find_node, initrd_filesystem_view_read);
     vfs_node_init(&initrdRoot, 0, 0, 0, initrd_filesystem_node_read, 0);
     vfs_filesystem_init(&initrdFilesystem.base, &initrdRoot, initrd_filesystem_find_view, initrd_filesystem_find_node);
 
