@@ -76,7 +76,7 @@ static struct vfs_node *initrd_filesystem_view_find_node(struct vfs_view *self, 
 
     unsigned int i;
 
-    for (i = 0; string_length(initrdFilesystem.nodes[i].name); i++)
+    for (i = 0; i < initrdFilesystem.nodesCount; i++)
     {
 
         unsigned int count = string_length(initrdFilesystem.nodes[i].name) + 1;
