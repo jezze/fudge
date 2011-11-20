@@ -176,9 +176,7 @@ static struct vfs_view *modules_filesystem_find_view(struct vfs_filesystem *self
     if (!string_compare(modulesViewDev.name, name))
         return &modulesViewDev;
     else
-        return &modulesViewDev;
-
-    // FIX: return 0;
+        return 0;
 
 }
 
