@@ -8,6 +8,7 @@ call_open:
     push edi
     mov eax, 0x00
     mov esi, [ebp + 8]
+    mov edi, [ebp + 12]
     int 0x80
     pop edi
     pop esi

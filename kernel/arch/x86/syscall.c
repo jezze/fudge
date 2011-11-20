@@ -74,9 +74,10 @@ static void syscall_load_handler(struct syscall_registers *registers)
 static void syscall_open_handler(struct syscall_registers *registers)
 {
 
-    char *path = (char *)registers->esi;
+    char *view = (char *)registers->esi;
+    char *name = (char *)registers->edi;
 
-    registers->eax = syscall_open(path);
+    registers->eax = syscall_open(view, name);
 
 }
 

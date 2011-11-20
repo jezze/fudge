@@ -5,7 +5,7 @@ char buffer[0x4000];
 void get_path(char *buffer, char *arg)
 {
 
-    int cwd = file_open("/cwd");
+    int cwd = file_open("dev", "/cwd");
     unsigned int count = file_read(cwd, 256, buffer);
 
     if (arg)
@@ -74,7 +74,7 @@ void main(int argc, char *argv[])
     else
         get_path(path, argv[1]);
 
-    int fd = file_open(path);
+    int fd = file_open("initrd", path);
 
     if (!fd)
     {

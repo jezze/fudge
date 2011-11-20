@@ -17,10 +17,10 @@ unsigned int file_info(unsigned int fd, struct file_info *info)
 
 }
 
-unsigned int file_open(char *name)
+unsigned int file_open(char *view, char *name)
 {
 
-    return call_open(name);
+    return call_open(view, name);
 
 }
 

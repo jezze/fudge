@@ -3,7 +3,7 @@
 void get_path(char *buffer, char *arg)
 {
 
-    int cwd = file_open("/cwd");
+    int cwd = file_open("dev", "/cwd");
     unsigned int count = file_read(cwd, 256, buffer);
 
     if (arg)
@@ -41,7 +41,7 @@ void main(int argc, char *argv[])
 
     get_path(path, argv[1]);
 
-    int new = file_open(path);
+    int new = file_open("initrd", path);
 
     if (!new)
     {
@@ -55,7 +55,7 @@ void main(int argc, char *argv[])
 
     file_close(new);
 
-    int cwd = file_open("/cwd");
+    int cwd = file_open("dev", "/cwd");
     file_write_format(cwd, path);
     file_close(cwd);
 

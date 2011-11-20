@@ -12,14 +12,14 @@ void main(int argc, char *argv[])
 
     }
 
-    int cwd = file_open("/cwd");
+    int cwd = file_open("dev", "/cwd");
 
     char path[256];
 
     unsigned int count = file_read(cwd, 256, path);
     string_write_concat(path, argv[1]);
 
-    int file = file_open(path);
+    int file = file_open("initrd", path);
 
     if (!file)
     {

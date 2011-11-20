@@ -139,7 +139,7 @@ unsigned int syscall_load(char *path)
 
 }
 
-unsigned int syscall_open(char *path)
+unsigned int syscall_open(char *view, char *name)
 {
 
     struct runtime_task *task = runtime_get_running_task();    
@@ -147,7 +147,7 @@ unsigned int syscall_open(char *path)
     if (!task)
         return 0;
 
-    struct vfs_node *node = vfs_find("initrd", path);
+    struct vfs_node *node = vfs_find(view, name);
 
     if (!node)
         return 0;
