@@ -3,7 +3,6 @@
 #include <kernel/vfs.h>
 
 static struct vfs_filesystem *vfsFilesystems[VFS_FILESYSTEM_SLOTS];
-static struct vfs_filesystem vfsFilesystem;
 static struct vfs_node vfsRoot;
 
 void vfs_register_filesystem(struct vfs_filesystem *filesystem)
@@ -32,7 +31,7 @@ struct vfs_node *vfs_find(char *view, char *name)
         return 0;
 
     if (string_length(name) == 1)
-        return vfsFilesystem.root;
+        return &vfsRoot;
 
     unsigned int i;
 
@@ -50,21 +49,7 @@ struct vfs_node *vfs_find(char *view, char *name)
 
 }
 
-static struct vfs_node *vfs_filesystem_find_node(struct vfs_filesystem *self, char *view, char *name)
-{
-
-    return 0;
-
-}
-
-static struct vfs_view *vfs_filesystem_find_view(struct vfs_filesystem *self, char *name)
-{
-
-    return 0;
-
-}
-
-static unsigned int vfs_filesystem_node_read(struct vfs_node *self, unsigned int count, void *buffer)
+static unsigned int vfs_node_read(struct vfs_node *self, unsigned int count, void *buffer)
 {
 
     memory_set(buffer, 0, 1);
@@ -72,14 +57,7 @@ static unsigned int vfs_filesystem_node_read(struct vfs_node *self, unsigned int
     unsigned int i;
 
     for (i = 0; vfsFilesystems[i]; i++)
-    {
-
-        if (vfsFilesystems[i] == &vfsFilesystem)
-            continue;
-
         vfsFilesystems[i]->root->read(vfsFilesystems[i]->root, count, buffer + string_length(buffer));
-
-    }
 
     return string_length(buffer);
 
@@ -105,10 +83,11 @@ void vfs_node_init(struct vfs_node *node, unsigned int id, void (*open)(struct v
 
 }
 
-void vfs_view_init(struct vfs_view *view, char *name)
+void vfs_view_init(struct vfs_view *view, char *name, struct vfs_node *(*find_node)(struct vfs_view *self, char *name))
 {
 
     string_write(view->name, name);
+    view->find_node = find_node;
 
 }
 
@@ -124,9 +103,7 @@ void vfs_filesystem_init(struct vfs_filesystem *filesystem, struct vfs_node *roo
 void vfs_init()
 {
 
-    vfs_node_init(&vfsRoot, 0, 0, 0, vfs_filesystem_node_read, 0);
-    vfs_filesystem_init(&vfsFilesystem, &vfsRoot, vfs_filesystem_find_node, vfs_filesystem_find_view);
-    vfs_register_filesystem(&vfsFilesystem);
+    vfs_node_init(&vfsRoot, 0, 0, 0, vfs_node_read, 0);
 
 }
 
