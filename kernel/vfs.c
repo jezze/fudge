@@ -27,7 +27,7 @@ void vfs_register_filesystem(struct vfs_filesystem *filesystem)
 struct vfs_node *vfs_find(char *view, char *name)
 {
 
-    if (name[0] != '/')
+    if (!string_length(name))
         return 0;
 
     if (string_length(name) == 1)
