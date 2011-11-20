@@ -35,8 +35,11 @@ struct vfs_node *vfs_find(char *view, char *name)
 
     unsigned int i;
 
-    for (i = 0; vfsFilesystems[i]; i++)
+    for (i = 0; i < VFS_FILESYSTEM_SLOTS; i++)
     {
+
+        if (!vfsFilesystems[i])
+            continue;
 
         struct vfs_view *v = vfsFilesystems[i]->find_view(vfsFilesystems[i], view);
 
@@ -65,8 +68,11 @@ static unsigned int vfs_node_read(struct vfs_node *self, unsigned int count, voi
 
     unsigned int i;
 
-    for (i = 0; vfsFilesystems[i]; i++)
+    for (i = 0; i < VFS_FILESYSTEM_SLOTS; i++)
     {
+
+        if (!vfsFilesystems[i])
+            continue;
 
         struct vfs_view *v = vfsFilesystems[i]->find_view(vfsFilesystems[i], xx);
 

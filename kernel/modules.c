@@ -132,8 +132,11 @@ static struct vfs_node *modules_filesystem_view_find_node(struct vfs_view *self,
 
     unsigned int i;
 
-    for (i = 0; modulesDevices[i]; i++)
+    for (i = 0; i < MODULES_DEVICE_SLOTS; i++)
     {
+
+        if (!modulesDevices[i])
+            continue;
 
         if (modulesDevices[i]->type != STREAM_DEVICE_TYPE)
             continue;
@@ -155,8 +158,11 @@ static unsigned int modules_filesystem_view_read(struct vfs_view *self, unsigned
     memory_set(buffer, 0, 1);
     unsigned int i;
 
-    for (i = 0; modulesDevices[i]; i++)
+    for (i = 0; i < MODULES_DEVICE_SLOTS; i++)
     {
+
+        if (!modulesDevices[i])
+            continue;
 
         if (modulesDevices[i]->type != STREAM_DEVICE_TYPE)
             continue;
