@@ -78,6 +78,43 @@ static unsigned int vfs_filesystem_node_read(struct vfs_node *self, unsigned int
 
 }
 
+static void vfs_filesystem_add_view(struct vfs_filesystem *self, struct vfs_view *view)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < 8; i++)
+    {
+
+        if (self->views[i])
+            continue;
+
+        self->views[i] = view;
+
+        break;
+
+    }
+
+}
+
+static struct vfs_view *vfs_filesystem_find_view(struct vfs_filesystem *self, char *name)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < 8; i++)
+    {
+
+        if (!string_compare(self->views[i]->name, name))
+            return self->views[i];
+
+    }
+
+    return 0;
+
+}
+
+
 void vfs_descriptor_init(struct vfs_descriptor *descriptor, unsigned int id, struct vfs_node *node, unsigned int permissions)
 {
 
@@ -98,10 +135,19 @@ void vfs_node_init(struct vfs_node *node, unsigned int id, void (*open)(struct v
 
 }
 
+void vfs_view_init(struct vfs_view *view, char *name)
+{
+
+    string_write(view->name, name);
+
+}
+
 void vfs_filesystem_init(struct vfs_filesystem *filesystem, struct vfs_node *root, struct vfs_node *(*lookup)(struct vfs_filesystem *self, char *view, char *name))
 {
 
     filesystem->root = root;
+    filesystem->add_view = vfs_filesystem_add_view;
+    filesystem->find_view = vfs_filesystem_find_view;
     filesystem->lookup = lookup;
 
 }

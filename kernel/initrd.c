@@ -4,6 +4,8 @@
 #include <kernel/vfs.h>
 #include <kernel/initrd.h>
 
+static struct vfs_view initrdViewInitrd;
+static struct vfs_view initrdViewBin;
 static struct initrd_filesystem initrdFilesystem;
 static struct vfs_node initrdRoot;
 
@@ -112,6 +114,12 @@ void initrd_init(unsigned int initrdc, void **initrdv)
 
     vfs_node_init(&initrdRoot, 0, 0, 0, initrd_filesystem_node_read, 0);
     vfs_filesystem_init(&initrdFilesystem.base, &initrdRoot, initrd_filesystem_lookup);
+
+    vfs_view_init(&initrdViewInitrd, "initrd");
+    initrdFilesystem.base.add_view(&initrdFilesystem.base, &initrdViewInitrd);
+
+    vfs_view_init(&initrdViewBin, "bin");
+    initrdFilesystem.base.add_view(&initrdFilesystem.base, &initrdViewBin);
 
     initrdFilesystem.nodesCount = 0;
 
