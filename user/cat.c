@@ -2,23 +2,12 @@
 
 char buffer[0x4000];
 
-void get_path(char *buffer, char *arg)
+void get_path(char *buffer)
 {
 
-    int cwd = file_open("dev", "/cwd");
-    unsigned int count = file_read(cwd, 256, buffer);
-
-    if (arg)
-    {
-
-        if (arg[0] == '/')
-            string_write(buffer, arg);
-        else
-            string_write_concat(buffer, arg);
-
-    }
-
-    file_close(cwd);
+    int fd = file_open("dev", "/cwd");
+    unsigned int count = file_read(fd, 256, buffer);
+    file_close(fd);
 
 }
 
@@ -36,14 +25,14 @@ void main(int argc, char *argv[])
 
     }
 
-    get_path(path, argv[1]);
+    get_path(path);
 
-    int fd = file_open("initrd", path);
+    int fd = file_open(path, argv[1]);
 
     if (!fd)
     {
 
-        file_write_format(FILE_STDOUT, "%s: File does not exist.\n", path);
+        file_write_format(FILE_STDOUT, "%s: File does not exist.\n", argv[1]);
 
         call_exit();
 

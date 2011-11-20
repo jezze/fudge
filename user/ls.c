@@ -57,7 +57,7 @@ void main(int argc, char *argv[])
 
     get_path(path);
 
-    int fd = file_open("initrd", "/");
+    int fd = file_open(path, "/");
 
     if (!fd)
     {
