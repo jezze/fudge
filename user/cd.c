@@ -13,7 +13,7 @@ void set_path(char *buffer)
 {
 
     int fd = file_open("dev", "cwd");
-    file_write_format(fd, buffer);
+    file_write(fd, string_length(buffer), buffer);
     file_close(fd);
 
 }
