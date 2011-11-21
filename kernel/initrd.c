@@ -45,7 +45,7 @@ static unsigned int initrd_parse(void *address)
 
         struct tar_header *header = (struct tar_header *)address;
 
-        if (header->name[0] == '\0')
+        if (!header->name[0])
             break;
 
         unsigned int size = initrd_get_file_size(header->size);
