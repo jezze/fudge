@@ -134,6 +134,13 @@ static unsigned int tty_cwd_device_node_write(struct vfs_node *self, unsigned in
 
 }
 
+static unsigned int tty_view_device_node_read(struct vfs_node *self, unsigned int count, void *buffer)
+{
+
+    return 0;
+
+}
+
 void tty_device_init(struct tty_device *device, char *cwdname)
 {
 
@@ -150,6 +157,7 @@ void tty_device_init(struct tty_device *device, char *cwdname)
     stream_device_init(&device->out, "stdout", 0, tty_device_node_write);
     stream_device_init(&device->error, "stderr", 0, tty_device_node_write);
     stream_device_init(&device->cwd, "cwd", tty_cwd_device_node_read, tty_cwd_device_node_write);
+    stream_device_init(&device->view, "view", tty_view_device_node_read, 0);
 
 }
 

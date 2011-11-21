@@ -32,6 +32,7 @@ struct tty_device
     struct stream_device out;
     struct stream_device error;
     struct stream_device cwd;
+    struct stream_device view;
     char cwdname[32];
     unsigned short cursorOffset;
     struct serial_device *serialDevice;
