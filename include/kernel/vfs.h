@@ -6,6 +6,7 @@
 struct vfs_node
 {
 
+    char name[32];
     unsigned int id;
     void *physical;
     void (*open)(struct vfs_node *self);

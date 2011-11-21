@@ -7,7 +7,6 @@ struct stream_device
 {
 
     struct modules_device base;
-    char name[128];
     struct vfs_node node;
 
 };

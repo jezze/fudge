@@ -141,9 +141,9 @@ static struct vfs_node *modules_filesystem_view_find_node(struct vfs_view *self,
         if (modulesDevices[i]->type != STREAM_DEVICE_TYPE)
             continue;
 
-        unsigned int count = string_length(((struct stream_device *)modulesDevices[i])->name) + 1;
+        unsigned int count = string_length(((struct stream_device *)modulesDevices[i])->node.name) + 1;
 
-        if (!memory_compare(name, ((struct stream_device *)modulesDevices[i])->name, count))
+        if (!memory_compare(name, ((struct stream_device *)modulesDevices[i])->node.name, count))
             return &((struct stream_device *)modulesDevices[i])->node;
 
     }
@@ -167,7 +167,7 @@ static unsigned int modules_filesystem_view_read(struct vfs_view *self, unsigned
         if (modulesDevices[i]->type != STREAM_DEVICE_TYPE)
             continue;
 
-        string_write_concat(buffer, ((struct stream_device *)modulesDevices[i])->name);
+        string_write_concat(buffer, ((struct stream_device *)modulesDevices[i])->node.name);
         string_write_concat(buffer, "\n");
 
     }

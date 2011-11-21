@@ -164,7 +164,7 @@ static unsigned int tty_view_device_node_read(struct vfs_node *self, unsigned in
             if (!node)
                 continue;
 
-            string_write_concat(buffer, "file");
+            string_write_concat(buffer, node->name);
             string_write_concat(buffer, "\n");
 
         }

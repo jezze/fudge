@@ -10,7 +10,6 @@ struct initrd_node
 {
 
     struct vfs_node base;
-    char name[64];
     unsigned int size;
     struct tar_header *header;
     void *data;

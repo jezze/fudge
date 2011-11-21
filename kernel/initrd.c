@@ -53,7 +53,7 @@ static unsigned int initrd_parse(void *address)
 
         struct initrd_node *initrdFileNode = &initrdFilesystem.nodes[i];
         vfs_node_init(&initrdFileNode->base, i, 0, 0, initrd_node_read, 0);
-        string_write(initrdFileNode->name, header->name + start);
+        string_write(initrdFileNode->base.name, header->name + start);
         initrdFileNode->size = size;
         initrdFileNode->header = header;
         initrdFileNode->data = (void *)(address + TAR_BLOCK_SIZE);
@@ -78,15 +78,15 @@ static struct vfs_node *initrd_filesystem_view_find_node(struct vfs_view *self, 
     for (i = 0; i < initrdFilesystem.nodesCount; i++)
     {
 
-        if (!initrdFilesystem.nodes[i].name[0])
+        if (!initrdFilesystem.nodes[i].base.name[0])
             continue;
 
         if (!string_find(initrdFilesystem.nodes[i].header->name, self->name))
             continue;
 
-        unsigned int count = string_length(initrdFilesystem.nodes[i].name) + 1;
+        unsigned int count = string_length(initrdFilesystem.nodes[i].base.name) + 1;
 
-        if (!memory_compare(name, initrdFilesystem.nodes[i].name, count))
+        if (!memory_compare(name, initrdFilesystem.nodes[i].base.name, count))
             return &initrdFilesystem.nodes[i].base;
 
     }
@@ -104,13 +104,13 @@ static unsigned int initrd_filesystem_view_read(struct vfs_view *self, unsigned 
     for (i = 0; i < initrdFilesystem.nodesCount; i++)
     {
 
-        if (!initrdFilesystem.nodes[i].name[0])
+        if (!initrdFilesystem.nodes[i].base.name[0])
             continue;
 
         if (!string_find(initrdFilesystem.nodes[i].header->name, self->name))
             continue;
 
-        string_write_concat(buffer, initrdFilesystem.nodes[i].name);
+        string_write_concat(buffer, initrdFilesystem.nodes[i].base.name);
         string_write_concat(buffer, "\n");
 
     }
@@ -122,7 +122,7 @@ static unsigned int initrd_filesystem_view_read(struct vfs_view *self, unsigned 
 static struct vfs_node *initrd_filesystem_view_walk(struct vfs_view *self, unsigned int index)
 {
 
-    if (!initrdFilesystem.nodes[index].name[0])
+    if (!initrdFilesystem.nodes[index].base.name[0])
         return 0;
 
     return &initrdFilesystem.nodes[index].base;
