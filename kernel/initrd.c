@@ -52,7 +52,7 @@ static unsigned int initrd_parse(void *address)
         unsigned int size = initrd_get_file_size(header->size);
         unsigned int start = string_index_reversed(header->name, '/', (header->typeflag[0] == TAR_FILETYPE_DIR) ? 1 : 0) + 1;
 
-        struct initrd_node *initrdFileNode = &initrdFilesystem.nodes[i];
+        struct initrd_node *initrdFileNode = &initrdFilesystem.nodes[count];
         vfs_node_init(&initrdFileNode->base, count, 0, 0, initrd_node_read, 0);
         string_write(initrdFileNode->name, header->name + start);
         initrdFileNode->size = size;
