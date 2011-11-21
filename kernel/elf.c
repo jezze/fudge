@@ -68,9 +68,11 @@ void *elf_get_virtual(void *address)
 
 }
 
-static void *elf_get_symbol(void *address, struct elf_section_header *symHeader, char *symname)
+static void *elf_get_symbol(void *address, char *symname)
 {
 
+    struct elf_section_header *relHeader = elf_get_section_header_by_index(address, 2);
+    struct elf_section_header *symHeader = elf_get_section_header_by_index(address, relHeader->link);
     struct elf_section_header *strHeader = elf_get_section_header_by_index(address, symHeader->link);
     char *strtbl = (char *)(address + strHeader->offset);
 
@@ -109,7 +111,7 @@ void elf_relocate(void *address)
     struct elf_section_header *strHeader = elf_get_section_header_by_index(address, symHeader->link);
     char *strtbl = (char *)(address + strHeader->offset);
 
-    void *ioffset = elf_get_symbol(address, symHeader, "init");
+    void *ioffset = elf_get_symbol(address, "init");
 
     if (!ioffset)
         return;
