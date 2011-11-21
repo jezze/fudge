@@ -3,7 +3,7 @@
 #include <kernel/kernel.h>
 #include <kernel/elf.h>
 
-struct elf_header *elf_get_header(void *address)
+static struct elf_header *elf_get_header(void *address)
 {
 
     struct elf_header *header = (struct elf_header *)address;
