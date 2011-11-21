@@ -4,7 +4,7 @@ void get_path(char *buffer)
 {
 
     int fd = file_open("dev", "cwd");
-    unsigned int count = file_read(fd, 256, buffer);
+    file_read(fd, 256, buffer);
     file_close(fd);
 
 }

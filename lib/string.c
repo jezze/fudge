@@ -199,7 +199,6 @@ char *string_write_format(char *out, char *in, ...)
     arg++;
 
     char num[32];
-    int count = 0;
     char c;
 
     while ((c = *in++))
