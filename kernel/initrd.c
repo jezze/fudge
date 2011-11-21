@@ -39,7 +39,6 @@ static unsigned int initrd_parse(void *address)
 {
 
     unsigned int i;
-    unsigned int count = 0;
 
     for (i = 0; ; i++)
     {
@@ -52,8 +51,8 @@ static unsigned int initrd_parse(void *address)
         unsigned int size = initrd_get_file_size(header->size);
         unsigned int start = string_index_reversed(header->name, '/', (header->typeflag[0] == TAR_FILETYPE_DIR) ? 1 : 0) + 1;
 
-        struct initrd_node *initrdFileNode = &initrdFilesystem.nodes[count];
-        vfs_node_init(&initrdFileNode->base, count, 0, 0, initrd_node_read, 0);
+        struct initrd_node *initrdFileNode = &initrdFilesystem.nodes[i];
+        vfs_node_init(&initrdFileNode->base, i, 0, 0, initrd_node_read, 0);
         string_write(initrdFileNode->name, header->name + start);
         initrdFileNode->size = size;
         initrdFileNode->header = header;
@@ -65,11 +64,9 @@ static unsigned int initrd_parse(void *address)
         if (size % TAR_BLOCK_SIZE)
             address += TAR_BLOCK_SIZE;
 
-        count++;
-
     }
 
-    return count;
+    return i;
 
 }
 
@@ -80,6 +77,9 @@ static struct vfs_node *initrd_filesystem_view_find_node(struct vfs_view *self, 
 
     for (i = 0; i < initrdFilesystem.nodesCount; i++)
     {
+
+        if (!initrdFilesystem.nodes[i].name[0])
+            continue;
 
         if (!string_find(initrdFilesystem.nodes[i].header->name, self->name))
             continue;
@@ -104,6 +104,9 @@ static unsigned int initrd_filesystem_view_read(struct vfs_view *self, unsigned 
     for (i = 0; i < initrdFilesystem.nodesCount; i++)
     {
 
+        if (!initrdFilesystem.nodes[i].name[0])
+            continue;
+
         if (!string_find(initrdFilesystem.nodes[i].header->name, self->name))
             continue;
 
@@ -121,8 +124,11 @@ static struct vfs_view *initrd_filesystem_find_view(struct vfs_filesystem *self,
 
     unsigned int i;
 
-    for (i = 0; i < 5; i++)
+    for (i = 0; i < 8; i++)
     {
+
+        if (!initrdViews[i].name[0])
+            continue;
 
         if (!string_compare(initrdViews[i].name, name))
             return &initrdViews[i];
