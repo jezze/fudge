@@ -152,30 +152,6 @@ static struct vfs_node *modules_filesystem_view_find_node(struct vfs_view *self,
 
 }
 
-static unsigned int modules_filesystem_view_read(struct vfs_view *self, unsigned int count, void *buffer)
-{
-
-    memory_set(buffer, 0, 1);
-    unsigned int i;
-
-    for (i = 0; i < MODULES_DEVICE_SLOTS; i++)
-    {
-
-        if (!modulesDevices[i])
-            continue;
-
-        if (modulesDevices[i]->type != STREAM_DEVICE_TYPE)
-            continue;
-
-        string_write_concat(buffer, ((struct stream_device *)modulesDevices[i])->node.name);
-        string_write_concat(buffer, "\n");
-
-    }
-
-    return string_length(buffer);
-
-}
-
 static struct vfs_node *modules_filesystem_view_walk(struct vfs_view *self, unsigned int index)
 {
 
@@ -246,7 +222,7 @@ void modules_driver_init(struct modules_driver *driver, unsigned int type)
 void modules_init()
 {
 
-    vfs_view_init(&modulesViewDev, "dev", modules_filesystem_view_find_node, modules_filesystem_view_read, modules_filesystem_view_walk);
+    vfs_view_init(&modulesViewDev, "dev", modules_filesystem_view_find_node, modules_filesystem_view_walk);
     vfs_filesystem_init(&modulesFilesystem, modules_filesystem_find_view); 
     vfs_register_filesystem(&modulesFilesystem);
 

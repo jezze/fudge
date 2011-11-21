@@ -57,16 +57,7 @@ void main(int argc, char *argv[])
 
     get_path(path);
 
-    int fd = file_open(path, "/");
-
-    if (!fd)
-    {
-
-        file_write_format(FILE_STDOUT, "%s: File does not exist.\n", path);
-
-        call_exit();
-
-    }
+    int fd = file_open("dev", "view");
 
     file_read(fd, 0x1000, buffer);
 
