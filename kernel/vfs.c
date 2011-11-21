@@ -24,6 +24,16 @@ void vfs_register_filesystem(struct vfs_filesystem *filesystem)
 
 }
 
+struct vfs_filesystem *vfs_get_filesystem(unsigned int index)
+{
+
+    if (!vfsFilesystems[index])
+        return 0;
+
+    return vfsFilesystems[index];
+
+}
+
 struct vfs_node *vfs_find(char *view, char *name)
 {
 

@@ -18,5 +18,6 @@ modules_get_driver
 modules_register_bus
 modules_register_device
 modules_register_driver
+vfs_get_filesystem
 vfs_find
 vfs_node_init

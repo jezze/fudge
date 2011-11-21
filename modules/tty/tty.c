@@ -143,17 +143,19 @@ static unsigned int tty_view_device_node_read(struct vfs_node *self, unsigned in
 
     for (i = 0; i < VFS_FILESYSTEM_SLOTS; i++)
     {
-/*
-        if (!vfsFilesystems[i])
+
+        struct vfs_filesystem *filesystem = vfs_get_filesystem(i);
+
+        if (!filesystem)
             continue;
 
-        struct vfs_view *v = vfsFilesystems[i]->find_view(vfsFilesystems[i], ttyDevice.cwdname);
+        struct vfs_view *v = filesystem->find_view(filesystem, ttyDevice.cwdname);
 
         if (!v)
             continue;
 
         v->read(v, count, buffer + string_length(buffer));
-*/
+
     }
 
     return string_length(buffer);
