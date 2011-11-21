@@ -256,7 +256,12 @@ void *runtime_relocate(void *paddress)
 
     elf_relocate(paddress);
 
-    return elf_get_entry(paddress);
+    void *init = elf_get_symbol(paddress, "init");
+
+    if (!init)
+        return 0;
+
+    return init;
 
 }
 

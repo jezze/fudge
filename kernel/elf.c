@@ -68,10 +68,16 @@ void *elf_get_virtual(void *address)
 
 }
 
-static void *elf_get_symbol(void *address, char *symname)
+void *elf_get_symbol(void *address, char *symname)
 {
 
+    struct elf_header *header = elf_get_header(address);
+
+    if (!header)
+        return 0;
+
     struct elf_section_header *relHeader = elf_get_section_header_by_index(address, 2);
+    struct elf_section_header *infoHeader = elf_get_section_header_by_index(address, relHeader->info);
     struct elf_section_header *symHeader = elf_get_section_header_by_index(address, relHeader->link);
     struct elf_section_header *strHeader = elf_get_section_header_by_index(address, symHeader->link);
     char *strtbl = (char *)(address + strHeader->offset);
@@ -89,7 +95,7 @@ static void *elf_get_symbol(void *address, char *symname)
         char *name = strtbl + symbol->name;
 
         if (!string_compare(symname, name))
-            return (void *)symbol->value;
+            return (void *)(address + infoHeader->offset + symbol->value);
 
     }
 
@@ -110,11 +116,6 @@ void elf_relocate(void *address)
     struct elf_section_header *symHeader = elf_get_section_header_by_index(address, relHeader->link);
     struct elf_section_header *strHeader = elf_get_section_header_by_index(address, symHeader->link);
     char *strtbl = (char *)(address + strHeader->offset);
-
-    void *ioffset = elf_get_symbol(address, "init");
-
-    if (!ioffset)
-        return;
 
     unsigned int i;
 
@@ -151,8 +152,6 @@ void elf_relocate(void *address)
         }
 
     }
-
-    header->entry = (void *)((int)address + infoHeader->offset + (int)ioffset);
 
 }
 
