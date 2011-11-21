@@ -1,4 +1,3 @@
-#include <lib/memory.h>
 #include <lib/string.h>
 #include <kernel/vfs.h>
 
@@ -96,11 +95,6 @@ void vfs_filesystem_init(struct vfs_filesystem *filesystem, struct vfs_view *(fi
 {
 
     filesystem->find_view = find_view;
-
-}
-
-void vfs_init()
-{
 
 }
 

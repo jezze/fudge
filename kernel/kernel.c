@@ -146,7 +146,6 @@ void kernel_init(struct kernel_arch *arch)
     kernel_core_init(&kernelCore, arch);
     kernelCore.arch->setup(kernelCore.arch);
 
-    vfs_init();
     modules_init();
     event_init();
     initrd_init(kernelCore.arch->initrdc, kernelCore.arch->initrdv);
