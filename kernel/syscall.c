@@ -120,7 +120,7 @@ unsigned int syscall_info(unsigned int fd, struct file_info *info)
 unsigned int syscall_load(char *path)
 {
 
-    struct vfs_node *node = vfs_find("bin", path);
+    struct vfs_node *node = vfs_find("mod", path);
 
     if (!node)
         return 0;
