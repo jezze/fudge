@@ -137,7 +137,26 @@ static unsigned int tty_cwd_device_node_write(struct vfs_node *self, unsigned in
 static unsigned int tty_view_device_node_read(struct vfs_node *self, unsigned int count, void *buffer)
 {
 
-    return 0;
+    memory_set(buffer, 0, 1);
+
+    unsigned int i;
+
+    for (i = 0; i < VFS_FILESYSTEM_SLOTS; i++)
+    {
+/*
+        if (!vfsFilesystems[i])
+            continue;
+
+        struct vfs_view *v = vfsFilesystems[i]->find_view(vfsFilesystems[i], ttyDevice.cwdname);
+
+        if (!v)
+            continue;
+
+        v->read(v, count, buffer + string_length(buffer));
+*/
+    }
+
+    return string_length(buffer);
 
 }
 
@@ -170,6 +189,7 @@ void init()
     modules_register_device(&ttyDevice.out.base);
     modules_register_device(&ttyDevice.error.base);
     modules_register_device(&ttyDevice.cwd.base);
+    modules_register_device(&ttyDevice.view.base);
     modules_register_device(&ttyDevice.base);
 
 }
