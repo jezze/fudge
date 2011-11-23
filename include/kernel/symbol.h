@@ -1,7 +1,9 @@
 #ifndef KERNEL_SYMBOL_H
 #define KERNEL_SYMBOL_H
 
-struct kernel_symbol
+#define SYMBOL_BUFFER_SIZE 1024
+
+struct symbol_entry
 {
 
     char name[32];

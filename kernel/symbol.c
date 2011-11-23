@@ -1,9 +1,10 @@
 #include <lib/string.h>
+#include <kernel/error.h>
 #include <kernel/symbol.h>
 #include <kernel/vfs.h>
 
-static struct kernel_symbol kernelSymbols[32];
-static char kernelSymbolBuffer[1024];
+static struct symbol_entry symbolSlots[32];
+static char symbolBuffer[SYMBOL_BUFFER_SIZE];
 
 void *symbol_find(char *name)
 {
@@ -13,8 +14,8 @@ void *symbol_find(char *name)
     for (i = 0; i < 32; i++)
     {
 
-        if (!string_compare(kernelSymbols[i].name, name))
-            return kernelSymbols[i].paddress;
+        if (!string_compare(symbolSlots[i].name, name))
+            return symbolSlots[i].paddress;
 
     }
 
@@ -26,30 +27,34 @@ void symbol_init()
 {
 
     struct vfs_node *node = vfs_find("boot", "fudge.map");
-    node->read(node, 1024, kernelSymbolBuffer);
+
+    if (!node)
+        error_panic("Symbol table not found", __FILE__, __LINE__);
+
+    node->read(node, SYMBOL_BUFFER_SIZE, symbolBuffer);
 
     unsigned int i;
     unsigned int start = 0;
     unsigned int index = 0;
 
-    for (i = 0; i < 1024; i++)
+    for (i = 0; i < SYMBOL_BUFFER_SIZE; i++)
     {
 
-        switch (kernelSymbolBuffer[i])
+        switch (symbolBuffer[i])
         {
 
             case ' ':
 
-                kernelSymbolBuffer[i] = '\0';
+                symbolBuffer[i] = '\0';
 
                 break;
 
             case '\n':
 
-                kernelSymbolBuffer[i] = '\0';
+                symbolBuffer[i] = '\0';
 
-                string_write(kernelSymbols[index].name, kernelSymbolBuffer + start + 11);
-                kernelSymbols[index].paddress = (void *)string_read_num(kernelSymbolBuffer + start, 16);
+                string_write(symbolSlots[index].name, symbolBuffer + start + 11);
+                symbolSlots[index].paddress = (void *)string_read_num(symbolBuffer + start, 16);
                 index++;
 
                 start = i + 1;
