@@ -6,7 +6,6 @@
 #define SYSCALL_ROUTINE_CLOSE   0x01
 #define SYSCALL_ROUTINE_READ    0x02
 #define SYSCALL_ROUTINE_WRITE   0x03
-#define SYSCALL_ROUTINE_INFO    0x04
 #define SYSCALL_ROUTINE_EXECUTE 0x10
 #define SYSCALL_ROUTINE_EXIT    0x11
 #define SYSCALL_ROUTINE_WAIT    0x12
@@ -22,7 +21,6 @@ extern unsigned int syscall_close(unsigned int fd);
 extern unsigned int syscall_detach(unsigned int index);
 extern unsigned int syscall_execute(char *path, unsigned int argc, char **argv);
 extern unsigned int syscall_exit();
-extern unsigned int syscall_info(unsigned int fd, struct file_info *info);
 extern unsigned int syscall_load(char *path);
 extern unsigned int syscall_open(char *view, char *name);
 extern unsigned int syscall_read(unsigned int fd, unsigned int count, char *buffer);

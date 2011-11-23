@@ -52,16 +52,6 @@ static void syscall_exit_handler(struct syscall_registers *registers)
 
 }
 
-static void syscall_info_handler(struct syscall_registers *registers)
-{
-
-    unsigned int fd = registers->ebx;
-    struct file_info *info = (struct file_info *)registers->edi;
-
-    registers->eax = syscall_info(fd, info);
-
-}
-
 static void syscall_load_handler(struct syscall_registers *registers)
 {
 
@@ -174,7 +164,6 @@ void syscall_init()
     syscall_register_handler(SYSCALL_ROUTINE_CLOSE, syscall_close_handler);
     syscall_register_handler(SYSCALL_ROUTINE_READ, syscall_read_handler);
     syscall_register_handler(SYSCALL_ROUTINE_WRITE, syscall_write_handler);
-    syscall_register_handler(SYSCALL_ROUTINE_INFO, syscall_info_handler);
     syscall_register_handler(SYSCALL_ROUTINE_EXECUTE, syscall_execute_handler);
     syscall_register_handler(SYSCALL_ROUTINE_EXIT, syscall_exit_handler);
     syscall_register_handler(SYSCALL_ROUTINE_WAIT, syscall_wait_handler);

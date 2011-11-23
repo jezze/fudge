@@ -10,13 +10,6 @@ void file_close(unsigned int fd)
 
 }
 
-unsigned int file_info(unsigned int fd, struct file_info *info)
-{
-
-    return call_info(fd, info);
-
-}
-
 unsigned int file_open(char *view, char *name)
 {
 

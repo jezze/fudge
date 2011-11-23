@@ -7,7 +7,6 @@ extern unsigned int call_open(char *view, char *name);
 extern void call_close(unsigned int fd);
 extern unsigned int call_read(unsigned int fd, void *buffer, unsigned int count);
 extern unsigned int call_write(unsigned int fd, void *buffer, unsigned int count);
-extern unsigned int call_info(unsigned int fd, struct file_info *info);
 extern unsigned int call_execute(char *path, unsigned int argc, char **argv);
 extern unsigned int call_load(char *path);
 extern unsigned int call_unload(char *path);
