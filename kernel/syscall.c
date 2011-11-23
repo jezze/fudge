@@ -66,6 +66,14 @@ unsigned int syscall_execute(char *path, unsigned int argc, char **argv)
     if (!task->load(task, path, argc, argv))
         return 0;
 
+    struct vfs_node *sin = vfs_find("dev", "stdin");
+    struct vfs_node *sout = vfs_find("dev", "stdout");
+    struct vfs_node *serror = vfs_find("dev", "stderr");
+
+    task->add_descriptor(task, sin);
+    task->add_descriptor(task, sout);
+    task->add_descriptor(task, serror);
+
     runtime_activate(task);
 
     event_handler(EVENT_SYSCALL_EXECUTE);

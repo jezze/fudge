@@ -76,7 +76,7 @@ void runtime_activate(struct runtime_task *task)
 
 }
 
-static void *runtime_copy_argv(void *paddress, void *vaddress, unsigned int argc, char **argv)
+static void *runtime_task_load_argv(void *paddress, void *vaddress, unsigned int argc, char **argv)
 {
 
     unsigned int start = 0xFD00;
@@ -98,7 +98,7 @@ static void *runtime_copy_argv(void *paddress, void *vaddress, unsigned int argc
 
 }
 
-static void *runtime_task_create_stack(void *pstack, void *vstack, void *ip, unsigned int argc, char **argv)
+static void *runtime_task_load_stack(void *pstack, void *vstack, void *ip, unsigned int argc, char **argv)
 {
 
     memory_copy(pstack - 0x4, &argv, 4);
@@ -106,24 +106,6 @@ static void *runtime_task_create_stack(void *pstack, void *vstack, void *ip, uns
     memory_copy(pstack - 0xC, &ip, 4);
 
     return vstack - 0xC;
-
-}
-
-static void runtime_task_load_descriptors(struct runtime_task *task)
-{
-
-    unsigned int i;
-
-    for (i = 0; i < RUNTIME_TASK_DESCRIPTOR_SLOTS; i++)
-        task->descriptors[i].node = 0;
-
-    struct vfs_node *sin = vfs_find("dev", "stdin");
-    struct vfs_node *sout = vfs_find("dev", "stdout");
-    struct vfs_node *serror = vfs_find("dev", "stderr");
-
-    task->add_descriptor(task, sin);
-    task->add_descriptor(task, sout);
-    task->add_descriptor(task, serror);
 
 }
 
@@ -153,12 +135,15 @@ static unsigned int runtime_task_load(struct runtime_task *self, char *path, uns
     self->used = 1;
     self->registers.ip = entry;
 
-    void *vargv = runtime_copy_argv(paddress, vaddress, argc, argv);
-    self->registers.sp = runtime_task_create_stack(paddress + limit, vaddress + limit, self->registers.ip, argc, vargv);
+    void *vargv = runtime_task_load_argv(paddress, vaddress, argc, argv);
+    self->registers.sp = runtime_task_load_stack(paddress + limit, vaddress + limit, self->registers.ip, argc, vargv);
 
     kernel_map_task_memory(paddress, vaddress, limit, 0x7, 0x7);
 
-    runtime_task_load_descriptors(self);
+    unsigned int i;
+
+    for (i = 0; i < RUNTIME_TASK_DESCRIPTOR_SLOTS; i++)
+        self->descriptors[i].node = 0;
 
     return 1;
 
