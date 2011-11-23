@@ -6,10 +6,9 @@
 #include <kernel/log.h>
 #include <kernel/modules.h>
 #include <kernel/runtime.h>
+#include <kernel/symbol.h>
 
 static struct kernel_core kernelCore;
-static struct kernel_symbol kernelSymbols[32];
-static char kernelSymbolBuffer[1024];
 
 void kernel_disable_interrupts()
 {
@@ -74,67 +73,10 @@ void kernel_map_task_memory(void *paddress, void *vaddress, unsigned int size, u
 
 }
 
-void *kernel_get_symbol(char *name)
-{
-
-    unsigned int i;
-
-    for (i = 0; i < 32; i++)
-    {
-
-        if (!string_compare(kernelSymbols[i].name, name))
-            return kernelSymbols[i].paddress;
-
-    }
-
-    return 0;
-
-}
-
 void kernel_core_init(struct kernel_core *core, struct kernel_arch *arch)
 {
 
     core->arch = arch;
-
-}
-
-static void kernel_init_symbols()
-{
-
-    struct vfs_node *node = vfs_find("boot", "fudge.map");
-    node->read(node, 1024, kernelSymbolBuffer);
-
-    unsigned int i;
-    unsigned int start = 0;
-    unsigned int index = 0;
-
-    for (i = 0; i < 1024; i++)
-    {
-
-        switch (kernelSymbolBuffer[i])
-        {
-
-            case ' ':
-
-                kernelSymbolBuffer[i] = '\0';
-
-                break;
-
-            case '\n':
-
-                kernelSymbolBuffer[i] = '\0';
-
-                string_write(kernelSymbols[index].name, kernelSymbolBuffer + start + 11);
-                kernelSymbols[index].paddress = (void *)string_read_num(kernelSymbolBuffer + start, 16);
-                index++;
-
-                start = i + 1;
-
-                break;
-
-        }
-
-    }
 
 }
 
@@ -149,7 +91,7 @@ void kernel_init(struct kernel_arch *arch)
     modules_init();
     event_init();
     initrd_init(kernelCore.arch->initrdc, kernelCore.arch->initrdv);
-    kernel_init_symbols();
+    symbol_init();
     runtime_init();
 
     struct runtime_task *task = runtime_get_slot();

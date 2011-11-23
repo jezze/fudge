@@ -29,15 +29,6 @@ struct kernel_core
 
 };
 
-struct kernel_symbol
-{
-
-    char name[32];
-    void *paddress;
-
-};
-
-extern void *kernel_get_symbol(char *name);
 extern void kernel_disable_interrupts();
 extern void kernel_enable_interrupts();
 extern void kernel_enter_usermode(void *callback, void *stack);

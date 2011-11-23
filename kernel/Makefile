@@ -27,12 +27,13 @@ kernel:
 	@${GCC} ${GCCFLAGS} log.c -o log.o
 	@${GCC} ${GCCFLAGS} modules.c -o modules.o
 	@${GCC} ${GCCFLAGS} runtime.c -o runtime.o
+	@${GCC} ${GCCFLAGS} symbol.c -o symbol.o
 	@${GCC} ${GCCFLAGS} syscall.c -o syscall.o
 	@${GCC} ${GCCFLAGS} vfs.c -o vfs.o
 
 arch-arm:
 	@make -C ${DIR_SOURCE_ARCH}/
-	@${LD} elf.o error.o event.o initrd.o kernel.o log.o modules.o runtime.o syscall.o vfs.o \
+	@${LD} elf.o error.o event.o initrd.o kernel.o log.o modules.o runtime.o symbol.o syscall.o vfs.o \
 		${DIR_SOURCE_ARCH}/arch.o \
 		${DIR_SOURCE_ARCH}/call.o \
 		${DIR_SOURCE_ARCH}/init.o \
@@ -43,7 +44,7 @@ arch-arm:
 
 arch-x86:
 	@make -C ${DIR_SOURCE_ARCH}/
-	@${LD} ${LDFLAGS} elf.o error.o event.o initrd.o kernel.o log.o modules.o runtime.o syscall.o vfs.o \
+	@${LD} ${LDFLAGS} elf.o error.o event.o initrd.o kernel.o log.o modules.o runtime.o symbol.o syscall.o vfs.o \
 		${DIR_SOURCE_ARCH}/arch.o \
 		${DIR_SOURCE_ARCH}/calls.o \
 		${DIR_SOURCE_ARCH}/cpu.o \

@@ -1,7 +1,7 @@
 #include <lib/elf.h>
 #include <lib/string.h>
-#include <kernel/kernel.h>
 #include <kernel/elf.h>
+#include <kernel/symbol.h>
 
 static struct elf_header *elf_get_header(void *address)
 {
@@ -131,7 +131,7 @@ void elf_relocate(void *address)
         int offset = elf_get_section_header_by_index(address, symbol->index)->offset;
 
         int *entry = (int *)((int)address + infoHeader->offset + relocate->offset);
-        int reloc = (symbol->index) ? (int)address + offset : (int)kernel_get_symbol(strtbl + symbol->name);
+        int reloc = (symbol->index) ? (int)address + offset : (int)symbol_find(strtbl + symbol->name);
         int paddress = reloc + symbol->value;
 
         switch (type)
