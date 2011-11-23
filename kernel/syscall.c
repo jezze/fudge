@@ -105,26 +105,6 @@ unsigned int syscall_exit()
 
 }
 
-unsigned int syscall_info(unsigned int fd, struct file_info *info)
-{
-
-    struct runtime_task *task = runtime_get_running_task();
-
-    if (!task)
-        return 0;
-
-    struct vfs_node *node = task->get_descriptor(task, fd)->node;
-
-    if (!node)
-        return 0;
-
-    info->id = node->id;
-    info->length = 0;
-
-    return 1;
-
-}
-
 unsigned int syscall_load(char *path)
 {
 
