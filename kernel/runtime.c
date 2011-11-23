@@ -98,18 +98,14 @@ static void *runtime_copy_argv(void *paddress, void *vaddress, unsigned int argc
 
 }
 
-static void *runtime_task_create_stack(struct runtime_task *self, void *paddress, void *vaddress, unsigned int limit, unsigned int argc, char **argv)
+static void *runtime_task_create_stack(void *pstack, void *vstack, void *ip, unsigned int argc, char **argv)
 {
 
-    void *nargv = runtime_copy_argv(paddress, vaddress, argc, argv);
-
-    void *pstack = paddress + limit;
-
-    memory_copy(pstack - 0x4, &nargv, 4);
+    memory_copy(pstack - 0x4, &argv, 4);
     memory_copy(pstack - 0x8, &argc, 4);
-    memory_copy(pstack - 0xC, &self->registers.ip, 4);
+    memory_copy(pstack - 0xC, &ip, 4);
 
-    return vaddress + limit - 0xC;
+    return vstack - 0xC;
 
 }
 
@@ -138,7 +134,9 @@ static unsigned int runtime_task_load(struct runtime_task *self, char *path, uns
 
     self->used = 1;
     self->registers.ip = entry;
-    self->registers.sp = runtime_task_create_stack(self, paddress, vaddress, limit, argc, argv);
+
+    void *vargv = runtime_copy_argv(paddress, vaddress, argc, argv);
+    self->registers.sp = runtime_task_create_stack(paddress + limit, vaddress + limit, self->registers.ip, argc, vargv);
 
     kernel_map_task_memory(paddress, vaddress, limit, 0x7, 0x7);
 
