@@ -98,18 +98,18 @@ static void *runtime_copy_argv(void *paddress, void *vaddress, unsigned int argc
 
 }
 
-static void runtime_task_create_stack(struct runtime_task *self, void *paddress, void *vaddress, unsigned int argc, char **argv)
+static void *runtime_task_create_stack(struct runtime_task *self, void *paddress, void *vaddress, unsigned int limit, unsigned int argc, char **argv)
 {
 
     void *nargv = runtime_copy_argv(paddress, vaddress, argc, argv);
 
-    unsigned int *stack = (unsigned int *)((unsigned int)paddress + 0x10000);
+    void *pstack = paddress + limit;
 
-    memory_copy(stack - 1, &nargv, 4);
-    memory_copy(stack - 2, &argc, 4);
-    memory_copy(stack - 3, &self->registers.ip, 4);
+    memory_copy(pstack - 0x4, &nargv, 4);
+    memory_copy(pstack - 0x8, &argc, 4);
+    memory_copy(pstack - 0xC, &self->registers.ip, 4);
 
-    self->registers.sp = vaddress + 0xFFF4;
+    return vaddress + limit - 0xC;
 
 }
 
@@ -117,13 +117,14 @@ static unsigned int runtime_task_load(struct runtime_task *self, char *path, uns
 {
 
     void *paddress = kernel_get_task_memory(self->id);
+    unsigned int limit = 0x10000;
 
     struct vfs_node *node = vfs_find("bin", path);
 
     if (!(node && node->read))
         return 0;
 
-    node->read(node, 0x10000, paddress);
+    node->read(node, limit, paddress);
 
     void *vaddress = elf_get_virtual(paddress);
 
@@ -137,10 +138,9 @@ static unsigned int runtime_task_load(struct runtime_task *self, char *path, uns
 
     self->used = 1;
     self->registers.ip = entry;
+    self->registers.sp = runtime_task_create_stack(self, paddress, vaddress, limit, argc, argv);
 
-    runtime_task_create_stack(self, paddress, vaddress, argc, argv);
-
-    kernel_map_task_memory(paddress, vaddress, 0x10000, 0x7, 0x7);
+    kernel_map_task_memory(paddress, vaddress, limit, 0x7, 0x7);
 
     unsigned int i;
 
