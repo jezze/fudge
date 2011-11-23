@@ -137,7 +137,8 @@ static unsigned int runtime_task_load(struct runtime_task *self, char *path, uns
 
     self->used = 1;
     self->registers.ip = entry;
-    self->create_stack(self, paddress, vaddress, argc, argv);
+
+    runtime_task_create_stack(self, paddress, vaddress, argc, argv);
 
     kernel_map_task_memory(paddress, vaddress, 0x10000, 0x7, 0x7);
 
@@ -229,7 +230,6 @@ void runtime_task_init(struct runtime_task *task, unsigned int id)
     task->id = id;
     task->running = 0;
     task->used = 0;
-    task->create_stack = runtime_task_create_stack;
     task->load = runtime_task_load;
     task->unload = runtime_task_unload;
     task->save_registers = runtime_task_save_registers;
