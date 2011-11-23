@@ -13,6 +13,15 @@ struct runtime_registers
 
 };
 
+struct runtime_descriptor
+{
+
+    unsigned int id;
+    struct vfs_node *node;
+    unsigned int permissions;
+
+};
+
 struct runtime_task
 {
 
@@ -24,9 +33,9 @@ struct runtime_task
     void (*save_registers)(struct runtime_task *self, void *ip, void *sp, void *sb);
     unsigned int (*load)(struct runtime_task *self, char *path, unsigned int argc, char **argv);
     void (*unload)(struct runtime_task *self);
-    struct vfs_descriptor descriptors[RUNTIME_TASK_DESCRIPTOR_SLOTS];
-    struct vfs_descriptor *(*add_descriptor)(struct runtime_task *self, struct vfs_node *node);
-    struct vfs_descriptor *(*get_descriptor)(struct runtime_task *self, unsigned int index);
+    struct runtime_descriptor descriptors[RUNTIME_TASK_DESCRIPTOR_SLOTS];
+    struct runtime_descriptor *(*add_descriptor)(struct runtime_task *self, struct vfs_node *node);
+    struct runtime_descriptor *(*get_descriptor)(struct runtime_task *self, unsigned int index);
     void (*remove_descriptor)(struct runtime_task *self, unsigned int index);
 
 };
@@ -36,6 +45,7 @@ extern struct runtime_task *runtime_get_running_task();
 extern struct runtime_task *runtime_get_slot();
 extern void runtime_activate(struct runtime_task *task);
 extern void *runtime_relocate(void *paddress);
+extern void runtime_descriptor_init(struct runtime_descriptor *descriptor, unsigned int id, struct vfs_node *node, unsigned int permissions);
 extern void runtime_task_init(struct runtime_task *task, unsigned int id);
 extern void runtime_init();
 

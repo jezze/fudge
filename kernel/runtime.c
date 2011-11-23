@@ -180,7 +180,7 @@ static void runtime_task_save_registers(struct runtime_task *self, void *ip, voi
 
 }
 
-static struct vfs_descriptor *runtime_task_add_descriptor(struct runtime_task *self, struct vfs_node *node)
+static struct runtime_descriptor *runtime_task_add_descriptor(struct runtime_task *self, struct vfs_node *node)
 {
 
     unsigned int i;
@@ -203,7 +203,7 @@ static struct vfs_descriptor *runtime_task_add_descriptor(struct runtime_task *s
 
 }
 
-static struct vfs_descriptor *runtime_task_get_descriptor(struct runtime_task *self, unsigned int id)
+static struct runtime_descriptor *runtime_task_get_descriptor(struct runtime_task *self, unsigned int id)
 {
 
     unsigned int i;
@@ -223,9 +223,18 @@ static struct vfs_descriptor *runtime_task_get_descriptor(struct runtime_task *s
 static void runtime_task_remove_descriptor(struct runtime_task *self, unsigned int id)
 {
 
-    struct vfs_descriptor *descriptor = runtime_task_get_descriptor(self, id);
+    struct runtime_descriptor *descriptor = runtime_task_get_descriptor(self, id);
 
     descriptor->node = 0;
+
+}
+
+void runtime_descriptor_init(struct runtime_descriptor *descriptor, unsigned int id, struct vfs_node *node, unsigned int permissions)
+{
+
+    descriptor->id = id;
+    descriptor->node = node;
+    descriptor->permissions = permissions;
 
 }
 
@@ -245,7 +254,7 @@ void runtime_task_init(struct runtime_task *task, unsigned int id)
     unsigned int i;
 
     for (i = 0; i < RUNTIME_TASK_DESCRIPTOR_SLOTS; i++)
-        vfs_descriptor_init(&task->descriptors[i], i + 1, 0, 0);
+        runtime_descriptor_init(&task->descriptors[i], i + 1, 0, 0);
 
 }
 

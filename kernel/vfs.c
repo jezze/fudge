@@ -62,15 +62,6 @@ struct vfs_node *vfs_find(char *view, char *name)
 
 }
 
-void vfs_descriptor_init(struct vfs_descriptor *descriptor, unsigned int id, struct vfs_node *node, unsigned int permissions)
-{
-
-    descriptor->id = id;
-    descriptor->node = node;
-    descriptor->permissions = permissions;
-
-}
-
 void vfs_node_init(struct vfs_node *node, unsigned int id, void (*open)(struct vfs_node *self), void (*close)(struct vfs_node *self), unsigned int (*read)(struct vfs_node *self, unsigned int count, void *buffer), unsigned int (*write)(struct vfs_node *self, unsigned int count, void *buffer))
 {
 

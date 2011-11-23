@@ -152,7 +152,7 @@ unsigned int syscall_open(char *view, char *name)
     if (!node)
         return 0;
 
-    struct vfs_descriptor *descriptor = task->add_descriptor(task, node);
+    struct runtime_descriptor *descriptor = task->add_descriptor(task, node);
 
     if (!descriptor)
         return 0;
