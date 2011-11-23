@@ -103,18 +103,11 @@ static void runtime_task_create_stack(struct runtime_task *self, void *paddress,
 
     void *nargv = runtime_copy_argv(paddress, vaddress, argc, argv);
 
-    memory_set(paddress + 0xFFFF, ((unsigned int)nargv & 0xFF000000) >> 24, 1);
-    memory_set(paddress + 0xFFFE, ((unsigned int)nargv & 0x00FF0000) >> 16, 1);
-    memory_set(paddress + 0xFFFD, ((unsigned int)nargv & 0x0000FF00) >> 8, 1);
-    memory_set(paddress + 0xFFFC, ((unsigned int)nargv & 0x000000FF) >> 0, 1);
-    memory_set(paddress + 0xFFFB, (argc & 0xFF000000) >> 24, 1);
-    memory_set(paddress + 0xFFFA, (argc & 0x00FF0000) >> 16, 1);
-    memory_set(paddress + 0xFFF9, (argc & 0x0000FF00) >> 8, 1);
-    memory_set(paddress + 0xFFF8, (argc & 0x000000FF) >> 0, 1);
-    memory_set(paddress + 0xFFF7, ((unsigned int)self->registers.ip & 0xFF000000) >> 24, 1);
-    memory_set(paddress + 0xFFF6, ((unsigned int)self->registers.ip & 0x00FF0000) >> 16, 1);
-    memory_set(paddress + 0xFFF5, ((unsigned int)self->registers.ip & 0x0000FF00) >> 8, 1);
-    memory_set(paddress + 0xFFF4, ((unsigned int)self->registers.ip & 0x000000FF) >> 0, 1);
+    unsigned int *stack = (unsigned int *)((unsigned int)paddress + 0x10000);
+
+    memory_copy(stack - 1, &nargv, 4);
+    memory_copy(stack - 2, &argc, 4);
+    memory_copy(stack - 3, &self->registers.ip, 4);
 
     self->registers.sp = vaddress + 0xFFF4;
 
