@@ -25,7 +25,6 @@ struct runtime_task
     void (*create_stack)(struct runtime_task *self, void *address, void *virt, unsigned int argc, char **argv);
     unsigned int (*load)(struct runtime_task *self, char *path, unsigned int argc, char **argv);
     void (*unload)(struct runtime_task *self);
-    struct mmu_header *header;
     struct vfs_descriptor descriptors[RUNTIME_TASK_DESCRIPTOR_SLOTS];
     struct vfs_descriptor *(*add_descriptor)(struct runtime_task *self, struct vfs_node *node);
     struct vfs_descriptor *(*get_descriptor)(struct runtime_task *self, unsigned int index);

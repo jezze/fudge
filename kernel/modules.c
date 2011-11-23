@@ -4,10 +4,10 @@
 #include <kernel/modules.h>
 #include <modules/stream/stream.h>
 
-static struct vfs_view modulesViewDev;
 static struct modules_bus *modulesBusses[MODULES_BUS_SLOTS];
 static struct modules_device *modulesDevices[MODULES_DEVICE_SLOTS];
 static struct modules_driver *modulesDrivers[MODULES_DRIVER_SLOTS];
+static struct vfs_view modulesViewDev;
 static struct vfs_filesystem modulesFilesystem;
 
 struct modules_bus *modules_get_bus(unsigned int type)
