@@ -48,6 +48,11 @@ unsigned int syscall_detach(unsigned int index)
 unsigned int syscall_execute(char *path, unsigned int argc, char **argv)
 {
 
+    struct vfs_node *node = vfs_find("bin", path);
+
+    if (!(node && node->read))
+        return 0;
+
     struct runtime_task *task = runtime_get_slot();
 
     if (!task)
@@ -63,11 +68,6 @@ unsigned int syscall_execute(char *path, unsigned int argc, char **argv)
     void *paddress = kernel_get_task_memory(task->id);
     unsigned int limit = 0x10000;
 
-    struct vfs_node *node = vfs_find("bin", path);
-
-    if (!(node && node->read))
-        return 0;
-
     node->read(node, limit, paddress);
 
     void *vaddress = elf_get_virtual(paddress);
@@ -82,6 +82,8 @@ unsigned int syscall_execute(char *path, unsigned int argc, char **argv)
 
     if (!task->load(task, paddress, vaddress, limit, entry, argc, argv))
         return 0;
+
+    kernel_map_task_memory(paddress, vaddress, limit, 0x7, 0x7);
 
     struct vfs_node *sin = vfs_find("dev", "stdin");
     struct vfs_node *sout = vfs_find("dev", "stdout");

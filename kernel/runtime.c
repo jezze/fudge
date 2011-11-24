@@ -116,8 +116,6 @@ static unsigned int runtime_task_load(struct runtime_task *self, void *paddress,
     void *vargv = runtime_task_load_argv(paddress, vaddress, argc, argv);
     self->registers.sp = runtime_task_load_stack(paddress + limit, vaddress + limit, self->registers.ip, argc, vargv);
 
-    kernel_map_task_memory(paddress, vaddress, limit, 0x7, 0x7);
-
     unsigned int i;
 
     for (i = 0; i < RUNTIME_TASK_DESCRIPTOR_SLOTS; i++)
