@@ -10,7 +10,7 @@ static struct mmu_unit mmuUnit;
 static struct mmu_header mmuKernelHeader;
 static struct mmu_header mmuProgramHeaders[8];
 
-static void mmu_handler(struct isr_registers *registers)
+static void handle_isr(struct isr_registers *registers)
 {
 
     unsigned int address = cpu_get_cr2();
@@ -38,35 +38,35 @@ static void mmu_handler(struct isr_registers *registers)
 
 }
 
-static void mmu_clear_directory(struct mmu_directory *directory)
+static void clear_directory(struct mmu_directory *directory)
 {
 
     memory_set(directory, 0, sizeof (struct mmu_directory));
 
 }
 
-static void mmu_clear_table(struct mmu_table *table)
+static void clear_table(struct mmu_table *table)
 {
 
     memory_set(table, 0, sizeof (struct mmu_table));
 
 }
 
-static struct mmu_table *mmu_get_table(struct mmu_directory *directory, unsigned int frame)
+static struct mmu_table *get_table(struct mmu_directory *directory, unsigned int frame)
 {
 
     return (struct mmu_table *)((unsigned int)directory->tables[frame / MMU_DIRECTORY_SLOTS] & 0xFFFFF000);
 
 }
 
-static unsigned int *mmu_get_entry(struct mmu_directory *directory, unsigned int frame)
+static unsigned int *get_entry(struct mmu_directory *directory, unsigned int frame)
 {
 
-    return &mmu_get_table(directory, frame)->entries[frame % MMU_TABLE_SLOTS];
+    return &get_table(directory, frame)->entries[frame % MMU_TABLE_SLOTS];
 
 }
 
-static struct mmu_header *mmu_get_header(void *paddress)
+static struct mmu_header *get_header(void *paddress)
 {
 
     if (!paddress)
@@ -86,16 +86,16 @@ static struct mmu_header *mmu_get_header(void *paddress)
 
 }
 
-static void mmu_map(void *paddress, void *vaddress, unsigned int size, unsigned int tflags, unsigned int pflags)
+static void mmu_unit_map(void *paddress, void *vaddress, unsigned int size, unsigned int tflags, unsigned int pflags)
 {
 
-    struct mmu_header *header = mmu_get_header(paddress);
+    struct mmu_header *header = get_header(paddress);
 
     unsigned int frame = (unsigned int)vaddress / MMU_PAGE_SLOTS;
     unsigned int index = frame / MMU_DIRECTORY_SLOTS;
     unsigned int count = size / MMU_PAGE_SIZE + ((size & 0xFFF) > 0);
 
-    mmu_clear_table(&header->table);
+    clear_table(&header->table);
     header->directory.tables[index] = (struct mmu_table *)((unsigned int)&header->table | tflags);
 
     unsigned int i;
@@ -103,7 +103,7 @@ static void mmu_map(void *paddress, void *vaddress, unsigned int size, unsigned 
     for (i = 0; i < count; i++)
     {
 
-        *mmu_get_entry(&header->directory, frame + i) = (unsigned int)paddress | pflags;
+        *get_entry(&header->directory, frame + i) = (unsigned int)paddress | pflags;
 
         paddress += MMU_PAGE_SIZE;
 
@@ -111,36 +111,36 @@ static void mmu_map(void *paddress, void *vaddress, unsigned int size, unsigned 
 
 }
 
-static void mmu_set_directory(void *paddress)
+static void mmu_unit_set_directory(void *paddress)
 {
 
-    struct mmu_header *header = mmu_get_header(paddress);
+    struct mmu_header *header = get_header(paddress);
 
     cpu_set_cr3((unsigned int)&header->directory);
 
 }
 
-static void mmu_enable()
+static void mmu_unit_enable()
 {
 
     cpu_set_cr0(cpu_get_cr0() | 0x80000000);
 
 }
 
-static void *mmu_get_paddress(unsigned int id)
+static void *mmu_unit_get_paddress(unsigned int id)
 {
 
     return mmuProgramHeaders[id].address;
 
 }
 
-static void mmu_setup()
+static void mmu_unit_setup()
 {
 
-    mmu_clear_directory(&mmuKernelHeader.directory);
+    clear_directory(&mmuKernelHeader.directory);
     mmuKernelHeader.address = 0;
-    mmu_map(mmuKernelHeader.address, (void *)0x00000000, 0x00400000, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE);
-    mmu_set_directory(mmuKernelHeader.address);
+    mmu_unit_map(mmuKernelHeader.address, (void *)0x00000000, 0x00400000, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE);
+    mmu_unit_set_directory(mmuKernelHeader.address);
 
     unsigned int i;
 
@@ -152,14 +152,14 @@ static void mmu_setup()
 
     }
 
-    isr_register_handler(ISR_ROUTINE_PF, mmu_handler);
+    isr_register_handler(ISR_ROUTINE_PF, handle_isr);
 
 }
 
 void mmu_init()
 {
 
-    mmu_unit_init(&mmuUnit, mmu_setup, mmu_enable, mmu_get_paddress, mmu_set_directory, mmu_map);
+    mmu_unit_init(&mmuUnit, mmu_unit_setup, mmu_unit_enable, mmu_unit_get_paddress, mmu_unit_set_directory, mmu_unit_map);
     mmu_register_unit(&mmuUnit);
 
 }

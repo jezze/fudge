@@ -3,9 +3,9 @@
 #include <kernel/syscall.h>
 #include <kernel/arch/x86/syscall.h>
 
-static void *syscallRoutines[SYSCALL_ROUTINE_SLOTS];
+static void *routines[SYSCALL_ROUTINE_SLOTS];
 
-static void syscall_attach_handler(struct syscall_registers *registers)
+static void attach(struct syscall_registers *registers)
 {
 
     unsigned int index = registers->ebx;
@@ -15,7 +15,7 @@ static void syscall_attach_handler(struct syscall_registers *registers)
 
 }
 
-static void syscall_close_handler(struct syscall_registers *registers)
+static void close(struct syscall_registers *registers)
 {
 
     unsigned int fd = registers->ebx;
@@ -24,7 +24,7 @@ static void syscall_close_handler(struct syscall_registers *registers)
 
 }
 
-static void syscall_detach_handler(struct syscall_registers *registers)
+static void detach(struct syscall_registers *registers)
 {
 
     unsigned int index = registers->ebx;
@@ -33,7 +33,7 @@ static void syscall_detach_handler(struct syscall_registers *registers)
 
 }
 
-static void syscall_execute_handler(struct syscall_registers *registers)
+static void execute(struct syscall_registers *registers)
 {
 
     char *path = (char *)registers->esi;
@@ -44,14 +44,14 @@ static void syscall_execute_handler(struct syscall_registers *registers)
 
 }
 
-static void syscall_exit_handler(struct syscall_registers *registers)
+static void exit(struct syscall_registers *registers)
 {
 
     registers->eax = syscall_exit();
 
 }
 
-static void syscall_load_handler(struct syscall_registers *registers)
+static void load(struct syscall_registers *registers)
 {
 
     char *path = (char *)registers->esi;
@@ -60,7 +60,7 @@ static void syscall_load_handler(struct syscall_registers *registers)
 
 }
 
-static void syscall_open_handler(struct syscall_registers *registers)
+static void open(struct syscall_registers *registers)
 {
 
     char *view = (char *)registers->esi;
@@ -70,7 +70,7 @@ static void syscall_open_handler(struct syscall_registers *registers)
 
 }
 
-static void syscall_read_handler(struct syscall_registers *registers)
+static void read(struct syscall_registers *registers)
 {
 
     unsigned int fd = registers->ebx;
@@ -81,28 +81,28 @@ static void syscall_read_handler(struct syscall_registers *registers)
 
 }
 
-static void syscall_reboot_handler(struct syscall_registers *registers)
+static void reboot(struct syscall_registers *registers)
 {
 
     registers->eax = syscall_reboot();
 
 }
 
-static void syscall_unload_handler(struct syscall_registers *registers)
+static void unload(struct syscall_registers *registers)
 {
 
     registers->eax = syscall_unload();
 
 }
 
-static void syscall_wait_handler(struct syscall_registers *registers)
+static void wait(struct syscall_registers *registers)
 {
 
     registers->eax = syscall_wait();
 
 }
 
-static void syscall_write_handler(struct syscall_registers *registers)
+static void write(struct syscall_registers *registers)
 {
 
     unsigned int fd = registers->ebx;
@@ -113,17 +113,17 @@ static void syscall_write_handler(struct syscall_registers *registers)
 
 }
 
-static void syscall_register_handler(unsigned char index, void (*handler)(struct syscall_registers *registers))
+static void register_routine(unsigned char index, void (*handler)(struct syscall_registers *registers))
 {
 
-    syscallRoutines[index] = handler;
+    routines[index] = handler;
 
 }
 
 void syscall_handler(struct syscall_registers *registers)
 {
 
-    void (*handler)(struct syscall_registers *registers) = syscallRoutines[registers->eax];
+    void (*handler)(struct syscall_registers *registers) = routines[registers->eax];
 
     if (!handler)
         return;
@@ -159,18 +159,18 @@ void syscall_handler(struct syscall_registers *registers)
 void syscall_init()
 {
 
-    syscall_register_handler(SYSCALL_ROUTINE_OPEN, syscall_open_handler);
-    syscall_register_handler(SYSCALL_ROUTINE_CLOSE, syscall_close_handler);
-    syscall_register_handler(SYSCALL_ROUTINE_READ, syscall_read_handler);
-    syscall_register_handler(SYSCALL_ROUTINE_WRITE, syscall_write_handler);
-    syscall_register_handler(SYSCALL_ROUTINE_EXECUTE, syscall_execute_handler);
-    syscall_register_handler(SYSCALL_ROUTINE_EXIT, syscall_exit_handler);
-    syscall_register_handler(SYSCALL_ROUTINE_WAIT, syscall_wait_handler);
-    syscall_register_handler(SYSCALL_ROUTINE_LOAD, syscall_load_handler);
-    syscall_register_handler(SYSCALL_ROUTINE_UNLOAD, syscall_unload_handler);
-    syscall_register_handler(SYSCALL_ROUTINE_REBOOT, syscall_reboot_handler);
-    syscall_register_handler(SYSCALL_ROUTINE_ATTACH, syscall_attach_handler);
-    syscall_register_handler(SYSCALL_ROUTINE_DETACH, syscall_detach_handler);
+    register_routine(SYSCALL_ROUTINE_OPEN, open);
+    register_routine(SYSCALL_ROUTINE_CLOSE, close);
+    register_routine(SYSCALL_ROUTINE_READ, read);
+    register_routine(SYSCALL_ROUTINE_WRITE, write);
+    register_routine(SYSCALL_ROUTINE_EXECUTE, execute);
+    register_routine(SYSCALL_ROUTINE_EXIT, exit);
+    register_routine(SYSCALL_ROUTINE_WAIT, wait);
+    register_routine(SYSCALL_ROUTINE_LOAD, load);
+    register_routine(SYSCALL_ROUTINE_UNLOAD, unload);
+    register_routine(SYSCALL_ROUTINE_REBOOT, reboot);
+    register_routine(SYSCALL_ROUTINE_ATTACH, attach);
+    register_routine(SYSCALL_ROUTINE_DETACH, detach);
 
 }
 
