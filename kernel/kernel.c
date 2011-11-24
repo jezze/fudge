@@ -7,6 +7,7 @@
 #include <kernel/modules.h>
 #include <kernel/runtime.h>
 #include <kernel/symbol.h>
+#include <kernel/syscall.h>
 
 static struct kernel_core kernelCore;
 
@@ -80,6 +81,17 @@ void kernel_core_init(struct kernel_core *core, struct kernel_arch *arch)
 
 }
 
+static void kernel_init_userspace()
+{
+
+    unsigned int id = syscall_execute("init", 0, 0);
+    struct runtime_task *task = runtime_get_task(id);
+
+    kernelCore.arch->set_stack(kernelCore.arch->stack);
+    kernelCore.arch->enter_usermode(task->registers.ip, task->registers.sp);
+
+}
+
 void kernel_init(struct kernel_arch *arch)
 {
 
@@ -94,13 +106,7 @@ void kernel_init(struct kernel_arch *arch)
     symbol_init();
     runtime_init();
 
-    struct runtime_task *task = runtime_get_slot();
-
-    task->load(task, "init", 0, 0);
-    runtime_activate(task);
-
-    kernelCore.arch->set_stack(kernelCore.arch->stack);
-    kernelCore.arch->enter_usermode(task->registers.ip, task->registers.sp);
+    kernel_init_userspace();
 
     for (;;);
 
