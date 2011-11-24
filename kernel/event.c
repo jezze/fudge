@@ -6,25 +6,29 @@
 
 struct event_event eventHandlers[64];
 
-void event_register(unsigned int index, struct runtime_task *task, void (*handler)())
+unsigned int event_register(unsigned int index, struct runtime_task *task, void (*handler)())
 {
 
     if (eventHandlers[index].task)
-        return;
+        return 0;
 
     eventHandlers[index].task = task;
     eventHandlers[index].handler = handler;
 
+    return 1;
+
 }
 
-void event_unregister(unsigned int index, struct runtime_task *task)
+unsigned int event_unregister(unsigned int index, struct runtime_task *task)
 {
 
     if (eventHandlers[index].task != task)
-        return;
+        return 0;
 
     eventHandlers[index].task = 0;
     eventHandlers[index].handler = 0;
+
+    return 1;
 
 }
 

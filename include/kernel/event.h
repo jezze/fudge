@@ -23,8 +23,8 @@ struct event_event
 
 };
 
-extern void event_register(unsigned int index, struct runtime_task *task, void (*handler)());
-extern void event_unregister(unsigned int index, struct runtime_task *task);
+extern unsigned int event_register(unsigned int index, struct runtime_task *task, void (*handler)());
+extern unsigned int event_unregister(unsigned int index, struct runtime_task *task);
 extern struct event_event *event_get(unsigned int index);
 extern unsigned int event_handler(unsigned int index);
 extern void event_init();

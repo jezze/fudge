@@ -11,9 +11,7 @@ unsigned int syscall_attach(unsigned int index, void (*handler)())
     if (!task)
         return 0;
 
-    event_register(index, task, handler);
-
-    return 1;
+    return event_register(index, task, handler);
 
 }
 
@@ -41,9 +39,7 @@ unsigned int syscall_detach(unsigned int index)
     if (!task)
         return 0;
 
-    event_unregister(index, task);
-
-    return 1;
+    return event_unregister(index, task);
 
 }
 
@@ -77,7 +73,7 @@ unsigned int syscall_execute(char *path, unsigned int argc, char **argv)
 
     event_handler(EVENT_SYSCALL_EXECUTE);
 
-    return 1;
+    return task->id;
 
 }
 
@@ -100,7 +96,7 @@ unsigned int syscall_exit()
 
     event_handler(EVENT_SYSCALL_EXIT);
 
-    return 1;
+    return task->id;
 
 }
 
