@@ -31,7 +31,6 @@ struct kernel_core
 
 extern void kernel_disable_interrupts();
 extern void kernel_enable_interrupts();
-extern void kernel_enter_usermode(void *callback, void *stack);
 extern void kernel_reboot();
 extern void kernel_register_irq(unsigned int index, void (*handler)());
 extern void kernel_unregister_irq(unsigned int index);
