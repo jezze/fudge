@@ -46,17 +46,17 @@ unsigned int syscall_detach(unsigned int index)
 unsigned int syscall_execute(char *path, unsigned int argc, char **argv)
 {
 
-    struct runtime_task *oldtask = runtime_get_running_task();
-
-    if (!oldtask)
-        return 0;
-
     struct runtime_task *task = runtime_get_slot();
 
     if (!task)
         return 0;
 
-    task->parentid = oldtask->id;
+    struct runtime_task *ptask = runtime_get_running_task();
+
+    if (ptask)
+        task->parentid = ptask->id;
+    else
+        task->parentid = 0;
 
     if (!task->load(task, path, argc, argv))
         return 0;
@@ -80,23 +80,23 @@ unsigned int syscall_execute(char *path, unsigned int argc, char **argv)
 unsigned int syscall_exit()
 {
 
-    struct runtime_task *oldtask = runtime_get_running_task();
-
-    if (!oldtask)
-        return 0;
-
-    oldtask->unload(oldtask);
-
-    struct runtime_task *task = runtime_get_task(oldtask->parentid);
+    struct runtime_task *task = runtime_get_running_task();
 
     if (!task)
         return 0;
 
-    runtime_activate(task);
+    task->unload(task);
+
+    struct runtime_task *ptask = runtime_get_task(task->parentid);
+
+    if (!ptask)
+        return 0;
+
+    runtime_activate(ptask);
 
     event_handler(EVENT_SYSCALL_EXIT);
 
-    return task->id;
+    return ptask->id;
 
 }
 
