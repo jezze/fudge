@@ -4,7 +4,24 @@
 #include <kernel/kernel.h>
 #include <kernel/runtime.h>
 
-struct runtime_task runtimeTasks[RUNTIME_TASK_SLOTS];
+static struct runtime_control runtimeControl;
+
+struct runtime_task *runtime_get_slot()
+{
+
+    unsigned int i;
+
+    for (i = 0; i < RUNTIME_TASK_SLOTS; i++)
+    {
+
+        if (!runtimeControl.tasks[i].used)
+            return &runtimeControl.tasks[i];
+
+    }
+
+    return 0;
+
+}
 
 struct runtime_task *runtime_get_task(unsigned int id)
 {
@@ -14,8 +31,8 @@ struct runtime_task *runtime_get_task(unsigned int id)
     for (i = 0; i < RUNTIME_TASK_SLOTS; i++)
     {
 
-        if (runtimeTasks[i].id == id)
-            return &runtimeTasks[i];
+        if (runtimeControl.tasks[i].id == id)
+            return &runtimeControl.tasks[i];
 
     }
 
@@ -26,50 +43,18 @@ struct runtime_task *runtime_get_task(unsigned int id)
 struct runtime_task *runtime_get_running_task()
 {
 
-    unsigned int i;
-
-    for (i = 0; i < RUNTIME_TASK_SLOTS; i++)
-    {
-
-        if (runtimeTasks[i].running)
-            return &runtimeTasks[i];
-
-    }
-
-    return 0;
-
-}
-
-struct runtime_task *runtime_get_slot()
-{
-
-    unsigned int i;
-
-    for (i = 0; i < RUNTIME_TASK_SLOTS; i++)
-    {
-
-        if (!runtimeTasks[i].used)
-            return &runtimeTasks[i];
-
-    }
-
-    return 0;
+    return runtimeControl.running;
 
 }
 
 void runtime_activate(struct runtime_task *task)
 {
 
-    unsigned int i;
-
-    for (i = 0; i < RUNTIME_TASK_SLOTS; i++)
-        runtimeTasks[i].running = 0;
-
     void *paddress = kernel_get_task_memory(task->id);
 
     kernel_load_task_memory(paddress);
 
-    task->running = 1;
+    runtimeControl.running = task;
 
 }
 
@@ -202,7 +187,6 @@ void runtime_task_init(struct runtime_task *task, unsigned int id)
 {
 
     task->id = id;
-    task->running = 0;
     task->used = 0;
     task->load = runtime_task_load;
     task->unload = runtime_task_unload;
@@ -218,13 +202,22 @@ void runtime_task_init(struct runtime_task *task, unsigned int id)
 
 }
 
-void runtime_init()
+void runtime_control_init(struct runtime_control *control)
 {
 
     unsigned int i;
 
     for (i = 0; i < RUNTIME_TASK_SLOTS; i++)
-        runtime_task_init(&runtimeTasks[i], i + 1);
+        runtime_task_init(&control->tasks[i], i + 1);
+
+    control->running = 0;
+
+}
+
+void runtime_init()
+{
+
+    runtime_control_init(&runtimeControl);
 
 }
 
