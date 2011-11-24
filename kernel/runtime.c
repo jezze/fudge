@@ -1,7 +1,5 @@
-#include <lib/elf.h>
 #include <lib/memory.h>
 #include <lib/string.h>
-#include <kernel/elf.h>
 #include <kernel/vfs.h>
 #include <kernel/kernel.h>
 #include <kernel/modules.h>
@@ -109,28 +107,8 @@ static void *runtime_task_load_stack(void *pstack, void *vstack, void *ip, unsig
 
 }
 
-static unsigned int runtime_task_load(struct runtime_task *self, char *path, unsigned int argc, char **argv)
+static unsigned int runtime_task_load(struct runtime_task *self, void *paddress, void *vaddress, unsigned int limit, void *entry, unsigned int argc, char **argv)
 {
-
-    void *paddress = kernel_get_task_memory(self->id);
-    unsigned int limit = 0x10000;
-
-    struct vfs_node *node = vfs_find("bin", path);
-
-    if (!(node && node->read))
-        return 0;
-
-    node->read(node, limit, paddress);
-
-    void *vaddress = elf_get_virtual(paddress);
-
-    if (!vaddress)
-        return 0;
-
-    void *entry = elf_get_entry(paddress);
-
-    if (!entry)
-        return 0;
 
     self->used = 1;
     self->registers.ip = entry;
@@ -240,20 +218,6 @@ void runtime_task_init(struct runtime_task *task, unsigned int id)
 
     for (i = 0; i < RUNTIME_TASK_DESCRIPTOR_SLOTS; i++)
         runtime_descriptor_init(&task->descriptors[i], i + 1, 0, 0);
-
-}
-
-void *runtime_relocate(void *paddress)
-{
-
-    elf_relocate(paddress);
-
-    void *init = elf_get_symbol(paddress, "init");
-
-    if (!init)
-        return 0;
-
-    return init;
 
 }
 

@@ -1,3 +1,5 @@
+#include <lib/elf.h>
+#include <kernel/elf.h>
 #include <kernel/vfs.h>
 #include <kernel/event.h>
 #include <kernel/kernel.h>
@@ -58,7 +60,27 @@ unsigned int syscall_execute(char *path, unsigned int argc, char **argv)
     else
         task->parentid = 0;
 
-    if (!task->load(task, path, argc, argv))
+    void *paddress = kernel_get_task_memory(task->id);
+    unsigned int limit = 0x10000;
+
+    struct vfs_node *node = vfs_find("bin", path);
+
+    if (!(node && node->read))
+        return 0;
+
+    node->read(node, limit, paddress);
+
+    void *vaddress = elf_get_virtual(paddress);
+
+    if (!vaddress)
+        return 0;
+
+    void *entry = elf_get_entry(paddress);
+
+    if (!entry)
+        return 0;
+
+    if (!task->load(task, paddress, vaddress, limit, entry, argc, argv))
         return 0;
 
     struct vfs_node *sin = vfs_find("dev", "stdin");
@@ -108,13 +130,15 @@ unsigned int syscall_load(char *path)
     if (!node)
         return 0;
 
-    void *entry = runtime_relocate(node->physical);
+    elf_relocate(node->physical);
+
+    void *entry = elf_get_symbol(node->physical, "init");
 
     if (!entry)
         return 0;
 
-    void (*minit)() = entry;
-    minit();
+    void (*init)() = entry;
+    init();
 
     event_handler(EVENT_SYSCALL_LOAD);
 
