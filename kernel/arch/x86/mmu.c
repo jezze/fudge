@@ -135,7 +135,7 @@ static void *mmu_get_paddress(unsigned int id)
 
 }
 
-void mmu_init()
+static void mmu_setup()
 {
 
     mmu_clear_directory(&mmuKernelHeader.directory);
@@ -155,10 +155,13 @@ void mmu_init()
 
     isr_register_handler(ISR_ROUTINE_PF, mmu_handler);
 
-    mmu_unit_init(&mmuUnit, mmu_enable, mmu_get_paddress, mmu_set_directory, mmu_map);
-    mmu_register_unit(&mmuUnit);
+}
 
-    mmuUnit.enable();
+void mmu_init()
+{
+
+    mmu_unit_init(&mmuUnit, mmu_setup, mmu_enable, mmu_get_paddress, mmu_set_directory, mmu_map);
+    mmu_register_unit(&mmuUnit);
 
 }
 
