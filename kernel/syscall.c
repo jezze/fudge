@@ -58,13 +58,6 @@ unsigned int syscall_execute(char *path, unsigned int argc, char **argv)
     if (!task)
         return 0;
 
-    struct runtime_task *ptask = runtime_get_running_task();
-
-    if (ptask)
-        task->parentid = ptask->id;
-    else
-        task->parentid = 0;
-
     void *paddress = kernel_get_task_memory(task->id);
     unsigned int limit = 0x10000;
 
@@ -85,6 +78,15 @@ unsigned int syscall_execute(char *path, unsigned int argc, char **argv)
 
     kernel_map_task_memory(paddress, vaddress, limit, 0x7, 0x7);
 
+    struct runtime_task *ptask = runtime_get_running_task();
+
+    if (ptask)
+        task->parentid = ptask->id;
+    else
+        task->parentid = 0;
+
+    runtime_activate(task);
+
     struct vfs_node *sin = vfs_find("dev", "stdin");
     struct vfs_node *sout = vfs_find("dev", "stdout");
     struct vfs_node *serror = vfs_find("dev", "stderr");
@@ -92,8 +94,6 @@ unsigned int syscall_execute(char *path, unsigned int argc, char **argv)
     task->add_descriptor(task, sin);
     task->add_descriptor(task, sout);
     task->add_descriptor(task, serror);
-
-    runtime_activate(task);
 
     event_handler(EVENT_SYSCALL_EXECUTE);
 
