@@ -56,11 +56,6 @@ struct mmu_header
 };
 
 extern void mmu_init();
-extern void mmu_set_directory(void *paddress);
-extern void mmu_map(void *paddress, void *vaddress, unsigned int size, unsigned int tflags, unsigned int pflags);
-extern void mmu_enable();
-extern struct mmu_header *mmu_get_header(void *paddress);
-extern void *mmu_get_paddress(unsigned int id);
 
 #endif
 

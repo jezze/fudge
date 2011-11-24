@@ -67,7 +67,27 @@ static unsigned int *mmu_get_entry(struct mmu_directory *directory, unsigned int
 
 }
 
-void mmu_map(void *paddress, void *vaddress, unsigned int size, unsigned int tflags, unsigned int pflags)
+static struct mmu_header *mmu_get_header(void *paddress)
+{
+
+    if (!paddress)
+        return &mmuKernelHeader;
+
+    unsigned int i;
+
+    for (i = 0; i < 8; i++)
+    {
+
+        if (mmuProgramHeaders[i].address == paddress)
+            return &mmuProgramHeaders[i];
+
+    }
+
+    return 0;
+
+}
+
+static void mmu_map(void *paddress, void *vaddress, unsigned int size, unsigned int tflags, unsigned int pflags)
 {
 
     struct mmu_header *header = mmu_get_header(paddress);
@@ -92,7 +112,7 @@ void mmu_map(void *paddress, void *vaddress, unsigned int size, unsigned int tfl
 
 }
 
-void mmu_set_directory(void *paddress)
+static void mmu_set_directory(void *paddress)
 {
 
     struct mmu_header *header = mmu_get_header(paddress);
@@ -101,34 +121,14 @@ void mmu_set_directory(void *paddress)
 
 }
 
-void mmu_enable()
+static void mmu_enable()
 {
 
     cpu_set_cr0(cpu_get_cr0() | 0x80000000);
 
 }
 
-struct mmu_header *mmu_get_header(void *paddress)
-{
-
-    if (!paddress)
-        return &mmuKernelHeader;
-
-    unsigned int i;
-
-    for (i = 0; i < 8; i++)
-    {
-
-        if (mmuProgramHeaders[i].address == paddress)
-            return &mmuProgramHeaders[i];
-
-    }
-
-    return 0;
-
-}
-
-void *mmu_get_paddress(unsigned int id)
+static void *mmu_get_paddress(unsigned int id)
 {
 
     return mmuProgramHeaders[id].address;
@@ -155,10 +155,10 @@ void mmu_init()
 
     isr_register_handler(ISR_ROUTINE_PF, mmu_handler);
 
-    mmu_enable();
-
-    mmu_unit_init(&mmuUnit, mmu_get_paddress, mmu_set_directory, mmu_map);
+    mmu_unit_init(&mmuUnit, mmu_enable, mmu_get_paddress, mmu_set_directory, mmu_map);
     mmu_register_unit(&mmuUnit);
+
+    mmuUnit.enable();
 
 }
 
