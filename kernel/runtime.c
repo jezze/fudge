@@ -1,7 +1,7 @@
 #include <lib/memory.h>
 #include <lib/string.h>
+#include <kernel/mmu.h>
 #include <kernel/vfs.h>
-#include <kernel/kernel.h>
 #include <kernel/runtime.h>
 
 static struct runtime_control runtimeControl;
@@ -50,9 +50,9 @@ struct runtime_task *runtime_get_running_task()
 void runtime_activate(struct runtime_task *task)
 {
 
-    void *paddress = kernel_get_task_memory(task->id);
+    void *paddress = mmu_get_task_memory(task->id);
 
-    kernel_load_task_memory(paddress);
+    mmu_load_task_memory(paddress);
 
     runtimeControl.running = task;
 

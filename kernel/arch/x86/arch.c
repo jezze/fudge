@@ -56,9 +56,6 @@ void arch_init(struct mboot_header *header, unsigned int magic, void *stack)
     x86.base.set_stack = tss_set_stack;
     x86.base.register_irq = irq_register_handler;
     x86.base.unregister_irq = irq_unregister_handler;
-    x86.base.get_task_memory = mmu_get_paddress;
-    x86.base.load_task_memory = mmu_set_directory;
-    x86.base.map_task_memory = mmu_map;
     x86.base.stack = stack;
     x86.base.initrdc = header->modules.count;
     x86.base.initrdv = header->modules.address;

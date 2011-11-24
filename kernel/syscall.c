@@ -3,6 +3,7 @@
 #include <kernel/vfs.h>
 #include <kernel/event.h>
 #include <kernel/kernel.h>
+#include <kernel/mmu.h>
 #include <kernel/runtime.h>
 
 unsigned int syscall_attach(unsigned int index, void (*handler)())
@@ -58,7 +59,7 @@ unsigned int syscall_execute(char *path, unsigned int argc, char **argv)
     if (!task)
         return 0;
 
-    void *paddress = kernel_get_task_memory(task->id);
+    void *paddress = mmu_get_task_memory(task->id);
     unsigned int limit = 0x10000;
 
     node->read(node, limit, paddress);
@@ -76,7 +77,7 @@ unsigned int syscall_execute(char *path, unsigned int argc, char **argv)
     if (!task->load(task, paddress, vaddress, limit, entry, argc, argv))
         return 0;
 
-    kernel_map_task_memory(paddress, vaddress, limit, 0x7, 0x7);
+    mmu_map_task_memory(paddress, vaddress, limit, 0x7, 0x7);
 
     struct runtime_task *ptask = runtime_get_running_task();
 

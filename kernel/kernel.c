@@ -46,27 +46,6 @@ void kernel_unregister_irq(unsigned int index)
 
 }
 
-void *kernel_get_task_memory(unsigned int id)
-{
-
-    return kernelCore.arch->get_task_memory(id);
-
-}
-
-void kernel_load_task_memory(void *paddress)
-{
-
-    kernelCore.arch->load_task_memory(paddress);
-
-}
-
-void kernel_map_task_memory(void *paddress, void *vaddress, unsigned int size, unsigned int tflags, unsigned int pflags)
-{
-
-    kernelCore.arch->map_task_memory(paddress, vaddress, size, tflags, pflags);
-
-}
-
 void kernel_core_init(struct kernel_core *core, struct kernel_arch *arch)
 {
 

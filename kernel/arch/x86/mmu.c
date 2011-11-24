@@ -1,11 +1,13 @@
 #include <lib/memory.h>
 #include <kernel/error.h>
 #include <kernel/kernel.h>
+#include <kernel/mmu.h>
 #include <kernel/log.h>
 #include <kernel/arch/x86/cpu.h>
 #include <kernel/arch/x86/isr.h>
 #include <kernel/arch/x86/mmu.h>
 
+static struct mmu_unit mmuUnit;
 static struct mmu_header mmuKernelHeader;
 static struct mmu_header mmuProgramHeaders[8];
 
@@ -154,6 +156,9 @@ void mmu_init()
     isr_register_handler(ISR_ROUTINE_PF, mmu_handler);
 
     mmu_enable();
+
+    mmu_unit_init(&mmuUnit, mmu_get_paddress, mmu_set_directory, mmu_map);
+    mmu_register_unit(&mmuUnit);
 
 }
 
