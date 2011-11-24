@@ -2,7 +2,6 @@
 #include <lib/string.h>
 #include <kernel/vfs.h>
 #include <kernel/kernel.h>
-#include <kernel/modules.h>
 #include <kernel/runtime.h>
 
 struct runtime_task runtimeTasks[RUNTIME_TASK_SLOTS];
