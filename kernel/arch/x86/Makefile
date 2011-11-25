@@ -12,11 +12,8 @@ arch:
 	@${ASM} ${ASMFLAGS} calls.s -o calls.o
 	@${ASM} ${ASMFLAGS} cpu.s -o cpu.o
 	@${GCC} ${GCCFLAGS} fpu.c -o fpu.o
-	@${ASM} ${ASMFLAGS} fpus.s -o fpus.o
 	@${GCC} ${GCCFLAGS} gdt.c -o gdt.o
-	@${ASM} ${ASMFLAGS} gdts.s -o gdts.o
 	@${GCC} ${GCCFLAGS} idt.c -o idt.o
-	@${ASM} ${ASMFLAGS} idts.s -o idts.o
 	@${ASM} ${ASMFLAGS} init.s -o init.o
 	@${ASM} ${ASMFLAGS} ios.s -o ios.o
 	@${GCC} ${GCCFLAGS} irq.c -o irq.o

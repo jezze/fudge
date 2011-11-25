@@ -1,4 +1,5 @@
 #include <lib/memory.h>
+#include <kernel/arch/x86/cpu.h>
 #include <kernel/arch/x86/gdt.h>
 
 static struct gdt_entry gdtEntries[GDT_TABLE_SLOTS];
@@ -30,7 +31,8 @@ void gdt_init()
 
     gdtPointer.base = gdtEntries;
     gdtPointer.limit = (sizeof (struct gdt_entry) * GDT_TABLE_SLOTS) - 1;
-    gdt_flush(&gdtPointer);
+
+    cpu_set_gdt(&gdtPointer);
 
 }
 

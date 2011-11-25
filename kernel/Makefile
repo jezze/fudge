@@ -50,11 +50,8 @@ arch-x86:
 		${DIR_SOURCE_ARCH}/calls.o \
 		${DIR_SOURCE_ARCH}/cpu.o \
 		${DIR_SOURCE_ARCH}/fpu.o \
-		${DIR_SOURCE_ARCH}/fpus.o \
 		${DIR_SOURCE_ARCH}/gdt.o \
-		${DIR_SOURCE_ARCH}/gdts.o \
 		${DIR_SOURCE_ARCH}/idt.o \
-		${DIR_SOURCE_ARCH}/idts.o \
 		${DIR_SOURCE_ARCH}/init.o \
 		${DIR_SOURCE_ARCH}/ios.o \
 		${DIR_SOURCE_ARCH}/irqs.o \

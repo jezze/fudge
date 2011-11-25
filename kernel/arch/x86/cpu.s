@@ -3,6 +3,11 @@ cpu_disable_interrupts:
     cli
     ret
 
+global cpu_enable_fpu
+cpu_enable_fpu:
+    finit
+    ret
+
 global cpu_enable_interrupts
 cpu_enable_interrupts:
     sti
@@ -99,6 +104,27 @@ cpu_set_eflags:
     mov eax, [esp + 4]
     push eax
     popf
+    ret
+
+global cpu_set_gdt
+cpu_set_gdt:
+    mov eax, [esp + 4]
+    lgdt [eax]
+    mov ax, 0x10
+    mov ds, ax
+    mov es, ax
+    mov fs, ax
+    mov gs, ax
+    mov ss, ax
+    jmp 0x08:cpu_set_gdt_high
+
+cpu_set_gdt_high:
+    ret
+
+global cpu_set_idt
+cpu_set_idt:
+    mov eax, [esp + 4]
+    lidt [eax]
     ret
 
 global cpu_set_stack

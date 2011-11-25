@@ -4,7 +4,7 @@
 void fpu_init()
 {
 
-    fpu_set();
+    cpu_enable_fpu();
 
 }
 

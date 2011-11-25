@@ -1,4 +1,5 @@
 #include <lib/memory.h>
+#include <kernel/arch/x86/cpu.h>
 #include <kernel/arch/x86/idt.h>
 
 static struct idt_entry idtEntries[IDT_TABLE_SLOTS];
@@ -24,7 +25,8 @@ void idt_init()
 
     idtPointer.base = idtEntries;
     idtPointer.limit = (sizeof (struct idt_entry) * IDT_TABLE_SLOTS) - 1;
-    idt_flush(&idtPointer);
+
+    cpu_set_idt(&idtPointer);
 
 }
 
