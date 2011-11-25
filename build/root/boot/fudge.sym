@@ -5,7 +5,6 @@ io_ind
 io_outb
 io_outw
 io_outd
-kernel_get_symbol
 kernel_register_irq
 kernel_unregister_irq
 log_write
