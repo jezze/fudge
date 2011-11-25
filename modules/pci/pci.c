@@ -152,12 +152,17 @@ void pci_bus_init(struct pci_bus *bus)
 
 }
 
-void pci()
+void init()
 {
 
     pci_bus_init(&pciBus);
 
     modules_register_bus(&pciBus.base);
+
+}
+
+void destroy()
+{
 
 }
 

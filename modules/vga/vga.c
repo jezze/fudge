@@ -84,3 +84,10 @@ void init()
 
 }
 
+void destroy()
+{
+
+    modules_unregister_device(&vgaDevice.base);
+
+}
+

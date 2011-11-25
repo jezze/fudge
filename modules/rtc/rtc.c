@@ -73,3 +73,11 @@ void init()
 
 }
 
+void destroy()
+{
+
+    modules_unregister_device(&rtcDevice.stream.base);
+    modules_unregister_device(&rtcDevice.base);
+
+}
+

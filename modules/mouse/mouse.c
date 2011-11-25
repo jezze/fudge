@@ -137,3 +137,12 @@ void init()
 
 }
 
+void destroy()
+{
+
+    kernel_unregister_irq(0x0C);
+
+    modules_unregister_device(&mouseDevice.base);
+
+}
+

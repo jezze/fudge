@@ -103,3 +103,12 @@ void init()
 
 }
 
+void destroy()
+{
+
+    kernel_unregister_irq(0x04);
+
+    modules_unregister_device(&serialDevice1.base);
+
+}
+
