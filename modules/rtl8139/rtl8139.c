@@ -64,7 +64,7 @@ static void get_mac(struct rtl8139_driver *driver)
 
 }
 
-static unsigned int rtl8139_macs_read(struct vfs_node *self, unsigned int count, void *buffer)
+static unsigned int rtl8139_driver_macs_read(struct vfs_node *self, unsigned int count, void *buffer)
 {
 
     string_write_format(buffer, "%x:%x:%x:%x:%x:%x", driver.mac[0], driver.mac[1], driver.mac[2], driver.mac[3], driver.mac[4], driver.mac[5]);
@@ -86,7 +86,7 @@ void rtl8139_driver_init(struct rtl8139_driver *driver, struct pci_device *devic
     set_interrupt_flags(driver, 0x05);
     enable(driver);
 
-    stream_device_init(&driver->macs, "mac", rtl8139_macs_read, 0);
+    stream_device_init(&driver->macs, "mac", rtl8139_driver_macs_read, 0);
 
 }
 
@@ -121,3 +121,4 @@ void destroy()
     modules_unregister_device(&driver.macs.base);
 
 }
+
