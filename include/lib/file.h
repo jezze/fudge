@@ -5,14 +5,6 @@
 #define FILE_STDOUT 2
 #define FILE_STDERR 3
 
-struct file_info
-{
-
-    unsigned int id;
-    unsigned int length;
-
-};
-
 extern void file_close(unsigned int fd);
 extern unsigned int file_open(char *view, char *name);
 extern unsigned int file_read(unsigned int fd, unsigned int count, void *buffer);

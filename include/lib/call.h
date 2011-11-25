@@ -1,8 +1,6 @@
 #ifndef LIB_CALL_H
 #define LIB_CALL_H
 
-struct file_info;
-
 extern unsigned int call_open(char *view, char *name);
 extern void call_close(unsigned int fd);
 extern unsigned int call_read(unsigned int fd, void *buffer, unsigned int count);

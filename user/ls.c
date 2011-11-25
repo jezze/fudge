@@ -31,10 +31,6 @@ void write_content(char *path, char *content)
             string_write_concat(str, path);
             string_write_concat(str, content + start);
 
-//            struct file_info *info = 0;
-
-//            file_info(str, info);
-
             if (1)
                 file_write_format(FILE_STDOUT, "d");
             else
