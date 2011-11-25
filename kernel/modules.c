@@ -127,6 +127,72 @@ void modules_register_driver(struct modules_driver *driver)
 
 }
 
+void modules_unregister_bus(struct modules_bus *bus)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < MODULES_BUS_SLOTS; i++)
+    {
+
+        if (!modulesBusses[i])
+            continue;
+
+        if (modulesBusses[i] != bus)
+            continue;
+
+        modulesBusses[i] = 0;
+
+        break;
+
+    }
+
+}
+
+void modules_unregister_device(struct modules_device *device)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < MODULES_DEVICE_SLOTS; i++)
+    {
+
+        if (!modulesDevices[i])
+            continue;
+
+        if (modulesDevices[i] != device)
+            continue;
+
+        modulesDevices[i] = 0;
+
+        break;
+
+    }
+
+}
+
+void modules_unregister_driver(struct modules_driver *driver)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < MODULES_DRIVER_SLOTS; i++)
+    {
+
+        if (!modulesDrivers[i])
+            continue;
+
+        if (modulesDrivers[i] != driver)
+            continue;
+
+        modulesDrivers[i] = 0;
+
+        break;
+
+    }
+
+}
+
 static struct vfs_node *modules_filesystem_view_find_node(struct vfs_view *self, char *name)
 {
 

@@ -59,3 +59,13 @@ void init()
 
 }
 
+void destroy()
+{
+
+    kernel_unregister_irq(0x00);
+
+    modules_unregister_device(&pitDevice.stream.base);
+    modules_unregister_device(&pitDevice.base);
+
+}
+
