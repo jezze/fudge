@@ -31,13 +31,13 @@ void symbol_init()
     if (!node)
         error_panic("Symbol table not found", __FILE__, __LINE__);
 
-    node->read(node, SYMBOL_BUFFER_SIZE, symbolBuffer);
+    unsigned int count = node->read(node, SYMBOL_BUFFER_SIZE, symbolBuffer);
 
     unsigned int i;
     unsigned int start = 0;
     unsigned int index = 0;
 
-    for (i = 0; i < SYMBOL_BUFFER_SIZE; i++)
+    for (i = 0; i < count; i++)
     {
 
         switch (symbolBuffer[i])
