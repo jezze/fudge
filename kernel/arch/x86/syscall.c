@@ -91,7 +91,9 @@ static void syscall_handle_reboot(struct syscall_registers *registers)
 static void syscall_handle_unload(struct syscall_registers *registers)
 {
 
-    registers->eax = syscall_unload();
+    char *path = (char *)registers->esi;
+
+    registers->eax = syscall_unload(path);
 
 }
 

@@ -25,7 +25,7 @@ extern unsigned int syscall_load(char *path);
 extern unsigned int syscall_open(char *view, char *name);
 extern unsigned int syscall_read(unsigned int fd, unsigned int count, char *buffer);
 extern unsigned int syscall_reboot();
-extern unsigned int syscall_unload();
+extern unsigned int syscall_unload(char *path);
 extern unsigned int syscall_wait();
 extern unsigned int syscall_write(unsigned int fd, unsigned int count, char *buffer);
 

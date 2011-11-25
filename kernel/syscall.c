@@ -135,12 +135,11 @@ unsigned int syscall_load(char *path)
 
     elf_relocate(node->physical);
 
-    void *entry = elf_get_symbol(node->physical, "init");
+    void (*init)() = elf_get_symbol(node->physical, "init");
 
-    if (!entry)
+    if (!init)
         return 0;
 
-    void (*init)() = entry;
     init();
 
     event_handle(EVENT_SYSCALL_LOAD);
@@ -203,8 +202,20 @@ unsigned int syscall_reboot()
 
 }
 
-unsigned int syscall_unload()
+unsigned int syscall_unload(char *path)
 {
+
+    struct vfs_node *node = vfs_find("mod", path);
+
+    if (!node)
+        return 0;
+
+    void (*destroy)() = elf_get_symbol(node->physical, "destroy");
+
+    if (!destroy)
+        return 0;
+
+    destroy();
 
     event_handle(EVENT_SYSCALL_UNLOAD);
 
