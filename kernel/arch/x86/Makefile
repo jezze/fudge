@@ -24,7 +24,6 @@ arch:
 	@${GCC} ${GCCFLAGS} mboot.c -o mboot.o
 	@${GCC} ${GCCFLAGS} syscall.c -o syscall.o
 	@${GCC} ${GCCFLAGS} tss.c -o tss.o
-	@${ASM} ${ASMFLAGS} tsss.s -o tsss.o
 
 clean:
 	@rm -f *.o

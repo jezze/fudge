@@ -62,7 +62,6 @@ arch-x86:
 		${DIR_SOURCE_ARCH}/mboot.o \
 		${DIR_SOURCE_ARCH}/syscall.o \
 		${DIR_SOURCE_ARCH}/tss.o \
-		${DIR_SOURCE_ARCH}/tsss.o \
 		${DIR_SOURCE_LIB}/memory.o \
 		${DIR_SOURCE_LIB}/file.o \
 		${DIR_SOURCE_LIB}/string.o \

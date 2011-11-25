@@ -13,6 +13,12 @@ cpu_enable_interrupts:
     sti
     ret
 
+global cpu_enable_tss
+cpu_enable_tss:
+    mov ax, 0x2B
+    ltr ax
+    ret
+
 global cpu_enter_usermode
 cpu_enter_usermode:
     cli

@@ -1,4 +1,5 @@
 #include <lib/memory.h>
+#include <kernel/arch/x86/cpu.h>
 #include <kernel/arch/x86/gdt.h>
 #include <kernel/arch/x86/tss.h>
 
@@ -26,7 +27,7 @@ void tss_init()
 
     gdt_set_gate(0x05, base, limit, 0xE9, 0x00);
 
-    tss_flush();
+    cpu_enable_tss();
 
 }
 

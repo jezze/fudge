@@ -4,6 +4,7 @@
 extern void cpu_disable_interrupts();
 extern void cpu_enable_fpu();
 extern void cpu_enable_interrupts();
+extern void cpu_enable_tss();
 extern void cpu_enter_usermode(void *callback, void *stack);
 extern unsigned int cpu_get_cr0();
 extern unsigned int cpu_get_cr2();
