@@ -8,21 +8,21 @@
 
 static void *irqRoutines[IRQ_ROUTINE_SLOTS];
 
-void irq_register_handler(unsigned char index, void (*handler)())
+void irq_register_routine(unsigned char index, void (*routine)())
 {
 
-    irqRoutines[index] = handler;
+    irqRoutines[index] = routine;
 
 }
 
-void irq_unregister_handler(unsigned char index)
+void irq_unregister_routine(unsigned char index)
 {
 
     irqRoutines[index] = 0;
 
 }
 
-void irq_handler(struct irq_registers *registers)
+void irq_handle(struct irq_registers *registers)
 {
 
     struct runtime_task *task = runtime_get_running_task();
@@ -38,10 +38,10 @@ void irq_handler(struct irq_registers *registers)
 
     }
 
-    void (*handler)() = irqRoutines[registers->index];
+    void (*routine)() = irqRoutines[registers->index];
 
-    if (handler)
-        handler();
+    if (routine)
+        routine();
 
     if (registers->slave)
         io_outb(0xA0, 0x20);

@@ -6,7 +6,7 @@
 #include <kernel/mmu.h>
 #include <kernel/runtime.h>
 
-unsigned int syscall_attach(unsigned int index, void (*handler)())
+unsigned int syscall_attach(unsigned int index, void (*routine)())
 {
 
     struct runtime_task *task = runtime_get_running_task();    
@@ -14,7 +14,7 @@ unsigned int syscall_attach(unsigned int index, void (*handler)())
     if (!task)
         return 0;
 
-    return event_register(index, task, handler);
+    return event_register_routine(index, task, routine);
 
 }
 
@@ -28,7 +28,7 @@ unsigned int syscall_close(unsigned int fd)
 
     task->remove_descriptor(task, fd);
 
-    event_handler(EVENT_SYSCALL_CLOSE);
+    event_handle(EVENT_SYSCALL_CLOSE);
 
     return 1;
 
@@ -42,7 +42,7 @@ unsigned int syscall_detach(unsigned int index)
     if (!task)
         return 0;
 
-    return event_unregister(index, task);
+    return event_unregister_routine(index, task);
 
 }
 
@@ -96,7 +96,7 @@ unsigned int syscall_execute(char *path, unsigned int argc, char **argv)
     task->add_descriptor(task, sout);
     task->add_descriptor(task, serror);
 
-    event_handler(EVENT_SYSCALL_EXECUTE);
+    event_handle(EVENT_SYSCALL_EXECUTE);
 
     return task->id;
 
@@ -119,7 +119,7 @@ unsigned int syscall_exit()
 
     runtime_activate(ptask);
 
-    event_handler(EVENT_SYSCALL_EXIT);
+    event_handle(EVENT_SYSCALL_EXIT);
 
     return ptask->id;
 
@@ -143,7 +143,7 @@ unsigned int syscall_load(char *path)
     void (*init)() = entry;
     init();
 
-    event_handler(EVENT_SYSCALL_LOAD);
+    event_handle(EVENT_SYSCALL_LOAD);
 
     return 1;
 
@@ -167,7 +167,7 @@ unsigned int syscall_open(char *view, char *name)
     if (!descriptor)
         return 0;
 
-    event_handler(EVENT_SYSCALL_OPEN);
+    event_handle(EVENT_SYSCALL_OPEN);
 
     return descriptor->id;
 
@@ -188,7 +188,7 @@ unsigned int syscall_read(unsigned int fd, unsigned int count, char *buffer)
 
     unsigned int c = node->read(node, count, buffer);
 
-    event_handler(EVENT_SYSCALL_READ);
+    event_handle(EVENT_SYSCALL_READ);
 
     return c;
 
@@ -206,7 +206,7 @@ unsigned int syscall_reboot()
 unsigned int syscall_unload()
 {
 
-    event_handler(EVENT_SYSCALL_UNLOAD);
+    event_handle(EVENT_SYSCALL_UNLOAD);
 
     return 1;
 
@@ -227,7 +227,7 @@ unsigned int syscall_wait()
 
     runtime_activate(task);
 
-    event_handler(EVENT_SYSCALL_WAIT);
+    event_handle(EVENT_SYSCALL_WAIT);
 
     return 1;
 
@@ -248,7 +248,7 @@ unsigned int syscall_write(unsigned int fd, unsigned int count, char *buffer)
 
     unsigned int c = node->write(node, count, buffer);
 
-    event_handler(EVENT_SYSCALL_WRITE);
+    event_handle(EVENT_SYSCALL_WRITE);
 
     return c;
 

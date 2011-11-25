@@ -15,19 +15,17 @@
 #define EVENT_SYSCALL_LOAD    0x27
 #define EVENT_SYSCALL_UNLOAD  0x28
 
-struct event_event
+struct event_routine
 {
 
     struct runtime_task *task;
-    void (*handler)();
+    void (*routine)();
 
 };
 
-extern unsigned int event_register(unsigned int index, struct runtime_task *task, void (*handler)());
-extern unsigned int event_unregister(unsigned int index, struct runtime_task *task);
-extern struct event_event *event_get(unsigned int index);
-extern unsigned int event_handler(unsigned int index);
-extern void event_init();
+extern unsigned int event_register_routine(unsigned int index, struct runtime_task *task, void (*routine)());
+extern unsigned int event_unregister_routine(unsigned int index, struct runtime_task *task);
+extern unsigned int event_handle(unsigned int index);
 
 #endif
 

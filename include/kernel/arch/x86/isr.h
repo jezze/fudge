@@ -66,8 +66,9 @@ extern void isr1D();
 extern void isr1E();
 extern void isr1F();
 extern void isr_syscall();
-extern void isr_register_handler(unsigned char index, void (*handler)(struct isr_registers *registers));
-extern void isr_unregister_handler(unsigned char index);
+extern void isr_register_routine(unsigned char index, void (*routine)(struct isr_registers *registers));
+extern void isr_unregister_routine(unsigned char index);
+extern void isr_handle(struct isr_registers *registers);
 extern void isr_init();
 
 #endif

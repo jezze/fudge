@@ -48,7 +48,7 @@ unsigned int call_wait()
 
 }
 
-unsigned int call_attach(int index, void (*handler)())
+unsigned int call_attach(int index, void (*routine)())
 {
 
 }

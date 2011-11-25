@@ -8,7 +8,7 @@
 
 static struct rtl8139_driver rtl8139Driver;
 
-static void rtl8139_handler()
+static void rtl8139_handle_irq()
 {
 
 }
@@ -79,7 +79,7 @@ void init()
     rtl8139Driver.base.device = &device->base;
     rtl8139Driver.io = (device->configuration.bar0 & ~1);
 
-    kernel_register_irq(device->configuration.interruptline, rtl8139_handler);
+    kernel_register_irq(device->configuration.interruptline, rtl8139_handle_irq);
 
     rtl8139_poweron(&rtl8139Driver);
     rtl8139_reset(&rtl8139Driver);

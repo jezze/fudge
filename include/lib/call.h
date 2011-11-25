@@ -12,7 +12,7 @@ extern unsigned int call_load(char *path);
 extern unsigned int call_unload(char *path);
 extern unsigned int call_exit();
 extern unsigned int call_wait();
-extern unsigned int call_attach(int index, void (*handler)());
+extern unsigned int call_attach(int index, void (*routine)());
 extern unsigned int call_detach(int index);
 extern void call_halt();
 extern void call_reboot();

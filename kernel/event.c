@@ -4,45 +4,38 @@
 #include <kernel/vfs.h>
 #include <kernel/runtime.h>
 
-struct event_event eventHandlers[64];
+struct event_routine eventRoutines[64];
 
-unsigned int event_register(unsigned int index, struct runtime_task *task, void (*handler)())
+unsigned int event_register_routine(unsigned int index, struct runtime_task *task, void (*routine)())
 {
 
-    if (eventHandlers[index].task)
+    if (eventRoutines[index].task)
         return 0;
 
-    eventHandlers[index].task = task;
-    eventHandlers[index].handler = handler;
+    eventRoutines[index].task = task;
+    eventRoutines[index].routine = routine;
 
     return 1;
 
 }
 
-unsigned int event_unregister(unsigned int index, struct runtime_task *task)
+unsigned int event_unregister_routine(unsigned int index, struct runtime_task *task)
 {
 
-    if (eventHandlers[index].task != task)
+    if (eventRoutines[index].task != task)
         return 0;
 
-    eventHandlers[index].task = 0;
-    eventHandlers[index].handler = 0;
+    eventRoutines[index].task = 0;
+    eventRoutines[index].routine = 0;
 
     return 1;
 
 }
 
-struct event_event *event_get(unsigned int index)
+unsigned int event_handle(unsigned int index)
 {
 
-    return &eventHandlers[index];
-
-}
-
-unsigned int event_handler(unsigned int index)
-{
-
-    struct event_event *event = event_get(index);
+    struct event_routine *event = &eventRoutines[index];
 
     if (!event)
         return 0;
@@ -66,14 +59,9 @@ unsigned int event_handler(unsigned int index)
 
     }
 
-    etask->registers.ip = event->handler;
+    etask->registers.ip = event->routine;
 
     return 1;
-
-}
-
-void event_init()
-{
 
 }
 

@@ -10,7 +10,7 @@ static struct mmu_unit mmuUnit;
 static struct mmu_header mmuKernelHeader;
 static struct mmu_header mmuProgramHeaders[8];
 
-static void mmu_handler(struct isr_registers *registers)
+static void mmu_handle_isr(struct isr_registers *registers)
 {
 
     unsigned int address = cpu_get_cr2();
@@ -152,7 +152,7 @@ static void mmu_setup()
 
     }
 
-    isr_register_handler(ISR_ROUTINE_PF, mmu_handler);
+    isr_register_routine(ISR_ROUTINE_PF, mmu_handle_isr);
 
 }
 

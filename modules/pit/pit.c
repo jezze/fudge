@@ -9,14 +9,14 @@
 
 static struct pit_device pitDevice;
 
-static void pit_handler()
+static void pit_handle_irq()
 {
 
     struct pit_device *pit = &pitDevice;
 
     pit->jiffies += 1;
 
-    event_handler(EVENT_IRQ_PIT);
+    event_handle(EVENT_IRQ_PIT);
 
 }
 
@@ -52,7 +52,7 @@ void init()
 
     pit_device_init(&pitDevice);
 
-    kernel_register_irq(0x00, pit_handler);
+    kernel_register_irq(0x00, pit_handle_irq);
 
     modules_register_device(&pitDevice.stream.base);
     modules_register_device(&pitDevice.base);

@@ -1,5 +1,5 @@
-extern isr_handler
-extern syscall_handler
+extern isr_handle
+extern syscall_handle
 
 global isr00
 isr00:
@@ -234,7 +234,7 @@ isr_syscall:
     mov gs, ax
     mov eax, esp
     push eax
-    call syscall_handler
+    call syscall_handle
     pop eax
     pop gs
     pop fs
@@ -256,7 +256,7 @@ isr_common:
     mov gs, ax
     mov eax, esp
     push eax
-    call isr_handler
+    call isr_handle
     pop eax
     pop gs
     pop fs

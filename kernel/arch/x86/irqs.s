@@ -1,4 +1,4 @@
-extern irq_handler
+extern irq_handle
 
 global irq00
 irq00:
@@ -125,7 +125,7 @@ irq_common:
     mov gs, ax
     mov eax, esp
     push eax
-    call irq_handler
+    call irq_handle
     pop eax
     pop gs
     pop fs

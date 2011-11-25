@@ -5,26 +5,26 @@
 
 static void *isrRoutines[ISR_ROUTINE_SLOTS];
 
-void isr_register_handler(unsigned char index, void (*handler)(struct isr_registers *registers))
+void isr_register_routine(unsigned char index, void (*routine)(struct isr_registers *registers))
 {
 
-    isrRoutines[index] = handler;
+    isrRoutines[index] = routine;
 
 }
 
-void isr_unregister_handler(unsigned char index)
+void isr_unregister_routine(unsigned char index)
 {
 
     isrRoutines[index] = 0;
 
 }
 
-void isr_handler(struct isr_registers *registers)
+void isr_handle(struct isr_registers *registers)
 {
 
-    void (*handler)(struct isr_registers *registers) = isrRoutines[registers->index];
+    void (*routine)(struct isr_registers *registers) = isrRoutines[registers->index];
 
-    if (!handler)
+    if (!routine)
     {
 
         log_write("ERROR!\n");
@@ -34,7 +34,7 @@ void isr_handler(struct isr_registers *registers)
 
     }
 
-    handler(registers);
+    routine(registers);
 
 }
 

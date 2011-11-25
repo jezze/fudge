@@ -16,7 +16,7 @@
 #define SYSCALL_ROUTINE_ATTACH  0x30
 #define SYSCALL_ROUTINE_DETACH  0x31
 
-extern unsigned int syscall_attach(unsigned int index, void (*handler)());
+extern unsigned int syscall_attach(unsigned int index, void (*routine)());
 extern unsigned int syscall_close(unsigned int fd);
 extern unsigned int syscall_detach(unsigned int index);
 extern unsigned int syscall_execute(char *path, unsigned int argc, char **argv);

@@ -6,7 +6,7 @@
 
 static struct mouse_device mouseDevice;
 
-static void mouse_handler()
+static void mouse_handle_irq()
 {
 
     struct mouse_device *mouse = &mouseDevice;
@@ -39,7 +39,7 @@ static void mouse_handler()
 
     }
 
-    event_handler(EVENT_IRQ_MOUSE);
+    event_handle(EVENT_IRQ_MOUSE);
 
 }
 
@@ -131,7 +131,7 @@ void init()
 
     mouse_device_init(&mouseDevice);
 
-    kernel_register_irq(0x0C, mouse_handler);
+    kernel_register_irq(0x0C, mouse_handle_irq);
 
     modules_register_device(&mouseDevice.base);
 

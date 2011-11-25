@@ -1,6 +1,5 @@
 #include <lib/string.h>
 #include <kernel/vfs.h>
-#include <kernel/event.h>
 #include <kernel/initrd.h>
 #include <kernel/kernel.h>
 #include <kernel/log.h>
@@ -32,10 +31,10 @@ void kernel_reboot()
 
 }
 
-void kernel_register_irq(unsigned int index, void (*handler)())
+void kernel_register_irq(unsigned int index, void (*routine)())
 {
 
-    kernelCore.arch->register_irq(index, handler);
+    kernelCore.arch->register_irq(index, routine);
 
 }
 
@@ -73,7 +72,6 @@ void kernel_init(struct kernel_arch *arch)
     kernelCore.arch->setup(kernelCore.arch);
 
     modules_init();
-    event_init();
     initrd_init(kernelCore.arch->initrdc, kernelCore.arch->initrdv);
     symbol_init();
     runtime_init();

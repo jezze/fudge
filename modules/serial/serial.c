@@ -59,7 +59,7 @@ static void serial_device_write(struct serial_device *self, char c)
 
 }
 
-static void serial_handler()
+static void serial_handle_irq()
 {
 
     char c = serialDevice1.read(&serialDevice1);
@@ -97,7 +97,7 @@ void init()
 
     serial_device_init(&serialDevice1, SERIAL_COM1);
 
-    kernel_register_irq(0x04, serial_handler);
+    kernel_register_irq(0x04, serial_handle_irq);
 
     modules_register_device(&serialDevice1.base);
 

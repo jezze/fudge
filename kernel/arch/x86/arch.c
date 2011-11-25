@@ -54,8 +54,8 @@ void arch_init(struct mboot_header *header, unsigned int magic, void *stack)
     x86.base.enable_interrupts = cpu_enable_interrupts;
     x86.base.enter_usermode = cpu_enter_usermode;
     x86.base.set_stack = tss_set_stack;
-    x86.base.register_irq = irq_register_handler;
-    x86.base.unregister_irq = irq_unregister_handler;
+    x86.base.register_irq = irq_register_routine;
+    x86.base.unregister_irq = irq_unregister_routine;
     x86.base.stack = stack;
     x86.base.initrdc = header->modules.count;
     x86.base.initrdv = header->modules.address;

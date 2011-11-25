@@ -60,7 +60,7 @@ static unsigned int kbd_buffer_putc(struct kbd_buffer *self, char *buffer)
 
 }
 
-static void kbd_handler()
+static void kbd_handle_irq()
 {
 
     struct kbd_device *kbd = &kbdDevice;
@@ -113,7 +113,7 @@ static void kbd_handler()
 
     }
 
-    event_handler(EVENT_IRQ_KBD);
+    event_handle(EVENT_IRQ_KBD);
 
 }
 
@@ -139,7 +139,7 @@ void init()
 
     kbd_device_init(&kbdDevice);
 
-    kernel_register_irq(0x01, kbd_handler);
+    kernel_register_irq(0x01, kbd_handle_irq);
 
     modules_register_device(&kbdDevice.base);
 
