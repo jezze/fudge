@@ -1,8 +1,9 @@
 #include <lib/string.h>
 #include <kernel/arch/x86/io.h>
-//#include <kernel/log.h>
 #include <kernel/modules.h>
 #include <kernel/kernel.h>
+#include <kernel/vfs.h>
+#include <modules/stream/stream.h>
 #include <modules/pci/pci.h>
 #include <modules/rtl8139/rtl8139.h>
 
@@ -63,6 +64,15 @@ void rtl8139_get_mac(struct rtl8139_driver *driver)
 
 }
 
+static unsigned int rtl8139_macs_read(struct vfs_node *self, unsigned int count, void *buffer)
+{
+
+    string_write_format(buffer, "%x:%x:%x:%x:%x:%x", rtl8139Driver.mac[0], rtl8139Driver.mac[1], rtl8139Driver.mac[2], rtl8139Driver.mac[3], rtl8139Driver.mac[4], rtl8139Driver.mac[5]);
+
+    return string_length(buffer);
+
+}
+
 void init()
 {
 
@@ -88,7 +98,9 @@ void init()
     rtl8139_set_interrupt_flags(&rtl8139Driver, 0x05);
     rtl8139_enable(&rtl8139Driver);
 
-//    log_write("[rtl8139] Mac address: %x:%x:%x:%x:%x:%x\n", rtl8139Driver.mac[0], rtl8139Driver.mac[1], rtl8139Driver.mac[2], rtl8139Driver.mac[3], rtl8139Driver.mac[4], rtl8139Driver.mac[5]);
+    stream_device_init(&rtl8139Driver.macs, "mac", rtl8139_macs_read, 0);
+
+    modules_register_device(&rtl8139Driver.macs.base);
 
 }
 
