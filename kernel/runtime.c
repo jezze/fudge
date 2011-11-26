@@ -58,35 +58,29 @@ void runtime_activate(struct runtime_task *task)
 
 }
 
-static void *runtime_task_load_argv(void *paddress, void *vaddress, unsigned int argc, char **argv)
-{
-
-    unsigned int start = 0xFD00;
-    char **nargv = paddress + start;
-
-    unsigned int i;
-    unsigned int off = argc * 4;
-
-    for (i = 0; i < argc; i++)
-    {
-
-        nargv[i] = vaddress + start + off;
-        string_write(paddress + start + off, argv[i]);
-        off += string_length(argv[i]) + 2;
-
-    }
-
-    return vaddress + start;
-
-}
-
 static unsigned int runtime_task_load(struct runtime_task *self, void *paddress, void *vaddress, unsigned int limit, void *entry, unsigned int argc, char **argv)
 {
+
 
     void *pstack = paddress + limit;
     void *vstack = vaddress + limit;
 
-    void *vargv = runtime_task_load_argv(paddress, vaddress, argc, argv);
+    unsigned int start = limit - 0x200;
+
+    char **pargv = paddress + start;
+    void **vargv = vaddress + start;
+
+    unsigned int offset = argc * 4;
+    unsigned int i;
+
+    for (i = 0; i < argc; i++)
+    {
+
+        pargv[i] = vaddress + start + offset;
+        string_write(paddress + start + offset, argv[i]);
+        offset += string_length(argv[i]) + 2;
+
+    }
 
     memory_copy(pstack - 0x4, &vargv, 4);
     memory_copy(pstack - 0x8, &argc, 4);
