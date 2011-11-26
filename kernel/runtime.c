@@ -95,6 +95,7 @@ static unsigned int runtime_task_load(struct runtime_task *self, void *paddress,
     self->used = 1;
     self->registers.ip = entry;
     self->registers.sp = vstack - 0xC;
+    self->registers.sb = vstack - 0xC;
 
     return 1;
 
