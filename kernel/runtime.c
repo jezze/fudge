@@ -63,14 +63,10 @@ static unsigned int runtime_task_load(struct runtime_task *self, void *paddress,
 
     int reloc = (int)vaddress - (int)paddress;
 
-    void *pstack = paddress + limit;
-
-    unsigned int start = limit - 0x200;
-
-    char **pargv = paddress + start;
-    char **vargv = vaddress + start;
-
+    char **pargv = (char **)(paddress + limit - 0x200);
+    unsigned int vargv = (unsigned int)pargv + reloc;
     void *offset = pargv + argc * 4;
+
     unsigned int i;
 
     for (i = 0; i < argc; i++)
@@ -81,6 +77,8 @@ static unsigned int runtime_task_load(struct runtime_task *self, void *paddress,
         offset += string_length(argv[i]) + 2;
 
     }
+
+    void *pstack = paddress + limit;
 
     pstack = memory_copy(pstack - 0x4, &vargv, 4);
     pstack = memory_copy(pstack - 0x4, &argc, 4);
