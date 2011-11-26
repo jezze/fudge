@@ -26,7 +26,12 @@ static void scroll()
     char buffer[TTY_CHARACTER_SIZE];
 
     device.vgaDevice->read_framebuffer(TTY_CHARACTER_WIDTH, TTY_CHARACTER_SIZE - TTY_CHARACTER_WIDTH, buffer);
-    memory_set(buffer + TTY_CHARACTER_SIZE - TTY_CHARACTER_WIDTH, ' ', TTY_CHARACTER_WIDTH);
+
+    unsigned int i;
+
+    for (i = TTY_CHARACTER_SIZE - TTY_CHARACTER_WIDTH; i < TTY_CHARACTER_SIZE; i++)
+        buffer[i] = ' ';
+
     device.vgaDevice->write_framebuffer(0, TTY_CHARACTER_SIZE, buffer);
 
     device.cursorOffset -= TTY_CHARACTER_WIDTH;
