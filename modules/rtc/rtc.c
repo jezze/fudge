@@ -6,16 +6,16 @@
 #include <modules/stream/stream.h>
 #include <modules/rtc/rtc.h>
 
-static struct rtc_device rtcDevice;
+static struct rtc_device device;
 
-static unsigned char rtc_convert(unsigned char num)
+static unsigned char convert(unsigned char num)
 {
 
     return ((num & 0xF0) >> 1) + ((num & 0xF0) >> 3) + (num & 0x0F);
 
 }
 
-static unsigned char rtc_get(unsigned int type)
+static unsigned char get_value(unsigned int type)
 {
 
 //    do { io_outb(RTC_PORT_WRITE, 0x0A); }
@@ -23,7 +23,7 @@ static unsigned char rtc_get(unsigned int type)
 
     io_outb(RTC_PORT_WRITE, type);
 
-    return rtc_convert(io_inb(RTC_PORT_READ));
+    return convert(io_inb(RTC_PORT_READ));
 
 }
 
@@ -33,22 +33,22 @@ static unsigned int rtc_device_stream_read(struct vfs_node *self, unsigned int c
     char num[32];
 
     string_write(buffer, "20");
-    string_write_num(num, rtc_get(RTC_FLAG_YEAR), 10);
+    string_write_num(num, get_value(RTC_FLAG_YEAR), 10);
     string_write_concat(buffer, num);
     string_write_concat(buffer, "-");
-    string_write_num(num, rtc_get(RTC_FLAG_MONTH), 10);
+    string_write_num(num, get_value(RTC_FLAG_MONTH), 10);
     string_write_concat(buffer, num);
     string_write_concat(buffer, "-");
-    string_write_num(num, rtc_get(RTC_FLAG_DAY), 10);
+    string_write_num(num, get_value(RTC_FLAG_DAY), 10);
     string_write_concat(buffer, num);
     string_write_concat(buffer, " ");
-    string_write_num(num, rtc_get(RTC_FLAG_HOURS), 10);
+    string_write_num(num, get_value(RTC_FLAG_HOURS), 10);
     string_write_concat(buffer, num);
     string_write_concat(buffer, ":");
-    string_write_num(num, rtc_get(RTC_FLAG_MINUTES), 10);
+    string_write_num(num, get_value(RTC_FLAG_MINUTES), 10);
     string_write_concat(buffer, num);
     string_write_concat(buffer, ":");
-    string_write_num(num, rtc_get(RTC_FLAG_SECONDS), 10);
+    string_write_num(num, get_value(RTC_FLAG_SECONDS), 10);
     string_write_concat(buffer, num);
 
     return string_length(buffer);
@@ -66,18 +66,18 @@ void rtc_device_init(struct rtc_device *device)
 void init()
 {
 
-    rtc_device_init(&rtcDevice);
+    rtc_device_init(&device);
 
-    modules_register_device(&rtcDevice.stream.base);
-    modules_register_device(&rtcDevice.base);
+    modules_register_device(&device.stream.base);
+    modules_register_device(&device.base);
 
 }
 
 void destroy()
 {
 
-    modules_unregister_device(&rtcDevice.stream.base);
-    modules_unregister_device(&rtcDevice.base);
+    modules_unregister_device(&device.stream.base);
+    modules_unregister_device(&device.base);
 
 }
 

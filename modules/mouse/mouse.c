@@ -4,46 +4,9 @@
 #include <kernel/kernel.h>
 #include <modules/mouse/mouse.h>
 
-static struct mouse_device mouseDevice;
+static struct mouse_device device;
 
-static void mouse_handle_irq()
-{
-
-    struct mouse_device *mouse = &mouseDevice;
-
-    switch (mouse->cycle)
-    {
-
-        case 0:
-
-            mouse->byte[0] = io_inb(0x60);
-            mouse->cycle++;
-
-            break;
-
-        case 1:
-
-            mouse->byte[1] = io_inb(0x60);
-            mouse->cycle++;
-
-            break;
-
-        case 2:
-
-            mouse->byte[2] = io_inb(0x60);
-            mouse->x = mouse->byte[1];
-            mouse->y = mouse->byte[2];
-            mouse->cycle = 0;
-
-            break;
-
-    }
-
-    event_handle(EVENT_IRQ_MOUSE);
-
-}
-
-static void mouse_wait(unsigned char type)
+static void wait(unsigned char type)
 {
 
     unsigned int timeout = 100000;
@@ -80,20 +43,20 @@ static void mouse_wait(unsigned char type)
 
 }
 
-static void mouse_write(unsigned char value)
+static void write(unsigned char value)
 {
 
-    mouse_wait(1);
+    wait(1);
     io_outb(0x64, 0xD4);
-    mouse_wait(1);
+    wait(1);
     io_outb(0x60, value);
 
 }
 
-static unsigned char mouse_read()
+static unsigned char read()
 {
 
-    mouse_wait(0);
+    wait(0);
 
     return io_inb(0x60);
 
@@ -109,31 +72,68 @@ void mouse_device_init(struct mouse_device *device)
 
     unsigned char status;
 
-    mouse_wait(1);
+    wait(1);
     io_outb(0x64, 0xA8);
-    mouse_wait(1);
+    wait(1);
     io_outb(0x64, 0x20);
-    mouse_wait(0);
+    wait(0);
     status = (io_inb(0x60) | 2);
-    mouse_wait(1);
+    wait(1);
     io_outb(0x64, 0x60);
-    mouse_wait(1);
+    wait(1);
     io_outb(0x60, status);
-    mouse_write(0xF6);
-    mouse_read();
-    mouse_write(0xF4);
-    mouse_read();
+    write(0xF6);
+    read();
+    write(0xF4);
+    read();
+
+}
+
+static void handle_irq()
+{
+
+    struct mouse_device *mouse = &device;
+
+    switch (mouse->cycle)
+    {
+
+        case 0:
+
+            mouse->byte[0] = io_inb(0x60);
+            mouse->cycle++;
+
+            break;
+
+        case 1:
+
+            mouse->byte[1] = io_inb(0x60);
+            mouse->cycle++;
+
+            break;
+
+        case 2:
+
+            mouse->byte[2] = io_inb(0x60);
+            mouse->x = mouse->byte[1];
+            mouse->y = mouse->byte[2];
+            mouse->cycle = 0;
+
+            break;
+
+    }
+
+    event_handle(EVENT_IRQ_MOUSE);
 
 }
 
 void init()
 {
 
-    mouse_device_init(&mouseDevice);
+    mouse_device_init(&device);
 
-    kernel_register_irq(0x0C, mouse_handle_irq);
+    kernel_register_irq(0x0C, handle_irq);
 
-    modules_register_device(&mouseDevice.base);
+    modules_register_device(&device.base);
 
 }
 
@@ -142,7 +142,7 @@ void destroy()
 
     kernel_unregister_irq(0x0C);
 
-    modules_unregister_device(&mouseDevice.base);
+    modules_unregister_device(&device.base);
 
 }
 

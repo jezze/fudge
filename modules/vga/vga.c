@@ -4,7 +4,7 @@
 #include <kernel/modules.h>
 #include <modules/vga/vga.h>
 
-static struct vga_device vgaDevice;
+static struct vga_device device;
 
 static unsigned int vga_device_read_framebuffer(unsigned int offset, unsigned int count, void *buffer)
 {
@@ -41,7 +41,7 @@ static unsigned int vga_device_write_framebuffer(unsigned int offset, unsigned i
         void *address = (void *)(VGA_FB_ADDRESS + i * 2);
 
         memory_copy(address, buffer + j, 1);
-        memory_set(address + 1, vgaDevice.cursorColor, 1);
+        memory_set(address + 1, device.cursorColor, 1);
 
     }
 
@@ -52,7 +52,7 @@ static unsigned int vga_device_write_framebuffer(unsigned int offset, unsigned i
 static void vga_device_set_cursor_color(unsigned char fg, unsigned char bg)
 {
 
-    vgaDevice.cursorColor = (bg << 4) | (fg & 0x0F);
+    device.cursorColor = (bg << 4) | (fg & 0x0F);
 
 }
 
@@ -80,16 +80,16 @@ void vga_device_init(struct vga_device *device)
 void init()
 {
 
-    vga_device_init(&vgaDevice);
+    vga_device_init(&device);
 
-    modules_register_device(&vgaDevice.base);
+    modules_register_device(&device.base);
 
 }
 
 void destroy()
 {
 
-    modules_unregister_device(&vgaDevice.base);
+    modules_unregister_device(&device.base);
 
 }
 

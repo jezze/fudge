@@ -9,11 +9,6 @@
 
 static struct rtl8139_driver driver;
 
-static void handle_irq()
-{
-
-}
-
 static void poweron(struct rtl8139_driver *driver)
 {
 
@@ -87,6 +82,11 @@ void rtl8139_driver_init(struct rtl8139_driver *driver, struct pci_device *devic
     enable(driver);
 
     stream_device_init(&driver->macs, "mac", rtl8139_driver_macs_read, 0);
+
+}
+
+static void handle_irq()
+{
 
 }
 

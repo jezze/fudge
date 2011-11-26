@@ -7,25 +7,14 @@
 #include <modules/stream/stream.h>
 #include <modules/pit/pit.h>
 
-static struct pit_device pitDevice;
-
-static void pit_handle_irq()
-{
-
-    struct pit_device *pit = &pitDevice;
-
-    pit->jiffies += 1;
-
-    event_handle(EVENT_IRQ_PIT);
-
-}
+static struct pit_device device;
 
 static unsigned int pit_device_stream_read(struct vfs_node *self, unsigned int count, void *buffer)
 {
 
     char num[32];
 
-    string_write_num(num, pitDevice.jiffies, 10);
+    string_write_num(num, device.jiffies, 10);
 
     string_write(buffer, num);
 
@@ -37,7 +26,7 @@ void pit_device_init(struct pit_device *device)
 {
 
     modules_device_init(&device->base, PIT_DEVICE_TYPE);
-    stream_device_init(&pitDevice.stream, "jiffies", pit_device_stream_read, 0);
+    stream_device_init(&device->stream, "jiffies", pit_device_stream_read, 0);
     device->divisor = PIT_HERTZ / PIT_FREQUENCY;
     device->jiffies = 0;
 
@@ -47,15 +36,26 @@ void pit_device_init(struct pit_device *device)
 
 }
 
+static void handle_irq()
+{
+
+    struct pit_device *pit = &device;
+
+    pit->jiffies += 1;
+
+    event_handle(EVENT_IRQ_PIT);
+
+}
+
 void init()
 {
 
-    pit_device_init(&pitDevice);
+    pit_device_init(&device);
 
-    kernel_register_irq(0x00, pit_handle_irq);
+    kernel_register_irq(0x00, handle_irq);
 
-    modules_register_device(&pitDevice.stream.base);
-    modules_register_device(&pitDevice.base);
+    modules_register_device(&device.stream.base);
+    modules_register_device(&device.base);
 
 }
 
@@ -64,8 +64,8 @@ void destroy()
 
     kernel_unregister_irq(0x00);
 
-    modules_unregister_device(&pitDevice.stream.base);
-    modules_unregister_device(&pitDevice.base);
+    modules_unregister_device(&device.stream.base);
+    modules_unregister_device(&device.base);
 
 }
 

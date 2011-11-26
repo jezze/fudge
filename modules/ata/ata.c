@@ -5,9 +5,9 @@
 #include <kernel/modules.h>
 #include <modules/ata/ata.h>
 
-static struct ata_bus ataBusPrimary;
-static struct ata_bus ataBusSecondary;
-static struct ata_device ataDevices[4];
+static struct ata_bus busPrimary;
+static struct ata_bus busSecondary;
+static struct ata_device devices[4];
 
 static void ata_device_sleep(struct ata_device *self)
 {
@@ -151,36 +151,36 @@ void ata_device_init(struct ata_device *device, unsigned int control, unsigned i
 void init()
 {
 
-    ata_bus_init(&ataBusPrimary);
-    modules_register_bus(&ataBusPrimary.base);
+    ata_bus_init(&busPrimary);
+    modules_register_bus(&busPrimary.base);
 
-    ata_bus_init(&ataBusSecondary);
-    modules_register_bus(&ataBusSecondary.base);
+    ata_bus_init(&busSecondary);
+    modules_register_bus(&busSecondary.base);
 
     struct ata_device *device;
     
-    device = &ataDevices[0];
+    device = &devices[0];
 
     ata_device_init(device, ATA_PRIMARY_MASTER_CONTROL, ATA_PRIMARY_MASTER_DATA);
 
     if (device->identify(device))
         modules_register_device(&device->base);
 
-    device = &ataDevices[1];
+    device = &devices[1];
 
     ata_device_init(device, ATA_PRIMARY_SLAVE_CONTROL, ATA_PRIMARY_SLAVE_DATA);
 
     if (device->identify(device))
         modules_register_device(&device->base);
 
-    device = &ataDevices[2];
+    device = &devices[2];
 
     ata_device_init(device, ATA_SECONDARY_MASTER_CONTROL, ATA_SECONDARY_MASTER_DATA);
 
     if (device->identify(device))
         modules_register_device(&device->base);
 
-    device = &ataDevices[3];
+    device = &devices[3];
 
     ata_device_init(device, ATA_SECONDARY_SLAVE_CONTROL, ATA_SECONDARY_SLAVE_DATA);
 

@@ -5,7 +5,7 @@
 #include <kernel/kernel.h>
 #include <modules/serial/serial.h>
 
-static struct serial_device serialDevice1;
+static struct serial_device device1;
 
 static unsigned int serial_buffer_getc(struct serial_buffer *self, char *buffer)
 {
@@ -59,15 +59,6 @@ static void serial_device_write(struct serial_device *self, char c)
 
 }
 
-static void serial_handle_irq()
-{
-
-    char c = serialDevice1.read(&serialDevice1);
-
-    serialDevice1.buffer.putc(&serialDevice1.buffer, &c);
-
-}
-
 void serial_device_init(struct serial_device *device, unsigned int port)
 {
 
@@ -92,14 +83,23 @@ void serial_device_init(struct serial_device *device, unsigned int port)
 
 }
 
+static void handle_irq()
+{
+
+    char c = device1.read(&device1);
+
+    device1.buffer.putc(&device1.buffer, &c);
+
+}
+
 void init()
 {
 
-    serial_device_init(&serialDevice1, SERIAL_COM1);
+    serial_device_init(&device1, SERIAL_COM1);
 
-    kernel_register_irq(0x04, serial_handle_irq);
+    kernel_register_irq(0x04, handle_irq);
 
-    modules_register_device(&serialDevice1.base);
+    modules_register_device(&device1.base);
 
 }
 
@@ -108,7 +108,7 @@ void destroy()
 
     kernel_unregister_irq(0x04);
 
-    modules_unregister_device(&serialDevice1.base);
+    modules_unregister_device(&device1.base);
 
 }
 
