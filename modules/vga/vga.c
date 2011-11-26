@@ -38,8 +38,10 @@ static unsigned int vga_device_write_framebuffer(unsigned int offset, unsigned i
         if (i == VGA_FB_SIZE)
             return j;
 
-        memory_copy((void *)(VGA_FB_ADDRESS + i * 2), buffer + j, 1);
-        memory_set((void *)(VGA_FB_ADDRESS + i * 2 + 1), vgaDevice.cursorColor, 1);
+        void *address = (void *)(VGA_FB_ADDRESS + i * 2);
+
+        memory_copy(address, buffer + j, 1);
+        memory_set(address + 1, vgaDevice.cursorColor, 1);
 
     }
 
