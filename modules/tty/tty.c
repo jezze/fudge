@@ -217,5 +217,12 @@ void init()
 void destroy()
 {
 
+    modules_unregister_device(&device.in.base);
+    modules_unregister_device(&device.out.base);
+    modules_unregister_device(&device.error.base);
+    modules_unregister_device(&device.cwd.base);
+    modules_unregister_device(&device.view.base);
+    modules_unregister_device(&device.base);
+
 }
 
