@@ -68,7 +68,7 @@ static unsigned int runtime_task_load(struct runtime_task *self, void *paddress,
     unsigned int start = limit - 0x200;
 
     char **pargv = paddress + start;
-    void **vargv = vaddress + start;
+    char **vargv = vaddress + start;
 
     void *offset = pargv + argc * 4;
     unsigned int i;
