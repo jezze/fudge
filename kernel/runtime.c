@@ -61,7 +61,6 @@ void runtime_activate(struct runtime_task *task)
 static unsigned int runtime_task_load(struct runtime_task *self, void *paddress, void *vaddress, unsigned int limit, void *entry, unsigned int argc, char **argv)
 {
 
-
     void *pstack = paddress + limit;
     void *vstack = vaddress + limit;
 
@@ -82,9 +81,9 @@ static unsigned int runtime_task_load(struct runtime_task *self, void *paddress,
 
     }
 
-    memory_copy(pstack - 0x4, &vargv, 4);
-    memory_copy(pstack - 0x8, &argc, 4);
-    memory_copy(pstack - 0xC, &entry, 4);
+    pstack = memory_copy(pstack - 0x4, &vargv, 4);
+    pstack = memory_copy(pstack - 0x4, &argc, 4);
+    pstack = memory_copy(pstack - 0x4, &entry, 4);
 
     self->used = 1;
     self->registers.ip = entry;
