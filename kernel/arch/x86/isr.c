@@ -3,26 +3,26 @@
 #include <kernel/arch/x86/idt.h>
 #include <kernel/arch/x86/isr.h>
 
-static void *isrRoutines[ISR_ROUTINE_SLOTS];
+static void *routines[ISR_ROUTINE_SLOTS];
 
 void isr_register_routine(unsigned char index, void (*routine)(struct isr_registers *registers))
 {
 
-    isrRoutines[index] = routine;
+    routines[index] = routine;
 
 }
 
 void isr_unregister_routine(unsigned char index)
 {
 
-    isrRoutines[index] = 0;
+    routines[index] = 0;
 
 }
 
 void isr_handle(struct isr_registers *registers)
 {
 
-    void (*routine)(struct isr_registers *registers) = isrRoutines[registers->index];
+    void (*routine)(struct isr_registers *registers) = routines[registers->index];
 
     if (!routine)
     {

@@ -3,26 +3,26 @@
 #include <kernel/arch/x86/gdt.h>
 #include <kernel/arch/x86/tss.h>
 
-static struct tss_entry tssEntry;
+static struct tss_entry entry;
 
 void tss_set_stack(void *address)
 {
 
-    tssEntry.esp0 = (unsigned int)address;
+    entry.esp0 = (unsigned int)address;
 
 }
 
 void tss_init()
 {
 
-    memory_set(&tssEntry, 0, sizeof (struct tss_entry));
+    memory_set(&entry, 0, sizeof (struct tss_entry));
 
-    tssEntry.ss0 = 0x10;
-    tssEntry.esp0 = 0x00;
-    tssEntry.cs = 0x0B;
-    tssEntry.ss = tssEntry.ds = tssEntry.es = tssEntry.fs = tssEntry.gs = 0x13;
+    entry.ss0 = 0x10;
+    entry.esp0 = 0x00;
+    entry.cs = 0x0B;
+    entry.ss = entry.ds = entry.es = entry.fs = entry.gs = 0x13;
 
-    unsigned int base = (unsigned int)&tssEntry;
+    unsigned int base = (unsigned int)&entry;
     unsigned int limit = base + sizeof (struct tss_entry);
 
     gdt_set_gate(0x05, base, limit, 0xE9, 0x00);

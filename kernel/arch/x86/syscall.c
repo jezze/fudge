@@ -3,7 +3,7 @@
 #include <kernel/syscall.h>
 #include <kernel/arch/x86/syscall.h>
 
-static void *syscallRoutines[SYSCALL_ROUTINE_SLOTS];
+static void *routines[SYSCALL_ROUTINE_SLOTS];
 
 static void syscall_handle_attach(struct syscall_registers *registers)
 {
@@ -118,14 +118,14 @@ static void syscall_handle_write(struct syscall_registers *registers)
 static void syscall_register_routine(unsigned char index, void (*routine)(struct syscall_registers *registers))
 {
 
-    syscallRoutines[index] = routine;
+    routines[index] = routine;
 
 }
 
 void syscall_handle(struct syscall_registers *registers)
 {
 
-    void (*routine)(struct syscall_registers *registers) = syscallRoutines[registers->eax];
+    void (*routine)(struct syscall_registers *registers) = routines[registers->eax];
 
     if (!routine)
         return;

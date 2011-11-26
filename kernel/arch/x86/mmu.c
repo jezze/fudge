@@ -6,9 +6,9 @@
 #include <kernel/arch/x86/isr.h>
 #include <kernel/arch/x86/mmu.h>
 
-static struct mmu_unit mmuUnit;
-static struct mmu_header mmuKernelHeader;
-static struct mmu_header mmuProgramHeaders[8];
+static struct mmu_unit unit;
+static struct mmu_header kernelHeader;
+static struct mmu_header programHeaders[8];
 
 static void mmu_handle_isr(struct isr_registers *registers)
 {
@@ -70,15 +70,15 @@ static struct mmu_header *mmu_get_header(void *paddress)
 {
 
     if (!paddress)
-        return &mmuKernelHeader;
+        return &kernelHeader;
 
     unsigned int i;
 
     for (i = 0; i < 8; i++)
     {
 
-        if (mmuProgramHeaders[i].address == paddress)
-            return &mmuProgramHeaders[i];
+        if (programHeaders[i].address == paddress)
+            return &programHeaders[i];
 
     }
 
@@ -130,25 +130,25 @@ static void mmu_enable()
 static void *mmu_get_paddress(unsigned int id)
 {
 
-    return mmuProgramHeaders[id].address;
+    return programHeaders[id].address;
 
 }
 
 static void mmu_setup()
 {
 
-    mmu_clear_directory(&mmuKernelHeader.directory);
-    mmuKernelHeader.address = 0;
-    mmu_map(mmuKernelHeader.address, (void *)0x00000000, 0x00400000, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE);
-    mmu_set_directory(mmuKernelHeader.address);
+    mmu_clear_directory(&kernelHeader.directory);
+    kernelHeader.address = 0;
+    mmu_map(kernelHeader.address, (void *)0x00000000, 0x00400000, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE);
+    mmu_set_directory(kernelHeader.address);
 
     unsigned int i;
 
     for (i = 0; i < 8; i++)
     {
 
-        mmuProgramHeaders[i].address = (void *)(0x00300000 + i * 0x10000);
-        memory_copy(&mmuProgramHeaders[i].directory, &mmuKernelHeader.directory, sizeof (struct mmu_directory));
+        programHeaders[i].address = (void *)(0x00300000 + i * 0x10000);
+        memory_copy(&programHeaders[i].directory, &kernelHeader.directory, sizeof (struct mmu_directory));
 
     }
 
@@ -159,8 +159,8 @@ static void mmu_setup()
 void mmu_init()
 {
 
-    mmu_unit_init(&mmuUnit, mmu_setup, mmu_enable, mmu_get_paddress, mmu_set_directory, mmu_map);
-    mmu_register_unit(&mmuUnit);
+    mmu_unit_init(&unit, mmu_setup, mmu_enable, mmu_get_paddress, mmu_set_directory, mmu_map);
+    mmu_register_unit(&unit);
 
 }
 

@@ -6,19 +6,19 @@
 #include <kernel/arch/x86/irq.h>
 #include <kernel/arch/x86/isr.h>
 
-static void *irqRoutines[IRQ_ROUTINE_SLOTS];
+static void *routines[IRQ_ROUTINE_SLOTS];
 
 void irq_register_routine(unsigned char index, void (*routine)())
 {
 
-    irqRoutines[index] = routine;
+    routines[index] = routine;
 
 }
 
 void irq_unregister_routine(unsigned char index)
 {
 
-    irqRoutines[index] = 0;
+    routines[index] = 0;
 
 }
 
@@ -38,7 +38,7 @@ void irq_handle(struct irq_registers *registers)
 
     }
 
-    void (*routine)() = irqRoutines[registers->index];
+    void (*routine)() = routines[registers->index];
 
     if (routine)
         routine();
