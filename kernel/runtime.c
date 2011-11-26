@@ -64,7 +64,6 @@ static unsigned int runtime_task_load(struct runtime_task *self, void *paddress,
     int reloc = (int)vaddress - (int)paddress;
 
     char **pargv = (char **)(paddress + limit - 0x200);
-    unsigned int vargv = (unsigned int)pargv + reloc;
     void *offset = pargv + argc * 4;
 
     unsigned int i;
@@ -78,16 +77,19 @@ static unsigned int runtime_task_load(struct runtime_task *self, void *paddress,
 
     }
 
-    void *pstack = paddress + limit;
+    unsigned int vargc = argc;
+    unsigned int vargv = (unsigned int)pargv + reloc;
 
-    pstack = memory_copy(pstack - 0x4, &vargv, 4);
-    pstack = memory_copy(pstack - 0x4, &argc, 4);
-    pstack = memory_copy(pstack - 0x4, &entry, 4);
+    void *stack = paddress + limit;
+
+    stack = memory_copy(stack - 0x4, &vargv, 4);
+    stack = memory_copy(stack - 0x4, &vargc, 4);
+    stack = memory_copy(stack - 0x4, &entry, 4);
 
     self->used = 1;
     self->registers.ip = entry;
-    self->registers.sp = pstack + reloc;
-    self->registers.sb = pstack + reloc;
+    self->registers.sp = stack + reloc;
+    self->registers.sb = stack + reloc;
 
     return 1;
 
