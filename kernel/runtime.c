@@ -80,30 +80,21 @@ static void *runtime_task_load_argv(void *paddress, void *vaddress, unsigned int
 
 }
 
-static void *runtime_task_load_stack(void *pstack, void *vstack, void *ip, unsigned int argc, char **argv)
-{
-
-    memory_copy(pstack - 0x4, &argv, 4);
-    memory_copy(pstack - 0x8, &argc, 4);
-    memory_copy(pstack - 0xC, &ip, 4);
-
-    return vstack - 0xC;
-
-}
-
 static unsigned int runtime_task_load(struct runtime_task *self, void *paddress, void *vaddress, unsigned int limit, void *entry, unsigned int argc, char **argv)
 {
 
-    self->used = 1;
-    self->registers.ip = entry;
+    void *pstack = paddress + limit;
+    void *vstack = vaddress + limit;
 
     void *vargv = runtime_task_load_argv(paddress, vaddress, argc, argv);
-    self->registers.sp = runtime_task_load_stack(paddress + limit, vaddress + limit, self->registers.ip, argc, vargv);
 
-    unsigned int i;
+    memory_copy(pstack - 0x4, &vargv, 4);
+    memory_copy(pstack - 0x8, &argc, 4);
+    memory_copy(pstack - 0xC, &entry, 4);
 
-    for (i = 0; i < RUNTIME_TASK_DESCRIPTOR_SLOTS; i++)
-        self->descriptors[i].node = 0;
+    self->used = 1;
+    self->registers.ip = entry;
+    self->registers.sp = vstack - 0xC;
 
     return 1;
 
@@ -113,6 +104,11 @@ static void runtime_task_unload(struct runtime_task *self)
 {
 
     self->used = 0;
+
+    unsigned int i;
+
+    for (i = 0; i < RUNTIME_TASK_DESCRIPTOR_SLOTS; i++)
+        self->descriptors[i].node = 0;
 
 }
 
