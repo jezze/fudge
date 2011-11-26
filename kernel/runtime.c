@@ -70,14 +70,14 @@ static unsigned int runtime_task_load(struct runtime_task *self, void *paddress,
     char **pargv = paddress + start;
     void **vargv = vaddress + start;
 
-    unsigned int offset = argc * 4;
+    unsigned int offset = start + argc * 4;
     unsigned int i;
 
     for (i = 0; i < argc; i++)
     {
 
-        pargv[i] = vaddress + start + offset;
-        string_write(paddress + start + offset, argv[i]);
+        pargv[i] = vaddress + offset;
+        string_write(paddress + offset, argv[i]);
         offset += string_length(argv[i]) + 2;
 
     }
