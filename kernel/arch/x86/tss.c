@@ -15,7 +15,7 @@ void tss_set_stack(void *address)
 void tss_init()
 {
 
-    memory_set(&entry, 0, sizeof (struct tss_entry));
+    memory_clear(&entry, sizeof (struct tss_entry));
 
     entry.ss0 = 0x10;
     entry.esp0 = 0x00;

@@ -1,5 +1,17 @@
 #include <lib/memory.h>
 
+void *memory_clear(void *out, unsigned int count)
+{
+
+    char *op = out;
+
+    for (; count; op++, count--)
+        *op = 0;
+
+    return out;
+
+}
+
 int memory_compare(const void *in1, const void *in2, unsigned int count)
 {
 

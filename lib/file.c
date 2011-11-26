@@ -59,7 +59,7 @@ static unsigned int file_write_num(unsigned int fd, unsigned int num, unsigned i
         return file_write_string(fd, "0");
 
     char buffer[32];
-    memory_set(buffer, 0, 32);
+    memory_clear(buffer, 32);
 
     int i;
 

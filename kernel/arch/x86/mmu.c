@@ -41,14 +41,14 @@ static void mmu_handle_isr(struct isr_registers *registers)
 static void mmu_clear_directory(struct mmu_directory *directory)
 {
 
-    memory_set(directory, 0, sizeof (struct mmu_directory));
+    memory_clear(directory, sizeof (struct mmu_directory));
 
 }
 
 static void mmu_clear_table(struct mmu_table *table)
 {
 
-    memory_set(table, 0, sizeof (struct mmu_table));
+    memory_clear(table, sizeof (struct mmu_table));
 
 }
 

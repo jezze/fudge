@@ -60,7 +60,7 @@ static unsigned char ata_read_identity(struct ata_device *device)
 
     unsigned short buffer[256];
 
-    memory_set(buffer, 0, 512);
+    memory_clear(buffer, 512);
 
     unsigned int i;
 

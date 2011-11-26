@@ -137,7 +137,7 @@ static unsigned int tty_device_out_write(struct vfs_node *self, unsigned int cou
 static unsigned int tty_device_view_read(struct vfs_node *self, unsigned int count, void *buffer)
 {
 
-    memory_set(buffer, 0, 1);
+    memory_clear(buffer, 1);
 
     unsigned int i;
 

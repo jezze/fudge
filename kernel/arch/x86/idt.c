@@ -21,7 +21,7 @@ void idt_set_gate(unsigned char index, void *callback, unsigned short selector, 
 void idt_init()
 {
 
-    memory_set(&entries, 0, sizeof (struct idt_entry) * IDT_TABLE_SLOTS);
+    memory_clear(&entries, sizeof (struct idt_entry) * IDT_TABLE_SLOTS);
 
     pointer.base = entries;
     pointer.limit = (sizeof (struct idt_entry) * IDT_TABLE_SLOTS) - 1;

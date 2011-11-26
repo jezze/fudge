@@ -180,7 +180,7 @@ char *string_write_num(char *out, unsigned int num, unsigned int base)
         return string_write(out, "0");
 
     char buffer[32];
-    memory_set(buffer, 0, 32);
+    memory_clear(buffer, 32);
 
     int i;
 

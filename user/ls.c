@@ -27,7 +27,7 @@ void write_content(char *path, char *content)
 
             content[i] = '\0';
 
-            memory_set(str, 0, 256);
+            memory_clear(str, 256);
             string_write_concat(str, path);
             string_write_concat(str, content + start);
 

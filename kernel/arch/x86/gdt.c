@@ -21,7 +21,7 @@ void gdt_set_gate(unsigned char index, unsigned int base, unsigned int limit, un
 void gdt_init()
 {
 
-    memory_set(&entries, 0, sizeof (struct gdt_entry) * GDT_TABLE_SLOTS);
+    memory_clear(&entries, sizeof (struct gdt_entry) * GDT_TABLE_SLOTS);
 
     gdt_set_gate(0x00, 0x00000000, 0x00000000, 0x00, 0x00); // Null segment
     gdt_set_gate(0x01, 0x00000000, 0xFFFFFFFF, 0x9A, 0xCF); // Kernel code segment
