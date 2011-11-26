@@ -3,7 +3,7 @@
 #include <kernel/elf.h>
 #include <kernel/symbol.h>
 
-static struct elf_header *elf_get_header(void *address)
+static struct elf_header *get_header(void *address)
 {
 
     struct elf_header *header = (struct elf_header *)address;
@@ -24,19 +24,19 @@ static struct elf_header *elf_get_header(void *address)
 
 }
 
-static struct elf_program_header *elf_get_program_header(void *address)
+static struct elf_program_header *get_program_header(void *address)
 {
 
-    struct elf_header *header = elf_get_header(address);
+    struct elf_header *header = get_header(address);
 
     return (struct elf_program_header *)(address + header->phoffset);
 
 }
 
-static struct elf_section_header *elf_get_section_header(void *address, unsigned int index)
+static struct elf_section_header *get_section_header(void *address, unsigned int index)
 {
 
-    struct elf_header *header = elf_get_header(address);
+    struct elf_header *header = get_header(address);
 
     return (struct elf_section_header *)(address + header->shoffset + header->shsize * index);
 
@@ -45,7 +45,7 @@ static struct elf_section_header *elf_get_section_header(void *address, unsigned
 void *elf_get_entry(void *address)
 {
 
-    struct elf_header *header = elf_get_header(address);
+    struct elf_header *header = get_header(address);
 
     if (!header)
         return 0;
@@ -57,12 +57,12 @@ void *elf_get_entry(void *address)
 void *elf_get_virtual(void *address)
 {
 
-    struct elf_header *header = elf_get_header(address);
+    struct elf_header *header = get_header(address);
 
     if (!header)
         return 0;
 
-    struct elf_program_header *pheader = elf_get_program_header(address);
+    struct elf_program_header *pheader = get_program_header(address);
 
     return pheader->vaddress;
 
@@ -71,15 +71,15 @@ void *elf_get_virtual(void *address)
 void *elf_get_symbol(void *address, char *symname)
 {
 
-    struct elf_header *header = elf_get_header(address);
+    struct elf_header *header = get_header(address);
 
     if (!header)
         return 0;
 
-    struct elf_section_header *relHeader = elf_get_section_header(address, 2);
-    struct elf_section_header *infoHeader = elf_get_section_header(address, relHeader->info);
-    struct elf_section_header *symHeader = elf_get_section_header(address, relHeader->link);
-    struct elf_section_header *strHeader = elf_get_section_header(address, symHeader->link);
+    struct elf_section_header *relHeader = get_section_header(address, 2);
+    struct elf_section_header *infoHeader = get_section_header(address, relHeader->info);
+    struct elf_section_header *symHeader = get_section_header(address, relHeader->link);
+    struct elf_section_header *strHeader = get_section_header(address, symHeader->link);
     char *strtbl = (char *)(address + strHeader->offset);
 
     unsigned int i;
@@ -106,15 +106,15 @@ void *elf_get_symbol(void *address, char *symname)
 void elf_relocate(void *address)
 {
 
-    struct elf_header *header = elf_get_header(address);
+    struct elf_header *header = get_header(address);
 
     if (!header)
         return;
 
-    struct elf_section_header *relHeader = elf_get_section_header(address, 2);
-    struct elf_section_header *infoHeader = elf_get_section_header(address, relHeader->info);
-    struct elf_section_header *symHeader = elf_get_section_header(address, relHeader->link);
-    struct elf_section_header *strHeader = elf_get_section_header(address, symHeader->link);
+    struct elf_section_header *relHeader = get_section_header(address, 2);
+    struct elf_section_header *infoHeader = get_section_header(address, relHeader->info);
+    struct elf_section_header *symHeader = get_section_header(address, relHeader->link);
+    struct elf_section_header *strHeader = get_section_header(address, symHeader->link);
     char *strtbl = (char *)(address + strHeader->offset);
 
     unsigned int i;
@@ -128,7 +128,7 @@ void elf_relocate(void *address)
         unsigned int type = relocate->info & 0x0F;
 
         struct elf_symbol *symbol = (struct elf_symbol *)(address + symHeader->offset + sym * symHeader->esize);
-        int offset = elf_get_section_header(address, symbol->index)->offset;
+        int offset = get_section_header(address, symbol->index)->offset;
 
         int *entry = (int *)((int)address + infoHeader->offset + relocate->offset);
         int reloc = (symbol->index) ? (int)address + offset : (int)symbol_find(strtbl + symbol->name);

@@ -4,7 +4,7 @@
 #include <kernel/vfs.h>
 #include <kernel/runtime.h>
 
-static struct runtime_control runtimeControl;
+static struct runtime_control control;
 
 struct runtime_task *runtime_get_slot()
 {
@@ -14,8 +14,8 @@ struct runtime_task *runtime_get_slot()
     for (i = 0; i < RUNTIME_TASK_SLOTS; i++)
     {
 
-        if (!runtimeControl.tasks[i].used)
-            return &runtimeControl.tasks[i];
+        if (!control.tasks[i].used)
+            return &control.tasks[i];
 
     }
 
@@ -31,8 +31,8 @@ struct runtime_task *runtime_get_task(unsigned int id)
     for (i = 0; i < RUNTIME_TASK_SLOTS; i++)
     {
 
-        if (runtimeControl.tasks[i].id == id)
-            return &runtimeControl.tasks[i];
+        if (control.tasks[i].id == id)
+            return &control.tasks[i];
 
     }
 
@@ -43,7 +43,7 @@ struct runtime_task *runtime_get_task(unsigned int id)
 struct runtime_task *runtime_get_running_task()
 {
 
-    return runtimeControl.running;
+    return control.running;
 
 }
 
@@ -54,7 +54,7 @@ void runtime_activate(struct runtime_task *task)
 
     mmu_load_task_memory(paddress);
 
-    runtimeControl.running = task;
+    control.running = task;
 
 }
 
@@ -208,7 +208,7 @@ void runtime_control_init(struct runtime_control *control)
 void runtime_init()
 {
 
-    runtime_control_init(&runtimeControl);
+    runtime_control_init(&control);
 
 }
 

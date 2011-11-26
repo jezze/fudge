@@ -1,7 +1,7 @@
 #include <lib/string.h>
 #include <kernel/vfs.h>
 
-static struct vfs_filesystem *vfsFilesystems[VFS_FILESYSTEM_SLOTS];
+static struct vfs_filesystem *filesystems[VFS_FILESYSTEM_SLOTS];
 
 void vfs_register_filesystem(struct vfs_filesystem *filesystem)
 {
@@ -11,10 +11,10 @@ void vfs_register_filesystem(struct vfs_filesystem *filesystem)
     for (i = 0; i < VFS_FILESYSTEM_SLOTS; i++)
     {
 
-        if (vfsFilesystems[i])
+        if (filesystems[i])
             continue;
 
-        vfsFilesystems[i] = filesystem;
+        filesystems[i] = filesystem;
 
         return;
 
@@ -25,10 +25,10 @@ void vfs_register_filesystem(struct vfs_filesystem *filesystem)
 struct vfs_filesystem *vfs_get_filesystem(unsigned int index)
 {
 
-    if (!vfsFilesystems[index])
+    if (!filesystems[index])
         return 0;
 
-    return vfsFilesystems[index];
+    return filesystems[index];
 
 }
 
@@ -43,10 +43,10 @@ struct vfs_node *vfs_find(char *view, char *name)
     for (i = 0; i < VFS_FILESYSTEM_SLOTS; i++)
     {
 
-        if (!vfsFilesystems[i])
+        if (!filesystems[i])
             continue;
 
-        struct vfs_view *v = vfsFilesystems[i]->find_view(vfsFilesystems[i], view);
+        struct vfs_view *v = filesystems[i]->find_view(filesystems[i], view);
 
         if (!v)
             continue;

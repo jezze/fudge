@@ -4,13 +4,13 @@
 #include <kernel/vfs.h>
 #include <kernel/initrd.h>
 
-static struct vfs_view initrdViews[8];
-static struct initrd_filesystem initrdFilesystem;
+static struct vfs_view views[8];
+static struct initrd_filesystem filesystem;
 
-static unsigned int initrd_node_read(struct vfs_node *self, unsigned int count, void *buffer)
+static unsigned int initrd_filesystem_node_read(struct vfs_node *self, unsigned int count, void *buffer)
 {
 
-    struct initrd_node *initrdNode = &initrdFilesystem.nodes[self->id];
+    struct initrd_node *initrdNode = &filesystem.nodes[self->id];
 
     if (count > initrdNode->size)
         count = initrdNode->size;
@@ -21,7 +21,65 @@ static unsigned int initrd_node_read(struct vfs_node *self, unsigned int count, 
 
 }
 
-static unsigned int initrd_get_file_size(const char *in)
+static struct vfs_node *initrd_filesystem_view_find_node(struct vfs_view *self, char *name)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < filesystem.nodesCount; i++)
+    {
+
+        if (!filesystem.nodes[i].base.name[0])
+            continue;
+
+        if (!string_find(filesystem.nodes[i].header->name, self->name))
+            continue;
+
+        unsigned int count = string_length(filesystem.nodes[i].base.name) + 1;
+
+        if (!memory_compare(name, filesystem.nodes[i].base.name, count))
+            return &filesystem.nodes[i].base;
+
+    }
+
+    return 0;
+
+}
+
+static struct vfs_node *initrd_filesystem_view_walk(struct vfs_view *self, unsigned int index)
+{
+
+    if (!filesystem.nodes[index].base.name[0])
+        return 0;
+
+    if (!string_find(filesystem.nodes[index].header->name, self->name))
+        return 0;
+
+    return &filesystem.nodes[index].base;
+
+}
+
+static struct vfs_view *initrd_filesystem_find_view(struct vfs_filesystem *self, char *name)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < 8; i++)
+    {
+
+        if (!views[i].name[0])
+            continue;
+
+        if (!string_compare(views[i].name, name))
+            return &views[i];
+
+    }
+
+    return 0;
+
+}
+
+static unsigned int get_num(const char *in)
 {
 
     unsigned int size = 0;
@@ -35,7 +93,7 @@ static unsigned int initrd_get_file_size(const char *in)
 
 }
 
-static unsigned int initrd_parse(void *address)
+static unsigned int parse(void *address)
 {
 
     unsigned int i;
@@ -48,11 +106,11 @@ static unsigned int initrd_parse(void *address)
         if (!header->name[0])
             break;
 
-        unsigned int size = initrd_get_file_size(header->size);
+        unsigned int size = get_num(header->size);
         unsigned int start = string_index_reversed(header->name, '/', (header->typeflag[0] == TAR_FILETYPE_DIR) ? 1 : 0) + 1;
 
-        struct initrd_node *initrdFileNode = &initrdFilesystem.nodes[i];
-        vfs_node_init(&initrdFileNode->base, i, 0, 0, initrd_node_read, 0);
+        struct initrd_node *initrdFileNode = &filesystem.nodes[i];
+        vfs_node_init(&initrdFileNode->base, i, 0, 0, initrd_filesystem_node_read, 0);
         string_write(initrdFileNode->base.name, header->name + start);
         initrdFileNode->size = size;
         initrdFileNode->header = header;
@@ -70,82 +128,24 @@ static unsigned int initrd_parse(void *address)
 
 }
 
-static struct vfs_node *initrd_filesystem_view_find_node(struct vfs_view *self, char *name)
-{
-
-    unsigned int i;
-
-    for (i = 0; i < initrdFilesystem.nodesCount; i++)
-    {
-
-        if (!initrdFilesystem.nodes[i].base.name[0])
-            continue;
-
-        if (!string_find(initrdFilesystem.nodes[i].header->name, self->name))
-            continue;
-
-        unsigned int count = string_length(initrdFilesystem.nodes[i].base.name) + 1;
-
-        if (!memory_compare(name, initrdFilesystem.nodes[i].base.name, count))
-            return &initrdFilesystem.nodes[i].base;
-
-    }
-
-    return 0;
-
-}
-
-static struct vfs_node *initrd_filesystem_view_walk(struct vfs_view *self, unsigned int index)
-{
-
-    if (!initrdFilesystem.nodes[index].base.name[0])
-        return 0;
-
-    if (!string_find(initrdFilesystem.nodes[index].header->name, self->name))
-        return 0;
-
-    return &initrdFilesystem.nodes[index].base;
-
-}
-
-static struct vfs_view *initrd_filesystem_find_view(struct vfs_filesystem *self, char *name)
-{
-
-    unsigned int i;
-
-    for (i = 0; i < 8; i++)
-    {
-
-        if (!initrdViews[i].name[0])
-            continue;
-
-        if (!string_compare(initrdViews[i].name, name))
-            return &initrdViews[i];
-
-    }
-
-    return 0;
-
-}
-
 void initrd_init(unsigned int initrdc, void **initrdv)
 {
 
-    vfs_view_init(&initrdViews[0], "bin", initrd_filesystem_view_find_node, initrd_filesystem_view_walk);
-    vfs_view_init(&initrdViews[1], "boot", initrd_filesystem_view_find_node, initrd_filesystem_view_walk);
-    vfs_view_init(&initrdViews[2], "grub", initrd_filesystem_view_find_node, initrd_filesystem_view_walk);
-    vfs_view_init(&initrdViews[3], "home", initrd_filesystem_view_find_node, initrd_filesystem_view_walk);
-    vfs_view_init(&initrdViews[4], "mod", initrd_filesystem_view_find_node, initrd_filesystem_view_walk);
-    vfs_filesystem_init(&initrdFilesystem.base, initrd_filesystem_find_view);
+    vfs_view_init(&views[0], "bin", initrd_filesystem_view_find_node, initrd_filesystem_view_walk);
+    vfs_view_init(&views[1], "boot", initrd_filesystem_view_find_node, initrd_filesystem_view_walk);
+    vfs_view_init(&views[2], "grub", initrd_filesystem_view_find_node, initrd_filesystem_view_walk);
+    vfs_view_init(&views[3], "home", initrd_filesystem_view_find_node, initrd_filesystem_view_walk);
+    vfs_view_init(&views[4], "mod", initrd_filesystem_view_find_node, initrd_filesystem_view_walk);
+    vfs_filesystem_init(&filesystem.base, initrd_filesystem_find_view);
 
-    initrdFilesystem.nodesCount = 0;
+    filesystem.nodesCount = 0;
 
     unsigned int i;
 
     for (i = 0; i < initrdc; i++)
-        initrdFilesystem.nodesCount += initrd_parse(*(initrdv + i));
+        filesystem.nodesCount += parse(*(initrdv + i));
 
-    vfs_register_filesystem(&initrdFilesystem.base);
+    vfs_register_filesystem(&filesystem.base);
 
 }
 

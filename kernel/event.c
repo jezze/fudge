@@ -4,16 +4,16 @@
 #include <kernel/vfs.h>
 #include <kernel/runtime.h>
 
-struct event_routine eventRoutines[64];
+static struct event_routine routines[64];
 
 unsigned int event_register_routine(unsigned int index, struct runtime_task *task, void (*routine)())
 {
 
-    if (eventRoutines[index].task)
+    if (routines[index].task)
         return 0;
 
-    eventRoutines[index].task = task;
-    eventRoutines[index].routine = routine;
+    routines[index].task = task;
+    routines[index].routine = routine;
 
     return 1;
 
@@ -22,11 +22,11 @@ unsigned int event_register_routine(unsigned int index, struct runtime_task *tas
 unsigned int event_unregister_routine(unsigned int index, struct runtime_task *task)
 {
 
-    if (eventRoutines[index].task != task)
+    if (routines[index].task != task)
         return 0;
 
-    eventRoutines[index].task = 0;
-    eventRoutines[index].routine = 0;
+    routines[index].task = 0;
+    routines[index].routine = 0;
 
     return 1;
 
@@ -35,7 +35,7 @@ unsigned int event_unregister_routine(unsigned int index, struct runtime_task *t
 unsigned int event_handle(unsigned int index)
 {
 
-    struct event_routine *event = &eventRoutines[index];
+    struct event_routine *event = &routines[index];
 
     if (!event)
         return 0;
