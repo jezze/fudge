@@ -15,10 +15,12 @@ static unsigned int vga_device_read_framebuffer(unsigned int offset, unsigned in
     for (i = offset; i < offset + count; i++, j++)
     {
 
-        if (i == VGA_FB_SIZE)
+        if (i >= VGA_FB_SIZE)
             return j;
 
-        memory_copy(buffer + j, (void *)(VGA_FB_ADDRESS + i * 2), 1);
+        char *address = (char *)(VGA_FB_ADDRESS + i * 2);
+
+        memory_copy(buffer + j, address, 1);
 
     }
 
@@ -35,13 +37,13 @@ static unsigned int vga_device_write_framebuffer(unsigned int offset, unsigned i
     for (i = offset; i < offset + count; i++, j++)
     {
 
-        if (i == VGA_FB_SIZE)
+        if (i >= VGA_FB_SIZE)
             return j;
 
         char *address = (char *)(VGA_FB_ADDRESS + i * 2);
 
-        *address = *((char *)(buffer + j));
-        *(address + 1) = device.cursorColor;
+        memory_copy(address, buffer + j, 1);
+        memory_copy(address + 1, &device.cursorColor, 1);
 
     }
 
