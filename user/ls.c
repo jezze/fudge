@@ -1,20 +1,9 @@
 #include <fudge.h>
 
-char buffer[0x4000];
+char buffer[0x1000];
 
-void get_path(char *buffer)
+void write_content(char *content)
 {
-
-    int fd = file_open("dev", "cwd");
-    file_read(fd, 256, buffer);
-    file_close(fd);
-
-}
-
-void write_content(char *path, char *content)
-{
-
-    char str[256];
 
     unsigned int start = 0;
     unsigned int i;
@@ -26,10 +15,6 @@ void write_content(char *path, char *content)
         {
 
             content[i] = '\0';
-
-            memory_clear(str, 256);
-            string_write_concat(str, path);
-            string_write_concat(str, content + start);
 
             if (1)
                 file_write_format(FILE_STDOUT, "d");
@@ -49,17 +34,11 @@ void write_content(char *path, char *content)
 void main(int argc, char *argv[])
 {
 
-    char path[256];
-
-    get_path(path);
-
     int fd = file_open("dev", "view");
-
     file_read(fd, 0x1000, buffer);
-
-    write_content(path, buffer);
-
     file_close(fd);
+
+    write_content(buffer);
 
     call_exit();
 
