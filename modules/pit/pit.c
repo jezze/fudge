@@ -12,11 +12,7 @@ static struct pit_device device;
 static unsigned int pit_device_stream_read(struct vfs_node *self, unsigned int count, void *buffer)
 {
 
-    char num[32];
-
-    string_write_num(num, device.jiffies, 10);
-
-    string_write(buffer, num);
+    string_write_format(buffer, "%d", device.jiffies);
 
     return string_length(buffer);
 

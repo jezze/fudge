@@ -166,7 +166,7 @@ char *string_write(char *out, const char *in)
 
 }
 
-char *string_write_num(char *out, unsigned int num, unsigned int base)
+static char *string_write_num(char *out, unsigned int num, unsigned int base)
 {
 
     if (!num)
