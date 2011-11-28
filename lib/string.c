@@ -166,13 +166,6 @@ char *string_write(char *out, const char *in)
 
 }
 
-char *string_write_concat(char *out, const char *in)
-{
-
-    return memory_copy(out + string_length(out), in, string_length(in) + 1);
-
-}
-
 char *string_write_num(char *out, unsigned int num, unsigned int base)
 {
 

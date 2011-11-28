@@ -13,7 +13,6 @@ extern char *string_triml(char *in, char c);
 extern char *string_trimr(char *in, char c);
 extern char *string_trim(char *in, char c);
 extern char *string_write(char *out, const char *in);
-extern char *string_write_concat(char *out, const char *in);
 extern char *string_write_num(char *out, unsigned int num, unsigned int base);
 extern char *string_write_format(char *out, char *in, ...);
 

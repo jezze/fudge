@@ -142,8 +142,6 @@ static unsigned int tty_device_out_write(struct vfs_node *self, unsigned int cou
 static unsigned int tty_device_view_read(struct vfs_node *self, unsigned int count, void *buffer)
 {
 
-    memory_clear(buffer, 1);
-
     unsigned int i;
 
     for (i = 0; i < VFS_FILESYSTEM_SLOTS; i++)
@@ -154,23 +152,24 @@ static unsigned int tty_device_view_read(struct vfs_node *self, unsigned int cou
         if (!filesystem)
             continue;
 
-        struct vfs_view *v = filesystem->find_view(filesystem, device.cwdname);
+        struct vfs_view *view = filesystem->find_view(filesystem, device.cwdname);
 
-        if (!v)
+        if (!view)
             continue;
 
         unsigned int j;
+        unsigned int start = 0;
 
         for (j = 0; j < 64; j++)
         {
 
-            struct vfs_node *node = v->walk(v, j);
+            struct vfs_node *node = view->walk(view, j);
 
             if (!node)
                 continue;
 
-            string_write_concat(buffer, node->name);
-            string_write_concat(buffer, "\n");
+            string_write_format(buffer + start, "%s\n", node->name);
+            start += string_length(node->name) + 1;
 
         }
 
