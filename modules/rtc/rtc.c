@@ -30,26 +30,7 @@ static unsigned char get_value(unsigned int type)
 static unsigned int rtc_device_stream_read(struct vfs_node *self, unsigned int count, void *buffer)
 {
 
-    char num[32];
-
-    string_write(buffer, "20");
-    string_write_num(num, get_value(RTC_FLAG_YEAR), 10);
-    string_write_concat(buffer, num);
-    string_write_concat(buffer, "-");
-    string_write_num(num, get_value(RTC_FLAG_MONTH), 10);
-    string_write_concat(buffer, num);
-    string_write_concat(buffer, "-");
-    string_write_num(num, get_value(RTC_FLAG_DAY), 10);
-    string_write_concat(buffer, num);
-    string_write_concat(buffer, " ");
-    string_write_num(num, get_value(RTC_FLAG_HOURS), 10);
-    string_write_concat(buffer, num);
-    string_write_concat(buffer, ":");
-    string_write_num(num, get_value(RTC_FLAG_MINUTES), 10);
-    string_write_concat(buffer, num);
-    string_write_concat(buffer, ":");
-    string_write_num(num, get_value(RTC_FLAG_SECONDS), 10);
-    string_write_concat(buffer, num);
+    string_write_format(buffer, "20%d-%d-%d %d:%d:%d", get_value(RTC_FLAG_YEAR), get_value(RTC_FLAG_MONTH), get_value(RTC_FLAG_DAY), get_value(RTC_FLAG_HOURS), get_value(RTC_FLAG_MINUTES), get_value(RTC_FLAG_SECONDS));
 
     return string_length(buffer);
 
