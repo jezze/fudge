@@ -248,6 +248,8 @@ char *string_write_format(char *out, char *in, ...)
 
     }
 
+    *(out) = '\0';
+
     return ret;
 
 }
