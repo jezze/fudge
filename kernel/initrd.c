@@ -97,6 +97,7 @@ static unsigned int parse(void *address)
 {
 
     unsigned int i;
+    unsigned int j = 0;
 
     for (i = 0; ; i++)
     {
@@ -107,10 +108,23 @@ static unsigned int parse(void *address)
             break;
 
         unsigned int size = get_num(header->size);
-        unsigned int start = string_index_reversed(header->name, '/', (header->typeflag[0] == TAR_FILETYPE_DIR) ? 1 : 0) + 1;
 
-        struct initrd_node *initrdFileNode = &filesystem.nodes[i];
-        vfs_node_init(&initrdFileNode->base, i, 0, 0, initrd_filesystem_node_read, 0);
+        if (header->typeflag[0] == TAR_FILETYPE_DIR)
+        {
+
+            address += ((size / TAR_BLOCK_SIZE) + 1) * TAR_BLOCK_SIZE;
+
+            if (size % TAR_BLOCK_SIZE)
+                address += TAR_BLOCK_SIZE;
+
+            continue;
+
+        }
+
+        unsigned int start = string_index_reversed(header->name, '/', 0) + 1;
+
+        struct initrd_node *initrdFileNode = &filesystem.nodes[j];
+        vfs_node_init(&initrdFileNode->base, j, 0, 0, initrd_filesystem_node_read, 0);
         string_write(initrdFileNode->base.name, header->name + start);
         initrdFileNode->size = size;
         initrdFileNode->header = header;
@@ -122,9 +136,11 @@ static unsigned int parse(void *address)
         if (size % TAR_BLOCK_SIZE)
             address += TAR_BLOCK_SIZE;
 
+        j++;
+
     }
 
-    return i;
+    return j;
 
 }
 
