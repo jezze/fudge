@@ -79,6 +79,19 @@ static struct vfs_view *initrd_filesystem_find_view(struct vfs_filesystem *self,
 
 }
 
+static void initrd_node_init(struct initrd_node *node, unsigned int index, char *name, unsigned int size, struct tar_header *header, void *data)
+{
+
+    vfs_node_init(&node->base, index, 0, 0, initrd_filesystem_node_read, 0);
+    string_write(node->base.name, name);
+
+    node->size = size;
+    node->header = header;
+    node->data = data;
+    node->base.physical = data;
+
+}
+
 static unsigned int get_num(const char *in)
 {
 
@@ -97,7 +110,7 @@ static unsigned int parse(void *address)
 {
 
     unsigned int i;
-    unsigned int j = 0;
+    unsigned int count = 0;
 
     for (i = 0; ; i++)
     {
@@ -109,38 +122,25 @@ static unsigned int parse(void *address)
 
         unsigned int size = get_num(header->size);
 
-        if (header->typeflag[0] == TAR_FILETYPE_DIR)
+        if (header->typeflag[0] != TAR_FILETYPE_DIR)
         {
 
-            address += ((size / TAR_BLOCK_SIZE) + 1) * TAR_BLOCK_SIZE;
+            unsigned int start = string_index_reversed(header->name, '/', 0) + 1;
 
-            if (size % TAR_BLOCK_SIZE)
-                address += TAR_BLOCK_SIZE;
+            initrd_node_init(&filesystem.nodes[count], count, header->name + start, size, header, address + TAR_BLOCK_SIZE);
 
-            continue;
+            count++;
 
         }
-
-        unsigned int start = string_index_reversed(header->name, '/', 0) + 1;
-
-        struct initrd_node *initrdFileNode = &filesystem.nodes[j];
-        vfs_node_init(&initrdFileNode->base, j, 0, 0, initrd_filesystem_node_read, 0);
-        string_write(initrdFileNode->base.name, header->name + start);
-        initrdFileNode->size = size;
-        initrdFileNode->header = header;
-        initrdFileNode->data = (void *)(address + TAR_BLOCK_SIZE);
-        initrdFileNode->base.physical = (void *)(address + TAR_BLOCK_SIZE);
 
         address += ((size / TAR_BLOCK_SIZE) + 1) * TAR_BLOCK_SIZE;
 
         if (size % TAR_BLOCK_SIZE)
             address += TAR_BLOCK_SIZE;
 
-        j++;
-
     }
 
-    return j;
+    return count;
 
 }
 
