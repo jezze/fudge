@@ -109,17 +109,12 @@ static unsigned int get_num(const char *in)
 static unsigned int parse(void *address)
 {
 
-    unsigned int i;
     unsigned int count = 0;
 
-    for (i = 0; ; i++)
+    while (*(char *)address)
     {
 
-        struct tar_header *header = (struct tar_header *)address;
-
-        if (!header->name[0])
-            break;
-
+        struct tar_header *header = address;
         unsigned int size = get_num(header->size);
 
         if (header->typeflag[0] != TAR_FILETYPE_DIR)
