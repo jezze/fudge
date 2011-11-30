@@ -1,15 +1,25 @@
-ASM=nasm
-ASMFLAGS=-f elf
-GCC=gcc
-GCCFLAGS=-c -O2 -I../include -Wall -Wextra -ffreestanding -nostdlib -nostartfiles -nodefaultlibs -m32
-LD=ld
-LDFLAGS=-r ../lib/file.o ../lib/memory.o ../lib/string.o ../kernel/arch/x86/calls.o
+all-arm: ARCH=arm
+all-arm: GCC=arm-none-eabi-gcc
+all-arm: GCCFLAGS=-c -O2 -I../include -Wall -Wextra -ffreestanding -nostdlib -nostartfiles -nodefaultlibs
+all-arm: LD=arm-none-eabi-ld
+all-arm: LDFLAGS=-r ../lib/file.o ../lib/memory.o ../lib/string.o ../kernel/arch/arm/call.o -L/usr/lib/gcc/arm-none-eabi/4.6.1/ -lgcc
+all-x86: ARCH=x86
+all-x86: ASM=nasm
+all-x86: ASMFLAGS=-f elf
+all-x86: GCC=gcc
+all-x86: GCCFLAGS=-c -O2 -I../include -Wall -Wextra -ffreestanding -nostdlib -nostartfiles -nodefaultlibs -m32
+all-x86: LD=ld
+all-x86: LDFLAGS=-r ../lib/file.o ../lib/memory.o ../lib/string.o ../kernel/arch/x86/calls.o -melf_i386
 
 .PHONY: all clean modules
 
-all: modules
+all: all-x86
 
-modules:
+all-arm:
+	@${GCC} ${GCCFLAGS} stream/stream.c -o stream/stream.o
+	@${LD} ${LDFLAGS} stream/stream.o -o stream/stream.ko
+
+all-x86:
 	@${GCC} ${GCCFLAGS} ata/ata.c -o ata/ata.o
 	@${GCC} ${GCCFLAGS} kbd/kbd.c -o kbd/kbd.o
 	@${GCC} ${GCCFLAGS} mouse/mouse.c -o mouse/mouse.o

@@ -1,7 +1,7 @@
-ASM=arm-elf-as
+ASM=arm-none-eabi-as
 ASMFLAGS=-c -mfpu=softfpa
-GCC=arm-elf-gcc
-GCCFLAGS=-c -O2 -I../../../include -Wall -Wextra -nostdlib -nostartfiles -ffreestanding -std=gnu99
+GCC=arm-none-eabi-gcc
+GCCFLAGS=-c -O2 -I../../../include -Wall -Wextra -ffreestanding -nostdlib -nostartfiles -nodefaultlibs
 
 .PHONY: all clean arch
 

@@ -1,5 +1,5 @@
 all-arm: ARCH=arm
-all-arm: GCC=arm-elf-gcc
+all-arm: GCC=arm-none-eabi-gcc
 all-arm: GCCFLAGS=-c -O2 -I../include -Wall -Wextra -nostdlib -nostartfiles -ffreestanding -std=gnu99
 all-x86: ARCH=x86
 all-x86: GCC=gcc

@@ -1,8 +1,8 @@
 all-arm: ARCH=arm
-all-arm: GCC=arm-elf-gcc
-all-arm: GCCFLAGS=-c -O2 -I../include -Wall -Wextra -nostdlib -nostartfiles -ffreestanding -std=gnu99
-all-arm: LD=arm-elf-ld
-all-arm: LDFLAGS=-T${DIR_SOURCE_ARCH}/linker.ld -L/usr/lib/gcc/arm-elf/4.6.0
+all-arm: GCC=arm-none-eabi-gcc
+all-arm: GCCFLAGS=-c -O2 -I../include -Wall -Wextra -ffreestanding -nostdlib -nostartfiles -nodefaultlibs
+all-arm: LD=arm-none-eabi-ld
+all-arm: LDFLAGS=-T${DIR_SOURCE_ARCH}/linker.ld -L/usr/lib/gcc/arm-none-eabi/4.6.1/ -lgcc
 all-x86: ARCH=x86
 all-x86: GCC=gcc
 all-x86: GCCFLAGS=-c -O2 -I../include -Wall -Wextra -ffreestanding -nostdlib -nostartfiles -nodefaultlibs -m32

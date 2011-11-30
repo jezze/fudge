@@ -16,10 +16,10 @@ lib:
 	@make -C ${DIR_SOURCE_LIB}/ all-${ARCH}
 
 modules:
-	@make -C ${DIR_SOURCE_MODULES}/
+	@make -C ${DIR_SOURCE_MODULES}/ all-${ARCH}
 
 user:
-	@make -C ${DIR_SOURCE_USER}/
+	@make -C ${DIR_SOURCE_USER}/ all-${ARCH}
 
 ramdisk:
 	@cp ${DIR_SOURCE_KERNEL}/fudge ${DIR_IMAGE}/boot/fudge
