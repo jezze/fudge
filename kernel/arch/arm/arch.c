@@ -6,6 +6,8 @@ static struct arch_arm arm;
 void arch_init()
 {
 
+    for (;;);
+
     kernel_init(&arm.base);
 
 }

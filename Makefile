@@ -7,7 +7,7 @@ DIR_SOURCE_USER=user
 
 .PHONY: all clean kernel lib modules user ramdisk sda iso hda
 
-all: lib kernel modules user ramdisk
+all: lib kernel modules user ramdisk-${ARCH}
 
 kernel:
 	@make -C ${DIR_SOURCE_KERNEL}/ all-${ARCH}
@@ -21,7 +21,32 @@ modules:
 user:
 	@make -C ${DIR_SOURCE_USER}/ all-${ARCH}
 
-ramdisk:
+ramdisk-arm:
+	@cp ${DIR_SOURCE_KERNEL}/fudge ${DIR_IMAGE}/boot/fudge
+	@nm ${DIR_IMAGE}/boot/fudge | grep -f ${DIR_IMAGE}/boot/fudge.sym > ${DIR_IMAGE}/boot/fudge.map
+	@cp ${DIR_SOURCE_MODULES}/*/*.ko ${DIR_IMAGE}/mod/
+	@cp ${DIR_SOURCE_USER}/cat ${DIR_IMAGE}/bin/cat
+	@cp ${DIR_SOURCE_USER}/cd ${DIR_IMAGE}/bin/cd
+	@cp ${DIR_SOURCE_USER}/clear ${DIR_IMAGE}/bin/clear
+	@cp ${DIR_SOURCE_USER}/date ${DIR_IMAGE}/bin/date
+	@cp ${DIR_SOURCE_USER}/echo ${DIR_IMAGE}/bin/echo
+	@cp ${DIR_SOURCE_USER}/event1 ${DIR_IMAGE}/bin/event1
+	@cp ${DIR_SOURCE_USER}/event2 ${DIR_IMAGE}/bin/event2
+	@cp ${DIR_SOURCE_USER}/event3 ${DIR_IMAGE}/bin/event3
+	@cp ${DIR_SOURCE_USER}/hello ${DIR_IMAGE}/bin/hello
+	@cp ${DIR_SOURCE_USER}/init ${DIR_IMAGE}/bin/init
+	@cp ${DIR_SOURCE_USER}/load ${DIR_IMAGE}/bin/load
+	@cp ${DIR_SOURCE_USER}/ls ${DIR_IMAGE}/bin/ls
+	@cp ${DIR_SOURCE_USER}/reboot ${DIR_IMAGE}/bin/reboot
+	@cp ${DIR_SOURCE_USER}/shell ${DIR_IMAGE}/bin/shell
+	@cp ${DIR_SOURCE_USER}/timer ${DIR_IMAGE}/bin/timer
+	@cp ${DIR_SOURCE_USER}/unload ${DIR_IMAGE}/bin/unload
+	@tar -cvf initrd.tar ${DIR_IMAGE}
+	@find ${DIR_IMAGE} -depth -print | cpio -ov > initrd.cpio
+	@mv initrd.tar ${DIR_IMAGE}/boot
+	@mv initrd.cpio ${DIR_IMAGE}/boot
+
+ramdisk-x86:
 	@cp ${DIR_SOURCE_KERNEL}/fudge ${DIR_IMAGE}/boot/fudge
 	@nm ${DIR_IMAGE}/boot/fudge | grep -f ${DIR_IMAGE}/boot/fudge.sym > ${DIR_IMAGE}/boot/fudge.map
 	@cp ${DIR_SOURCE_MODULES}/*/*.ko ${DIR_IMAGE}/mod/
@@ -47,6 +72,8 @@ ramdisk:
 	@find ${DIR_IMAGE} -depth -print | cpio -ov > initrd.cpio
 	@mv initrd.tar ${DIR_IMAGE}/boot
 	@mv initrd.cpio ${DIR_IMAGE}/boot
+
+
 
 sda:
 	@dd if=/dev/zero of=fudge.img bs=512 count=2880
