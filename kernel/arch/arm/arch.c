@@ -24,12 +24,29 @@ void puts(const char *s)
 
 }
 
-void arch_init()
+static void arch_setup(struct kernel_arch *arch)
 {
+
+    struct arch_arm *arm = (struct arch_arm *)arch;
 
     puts("Fudge Console Text\n\n");
 
-    for (;;);
+}
+
+void arch_init()
+{
+
+    arm.base.setup = arch_setup;
+    arm.base.disable_interrupts = 0;
+    arm.base.enable_interrupts = 0;
+    arm.base.enter_usermode = 0;
+    arm.base.set_stack = 0;
+    arm.base.register_irq = 0;
+    arm.base.unregister_irq = 0;
+    arm.base.stack = 0;
+    arm.base.initrdc = 0;
+    arm.base.initrdv = 0;
+    arm.base.reboot = 0;
 
     kernel_init(&arm.base);
 

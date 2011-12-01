@@ -1,4 +1,5 @@
 #include <lib/string.h>
+#include <kernel/error.h>
 #include <kernel/vfs.h>
 #include <kernel/initrd.h>
 #include <kernel/kernel.h>
@@ -56,6 +57,10 @@ static void kernel_init_userspace()
 {
 
     unsigned int id = syscall_execute("init", 0, 0);
+
+    if (!id)
+        error_panic("Could not run init", __FILE__, __LINE__);
+
     struct runtime_task *task = runtime_get_task(id);
 
     kernelCore.arch->set_stack(kernelCore.arch->stack);
