@@ -3,7 +3,7 @@ ENTRY (init)
 SECTIONS
 {
 
-    . = 0x0;
+    . = 0x00100000;
 
     .text :
     {

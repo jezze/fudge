@@ -73,7 +73,10 @@ ramdisk-x86:
 	@mv initrd.tar ${DIR_IMAGE}/boot
 	@mv initrd.cpio ${DIR_IMAGE}/boot
 
-
+image-arm:
+	@arm-none-eabi-objcopy -O binary ${DIR_IMAGE}/boot/fudge ${DIR_IMAGE}/boot/fudge.bin
+	@mkimage -A arm -C none -O linux -T kernel -d ${DIR_IMAGE}/boot/fudge.bin -a 0x00100000 -e 0x00100000 ${DIR_IMAGE}/boot/fudge.uimg
+	@cat ${DIR_IMAGE}/boot/uboot/u-boot.bin ${DIR_IMAGE}/boot/fudge.uimg > fudge.img
 
 sda:
 	@dd if=/dev/zero of=fudge.img bs=512 count=2880
@@ -117,6 +120,8 @@ clean:
 	@rm -f ${DIR_IMAGE}/bin/unload
 	@rm -f ${DIR_IMAGE}/bin/vga
 	@rm -f ${DIR_IMAGE}/mod/*.ko
+	@rm -f ${DIR_IMAGE}/boot/*.bin
+	@rm -f ${DIR_IMAGE}/boot/*.uimg
 	@rm -f ${DIR_IMAGE}/boot/fudge
 	@rm -f ${DIR_IMAGE}/boot/fudge.map
 	@rm -f ${DIR_IMAGE}/boot/initrd
