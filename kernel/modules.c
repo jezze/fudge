@@ -258,6 +258,7 @@ void modules_module_init(struct modules_module *module, unsigned int type)
 {
 
     module->type = type;
+    module->view = 0;
 
 }
 
