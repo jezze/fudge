@@ -9,7 +9,7 @@
 
 static struct pit_device device;
 
-static unsigned int pit_device_stream_read(struct vfs_node *self, unsigned int count, void *buffer)
+static unsigned int pit_device_read_read(struct vfs_node *self, unsigned int count, void *buffer)
 {
 
     string_write_format(buffer, "%d", device.jiffies);
@@ -48,11 +48,10 @@ void pit_device_init(struct pit_device *device)
 {
 
     modules_device_init(&device->base, PIT_DEVICE_TYPE);
-    stream_device_init(&device->stream, "jiffies", pit_device_stream_read, 0);
     device->divisor = PIT_HERTZ / PIT_FREQUENCY;
     device->jiffies = 0;
 
-    vfs_node_init(&device->read, 0, 0, 0, pit_device_stream_read, 0);
+    vfs_node_init(&device->read, 0, 0, 0, pit_device_read_read, 0);
     string_write(device->read.name, "jiffies");
     vfs_view_init(&device->view, "pit", pit_device_view_find_node, pit_device_view_walk);
 
@@ -82,7 +81,6 @@ void init()
 
     kernel_register_irq(0x00, handle_irq);
 
-    modules_register_device(&device.stream.base);
     modules_register_device(&device.base);
 
 }
@@ -92,7 +90,6 @@ void destroy()
 
     kernel_unregister_irq(0x00);
 
-    modules_unregister_device(&device.stream.base);
     modules_unregister_device(&device.base);
 
 }
