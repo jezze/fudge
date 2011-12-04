@@ -27,9 +27,9 @@ all-x86:
 	@${GCC} ${GCCFLAGS} pit/pit.c -o pit/pit.o
 	@${GCC} ${GCCFLAGS} rtc/rtc.c -o rtc/rtc.o
 	@${GCC} ${GCCFLAGS} rtl8139/rtl8139.c -o rtl8139/rtl8139.o
-	@${GCC} ${GCCFLAGS} serial/serial.c -o serial/serial.o
 	@${GCC} ${GCCFLAGS} stream/stream.c -o stream/stream.o
 	@${GCC} ${GCCFLAGS} tty/tty.c -o tty/tty.o
+	@${GCC} ${GCCFLAGS} uart/uart.c -o uart/uart.o
 	@${GCC} ${GCCFLAGS} vga/vga.c -o vga/vga.o
 	@${LD} ${LDFLAGS} ata/ata.o -o ata/ata.ko
 	@${LD} ${LDFLAGS} kbd/kbd.o -o kbd/kbd.ko
@@ -38,9 +38,9 @@ all-x86:
 	@${LD} ${LDFLAGS} pit/pit.o stream/stream.o -o pit/pit.ko
 	@${LD} ${LDFLAGS} rtc/rtc.o stream/stream.o -o rtc/rtc.ko
 	@${LD} ${LDFLAGS} rtl8139/rtl8139.o stream/stream.o -o rtl8139/rtl8139.ko
-	@${LD} ${LDFLAGS} serial/serial.o -o serial/serial.ko
 	@${LD} ${LDFLAGS} stream/stream.o -o stream/stream.ko
 	@${LD} ${LDFLAGS} stream/stream.o tty/tty.o -o tty/tty.ko
+	@${LD} ${LDFLAGS} uart/uart.o -o uart/uart.ko
 	@${LD} ${LDFLAGS} vga/vga.o -o vga/vga.ko
 
 clean:

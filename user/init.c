@@ -6,7 +6,7 @@ void main(int argc, char *argv[])
     for (;;)
     {
 
-        call_load("serial.ko");
+        call_load("uart.ko");
         call_load("vga.ko");
         call_load("pci.ko");
         call_load("ata.ko");
