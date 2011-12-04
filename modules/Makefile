@@ -36,7 +36,7 @@ all-x86:
 	@${LD} ${LDFLAGS} pit/pit.o -o pit/pit.ko
 	@${LD} ${LDFLAGS} ps2/kbd.o -o ps2/ps2_kbd.ko
 	@${LD} ${LDFLAGS} ps2/mouse.o -o ps2/ps2_mouse.ko
-	@${LD} ${LDFLAGS} rtc/rtc.o stream/stream.o -o rtc/rtc.ko
+	@${LD} ${LDFLAGS} rtc/rtc.o -o rtc/rtc.ko
 	@${LD} ${LDFLAGS} rtl8139/rtl8139.o stream/stream.o -o rtl8139/rtl8139.ko
 	@${LD} ${LDFLAGS} stream/stream.o -o stream/stream.ko
 	@${LD} ${LDFLAGS} stream/stream.o tty/tty.o -o tty/tty.ko

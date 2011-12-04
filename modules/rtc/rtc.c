@@ -27,7 +27,7 @@ static unsigned char get_value(unsigned int type)
 
 }
 
-static unsigned int rtc_device_stream_read(struct vfs_node *self, unsigned int count, void *buffer)
+static unsigned int rtc_device_read_read(struct vfs_node *self, unsigned int count, void *buffer)
 {
 
     string_write_format(buffer, "20%d-%d-%d %d:%d:%d", get_value(RTC_FLAG_YEAR), get_value(RTC_FLAG_MONTH), get_value(RTC_FLAG_DAY), get_value(RTC_FLAG_HOURS), get_value(RTC_FLAG_MINUTES), get_value(RTC_FLAG_SECONDS));
@@ -36,11 +36,42 @@ static unsigned int rtc_device_stream_read(struct vfs_node *self, unsigned int c
 
 }
 
+static struct vfs_node *rtc_device_view_find_node(struct vfs_view *self, char *name)
+{
+
+    if (!string_compare(device.read.name, name))
+        return &device.read;
+
+    return 0;
+
+}
+
+static struct vfs_node *rtc_device_view_walk(struct vfs_view *self, unsigned int index)
+{
+
+    switch (index)
+    {
+
+        case 0:
+
+            return &device.read;
+
+    }
+
+    return 0;
+
+}
+
 void rtc_device_init(struct rtc_device *device)
 {
 
     modules_device_init(&device->base, RTC_DEVICE_TYPE);
-    stream_device_init(&device->stream, "rtc", rtc_device_stream_read, 0);
+
+    vfs_node_init(&device->read, 0, 0, 0, rtc_device_read_read, 0);
+    string_write(device->read.name, "date");
+    vfs_view_init(&device->view, "rtc", rtc_device_view_find_node, rtc_device_view_walk);
+
+    device->base.module.view = &device->view;
 
 }
 
@@ -49,7 +80,6 @@ void init()
 
     rtc_device_init(&device);
 
-    modules_register_device(&device.stream.base);
     modules_register_device(&device.base);
 
 }
@@ -57,7 +87,6 @@ void init()
 void destroy()
 {
 
-    modules_unregister_device(&device.stream.base);
     modules_unregister_device(&device.base);
 
 }
