@@ -3,7 +3,6 @@
 #include <kernel/modules.h>
 #include <kernel/kernel.h>
 #include <kernel/vfs.h>
-#include <modules/stream/stream.h>
 #include <modules/pci/pci.h>
 #include <modules/rtl8139/rtl8139.h>
 
@@ -59,15 +58,6 @@ static void get_mac(struct rtl8139_driver *driver)
 
 }
 
-static unsigned int rtl8139_driver_macs_read(struct vfs_node *self, unsigned int count, void *buffer)
-{
-
-    string_write_format(buffer, "%x:%x:%x:%x:%x:%x", driver.mac[0], driver.mac[1], driver.mac[2], driver.mac[3], driver.mac[4], driver.mac[5]);
-
-    return string_length(buffer);
-
-}
-
 void rtl8139_driver_init(struct rtl8139_driver *driver, struct pci_device *device)
 {
 
@@ -80,8 +70,6 @@ void rtl8139_driver_init(struct rtl8139_driver *driver, struct pci_device *devic
     set_rx(driver, 0x0F);
     set_interrupt_flags(driver, 0x05);
     enable(driver);
-
-    stream_device_init(&driver->macs, "mac", rtl8139_driver_macs_read, 0);
 
 }
 
@@ -107,8 +95,6 @@ void init()
 
     kernel_register_irq(device->configuration.interruptline, handle_irq);
 
-    modules_register_device(&driver.macs.base);
-
 }
 
 void destroy()
@@ -117,8 +103,6 @@ void destroy()
     struct pci_device *device = (struct pci_device *)driver.base.device;
 
     kernel_unregister_irq(device->configuration.interruptline);
-
-    modules_unregister_device(&driver.macs.base);
 
 }
 

@@ -2,12 +2,10 @@
 #include <lib/string.h>
 #include <kernel/vfs.h>
 #include <kernel/modules.h>
-#include <modules/stream/stream.h>
 
 static struct modules_bus *busses[MODULES_BUS_SLOTS];
 static struct modules_device *devices[MODULES_DEVICE_SLOTS];
 static struct modules_driver *drivers[MODULES_DRIVER_SLOTS];
-static struct vfs_view viewDev;
 static struct vfs_filesystem filesystem;
 
 struct modules_bus *modules_get_bus(unsigned int type)
@@ -193,62 +191,8 @@ void modules_unregister_driver(struct modules_driver *driver)
 
 }
 
-static struct vfs_node *modules_filesystem_view_find_node(struct vfs_view *self, char *name)
-{
-
-    unsigned int i;
-
-    for (i = 0; i < MODULES_DEVICE_SLOTS; i++)
-    {
-
-        if (!devices[i])
-            continue;
-
-        if (devices[i]->type != STREAM_DEVICE_TYPE)
-            continue;
-
-        unsigned int count = string_length(((struct stream_device *)devices[i])->node.name) + 1;
-
-        if (!memory_compare(name, ((struct stream_device *)devices[i])->node.name, count))
-            return &((struct stream_device *)devices[i])->node;
-
-    }
-
-    return 0;
-
-}
-
-static struct vfs_node *modules_filesystem_view_walk(struct vfs_view *self, unsigned int index)
-{
-
-    unsigned int i;
-    unsigned int current = 0;
-
-    for (i = 0; i < MODULES_DEVICE_SLOTS; i++)
-    {
-
-        if (!devices[i])
-            continue;
-
-        if (devices[i]->type != STREAM_DEVICE_TYPE)
-            continue;
-
-        if (current == index)
-            return &((struct stream_device *)devices[i])->node;
-
-        current++;
-
-    }
-
-    return 0;
-
-}
-
 static struct vfs_view *modules_filesystem_find_view(struct vfs_filesystem *self, char *name)
 {
-
-    if (!string_compare(viewDev.name, name))
-        return &viewDev;
 
     unsigned int i;
 
@@ -310,7 +254,6 @@ void modules_driver_init(struct modules_driver *driver, unsigned int type)
 void modules_init()
 {
 
-    vfs_view_init(&viewDev, "dev", modules_filesystem_view_find_node, modules_filesystem_view_walk);
     vfs_filesystem_init(&filesystem, modules_filesystem_find_view); 
     vfs_register_filesystem(&filesystem);
 

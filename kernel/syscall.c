@@ -88,9 +88,9 @@ unsigned int syscall_execute(char *path, unsigned int argc, char **argv)
 
     runtime_activate(task);
 
-    struct vfs_node *sin = vfs_find("dev", "stdin");
-    struct vfs_node *sout = vfs_find("dev", "stdout");
-    struct vfs_node *serror = vfs_find("dev", "stderr");
+    struct vfs_node *sin = vfs_find("tty", "stdin");
+    struct vfs_node *sout = vfs_find("tty", "stdout");
+    struct vfs_node *serror = vfs_find("tty", "stderr");
 
     task->add_descriptor(task, sin);
     task->add_descriptor(task, sout);

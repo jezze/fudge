@@ -34,7 +34,7 @@ void write_content(char *content)
 void main(int argc, char *argv[])
 {
 
-    int fd = file_open("dev", "view");
+    int fd = file_open("tty", "pwd");
     file_read(fd, 0x1000, buffer);
     file_close(fd);
 

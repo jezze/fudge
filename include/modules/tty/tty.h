@@ -28,16 +28,17 @@ struct tty_device
 {
 
     struct modules_device base;
-    struct stream_device in;
-    struct stream_device out;
-    struct stream_device error;
-    struct stream_device cwd;
-    struct stream_device view;
     char cwdname[32];
     unsigned short cursorOffset;
     struct serial_device *serialDevice;
     struct kbd_device *kbdDevice;
     struct vga_device *vgaDevice;
+    struct vfs_view nview;
+    struct vfs_node nin;
+    struct vfs_node nout;
+    struct vfs_node nerror;
+    struct vfs_node ncwd;
+    struct vfs_node npwd;
 
 };
 

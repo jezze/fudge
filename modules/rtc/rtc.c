@@ -3,7 +3,6 @@
 #include <kernel/arch/x86/io.h>
 #include <kernel/modules.h>
 #include <kernel/vfs.h>
-#include <modules/stream/stream.h>
 #include <modules/rtc/rtc.h>
 
 static struct rtc_device device;
@@ -49,14 +48,8 @@ static struct vfs_node *rtc_device_view_find_node(struct vfs_view *self, char *n
 static struct vfs_node *rtc_device_view_walk(struct vfs_view *self, unsigned int index)
 {
 
-    switch (index)
-    {
-
-        case 0:
-
-            return &device.read;
-
-    }
+    if (index == 0)
+        return &device.read;
 
     return 0;
 

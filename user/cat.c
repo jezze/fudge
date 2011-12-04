@@ -5,7 +5,7 @@ char buffer[0x4000];
 void get_path(char *buffer)
 {
 
-    int fd = file_open("dev", "cwd");
+    int fd = file_open("tty", "cwd");
     file_read(fd, 256, buffer);
     file_close(fd);
 

@@ -91,7 +91,6 @@ struct rtl8139_driver
     unsigned short io; 
     char mac[6];
     char rx[8192+16];
-    struct stream_device macs;
 
 };
 

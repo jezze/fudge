@@ -4,7 +4,6 @@
 #include <kernel/modules.h>
 #include <modules/vga/vga.h>
 #include <modules/ps2/ps2.h>
-#include <modules/stream/stream.h>
 #include <modules/tty/tty.h>
 
 static struct tty_device device;
@@ -179,6 +178,50 @@ static unsigned int tty_device_view_read(struct vfs_node *self, unsigned int cou
 
 }
 
+static struct vfs_node *tty_device_view_find_node(struct vfs_view *self, char *name)
+{
+
+    if (!string_compare(device.nin.name, name))
+        return &device.nin;
+
+    if (!string_compare(device.nout.name, name))
+        return &device.nout;
+
+    if (!string_compare(device.nerror.name, name))
+        return &device.nerror;
+
+    if (!string_compare(device.ncwd.name, name))
+        return &device.ncwd;
+
+    if (!string_compare(device.npwd.name, name))
+        return &device.npwd;
+
+    return 0;
+
+}
+
+static struct vfs_node *tty_device_view_walk(struct vfs_view *self, unsigned int index)
+{
+
+    if (index == 0)
+        return &device.nin;
+
+    if (index == 1)
+        return &device.nout;
+
+    if (index == 2)
+        return &device.nerror;
+
+    if (index == 3)
+        return &device.ncwd;
+
+    if (index == 4)
+        return &device.npwd;
+
+    return 0;
+
+}
+
 void tty_device_init(struct tty_device *device, char *cwdname)
 {
 
@@ -191,11 +234,19 @@ void tty_device_init(struct tty_device *device, char *cwdname)
 
     string_write(device->cwdname, cwdname);
 
-    stream_device_init(&device->in, "stdin", tty_device_in_read, 0);
-    stream_device_init(&device->out, "stdout", 0, tty_device_out_write);
-    stream_device_init(&device->error, "stderr", 0, tty_device_out_write);
-    stream_device_init(&device->cwd, "cwd", tty_device_cwd_read, tty_device_cwd_write);
-    stream_device_init(&device->view, "view", tty_device_view_read, 0);
+    vfs_node_init(&device->nin, 0, 0, 0, tty_device_in_read, 0);
+    vfs_node_init(&device->nout, 0, 0, 0, 0, tty_device_out_write);
+    vfs_node_init(&device->nerror, 0, 0, 0, 0, tty_device_out_write);
+    vfs_node_init(&device->ncwd, 0, 0, 0, tty_device_cwd_read, tty_device_cwd_write);
+    vfs_node_init(&device->npwd, 0, 0, 0, tty_device_view_read, 0);
+    string_write(device->nin.name, "stdin");
+    string_write(device->nout.name, "stdout");
+    string_write(device->nerror.name, "stderr");
+    string_write(device->ncwd.name, "cwd");
+    string_write(device->npwd.name, "pwd");
+    vfs_view_init(&device->nview, "tty", tty_device_view_find_node, tty_device_view_walk);
+
+    device->base.module.view = &device->nview;
 
 }
 
@@ -204,11 +255,6 @@ void init()
 
     tty_device_init(&device, "home");
 
-    modules_register_device(&device.in.base);
-    modules_register_device(&device.out.base);
-    modules_register_device(&device.error.base);
-    modules_register_device(&device.cwd.base);
-    modules_register_device(&device.view.base);
     modules_register_device(&device.base);
 
 }
@@ -216,11 +262,6 @@ void init()
 void destroy()
 {
 
-    modules_unregister_device(&device.in.base);
-    modules_unregister_device(&device.out.base);
-    modules_unregister_device(&device.error.base);
-    modules_unregister_device(&device.cwd.base);
-    modules_unregister_device(&device.view.base);
     modules_unregister_device(&device.base);
 
 }
