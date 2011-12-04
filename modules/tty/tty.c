@@ -141,6 +141,7 @@ static unsigned int tty_device_out_write(struct vfs_node *self, unsigned int cou
 static unsigned int tty_device_view_read(struct vfs_node *self, unsigned int count, void *buffer)
 {
 
+    void *out = buffer;
     unsigned int i;
 
     for (i = 0; i < VFS_FILESYSTEM_SLOTS; i++)
@@ -167,14 +168,14 @@ static unsigned int tty_device_view_read(struct vfs_node *self, unsigned int cou
             if (!node)
                 continue;
 
-            string_write_format(buffer + start, "%s\n", node->name);
-            start += string_length(node->name) + 1;
+            string_write_format(buffer, "%d\n", node->id);
+            buffer += string_length(buffer);
 
         }
 
     }
 
-    return string_length(buffer);
+    return string_length(out);
 
 }
 
@@ -235,10 +236,10 @@ void tty_device_init(struct tty_device *device, char *cwdname)
     string_write(device->cwdname, cwdname);
 
     vfs_node_init(&device->nin, 0, 0, 0, tty_device_in_read, 0);
-    vfs_node_init(&device->nout, 0, 0, 0, 0, tty_device_out_write);
-    vfs_node_init(&device->nerror, 0, 0, 0, 0, tty_device_out_write);
-    vfs_node_init(&device->ncwd, 0, 0, 0, tty_device_cwd_read, tty_device_cwd_write);
-    vfs_node_init(&device->npwd, 0, 0, 0, tty_device_view_read, 0);
+    vfs_node_init(&device->nout, 1, 0, 0, 0, tty_device_out_write);
+    vfs_node_init(&device->nerror, 2, 0, 0, 0, tty_device_out_write);
+    vfs_node_init(&device->ncwd, 3, 0, 0, tty_device_cwd_read, tty_device_cwd_write);
+    vfs_node_init(&device->npwd, 4, 0, 0, tty_device_view_read, 0);
     string_write(device->nin.name, "stdin");
     string_write(device->nout.name, "stdout");
     string_write(device->nerror.name, "stderr");

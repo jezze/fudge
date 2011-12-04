@@ -21,7 +21,7 @@ void write_content(char *content)
             else
                 file_write_format(FILE_STDOUT, "-");
 
-            file_write_format(FILE_STDOUT, "rwxrwxrwx %d\t%s\n", 0, content + start);
+            file_write_format(FILE_STDOUT, "rwxrwxrwx\t%s\n", content + start);
 
             start = i + 1;
 
