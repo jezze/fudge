@@ -3,7 +3,7 @@
 #include <kernel/vfs.h>
 #include <kernel/modules.h>
 #include <modules/vga/vga.h>
-#include <modules/kbd/kbd.h>
+#include <modules/ps2/ps2.h>
 #include <modules/stream/stream.h>
 #include <modules/tty/tty.h>
 

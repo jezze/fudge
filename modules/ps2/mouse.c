@@ -2,7 +2,7 @@
 #include <kernel/event.h>
 #include <kernel/modules.h>
 #include <kernel/kernel.h>
-#include <modules/mouse/mouse.h>
+#include <modules/ps2/ps2.h>
 
 static struct mouse_device device;
 

@@ -1,9 +1,10 @@
-#ifndef MODULES_KBD_H
-#define MODULES_KBD_H
+#ifndef MODULES_PS2_H
+#define MODULES_PS2_H
 
 #define KBD_PORT_READ 0x60
 
 #define KBD_DEVICE_TYPE 5
+#define MOUSE_DEVICE_TYPE 59
 
 struct kbd_buffer
 {
@@ -29,7 +30,20 @@ struct kbd_device
 
 };
 
+
+struct mouse_device
+{
+
+    struct modules_device base;
+    unsigned char cycle;
+    char byte[3];
+    char x;
+    char y;
+
+};
+
 extern void kbd_device_init(struct kbd_device *device);
+extern void mouse_device_init(struct mouse_device *device);
 
 #endif
 

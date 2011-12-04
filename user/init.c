@@ -11,8 +11,8 @@ void main(int argc, char *argv[])
         call_load("pci.ko");
         call_load("ata.ko");
         call_load("pit.ko");
-        call_load("kbd.ko");
-        call_load("mouse.ko");
+        call_load("ps2_kbd.ko");
+        call_load("ps2_mouse.ko");
         call_load("rtc.ko");
         call_load("rtl8139.ko");
         call_load("tty.ko");

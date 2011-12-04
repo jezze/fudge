@@ -21,10 +21,10 @@ all-arm:
 
 all-x86:
 	@${GCC} ${GCCFLAGS} ata/ata.c -o ata/ata.o
-	@${GCC} ${GCCFLAGS} kbd/kbd.c -o kbd/kbd.o
-	@${GCC} ${GCCFLAGS} mouse/mouse.c -o mouse/mouse.o
 	@${GCC} ${GCCFLAGS} pci/pci.c -o pci/pci.o
 	@${GCC} ${GCCFLAGS} pit/pit.c -o pit/pit.o
+	@${GCC} ${GCCFLAGS} ps2/kbd.c -o ps2/kbd.o
+	@${GCC} ${GCCFLAGS} ps2/mouse.c -o ps2/mouse.o
 	@${GCC} ${GCCFLAGS} rtc/rtc.c -o rtc/rtc.o
 	@${GCC} ${GCCFLAGS} rtl8139/rtl8139.c -o rtl8139/rtl8139.o
 	@${GCC} ${GCCFLAGS} stream/stream.c -o stream/stream.o
@@ -32,10 +32,10 @@ all-x86:
 	@${GCC} ${GCCFLAGS} uart/uart.c -o uart/uart.o
 	@${GCC} ${GCCFLAGS} vga/vga.c -o vga/vga.o
 	@${LD} ${LDFLAGS} ata/ata.o -o ata/ata.ko
-	@${LD} ${LDFLAGS} kbd/kbd.o -o kbd/kbd.ko
-	@${LD} ${LDFLAGS} mouse/mouse.o -o mouse/mouse.ko
 	@${LD} ${LDFLAGS} pci/pci.o -o pci/pci.ko
 	@${LD} ${LDFLAGS} pit/pit.o stream/stream.o -o pit/pit.ko
+	@${LD} ${LDFLAGS} ps2/kbd.o -o ps2/ps2_kbd.ko
+	@${LD} ${LDFLAGS} ps2/mouse.o -o ps2/ps2_mouse.ko
 	@${LD} ${LDFLAGS} rtc/rtc.o stream/stream.o -o rtc/rtc.ko
 	@${LD} ${LDFLAGS} rtl8139/rtl8139.o stream/stream.o -o rtl8139/rtl8139.ko
 	@${LD} ${LDFLAGS} stream/stream.o -o stream/stream.ko
