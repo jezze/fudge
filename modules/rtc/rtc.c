@@ -38,7 +38,7 @@ static unsigned int rtc_device_read_read(struct vfs_node *self, unsigned int cou
 static struct vfs_node *rtc_device_view_find_node(struct vfs_view *self, char *name)
 {
 
-    if (!string_compare(device.read.name, name))
+    if (!string_compare("date", name))
         return &device.read;
 
     return 0;
@@ -61,7 +61,6 @@ void rtc_device_init(struct rtc_device *device)
     modules_device_init(&device->base, RTC_DEVICE_TYPE);
 
     vfs_node_init(&device->read, 0, 0, 0, rtc_device_read_read, 0);
-    string_write(device->read.name, "date");
     vfs_view_init(&device->view, "rtc", rtc_device_view_find_node, rtc_device_view_walk);
 
     device->base.module.view = &device->view;

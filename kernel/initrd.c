@@ -29,15 +29,15 @@ static struct vfs_node *initrd_filesystem_view_find_node(struct vfs_view *self, 
     for (i = 0; i < filesystem.nodesCount; i++)
     {
 
-        if (!filesystem.nodes[i].base.name[0])
+        if (!filesystem.nodes[i].name[0])
             continue;
 
         if (!string_find(filesystem.nodes[i].header->name, self->name))
             continue;
 
-        unsigned int count = string_length(filesystem.nodes[i].base.name) + 1;
+        unsigned int count = string_length(filesystem.nodes[i].name) + 1;
 
-        if (!memory_compare(name, filesystem.nodes[i].base.name, count))
+        if (!memory_compare(name, filesystem.nodes[i].name, count))
             return &filesystem.nodes[i].base;
 
     }
@@ -49,7 +49,7 @@ static struct vfs_node *initrd_filesystem_view_find_node(struct vfs_view *self, 
 static struct vfs_node *initrd_filesystem_view_walk(struct vfs_view *self, unsigned int index)
 {
 
-    if (!filesystem.nodes[index].base.name[0])
+    if (!filesystem.nodes[index].name[0])
         return 0;
 
     if (!string_find(filesystem.nodes[index].header->name, self->name))
@@ -83,7 +83,7 @@ static void initrd_node_init(struct initrd_node *node, unsigned int index, char 
 {
 
     vfs_node_init(&node->base, index, 0, 0, initrd_filesystem_node_read, 0);
-    string_write(node->base.name, name);
+    string_write(node->name, name);
 
     node->size = size;
     node->header = header;

@@ -182,19 +182,19 @@ static unsigned int tty_device_view_read(struct vfs_node *self, unsigned int cou
 static struct vfs_node *tty_device_view_find_node(struct vfs_view *self, char *name)
 {
 
-    if (!string_compare(device.nin.name, name))
+    if (!string_compare("stdin", name))
         return &device.nin;
 
-    if (!string_compare(device.nout.name, name))
+    if (!string_compare("stdout", name))
         return &device.nout;
 
-    if (!string_compare(device.nerror.name, name))
+    if (!string_compare("stderr", name))
         return &device.nerror;
 
-    if (!string_compare(device.ncwd.name, name))
+    if (!string_compare("cwd", name))
         return &device.ncwd;
 
-    if (!string_compare(device.npwd.name, name))
+    if (!string_compare("pwd", name))
         return &device.npwd;
 
     return 0;
@@ -240,11 +240,6 @@ void tty_device_init(struct tty_device *device, char *cwdname)
     vfs_node_init(&device->nerror, 2, 0, 0, 0, tty_device_out_write);
     vfs_node_init(&device->ncwd, 3, 0, 0, tty_device_cwd_read, tty_device_cwd_write);
     vfs_node_init(&device->npwd, 4, 0, 0, tty_device_view_read, 0);
-    string_write(device->nin.name, "stdin");
-    string_write(device->nout.name, "stdout");
-    string_write(device->nerror.name, "stderr");
-    string_write(device->ncwd.name, "cwd");
-    string_write(device->npwd.name, "pwd");
     vfs_view_init(&device->nview, "tty", tty_device_view_find_node, tty_device_view_walk);
 
     device->base.module.view = &device->nview;

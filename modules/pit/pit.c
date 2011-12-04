@@ -20,7 +20,7 @@ static unsigned int pit_device_read_read(struct vfs_node *self, unsigned int cou
 static struct vfs_node *pit_device_view_find_node(struct vfs_view *self, char *name)
 {
 
-    if (!string_compare(device.read.name, name))
+    if (!string_compare("jiffies", name))
         return &device.read;
 
     return 0;
@@ -45,7 +45,6 @@ void pit_device_init(struct pit_device *device)
     device->jiffies = 0;
 
     vfs_node_init(&device->read, 0, 0, 0, pit_device_read_read, 0);
-    string_write(device->read.name, "jiffies");
     vfs_view_init(&device->view, "pit", pit_device_view_find_node, pit_device_view_walk);
 
     device->base.module.view = &device->view;
