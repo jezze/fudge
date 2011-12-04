@@ -24,3 +24,4 @@ modules_unregister_driver
 vfs_get_filesystem
 vfs_find
 vfs_node_init
+vfs_view_init

@@ -249,8 +249,26 @@ static struct vfs_view *modules_filesystem_find_view(struct vfs_filesystem *self
 
     if (!string_compare(viewDev.name, name))
         return &viewDev;
-    else
-        return 0;
+
+    unsigned int i;
+
+    for (i = 0; i < MODULES_DEVICE_SLOTS; i++)
+    {
+
+        if (!devices[i])
+            continue;
+
+        struct modules_module *module = &devices[i]->module;
+
+        if (!module->view)
+            continue;
+
+        if (!string_compare(module->view->name, name))
+            return module->view;
+
+    }
+
+    return 0;
 
 }
 

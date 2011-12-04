@@ -18,6 +18,32 @@ static unsigned int pit_device_stream_read(struct vfs_node *self, unsigned int c
 
 }
 
+static struct vfs_node *pit_device_view_find_node(struct vfs_view *self, char *name)
+{
+
+    if (!string_compare(device.read.name, name))
+        return &device.read;
+
+    return 0;
+
+}
+
+static struct vfs_node *pit_device_view_walk(struct vfs_view *self, unsigned int index)
+{
+
+    switch (index)
+    {
+
+        case 0:
+
+            return &device.read;
+
+    }
+
+    return 0;
+
+}
+
 void pit_device_init(struct pit_device *device)
 {
 
@@ -25,6 +51,12 @@ void pit_device_init(struct pit_device *device)
     stream_device_init(&device->stream, "jiffies", pit_device_stream_read, 0);
     device->divisor = PIT_HERTZ / PIT_FREQUENCY;
     device->jiffies = 0;
+
+    vfs_node_init(&device->read, 0, 0, 0, pit_device_stream_read, 0);
+    string_write(device->read.name, "jiffies");
+    vfs_view_init(&device->view, "pit", pit_device_view_find_node, pit_device_view_walk);
+
+    device->base.module.view = &device->view;
 
     io_outb(0x43, 0x36);
     io_outb(0x40, (unsigned char)(device->divisor & 0xFF));

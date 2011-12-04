@@ -13,6 +13,8 @@ struct pit_device
     struct stream_device stream;
     unsigned short divisor;
     unsigned short jiffies;
+    struct vfs_view view;
+    struct vfs_node read;
 
 };
 
