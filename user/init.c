@@ -14,7 +14,6 @@ void main(int argc, char *argv[])
         call_load("rtc.ko");
         call_load("ps2_kbd.ko");
         call_load("ps2_mouse.ko");
-        call_load("bga.ko");
         call_load("rtl8139.ko");
         call_load("tty.ko");
         call_execute("shell", 0, 0);

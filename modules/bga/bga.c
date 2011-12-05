@@ -4,20 +4,6 @@
 #include <kernel/modules.h>
 #include <modules/bga/bga.h>
 
-#define BGA_INDEX 0x01CE
-#define BGA_DATA  0x01CF
-
-#define BGA_INDEX_ID          0
-#define BGA_INDEX_XRES        1
-#define BGA_INDEX_YRES        2
-#define BGA_INDEX_BPP         3
-#define BGA_INDEX_ENABLE      4
-#define BGA_INDEX_BANK        5
-#define BGA_INDEX_VIRT_WIDTH  6
-#define BGA_INDEX_VIRT_HEIGHT 7
-#define BGA_INDEX_XOFF        8
-#define BGA_INDEX_YOFF        9
-
 static struct bga_device device;
 
 static void write_register(unsigned short index, unsigned short data)
@@ -40,12 +26,53 @@ static unsigned short read_register(unsigned short index)
 static void set_mode(unsigned int width, unsigned int height, unsigned int depth, unsigned int linear, unsigned int clear)
 {
 
-    write_register(BGA_INDEX_ENABLE, 0);
+    write_register(BGA_INDEX_ENABLE, 0x00);
     write_register(BGA_INDEX_XRES, width);
     write_register(BGA_INDEX_YRES, height);
     write_register(BGA_INDEX_YRES, height);
     write_register(BGA_INDEX_BPP, depth);
-    write_register(BGA_INDEX_ENABLE, 1);
+    write_register(BGA_INDEX_ENABLE, 0x40 | 0x01);
+
+}
+
+static void set_bank(unsigned int index)
+{
+
+    write_register(BGA_INDEX_BANK, index);
+
+}
+
+static void draw_pixel(unsigned int x, unsigned int y, unsigned int color)
+{
+
+    unsigned int *video = (unsigned int *)0xA0000;
+
+    unsigned int offset = (y * 320 + x) * 1;
+
+    *(video + offset) = color;
+
+}
+
+static void draw_example()
+{
+
+    unsigned int i;
+    unsigned int j;
+
+    // Red square
+    for (i = 10; i < 20; i++)
+        for (j = 10; j < 20; j++)
+            draw_pixel(i, j, 0x00FF0000);
+
+    // Green square
+    for (i = 20; i < 30; i++)
+        for (j = 10; j < 20; j++)
+            draw_pixel(i, j, 0x0000FF00);
+
+    // Blue square
+    for (i = 30; i < 40; i++)
+        for (j = 10; j < 20; j++)
+            draw_pixel(i, j, 0x000000FF);
 
 }
 
@@ -54,7 +81,10 @@ void bga_device_init(struct bga_device *device)
 
     modules_device_init(&device->base, BGA_DEVICE_TYPE);
 
-//    set_mode(640, 480, 24, 0, 0);
+    set_mode(320, 240, BGA_BPP_32, 0, 0);
+    set_bank(0);
+
+    draw_example();
 
 }
 
