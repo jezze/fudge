@@ -84,6 +84,8 @@
 #define RTL8139_REGISTER_LSBCRC7 0xD3
 #define RTL8139_REGISTER_CONFIG5 0xD8
 
+#define RTL8139_DRIVER_TYPE 423
+
 struct rtl8139_driver
 {
 
@@ -93,6 +95,8 @@ struct rtl8139_driver
     char rx[8192+16];
 
 };
+
+extern void rtl8139_driver_init(struct rtl8139_driver *driver, struct pci_device *device);
 
 #endif
 

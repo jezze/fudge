@@ -22,16 +22,16 @@
 #define BGA_BPP_24 0x18
 #define BGA_BPP_32 0x20
 
-#define BGA_DEVICE_TYPE 593
+#define BGA_DRIVER_TYPE 593
 
-struct bga_device
+struct bga_driver
 {
 
-    struct modules_device base;
+    struct modules_driver base;
 
 };
 
-extern void bga_device_init(struct bga_device *device);
+extern void bga_driver_init(struct bga_driver *driver, struct pci_device *device);
 
 #endif
 

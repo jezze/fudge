@@ -2,9 +2,10 @@
 #include <lib/string.h>
 #include <kernel/arch/x86/io.h>
 #include <kernel/modules.h>
+#include <modules/pci/pci.h>
 #include <modules/bga/bga.h>
 
-static struct bga_device device;
+static struct bga_driver driver;
 
 static void write_register(unsigned short index, unsigned short data)
 {
@@ -76,10 +77,11 @@ static void draw_example()
 
 }
 
-void bga_device_init(struct bga_device *device)
+void bga_driver_init(struct bga_driver *driver, struct pci_device *device)
 {
 
-    modules_device_init(&device->base, BGA_DEVICE_TYPE);
+    modules_driver_init(&driver->base, BGA_DRIVER_TYPE);
+    driver->base.device = &device->base;
 
     set_mode(320, 240, BGA_BPP_32, 0, 0);
     set_bank(0);
@@ -91,16 +93,26 @@ void bga_device_init(struct bga_device *device)
 void init()
 {
 
-    bga_device_init(&device);
+    struct pci_bus *bus = (struct pci_bus *)modules_get_bus(PCI_BUS_TYPE);
 
-    modules_register_device(&device.base);
+    if (!bus)
+        return;
+
+    struct pci_device *device = bus->find_device(bus, 0x1111);
+
+    if (!device)
+        return;
+
+    bga_driver_init(&driver, device);
+
+    modules_register_driver(&driver.base);
 
 }
 
 void destroy()
 {
 
-    modules_unregister_device(&device.base);
+    modules_unregister_driver(&driver.base);
 
 }
 

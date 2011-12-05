@@ -61,6 +61,7 @@ static void get_mac(struct rtl8139_driver *driver)
 void rtl8139_driver_init(struct rtl8139_driver *driver, struct pci_device *device)
 {
 
+    modules_driver_init(&driver->base, RTL8139_DRIVER_TYPE);
     driver->base.device = &device->base;
     driver->io = (device->configuration.bar0 & ~1);
 
