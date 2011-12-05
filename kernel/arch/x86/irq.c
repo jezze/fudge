@@ -1,5 +1,3 @@
-#include <kernel/modules.h>
-#include <kernel/vfs.h>
 #include <kernel/runtime.h>
 #include <kernel/arch/x86/idt.h>
 #include <kernel/arch/x86/io.h>

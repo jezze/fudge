@@ -32,10 +32,10 @@ struct vfs_filesystem *vfs_get_filesystem(unsigned int index)
 
 }
 
-struct vfs_node *vfs_find(char *view, char *name)
+struct vfs_node *vfs_find(char *viewname, char *nodename)
 {
 
-    if (!string_length(name))
+    if (!string_length(viewname) || !string_length(nodename))
         return 0;
 
     unsigned int i;
@@ -46,12 +46,12 @@ struct vfs_node *vfs_find(char *view, char *name)
         if (!filesystems[i])
             continue;
 
-        struct vfs_view *v = filesystems[i]->find_view(filesystems[i], view);
+        struct vfs_view *view = filesystems[i]->find_view(filesystems[i], viewname);
 
-        if (!v)
+        if (!view)
             continue;
 
-        struct vfs_node *node = v->find_node(v, name);
+        struct vfs_node *node = view->find_node(view, nodename);
 
         if (node)
             return node;

@@ -1,7 +1,6 @@
 #include <lib/memory.h>
 #include <kernel/event.h>
 #include <kernel/kernel.h>
-#include <kernel/vfs.h>
 #include <kernel/runtime.h>
 
 static struct event_routine routines[64];
