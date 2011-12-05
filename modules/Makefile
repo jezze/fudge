@@ -19,6 +19,7 @@ all-arm:
 
 all-x86:
 	@${GCC} ${GCCFLAGS} ata/ata.c -o ata/ata.o
+	@${GCC} ${GCCFLAGS} bga/bga.c -o bga/bga.o
 	@${GCC} ${GCCFLAGS} pci/pci.c -o pci/pci.o
 	@${GCC} ${GCCFLAGS} pit/pit.c -o pit/pit.o
 	@${GCC} ${GCCFLAGS} ps2/kbd.c -o ps2/kbd.o
@@ -29,6 +30,7 @@ all-x86:
 	@${GCC} ${GCCFLAGS} uart/uart.c -o uart/uart.o
 	@${GCC} ${GCCFLAGS} vga/vga.c -o vga/vga.o
 	@${LD} ${LDFLAGS} ata/ata.o -o ata/ata.ko
+	@${LD} ${LDFLAGS} bga/bga.o -o bga/bga.ko
 	@${LD} ${LDFLAGS} pci/pci.o -o pci/pci.ko
 	@${LD} ${LDFLAGS} pit/pit.o -o pit/pit.ko
 	@${LD} ${LDFLAGS} ps2/kbd.o -o ps2/ps2_kbd.ko
