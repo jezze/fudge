@@ -7,6 +7,7 @@ io_outw
 io_outd
 kernel_register_irq
 kernel_unregister_irq
+log_get
 log_write
 modules_bus_init
 modules_device_init

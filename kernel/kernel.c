@@ -73,6 +73,8 @@ void kernel_init(struct kernel_arch *arch)
 
     log_init();
 
+    log_write("[kernel] Fudge init\n");
+
     kernel_core_init(&kernelCore, arch);
     kernelCore.arch->setup(kernelCore.arch);
 
@@ -82,8 +84,6 @@ void kernel_init(struct kernel_arch *arch)
     runtime_init();
 
     kernel_init_userspace();
-
-    for (;;);
 
 }
 
