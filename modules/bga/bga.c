@@ -24,19 +24,22 @@ static unsigned short read_register(unsigned short index)
 
 }
 
-static void set_mode(unsigned int width, unsigned int height, unsigned int depth, unsigned int linear, unsigned int clear)
+static void bga_driver_set_mode(struct bga_driver *self, unsigned int xres, unsigned int yres, unsigned int bpp)
 {
 
+    self->xres = xres;
+    self->yres = yres;
+    self->bpp = bpp;
+
     write_register(BGA_INDEX_ENABLE, 0x00);
-    write_register(BGA_INDEX_XRES, width);
-    write_register(BGA_INDEX_YRES, height);
-    write_register(BGA_INDEX_YRES, height);
-    write_register(BGA_INDEX_BPP, depth);
-    write_register(BGA_INDEX_ENABLE, 0x40 | 0x01);
+    write_register(BGA_INDEX_XRES, self->xres);
+    write_register(BGA_INDEX_YRES, self->yres);
+    write_register(BGA_INDEX_BPP, self->bpp);
+    write_register(BGA_INDEX_ENABLE, 0x01 | 0x40);
 
 }
 
-static void set_bank(unsigned int index)
+static void bga_driver_set_bank(struct bga_driver *self, unsigned int index)
 {
 
     write_register(BGA_INDEX_BANK, index);
@@ -51,7 +54,7 @@ static void draw_pixel(unsigned int x, unsigned int y, unsigned int color)
 
     unsigned int *video = (unsigned int *)driver.bank;
 
-    unsigned int offset = (y * 320 + x) * 1;
+    unsigned int offset = (y * driver.xres + x);
 
     *(video + offset) = color;
 
@@ -86,9 +89,11 @@ void bga_driver_init(struct bga_driver *driver, struct pci_device *device)
     modules_driver_init(&driver->base, BGA_DRIVER_TYPE);
     driver->base.device = &device->base;
     driver->bank = (unsigned int *)0xA0000;
+    driver->set_mode = bga_driver_set_mode;
+    driver->set_bank = bga_driver_set_bank;
 
-    set_mode(320, 240, BGA_BPP_32, 0, 0);
-    set_bank(0);
+    driver->set_mode(driver, 1024, 768, BGA_BPP_32);
+    driver->set_bank(driver, 0);
 
     draw_example();
 
