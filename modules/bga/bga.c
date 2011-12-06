@@ -46,7 +46,10 @@ static void set_bank(unsigned int index)
 static void draw_pixel(unsigned int x, unsigned int y, unsigned int color)
 {
 
-    unsigned int *video = (unsigned int *)0xA0000;
+    //struct pci_device *device = (struct pci_device *)driver.base.device;
+    //unsigned int *video = device->configuration.bar0;
+
+    unsigned int *video = (unsigned int *)driver.bank;
 
     unsigned int offset = (y * 320 + x) * 1;
 
@@ -82,6 +85,7 @@ void bga_driver_init(struct bga_driver *driver, struct pci_device *device)
 
     modules_driver_init(&driver->base, BGA_DRIVER_TYPE);
     driver->base.device = &device->base;
+    driver->bank = (unsigned int *)0xA0000;
 
     set_mode(320, 240, BGA_BPP_32, 0, 0);
     set_bank(0);

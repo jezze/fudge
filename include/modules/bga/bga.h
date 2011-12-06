@@ -28,6 +28,7 @@ struct bga_driver
 {
 
     struct modules_driver base;
+    unsigned int *bank;
 
 };
 
