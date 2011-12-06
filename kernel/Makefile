@@ -46,6 +46,7 @@ arch-arm:
 arch-x86:
 	@make -C ${DIR_SOURCE_ARCH}/
 	@${LD} ${LDFLAGS} elf.o error.o event.o initrd.o kernel.o log.o mmu.o modules.o runtime.o symbol.o syscall.o vfs.o \
+		${DIR_SOURCE_ARCH}/acpi.o \
 		${DIR_SOURCE_ARCH}/arch.o \
 		${DIR_SOURCE_ARCH}/calls.o \
 		${DIR_SOURCE_ARCH}/cpu.o \
