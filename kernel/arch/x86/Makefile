@@ -10,13 +10,13 @@ all: arch
 arch:
 	@${GCC} ${GCCFLAGS} acpi.c -o acpi.o
 	@${GCC} ${GCCFLAGS} arch.c -o arch.o
-	@${ASM} ${ASMFLAGS} calls.s -o calls.o
+	@${ASM} ${ASMFLAGS} call.s -o call.o
 	@${ASM} ${ASMFLAGS} cpu.s -o cpu.o
 	@${GCC} ${GCCFLAGS} fpu.c -o fpu.o
 	@${GCC} ${GCCFLAGS} gdt.c -o gdt.o
 	@${GCC} ${GCCFLAGS} idt.c -o idt.o
 	@${ASM} ${ASMFLAGS} init.s -o init.o
-	@${ASM} ${ASMFLAGS} ios.s -o ios.o
+	@${ASM} ${ASMFLAGS} io.s -o io.o
 	@${GCC} ${GCCFLAGS} irq.c -o irq.o
 	@${ASM} ${ASMFLAGS} irqs.s -o irqs.o
 	@${GCC} ${GCCFLAGS} isr.c -o isr.o
