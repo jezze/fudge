@@ -1,7 +1,7 @@
 #ifndef ARCH_ACPI_H
 #define ARCH_ACPI_H
 
-struct acpi_rsdt
+struct acpi_sdt
 {
 
     char signature[4];
@@ -23,7 +23,7 @@ struct acpi_rsdp
     unsigned char checksum;
     char oem[6];
     unsigned char revision;
-    struct acpi_rsdt *rsdt;
+    unsigned int rsdt;
     unsigned int length;
     unsigned int xsdtLow;
     unsigned int xsdtHigh;

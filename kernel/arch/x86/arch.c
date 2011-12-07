@@ -42,8 +42,8 @@ static void arch_setup(struct kernel_arch *arch)
     fpu_init();
     isr_init();
     irq_init();
-    mmu_init();
     acpi_init();
+    mmu_init();
     syscall_init();
 
 }

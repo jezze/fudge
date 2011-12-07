@@ -2,6 +2,11 @@
 #include <kernel/log.h>
 #include <kernel/arch/x86/acpi.h>
 
+static void *find_table(struct acpi_sdt *rsdt)
+{
+
+}
+
 static void *get_rsdp()
 {
 
@@ -27,7 +32,15 @@ void acpi_init()
     if (!rsdp)
         return;
 
-    log_write("[acpi] Address: 0x%x\n", rsdp);
+    log_write("[acpi] RSDP Address: 0x%x\n", rsdp);
+    log_write("[acpi] RSDP Revision: %d.0\n", rsdp->revision + 1);
+    log_write("[acpi] RSDP OEM: %s\n", rsdp->oem);
+
+    log_write("[acpi] RSDT Address: 0x%x\n", rsdp->rsdt);
+
+    struct acpi_sdt *rsdt = (struct acpi_sdt *)rsdp->rsdt;
+
+    log_write("[acpi] RSDT OEM: %s\n", rsdt->oem);
 
 }
 
