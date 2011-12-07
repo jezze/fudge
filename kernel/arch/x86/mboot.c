@@ -79,7 +79,6 @@ void mboot_init(void *address)
 
         struct mboot_module *module = (struct mboot_module *)*info->modules.address;
 
-        log_write("[mboot] Module: %s\n", (char *)module->name);
         log_write("[mboot] Module address: 0x%x\n", module->base);
 
     }

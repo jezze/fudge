@@ -1,16 +1,16 @@
 #include <lib/memory.h>
+#include <kernel/log.h>
 #include <kernel/arch/x86/acpi.h>
 
 static void *get_rsdp()
 {
 
-    char *signature = "RSD PTR ";
     void *rsdp;
 
     for (rsdp = (void *)0x000E0000; rsdp < (void *)0x000FFFFF; rsdp += 0x10)
     {
 
-        if (!memory_compare(rsdp, signature, 8))
+        if (!memory_compare(rsdp, "RSD PTR ", 8))
             return rsdp;
 
     }
@@ -26,6 +26,8 @@ void acpi_init()
 
     if (!rsdp)
         return;
+
+    log_write("[acpi] Address: 0x%x\n", rsdp);
 
 }
 
