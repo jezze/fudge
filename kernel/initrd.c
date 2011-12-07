@@ -59,6 +59,23 @@ static struct vfs_node *initrd_filesystem_view_walk(struct vfs_view *self, unsig
 
 }
 
+static char *initrd_filesystem_view_get_name(struct vfs_view *self, struct vfs_node *node)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < filesystem.nodesCount; i++)
+    {
+
+        if (filesystem.nodes[i].base.id == node->id)
+            return filesystem.nodes[i].name;
+
+    }
+
+    return 0;
+
+}
+
 static struct vfs_view *initrd_filesystem_find_view(struct vfs_filesystem *self, char *name)
 {
 
@@ -142,11 +159,11 @@ static unsigned int parse(void *address)
 void initrd_init(unsigned int initrdc, void **initrdv)
 {
 
-    vfs_view_init(&views[0], "bin", initrd_filesystem_view_find_node, initrd_filesystem_view_walk);
-    vfs_view_init(&views[1], "boot", initrd_filesystem_view_find_node, initrd_filesystem_view_walk);
-    vfs_view_init(&views[2], "grub", initrd_filesystem_view_find_node, initrd_filesystem_view_walk);
-    vfs_view_init(&views[3], "home", initrd_filesystem_view_find_node, initrd_filesystem_view_walk);
-    vfs_view_init(&views[4], "mod", initrd_filesystem_view_find_node, initrd_filesystem_view_walk);
+    vfs_view_init(&views[0], "bin", initrd_filesystem_view_find_node, initrd_filesystem_view_walk, initrd_filesystem_view_get_name);
+    vfs_view_init(&views[1], "boot", initrd_filesystem_view_find_node, initrd_filesystem_view_walk, initrd_filesystem_view_get_name);
+    vfs_view_init(&views[2], "grub", initrd_filesystem_view_find_node, initrd_filesystem_view_walk, initrd_filesystem_view_get_name);
+    vfs_view_init(&views[3], "home", initrd_filesystem_view_find_node, initrd_filesystem_view_walk, initrd_filesystem_view_get_name);
+    vfs_view_init(&views[4], "mod", initrd_filesystem_view_find_node, initrd_filesystem_view_walk, initrd_filesystem_view_get_name);
     vfs_filesystem_init(&filesystem.base, initrd_filesystem_find_view);
 
     filesystem.nodesCount = 0;

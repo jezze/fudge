@@ -37,6 +37,16 @@ static struct vfs_node *pit_device_view_walk(struct vfs_view *self, unsigned int
 
 }
 
+static char *pit_device_view_get_name(struct vfs_view *self, struct vfs_node *node)
+{
+
+    if (node->id == 0)
+        return "jiffies";
+
+    return 0;
+
+}
+
 void pit_device_init(struct pit_device *device)
 {
 
@@ -45,7 +55,7 @@ void pit_device_init(struct pit_device *device)
     device->jiffies = 0;
 
     vfs_node_init(&device->read, 0, 0, 0, pit_device_read_read, 0);
-    vfs_view_init(&device->view, "pit", pit_device_view_find_node, pit_device_view_walk);
+    vfs_view_init(&device->view, "pit", pit_device_view_find_node, pit_device_view_walk, pit_device_view_get_name);
 
     device->base.module.view = &device->view;
 

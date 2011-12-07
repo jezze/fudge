@@ -55,13 +55,23 @@ static struct vfs_node *rtc_device_view_walk(struct vfs_view *self, unsigned int
 
 }
 
+static char *rtc_device_view_get_name(struct vfs_view *self, struct vfs_node *node)
+{
+
+    if (node->id == 0)
+        return "date";
+
+    return 0;
+
+}
+
 void rtc_device_init(struct rtc_device *device)
 {
 
     modules_device_init(&device->base, RTC_DEVICE_TYPE);
 
     vfs_node_init(&device->read, 0, 0, 0, rtc_device_read_read, 0);
-    vfs_view_init(&device->view, "rtc", rtc_device_view_find_node, rtc_device_view_walk);
+    vfs_view_init(&device->view, "rtc", rtc_device_view_find_node, rtc_device_view_walk, rtc_device_view_get_name);
 
     device->base.module.view = &device->view;
 

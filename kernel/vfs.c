@@ -73,12 +73,13 @@ void vfs_node_init(struct vfs_node *node, unsigned int id, void (*open)(struct v
 
 }
 
-void vfs_view_init(struct vfs_view *view, char *name, struct vfs_node *(*find_node)(struct vfs_view *self, char *name), struct vfs_node *(*walk)(struct vfs_view *self, unsigned int index))
+void vfs_view_init(struct vfs_view *view, char *name, struct vfs_node *(*find_node)(struct vfs_view *self, char *name), struct vfs_node *(*walk)(struct vfs_view *self, unsigned int index), char *(*get_name)(struct vfs_view *self, struct vfs_node *node))
 {
 
     string_write(view->name, name);
     view->find_node = find_node;
     view->walk = walk;
+    view->get_name = get_name;
 
 }
 

@@ -168,7 +168,7 @@ static unsigned int tty_device_view_read(struct vfs_node *self, unsigned int cou
             if (!node)
                 continue;
 
-            string_write_format(buffer, "%d\n", node->id);
+            string_write_format(buffer, "%s\n", view->get_name(view, node));
             buffer += string_length(buffer);
 
         }
@@ -223,6 +223,29 @@ static struct vfs_node *tty_device_view_walk(struct vfs_view *self, unsigned int
 
 }
 
+static char *tty_device_view_get_name(struct vfs_view *self, struct vfs_node *node)
+{
+
+    if (node->id == 0)
+        return "stdin";
+
+    if (node->id == 1)
+        return "stdout";
+ 
+    if (node->id == 2)
+        return "stderr";
+
+    if (node->id == 3)
+        return "cwd";
+
+    if (node->id == 4)
+        return "pwd";
+
+    return 0;
+
+}
+
+
 void tty_device_init(struct tty_device *device, char *cwdname)
 {
 
@@ -240,7 +263,7 @@ void tty_device_init(struct tty_device *device, char *cwdname)
     vfs_node_init(&device->nerror, 2, 0, 0, 0, tty_device_out_write);
     vfs_node_init(&device->ncwd, 3, 0, 0, tty_device_cwd_read, tty_device_cwd_write);
     vfs_node_init(&device->npwd, 4, 0, 0, tty_device_view_read, 0);
-    vfs_view_init(&device->nview, "tty", tty_device_view_find_node, tty_device_view_walk);
+    vfs_view_init(&device->nview, "tty", tty_device_view_find_node, tty_device_view_walk, tty_device_view_get_name);
 
     device->base.module.view = &device->nview;
 
