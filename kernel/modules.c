@@ -3,9 +3,7 @@
 #include <kernel/vfs.h>
 #include <kernel/modules.h>
 
-static struct modules_bus *busses[MODULES_BUS_SLOTS];
-static struct modules_device *devices[MODULES_DEVICE_SLOTS];
-static struct modules_driver *drivers[MODULES_DRIVER_SLOTS];
+static struct modules_module *modules[MODULES_MODULE_SLOTS];
 static struct vfs_filesystem filesystem;
 
 struct modules_bus *modules_get_bus(unsigned int type)
@@ -13,14 +11,16 @@ struct modules_bus *modules_get_bus(unsigned int type)
 
     unsigned int i;
 
-    for (i = 0; i < MODULES_BUS_SLOTS; i++)
+    for (i = 0; i < MODULES_MODULE_SLOTS; i++)
     {
 
-        if (!busses[i])
+        if (modules[i]->type != MODULES_TYPE_BUS)
             continue;
 
-        if (busses[i]->type == type)
-            return busses[i];
+        struct modules_bus *bus = (struct modules_bus *)modules[i];
+
+        if (bus->type == type)
+            return bus;
 
     }
 
@@ -33,14 +33,16 @@ struct modules_device *modules_get_device(unsigned int type)
 
     unsigned int i;
 
-    for (i = 0; i < MODULES_DEVICE_SLOTS; i++)
+    for (i = 0; i < MODULES_MODULE_SLOTS; i++)
     {
 
-        if (!devices[i])
+        if (modules[i]->type != MODULES_TYPE_DEVICE)
             continue;
 
-        if (devices[i]->type == type)
-            return devices[i];
+        struct modules_device *device = (struct modules_device *)modules[i];
+
+        if (device->type == type)
+            return device;
 
     }
 
@@ -53,14 +55,16 @@ struct modules_driver *modules_get_driver(unsigned int type)
 
     unsigned int i;
 
-    for (i = 0; i < MODULES_DRIVER_SLOTS; i++)
+    for (i = 0; i < MODULES_MODULE_SLOTS; i++)
     {
 
-        if (!drivers[i])
+        if (modules[i]->type != MODULES_TYPE_DRIVER)
             continue;
 
-        if (drivers[i]->type == type)
-            return drivers[i];
+        struct modules_driver *driver = (struct modules_driver *)modules[i];
+
+        if (driver->type == type)
+            return driver;
 
     }
 
@@ -68,56 +72,61 @@ struct modules_driver *modules_get_driver(unsigned int type)
 
 }
 
-void modules_register_bus(struct modules_bus *bus)
+static void modules_register_module(struct modules_module *module)
 {
 
     unsigned int i;
 
-    for (i = 0; i < MODULES_BUS_SLOTS; i++)
+    for (i = 0; i < MODULES_MODULE_SLOTS; i++)
     {
 
-        if (busses[i])
+        if (modules[i])
             continue;
 
-        busses[i] = bus;
+        modules[i] = module;
 
         break;
 
     }
+
+}
+
+void modules_register_bus(struct modules_bus *bus)
+{
+
+    modules_register_module(&bus->module);
 
 }
 
 void modules_register_device(struct modules_device *device)
 {
 
-    unsigned int i;
-
-    for (i = 0; i < MODULES_DEVICE_SLOTS; i++)
-    {
-
-        if (devices[i])
-            continue;
-
-        devices[i] = device;
-
-        break;
-
-    }
+    modules_register_module(&device->module);
 
 }
 
 void modules_register_driver(struct modules_driver *driver)
 {
 
+    modules_register_module(&driver->module);
+
+}
+
+void modules_unregister_module(struct modules_module *module)
+{
+
     unsigned int i;
 
-    for (i = 0; i < MODULES_DRIVER_SLOTS; i++)
+    for (i = 0; i < MODULES_MODULE_SLOTS; i++)
     {
 
-        if (drivers[i])
+        if (!modules[i])
             continue;
 
-        drivers[i] = driver;
+        if (modules[i] != module)
+            continue;
+
+        modules[i] = 0;
 
         break;
 
@@ -128,66 +137,21 @@ void modules_register_driver(struct modules_driver *driver)
 void modules_unregister_bus(struct modules_bus *bus)
 {
 
-    unsigned int i;
-
-    for (i = 0; i < MODULES_BUS_SLOTS; i++)
-    {
-
-        if (!busses[i])
-            continue;
-
-        if (busses[i] != bus)
-            continue;
-
-        busses[i] = 0;
-
-        break;
-
-    }
+    modules_unregister_module(&bus->module);
 
 }
 
 void modules_unregister_device(struct modules_device *device)
 {
 
-    unsigned int i;
-
-    for (i = 0; i < MODULES_DEVICE_SLOTS; i++)
-    {
-
-        if (!devices[i])
-            continue;
-
-        if (devices[i] != device)
-            continue;
-
-        devices[i] = 0;
-
-        break;
-
-    }
+    modules_unregister_module(&device->module);
 
 }
 
 void modules_unregister_driver(struct modules_driver *driver)
 {
 
-    unsigned int i;
-
-    for (i = 0; i < MODULES_DRIVER_SLOTS; i++)
-    {
-
-        if (!drivers[i])
-            continue;
-
-        if (drivers[i] != driver)
-            continue;
-
-        drivers[i] = 0;
-
-        break;
-
-    }
+    modules_unregister_module(&driver->module);
 
 }
 
@@ -196,19 +160,17 @@ static struct vfs_view *modules_filesystem_find_view(struct vfs_filesystem *self
 
     unsigned int i;
 
-    for (i = 0; i < MODULES_DEVICE_SLOTS; i++)
+    for (i = 0; i < MODULES_MODULE_SLOTS; i++)
     {
 
-        if (!devices[i])
+        if (!modules[i])
             continue;
 
-        struct modules_module *module = &devices[i]->module;
-
-        if (!module->view)
+        if (!modules[i]->view)
             continue;
 
-        if (!string_compare(module->view->name, name))
-            return module->view;
+        if (!string_compare(modules[i]->view->name, name))
+            return modules[i]->view;
 
     }
 
