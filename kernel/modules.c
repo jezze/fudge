@@ -112,7 +112,7 @@ void modules_register_driver(struct modules_driver *driver)
 
 }
 
-void modules_unregister_module(struct modules_module *module)
+static void modules_unregister_module(struct modules_module *module)
 {
 
     unsigned int i;
