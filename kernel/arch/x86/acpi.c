@@ -5,6 +5,8 @@
 static void *find_table(struct acpi_sdt *rsdt)
 {
 
+    return 0;
+
 }
 
 static void *get_rsdp()

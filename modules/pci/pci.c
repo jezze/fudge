@@ -76,7 +76,7 @@ static void pci_bus_add_device(unsigned short busX, unsigned short slot, unsigne
 
 }
 
-static struct pci_device *pci_bus_find_device(struct pci_bus *self, unsigned short deviceid)
+static struct pci_device *pci_bus_find_device(struct pci_bus *self, unsigned int vendorid, unsigned short deviceid)
 {
 
     unsigned int i;
@@ -84,7 +84,7 @@ static struct pci_device *pci_bus_find_device(struct pci_bus *self, unsigned sho
     for (i = 0; i < self->devicesCount; i++)
     {
 
-        if (self->devices[i].configuration.deviceid == deviceid)
+        if (self->devices[i].configuration.vendorid == vendorid && self->devices[i].configuration.deviceid == deviceid)
             return &self->devices[i];
 
     }
