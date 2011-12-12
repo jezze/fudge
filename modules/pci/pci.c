@@ -1,5 +1,6 @@
 #include <lib/string.h>
 #include <kernel/arch/x86/io.h>
+#include <kernel/log.h>
 #include <kernel/modules.h>
 #include <modules/pci/pci.h>
 
@@ -60,6 +61,8 @@ void pci_device_init(struct pci_device *device, unsigned int address)
         device->configuration.bar5 = ind(address, 0x24);
 
     }
+
+    log_write("[pci] %x:%x\n", device->configuration.vendorid, device->configuration.deviceid);
 
 }
 
@@ -125,7 +128,7 @@ static void pci_bus_scan(unsigned int busX)
                 unsigned int address = get_address(busX, slot, function);
 
                 if (inw(address, 0x00) == 0xFFFF)
-                    break;
+                    continue;
 
                 pci_bus_add_device(busX, slot, function);
 
@@ -154,6 +157,8 @@ void pci_bus_init(struct pci_bus *bus)
 
 void init()
 {
+
+    log_write("[pci] Init\n");
 
     pci_bus_init(&bus);
 

@@ -2,7 +2,7 @@
 #include <lib/string.h>
 #include <kernel/log.h>
 
-static char log[4096];
+static char log[8192];
 unsigned int offset;
 
 char *log_get()
