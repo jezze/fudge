@@ -20,6 +20,7 @@ all-arm:
 all-x86:
 	@${GCC} ${GCCFLAGS} ata/ata.c -o ata/ata.o
 	@${GCC} ${GCCFLAGS} bga/bga.c -o bga/bga.o
+	@${GCC} ${GCCFLAGS} ext2/ext2.c -o ext2/ext2.o
 	@${GCC} ${GCCFLAGS} log/log.c -o log/log.o
 	@${GCC} ${GCCFLAGS} pci/pci.c -o pci/pci.o
 	@${GCC} ${GCCFLAGS} pit/pit.c -o pit/pit.o
@@ -32,6 +33,7 @@ all-x86:
 	@${GCC} ${GCCFLAGS} vga/vga.c -o vga/vga.o
 	@${LD} ${LDFLAGS} ata/ata.o -o ata/ata.ko
 	@${LD} ${LDFLAGS} bga/bga.o -o bga/bga.ko
+	@${LD} ${LDFLAGS} ext2/ext2.o -o ext2/ext2.ko
 	@${LD} ${LDFLAGS} log/log.o -o log/log.ko
 	@${LD} ${LDFLAGS} pci/pci.o -o pci/pci.ko
 	@${LD} ${LDFLAGS} pit/pit.o -o pit/pit.ko
