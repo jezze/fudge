@@ -34,7 +34,7 @@ static unsigned char get_command(unsigned short data)
 
 }
 
-static void set_command(unsigned short control, unsigned int data, unsigned char command)
+static void set_command(unsigned short control, unsigned short data, unsigned char command)
 {
 
     io_outb(data + ATA_DATA_COMMAND, command);

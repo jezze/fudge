@@ -22,8 +22,6 @@ static void wait(unsigned char type)
 
         }
 
-        return;
-
     }
 
     else
@@ -36,8 +34,6 @@ static void wait(unsigned char type)
                 return;
 
         }
-
-        return;
 
     }
 
