@@ -58,6 +58,9 @@
 #define ATA_DEVICE_TYPE_SATA    0x03
 #define ATA_DEVICE_TYPE_SATAPI  0x04
 
+#define ATA_DEVICE_PRIMARY        0
+#define ATA_DEVICE_SECONDARY 1 << 4
+
 #define ATA_BUS_TYPE 2
 #define ATA_DEVICE_TYPE 4
 
@@ -65,15 +68,17 @@ struct ata_device
 {
 
     struct modules_device base;
+    unsigned int type;
+    unsigned int secondary;
     unsigned short control;
     unsigned short data;
-    unsigned char secondary;
-    unsigned char type;
-    unsigned char (*get_command)(struct ata_device *self);
-    unsigned int (*identify)(struct ata_device *self);
-    void (*select)(struct ata_device *self);
-    void (*sleep)(struct ata_device *self);
-    void (*set_command)(struct ata_device *self, unsigned char command);
+    unsigned int lba28Max;
+    unsigned int (*read_lba28)(struct ata_device *self, unsigned int sector, unsigned int count, void *buffer);
+    unsigned int (*write_lba28)(struct ata_device *self, unsigned int sector, unsigned int count, void *buffer);
+    unsigned int lba48MaxLow;
+    unsigned int lba48MaxHigh;
+    unsigned int (*read_lba48)(struct ata_device *self, unsigned int sector, unsigned int count, void *buffer);
+    unsigned int (*write_lba48)(struct ata_device *self, unsigned int sector, unsigned int count, void *buffer);
 
 };
 
@@ -86,8 +91,8 @@ struct ata_bus
 
 };
 
+extern void ata_device_init(struct ata_device *device, unsigned int type, unsigned int secondary, unsigned int control, unsigned int data);
 extern void ata_bus_init(struct ata_bus *bus);
-extern void ata_device_init(struct ata_device *device, unsigned int control, unsigned int data);
 
 #endif
 
