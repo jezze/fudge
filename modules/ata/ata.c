@@ -185,10 +185,28 @@ void ata_device_init(struct ata_device *device, unsigned int type, unsigned int 
 
 }
 
+static struct ata_device *ata_bus_find_device(struct ata_bus *self, unsigned int type)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < 4; i++)
+    {
+
+        if (devices[i].type == type)
+            return &devices[i];
+
+    }
+
+    return 0;
+
+}
+
 void ata_bus_init(struct ata_bus *bus)
 {
 
     modules_bus_init(&bus->base, ATA_BUS_TYPE);
+    bus->find_device = ata_bus_find_device;
 
 }
 

@@ -75,7 +75,6 @@ struct pci_bus
     struct modules_bus base;
     struct pci_device devices[32];
     unsigned int devicesCount;
-    void (*register_device)(struct pci_device *device);
     struct pci_device *(*find_device)(struct pci_bus *self, unsigned int vendorid, unsigned short deviceid);
     void (*scan)(unsigned int bus);
 

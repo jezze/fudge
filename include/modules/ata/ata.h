@@ -86,8 +86,7 @@ struct ata_bus
 {
 
     struct modules_bus base;
-    void (*register_device)(struct ata_device *device);
-    struct ata_device *(*find_device)(int device);
+    struct ata_device *(*find_device)(struct ata_bus *self, unsigned int type);
 
 };
 
