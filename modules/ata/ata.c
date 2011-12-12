@@ -42,6 +42,41 @@ static void ata_device_set_command(struct ata_device *self, unsigned char comman
 
 }
 
+static unsigned int ata_device_read_lba28(struct ata_device *device, unsigned int sector, unsigned int count, void *buffer)
+{
+
+    io_outb(0x1F6, (device->secondary ? 0xF0 : 0xE0) | ((sector >> 24) & 0x0F));
+    io_outb(0x1F1, 0x00);
+    io_outb(0x1F2, count);
+    io_outb(0x1F3, (unsigned char)(sector >> 0));
+    io_outb(0x1F4, (unsigned char)(sector >> 8));
+    io_outb(0x1F5, (unsigned char)(sector >> 16));
+    io_outb(0x1F7, 0x20);
+
+    while (1)
+    {
+
+        unsigned char status = device->get_command(device);
+
+        if ((status & (1 << 7)) == 0)
+            break;
+
+//        if ((status & (1 << 3)) != 1)
+//            continue;
+
+    }
+
+    unsigned short *out = (unsigned short *)buffer;
+
+    unsigned int i;
+
+    for (i = 0; i < 256; i++)
+        out[i] = io_inw(0x1F0);
+
+    return 512;
+
+}
+
 static unsigned char ata_read_identity(struct ata_device *device)
 {
 
@@ -60,14 +95,32 @@ static unsigned char ata_read_identity(struct ata_device *device)
 
     unsigned short buffer[256];
 
-    memory_clear(buffer, 512);
-
     unsigned int i;
 
     for (i = 0; i < 256; i++)
         buffer[i] = io_inw(device->data);
 
-    log_write("[ata] Ctrl num: %x\n", buffer[0]);
+    log_write("[ata] Ctrl num: 0x%x\n", buffer[0]);
+
+    unsigned int lba28Max = (buffer[60] << 16) | buffer[61];
+
+    log_write("[ata] LBA28 max: 0x%x\n", lba28Max);
+
+    unsigned int lba48Support = buffer[83] & (1 << 10);
+
+    if (lba48Support)
+    {
+
+        unsigned int lba48MaxLow = (buffer[100] << 16) | buffer[101];
+        unsigned int lba48MaxHigh = (buffer[102] << 16) | buffer[103];
+
+        log_write("[ata] LBA48 max: 0x%x:%x\n", lba48MaxLow, lba48MaxHigh);
+
+    }
+
+    ata_device_read_lba28(device, 0, 0, buffer);
+
+    log_write("[ata] Read: %s\n", (unsigned char *)buffer);
 
     return 1;
 

@@ -100,7 +100,6 @@ clean:
 	@make -C ${DIR_SOURCE_USER}/ clean
 	@rm -f fudge.img
 	@rm -f fudge.iso
-	@rm -f hda.img
 	@rm -f ${DIR_IMAGE}/bin/cat
 	@rm -f ${DIR_IMAGE}/bin/cd
 	@rm -f ${DIR_IMAGE}/bin/clear
