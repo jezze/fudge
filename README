@@ -37,12 +37,14 @@ Drivers:
 * PIT support
 * RTC support
 * FPU support
-* PCI detection
-* ATA detection
-* TTY devices
+* PCI support
+* ATA support (lba28 read-only)
+* Ext2 support
+* BGA graphics support
 * PS/2 keyboard
 * PS/2 mouse
 * RTL8139 network card
+* TTY devices
 
 ## BUILDING
 
