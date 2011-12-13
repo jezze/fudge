@@ -1,6 +1,7 @@
 #include <lib/memory.h>
 #include <lib/string.h>
 #include <kernel/arch/x86/io.h>
+#include <kernel/kernel.h>
 #include <kernel/log.h>
 #include <kernel/modules.h>
 #include <modules/ata/ata.h>
@@ -234,6 +235,20 @@ static struct ata_device *ata_bus_find_device(struct ata_bus *self, unsigned int
 
 }
 
+static void handle_irq_primary()
+{
+
+    log_write("[ata] irq 0x0E\n");
+
+}
+
+static void handle_irq_secondary()
+{
+
+    log_write("[ata] irq 0x0F\n");
+
+}
+
 void ata_bus_init(struct ata_bus *bus)
 {
 
@@ -248,8 +263,12 @@ void init()
     ata_bus_init(&busPrimary);
     modules_register_bus(&busPrimary.base);
 
+    kernel_register_irq(0x0E, handle_irq_primary);
+
     ata_bus_init(&busSecondary);
     modules_register_bus(&busSecondary.base);
+
+    kernel_register_irq(0x0F, handle_irq_secondary);
 
     unsigned int type;
     
