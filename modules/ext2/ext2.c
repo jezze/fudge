@@ -20,7 +20,7 @@ void ext2_driver_init(struct ext2_driver *driver)
     if (!device)
         return;
 
-    char buffer[1024];
+    char buffer[512];
 
     device->read_lba28(device, 2, 1, buffer);
 
@@ -38,7 +38,6 @@ void ext2_driver_init(struct ext2_driver *driver)
     if (sb->majorVersion >= 1)
     {
 
-        log_write("[ext2] System: %s\n", sb->system);
         log_write("[ext2] Volume: %s\n", sb->volume);
         log_write("[ext2] Last mount: %s\n", sb->lastmount);
 
