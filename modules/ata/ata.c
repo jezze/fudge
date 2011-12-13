@@ -10,50 +10,6 @@ static struct ata_bus busPrimary;
 static struct ata_bus busSecondary;
 static struct ata_device devices[4];
 
-static unsigned int detect(unsigned short control, unsigned short data, unsigned int secondary)
-{
-
-    io_outb(data + ATA_DATA_COUNT0, 0);
-    io_outb(data + ATA_DATA_LBA0, 0);
-    io_outb(data + ATA_DATA_LBA1, 0);
-    io_outb(data + ATA_DATA_LBA2, 0);
-    io_outb(data + ATA_DATA_SELECT, 0xA0 | secondary);
-    io_outb(data + ATA_DATA_COMMAND, ATA_COMMAND_ID);
-
-    unsigned char status = io_inb(data + ATA_DATA_COMMAND);
-
-    if (!status)
-        return 0;
-
-    unsigned short lba = (io_inb(data + ATA_DATA_LBA2) << 8) | io_inb(data + ATA_DATA_LBA1);
-
-    if (lba == 0x0000)
-        return ATA_DEVICE_TYPE_ATA;
-
-    if (lba == 0xEB14)
-        return ATA_DEVICE_TYPE_ATAPI;
-
-    if (lba == 0xC33C)
-        return ATA_DEVICE_TYPE_SATA;
-
-    if (lba == 0x9669)
-        return ATA_DEVICE_TYPE_SATAPI;
-
-    return 0;
-
-}
-
-static void select(struct ata_device *device)
-{
-
-    io_outb(device->data + ATA_DATA_SELECT, 0xA0 | device->secondary);
-    io_inb(device->control);
-    io_inb(device->control);
-    io_inb(device->control);
-    io_inb(device->control);
-
-}
-
 static unsigned int wait(struct ata_device *device)
 {
 
@@ -74,6 +30,56 @@ static unsigned int wait(struct ata_device *device)
     }
 
     return 1;
+
+}
+
+static void select(struct ata_device *device)
+{
+
+    io_outb(device->data + ATA_DATA_SELECT, 0xA0 | device->secondary);
+    io_inb(device->control);
+    io_inb(device->control);
+    io_inb(device->control);
+    io_inb(device->control);
+
+}
+
+static unsigned int detect(struct ata_device *device, void *buffer)
+{
+
+    io_outb(device->data + ATA_DATA_COUNT0, 0);
+    io_outb(device->data + ATA_DATA_LBA0, 0);
+    io_outb(device->data + ATA_DATA_LBA1, 0);
+    io_outb(device->data + ATA_DATA_LBA2, 0);
+    io_outb(device->data + ATA_DATA_SELECT, 0xA0 | device->secondary);
+    io_outb(device->data + ATA_DATA_COMMAND, ATA_COMMAND_ID);
+
+    unsigned char status = io_inb(device->data + ATA_DATA_COMMAND);
+
+    if (!status)
+        return 0;
+
+    unsigned short lba = (io_inb(device->data + ATA_DATA_LBA2) << 8) | io_inb(device->data + ATA_DATA_LBA1);
+
+    if (lba == 0xEB14)
+        return ATA_DEVICE_TYPE_ATAPI;
+
+    if (lba == 0xC33C)
+        return ATA_DEVICE_TYPE_SATA;
+
+    if (lba == 0x9669)
+        return ATA_DEVICE_TYPE_SATAPI;
+
+    if (!wait(device))
+        return 0;
+
+    unsigned int i;
+    unsigned short *out = (unsigned short *)buffer;
+
+    for (i = 0; i < 256; i++)
+        *out++ = io_inw(device->data);
+
+    return ATA_DEVICE_TYPE_ATA;
 
 }
 
@@ -159,38 +165,10 @@ static unsigned int ata_device_write_lba48(struct ata_device *device, unsigned i
 
 }
 
-static void ata_read_identity(struct ata_device *device)
-{
-
-    if (!wait(device))
-        return;
-
-    unsigned short buffer[256];
-
-    unsigned int i;
-
-    for (i = 0; i < 256; i++)
-        buffer[i] = io_inw(device->data);
-
-    device->lba28Max = (buffer[60] << 16) | buffer[61];
-
-    unsigned int lba48 = buffer[83] & (1 << 10);
-
-    if (lba48)
-    {
-
-        device->lba48MaxLow = (buffer[100] << 16) | buffer[101];
-        device->lba48MaxHigh = (buffer[102] << 16) | buffer[103];
-
-    }
-
-}
-
-void ata_device_init(struct ata_device *device, unsigned int type, unsigned int secondary, unsigned int control, unsigned int data)
+void ata_device_init(struct ata_device *device, unsigned int secondary, unsigned int control, unsigned int data)
 {
 
     modules_device_init(&device->base, ATA_DEVICE_TYPE);
-    device->type = type;
     device->secondary = secondary;
     device->control = control;
     device->data = data;
@@ -202,8 +180,26 @@ void ata_device_init(struct ata_device *device, unsigned int type, unsigned int 
     device->read_lba48 = ata_device_read_lba48;
     device->write_lba48 = ata_device_write_lba48;
 
+    unsigned short buffer[256];
+
+    device->type = detect(device, buffer);
+
     if (device->type == ATA_DEVICE_TYPE_ATA)
-        ata_read_identity(device);
+    {
+
+        device->lba28Max = (buffer[60] << 16) | buffer[61];
+
+        unsigned int lba48 = buffer[83] & (1 << 10);
+
+        if (lba48)
+        {
+
+            device->lba48MaxLow = (buffer[100] << 16) | buffer[101];
+            device->lba48MaxHigh = (buffer[102] << 16) | buffer[103];
+
+        }
+
+    }
 
 }
 
@@ -224,6 +220,14 @@ static struct ata_device *ata_bus_find_device(struct ata_bus *self, unsigned int
 
 }
 
+void ata_bus_init(struct ata_bus *bus)
+{
+
+    modules_bus_init(&bus->base, ATA_BUS_TYPE);
+    bus->find_device = ata_bus_find_device;
+
+}
+
 static void handle_irq_primary()
 {
 
@@ -238,65 +242,34 @@ static void handle_irq_secondary()
 
 }
 
-void ata_bus_init(struct ata_bus *bus)
-{
-
-    modules_bus_init(&bus->base, ATA_BUS_TYPE);
-    bus->find_device = ata_bus_find_device;
-
-}
-
 void init()
 {
 
     ata_bus_init(&busPrimary);
     modules_register_bus(&busPrimary.base);
 
-    kernel_register_irq(0x0E, handle_irq_primary);
-
     ata_bus_init(&busSecondary);
     modules_register_bus(&busSecondary.base);
 
+    kernel_register_irq(0x0E, handle_irq_primary);
     kernel_register_irq(0x0F, handle_irq_secondary);
 
-    unsigned int type;
-    
-    if ((type = detect(ATA_PRIMARY_MASTER_CONTROL, ATA_PRIMARY_MASTER_DATA, ATA_DEVICE_PRIMARY)))
-    {
+    ata_device_init(&devices[0], ATA_DEVICE_PRIMARY, ATA_PRIMARY_MASTER_CONTROL, ATA_PRIMARY_MASTER_DATA);
 
-        ata_device_init(&devices[0], type, ATA_DEVICE_PRIMARY, ATA_PRIMARY_MASTER_CONTROL, ATA_PRIMARY_MASTER_DATA);
+    modules_register_device(&devices[0].base);
+/*
+    ata_device_init(&devices[1], type, ATA_DEVICE_PRIMARY, ATA_PRIMARY_SLAVE_CONTROL, ATA_PRIMARY_SLAVE_DATA);
 
-        modules_register_device(&devices[0].base);
+    modules_register_device(&devices[1].base);
 
-    }
+    ata_device_init(&devices[2], type, ATA_DEVICE_SECONDARY, ATA_SECONDARY_MASTER_CONTROL, ATA_SECONDARY_MASTER_DATA);
 
-    if ((type = detect(ATA_PRIMARY_SLAVE_CONTROL, ATA_PRIMARY_SLAVE_DATA, ATA_DEVICE_PRIMARY)))
-    {
+    modules_register_device(&devices[2].base);
 
-        ata_device_init(&devices[1], type, ATA_DEVICE_PRIMARY, ATA_PRIMARY_SLAVE_CONTROL, ATA_PRIMARY_SLAVE_DATA);
+    ata_device_init(&devices[3], type, ATA_DEVICE_SECONDARY, ATA_SECONDARY_SLAVE_CONTROL, ATA_SECONDARY_SLAVE_DATA);
 
-        modules_register_device(&devices[1].base);
-
-    }
-
-    if ((type = detect(ATA_SECONDARY_MASTER_CONTROL, ATA_SECONDARY_MASTER_DATA, ATA_DEVICE_SECONDARY)))
-    {
-
-        ata_device_init(&devices[2], type, ATA_DEVICE_SECONDARY, ATA_SECONDARY_MASTER_CONTROL, ATA_SECONDARY_MASTER_DATA);
-
-        modules_register_device(&devices[2].base);
-
-    }
-
-    if ((type = detect(ATA_SECONDARY_SLAVE_CONTROL, ATA_SECONDARY_SLAVE_DATA, ATA_DEVICE_SECONDARY)))
-    {
-
-        ata_device_init(&devices[3], type, ATA_DEVICE_SECONDARY, ATA_SECONDARY_SLAVE_CONTROL, ATA_SECONDARY_SLAVE_DATA);
-
-        modules_register_device(&devices[3].base);
-
-    }
-
+    modules_register_device(&devices[3].base);
+*/
 }
 
 void destroy()
