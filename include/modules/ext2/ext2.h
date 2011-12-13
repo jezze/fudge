@@ -59,6 +59,43 @@ struct ext2_blockgroup
 
 };
 
+struct ext2_node
+{
+
+    unsigned short type;
+    unsigned short userId;
+    unsigned int sizeLow;
+    unsigned int lastAccessTime;
+    unsigned int creationTime;
+    unsigned int lastModificationTime;
+    unsigned int deletionTime;
+    unsigned short groupId;
+    unsigned short hardCount;
+    unsigned int sectorCount;
+    unsigned int flags;
+    unsigned int osSpecific;
+    unsigned int pointer0;
+    unsigned int pointer1;
+    unsigned int pointer2;
+    unsigned int pointer3;
+    unsigned int pointer4;
+    unsigned int pointer5;
+    unsigned int pointer6;
+    unsigned int pointer7;
+    unsigned int pointer8;
+    unsigned int pointer9;
+    unsigned int pointer10;
+    unsigned int pointer11;
+    unsigned int singlyIndirectPointer;
+    unsigned int doublyIndirectPointer;
+    unsigned int tripplyIndirectPointer;
+    unsigned int generation;
+    unsigned int extendedAttributes;
+    unsigned int sizeHigh;
+    unsigned int fragmentBlockAddress;
+
+};
+
 struct ext2_driver
 {
 

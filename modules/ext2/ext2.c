@@ -26,7 +26,21 @@ void ext2_driver_init(struct ext2_driver *driver)
 
     struct ext2_superblock *sb = (struct ext2_superblock *)buffer;
 
-    log_write("[ext2] Signature: %x\n", sb->signature);
+    if (sb->signature != 0xEF53)
+        return;
+
+    log_write("[ext2] Signature: 0x%x\n", sb->signature);
+    log_write("[ext2] Block size: 0x%x\n", sb->blockSize);
+    log_write("[ext2] Blocks per group: %d\n", sb->blockCountGroup);
+    log_write("[ext2] Nodes per group: %d\n", sb->nodeCountGroup);
+
+    device->read_lba28(device, 3, 0, buffer);
+
+    struct ext2_blockgroup *bg = (struct ext2_blockgroup *)buffer;
+
+    log_write("[ext2] Block usage bitmap address: 0x%x\n", bg->blockUsageAddress);
+    log_write("[ext2] Node usage bitmap address: 0x%x\n", bg->nodeUsageAddress);
+    log_write("[ext2] Block table address: 0x%x\n", bg->blockTableAddress);
 
     modules_driver_init(&driver->base, EXT2_DRIVER_TYPE);
 
