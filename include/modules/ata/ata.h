@@ -17,17 +17,17 @@
 #define ATA_COMMAND_PIO48_READ  0x24
 #define ATA_COMMAND_PIO48_WRITE 0x34
 
-#define ATA_DATA_COMMAND 0x07
-#define ATA_DATA_COUNT0  0x02
-#define ATA_DATA_COUNT1  0x08
 #define ATA_DATA_FEATURE 0x01
+#define ATA_DATA_COUNT0  0x02
 #define ATA_DATA_LBA0    0x03
 #define ATA_DATA_LBA1    0x04
 #define ATA_DATA_LBA2    0x05
+#define ATA_DATA_SELECT  0x06
+#define ATA_DATA_COMMAND 0x07
+#define ATA_DATA_COUNT1  0x08
 #define ATA_DATA_LBA3    0x09
 #define ATA_DATA_LBA4    0x0A
 #define ATA_DATA_LBA5    0x0B
-#define ATA_DATA_SELECT  0x06
 
 #define ATA_ID_TYPE     0x00
 #define ATA_ID_SERIAL   0x0A
