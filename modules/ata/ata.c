@@ -94,12 +94,12 @@ static unsigned int wait(struct ata_device *device)
 static unsigned int ata_device_read_lba28(struct ata_device *device, unsigned int sector, unsigned int count, void *buffer)
 {
 
-    io_outb(0x1F6, (0xE0 | device->secondary) | ((sector >> 24) & 0x0F));
     io_outb(0x1F1, 0x00);
     io_outb(0x1F2, (unsigned char)(count));
     io_outb(0x1F3, (unsigned char)(sector >> 0));
     io_outb(0x1F4, (unsigned char)(sector >> 8));
     io_outb(0x1F5, (unsigned char)(sector >> 16));
+    io_outb(0x1F6, (0xE0 | device->secondary) | ((sector >> 24) & 0x0F));
     io_outb(0x1F7, 0x20);
 
     unsigned int i;
@@ -110,7 +110,6 @@ static unsigned int ata_device_read_lba28(struct ata_device *device, unsigned in
 
         if (!wait(device))
             return 0;
-
 
         unsigned int i;
 
