@@ -47,6 +47,8 @@ static void select(struct ata_device *device)
 static unsigned int detect(struct ata_device *device, void *buffer)
 {
 
+    select(device);
+
     io_outb(device->data + ATA_DATA_COUNT0, 0);
     io_outb(device->data + ATA_DATA_LBA0, 0);
     io_outb(device->data + ATA_DATA_LBA1, 0);
@@ -248,28 +250,29 @@ void init()
     ata_bus_init(&busPrimary);
     modules_register_bus(&busPrimary.base);
 
-    ata_bus_init(&busSecondary);
-    modules_register_bus(&busSecondary.base);
-
     kernel_register_irq(0x0E, handle_irq_primary);
-    kernel_register_irq(0x0F, handle_irq_secondary);
 
     ata_device_init(&devices[0], ATA_DEVICE_PRIMARY, ATA_PRIMARY_MASTER_CONTROL, ATA_PRIMARY_MASTER_DATA);
 
     modules_register_device(&devices[0].base);
-/*
-    ata_device_init(&devices[1], type, ATA_DEVICE_PRIMARY, ATA_PRIMARY_SLAVE_CONTROL, ATA_PRIMARY_SLAVE_DATA);
+
+    ata_device_init(&devices[1], ATA_DEVICE_PRIMARY, ATA_PRIMARY_SLAVE_CONTROL, ATA_PRIMARY_SLAVE_DATA);
 
     modules_register_device(&devices[1].base);
 
-    ata_device_init(&devices[2], type, ATA_DEVICE_SECONDARY, ATA_SECONDARY_MASTER_CONTROL, ATA_SECONDARY_MASTER_DATA);
+    ata_bus_init(&busSecondary);
+    modules_register_bus(&busSecondary.base);
 
-    modules_register_device(&devices[2].base);
+    kernel_register_irq(0x0F, handle_irq_secondary);
 
-    ata_device_init(&devices[3], type, ATA_DEVICE_SECONDARY, ATA_SECONDARY_SLAVE_CONTROL, ATA_SECONDARY_SLAVE_DATA);
+//    ata_device_init(&devices[2], ATA_DEVICE_SECONDARY, ATA_SECONDARY_MASTER_CONTROL, ATA_SECONDARY_MASTER_DATA);
 
-    modules_register_device(&devices[3].base);
-*/
+//    modules_register_device(&devices[2].base);
+
+//    ata_device_init(&devices[3], ATA_DEVICE_SECONDARY, ATA_SECONDARY_SLAVE_CONTROL, ATA_SECONDARY_SLAVE_DATA);
+
+//    modules_register_device(&devices[3].base);
+
 }
 
 void destroy()
