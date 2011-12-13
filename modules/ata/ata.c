@@ -14,16 +14,12 @@ static unsigned int detect(unsigned short control, unsigned short data, unsigned
 {
 
     io_outb(data + ATA_DATA_SELECT, 0xA0 | secondary);
-    io_inb(control + ATA_CONTROL_STATUS);
-    io_inb(control + ATA_CONTROL_STATUS);
-    io_inb(control + ATA_CONTROL_STATUS);
-    io_inb(control + ATA_CONTROL_STATUS);
+    io_inb(control);
+    io_inb(control);
+    io_inb(control);
+    io_inb(control);
 
     io_outb(data + ATA_DATA_COMMAND, ATA_COMMAND_ID);
-    io_inb(control + ATA_CONTROL_STATUS);
-    io_inb(control + ATA_CONTROL_STATUS);
-    io_inb(control + ATA_CONTROL_STATUS);
-    io_inb(control + ATA_CONTROL_STATUS);
 
     unsigned char status = io_inb(data + ATA_DATA_COMMAND);
 
@@ -52,10 +48,10 @@ static void select(struct ata_device *device)
 {
 
     io_outb(device->data + ATA_DATA_SELECT, 0xA0 | device->secondary);
-    io_inb(device->control + ATA_CONTROL_STATUS);
-    io_inb(device->control + ATA_CONTROL_STATUS);
-    io_inb(device->control + ATA_CONTROL_STATUS);
-    io_inb(device->control + ATA_CONTROL_STATUS);
+    io_inb(device->control);
+    io_inb(device->control);
+    io_inb(device->control);
+    io_inb(device->control);
 
 }
 
