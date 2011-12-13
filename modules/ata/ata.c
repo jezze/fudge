@@ -114,7 +114,7 @@ static unsigned int ata_device_read_lba28(struct ata_device *device, unsigned in
         unsigned int i;
 
         for (i = 0; i < 256; i++)
-            *out++ = io_inw(0x1F0);
+            *out++ = io_inw(device->data);
 
     }
 
@@ -155,7 +155,7 @@ static unsigned int ata_device_read_lba48(struct ata_device *device, unsigned in
         unsigned int i;
 
         for (i = 0; i < 256; i++)
-            *out++ = io_inw(0x1F0);
+            *out++ = io_inw(device->data);
 
     }
 
