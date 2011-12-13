@@ -10,46 +10,22 @@ static struct ata_bus busPrimary;
 static struct ata_bus busSecondary;
 static struct ata_device devices[4];
 
-static void sleep(unsigned short control)
-{
-
-    io_inb(control + ATA_CONTROL_STATUS);
-    io_inb(control + ATA_CONTROL_STATUS);
-    io_inb(control + ATA_CONTROL_STATUS);
-    io_inb(control + ATA_CONTROL_STATUS);
-
-}
-
-static void select(unsigned short control, unsigned short data, unsigned int secondary)
-{
-
-    io_outb(data + ATA_DATA_SELECT, 0xA0 | secondary);
-    sleep(control);
-
-}
-
-static unsigned char get_command(unsigned short data)
-{
-
-    return io_inb(data + ATA_DATA_COMMAND);
-
-}
-
-static void set_command(unsigned short control, unsigned short data, unsigned char command)
-{
-
-    io_outb(data + ATA_DATA_COMMAND, command);
-    sleep(control);
-
-}
-
 static unsigned int detect(unsigned short control, unsigned short data, unsigned int secondary)
 {
 
-    select(control, data, secondary);
-    set_command(control, data, ATA_COMMAND_ID);
+    io_outb(data + ATA_DATA_SELECT, 0xA0 | secondary);
+    io_inb(control + ATA_CONTROL_STATUS);
+    io_inb(control + ATA_CONTROL_STATUS);
+    io_inb(control + ATA_CONTROL_STATUS);
+    io_inb(control + ATA_CONTROL_STATUS);
 
-    unsigned char status = get_command(data);
+    io_outb(data + ATA_DATA_COMMAND, ATA_COMMAND_ID);
+    io_inb(control + ATA_CONTROL_STATUS);
+    io_inb(control + ATA_CONTROL_STATUS);
+    io_inb(control + ATA_CONTROL_STATUS);
+    io_inb(control + ATA_CONTROL_STATUS);
+
+    unsigned char status = io_inb(data + ATA_DATA_COMMAND);
 
     if (!status)
         return 0;
@@ -72,13 +48,24 @@ static unsigned int detect(unsigned short control, unsigned short data, unsigned
 
 }
 
+static void select(struct ata_device *device)
+{
+
+    io_outb(device->data + ATA_DATA_SELECT, 0xA0 | device->secondary);
+    io_inb(device->control + ATA_CONTROL_STATUS);
+    io_inb(device->control + ATA_CONTROL_STATUS);
+    io_inb(device->control + ATA_CONTROL_STATUS);
+    io_inb(device->control + ATA_CONTROL_STATUS);
+
+}
+
 static unsigned int wait(struct ata_device *device)
 {
 
     while (1)
     {
 
-        unsigned char status = get_command(device->data);
+        unsigned char status = io_inb(device->data + ATA_DATA_COMMAND);
 
         if (status & ATA_STATUS_FLAG_ERROR)
             return 0;
