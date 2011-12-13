@@ -94,7 +94,6 @@ static unsigned int wait(struct ata_device *device)
 static unsigned int ata_device_read_lba28(struct ata_device *device, unsigned int sector, unsigned int count, void *buffer)
 {
 
-    io_outb(0x1F1, 0x00);
     io_outb(0x1F2, (unsigned char)(count));
     io_outb(0x1F3, (unsigned char)(sector >> 0));
     io_outb(0x1F4, (unsigned char)(sector >> 8));
@@ -132,7 +131,34 @@ static unsigned int ata_device_write_lba28(struct ata_device *device, unsigned i
 static unsigned int ata_device_read_lba48(struct ata_device *device, unsigned int sector, unsigned int count, void *buffer)
 {
 
-    return 0;
+    io_outb(0x1F2, (unsigned char)(count & 0xF0));
+    io_outb(0x1F3, (unsigned char)(sector >> 12));
+    io_outb(0x1F4, (unsigned char)(sector >> 16));
+    io_outb(0x1F5, (unsigned char)(sector >> 24));
+    io_outb(0x1F2, (unsigned char)(count & 0x0F));
+    io_outb(0x1F3, (unsigned char)(sector >> 0));
+    io_outb(0x1F4, (unsigned char)(sector >> 4));
+    io_outb(0x1F5, (unsigned char)(sector >> 8));
+    io_outb(0x1F6, 0x40 | device->secondary);
+    io_outb(0x1F7, 0x24);
+
+    unsigned int i;
+    unsigned short *out = (unsigned short *)buffer;
+
+    for (i = 0; i < count; i++)
+    {
+
+        if (!wait(device))
+            return 0;
+
+        unsigned int i;
+
+        for (i = 0; i < 256; i++)
+            *out++ = io_inw(0x1F0);
+
+    }
+
+    return count * 512;
 
 }
 

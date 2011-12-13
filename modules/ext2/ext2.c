@@ -22,7 +22,7 @@ void ext2_driver_init(struct ext2_driver *driver)
 
     char buffer[512];
 
-    device->read_lba28(device, 2, 1, buffer);
+    device->read_lba48(device, 2, 1, buffer);
 
     struct ext2_superblock *sb = (struct ext2_superblock *)buffer;
 
@@ -43,7 +43,7 @@ void ext2_driver_init(struct ext2_driver *driver)
 
     }
 
-    device->read_lba28(device, 4, 1, buffer);
+    device->read_lba48(device, 4, 1, buffer);
 
     struct ext2_blockgroup *bg = (struct ext2_blockgroup *)buffer;
 
