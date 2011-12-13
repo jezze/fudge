@@ -22,7 +22,7 @@ void ext2_driver_init(struct ext2_driver *driver)
 
     char buffer[512];
 
-    device->read_lba28(device, 2, 0, buffer);
+    device->read_lba28(device, 2, 1, buffer);
 
     struct ext2_superblock *sb = (struct ext2_superblock *)buffer;
 
@@ -30,11 +30,11 @@ void ext2_driver_init(struct ext2_driver *driver)
         return;
 
     log_write("[ext2] Signature: 0x%x\n", sb->signature);
-    log_write("[ext2] Block size: 0x%x\n", sb->blockSize);
+    log_write("[ext2] Block size: %d\n", 1024 << sb->blockSize);
     log_write("[ext2] Blocks per group: %d\n", sb->blockCountGroup);
     log_write("[ext2] Nodes per group: %d\n", sb->nodeCountGroup);
 
-    device->read_lba28(device, 3, 0, buffer);
+    device->read_lba28(device, 4, 1, buffer);
 
     struct ext2_blockgroup *bg = (struct ext2_blockgroup *)buffer;
 
