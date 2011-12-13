@@ -44,6 +44,23 @@ struct ext2_superblock
     unsigned int majorVersion;
     unsigned short userId;
     unsigned short groupId;
+    unsigned int firstUnreservedNode;
+    unsigned short nodeSize;
+    unsigned short superblockGroup;
+    unsigned int optionalAttributes;
+    unsigned int requiredFeatures;
+    unsigned int unsupportedFeatures;
+    unsigned char system[16];
+    unsigned char volume[16];
+    unsigned char lastmount[64];
+    unsigned int algorithm;
+    unsigned char filePreallocBlocks;
+    unsigned char directoryPreallocBlocks;
+    unsigned short unused;
+    unsigned char journal[16];
+    unsigned int journalNode;
+    unsigned int journalDevice;
+    unsigned int firstOrphan;
 
 };
 

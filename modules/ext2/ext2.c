@@ -20,7 +20,7 @@ void ext2_driver_init(struct ext2_driver *driver)
     if (!device)
         return;
 
-    char buffer[512];
+    char buffer[1024];
 
     device->read_lba28(device, 2, 1, buffer);
 
@@ -30,9 +30,19 @@ void ext2_driver_init(struct ext2_driver *driver)
         return;
 
     log_write("[ext2] Signature: 0x%x\n", sb->signature);
+    log_write("[ext2] Version: %d:%d\n", sb->majorVersion, sb->minorVersion);;
     log_write("[ext2] Block size: %d\n", 1024 << sb->blockSize);
     log_write("[ext2] Blocks per group: %d\n", sb->blockCountGroup);
     log_write("[ext2] Nodes per group: %d\n", sb->nodeCountGroup);
+
+    if (sb->majorVersion >= 1)
+    {
+
+        log_write("[ext2] System: %s\n", sb->system);
+        log_write("[ext2] Volume: %s\n", sb->volume);
+        log_write("[ext2] Last mount: %s\n", sb->lastmount);
+
+    }
 
     device->read_lba28(device, 4, 1, buffer);
 
