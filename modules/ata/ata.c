@@ -161,7 +161,7 @@ static unsigned int ata_bus_detect(struct ata_bus *self, unsigned int secondary,
 
     self->select(self, 0xA0, secondary);
     self->set_lba(self, 0, 0, 0, 0);
-    self->set_command(self, ATA_COMMAND_ID);
+    self->set_command(self, ATA_COMMAND_ID_ATA);
 
     unsigned char status = io_inb(self->data + ATA_DATA_COMMAND);
 
@@ -182,7 +182,15 @@ static unsigned int ata_bus_detect(struct ata_bus *self, unsigned int secondary,
     }
 
     if (lba == 0xEB14)
+    {
+
+        self->set_command(self, ATA_COMMAND_ID_ATAPI);
+
+        read_blocks(self, 1, buffer);
+
         return ATA_DEVICE_TYPE_ATAPI;
+
+    }
 
     if (lba == 0xC33C)
         return ATA_DEVICE_TYPE_SATA;
