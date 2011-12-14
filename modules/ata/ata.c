@@ -8,6 +8,46 @@
 
 static struct ata_bus primary;
 static struct ata_bus secondary;
+static unsigned int irq;
+
+static void set_irq()
+{
+
+    irq = 1;
+
+}
+
+static void clear_irq()
+{
+
+    irq = 0;
+
+}
+
+static void wait_irq()
+{
+
+    while (!irq);
+
+    clear_irq();
+
+}
+
+static void handle_irq_primary()
+{
+
+    set_irq();
+    log_write("[ata] irq 0x0E\n");
+
+}
+
+static void handle_irq_secondary()
+{
+
+    set_irq();
+    log_write("[ata] irq 0x0F\n");
+
+}
 
 static void configure_ata_device(struct ata_device *device, unsigned short *buffer)
 {
@@ -282,32 +322,19 @@ void ata_bus_init(struct ata_bus *bus, unsigned int control, unsigned int data)
 
 }
 
-static void handle_irq_primary()
-{
-
-    log_write("[ata] irq 0x0E\n");
-
-}
-
-static void handle_irq_secondary()
-{
-
-    log_write("[ata] irq 0x0F\n");
-
-}
-
 void init()
 {
+
+    clear_irq();
+
+    kernel_register_irq(0x0E, handle_irq_primary);
+    kernel_register_irq(0x0F, handle_irq_secondary);
 
     ata_bus_init(&primary, ATA_MASTER_PRIMARY_CONTROL, ATA_MASTER_PRIMARY_DATA);
     modules_register_bus(&primary.base);
 
-    kernel_register_irq(0x0E, handle_irq_primary);
-
     ata_bus_init(&secondary, ATA_MASTER_SECONDARY_CONTROL, ATA_MASTER_SECONDARY_DATA);
     modules_register_bus(&secondary.base);
-
-    kernel_register_irq(0x0F, handle_irq_secondary);
 
 }
 
