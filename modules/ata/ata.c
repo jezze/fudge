@@ -17,7 +17,6 @@ static void sleep(struct ata_device *device)
     io_inb(device->control);
     io_inb(device->control);
     io_inb(device->control);
-    io_inb(device->control);
 
 }
 
@@ -201,22 +200,37 @@ void ata_device_init(struct ata_device *device, unsigned int secondary, unsigned
 
     device->type = detect(device, buffer);
 
-    log_write("[ata] Type: %d\n", device->type);
+    if (device->type != ATA_DEVICE_TYPE_ATA)
+        return;
 
-    if (device->type == ATA_DEVICE_TYPE_ATA)
+    unsigned int lba48 = buffer[ATA_ID_SUPPORT] & (1 << 10);
+
+    device->lba28Max = (buffer[ATA_ID_LBA28MAX] << 16) | buffer[ATA_ID_LBA28MAX + 1];
+
+    if (lba48)
     {
 
-        device->lba28Max = (buffer[60] << 16) | buffer[61];
+        device->lba48MaxLow = (buffer[ATA_ID_LBA48MAX + 0] << 16) | buffer[ATA_ID_LBA48MAX + 1];
+        device->lba48MaxHigh = (buffer[ATA_ID_LBA48MAX + 2] << 16) | buffer[ATA_ID_LBA48MAX + 3];
 
-        unsigned int lba48 = buffer[83] & (1 << 10);
+    }
 
-        if (lba48)
-        {
+    unsigned int i;
 
-            device->lba48MaxLow = (buffer[100] << 16) | buffer[101];
-            device->lba48MaxHigh = (buffer[102] << 16) | buffer[103];
+    char *model = (char *)&buffer[ATA_ID_MODEL];
 
-        }
+    for (i = 0; i < 40; i++)
+        device->model[i] = model[i + 1 - ((i & 1) << 1)];
+
+    device->model[40] = '\0';
+
+    for (i = 39; i > 0; i--)
+    {
+
+        if (device->model[i] == ' ')
+            device->model[i] = '\0';
+        else
+            break;
 
     }
 

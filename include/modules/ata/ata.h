@@ -30,7 +30,10 @@
 #define ATA_ID_TYPE     0x00
 #define ATA_ID_SERIAL   0x0A
 #define ATA_ID_MODEL    0x1B
+#define ATA_ID_CAP      0x31
+#define ATA_ID_VALID    0x35
 #define ATA_ID_LBA28MAX 0x3C
+#define ATA_ID_SUPPORT  0x53
 #define ATA_ID_LBA48MAX 0x64
 
 #define ATA_MASTER_PRIMARY_DATA      0x1F0
@@ -67,6 +70,7 @@ struct ata_device
     unsigned int secondary;
     unsigned short control;
     unsigned short data;
+    unsigned char model[41];
     unsigned int lba28Max;
     unsigned int (*read_lba28)(struct ata_device *self, unsigned int sector, unsigned int count, void *buffer);
     unsigned int (*write_lba28)(struct ata_device *self, unsigned int sector, unsigned int count, void *buffer);
