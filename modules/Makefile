@@ -22,6 +22,7 @@ all-x86:
 	@${GCC} ${GCCFLAGS} bga/bga.c -o bga/bga.o
 	@${GCC} ${GCCFLAGS} ext2/ext2.c -o ext2/ext2.o
 	@${GCC} ${GCCFLAGS} log/log.c -o log/log.o
+	@${GCC} ${GCCFLAGS} mbr/mbr.c -o mbr/mbr.o
 	@${GCC} ${GCCFLAGS} pci/pci.c -o pci/pci.o
 	@${GCC} ${GCCFLAGS} pit/pit.c -o pit/pit.o
 	@${GCC} ${GCCFLAGS} ps2/kbd.c -o ps2/kbd.o
@@ -35,6 +36,7 @@ all-x86:
 	@${LD} ${LDFLAGS} bga/bga.o -o bga/bga.ko
 	@${LD} ${LDFLAGS} ext2/ext2.o -o ext2/ext2.ko
 	@${LD} ${LDFLAGS} log/log.o -o log/log.ko
+	@${LD} ${LDFLAGS} mbr/mbr.o -o mbr/mbr.ko
 	@${LD} ${LDFLAGS} pci/pci.o -o pci/pci.ko
 	@${LD} ${LDFLAGS} pit/pit.o -o pit/pit.ko
 	@${LD} ${LDFLAGS} ps2/kbd.o -o ps2/ps2_kbd.ko

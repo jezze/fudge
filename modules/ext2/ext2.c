@@ -7,7 +7,7 @@
 
 static struct ext2_driver driver;
 
-void ext2_driver_init(struct ext2_driver *driver)
+static void read()
 {
 
     struct ata_bus *bus = (struct ata_bus *)modules_get_bus(ATA_BUS_TYPE);
@@ -51,6 +51,11 @@ void ext2_driver_init(struct ext2_driver *driver)
     log_write("[ext2] Node usage bitmap address: 0x%x\n", bg->nodeUsageAddress);
     log_write("[ext2] Block table address: 0x%x\n", bg->blockTableAddress);
 
+}
+
+void ext2_driver_init(struct ext2_driver *driver)
+{
+
     modules_driver_init(&driver->base, EXT2_DRIVER_TYPE);
 
 }
@@ -59,6 +64,8 @@ void init()
 {
 
     ext2_driver_init(&driver);
+
+    read(); // REMOVE
 
     modules_register_driver(&driver.base);
 
