@@ -85,12 +85,17 @@ struct ata_bus
 {
 
     struct modules_bus base;
+    unsigned short control;
+    unsigned short data;
+    struct ata_device primary;
+    struct ata_device secondary;
+    unsigned int (*detect)(struct ata_bus *self, unsigned int secondary, void *buffer);
     struct ata_device *(*find_device)(struct ata_bus *self, unsigned int type);
 
 };
 
-extern void ata_device_init(struct ata_device *device, unsigned int secondary, unsigned int control, unsigned int data);
-extern void ata_bus_init(struct ata_bus *bus);
+extern void ata_device_init(struct ata_device *device, unsigned int secondary, unsigned int control, unsigned int data, unsigned int type);
+extern void ata_bus_init(struct ata_bus *bus, unsigned int control, unsigned int data);
 
 #endif
 
