@@ -9,27 +9,25 @@
 static struct ata_bus primary;
 static struct ata_bus secondary;
 
-static void sleep(struct ata_device *device)
+static void sleep(struct ata_bus *bus)
 {
 
-    io_inb(device->control);
-    io_inb(device->control);
-    io_inb(device->control);
-    io_inb(device->control);
+    io_inb(bus->control);
+    io_inb(bus->control);
+    io_inb(bus->control);
+    io_inb(bus->control);
 
 }
 
-static unsigned int ata_device_read_lba28(struct ata_device *self, unsigned int sector, unsigned int count, void *buffer)
+static void wait(struct ata_bus *bus)
 {
 
-    io_outb(self->data + ATA_DATA_SELECT, (0xE0 | self->secondary) | ((sector >> 24) & 0x0F));
-    sleep(self);
+    while (io_inb(bus->data + ATA_DATA_COMMAND) & ATA_STATUS_FLAG_BUSY);
 
-    io_outb(self->data + ATA_DATA_COUNT0, (unsigned char)(count));
-    io_outb(self->data + ATA_DATA_LBA0, (unsigned char)(sector >> 0));
-    io_outb(self->data + ATA_DATA_LBA1, (unsigned char)(sector >> 8));
-    io_outb(self->data + ATA_DATA_LBA2, (unsigned char)(sector >> 16));
-    io_outb(self->data + ATA_DATA_COMMAND, ATA_COMMAND_PIO28_READ);
+}
+
+static unsigned int read_blocks(struct ata_bus *bus, unsigned int count, void *buffer)
+{
 
     unsigned int i;
     unsigned short *out = (unsigned short *)buffer;
@@ -37,26 +35,35 @@ static unsigned int ata_device_read_lba28(struct ata_device *self, unsigned int 
     for (i = 0; i < count; i++)
     {
 
-        sleep(self);
-
-        while (1)
-        {
-
-            unsigned char status = io_inb(self->data + ATA_DATA_COMMAND);
-
-            if (!(status & ATA_STATUS_FLAG_BUSY))
-                break;
-
-        }
+        sleep(bus);
+        wait(bus);
 
         unsigned int i;
 
         for (i = 0; i < 256; i++)
-            *out++ = io_inw(self->data);
+            *out++ = io_inw(bus->data);
 
     }
 
-    return count * 512;
+    return count;
+
+}
+
+static unsigned int ata_device_read_lba28(struct ata_device *self, unsigned int sector, unsigned int count, void *buffer)
+{
+
+    struct ata_bus *bus = self->bus;
+
+    io_outb(bus->data + ATA_DATA_SELECT, (0xE0 | self->secondary) | ((sector >> 24) & 0x0F));
+    sleep(bus);
+
+    io_outb(bus->data + ATA_DATA_COUNT0, (unsigned char)(count));
+    io_outb(bus->data + ATA_DATA_LBA0, (unsigned char)(sector >> 0));
+    io_outb(bus->data + ATA_DATA_LBA1, (unsigned char)(sector >> 8));
+    io_outb(bus->data + ATA_DATA_LBA2, (unsigned char)(sector >> 16));
+    io_outb(bus->data + ATA_DATA_COMMAND, ATA_COMMAND_PIO28_READ);
+
+    return read_blocks(bus, count, buffer) * 512;
 
 }
 
@@ -70,45 +77,22 @@ static unsigned int ata_device_write_lba28(struct ata_device *self, unsigned int
 static unsigned int ata_device_read_lba48(struct ata_device *self, unsigned int sector, unsigned int count, void *buffer)
 {
 
-    io_outb(self->data + ATA_DATA_SELECT, 0x40 | self->secondary);
-    sleep(self);
+    struct ata_bus *bus = self->bus;
 
-    io_outb(self->data + ATA_DATA_COUNT0, (unsigned char)(count & 0xF0));
-    io_outb(self->data + ATA_DATA_LBA0, (unsigned char)(sector >> 12));
-    io_outb(self->data + ATA_DATA_LBA1, (unsigned char)(sector >> 16));
-    io_outb(self->data + ATA_DATA_LBA2, (unsigned char)(sector >> 24));
-    io_outb(self->data + ATA_DATA_COUNT0, (unsigned char)(count & 0x0F));
-    io_outb(self->data + ATA_DATA_LBA0, (unsigned char)(sector >> 0));
-    io_outb(self->data + ATA_DATA_LBA1, (unsigned char)(sector >> 4));
-    io_outb(self->data + ATA_DATA_LBA2, (unsigned char)(sector >> 8));
-    io_outb(self->data + ATA_DATA_COMMAND, ATA_COMMAND_PIO48_READ);
+    io_outb(bus->data + ATA_DATA_SELECT, 0x40 | self->secondary);
+    sleep(bus);
 
-    unsigned int i;
-    unsigned short *out = (unsigned short *)buffer;
+    io_outb(bus->data + ATA_DATA_COUNT0, (unsigned char)(count & 0xF0));
+    io_outb(bus->data + ATA_DATA_LBA0, (unsigned char)(sector >> 12));
+    io_outb(bus->data + ATA_DATA_LBA1, (unsigned char)(sector >> 16));
+    io_outb(bus->data + ATA_DATA_LBA2, (unsigned char)(sector >> 24));
+    io_outb(bus->data + ATA_DATA_COUNT0, (unsigned char)(count & 0x0F));
+    io_outb(bus->data + ATA_DATA_LBA0, (unsigned char)(sector >> 0));
+    io_outb(bus->data + ATA_DATA_LBA1, (unsigned char)(sector >> 4));
+    io_outb(bus->data + ATA_DATA_LBA2, (unsigned char)(sector >> 8));
+    io_outb(bus->data + ATA_DATA_COMMAND, ATA_COMMAND_PIO48_READ);
 
-    for (i = 0; i < count; i++)
-    {
-
-        sleep(self);
-
-        while (1)
-        {
-
-            unsigned char status = io_inb(self->data + ATA_DATA_COMMAND);
-
-            if (!(status & ATA_STATUS_FLAG_BUSY))
-                break;
-
-        }
-
-        unsigned int i;
-
-        for (i = 0; i < 256; i++)
-            *out++ = io_inw(self->data);
-
-    }
-
-    return count * 512;
+    return read_blocks(bus, count, buffer) * 512;
 
 }
 
@@ -123,10 +107,7 @@ static unsigned int ata_bus_detect(struct ata_bus *self, unsigned int secondary,
 {
 
     io_outb(self->data + ATA_DATA_SELECT, 0xA0 | secondary);
-    io_inb(self->control);
-    io_inb(self->control);
-    io_inb(self->control);
-    io_inb(self->control);
+    sleep(self);
 
     io_outb(self->data + ATA_DATA_COUNT0, 0);
     io_outb(self->data + ATA_DATA_LBA0, 0);
@@ -139,15 +120,7 @@ static unsigned int ata_bus_detect(struct ata_bus *self, unsigned int secondary,
     if (!status)
         return 0;
 
-    while (1)
-    {
-
-        unsigned char status = io_inb(self->data + ATA_DATA_COMMAND);
-
-        if (!(status & ATA_STATUS_FLAG_BUSY))
-            break;
-
-    }
+    wait(self);
 
     unsigned short lba = (io_inb(self->data + ATA_DATA_LBA2) << 8) | io_inb(self->data + ATA_DATA_LBA1);
 
@@ -160,37 +133,19 @@ static unsigned int ata_bus_detect(struct ata_bus *self, unsigned int secondary,
     if (lba == 0x9669)
         return ATA_DEVICE_TYPE_SATAPI;
 
-    while (1)
-    {
-
-        unsigned char status = io_inb(self->data + ATA_DATA_COMMAND);
-
-        if ((status & ATA_STATUS_FLAG_DRQ))
-            break;
-
-        if ((status & ATA_STATUS_FLAG_ERROR))
-            return 0;
-
-    }
-
-    unsigned int i;
-    unsigned short *out = (unsigned short *)buffer;
-
-    for (i = 0; i < 256; i++)
-        *out++ = io_inw(self->data);
+    read_blocks(self, 1, buffer);
 
     return ATA_DEVICE_TYPE_ATA;
 
 }
 
-void ata_device_init(struct ata_device *device, unsigned int secondary, unsigned int control, unsigned int data, unsigned int type)
+void ata_device_init(struct ata_device *device, struct ata_bus *bus, unsigned int secondary, unsigned int type)
 {
 
     modules_device_init(&device->base, ATA_DEVICE_TYPE);
+    device->bus = bus;
     device->type = type;
     device->secondary = secondary;
-    device->control = control;
-    device->data = data;
     device->lba28Max = 0;
     device->read_lba28 = ata_device_read_lba28;
     device->write_lba28 = ata_device_write_lba28;
@@ -269,7 +224,7 @@ void ata_bus_init(struct ata_bus *bus, unsigned int control, unsigned int data)
     if ((type = bus->detect(bus, 0 << 4, buffer)))
     {
 
-        ata_device_init(&bus->primary, 0 << 4, bus->control, bus->data, type);
+        ata_device_init(&bus->primary, bus, 0 << 4, type);
         configure_device(&bus->primary, buffer);
 
         modules_register_device(&bus->primary.base);
@@ -279,7 +234,7 @@ void ata_bus_init(struct ata_bus *bus, unsigned int control, unsigned int data)
     if ((type = bus->detect(bus, 1 << 4, buffer)))
     {
 
-        ata_device_init(&bus->secondary, 1 << 4, bus->control, bus->data, type);
+        ata_device_init(&bus->secondary, bus, 1 << 4, type);
         configure_device(&bus->secondary, buffer);
 
         modules_register_device(&bus->secondary.base);

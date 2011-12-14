@@ -62,14 +62,15 @@
 #define ATA_BUS_TYPE 2
 #define ATA_DEVICE_TYPE 4
 
+struct ata_bus;
+
 struct ata_device
 {
 
     struct modules_device base;
+    struct ata_bus *bus;
     unsigned int type;
     unsigned int secondary;
-    unsigned short control;
-    unsigned short data;
     unsigned char model[41];
     unsigned int lba28Max;
     unsigned int (*read_lba28)(struct ata_device *self, unsigned int sector, unsigned int count, void *buffer);
@@ -94,7 +95,7 @@ struct ata_bus
 
 };
 
-extern void ata_device_init(struct ata_device *device, unsigned int secondary, unsigned int control, unsigned int data, unsigned int type);
+extern void ata_device_init(struct ata_device *device, struct ata_bus *bus, unsigned int secondary, unsigned int type);
 extern void ata_bus_init(struct ata_bus *bus, unsigned int control, unsigned int data);
 
 #endif
