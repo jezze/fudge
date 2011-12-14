@@ -9,20 +9,42 @@
 static struct ata_bus primary;
 static struct ata_bus secondary;
 
-static void sleep(struct ata_bus *bus)
+static void configure_device(struct ata_device *device, unsigned short *buffer)
 {
 
-    io_inb(bus->control);
-    io_inb(bus->control);
-    io_inb(bus->control);
-    io_inb(bus->control);
+    if (device->type != ATA_DEVICE_TYPE_ATA)
+        return;
 
-}
+    unsigned int lba48 = buffer[ATA_ID_SUPPORT] & (1 << 10);
 
-static void wait(struct ata_bus *bus)
-{
+    device->lba28Max = (buffer[ATA_ID_LBA28MAX] << 16) | buffer[ATA_ID_LBA28MAX + 1];
 
-    while (io_inb(bus->data + ATA_DATA_COMMAND) & ATA_STATUS_FLAG_BUSY);
+    if (lba48)
+    {
+
+        device->lba48MaxLow = (buffer[ATA_ID_LBA48MAX + 0] << 16) | buffer[ATA_ID_LBA48MAX + 1];
+        device->lba48MaxHigh = (buffer[ATA_ID_LBA48MAX + 2] << 16) | buffer[ATA_ID_LBA48MAX + 3];
+
+    }
+
+    unsigned int i;
+
+    char *model = (char *)&buffer[ATA_ID_MODEL];
+
+    for (i = 0; i < 40; i++)
+        device->model[i] = model[i + 1 - ((i & 1) << 1)];
+
+    device->model[40] = '\0';
+
+    for (i = 39; i > 0; i--)
+    {
+
+        if (device->model[i] == ' ')
+            device->model[i] = '\0';
+        else
+            break;
+
+    }
 
 }
 
@@ -35,8 +57,8 @@ static unsigned int read_blocks(struct ata_bus *bus, unsigned int count, void *b
     for (i = 0; i < count; i++)
     {
 
-        sleep(bus);
-        wait(bus);
+        bus->sleep(bus);
+        bus->wait(bus);
 
         unsigned int i;
 
@@ -54,14 +76,9 @@ static unsigned int ata_device_read_lba28(struct ata_device *self, unsigned int 
 
     struct ata_bus *bus = self->bus;
 
-    io_outb(bus->data + ATA_DATA_SELECT, (0xE0 | self->secondary) | ((sector >> 24) & 0x0F));
-    sleep(bus);
-
-    io_outb(bus->data + ATA_DATA_COUNT0, (unsigned char)(count));
-    io_outb(bus->data + ATA_DATA_LBA0, (unsigned char)(sector >> 0));
-    io_outb(bus->data + ATA_DATA_LBA1, (unsigned char)(sector >> 8));
-    io_outb(bus->data + ATA_DATA_LBA2, (unsigned char)(sector >> 16));
-    io_outb(bus->data + ATA_DATA_COMMAND, ATA_COMMAND_PIO28_READ);
+    bus->select(bus, 0xE0 | ((sector >> 24) & 0x0F), self->secondary);
+    bus->set_lba(bus, (unsigned char)(count), (unsigned char)(sector >> 0), (unsigned char)(sector >> 4), (unsigned char)(sector >> 8));
+    bus->set_command(bus, ATA_COMMAND_PIO28_READ);
 
     return read_blocks(bus, count, buffer) * 512;
 
@@ -79,18 +96,10 @@ static unsigned int ata_device_read_lba48(struct ata_device *self, unsigned int 
 
     struct ata_bus *bus = self->bus;
 
-    io_outb(bus->data + ATA_DATA_SELECT, 0x40 | self->secondary);
-    sleep(bus);
-
-    io_outb(bus->data + ATA_DATA_COUNT0, (unsigned char)(count & 0xF0));
-    io_outb(bus->data + ATA_DATA_LBA0, (unsigned char)(sector >> 12));
-    io_outb(bus->data + ATA_DATA_LBA1, (unsigned char)(sector >> 16));
-    io_outb(bus->data + ATA_DATA_LBA2, (unsigned char)(sector >> 24));
-    io_outb(bus->data + ATA_DATA_COUNT0, (unsigned char)(count & 0x0F));
-    io_outb(bus->data + ATA_DATA_LBA0, (unsigned char)(sector >> 0));
-    io_outb(bus->data + ATA_DATA_LBA1, (unsigned char)(sector >> 4));
-    io_outb(bus->data + ATA_DATA_LBA2, (unsigned char)(sector >> 8));
-    io_outb(bus->data + ATA_DATA_COMMAND, ATA_COMMAND_PIO48_READ);
+    bus->select(bus, 0x40, self->secondary);
+    bus->set_lba(bus, (unsigned char)(count & 0xF0), (unsigned char)(sector >> 12), (unsigned char)(sector >> 16), (unsigned char)(sector >> 24));
+    bus->set_lba(bus, (unsigned char)(count & 0x0F), (unsigned char)(sector >> 0), (unsigned char)(sector >> 4), (unsigned char)(sector >> 8));
+    bus->set_command(bus, ATA_COMMAND_PIO48_READ);
 
     return read_blocks(bus, count, buffer) * 512;
 
@@ -103,24 +112,61 @@ static unsigned int ata_device_write_lba48(struct ata_device *self, unsigned int
 
 }
 
+static void ata_bus_sleep(struct ata_bus *self)
+{
+
+    io_inb(self->control);
+    io_inb(self->control);
+    io_inb(self->control);
+    io_inb(self->control);
+
+}
+
+static void ata_bus_wait(struct ata_bus *self)
+{
+
+    while (io_inb(self->data + ATA_DATA_COMMAND) & ATA_STATUS_FLAG_BUSY);
+
+}
+
+static void ata_bus_select(struct ata_bus *self, unsigned char operation, unsigned int secondary)
+{
+
+    io_outb(self->data + ATA_DATA_SELECT, operation | secondary);
+    self->sleep(self);
+
+}
+
+static void ata_bus_set_lba(struct ata_bus *self, unsigned char count, unsigned char lba0, unsigned char lba1, unsigned char lba2)
+{
+
+    io_outb(self->data + ATA_DATA_COUNT0, count);
+    io_outb(self->data + ATA_DATA_LBA0, lba0);
+    io_outb(self->data + ATA_DATA_LBA1, lba1);
+    io_outb(self->data + ATA_DATA_LBA2, lba2);
+
+}
+
+static void ata_bus_set_command(struct ata_bus *self, unsigned char command)
+{
+
+    io_outb(self->data + ATA_DATA_COMMAND, command);
+
+}
+
 static unsigned int ata_bus_detect(struct ata_bus *self, unsigned int secondary, void *buffer)
 {
 
-    io_outb(self->data + ATA_DATA_SELECT, 0xA0 | secondary);
-    sleep(self);
-
-    io_outb(self->data + ATA_DATA_COUNT0, 0);
-    io_outb(self->data + ATA_DATA_LBA0, 0);
-    io_outb(self->data + ATA_DATA_LBA1, 0);
-    io_outb(self->data + ATA_DATA_LBA2, 0);
-    io_outb(self->data + ATA_DATA_COMMAND, ATA_COMMAND_ID);
+    self->select(self, 0xA0, secondary);
+    self->set_lba(self, 0, 0, 0, 0);
+    self->set_command(self, ATA_COMMAND_ID);
 
     unsigned char status = io_inb(self->data + ATA_DATA_COMMAND);
 
     if (!status)
         return 0;
 
-    wait(self);
+    self->wait(self);
 
     unsigned short lba = (io_inb(self->data + ATA_DATA_LBA2) << 8) | io_inb(self->data + ATA_DATA_LBA1);
 
@@ -169,51 +215,17 @@ static struct ata_device *ata_bus_find_device(struct ata_bus *self, unsigned int
 
 }
 
-static void configure_device(struct ata_device *device, unsigned short *buffer)
-{
-
-    if (device->type != ATA_DEVICE_TYPE_ATA)
-        return;
-
-    unsigned int lba48 = buffer[ATA_ID_SUPPORT] & (1 << 10);
-
-    device->lba28Max = (buffer[ATA_ID_LBA28MAX] << 16) | buffer[ATA_ID_LBA28MAX + 1];
-
-    if (lba48)
-    {
-
-        device->lba48MaxLow = (buffer[ATA_ID_LBA48MAX + 0] << 16) | buffer[ATA_ID_LBA48MAX + 1];
-        device->lba48MaxHigh = (buffer[ATA_ID_LBA48MAX + 2] << 16) | buffer[ATA_ID_LBA48MAX + 3];
-
-    }
-
-    unsigned int i;
-
-    char *model = (char *)&buffer[ATA_ID_MODEL];
-
-    for (i = 0; i < 40; i++)
-        device->model[i] = model[i + 1 - ((i & 1) << 1)];
-
-    device->model[40] = '\0';
-
-    for (i = 39; i > 0; i--)
-    {
-
-        if (device->model[i] == ' ')
-            device->model[i] = '\0';
-        else
-            break;
-
-    }
-
-}
-
 void ata_bus_init(struct ata_bus *bus, unsigned int control, unsigned int data)
 {
 
     modules_bus_init(&bus->base, ATA_BUS_TYPE);
     bus->control = control;
     bus->data = data;
+    bus->sleep = ata_bus_sleep;
+    bus->wait = ata_bus_wait;
+    bus->select = ata_bus_select;
+    bus->set_lba = ata_bus_set_lba;
+    bus->set_command = ata_bus_set_command;
     bus->detect = ata_bus_detect;
     bus->find_device = ata_bus_find_device;
 

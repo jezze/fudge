@@ -90,6 +90,11 @@ struct ata_bus
     unsigned short data;
     struct ata_device primary;
     struct ata_device secondary;
+    void (*sleep)(struct ata_bus *self);
+    void (*wait)(struct ata_bus *self);
+    void (*select)(struct ata_bus *self, unsigned char operation, unsigned int secondary);
+    void (*set_lba)(struct ata_bus *self, unsigned char count, unsigned char lba0, unsigned char lba1, unsigned char lba2);
+    void (*set_command)(struct ata_bus *self, unsigned char command);
     unsigned int (*detect)(struct ata_bus *self, unsigned int secondary, void *buffer);
     struct ata_device *(*find_device)(struct ata_bus *self, unsigned int type);
 
