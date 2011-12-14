@@ -267,28 +267,31 @@ void init()
     ata_bus_init(&busPrimary);
     modules_register_bus(&busPrimary.base);
 
-    kernel_register_irq(0x0E, handle_irq_primary);
-
-    ata_device_init(&devices[0], 0, ATA_MASTER_PRIMARY_CONTROL, ATA_MASTER_PRIMARY_DATA);
-
-    modules_register_device(&devices[0].base);
-
-    ata_device_init(&devices[1], 1 << 4, ATA_MASTER_PRIMARY_CONTROL, ATA_MASTER_PRIMARY_DATA);
-
-    modules_register_device(&devices[1].base);
-
     ata_bus_init(&busSecondary);
     modules_register_bus(&busSecondary.base);
 
+    kernel_register_irq(0x0E, handle_irq_primary);
     kernel_register_irq(0x0F, handle_irq_secondary);
 
-//    ata_device_init(&devices[2], ATA_DEVICE_PRIMARY, ATA_SLAVE_PRIMARY_CONTROL, ATA_SLAVE_PRIMARY_DATA);
+    ata_device_init(&devices[0], 0, ATA_MASTER_PRIMARY_CONTROL, ATA_MASTER_PRIMARY_DATA);
 
-//    modules_register_device(&devices[2].base);
+    if (&devices[0].type)
+        modules_register_device(&devices[0].base);
 
-//    ata_device_init(&devices[3], ATA_DEVICE_SECONDARY, ATA_SLAVE_SECONDARY_CONTROL, ATA_SLAVE_SECONDARY_DATA);
+    ata_device_init(&devices[1], 1 << 4, ATA_MASTER_PRIMARY_CONTROL, ATA_MASTER_PRIMARY_DATA);
 
-//    modules_register_device(&devices[3].base);
+    if (&devices[1].type)
+        modules_register_device(&devices[1].base);
+
+    ata_device_init(&devices[2], 0, ATA_MASTER_SECONDARY_CONTROL, ATA_MASTER_SECONDARY_DATA);
+
+    if (&devices[2].type)
+        modules_register_device(&devices[2].base);
+
+    ata_device_init(&devices[3], 1 << 4, ATA_MASTER_SECONDARY_CONTROL, ATA_MASTER_SECONDARY_DATA);
+
+    if (&devices[3].type)
+        modules_register_device(&devices[3].base);
 
 }
 
