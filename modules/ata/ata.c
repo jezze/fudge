@@ -9,11 +9,8 @@
 static struct ata_bus primary;
 static struct ata_bus secondary;
 
-static void configure_device(struct ata_device *device, unsigned short *buffer)
+static void configure_ata_device(struct ata_device *device, unsigned short *buffer)
 {
-
-    if (device->type != ATA_DEVICE_TYPE_ATA)
-        return;
 
     unsigned int lba48 = buffer[ATA_ID_SUPPORT] & (1 << 10);
 
@@ -45,6 +42,11 @@ static void configure_device(struct ata_device *device, unsigned short *buffer)
             break;
 
     }
+
+}
+
+static void configure_atapi_device(struct ata_device *device, unsigned short *buffer)
+{
 
 }
 
@@ -170,6 +172,15 @@ static unsigned int ata_bus_detect(struct ata_bus *self, unsigned int secondary,
 
     unsigned short lba = (io_inb(self->data + ATA_DATA_LBA2) << 8) | io_inb(self->data + ATA_DATA_LBA1);
 
+    if (lba == 0x0000)
+    {
+
+        read_blocks(self, 1, buffer);
+
+        return ATA_DEVICE_TYPE_ATA;
+
+    }
+
     if (lba == 0xEB14)
         return ATA_DEVICE_TYPE_ATAPI;
 
@@ -179,9 +190,7 @@ static unsigned int ata_bus_detect(struct ata_bus *self, unsigned int secondary,
     if (lba == 0x9669)
         return ATA_DEVICE_TYPE_SATAPI;
 
-    read_blocks(self, 1, buffer);
-
-    return ATA_DEVICE_TYPE_ATA;
+    return 0;
 
 }
 
@@ -237,7 +246,12 @@ void ata_bus_init(struct ata_bus *bus, unsigned int control, unsigned int data)
     {
 
         ata_device_init(&bus->primary, bus, 0 << 4, type);
-        configure_device(&bus->primary, buffer);
+
+        if (bus->primary.type == ATA_DEVICE_TYPE_ATA)
+            configure_ata_device(&bus->primary, buffer);
+
+        if (bus->primary.type == ATA_DEVICE_TYPE_ATAPI)
+            configure_atapi_device(&bus->primary, buffer);
 
         modules_register_device(&bus->primary.base);
 
@@ -247,7 +261,12 @@ void ata_bus_init(struct ata_bus *bus, unsigned int control, unsigned int data)
     {
 
         ata_device_init(&bus->secondary, bus, 1 << 4, type);
-        configure_device(&bus->secondary, buffer);
+
+        if (bus->secondary.type == ATA_DEVICE_TYPE_ATA)
+            configure_ata_device(&bus->secondary, buffer);
+
+        if (bus->secondary.type == ATA_DEVICE_TYPE_ATAPI)
+            configure_atapi_device(&bus->secondary, buffer);
 
         modules_register_device(&bus->secondary.base);
 
