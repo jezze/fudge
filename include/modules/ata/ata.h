@@ -56,9 +56,6 @@
 #define ATA_DEVICE_TYPE_SATA    0x03
 #define ATA_DEVICE_TYPE_SATAPI  0x04
 
-#define ATA_DEVICE_PRIMARY        0
-#define ATA_DEVICE_SECONDARY 1 << 4
-
 #define ATA_BUS_TYPE 2
 #define ATA_DEVICE_TYPE 4
 
@@ -88,7 +85,7 @@ struct ata_bus
 
 };
 
-extern void ata_device_init(struct ata_device *device, unsigned int secondary, unsigned int control, unsigned int data);
+extern void ata_device_init(struct ata_device *device, unsigned int control, unsigned int data);
 extern void ata_bus_init(struct ata_bus *bus);
 
 #endif

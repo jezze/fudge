@@ -167,11 +167,11 @@ static unsigned int ata_device_write_lba48(struct ata_device *self, unsigned int
 
 }
 
-void ata_device_init(struct ata_device *device, unsigned int secondary, unsigned int control, unsigned int data)
+void ata_device_init(struct ata_device *device, unsigned int control, unsigned int data)
 {
 
     modules_device_init(&device->base, ATA_DEVICE_TYPE);
-    device->secondary = secondary;
+    device->secondary = control ^ (1 << 4);
     device->control = control;
     device->data = data;
     device->lba28Max = 0;
@@ -252,18 +252,18 @@ void init()
 
     kernel_register_irq(0x0E, handle_irq_primary);
 
-    ata_device_init(&devices[0], ATA_DEVICE_PRIMARY, ATA_MASTER_PRIMARY_CONTROL, ATA_MASTER_PRIMARY_DATA);
+    ata_device_init(&devices[0], ATA_MASTER_PRIMARY_CONTROL, ATA_MASTER_PRIMARY_DATA);
 
     modules_register_device(&devices[0].base);
 
-    ata_device_init(&devices[1], ATA_DEVICE_SECONDARY, ATA_MASTER_SECONDARY_CONTROL, ATA_MASTER_SECONDARY_DATA);
+    ata_device_init(&devices[1], ATA_MASTER_SECONDARY_CONTROL, ATA_MASTER_SECONDARY_DATA);
 
     modules_register_device(&devices[1].base);
 
     ata_bus_init(&busSecondary);
     modules_register_bus(&busSecondary.base);
 
-//    kernel_register_irq(0x0F, handle_irq_secondary);
+    kernel_register_irq(0x0F, handle_irq_secondary);
 
 //    ata_device_init(&devices[2], ATA_DEVICE_PRIMARY, ATA_SLAVE_PRIMARY_CONTROL, ATA_SLAVE_PRIMARY_DATA);
 
