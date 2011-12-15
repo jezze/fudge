@@ -9,7 +9,7 @@ all-x86: ASMFLAGS=-f elf
 all-x86: GCC=gcc
 all-x86: GCCFLAGS=-c -O2 -I../include/lib -Wall -Wextra -ffreestanding -nostdlib -nostartfiles -nodefaultlibs -m32
 all-x86: LD=ld
-all-x86: LDFLAGS=-e main ../lib/file.o ../lib/memory.o ../lib/string.o ../lib/arch/x86/call.o -melf_i386
+all-x86: LDFLAGS=../lib/file.o ../lib/memory.o ../lib/string.o ../lib/arch/x86/call.o ../lib/arch/x86/crt0.o -melf_i386
 
 .PHONY: all clean user
 
