@@ -69,6 +69,7 @@ struct ata_device
 
     struct modules_device base;
     struct ata_bus *bus;
+    struct pci_device *pciDevice;
     unsigned int type;
     unsigned int secondary;
     unsigned char model[41];
