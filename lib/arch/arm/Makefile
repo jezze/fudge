@@ -8,8 +8,7 @@ GCCFLAGS=-c -O2 -I../../../include -Wall -Wextra -ffreestanding -nostdlib -nosta
 all: arch
 
 arch:
-	@${GCC} ${GCCFLAGS} arch.c -o arch.o
-	@${ASM} ${ASMFLAGS} init.s -o init.o
+	@${GCC} ${GCCFLAGS} call.c -o call.o
 
 clean:
 	@rm -f *.o

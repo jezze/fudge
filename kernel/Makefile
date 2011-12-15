@@ -36,10 +36,8 @@ arch-arm:
 	@make -C ${DIR_SOURCE_ARCH}/
 	@${LD} elf.o error.o event.o initrd.o kernel.o log.o mmu.o modules.o runtime.o symbol.o syscall.o vfs.o \
 		${DIR_SOURCE_ARCH}/arch.o \
-		${DIR_SOURCE_ARCH}/call.o \
 		${DIR_SOURCE_ARCH}/init.o \
 		${DIR_SOURCE_LIB}/memory.o \
-		${DIR_SOURCE_LIB}/file.o \
 		${DIR_SOURCE_LIB}/string.o \
 		-o fudge ${LDFLAGS} 
 
@@ -48,7 +46,6 @@ arch-x86:
 	@${LD} ${LDFLAGS} elf.o error.o event.o initrd.o kernel.o log.o mmu.o modules.o runtime.o symbol.o syscall.o vfs.o \
 		${DIR_SOURCE_ARCH}/acpi.o \
 		${DIR_SOURCE_ARCH}/arch.o \
-		${DIR_SOURCE_ARCH}/call.o \
 		${DIR_SOURCE_ARCH}/cpu.o \
 		${DIR_SOURCE_ARCH}/fpu.o \
 		${DIR_SOURCE_ARCH}/gdt.o \
@@ -64,7 +61,6 @@ arch-x86:
 		${DIR_SOURCE_ARCH}/syscall.o \
 		${DIR_SOURCE_ARCH}/tss.o \
 		${DIR_SOURCE_LIB}/memory.o \
-		${DIR_SOURCE_LIB}/file.o \
 		${DIR_SOURCE_LIB}/string.o \
 		-o fudge
 

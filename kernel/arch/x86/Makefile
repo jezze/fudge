@@ -10,7 +10,6 @@ all: arch
 arch:
 	@${GCC} ${GCCFLAGS} acpi.c -o acpi.o
 	@${GCC} ${GCCFLAGS} arch.c -o arch.o
-	@${ASM} ${ASMFLAGS} call.s -o call.o
 	@${ASM} ${ASMFLAGS} cpu.s -o cpu.o
 	@${GCC} ${GCCFLAGS} fpu.c -o fpu.o
 	@${GCC} ${GCCFLAGS} gdt.c -o gdt.o
