@@ -3,6 +3,7 @@
 #include <kernel/modules.h>
 #include <kernel/vfs.h>
 #include <modules/ata/ata.h>
+#include <modules/mbr/mbr.h>
 #include <modules/ext2/ext2.h>
 
 static struct ext2_driver driver;
@@ -22,9 +23,13 @@ static void read()
 
     char buffer[512];
 
-    device->read_lba48(device, 2, 1, buffer);
+    unsigned int start = 63;
+
+    device->read_lba28(device, start + 2, 1, buffer);
 
     struct ext2_superblock *sb = (struct ext2_superblock *)buffer;
+
+    log_write("[ext2] Signature: 0x%x\n", sb->signature);
 
     if (sb->signature != 0xEF53)
         return;
@@ -42,14 +47,6 @@ static void read()
         log_write("[ext2] Last mount: %s\n", sb->lastmount);
 
     }
-
-    device->read_lba48(device, 4, 1, buffer);
-
-    struct ext2_blockgroup *bg = (struct ext2_blockgroup *)buffer;
-
-    log_write("[ext2] Block usage bitmap address: 0x%x\n", bg->blockUsageAddress);
-    log_write("[ext2] Node usage bitmap address: 0x%x\n", bg->nodeUsageAddress);
-    log_write("[ext2] Block table address: 0x%x\n", bg->blockTableAddress);
 
 }
 

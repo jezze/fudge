@@ -7,6 +7,26 @@
 
 static struct mbr_driver driver;
 
+static void read_partition(void *buffer, unsigned int offset)
+{
+
+    struct mbr_partition *header = (struct mbr_header *)(buffer + offset);
+
+    if (!header->systemId)
+        return;
+
+    log_write("[mbr] Partition offset: 0x%x\n", offset);
+    log_write("[mbr]   Boot: 0x%x\n", header->boot);
+    log_write("[mbr]   Start: %d\n", header->sectorRelative);
+
+    unsigned int c = header->cylinderStart & 0xC0;
+    unsigned int h = header->headStart;
+    unsigned int s = header->cylinderStart & 0x3F;
+
+    log_write("[mbr]   CHS: %d:%d:%d\n", c, h, s);
+
+}
+
 static void read()
 {
 
@@ -24,7 +44,10 @@ static void read()
 
     device->read_lba48(device, 0, 1, buffer);
 
-    struct mbr_header *header = (struct mbr_header *)buffer;
+    read_partition(buffer, 0x1BE);
+    read_partition(buffer, 0x1CE);
+    read_partition(buffer, 0x1DE);
+    read_partition(buffer, 0x1EE);
 
 }
 

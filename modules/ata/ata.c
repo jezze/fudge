@@ -109,7 +109,7 @@ static unsigned int read_blocks(struct ata_bus *bus, unsigned int count, void *b
 
     }
 
-    return count;
+    return i;
 
 }
 
@@ -186,6 +186,7 @@ static void ata_bus_set_lba(struct ata_bus *self, unsigned char count, unsigned 
     io_outb(self->data + ATA_DATA_LBA0, lba0);
     io_outb(self->data + ATA_DATA_LBA1, lba1);
     io_outb(self->data + ATA_DATA_LBA2, lba2);
+    self->sleep(self);
 
 }
 
