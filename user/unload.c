@@ -14,7 +14,5 @@ void main(int argc, char *argv[])
 
     call_unload(argv[1]);
 
-    call_exit();
-
 }
 

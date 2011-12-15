@@ -8,13 +8,11 @@ void main(int argc, char *argv[])
 
         file_write_format(FILE_STDOUT, "You need to supply filename.\n");
 
-        call_exit();
+        return;
 
     }
 
     call_load(argv[1]);
-
-    call_exit();
 
 }
 

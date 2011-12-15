@@ -40,7 +40,5 @@ void main(int argc, char *argv[])
 
     write_content(buffer);
 
-    call_exit();
-
 }
 

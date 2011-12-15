@@ -31,13 +31,11 @@ void main(int argc, char *argv[])
         file_write_format(FILE_STDOUT, path);
         file_write_byte(FILE_STDOUT, '\n');
 
-        call_exit();
+        return;
 
     }
 
     set_path(argv[1]);
-
-    call_exit();
 
 }
 

@@ -21,7 +21,7 @@ void main(int argc, char *argv[])
 
         file_write_format(FILE_STDOUT, "You need to supply filename.\n");
 
-        call_exit();
+        return;
 
     }
 
@@ -34,7 +34,7 @@ void main(int argc, char *argv[])
 
         file_write_format(FILE_STDOUT, "%s: File does not exist.\n", argv[1]);
 
-        call_exit();
+        return;
 
     }
 
@@ -42,8 +42,6 @@ void main(int argc, char *argv[])
 
     file_write(FILE_STDOUT, count, buffer);
     file_close(fd);
-
-    call_exit();
 
 }
 

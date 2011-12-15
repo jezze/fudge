@@ -10,7 +10,5 @@ void main(int argc, char *argv[])
     file_write_format(FILE_STDOUT, "Timer: %s\n", buffer);
     file_close(fd);
 
-    call_exit();
-
 }
 
