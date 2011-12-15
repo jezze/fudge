@@ -44,7 +44,7 @@ void pci_device_init(struct pci_device *device, unsigned int address)
     device->configuration.deviceid = inw(address, 0x02);
     device->configuration.revision = inb(address, 0x08);
     device->configuration.interface = inb(address, 0x09);
-    device->configuration.subclass = inb(address, 0x0A);
+    device->configuration.subclasscode = inb(address, 0x0A);
     device->configuration.classcode = inb(address, 0x0B);
     device->configuration.headertype = inb(address, 0x0E);
     device->configuration.interruptline = inb(address, 0x3C);
@@ -62,7 +62,7 @@ void pci_device_init(struct pci_device *device, unsigned int address)
 
     }
 
-    log_write("[pci] %x:%x\n", device->configuration.vendorid, device->configuration.deviceid);
+    log_write("[pci] %x:%x %x:%x\n", device->configuration.vendorid, device->configuration.deviceid, device->configuration.classcode, device->configuration.subclasscode);
 
 }
 
@@ -79,7 +79,7 @@ static void pci_bus_add_device(unsigned short busX, unsigned short slot, unsigne
 
 }
 
-static struct pci_device *pci_bus_find_device(struct pci_bus *self, unsigned int vendorid, unsigned short deviceid)
+static struct pci_device *pci_bus_find_device_by_id(struct pci_bus *self, unsigned short vendorid, unsigned short deviceid)
 {
 
     unsigned int i;
@@ -95,6 +95,25 @@ static struct pci_device *pci_bus_find_device(struct pci_bus *self, unsigned int
     return 0;
 
 }
+
+static struct pci_device *pci_bus_find_device_by_class(struct pci_bus *self, unsigned char classcode, unsigned char subclasscode)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < self->devicesCount; i++)
+    {
+
+        if (self->devices[i].configuration.classcode == classcode && self->devices[i].configuration.subclasscode == subclasscode)
+            return &self->devices[i];
+
+    }
+
+    return 0;
+
+}
+
+
 
 static void pci_bus_scan(unsigned int busX)
 {
@@ -149,7 +168,8 @@ void pci_bus_init(struct pci_bus *bus)
 
     modules_bus_init(&bus->base, PCI_BUS_TYPE);
     bus->devicesCount = 0;
-    bus->find_device = pci_bus_find_device;
+    bus->find_device_by_id = pci_bus_find_device_by_id;
+    bus->find_device_by_class = pci_bus_find_device_by_class;
     bus->scan = pci_bus_scan;
     bus->scan(0);
 

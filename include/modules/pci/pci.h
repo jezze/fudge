@@ -36,7 +36,7 @@ struct pci_configuration
     unsigned short status;
     unsigned char revision;
     unsigned char interface;
-    unsigned char subclass;
+    unsigned char subclasscode;
     unsigned char classcode;
     unsigned char cachelinesize;
     unsigned char latencytimer;
@@ -75,7 +75,8 @@ struct pci_bus
     struct modules_bus base;
     struct pci_device devices[32];
     unsigned int devicesCount;
-    struct pci_device *(*find_device)(struct pci_bus *self, unsigned int vendorid, unsigned short deviceid);
+    struct pci_device *(*find_device_by_id)(struct pci_bus *self, unsigned short vendorid, unsigned short deviceid);
+    struct pci_device *(*find_device_by_class)(struct pci_bus *self, unsigned char classcode, unsigned char subclasscode);
     void (*scan)(unsigned int bus);
 
 };
