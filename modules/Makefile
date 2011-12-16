@@ -16,6 +16,10 @@ all-x86: LDFLAGS=-r ../lib/memory.o ../lib/string.o -melf_i386
 all: all-x86
 
 all-arm:
+	@${GCC} ${GCCFLAGS} ext2/ext2.c -o ext2/ext2.o
+	@${GCC} ${GCCFLAGS} log/log.c -o log/log.o
+	@${LD} ${LDFLAGS} ext2/ext2.o -o ext2/ext2.ko
+	@${LD} ${LDFLAGS} log/log.o -o log/log.ko
 
 all-x86:
 	@${GCC} ${GCCFLAGS} ata/ata.c -o ata/ata.o
