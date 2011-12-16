@@ -1,5 +1,6 @@
 #include <kernel/kernel.h>
 #include <kernel/arch/arm/arch.h>
+#include <kernel/arch/arm/cpu.h>
 
 static struct arch_arm arm;
 
@@ -37,8 +38,8 @@ void arch_init()
 {
 
     arm.base.setup = arch_setup;
-    arm.base.disable_interrupts = 0;
-    arm.base.enable_interrupts = 0;
+    arm.base.disable_interrupts = cpu_disable_interrupts;
+    arm.base.enable_interrupts = cpu_enable_interrupts;
     arm.base.enter_usermode = 0;
     arm.base.set_stack = 0;
     arm.base.register_irq = 0;

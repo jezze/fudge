@@ -9,6 +9,7 @@ all: arch
 
 arch:
 	@${GCC} ${GCCFLAGS} arch.c -o arch.o
+	@${ASM} ${ASMFLAGS} cpu.s -o cpu.o
 	@${ASM} ${ASMFLAGS} init.s -o init.o
 
 clean:
