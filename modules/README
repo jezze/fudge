@@ -1,0 +1,23 @@
+# List of bus types
+
+0002: ATA
+0004: PCI
+
+# List of device types
+
+0002: UART
+0003: VGA
+0006: PCI
+0004: ATA
+2000: RTC
+2202: PIT
+0005: PS2 Keyboard
+0059: PS2 Mouse
+1000: TTY
+
+# List of driver types
+
+0300: MBR
+0320: Ext2
+0423: RTL8139
+0593: BGA
