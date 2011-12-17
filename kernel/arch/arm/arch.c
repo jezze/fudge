@@ -25,7 +25,7 @@ void puts(const char *s)
 
 }
 
-static void arch_setup(struct kernel_arch *arch)
+static void arch_arm_setup(struct kernel_arch *arch)
 {
 
     struct arch_arm *arm = (struct arch_arm *)arch;
@@ -37,17 +37,17 @@ static void arch_setup(struct kernel_arch *arch)
 void arch_init()
 {
 
-    arm.base.setup = arch_setup;
-    arm.base.disable_interrupts = cpu_disable_interrupts;
+    arm.base.setup = arch_arm_setup;
+    arm.base.reboot = 0;
     arm.base.enable_interrupts = cpu_enable_interrupts;
+    arm.base.disable_interrupts = cpu_disable_interrupts;
     arm.base.enter_usermode = 0;
-    arm.base.set_stack = 0;
     arm.base.register_irq = 0;
     arm.base.unregister_irq = 0;
     arm.base.stack = 0;
+    arm.base.set_stack = 0;
     arm.base.initrdc = 0;
     arm.base.initrdv = 0;
-    arm.base.reboot = 0;
 
     kernel_init(&arm.base);
 
