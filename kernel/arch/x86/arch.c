@@ -5,6 +5,7 @@
 #include <kernel/arch/x86/fpu.h>
 #include <kernel/arch/x86/gdt.h>
 #include <kernel/arch/x86/idt.h>
+#include <kernel/arch/x86/io.h>
 #include <kernel/arch/x86/isr.h>
 #include <kernel/arch/x86/irq.h>
 #include <kernel/arch/x86/mboot.h>
@@ -14,19 +15,17 @@
 
 static struct arch_x86 x86;
 
-void arch_reboot()
+static void arch_reboot()
 {
 
     cpu_disable_interrupts();
 
-    /*
     unsigned char ready = 0x02;
 
-    while ((ready & 0x02) != 0)
+    while ((ready & 0x02))
         ready = io_inb(0x64);
 
     io_outb(0x64, 0xFE);
-    */
 
 }
 
