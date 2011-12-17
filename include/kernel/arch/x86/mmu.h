@@ -1,12 +1,6 @@
 #ifndef ARCH_MMU_H
 #define ARCH_MMU_H
 
-#define MMU_ERROR_PRESENT  1 << 0
-#define MMU_ERROR_RW       1 << 1
-#define MMU_ERROR_USER     1 << 2
-#define MMU_ERROR_RESERVED 1 << 3
-#define MMU_ERROR_FETCH    1 << 4
-
 #define MMU_DIRECTORY_SLOTS 1024
 
 #define MMU_TABLE_SLOTS 1024

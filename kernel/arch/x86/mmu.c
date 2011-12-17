@@ -10,31 +10,12 @@ static struct mmu_unit unit;
 static struct mmu_header kernelHeader;
 static struct mmu_header programHeaders[8];
 
-static void mmu_handle_isr(struct isr_registers *registers)
+static void mmu_handle_pagefault(struct isr_registers *registers)
 {
 
     unsigned int address = cpu_get_cr2();
 
-    log_write("ERROR!\n");
-
-    if (!(registers->error & MMU_ERROR_PRESENT))
-        log_write("Page: present\n");
-
-    if (registers->error & MMU_ERROR_RW)
-        log_write("Page: read-only\n");
-
-    if (registers->error & MMU_ERROR_USER)
-        log_write("Page: user-mode\n");
-
-    if (registers->error & MMU_ERROR_RESERVED)
-        log_write("Page: reserved\n");
-
-    if (registers->error & MMU_ERROR_FETCH)
-        log_write("Page: fetch\n");
-
-    log_write("Address: 0x%x\n", address);
-
-    error_panic("PAGE FAULT", __FILE__, __LINE__);
+    mmu_pagefault(address, registers->error);
 
 }
 
@@ -152,7 +133,7 @@ static void mmu_setup()
 
     }
 
-    isr_register_routine(ISR_ROUTINE_PF, mmu_handle_isr);
+    isr_register_routine(ISR_ROUTINE_PF, mmu_handle_pagefault);
 
 }
 
