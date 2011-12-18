@@ -14,7 +14,7 @@ struct mbr_partition
     unsigned char headEnd;
     unsigned char sectorEnd;
     unsigned char cylinderEnd;
-    unsigned int sectorRelative;
+    unsigned int sectorLba;
     unsigned int sectorTotal;
 
 } __attribute__((packed));
@@ -23,6 +23,7 @@ struct mbr_driver
 {
 
     struct modules_driver base;
+    struct mbr_partition *(*get_partition)(unsigned int index);
 
 };
 

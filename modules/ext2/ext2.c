@@ -21,11 +21,16 @@ static void read()
     if (!device)
         return;
 
-    char buffer[1024];
+    struct mbr_driver *mbr = (struct mbr_driver *)modules_get_driver(MBR_DRIVER_TYPE);
 
-    unsigned int start = 63;
+    if (!mbr)
+        return;
 
-    device->read_lba48(device, start + 2, 1, buffer);
+    struct mbr_partition *partition = mbr->get_partition(0);
+
+    char buffer[512];
+
+    device->read_lba28(device, partition->sectorLba + 2, 1, buffer);
 
     struct ext2_superblock *sb = (struct ext2_superblock *)buffer;
 

@@ -1,3 +1,4 @@
+#include <lib/memory.h>
 #include <lib/string.h>
 #include <kernel/log.h>
 #include <kernel/modules.h>
@@ -6,26 +7,7 @@
 #include <modules/mbr/mbr.h>
 
 static struct mbr_driver driver;
-
-static void read_partition(void *buffer, unsigned int offset)
-{
-
-    struct mbr_partition *header = (struct mbr_header *)(buffer + offset);
-
-    if (!header->systemId)
-        return;
-
-    log_write("[mbr] Partition offset: 0x%x\n", offset);
-    log_write("[mbr]   Boot: 0x%x\n", header->boot);
-    log_write("[mbr]   Start: %d\n", header->sectorRelative);
-
-    unsigned int c = header->cylinderStart & 0xC0;
-    unsigned int h = header->headStart;
-    unsigned int s = header->cylinderStart & 0x3F;
-
-    log_write("[mbr]   CHS: %d:%d:%d\n", c, h, s);
-
-}
+static struct mbr_partition partitions[4];
 
 static void read()
 {
@@ -44,10 +26,22 @@ static void read()
 
     device->read_lba48(device, 0, 1, buffer);
 
-    read_partition(buffer, 0x1BE);
-    read_partition(buffer, 0x1CE);
-    read_partition(buffer, 0x1DE);
-    read_partition(buffer, 0x1EE);
+    unsigned int i;
+
+    for (i = 0; i < 4; i++)
+        memory_copy(&partitions[i], buffer + 0x1BE + i * 0x10, sizeof (struct mbr_partition));
+
+}
+
+static struct mbr_partition *mbr_driver_get_partition(unsigned int index)
+{
+
+    struct mbr_partition *partition = &partitions[index];
+
+    if (!partitions->systemId)
+        return 0;
+
+    return partition;
 
 }
 
@@ -55,6 +49,7 @@ void mbr_driver_init(struct mbr_driver *driver)
 {
 
     modules_driver_init(&driver->base, MBR_DRIVER_TYPE);
+    driver->get_partition = mbr_driver_get_partition;
 
 }
 
@@ -63,7 +58,7 @@ void init()
 
     mbr_driver_init(&driver);
 
-    read(); // REMOVE
+    read();
 
     modules_register_driver(&driver.base);
 
