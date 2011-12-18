@@ -25,7 +25,7 @@ static void read()
 
     unsigned int start = 63;
 
-    device->read_lba28(device, start + 2, 1, buffer);
+    device->read_lba48(device, start + 2, 1, buffer);
 
     struct ext2_superblock *sb = (struct ext2_superblock *)buffer;
 

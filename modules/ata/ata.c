@@ -140,8 +140,8 @@ static unsigned int ata_device_read_lba48(struct ata_device *self, unsigned int 
     struct ata_bus *bus = self->bus;
 
     bus->select(bus, 0x40, self->secondary);
-    bus->set_lba(bus, (unsigned char)(count & 0xF0), (unsigned char)(sector >> 12), (unsigned char)(sector >> 16), (unsigned char)(sector >> 24));
-    bus->set_lba(bus, (unsigned char)(count & 0x0F), (unsigned char)(sector >> 0), (unsigned char)(sector >> 4), (unsigned char)(sector >> 8));
+    bus->set_lba(bus, (unsigned char)(count) & 0x0F, (unsigned char)(sector >> 0), (unsigned char)(sector >> 8), (unsigned char)(sector >> 16));
+//  bus->set_lba2(bus, (unsigned char)(count) & 0xF0, (unsigned char)(sector >> 24), (unsigned char)(sector >> 8), (unsigned char)(sector >> 16));
     bus->set_command(bus, ATA_COMMAND_PIO48_READ);
 
     return read_blocks(bus, count, buffer) * 512;
