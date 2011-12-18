@@ -7,7 +7,7 @@
 #include <modules/mbr/mbr.h>
 
 static struct mbr_driver driver;
-static struct mbr_partition partitions[4];
+static struct mbr_partition partitions[MBR_PARTITION_SLOTS];
 
 static void read()
 {
@@ -28,8 +28,8 @@ static void read()
 
     unsigned int i;
 
-    for (i = 0; i < 4; i++)
-        memory_copy(&partitions[i], buffer + 0x1BE + i * 0x10, sizeof (struct mbr_partition));
+    for (i = 0; i < MBR_PARTITION_SLOTS; i++)
+        memory_copy(&partitions[i], buffer + MBR_PARTITION_OFFSET + i * MBR_PARTITION_SIZE, sizeof (struct mbr_partition));
 
 }
 
@@ -65,6 +65,8 @@ void init()
 
 void destroy()
 {
+
+    modules_unregister_driver(&driver.base);
 
 }
 

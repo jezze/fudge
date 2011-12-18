@@ -1,6 +1,10 @@
 #ifndef MODULES_MBR_H
 #define MODULES_MBR_H
 
+#define MBR_PARTITION_SLOTS 4
+#define MBR_PARTITION_OFFSET 0x1BE
+#define MBR_PARTITION_SIZE 16
+
 #define MBR_DRIVER_TYPE 300
 
 struct mbr_partition
