@@ -36,6 +36,8 @@ static void read()
 static struct mbr_partition *mbr_driver_get_partition(unsigned int index)
 {
 
+    read();
+
     struct mbr_partition *partition = &partitions[index];
 
     if (!partitions->systemId)
@@ -57,9 +59,6 @@ void init()
 {
 
     mbr_driver_init(&driver);
-
-    read();
-
     modules_register_driver(&driver.base);
 
 }

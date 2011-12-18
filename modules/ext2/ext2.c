@@ -46,8 +46,8 @@ static void read()
     if (sb->majorVersion >= 1)
     {
 
-        log_write("[ext2] Volume: %s\n", sb->volume);
-        log_write("[ext2] Last mount: %s\n", sb->lastmount);
+        log_write("[ext2] Volume: %d\n", sb->volume);
+        log_write("[ext2] Last mount: %d\n", sb->lastmount);
 
     }
 
