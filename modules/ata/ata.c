@@ -120,7 +120,7 @@ static unsigned int ata_device_read_lba28(struct ata_device *self, unsigned int 
     struct ata_bus *bus = self->bus;
 
     bus->select(bus, 0xE0 | ((sector >> 24) & 0x0F), self->secondary);
-    bus->set_lba(bus, (unsigned char)(count), (unsigned char)(sector >> 0), (unsigned char)(sector >> 4), (unsigned char)(sector >> 8));
+    bus->set_lba(bus, (unsigned char)(count), (unsigned char)(sector >> 0), (unsigned char)(sector >> 8), (unsigned char)(sector >> 16));
     bus->set_command(bus, ATA_COMMAND_PIO28_READ);
 
     return read_blocks(bus, count, buffer) * 512;
@@ -187,7 +187,16 @@ static void ata_bus_set_lba(struct ata_bus *self, unsigned char count, unsigned 
     io_outb(self->data + ATA_DATA_LBA0, lba0);
     io_outb(self->data + ATA_DATA_LBA1, lba1);
     io_outb(self->data + ATA_DATA_LBA2, lba2);
-    self->sleep(self);
+
+}
+
+static void ata_bus_set_lba2(struct ata_bus *self, unsigned char count, unsigned char lba3, unsigned char lba4, unsigned char lba5)
+{
+
+    io_outb(self->data + ATA_DATA_COUNT1, count);
+    io_outb(self->data + ATA_DATA_LBA3, lba3);
+    io_outb(self->data + ATA_DATA_LBA4, lba4);
+    io_outb(self->data + ATA_DATA_LBA5, lba5);
 
 }
 

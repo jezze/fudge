@@ -21,15 +21,13 @@ static void read()
     if (!device)
         return;
 
-    char buffer[512];
+    char buffer[1024];
 
     unsigned int start = 63;
 
     device->read_lba28(device, start + 2, 1, buffer);
 
     struct ext2_superblock *sb = (struct ext2_superblock *)buffer;
-
-    log_write("[ext2] Signature: 0x%x\n", sb->signature);
 
     if (sb->signature != 0xEF53)
         return;
