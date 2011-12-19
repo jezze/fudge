@@ -24,7 +24,7 @@ static void read()
 
     char buffer[512];
 
-    device->read_lba48(device, 0, 1, buffer);
+    device->read_lba28(device, 0, 1, buffer);
 
     unsigned int i;
 

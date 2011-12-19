@@ -134,21 +134,21 @@ static unsigned int ata_device_write_lba28(struct ata_device *self, unsigned int
 
 }
 
-static unsigned int ata_device_read_lba48(struct ata_device *self, unsigned int sector, unsigned int count, void *buffer)
+static unsigned int ata_device_read_lba48(struct ata_device *self, unsigned int sectorlow, unsigned int sectorhigh, unsigned int count, void *buffer)
 {
 
     struct ata_bus *bus = self->bus;
 
     bus->select(bus, 0x40, self->secondary);
-    bus->set_lba(bus, (unsigned char)(count) & 0x0F, (unsigned char)(sector >> 0), (unsigned char)(sector >> 8), (unsigned char)(sector >> 16));
-//  bus->set_lba2(bus, (unsigned char)(count) & 0xF0, (unsigned char)(sector >> 24), (unsigned char)(sector >> 8), (unsigned char)(sector >> 16));
+    bus->set_lba2(bus, (unsigned char)(count >> 8), (unsigned char)(sectorhigh >> 0), (unsigned char)(sectorhigh >> 8), (unsigned char)(sectorhigh >> 16));
+    bus->set_lba(bus, (unsigned char)(count), (unsigned char)(sectorlow >> 0), (unsigned char)(sectorlow >> 8), (unsigned char)(sectorlow >> 16));
     bus->set_command(bus, ATA_COMMAND_PIO48_READ);
 
     return read_blocks(bus, count, buffer) * 512;
 
 }
 
-static unsigned int ata_device_write_lba48(struct ata_device *self, unsigned int sector, unsigned int count, void *buffer)
+static unsigned int ata_device_write_lba48(struct ata_device *self, unsigned int sectorlow, unsigned int sectorhigh, unsigned int count, void *buffer)
 {
 
     return 0;
@@ -311,6 +311,7 @@ void ata_bus_init(struct ata_bus *bus, unsigned int control, unsigned int data)
     bus->wait = ata_bus_wait;
     bus->select = ata_bus_select;
     bus->set_lba = ata_bus_set_lba;
+    bus->set_lba2 = ata_bus_set_lba2;
     bus->set_command = ata_bus_set_command;
     bus->detect = ata_bus_detect;
     bus->find_device = ata_bus_find_device;
