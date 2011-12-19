@@ -8,6 +8,27 @@
 
 static struct ext2_driver driver;
 
+static unsigned int get_group(unsigned int node, unsigned int nodespergroup)
+{
+
+    return (node - 1) / nodespergroup;
+
+}
+
+static unsigned int get_index(unsigned int node, unsigned int nodespergroup)
+{
+
+    return (node - 1) % nodespergroup;
+
+}
+
+static unsigned int get_block(unsigned int index, unsigned int nodesize, unsigned int blocksize)
+{
+
+    return (index * nodesize) / blocksize;
+
+}
+
 static void read()
 {
 
@@ -27,19 +48,25 @@ static void read()
         return;
 
     struct mbr_partition *partition = mbr->get_partition(0);
+    unsigned int blockstart = partition->sectorLba + 2;
 
-    char buffer[512];
+    char buffer[1024];
 
-    device->read_lba28(device, partition->sectorLba + 2, 1, buffer);
+    device->read_lba28(device, blockstart, 2, buffer);
 
     struct ext2_superblock *sb = (struct ext2_superblock *)buffer;
 
     if (sb->signature != 0xEF53)
         return;
 
+    unsigned int blocksize = 1024 << sb->blockSize;
+    unsigned int nodesize = sb->nodeSize;
+    unsigned int blockstep = blocksize / 512;
+
     log_write("[ext2] Signature: 0x%x\n", sb->signature);
     log_write("[ext2] Version: %d:%d\n", sb->majorVersion, sb->minorVersion);;
-    log_write("[ext2] Block size: %d\n", 1024 << sb->blockSize);
+    log_write("[ext2] Block size: %d\n", blocksize);
+    log_write("[ext2] Node size: %d\n", nodesize);
     log_write("[ext2] Blocks per group: %d\n", sb->blockCountGroup);
     log_write("[ext2] Nodes per group: %d\n", sb->nodeCountGroup);
 
@@ -48,6 +75,28 @@ static void read()
 
         log_write("[ext2] Volume: %d\n", sb->volume);
         log_write("[ext2] Last mount: %d\n", sb->lastmount);
+
+    }
+
+    device->read_lba28(device, blockstart + blockstep, blockstep, buffer);
+
+    struct ext2_blockgroup *bg = (struct ext2_blockgroup *)buffer;
+
+    log_write("[ext2] Block block usage bitmap: 0x%x\n", bg->blockUsageAddress);
+    log_write("[ext2] Block node usage bitmap: 0x%x\n", bg->nodeUsageAddress);
+    log_write("[ext2] Starting block address node table: 0x%x\n", bg->blockTableAddress);
+    log_write("[ext2] Number of directories: %d\n", bg->directoryCount);
+
+    device->read_lba28(device, blockstart + blockstep * bg->blockTableAddress, blockstep, buffer);
+
+    unsigned int i;
+
+    for (i = 0; i < 8; i++)
+    {
+
+        struct ext2_node *node = (struct ext2_node *)(buffer + i * nodesize);
+
+        log_write("[ext2] Node type: 0x%x Perm: 0x%x\n", node->type & 0xF000, node->type & 0x0FFF);
 
     }
 
