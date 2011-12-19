@@ -50,7 +50,7 @@ static void read()
     struct mbr_partition *partition = mbr->get_partition(0);
     unsigned int blockstart = partition->sectorLba + 2;
 
-    char buffer[1024];
+    char buffer[4096];
 
     device->read_lba28(device, blockstart, 2, buffer);
 
@@ -62,19 +62,21 @@ static void read()
     unsigned int blocksize = 1024 << sb->blockSize;
     unsigned int nodesize = sb->nodeSize;
     unsigned int blockstep = blocksize / 512;
+    unsigned int firstunreserved = sb->firstUnreservedNode;
 
     log_write("[ext2] Signature: 0x%x\n", sb->signature);
-    log_write("[ext2] Version: %d:%d\n", sb->majorVersion, sb->minorVersion);;
+    log_write("[ext2] Version: %d.%d\n", sb->majorVersion, sb->minorVersion);;
     log_write("[ext2] Block size: %d\n", blocksize);
     log_write("[ext2] Node size: %d\n", nodesize);
     log_write("[ext2] Blocks per group: %d\n", sb->blockCountGroup);
     log_write("[ext2] Nodes per group: %d\n", sb->nodeCountGroup);
+    log_write("[ext2] First unreserved node: %d\n", firstunreserved);
 
     if (sb->majorVersion >= 1)
     {
 
-        log_write("[ext2] Volume: %d\n", sb->volume);
-        log_write("[ext2] Last mount: %d\n", sb->lastmount);
+        log_write("[ext2] Volume: %s\n", sb->volume);
+        log_write("[ext2] Last mount: %s\n", sb->lastmount);
 
     }
 
@@ -87,16 +89,25 @@ static void read()
     log_write("[ext2] Starting block address node table: 0x%x\n", bg->blockTableAddress);
     log_write("[ext2] Number of directories: %d\n", bg->directoryCount);
 
-    device->read_lba28(device, blockstart + blockstep * bg->blockTableAddress, blockstep, buffer);
+    device->read_lba28(device, blockstart + blockstep * bg->blockTableAddress, blockstep * 4, buffer);
 
     unsigned int i;
 
-    for (i = 0; i < 8; i++)
+    for (i = 0; i < 16; i++)
     {
 
         struct ext2_node *node = (struct ext2_node *)(buffer + i * nodesize);
 
-        log_write("[ext2] Node type: 0x%x Perm: 0x%x\n", node->type & 0xF000, node->type & 0x0FFF);
+        unsigned int type = node->type & 0xF000;
+
+        if (type != 0x8000)
+            continue;
+
+        log_write("[ext2] Node type: 0x%x Perm: 0x%x Block0: 0x%x\n", node->type & 0xF000, node->type & 0x0FFF, node->pointer0);
+
+        //device->read_lba28(device, blockstart + blockstep * node->pointer0, blockstep, content);
+        
+//        log_write("[ext2] Content: %s\n", content);
 
     }
 
