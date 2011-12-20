@@ -256,17 +256,20 @@ static unsigned int ata_bus_detect(struct ata_bus *self, unsigned int secondary,
 struct pci_device *find_pci_device()
 {
 
-    struct pci_bus *bus = (struct pci_bus *)modules_get_bus(PCI_BUS_TYPE, 0);
+    unsigned int i;
+    struct pci_bus *bus;
 
-    if (!bus)
-        return 0;
+    for (i = 0; (bus = (struct pci_bus *)modules_get_bus(PCI_BUS_TYPE, i)); i++)
+    {
 
-    struct pci_device *device = bus->find_device_by_class(bus, 0x01, 0x01);
+        struct pci_device *device = bus->find_device_by_class(bus, 0x01, 0x01);
 
-    if (!device)
-        return 0;
+        if (device)
+            return device;
 
-    return device;
+    }
+
+    return 0;
 
 }
 
@@ -288,13 +291,13 @@ void ata_device_init(struct ata_device *device, struct ata_bus *bus, unsigned in
 
 }
 
-static struct ata_device *ata_bus_find_device(struct ata_bus *self, unsigned int type)
+static struct ata_device *ata_bus_find_device(struct ata_bus *self, unsigned int type, unsigned int index)
 {
 
-    if (self->primary.type == type)
+    if (index == 0 && self->primary.type == type)
         return &self->primary;
 
-    if (self->secondary.type == type)
+    if (index < 2 && self->secondary.type == type)
         return &self->secondary;
 
     return 0;

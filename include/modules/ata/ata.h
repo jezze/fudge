@@ -98,7 +98,7 @@ struct ata_bus
     void (*set_lba2)(struct ata_bus *self, unsigned char count, unsigned char lba3, unsigned char lba4, unsigned char lba5);
     void (*set_command)(struct ata_bus *self, unsigned char command);
     unsigned int (*detect)(struct ata_bus *self, unsigned int secondary, void *buffer);
-    struct ata_device *(*find_device)(struct ata_bus *self, unsigned int type);
+    struct ata_device *(*find_device)(struct ata_bus *self, unsigned int type, unsigned int index);
 
 };
 

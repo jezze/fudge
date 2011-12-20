@@ -37,7 +37,7 @@ static void read()
     if (!bus)
         return;
 
-    struct ata_device *device = bus->find_device(bus, ATA_DEVICE_TYPE_ATA);
+    struct ata_device *device = bus->find_device(bus, ATA_DEVICE_TYPE_ATA, 0);
 
     if (!device)
         return;
