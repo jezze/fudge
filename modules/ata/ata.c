@@ -262,7 +262,7 @@ struct pci_device *find_pci_device()
     for (i = 0; (bus = (struct pci_bus *)modules_get_bus(PCI_BUS_TYPE, i)); i++)
     {
 
-        struct pci_device *device = bus->find_device_by_class(bus, 0x01, 0x01);
+        struct pci_device *device = bus->find_device_by_class(bus, 0x01, 0x01, 0);
 
         if (device)
             return device;

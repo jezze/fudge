@@ -79,7 +79,7 @@ static void pci_bus_add_device(unsigned short busX, unsigned short slot, unsigne
 
 }
 
-static struct pci_device *pci_bus_find_device_by_id(struct pci_bus *self, unsigned short vendorid, unsigned short deviceid)
+static struct pci_device *pci_bus_find_device_by_id(struct pci_bus *self, unsigned short vendorid, unsigned short deviceid, unsigned int index)
 {
 
     unsigned int i;
@@ -87,8 +87,19 @@ static struct pci_device *pci_bus_find_device_by_id(struct pci_bus *self, unsign
     for (i = 0; i < self->devicesCount; i++)
     {
 
-        if (self->devices[i].configuration.vendorid == vendorid && self->devices[i].configuration.deviceid == deviceid)
-            return &self->devices[i];
+        if (self->devices[i].configuration.vendorid != vendorid || self->devices[i].configuration.deviceid != deviceid)
+            continue;
+
+        if (index)
+        {
+
+            index--;
+
+            continue;
+
+        }
+
+        return &self->devices[i];
 
     }
 
@@ -96,7 +107,7 @@ static struct pci_device *pci_bus_find_device_by_id(struct pci_bus *self, unsign
 
 }
 
-static struct pci_device *pci_bus_find_device_by_class(struct pci_bus *self, unsigned char classcode, unsigned char subclasscode)
+static struct pci_device *pci_bus_find_device_by_class(struct pci_bus *self, unsigned char classcode, unsigned char subclasscode, unsigned int index)
 {
 
     unsigned int i;
@@ -104,8 +115,19 @@ static struct pci_device *pci_bus_find_device_by_class(struct pci_bus *self, uns
     for (i = 0; i < self->devicesCount; i++)
     {
 
-        if (self->devices[i].configuration.classcode == classcode && self->devices[i].configuration.subclasscode == subclasscode)
-            return &self->devices[i];
+        if (self->devices[i].configuration.classcode != classcode || self->devices[i].configuration.subclasscode != subclasscode)
+            continue;
+
+        if (index)
+        {
+
+            index--;
+
+            continue;
+
+        }
+
+        return &self->devices[i];
 
     }
 

@@ -87,7 +87,7 @@ void init()
     if (!bus)
         return;
 
-    struct pci_device *device = bus->find_device_by_id(bus, 0x10EC, 0x8139);
+    struct pci_device *device = bus->find_device_by_id(bus, 0x10EC, 0x8139, 0);
 
     if (!device)
         return;
