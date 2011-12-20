@@ -82,19 +82,26 @@ static void handle_irq()
 void init()
 {
 
-    struct pci_bus *bus = (struct pci_bus *)modules_get_bus(PCI_BUS_TYPE, 0);
+    unsigned int i;
+    struct pci_bus *bus;
 
-    if (!bus)
-        return;
+    for (i = 0; (bus = (struct pci_bus *)modules_get_bus(PCI_BUS_TYPE, i)); i++)
+    {
 
-    struct pci_device *device = bus->find_device_by_id(bus, 0x10EC, 0x8139, 0);
+        struct pci_device *device = bus->find_device_by_id(bus, 0x10EC, 0x8139, 0);
 
-    if (!device)
-        return;
+        if (device)
+        {
 
-    rtl8139_driver_init(&driver, device);
+            rtl8139_driver_init(&driver, device);
+            kernel_register_irq(device->configuration.interruptline, handle_irq);
+            modules_register_driver(&driver.base);
 
-    kernel_register_irq(device->configuration.interruptline, handle_irq);
+            break;
+
+        }
+
+    }
 
 }
 
@@ -104,6 +111,7 @@ void destroy()
     struct pci_device *device = (struct pci_device *)driver.base.device;
 
     kernel_unregister_irq(device->configuration.interruptline);
+    modules_unregister_driver(&driver.base);
 
 }
 

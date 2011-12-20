@@ -102,19 +102,25 @@ void bga_driver_init(struct bga_driver *driver, struct pci_device *device)
 void init()
 {
 
-    struct pci_bus *bus = (struct pci_bus *)modules_get_bus(PCI_BUS_TYPE, 0);
+    unsigned int i;
+    struct pci_bus *bus;
 
-    if (!bus)
-        return;
+    for (i = 0; (bus = (struct pci_bus *)modules_get_bus(PCI_BUS_TYPE, i)); i++)
+    {
 
-    struct pci_device *device = bus->find_device_by_id(bus, 0x1234, 0x1111, 0);
+        struct pci_device *device = bus->find_device_by_id(bus, 0x1234, 0x1111, 0);
 
-    if (!device)
-        return;
+        if (device)
+        {
 
-    bga_driver_init(&driver, device);
+            bga_driver_init(&driver, device);
+            modules_register_driver(&driver.base);
 
-    modules_register_driver(&driver.base);
+            break;
+
+        }
+
+    }
 
 }
 
