@@ -256,7 +256,7 @@ static unsigned int ata_bus_detect(struct ata_bus *self, unsigned int secondary,
 struct pci_device *find_pci_device()
 {
 
-    struct pci_bus *bus = (struct pci_bus *)modules_get_bus(PCI_BUS_TYPE);
+    struct pci_bus *bus = (struct pci_bus *)modules_get_bus(PCI_BUS_TYPE, 0);
 
     if (!bus)
         return 0;

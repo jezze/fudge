@@ -102,7 +102,7 @@ void bga_driver_init(struct bga_driver *driver, struct pci_device *device)
 void init()
 {
 
-    struct pci_bus *bus = (struct pci_bus *)modules_get_bus(PCI_BUS_TYPE);
+    struct pci_bus *bus = (struct pci_bus *)modules_get_bus(PCI_BUS_TYPE, 0);
 
     if (!bus)
         return;

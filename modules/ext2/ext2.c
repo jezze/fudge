@@ -32,7 +32,7 @@ static unsigned int get_block(unsigned int index, unsigned int nodesize, unsigne
 static void read()
 {
 
-    struct ata_bus *bus = (struct ata_bus *)modules_get_bus(ATA_BUS_TYPE);
+    struct ata_bus *bus = (struct ata_bus *)modules_get_bus(ATA_BUS_TYPE, 0);
 
     if (!bus)
         return;
@@ -42,7 +42,7 @@ static void read()
     if (!device)
         return;
 
-    struct mbr_driver *mbr = (struct mbr_driver *)modules_get_driver(MBR_DRIVER_TYPE);
+    struct mbr_driver *mbr = (struct mbr_driver *)modules_get_driver(MBR_DRIVER_TYPE, 0);
 
     if (!mbr)
         return;

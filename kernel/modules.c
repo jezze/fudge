@@ -6,7 +6,7 @@
 static struct modules_module *modules[MODULES_MODULE_SLOTS];
 static struct vfs_filesystem filesystem;
 
-struct modules_bus *modules_get_bus(unsigned int type)
+struct modules_bus *modules_get_bus(unsigned int type, unsigned int index)
 {
 
     unsigned int i;
@@ -16,6 +16,15 @@ struct modules_bus *modules_get_bus(unsigned int type)
 
         if (modules[i]->type != MODULES_TYPE_BUS)
             continue;
+
+        if (index)
+        {
+
+            index--;
+
+            continue;
+
+        }
 
         struct modules_bus *bus = (struct modules_bus *)modules[i];
 
@@ -28,7 +37,7 @@ struct modules_bus *modules_get_bus(unsigned int type)
 
 }
 
-struct modules_device *modules_get_device(unsigned int type)
+struct modules_device *modules_get_device(unsigned int type, unsigned int index)
 {
 
     unsigned int i;
@@ -38,6 +47,15 @@ struct modules_device *modules_get_device(unsigned int type)
 
         if (modules[i]->type != MODULES_TYPE_DEVICE)
             continue;
+
+        if (index)
+        {
+
+            index--;
+
+            continue;
+
+        }
 
         struct modules_device *device = (struct modules_device *)modules[i];
 
@@ -50,7 +68,7 @@ struct modules_device *modules_get_device(unsigned int type)
 
 }
 
-struct modules_driver *modules_get_driver(unsigned int type)
+struct modules_driver *modules_get_driver(unsigned int type, unsigned int index)
 {
 
     unsigned int i;
@@ -60,6 +78,15 @@ struct modules_driver *modules_get_driver(unsigned int type)
 
         if (modules[i]->type != MODULES_TYPE_DRIVER)
             continue;
+
+        if (index)
+        {
+
+            index--;
+
+            continue;
+
+        }
 
         struct modules_driver *driver = (struct modules_driver *)modules[i];
 

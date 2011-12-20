@@ -82,7 +82,7 @@ static void handle_irq()
 void init()
 {
 
-    struct pci_bus *bus = (struct pci_bus *)modules_get_bus(PCI_BUS_TYPE);
+    struct pci_bus *bus = (struct pci_bus *)modules_get_bus(PCI_BUS_TYPE, 0);
 
     if (!bus)
         return;

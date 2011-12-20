@@ -12,7 +12,7 @@ static struct mbr_partition partitions[MBR_PARTITION_SLOTS];
 static void read()
 {
 
-    struct ata_bus *bus = (struct ata_bus *)modules_get_bus(ATA_BUS_TYPE);
+    struct ata_bus *bus = (struct ata_bus *)modules_get_bus(ATA_BUS_TYPE, 0);
 
     if (!bus)
         return;
