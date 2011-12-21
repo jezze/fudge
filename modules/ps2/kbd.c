@@ -148,7 +148,7 @@ void init()
 void destroy()
 {
 
-    kernel_unregister_irq(0x00);
+    kernel_unregister_irq(0x01);
 
     modules_unregister_device(&device.base);
 
