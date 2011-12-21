@@ -37,7 +37,8 @@ all-x86:
 	@${GCC} ${GCCFLAGS} rtc/main.c -o rtc/main.o
 	@${GCC} ${GCCFLAGS} rtl8139/rtl8139.c -o rtl8139/rtl8139.o
 	@${GCC} ${GCCFLAGS} tty/tty.c -o tty/tty.o
-	@${GCC} ${GCCFLAGS} uart/uart.c -o uart/uart.o
+	@${GCC} ${GCCFLAGS} uart/device.c -o uart/device.o
+	@${GCC} ${GCCFLAGS} uart/main.c -o uart/main.o
 	@${GCC} ${GCCFLAGS} vga/vga.c -o vga/vga.o
 	@${LD} ${LDFLAGS} ata/ata.o -o ata/ata.ko
 	@${LD} ${LDFLAGS} bga/driver.o bga/main.o -o bga/bga.ko
@@ -51,7 +52,7 @@ all-x86:
 	@${LD} ${LDFLAGS} rtc/device.o rtc/main.o -o rtc/rtc.ko
 	@${LD} ${LDFLAGS} rtl8139/rtl8139.o -o rtl8139/rtl8139.ko
 	@${LD} ${LDFLAGS} tty/tty.o -o tty/tty.ko
-	@${LD} ${LDFLAGS} uart/uart.o -o uart/uart.ko
+	@${LD} ${LDFLAGS} uart/device.o uart/main.o -o uart/uart.ko
 	@${LD} ${LDFLAGS} vga/vga.o -o vga/vga.ko
 
 clean:

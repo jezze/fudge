@@ -5,8 +5,6 @@
 #include <kernel/kernel.h>
 #include <modules/uart/uart.h>
 
-static struct uart_device device1;
-
 static unsigned int uart_buffer_getc(struct uart_buffer *self, char *buffer)
 {
 
@@ -80,35 +78,6 @@ void uart_device_init(struct uart_device *device, unsigned int port)
     io_outb(device->port + UART_FCR, 0xC7);
     io_outb(device->port + UART_MCR, 0x0B);
     io_outb(device->port + UART_IER, 0x01);
-
-}
-
-static void handle_irq()
-{
-
-    char c = device1.read(&device1);
-
-    device1.buffer.putc(&device1.buffer, &c);
-
-}
-
-void init()
-{
-
-    uart_device_init(&device1, UART_BASE1);
-
-    kernel_register_irq(0x04, handle_irq);
-
-    modules_register_device(&device1.base);
-
-}
-
-void destroy()
-{
-
-    kernel_unregister_irq(0x04);
-
-    modules_unregister_device(&device1.base);
 
 }
 
