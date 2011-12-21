@@ -29,7 +29,8 @@ all-x86:
 	@${GCC} ${GCCFLAGS} log/log.c -o log/log.o
 	@${GCC} ${GCCFLAGS} mbr/mbr.c -o mbr/mbr.o
 	@${GCC} ${GCCFLAGS} pci/pci.c -o pci/pci.o
-	@${GCC} ${GCCFLAGS} pit/pit.c -o pit/pit.o
+	@${GCC} ${GCCFLAGS} pit/device.c -o pit/device.o
+	@${GCC} ${GCCFLAGS} pit/main.c -o pit/main.o
 	@${GCC} ${GCCFLAGS} ps2/kbd.c -o ps2/kbd.o
 	@${GCC} ${GCCFLAGS} ps2/mouse.c -o ps2/mouse.o
 	@${GCC} ${GCCFLAGS} rtc/rtc.c -o rtc/rtc.o
@@ -43,7 +44,7 @@ all-x86:
 	@${LD} ${LDFLAGS} log/log.o -o log/log.ko
 	@${LD} ${LDFLAGS} mbr/mbr.o -o mbr/mbr.ko
 	@${LD} ${LDFLAGS} pci/pci.o -o pci/pci.ko
-	@${LD} ${LDFLAGS} pit/pit.o -o pit/pit.ko
+	@${LD} ${LDFLAGS} pit/device.o pit/main.o -o pit/pit.ko
 	@${LD} ${LDFLAGS} ps2/kbd.o -o ps2/ps2_kbd.ko
 	@${LD} ${LDFLAGS} ps2/mouse.o -o ps2/ps2_mouse.ko
 	@${LD} ${LDFLAGS} rtc/rtc.o -o rtc/rtc.ko

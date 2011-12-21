@@ -12,8 +12,6 @@ struct pit_device
     struct modules_device base;
     unsigned short divisor;
     unsigned short jiffies;
-    struct vfs_view view;
-    struct vfs_node read;
 
 };
 
