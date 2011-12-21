@@ -17,9 +17,7 @@ struct rtc_device
 {
 
     struct modules_device base;
-    unsigned char (*get)(unsigned int type);
-    struct vfs_view view;
-    struct vfs_node read;
+    unsigned char (*get_value)(unsigned int type);
 
 };
 

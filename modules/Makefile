@@ -33,7 +33,8 @@ all-x86:
 	@${GCC} ${GCCFLAGS} pit/main.c -o pit/main.o
 	@${GCC} ${GCCFLAGS} ps2/kbd.c -o ps2/kbd.o
 	@${GCC} ${GCCFLAGS} ps2/mouse.c -o ps2/mouse.o
-	@${GCC} ${GCCFLAGS} rtc/rtc.c -o rtc/rtc.o
+	@${GCC} ${GCCFLAGS} rtc/device.c -o rtc/device.o
+	@${GCC} ${GCCFLAGS} rtc/main.c -o rtc/main.o
 	@${GCC} ${GCCFLAGS} rtl8139/rtl8139.c -o rtl8139/rtl8139.o
 	@${GCC} ${GCCFLAGS} tty/tty.c -o tty/tty.o
 	@${GCC} ${GCCFLAGS} uart/uart.c -o uart/uart.o
@@ -47,7 +48,7 @@ all-x86:
 	@${LD} ${LDFLAGS} pit/device.o pit/main.o -o pit/pit.ko
 	@${LD} ${LDFLAGS} ps2/kbd.o -o ps2/ps2_kbd.ko
 	@${LD} ${LDFLAGS} ps2/mouse.o -o ps2/ps2_mouse.ko
-	@${LD} ${LDFLAGS} rtc/rtc.o -o rtc/rtc.ko
+	@${LD} ${LDFLAGS} rtc/device.o rtc/main.o -o rtc/rtc.ko
 	@${LD} ${LDFLAGS} rtl8139/rtl8139.o -o rtl8139/rtl8139.ko
 	@${LD} ${LDFLAGS} tty/tty.o -o tty/tty.ko
 	@${LD} ${LDFLAGS} uart/uart.o -o uart/uart.ko
