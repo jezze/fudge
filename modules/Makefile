@@ -39,7 +39,8 @@ all-x86:
 	@${GCC} ${GCCFLAGS} tty/tty.c -o tty/tty.o
 	@${GCC} ${GCCFLAGS} uart/device.c -o uart/device.o
 	@${GCC} ${GCCFLAGS} uart/main.c -o uart/main.o
-	@${GCC} ${GCCFLAGS} vga/vga.c -o vga/vga.o
+	@${GCC} ${GCCFLAGS} vga/device.c -o vga/device.o
+	@${GCC} ${GCCFLAGS} vga/main.c -o vga/main.o
 	@${LD} ${LDFLAGS} ata/ata.o -o ata/ata.ko
 	@${LD} ${LDFLAGS} bga/driver.o bga/main.o -o bga/bga.ko
 	@${LD} ${LDFLAGS} ext2/ext2.o -o ext2/ext2.ko
@@ -53,7 +54,7 @@ all-x86:
 	@${LD} ${LDFLAGS} rtl8139/rtl8139.o -o rtl8139/rtl8139.ko
 	@${LD} ${LDFLAGS} tty/tty.o -o tty/tty.ko
 	@${LD} ${LDFLAGS} uart/device.o uart/main.o -o uart/uart.ko
-	@${LD} ${LDFLAGS} vga/vga.o -o vga/vga.ko
+	@${LD} ${LDFLAGS} vga/device.o vga/main.o -o vga/vga.ko
 
 clean:
 	@rm -f */*.o

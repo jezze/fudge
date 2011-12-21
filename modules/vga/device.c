@@ -4,9 +4,7 @@
 #include <kernel/modules.h>
 #include <modules/vga/vga.h>
 
-static struct vga_device device;
-
-static unsigned int vga_device_read_framebuffer(unsigned int offset, unsigned int count, void *buffer)
+static unsigned int vga_device_read_framebuffer(struct vga_device *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     unsigned int i;
@@ -28,7 +26,7 @@ static unsigned int vga_device_read_framebuffer(unsigned int offset, unsigned in
 
 }
 
-static unsigned int vga_device_write_framebuffer(unsigned int offset, unsigned int count, void *buffer)
+static unsigned int vga_device_write_framebuffer(struct vga_device *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     unsigned int i;
@@ -43,7 +41,7 @@ static unsigned int vga_device_write_framebuffer(unsigned int offset, unsigned i
         char *address = (char *)(VGA_FB_ADDRESS + i * 2);
 
         memory_copy(address, buffer + j, 1);
-        memory_copy(address + 1, &device.cursorColor, 1);
+        memory_copy(address + 1, &self->cursorColor, 1);
 
     }
 
@@ -51,14 +49,14 @@ static unsigned int vga_device_write_framebuffer(unsigned int offset, unsigned i
 
 }
 
-static void vga_device_set_cursor_color(unsigned char fg, unsigned char bg)
+static void vga_device_set_cursor_color(struct vga_device *self, unsigned char fg, unsigned char bg)
 {
 
-    device.cursorColor = (bg << 4) | (fg & 0x0F);
+    self->cursorColor = (bg << 4) | (fg & 0x0F);
 
 }
 
-static void vga_device_set_cursor_offset(unsigned short offset)
+static void vga_device_set_cursor_offset(struct vga_device *self, unsigned short offset)
 {
 
     io_outb(0x3D4, 14);
@@ -76,22 +74,6 @@ void vga_device_init(struct vga_device *device)
     device->write_framebuffer = vga_device_write_framebuffer;
     device->set_cursor_color = vga_device_set_cursor_color;
     device->set_cursor_offset = vga_device_set_cursor_offset;
-
-}
-
-void init()
-{
-
-    vga_device_init(&device);
-
-    modules_register_device(&device.base);
-
-}
-
-void destroy()
-{
-
-    modules_unregister_device(&device.base);
 
 }
 

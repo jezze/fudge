@@ -12,10 +12,10 @@ struct vga_device
     struct modules_device base;
     unsigned char cursorColor;
     unsigned short cursorOffset;
-    unsigned int (*read_framebuffer)(unsigned int offset, unsigned int count, void *buffer);
-    unsigned int (*write_framebuffer)(unsigned int offset, unsigned int count, void *buffer);
-    void (*set_cursor_color)(unsigned char fg, unsigned char bg);
-    void (*set_cursor_offset)(unsigned short offset);
+    unsigned int (*read_framebuffer)(struct vga_device *self, unsigned int offset, unsigned int count, void *buffer);
+    unsigned int (*write_framebuffer)(struct vga_device *self, unsigned int offset, unsigned int count, void *buffer);
+    void (*set_cursor_color)(struct vga_device *self, unsigned char fg, unsigned char bg);
+    void (*set_cursor_offset)(struct vga_device *self, unsigned short offset);
 
 };
 
