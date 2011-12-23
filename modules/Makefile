@@ -23,6 +23,7 @@ all-arm:
 
 all-x86:
 	@${GCC} ${GCCFLAGS} ata/bus.c -o ata/bus.o
+	@${GCC} ${GCCFLAGS} ata/device.c -o ata/device.o
 	@${GCC} ${GCCFLAGS} ata/main.c -o ata/main.o
 	@${GCC} ${GCCFLAGS} bga/driver.c -o bga/driver.o
 	@${GCC} ${GCCFLAGS} bga/main.c -o bga/main.o
@@ -42,7 +43,7 @@ all-x86:
 	@${GCC} ${GCCFLAGS} uart/main.c -o uart/main.o
 	@${GCC} ${GCCFLAGS} vga/device.c -o vga/device.o
 	@${GCC} ${GCCFLAGS} vga/main.c -o vga/main.o
-	@${LD} ${LDFLAGS} ata/bus.o ata/main.o -o ata/ata.ko
+	@${LD} ${LDFLAGS} ata/bus.o ata/device.o ata/main.o -o ata/ata.ko
 	@${LD} ${LDFLAGS} bga/driver.o bga/main.o -o bga/bga.ko
 	@${LD} ${LDFLAGS} ext2/ext2.o -o ext2/ext2.ko
 	@${LD} ${LDFLAGS} log/main.o -o log/log.ko
