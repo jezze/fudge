@@ -4,8 +4,6 @@
 #include <kernel/kernel.h>
 #include <modules/ps2/ps2.h>
 
-static struct mouse_device device;
-
 static void wait(unsigned char type)
 {
 
@@ -82,63 +80,6 @@ void mouse_device_init(struct mouse_device *device)
     read();
     write(0xF4);
     read();
-
-}
-
-static void handle_irq()
-{
-
-    struct mouse_device *mouse = &device;
-
-    switch (mouse->cycle)
-    {
-
-        case 0:
-
-            mouse->byte[0] = io_inb(0x60);
-            mouse->cycle++;
-
-            break;
-
-        case 1:
-
-            mouse->byte[1] = io_inb(0x60);
-            mouse->cycle++;
-
-            break;
-
-        case 2:
-
-            mouse->byte[2] = io_inb(0x60);
-            mouse->x = mouse->byte[1];
-            mouse->y = mouse->byte[2];
-            mouse->cycle = 0;
-
-            break;
-
-    }
-
-    event_handle(EVENT_IRQ_MOUSE);
-
-}
-
-void init()
-{
-
-    mouse_device_init(&device);
-
-    kernel_register_irq(0x0C, handle_irq);
-
-    modules_register_device(&device.base);
-
-}
-
-void destroy()
-{
-
-    kernel_unregister_irq(0x0C);
-
-    modules_unregister_device(&device.base);
 
 }
 

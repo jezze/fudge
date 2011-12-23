@@ -34,6 +34,7 @@ all-x86:
 	@${GCC} ${GCCFLAGS} pit/device.c -o pit/device.o
 	@${GCC} ${GCCFLAGS} pit/main.c -o pit/main.o
 	@${GCC} ${GCCFLAGS} ps2/kbd.c -o ps2/kbd.o
+	@${GCC} ${GCCFLAGS} ps2/main.c -o ps2/main.o
 	@${GCC} ${GCCFLAGS} ps2/mouse.c -o ps2/mouse.o
 	@${GCC} ${GCCFLAGS} rtc/device.c -o rtc/device.o
 	@${GCC} ${GCCFLAGS} rtc/main.c -o rtc/main.o
@@ -50,8 +51,7 @@ all-x86:
 	@${LD} ${LDFLAGS} mbr/mbr.o -o mbr/mbr.ko
 	@${LD} ${LDFLAGS} pci/pci.o -o pci/pci.ko
 	@${LD} ${LDFLAGS} pit/device.o pit/main.o -o pit/pit.ko
-	@${LD} ${LDFLAGS} ps2/kbd.o -o ps2/ps2_kbd.ko
-	@${LD} ${LDFLAGS} ps2/mouse.o -o ps2/ps2_mouse.ko
+	@${LD} ${LDFLAGS} ps2/kbd.o ps2/main.o ps2/mouse.o -o ps2/ps2.ko
 	@${LD} ${LDFLAGS} rtc/device.o rtc/main.o -o rtc/rtc.ko
 	@${LD} ${LDFLAGS} rtl8139/rtl8139.o -o rtl8139/rtl8139.ko
 	@${LD} ${LDFLAGS} tty/tty.o -o tty/tty.ko

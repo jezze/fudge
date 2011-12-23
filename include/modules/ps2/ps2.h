@@ -23,6 +23,7 @@ struct kbd_device
 
     struct modules_device base;
     struct kbd_buffer buffer;
+    char *map;
     unsigned int escaped;
     unsigned int toggleAlt;
     unsigned int toggleCtrl;

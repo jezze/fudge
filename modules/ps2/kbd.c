@@ -24,8 +24,6 @@ static char mapUS[256] =
        0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0
 };
 
-static struct kbd_device device;
-
 static unsigned int kbd_buffer_getc(struct kbd_buffer *self, char *buffer)
 {
 
@@ -69,88 +67,11 @@ void kbd_device_init(struct kbd_device *device)
     device->buffer.tail = 0;
     device->buffer.getc = kbd_buffer_getc;
     device->buffer.putc = kbd_buffer_putc;
+    device->map = mapUS;
     device->escaped = 0;
     device->toggleAlt = 0;
     device->toggleCtrl = 0;
     device->toggleShift = 0;
-
-
-}
-
-static void handle_irq()
-{
-
-    struct kbd_device *kbd = &device;
-
-    unsigned char scancode = io_inb(KBD_PORT_READ);
-
-    if (kbd->escaped)
-    {
-
-        //scancode += 256;
-        kbd->escaped = 0;
-
-    }
-
-    if (scancode == 0xE0)
-        kbd->escaped = 1;
-
-    if (scancode == 0x38)
-        kbd->toggleAlt = 1;
-
-    if (scancode == 0xB8)
-        kbd->toggleAlt = 0;
-
-    if (scancode == 0x1D)
-        kbd->toggleCtrl = 1;
-
-    if (scancode == 0x9D)
-        kbd->toggleCtrl = 0;
-
-    if (scancode == 0x2A)
-        kbd->toggleShift = 1;
-
-    if (scancode == 0xAA)
-        kbd->toggleShift = 0;
-
-    if (scancode & 0x80)
-    {
-
-        // Break codes
-
-    }
-
-    else
-    {
-
-        if (kbd->toggleShift)
-            scancode += 128;
-
-        kbd->buffer.putc(&kbd->buffer, &mapUS[scancode]);
-
-    }
-
-    event_handle(EVENT_IRQ_KBD);
-
-}
-
-void init()
-{
-
-    kbd_device_init(&device);
-
-    kernel_register_irq(0x01, handle_irq);
-
-    modules_register_device(&device.base);
-
-}
-
-void destroy()
-{
-
-    kernel_unregister_irq(0x01);
-
-    modules_unregister_device(&device.base);
 
 }
 
