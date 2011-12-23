@@ -6,10 +6,9 @@
 #include <modules/ata/ata.h>
 #include <modules/mbr/mbr.h>
 
-static struct mbr_driver driver;
 static struct mbr_partition partitions[MBR_PARTITION_SLOTS];
 
-static void read()
+static void read(struct mbr_driver *self)
 {
 
     struct ata_bus *bus = (struct ata_bus *)modules_get_bus(ATA_BUS_TYPE, 0);
@@ -33,10 +32,10 @@ static void read()
 
 }
 
-static struct mbr_partition *mbr_driver_get_partition(unsigned int index)
+static struct mbr_partition *mbr_driver_get_partition(struct mbr_driver *self, unsigned int index)
 {
 
-    read();
+    read(self);
 
     struct mbr_partition *partition = &partitions[index];
 
@@ -52,21 +51,6 @@ void mbr_driver_init(struct mbr_driver *driver)
 
     modules_driver_init(&driver->base, MBR_DRIVER_TYPE);
     driver->get_partition = mbr_driver_get_partition;
-
-}
-
-void init()
-{
-
-    mbr_driver_init(&driver);
-    modules_register_driver(&driver.base);
-
-}
-
-void destroy()
-{
-
-    modules_unregister_driver(&driver.base);
 
 }
 

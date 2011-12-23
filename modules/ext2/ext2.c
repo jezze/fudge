@@ -47,7 +47,7 @@ static void read()
     if (!mbr)
         return;
 
-    struct mbr_partition *partition = mbr->get_partition(0);
+    struct mbr_partition *partition = mbr->get_partition(mbr, 0);
     unsigned int blockstart = partition->sectorLba + 2;
 
     char buffer[4096];

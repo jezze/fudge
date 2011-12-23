@@ -27,7 +27,8 @@ all-x86:
 	@${GCC} ${GCCFLAGS} bga/main.c -o bga/main.o
 	@${GCC} ${GCCFLAGS} ext2/ext2.c -o ext2/ext2.o
 	@${GCC} ${GCCFLAGS} log/main.c -o log/main.o
-	@${GCC} ${GCCFLAGS} mbr/mbr.c -o mbr/mbr.o
+	@${GCC} ${GCCFLAGS} mbr/driver.c -o mbr/driver.o
+	@${GCC} ${GCCFLAGS} mbr/main.c -o mbr/main.o
 	@${GCC} ${GCCFLAGS} pci/pci.c -o pci/pci.o
 	@${GCC} ${GCCFLAGS} pit/device.c -o pit/device.o
 	@${GCC} ${GCCFLAGS} pit/main.c -o pit/main.o
@@ -49,7 +50,7 @@ all-x86:
 	@${LD} ${LDFLAGS} bga/driver.o bga/main.o -o bga/bga.ko
 	@${LD} ${LDFLAGS} ext2/ext2.o -o ext2/ext2.ko
 	@${LD} ${LDFLAGS} log/main.o -o log/log.ko
-	@${LD} ${LDFLAGS} mbr/mbr.o -o mbr/mbr.ko
+	@${LD} ${LDFLAGS} mbr/driver.o mbr/main.o -o mbr/mbr.ko
 	@${LD} ${LDFLAGS} pci/pci.o -o pci/pci.ko
 	@${LD} ${LDFLAGS} pit/device.o pit/main.o -o pit/pit.ko
 	@${LD} ${LDFLAGS} ps2/kbd.o ps2/main.o ps2/mouse.o -o ps2/ps2.ko
