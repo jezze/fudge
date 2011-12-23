@@ -6,87 +6,87 @@
 #include <modules/ps2/ps2.h>
 #include <modules/tty/tty.h>
 
-static struct tty_device device;
-
-static void clear()
+static void clear(struct tty_device *device)
 {
 
     char c = ' ';
     int i;
 
     for (i = 0; i < TTY_CHARACTER_SIZE; i++)
-        device.vgaDevice->write_framebuffer(device.vgaDevice, i, 1, &c);
+        device->vgaDevice->write_framebuffer(device->vgaDevice, i, 1, &c);
 
 }
 
-static void scroll()
+static void scroll(struct tty_device *device)
 {
 
     char buffer[TTY_CHARACTER_SIZE];
 
-    device.vgaDevice->read_framebuffer(device.vgaDevice, TTY_CHARACTER_WIDTH, TTY_CHARACTER_SIZE - TTY_CHARACTER_WIDTH, buffer);
+    device->vgaDevice->read_framebuffer(device->vgaDevice, TTY_CHARACTER_WIDTH, TTY_CHARACTER_SIZE - TTY_CHARACTER_WIDTH, buffer);
 
     unsigned int i;
 
     for (i = TTY_CHARACTER_SIZE - TTY_CHARACTER_WIDTH; i < TTY_CHARACTER_SIZE; i++)
         buffer[i] = ' ';
 
-    device.vgaDevice->write_framebuffer(device.vgaDevice, 0, TTY_CHARACTER_SIZE, buffer);
+    device->vgaDevice->write_framebuffer(device->vgaDevice, 0, TTY_CHARACTER_SIZE, buffer);
 
-    device.cursorOffset -= TTY_CHARACTER_WIDTH;
+    device->cursorOffset -= TTY_CHARACTER_WIDTH;
 
 }
 
-static void putc(char c)
+static void putc(struct tty_device *device, char c)
 {
 
     if (c == '\b')
     {
 
-        device.cursorOffset--;
+        device->cursorOffset--;
 
     }
 
     else if (c == '\t')
     {
 
-        device.cursorOffset = (device.cursorOffset + 8) & ~(8 - 1);
+        device->cursorOffset = (device->cursorOffset + 8) & ~(8 - 1);
 
     }
 
     else if (c == '\r')
     {
 
-        device.cursorOffset -= (device.cursorOffset % TTY_CHARACTER_WIDTH);
+        device->cursorOffset -= (device->cursorOffset % TTY_CHARACTER_WIDTH);
 
     }
 
     else if (c == '\n')
     {
 
-        device.cursorOffset += TTY_CHARACTER_WIDTH - (device.cursorOffset % TTY_CHARACTER_WIDTH);
+        device->cursorOffset += TTY_CHARACTER_WIDTH - (device->cursorOffset % TTY_CHARACTER_WIDTH);
 
     }
     
     else if (c >= ' ')
     {
 
-        device.vgaDevice->write_framebuffer(device.vgaDevice, device.cursorOffset, 1, &c);
-        device.cursorOffset++;
+        device->vgaDevice->write_framebuffer(device->vgaDevice, device->cursorOffset, 1, &c);
+        device->cursorOffset++;
 
     }
 
-    if (device.cursorOffset >= TTY_CHARACTER_WIDTH * TTY_CHARACTER_HEIGHT)
-        scroll();
+    if (device->cursorOffset >= TTY_CHARACTER_WIDTH * TTY_CHARACTER_HEIGHT)
+        device->scroll(device);
 
 }
 
 static unsigned int tty_device_cwd_read(struct vfs_node *self, unsigned int count, void *buffer)
 {
 
-    count = string_length(device.cwdname);
+    struct tty_device *device = tty_get();
 
-    string_write(buffer, device.cwdname);
+    count = string_length(device->cwdname);
+
+    string_write(buffer, device->cwdname);
 
     return count;
 
@@ -95,9 +95,11 @@ static unsigned int tty_device_cwd_read(struct vfs_node *self, unsigned int coun
 static unsigned int tty_device_cwd_write(struct vfs_node *self, unsigned int count, void *buffer)
 {
 
+    struct tty_device *device = tty_get();
+
     count = string_length(buffer);
 
-    string_write(device.cwdname, buffer);
+    string_write(device->cwdname, buffer);
 
     return count;
 
@@ -106,6 +108,8 @@ static unsigned int tty_device_cwd_write(struct vfs_node *self, unsigned int cou
 static unsigned int tty_device_in_read(struct vfs_node *self, unsigned int count, void *buffer)
 {
 
+    struct tty_device *device = tty_get();
+
     unsigned int i;
 
     for (i = 0; i < count; i++)
@@ -113,7 +117,7 @@ static unsigned int tty_device_in_read(struct vfs_node *self, unsigned int count
 
         char c;
 
-        if (!device.kbdDevice->buffer.getc(&device.kbdDevice->buffer, &c))
+        if (!device->kbdDevice->buffer.getc(&device->kbdDevice->buffer, &c))
             break;
 
         ((char *)buffer)[i] = c;
@@ -127,12 +131,14 @@ static unsigned int tty_device_in_read(struct vfs_node *self, unsigned int count
 static unsigned int tty_device_out_write(struct vfs_node *self, unsigned int count, void *buffer)
 {
 
+    struct tty_device *device = tty_get();
+
     unsigned int i;
 
     for (i = 0; i < count; i++)
-        putc(((char *)buffer)[i]);
+        device->putc(device, ((char *)buffer)[i]);
 
-    device.vgaDevice->set_cursor_offset(device.vgaDevice, device.cursorOffset);
+    device->vgaDevice->set_cursor_offset(device->vgaDevice, device->cursorOffset);
 
     return count;
 
@@ -140,6 +146,8 @@ static unsigned int tty_device_out_write(struct vfs_node *self, unsigned int cou
 
 static unsigned int tty_device_view_read(struct vfs_node *self, unsigned int count, void *buffer)
 {
+
+    struct tty_device *device = tty_get();
 
     void *out = buffer;
     unsigned int i;
@@ -152,7 +160,7 @@ static unsigned int tty_device_view_read(struct vfs_node *self, unsigned int cou
         if (!filesystem)
             continue;
 
-        struct vfs_view *view = filesystem->find_view(filesystem, device.cwdname);
+        struct vfs_view *view = filesystem->find_view(filesystem, device->cwdname);
 
         if (!view)
             continue;
@@ -182,20 +190,22 @@ static unsigned int tty_device_view_read(struct vfs_node *self, unsigned int cou
 static struct vfs_node *tty_device_view_find_node(struct vfs_view *self, char *name)
 {
 
+    struct tty_device *device = tty_get();
+
     if (!string_compare("stdin", name))
-        return &device.nin;
+        return &device->nin;
 
     if (!string_compare("stdout", name))
-        return &device.nout;
+        return &device->nout;
 
     if (!string_compare("stderr", name))
-        return &device.nerror;
+        return &device->nerror;
 
     if (!string_compare("cwd", name))
-        return &device.ncwd;
+        return &device->ncwd;
 
     if (!string_compare("pwd", name))
-        return &device.npwd;
+        return &device->npwd;
 
     return 0;
 
@@ -204,20 +214,22 @@ static struct vfs_node *tty_device_view_find_node(struct vfs_view *self, char *n
 static struct vfs_node *tty_device_view_walk(struct vfs_view *self, unsigned int index)
 {
 
+    struct tty_device *device = tty_get();
+
     if (index == 0)
-        return &device.nin;
+        return &device->nin;
 
     if (index == 1)
-        return &device.nout;
+        return &device->nout;
 
     if (index == 2)
-        return &device.nerror;
+        return &device->nerror;
 
     if (index == 3)
-        return &device.ncwd;
+        return &device->ncwd;
 
     if (index == 4)
-        return &device.npwd;
+        return &device->npwd;
 
     return 0;
 
@@ -254,7 +266,11 @@ void tty_device_init(struct tty_device *device, char *cwdname)
     device->kbdDevice = (struct kbd_device *)modules_get_device(KBD_DEVICE_TYPE, 0);
     device->vgaDevice = (struct vga_device *)modules_get_device(VGA_DEVICE_TYPE, 0);
     device->vgaDevice->set_cursor_color(device->vgaDevice, TTY_COLOR_WHITE, TTY_COLOR_BLACK);
-    clear();
+    device->clear = clear;
+    device->scroll = scroll;
+    device->putc = putc;
+
+    device->clear(device);
 
     string_write(device->cwdname, cwdname);
 
@@ -266,22 +282,6 @@ void tty_device_init(struct tty_device *device, char *cwdname)
     vfs_view_init(&device->nview, "tty", tty_device_view_find_node, tty_device_view_walk, tty_device_view_get_name);
 
     device->base.module.view = &device->nview;
-
-}
-
-void init()
-{
-
-    tty_device_init(&device, "home");
-
-    modules_register_device(&device.base);
-
-}
-
-void destroy()
-{
-
-    modules_unregister_device(&device.base);
 
 }
 

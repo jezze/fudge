@@ -33,6 +33,9 @@ struct tty_device
     struct serial_device *serialDevice;
     struct kbd_device *kbdDevice;
     struct vga_device *vgaDevice;
+    void (*clear)(struct tty_device *device);
+    void (*scroll)(struct tty_device *device);
+    void (*putc)(struct tty_device *device, char c);
     struct vfs_view nview;
     struct vfs_node nin;
     struct vfs_node nout;
@@ -42,6 +45,7 @@ struct tty_device
 
 };
 
+extern struct tty_device *tty_get();
 extern void tty_device_init(struct tty_device *device, char *cwdname);
 
 #endif
