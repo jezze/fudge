@@ -99,6 +99,7 @@ struct ata_bus
     void (*set_command)(struct ata_bus *self, unsigned char command);
     unsigned int (*detect)(struct ata_bus *self, unsigned int secondary, void *buffer);
     struct ata_device *(*find_device)(struct ata_bus *self, unsigned int type, unsigned int index);
+    unsigned int (*read_blocks)(struct ata_bus *bus, unsigned int count, void *buffer);
 
 };
 
