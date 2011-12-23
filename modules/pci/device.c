@@ -13,17 +13,17 @@ unsigned int pci_bus_ind(unsigned int address, unsigned short offset)
 
 }
 
-unsigned char pci_bus_inb(unsigned int address, unsigned short offset)
-{
-
-    return (unsigned char)((pci_bus_ind(address, offset) >> ((offset & 3) * 8)) & 0xFF);
-
-}
-
 unsigned short pci_bus_inw(unsigned int address, unsigned short offset)
 {
 
     return (unsigned short)((pci_bus_ind(address, offset) >> ((offset & 2) * 8)) & 0xFFFF);
+
+}
+
+unsigned char pci_bus_inb(unsigned int address, unsigned short offset)
+{
+
+    return (unsigned char)((pci_bus_ind(address, offset) >> ((offset & 3) * 8)) & 0xFF);
 
 }
 
@@ -55,8 +55,6 @@ void pci_device_init(struct pci_device *device, struct pci_bus *bus, unsigned in
         device->configuration.bar5 = pci_bus_ind(address, 0x24);
 
     }
-
-    log_write("[pci] %x:%x %x:%x\n", device->configuration.vendorid, device->configuration.deviceid, device->configuration.classcode, device->configuration.subclasscode);
 
 }
 
