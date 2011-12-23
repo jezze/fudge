@@ -6,6 +6,26 @@
 
 static struct pci_bus busses[8];
 
+unsigned int get_address(unsigned int num, unsigned int slot, unsigned int function)
+{
+
+    return 0x80000000 | (num << 16) | (slot << 11) | (function << 8);
+
+}
+
+static void pci_bus_add_device(struct pci_bus *bus, unsigned short slot, unsigned short function)
+{
+
+    struct pci_device *device = &bus->devices[bus->devicesCount];
+
+    pci_device_init(device, bus, slot, function, get_address(bus->num, slot, function));
+
+    modules_register_device(&device->base);
+
+    bus->devicesCount++;
+
+}
+
 static unsigned int scan(struct pci_bus *bus, unsigned int num)
 {
 
@@ -42,7 +62,7 @@ static unsigned int scan(struct pci_bus *bus, unsigned int num)
                 if (pci_bus_inw(address, 0x00) == 0xFFFF)
                     continue;
 
-                bus->add_device(bus, slot, function);
+                pci_bus_add_device(bus, slot, function);
 
             }
 
@@ -50,7 +70,7 @@ static unsigned int scan(struct pci_bus *bus, unsigned int num)
 
         }
     
-        bus->add_device(bus, slot, 0);
+        pci_bus_add_device(bus, slot, 0);
 
     }
 

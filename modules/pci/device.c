@@ -4,13 +4,6 @@
 #include <kernel/modules.h>
 #include <modules/pci/pci.h>
 
-unsigned int get_address(unsigned int num, unsigned int slot, unsigned int function)
-{
-
-    return 0x80000000 | (num << 16) | (slot << 11) | (function << 8);
-
-}
-
 unsigned int pci_bus_ind(unsigned int address, unsigned short offset)
 {
 
@@ -34,11 +27,13 @@ unsigned short pci_bus_inw(unsigned int address, unsigned short offset)
 
 }
 
-void pci_device_init(struct pci_device *device, struct pci_bus *bus, unsigned int address)
+void pci_device_init(struct pci_device *device, struct pci_bus *bus, unsigned int slot, unsigned int function, unsigned int address)
 {
 
     modules_device_init(&device->base, PCI_DEVICE_TYPE);
     device->bus = bus;
+    device->slot = slot;
+    device->function = function;
     device->configuration.vendorid = pci_bus_inw(address, 0x00);
     device->configuration.deviceid = pci_bus_inw(address, 0x02);
     device->configuration.revision = pci_bus_inb(address, 0x08);
