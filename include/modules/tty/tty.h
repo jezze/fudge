@@ -36,16 +36,11 @@ struct tty_device
     void (*clear)(struct tty_device *device);
     void (*scroll)(struct tty_device *device);
     void (*putc)(struct tty_device *device, char c);
-    struct vfs_view nview;
-    struct vfs_node nin;
-    struct vfs_node nout;
-    struct vfs_node nerror;
-    struct vfs_node ncwd;
-    struct vfs_node npwd;
 
 };
 
 extern struct tty_device *tty_get();
+extern void tty_view_init(struct tty_device *tty);
 extern void tty_device_init(struct tty_device *device, char *cwdname);
 
 #endif
