@@ -6,14 +6,14 @@
 #include <modules/ps2/ps2.h>
 #include <modules/tty/tty.h>
 
-static struct vfs_view nview;
-static struct vfs_node nin;
-static struct vfs_node nout;
-static struct vfs_node nerror;
-static struct vfs_node ncwd;
-static struct vfs_node npwd;
+static struct vfs_view ttyView;
+static struct vfs_node ttyIn;
+static struct vfs_node ttyOut;
+static struct vfs_node ttyError;
+static struct vfs_node ttyCwd;
+static struct vfs_node ttyPwd;
 
-static unsigned int tty_device_cwd_read(struct vfs_node *self, unsigned int count, void *buffer)
+static unsigned int cwd_read(struct vfs_node *self, unsigned int count, void *buffer)
 {
 
     struct tty_device *device = tty_get();
@@ -26,7 +26,7 @@ static unsigned int tty_device_cwd_read(struct vfs_node *self, unsigned int coun
 
 }
 
-static unsigned int tty_device_cwd_write(struct vfs_node *self, unsigned int count, void *buffer)
+static unsigned int cwd_write(struct vfs_node *self, unsigned int count, void *buffer)
 {
 
     struct tty_device *device = tty_get();
@@ -39,7 +39,7 @@ static unsigned int tty_device_cwd_write(struct vfs_node *self, unsigned int cou
 
 }
 
-static unsigned int tty_device_in_read(struct vfs_node *self, unsigned int count, void *buffer)
+static unsigned int in_read(struct vfs_node *self, unsigned int count, void *buffer)
 {
 
     struct tty_device *device = tty_get();
@@ -62,7 +62,7 @@ static unsigned int tty_device_in_read(struct vfs_node *self, unsigned int count
 
 }
 
-static unsigned int tty_device_out_write(struct vfs_node *self, unsigned int count, void *buffer)
+static unsigned int out_write(struct vfs_node *self, unsigned int count, void *buffer)
 {
 
     struct tty_device *device = tty_get();
@@ -78,7 +78,7 @@ static unsigned int tty_device_out_write(struct vfs_node *self, unsigned int cou
 
 }
 
-static unsigned int tty_device_view_read(struct vfs_node *self, unsigned int count, void *buffer)
+static unsigned int view_read(struct vfs_node *self, unsigned int count, void *buffer)
 {
 
     struct tty_device *device = tty_get();
@@ -121,51 +121,51 @@ static unsigned int tty_device_view_read(struct vfs_node *self, unsigned int cou
 
 }
 
-static struct vfs_node *tty_device_view_find_node(struct vfs_view *self, char *name)
+static struct vfs_node *view_find_node(struct vfs_view *self, char *name)
 {
 
     if (!string_compare("stdin", name))
-        return &nin;
+        return &ttyIn;
 
     if (!string_compare("stdout", name))
-        return &nout;
+        return &ttyOut;
 
     if (!string_compare("stderr", name))
-        return &nerror;
+        return &ttyError;
 
     if (!string_compare("cwd", name))
-        return &ncwd;
+        return &ttyCwd;
 
     if (!string_compare("pwd", name))
-        return &npwd;
+        return &ttyPwd;
 
     return 0;
 
 }
 
-static struct vfs_node *tty_device_view_walk(struct vfs_view *self, unsigned int index)
+static struct vfs_node *view_walk(struct vfs_view *self, unsigned int index)
 {
 
     if (index == 0)
-        return &nin;
+        return &ttyIn;
 
     if (index == 1)
-        return &nout;
+        return &ttyOut;
 
     if (index == 2)
-        return &nerror;
+        return &ttyError;
 
     if (index == 3)
-        return &ncwd;
+        return &ttyCwd;
 
     if (index == 4)
-        return &npwd;
+        return &ttyPwd;
 
     return 0;
 
 }
 
-static char *tty_device_view_get_name(struct vfs_view *self, struct vfs_node *node)
+static char *view_get_name(struct vfs_view *self, struct vfs_node *node)
 {
 
     if (node->id == 0)
@@ -190,14 +190,14 @@ static char *tty_device_view_get_name(struct vfs_view *self, struct vfs_node *no
 void tty_view_init(struct tty_device *tty)
 {
 
-    vfs_node_init(&nin, 0, 0, 0, tty_device_in_read, 0);
-    vfs_node_init(&nout, 1, 0, 0, 0, tty_device_out_write);
-    vfs_node_init(&nerror, 2, 0, 0, 0, tty_device_out_write);
-    vfs_node_init(&ncwd, 3, 0, 0, tty_device_cwd_read, tty_device_cwd_write);
-    vfs_node_init(&npwd, 4, 0, 0, tty_device_view_read, 0);
-    vfs_view_init(&nview, "tty", tty_device_view_find_node, tty_device_view_walk, tty_device_view_get_name);
+    vfs_node_init(&ttyIn, 0, 0, 0, in_read, 0);
+    vfs_node_init(&ttyOut, 1, 0, 0, 0, out_write);
+    vfs_node_init(&ttyError, 2, 0, 0, 0, out_write);
+    vfs_node_init(&ttyCwd, 3, 0, 0, cwd_read, cwd_write);
+    vfs_node_init(&ttyPwd, 4, 0, 0, view_read, 0);
+    vfs_view_init(&ttyView, "tty", view_find_node, view_walk, view_get_name);
 
-    tty->base.module.view = &nview;
+    tty->base.module.view = &ttyView;
 
 }
 
