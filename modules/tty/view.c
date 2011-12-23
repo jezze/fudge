@@ -78,7 +78,7 @@ static unsigned int out_write(struct vfs_node *self, unsigned int count, void *b
 
 }
 
-static unsigned int view_read(struct vfs_node *self, unsigned int count, void *buffer)
+static unsigned int pwd_read(struct vfs_node *self, unsigned int count, void *buffer)
 {
 
     struct tty_device *device = tty_get();
@@ -187,17 +187,17 @@ static char *view_get_name(struct vfs_view *self, struct vfs_node *node)
 
 }
 
-void tty_view_init(struct tty_device *tty)
+struct vfs_view *tty_view_init()
 {
 
     vfs_node_init(&ttyIn, 0, 0, 0, in_read, 0);
     vfs_node_init(&ttyOut, 1, 0, 0, 0, out_write);
     vfs_node_init(&ttyError, 2, 0, 0, 0, out_write);
     vfs_node_init(&ttyCwd, 3, 0, 0, cwd_read, cwd_write);
-    vfs_node_init(&ttyPwd, 4, 0, 0, view_read, 0);
+    vfs_node_init(&ttyPwd, 4, 0, 0, pwd_read, 0);
     vfs_view_init(&ttyView, "tty", view_find_node, view_walk, view_get_name);
 
-    tty->base.module.view = &ttyView;
+    return &ttyView;
 
 }
 

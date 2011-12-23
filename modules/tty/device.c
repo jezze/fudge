@@ -90,12 +90,11 @@ void tty_device_init(struct tty_device *device, char *cwdname)
     device->clear = clear;
     device->scroll = scroll;
     device->putc = putc;
+    string_write(device->cwdname, cwdname);
 
     device->clear(device);
 
-    string_write(device->cwdname, cwdname);
-
-    tty_view_init(device);
+    device->base.module.view = tty_view_init(device);
 
 }
 

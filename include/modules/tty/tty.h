@@ -39,8 +39,8 @@ struct tty_device
 
 };
 
+extern struct vfs_view *tty_view_init();
 extern struct tty_device *tty_get();
-extern void tty_view_init(struct tty_device *tty);
 extern void tty_device_init(struct tty_device *device, char *cwdname);
 
 #endif
