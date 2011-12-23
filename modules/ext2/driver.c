@@ -6,8 +6,6 @@
 #include <modules/mbr/mbr.h>
 #include <modules/ext2/ext2.h>
 
-static struct ext2_driver driver;
-
 static unsigned int get_group(unsigned int node, unsigned int nodespergroup)
 {
 
@@ -118,21 +116,7 @@ void ext2_driver_init(struct ext2_driver *driver)
 
     modules_driver_init(&driver->base, EXT2_DRIVER_TYPE);
 
-}
-
-void init()
-{
-
-    ext2_driver_init(&driver);
-
     read(); // REMOVE
-
-    modules_register_driver(&driver.base);
-
-}
-
-void destroy()
-{
 
 }
 

@@ -25,7 +25,8 @@ all-x86:
 	@${GCC} ${GCCFLAGS} ata/main.c -o ata/main.o
 	@${GCC} ${GCCFLAGS} bga/driver.c -o bga/driver.o
 	@${GCC} ${GCCFLAGS} bga/main.c -o bga/main.o
-	@${GCC} ${GCCFLAGS} ext2/ext2.c -o ext2/ext2.o
+	@${GCC} ${GCCFLAGS} ext2/driver.c -o ext2/driver.o
+	@${GCC} ${GCCFLAGS} ext2/main.c -o ext2/main.o
 	@${GCC} ${GCCFLAGS} log/main.c -o log/main.o
 	@${GCC} ${GCCFLAGS} mbr/driver.c -o mbr/driver.o
 	@${GCC} ${GCCFLAGS} mbr/main.c -o mbr/main.o
@@ -48,7 +49,7 @@ all-x86:
 	@${GCC} ${GCCFLAGS} vga/main.c -o vga/main.o
 	@${LD} ${LDFLAGS} ata/bus.o ata/device.o ata/main.o -o ata/ata.ko
 	@${LD} ${LDFLAGS} bga/driver.o bga/main.o -o bga/bga.ko
-	@${LD} ${LDFLAGS} ext2/ext2.o -o ext2/ext2.ko
+	@${LD} ${LDFLAGS} ext2/driver.o ext2/main.o -o ext2/ext2.ko
 	@${LD} ${LDFLAGS} log/main.o -o log/log.ko
 	@${LD} ${LDFLAGS} mbr/driver.o mbr/main.o -o mbr/mbr.ko
 	@${LD} ${LDFLAGS} pci/pci.o -o pci/pci.ko
