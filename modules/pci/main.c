@@ -92,5 +92,8 @@ void init()
 void destroy()
 {
 
+    modules_foreach(pci_device_check_module, modules_unregister_module);
+    modules_foreach(pci_bus_check_module, modules_unregister_module);
+
 }
 

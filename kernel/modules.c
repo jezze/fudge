@@ -140,7 +140,7 @@ struct modules_driver *modules_get_driver(unsigned int type, unsigned int index)
 
 }
 
-static void modules_register_module(struct modules_module *module)
+void modules_register_module(struct modules_module *module)
 {
 
     unsigned int i;
@@ -180,7 +180,7 @@ void modules_register_driver(struct modules_driver *driver)
 
 }
 
-static void modules_unregister_module(struct modules_module *module)
+void modules_unregister_module(struct modules_module *module)
 {
 
     unsigned int i;

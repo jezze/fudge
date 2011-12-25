@@ -20,9 +20,11 @@ modules_get_driver
 modules_is_bus
 modules_is_device
 modules_is_driver
+modules_register_module
 modules_register_bus
 modules_register_device
 modules_register_driver
+modules_unregister_module
 modules_unregister_bus
 modules_unregister_device
 modules_unregister_driver

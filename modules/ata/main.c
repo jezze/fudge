@@ -69,5 +69,8 @@ void init()
 void destroy()
 {
 
+    modules_foreach(ata_device_check_module, modules_unregister_module);
+    modules_foreach(ata_bus_check_module, modules_unregister_module);
+
 }
 

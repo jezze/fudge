@@ -103,6 +103,8 @@ struct ata_bus
 
 };
 
+extern unsigned int ata_bus_check_module(struct modules_module *module);
+extern unsigned int ata_device_check_module(struct modules_module *module);
 extern void ata_device_init(struct ata_device *device, struct ata_bus *bus, unsigned int secondary, unsigned int type);
 extern void ata_bus_init(struct ata_bus *bus, unsigned int control, unsigned int data);
 

@@ -201,6 +201,18 @@ static struct ata_device *ata_bus_find_device(struct ata_bus *self, unsigned int
 
 }
 
+unsigned int ata_bus_check_module(struct modules_module *module)
+{
+
+    if (!modules_is_bus(module))
+        return 0;
+
+    struct modules_bus *bus = (struct modules_bus *)module;
+
+    return bus->type == ATA_BUS_TYPE;
+
+}
+
 void ata_bus_init(struct ata_bus *bus, unsigned int control, unsigned int data)
 {
 
