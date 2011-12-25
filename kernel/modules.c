@@ -6,6 +6,47 @@
 static struct modules_module *modules[MODULES_MODULE_SLOTS];
 static struct vfs_filesystem filesystem;
 
+void modules_foreach(unsigned int (*test)(struct modules_module *module), void (*callback)(struct modules_module *module))
+{
+
+    unsigned int i;
+
+    for (i = 0; i < MODULES_MODULE_SLOTS; i++)
+    {
+
+        struct modules_module *module = modules[i];
+
+        if (!module->type)
+            continue;
+
+        if (test(module))
+            callback(modules[i]);
+        
+    }
+
+}
+
+unsigned int modules_is_bus(struct modules_module *module)
+{
+
+    return module->type == MODULES_TYPE_BUS;
+
+}
+
+unsigned int modules_is_device(struct modules_module *module)
+{
+
+    return module->type == MODULES_TYPE_DEVICE;
+
+}
+
+unsigned int modules_is_driver(struct modules_module *module)
+{
+
+    return module->type == MODULES_TYPE_DRIVER;
+
+}
+
 struct modules_bus *modules_get_bus(unsigned int type, unsigned int index)
 {
 

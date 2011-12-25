@@ -3,7 +3,7 @@
 #include <kernel/symbol.h>
 #include <kernel/vfs.h>
 
-static struct symbol_entry entries[32];
+static struct symbol_entry entries[SYMBOL_ENTRY_SLOTS];
 static char buffer[SYMBOL_BUFFER_SIZE];
 
 void *symbol_find(char *name)
@@ -11,7 +11,7 @@ void *symbol_find(char *name)
 
     unsigned int i;
 
-    for (i = 0; i < 32; i++)
+    for (i = 0; i < SYMBOL_ENTRY_SLOTS; i++)
     {
 
         if (!string_compare(entries[i].name, name))

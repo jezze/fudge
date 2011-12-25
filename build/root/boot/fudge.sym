@@ -9,6 +9,7 @@ kernel_register_irq
 kernel_unregister_irq
 log_get
 log_write
+modules_foreach
 modules_bus_init
 modules_device_init
 modules_driver_init
@@ -16,6 +17,9 @@ modules_module_init
 modules_get_bus
 modules_get_device
 modules_get_driver
+modules_is_bus
+modules_is_device
+modules_is_driver
 modules_register_bus
 modules_register_device
 modules_register_driver
