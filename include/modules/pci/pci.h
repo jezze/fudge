@@ -89,6 +89,8 @@ struct pci_bus
 extern unsigned int pci_bus_ind(unsigned int address, unsigned short offset);
 extern unsigned char pci_bus_inb(unsigned int address, unsigned short offset);
 extern unsigned short pci_bus_inw(unsigned int address, unsigned short offset);
+extern unsigned int pci_bus_check_module(struct modules_module *module);
+extern unsigned int pci_device_check_module(struct modules_module *module);
 extern void pci_bus_init(struct pci_bus *bus, unsigned int num);
 extern void pci_device_init(struct pci_device *device, struct pci_bus *bus, unsigned int slot, unsigned int function, unsigned int address);
 

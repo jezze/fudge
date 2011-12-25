@@ -7,28 +7,32 @@
 
 static struct bga_driver driver;
 
+static unsigned int check_device(struct modules_module *module)
+{
+
+    if (!pci_device_check_module(module))
+        return 0;
+
+    struct pci_device *device = (struct pci_device *)module;
+
+    return device->configuration.vendorid == 0x1234 && device->configuration.deviceid == 0x1111;
+
+}
+
+static void init_driver(struct modules_module *module)
+{
+
+    struct pci_device *device = (struct pci_device *)module;
+
+    bga_driver_init(&driver, device);
+    modules_register_driver(&driver.base);
+
+}
+
 void init()
 {
 
-    unsigned int i;
-    struct pci_bus *bus;
-
-    for (i = 0; (bus = (struct pci_bus *)modules_get_bus(PCI_BUS_TYPE, i)); i++)
-    {
-
-        struct pci_device *device = bus->find_device_by_id(bus, 0x1234, 0x1111, 0);
-
-        if (device)
-        {
-
-            bga_driver_init(&driver, device);
-            modules_register_driver(&driver.base);
-
-            break;
-
-        }
-
-    }
+    modules_foreach(check_device, init_driver);
 
 }
 
