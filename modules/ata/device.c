@@ -4,7 +4,6 @@
 #include <kernel/kernel.h>
 #include <kernel/log.h>
 #include <kernel/modules.h>
-#include <modules/pci/pci.h>
 #include <modules/ata/ata.h>
 
 static unsigned int ata_device_read_lba28(struct ata_device *self, unsigned int sector, unsigned int count, void *buffer)
@@ -65,7 +64,6 @@ void ata_device_init(struct ata_device *device, struct ata_bus *bus, unsigned in
 
     modules_device_init(&device->base, ATA_DEVICE_TYPE);
     device->bus = bus;
-    device->pciDevice = 0;
     device->type = type;
     device->secondary = secondary;
     device->lba28Max = 0;

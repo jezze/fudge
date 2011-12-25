@@ -4,7 +4,6 @@
 #include <kernel/kernel.h>
 #include <kernel/log.h>
 #include <kernel/modules.h>
-#include <modules/pci/pci.h>
 #include <modules/ata/ata.h>
 
 static void configure_ata_device(struct ata_device *device, unsigned short *buffer)
@@ -45,26 +44,6 @@ static void configure_ata_device(struct ata_device *device, unsigned short *buff
 
 static void configure_atapi_device(struct ata_device *device, unsigned short *buffer)
 {
-
-}
-
-struct pci_device *find_pci_device()
-{
-
-    unsigned int i;
-    struct pci_bus *bus;
-
-    for (i = 0; (bus = (struct pci_bus *)modules_get_bus(PCI_BUS_TYPE, i)); i++)
-    {
-
-        struct pci_device *device = bus->find_device_by_class(bus, 0x01, 0x01, 0);
-
-        if (device)
-            return device;
-
-    }
-
-    return 0;
 
 }
 
@@ -239,12 +218,7 @@ void ata_bus_init(struct ata_bus *bus, unsigned int control, unsigned int data)
         ata_device_init(&bus->primary, bus, 0 << 4, type);
 
         if (bus->primary.type == ATA_DEVICE_TYPE_ATA)
-        {
-
-            bus->primary.pciDevice = find_pci_device();
             configure_ata_device(&bus->primary, buffer);
-
-        }
 
         if (bus->primary.type == ATA_DEVICE_TYPE_ATAPI)
             configure_atapi_device(&bus->primary, buffer);
@@ -259,12 +233,7 @@ void ata_bus_init(struct ata_bus *bus, unsigned int control, unsigned int data)
         ata_device_init(&bus->secondary, bus, 1 << 4, type);
 
         if (bus->secondary.type == ATA_DEVICE_TYPE_ATA)
-        {
-
-            bus->secondary.pciDevice = find_pci_device();
             configure_ata_device(&bus->secondary, buffer);
-
-        }
 
         if (bus->secondary.type == ATA_DEVICE_TYPE_ATAPI)
             configure_atapi_device(&bus->secondary, buffer);
