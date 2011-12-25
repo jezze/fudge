@@ -27,11 +27,12 @@ struct mbr_driver
 {
 
     struct modules_driver base;
+    struct ata_device *device;
     struct mbr_partition *(*get_partition)(struct mbr_driver *self, unsigned int index);
 
 };
 
-extern void mbr_driver_init(struct mbr_driver *driver);
+extern void mbr_driver_init(struct mbr_driver *driver, struct ata_device *device);
 
 #endif
 

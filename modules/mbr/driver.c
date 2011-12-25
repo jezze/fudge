@@ -11,19 +11,9 @@ static struct mbr_partition partitions[MBR_PARTITION_SLOTS];
 static void read(struct mbr_driver *self)
 {
 
-    struct ata_bus *bus = (struct ata_bus *)modules_get_bus(ATA_BUS_TYPE, 0);
-
-    if (!bus)
-        return;
-
-    struct ata_device *device = bus->find_device(bus, ATA_DEVICE_TYPE_ATA, 0);
-
-    if (!device)
-        return;
-
     char buffer[512];
 
-    device->read_lba28(device, 0, 1, buffer);
+    self->device->read_lba28(self->device, 0, 1, buffer);
 
     unsigned int i;
 
@@ -46,10 +36,11 @@ static struct mbr_partition *mbr_driver_get_partition(struct mbr_driver *self, u
 
 }
 
-void mbr_driver_init(struct mbr_driver *driver)
+void mbr_driver_init(struct mbr_driver *driver, struct ata_device *device)
 {
 
     modules_driver_init(&driver->base, MBR_DRIVER_TYPE);
+    driver->device = device;
     driver->get_partition = mbr_driver_get_partition;
 
 }
