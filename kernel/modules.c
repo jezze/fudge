@@ -16,12 +16,12 @@ void modules_foreach(unsigned int (*test)(struct modules_module *module), void (
 
         struct modules_module *module = modules[i];
 
-        if (!module->type)
+        if (!module)
             continue;
 
         if (test(module))
-            callback(modules[i]);
-        
+            callback(module);
+
     }
 
 }
