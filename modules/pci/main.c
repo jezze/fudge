@@ -84,7 +84,7 @@ void init()
     unsigned int i = 0;
     unsigned int num = 0;
 
-    for (i = 0; (num = scan(&busses[i], num)); i++);
+    for (i = 0; (num = scan(&busses[i], num)); i++)
         modules_register_bus(&busses[i].base);
 
 }
