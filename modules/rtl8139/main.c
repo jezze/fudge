@@ -29,31 +29,32 @@ static unsigned int check_device(struct modules_module *module)
 
 }
 
-static void idriver(struct modules_module *module)
+static void attach_device(struct modules_module *module)
 {
 
     struct pci_device *device = (struct pci_device *)module;
+    device->base.driver = (struct modules_driver *)&driver;
 
-    rtl8139_driver_init(&driver, device);
+    driver.io = (device->configuration.bar0 & ~1);
+
     kernel_register_irq(device->configuration.interruptline, handle_irq);
-    modules_register_driver(&driver.base);
 
 }
 
 void init()
 {
 
-    modules_foreach(check_device, idriver);
+    rtl8139_driver_init(&driver);
+    modules_register_driver(&driver.base);
+
+    modules_foreach(check_device, attach_device);
+
+    driver.start(&driver);
 
 }
 
 void destroy()
 {
-
-    struct pci_device *device = (struct pci_device *)driver.base.device;
-
-    kernel_unregister_irq(device->configuration.interruptline);
-    modules_unregister_driver(&driver.base);
 
 }
 

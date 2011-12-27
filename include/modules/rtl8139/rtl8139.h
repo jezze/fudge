@@ -93,10 +93,11 @@ struct rtl8139_driver
     unsigned short io; 
     char mac[6];
     char rx[8192+16];
+    void (*start)(struct rtl8139_driver *self);
 
 };
 
-extern void rtl8139_driver_init(struct rtl8139_driver *driver, struct pci_device *device);
+extern void rtl8139_driver_init(struct rtl8139_driver *driver);
 
 #endif
 

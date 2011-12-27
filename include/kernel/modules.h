@@ -15,7 +15,7 @@ struct modules_module
 
 };
 
-struct modules_device
+struct modules_driver
 {
 
     struct modules_module module;
@@ -23,12 +23,12 @@ struct modules_device
 
 };
 
-struct modules_driver
+struct modules_device
 {
 
     struct modules_module module;
     unsigned int type;
-    struct modules_device *device;
+    struct modules_driver *driver;
 
 };
 

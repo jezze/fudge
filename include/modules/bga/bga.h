@@ -32,12 +32,13 @@ struct bga_driver
     unsigned int xres;
     unsigned int yres;
     unsigned int bpp;
+    void (*start)(struct bga_driver *self);
     void (*set_mode)(struct bga_driver *self, unsigned int xres, unsigned int yres, unsigned int bpp);
     void (*set_bank)(struct bga_driver *self, unsigned int index);
 
 };
 
-extern void bga_driver_init(struct bga_driver *driver, struct pci_device *device);
+extern void bga_driver_init(struct bga_driver *driver);
 
 #endif
 
