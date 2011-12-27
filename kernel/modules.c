@@ -6,6 +6,37 @@
 static struct modules_module *modules[MODULES_MODULE_SLOTS];
 static struct vfs_filesystem filesystem;
 
+void modules_attach(struct modules_driver *driver)
+{
+
+    if (!driver->check)
+        return;
+
+    if (!driver->attach)
+        return;
+
+    unsigned int i;
+
+    for (i = 0; i < MODULES_MODULE_SLOTS; i++)
+    {
+
+        struct modules_module *module = modules[i];
+
+        if (!module)
+            continue;
+
+        if (!module->type != MODULES_TYPE_DEVICE)
+            continue;
+
+        struct modules_device *device = (struct modules_device *)module;
+
+        if (driver->check(driver, device))
+            driver->attach(driver, device);
+
+    }
+
+}
+
 void modules_foreach(unsigned int (*test)(struct modules_module *module), void (*callback)(struct modules_module *module))
 {
 
