@@ -10,8 +10,11 @@ static struct bga_driver driver;
 static unsigned int check_device(struct modules_module *module)
 {
 
-//    if (!pci_device_check_module(module))
-//        return 0;
+    if (!modules_is_device(module))
+        return 0;
+
+    if (((struct modules_device *)module)->type != PCI_DEVICE_TYPE)
+        return 0;
 
     struct pci_device *device = (struct pci_device *)module;
 
