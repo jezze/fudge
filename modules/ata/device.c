@@ -47,18 +47,6 @@ static unsigned int ata_device_write_lba48(struct ata_device *self, unsigned int
 
 }
 
-unsigned int ata_device_check_module(struct modules_module *module)
-{
-
-    if (!modules_is_device(module))
-        return 0;
-
-    struct modules_device *device = (struct modules_device *)module;
-
-    return device->type == ATA_DEVICE_TYPE;
-
-}
-
 void ata_device_init(struct ata_device *device, struct ata_bus *bus, unsigned int secondary, unsigned int type)
 {
 

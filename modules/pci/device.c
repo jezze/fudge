@@ -27,18 +27,6 @@ unsigned char pci_bus_inb(unsigned int address, unsigned short offset)
 
 }
 
-unsigned int pci_device_check_module(struct modules_module *module)
-{
-
-    if (!modules_is_device(module))
-        return 0;
-
-    struct modules_device *device = (struct modules_device *)module;
-
-    return device->type == PCI_DEVICE_TYPE;
-
-}
-
 void pci_device_init(struct pci_device *device, struct pci_bus *bus, unsigned int slot, unsigned int function, unsigned int address)
 {
 
