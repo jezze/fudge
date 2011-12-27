@@ -10,8 +10,8 @@ static struct bga_driver driver;
 static unsigned int check_device(struct modules_module *module)
 {
 
-    if (!pci_device_check_module(module))
-        return 0;
+//    if (!pci_device_check_module(module))
+//        return 0;
 
     struct pci_device *device = (struct pci_device *)module;
 
@@ -19,7 +19,7 @@ static unsigned int check_device(struct modules_module *module)
 
 }
 
-static void init_driver(struct modules_module *module)
+static void idriver(struct modules_module *module)
 {
 
     struct pci_device *device = (struct pci_device *)module;
@@ -32,7 +32,7 @@ static void init_driver(struct modules_module *module)
 void init()
 {
 
-    modules_foreach(check_device, init_driver);
+    modules_foreach(check_device, idriver);
 
 }
 
