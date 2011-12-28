@@ -35,9 +35,9 @@ all-x86:
 	@${GCC} ${GCCFLAGS} pci/main.c -o pci/main.o
 	@${GCC} ${GCCFLAGS} pit/device.c -o pit/device.o
 	@${GCC} ${GCCFLAGS} pit/main.c -o pit/main.o
-	@${GCC} ${GCCFLAGS} ps2/kbd.c -o ps2/kbd.o
+	@${GCC} ${GCCFLAGS} ps2/kbd_driver.c -o ps2/kbd_driver.o
 	@${GCC} ${GCCFLAGS} ps2/main.c -o ps2/main.o
-	@${GCC} ${GCCFLAGS} ps2/mouse.c -o ps2/mouse.o
+	@${GCC} ${GCCFLAGS} ps2/mouse_driver.c -o ps2/mouse_driver.o
 	@${GCC} ${GCCFLAGS} rtc/device.c -o rtc/device.o
 	@${GCC} ${GCCFLAGS} rtc/main.c -o rtc/main.o
 	@${GCC} ${GCCFLAGS} rtl8139/driver.c -o rtl8139/driver.o
@@ -56,7 +56,7 @@ all-x86:
 	@${LD} ${LDFLAGS} mbr/driver.o mbr/main.o -o mbr/mbr.ko
 	@${LD} ${LDFLAGS} pci/bus.o pci/device.o pci/main.o -o pci/pci.ko
 	@${LD} ${LDFLAGS} pit/device.o pit/main.o -o pit/pit.ko
-	@${LD} ${LDFLAGS} ps2/kbd.o ps2/main.o ps2/mouse.o -o ps2/ps2.ko
+	@${LD} ${LDFLAGS} ps2/kbd_driver.o ps2/main.o ps2/mouse_driver.o -o ps2/ps2.ko
 	@${LD} ${LDFLAGS} rtc/device.o rtc/main.o -o rtc/rtc.ko
 	@${LD} ${LDFLAGS} rtl8139/driver.o rtl8139/main.o -o rtl8139/rtl8139.ko
 	@${LD} ${LDFLAGS} tty/device.o tty/main.o tty/view.o -o tty/tty.ko
