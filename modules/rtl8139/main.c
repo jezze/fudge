@@ -16,7 +16,7 @@ void init()
     modules_register_driver(&driver.base);
     modules_attach(&driver.base);
 
-//    driver.base.start(&driver.base);
+    driver.base.start(&driver.base);
 
 }
 

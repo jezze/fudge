@@ -11,6 +11,16 @@ static struct mbr_partition partitions[MBR_PARTITION_SLOTS];
 static struct mbr_partition *mbr_driver_get_partition(struct mbr_driver *self, unsigned int index)
 {
 
+    char buffer[512];
+    struct mbr_driver *driver = (struct mbr_driver *)self;
+
+    driver->device->read_lba28(driver->device, 0, 1, buffer);
+
+    unsigned int i;
+
+    for (i = 0; i < MBR_PARTITION_SLOTS; i++)
+        memory_copy(&partitions[i], buffer + MBR_PARTITION_OFFSET + i * MBR_PARTITION_SIZE, sizeof (struct mbr_partition));
+
     struct mbr_partition *partition = &partitions[index];
 
     if (!partitions->systemId)
@@ -22,16 +32,6 @@ static struct mbr_partition *mbr_driver_get_partition(struct mbr_driver *self, u
 
 static void mbr_driver_start(struct modules_driver *self)
 {
-
-    char buffer[512];
-    struct mbr_driver *driver = (struct mbr_driver *)self;
-
-    driver->device->read_lba28(driver->device, 0, 1, buffer);
-
-    unsigned int i;
-
-    for (i = 0; i < MBR_PARTITION_SLOTS; i++)
-        memory_copy(&partitions[i], buffer + MBR_PARTITION_OFFSET + i * MBR_PARTITION_SIZE, sizeof (struct mbr_partition));
 
 }
 

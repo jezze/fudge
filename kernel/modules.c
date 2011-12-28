@@ -25,7 +25,7 @@ void modules_attach(struct modules_driver *driver)
         if (!module)
             continue;
 
-        if (!module->type != MODULES_TYPE_DEVICE)
+        if (module->type != MODULES_TYPE_DEVICE)
             continue;
 
         struct modules_device *device = (struct modules_device *)module;
