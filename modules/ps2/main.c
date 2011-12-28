@@ -4,13 +4,13 @@
 #include <kernel/kernel.h>
 #include <modules/ps2/ps2.h>
 
-static struct kbd_device kbdDevice;
-static struct mouse_device mouseDevice;
+static struct kbd_driver kbdDriver;
+static struct mouse_driver mouseDriver;
 
 static void handle_kbd_irq()
 {
 
-    struct kbd_device *kbd = &kbdDevice;
+    struct kbd_driver *kbd = &kbdDriver;
 
     unsigned char scancode = io_inb(KBD_PORT_READ);
 
@@ -67,7 +67,7 @@ static void handle_kbd_irq()
 static void handle_mouse_irq()
 {
 
-    struct mouse_device *mouse = &mouseDevice;
+    struct mouse_driver *mouse = &mouseDriver;
 
     switch (mouse->cycle)
     {
@@ -104,11 +104,11 @@ static void handle_mouse_irq()
 void init()
 {
 
-    kbd_device_init(&kbdDevice);
-    mouse_device_init(&mouseDevice);
+    kbd_driver_init(&kbdDriver);
+    mouse_driver_init(&mouseDriver);
 
-    modules_register_device(&kbdDevice.base);
-    modules_register_device(&mouseDevice.base);
+    modules_register_driver(&kbdDriver.base);
+    modules_register_driver(&mouseDriver.base);
 
     kernel_register_irq(0x01, handle_kbd_irq);
     kernel_register_irq(0x0C, handle_mouse_irq);
@@ -121,8 +121,8 @@ void destroy()
     kernel_unregister_irq(0x01);
     kernel_unregister_irq(0x0C);
 
-    modules_unregister_device(&kbdDevice.base);
-    modules_unregister_device(&mouseDevice.base);
+    modules_unregister_driver(&kbdDriver.base);
+    modules_unregister_driver(&mouseDriver.base);
 
 }
 

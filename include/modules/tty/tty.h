@@ -31,7 +31,7 @@ struct tty_device
     char cwdname[32];
     unsigned short cursorOffset;
     struct serial_device *serialDevice;
-    struct kbd_device *kbdDevice;
+    struct kbd_driver *kbdDriver;
     struct vga_device *vgaDevice;
     void (*clear)(struct tty_device *device);
     void (*scroll)(struct tty_device *device);

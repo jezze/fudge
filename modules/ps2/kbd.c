@@ -58,20 +58,20 @@ static unsigned int kbd_buffer_putc(struct kbd_buffer *self, char *buffer)
 
 }
 
-void kbd_device_init(struct kbd_device *device)
+void kbd_driver_init(struct kbd_driver *driver)
 {
 
-    modules_device_init(&device->base, KBD_DEVICE_TYPE);
-    device->buffer.size = 256;
-    device->buffer.head = 0;
-    device->buffer.tail = 0;
-    device->buffer.getc = kbd_buffer_getc;
-    device->buffer.putc = kbd_buffer_putc;
-    device->map = mapUS;
-    device->escaped = 0;
-    device->toggleAlt = 0;
-    device->toggleCtrl = 0;
-    device->toggleShift = 0;
+    modules_driver_init(&driver->base, KBD_DRIVER_TYPE);
+    driver->buffer.size = 256;
+    driver->buffer.head = 0;
+    driver->buffer.tail = 0;
+    driver->buffer.getc = kbd_buffer_getc;
+    driver->buffer.putc = kbd_buffer_putc;
+    driver->map = mapUS;
+    driver->escaped = 0;
+    driver->toggleAlt = 0;
+    driver->toggleCtrl = 0;
+    driver->toggleShift = 0;
 
 }
 

@@ -84,7 +84,7 @@ void tty_device_init(struct tty_device *device, char *cwdname)
 
     modules_device_init(&device->base, TTY_DEVICE_TYPE);
     device->cursorOffset = 0;
-    device->kbdDevice = (struct kbd_device *)modules_get_device(KBD_DEVICE_TYPE);
+    device->kbdDriver = (struct kbd_device *)modules_get_driver(KBD_DRIVER_TYPE);
     device->vgaDevice = (struct vga_device *)modules_get_device(VGA_DEVICE_TYPE);
     device->vgaDevice->set_cursor_color(device->vgaDevice, TTY_COLOR_WHITE, TTY_COLOR_BLACK);
     device->clear = clear;

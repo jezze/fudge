@@ -51,7 +51,7 @@ static unsigned int in_read(struct vfs_node *self, unsigned int count, void *buf
 
         char c;
 
-        if (!device->kbdDevice->buffer.getc(&device->kbdDevice->buffer, &c))
+        if (!device->kbdDriver->buffer.getc(&device->kbdDriver->buffer, &c))
             break;
 
         ((char *)buffer)[i] = c;

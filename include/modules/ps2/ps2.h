@@ -3,8 +3,8 @@
 
 #define KBD_PORT_READ 0x60
 
-#define KBD_DEVICE_TYPE 5
-#define MOUSE_DEVICE_TYPE 59
+#define KBD_DRIVER_TYPE 5
+#define MOUSE_DRIVER_TYPE 59
 
 struct kbd_buffer
 {
@@ -18,10 +18,10 @@ struct kbd_buffer
 
 };
 
-struct kbd_device
+struct kbd_driver
 {
 
-    struct modules_device base;
+    struct modules_driver base;
     struct kbd_buffer buffer;
     char *map;
     unsigned int escaped;
@@ -31,11 +31,10 @@ struct kbd_device
 
 };
 
-
-struct mouse_device
+struct mouse_driver
 {
 
-    struct modules_device base;
+    struct modules_driver base;
     unsigned char cycle;
     char byte[3];
     char x;
@@ -43,8 +42,8 @@ struct mouse_device
 
 };
 
-extern void kbd_device_init(struct kbd_device *device);
-extern void mouse_device_init(struct mouse_device *device);
+extern void kbd_driver_init(struct kbd_driver *driver);
+extern void mouse_driver_init(struct mouse_driver *driver);
 
 #endif
 

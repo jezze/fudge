@@ -56,13 +56,13 @@ static unsigned char read()
 
 }
 
-void mouse_device_init(struct mouse_device *device)
+void mouse_driver_init(struct mouse_driver *driver)
 {
 
-    modules_device_init(&device->base, MOUSE_DEVICE_TYPE);
-    device->cycle = 0;
-    device->x = 0;
-    device->y = 0;
+    modules_driver_init(&driver->base, MOUSE_DRIVER_TYPE);
+    driver->cycle = 0;
+    driver->x = 0;
+    driver->y = 0;
 
     unsigned char status;
 
