@@ -19,6 +19,17 @@
 #define UART_SCR 7
 
 #define UART_DEVICE_TYPE 2
+#define UART_DRIVER_TYPE 232
+
+struct uart_device
+{
+
+    struct modules_device base;
+    unsigned int port;
+    char (*read)(struct uart_device *self);
+    void (*write)(struct uart_device *self, char c);
+
+};
 
 struct uart_buffer
 {
@@ -32,18 +43,16 @@ struct uart_buffer
 
 };
 
-struct uart_device
+struct uart_driver
 {
 
-    struct modules_device base;
+    struct modules_driver base;
     struct uart_buffer buffer;
-    unsigned int port;
-    char (*read)(struct uart_device *self);
-    void (*write)(struct uart_device *self, char c);
 
 };
 
 extern void uart_device_init(struct uart_device *device, unsigned int port);
+extern void uart_driver_init(struct uart_driver *driver);
 
 #endif
 

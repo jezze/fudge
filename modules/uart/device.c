@@ -5,40 +5,6 @@
 #include <kernel/kernel.h>
 #include <modules/uart/uart.h>
 
-static unsigned int uart_buffer_getc(struct uart_buffer *self, char *buffer)
-{
-
-    if (self->head != self->tail)
-    {
-
-        buffer[0] = self->buffer[self->tail];
-        self->tail = ((self->tail + 1) % self->size);
-
-        return 1;
-
-    }
-
-    return 0;
-
-}
-
-static unsigned int uart_buffer_putc(struct uart_buffer *self, char *buffer)
-{
-
-    if ((self->head + 1) % self->size != self->tail)
-    {
-
-        self->buffer[self->head] = buffer[0];
-        self->head = ((self->head + 1) % self->size);
-
-        return 1;
-
-    }
-
-    return 0;
-
-}
-
 static char uart_device_read(struct uart_device *self)
 {
 
@@ -61,11 +27,6 @@ void uart_device_init(struct uart_device *device, unsigned int port)
 {
 
     modules_device_init(&device->base, UART_DEVICE_TYPE);
-    device->buffer.size = 256;
-    device->buffer.head = 0;
-    device->buffer.tail = 0;
-    device->buffer.getc = uart_buffer_getc;
-    device->buffer.putc = uart_buffer_putc;
     device->port = port;
     device->read = uart_device_read;
     device->write = uart_device_write;
