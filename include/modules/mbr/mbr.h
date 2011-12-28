@@ -27,8 +27,7 @@ struct mbr_driver
 {
 
     struct modules_driver base;
-    struct ata_device *device;
-    struct mbr_partition *(*get_partition)(struct mbr_driver *self, unsigned int index);
+    struct mbr_partition *(*get_partition)(struct mbr_driver *self, struct ata_device *device, unsigned int index);
 
 };
 

@@ -8,13 +8,12 @@
 
 static struct mbr_partition partitions[MBR_PARTITION_SLOTS];
 
-static struct mbr_partition *mbr_driver_get_partition(struct mbr_driver *self, unsigned int index)
+static struct mbr_partition *mbr_driver_get_partition(struct mbr_driver *self, struct ata_device *device, unsigned int index)
 {
 
     char buffer[512];
-    struct mbr_driver *driver = (struct mbr_driver *)self;
 
-    driver->device->read_lba28(driver->device, 0, 1, buffer);
+    device->read_lba28(device, 0, 1, buffer);
 
     unsigned int i;
 
@@ -39,10 +38,6 @@ static void mbr_driver_attach(struct modules_driver *self, struct modules_device
 {
 
     device->driver = self;
-
-    struct mbr_driver *driver = (struct mbr_driver *)self;
-
-    driver->device = (struct ata_device *)device;
 
 }
 
