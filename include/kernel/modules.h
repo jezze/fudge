@@ -48,7 +48,6 @@ struct modules_driver
 };
 
 extern void modules_attach(struct modules_driver *driver);
-extern void modules_foreach(unsigned int (*test)(struct modules_module *module), void (*callback)(struct modules_module *module));
 extern struct modules_bus *modules_get_bus(unsigned int type, unsigned int index);
 extern struct modules_device *modules_get_device(unsigned int type, unsigned int index);
 extern struct modules_driver *modules_get_driver(unsigned int type, unsigned int index);

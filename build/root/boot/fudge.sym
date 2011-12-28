@@ -10,7 +10,6 @@ kernel_unregister_irq
 log_get
 log_write
 modules_attach
-modules_foreach
 modules_bus_init
 modules_device_init
 modules_driver_init

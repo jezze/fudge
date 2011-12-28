@@ -37,26 +37,6 @@ void modules_attach(struct modules_driver *driver)
 
 }
 
-void modules_foreach(unsigned int (*test)(struct modules_module *module), void (*callback)(struct modules_module *module))
-{
-
-    unsigned int i;
-
-    for (i = 0; i < MODULES_MODULE_SLOTS; i++)
-    {
-
-        struct modules_module *module = modules[i];
-
-        if (!module)
-            continue;
-
-        if (test(module))
-            callback(module);
-
-    }
-
-}
-
 struct modules_bus *modules_get_bus(unsigned int type, unsigned int index)
 {
 
