@@ -11,7 +11,7 @@
 #define RTC_FLAG_MONTH   0x08
 #define RTC_FLAG_YEAR    0x09
 
-#define RTC_DEVICE_TYPE 2000
+#define RTC_DEVICE_TYPE 0x2000
 
 struct rtc_device
 {

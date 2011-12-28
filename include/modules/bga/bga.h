@@ -22,7 +22,7 @@
 #define BGA_BPP_24 0x18
 #define BGA_BPP_32 0x20
 
-#define BGA_DRIVER_TYPE 593
+#define BGA_DRIVER_TYPE 0x0593
 
 struct bga_driver
 {

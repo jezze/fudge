@@ -3,8 +3,8 @@
 
 #define KBD_PORT_READ 0x60
 
-#define KBD_DRIVER_TYPE 5
-#define MOUSE_DRIVER_TYPE 59
+#define KBD_DRIVER_TYPE   0x0005
+#define MOUSE_DRIVER_TYPE 0x0059
 
 struct kbd_buffer
 {

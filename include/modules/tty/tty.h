@@ -22,7 +22,7 @@
 #define TTY_COLOR_WHITE      0x0f
 #define TTY_CWD_SIZE         256
 
-#define TTY_DEVICE_TYPE 1000
+#define TTY_DEVICE_TYPE 0x1000
 
 struct tty_device
 {

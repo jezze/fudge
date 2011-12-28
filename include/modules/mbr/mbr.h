@@ -5,7 +5,7 @@
 #define MBR_PARTITION_OFFSET 0x1BE
 #define MBR_PARTITION_SIZE 16
 
-#define MBR_DRIVER_TYPE 300
+#define MBR_DRIVER_TYPE 0x0300
 
 struct mbr_partition
 {

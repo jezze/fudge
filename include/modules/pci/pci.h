@@ -24,8 +24,8 @@
 #define PCI_CLASS_SIGNAL    0x11
 #define PCI_CLASS_OTHER     0xFF
 
-#define PCI_BUS_TYPE 4
-#define PCI_DEVICE_TYPE 6
+#define PCI_BUS_TYPE    0x0004
+#define PCI_DEVICE_TYPE 0x0006
 
 struct pci_configuration
 {

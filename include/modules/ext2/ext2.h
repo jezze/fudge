@@ -14,7 +14,7 @@
 #define EXT2_OSID_FREEBSD  3
 #define EXT2_OSID_OTHERBSD 4
 
-#define EXT2_DRIVER_TYPE 320
+#define EXT2_DRIVER_TYPE 0x0320
 
 struct ext2_superblock
 {

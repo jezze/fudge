@@ -59,8 +59,8 @@
 #define ATA_DEVICE_TYPE_SATA    0x03
 #define ATA_DEVICE_TYPE_SATAPI  0x04
 
-#define ATA_BUS_TYPE 2
-#define ATA_DEVICE_TYPE 4
+#define ATA_BUS_TYPE    0x0002
+#define ATA_DEVICE_TYPE 0x0004
 
 struct ata_bus;
 

@@ -18,8 +18,8 @@
 #define UART_MSR 6
 #define UART_SCR 7
 
-#define UART_DEVICE_TYPE 2
-#define UART_DRIVER_TYPE 232
+#define UART_DEVICE_TYPE 0x0002
+#define UART_DRIVER_TYPE 0x0232
 
 struct uart_device
 {

@@ -4,7 +4,7 @@
 #define PIT_HERTZ     1193180
 #define PIT_FREQUENCY 100
 
-#define PIT_DEVICE_TYPE 2202
+#define PIT_DEVICE_TYPE 0x2202
 
 struct pit_device
 {
