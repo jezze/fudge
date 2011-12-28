@@ -69,5 +69,11 @@ void init()
 void destroy()
 {
 
+    kernel_unregister_irq(0x0E);
+    kernel_unregister_irq(0x0F);
+
+    modules_unregister_bus(&primary.base);
+    modules_unregister_bus(&secondary.base);
+
 }
 
