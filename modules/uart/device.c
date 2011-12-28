@@ -23,11 +23,12 @@ static void uart_device_write(struct uart_device *self, char c)
 
 }
 
-void uart_device_init(struct uart_device *device, unsigned int port)
+void uart_device_init(struct uart_device *device, unsigned int port, unsigned int irq)
 {
 
     modules_device_init(&device->base, UART_DEVICE_TYPE);
     device->port = port;
+    device->irq = irq;
     device->read = uart_device_read;
     device->write = uart_device_write;
 

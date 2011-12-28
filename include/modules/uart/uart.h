@@ -26,6 +26,7 @@ struct uart_device
 
     struct modules_device base;
     unsigned int port;
+    unsigned int irq;
     char (*read)(struct uart_device *self);
     void (*write)(struct uart_device *self, char c);
 
@@ -51,7 +52,7 @@ struct uart_driver
 
 };
 
-extern void uart_device_init(struct uart_device *device, unsigned int port);
+extern void uart_device_init(struct uart_device *device, unsigned int port, unsigned int irq);
 extern void uart_driver_init(struct uart_driver *driver);
 
 #endif
