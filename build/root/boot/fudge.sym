@@ -18,9 +18,6 @@ modules_module_init
 modules_get_bus
 modules_get_device
 modules_get_driver
-modules_is_bus
-modules_is_device
-modules_is_driver
 modules_register_module
 modules_register_bus
 modules_register_device

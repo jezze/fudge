@@ -57,27 +57,6 @@ void modules_foreach(unsigned int (*test)(struct modules_module *module), void (
 
 }
 
-unsigned int modules_is_bus(struct modules_module *module)
-{
-
-    return module->type == MODULES_TYPE_BUS;
-
-}
-
-unsigned int modules_is_device(struct modules_module *module)
-{
-
-    return module->type == MODULES_TYPE_DEVICE;
-
-}
-
-unsigned int modules_is_driver(struct modules_module *module)
-{
-
-    return module->type == MODULES_TYPE_DRIVER;
-
-}
-
 struct modules_bus *modules_get_bus(unsigned int type, unsigned int index)
 {
 

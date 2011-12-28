@@ -8,35 +8,14 @@
 
 static struct mbr_driver driver;
 
-static unsigned int check_device(struct modules_module *module)
-{
-
-    if (!modules_is_device(module))
-        return 0;
-
-    if (((struct modules_device *)module)->type != ATA_DEVICE_TYPE)
-        return 0;
-
-    struct ata_device *device = (struct ata_device *)module;
-
-    return device->type == ATA_DEVICE_TYPE_ATA;
-
-}
-
-static void idriver(struct modules_module *module)
-{
-
-    struct ata_device *device = (struct ata_device *)module;
-
-    mbr_driver_init(&driver, device);
-    modules_register_driver(&driver.base);
-
-}
-
 void init()
 {
 
-    modules_foreach(check_device, idriver);
+    mbr_driver_init(&driver);
+    modules_register_driver(&driver.base);
+    modules_attach(&driver.base);
+
+//    driver.base.start(&driver.base);
 
 }
 
