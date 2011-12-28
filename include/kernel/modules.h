@@ -48,9 +48,9 @@ struct modules_driver
 };
 
 extern void modules_attach(struct modules_driver *driver);
-extern struct modules_bus *modules_get_bus(unsigned int type, unsigned int index);
-extern struct modules_device *modules_get_device(unsigned int type, unsigned int index);
-extern struct modules_driver *modules_get_driver(unsigned int type, unsigned int index);
+extern struct modules_bus *modules_get_bus(unsigned int type);
+extern struct modules_device *modules_get_device(unsigned int type);
+extern struct modules_driver *modules_get_driver(unsigned int type);
 extern void modules_register_module(struct modules_module *module);
 extern void modules_register_bus(struct modules_bus *bus);
 extern void modules_register_device(struct modules_device *device);
