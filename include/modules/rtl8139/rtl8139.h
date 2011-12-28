@@ -93,7 +93,6 @@ struct rtl8139_driver
     unsigned short io; 
     char mac[6];
     char rx[8192+16];
-    void (*start)(struct rtl8139_driver *self);
 
 };
 

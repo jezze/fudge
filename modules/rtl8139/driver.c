@@ -56,15 +56,48 @@ static void get_mac(struct rtl8139_driver *driver)
 
 }
 
-void rtl8139_driver_start(struct rtl8139_driver *self)
+static void handle_irq()
 {
 
-    poweron(self);
-    reset(self);
-    get_mac(self);
-    set_rx(self, 0x0F);
-    set_interrupt_flags(self, 0x05);
-    enable(self);
+}
+
+static void rtl8139_driver_start(struct modules_driver *self)
+{
+
+    struct rtl8139_driver *driver = (struct rtl8139_driver *)self;
+
+    poweron(driver);
+    reset(driver);
+    get_mac(driver);
+    set_rx(driver, 0x0F);
+    set_interrupt_flags(driver, 0x05);
+    enable(driver);
+
+}
+
+static void rtl8139_driver_attach(struct modules_driver *self, struct modules_device *device)
+{
+
+    device->driver = self;
+
+    struct rtl8139_driver *driver = (struct rtl8139_driver *)self;
+    struct pci_device *pciDevice = (struct pci_device *)device;
+
+    driver->io = (pciDevice->configuration.bar0 & ~1);
+
+    kernel_register_irq(pciDevice->configuration.interruptline, handle_irq);
+
+}
+
+static unsigned int rtl8139_driver_check(struct modules_driver *self, struct modules_device *device)
+{
+
+    if (device->type != PCI_DEVICE_TYPE)
+        return 0;
+
+    struct pci_device *pciDevice = (struct pci_device *)device;
+
+    return pciDevice->configuration.vendorid == 0x10EC && pciDevice->configuration.deviceid == 0x8139;
 
 }
 
@@ -72,7 +105,9 @@ void rtl8139_driver_init(struct rtl8139_driver *driver)
 {
 
     modules_driver_init(&driver->base, RTL8139_DRIVER_TYPE);
-    driver->start = rtl8139_driver_start;
+    driver->base.start = rtl8139_driver_start;
+    driver->base.attach = rtl8139_driver_attach;
+    driver->base.check = rtl8139_driver_check;
 
 }
 
