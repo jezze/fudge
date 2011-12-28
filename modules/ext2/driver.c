@@ -27,7 +27,7 @@ static unsigned int get_block(unsigned int index, unsigned int nodesize, unsigne
 
 }
 
-static void read()
+static void ext2_driver_start(struct modules_driver *self)
 {
 
     struct ata_bus *bus = (struct ata_bus *)modules_get_bus(ATA_BUS_TYPE, 0);
@@ -115,8 +115,7 @@ void ext2_driver_init(struct ext2_driver *driver)
 {
 
     modules_driver_init(&driver->base, EXT2_DRIVER_TYPE);
-
-    read(); // REMOVE
+    driver->base.start = ext2_driver_start;
 
 }
 
