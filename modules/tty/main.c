@@ -6,28 +6,28 @@
 #include <modules/ps2/ps2.h>
 #include <modules/tty/tty.h>
 
-static struct tty_device device;
+static struct tty_driver driver;
 
-struct tty_device *tty_get()
+struct tty_driver *tty_get()
 {
 
-    return &device;
+    return &driver;
 
 }
 
 void init()
 {
 
-    tty_device_init(&device, "home");
+    tty_driver_init(&driver, "home");
 
-    modules_register_device(&device.base);
+    modules_register_driver(&driver.base);
 
 }
 
 void destroy()
 {
 
-    modules_unregister_device(&device.base);
+    modules_unregister_driver(&driver.base);
 
 }
 

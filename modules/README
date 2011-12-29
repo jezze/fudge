@@ -11,7 +11,6 @@
 0x0004: ATA
 0x2000: RTC
 0x2202: PIT
-0x1000: TTY
 
 # List of driver types
 
@@ -22,3 +21,4 @@
 0x0320: Ext2
 0x0423: RTL8139
 0x0593: BGA
+0x1000: TTY

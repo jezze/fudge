@@ -16,11 +16,11 @@ static struct vfs_node ttyPwd;
 static unsigned int cwd_read(struct vfs_node *self, unsigned int count, void *buffer)
 {
 
-    struct tty_device *device = tty_get();
+    struct tty_driver *driver = tty_get();
 
-    count = string_length(device->cwdname);
+    count = string_length(driver->cwdname);
 
-    string_write(buffer, device->cwdname);
+    string_write(buffer, driver->cwdname);
 
     return count;
 
@@ -29,11 +29,11 @@ static unsigned int cwd_read(struct vfs_node *self, unsigned int count, void *bu
 static unsigned int cwd_write(struct vfs_node *self, unsigned int count, void *buffer)
 {
 
-    struct tty_device *device = tty_get();
+    struct tty_driver *driver = tty_get();
 
     count = string_length(buffer);
 
-    string_write(device->cwdname, buffer);
+    string_write(driver->cwdname, buffer);
 
     return count;
 
@@ -42,7 +42,7 @@ static unsigned int cwd_write(struct vfs_node *self, unsigned int count, void *b
 static unsigned int in_read(struct vfs_node *self, unsigned int count, void *buffer)
 {
 
-    struct tty_device *device = tty_get();
+    struct tty_driver *driver = tty_get();
 
     unsigned int i;
 
@@ -51,7 +51,7 @@ static unsigned int in_read(struct vfs_node *self, unsigned int count, void *buf
 
         char c;
 
-        if (!device->kbdDriver->buffer.getc(&device->kbdDriver->buffer, &c))
+        if (!driver->kbdDriver->buffer.getc(&driver->kbdDriver->buffer, &c))
             break;
 
         ((char *)buffer)[i] = c;
@@ -65,14 +65,14 @@ static unsigned int in_read(struct vfs_node *self, unsigned int count, void *buf
 static unsigned int out_write(struct vfs_node *self, unsigned int count, void *buffer)
 {
 
-    struct tty_device *device = tty_get();
+    struct tty_driver *driver = tty_get();
 
     unsigned int i;
 
     for (i = 0; i < count; i++)
-        device->putc(device, ((char *)buffer)[i]);
+        driver->putc(driver, ((char *)buffer)[i]);
 
-    device->vgaDevice->set_cursor_offset(device->vgaDevice, device->cursorOffset);
+    driver->vgaDevice->set_cursor_offset(driver->vgaDevice, driver->cursorOffset);
 
     return count;
 
@@ -81,7 +81,7 @@ static unsigned int out_write(struct vfs_node *self, unsigned int count, void *b
 static unsigned int pwd_read(struct vfs_node *self, unsigned int count, void *buffer)
 {
 
-    struct tty_device *device = tty_get();
+    struct tty_driver *driver = tty_get();
 
     void *out = buffer;
     unsigned int i;
@@ -94,7 +94,7 @@ static unsigned int pwd_read(struct vfs_node *self, unsigned int count, void *bu
         if (!filesystem)
             continue;
 
-        struct vfs_view *view = filesystem->find_view(filesystem, device->cwdname);
+        struct vfs_view *view = filesystem->find_view(filesystem, driver->cwdname);
 
         if (!view)
             continue;

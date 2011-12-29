@@ -22,24 +22,24 @@
 #define TTY_COLOR_WHITE      0x0f
 #define TTY_CWD_SIZE         256
 
-#define TTY_DEVICE_TYPE 0x1000
+#define TTY_DRIVER_TYPE 0x1000
 
-struct tty_device
+struct tty_driver
 {
 
-    struct modules_device base;
+    struct modules_driver base;
     char cwdname[32];
     unsigned short cursorOffset;
     struct kbd_driver *kbdDriver;
     struct vga_device *vgaDevice;
-    void (*clear)(struct tty_device *device);
-    void (*scroll)(struct tty_device *device);
-    void (*putc)(struct tty_device *device, char c);
+    void (*clear)(struct tty_driver *self);
+    void (*scroll)(struct tty_driver *self);
+    void (*putc)(struct tty_driver *self, char c);
 
 };
 
 extern struct vfs_view *tty_view_init();
-extern struct tty_device *tty_get();
-extern void tty_device_init(struct tty_device *device, char *cwdname);
+extern struct tty_driver *tty_get();
+extern void tty_driver_init(struct tty_driver *driver, char *cwdname);
 
 #endif
