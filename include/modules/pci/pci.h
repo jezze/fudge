@@ -81,8 +81,6 @@ struct pci_bus
     unsigned int num;
     struct pci_device devices[32];
     unsigned int devicesCount;
-    struct pci_device *(*find_device_by_id)(struct pci_bus *self, unsigned short vendorid, unsigned short deviceid, unsigned int index);
-    struct pci_device *(*find_device_by_class)(struct pci_bus *self, unsigned char classcode, unsigned char subclasscode, unsigned int index);
 
 };
 
