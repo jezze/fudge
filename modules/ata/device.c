@@ -6,6 +6,47 @@
 #include <kernel/modules.h>
 #include <modules/ata/ata.h>
 
+static void ata_device_configure_ata(struct ata_device *self, unsigned short *buffer)
+{
+
+    unsigned int lba48 = buffer[ATA_ID_SUPPORT] & (1 << 10);
+
+    self->lba28Max = (buffer[ATA_ID_LBA28MAX] << 16) | buffer[ATA_ID_LBA28MAX + 1];
+
+    if (lba48)
+    {
+
+        self->lba48MaxLow = (buffer[ATA_ID_LBA48MAX + 0] << 16) | buffer[ATA_ID_LBA48MAX + 1];
+        self->lba48MaxHigh = (buffer[ATA_ID_LBA48MAX + 2] << 16) | buffer[ATA_ID_LBA48MAX + 3];
+
+    }
+
+    unsigned int i;
+
+    char *model = (char *)&buffer[ATA_ID_MODEL];
+
+    for (i = 0; i < 40; i++)
+        self->model[i] = model[i + 1 - ((i & 1) << 1)];
+
+    self->model[40] = '\0';
+
+    for (i = 39; i > 0; i--)
+    {
+
+        if (self->model[i] == ' ')
+            self->model[i] = '\0';
+        else
+            break;
+
+    }
+
+}
+
+static void ata_device_configure_atapi(struct ata_device *self, unsigned short *buffer)
+{
+
+}
+
 static unsigned int ata_device_read_lba28(struct ata_device *self, unsigned int sector, unsigned int count, void *buffer)
 {
 
@@ -54,6 +95,8 @@ void ata_device_init(struct ata_device *device, struct ata_bus *bus, unsigned in
     device->bus = bus;
     device->type = type;
     device->secondary = secondary;
+    device->configure_ata = ata_device_configure_ata;
+    device->configure_atapi = ata_device_configure_atapi;
     device->lba28Max = 0;
     device->read_lba28 = ata_device_read_lba28;
     device->write_lba28 = ata_device_write_lba28;

@@ -73,6 +73,8 @@ struct ata_device
     unsigned int type;
     unsigned int secondary;
     unsigned char model[41];
+    void (*configure_ata)(struct ata_device *self, unsigned short *buffer);
+    void (*configure_atapi)(struct ata_device *self, unsigned short *buffer);
     unsigned int lba28Max;
     unsigned int (*read_lba28)(struct ata_device *self, unsigned int sector, unsigned int count, void *buffer);
     unsigned int (*write_lba28)(struct ata_device *self, unsigned int sector, unsigned int count, void *buffer);
