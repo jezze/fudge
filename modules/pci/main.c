@@ -23,11 +23,10 @@ static void add_device(unsigned int num, unsigned int slot, unsigned int functio
 void init()
 {
 
-    devicesCount = 0;
-
     pci_bus_init(&bus);
     modules_register_bus(&bus.base);
 
+    devicesCount = 0;
     bus.scan(&bus, 0, add_device);
 
 }
