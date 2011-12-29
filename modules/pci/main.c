@@ -4,7 +4,7 @@
 #include <kernel/modules.h>
 #include <modules/pci/pci.h>
 
-static struct pci_bus busses[8];
+static struct pci_bus bus;
 static struct pci_device devices[64];
 static unsigned int devicesCount;
 
@@ -38,29 +38,27 @@ unsigned char pci_inb(unsigned int address, unsigned short offset)
 
 }
 
-static void add_device(struct pci_bus *bus, unsigned short slot, unsigned short function)
+static void add_device(unsigned int num, unsigned short slot, unsigned short function)
 {
 
     struct pci_device *device = &devices[devicesCount];
 
-    pci_device_init(device, bus, slot, function, get_address(bus->num, slot, function));
+    pci_device_init(device, &bus, num, slot, function, get_address(num, slot, function));
     modules_register_device(&device->base);
 
     devicesCount++;
 
 }
 
-static unsigned int add_bus(struct pci_bus *bus, unsigned int num)
+static unsigned int scan(unsigned int num)
 {
-
-    pci_bus_init(bus, num);
 
     unsigned int slot;
 
     for (slot = 0; slot < 32; slot++)
     {
 
-        unsigned int address = get_address(bus->num, slot, 0x00);
+        unsigned int address = get_address(num, slot, 0x00);
 
         if (pci_inw(address, 0x00) == 0xFFFF)
             continue;
@@ -68,10 +66,10 @@ static unsigned int add_bus(struct pci_bus *bus, unsigned int num)
         unsigned short header = pci_inb(address, 0x0E);
 
         if ((header & 0x01))
-            return pci_inb(address, 0x19);
+            scan(pci_inb(address, 0x19));
 
         if ((header & 0x02))
-            return pci_inb(address, 0x18);
+            scan(pci_inb(address, 0x18));
 
         if ((header & 0x80))
         {
@@ -81,12 +79,12 @@ static unsigned int add_bus(struct pci_bus *bus, unsigned int num)
             for (function = 0; function < 8; function++)
             {
 
-                unsigned int address = get_address(bus->num, slot, function);
+                unsigned int address = get_address(num, slot, function);
 
                 if (pci_inw(address, 0x00) == 0xFFFF)
                     continue;
 
-                add_device(bus, slot, function);
+                add_device(num, slot, function);
 
             }
 
@@ -94,7 +92,7 @@ static unsigned int add_bus(struct pci_bus *bus, unsigned int num)
 
         }
     
-        add_device(bus, slot, 0);
+        add_device(num, slot, 0);
 
     }
 
@@ -107,16 +105,17 @@ void init()
 
     devicesCount = 0;
 
-    unsigned int i = 0;
-    unsigned int num = 0;
+    pci_bus_init(&bus);
+    modules_register_bus(&bus.base);
 
-    for (i = 0; (num = add_bus(&busses[i], num)); i++)
-        modules_register_bus(&busses[i].base);
+    scan(0);
 
 }
 
 void destroy()
 {
+
+    modules_unregister_bus(&bus.base);
 
 }
 

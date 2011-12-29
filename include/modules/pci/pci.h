@@ -61,32 +61,30 @@ struct pci_configuration
 
 };
 
-struct pci_bus;
+struct pci_bus
+{
+
+    struct modules_bus base;
+
+};
 
 struct pci_device
 {
 
     struct modules_device base;
     struct pci_bus *bus;
+    unsigned int num;
     unsigned int slot;
     unsigned int function;
     struct pci_configuration configuration;
 
 };
 
-struct pci_bus
-{
-
-    struct modules_bus base;
-    unsigned int num;
-
-};
-
 extern unsigned int pci_ind(unsigned int address, unsigned short offset);
 extern unsigned char pci_inb(unsigned int address, unsigned short offset);
 extern unsigned short pci_inw(unsigned int address, unsigned short offset);
-extern void pci_bus_init(struct pci_bus *bus, unsigned int num);
-extern void pci_device_init(struct pci_device *device, struct pci_bus *bus, unsigned int slot, unsigned int function, unsigned int address);
+extern void pci_bus_init(struct pci_bus *bus);
+extern void pci_device_init(struct pci_device *device, struct pci_bus *bus, unsigned int num, unsigned int slot, unsigned int function, unsigned int address);
 
 #endif
 

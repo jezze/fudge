@@ -4,11 +4,12 @@
 #include <kernel/modules.h>
 #include <modules/pci/pci.h>
 
-void pci_device_init(struct pci_device *device, struct pci_bus *bus, unsigned int slot, unsigned int function, unsigned int address)
+void pci_device_init(struct pci_device *device, struct pci_bus *bus, unsigned int num, unsigned int slot, unsigned int function, unsigned int address)
 {
 
     modules_device_init(&device->base, PCI_DEVICE_TYPE);
     device->bus = bus;
+    device->num = num;
     device->slot = slot;
     device->function = function;
     device->configuration.vendorid = pci_inw(address, 0x00);
