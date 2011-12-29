@@ -9,10 +9,7 @@ static struct vfs_filesystem filesystem;
 static void modules_attach(struct modules_driver *driver)
 {
 
-    if (!driver->check)
-        return;
-
-    if (!driver->attach)
+    if (!driver->check || !driver->attach)
         return;
 
     unsigned int i;
@@ -22,13 +19,13 @@ static void modules_attach(struct modules_driver *driver)
 
         struct modules_module *module = modules[i];
 
-        if (!module)
-            continue;
-
-        if (module->type != MODULES_TYPE_DEVICE)
+        if (!module || module->type != MODULES_TYPE_DEVICE)
             continue;
 
         struct modules_device *device = (struct modules_device *)module;
+
+        if (device->driver)
+            continue;
 
         if (driver->check(driver, device))
             driver->attach(driver, device);
@@ -45,10 +42,12 @@ struct modules_bus *modules_get_bus(unsigned int type)
     for (i = 0; i < MODULES_MODULE_SLOTS; i++)
     {
 
-        if (modules[i]->type != MODULES_TYPE_BUS)
+        struct modules_module *module = modules[i];
+
+        if (!module || module->type != MODULES_TYPE_BUS)
             continue;
 
-        struct modules_bus *bus = (struct modules_bus *)modules[i];
+        struct modules_bus *bus = (struct modules_bus *)module;
 
         if (bus->type == type)
             return bus;
@@ -67,10 +66,12 @@ struct modules_device *modules_get_device(unsigned int type)
     for (i = 0; i < MODULES_MODULE_SLOTS; i++)
     {
 
-        if (modules[i]->type != MODULES_TYPE_DEVICE)
+        struct modules_module *module = modules[i];
+
+        if (!module || module->type != MODULES_TYPE_DEVICE)
             continue;
 
-        struct modules_device *device = (struct modules_device *)modules[i];
+        struct modules_device *device = (struct modules_device *)module;
 
         if (device->type == type)
             return device;
@@ -89,10 +90,12 @@ struct modules_driver *modules_get_driver(unsigned int type)
     for (i = 0; i < MODULES_MODULE_SLOTS; i++)
     {
 
-        if (modules[i]->type != MODULES_TYPE_DRIVER)
+        struct modules_module *module = modules[i];
+
+        if (!module || module->type != MODULES_TYPE_DRIVER)
             continue;
 
-        struct modules_driver *driver = (struct modules_driver *)modules[i];
+        struct modules_driver *driver = (struct modules_driver *)module;
 
         if (driver->type == type)
             return driver;
@@ -195,14 +198,13 @@ static struct vfs_view *modules_filesystem_find_view(struct vfs_filesystem *self
     for (i = 0; i < MODULES_MODULE_SLOTS; i++)
     {
 
-        if (!modules[i])
+        struct modules_module *module = modules[i];
+
+        if (!module || !module->view)
             continue;
 
-        if (!modules[i]->view)
-            continue;
-
-        if (!string_compare(modules[i]->view->name, name))
-            return modules[i]->view;
+        if (!string_compare(module->view->name, name))
+            return module->view;
 
     }
 
