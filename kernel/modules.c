@@ -6,7 +6,7 @@
 static struct modules_module *modules[MODULES_MODULE_SLOTS];
 static struct vfs_filesystem filesystem;
 
-void modules_attach(struct modules_driver *driver)
+static void modules_attach(struct modules_driver *driver)
 {
 
     if (!driver->check)
@@ -140,6 +140,7 @@ void modules_register_driver(struct modules_driver *driver)
 {
 
     modules_register_module(&driver->module);
+    modules_attach(driver);
 
 }
 

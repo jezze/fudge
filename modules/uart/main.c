@@ -39,7 +39,6 @@ void init()
 
     uart_driver_init(&driver);
     modules_register_driver(&driver.base);
-    modules_attach(&driver.base);
 
     kernel_register_irq(0x03, handle_irq);
     kernel_register_irq(0x04, handle_irq);
