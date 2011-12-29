@@ -10,7 +10,6 @@ void init()
 {
 
     vga_device_init(&device);
-
     modules_register_device(&device.base);
 
 }

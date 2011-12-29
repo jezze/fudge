@@ -19,7 +19,6 @@ void init()
 {
 
     tty_driver_init(&driver, "home");
-
     modules_register_driver(&driver.base);
 
 }

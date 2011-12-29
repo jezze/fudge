@@ -14,9 +14,9 @@ void init()
 {
 
     ata_bus_init(&primary, ATA_MASTER_PRIMARY_CONTROL, ATA_MASTER_PRIMARY_DATA, 0x0E);
-    modules_register_bus(&primary.base);
-
     ata_bus_init(&secondary, ATA_MASTER_SECONDARY_CONTROL, ATA_MASTER_SECONDARY_DATA, 0x0F);
+
+    modules_register_bus(&primary.base);
     modules_register_bus(&secondary.base);
 
 }

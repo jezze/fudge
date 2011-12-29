@@ -20,5 +20,7 @@ void init()
 void destroy()
 {
 
+    modules_unregister_driver(&driver.base);
+
 }
 

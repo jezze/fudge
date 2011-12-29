@@ -34,6 +34,11 @@ void init()
 void destroy()
 {
 
+    unsigned int i;
+
+    for (i = 0; i < devicesCount; i++)
+        modules_unregister_device(&devices[i].base);
+
     modules_unregister_bus(&bus.base);
 
 }
