@@ -180,12 +180,18 @@ static struct ata_device *ata_bus_find_device(struct ata_bus *self, unsigned int
 
 }
 
-void ata_bus_init(struct ata_bus *bus, unsigned int control, unsigned int data)
+static void handle_irq()
+{
+
+}
+
+void ata_bus_init(struct ata_bus *bus, unsigned int control, unsigned int data, unsigned int irq)
 {
 
     modules_bus_init(&bus->base, ATA_BUS_TYPE);
     bus->control = control;
     bus->data = data;
+    bus->irq = irq;
     bus->sleep = ata_bus_sleep;
     bus->wait = ata_bus_wait;
     bus->select = ata_bus_select;
@@ -195,6 +201,8 @@ void ata_bus_init(struct ata_bus *bus, unsigned int control, unsigned int data)
     bus->detect = ata_bus_detect;
     bus->find_device = ata_bus_find_device;
     bus->read_blocks = ata_bus_read_blocks;
+
+    kernel_register_irq(bus->irq, handle_irq);
 
     unsigned short buffer[256];
 
