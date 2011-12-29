@@ -79,14 +79,12 @@ struct pci_bus
 
     struct modules_bus base;
     unsigned int num;
-    struct pci_device devices[32];
-    unsigned int devicesCount;
 
 };
 
-extern unsigned int pci_bus_ind(unsigned int address, unsigned short offset);
-extern unsigned char pci_bus_inb(unsigned int address, unsigned short offset);
-extern unsigned short pci_bus_inw(unsigned int address, unsigned short offset);
+extern unsigned int pci_ind(unsigned int address, unsigned short offset);
+extern unsigned char pci_inb(unsigned int address, unsigned short offset);
+extern unsigned short pci_inw(unsigned int address, unsigned short offset);
 extern void pci_bus_init(struct pci_bus *bus, unsigned int num);
 extern void pci_device_init(struct pci_device *device, struct pci_bus *bus, unsigned int slot, unsigned int function, unsigned int address);
 
