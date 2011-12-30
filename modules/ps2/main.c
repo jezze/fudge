@@ -60,7 +60,7 @@ static void handle_kbd_irq(struct modules_device *self)
 
     }
 
-    event_handle(EVENT_IRQ_KBD);
+    event_raise(EVENT_IRQ_KBD);
 
 }
 
@@ -97,7 +97,7 @@ static void handle_mouse_irq(struct modules_device *self)
 
     }
 
-    event_handle(EVENT_IRQ_MOUSE);
+    event_raise(EVENT_IRQ_MOUSE);
 
 }
 

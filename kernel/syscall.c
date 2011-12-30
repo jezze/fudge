@@ -28,7 +28,7 @@ unsigned int syscall_close(unsigned int fd)
 
     task->remove_descriptor(task, fd);
 
-    event_handle(EVENT_SYSCALL_CLOSE);
+    event_raise(EVENT_SYSCALL_CLOSE);
 
     return 1;
 
@@ -105,7 +105,7 @@ unsigned int syscall_execute(char *path, unsigned int argc, char **argv)
     task->add_descriptor(task, sout);
     task->add_descriptor(task, serror);
 
-    event_handle(EVENT_SYSCALL_EXECUTE);
+    event_raise(EVENT_SYSCALL_EXECUTE);
 
     return task->id;
 
@@ -128,7 +128,7 @@ unsigned int syscall_exit()
 
     runtime_activate(ptask);
 
-    event_handle(EVENT_SYSCALL_EXIT);
+    event_raise(EVENT_SYSCALL_EXIT);
 
     return ptask->id;
 
@@ -151,7 +151,7 @@ unsigned int syscall_load(char *path)
 
     init();
 
-    event_handle(EVENT_SYSCALL_LOAD);
+    event_raise(EVENT_SYSCALL_LOAD);
 
     return 1;
 
@@ -175,7 +175,7 @@ unsigned int syscall_open(char *view, char *name)
     if (!descriptor)
         return 0;
 
-    event_handle(EVENT_SYSCALL_OPEN);
+    event_raise(EVENT_SYSCALL_OPEN);
 
     return descriptor->id;
 
@@ -196,7 +196,7 @@ unsigned int syscall_read(unsigned int fd, unsigned int count, char *buffer)
 
     unsigned int c = node->read(node, count, buffer);
 
-    event_handle(EVENT_SYSCALL_READ);
+    event_raise(EVENT_SYSCALL_READ);
 
     return c;
 
@@ -226,7 +226,7 @@ unsigned int syscall_unload(char *path)
 
     destroy();
 
-    event_handle(EVENT_SYSCALL_UNLOAD);
+    event_raise(EVENT_SYSCALL_UNLOAD);
 
     return 1;
 
@@ -247,7 +247,7 @@ unsigned int syscall_wait()
 
     runtime_activate(task);
 
-    event_handle(EVENT_SYSCALL_WAIT);
+    event_raise(EVENT_SYSCALL_WAIT);
 
     return 1;
 
@@ -268,7 +268,7 @@ unsigned int syscall_write(unsigned int fd, unsigned int count, char *buffer)
 
     unsigned int c = node->write(node, count, buffer);
 
-    event_handle(EVENT_SYSCALL_WRITE);
+    event_raise(EVENT_SYSCALL_WRITE);
 
     return c;
 

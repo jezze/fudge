@@ -10,7 +10,7 @@ void irq_handle(struct irq_registers *registers)
 
     runtime_set_state(registers->eip, registers->useresp, registers->ebp);
 
-    irq_routine(registers->index);
+    irq_raise(registers->index);
 
     if (registers->slave)
         io_outb(0xA0, 0x20);

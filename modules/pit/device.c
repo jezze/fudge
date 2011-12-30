@@ -11,7 +11,7 @@ static void pit_handle_irq(struct modules_device *self)
 
     device->jiffies += 1;
 
-    event_handle(EVENT_IRQ_PIT);
+    event_raise(EVENT_IRQ_PIT);
 
 }
 
