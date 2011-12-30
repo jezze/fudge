@@ -97,19 +97,17 @@ static void handle_input(char c)
 
 }
 
-static void poll()
+static void read_keyboard()
 {
 
     char c;
 
-    for (;;)
-    {
+    unsigned int num = file_read(FILE_STDIN, 1, &c);
 
-        while (!file_read(FILE_STDIN, 1, &c));
-
+    if (num)
         handle_input(c);
 
-    }
+    call_wait();
 
 }
 
@@ -120,7 +118,9 @@ void main(int argc, char *argv[])
     file_write_format(FILE_STDOUT, "Write `cat help.txt` for a short list if commands\n\n");
 
     clear();
-    poll();
+
+    call_attach(0x01, read_keyboard);
+    call_wait();
 
 }
 
