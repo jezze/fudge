@@ -8,18 +8,7 @@
 void irq_handle(struct irq_registers *registers)
 {
 
-    struct runtime_task *task = runtime_get_running_task();
-
-    if (task)
-    {
-
-        void *ip = (void *)registers->eip;
-        void *sp = (void *)registers->useresp;
-        void *sb = (void *)registers->ebp;
-
-        task->save_registers(task, ip, sp, sb);
-
-    }
+    runtime_set_state(registers->eip, registers->useresp, registers->ebp);
 
     irq_routine(registers->index);
 
@@ -28,16 +17,7 @@ void irq_handle(struct irq_registers *registers)
 
     io_outb(0x20, 0x20);
 
-    struct runtime_task *atask = runtime_get_running_task();
-
-    if (atask)
-    {
-
-        registers->eip = (unsigned int)atask->registers.ip;
-        registers->useresp = (unsigned int)atask->registers.sp;
-        registers->ebp = (unsigned int)atask->registers.sb;
-
-    }
+    runtime_get_state(&registers->eip, &registers->useresp, &registers->ebp);
 
 }
 

@@ -129,31 +129,9 @@ void syscall_handle(struct syscall_registers *registers)
     if (!routine)
         return;
 
-    struct runtime_task *task = runtime_get_running_task();
-
-    if (task)
-    {
-
-        void *ip = (void *)registers->eip;
-        void *sp = (void *)registers->useresp;
-        void *sb = (void *)registers->ebp;
-
-        task->save_registers(task, ip, sp, sb);
-
-    }
-
+    runtime_set_state(registers->eip, registers->useresp, registers->ebp);
     routine(registers);
-
-    struct runtime_task *atask = runtime_get_running_task();
-
-    if (atask)
-    {
-
-        registers->eip = (unsigned int)atask->registers.ip;
-        registers->useresp = (unsigned int)atask->registers.sp;
-        registers->ebp = (unsigned int)atask->registers.sb;
-
-    }
+    runtime_get_state(&registers->eip, &registers->useresp, &registers->ebp);
 
 }
 

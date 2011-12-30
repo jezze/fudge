@@ -87,9 +87,9 @@ static unsigned int runtime_task_load(struct runtime_task *self, void *paddress,
     stack = memory_copy(stack - 0x4, &entry, 4);
 
     self->used = 1;
-    self->registers.ip = entry;
-    self->registers.sp = stack + reloc;
-    self->registers.sb = stack + reloc;
+    self->registers.ip = (unsigned int)entry;
+    self->registers.sp = (unsigned int)(stack + reloc);
+    self->registers.sb = (unsigned int)(stack + reloc);
 
     return 1;
 
@@ -107,12 +107,31 @@ static void runtime_task_unload(struct runtime_task *self)
 
 }
 
-static void runtime_task_save_registers(struct runtime_task *self, void *ip, void *sp, void *sb)
+void runtime_set_state(unsigned int ip, unsigned int sp, unsigned int sb)
 {
 
-    self->registers.ip = ip;
-    self->registers.sp = sp;
-    self->registers.sb = sb;
+    struct runtime_task *task = runtime_get_running_task();
+
+    if (!task)
+        return;
+
+    task->registers.ip = ip;
+    task->registers.sp = sp;
+    task->registers.sb = sb;
+
+}
+
+void runtime_get_state(unsigned int *ip, unsigned int *sp, unsigned int *sb)
+{
+
+    struct runtime_task *task = runtime_get_running_task();
+
+    if (!task)
+        return;
+
+    *ip = task->registers.ip;
+    *sp = task->registers.sp;
+    *sb = task->registers.sb;
 
 }
 
@@ -181,7 +200,6 @@ void runtime_task_init(struct runtime_task *task, unsigned int id)
     task->used = 0;
     task->load = runtime_task_load;
     task->unload = runtime_task_unload;
-    task->save_registers = runtime_task_save_registers;
     task->add_descriptor = runtime_task_add_descriptor;
     task->get_descriptor = runtime_task_get_descriptor;
     task->remove_descriptor = runtime_task_remove_descriptor;

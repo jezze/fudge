@@ -58,7 +58,7 @@ unsigned int event_handle(unsigned int index)
 
     }
 
-    etask->registers.ip = event->routine;
+    etask->registers.ip = (unsigned int)event->routine;
 
     return 1;
 
