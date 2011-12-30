@@ -3,8 +3,16 @@
 
 #define IRQ_ROUTINE_SLOTS 16
 
-extern void irq_register_routine(unsigned char index, void (*routine)());
-extern void irq_unregister_routine(unsigned char index);
+struct irq_routine
+{
+
+    struct modules_device *device;
+    void (*callback)(struct modules_device *device);
+
+};
+
+extern void irq_register_routine(unsigned char index, struct modules_device *device, void (*callback)(struct modules_device *device));
+extern void irq_unregister_routine(unsigned char index, struct modules_device *device);
 extern void irq_routine(unsigned char index);
 
 #endif

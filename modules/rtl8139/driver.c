@@ -56,7 +56,7 @@ static void get_mac(struct rtl8139_driver *driver)
 
 }
 
-static void handle_irq()
+static void handle_irq(struct modules_device *self)
 {
 
 }
@@ -85,7 +85,7 @@ static void rtl8139_driver_attach(struct modules_driver *self, struct modules_de
 
     driver->io = (pciDevice->configuration.bar0 & ~1);
 
-    irq_register_routine(pciDevice->configuration.interruptline, handle_irq);
+    irq_register_routine(pciDevice->configuration.interruptline, device, handle_irq);
 
 }
 

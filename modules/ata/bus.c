@@ -161,8 +161,6 @@ void ata_bus_init(struct ata_bus *bus, unsigned int control, unsigned int data, 
     bus->find_device = ata_bus_find_device;
     bus->read_blocks = ata_bus_read_blocks;
 
-    irq_register_routine(bus->irq, handle_irq);
-
     unsigned short buffer[256];
 
     unsigned int type;

@@ -7,7 +7,7 @@
 static struct kbd_driver kbdDriver;
 static struct mouse_driver mouseDriver;
 
-static void handle_kbd_irq()
+static void handle_kbd_irq(struct modules_device *self)
 {
 
     struct kbd_driver *kbd = &kbdDriver;
@@ -64,7 +64,7 @@ static void handle_kbd_irq()
 
 }
 
-static void handle_mouse_irq()
+static void handle_mouse_irq(struct modules_device *self)
 {
 
     struct mouse_driver *mouse = &mouseDriver;
@@ -110,16 +110,16 @@ void init()
     modules_register_driver(&kbdDriver.base);
     modules_register_driver(&mouseDriver.base);
 
-    irq_register_routine(0x01, handle_kbd_irq);
-    irq_register_routine(0x0C, handle_mouse_irq);
+    irq_register_routine(0x01, 0, handle_kbd_irq);
+    irq_register_routine(0x0C, 0, handle_mouse_irq);
 
 }
 
 void destroy()
 {
 
-    irq_unregister_routine(0x01);
-    irq_unregister_routine(0x0C);
+    irq_unregister_routine(0x01, 0);
+    irq_unregister_routine(0x0C, 0);
 
     modules_unregister_driver(&kbdDriver.base);
     modules_unregister_driver(&mouseDriver.base);
