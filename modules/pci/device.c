@@ -8,6 +8,7 @@ void pci_device_init(struct pci_device *device, struct pci_bus *bus, unsigned in
 {
 
     modules_device_init(&device->base, PCI_DEVICE_TYPE);
+
     device->bus = bus;
     device->num = num;
     device->slot = slot;

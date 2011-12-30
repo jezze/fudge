@@ -223,31 +223,31 @@ void modules_module_init(struct modules_module *module, unsigned int type)
 void modules_bus_init(struct modules_bus *bus, unsigned int type)
 {
 
-    bus->type = type;
-
     modules_module_init(&bus->module, MODULES_TYPE_BUS);
+
+    bus->type = type;
 
 }
 
 void modules_device_init(struct modules_device *device, unsigned int type)
 {
 
+    modules_module_init(&device->module, MODULES_TYPE_DEVICE);
+
     device->type = type;
     device->driver = 0;
-
-    modules_module_init(&device->module, MODULES_TYPE_DEVICE);
 
 }
 
 void modules_driver_init(struct modules_driver *driver, unsigned int type)
 {
 
+    modules_module_init(&driver->module, MODULES_TYPE_DRIVER);
+
     driver->type = type;
     driver->start = 0;
     driver->attach = 0;
     driver->check = 0;
-
-    modules_module_init(&driver->module, MODULES_TYPE_DRIVER);
 
 }
 

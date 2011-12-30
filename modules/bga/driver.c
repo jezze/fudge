@@ -113,6 +113,7 @@ void bga_driver_init(struct bga_driver *driver)
 {
 
     modules_driver_init(&driver->base, BGA_DRIVER_TYPE);
+
     driver->base.start = bga_driver_start;
     driver->base.attach = bga_driver_attach;
     driver->base.check = bga_driver_check;

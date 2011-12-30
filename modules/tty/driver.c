@@ -81,6 +81,7 @@ void tty_driver_init(struct tty_driver *driver, char *cwdname)
 {
 
     modules_driver_init(&driver->base, TTY_DRIVER_TYPE);
+
     driver->cursorOffset = 0;
     driver->kbdDriver = (struct kbd_driver *)modules_get_driver(KBD_DRIVER_TYPE);
     driver->vgaDevice = (struct vga_device *)modules_get_device(VGA_DEVICE_TYPE);
@@ -88,6 +89,7 @@ void tty_driver_init(struct tty_driver *driver, char *cwdname)
     driver->clear = tty_driver_clear;
     driver->scroll = tty_driver_scroll;
     driver->putc = tty_driver_putc;
+
     string_write(driver->cwdname, cwdname);
 
     driver->clear(driver);

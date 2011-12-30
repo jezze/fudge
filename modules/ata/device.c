@@ -87,6 +87,7 @@ void ata_device_init(struct ata_device *device, struct ata_bus *bus, unsigned in
 {
 
     modules_device_init(&device->base, ATA_DEVICE_TYPE);
+
     device->bus = bus;
     device->type = type;
     device->secondary = secondary;

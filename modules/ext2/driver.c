@@ -113,6 +113,7 @@ void ext2_driver_init(struct ext2_driver *driver)
 {
 
     modules_driver_init(&driver->base, EXT2_DRIVER_TYPE);
+
     driver->base.start = ext2_driver_start;
 
 }

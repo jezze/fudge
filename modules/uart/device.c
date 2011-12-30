@@ -37,6 +37,7 @@ void uart_device_init(struct uart_device *device, unsigned int port, unsigned in
 {
 
     modules_device_init(&device->base, UART_DEVICE_TYPE);
+
     device->port = port;
     device->read = uart_device_read;
     device->write = uart_device_write;

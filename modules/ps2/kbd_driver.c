@@ -61,6 +61,7 @@ void kbd_driver_init(struct kbd_driver *driver)
 {
 
     modules_driver_init(&driver->base, KBD_DRIVER_TYPE);
+
     driver->buffer.size = 256;
     driver->buffer.head = 0;
     driver->buffer.tail = 0;

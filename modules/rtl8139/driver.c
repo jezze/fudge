@@ -103,6 +103,7 @@ void rtl8139_driver_init(struct rtl8139_driver *driver)
 {
 
     modules_driver_init(&driver->base, RTL8139_DRIVER_TYPE);
+
     driver->base.start = rtl8139_driver_start;
     driver->base.attach = rtl8139_driver_attach;
     driver->base.check = rtl8139_driver_check;

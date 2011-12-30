@@ -59,6 +59,7 @@ void mouse_driver_init(struct mouse_driver *driver)
 {
 
     modules_driver_init(&driver->base, MOUSE_DRIVER_TYPE);
+
     driver->cycle = 0;
     driver->x = 0;
     driver->y = 0;

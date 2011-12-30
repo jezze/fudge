@@ -61,6 +61,7 @@ void uart_driver_init(struct uart_driver *driver)
 {
 
     modules_driver_init(&driver->base, UART_DRIVER_TYPE);
+
     driver->base.start = uart_driver_start;
     driver->base.attach = uart_driver_attach;
     driver->base.check = uart_driver_check;

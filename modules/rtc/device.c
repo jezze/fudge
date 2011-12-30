@@ -25,6 +25,7 @@ void rtc_device_init(struct rtc_device *device)
 {
 
     modules_device_init(&device->base, RTC_DEVICE_TYPE);
+
     device->get_value = get_value;
 
 }

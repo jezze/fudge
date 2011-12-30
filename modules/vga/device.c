@@ -69,6 +69,7 @@ void vga_device_init(struct vga_device *device)
 {
 
     modules_device_init(&device->base, VGA_DEVICE_TYPE);
+
     device->read_framebuffer = vga_device_read_framebuffer;
     device->write_framebuffer = vga_device_write_framebuffer;
     device->set_cursor_color = vga_device_set_cursor_color;

@@ -146,6 +146,7 @@ void ata_bus_init(struct ata_bus *bus, unsigned int control, unsigned int data, 
 {
 
     modules_bus_init(&bus->base, ATA_BUS_TYPE);
+
     bus->control = control;
     bus->data = data;
     bus->irq = irq;

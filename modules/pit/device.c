@@ -19,6 +19,7 @@ void pit_device_init(struct pit_device *device)
 {
 
     modules_device_init(&device->base, PIT_DEVICE_TYPE);
+
     device->divisor = PIT_HERTZ / PIT_FREQUENCY;
     device->jiffies = 0;
 
