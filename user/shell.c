@@ -100,12 +100,13 @@ static void handle_input(char c)
 static void read_keyboard()
 {
 
-    char c;
+    char buffer[32];
 
-    unsigned int num = file_read(FILE_STDIN, 1, &c);
+    unsigned int num = file_read(FILE_STDIN, 32, buffer);
+    unsigned int i;
 
-    if (num)
-        handle_input(c);
+    for (i = 0; i < num; i++)
+        handle_input(buffer[i]);
 
     call_wait();
 
@@ -114,14 +115,16 @@ static void read_keyboard()
 static void poll()
 {
 
-    char c;
+    char buffer[32];
 
     for (;;)
     {
 
-        while (!file_read(FILE_STDIN, 1, &c));
+        unsigned int num = file_read(FILE_STDIN, 32, buffer);
+        unsigned int i;
 
-        handle_input(c);
+        for (i = 0; i < num; i++)
+            handle_input(buffer[i]);
 
     }
 
