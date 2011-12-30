@@ -1,8 +1,5 @@
-#include <lib/memory.h>
-#include <lib/string.h>
-#include <kernel/arch/x86/io.h>
+#include <kernel/irq.h>
 #include <kernel/modules.h>
-#include <kernel/kernel.h>
 #include <modules/uart/uart.h>
 
 static struct uart_device device1;
@@ -37,16 +34,16 @@ void init()
     modules_register_device(&device4.base);
     modules_register_driver(&driver.base);
 
-    kernel_register_irq(0x03, handle_irq);
-    kernel_register_irq(0x04, handle_irq);
+    irq_register_routine(0x03, handle_irq);
+    irq_register_routine(0x04, handle_irq);
 
 }
 
 void destroy()
 {
 
-    kernel_unregister_irq(0x03);
-    kernel_unregister_irq(0x04);
+    irq_unregister_routine(0x03);
+    irq_unregister_routine(0x04);
 
     modules_unregister_driver(&driver.base);
     modules_unregister_device(&device1.base);

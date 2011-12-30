@@ -1,7 +1,7 @@
 #include <lib/string.h>
 #include <kernel/arch/x86/io.h>
+#include <kernel/irq.h>
 #include <kernel/modules.h>
-#include <kernel/kernel.h>
 #include <kernel/vfs.h>
 #include <modules/pci/pci.h>
 #include <modules/rtl8139/rtl8139.h>
@@ -85,7 +85,7 @@ static void rtl8139_driver_attach(struct modules_driver *self, struct modules_de
 
     driver->io = (pciDevice->configuration.bar0 & ~1);
 
-    kernel_register_irq(pciDevice->configuration.interruptline, handle_irq);
+    irq_register_routine(pciDevice->configuration.interruptline, handle_irq);
 
 }
 

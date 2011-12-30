@@ -5,8 +5,8 @@ io_ind
 io_outb
 io_outw
 io_outd
-kernel_register_irq
-kernel_unregister_irq
+irq_register_routine
+irq_unregister_routine
 log_get
 log_write
 modules_bus_init

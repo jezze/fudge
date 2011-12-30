@@ -33,20 +33,6 @@ void kernel_reboot()
 
 }
 
-void kernel_register_irq(unsigned int index, void (*routine)())
-{
-
-    irq_register_routine(index, routine);
-
-}
-
-void kernel_unregister_irq(unsigned int index)
-{
-
-    irq_unregister_routine(index);
-
-}
-
 void kernel_core_init(struct kernel_core *core, struct kernel_arch *arch)
 {
 

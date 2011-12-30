@@ -1,7 +1,7 @@
 #include <lib/memory.h>
 #include <lib/string.h>
 #include <kernel/arch/x86/io.h>
-#include <kernel/kernel.h>
+#include <kernel/irq.h>
 #include <kernel/log.h>
 #include <kernel/modules.h>
 #include <modules/ata/ata.h>
@@ -161,7 +161,7 @@ void ata_bus_init(struct ata_bus *bus, unsigned int control, unsigned int data, 
     bus->find_device = ata_bus_find_device;
     bus->read_blocks = ata_bus_read_blocks;
 
-    kernel_register_irq(bus->irq, handle_irq);
+    irq_register_routine(bus->irq, handle_irq);
 
     unsigned short buffer[256];
 

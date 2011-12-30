@@ -1,7 +1,7 @@
 #include <kernel/arch/x86/io.h>
 #include <kernel/event.h>
+#include <kernel/irq.h>
 #include <kernel/modules.h>
-#include <kernel/kernel.h>
 #include <modules/ps2/ps2.h>
 
 static struct kbd_driver kbdDriver;
@@ -110,16 +110,16 @@ void init()
     modules_register_driver(&kbdDriver.base);
     modules_register_driver(&mouseDriver.base);
 
-    kernel_register_irq(0x01, handle_kbd_irq);
-    kernel_register_irq(0x0C, handle_mouse_irq);
+    irq_register_routine(0x01, handle_kbd_irq);
+    irq_register_routine(0x0C, handle_mouse_irq);
 
 }
 
 void destroy()
 {
 
-    kernel_unregister_irq(0x01);
-    kernel_unregister_irq(0x0C);
+    irq_unregister_routine(0x01);
+    irq_unregister_routine(0x0C);
 
     modules_unregister_driver(&kbdDriver.base);
     modules_unregister_driver(&mouseDriver.base);

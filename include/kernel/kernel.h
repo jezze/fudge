@@ -27,8 +27,6 @@ struct kernel_core
 extern void kernel_disable_interrupts();
 extern void kernel_enable_interrupts();
 extern void kernel_reboot();
-extern void kernel_register_irq(unsigned int index, void (*routine)());
-extern void kernel_unregister_irq(unsigned int index);
 extern void kernel_core_init(struct kernel_core *core, struct kernel_arch *arch);
 extern void kernel_init(struct kernel_arch *arch);
 
