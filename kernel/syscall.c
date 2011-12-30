@@ -46,6 +46,15 @@ unsigned int syscall_detach(unsigned int index)
 
 }
 
+unsigned int syscall_halt()
+{
+
+    kernel_halt();
+
+    return 1;
+
+}
+
 unsigned int syscall_execute(char *path, unsigned int argc, char **argv)
 {
 

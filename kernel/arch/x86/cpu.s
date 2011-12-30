@@ -72,7 +72,6 @@ cpu_get_stack:
 
 global cpu_halt
 cpu_halt:
-    cli
     hlt
 
 global cpu_idle

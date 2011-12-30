@@ -52,6 +52,7 @@ void arch_init(struct mboot_header *header, unsigned int magic, void *stack)
 
     x86.base.setup = arch_x86_setup;
     x86.base.reboot = arch_x86_reboot;
+    x86.base.halt = cpu_halt;
     x86.base.enable_interrupts = cpu_enable_interrupts;
     x86.base.disable_interrupts = cpu_disable_interrupts;
     x86.base.enter_usermode = cpu_enter_usermode;

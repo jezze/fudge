@@ -10,6 +10,7 @@ struct kernel_arch
     void (*set_stack)(void *address);
     void (*enter_usermode)(unsigned int ip, unsigned int sp);
     void (*reboot)();
+    void (*halt)();
     void *stack;
     void *mboot;
     unsigned int initrdc;
@@ -27,6 +28,7 @@ struct kernel_core
 extern void kernel_disable_interrupts();
 extern void kernel_enable_interrupts();
 extern void kernel_reboot();
+extern void kernel_halt();
 extern void kernel_core_init(struct kernel_core *core, struct kernel_arch *arch);
 extern void kernel_init(struct kernel_arch *arch);
 

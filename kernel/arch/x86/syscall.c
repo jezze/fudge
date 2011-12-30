@@ -32,6 +32,13 @@ static void syscall_handle_detach(struct syscall_registers *registers)
 
 }
 
+static void syscall_handle_halt(struct syscall_registers *registers)
+{
+
+    registers->eax = syscall_halt();
+
+}
+
 static void syscall_handle_execute(struct syscall_registers *registers)
 {
 

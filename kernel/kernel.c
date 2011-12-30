@@ -33,6 +33,13 @@ void kernel_reboot()
 
 }
 
+void kernel_halt()
+{
+
+    kernelCore.arch->halt();
+
+}
+
 void kernel_core_init(struct kernel_core *core, struct kernel_arch *arch)
 {
 

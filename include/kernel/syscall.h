@@ -19,6 +19,7 @@
 extern unsigned int syscall_attach(unsigned int index, void (*routine)());
 extern unsigned int syscall_close(unsigned int fd);
 extern unsigned int syscall_detach(unsigned int index);
+extern unsigned int syscall_halt();
 extern unsigned int syscall_execute(char *path, unsigned int argc, char **argv);
 extern unsigned int syscall_exit();
 extern unsigned int syscall_load(char *path);
