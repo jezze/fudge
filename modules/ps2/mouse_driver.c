@@ -1,7 +1,6 @@
 #include <kernel/arch/x86/io.h>
 #include <kernel/event.h>
 #include <kernel/modules.h>
-#include <kernel/kernel.h>
 #include <modules/ps2/ps2.h>
 
 static void wait(unsigned char type)

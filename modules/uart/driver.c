@@ -1,8 +1,4 @@
-#include <lib/memory.h>
-#include <lib/string.h>
-#include <kernel/arch/x86/io.h>
 #include <kernel/modules.h>
-#include <kernel/kernel.h>
 #include <modules/uart/uart.h>
 
 static unsigned int uart_buffer_getc(struct uart_buffer *self, char *buffer)

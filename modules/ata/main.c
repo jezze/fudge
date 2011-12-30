@@ -1,10 +1,4 @@
-#include <lib/memory.h>
-#include <lib/string.h>
-#include <kernel/arch/x86/io.h>
-#include <kernel/kernel.h>
-#include <kernel/log.h>
 #include <kernel/modules.h>
-#include <modules/pci/pci.h>
 #include <modules/ata/ata.h>
 
 static struct ata_bus primary;

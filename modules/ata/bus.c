@@ -1,5 +1,3 @@
-#include <lib/memory.h>
-#include <lib/string.h>
 #include <kernel/arch/x86/io.h>
 #include <kernel/irq.h>
 #include <kernel/log.h>

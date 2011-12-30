@@ -1,8 +1,5 @@
-#include <lib/memory.h>
-#include <lib/string.h>
 #include <kernel/arch/x86/io.h>
 #include <kernel/modules.h>
-#include <kernel/vfs.h>
 #include <modules/rtc/rtc.h>
 
 static unsigned char convert(unsigned char num)
