@@ -27,7 +27,6 @@ ramdisk:
 	@cp ${DIR_SOURCE_MODULES}/*/*.ko ${DIR_IMAGE}/mod/
 	@cp ${DIR_SOURCE_USER}/cat ${DIR_IMAGE}/bin/cat
 	@cp ${DIR_SOURCE_USER}/cd ${DIR_IMAGE}/bin/cd
-	@cp ${DIR_SOURCE_USER}/clear ${DIR_IMAGE}/bin/clear
 	@cp ${DIR_SOURCE_USER}/date ${DIR_IMAGE}/bin/date
 	@cp ${DIR_SOURCE_USER}/echo ${DIR_IMAGE}/bin/echo
 	@cp ${DIR_SOURCE_USER}/event1 ${DIR_IMAGE}/bin/event1
@@ -75,7 +74,6 @@ clean:
 	@rm -f fudge.iso
 	@rm -f ${DIR_IMAGE}/bin/cat
 	@rm -f ${DIR_IMAGE}/bin/cd
-	@rm -f ${DIR_IMAGE}/bin/clear
 	@rm -f ${DIR_IMAGE}/bin/date
 	@rm -f ${DIR_IMAGE}/bin/echo
 	@rm -f ${DIR_IMAGE}/bin/event1

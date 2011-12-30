@@ -15,7 +15,6 @@ all-x86: all
 all:
 	@${GCC} ${GCCFLAGS} cat.c ${LIB} -o cat
 	@${GCC} ${GCCFLAGS} cd.c ${LIB} -o cd
-	@${GCC} ${GCCFLAGS} clear.c ${LIB} -o clear
 	@${GCC} ${GCCFLAGS} date.c ${LIB} -o date
 	@${GCC} ${GCCFLAGS} echo.c ${LIB} -o echo
 	@${GCC} ${GCCFLAGS} event1.c ${LIB} -o event1
@@ -33,7 +32,6 @@ all:
 clean:
 	@rm -f cat
 	@rm -f cd
-	@rm -f clear
 	@rm -f date
 	@rm -f echo
 	@rm -f event1
