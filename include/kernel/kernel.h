@@ -9,8 +9,6 @@ struct kernel_arch
     void (*disable_interrupts)();
     void (*set_stack)(void *address);
     void (*enter_usermode)(void *callback, void *stack);
-    void (*register_irq)(unsigned char index, void (*routine)());
-    void (*unregister_irq)(unsigned char index);
     void (*reboot)();
     void *stack;
     void *mboot;

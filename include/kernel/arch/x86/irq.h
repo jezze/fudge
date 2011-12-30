@@ -1,7 +1,6 @@
 #ifndef ARCH_IRQ_H
 #define ARCH_IRQ_H
 
-#define IRQ_ROUTINE_SLOTS 16
 #define IRQ_ROUTINE_PIT   0x00
 #define IRQ_ROUTINE_KBD   0x01
 #define IRQ_ROUTINE_COM2  0x03
@@ -38,8 +37,6 @@ extern void irq0D();
 extern void irq0E();
 extern void irq0F();
 
-extern void irq_register_routine(unsigned char index, void (*routine)());
-extern void irq_unregister_routine(unsigned char index);
 extern void irq_handle(struct irq_registers *registers);
 extern void irq_init();
 

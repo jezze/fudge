@@ -2,6 +2,7 @@
 #include <kernel/error.h>
 #include <kernel/vfs.h>
 #include <kernel/initrd.h>
+#include <kernel/irq.h>
 #include <kernel/kernel.h>
 #include <kernel/log.h>
 #include <kernel/modules.h>
@@ -35,14 +36,14 @@ void kernel_reboot()
 void kernel_register_irq(unsigned int index, void (*routine)())
 {
 
-    kernelCore.arch->register_irq(index, routine);
+    irq_register_routine(index, routine);
 
 }
 
 void kernel_unregister_irq(unsigned int index)
 {
 
-    kernelCore.arch->unregister_irq(index);
+    irq_unregister_routine(index);
 
 }
 

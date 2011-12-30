@@ -1,24 +1,9 @@
+#include <kernel/irq.h>
 #include <kernel/runtime.h>
 #include <kernel/arch/x86/idt.h>
 #include <kernel/arch/x86/io.h>
 #include <kernel/arch/x86/irq.h>
 #include <kernel/arch/x86/isr.h>
-
-static void *routines[IRQ_ROUTINE_SLOTS];
-
-void irq_register_routine(unsigned char index, void (*routine)())
-{
-
-    routines[index] = routine;
-
-}
-
-void irq_unregister_routine(unsigned char index)
-{
-
-    routines[index] = 0;
-
-}
 
 void irq_handle(struct irq_registers *registers)
 {
@@ -36,10 +21,7 @@ void irq_handle(struct irq_registers *registers)
 
     }
 
-    void (*routine)() = routines[registers->index];
-
-    if (routine)
-        routine();
+    irq_routine(registers->index);
 
     if (registers->slave)
         io_outb(0xA0, 0x20);
