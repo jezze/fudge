@@ -40,7 +40,7 @@ void event_raise(unsigned int index)
 
     struct event_routine *routine = &routines[index];
 
-    if (!routine)
+    if (!routine->callback)
         return;
 
     struct runtime_task *ctask = runtime_get_running_task();
