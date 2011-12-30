@@ -2,23 +2,21 @@
 
 ## ABOUT
 
-Fudge is a very basic operating system written in C and Assembler. It is inspired by many other projects like Minix, Plan9, L4 and AmigaOS but Fudge is fundamentally different in many aspects.
+Fudge is a powerful yet elegant operating system written by Jens Nyberg. It started as a hobby somewhere around early 2009 but has since grown to become quite useful. Even if it takes a lot of inspiration from other operating systems Fudge is fundamentally different in many aspects and tries to incorporate new and unusual ideas.
 
 Keywords for this project is simplicity, clarity and speed.
 
-At the moment I’m trying to figure out what direction I want this project to go so nothing is so far written in stone. I know for sure it will feature some ideas that are uncommon in other mainstream operating systems. Even if those features might seem awkward I still want to see what can be done when thinking outside the box. Here are some brief examples.
-
 * Deterministic behaviour
-The main goal of this operating system is to be as deterministic as possible. This is not the same as a realtime operating system that only need to finish workloads within a given timelimit. I’m talking about the actual computation time. I’m trying to accomplish this by replacing various parts of a typical operating system that isn't deterministic in nature such as memory allocation and multitasking. Not only does that make the system more deterministic but also less complex because the decreased amount of states the operating system can exist in which makes it both easier to analyze and less complex to write.
+One of the main goals of Fudge is to be as deterministic as possible. This is not the same as a realtime operating system that tries to finish workloads within given timelimits but deterministic in the sense that running one task multiple times will always take the same amount of time. Fudge tries to accomplish this by replacing various parts normally found in most operating systems that isn't deterministic in nature such as memory allocation and multitasking. Not only does this make the system more deterministic but also less complex because of the decreased amount of states the operating system can exist in which makes it both easier to analyze and less complex to write.
 
 * No multitasking
-There will be no scheduler or timeslices to consider. Instead I’ve chose to use something I call event-driven sequence-tasking. This works by letting every system call trigger events. Any program can attach listeners to these events, basically a callback, that will execute when the events are fired. As an example a program could attach a listener to an event that will fire when a certain file is closed. If a second program is writing to that file and when done closes it the first program will get an event that tells it the file has been closed and can now opened for reading.
+There is no scheduling or timeslices to consider. Fudge is designed to work on one task at a time. This does not mean Fudge is limited to run only one program at a time. To have multiple programs working in unison Fudge uses an event system that let programs delay their own execution until a specific event occurs, like when data is ready to be read from a disk, and will register a callback that takes precedence over the program currently running. Events are triggered both by system calls and interrupt requests. Using this method it is even possible to construct a multitasking scenario by simply listening on the internal clock.
 
 * No memory allocation
-It is not possible to dynamically allocate memory in runtime. All memory has to be preallocated when the operating system starts. In this way there will never be a chance of memory running out and the kernel would be less occupied with allocating and deallocating memory. All preallocated areas of RAM will show up as files in the virtual filesystem. If one of these files becomes full it's content needs to be taken care of before more data can be written.
+It is not possible to dynamically allocate memory at runtime. In this way Fudge will never be out of memory and the kernel will be less occupied with allocating and deallocating memory. All preallocated areas of RAM will show up as files in the virtual filesystem.
 
-* No directories
-Fudge does not have directories in the classical sense. Instead it has views which works simular like branches in git. This has a lot of advantages because you never have to think about where one file exist in relation to another and if you should use relative or absolute paths to reference it. The fopen(char *path) call in posix would be file_open(char *view, char *name) in fudge. No paths to worry about. It is actually very intuitive and I feel it goes a lot faster.
+* No directory structure
+Fudge virtual filesystem does not have directories in the classical sense. Instead it has views which is simular to what a branch is in git. This has a lot of advantages because you never have to think about where one file exist in relation to another and if you should use relative or absolute paths to reference it. It is very intuitive from a user standpoint.
 
 ## FEATURES
 
