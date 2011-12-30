@@ -1,18 +1,5 @@
-#include <kernel/irq.h>
 #include <kernel/modules.h>
 #include <modules/uart/uart.h>
-
-static void handle_irq(struct modules_device *self)
-{
-
-    struct uart_device *device = (struct uart_device *)self;
-    struct uart_driver *driver = (struct uart_driver *)self->driver;
-
-    char c = device->read(device);
-
-    driver->buffer.putc(&driver->buffer, &c);
-
-}
 
 static struct uart_device device1;
 static struct uart_device device2;
@@ -35,16 +22,10 @@ void init()
     modules_register_device(&device4.base);
     modules_register_driver(&driver.base);
 
-    irq_register_routine(0x04, &device1.base, handle_irq);
-    irq_register_routine(0x03, &device2.base, handle_irq);
-
 }
 
 void destroy()
 {
-
-    irq_unregister_routine(0x04, &device1.base);
-    irq_unregister_routine(0x03, &device2.base);
 
     modules_unregister_driver(&driver.base);
     modules_unregister_device(&device1.base);

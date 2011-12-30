@@ -1,8 +1,6 @@
-#include <lib/memory.h>
-#include <lib/string.h>
 #include <kernel/arch/x86/io.h>
+#include <kernel/irq.h>
 #include <kernel/modules.h>
-#include <kernel/kernel.h>
 #include <modules/uart/uart.h>
 
 static char uart_device_read(struct uart_device *self)
@@ -23,12 +21,23 @@ static void uart_device_write(struct uart_device *self, char c)
 
 }
 
+static void uart_handle_irq(struct modules_device *self)
+{
+
+    struct uart_device *device = (struct uart_device *)self;
+    struct uart_driver *driver = (struct uart_driver *)self->driver;
+
+    char c = device->read(device);
+
+    driver->buffer.putc(&driver->buffer, &c);
+
+}
+
 void uart_device_init(struct uart_device *device, unsigned int port, unsigned int irq)
 {
 
     modules_device_init(&device->base, UART_DEVICE_TYPE);
     device->port = port;
-    device->irq = irq;
     device->read = uart_device_read;
     device->write = uart_device_write;
 
@@ -40,6 +49,8 @@ void uart_device_init(struct uart_device *device, unsigned int port, unsigned in
     io_outb(device->port + UART_FCR, 0xC7);
     io_outb(device->port + UART_MCR, 0x0B);
     io_outb(device->port + UART_IER, 0x01);
+
+    irq_register_routine(irq, &device->base, uart_handle_irq);
 
 }
 
