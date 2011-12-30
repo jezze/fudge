@@ -1,6 +1,3 @@
-#include <lib/string.h>
-#include <kernel/arch/x86/io.h>
-#include <kernel/log.h>
 #include <kernel/modules.h>
 #include <modules/pci/pci.h>
 

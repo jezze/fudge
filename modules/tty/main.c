@@ -1,9 +1,7 @@
-#include <lib/memory.h>
-#include <lib/string.h>
-#include <kernel/vfs.h>
 #include <kernel/modules.h>
-#include <modules/vga/vga.h>
 #include <modules/ps2/ps2.h>
+#include <modules/uart/uart.h>
+#include <modules/vga/vga.h>
 #include <modules/tty/tty.h>
 
 static struct tty_driver driver;
