@@ -154,6 +154,7 @@ void syscall_init()
     syscall_register_routine(SYSCALL_ROUTINE_WAIT, syscall_handle_wait);
     syscall_register_routine(SYSCALL_ROUTINE_LOAD, syscall_handle_load);
     syscall_register_routine(SYSCALL_ROUTINE_UNLOAD, syscall_handle_unload);
+    syscall_register_routine(SYSCALL_ROUTINE_HALT, syscall_handle_halt);
     syscall_register_routine(SYSCALL_ROUTINE_REBOOT, syscall_handle_reboot);
     syscall_register_routine(SYSCALL_ROUTINE_ATTACH, syscall_handle_attach);
     syscall_register_routine(SYSCALL_ROUTINE_DETACH, syscall_handle_detach);

@@ -15,7 +15,7 @@ void main(int argc, char *argv[])
     call_load("tty.ko");
     call_execute("shell", 0, 0);
 
-    for (;;);
+    for(;;);
 
 }
 
