@@ -58,12 +58,14 @@ void runtime_activate(struct runtime_task *task)
 
 }
 
-static unsigned int runtime_task_load(struct runtime_task *self, void *paddress, void *vaddress, unsigned int limit, void *entry, unsigned int argc, char **argv)
+static unsigned int runtime_task_load(struct runtime_task *self, void *entry, unsigned int argc, char **argv)
 {
 
-    int reloc = (int)vaddress - (int)paddress;
+    struct runtime_memory *memory = (struct runtime_memory *)&self->memory;
 
-    char **pargv = (char **)(paddress + limit - 0x200);
+    int reloc = (int)memory->vaddress - (int)memory->paddress;
+
+    char **pargv = (char **)(memory->paddress + memory->size - 0x200);
     void *offset = pargv + argc * 4;
 
     unsigned int i;
@@ -80,7 +82,7 @@ static unsigned int runtime_task_load(struct runtime_task *self, void *paddress,
     unsigned int vargc = argc;
     unsigned int vargv = (unsigned int)pargv + reloc;
 
-    void *stack = paddress + limit;
+    void *stack = memory->paddress + memory->size;
 
     stack = memory_copy(stack - 0x4, &vargv, 4);
     stack = memory_copy(stack - 0x4, &vargc, 4);
