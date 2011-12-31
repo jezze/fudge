@@ -111,13 +111,7 @@ static void mmu_map_memory(struct mmu_memory *memory, unsigned int tflags, unsig
     unsigned int page = (unsigned int)memory->paddress;
 
     for (i = 0; i < count; i++, page += MMU_PAGE_SIZE)
-    {
-
-        struct mmu_table *table = mmu_directory_get_table(&header->directory, frame + i);
-
-        mmu_table_set_page(table, frame + i, page, pflags); 
-
-    }
+        mmu_table_set_page(&header->table, frame + i, page, pflags); 
 
 }
 
