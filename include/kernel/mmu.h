@@ -7,6 +7,15 @@
 #define MMU_ERROR_RESERVED 1 << 3
 #define MMU_ERROR_FETCH    1 << 4
 
+struct mmu_memory
+{
+
+    void *paddress;
+    void *vaddress;
+    unsigned int size;
+
+};
+
 struct mmu_unit
 {
 

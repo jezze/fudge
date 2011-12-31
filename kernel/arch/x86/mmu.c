@@ -58,7 +58,7 @@ static struct mmu_header *mmu_get_header(void *paddress)
     for (i = 0; i < 8; i++)
     {
 
-        if (programHeaders[i].address == paddress)
+        if (programHeaders[i].memory.paddress == paddress)
             return &programHeaders[i];
 
     }
@@ -111,24 +111,27 @@ static void mmu_enable()
 static void *mmu_get_paddress(unsigned int id)
 {
 
-    return programHeaders[id].address;
+    return programHeaders[id].memory.paddress;
 
 }
 
 static void mmu_setup()
 {
 
+    kernelHeader.memory.paddress = 0x00000000;
+    kernelHeader.memory.vaddress = 0x00000000;
+    kernelHeader.memory.size = 0x00400000;
+
     mmu_clear_directory(&kernelHeader.directory);
-    kernelHeader.address = 0;
-    mmu_map(kernelHeader.address, (void *)0x00000000, 0x00400000, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE);
-    mmu_set_directory(kernelHeader.address);
+    mmu_map(kernelHeader.memory.paddress, kernelHeader.memory.vaddress, kernelHeader.memory.size, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE);
+    mmu_set_directory(kernelHeader.memory.paddress);
 
     unsigned int i;
 
     for (i = 0; i < 8; i++)
     {
 
-        programHeaders[i].address = (void *)(0x00300000 + i * 0x10000);
+        programHeaders[i].memory.paddress = (void *)(0x00300000 + i * 0x10000);
         memory_copy(&programHeaders[i].directory, &kernelHeader.directory, sizeof (struct mmu_directory));
 
     }

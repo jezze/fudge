@@ -24,7 +24,7 @@
 #define MMU_PAGE_FLAG_DIRTY        1 << 6
 #define MMU_PAGE_FLAG_GLOBAL       1 << 7
 
-struct isr_registers;
+struct mmu_memory;
 
 struct mmu_table
 {
@@ -43,7 +43,7 @@ struct mmu_directory
 struct mmu_header
 {
 
-    void *address;
+    struct mmu_memory memory;
     struct mmu_directory directory;
     struct mmu_table table;
 

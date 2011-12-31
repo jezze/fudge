@@ -1,4 +1,5 @@
 #include <kernel/kernel.h>
+#include <kernel/mmu.h>
 #include <kernel/arch/x86/acpi.h>
 #include <kernel/arch/x86/arch.h>
 #include <kernel/arch/x86/cpu.h>
