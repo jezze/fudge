@@ -68,13 +68,6 @@ static unsigned int mmu_get_frame(struct mmu_memory *memory)
 
 }
 
-static unsigned int mmu_get_count(struct mmu_memory *memory)
-{
-
-    return memory->size / MMU_PAGE_SIZE + ((memory->size & 0xFFF) > 0);
-
-}
-
 static struct mmu_header *mmu_get_header(struct mmu_memory *memory)
 {
 
@@ -108,14 +101,13 @@ static void mmu_map_memory(struct mmu_memory *memory, unsigned int tflags, unsig
     struct mmu_header *header = mmu_get_header(memory);
 
     unsigned int frame = mmu_get_frame(memory);
-    unsigned int count = mmu_get_count(memory);
 
     mmu_table_clear(&header->table);
     mmu_directory_set_table(&header->directory, frame, &header->table, tflags);
 
     unsigned int i;
 
-    for (i = 0; i < count; i++)
+    for (i = 0; i < memory->size / MMU_PAGE_SIZE; i++)
         mmu_table_set_page(&header->table, frame + i, memory->paddress + i * MMU_PAGE_SIZE, pflags); 
 
 }
