@@ -100,10 +100,33 @@ static void mmu_map_memory(struct mmu_memory *memory, unsigned int tflags, unsig
 
 }
 
-static struct mmu_memory *mmu_get_memory(unsigned int id)
+static struct mmu_memory *mmu_get_memory()
 {
 
-    return &programHeaders[id].memory;
+    unsigned int i;
+
+    for (i = 0; i < 8; i++)
+    {
+
+        struct mmu_memory *memory = &programHeaders[i].memory;
+
+        if (memory->used)
+            continue;
+
+        memory->used = 1;
+
+        return memory;
+
+    }
+
+    return 0;
+
+}
+
+static void mmu_unget_memory(struct mmu_memory *memory)
+{
+
+    memory->used = 0;
 
 }
 
@@ -120,9 +143,11 @@ void mmu_init()
 {
 
     unit.get_task_memory = mmu_get_memory;
+    unit.unget_task_memory = mmu_unget_memory;
     unit.load_task_memory = mmu_load_memory;
     unit.map_task_memory = mmu_map_memory;
 
+    kernelHeader.memory.used = 1;
     kernelHeader.memory.size = 0x00400000;
     kernelHeader.memory.paddress = 0x00000000;
     kernelHeader.memory.vaddress = 0x00000000;
@@ -136,6 +161,7 @@ void mmu_init()
     for (i = 0; i < 8; i++)
     {
 
+        programHeaders[i].memory.used = 0;
         programHeaders[i].memory.size = 0x10000;
         programHeaders[i].memory.paddress = (void *)(0x00300000 + i * programHeaders[i].memory.size);
         programHeaders[i].memory.vaddress = 0x00000000;

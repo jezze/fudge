@@ -68,7 +68,7 @@ unsigned int syscall_execute(char *path, unsigned int argc, char **argv)
     if (!task)
         return 0;
 
-    task->memory = mmu_get_task_memory(task->id);
+    task->memory = mmu_get_task_memory();
     task->memory->size = 0x10000;
 
     node->read(node, task->memory->size, task->memory->paddress);
@@ -120,6 +120,8 @@ unsigned int syscall_exit()
         return 0;
 
     task->unload(task);
+
+    mmu_unget_task_memory(task->memory);
 
     struct runtime_task *ptask = runtime_get_task(task->parentid);
 

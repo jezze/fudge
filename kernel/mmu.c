@@ -37,6 +37,13 @@ struct mmu_memory *mmu_get_task_memory(unsigned int id)
 
 }
 
+void mmu_unget_task_memory(struct mmu_memory *memory)
+{
+
+    return primary->unget_task_memory(memory);
+
+}
+
 void mmu_load_task_memory(struct mmu_memory *memory)
 {
 
