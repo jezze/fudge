@@ -13,7 +13,6 @@
 #define MMU_TABLE_FLAG_LARGE        1 << 6
 #define MMU_TABLE_FLAG_IGNORED      1 << 7
 
-#define MMU_PAGE_SLOTS 4096
 #define MMU_PAGE_SIZE 4096
 #define MMU_PAGE_FLAG_PRESENT      1 << 0
 #define MMU_PAGE_FLAG_WRITEABLE    1 << 1
@@ -31,14 +30,14 @@ struct mmu_table
 
     unsigned int entries[MMU_TABLE_SLOTS];
 
-} __attribute__((aligned(MMU_PAGE_SLOTS)));
+} __attribute__((aligned(MMU_PAGE_SIZE)));
 
 struct mmu_directory
 {
 
     struct mmu_table *tables[MMU_DIRECTORY_SLOTS];
 
-} __attribute__((aligned(MMU_PAGE_SLOTS)));
+} __attribute__((aligned(MMU_PAGE_SIZE)));
 
 struct mmu_header
 {

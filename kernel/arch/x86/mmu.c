@@ -72,7 +72,7 @@ static void mmu_map(void *paddress, void *vaddress, unsigned int size, unsigned 
 
     struct mmu_header *header = mmu_get_header(paddress);
 
-    unsigned int frame = (unsigned int)vaddress / MMU_PAGE_SLOTS;
+    unsigned int frame = (unsigned int)vaddress / MMU_PAGE_SIZE;
     unsigned int index = frame / MMU_DIRECTORY_SLOTS;
     unsigned int count = size / MMU_PAGE_SIZE + ((size & 0xFFF) > 0);
 
