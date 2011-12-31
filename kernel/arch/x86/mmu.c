@@ -119,9 +119,9 @@ static void mmu_load_memory(struct mmu_memory *memory)
 static void mmu_setup()
 {
 
+    kernelHeader.memory.size = 0x00400000;
     kernelHeader.memory.paddress = 0x00000000;
     kernelHeader.memory.vaddress = 0x00000000;
-    kernelHeader.memory.size = 0x00400000;
 
     mmu_clear_directory(&kernelHeader.directory);
     mmu_map_memory(&kernelHeader.memory, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE);
@@ -132,7 +132,9 @@ static void mmu_setup()
     for (i = 0; i < 8; i++)
     {
 
-        programHeaders[i].memory.paddress = (void *)(0x00300000 + i * 0x10000);
+        programHeaders[i].memory.size = 0x10000;
+        programHeaders[i].memory.paddress = (void *)(0x00300000 + i * programHeaders[i].memory.size);
+        programHeaders[i].memory.vaddress = 0x00000000;
         memory_copy(&programHeaders[i].directory, &kernelHeader.directory, sizeof (struct mmu_directory));
 
     }
