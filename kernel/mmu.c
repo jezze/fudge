@@ -30,10 +30,10 @@ void mmu_pagefault(unsigned int address, unsigned int flags)
 
 }
 
-struct mmu_memory *mmu_get_task_memory(unsigned int id)
+struct mmu_memory *mmu_get_task_memory()
 {
 
-    return primary->get_task_memory(id);
+    return primary->get_task_memory();
 
 }
 
@@ -51,10 +51,10 @@ void mmu_load_task_memory(struct mmu_memory *memory)
 
 }
 
-void mmu_map_task_memory(struct mmu_memory *memory, unsigned int tflags, unsigned int pflags)
+void mmu_map_task_memory(struct mmu_memory *memory)
 {
 
-    primary->map_task_memory(memory, tflags, pflags);
+    primary->map_task_memory(memory);
 
 }
 
@@ -74,3 +74,4 @@ void mmu_memory_init(struct mmu_memory *memory, unsigned int used, void *paddres
     memory->size = size;
 
 }
+

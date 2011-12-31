@@ -93,6 +93,20 @@ static void mmu_map_memory(struct mmu_memory *memory, unsigned int tflags, unsig
 
 }
 
+static void mmu_map_memory_kernel(struct mmu_memory *memory)
+{
+
+    mmu_map_memory(memory, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE);
+
+}
+
+static void mmu_map_memory_user(struct mmu_memory *memory)
+{
+
+    mmu_map_memory(memory, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);
+
+}
+
 static struct mmu_memory *mmu_get_memory()
 {
 
@@ -139,7 +153,7 @@ void mmu_init()
     struct mmu_memory *memory = &kernelHeader.memory;
 
     mmu_memory_init(memory, 1, (void *)0x00000000, (void *)0x00000000, 0x00400000);
-    mmu_map_memory(memory, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE);
+    mmu_map_memory_kernel(memory);
     mmu_load_memory(memory);
 
     isr_register_routine(ISR_ROUTINE_PF, mmu_handle_pagefault);
@@ -149,7 +163,7 @@ void mmu_init()
     unit.get_task_memory = mmu_get_memory;
     unit.unget_task_memory = mmu_unget_memory;
     unit.load_task_memory = mmu_load_memory;
-    unit.map_task_memory = mmu_map_memory;
+    unit.map_task_memory = mmu_map_memory_user;
 
     mmu_register_unit(&unit);
 
