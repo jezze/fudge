@@ -116,8 +116,12 @@ static void mmu_load_memory(struct mmu_memory *memory)
 
 }
 
-static void mmu_setup()
+void mmu_init()
 {
+
+    unit.get_task_memory = mmu_get_memory;
+    unit.load_task_memory = mmu_load_memory;
+    unit.map_task_memory = mmu_map_memory;
 
     kernelHeader.memory.size = 0x00400000;
     kernelHeader.memory.paddress = 0x00000000;
@@ -141,12 +145,8 @@ static void mmu_setup()
 
     isr_register_routine(ISR_ROUTINE_PF, mmu_handle_pagefault);
 
-}
+    mmu_enable();
 
-void mmu_init()
-{
-
-    mmu_unit_init(&unit, mmu_setup, mmu_enable, mmu_get_memory, mmu_load_memory, mmu_map_memory);
     mmu_register_unit(&unit);
 
 }

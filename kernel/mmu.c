@@ -51,20 +51,6 @@ void mmu_map_task_memory(struct mmu_memory *memory, unsigned int tflags, unsigne
 
 }
 
-void mmu_unit_init(struct mmu_unit *unit, void (*setup)(), void (*enable)(), struct mmu_memory *(*get_task_memory)(unsigned int id), void (*load_task_memory)(struct mmu_memory *memory), void (*map_task_memory)(struct mmu_memory *memory, unsigned int tflags, unsigned int pflags))
-{
-
-    unit->setup = setup;
-    unit->enable = enable;
-    unit->get_task_memory = get_task_memory;
-    unit->load_task_memory = load_task_memory;
-    unit->map_task_memory = map_task_memory;
-
-    unit->setup();
-    unit->enable();
-
-}
-
 void mmu_register_unit(struct mmu_unit *unit)
 {
 
