@@ -19,24 +19,31 @@ static void mmu_handle_pagefault(struct isr_registers *registers)
 
 }
 
-static void mmu_clear_table(struct mmu_table *table)
+static void mmu_table_clear(struct mmu_table *table)
 {
 
     memory_clear(table, sizeof (struct mmu_table));
 
 }
 
-static struct mmu_table *mmu_get_table(struct mmu_directory *directory, unsigned int frame)
+static struct mmu_table *mmu_directory_get_table(struct mmu_directory *directory, unsigned int frame)
 {
 
     return (struct mmu_table *)((unsigned int)directory->tables[frame / MMU_DIRECTORY_SLOTS] & 0xFFFFF000);
 
 }
 
+static void mmu_directory_set_table(struct mmu_directory *directory, unsigned int index, struct mmu_table *table, unsigned int tflags)
+{
+
+    directory->tables[index] = (struct mmu_table *)((unsigned int)table | tflags);
+
+}
+
 static unsigned int *mmu_get_entry(struct mmu_directory *directory, unsigned int frame)
 {
 
-    return &mmu_get_table(directory, frame)->entries[frame % MMU_TABLE_SLOTS];
+    return &mmu_directory_get_table(directory, frame)->entries[frame % MMU_TABLE_SLOTS];
 
 }
 
@@ -97,8 +104,8 @@ static void mmu_map_memory(struct mmu_memory *memory, unsigned int tflags, unsig
     unsigned int index = mmu_get_index(memory);
     unsigned int count = mmu_get_count(memory);
 
-    mmu_clear_table(&header->table);
-    header->directory.tables[index] = (struct mmu_table *)((unsigned int)&header->table | tflags);
+    mmu_table_clear(&header->table);
+    mmu_directory_set_table(&header->directory, index, &header->table, tflags);
 
     unsigned int i;
     unsigned int paddress = (unsigned int)memory->paddress;
