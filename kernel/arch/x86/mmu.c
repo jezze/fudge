@@ -1,7 +1,5 @@
 #include <lib/memory.h>
-#include <kernel/error.h>
 #include <kernel/mmu.h>
-#include <kernel/log.h>
 #include <kernel/arch/x86/cpu.h>
 #include <kernel/arch/x86/isr.h>
 #include <kernel/arch/x86/mmu.h>
