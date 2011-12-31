@@ -92,15 +92,6 @@ static void mmu_map(void *paddress, void *vaddress, unsigned int size, unsigned 
 
 }
 
-static void mmu_set_directory(void *paddress)
-{
-
-    struct mmu_header *header = mmu_get_header(paddress);
-
-    cpu_set_cr3((unsigned int)&header->directory);
-
-}
-
 static void mmu_enable()
 {
 
@@ -108,10 +99,19 @@ static void mmu_enable()
 
 }
 
-static struct mmu_memory *mmu_get_paddress(unsigned int id)
+static struct mmu_memory *mmu_get_memory(unsigned int id)
 {
 
     return &programHeaders[id].memory;
+
+}
+
+static void mmu_load_memory(struct mmu_memory *memory)
+{
+
+    struct mmu_header *header = mmu_get_header(memory->paddress);
+
+    cpu_set_cr3((unsigned int)&header->directory);
 
 }
 
@@ -124,7 +124,7 @@ static void mmu_setup()
 
     mmu_clear_directory(&kernelHeader.directory);
     mmu_map(kernelHeader.memory.paddress, kernelHeader.memory.vaddress, kernelHeader.memory.size, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE);
-    mmu_set_directory(kernelHeader.memory.paddress);
+    mmu_load_memory(&kernelHeader.memory);
 
     unsigned int i;
 
@@ -143,7 +143,7 @@ static void mmu_setup()
 void mmu_init()
 {
 
-    mmu_unit_init(&unit, mmu_setup, mmu_enable, mmu_get_paddress, mmu_set_directory, mmu_map);
+    mmu_unit_init(&unit, mmu_setup, mmu_enable, mmu_get_memory, mmu_load_memory, mmu_map);
     mmu_register_unit(&unit);
 
 }
