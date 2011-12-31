@@ -19,13 +19,6 @@ static void mmu_handle_pagefault(struct isr_registers *registers)
 
 }
 
-static void mmu_clear_directory(struct mmu_directory *directory)
-{
-
-    memory_clear(directory, sizeof (struct mmu_directory));
-
-}
-
 static void mmu_clear_table(struct mmu_table *table)
 {
 
@@ -113,10 +106,7 @@ static struct mmu_memory *mmu_get_memory()
         if (memory->used)
             continue;
 
-        memory->used = 1;
-        memory->size = 0x10000;
-        memory->paddress = (void *)(0x00300000 + i * memory->size);
-        memory->vaddress = 0x00000000;
+        mmu_memory_init(memory, 1, (void *)(0x00300000 + i * 0x10000), (void *)0x00000000, 0x10000);
         memory_copy(&programHeaders[i].directory, &kernelHeader.directory, sizeof (struct mmu_directory));
 
         return memory;
@@ -148,11 +138,7 @@ void mmu_init()
 
     struct mmu_memory *memory = &kernelHeader.memory;
 
-    memory->used = 1;
-    memory->size = 0x00400000;
-    memory->paddress = 0x00000000;
-    memory->vaddress = 0x00000000;
-
+    mmu_memory_init(memory, 1, (void *)0x00000000, (void *)0x00000000, 0x00400000);
     mmu_map_memory(memory, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE);
     mmu_load_memory(memory);
 

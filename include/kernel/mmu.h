@@ -35,6 +35,7 @@ extern void mmu_unget_task_memory(struct mmu_memory *memory);
 extern void mmu_load_task_memory(struct mmu_memory *memory);
 extern void mmu_map_task_memory(struct mmu_memory *memory, unsigned int tflags, unsigned int pflags);
 extern void mmu_register_unit(struct mmu_unit *unit);
+extern void mmu_memory_init(struct mmu_memory *memory, unsigned int used, void *paddress, void *vaddress, unsigned int size);
 
 #endif
 

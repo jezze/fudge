@@ -65,3 +65,12 @@ void mmu_register_unit(struct mmu_unit *unit)
 
 }
 
+void mmu_memory_init(struct mmu_memory *memory, unsigned int used, void *paddress, void *vaddress, unsigned int size)
+{
+
+    memory->used = used;
+    memory->paddress = paddress;
+    memory->vaddress = vaddress;
+    memory->size = size;
+
+}
