@@ -50,9 +50,9 @@ struct runtime_task *runtime_get_running_task()
 void runtime_activate(struct runtime_task *task)
 {
 
-    void *paddress = mmu_get_task_memory(task->id);
+    struct mmu_memory *memory = task->memory;
 
-    mmu_load_task_memory(paddress);
+    mmu_load_task_memory(memory->paddress);
 
     control.running = task;
 
@@ -61,7 +61,7 @@ void runtime_activate(struct runtime_task *task)
 static unsigned int runtime_task_load(struct runtime_task *self, void *entry, unsigned int argc, char **argv)
 {
 
-    struct runtime_memory *memory = (struct runtime_memory *)&self->memory;
+    struct mmu_memory *memory = self->memory;
 
     int reloc = (int)memory->vaddress - (int)memory->paddress;
 

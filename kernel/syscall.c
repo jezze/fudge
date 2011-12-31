@@ -68,17 +68,17 @@ unsigned int syscall_execute(char *path, unsigned int argc, char **argv)
     if (!task)
         return 0;
 
-    task->memory.paddress = mmu_get_task_memory(task->id);
-    task->memory.size = 0x10000;
+    task->memory = mmu_get_task_memory(task->id);
+    task->memory->size = 0x10000;
 
-    node->read(node, task->memory.size, task->memory.paddress);
+    node->read(node, task->memory->size, task->memory->paddress);
 
-    task->memory.vaddress = elf_get_virtual(task->memory.paddress);
+    task->memory->vaddress = elf_get_virtual(task->memory->paddress);
 
-    if (!task->memory.vaddress)
+    if (!task->memory->vaddress)
         return 0;
 
-    void *entry = elf_get_entry(task->memory.paddress);
+    void *entry = elf_get_entry(task->memory->paddress);
 
     if (!entry)
         return 0;
@@ -86,7 +86,7 @@ unsigned int syscall_execute(char *path, unsigned int argc, char **argv)
     if (!task->load(task, entry, argc, argv))
         return 0;
 
-    mmu_map_task_memory(task->memory.paddress, task->memory.vaddress, task->memory.size, 0x7, 0x7);
+    mmu_map_task_memory(task->memory->paddress, task->memory->vaddress, task->memory->size, 0x7, 0x7);
 
     struct runtime_task *ptask = runtime_get_running_task();
 

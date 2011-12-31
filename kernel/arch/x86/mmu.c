@@ -108,10 +108,10 @@ static void mmu_enable()
 
 }
 
-static void *mmu_get_paddress(unsigned int id)
+static struct mmu_memory *mmu_get_paddress(unsigned int id)
 {
 
-    return programHeaders[id].memory.paddress;
+    return &programHeaders[id].memory;
 
 }
 

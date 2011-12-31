@@ -13,15 +13,6 @@ struct runtime_registers
 
 };
 
-struct runtime_memory
-{
-
-    void *paddress;
-    void *vaddress;
-    unsigned int size;
-
-};
-
 struct runtime_descriptor
 {
 
@@ -38,7 +29,7 @@ struct runtime_task
     unsigned int parentid;
     unsigned int used;
     struct runtime_registers registers;
-    struct runtime_memory memory;
+    struct mmu_memory *memory;
     unsigned int (*load)(struct runtime_task *self, void *entry, unsigned int argc, char **argv);
     void (*unload)(struct runtime_task *self);
     struct runtime_descriptor descriptors[RUNTIME_TASK_DESCRIPTOR_SLOTS];
