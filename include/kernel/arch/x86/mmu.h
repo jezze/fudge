@@ -28,7 +28,7 @@ struct mmu_memory;
 struct mmu_table
 {
 
-    unsigned int entries[MMU_TABLE_SLOTS];
+    void *pages[MMU_TABLE_SLOTS];
 
 } __attribute__((aligned(MMU_PAGE_SIZE)));
 

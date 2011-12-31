@@ -19,6 +19,27 @@ static void mmu_handle_pagefault(struct isr_registers *registers)
 
 }
 
+static void mmu_directory_clear(struct mmu_directory *directory)
+{
+
+    memory_clear(directory, sizeof (struct mmu_directory));
+
+}
+
+static struct mmu_table *mmu_directory_get_table_by_frame(struct mmu_directory *directory, unsigned int frame)
+{
+
+    return (struct mmu_table *)((unsigned int)directory->tables[frame / MMU_DIRECTORY_SLOTS] & 0xFFFFF000);
+
+}
+
+static void mmu_directory_set_table(struct mmu_directory *directory, unsigned int frame, struct mmu_table *table, unsigned int tflags)
+{
+
+    directory->tables[frame / MMU_DIRECTORY_SLOTS] = (struct mmu_table *)((unsigned int)table | tflags);
+
+}
+
 static void mmu_table_clear(struct mmu_table *table)
 {
 
@@ -26,24 +47,17 @@ static void mmu_table_clear(struct mmu_table *table)
 
 }
 
-static void mmu_table_set_page(struct mmu_table *table, unsigned int frame, unsigned int page, unsigned int pflags)
+static void *mmu_table_get_page_by_frame(struct mmu_table *table, unsigned int frame)
 {
 
-    table->entries[frame % MMU_TABLE_SLOTS] = page | pflags;
+    return (void *)((unsigned int)table->pages[frame % MMU_TABLE_SLOTS] & 0xFFFFF000);
 
 }
 
-static struct mmu_table *mmu_directory_get_table(struct mmu_directory *directory, unsigned int frame)
+static void mmu_table_set_page(struct mmu_table *table, unsigned int frame, void *page, unsigned int pflags)
 {
 
-    return (struct mmu_table *)((unsigned int)directory->tables[frame / MMU_DIRECTORY_SLOTS] & 0xFFFFF000);
-
-}
-
-static void mmu_directory_set_table(struct mmu_directory *directory, unsigned int index, struct mmu_table *table, unsigned int tflags)
-{
-
-    directory->tables[index] = (struct mmu_table *)((unsigned int)table | tflags);
+    table->pages[frame % MMU_TABLE_SLOTS] = (void *)((unsigned int)page | pflags);
 
 }
 
@@ -51,13 +65,6 @@ static unsigned int mmu_get_frame(struct mmu_memory *memory)
 {
 
     return (unsigned int)memory->vaddress / MMU_PAGE_SIZE;
-
-}
-
-static unsigned int mmu_get_index(struct mmu_memory *memory)
-{
-
-    return mmu_get_frame(memory) / MMU_DIRECTORY_SLOTS;
 
 }
 
@@ -101,14 +108,13 @@ static void mmu_map_memory(struct mmu_memory *memory, unsigned int tflags, unsig
     struct mmu_header *header = mmu_get_header(memory);
 
     unsigned int frame = mmu_get_frame(memory);
-    unsigned int index = mmu_get_index(memory);
     unsigned int count = mmu_get_count(memory);
 
     mmu_table_clear(&header->table);
-    mmu_directory_set_table(&header->directory, index, &header->table, tflags);
+    mmu_directory_set_table(&header->directory, frame, &header->table, tflags);
 
     unsigned int i;
-    unsigned int page = (unsigned int)memory->paddress;
+    void *page = memory->paddress;
 
     for (i = 0; i < count; i++, page += MMU_PAGE_SIZE)
         mmu_table_set_page(&header->table, frame + i, page, pflags); 
