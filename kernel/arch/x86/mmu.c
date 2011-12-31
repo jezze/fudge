@@ -40,10 +40,31 @@ static unsigned int *mmu_get_entry(struct mmu_directory *directory, unsigned int
 
 }
 
-static struct mmu_header *mmu_get_header(void *paddress)
+static unsigned int mmu_get_frame(struct mmu_memory *memory)
 {
 
-    if (!paddress)
+    return (unsigned int)memory->vaddress / MMU_PAGE_SIZE;
+
+}
+
+static unsigned int mmu_get_index(struct mmu_memory *memory)
+{
+
+    return mmu_get_frame(memory) / MMU_DIRECTORY_SLOTS;
+
+}
+
+static unsigned int mmu_get_count(struct mmu_memory *memory)
+{
+
+    return memory->size / MMU_PAGE_SIZE + ((memory->size & 0xFFF) > 0);
+
+}
+
+static struct mmu_header *mmu_get_header(struct mmu_memory *memory)
+{
+
+    if (!memory->paddress)
         return &kernelHeader;
 
     unsigned int i;
@@ -51,7 +72,7 @@ static struct mmu_header *mmu_get_header(void *paddress)
     for (i = 0; i < 8; i++)
     {
 
-        if (programHeaders[i].memory.paddress == paddress)
+        if (programHeaders[i].memory.paddress == memory->paddress)
             return &programHeaders[i];
 
     }
@@ -70,22 +91,22 @@ static void mmu_enable()
 static void mmu_map_memory(struct mmu_memory *memory, unsigned int tflags, unsigned int pflags)
 {
 
-    struct mmu_header *header = mmu_get_header(memory->paddress);
+    struct mmu_header *header = mmu_get_header(memory);
 
-    unsigned int frame = (unsigned int)memory->vaddress / MMU_PAGE_SIZE;
-    unsigned int index = frame / MMU_DIRECTORY_SLOTS;
-    unsigned int count = memory->size / MMU_PAGE_SIZE + ((memory->size & 0xFFF) > 0);
+    unsigned int frame = mmu_get_frame(memory);
+    unsigned int index = mmu_get_index(memory);
+    unsigned int count = mmu_get_count(memory);
 
     mmu_clear_table(&header->table);
     header->directory.tables[index] = (struct mmu_table *)((unsigned int)&header->table | tflags);
 
     unsigned int i;
-    void *paddress = memory->paddress;
+    unsigned int paddress = (unsigned int)memory->paddress;
 
     for (i = 0; i < count; i++)
     {
 
-        *mmu_get_entry(&header->directory, frame + i) = (unsigned int)paddress | pflags;
+        *mmu_get_entry(&header->directory, frame + i) = paddress | pflags;
 
         paddress += MMU_PAGE_SIZE;
 
@@ -141,7 +162,7 @@ static void mmu_unget_memory(struct mmu_memory *memory)
 static void mmu_load_memory(struct mmu_memory *memory)
 {
 
-    struct mmu_header *header = mmu_get_header(memory->paddress);
+    struct mmu_header *header = mmu_get_header(memory);
 
     cpu_set_cr3((unsigned int)&header->directory);
 
