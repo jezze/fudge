@@ -67,19 +67,27 @@ static struct mmu_header *mmu_get_header(void *paddress)
 
 }
 
-static void mmu_map(void *paddress, void *vaddress, unsigned int size, unsigned int tflags, unsigned int pflags)
+static void mmu_enable()
 {
 
-    struct mmu_header *header = mmu_get_header(paddress);
+    cpu_set_cr0(cpu_get_cr0() | 0x80000000);
 
-    unsigned int frame = (unsigned int)vaddress / MMU_PAGE_SIZE;
+}
+
+static void mmu_map_memory(struct mmu_memory *memory, unsigned int tflags, unsigned int pflags)
+{
+
+    struct mmu_header *header = mmu_get_header(memory->paddress);
+
+    unsigned int frame = (unsigned int)memory->vaddress / MMU_PAGE_SIZE;
     unsigned int index = frame / MMU_DIRECTORY_SLOTS;
-    unsigned int count = size / MMU_PAGE_SIZE + ((size & 0xFFF) > 0);
+    unsigned int count = memory->size / MMU_PAGE_SIZE + ((memory->size & 0xFFF) > 0);
 
     mmu_clear_table(&header->table);
     header->directory.tables[index] = (struct mmu_table *)((unsigned int)&header->table | tflags);
 
     unsigned int i;
+    void *paddress = memory->paddress;
 
     for (i = 0; i < count; i++)
     {
@@ -89,13 +97,6 @@ static void mmu_map(void *paddress, void *vaddress, unsigned int size, unsigned 
         paddress += MMU_PAGE_SIZE;
 
     }
-
-}
-
-static void mmu_enable()
-{
-
-    cpu_set_cr0(cpu_get_cr0() | 0x80000000);
 
 }
 
@@ -123,7 +124,7 @@ static void mmu_setup()
     kernelHeader.memory.size = 0x00400000;
 
     mmu_clear_directory(&kernelHeader.directory);
-    mmu_map(kernelHeader.memory.paddress, kernelHeader.memory.vaddress, kernelHeader.memory.size, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE);
+    mmu_map_memory(&kernelHeader.memory, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE);
     mmu_load_memory(&kernelHeader.memory);
 
     unsigned int i;
@@ -143,7 +144,7 @@ static void mmu_setup()
 void mmu_init()
 {
 
-    mmu_unit_init(&unit, mmu_setup, mmu_enable, mmu_get_memory, mmu_load_memory, mmu_map);
+    mmu_unit_init(&unit, mmu_setup, mmu_enable, mmu_get_memory, mmu_load_memory, mmu_map_memory);
     mmu_register_unit(&unit);
 
 }

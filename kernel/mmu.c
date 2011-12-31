@@ -44,14 +44,14 @@ void mmu_load_task_memory(struct mmu_memory *memory)
 
 }
 
-void mmu_map_task_memory(void *paddress, void *vaddress, unsigned int size, unsigned int tflags, unsigned int pflags)
+void mmu_map_task_memory(struct mmu_memory *memory, unsigned int tflags, unsigned int pflags)
 {
 
-    primary->map_task_memory(paddress, vaddress, size, tflags, pflags);
+    primary->map_task_memory(memory, tflags, pflags);
 
 }
 
-void mmu_unit_init(struct mmu_unit *unit, void (*setup)(), void (*enable)(), struct mmu_memory *(*get_task_memory)(unsigned int id), void (*load_task_memory)(struct mmu_memory *memory), void (*map_task_memory)(void *paddress, void *vaddress, unsigned int size, unsigned int tflags, unsigned int pflags))
+void mmu_unit_init(struct mmu_unit *unit, void (*setup)(), void (*enable)(), struct mmu_memory *(*get_task_memory)(unsigned int id), void (*load_task_memory)(struct mmu_memory *memory), void (*map_task_memory)(struct mmu_memory *memory, unsigned int tflags, unsigned int pflags))
 {
 
     unit->setup = setup;

@@ -86,7 +86,7 @@ unsigned int syscall_execute(char *path, unsigned int argc, char **argv)
     if (!task->load(task, entry, argc, argv))
         return 0;
 
-    mmu_map_task_memory(task->memory->paddress, task->memory->vaddress, task->memory->size, 0x7, 0x7);
+    mmu_map_task_memory(task->memory, 0x7, 0x7);
 
     struct runtime_task *ptask = runtime_get_running_task();
 
