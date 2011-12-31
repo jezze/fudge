@@ -7,8 +7,8 @@
 #include <kernel/arch/x86/mmu.h>
 
 static struct mmu_unit unit;
-static struct mmu_header kernelHeader;
-static struct mmu_header programHeaders[8];
+static struct mmu_header headers[8];
+static struct mmu_header *kernelHeader;
 
 static void mmu_handle_pagefault(struct isr_registers *registers)
 {
@@ -71,16 +71,13 @@ static unsigned int mmu_get_frame(struct mmu_memory *memory)
 static struct mmu_header *mmu_get_header(struct mmu_memory *memory)
 {
 
-    if (!memory->paddress)
-        return &kernelHeader;
-
     unsigned int i;
 
     for (i = 0; i < 8; i++)
     {
 
-        if (programHeaders[i].memory.paddress == memory->paddress)
-            return &programHeaders[i];
+        if (headers[i].memory.paddress == memory->paddress)
+            return &headers[i];
 
     }
 
@@ -88,18 +85,16 @@ static struct mmu_header *mmu_get_header(struct mmu_memory *memory)
 
 }
 
-static void mmu_map_memory(struct mmu_memory *memory, unsigned int tflags, unsigned int pflags)
+static void mmu_map_memory(struct mmu_header *header, unsigned int tflags, unsigned int pflags)
 {
-
-    struct mmu_header *header = mmu_get_header(memory);
 
     mmu_table_clear(&header->table);
 
-    unsigned int frame = mmu_get_frame(memory);
+    unsigned int frame = mmu_get_frame(&header->memory);
     unsigned int i;
 
-    for (i = 0; i < memory->size / MMU_PAGE_SIZE; i++)
-        mmu_table_set_page(&header->table, frame + i, memory->paddress + i * MMU_PAGE_SIZE, pflags); 
+    for (i = 0; i < header->memory.size / MMU_PAGE_SIZE; i++)
+        mmu_table_set_page(&header->table, frame + i, header->memory.paddress + i * MMU_PAGE_SIZE, pflags); 
 
     mmu_directory_set_table(&header->directory, frame, &header->table, tflags);
 }
@@ -107,18 +102,22 @@ static void mmu_map_memory(struct mmu_memory *memory, unsigned int tflags, unsig
 static void mmu_map_memory_kernel(struct mmu_memory *memory)
 {
 
-    mmu_map_memory(memory, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE);
+    struct mmu_header *header = mmu_get_header(memory);
+
+    mmu_map_memory(header, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE);
 
 }
 
 static void mmu_map_memory_user(struct mmu_memory *memory)
 {
 
-    mmu_map_memory(memory, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);
+    struct mmu_header *header = mmu_get_header(memory);
+
+    mmu_map_memory(header, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);
 
 }
 
-static struct mmu_memory *mmu_get_memory()
+static unsigned int mmu_get_unused_header_slot()
 {
 
     unsigned int i;
@@ -126,19 +125,27 @@ static struct mmu_memory *mmu_get_memory()
     for (i = 0; i < 8; i++)
     {
 
-        struct mmu_memory *memory = &programHeaders[i].memory;
+        struct mmu_memory *memory = &headers[i].memory;
 
-        if (memory->used)
-            continue;
-
-        mmu_memory_init(memory, 1, (void *)(0x00300000 + i * 0x10000), (void *)0x00000000, 0x10000);
-        memory_copy(&programHeaders[i].directory, &kernelHeader.directory, sizeof (struct mmu_directory));
-
-        return memory;
+        if (!memory->used)
+            return i;
 
     }
 
     return 0;
+
+}
+
+static struct mmu_memory *mmu_get_memory()
+{
+
+    unsigned int index = mmu_get_unused_header_slot();
+    struct mmu_header *header = &headers[index];
+
+    mmu_memory_init(&header->memory, 1, (void *)(0x00300000 + index * 0x10000), (void *)0x00000000, 0x10000);
+    memory_copy(&header->directory, &kernelHeader->directory, sizeof (struct mmu_directory));
+
+    return &header->memory;
 
 }
 
@@ -161,11 +168,11 @@ static void mmu_load_memory(struct mmu_memory *memory)
 void mmu_enable()
 {
 
-    struct mmu_memory *memory = &kernelHeader.memory;
+    kernelHeader = &headers[mmu_get_unused_header_slot()];
 
-    mmu_memory_init(memory, 1, (void *)0x00000000, (void *)0x00000000, 0x00400000);
-    mmu_map_memory_kernel(memory);
-    mmu_load_memory(memory);
+    mmu_memory_init(&kernelHeader->memory, 1, (void *)0x00000000, (void *)0x00000000, 0x00400000);
+    mmu_map_memory_kernel(&kernelHeader->memory);
+    mmu_load_memory(&kernelHeader->memory);
 
     isr_register_routine(ISR_ROUTINE_PF, mmu_handle_pagefault);
     cpu_set_cr0(cpu_get_cr0() | 0x80000000);
