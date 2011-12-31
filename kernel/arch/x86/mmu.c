@@ -114,6 +114,10 @@ static struct mmu_memory *mmu_get_memory()
             continue;
 
         memory->used = 1;
+        memory->size = 0x10000;
+        memory->paddress = (void *)(0x00300000 + i * memory->size);
+        memory->vaddress = 0x00000000;
+        memory_copy(&programHeaders[i].directory, &kernelHeader.directory, sizeof (struct mmu_directory));
 
         return memory;
 
@@ -155,19 +159,6 @@ void mmu_init()
     mmu_clear_directory(&kernelHeader.directory);
     mmu_map_memory(&kernelHeader.memory, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE);
     mmu_load_memory(&kernelHeader.memory);
-
-    unsigned int i;
-
-    for (i = 0; i < 8; i++)
-    {
-
-        programHeaders[i].memory.used = 0;
-        programHeaders[i].memory.size = 0x10000;
-        programHeaders[i].memory.paddress = (void *)(0x00300000 + i * programHeaders[i].memory.size);
-        programHeaders[i].memory.vaddress = 0x00000000;
-        memory_copy(&programHeaders[i].directory, &kernelHeader.directory, sizeof (struct mmu_directory));
-
-    }
 
     isr_register_routine(ISR_ROUTINE_PF, mmu_handle_pagefault);
 
