@@ -72,6 +72,9 @@ void kernel_init(struct kernel_arch *arch)
     kernel_core_init(&kernelCore, arch);
     kernelCore.arch->setup(kernelCore.arch);
 
+    if (kernelCore.arch->enable_mmu)
+        kernelCore.arch->enable_mmu();
+
     modules_init();
     initrd_init(kernelCore.arch->initrdc, kernelCore.arch->initrdv);
     symbol_init();
