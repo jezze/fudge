@@ -111,6 +111,7 @@ static void mmu_map_memory_user(struct mmu_memory *memory)
 
     struct mmu_header *header = mmu_get_header(memory);
 
+    memory_copy(&header->directory, &kernelHeader->directory, sizeof (struct mmu_directory));
     mmu_map_memory(header, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);
 
 }
@@ -141,7 +142,6 @@ static struct mmu_memory *mmu_get_memory()
     struct mmu_header *header = &headers[index];
 
     mmu_memory_init(&header->memory, 1, (void *)(0x00300000 + index * 0x10000), (void *)0x00000000, 0x10000);
-    memory_copy(&header->directory, &kernelHeader->directory, sizeof (struct mmu_directory));
 
     return &header->memory;
 
