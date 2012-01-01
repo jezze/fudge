@@ -42,7 +42,7 @@ struct mmu_directory
 struct mmu_header
 {
 
-    struct mmu_memory memory;
+    struct mmu_memory *memory;
     struct mmu_directory directory;
     struct mmu_table table;
 

@@ -5,6 +5,7 @@
 #include <kernel/arch/x86/mmu.h>
 
 static struct mmu_unit unit;
+static struct mmu_memory memories[8];
 static struct mmu_header headers[8];
 static struct mmu_header *kernelHeader;
 
@@ -74,7 +75,7 @@ static struct mmu_header *mmu_get_header(struct mmu_memory *memory)
     for (i = 0; i < 8; i++)
     {
 
-        if (headers[i].memory.paddress == memory->paddress)
+        if (headers[i].memory->paddress == memory->paddress)
             return &headers[i];
 
     }
@@ -88,11 +89,11 @@ static void mmu_map_memory(struct mmu_header *header, unsigned int tflags, unsig
 
     mmu_table_clear(&header->table);
 
-    unsigned int frame = mmu_get_frame(&header->memory);
+    unsigned int frame = mmu_get_frame(header->memory);
     unsigned int i;
 
-    for (i = 0; i < header->memory.size / MMU_PAGE_SIZE; i++)
-        mmu_table_set_page(&header->table, frame + i, header->memory.paddress + i * MMU_PAGE_SIZE, pflags); 
+    for (i = 0; i < header->memory->size / MMU_PAGE_SIZE; i++)
+        mmu_table_set_page(&header->table, frame + i, header->memory->paddress + i * MMU_PAGE_SIZE, pflags); 
 
     mmu_directory_set_table(&header->directory, frame, &header->table, tflags);
 }
@@ -124,7 +125,7 @@ static unsigned int mmu_get_unused_header_slot()
     for (i = 0; i < 8; i++)
     {
 
-        struct mmu_memory *memory = &headers[i].memory;
+        struct mmu_memory *memory = headers[i].memory;
 
         if (!memory->used)
             return i;
@@ -141,9 +142,9 @@ static struct mmu_memory *mmu_get_memory()
     unsigned int index = mmu_get_unused_header_slot();
     struct mmu_header *header = &headers[index];
 
-    mmu_memory_init(&header->memory, 1, (void *)(0x00300000 + index * 0x10000), (void *)0x00000000, 0x10000);
+    mmu_memory_init(header->memory, 1, (void *)(0x00300000 + index * 0x10000), (void *)0x00000000, 0x10000);
 
-    return &header->memory;
+    return header->memory;
 
 }
 
@@ -166,11 +167,16 @@ static void mmu_load_memory(struct mmu_memory *memory)
 void mmu_enable()
 {
 
+    unsigned int i;
+
+    for (i = 0; i < 8; i++)
+        headers[i].memory = &memories[i];
+
     kernelHeader = &headers[mmu_get_unused_header_slot()];
 
-    mmu_memory_init(&kernelHeader->memory, 1, (void *)0x00000000, (void *)0x00000000, 0x00400000);
-    mmu_map_memory_kernel(&kernelHeader->memory);
-    mmu_load_memory(&kernelHeader->memory);
+    mmu_memory_init(kernelHeader->memory, 1, (void *)0x00000000, (void *)0x00000000, 0x00400000);
+    mmu_map_memory_kernel(kernelHeader->memory);
+    mmu_load_memory(kernelHeader->memory);
 
     isr_register_routine(ISR_ROUTINE_PF, mmu_handle_pagefault);
     cpu_set_cr0(cpu_get_cr0() | 0x80000000);
