@@ -117,7 +117,7 @@ static void mmu_map_memory_user(struct mmu_memory *memory)
 
 }
 
-static unsigned int mmu_get_unused_header_slot()
+static unsigned int mmu_get_unused_slot()
 {
 
     unsigned int i;
@@ -125,9 +125,9 @@ static unsigned int mmu_get_unused_header_slot()
     for (i = 0; i < 8; i++)
     {
 
-        struct mmu_memory *memory = headers[i].memory;
+        struct mmu_header *header = &headers[i];
 
-        if (!memory->used)
+        if (!header->memory || !header->memory->used)
             return i;
 
     }
@@ -139,8 +139,13 @@ static unsigned int mmu_get_unused_header_slot()
 static struct mmu_memory *mmu_get_memory()
 {
 
-    unsigned int index = mmu_get_unused_header_slot();
+    unsigned int index = mmu_get_unused_slot();
+
+    if (!index)
+        return 0;
+
     struct mmu_header *header = &headers[index];
+    header->memory = &memories[index];
 
     mmu_memory_init(header->memory, 1, (void *)(0x00300000 + index * 0x10000), (void *)0x00000000, 0x10000);
 
@@ -167,12 +172,8 @@ static void mmu_load_memory(struct mmu_memory *memory)
 void mmu_enable()
 {
 
-    unsigned int i;
-
-    for (i = 0; i < 8; i++)
-        headers[i].memory = &memories[i];
-
-    kernelHeader = &headers[mmu_get_unused_header_slot()];
+    kernelHeader = &headers[0];
+    kernelHeader->memory = &memories[0];
 
     mmu_memory_init(kernelHeader->memory, 1, (void *)0x00000000, (void *)0x00000000, 0x00400000);
     mmu_map_memory_kernel(kernelHeader->memory);
