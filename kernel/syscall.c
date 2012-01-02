@@ -94,12 +94,7 @@ unsigned int syscall_execute(char *path, unsigned int argc, char **argv)
 
     struct runtime_task *ptask = runtime_get_running_task();
 
-    if (ptask)
-        task->parentid = ptask->id;
-    else
-        task->parentid = 0;
-
-    runtime_activate(task);
+    runtime_activate(task, ptask);
 
     struct vfs_node *sin = vfs_find("tty", "stdin");
     struct vfs_node *sout = vfs_find("tty", "stdout");
@@ -132,7 +127,7 @@ unsigned int syscall_exit()
     if (!ptask)
         return 0;
 
-    runtime_activate(ptask);
+    runtime_activate(ptask, 0);
 
     event_raise(EVENT_SYSCALL_EXIT);
 
@@ -254,7 +249,7 @@ unsigned int syscall_wait()
     if (!ptask)
         return 0;
 
-    runtime_activate(ptask);
+    runtime_activate(ptask, 0);
 
     event_raise(EVENT_SYSCALL_WAIT);
 
