@@ -5,6 +5,7 @@
 #include <kernel/irq.h>
 #include <kernel/kernel.h>
 #include <kernel/log.h>
+#include <kernel/mmu.h>
 #include <kernel/modules.h>
 #include <kernel/runtime.h>
 #include <kernel/symbol.h>

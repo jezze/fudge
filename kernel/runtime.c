@@ -50,9 +50,7 @@ struct runtime_task *runtime_get_running_task()
 void runtime_activate(struct runtime_task *task)
 {
 
-    struct mmu_memory *memory = task->memory;
-
-    mmu_load_memory(memory);
+    mmu_load_memory(&task->memory);
 
     control.running = task;
 
@@ -61,7 +59,7 @@ void runtime_activate(struct runtime_task *task)
 static unsigned int runtime_task_load(struct runtime_task *self, void *entry, unsigned int argc, char **argv)
 {
 
-    struct mmu_memory *memory = self->memory;
+    struct mmu_memory *memory = &self->memory;
 
     int reloc = (int)memory->vaddress - (int)memory->paddress;
 
@@ -205,6 +203,8 @@ void runtime_task_init(struct runtime_task *task, unsigned int id)
     task->add_descriptor = runtime_task_add_descriptor;
     task->get_descriptor = runtime_task_get_descriptor;
     task->remove_descriptor = runtime_task_remove_descriptor;
+
+    mmu_memory_init(&task->memory, (void *)(0x00300000 + task->id * 0x10000), (void *)0x00000000, 0x10000);
 
     unsigned int i;
 

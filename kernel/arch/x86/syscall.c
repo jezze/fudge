@@ -1,3 +1,4 @@
+#include <kernel/mmu.h>
 #include <kernel/runtime.h>
 #include <kernel/syscall.h>
 #include <kernel/arch/x86/syscall.h>

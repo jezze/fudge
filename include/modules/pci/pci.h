@@ -65,7 +65,7 @@ struct pci_bus
 {
 
     struct modules_bus base;
-    void (*scan)(struct pci_bus *self, unsigned int num, void (*callback)(unsigned int num, unsigned int slot, unsigned int function));
+    unsigned int (*scan)(struct pci_bus *self, unsigned int num, void (*callback)(unsigned int num, unsigned int slot, unsigned int function));
 
 };
 

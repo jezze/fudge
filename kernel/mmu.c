@@ -3,7 +3,7 @@
 #include <kernel/mmu.h>
 
 static struct mmu_unit *primary;
-static struct mmu_memory memories[8];
+static struct mmu_memory kernel;
 
 void mmu_pagefault(unsigned int address, unsigned int flags)
 {
@@ -28,41 +28,6 @@ void mmu_pagefault(unsigned int address, unsigned int flags)
     log_write("Address: 0x%x\n", address);
 
     error_panic("PAGE FAULT", __FILE__, __LINE__);
-
-}
-
-static unsigned int mmu_get_unused_slot()
-{
-
-    unsigned int i;
-
-    for (i = 0; i < 8; i++)
-    {
-
-        struct mmu_memory *memory = &memories[i];
-
-        if (!memory->used)
-            return i;
-
-    }
-
-    return 0;
-
-}
-
-struct mmu_memory *mmu_get_task_memory()
-{
-
-    unsigned int index = mmu_get_unused_slot();
-
-    if (!index)
-        return 0;
-
-    struct mmu_memory *memory = &memories[index];
-
-    mmu_memory_init(memory, (void *)(0x00300000 + index * 0x10000), (void *)0x00000000, 0x10000);
-
-    return memory;
 
 }
 
@@ -99,7 +64,7 @@ void mmu_register_unit(struct mmu_unit *unit)
 
     primary = unit;
 
-    struct mmu_memory *memory = &memories[0];
+    struct mmu_memory *memory = &kernel;
 
     mmu_memory_init(memory, (void *)0x00000000, (void *)0x00000000, 0x00400000);
     mmu_map_kernel_memory(memory);

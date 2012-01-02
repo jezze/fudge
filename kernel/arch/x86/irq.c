@@ -1,4 +1,5 @@
 #include <kernel/irq.h>
+#include <kernel/mmu.h>
 #include <kernel/runtime.h>
 #include <kernel/arch/x86/idt.h>
 #include <kernel/arch/x86/io.h>
