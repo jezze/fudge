@@ -244,17 +244,17 @@ unsigned int syscall_unload(char *path)
 unsigned int syscall_wait()
 {
 
-    struct runtime_task *oldtask = runtime_get_running_task();
-
-    if (!oldtask)
-        return 0;
-
-    struct runtime_task *task = runtime_get_task(oldtask->parentid);
+    struct runtime_task *task = runtime_get_running_task();
 
     if (!task)
         return 0;
 
-    runtime_activate(task);
+    struct runtime_task *ptask = runtime_get_task(task->parentid);
+
+    if (!ptask)
+        return 0;
+
+    runtime_activate(ptask);
 
     event_raise(EVENT_SYSCALL_WAIT);
 
