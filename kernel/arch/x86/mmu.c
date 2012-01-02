@@ -59,7 +59,7 @@ static void mmu_table_set_page(struct mmu_table *table, unsigned int frame, void
 
 }
 
-static unsigned int mmu_get_unused_slot()
+static unsigned int mmu_get_header_slot()
 {
 
     unsigned int i;
@@ -67,9 +67,7 @@ static unsigned int mmu_get_unused_slot()
     for (i = 0; i < MMU_HEADER_SLOTS; i++)
     {
 
-        struct mmu_header *header = &headers[i];
-
-        if (!header->memory)
+        if (!headers[i].memory)
             return i;
 
     }
@@ -107,7 +105,7 @@ static void mmu_unit_load_memory(struct mmu_memory *memory)
 static void mmu_unit_map_memory(struct mmu_memory *memory, unsigned int tflags, unsigned int pflags)
 {
 
-    struct mmu_header *header = &headers[mmu_get_unused_slot()];
+    struct mmu_header *header = &headers[mmu_get_header_slot()];
     header->memory = memory;
 
     mmu_table_clear(&header->table);
