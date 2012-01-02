@@ -51,12 +51,6 @@ void event_raise(unsigned int index)
 
     struct runtime_task *etask = runtime_get_task(routine->task->id);
 
-    if (!etask)
-        return;
-
-    if (ctask->id == etask->id)
-        return;
-
     etask->parentid = ctask->id;
     etask->load(etask, routine->callback, 0, 0);
 
