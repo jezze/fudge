@@ -146,8 +146,6 @@ unsigned int runtime_task_get_descriptor_slot(struct runtime_task *self)
 
 }
 
-
-
 static struct runtime_descriptor *runtime_task_get_descriptor(struct runtime_task *self, unsigned int index)
 {
 
@@ -155,6 +153,16 @@ static struct runtime_descriptor *runtime_task_get_descriptor(struct runtime_tas
         return 0;
 
     return &self->descriptors[index];
+
+}
+
+static void runtime_task_set_descriptor(struct runtime_task *self, unsigned int index, struct vfs_node *node)
+{
+
+    if (!index)
+        return;
+
+    self->descriptors[index].node = node;
 
 }
 
@@ -197,8 +205,9 @@ void runtime_task_init(struct runtime_task *task, unsigned int id)
     task->used = 0;
     task->load = runtime_task_load;
     task->unload = runtime_task_unload;
-    task->add_descriptor = runtime_task_add_descriptor;
     task->get_descriptor = runtime_task_get_descriptor;
+    task->set_descriptor = runtime_task_set_descriptor;
+    task->add_descriptor = runtime_task_add_descriptor;
     task->remove_descriptor = runtime_task_remove_descriptor;
 
     mmu_memory_init(&task->memory, (void *)(0x00300000 + task->id * 0x10000), (void *)0x00000000, 0x10000);

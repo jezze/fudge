@@ -99,9 +99,9 @@ unsigned int syscall_execute(char *path, unsigned int argc, char **argv)
     struct vfs_node *sout = vfs_find("tty", "stdout");
     struct vfs_node *serror = vfs_find("tty", "stderr");
 
-    task->add_descriptor(task, sin);
-    task->add_descriptor(task, sout);
-    task->add_descriptor(task, serror);
+    task->set_descriptor(task, 1, sin);
+    task->set_descriptor(task, 2, sout);
+    task->set_descriptor(task, 3, serror);
 
     event_raise(EVENT_SYSCALL_EXECUTE);
 
