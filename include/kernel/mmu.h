@@ -10,7 +10,6 @@
 struct mmu_memory
 {
 
-    unsigned int used;
     void *paddress;
     void *vaddress;
     unsigned int size;

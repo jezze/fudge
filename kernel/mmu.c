@@ -75,7 +75,6 @@ void mmu_register_unit(struct mmu_unit *unit)
 void mmu_memory_init(struct mmu_memory *memory, void *paddress, void *vaddress, unsigned int size)
 {
 
-    memory->used = 0;
     memory->paddress = paddress;
     memory->vaddress = vaddress;
     memory->size = size;

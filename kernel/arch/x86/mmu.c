@@ -110,8 +110,6 @@ static void mmu_unit_map_memory(struct mmu_memory *memory, unsigned int tflags, 
     struct mmu_header *header = &headers[mmu_get_unused_slot()];
     header->memory = memory;
 
-    memory->used = 1;
-
     mmu_table_clear(&header->table);
 
     unsigned int frame = (unsigned int)header->memory->vaddress / MMU_PAGE_SIZE;
@@ -146,8 +144,6 @@ static void mmu_unit_map_user_memory(struct mmu_memory *memory)
 
 static void mmu_unit_unmap_memory(struct mmu_memory *memory)
 {
-
-    memory->used = 0;
 
     struct mmu_header *header = mmu_get_header(memory);
 
