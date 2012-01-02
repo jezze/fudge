@@ -1,8 +1,6 @@
-#include <lib/string.h>
 #include <kernel/error.h>
 #include <kernel/vfs.h>
 #include <kernel/initrd.h>
-#include <kernel/irq.h>
 #include <kernel/kernel.h>
 #include <kernel/log.h>
 #include <kernel/mmu.h>
@@ -48,8 +46,24 @@ void kernel_core_init(struct kernel_core *core, struct kernel_arch *arch)
 
 }
 
-static void kernel_init_userspace()
+void kernel_init(struct kernel_arch *arch)
 {
+
+    struct kernel_core *core = &kernelCore;
+
+    log_init();
+    log_write("[kernel] Fudge init\n");
+
+    kernel_core_init(core, arch);
+    core->arch->setup(core->arch);
+
+    if (core->arch->enable_mmu)
+        core->arch->enable_mmu();
+
+    modules_init();
+    runtime_init();
+    initrd_init(core->arch->initrdc, core->arch->initrdv);
+    symbol_init();
 
     unsigned int id = syscall_execute("init", 0, 0);
 
@@ -58,30 +72,8 @@ static void kernel_init_userspace()
 
     struct runtime_task *task = runtime_get_task(id);
 
-    kernelCore.arch->set_stack(kernelCore.arch->stack);
-    kernelCore.arch->enter_usermode(task->registers.ip, task->registers.sp);
-
-}
-
-void kernel_init(struct kernel_arch *arch)
-{
-
-    log_init();
-
-    log_write("[kernel] Fudge init\n");
-
-    kernel_core_init(&kernelCore, arch);
-    kernelCore.arch->setup(kernelCore.arch);
-
-    if (kernelCore.arch->enable_mmu)
-        kernelCore.arch->enable_mmu();
-
-    modules_init();
-    initrd_init(kernelCore.arch->initrdc, kernelCore.arch->initrdv);
-    symbol_init();
-    runtime_init();
-
-    kernel_init_userspace();
+    core->arch->set_stack(core->arch->stack);
+    core->arch->enter_usermode(task->registers.ip, task->registers.sp);
 
 }
 
