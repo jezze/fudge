@@ -210,7 +210,9 @@ void runtime_task_init(struct runtime_task *task, unsigned int id)
     task->add_descriptor = runtime_task_add_descriptor;
     task->remove_descriptor = runtime_task_remove_descriptor;
 
-    mmu_memory_init(&task->memory, (void *)(0x00300000 + task->id * 0x10000), (void *)0x00000000, 0x10000);
+    void *address = (void *)(RUNTIME_TASK_ADDRESS_BASE + task->id * RUNTIME_TASK_ADDRESS_SIZE);
+
+    mmu_memory_init(&task->memory, address, address, RUNTIME_TASK_ADDRESS_SIZE);
 
     unsigned int i;
 
