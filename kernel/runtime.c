@@ -166,10 +166,9 @@ static void runtime_task_set_descriptor(struct runtime_task *self, unsigned int 
 
 }
 
-void runtime_descriptor_init(struct runtime_descriptor *descriptor, unsigned int id, struct vfs_node *node, unsigned int permissions)
+void runtime_descriptor_init(struct runtime_descriptor *descriptor, struct vfs_node *node, unsigned int permissions)
 {
 
-    descriptor->id = id;
     descriptor->node = node;
     descriptor->permissions = permissions;
 
@@ -193,7 +192,7 @@ void runtime_task_init(struct runtime_task *task, unsigned int id)
     unsigned int i;
 
     for (i = 0; i < RUNTIME_TASK_DESCRIPTOR_SLOTS; i++)
-        runtime_descriptor_init(&task->descriptors[i], i, 0, 0);
+        runtime_descriptor_init(&task->descriptors[i], 0, 0);
 
 }
 

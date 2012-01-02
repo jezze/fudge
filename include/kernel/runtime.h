@@ -18,7 +18,6 @@ struct runtime_registers
 struct runtime_descriptor
 {
 
-    unsigned int id;
     struct vfs_node *node;
     unsigned int permissions;
 
@@ -47,7 +46,7 @@ extern struct runtime_task *runtime_get_running_task();
 extern void runtime_activate(struct runtime_task *task, struct runtime_task *ptask);
 extern void runtime_get_state(unsigned int *ip, unsigned int *sp, unsigned int *sb);
 extern void runtime_set_state(unsigned int ip, unsigned int sp, unsigned int sb);
-extern void runtime_descriptor_init(struct runtime_descriptor *descriptor, unsigned int id, struct vfs_node *node, unsigned int permissions);
+extern void runtime_descriptor_init(struct runtime_descriptor *descriptor, struct vfs_node *node, unsigned int permissions);
 extern void runtime_task_init(struct runtime_task *task, unsigned int id);
 extern void runtime_init();
 
