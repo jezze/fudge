@@ -63,17 +63,16 @@ unsigned int syscall_halt()
 unsigned int syscall_execute(char *path, unsigned int argc, char **argv)
 {
 
-    struct vfs_node *node = vfs_find("bin", path);
-
-    if (!(node && node->read))
-        return 0;
-
     unsigned int id = runtime_get_slot();
 
     if (!id)
         return 0;
 
     struct runtime_task *task = runtime_get_task(id);
+    struct vfs_node *node = vfs_find("bin", path);
+
+    if (!(node && node->read))
+        return 0;
 
     node->read(node, task->memory.size, task->memory.paddress);
 
