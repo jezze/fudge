@@ -58,9 +58,9 @@ static void handle_kbd_irq(struct modules_device *self)
 
         kbd->buffer.putc(&kbd->buffer, &kbd->map[scancode]);
 
-    }
+        event_raise(EVENT_IRQ_KBD);
 
-    event_raise(EVENT_IRQ_KBD);
+    }
 
 }
 

@@ -112,24 +112,6 @@ static void read_keyboard()
 
 }
 
-static void poll()
-{
-
-    char buffer[32];
-
-    for (;;)
-    {
-
-        unsigned int num = file_read(FILE_STDIN, 32, buffer);
-        unsigned int i;
-
-        for (i = 0; i < num; i++)
-            handle_input(buffer[i]);
-
-    }
-
-}
-
 void main(int argc, char *argv[])
 {
 
@@ -137,11 +119,9 @@ void main(int argc, char *argv[])
     file_write_format(FILE_STDOUT, "Write `cat help.txt` for a short list if commands\n\n");
 
     clear();
-    poll();
 
-//    Sadly this is buggy. Need to fix.
-//    call_attach(0x01, read_keyboard);
-//    call_wait();
+    call_attach(0x01, read_keyboard);
+    call_wait();
 
 }
 
