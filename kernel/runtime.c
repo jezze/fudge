@@ -166,29 +166,6 @@ static void runtime_task_set_descriptor(struct runtime_task *self, unsigned int 
 
 }
 
-static struct runtime_descriptor *runtime_task_add_descriptor(struct runtime_task *self, struct vfs_node *node)
-{
-
-    unsigned int index = runtime_task_get_descriptor_slot(self);
-
-    if (!index)
-        return 0;
-
-    struct runtime_descriptor *descriptor = self->get_descriptor(self, index);
-    descriptor->node = node;
-
-    return descriptor;
-
-}
-
-static void runtime_task_remove_descriptor(struct runtime_task *self, unsigned int index)
-{
-
-    struct runtime_descriptor *descriptor = self->get_descriptor(self, index);
-    descriptor->node = 0;
-
-}
-
 void runtime_descriptor_init(struct runtime_descriptor *descriptor, unsigned int id, struct vfs_node *node, unsigned int permissions)
 {
 
@@ -205,10 +182,9 @@ void runtime_task_init(struct runtime_task *task, unsigned int id)
     task->used = 0;
     task->load = runtime_task_load;
     task->unload = runtime_task_unload;
+    task->get_descriptor_slot = runtime_task_get_descriptor_slot;
     task->get_descriptor = runtime_task_get_descriptor;
     task->set_descriptor = runtime_task_set_descriptor;
-    task->add_descriptor = runtime_task_add_descriptor;
-    task->remove_descriptor = runtime_task_remove_descriptor;
 
     void *address = (void *)(RUNTIME_TASK_ADDRESS_BASE + task->id * RUNTIME_TASK_ADDRESS_SIZE);
 

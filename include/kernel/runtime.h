@@ -35,10 +35,9 @@ struct runtime_task
     unsigned int (*load)(struct runtime_task *self, void *entry, unsigned int argc, char **argv);
     void (*unload)(struct runtime_task *self);
     struct runtime_descriptor descriptors[RUNTIME_TASK_DESCRIPTOR_SLOTS];
+    unsigned int (*get_descriptor_slot)(struct runtime_task *self);
     struct runtime_descriptor *(*get_descriptor)(struct runtime_task *self, unsigned int index);
     void (*set_descriptor)(struct runtime_task *self, unsigned int index, struct vfs_node *node);
-    struct runtime_descriptor *(*add_descriptor)(struct runtime_task *self, struct vfs_node *node);
-    void (*remove_descriptor)(struct runtime_task *self, unsigned int index);
 
 };
 

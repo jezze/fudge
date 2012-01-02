@@ -26,12 +26,15 @@ unsigned int syscall_close(unsigned int fd)
     if (!task)
         return 0;
 
-    struct vfs_node *node = task->get_descriptor(task, fd)->node;
+    struct runtime_descriptor *descriptor = task->get_descriptor(task, fd);
 
-    if (node->close)
-        node->close(node);
+    if (!descriptor)
+        return 0;
 
-    task->remove_descriptor(task, fd);
+    if (descriptor->node->close)
+        descriptor->node->close(descriptor->node);
+
+    task->set_descriptor(task, fd, 0);
 
     event_raise(EVENT_SYSCALL_CLOSE);
 
@@ -170,17 +173,24 @@ unsigned int syscall_open(char *view, char *name)
     if (!node)
         return 0;
 
-    if (node->open)
-        node->open(node);
+    unsigned int index = task->get_descriptor_slot(task);
 
-    struct runtime_descriptor *descriptor = task->add_descriptor(task, node);
+    if (!index)
+        return 0;
+
+    struct runtime_descriptor *descriptor = task->get_descriptor(task, index);
 
     if (!descriptor)
         return 0;
 
+    task->set_descriptor(task, index, node);
+
+    if (descriptor->node->open)
+        descriptor->node->open(node);
+
     event_raise(EVENT_SYSCALL_OPEN);
 
-    return descriptor->id;
+    return index;
 
 }
 
