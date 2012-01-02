@@ -258,7 +258,7 @@ unsigned int syscall_wait()
 
     event_raise(EVENT_SYSCALL_WAIT);
 
-    return 1;
+    return ptask->id;
 
 }
 
