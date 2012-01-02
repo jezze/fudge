@@ -60,7 +60,7 @@ struct mmu_memory *mmu_get_task_memory()
 
     struct mmu_memory *memory = &memories[index];
 
-    mmu_memory_init(memory, 1, (void *)(0x00300000 + index * 0x10000), (void *)0x00000000, 0x10000);
+    mmu_memory_init(memory, (void *)(0x00300000 + index * 0x10000), (void *)0x00000000, 0x10000);
 
     return memory;
 
@@ -101,16 +101,16 @@ void mmu_register_unit(struct mmu_unit *unit)
 
     struct mmu_memory *memory = &memories[0];
 
-    mmu_memory_init(memory, 1, (void *)0x00000000, (void *)0x00000000, 0x00400000);
+    mmu_memory_init(memory, (void *)0x00000000, (void *)0x00000000, 0x00400000);
     mmu_map_kernel_memory(memory);
     mmu_load_memory(memory);
 
 }
 
-void mmu_memory_init(struct mmu_memory *memory, unsigned int used, void *paddress, void *vaddress, unsigned int size)
+void mmu_memory_init(struct mmu_memory *memory, void *paddress, void *vaddress, unsigned int size)
 {
 
-    memory->used = used;
+    memory->used = 0;
     memory->paddress = paddress;
     memory->vaddress = vaddress;
     memory->size = size;
