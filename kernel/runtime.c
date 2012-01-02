@@ -124,9 +124,6 @@ static void runtime_task_unload(struct runtime_task *self)
 
     self->used = 0;
 
-    memory_clear(&self->registers, sizeof (struct runtime_registers));
-    memory_clear(&self->descriptors, sizeof (struct runtime_descriptor) * RUNTIME_TASK_DESCRIPTOR_SLOTS);
-
 }
 
 static unsigned int runtime_task_get_descriptor_slot(struct runtime_task *self)
@@ -159,6 +156,8 @@ static struct runtime_descriptor *runtime_task_get_descriptor(struct runtime_tas
 void runtime_registers_init(struct runtime_registers *registers, unsigned int ip, unsigned int sp, unsigned int sb)
 {
 
+    memory_clear(registers, sizeof (struct runtime_registers));
+
     registers->ip = ip;
     registers->sp = sp;
     registers->sb = sb;
@@ -168,6 +167,8 @@ void runtime_registers_init(struct runtime_registers *registers, unsigned int ip
 void runtime_descriptor_init(struct runtime_descriptor *descriptor, struct vfs_node *node, unsigned int permissions)
 {
 
+    memory_clear(descriptor, sizeof (struct runtime_descriptor));
+
     descriptor->node = node;
     descriptor->permissions = permissions;
 
@@ -176,15 +177,14 @@ void runtime_descriptor_init(struct runtime_descriptor *descriptor, struct vfs_n
 void runtime_task_init(struct runtime_task *task, unsigned int id)
 {
 
+    memory_clear(task, sizeof (struct runtime_task));
+
     task->id = id;
     task->used = 0;
     task->load = runtime_task_load;
     task->unload = runtime_task_unload;
     task->get_descriptor_slot = runtime_task_get_descriptor_slot;
     task->get_descriptor = runtime_task_get_descriptor;
-
-    memory_clear(&task->registers, sizeof (struct runtime_registers));
-    memory_clear(&task->descriptors, sizeof (struct runtime_descriptor) * RUNTIME_TASK_DESCRIPTOR_SLOTS);
 
     void *address = (void *)(RUNTIME_TASK_ADDRESS_BASE + task->id * RUNTIME_TASK_ADDRESS_SIZE);
 
@@ -194,11 +194,6 @@ void runtime_task_init(struct runtime_task *task, unsigned int id)
 
 void runtime_init()
 {
-
-    unsigned int i;
-
-    for (i = 0; i < RUNTIME_TASK_SLOTS; i++)
-        runtime_task_init(&tasks[i], i);
 
     running = 0;
 

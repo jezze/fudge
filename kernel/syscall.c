@@ -28,16 +28,13 @@ unsigned int syscall_close(unsigned int fd)
 
     struct runtime_descriptor *descriptor = task->get_descriptor(task, fd);
 
-    if (!descriptor)
-        return 0;
-
-    if (!descriptor->node)
+    if (!descriptor || !descriptor->node)
         return 0;
 
     if (descriptor->node->close)
         descriptor->node->close(descriptor->node);
 
-    descriptor->node = 0;
+    runtime_descriptor_init(descriptor, 0, 0);
 
     event_raise(EVENT_SYSCALL_CLOSE);
 
@@ -75,6 +72,9 @@ unsigned int syscall_execute(char *path, unsigned int argc, char **argv)
         return 0;
 
     struct runtime_task *task = runtime_get_task(index);
+
+    runtime_task_init(task, index);
+
     struct vfs_node *node = vfs_find("bin", path);
 
     if (!(node && node->read))
@@ -100,10 +100,9 @@ unsigned int syscall_execute(char *path, unsigned int argc, char **argv)
     struct runtime_task *ptask = runtime_get_running_task();
 
     runtime_activate(task, ptask);
-
-    task->get_descriptor(task, 1)->node = vfs_find("tty", "stdin");
-    task->get_descriptor(task, 2)->node = vfs_find("tty", "stdout");
-    task->get_descriptor(task, 3)->node = vfs_find("tty", "stderr");
+    runtime_descriptor_init(task->get_descriptor(task, 1), vfs_find("tty", "stdin"), 0);
+    runtime_descriptor_init(task->get_descriptor(task, 2), vfs_find("tty", "stdout"), 0);
+    runtime_descriptor_init(task->get_descriptor(task, 3), vfs_find("tty", "stderr"), 0);
 
     event_raise(EVENT_SYSCALL_EXECUTE);
 
@@ -177,7 +176,7 @@ unsigned int syscall_open(char *view, char *name)
     if (!descriptor)
         return 0;
 
-    descriptor->node = vfs_find(view, name);
+    runtime_descriptor_init(descriptor, vfs_find(view, name), 0);
 
     if (!descriptor->node)
         return 0;
