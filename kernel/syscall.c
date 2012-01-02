@@ -121,7 +121,7 @@ unsigned int syscall_exit()
 
     task->unload(task);
 
-    mmu_unget_task_memory(task->memory);
+    mmu_unmap_task_memory(task->memory);
 
     struct runtime_task *ptask = runtime_get_task(task->parentid);
 

@@ -60,10 +60,22 @@ static void mmu_table_set_page(struct mmu_table *table, unsigned int frame, void
 
 }
 
-static unsigned int mmu_get_frame(struct mmu_memory *memory)
+static unsigned int mmu_get_unused_slot()
 {
 
-    return (unsigned int)memory->vaddress / MMU_PAGE_SIZE;
+    unsigned int i;
+
+    for (i = 0; i < 8; i++)
+    {
+
+        struct mmu_header *header = &headers[i];
+
+        if (!header->memory)
+            return i;
+
+    }
+
+    return 0;
 
 }
 
@@ -75,7 +87,7 @@ static struct mmu_header *mmu_get_header(struct mmu_memory *memory)
     for (i = 0; i < 8; i++)
     {
 
-        if (headers[i].memory->paddress == memory->paddress)
+        if (headers[i].memory == memory)
             return &headers[i];
 
     }
@@ -89,20 +101,24 @@ static void mmu_map_memory(struct mmu_header *header, unsigned int tflags, unsig
 
     mmu_table_clear(&header->table);
 
-    unsigned int frame = mmu_get_frame(header->memory);
+    unsigned int frame = (unsigned int)header->memory->vaddress / MMU_PAGE_SIZE;
     unsigned int i;
 
     for (i = 0; i < header->memory->size / MMU_PAGE_SIZE; i++)
         mmu_table_set_page(&header->table, frame + i, header->memory->paddress + i * MMU_PAGE_SIZE, pflags); 
 
     mmu_directory_set_table(&header->directory, frame, &header->table, tflags);
+
 }
 
 static void mmu_map_memory_kernel(struct mmu_memory *memory)
 {
 
-    struct mmu_header *header = mmu_get_header(memory);
+    unsigned int index = mmu_get_unused_slot();
+    struct mmu_header *header = &headers[index];
+    header->memory = memory;
 
+    kernelHeader = header;
     mmu_map_memory(header, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE);
 
 }
@@ -110,31 +126,27 @@ static void mmu_map_memory_kernel(struct mmu_memory *memory)
 static void mmu_map_memory_user(struct mmu_memory *memory)
 {
 
-    struct mmu_header *header = mmu_get_header(memory);
+    unsigned int index = mmu_get_unused_slot();
+    struct mmu_header *header = &headers[index];
+    header->memory = memory;
 
     memory_copy(&header->directory, &kernelHeader->directory, sizeof (struct mmu_directory));
     mmu_map_memory(header, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);
 
 }
 
-static unsigned int mmu_get_unused_slot()
+static void mmu_unmap_memory(struct mmu_memory *memory)
 {
 
-    unsigned int i;
+    memory->used = 0;
 
-    for (i = 0; i < 8; i++)
-    {
+    struct mmu_header *header = mmu_get_header(memory);
 
-        struct mmu_header *header = &headers[i];
-
-        if (!header->memory || !header->memory->used)
-            return i;
-
-    }
-
-    return 0;
+    header->memory = 0;
 
 }
+
+
 
 static struct mmu_memory *mmu_get_memory()
 {
@@ -144,19 +156,11 @@ static struct mmu_memory *mmu_get_memory()
     if (!index)
         return 0;
 
-    struct mmu_header *header = &headers[index];
-    header->memory = &memories[index];
+    struct mmu_memory *memory = &memories[index];
 
-    mmu_memory_init(header->memory, 1, (void *)(0x00300000 + index * 0x10000), (void *)0x00000000, 0x10000);
+    mmu_memory_init(memory, 1, (void *)(0x00300000 + index * 0x10000), (void *)0x00000000, 0x10000);
 
-    return header->memory;
-
-}
-
-static void mmu_unget_memory(struct mmu_memory *memory)
-{
-
-    memory->used = 0;
+    return memory;
 
 }
 
@@ -172,20 +176,19 @@ static void mmu_load_memory(struct mmu_memory *memory)
 void mmu_enable()
 {
 
-    kernelHeader = &headers[0];
-    kernelHeader->memory = &memories[0];
+    struct mmu_memory *memory = &memories[0];
 
-    mmu_memory_init(kernelHeader->memory, 1, (void *)0x00000000, (void *)0x00000000, 0x00400000);
-    mmu_map_memory_kernel(kernelHeader->memory);
-    mmu_load_memory(kernelHeader->memory);
+    mmu_memory_init(memory, 1, (void *)0x00000000, (void *)0x00000000, 0x00400000);
+    mmu_map_memory_kernel(memory);
+    mmu_load_memory(memory);
 
     isr_register_routine(ISR_ROUTINE_PF, mmu_handle_pagefault);
     cpu_set_cr0(cpu_get_cr0() | 0x80000000);
 
     unit.get_task_memory = mmu_get_memory;
-    unit.unget_task_memory = mmu_unget_memory;
     unit.load_task_memory = mmu_load_memory;
     unit.map_task_memory = mmu_map_memory_user;
+    unit.unmap_task_memory = mmu_unmap_memory;
 
     mmu_register_unit(&unit);
 

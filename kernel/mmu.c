@@ -37,10 +37,10 @@ struct mmu_memory *mmu_get_task_memory()
 
 }
 
-void mmu_unget_task_memory(struct mmu_memory *memory)
+void mmu_unmap_task_memory(struct mmu_memory *memory)
 {
 
-    return primary->unget_task_memory(memory);
+    return primary->unmap_task_memory(memory);
 
 }
 
