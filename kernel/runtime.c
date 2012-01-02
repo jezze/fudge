@@ -112,9 +112,8 @@ static unsigned int runtime_task_load(struct runtime_task *self, void *entry, un
     stack = memory_copy(stack - 0x4, &entry, 4);
 
     self->used = 1;
-    self->registers.ip = (unsigned int)entry;
-    self->registers.sp = (unsigned int)(stack + reloc);
-    self->registers.sb = (unsigned int)(stack + reloc);
+
+    runtime_registers_init(&self->registers, (unsigned int)entry, (unsigned int)(stack + reloc), (unsigned int)(stack + reloc));
 
     return 1;
 
@@ -125,11 +124,12 @@ static void runtime_task_unload(struct runtime_task *self)
 
     self->used = 0;
 
-    memory_clear(self->descriptors, sizeof (struct runtime_descriptor) * RUNTIME_TASK_DESCRIPTOR_SLOTS);
+    memory_clear(&self->registers, sizeof (struct runtime_registers));
+    memory_clear(&self->descriptors, sizeof (struct runtime_descriptor) * RUNTIME_TASK_DESCRIPTOR_SLOTS);
 
 }
 
-unsigned int runtime_task_get_descriptor_slot(struct runtime_task *self)
+static unsigned int runtime_task_get_descriptor_slot(struct runtime_task *self)
 {
 
     unsigned int i;
@@ -156,6 +156,15 @@ static struct runtime_descriptor *runtime_task_get_descriptor(struct runtime_tas
 
 }
 
+void runtime_registers_init(struct runtime_registers *registers, unsigned int ip, unsigned int sp, unsigned int sb)
+{
+
+    registers->ip = ip;
+    registers->sp = sp;
+    registers->sb = sb;
+
+}
+
 void runtime_descriptor_init(struct runtime_descriptor *descriptor, struct vfs_node *node, unsigned int permissions)
 {
 
@@ -174,7 +183,8 @@ void runtime_task_init(struct runtime_task *task, unsigned int id)
     task->get_descriptor_slot = runtime_task_get_descriptor_slot;
     task->get_descriptor = runtime_task_get_descriptor;
 
-    memory_clear(task->descriptors, sizeof (struct runtime_descriptor) * RUNTIME_TASK_DESCRIPTOR_SLOTS);
+    memory_clear(&task->registers, sizeof (struct runtime_registers));
+    memory_clear(&task->descriptors, sizeof (struct runtime_descriptor) * RUNTIME_TASK_DESCRIPTOR_SLOTS);
 
     void *address = (void *)(RUNTIME_TASK_ADDRESS_BASE + task->id * RUNTIME_TASK_ADDRESS_SIZE);
 
