@@ -125,10 +125,7 @@ static void runtime_task_unload(struct runtime_task *self)
 
     self->used = 0;
 
-    unsigned int i;
-
-    for (i = 0; i < RUNTIME_TASK_DESCRIPTOR_SLOTS; i++)
-        self->descriptors[i].node = 0;
+    memory_clear(self->descriptors, sizeof (struct runtime_descriptor) * RUNTIME_TASK_DESCRIPTOR_SLOTS);
 
 }
 
