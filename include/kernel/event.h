@@ -25,6 +25,16 @@ struct event_routine
 
 };
 
+struct event_buffer
+{
+
+    struct event_routine *buffer[8];
+    unsigned int size;
+    unsigned int head;
+    unsigned int tail;
+
+};
+
 extern unsigned int event_register_routine(unsigned int index, struct runtime_task *task, void (*callback)());
 extern unsigned int event_unregister_routine(unsigned int index, struct runtime_task *task);
 extern void event_raise(unsigned int index);
