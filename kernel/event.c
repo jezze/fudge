@@ -54,16 +54,13 @@ void event_raise(unsigned int index)
     if (!etask)
         return;
 
-    if (ctask->id != etask->id)
-    {
+    if (ctask->id == etask->id)
+        return;
 
-        runtime_activate(etask);
+    etask->parentid = ctask->id;
+    etask->load(etask, routine->callback, 0, 0);
 
-        etask->parentid = ctask->id;
-
-    }
-
-    etask->registers.ip = (unsigned int)routine->callback;
+    runtime_activate(etask);
 
 }
 
