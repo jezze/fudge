@@ -68,7 +68,7 @@ unsigned int syscall_execute(char *path, unsigned int argc, char **argv)
     if (!(node && node->read))
         return 0;
 
-    unsigned int id = runtime_get_free_slot();
+    unsigned int id = runtime_get_slot();
 
     if (!id)
         return 0;

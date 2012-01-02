@@ -4,9 +4,10 @@
 #include <kernel/vfs.h>
 #include <kernel/runtime.h>
 
-static struct runtime_control control;
+static struct runtime_task tasks[RUNTIME_TASK_SLOTS];
+static struct runtime_task *running;
 
-unsigned int runtime_get_free_slot()
+unsigned int runtime_get_slot()
 {
 
     unsigned int i;
@@ -14,7 +15,7 @@ unsigned int runtime_get_free_slot()
     for (i = 1; i < RUNTIME_TASK_SLOTS; i++)
     {
 
-        if (!control.tasks[i].used)
+        if (!tasks[i].used)
             return i;
 
     }
@@ -26,14 +27,14 @@ unsigned int runtime_get_free_slot()
 struct runtime_task *runtime_get_task(unsigned int index)
 {
 
-    return &control.tasks[index];
+    return &tasks[index];
 
 }
 
 struct runtime_task *runtime_get_running_task()
 {
 
-    return control.running;
+    return running;
 
 }
 
@@ -42,7 +43,7 @@ void runtime_activate(struct runtime_task *task)
 
     mmu_load_memory(&task->memory);
 
-    control.running = task;
+    running = task;
 
 }
 
@@ -130,7 +131,7 @@ static struct runtime_descriptor *runtime_task_add_descriptor(struct runtime_tas
 
     unsigned int i;
 
-    for (i = 0; i < RUNTIME_TASK_DESCRIPTOR_SLOTS; i++)
+    for (i = 1; i < RUNTIME_TASK_DESCRIPTOR_SLOTS; i++)
     {
 
         if (!self->descriptors[i].node)
@@ -153,7 +154,7 @@ static struct runtime_descriptor *runtime_task_get_descriptor(struct runtime_tas
 
     unsigned int i;
 
-    for (i = 0; i < RUNTIME_TASK_DESCRIPTOR_SLOTS; i++)
+    for (i = 1; i < RUNTIME_TASK_DESCRIPTOR_SLOTS; i++)
     {
 
         if (self->descriptors[i].id == id && self->descriptors[i].node)
@@ -199,26 +200,19 @@ void runtime_task_init(struct runtime_task *task, unsigned int id)
     unsigned int i;
 
     for (i = 0; i < RUNTIME_TASK_DESCRIPTOR_SLOTS; i++)
-        runtime_descriptor_init(&task->descriptors[i], i + 1, 0, 0);
-
-}
-
-void runtime_control_init(struct runtime_control *control)
-{
-
-    unsigned int i;
-
-    for (i = 0; i < RUNTIME_TASK_SLOTS; i++)
-        runtime_task_init(&control->tasks[i], i);
-
-    control->running = 0;
+        runtime_descriptor_init(&task->descriptors[i], i, 0, 0);
 
 }
 
 void runtime_init()
 {
 
-    runtime_control_init(&control);
+    unsigned int i;
+
+    for (i = 0; i < RUNTIME_TASK_SLOTS; i++)
+        runtime_task_init(&tasks[i], i);
+
+    running = 0;
 
 }
 

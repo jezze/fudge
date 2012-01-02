@@ -39,23 +39,14 @@ struct runtime_task
 
 };
 
-struct runtime_control
-{
-
-    struct runtime_task tasks[RUNTIME_TASK_SLOTS];
-    struct runtime_task *running;
-
-};
-
-extern unsigned int runtime_get_free_slot();
-extern struct runtime_task *runtime_get_task(unsigned int id);
+extern unsigned int runtime_get_slot();
+extern struct runtime_task *runtime_get_task(unsigned int index);
 extern struct runtime_task *runtime_get_running_task();
+extern void runtime_activate(struct runtime_task *task);
 extern void runtime_set_state(unsigned int ip, unsigned int sp, unsigned int sb);
 extern void runtime_get_state(unsigned int *ip, unsigned int *sp, unsigned int *sb);
-extern void runtime_activate(struct runtime_task *task);
 extern void runtime_descriptor_init(struct runtime_descriptor *descriptor, unsigned int id, struct vfs_node *node, unsigned int permissions);
 extern void runtime_task_init(struct runtime_task *task, unsigned int id);
-extern void runtime_control_init(struct runtime_control *control);
 extern void runtime_init();
 
 #endif
