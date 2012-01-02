@@ -177,14 +177,11 @@ void runtime_task_init(struct runtime_task *task, unsigned int id)
     task->get_descriptor_slot = runtime_task_get_descriptor_slot;
     task->get_descriptor = runtime_task_get_descriptor;
 
+    memory_clear(task->descriptors, sizeof (struct runtime_descriptor) * RUNTIME_TASK_DESCRIPTOR_SLOTS);
+
     void *address = (void *)(RUNTIME_TASK_ADDRESS_BASE + task->id * RUNTIME_TASK_ADDRESS_SIZE);
 
     mmu_memory_init(&task->memory, address, address, RUNTIME_TASK_ADDRESS_SIZE);
-
-    unsigned int i;
-
-    for (i = 0; i < RUNTIME_TASK_DESCRIPTOR_SLOTS; i++)
-        runtime_descriptor_init(&task->descriptors[i], 0, 0);
 
 }
 
