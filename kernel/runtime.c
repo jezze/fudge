@@ -129,6 +129,25 @@ static void runtime_task_unload(struct runtime_task *self)
 
 }
 
+unsigned int runtime_task_get_descriptor_slot(struct runtime_task *self)
+{
+
+    unsigned int i;
+
+    for (i = 1; i < RUNTIME_TASK_DESCRIPTOR_SLOTS; i++)
+    {
+
+        if (!self->descriptors[i].node)
+            return i;
+
+    }
+
+    return 0;
+
+}
+
+
+
 static struct runtime_descriptor *runtime_task_get_descriptor(struct runtime_task *self, unsigned int index)
 {
 
@@ -142,30 +161,22 @@ static struct runtime_descriptor *runtime_task_get_descriptor(struct runtime_tas
 static struct runtime_descriptor *runtime_task_add_descriptor(struct runtime_task *self, struct vfs_node *node)
 {
 
-    unsigned int i;
+    unsigned int index = runtime_task_get_descriptor_slot(self);
 
-    for (i = 1; i < RUNTIME_TASK_DESCRIPTOR_SLOTS; i++)
-    {
+    if (!index)
+        return 0;
 
-        if (!self->descriptors[i].node)
-        {
+    struct runtime_descriptor *descriptor = self->get_descriptor(self, index);
+    descriptor->node = node;
 
-            self->descriptors[i].node = node;
-
-            return &self->descriptors[i];
-
-        }
-
-    }
-
-    return 0;
+    return descriptor;
 
 }
 
 static void runtime_task_remove_descriptor(struct runtime_task *self, unsigned int index)
 {
 
-    struct runtime_descriptor *descriptor = runtime_task_get_descriptor(self, index);
+    struct runtime_descriptor *descriptor = self->get_descriptor(self, index);
     descriptor->node = 0;
 
 }
