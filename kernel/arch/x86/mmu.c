@@ -5,7 +5,7 @@
 #include <kernel/arch/x86/mmu.h>
 
 static struct mmu_unit unit;
-static struct mmu_header headers[8];
+static struct mmu_header headers[MMU_HEADER_SLOTS];
 static struct mmu_header *kernelHeader;
 
 static void mmu_handle_pagefault(struct isr_registers *registers)
@@ -64,7 +64,7 @@ static unsigned int mmu_get_unused_slot()
 
     unsigned int i;
 
-    for (i = 0; i < 8; i++)
+    for (i = 0; i < MMU_HEADER_SLOTS; i++)
     {
 
         struct mmu_header *header = &headers[i];
@@ -83,7 +83,7 @@ static struct mmu_header *mmu_get_header(struct mmu_memory *memory)
 
     unsigned int i;
 
-    for (i = 0; i < 8; i++)
+    for (i = 0; i < MMU_HEADER_SLOTS; i++)
     {
 
         if (headers[i].memory == memory)
