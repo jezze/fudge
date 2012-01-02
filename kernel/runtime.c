@@ -52,7 +52,7 @@ void runtime_activate(struct runtime_task *task)
 
     struct mmu_memory *memory = task->memory;
 
-    mmu_load_task_memory(memory);
+    mmu_load_memory(memory);
 
     control.running = task;
 

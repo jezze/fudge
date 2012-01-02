@@ -86,7 +86,7 @@ unsigned int syscall_execute(char *path, unsigned int argc, char **argv)
     if (!task->load(task, entry, argc, argv))
         return 0;
 
-    mmu_map_task_memory(task->memory);
+    mmu_map_user_memory(task->memory);
 
     struct runtime_task *ptask = runtime_get_running_task();
 
@@ -121,7 +121,7 @@ unsigned int syscall_exit()
 
     task->unload(task);
 
-    mmu_unmap_task_memory(task->memory);
+    mmu_unmap_memory(task->memory);
 
     struct runtime_task *ptask = runtime_get_task(task->parentid);
 

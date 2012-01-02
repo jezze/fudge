@@ -22,18 +22,19 @@ struct mmu_unit
 
     void (*setup)();
     void (*enable)();
-    struct mmu_memory *(*get_task_memory)();
-    void (*load_task_memory)(struct mmu_memory *memory);
-    void (*map_task_memory)(struct mmu_memory *memory);
-    void (*unmap_task_memory)(struct mmu_memory *memory);
+    void (*load_memory)(struct mmu_memory *memory);
+    void (*map_user_memory)(struct mmu_memory *memory);
+    void (*map_kernel_memory)(struct mmu_memory *memory);
+    void (*unmap_memory)(struct mmu_memory *memory);
 
 };
 
 extern void mmu_pagefault(unsigned int address, unsigned int flags);
 extern struct mmu_memory *mmu_get_task_memory();
-extern void mmu_load_task_memory(struct mmu_memory *memory);
-extern void mmu_map_task_memory(struct mmu_memory *memory);
-extern void mmu_unmap_task_memory(struct mmu_memory *memory);
+extern void mmu_load_memory(struct mmu_memory *memory);
+extern void mmu_map_user_memory(struct mmu_memory *memory);
+extern void mmu_map_kernel_memory(struct mmu_memory *memory);
+extern void mmu_unmap_memory(struct mmu_memory *memory);
 extern void mmu_register_unit(struct mmu_unit *unit);
 extern void mmu_memory_init(struct mmu_memory *memory, unsigned int used, void *paddress, void *vaddress, unsigned int size);
 
