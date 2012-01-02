@@ -5,7 +5,6 @@
 #include <kernel/runtime.h>
 
 static struct event_routine routines[EVENT_ROUTINE_SLOTS];
-static struct event_buffer buffer;
 
 unsigned int event_register_routine(unsigned int index, struct runtime_task *task, void (*callback)())
 {
@@ -37,47 +36,10 @@ unsigned int event_unregister_routine(unsigned int index, struct runtime_task *t
 
 }
 
-static struct event_routine *event_buffer_get(struct event_buffer *self)
-{
-
-    struct event_routine *routine;
-
-    if (self->head != self->tail)
-    {
-
-        routine = self->buffer[self->tail];
-        self->tail = ((self->tail + 1) % self->size);
-
-        return routine;
-
-    }
-
-    return 0;
-
-}
-
-static void event_buffer_put(struct event_buffer *self, struct event_routine *routine)
-{
-
-    if ((self->head + 1) % self->size != self->tail)
-    {
-
-        self->buffer[self->head] = routine;
-        self->head = ((self->head + 1) % self->size);
-
-    }
-
-}
-
 void event_raise(unsigned int index)
 {
 
-    buffer.size = 8;
-    buffer.head = 0;
-    buffer.tail = 0;
-
-    event_buffer_put(&buffer, &routines[index]);
-    struct event_routine *routine = event_buffer_get(&buffer);
+    struct event_routine *routine = &routines[index];
 
     if (!routine->callback)
         return;
