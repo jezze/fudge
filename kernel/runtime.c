@@ -11,11 +11,11 @@ unsigned int runtime_get_free_slot()
 
     unsigned int i;
 
-    for (i = 0; i < RUNTIME_TASK_SLOTS; i++)
+    for (i = 1; i < RUNTIME_TASK_SLOTS; i++)
     {
 
         if (!control.tasks[i].used)
-            return i + 1;
+            return i;
 
     }
 
@@ -23,20 +23,10 @@ unsigned int runtime_get_free_slot()
 
 }
 
-struct runtime_task *runtime_get_task(unsigned int id)
+struct runtime_task *runtime_get_task(unsigned int index)
 {
 
-    unsigned int i;
-
-    for (i = 0; i < RUNTIME_TASK_SLOTS; i++)
-    {
-
-        if (control.tasks[i].id == id)
-            return &control.tasks[i];
-
-    }
-
-    return 0;
+    return &control.tasks[index];
 
 }
 
@@ -219,7 +209,7 @@ void runtime_control_init(struct runtime_control *control)
     unsigned int i;
 
     for (i = 0; i < RUNTIME_TASK_SLOTS; i++)
-        runtime_task_init(&control->tasks[i], i + 1);
+        runtime_task_init(&control->tasks[i], i);
 
     control->running = 0;
 
