@@ -248,7 +248,7 @@ unsigned int syscall_wait()
     if (!ptask)
         return 0;
 
-    runtime_activate(ptask, task);
+    runtime_activate(ptask, 0);
 
     event_raise(EVENT_SYSCALL_WAIT);
 
