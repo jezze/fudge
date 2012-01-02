@@ -156,16 +156,6 @@ static struct runtime_descriptor *runtime_task_get_descriptor(struct runtime_tas
 
 }
 
-static void runtime_task_set_descriptor(struct runtime_task *self, unsigned int index, struct vfs_node *node)
-{
-
-    if (!index)
-        return;
-
-    self->descriptors[index].node = node;
-
-}
-
 void runtime_descriptor_init(struct runtime_descriptor *descriptor, struct vfs_node *node, unsigned int permissions)
 {
 
@@ -183,7 +173,6 @@ void runtime_task_init(struct runtime_task *task, unsigned int id)
     task->unload = runtime_task_unload;
     task->get_descriptor_slot = runtime_task_get_descriptor_slot;
     task->get_descriptor = runtime_task_get_descriptor;
-    task->set_descriptor = runtime_task_set_descriptor;
 
     void *address = (void *)(RUNTIME_TASK_ADDRESS_BASE + task->id * RUNTIME_TASK_ADDRESS_SIZE);
 

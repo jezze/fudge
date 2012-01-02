@@ -36,7 +36,6 @@ struct runtime_task
     struct runtime_descriptor descriptors[RUNTIME_TASK_DESCRIPTOR_SLOTS];
     unsigned int (*get_descriptor_slot)(struct runtime_task *self);
     struct runtime_descriptor *(*get_descriptor)(struct runtime_task *self, unsigned int index);
-    void (*set_descriptor)(struct runtime_task *self, unsigned int index, struct vfs_node *node);
 
 };
 

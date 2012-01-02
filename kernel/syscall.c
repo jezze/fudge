@@ -31,10 +31,13 @@ unsigned int syscall_close(unsigned int fd)
     if (!descriptor)
         return 0;
 
+    if (!descriptor->node)
+        return 0;
+
     if (descriptor->node->close)
         descriptor->node->close(descriptor->node);
 
-    task->set_descriptor(task, fd, 0);
+    descriptor->node = 0;
 
     event_raise(EVENT_SYSCALL_CLOSE);
 
@@ -98,13 +101,9 @@ unsigned int syscall_execute(char *path, unsigned int argc, char **argv)
 
     runtime_activate(task, ptask);
 
-    struct vfs_node *sin = vfs_find("tty", "stdin");
-    struct vfs_node *sout = vfs_find("tty", "stdout");
-    struct vfs_node *serror = vfs_find("tty", "stderr");
-
-    task->set_descriptor(task, 1, sin);
-    task->set_descriptor(task, 2, sout);
-    task->set_descriptor(task, 3, serror);
+    task->get_descriptor(task, 1)->node = vfs_find("tty", "stdin");
+    task->get_descriptor(task, 2)->node = vfs_find("tty", "stdout");
+    task->get_descriptor(task, 3)->node = vfs_find("tty", "stderr");
 
     event_raise(EVENT_SYSCALL_EXECUTE);
 
@@ -168,11 +167,6 @@ unsigned int syscall_open(char *view, char *name)
     if (!task)
         return 0;
 
-    struct vfs_node *node = vfs_find(view, name);
-
-    if (!node)
-        return 0;
-
     unsigned int index = task->get_descriptor_slot(task);
 
     if (!index)
@@ -183,10 +177,13 @@ unsigned int syscall_open(char *view, char *name)
     if (!descriptor)
         return 0;
 
-    task->set_descriptor(task, index, node);
+    descriptor->node = vfs_find(view, name);
+
+    if (!descriptor->node)
+        return 0;
 
     if (descriptor->node->open)
-        descriptor->node->open(node);
+        descriptor->node->open(descriptor->node);
 
     event_raise(EVENT_SYSCALL_OPEN);
 
