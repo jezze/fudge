@@ -118,16 +118,16 @@ unsigned int syscall_exit()
     if (!task)
         return 0;
 
-    task->unload(task);
-
-    mmu_unmap_memory(&task->memory);
-
     struct runtime_task *ptask = runtime_get_task(task->parentid);
 
     if (!ptask)
         return 0;
 
     runtime_activate(ptask, 0);
+
+    task->unload(task);
+
+    mmu_unmap_memory(&task->memory);
 
     event_raise(EVENT_SYSCALL_EXIT);
 
