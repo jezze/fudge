@@ -69,12 +69,12 @@ unsigned int syscall_halt()
 unsigned int syscall_execute(char *path, unsigned int argc, char **argv)
 {
 
-    unsigned int id = runtime_get_slot();
+    unsigned int index = runtime_get_task_slot();
 
-    if (!id)
+    if (!index)
         return 0;
 
-    struct runtime_task *task = runtime_get_task(id);
+    struct runtime_task *task = runtime_get_task(index);
     struct vfs_node *node = vfs_find("bin", path);
 
     if (!(node && node->read))

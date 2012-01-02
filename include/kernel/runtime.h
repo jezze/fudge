@@ -39,7 +39,7 @@ struct runtime_task
 
 };
 
-extern unsigned int runtime_get_slot();
+extern unsigned int runtime_get_task_slot();
 extern struct runtime_task *runtime_get_task(unsigned int index);
 extern struct runtime_task *runtime_get_running_task();
 extern void runtime_activate(struct runtime_task *task, struct runtime_task *ptask);

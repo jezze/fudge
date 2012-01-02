@@ -7,7 +7,7 @@
 static struct runtime_task tasks[RUNTIME_TASK_SLOTS];
 static struct runtime_task *running;
 
-unsigned int runtime_get_slot()
+unsigned int runtime_get_task_slot()
 {
 
     unsigned int i;
@@ -26,6 +26,9 @@ unsigned int runtime_get_slot()
 
 struct runtime_task *runtime_get_task(unsigned int index)
 {
+
+    if (!index)
+        return 0;
 
     return &tasks[index];
 
