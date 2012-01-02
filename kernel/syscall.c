@@ -68,10 +68,12 @@ unsigned int syscall_execute(char *path, unsigned int argc, char **argv)
     if (!(node && node->read))
         return 0;
 
-    struct runtime_task *task = runtime_get_slot();
+    unsigned int id = runtime_get_free_slot();
 
-    if (!task)
+    if (!id)
         return 0;
+
+    struct runtime_task *task = runtime_get_task(id);
 
     node->read(node, task->memory.size, task->memory.paddress);
 

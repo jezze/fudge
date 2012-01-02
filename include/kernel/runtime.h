@@ -47,9 +47,9 @@ struct runtime_control
 
 };
 
+extern unsigned int runtime_get_free_slot();
 extern struct runtime_task *runtime_get_task(unsigned int id);
 extern struct runtime_task *runtime_get_running_task();
-extern struct runtime_task *runtime_get_slot();
 extern void runtime_set_state(unsigned int ip, unsigned int sp, unsigned int sb);
 extern void runtime_get_state(unsigned int *ip, unsigned int *sp, unsigned int *sb);
 extern void runtime_activate(struct runtime_task *task);

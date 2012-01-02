@@ -6,7 +6,7 @@
 
 static struct runtime_control control;
 
-struct runtime_task *runtime_get_slot()
+unsigned int runtime_get_free_slot()
 {
 
     unsigned int i;
@@ -15,7 +15,7 @@ struct runtime_task *runtime_get_slot()
     {
 
         if (!control.tasks[i].used)
-            return &control.tasks[i];
+            return i + 1;
 
     }
 
