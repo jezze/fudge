@@ -47,6 +47,34 @@ void runtime_activate(struct runtime_task *task)
 
 }
 
+void runtime_get_state(unsigned int *ip, unsigned int *sp, unsigned int *sb)
+{
+
+    struct runtime_task *task = runtime_get_running_task();
+
+    if (!task)
+        return;
+
+    *ip = task->registers.ip;
+    *sp = task->registers.sp;
+    *sb = task->registers.sb;
+
+}
+
+void runtime_set_state(unsigned int ip, unsigned int sp, unsigned int sb)
+{
+
+    struct runtime_task *task = runtime_get_running_task();
+
+    if (!task)
+        return;
+
+    task->registers.ip = ip;
+    task->registers.sp = sp;
+    task->registers.sb = sb;
+
+}
+
 static unsigned int runtime_task_load(struct runtime_task *self, void *entry, unsigned int argc, char **argv)
 {
 
@@ -98,31 +126,13 @@ static void runtime_task_unload(struct runtime_task *self)
 
 }
 
-void runtime_set_state(unsigned int ip, unsigned int sp, unsigned int sb)
+static struct runtime_descriptor *runtime_task_get_descriptor(struct runtime_task *self, unsigned int index)
 {
 
-    struct runtime_task *task = runtime_get_running_task();
+    if (!index)
+        return 0;
 
-    if (!task)
-        return;
-
-    task->registers.ip = ip;
-    task->registers.sp = sp;
-    task->registers.sb = sb;
-
-}
-
-void runtime_get_state(unsigned int *ip, unsigned int *sp, unsigned int *sb)
-{
-
-    struct runtime_task *task = runtime_get_running_task();
-
-    if (!task)
-        return;
-
-    *ip = task->registers.ip;
-    *sp = task->registers.sp;
-    *sb = task->registers.sb;
+    return &self->descriptors[index];
 
 }
 
@@ -149,28 +159,10 @@ static struct runtime_descriptor *runtime_task_add_descriptor(struct runtime_tas
 
 }
 
-static struct runtime_descriptor *runtime_task_get_descriptor(struct runtime_task *self, unsigned int id)
+static void runtime_task_remove_descriptor(struct runtime_task *self, unsigned int index)
 {
 
-    unsigned int i;
-
-    for (i = 1; i < RUNTIME_TASK_DESCRIPTOR_SLOTS; i++)
-    {
-
-        if (self->descriptors[i].id == id && self->descriptors[i].node)
-            return &self->descriptors[i];
-
-    }
-
-    return 0;
-
-}
-
-static void runtime_task_remove_descriptor(struct runtime_task *self, unsigned int id)
-{
-
-    struct runtime_descriptor *descriptor = runtime_task_get_descriptor(self, id);
-
+    struct runtime_descriptor *descriptor = runtime_task_get_descriptor(self, index);
     descriptor->node = 0;
 
 }
