@@ -24,8 +24,6 @@
 #define MMU_PAGE_FLAG_DIRTY        1 << 6
 #define MMU_PAGE_FLAG_GLOBAL       1 << 7
 
-struct mmu_memory;
-
 struct mmu_table
 {
 
