@@ -9,7 +9,11 @@
 void irq_handle(struct irq_registers *registers)
 {
 
-    runtime_set_state(registers->eip, registers->useresp, registers->ebp);
+    struct runtime_task *task = runtime_get_running_task();
+
+    task->registers.ip = registers->eip;
+    task->registers.sp = registers->useresp;
+    task->registers.sb = registers->ebp;
 
     irq_raise(registers->index);
 

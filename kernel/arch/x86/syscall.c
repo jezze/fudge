@@ -137,8 +137,14 @@ void syscall_handle(struct syscall_registers *registers)
     if (!routine)
         return;
 
-    runtime_set_state(registers->eip, registers->useresp, registers->ebp);
-    routine(registers, runtime_get_running_task());
+    struct runtime_task *task = runtime_get_running_task();
+
+    task->registers.ip = registers->eip;
+    task->registers.sp = registers->useresp;
+    task->registers.sb = registers->ebp;
+
+    routine(registers, task);
+
     runtime_get_state(&registers->eip, &registers->useresp, &registers->ebp);
 
 }

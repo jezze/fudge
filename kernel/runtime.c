@@ -67,20 +67,6 @@ void runtime_get_state(unsigned int *ip, unsigned int *sp, unsigned int *sb)
 
 }
 
-void runtime_set_state(unsigned int ip, unsigned int sp, unsigned int sb)
-{
-
-    struct runtime_task *task = runtime_get_running_task();
-
-    if (!task)
-        return;
-
-    task->registers.ip = ip;
-    task->registers.sp = sp;
-    task->registers.sb = sb;
-
-}
-
 static unsigned int runtime_task_load(struct runtime_task *self, void *entry, unsigned int argc, char **argv)
 {
 
