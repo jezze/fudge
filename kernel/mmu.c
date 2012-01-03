@@ -1,3 +1,4 @@
+#include <lib/memory.h>
 #include <kernel/error.h>
 #include <kernel/log.h>
 #include <kernel/mmu.h>
@@ -74,6 +75,8 @@ void mmu_register_unit(struct mmu_unit *unit)
 
 void mmu_memory_init(struct mmu_memory *memory, void *paddress, void *vaddress, unsigned int size)
 {
+
+    memory_clear(memory, sizeof (struct mmu_memory));
 
     memory->paddress = paddress;
     memory->vaddress = vaddress;

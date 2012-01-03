@@ -215,13 +215,16 @@ static struct vfs_view *modules_filesystem_find_view(struct vfs_filesystem *self
 void modules_module_init(struct modules_module *module, unsigned int type)
 {
 
+    memory_clear(module, sizeof (struct modules_module));
+
     module->type = type;
-    module->view = 0;
 
 }
 
 void modules_bus_init(struct modules_bus *bus, unsigned int type)
 {
+
+    memory_clear(bus, sizeof (struct modules_bus));
 
     modules_module_init(&bus->module, MODULES_TYPE_BUS);
 
@@ -232,22 +235,22 @@ void modules_bus_init(struct modules_bus *bus, unsigned int type)
 void modules_device_init(struct modules_device *device, unsigned int type)
 {
 
+    memory_clear(device, sizeof (struct modules_device));
+
     modules_module_init(&device->module, MODULES_TYPE_DEVICE);
 
     device->type = type;
-    device->driver = 0;
 
 }
 
 void modules_driver_init(struct modules_driver *driver, unsigned int type)
 {
 
+    memory_clear(driver, sizeof (struct modules_driver));
+
     modules_module_init(&driver->module, MODULES_TYPE_DRIVER);
 
     driver->type = type;
-    driver->start = 0;
-    driver->attach = 0;
-    driver->check = 0;
 
 }
 
