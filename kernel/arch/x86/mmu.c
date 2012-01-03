@@ -152,11 +152,7 @@ static void mmu_unit_unmap_memory(struct mmu_memory *memory)
 void mmu_enable()
 {
 
-    unit.load_memory = mmu_unit_load_memory;
-    unit.map_kernel_memory = mmu_unit_map_kernel_memory;
-    unit.map_user_memory = mmu_unit_map_user_memory;
-    unit.unmap_memory = mmu_unit_unmap_memory;
-
+    mmu_unit_init(&unit, mmu_unit_load_memory, mmu_unit_map_kernel_memory, mmu_unit_map_user_memory, mmu_unit_unmap_memory);
     mmu_register_unit(&unit);
 
     isr_register_routine(ISR_ROUTINE_PF, mmu_handle_pagefault);

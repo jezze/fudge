@@ -65,11 +65,9 @@ void mmu_register_unit(struct mmu_unit *unit)
 
     primary = unit;
 
-    struct mmu_memory *memory = &kernel;
-
-    mmu_memory_init(memory, (void *)0x00000000, (void *)0x00000000, 0x00400000);
-    mmu_map_kernel_memory(memory);
-    mmu_load_memory(memory);
+    mmu_memory_init(&kernel, (void *)0x00000000, (void *)0x00000000, 0x00400000);
+    mmu_map_kernel_memory(&kernel);
+    mmu_load_memory(&kernel);
 
 }
 
@@ -81,6 +79,18 @@ void mmu_memory_init(struct mmu_memory *memory, void *paddress, void *vaddress, 
     memory->paddress = paddress;
     memory->vaddress = vaddress;
     memory->size = size;
+
+}
+
+void mmu_unit_init(struct mmu_unit *unit, void (*load_memory)(struct mmu_memory *memory), void (*map_kernel_memory)(struct mmu_memory *memory), void (*map_user_memory)(struct mmu_memory *memory), void (*unmap_memory)(struct mmu_memory *memory))
+{
+
+    memory_clear(unit, sizeof (struct mmu_unit));
+
+    unit->load_memory = load_memory;
+    unit->map_kernel_memory = map_kernel_memory;
+    unit->map_user_memory = map_user_memory;
+    unit->unmap_memory = unmap_memory;
 
 }
 
