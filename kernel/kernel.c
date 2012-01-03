@@ -65,12 +65,12 @@ void kernel_init()
     initrd_init(primary->initrdc, primary->initrdv);
     symbol_init();
 
-    unsigned int id = syscall_execute(0, "init", 0, 0);
+    unsigned int index = syscall_execute(0, "init", 0, 0);
 
-    if (!id)
+    if (!index)
         error_panic("Could not start init", __FILE__, __LINE__);
 
-    struct runtime_task *task = runtime_get_task(id);
+    struct runtime_task *task = runtime_get_task(index);
 
     primary->set_stack(primary->stack);
     primary->enter_usermode(task->registers.ip, task->registers.sp);

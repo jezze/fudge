@@ -13,10 +13,10 @@ unsigned int syscall_attach(struct runtime_task *task, unsigned int index, void 
 
 }
 
-unsigned int syscall_close(struct runtime_task *task, unsigned int fd)
+unsigned int syscall_close(struct runtime_task *task, unsigned int index)
 {
 
-    struct runtime_descriptor *descriptor = task->get_descriptor(task, fd);
+    struct runtime_descriptor *descriptor = task->get_descriptor(task, index);
 
     if (!descriptor || !descriptor->node)
         return 0;
@@ -160,10 +160,10 @@ unsigned int syscall_open(struct runtime_task *task, char *view, char *name)
 
 }
 
-unsigned int syscall_read(struct runtime_task *task, unsigned int fd, unsigned int count, char *buffer)
+unsigned int syscall_read(struct runtime_task *task, unsigned int index, unsigned int count, char *buffer)
 {
 
-    struct vfs_node *node = task->get_descriptor(task, fd)->node;
+    struct vfs_node *node = task->get_descriptor(task, index)->node;
 
     if (!(node && node->read))
         return 0;
@@ -224,10 +224,10 @@ unsigned int syscall_wait(struct runtime_task *task)
 
 }
 
-unsigned int syscall_write(struct runtime_task *task, unsigned int fd, unsigned int count, char *buffer)
+unsigned int syscall_write(struct runtime_task *task, unsigned int index, unsigned int count, char *buffer)
 {
 
-    struct vfs_node *node = task->get_descriptor(task, fd)->node;
+    struct vfs_node *node = task->get_descriptor(task, index)->node;
 
     if (!(node && node->write))
         return 0;

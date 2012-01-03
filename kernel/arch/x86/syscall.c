@@ -18,9 +18,9 @@ static void syscall_handle_attach(struct syscall_registers *registers, struct ru
 static void syscall_handle_close(struct syscall_registers *registers, struct runtime_task *task)
 {
 
-    unsigned int fd = registers->ebx;
+    unsigned int index = registers->ebx;
 
-    registers->eax = syscall_close(task, fd);
+    registers->eax = syscall_close(task, index);
 
 }
 
@@ -80,11 +80,11 @@ static void syscall_handle_open(struct syscall_registers *registers, struct runt
 static void syscall_handle_read(struct syscall_registers *registers, struct runtime_task *task)
 {
 
-    unsigned int fd = registers->ebx;
+    unsigned int index = registers->ebx;
     unsigned int count = registers->ecx;
     char *buffer = (char *)registers->esi;
 
-    registers->eax = syscall_read(task, fd, count, buffer);
+    registers->eax = syscall_read(task, index, count, buffer);
 
 }
 
@@ -114,11 +114,11 @@ static void syscall_handle_wait(struct syscall_registers *registers, struct runt
 static void syscall_handle_write(struct syscall_registers *registers, struct runtime_task *task)
 {
 
-    unsigned int fd = registers->ebx;
+    unsigned int index = registers->ebx;
     unsigned int count = registers->ecx;
     char *buffer = (char *)registers->esi;
 
-    registers->eax = syscall_write(task, fd, count, buffer);
+    registers->eax = syscall_write(task, index, count, buffer);
 
 }
 
