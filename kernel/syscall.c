@@ -11,9 +11,6 @@ unsigned int syscall_attach(unsigned int index, void (*routine)())
 
     struct runtime_task *task = runtime_get_running_task();    
 
-    if (!task)
-        return 0;
-
     return event_register_routine(index, task, routine);
 
 }
@@ -22,9 +19,6 @@ unsigned int syscall_close(unsigned int fd)
 {
 
     struct runtime_task *task = runtime_get_running_task();    
-
-    if (!task)
-        return 0;
 
     struct runtime_descriptor *descriptor = task->get_descriptor(task, fd);
 
@@ -47,9 +41,6 @@ unsigned int syscall_detach(unsigned int index)
 
     struct runtime_task *task = runtime_get_running_task();    
 
-    if (!task)
-        return 0;
-
     return event_unregister_routine(index, task);
 
 }
@@ -66,47 +57,47 @@ unsigned int syscall_halt()
 unsigned int syscall_execute(char *path, unsigned int argc, char **argv)
 {
 
+    struct runtime_task *task = runtime_get_running_task();
+
     unsigned int index = runtime_get_task_slot();
 
     if (!index)
         return 0;
 
-    struct runtime_task *task = runtime_get_task(index);
+    struct runtime_task *ntask = runtime_get_task(index);
 
-    runtime_task_init(task, index);
+    runtime_task_init(ntask, index);
 
     struct vfs_node *node = vfs_find("bin", path);
 
     if (!(node && node->read))
         return 0;
 
-    node->read(node, task->memory.size, task->memory.paddress);
+    node->read(node, ntask->memory.size, ntask->memory.paddress);
 
-    task->memory.vaddress = elf_get_virtual(task->memory.paddress);
+    ntask->memory.vaddress = elf_get_virtual(ntask->memory.paddress);
 
-    if (!task->memory.vaddress)
+    if (!ntask->memory.vaddress)
         return 0;
 
-    void *entry = elf_get_entry(task->memory.paddress);
+    void *entry = elf_get_entry(ntask->memory.paddress);
 
     if (!entry)
         return 0;
 
-    if (!task->load(task, entry, argc, argv))
+    if (!ntask->load(ntask, entry, argc, argv))
         return 0;
 
-    mmu_map_user_memory(&task->memory);
+    mmu_map_user_memory(&ntask->memory);
 
-    struct runtime_task *ptask = runtime_get_running_task();
-
-    runtime_activate(task, ptask);
-    runtime_descriptor_init(task->get_descriptor(task, 1), vfs_find("tty", "stdin"), 0);
-    runtime_descriptor_init(task->get_descriptor(task, 2), vfs_find("tty", "stdout"), 0);
-    runtime_descriptor_init(task->get_descriptor(task, 3), vfs_find("tty", "stderr"), 0);
+    runtime_activate(ntask, task);
+    runtime_descriptor_init(ntask->get_descriptor(ntask, 1), vfs_find("tty", "stdin"), 0);
+    runtime_descriptor_init(ntask->get_descriptor(ntask, 2), vfs_find("tty", "stdout"), 0);
+    runtime_descriptor_init(ntask->get_descriptor(ntask, 3), vfs_find("tty", "stderr"), 0);
 
     event_raise(EVENT_SYSCALL_EXECUTE);
 
-    return task->id;
+    return ntask->id;
 
 }
 
@@ -114,9 +105,6 @@ unsigned int syscall_exit()
 {
 
     struct runtime_task *task = runtime_get_running_task();
-
-    if (!task)
-        return 0;
 
     struct runtime_task *ptask = runtime_get_task(task->parentid);
 
@@ -140,9 +128,6 @@ unsigned int syscall_load(char *path)
 
     struct vfs_node *node = vfs_find("mod", path);
 
-    if (!node)
-        return 0;
-
     elf_relocate(node->physical);
 
     void (*init)() = elf_get_symbol(node->physical, "init");
@@ -162,9 +147,6 @@ unsigned int syscall_open(char *view, char *name)
 {
 
     struct runtime_task *task = runtime_get_running_task();    
-
-    if (!task)
-        return 0;
 
     unsigned int index = task->get_descriptor_slot(task);
 
@@ -194,9 +176,6 @@ unsigned int syscall_read(unsigned int fd, unsigned int count, char *buffer)
 {
 
     struct runtime_task *task = runtime_get_running_task();    
-
-    if (!task)
-        return 0;
 
     struct vfs_node *node = task->get_descriptor(task, fd)->node;
 
@@ -246,9 +225,6 @@ unsigned int syscall_wait()
 
     struct runtime_task *task = runtime_get_running_task();
 
-    if (!task)
-        return 0;
-
     task->event = 0;
 
     struct runtime_task *ptask = runtime_get_task(task->parentid);
@@ -268,9 +244,6 @@ unsigned int syscall_write(unsigned int fd, unsigned int count, char *buffer)
 {
 
     struct runtime_task *task = runtime_get_running_task();    
-
-    if (!task)
-        return 0;
 
     struct vfs_node *node = task->get_descriptor(task, fd)->node;
 
