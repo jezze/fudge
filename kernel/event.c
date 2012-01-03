@@ -44,21 +44,16 @@ void event_raise(unsigned int index)
     if (!routine->callback)
         return;
 
-    struct runtime_task *ctask = runtime_get_running_task();
-
-    if (!ctask)
-        return;
-
+    struct runtime_task *task = runtime_get_running_task();
     struct runtime_task *etask = runtime_get_task(routine->task->id);
 
     if (etask->event)
         return;
 
     etask->event = 1;
-
     etask->load(etask, routine->callback, 0, 0);
 
-    runtime_activate(etask, ctask);
+    runtime_activate(etask, task);
 
 }
 
