@@ -16,19 +16,19 @@
 #define SYSCALL_ROUTINE_ATTACH  0x30
 #define SYSCALL_ROUTINE_DETACH  0x31
 
-extern unsigned int syscall_attach(unsigned int index, void (*routine)());
-extern unsigned int syscall_close(unsigned int fd);
-extern unsigned int syscall_detach(unsigned int index);
-extern unsigned int syscall_halt();
-extern unsigned int syscall_execute(char *path, unsigned int argc, char **argv);
-extern unsigned int syscall_exit();
-extern unsigned int syscall_load(char *path);
-extern unsigned int syscall_open(char *view, char *name);
-extern unsigned int syscall_read(unsigned int fd, unsigned int count, char *buffer);
-extern unsigned int syscall_reboot();
-extern unsigned int syscall_unload(char *path);
-extern unsigned int syscall_wait();
-extern unsigned int syscall_write(unsigned int fd, unsigned int count, char *buffer);
+extern unsigned int syscall_attach(struct runtime_task *task, unsigned int index, void (*routine)());
+extern unsigned int syscall_close(struct runtime_task *task, unsigned int fd);
+extern unsigned int syscall_detach(struct runtime_task *task, unsigned int index);
+extern unsigned int syscall_halt(struct runtime_task *task);
+extern unsigned int syscall_execute(struct runtime_task *task, char *path, unsigned int argc, char **argv);
+extern unsigned int syscall_exit(struct runtime_task *task);
+extern unsigned int syscall_load(struct runtime_task *task, char *path);
+extern unsigned int syscall_open(struct runtime_task *task, char *view, char *name);
+extern unsigned int syscall_read(struct runtime_task *task, unsigned int fd, unsigned int count, char *buffer);
+extern unsigned int syscall_reboot(struct runtime_task *task);
+extern unsigned int syscall_unload(struct runtime_task *task, char *path);
+extern unsigned int syscall_wait(struct runtime_task *task);
+extern unsigned int syscall_write(struct runtime_task *task, unsigned int fd, unsigned int count, char *buffer);
 
 #endif
 

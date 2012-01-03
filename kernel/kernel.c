@@ -65,7 +65,7 @@ void kernel_init()
     initrd_init(primary->initrdc, primary->initrdv);
     symbol_init();
 
-    unsigned int id = syscall_execute("init", 0, 0);
+    unsigned int id = syscall_execute(0, "init", 0, 0);
 
     if (!id)
         error_panic("Could not start init", __FILE__, __LINE__);

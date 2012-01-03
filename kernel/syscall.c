@@ -6,19 +6,15 @@
 #include <kernel/mmu.h>
 #include <kernel/runtime.h>
 
-unsigned int syscall_attach(unsigned int index, void (*routine)())
+unsigned int syscall_attach(struct runtime_task *task, unsigned int index, void (*routine)())
 {
-
-    struct runtime_task *task = runtime_get_running_task();    
 
     return event_register_routine(index, task, routine);
 
 }
 
-unsigned int syscall_close(unsigned int fd)
+unsigned int syscall_close(struct runtime_task *task, unsigned int fd)
 {
-
-    struct runtime_task *task = runtime_get_running_task();    
 
     struct runtime_descriptor *descriptor = task->get_descriptor(task, fd);
 
@@ -36,16 +32,14 @@ unsigned int syscall_close(unsigned int fd)
 
 }
 
-unsigned int syscall_detach(unsigned int index)
+unsigned int syscall_detach(struct runtime_task *task, unsigned int index)
 {
-
-    struct runtime_task *task = runtime_get_running_task();    
 
     return event_unregister_routine(index, task);
 
 }
 
-unsigned int syscall_halt()
+unsigned int syscall_halt(struct runtime_task *task)
 {
 
     kernel_halt();
@@ -54,10 +48,8 @@ unsigned int syscall_halt()
 
 }
 
-unsigned int syscall_execute(char *path, unsigned int argc, char **argv)
+unsigned int syscall_execute(struct runtime_task *task, char *path, unsigned int argc, char **argv)
 {
-
-    struct runtime_task *task = runtime_get_running_task();
 
     unsigned int index = runtime_get_task_slot();
 
@@ -101,10 +93,8 @@ unsigned int syscall_execute(char *path, unsigned int argc, char **argv)
 
 }
 
-unsigned int syscall_exit()
+unsigned int syscall_exit(struct runtime_task *task)
 {
-
-    struct runtime_task *task = runtime_get_running_task();
 
     struct runtime_task *ptask = runtime_get_task(task->parentid);
 
@@ -123,7 +113,7 @@ unsigned int syscall_exit()
 
 }
 
-unsigned int syscall_load(char *path)
+unsigned int syscall_load(struct runtime_task *task, char *path)
 {
 
     struct vfs_node *node = vfs_find("mod", path);
@@ -143,10 +133,8 @@ unsigned int syscall_load(char *path)
 
 }
 
-unsigned int syscall_open(char *view, char *name)
+unsigned int syscall_open(struct runtime_task *task, char *view, char *name)
 {
-
-    struct runtime_task *task = runtime_get_running_task();    
 
     unsigned int index = task->get_descriptor_slot(task);
 
@@ -172,10 +160,8 @@ unsigned int syscall_open(char *view, char *name)
 
 }
 
-unsigned int syscall_read(unsigned int fd, unsigned int count, char *buffer)
+unsigned int syscall_read(struct runtime_task *task, unsigned int fd, unsigned int count, char *buffer)
 {
-
-    struct runtime_task *task = runtime_get_running_task();    
 
     struct vfs_node *node = task->get_descriptor(task, fd)->node;
 
@@ -190,7 +176,7 @@ unsigned int syscall_read(unsigned int fd, unsigned int count, char *buffer)
 
 }
 
-unsigned int syscall_reboot()
+unsigned int syscall_reboot(struct runtime_task *task)
 {
 
     kernel_reboot();
@@ -199,7 +185,7 @@ unsigned int syscall_reboot()
 
 }
 
-unsigned int syscall_unload(char *path)
+unsigned int syscall_unload(struct runtime_task *task, char *path)
 {
 
     struct vfs_node *node = vfs_find("mod", path);
@@ -220,10 +206,8 @@ unsigned int syscall_unload(char *path)
 
 }
 
-unsigned int syscall_wait()
+unsigned int syscall_wait(struct runtime_task *task)
 {
-
-    struct runtime_task *task = runtime_get_running_task();
 
     task->event = 0;
 
@@ -240,10 +224,8 @@ unsigned int syscall_wait()
 
 }
 
-unsigned int syscall_write(unsigned int fd, unsigned int count, char *buffer)
+unsigned int syscall_write(struct runtime_task *task, unsigned int fd, unsigned int count, char *buffer)
 {
-
-    struct runtime_task *task = runtime_get_running_task();    
 
     struct vfs_node *node = task->get_descriptor(task, fd)->node;
 

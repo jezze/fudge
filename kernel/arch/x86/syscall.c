@@ -5,124 +5,124 @@
 
 static void *routines[SYSCALL_ROUTINE_SLOTS];
 
-static void syscall_handle_attach(struct syscall_registers *registers)
+static void syscall_handle_attach(struct syscall_registers *registers, struct runtime_task *task)
 {
 
     unsigned int index = registers->ebx;
     void (*routine)() = (void *)registers->ecx;
 
-    registers->eax = syscall_attach(index, routine);
+    registers->eax = syscall_attach(task, index, routine);
 
 }
 
-static void syscall_handle_close(struct syscall_registers *registers)
+static void syscall_handle_close(struct syscall_registers *registers, struct runtime_task *task)
 {
 
     unsigned int fd = registers->ebx;
 
-    registers->eax = syscall_close(fd);
+    registers->eax = syscall_close(task, fd);
 
 }
 
-static void syscall_handle_detach(struct syscall_registers *registers)
+static void syscall_handle_detach(struct syscall_registers *registers, struct runtime_task *task)
 {
 
     unsigned int index = registers->ebx;
 
-    registers->eax = syscall_detach(index);
+    registers->eax = syscall_detach(task, index);
 
 }
 
-static void syscall_handle_halt(struct syscall_registers *registers)
+static void syscall_handle_halt(struct syscall_registers *registers, struct runtime_task *task)
 {
 
-    registers->eax = syscall_halt();
+    registers->eax = syscall_halt(task);
 
 }
 
-static void syscall_handle_execute(struct syscall_registers *registers)
+static void syscall_handle_execute(struct syscall_registers *registers, struct runtime_task *task)
 {
 
     char *path = (char *)registers->esi;
     unsigned int argc = registers->ecx;
     char **argv = (char **)registers->ebx;
 
-    registers->eax = syscall_execute(path, argc, argv);
+    registers->eax = syscall_execute(task, path, argc, argv);
 
 }
 
-static void syscall_handle_exit(struct syscall_registers *registers)
+static void syscall_handle_exit(struct syscall_registers *registers, struct runtime_task *task)
 {
 
-    registers->eax = syscall_exit();
+    registers->eax = syscall_exit(task);
 
 }
 
-static void syscall_handle_load(struct syscall_registers *registers)
+static void syscall_handle_load(struct syscall_registers *registers, struct runtime_task *task)
 {
 
     char *path = (char *)registers->esi;
 
-    registers->eax = syscall_load(path);
+    registers->eax = syscall_load(task, path);
 
 }
 
-static void syscall_handle_open(struct syscall_registers *registers)
+static void syscall_handle_open(struct syscall_registers *registers, struct runtime_task *task)
 {
 
     char *view = (char *)registers->esi;
     char *name = (char *)registers->edi;
 
-    registers->eax = syscall_open(view, name);
+    registers->eax = syscall_open(task, view, name);
 
 }
 
-static void syscall_handle_read(struct syscall_registers *registers)
+static void syscall_handle_read(struct syscall_registers *registers, struct runtime_task *task)
 {
 
     unsigned int fd = registers->ebx;
     unsigned int count = registers->ecx;
     char *buffer = (char *)registers->esi;
 
-    registers->eax = syscall_read(fd, count, buffer);
+    registers->eax = syscall_read(task, fd, count, buffer);
 
 }
 
-static void syscall_handle_reboot(struct syscall_registers *registers)
+static void syscall_handle_reboot(struct syscall_registers *registers, struct runtime_task *task)
 {
 
-    registers->eax = syscall_reboot();
+    registers->eax = syscall_reboot(task);
 
 }
 
-static void syscall_handle_unload(struct syscall_registers *registers)
+static void syscall_handle_unload(struct syscall_registers *registers, struct runtime_task *task)
 {
 
     char *path = (char *)registers->esi;
 
-    registers->eax = syscall_unload(path);
+    registers->eax = syscall_unload(task, path);
 
 }
 
-static void syscall_handle_wait(struct syscall_registers *registers)
+static void syscall_handle_wait(struct syscall_registers *registers, struct runtime_task *task)
 {
 
-    registers->eax = syscall_wait();
+    registers->eax = syscall_wait(task);
 
 }
 
-static void syscall_handle_write(struct syscall_registers *registers)
+static void syscall_handle_write(struct syscall_registers *registers, struct runtime_task *task)
 {
 
     unsigned int fd = registers->ebx;
     unsigned int count = registers->ecx;
     char *buffer = (char *)registers->esi;
 
-    registers->eax = syscall_write(fd, count, buffer);
+    registers->eax = syscall_write(task, fd, count, buffer);
 
 }
 
-static void syscall_register_routine(unsigned char index, void (*routine)(struct syscall_registers *registers))
+static void syscall_register_routine(unsigned char index, void (*routine)(struct syscall_registers *registers, struct runtime_task *task))
 {
 
     routines[index] = routine;
@@ -132,13 +132,13 @@ static void syscall_register_routine(unsigned char index, void (*routine)(struct
 void syscall_handle(struct syscall_registers *registers)
 {
 
-    void (*routine)(struct syscall_registers *registers) = routines[registers->eax];
+    void (*routine)(struct syscall_registers *registers, struct runtime_task *task) = routines[registers->eax];
 
     if (!routine)
         return;
 
     runtime_set_state(registers->eip, registers->useresp, registers->ebp);
-    routine(registers);
+    routine(registers, runtime_get_running_task());
     runtime_get_state(&registers->eip, &registers->useresp, &registers->ebp);
 
 }
