@@ -6,15 +6,28 @@
 #include <kernel/arch/x86/irq.h>
 #include <kernel/arch/x86/isr.h>
 
-void irq_handle(struct irq_registers *registers)
+static void irq_save_state(struct runtime_task *task, struct irq_registers *registers)
 {
-
-    struct runtime_task *task = runtime_get_running_task();
 
     task->registers.ip = registers->eip;
     task->registers.sp = registers->useresp;
     task->registers.sb = registers->ebp;
 
+}
+
+static void irq_load_state(struct runtime_task *task, struct irq_registers *registers)
+{
+
+    registers->eip = task->registers.ip;
+    registers->useresp = task->registers.sp;
+    registers->ebp = task->registers.sb;
+
+}
+
+void irq_handle(struct irq_registers *registers)
+{
+
+    irq_save_state(runtime_get_running_task(), registers);
     irq_raise(registers->index);
 
     if (registers->slave)
@@ -22,7 +35,7 @@ void irq_handle(struct irq_registers *registers)
 
     io_outb(0x20, 0x20);
 
-    runtime_get_state(&registers->eip, &registers->useresp, &registers->ebp);
+    irq_load_state(runtime_get_running_task(), registers);
 
 }
 

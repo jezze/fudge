@@ -129,6 +129,24 @@ static void syscall_register_routine(unsigned char index, void (*routine)(struct
 
 }
 
+static void syscall_save_state(struct runtime_task *task, struct syscall_registers *registers)
+{
+
+    task->registers.ip = registers->eip;
+    task->registers.sp = registers->useresp;
+    task->registers.sb = registers->ebp;
+
+}
+
+static void syscall_load_state(struct runtime_task *task, struct syscall_registers *registers)
+{
+
+    registers->eip = task->registers.ip;
+    registers->useresp = task->registers.sp;
+    registers->ebp = task->registers.sb;
+
+}
+
 void syscall_handle(struct syscall_registers *registers)
 {
 
@@ -139,13 +157,9 @@ void syscall_handle(struct syscall_registers *registers)
 
     struct runtime_task *task = runtime_get_running_task();
 
-    task->registers.ip = registers->eip;
-    task->registers.sp = registers->useresp;
-    task->registers.sb = registers->ebp;
-
+    syscall_save_state(task, registers);
     routine(registers, task);
-
-    runtime_get_state(&registers->eip, &registers->useresp, &registers->ebp);
+    syscall_load_state(runtime_get_running_task(), registers);
 
 }
 

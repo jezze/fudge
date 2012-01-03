@@ -44,7 +44,6 @@ extern unsigned int runtime_get_task_slot();
 extern struct runtime_task *runtime_get_task(unsigned int index);
 extern struct runtime_task *runtime_get_running_task();
 extern void runtime_activate(struct runtime_task *task, struct runtime_task *ptask);
-extern void runtime_get_state(unsigned int *ip, unsigned int *sp, unsigned int *sb);
 extern void runtime_registers_init(struct runtime_registers *registers, unsigned int ip, unsigned int sp, unsigned int sb);
 extern void runtime_descriptor_init(struct runtime_descriptor *descriptor, struct vfs_node *node, unsigned int permissions);
 extern void runtime_task_init(struct runtime_task *task, unsigned int id);

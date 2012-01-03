@@ -53,20 +53,6 @@ void runtime_activate(struct runtime_task *task, struct runtime_task *ptask)
 
 }
 
-void runtime_get_state(unsigned int *ip, unsigned int *sp, unsigned int *sb)
-{
-
-    struct runtime_task *task = runtime_get_running_task();
-
-    if (!task)
-        return;
-
-    *ip = task->registers.ip;
-    *sp = task->registers.sp;
-    *sb = task->registers.sb;
-
-}
-
 static unsigned int runtime_task_load(struct runtime_task *self, void *entry, unsigned int argc, char **argv)
 {
 
