@@ -63,7 +63,8 @@ void arch_init(struct mboot_header *header, unsigned int magic, void *stack)
     x86.mboot = header;
     x86.magic = magic;
 
-    kernel_init(&x86.base);
+    kernel_register_arch(&x86.base);
+    kernel_init();
 
 }
 

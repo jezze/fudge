@@ -173,6 +173,7 @@ void mmu_setup()
 
     mmu_unit_init(&unit, mmu_unit_setup);
     mmu_register_unit(&unit);
+    mmu_init();
 
 }
 

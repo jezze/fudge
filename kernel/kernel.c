@@ -9,60 +9,57 @@
 #include <kernel/symbol.h>
 #include <kernel/syscall.h>
 
-static struct kernel_core kernelCore;
+static struct kernel_arch *primary;
 
 void kernel_disable_interrupts()
 {
 
-    kernelCore.arch->disable_interrupts();
+    primary->disable_interrupts();
 
 }
 
 void kernel_enable_interrupts()
 {
 
-    kernelCore.arch->enable_interrupts();
+    primary->enable_interrupts();
 
 }
 
 void kernel_reboot()
 {
 
-    kernelCore.arch->reboot();
+    primary->reboot();
 
 }
 
 void kernel_halt()
 {
 
-    kernelCore.arch->halt();
+    primary->halt();
 
 }
 
-void kernel_core_init(struct kernel_core *core, struct kernel_arch *arch)
+void kernel_register_arch(struct kernel_arch *arch)
 {
 
-    core->arch = arch;
+    primary = arch;
 
 }
 
-void kernel_init(struct kernel_arch *arch)
+void kernel_init()
 {
-
-    struct kernel_core *core = &kernelCore;
 
     log_init();
     log_write("[kernel] Fudge init\n");
 
-    kernel_core_init(core, arch);
-    core->arch->setup(core->arch);
+    primary->setup(primary);
 
-    if (core->arch->setup_mmu)
-        core->arch->setup_mmu();
+    if (primary->setup_mmu)
+        primary->setup_mmu();
 
     modules_init();
     runtime_init();
-    initrd_init(core->arch->initrdc, core->arch->initrdv);
+    initrd_init(primary->initrdc, primary->initrdv);
     symbol_init();
 
     unsigned int id = syscall_execute("init", 0, 0);
@@ -72,8 +69,8 @@ void kernel_init(struct kernel_arch *arch)
 
     struct runtime_task *task = runtime_get_task(id);
 
-    core->arch->set_stack(core->arch->stack);
-    core->arch->enter_usermode(task->registers.ip, task->registers.sp);
+    primary->set_stack(primary->stack);
+    primary->enter_usermode(task->registers.ip, task->registers.sp);
 
 }
 
