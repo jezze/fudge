@@ -156,10 +156,21 @@ void mmu_unit_enable()
 
 }
 
+void mmu_unit_setup(struct mmu_unit *unit)
+{
+
+    unit->enable = mmu_unit_enable;
+    unit->load_memory = mmu_unit_load_memory;
+    unit->map_kernel_memory = mmu_unit_map_kernel_memory;
+    unit->map_user_memory = mmu_unit_map_user_memory;
+    unit->unmap_memory = mmu_unit_unmap_memory;
+
+}
+
 void mmu_setup()
 {
 
-    mmu_unit_init(&unit, mmu_unit_enable, mmu_unit_load_memory, mmu_unit_map_kernel_memory, mmu_unit_map_user_memory, mmu_unit_unmap_memory);
+    mmu_unit_init(&unit, mmu_unit_setup);
     mmu_init();
 
 }
