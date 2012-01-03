@@ -5,8 +5,8 @@ struct kernel_arch
 {
 
     void (*setup)(struct kernel_arch *arch);
+    void (*setup_mmu)();
     void (*enable_interrupts)();
-    void (*enable_mmu)();
     void (*disable_interrupts)();
     void (*set_stack)(void *address);
     void (*enter_usermode)(unsigned int ip, unsigned int sp);

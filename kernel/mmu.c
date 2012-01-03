@@ -3,7 +3,7 @@
 #include <kernel/log.h>
 #include <kernel/mmu.h>
 
-static struct mmu_unit *primary;
+struct mmu_unit unit;
 static struct mmu_memory kernel;
 
 void mmu_pagefault(unsigned int address, unsigned int flags)
@@ -35,39 +35,28 @@ void mmu_pagefault(unsigned int address, unsigned int flags)
 void mmu_load_memory(struct mmu_memory *memory)
 {
 
-    primary->load_memory(memory);
+    unit.load_memory(memory);
 
 }
 
 void mmu_map_kernel_memory(struct mmu_memory *memory)
 {
 
-    primary->map_kernel_memory(memory);
+    unit.map_kernel_memory(memory);
 
 }
 
 void mmu_map_user_memory(struct mmu_memory *memory)
 {
 
-    primary->map_user_memory(memory);
+    unit.map_user_memory(memory);
 
 }
 
 void mmu_unmap_memory(struct mmu_memory *memory)
 {
 
-    primary->unmap_memory(memory);
-
-}
-
-void mmu_register_unit(struct mmu_unit *unit)
-{
-
-    primary = unit;
-
-    mmu_memory_init(&kernel, (void *)0x00000000, (void *)0x00000000, 0x00400000);
-    mmu_map_kernel_memory(&kernel);
-    mmu_load_memory(&kernel);
+    unit.unmap_memory(memory);
 
 }
 
@@ -82,15 +71,27 @@ void mmu_memory_init(struct mmu_memory *memory, void *paddress, void *vaddress, 
 
 }
 
-void mmu_unit_init(struct mmu_unit *unit, void (*load_memory)(struct mmu_memory *memory), void (*map_kernel_memory)(struct mmu_memory *memory), void (*map_user_memory)(struct mmu_memory *memory), void (*unmap_memory)(struct mmu_memory *memory))
+void mmu_unit_init(struct mmu_unit *unit, void (*enable)(), void (*load_memory)(struct mmu_memory *memory), void (*map_kernel_memory)(struct mmu_memory *memory), void (*map_user_memory)(struct mmu_memory *memory), void (*unmap_memory)(struct mmu_memory *memory))
 {
 
     memory_clear(unit, sizeof (struct mmu_unit));
 
+    unit->enable = enable;
     unit->load_memory = load_memory;
     unit->map_kernel_memory = map_kernel_memory;
     unit->map_user_memory = map_user_memory;
     unit->unmap_memory = unmap_memory;
+
+}
+
+void mmu_init()
+{
+
+    mmu_memory_init(&kernel, (void *)0x00000000, (void *)0x00000000, 0x00400000);
+    mmu_map_kernel_memory(&kernel);
+    mmu_load_memory(&kernel);
+
+    unit.enable();
 
 }
 

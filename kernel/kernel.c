@@ -57,8 +57,8 @@ void kernel_init(struct kernel_arch *arch)
     kernel_core_init(core, arch);
     core->arch->setup(core->arch);
 
-    if (core->arch->enable_mmu)
-        core->arch->enable_mmu();
+    if (core->arch->setup_mmu)
+        core->arch->setup_mmu();
 
     modules_init();
     runtime_init();

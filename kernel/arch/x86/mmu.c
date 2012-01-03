@@ -4,7 +4,6 @@
 #include <kernel/arch/x86/isr.h>
 #include <kernel/arch/x86/mmu.h>
 
-static struct mmu_unit unit;
 static struct mmu_header headers[MMU_HEADER_SLOTS];
 static struct mmu_header *kernelHeader;
 
@@ -149,14 +148,19 @@ static void mmu_unit_unmap_memory(struct mmu_memory *memory)
 
 }
 
-void mmu_enable()
+void mmu_unit_enable()
 {
-
-    mmu_unit_init(&unit, mmu_unit_load_memory, mmu_unit_map_kernel_memory, mmu_unit_map_user_memory, mmu_unit_unmap_memory);
-    mmu_register_unit(&unit);
 
     isr_register_routine(ISR_ROUTINE_PF, mmu_handle_pagefault);
     cpu_set_cr0(cpu_get_cr0() | 0x80000000);
+
+}
+
+void mmu_setup()
+{
+
+    mmu_unit_init(&unit, mmu_unit_enable, mmu_unit_load_memory, mmu_unit_map_kernel_memory, mmu_unit_map_user_memory, mmu_unit_unmap_memory);
+    mmu_init();
 
 }
 
