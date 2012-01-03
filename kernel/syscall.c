@@ -80,8 +80,6 @@ unsigned int syscall_execute(struct runtime_task *task, char *path, unsigned int
     if (!ntask->load(ntask, entry, argc, argv))
         return 0;
 
-    mmu_map_user_memory(&ntask->memory);
-
     runtime_activate(ntask, task);
     runtime_descriptor_init(ntask->get_descriptor(ntask, 1), vfs_find("tty", "stdin"), 0);
     runtime_descriptor_init(ntask->get_descriptor(ntask, 2), vfs_find("tty", "stdout"), 0);
@@ -104,8 +102,6 @@ unsigned int syscall_exit(struct runtime_task *task)
     runtime_activate(ptask, 0);
 
     task->unload(task);
-
-    mmu_unmap_memory(&task->memory);
 
     event_raise(EVENT_SYSCALL_EXIT);
 

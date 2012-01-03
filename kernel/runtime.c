@@ -56,6 +56,8 @@ void runtime_activate(struct runtime_task *task, struct runtime_task *ptask)
 static unsigned int runtime_task_load(struct runtime_task *self, void *entry, unsigned int argc, char **argv)
 {
 
+    self->used = 1;
+
     struct mmu_memory *memory = &self->memory;
 
     int reloc = (int)memory->vaddress - (int)memory->paddress;
@@ -83,7 +85,7 @@ static unsigned int runtime_task_load(struct runtime_task *self, void *entry, un
     stack = memory_copy(stack - 0x4, &vargc, 4);
     stack = memory_copy(stack - 0x4, &entry, 4);
 
-    self->used = 1;
+    mmu_map_user_memory(memory);
 
     runtime_registers_init(&self->registers, (unsigned int)entry, (unsigned int)(stack + reloc), (unsigned int)(stack + reloc));
 
@@ -95,6 +97,10 @@ static void runtime_task_unload(struct runtime_task *self)
 {
 
     self->used = 0;
+
+    struct mmu_memory *memory = &self->memory;
+
+    mmu_unmap_memory(memory);
 
 }
 

@@ -105,7 +105,14 @@ static void mmu_unit_load_memory(struct mmu_memory *memory)
 static void mmu_unit_map_memory(struct mmu_memory *memory, unsigned int tflags, unsigned int pflags)
 {
 
-    struct mmu_header *header = &headers[mmu_get_header_slot()];
+    struct mmu_header *header = mmu_get_header(memory);
+
+    if (header)
+        return;
+
+    unsigned int index = mmu_get_header_slot();
+
+    header = &headers[index];
     header->memory = memory;
 
     mmu_table_clear(&header->table);
