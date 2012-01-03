@@ -36,7 +36,7 @@ extern void mmu_map_user_memory(struct mmu_memory *memory);
 extern void mmu_unmap_memory(struct mmu_memory *memory);
 extern void mmu_memory_init(struct mmu_memory *memory, void *paddress, void *vaddress, unsigned int size);
 extern void mmu_unit_init(struct mmu_unit *unit, void (*setup)(struct mmu_unit *self));
-extern void mmu_init();
+extern void mmu_init(struct mmu_unit *aunit);
 
 #endif
 

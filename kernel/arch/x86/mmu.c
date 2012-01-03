@@ -4,6 +4,7 @@
 #include <kernel/arch/x86/isr.h>
 #include <kernel/arch/x86/mmu.h>
 
+static struct mmu_unit unit;
 static struct mmu_header headers[MMU_HEADER_SLOTS];
 static struct mmu_header *kernelHeader;
 
@@ -171,7 +172,7 @@ void mmu_setup()
 {
 
     mmu_unit_init(&unit, mmu_unit_setup);
-    mmu_init();
+    mmu_init(&unit);
 
 }
 

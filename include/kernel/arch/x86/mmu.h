@@ -47,7 +47,6 @@ struct mmu_header
 
 };
 
-extern struct mmu_unit unit;
 extern void mmu_setup();
 
 #endif
