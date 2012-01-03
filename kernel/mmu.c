@@ -3,7 +3,7 @@
 #include <kernel/log.h>
 #include <kernel/mmu.h>
 
-static struct mmu_unit *unit;
+static struct mmu_unit *primary;
 static struct mmu_memory kernel;
 
 void mmu_pagefault(unsigned int address, unsigned int flags)
@@ -35,28 +35,42 @@ void mmu_pagefault(unsigned int address, unsigned int flags)
 void mmu_load_memory(struct mmu_memory *memory)
 {
 
-    unit->load_memory(memory);
+    primary->load_memory(memory);
 
 }
 
 void mmu_map_kernel_memory(struct mmu_memory *memory)
 {
 
-    unit->map_kernel_memory(memory);
+    primary->map_kernel_memory(memory);
 
 }
 
 void mmu_map_user_memory(struct mmu_memory *memory)
 {
 
-    unit->map_user_memory(memory);
+    primary->map_user_memory(memory);
 
 }
 
 void mmu_unmap_memory(struct mmu_memory *memory)
 {
 
-    unit->unmap_memory(memory);
+    primary->unmap_memory(memory);
+
+}
+
+void mmu_register_unit(struct mmu_unit *unit)
+{
+
+    mmu_memory_init(&kernel, (void *)0x00000000, (void *)0x00000000, 0x00400000);
+
+    unit->setup(unit);
+    unit->map_kernel_memory(&kernel);
+    unit->load_memory(&kernel);
+    unit->enable();
+
+    primary = unit;
 
 }
 
@@ -77,20 +91,6 @@ void mmu_unit_init(struct mmu_unit *unit, void (*setup)(struct mmu_unit *self))
     memory_clear(unit, sizeof (struct mmu_unit));
 
     unit->setup = setup;
-
-}
-
-void mmu_init(struct mmu_unit *aunit)
-{
-
-    mmu_memory_init(&kernel, (void *)0x00000000, (void *)0x00000000, 0x00400000);
-
-    unit = aunit;
-
-    unit->setup(unit);
-    unit->map_kernel_memory(&kernel);
-    unit->load_memory(&kernel);
-    unit->enable();
 
 }
 
