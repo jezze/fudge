@@ -50,7 +50,10 @@ void kernel_init()
 {
 
     log_init();
-    log_write("[kernel] Fudge init\n");
+    log_write("[kernel] Initializing\n");
+
+    if (!primary)
+        error_panic("No architecture registered", __FILE__, __LINE__);
 
     primary->setup(primary);
 
@@ -65,7 +68,7 @@ void kernel_init()
     unsigned int id = syscall_execute("init", 0, 0);
 
     if (!id)
-        error_panic("Could not run init", __FILE__, __LINE__);
+        error_panic("Could not start init", __FILE__, __LINE__);
 
     struct runtime_task *task = runtime_get_task(id);
 

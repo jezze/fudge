@@ -83,6 +83,9 @@ void mmu_init()
 
     mmu_memory_init(&kernel, (void *)0x00000000, (void *)0x00000000, 0x00400000);
 
+    if (!primary)
+        error_panic("No MMU registered", __FILE__, __LINE__);
+
     primary->map_kernel_memory(&kernel);
     primary->load_memory(&kernel);
     primary->enable();
