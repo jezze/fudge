@@ -181,6 +181,7 @@ void runtime_task_init(struct runtime_task *task, unsigned int id)
 
     task->id = id;
     task->used = 0;
+    task->event = 0;
     task->load = runtime_task_load;
     task->unload = runtime_task_unload;
     task->get_descriptor_slot = runtime_task_get_descriptor_slot;

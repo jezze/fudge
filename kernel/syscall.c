@@ -249,6 +249,8 @@ unsigned int syscall_wait()
     if (!task)
         return 0;
 
+    task->event = 0;
+
     struct runtime_task *ptask = runtime_get_task(task->parentid);
 
     if (!ptask)

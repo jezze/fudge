@@ -29,6 +29,7 @@ struct runtime_task
     unsigned int id;
     unsigned int parentid;
     unsigned int used;
+    unsigned int event;
     struct runtime_registers registers;
     struct mmu_memory memory;
     struct runtime_descriptor descriptors[RUNTIME_TASK_DESCRIPTOR_SLOTS];
