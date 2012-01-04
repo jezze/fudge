@@ -51,15 +51,13 @@ unsigned int memory_index(const void *in, char value, unsigned int count, unsign
     for (; count; ip++, count--)
     {
 
-        if (*ip == value)
-        {
+        if (*ip != value)
+            continue;
 
-            if (skip)
-                skip--;
-            else
-                break;
-
-        }
+        if (skip)
+            skip--;
+        else
+            break;
 
     }
 
@@ -75,15 +73,13 @@ unsigned int memory_index_reversed(const void *in, char value, unsigned int coun
     for (; count > 0; ip--, count--)
     {
 
-        if (*ip == value)
-        {
+        if (*ip != value)
+            continue;
 
-            if (skip)
-                skip--;
-            else
-                break;
-
-        }
+        if (skip)
+            skip--;
+        else
+            break;
 
     }
 
