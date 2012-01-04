@@ -58,11 +58,11 @@ void *elf_get_symbol(void *address, char *name)
     if (!header)
         return 0;
 
-    struct elf_section_header *sh = address + header->shoffset;
-    struct elf_section_header *relHeader = &sh[2];
-    struct elf_section_header *infoHeader = &sh[relHeader->info];
-    struct elf_section_header *symHeader = &sh[relHeader->link];
-    struct elf_section_header *strHeader = &sh[symHeader->link];
+    struct elf_section_header *sheader = address + header->shoffset;
+    struct elf_section_header *relHeader = &sheader[2];
+    struct elf_section_header *infoHeader = &sheader[relHeader->info];
+    struct elf_section_header *symHeader = &sheader[relHeader->link];
+    struct elf_section_header *strHeader = &sheader[symHeader->link];
 
     struct elf_symbol *symTable = (struct elf_symbol *)(address + symHeader->offset);
     char *strTable = (char *)(address + strHeader->offset);
@@ -95,11 +95,11 @@ void elf_relocate(void *address)
     if (!header)
         return;
 
-    struct elf_section_header *sh = address + header->shoffset;
-    struct elf_section_header *relHeader = &sh[2];
-    struct elf_section_header *infoHeader = &sh[relHeader->info];
-    struct elf_section_header *symHeader = &sh[relHeader->link];
-    struct elf_section_header *strHeader = &sh[symHeader->link];
+    struct elf_section_header *sheader = address + header->shoffset;
+    struct elf_section_header *relHeader = &sheader[2];
+    struct elf_section_header *infoHeader = &sheader[relHeader->info];
+    struct elf_section_header *symHeader = &sheader[relHeader->link];
+    struct elf_section_header *strHeader = &sheader[symHeader->link];
 
     struct elf_relocate *relTable = (struct elf_relocate *)(address + relHeader->offset);
     struct elf_symbol *symTable = (struct elf_symbol *)(address + symHeader->offset);
@@ -113,7 +113,7 @@ void elf_relocate(void *address)
 
         struct elf_relocate *relocate = &relTable[i];
         struct elf_symbol *symbol = &symTable[relocate->info >> 8];
-        int offset = sh[symbol->index].offset;
+        int offset = sheader[symbol->index].offset;
         int *entry = (int *)(address + infoHeader->offset + relocate->offset);
         int reloc = (symbol->index) ? (int)address + offset : (int)symbol_find(strTable + symbol->name);
         int paddress = reloc + symbol->value;
