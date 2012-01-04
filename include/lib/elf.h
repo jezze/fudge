@@ -117,7 +117,7 @@ struct elf_symbol
     unsigned int size;
     unsigned char info;
     unsigned char other;
-    unsigned short index;
+    unsigned short shindex;
 
 };
 

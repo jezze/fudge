@@ -65,6 +65,7 @@ void *elf_get_symbol(void *address, char *name)
     struct elf_section_header *strHeader = &sheader[symHeader->link];
 
     struct elf_symbol *symTable = address + symHeader->offset;
+    void *infoTable = address + infoHeader->offset;
     char *strTable = address + strHeader->offset;
 
     unsigned int i;
@@ -75,11 +76,8 @@ void *elf_get_symbol(void *address, char *name)
 
         struct elf_symbol *symbol = &symTable[i];
 
-        if (!symbol->name)
-            continue;
-
         if (!string_compare(name, strTable + symbol->name))
-            return address + infoHeader->offset + symbol->value;
+            return infoTable + symbol->value;
 
     }
 
@@ -103,6 +101,7 @@ void elf_relocate(void *address)
 
     struct elf_relocate *relTable = address + relHeader->offset;
     struct elf_symbol *symTable = address + symHeader->offset;
+    void *infoTable = address + infoHeader->offset;
     char *strTable = address + strHeader->offset;
 
     unsigned int i;
@@ -112,11 +111,15 @@ void elf_relocate(void *address)
     {
 
         struct elf_relocate *relocate = &relTable[i];
-        struct elf_symbol *symbol = &symTable[relocate->info >> 8];
-        int *entry = (int *)(address + infoHeader->offset + relocate->offset);
-        int reloc = (symbol->index) ? (int)(address + sheader[symbol->index].offset + symbol->value) : (int)symbol_find(strTable + symbol->name);
 
-        switch (relocate->info & 0x0F)
+        unsigned char type = relocate->info & 0x0F;
+        unsigned char index = relocate->info >> 8;
+
+        struct elf_symbol *symbol = &symTable[index];
+        unsigned int *entry = (unsigned int *)(infoTable + relocate->offset);
+        unsigned int reloc = (symbol->shindex) ? (unsigned int)(address + sheader[symbol->shindex].offset + symbol->value) : (unsigned int)symbol_find(strTable + symbol->name);
+
+        switch (type)
         {
 
             case 1:
@@ -127,7 +130,7 @@ void elf_relocate(void *address)
 
             case 2:
 
-                *entry = reloc + *entry - (int)entry;
+                *entry = reloc + *entry - (unsigned int)entry;
 
                 break;
 
