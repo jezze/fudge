@@ -63,11 +63,12 @@ struct vfs_node *vfs_find(char *viewname, char *nodename)
 
 }
 
-void vfs_node_init(struct vfs_node *node, unsigned int id, void (*open)(struct vfs_node *self), void (*close)(struct vfs_node *self), unsigned int (*read)(struct vfs_node *self, unsigned int count, void *buffer), unsigned int (*write)(struct vfs_node *self, unsigned int count, void *buffer))
+void vfs_node_init(struct vfs_node *node, char *name, unsigned int id, void (*open)(struct vfs_node *self), void (*close)(struct vfs_node *self), unsigned int (*read)(struct vfs_node *self, unsigned int count, void *buffer), unsigned int (*write)(struct vfs_node *self, unsigned int count, void *buffer))
 {
 
     memory_clear(node, sizeof (struct vfs_node));
 
+    node->name = name;
     node->id = id;
     node->open = open;
     node->close = close;
@@ -76,7 +77,7 @@ void vfs_node_init(struct vfs_node *node, unsigned int id, void (*open)(struct v
 
 }
 
-void vfs_view_init(struct vfs_view *view, char *name, struct vfs_node *(*find_node)(struct vfs_view *self, char *name), struct vfs_node *(*walk)(struct vfs_view *self, unsigned int index), char *(*get_name)(struct vfs_view *self, struct vfs_node *node))
+void vfs_view_init(struct vfs_view *view, char *name, struct vfs_node *(*find_node)(struct vfs_view *self, char *name), struct vfs_node *(*walk)(struct vfs_view *self, unsigned int index))
 {
 
     memory_clear(view, sizeof (struct vfs_view));
@@ -84,7 +85,6 @@ void vfs_view_init(struct vfs_view *view, char *name, struct vfs_node *(*find_no
     view->name = name;
     view->find_node = find_node;
     view->walk = walk;
-    view->get_name = get_name;
 
 }
 

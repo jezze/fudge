@@ -9,7 +9,6 @@ struct vfs_filesystem;
 struct initrd_node
 {
 
-    char name[32];
     struct vfs_node base;
     unsigned int size;
     struct tar_header *header;
