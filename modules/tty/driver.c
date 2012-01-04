@@ -94,7 +94,5 @@ void tty_driver_init(struct tty_driver *driver, char *cwdname)
 
     driver->clear(driver);
 
-    driver->base.module.view = tty_view_init(driver);
-
 }
 

@@ -5,6 +5,7 @@
 #include <modules/ps2/ps2.h>
 #include <modules/tty/tty.h>
 
+static struct tty_driver *driver;
 static struct vfs_view ttyView;
 static struct vfs_node ttyIn;
 static struct vfs_node ttyOut;
@@ -14,8 +15,6 @@ static struct vfs_node ttyPwd;
 
 static unsigned int cwd_read(struct vfs_node *self, unsigned int count, void *buffer)
 {
-
-    struct tty_driver *driver = tty_get();
 
     count = string_length(driver->cwdname);
 
@@ -28,8 +27,6 @@ static unsigned int cwd_read(struct vfs_node *self, unsigned int count, void *bu
 static unsigned int cwd_write(struct vfs_node *self, unsigned int count, void *buffer)
 {
 
-    struct tty_driver *driver = tty_get();
-
     count = string_length(buffer);
 
     string_write(driver->cwdname, buffer);
@@ -40,8 +37,6 @@ static unsigned int cwd_write(struct vfs_node *self, unsigned int count, void *b
 
 static unsigned int in_read(struct vfs_node *self, unsigned int count, void *buffer)
 {
-
-    struct tty_driver *driver = tty_get();
 
     unsigned int i;
 
@@ -64,8 +59,6 @@ static unsigned int in_read(struct vfs_node *self, unsigned int count, void *buf
 static unsigned int out_write(struct vfs_node *self, unsigned int count, void *buffer)
 {
 
-    struct tty_driver *driver = tty_get();
-
     unsigned int i;
 
     for (i = 0; i < count; i++)
@@ -79,8 +72,6 @@ static unsigned int out_write(struct vfs_node *self, unsigned int count, void *b
 
 static unsigned int pwd_read(struct vfs_node *self, unsigned int count, void *buffer)
 {
-
-    struct tty_driver *driver = tty_get();
 
     void *out = buffer;
     unsigned int i;
@@ -186,8 +177,10 @@ static char *view_get_name(struct vfs_view *self, struct vfs_node *node)
 
 }
 
-struct vfs_view *tty_view_init()
+void tty_view_init(struct modules_module *module)
 {
+
+    driver = (struct tty_driver *)module;
 
     vfs_node_init(&ttyIn, 0, 0, 0, in_read, 0);
     vfs_node_init(&ttyOut, 1, 0, 0, 0, out_write);
@@ -196,7 +189,7 @@ struct vfs_view *tty_view_init()
     vfs_node_init(&ttyPwd, 4, 0, 0, pwd_read, 0);
     vfs_view_init(&ttyView, "tty", view_find_node, view_walk, view_get_name);
 
-    return &ttyView;
+    module->view = &ttyView;
 
 }
 

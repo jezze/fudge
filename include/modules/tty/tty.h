@@ -38,8 +38,7 @@ struct tty_driver
 
 };
 
-extern struct vfs_view *tty_view_init();
-extern struct tty_driver *tty_get();
 extern void tty_driver_init(struct tty_driver *driver, char *cwdname);
+extern void tty_view_init(struct modules_module *module);
 
 #endif
