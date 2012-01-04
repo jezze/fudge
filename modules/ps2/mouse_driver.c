@@ -3,55 +3,27 @@
 #include <kernel/modules.h>
 #include <modules/ps2/ps2.h>
 
-static void wait(unsigned char type)
+static void mouse_driver_start(struct modules_driver *self)
 {
 
-    unsigned int timeout = 100000;
-
-    if (type)
-    {
-
-        while (timeout--)
-        {
-
-            if ((io_inb(0x64) & 2) == 0)
-                return;
-
-        }
-
-    }
-
-    else
-    {
-
-        while (timeout--)
-        {
-
-            if ((io_inb(0x64) & 1) == 1)
-                return;
-
-        }
-
-    }
+    struct mouse_driver *driver = (struct mouse_driver *)self;
 
 }
 
-static void write(unsigned char value)
+static void mouse_driver_attach(struct modules_driver *self, struct modules_device *device)
 {
 
-    wait(1);
-    io_outb(0x64, 0xD4);
-    wait(1);
-    io_outb(0x60, value);
+    device->driver = self;
 
 }
 
-static unsigned char read()
+static unsigned int mouse_driver_check(struct modules_driver *self, struct modules_device *device)
 {
 
-    wait(0);
+    if (device->type != MOUSE_DEVICE_TYPE)
+        return 0;
 
-    return io_inb(0x60);
+    return 1;
 
 }
 
@@ -60,26 +32,12 @@ void mouse_driver_init(struct mouse_driver *driver)
 
     modules_driver_init(&driver->base, MOUSE_DRIVER_TYPE);
 
+    driver->base.start = mouse_driver_start;
+    driver->base.attach = mouse_driver_attach;
+    driver->base.check = mouse_driver_check;
     driver->cycle = 0;
     driver->x = 0;
     driver->y = 0;
-
-    unsigned char status;
-
-    wait(1);
-    io_outb(0x64, 0xA8);
-    wait(1);
-    io_outb(0x64, 0x20);
-    wait(0);
-    status = (io_inb(0x60) | 2);
-    wait(1);
-    io_outb(0x64, 0x60);
-    wait(1);
-    io_outb(0x60, status);
-    write(0xF6);
-    read();
-    write(0xF4);
-    read();
 
 }
 

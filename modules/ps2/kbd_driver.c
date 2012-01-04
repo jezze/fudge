@@ -57,11 +57,38 @@ static unsigned int kbd_buffer_putc(struct kbd_buffer *self, char *buffer)
 
 }
 
+static void kbd_driver_start(struct modules_driver *self)
+{
+
+    struct kbd_driver *driver = (struct kbd_driver *)self;
+
+}
+
+static void kbd_driver_attach(struct modules_driver *self, struct modules_device *device)
+{
+
+    device->driver = self;
+
+}
+
+static unsigned int kbd_driver_check(struct modules_driver *self, struct modules_device *device)
+{
+
+    if (device->type != KBD_DEVICE_TYPE)
+        return 0;
+
+    return 1;
+
+}
+
 void kbd_driver_init(struct kbd_driver *driver)
 {
 
     modules_driver_init(&driver->base, KBD_DRIVER_TYPE);
 
+    driver->base.start = kbd_driver_start;
+    driver->base.attach = kbd_driver_attach;
+    driver->base.check = kbd_driver_check;
     driver->buffer.size = 256;
     driver->buffer.head = 0;
     driver->buffer.tail = 0;
