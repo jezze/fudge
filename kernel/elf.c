@@ -24,24 +24,6 @@ static struct elf_header *get_header(void *address)
 
 }
 
-static struct elf_program_header *get_program_header(void *address)
-{
-
-    struct elf_header *header = get_header(address);
-
-    return (struct elf_program_header *)(address + header->phoffset);
-
-}
-
-static struct elf_section_header *get_section_header(void *address, unsigned int index)
-{
-
-    struct elf_header *header = get_header(address);
-
-    return (struct elf_section_header *)(address + header->shoffset + header->shsize * index);
-
-}
-
 void *elf_get_entry(void *address)
 {
 
@@ -62,13 +44,13 @@ void *elf_get_virtual(void *address)
     if (!header)
         return 0;
 
-    struct elf_program_header *pheader = get_program_header(address);
+    struct elf_program_header *pheader = address + header->phoffset;
 
     return pheader->vaddress;
 
 }
 
-void *elf_get_symbol(void *address, char *symname)
+void *elf_get_symbol(void *address, char *name)
 {
 
     struct elf_header *header = get_header(address);
@@ -76,12 +58,14 @@ void *elf_get_symbol(void *address, char *symname)
     if (!header)
         return 0;
 
-    struct elf_section_header *relHeader = get_section_header(address, 2);
-    struct elf_section_header *infoHeader = get_section_header(address, relHeader->info);
-    struct elf_section_header *symHeader = get_section_header(address, relHeader->link);
-    struct elf_section_header *strHeader = get_section_header(address, symHeader->link);
+    struct elf_section_header *sh = address + header->shoffset;
+    struct elf_section_header *relHeader = &sh[2];
+    struct elf_section_header *infoHeader = &sh[relHeader->info];
+    struct elf_section_header *symHeader = &sh[relHeader->link];
+    struct elf_section_header *strHeader = &sh[symHeader->link];
+
     struct elf_symbol *symTable = (struct elf_symbol *)(address + symHeader->offset);
-    char *strtbl = (char *)(address + strHeader->offset);
+    char *strTable = (char *)(address + strHeader->offset);
 
     unsigned int i;
     unsigned int count = symHeader->size / symHeader->esize;
@@ -94,9 +78,7 @@ void *elf_get_symbol(void *address, char *symname)
         if (!symbol->name)
             continue;
 
-        char *name = strtbl + symbol->name;
-
-        if (!string_compare(symname, name))
+        if (!string_compare(name, strTable + symbol->name))
             return (void *)(address + infoHeader->offset + symbol->value);
 
     }
@@ -113,13 +95,15 @@ void elf_relocate(void *address)
     if (!header)
         return;
 
-    struct elf_section_header *relHeader = get_section_header(address, 2);
-    struct elf_section_header *infoHeader = get_section_header(address, relHeader->info);
-    struct elf_section_header *symHeader = get_section_header(address, relHeader->link);
-    struct elf_section_header *strHeader = get_section_header(address, symHeader->link);
+    struct elf_section_header *sh = address + header->shoffset;
+    struct elf_section_header *relHeader = &sh[2];
+    struct elf_section_header *infoHeader = &sh[relHeader->info];
+    struct elf_section_header *symHeader = &sh[relHeader->link];
+    struct elf_section_header *strHeader = &sh[symHeader->link];
+
     struct elf_relocate *relTable = (struct elf_relocate *)(address + relHeader->offset);
     struct elf_symbol *symTable = (struct elf_symbol *)(address + symHeader->offset);
-    char *strtbl = (char *)(address + strHeader->offset);
+    char *strTable = (char *)(address + strHeader->offset);
 
     unsigned int i;
     unsigned int count = relHeader->size / relHeader->esize; 
@@ -129,9 +113,9 @@ void elf_relocate(void *address)
 
         struct elf_relocate *relocate = &relTable[i];
         struct elf_symbol *symbol = &symTable[relocate->info >> 8];
-        int offset = get_section_header(address, symbol->index)->offset;
-        int *entry = (int *)((int)address + infoHeader->offset + relocate->offset);
-        int reloc = (symbol->index) ? (int)address + offset : (int)symbol_find(strtbl + symbol->name);
+        int offset = sh[symbol->index].offset;
+        int *entry = (int *)(address + infoHeader->offset + relocate->offset);
+        int reloc = (symbol->index) ? (int)address + offset : (int)symbol_find(strTable + symbol->name);
         int paddress = reloc + symbol->value;
 
         switch (relocate->info & 0x0F)
