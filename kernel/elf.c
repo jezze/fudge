@@ -113,23 +113,21 @@ void elf_relocate(void *address)
 
         struct elf_relocate *relocate = &relTable[i];
         struct elf_symbol *symbol = &symTable[relocate->info >> 8];
-        int offset = sheader[symbol->index].offset;
         int *entry = (int *)(address + infoHeader->offset + relocate->offset);
-        int reloc = (symbol->index) ? (int)address + offset : (int)symbol_find(strTable + symbol->name);
-        int paddress = reloc + symbol->value;
+        int reloc = (symbol->index) ? (int)(address + sheader[symbol->index].offset + symbol->value) : (int)symbol_find(strTable + symbol->name);
 
         switch (relocate->info & 0x0F)
         {
 
             case 1:
 
-                *entry = paddress + *entry;
+                *entry = reloc + *entry;
 
                 break;
 
             case 2:
 
-                *entry = paddress + *entry - (int)entry;
+                *entry = reloc + *entry - (int)entry;
 
                 break;
 
