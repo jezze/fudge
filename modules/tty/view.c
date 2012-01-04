@@ -12,6 +12,7 @@ static struct vfs_node ttyOut;
 static struct vfs_node ttyError;
 static struct vfs_node ttyCwd;
 static struct vfs_node ttyPwd;
+static char *stringtable = "tty\0stdin\0stdout\0stderr\0cwd\0pwd";
 
 static unsigned int cwd_read(struct vfs_node *self, unsigned int count, void *buffer)
 {
@@ -159,19 +160,19 @@ static char *view_get_name(struct vfs_view *self, struct vfs_node *node)
 {
 
     if (node->id == 0)
-        return "stdin";
+        return stringtable + 4;
 
     if (node->id == 1)
-        return "stdout";
+        return stringtable + 10;
  
     if (node->id == 2)
-        return "stderr";
+        return stringtable + 17;
 
     if (node->id == 3)
-        return "cwd";
+        return stringtable + 24;
 
     if (node->id == 4)
-        return "pwd";
+        return stringtable + 28;
 
     return 0;
 
@@ -187,7 +188,7 @@ void tty_view_init(struct modules_module *module)
     vfs_node_init(&ttyError, 2, 0, 0, 0, out_write);
     vfs_node_init(&ttyCwd, 3, 0, 0, cwd_read, cwd_write);
     vfs_node_init(&ttyPwd, 4, 0, 0, pwd_read, 0);
-    vfs_view_init(&ttyView, "tty", view_find_node, view_walk, view_get_name);
+    vfs_view_init(&ttyView, stringtable + 0, view_find_node, view_walk, view_get_name);
 
     module->view = &ttyView;
 

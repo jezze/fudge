@@ -81,7 +81,7 @@ void vfs_view_init(struct vfs_view *view, char *name, struct vfs_node *(*find_no
 
     memory_clear(view, sizeof (struct vfs_view));
 
-    string_write(view->name, name);
+    view->name = name;
     view->find_node = find_node;
     view->walk = walk;
     view->get_name = get_name;

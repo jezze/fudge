@@ -8,6 +8,7 @@ struct vfs_node
 
     unsigned int id;
     void *physical;
+    char *name;
     void (*open)(struct vfs_node *self);
     void (*close)(struct vfs_node *self);
     unsigned int (*read)(struct vfs_node *self, unsigned int count, void *buffer);
@@ -18,7 +19,7 @@ struct vfs_node
 struct vfs_view
 {
 
-    char name[32];
+    char *name;
     struct vfs_node *(*find_node)(struct vfs_view *self, char *name);
     struct vfs_node *(*walk)(struct vfs_view *self, unsigned int index);
     char *(*get_name)(struct vfs_view *self, struct vfs_node *node);
