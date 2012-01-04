@@ -115,6 +115,9 @@ unsigned int syscall_load(struct runtime_task *task, char *path)
 
     struct vfs_node *node = vfs_find("mod", path);
 
+    if (!node)
+        return 0;
+
     elf_relocate(node->physical);
 
     void (*init)() = elf_get_symbol(node->physical, "init");

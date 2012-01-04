@@ -73,7 +73,7 @@ $ make
 
 If everything went well these files should have appeared:
 
-build/root/boot/kernel
+build/root/boot/fudge
 build/root/boot/initrd.tar
 
 Create an iso.
