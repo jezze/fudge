@@ -7,11 +7,7 @@
 
 static struct tty_driver *driver;
 static struct vfs_view ttyView;
-static struct vfs_node ttyIn;
-static struct vfs_node ttyOut;
-static struct vfs_node ttyError;
-static struct vfs_node ttyCwd;
-static struct vfs_node ttyPwd;
+static struct vfs_node ttyNodes[5];
 
 static unsigned int cwd_read(struct vfs_node *self, unsigned int count, void *buffer)
 {
@@ -114,20 +110,15 @@ static unsigned int pwd_read(struct vfs_node *self, unsigned int count, void *bu
 static struct vfs_node *view_find_node(struct vfs_view *self, char *name)
 {
 
-    if (!string_compare("stdin", name))
-        return &ttyIn;
+    unsigned int i;
 
-    if (!string_compare("stdout", name))
-        return &ttyOut;
+    for (i = 0; i < 5; i++)
+    {
 
-    if (!string_compare("stderr", name))
-        return &ttyError;
+        if (!string_compare(ttyNodes[i].name, name))
+            return &ttyNodes[i];
 
-    if (!string_compare("cwd", name))
-        return &ttyCwd;
-
-    if (!string_compare("pwd", name))
-        return &ttyPwd;
+    }
 
     return 0;
 
@@ -136,22 +127,10 @@ static struct vfs_node *view_find_node(struct vfs_view *self, char *name)
 static struct vfs_node *view_walk(struct vfs_view *self, unsigned int index)
 {
 
-    if (index == 0)
-        return &ttyIn;
+    if (index > 4)
+        return 0;
 
-    if (index == 1)
-        return &ttyOut;
-
-    if (index == 2)
-        return &ttyError;
-
-    if (index == 3)
-        return &ttyCwd;
-
-    if (index == 4)
-        return &ttyPwd;
-
-    return 0;
+    return &ttyNodes[index];
 
 }
 
@@ -160,11 +139,11 @@ void tty_view_init(struct modules_module *module)
 
     driver = (struct tty_driver *)module;
 
-    vfs_node_init(&ttyIn, "stdin", 0, 0, 0, in_read, 0);
-    vfs_node_init(&ttyOut, "stdout", 1, 0, 0, 0, out_write);
-    vfs_node_init(&ttyError, "stderr", 2, 0, 0, 0, out_write);
-    vfs_node_init(&ttyCwd, "cwd", 3, 0, 0, cwd_read, cwd_write);
-    vfs_node_init(&ttyPwd, "pwd", 4, 0, 0, pwd_read, 0);
+    vfs_node_init(&ttyNodes[0], "stdin", 0, 0, 0, in_read, 0);
+    vfs_node_init(&ttyNodes[1], "stdout", 1, 0, 0, 0, out_write);
+    vfs_node_init(&ttyNodes[2], "stderr", 2, 0, 0, 0, out_write);
+    vfs_node_init(&ttyNodes[3], "cwd", 3, 0, 0, cwd_read, cwd_write);
+    vfs_node_init(&ttyNodes[4], "pwd", 4, 0, 0, pwd_read, 0);
     vfs_view_init(&ttyView, "tty", view_find_node, view_walk);
 
     module->view = &ttyView;
