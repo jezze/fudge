@@ -5,8 +5,8 @@ void *memory_clear(void *out, unsigned int count)
 
     char *op = out;
 
-    for (; count; op++, count--)
-        *op = 0;
+    for (; count; count--)
+        *op++ = 0;
 
     return out;
 
@@ -36,8 +36,8 @@ void *memory_copy(void *out, const void *in, unsigned int count)
     char *op = out;
     const char *ip = in;
 
-    for (; count; op++, ip++, count--)
-        *op = *ip;
+    for (; count; count--)
+        *op++ = *ip++;
 
     return out;
 
@@ -96,11 +96,11 @@ void *memory_replace(void *out, char value1, char value2, unsigned int count)
 
     char *op = out;
 
-    for (; count; op++, count--)
+    for (; count; count--)
     {
 
         if (*op == value1)
-            *op = value2;
+            *op++ = value2;
 
     }
 
