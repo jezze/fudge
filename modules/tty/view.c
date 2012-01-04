@@ -127,10 +127,10 @@ static struct vfs_node *view_find_node(struct vfs_view *self, char *name)
 static struct vfs_node *view_walk(struct vfs_view *self, unsigned int index)
 {
 
-    if (index > 4)
-        return 0;
+    if (index < 5)
+        return &ttyNodes[index];
 
-    return &ttyNodes[index];
+    return 0;
 
 }
 
