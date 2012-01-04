@@ -42,6 +42,7 @@ unsigned int syscall_detach(struct runtime_task *task, unsigned int index)
 unsigned int syscall_halt(struct runtime_task *task)
 {
 
+    kernel_enable_interrupts();
     kernel_halt();
 
     return 1;
