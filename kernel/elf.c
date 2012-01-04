@@ -117,20 +117,21 @@ void elf_relocate(void *address)
 
         struct elf_symbol *symbol = &symTable[index];
         unsigned int *entry = (unsigned int *)(infoTable + relocate->offset);
-        unsigned int reloc = (symbol->shindex) ? (unsigned int)(address + sheader[symbol->shindex].offset + symbol->value) : (unsigned int)symbol_find(strTable + symbol->name);
+        unsigned int value = *entry;
+        unsigned int addend = (symbol->shindex) ? (unsigned int)(address + sheader[symbol->shindex].offset + symbol->value) : (unsigned int)symbol_find(strTable + symbol->name);
 
         switch (type)
         {
 
             case 1:
 
-                *entry = reloc + *entry;
+                *entry = value + addend;
 
                 break;
 
             case 2:
 
-                *entry = reloc + *entry - (unsigned int)entry;
+                *entry = value + addend - (unsigned int)entry;
 
                 break;
 
