@@ -115,6 +115,7 @@ void elf_relocate(void *address)
     struct elf_section_header *infoHeader = get_section_header(address, relHeader->info);
     struct elf_section_header *symHeader = get_section_header(address, relHeader->link);
     struct elf_section_header *strHeader = get_section_header(address, symHeader->link);
+    struct elf_symbol *symTable = (struct elf_symbol *)(address + symHeader->offset);
     char *strtbl = (char *)(address + strHeader->offset);
 
     unsigned int i;
@@ -127,7 +128,8 @@ void elf_relocate(void *address)
         unsigned int sym = relocate->info >> 8;
         unsigned int type = relocate->info & 0x0F;
 
-        struct elf_symbol *symbol = (struct elf_symbol *)(address + symHeader->offset + sym * symHeader->esize);
+        struct elf_symbol *symbol = &symTable[sym];
+
         int offset = get_section_header(address, symbol->index)->offset;
 
         int *entry = (int *)((int)address + infoHeader->offset + relocate->offset);
