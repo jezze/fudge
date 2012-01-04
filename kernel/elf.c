@@ -64,8 +64,8 @@ void *elf_get_symbol(void *address, char *name)
     struct elf_section_header *symHeader = &sheader[relHeader->link];
     struct elf_section_header *strHeader = &sheader[symHeader->link];
 
-    struct elf_symbol *symTable = (struct elf_symbol *)(address + symHeader->offset);
-    char *strTable = (char *)(address + strHeader->offset);
+    struct elf_symbol *symTable = address + symHeader->offset;
+    char *strTable = address + strHeader->offset;
 
     unsigned int i;
     unsigned int count = symHeader->size / symHeader->esize;
@@ -79,7 +79,7 @@ void *elf_get_symbol(void *address, char *name)
             continue;
 
         if (!string_compare(name, strTable + symbol->name))
-            return (void *)(address + infoHeader->offset + symbol->value);
+            return address + infoHeader->offset + symbol->value;
 
     }
 
@@ -101,9 +101,9 @@ void elf_relocate(void *address)
     struct elf_section_header *symHeader = &sheader[relHeader->link];
     struct elf_section_header *strHeader = &sheader[symHeader->link];
 
-    struct elf_relocate *relTable = (struct elf_relocate *)(address + relHeader->offset);
-    struct elf_symbol *symTable = (struct elf_symbol *)(address + symHeader->offset);
-    char *strTable = (char *)(address + strHeader->offset);
+    struct elf_relocate *relTable = address + relHeader->offset;
+    struct elf_symbol *symTable = address + symHeader->offset;
+    char *strTable = address + strHeader->offset;
 
     unsigned int i;
     unsigned int count = relHeader->size / relHeader->esize; 
