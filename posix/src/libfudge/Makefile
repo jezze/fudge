@@ -1,5 +1,5 @@
 all: GCC=gcc
-all: GCCFLAGS=-c -O2 -I../../include -Wall -Wextra -ffreestanding -nostdlib -nostartfiles -nodefaultlibs -m32
+all: GCCFLAGS=-c -O2 -I../../include -I../../../include/lib -Wall -Wextra -ffreestanding -nostdlib -nostartfiles -nodefaultlibs -m32
 all: LD=ld
 all: LDFLAGS=-melf_i386
 all: AR=ar

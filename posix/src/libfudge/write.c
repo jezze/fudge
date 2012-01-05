@@ -1,6 +1,7 @@
 #include <_ansi.h>
 #include <_syslist.h>
 #include <errno.h>
+#include <call.h>
 
 #undef errno
 extern int errno;
@@ -8,9 +9,7 @@ extern int errno;
 int write(int file, char *ptr, int len)
 {
 
-    errno = ENOSYS;
-
-    return -1;
+    return call_write(file + 1, ptr, (unsigned int)len);
 
 }
 
