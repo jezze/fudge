@@ -9,7 +9,7 @@ extern int errno;
 int open(char *file, int flags, int mode)
 {
 
-    return call_open("initrd", file) + 1;
+    return call_open("initrd", file) - 1;
 
 }
 

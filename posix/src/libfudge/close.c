@@ -8,9 +8,7 @@ extern int errno;
 int close(int fd)
 {
 
-    errno = ENOSYS;
-
-    return -1;
+    return call_close(fd) - 1;
 
 }
 
