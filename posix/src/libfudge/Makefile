@@ -34,7 +34,8 @@ all:
 	@${GCC} ${GCCFLAGS} write.c -o write.o
 	@${AR} ${ARFLAGS} ../../lib/libfudge.a \
         _exit.o chown.o close.o environ.o errno.o execve.o fork.o fstat.o getpid.o isatty.o kill.o \
-        link.o lseek.o open.o read.o readlink.o sbrk.o stat.o symlink.o times.o unlink.o wait.o write.o
+        link.o lseek.o open.o read.o readlink.o sbrk.o stat.o symlink.o times.o unlink.o wait.o write.o \
+        ../../../lib/arch/x86/crt0.o ../../../lib/arch/x86/call.o
 
 clean:
 	@rm -f *.o

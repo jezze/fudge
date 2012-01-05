@@ -4,10 +4,11 @@ DIR_SOURCE_KERNEL=kernel
 DIR_SOURCE_LIB=lib
 DIR_SOURCE_MODULES=modules
 DIR_SOURCE_USER=user
+DIR_SOURCE_POSIX=posix
 
-.PHONY: all clean kernel lib modules user ramdisk sda iso hda
+.PHONY: all clean kernel lib modules user posix ramdisk sda iso hda
 
-all: lib kernel modules user ramdisk
+all: lib kernel modules user posix ramdisk
 
 kernel:
 	@make -C ${DIR_SOURCE_KERNEL}/ all-${ARCH}
@@ -20,6 +21,10 @@ modules:
 
 user:
 	@make -C ${DIR_SOURCE_USER}/ all-${ARCH}
+
+posix:
+	@make -C ${DIR_SOURCE_POSIX}/src/libfudge all
+	@make -C ${DIR_SOURCE_POSIX}/src/test all
 
 ramdisk:
 	@cp ${DIR_SOURCE_KERNEL}/fudge ${DIR_IMAGE}/boot/fudge
@@ -40,6 +45,7 @@ ramdisk:
 	@cp ${DIR_SOURCE_USER}/shell ${DIR_IMAGE}/bin/shell
 	@cp ${DIR_SOURCE_USER}/timer ${DIR_IMAGE}/bin/timer
 	@cp ${DIR_SOURCE_USER}/unload ${DIR_IMAGE}/bin/unload
+	@cp ${DIR_SOURCE_POSIX}/src/test/test ${DIR_IMAGE}/bin/test
 	@tar -cvf initrd.tar ${DIR_IMAGE}
 	@find ${DIR_IMAGE} -depth -print | cpio -ov > initrd.cpio
 	@mv initrd.tar ${DIR_IMAGE}/boot
@@ -70,6 +76,8 @@ clean:
 	@make -C ${DIR_SOURCE_KERNEL}/ clean
 	@make -C ${DIR_SOURCE_MODULES}/ clean
 	@make -C ${DIR_SOURCE_USER}/ clean
+	@make -C ${DIR_SOURCE_POSIX}/src/libfudge clean
+	@make -C ${DIR_SOURCE_POSIX}/src/test clean
 	@rm -f fudge.img
 	@rm -f fudge.iso
 	@rm -f ${DIR_IMAGE}/bin/cat
@@ -87,6 +95,7 @@ clean:
 	@rm -f ${DIR_IMAGE}/bin/shell
 	@rm -f ${DIR_IMAGE}/bin/timer
 	@rm -f ${DIR_IMAGE}/bin/unload
+	@rm -f ${DIR_IMAGE}/bin/test
 	@rm -f ${DIR_IMAGE}/mod/*.ko
 	@rm -f ${DIR_IMAGE}/boot/*.bin
 	@rm -f ${DIR_IMAGE}/boot/*.uimg

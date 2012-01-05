@@ -6,7 +6,7 @@ all-x86: GCC=gcc
 all-x86: GCCFLAGS=-c -O2 -I../include -Wall -Wextra -ffreestanding -nostdlib -nostartfiles -nodefaultlibs -m32
 
 AR=ar
-ARFLAGS=-rcs
+ARFLAGS=rvs
 
 DIR_SOURCE_ARCH=arch/${ARCH}
 
