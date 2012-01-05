@@ -5,7 +5,7 @@
 int main(int argc, char **argv)
 {
 
-    write(1, "Testing\n", 8);
+    printf("Testing\n");
 
     return 0;
 
