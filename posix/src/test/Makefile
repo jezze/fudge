@@ -4,7 +4,7 @@ all: GCCFLAGS=-O2 -I../../include -Wall -Wextra -ffreestanding -nostdlib -nostar
 .PHONY: all clean
 
 all:
-	@${GCC} ${GCCFLAGS} main.c -lfudge -lc -lm -o test
+	@${GCC} ${GCCFLAGS} -lc -lfudge main.c -o test
 
 clean:
 	@rm -f *.o

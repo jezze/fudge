@@ -1,10 +1,11 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <unistd.h>
 
 int main(int argc, char **argv)
 {
 
-    printf("Testing");
+    write(1, "Testing\n", 8);
 
     return 0;
 
