@@ -1,10 +1,10 @@
 all-arm: ARCH=arm
 all-arm: GCC=arm-none-eabi-gcc
-all-arm: GCCFLAGS=-O2 -I../include/lib -Wall -Wextra -ffreestanding -nostdlib -nostartfiles -nodefaultlibs -L../lib/ -L/usr/lib/gcc/arm-none-eabi/4.6.1/
+all-arm: GCCFLAGS=-static -s -O2 -I../include/lib -Wall -Wextra -ffreestanding -nostdlib -nostartfiles -nodefaultlibs -L../lib/ -L/usr/lib/gcc/arm-none-eabi/4.6.1/
 all-arm: LIB=-lfudge -lgcc
 all-x86: ARCH=x86
 all-x86: GCC=gcc
-all-x86: GCCFLAGS=-O2 -I../include/lib -Wall -Wextra -ffreestanding -nostdlib -nostartfiles -nodefaultlibs -L../lib/ -m32
+all-x86: GCCFLAGS=-static -s -O2 -I../include/lib -Wall -Wextra -ffreestanding -nostdlib -nostartfiles -nodefaultlibs -L../lib/ -m32
 all-x86: LIB=-lfudge
 
 .PHONY: all clean user
