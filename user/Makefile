@@ -1,6 +1,8 @@
 include ../rules.mk
+include ../user.mk
+include ../${ARCH}.mk
 
-GCCFLAGS=-static -s -O2 -I../include/lib -Wall -Wextra -ffreestanding -nostdlib -nostartfiles -nodefaultlibs -L../lib/ -m32
+GCCFLAGS+=-I../include/lib -L../lib/
 LIB=-lfudge
 
 .PHONY: all clean user
