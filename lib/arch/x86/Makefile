@@ -1,4 +1,5 @@
 include ../../../rules.mk
+include ../../../${ARCH}.mk
 
 .PHONY: all clean arch
 

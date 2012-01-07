@@ -1,8 +1,9 @@
 include ../../../rules.mk
+include ../../../${ARCH}.mk
 
 ASM=nasm
 ASMFLAGS=-f elf
-GCCFLAGS=-c -O2 -I../../../include -Wall -Wextra -ffreestanding -nostdlib -nostartfiles -nodefaultlibs -m32
+GCCFLAGS+=-I../../../include
 
 .PHONY: all clean arch
 

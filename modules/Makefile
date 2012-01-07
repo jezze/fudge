@@ -1,9 +1,8 @@
 include ../rules.mk
+include ../${ARCH}.mk
 
-all-arm: GCCFLAGS=-c -O2 -I../include -Wall -Wextra -ffreestanding -nostdlib -nostartfiles -nodefaultlibs
-all-arm: LDFLAGS=-r ../lib/memory.o ../lib/string.o -L/usr/lib/gcc/arm-none-eabi/4.6.1/ -lgcc
-all-x86: GCCFLAGS=-c -O2 -I../include -Wall -Wextra -ffreestanding -nostdlib -nostartfiles -nodefaultlibs -m32
-all-x86: LDFLAGS=-r ../lib/memory.o ../lib/string.o
+GCCFLAGS+=-I../include
+LDFLAGS+=-r ../lib/memory.o ../lib/string.o
 
 .PHONY: all clean modules
 

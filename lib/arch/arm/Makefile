@@ -1,7 +1,7 @@
 include ../../../rules.mk
+include ../../../${ARCH}.mk
 
-ASMFLAGS=-c -mfpu=softfpa
-GCCFLAGS=-c -O2 -I../../../include -Wall -Wextra -ffreestanding -nostdlib -nostartfiles -nodefaultlibs
+GCCFLAGS+=-I../../../include
 
 .PHONY: all clean arch
 

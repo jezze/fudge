@@ -1,9 +1,8 @@
 include ../rules.mk
+include ../${ARCH}.mk
 
-all-arm: GCCFLAGS=-c -O2 -I../include -Wall -Wextra -ffreestanding -nostdlib -nostartfiles -nodefaultlibs
-all-arm: LDFLAGS=-T${DIR_SOURCE_ARCH}/linker.ld -L/usr/lib/gcc/arm-none-eabi/4.6.1/ -lgcc
-all-x86: GCCFLAGS=-c -O2 -I../include -Wall -Wextra -ffreestanding -nostdlib -nostartfiles -nodefaultlibs -m32
-all-x86: LDFLAGS=-T${DIR_SOURCE_ARCH}/linker.ld
+GCCFLAGS+=-I../include
+LDFLAGS+=-T${DIR_SOURCE_ARCH}/linker.ld
 
 DIR_SOURCE_ARCH=arch/${ARCH}
 DIR_SOURCE_LIB=../lib

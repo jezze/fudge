@@ -1,0 +1,2 @@
+GCCFLAGS+=-m32
+

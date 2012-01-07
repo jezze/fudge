@@ -1,0 +1,2 @@
+ASMFLAGS+=-mfpu=softfpa
+
