@@ -6,7 +6,7 @@ LDFLAGS+=-r ../lib/memory.o ../lib/string.o
 
 .PHONY: all clean modules
 
-all: all-x86
+all: all-${ARCH}
 
 all-arm:
 	@${GCC} ${GCCFLAGS} log/main.c -o log/main.o

@@ -17,13 +17,13 @@ toolchain:
 	@make -C toolchain all TARGET=${TARGET}
 
 kernel:
-	@make -C ${DIR_SOURCE_KERNEL}/ all-${ARCH}
+	@make -C ${DIR_SOURCE_KERNEL}/ all
 
 lib:
-	@make -C ${DIR_SOURCE_LIB}/ all-${ARCH}
+	@make -C ${DIR_SOURCE_LIB}/ all
 
 modules:
-	@make -C ${DIR_SOURCE_MODULES}/ all-${ARCH}
+	@make -C ${DIR_SOURCE_MODULES}/ all
 
 user:
 	@make -C ${DIR_SOURCE_USER}/ all-${ARCH}

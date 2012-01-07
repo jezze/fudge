@@ -9,9 +9,7 @@ DIR_SOURCE_LIB=../lib
 
 .PHONY: all clean kernel
 
-all: all-x86
-all-arm: kernel arch-arm
-all-x86: kernel arch-x86
+all: kernel all-${ARCH}
 
 kernel:
 	@${GCC} ${GCCFLAGS} elf.c -o elf.o
@@ -28,7 +26,7 @@ kernel:
 	@${GCC} ${GCCFLAGS} syscall.c -o syscall.o
 	@${GCC} ${GCCFLAGS} vfs.c -o vfs.o
 
-arch-arm:
+all-arm:
 	@make -C ${DIR_SOURCE_ARCH}/
 	@${LD} elf.o error.o event.o initrd.o irq.o kernel.o log.o mmu.o modules.o runtime.o symbol.o syscall.o vfs.o \
 		${DIR_SOURCE_ARCH}/arch.o \
@@ -38,7 +36,7 @@ arch-arm:
 		${DIR_SOURCE_LIB}/string.o \
 		-o fudge ${LDFLAGS} 
 
-arch-x86:
+all-x86:
 	@make -C ${DIR_SOURCE_ARCH}/
 	@${LD} ${LDFLAGS} elf.o error.o event.o initrd.o irq.o kernel.o log.o mmu.o modules.o runtime.o symbol.o syscall.o vfs.o \
 		${DIR_SOURCE_ARCH}/acpi.o \

@@ -5,9 +5,7 @@ GCCFLAGS+=-I../include
 
 .PHONY: all clean lib
 
-all: all-x86
-all-arm: lib
-all-x86: lib
+all: lib
 
 lib:
 	@make -C arch/${ARCH}/
