@@ -1,4 +1,5 @@
 ARCH=x86
+TARGET=i586-pc-fudge
 DIR_IMAGE=build/root
 DIR_SOURCE_KERNEL=kernel
 DIR_SOURCE_LIB=lib
@@ -6,9 +7,14 @@ DIR_SOURCE_MODULES=modules
 DIR_SOURCE_USER=user
 DIR_SOURCE_POSIX=posix
 
-.PHONY: all clean kernel lib modules user posix ramdisk sda iso hda
+.PHONY: all clean toolchain kernel lib modules user posix ramdisk sda iso hda
 
 all: lib kernel modules user posix ramdisk
+
+toolchain:
+	@git submodule init toolchain
+	@git submodule update toolchain
+	@make -C toolchain all TARGET=${TARGET}
 
 kernel:
 	@make -C ${DIR_SOURCE_KERNEL}/ all-${ARCH}
