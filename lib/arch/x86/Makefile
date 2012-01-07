@@ -1,5 +1,5 @@
-ASM=nasm
-ASMFLAGS=-f elf
+ASM=as
+ASMFLAGS=-c
 GCC=gcc
 GCCFLAGS=-c -O2 -I../../../include -Wall -Wextra -ffreestanding -nostdlib -nostartfiles -nodefaultlibs -m32
 

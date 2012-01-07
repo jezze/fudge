@@ -1,7 +1,9 @@
-extern main
-extern call_exit
+.intel_syntax noprefix
 
-global _start
+.extern main
+.extern call_exit
+
+.global _start
 _start:
     mov eax, [esp + 4]
     mov ebx, [esp + 8]

@@ -1,4 +1,6 @@
-global call_open
+.intel_syntax noprefix
+
+.global call_open
 call_open:
     push ebp
     mov ebp, esp
@@ -18,7 +20,7 @@ call_open:
     pop ebp
     ret
 
-global call_close
+.global call_close
 call_close:
     push ebp
     mov ebp, esp
@@ -37,7 +39,7 @@ call_close:
     pop ebp
     ret
 
-global call_read
+.global call_read
 call_read:
     push ebp
     mov ebp, esp
@@ -58,7 +60,7 @@ call_read:
     pop ebp
     ret
 
-global call_write
+.global call_write
 call_write:
     push ebp
     mov ebp, esp
@@ -79,7 +81,7 @@ call_write:
     pop ebp
     ret
 
-global call_execute
+.global call_execute
 call_execute:
     push ebp
     mov ebp, esp
@@ -100,7 +102,7 @@ call_execute:
     pop ebp
     ret
 
-global call_exit
+.global call_exit
 call_exit:
     push ebp
     mov ebp, esp
@@ -118,7 +120,7 @@ call_exit:
     pop ebp
     ret
 
-global call_wait
+.global call_wait
 call_wait:
     push ebp
     mov ebp, esp
@@ -136,7 +138,7 @@ call_wait:
     pop ebp
     ret
 
-global call_load
+.global call_load
 call_load:
     push ebp
     mov ebp, esp
@@ -155,7 +157,7 @@ call_load:
     pop ebp
     ret
 
-global call_unload
+.global call_unload
 call_unload:
     push ebp
     mov ebp, esp
@@ -174,7 +176,7 @@ call_unload:
     pop ebp
     ret
 
-global call_halt
+.global call_halt
 call_halt:
     push ebp
     mov ebp, esp
@@ -192,7 +194,7 @@ call_halt:
     pop ebp
     ret
 
-global call_reboot
+.global call_reboot
 call_reboot:
     push ebp
     mov ebp, esp
@@ -210,7 +212,7 @@ call_reboot:
     pop ebp
     ret
 
-global call_attach
+.global call_attach
 call_attach:
     push ebp
     mov ebp, esp
@@ -230,7 +232,7 @@ call_attach:
     pop ebp
     ret
 
-global call_detach
+.global call_detach
 call_detach:
     push ebp
     mov ebp, esp
