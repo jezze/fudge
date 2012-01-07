@@ -1,0 +1,7 @@
+ARCH=x86
+TARGET=i586-pc-fudge
+GCC=${TARGET}-gcc
+ASM=${TARGET}-as
+LD=${TARGET}-ld
+AR=ar
+ARFLAGS=rvs

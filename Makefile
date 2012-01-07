@@ -1,5 +1,5 @@
-ARCH=x86
-TARGET=i586-pc-fudge
+include rules.mk
+
 DIR_IMAGE=build/root
 DIR_SOURCE_KERNEL=kernel
 DIR_SOURCE_LIB=lib

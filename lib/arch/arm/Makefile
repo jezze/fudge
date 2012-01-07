@@ -1,6 +1,6 @@
-ASM=arm-none-eabi-as
+include ../../../rules.mk
+
 ASMFLAGS=-c -mfpu=softfpa
-GCC=arm-none-eabi-gcc
 GCCFLAGS=-c -O2 -I../../../include -Wall -Wextra -ffreestanding -nostdlib -nostartfiles -nodefaultlibs
 
 .PHONY: all clean arch

@@ -1,15 +1,9 @@
-all-arm: ARCH=arm
-all-arm: GCC=arm-none-eabi-gcc
+include ../rules.mk
+
 all-arm: GCCFLAGS=-c -O2 -I../include -Wall -Wextra -ffreestanding -nostdlib -nostartfiles -nodefaultlibs
-all-arm: LD=arm-none-eabi-ld
 all-arm: LDFLAGS=-r ../lib/memory.o ../lib/string.o -L/usr/lib/gcc/arm-none-eabi/4.6.1/ -lgcc
-all-x86: ARCH=x86
-all-x86: ASM=nasm
-all-x86: ASMFLAGS=-f elf
-all-x86: GCC=gcc
 all-x86: GCCFLAGS=-c -O2 -I../include -Wall -Wextra -ffreestanding -nostdlib -nostartfiles -nodefaultlibs -m32
-all-x86: LD=ld
-all-x86: LDFLAGS=-r ../lib/memory.o ../lib/string.o -melf_i386
+all-x86: LDFLAGS=-r ../lib/memory.o ../lib/string.o
 
 .PHONY: all clean modules
 
