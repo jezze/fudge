@@ -5,9 +5,7 @@ GCCFLAGS+=-I../include
 
 .PHONY: all clean lib
 
-all: lib
-
-lib:
+all:
 	@make -C arch/${ARCH}/
 	@${GCC} ${GCCFLAGS} file.c -o file.o
 	@${GCC} ${GCCFLAGS} memory.c -o memory.o

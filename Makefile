@@ -26,7 +26,7 @@ modules:
 	@make -C ${DIR_SOURCE_MODULES}/ all
 
 user:
-	@make -C ${DIR_SOURCE_USER}/ all-${ARCH}
+	@make -C ${DIR_SOURCE_USER}/ all
 
 posix:
 	@make -C ${DIR_SOURCE_POSIX}/src/libfudge all
