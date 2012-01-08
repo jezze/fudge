@@ -33,9 +33,6 @@ call_execute:
     push esi
     push edi
     mov eax, 0x10
-    mov esi, [ebp + 8]
-    mov ecx, [ebp + 12]
-    mov ebx, [ebp + 16]
     int 0x80
     pop edi
     pop esi

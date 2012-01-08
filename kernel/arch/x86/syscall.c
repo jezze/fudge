@@ -43,9 +43,9 @@ static void syscall_handle_halt(struct syscall_registers *registers, struct runt
 static void syscall_handle_execute(struct syscall_registers *registers, struct runtime_task *task)
 {
 
-    char *path = (char *)registers->esi;
-    unsigned int argc = registers->ecx;
-    char **argv = (char **)registers->ebx;
+    char *path = *(char **)(registers->useresp + 24);
+    unsigned int argc = *(unsigned int *)(registers->useresp + 28);
+    char **argv = *(char ***)(registers->useresp + 32);
 
     registers->eax = syscall_execute(task, path, argc, argv);
 
