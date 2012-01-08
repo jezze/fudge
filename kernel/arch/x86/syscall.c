@@ -80,9 +80,9 @@ static void syscall_handle_open(struct syscall_registers *registers, struct runt
 static void syscall_handle_read(struct syscall_registers *registers, struct runtime_task *task)
 {
 
-    unsigned int index = registers->ebx;
-    unsigned int count = registers->ecx;
-    char *buffer = (char *)registers->esi;
+    unsigned int index = *(unsigned int *)(registers->useresp + 4);
+    char *buffer = *(char **)(registers->useresp + 8);
+    unsigned int count = *(unsigned int *)(registers->useresp + 12);
 
     registers->eax = syscall_read(task, index, count, buffer);
 
@@ -114,9 +114,9 @@ static void syscall_handle_wait(struct syscall_registers *registers, struct runt
 static void syscall_handle_write(struct syscall_registers *registers, struct runtime_task *task)
 {
 
-    unsigned int index = registers->ebx;
-    unsigned int count = registers->ecx;
-    char *buffer = (char *)registers->esi;
+    unsigned int index = *(unsigned int *)(registers->useresp + 4);
+    char *buffer = *(char **)(registers->useresp + 8);
+    unsigned int count = *(unsigned int *)(registers->useresp + 12);
 
     registers->eax = syscall_write(task, index, count, buffer);
 
