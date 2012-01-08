@@ -60,38 +60,14 @@ call_execute:
 
 .global call_exit
 call_exit:
-    push ebp
-    mov ebp, esp
-    push ebx
-    push ecx
-    push esi
-    push edi
     mov eax, 0x11
     int 0x80
-    pop edi
-    pop esi
-    pop ecx
-    pop ebx
-    mov esp, ebp
-    pop ebp
     ret
 
 .global call_wait
 call_wait:
-    push ebp
-    mov ebp, esp
-    push ebx
-    push ecx
-    push esi
-    push edi
     mov eax, 0x12
     int 0x80
-    pop edi
-    pop esi
-    pop ecx
-    pop ebx
-    mov esp, ebp
-    pop ebp
     ret
 
 .global call_load
@@ -121,38 +97,14 @@ call_unload:
 
 .global call_halt
 call_halt:
-    push ebp
-    mov ebp, esp
-    push ebx
-    push ecx
-    push esi
-    push edi
     mov eax, 0x20
     int 0x80
-    pop edi
-    pop esi
-    pop ecx
-    pop ebx
-    mov esp, ebp
-    pop ebp
     ret
 
 .global call_reboot
 call_reboot:
-    push ebp
-    mov ebp, esp
-    push ebx
-    push ecx
-    push esi
-    push edi
     mov eax, 0x21
     int 0x80
-    pop edi
-    pop esi
-    pop ecx
-    pop ebx
-    mov esp, ebp
-    pop ebp
     ret
 
 .global call_attach
