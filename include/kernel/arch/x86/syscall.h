@@ -14,13 +14,13 @@ struct syscall_registers_quick
 {
 
     unsigned int gs, fs, es, ds;
-    unsigned int ebp;
+    unsigned int ebp, eax;
     unsigned int eip, cs, eflags, useresp, ss;
 
 };
 
 extern void syscall_handle(struct syscall_registers *registers);
-extern void syscall_handle_quick(unsigned int num, void *parameters);
+extern unsigned int syscall_handle_quick(struct syscall_registers_quick *registers);
 extern void syscall_init();
 
 #endif

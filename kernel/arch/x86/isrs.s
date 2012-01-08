@@ -247,6 +247,7 @@ isr_syscall:
 global isr_syscall_quick
 isr_syscall_quick:
     cli
+    push eax
     push ebp
     push ds
     push es
@@ -257,15 +258,15 @@ isr_syscall_quick:
     mov es, ax
     mov fs, ax
     mov gs, ax
-    mov eax, esp
-    push eax
+    mov edx, esp
+    push edx
     call syscall_handle_quick
-    pop eax
+    pop edx
     pop gs
     pop fs
     pop es
     pop ds
-    add esp, 4
+    add esp, 8
     iret
 
 isr_common:
