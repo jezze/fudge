@@ -23,6 +23,7 @@ all:
 	@${GCC} ${GCCFLAGS} shell.c ${LIB} -o shell
 	@${GCC} ${GCCFLAGS} timer.c ${LIB} -o timer
 	@${GCC} ${GCCFLAGS} unload.c ${LIB} -o unload
+	@${GCC} test.c -o test
 
 clean:
 	@rm -f cat
@@ -40,4 +41,5 @@ clean:
 	@rm -f shell
 	@rm -f timer
 	@rm -f unload
+	@rm -f test
 

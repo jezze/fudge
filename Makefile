@@ -46,6 +46,7 @@ ramdisk:
 	@cp ${DIR_SOURCE_USER}/shell ${DIR_IMAGE}/bin/shell
 	@cp ${DIR_SOURCE_USER}/timer ${DIR_IMAGE}/bin/timer
 	@cp ${DIR_SOURCE_USER}/unload ${DIR_IMAGE}/bin/unload
+	@cp ${DIR_SOURCE_USER}/test ${DIR_IMAGE}/bin/test
 	@tar -cvf initrd.tar ${DIR_IMAGE}
 	@find ${DIR_IMAGE} -depth -print | cpio -ov > initrd.cpio
 	@mv initrd.tar ${DIR_IMAGE}/boot
