@@ -8,8 +8,8 @@ static void *routines[SYSCALL_ROUTINE_SLOTS];
 static void syscall_handle_attach(struct syscall_registers *registers, struct runtime_task *task)
 {
 
-    unsigned int index = registers->ebx;
-    void (*routine)() = (void *)registers->ecx;
+    unsigned int index = *(unsigned int *)(registers->useresp + 4);
+    void (*routine)() = *(unsigned int **)(registers->useresp + 8);
 
     registers->eax = syscall_attach(task, index, routine);
 
@@ -18,7 +18,7 @@ static void syscall_handle_attach(struct syscall_registers *registers, struct ru
 static void syscall_handle_close(struct syscall_registers *registers, struct runtime_task *task)
 {
 
-    unsigned int index = registers->ebx;
+    unsigned int index = *(unsigned int *)(registers->useresp + 4);
 
     registers->eax = syscall_close(task, index);
 
@@ -27,7 +27,7 @@ static void syscall_handle_close(struct syscall_registers *registers, struct run
 static void syscall_handle_detach(struct syscall_registers *registers, struct runtime_task *task)
 {
 
-    unsigned int index = registers->ebx;
+    unsigned int index = *(unsigned int *)(registers->useresp + 4);
 
     registers->eax = syscall_detach(task, index);
 

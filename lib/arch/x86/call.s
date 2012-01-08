@@ -8,21 +8,8 @@ call_open:
 
 .global call_close
 call_close:
-    push ebp
-    mov ebp, esp
-    push ebx
-    push ecx
-    push esi
-    push edi
     mov eax, 0x01
-    mov ebx, [ebp + 8]
     int 0x80
-    pop edi
-    pop esi
-    pop ecx
-    pop ebx
-    mov esp, ebp
-    pop ebp
     ret
 
 .global call_read
@@ -109,40 +96,13 @@ call_reboot:
 
 .global call_attach
 call_attach:
-    push ebp
-    mov ebp, esp
-    push ebx
-    push ecx
-    push esi
-    push edi
     mov eax, 0x30
-    mov ebx, [ebp + 8]
-    mov ecx, [ebp + 12]
     int 0x80
-    pop edi
-    pop esi
-    pop ecx
-    pop ebx
-    mov esp, ebp
-    pop ebp
     ret
 
 .global call_detach
 call_detach:
-    push ebp
-    mov ebp, esp
-    push ebx
-    push ecx
-    push esi
-    push edi
     mov eax, 0x31
-    mov ebx, [ebp + 8]
     int 0x80
-    pop edi
-    pop esi
-    pop ecx
-    pop ebx
-    mov esp, ebp
-    pop ebp
     ret
 
