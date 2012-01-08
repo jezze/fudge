@@ -68,13 +68,13 @@ static unsigned int syscall_handle_load(struct syscall_registers_quick *register
 
 }
 
-static void syscall_handle_open(struct syscall_registers *registers, struct runtime_task *task)
+static unsigned int syscall_handle_open(struct syscall_registers_quick *registers, struct runtime_task *task)
 {
 
-    char *view = (char *)registers->esi;
-    char *name = (char *)registers->edi;
+    char *view = *(char **)(registers->esp + 4);
+    char *name = *(char **)(registers->esp + 8);
 
-    registers->eax = syscall_open(task, view, name);
+    return syscall_open(task, view, name);
 
 }
 
@@ -210,7 +210,7 @@ unsigned int syscall_handle_quick(struct syscall_registers_quick *registers)
 void syscall_init()
 {
 
-    syscall_register_routine(SYSCALL_ROUTINE_OPEN, syscall_handle_open);
+    syscall_register_routine_quick(SYSCALL_ROUTINE_OPEN, syscall_handle_open);
     syscall_register_routine(SYSCALL_ROUTINE_CLOSE, syscall_handle_close);
     syscall_register_routine(SYSCALL_ROUTINE_READ, syscall_handle_read);
     syscall_register_routine(SYSCALL_ROUTINE_WRITE, syscall_handle_write);

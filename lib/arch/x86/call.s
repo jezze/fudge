@@ -2,22 +2,8 @@
 
 .global call_open
 call_open:
-    push ebp
-    mov ebp, esp
-    push ebx
-    push ecx
-    push esi
-    push edi
     mov eax, 0x00
-    mov esi, [ebp + 8]
-    mov edi, [ebp + 12]
-    int 0x80
-    pop edi
-    pop esi
-    pop ecx
-    pop ebx
-    mov esp, ebp
-    pop ebp
+    int 0x81
     ret
 
 .global call_close
