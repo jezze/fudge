@@ -98,7 +98,7 @@ static void syscall_handle_reboot(struct syscall_registers *registers, struct ru
 static void syscall_handle_unload(struct syscall_registers *registers, struct runtime_task *task)
 {
 
-    char *path = (char *)registers->esi;
+    char *path = *(char **)(registers->useresp + 4);
 
     registers->eax = syscall_unload(task, path);
 
