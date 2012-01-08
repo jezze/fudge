@@ -4,7 +4,6 @@
 #include <kernel/arch/x86/syscall.h>
 
 static void *routines[SYSCALL_ROUTINE_SLOTS];
-static void *routines_quick[SYSCALL_ROUTINE_SLOTS];
 
 static void syscall_handle_attach(struct syscall_registers *registers, struct runtime_task *task)
 {
@@ -59,22 +58,22 @@ static void syscall_handle_exit(struct syscall_registers *registers, struct runt
 
 }
 
-static unsigned int syscall_handle_load(struct syscall_registers_quick *registers, struct runtime_task *task)
+static void syscall_handle_load(struct syscall_registers *registers, struct runtime_task *task)
 {
 
-    char *path = *(char **)(registers->esp + 4);
+    char *path = *(char **)(registers->useresp + 4);
 
-    return syscall_load(task, path);
+    registers->eax = syscall_load(task, path);
 
 }
 
-static unsigned int syscall_handle_open(struct syscall_registers_quick *registers, struct runtime_task *task)
+static void syscall_handle_open(struct syscall_registers *registers, struct runtime_task *task)
 {
 
-    char *view = *(char **)(registers->esp + 4);
-    char *name = *(char **)(registers->esp + 8);
+    char *view = *(char **)(registers->useresp + 4);
+    char *name = *(char **)(registers->useresp + 8);
 
-    return syscall_open(task, view, name);
+    registers->eax = syscall_open(task, view, name);
 
 }
 
@@ -130,13 +129,6 @@ static void syscall_register_routine(unsigned char index, void (*routine)(struct
 
 }
 
-static void syscall_register_routine_quick(unsigned char index, unsigned int (*routine)(struct syscall_registers_quick *registers, struct runtime_task *task))
-{
-
-    routines_quick[index] = routine;
-
-}
-
 static void syscall_save_state(struct runtime_task *task, struct syscall_registers *registers)
 {
 
@@ -146,29 +138,11 @@ static void syscall_save_state(struct runtime_task *task, struct syscall_registe
 
 }
 
-static void syscall_save_state_quick(struct runtime_task *task, struct syscall_registers_quick *registers)
-{
-
-    task->registers.ip = registers->eip;
-    task->registers.sp = registers->esp;
-    task->registers.sb = registers->ebp;
-
-}
-
 static void syscall_load_state(struct runtime_task *task, struct syscall_registers *registers)
 {
 
     registers->eip = task->registers.ip;
     registers->useresp = task->registers.sp;
-    registers->ebp = task->registers.sb;
-
-}
-
-static void syscall_load_state_quick(struct runtime_task *task, struct syscall_registers_quick *registers)
-{
-
-    registers->eip = task->registers.ip;
-    registers->esp = task->registers.sp;
     registers->ebp = task->registers.sb;
 
 }
@@ -189,35 +163,17 @@ void syscall_handle(struct syscall_registers *registers)
 
 }
 
-unsigned int syscall_handle_quick(struct syscall_registers_quick *registers)
-{
-
-    unsigned int (*routine)(struct syscall_registers_quick *registers, struct runtime_task *task) = routines_quick[registers->eax];
-
-    if (!routine)
-        return 0;
-
-    struct runtime_task *task = runtime_get_running_task();
-
-    syscall_save_state_quick(task, registers);
-    unsigned int result = routine(registers, task);
-    syscall_load_state_quick(task, registers);
-
-    return result;
-
-}
-
 void syscall_init()
 {
 
-    syscall_register_routine_quick(SYSCALL_ROUTINE_OPEN, syscall_handle_open);
+    syscall_register_routine(SYSCALL_ROUTINE_OPEN, syscall_handle_open);
     syscall_register_routine(SYSCALL_ROUTINE_CLOSE, syscall_handle_close);
     syscall_register_routine(SYSCALL_ROUTINE_READ, syscall_handle_read);
     syscall_register_routine(SYSCALL_ROUTINE_WRITE, syscall_handle_write);
     syscall_register_routine(SYSCALL_ROUTINE_EXECUTE, syscall_handle_execute);
     syscall_register_routine(SYSCALL_ROUTINE_EXIT, syscall_handle_exit);
     syscall_register_routine(SYSCALL_ROUTINE_WAIT, syscall_handle_wait);
-    syscall_register_routine_quick(SYSCALL_ROUTINE_LOAD, syscall_handle_load);
+    syscall_register_routine(SYSCALL_ROUTINE_LOAD, syscall_handle_load);
     syscall_register_routine(SYSCALL_ROUTINE_UNLOAD, syscall_handle_unload);
     syscall_register_routine(SYSCALL_ROUTINE_HALT, syscall_handle_halt);
     syscall_register_routine(SYSCALL_ROUTINE_REBOOT, syscall_handle_reboot);

@@ -3,7 +3,7 @@
 .global call_open
 call_open:
     mov eax, 0x00
-    int 0x81
+    int 0x80
     ret
 
 .global call_close
@@ -127,7 +127,7 @@ call_wait:
 .global call_load
 call_load:
     mov eax, 0x16
-    int 0x81
+    int 0x80
     ret
 
 .global call_unload

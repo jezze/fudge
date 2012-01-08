@@ -22,7 +22,6 @@
 #define ISR_ROUTINE_MC      0x12
 #define ISR_ROUTINE_XM      0x13
 #define ISR_ROUTINE_SYSCALL 0x80
-#define ISR_ROUTINE_SYSCALL_QUICK 0x81
 
 struct isr_registers
 {
@@ -67,7 +66,6 @@ extern void isr1D();
 extern void isr1E();
 extern void isr1F();
 extern void isr_syscall();
-extern void isr_syscall_quick();
 extern void isr_register_routine(unsigned char index, void (*routine)(struct isr_registers *registers));
 extern void isr_unregister_routine(unsigned char index);
 extern void isr_handle(struct isr_registers *registers);
