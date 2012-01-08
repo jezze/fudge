@@ -4,6 +4,7 @@
 #include <kernel/arch/x86/syscall.h>
 
 static void *routines[SYSCALL_ROUTINE_SLOTS];
+static void *routines_quick[SYSCALL_ROUTINE_SLOTS];
 
 static void syscall_handle_attach(struct syscall_registers *registers, struct runtime_task *task)
 {
@@ -138,7 +139,25 @@ static void syscall_save_state(struct runtime_task *task, struct syscall_registe
 
 }
 
+static void syscall_save_state_quick(struct runtime_task *task, struct syscall_registers_quick *registers)
+{
+
+    task->registers.ip = registers->eip;
+    task->registers.sp = registers->useresp;
+    task->registers.sb = registers->ebp;
+
+}
+
 static void syscall_load_state(struct runtime_task *task, struct syscall_registers *registers)
+{
+
+    registers->eip = task->registers.ip;
+    registers->useresp = task->registers.sp;
+    registers->ebp = task->registers.sb;
+
+}
+
+static void syscall_load_state_quick(struct runtime_task *task, struct syscall_registers_quick *registers)
 {
 
     registers->eip = task->registers.ip;
@@ -160,6 +179,22 @@ void syscall_handle(struct syscall_registers *registers)
     syscall_save_state(task, registers);
     routine(registers, task);
     syscall_load_state(runtime_get_running_task(), registers);
+
+}
+
+void syscall_handle_quick(unsigned int index, void *parameters)
+{
+
+//    void (*routine)(struct syscall_registers *registers, struct runtime_task *task) = routines[index];
+
+//    if (!routine)
+//        return;
+
+    struct runtime_task *task = runtime_get_running_task();
+
+//    syscall_save_state_quick(task, registers);
+//    routine(0, task);
+//    syscall_load_state_quick(runtime_get_running_task(), registers);
 
 }
 

@@ -1,5 +1,6 @@
 extern isr_handle
 extern syscall_handle
+extern syscall_handle_quick
 
 global isr00
 isr00:
@@ -241,6 +242,30 @@ isr_syscall:
     pop es
     pop ds
     popa
+    iret
+
+global isr_syscall_quick
+isr_syscall_quick:
+    cli
+    push ebp
+    push ds
+    push es
+    push fs
+    push gs
+    mov ax, 0x10
+    mov ds, ax
+    mov es, ax
+    mov fs, ax
+    mov gs, ax
+    mov eax, esp
+    push eax
+    call syscall_handle_quick
+    pop eax
+    pop gs
+    pop fs
+    pop es
+    pop ds
+    add esp, 4
     iret
 
 isr_common:
