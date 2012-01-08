@@ -15,7 +15,7 @@ struct syscall_registers_quick
 
     unsigned int gs, fs, es, ds;
     unsigned int ebp, eax;
-    unsigned int eip, cs, eflags, useresp, ss;
+    unsigned int eip, cs, eflags, esp, ss;
 
 };
 

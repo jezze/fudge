@@ -62,7 +62,7 @@ static void syscall_handle_exit(struct syscall_registers *registers, struct runt
 static unsigned int syscall_handle_load(struct syscall_registers_quick *registers, struct runtime_task *task)
 {
 
-    char *path = *(char **)(registers->useresp + 4);
+    char *path = *(char **)(registers->esp + 4);
 
     return syscall_load(task, path);
 
@@ -150,7 +150,7 @@ static void syscall_save_state_quick(struct runtime_task *task, struct syscall_r
 {
 
     task->registers.ip = registers->eip;
-    task->registers.sp = registers->useresp;
+    task->registers.sp = registers->esp;
     task->registers.sb = registers->ebp;
 
 }
@@ -168,7 +168,7 @@ static void syscall_load_state_quick(struct runtime_task *task, struct syscall_r
 {
 
     registers->eip = task->registers.ip;
-    registers->useresp = task->registers.sp;
+    registers->esp = task->registers.sp;
     registers->ebp = task->registers.sb;
 
 }
