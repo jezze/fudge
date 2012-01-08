@@ -84,38 +84,40 @@ work on Windows if you have cygwin installed but this has not been tested.
 To compile and run Fudge you need to have the following tools installed.
 
 * nasm (compile assembler code)
-* gcc or clang (compile C code)
-* ld (linker)
 * dd (to create disk image)
 * genisoimage (to create cd image)
 * qemu or bochs (emulator)
 
 ### FETCHING
 
-Download the source either directly or by using git.
+Download the source using git.
 
 $ git clone git://github.com/Jezze/fudge.git fudge
 
 ### COMPILING
 
+First you need to create the cross compilation tools.
+
+$ cd fudge
+$ export PATH=$PATH:/path/to/fudge/toolchain/local/bin
+$ make toolchain
+
+Compile fudge.
+
 $ make
 
-If everything went well these files should have appeared:
-
-build/root/boot/fudge
-build/root/boot/initrd.tar
-
-Create an iso.
+Create an iso image.
 
 $ make iso
 
 ### RUNNING
 
-$ qemu -cdrom fudge.iso [-serial stdio] [-net nic,model=rtl8139]
+$ qemu[-system-x86] -cdrom fudge.iso
 
 ### CLEANING
 
-This will remove all post-compiled content.
+This will remove all fudge content but leave the cross compilation tools
+intact so you don't need to compile that again.
 
 $ make clean
 
