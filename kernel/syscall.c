@@ -95,14 +95,14 @@ unsigned int syscall_execute(struct runtime_task *task, char *path, unsigned int
 unsigned int syscall_exit(struct runtime_task *task)
 {
 
+    task->unload(task);
+
     struct runtime_task *ptask = runtime_get_task(task->parentid);
 
     if (!ptask)
         return 0;
 
     runtime_activate(ptask, 0);
-
-    task->unload(task);
 
     event_raise(EVENT_SYSCALL_EXIT);
 
