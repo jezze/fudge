@@ -7,7 +7,6 @@ io_outw
 io_outd
 irq_register_routine
 irq_unregister_routine
-log_get
 log_write
 modules_bus_init
 modules_device_init

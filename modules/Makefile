@@ -8,10 +8,6 @@ LDFLAGS+=-r ../lib/memory.o ../lib/string.o
 
 all: all-${ARCH}
 
-all-arm:
-	@${GCC} ${GCCFLAGS} log/main.c -o log/main.o
-	@${LD} ${LDFLAGS} log/main.o -o log/log.ko
-
 all-x86:
 	@${GCC} ${GCCFLAGS} ata/bus.c -o ata/bus.o
 	@${GCC} ${GCCFLAGS} ata/device.c -o ata/device.o
@@ -20,7 +16,6 @@ all-x86:
 	@${GCC} ${GCCFLAGS} bga/main.c -o bga/main.o
 	@${GCC} ${GCCFLAGS} ext2/driver.c -o ext2/driver.o
 	@${GCC} ${GCCFLAGS} ext2/main.c -o ext2/main.o
-	@${GCC} ${GCCFLAGS} log/main.c -o log/main.o
 	@${GCC} ${GCCFLAGS} mbr/driver.c -o mbr/driver.o
 	@${GCC} ${GCCFLAGS} mbr/main.c -o mbr/main.o
 	@${GCC} ${GCCFLAGS} pci/bus.c -o pci/bus.o
@@ -48,7 +43,6 @@ all-x86:
 	@${LD} ${LDFLAGS} ata/bus.o ata/device.o ata/main.o -o ata/ata.ko
 	@${LD} ${LDFLAGS} bga/driver.o bga/main.o -o bga/bga.ko
 	@${LD} ${LDFLAGS} ext2/driver.o ext2/main.o -o ext2/ext2.ko
-	@${LD} ${LDFLAGS} log/main.o -o log/log.ko
 	@${LD} ${LDFLAGS} mbr/driver.o mbr/main.o -o mbr/mbr.ko
 	@${LD} ${LDFLAGS} pci/bus.o pci/device.o pci/main.o -o pci/pci.ko
 	@${LD} ${LDFLAGS} pit/device.o pit/main.o -o pit/pit.ko

@@ -49,7 +49,6 @@ void kernel_register_arch(struct kernel_arch *arch)
 void kernel_init()
 {
 
-    log_init();
     log_write("[kernel] Initializing\n");
 
     if (!primary)

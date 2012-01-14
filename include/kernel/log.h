@@ -5,9 +5,7 @@
 #define LOG_TYPE_ERROR   1
 #define LOG_TYPE_WARNING 2
 
-extern char *log_get();
 extern void log_write(char *in, ...);
-extern void log_init();
 
 #endif
 

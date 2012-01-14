@@ -1,16 +1,9 @@
 #include <lib/memory.h>
 #include <lib/string.h>
 #include <kernel/log.h>
+#include <kernel/vfs.h>
 
-static char log[8192];
-unsigned int offset;
-
-char *log_get()
-{
-
-    return log;
-
-}
+static char log[512];
 
 static char *log_write_num(char *out, unsigned int num, unsigned int base)
 {
@@ -33,7 +26,7 @@ static char *log_write_num(char *out, unsigned int num, unsigned int base)
 void log_write(char *in, ...)
 {
 
-    char *out = log + offset;
+    char *out = log;
     char **arg = (char **)&in;
     arg++;
 
@@ -96,14 +89,10 @@ void log_write(char *in, ...)
 
     *(out) = '\0';
 
-    offset += string_length(log + offset);
+    struct vfs_node *node = vfs_find("tty", "stdout");
 
-}
-
-void log_init()
-{
-
-    offset = 0;
+    if (node)
+        node->write(node, string_length(log), log);
 
 }
 
