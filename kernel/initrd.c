@@ -37,7 +37,7 @@ static struct vfs_node *initrd_filesystem_view_find_node(struct vfs_view *self, 
 
         unsigned int count = string_length(filesystem.nodes[i].base.name) + 1;
 
-        if (!memory_compare(name, filesystem.nodes[i].base.name, count))
+        if (string_find(filesystem.nodes[i].base.name, name))
             return &filesystem.nodes[i].base;
 
     }
@@ -119,9 +119,7 @@ static unsigned int parse(void *address)
         if (header->typeflag[0] != TAR_FILETYPE_DIR)
         {
 
-            unsigned int start = string_index_reversed(header->name, '/', 0) + 1;
-
-            initrd_node_init(&filesystem.nodes[count], count, header->name + start, size, header, address + TAR_BLOCK_SIZE);
+            initrd_node_init(&filesystem.nodes[count], count, header->name, size, header, address + TAR_BLOCK_SIZE);
 
             count++;
 

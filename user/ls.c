@@ -16,12 +16,7 @@ void write_content(char *content)
 
             content[i] = '\0';
 
-            if (1)
-                file_write_format(FILE_STDOUT, "d");
-            else
-                file_write_format(FILE_STDOUT, "-");
-
-            file_write_format(FILE_STDOUT, "rwxrwxrwx\t%s\n", content + start);
+            file_write_format(FILE_STDOUT, "%s\n", content + start);
 
             start = i + 1;
 
