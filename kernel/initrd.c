@@ -32,11 +32,6 @@ static struct vfs_node *initrd_filesystem_view_find_node(struct vfs_view *self, 
         if (!filesystem.nodes[i].base.name)
             continue;
 
-        if (!string_find(filesystem.nodes[i].header->name, self->name))
-            continue;
-
-        unsigned int count = string_length(filesystem.nodes[i].base.name) + 1;
-
         if (string_find(filesystem.nodes[i].base.name, name))
             return &filesystem.nodes[i].base;
 
@@ -52,9 +47,6 @@ static struct vfs_node *initrd_filesystem_view_walk(struct vfs_view *self, unsig
     if (!filesystem.nodes[index].base.name)
         return 0;
 
-    if (!string_find(filesystem.nodes[index].header->name, self->name))
-        return 0;
-
     return &filesystem.nodes[index].base;
 
 }
@@ -62,20 +54,7 @@ static struct vfs_node *initrd_filesystem_view_walk(struct vfs_view *self, unsig
 static struct vfs_view *initrd_filesystem_find_view(struct vfs_filesystem *self, char *name)
 {
 
-    unsigned int i;
-
-    for (i = 0; i < 8; i++)
-    {
-
-        if (!views[i].name)
-            continue;
-
-        if (!string_compare(views[i].name, name))
-            return &views[i];
-
-    }
-
-    return 0;
+    return &views[0];
 
 }
 
@@ -139,11 +118,7 @@ static unsigned int parse(void *address)
 void initrd_init(unsigned int initrdc, void **initrdv)
 {
 
-    vfs_view_init(&views[0], "bin", initrd_filesystem_view_find_node, initrd_filesystem_view_walk);
-    vfs_view_init(&views[1], "boot", initrd_filesystem_view_find_node, initrd_filesystem_view_walk);
-    vfs_view_init(&views[2], "grub", initrd_filesystem_view_find_node, initrd_filesystem_view_walk);
-    vfs_view_init(&views[3], "home", initrd_filesystem_view_find_node, initrd_filesystem_view_walk);
-    vfs_view_init(&views[4], "mod", initrd_filesystem_view_find_node, initrd_filesystem_view_walk);
+    vfs_view_init(&views[0], "initrd", initrd_filesystem_view_find_node, initrd_filesystem_view_walk);
     vfs_filesystem_init(&filesystem.base, initrd_filesystem_find_view);
 
     filesystem.nodesCount = 0;
