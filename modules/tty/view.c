@@ -147,7 +147,7 @@ void tty_view_init(struct modules_module *module)
     vfs_node_init(&ttyNodes[2], "module/tty/stderr", 2, 0, 0, 0, out_write);
     vfs_node_init(&ttyNodes[3], "module/tty/cwd", 3, 0, 0, cwd_read, cwd_write);
     vfs_node_init(&ttyNodes[4], "module/tty/pwd", 4, 0, 0, pwd_read, 0);
-    vfs_view_init(&ttyView, "tty", view_find_node, view_walk);
+    vfs_view_init(&ttyView, view_find_node, view_walk);
 
     module->view = &ttyView;
 

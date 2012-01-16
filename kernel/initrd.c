@@ -118,7 +118,7 @@ static unsigned int parse(void *address)
 void initrd_init(unsigned int initrdc, void **initrdv)
 {
 
-    vfs_view_init(&views[0], "initrd", initrd_filesystem_view_find_node, initrd_filesystem_view_walk);
+    vfs_view_init(&views[0], initrd_filesystem_view_find_node, initrd_filesystem_view_walk);
     vfs_filesystem_init(&filesystem.base, initrd_filesystem_find_view);
 
     filesystem.nodesCount = 0;
