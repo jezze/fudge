@@ -23,16 +23,15 @@ static unsigned int initrd_filesystem_node_read(struct vfs_node *self, unsigned 
 static struct vfs_node *initrd_filesystem_find_node(struct vfs_filesystem *self, char *name)
 {
 
+    struct initrd_filesystem *filesystem = (struct initrd_filesystem *)self;
+
     unsigned int i;
 
-    for (i = 0; i < filesystem.base.nodeCount; i++)
+    for (i = 0; i < filesystem->base.nodeCount; i++)
     {
 
-        if (!filesystem.nodes[i].base.name)
-            continue;
-
-        if (string_find(filesystem.nodes[i].base.name, name))
-            return &filesystem.nodes[i].base;
+        if (string_find(filesystem->nodes[i].base.name, name))
+            return &filesystem->nodes[i].base;
 
     }
 
@@ -43,10 +42,12 @@ static struct vfs_node *initrd_filesystem_find_node(struct vfs_filesystem *self,
 static struct vfs_node *initrd_filesystem_walk(struct vfs_filesystem *self, unsigned int index)
 {
 
-    if (!filesystem.nodes[index].base.name)
+    struct initrd_filesystem *filesystem = (struct initrd_filesystem *)self;
+
+    if (!filesystem->nodes[index].base.name)
         return 0;
 
-    return &filesystem.nodes[index].base;
+    return &filesystem->nodes[index].base;
 
 }
 

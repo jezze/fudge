@@ -122,7 +122,7 @@ static struct vfs_node *filesystem_find_node(struct vfs_filesystem *self, char *
 static struct vfs_node *filesystem_walk(struct vfs_filesystem *self, unsigned int index)
 {
 
-    if (index < 5)
+    if (index < self->nodeCount)
         return &ttyNodes[index];
 
     return 0;
