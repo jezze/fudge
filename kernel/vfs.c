@@ -17,7 +17,7 @@ void vfs_register_filesystem(struct vfs_filesystem *filesystem)
 
         filesystems[i] = filesystem;
 
-        return;
+        break;
 
     }
 
