@@ -4,7 +4,7 @@ void main(int argc, char *argv[])
 {
 
     if (argc != 2)
-        call_exit();
+        return;
 
     file_write_format(FILE_STDOUT, "%s\n", argv[1]);
 
