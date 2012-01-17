@@ -99,7 +99,7 @@ unsigned int syscall_exit(struct runtime_task *task)
 
     struct runtime_task *ptask = runtime_get_task(task->parentid);
 
-    if (!ptask)
+    if (!ptask->used)
         return 0;
 
     runtime_activate(ptask, 0);
@@ -213,7 +213,7 @@ unsigned int syscall_wait(struct runtime_task *task)
 
     struct runtime_task *ptask = runtime_get_task(task->parentid);
 
-    if (!ptask)
+    if (!ptask->used)
         return 0;
 
     runtime_activate(ptask, 0);
