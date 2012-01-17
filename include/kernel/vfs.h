@@ -21,6 +21,7 @@ struct vfs_filesystem
 
     struct vfs_node *(*find_node)(struct vfs_filesystem *self, char *name);
     struct vfs_node *(*walk)(struct vfs_filesystem *self, unsigned int index);
+    unsigned int nodeCount;
 
 };
 

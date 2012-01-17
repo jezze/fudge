@@ -83,13 +83,10 @@ static unsigned int pwd_read(struct vfs_node *self, unsigned int count, void *bu
         unsigned int j;
         unsigned int start = 0;
 
-        for (j = 0; j < 64; j++)
+        for (j = 0; j < filesystem->nodeCount; j++)
         {
 
             struct vfs_node *node = filesystem->walk(filesystem, j);
-
-            if (!node)
-                continue;
 
             if (!string_find(node->name, driver->cwdname))
                 continue;
@@ -110,7 +107,7 @@ static struct vfs_node *filesystem_find_node(struct vfs_filesystem *self, char *
 
     unsigned int i;
 
-    for (i = 0; i < 5; i++)
+    for (i = 0; i < self->nodeCount; i++)
     {
 
         if (string_find(ttyNodes[i].name, name))
@@ -144,6 +141,8 @@ void tty_view_init(struct modules_module *module)
     vfs_node_init(&ttyNodes[4], "module/tty/pwd", 4, 0, 0, pwd_read, 0);
 
     vfs_filesystem_init(&filesystem, filesystem_find_node, filesystem_walk); 
+    filesystem.nodeCount = 5;
+
     vfs_register_filesystem(&filesystem);
 
 }

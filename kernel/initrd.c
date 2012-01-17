@@ -25,7 +25,7 @@ static struct vfs_node *initrd_filesystem_find_node(struct vfs_filesystem *self,
 
     unsigned int i;
 
-    for (i = 0; i < filesystem.nodesCount; i++)
+    for (i = 0; i < filesystem.base.nodeCount; i++)
     {
 
         if (!filesystem.nodes[i].base.name)
@@ -112,12 +112,12 @@ void initrd_init(unsigned int initrdc, void **initrdv)
 
     vfs_filesystem_init(&filesystem.base, initrd_filesystem_find_node, initrd_filesystem_walk);
 
-    filesystem.nodesCount = 0;
+    filesystem.base.nodeCount = 0;
 
     unsigned int i;
 
     for (i = 0; i < initrdc; i++)
-        filesystem.nodesCount += parse(*(initrdv + i));
+        filesystem.base.nodeCount += parse(*(initrdv + i));
 
     vfs_register_filesystem(&filesystem.base);
 
