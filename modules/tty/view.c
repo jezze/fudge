@@ -88,7 +88,7 @@ static unsigned int pwd_read(struct vfs_node *self, unsigned int count, void *bu
 
             struct vfs_node *node = filesystem->walk(filesystem, j);
 
-            if (!string_find(node->name, driver->cwdname))
+            if (string_compare(driver->cwdname, "*") && !string_find(node->name, driver->cwdname))
                 continue;
 
             string_write_format(buffer, "%s\n", node->name);
