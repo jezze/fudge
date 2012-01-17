@@ -27,9 +27,6 @@ unsigned int runtime_get_task_slot()
 struct runtime_task *runtime_get_task(unsigned int index)
 {
 
-    if (!index)
-        return 0;
-
     return &tasks[index];
 
 }

@@ -15,7 +15,7 @@ void main(int argc, char *argv[])
     call_load("mod/tty.ko");
     call_execute("bin/shell", 0, 0);
 
-    for(;;);
+    for (;;);
 
 }
 

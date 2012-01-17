@@ -100,7 +100,12 @@ unsigned int syscall_exit(struct runtime_task *task)
     struct runtime_task *ptask = runtime_get_task(task->parentid);
 
     if (!ptask->used)
-        return 0;
+    {
+
+        kernel_enable_interrupts();
+        kernel_halt();
+
+    }
 
     runtime_activate(ptask, 0);
 
@@ -214,7 +219,12 @@ unsigned int syscall_wait(struct runtime_task *task)
     struct runtime_task *ptask = runtime_get_task(task->parentid);
 
     if (!ptask->used)
-        return 0;
+    {
+
+        kernel_enable_interrupts();
+        kernel_halt();
+
+    }
 
     runtime_activate(ptask, 0);
 
