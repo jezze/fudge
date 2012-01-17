@@ -15,7 +15,6 @@ struct modules_module
 {
 
     unsigned int type;
-    struct vfs_view *view;
 
 };
 

@@ -47,12 +47,7 @@ struct vfs_node *vfs_find(char *path)
         if (!filesystems[i])
             continue;
 
-        struct vfs_view *view = filesystems[i]->find_view(filesystems[i]);
-
-        if (!view)
-            continue;
-
-        struct vfs_node *node = view->find_node(view, path);
+        struct vfs_node *node = filesystems[i]->find_node(filesystems[i], path);
 
         if (node)
             return node;
@@ -77,22 +72,13 @@ void vfs_node_init(struct vfs_node *node, char *name, unsigned int id, void (*op
 
 }
 
-void vfs_view_init(struct vfs_view *view, struct vfs_node *(*find_node)(struct vfs_view *self, char *name), struct vfs_node *(*walk)(struct vfs_view *self, unsigned int index))
-{
-
-    memory_clear(view, sizeof (struct vfs_view));
-
-    view->find_node = find_node;
-    view->walk = walk;
-
-}
-
-void vfs_filesystem_init(struct vfs_filesystem *filesystem, struct vfs_view *(find_view)(struct vfs_filesystem *self))
+void vfs_filesystem_init(struct vfs_filesystem *filesystem, struct vfs_node *(*find_node)(struct vfs_filesystem *self, char *name), struct vfs_node *(*walk)(struct vfs_filesystem *self, unsigned int index))
 {
 
     memory_clear(filesystem, sizeof (struct vfs_filesystem));
 
-    filesystem->find_view = find_view;
+    filesystem->find_node = find_node;
+    filesystem->walk = walk;
 
 }
 

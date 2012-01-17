@@ -4,7 +4,6 @@
 #include <kernel/vfs.h>
 #include <kernel/initrd.h>
 
-static struct vfs_view views[8];
 static struct initrd_filesystem filesystem;
 
 static unsigned int initrd_filesystem_node_read(struct vfs_node *self, unsigned int count, void *buffer)
@@ -21,7 +20,7 @@ static unsigned int initrd_filesystem_node_read(struct vfs_node *self, unsigned 
 
 }
 
-static struct vfs_node *initrd_filesystem_view_find_node(struct vfs_view *self, char *name)
+static struct vfs_node *initrd_filesystem_find_node(struct vfs_filesystem *self, char *name)
 {
 
     unsigned int i;
@@ -41,20 +40,13 @@ static struct vfs_node *initrd_filesystem_view_find_node(struct vfs_view *self, 
 
 }
 
-static struct vfs_node *initrd_filesystem_view_walk(struct vfs_view *self, unsigned int index)
+static struct vfs_node *initrd_filesystem_walk(struct vfs_filesystem *self, unsigned int index)
 {
 
     if (!filesystem.nodes[index].base.name)
         return 0;
 
     return &filesystem.nodes[index].base;
-
-}
-
-static struct vfs_view *initrd_filesystem_find_view(struct vfs_filesystem *self)
-{
-
-    return &views[0];
 
 }
 
@@ -118,8 +110,7 @@ static unsigned int parse(void *address)
 void initrd_init(unsigned int initrdc, void **initrdv)
 {
 
-    vfs_view_init(&views[0], initrd_filesystem_view_find_node, initrd_filesystem_view_walk);
-    vfs_filesystem_init(&filesystem.base, initrd_filesystem_find_view);
+    vfs_filesystem_init(&filesystem.base, initrd_filesystem_find_node, initrd_filesystem_walk);
 
     filesystem.nodesCount = 0;
 

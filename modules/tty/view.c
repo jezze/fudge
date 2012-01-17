@@ -6,7 +6,6 @@
 #include <modules/tty/tty.h>
 
 static struct tty_driver *driver;
-static struct vfs_view ttyView;
 static struct vfs_node ttyNodes[5];
 static struct vfs_filesystem filesystem;
 
@@ -81,18 +80,13 @@ static unsigned int pwd_read(struct vfs_node *self, unsigned int count, void *bu
         if (!filesystem)
             continue;
 
-        struct vfs_view *view = filesystem->find_view(filesystem);
-
-        if (!view)
-            continue;
-
         unsigned int j;
         unsigned int start = 0;
 
         for (j = 0; j < 64; j++)
         {
 
-            struct vfs_node *node = view->walk(view, j);
+            struct vfs_node *node = filesystem->walk(filesystem, j);
 
             if (!node)
                 continue;
@@ -111,7 +105,7 @@ static unsigned int pwd_read(struct vfs_node *self, unsigned int count, void *bu
 
 }
 
-static struct vfs_node *view_find_node(struct vfs_view *self, char *name)
+static struct vfs_node *filesystem_find_node(struct vfs_filesystem *self, char *name)
 {
 
     unsigned int i;
@@ -128,20 +122,13 @@ static struct vfs_node *view_find_node(struct vfs_view *self, char *name)
 
 }
 
-static struct vfs_node *view_walk(struct vfs_view *self, unsigned int index)
+static struct vfs_node *filesystem_walk(struct vfs_filesystem *self, unsigned int index)
 {
 
     if (index < 5)
         return &ttyNodes[index];
 
     return 0;
-
-}
-
-static struct vfs_view *tty_filesystem_find_view(struct vfs_filesystem *self)
-{
-
-    return &ttyView;
 
 }
 
@@ -155,11 +142,8 @@ void tty_view_init(struct modules_module *module)
     vfs_node_init(&ttyNodes[2], "module/tty/stderr", 2, 0, 0, 0, out_write);
     vfs_node_init(&ttyNodes[3], "module/tty/cwd", 3, 0, 0, cwd_read, cwd_write);
     vfs_node_init(&ttyNodes[4], "module/tty/pwd", 4, 0, 0, pwd_read, 0);
-    vfs_view_init(&ttyView, view_find_node, view_walk);
 
-    module->view = &ttyView;
-
-    vfs_filesystem_init(&filesystem, tty_filesystem_find_view); 
+    vfs_filesystem_init(&filesystem, filesystem_find_node, filesystem_walk); 
     vfs_register_filesystem(&filesystem);
 
 }
