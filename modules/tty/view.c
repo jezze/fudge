@@ -8,6 +8,7 @@
 static struct tty_driver *driver;
 static struct vfs_view ttyView;
 static struct vfs_node ttyNodes[5];
+static struct vfs_filesystem filesystem;
 
 static unsigned int cwd_read(struct vfs_node *self, unsigned int count, void *buffer)
 {
@@ -137,6 +138,13 @@ static struct vfs_node *view_walk(struct vfs_view *self, unsigned int index)
 
 }
 
+static struct vfs_view *tty_filesystem_find_view(struct vfs_filesystem *self)
+{
+
+    return &ttyView;
+
+}
+
 void tty_view_init(struct modules_module *module)
 {
 
@@ -150,6 +158,9 @@ void tty_view_init(struct modules_module *module)
     vfs_view_init(&ttyView, view_find_node, view_walk);
 
     module->view = &ttyView;
+
+    vfs_filesystem_init(&filesystem, tty_filesystem_find_view); 
+    vfs_register_filesystem(&filesystem);
 
 }
 

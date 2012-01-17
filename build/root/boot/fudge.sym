@@ -20,7 +20,9 @@ modules_register_driver
 modules_unregister_bus
 modules_unregister_device
 modules_unregister_driver
-vfs_get_filesystem
 vfs_find
 vfs_node_init
 vfs_view_init
+vfs_filesystem_init
+vfs_register_filesystem
+vfs_get_filesystem

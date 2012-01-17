@@ -4,7 +4,6 @@
 #include <kernel/modules.h>
 
 static struct modules_module *modules[MODULES_MODULE_SLOTS];
-static struct vfs_filesystem filesystem;
 
 static void modules_attach(struct modules_driver *driver)
 {
@@ -190,27 +189,6 @@ void modules_unregister_driver(struct modules_driver *driver)
 
 }
 
-static struct vfs_view *modules_filesystem_find_view(struct vfs_filesystem *self)
-{
-
-    unsigned int i;
-
-    for (i = 0; i < MODULES_MODULE_SLOTS; i++)
-    {
-
-        struct modules_module *module = modules[i];
-
-        if (!module || !module->view)
-            continue;
-
-        return module->view;
-
-    }
-
-    return 0;
-
-}
-
 void modules_module_init(struct modules_module *module, unsigned int type)
 {
 
@@ -250,14 +228,6 @@ void modules_driver_init(struct modules_driver *driver, unsigned int type)
     modules_module_init(&driver->module, MODULES_TYPE_DRIVER);
 
     driver->type = type;
-
-}
-
-void modules_init()
-{
-
-    vfs_filesystem_init(&filesystem, modules_filesystem_find_view); 
-    vfs_register_filesystem(&filesystem);
 
 }
 
