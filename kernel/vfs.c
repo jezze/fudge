@@ -63,7 +63,7 @@ void vfs_node_init(struct vfs_node *node, char *name, unsigned int id, void (*op
 
     memory_clear(node, sizeof (struct vfs_node));
 
-    node->name = name;
+    string_write(node->name, name);
     node->id = id;
     node->open = open;
     node->close = close;
