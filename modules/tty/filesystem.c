@@ -129,7 +129,7 @@ static struct vfs_node *filesystem_walk(struct vfs_filesystem *self, unsigned in
 
 }
 
-void tty_view_init(struct modules_module *module)
+void tty_filesystem_init(struct modules_module *module)
 {
 
     driver = (struct tty_driver *)module;

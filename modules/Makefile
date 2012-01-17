@@ -34,7 +34,7 @@ all-x86:
 	@${GCC} ${GCCFLAGS} rtl8139/main.c -o rtl8139/main.o
 	@${GCC} ${GCCFLAGS} tty/driver.c -o tty/driver.o
 	@${GCC} ${GCCFLAGS} tty/main.c -o tty/main.o
-	@${GCC} ${GCCFLAGS} tty/view.c -o tty/view.o
+	@${GCC} ${GCCFLAGS} tty/filesystem.c -o tty/filesystem.o
 	@${GCC} ${GCCFLAGS} uart/device.c -o uart/device.o
 	@${GCC} ${GCCFLAGS} uart/driver.c -o uart/driver.o
 	@${GCC} ${GCCFLAGS} uart/main.c -o uart/main.o
@@ -49,7 +49,7 @@ all-x86:
 	@${LD} ${LDFLAGS} ps2/kbd_device.o ps2/kbd_driver.o ps2/main.o ps2/mouse_device.o ps2/mouse_driver.o -o ps2/ps2.ko
 	@${LD} ${LDFLAGS} rtc/device.o rtc/main.o -o rtc/rtc.ko
 	@${LD} ${LDFLAGS} rtl8139/driver.o rtl8139/main.o -o rtl8139/rtl8139.ko
-	@${LD} ${LDFLAGS} tty/driver.o tty/main.o tty/view.o -o tty/tty.ko
+	@${LD} ${LDFLAGS} tty/driver.o tty/main.o tty/filesystem.o -o tty/tty.ko
 	@${LD} ${LDFLAGS} uart/driver.o uart/device.o uart/main.o -o uart/uart.ko
 	@${LD} ${LDFLAGS} vga/device.o vga/main.o -o vga/vga.ko
 

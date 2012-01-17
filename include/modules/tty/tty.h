@@ -39,6 +39,6 @@ struct tty_driver
 };
 
 extern void tty_driver_init(struct tty_driver *driver, char *cwdname);
-extern void tty_view_init(struct modules_module *module);
+extern void tty_filesystem_init(struct modules_module *module);
 
 #endif

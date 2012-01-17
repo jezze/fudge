@@ -11,7 +11,7 @@ void init()
     tty_driver_init(&driver, "home");
     modules_register_driver(&driver.base);
 
-    tty_view_init(&driver.base.module);
+    tty_filesystem_init(&driver.base.module);
 
 }
 
