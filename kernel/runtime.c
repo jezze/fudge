@@ -34,6 +34,9 @@ struct runtime_task *runtime_get_task(unsigned int index)
 struct runtime_task *runtime_get_running_task()
 {
 
+    if (!running->used)
+        return 0;
+
     return running;
 
 }
