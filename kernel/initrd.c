@@ -51,7 +51,7 @@ static struct vfs_node *initrd_filesystem_view_walk(struct vfs_view *self, unsig
 
 }
 
-static struct vfs_view *initrd_filesystem_find_view(struct vfs_filesystem *self, char *name)
+static struct vfs_view *initrd_filesystem_find_view(struct vfs_filesystem *self)
 {
 
     return &views[0];

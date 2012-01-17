@@ -190,7 +190,7 @@ void modules_unregister_driver(struct modules_driver *driver)
 
 }
 
-static struct vfs_view *modules_filesystem_find_view(struct vfs_filesystem *self, char *name)
+static struct vfs_view *modules_filesystem_find_view(struct vfs_filesystem *self)
 {
 
     unsigned int i;

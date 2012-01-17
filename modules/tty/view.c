@@ -80,7 +80,7 @@ static unsigned int pwd_read(struct vfs_node *self, unsigned int count, void *bu
         if (!filesystem)
             continue;
 
-        struct vfs_view *view = filesystem->find_view(filesystem, driver->cwdname);
+        struct vfs_view *view = filesystem->find_view(filesystem);
 
         if (!view)
             continue;
