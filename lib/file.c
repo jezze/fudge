@@ -10,10 +10,10 @@ void file_close(unsigned int fd)
 
 }
 
-unsigned int file_open(char *view, char *name)
+unsigned int file_open(char *path)
 {
 
-    return call_open(view, name);
+    return call_open(path);
 
 }
 

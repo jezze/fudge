@@ -70,10 +70,9 @@ static void syscall_handle_load(struct syscall_registers *registers, struct runt
 static void syscall_handle_open(struct syscall_registers *registers, struct runtime_task *task)
 {
 
-    char *view = *(char **)(registers->useresp + 4);
-    char *name = *(char **)(registers->useresp + 8);
+    char *path = *(char **)(registers->useresp + 4);
 
-    registers->eax = syscall_open(task, view, name);
+    registers->eax = syscall_open(task, path);
 
 }
 

@@ -1,7 +1,7 @@
 #ifndef LIB_CALL_H
 #define LIB_CALL_H
 
-extern unsigned int call_open(char *view, char *name);
+extern unsigned int call_open(char *path);
 extern void call_close(unsigned int fd);
 extern unsigned int call_read(unsigned int fd, void *buffer, unsigned int count);
 extern unsigned int call_write(unsigned int fd, void *buffer, unsigned int count);

@@ -23,7 +23,7 @@ extern unsigned int syscall_halt(struct runtime_task *task);
 extern unsigned int syscall_execute(struct runtime_task *task, char *path, unsigned int argc, char **argv);
 extern unsigned int syscall_exit(struct runtime_task *task);
 extern unsigned int syscall_load(struct runtime_task *task, char *path);
-extern unsigned int syscall_open(struct runtime_task *task, char *view, char *name);
+extern unsigned int syscall_open(struct runtime_task *task, char *path);
 extern unsigned int syscall_read(struct runtime_task *task, unsigned int index, unsigned int count, char *buffer);
 extern unsigned int syscall_reboot(struct runtime_task *task);
 extern unsigned int syscall_unload(struct runtime_task *task, char *path);

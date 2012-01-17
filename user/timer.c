@@ -5,7 +5,7 @@ void main(int argc, char *argv[])
 
     char buffer[32];
 
-    int fd = file_open("pit", "jiffies");
+    int fd = file_open("pit/jiffies");
 
     if (!fd)
     {

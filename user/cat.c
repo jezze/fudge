@@ -5,7 +5,7 @@ char buffer[0x4000];
 void get_path(char *buffer)
 {
 
-    int fd = file_open("tty", "cwd");
+    int fd = file_open("tty/cwd");
     file_read(fd, 256, buffer);
     file_close(fd);
 
@@ -27,7 +27,7 @@ void main(int argc, char *argv[])
 
     get_path(path);
 
-    int fd = file_open(path, argv[1]);
+    int fd = file_open(argv[1]);
 
     if (!fd)
     {

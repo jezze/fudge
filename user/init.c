@@ -3,17 +3,17 @@
 void main(int argc, char *argv[])
 {
 
-    call_load("uart.ko");
-    call_load("vga.ko");
-    call_load("pci.ko");
-    call_load("ata.ko");
-    call_load("mbr.ko");
-    call_load("pit.ko");
-    call_load("rtc.ko");
-    call_load("ps2.ko");
-    call_load("rtl8139.ko");
-    call_load("tty.ko");
-    call_execute("shell", 0, 0);
+    call_load("mod/uart.ko");
+    call_load("mod/vga.ko");
+    call_load("mod/pci.ko");
+    call_load("mod/ata.ko");
+    call_load("mod/mbr.ko");
+    call_load("mod/pit.ko");
+    call_load("mod/rtc.ko");
+    call_load("mod/ps2.ko");
+    call_load("mod/rtl8139.ko");
+    call_load("mod/tty.ko");
+    call_execute("bin/shell", 0, 0);
 
     for(;;);
 

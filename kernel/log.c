@@ -89,7 +89,7 @@ void log_write(char *in, ...)
 
     *(out) = '\0';
 
-    struct vfs_node *node = vfs_find("tty", "stdout");
+    struct vfs_node *node = vfs_find("tty/stdout");
 
     if (node)
         node->write(node, string_length(log), log);

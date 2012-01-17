@@ -3,7 +3,7 @@
 void get_path(char *buffer)
 {
 
-    int fd = file_open("tty", "cwd");
+    int fd = file_open("tty/cwd");
     file_read(fd, 256, buffer);
     file_close(fd);
 
@@ -12,7 +12,7 @@ void get_path(char *buffer)
 void set_path(char *buffer)
 {
 
-    int fd = file_open("tty", "cwd");
+    int fd = file_open("tty/cwd");
     file_write(fd, string_length(buffer), buffer);
     file_close(fd);
 

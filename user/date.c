@@ -5,7 +5,7 @@ void main(int argc, char *argv[])
 
     char buffer[64];
 
-    int fd = file_open("rtc", "date");
+    int fd = file_open("rtc/date");
 
     if (!fd)
     {

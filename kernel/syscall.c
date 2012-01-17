@@ -61,7 +61,7 @@ unsigned int syscall_execute(struct runtime_task *task, char *path, unsigned int
 
     runtime_task_init(ntask, index);
 
-    struct vfs_node *node = vfs_find("bin", path);
+    struct vfs_node *node = vfs_find(path);
 
     if (!(node && node->read))
         return 0;
@@ -82,9 +82,9 @@ unsigned int syscall_execute(struct runtime_task *task, char *path, unsigned int
         return 0;
 
     runtime_activate(ntask, task);
-    runtime_descriptor_init(ntask->get_descriptor(ntask, 1), vfs_find("tty", "stdin"), 0);
-    runtime_descriptor_init(ntask->get_descriptor(ntask, 2), vfs_find("tty", "stdout"), 0);
-    runtime_descriptor_init(ntask->get_descriptor(ntask, 3), vfs_find("tty", "stderr"), 0);
+    runtime_descriptor_init(ntask->get_descriptor(ntask, 1), vfs_find("tty/stdin"), 0);
+    runtime_descriptor_init(ntask->get_descriptor(ntask, 2), vfs_find("tty/stdout"), 0);
+    runtime_descriptor_init(ntask->get_descriptor(ntask, 3), vfs_find("tty/stderr"), 0);
 
     event_raise(EVENT_SYSCALL_EXECUTE);
 
@@ -113,7 +113,7 @@ unsigned int syscall_exit(struct runtime_task *task)
 unsigned int syscall_load(struct runtime_task *task, char *path)
 {
 
-    struct vfs_node *node = vfs_find("mod", path);
+    struct vfs_node *node = vfs_find(path);
 
     if (!node)
         return 0;
@@ -133,7 +133,7 @@ unsigned int syscall_load(struct runtime_task *task, char *path)
 
 }
 
-unsigned int syscall_open(struct runtime_task *task, char *view, char *name)
+unsigned int syscall_open(struct runtime_task *task, char *path)
 {
 
     unsigned int index = task->get_descriptor_slot(task);
@@ -146,7 +146,7 @@ unsigned int syscall_open(struct runtime_task *task, char *view, char *name)
     if (!descriptor)
         return 0;
 
-    runtime_descriptor_init(descriptor, vfs_find(view, name), 0);
+    runtime_descriptor_init(descriptor, vfs_find(path), 0);
 
     if (!descriptor->node)
         return 0;
@@ -188,7 +188,7 @@ unsigned int syscall_reboot(struct runtime_task *task)
 unsigned int syscall_unload(struct runtime_task *task, char *path)
 {
 
-    struct vfs_node *node = vfs_find("mod", path);
+    struct vfs_node *node = vfs_find(path);
 
     if (!node)
         return 0;

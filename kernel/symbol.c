@@ -26,7 +26,7 @@ void *symbol_find(char *name)
 void symbol_init()
 {
 
-    struct vfs_node *node = vfs_find("boot", "fudge.map");
+    struct vfs_node *node = vfs_find("boot/fudge.map");
 
     if (!node)
         error_panic("Symbol table not found", __FILE__, __LINE__);
