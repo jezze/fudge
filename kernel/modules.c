@@ -1,6 +1,4 @@
 #include <lib/memory.h>
-#include <lib/string.h>
-#include <kernel/vfs.h>
 #include <kernel/modules.h>
 
 static struct modules_module *modules[MODULES_MODULE_SLOTS];
