@@ -59,6 +59,7 @@ void kernel_init()
     if (primary->setup_mmu)
         primary->setup_mmu();
 
+    syscall_init();
     runtime_init();
     initrd_init(primary->initrdc, primary->initrdv);
     symbol_init();

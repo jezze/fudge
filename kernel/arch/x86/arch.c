@@ -10,7 +10,6 @@
 #include <kernel/arch/x86/irq.h>
 #include <kernel/arch/x86/mboot.h>
 #include <kernel/arch/x86/mmu.h>
-#include <kernel/arch/x86/syscall.h>
 #include <kernel/arch/x86/tss.h>
 
 static struct arch_x86 x86;
@@ -42,7 +41,6 @@ static void arch_x86_setup(struct kernel_arch *arch)
     isr_init();
     irq_init();
     acpi_init();
-    syscall_init();
 
 }
 

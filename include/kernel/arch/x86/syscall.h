@@ -11,7 +11,6 @@ struct syscall_registers
 };
 
 extern void syscall_handle(struct syscall_registers *registers);
-extern void syscall_init();
 
 #endif
 
