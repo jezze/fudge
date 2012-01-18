@@ -5,123 +5,123 @@
 
 static void *routines[SYSCALL_ROUTINE_SLOTS];
 
-static void syscall_handle_attach(struct syscall_registers *registers, struct runtime_task *task)
+static unsigned int syscall_handle_attach(unsigned int stack, struct runtime_task *task)
 {
 
-    unsigned int index = *(unsigned int *)(registers->useresp + 4);
-    void (*routine)() = *(unsigned int **)(registers->useresp + 8);
+    unsigned int index = *(unsigned int *)(stack + 4);
+    void (*routine)() = *(void **)(stack + 8);
 
-    registers->eax = syscall_attach(task, index, routine);
+    return syscall_attach(task, index, routine);
 
 }
 
-static void syscall_handle_close(struct syscall_registers *registers, struct runtime_task *task)
+static unsigned int syscall_handle_close(unsigned int stack, struct runtime_task *task)
 {
 
-    unsigned int index = *(unsigned int *)(registers->useresp + 4);
+    unsigned int index = *(unsigned int *)(stack + 4);
 
-    registers->eax = syscall_close(task, index);
+    return syscall_close(task, index);
 
 }
 
-static void syscall_handle_detach(struct syscall_registers *registers, struct runtime_task *task)
+static unsigned int syscall_handle_detach(unsigned int stack, struct runtime_task *task)
 {
 
-    unsigned int index = *(unsigned int *)(registers->useresp + 4);
+    unsigned int index = *(unsigned int *)(stack + 4);
 
-    registers->eax = syscall_detach(task, index);
+    return syscall_detach(task, index);
 
 }
 
-static void syscall_handle_halt(struct syscall_registers *registers, struct runtime_task *task)
+static unsigned int syscall_handle_halt(unsigned int stack, struct runtime_task *task)
 {
 
-    registers->eax = syscall_halt(task);
+    return syscall_halt(task);
 
 }
 
-static void syscall_handle_execute(struct syscall_registers *registers, struct runtime_task *task)
+static unsigned int syscall_handle_execute(unsigned int stack, struct runtime_task *task)
 {
 
-    char *path = *(char **)(registers->useresp + 24);
-    unsigned int argc = *(unsigned int *)(registers->useresp + 28);
-    char **argv = *(char ***)(registers->useresp + 32);
+    char *path = *(char **)(stack + 24);
+    unsigned int argc = *(unsigned int *)(stack + 28);
+    char **argv = *(char ***)(stack + 32);
 
-    registers->eax = syscall_execute(task, path, argc, argv);
+    return syscall_execute(task, path, argc, argv);
 
 }
 
-static void syscall_handle_exit(struct syscall_registers *registers, struct runtime_task *task)
+static unsigned int syscall_handle_exit(unsigned int stack, struct runtime_task *task)
 {
 
-    registers->eax = syscall_exit(task);
+    return syscall_exit(task);
 
 }
 
-static void syscall_handle_load(struct syscall_registers *registers, struct runtime_task *task)
+static unsigned int syscall_handle_load(unsigned int stack, struct runtime_task *task)
 {
 
-    char *path = *(char **)(registers->useresp + 4);
+    char *path = *(char **)(stack + 4);
 
-    registers->eax = syscall_load(task, path);
+    return syscall_load(task, path);
 
 }
 
-static void syscall_handle_open(struct syscall_registers *registers, struct runtime_task *task)
+static unsigned int syscall_handle_open(unsigned int stack, struct runtime_task *task)
 {
 
-    char *path = *(char **)(registers->useresp + 4);
+    char *path = *(char **)(stack + 4);
 
-    registers->eax = syscall_open(task, path);
+    return syscall_open(task, path);
 
 }
 
-static void syscall_handle_read(struct syscall_registers *registers, struct runtime_task *task)
+static unsigned int syscall_handle_read(unsigned int stack, struct runtime_task *task)
 {
 
-    unsigned int index = *(unsigned int *)(registers->useresp + 4);
-    char *buffer = *(char **)(registers->useresp + 8);
-    unsigned int count = *(unsigned int *)(registers->useresp + 12);
+    unsigned int index = *(unsigned int *)(stack + 4);
+    char *buffer = *(char **)(stack + 8);
+    unsigned int count = *(unsigned int *)(stack + 12);
 
-    registers->eax = syscall_read(task, index, count, buffer);
+    return syscall_read(task, index, count, buffer);
 
 }
 
-static void syscall_handle_reboot(struct syscall_registers *registers, struct runtime_task *task)
+static unsigned int syscall_handle_reboot(unsigned int stack, struct runtime_task *task)
 {
 
-    registers->eax = syscall_reboot(task);
+    return syscall_reboot(task);
 
 }
 
-static void syscall_handle_unload(struct syscall_registers *registers, struct runtime_task *task)
+static unsigned int syscall_handle_unload(unsigned int stack, struct runtime_task *task)
 {
 
-    char *path = *(char **)(registers->useresp + 4);
+    char *path = *(char **)(stack + 4);
 
-    registers->eax = syscall_unload(task, path);
+    return syscall_unload(task, path);
 
 }
 
-static void syscall_handle_wait(struct syscall_registers *registers, struct runtime_task *task)
+static unsigned int syscall_handle_wait(unsigned int stack, struct runtime_task *task)
 {
 
-    registers->eax = syscall_wait(task);
+    return syscall_wait(task);
 
 }
 
-static void syscall_handle_write(struct syscall_registers *registers, struct runtime_task *task)
+static unsigned int syscall_handle_write(unsigned int stack, struct runtime_task *task)
 {
 
-    unsigned int index = *(unsigned int *)(registers->useresp + 4);
-    char *buffer = *(char **)(registers->useresp + 8);
-    unsigned int count = *(unsigned int *)(registers->useresp + 12);
+    unsigned int index = *(unsigned int *)(stack + 4);
+    char *buffer = *(char **)(stack + 8);
+    unsigned int count = *(unsigned int *)(stack + 12);
 
-    registers->eax = syscall_write(task, index, count, buffer);
+    return syscall_write(task, index, count, buffer);
 
 }
 
-static void syscall_register_routine(unsigned char index, void (*routine)(struct syscall_registers *registers, struct runtime_task *task))
+static void syscall_register_routine(unsigned char index, unsigned int (*routine)(unsigned int stack, struct runtime_task *task))
 {
 
     routines[index] = routine;
@@ -149,7 +149,7 @@ static void syscall_load_state(struct runtime_task *task, struct syscall_registe
 void syscall_handle(struct syscall_registers *registers)
 {
 
-    void (*routine)(struct syscall_registers *registers, struct runtime_task *task) = routines[registers->eax];
+    unsigned int (*routine)(unsigned int stack, struct runtime_task *task) = routines[registers->eax];
 
     if (!routine)
         return;
@@ -157,7 +157,7 @@ void syscall_handle(struct syscall_registers *registers)
     struct runtime_task *task = runtime_get_running_task();
 
     syscall_save_state(task, registers);
-    routine(registers, task);
+    registers->eax = routine(registers->useresp, task);
     syscall_load_state(runtime_get_running_task(), registers);
 
 }
