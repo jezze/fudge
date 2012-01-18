@@ -1,8 +1,8 @@
-arch: ASM=nasm
-arch: ASMFLAGS=-f elf
-arch: GCCFLAGS+=-Iinclude
+kernel-arch: ASM=nasm
+kernel-arch: ASMFLAGS=-f elf
+kernel-arch: GCCFLAGS+=-Iinclude
 
-arch:
+kernel-arch:
 	@${GCC} ${GCCFLAGS} kernel/arch/x86/acpi.c -o kernel/arch/x86/acpi.o
 	@${GCC} ${GCCFLAGS} kernel/arch/x86/arch.c -o kernel/arch/x86/arch.o
 	@${ASM} ${ASMFLAGS} kernel/arch/x86/cpu.s -o kernel/arch/x86/cpu.o
@@ -20,6 +20,6 @@ arch:
 	@${GCC} ${GCCFLAGS} kernel/arch/x86/syscall.c -o kernel/arch/x86/syscall.o
 	@${GCC} ${GCCFLAGS} kernel/arch/x86/tss.c -o kernel/arch/x86/tss.o
 
-arch-clean:
+kernel-arch-clean:
 	@rm -f kernel/arch/x86/*.o
 

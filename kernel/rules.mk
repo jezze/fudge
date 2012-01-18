@@ -4,7 +4,7 @@ kernel: GCCFLAGS+=-Iinclude
 kernel-arm: LDFLAGS+=-Tkernel/arch/arm/linker.ld
 kernel-x86: LDFLAGS+=-Tkernel/arch/x86/linker.ld
 
-kernel: arch
+kernel: kernel-arch
 	@${GCC} ${GCCFLAGS} kernel/elf.c -o kernel/elf.o
 	@${GCC} ${GCCFLAGS} kernel/error.c -o kernel/error.o
 	@${GCC} ${GCCFLAGS} kernel/event.c -o kernel/event.o
@@ -50,7 +50,7 @@ kernel-x86:
 		lib/string.o \
 		-o kernel/fudge
 
-kernel-clean: arch-clean
+kernel-clean: kernel-arch-clean
 	@rm -f kernel/fudge
 	@rm -f kernel/*.o
 

@@ -1,5 +1,6 @@
 include rules.mk
 include ${ARCH}.mk
+include lib/rules.mk
 include kernel/rules.mk
 
 DIR_IMAGE=build/root
@@ -16,9 +17,6 @@ toolchain:
 	@git submodule init toolchain
 	@git submodule update toolchain
 	@make -C toolchain all TARGET=${TARGET}
-
-lib:
-	@make -C ${DIR_SOURCE_LIB}/ all
 
 modules:
 	@make -C ${DIR_SOURCE_MODULES}/ all
@@ -71,8 +69,7 @@ iso:
 hda:
 	@dd if=/dev/zero of=hda.img bs=512 count=2880
 
-clean: kernel-clean
-	@make -C ${DIR_SOURCE_LIB}/ clean
+clean: lib-clean kernel-clean
 	@make -C ${DIR_SOURCE_MODULES}/ clean
 	@make -C ${DIR_SOURCE_USER}/ clean
 	@rm -f fudge.img
