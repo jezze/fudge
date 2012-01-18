@@ -4,12 +4,13 @@
 #include <kernel/vfs.h>
 #include <kernel/initrd.h>
 
-static struct initrd_filesystem filesystem;
+static struct vfs_filesystem filesystem;
+static struct initrd_node nodes[INITRD_HEADER_SIZE];
 
 static unsigned int initrd_filesystem_node_read(struct vfs_node *self, unsigned int count, void *buffer)
 {
 
-    struct initrd_node *initrdNode = &filesystem.nodes[self->id];
+    struct initrd_node *initrdNode = &nodes[self->id];
 
     if (count > initrdNode->size)
         count = initrdNode->size;
@@ -23,15 +24,13 @@ static unsigned int initrd_filesystem_node_read(struct vfs_node *self, unsigned 
 static struct vfs_node *initrd_filesystem_find_node(struct vfs_filesystem *self, char *name)
 {
 
-    struct initrd_filesystem *filesystem = (struct initrd_filesystem *)self;
-
     unsigned int i;
 
-    for (i = 0; i < filesystem->base.nodeCount; i++)
+    for (i = 0; i < self->nodeCount; i++)
     {
 
-        if (string_find(filesystem->nodes[i].base.name, name))
-            return &filesystem->nodes[i].base;
+        if (string_find(nodes[i].base.name, name))
+            return &nodes[i].base;
 
     }
 
@@ -42,12 +41,10 @@ static struct vfs_node *initrd_filesystem_find_node(struct vfs_filesystem *self,
 static struct vfs_node *initrd_filesystem_walk(struct vfs_filesystem *self, unsigned int index)
 {
 
-    struct initrd_filesystem *filesystem = (struct initrd_filesystem *)self;
-
-    if (!filesystem->nodes[index].base.name)
+    if (!nodes[index].base.name)
         return 0;
 
-    return &filesystem->nodes[index].base;
+    return &nodes[index].base;
 
 }
 
@@ -91,7 +88,7 @@ static unsigned int parse(void *address)
         if (header->typeflag[0] != TAR_FILETYPE_DIR)
         {
 
-            initrd_node_init(&filesystem.nodes[count], count, header->name, size, header, address + TAR_BLOCK_SIZE);
+            initrd_node_init(&nodes[count], count, header->name, size, header, address + TAR_BLOCK_SIZE);
 
             count++;
 
@@ -111,16 +108,16 @@ static unsigned int parse(void *address)
 void initrd_init(unsigned int initrdc, void **initrdv)
 {
 
-    vfs_filesystem_init(&filesystem.base, initrd_filesystem_find_node, initrd_filesystem_walk);
+    vfs_filesystem_init(&filesystem, initrd_filesystem_find_node, initrd_filesystem_walk);
 
-    filesystem.base.nodeCount = 0;
+    filesystem.nodeCount = 0;
 
     unsigned int i;
 
     for (i = 0; i < initrdc; i++)
-        filesystem.base.nodeCount += parse(*(initrdv + i));
+        filesystem.nodeCount += parse(*(initrdv + i));
 
-    vfs_register_filesystem(&filesystem.base);
+    vfs_register_filesystem(&filesystem);
 
 }
 
