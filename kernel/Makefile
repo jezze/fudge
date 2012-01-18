@@ -1,17 +1,16 @@
 include ../rules.mk
 include ../${ARCH}.mk
+include arch/${ARCH}/rules.mk
 
-GCCFLAGS+=-I../include
-LDFLAGS+=-T${DIR_SOURCE_ARCH}/linker.ld
+kernel: GCCFLAGS+=-I../include
+kernel-arm: LDFLAGS+=-Tarch/arm/linker.ld
+kernel-x86: LDFLAGS+=-Tarch/x86/linker.ld
 
-DIR_SOURCE_ARCH=arch/${ARCH}
-DIR_SOURCE_LIB=../lib
+.PHONY: all clean kernel arch arch-clean
 
-.PHONY: all clean kernel
+all: kernel kernel-${ARCH}
 
-all: kernel all-${ARCH}
-
-kernel:
+kernel: arch
 	@${GCC} ${GCCFLAGS} elf.c -o elf.o
 	@${GCC} ${GCCFLAGS} error.c -o error.o
 	@${GCC} ${GCCFLAGS} event.c -o event.o
@@ -26,42 +25,38 @@ kernel:
 	@${GCC} ${GCCFLAGS} syscall.c -o syscall.o
 	@${GCC} ${GCCFLAGS} vfs.c -o vfs.o
 
-all-arm:
-	@make -C ${DIR_SOURCE_ARCH}/
+kernel-arm:
 	@${LD} ${LDFLAGS} elf.o error.o event.o initrd.o irq.o kernel.o log.o mmu.o modules.o runtime.o symbol.o syscall.o vfs.o \
-		${DIR_SOURCE_ARCH}/arch.o \
-		${DIR_SOURCE_ARCH}/cpu.o \
-		${DIR_SOURCE_ARCH}/init.o \
-		${DIR_SOURCE_LIB}/memory.o \
-		${DIR_SOURCE_LIB}/string.o \
+		arch/arm/arch.o \
+		arch/arm/cpu.o \
+		arch/arm/init.o \
+		../lib/memory.o \
+		../lib/string.o \
 		-o fudge 
 
-all-x86:
-	@make -C ${DIR_SOURCE_ARCH}/
+kernel-x86:
 	@${LD} ${LDFLAGS} elf.o error.o event.o initrd.o irq.o kernel.o log.o mmu.o modules.o runtime.o symbol.o syscall.o vfs.o \
-		${DIR_SOURCE_ARCH}/acpi.o \
-		${DIR_SOURCE_ARCH}/arch.o \
-		${DIR_SOURCE_ARCH}/cpu.o \
-		${DIR_SOURCE_ARCH}/fpu.o \
-		${DIR_SOURCE_ARCH}/gdt.o \
-		${DIR_SOURCE_ARCH}/idt.o \
-		${DIR_SOURCE_ARCH}/init.o \
-		${DIR_SOURCE_ARCH}/io.o \
-		${DIR_SOURCE_ARCH}/irqs.o \
-		${DIR_SOURCE_ARCH}/isrs.o \
-		${DIR_SOURCE_ARCH}/irq.o \
-		${DIR_SOURCE_ARCH}/isr.o \
-		${DIR_SOURCE_ARCH}/mmu.o \
-		${DIR_SOURCE_ARCH}/mboot.o \
-		${DIR_SOURCE_ARCH}/syscall.o \
-		${DIR_SOURCE_ARCH}/tss.o \
-		${DIR_SOURCE_LIB}/memory.o \
-		${DIR_SOURCE_LIB}/string.o \
+		arch/x86/acpi.o \
+		arch/x86/arch.o \
+		arch/x86/cpu.o \
+		arch/x86/fpu.o \
+		arch/x86/gdt.o \
+		arch/x86/idt.o \
+		arch/x86/init.o \
+		arch/x86/io.o \
+		arch/x86/irqs.o \
+		arch/x86/isrs.o \
+		arch/x86/irq.o \
+		arch/x86/isr.o \
+		arch/x86/mmu.o \
+		arch/x86/mboot.o \
+		arch/x86/syscall.o \
+		arch/x86/tss.o \
+		../lib/memory.o \
+		../lib/string.o \
 		-o fudge
 
-clean:
-	@make -C arch/arm/ clean
-	@make -C arch/x86/ clean
+clean: arch-clean
 	@rm -f fudge
 	@rm -f *.o
 
