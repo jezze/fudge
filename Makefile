@@ -1,4 +1,6 @@
 include rules.mk
+include ${ARCH}.mk
+include kernel/rules.mk
 
 DIR_IMAGE=build/root
 DIR_SOURCE_KERNEL=kernel
@@ -6,17 +8,14 @@ DIR_SOURCE_LIB=lib
 DIR_SOURCE_MODULES=modules
 DIR_SOURCE_USER=user
 
-.PHONY: all clean toolchain kernel lib modules user ramdisk sda iso hda
+.PHONY: all clean toolchain kernel lib modules user ramdisk sda iso hda arch
 
-all: lib kernel modules user ramdisk
+all: lib kernel kernel-${ARCH} modules user ramdisk
 
 toolchain:
 	@git submodule init toolchain
 	@git submodule update toolchain
 	@make -C toolchain all TARGET=${TARGET}
-
-kernel:
-	@make -C ${DIR_SOURCE_KERNEL}/ all
 
 lib:
 	@make -C ${DIR_SOURCE_LIB}/ all
@@ -72,9 +71,8 @@ iso:
 hda:
 	@dd if=/dev/zero of=hda.img bs=512 count=2880
 
-clean:
+clean: kernel-clean
 	@make -C ${DIR_SOURCE_LIB}/ clean
-	@make -C ${DIR_SOURCE_KERNEL}/ clean
 	@make -C ${DIR_SOURCE_MODULES}/ clean
 	@make -C ${DIR_SOURCE_USER}/ clean
 	@rm -f fudge.img
