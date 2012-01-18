@@ -86,11 +86,10 @@ static unsigned int runtime_task_load(struct runtime_task *self, void *entry, un
     mmu_map_user_memory(memory);
     mmu_load_memory(memory);
 
-    void *address = memory->vaddress + memory->size - 0x200;
+    void *stack = memory->vaddress + memory->size;
+    void *address = stack - 0x200;
 
     runtime_copy_args(argc, (char **)(temp), address);
-
-    void *stack = memory->vaddress + memory->size;
 
     stack = memory_copy(stack - 0x4, &address, 4);
     stack = memory_copy(stack - 0x4, &argc, 4);
