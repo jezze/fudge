@@ -1,9 +1,5 @@
 include rules.mk
 include ${ARCH}.mk
-include lib/rules.mk
-include kernel/rules.mk
-include modules/rules.mk
-include user/rules.mk
 
 DIR_IMAGE=build/root
 DIR_SOURCE_KERNEL=kernel
@@ -14,6 +10,11 @@ DIR_SOURCE_USER=user
 .PHONY: all clean toolchain kernel lib modules user ramdisk sda iso hda arch
 
 all: lib kernel kernel-${ARCH} modules user ramdisk
+
+include lib/rules.mk
+include kernel/rules.mk
+include modules/rules.mk
+include user/rules.mk
 
 toolchain:
 	@git submodule init toolchain
