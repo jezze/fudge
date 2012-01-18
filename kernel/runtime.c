@@ -53,8 +53,31 @@ void runtime_activate(struct runtime_task *task, struct runtime_task *ptask)
 
 }
 
+static void runtime_copy_args(unsigned int argc, char **argv, void *buffer)
+{
+
+    char **nargv = (char **)(buffer);
+    void *offset = nargv + argc * 4;
+
+    unsigned int i;
+
+    for (i = 0; i < argc; i++)
+    {
+
+        nargv[i] = offset;
+        string_write(offset, argv[i]);
+        offset += string_length(argv[i]) + 2;
+
+    }
+
+}
+
 static unsigned int runtime_task_load(struct runtime_task *self, void *entry, unsigned int argc, char **argv)
 {
+
+    char temp[128];
+
+    runtime_copy_args(argc, argv, temp);
 
     self->used = 1;
 
@@ -64,22 +87,12 @@ static unsigned int runtime_task_load(struct runtime_task *self, void *entry, un
 
     int reloc = (int)memory->vaddress - (int)memory->paddress;
 
-    char **pargv = (char **)(memory->paddress + memory->size - 0x200);
-    void *offset = pargv + argc * 4;
+    void *address = memory->paddress + memory->size - 0x200;
 
-    unsigned int i;
-
-    for (i = 0; i < argc; i++)
-    {
-
-        pargv[i] = offset + reloc;
-        string_write(offset, argv[i]);
-        offset += string_length(argv[i]) + 2;
-
-    }
+    runtime_copy_args(argc, (char **)(temp), address);
 
     unsigned int vargc = argc;
-    unsigned int vargv = (unsigned int)pargv + reloc;
+    unsigned int vargv = (unsigned int)address + reloc;
 
     void *stack = memory->paddress + memory->size;
 
