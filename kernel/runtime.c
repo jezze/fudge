@@ -60,6 +60,8 @@ static unsigned int runtime_task_load(struct runtime_task *self, void *entry, un
 
     struct mmu_memory *memory = &self->memory;
 
+    mmu_map_user_memory(memory);
+
     int reloc = (int)memory->vaddress - (int)memory->paddress;
 
     char **pargv = (char **)(memory->paddress + memory->size - 0x200);
@@ -84,8 +86,6 @@ static unsigned int runtime_task_load(struct runtime_task *self, void *entry, un
     stack = memory_copy(stack - 0x4, &vargv, 4);
     stack = memory_copy(stack - 0x4, &vargc, 4);
     stack = memory_copy(stack - 0x4, &entry, 4);
-
-    mmu_map_user_memory(memory);
 
     runtime_registers_init(&self->registers, (unsigned int)entry, (unsigned int)(stack + reloc), (unsigned int)(stack + reloc));
 
