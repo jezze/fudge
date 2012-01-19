@@ -32,7 +32,5 @@ struct acpi_rsdp
 
 };
 
-extern void acpi_init();
-
 #endif
 

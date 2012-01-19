@@ -2,14 +2,10 @@
 #include <kernel/log.h>
 #include <modules/acpi/acpi.h>
 
-static void *write_table(struct acpi_sdth *entry)
+static void write_sdt(struct acpi_sdth *sdt)
 {
 
-    char *sign = memory_copy("XXXX\0", entry->signature, 4);
-
-    log_write("[acpi] Table: %s\n", sign);
-
-    return 0;
+    //log_write("[acpi] Sdt: %s\n", sdt->signature);
 
 }
 
@@ -39,13 +35,12 @@ void init()
         return;
 
     log_write("[acpi] RSDP Address: 0x%x\n", rsdp);
+    log_write("[acpi] RSDP Checksum: 0x%x\n", rsdp->checksum);
     log_write("[acpi] RSDP Revision: %d.0\n", rsdp->revision + 1);
     log_write("[acpi] RSDP OEM: %s\n", rsdp->oem);
+    log_write("[acpi] RSDT Address: 0x%x\n", rsdp->rsdt);
 
-    unsigned int i;
-
-    for (i = 0; i < rsdp->length; i++)
-        write_table((struct acpi_sdth *)(rsdp->rsdt + i * 4));
+    write_sdt((struct acpi_sdth *)rsdp->rsdt);
 
 }
 
