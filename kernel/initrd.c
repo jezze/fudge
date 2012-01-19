@@ -48,18 +48,6 @@ static struct vfs_node *initrd_filesystem_walk(struct vfs_filesystem *self, unsi
 
 }
 
-static void initrd_node_init(struct initrd_node *node, unsigned int index, char *name, unsigned int size, struct tar_header *header, void *data)
-{
-
-    vfs_node_init(&node->base, name, index, 0, 0, initrd_filesystem_node_read, 0);
-
-    node->size = size;
-    node->header = header;
-    node->data = data;
-    node->base.physical = data;
-
-}
-
 static unsigned int get_num(const char *in)
 {
 
@@ -102,6 +90,20 @@ static unsigned int parse(void *address)
     }
 
     return count;
+
+}
+
+void initrd_node_init(struct initrd_node *node, unsigned int index, char *name, unsigned int size, struct tar_header *header, void *data)
+{
+
+    memory_clear(node, sizeof (struct initrd_node));
+
+    vfs_node_init(&node->base, name, index, 0, 0, initrd_filesystem_node_read, 0);
+
+    node->size = size;
+    node->header = header;
+    node->data = data;
+    node->base.physical = data;
 
 }
 
