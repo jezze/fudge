@@ -1,9 +1,13 @@
 #include <lib/memory.h>
 #include <kernel/log.h>
-#include <kernel/arch/x86/acpi.h>
+#include <modules/acpi/acpi.h>
 
-static void *find_table(struct acpi_sdt *rsdt)
+static void *write_table(struct acpi_sdth *entry)
 {
+
+    char *sign = memory_copy("XXXX\0", entry->signature, 4);
+
+    log_write("[acpi] Table: %s\n", sign);
 
     return 0;
 
@@ -26,7 +30,7 @@ static void *get_rsdp()
 
 }
 
-void acpi_init()
+void init()
 {
 
     struct acpi_rsdp *rsdp = get_rsdp();
@@ -38,11 +42,15 @@ void acpi_init()
     log_write("[acpi] RSDP Revision: %d.0\n", rsdp->revision + 1);
     log_write("[acpi] RSDP OEM: %s\n", rsdp->oem);
 
-    log_write("[acpi] RSDT Address: 0x%x\n", rsdp->rsdt);
+    unsigned int i;
 
-    struct acpi_sdt *rsdt = (struct acpi_sdt *)rsdp->rsdt;
+    for (i = 0; i < rsdp->length; i++)
+        write_table((struct acpi_sdth *)(rsdp->rsdt + i * 4));
 
-    log_write("[acpi] RSDT OEM: %s\n", rsdt->oem);
+}
+
+void destroy()
+{
 
 }
 

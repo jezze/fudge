@@ -1,5 +1,4 @@
 #include <kernel/kernel.h>
-#include <kernel/arch/x86/acpi.h>
 #include <kernel/arch/x86/arch.h>
 #include <kernel/arch/x86/cpu.h>
 #include <kernel/arch/x86/fpu.h>
@@ -40,7 +39,6 @@ static void arch_x86_setup(struct kernel_arch *arch)
     fpu_init();
     isr_init();
     irq_init();
-    acpi_init();
 
 }
 

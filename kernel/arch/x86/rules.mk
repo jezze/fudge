@@ -3,7 +3,6 @@ kernel-arch: ASMFLAGS=-f elf
 kernel-arch: GCCFLAGS+=-Iinclude
 
 kernel-arch:
-	@${GCC} ${GCCFLAGS} kernel/arch/x86/acpi.c -o kernel/arch/x86/acpi.o
 	@${GCC} ${GCCFLAGS} kernel/arch/x86/arch.c -o kernel/arch/x86/arch.o
 	@${ASM} ${ASMFLAGS} kernel/arch/x86/cpu.s -o kernel/arch/x86/cpu.o
 	@${GCC} ${GCCFLAGS} kernel/arch/x86/fpu.c -o kernel/arch/x86/fpu.o

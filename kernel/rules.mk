@@ -30,7 +30,6 @@ kernel-arm:
 
 kernel-x86:
 	@${LD} ${LDFLAGS} kernel/elf.o kernel/error.o kernel/event.o kernel/initrd.o kernel/irq.o kernel/kernel.o kernel/log.o kernel/mmu.o kernel/modules.o kernel/runtime.o kernel/symbol.o kernel/syscall.o kernel/vfs.o \
-		kernel/arch/x86/acpi.o \
 		kernel/arch/x86/arch.o \
 		kernel/arch/x86/cpu.o \
 		kernel/arch/x86/fpu.o \

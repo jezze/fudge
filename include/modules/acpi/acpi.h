@@ -1,7 +1,7 @@
-#ifndef ARCH_ACPI_H
-#define ARCH_ACPI_H
+#ifndef MODULES_ACPI_H
+#define MODULES_ACPI_H
 
-struct acpi_sdt
+struct acpi_sdth
 {
 
     char signature[4];
