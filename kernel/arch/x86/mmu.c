@@ -60,6 +60,13 @@ static void mmu_table_set_page(struct mmu_table *table, unsigned int frame, void
 
 }
 
+static unsigned int mmu_get_frame(struct mmu_memory *memory)
+{
+
+    return (unsigned int)memory->vaddress / MMU_PAGE_SIZE;
+
+}
+
 static void mmu_unit_load_memory(unsigned int index)
 {
 
@@ -77,7 +84,7 @@ static void mmu_unit_map_memory(unsigned int index, struct mmu_memory *memory, u
 
     mmu_table_clear(table);
 
-    unsigned int frame = (unsigned int)memory->vaddress / MMU_PAGE_SIZE;
+    unsigned int frame = mmu_get_frame(memory);
     unsigned int i;
 
     for (i = 0; i < memory->size / MMU_PAGE_SIZE; i++)

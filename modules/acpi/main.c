@@ -14,7 +14,7 @@ static void *get_rsdp()
 
     void *rsdp;
 
-    for (rsdp = (void *)0x000E0000; rsdp < (void *)0x000FFFFF; rsdp += 0x10)
+    for (rsdp = (void *)0x000E0000; rsdp < (void *)0x00100000; rsdp += 0x10)
     {
 
         if (!memory_compare(rsdp, "RSD PTR ", 8))
