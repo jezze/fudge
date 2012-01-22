@@ -12,12 +12,12 @@ static void write_sdt(struct acpi_sdth *sdt)
 
     mmu_memory_init(memory, sdt, sdt, 0x1000); 
     mmu_map_kernel_memory(memory);
-    mmu_load_memory(0);
+//    mmu_load_memory(0);
 
-    char signature[5];
-    signature[4] = '\0';
+//    char signature[5];
+//    signature[4] = '\0';
 
-    memory_copy(signature, sdt->signature, 4);
+//    memory_copy(signature, sdt->signature, 4);
 
 //    log_write("[acpi] Sdt: %s\n", signature);
 
@@ -54,7 +54,7 @@ void init()
 //    log_write("[acpi] RSDP OEM: %s\n", rsdp->oem);
 //    log_write("[acpi] RSDT Address: 0x%x\n", rsdp->rsdt);
 
-//    write_sdt((struct acpi_sdth *)rsdp->rsdt);
+    write_sdt((struct acpi_sdth *)rsdp->rsdt);
 
 }
 
