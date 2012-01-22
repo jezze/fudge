@@ -83,7 +83,7 @@ static unsigned int runtime_task_load(struct runtime_task *self, void *entry, un
 
     struct mmu_memory *memory = &self->memory;
 
-    mmu_map_user_memory(memory);
+    mmu_map_user_memory(self->id, memory);
     mmu_load_memory(memory);
 
     void *stack = memory->vaddress + memory->size;

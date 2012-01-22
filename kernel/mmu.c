@@ -46,10 +46,10 @@ void mmu_map_kernel_memory(struct mmu_memory *memory)
 
 }
 
-void mmu_map_user_memory(struct mmu_memory *memory)
+void mmu_map_user_memory(unsigned int index, struct mmu_memory *memory)
 {
 
-    primary->map_user_memory(memory);
+    primary->map_user_memory(index, memory);
 
 }
 

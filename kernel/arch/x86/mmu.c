@@ -102,17 +102,10 @@ static void mmu_unit_load_memory(struct mmu_memory *memory)
 
 }
 
-static void mmu_unit_map_memory(struct mmu_memory *memory, unsigned int tflags, unsigned int pflags)
+static void mmu_unit_map_memory(unsigned int index, struct mmu_memory *memory, unsigned int tflags, unsigned int pflags)
 {
 
-    struct mmu_header *header = mmu_get_header(memory);
-
-    if (header)
-        return;
-
-    unsigned int index = mmu_get_header_slot();
-
-    header = &headers[index];
+    struct mmu_header *header = &headers[index];
     header->memory = memory;
 
     mmu_table_clear(&header->table);
@@ -130,18 +123,20 @@ static void mmu_unit_map_memory(struct mmu_memory *memory, unsigned int tflags, 
 static void mmu_unit_map_kernel_memory(struct mmu_memory *memory)
 {
 
-    mmu_unit_map_memory(memory, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE);
+    mmu_unit_map_memory(0, memory, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE);
 
-    kernelHeader = mmu_get_header(memory);
+    struct mmu_header *header = &headers[0];
+
+    kernelHeader = header;
 
 }
 
-static void mmu_unit_map_user_memory(struct mmu_memory *memory)
+static void mmu_unit_map_user_memory(unsigned int index, struct mmu_memory *memory)
 {
 
-    mmu_unit_map_memory(memory, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);
+    mmu_unit_map_memory(index, memory, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);
 
-    struct mmu_header *header = mmu_get_header(memory);
+    struct mmu_header *header = &headers[index];
 
     memory_copy(&header->directory, &kernelHeader->directory, sizeof (unsigned int));
 
