@@ -77,6 +77,15 @@ static void mmu_unit_load_memory(unsigned int index)
 
 }
 
+static void mmu_unit_reload_memory()
+{
+
+    unsigned int directory = cpu_get_cr3();
+
+    cpu_set_cr3(directory);
+
+}
+
 static void mmu_unit_map_memory(struct mmu_directory *directory, struct mmu_table *table, struct mmu_memory *memory, unsigned int tflags, unsigned int pflags)
 {
 
@@ -161,6 +170,7 @@ void mmu_setup()
 
     unit.enable = mmu_unit_enable;
     unit.load_memory = mmu_unit_load_memory;
+    unit.reload_memory = mmu_unit_reload_memory;
     unit.map_kernel_memory = mmu_unit_map_kernel_memory;
     unit.map_user_memory = mmu_unit_map_user_memory;
     unit.unmap_memory = mmu_unit_unmap_memory;

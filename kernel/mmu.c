@@ -39,6 +39,13 @@ void mmu_load_memory(unsigned int index)
 
 }
 
+void mmu_reload_memory()
+{
+
+    primary->reload_memory();
+
+}
+
 void mmu_map_kernel_memory(struct mmu_memory *memory)
 {
 
