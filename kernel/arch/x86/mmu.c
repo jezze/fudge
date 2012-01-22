@@ -5,8 +5,9 @@
 #include <kernel/arch/x86/mmu.h>
 
 static struct mmu_unit unit;
-static struct mmu_header headers[MMU_HEADER_SLOTS];
-static struct mmu_header *kernelHeader;
+static struct mmu_directory directories[MMU_HEADER_SLOTS];
+static struct mmu_directory *kernelDirectory;
+static struct mmu_table tables[MMU_HEADER_SLOTS];
 
 static void mmu_handle_pagefault(struct isr_registers *registers)
 {
@@ -62,27 +63,27 @@ static void mmu_table_set_page(struct mmu_table *table, unsigned int frame, void
 static void mmu_unit_load_memory(unsigned int index)
 {
 
-    struct mmu_header *header = &headers[index];
+    struct mmu_directory *directory = &directories[index];
 
-    cpu_set_cr3((unsigned int)&header->directory);
+    cpu_set_cr3((unsigned int)directory);
 
 }
 
 static void mmu_unit_map_memory(unsigned int index, struct mmu_memory *memory, unsigned int tflags, unsigned int pflags)
 {
 
-    struct mmu_header *header = &headers[index];
-    header->memory = memory;
+    struct mmu_directory *directory = &directories[index];
+    struct mmu_table *table = &tables[index];
 
-    mmu_table_clear(&header->table);
+    mmu_table_clear(table);
 
-    unsigned int frame = (unsigned int)header->memory->vaddress / MMU_PAGE_SIZE;
+    unsigned int frame = (unsigned int)memory->vaddress / MMU_PAGE_SIZE;
     unsigned int i;
 
-    for (i = 0; i < header->memory->size / MMU_PAGE_SIZE; i++)
-        mmu_table_set_page(&header->table, frame + i, header->memory->paddress + i * MMU_PAGE_SIZE, pflags); 
+    for (i = 0; i < memory->size / MMU_PAGE_SIZE; i++)
+        mmu_table_set_page(table, frame + i, memory->paddress + i * MMU_PAGE_SIZE, pflags); 
 
-    mmu_directory_set_table(&header->directory, frame, &header->table, tflags);
+    mmu_directory_set_table(directory, frame, table, tflags);
 
 }
 
@@ -91,9 +92,9 @@ static void mmu_unit_map_kernel_memory(struct mmu_memory *memory)
 
     mmu_unit_map_memory(0, memory, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE);
 
-    struct mmu_header *header = &headers[0];
+    struct mmu_directory *directory = &directories[0];
 
-    kernelHeader = header;
+    kernelDirectory = directory;
 
 }
 
@@ -102,18 +103,18 @@ static void mmu_unit_map_user_memory(unsigned int index, struct mmu_memory *memo
 
     mmu_unit_map_memory(index, memory, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);
 
-    struct mmu_header *header = &headers[index];
+    struct mmu_directory *directory = &directories[index];
 
-    memory_copy(&header->directory, &kernelHeader->directory, sizeof (unsigned int));
+    memory_copy(directory, kernelDirectory, sizeof (unsigned int));
 
 }
 
 static void mmu_unit_unmap_memory(unsigned int index)
 {
 
-    struct mmu_header *header = &headers[index];
+    struct mmu_directory *directory = &directories[index];
 
-    header->memory = 0;
+    mmu_directory_clear(directory);
 
 }
 

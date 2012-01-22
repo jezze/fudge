@@ -38,15 +38,6 @@ struct mmu_directory
 
 } __attribute__((aligned(MMU_PAGE_SIZE)));
 
-struct mmu_header
-{
-
-    struct mmu_memory *memory;
-    struct mmu_directory directory;
-    struct mmu_table table;
-
-};
-
 extern void mmu_setup();
 
 #endif
