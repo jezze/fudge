@@ -133,9 +133,9 @@ static void mmu_unit_map_user_memory(unsigned int index, struct mmu_memory *memo
     struct mmu_directory *directory = &directories[index];
     struct mmu_table *table = &tables[index];
 
-    mmu_unit_map_memory(directory, table, memory, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);
+    memory_copy(directory, &kernelDirectory, sizeof (struct mmu_directory));
 
-    memory_copy(directory, &kernelDirectory, sizeof (unsigned int));
+    mmu_unit_map_memory(directory, table, memory, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);
 
 }
 
