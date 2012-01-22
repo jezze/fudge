@@ -6,8 +6,9 @@
 
 static struct mmu_unit unit;
 static struct mmu_directory directories[MMU_HEADER_SLOTS];
-static struct mmu_directory *kernelDirectory;
 static struct mmu_table tables[MMU_HEADER_SLOTS];
+static struct mmu_directory kernelDirectory;
+static struct mmu_table kernelTables[2];
 
 static void mmu_handle_pagefault(struct isr_registers *registers)
 {
@@ -70,7 +71,7 @@ static unsigned int mmu_get_frame(struct mmu_memory *memory)
 static void mmu_unit_load_memory(unsigned int index)
 {
 
-    struct mmu_directory *directory = &directories[index];
+    struct mmu_directory *directory = (index) ? &directories[index] : &kernelDirectory;
 
     cpu_set_cr3((unsigned int)directory);
 
@@ -94,24 +95,22 @@ static void mmu_unit_map_memory(struct mmu_directory *directory, struct mmu_tabl
 static void mmu_unit_map_kernel_memory(struct mmu_memory *memory)
 {
 
-    struct mmu_directory *directory = &directories[0];
-    struct mmu_table *table = &tables[0];
+    struct mmu_directory *directory = &kernelDirectory;
+    struct mmu_table *table = (memory->paddress == 0) ? &kernelTables[0] : &kernelTables[1]; // FIX THIS LATER
 
     mmu_unit_map_memory(directory, table, memory, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE);
-
-    kernelDirectory = directory;
 
 }
 
 static void mmu_unit_map_user_memory(unsigned int index, struct mmu_memory *memory)
 {
 
-    struct mmu_directory *directory = &directories[index];
+    struct mmu_directory *directory = (index) ? &directories[index] : &kernelDirectory;
     struct mmu_table *table = &tables[index];
 
     mmu_unit_map_memory(directory, table, memory, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);
 
-    memory_copy(directory, kernelDirectory, sizeof (unsigned int));
+    memory_copy(directory, &kernelDirectory, sizeof (unsigned int));
 
 }
 
