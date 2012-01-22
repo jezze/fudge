@@ -105,7 +105,7 @@ static void mmu_unit_map_kernel_memory(struct mmu_memory *memory)
 static void mmu_unit_map_user_memory(unsigned int index, struct mmu_memory *memory)
 {
 
-    struct mmu_directory *directory = (index) ? &directories[index] : &kernelDirectory;
+    struct mmu_directory *directory = &directories[index];
     struct mmu_table *table = &tables[index];
 
     mmu_unit_map_memory(directory, table, memory, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);

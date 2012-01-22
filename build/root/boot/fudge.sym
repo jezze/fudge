@@ -10,6 +10,7 @@ irq_unregister_routine
 log_write
 mmu_load_memory
 mmu_map_kernel_memory
+mmu_memory_init
 modules_bus_init
 modules_device_init
 modules_driver_init

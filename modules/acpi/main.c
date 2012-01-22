@@ -10,10 +10,7 @@ static void write_sdt(struct acpi_sdth *sdt)
 
     struct mmu_memory *memory = &acpiMemory;
 
-    memory->paddress = (void *)((unsigned int)sdt & 0xFFFFF000);
-    memory->vaddress = (void *)((unsigned int)sdt & 0xFFFFF000);
-    memory->size = 0x4000;
-
+    mmu_memory_init(memory, sdt, sdt, 0x1000); 
     mmu_map_kernel_memory(memory);
     mmu_load_memory(0);
 
