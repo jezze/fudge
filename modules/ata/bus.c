@@ -1,6 +1,5 @@
 #include <kernel/arch/x86/io.h>
 #include <kernel/irq.h>
-#include <kernel/log.h>
 #include <kernel/modules.h>
 #include <modules/ata/ata.h>
 
