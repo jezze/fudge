@@ -8,7 +8,7 @@ static struct mmu_unit unit;
 static struct mmu_directory directories[MMU_HEADER_SLOTS];
 static struct mmu_table tables[MMU_HEADER_SLOTS];
 static struct mmu_directory kernelDirectory;
-static struct mmu_table kernelTables[2];
+static struct mmu_table kernelTables[4];
 
 static void mmu_handle_pagefault(struct isr_registers *registers)
 {
@@ -96,7 +96,32 @@ static void mmu_unit_map_kernel_memory(struct mmu_memory *memory)
 {
 
     struct mmu_directory *directory = &kernelDirectory;
-    struct mmu_table *table = (memory->paddress == 0) ? &kernelTables[0] : &kernelTables[1]; // FIX THIS LATER
+
+    // FIX THIS
+    struct mmu_table *table;
+
+    switch ((unsigned int)memory->paddress)
+    {
+
+        case 0x00000000:
+
+            table = &kernelTables[0];
+
+            break;
+
+        case 0x00400000:
+
+            table = &kernelTables[1];
+
+            break;
+
+        default:
+
+            table = &kernelTables[2];
+
+            break;
+
+    }
 
     mmu_unit_map_memory(directory, table, memory, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE);
 

@@ -5,6 +5,7 @@
 
 static struct mmu_unit *primary;
 static struct mmu_memory kernel;
+static struct mmu_memory kernel2;
 
 void mmu_pagefault(unsigned int address, unsigned int flags)
 {
@@ -82,11 +83,13 @@ void mmu_init()
 {
 
     mmu_memory_init(&kernel, (void *)0x00000000, (void *)0x00000000, 0x00400000);
+    mmu_memory_init(&kernel2, (void *)0x00400000, (void *)0x00400000, 0x00400000);
 
     if (!primary)
         error_panic("No MMU registered", __FILE__, __LINE__);
 
     primary->map_kernel_memory(&kernel);
+    primary->map_kernel_memory(&kernel2);
     primary->load_memory(0);
     primary->enable();
 
