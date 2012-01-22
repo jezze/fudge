@@ -97,7 +97,7 @@ static void mmu_unit_map_kernel_memory(struct mmu_memory *memory)
 
     struct mmu_directory *directory = &kernelDirectory;
 
-    // FIX THIS. DYNAMICALLY SELECT TABLE TO USE
+    // FIX THIS
     struct mmu_table *table;
 
     switch ((unsigned int)memory->paddress)
@@ -122,24 +122,8 @@ static void mmu_unit_map_kernel_memory(struct mmu_memory *memory)
             break;
 
     }
-    // END FIX
 
     mmu_unit_map_memory(directory, table, memory, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE);
-
-    // FIX THIS. IT COPIES KERNEL MAPPED MEMORY. MAKE THIS PAGE IN WHEN PAGE FAULT OCCURS
-    unsigned int i;
-    unsigned int j;
-
-    for (i = 0; i < MMU_HEADER_SLOTS; i++)
-    {
-
-        struct mmu_directory *d = &directories[i];
-
-        for (j = 0; j < 1024; j++)
-            d->tables[j] = kernelDirectory.tables[j];
-
-    }
-    // END FIX
 
 }
 
@@ -148,6 +132,8 @@ static void mmu_unit_map_user_memory(unsigned int index, struct mmu_memory *memo
 
     struct mmu_directory *directory = &directories[index];
     struct mmu_table *table = &tables[index];
+
+    memory_copy(directory, &kernelDirectory, sizeof (struct mmu_directory));
 
     mmu_unit_map_memory(directory, table, memory, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);
 
