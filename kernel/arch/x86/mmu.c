@@ -59,23 +59,6 @@ static void mmu_table_set_page(struct mmu_table *table, unsigned int frame, void
 
 }
 
-static unsigned int mmu_get_header_slot()
-{
-
-    unsigned int i;
-
-    for (i = 0; i < MMU_HEADER_SLOTS; i++)
-    {
-
-        if (!headers[i].memory)
-            return i;
-
-    }
-
-    return 0;
-
-}
-
 static struct mmu_header *mmu_get_header(struct mmu_memory *memory)
 {
 
@@ -93,10 +76,10 @@ static struct mmu_header *mmu_get_header(struct mmu_memory *memory)
 
 }
 
-static void mmu_unit_load_memory(struct mmu_memory *memory)
+static void mmu_unit_load_memory(unsigned int index)
 {
 
-    struct mmu_header *header = mmu_get_header(memory);
+    struct mmu_header *header = &headers[index];
 
     cpu_set_cr3((unsigned int)&header->directory);
 

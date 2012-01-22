@@ -20,7 +20,7 @@ struct mmu_unit
 {
 
     void (*enable)();
-    void (*load_memory)(struct mmu_memory *memory);
+    void (*load_memory)(unsigned int index);
     void (*map_kernel_memory)(struct mmu_memory *memory);
     void (*map_user_memory)(unsigned int index, struct mmu_memory *memory);
     void (*unmap_memory)(struct mmu_memory *memory);
@@ -29,7 +29,7 @@ struct mmu_unit
 
 extern void mmu_pagefault(unsigned int address, unsigned int flags);
 extern struct mmu_memory *mmu_get_task_memory();
-extern void mmu_load_memory(struct mmu_memory *memory);
+extern void mmu_load_memory(unsigned int index);
 extern void mmu_map_kernel_memory(struct mmu_memory *memory);
 extern void mmu_map_user_memory(unsigned int index, struct mmu_memory *memory);
 extern void mmu_unmap_memory(struct mmu_memory *memory);

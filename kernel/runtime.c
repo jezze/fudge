@@ -47,7 +47,7 @@ void runtime_activate(struct runtime_task *task, struct runtime_task *ptask)
     if (ptask)
         task->parentid = ptask->id;
 
-    mmu_load_memory(&task->memory);
+    mmu_load_memory(task->id);
 
     running = task;
 
@@ -84,7 +84,7 @@ static unsigned int runtime_task_load(struct runtime_task *self, void *entry, un
     struct mmu_memory *memory = &self->memory;
 
     mmu_map_user_memory(self->id, memory);
-    mmu_load_memory(memory);
+    mmu_load_memory(self->id);
 
     void *stack = memory->vaddress + memory->size;
     void *address = stack - 0x200;

@@ -32,10 +32,10 @@ void mmu_pagefault(unsigned int address, unsigned int flags)
 
 }
 
-void mmu_load_memory(struct mmu_memory *memory)
+void mmu_load_memory(unsigned int index)
 {
 
-    primary->load_memory(memory);
+    primary->load_memory(index);
 
 }
 
@@ -87,7 +87,7 @@ void mmu_init()
         error_panic("No MMU registered", __FILE__, __LINE__);
 
     primary->map_kernel_memory(&kernel);
-    primary->load_memory(&kernel);
+    primary->load_memory(0);
     primary->enable();
 
 }
