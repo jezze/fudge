@@ -59,23 +59,6 @@ static void mmu_table_set_page(struct mmu_table *table, unsigned int frame, void
 
 }
 
-static struct mmu_header *mmu_get_header(struct mmu_memory *memory)
-{
-
-    unsigned int i;
-
-    for (i = 0; i < MMU_HEADER_SLOTS; i++)
-    {
-
-        if (headers[i].memory == memory)
-            return &headers[i];
-
-    }
-
-    return 0;
-
-}
-
 static void mmu_unit_load_memory(unsigned int index)
 {
 
@@ -125,10 +108,10 @@ static void mmu_unit_map_user_memory(unsigned int index, struct mmu_memory *memo
 
 }
 
-static void mmu_unit_unmap_memory(struct mmu_memory *memory)
+static void mmu_unit_unmap_memory(unsigned int index)
 {
 
-    struct mmu_header *header = mmu_get_header(memory);
+    struct mmu_header *header = &headers[index];
 
     header->memory = 0;
 

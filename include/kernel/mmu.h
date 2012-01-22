@@ -23,7 +23,7 @@ struct mmu_unit
     void (*load_memory)(unsigned int index);
     void (*map_kernel_memory)(struct mmu_memory *memory);
     void (*map_user_memory)(unsigned int index, struct mmu_memory *memory);
-    void (*unmap_memory)(struct mmu_memory *memory);
+    void (*unmap_memory)(unsigned int index);
 
 };
 
@@ -32,7 +32,7 @@ extern struct mmu_memory *mmu_get_task_memory();
 extern void mmu_load_memory(unsigned int index);
 extern void mmu_map_kernel_memory(struct mmu_memory *memory);
 extern void mmu_map_user_memory(unsigned int index, struct mmu_memory *memory);
-extern void mmu_unmap_memory(struct mmu_memory *memory);
+extern void mmu_unmap_memory(unsigned int index);
 extern void mmu_register_unit(struct mmu_unit *unit);
 extern void mmu_memory_init(struct mmu_memory *memory, void *paddress, void *vaddress, unsigned int size);
 extern void mmu_init();

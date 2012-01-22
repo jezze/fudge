@@ -108,7 +108,7 @@ static void runtime_task_unload(struct runtime_task *self)
 
     struct mmu_memory *memory = &self->memory;
 
-    mmu_unmap_memory(memory);
+    mmu_unmap_memory(self->id);
 
 }
 

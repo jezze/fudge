@@ -53,10 +53,10 @@ void mmu_map_user_memory(unsigned int index, struct mmu_memory *memory)
 
 }
 
-void mmu_unmap_memory(struct mmu_memory *memory)
+void mmu_unmap_memory(unsigned int index)
 {
 
-    primary->unmap_memory(memory);
+    primary->unmap_memory(index);
 
 }
 
