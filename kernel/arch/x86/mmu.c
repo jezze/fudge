@@ -137,8 +137,6 @@ static void mmu_unit_map_user_memory(unsigned int index, struct mmu_memory *memo
 
     mmu_unit_map_memory(directory, table, memory, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);
 
-    memory_copy(directory, &kernelDirectory, sizeof (unsigned int));
-
 }
 
 static void mmu_unit_unmap_memory(unsigned int index)
