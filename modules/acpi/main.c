@@ -19,7 +19,15 @@ static void write_sdt(struct acpi_sdth *sdt)
 
     memory_copy(signature, sdt->signature, 4);
 
-    log_write("[acpi] Sdt: %s\n", signature);
+    log_write("[acpi] SDT Address: 0x%x\n", sdt);
+    log_write("[acpi] SDT Signature: %s\n", signature);
+    log_write("[acpi] SDT Length: %d\n", sdt->length);
+    log_write("[acpi] SDT Revision: %d\n", sdt->revision);
+    log_write("[acpi] SDT Checksum: %d\n", sdt->checksum);
+//    log_write("[acpi] SDT OEM: %s\n", sdt->oem);
+    log_write("[acpi] SDT OEMRevision: %d\n", sdt->oemRevision);
+//    log_write("[acpi] SDT Creator: %s\n", sdt->creator);
+    log_write("[acpi] SDT CreatorRevision: %d\n", sdt->creatorRevision);
 
 }
 
@@ -49,10 +57,9 @@ void init()
         return;
 
     log_write("[acpi] RSDP Address: 0x%x\n", rsdp);
-    log_write("[acpi] RSDP Checksum: 0x%x\n", rsdp->checksum);
+    log_write("[acpi] RSDP Checksum: %d\n", rsdp->checksum);
     log_write("[acpi] RSDP Revision: %d.0\n", rsdp->revision + 1);
-    log_write("[acpi] RSDP OEM: %s\n", rsdp->oem);
-    log_write("[acpi] RSDT Address: 0x%x\n", rsdp->rsdt);
+//    log_write("[acpi] RSDP OEM: %s\n", rsdp->oem);
 
     write_sdt((struct acpi_sdth *)rsdp->rsdt);
 
