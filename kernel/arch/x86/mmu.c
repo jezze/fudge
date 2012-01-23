@@ -134,6 +134,11 @@ static void mmu_unit_map_kernel_memory(struct mmu_memory *memory)
 
     mmu_unit_map_memory(directory, table, memory, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE);
 
+    unsigned int i;
+
+    for (i = 0; i < MMU_HEADER_SLOTS; i++)
+        mmu_unit_map_memory(&directories[i], table, memory, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE);
+
 }
 
 static void mmu_unit_map_user_memory(unsigned int index, struct mmu_memory *memory)

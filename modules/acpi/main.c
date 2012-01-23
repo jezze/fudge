@@ -17,9 +17,9 @@ static void write_sdt(struct acpi_sdth *sdt)
     char signature[5];
     signature[4] = '\0';
 
-//    memory_copy(signature, sdt->signature, 4);
+    memory_copy(signature, sdt->signature, 4);
 
-//    log_write("[acpi] Sdt: %s\n", signature);
+    log_write("[acpi] Sdt: %s\n", signature);
 
 }
 
@@ -48,11 +48,11 @@ void init()
     if (!rsdp)
         return;
 
-//    log_write("[acpi] RSDP Address: 0x%x\n", rsdp);
-//    log_write("[acpi] RSDP Checksum: 0x%x\n", rsdp->checksum);
-//    log_write("[acpi] RSDP Revision: %d.0\n", rsdp->revision + 1);
-//    log_write("[acpi] RSDP OEM: %s\n", rsdp->oem);
-//    log_write("[acpi] RSDT Address: 0x%x\n", rsdp->rsdt);
+    log_write("[acpi] RSDP Address: 0x%x\n", rsdp);
+    log_write("[acpi] RSDP Checksum: 0x%x\n", rsdp->checksum);
+    log_write("[acpi] RSDP Revision: %d.0\n", rsdp->revision + 1);
+    log_write("[acpi] RSDP OEM: %s\n", rsdp->oem);
+    log_write("[acpi] RSDT Address: 0x%x\n", rsdp->rsdt);
 
     write_sdt((struct acpi_sdth *)rsdp->rsdt);
 
