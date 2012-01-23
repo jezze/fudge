@@ -9,59 +9,54 @@
 #include <kernel/symbol.h>
 #include <kernel/syscall.h>
 
-static struct kernel_arch *primary;
+static struct kernel_arch *kernelArch;
 
 void kernel_disable_interrupts()
 {
 
-    primary->disable_interrupts();
+    kernelArch->disable_interrupts();
 
 }
 
 void kernel_enable_interrupts()
 {
 
-    primary->enable_interrupts();
+    kernelArch->enable_interrupts();
 
 }
 
 void kernel_reboot()
 {
 
-    primary->reboot();
+    kernelArch->reboot();
 
 }
 
 void kernel_halt()
 {
 
-    primary->halt();
+    kernelArch->halt();
 
 }
 
-void kernel_register_arch(struct kernel_arch *arch)
+void kernel_init(struct kernel_arch *arch)
 {
 
-    primary = arch;
-
-}
-
-void kernel_init()
-{
+    kernelArch = arch;
 
     log_write("[kernel] Initializing\n");
 
-    if (!primary)
+    if (!kernelArch)
         error_panic("No architecture registered", __FILE__, __LINE__);
 
-    primary->setup(primary);
+    kernelArch->setup(kernelArch);
 
-    if (primary->setup_mmu)
-        primary->setup_mmu();
+    if (kernelArch->setup_mmu)
+        kernelArch->setup_mmu();
 
     syscall_init();
     runtime_init();
-    initrd_init(primary->initrdc, primary->initrdv);
+    initrd_init(kernelArch->initrdc, kernelArch->initrdv);
     symbol_init();
 
     unsigned int index = syscall_execute(0, "init", 0, 0);
@@ -71,8 +66,8 @@ void kernel_init()
 
     struct runtime_task *task = runtime_get_task(index);
 
-    primary->set_stack(primary->stack);
-    primary->enter_usermode(task->registers.ip, task->registers.sp);
+    kernelArch->set_stack(kernelArch->stack);
+    kernelArch->enter_usermode(task->registers.ip, task->registers.sp);
 
 }
 

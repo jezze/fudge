@@ -3,8 +3,8 @@
 #include <kernel/log.h>
 #include <kernel/mmu.h>
 
-static struct mmu_unit *primary;
-static struct mmu_memory kernel[2];
+static struct mmu_unit *mmuUnit;
+static struct mmu_memory mmuKernelMemory[2];
 
 void mmu_pagefault(unsigned int address, unsigned int flags)
 {
@@ -35,42 +35,35 @@ void mmu_pagefault(unsigned int address, unsigned int flags)
 void mmu_load_memory(unsigned int index)
 {
 
-    primary->load_memory(index);
+    mmuUnit->load_memory(index);
 
 }
 
 void mmu_reload_memory()
 {
 
-    primary->reload_memory();
+    mmuUnit->reload_memory();
 
 }
 
 void mmu_map_kernel_memory(struct mmu_memory *memory)
 {
 
-    primary->map_kernel_memory(memory);
+    mmuUnit->map_kernel_memory(memory);
 
 }
 
 void mmu_map_user_memory(unsigned int index, struct mmu_memory *memory)
 {
 
-    primary->map_user_memory(index, memory);
+    mmuUnit->map_user_memory(index, memory);
 
 }
 
 void mmu_unmap_memory(unsigned int index)
 {
 
-    primary->unmap_memory(index);
-
-}
-
-void mmu_register_unit(struct mmu_unit *unit)
-{
-
-    primary = unit;
+    mmuUnit->unmap_memory(index);
 
 }
 
@@ -85,19 +78,21 @@ void mmu_memory_init(struct mmu_memory *memory, void *paddress, void *vaddress, 
 
 }
 
-void mmu_init()
+void mmu_init(struct mmu_unit *unit)
 {
 
-    mmu_memory_init(&kernel[0], (void *)0x00000000, (void *)0x00000000, 0x00400000);
-    mmu_memory_init(&kernel[1], (void *)0x00400000, (void *)0x00400000, 0x00400000);
+    mmuUnit = unit;
 
-    if (!primary)
+    mmu_memory_init(&mmuKernelMemory[0], (void *)0x00000000, (void *)0x00000000, 0x00400000);
+    mmu_memory_init(&mmuKernelMemory[1], (void *)0x00400000, (void *)0x00400000, 0x00400000);
+
+    if (!mmuUnit)
         error_panic("No MMU registered", __FILE__, __LINE__);
 
-    primary->map_kernel_memory(&kernel[0]);
-    primary->map_kernel_memory(&kernel[1]);
-    primary->load_memory(0);
-    primary->enable();
+    mmuUnit->map_kernel_memory(&mmuKernelMemory[0]);
+    mmuUnit->map_kernel_memory(&mmuKernelMemory[1]);
+    mmuUnit->load_memory(0);
+    mmuUnit->enable();
 
 }
 

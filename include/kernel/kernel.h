@@ -23,8 +23,7 @@ extern void kernel_disable_interrupts();
 extern void kernel_enable_interrupts();
 extern void kernel_reboot();
 extern void kernel_halt();
-extern void kernel_register_arch(struct kernel_arch *arch);
-extern void kernel_init();
+extern void kernel_init(struct kernel_arch *arch);
 
 #endif
 

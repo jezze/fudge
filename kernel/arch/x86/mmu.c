@@ -13,9 +13,7 @@ static struct mmu_table kernelTables[4];
 static void mmu_handle_pagefault(struct isr_registers *registers)
 {
 
-    unsigned int address = cpu_get_cr2();
-
-    mmu_pagefault(address, registers->error);
+    mmu_pagefault(cpu_get_cr2(), registers->error);
 
 }
 
@@ -80,9 +78,7 @@ static void mmu_unit_load_memory(unsigned int index)
 static void mmu_unit_reload_memory()
 {
 
-    unsigned int directory = cpu_get_cr3();
-
-    cpu_set_cr3(directory);
+    cpu_set_cr3(cpu_get_cr3());
 
 }
 
@@ -180,8 +176,7 @@ void mmu_setup()
     unit.map_user_memory = mmu_unit_map_user_memory;
     unit.unmap_memory = mmu_unit_unmap_memory;
 
-    mmu_register_unit(&unit);
-    mmu_init();
+    mmu_init(&unit);
 
 }
 
