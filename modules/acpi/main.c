@@ -39,7 +39,9 @@ static void write_sdt(struct acpi_sdth *sdt)
 
     unsigned int i;
 
-//    for (i = 0; i < entries; i++)
+    for (i = 0; i < entries; i++)
+        log_write("[acpi] RSDT entry: 0x%x\n", tables[i]);
+
     write_sdt(tables[0]);
 
 }

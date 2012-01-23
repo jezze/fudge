@@ -3,8 +3,6 @@
 #include <kernel/log.h>
 #include <kernel/vfs.h>
 
-static char log[512];
-
 static char *log_write_num(char *out, unsigned int num, unsigned int base)
 {
 
@@ -23,76 +21,74 @@ static char *log_write_num(char *out, unsigned int num, unsigned int base)
 
 }
 
-void log_write(char *in, ...)
+void log_write(const char *buffer, ...)
 {
 
-    char *out = log;
-    char **arg = (char **)&in;
-    arg++;
+    struct vfs_node *node = vfs_find("tty/stdout");
+
+    if (!node)
+        return;
+
+    char **arg = (char **)&buffer;
 
     char num[32];
-    char c;
+    char c = '\0';
 
-    while ((c = *in++))
+    while ((c = *buffer))
     {
 
         if (c != '%')
         {
 
-            memory_copy(out, &c, 1);
-            out += 1;
+            node->write(node, 1, &c);
+
+            buffer++;
 
             continue;
 
         }
 
-        c = *in++;
+        arg++;
+        buffer++;
+
+        c = *buffer;
 
         switch (c)
         {
 
             case 'c':
 
-                memory_copy(out, (char *)arg, 1);
-                out += 1;
+                node->write(node, 1, (char *)arg);
 
                 break;
 
             case 'd':
 
                 log_write_num(num, *(int *)arg, 10);
-                string_write(out, num);
-                out += string_length(num);
+                node->write(node, string_length(num), num);
 
                 break;
 
             case 's':
 
-                string_write(out, *(char **)arg);
-                out += string_length(*(char **)arg);
+                node->write(node, string_length(*(char **)arg), *(char **)arg);
 
                 break;
 
             case 'x':
 
                 log_write_num(num, *(int *)arg, 16);
-                string_write(out, num);
-                out += string_length(num);
+                node->write(node, string_length(num), num);
 
                 break;
 
         }
 
-        arg++;
+        buffer++;
 
     }
 
-    *(out) = '\0';
-
-    struct vfs_node *node = vfs_find("tty/stdout");
-
-    if (node)
-        node->write(node, string_length(log), log);
+    node->write(node, 1, "");
 
 }
 

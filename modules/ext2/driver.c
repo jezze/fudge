@@ -60,8 +60,8 @@ static void ext2_driver_start(struct modules_driver *self)
     unsigned int blockstep = blocksize / 512;
     unsigned int firstunreserved = sb->firstUnreservedNode;
 
-    log_write("[ext2] Signature: 0x%x\n", sb->signature);
-    log_write("[ext2] Version: %d.%d\n", sb->majorVersion, sb->minorVersion);;
+//    log_write("[ext2] Signature: 0x%x\n", sb->signature);
+    log_write("[ext2] Version: %d.%d\n", sb->majorVersion, sb->minorVersion);
     log_write("[ext2] Block size: %d\n", blocksize);
     log_write("[ext2] Node size: %d\n", nodesize);
     log_write("[ext2] Blocks per group: %d\n", sb->blockCountGroup);
@@ -71,8 +71,8 @@ static void ext2_driver_start(struct modules_driver *self)
     if (sb->majorVersion >= 1)
     {
 
-        log_write("[ext2] Volume: %s\n", sb->volume);
-        log_write("[ext2] Last mount: %s\n", sb->lastmount);
+//        log_write("[ext2] Volume: %s\n", sb->volume);
+//        log_write("[ext2] Last mount: %s\n", sb->lastmount);
 
     }
 
@@ -80,10 +80,10 @@ static void ext2_driver_start(struct modules_driver *self)
 
     struct ext2_blockgroup *bg = (struct ext2_blockgroup *)buffer;
 
-    log_write("[ext2] Block block usage bitmap: 0x%x\n", bg->blockUsageAddress);
-    log_write("[ext2] Block node usage bitmap: 0x%x\n", bg->nodeUsageAddress);
-    log_write("[ext2] Starting block address node table: 0x%x\n", bg->blockTableAddress);
-    log_write("[ext2] Number of directories: %d\n", bg->directoryCount);
+//    log_write("[ext2] Block block usage bitmap: 0x%x\n", bg->blockUsageAddress);
+//    log_write("[ext2] Block node usage bitmap: 0x%x\n", bg->nodeUsageAddress);
+//    log_write("[ext2] Starting block address node table: 0x%x\n", bg->blockTableAddress);
+//    log_write("[ext2] Number of directories: %d\n", bg->directoryCount);
 
     device->read_lba28(device, blockstart + blockstep * bg->blockTableAddress, blockstep * 4, buffer);
 
@@ -99,9 +99,9 @@ static void ext2_driver_start(struct modules_driver *self)
         if (type != 0x8000)
             continue;
 
-        log_write("[ext2] Node type: 0x%x Perm: 0x%x Block0: 0x%x\n", node->type & 0xF000, node->type & 0x0FFF, node->pointer0);
+//        log_write("[ext2] Node type: 0x%x Perm: 0x%x Block0: 0x%x\n", node->type & 0xF000, node->type & 0x0FFF, node->pointer0);
 
-        //device->read_lba28(device, blockstart + blockstep * node->pointer0, blockstep, content);
+//        device->read_lba28(device, blockstart + blockstep * node->pointer0, blockstep, content);
         
 //        log_write("[ext2] Content: %s\n", content);
 
