@@ -10,7 +10,7 @@ static void write_sdt(struct acpi_sdth *sdt)
 
     struct mmu_memory *memory = &acpiMemory;
 
-    mmu_memory_init(memory, sdt, sdt, 0x1000); 
+    mmu_memory_init(memory, sdt, sdt, 0x2000); 
     mmu_map_kernel_memory(memory);
     mmu_reload_memory();
 
@@ -22,12 +22,25 @@ static void write_sdt(struct acpi_sdth *sdt)
     log_write("[acpi] SDT Address: 0x%x\n", sdt);
     log_write("[acpi] SDT Signature: %s\n", signature);
     log_write("[acpi] SDT Length: %d\n", sdt->length);
-    log_write("[acpi] SDT Revision: %d\n", sdt->revision);
-    log_write("[acpi] SDT Checksum: %d\n", sdt->checksum);
+//    log_write("[acpi] SDT Revision: %d\n", sdt->revision);
+//    log_write("[acpi] SDT Checksum: %d\n", sdt->checksum);
 //    log_write("[acpi] SDT OEM: %s\n", sdt->oem);
-    log_write("[acpi] SDT OEMRevision: %d\n", sdt->oemRevision);
+//    log_write("[acpi] SDT OEMRevision: %d\n", sdt->oemRevision);
 //    log_write("[acpi] SDT Creator: %s\n", sdt->creator);
-    log_write("[acpi] SDT CreatorRevision: %d\n", sdt->creatorRevision);
+//    log_write("[acpi] SDT CreatorRevision: %d\n", sdt->creatorRevision);
+
+    if (memory_compare(sdt->signature, "RSDT", 4))
+        return;
+
+    void **tables = (void *)sdt + sizeof (struct acpi_sdth);
+    unsigned int entries = (sdt->length - sizeof (struct acpi_sdth)) / 4;
+
+    log_write("[acpi] SDT Entries: %d\n", entries);
+
+    unsigned int i;
+
+//    for (i = 0; i < entries; i++)
+    write_sdt(tables[0]);
 
 }
 
@@ -56,9 +69,9 @@ void init()
     if (!rsdp)
         return;
 
-    log_write("[acpi] RSDP Address: 0x%x\n", rsdp);
-    log_write("[acpi] RSDP Checksum: %d\n", rsdp->checksum);
-    log_write("[acpi] RSDP Revision: %d.0\n", rsdp->revision + 1);
+//    log_write("[acpi] RSDP Address: 0x%x\n", rsdp);
+//    log_write("[acpi] RSDP Checksum: %d\n", rsdp->checksum);
+//    log_write("[acpi] RSDP Revision: %d.0\n", rsdp->revision + 1);
 //    log_write("[acpi] RSDP OEM: %s\n", rsdp->oem);
 
     write_sdt((struct acpi_sdth *)rsdp->rsdt);
