@@ -69,7 +69,7 @@ void init()
 
     struct mmu_memory *memory = &acpiMemory;
 
-    mmu_memory_init(memory, (void *)rsdp->rsdt, (void *)rsdp->rsdt, 0x2000); 
+    mmu_memory_init(memory, (void *)rsdp->rsdt, (void *)rsdp->rsdt, 0x10000); 
     mmu_map_kernel_memory(memory);
     mmu_reload_memory();
 
