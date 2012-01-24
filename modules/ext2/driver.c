@@ -78,6 +78,8 @@ static void ext2_driver_start(struct modules_driver *self)
 
     }
 
+    firstunreserved += 4;
+
     // Try to find first unreserved node
     unsigned int nodegroup = get_group(firstunreserved, nodespergroup);
     unsigned int nodeindex = get_index(firstunreserved, nodespergroup);
@@ -95,11 +97,11 @@ static void ext2_driver_start(struct modules_driver *self)
 
     //REMEMBER TO OFFSET WITH NODEGROUP. NOW USING ZERO OFFSET
 
-    unsigned int startingblock = bg->blockTableAddress;
+    unsigned int tableblock = bg->blockTableAddress;
 
     log_write("[ext2] Block address of block usage bitmap: %d\n", bg->blockUsageAddress);
     log_write("[ext2] Block address of node usage bitmap: %d\n", bg->nodeUsageAddress);
-    log_write("[ext2] Starting block address of node table: %d\n", startingblock);
+    log_write("[ext2] Starting block address of node table: %d\n", tableblock);
     log_write("[ext2] Number of directories: %d\n", bg->directoryCount);
 
     unsigned int nodesperblock = blocksize / nodesize;
@@ -110,12 +112,28 @@ static void ext2_driver_start(struct modules_driver *self)
 
     log_write("[ext2] New node index: %d\n", newindex);
 
-    device->read_lba28(device, sectorStart + (startingblock + nodeblock) * blockstep, blockstep, buffer);
+    device->read_lba28(device, sectorStart + (tableblock + nodeblock) * blockstep, blockstep, buffer);
 
     void *pb = buffer;
 
     struct ext2_node *node = pb + nodesize * newindex;
     log_write("[ext2] Node size low: %d\n", node->sizeLow);
+    log_write("[ext2] Pointer0: %d\n", node->pointer0);
+    log_write("[ext2] Pointer1: %d\n", node->pointer1);
+    log_write("[ext2] Pointer2: %d\n", node->pointer2);
+    log_write("[ext2] Pointer3: %d\n", node->pointer3);
+    log_write("[ext2] Pointer4: %d\n", node->pointer4);
+    log_write("[ext2] Pointer5: %d\n", node->pointer5);
+    log_write("[ext2] Pointer6: %d\n", node->pointer6);
+    log_write("[ext2] Pointer7: %d\n", node->pointer7);
+    log_write("[ext2] Pointer8: %d\n", node->pointer8);
+    log_write("[ext2] Pointer9: %d\n", node->pointer9);
+    log_write("[ext2] Pointer10: %d\n", node->pointer10);
+    log_write("[ext2] Pointer11: %d\n", node->pointer11);
+
+    device->read_lba28(device, sectorStart + (node->pointer0) * blockstep, blockstep, buffer);
+
+    log_write("[ext2] Content: %s\n", buffer);
 
 }
 
