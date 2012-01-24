@@ -46,36 +46,45 @@ static void ext2_driver_start(struct modules_driver *self)
     unsigned int blocksize = 1024 << sb->blockSize;
     unsigned int nodesize = sb->nodeSize;
     unsigned int sectorsize = blocksize / 512;
+    unsigned int first = sb->firstUnreservedNode;
+    unsigned int nodeCount = sb->nodeCountGroup;
 
     if (sb->majorVersion >= 1)
     {
 
     }
 
-    // Try to find forth unreserved node
-    // FIX: Select any node
-    unsigned int nodenum = sb->firstUnreservedNode + 4;
-    unsigned int nodegroup = (nodenum - 1) / sb->nodeCountGroup;
-    unsigned int nodeindex = (nodenum - 1) % sb->nodeCountGroup;
-    unsigned int nodeblock = (nodenum * nodesize) / blocksize;
+    unsigned int i;
 
-    // Read block group descriptor table
+    for (i = 3; i < 5; i++)
+    {
 
-    device->read_lba28(device, sectorstart + 2 * sectorsize, sectorsize, buffer);
+        // Try to find forth unreserved node
+        // FIX: Select any node
+        unsigned int nodenum = first + i;
+        unsigned int nodegroup = (nodenum - 1) / nodeCount;
+        unsigned int nodeindex = (nodenum - 1) % nodeCount;
+        unsigned int nodeblock = (nodenum * nodesize) / blocksize;
 
-    struct ext2_blockgroup *bg = buffer + nodegroup * sizeof (struct ext2_blockgroup);
+        // Read block group descriptor table
 
-    // Read the node
+        device->read_lba28(device, sectorstart + 2 * sectorsize, sectorsize, buffer);
 
-    device->read_lba28(device, sectorstart + (bg->blockTableAddress + nodeblock) * sectorsize, sectorsize, buffer);
+        struct ext2_blockgroup *bg = buffer + nodegroup * sizeof (struct ext2_blockgroup);
 
-    struct ext2_node *node = buffer + nodesize * (nodeindex % (blocksize / nodesize));
+        // Read the node
 
-    // Read content
+        device->read_lba28(device, sectorstart + (bg->blockTableAddress + nodeblock) * sectorsize, sectorsize, buffer);
 
-    device->read_lba28(device, sectorstart + (node->pointer0) * sectorsize, sectorsize, buffer);
+        struct ext2_node *node = buffer + nodesize * (nodeindex % (blocksize / nodesize));
 
-    log_write(buffer);
+        // Read content
+
+        device->read_lba28(device, sectorstart + (node->pointer0) * sectorsize, sectorsize, buffer);
+
+        log_write("Content:\n%s\n", buffer);
+
+    }
 
 }
 
