@@ -4,27 +4,6 @@
 #include <modules/mbr/mbr.h>
 #include <modules/ext2/ext2.h>
 
-static unsigned int get_group(unsigned int node, unsigned int nodespergroup)
-{
-
-    return (node - 1) / nodespergroup;
-
-}
-
-static unsigned int get_index(unsigned int node, unsigned int nodespergroup)
-{
-
-    return (node - 1) % nodespergroup;
-
-}
-
-static unsigned int get_block(unsigned int index, unsigned int nodesize, unsigned int blocksize)
-{
-
-    return (index * nodesize) / blocksize;
-
-}
-
 static void ext2_driver_start(struct modules_driver *self)
 {
 
@@ -76,9 +55,9 @@ static void ext2_driver_start(struct modules_driver *self)
     // Try to find forth unreserved node
     // FIX: Select any node
     unsigned int nodenum = sb->firstUnreservedNode + 4;
-    unsigned int nodegroup = get_group(nodenum, sb->nodeCountGroup);
-    unsigned int nodeindex = get_index(nodenum, sb->nodeCountGroup);
-    unsigned int nodeblock = get_block(nodenum, nodesize, blocksize);
+    unsigned int nodegroup = (nodenum - 1) / sb->nodeCountGroup;
+    unsigned int nodeindex = (nodenum - 1) % sb->nodeCountGroup;
+    unsigned int nodeblock = (nodenum * nodesize) / blocksize;
 
     // Read block group descriptor table
 
