@@ -103,20 +103,18 @@ static void ext2_driver_start(struct modules_driver *self)
 
     struct ext2_blockgroup *bg = pb1 + nodegroup * sizeof (struct ext2_blockgroup);
 
-    unsigned int tableblock = bg->blockTableAddress;
-
     log_write("[ext2] Block address of block usage bitmap: %d\n", bg->blockUsageAddress);
     log_write("[ext2] Block address of node usage bitmap: %d\n", bg->nodeUsageAddress);
-    log_write("[ext2] Starting block address of node table: %d\n", tableblock);
+    log_write("[ext2] Starting block address of node table: %d\n", bg->blockTableAddress);
     log_write("[ext2] Number of directories: %d\n", bg->directoryCount);
 
     // Read the node
 
-    device->read_lba28(device, sectorstart + (tableblock + nodeblock) * sectorsize, sectorsize, buffer);
+    device->read_lba28(device, sectorstart + (bg->blockTableAddress + nodeblock) * sectorsize, sectorsize, buffer);
 
     void *pb2 = buffer;
 
-    struct ext2_node *node = pb2 + nodesize * (nodeindex - nodeblock * (blocksize / nodesize));
+    struct ext2_node *node = pb2 + nodesize * (nodeindex % (blocksize / nodesize));
 
     log_write("[ext2] Node size low: %d\n", node->sizeLow);
     log_write("[ext2] Pointer0: %d\n", node->pointer0);
