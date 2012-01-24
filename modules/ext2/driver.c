@@ -44,11 +44,12 @@ static void ext2_driver_start(struct modules_driver *self)
         return;
 
     struct mbr_partition *partition = mbr->get_partition(mbr, device, 0);
-    unsigned int sectorStart = partition->sectorLba + 2;
+    unsigned int sectorStart = partition->sectorLba;
 
     char buffer[1024];
 
-    device->read_lba28(device, sectorStart, 2, buffer);
+    // Read superblock
+    device->read_lba28(device, sectorStart + 1 * 2, 2, buffer);
 
     struct ext2_superblock *sb = (struct ext2_superblock *)buffer;
 
@@ -59,6 +60,7 @@ static void ext2_driver_start(struct modules_driver *self)
     unsigned int nodesize = sb->nodeSize;
     unsigned int blockstep = blocksize / 512;
     unsigned int firstunreserved = sb->firstUnreservedNode;
+    unsigned int nodespergroup = sb->nodeCountGroup;
 
     log_write("[ext2] Signature: 0x%x\n", sb->signature);
     log_write("[ext2] Version: %d.%d\n", sb->majorVersion, sb->minorVersion);
@@ -66,7 +68,7 @@ static void ext2_driver_start(struct modules_driver *self)
     log_write("[ext2] Node size: %d\n", nodesize);
     log_write("[ext2] Blocks per group: %d\n", sb->blockCountGroup);
     log_write("[ext2] Nodes per group: %d\n", sb->nodeCountGroup);
-    log_write("[ext2] First unreserved node: %d\n", firstunreserved);
+    log_write("[ext2] Superblock index: %d\n", sb->superblockIndex);
 
     if (sb->majorVersion >= 1)
     {
@@ -76,38 +78,34 @@ static void ext2_driver_start(struct modules_driver *self)
 
     }
 
-    device->read_lba28(device, sectorStart + blockstep, 2, buffer);
+    // Try to find first unreserved node
+    unsigned int nodegroup = get_group(firstunreserved, nodespergroup);
+    unsigned int nodeindex = get_index(firstunreserved, nodespergroup);
+    unsigned int nodeblock = get_block(firstunreserved, nodesize, blocksize);
+
+    log_write("[ext2] First node: %d\n", firstunreserved);
+    log_write("[ext2] First node group: %d\n", nodegroup);
+    log_write("[ext2] First node index: %d\n", nodeindex);
+    log_write("[ext2] First node block: %d\n", nodeblock);
+
+    // Read first entry in block group descriptor table
+    device->read_lba28(device, sectorStart + 2 * 2, 2, buffer);
 
     struct ext2_blockgroup *bg = (struct ext2_blockgroup *)buffer;
 
-    log_write("[ext2] Block block usage bitmap: 0x%x\n", bg->blockUsageAddress);
-    log_write("[ext2] Block node usage bitmap: 0x%x\n", bg->nodeUsageAddress);
-    log_write("[ext2] Starting block address node table: 0x%x\n", bg->blockTableAddress);
+    unsigned int startingblock = bg->blockTableAddress;
+
+    log_write("[ext2] Block address of block usage bitmap: %d\n", bg->blockUsageAddress);
+    log_write("[ext2] Block address of node usage bitmap: %d\n", bg->nodeUsageAddress);
+    log_write("[ext2] Starting block address of node table: %d\n", startingblock);
     log_write("[ext2] Number of directories: %d\n", bg->directoryCount);
 
-/*
-    device->read_lba28(device, sectorStart + blockstep * bg->blockTableAddress, blockstep * 4, buffer);
+    // Read block containing node
+    device->read_lba28(device, sectorStart + startingblock * 2, 2, buffer);
 
-    unsigned int i;
+    struct ext2_node *node = (struct ext2_node *)buffer;
 
-    for (i = 0; i < 16; i++)
-    {
-
-        struct ext2_node *node = (struct ext2_node *)(buffer + i * nodesize);
-
-        unsigned int type = node->type & 0xF000;
-
-        if (type != 0x8000)
-            continue;
-
-//        log_write("[ext2] Node type: 0x%x Perm: 0x%x Block0: 0x%x\n", node->type & 0xF000, node->type & 0x0FFF, node->pointer0);
-
-//        device->read_lba28(device, sectorStart + blockstep * node->pointer0, blockstep, content);
-        
-//        log_write("[ext2] Content: %s\n", content);
-
-    }
-*/
+    log_write("[ext2] Node size low: %d\n", node->sizeLow);
 
 }
 
