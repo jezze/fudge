@@ -1,4 +1,6 @@
-global cpu_check_cpuid
+.intel_syntax noprefix
+
+.global cpu_check_cpuid
 cpu_check_cpuid:
     pushfd
     pop eax
@@ -13,7 +15,7 @@ cpu_check_cpuid:
     and eax, 1
     ret
 
-global cpu_get_vendor
+.global cpu_get_vendor
 cpu_get_vendor:
     push ebp
     mov ebp, esp
@@ -38,7 +40,7 @@ cpu_get_vendor:
     pop ebp
     ret
 
-global cpu_get_feature_ecx
+.global cpu_get_feature_ecx
 cpu_get_feature_ecx:
     push ebp
     mov ebp, esp
@@ -52,7 +54,7 @@ cpu_get_feature_ecx:
     pop ebp
     ret
 
-global cpu_get_feature_edx
+.global cpu_get_feature_edx
 cpu_get_feature_edx:
     push ebp
     mov ebp, esp
@@ -66,7 +68,7 @@ cpu_get_feature_edx:
     pop ebp
     ret
 
-global cpu_get_brand
+.global cpu_get_brand
 cpu_get_brand:
     push ebp
     mov ebp, esp

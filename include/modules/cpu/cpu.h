@@ -1,5 +1,5 @@
-#ifndef CPU_H
-#define CPU_H
+#ifndef MODULES_CPU_H
+#define MODULES_CPU_H
 
 #define CPU_VENDOR_AMD              "AuthenticAMD"
 #define CPU_VENDOR_AMD_LEGACY       "AMDisbetter!"

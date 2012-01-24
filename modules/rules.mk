@@ -12,6 +12,8 @@ modules-x86:
 	@${GCC} ${GCCFLAGS} modules/ata/main.c -o modules/ata/main.o
 	@${GCC} ${GCCFLAGS} modules/bga/driver.c -o modules/bga/driver.o
 	@${GCC} ${GCCFLAGS} modules/bga/main.c -o modules/bga/main.o
+	@${ASM} ${ASMFLAGS} modules/cpu/cpuid.s -o modules/cpu/cpuid.o
+	@${GCC} ${GCCFLAGS} modules/cpu/main.c -o modules/cpu/main.o
 	@${GCC} ${GCCFLAGS} modules/ext2/driver.c -o modules/ext2/driver.o
 	@${GCC} ${GCCFLAGS} modules/ext2/main.c -o modules/ext2/main.o
 	@${GCC} ${GCCFLAGS} modules/mbr/driver.c -o modules/mbr/driver.o
@@ -41,6 +43,7 @@ modules-x86:
 	@${LD} ${LDFLAGS} modules/acpi/main.o -o modules/acpi/acpi.ko
 	@${LD} ${LDFLAGS} modules/ata/bus.o modules/ata/device.o modules/ata/main.o -o modules/ata/ata.ko
 	@${LD} ${LDFLAGS} modules/bga/driver.o modules/bga/main.o -o modules/bga/bga.ko
+	@${LD} ${LDFLAGS} modules/cpu/cpuid.o modules/cpu/main.o -o modules/cpu/cpu.ko
 	@${LD} ${LDFLAGS} modules/ext2/driver.o modules/ext2/main.o -o modules/ext2/ext2.ko
 	@${LD} ${LDFLAGS} modules/mbr/driver.o modules/mbr/main.o -o modules/mbr/mbr.ko
 	@${LD} ${LDFLAGS} modules/pci/bus.o modules/pci/device.o modules/pci/main.o -o modules/pci/pci.ko
