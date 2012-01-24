@@ -48,18 +48,14 @@ static void ext2_driver_start(struct modules_driver *self)
     // FIX: Not only partition 0
 
     struct mbr_partition *partition = mbr->get_partition(mbr, device, 0);
+    unsigned int sectorstart = partition->sectorLba;
 
     char mem[1024];
-
     void *buffer = mem;
-
-    unsigned int blocksize = 1024;
-    unsigned int sectorsize = blocksize / 512;
-    unsigned int sectorstart = partition->sectorLba;
 
     // Read superblock
 
-    device->read_lba28(device, sectorstart + 1 * sectorsize, sectorsize, buffer);
+    device->read_lba28(device, sectorstart + 1 * 2, 2, buffer);
 
     struct ext2_superblock *sb = buffer;
 
@@ -68,11 +64,9 @@ static void ext2_driver_start(struct modules_driver *self)
 
     // FIX: If blocksize is different than 1024 the buffer will be to small
 
-    blocksize = 1024 << sb->blockSize;
-    sectorsize = blocksize / 512;
+    unsigned int blocksize = 1024 << sb->blockSize;
     unsigned int nodesize = sb->nodeSize;
-    unsigned int firstunreserved = sb->firstUnreservedNode;
-    unsigned int nodespergroup = sb->nodeCountGroup;
+    unsigned int sectorsize = blocksize / 512;
 
     if (sb->majorVersion >= 1)
     {
@@ -81,11 +75,10 @@ static void ext2_driver_start(struct modules_driver *self)
 
     // Try to find forth unreserved node
     // FIX: Select any node
-    firstunreserved += 4;
-
-    unsigned int nodegroup = get_group(firstunreserved, nodespergroup);
-    unsigned int nodeindex = get_index(firstunreserved, nodespergroup);
-    unsigned int nodeblock = get_block(firstunreserved, nodesize, blocksize);
+    unsigned int nodenum = sb->firstUnreservedNode + 4;
+    unsigned int nodegroup = get_group(nodenum, sb->nodeCountGroup);
+    unsigned int nodeindex = get_index(nodenum, sb->nodeCountGroup);
+    unsigned int nodeblock = get_block(nodenum, nodesize, blocksize);
 
     // Read block group descriptor table
 
