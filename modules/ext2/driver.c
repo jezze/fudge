@@ -93,6 +93,8 @@ static void ext2_driver_start(struct modules_driver *self)
 
     struct ext2_blockgroup *bg = (struct ext2_blockgroup *)buffer;
 
+    //REMEMBER TO OFFSET WITH NODEGROUP. NOW USING ZERO OFFSET
+
     unsigned int startingblock = bg->blockTableAddress;
 
     log_write("[ext2] Block address of block usage bitmap: %d\n", bg->blockUsageAddress);
@@ -100,43 +102,20 @@ static void ext2_driver_start(struct modules_driver *self)
     log_write("[ext2] Starting block address of node table: %d\n", startingblock);
     log_write("[ext2] Number of directories: %d\n", bg->directoryCount);
 
-    void *x;
-    unsigned int i;
-    unsigned int offset;
-
     unsigned int nodesperblock = blocksize / nodesize;
 
-    // Read the first 8
+    // Read the node
 
-    offset = 0;
-    device->read_lba28(device, sectorStart + (startingblock + offset) * blockstep, blockstep, buffer);
+    unsigned int newindex = nodeindex - nodeblock * nodesperblock;
 
-    x = buffer;
+    log_write("[ext2] New node index: %d\n", newindex);
 
-    for (i = 0; i < 8; i++)
-    {
+    device->read_lba28(device, sectorStart + (startingblock + nodeblock) * blockstep, blockstep, buffer);
 
-        struct ext2_node *node = x;
-        log_write("[ext2] Node size low: %d\n", node->sizeLow);
-        x += nodesize;
+    void *pb = buffer;
 
-    }
-
-    // Read the second 8
-
-    offset = 1;
-    device->read_lba28(device, sectorStart + (startingblock + offset) * blockstep, blockstep, buffer);
-
-    x = buffer;
-
-    for (i = 0; i < 8; i++)
-    {
-
-        struct ext2_node *node = x;
-        log_write("[ext2] Node size low: %d\n", node->sizeLow);
-        x += nodesize;
-
-    }
+    struct ext2_node *node = pb + nodesize * newindex;
+    log_write("[ext2] Node size low: %d\n", node->sizeLow);
 
 }
 
