@@ -95,12 +95,13 @@ static void ext2_driver_start(struct modules_driver *self)
     log_write("[ext2] First node index: %d\n", nodeindex);
     log_write("[ext2] First node block: %d\n", nodeblock);
 
-    // Read first entry in block group descriptor table
+    // Read block group descriptor table
+
     device->read_lba28(device, sectorstart + 2 * sectorsize, sectorsize, buffer);
 
-    struct ext2_blockgroup *bg = (struct ext2_blockgroup *)buffer;
+    void *pb1 = buffer;
 
-    // FIX: REMEMBER TO OFFSET WITH NODEGROUP. NOW USING ZERO OFFSET BECAUSE THE FIRST GROUP HOLDS ABOUT 8192 BLOCKS
+    struct ext2_blockgroup *bg = pb1 + nodegroup * sizeof (struct ext2_blockgroup);
 
     unsigned int tableblock = bg->blockTableAddress;
 
@@ -113,11 +114,9 @@ static void ext2_driver_start(struct modules_driver *self)
 
     device->read_lba28(device, sectorstart + (tableblock + nodeblock) * sectorsize, sectorsize, buffer);
 
-    void *pb = buffer;
+    void *pb2 = buffer;
 
-    unsigned int newindex = nodeindex - nodeblock * (blocksize / nodesize);
-
-    struct ext2_node *node = pb + nodesize * newindex;
+    struct ext2_node *node = pb2 + nodesize * (nodeindex - nodeblock * (blocksize / nodesize));
 
     log_write("[ext2] Node size low: %d\n", node->sizeLow);
     log_write("[ext2] Pointer0: %d\n", node->pointer0);
