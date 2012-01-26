@@ -86,7 +86,7 @@ static unsigned int pwd_read(struct vfs_node *self, unsigned int count, void *bu
         for (j = 0; j < filesystem->nodeCount; j++)
         {
 
-            struct vfs_node *node = filesystem->walk(filesystem, j);
+            struct vfs_node *node = filesystem->get_node(filesystem, j);
 
             if (string_compare(driver->cwdname, "*") && !string_find(node->name, driver->cwdname))
                 continue;
