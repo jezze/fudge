@@ -102,6 +102,16 @@ static unsigned int pwd_read(struct vfs_node *self, unsigned int count, void *bu
 
 }
 
+static struct vfs_node *filesystem_get_node(struct vfs_filesystem *self, unsigned int index)
+{
+
+    if (index >= self->nodeCount)
+        return 0;
+
+    return &ttyNodes[index];
+
+}
+
 static struct vfs_node *filesystem_find_node(struct vfs_filesystem *self, char *name)
 {
 
@@ -140,7 +150,7 @@ void tty_filesystem_init(struct modules_module *module)
     vfs_node_init(&ttyNodes[3], "module/tty/cwd", 3, 0, 0, cwd_read, cwd_write);
     vfs_node_init(&ttyNodes[4], "module/tty/pwd", 4, 0, 0, pwd_read, 0);
 
-    vfs_filesystem_init(&filesystem, filesystem_find_node, filesystem_walk); 
+    vfs_filesystem_init(&filesystem, filesystem_get_node, filesystem_find_node, filesystem_walk); 
     filesystem.nodeCount = 5;
 
     vfs_register_filesystem(&filesystem);

@@ -21,6 +21,16 @@ static unsigned int initrd_filesystem_node_read(struct vfs_node *self, unsigned 
 
 }
 
+static struct vfs_node *initrd_filesystem_get_node(struct vfs_filesystem *self, unsigned int index)
+{
+
+    if (!nodes[index].base.name)
+        return 0;
+
+    return &nodes[index].base;
+
+}
+
 static struct vfs_node *initrd_filesystem_find_node(struct vfs_filesystem *self, char *name)
 {
 
@@ -110,7 +120,7 @@ void initrd_node_init(struct initrd_node *node, unsigned int index, char *name, 
 void initrd_init(unsigned int initrdc, void **initrdv)
 {
 
-    vfs_filesystem_init(&filesystem, initrd_filesystem_find_node, initrd_filesystem_walk);
+    vfs_filesystem_init(&filesystem, initrd_filesystem_get_node, initrd_filesystem_find_node, initrd_filesystem_walk);
 
     filesystem.nodeCount = 0;
 
