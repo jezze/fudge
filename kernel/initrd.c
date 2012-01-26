@@ -48,13 +48,13 @@ static struct vfs_node *initrd_filesystem_find_node(struct vfs_filesystem *self,
 
 }
 
-static struct vfs_node *initrd_filesystem_walk(struct vfs_filesystem *self, unsigned int index)
+static unsigned int initrd_filesystem_walk(struct vfs_filesystem *self, unsigned int index)
 {
 
     if (index >= self->nodeCount)
         return 0;
 
-    return &nodes[index].base;
+    return index + 1;
 
 }
 

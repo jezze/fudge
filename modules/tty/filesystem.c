@@ -80,13 +80,15 @@ static unsigned int pwd_read(struct vfs_node *self, unsigned int count, void *bu
         if (!filesystem)
             continue;
 
-        unsigned int j;
-        unsigned int start = 0;
+        unsigned int index = 0;
 
-        for (j = 0; j < filesystem->nodeCount; j++)
+        while ((index = filesystem->walk(filesystem, index)))
         {
 
-            struct vfs_node *node = filesystem->get_node(filesystem, j);
+            struct vfs_node *node = filesystem->get_node(filesystem, index);
+
+            if (!node)
+                continue;
 
             if (string_compare(driver->cwdname, "*") && !string_find(node->name, driver->cwdname))
                 continue;
@@ -129,13 +131,13 @@ static struct vfs_node *filesystem_find_node(struct vfs_filesystem *self, char *
 
 }
 
-static struct vfs_node *filesystem_walk(struct vfs_filesystem *self, unsigned int index)
+static unsigned int filesystem_walk(struct vfs_filesystem *self, unsigned int index)
 {
 
-    if (index < self->nodeCount)
-        return &ttyNodes[index];
+    if (index >= self->nodeCount)
+        return 0;
 
-    return 0;
+    return index + 1;
 
 }
 
