@@ -83,6 +83,25 @@ void *elf_get_symbol(void *address, char *name)
 
 }
 
+void elf_prepare(void *address)
+{
+
+
+    struct elf_header *header = get_header(address);
+
+    if (!header)
+        return;
+
+    unsigned int i;
+
+    for (i = 0; i < header->shsize; i++)
+    {
+
+
+    }
+
+}
+
 void elf_relocate(void *address)
 {
 
