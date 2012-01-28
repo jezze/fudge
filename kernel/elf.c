@@ -86,17 +86,20 @@ void *elf_get_symbol(void *address, char *name)
 void elf_prepare(void *address)
 {
 
-
     struct elf_header *header = get_header(address);
 
     if (!header)
         return;
+
+    struct elf_section_header *sheader = address + header->shoffset;
 
     unsigned int i;
 
     for (i = 0; i < header->shsize; i++)
     {
 
+        if (sheader[i].type == 8)
+            memory_clear(address + sheader[i].offset, sheader[i].size);
 
     }
 
