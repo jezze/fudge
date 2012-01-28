@@ -95,7 +95,7 @@ void elf_prepare(void *address)
 
     unsigned int i;
 
-    for (i = 0; i < header->shsize; i++)
+    for (i = 0; i < header->shcount; i++)
     {
 
         if (sheader[i].type == 8)
