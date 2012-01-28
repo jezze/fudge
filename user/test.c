@@ -9,8 +9,8 @@ int main(int argc, char *argv[])
 
     fputs("test2\n", stdout);
 
-    FILE *out = fopen("stdout", "w");
-    fputs("test3\n", out);
+    FILE *out = fopen("stdout", "a");
+//    fputs("test3\n", out);
 //    fclose(out);
 
     return 0;
