@@ -1,4 +1,5 @@
 #include <lib/elf.h>
+#include <lib/memory.h>
 #include <lib/string.h>
 #include <kernel/elf.h>
 #include <kernel/symbol.h>

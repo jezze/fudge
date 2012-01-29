@@ -15,7 +15,7 @@ static unsigned int vga_device_read_framebuffer(struct vga_device *self, unsigne
         if (i >= VGA_FB_SIZE)
             return j;
 
-        char *address = (char *)(VGA_FB_ADDRESS + i * 2);
+        volatile char *address = (char *)(VGA_FB_ADDRESS + i * 2);
 
         memory_copy(buffer + j, address, 1);
 
@@ -37,7 +37,7 @@ static unsigned int vga_device_write_framebuffer(struct vga_device *self, unsign
         if (i >= VGA_FB_SIZE)
             return j;
 
-        char *address = (char *)(VGA_FB_ADDRESS + i * 2);
+        volatile char *address = (char *)(VGA_FB_ADDRESS + i * 2);
 
         memory_copy(address, buffer + j, 1);
         memory_copy(address + 1, &self->cursorColor, 1);
