@@ -113,6 +113,16 @@ struct ext2_node
 
 } __attribute__((packed));
 
+struct ext2_directory
+{
+
+    unsigned int node;
+    unsigned short size;
+    unsigned char length;
+    unsigned char type;
+
+} __attribute__((packed));
+
 struct ext2_driver
 {
 

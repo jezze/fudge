@@ -22,12 +22,38 @@ static void read_node(unsigned int nodenum, struct ata_device *device, unsigned 
 
     struct ext2_node *node = buffer + nodesize * (nodeindex % (blocksize / nodesize));
 
-    if (!((node->type & 0xF000) == 0x8000))
-        return;
+    if (((node->type & 0xF000) == 0x4000))
+    {
 
-    device->read_lba28(device, sectorstart + (node->pointer0) * sectorsize, sectorsize, buffer);
+        device->read_lba28(device, sectorstart + (node->pointer0) * sectorsize, sectorsize, buffer);
 
-    log_write("Content:\n%s\n", buffer);
+        log_write("Directory content:\n");
+
+        for (;;)
+        {
+
+            struct ext2_directory *directory = buffer;
+
+            if (!directory->length)
+                return;
+
+            log_write("%s\n", buffer + 8);
+
+            buffer += directory->size;
+
+        }
+
+    }
+
+    if (((node->type & 0xF000) == 0x8000))
+    {
+
+        device->read_lba28(device, sectorstart + (node->pointer0) * sectorsize, sectorsize, buffer);
+
+        log_write("File content:\n");
+        log_write("%s\n", buffer);
+
+    }
 
 }
 
@@ -73,6 +99,8 @@ static void ext2_driver_start(struct modules_driver *self)
     {
 
     }
+
+    read_node(2, device, blocksize, nodesize, sectorstart, sectorsize, nodesperblock);
 
     unsigned int i;
 
