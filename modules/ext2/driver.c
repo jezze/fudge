@@ -36,6 +36,8 @@ static void ext2_driver_start(struct modules_driver *self)
     if (!bus)
         return;
 
+/*
+
     // FIX: Not only first ata device
     struct ata_device *device = bus->find_device(bus, ATA_DEVICE_TYPE_ATA, 0);
 
@@ -76,6 +78,8 @@ static void ext2_driver_start(struct modules_driver *self)
 
     for (i = 3; i < 5; i++)
         read_node(first + i, device, blocksize, nodesize, sectorstart, sectorsize, nodesperblock);
+
+*/
 
 }
 

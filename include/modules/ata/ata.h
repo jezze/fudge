@@ -92,8 +92,6 @@ struct ata_bus
     unsigned short control;
     unsigned short data;
     unsigned int irq;
-    struct ata_device primary;
-    struct ata_device secondary;
     void (*sleep)(struct ata_bus *self);
     void (*wait)(struct ata_bus *self);
     void (*select)(struct ata_bus *self, unsigned char operation, unsigned int secondary);
@@ -101,8 +99,8 @@ struct ata_bus
     void (*set_lba2)(struct ata_bus *self, unsigned char count, unsigned char lba3, unsigned char lba4, unsigned char lba5);
     void (*set_command)(struct ata_bus *self, unsigned char command);
     unsigned int (*detect)(struct ata_bus *self, unsigned int secondary, void *buffer);
-    struct ata_device *(*find_device)(struct ata_bus *self, unsigned int type, unsigned int index);
     unsigned int (*read_blocks)(struct ata_bus *bus, unsigned int count, void *buffer);
+    void (*scan)(struct ata_bus *bus, void (*callback)(struct ata_bus *bus, unsigned int master, unsigned int type, void *buffer));
 
 };
 

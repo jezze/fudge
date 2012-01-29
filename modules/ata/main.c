@@ -28,13 +28,15 @@ void add_device(struct ata_bus *bus, unsigned int master, unsigned int type, voi
 void init()
 {
 
-    devicesCount = 0;
-
     ata_bus_init(&primary, ATA_MASTER_PRIMARY_CONTROL, ATA_MASTER_PRIMARY_DATA, 0x0E);
     ata_bus_init(&secondary, ATA_MASTER_SECONDARY_CONTROL, ATA_MASTER_SECONDARY_DATA, 0x0F);
 
     modules_register_bus(&primary.base);
     modules_register_bus(&secondary.base);
+
+    devicesCount = 0;
+    primary.scan(&primary, add_device);
+    secondary.scan(&secondary, add_device);
 
 }
 

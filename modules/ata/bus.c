@@ -123,21 +123,22 @@ static unsigned int ata_bus_detect(struct ata_bus *self, unsigned int secondary,
 
 }
 
-static struct ata_device *ata_bus_find_device(struct ata_bus *self, unsigned int type, unsigned int index)
+static void handle_irq()
 {
-
-    if (index == 0 && self->primary.type == type)
-        return &self->primary;
-
-    if (index < 2 && self->secondary.type == type)
-        return &self->secondary;
-
-    return 0;
 
 }
 
-static void handle_irq()
+void ata_bus_scan(struct ata_bus *bus, void (*callback)(struct ata_bus *bus, unsigned int master, unsigned int type, void *buffer))
 {
+
+    unsigned short buffer[256];
+    unsigned int type;
+
+    if ((type = bus->detect(bus, 0 << 4, buffer)))
+        callback(bus, 0 << 4, type, buffer);
+
+    if ((type = bus->detect(bus, 1 << 4, buffer)))
+        callback(bus, 1 << 4, type, buffer);
 
 }
 
@@ -156,42 +157,8 @@ void ata_bus_init(struct ata_bus *bus, unsigned int control, unsigned int data, 
     bus->set_lba2 = ata_bus_set_lba2;
     bus->set_command = ata_bus_set_command;
     bus->detect = ata_bus_detect;
-    bus->find_device = ata_bus_find_device;
     bus->read_blocks = ata_bus_read_blocks;
-
-    unsigned short buffer[256];
-
-    unsigned int type;
-
-    if ((type = bus->detect(bus, 0 << 4, buffer)))
-    {
-
-        ata_device_init(&bus->primary, bus, 0 << 4, type);
-
-        if (bus->primary.type == ATA_DEVICE_TYPE_ATA)
-            bus->primary.configure_ata(&bus->primary, buffer);
-
-        if (bus->primary.type == ATA_DEVICE_TYPE_ATAPI)
-            bus->primary.configure_atapi(&bus->primary, buffer);
-
-        modules_register_device(&bus->primary.base);
-
-    }
-
-    if ((type = bus->detect(bus, 1 << 4, buffer)))
-    {
-
-        ata_device_init(&bus->secondary, bus, 1 << 4, type);
-
-        if (bus->secondary.type == ATA_DEVICE_TYPE_ATA)
-            bus->secondary.configure_ata(&bus->secondary, buffer);
-
-        if (bus->secondary.type == ATA_DEVICE_TYPE_ATAPI)
-            bus->secondary.configure_atapi(&bus->secondary, buffer);
-
-        modules_register_device(&bus->secondary.base);
-
-    }
+    bus->scan = ata_bus_scan;
 
 }
 
