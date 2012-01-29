@@ -3,9 +3,25 @@
 
 static struct ata_bus primary;
 static struct ata_bus secondary;
+static struct ata_device devices[8];
+static unsigned int devicesCount;
+
+void add_device(struct ata_bus *bus, unsigned int master, unsigned int type)
+{
+
+    struct ata_device *device = &devices[devicesCount];
+
+    ata_device_init(device, bus, master, type);
+    modules_register_device(&device->base);
+
+    devicesCount++;
+
+}
 
 void init()
 {
+
+    devicesCount = 0;
 
     ata_bus_init(&primary, ATA_MASTER_PRIMARY_CONTROL, ATA_MASTER_PRIMARY_DATA, 0x0E);
     ata_bus_init(&secondary, ATA_MASTER_SECONDARY_CONTROL, ATA_MASTER_SECONDARY_DATA, 0x0F);
