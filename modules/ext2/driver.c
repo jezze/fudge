@@ -27,8 +27,6 @@ static void read_node(unsigned int nodenum, struct ata_device *device, unsigned 
 
         device->read_lba28(device, sectorstart + (node->pointer0) * sectorsize, sectorsize, buffer);
 
-        log_write("Directory content:\n");
-
         for (;;)
         {
 
@@ -37,7 +35,7 @@ static void read_node(unsigned int nodenum, struct ata_device *device, unsigned 
             if (!directory->length)
                 return;
 
-            log_write("%s\n", buffer + 8);
+            log_write("%d\t%s\n", directory->node, buffer + 8);
 
             buffer += directory->size;
 
@@ -92,20 +90,12 @@ static void ext2_driver_start(struct modules_driver *self)
     unsigned int first = sb->firstUnreservedNode;
     unsigned int total = sb->nodeCount - sb->nodeCountUnalloc;
 
-    log_write("First: %d\n", first);
-    log_write("Total: %d\n", total);
-
     if (sb->majorVersion >= 1)
     {
 
     }
 
     read_node(2, device, blocksize, nodesize, sectorstart, sectorsize, nodesperblock);
-
-    unsigned int i;
-
-    for (i = first; i < first + total; i++)
-        read_node(i, device, blocksize, nodesize, sectorstart, sectorsize, nodesperblock);
 
 }
 
