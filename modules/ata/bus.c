@@ -123,11 +123,6 @@ static unsigned int ata_bus_detect(struct ata_bus *self, unsigned int secondary,
 
 }
 
-static void handle_irq()
-{
-
-}
-
 void ata_bus_scan(struct ata_bus *self, void (*callback)(struct ata_bus *bus, unsigned int master, unsigned int type, void *buffer))
 {
 
