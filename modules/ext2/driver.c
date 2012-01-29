@@ -31,15 +31,8 @@ static void read_node(unsigned int nodenum, struct ata_device *device, unsigned 
 static void ext2_driver_start(struct modules_driver *self)
 {
 
-    struct ata_bus *bus = (struct ata_bus *)modules_get_bus(ATA_BUS_TYPE);
-
-    if (!bus)
-        return;
-
-/*
-
     // FIX: Not only first ata device
-    struct ata_device *device = bus->find_device(bus, ATA_DEVICE_TYPE_ATA, 0);
+    struct ata_device *device = (struct ata_device *)modules_get_device(ATA_DEVICE_TYPE);
 
     if (!device)
         return;
@@ -78,8 +71,6 @@ static void ext2_driver_start(struct modules_driver *self)
 
     for (i = 3; i < 5; i++)
         read_node(first + i, device, blocksize, nodesize, sectorstart, sectorsize, nodesperblock);
-
-*/
 
 }
 
