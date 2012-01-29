@@ -41,11 +41,23 @@ static void *get_rsdp()
 {
 
     void *rsdp;
+    char *signature = "RSD PTR ";
 
     for (rsdp = (void *)0x000E0000; rsdp < (void *)0x00100000; rsdp += 0x10)
     {
 
-        if (!memory_compare(rsdp, "RSD PTR ", 8))
+        if (!memory_compare(rsdp, signature, 8))
+            return rsdp;
+
+    }
+
+    unsigned int ebda = *((unsigned int *)0x40E);
+    ebda = ebda * 0x10 & 0x000FFFFF;
+
+    for (rsdp = (void *)ebda; rsdp < (void *)(ebda + 0x400); rsdp += 0x10)
+    {
+
+        if (!memory_compare(rsdp, signature, 8))
             return rsdp;
 
     }
