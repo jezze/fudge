@@ -54,13 +54,11 @@ static void ata_device_configure_atapi(struct ata_device *self)
 static unsigned int ata_device_read_lba28(struct ata_device *self, unsigned int sector, unsigned int count, void *buffer)
 {
 
-    struct ata_bus *bus = self->bus;
+    self->bus->select(self->bus, 0xE0 | ((sector >> 24) & 0x0F), self->slave);
+    self->bus->set_lba(self->bus, (unsigned char)(count), (unsigned char)(sector >> 0), (unsigned char)(sector >> 8), (unsigned char)(sector >> 16));
+    self->bus->set_command(self->bus, ATA_COMMAND_PIO28_READ);
 
-    bus->select(bus, 0xE0 | ((sector >> 24) & 0x0F), self->slave);
-    bus->set_lba(bus, (unsigned char)(count), (unsigned char)(sector >> 0), (unsigned char)(sector >> 8), (unsigned char)(sector >> 16));
-    bus->set_command(bus, ATA_COMMAND_PIO28_READ);
-
-    return bus->read_blocks(bus, count, buffer) * 512;
+    return self->bus->read_blocks(self->bus, count, buffer) * 512;
 
 }
 
@@ -74,14 +72,12 @@ static unsigned int ata_device_write_lba28(struct ata_device *self, unsigned int
 static unsigned int ata_device_read_lba48(struct ata_device *self, unsigned int sectorlow, unsigned int sectorhigh, unsigned int count, void *buffer)
 {
 
-    struct ata_bus *bus = self->bus;
+    self->bus->select(self->bus, 0x40, self->slave);
+    self->bus->set_lba2(self->bus, (unsigned char)(count >> 8), (unsigned char)(sectorhigh >> 0), (unsigned char)(sectorhigh >> 8), (unsigned char)(sectorhigh >> 16));
+    self->bus->set_lba(self->bus, (unsigned char)(count), (unsigned char)(sectorlow >> 0), (unsigned char)(sectorlow >> 8), (unsigned char)(sectorlow >> 16));
+    self->bus->set_command(self->bus, ATA_COMMAND_PIO48_READ);
 
-    bus->select(bus, 0x40, self->slave);
-    bus->set_lba2(bus, (unsigned char)(count >> 8), (unsigned char)(sectorhigh >> 0), (unsigned char)(sectorhigh >> 8), (unsigned char)(sectorhigh >> 16));
-    bus->set_lba(bus, (unsigned char)(count), (unsigned char)(sectorlow >> 0), (unsigned char)(sectorlow >> 8), (unsigned char)(sectorlow >> 16));
-    bus->set_command(bus, ATA_COMMAND_PIO48_READ);
-
-    return bus->read_blocks(bus, count, buffer) * 512;
+    return self->bus->read_blocks(self->bus, count, buffer) * 512;
 
 }
 
