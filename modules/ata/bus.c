@@ -3,7 +3,7 @@
 #include <kernel/modules.h>
 #include <modules/ata/ata.h>
 
-static unsigned int ata_bus_read_blocks(struct ata_bus *bus, unsigned int count, void *buffer)
+static unsigned int ata_bus_read_blocks(struct ata_bus *self, unsigned int count, void *buffer)
 {
 
     unsigned int i;
@@ -12,13 +12,13 @@ static unsigned int ata_bus_read_blocks(struct ata_bus *bus, unsigned int count,
     for (i = 0; i < count; i++)
     {
 
-        bus->sleep(bus);
-        bus->wait(bus);
+        self->sleep(self);
+        self->wait(self);
 
         unsigned int i;
 
         for (i = 0; i < 256; i++)
-            *out++ = io_inw(bus->data);
+            *out++ = io_inw(self->data);
 
     }
 
@@ -128,17 +128,17 @@ static void handle_irq()
 
 }
 
-void ata_bus_scan(struct ata_bus *bus, void (*callback)(struct ata_bus *bus, unsigned int master, unsigned int type, void *buffer))
+void ata_bus_scan(struct ata_bus *self, void (*callback)(struct ata_bus *bus, unsigned int master, unsigned int type, void *buffer))
 {
 
     unsigned short buffer[256];
     unsigned int type;
 
-    if ((type = bus->detect(bus, 0 << 4, buffer)))
-        callback(bus, 0 << 4, type, buffer);
+    if ((type = self->detect(self, 0 << 4, buffer)))
+        callback(self, 0 << 4, type, buffer);
 
-    if ((type = bus->detect(bus, 1 << 4, buffer)))
-        callback(bus, 1 << 4, type, buffer);
+    if ((type = self->detect(self, 1 << 4, buffer)))
+        callback(self, 1 << 4, type, buffer);
 
 }
 

@@ -99,8 +99,8 @@ struct ata_bus
     void (*set_lba2)(struct ata_bus *self, unsigned char count, unsigned char lba3, unsigned char lba4, unsigned char lba5);
     void (*set_command)(struct ata_bus *self, unsigned char command);
     unsigned int (*detect)(struct ata_bus *self, unsigned int secondary, void *buffer);
-    unsigned int (*read_blocks)(struct ata_bus *bus, unsigned int count, void *buffer);
-    void (*scan)(struct ata_bus *bus, void (*callback)(struct ata_bus *bus, unsigned int master, unsigned int type, void *buffer));
+    unsigned int (*read_blocks)(struct ata_bus *self, unsigned int count, void *buffer);
+    void (*scan)(struct ata_bus *self, void (*callback)(struct ata_bus *bus, unsigned int master, unsigned int type, void *buffer));
 
 };
 
