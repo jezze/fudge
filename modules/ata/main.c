@@ -6,7 +6,7 @@ static struct ata_bus secondary;
 static struct ata_device devices[8];
 static unsigned int devicesCount;
 
-void add_device(struct ata_bus *bus, unsigned int slave, unsigned int type, void *buffer)
+void add_device(struct ata_bus *bus, unsigned int slave, unsigned int type)
 {
 
     struct ata_device *device = &devices[devicesCount];
@@ -14,10 +14,10 @@ void add_device(struct ata_bus *bus, unsigned int slave, unsigned int type, void
     ata_device_init(device, bus, slave, type);
 
     if (type == ATA_DEVICE_TYPE_ATA)
-        device->configure_ata(device, buffer);
+        device->configure_ata(device);
 
     if (type == ATA_DEVICE_TYPE_ATAPI)
-        device->configure_atapi(device, buffer);
+        device->configure_atapi(device);
 
     modules_register_device(&device->base);
 

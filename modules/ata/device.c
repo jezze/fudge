@@ -1,8 +1,12 @@
 #include <kernel/modules.h>
 #include <modules/ata/ata.h>
 
-static void ata_device_configure_ata(struct ata_device *self, unsigned short *buffer)
+static void ata_device_configure_ata(struct ata_device *self)
 {
+
+    unsigned short buffer[256];
+
+    self->bus->read_blocks(self->bus, 1, buffer);
 
     unsigned int lba48 = buffer[ATA_ID_SUPPORT] & (1 << 10);
 
@@ -37,8 +41,13 @@ static void ata_device_configure_ata(struct ata_device *self, unsigned short *bu
 
 }
 
-static void ata_device_configure_atapi(struct ata_device *self, unsigned short *buffer)
+static void ata_device_configure_atapi(struct ata_device *self)
 {
+
+    unsigned short buffer[256];
+
+    self->bus->set_command(self->bus, ATA_COMMAND_ID_ATAPI);
+    self->bus->read_blocks(self->bus, 1, buffer);
 
 }
 

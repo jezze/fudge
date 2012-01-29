@@ -78,7 +78,7 @@ static void ata_bus_set_command(struct ata_bus *self, unsigned char command)
 
 }
 
-static unsigned int ata_bus_detect(struct ata_bus *self, unsigned int slave, void *buffer)
+static unsigned int ata_bus_detect(struct ata_bus *self, unsigned int slave)
 {
 
     self->select(self, 0xA0, slave);
@@ -95,23 +95,10 @@ static unsigned int ata_bus_detect(struct ata_bus *self, unsigned int slave, voi
     unsigned short lba = (io_inb(self->data + ATA_DATA_LBA2) << 8) | io_inb(self->data + ATA_DATA_LBA1);
 
     if (lba == 0x0000)
-    {
-
-        self->read_blocks(self, 1, buffer);
-
         return ATA_DEVICE_TYPE_ATA;
 
-    }
-
     if (lba == 0xEB14)
-    {
-
-        self->set_command(self, ATA_COMMAND_ID_ATAPI);
-        self->read_blocks(self, 1, buffer);
-
         return ATA_DEVICE_TYPE_ATAPI;
-
-    }
 
     if (lba == 0xC33C)
         return ATA_DEVICE_TYPE_SATA;
@@ -123,17 +110,16 @@ static unsigned int ata_bus_detect(struct ata_bus *self, unsigned int slave, voi
 
 }
 
-void ata_bus_scan(struct ata_bus *self, void (*callback)(struct ata_bus *bus, unsigned int slave, unsigned int type, void *buffer))
+void ata_bus_scan(struct ata_bus *self, void (*callback)(struct ata_bus *bus, unsigned int slave, unsigned int type))
 {
 
-    unsigned short buffer[256];
     unsigned int type;
 
-    if ((type = self->detect(self, 0, buffer)))
-        callback(self, 0, type, buffer);
+    if ((type = self->detect(self, 0)))
+        callback(self, 0, type);
 
-    if ((type = self->detect(self, 1, buffer)))
-        callback(self, 1, type, buffer);
+    if ((type = self->detect(self, 1)))
+        callback(self, 1, type);
 
 }
 

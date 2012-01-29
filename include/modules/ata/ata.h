@@ -72,8 +72,8 @@ struct ata_device
     unsigned int type;
     unsigned int slave;
     unsigned char model[41];
-    void (*configure_ata)(struct ata_device *self, unsigned short *buffer);
-    void (*configure_atapi)(struct ata_device *self, unsigned short *buffer);
+    void (*configure_ata)(struct ata_device *self);
+    void (*configure_atapi)(struct ata_device *self);
     unsigned int lba28Max;
     unsigned int (*read_lba28)(struct ata_device *self, unsigned int sector, unsigned int count, void *buffer);
     unsigned int (*write_lba28)(struct ata_device *self, unsigned int sector, unsigned int count, void *buffer);
@@ -97,9 +97,9 @@ struct ata_bus
     void (*set_lba)(struct ata_bus *self, unsigned char count, unsigned char lba0, unsigned char lba1, unsigned char lba2);
     void (*set_lba2)(struct ata_bus *self, unsigned char count, unsigned char lba3, unsigned char lba4, unsigned char lba5);
     void (*set_command)(struct ata_bus *self, unsigned char command);
-    unsigned int (*detect)(struct ata_bus *self, unsigned int slave, void *buffer);
+    unsigned int (*detect)(struct ata_bus *self, unsigned int slave);
     unsigned int (*read_blocks)(struct ata_bus *self, unsigned int count, void *buffer);
-    void (*scan)(struct ata_bus *self, void (*callback)(struct ata_bus *bus, unsigned int slave, unsigned int type, void *buffer));
+    void (*scan)(struct ata_bus *self, void (*callback)(struct ata_bus *bus, unsigned int slave, unsigned int type));
 
 };
 
