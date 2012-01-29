@@ -43,10 +43,10 @@ static void ata_bus_wait(struct ata_bus *self)
 
 }
 
-static void ata_bus_select(struct ata_bus *self, unsigned char operation, unsigned int secondary)
+static void ata_bus_select(struct ata_bus *self, unsigned char operation, unsigned int slave)
 {
 
-    io_outb(self->data + ATA_DATA_SELECT, operation | secondary);
+    io_outb(self->data + ATA_DATA_SELECT, operation | slave << 4);
     self->sleep(self);
 
 }
@@ -78,10 +78,10 @@ static void ata_bus_set_command(struct ata_bus *self, unsigned char command)
 
 }
 
-static unsigned int ata_bus_detect(struct ata_bus *self, unsigned int secondary, void *buffer)
+static unsigned int ata_bus_detect(struct ata_bus *self, unsigned int slave, void *buffer)
 {
 
-    self->select(self, 0xA0, secondary);
+    self->select(self, 0xA0, slave);
     self->set_lba(self, 0, 0, 0, 0);
     self->set_command(self, ATA_COMMAND_ID_ATA);
 
@@ -123,17 +123,17 @@ static unsigned int ata_bus_detect(struct ata_bus *self, unsigned int secondary,
 
 }
 
-void ata_bus_scan(struct ata_bus *self, void (*callback)(struct ata_bus *bus, unsigned int master, unsigned int type, void *buffer))
+void ata_bus_scan(struct ata_bus *self, void (*callback)(struct ata_bus *bus, unsigned int slave, unsigned int type, void *buffer))
 {
 
     unsigned short buffer[256];
     unsigned int type;
 
-    if ((type = self->detect(self, 0 << 4, buffer)))
-        callback(self, 0 << 4, type, buffer);
+    if ((type = self->detect(self, 0, buffer)))
+        callback(self, 0, type, buffer);
 
-    if ((type = self->detect(self, 1 << 4, buffer)))
-        callback(self, 1 << 4, type, buffer);
+    if ((type = self->detect(self, 1, buffer)))
+        callback(self, 1, type, buffer);
 
 }
 

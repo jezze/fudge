@@ -36,15 +36,14 @@
 #define ATA_ID_SUPPORT  0x53
 #define ATA_ID_LBA48MAX 0x64
 
-#define ATA_MASTER_PRIMARY_DATA      0x1F0
-#define ATA_MASTER_PRIMARY_CONTROL   0x3F6
-#define ATA_MASTER_SECONDARY_DATA    0x170
-#define ATA_MASTER_SECONDARY_CONTROL 0x376
-
-#define ATA_SLAVE_PRIMARY_DATA       0x1E8
-#define ATA_SLAVE_PRIMARY_CONTROL    0x3E6
-#define ATA_SLAVE_SECONDARY_DATA     0x168
-#define ATA_SLAVE_SECONDARY_CONTROL  0x366
+#define ATA_PRIMARY_MASTER_DATA      0x1F0
+#define ATA_PRIMARY_MASTER_CONTROL   0x3F6
+#define ATA_PRIMARY_SLAVE_DATA       0x170
+#define ATA_PRIMARY_SLAVE_CONTROL    0x376
+#define ATA_SECONDARY_MASTER_DATA    0x1E8
+#define ATA_SECONDARY_MASTER_CONTROL 0x3E6
+#define ATA_SECONDARY_SLAVE_DATA     0x168
+#define ATA_SECONDARY_SLAVE_CONTROL  0x366
 
 #define ATA_STATUS_FLAG_ERROR 1 << 0
 #define ATA_STATUS_FLAG_DRQ   1 << 3
@@ -71,7 +70,7 @@ struct ata_device
     struct ata_bus *bus;
     struct pci_device *pciDevice;
     unsigned int type;
-    unsigned int secondary;
+    unsigned int slave;
     unsigned char model[41];
     void (*configure_ata)(struct ata_device *self, unsigned short *buffer);
     void (*configure_atapi)(struct ata_device *self, unsigned short *buffer);
@@ -94,17 +93,17 @@ struct ata_bus
     unsigned int irq;
     void (*sleep)(struct ata_bus *self);
     void (*wait)(struct ata_bus *self);
-    void (*select)(struct ata_bus *self, unsigned char operation, unsigned int secondary);
+    void (*select)(struct ata_bus *self, unsigned char operation, unsigned int slave);
     void (*set_lba)(struct ata_bus *self, unsigned char count, unsigned char lba0, unsigned char lba1, unsigned char lba2);
     void (*set_lba2)(struct ata_bus *self, unsigned char count, unsigned char lba3, unsigned char lba4, unsigned char lba5);
     void (*set_command)(struct ata_bus *self, unsigned char command);
-    unsigned int (*detect)(struct ata_bus *self, unsigned int secondary, void *buffer);
+    unsigned int (*detect)(struct ata_bus *self, unsigned int slave, void *buffer);
     unsigned int (*read_blocks)(struct ata_bus *self, unsigned int count, void *buffer);
-    void (*scan)(struct ata_bus *self, void (*callback)(struct ata_bus *bus, unsigned int master, unsigned int type, void *buffer));
+    void (*scan)(struct ata_bus *self, void (*callback)(struct ata_bus *bus, unsigned int slave, unsigned int type, void *buffer));
 
 };
 
-extern void ata_device_init(struct ata_device *device, struct ata_bus *bus, unsigned int secondary, unsigned int type);
+extern void ata_device_init(struct ata_device *device, struct ata_bus *bus, unsigned int slave, unsigned int type);
 extern void ata_bus_init(struct ata_bus *bus, unsigned int control, unsigned int data, unsigned int irq);
 
 #endif

@@ -6,12 +6,12 @@ static struct ata_bus secondary;
 static struct ata_device devices[8];
 static unsigned int devicesCount;
 
-void add_device(struct ata_bus *bus, unsigned int master, unsigned int type, void *buffer)
+void add_device(struct ata_bus *bus, unsigned int slave, unsigned int type, void *buffer)
 {
 
     struct ata_device *device = &devices[devicesCount];
 
-    ata_device_init(device, bus, master, type);
+    ata_device_init(device, bus, slave, type);
 
     if (type == ATA_DEVICE_TYPE_ATA)
         device->configure_ata(device, buffer);
@@ -28,8 +28,8 @@ void add_device(struct ata_bus *bus, unsigned int master, unsigned int type, voi
 void init()
 {
 
-    ata_bus_init(&primary, ATA_MASTER_PRIMARY_CONTROL, ATA_MASTER_PRIMARY_DATA, 0x0E);
-    ata_bus_init(&secondary, ATA_MASTER_SECONDARY_CONTROL, ATA_MASTER_SECONDARY_DATA, 0x0F);
+    ata_bus_init(&primary, ATA_PRIMARY_MASTER_CONTROL, ATA_PRIMARY_MASTER_DATA, 0x0E);
+    ata_bus_init(&secondary, ATA_PRIMARY_SLAVE_CONTROL, ATA_PRIMARY_SLAVE_DATA, 0x0F);
 
     modules_register_bus(&primary.base);
     modules_register_bus(&secondary.base);
