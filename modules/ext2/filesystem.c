@@ -23,6 +23,23 @@ static struct vfs_node *filesystem_find_node(struct vfs_filesystem *self, char *
 static unsigned int filesystem_walk(struct vfs_filesystem *self, unsigned int index)
 {
 
+    static char mem[1024];
+    void *buffer = mem;
+
+    driver->read_node(driver, 2, buffer);
+
+    for (;;)
+    {
+
+        struct ext2_directory *directory = buffer;
+
+        if (!directory->length)
+            return 0;
+
+        buffer += directory->size;
+
+    }
+
     return 0;
 
 }
