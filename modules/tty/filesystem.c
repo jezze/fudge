@@ -80,7 +80,7 @@ static unsigned int pwd_read(struct vfs_node *self, unsigned int count, void *bu
         if (!filesystem)
             continue;
 
-        unsigned int index = 0;
+        unsigned int index = filesystem->firstIndex;
 
         while ((index = filesystem->walk(filesystem, index)))
         {
@@ -93,7 +93,7 @@ static unsigned int pwd_read(struct vfs_node *self, unsigned int count, void *bu
             if (string_compare(driver->cwdname, "*") && !string_find(node->name, driver->cwdname))
                 continue;
 
-            string_write_format(buffer, "%s\n", node->name);
+            string_write_format(buffer, "%d\t%s\n", index, node->name);
             buffer += string_length(buffer);
 
         }
@@ -107,7 +107,7 @@ static unsigned int pwd_read(struct vfs_node *self, unsigned int count, void *bu
 static struct vfs_node *filesystem_get_node(struct vfs_filesystem *self, unsigned int index)
 {
 
-    if (index >= self->nodeCount)
+    if (index >= 5)
         return 0;
 
     return &ttyNodes[index];
@@ -119,7 +119,7 @@ static struct vfs_node *filesystem_find_node(struct vfs_filesystem *self, char *
 
     unsigned int i;
 
-    for (i = 0; i < self->nodeCount; i++)
+    for (i = 0; i < 5; i++)
     {
 
         if (string_find(ttyNodes[i].name, name))
@@ -134,7 +134,7 @@ static struct vfs_node *filesystem_find_node(struct vfs_filesystem *self, char *
 static unsigned int filesystem_walk(struct vfs_filesystem *self, unsigned int index)
 {
 
-    if (index >= self->nodeCount)
+    if (index >= 5)
         return 0;
 
     return index + 1;
@@ -153,7 +153,7 @@ void tty_filesystem_init(struct modules_module *module)
     vfs_node_init(&ttyNodes[4], "module/tty/pwd", 4, 0, 0, pwd_read, 0);
 
     vfs_filesystem_init(&filesystem, filesystem_get_node, filesystem_find_node, filesystem_walk); 
-    filesystem.nodeCount = 5;
+    filesystem.firstIndex = 0;
 
     vfs_register_filesystem(&filesystem);
 

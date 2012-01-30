@@ -6,6 +6,7 @@
 
 static struct vfs_filesystem filesystem;
 static struct initrd_node nodes[INITRD_HEADER_SIZE];
+static unsigned int nodesCount;
 
 static unsigned int initrd_filesystem_node_read(struct vfs_node *self, unsigned int count, void *buffer)
 {
@@ -36,7 +37,7 @@ static struct vfs_node *initrd_filesystem_find_node(struct vfs_filesystem *self,
 
     unsigned int i;
 
-    for (i = 0; i < self->nodeCount; i++)
+    for (i = 0; i < nodesCount; i++)
     {
 
         if (string_find(nodes[i].base.name, name))
@@ -51,7 +52,7 @@ static struct vfs_node *initrd_filesystem_find_node(struct vfs_filesystem *self,
 static unsigned int initrd_filesystem_walk(struct vfs_filesystem *self, unsigned int index)
 {
 
-    if (index >= self->nodeCount)
+    if (index >= nodesCount)
         return 0;
 
     return index + 1;
@@ -121,13 +122,12 @@ void initrd_init(unsigned int initrdc, void **initrdv)
 {
 
     vfs_filesystem_init(&filesystem, initrd_filesystem_get_node, initrd_filesystem_find_node, initrd_filesystem_walk);
-
-    filesystem.nodeCount = 0;
+    filesystem.firstIndex = 0;
 
     unsigned int i;
 
     for (i = 0; i < initrdc; i++)
-        filesystem.nodeCount += parse(*(initrdv + i));
+        nodesCount += parse(*(initrdv + i));
 
     vfs_register_filesystem(&filesystem);
 
