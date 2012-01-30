@@ -11,6 +11,8 @@ void init()
 
     driver.base.start(&driver.base);
 
+    ext2_filesystem_init(&driver.base.module);
+
 }
 
 void destroy()

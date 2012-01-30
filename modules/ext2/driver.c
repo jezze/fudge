@@ -8,7 +8,7 @@
 static struct ext2_superblock superblock;
 static char mem[1024];
 
-static void read_node(unsigned int nodenum, struct ata_device *device, unsigned int sectorstart)
+static void read_node(struct ext2_driver *self, unsigned int nodenum, unsigned int sectorstart)
 {
 
     unsigned int blocksize = 1024 << superblock.blockSize;
@@ -20,18 +20,18 @@ static void read_node(unsigned int nodenum, struct ata_device *device, unsigned 
 
     void *buffer = mem;
 
-    device->read_lba28(device, sectorstart + 2 * sectorsize, sectorsize, buffer);
+    self->ataDevice->read_lba28(self->ataDevice, sectorstart + 2 * sectorsize, sectorsize, buffer);
 
     struct ext2_blockgroup *bg = buffer + nodegroup * sizeof (struct ext2_blockgroup);
 
-    device->read_lba28(device, sectorstart + (bg->blockTableAddress + nodeblock) * sectorsize, sectorsize, buffer);
+    self->ataDevice->read_lba28(self->ataDevice, sectorstart + (bg->blockTableAddress + nodeblock) * sectorsize, sectorsize, buffer);
 
     struct ext2_node *node = buffer + nodesize * (nodeindex % (blocksize / nodesize));
 
     if (((node->type & 0xF000) == 0x4000))
     {
 
-        device->read_lba28(device, sectorstart + (node->pointer0) * sectorsize, sectorsize, buffer);
+        self->ataDevice->read_lba28(self->ataDevice, sectorstart + (node->pointer0) * sectorsize, sectorsize, buffer);
 
         for (;;)
         {
@@ -52,7 +52,7 @@ static void read_node(unsigned int nodenum, struct ata_device *device, unsigned 
     if (((node->type & 0xF000) == 0x8000))
     {
 
-        device->read_lba28(device, sectorstart + (node->pointer0) * sectorsize, sectorsize, buffer);
+        self->ataDevice->read_lba28(self->ataDevice, sectorstart + (node->pointer0) * sectorsize, sectorsize, buffer);
 
         log_write("File content:\n");
         log_write("%s\n", buffer);
@@ -64,31 +64,33 @@ static void read_node(unsigned int nodenum, struct ata_device *device, unsigned 
 static void ext2_driver_start(struct modules_driver *self)
 {
 
-    // FIX: Not only first ata device
-    struct ata_device *device = (struct ata_device *)modules_get_device(ATA_DEVICE_TYPE);
+    struct ext2_driver *driver = (struct ext2_driver *)self;
 
-    if (!device)
+    // FIX: Not only first ata device
+    driver->ataDevice = (struct ata_device *)modules_get_device(ATA_DEVICE_TYPE);
+
+    if (!driver->ataDevice)
         return;
 
-    struct mbr_driver *mbr = (struct mbr_driver *)modules_get_driver(MBR_DRIVER_TYPE);
+    driver->mbrDriver = (struct mbr_driver *)modules_get_driver(MBR_DRIVER_TYPE);
 
-    if (!mbr)
+    if (!driver->mbrDriver)
         return;
 
     // FIX: Not only partition 0
-    struct mbr_partition *partition = mbr->get_partition(mbr, device, 0);
+    struct mbr_partition *partition = driver->mbrDriver->get_partition(driver->mbrDriver, driver->ataDevice, 0);
     unsigned int sectorstart = partition->sectorLba;
 
     void *buffer = mem;
 
-    device->read_lba28(device, sectorstart + 1 * 2, 2, buffer);
+    driver->ataDevice->read_lba28(driver->ataDevice, sectorstart + 1 * 2, 2, buffer);
 
     memory_copy(&superblock, buffer, sizeof (struct ext2_superblock));
 
     if (superblock.signature != 0xEF53)
         return;
 
-    read_node(2, device, sectorstart);
+    read_node(driver, 2, sectorstart);
 
 }
 

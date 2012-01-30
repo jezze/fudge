@@ -127,10 +127,13 @@ struct ext2_driver
 {
 
     struct modules_driver base;
+    struct ata_device *ataDevice;
+    struct mbr_driver *mbrDriver;
 
 };
 
 extern void ext2_driver_init(struct ext2_driver *driver);
+extern void ext2_filesystem_init(struct modules_module *module);
 
 #endif
 
