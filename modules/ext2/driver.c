@@ -31,11 +31,12 @@ static void read_node(struct ext2_driver *self, unsigned int nodenum)
     self->ataDevice->read_lba28(self->ataDevice, sectorstart + (bg->blockTableAddress + nodeblock) * sectorsize, sectorsize, buffer);
 
     struct ext2_node *node = buffer + nodesize * (nodeindex % (blocksize / nodesize));
+    unsigned int type = node->type;
 
-    if (((node->type & 0xF000) == 0x4000))
+    self->ataDevice->read_lba28(self->ataDevice, sectorstart + (node->pointer0) * sectorsize, sectorsize, buffer);
+
+    if ((type & 0xF000) == 0x4000)
     {
-
-        self->ataDevice->read_lba28(self->ataDevice, sectorstart + (node->pointer0) * sectorsize, sectorsize, buffer);
 
         for (;;)
         {
@@ -53,12 +54,9 @@ static void read_node(struct ext2_driver *self, unsigned int nodenum)
 
     }
 
-    if (((node->type & 0xF000) == 0x8000))
+    if ((type & 0xF000) == 0x8000)
     {
 
-        self->ataDevice->read_lba28(self->ataDevice, sectorstart + (node->pointer0) * sectorsize, sectorsize, buffer);
-
-        log_write("File content:\n");
         log_write("%s\n", buffer);
 
     }
