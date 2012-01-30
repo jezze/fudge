@@ -1,18 +1,24 @@
+#include <lib/memory.h>
 #include <kernel/log.h>
 #include <kernel/modules.h>
 #include <modules/ata/ata.h>
 #include <modules/mbr/mbr.h>
 #include <modules/ext2/ext2.h>
 
+static struct ext2_superblock superblock;
 static char mem[1024];
 
-static void read_node(unsigned int nodenum, struct ata_device *device, unsigned int blocksize, unsigned int nodesize, unsigned int sectorstart, unsigned int sectorsize, unsigned int nodesperblock)
+static void read_node(unsigned int nodenum, struct ata_device *device, unsigned int sectorstart)
 {
 
-    void *buffer = mem;
-    unsigned int nodegroup = (nodenum - 1) / nodesperblock;
-    unsigned int nodeindex = (nodenum - 1) % nodesperblock;
+    unsigned int blocksize = 1024 << superblock.blockSize;
+    unsigned int nodesize = superblock.nodeSize;
+    unsigned int sectorsize = blocksize / 512;
+    unsigned int nodegroup = (nodenum - 1) / superblock.nodeCountGroup;
+    unsigned int nodeindex = (nodenum - 1) % superblock.nodeCountGroup;
     unsigned int nodeblock = (nodenum * nodesize) / blocksize;
+
+    void *buffer = mem;
 
     device->read_lba28(device, sectorstart + 2 * sectorsize, sectorsize, buffer);
 
@@ -77,25 +83,12 @@ static void ext2_driver_start(struct modules_driver *self)
 
     device->read_lba28(device, sectorstart + 1 * 2, 2, buffer);
 
-    struct ext2_superblock *sb = buffer;
+    memory_copy(&superblock, buffer, sizeof (struct ext2_superblock));
 
-    if (sb->signature != 0xEF53)
+    if (superblock.signature != 0xEF53)
         return;
 
-    // FIX: If blocksize is different than 1024 the buffer will be to small
-    unsigned int blocksize = 1024 << sb->blockSize;
-    unsigned int nodesize = sb->nodeSize;
-    unsigned int sectorsize = blocksize / 512;
-    unsigned int nodesperblock = sb->nodeCountGroup;
-    unsigned int first = sb->firstUnreservedNode;
-    unsigned int total = sb->nodeCount - sb->nodeCountUnalloc;
-
-    if (sb->majorVersion >= 1)
-    {
-
-    }
-
-    read_node(2, device, blocksize, nodesize, sectorstart, sectorsize, nodesperblock);
+    read_node(2, device, sectorstart);
 
 }
 
