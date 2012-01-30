@@ -8,8 +8,12 @@
 static struct ext2_superblock superblock;
 static char mem[1024];
 
-static void read_node(struct ext2_driver *self, unsigned int nodenum, unsigned int sectorstart)
+static void read_node(struct ext2_driver *self, unsigned int nodenum)
 {
+
+    // FIX: Not only partition 0
+    struct mbr_partition *partition = self->mbrDriver->get_partition(self->mbrDriver, self->ataDevice, 0);
+    unsigned int sectorstart = partition->sectorLba;
 
     unsigned int blocksize = 1024 << superblock.blockSize;
     unsigned int nodesize = superblock.nodeSize;
@@ -90,7 +94,7 @@ static void ext2_driver_start(struct modules_driver *self)
     if (superblock.signature != 0xEF53)
         return;
 
-    read_node(driver, 2, sectorstart);
+    read_node(driver, 2);
 
 }
 
@@ -99,6 +103,7 @@ void ext2_driver_init(struct ext2_driver *driver)
 
     modules_driver_init(&driver->base, EXT2_DRIVER_TYPE);
 
+    driver->read_node = read_node;
     driver->base.start = ext2_driver_start;
 
 }
