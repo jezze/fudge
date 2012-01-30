@@ -65,7 +65,7 @@ static void ext2_driver_start(struct modules_driver *self)
         return;
 
     // FIX: Move this
-    read_node(driver, 2, buffer);
+    driver->read_node(driver, 2, buffer);
 
     for (;;)
     {
