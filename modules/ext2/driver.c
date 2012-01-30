@@ -6,9 +6,8 @@
 #include <modules/ext2/ext2.h>
 
 static struct ext2_superblock superblock;
-static char mem[1024];
 
-static void read_node(struct ext2_driver *self, unsigned int nodenum)
+static void read_node(struct ext2_driver *self, unsigned int nodenum, void *buffer)
 {
 
     // FIX: Not only partition 0
@@ -22,8 +21,6 @@ static void read_node(struct ext2_driver *self, unsigned int nodenum)
     unsigned int nodeindex = (nodenum - 1) % superblock.nodeCountGroup;
     unsigned int nodeblock = (nodenum * nodesize) / blocksize;
 
-    void *buffer = mem;
-
     self->ataDevice->read_lba28(self->ataDevice, sectorstart + 2 * sectorsize, sectorsize, buffer);
 
     struct ext2_blockgroup *bg = buffer + nodegroup * sizeof (struct ext2_blockgroup);
@@ -34,32 +31,6 @@ static void read_node(struct ext2_driver *self, unsigned int nodenum)
     unsigned int type = node->type;
 
     self->ataDevice->read_lba28(self->ataDevice, sectorstart + (node->pointer0) * sectorsize, sectorsize, buffer);
-
-    if ((type & 0xF000) == 0x4000)
-    {
-
-        for (;;)
-        {
-
-            struct ext2_directory *directory = buffer;
-
-            if (!directory->length)
-                return;
-
-            log_write("%d\t%s\n", directory->node, buffer + 8);
-
-            buffer += directory->size;
-
-        }
-
-    }
-
-    if ((type & 0xF000) == 0x8000)
-    {
-
-        log_write("%s\n", buffer);
-
-    }
 
 }
 
@@ -83,6 +54,7 @@ static void ext2_driver_start(struct modules_driver *self)
     struct mbr_partition *partition = driver->mbrDriver->get_partition(driver->mbrDriver, driver->ataDevice, 0);
     unsigned int sectorstart = partition->sectorLba;
 
+    static char mem[1024];
     void *buffer = mem;
 
     driver->ataDevice->read_lba28(driver->ataDevice, sectorstart + 1 * 2, 2, buffer);
@@ -92,7 +64,22 @@ static void ext2_driver_start(struct modules_driver *self)
     if (superblock.signature != 0xEF53)
         return;
 
-    read_node(driver, 2);
+    // FIX: Move this
+    read_node(driver, 2, buffer);
+
+    for (;;)
+    {
+
+        struct ext2_directory *directory = buffer;
+
+        if (!directory->length)
+            return;
+
+        log_write("%d\t%s\n", directory->node, buffer + 8);
+
+        buffer += directory->size;
+
+    }
 
 }
 
