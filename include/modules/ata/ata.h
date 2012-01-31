@@ -99,6 +99,7 @@ struct ata_bus
     void (*set_command)(struct ata_bus *self, unsigned char command);
     unsigned int (*detect)(struct ata_bus *self, unsigned int slave);
     unsigned int (*read_blocks)(struct ata_bus *self, unsigned int count, void *buffer);
+    unsigned int (*write_blocks)(struct ata_bus *self, unsigned int count, void *buffer);
     void (*scan)(struct ata_bus *self, void (*callback)(struct ata_bus *bus, unsigned int slave, unsigned int type));
 
 };

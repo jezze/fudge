@@ -26,6 +26,30 @@ static unsigned int ata_bus_read_blocks(struct ata_bus *self, unsigned int count
 
 }
 
+static unsigned int ata_bus_write_blocks(struct ata_bus *self, unsigned int count, void *buffer)
+{
+
+    unsigned int i;
+    unsigned short *out = (unsigned short *)buffer;
+
+    for (i = 0; i < count; i++)
+    {
+
+        self->sleep(self);
+        self->wait(self);
+
+        unsigned int i;
+
+        for (i = 0; i < 256; i++)
+            io_outw(self->data, *out++);
+
+    }
+
+    return i;
+
+
+}
+
 static void ata_bus_sleep(struct ata_bus *self)
 {
 
@@ -139,6 +163,7 @@ void ata_bus_init(struct ata_bus *bus, unsigned int control, unsigned int data, 
     bus->set_command = ata_bus_set_command;
     bus->detect = ata_bus_detect;
     bus->read_blocks = ata_bus_read_blocks;
+    bus->write_blocks = ata_bus_write_blocks;
     bus->scan = ata_bus_scan;
 
 }
