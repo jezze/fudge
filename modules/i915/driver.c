@@ -88,6 +88,10 @@ static void set_pipe_mode(unsigned int width, unsigned int height)
 static void i915_driver_start(struct modules_driver *self)
 {
 
+    unsigned volatile int *lvds = (unsigned volatile int *)0x61180;
+
+    log_write("[i915] LVDS: %x\n", *lvds);
+
     log_write("[i915] Set pipe mode\n");
     set_pipe_mode(1024, 600);
 
