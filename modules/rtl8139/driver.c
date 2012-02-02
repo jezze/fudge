@@ -57,6 +57,8 @@ static void get_mac(struct rtl8139_driver *driver)
 static void handle_irq(struct modules_device *self)
 {
 
+    log_write("[rtl8139] IRQ handler\n");
+
 }
 
 static void rtl8139_driver_start(struct modules_driver *self)
@@ -70,6 +72,8 @@ static void rtl8139_driver_start(struct modules_driver *self)
     set_rx(driver, 0x0F);
     set_interrupt_flags(driver, 0x05);
     enable(driver);
+
+    log_write("[rtl8139] Mac: %x:%x:%x:%x:%x:%x\n", driver->mac[0], driver->mac[1], driver->mac[2], driver->mac[3], driver->mac[4], driver->mac[5]);
 
 }
 
