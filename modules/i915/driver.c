@@ -4,33 +4,6 @@
 #include <modules/pci/pci.h>
 #include <modules/i915/i915.h>
 
-#define I915_PIPEA_DSL  0x70000
-#define I915_PIPEA_SCL  0x70004
-#define I915_PIPEA_CONF 0x70008
-#define I915_PIPEA_STAT 0x70024
-
-#define I915_PIPEB_DSL  0x71000
-#define I915_PIPEB_SCL  0x71004
-#define I915_PIPEB_CONF 0x71008
-#define I915_PIPEB_STAT 0x71024
-
-#define I915_PIPE_CONF_STATE  (1 << 30)
-#define I915_PIPE_CONF_ENABLE (1 << 31)
-
-#define I915_PIPE_STAT_STATUS_VBLANK (1 << 1)
-#define I915_PIPE_STAT_STATUS_VSYNC (1 << 9)
-
-#define I915_DISPLAYA_CNTR 0x70180
-#define I915_DISPLAYA_LOFF 0x70184
-#define I915_DISPLAYA_SURF 0x7019C
-
-#define I915_DISPLAYB_CNTR 0x71180
-#define I915_DISPLAYB_LOFF 0x71184
-#define I915_DISPLAYB_SURF 0x7119C
-
-#define I915_DISPLAY_CNTR_ENABLE_GAMMA (1 << 30)
-#define I915_DISPLAY_CNTR_ENABLE_PLANE (1 << 31)
-
 static void wait_vblank()
 {
 
@@ -39,6 +12,17 @@ static void wait_vblank()
     *stat = *stat | I915_PIPE_STAT_STATUS_VBLANK;
 
     while (*stat & I915_PIPE_STAT_STATUS_VBLANK);
+
+}
+
+static void enable_dpll()
+{
+
+    unsigned volatile int *ctrl = (unsigned volatile int *)I915_DPLLA_CTRL;
+
+    //unsigned int temp = I915_DPLL_CTRL_DISABLE_VGA | I915_DPLL_CTRL_DIVIDE2;
+
+    *ctrl = I915_DPLL_CTRL_ENABLE_VCO;
 
 }
 
@@ -56,35 +40,102 @@ static void enable_pipe()
 static void enable_plane()
 {
 
-    unsigned volatile int *cntr = (unsigned volatile int *)I915_DISPLAYA_CNTR;
+    unsigned volatile int *crtl = (unsigned volatile int *)I915_DISPLAYA_CTRL;
 
-    *cntr = *cntr & I915_DISPLAY_CNTR_ENABLE_PLANE;
+    *crtl = *crtl & I915_DISPLAY_CTRL_ENABLE_PLANE;
 
-    // flush plane
+    unsigned volatile int *addr = (unsigned volatile int *)I915_DISPLAYA_ADDR;
+
+    *addr = *addr;
+
+    unsigned volatile int *surf = (unsigned volatile int *)I915_DISPLAYA_SURF;
+
+    *surf = *surf;
 
     wait_vblank();
+
+}
+
+static void set_pipe_mode(unsigned int width, unsigned int height)
+{
+
+    unsigned volatile int *htotal = (unsigned volatile int *)I915_DISPLAYA_HTOTAL;
+
+    *htotal = ((height - 1) << 16) | ((height - 1) << 0);
+
+    unsigned volatile int *hblank = (unsigned volatile int *)I915_DISPLAYA_HBLANK;
+
+    *hblank = ((height - 1) << 16) | ((height - 1) << 0);
+
+    unsigned volatile int *hsync = (unsigned volatile int *)I915_DISPLAYA_HSYNC;
+
+    *hsync = ((height - 1) << 16) | ((height - 1) << 0);
+
+    unsigned volatile int *vtotal = (unsigned volatile int *)I915_DISPLAYA_VTOTAL;
+
+    *vtotal = ((width - 1) << 16) | ((width - 1) << 0);
+
+    unsigned volatile int *vblank = (unsigned volatile int *)I915_DISPLAYA_VBLANK;
+
+    *vblank = ((width - 1) << 16) | ((width - 1) << 0);
+
+    unsigned volatile int *vsync = (unsigned volatile int *)I915_DISPLAYA_VSYNC;
+
+    *vsync = ((width - 1) << 16) | ((width - 1) << 0);
 
 }
 
 static void i915_driver_start(struct modules_driver *self)
 {
 
-    // Program pipe timings
+    log_write("[i915] Set pipe mode\n");
+    set_pipe_mode(1024, 600);
 
-    // Enable panelfitter as needed
+    log_write("[i915] SKIP: Enable panelfitter\n");
 
+    log_write("[i915] Enable dpll\n");
+    enable_dpll();
 
+    log_write("[i915] SKIP: Wait 150us\n");
 
-    // Program DPLL
-
-    // Enable DPLL
-
-    // Wait 150us
-
+    log_write("[i915] Enable pipe\n");
     enable_pipe();
+
+    log_write("[i915] Enable plane\n");
     enable_plane();
 
-    // Enable ports
+    log_write("[i915] SKIP: Enable ports\n");
+
+}
+
+void handle_irq()
+{
+
+    log_write("[i915] IRQ\n");
+
+}
+
+static void i915_driver_attach(struct modules_driver *self, struct modules_device *device)
+{
+
+    device->driver = self;
+
+    struct i915_driver *driver = (struct i915_driver *)self;
+    struct pci_device *pciDevice = (struct pci_device *)device;
+
+    irq_register_routine(pciDevice->configuration.interruptline, device, handle_irq);
+
+}
+
+static unsigned int i915_driver_check(struct modules_driver *self, struct modules_device *device)
+{
+
+    if (device->type != PCI_DEVICE_TYPE)
+        return 0;
+
+    struct pci_device *pciDevice = (struct pci_device *)device;
+
+    return pciDevice->configuration.vendorid == 0x8086 && pciDevice->configuration.deviceid == 0x27AE;
 
 }
 
@@ -94,6 +145,8 @@ void i915_driver_init(struct i915_driver *driver)
     modules_driver_init(&driver->base, I915_DRIVER_TYPE);
 
     driver->base.start = i915_driver_start;
+    driver->base.attach = i915_driver_attach;
+    driver->base.check = i915_driver_check;
 
 }
 
