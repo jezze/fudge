@@ -55,6 +55,18 @@ static void get_mac(struct rtl8139_driver *driver)
 
 }
 
+static void read(struct rtl8139_driver *driver)
+{
+
+    log_write("%x:%x:%x:%x\n", driver->rx[0], driver->rx[1], driver->rx[2], driver->rx[3]);
+
+}
+
+static void write(struct rtl8139_driver *driver)
+{
+
+}
+
 static void handle_irq(struct modules_device *self)
 {
 
@@ -65,7 +77,7 @@ static void handle_irq(struct modules_device *self)
     if (status & RTL8139_ISR_FLAG_ROK)
     {
 
-        log_write("%x:%x:%x:%x\n", driver->rx[0], driver->rx[1], driver->rx[2], driver->rx[3]);
+        read(driver);
 
         io_outw(driver->io + RTL8139_REGISTER_ISR, RTL8139_ISR_FLAG_ROK);
 
@@ -73,6 +85,8 @@ static void handle_irq(struct modules_device *self)
 
     if (status & RTL8139_ISR_FLAG_TOK)
     {
+
+        write(driver);
 
         io_outw(driver->io + RTL8139_REGISTER_ISR, RTL8139_ISR_FLAG_TOK);
 
