@@ -1,3 +1,4 @@
+#include <lib/memory.h>
 #include <kernel/arch/x86/io.h>
 #include <kernel/irq.h>
 #include <kernel/log.h>
@@ -47,6 +48,11 @@ static void setup_receiver(struct rtl8139_driver *driver)
 
 static void setup_transmitter(struct rtl8139_driver *driver)
 {
+
+    io_outd(driver->io + RTL8139_REGISTER_TSAD0, (unsigned int)driver->tx0);
+    io_outd(driver->io + RTL8139_REGISTER_TSAD1, (unsigned int)driver->tx1);
+    io_outd(driver->io + RTL8139_REGISTER_TSAD2, (unsigned int)driver->tx2);
+    io_outd(driver->io + RTL8139_REGISTER_TSAD3, (unsigned int)driver->tx3);
 
 }
 
@@ -147,7 +153,7 @@ static void read(struct rtl8139_driver *driver)
 
         struct rtl8139_header *header = (struct rtl8139_header *)(driver->rx + current);
 
-        log_write("[rtl8139]   0x%x Flags:0x%x Length:0x%x\n", current, header->flags, header->length);
+        log_write("[rtl8139] 0x%x Flags:0x%x Length:0x%x\n", current, header->flags, header->length);
 
         read_frame((unsigned char *)(driver->rx + current + 4));
 
@@ -159,10 +165,14 @@ static void read(struct rtl8139_driver *driver)
 
 }
 
-static void write(struct rtl8139_driver *driver)
+static void write(struct rtl8139_driver *driver, unsigned int count, char *buffer)
 {
 
-    log_write("[rtl8139] IRQ Write\n");
+    memory_copy(driver->tx0, buffer, count);
+
+    unsigned int status = count & 0x1FFF;
+
+    io_outd(driver->io + RTL8139_REGISTER_TSD0, status); 
 
 }
 
@@ -185,7 +195,7 @@ static void handle_irq(struct modules_device *self)
     if (status & RTL8139_ISR_FLAG_TOK)
     {
 
-        write(driver);
+        log_write("Transfer occured\n");
 
         io_outw(driver->io + RTL8139_REGISTER_ISR, RTL8139_ISR_FLAG_TOK);
 
