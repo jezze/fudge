@@ -73,27 +73,11 @@ static void read(struct rtl8139_driver *driver)
 
         log_write("[rtl8139] Off:0x%x H:0x%x L:0x%x\n", current, header, length);
 
-        // Dest mac
-        unsigned char x0 = driver->rx[current + 4]; 
-        unsigned char x1 = driver->rx[current + 5]; 
-        unsigned char x2 = driver->rx[current + 6]; 
-        unsigned char x3 = driver->rx[current + 7]; 
-        unsigned char x4 = driver->rx[current + 8]; 
-        unsigned char x5 = driver->rx[current + 9]; 
+        unsigned char *data = driver->rx + current + 4;
 
-        // Source mac
-        unsigned char x6 = driver->rx[current + 10]; 
-        unsigned char x7 = driver->rx[current + 11]; 
-        unsigned char x8 = driver->rx[current + 12]; 
-        unsigned char x9 = driver->rx[current + 13]; 
-        unsigned char x10 = driver->rx[current + 14]; 
-        unsigned char x11 = driver->rx[current + 15];
-
-        // Ethertype
-        unsigned char x12 = driver->rx[current + 16]; 
-        unsigned char x13 = driver->rx[current + 17]; 
-
-        log_write("- %x:%x:%x:%x:%x:%x %x:%x:%x:%x:%x:%x %x:%x\n", x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13);
+        log_write("- Dest: %x:%x:%x:%x:%x:%x\n", data[0], data[1], data[2], data[3], data[4], data[5]);
+        log_write("- Source: %x:%x:%x:%x:%x:%x\n", data[6], data[7], data[8], data[9], data[10], data[11]);
+        log_write("- Type: %x:%x\n", data[12], data[13]);
 
         current += length + 4;
         current = (current + 3) & ~3;
