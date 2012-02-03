@@ -59,8 +59,8 @@ static void get_mac(struct rtl8139_driver *driver)
 static void read(struct rtl8139_driver *driver)
 {
 
-//    unsigned int cbr = inw(driver->io + RTL8139_REGISTER_CBR);
-//    unsigned int capr = inw(driver->io + RTL8139_REGISTER_CAPR);
+    unsigned int cbr = io_inw(driver->io + RTL8139_REGISTER_CBR);
+    unsigned int capr = io_inw(driver->io + RTL8139_REGISTER_CAPR);
 
     log_write("[rtl8139] IRQ Read\n");
 
