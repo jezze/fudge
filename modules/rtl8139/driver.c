@@ -64,13 +64,32 @@ static void get_mac(struct rtl8139_driver *driver)
 
 }
 
-static void read_datagram_ipv6(unsigned char *data)
+static void read_arp(unsigned char *data)
+{
+
+    log_write("- ARP Operation: %d\n", data[6] << 8 | data[7]);
+
+}
+
+static void read_icmpv6(unsigned char *data)
+{
+
+    log_write("- ICMPv6 Type: %d\n", data[0]);
+    log_write("- ICMPv6 Code: %d\n", data[1]);
+
+}
+
+static void read_ipv6(unsigned char *data)
 {
 
     log_write("- IPv6 Version: %d\n", data[0] >> 4);
     log_write("- IPv6 Length:  %d\n", data[4]);
+    log_write("- IPv6 Next:  %d\n", data[6]);
     log_write("- IPv6 Source:  %x%x:%x%x:%x%x:%x%x:%x%x:%x%x:%x%x:%x%x\n", data[8], data[9], data[10], data[11], data[12], data[13], data[14], data[15], data[16], data[17], data[18], data[19], data[20], data[21], data[22], data[23]);
     log_write("- IPv6 Dest:    %x%x:%x%x:%x%x:%x%x:%x%x:%x%x:%x%x:%x%x\n", data[24], data[25], data[26], data[27], data[28], data[29], data[30], data[31], data[32], data[33], data[34], data[35], data[36], data[37], data[38], data[39]);
+
+    if (data[6] == 58)
+        read_icmpv6(data + 40);
 
 }
 
@@ -81,7 +100,13 @@ static void read_frame(unsigned char *data)
     log_write("- Frame Source: %x:%x:%x:%x:%x:%x\n", data[6], data[7], data[8], data[9], data[10], data[11]);
     log_write("- Frame Type:   0x%x%x\n", data[12], data[13]);
 
-    read_datagram_ipv6(data + 14);
+    unsigned short type = *(unsigned short *)(data + 12);
+
+    if (data[12] == 0x08 && data[13] == 0x06)
+        read_arp(data + 14);
+
+    if (data[12] == 0x86 && data[13] == 0xDD)
+        read_ipv6(data + 14);
 
 }
 
@@ -98,7 +123,7 @@ static void read(struct rtl8139_driver *driver)
 
         log_write("[rtl8139]   0x%x Flags:0x%x Length:0x%x\n", current, header->flags, header->length);
 
-        read_frame(driver->rx + current + 4);
+        read_frame((unsigned char *)(driver->rx + current + 4));
 
         current += (header->length + 4 + 3) & ~3;
 
