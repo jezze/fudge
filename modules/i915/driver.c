@@ -1,4 +1,5 @@
 #include <lib/memory.h>
+#include <kernel/irq.h>
 #include <kernel/log.h>
 #include <kernel/modules.h>
 #include <modules/pci/pci.h>
