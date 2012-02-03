@@ -67,12 +67,12 @@ static void read(struct rtl8139_driver *driver)
     while (read_ofs < end_ofs)
     {
 
-        unsigned short hdr = *(unsigned short *)&driver->rx[read_ofs]; 
+        unsigned short hdr = *(unsigned short *)&driver->rx[read_ofs];
         unsigned short len = *(unsigned short *)&driver->rx[read_ofs + 2]; 
 
-        log_write("[rtl8139] 0x%x 0x%x 0x%x\n", read_ofs, hdr, len);
+        log_write("[rtl8139] Off:0x%x Head:0x%x Len:0x%x\n", read_ofs, hdr, len);
 
-        read_ofs += *(unsigned short *)&driver->rx[read_ofs + 2] + 4;
+        read_ofs += len + 4;
         read_ofs = (read_ofs + 3) & ~3;
 
     }
