@@ -62,9 +62,14 @@ static void read(struct rtl8139_driver *driver)
 //    unsigned int cbr = inw(driver->io + RTL8139_REGISTER_CBR);
 //    unsigned int capr = inw(driver->io + RTL8139_REGISTER_CAPR);
 
-//    log_write("%x\n", cbr);
+    log_write("[rtl8139] IRQ Read\n");
 
-    log_write("[rtl8139] IRQ\n");
+}
+
+static void write(struct rtl8139_driver *driver)
+{
+
+    log_write("[rtl8139] IRQ Write\n");
 
 }
 
