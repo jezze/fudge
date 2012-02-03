@@ -87,6 +87,16 @@
 #define RTL8139_ISR_FLAG_ROK (1 << 0)
 #define RTL8139_ISR_FLAG_TOK (1 << 2)
 
+#define RTL8139_HEADER_FLAG_ROK  (1 << 0)
+#define RTL8139_HEADER_FLAG_FAE  (1 << 1)
+#define RTL8139_HEADER_FLAG_CRC  (1 << 2)
+#define RTL8139_HEADER_FLAG_LONG (1 << 3)
+#define RTL8139_HEADER_FLAG_RUNT (1 << 4)
+#define RTL8139_HEADER_FLAG_ISE  (1 << 5)
+#define RTL8139_HEADER_FLAG_BAR  (1 << 13)
+#define RTL8139_HEADER_FLAG_PAM  (1 << 14)
+#define RTL8139_HEADER_FLAG_MAR  (1 << 15)
+
 #define RTL8139_DRIVER_TYPE 0x0423
 
 struct rtl8139_driver

@@ -56,13 +56,34 @@ static void get_mac(struct rtl8139_driver *driver)
 
 }
 
+unsigned short cbr_old;
+
 static void read(struct rtl8139_driver *driver)
 {
 
-    unsigned int cbr = io_inw(driver->io + RTL8139_REGISTER_CBR);
-    unsigned int capr = io_inw(driver->io + RTL8139_REGISTER_CAPR);
+    unsigned short end_ofs = io_inw(driver->io + RTL8139_REGISTER_CBR);
+    unsigned short read_ofs = cbr_old;
 
-    log_write("[rtl8139] IRQ Read\n");
+    while (read_ofs < end_ofs)
+    {
+
+        unsigned short hdr = *(unsigned short *)&driver->rx[read_ofs]; 
+        unsigned short len = *(unsigned short *)&driver->rx[read_ofs + 2]; 
+
+        log_write("[rtl8139] 0x%x 0x%x 0x%x\n", read_ofs, hdr, len);
+
+        read_ofs += *(unsigned short *)&driver->rx[read_ofs + 2] + 4;
+        read_ofs = (read_ofs + 3) & ~3;
+
+    }
+
+    cbr_old = read_ofs;
+
+    unsigned short read_ofs2 = io_inw(driver->io + RTL8139_REGISTER_CAPR);
+
+    read_ofs2 = (read_ofs2 + 0x10) & 0xFFFF;
+
+    unsigned short len2 = *(unsigned short *)&driver->rx[read_ofs2 + 2];
 
 }
 
@@ -104,6 +125,8 @@ static void rtl8139_driver_start(struct modules_driver *self)
 {
 
     struct rtl8139_driver *driver = (struct rtl8139_driver *)self;
+
+    cbr_old = 0;
 
     poweron(driver);
     reset(driver);
