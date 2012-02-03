@@ -94,15 +94,13 @@ static void read(struct rtl8139_driver *driver)
     while (current < end)
     {
 
-        unsigned short header = *(unsigned short *)&driver->rx[current];
-        unsigned short length = *(unsigned short *)&driver->rx[current + 2]; 
+        struct rtl8139_header *header = (struct rtl8139_header *)(driver->rx + current);
 
-        log_write("[rtl8139]   0x%x H:0x%x L:0x%x\n", current, header, length);
+        log_write("[rtl8139]   0x%x Flags:0x%x Length:0x%x\n", current, header->flags, header->length);
 
         read_frame(driver->rx + current + 4);
 
-        current += length + 4;
-        current = (current + 3) & ~3;
+        current += (header->length + 4 + 3) & ~3;
 
     }
 

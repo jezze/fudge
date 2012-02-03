@@ -109,6 +109,14 @@ struct rtl8139_driver
 
 };
 
+struct rtl8139_header
+{
+
+    unsigned short flags;
+    unsigned short length;
+
+};
+
 extern void rtl8139_driver_init(struct rtl8139_driver *driver);
 
 #endif
