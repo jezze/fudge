@@ -21,24 +21,32 @@ static void reset(struct rtl8139_driver *driver)
 
 }
 
-static void set_rx(struct rtl8139_driver *driver)
+static void enable(struct rtl8139_driver *driver)
+{
+
+    io_outw(driver->io + RTL8139_REGISTER_CR, 0x0C);
+
+}
+
+static void setup_interrupts(struct rtl8139_driver *driver, unsigned short flags)
+{
+
+    io_outw(driver->io + RTL8139_REGISTER_IMR, flags);
+
+}
+
+static void setup_reciever(struct rtl8139_driver *driver)
 {
 
     io_outd(driver->io + RTL8139_REGISTER_RBSTART, (unsigned int)driver->rx);
     io_outd(driver->io + RTL8139_REGISTER_CBR, 0);
     io_outd(driver->io + RTL8139_REGISTER_CAPR, 0);
+    io_outd(driver->io + RTL8139_REGISTER_RCR, 0x0F);
 
 }
 
-static void set_tx(struct rtl8139_driver *driver)
+static void setup_transmitter(struct rtl8139_driver *driver)
 {
-
-}
-
-static void set_interrupt_flags(struct rtl8139_driver *driver, unsigned short flags)
-{
-
-    io_outw(driver->io + RTL8139_REGISTER_IMR, flags);
 
 }
 
@@ -148,13 +156,10 @@ static void rtl8139_driver_start(struct modules_driver *self)
 
     poweron(driver);
     reset(driver);
-    set_interrupt_flags(driver, RTL8139_ISR_FLAG_ROK | RTL8139_ISR_FLAG_TOK);
-    set_rx(driver);
-    set_tx(driver);
-
-    io_outd(driver->io + RTL8139_REGISTER_RCR, 0x0F);
-    io_outw(driver->io + RTL8139_REGISTER_CR, 0x0C);
-
+    setup_interrupts(driver, RTL8139_ISR_FLAG_ROK | RTL8139_ISR_FLAG_TOK);
+    setup_reciever(driver);
+    setup_transmitter(driver);
+    enable(driver);
     get_mac(driver);
 
 }
