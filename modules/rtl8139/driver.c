@@ -35,7 +35,7 @@ static void setup_interrupts(struct rtl8139_driver *driver, unsigned short flags
 
 }
 
-static void setup_reciever(struct rtl8139_driver *driver)
+static void setup_receiver(struct rtl8139_driver *driver)
 {
 
     io_outd(driver->io + RTL8139_REGISTER_RBSTART, (unsigned int)driver->rx);
@@ -157,7 +157,7 @@ static void rtl8139_driver_start(struct modules_driver *self)
     poweron(driver);
     reset(driver);
     setup_interrupts(driver, RTL8139_ISR_FLAG_ROK | RTL8139_ISR_FLAG_TOK);
-    setup_reciever(driver);
+    setup_receiver(driver);
     setup_transmitter(driver);
     enable(driver);
     get_mac(driver);
