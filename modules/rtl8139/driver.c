@@ -21,11 +21,17 @@ static void reset(struct rtl8139_driver *driver)
 
 }
 
-static void set_rx(struct rtl8139_driver *driver, unsigned int rcr)
+static void set_rx(struct rtl8139_driver *driver)
 {
 
     io_outd(driver->io + RTL8139_REGISTER_RBSTART, (unsigned int)driver->rx);
-    io_outd(driver->io + RTL8139_REGISTER_RCR, rcr);
+    io_outd(driver->io + RTL8139_REGISTER_CBR, 0);
+    io_outd(driver->io + RTL8139_REGISTER_CAPR, 0);
+
+}
+
+static void set_tx(struct rtl8139_driver *driver)
+{
 
 }
 
@@ -33,13 +39,6 @@ static void set_interrupt_flags(struct rtl8139_driver *driver, unsigned short fl
 {
 
     io_outw(driver->io + RTL8139_REGISTER_IMR, flags);
-
-}
-
-static void enable(struct rtl8139_driver *driver)
-{
-
-    io_outw(driver->io + RTL8139_REGISTER_CR, 0x0C);
 
 }
 
@@ -53,17 +52,19 @@ static void get_mac(struct rtl8139_driver *driver)
     driver->mac[4] = io_inb(driver->io + RTL8139_REGISTER_IDR4);
     driver->mac[5] = io_inb(driver->io + RTL8139_REGISTER_IDR5);
 
+    log_write("[rtl8139] Mac: %x:%x:%x:%x:%x:%x\n", driver->mac[0], driver->mac[1], driver->mac[2], driver->mac[3], driver->mac[4], driver->mac[5]);
+
 }
 
 static void read(struct rtl8139_driver *driver)
 {
 
-    log_write("%x:%x:%x:%x\n", driver->rx[0], driver->rx[1], driver->rx[2], driver->rx[3]);
+//    unsigned int cbr = inw(driver->io + RTL8139_REGISTER_CBR);
+//    unsigned int capr = inw(driver->io + RTL8139_REGISTER_CAPR);
 
-}
+//    log_write("%x\n", cbr);
 
-static void write(struct rtl8139_driver *driver)
-{
+    log_write("[rtl8139] IRQ\n");
 
 }
 
@@ -101,12 +102,14 @@ static void rtl8139_driver_start(struct modules_driver *self)
 
     poweron(driver);
     reset(driver);
-    get_mac(driver);
-    set_rx(driver, 0x0F);
     set_interrupt_flags(driver, RTL8139_ISR_FLAG_ROK | RTL8139_ISR_FLAG_TOK);
-    enable(driver);
+    set_rx(driver);
+    set_tx(driver);
 
-    log_write("[rtl8139] Mac: %x:%x:%x:%x:%x:%x\n", driver->mac[0], driver->mac[1], driver->mac[2], driver->mac[3], driver->mac[4], driver->mac[5]);
+    io_outd(driver->io + RTL8139_REGISTER_RCR, 0x0F);
+    io_outw(driver->io + RTL8139_REGISTER_CR, 0x0C);
+
+    get_mac(driver);
 
 }
 
