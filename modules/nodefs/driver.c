@@ -1,8 +1,52 @@
 #include <lib/memory.h>
+#include <lib/string.h>
 #include <kernel/log.h>
 #include <kernel/modules.h>
 #include <kernel/vfs.h>
 #include <modules/nodefs/nodefs.h>
+
+static struct vfs_node *filesystem_get_node(struct vfs_filesystem *self, unsigned int index)
+{
+
+    struct nodefs_filesystem *filesystem = (struct nodefs_filesystem *)self;
+
+    if (index >= 128)
+        return 0;
+
+    return filesystem->nodes[index];
+
+}
+
+static struct vfs_node *filesystem_find_node(struct vfs_filesystem *self, char *name)
+{
+
+    struct nodefs_filesystem *filesystem = (struct nodefs_filesystem *)self;
+
+    unsigned int i;
+
+    for (i = 0; i < 128; i++)
+    {
+
+        if (string_find(filesystem->nodes[i]->name, name))
+            return filesystem->nodes[i];
+
+    }
+
+    return 0;
+
+}
+
+static unsigned int filesystem_walk(struct vfs_filesystem *self, unsigned int index)
+{
+
+    struct nodefs_filesystem *filesystem = (struct nodefs_filesystem *)self;
+
+    if (index >= 128)
+        return 0;
+
+    return index + 1;
+
+}
 
 static void register_node(struct nodefs_driver *self, struct vfs_node *node)
 {
@@ -12,8 +56,8 @@ static void register_node(struct nodefs_driver *self, struct vfs_node *node)
     for (i = 0; i < 128; i++)
     {
 
-        if (!self->nodes[i])
-            self->nodes[i] = node;
+        if (!self->filesystem.nodes[i])
+            self->filesystem.nodes[i] = node;
 
     }
 
@@ -27,10 +71,17 @@ static void unregister_node(struct nodefs_driver *self, struct vfs_node *node)
     for (i = 0; i < 128; i++)
     {
 
-        if (self->nodes[i] == node)
-            self->nodes[i] = 0;
+        if (self->filesystem.nodes[i] == node)
+            self->filesystem.nodes[i] = 0;
 
     }
+
+}
+
+void nodefs_filesystem_init(struct nodefs_filesystem *filesystem)
+{
+
+    vfs_filesystem_init(&filesystem->base, filesystem_get_node, filesystem_find_node, filesystem_walk); 
 
 }
 
@@ -38,6 +89,7 @@ void nodefs_driver_init(struct nodefs_driver *driver)
 {
 
     modules_driver_init(&driver->base, NODEFS_DRIVER_TYPE);
+    nodefs_filesystem_init(&driver->filesystem);
 
     driver->register_node = register_node;
     driver->unregister_node = unregister_node;
