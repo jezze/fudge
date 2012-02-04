@@ -3,7 +3,9 @@
 #include <kernel/irq.h>
 #include <kernel/log.h>
 #include <kernel/modules.h>
+#include <kernel/vfs.h>
 #include <modules/pci/pci.h>
+#include <modules/nodefs/nodefs.h>
 #include <modules/rtl8139/rtl8139.h>
 
 static void poweron(struct rtl8139_driver *driver)
@@ -247,6 +249,8 @@ static unsigned int rtl8139_driver_check(struct modules_driver *self, struct mod
 
 }
 
+static struct vfs_node test;
+
 void rtl8139_driver_init(struct rtl8139_driver *driver)
 {
 
@@ -255,6 +259,12 @@ void rtl8139_driver_init(struct rtl8139_driver *driver)
     driver->base.start = rtl8139_driver_start;
     driver->base.attach = rtl8139_driver_attach;
     driver->base.check = rtl8139_driver_check;
+
+    vfs_node_init(&test, "module/rtl8139/in", 1, 0, 0, 0, 0);
+
+    struct nodefs_driver *nodefs = (struct nodefs_driver *)modules_get_driver(NODEFS_DRIVER_TYPE);
+
+    nodefs->register_node(nodefs, &test);
 
 }
 

@@ -50,10 +50,10 @@ static unsigned int filesystem_walk(struct vfs_filesystem *self, unsigned int in
 
 static void register_node(struct nodefs_driver *self, struct vfs_node *node)
 {
-
+/*
     unsigned int i;
 
-    for (i = 0; i < self->filesystem.count; i++)
+    for (i = 0; i < 128; i++)
     {
 
         if (!self->filesystem.nodes[i])
@@ -67,7 +67,7 @@ static void register_node(struct nodefs_driver *self, struct vfs_node *node)
         }
 
     }
-
+*/
 }
 
 static void unregister_node(struct nodefs_driver *self, struct vfs_node *node)
@@ -75,7 +75,7 @@ static void unregister_node(struct nodefs_driver *self, struct vfs_node *node)
 
     unsigned int i;
 
-    for (i = 0; i < self->filesystem.count; i++)
+    for (i = 0; i < 128; i++)
     {
 
         if (self->filesystem.nodes[i] == node)
