@@ -8,6 +8,7 @@ struct nodefs_filesystem
 
     struct vfs_filesystem base;
     struct vfs_node *nodes[128];
+    unsigned int count;
 
 };
 
