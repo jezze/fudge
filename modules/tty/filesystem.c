@@ -1,13 +1,13 @@
 #include <lib/string.h>
 #include <kernel/vfs.h>
 #include <kernel/modules.h>
-#include <modules/vga/vga.h>
+#include <modules/nodefs/nodefs.h>
 #include <modules/ps2/ps2.h>
+#include <modules/vga/vga.h>
 #include <modules/tty/tty.h>
 
 static struct tty_driver *driver;
 static struct vfs_node ttyNodes[5];
-static struct vfs_filesystem filesystem;
 
 static unsigned int cwd_read(struct vfs_node *self, unsigned int count, void *buffer)
 {
@@ -104,47 +104,15 @@ static unsigned int pwd_read(struct vfs_node *self, unsigned int count, void *bu
 
 }
 
-static struct vfs_node *filesystem_get_node(struct vfs_filesystem *self, unsigned int index)
-{
-
-    if (index >= 5)
-        return 0;
-
-    return &ttyNodes[index];
-
-}
-
-static struct vfs_node *filesystem_find_node(struct vfs_filesystem *self, char *name)
-{
-
-    unsigned int i;
-
-    for (i = 0; i < 5; i++)
-    {
-
-        if (string_find(ttyNodes[i].name, name))
-            return &ttyNodes[i];
-
-    }
-
-    return 0;
-
-}
-
-static unsigned int filesystem_walk(struct vfs_filesystem *self, unsigned int index)
-{
-
-    if (index >= 5)
-        return 0;
-
-    return index + 1;
-
-}
-
 void tty_filesystem_init(struct modules_module *module)
 {
 
     driver = (struct tty_driver *)module;
+
+    struct nodefs_driver *nodefs = (struct nodefs_driver *)modules_get_driver(NODEFS_DRIVER_TYPE);
+
+    if (!nodefs)
+        return;
 
     vfs_node_init(&ttyNodes[0], "module/tty/stdin", 0, 0, 0, in_read, 0);
     vfs_node_init(&ttyNodes[1], "module/tty/stdout", 1, 0, 0, 0, out_write);
@@ -152,10 +120,11 @@ void tty_filesystem_init(struct modules_module *module)
     vfs_node_init(&ttyNodes[3], "module/tty/cwd", 3, 0, 0, cwd_read, cwd_write);
     vfs_node_init(&ttyNodes[4], "module/tty/pwd", 4, 0, 0, pwd_read, 0);
 
-    vfs_filesystem_init(&filesystem, filesystem_get_node, filesystem_find_node, filesystem_walk); 
-    filesystem.firstIndex = 0;
-
-    vfs_register_filesystem(&filesystem);
+    nodefs->register_node(nodefs, &ttyNodes[0]);
+    nodefs->register_node(nodefs, &ttyNodes[1]);
+    nodefs->register_node(nodefs, &ttyNodes[2]);
+    nodefs->register_node(nodefs, &ttyNodes[3]);
+    nodefs->register_node(nodefs, &ttyNodes[4]);
 
 }
 

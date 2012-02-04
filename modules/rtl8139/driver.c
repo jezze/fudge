@@ -260,9 +260,12 @@ void rtl8139_driver_init(struct rtl8139_driver *driver)
     driver->base.attach = rtl8139_driver_attach;
     driver->base.check = rtl8139_driver_check;
 
-    vfs_node_init(&test, "module/rtl8139/in", 1, 0, 0, 0, 0);
-
     struct nodefs_driver *nodefs = (struct nodefs_driver *)modules_get_driver(NODEFS_DRIVER_TYPE);
+
+    if (!nodefs)
+        return;
+
+    vfs_node_init(&test, "module/rtl8139/in", 1, 0, 0, 0, 0);
 
     nodefs->register_node(nodefs, &test);
 

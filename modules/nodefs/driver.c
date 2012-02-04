@@ -99,7 +99,7 @@ void nodefs_filesystem_init(struct nodefs_filesystem *filesystem)
     filesystem->base.firstIndex = 0;
     filesystem->count = 0;
 
-    memory_clear(filesystem->nodes, sizeof (struct vfs_node *));
+    memory_clear(filesystem->nodes, sizeof (struct vfs_node *) * 128);
 
     vfs_register_filesystem(&filesystem->base);
 
