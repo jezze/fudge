@@ -159,6 +159,9 @@ static void read(struct rtl8139_driver *driver)
 
         current += (header->length + 4 + 3) & ~3;
 
+        if (current >= 0x2000 + 0x10)
+            current = 0x10;
+
     }
 
     io_outw(driver->io + RTL8139_REGISTER_CAPR, current - 0x10);
