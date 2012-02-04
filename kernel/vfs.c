@@ -72,11 +72,12 @@ void vfs_node_init(struct vfs_node *node, char *name, unsigned int id, void (*op
 
 }
 
-void vfs_filesystem_init(struct vfs_filesystem *filesystem, struct vfs_node *(*get_node)(struct vfs_filesystem *self, unsigned int index), struct vfs_node *(*find_node)(struct vfs_filesystem *self, char *name), unsigned int (*walk)(struct vfs_filesystem *self, unsigned int index))
+void vfs_filesystem_init(struct vfs_filesystem *filesystem, unsigned int firstIndex, struct vfs_node *(*get_node)(struct vfs_filesystem *self, unsigned int index), struct vfs_node *(*find_node)(struct vfs_filesystem *self, char *name), unsigned int (*walk)(struct vfs_filesystem *self, unsigned int index))
 {
 
     memory_clear(filesystem, sizeof (struct vfs_filesystem));
 
+    filesystem->firstIndex = firstIndex;
     filesystem->get_node = get_node;
     filesystem->find_node = find_node;
     filesystem->walk = walk;

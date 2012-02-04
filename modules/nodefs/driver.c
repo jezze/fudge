@@ -95,8 +95,7 @@ static void unregister_node(struct nodefs_driver *self, struct vfs_node *node)
 void nodefs_filesystem_init(struct nodefs_filesystem *filesystem)
 {
 
-    vfs_filesystem_init(&filesystem->base, filesystem_get_node, filesystem_find_node, filesystem_walk); 
-    filesystem->base.firstIndex = 0;
+    vfs_filesystem_init(&filesystem->base, 0, filesystem_get_node, filesystem_find_node, filesystem_walk); 
     filesystem->count = 0;
 
     memory_clear(filesystem->nodes, sizeof (struct vfs_node *) * 128);
