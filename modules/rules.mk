@@ -21,6 +21,8 @@ modules-x86:
 	@${GCC} ${GCCFLAGS} modules/i915/main.c -o modules/i915/main.o
 	@${GCC} ${GCCFLAGS} modules/mbr/driver.c -o modules/mbr/driver.o
 	@${GCC} ${GCCFLAGS} modules/mbr/main.c -o modules/mbr/main.o
+	@${GCC} ${GCCFLAGS} modules/nodefs/driver.c -o modules/nodefs/driver.o
+	@${GCC} ${GCCFLAGS} modules/nodefs/main.c -o modules/nodefs/main.o
 	@${GCC} ${GCCFLAGS} modules/pci/bus.c -o modules/pci/bus.o
 	@${GCC} ${GCCFLAGS} modules/pci/device.c -o modules/pci/device.o
 	@${GCC} ${GCCFLAGS} modules/pci/main.c -o modules/pci/main.o
@@ -50,6 +52,7 @@ modules-x86:
 	@${LD} ${LDFLAGS} modules/ext2/driver.o modules/ext2/filesystem.o modules/ext2/main.o -o modules/ext2/ext2.ko
 	@${LD} ${LDFLAGS} modules/i915/driver.o modules/i915/main.o -o modules/i915/i915.ko
 	@${LD} ${LDFLAGS} modules/mbr/driver.o modules/mbr/main.o -o modules/mbr/mbr.ko
+	@${LD} ${LDFLAGS} modules/nodefs/driver.o modules/nodefs/main.o -o modules/nodefs/nodefs.ko
 	@${LD} ${LDFLAGS} modules/pci/bus.o modules/pci/device.o modules/pci/main.o -o modules/pci/pci.ko
 	@${LD} ${LDFLAGS} modules/pit/device.o modules/pit/main.o -o modules/pit/pit.ko
 	@${LD} ${LDFLAGS} modules/ps2/kbd_device.o modules/ps2/kbd_driver.o modules/ps2/main.o modules/ps2/mouse_device.o modules/ps2/mouse_driver.o -o modules/ps2/ps2.ko

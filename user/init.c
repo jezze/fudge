@@ -3,6 +3,7 @@
 void main(int argc, char *argv[])
 {
 
+    call_load("mod/nodefs.ko");
     call_load("mod/uart.ko");
     call_load("mod/vga.ko");
     call_load("mod/pci.ko");
