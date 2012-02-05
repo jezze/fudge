@@ -1,5 +1,6 @@
 #include <lib/memory.h>
 #include <kernel/arch/x86/io.h>
+#include <kernel/event.h>
 #include <kernel/irq.h>
 #include <kernel/log.h>
 #include <kernel/modules.h>
@@ -189,6 +190,8 @@ static void handle_irq(struct modules_device *self)
         io_outw(driver->io + RTL8139_REGISTER_ISR, RTL8139_ISR_FLAG_TOK);
 
     }
+
+    event_raise(EVENT_IRQ_NETWORK);
 
 }
 

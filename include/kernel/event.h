@@ -5,6 +5,7 @@
 
 #define EVENT_IRQ_PIT         0x00
 #define EVENT_IRQ_KBD         0x01
+#define EVENT_IRQ_NETWORK     0x07
 #define EVENT_IRQ_MOUSE       0x0C
 
 #define EVENT_SYSCALL_CLOSE   0x20
