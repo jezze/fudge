@@ -5,12 +5,12 @@ void main(int argc, char *argv[])
 
     char buffer[64];
 
-    int fd = file_open("rtc/date");
+    int fd = file_open("rtc/timestamp");
 
     if (!fd)
     {
 
-        file_write_format(FILE_STDOUT, "Could not read rtc/date\n");
+        file_write_format(FILE_STDOUT, "Could not read rtc/timestamp\n");
 
         return;
 
