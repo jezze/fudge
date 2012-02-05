@@ -12,7 +12,7 @@ static unsigned int mac_read(struct vfs_node *self, unsigned int count, void *bu
 
     string_write_format(buffer, "%x:%x:%x:%x:%x:%x", driver.mac[0], driver.mac[1], driver.mac[2], driver.mac[3], driver.mac[4], driver.mac[5]);
 
-    return string_length(buffer) + 1;
+    return string_length(buffer);
 
 }
 
