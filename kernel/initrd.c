@@ -11,12 +11,12 @@ static unsigned int nodesCount;
 static unsigned int initrd_filesystem_node_read(struct vfs_node *self, unsigned int count, void *buffer)
 {
 
-    struct initrd_node *initrdNode = &nodes[self->id];
+    struct initrd_node *node = (struct initrd_node *)self;
 
-    if (count > initrdNode->size)
-        count = initrdNode->size;
+    if (count > node->size)
+        count = node->size;
 
-    memory_copy(buffer, initrdNode->data, count);
+    memory_copy(buffer, node->data, count);
 
     return count;
 
@@ -109,7 +109,7 @@ void initrd_node_init(struct initrd_node *node, unsigned int index, char *name, 
 
     memory_clear(node, sizeof (struct initrd_node));
 
-    vfs_node_init(&node->base, name, index, 0, 0, initrd_filesystem_node_read, 0);
+    vfs_node_init(&node->base, name, 0, 0, initrd_filesystem_node_read, 0);
 
     node->size = size;
     node->header = header;

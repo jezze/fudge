@@ -27,7 +27,7 @@ void init()
     if (!nodefs)
         return;
 
-    vfs_node_init(&jiffies, "module/pit/jiffies", 1, 0, 0, jiffies_read, 0);
+    vfs_node_init(&jiffies, "module/pit/jiffies", 0, 0, jiffies_read, 0);
 
     nodefs->register_node(nodefs, &jiffies);
 

@@ -119,11 +119,11 @@ void init()
     if (!nodefs)
         return;
 
-    vfs_node_init(&in, "module/tty/stdin", 0, 0, 0, in_read, 0);
-    vfs_node_init(&out, "module/tty/stdout", 1, 0, 0, 0, out_write);
-    vfs_node_init(&err, "module/tty/stderr", 2, 0, 0, 0, out_write);
-    vfs_node_init(&cwd, "module/tty/cwd", 3, 0, 0, cwd_read, cwd_write);
-    vfs_node_init(&pwd, "module/tty/pwd", 4, 0, 0, pwd_read, 0);
+    vfs_node_init(&in, "module/tty/stdin", 0, 0, in_read, 0);
+    vfs_node_init(&out, "module/tty/stdout", 0, 0, 0, out_write);
+    vfs_node_init(&err, "module/tty/stderr", 0, 0, 0, out_write);
+    vfs_node_init(&cwd, "module/tty/cwd", 0, 0, cwd_read, cwd_write);
+    vfs_node_init(&pwd, "module/tty/pwd", 0, 0, pwd_read, 0);
 
     nodefs->register_node(nodefs, &in);
     nodefs->register_node(nodefs, &out);

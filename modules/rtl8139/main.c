@@ -29,7 +29,7 @@ void init()
     if (!nodefs)
         return;
 
-    vfs_node_init(&mac, "module/rtl8139/mac", 1, 0, 0, mac_read, 0);
+    vfs_node_init(&mac, "module/rtl8139/mac", 0, 0, mac_read, 0);
 
     nodefs->register_node(nodefs, &mac);
 
