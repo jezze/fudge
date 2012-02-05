@@ -195,7 +195,7 @@ static void handle_irq(struct modules_device *self)
 
 }
 
-static void rtl8139_driver_start(struct modules_driver *self)
+static void start(struct modules_driver *self)
 {
 
     struct rtl8139_driver *driver = (struct rtl8139_driver *)self;
@@ -216,7 +216,7 @@ static void rtl8139_driver_start(struct modules_driver *self)
 
 }
 
-static void rtl8139_driver_attach(struct modules_driver *self, struct modules_device *device)
+static void attach(struct modules_driver *self, struct modules_device *device)
 {
 
     device->driver = self;
@@ -230,7 +230,7 @@ static void rtl8139_driver_attach(struct modules_driver *self, struct modules_de
 
 }
 
-static unsigned int rtl8139_driver_check(struct modules_driver *self, struct modules_device *device)
+static unsigned int check(struct modules_driver *self, struct modules_device *device)
 {
 
     if (device->type != PCI_DEVICE_TYPE)
@@ -247,9 +247,10 @@ void rtl8139_driver_init(struct rtl8139_driver *driver)
 
     modules_driver_init(&driver->base, RTL8139_DRIVER_TYPE);
 
-    driver->base.start = rtl8139_driver_start;
-    driver->base.attach = rtl8139_driver_attach;
-    driver->base.check = rtl8139_driver_check;
+    driver->base.start = start;
+    driver->base.attach = attach;
+    driver->base.check = check;
+    driver->read = read;
 
 }
 

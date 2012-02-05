@@ -6,6 +6,7 @@
 
 static struct rtl8139_driver driver;
 static struct vfs_node mac;
+static struct vfs_node data;
 
 static unsigned int mac_read(struct vfs_node *self, unsigned int count, void *buffer)
 {
@@ -13,6 +14,13 @@ static unsigned int mac_read(struct vfs_node *self, unsigned int count, void *bu
     string_write_format(buffer, "%x:%x:%x:%x:%x:%x", driver.mac[0], driver.mac[1], driver.mac[2], driver.mac[3], driver.mac[4], driver.mac[5]);
 
     return string_length(buffer);
+
+}
+
+static unsigned int data_read(struct vfs_node *self, unsigned int count, void *buffer)
+{
+
+    return 0;
 
 }
 
@@ -30,8 +38,10 @@ void init()
         return;
 
     vfs_node_init(&mac, "module/rtl8139/mac", 0, 0, mac_read, 0);
+    vfs_node_init(&data, "module/rtl8139/data", 0, 0, data_read, 0);
 
     nodefs->register_node(nodefs, &mac);
+    nodefs->register_node(nodefs, &data);
 
 }
 
