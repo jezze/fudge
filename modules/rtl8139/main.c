@@ -20,7 +20,7 @@ static unsigned int mac_read(struct vfs_node *self, unsigned int count, void *bu
 static unsigned int data_read(struct vfs_node *self, unsigned int count, void *buffer)
 {
 
-    return 0;
+    return driver.read(&driver, buffer);
 
 }
 
