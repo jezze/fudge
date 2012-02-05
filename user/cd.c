@@ -1,41 +1,31 @@
 #include <fudge.h>
 
-void get_path(char *buffer)
-{
-
-    int fd = file_open("tty/cwd");
-    file_read(fd, 256, buffer);
-    file_close(fd);
-
-}
-
-void set_path(char *buffer)
-{
-
-    int fd = file_open("tty/cwd");
-    file_write(fd, string_length(buffer), buffer);
-    file_close(fd);
-
-}
-
 void main(int argc, char *argv[])
 {
 
-    char path[256];
+    char buffer[256];
 
-    get_path(path);
+    unsigned int fd = file_open("tty/cwd");
 
     if (argc == 1)
     {
 
-        file_write_format(FILE_STDOUT, path);
-        file_write_byte(FILE_STDOUT, '\n');
+        file_read(fd, 256, buffer);
 
-        return;
+        file_write_format(FILE_STDOUT, buffer);
+        file_write_byte(FILE_STDOUT, '\n');
 
     }
 
-    set_path(argv[1]);
+    if (argc == 2)
+    {
+
+        file_write(fd, string_length(argv[1]), argv[1]);
+
+
+    }
+
+    file_close(fd);
 
 }
 
