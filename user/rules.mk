@@ -13,6 +13,7 @@ user:
 	@${GCC} ${GCCFLAGS} user/init.c ${LIB} -o user/init
 	@${GCC} ${GCCFLAGS} user/load.c ${LIB} -o user/load
 	@${GCC} ${GCCFLAGS} user/ls.c ${LIB} -o user/ls
+	@${GCC} ${GCCFLAGS} user/ncat.c ${LIB} -o user/ncat
 	@${GCC} ${GCCFLAGS} user/reboot.c ${LIB} -o user/reboot
 	@${GCC} ${GCCFLAGS} user/shell.c ${LIB} -o user/shell
 	@${GCC} ${GCCFLAGS} user/tail.c ${LIB} -o user/tail
@@ -32,6 +33,7 @@ user-clean:
 	@rm -f user/init
 	@rm -f user/load
 	@rm -f user/ls
+	@rm -f user/ncat
 	@rm -f user/reboot
 	@rm -f user/shell
 	@rm -f user/tail
