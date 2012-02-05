@@ -65,6 +65,7 @@ static unsigned int read(struct rtl8139_driver *driver, void *buffer)
     unsigned short current = io_inw(driver->io + RTL8139_REGISTER_CAPR) + 0x10;
     unsigned short end = io_inw(driver->io + RTL8139_REGISTER_CBR);
 
+    // FIX: Fix so buffer may be full
     while (current < end)
     {
 
@@ -73,10 +74,6 @@ static unsigned int read(struct rtl8139_driver *driver, void *buffer)
         memory_copy(buffer, driver->rx + current + 4, header->length);
 
         current += (header->length + 4 + 3) & ~3;
-
-        if (current >= 0x2000 + 0x10)
-            current = 0x10;
-
         count += header->length;
 
     }

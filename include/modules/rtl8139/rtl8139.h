@@ -105,7 +105,7 @@ struct rtl8139_driver
     struct modules_driver base;
     unsigned short io; 
     char mac[6];
-    char rx[0x2200];
+    char rx[0x2600];
     char tx0[0x800];
     char tx1[0x800];
     char tx2[0x800];
