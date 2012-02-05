@@ -1,6 +1,5 @@
 #include <fudge.h>
 
-// Move
 struct arp_header
 {
 
@@ -24,9 +23,9 @@ static void read_arp(unsigned char *data)
 
     file_write_format(FILE_STDOUT, "- ARP Operation: %d\n", header->operationHigh << 8 | header->operationLow);
     file_write_format(FILE_STDOUT, "- ARP SHA: %x:%x:%x:%x:%x:%x\n", header->sha[0], header->sha[1], header->sha[2], header->sha[3], header->sha[4], header->sha[5]);
-    file_write_format(FILE_STDOUT, "- ARP SPA: %x.%x.%x.%x\n", header->spa[0], header->spa[1], header->spa[2], header->spa[3]);
+    file_write_format(FILE_STDOUT, "- ARP SPA: %d.%d.%d.%d\n", header->spa[0], header->spa[1], header->spa[2], header->spa[3]);
     file_write_format(FILE_STDOUT, "- ARP THA: %x:%x:%x:%x:%x:%x\n", header->tha[0], header->tha[1], header->tha[2], header->tha[3], header->tha[4], header->tha[5]);
-    file_write_format(FILE_STDOUT, "- ARP TPA: %x.%x.%x.%x\n", header->tpa[0], header->tpa[1], header->tpa[2], header->tpa[3]);
+    file_write_format(FILE_STDOUT, "- ARP TPA: %d.%d.%d.%d\n", header->tpa[0], header->tpa[1], header->tpa[2], header->tpa[3]);
 
 }
 
