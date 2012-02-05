@@ -32,6 +32,7 @@ ramdisk:
 	@cp user/ls build/root/bin/ls
 	@cp user/reboot build/root/bin/reboot
 	@cp user/shell build/root/bin/shell
+	@cp user/tail build/root/bin/tail
 	@cp user/timer build/root/bin/timer
 	@cp user/unload build/root/bin/unload
 	@cp user/test build/root/bin/test
@@ -76,6 +77,7 @@ clean: lib-clean kernel-clean modules-clean user-clean
 	@rm -f build/root/bin/ls
 	@rm -f build/root/bin/reboot
 	@rm -f build/root/bin/shell
+	@rm -f build/root/bin/tail
 	@rm -f build/root/bin/timer
 	@rm -f build/root/bin/unload
 	@rm -f build/root/bin/test

@@ -15,6 +15,7 @@ user:
 	@${GCC} ${GCCFLAGS} user/ls.c ${LIB} -o user/ls
 	@${GCC} ${GCCFLAGS} user/reboot.c ${LIB} -o user/reboot
 	@${GCC} ${GCCFLAGS} user/shell.c ${LIB} -o user/shell
+	@${GCC} ${GCCFLAGS} user/tail.c ${LIB} -o user/tail
 	@${GCC} ${GCCFLAGS} user/timer.c ${LIB} -o user/timer
 	@${GCC} ${GCCFLAGS} user/unload.c ${LIB} -o user/unload
 	@${GCC} user/test.c -o user/test
@@ -33,6 +34,7 @@ user-clean:
 	@rm -f user/ls
 	@rm -f user/reboot
 	@rm -f user/shell
+	@rm -f user/tail
 	@rm -f user/timer
 	@rm -f user/unload
 	@rm -f user/test
