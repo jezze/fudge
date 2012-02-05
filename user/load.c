@@ -12,6 +12,19 @@ void main(int argc, char *argv[])
 
     }
 
+    unsigned int fd = file_open(argv[1]);
+
+    if (!fd)
+    {
+
+        file_write_format(FILE_STDOUT, "%s: File does not exist.\n", argv[1]);
+
+        return;
+
+    }
+
+    file_close(fd);
+
     call_load(argv[1]);
 
 }

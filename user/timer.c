@@ -5,7 +5,7 @@ void main(int argc, char *argv[])
 
     char buffer[32];
 
-    int fd = file_open("pit/jiffies");
+    unsigned int fd = file_open("pit/jiffies");
 
     if (!fd)
     {
@@ -17,8 +17,9 @@ void main(int argc, char *argv[])
     }
 
     file_read(fd, 32, buffer);
-    file_write_format(FILE_STDOUT, "Timer: %s\n", buffer);
     file_close(fd);
+
+    file_write_format(FILE_STDOUT, "Timer: %s\n", buffer);
 
 }
 
