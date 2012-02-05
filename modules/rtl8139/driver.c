@@ -3,9 +3,7 @@
 #include <kernel/irq.h>
 #include <kernel/log.h>
 #include <kernel/modules.h>
-#include <kernel/vfs.h>
 #include <modules/pci/pci.h>
-#include <modules/nodefs/nodefs.h>
 #include <modules/rtl8139/rtl8139.h>
 
 static void poweron(struct rtl8139_driver *driver)
@@ -55,20 +53,6 @@ static void setup_transmitter(struct rtl8139_driver *driver)
     io_outd(driver->io + RTL8139_REGISTER_TSAD1, (unsigned int)driver->tx1);
     io_outd(driver->io + RTL8139_REGISTER_TSAD2, (unsigned int)driver->tx2);
     io_outd(driver->io + RTL8139_REGISTER_TSAD3, (unsigned int)driver->tx3);
-
-}
-
-static void get_mac(struct rtl8139_driver *driver)
-{
-
-    driver->mac[0] = io_inb(driver->io + RTL8139_REGISTER_IDR0);
-    driver->mac[1] = io_inb(driver->io + RTL8139_REGISTER_IDR1);
-    driver->mac[2] = io_inb(driver->io + RTL8139_REGISTER_IDR2);
-    driver->mac[3] = io_inb(driver->io + RTL8139_REGISTER_IDR3);
-    driver->mac[4] = io_inb(driver->io + RTL8139_REGISTER_IDR4);
-    driver->mac[5] = io_inb(driver->io + RTL8139_REGISTER_IDR5);
-
-    log_write("[rtl8139] Mac: %x:%x:%x:%x:%x:%x\n", driver->mac[0], driver->mac[1], driver->mac[2], driver->mac[3], driver->mac[4], driver->mac[5]);
 
 }
 
@@ -219,7 +203,13 @@ static void rtl8139_driver_start(struct modules_driver *self)
     setup_receiver(driver);
     setup_transmitter(driver);
     enable(driver);
-    get_mac(driver);
+
+    driver->mac[0] = io_inb(driver->io + RTL8139_REGISTER_IDR0);
+    driver->mac[1] = io_inb(driver->io + RTL8139_REGISTER_IDR1);
+    driver->mac[2] = io_inb(driver->io + RTL8139_REGISTER_IDR2);
+    driver->mac[3] = io_inb(driver->io + RTL8139_REGISTER_IDR3);
+    driver->mac[4] = io_inb(driver->io + RTL8139_REGISTER_IDR4);
+    driver->mac[5] = io_inb(driver->io + RTL8139_REGISTER_IDR5);
 
 }
 
@@ -249,8 +239,6 @@ static unsigned int rtl8139_driver_check(struct modules_driver *self, struct mod
 
 }
 
-static struct vfs_node test;
-
 void rtl8139_driver_init(struct rtl8139_driver *driver)
 {
 
@@ -259,15 +247,6 @@ void rtl8139_driver_init(struct rtl8139_driver *driver)
     driver->base.start = rtl8139_driver_start;
     driver->base.attach = rtl8139_driver_attach;
     driver->base.check = rtl8139_driver_check;
-
-    struct nodefs_driver *nodefs = (struct nodefs_driver *)modules_get_driver(NODEFS_DRIVER_TYPE);
-
-    if (!nodefs)
-        return;
-
-    vfs_node_init(&test, "module/rtl8139/in", 1, 0, 0, 0, 0);
-
-    nodefs->register_node(nodefs, &test);
 
 }
 
