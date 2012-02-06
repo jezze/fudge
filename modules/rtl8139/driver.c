@@ -26,7 +26,7 @@ static void reset(struct rtl8139_driver *driver)
 static void enable(struct rtl8139_driver *driver)
 {
 
-    io_outw(driver->io + RTL8139_REGISTER_CR, 0x0C);
+    io_outb(driver->io + RTL8139_REGISTER_CR, 0x0C);
 
 }
 
@@ -41,9 +41,7 @@ static void setup_receiver(struct rtl8139_driver *driver)
 {
 
     io_outd(driver->io + RTL8139_REGISTER_RBSTART, (unsigned int)driver->rx);
-    io_outd(driver->io + RTL8139_REGISTER_CBR, 0);
-    io_outd(driver->io + RTL8139_REGISTER_CAPR, 0);
-    io_outd(driver->io + RTL8139_REGISTER_RCR, 0x0F);
+    io_outd(driver->io + RTL8139_REGISTER_RCR, 0x0000008F);
 
 }
 
@@ -60,38 +58,23 @@ static void setup_transmitter(struct rtl8139_driver *driver)
 static unsigned int read(struct rtl8139_driver *driver, void *buffer)
 {
 
-    unsigned int count = 0;
-
     unsigned short current = io_inw(driver->io + RTL8139_REGISTER_CAPR) + 0x10;
     unsigned short end = io_inw(driver->io + RTL8139_REGISTER_CBR);
 
-    // FIX: Fix so buffer may be full
-    while (current < end)
-    {
+    struct rtl8139_header *header = (struct rtl8139_header *)(driver->rx + current);
 
-        struct rtl8139_header *header = (struct rtl8139_header *)(driver->rx + current);
+    memory_copy(buffer, driver->rx + current + 4, header->length);
 
-        memory_copy(buffer, driver->rx + current + 4, header->length);
-
-        current += (header->length + 4 + 3) & ~3;
-        count += header->length;
-
-    }
+    current += (header->length + 4 + 3) & ~3;
 
     io_outw(driver->io + RTL8139_REGISTER_CAPR, current - 0x10);
 
-    return count;
+    return header->length;
 
 }
 
 static void write(struct rtl8139_driver *driver, unsigned int count, char *buffer)
 {
-
-    memory_copy(driver->tx0, buffer, count);
-
-    unsigned int status = count & 0x1FFF;
-
-    io_outd(driver->io + RTL8139_REGISTER_TSD0, status); 
 
 }
 
