@@ -16,27 +16,43 @@ struct arp_header
 
 } __attribute__((packed));
 
-static char mac[6];
-static struct arp_header response;
-
-static void read_arp(unsigned char *data)
+struct frame_header
 {
 
-    struct arp_header *header = (struct arp_header *)data;
+    unsigned char tha[6];
+    unsigned char sha[6];
+    unsigned char typeHigh;
+    unsigned char typeLow;
 
-    file_write_format(FILE_STDOUT, "- ARP Operation: %d\n", header->operationHigh << 8 | header->operationLow);
-    file_write_format(FILE_STDOUT, "- ARP SHA: %x:%x:%x:%x:%x:%x\n", header->sha[0], header->sha[1], header->sha[2], header->sha[3], header->sha[4], header->sha[5]);
-    file_write_format(FILE_STDOUT, "- ARP SPA: %d.%d.%d.%d\n", header->spa[0], header->spa[1], header->spa[2], header->spa[3]);
-    file_write_format(FILE_STDOUT, "- ARP THA: %x:%x:%x:%x:%x:%x\n", header->tha[0], header->tha[1], header->tha[2], header->tha[3], header->tha[4], header->tha[5]);
-    file_write_format(FILE_STDOUT, "- ARP TPA: %d.%d.%d.%d\n", header->tpa[0], header->tpa[1], header->tpa[2], header->tpa[3]);
+} __attribute__((packed));
 
-    unsigned int ip = 0x0a000205;
+static char mac[6];
 
-    memory_copy(response.sha, mac, 6);
-    memory_copy(response.spa, &ip, 4);
+static struct frame_header *read_frame(void *data)
+{
 
-    memory_copy(response.tha, header->sha, 6);
-    memory_copy(response.tpa, header->tha, 4);
+    struct frame_header *fheader = data;
+
+    return fheader;
+
+}
+
+static struct arp_header *read_arp(void *data)
+{
+
+    struct frame_header *fheader = read_frame(data);
+
+    if (!fheader)
+        return 0;
+
+    unsigned short type = (fheader->typeHigh << 8) | fheader->typeLow;
+
+    if (type != 0x0806)
+        return 0;
+
+    struct arp_header *aheader = (void *)fheader + 14;
+
+    return aheader;
 
 }
 
@@ -64,33 +80,34 @@ static void read_ipv6(unsigned char *data)
 
 }
 
-static void read_frame(unsigned char *data)
-{
-/*
-    log_write("- Frame Dest:   %x:%x:%x:%x:%x:%x\n", data[0], data[1], data[2], data[3], data[4], data[5]);
-    log_write("- Frame Source: %x:%x:%x:%x:%x:%x\n", data[6], data[7], data[8], data[9], data[10], data[11]);
-    log_write("- Frame Type:   0x%x%x\n", data[12], data[13]);
-*/
-    unsigned short type = *(unsigned short *)(data + 12);
-
-    if (data[12] == 0x08 && data[13] == 0x06)
-        read_arp(data + 14);
-    else if (data[12] == 0x86 && data[13] == 0xDD)
-        read_ipv6(data + 14);
-    else
-        file_write_format(FILE_STDOUT, "Unknown protocol 0x%x%x\n", data[12], data[13]);
-
-}
-
 void handle_network_event()
 {
 
+    unsigned int ip = 0x0a000205;
     unsigned char buffer[0x800];
     unsigned int fd = file_open("rtl8139/data");
     unsigned int count = file_read(fd, 0x800, buffer);
 
+    struct arp_header *header = read_arp(buffer);
+
+    if (!header)
+        call_wait();
+
+    file_write_format(FILE_STDOUT, "- ARP Operation: %d\n", (header->operationHigh << 8) | header->operationLow);
+    file_write_format(FILE_STDOUT, "- ARP SHA: %x:%x:%x:%x:%x:%x\n", header->sha[0], header->sha[1], header->sha[2], header->sha[3], header->sha[4], header->sha[5]);
+    file_write_format(FILE_STDOUT, "- ARP SPA: %d.%d.%d.%d\n", header->spa[0], header->spa[1], header->spa[2], header->spa[3]);
+    file_write_format(FILE_STDOUT, "- ARP THA: %x:%x:%x:%x:%x:%x\n", header->tha[0], header->tha[1], header->tha[2], header->tha[3], header->tha[4], header->tha[5]);
+    file_write_format(FILE_STDOUT, "- ARP TPA: %d.%d.%d.%d\n", header->tpa[0], header->tpa[1], header->tpa[2], header->tpa[3]);
+
+    static struct arp_header response;
+
+    memory_copy(response.sha, mac, 6);
+    memory_copy(response.spa, &ip, 4);
+    memory_copy(response.tha, header->sha, 6);
+    memory_copy(response.tpa, header->tha, 4);
+
     file_close(fd);
-    read_frame(buffer);
+
     call_wait();
 
 }
