@@ -40,8 +40,8 @@ static void setup_interrupts(struct rtl8139_driver *driver, unsigned short flags
 static void setup_receiver(struct rtl8139_driver *driver)
 {
 
-    io_outd(driver->io + RTL8139_REGISTER_RBSTART, (unsigned int)driver->rx);
-    io_outd(driver->io + RTL8139_REGISTER_RCR, 0x0000008F);
+    io_outd(driver->io + RTL8139_REGISTER_RBSTART, (unsigned int)0x300000);
+    io_outd(driver->io + RTL8139_REGISTER_RCR, 0x0000000F);
 
 }
 
@@ -61,9 +61,9 @@ static unsigned int read(struct rtl8139_driver *driver, void *buffer)
     unsigned short current = io_inw(driver->io + RTL8139_REGISTER_CAPR) + 0x10;
     unsigned short end = io_inw(driver->io + RTL8139_REGISTER_CBR);
 
-    struct rtl8139_header *header = (struct rtl8139_header *)(driver->rx + current);
+    struct rtl8139_header *header = (struct rtl8139_header *)(0x300000 + current);
 
-    memory_copy(buffer, driver->rx + current + 4, header->length);
+    memory_copy(buffer, 0x300000 + current + 4, header->length);
 
     current += (header->length + 4 + 3) & ~3;
 
