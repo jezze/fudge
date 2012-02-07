@@ -106,6 +106,14 @@ void handle_network_event()
     file_write_format(FILE_STDOUT, "- ARP THA: %x:%x:%x:%x:%x:%x\n", header->tha[0], header->tha[1], header->tha[2], header->tha[3], header->tha[4], header->tha[5]);
     file_write_format(FILE_STDOUT, "- ARP TPA: %d.%d.%d.%d\n", header->tpa[0], header->tpa[1], header->tpa[2], header->tpa[3]);
 
+    static struct frame_header fheader;
+
+    fheader.typeHigh = 0x08;
+    fheader.typeLow = 0x06;
+
+    memory_copy(fheader.sha, eth0.mac, 6);
+    memory_copy(fheader.tha, header->sha, 6);
+
     static struct arp_header aheader;
 
     aheader.operationHigh = 0x00;
@@ -116,11 +124,10 @@ void handle_network_event()
     memory_copy(aheader.tha, header->sha, 6);
     memory_copy(aheader.tpa, header->tha, 4);
 
-    static struct frame_header fheader;
+    memory_copy(buffer, &fheader, sizeof (struct frame_header));
+    memory_copy(buffer + sizeof (struct frame_header), &aheader, sizeof (struct arp_header));
 
-    memory_copy(fheader.sha, eth0.mac, 6);
-    memory_copy(fheader.tha, header->sha, 6);
-
+    //file_write(fd, 0, buffer);
     file_close(fd);
 
     call_wait();
