@@ -111,6 +111,7 @@ struct rtl8139_driver
     char tx2[0x800];
     char tx3[0x800];
     unsigned int (*read)(struct rtl8139_driver *self, void *buffer);
+    unsigned int (*write)(struct rtl8139_driver *self, unsigned int count, void *buffer);
 
 };
 

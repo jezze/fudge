@@ -63,7 +63,7 @@ static unsigned int read(struct rtl8139_driver *driver, void *buffer)
 
     struct rtl8139_header *header = (struct rtl8139_header *)(0x300000 + current);
 
-    memory_copy(buffer, 0x300000 + current + 4, header->length);
+    memory_copy(buffer, (void *)0x300000 + current + 4, header->length);
 
     current += (header->length + 4 + 3) & ~3;
 
@@ -75,6 +75,16 @@ static unsigned int read(struct rtl8139_driver *driver, void *buffer)
 
 static void write(struct rtl8139_driver *driver, unsigned int count, char *buffer)
 {
+
+    memory_copy(driver->tx0, buffer, count);
+
+    int status = 0;
+
+    status |= count & 0x1FFF;
+    status |= 0 << 13;
+    status |= (0 & 0x3F) << 16;
+
+    io_outd(driver->io + RTL8139_REGISTER_TSD0, status);
 
 }
 

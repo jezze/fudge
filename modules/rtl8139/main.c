@@ -24,6 +24,13 @@ static unsigned int data_read(struct vfs_node *self, unsigned int count, void *b
 
 }
 
+static unsigned int data_write(struct vfs_node *self, unsigned int count, void *buffer)
+{
+
+    return driver.write(&driver, count, buffer);
+
+}
+
 void init()
 {
 
@@ -38,7 +45,7 @@ void init()
         return;
 
     vfs_node_init(&mac, "module/rtl8139/mac", 0, 0, mac_read, 0);
-    vfs_node_init(&data, "module/rtl8139/data", 0, 0, data_read, 0);
+    vfs_node_init(&data, "module/rtl8139/data", 0, 0, data_read, data_write);
 
     nodefs->register_node(nodefs, &mac);
     nodefs->register_node(nodefs, &data);
