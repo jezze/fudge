@@ -26,7 +26,15 @@ struct frame_header
 
 } __attribute__((packed));
 
-static char mac[6];
+struct interface
+{
+
+    unsigned char mac[6];
+    unsigned char ip[4];
+
+} __attribute__((packed));
+
+struct interface eth0;
 
 static struct frame_header *read_frame(void *data)
 {
@@ -83,7 +91,6 @@ static void read_ipv6(unsigned char *data)
 void handle_network_event()
 {
 
-    unsigned int ip = 0x0a000205;
     unsigned char buffer[0x800];
     unsigned int fd = file_open("rtl8139/data");
     unsigned int count = file_read(fd, 0x800, buffer);
@@ -99,12 +106,20 @@ void handle_network_event()
     file_write_format(FILE_STDOUT, "- ARP THA: %x:%x:%x:%x:%x:%x\n", header->tha[0], header->tha[1], header->tha[2], header->tha[3], header->tha[4], header->tha[5]);
     file_write_format(FILE_STDOUT, "- ARP TPA: %d.%d.%d.%d\n", header->tpa[0], header->tpa[1], header->tpa[2], header->tpa[3]);
 
-    static struct arp_header response;
+    static struct arp_header aheader;
 
-    memory_copy(response.sha, mac, 6);
-    memory_copy(response.spa, &ip, 4);
-    memory_copy(response.tha, header->sha, 6);
-    memory_copy(response.tpa, header->tha, 4);
+    aheader.operationHigh = 0x00;
+    aheader.operationLow = 0x02;
+
+    memory_copy(aheader.sha, eth0.mac, 6);
+    memory_copy(aheader.spa, eth0.ip, 4);
+    memory_copy(aheader.tha, header->sha, 6);
+    memory_copy(aheader.tpa, header->tha, 4);
+
+    static struct frame_header fheader;
+
+    memory_copy(fheader.sha, eth0.mac, 6);
+    memory_copy(fheader.tha, header->sha, 6);
 
     file_close(fd);
 
@@ -115,11 +130,17 @@ void handle_network_event()
 void main(int argc, char *argv[])
 {
 
+    eth0.ip[0] = 0x0a;
+    eth0.ip[1] = 0x00;
+    eth0.ip[2] = 0x02;
+    eth0.ip[3] = 0x05;
+
     unsigned int fd = file_open("rtl8139/mac");
-    unsigned int count = file_read(fd, 6, mac);
+    file_read(fd, 6, eth0.mac);
     file_close(fd);
 
-    file_write_format(FILE_STDOUT, "Mac: %x:%x:%x:%x:%x:%x\n", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+    file_write_format(FILE_STDOUT, "IP: %d.%d.%d.%d\n", eth0.ip[0], eth0.ip[1], eth0.ip[2], eth0.ip[3]);
+    file_write_format(FILE_STDOUT, "Mac: %x:%x:%x:%x:%x:%x\n", eth0.mac[0], eth0.mac[1], eth0.mac[2], eth0.mac[3], eth0.mac[4], eth0.mac[5]);
 
     call_attach(0x07, handle_network_event);
     call_wait();
