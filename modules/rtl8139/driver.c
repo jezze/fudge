@@ -106,6 +106,8 @@ static void handle_irq(struct modules_device *self)
     if (status & RTL8139_ISR_FLAG_TOK)
     {
 
+        log_write("Response sent\n");
+
         io_outw(driver->io + RTL8139_REGISTER_ISR, RTL8139_ISR_FLAG_TOK);
 
     }
@@ -168,6 +170,7 @@ void rtl8139_driver_init(struct rtl8139_driver *driver)
     driver->base.attach = attach;
     driver->base.check = check;
     driver->read = read;
+    driver->write = write;
 
 }
 

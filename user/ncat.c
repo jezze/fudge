@@ -3,8 +3,10 @@
 struct arp_header
 {
 
-    unsigned short htype;
-    unsigned short ptype;
+    unsigned char htypeHigh;
+    unsigned char htypeLow;
+    unsigned char ptypeHigh;
+    unsigned char ptypeLow;
     unsigned char hlength;
     unsigned char plength;
     unsigned char operationHigh;
@@ -34,6 +36,7 @@ struct interface
 
 } __attribute__((packed));
 
+static unsigned char buffer[0x800];
 struct interface eth0;
 
 static struct frame_header *read_frame(void *data)
@@ -91,9 +94,9 @@ static void read_ipv6(unsigned char *data)
 void handle_network_event()
 {
 
-    unsigned char buffer[0x800];
     unsigned int fd = file_open("rtl8139/data");
-    unsigned int count = file_read(fd, 0x800, buffer);
+    file_read(fd, 0x800, buffer);
+    file_close(fd);
 
     struct arp_header *header = read_arp(buffer);
 
@@ -106,7 +109,7 @@ void handle_network_event()
     file_write_format(FILE_STDOUT, "- ARP THA: %x:%x:%x:%x:%x:%x\n", header->tha[0], header->tha[1], header->tha[2], header->tha[3], header->tha[4], header->tha[5]);
     file_write_format(FILE_STDOUT, "- ARP TPA: %d.%d.%d.%d\n", header->tpa[0], header->tpa[1], header->tpa[2], header->tpa[3]);
 
-    static struct frame_header fheader;
+    struct frame_header fheader;
 
     fheader.typeHigh = 0x08;
     fheader.typeLow = 0x06;
@@ -114,8 +117,14 @@ void handle_network_event()
     memory_copy(fheader.sha, eth0.mac, 6);
     memory_copy(fheader.tha, header->sha, 6);
 
-    static struct arp_header aheader;
+    struct arp_header aheader;
 
+    aheader.htypeHigh = 0x00;
+    aheader.htypeLow = 0x01;
+    aheader.ptypeHigh = 0x08;
+    aheader.ptypeLow = 0x00;
+    aheader.hlength = 0x06;
+    aheader.plength = 0x04;
     aheader.operationHigh = 0x00;
     aheader.operationLow = 0x02;
 
@@ -127,8 +136,9 @@ void handle_network_event()
     memory_copy(buffer, &fheader, sizeof (struct frame_header));
     memory_copy(buffer + sizeof (struct frame_header), &aheader, sizeof (struct arp_header));
 
-    //file_write(fd, 0, buffer);
-    file_close(fd);
+    unsigned int fd2 = file_open("rtl8139/data");
+    file_write(fd2, sizeof (struct frame_header) + sizeof (struct arp_header), buffer);
+    file_close(fd2);
 
     call_wait();
 
