@@ -1,4 +1,4 @@
-#include <lib/string.h>
+#include <lib/memory.h>
 #include <kernel/modules.h>
 #include <kernel/vfs.h>
 #include <modules/nodefs/nodefs.h>
@@ -11,9 +11,9 @@ static struct vfs_node data;
 static unsigned int mac_read(struct vfs_node *self, unsigned int count, void *buffer)
 {
 
-    string_write_format(buffer, "%x:%x:%x:%x:%x:%x", driver.mac[0], driver.mac[1], driver.mac[2], driver.mac[3], driver.mac[4], driver.mac[5]);
+    memory_copy(buffer, driver.mac, 6);
 
-    return string_length(buffer);
+    return 6;
 
 }
 

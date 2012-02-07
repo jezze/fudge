@@ -16,6 +16,9 @@ struct arp_header
 
 } __attribute__((packed));
 
+static char mac[6];
+static struct arp_header response;
+
 static void read_arp(unsigned char *data)
 {
 
@@ -26,6 +29,14 @@ static void read_arp(unsigned char *data)
     file_write_format(FILE_STDOUT, "- ARP SPA: %d.%d.%d.%d\n", header->spa[0], header->spa[1], header->spa[2], header->spa[3]);
     file_write_format(FILE_STDOUT, "- ARP THA: %x:%x:%x:%x:%x:%x\n", header->tha[0], header->tha[1], header->tha[2], header->tha[3], header->tha[4], header->tha[5]);
     file_write_format(FILE_STDOUT, "- ARP TPA: %d.%d.%d.%d\n", header->tpa[0], header->tpa[1], header->tpa[2], header->tpa[3]);
+
+    unsigned int ip = 0x0a000205;
+
+    memory_copy(response.sha, mac, 6);
+    memory_copy(response.spa, &ip, 4);
+
+    memory_copy(response.tha, header->sha, 6);
+    memory_copy(response.tpa, header->tha, 4);
 
 }
 
@@ -86,6 +97,12 @@ void handle_network_event()
 
 void main(int argc, char *argv[])
 {
+
+    unsigned int fd = file_open("rtl8139/mac");
+    unsigned int count = file_read(fd, 6, mac);
+    file_close(fd);
+
+    file_write_format(FILE_STDOUT, "Mac: %x:%x:%x:%x:%x:%x\n", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
 
     call_attach(0x07, handle_network_event);
     call_wait();
