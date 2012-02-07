@@ -103,12 +103,6 @@ void handle_network_event()
     if (!header)
         call_wait();
 
-    file_write_format(FILE_STDOUT, "- ARP Operation: %d\n", (header->operationHigh << 8) | header->operationLow);
-    file_write_format(FILE_STDOUT, "- ARP SHA: %x:%x:%x:%x:%x:%x\n", header->sha[0], header->sha[1], header->sha[2], header->sha[3], header->sha[4], header->sha[5]);
-    file_write_format(FILE_STDOUT, "- ARP SPA: %d.%d.%d.%d\n", header->spa[0], header->spa[1], header->spa[2], header->spa[3]);
-    file_write_format(FILE_STDOUT, "- ARP THA: %x:%x:%x:%x:%x:%x\n", header->tha[0], header->tha[1], header->tha[2], header->tha[3], header->tha[4], header->tha[5]);
-    file_write_format(FILE_STDOUT, "- ARP TPA: %d.%d.%d.%d\n", header->tpa[0], header->tpa[1], header->tpa[2], header->tpa[3]);
-
     struct frame_header fheader;
 
     fheader.typeHigh = 0x08;
@@ -131,7 +125,21 @@ void handle_network_event()
     memory_copy(aheader.sha, eth0.mac, 6);
     memory_copy(aheader.spa, eth0.ip, 4);
     memory_copy(aheader.tha, header->sha, 6);
-    memory_copy(aheader.tpa, header->tha, 4);
+    memory_copy(aheader.tpa, header->spa, 4);
+
+    file_write_format(FILE_STDOUT, "- ARP Operation: %d\n", (header->operationHigh << 8) | header->operationLow);
+    file_write_format(FILE_STDOUT, "- ARP SHA: %x:%x:%x:%x:%x:%x\n", header->sha[0], header->sha[1], header->sha[2], header->sha[3], header->sha[4], header->sha[5]);
+    file_write_format(FILE_STDOUT, "- ARP SPA: %d.%d.%d.%d\n", header->spa[0], header->spa[1], header->spa[2], header->spa[3]);
+    file_write_format(FILE_STDOUT, "- ARP THA: %x:%x:%x:%x:%x:%x\n", header->tha[0], header->tha[1], header->tha[2], header->tha[3], header->tha[4], header->tha[5]);
+    file_write_format(FILE_STDOUT, "- ARP TPA: %d.%d.%d.%d\n", header->tpa[0], header->tpa[1], header->tpa[2], header->tpa[3]);
+
+    header = &aheader;
+
+    file_write_format(FILE_STDOUT, "- ARPR Operation: %d\n", (header->operationHigh << 8) | header->operationLow);
+    file_write_format(FILE_STDOUT, "- ARPR SHA: %x:%x:%x:%x:%x:%x\n", header->sha[0], header->sha[1], header->sha[2], header->sha[3], header->sha[4], header->sha[5]);
+    file_write_format(FILE_STDOUT, "- ARPR SPA: %d.%d.%d.%d\n", header->spa[0], header->spa[1], header->spa[2], header->spa[3]);
+    file_write_format(FILE_STDOUT, "- ARPR THA: %x:%x:%x:%x:%x:%x\n", header->tha[0], header->tha[1], header->tha[2], header->tha[3], header->tha[4], header->tha[5]);
+    file_write_format(FILE_STDOUT, "R ARPr TPA: %d.%d.%d.%d\n", header->tpa[0], header->tpa[1], header->tpa[2], header->tpa[3]);
 
     memory_copy(buffer, &fheader, sizeof (struct frame_header));
     memory_copy(buffer + sizeof (struct frame_header), &aheader, sizeof (struct arp_header));
