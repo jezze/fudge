@@ -176,8 +176,6 @@ static void start(struct modules_driver *self)
 static void attach(struct modules_driver *self, struct modules_device *device)
 {
 
-    device->driver = self;
-
     struct rtl8139_driver *driver = (struct rtl8139_driver *)self;
     struct pci_device *pciDevice = (struct pci_device *)device;
 

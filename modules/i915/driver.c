@@ -123,8 +123,6 @@ void handle_irq()
 static void i915_driver_attach(struct modules_driver *self, struct modules_device *device)
 {
 
-    device->driver = self;
-
     struct i915_driver *driver = (struct i915_driver *)self;
     struct pci_device *pciDevice = (struct pci_device *)device;
 

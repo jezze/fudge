@@ -40,13 +40,6 @@ static void uart_driver_start(struct modules_driver *self)
 
 }
 
-static void uart_driver_attach(struct modules_driver *self, struct modules_device *device)
-{
-
-    device->driver = self;
-
-}
-
 static unsigned int uart_driver_check(struct modules_driver *self, struct modules_device *device)
 {
 
@@ -63,7 +56,6 @@ void uart_driver_init(struct uart_driver *driver)
     modules_driver_init(&driver->base, UART_DRIVER_TYPE);
 
     driver->base.start = uart_driver_start;
-    driver->base.attach = uart_driver_attach;
     driver->base.check = uart_driver_check;
     driver->buffer.size = 256;
     driver->buffer.head = 0;

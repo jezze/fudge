@@ -6,7 +6,7 @@ static struct modules_module *modules[MODULES_MODULE_SLOTS];
 static void modules_attach(struct modules_driver *driver)
 {
 
-    if (!driver->check || !driver->attach)
+    if (!driver->check)
         return;
 
     unsigned int i;
@@ -24,7 +24,12 @@ static void modules_attach(struct modules_driver *driver)
         if (device->driver)
             continue;
 
-        if (driver->check(driver, device))
+        if (!driver->check(driver, device))
+            continue;
+
+        device->driver = driver;
+
+        if (driver->attach)
             driver->attach(driver, device);
 
     }
