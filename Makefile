@@ -1,5 +1,5 @@
 include rules.mk
-include ${ARCH}.mk
+include rules.${ARCH}.mk
 
 .PHONY: all clean toolchain kernel lib modules user ramdisk
 
