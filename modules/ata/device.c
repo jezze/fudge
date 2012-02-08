@@ -1,7 +1,7 @@
 #include <kernel/modules.h>
 #include <modules/ata/ata.h>
 
-static void ata_device_configure_ata(struct ata_device *self)
+static void configure_ata(struct ata_device *self)
 {
 
     unsigned short buffer[256];
@@ -41,7 +41,7 @@ static void ata_device_configure_ata(struct ata_device *self)
 
 }
 
-static void ata_device_configure_atapi(struct ata_device *self)
+static void configure_atapi(struct ata_device *self)
 {
 
     unsigned short buffer[256];
@@ -51,7 +51,7 @@ static void ata_device_configure_atapi(struct ata_device *self)
 
 }
 
-static unsigned int ata_device_read_lba28(struct ata_device *self, unsigned int sector, unsigned int count, void *buffer)
+static unsigned int read_lba28(struct ata_device *self, unsigned int sector, unsigned int count, void *buffer)
 {
 
     self->bus->select(self->bus, 0xE0 | ((sector >> 24) & 0x0F), self->slave);
@@ -62,7 +62,7 @@ static unsigned int ata_device_read_lba28(struct ata_device *self, unsigned int 
 
 }
 
-static unsigned int ata_device_write_lba28(struct ata_device *self, unsigned int sector, unsigned int count, void *buffer)
+static unsigned int write_lba28(struct ata_device *self, unsigned int sector, unsigned int count, void *buffer)
 {
 
     self->bus->select(self->bus, 0xE0 | ((sector >> 24) & 0x0F), self->slave);
@@ -73,7 +73,7 @@ static unsigned int ata_device_write_lba28(struct ata_device *self, unsigned int
 
 }
 
-static unsigned int ata_device_read_lba48(struct ata_device *self, unsigned int sectorlow, unsigned int sectorhigh, unsigned int count, void *buffer)
+static unsigned int read_lba48(struct ata_device *self, unsigned int sectorlow, unsigned int sectorhigh, unsigned int count, void *buffer)
 {
 
     self->bus->select(self->bus, 0x40, self->slave);
@@ -85,7 +85,7 @@ static unsigned int ata_device_read_lba48(struct ata_device *self, unsigned int 
 
 }
 
-static unsigned int ata_device_write_lba48(struct ata_device *self, unsigned int sectorlow, unsigned int sectorhigh, unsigned int count, void *buffer)
+static unsigned int write_lba48(struct ata_device *self, unsigned int sectorlow, unsigned int sectorhigh, unsigned int count, void *buffer)
 {
 
     self->bus->select(self->bus, 0x40, self->slave);
@@ -105,15 +105,15 @@ void ata_device_init(struct ata_device *device, struct ata_bus *bus, unsigned in
     device->bus = bus;
     device->type = type;
     device->slave = slave;
-    device->configure_ata = ata_device_configure_ata;
-    device->configure_atapi = ata_device_configure_atapi;
+    device->configure_ata = configure_ata;
+    device->configure_atapi = configure_atapi;
     device->lba28Max = 0;
-    device->read_lba28 = ata_device_read_lba28;
-    device->write_lba28 = ata_device_write_lba28;
+    device->read_lba28 = read_lba28;
+    device->write_lba28 = write_lba28;
     device->lba48MaxLow = 0;
     device->lba48MaxHigh = 0;
-    device->read_lba48 = ata_device_read_lba48;
-    device->write_lba48 = ata_device_write_lba48;
+    device->read_lba48 = read_lba48;
+    device->write_lba48 = write_lba48;
 
 }
 

@@ -3,7 +3,7 @@
 #include <kernel/modules.h>
 #include <modules/ata/ata.h>
 
-static unsigned int ata_bus_read_blocks(struct ata_bus *self, unsigned int count, void *buffer)
+static unsigned int read_blocks(struct ata_bus *self, unsigned int count, void *buffer)
 {
 
     unsigned int i;
@@ -26,7 +26,7 @@ static unsigned int ata_bus_read_blocks(struct ata_bus *self, unsigned int count
 
 }
 
-static unsigned int ata_bus_write_blocks(struct ata_bus *self, unsigned int count, void *buffer)
+static unsigned int write_blocks(struct ata_bus *self, unsigned int count, void *buffer)
 {
 
     unsigned int i;
@@ -50,7 +50,7 @@ static unsigned int ata_bus_write_blocks(struct ata_bus *self, unsigned int coun
 
 }
 
-static void ata_bus_sleep(struct ata_bus *self)
+static void sleep(struct ata_bus *self)
 {
 
     io_inb(self->control);
@@ -60,14 +60,14 @@ static void ata_bus_sleep(struct ata_bus *self)
 
 }
 
-static void ata_bus_wait(struct ata_bus *self)
+static void wait(struct ata_bus *self)
 {
 
     while (io_inb(self->data + ATA_DATA_COMMAND) & ATA_STATUS_FLAG_BUSY);
 
 }
 
-static void ata_bus_select(struct ata_bus *self, unsigned char operation, unsigned int slave)
+static void select(struct ata_bus *self, unsigned char operation, unsigned int slave)
 {
 
     io_outb(self->data + ATA_DATA_SELECT, operation | slave << 4);
@@ -75,7 +75,7 @@ static void ata_bus_select(struct ata_bus *self, unsigned char operation, unsign
 
 }
 
-static void ata_bus_set_lba(struct ata_bus *self, unsigned char count, unsigned char lba0, unsigned char lba1, unsigned char lba2)
+static void set_lba(struct ata_bus *self, unsigned char count, unsigned char lba0, unsigned char lba1, unsigned char lba2)
 {
 
     io_outb(self->data + ATA_DATA_COUNT0, count);
@@ -85,7 +85,7 @@ static void ata_bus_set_lba(struct ata_bus *self, unsigned char count, unsigned 
 
 }
 
-static void ata_bus_set_lba2(struct ata_bus *self, unsigned char count, unsigned char lba3, unsigned char lba4, unsigned char lba5)
+static void set_lba2(struct ata_bus *self, unsigned char count, unsigned char lba3, unsigned char lba4, unsigned char lba5)
 {
 
     io_outb(self->data + ATA_DATA_COUNT1, count);
@@ -95,14 +95,14 @@ static void ata_bus_set_lba2(struct ata_bus *self, unsigned char count, unsigned
 
 }
 
-static void ata_bus_set_command(struct ata_bus *self, unsigned char command)
+static void set_command(struct ata_bus *self, unsigned char command)
 {
 
     io_outb(self->data + ATA_DATA_COMMAND, command);
 
 }
 
-static unsigned int ata_bus_detect(struct ata_bus *self, unsigned int slave)
+static unsigned int detect(struct ata_bus *self, unsigned int slave)
 {
 
     self->select(self, 0xA0, slave);
@@ -155,15 +155,15 @@ void ata_bus_init(struct ata_bus *bus, unsigned int control, unsigned int data, 
     bus->control = control;
     bus->data = data;
     bus->irq = irq;
-    bus->sleep = ata_bus_sleep;
-    bus->wait = ata_bus_wait;
-    bus->select = ata_bus_select;
-    bus->set_lba = ata_bus_set_lba;
-    bus->set_lba2 = ata_bus_set_lba2;
-    bus->set_command = ata_bus_set_command;
-    bus->detect = ata_bus_detect;
-    bus->read_blocks = ata_bus_read_blocks;
-    bus->write_blocks = ata_bus_write_blocks;
+    bus->sleep = sleep;
+    bus->wait = wait;
+    bus->select = select;
+    bus->set_lba = set_lba;
+    bus->set_lba2 = set_lba2;
+    bus->set_command = set_command;
+    bus->detect = detect;
+    bus->read_blocks = read_blocks;
+    bus->write_blocks = write_blocks;
     bus->scan = ata_bus_scan;
 
 }

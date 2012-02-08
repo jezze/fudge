@@ -34,7 +34,7 @@ static void read_node(struct ext2_driver *self, unsigned int nodenum, void *buff
 
 }
 
-static void ext2_driver_start(struct modules_driver *self)
+static void start(struct modules_driver *self)
 {
 
     struct ext2_driver *driver = (struct ext2_driver *)self;
@@ -88,8 +88,8 @@ void ext2_driver_init(struct ext2_driver *driver)
 
     modules_driver_init(&driver->base, EXT2_DRIVER_TYPE);
 
+    driver->base.start = start;
     driver->read_node = read_node;
-    driver->base.start = ext2_driver_start;
 
 }
 

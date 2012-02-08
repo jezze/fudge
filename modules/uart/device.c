@@ -3,7 +3,7 @@
 #include <kernel/modules.h>
 #include <modules/uart/uart.h>
 
-static char uart_device_read(struct uart_device *self)
+static char read(struct uart_device *self)
 {
 
     while (!(io_inb(self->port + UART_LSR) & 0x01));
@@ -12,7 +12,7 @@ static char uart_device_read(struct uart_device *self)
 
 }
 
-static void uart_device_write(struct uart_device *self, char c)
+static void write(struct uart_device *self, char c)
 {
 
     while (!(io_inb(self->port + UART_LSR) & 0x20));
@@ -21,7 +21,7 @@ static void uart_device_write(struct uart_device *self, char c)
 
 }
 
-static void uart_handle_irq(struct modules_device *self)
+static void handle_irq(struct modules_device *self)
 {
 
     struct uart_device *device = (struct uart_device *)self;
@@ -39,8 +39,8 @@ void uart_device_init(struct uart_device *device, unsigned int port, unsigned in
     modules_device_init(&device->base, UART_DEVICE_TYPE);
 
     device->port = port;
-    device->read = uart_device_read;
-    device->write = uart_device_write;
+    device->read = read;
+    device->write = write;
 
     io_outb(device->port + UART_IER, 0x00);
     io_outb(device->port + UART_LCR, 0x80);
@@ -51,7 +51,7 @@ void uart_device_init(struct uart_device *device, unsigned int port, unsigned in
     io_outb(device->port + UART_MCR, 0x0B);
     io_outb(device->port + UART_IER, 0x01);
 
-    irq_register_routine(irq, &device->base, uart_handle_irq);
+    irq_register_routine(irq, &device->base, handle_irq);
 
 }
 

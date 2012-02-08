@@ -5,7 +5,7 @@
 
 static struct mbr_partition partitions[MBR_PARTITION_SLOTS];
 
-static struct mbr_partition *mbr_driver_get_partition(struct mbr_driver *self, struct ata_device *device, unsigned int index)
+static struct mbr_partition *get_partition(struct mbr_driver *self, struct ata_device *device, unsigned int index)
 {
 
     char buffer[512];
@@ -26,12 +26,12 @@ static struct mbr_partition *mbr_driver_get_partition(struct mbr_driver *self, s
 
 }
 
-static void mbr_driver_start(struct modules_driver *self)
+static void start(struct modules_driver *self)
 {
 
 }
 
-static unsigned int mbr_driver_check(struct modules_driver *self, struct modules_device *device)
+static unsigned int check(struct modules_driver *self, struct modules_device *device)
 {
 
     if (device->type != ATA_DEVICE_TYPE)
@@ -48,9 +48,9 @@ void mbr_driver_init(struct mbr_driver *driver)
 
     modules_driver_init(&driver->base, MBR_DRIVER_TYPE);
 
-    driver->base.start = mbr_driver_start;
-    driver->base.check = mbr_driver_check;
-    driver->get_partition = mbr_driver_get_partition;
+    driver->base.start = start;
+    driver->base.check = check;
+    driver->get_partition = get_partition;
 
 }
 

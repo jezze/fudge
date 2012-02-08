@@ -33,7 +33,7 @@ unsigned char pci_inb(unsigned int address, unsigned short offset)
 
 }
 
-static unsigned int pci_bus_scan(struct pci_bus *self, unsigned int num, void (*callback)(unsigned int num, unsigned int slot, unsigned int function))
+static unsigned int scan(struct pci_bus *self, unsigned int num, void (*callback)(unsigned int num, unsigned int slot, unsigned int function))
 {
 
     unsigned int slot;
@@ -49,10 +49,10 @@ static unsigned int pci_bus_scan(struct pci_bus *self, unsigned int num, void (*
         unsigned short header = pci_inb(address, 0x0E);
 
         if ((header & 0x01))
-            pci_bus_scan(self, pci_inb(address, 0x19), callback);
+            scan(self, pci_inb(address, 0x19), callback);
 
         if ((header & 0x02))
-            pci_bus_scan(self, pci_inb(address, 0x18), callback);
+            scan(self, pci_inb(address, 0x18), callback);
 
         if ((header & 0x80))
         {
@@ -88,7 +88,7 @@ void pci_bus_init(struct pci_bus *bus)
 
     modules_bus_init(&bus->base, PCI_BUS_TYPE);
 
-    bus->scan = pci_bus_scan;
+    bus->scan = scan;
 
 }
 

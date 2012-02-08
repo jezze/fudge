@@ -4,7 +4,7 @@
 #include <kernel/modules.h>
 #include <modules/ps2/ps2.h>
 
-static void handle_mouse_irq(struct modules_device *self)
+static void handle_irq(struct modules_device *self)
 {
 
     struct mouse_driver *mouse = (struct mouse_driver *)self->driver;
@@ -118,7 +118,7 @@ void mouse_device_init(struct mouse_device *device)
     write(0xF4);
     read();
 
-    irq_register_routine(0x0C, &device->base, handle_mouse_irq);
+    irq_register_routine(0x0C, &device->base, handle_irq);
 
 }
 

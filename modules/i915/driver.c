@@ -86,7 +86,7 @@ static void set_pipe_mode(unsigned int width, unsigned int height)
 
 }
 
-static void i915_driver_start(struct modules_driver *self)
+static void start(struct modules_driver *self)
 {
 
     unsigned volatile int *lvds = (unsigned volatile int *)0x61180;
@@ -120,7 +120,7 @@ void handle_irq()
 
 }
 
-static void i915_driver_attach(struct modules_driver *self, struct modules_device *device)
+static void attach(struct modules_driver *self, struct modules_device *device)
 {
 
     struct i915_driver *driver = (struct i915_driver *)self;
@@ -130,7 +130,7 @@ static void i915_driver_attach(struct modules_driver *self, struct modules_devic
 
 }
 
-static unsigned int i915_driver_check(struct modules_driver *self, struct modules_device *device)
+static unsigned int check(struct modules_driver *self, struct modules_device *device)
 {
 
     if (device->type != PCI_DEVICE_TYPE)
@@ -147,9 +147,9 @@ void i915_driver_init(struct i915_driver *driver)
 
     modules_driver_init(&driver->base, I915_DRIVER_TYPE);
 
-    driver->base.start = i915_driver_start;
-    driver->base.attach = i915_driver_attach;
-    driver->base.check = i915_driver_check;
+    driver->base.start = start;
+    driver->base.attach = attach;
+    driver->base.check = check;
 
 }
 

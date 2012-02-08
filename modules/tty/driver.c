@@ -4,7 +4,7 @@
 #include <modules/ps2/ps2.h>
 #include <modules/tty/tty.h>
 
-static void tty_driver_clear(struct tty_driver *self)
+static void clear(struct tty_driver *self)
 {
 
     char c = ' ';
@@ -15,7 +15,7 @@ static void tty_driver_clear(struct tty_driver *self)
 
 }
 
-static void tty_driver_scroll(struct tty_driver *self)
+static void scroll(struct tty_driver *self)
 {
 
     char buffer[TTY_CHARACTER_SIZE];
@@ -33,7 +33,7 @@ static void tty_driver_scroll(struct tty_driver *self)
 
 }
 
-static void tty_driver_putc(struct tty_driver *self, char c)
+static void putc(struct tty_driver *self, char c)
 {
 
     if (c == '\b')
@@ -86,9 +86,9 @@ void tty_driver_init(struct tty_driver *driver, char *cwdname)
     driver->kbdDriver = (struct kbd_driver *)modules_get_driver(KBD_DRIVER_TYPE);
     driver->vgaDevice = (struct vga_device *)modules_get_device(VGA_DEVICE_TYPE);
     driver->vgaDevice->set_cursor_color(driver->vgaDevice, TTY_COLOR_WHITE, TTY_COLOR_BLACK);
-    driver->clear = tty_driver_clear;
-    driver->scroll = tty_driver_scroll;
-    driver->putc = tty_driver_putc;
+    driver->clear = clear;
+    driver->scroll = scroll;
+    driver->putc = putc;
 
     string_write(driver->cwdname, cwdname);
 

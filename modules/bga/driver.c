@@ -57,7 +57,7 @@ static void draw_example(struct bga_driver *self)
 
 }
 
-static void bga_driver_set_mode(struct bga_driver *self, unsigned int xres, unsigned int yres, unsigned int bpp)
+static void set_mode(struct bga_driver *self, unsigned int xres, unsigned int yres, unsigned int bpp)
 {
 
     self->xres = xres;
@@ -72,14 +72,14 @@ static void bga_driver_set_mode(struct bga_driver *self, unsigned int xres, unsi
 
 }
 
-static void bga_driver_set_bank(struct bga_driver *self, unsigned int index)
+static void set_bank(struct bga_driver *self, unsigned int index)
 {
 
     write_register(BGA_INDEX_BANK, index);
 
 }
 
-static void bga_driver_start(struct modules_driver *self)
+static void start(struct modules_driver *self)
 {
 
     struct bga_driver *driver = (struct bga_driver *)self;
@@ -90,7 +90,7 @@ static void bga_driver_start(struct modules_driver *self)
 
 }
 
-static unsigned int bga_driver_check(struct modules_driver *self, struct modules_device *device)
+static unsigned int check(struct modules_driver *self, struct modules_device *device)
 {
 
     if (device->type != PCI_DEVICE_TYPE)
@@ -107,11 +107,11 @@ void bga_driver_init(struct bga_driver *driver)
 
     modules_driver_init(&driver->base, BGA_DRIVER_TYPE);
 
-    driver->base.start = bga_driver_start;
-    driver->base.check = bga_driver_check;
+    driver->base.start = start;
+    driver->base.check = check;
     driver->bank = (unsigned int *)0xA0000;
-    driver->set_mode = bga_driver_set_mode;
-    driver->set_bank = bga_driver_set_bank;
+    driver->set_mode = set_mode;
+    driver->set_bank = set_bank;
 
 }
 

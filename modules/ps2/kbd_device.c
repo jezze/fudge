@@ -4,7 +4,7 @@
 #include <kernel/modules.h>
 #include <modules/ps2/ps2.h>
 
-static void handle_kbd_irq(struct modules_device *self)
+static void handle_irq(struct modules_device *self)
 {
 
     struct kbd_driver *kbd = (struct kbd_driver *)self->driver;
@@ -69,7 +69,7 @@ void kbd_device_init(struct kbd_device *device)
 
     modules_device_init(&device->base, KBD_DEVICE_TYPE);
 
-    irq_register_routine(0x01, &device->base, handle_kbd_irq);
+    irq_register_routine(0x01, &device->base, handle_irq);
 
 }
 

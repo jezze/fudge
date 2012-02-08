@@ -23,7 +23,7 @@ static char mapUS[256] =
        0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0
 };
 
-static unsigned int kbd_buffer_getc(struct kbd_buffer *self, char *buffer)
+static unsigned int buffer_getc(struct kbd_buffer *self, char *buffer)
 {
 
     if (self->head != self->tail)
@@ -40,7 +40,7 @@ static unsigned int kbd_buffer_getc(struct kbd_buffer *self, char *buffer)
 
 }
 
-static unsigned int kbd_buffer_putc(struct kbd_buffer *self, char *buffer)
+static unsigned int buffer_putc(struct kbd_buffer *self, char *buffer)
 {
 
     if ((self->head + 1) % self->size != self->tail)
@@ -57,20 +57,17 @@ static unsigned int kbd_buffer_putc(struct kbd_buffer *self, char *buffer)
 
 }
 
-static void kbd_driver_start(struct modules_driver *self)
+static void start(struct modules_driver *self)
 {
 
     struct kbd_driver *driver = (struct kbd_driver *)self;
 
 }
 
-static unsigned int kbd_driver_check(struct modules_driver *self, struct modules_device *device)
+static unsigned int check(struct modules_driver *self, struct modules_device *device)
 {
 
-    if (device->type != KBD_DEVICE_TYPE)
-        return 0;
-
-    return 1;
+    return device->type == KBD_DEVICE_TYPE;
 
 }
 
@@ -79,13 +76,13 @@ void kbd_driver_init(struct kbd_driver *driver)
 
     modules_driver_init(&driver->base, KBD_DRIVER_TYPE);
 
-    driver->base.start = kbd_driver_start;
-    driver->base.check = kbd_driver_check;
+    driver->base.start = start;
+    driver->base.check = check;
     driver->buffer.size = 256;
     driver->buffer.head = 0;
     driver->buffer.tail = 0;
-    driver->buffer.getc = kbd_buffer_getc;
-    driver->buffer.putc = kbd_buffer_putc;
+    driver->buffer.getc = buffer_getc;
+    driver->buffer.putc = buffer_putc;
     driver->map = mapUS;
     driver->escaped = 0;
     driver->toggleAlt = 0;

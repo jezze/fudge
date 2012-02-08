@@ -4,7 +4,7 @@
 #include <kernel/modules.h>
 #include <modules/pit/pit.h>
 
-static void pit_handle_irq(struct modules_device *self)
+static void handle_irq(struct modules_device *self)
 {
 
     struct pit_device *device = (struct pit_device *)self;
@@ -27,7 +27,7 @@ void pit_device_init(struct pit_device *device)
     io_outb(0x40, (unsigned char)(device->divisor & 0xFF));
     io_outb(0x40, (unsigned char)((device->divisor >> 8) & 0xFF));
 
-    irq_register_routine(0x00, &device->base, pit_handle_irq);
+    irq_register_routine(0x00, &device->base, handle_irq);
 
 }
 
