@@ -32,5 +32,70 @@ struct acpi_rsdp
 
 };
 
+struct acpi_madt_entry
+{
+
+    unsigned char type;
+    unsigned char length;
+
+};
+
+struct acpi_madt_proclapic
+{
+
+    struct acpi_madt_entry base;
+    unsigned char processorId;
+    unsigned char id;
+    unsigned int flags;
+
+};
+
+struct acpi_madt_procsapic
+{
+
+    struct acpi_madt_entry base;
+    unsigned char processorId;
+    unsigned char id;
+    unsigned char eid;
+    unsigned char reserved[3];
+    unsigned int flags;
+    unsigned int uid;
+    char *uidName;
+
+};
+
+struct acpi_madt_ioapic
+{
+
+    struct acpi_madt_entry base;
+    unsigned char id;
+    unsigned char reserved;
+    unsigned int address;
+    unsigned int gsib;
+
+};
+
+struct acpi_madt_iosapic
+{
+
+    struct acpi_madt_entry base;
+    unsigned char id;
+    unsigned char reserved;
+    unsigned int gsib;
+    unsigned int addressLow;
+    unsigned int addressHigh;
+
+};
+
+struct acpi_madt
+{
+
+    struct acpi_sdth base;
+    unsigned int address;
+    unsigned int flags;
+    struct acpi_madt_entry *entries;
+
+};
+
 #endif
 

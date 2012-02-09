@@ -5,35 +5,25 @@
 
 static struct mmu_memory acpiMemory;
 
-static void write_sdt(struct acpi_sdth *sdt)
+static struct acpi_sdth *get_table(struct acpi_sdth *sdt, char *name)
 {
-
-    char signature[5];
-    signature[4] = '\0';
-
-    memory_copy(signature, sdt->signature, 4);
-
-    log_write("[acpi] SDT Signature: %s\n", signature);
-    log_write("[acpi] SDT Length: %d\n", sdt->length);
-//    log_write("[acpi] SDT Revision: %d\n", sdt->revision);
-//    log_write("[acpi] SDT Checksum: %d\n", sdt->checksum);
-//    log_write("[acpi] SDT OEM: %s\n", sdt->oem);
-//    log_write("[acpi] SDT OEMRevision: %d\n", sdt->oemRevision);
-//    log_write("[acpi] SDT Creator: %s\n", sdt->creator);
-//    log_write("[acpi] SDT CreatorRevision: %d\n", sdt->creatorRevision);
-
-    if (memory_compare(sdt->signature, "RSDT", 4))
-        return;
 
     void **tables = (void *)sdt + sizeof (struct acpi_sdth);
     unsigned int entries = (sdt->length - sizeof (struct acpi_sdth)) / 4;
 
-    log_write("[acpi] RSDT Entries: %d\n", entries);
-
     unsigned int i;
 
     for (i = 0; i < entries; i++)
-        write_sdt(tables[i]);
+    {
+
+        struct acpi_sdth *current = tables[i];
+
+        if (!memory_compare(current->signature, name, 4))
+            return current;
+
+    }
+
+    return 0;
 
 }
 
@@ -75,9 +65,7 @@ void init()
         return;
 
     log_write("[acpi] RSDP Address: 0x%x\n", rsdp);
-    log_write("[acpi] RSDP Checksum: %d\n", rsdp->checksum);
     log_write("[acpi] RSDP Revision: %d.0\n", rsdp->revision + 1);
-    log_write("[acpi] RSDP OEM: %s\n", rsdp->oem);
 
     struct mmu_memory *memory = &acpiMemory;
 
@@ -85,7 +73,10 @@ void init()
     mmu_map_kernel_memory(memory);
     mmu_reload_memory();
 
-    write_sdt((struct acpi_sdth *)rsdp->rsdt);
+    struct acpi_madt *madt = (struct acpi_madt *)get_table((struct acpi_sdth *)rsdp->rsdt, "APIC");
+
+    if (madt)
+        log_write("[acpi] MADT signature: %c%c%c%c\n", madt->base.signature[0], madt->base.signature[1], madt->base.signature[2], madt->base.signature[3]);
 
 }
 
