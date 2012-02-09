@@ -42,7 +42,7 @@ modules-x86:
 	@${GCC} ${GCCFLAGS} modules/uart/device.c -o modules/uart/device.o
 	@${GCC} ${GCCFLAGS} modules/uart/driver.c -o modules/uart/driver.o
 	@${GCC} ${GCCFLAGS} modules/uart/main.c -o modules/uart/main.o
-	@${GCC} ${GCCFLAGS} modules/vga/device.c -o modules/vga/device.o
+	@${GCC} ${GCCFLAGS} modules/vga/driver.c -o modules/vga/driver.o
 	@${GCC} ${GCCFLAGS} modules/vga/main.c -o modules/vga/main.o
 	@${LD} ${LDFLAGS} modules/acpi/main.o -o modules/acpi/acpi.ko
 	@${LD} ${LDFLAGS} modules/ata/bus.o modules/ata/device.o modules/ata/main.o -o modules/ata/ata.ko
@@ -59,7 +59,7 @@ modules-x86:
 	@${LD} ${LDFLAGS} modules/rtl8139/driver.o modules/rtl8139/main.o -o modules/rtl8139/rtl8139.ko
 	@${LD} ${LDFLAGS} modules/tty/driver.o modules/tty/main.o -o modules/tty/tty.ko
 	@${LD} ${LDFLAGS} modules/uart/driver.o modules/uart/device.o modules/uart/main.o -o modules/uart/uart.ko
-	@${LD} ${LDFLAGS} modules/vga/device.o modules/vga/main.o -o modules/vga/vga.ko
+	@${LD} ${LDFLAGS} modules/vga/driver.o modules/vga/main.o -o modules/vga/vga.ko
 
 modules-clean:
 	@rm -f modules/*/*.o

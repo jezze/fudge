@@ -31,7 +31,7 @@ struct tty_driver
     char cwdname[32];
     unsigned short cursorOffset;
     struct kbd_driver *kbdDriver;
-    struct vga_device *vgaDevice;
+    struct vga_driver *vgaDriver;
     void (*clear)(struct tty_driver *self);
     void (*scroll)(struct tty_driver *self);
     void (*putc)(struct tty_driver *self, char c);

@@ -6,7 +6,6 @@
 # List of device types
 
 0x0002: UART
-0x0003: VGA
 0x0006: PCI
 0x0004: ATA
 0x2000: RTC
@@ -14,6 +13,7 @@
 
 # List of driver types
 
+0x0003: VGA
 0x0005: PS2 Keyboard
 0x0059: PS2 Mouse
 0x0232: UART

@@ -3,7 +3,7 @@
 #include <kernel/modules.h>
 #include <modules/vga/vga.h>
 
-static unsigned int read_framebuffer(struct vga_device *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int read_framebuffer(struct vga_driver *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     unsigned int i;
@@ -25,7 +25,7 @@ static unsigned int read_framebuffer(struct vga_device *self, unsigned int offse
 
 }
 
-static unsigned int write_framebuffer(struct vga_device *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int write_framebuffer(struct vga_driver *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     unsigned int i;
@@ -48,14 +48,14 @@ static unsigned int write_framebuffer(struct vga_device *self, unsigned int offs
 
 }
 
-static void set_cursor_color(struct vga_device *self, unsigned char fg, unsigned char bg)
+static void set_cursor_color(struct vga_driver *self, unsigned char fg, unsigned char bg)
 {
 
     self->cursorColor = (bg << 4) | (fg & 0x0F);
 
 }
 
-static void set_cursor_offset(struct vga_device *self, unsigned short offset)
+static void set_cursor_offset(struct vga_driver *self, unsigned short offset)
 {
 
     io_outb(0x3D4, 14);
@@ -65,15 +65,15 @@ static void set_cursor_offset(struct vga_device *self, unsigned short offset)
 
 }
 
-void vga_device_init(struct vga_device *device)
+void vga_driver_init(struct vga_driver *driver)
 {
 
-    modules_device_init(&device->base, VGA_DEVICE_TYPE);
+    modules_driver_init(&driver->base, VGA_DRIVER_TYPE);
 
-    device->read_framebuffer = read_framebuffer;
-    device->write_framebuffer = write_framebuffer;
-    device->set_cursor_color = set_cursor_color;
-    device->set_cursor_offset = set_cursor_offset;
+    driver->read_framebuffer = read_framebuffer;
+    driver->write_framebuffer = write_framebuffer;
+    driver->set_cursor_color = set_cursor_color;
+    driver->set_cursor_offset = set_cursor_offset;
 
 }
 

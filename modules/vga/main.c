@@ -1,20 +1,20 @@
 #include <kernel/modules.h>
 #include <modules/vga/vga.h>
 
-static struct vga_device device;
+static struct vga_driver driver;
 
 void init()
 {
 
-    vga_device_init(&device);
-    modules_register_device(&device.base);
+    vga_driver_init(&driver);
+    modules_register_driver(&driver.base);
 
 }
 
 void destroy()
 {
 
-    modules_unregister_device(&device.base);
+    modules_unregister_driver(&driver.base);
 
 }
 

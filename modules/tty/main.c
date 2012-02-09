@@ -64,7 +64,7 @@ static unsigned int out_write(struct vfs_node *self, unsigned int count, void *b
     for (i = 0; i < count; i++)
         driver.putc(&driver, ((char *)buffer)[i]);
 
-    driver.vgaDevice->set_cursor_offset(driver.vgaDevice, driver.cursorOffset);
+    driver.vgaDriver->set_cursor_offset(driver.vgaDriver, driver.cursorOffset);
 
     return count;
 

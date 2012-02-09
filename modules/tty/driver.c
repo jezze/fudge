@@ -11,7 +11,7 @@ static void clear(struct tty_driver *self)
     int i;
 
     for (i = 0; i < TTY_CHARACTER_SIZE; i++)
-        self->vgaDevice->write_framebuffer(self->vgaDevice, i, 1, &c);
+        self->vgaDriver->write_framebuffer(self->vgaDriver, i, 1, &c);
 
 }
 
@@ -20,14 +20,14 @@ static void scroll(struct tty_driver *self)
 
     char buffer[TTY_CHARACTER_SIZE];
 
-    self->vgaDevice->read_framebuffer(self->vgaDevice, TTY_CHARACTER_WIDTH, TTY_CHARACTER_SIZE - TTY_CHARACTER_WIDTH, buffer);
+    self->vgaDriver->read_framebuffer(self->vgaDriver, TTY_CHARACTER_WIDTH, TTY_CHARACTER_SIZE - TTY_CHARACTER_WIDTH, buffer);
 
     unsigned int i;
 
     for (i = TTY_CHARACTER_SIZE - TTY_CHARACTER_WIDTH; i < TTY_CHARACTER_SIZE; i++)
         buffer[i] = ' ';
 
-    self->vgaDevice->write_framebuffer(self->vgaDevice, 0, TTY_CHARACTER_SIZE, buffer);
+    self->vgaDriver->write_framebuffer(self->vgaDriver, 0, TTY_CHARACTER_SIZE, buffer);
 
     self->cursorOffset -= TTY_CHARACTER_WIDTH;
 
@@ -67,7 +67,7 @@ static void putc(struct tty_driver *self, char c)
     else if (c >= ' ')
     {
 
-        self->vgaDevice->write_framebuffer(self->vgaDevice, self->cursorOffset, 1, &c);
+        self->vgaDriver->write_framebuffer(self->vgaDriver, self->cursorOffset, 1, &c);
         self->cursorOffset++;
 
     }
@@ -84,8 +84,8 @@ void tty_driver_init(struct tty_driver *driver, char *cwdname)
 
     driver->cursorOffset = 0;
     driver->kbdDriver = (struct kbd_driver *)modules_get_driver(KBD_DRIVER_TYPE);
-    driver->vgaDevice = (struct vga_device *)modules_get_device(VGA_DEVICE_TYPE);
-    driver->vgaDevice->set_cursor_color(driver->vgaDevice, TTY_COLOR_WHITE, TTY_COLOR_BLACK);
+    driver->vgaDriver = (struct vga_device *)modules_get_driver(VGA_DRIVER_TYPE);
+    driver->vgaDriver->set_cursor_color(driver->vgaDriver, TTY_COLOR_WHITE, TTY_COLOR_BLACK);
     driver->clear = clear;
     driver->scroll = scroll;
     driver->putc = putc;
