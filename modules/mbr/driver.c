@@ -72,6 +72,7 @@ void mbr_driver_init(struct mbr_driver *driver)
 
     driver->base.start = start;
     driver->base.check = check;
+    driver->base.attach = attach;
     driver->get_partition = get_partition;
 
 }
