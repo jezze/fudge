@@ -4,21 +4,20 @@
 #include <kernel/mmu.h>
 #include <modules/acpi/acpi.h>
 
-static struct acpi_sdth *get_table(struct acpi_sdth *sdt, char *name)
+static struct acpi_sdth *get_table(void *rsdt, char *name)
 {
 
-    void **tables = (void *)sdt + sizeof (struct acpi_sdth);
-    unsigned int entries = (sdt->length - sizeof (struct acpi_sdth)) / 4;
+    struct acpi_sdth *header = rsdt;
+    struct acpi_sdth **headers = rsdt + sizeof (struct acpi_sdth);
+    unsigned int entries = (header->length - sizeof (struct acpi_sdth)) / 4;
 
     unsigned int i;
 
     for (i = 0; i < entries; i++)
     {
 
-        struct acpi_sdth *current = tables[i];
-
-        if (!memory_compare(current->signature, name, 4))
-            return current;
+        if (!memory_compare(headers[i]->signature, name, 4))
+            return headers[i];
 
     }
 
