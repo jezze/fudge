@@ -7,9 +7,8 @@
 static struct acpi_sdth *get_table(struct acpi_driver *driver, char *name)
 {
 
-    struct acpi_sdth *header = (struct acpi_sdth *)driver->rsdp->rsdt;
     struct acpi_sdth **headers = (void *)driver->rsdp->rsdt + sizeof (struct acpi_sdth);
-    unsigned int entries = (header->length - sizeof (struct acpi_sdth)) / 4;
+    unsigned int entries = (driver->rsdp->rsdt->base.length - sizeof (struct acpi_sdth)) / 4;
 
     unsigned int i;
 

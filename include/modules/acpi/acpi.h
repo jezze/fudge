@@ -98,7 +98,7 @@ struct acpi_rsdp
     unsigned char checksum;
     char oem[6];
     unsigned char revision;
-    unsigned int rsdt;
+    struct acpi_rsdt *rsdt;
     unsigned int length;
     unsigned int xsdtLow;
     unsigned int xsdtHigh;
