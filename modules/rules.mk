@@ -6,6 +6,7 @@ modules-x86: LDFLAGS+=-r lib/memory.o lib/string.o
 modules: modules-${ARCH}
 
 modules-x86:
+	@${GCC} ${GCCFLAGS} modules/acpi/driver.c -o modules/acpi/driver.o
 	@${GCC} ${GCCFLAGS} modules/acpi/main.c -o modules/acpi/main.o
 	@${GCC} ${GCCFLAGS} modules/ata/bus.c -o modules/ata/bus.o
 	@${GCC} ${GCCFLAGS} modules/ata/device.c -o modules/ata/device.o
@@ -44,7 +45,7 @@ modules-x86:
 	@${GCC} ${GCCFLAGS} modules/uart/main.c -o modules/uart/main.o
 	@${GCC} ${GCCFLAGS} modules/vga/driver.c -o modules/vga/driver.o
 	@${GCC} ${GCCFLAGS} modules/vga/main.c -o modules/vga/main.o
-	@${LD} ${LDFLAGS} modules/acpi/main.o -o modules/acpi/acpi.ko
+	@${LD} ${LDFLAGS} modules/acpi/driver.o modules/acpi/main.o -o modules/acpi/acpi.ko
 	@${LD} ${LDFLAGS} modules/ata/bus.o modules/ata/device.o modules/ata/main.o -o modules/ata/ata.ko
 	@${LD} ${LDFLAGS} modules/bga/driver.o modules/bga/main.o -o modules/bga/bga.ko
 	@${LD} ${LDFLAGS} modules/cpu/cpuid.o modules/cpu/main.o -o modules/cpu/cpu.ko

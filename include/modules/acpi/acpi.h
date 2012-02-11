@@ -1,20 +1,7 @@
 #ifndef MODULES_ACPI_H
 #define MODULES_ACPI_H
 
-struct acpi_sdth
-{
-
-    char signature[4];
-    unsigned int length;
-    unsigned char revision;
-    unsigned char checksum;
-    char oem[6];
-    char oemTable[8];
-    unsigned int oemRevision;
-    unsigned int creator;
-    unsigned int creatorRevision;
-
-};
+#define ACPI_DRIVER_TYPE 0x2010
 
 struct acpi_rsdp
 {
@@ -29,6 +16,21 @@ struct acpi_rsdp
     unsigned int xsdtHigh;
     unsigned char checksum2;
     unsigned char reserved[2];
+
+};
+
+struct acpi_sdth
+{
+
+    char signature[4];
+    unsigned int length;
+    unsigned char revision;
+    unsigned char checksum;
+    char oem[6];
+    char oemTable[8];
+    unsigned int oemRevision;
+    unsigned int creator;
+    unsigned int creatorRevision;
 
 };
 
@@ -96,6 +98,17 @@ struct acpi_madt
     struct acpi_madt_entry *entries;
 
 };
+
+struct acpi_driver
+{
+
+    struct modules_driver base;
+    struct acpi_rsdp *rsdp;
+    struct mmu_memory memory;
+
+};
+
+void acpi_driver_init(struct acpi_driver *driver);
 
 #endif
 
