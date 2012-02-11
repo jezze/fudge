@@ -4,11 +4,11 @@
 #include <kernel/mmu.h>
 #include <modules/acpi/acpi.h>
 
-static struct acpi_sdth *get_table(void *rsdt, char *name)
+static struct acpi_sdth *get_table(struct acpi_driver *driver, char *name)
 {
 
-    struct acpi_sdth *header = rsdt;
-    struct acpi_sdth **headers = rsdt + sizeof (struct acpi_sdth);
+    struct acpi_sdth *header = (struct acpi_sdth *)driver->rsdp->rsdt;
+    struct acpi_sdth **headers = (void *)driver->rsdp->rsdt + sizeof (struct acpi_sdth);
     unsigned int entries = (header->length - sizeof (struct acpi_sdth)) / 4;
 
     unsigned int i;
@@ -59,7 +59,7 @@ static void start(struct modules_driver *self)
 
     struct acpi_driver *driver = (struct acpi_driver *)self;
 
-    struct acpi_madt *madt = (struct acpi_madt *)get_table((struct acpi_sdth *)driver->rsdp->rsdt, "APIC");
+    struct acpi_madt *madt = (struct acpi_madt *)get_table(driver, "APIC");
 
     log_write("[acpi] Madt signature: %c%c%c%c\n", madt->base.signature[0], madt->base.signature[1], madt->base.signature[2], madt->base.signature[3]);
 

@@ -3,22 +3,6 @@
 
 #define ACPI_DRIVER_TYPE 0x2010
 
-struct acpi_rsdp
-{
-
-    char signature[8];
-    unsigned char checksum;
-    char oem[6];
-    unsigned char revision;
-    unsigned int rsdt;
-    unsigned int length;
-    unsigned int xsdtLow;
-    unsigned int xsdtHigh;
-    unsigned char checksum2;
-    unsigned char reserved[2];
-
-};
-
 struct acpi_sdth
 {
 
@@ -31,6 +15,14 @@ struct acpi_sdth
     unsigned int oemRevision;
     unsigned int creator;
     unsigned int creatorRevision;
+
+};
+
+struct acpi_rsdt
+{
+
+    struct acpi_sdth base;
+    struct acpi_sdth **entries;
 
 };
 
@@ -96,6 +88,22 @@ struct acpi_madt
     unsigned int address;
     unsigned int flags;
     struct acpi_madt_entry *entries;
+
+};
+
+struct acpi_rsdp
+{
+
+    char signature[8];
+    unsigned char checksum;
+    char oem[6];
+    unsigned char revision;
+    unsigned int rsdt;
+    unsigned int length;
+    unsigned int xsdtLow;
+    unsigned int xsdtHigh;
+    unsigned char checksum2;
+    unsigned char reserved[2];
 
 };
 
