@@ -4,19 +4,18 @@
 #include <kernel/mmu.h>
 #include <modules/acpi/acpi.h>
 
-static struct acpi_sdth *get_table(struct acpi_driver *driver, char *name)
+static struct acpi_sdth *find_header(struct acpi_driver *self, char *name)
 {
 
-    struct acpi_sdth **headers = (void *)driver->rsdp->rsdt + sizeof (struct acpi_sdth);
-    unsigned int entries = (driver->rsdp->rsdt->base.length - sizeof (struct acpi_sdth)) / 4;
+    unsigned int entries = (self->rsdp->rsdt->base.length - sizeof (struct acpi_sdth)) / 4;
 
     unsigned int i;
 
     for (i = 0; i < entries; i++)
     {
 
-        if (!memory_compare(headers[i]->signature, name, 4))
-            return headers[i];
+        if (!memory_compare(self->rsdp->rsdt->entries[i]->signature, name, 4))
+            return self->rsdp->rsdt->entries[i];
 
     }
 
@@ -24,7 +23,7 @@ static struct acpi_sdth *get_table(struct acpi_driver *driver, char *name)
 
 }
 
-static void *get_rsdp()
+static void *find_rsdp()
 {
 
     void *rsdp;
@@ -58,7 +57,16 @@ static void start(struct modules_driver *self)
 
     struct acpi_driver *driver = (struct acpi_driver *)self;
 
-    struct acpi_madt *madt = (struct acpi_madt *)get_table(driver, "APIC");
+    driver->rsdp = find_rsdp();
+
+    if (!driver->rsdp)
+        return;
+
+    mmu_memory_init(&driver->memory, driver->rsdp->rsdt, driver->rsdp->rsdt, 0x10000); 
+    mmu_map_kernel_memory(&driver->memory);
+    mmu_reload_memory();
+
+    struct acpi_madt *madt = (struct acpi_madt *)driver->find_header(driver, "APIC");
 
     log_write("[acpi] Madt signature: %c%c%c%c\n", madt->base.signature[0], madt->base.signature[1], madt->base.signature[2], madt->base.signature[3]);
 
@@ -70,11 +78,7 @@ void acpi_driver_init(struct acpi_driver *driver)
     modules_driver_init(&driver->base, ACPI_DRIVER_TYPE);
 
     driver->base.start = start;
-    driver->rsdp = get_rsdp();
-
-    mmu_memory_init(&driver->memory, (void *)driver->rsdp->rsdt, (void *)driver->rsdp->rsdt, 0x10000); 
-    mmu_map_kernel_memory(&driver->memory);
-    mmu_reload_memory();
+    driver->find_header = find_header;
 
 }
 

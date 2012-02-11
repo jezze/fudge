@@ -22,7 +22,7 @@ struct acpi_rsdt
 {
 
     struct acpi_sdth base;
-    struct acpi_sdth **entries;
+    struct acpi_sdth *entries[];
 
 };
 
@@ -87,7 +87,7 @@ struct acpi_madt
     struct acpi_sdth base;
     unsigned int address;
     unsigned int flags;
-    struct acpi_madt_entry *entries;
+    struct acpi_madt_entry *entries[];
 
 };
 
@@ -113,6 +113,7 @@ struct acpi_driver
     struct modules_driver base;
     struct acpi_rsdp *rsdp;
     struct mmu_memory memory;
+    struct acpi_sdth *(*find_header)(struct acpi_driver *self, char *name);
 
 };
 
