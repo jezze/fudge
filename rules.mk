@@ -2,12 +2,12 @@ ROOT:=$(PWD)
 PATH:=$(PATH):$(PWD)/toolchain/local/bin
 
 ARCH=x86
-TARGET=i586-pc-fudge
-ASM=${TARGET}-as
+TARGET=i586-pc-fudge-
+ASM=${TARGET}as
 ASMFLAGS=-c
-GCC=${TARGET}-gcc
+GCC=${TARGET}gcc
 GCCFLAGS=-c -O2 -Wall -Wextra -ffreestanding -nostdlib -nostartfiles -nodefaultlibs
-LD=${TARGET}-ld
+LD=${TARGET}ld
 AR=ar
 ARFLAGS=rvs
 
