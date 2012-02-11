@@ -31,6 +31,28 @@ static void start(struct modules_driver *self)
 
 }
 
+static void handle_irq_primary(struct modules_device *device)
+{
+
+    log_write("[mbr] Primary interrupt\n");    
+
+}
+
+static void handle_irq_secondary(struct modules_device *device)
+{
+
+    log_write("[mbr] Secondary interrupt\n");    
+
+}
+
+static void attach(struct modules_driver *self, struct modules_device *device)
+{
+
+    irq_register_routine(0x0E, device, handle_irq_primary);
+    irq_register_routine(0x0F, device, handle_irq_secondary);
+
+}
+
 static unsigned int check(struct modules_driver *self, struct modules_device *device)
 {
 
