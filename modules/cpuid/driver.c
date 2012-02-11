@@ -1,10 +1,10 @@
 #include <kernel/modules.h>
 #include <modules/cpuid/cpuid.h>
 
-static void is_supported(unsigned int instruction, unsigned int flag)
+static unsigned int is_supported(unsigned int instruction, unsigned int flag)
 {
 
-    return cpuid_get_feature_ecx() & flag;
+    return cpuid_get_feature_edx() & flag;
 
 }
 

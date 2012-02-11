@@ -84,7 +84,7 @@ void tty_driver_init(struct tty_driver *driver, char *cwdname)
 
     driver->cursorOffset = 0;
     driver->kbdDriver = (struct kbd_driver *)modules_get_driver(KBD_DRIVER_TYPE);
-    driver->vgaDriver = (struct vga_device *)modules_get_driver(VGA_DRIVER_TYPE);
+    driver->vgaDriver = (struct vga_driver *)modules_get_driver(VGA_DRIVER_TYPE);
     driver->vgaDriver->set_cursor_color(driver->vgaDriver, TTY_COLOR_WHITE, TTY_COLOR_BLACK);
     driver->clear = clear;
     driver->scroll = scroll;
