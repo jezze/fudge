@@ -112,7 +112,6 @@ struct acpi_driver
 
     struct modules_driver base;
     struct acpi_rsdp *rsdp;
-    struct mmu_memory memory;
     struct acpi_sdth *(*find_header)(struct acpi_driver *self, char *name);
 
 };

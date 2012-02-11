@@ -1,4 +1,3 @@
-#include <kernel/mmu.h>
 #include <kernel/modules.h>
 #include <modules/acpi/acpi.h>
 

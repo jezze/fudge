@@ -4,6 +4,8 @@
 #include <kernel/mmu.h>
 #include <modules/acpi/acpi.h>
 
+static struct mmu_memory memory;
+
 static struct acpi_sdth *find_header(struct acpi_driver *self, char *name)
 {
 
@@ -62,8 +64,8 @@ static void start(struct modules_driver *self)
     if (!driver->rsdp)
         return;
 
-    mmu_memory_init(&driver->memory, driver->rsdp->rsdt, driver->rsdp->rsdt, 0x10000); 
-    mmu_map_kernel_memory(&driver->memory);
+    mmu_memory_init(&memory, driver->rsdp->rsdt, driver->rsdp->rsdt, 0x10000); 
+    mmu_map_kernel_memory(&memory);
     mmu_reload_memory();
 
     struct acpi_madt *madt = (struct acpi_madt *)driver->find_header(driver, "APIC");
