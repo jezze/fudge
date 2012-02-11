@@ -1,5 +1,4 @@
 #include <lib/memory.h>
-#include <kernel/log.h>
 #include <kernel/modules.h>
 #include <kernel/mmu.h>
 #include <modules/acpi/acpi.h>
@@ -67,10 +66,6 @@ static void start(struct modules_driver *self)
     mmu_memory_init(&memory, driver->rsdp->rsdt, driver->rsdp->rsdt, 0x10000); 
     mmu_map_kernel_memory(&memory);
     mmu_reload_memory();
-
-    struct acpi_madt *madt = (struct acpi_madt *)driver->find_header(driver, "APIC");
-
-    log_write("[acpi] Madt signature: %c%c%c%c\n", madt->base.signature[0], madt->base.signature[1], madt->base.signature[2], madt->base.signature[3]);
 
 }
 
