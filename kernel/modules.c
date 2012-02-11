@@ -147,6 +147,9 @@ void modules_register_driver(struct modules_driver *driver)
     modules_register_module(&driver->module);
     modules_attach(driver);
 
+    if (driver->start)
+        driver->start(driver);
+
 }
 
 void modules_unregister_module(struct modules_module *module)

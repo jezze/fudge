@@ -9,8 +9,6 @@ void init()
     ext2_driver_init(&driver);
     modules_register_driver(&driver.base);
 
-    driver.base.start(&driver.base);
-
     ext2_filesystem_init(&driver.base.module);
 
 }

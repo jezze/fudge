@@ -37,8 +37,6 @@ void init()
     rtl8139_driver_init(&driver);
     modules_register_driver(&driver.base);
 
-    driver.base.start(&driver.base);
-
     struct nodefs_driver *nodefs = (struct nodefs_driver *)modules_get_driver(NODEFS_DRIVER_TYPE);
 
     if (!nodefs)

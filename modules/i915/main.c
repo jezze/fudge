@@ -9,8 +9,6 @@ void init()
     i915_driver_init(&driver);
     modules_register_driver(&driver.base);
 
-    driver.base.start(&driver.base);
-
 }
 
 void destroy()
