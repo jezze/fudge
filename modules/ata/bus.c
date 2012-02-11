@@ -1,5 +1,4 @@
 #include <kernel/arch/x86/io.h>
-#include <kernel/irq.h>
 #include <kernel/modules.h>
 #include <modules/ata/ata.h>
 
@@ -147,14 +146,13 @@ void ata_bus_scan(struct ata_bus *self, void (*callback)(struct ata_bus *bus, un
 
 }
 
-void ata_bus_init(struct ata_bus *bus, unsigned int control, unsigned int data, unsigned int irq)
+void ata_bus_init(struct ata_bus *bus, unsigned int control, unsigned int data)
 {
 
     modules_bus_init(&bus->base, ATA_BUS_TYPE);
 
     bus->control = control;
     bus->data = data;
-    bus->irq = irq;
     bus->sleep = sleep;
     bus->wait = wait;
     bus->select = select;

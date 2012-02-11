@@ -28,8 +28,8 @@ void add_device(struct ata_bus *bus, unsigned int slave, unsigned int type)
 void init()
 {
 
-    ata_bus_init(&primary, ATA_PRIMARY_MASTER_CONTROL, ATA_PRIMARY_MASTER_DATA, 0x0E);
-    ata_bus_init(&secondary, ATA_PRIMARY_SLAVE_CONTROL, ATA_PRIMARY_SLAVE_DATA, 0x0F);
+    ata_bus_init(&primary, ATA_PRIMARY_MASTER_CONTROL, ATA_PRIMARY_MASTER_DATA);
+    ata_bus_init(&secondary, ATA_PRIMARY_SLAVE_CONTROL, ATA_PRIMARY_SLAVE_DATA);
 
     modules_register_bus(&primary.base);
     modules_register_bus(&secondary.base);

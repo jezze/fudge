@@ -90,7 +90,6 @@ struct ata_bus
     struct modules_bus base;
     unsigned short control;
     unsigned short data;
-    unsigned int irq;
     void (*sleep)(struct ata_bus *self);
     void (*wait)(struct ata_bus *self);
     void (*select)(struct ata_bus *self, unsigned char operation, unsigned int slave);
@@ -105,7 +104,7 @@ struct ata_bus
 };
 
 extern void ata_device_init(struct ata_device *device, struct ata_bus *bus, unsigned int slave, unsigned int type);
-extern void ata_bus_init(struct ata_bus *bus, unsigned int control, unsigned int data, unsigned int irq);
+extern void ata_bus_init(struct ata_bus *bus, unsigned int control, unsigned int data);
 
 #endif
 
