@@ -39,6 +39,8 @@ modules-x86:
 	@${GCC} ${GCCFLAGS} modules/rtc/main.c -o modules/rtc/main.o
 	@${GCC} ${GCCFLAGS} modules/rtl8139/driver.c -o modules/rtl8139/driver.o
 	@${GCC} ${GCCFLAGS} modules/rtl8139/main.c -o modules/rtl8139/main.o
+	@${GCC} ${GCCFLAGS} modules/smp/driver.c -o modules/smp/driver.o
+	@${GCC} ${GCCFLAGS} modules/smp/main.c -o modules/smp/main.o
 	@${GCC} ${GCCFLAGS} modules/tty/driver.c -o modules/tty/driver.o
 	@${GCC} ${GCCFLAGS} modules/tty/main.c -o modules/tty/main.o
 	@${GCC} ${GCCFLAGS} modules/uart/device.c -o modules/uart/device.o
@@ -59,6 +61,7 @@ modules-x86:
 	@${LD} ${LDFLAGS} modules/ps2/kbd_device.o modules/ps2/kbd_driver.o modules/ps2/main.o modules/ps2/mouse_device.o modules/ps2/mouse_driver.o -o modules/ps2/ps2.ko
 	@${LD} ${LDFLAGS} modules/rtc/device.o modules/rtc/main.o -o modules/rtc/rtc.ko
 	@${LD} ${LDFLAGS} modules/rtl8139/driver.o modules/rtl8139/main.o -o modules/rtl8139/rtl8139.ko
+	@${LD} ${LDFLAGS} modules/smp/driver.o modules/smp/main.o -o modules/smp/smp.ko
 	@${LD} ${LDFLAGS} modules/tty/driver.o modules/tty/main.o -o modules/tty/tty.ko
 	@${LD} ${LDFLAGS} modules/uart/driver.o modules/uart/device.o modules/uart/main.o -o modules/uart/uart.ko
 	@${LD} ${LDFLAGS} modules/vga/driver.o modules/vga/main.o -o modules/vga/vga.ko
