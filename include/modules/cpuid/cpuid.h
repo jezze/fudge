@@ -93,6 +93,16 @@
 
 #define CPUID_DRIVER_TYPE 0x9421
 
+struct cpuid_data
+{
+
+    unsigned int eax;
+    unsigned int ebx;
+    unsigned int ecx;
+    unsigned int edx;
+
+};
+
 struct cpuid_driver
 {
 
@@ -102,8 +112,7 @@ struct cpuid_driver
 };
 
 extern unsigned int cpuid_check_cpuid();
-extern unsigned int cpuid_get_feature_ecx();
-extern unsigned int cpuid_get_feature_edx();
+extern unsigned int cpuid_fill(unsigned int instruction, struct cpuid_data *data);
 extern void cpuid_get_vendor(char *destination);
 extern void cpuid_get_brand(char *destination);
 extern void cpuid_driver_init(struct cpuid_driver *driver);

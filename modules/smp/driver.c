@@ -21,7 +21,7 @@ static void start(struct modules_driver *self)
 
     log_write("[smp] Driver started\n");
 
-    if (!cpuidDriver->is_supported(CPUID_INSTRUCTION_FEATURES0, CPUID_FEATURES0_EDX_FLAG_HTT))
+    if (!cpuidDriver->is_supported(CPUID_INSTRUCTION_VENDOR, CPUID_FEATURES0_EDX_FLAG_HTT))
         return;
 
     struct acpi_madt *madt = (struct acpi_madt *)acpiDriver->find_header(acpiDriver, "APIC");

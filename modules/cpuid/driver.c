@@ -4,7 +4,11 @@
 static unsigned int is_supported(unsigned int instruction, unsigned int flag)
 {
 
-    return cpuid_get_feature_edx() & flag;
+    struct cpuid_data data;
+
+    cpuid_fill(instruction, &data);
+
+    return data.edx & flag;
 
 }
 

@@ -15,6 +15,32 @@ cpuid_check_cpuid:
     and eax, 1
     ret
 
+.global cpuid_fill
+cpuid_fill:
+    push ebp
+    mov ebp, esp
+    push eax
+    push ebx
+    push ecx
+    push edx
+    push esi
+    push edi
+    mov eax, [ebp + 8]
+    cpuid
+    mov edi, [ebp + 12]
+    mov [edi + 0], eax
+    mov [edi + 4], ebx
+    mov [edi + 8], ecx
+    mov [edi + 12], edx
+    pop edi
+    pop esi
+    pop edx
+    pop ecx
+    pop ebx
+    pop eax
+    pop ebp
+    ret
+
 .global cpuid_get_vendor
 cpuid_get_vendor:
     push ebp
@@ -37,34 +63,6 @@ cpuid_get_vendor:
     pop ecx
     pop ebx
     pop eax
-    pop ebp
-    ret
-
-.global cpuid_get_feature_ecx
-cpuid_get_feature_ecx:
-    push ebp
-    mov ebp, esp
-    push ecx
-    push edx
-    mov eax, 0x01
-    cpuid
-    mov eax, ecx
-    pop edx
-    pop ecx
-    pop ebp
-    ret
-
-.global cpuid_get_feature_edx
-cpuid_get_feature_edx:
-    push ebp
-    mov ebp, esp
-    push ecx
-    push edx
-    mov eax, 0x01
-    cpuid
-    mov eax, edx
-    pop edx
-    pop ecx
     pop ebp
     ret
 
