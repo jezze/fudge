@@ -5,6 +5,72 @@
 #include <modules/cpuid/cpuid.h>
 #include <modules/smp/smp.h>
 
+static void setup_madt(struct smp_driver *driver, struct acpi_driver *acpiDriver)
+{
+
+    struct acpi_madt *madt = (struct acpi_madt *)acpiDriver->find_header(acpiDriver, "APIC");
+
+    if (!madt)
+        return;
+
+    log_write("[smp] Madt found\n");
+
+    void *madttable = (void *)madt + sizeof (struct acpi_madt);
+    void *madtend = (void *)madt + madt->base.length;
+
+    while (madttable < madtend)
+    {
+
+        struct acpi_madt_entry *entry = madttable;
+
+        if (entry->type == 0)
+        {
+
+            struct acpi_madt_lapic *lapic = (struct acpi_madt_lapic *)entry;
+
+            driver->cpus[driver->count].id = lapic->id;
+            driver->count++;
+
+        }
+
+        madttable += entry->length;
+
+    }
+
+
+}
+
+static void setup_srat(struct smp_driver *driver, struct acpi_driver *acpiDriver)
+{
+
+    struct acpi_srat *srat = (struct acpi_srat *)acpiDriver->find_header(acpiDriver, "SRAT");
+
+    if (!srat)
+        return;
+
+    log_write("[smp] Srat found\n");
+
+    void *srattable = (void *)srat + sizeof (struct acpi_srat);
+    void *sratend = (void *)srat + srat->base.length;
+
+    while (srattable < sratend)
+    {
+
+        struct acpi_srat_entry *entry = srattable;
+        if (entry->type == 0)
+        {
+
+            struct acpi_srat_lapic *lapic = (struct acpi_srat_lapic *)entry;
+
+            //driver->cpus[lapic->id].domain = lapic->domain;
+
+        }
+
+        srattable += entry->length;
+
+    }
+
+}
 static void start(struct modules_driver *self)
 {
 
@@ -20,46 +86,32 @@ static void start(struct modules_driver *self)
     if (!cpuidDriver)
         return;
 
-    log_write("[smp] Driver started\n");
-
 //    if (!cpuidDriver->is_supported(CPUID_INSTRUCTION_VENDOR, CPUID_FEATURES0_EDX_FLAG_HTT))
 //        return;
 
-    struct acpi_madt *madt = (struct acpi_madt *)acpiDriver->find_header(acpiDriver, "APIC");
+    unsigned int i;
 
-    log_write("[smp] Madt signature: %c%c%c%c\n", madt->base.signature[0], madt->base.signature[1], madt->base.signature[2], madt->base.signature[3]);
-    log_write("[smp] Madt length: %d\n", madt->base.length);
-
-    void *table = (void *)madt + sizeof (struct acpi_madt);
-    void *end = (void *)madt + madt->base.length;
-
-    while (table < end)
+    for (i = 0; i < 32; i++)
     {
 
-        struct acpi_madt_entry *entry = table;
+        struct smp_cpu *cpu = &driver->cpus[i];
 
-        if (entry->type == 0)
-        {
-
-            struct acpi_madt_lapic *lapic = (struct acpi_madt_lapic *)entry;
-
-            driver->cpus[driver->count].id = lapic->id;
-            driver->count++;
-
-        }
-
-        table += entry->length;
+        cpu->id = 0;
+        cpu->core = 0;
+        cpu->chip = 0;
+        cpu->domain = 0;
 
     }
 
-    unsigned int i;
+    setup_madt(driver, acpiDriver);
+    setup_srat(driver, acpiDriver);
 
     for (i = 0; i < driver->count; i++)
     {
 
         struct smp_cpu *cpu = &driver->cpus[i];
 
-        log_write("[smp] CPU id: %d:%d:%d:%d\n", cpu->domain, cpu->chip, cpu->core, cpu->id);
+        log_write("[smp] CPU %d: %d:%d:%d:%d\n", i, cpu->domain, cpu->chip, cpu->core, cpu->id);
 
     }
 

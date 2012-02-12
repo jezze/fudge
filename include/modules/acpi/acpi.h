@@ -44,49 +44,40 @@ struct acpi_madt_lapic
 
 };
 
-struct acpi_madt_lsapic
-{
-
-    struct acpi_madt_entry base;
-    unsigned char processorId;
-    unsigned char id;
-    unsigned char eid;
-    unsigned char reserved[3];
-    unsigned int flags;
-    unsigned int uid;
-    char *uidName;
-
-};
-
-struct acpi_madt_ioapic
-{
-
-    struct acpi_madt_entry base;
-    unsigned char id;
-    unsigned char reserved;
-    unsigned int address;
-    unsigned int gsib;
-
-};
-
-struct acpi_madt_iosapic
-{
-
-    struct acpi_madt_entry base;
-    unsigned char id;
-    unsigned char reserved;
-    unsigned int gsib;
-    unsigned int addressLow;
-    unsigned int addressHigh;
-
-};
-
 struct acpi_madt
 {
 
     struct acpi_sdth base;
     unsigned int lica;
     unsigned int flags;
+
+};
+
+struct acpi_srat_entry
+{
+
+    unsigned char type;
+    unsigned char length;
+
+};
+
+struct acpi_srat_lapic
+{
+
+    struct acpi_srat_entry base;
+    char domain;
+    char id;
+    unsigned int flags;
+
+};
+
+struct acpi_srat
+{
+
+    struct acpi_sdth base;
+    unsigned int reserved0;
+    unsigned int reserved1;
+    unsigned int reserved2;
 
 };
 
