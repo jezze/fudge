@@ -22,7 +22,7 @@ struct nodefs_driver
 
 };
 
-extern void nodefs_driver_init(struct nodefs_driver *driver);
+void nodefs_driver_init(struct nodefs_driver *driver);
 
 #endif
 

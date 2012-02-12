@@ -15,7 +15,7 @@ struct pit_device
 
 };
 
-extern void pit_device_init(struct pit_device *device);
+void pit_device_init(struct pit_device *device);
 
 #endif
 

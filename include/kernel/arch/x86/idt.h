@@ -22,8 +22,8 @@ struct idt_pointer
 
 } __attribute__((packed));
 
-extern void idt_init();
-extern void idt_set_gate(unsigned char index, void *callback, unsigned short selector, unsigned char flags);
+void idt_init();
+void idt_set_gate(unsigned char index, void *callback, unsigned short selector, unsigned char flags);
 
 #endif
 

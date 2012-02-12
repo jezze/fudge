@@ -103,8 +103,8 @@ struct ata_bus
 
 };
 
-extern void ata_device_init(struct ata_device *device, struct ata_bus *bus, unsigned int slave, unsigned int type);
-extern void ata_bus_init(struct ata_bus *bus, unsigned int control, unsigned int data);
+void ata_device_init(struct ata_device *device, struct ata_bus *bus, unsigned int slave, unsigned int type);
+void ata_bus_init(struct ata_bus *bus, unsigned int control, unsigned int data);
 
 #endif
 

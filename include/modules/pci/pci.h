@@ -81,11 +81,11 @@ struct pci_device
 
 };
 
-extern unsigned int pci_ind(unsigned int address, unsigned short offset);
-extern unsigned char pci_inb(unsigned int address, unsigned short offset);
-extern unsigned short pci_inw(unsigned int address, unsigned short offset);
-extern void pci_bus_init(struct pci_bus *bus);
-extern void pci_device_init(struct pci_device *device, struct pci_bus *bus, unsigned int num, unsigned int slot, unsigned int function, unsigned int address);
+unsigned int pci_ind(unsigned int address, unsigned short offset);
+unsigned char pci_inb(unsigned int address, unsigned short offset);
+unsigned short pci_inw(unsigned int address, unsigned short offset);
+void pci_bus_init(struct pci_bus *bus);
+void pci_device_init(struct pci_device *device, struct pci_bus *bus, unsigned int num, unsigned int slot, unsigned int function, unsigned int address);
 
 #endif
 

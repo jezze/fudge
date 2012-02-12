@@ -10,7 +10,7 @@ struct arch_x86
 
 };
 
-extern void arch_init(struct mboot_header *header, unsigned int magic, void *stack);
+void arch_init(struct mboot_header *header, unsigned int magic, void *stack);
 
 #endif
 

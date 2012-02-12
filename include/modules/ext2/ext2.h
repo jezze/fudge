@@ -133,8 +133,8 @@ struct ext2_driver
 
 };
 
-extern void ext2_driver_init(struct ext2_driver *driver);
-extern void ext2_filesystem_init(struct modules_module *module);
+void ext2_driver_init(struct ext2_driver *driver);
+void ext2_filesystem_init(struct modules_module *module);
 
 #endif
 

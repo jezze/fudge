@@ -15,8 +15,8 @@ struct initrd_node
 
 };
 
-extern void initrd_node_init(struct initrd_node *node, unsigned int index, char *name, unsigned int size, struct tar_header *header, void *data);
-extern void initrd_init(unsigned int initrdc, void **initrdv);
+void initrd_node_init(struct initrd_node *node, unsigned int index, char *name, unsigned int size, struct tar_header *header, void *data);
+void initrd_init(unsigned int initrdc, void **initrdv);
 
 #endif
 

@@ -102,7 +102,7 @@ struct mboot_module
 
 };
 
-extern void mboot_init(void *address);
+void mboot_init(void *address);
 
 #endif
 

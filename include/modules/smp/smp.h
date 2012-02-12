@@ -22,7 +22,7 @@ struct smp_driver
 
 };
 
-extern void smp_driver_init(struct smp_driver *driver);
+void smp_driver_init(struct smp_driver *driver);
 
 #endif
 

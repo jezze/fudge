@@ -38,6 +38,6 @@ struct tty_driver
 
 };
 
-extern void tty_driver_init(struct tty_driver *driver, char *cwdname);
+void tty_driver_init(struct tty_driver *driver, char *cwdname);
 
 #endif

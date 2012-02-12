@@ -11,9 +11,9 @@ struct irq_routine
 
 };
 
-extern unsigned int irq_register_routine(unsigned char index, struct modules_device *device, void (*callback)(struct modules_device *device));
-extern unsigned int irq_unregister_routine(unsigned char index, struct modules_device *device);
-extern void irq_raise(unsigned char index);
+unsigned int irq_register_routine(unsigned char index, struct modules_device *device, void (*callback)(struct modules_device *device));
+unsigned int irq_unregister_routine(unsigned char index, struct modules_device *device);
+void irq_raise(unsigned char index);
 
 #endif
 

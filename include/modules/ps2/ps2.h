@@ -58,10 +58,10 @@ struct mouse_driver
 
 };
 
-extern void kbd_device_init(struct kbd_device *device);
-extern void kbd_driver_init(struct kbd_driver *driver);
-extern void mouse_device_init(struct mouse_device *device);
-extern void mouse_driver_init(struct mouse_driver *driver);
+void kbd_device_init(struct kbd_device *device);
+void kbd_driver_init(struct kbd_driver *driver);
+void mouse_device_init(struct mouse_device *device);
+void mouse_driver_init(struct mouse_driver *driver);
 
 #endif
 

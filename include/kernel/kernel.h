@@ -19,11 +19,11 @@ struct kernel_arch
 
 };
 
-extern void kernel_disable_interrupts();
-extern void kernel_enable_interrupts();
-extern void kernel_reboot();
-extern void kernel_halt();
-extern void kernel_init(struct kernel_arch *arch);
+void kernel_disable_interrupts();
+void kernel_enable_interrupts();
+void kernel_reboot();
+void kernel_halt();
+void kernel_init(struct kernel_arch *arch);
 
 #endif
 

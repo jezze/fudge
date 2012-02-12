@@ -51,8 +51,8 @@ struct uart_driver
 
 };
 
-extern void uart_device_init(struct uart_device *device, unsigned int port, unsigned int irq);
-extern void uart_driver_init(struct uart_driver *driver);
+void uart_device_init(struct uart_device *device, unsigned int port, unsigned int irq);
+void uart_driver_init(struct uart_driver *driver);
 
 #endif
 

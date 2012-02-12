@@ -111,11 +111,11 @@ struct cpuid_driver
 
 };
 
-extern unsigned int cpuid_check_cpuid();
-extern unsigned int cpuid_fill(unsigned int instruction, struct cpuid_data *data);
-extern void cpuid_get_vendor(char *destination);
-extern void cpuid_get_brand(char *destination);
-extern void cpuid_driver_init(struct cpuid_driver *driver);
+unsigned int cpuid_check_cpuid();
+unsigned int cpuid_fill(unsigned int instruction, struct cpuid_data *data);
+void cpuid_get_vendor(char *destination);
+void cpuid_get_brand(char *destination);
+void cpuid_driver_init(struct cpuid_driver *driver);
 
 #endif
 

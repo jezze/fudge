@@ -12,8 +12,8 @@ struct symbol_entry
 
 };
 
-extern void *symbol_find(char *name);
-extern void symbol_init();
+void *symbol_find(char *name);
+void symbol_init();
 
 #endif
 

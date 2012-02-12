@@ -19,7 +19,7 @@ struct vga_driver
 
 };
 
-extern void vga_driver_init(struct vga_driver *driver);
+void vga_driver_init(struct vga_driver *driver);
 
 #endif
 

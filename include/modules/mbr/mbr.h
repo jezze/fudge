@@ -31,7 +31,7 @@ struct mbr_driver
 
 };
 
-extern void mbr_driver_init(struct mbr_driver *driver);
+void mbr_driver_init(struct mbr_driver *driver);
 
 #endif
 

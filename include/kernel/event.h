@@ -26,9 +26,9 @@ struct event_routine
 
 };
 
-extern unsigned int event_register_routine(unsigned int index, struct runtime_task *task, void (*callback)());
-extern unsigned int event_unregister_routine(unsigned int index, struct runtime_task *task);
-extern void event_raise(unsigned int index);
+unsigned int event_register_routine(unsigned int index, struct runtime_task *task, void (*callback)());
+unsigned int event_unregister_routine(unsigned int index, struct runtime_task *task);
+void event_raise(unsigned int index);
 
 #endif
 
