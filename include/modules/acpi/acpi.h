@@ -34,7 +34,7 @@ struct acpi_madt_entry
 
 };
 
-struct acpi_madt_proclapic
+struct acpi_madt_lapic
 {
 
     struct acpi_madt_entry base;
@@ -44,7 +44,7 @@ struct acpi_madt_proclapic
 
 };
 
-struct acpi_madt_procsapic
+struct acpi_madt_lsapic
 {
 
     struct acpi_madt_entry base;
@@ -85,9 +85,8 @@ struct acpi_madt
 {
 
     struct acpi_sdth base;
-    unsigned int address;
+    unsigned int lica;
     unsigned int flags;
-    struct acpi_madt_entry *entries[];
 
 };
 
