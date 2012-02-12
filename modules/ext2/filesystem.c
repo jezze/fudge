@@ -49,7 +49,7 @@ void ext2_filesystem_init(struct modules_module *module)
 
     driver = (struct ext2_driver *)module;
 
-    vfs_filesystem_init(&filesystem, 2, get_node, find_node, walk); 
+    vfs_filesystem_init(&filesystem, 2, 0, 0, 0, 0, get_node, find_node, walk); 
     vfs_register_filesystem(&filesystem);
 
 }
