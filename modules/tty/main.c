@@ -89,15 +89,15 @@ static unsigned int pwd_read(struct vfs_node *self, unsigned int count, void *bu
         while ((index = filesystem->walk(filesystem, index)))
         {
 
-            struct vfs_node *node = filesystem->get_node(filesystem, index - 1);
+            char *name = filesystem->get_name(filesystem, index - 1);
 
-            if (!node)
+            if (!name)
                 continue;
 
-            if (string_compare(driver.cwdname, "*") && !string_find(node->name, driver.cwdname))
+            if (string_compare(driver.cwdname, "*") && !string_find(name, driver.cwdname))
                 continue;
 
-            string_write_format(buffer, "%d\t%s\n", index, node->name);
+            string_write_format(buffer, "%d\t%s\n", index, name);
             buffer += string_length(buffer);
 
         }
