@@ -8,6 +8,8 @@
 static char *filesystem_get_name(struct vfs_filesystem *self, unsigned int index)
 {
 
+    index -= 100;
+
     struct nodefs_filesystem *filesystem = (struct nodefs_filesystem *)self;
 
     if (index >= filesystem->count)
@@ -39,12 +41,14 @@ static struct vfs_node *filesystem_find_node(struct vfs_filesystem *self, char *
 static unsigned int filesystem_walk(struct vfs_filesystem *self, unsigned int index)
 {
 
+    index -= 100;
+
     struct nodefs_filesystem *filesystem = (struct nodefs_filesystem *)self;
 
     if (index >= filesystem->count)
         return 0;
 
-    return index + 1;
+    return index + 1 + 100;
 
 }
 
@@ -95,7 +99,7 @@ static void unregister_node(struct nodefs_driver *self, struct vfs_node *node)
 void nodefs_filesystem_init(struct nodefs_filesystem *filesystem)
 {
 
-    vfs_filesystem_init(&filesystem->base, 0, 0, 0, 0, 0, filesystem_get_name, filesystem_find_node, filesystem_walk); 
+    vfs_filesystem_init(&filesystem->base, 100, 0, 0, 0, 0, filesystem_get_name, filesystem_find_node, filesystem_walk); 
     filesystem->count = 0;
 
     memory_clear(filesystem->nodes, sizeof (struct vfs_node *) * 128);
