@@ -6,7 +6,8 @@
 #define FLAKE_SIZE_MAX         0x00010000
 
 #define FLAKE_TRANSMIT_FLAG    0x4000
-#define FLAKE_TRANSMIT_ERROR   0x4FFF
+#define FLAKE_TRANSMIT_ANY     0x4FFF
+#define FLAKE_TRANSMIT_ERROR   0x4002
 #define FLAKE_TRANSMIT_VERSION 0x4004
 #define FLAKE_TRANSMIT_OPEN    0x4008
 #define FLAKE_TRANSMIT_CLOSE   0x4009
@@ -14,7 +15,8 @@
 #define FLAKE_TRANSMIT_WRITE   0x400B
 
 #define FLAKE_RESPONSE_FLAG    0x8000
-#define FLAKE_RESPONSE_ERROR   0x8FFF
+#define FLAKE_RESPONSE_ANY     0x8FFF
+#define FLAKE_RESPONSE_ERROR   0x8002
 #define FLAKE_RESPONSE_VERSION 0x8004
 #define FLAKE_RESPONSE_OPEN    0x8008
 #define FLAKE_RESPONSE_CLOSE   0x8009
@@ -128,6 +130,8 @@ struct flake_response_write
     unsigned int count;
 
 };
+
+void *flake_parse(unsigned int type, unsigned int count, void *buffer);
 
 #endif
 
