@@ -143,9 +143,9 @@ void handle_network_event()
 void main(int argc, char *argv[])
 {
 
-    eth0.ip[0] = 0x0a;
-    eth0.ip[1] = 0x00;
-    eth0.ip[2] = 0x02;
+    eth0.ip[0] = 0xC0;
+    eth0.ip[1] = 0xA8;
+    eth0.ip[2] = 0x00;
     eth0.ip[3] = 0x05;
 
     unsigned int fd = file_open("rtl8139/mac");
