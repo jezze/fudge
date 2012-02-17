@@ -76,53 +76,43 @@ static unsigned int read(struct rtl8139_driver *self, void *buffer)
 static unsigned int write(struct rtl8139_driver *self, unsigned int count, void *buffer)
 {
 
-    char *tx;
-    unsigned int offset;
+    unsigned int status = (0x3F << 16) | (count & 0x1FFF);
 
-    if (self->txp == 0)
+    switch (self->txp)
     {
 
-        tx = self->tx0;
-        offset = RTL8139_REGISTER_TSD0;
+        case 0:
 
-    }
+            memory_copy(self->tx0, buffer, count);
+            io_outd(self->io + RTL8139_REGISTER_TSD0, status);
 
-    if (self->txp == 1)
-    {
+            break;
 
-        tx = self->tx1;
-        offset = RTL8139_REGISTER_TSD1;
+        case 1:
 
-    }
+            memory_copy(self->tx1, buffer, count);
+            io_outd(self->io + RTL8139_REGISTER_TSD1, status);
 
-    if (self->txp == 2)
-    {
+            break;
 
-        tx = self->tx2;
-        offset = RTL8139_REGISTER_TSD2;
+        case 2:
 
-    }
+            memory_copy(self->tx2, buffer, count);
+            io_outd(self->io + RTL8139_REGISTER_TSD2, status);
 
-    if (self->txp == 3)
-    {
+            break;
 
-        tx = self->tx3;
-        offset = RTL8139_REGISTER_TSD3;
+        case 3:
+
+            memory_copy(self->tx3, buffer, count);
+            io_outd(self->io + RTL8139_REGISTER_TSD3, status);
+
+            break;
 
     }
 
     self->txp++;
     self->txp %= 4;
-
-    memory_copy(tx, buffer, count);
-
-    int status = 0;
-
-    status |= count & 0x1FFF;
-    status |= 0 << 13;
-    status |= (0 & 0x3F) << 16;
-
-    io_outd(self->io + offset, status);
 
     return count;
 

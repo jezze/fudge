@@ -28,7 +28,7 @@ static char *initrd_filesystem_get_name(struct vfs_filesystem *self, unsigned in
     if (!nodes[index].base.name)
         return 0;
 
-    return &nodes[index].base.name;
+    return nodes[index].base.name;
 
 }
 
