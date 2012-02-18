@@ -71,7 +71,7 @@ void vfs_node_init(struct vfs_node *node, char *name, void (*open)(struct vfs_no
 
 }
 
-void vfs_filesystem_init(struct vfs_filesystem *filesystem, unsigned int firstIndex, void (*open)(struct vfs_filesystem *self, unsigned int index), void (*close)(struct vfs_filesystem *self, unsigned int index), unsigned int (*read)(struct vfs_filesystem *self, unsigned int index, unsigned int count, void *buffer), unsigned int (*write)(struct vfs_filesystem *self, unsigned int index, unsigned int count, void *buffer), char *(*get_name)(struct vfs_filesystem *self, unsigned int index), struct vfs_node *(*find_node)(struct vfs_filesystem *self, char *name), unsigned int (*walk)(struct vfs_filesystem *self, unsigned int index))
+void vfs_filesystem_init(struct vfs_filesystem *filesystem, unsigned int firstIndex, void (*open)(struct vfs_filesystem *self, unsigned int index), void (*close)(struct vfs_filesystem *self, unsigned int index), unsigned int (*read)(struct vfs_filesystem *self, unsigned int index, unsigned int count, void *buffer), unsigned int (*write)(struct vfs_filesystem *self, unsigned int index, unsigned int count, void *buffer), char *(*get_name)(struct vfs_filesystem *self, unsigned int index), struct vfs_node *(*get_node)(struct vfs_filesystem *self, unsigned int index), struct vfs_node *(*find_node)(struct vfs_filesystem *self, char *name), unsigned int (*walk)(struct vfs_filesystem *self, unsigned int index))
 {
 
     memory_clear(filesystem, sizeof (struct vfs_filesystem));

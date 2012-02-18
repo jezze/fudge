@@ -6,20 +6,6 @@
 static struct ext2_driver *driver;
 static struct vfs_filesystem filesystem;
 
-static char *get_name(struct vfs_filesystem *self, unsigned int index)
-{
-
-    return 0;
-
-}
-
-static struct vfs_node *find_node(struct vfs_filesystem *self, char *name)
-{
-
-    return 0;
-
-}
-
 static unsigned int walk(struct vfs_filesystem *self, unsigned int index)
 {
 
@@ -49,7 +35,7 @@ void ext2_filesystem_init(struct modules_module *module)
 
     driver = (struct ext2_driver *)module;
 
-    vfs_filesystem_init(&filesystem, 2, 0, 0, 0, 0, get_name, find_node, walk); 
+    vfs_filesystem_init(&filesystem, 2, 0, 0, 0, 0, 0, 0, 0, walk); 
     vfs_register_filesystem(&filesystem);
 
 }
