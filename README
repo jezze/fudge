@@ -32,6 +32,16 @@ triggered both by system calls and interrupt requests. Using this method it is
 even possible to construct a multitasking scenario by simply listening on the
 internal clock.
 
+* Terminate and stay resident
+In Fudge a user space program is not encouraged to run busy waits. Instead they
+should issue a certain system call as soon as it is not working on anything or
+waiting for some sort of external event. No matter the type of operating system
+a typical program is for the most part in a waiting state. Because of how Fudge
+works it can look at all the running programs and see that all are in a waiting
+state and simple put the CPU to halt. This basically means, in a somewhat
+simplified example, that your computer is only running from the time you hit a
+key until you release it again. The rest of the time it is off.
+
 * No memory allocation
 It is not possible to dynamically allocate memory at runtime. In this way Fudge
 will never be out of memory and the kernel will be less occupied with
