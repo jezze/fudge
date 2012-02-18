@@ -73,6 +73,7 @@ cpu_get_stack:
 global cpu_halt
 cpu_halt:
     hlt
+    ret
 
 global cpu_idle
 cpu_idle:

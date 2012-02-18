@@ -33,7 +33,9 @@ static void irq_load_state(struct runtime_task *task, struct irq_registers *regi
 void irq_handle(struct irq_registers *registers)
 {
 
-    irq_save_state(runtime_get_running_task(), registers);
+    if (registers->ds == 0x23)
+        irq_save_state(runtime_get_running_task(), registers);
+
     irq_raise(registers->index);
 
     if (registers->slave)
@@ -41,7 +43,8 @@ void irq_handle(struct irq_registers *registers)
 
     io_outb(0x20, 0x20);
 
-    irq_load_state(runtime_get_running_task(), registers);
+    if (registers->ds == 0x23)
+        irq_load_state(runtime_get_running_task(), registers);
 
 }
 
