@@ -86,10 +86,10 @@ static unsigned int pwd_read(struct vfs_node *self, unsigned int count, void *bu
 
         unsigned int index = filesystem->firstIndex;
 
-        while ((index = filesystem->walk(filesystem, index)))
+        do
         {
 
-            char *name = filesystem->get_name(filesystem, index - 1);
+            char *name = filesystem->get_name(filesystem, index);
 
             if (!name)
                 continue;
@@ -101,6 +101,7 @@ static unsigned int pwd_read(struct vfs_node *self, unsigned int count, void *bu
             buffer += string_length(buffer);
 
         }
+        while ((index = filesystem->walk(filesystem, index)));
 
     }
 
