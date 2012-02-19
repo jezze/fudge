@@ -47,10 +47,25 @@ struct vfs_node *vfs_find(char *path)
         if (!filesystems[i])
             continue;
 
-        struct vfs_node *node = filesystems[i]->find_node(filesystems[i], path);
+        struct vfs_filesystem *filesystem = filesystems[i];
 
-        if (node)
-            return node;
+        unsigned int index = filesystem->firstIndex;
+
+        do
+        {
+
+            char *name = filesystem->get_name(filesystem, index);
+
+            if (!name)
+                continue;
+
+            if (!string_find(name, path))
+                continue;
+
+            return filesystem->get_node(filesystem, index);
+
+        }
+        while ((index = filesystem->walk(filesystem, index)));
 
     }
 
@@ -82,6 +97,7 @@ void vfs_filesystem_init(struct vfs_filesystem *filesystem, unsigned int firstIn
     filesystem->read = read;
     filesystem->write = write;
     filesystem->get_name = get_name;
+    filesystem->get_node = get_node;
     filesystem->find_node = find_node;
     filesystem->walk = walk;
 
