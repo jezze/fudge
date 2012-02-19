@@ -133,6 +133,8 @@ void initrd_init(unsigned int initrdc, void **initrdv)
 
     vfs_filesystem_init(&filesystem, 0, 0, 0, 0, 0, initrd_filesystem_get_name, initrd_filesystem_get_node, initrd_filesystem_find_node, initrd_filesystem_walk);
 
+    nodesCount = 0;
+
     unsigned int i;
 
     for (i = 0; i < initrdc; i++)
