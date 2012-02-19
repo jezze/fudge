@@ -56,9 +56,6 @@ struct vfs_node *vfs_find(char *path)
 
             char *name = filesystem->get_name(filesystem, index);
 
-            if (!name)
-                continue;
-
             if (!string_find(name, path))
                 continue;
 

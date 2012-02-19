@@ -91,9 +91,6 @@ static unsigned int pwd_read(struct vfs_node *self, unsigned int count, void *bu
 
             char *name = filesystem->get_name(filesystem, index);
 
-            if (!name)
-                continue;
-
             if (string_compare(driver.cwdname, "*") && !string_find(name, driver.cwdname))
                 continue;
 
