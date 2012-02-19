@@ -150,11 +150,12 @@ void runtime_registers_init(struct runtime_registers *registers, unsigned int ip
 
 }
 
-void runtime_descriptor_init(struct runtime_descriptor *descriptor, struct vfs_node *node, unsigned int permissions)
+void runtime_descriptor_init(struct runtime_descriptor *descriptor, struct vfs_filesystem *filesystem, struct vfs_node *node, unsigned int permissions)
 {
 
     memory_clear(descriptor, sizeof (struct runtime_descriptor));
 
+    descriptor->filesystem = filesystem;
     descriptor->node = node;
     descriptor->permissions = permissions;
 
