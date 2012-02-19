@@ -25,7 +25,7 @@ static unsigned int initrd_filesystem_node_read(struct vfs_node *self, unsigned 
 static char *initrd_filesystem_get_name(struct vfs_filesystem *self, unsigned int index)
 {
 
-    if (!nodes[index].base.name)
+    if (index >= nodesCount)
         return 0;
 
     return nodes[index].base.name;
@@ -35,7 +35,7 @@ static char *initrd_filesystem_get_name(struct vfs_filesystem *self, unsigned in
 static struct vfs_node *initrd_filesystem_get_node(struct vfs_filesystem *self, unsigned int index)
 {
 
-    if (!nodes[index].base.name)
+    if (index >= nodesCount)
         return 0;
 
     return &nodes[index].base;

@@ -8,9 +8,9 @@
 static char *filesystem_get_name(struct vfs_filesystem *self, unsigned int index)
 {
 
-    index -= 100;
-
     struct nodefs_filesystem *filesystem = (struct nodefs_filesystem *)self;
+
+    index -= 100;
 
     if (index >= filesystem->count)
         return 0;
@@ -22,9 +22,9 @@ static char *filesystem_get_name(struct vfs_filesystem *self, unsigned int index
 static struct vfs_node *filesystem_get_node(struct vfs_filesystem *self, unsigned int index)
 {
 
-    index -= 100;
-
     struct nodefs_filesystem *filesystem = (struct nodefs_filesystem *)self;
+
+    index -= 100;
 
     if (index >= filesystem->count)
         return 0;
@@ -55,11 +55,11 @@ static struct vfs_node *filesystem_find_node(struct vfs_filesystem *self, char *
 static unsigned int filesystem_walk(struct vfs_filesystem *self, unsigned int index)
 {
 
-    index -= 100;
-
     struct nodefs_filesystem *filesystem = (struct nodefs_filesystem *)self;
 
-    if (index >= filesystem->count)
+    index -= 100;
+
+    if (index >= filesystem->count - 1)
         return 0;
 
     return index + 1 + 100;
