@@ -33,7 +33,7 @@ static struct vfs_node *filesystem_get_node(struct vfs_filesystem *self, unsigne
 
 }
 
-static struct vfs_node *filesystem_find_node(struct vfs_filesystem *self, char *name)
+static unsigned int filesystem_find_node(struct vfs_filesystem *self, char *name)
 {
 
     struct nodefs_filesystem *filesystem = (struct nodefs_filesystem *)self;
@@ -44,7 +44,7 @@ static struct vfs_node *filesystem_find_node(struct vfs_filesystem *self, char *
     {
 
         if (string_find(filesystem->nodes[i]->name, name))
-            return filesystem->nodes[i];
+            return i + 100;
 
     }
 
