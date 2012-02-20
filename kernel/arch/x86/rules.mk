@@ -1,6 +1,5 @@
 kernel-arch: ASM=nasm
 kernel-arch: ASMFLAGS=-f elf
-kernel-arch: GCCFLAGS+=-Iinclude
 
 kernel-arch:
 	@${GCC} ${GCCFLAGS} kernel/arch/x86/arch.c -o kernel/arch/x86/arch.o
