@@ -1,6 +1,3 @@
-modules-arch: GCCFLAGS+=-Iinclude
-modules-arch: LDFLAGS+=-r lib/memory.o lib/string.o
-
 modules-arch:
 	@${GCC} ${GCCFLAGS} modules/arch/x86/acpi/driver.c -o modules/arch/x86/acpi/driver.o
 	@${GCC} ${GCCFLAGS} modules/arch/x86/acpi/main.c -o modules/arch/x86/acpi/main.o

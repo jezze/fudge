@@ -19,6 +19,7 @@ ramdisk:
 	@cp kernel/fudge build/root/boot/fudge
 	@nm build/root/boot/fudge | grep -f build/root/boot/fudge.sym > build/root/boot/fudge.map
 	@cp modules/*/*.ko build/root/mod/
+	@cp modules/arch/*/*/*.ko build/root/mod/
 	@cp user/cat build/root/bin/cat
 	@cp user/cd build/root/bin/cd
 	@cp user/date build/root/bin/date
