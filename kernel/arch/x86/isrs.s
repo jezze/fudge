@@ -1,6 +1,5 @@
 extern isr_handle
 extern syscall_handle
-extern syscall_handle_quick
 
 global isr00
 isr00:
