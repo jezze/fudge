@@ -3,7 +3,7 @@ include rules.${ARCH}.mk
 
 .PHONY: all clean toolchain kernel lib modules user ramdisk
 
-all: lib kernel kernel-${ARCH} modules user ramdisk
+all: lib kernel modules user ramdisk
 
 include lib/rules.mk
 include kernel/rules.mk

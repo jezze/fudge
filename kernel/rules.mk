@@ -1,8 +1,7 @@
 include kernel/arch/${ARCH}/rules.mk
 
 kernel: GCCFLAGS+=-Iinclude
-kernel-arm: LDFLAGS+=-Tkernel/arch/arm/linker.ld
-kernel-x86: LDFLAGS+=-Tkernel/arch/x86/linker.ld
+kernel: LDFLAGS+=-Tkernel/arch/${ARCH}/linker.ld
 
 kernel: kernel-arch
 	@${GCC} ${GCCFLAGS} kernel/elf.c -o kernel/elf.o
@@ -18,36 +17,7 @@ kernel: kernel-arch
 	@${GCC} ${GCCFLAGS} kernel/symbol.c -o kernel/symbol.o
 	@${GCC} ${GCCFLAGS} kernel/syscall.c -o kernel/syscall.o
 	@${GCC} ${GCCFLAGS} kernel/vfs.c -o kernel/vfs.o
-
-kernel-arm:
-	@${LD} ${LDFLAGS} kernel/elf.o kernel/error.o kernel/event.o kernel/initrd.o kernel/irq.o kernel/kernel.o kernel/log.o kernel/mmu.o kernel/modules.o kernel/runtime.o kernel/symbol.o kernel/syscall.o kernel/vfs.o \
-		kernel/arch/arm/arch.o \
-		kernel/arch/arm/cpu.o \
-		kernel/arch/arm/init.o \
-		lib/memory.o \
-		lib/string.o \
-		-o kernel/fudge 
-
-kernel-x86:
-	@${LD} ${LDFLAGS} kernel/elf.o kernel/error.o kernel/event.o kernel/initrd.o kernel/irq.o kernel/kernel.o kernel/log.o kernel/mmu.o kernel/modules.o kernel/runtime.o kernel/symbol.o kernel/syscall.o kernel/vfs.o \
-		kernel/arch/x86/arch.o \
-		kernel/arch/x86/cpu.o \
-		kernel/arch/x86/fpu.o \
-		kernel/arch/x86/gdt.o \
-		kernel/arch/x86/idt.o \
-		kernel/arch/x86/init.o \
-		kernel/arch/x86/io.o \
-		kernel/arch/x86/irqs.o \
-		kernel/arch/x86/isrs.o \
-		kernel/arch/x86/irq.o \
-		kernel/arch/x86/isr.o \
-		kernel/arch/x86/mmu.o \
-		kernel/arch/x86/mboot.o \
-		kernel/arch/x86/syscall.o \
-		kernel/arch/x86/tss.o \
-		lib/memory.o \
-		lib/string.o \
-		-o kernel/fudge
+	@${LD} ${LDFLAGS} kernel/*.o kernel/arch/${ARCH}/*.o lib/memory.o lib/string.o -o kernel/fudge
 
 kernel-clean: kernel-arch-clean
 	@rm -f kernel/fudge

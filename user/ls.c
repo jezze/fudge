@@ -2,38 +2,25 @@
 
 char buffer[0x1000];
 
-void write_content(char *content)
-{
-
-    unsigned int start = 0;
-    unsigned int i;
-
-    for (i = 0; content[i] != '\0'; i++)
-    {
-
-        if (content[i] == '\n')
-        {
-
-            content[i] = '\0';
-
-            file_write_format(FILE_STDOUT, "%s\n", content + start);
-
-            start = i + 1;
-
-        }
-
-    }
-
-}
-
 void main(int argc, char *argv[])
 {
 
-    int fd = file_open("tty/pwd");
-    file_read(fd, 0x1000, buffer);
+    unsigned int fd = file_open("tty/pwd");
+
+    if (!fd)
+    {
+
+        file_write_format(FILE_STDOUT, "%s: File does not exist.\n", argv[1]);
+
+        return;
+
+    }
+
+    unsigned int count = file_read(fd, 0x1000, buffer);
+
     file_close(fd);
 
-    write_content(buffer);
+    file_write(FILE_STDOUT, count, buffer);
 
 }
 
