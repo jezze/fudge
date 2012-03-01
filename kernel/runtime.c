@@ -120,7 +120,7 @@ static unsigned int runtime_task_get_descriptor_slot(struct runtime_task *self)
     for (i = 1; i < RUNTIME_TASK_DESCRIPTOR_SLOTS; i++)
     {
 
-        if (!self->descriptors[i].node)
+        if (!self->descriptors[i].id)
             return i;
 
     }
@@ -150,14 +150,13 @@ void runtime_registers_init(struct runtime_registers *registers, unsigned int ip
 
 }
 
-void runtime_descriptor_init(struct runtime_descriptor *descriptor, unsigned int id,  struct vfs_filesystem *filesystem, struct vfs_node *node, unsigned int permissions)
+void runtime_descriptor_init(struct runtime_descriptor *descriptor, unsigned int id,  struct vfs_filesystem *filesystem, unsigned int permissions)
 {
 
     memory_clear(descriptor, sizeof (struct runtime_descriptor));
 
     descriptor->id = id;
     descriptor->filesystem = filesystem;
-    descriptor->node = node;
     descriptor->permissions = permissions;
 
 }

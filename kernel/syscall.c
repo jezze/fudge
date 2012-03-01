@@ -21,13 +21,15 @@ unsigned int syscall_close(struct runtime_task *task, unsigned int index)
 
     struct runtime_descriptor *descriptor = task->get_descriptor(task, index);
 
-    if (!descriptor || !descriptor->node)
+    if (!descriptor || !descriptor->id)
         return 0;
 
-    if (descriptor->node->close)
-        descriptor->node->close(descriptor->node);
+    struct vfs_node *node = descriptor->filesystem->get_node(descriptor->filesystem, descriptor->id);
 
-    runtime_descriptor_init(descriptor, 0, 0, 0, 0);
+    if (node->close)
+        node->close(node);
+
+    runtime_descriptor_init(descriptor, 0, 0, 0);
 
     event_raise(EVENT_SYSCALL_CLOSE);
 
@@ -93,9 +95,9 @@ unsigned int syscall_execute(struct runtime_task *task, char *path, unsigned int
     if (filesystem)
     {
 
-        runtime_descriptor_init(ntask->get_descriptor(ntask, 1), filesystem->find_node(filesystem, "tty/stdin"), filesystem, vfs_find("tty/stdin"), 0);
-        runtime_descriptor_init(ntask->get_descriptor(ntask, 2), filesystem->find_node(filesystem, "tty/stdout"), filesystem, vfs_find("tty/stdout"), 0);
-        runtime_descriptor_init(ntask->get_descriptor(ntask, 3), filesystem->find_node(filesystem, "tty/stderr"), filesystem, vfs_find("tty/stderr"), 0);
+        runtime_descriptor_init(ntask->get_descriptor(ntask, 1), filesystem->find_node(filesystem, "tty/stdin"), filesystem, 0);
+        runtime_descriptor_init(ntask->get_descriptor(ntask, 2), filesystem->find_node(filesystem, "tty/stdout"), filesystem, 0);
+        runtime_descriptor_init(ntask->get_descriptor(ntask, 3), filesystem->find_node(filesystem, "tty/stderr"), filesystem, 0);
 
     }
 
@@ -169,13 +171,15 @@ unsigned int syscall_open(struct runtime_task *task, char *path)
     if (!filesystem)
         return 0;
 
-    runtime_descriptor_init(descriptor, filesystem->find_node(filesystem, path), filesystem, vfs_find(path), 0);
+    runtime_descriptor_init(descriptor, filesystem->find_node(filesystem, path), filesystem, 0);
 
-    if (!descriptor->node)
+    if (!descriptor->id)
         return 0;
 
-    if (descriptor->node->open)
-        descriptor->node->open(descriptor->node);
+    struct vfs_node *node = descriptor->filesystem->get_node(descriptor->filesystem, descriptor->id);
+
+    if (node->open)
+        node->open(node);
 
     event_raise(EVENT_SYSCALL_OPEN);
 
@@ -186,7 +190,8 @@ unsigned int syscall_open(struct runtime_task *task, char *path)
 unsigned int syscall_read(struct runtime_task *task, unsigned int index, unsigned int count, char *buffer)
 {
 
-    struct vfs_node *node = task->get_descriptor(task, index)->node;
+    struct runtime_descriptor *descriptor = task->get_descriptor(task, index);
+    struct vfs_node *node = descriptor->filesystem->get_node(descriptor->filesystem, descriptor->id);
 
     if (!(node && node->read))
         return 0;
@@ -255,7 +260,8 @@ unsigned int syscall_wait(struct runtime_task *task)
 unsigned int syscall_write(struct runtime_task *task, unsigned int index, unsigned int count, char *buffer)
 {
 
-    struct vfs_node *node = task->get_descriptor(task, index)->node;
+    struct runtime_descriptor *descriptor = task->get_descriptor(task, index);
+    struct vfs_node *node = descriptor->filesystem->get_node(descriptor->filesystem, descriptor->id);
 
     if (!(node && node->write))
         return 0;
