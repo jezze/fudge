@@ -164,7 +164,12 @@ unsigned int syscall_open(struct runtime_task *task, char *path)
     if (!descriptor)
         return 0;
 
-    runtime_descriptor_init(descriptor, 0, vfs_find_filesystem(path), vfs_find(path), 0);
+    struct vfs_filesystem *filesystem = vfs_find_filesystem(path);
+
+    if (!filesystem)
+        return 0;
+
+    runtime_descriptor_init(descriptor, filesystem->find_node(filesystem, path), filesystem, vfs_find(path), 0);
 
     if (!descriptor->node)
         return 0;
