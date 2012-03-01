@@ -59,7 +59,7 @@ void kernel_init(struct kernel_arch *arch)
     initrd_init(kernelArch->initrdc, kernelArch->initrdv);
     symbol_init();
 
-    unsigned int index = syscall_execute(0, "bin/init", 0, 0);
+    unsigned int index = syscall_execute(0, "build/root/bin/init", 0, 0);
 
     if (!index)
         error_panic("Could not start init", __FILE__, __LINE__);
