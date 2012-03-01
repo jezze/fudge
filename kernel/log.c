@@ -24,10 +24,12 @@ static char *log_write_num(char *out, unsigned int num, unsigned int base)
 void log_write(const char *buffer, ...)
 {
 
-    struct vfs_node *node = vfs_find("tty/stdout");
+    struct vfs_filesystem *filesystem = vfs_find_filesystem("module/tty/stdout");
 
-    if (!node)
+    if (!filesystem)
         return;
+
+    struct vfs_node *node = filesystem->get_node(filesystem, filesystem->find_node(filesystem, "module/tty/stdout"));
 
     char **arg = (char **)&buffer;
 
