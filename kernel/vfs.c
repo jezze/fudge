@@ -33,7 +33,7 @@ struct vfs_filesystem *vfs_get_filesystem(unsigned int index)
 
 }
 
-struct vfs_filesystem *vfs_2find(char *path)
+struct vfs_filesystem *vfs_find_filesystem(char *path)
 {
 
     if (!string_length(path))
@@ -65,7 +65,7 @@ struct vfs_filesystem *vfs_2find(char *path)
 struct vfs_node *vfs_find(char *path)
 {
 
-    struct vfs_filesystem *filesystem = vfs_2find(path);
+    struct vfs_filesystem *filesystem = vfs_find_filesystem(path);
 
     if (!filesystem)
         return 0;
