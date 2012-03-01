@@ -221,7 +221,12 @@ unsigned int syscall_reboot(struct runtime_task *task)
 unsigned int syscall_unload(struct runtime_task *task, char *path)
 {
 
-    struct vfs_node *node = vfs_find(path);
+    struct vfs_filesystem *filesystem = vfs_find_filesystem(path);
+
+    if (!filesystem)
+        return 0;
+
+    struct vfs_node *node = filesystem->get_node(filesystem, filesystem->find_node(filesystem, path));
 
     if (!node)
         return 0;
