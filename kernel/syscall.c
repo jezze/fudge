@@ -66,7 +66,12 @@ unsigned int syscall_execute(struct runtime_task *task, char *path, unsigned int
 
     runtime_task_init(ntask, index);
 
-    struct vfs_node *node = vfs_find(path);
+    struct vfs_filesystem *filesystem2 = vfs_find_filesystem(path);
+
+    if (!filesystem2)
+        return 0;
+
+    struct vfs_node *node = filesystem2->get_node(filesystem2, filesystem2->find_node(filesystem2, path));
 
     if (!(node && node->read))
         return 0;
