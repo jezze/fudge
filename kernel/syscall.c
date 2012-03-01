@@ -27,7 +27,7 @@ unsigned int syscall_close(struct runtime_task *task, unsigned int index)
     if (descriptor->node->close)
         descriptor->node->close(descriptor->node);
 
-    runtime_descriptor_init(descriptor, 0, 0, 0);
+    runtime_descriptor_init(descriptor, 0, 0, 0, 0);
 
     event_raise(EVENT_SYSCALL_CLOSE);
 
@@ -87,9 +87,9 @@ unsigned int syscall_execute(struct runtime_task *task, char *path, unsigned int
     elf_prepare(ntask->memory.vaddress);
 
     runtime_activate(ntask, task);
-    runtime_descriptor_init(ntask->get_descriptor(ntask, 1), vfs_2find("tty/stdin"), vfs_find("tty/stdin"), 0);
-    runtime_descriptor_init(ntask->get_descriptor(ntask, 2), vfs_2find("tty/stdout"), vfs_find("tty/stdout"), 0);
-    runtime_descriptor_init(ntask->get_descriptor(ntask, 3), vfs_2find("tty/stderr"), vfs_find("tty/stderr"), 0);
+    runtime_descriptor_init(ntask->get_descriptor(ntask, 1), 0, vfs_2find("tty/stdin"), vfs_find("tty/stdin"), 0);
+    runtime_descriptor_init(ntask->get_descriptor(ntask, 2), 0, vfs_2find("tty/stdout"), vfs_find("tty/stdout"), 0);
+    runtime_descriptor_init(ntask->get_descriptor(ntask, 3), 0, vfs_2find("tty/stderr"), vfs_find("tty/stderr"), 0);
 
     event_raise(EVENT_SYSCALL_EXECUTE);
 
@@ -156,7 +156,7 @@ unsigned int syscall_open(struct runtime_task *task, char *path)
     if (!descriptor)
         return 0;
 
-    runtime_descriptor_init(descriptor, vfs_2find(path), vfs_find(path), 0);
+    runtime_descriptor_init(descriptor, 0, vfs_2find(path), vfs_find(path), 0);
 
     if (!descriptor->node)
         return 0;

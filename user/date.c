@@ -5,7 +5,7 @@ void main(int argc, char *argv[])
 
     char buffer[64];
 
-    unsigned int fd = file_open("rtc/timestamp");
+    unsigned int fd = file_open("module/rtc/timestamp");
 
     if (!fd)
     {

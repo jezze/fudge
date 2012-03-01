@@ -5,7 +5,7 @@ void main(int argc, char *argv[])
 
     char buffer[32];
 
-    unsigned int fd = file_open("pit/jiffies");
+    unsigned int fd = file_open("module/pit/jiffies");
 
     if (!fd)
     {

@@ -5,7 +5,7 @@ void main(int argc, char *argv[])
 
     char buffer[256];
 
-    unsigned int fd = file_open("tty/cwd");
+    unsigned int fd = file_open("module/tty/cwd");
 
     if (argc == 1)
     {
