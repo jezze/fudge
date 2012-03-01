@@ -27,7 +27,7 @@ void init()
     if (!nodefs)
         return;
 
-    vfs_node_init(&timestamp, "module/rtc/timestamp", 0, 0, timestamp_read, 0);
+    vfs_node_init(&timestamp, "module/rtc/timestamp", timestamp_read, 0);
 
     nodefs->register_node(nodefs, &timestamp);
 

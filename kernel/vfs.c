@@ -62,14 +62,12 @@ struct vfs_filesystem *vfs_find_filesystem(char *path)
 
 }
 
-void vfs_node_init(struct vfs_node *node, char *name, void (*open)(struct vfs_node *self), void (*close)(struct vfs_node *self), unsigned int (*read)(struct vfs_node *self, unsigned int count, void *buffer), unsigned int (*write)(struct vfs_node *self, unsigned int count, void *buffer))
+void vfs_node_init(struct vfs_node *node, char *name, unsigned int (*read)(struct vfs_node *self, unsigned int count, void *buffer), unsigned int (*write)(struct vfs_node *self, unsigned int count, void *buffer))
 {
 
     memory_clear(node, sizeof (struct vfs_node));
 
     string_write(node->name, name);
-    node->open = open;
-    node->close = close;
     node->read = read;
     node->write = write;
 

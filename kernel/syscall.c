@@ -24,10 +24,8 @@ unsigned int syscall_close(struct runtime_task *task, unsigned int index)
     if (!descriptor || !descriptor->id)
         return 0;
 
-    struct vfs_node *node = descriptor->filesystem->get_node(descriptor->filesystem, descriptor->id);
-
-    if (node->close)
-        node->close(node);
+    if (descriptor->filesystem->close)
+        descriptor->filesystem->close(descriptor->filesystem, descriptor->id);
 
     runtime_descriptor_init(descriptor, 0, 0, 0);
 
@@ -186,10 +184,8 @@ unsigned int syscall_open(struct runtime_task *task, char *path)
     if (!descriptor->id)
         return 0;
 
-    struct vfs_node *node = descriptor->filesystem->get_node(descriptor->filesystem, descriptor->id);
-
-    if (node->open)
-        node->open(node);
+    if (descriptor->filesystem->open)
+        descriptor->filesystem->open(descriptor->filesystem, descriptor->id);
 
     event_raise(EVENT_SYSCALL_OPEN);
 

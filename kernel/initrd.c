@@ -119,7 +119,7 @@ void initrd_node_init(struct initrd_node *node, unsigned int index, char *name, 
 
     memory_clear(node, sizeof (struct initrd_node));
 
-    vfs_node_init(&node->base, name, 0, 0, initrd_filesystem_node_read, 0);
+    vfs_node_init(&node->base, name, initrd_filesystem_node_read, 0);
 
     node->size = size;
     node->header = header;
