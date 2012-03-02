@@ -29,7 +29,10 @@ void log_write(const char *buffer, ...)
     if (!filesystem)
         return;
 
-    struct vfs_node *node = filesystem->get_node(filesystem, filesystem->find_node(filesystem, "module/tty/stdout"));
+    unsigned int id = filesystem->find_node(filesystem, "module/tty/stdout");
+
+    if (!id)
+        return;
 
     char **arg = (char **)&buffer;
 
@@ -42,7 +45,7 @@ void log_write(const char *buffer, ...)
         if (c != '%')
         {
 
-            node->write(node, 1, &c);
+            filesystem->write(filesystem, id, 1, &c);
 
             buffer++;
 
@@ -60,27 +63,27 @@ void log_write(const char *buffer, ...)
 
             case 'c':
 
-                node->write(node, 1, (char *)arg);
+                filesystem->write(filesystem, id, 1, (char *)arg);
 
                 break;
 
             case 'd':
 
                 log_write_num(num, *(int *)arg, 10);
-                node->write(node, string_length(num), num);
+                filesystem->write(filesystem, id, string_length(num), num);
 
                 break;
 
             case 's':
 
-                node->write(node, string_length(*(char **)arg), *(char **)arg);
+                filesystem->write(filesystem, id, string_length(*(char **)arg), *(char **)arg);
 
                 break;
 
             case 'x':
 
                 log_write_num(num, *(int *)arg, 16);
-                node->write(node, string_length(num), num);
+                filesystem->write(filesystem, id, string_length(num), num);
 
                 break;
 
@@ -90,7 +93,7 @@ void log_write(const char *buffer, ...)
 
     }
 
-    node->write(node, 1, "");
+    filesystem->write(filesystem, id, 1, "");
 
 }
 
