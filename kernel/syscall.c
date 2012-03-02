@@ -141,14 +141,19 @@ unsigned int syscall_load(struct runtime_task *task, char *path)
     if (!filesystem)
         return 0;
 
-    struct vfs_node *node = filesystem->get_node(filesystem, filesystem->find_node(filesystem, path));
+    unsigned int id = filesystem->find_node(filesystem, path);
 
-    if (!node)
+    if (!id)
         return 0;
 
-    elf_relocate(node->physical);
+    void *physical = filesystem->get_physical(filesystem, id);
 
-    void (*init)() = elf_get_symbol(node->physical, "init");
+    if (!physical)
+        return 0;
+
+    elf_relocate(physical);
+
+    void (*init)() = elf_get_symbol(physical, "init");
 
     if (!init)
         return 0;
