@@ -26,7 +26,11 @@ void *symbol_find(char *name)
 void symbol_init()
 {
 
-    struct vfs_filesystem *filesystem = vfs_find_filesystem("build/root/boot/fudge.map");
+    struct vfs_filesystem *filesystem = vfs_find_filesystem("build/");
+
+    if (!filesystem)
+        error_panic("Symbol table not found", __FILE__, __LINE__);
+
     unsigned int id = filesystem->find(filesystem, "build/root/boot/fudge.map");
 
     if (!id)

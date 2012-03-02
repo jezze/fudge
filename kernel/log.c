@@ -24,7 +24,7 @@ static char *log_write_num(char *out, unsigned int num, unsigned int base)
 void log_write(const char *buffer, ...)
 {
 
-    struct vfs_filesystem *filesystem = vfs_find_filesystem("module/tty/stdout");
+    struct vfs_filesystem *filesystem = vfs_find_filesystem("module/");
 
     if (!filesystem)
         return;
