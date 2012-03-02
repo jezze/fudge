@@ -8,13 +8,13 @@ static struct vfs_filesystem filesystem;
 static struct initrd_node nodes[INITRD_HEADER_SIZE];
 static unsigned int nodesCount;
 
-static unsigned int initrd_filesystem_read(struct vfs_filesystem *self, unsigned int index, unsigned int count, void *buffer)
+static unsigned int initrd_filesystem_read(struct vfs_filesystem *self, unsigned int id, unsigned int count, void *buffer)
 {
 
-    if (index >= nodesCount)
+    if (id >= nodesCount)
         return 0;
 
-    struct initrd_node *node = &nodes[index];
+    struct initrd_node *node = &nodes[id];
 
     if (count > node->size)
         count = node->size;
@@ -25,17 +25,17 @@ static unsigned int initrd_filesystem_read(struct vfs_filesystem *self, unsigned
 
 }
 
-static char *initrd_filesystem_get_name(struct vfs_filesystem *self, unsigned int index)
+static char *initrd_filesystem_get_name(struct vfs_filesystem *self, unsigned int id)
 {
 
-    if (index >= nodesCount)
+    if (id >= nodesCount)
         return 0;
 
-    return nodes[index].name;
+    return nodes[id].name;
 
 }
 
-unsigned int initrd_filesystem_find_node(struct vfs_filesystem *self, char *name)
+unsigned int initrd_filesystem_find(struct vfs_filesystem *self, char *name)
 {
 
     unsigned int i;
@@ -52,23 +52,23 @@ unsigned int initrd_filesystem_find_node(struct vfs_filesystem *self, char *name
 
 }
 
-static unsigned int initrd_filesystem_walk(struct vfs_filesystem *self, unsigned int index)
+static unsigned int initrd_filesystem_walk(struct vfs_filesystem *self, unsigned int id)
 {
 
-    if (index >= nodesCount - 1)
+    if (id >= nodesCount - 1)
         return 0;
 
-    return index + 1;
+    return id + 1;
 
 }
 
-static void *initrd_filesystem_get_physical(struct vfs_filesystem *self, unsigned int index)
+static void *initrd_filesystem_get_physical(struct vfs_filesystem *self, unsigned int id)
 {
 
-    if (index >= nodesCount)
+    if (id >= nodesCount)
         return 0;
 
-    struct initrd_node *node = &nodes[index];
+    struct initrd_node *node = &nodes[id];
 
     return node->data;
 
@@ -102,7 +102,7 @@ static unsigned int parse(void *address)
         if (header->typeflag[0] != TAR_FILETYPE_DIR)
         {
 
-            initrd_node_init(&nodes[count], count, header->name, size, header, address + TAR_BLOCK_SIZE);
+            initrd_node_init(&nodes[count], header->name, size, header, address + TAR_BLOCK_SIZE);
 
             count++;
 
@@ -119,7 +119,7 @@ static unsigned int parse(void *address)
 
 }
 
-void initrd_node_init(struct initrd_node *node, unsigned int index, char *name, unsigned int size, struct tar_header *header, void *data)
+void initrd_node_init(struct initrd_node *node, char *name, unsigned int size, struct tar_header *header, void *data)
 {
 
     memory_clear(node, sizeof (struct initrd_node));
@@ -134,7 +134,7 @@ void initrd_node_init(struct initrd_node *node, unsigned int index, char *name, 
 void initrd_init(unsigned int initrdc, void **initrdv)
 {
 
-    vfs_filesystem_init(&filesystem, "build/", 0, 0, 0, initrd_filesystem_read, 0, initrd_filesystem_get_name, initrd_filesystem_find_node, initrd_filesystem_walk, initrd_filesystem_get_physical);
+    vfs_filesystem_init(&filesystem, "build/", 0, 0, 0, initrd_filesystem_read, 0, initrd_filesystem_get_name, initrd_filesystem_find, initrd_filesystem_walk, initrd_filesystem_get_physical);
 
     nodesCount = 0;
 

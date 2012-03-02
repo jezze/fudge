@@ -69,7 +69,7 @@ unsigned int syscall_execute(struct runtime_task *task, char *path, unsigned int
     if (!filesystem2)
         return 0;
 
-    unsigned int id = filesystem2->find_node(filesystem2, path);
+    unsigned int id = filesystem2->find(filesystem2, path);
 
     if (!id)
         return 0;
@@ -101,9 +101,9 @@ unsigned int syscall_execute(struct runtime_task *task, char *path, unsigned int
     if (filesystem)
     {
 
-        runtime_descriptor_init(ntask->get_descriptor(ntask, 1), filesystem->find_node(filesystem, "tty/stdin"), filesystem, 0);
-        runtime_descriptor_init(ntask->get_descriptor(ntask, 2), filesystem->find_node(filesystem, "tty/stdout"), filesystem, 0);
-        runtime_descriptor_init(ntask->get_descriptor(ntask, 3), filesystem->find_node(filesystem, "tty/stderr"), filesystem, 0);
+        runtime_descriptor_init(ntask->get_descriptor(ntask, 1), filesystem->find(filesystem, "tty/stdin"), filesystem, 0);
+        runtime_descriptor_init(ntask->get_descriptor(ntask, 2), filesystem->find(filesystem, "tty/stdout"), filesystem, 0);
+        runtime_descriptor_init(ntask->get_descriptor(ntask, 3), filesystem->find(filesystem, "tty/stderr"), filesystem, 0);
 
     }
 
@@ -144,7 +144,7 @@ unsigned int syscall_load(struct runtime_task *task, char *path)
     if (!filesystem)
         return 0;
 
-    unsigned int id = filesystem->find_node(filesystem, path);
+    unsigned int id = filesystem->find(filesystem, path);
 
     if (!id)
         return 0;
@@ -187,7 +187,7 @@ unsigned int syscall_open(struct runtime_task *task, char *path)
     if (!filesystem)
         return 0;
 
-    runtime_descriptor_init(descriptor, filesystem->find_node(filesystem, path), filesystem, 0);
+    runtime_descriptor_init(descriptor, filesystem->find(filesystem, path), filesystem, 0);
 
     if (!descriptor->id)
         return 0;
@@ -234,7 +234,7 @@ unsigned int syscall_unload(struct runtime_task *task, char *path)
     if (!filesystem)
         return 0;
 
-    unsigned int id = filesystem->find_node(filesystem, path);
+    unsigned int id = filesystem->find(filesystem, path);
 
     if (!id)
         return 0;

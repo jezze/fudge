@@ -49,9 +49,9 @@ struct vfs_filesystem *vfs_find_filesystem(char *path)
 
         struct vfs_filesystem *filesystem = filesystems[i];
 
-        unsigned int index = filesystem->find_node(filesystem, path);
+        unsigned int id = filesystem->find(filesystem, path);
 
-        if (!index)
+        if (!id)
             continue;
 
         return filesystem;
@@ -62,19 +62,19 @@ struct vfs_filesystem *vfs_find_filesystem(char *path)
 
 }
 
-void vfs_filesystem_init(struct vfs_filesystem *filesystem, char *name, unsigned int firstIndex, void (*open)(struct vfs_filesystem *self, unsigned int index), void (*close)(struct vfs_filesystem *self, unsigned int index), unsigned int (*read)(struct vfs_filesystem *self, unsigned int index, unsigned int count, void *buffer), unsigned int (*write)(struct vfs_filesystem *self, unsigned int index, unsigned int count, void *buffer), char *(*get_name)(struct vfs_filesystem *self, unsigned int index), unsigned int (*find_node)(struct vfs_filesystem *self, char *name), unsigned int (*walk)(struct vfs_filesystem *self, unsigned int index), void *(*get_physical)(struct vfs_filesystem *self, unsigned int index))
+void vfs_filesystem_init(struct vfs_filesystem *filesystem, char *name, unsigned int firstId, void (*open)(struct vfs_filesystem *self, unsigned int id), void (*close)(struct vfs_filesystem *self, unsigned int id), unsigned int (*read)(struct vfs_filesystem *self, unsigned int id, unsigned int count, void *buffer), unsigned int (*write)(struct vfs_filesystem *self, unsigned int id, unsigned int count, void *buffer), char *(*get_name)(struct vfs_filesystem *self, unsigned int id), unsigned int (*find)(struct vfs_filesystem *self, char *name), unsigned int (*walk)(struct vfs_filesystem *self, unsigned int id), void *(*get_physical)(struct vfs_filesystem *self, unsigned int id))
 {
 
     memory_clear(filesystem, sizeof (struct vfs_filesystem));
 
     filesystem->name = name;
-    filesystem->firstIndex = firstIndex;
+    filesystem->firstId = firstId;
     filesystem->open = open;
     filesystem->close = close;
     filesystem->read = read;
     filesystem->write = write;
     filesystem->get_name = get_name;
-    filesystem->find_node = find_node;
+    filesystem->find = find;
     filesystem->walk = walk;
     filesystem->get_physical = get_physical;
 
