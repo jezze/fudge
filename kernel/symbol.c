@@ -27,12 +27,12 @@ void symbol_init()
 {
 
     struct vfs_filesystem *filesystem = vfs_find_filesystem("build/root/boot/fudge.map");
-    struct vfs_node *node = filesystem->get_node(filesystem, filesystem->find_node(filesystem, "build/root/boot/fudge.map"));
+    unsigned int id = filesystem->find_node(filesystem, "build/root/boot/fudge.map");
 
-    if (!node)
+    if (!id)
         error_panic("Symbol table not found", __FILE__, __LINE__);
 
-    unsigned int count = node->read(node, SYMBOL_BUFFER_SIZE, buffer);
+    unsigned int count = filesystem->read(filesystem, id, SYMBOL_BUFFER_SIZE, buffer);
 
     unsigned int i;
     unsigned int start = 0;

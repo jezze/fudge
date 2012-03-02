@@ -22,6 +22,23 @@ static unsigned int initrd_filesystem_node_read(struct vfs_node *self, unsigned 
 
 }
 
+static unsigned int initrd_filesystem_read(struct vfs_filesystem *filesystem, unsigned int index, unsigned int count, void *buffer)
+{
+
+    if (index >= nodesCount)
+        return 0;
+
+    struct initrd_node *node = &nodes[index];
+
+    if (count > node->size)
+        count = node->size;
+
+    memory_copy(buffer, node->data, count);
+
+    return count;
+
+}
+
 static char *initrd_filesystem_get_name(struct vfs_filesystem *self, unsigned int index)
 {
 
@@ -131,7 +148,7 @@ void initrd_node_init(struct initrd_node *node, unsigned int index, char *name, 
 void initrd_init(unsigned int initrdc, void **initrdv)
 {
 
-    vfs_filesystem_init(&filesystem, "build/", 0, 0, 0, 0, 0, initrd_filesystem_get_name, initrd_filesystem_get_node, initrd_filesystem_find_node, initrd_filesystem_walk);
+    vfs_filesystem_init(&filesystem, "build/", 0, 0, 0, initrd_filesystem_read, 0, initrd_filesystem_get_name, initrd_filesystem_get_node, initrd_filesystem_find_node, initrd_filesystem_walk);
 
     nodesCount = 0;
 
