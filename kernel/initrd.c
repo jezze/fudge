@@ -8,20 +8,6 @@ static struct vfs_filesystem filesystem;
 static struct initrd_node nodes[INITRD_HEADER_SIZE];
 static unsigned int nodesCount;
 
-static unsigned int initrd_filesystem_node_read(struct vfs_node *self, unsigned int count, void *buffer)
-{
-
-    struct initrd_node *node = (struct initrd_node *)self;
-
-    if (count > node->size)
-        count = node->size;
-
-    memory_copy(buffer, node->data, count);
-
-    return count;
-
-}
-
 static unsigned int initrd_filesystem_read(struct vfs_filesystem *self, unsigned int index, unsigned int count, void *buffer)
 {
 
@@ -45,17 +31,7 @@ static char *initrd_filesystem_get_name(struct vfs_filesystem *self, unsigned in
     if (index >= nodesCount)
         return 0;
 
-    return nodes[index].base.name;
-
-}
-
-static struct vfs_node *initrd_filesystem_get_node(struct vfs_filesystem *self, unsigned int index)
-{
-
-    if (index >= nodesCount)
-        return 0;
-
-    return &nodes[index].base;
+    return nodes[index].name;
 
 }
 
@@ -67,7 +43,7 @@ unsigned int initrd_filesystem_find_node(struct vfs_filesystem *self, char *name
     for (i = 0; i < nodesCount; i++)
     {
 
-        if (string_find(nodes[i].base.name, name))
+        if (string_find(nodes[i].name, name))
             return i;
 
     }
@@ -148,19 +124,17 @@ void initrd_node_init(struct initrd_node *node, unsigned int index, char *name, 
 
     memory_clear(node, sizeof (struct initrd_node));
 
-    vfs_node_init(&node->base, name, initrd_filesystem_node_read, 0);
-
+    node->name = name;
     node->size = size;
     node->header = header;
     node->data = data;
-    node->base.physical = data;
 
 }
 
 void initrd_init(unsigned int initrdc, void **initrdv)
 {
 
-    vfs_filesystem_init(&filesystem, "build/", 0, 0, 0, initrd_filesystem_read, 0, initrd_filesystem_get_name, initrd_filesystem_get_node, initrd_filesystem_find_node, initrd_filesystem_walk, initrd_filesystem_get_physical);
+    vfs_filesystem_init(&filesystem, "build/", 0, 0, 0, initrd_filesystem_read, 0, initrd_filesystem_get_name, initrd_filesystem_find_node, initrd_filesystem_walk, initrd_filesystem_get_physical);
 
     nodesCount = 0;
 

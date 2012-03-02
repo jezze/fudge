@@ -35,7 +35,7 @@ void ext2_filesystem_init(struct modules_module *module)
 
     driver = (struct ext2_driver *)module;
 
-    vfs_filesystem_init(&filesystem, "hda/", 2, 0, 0, 0, 0, 0, 0, 0, walk, 0); 
+    vfs_filesystem_init(&filesystem, "hda/", 2, 0, 0, 0, 0, 0, 0, walk, 0); 
     vfs_register_filesystem(&filesystem);
 
 }
