@@ -69,12 +69,15 @@ unsigned int syscall_execute(struct runtime_task *task, char *path, unsigned int
     if (!filesystem2)
         return 0;
 
-    struct vfs_node *node = filesystem2->get_node(filesystem2, filesystem2->find_node(filesystem2, path));
+    unsigned int id = filesystem2->find_node(filesystem2, path);
 
-    if (!(node && node->read))
+    if (!id)
         return 0;
 
-    node->read(node, ntask->memory.size, ntask->memory.paddress);
+    unsigned int count = filesystem2->read(filesystem2, id, ntask->memory.size, ntask->memory.paddress);
+
+    if (!count)
+        return 0;
 
     ntask->memory.vaddress = elf_get_virtual(ntask->memory.paddress);
 
