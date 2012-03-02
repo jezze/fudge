@@ -68,9 +68,7 @@ static void *initrd_filesystem_get_physical(struct vfs_filesystem *self, unsigne
     if (id >= nodesCount)
         return 0;
 
-    struct initrd_node *node = &nodes[id - 1];
-
-    return node->data;
+    return nodes[id - 1].data;
 
 }
 
