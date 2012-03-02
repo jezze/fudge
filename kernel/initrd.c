@@ -11,10 +11,10 @@ static unsigned int nodesCount;
 static unsigned int initrd_filesystem_read(struct vfs_filesystem *self, unsigned int id, unsigned int count, void *buffer)
 {
 
-    if (id >= nodesCount)
+    if (id > nodesCount)
         return 0;
 
-    struct initrd_node *node = &nodes[id];
+    struct initrd_node *node = &nodes[id - 1];
 
     if (count > node->size)
         count = node->size;
@@ -28,10 +28,10 @@ static unsigned int initrd_filesystem_read(struct vfs_filesystem *self, unsigned
 static char *initrd_filesystem_get_name(struct vfs_filesystem *self, unsigned int id)
 {
 
-    if (id >= nodesCount)
+    if (id > nodesCount)
         return 0;
 
-    return nodes[id].name;
+    return nodes[id - 1].name;
 
 }
 
@@ -44,7 +44,7 @@ unsigned int initrd_filesystem_find(struct vfs_filesystem *self, char *name)
     {
 
         if (string_find(nodes[i].name, name))
-            return i;
+            return i + 1;
 
     }
 
@@ -55,7 +55,7 @@ unsigned int initrd_filesystem_find(struct vfs_filesystem *self, char *name)
 static unsigned int initrd_filesystem_walk(struct vfs_filesystem *self, unsigned int id)
 {
 
-    if (id >= nodesCount - 1)
+    if (id > nodesCount - 1)
         return 0;
 
     return id + 1;
@@ -68,7 +68,7 @@ static void *initrd_filesystem_get_physical(struct vfs_filesystem *self, unsigne
     if (id >= nodesCount)
         return 0;
 
-    struct initrd_node *node = &nodes[id];
+    struct initrd_node *node = &nodes[id - 1];
 
     return node->data;
 
@@ -134,7 +134,7 @@ void initrd_node_init(struct initrd_node *node, char *name, unsigned int size, s
 void initrd_init(unsigned int initrdc, void **initrdv)
 {
 
-    vfs_filesystem_init(&filesystem, "build/", 0, 0, 0, initrd_filesystem_read, 0, initrd_filesystem_get_name, initrd_filesystem_find, initrd_filesystem_walk, initrd_filesystem_get_physical);
+    vfs_filesystem_init(&filesystem, "build/", 1, 0, 0, initrd_filesystem_read, 0, initrd_filesystem_get_name, initrd_filesystem_find, initrd_filesystem_walk, initrd_filesystem_get_physical);
 
     nodesCount = 0;
 

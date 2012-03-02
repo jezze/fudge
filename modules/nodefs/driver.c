@@ -5,18 +5,6 @@
 #include <kernel/vfs.h>
 #include <modules/nodefs/nodefs.h>
 
-static char *filesystem_get_name(struct vfs_filesystem *self, unsigned int id)
-{
-
-    struct nodefs_filesystem *filesystem = (struct nodefs_filesystem *)self;
-
-    if (id > filesystem->count)
-        return 0;
-
-    return filesystem->nodes[id - 1]->name;
-
-}
-
 static unsigned int filesystem_read(struct vfs_filesystem *self, unsigned int id, unsigned int count, void *buffer)
 {
 
@@ -42,6 +30,18 @@ static unsigned int filesystem_write(struct vfs_filesystem *self, unsigned int i
     struct nodefs_node *node = filesystem->nodes[id - 1];
 
     return node->write(node, count, buffer);
+
+}
+
+static char *filesystem_get_name(struct vfs_filesystem *self, unsigned int id)
+{
+
+    struct nodefs_filesystem *filesystem = (struct nodefs_filesystem *)self;
+
+    if (id > filesystem->count)
+        return 0;
+
+    return filesystem->nodes[id - 1]->name;
 
 }
 
