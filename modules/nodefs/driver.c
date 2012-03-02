@@ -33,18 +33,6 @@ static unsigned int filesystem_write(struct vfs_filesystem *self, unsigned int i
 
 }
 
-static char *filesystem_get_name(struct vfs_filesystem *self, unsigned int id)
-{
-
-    struct nodefs_filesystem *filesystem = (struct nodefs_filesystem *)self;
-
-    if (id > filesystem->count)
-        return 0;
-
-    return filesystem->nodes[id - 1]->name;
-
-}
-
 static unsigned int filesystem_find(struct vfs_filesystem *self, char *name)
 {
 
@@ -73,6 +61,18 @@ static unsigned int filesystem_walk(struct vfs_filesystem *self, unsigned int id
         return 0;
 
     return id + 1;
+
+}
+
+static char *filesystem_get_name(struct vfs_filesystem *self, unsigned int id)
+{
+
+    struct nodefs_filesystem *filesystem = (struct nodefs_filesystem *)self;
+
+    if (id > filesystem->count)
+        return 0;
+
+    return filesystem->nodes[id - 1]->name;
 
 }
 

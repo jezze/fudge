@@ -25,16 +25,6 @@ static unsigned int initrd_filesystem_read(struct vfs_filesystem *self, unsigned
 
 }
 
-static char *initrd_filesystem_get_name(struct vfs_filesystem *self, unsigned int id)
-{
-
-    if (id > nodesCount)
-        return 0;
-
-    return nodes[id - 1].name;
-
-}
-
 unsigned int initrd_filesystem_find(struct vfs_filesystem *self, char *name)
 {
 
@@ -59,6 +49,16 @@ static unsigned int initrd_filesystem_walk(struct vfs_filesystem *self, unsigned
         return 0;
 
     return id + 1;
+
+}
+
+static char *initrd_filesystem_get_name(struct vfs_filesystem *self, unsigned int id)
+{
+
+    if (id > nodesCount)
+        return 0;
+
+    return nodes[id - 1].name;
 
 }
 
