@@ -205,12 +205,11 @@ unsigned int syscall_read(struct runtime_task *task, unsigned int index, unsigne
 {
 
     struct runtime_descriptor *descriptor = task->get_descriptor(task, index);
-    struct vfs_node *node = descriptor->filesystem->get_node(descriptor->filesystem, descriptor->id);
 
-    if (!(node && node->read))
+    if (!descriptor->filesystem || !descriptor->filesystem->read)
         return 0;
 
-    unsigned int c = node->read(node, count, buffer);
+    unsigned int c = descriptor->filesystem->read(descriptor->filesystem, descriptor->id, count, buffer);
 
     event_raise(EVENT_SYSCALL_READ);
 
@@ -285,12 +284,11 @@ unsigned int syscall_write(struct runtime_task *task, unsigned int index, unsign
 {
 
     struct runtime_descriptor *descriptor = task->get_descriptor(task, index);
-    struct vfs_node *node = descriptor->filesystem->get_node(descriptor->filesystem, descriptor->id);
 
-    if (!(node && node->write))
+    if (!descriptor->filesystem || !descriptor->filesystem->write)
         return 0;
 
-    unsigned int c = node->write(node, count, buffer);
+    unsigned int c = descriptor->filesystem->write(descriptor->filesystem, descriptor->id, count, buffer);
 
     event_raise(EVENT_SYSCALL_WRITE);
 
