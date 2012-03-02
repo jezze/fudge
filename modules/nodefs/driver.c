@@ -29,7 +29,7 @@ static unsigned int filesystem_read(struct vfs_filesystem *self, unsigned int in
     if (index >= filesystem->count)
         return 0;
 
-    struct vfs_node *node = filesystem->nodes[index];
+    struct nodefs_node *node = filesystem->nodes[index];
 
     return node->read(node, count, buffer);
 
@@ -45,7 +45,7 @@ static unsigned int filesystem_write(struct vfs_filesystem *self, unsigned int i
     if (index >= filesystem->count)
         return 0;
 
-    struct vfs_node *node = filesystem->nodes[index];
+    struct nodefs_node *node = filesystem->nodes[index];
 
     return node->write(node, count, buffer);
 
@@ -84,7 +84,7 @@ static unsigned int filesystem_walk(struct vfs_filesystem *self, unsigned int in
 
 }
 
-static void register_node(struct nodefs_driver *self, struct vfs_node *node)
+static void register_node(struct nodefs_driver *self, struct nodefs_node *node)
 {
 
     unsigned int i;
@@ -106,7 +106,7 @@ static void register_node(struct nodefs_driver *self, struct vfs_node *node)
 
 }
 
-static void unregister_node(struct nodefs_driver *self, struct vfs_node *node)
+static void unregister_node(struct nodefs_driver *self, struct nodefs_node *node)
 {
 
     unsigned int i;
@@ -134,7 +134,7 @@ void nodefs_filesystem_init(struct nodefs_filesystem *filesystem)
     vfs_filesystem_init(&filesystem->base, "module/", 100, 0, 0, filesystem_read, filesystem_write, filesystem_get_name, filesystem_find_node, filesystem_walk, 0); 
     filesystem->count = 0;
 
-    memory_clear(filesystem->nodes, sizeof (struct vfs_node *) * 128);
+    memory_clear(filesystem->nodes, sizeof (struct nodefs_node *) * 128);
 
     vfs_register_filesystem(&filesystem->base);
 

@@ -7,13 +7,13 @@
 #include <modules/tty/tty.h>
 
 static struct tty_driver driver;
-static struct vfs_node in;
-static struct vfs_node out;
-static struct vfs_node err;
-static struct vfs_node cwd;
-static struct vfs_node pwd;
+static struct nodefs_node in;
+static struct nodefs_node out;
+static struct nodefs_node err;
+static struct nodefs_node cwd;
+static struct nodefs_node pwd;
 
-static unsigned int cwd_read(struct vfs_node *self, unsigned int count, void *buffer)
+static unsigned int cwd_read(struct nodefs_node *self, unsigned int count, void *buffer)
 {
 
     count = string_length(driver.cwdname);
@@ -24,7 +24,7 @@ static unsigned int cwd_read(struct vfs_node *self, unsigned int count, void *bu
 
 }
 
-static unsigned int cwd_write(struct vfs_node *self, unsigned int count, void *buffer)
+static unsigned int cwd_write(struct nodefs_node *self, unsigned int count, void *buffer)
 {
 
     count = string_length(buffer);
@@ -35,7 +35,7 @@ static unsigned int cwd_write(struct vfs_node *self, unsigned int count, void *b
 
 }
 
-static unsigned int in_read(struct vfs_node *self, unsigned int count, void *buffer)
+static unsigned int in_read(struct nodefs_node *self, unsigned int count, void *buffer)
 {
 
     unsigned int i;
@@ -56,7 +56,7 @@ static unsigned int in_read(struct vfs_node *self, unsigned int count, void *buf
 
 }
 
-static unsigned int out_write(struct vfs_node *self, unsigned int count, void *buffer)
+static unsigned int out_write(struct nodefs_node *self, unsigned int count, void *buffer)
 {
 
     unsigned int i;
@@ -70,7 +70,7 @@ static unsigned int out_write(struct vfs_node *self, unsigned int count, void *b
 
 }
 
-static unsigned int pwd_read(struct vfs_node *self, unsigned int count, void *buffer)
+static unsigned int pwd_read(struct nodefs_node *self, unsigned int count, void *buffer)
 {
 
     void *out = buffer;
@@ -117,11 +117,25 @@ void init()
     if (!nodefs)
         return;
 
-    vfs_node_init(&in, "module/tty/stdin", in_read, 0);
-    vfs_node_init(&out, "module/tty/stdout", 0, out_write);
-    vfs_node_init(&err, "module/tty/stderr", 0, out_write);
-    vfs_node_init(&cwd, "module/tty/cwd", cwd_read, cwd_write);
-    vfs_node_init(&pwd, "module/tty/pwd", pwd_read, 0);
+    in.name = "module/tty/stdin";
+    in.read = in_read;
+    in.write = 0;
+
+    out.name = "module/tty/stdout";
+    out.read = 0;
+    out.write = out_write;
+
+    err.name = "module/tty/stderr";
+    err.read = 0;
+    err.write = out_write;
+
+    cwd.name = "module/tty/cwd";
+    cwd.read = cwd_read;
+    cwd.write = cwd_write;
+
+    pwd.name = "module/tty/pwd";
+    pwd.read = pwd_read;
+    pwd.write = 0;
 
     nodefs->register_node(nodefs, &in);
     nodefs->register_node(nodefs, &out);

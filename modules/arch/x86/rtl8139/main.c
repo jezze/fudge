@@ -5,10 +5,10 @@
 #include <modules/rtl8139/rtl8139.h>
 
 static struct rtl8139_driver driver;
-static struct vfs_node mac;
-static struct vfs_node data;
+static struct nodefs_node mac;
+static struct nodefs_node data;
 
-static unsigned int mac_read(struct vfs_node *self, unsigned int count, void *buffer)
+static unsigned int mac_read(struct nodefs_node *self, unsigned int count, void *buffer)
 {
 
     memory_copy(buffer, driver.mac, 6);
@@ -17,14 +17,14 @@ static unsigned int mac_read(struct vfs_node *self, unsigned int count, void *bu
 
 }
 
-static unsigned int data_read(struct vfs_node *self, unsigned int count, void *buffer)
+static unsigned int data_read(struct nodefs_node *self, unsigned int count, void *buffer)
 {
 
     return driver.read(&driver, buffer);
 
 }
 
-static unsigned int data_write(struct vfs_node *self, unsigned int count, void *buffer)
+static unsigned int data_write(struct nodefs_node *self, unsigned int count, void *buffer)
 {
 
     return driver.write(&driver, count, buffer);
@@ -42,8 +42,13 @@ void init()
     if (!nodefs)
         return;
 
-    vfs_node_init(&mac, "module/rtl8139/mac", mac_read, 0);
-    vfs_node_init(&data, "module/rtl8139/data", data_read, data_write);
+    mac.name = "module/rtl8139/mac";
+    mac.read = mac_read;
+    mac.write = 0;
+
+    data.name = "module/rtl8139/data";
+    data.read = data_read;
+    data.write = data_write;
 
     nodefs->register_node(nodefs, &mac);
     nodefs->register_node(nodefs, &data);

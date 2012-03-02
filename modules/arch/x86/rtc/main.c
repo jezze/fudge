@@ -5,9 +5,9 @@
 #include <modules/rtc/rtc.h>
 
 static struct rtc_device device;
-static struct vfs_node timestamp;
+static struct nodefs_node timestamp;
 
-static unsigned int timestamp_read(struct vfs_node *self, unsigned int count, void *buffer)
+static unsigned int timestamp_read(struct nodefs_node *self, unsigned int count, void *buffer)
 {
 
     string_write_format(buffer, "%d", 0);
@@ -27,7 +27,9 @@ void init()
     if (!nodefs)
         return;
 
-    vfs_node_init(&timestamp, "module/rtc/timestamp", timestamp_read, 0);
+    timestamp.name = "module/rtc/timestamp";
+    timestamp.read = timestamp_read;
+    timestamp.write = 0;
 
     nodefs->register_node(nodefs, &timestamp);
 

@@ -5,9 +5,9 @@
 #include <modules/pit/pit.h>
 
 static struct pit_device device;
-static struct vfs_node jiffies;
+static struct nodefs_node jiffies;
 
-static unsigned int jiffies_read(struct vfs_node *self, unsigned int count, void *buffer)
+static unsigned int jiffies_read(struct nodefs_node *self, unsigned int count, void *buffer)
 {
 
     string_write_format(buffer, "%d", device.jiffies);
@@ -27,7 +27,9 @@ void init()
     if (!nodefs)
         return;
 
-    vfs_node_init(&jiffies, "module/pit/jiffies", jiffies_read, 0);
+    jiffies.name = "module/pit/jiffies";
+    jiffies.read = jiffies_read;
+    jiffies.write = 0;
 
     nodefs->register_node(nodefs, &jiffies);
 
