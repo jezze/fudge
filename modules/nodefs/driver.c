@@ -10,12 +10,10 @@ static char *filesystem_get_name(struct vfs_filesystem *self, unsigned int id)
 
     struct nodefs_filesystem *filesystem = (struct nodefs_filesystem *)self;
 
-    id -= 100;
-
-    if (id >= filesystem->count)
+    if (id > filesystem->count)
         return 0;
 
-    return filesystem->nodes[id]->name;
+    return filesystem->nodes[id - 1]->name;
 
 }
 
@@ -24,12 +22,10 @@ static unsigned int filesystem_read(struct vfs_filesystem *self, unsigned int id
 
     struct nodefs_filesystem *filesystem = (struct nodefs_filesystem *)self;
 
-    id -= 100;
-
-    if (id >= filesystem->count)
+    if (id > filesystem->count)
         return 0;
 
-    struct nodefs_node *node = filesystem->nodes[id];
+    struct nodefs_node *node = filesystem->nodes[id - 1];
 
     return node->read(node, count, buffer);
 
@@ -40,12 +36,10 @@ static unsigned int filesystem_write(struct vfs_filesystem *self, unsigned int i
 
     struct nodefs_filesystem *filesystem = (struct nodefs_filesystem *)self;
 
-    id -= 100;
-
-    if (id >= filesystem->count)
+    if (id > filesystem->count)
         return 0;
 
-    struct nodefs_node *node = filesystem->nodes[id];
+    struct nodefs_node *node = filesystem->nodes[id - 1];
 
     return node->write(node, count, buffer);
 
@@ -62,7 +56,7 @@ static unsigned int filesystem_find(struct vfs_filesystem *self, char *name)
     {
 
         if (string_find(filesystem->nodes[i]->name, name))
-            return i + 100;
+            return i + 1;
 
     }
 
@@ -75,12 +69,10 @@ static unsigned int filesystem_walk(struct vfs_filesystem *self, unsigned int id
 
     struct nodefs_filesystem *filesystem = (struct nodefs_filesystem *)self;
 
-    id -= 100;
-
-    if (id >= filesystem->count - 1)
+    if (id > filesystem->count - 1)
         return 0;
 
-    return id + 1 + 100;
+    return id + 1;
 
 }
 
@@ -131,7 +123,7 @@ static void unregister_node(struct nodefs_driver *self, struct nodefs_node *node
 void nodefs_filesystem_init(struct nodefs_filesystem *filesystem)
 {
 
-    vfs_filesystem_init(&filesystem->base, "module/", 100, 0, 0, filesystem_read, filesystem_write, filesystem_get_name, filesystem_find, filesystem_walk, 0); 
+    vfs_filesystem_init(&filesystem->base, "module/", 1, 0, 0, filesystem_read, filesystem_write, filesystem_get_name, filesystem_find, filesystem_walk, 0); 
     filesystem->count = 0;
 
     memory_clear(filesystem->nodes, sizeof (struct nodefs_node *) * 128);
