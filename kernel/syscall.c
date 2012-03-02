@@ -235,12 +235,17 @@ unsigned int syscall_unload(struct runtime_task *task, char *path)
     if (!filesystem)
         return 0;
 
-    struct vfs_node *node = filesystem->get_node(filesystem, filesystem->find_node(filesystem, path));
+    unsigned int id = filesystem->find_node(filesystem, path);
 
-    if (!node)
+    if (!id)
         return 0;
 
-    void (*destroy)() = elf_get_symbol(node->physical, "destroy");
+    void *physical = filesystem->get_physical(filesystem, id);
+
+    if (!physical)
+        return 0;
+
+    void (*destroy)() = elf_get_symbol(physical, "destroy");
 
     if (!destroy)
         return 0;
