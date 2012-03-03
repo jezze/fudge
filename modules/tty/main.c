@@ -86,6 +86,9 @@ static unsigned int pwd_read(struct nodefs_node *self, unsigned int count, void 
 
         unsigned int index = filesystem->firstId;
 
+        if (!index)
+            continue;
+
         do
         {
 
