@@ -84,12 +84,9 @@ static unsigned int pwd_read(struct nodefs_node *self, unsigned int count, void 
         if (!filesystem)
             continue;
 
-        unsigned int index = filesystem->firstId;
+        unsigned int index = 0;
 
-        if (!index)
-            continue;
-
-        do
+        while ((index = filesystem->walk(filesystem, index)))
         {
 
             char *name = filesystem->get_name(filesystem, index);
@@ -101,7 +98,6 @@ static unsigned int pwd_read(struct nodefs_node *self, unsigned int count, void 
             buffer += string_length(buffer);
 
         }
-        while ((index = filesystem->walk(filesystem, index)));
 
     }
 

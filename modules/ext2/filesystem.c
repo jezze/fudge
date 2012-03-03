@@ -9,6 +9,8 @@ static struct vfs_filesystem filesystem;
 static unsigned int walk(struct vfs_filesystem *self, unsigned int index)
 {
 
+    return 0;
+/*
     static char mem[1024];
     void *buffer = mem;
 
@@ -27,7 +29,7 @@ static unsigned int walk(struct vfs_filesystem *self, unsigned int index)
     }
 
     return 0;
-
+*/
 }
 
 void ext2_filesystem_init(struct modules_module *module)
@@ -35,7 +37,7 @@ void ext2_filesystem_init(struct modules_module *module)
 
     driver = (struct ext2_driver *)module;
 
-    vfs_filesystem_init(&filesystem, "hda/", 0, 0, 0, 0, 0, 0, 0, walk, 0); 
+    vfs_filesystem_init(&filesystem, "/hda", 0, 0, 0, 0, 0, 0, walk, 0); 
     vfs_register_filesystem(&filesystem);
 
 }
