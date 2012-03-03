@@ -11,9 +11,6 @@ static unsigned int nodesCount;
 static unsigned int initrd_filesystem_read(struct vfs_filesystem *self, unsigned int id, unsigned int count, void *buffer)
 {
 
-    if (id > nodesCount)
-        return 0;
-
     struct initrd_node *node = &nodes[id - 1];
 
     if (count > node->size)
@@ -55,18 +52,12 @@ static unsigned int initrd_filesystem_walk(struct vfs_filesystem *self, unsigned
 static char *initrd_filesystem_get_name(struct vfs_filesystem *self, unsigned int id)
 {
 
-    if (id > nodesCount)
-        return 0;
-
     return nodes[id - 1].name;
 
 }
 
 static void *initrd_filesystem_get_physical(struct vfs_filesystem *self, unsigned int id)
 {
-
-    if (id >= nodesCount)
-        return 0;
 
     return nodes[id - 1].data;
 

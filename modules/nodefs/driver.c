@@ -10,9 +10,6 @@ static unsigned int filesystem_read(struct vfs_filesystem *self, unsigned int id
 
     struct nodefs_filesystem *filesystem = (struct nodefs_filesystem *)self;
 
-    if (id > filesystem->count)
-        return 0;
-
     struct nodefs_node *node = filesystem->nodes[id - 1];
 
     return node->read(node, count, buffer);
@@ -23,9 +20,6 @@ static unsigned int filesystem_write(struct vfs_filesystem *self, unsigned int i
 {
 
     struct nodefs_filesystem *filesystem = (struct nodefs_filesystem *)self;
-
-    if (id > filesystem->count)
-        return 0;
 
     struct nodefs_node *node = filesystem->nodes[id - 1];
 
@@ -68,9 +62,6 @@ static char *filesystem_get_name(struct vfs_filesystem *self, unsigned int id)
 {
 
     struct nodefs_filesystem *filesystem = (struct nodefs_filesystem *)self;
-
-    if (id > filesystem->count)
-        return 0;
 
     return filesystem->nodes[id - 1]->name;
 
