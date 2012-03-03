@@ -59,6 +59,7 @@ void modules_unregister_driver(struct modules_driver *driver);
 void modules_bus_init(struct modules_bus *bus, unsigned int type, char *name);
 void modules_device_init(struct modules_device *device, unsigned int type, char *name);
 void modules_driver_init(struct modules_driver *driver, unsigned int type, char *name);
+void modules_init();
 
 #endif
 

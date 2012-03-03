@@ -1,6 +1,8 @@
 #include <lib/memory.h>
 #include <kernel/modules.h>
+#include <kernel/vfs.h>
 
+static struct vfs_filesystem filesystem;
 static struct modules_module *modules[MODULES_MODULE_SLOTS];
 
 static void modules_attach(struct modules_driver *driver)
@@ -235,6 +237,14 @@ void modules_driver_init(struct modules_driver *driver, unsigned int type, char 
     modules_module_init(&driver->module, MODULES_TYPE_DRIVER, name);
 
     driver->type = type;
+
+}
+
+void modules_init()
+{
+
+    vfs_filesystem_init(&filesystem, "/sys", 0, 0, 0, 0, 0, 0, 0, 0);
+    vfs_register_filesystem(&filesystem);
 
 }
 

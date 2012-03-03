@@ -46,6 +46,9 @@ struct vfs_filesystem *vfs_find_filesystem(char *path)
 
         struct vfs_filesystem *filesystem = filesystems[i];
 
+        if (!filesystem->find)
+            continue;
+
         if (string_find(filesystem->name, path))
             return filesystem;
 

@@ -81,7 +81,7 @@ static unsigned int pwd_read(struct nodefs_node *self, unsigned int count, void 
 
         struct vfs_filesystem *filesystem = vfs_get_filesystem(i);
 
-        if (!filesystem)
+        if (!filesystem || !filesystem->walk || !filesystem->get_name)
             continue;
 
         unsigned int index = 0;

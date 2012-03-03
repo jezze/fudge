@@ -54,6 +54,7 @@ void kernel_init(struct kernel_arch *arch)
     if (kernelArch->setup_mmu)
         kernelArch->setup_mmu();
 
+    modules_init();
     syscall_init();
     runtime_init();
     initrd_init(kernelArch->initrdc, kernelArch->initrdv);
