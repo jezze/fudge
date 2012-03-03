@@ -62,7 +62,7 @@ struct vfs_filesystem *vfs_find_filesystem(char *path)
 
 }
 
-void vfs_filesystem_init(struct vfs_filesystem *filesystem, char *name, void (*open)(struct vfs_filesystem *self, unsigned int id), void (*close)(struct vfs_filesystem *self, unsigned int id), unsigned int (*read)(struct vfs_filesystem *self, unsigned int id, unsigned int count, void *buffer), unsigned int (*write)(struct vfs_filesystem *self, unsigned int id, unsigned int count, void *buffer), char *(*get_name)(struct vfs_filesystem *self, unsigned int id), unsigned int (*find)(struct vfs_filesystem *self, char *name), unsigned int (*walk)(struct vfs_filesystem *self, unsigned int id), void *(*get_physical)(struct vfs_filesystem *self, unsigned int id))
+void vfs_filesystem_init(struct vfs_filesystem *filesystem, char *name, void (*open)(struct vfs_filesystem *self, unsigned int id), void (*close)(struct vfs_filesystem *self, unsigned int id), unsigned int (*read)(struct vfs_filesystem *self, unsigned int id, unsigned int count, void *buffer), unsigned int (*write)(struct vfs_filesystem *self, unsigned int id, unsigned int count, void *buffer), unsigned int (*find)(struct vfs_filesystem *self, char *name), unsigned int (*walk)(struct vfs_filesystem *self, unsigned int id), char *(*get_name)(struct vfs_filesystem *self, unsigned int id), void *(*get_physical)(struct vfs_filesystem *self, unsigned int id))
 {
 
     memory_clear(filesystem, sizeof (struct vfs_filesystem));
@@ -72,9 +72,9 @@ void vfs_filesystem_init(struct vfs_filesystem *filesystem, char *name, void (*o
     filesystem->close = close;
     filesystem->read = read;
     filesystem->write = write;
-    filesystem->get_name = get_name;
     filesystem->find = find;
     filesystem->walk = walk;
+    filesystem->get_name = get_name;
     filesystem->get_physical = get_physical;
 
 }
