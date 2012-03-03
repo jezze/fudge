@@ -49,8 +49,12 @@ static void interpret(char *command)
     if (!argc)
         return;
 
-    if (!call_execute(argv[0], argc, argv))
-        file_write_format(FILE_STDOUT, "%s: Invalid command\n", argv[0]);
+    char binary[32];
+
+    string_write_format(binary, "bin/%s", argv[0]);
+
+    if (!call_execute(binary, argc, argv))
+        file_write_format(FILE_STDOUT, "%s: Invalid command\n", binary);
 
 }
 
