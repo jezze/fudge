@@ -72,7 +72,7 @@ static void start(struct modules_driver *self)
 void acpi_driver_init(struct acpi_driver *driver)
 {
 
-    modules_driver_init(&driver->base, ACPI_DRIVER_TYPE);
+    modules_driver_init(&driver->base, ACPI_DRIVER_TYPE, "acpi");
 
     driver->base.start = start;
     driver->find_header = find_header;

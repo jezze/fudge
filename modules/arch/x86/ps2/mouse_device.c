@@ -99,7 +99,7 @@ static unsigned char read()
 void mouse_device_init(struct mouse_device *device)
 {
 
-    modules_device_init(&device->base, MOUSE_DEVICE_TYPE);
+    modules_device_init(&device->base, MOUSE_DEVICE_TYPE, "mouse");
 
     unsigned char status;
 

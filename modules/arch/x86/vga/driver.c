@@ -68,7 +68,7 @@ static void set_cursor_offset(struct vga_driver *self, unsigned short offset)
 void vga_driver_init(struct vga_driver *driver)
 {
 
-    modules_driver_init(&driver->base, VGA_DRIVER_TYPE);
+    modules_driver_init(&driver->base, VGA_DRIVER_TYPE, "vga");
 
     driver->read_framebuffer = read_framebuffer;
     driver->write_framebuffer = write_framebuffer;

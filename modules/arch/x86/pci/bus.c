@@ -86,7 +86,7 @@ static unsigned int scan(struct pci_bus *self, unsigned int num, void (*callback
 void pci_bus_init(struct pci_bus *bus)
 {
 
-    modules_bus_init(&bus->base, PCI_BUS_TYPE);
+    modules_bus_init(&bus->base, PCI_BUS_TYPE, "pci:0");
 
     bus->scan = scan;
 

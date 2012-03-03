@@ -105,7 +105,7 @@ static unsigned int check(struct modules_driver *self, struct modules_device *de
 void bga_driver_init(struct bga_driver *driver)
 {
 
-    modules_driver_init(&driver->base, BGA_DRIVER_TYPE);
+    modules_driver_init(&driver->base, BGA_DRIVER_TYPE, "bga");
 
     driver->base.start = start;
     driver->base.check = check;

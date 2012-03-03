@@ -86,7 +86,7 @@ static void start(struct modules_driver *self)
 void ext2_driver_init(struct ext2_driver *driver)
 {
 
-    modules_driver_init(&driver->base, EXT2_DRIVER_TYPE);
+    modules_driver_init(&driver->base, EXT2_DRIVER_TYPE, "ext2");
 
     driver->base.start = start;
     driver->read_node = read_node;

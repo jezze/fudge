@@ -100,7 +100,7 @@ static unsigned int write_lba48(struct ata_device *self, unsigned int sectorlow,
 void ata_device_init(struct ata_device *device, struct ata_bus *bus, unsigned int slave, unsigned int type)
 {
 
-    modules_device_init(&device->base, ATA_DEVICE_TYPE);
+    modules_device_init(&device->base, ATA_DEVICE_TYPE, "ata:0:0");
 
     device->bus = bus;
     device->type = type;

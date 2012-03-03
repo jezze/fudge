@@ -18,7 +18,7 @@ static void handle_irq(struct modules_device *self)
 void pit_device_init(struct pit_device *device)
 {
 
-    modules_device_init(&device->base, PIT_DEVICE_TYPE);
+    modules_device_init(&device->base, PIT_DEVICE_TYPE, "pit");
 
     device->divisor = PIT_HERTZ / PIT_FREQUENCY;
     device->jiffies = 0;

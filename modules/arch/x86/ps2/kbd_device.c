@@ -67,7 +67,7 @@ static void handle_irq(struct modules_device *self)
 void kbd_device_init(struct kbd_device *device)
 {
 
-    modules_device_init(&device->base, KBD_DEVICE_TYPE);
+    modules_device_init(&device->base, KBD_DEVICE_TYPE, "kbd");
 
     irq_register_routine(0x01, &device->base, handle_irq);
 

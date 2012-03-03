@@ -80,7 +80,7 @@ static void putc(struct tty_driver *self, char c)
 void tty_driver_init(struct tty_driver *driver, char *cwdname)
 {
 
-    modules_driver_init(&driver->base, TTY_DRIVER_TYPE);
+    modules_driver_init(&driver->base, TTY_DRIVER_TYPE, "tty");
 
     driver->cursorOffset = 0;
     driver->kbdDriver = (struct kbd_driver *)modules_get_driver(KBD_DRIVER_TYPE);

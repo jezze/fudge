@@ -145,7 +145,7 @@ static unsigned int check(struct modules_driver *self, struct modules_device *de
 void i915_driver_init(struct i915_driver *driver)
 {
 
-    modules_driver_init(&driver->base, I915_DRIVER_TYPE);
+    modules_driver_init(&driver->base, I915_DRIVER_TYPE, "i915");
 
     driver->base.start = start;
     driver->base.attach = attach;

@@ -74,7 +74,7 @@ static unsigned int check(struct modules_driver *self, struct modules_device *de
 void kbd_driver_init(struct kbd_driver *driver)
 {
 
-    modules_driver_init(&driver->base, KBD_DRIVER_TYPE);
+    modules_driver_init(&driver->base, KBD_DRIVER_TYPE, "kbd");
 
     driver->base.start = start;
     driver->base.check = check;

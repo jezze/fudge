@@ -25,7 +25,7 @@ static void start(struct modules_driver *self)
 void cpuid_driver_init(struct cpuid_driver *driver)
 {
 
-    modules_driver_init(&driver->base, CPUID_DRIVER_TYPE);
+    modules_driver_init(&driver->base, CPUID_DRIVER_TYPE, "cpuid");
 
     driver->base.start = start;
     driver->is_supported = is_supported;

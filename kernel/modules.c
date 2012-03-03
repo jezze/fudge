@@ -195,43 +195,44 @@ void modules_unregister_driver(struct modules_driver *driver)
 
 }
 
-void modules_module_init(struct modules_module *module, unsigned int type)
+void modules_module_init(struct modules_module *module, unsigned int type, char *name)
 {
 
     memory_clear(module, sizeof (struct modules_module));
 
     module->type = type;
+    module->name = name;
 
 }
 
-void modules_bus_init(struct modules_bus *bus, unsigned int type)
+void modules_bus_init(struct modules_bus *bus, unsigned int type, char *name)
 {
 
     memory_clear(bus, sizeof (struct modules_bus));
 
-    modules_module_init(&bus->module, MODULES_TYPE_BUS);
+    modules_module_init(&bus->module, MODULES_TYPE_BUS, name);
 
     bus->type = type;
 
 }
 
-void modules_device_init(struct modules_device *device, unsigned int type)
+void modules_device_init(struct modules_device *device, unsigned int type, char *name)
 {
 
     memory_clear(device, sizeof (struct modules_device));
 
-    modules_module_init(&device->module, MODULES_TYPE_DEVICE);
+    modules_module_init(&device->module, MODULES_TYPE_DEVICE, name);
 
     device->type = type;
 
 }
 
-void modules_driver_init(struct modules_driver *driver, unsigned int type)
+void modules_driver_init(struct modules_driver *driver, unsigned int type, char *name)
 {
 
     memory_clear(driver, sizeof (struct modules_driver));
 
-    modules_module_init(&driver->module, MODULES_TYPE_DRIVER);
+    modules_module_init(&driver->module, MODULES_TYPE_DRIVER, name);
 
     driver->type = type;
 

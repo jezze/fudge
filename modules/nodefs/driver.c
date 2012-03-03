@@ -126,7 +126,7 @@ void nodefs_filesystem_init(struct nodefs_filesystem *filesystem)
 void nodefs_driver_init(struct nodefs_driver *driver)
 {
 
-    modules_driver_init(&driver->base, NODEFS_DRIVER_TYPE);
+    modules_driver_init(&driver->base, NODEFS_DRIVER_TYPE, "nodefs");
     nodefs_filesystem_init(&driver->filesystem);
 
     driver->register_node = register_node;

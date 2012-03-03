@@ -36,7 +36,7 @@ static void handle_irq(struct modules_device *self)
 void uart_device_init(struct uart_device *device, unsigned int port, unsigned int irq)
 {
 
-    modules_device_init(&device->base, UART_DEVICE_TYPE);
+    modules_device_init(&device->base, UART_DEVICE_TYPE, "uart");
 
     device->port = port;
     device->read = read;

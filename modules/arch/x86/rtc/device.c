@@ -24,7 +24,7 @@ static unsigned char get_value(unsigned int type)
 void rtc_device_init(struct rtc_device *device)
 {
 
-    modules_device_init(&device->base, RTC_DEVICE_TYPE);
+    modules_device_init(&device->base, RTC_DEVICE_TYPE, "rtc");
 
     device->get_value = get_value;
 

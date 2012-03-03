@@ -53,7 +53,7 @@ static unsigned int uart_driver_check(struct modules_driver *self, struct module
 void uart_driver_init(struct uart_driver *driver)
 {
 
-    modules_driver_init(&driver->base, UART_DRIVER_TYPE);
+    modules_driver_init(&driver->base, UART_DRIVER_TYPE, "uart");
 
     driver->base.start = uart_driver_start;
     driver->base.check = uart_driver_check;

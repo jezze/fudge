@@ -120,7 +120,7 @@ static void start(struct modules_driver *self)
 void smp_driver_init(struct smp_driver *driver)
 {
 
-    modules_driver_init(&driver->base, SMP_DRIVER_TYPE);
+    modules_driver_init(&driver->base, SMP_DRIVER_TYPE, "smp");
 
     driver->base.start = start;
     driver->count = 0;

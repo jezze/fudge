@@ -20,7 +20,7 @@ static unsigned int check(struct modules_driver *self, struct modules_device *de
 void mouse_driver_init(struct mouse_driver *driver)
 {
 
-    modules_driver_init(&driver->base, MOUSE_DRIVER_TYPE);
+    modules_driver_init(&driver->base, MOUSE_DRIVER_TYPE, "mouse");
 
     driver->base.start = start;
     driver->base.check = check;
