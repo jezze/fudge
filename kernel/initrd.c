@@ -8,7 +8,7 @@ static struct vfs_filesystem filesystem;
 static struct initrd_node nodes[INITRD_HEADER_SIZE];
 static unsigned int nodesCount;
 
-static unsigned int initrd_filesystem_read(struct vfs_filesystem *self, unsigned int id, unsigned int count, void *buffer)
+static unsigned int filesystem_read(struct vfs_filesystem *self, unsigned int id, unsigned int count, void *buffer)
 {
 
     struct initrd_node *node = &nodes[id - 1];
@@ -22,7 +22,7 @@ static unsigned int initrd_filesystem_read(struct vfs_filesystem *self, unsigned
 
 }
 
-unsigned int initrd_filesystem_find(struct vfs_filesystem *self, char *name)
+static unsigned int filesystem_find(struct vfs_filesystem *self, char *name)
 {
 
     unsigned int i;
@@ -39,7 +39,7 @@ unsigned int initrd_filesystem_find(struct vfs_filesystem *self, char *name)
 
 }
 
-static unsigned int initrd_filesystem_walk(struct vfs_filesystem *self, unsigned int id)
+static unsigned int filesystem_walk(struct vfs_filesystem *self, unsigned int id)
 {
 
     if (id > nodesCount - 1)
@@ -49,14 +49,14 @@ static unsigned int initrd_filesystem_walk(struct vfs_filesystem *self, unsigned
 
 }
 
-static char *initrd_filesystem_get_name(struct vfs_filesystem *self, unsigned int id)
+static char *filesystem_get_name(struct vfs_filesystem *self, unsigned int id)
 {
 
     return nodes[id - 1].name;
 
 }
 
-static void *initrd_filesystem_get_physical(struct vfs_filesystem *self, unsigned int id)
+static void *filesystem_get_physical(struct vfs_filesystem *self, unsigned int id)
 {
 
     return nodes[id - 1].data;
@@ -123,7 +123,7 @@ void initrd_node_init(struct initrd_node *node, char *name, unsigned int size, s
 void initrd_init(unsigned int initrdc, void **initrdv)
 {
 
-    vfs_filesystem_init(&filesystem, "/ramdisk", 0, 0, initrd_filesystem_read, 0, initrd_filesystem_find, initrd_filesystem_walk, initrd_filesystem_get_name, initrd_filesystem_get_physical);
+    vfs_filesystem_init(&filesystem, "/ramdisk", 0, 0, filesystem_read, 0, filesystem_find, filesystem_walk, filesystem_get_name, filesystem_get_physical);
 
     nodesCount = 0;
 
