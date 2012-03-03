@@ -100,7 +100,7 @@ static unsigned int parse(void *address)
         if (header->typeflag[0] != TAR_FILETYPE_DIR)
         {
 
-            initrd_node_init(&nodes[count], header->name + 6, size, header, address + TAR_BLOCK_SIZE);
+            initrd_node_init(&nodes[count], header->name + 11, size, header, address + TAR_BLOCK_SIZE);
 
             count++;
 
