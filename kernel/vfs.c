@@ -36,9 +36,6 @@ struct vfs_filesystem *vfs_get_filesystem(unsigned int index)
 struct vfs_filesystem *vfs_find_filesystem(char *path)
 {
 
-    if (!string_length(path))
-        return 0;
-
     unsigned int i;
 
     for (i = 0; i < VFS_FILESYSTEM_SLOTS; i++)

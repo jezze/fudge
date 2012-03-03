@@ -12,6 +12,12 @@ static void *routines[SYSCALL_ROUTINE_SLOTS];
 unsigned int syscall_attach(struct runtime_task *task, unsigned int index, void (*routine)())
 {
 
+    if (!index)
+        return 0;
+
+    if (!routine)
+        return 0;
+
     return event_register_routine(index, task, routine);
 
 }
@@ -38,6 +44,9 @@ unsigned int syscall_close(struct runtime_task *task, unsigned int index)
 unsigned int syscall_detach(struct runtime_task *task, unsigned int index)
 {
 
+    if (!index)
+        return 0;
+
     return event_unregister_routine(index, task);
 
 }
@@ -54,6 +63,9 @@ unsigned int syscall_halt(struct runtime_task *task)
 
 unsigned int syscall_execute(struct runtime_task *task, char *path, unsigned int argc, char **argv)
 {
+
+    if (!path)
+        return 0;
 
     unsigned int index = runtime_get_task_slot();
 
@@ -139,6 +151,9 @@ unsigned int syscall_exit(struct runtime_task *task)
 unsigned int syscall_load(struct runtime_task *task, char *path)
 {
 
+    if (!path)
+        return 0;
+
     struct vfs_filesystem *filesystem = vfs_find_filesystem(path);
 
     if (!filesystem)
@@ -172,6 +187,9 @@ unsigned int syscall_load(struct runtime_task *task, char *path)
 unsigned int syscall_open(struct runtime_task *task, char *path)
 {
 
+    if (!path)
+        return 0;
+
     unsigned int index = task->get_descriptor_slot(task);
 
     if (!index)
@@ -187,10 +205,12 @@ unsigned int syscall_open(struct runtime_task *task, char *path)
     if (!filesystem)
         return 0;
 
-    runtime_descriptor_init(descriptor, filesystem->find(filesystem, path), filesystem, 0);
+    unsigned int id = filesystem->find(filesystem, path);
 
-    if (!descriptor->id)
+    if (!id)
         return 0;
+
+    runtime_descriptor_init(descriptor, id, filesystem, 0);
 
     if (descriptor->filesystem->open)
         descriptor->filesystem->open(descriptor->filesystem, descriptor->id);
@@ -206,7 +226,7 @@ unsigned int syscall_read(struct runtime_task *task, unsigned int index, unsigne
 
     struct runtime_descriptor *descriptor = task->get_descriptor(task, index);
 
-    if (!descriptor->filesystem || !descriptor->filesystem->read)
+    if (!descriptor->id || !descriptor->filesystem || !descriptor->filesystem->read)
         return 0;
 
     unsigned int c = descriptor->filesystem->read(descriptor->filesystem, descriptor->id, count, buffer);
@@ -228,6 +248,9 @@ unsigned int syscall_reboot(struct runtime_task *task)
 
 unsigned int syscall_unload(struct runtime_task *task, char *path)
 {
+
+    if (!path)
+        return 0;
 
     struct vfs_filesystem *filesystem = vfs_find_filesystem(path);
 
@@ -285,7 +308,7 @@ unsigned int syscall_write(struct runtime_task *task, unsigned int index, unsign
 
     struct runtime_descriptor *descriptor = task->get_descriptor(task, index);
 
-    if (!descriptor->filesystem || !descriptor->filesystem->write)
+    if (!descriptor->id || !descriptor->filesystem || !descriptor->filesystem->write)
         return 0;
 
     unsigned int c = descriptor->filesystem->write(descriptor->filesystem, descriptor->id, count, buffer);
