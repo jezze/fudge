@@ -49,6 +49,9 @@ struct vfs_filesystem *vfs_find_filesystem(char *path)
 
         struct vfs_filesystem *filesystem = filesystems[i];
 
+        if (string_find(filesystem->name, path))
+            return filesystem;
+
         unsigned int id = filesystem->find(filesystem, path);
 
         if (!id)

@@ -29,7 +29,7 @@ void log_write(const char *buffer, ...)
     if (!filesystem)
         return;
 
-    unsigned int id = filesystem->find(filesystem, "module/tty/stdout");
+    unsigned int id = filesystem->find(filesystem, "tty/stdout");
 
     if (!id)
         return;

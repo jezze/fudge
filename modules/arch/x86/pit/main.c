@@ -27,7 +27,7 @@ void init()
     if (!nodefs)
         return;
 
-    jiffies.name = "module/pit/jiffies";
+    jiffies.name = "pit/jiffies";
     jiffies.read = jiffies_read;
     jiffies.write = 0;
 

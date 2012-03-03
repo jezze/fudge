@@ -94,7 +94,7 @@ static unsigned int pwd_read(struct nodefs_node *self, unsigned int count, void 
             if (string_compare(driver.cwdname, "*") && !string_find(name, driver.cwdname))
                 continue;
 
-            string_write_format(buffer, "%d\t%s\n", index, name);
+            string_write_format(buffer, "%d\t%s%s\n", index, filesystem->name, name);
             buffer += string_length(buffer);
 
         }
@@ -117,23 +117,23 @@ void init()
     if (!nodefs)
         return;
 
-    in.name = "module/tty/stdin";
+    in.name = "tty/stdin";
     in.read = in_read;
     in.write = 0;
 
-    out.name = "module/tty/stdout";
+    out.name = "tty/stdout";
     out.read = 0;
     out.write = out_write;
 
-    err.name = "module/tty/stderr";
+    err.name = "tty/stderr";
     err.read = 0;
     err.write = out_write;
 
-    cwd.name = "module/tty/cwd";
+    cwd.name = "tty/cwd";
     cwd.read = cwd_read;
     cwd.write = cwd_write;
 
-    pwd.name = "module/tty/pwd";
+    pwd.name = "tty/pwd";
     pwd.read = pwd_read;
     pwd.write = 0;
 

@@ -27,7 +27,7 @@ void init()
     if (!nodefs)
         return;
 
-    timestamp.name = "module/rtc/timestamp";
+    timestamp.name = "rtc/timestamp";
     timestamp.read = timestamp_read;
     timestamp.write = 0;
 
