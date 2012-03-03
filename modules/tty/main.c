@@ -94,7 +94,7 @@ static unsigned int pwd_read(struct nodefs_node *self, unsigned int count, void 
             if (string_compare(driver.cwdname, "*") && !string_find(name, driver.cwdname))
                 continue;
 
-            string_write_format(buffer, "%d\t%s%s\n", index, filesystem->name, name);
+            string_write_format(buffer, "%s/%s\n", filesystem->name, name);
             buffer += string_length(buffer);
 
         }

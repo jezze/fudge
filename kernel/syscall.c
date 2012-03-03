@@ -96,7 +96,7 @@ unsigned int syscall_execute(struct runtime_task *task, char *path, unsigned int
 
     runtime_activate(ntask, task);
 
-    struct vfs_filesystem *filesystem = vfs_find_filesystem("module/");
+    struct vfs_filesystem *filesystem = vfs_find_filesystem("/module");
 
     if (filesystem)
     {

@@ -26,7 +26,7 @@ void *symbol_find(char *name)
 void symbol_init()
 {
 
-    struct vfs_filesystem *filesystem = vfs_find_filesystem("build/");
+    struct vfs_filesystem *filesystem = vfs_find_filesystem("/ramdisk");
 
     if (!filesystem)
         error_panic("Symbol table not found", __FILE__, __LINE__);
