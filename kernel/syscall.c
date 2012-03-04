@@ -82,7 +82,7 @@ unsigned int syscall_execute(struct runtime_task *task, char *path, unsigned int
     if (!filesystem2)
         return 0;
 
-    unsigned int id = filesystem2->find(filesystem2, path + string_length(filesystem2->name) + 2);
+    unsigned int id = filesystem2->find(filesystem2, path + string_length(filesystem2->name) + 1);
 
     if (!id)
         return 0;
@@ -160,7 +160,7 @@ unsigned int syscall_load(struct runtime_task *task, char *path)
     if (!filesystem)
         return 0;
 
-    unsigned int id = filesystem->find(filesystem, path + string_length(filesystem->name) + 2);
+    unsigned int id = filesystem->find(filesystem, path + string_length(filesystem->name) + 1);
 
     if (!id)
         return 0;
@@ -206,7 +206,7 @@ unsigned int syscall_open(struct runtime_task *task, char *path)
     if (!filesystem)
         return 0;
 
-    unsigned int id = filesystem->find(filesystem, path + string_length(filesystem->name) + 2);
+    unsigned int id = filesystem->find(filesystem, path + string_length(filesystem->name) + 1);
 
     if (!id)
         return 0;
@@ -258,7 +258,7 @@ unsigned int syscall_unload(struct runtime_task *task, char *path)
     if (!filesystem)
         return 0;
 
-    unsigned int id = filesystem->find(filesystem, path + string_length(filesystem->name) + 2);
+    unsigned int id = filesystem->find(filesystem, path + string_length(filesystem->name) + 1);
 
     if (!id)
         return 0;
