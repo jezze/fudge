@@ -3,15 +3,15 @@
 void main(int argc, char *argv[])
 {
 
-    call_load("mod/nodefs.ko");
-    call_load("mod/uart.ko");
-    call_load("mod/vga.ko");
-    call_load("mod/pci.ko");
-    call_load("mod/pit.ko");
-    call_load("mod/rtc.ko");
-    call_load("mod/ps2.ko");
-    call_load("mod/tty.ko");
-    call_execute("bin/shell", 0, 0);
+    call_load("/ramdisk/mod/nodefs.ko");
+    call_load("/ramdisk/mod/uart.ko");
+    call_load("/ramdisk/mod/vga.ko");
+    call_load("/ramdisk/mod/pci.ko");
+    call_load("/ramdisk/mod/pit.ko");
+    call_load("/ramdisk/mod/rtc.ko");
+    call_load("/ramdisk/mod/ps2.ko");
+    call_load("/ramdisk/mod/tty.ko");
+    call_execute("/ramdisk/bin/shell", 0, 0);
 
     for (;;)
         call_halt();

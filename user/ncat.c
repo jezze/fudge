@@ -94,7 +94,7 @@ static void read_ipv6(unsigned char *data)
 void handle_network_event()
 {
 
-    unsigned int fd = file_open("rtl8139/data");
+    unsigned int fd = file_open("/module/rtl8139/data");
     file_read(fd, 0x800, buffer);
     file_close(fd);
 
@@ -130,7 +130,7 @@ void handle_network_event()
     memory_copy(buffer, &fheader, sizeof (struct frame_header));
     memory_copy(buffer + sizeof (struct frame_header), &aheader, sizeof (struct arp_header));
 
-    unsigned int fd2 = file_open("rtl8139/data");
+    unsigned int fd2 = file_open("/module/rtl8139/data");
     file_write(fd2, sizeof (struct frame_header) + sizeof (struct arp_header), buffer);
     file_close(fd2);
 
@@ -148,7 +148,7 @@ void main(int argc, char *argv[])
     eth0.ip[2] = 0x00;
     eth0.ip[3] = 0x05;
 
-    unsigned int fd = file_open("rtl8139/mac");
+    unsigned int fd = file_open("/module/rtl8139/mac");
     file_read(fd, 6, eth0.mac);
     file_close(fd);
 
