@@ -80,22 +80,15 @@ static unsigned int get_num(const char *in)
 static unsigned int parse(void *address)
 {
 
-    unsigned int count = 0;
+    unsigned int i;
 
-    while (*(char *)address)
+    for (i = 0; *(char *)address; i++)
     {
 
         struct tar_header *header = address;
         unsigned int size = get_num(header->size);
 
-        if (header->typeflag[0] != TAR_FILETYPE_DIR)
-        {
-
-            initrd_node_init(&nodes[count], header->name + 11, size, header, address + TAR_BLOCK_SIZE);
-
-            count++;
-
-        }
+        initrd_node_init(&nodes[i], header->name + 11, size, header, address + TAR_BLOCK_SIZE);
 
         address += ((size / TAR_BLOCK_SIZE) + 1) * TAR_BLOCK_SIZE;
 
@@ -104,7 +97,7 @@ static unsigned int parse(void *address)
 
     }
 
-    return count;
+    return i;
 
 }
 
