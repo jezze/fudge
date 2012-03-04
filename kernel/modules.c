@@ -1,4 +1,5 @@
 #include <lib/memory.h>
+#include <lib/string.h>
 #include <kernel/modules.h>
 #include <kernel/vfs.h>
 
@@ -240,10 +241,47 @@ void modules_driver_init(struct modules_driver *driver, unsigned int type, char 
 
 }
 
+static unsigned int filesystem_find(struct vfs_filesystem *self, char *name)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < MODULES_MODULE_SLOTS; i++)
+    {
+
+        if (!modules[i])
+            continue;
+
+        if (string_find(modules[i]->name, name))
+            return i + 1;
+
+    }
+
+    return 0;
+
+}
+
+static unsigned int filesystem_walk(struct vfs_filesystem *self, unsigned int id)
+{
+
+    if (modules[id + 1] == 0)
+        return 0;
+
+    return id + 1;
+
+}
+
+static char *filesystem_get_name(struct vfs_filesystem *self, unsigned int id)
+{
+
+    return modules[id - 1]->name;
+
+}
+
 void modules_init()
 {
 
-    vfs_filesystem_init(&filesystem, "/sys", 0, 0, 0, 0, 0, 0, 0, 0);
+    vfs_filesystem_init(&filesystem, "/sys", 0, 0, 0, 0, filesystem_find, filesystem_walk, filesystem_get_name, 0);
     vfs_register_filesystem(&filesystem);
 
 }
