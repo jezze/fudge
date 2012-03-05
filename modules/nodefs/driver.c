@@ -30,6 +30,11 @@ static unsigned int filesystem_write(struct vfs_filesystem *self, unsigned int i
 static unsigned int filesystem_find(struct vfs_filesystem *self, char *name)
 {
 
+    unsigned int length = string_length(name);
+
+    if (!length)
+        return 0;
+
     struct nodefs_filesystem *filesystem = (struct nodefs_filesystem *)self;
 
     unsigned int i;

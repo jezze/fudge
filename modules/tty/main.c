@@ -75,6 +75,9 @@ static unsigned int pwd_read(struct nodefs_node *self, unsigned int count, void 
 
     struct vfs_filesystem *filesystem = vfs_find_filesystem(driver.cwdname);
 
+    if (!filesystem)
+        return 0;
+
     unsigned int id = filesystem->find(filesystem, driver.cwdname + string_length(filesystem->name) + 1);
 
     if (!id)

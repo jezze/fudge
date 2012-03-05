@@ -28,12 +28,19 @@ static unsigned int filesystem_read(struct vfs_filesystem *self, unsigned int id
             if (!string_find(nodes[i].name, node->name))
                 continue;
 
-            string_write_format(buffer + offset, "%s\n", nodes[i].name + string_length(node->name));
+            char *start = nodes[i].name + string_length(node->name);
+            unsigned int length = string_length(start);
+            unsigned int slash = string_index(start, '/', 0);
+
+            if (slash != length && slash != length - 1)
+                continue;
+
+            string_write_format(buffer + offset, "%s\n", start);
             offset += string_length(buffer + offset);
 
         }
 
-        return string_length(buffer);
+        return offset;
 
     }
     
@@ -56,11 +63,12 @@ static unsigned int filesystem_read(struct vfs_filesystem *self, unsigned int id
 static unsigned int filesystem_find(struct vfs_filesystem *self, char *name)
 {
 
-    unsigned int i;
     unsigned int length = string_length(name);
 
     if (!length)
         return 1;
+
+    unsigned int i;
 
     for (i = 0; i < nodesCount; i++)
     {
