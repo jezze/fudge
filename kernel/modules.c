@@ -244,6 +244,11 @@ void modules_driver_init(struct modules_driver *driver, unsigned int type, char 
 static unsigned int filesystem_find(struct vfs_filesystem *self, char *name)
 {
 
+    unsigned int length = string_length(name);
+
+    if (!length)
+        return 0;
+
     unsigned int i;
 
     for (i = 0; i < MODULES_MODULE_SLOTS; i++)
