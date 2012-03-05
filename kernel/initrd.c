@@ -29,7 +29,7 @@ static unsigned int filesystem_read(struct vfs_filesystem *self, unsigned int id
             {
 
                 string_write_format(buffer + offset, "%s\n", nodes[i].name + string_length(node->name));
-                offset += string_length(nodes[i].name) - string_length(node->name) + 1;
+                offset += string_length(buffer + offset);
 
             }
 
