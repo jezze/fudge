@@ -164,7 +164,7 @@ void initrd_node_init(struct initrd_node *node, char *name, unsigned int size, s
 void initrd_init(unsigned int initrdc, void **initrdv)
 {
 
-    vfs_filesystem_init(&filesystem, "/ramdisk", 0, 0, filesystem_read, 0, filesystem_find, filesystem_walk, filesystem_get_name, filesystem_get_physical);
+    vfs_filesystem_init(&filesystem, "/ramdisk/", 0, 0, filesystem_read, 0, filesystem_find, filesystem_walk, filesystem_get_name, filesystem_get_physical);
 
     nodesCount = 0;
 

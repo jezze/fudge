@@ -281,7 +281,7 @@ static char *filesystem_get_name(struct vfs_filesystem *self, unsigned int id)
 void modules_init()
 {
 
-    vfs_filesystem_init(&filesystem, "/sys", 0, 0, 0, 0, filesystem_find, filesystem_walk, filesystem_get_name, 0);
+    vfs_filesystem_init(&filesystem, "/sys/", 0, 0, 0, 0, filesystem_find, filesystem_walk, filesystem_get_name, 0);
     vfs_register_filesystem(&filesystem);
 
 }

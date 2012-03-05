@@ -82,7 +82,7 @@ unsigned int syscall_execute(struct runtime_task *task, char *path, unsigned int
     if (!filesystem2)
         return 0;
 
-    unsigned int id = filesystem2->find(filesystem2, path + string_length(filesystem2->name) + 1);
+    unsigned int id = filesystem2->find(filesystem2, path + string_length(filesystem2->name));
 
     if (!id)
         return 0;
@@ -109,7 +109,7 @@ unsigned int syscall_execute(struct runtime_task *task, char *path, unsigned int
 
     runtime_activate(ntask, task);
 
-    struct vfs_filesystem *filesystem = vfs_find_filesystem("/module");
+    struct vfs_filesystem *filesystem = vfs_find_filesystem("/module/");
 
     if (filesystem)
     {
@@ -160,7 +160,7 @@ unsigned int syscall_load(struct runtime_task *task, char *path)
     if (!filesystem)
         return 0;
 
-    unsigned int id = filesystem->find(filesystem, path + string_length(filesystem->name) + 1);
+    unsigned int id = filesystem->find(filesystem, path + string_length(filesystem->name));
 
     if (!id)
         return 0;
@@ -206,7 +206,7 @@ unsigned int syscall_open(struct runtime_task *task, char *path)
     if (!filesystem)
         return 0;
 
-    unsigned int id = filesystem->find(filesystem, path + string_length(filesystem->name) + 1);
+    unsigned int id = filesystem->find(filesystem, path + string_length(filesystem->name));
 
     if (!id)
         return 0;
@@ -258,7 +258,7 @@ unsigned int syscall_unload(struct runtime_task *task, char *path)
     if (!filesystem)
         return 0;
 
-    unsigned int id = filesystem->find(filesystem, path + string_length(filesystem->name) + 1);
+    unsigned int id = filesystem->find(filesystem, path + string_length(filesystem->name));
 
     if (!id)
         return 0;

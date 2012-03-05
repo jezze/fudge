@@ -81,7 +81,7 @@ static unsigned int pwd_read(struct nodefs_node *self, unsigned int count, void 
     if (!filesystem)
         return 0;
 
-    unsigned int id = filesystem->find(filesystem, driver.cwdname + string_length(filesystem->name) + 1);
+    unsigned int id = filesystem->find(filesystem, driver.cwdname + string_length(filesystem->name));
 
     if (!id)
         return 0;
