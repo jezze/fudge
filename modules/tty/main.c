@@ -13,31 +13,6 @@ static struct nodefs_node err;
 static struct nodefs_node cwd;
 static struct nodefs_node pwd;
 
-static unsigned int cwd_read(struct nodefs_node *self, unsigned int count, void *buffer)
-{
-
-    count = string_length(driver.cwdname);
-
-    string_write(buffer, driver.cwdname);
-
-    return count;
-
-}
-
-static unsigned int cwd_write(struct nodefs_node *self, unsigned int count, void *buffer)
-{
-
-    count = string_length(buffer);
-
-    if (((char *)buffer)[0] == '/')
-        string_write(driver.cwdname, buffer);
-    else
-        string_write(driver.cwdname + string_length(driver.cwdname), buffer);
-
-    return count;
-
-}
-
 static unsigned int in_read(struct nodefs_node *self, unsigned int count, void *buffer)
 {
 
@@ -68,6 +43,32 @@ static unsigned int out_write(struct nodefs_node *self, unsigned int count, void
         driver.putc(&driver, ((char *)buffer)[i]);
 
     driver.vgaDriver->set_cursor_offset(driver.vgaDriver, driver.cursorOffset);
+
+    return count;
+
+}
+
+static unsigned int cwd_read(struct nodefs_node *self, unsigned int count, void *buffer)
+{
+
+    count = string_length(driver.cwdname);
+
+    string_write(buffer, driver.cwdname);
+
+    return count;
+
+}
+
+static unsigned int cwd_write(struct nodefs_node *self, unsigned int count, void *buffer)
+{
+
+    if (((char *)buffer)[string_length(buffer) - 1] != '/')
+        return 0;
+
+    if (((char *)buffer)[0] == '/')
+        string_write(driver.cwdname, buffer);
+    else
+        string_write(driver.cwdname + string_length(driver.cwdname), buffer);
 
     return count;
 
