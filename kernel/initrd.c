@@ -25,13 +25,11 @@ static unsigned int filesystem_read(struct vfs_filesystem *self, unsigned int id
             if (&nodes[i] == node)
                 continue;
 
-            if (string_find(nodes[i].name, node->name))
-            {
+            if (!string_find(nodes[i].name, node->name))
+                continue;
 
-                string_write_format(buffer + offset, "%s\n", nodes[i].name + string_length(node->name));
-                offset += string_length(buffer + offset);
-
-            }
+            string_write_format(buffer + offset, "%s\n", nodes[i].name + string_length(node->name));
+            offset += string_length(buffer + offset);
 
         }
 
@@ -59,11 +57,20 @@ static unsigned int filesystem_find(struct vfs_filesystem *self, char *name)
 {
 
     unsigned int i;
+    unsigned int length = string_length(name);
+
+    if (!length)
+        return 1;
 
     for (i = 0; i < nodesCount; i++)
     {
 
-        if (string_find(nodes[i].name, name))
+        unsigned int l2 = string_length(nodes[i].name);
+
+        if (length != l2)
+            continue;
+
+        if (!memory_compare(nodes[i].name, name, length))
             return i + 1;
 
     }
@@ -121,7 +128,7 @@ static unsigned int parse(void *address)
         struct tar_header *header = address;
         unsigned int size = get_num(header->size);
 
-        initrd_node_init(&nodes[i], header->name, size, header, address + TAR_BLOCK_SIZE);
+        initrd_node_init(&nodes[i], header->name + 11, size, header, address + TAR_BLOCK_SIZE);
 
         address += ((size / TAR_BLOCK_SIZE) + 1) * TAR_BLOCK_SIZE;
 

@@ -31,7 +31,7 @@ void symbol_init()
     if (!filesystem)
         error_panic("Symbol table not found", __FILE__, __LINE__);
 
-    unsigned int id = filesystem->find(filesystem, "build/root/boot/fudge.map");
+    unsigned int id = filesystem->find(filesystem, "boot/fudge.map");
 
     if (!id)
         error_panic("Symbol table not found", __FILE__, __LINE__);

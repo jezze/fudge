@@ -51,7 +51,7 @@ static void interpret(char *command)
 
     char binary[32];
 
-    string_write_format(binary, "/ramdisk/build/root/bin/%s", argv[0]);
+    string_write_format(binary, "/ramdisk/bin/%s", argv[0]);
 
     if (!call_execute(binary, argc, argv))
         file_write_format(FILE_STDOUT, "%s: Invalid command\n", binary);
