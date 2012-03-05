@@ -73,42 +73,21 @@ static unsigned int out_write(struct nodefs_node *self, unsigned int count, void
 static unsigned int pwd_read(struct nodefs_node *self, unsigned int count, void *buffer)
 {
 
-    void *out = buffer;
-    unsigned int i;
+    struct vfs_filesystem *filesystem = vfs_find_filesystem(driver.cwdname);
 
-    for (i = 0; i < VFS_FILESYSTEM_SLOTS; i++)
-    {
+    unsigned int id = filesystem->find(filesystem, driver.cwdname + string_length(filesystem->name) + 1);
 
-        struct vfs_filesystem *filesystem = vfs_get_filesystem(i);
+    if (!id)
+        return 0;
 
-        if (!filesystem || !filesystem->walk || !filesystem->get_name)
-            continue;
-
-        unsigned int index = 0;
-
-        while ((index = filesystem->walk(filesystem, index)))
-        {
-
-            char *name = filesystem->get_name(filesystem, index);
-
-            if (string_compare(driver.cwdname, "*") && !string_find(name, driver.cwdname))
-                continue;
-
-            string_write_format(buffer, "%s/%s\n", filesystem->name, name);
-            buffer += string_length(buffer);
-
-        }
-
-    }
-
-    return string_length(out);
+    return filesystem->read(filesystem, id, count, buffer);
 
 }
 
 void init()
 {
 
-    tty_driver_init(&driver, "home");
+    tty_driver_init(&driver, "/ramdisk/home/");
     modules_register_driver(&driver.base);
 
     struct nodefs_driver *nodefs = (struct nodefs_driver *)modules_get_driver(NODEFS_DRIVER_TYPE);

@@ -23,16 +23,6 @@ void vfs_register_filesystem(struct vfs_filesystem *filesystem)
 
 }
 
-struct vfs_filesystem *vfs_get_filesystem(unsigned int index)
-{
-
-    if (!filesystems[index])
-        return 0;
-
-    return filesystems[index];
-
-}
-
 struct vfs_filesystem *vfs_find_filesystem(char *path)
 {
 
