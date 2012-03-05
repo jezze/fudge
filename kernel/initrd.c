@@ -13,12 +13,45 @@ static unsigned int filesystem_read(struct vfs_filesystem *self, unsigned int id
 
     struct initrd_node *node = &nodes[id - 1];
 
-    if (count > node->size)
-        count = node->size;
+    if (node->header->typeflag[0] == TAR_FILETYPE_DIR)
+    {
 
-    memory_copy(buffer, node->data, count);
+        unsigned int offset = 0;
+        unsigned int i;
 
-    return count;
+        for (i = 0; i < nodesCount; i++)
+        {
+
+            if (&nodes[i] == node)
+                continue;
+
+            if (string_find(nodes[i].name, node->name))
+            {
+
+                string_write_format(buffer + offset, "%s\n", nodes[i].name + string_length(node->name));
+                offset += string_length(nodes[i].name) - string_length(node->name) + 1;
+
+            }
+
+        }
+
+        return string_length(buffer);
+
+    }
+    
+    else
+    {
+
+        if (count > node->size)
+            count = node->size;
+
+        memory_copy(buffer, node->data, count);
+
+        return count;
+
+    }
+
+    return 0;
 
 }
 
@@ -88,7 +121,7 @@ static unsigned int parse(void *address)
         struct tar_header *header = address;
         unsigned int size = get_num(header->size);
 
-        initrd_node_init(&nodes[i], header->name + 11, size, header, address + TAR_BLOCK_SIZE);
+        initrd_node_init(&nodes[i], header->name, size, header, address + TAR_BLOCK_SIZE);
 
         address += ((size / TAR_BLOCK_SIZE) + 1) * TAR_BLOCK_SIZE;
 
