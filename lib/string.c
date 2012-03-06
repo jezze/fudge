@@ -15,13 +15,6 @@ unsigned int string_index(const char *in, char value, unsigned int skip)
 
 }
 
-unsigned int string_index_reversed(const char *in, char value, unsigned int skip)
-{
-
-    return memory_index_reversed(in, value, string_length(in), skip);
-
-}
-
 char *string_find(const char *in, const char *str)
 {
 

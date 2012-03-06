@@ -3,7 +3,6 @@
 
 int string_compare(const char *in1, const char *in2);
 unsigned int string_index(const char *in, char value, unsigned int skip);
-unsigned int string_index_reversed(const char *in, char value, unsigned int skip);
 char *string_find(const char *in, const char *str);
 unsigned int string_length(const char *in);
 unsigned int string_read_num(const char *in, unsigned int base);

@@ -65,28 +65,6 @@ unsigned int memory_index(const void *in, char value, unsigned int count, unsign
 
 }
 
-unsigned int memory_index_reversed(const void *in, char value, unsigned int count, unsigned int skip)
-{
-
-    const char *ip = in + count - 1;
-
-    for (; count > 0; ip--, count--)
-    {
-
-        if (*ip != value)
-            continue;
-
-        if (skip)
-            skip--;
-        else
-            break;
-
-    }
-
-    return count - 1;
-
-}
-
 void *memory_replace(void *out, char value1, char value2, unsigned int count)
 {
 
