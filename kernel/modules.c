@@ -241,13 +241,37 @@ void modules_driver_init(struct modules_driver *driver, unsigned int type, char 
 
 }
 
+static unsigned int filesystem_read(struct vfs_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    if (id != 1)
+        return 0;
+
+    unsigned int length = 0;
+    unsigned int i;
+
+    for (i = 0; i < MODULES_MODULE_SLOTS; i++)
+    {
+
+        if (!modules[i])
+            continue;
+
+        string_write_format(buffer + length, "%s\n", modules[i]->name);
+        length += string_length(buffer + length);
+
+    }
+
+    return length;
+
+}
+
 static unsigned int filesystem_find(struct vfs_filesystem *self, char *name)
 {
 
     unsigned int length = string_length(name);
 
     if (!length)
-        return 0;
+        return 1;
 
     unsigned int i;
 
@@ -269,7 +293,7 @@ static unsigned int filesystem_find(struct vfs_filesystem *self, char *name)
 void modules_init()
 {
 
-    vfs_filesystem_init(&filesystem, "/sys/", 0, 0, 0, 0, filesystem_find, 0);
+    vfs_filesystem_init(&filesystem, "/sys/", 0, 0, filesystem_read, 0, filesystem_find, 0);
     vfs_register_filesystem(&filesystem);
 
 }
