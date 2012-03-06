@@ -2,9 +2,10 @@
 #include <lib/string.h>
 #include <kernel/vfs.h>
 #include <kernel/vfs/ramdisk.h>
+#include <kernel/vfs/root.h>
 #include <kernel/vfs/sys.h>
 
-static struct vfs_filesystem *filesystems[VFS_FILESYSTEM_SLOTS];
+struct vfs_filesystem *filesystems[VFS_FILESYSTEM_SLOTS];
 
 void vfs_register_filesystem(struct vfs_filesystem *filesystem)
 {
@@ -65,6 +66,7 @@ void vfs_filesystem_init(struct vfs_filesystem *filesystem, char *name, void (*o
 void vfs_init()
 {
 
+    vfs_root_init();
     vfs_sys_init();
     vfs_ramdisk_init();
 
