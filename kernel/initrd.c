@@ -8,6 +8,44 @@ static struct vfs_filesystem filesystem;
 static struct initrd_node nodes[INITRD_HEADER_SIZE];
 static unsigned int nodesCount;
 
+static unsigned int get_num(const char *in)
+{
+
+    unsigned int size = 0;
+    unsigned int j;
+    unsigned int count = 1;
+
+    for (j = 11; j > 0; j--, count *= 8)
+        size += ((in[j - 1] - '0') * count);
+
+    return size;
+
+}
+
+static unsigned int parse(void *address)
+{
+
+    unsigned int i;
+
+    for (i = 0; *(char *)address; i++)
+    {
+
+        struct tar_header *header = address;
+        unsigned int size = get_num(header->size);
+
+        initrd_node_init(&nodes[i], header->name + 11, size, header, address + TAR_BLOCK_SIZE);
+
+        address += ((size / TAR_BLOCK_SIZE) + 1) * TAR_BLOCK_SIZE;
+
+        if (size % TAR_BLOCK_SIZE)
+            address += TAR_BLOCK_SIZE;
+
+    }
+
+    return i;
+
+}
+
 static unsigned int filesystem_read(struct vfs_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
@@ -91,44 +129,6 @@ static void *filesystem_get_physical(struct vfs_filesystem *self, unsigned int i
 {
 
     return nodes[id - 1].data;
-
-}
-
-static unsigned int get_num(const char *in)
-{
-
-    unsigned int size = 0;
-    unsigned int j;
-    unsigned int count = 1;
-
-    for (j = 11; j > 0; j--, count *= 8)
-        size += ((in[j - 1] - '0') * count);
-
-    return size;
-
-}
-
-static unsigned int parse(void *address)
-{
-
-    unsigned int i;
-
-    for (i = 0; *(char *)address; i++)
-    {
-
-        struct tar_header *header = address;
-        unsigned int size = get_num(header->size);
-
-        initrd_node_init(&nodes[i], header->name + 11, size, header, address + TAR_BLOCK_SIZE);
-
-        address += ((size / TAR_BLOCK_SIZE) + 1) * TAR_BLOCK_SIZE;
-
-        if (size % TAR_BLOCK_SIZE)
-            address += TAR_BLOCK_SIZE;
-
-    }
-
-    return i;
 
 }
 
