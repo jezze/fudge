@@ -14,8 +14,11 @@ static unsigned int read(struct vfs_filesystem *self, unsigned int id, unsigned 
     if (id != 1)
         return 0;
 
-    unsigned int length = 0;
+    string_write_format(buffer, "./\n../\n", 7);
+
+    unsigned int length = 7;
     unsigned int i;
+
 
     for (i = 0; i < VFS_FILESYSTEM_SLOTS; i++)
     {

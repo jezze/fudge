@@ -14,13 +14,15 @@ static unsigned int read(struct vfs_filesystem *self, unsigned int id, unsigned 
     if (id == 1)
     {
 
-        memory_copy(buffer, "all/\nbus/\ndevice/\ndriver/\n", 26);
+        memory_copy(buffer, "./\n../\nall/\nbus/\ndevice/\ndriver/\n", 33);
 
-        return 26;
+        return 33;
 
     }
 
-    unsigned int length = 0;
+    string_write_format(buffer, "./\n../\n", 7);
+
+    unsigned int length = 7;
     unsigned int i;
 
     for (i = 0; i < MODULES_MODULE_SLOTS; i++)

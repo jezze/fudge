@@ -30,7 +30,7 @@ struct vfs_filesystem *vfs_find_filesystem(char *path)
 {
 
     struct vfs_filesystem *current = 0;
-    unsigned int length = 0;
+    unsigned int max = 0;
 
     unsigned int i;
 
@@ -40,24 +40,20 @@ struct vfs_filesystem *vfs_find_filesystem(char *path)
         if (!filesystems[i])
             continue;
 
-        unsigned int l = string_length(filesystems[i]->name);
+        unsigned int length = string_length(filesystems[i]->name);
 
-        if (!memory_compare(filesystems[i]->name, path, l))
-        {
+        if (memory_compare(filesystems[i]->name, path, length))
+            continue;
 
-            if (l > length)
-            {
+        if (length < max)
+            continue;
 
-                current = filesystems[i];
-                length = l;
-
-            }
-
-        }
+        current = filesystems[i];
+        max = length;
 
     }
 
-    return (current) ? current : 0;
+    return current;
 
 }
 
