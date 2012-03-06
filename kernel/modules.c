@@ -266,17 +266,10 @@ static unsigned int filesystem_find(struct vfs_filesystem *self, char *name)
 
 }
 
-static char *filesystem_get_name(struct vfs_filesystem *self, unsigned int id)
-{
-
-    return modules[id - 1]->name;
-
-}
-
 void modules_init()
 {
 
-    vfs_filesystem_init(&filesystem, "/sys/", 0, 0, 0, 0, filesystem_find, filesystem_get_name, 0);
+    vfs_filesystem_init(&filesystem, "/sys/", 0, 0, 0, 0, filesystem_find, 0);
     vfs_register_filesystem(&filesystem);
 
 }

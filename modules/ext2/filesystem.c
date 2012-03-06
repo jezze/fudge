@@ -28,25 +28,12 @@ static unsigned int find(struct vfs_filesystem *self, char *name)
 
 }
 
-static char *get_name(struct vfs_filesystem *self, unsigned int id)
-{
-
-    if (id == 14)
-        return "ext2file1";
-
-    if (id == 15)
-        return "ext2file2";
-
-    return 0;
-
-}
-
 void ext2_filesystem_init(struct modules_module *module)
 {
 
     driver = (struct ext2_driver *)module;
 
-    vfs_filesystem_init(&filesystem, "/hda", 0, 0, read, 0, find, get_name, 0); 
+    vfs_filesystem_init(&filesystem, "/hda", 0, 0, read, 0, find, 0); 
     vfs_register_filesystem(&filesystem);
 
 }
