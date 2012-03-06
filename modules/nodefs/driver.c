@@ -5,7 +5,7 @@
 #include <kernel/vfs.h>
 #include <modules/nodefs/nodefs.h>
 
-static unsigned int filesystem_read(struct vfs_filesystem *self, unsigned int id, unsigned int count, void *buffer)
+static unsigned int filesystem_read(struct vfs_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct nodefs_filesystem *filesystem = (struct nodefs_filesystem *)self;
@@ -16,7 +16,7 @@ static unsigned int filesystem_read(struct vfs_filesystem *self, unsigned int id
 
 }
 
-static unsigned int filesystem_write(struct vfs_filesystem *self, unsigned int id, unsigned int count, void *buffer)
+static unsigned int filesystem_write(struct vfs_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct nodefs_filesystem *filesystem = (struct nodefs_filesystem *)self;

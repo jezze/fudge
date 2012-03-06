@@ -87,7 +87,7 @@ unsigned int syscall_execute(struct runtime_task *task, char *path, unsigned int
     if (!id)
         return 0;
 
-    unsigned int count = filesystem2->read(filesystem2, id, ntask->memory.size, ntask->memory.paddress);
+    unsigned int count = filesystem2->read(filesystem2, id, 0, ntask->memory.size, ntask->memory.paddress);
 
     if (!count)
         return 0;
@@ -230,7 +230,7 @@ unsigned int syscall_read(struct runtime_task *task, unsigned int index, unsigne
     if (!descriptor->id || !descriptor->filesystem || !descriptor->filesystem->read)
         return 0;
 
-    unsigned int c = descriptor->filesystem->read(descriptor->filesystem, descriptor->id, count, buffer);
+    unsigned int c = descriptor->filesystem->read(descriptor->filesystem, descriptor->id, 0, count, buffer);
 
     event_raise(EVENT_SYSCALL_READ);
 
@@ -312,7 +312,7 @@ unsigned int syscall_write(struct runtime_task *task, unsigned int index, unsign
     if (!descriptor->id || !descriptor->filesystem || !descriptor->filesystem->write)
         return 0;
 
-    unsigned int c = descriptor->filesystem->write(descriptor->filesystem, descriptor->id, count, buffer);
+    unsigned int c = descriptor->filesystem->write(descriptor->filesystem, descriptor->id, 0, count, buffer);
 
     event_raise(EVENT_SYSCALL_WRITE);
 

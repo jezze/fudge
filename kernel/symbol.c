@@ -36,7 +36,7 @@ void symbol_init()
     if (!id)
         error_panic("Symbol table not found", __FILE__, __LINE__);
 
-    unsigned int count = filesystem->read(filesystem, id, SYMBOL_BUFFER_SIZE, buffer);
+    unsigned int count = filesystem->read(filesystem, id, 0, SYMBOL_BUFFER_SIZE, buffer);
 
     unsigned int i;
     unsigned int start = 0;

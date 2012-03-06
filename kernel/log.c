@@ -45,7 +45,7 @@ void log_write(const char *buffer, ...)
         if (c != '%')
         {
 
-            filesystem->write(filesystem, id, 1, &c);
+            filesystem->write(filesystem, id, 0, 1, &c);
 
             buffer++;
 
@@ -63,27 +63,27 @@ void log_write(const char *buffer, ...)
 
             case 'c':
 
-                filesystem->write(filesystem, id, 1, (char *)arg);
+                filesystem->write(filesystem, id, 0, 1, (char *)arg);
 
                 break;
 
             case 'd':
 
                 log_write_num(num, *(int *)arg, 10);
-                filesystem->write(filesystem, id, string_length(num), num);
+                filesystem->write(filesystem, id, 0, string_length(num), num);
 
                 break;
 
             case 's':
 
-                filesystem->write(filesystem, id, string_length(*(char **)arg), *(char **)arg);
+                filesystem->write(filesystem, id, 0, string_length(*(char **)arg), *(char **)arg);
 
                 break;
 
             case 'x':
 
                 log_write_num(num, *(int *)arg, 16);
-                filesystem->write(filesystem, id, string_length(num), num);
+                filesystem->write(filesystem, id, 0, string_length(num), num);
 
                 break;
 
@@ -93,7 +93,7 @@ void log_write(const char *buffer, ...)
 
     }
 
-    filesystem->write(filesystem, id, 1, "");
+    filesystem->write(filesystem, id, 0, 1, "");
 
 }
 

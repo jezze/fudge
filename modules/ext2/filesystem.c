@@ -6,7 +6,7 @@
 static struct ext2_driver *driver;
 static struct vfs_filesystem filesystem;
 
-static unsigned int read(struct vfs_filesystem *self, unsigned int id, unsigned int count, void *buffer)
+static unsigned int read(struct vfs_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     driver->read_node(driver, id, buffer);
