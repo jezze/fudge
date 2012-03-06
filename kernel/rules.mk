@@ -1,9 +1,10 @@
 include kernel/arch/${ARCH}/rules.mk
+include kernel/vfs/rules.mk
 
 kernel: GCCFLAGS+=-Iinclude
 kernel: LDFLAGS+=-Tkernel/arch/${ARCH}/linker.ld
 
-kernel: kernel-arch
+kernel: kernel-arch vfs
 	@${GCC} ${GCCFLAGS} kernel/elf.c -o kernel/elf.o
 	@${GCC} ${GCCFLAGS} kernel/error.c -o kernel/error.o
 	@${GCC} ${GCCFLAGS} kernel/event.c -o kernel/event.o
@@ -17,9 +18,9 @@ kernel: kernel-arch
 	@${GCC} ${GCCFLAGS} kernel/symbol.c -o kernel/symbol.o
 	@${GCC} ${GCCFLAGS} kernel/syscall.c -o kernel/syscall.o
 	@${GCC} ${GCCFLAGS} kernel/vfs.c -o kernel/vfs.o
-	@${LD} ${LDFLAGS} kernel/*.o kernel/arch/${ARCH}/*.o lib/memory.o lib/string.o -o kernel/fudge
+	@${LD} ${LDFLAGS} kernel/*.o kernel/arch/${ARCH}/*.o kernel/vfs/*.o lib/memory.o lib/string.o -o kernel/fudge
 
-kernel-clean: kernel-arch-clean
+kernel-clean: kernel-arch-clean vfs-clean
 	@rm -f kernel/fudge
 	@rm -f kernel/*.o
 

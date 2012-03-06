@@ -1,6 +1,8 @@
 #include <lib/memory.h>
 #include <lib/string.h>
 #include <kernel/vfs.h>
+#include <kernel/vfs/ramdisk.h>
+#include <kernel/vfs/sys.h>
 
 static struct vfs_filesystem *filesystems[VFS_FILESYSTEM_SLOTS];
 
@@ -57,6 +59,14 @@ void vfs_filesystem_init(struct vfs_filesystem *filesystem, char *name, void (*o
     filesystem->write = write;
     filesystem->find = find;
     filesystem->get_physical = get_physical;
+
+}
+
+void vfs_init()
+{
+
+    vfs_sys_init();
+    vfs_ramdisk_init();
 
 }
 

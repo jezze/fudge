@@ -2,7 +2,7 @@ ROOT:=$(PWD)
 PATH:=$(PATH):$(PWD)/toolchain/local/bin
 
 ARCH=x86
-TARGET=i586-pc-fudge-
+TARGET=
 ASM=${TARGET}as
 ASMFLAGS=-c
 GCC=${TARGET}gcc
