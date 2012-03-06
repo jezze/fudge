@@ -29,6 +29,9 @@ void vfs_register_filesystem(struct vfs_filesystem *filesystem)
 struct vfs_filesystem *vfs_find_filesystem(char *path)
 {
 
+    struct vfs_filesystem *current = 0;
+    unsigned int length = 0;
+
     unsigned int i;
 
     for (i = 0; i < VFS_FILESYSTEM_SLOTS; i++)
@@ -37,14 +40,24 @@ struct vfs_filesystem *vfs_find_filesystem(char *path)
         if (!filesystems[i])
             continue;
 
-        if (memory_compare(filesystems[i]->name, path, string_length(filesystems[i]->name)))
-            continue;
+        unsigned int l = string_length(filesystems[i]->name);
 
-        return filesystems[i];
+        if (!memory_compare(filesystems[i]->name, path, l))
+        {
+
+            if (l > length)
+            {
+
+                current = filesystems[i];
+                length = l;
+
+            }
+
+        }
 
     }
 
-    return 0;
+    return (current) ? current : 0;
 
 }
 

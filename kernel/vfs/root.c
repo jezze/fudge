@@ -11,56 +11,41 @@ static struct vfs_filesystem filesystem;
 static unsigned int read(struct vfs_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    if (id == 1)
+    if (id != 1)
+        return 0;
+
+    unsigned int length = 0;
+    unsigned int i;
+
+    for (i = 0; i < VFS_FILESYSTEM_SLOTS; i++)
     {
 
-        unsigned int length = 0;
-        unsigned int i;
+        if (!filesystems[i])
+            continue;
 
-        for (i = 1; i < VFS_FILESYSTEM_SLOTS; i++)
-        {
+        if (filesystems[i] == self)
+            continue;
 
-            if (!filesystems[i])
-                continue;
-
-            string_write_format(buffer + length, "%s\n", filesystems[i]->name + 1);
-            length += string_length(buffer + length);
-
-        }
-
-        return length;
+        string_write_format(buffer + length, "%s\n", filesystems[i]->name + 1);
+        length += string_length(buffer + length);
 
     }
 
-    if (id == 2)
-    {
-
-        string_write_format(buffer, "hej\n", 4);
-
-        return 4;
-
-    }
-
-    return 0;
+    return length;
 
 }
 
 static unsigned int find(struct vfs_filesystem *self, char *name)
 {
 
-    unsigned int length = string_length(name);
-
-    if (!length)
-        return 1;
-
-    return 0;
+    return 1;
 
 }
 
 void vfs_root_init()
 {
 
-    vfs_filesystem_init(&filesystem, "/root/", 0, 0, read, 0, find, 0);
+    vfs_filesystem_init(&filesystem, "/", 0, 0, read, 0, find, 0);
     vfs_register_filesystem(&filesystem);
 
 }
