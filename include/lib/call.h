@@ -3,8 +3,8 @@
 
 unsigned int call_open(char *path);
 void call_close(unsigned int fd);
-unsigned int call_read(unsigned int fd, void *buffer, unsigned int count);
-unsigned int call_write(unsigned int fd, void *buffer, unsigned int count);
+unsigned int call_read(unsigned int fd, unsigned int offset, unsigned int count, void *buffer);
+unsigned int call_write(unsigned int fd, unsigned int offset, unsigned int count, void *buffer);
 unsigned int call_execute(char *path, unsigned int argc, char **argv);
 unsigned int call_load(char *path);
 unsigned int call_unload(char *path);

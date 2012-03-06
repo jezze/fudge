@@ -20,7 +20,7 @@ unsigned int file_open(char *path)
 unsigned int file_read(unsigned int fd, unsigned int count, void *buffer)
 {
 
-    return call_read(fd, buffer, count);
+    return call_read(fd, 0, count, buffer);
 
 }
 
@@ -34,7 +34,7 @@ unsigned int file_read_byte(unsigned int fd, char c)
 unsigned int file_write(unsigned int fd, unsigned int count, void *buffer)
 {
 
-    return call_write(fd, buffer, count);
+    return call_write(fd, 0, count, buffer);
 
 }
 

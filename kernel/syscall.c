@@ -222,15 +222,15 @@ unsigned int syscall_open(struct runtime_task *task, char *path)
 
 }
 
-unsigned int syscall_read(struct runtime_task *task, unsigned int index, unsigned int count, char *buffer)
+unsigned int syscall_read(struct runtime_task *task, unsigned int id, unsigned int offset, unsigned int count, char *buffer)
 {
 
-    struct runtime_descriptor *descriptor = task->get_descriptor(task, index);
+    struct runtime_descriptor *descriptor = task->get_descriptor(task, id);
 
     if (!descriptor->id || !descriptor->filesystem || !descriptor->filesystem->read)
         return 0;
 
-    unsigned int c = descriptor->filesystem->read(descriptor->filesystem, descriptor->id, 0, count, buffer);
+    unsigned int c = descriptor->filesystem->read(descriptor->filesystem, descriptor->id, offset, count, buffer);
 
     event_raise(EVENT_SYSCALL_READ);
 
@@ -304,15 +304,15 @@ unsigned int syscall_wait(struct runtime_task *task)
 
 }
 
-unsigned int syscall_write(struct runtime_task *task, unsigned int index, unsigned int count, char *buffer)
+unsigned int syscall_write(struct runtime_task *task, unsigned int id, unsigned int offset, unsigned int count, char *buffer)
 {
 
-    struct runtime_descriptor *descriptor = task->get_descriptor(task, index);
+    struct runtime_descriptor *descriptor = task->get_descriptor(task, id);
 
     if (!descriptor->id || !descriptor->filesystem || !descriptor->filesystem->write)
         return 0;
 
-    unsigned int c = descriptor->filesystem->write(descriptor->filesystem, descriptor->id, 0, count, buffer);
+    unsigned int c = descriptor->filesystem->write(descriptor->filesystem, descriptor->id, offset, count, buffer);
 
     event_raise(EVENT_SYSCALL_WRITE);
 
@@ -394,11 +394,12 @@ static unsigned int syscall_handle_open(unsigned int stack, struct runtime_task 
 static unsigned int syscall_handle_read(unsigned int stack, struct runtime_task *task)
 {
 
-    unsigned int index = *(unsigned int *)(stack + 4);
-    char *buffer = *(char **)(stack + 8);
+    unsigned int id = *(unsigned int *)(stack + 4);
+    unsigned int offset = *(unsigned int *)(stack + 8);
     unsigned int count = *(unsigned int *)(stack + 12);
+    char *buffer = *(char **)(stack + 16);
 
-    return syscall_read(task, index, count, buffer);
+    return syscall_read(task, id, offset, count, buffer);
 
 }
 
@@ -428,11 +429,12 @@ static unsigned int syscall_handle_wait(unsigned int stack, struct runtime_task 
 static unsigned int syscall_handle_write(unsigned int stack, struct runtime_task *task)
 {
 
-    unsigned int index = *(unsigned int *)(stack + 4);
-    char *buffer = *(char **)(stack + 8);
+    unsigned int id = *(unsigned int *)(stack + 4);
+    unsigned int offset = *(unsigned int *)(stack + 8);
     unsigned int count = *(unsigned int *)(stack + 12);
+    char *buffer = *(char **)(stack + 16);
 
-    return syscall_write(task, index, count, buffer);
+    return syscall_write(task, id, offset, count, buffer);
 
 }
 

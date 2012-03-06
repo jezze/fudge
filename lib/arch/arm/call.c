@@ -10,14 +10,14 @@ void call_close(unsigned int fd)
 
 }
 
-unsigned int call_read(unsigned int fd, void *buffer, unsigned int count)
+unsigned int call_read(unsigned int fd, unsigned int offset, unsigned int count, void *buffer)
 {
 
     return 0;
 
 }
 
-unsigned int call_write(unsigned int fd, void *buffer, unsigned int count)
+unsigned int call_write(unsigned int fd, unsigned int offset, unsigned int count, void *buffer)
 {
 
     return 0;
