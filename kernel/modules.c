@@ -266,16 +266,6 @@ static unsigned int filesystem_find(struct vfs_filesystem *self, char *name)
 
 }
 
-static unsigned int filesystem_walk(struct vfs_filesystem *self, unsigned int id)
-{
-
-    if (modules[id + 1] == 0)
-        return 0;
-
-    return id + 1;
-
-}
-
 static char *filesystem_get_name(struct vfs_filesystem *self, unsigned int id)
 {
 
@@ -286,7 +276,7 @@ static char *filesystem_get_name(struct vfs_filesystem *self, unsigned int id)
 void modules_init()
 {
 
-    vfs_filesystem_init(&filesystem, "/sys/", 0, 0, 0, 0, filesystem_find, filesystem_walk, filesystem_get_name, 0);
+    vfs_filesystem_init(&filesystem, "/sys/", 0, 0, 0, 0, filesystem_find, filesystem_get_name, 0);
     vfs_register_filesystem(&filesystem);
 
 }

@@ -51,18 +51,6 @@ static unsigned int filesystem_find(struct vfs_filesystem *self, char *name)
 
 }
 
-static unsigned int filesystem_walk(struct vfs_filesystem *self, unsigned int id)
-{
-
-    struct nodefs_filesystem *filesystem = (struct nodefs_filesystem *)self;
-
-    if (id > filesystem->count - 1)
-        return 0;
-
-    return id + 1;
-
-}
-
 static char *filesystem_get_name(struct vfs_filesystem *self, unsigned int id)
 {
 
@@ -119,7 +107,7 @@ static void unregister_node(struct nodefs_driver *self, struct nodefs_node *node
 void nodefs_filesystem_init(struct nodefs_filesystem *filesystem)
 {
 
-    vfs_filesystem_init(&filesystem->base, "/module/", 0, 0, filesystem_read, filesystem_write, filesystem_find, filesystem_walk, filesystem_get_name, 0); 
+    vfs_filesystem_init(&filesystem->base, "/module/", 0, 0, filesystem_read, filesystem_write, filesystem_find, filesystem_get_name, 0); 
     filesystem->count = 0;
 
     memory_clear(filesystem->nodes, sizeof (struct nodefs_node *) * 128);

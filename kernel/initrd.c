@@ -87,16 +87,6 @@ static unsigned int filesystem_find(struct vfs_filesystem *self, char *name)
 
 }
 
-static unsigned int filesystem_walk(struct vfs_filesystem *self, unsigned int id)
-{
-
-    if (id > nodesCount - 1)
-        return 0;
-
-    return id + 1;
-
-}
-
 static char *filesystem_get_name(struct vfs_filesystem *self, unsigned int id)
 {
 
@@ -164,7 +154,7 @@ void initrd_node_init(struct initrd_node *node, char *name, unsigned int size, s
 void initrd_init(unsigned int initrdc, void **initrdv)
 {
 
-    vfs_filesystem_init(&filesystem, "/ramdisk/", 0, 0, filesystem_read, 0, filesystem_find, filesystem_walk, filesystem_get_name, filesystem_get_physical);
+    vfs_filesystem_init(&filesystem, "/ramdisk/", 0, 0, filesystem_read, 0, filesystem_find, filesystem_get_name, filesystem_get_physical);
 
     nodesCount = 0;
 

@@ -28,39 +28,6 @@ static unsigned int find(struct vfs_filesystem *self, char *name)
 
 }
 
-static unsigned int walk(struct vfs_filesystem *self, unsigned int id)
-{
-
-    if (!id)
-        return 14;
-
-    if (id > 15 - 1)
-        return 0;
-
-    return id + 1;
-
-/*
-    static char mem[1024];
-    void *buffer = mem;
-
-    driver->read_node(driver, 2, buffer);
-
-    for (;;)
-    {
-
-        struct ext2_directory *directory = buffer;
-
-        if (!directory->length)
-            return 0;
-
-        buffer += directory->size;
-
-    }
-
-    return 0;
-*/
-}
-
 static char *get_name(struct vfs_filesystem *self, unsigned int id)
 {
 
@@ -79,7 +46,7 @@ void ext2_filesystem_init(struct modules_module *module)
 
     driver = (struct ext2_driver *)module;
 
-    vfs_filesystem_init(&filesystem, "/hda", 0, 0, read, 0, find, walk, get_name, 0); 
+    vfs_filesystem_init(&filesystem, "/hda", 0, 0, read, 0, find, get_name, 0); 
     vfs_register_filesystem(&filesystem);
 
 }
