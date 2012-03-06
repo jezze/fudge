@@ -10,7 +10,7 @@ extern unsigned int nodesCount;
 
 static struct vfs_filesystem filesystem;
 
-static unsigned int filesystem_read(struct vfs_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int read(struct vfs_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct initrd_node *node = &nodes[id - 1];
@@ -62,7 +62,7 @@ static unsigned int filesystem_read(struct vfs_filesystem *self, unsigned int id
 
 }
 
-static unsigned int filesystem_find(struct vfs_filesystem *self, char *name)
+static unsigned int find(struct vfs_filesystem *self, char *name)
 {
 
     unsigned int length = string_length(name);
@@ -89,7 +89,7 @@ static unsigned int filesystem_find(struct vfs_filesystem *self, char *name)
 
 }
 
-static void *filesystem_get_physical(struct vfs_filesystem *self, unsigned int id)
+static void *get_physical(struct vfs_filesystem *self, unsigned int id)
 {
 
     return nodes[id - 1].data;
@@ -99,7 +99,7 @@ static void *filesystem_get_physical(struct vfs_filesystem *self, unsigned int i
 void vfs_ramdisk_init()
 {
 
-    vfs_filesystem_init(&filesystem, "/ramdisk/", 0, 0, filesystem_read, 0, filesystem_find, filesystem_get_physical);
+    vfs_filesystem_init(&filesystem, "/ramdisk/", 0, 0, read, 0, find, get_physical);
     vfs_register_filesystem(&filesystem);
 
 }

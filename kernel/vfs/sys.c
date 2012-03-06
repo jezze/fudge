@@ -8,7 +8,7 @@ extern struct modules_module *modules[];
 
 static struct vfs_filesystem filesystem;
 
-static unsigned int filesystem_read(struct vfs_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int read(struct vfs_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     if (id == 1)
@@ -52,7 +52,7 @@ static unsigned int filesystem_read(struct vfs_filesystem *self, unsigned int id
 
 }
 
-static unsigned int filesystem_find(struct vfs_filesystem *self, char *name)
+static unsigned int find(struct vfs_filesystem *self, char *name)
 {
 
     unsigned int length = string_length(name);
@@ -79,7 +79,7 @@ static unsigned int filesystem_find(struct vfs_filesystem *self, char *name)
 void vfs_sys_init()
 {
 
-    vfs_filesystem_init(&filesystem, "/sys/", 0, 0, filesystem_read, 0, filesystem_find, 0);
+    vfs_filesystem_init(&filesystem, "/sys/", 0, 0, read, 0, find, 0);
     vfs_register_filesystem(&filesystem);
 
 }
