@@ -244,8 +244,14 @@ void modules_driver_init(struct modules_driver *driver, unsigned int type, char 
 static unsigned int filesystem_read(struct vfs_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    if (id != 1)
-        return 0;
+    if (id == 1)
+    {
+
+        memory_copy(buffer, "all/\nbus/\ndevice/\ndriver/\n", 26);
+
+        return 26;
+
+    }
 
     unsigned int length = 0;
     unsigned int i;
@@ -255,6 +261,20 @@ static unsigned int filesystem_read(struct vfs_filesystem *self, unsigned int id
 
         if (!modules[i])
             continue;
+
+        if (id != 2)
+        {
+
+            if (id == 3 && modules[i]->type != MODULES_TYPE_BUS)
+                continue;
+
+            if (id == 4 && modules[i]->type != MODULES_TYPE_DEVICE)
+                continue;
+
+            if (id == 5 && modules[i]->type != MODULES_TYPE_DRIVER)
+                continue;
+
+        }
 
         string_write_format(buffer + length, "%s\n", modules[i]->name);
         length += string_length(buffer + length);
@@ -273,18 +293,17 @@ static unsigned int filesystem_find(struct vfs_filesystem *self, char *name)
     if (!length)
         return 1;
 
-    unsigned int i;
+    if (!memory_compare(name, "all/", 4))
+        return 2;
 
-    for (i = 0; i < MODULES_MODULE_SLOTS; i++)
-    {
+    if (!memory_compare(name, "bus/", 4))
+        return 3;
 
-        if (!modules[i])
-            continue;
+    if (!memory_compare(name, "device/", 7))
+        return 4;
 
-        if (string_find(modules[i]->name, name))
-            return i + 1;
-
-    }
+    if (!memory_compare(name, "driver/", 7))
+        return 5;
 
     return 0;
 
