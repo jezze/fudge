@@ -1,3 +1,4 @@
+#include <lib/memory.h>
 #include <lib/string.h>
 #include <kernel/modules.h>
 #include <modules/vga/vga.h>
@@ -79,6 +80,8 @@ static void putc(struct tty_driver *self, char c)
 
 void tty_driver_init(struct tty_driver *driver, char *cwdname)
 {
+
+    memory_clear(driver, sizeof (struct tty_driver));
 
     modules_driver_init(&driver->base, TTY_DRIVER_TYPE, "tty");
 

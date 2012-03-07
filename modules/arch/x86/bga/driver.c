@@ -1,3 +1,4 @@
+#include <lib/memory.h>
 #include <kernel/arch/x86/io.h>
 #include <kernel/modules.h>
 #include <modules/pci/pci.h>
@@ -104,6 +105,8 @@ static unsigned int check(struct modules_driver *self, struct modules_device *de
 
 void bga_driver_init(struct bga_driver *driver)
 {
+
+    memory_clear(driver, sizeof (struct bga_driver));
 
     modules_driver_init(&driver->base, BGA_DRIVER_TYPE, "bga");
 

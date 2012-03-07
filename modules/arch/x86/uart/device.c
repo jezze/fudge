@@ -1,3 +1,4 @@
+#include <lib/memory.h>
 #include <kernel/arch/x86/io.h>
 #include <kernel/irq.h>
 #include <kernel/modules.h>
@@ -35,6 +36,8 @@ static void handle_irq(struct modules_device *self)
 
 void uart_device_init(struct uart_device *device, unsigned int port, unsigned int irq)
 {
+
+    memory_clear(device, sizeof (struct uart_device));
 
     modules_device_init(&device->base, UART_DEVICE_TYPE, "uart");
 

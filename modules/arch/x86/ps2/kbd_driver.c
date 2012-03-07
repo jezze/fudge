@@ -1,3 +1,4 @@
+#include <lib/memory.h>
 #include <kernel/arch/x86/io.h>
 #include <kernel/event.h>
 #include <kernel/modules.h>
@@ -73,6 +74,8 @@ static unsigned int check(struct modules_driver *self, struct modules_device *de
 
 void kbd_driver_init(struct kbd_driver *driver)
 {
+
+    memory_clear(driver, sizeof (struct kbd_driver));
 
     modules_driver_init(&driver->base, KBD_DRIVER_TYPE, "kbd");
 

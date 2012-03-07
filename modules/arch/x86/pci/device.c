@@ -1,3 +1,4 @@
+#include <lib/memory.h>
 #include <lib/string.h>
 #include <kernel/arch/x86/io.h>
 #include <kernel/modules.h>
@@ -5,6 +6,8 @@
 
 void pci_device_init(struct pci_device *device, struct pci_bus *bus, unsigned int num, unsigned int slot, unsigned int function, unsigned int address)
 {
+
+    memory_clear(device, sizeof (struct pci_device));
 
     modules_device_init(&device->base, PCI_DEVICE_TYPE, "pci:0:0");
 

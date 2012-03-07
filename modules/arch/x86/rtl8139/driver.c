@@ -190,6 +190,8 @@ static unsigned int check(struct modules_driver *self, struct modules_device *de
 void rtl8139_driver_init(struct rtl8139_driver *driver)
 {
 
+    memory_clear(driver, sizeof (struct rtl8139_driver));
+
     modules_driver_init(&driver->base, RTL8139_DRIVER_TYPE, "rtl8139");
 
     driver->base.start = start;

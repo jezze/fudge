@@ -1,3 +1,4 @@
+#include <lib/memory.h>
 #include <kernel/arch/x86/io.h>
 #include <kernel/event.h>
 #include <kernel/irq.h>
@@ -98,6 +99,8 @@ static unsigned char read()
 
 void mouse_device_init(struct mouse_device *device)
 {
+
+    memory_clear(device, sizeof (struct mouse_device));
 
     modules_device_init(&device->base, MOUSE_DEVICE_TYPE, "mouse");
 

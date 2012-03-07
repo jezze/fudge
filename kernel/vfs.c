@@ -75,6 +75,8 @@ void vfs_filesystem_init(struct vfs_filesystem *filesystem, void (*open)(struct 
 void vfs_mount_init(struct vfs_mount *mount, struct vfs_filesystem *filesystem, char *path)
 {
 
+    memory_clear(mount, sizeof (struct vfs_mount));
+
     mount->filesystem = filesystem;
     mount->path = path;
 

@@ -1,3 +1,4 @@
+#include <lib/memory.h>
 #include <kernel/arch/x86/io.h>
 #include <kernel/event.h>
 #include <kernel/modules.h>
@@ -19,6 +20,8 @@ static unsigned int check(struct modules_driver *self, struct modules_device *de
 
 void mouse_driver_init(struct mouse_driver *driver)
 {
+
+    memory_clear(driver, sizeof (struct mouse_driver));
 
     modules_driver_init(&driver->base, MOUSE_DRIVER_TYPE, "mouse");
 

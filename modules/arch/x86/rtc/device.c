@@ -1,3 +1,4 @@
+#include <lib/memory.h>
 #include <kernel/arch/x86/io.h>
 #include <kernel/modules.h>
 #include <modules/rtc/rtc.h>
@@ -23,6 +24,8 @@ static unsigned char get_value(unsigned int type)
 
 void rtc_device_init(struct rtc_device *device)
 {
+
+    memory_clear(device, sizeof (struct rtc_device));
 
     modules_device_init(&device->base, RTC_DEVICE_TYPE, "rtc");
 

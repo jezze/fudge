@@ -72,6 +72,8 @@ static void start(struct modules_driver *self)
 void acpi_driver_init(struct acpi_driver *driver)
 {
 
+    memory_clear(driver, sizeof (struct acpi_driver));
+
     modules_driver_init(&driver->base, ACPI_DRIVER_TYPE, "acpi");
 
     driver->base.start = start;

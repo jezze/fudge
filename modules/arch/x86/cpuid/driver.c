@@ -1,3 +1,4 @@
+#include <lib/memory.h>
 #include <kernel/modules.h>
 #include <modules/cpuid/cpuid.h>
 
@@ -24,6 +25,8 @@ static void start(struct modules_driver *self)
 
 void cpuid_driver_init(struct cpuid_driver *driver)
 {
+
+    memory_clear(driver, sizeof (struct cpuid_driver));
 
     modules_driver_init(&driver->base, CPUID_DRIVER_TYPE, "cpuid");
 

@@ -1,3 +1,4 @@
+#include <lib/memory.h>
 #include <kernel/arch/x86/io.h>
 #include <kernel/event.h>
 #include <kernel/irq.h>
@@ -66,6 +67,8 @@ static void handle_irq(struct modules_device *self)
 
 void kbd_device_init(struct kbd_device *device)
 {
+
+    memory_clear(device, sizeof (struct kbd_device));
 
     modules_device_init(&device->base, KBD_DEVICE_TYPE, "kbd");
 

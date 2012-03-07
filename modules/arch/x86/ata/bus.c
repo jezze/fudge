@@ -1,3 +1,4 @@
+#include <lib/memory.h>
 #include <kernel/arch/x86/io.h>
 #include <kernel/modules.h>
 #include <modules/ata/ata.h>
@@ -148,6 +149,8 @@ void ata_bus_scan(struct ata_bus *self, void (*callback)(struct ata_bus *bus, un
 
 void ata_bus_init(struct ata_bus *bus, unsigned int control, unsigned int data)
 {
+
+    memory_clear(bus, sizeof (struct ata_bus));
 
     modules_bus_init(&bus->base, ATA_BUS_TYPE, "ata:0");
 

@@ -70,6 +70,8 @@ static unsigned int check(struct modules_driver *self, struct modules_device *de
 void mbr_driver_init(struct mbr_driver *driver)
 {
 
+    memory_clear(driver, sizeof (struct mbr_driver));
+
     modules_driver_init(&driver->base, MBR_DRIVER_TYPE, "mbr");
 
     driver->base.start = start;

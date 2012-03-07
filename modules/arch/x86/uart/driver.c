@@ -1,3 +1,4 @@
+#include <lib/memory.h>
 #include <kernel/modules.h>
 #include <modules/uart/uart.h>
 
@@ -52,6 +53,8 @@ static unsigned int uart_driver_check(struct modules_driver *self, struct module
 
 void uart_driver_init(struct uart_driver *driver)
 {
+
+    memory_clear(driver, sizeof (struct uart_driver));
 
     modules_driver_init(&driver->base, UART_DRIVER_TYPE, "uart");
 

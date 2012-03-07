@@ -1,3 +1,4 @@
+#include <lib/memory.h>
 #include <lib/string.h>
 #include <kernel/arch/x86/io.h>
 #include <kernel/modules.h>
@@ -85,6 +86,8 @@ static unsigned int scan(struct pci_bus *self, unsigned int num, void (*callback
 
 void pci_bus_init(struct pci_bus *bus)
 {
+
+    memory_clear(bus, sizeof (struct pci_bus));
 
     modules_bus_init(&bus->base, PCI_BUS_TYPE, "pci:0");
 

@@ -98,10 +98,10 @@ static void unregister_node(struct nodefs_driver *self, struct nodefs_node *node
 void nodefs_filesystem_init(struct nodefs_filesystem *filesystem)
 {
 
+    memory_clear(filesystem, sizeof (struct nodefs_filesystem));
+
     vfs_filesystem_init(&filesystem->base, 0, 0, filesystem_read, filesystem_write, filesystem_find, 0); 
     filesystem->count = 0;
-
-    memory_clear(filesystem->nodes, sizeof (struct nodefs_node *) * 128);
 
     vfs_mount(&filesystem->base, "/module/");
 
@@ -109,6 +109,8 @@ void nodefs_filesystem_init(struct nodefs_filesystem *filesystem)
 
 void nodefs_driver_init(struct nodefs_driver *driver)
 {
+
+    memory_clear(driver, sizeof (struct nodefs_driver));
 
     modules_driver_init(&driver->base, NODEFS_DRIVER_TYPE, "nodefs");
     nodefs_filesystem_init(&driver->filesystem);
