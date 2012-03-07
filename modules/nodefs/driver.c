@@ -103,7 +103,6 @@ void nodefs_filesystem_init(struct nodefs_filesystem *filesystem)
 
     memory_clear(filesystem->nodes, sizeof (struct nodefs_node *) * 128);
 
-    vfs_register_filesystem(&filesystem->base);
     vfs_mount(&filesystem->base, "/module/");
 
 }

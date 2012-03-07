@@ -26,4 +26,3 @@ modules_unregister_driver
 vfs_filesystem_init
 vfs_find_mount
 vfs_mount
-vfs_register_filesystem

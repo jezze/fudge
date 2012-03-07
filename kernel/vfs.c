@@ -5,27 +5,7 @@
 #include <kernel/vfs/root.h>
 #include <kernel/vfs/sys.h>
 
-struct vfs_filesystem *filesystems[VFS_FILESYSTEM_SLOTS];
 struct vfs_mount mounts[VFS_MOUNT_SLOTS];
-
-void vfs_register_filesystem(struct vfs_filesystem *filesystem)
-{
-
-    unsigned int i;
-
-    for (i = 0; i < VFS_FILESYSTEM_SLOTS; i++)
-    {
-
-        if (filesystems[i])
-            continue;
-
-        filesystems[i] = filesystem;
-
-        break;
-
-    }
-
-}
 
 struct vfs_mount *vfs_find_mount(char *path)
 {

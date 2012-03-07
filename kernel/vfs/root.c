@@ -4,7 +4,6 @@
 #include <kernel/vfs.h>
 #include <kernel/vfs/root.h>
 
-extern struct vfs_filesystem *filesystems[];
 extern struct vfs_mount mounts[];
 
 static struct vfs_filesystem filesystem;
@@ -50,7 +49,6 @@ void vfs_root_init()
 {
 
     vfs_filesystem_init(&filesystem, 0, 0, read, 0, find, 0);
-    vfs_register_filesystem(&filesystem);
     vfs_mount(&filesystem, "/");
 
 }
