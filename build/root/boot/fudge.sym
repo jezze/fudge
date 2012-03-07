@@ -24,5 +24,6 @@ modules_unregister_bus
 modules_unregister_device
 modules_unregister_driver
 vfs_filesystem_init
-vfs_find_filesystem
+vfs_find_mount
+vfs_mount
 vfs_register_filesystem

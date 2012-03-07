@@ -26,17 +26,17 @@ void *symbol_find(char *name)
 void symbol_init()
 {
 
-    struct vfs_filesystem *filesystem = vfs_find_filesystem("/ramdisk/");
+    struct vfs_mount *mount = vfs_find_mount("/ramdisk/");
 
-    if (!filesystem)
+    if (!mount)
         error_panic("Symbol table not found", __FILE__, __LINE__);
 
-    unsigned int id = filesystem->find(filesystem, "boot/fudge.map");
+    unsigned int id = mount->filesystem->find(mount->filesystem, "boot/fudge.map");
 
     if (!id)
         error_panic("Symbol table not found", __FILE__, __LINE__);
 
-    unsigned int count = filesystem->read(filesystem, id, 0, SYMBOL_BUFFER_SIZE, buffer);
+    unsigned int count = mount->filesystem->read(mount->filesystem, id, 0, SYMBOL_BUFFER_SIZE, buffer);
 
     unsigned int i;
     unsigned int start = 0;

@@ -101,8 +101,9 @@ static void *get_physical(struct vfs_filesystem *self, unsigned int id)
 void vfs_ramdisk_init()
 {
 
-    vfs_filesystem_init(&filesystem, "/ramdisk/", 0, 0, read, 0, find, get_physical);
+    vfs_filesystem_init(&filesystem, 0, 0, read, 0, find, get_physical);
     vfs_register_filesystem(&filesystem);
+    vfs_mount(&filesystem, "/ramdisk/");
 
 }
 

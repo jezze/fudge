@@ -5,6 +5,7 @@
 #include <kernel/vfs/root.h>
 
 extern struct vfs_filesystem *filesystems[];
+extern struct vfs_mount mounts[];
 
 static struct vfs_filesystem filesystem;
 
@@ -20,16 +21,16 @@ static unsigned int read(struct vfs_filesystem *self, unsigned int id, unsigned 
     unsigned int i;
 
 
-    for (i = 0; i < VFS_FILESYSTEM_SLOTS; i++)
+    for (i = 0; i < VFS_MOUNT_SLOTS; i++)
     {
 
-        if (!filesystems[i])
+        if (!mounts[i].filesystem)
             continue;
 
-        if (filesystems[i] == self)
+        if (mounts[i].filesystem == self)
             continue;
 
-        string_write_format(buffer + length, "%s\n", filesystems[i]->name + 1);
+        string_write_format(buffer + length, "%s\n", mounts[i].path + 1);
         length += string_length(buffer + length);
 
     }
@@ -48,8 +49,9 @@ static unsigned int find(struct vfs_filesystem *self, char *name)
 void vfs_root_init()
 {
 
-    vfs_filesystem_init(&filesystem, "/", 0, 0, read, 0, find, 0);
+    vfs_filesystem_init(&filesystem, 0, 0, read, 0, find, 0);
     vfs_register_filesystem(&filesystem);
+    vfs_mount(&filesystem, "/");
 
 }
 

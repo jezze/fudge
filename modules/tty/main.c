@@ -77,17 +77,17 @@ static unsigned int cwd_write(struct nodefs_node *self, unsigned int count, void
 static unsigned int pwd_read(struct nodefs_node *self, unsigned int count, void *buffer)
 {
 
-    struct vfs_filesystem *filesystem = vfs_find_filesystem(driver.cwdname);
+    struct vfs_mount *mount = vfs_find_mount(driver.cwdname);
 
-    if (!filesystem)
+    if (!mount)
         return 0;
 
-    unsigned int id = filesystem->find(filesystem, driver.cwdname + string_length(filesystem->name));
+    unsigned int id = mount->filesystem->find(mount->filesystem, driver.cwdname + string_length(mount->path));
 
     if (!id)
         return 0;
 
-    return filesystem->read(filesystem, id, 0, count, buffer);
+    return mount->filesystem->read(mount->filesystem, id, 0, count, buffer);
 
 }
 

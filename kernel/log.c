@@ -24,12 +24,12 @@ static char *log_write_num(char *out, unsigned int num, unsigned int base)
 void log_write(const char *buffer, ...)
 {
 
-    struct vfs_filesystem *filesystem = vfs_find_filesystem("/module/");
+    struct vfs_mount *mount = vfs_find_mount("/module/");
 
-    if (!filesystem)
+    if (!mount)
         return;
 
-    unsigned int id = filesystem->find(filesystem, "tty/stdout");
+    unsigned int id = mount->filesystem->find(mount->filesystem, "tty/stdout");
 
     if (!id)
         return;
@@ -45,7 +45,7 @@ void log_write(const char *buffer, ...)
         if (c != '%')
         {
 
-            filesystem->write(filesystem, id, 0, 1, &c);
+            mount->filesystem->write(mount->filesystem, id, 0, 1, &c);
 
             buffer++;
 
@@ -63,27 +63,27 @@ void log_write(const char *buffer, ...)
 
             case 'c':
 
-                filesystem->write(filesystem, id, 0, 1, (char *)arg);
+                mount->filesystem->write(mount->filesystem, id, 0, 1, (char *)arg);
 
                 break;
 
             case 'd':
 
                 log_write_num(num, *(int *)arg, 10);
-                filesystem->write(filesystem, id, 0, string_length(num), num);
+                mount->filesystem->write(mount->filesystem, id, 0, string_length(num), num);
 
                 break;
 
             case 's':
 
-                filesystem->write(filesystem, id, 0, string_length(*(char **)arg), *(char **)arg);
+                mount->filesystem->write(mount->filesystem, id, 0, string_length(*(char **)arg), *(char **)arg);
 
                 break;
 
             case 'x':
 
                 log_write_num(num, *(int *)arg, 16);
-                filesystem->write(filesystem, id, 0, string_length(num), num);
+                mount->filesystem->write(mount->filesystem, id, 0, string_length(num), num);
 
                 break;
 
@@ -93,7 +93,7 @@ void log_write(const char *buffer, ...)
 
     }
 
-    filesystem->write(filesystem, id, 0, 1, "");
+    mount->filesystem->write(mount->filesystem, id, 0, 1, "");
 
 }
 

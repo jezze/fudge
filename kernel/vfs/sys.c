@@ -81,8 +81,9 @@ static unsigned int find(struct vfs_filesystem *self, char *name)
 void vfs_sys_init()
 {
 
-    vfs_filesystem_init(&filesystem, "/sys/", 0, 0, read, 0, find, 0);
+    vfs_filesystem_init(&filesystem, 0, 0, read, 0, find, 0);
     vfs_register_filesystem(&filesystem);
+    vfs_mount(&filesystem, "/sys/");
 
 }
 

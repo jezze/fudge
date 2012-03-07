@@ -77,17 +77,17 @@ unsigned int syscall_execute(struct runtime_task *task, char *path, unsigned int
 
     runtime_task_init(ntask, index);
 
-    struct vfs_filesystem *filesystem2 = vfs_find_filesystem(path);
+    struct vfs_mount *mount = vfs_find_mount(path);
 
-    if (!filesystem2)
+    if (!mount)
         return 0;
 
-    unsigned int id = filesystem2->find(filesystem2, path + string_length(filesystem2->name));
+    unsigned int id = mount->filesystem->find(mount->filesystem, path + string_length(mount->path));
 
     if (!id)
         return 0;
 
-    unsigned int count = filesystem2->read(filesystem2, id, 0, ntask->memory.size, ntask->memory.paddress);
+    unsigned int count = mount->filesystem->read(mount->filesystem, id, 0, ntask->memory.size, ntask->memory.paddress);
 
     if (!count)
         return 0;
@@ -109,7 +109,7 @@ unsigned int syscall_execute(struct runtime_task *task, char *path, unsigned int
 
     runtime_activate(ntask, task);
 
-    struct vfs_filesystem *filesystem = vfs_find_filesystem("/module/");
+    struct vfs_filesystem *filesystem = vfs_find_mount("/module/")->filesystem;
 
     if (filesystem)
     {
@@ -155,17 +155,17 @@ unsigned int syscall_load(struct runtime_task *task, char *path)
     if (!path)
         return 0;
 
-    struct vfs_filesystem *filesystem = vfs_find_filesystem(path);
+    struct vfs_mount *mount = vfs_find_mount(path);
 
-    if (!filesystem)
+    if (!mount)
         return 0;
 
-    unsigned int id = filesystem->find(filesystem, path + string_length(filesystem->name));
+    unsigned int id = mount->filesystem->find(mount->filesystem, path + string_length(mount->path));
 
     if (!id)
         return 0;
 
-    void *physical = filesystem->get_physical(filesystem, id);
+    void *physical = mount->filesystem->get_physical(mount->filesystem, id);
 
     if (!physical)
         return 0;
@@ -201,17 +201,17 @@ unsigned int syscall_open(struct runtime_task *task, char *path)
     if (!descriptor)
         return 0;
 
-    struct vfs_filesystem *filesystem = vfs_find_filesystem(path);
+    struct vfs_mount *mount = vfs_find_mount(path);
 
-    if (!filesystem)
+    if (!mount)
         return 0;
 
-    unsigned int id = filesystem->find(filesystem, path + string_length(filesystem->name));
+    unsigned int id = mount->filesystem->find(mount->filesystem, path + string_length(mount->path));
 
     if (!id)
         return 0;
 
-    runtime_descriptor_init(descriptor, id, filesystem, 0);
+    runtime_descriptor_init(descriptor, id, mount->filesystem, 0);
 
     if (descriptor->filesystem->open)
         descriptor->filesystem->open(descriptor->filesystem, descriptor->id);
@@ -253,17 +253,17 @@ unsigned int syscall_unload(struct runtime_task *task, char *path)
     if (!path)
         return 0;
 
-    struct vfs_filesystem *filesystem = vfs_find_filesystem(path);
+    struct vfs_mount *mount = vfs_find_mount(path);
 
-    if (!filesystem)
+    if (!mount)
         return 0;
 
-    unsigned int id = filesystem->find(filesystem, path + string_length(filesystem->name));
+    unsigned int id = mount->filesystem->find(mount->filesystem, path + string_length(mount->path));
 
     if (!id)
         return 0;
 
-    void *physical = filesystem->get_physical(filesystem, id);
+    void *physical = mount->filesystem->get_physical(mount->filesystem, id);
 
     if (!physical)
         return 0;
