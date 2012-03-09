@@ -11,6 +11,11 @@ void main(int argc, char *argv[])
     call_load("/ramdisk/mod/rtc.ko");
     call_load("/ramdisk/mod/ps2.ko");
     call_load("/ramdisk/mod/tty.ko");
+
+//    call_load("/ramdisk/mod/ata.ko");
+//    call_load("/ramdisk/mod/mbr.ko");
+//    call_load("/ramdisk/mod/ext2.ko");
+
     call_execute("/ramdisk/bin/shell", 0, 0);
 
     for (;;)

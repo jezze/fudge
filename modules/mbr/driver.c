@@ -36,14 +36,10 @@ static void start(struct modules_driver *self)
 static void handle_irq_primary(struct modules_device *device)
 {
 
-    log_write("[mbr] Primary interrupt\n");    
-
 }
 
 static void handle_irq_secondary(struct modules_device *device)
 {
-
-    log_write("[mbr] Secondary interrupt\n");    
 
 }
 

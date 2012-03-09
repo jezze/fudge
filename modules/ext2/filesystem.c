@@ -1,3 +1,4 @@
+#include <lib/memory.h>
 #include <lib/string.h>
 #include <kernel/vfs.h>
 #include <kernel/modules.h>
@@ -9,20 +10,40 @@ static struct vfs_filesystem filesystem;
 static unsigned int read(struct vfs_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    driver->read_node(driver, id, buffer);
+    char mem[1024];
+    char *private = &mem;
 
-    return 4;
+    driver->read_node(driver, id, private);
+
+    unsigned int c = 0;
+
+    for (;;)
+    {
+
+        struct ext2_directory *directory = private;
+
+        if (!directory->length)
+            return c;
+
+        memory_copy(buffer + c, private + 8, directory->length);
+        memory_copy(buffer + c + directory->length, "\n", 1);
+        c += directory->length + 1;
+
+        private += directory->size;
+
+    }
+
+    return c;
 
 }
 
 static unsigned int find(struct vfs_filesystem *self, char *name)
 {
 
-    if (string_find("ext2file1", name))
-        return 14;
+    unsigned int length = string_length(name);
 
-    if (string_find("ext2file2", name))
-        return 15;
+    if (!length)
+        return 2;
 
     return 0;
 

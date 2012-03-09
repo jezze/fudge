@@ -54,8 +54,8 @@ static void start(struct modules_driver *self)
     struct mbr_partition *partition = driver->mbrDriver->get_partition(driver->mbrDriver, driver->ataDevice, 0);
     unsigned int sectorstart = partition->sectorLba;
 
-    static char mem[1024];
-    void *buffer = mem;
+    char mem[1024];
+    void *buffer = &mem;
 
     driver->ataDevice->read_lba28(driver->ataDevice, sectorstart + 1 * 2, 2, buffer);
 
@@ -63,23 +63,6 @@ static void start(struct modules_driver *self)
 
     if (superblock.signature != 0xEF53)
         return;
-
-    // FIX: Move this
-    driver->read_node(driver, 2, buffer);
-
-    for (;;)
-    {
-
-        struct ext2_directory *directory = buffer;
-
-        if (!directory->length)
-            return;
-
-        log_write("%d\t%s\n", directory->node, buffer + 8);
-
-        buffer += directory->size;
-
-    }
 
 }
 
