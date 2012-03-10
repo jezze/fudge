@@ -7,20 +7,6 @@
 struct initrd_node nodes[INITRD_HEADER_SIZE];
 unsigned int nodesCount;
 
-static unsigned int get_num(const char *in)
-{
-
-    unsigned int size = 0;
-    unsigned int j;
-    unsigned int count = 1;
-
-    for (j = 11; j > 0; j--, count *= 8)
-        size += ((in[j - 1] - '0') * count);
-
-    return size;
-
-}
-
 static unsigned int parse(void *address)
 {
 
@@ -30,7 +16,7 @@ static unsigned int parse(void *address)
     {
 
         struct tar_header *header = address;
-        unsigned int size = get_num(header->size);
+        unsigned int size = string_read_num(header->size, 8);
 
         initrd_node_init(&nodes[i], header->name + 11, size, header, address + TAR_BLOCK_SIZE);
 
