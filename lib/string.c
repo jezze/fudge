@@ -1,13 +1,6 @@
 #include <lib/memory.h>
 #include <lib/string.h>
 
-int string_compare(const char *in1, const char *in2)
-{
-
-    return memory_compare(in1, in2, string_length(in1) + 1);
-
-}
-
 char *string_find(const char *in, const char *str)
 {
 

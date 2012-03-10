@@ -1,7 +1,6 @@
 #ifndef LIB_STRING_H
 #define LIB_STRING_H
 
-int string_compare(const char *in1, const char *in2);
 char *string_find(const char *in, const char *str);
 unsigned int string_length(const char *in);
 unsigned int string_read_num(const char *in, unsigned int base);

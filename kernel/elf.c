@@ -75,7 +75,7 @@ void *elf_get_symbol(void *address, char *name)
 
         struct elf_symbol *symEntry = &symTable[i];
 
-        if (!string_compare(name, strTable + symEntry->name))
+        if (!memory_compare(name, strTable + symEntry->name, string_length(name)))
             return infoTable + symEntry->value;
 
     }

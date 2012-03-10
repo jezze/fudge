@@ -1,3 +1,4 @@
+#include <lib/memory.h>
 #include <lib/string.h>
 #include <kernel/error.h>
 #include <kernel/symbol.h>
@@ -14,7 +15,7 @@ void *symbol_find(char *name)
     for (i = 0; i < SYMBOL_ENTRY_SLOTS; i++)
     {
 
-        if (!string_compare(entries[i].name, name))
+        if (!memory_compare(entries[i].name, name, string_length(entries[i].name)))
             return entries[i].paddress;
 
     }
