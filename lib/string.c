@@ -95,35 +95,6 @@ unsigned int string_split(char *out[], char *in, char value)
 
 }
 
-char *string_triml(char *in, char c)
-{
-
-    while (*in == c)
-        in++;
-
-    return in;
-
-}
-
-char *string_trimr(char *in, char c)
-{
-
-    char *end = in + string_length(in) - 1;
-
-    while (*end == c)
-        *end-- = '\0';
-
-    return in;
-
-}
-
-char *string_trim(char *in, char c)
-{
-
-    return string_triml(string_trimr(in, c), c);
-
-}
-
 static char *string_write_string(char *out, const char *in)
 {
 
