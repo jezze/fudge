@@ -65,20 +65,3 @@ unsigned int memory_index(const void *in, char value, unsigned int count, unsign
 
 }
 
-void *memory_replace(void *out, char value1, char value2, unsigned int count)
-{
-
-    char *op = out;
-
-    for (; count; count--)
-    {
-
-        if (*op == value1)
-            *op++ = value2;
-
-    }
-
-    return out;
-
-}
-
