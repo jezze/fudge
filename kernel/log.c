@@ -7,7 +7,7 @@ static char *log_write_num(char *out, unsigned int num, unsigned int base)
 {
 
     if (!num)
-        return string_write(out, "0");
+        return string_write_format(out, "%s", "0");
 
     char buffer[32];
     memory_clear(buffer, 32);
@@ -17,7 +17,7 @@ static char *log_write_num(char *out, unsigned int num, unsigned int base)
     for (i = 30; num && i; --i, num /= base)
         buffer[i] = "0123456789abcdef"[num % base];
 
-    return string_write(out, buffer + i + 1);
+    return string_write_format(out, "%s", buffer + i + 1);
 
 }
 
