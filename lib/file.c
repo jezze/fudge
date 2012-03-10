@@ -38,10 +38,10 @@ unsigned int file_write(unsigned int fd, unsigned int count, void *buffer)
 
 }
 
-unsigned int file_write_byte(unsigned int fd, char c)
+static unsigned int file_write_byte(unsigned int fd, char c)
 {
 
-    return file_write(fd, 1, &c);
+    return call_write(fd, 0, 1, &c);
 
 }
 
