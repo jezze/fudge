@@ -74,9 +74,7 @@ static void handle_input(char c)
             if (!stack_pop())
                 break;
 
-            file_write_byte(FILE_STDOUT, '\b');
-            file_write_byte(FILE_STDOUT, ' ');
-            file_write_byte(FILE_STDOUT, '\b');
+            file_write_format(FILE_STDOUT, "\b \b");
 
             break;
 
@@ -84,7 +82,7 @@ static void handle_input(char c)
         case '\n':
 
             stack_push('\0');
-            file_write_byte(FILE_STDOUT, c);
+            file_write_format(FILE_STDOUT, "%c", c);
             interpret(buffer);
             clear();
 
@@ -93,7 +91,7 @@ static void handle_input(char c)
         default:
 
             stack_push(c);
-            file_write_byte(FILE_STDOUT, c);
+            file_write_format(FILE_STDOUT, "%c", c);
 
             break;
 

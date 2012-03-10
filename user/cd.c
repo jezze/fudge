@@ -11,9 +11,7 @@ void main(int argc, char *argv[])
     {
 
         file_read(fd, 256, buffer);
-
-        file_write_format(FILE_STDOUT, buffer);
-        file_write_byte(FILE_STDOUT, '\n');
+        file_write_format(FILE_STDOUT, "%s\n", buffer);
 
     }
 
