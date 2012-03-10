@@ -66,15 +66,6 @@ unsigned int string_read_num(const char *in, unsigned int base)
 
 }
 
-char *string_replace(char *out, char value1, char value2)
-{
-
-    memory_replace(out, value1, value2, string_length(out));
-
-    return out;
-
-}
-
 unsigned int string_split(char *out[], char *in, char value)
 {
 
@@ -140,7 +131,7 @@ char *string_write(char *out, const char *in)
 
 }
 
-static char *string_write_num(char *out, unsigned int num, unsigned int base)
+char *string_write_num(char *out, unsigned int num, unsigned int base)
 {
 
     if (!num)
