@@ -18,7 +18,7 @@ static unsigned int read(struct vfs_filesystem *self, unsigned int id, unsigned 
     if (node->header->typeflag[0] == TAR_FILETYPE_DIR)
     {
 
-        string_write_format(buffer, "./\n../\n", 7);
+        string_write(buffer, "./\n../\n", 7);
 
         unsigned int length = 7;
         unsigned int i;
@@ -39,7 +39,7 @@ static unsigned int read(struct vfs_filesystem *self, unsigned int id, unsigned 
             if (slash != size && slash != size - 1)
                 continue;
 
-            string_write_format(buffer + length, "%s\n", start);
+            string_write(buffer + length, "%s\n", start);
             length += string_length(buffer + length);
 
         }

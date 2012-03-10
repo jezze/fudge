@@ -10,7 +10,7 @@ static struct nodefs_node jiffies;
 static unsigned int jiffies_read(struct nodefs_node *self, unsigned int count, void *buffer)
 {
 
-    string_write_format(buffer, "%d", device.jiffies);
+    string_write(buffer, "%d", device.jiffies);
 
     return string_length(buffer);
 

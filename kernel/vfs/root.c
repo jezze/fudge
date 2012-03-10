@@ -14,7 +14,7 @@ static unsigned int read(struct vfs_filesystem *self, unsigned int id, unsigned 
     if (id != 1)
         return 0;
 
-    string_write_format(buffer, "./\n../\n", 7);
+    string_write(buffer, "./\n../\n", 7);
 
     unsigned int length = 7;
     unsigned int i;
@@ -29,7 +29,7 @@ static unsigned int read(struct vfs_filesystem *self, unsigned int id, unsigned 
         if (mounts[i].filesystem == self)
             continue;
 
-        string_write_format(buffer + length, "%s\n", mounts[i].path + 1);
+        string_write(buffer + length, "%s\n", mounts[i].path + 1);
         length += string_length(buffer + length);
 
     }

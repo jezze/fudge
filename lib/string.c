@@ -149,7 +149,7 @@ static char *string_write_num(char *out, unsigned int num, unsigned int base)
 
 }
 
-char *string_write_format(char *out, char *in, ...)
+char *string_write(char *out, char *in, ...)
 {
 
     char *ret = out;

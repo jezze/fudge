@@ -20,7 +20,7 @@ static unsigned int read(struct vfs_filesystem *self, unsigned int id, unsigned 
 
     }
 
-    string_write_format(buffer, "./\n../\n", 7);
+    string_write(buffer, "./\n../\n", 7);
 
     unsigned int length = 7;
     unsigned int i;
@@ -45,7 +45,7 @@ static unsigned int read(struct vfs_filesystem *self, unsigned int id, unsigned 
 
         }
 
-        string_write_format(buffer + length, "%s\n", modules[i]->name);
+        string_write(buffer + length, "%s\n", modules[i]->name);
         length += string_length(buffer + length);
 
     }

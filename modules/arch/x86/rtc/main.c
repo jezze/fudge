@@ -10,7 +10,7 @@ static struct nodefs_node timestamp;
 static unsigned int timestamp_read(struct nodefs_node *self, unsigned int count, void *buffer)
 {
 
-    string_write_format(buffer, "%d", 0);
+    string_write(buffer, "%d", 0);
 
     return string_length(buffer);
 

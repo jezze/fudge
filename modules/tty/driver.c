@@ -93,7 +93,7 @@ void tty_driver_init(struct tty_driver *driver, char *cwdname)
     driver->scroll = scroll;
     driver->putc = putc;
 
-    string_write_format(driver->cwdname, "%s", cwdname);
+    string_write(driver->cwdname, "%s", cwdname);
 
     driver->clear(driver);
 

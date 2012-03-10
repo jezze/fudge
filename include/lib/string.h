@@ -8,7 +8,7 @@ unsigned int string_split(char *out[], char *in, char value);
 char *string_triml(char *in, char c);
 char *string_trimr(char *in, char c);
 char *string_trim(char *in, char c);
-char *string_write_format(char *out, char *in, ...);
+char *string_write(char *out, char *in, ...);
 
 #endif
 

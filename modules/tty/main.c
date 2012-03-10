@@ -53,7 +53,7 @@ static unsigned int cwd_read(struct nodefs_node *self, unsigned int count, void 
 
     count = string_length(driver.cwdname);
 
-    string_write_format(buffer, "%s", driver.cwdname);
+    string_write(buffer, "%s", driver.cwdname);
 
     return count;
 
@@ -66,9 +66,9 @@ static unsigned int cwd_write(struct nodefs_node *self, unsigned int count, void
         return 0;
 
     if (((char *)buffer)[0] == '/')
-        string_write_format(driver.cwdname, "%s", buffer);
+        string_write(driver.cwdname, "%s", buffer);
     else
-        string_write_format(driver.cwdname + string_length(driver.cwdname), "%s", buffer);
+        string_write(driver.cwdname + string_length(driver.cwdname), "%s", buffer);
 
     return count;
 

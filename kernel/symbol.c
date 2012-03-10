@@ -59,7 +59,7 @@ void symbol_init()
 
                 buffer[i] = '\0';
 
-                string_write_format(entries[index].name, "%s", buffer + start + 11);
+                string_write(entries[index].name, "%s", buffer + start + 11);
                 entries[index].paddress = (void *)string_read_num(buffer + start, 16);
                 index++;
 
