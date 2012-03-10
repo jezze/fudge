@@ -8,13 +8,6 @@ int string_compare(const char *in1, const char *in2)
 
 }
 
-unsigned int string_index(const char *in, char value, unsigned int skip)
-{
-
-    return memory_index(in, value, string_length(in), skip);
-
-}
-
 char *string_find(const char *in, const char *str)
 {
 
