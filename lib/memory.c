@@ -43,7 +43,7 @@ void *memory_copy(void *out, const void *in, unsigned int count)
 
 }
 
-unsigned int memory_index(const void *in, char value, unsigned int count, unsigned int skip)
+unsigned int memory_index(const void *in, char value, unsigned int count)
 {
 
     const char *ip = in;
@@ -51,12 +51,7 @@ unsigned int memory_index(const void *in, char value, unsigned int count, unsign
     for (; count; ip++, count--)
     {
 
-        if (*ip != value)
-            continue;
-
-        if (skip)
-            skip--;
-        else
+        if (*ip == value)
             break;
 
     }

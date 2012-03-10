@@ -34,7 +34,7 @@ static unsigned int read(struct vfs_filesystem *self, unsigned int id, unsigned 
 
             char *start = nodes[i].name + string_length(node->name);
             unsigned int size = string_length(start);
-            unsigned int slash = memory_index(start, '/', size, 0);
+            unsigned int slash = memory_index(start, '/', size);
 
             if (slash != size && slash != size - 1)
                 continue;
