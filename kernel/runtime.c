@@ -65,7 +65,7 @@ static void runtime_copy_args(unsigned int argc, char **argv, void *buffer)
     {
 
         nargv[i] = offset;
-        string_write(offset, argv[i]);
+        string_write_format(offset, "%s", argv[i]);
         offset += string_length(argv[i]) + 1;
 
     }
