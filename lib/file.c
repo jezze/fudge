@@ -24,13 +24,6 @@ unsigned int file_read(unsigned int fd, unsigned int count, void *buffer)
 
 }
 
-unsigned int file_read_byte(unsigned int fd, char c)
-{
-
-    return file_read(fd, 1, &c);
-
-}
-
 unsigned int file_write(unsigned int fd, unsigned int count, void *buffer)
 {
 
