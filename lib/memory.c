@@ -18,11 +18,11 @@ int memory_compare(const void *in1, const void *in2, unsigned int count)
     const char *ip1 = in1;
     const char *ip2 = in2;
 
-    for (; count; ip1++, ip2++, count--)
+    for (; count; count--)
     {
 
-        if (*ip1 != *ip2)
-            return *ip1 - *ip2;
+        if (*ip1++ != *ip2++)
+            return 1;
 
     }
 
@@ -48,10 +48,10 @@ unsigned int memory_index(const void *in, char value, unsigned int count)
 
     const char *ip = in;
 
-    for (; count; ip++, count--)
+    for (; count; count--)
     {
 
-        if (*ip == value)
+        if (*ip++ == value)
             break;
 
     }
