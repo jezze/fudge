@@ -37,11 +37,11 @@ char *string_find(const char *in, const char *str)
 unsigned int string_length(const char *in)
 {
 
-    const char *ip = in;
+    unsigned int i;
 
-    for (; *ip != '\0'; ip++);
+    for (i = 0; in[i]; i++);
 
-    return ip - in;
+    return i;
 
 }
 
