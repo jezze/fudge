@@ -150,7 +150,7 @@ char *string_write(char *out, char *in, ...)
 
             case 'c':
 
-                memory_copy(out, (char *)arg, 1);
+                memory_copy(out, arg, 1);
                 out += 1;
 
                 break;

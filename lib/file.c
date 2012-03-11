@@ -31,94 +31,17 @@ unsigned int file_write(unsigned int fd, unsigned int count, void *buffer)
 
 }
 
-static unsigned int file_write_byte(unsigned int fd, char c)
-{
-
-    return call_write(fd, 0, 1, &c);
-
-}
-
-static unsigned int file_write_string(unsigned int fd, char *buffer)
-{
-
-    return file_write(fd, string_length(buffer), buffer);
-
-}
-
-static unsigned int file_write_num(unsigned int fd, unsigned int num, unsigned int base)
-{
-
-    if (!num)
-        return file_write_string(fd, "0");
-
-    char buffer[32];
-    memory_clear(buffer, 32);
-
-    int i;
-
-    for (i = 30; num && i; --i, num /= base)
-        buffer[i] = "0123456789abcdef"[num % base];
-
-    return file_write_string(fd, buffer + i + 1);
-
-}
-
 unsigned int file_write_format(unsigned int fd, char *buffer, ...)
 {
 
-    char **arg = (char **)&buffer;
-    arg++;
+    char temp[0x1000];
+    void **arg = (void **)&buffer + 1;
 
-    int count = 0;
-    char c;
+    string_write(temp, buffer, *arg);
 
-    while ((c = *buffer++))
-    {
+    unsigned int count = string_length(temp) + 1;
 
-        if (c != '%')
-        {
-
-            count += file_write_byte(fd, c);
-            continue;
-
-        }
-
-        c = *buffer++;
-
-        switch (c)
-        {
-
-            case 'c':
-
-                count += file_write_byte(fd, *(char *)arg);
-
-                break;
-
-            case 'd':
-
-                count += file_write_num(fd, *(int *)arg, 10);
-
-                break;
-
-            case 's':
-
-                count += file_write_string(fd, *(char **)arg);
-
-                break;
-
-            case 'x':
-
-                count += file_write_num(fd, *(int *)arg, 16);
-
-                break;
-
-        }
-
-        arg++;
-
-    }
-
-    return count;
+    return call_write(fd, 0, count, temp);
 
 }
 
