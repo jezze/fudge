@@ -3,7 +3,7 @@
 #include <kernel/vfs.h>
 #include <kernel/vfs/sys.h>
 
-struct modules_module *modules[MODULES_MODULE_SLOTS];
+static struct modules_module *modules[MODULES_MODULE_SLOTS];
 
 static void modules_attach(struct modules_driver *driver)
 {
@@ -237,6 +237,13 @@ void modules_driver_init(struct modules_driver *driver, unsigned int type, char 
     modules_module_init(&driver->module, MODULES_TYPE_DRIVER, name);
 
     driver->type = type;
+
+}
+
+void modules_init()
+{
+
+    vfs_sys_init(modules);
 
 }
 

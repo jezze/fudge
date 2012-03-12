@@ -4,8 +4,7 @@
 #include <kernel/vfs.h>
 #include <kernel/vfs/sys.h>
 
-extern struct modules_module *modules[];
-
+static struct modules_module **modules;
 static struct vfs_filesystem filesystem;
 
 static unsigned int read(struct vfs_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
@@ -78,8 +77,10 @@ static unsigned int find(struct vfs_filesystem *self, char *name)
 
 }
 
-void vfs_sys_init()
+void vfs_sys_init(struct modules_module **m)
 {
+
+    modules = m;
 
     vfs_filesystem_init(&filesystem, 0, 0, read, 0, find, 0);
     vfs_mount(&filesystem, "/sys/");

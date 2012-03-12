@@ -55,6 +55,7 @@ void kernel_init(struct kernel_arch *arch)
         kernelArch->setup_mmu();
 
     vfs_init();
+    modules_init();
     syscall_init();
     runtime_init();
     ramdisk_init(kernelArch->ramdiskc, kernelArch->ramdiskv);
