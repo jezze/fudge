@@ -4,7 +4,7 @@
 #include <kernel/vfs/ramdisk.h>
 #include <kernel/vfs/root.h>
 
-struct vfs_mount mounts[VFS_MOUNT_SLOTS];
+static struct vfs_mount mounts[VFS_MOUNT_SLOTS];
 
 struct vfs_mount *vfs_find_mount(char *path)
 {
@@ -84,7 +84,7 @@ void vfs_mount_init(struct vfs_mount *mount, struct vfs_filesystem *filesystem, 
 void vfs_init()
 {
 
-    vfs_root_init();
+    vfs_root_init(mounts);
     vfs_ramdisk_init();
 
 }
