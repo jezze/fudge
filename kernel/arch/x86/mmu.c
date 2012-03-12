@@ -24,13 +24,6 @@ static void mmu_directory_clear(struct mmu_directory *directory)
 
 }
 
-static struct mmu_table *mmu_directory_get_table_by_frame(struct mmu_directory *directory, unsigned int frame)
-{
-
-    return (struct mmu_table *)((unsigned int)directory->tables[frame / MMU_DIRECTORY_SLOTS] & 0xFFFFF000);
-
-}
-
 static void mmu_directory_set_table(struct mmu_directory *directory, unsigned int frame, struct mmu_table *table, unsigned int tflags)
 {
 
@@ -42,13 +35,6 @@ static void mmu_table_clear(struct mmu_table *table)
 {
 
     memory_clear(table, sizeof (struct mmu_table));
-
-}
-
-static void *mmu_table_get_page_by_frame(struct mmu_table *table, unsigned int frame)
-{
-
-    return (void *)((unsigned int)table->pages[frame % MMU_TABLE_SLOTS] & 0xFFFFF000);
 
 }
 

@@ -7,8 +7,6 @@
 static void start(struct modules_driver *self)
 {
 
-    struct mouse_driver *driver = (struct mouse_driver *)self;
-
 }
 
 static unsigned int check(struct modules_driver *self, struct modules_device *device)

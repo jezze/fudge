@@ -12,15 +12,6 @@ static void write_register(unsigned short index, unsigned short data)
 
 }
 
-static unsigned short read_register(unsigned short index)
-{
-
-    io_outw(BGA_INDEX, index);
-
-    return io_inw(BGA_DATA);
-
-}
-
 static void draw_pixel(struct bga_driver *self, unsigned int x, unsigned int y, unsigned int color)
 {
 

@@ -61,8 +61,6 @@ static unsigned int buffer_putc(struct kbd_buffer *self, char *buffer)
 static void start(struct modules_driver *self)
 {
 
-    struct kbd_driver *driver = (struct kbd_driver *)self;
-
 }
 
 static unsigned int check(struct modules_driver *self, struct modules_device *device)

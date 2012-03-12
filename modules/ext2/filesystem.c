@@ -11,7 +11,7 @@ static unsigned int read(struct vfs_filesystem *self, unsigned int id, unsigned 
 {
 
     char mem[1024];
-    char *private = &mem;
+    char *private = mem;
 
     driver->read_node(driver, id, private);
 
@@ -20,7 +20,7 @@ static unsigned int read(struct vfs_filesystem *self, unsigned int id, unsigned 
     for (;;)
     {
 
-        struct ext2_directory *directory = private;
+        struct ext2_directory *directory = (struct ext2_directory *)private;
 
         if (!directory->length)
             return c;

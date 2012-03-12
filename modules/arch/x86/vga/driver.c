@@ -17,7 +17,7 @@ static unsigned int read_framebuffer(struct vga_driver *self, unsigned int offse
 
         volatile char *address = (char *)(VGA_FB_ADDRESS + i * 2);
 
-        memory_copy(buffer + j, address, 1);
+        memory_copy(buffer + j, (void *)address, 1);
 
     }
 
@@ -39,8 +39,8 @@ static unsigned int write_framebuffer(struct vga_driver *self, unsigned int offs
 
         volatile char *address = (char *)(VGA_FB_ADDRESS + i * 2);
 
-        memory_copy(address, buffer + j, 1);
-        memory_copy(address + 1, &self->cursorColor, 1);
+        memory_copy((void *)address, buffer + j, 1);
+        memory_copy((void *)(address + 1), &self->cursorColor, 1);
 
     }
 

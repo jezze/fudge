@@ -67,30 +67,6 @@ static struct arp_header *read_arp(void *data)
 
 }
 
-static void read_icmpv6(unsigned char *data)
-{
-
-    file_write_format(FILE_STDOUT, "- ICMPv6 Type: %d\n", data[0]);
-    file_write_format(FILE_STDOUT, "- ICMPv6 Code: %d\n", data[1]);
-
-}
-
-static void read_ipv6(unsigned char *data)
-{
-/*
-    log_write("- IPv6 Version: %d\n", data[0] >> 4);
-    log_write("- IPv6 Length:  %d\n", data[4]);
-    log_write("- IPv6 Next:  %d\n", data[6]);
-    log_write("- IPv6 Source:  %x%x:%x%x:%x%x:%x%x:%x%x:%x%x:%x%x:%x%x\n", data[8], data[9], data[10], data[11], data[12], data[13], data[14], data[15], data[16], data[17], data[18], data[19], data[20], data[21], data[22], data[23]);
-    log_write("- IPv6 Dest:    %x%x:%x%x:%x%x:%x%x:%x%x:%x%x:%x%x:%x%x\n", data[24], data[25], data[26], data[27], data[28], data[29], data[30], data[31], data[32], data[33], data[34], data[35], data[36], data[37], data[38], data[39]);
-*/
-    if (data[6] == 58)
-        read_icmpv6(data + 40);
-    else
-        file_write_format(FILE_STDOUT, "- IPv6: Unknown next code %d\n", data[6]);
-
-}
-
 void handle_network_event()
 {
 

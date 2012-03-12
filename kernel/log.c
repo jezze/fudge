@@ -16,7 +16,7 @@ void log_write(const char *buffer, ...)
     if (!id)
         return;
 
-    char temp[0x1000];
+    char temp[0x100];
     void **arg = (void **)&buffer + 1;
 
     string_write(temp, buffer, *arg);

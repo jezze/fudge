@@ -60,10 +60,6 @@ static void setup_srat(struct smp_driver *driver, struct acpi_driver *acpiDriver
         if (entry->type == 0)
         {
 
-            struct acpi_srat_lapic *lapic = (struct acpi_srat_lapic *)entry;
-
-            //driver->cpus[lapic->id].domain = lapic->domain;
-
         }
 
         srattable += entry->length;

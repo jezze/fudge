@@ -16,8 +16,6 @@ static unsigned int is_supported(unsigned int instruction, unsigned int flag)
 static void start(struct modules_driver *self)
 {
 
-    struct cpuid_driver *driver = (struct cpuid_driver *)self;
-
     if (!cpuid_check_cpuid())
         return;
 

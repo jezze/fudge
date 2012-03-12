@@ -59,7 +59,6 @@ static unsigned int read(struct rtl8139_driver *self, void *buffer)
 {
 
     unsigned short current = io_inw(self->io + RTL8139_REGISTER_CAPR) + 0x10;
-    unsigned short end = io_inw(self->io + RTL8139_REGISTER_CBR);
 
     struct rtl8139_header *header = (struct rtl8139_header *)(self->rx + current);
 
