@@ -6,7 +6,6 @@
 #include <kernel/vfs/ramdisk.h>
 
 static struct ramdisk_node nodes[RAMDISK_HEADER_SIZE];
-static unsigned int nodesCount;
 
 static unsigned int parse(void *address)
 {
@@ -47,14 +46,13 @@ void ramdisk_node_init(struct ramdisk_node *node, char *name, unsigned int size,
 void ramdisk_init(unsigned int ramdiskc, void **ramdiskv)
 {
 
-    nodesCount = 0;
-
+    unsigned int count = 0;
     unsigned int i;
 
     for (i = 0; i < ramdiskc; i++)
-        nodesCount += parse(*(ramdiskv + i));
+        count += parse(*(ramdiskv + i));
 
-    vfs_ramdisk_init(nodes, nodesCount);
+    vfs_ramdisk_init(nodes, count);
 
 }
 
