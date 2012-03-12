@@ -1,13 +1,12 @@
 #include <lib/memory.h>
 #include <lib/string.h>
 #include <lib/tar.h>
-#include <kernel/vfs.h>
 #include <kernel/ramdisk.h>
+#include <kernel/vfs.h>
 #include <kernel/vfs/ramdisk.h>
 
-extern struct ramdisk_node nodes[];
-extern unsigned int nodesCount;
-
+static struct ramdisk_node *nodes;
+static unsigned int nodesCount;
 static struct vfs_filesystem filesystem;
 
 static unsigned int read(struct vfs_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
@@ -98,8 +97,11 @@ static void *get_physical(struct vfs_filesystem *self, unsigned int id)
 
 }
 
-void vfs_ramdisk_init()
+void vfs_ramdisk_init(struct ramdisk_node *n, unsigned int c)
 {
+
+    nodes = n;
+    nodesCount = c;
 
     vfs_filesystem_init(&filesystem, 0, 0, read, 0, find, get_physical);
     vfs_mount(&filesystem, "/ramdisk/");

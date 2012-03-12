@@ -1,7 +1,6 @@
 #include <lib/memory.h>
 #include <lib/string.h>
 #include <kernel/vfs.h>
-#include <kernel/vfs/ramdisk.h>
 #include <kernel/vfs/root.h>
 
 static struct vfs_mount mounts[VFS_MOUNT_SLOTS];
@@ -85,7 +84,6 @@ void vfs_init()
 {
 
     vfs_root_init(mounts);
-    vfs_ramdisk_init();
 
 }
 

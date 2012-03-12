@@ -1,11 +1,12 @@
 #include <lib/memory.h>
 #include <lib/string.h>
 #include <lib/tar.h>
-#include <kernel/vfs.h>
 #include <kernel/ramdisk.h>
+#include <kernel/vfs.h>
+#include <kernel/vfs/ramdisk.h>
 
-struct ramdisk_node nodes[RAMDISK_HEADER_SIZE];
-unsigned int nodesCount;
+static struct ramdisk_node nodes[RAMDISK_HEADER_SIZE];
+static unsigned int nodesCount;
 
 static unsigned int parse(void *address)
 {
@@ -52,6 +53,8 @@ void ramdisk_init(unsigned int ramdiskc, void **ramdiskv)
 
     for (i = 0; i < ramdiskc; i++)
         nodesCount += parse(*(ramdiskv + i));
+
+    vfs_ramdisk_init(nodes, nodesCount);
 
 }
 
