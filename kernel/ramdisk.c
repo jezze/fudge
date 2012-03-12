@@ -5,7 +5,7 @@
 #include <kernel/vfs.h>
 #include <kernel/vfs/ramdisk.h>
 
-static struct ramdisk_node nodes[RAMDISK_HEADER_SIZE];
+static struct ramdisk_node nodes[RAMDISK_NODE_SLOTS];
 
 static unsigned int parse(void *address)
 {
