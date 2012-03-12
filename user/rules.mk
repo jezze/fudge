@@ -1,4 +1,4 @@
-user: GCCFLAGS=-static -s -O2 -Wall -Wextra -ffreestanding -nostdlib -nostartfiles -nodefaultlibs -Iinclude/lib -Llib/
+user: GCCFLAGS=-static -s -O2 -Wall -ffreestanding -nostdlib -Iinclude/lib -Llib/
 user: LIB=-lfudge
 
 user:
