@@ -1,6 +1,6 @@
 #include <kernel/error.h>
 #include <kernel/vfs.h>
-#include <kernel/initrd.h>
+#include <kernel/ramdisk.h>
 #include <kernel/kernel.h>
 #include <kernel/log.h>
 #include <kernel/mmu.h>
@@ -57,7 +57,7 @@ void kernel_init(struct kernel_arch *arch)
     vfs_init();
     syscall_init();
     runtime_init();
-    initrd_init(kernelArch->initrdc, kernelArch->initrdv);
+    ramdisk_init(kernelArch->ramdiskc, kernelArch->ramdiskv);
     symbol_init();
 
     unsigned int index = syscall_execute(0, "/ramdisk/bin/init", 0, 0);

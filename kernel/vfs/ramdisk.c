@@ -2,10 +2,10 @@
 #include <lib/string.h>
 #include <lib/tar.h>
 #include <kernel/vfs.h>
-#include <kernel/initrd.h>
+#include <kernel/ramdisk.h>
 #include <kernel/vfs/ramdisk.h>
 
-extern struct initrd_node nodes[];
+extern struct ramdisk_node nodes[];
 extern unsigned int nodesCount;
 
 static struct vfs_filesystem filesystem;
@@ -13,7 +13,7 @@ static struct vfs_filesystem filesystem;
 static unsigned int read(struct vfs_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct initrd_node *node = &nodes[id - 1];
+    struct ramdisk_node *node = &nodes[id - 1];
 
     if (node->header->typeflag[0] == TAR_FILETYPE_DIR)
     {

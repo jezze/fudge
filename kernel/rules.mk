@@ -8,7 +8,7 @@ kernel: kernel-arch vfs
 	@${GCC} ${GCCFLAGS} kernel/elf.c -o kernel/elf.o
 	@${GCC} ${GCCFLAGS} kernel/error.c -o kernel/error.o
 	@${GCC} ${GCCFLAGS} kernel/event.c -o kernel/event.o
-	@${GCC} ${GCCFLAGS} kernel/initrd.c -o kernel/initrd.o
+	@${GCC} ${GCCFLAGS} kernel/ramdisk.c -o kernel/ramdisk.o
 	@${GCC} ${GCCFLAGS} kernel/irq.c -o kernel/irq.o
 	@${GCC} ${GCCFLAGS} kernel/kernel.c -o kernel/kernel.o
 	@${GCC} ${GCCFLAGS} kernel/log.c -o kernel/log.o

@@ -2,9 +2,9 @@
 #include <lib/string.h>
 #include <lib/tar.h>
 #include <kernel/vfs.h>
-#include <kernel/initrd.h>
+#include <kernel/ramdisk.h>
 
-struct initrd_node nodes[INITRD_HEADER_SIZE];
+struct ramdisk_node nodes[RAMDISK_HEADER_SIZE];
 unsigned int nodesCount;
 
 static unsigned int parse(void *address)
@@ -18,7 +18,7 @@ static unsigned int parse(void *address)
         struct tar_header *header = address;
         unsigned int size = string_read_num(header->size, 8);
 
-        initrd_node_init(&nodes[i], header->name + 11, size, header, address + TAR_BLOCK_SIZE);
+        ramdisk_node_init(&nodes[i], header->name + 11, size, header, address + TAR_BLOCK_SIZE);
 
         address += ((size / TAR_BLOCK_SIZE) + 1) * TAR_BLOCK_SIZE;
 
@@ -31,10 +31,10 @@ static unsigned int parse(void *address)
 
 }
 
-void initrd_node_init(struct initrd_node *node, char *name, unsigned int size, struct tar_header *header, void *data)
+void ramdisk_node_init(struct ramdisk_node *node, char *name, unsigned int size, struct tar_header *header, void *data)
 {
 
-    memory_clear(node, sizeof (struct initrd_node));
+    memory_clear(node, sizeof (struct ramdisk_node));
 
     node->name = name;
     node->size = size;
@@ -43,15 +43,15 @@ void initrd_node_init(struct initrd_node *node, char *name, unsigned int size, s
 
 }
 
-void initrd_init(unsigned int initrdc, void **initrdv)
+void ramdisk_init(unsigned int ramdiskc, void **ramdiskv)
 {
 
     nodesCount = 0;
 
     unsigned int i;
 
-    for (i = 0; i < initrdc; i++)
-        nodesCount += parse(*(initrdv + i));
+    for (i = 0; i < ramdiskc; i++)
+        nodesCount += parse(*(ramdiskv + i));
 
 }
 

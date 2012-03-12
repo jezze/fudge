@@ -14,8 +14,8 @@ struct kernel_arch
     void (*halt)();
     void *stack;
     void *mboot;
-    unsigned int initrdc;
-    void **initrdv;
+    unsigned int ramdiskc;
+    void **ramdiskv;
 
 };
 
