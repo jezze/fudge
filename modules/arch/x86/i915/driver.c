@@ -5,55 +5,84 @@
 #include <modules/pci/pci.h>
 #include <modules/i915/i915.h>
 
+static unsigned int read(unsigned int reg)
+{
+
+    volatile unsigned int *value = (volatile unsigned int *)reg;
+
+    return *value;
+
+}
+
+static void write(unsigned int reg, unsigned int val)
+{
+
+    volatile unsigned int *value = (volatile unsigned int *)reg;
+
+    *value = val;
+
+}
+
+static void wait(unsigned int num)
+{
+
+    unsigned int i = 0xcfffffff;
+    unsigned int j = 0xcfffffff;
+
+    while (i--);
+
+}
+
 static void wait_vblank()
 {
 
-    unsigned volatile int *stat = (unsigned volatile int *)I915_PIPEA_STAT;
+    log_write("[i915] Wait vblank\n");
 
-    *stat = *stat | I915_PIPE_STAT_STATUS_VBLANK;
+    write(I915_PIPEB_STATUS, I915_PIPE_STATUS_VBLANK);
 
-    while (*stat & I915_PIPE_STAT_STATUS_VBLANK);
+    while (!(read(I915_PIPEB_STATUS) & I915_PIPE_STATUS_VBLANK));
 
 }
 
 static void enable_dpll()
 {
 
-    unsigned volatile int *ctrl = (unsigned volatile int *)I915_DPLLA_CTRL;
+    unsigned int pllb = read(I915_DPLLB_CONTROL);
 
-    //unsigned int temp = I915_DPLL_CTRL_DISABLE_VGA | I915_DPLL_CTRL_DIVIDE2;
+    if (!(pllb & I915_DPLL_CONTROL_ENABLE_VCO))
+    {
 
-    *ctrl = I915_DPLL_CTRL_ENABLE_VCO;
+        log_write("[i915] Enable dpll\n");
+
+        write(I915_DPLLB_CONTROL, pllb);
+        read(I915_DPLLB_CONTROL);
+        wait(150);
+        write(I915_DPLLB_CONTROL, pllb | I915_DPLL_CONTROL_ENABLE_VCO);
+        read(I915_DPLLB_CONTROL);
+        wait(150);
+        write(I915_DPLLB_CONTROL, pllb | I915_DPLL_CONTROL_ENABLE_VCO);
+        read(I915_DPLLB_CONTROL);
+        wait(150);
+
+    }
 
 }
 
 static void enable_pipe()
 {
 
-    unsigned volatile int *conf = (unsigned volatile int *)I915_PIPEA_CONF;
+    log_write("[i915] Enable pipe\n");
 
-    *conf = *conf & I915_PIPE_CONF_ENABLE;
-
-    wait_vblank();
+    write(I915_PIPEB_CONFIG, read(I915_PIPEB_CONFIG) & I915_PIPE_CONFIG_ENABLE);
 
 }
 
 static void enable_plane()
 {
 
-    unsigned volatile int *crtl = (unsigned volatile int *)I915_DISPLAYA_CTRL;
+    log_write("[i915] Enable plane\n");
 
-    *crtl = *crtl & I915_DISPLAY_CTRL_ENABLE_PLANE;
-
-    unsigned volatile int *addr = (unsigned volatile int *)I915_DISPLAYA_ADDR;
-
-    *addr = *addr;
-
-    unsigned volatile int *surf = (unsigned volatile int *)I915_DISPLAYA_SURF;
-
-    *surf = *surf;
-
-    wait_vblank();
+    write(I915_DISPLAYB_CONTROL, read(I915_DISPLAYB_CONTROL) & I915_DISPLAY_CONTROL_ENABLE_PLANE);
 
 }
 
@@ -89,31 +118,17 @@ static void set_pipe_mode(unsigned int width, unsigned int height)
 static void start(struct modules_driver *self)
 {
 
-    unsigned volatile int *lvds = (unsigned volatile int *)0x61180;
+    log_write("[i915] PIPEACONF: 0x%x\n", read(I915_PIPEA_CONFIG));
+    log_write("[i915] PIPEBCONF: 0x%x\n", read(I915_PIPEB_CONFIG));
 
-    log_write("[i915] LVDS: %x\n", *lvds);
-
-    log_write("[i915] Set pipe mode\n");
-    set_pipe_mode(1024, 600);
-
-    log_write("[i915] SKIP: Enable panelfitter\n");
-
-    log_write("[i915] Enable dpll\n");
     enable_dpll();
-
-    log_write("[i915] SKIP: Wait 150us\n");
-
-    log_write("[i915] Enable pipe\n");
     enable_pipe();
-
-    log_write("[i915] Enable plane\n");
     enable_plane();
-
-    log_write("[i915] SKIP: Enable ports\n");
+    wait_vblank();
 
 }
 
-void handle_irq()
+static void handle_irq()
 {
 
     log_write("[i915] IRQ\n");
