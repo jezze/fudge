@@ -29,7 +29,12 @@ static void wait(unsigned int num)
     unsigned int i = 0xcfffffff;
     unsigned int j = 0xcfffffff;
 
-    while (i--);
+    while(j--)
+    {
+
+        while (i--);
+
+    }
 
 }
 
@@ -41,6 +46,13 @@ static void wait_vblank()
     write(I915_PIPEB_STATUS, I915_PIPE_STATUS_VBLANK);
 
     while (!(read(I915_PIPEB_STATUS) & I915_PIPE_STATUS_VBLANK));
+
+}
+
+static void disable_vga()
+{
+
+    write(I915_VGA_CONTROL, I915_VGA_CONTROL_DISABLE);
 
 }
 
@@ -89,29 +101,29 @@ static void enable_plane()
 static void set_pipe_mode(unsigned int width, unsigned int height)
 {
 
-    unsigned volatile int *htotal = (unsigned volatile int *)I915_DISPLAYA_HTOTAL;
+    unsigned int htotal = (read(I915_DISPLAYB_HTOTAL) >> 16) + 1;
+    unsigned int hdisplay = (read(I915_DISPLAYB_HTOTAL) & 0xFFFF) + 1;
 
-    *htotal = ((height - 1) << 16) | ((height - 1) << 0);
+    unsigned int hsyncs = (read(I915_DISPLAYB_HSYNC) >> 16) + 1;
+    unsigned int hsynce = (read(I915_DISPLAYB_HSYNC) & 0xFFFF) + 1;
 
-    unsigned volatile int *hblank = (unsigned volatile int *)I915_DISPLAYA_HBLANK;
+    unsigned int vtotal = (read(I915_DISPLAYB_VTOTAL) >> 16) + 1;
+    unsigned int vdisplay = (read(I915_DISPLAYB_VTOTAL) & 0xFFFF) + 1;
 
-    *hblank = ((height - 1) << 16) | ((height - 1) << 0);
+    unsigned int vsyncs = (read(I915_DISPLAYB_VSYNC) >> 16) + 1;
+    unsigned int vsynce = (read(I915_DISPLAYB_VSYNC) & 0xFFFF) + 1;
 
-    unsigned volatile int *hsync = (unsigned volatile int *)I915_DISPLAYA_HSYNC;
+    log_write("[i915] htotal: %d\t hdisplay: %d\n", htotal, hdisplay);
+    log_write("[i915] hsyncs: %d\t hsynce: %d\n", hsyncs, hsynce);
+    log_write("[i915] vtotal: %d\t vdisplay: %d\n", vtotal, vdisplay);
+    log_write("[i915] vsyncs: %d\t vsynce: %d\n", vsyncs, vsynce);
 
-    *hsync = ((height - 1) << 16) | ((height - 1) << 0);
-
-    unsigned volatile int *vtotal = (unsigned volatile int *)I915_DISPLAYA_VTOTAL;
-
-    *vtotal = ((width - 1) << 16) | ((width - 1) << 0);
-
-    unsigned volatile int *vblank = (unsigned volatile int *)I915_DISPLAYA_VBLANK;
-
-    *vblank = ((width - 1) << 16) | ((width - 1) << 0);
-
-    unsigned volatile int *vsync = (unsigned volatile int *)I915_DISPLAYA_VSYNC;
-
-    *vsync = ((width - 1) << 16) | ((width - 1) << 0);
+    write(I915_DISPLAYB_HTOTAL, ((htotal - 1) << 16) | ((hdisplay - 1)));
+    write(I915_DISPLAYB_HBLANK, ((htotal - 1) << 16) | ((hdisplay - 1)));
+    write(I915_DISPLAYB_HSYNC, ((hsyncs - 1) << 16) | ((hsynce - 1)));
+    write(I915_DISPLAYB_VTOTAL, ((vtotal - 1) << 16) | ((vdisplay - 1)));
+    write(I915_DISPLAYB_VBLANK, ((vtotal - 1) << 16) | ((vdisplay - 1)));
+    write(I915_DISPLAYB_VSYNC, ((vsyncs - 1) << 16) | ((vsynce - 1)));
 
 }
 
@@ -125,6 +137,10 @@ static void start(struct modules_driver *self)
     enable_pipe();
     enable_plane();
     wait_vblank();
+
+    disable_vga();
+
+    set_pipe_mode(640, 480);
 
 }
 

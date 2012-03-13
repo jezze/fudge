@@ -70,6 +70,8 @@
 #define I915_DISPLAYB_SIZE                      0x71190
 #define I915_DISPLAYB_SURF                      0x7119C
 
+#define I915_VGA_CONTROL                        0x71400
+
 #define I915_DPLL_CONTROL_VGA_DIV1              (0x01 << 16)
 #define I915_DPLL_CONTROL_VGA_DIV2              (0x02 << 16)
 #define I915_DPLL_CONTROL_VGA_DIV3              (0x04 << 16)
@@ -101,6 +103,9 @@
 
 #define I915_LVDS_CONTROL_ENABLE                (0x01 << 31)
 #define I915_LVDS_CONTROL_PORT                  (0x01 << 30)
+
+#define I915_VGA_CONTROL_DISABLE                (0x01 << 31)
+#define I915_VGA_CONTROL_PIPE                   (0x01 << 29)
 
 #define I915_DRIVER_TYPE 0x0915
 
