@@ -5,17 +5,6 @@
 #include <kernel/modules.h>
 #include <modules/pit/pit.h>
 
-static void handle_irq(struct modules_device *self)
-{
-
-    struct pit_device *device = (struct pit_device *)self;
-
-    device->jiffies += 1;
-
-    event_raise(EVENT_IRQ_PIT);
-
-}
-
 void pit_device_init(struct pit_device *device)
 {
 
@@ -29,8 +18,6 @@ void pit_device_init(struct pit_device *device)
     io_outb(0x43, 0x36);
     io_outb(0x40, (unsigned char)(device->divisor & 0xFF));
     io_outb(0x40, (unsigned char)((device->divisor >> 8) & 0xFF));
-
-    irq_register_routine(0x00, &device->base, handle_irq);
 
 }
 

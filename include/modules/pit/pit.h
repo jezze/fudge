@@ -5,6 +5,7 @@
 #define PIT_FREQUENCY 100
 
 #define PIT_DEVICE_TYPE 0x2202
+#define PIT_DRIVER_TYPE 0x2202
 
 struct pit_device
 {
@@ -15,7 +16,15 @@ struct pit_device
 
 };
 
+struct pit_driver
+{
+
+    struct modules_driver base;
+
+};
+
 void pit_device_init(struct pit_device *device);
+void pit_driver_init(struct pit_driver *driver);
 
 #endif
 

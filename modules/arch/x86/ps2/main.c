@@ -11,15 +11,15 @@ void init()
 {
 
     kbd_device_init(&kbdDevice);
-    mouse_device_init(&mouseDevice);
-
-    kbd_driver_init(&kbdDriver);
-    mouse_driver_init(&mouseDriver);
-
     modules_register_device(&kbdDevice.base);
+
+    mouse_device_init(&mouseDevice);
     modules_register_device(&mouseDevice.base);
 
+    kbd_driver_init(&kbdDriver);
     modules_register_driver(&kbdDriver.base);
+
+    mouse_driver_init(&mouseDriver);
     modules_register_driver(&mouseDriver.base);
 
 }

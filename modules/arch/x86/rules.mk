@@ -15,6 +15,7 @@ modules-arch:
 	@${GCC} ${GCCFLAGS} modules/arch/x86/pci/device.c -o modules/arch/x86/pci/device.o
 	@${GCC} ${GCCFLAGS} modules/arch/x86/pci/main.c -o modules/arch/x86/pci/main.o
 	@${GCC} ${GCCFLAGS} modules/arch/x86/pit/device.c -o modules/arch/x86/pit/device.o
+	@${GCC} ${GCCFLAGS} modules/arch/x86/pit/driver.c -o modules/arch/x86/pit/driver.o
 	@${GCC} ${GCCFLAGS} modules/arch/x86/pit/main.c -o modules/arch/x86/pit/main.o
 	@${GCC} ${GCCFLAGS} modules/arch/x86/ps2/kbd_device.c -o modules/arch/x86/ps2/kbd_device.o
 	@${GCC} ${GCCFLAGS} modules/arch/x86/ps2/kbd_driver.c -o modules/arch/x86/ps2/kbd_driver.o
@@ -38,7 +39,7 @@ modules-arch:
 	@${LD} ${LDFLAGS} modules/arch/x86/cpuid/cpuid.o modules/arch/x86/cpuid/driver.o modules/arch/x86/cpuid/main.o -o modules/arch/x86/cpuid/cpuid.ko
 	@${LD} ${LDFLAGS} modules/arch/x86/i915/driver.o modules/arch/x86/i915/main.o -o modules/arch/x86/i915/i915.ko
 	@${LD} ${LDFLAGS} modules/arch/x86/pci/bus.o modules/arch/x86/pci/device.o modules/arch/x86/pci/main.o -o modules/arch/x86/pci/pci.ko
-	@${LD} ${LDFLAGS} modules/arch/x86/pit/device.o modules/arch/x86/pit/main.o -o modules/arch/x86/pit/pit.ko
+	@${LD} ${LDFLAGS} modules/arch/x86/pit/device.o modules/arch/x86/pit/driver.o modules/arch/x86/pit/main.o -o modules/arch/x86/pit/pit.ko
 	@${LD} ${LDFLAGS} modules/arch/x86/ps2/kbd_device.o modules/arch/x86/ps2/kbd_driver.o modules/arch/x86/ps2/main.o modules/arch/x86/ps2/mouse_device.o modules/arch/x86/ps2/mouse_driver.o -o modules/arch/x86/ps2/ps2.ko
 	@${LD} ${LDFLAGS} modules/arch/x86/rtc/device.o modules/arch/x86/rtc/main.o -o modules/arch/x86/rtc/rtc.ko
 	@${LD} ${LDFLAGS} modules/arch/x86/rtl8139/driver.o modules/arch/x86/rtl8139/main.o -o modules/arch/x86/rtl8139/rtl8139.ko

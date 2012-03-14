@@ -5,6 +5,7 @@
 #include <modules/pit/pit.h>
 
 static struct pit_device device;
+static struct pit_driver driver;
 static struct nodefs_node jiffies;
 
 static unsigned int jiffies_read(struct nodefs_node *self, unsigned int count, void *buffer)
@@ -21,6 +22,9 @@ void init()
 
     pit_device_init(&device);
     modules_register_device(&device.base);
+
+    pit_driver_init(&driver);
+    modules_register_driver(&driver.base);
 
     struct nodefs_driver *nodefs = (struct nodefs_driver *)modules_get_driver(NODEFS_DRIVER_TYPE);
 
