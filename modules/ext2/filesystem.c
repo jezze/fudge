@@ -11,37 +11,83 @@ static unsigned int read(struct vfs_filesystem *self, unsigned int id, unsigned 
 {
 
     struct ext2_blockgroup bg;
-
-    driver->read_blockgroup(driver, id, &bg);
-
     struct ext2_node node;
-
-    driver->read_node(driver, id, &bg, &node);
-
     char mem[1024];
     void *private = mem;
 
+    driver->read_blockgroup(driver, id, &bg);
+    driver->read_node(driver, id, &bg, &node);
     driver->read_content(driver, id, &node, private);
 
-    unsigned int c = 0;
-
-    for (;;)
+    if ((node.type & 0xF000) == EXT2_NODE_TYPE_DIR)
     {
 
-        struct ext2_directory *directory = private;
+        unsigned int c = 0;
 
-        if (!directory->length)
-            return c;
+        for (;;)
+        {
 
-        memory_copy(buffer + c, private + 8, directory->length);
-        memory_copy(buffer + c + directory->length, "\n", 1);
-        c += directory->length + 1;
+            struct ext2_directory *directory = private;
 
-        private += directory->size;
+            if (!directory->length)
+                return c;
+
+            memory_copy(buffer + c, private + 8, directory->length);
+            memory_copy(buffer + c + directory->length, "\n", 1);
+            c += directory->length + 1;
+
+            private += directory->size;
+
+        }
+
+        return c;
 
     }
 
-    return c;
+    if ((node.type & 0xF000) == EXT2_NODE_TYPE_REGULAR)
+    {
+
+        memory_copy(buffer, private, node.sizeLow);
+
+        return node.sizeLow;
+
+    }
+
+    return 0;
+
+}
+
+static unsigned int finddir(struct vfs_filesystem *self, unsigned int id, char *name)
+{
+
+    struct ext2_blockgroup bg;
+    struct ext2_node node;
+    char mem[1024];
+    void *private = mem;
+
+    driver->read_blockgroup(driver, id, &bg);
+    driver->read_node(driver, id, &bg, &node);
+    driver->read_content(driver, id, &node, private);
+
+    if ((node.type & 0xF000) == EXT2_NODE_TYPE_DIR)
+    {
+
+        for (;;)
+        {
+
+            struct ext2_directory *directory = private;
+
+            if (!directory->length)
+                return 0;
+
+            if (!memory_compare(name, private + 8, directory->length))
+                return directory->node;
+
+        }
+
+    }
+
+    return 0;
 
 }
 
