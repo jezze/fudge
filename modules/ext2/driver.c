@@ -49,7 +49,7 @@ static void read_node(struct ext2_driver *self, unsigned int id, struct ext2_blo
 
 }
 
-static void read_content(struct ext2_driver *self, unsigned int id, struct ext2_node *node, void *buffer)
+static void read_content(struct ext2_driver *self, struct ext2_node *node, void *buffer)
 {
 
     struct mbr_partition *partition = self->mbrDriver->get_partition(self->mbrDriver, self->ataDevice, 0);

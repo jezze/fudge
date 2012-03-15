@@ -17,7 +17,7 @@ static unsigned int read(struct vfs_filesystem *self, unsigned int id, unsigned 
 
     driver->read_blockgroup(driver, id, &bg);
     driver->read_node(driver, id, &bg, &node);
-    driver->read_content(driver, id, &node, private);
+    driver->read_content(driver, &node, private);
 
     if ((node.type & 0xF000) == EXT2_NODE_TYPE_DIR)
     {
@@ -27,16 +27,16 @@ static unsigned int read(struct vfs_filesystem *self, unsigned int id, unsigned 
         for (;;)
         {
 
-            struct ext2_directory *directory = private;
+            struct ext2_entry *entry = private;
 
-            if (!directory->length)
+            if (!entry->length)
                 return c;
 
-            memory_copy(buffer + c, private + 8, directory->length);
-            memory_copy(buffer + c + directory->length, "\n", 1);
-            c += directory->length + 1;
+            memory_copy(buffer + c, private + 8, entry->length);
+            memory_copy(buffer + c + entry->length, "\n", 1);
+            c += entry->length + 1;
 
-            private += directory->size;
+            private += entry->size;
 
         }
 
@@ -57,7 +57,7 @@ static unsigned int read(struct vfs_filesystem *self, unsigned int id, unsigned 
 
 }
 
-static struct ext2_directory *finddir(struct vfs_filesystem *self, unsigned int id, char *name)
+static struct ext2_entry *finddir(struct vfs_filesystem *self, unsigned int id, char *name)
 {
 
     struct ext2_blockgroup bg;
@@ -67,7 +67,7 @@ static struct ext2_directory *finddir(struct vfs_filesystem *self, unsigned int 
 
     driver->read_blockgroup(driver, id, &bg);
     driver->read_node(driver, id, &bg, &node);
-    driver->read_content(driver, id, &node, private);
+    driver->read_content(driver, &node, private);
 
     if ((node.type & 0xF000) == EXT2_NODE_TYPE_DIR)
     {
@@ -75,15 +75,15 @@ static struct ext2_directory *finddir(struct vfs_filesystem *self, unsigned int 
         for (;;)
         {
 
-            struct ext2_directory *directory = private;
+            struct ext2_entry *entry = private;
 
-            if (!directory->length)
+            if (!entry->length)
                 return 0;
 
-            if (!memory_compare(name, private + 8, directory->length))
-                return directory;
+            if (!memory_compare(name, private + 8, entry->length))
+                return entry;
 
-            private += directory->size;
+            private += entry->size;
 
         }
 
@@ -102,14 +102,14 @@ static unsigned int find(struct vfs_filesystem *self, char *name)
         return 2;
 
     char *temp = name;
-    struct ext2_directory *directory;
+    struct ext2_entry *entry;
     unsigned int id = 2;
 
-    while ((directory = finddir(self, id, temp)))
+    while ((entry = finddir(self, id, temp)))
     {
 
-        temp += directory->length + 1;
-        id = directory->node;
+        temp += entry->length + 1;
+        id = entry->node;
 
     }
 

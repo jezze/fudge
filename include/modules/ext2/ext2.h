@@ -121,7 +121,7 @@ struct ext2_node
 
 } __attribute__((packed));
 
-struct ext2_directory
+struct ext2_entry
 {
 
     unsigned int node;
@@ -139,7 +139,7 @@ struct ext2_driver
     struct mbr_driver *mbrDriver;
     void (*read_blockgroup)(struct ext2_driver *self, unsigned int id, struct ext2_blockgroup *bg);
     void (*read_node)(struct ext2_driver *self, unsigned int id, struct ext2_blockgroup *bg, struct ext2_node *node);
-    void (*read_content)(struct ext2_driver *self, unsigned int id, struct ext2_node *node, void *buffer);
+    void (*read_content)(struct ext2_driver *self, struct ext2_node *node, void *buffer);
 
 };
 
