@@ -57,7 +57,7 @@ static unsigned int read(struct vfs_filesystem *self, unsigned int id, unsigned 
 
 }
 
-static unsigned int finddir(struct vfs_filesystem *self, unsigned int id, char *name)
+static struct ext2_directory *finddir(struct vfs_filesystem *self, unsigned int id, char *name)
 {
 
     struct ext2_blockgroup bg;
@@ -81,7 +81,9 @@ static unsigned int finddir(struct vfs_filesystem *self, unsigned int id, char *
                 return 0;
 
             if (!memory_compare(name, private + 8, directory->length))
-                return directory->node;
+                return directory;
+
+            private += directory->size;
 
         }
 
@@ -99,7 +101,19 @@ static unsigned int find(struct vfs_filesystem *self, char *name)
     if (!length)
         return 2;
 
-    return 0;
+    char *temp = name;
+    struct ext2_directory *directory;
+    unsigned int id = 2;
+
+    while ((directory = finddir(self, id, temp)))
+    {
+
+        temp += directory->length + 1;
+        id = directory->node;
+
+    }
+
+    return id;
 
 }
 
