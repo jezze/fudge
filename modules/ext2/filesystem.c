@@ -10,17 +10,25 @@ static struct vfs_filesystem filesystem;
 static unsigned int read(struct vfs_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    char mem[1024];
-    char *private = mem;
+    struct ext2_blockgroup bg;
 
-    driver->read_node(driver, id, private);
+    driver->read_blockgroup(driver, id, &bg);
+
+    struct ext2_node node;
+
+    driver->read_node(driver, id, &bg, &node);
+
+    char mem[1024];
+    void *private = mem;
+
+    driver->read_content(driver, id, &node, private);
 
     unsigned int c = 0;
 
     for (;;)
     {
 
-        struct ext2_directory *directory = (struct ext2_directory *)private;
+        struct ext2_directory *directory = private;
 
         if (!directory->length)
             return c;

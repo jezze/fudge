@@ -129,7 +129,9 @@ struct ext2_driver
     struct modules_driver base;
     struct ata_device *ataDevice;
     struct mbr_driver *mbrDriver;
-    void (*read_node)(struct ext2_driver *self, unsigned int nodenum, void *buffer);
+    void (*read_blockgroup)(struct ext2_driver *self, unsigned int id, struct ext2_blockgroup *bg);
+    void (*read_node)(struct ext2_driver *self, unsigned int id, struct ext2_blockgroup *bg, struct ext2_node *node);
+    void (*read_content)(struct ext2_driver *self, unsigned int id, struct ext2_node *node, void *buffer);
 
 };
 
