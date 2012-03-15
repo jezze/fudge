@@ -4,20 +4,19 @@
 #include <kernel/modules.h>
 #include <modules/ext2/ext2.h>
 
-static struct ext2_driver *driver;
-static struct vfs_filesystem filesystem;
-
 static unsigned int read(struct vfs_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
+
+    struct ext2_filesystem *filesystem = (struct ext2_filesystem *)self;
 
     struct ext2_blockgroup bg;
     struct ext2_node node;
     char mem[1024];
     void *private = mem;
 
-    driver->read_blockgroup(driver, id, &bg);
-    driver->read_node(driver, id, &bg, &node);
-    driver->read_content(driver, &node, private);
+    filesystem->driver->read_blockgroup(filesystem->driver, id, &bg);
+    filesystem->driver->read_node(filesystem->driver, id, &bg, &node);
+    filesystem->driver->read_content(filesystem->driver, &node, private);
 
     if ((node.type & 0xF000) == EXT2_NODE_TYPE_DIR)
     {
@@ -60,14 +59,16 @@ static unsigned int read(struct vfs_filesystem *self, unsigned int id, unsigned 
 static struct ext2_entry *finddir(struct vfs_filesystem *self, unsigned int id, char *name)
 {
 
+    struct ext2_filesystem *filesystem = (struct ext2_filesystem *)self;
+
     struct ext2_blockgroup bg;
     struct ext2_node node;
     char mem[1024];
     void *private = mem;
 
-    driver->read_blockgroup(driver, id, &bg);
-    driver->read_node(driver, id, &bg, &node);
-    driver->read_content(driver, &node, private);
+    filesystem->driver->read_blockgroup(filesystem->driver, id, &bg);
+    filesystem->driver->read_node(filesystem->driver, id, &bg, &node);
+    filesystem->driver->read_content(filesystem->driver, &node, private);
 
     if ((node.type & 0xF000) == EXT2_NODE_TYPE_DIR)
     {
@@ -117,13 +118,15 @@ static unsigned int find(struct vfs_filesystem *self, char *name)
 
 }
 
-void ext2_filesystem_init(struct modules_module *module)
+void ext2_filesystem_init(struct ext2_filesystem *filesystem, struct ext2_driver *driver)
 {
 
-    driver = (struct ext2_driver *)module;
+    memory_clear(filesystem, sizeof (struct ext2_filesystem));
 
-    vfs_filesystem_init(&filesystem, 0, 0, read, 0, find, 0); 
-    vfs_mount(&filesystem, "/hda/");
+    vfs_filesystem_init(&filesystem->base, 0, 0, read, 0, find, 0); 
+    vfs_mount(&filesystem->base, "/hda/");
+
+    filesystem->driver = driver;
 
 }
 

@@ -143,8 +143,16 @@ struct ext2_driver
 
 };
 
+struct ext2_filesystem
+{
+
+    struct vfs_filesystem base;
+    struct ext2_driver *driver;
+
+};
+
 void ext2_driver_init(struct ext2_driver *driver);
-void ext2_filesystem_init(struct modules_module *module);
+void ext2_filesystem_init(struct ext2_filesystem *filesystem, struct ext2_driver *driver);
 
 #endif
 
