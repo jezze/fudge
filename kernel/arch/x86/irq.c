@@ -9,9 +9,6 @@
 static void irq_save_state(struct runtime_task *task, struct irq_registers *registers)
 {
 
-    if (!task)
-        return;
-
     task->registers.ip = registers->eip;
     task->registers.sp = registers->useresp;
     task->registers.sb = registers->ebp;
@@ -20,9 +17,6 @@ static void irq_save_state(struct runtime_task *task, struct irq_registers *regi
 
 static void irq_load_state(struct runtime_task *task, struct irq_registers *registers)
 {
-
-    if (!task)
-        return;
 
     registers->eip = task->registers.ip;
     registers->useresp = task->registers.sp;
