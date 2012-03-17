@@ -69,7 +69,7 @@ static unsigned int filesystem_find(struct vfs_filesystem *self, char *name)
 
 }
 
-static void register_node(struct nodefs_driver *self, struct nodefs_node *node)
+static void register_node(struct nodefs_driver *self, struct nodefs_node *node, char *name, struct modules_module *module, unsigned int (*read)(struct nodefs_node *self, unsigned int count, void *buffer), unsigned int (*write)(struct nodefs_node *self, unsigned int count, void *buffer))
 {
 
     unsigned int i;
@@ -79,6 +79,11 @@ static void register_node(struct nodefs_driver *self, struct nodefs_node *node)
 
         if (!self->filesystem.nodes[i])
         {
+
+            node->name = name;
+            node->module = module;
+            node->read = read;
+            node->write = write;
 
             self->filesystem.nodes[i] = node;
             self->filesystem.count++;

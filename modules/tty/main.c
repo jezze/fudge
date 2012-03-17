@@ -102,31 +102,11 @@ void init()
     if (!nodefs)
         return;
 
-    in.name = "tty/stdin";
-    in.read = in_read;
-    in.write = 0;
-
-    out.name = "tty/stdout";
-    out.read = 0;
-    out.write = out_write;
-
-    err.name = "tty/stderr";
-    err.read = 0;
-    err.write = out_write;
-
-    cwd.name = "tty/cwd";
-    cwd.read = cwd_read;
-    cwd.write = cwd_write;
-
-    pwd.name = "tty/pwd";
-    pwd.read = pwd_read;
-    pwd.write = 0;
-
-    nodefs->register_node(nodefs, &in);
-    nodefs->register_node(nodefs, &out);
-    nodefs->register_node(nodefs, &err);
-    nodefs->register_node(nodefs, &cwd);
-    nodefs->register_node(nodefs, &pwd);
+    nodefs->register_node(nodefs, &in, "tty/stdin", &driver.base.module, in_read, 0);
+    nodefs->register_node(nodefs, &out, "tty/stdout", &driver.base.module, 0, out_write);
+    nodefs->register_node(nodefs, &err, "tty/stderr", &driver.base.module, 0, out_write);
+    nodefs->register_node(nodefs, &cwd, "tty/cwd", &driver.base.module, cwd_read, cwd_write);
+    nodefs->register_node(nodefs, &pwd, "tty/pwd", &driver.base.module, pwd_read, 0);
 
 }
 

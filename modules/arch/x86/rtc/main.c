@@ -27,11 +27,7 @@ void init()
     if (!nodefs)
         return;
 
-    timestamp.name = "rtc/timestamp";
-    timestamp.read = timestamp_read;
-    timestamp.write = 0;
-
-    nodefs->register_node(nodefs, &timestamp);
+    nodefs->register_node(nodefs, &timestamp, "rtc/timestamp", &device.base.module, timestamp_read, 0);
 
 }
 

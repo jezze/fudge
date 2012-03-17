@@ -7,6 +7,7 @@ struct nodefs_node
 {
 
     char *name;
+    struct modules_module *module;
     unsigned int (*read)(struct nodefs_node *self, unsigned int count, void *buffer);
     unsigned int (*write)(struct nodefs_node *self, unsigned int count, void *buffer);
 
@@ -26,7 +27,7 @@ struct nodefs_driver
 
     struct modules_driver base;
     struct nodefs_filesystem filesystem;
-    void (*register_node)(struct nodefs_driver *self, struct nodefs_node *node);
+    void (*register_node)(struct nodefs_driver *self, struct nodefs_node *node, char *name, struct modules_module *module, unsigned int (*read)(struct nodefs_node *self, unsigned int count, void *buffer), unsigned int (*write)(struct nodefs_node *self, unsigned int count, void *buffer));
     void (*unregister_node)(struct nodefs_driver *self, struct nodefs_node *node);
 
 };

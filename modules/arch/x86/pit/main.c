@@ -31,11 +31,7 @@ void init()
     if (!nodefs)
         return;
 
-    jiffies.name = "pit/jiffies";
-    jiffies.read = jiffies_read;
-    jiffies.write = 0;
-
-    nodefs->register_node(nodefs, &jiffies);
+    nodefs->register_node(nodefs, &jiffies, "pit/jiffies", &driver.base.module, jiffies_read, 0);
 
 }
 

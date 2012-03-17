@@ -17,11 +17,7 @@ void init()
     if (!nodefs)
         return;
 
-    console.name = "vga/console";
-    console.read = 0;
-    console.write = 0;
-
-    nodefs->register_node(nodefs, &console);
+    nodefs->register_node(nodefs, &console, "vga/console", &driver.base.module, 0, 0);
 
 }
 

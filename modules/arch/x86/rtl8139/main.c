@@ -42,16 +42,8 @@ void init()
     if (!nodefs)
         return;
 
-    mac.name = "module/rtl8139/mac";
-    mac.read = mac_read;
-    mac.write = 0;
-
-    data.name = "module/rtl8139/data";
-    data.read = data_read;
-    data.write = data_write;
-
-    nodefs->register_node(nodefs, &mac);
-    nodefs->register_node(nodefs, &data);
+    nodefs->register_node(nodefs, &mac, "rtl8139/mac", &driver.base.module, mac_read, 0);
+    nodefs->register_node(nodefs, &data, "rtl8139/data", &driver.base.module, data_read, data_write);
 
 }
 
