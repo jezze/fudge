@@ -10,7 +10,25 @@ static unsigned int filesystem_read(struct vfs_filesystem *self, unsigned int id
 
     struct nodefs_filesystem *filesystem = (struct nodefs_filesystem *)self;
 
-    struct nodefs_node *node = filesystem->nodes[id - 1];
+    if (id == 1)
+    {
+
+        void *b = buffer;
+        unsigned int i;
+
+        for (i = 0; i < filesystem->count; i++)
+        {
+
+            string_write(b, "%s\n", filesystem->nodes[i]->name);
+            b += string_length(b);
+
+        }
+
+        return string_length(buffer);
+
+    }
+
+    struct nodefs_node *node = filesystem->nodes[id - 2];
 
     return node->read(node, count, buffer);
 
@@ -21,7 +39,7 @@ static unsigned int filesystem_write(struct vfs_filesystem *self, unsigned int i
 
     struct nodefs_filesystem *filesystem = (struct nodefs_filesystem *)self;
 
-    struct nodefs_node *node = filesystem->nodes[id - 1];
+    struct nodefs_node *node = filesystem->nodes[id - 2];
 
     return node->write(node, count, buffer);
 
@@ -33,7 +51,7 @@ static unsigned int filesystem_find(struct vfs_filesystem *self, char *name)
     unsigned int length = string_length(name);
 
     if (!length)
-        return 0;
+        return 1;
 
     struct nodefs_filesystem *filesystem = (struct nodefs_filesystem *)self;
 
@@ -43,7 +61,7 @@ static unsigned int filesystem_find(struct vfs_filesystem *self, char *name)
     {
 
         if (string_find(filesystem->nodes[i]->name, name))
-            return i + 1;
+            return i + 2;
 
     }
 
