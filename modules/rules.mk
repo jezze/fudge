@@ -1,7 +1,7 @@
 include modules/arch/${ARCH}/rules.mk
 
 modules: GCCFLAGS+=-Iinclude
-modules: LDFLAGS+=-r lib/memory.o lib/string.o
+modules: LDFLAGS+=-Tmodules/linker.ld -r lib/memory.o lib/string.o
 
 modules: modules-arch
 	@${GCC} ${GCCFLAGS} modules/ext2/driver.c -o modules/ext2/driver.o
