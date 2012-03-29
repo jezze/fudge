@@ -24,6 +24,7 @@ struct kbd_device
 {
 
     struct modules_device base;
+    unsigned int irq;
 
 };
 
@@ -44,6 +45,7 @@ struct mouse_device
 {
 
     struct modules_device base;
+    unsigned int irq;
 
 };
 
@@ -58,9 +60,9 @@ struct mouse_driver
 
 };
 
-void kbd_device_init(struct kbd_device *device);
+void kbd_device_init(struct kbd_device *device, unsigned int irq);
 void kbd_driver_init(struct kbd_driver *driver);
-void mouse_device_init(struct mouse_device *device);
+void mouse_device_init(struct mouse_device *device, unsigned int irq);
 void mouse_driver_init(struct mouse_driver *driver);
 
 #endif

@@ -1,4 +1,3 @@
-#include <kernel/event.h>
 #include <kernel/modules.h>
 #include <modules/ps2/ps2.h>
 
@@ -10,10 +9,10 @@ static struct mouse_driver mouseDriver;
 void init()
 {
 
-    kbd_device_init(&kbdDevice);
+    kbd_device_init(&kbdDevice, 0x01);
     modules_register_device(&kbdDevice.base);
 
-    mouse_device_init(&mouseDevice);
+    mouse_device_init(&mouseDevice, 0x0C);
     modules_register_device(&mouseDevice.base);
 
     kbd_driver_init(&kbdDriver);
