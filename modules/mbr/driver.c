@@ -28,12 +28,7 @@ static struct mbr_partition *get_partition(struct mbr_driver *self, struct ata_d
 
 }
 
-static void handle_irq_primary(struct modules_device *device)
-{
-
-}
-
-static void handle_irq_secondary(struct modules_device *device)
+static void handle_irq(struct modules_device *device)
 {
 
 }
@@ -41,8 +36,9 @@ static void handle_irq_secondary(struct modules_device *device)
 static void attach(struct modules_driver *self, struct modules_device *device)
 {
 
-    irq_register_routine(0x0E, device, handle_irq_primary);
-    irq_register_routine(0x0F, device, handle_irq_secondary);
+    struct ata_device *ataDevice = (struct ata_device *)device;
+
+    irq_register_routine(ataDevice->irq, device, handle_irq);
 
 }
 

@@ -98,7 +98,7 @@ static unsigned int write_lba48(struct ata_device *self, unsigned int sectorlow,
 
 }
 
-void ata_device_init(struct ata_device *device, struct ata_bus *bus, unsigned int slave, unsigned int type)
+void ata_device_init(struct ata_device *device, struct ata_bus *bus, unsigned int irq, unsigned int slave, unsigned int type)
 {
 
     memory_clear(device, sizeof (struct ata_device));
@@ -107,6 +107,7 @@ void ata_device_init(struct ata_device *device, struct ata_bus *bus, unsigned in
 
     device->bus = bus;
     device->type = type;
+    device->irq = irq;
     device->slave = slave;
     device->configure_ata = configure_ata;
     device->configure_atapi = configure_atapi;

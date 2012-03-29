@@ -11,7 +11,9 @@ void add_device(struct ata_bus *bus, unsigned int slave, unsigned int type)
 
     struct ata_device *device = &devices[devicesCount];
 
-    ata_device_init(device, bus, slave, type);
+    unsigned int irq = (slave) ? 0x0F : 0x0E;
+
+    ata_device_init(device, bus, irq, slave, type);
 
     if (type == ATA_DEVICE_TYPE_ATA)
         device->configure_ata(device);
