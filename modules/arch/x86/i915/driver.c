@@ -144,7 +144,7 @@ static void start(struct modules_driver *self)
 
 }
 
-static void handle_irq()
+static void handle_irq(struct modules_device *device)
 {
 
     log_write("[i915] IRQ\n");
