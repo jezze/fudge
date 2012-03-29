@@ -3,6 +3,19 @@
 #include <kernel/modules.h>
 #include <modules/ata/ata.h>
 
+static unsigned int read_block(struct ata_bus *self, unsigned int count, void *buffer)
+{
+
+    unsigned int i;
+    unsigned short *out = (unsigned short *)buffer;
+
+    for (i = 0; i < 256; i++)
+        *out++ = io_inw(self->data);
+
+    return 512;
+
+}
+
 static unsigned int read_blocks(struct ata_bus *self, unsigned int count, void *buffer)
 {
 
@@ -23,6 +36,19 @@ static unsigned int read_blocks(struct ata_bus *self, unsigned int count, void *
     }
 
     return i;
+
+}
+
+static unsigned int write_block(struct ata_bus *self, unsigned int count, void *buffer)
+{
+
+    unsigned int i;
+    unsigned short *out = (unsigned short *)buffer;
+
+    for (i = 0; i < 256; i++)
+        io_outw(self->data, *out++);
+
+    return 512;
 
 }
 
@@ -163,7 +189,9 @@ void ata_bus_init(struct ata_bus *bus, unsigned int control, unsigned int data)
     bus->set_lba2 = set_lba2;
     bus->set_command = set_command;
     bus->detect = detect;
+    bus->read_block = read_block;
     bus->read_blocks = read_blocks;
+    bus->write_block = write_block;
     bus->write_blocks = write_blocks;
     bus->scan = ata_bus_scan;
 

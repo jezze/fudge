@@ -63,6 +63,16 @@ static unsigned int read_lba28(struct ata_device *self, unsigned int sector, uns
 
 }
 
+static void read_lba28_async(struct ata_device *self, unsigned int sector, unsigned int count, void *buffer)
+{
+
+    self->bus->select(self->bus, 0xE0 | ((sector >> 24) & 0x0F), self->slave);
+    self->bus->set_lba(self->bus, (unsigned char)(count), (unsigned char)(sector >> 0), (unsigned char)(sector >> 8), (unsigned char)(sector >> 16));
+    self->bus->set_command(self->bus, ATA_COMMAND_PIO28_READ);
+    self->bus->sleep(self->bus);
+
+}
+
 static unsigned int write_lba28(struct ata_device *self, unsigned int sector, unsigned int count, void *buffer)
 {
 
@@ -71,6 +81,16 @@ static unsigned int write_lba28(struct ata_device *self, unsigned int sector, un
     self->bus->set_command(self->bus, ATA_COMMAND_PIO28_WRITE);
 
     return self->bus->write_blocks(self->bus, count, buffer) * 512;
+
+}
+
+static void write_lba28_async(struct ata_device *self, unsigned int sector, unsigned int count, void *buffer)
+{
+
+    self->bus->select(self->bus, 0xE0 | ((sector >> 24) & 0x0F), self->slave);
+    self->bus->set_lba(self->bus, (unsigned char)(count), (unsigned char)(sector >> 0), (unsigned char)(sector >> 8), (unsigned char)(sector >> 16));
+    self->bus->set_command(self->bus, ATA_COMMAND_PIO28_WRITE);
+    self->bus->sleep(self->bus);
 
 }
 
@@ -86,6 +106,17 @@ static unsigned int read_lba48(struct ata_device *self, unsigned int sectorlow, 
 
 }
 
+static void read_lba48_async(struct ata_device *self, unsigned int sectorlow, unsigned int sectorhigh, unsigned int count, void *buffer)
+{
+
+    self->bus->select(self->bus, 0x40, self->slave);
+    self->bus->set_lba2(self->bus, (unsigned char)(count >> 8), (unsigned char)(sectorhigh >> 0), (unsigned char)(sectorhigh >> 8), (unsigned char)(sectorhigh >> 16));
+    self->bus->set_lba(self->bus, (unsigned char)(count), (unsigned char)(sectorlow >> 0), (unsigned char)(sectorlow >> 8), (unsigned char)(sectorlow >> 16));
+    self->bus->set_command(self->bus, ATA_COMMAND_PIO48_READ);
+    self->bus->sleep(self->bus);
+
+}
+
 static unsigned int write_lba48(struct ata_device *self, unsigned int sectorlow, unsigned int sectorhigh, unsigned int count, void *buffer)
 {
 
@@ -95,6 +126,17 @@ static unsigned int write_lba48(struct ata_device *self, unsigned int sectorlow,
     self->bus->set_command(self->bus, ATA_COMMAND_PIO48_WRITE);
 
     return self->bus->write_blocks(self->bus, count, buffer) * 512;
+
+}
+
+static void write_lba48_async(struct ata_device *self, unsigned int sectorlow, unsigned int sectorhigh, unsigned int count, void *buffer)
+{
+
+    self->bus->select(self->bus, 0x40, self->slave);
+    self->bus->set_lba2(self->bus, (unsigned char)(count >> 8), (unsigned char)(sectorhigh >> 0), (unsigned char)(sectorhigh >> 8), (unsigned char)(sectorhigh >> 16));
+    self->bus->set_lba(self->bus, (unsigned char)(count), (unsigned char)(sectorlow >> 0), (unsigned char)(sectorlow >> 8), (unsigned char)(sectorlow >> 16));
+    self->bus->set_command(self->bus, ATA_COMMAND_PIO48_WRITE);
+    self->bus->sleep(self->bus);
 
 }
 
@@ -113,11 +155,15 @@ void ata_device_init(struct ata_device *device, struct ata_bus *bus, unsigned in
     device->configure_atapi = configure_atapi;
     device->lba28Max = 0;
     device->read_lba28 = read_lba28;
+    device->read_lba28_async = read_lba28_async;
     device->write_lba28 = write_lba28;
+    device->write_lba28_async = write_lba28_async;
     device->lba48MaxLow = 0;
     device->lba48MaxHigh = 0;
     device->read_lba48 = read_lba48;
+    device->read_lba48_async = read_lba48_async;
     device->write_lba48 = write_lba48;
+    device->write_lba48_async = write_lba48_async;
 
 }
 

@@ -77,11 +77,15 @@ struct ata_device
     void (*configure_atapi)(struct ata_device *self);
     unsigned int lba28Max;
     unsigned int (*read_lba28)(struct ata_device *self, unsigned int sector, unsigned int count, void *buffer);
+    void (*read_lba28_async)(struct ata_device *self, unsigned int sector, unsigned int count, void *buffer);
     unsigned int (*write_lba28)(struct ata_device *self, unsigned int sector, unsigned int count, void *buffer);
+    void (*write_lba28_async)(struct ata_device *self, unsigned int sector, unsigned int count, void *buffer);
     unsigned int lba48MaxLow;
     unsigned int lba48MaxHigh;
     unsigned int (*read_lba48)(struct ata_device *self, unsigned int sectorlow, unsigned int sectorhigh, unsigned int count, void *buffer);
+    void (*read_lba48_async)(struct ata_device *self, unsigned int sectorlow, unsigned int sectorhigh, unsigned int count, void *buffer);
     unsigned int (*write_lba48)(struct ata_device *self, unsigned int sectorlow, unsigned int sectorhigh, unsigned int count, void *buffer);
+    void (*write_lba48_async)(struct ata_device *self, unsigned int sectorlow, unsigned int sectorhigh, unsigned int count, void *buffer);
 
 };
 
@@ -98,7 +102,9 @@ struct ata_bus
     void (*set_lba2)(struct ata_bus *self, unsigned char count, unsigned char lba3, unsigned char lba4, unsigned char lba5);
     void (*set_command)(struct ata_bus *self, unsigned char command);
     unsigned int (*detect)(struct ata_bus *self, unsigned int slave);
+    unsigned int (*read_block)(struct ata_bus *self, unsigned int count, void *buffer);
     unsigned int (*read_blocks)(struct ata_bus *self, unsigned int count, void *buffer);
+    unsigned int (*write_block)(struct ata_bus *self, unsigned int count, void *buffer);
     unsigned int (*write_blocks)(struct ata_bus *self, unsigned int count, void *buffer);
     void (*scan)(struct ata_bus *self, void (*callback)(struct ata_bus *bus, unsigned int slave, unsigned int type));
 
