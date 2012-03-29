@@ -5,13 +5,14 @@
 #include <kernel/modules.h>
 #include <modules/pit/pit.h>
 
-void pit_device_init(struct pit_device *device)
+void pit_device_init(struct pit_device *device, unsigned int irq)
 {
 
     memory_clear(device, sizeof (struct pit_device));
 
     modules_device_init(&device->base, PIT_DEVICE_TYPE, "pit");
 
+    device->irq = irq;
     device->divisor = PIT_HERTZ / PIT_FREQUENCY;
     device->jiffies = 0;
 

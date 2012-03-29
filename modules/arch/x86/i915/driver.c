@@ -127,6 +127,13 @@ static void set_pipe_mode(unsigned int width, unsigned int height)
 
 }
 
+static void handle_irq(struct modules_device *device)
+{
+
+    log_write("[i915] IRQ\n");
+
+}
+
 static void start(struct modules_driver *self)
 {
 
@@ -141,13 +148,6 @@ static void start(struct modules_driver *self)
     disable_vga();
 
     set_pipe_mode(640, 480);
-
-}
-
-static void handle_irq(struct modules_device *device)
-{
-
-    log_write("[i915] IRQ\n");
 
 }
 

@@ -26,6 +26,7 @@ struct uart_device
 
     struct modules_device base;
     unsigned int port;
+    unsigned int irq;
     char (*read)(struct uart_device *self);
     void (*write)(struct uart_device *self, char c);
 

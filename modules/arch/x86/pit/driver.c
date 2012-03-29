@@ -19,7 +19,9 @@ static void handle_irq(struct modules_device *self)
 static void attach(struct modules_driver *self, struct modules_device *device)
 {
 
-    irq_register_routine(0x00, device, handle_irq);
+    struct pit_device *pitDevice = (struct pit_device *)device;
+
+    irq_register_routine(pitDevice->irq, device, handle_irq);
 
 }
 

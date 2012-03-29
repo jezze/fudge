@@ -58,11 +58,6 @@ static unsigned int buffer_putc(struct kbd_buffer *self, char *buffer)
 
 }
 
-static void start(struct modules_driver *self)
-{
-
-}
-
 static unsigned int check(struct modules_driver *self, struct modules_device *device)
 {
 
@@ -77,7 +72,6 @@ void kbd_driver_init(struct kbd_driver *driver)
 
     modules_driver_init(&driver->base, KBD_DRIVER_TYPE, "kbd");
 
-    driver->base.start = start;
     driver->base.check = check;
     driver->buffer.size = 256;
     driver->buffer.head = 0;

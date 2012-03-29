@@ -20,7 +20,7 @@ static unsigned int jiffies_read(struct nodefs_node *self, unsigned int count, v
 void init()
 {
 
-    pit_device_init(&device);
+    pit_device_init(&device, 0x00);
     modules_register_device(&device.base);
 
     pit_driver_init(&driver);

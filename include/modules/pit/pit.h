@@ -11,6 +11,7 @@ struct pit_device
 {
 
     struct modules_device base;
+    unsigned int irq;
     unsigned short divisor;
     unsigned short jiffies;
 
@@ -23,7 +24,7 @@ struct pit_driver
 
 };
 
-void pit_device_init(struct pit_device *device);
+void pit_device_init(struct pit_device *device, unsigned int irq);
 void pit_driver_init(struct pit_driver *driver);
 
 #endif
