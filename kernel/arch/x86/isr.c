@@ -10,14 +10,14 @@
 
 static void *routines[ISR_ROUTINE_SLOTS];
 
-void isr_register_routine(unsigned char index, void (*routine)(struct isr_registers *registers))
+void isr_register_routine(unsigned int index, void (*routine)(struct isr_registers *registers))
 {
 
     routines[index] = routine;
 
 }
 
-void isr_unregister_routine(unsigned char index)
+void isr_unregister_routine(unsigned int index)
 {
 
     routines[index] = 0;

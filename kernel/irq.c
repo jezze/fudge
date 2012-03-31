@@ -3,7 +3,7 @@
 
 static struct irq_routine routines[IRQ_ROUTINE_SLOTS];
 
-unsigned int irq_register_routine(unsigned char index, struct modules_device *device, void (*callback)(struct modules_device *device))
+unsigned int irq_register_routine(unsigned int index, struct modules_device *device, void (*callback)(struct modules_device *device))
 {
 
     struct irq_routine *routine = &routines[index];
@@ -18,7 +18,7 @@ unsigned int irq_register_routine(unsigned char index, struct modules_device *de
 
 }
 
-unsigned int irq_unregister_routine(unsigned char index, struct modules_device *device)
+unsigned int irq_unregister_routine(unsigned int index, struct modules_device *device)
 {
 
     struct irq_routine *routine = &routines[index];
@@ -33,7 +33,7 @@ unsigned int irq_unregister_routine(unsigned char index, struct modules_device *
 
 }
 
-void irq_raise(unsigned char index)
+void irq_raise(unsigned int index)
 {
 
     struct irq_routine *routine = &routines[index];

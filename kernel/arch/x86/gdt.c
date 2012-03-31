@@ -5,7 +5,7 @@
 static struct gdt_entry entries[GDT_TABLE_SLOTS];
 static struct gdt_pointer pointer;
 
-void gdt_set_gate(unsigned char index, unsigned int base, unsigned int limit, unsigned char access, unsigned char granularity)
+void gdt_set_gate(unsigned int index, unsigned int base, unsigned int limit, unsigned char access, unsigned char granularity)
 {
 
     entries[index].baseLow = (base & 0xFFFF);
