@@ -1,226 +1,339 @@
 extern isr_handle
-extern syscall_handle
+extern isr_handle_irq
+extern isr_handle_syscall
 
-global isr00
-isr00:
+global isr_routine00
+isr_routine00:
     cli
     push 0
     push 0x00
     jmp isr_common
 
-global isr01
-isr01:
+global isr_routine01
+isr_routine01:
     cli
     push 0
     push 0x01
     jmp isr_common
 
-global isr02
-isr02:
+global isr_routine02
+isr_routine02:
     cli
     push 0
     push 0x02
     jmp isr_common
 
-global isr03
-isr03:
+global isr_routine03
+isr_routine03:
     cli
     push 0
     push 0x03
     jmp isr_common
 
-global isr04
-isr04:
+global isr_routine04
+isr_routine04:
     cli
     push 0
     push 0x04
     jmp isr_common
 
-global isr05
-isr05:
+global isr_routine05
+isr_routine05:
     cli
     push 0
     push 0x05
     jmp isr_common
 
-global isr06
-isr06:
+global isr_routine06
+isr_routine06:
     cli
     push 0
     push 0x06
     jmp isr_common
 
-global isr07
-isr07:
+global isr_routine07
+isr_routine07:
     cli
     push 0
     push 0x07
     jmp isr_common
 
-global isr08
-isr08:
+global isr_routine08
+isr_routine08:
     cli
     push 0x08
     jmp isr_common
 
-global isr09
-isr09:
+global isr_routine09
+isr_routine09:
     cli
     push 0
     push 0x09
     jmp isr_common
 
-global isr0A
-isr0A:
+global isr_routine0A
+isr_routine0A:
     cli
     push 0x0A
     jmp isr_common
 
-global isr0B
-isr0B:
+global isr_routine0B
+isr_routine0B:
     cli
     push 0x0B
     jmp isr_common
 
-global isr0C
-isr0C:
+global isr_routine0C
+isr_routine0C:
     cli
     push 0x0C
     jmp isr_common
 
-global isr0D
-isr0D:
+global isr_routine0D
+isr_routine0D:
     cli
     push 0x0D
     jmp isr_common
 
-global isr0E
-isr0E:
+global isr_routine0E
+isr_routine0E:
     cli
     push 0x0E
     jmp isr_common
 
-global isr0F
-isr0F:
+global isr_routine0F
+isr_routine0F:
     cli
     push 0
     push 0x0F
     jmp isr_common
 
-global isr10
-isr10:
+global isr_routine10
+isr_routine10:
     cli
     push 0
     push 0x10
     jmp isr_common
 
-global isr11
-isr11:
+global isr_routine11
+isr_routine11:
     cli
     push 0
     push 0x11
     jmp isr_common
 
-global isr12
-isr12:
+global isr_routine12
+isr_routine12:
     cli
     push 0
     push 0x12
     jmp isr_common
 
-global isr13
-isr13:
+global isr_routine13
+isr_routine13:
     cli
     push 0
     push 0x13
     jmp isr_common
 
-global isr14
-isr14:
+global isr_routine14
+isr_routine14:
     cli
     push 0
     push 0x14
     jmp isr_common
 
-global isr15
-isr15:
+global isr_routine15
+isr_routine15:
     cli
     push 0
     push 0x15
     jmp isr_common
 
-global isr16
-isr16:
+global isr_routine16
+isr_routine16:
     cli
     push 0
     push 0x16
     jmp isr_common
 
-global isr17
-isr17:
+global isr_routine17
+isr_routine17:
     cli
     push 0
     push 0x17
     jmp isr_common
 
-global isr18
-isr18:
+global isr_routine18
+isr_routine18:
     cli
     push 0
     push 0x18
     jmp isr_common
 
-global isr19
-isr19:
+global isr_routine19
+isr_routine19:
     cli
     push 0
     push 0x19
     jmp isr_common
 
-global isr1A
-isr1A:
+global isr_routine1A
+isr_routine1A:
     cli
     push 0
     push 0x1A
     jmp isr_common
 
-global isr1B
-isr1B:
+global isr_routine1B
+isr_routine1B:
     cli
     push 0
     push 0x1B
     jmp isr_common
 
-global isr1C
-isr1C:
+global isr_routine1C
+isr_routine1C:
     cli
     push 0
     push 0x1C
     jmp isr_common
 
-global isr1D
-isr1D:
+global isr_routine1D
+isr_routine1D:
     cli
     push 0
     push 0x1D
     jmp isr_common
 
-global isr1E
-isr1E:
+global isr_routine1E
+isr_routine1E:
     cli
     push 0
     push 0x1E
     jmp isr_common
 
-global isr1F
-isr1F:
+global isr_routine1F
+isr_routine1F:
     cli
     push 0
     push 0x1F
     jmp isr_common
 
-global isr_syscall
-isr_syscall:
+global isr_routine20
+isr_routine20:
+    cli
+    push 0
+    push 0x00
+    jmp isr_common_irq
+
+global isr_routine21
+isr_routine21:
+    cli
+    push 0
+    push 0x01
+    jmp isr_common_irq
+
+global isr_routine22
+isr_routine22:
+    cli
+    push 0
+    push 0x02
+    jmp isr_common_irq
+
+global isr_routine23
+isr_routine23:
+    cli
+    push 0
+    push 0x03
+    jmp isr_common_irq
+
+global isr_routine24
+isr_routine24:
+    cli
+    push 0
+    push 0x04
+    jmp isr_common_irq
+
+global isr_routine25
+isr_routine25:
+    cli
+    push 0
+    push 0x05
+    jmp isr_common_irq
+
+global isr_routine26
+isr_routine26:
+    cli
+    push 0
+    push 0x06
+    jmp isr_common_irq
+
+global isr_routine27
+isr_routine27:
+    cli
+    push 0
+    push 0x07
+    jmp isr_common_irq
+
+global isr_routine28
+isr_routine28:
+    cli
+    push 1
+    push 0x08
+    jmp isr_common_irq
+
+global isr_routine29
+isr_routine29:
+    cli
+    push 1
+    push 0x09
+    jmp isr_common_irq
+
+global isr_routine2A
+isr_routine2A:
+    cli
+    push 1
+    push 0x0A
+    jmp isr_common_irq
+
+global isr_routine2B
+isr_routine2B:
+    cli
+    push 1
+    push 0x0B
+    jmp isr_common_irq
+
+global isr_routine2C
+isr_routine2C:
+    cli
+    push 1
+    push 0x0C
+    jmp isr_common_irq
+
+global isr_routine2D
+isr_routine2D:
+    cli
+    push 1
+    push 0x0D
+    jmp isr_common_irq
+
+global isr_routine2E
+isr_routine2E:
+    cli
+    push 1
+    push 0x0E
+    jmp isr_common_irq
+
+global isr_routine2F
+isr_routine2F:
+    cli
+    push 1
+    push 0x0F
+    jmp isr_common_irq
+
+global isr_routine80
+isr_routine80:
     cli
     pusha
     push ds
@@ -234,7 +347,7 @@ isr_syscall:
     mov gs, ax
     mov eax, esp
     push eax
-    call syscall_handle
+    call isr_handle_syscall
     pop eax
     pop gs
     pop fs
@@ -257,6 +370,29 @@ isr_common:
     mov eax, esp
     push eax
     call isr_handle
+    pop eax
+    pop gs
+    pop fs
+    pop es
+    pop ds
+    popa
+    add esp, 8
+    iret
+
+isr_common_irq:
+    pusha
+    push ds
+    push es
+    push fs
+    push gs
+    mov ax, 0x10
+    mov ds, ax
+    mov es, ax
+    mov fs, ax
+    mov gs, ax
+    mov eax, esp
+    push eax
+    call isr_handle_irq
     pop eax
     pop gs
     pop fs

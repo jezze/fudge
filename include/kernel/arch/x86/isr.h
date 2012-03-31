@@ -1,7 +1,7 @@
 #ifndef ARCH_ISR_H
 #define ARCH_ISR_H
 
-#define ISR_ROUTINE_SLOTS 256
+#define ISR_ROUTINE_SLOTS   256
 #define ISR_ROUTINE_DE      0x00
 #define ISR_ROUTINE_DB      0x01
 #define ISR_ROUTINE_NI      0x02
@@ -21,6 +21,14 @@
 #define ISR_ROUTINE_AC      0x11
 #define ISR_ROUTINE_MC      0x12
 #define ISR_ROUTINE_XM      0x13
+#define ISR_ROUTINE_PIT     0x20
+#define ISR_ROUTINE_KBD     0x21
+#define ISR_ROUTINE_COM2    0x23
+#define ISR_ROUTINE_COM1    0x24
+#define ISR_ROUTINE_SDA     0x26
+#define ISR_ROUTINE_RTC     0x28
+#define ISR_ROUTINE_ATAP    0x2E
+#define ISR_ROUTINE_ATAS    0x2F
 #define ISR_ROUTINE_SYSCALL 0x80
 
 struct isr_registers
@@ -33,42 +41,79 @@ struct isr_registers
 
 };
 
-void isr00();
-void isr01();
-void isr02();
-void isr03();
-void isr04();
-void isr05();
-void isr06();
-void isr07();
-void isr08();
-void isr09();
-void isr0A();
-void isr0B();
-void isr0C();
-void isr0D();
-void isr0E();
-void isr0F();
-void isr10();
-void isr11();
-void isr12();
-void isr13();
-void isr14();
-void isr15();
-void isr16();
-void isr17();
-void isr18();
-void isr19();
-void isr1A();
-void isr1B();
-void isr1C();
-void isr1D();
-void isr1E();
-void isr1F();
-void isr_syscall();
+struct irq_registers
+{
+
+    unsigned int gs, fs, es, ds;
+    unsigned int edi, esi, ebp, esp, ebx, edx, ecx, eax;
+    unsigned int index, slave;
+    unsigned int eip, cs, eflags, useresp, ss;
+
+};
+
+struct syscall_registers
+{
+
+    unsigned int gs, fs, es, ds;
+    unsigned int edi, esi, ebp, esp, ebx, edx, ecx, eax;
+    unsigned int eip, cs, eflags, useresp, ss;
+
+};
+
+void isr_routine00();
+void isr_routine01();
+void isr_routine02();
+void isr_routine03();
+void isr_routine04();
+void isr_routine05();
+void isr_routine06();
+void isr_routine07();
+void isr_routine08();
+void isr_routine09();
+void isr_routine0A();
+void isr_routine0B();
+void isr_routine0C();
+void isr_routine0D();
+void isr_routine0E();
+void isr_routine0F();
+void isr_routine10();
+void isr_routine11();
+void isr_routine12();
+void isr_routine13();
+void isr_routine14();
+void isr_routine15();
+void isr_routine16();
+void isr_routine17();
+void isr_routine18();
+void isr_routine19();
+void isr_routine1A();
+void isr_routine1B();
+void isr_routine1C();
+void isr_routine1D();
+void isr_routine1E();
+void isr_routine1F();
+void isr_routine20();
+void isr_routine21();
+void isr_routine22();
+void isr_routine23();
+void isr_routine24();
+void isr_routine25();
+void isr_routine26();
+void isr_routine27();
+void isr_routine28();
+void isr_routine29();
+void isr_routine2A();
+void isr_routine2B();
+void isr_routine2C();
+void isr_routine2D();
+void isr_routine2E();
+void isr_routine2F();
+void isr_routine80();
 void isr_register_routine(unsigned char index, void (*routine)(struct isr_registers *registers));
 void isr_unregister_routine(unsigned char index);
 void isr_handle(struct isr_registers *registers);
+void isr_handle_irq(struct irq_registers *registers);
+void isr_handle_syscall(struct syscall_registers *registers);
 void isr_init();
 
 #endif

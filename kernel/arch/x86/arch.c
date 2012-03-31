@@ -6,7 +6,6 @@
 #include <kernel/arch/x86/idt.h>
 #include <kernel/arch/x86/io.h>
 #include <kernel/arch/x86/isr.h>
-#include <kernel/arch/x86/irq.h>
 #include <kernel/arch/x86/mboot.h>
 #include <kernel/arch/x86/mmu.h>
 #include <kernel/arch/x86/tss.h>
@@ -38,7 +37,6 @@ static void arch_x86_setup(struct kernel_arch *arch)
     idt_init();
     fpu_init();
     isr_init();
-    irq_init();
 
 }
 
