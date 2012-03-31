@@ -116,11 +116,13 @@ void isr_handle_irq(struct irq_registers *registers)
 void isr_handle_syscall(struct syscall_registers *registers)
 {
 
-    struct runtime_task *task = runtime_get_running_task();
+    if (registers->ds == 0x23)
+        isr_save_syscall_state(runtime_get_running_task(), registers);
 
-    isr_save_syscall_state(task, registers);
-    registers->eax = syscall_raise(registers->eax, registers->useresp, task);
-    isr_load_syscall_state(runtime_get_running_task(), registers);
+    registers->eax = syscall_raise(registers->eax, registers->useresp, runtime_get_running_task());
+
+    if (registers->ds == 0x23)
+        isr_load_syscall_state(runtime_get_running_task(), registers);
 
 }
 
