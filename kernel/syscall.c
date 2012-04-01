@@ -320,7 +320,7 @@ unsigned int syscall_write(struct runtime_task *task, unsigned int id, unsigned 
 
 }
 
-static unsigned int syscall_handle_attach(unsigned int stack, struct runtime_task *task)
+static unsigned int syscall_handle_attach(struct runtime_task *task, unsigned int stack)
 {
 
     unsigned int index = *(unsigned int *)(stack + 4);
@@ -330,7 +330,7 @@ static unsigned int syscall_handle_attach(unsigned int stack, struct runtime_tas
 
 }
 
-static unsigned int syscall_handle_close(unsigned int stack, struct runtime_task *task)
+static unsigned int syscall_handle_close(struct runtime_task *task, unsigned int stack)
 {
 
     unsigned int index = *(unsigned int *)(stack + 4);
@@ -339,7 +339,7 @@ static unsigned int syscall_handle_close(unsigned int stack, struct runtime_task
 
 }
 
-static unsigned int syscall_handle_detach(unsigned int stack, struct runtime_task *task)
+static unsigned int syscall_handle_detach(struct runtime_task *task, unsigned int stack)
 {
 
     unsigned int index = *(unsigned int *)(stack + 4);
@@ -348,14 +348,14 @@ static unsigned int syscall_handle_detach(unsigned int stack, struct runtime_tas
 
 }
 
-static unsigned int syscall_handle_halt(unsigned int stack, struct runtime_task *task)
+static unsigned int syscall_handle_halt(struct runtime_task *task, unsigned int stack)
 {
 
     return syscall_halt(task);
 
 }
 
-static unsigned int syscall_handle_execute(unsigned int stack, struct runtime_task *task)
+static unsigned int syscall_handle_execute(struct runtime_task *task, unsigned int stack)
 {
 
     char *path = *(char **)(stack + 24);
@@ -366,14 +366,14 @@ static unsigned int syscall_handle_execute(unsigned int stack, struct runtime_ta
 
 }
 
-static unsigned int syscall_handle_exit(unsigned int stack, struct runtime_task *task)
+static unsigned int syscall_handle_exit(struct runtime_task *task, unsigned int stack)
 {
 
     return syscall_exit(task);
 
 }
 
-static unsigned int syscall_handle_load(unsigned int stack, struct runtime_task *task)
+static unsigned int syscall_handle_load(struct runtime_task *task, unsigned int stack)
 {
 
     char *path = *(char **)(stack + 4);
@@ -382,7 +382,7 @@ static unsigned int syscall_handle_load(unsigned int stack, struct runtime_task 
 
 }
 
-static unsigned int syscall_handle_open(unsigned int stack, struct runtime_task *task)
+static unsigned int syscall_handle_open(struct runtime_task *task, unsigned int stack)
 {
 
     char *path = *(char **)(stack + 4);
@@ -391,7 +391,7 @@ static unsigned int syscall_handle_open(unsigned int stack, struct runtime_task 
 
 }
 
-static unsigned int syscall_handle_read(unsigned int stack, struct runtime_task *task)
+static unsigned int syscall_handle_read(struct runtime_task *task, unsigned int stack)
 {
 
     unsigned int id = *(unsigned int *)(stack + 4);
@@ -403,14 +403,14 @@ static unsigned int syscall_handle_read(unsigned int stack, struct runtime_task 
 
 }
 
-static unsigned int syscall_handle_reboot(unsigned int stack, struct runtime_task *task)
+static unsigned int syscall_handle_reboot(struct runtime_task *task, unsigned int stack)
 {
 
     return syscall_reboot(task);
 
 }
 
-static unsigned int syscall_handle_unload(unsigned int stack, struct runtime_task *task)
+static unsigned int syscall_handle_unload(struct runtime_task *task, unsigned int stack)
 {
 
     char *path = *(char **)(stack + 4);
@@ -419,14 +419,14 @@ static unsigned int syscall_handle_unload(unsigned int stack, struct runtime_tas
 
 }
 
-static unsigned int syscall_handle_wait(unsigned int stack, struct runtime_task *task)
+static unsigned int syscall_handle_wait(struct runtime_task *task, unsigned int stack)
 {
 
     return syscall_wait(task);
 
 }
 
-static unsigned int syscall_handle_write(unsigned int stack, struct runtime_task *task)
+static unsigned int syscall_handle_write(struct runtime_task *task, unsigned int stack)
 {
 
     unsigned int id = *(unsigned int *)(stack + 4);
@@ -438,22 +438,22 @@ static unsigned int syscall_handle_write(unsigned int stack, struct runtime_task
 
 }
 
-static void syscall_register_routine(unsigned char index, unsigned int (*routine)(unsigned int stack, struct runtime_task *task))
+static void syscall_register_routine(unsigned char index, unsigned int (*routine)(struct runtime_task *task, unsigned int stack))
 {
 
     routines[index] = routine;
 
 }
 
-unsigned int syscall_raise(unsigned int index, unsigned int stack, struct runtime_task *task)
+unsigned int syscall_raise(unsigned int index, struct runtime_task *task, unsigned int stack)
 {
 
-    unsigned int (*routine)(unsigned int stack, struct runtime_task *task) = routines[index];
+    unsigned int (*routine)(struct runtime_task *task, unsigned int stack) = routines[index];
 
     if (!routine)
         return 0;
 
-    return routine(stack, task);
+    return routine(task, stack);
 
 }
 

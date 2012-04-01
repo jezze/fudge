@@ -17,7 +17,7 @@
 #define SYSCALL_ROUTINE_DETACH  0x31
 
 unsigned int syscall_execute(struct runtime_task *task, char *path, unsigned int argc, char **argv);
-unsigned int syscall_raise(unsigned int index, unsigned int stack, struct runtime_task *task);
+unsigned int syscall_raise(unsigned int index, struct runtime_task *task, unsigned int stack);
 void syscall_init();
 
 #endif
