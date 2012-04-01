@@ -33,6 +33,11 @@ static void draw_example(struct bga_driver *self)
     unsigned int i;
     unsigned int j;
 
+    // Background
+    for (i = 0; i < 800; i++)
+        for (j = 0; j < 600; j++)
+            draw_pixel(self, i, j, 0x00334455);
+
     // Red square
     for (i = 10; i < 20; i++)
         for (j = 10; j < 20; j++)
@@ -70,7 +75,7 @@ static void start(struct modules_driver *self)
 
     struct bga_driver *driver = (struct bga_driver *)self;
 
-    mmu_memory_init(&memory, driver->lfb, driver->lfb, 0x100000); 
+    mmu_memory_init(&memory, driver->lfb, driver->lfb, 0x400000); 
     mmu_map_kernel_memory(&memory);
     mmu_reload_memory();
 
