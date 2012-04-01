@@ -10,7 +10,7 @@ static struct mmu_table tables[MMU_HEADER_SLOTS];
 static struct mmu_directory kernelDirectory;
 static struct mmu_table kernelTables[4];
 
-static void mmu_handle_pagefault(struct isr_registers *registers)
+static void mmu_handle_pagefault(struct isr_cpu_registers *registers)
 {
 
     mmu_pagefault(cpu_get_cr2(), registers->error);

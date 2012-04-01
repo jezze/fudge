@@ -10,7 +10,7 @@
 
 static void *routines[ISR_ROUTINE_SLOTS];
 
-void isr_register_routine(unsigned int index, void (*routine)(struct isr_registers *registers))
+void isr_register_routine(unsigned int index, void (*routine)(struct isr_cpu_registers *registers))
 {
 
     routines[index] = routine;
@@ -24,7 +24,7 @@ void isr_unregister_routine(unsigned int index)
 
 }
 
-static void isr_save_irq_state(struct runtime_task *task, struct irq_registers *registers)
+static void isr_save_irq_state(struct runtime_task *task, struct isr_irq_registers *registers)
 {
 
     task->registers.ip = registers->eip;
@@ -33,7 +33,7 @@ static void isr_save_irq_state(struct runtime_task *task, struct irq_registers *
 
 }
 
-static void isr_load_irq_state(struct runtime_task *task, struct irq_registers *registers)
+static void isr_load_irq_state(struct runtime_task *task, struct isr_irq_registers *registers)
 {
 
     registers->eip = task->registers.ip;
@@ -42,7 +42,7 @@ static void isr_load_irq_state(struct runtime_task *task, struct irq_registers *
 
 }
 
-static void isr_save_syscall_state(struct runtime_task *task, struct syscall_registers *registers)
+static void isr_save_syscall_state(struct runtime_task *task, struct isr_syscall_registers *registers)
 {
 
     task->registers.ip = registers->eip;
@@ -51,7 +51,7 @@ static void isr_save_syscall_state(struct runtime_task *task, struct syscall_reg
 
 }
 
-static void isr_load_syscall_state(struct runtime_task *task, struct syscall_registers *registers)
+static void isr_load_syscall_state(struct runtime_task *task, struct isr_syscall_registers *registers)
 {
 
     registers->eip = task->registers.ip;
@@ -76,10 +76,10 @@ static void isr_remap_irq()
 
 }
 
-void isr_handle(struct isr_registers *registers)
+void isr_handle_cpu(struct isr_cpu_registers *registers)
 {
 
-    void (*routine)(struct isr_registers *registers) = routines[registers->index];
+    void (*routine)(struct isr_cpu_registers *registers) = routines[registers->index];
 
     if (!routine)
     {
@@ -95,7 +95,7 @@ void isr_handle(struct isr_registers *registers)
 
 }
 
-void isr_handle_irq(struct irq_registers *registers)
+void isr_handle_irq(struct isr_irq_registers *registers)
 {
 
     if (registers->ds == 0x23)
@@ -113,7 +113,7 @@ void isr_handle_irq(struct irq_registers *registers)
 
 }
 
-void isr_handle_syscall(struct syscall_registers *registers)
+void isr_handle_syscall(struct isr_syscall_registers *registers)
 {
 
     if (registers->ds == 0x23)

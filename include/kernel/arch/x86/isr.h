@@ -31,7 +31,7 @@
 #define ISR_ROUTINE_ATAS    0x2F
 #define ISR_ROUTINE_SYSCALL 0x80
 
-struct isr_registers
+struct isr_cpu_registers
 {
 
     unsigned int gs, fs, es, ds;
@@ -41,7 +41,7 @@ struct isr_registers
 
 };
 
-struct irq_registers
+struct isr_irq_registers
 {
 
     unsigned int gs, fs, es, ds;
@@ -51,7 +51,7 @@ struct irq_registers
 
 };
 
-struct syscall_registers
+struct isr_syscall_registers
 {
 
     unsigned int gs, fs, es, ds;
@@ -109,11 +109,11 @@ void isr_routine2D();
 void isr_routine2E();
 void isr_routine2F();
 void isr_routine80();
-void isr_register_routine(unsigned int index, void (*routine)(struct isr_registers *registers));
+void isr_register_routine(unsigned int index, void (*routine)(struct isr_cpu_registers *registers));
 void isr_unregister_routine(unsigned int index);
-void isr_handle(struct isr_registers *registers);
-void isr_handle_irq(struct irq_registers *registers);
-void isr_handle_syscall(struct syscall_registers *registers);
+void isr_handle_cpu(struct isr_cpu_registers *registers);
+void isr_handle_irq(struct isr_irq_registers *registers);
+void isr_handle_syscall(struct isr_syscall_registers *registers);
 void isr_init();
 
 #endif
