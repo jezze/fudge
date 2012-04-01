@@ -10,20 +10,6 @@
 
 static void *routines[ISR_ROUTINE_SLOTS];
 
-void isr_register_routine(unsigned int index, void (*routine)(struct isr_cpu_registers *registers))
-{
-
-    routines[index] = routine;
-
-}
-
-void isr_unregister_routine(unsigned int index)
-{
-
-    routines[index] = 0;
-
-}
-
 static void isr_save_irq_state(struct runtime_task *task, struct isr_irq_registers *registers)
 {
 
@@ -76,6 +62,16 @@ static void isr_remap_irq()
 
 }
 
+static void isr_reset_irq(unsigned int slave)
+{
+
+    if (slave)
+        io_outb(0xA0, 0x20);
+
+    io_outb(0x20, 0x20);
+
+}
+
 void isr_handle_cpu(struct isr_cpu_registers *registers)
 {
 
@@ -102,11 +98,7 @@ void isr_handle_irq(struct isr_irq_registers *registers)
         isr_save_irq_state(runtime_get_running_task(), registers);
 
     irq_raise(registers->index);
-
-    if (registers->slave)
-        io_outb(0xA0, 0x20);
-
-    io_outb(0x20, 0x20);
+    isr_reset_irq(registers->slave);
 
     if (registers->ds == 0x23)
         isr_load_irq_state(runtime_get_running_task(), registers);
@@ -123,6 +115,20 @@ void isr_handle_syscall(struct isr_syscall_registers *registers)
 
     if (registers->ds == 0x23)
         isr_load_syscall_state(runtime_get_running_task(), registers);
+
+}
+
+void isr_register_routine(unsigned int index, void (*routine)(struct isr_cpu_registers *registers))
+{
+
+    routines[index] = routine;
+
+}
+
+void isr_unregister_routine(unsigned int index)
+{
+
+    routines[index] = 0;
 
 }
 
