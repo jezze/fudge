@@ -3,7 +3,7 @@
 void before()
 {
 
-    file_write_format(FILE_STDOUT, "*** PROGRAM START ***\n");
+    file_write_format(FILE_STDOUT, 0, "*** PROGRAM START ***\n");
 
     call_wait();
 
@@ -12,7 +12,7 @@ void before()
 void after()
 {
 
-    file_write_format(FILE_STDOUT, "*** PROGRAM END ***\n");
+    file_write_format(FILE_STDOUT, 0, "*** PROGRAM END ***\n");
 
     call_detach(0x21);
     call_detach(0x22);

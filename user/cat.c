@@ -8,7 +8,7 @@ void main(int argc, char *argv[])
     if (argc != 2)
     {
 
-        file_write_format(FILE_STDOUT, "You need to supply filename.\n");
+        file_write_format(FILE_STDOUT, 0, "You need to supply filename.\n");
 
         return;
 
@@ -19,17 +19,17 @@ void main(int argc, char *argv[])
     if (!fd)
     {
 
-        file_write_format(FILE_STDOUT, "%s: File does not exist.\n", argv[1]);
+        file_write_format(FILE_STDOUT, 0, "%s: File does not exist.\n", argv[1]);
 
         return;
 
     }
 
-    unsigned int count = file_read(fd, 0x4000, buffer);
+    unsigned int count = file_read(fd, 0, 0x4000, buffer);
 
     file_close(fd);
 
-    file_write(FILE_STDOUT, count, buffer);
+    file_write(FILE_STDOUT, 0, count, buffer);
 
 }
 

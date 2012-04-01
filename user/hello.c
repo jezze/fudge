@@ -3,7 +3,7 @@
 void main(int argc, char *argv[])
 {
 
-    file_write_format(FILE_STDOUT, "Hello world!\n");
+    file_write_format(FILE_STDOUT, 0, "Hello world!\n");
 
 }
 

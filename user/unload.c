@@ -6,7 +6,7 @@ void main(int argc, char *argv[])
     if (argc != 2)
     {
 
-        file_write_format(FILE_STDOUT, "You need to supply filename.\n");
+        file_write_format(FILE_STDOUT, 0, "You need to supply filename.\n");
 
         return;
 

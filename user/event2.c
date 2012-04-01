@@ -15,9 +15,9 @@ void explain()
     counter++;
 
     if (counter & 1)
-        file_write_format(FILE_STDOUT, "Odd:    %d\n", counter);
+        file_write_format(FILE_STDOUT, 0, "Odd:    %d\n", counter);
     else
-        file_write_format(FILE_STDOUT, "Even:   %d\n", counter);
+        file_write_format(FILE_STDOUT, 0, "Even:   %d\n", counter);
 
     if (counter < 10)
         call_wait();

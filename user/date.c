@@ -10,16 +10,16 @@ void main(int argc, char *argv[])
     if (!fd)
     {
 
-        file_write_format(FILE_STDOUT, "Could not read rtc/timestamp\n");
+        file_write_format(FILE_STDOUT, 0, "Could not read rtc/timestamp\n");
 
         return;
 
     }
 
-    file_read(fd, 64, buffer);
+    file_read(fd, 0, 64, buffer);
     file_close(fd);
 
-    file_write_format(FILE_STDOUT, "Date: %s\n", buffer);
+    file_write_format(FILE_STDOUT, 0, "Date: %s\n", buffer);
 
 }
 
