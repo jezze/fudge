@@ -1,8 +1,12 @@
 #include <lib/memory.h>
 #include <kernel/arch/x86/io.h>
+#include <kernel/log.h>
+#include <kernel/mmu.h>
 #include <kernel/modules.h>
 #include <modules/pci/pci.h>
 #include <modules/bga/bga.h>
+
+static struct mmu_memory memory;
 
 static void write_register(unsigned short index, unsigned short data)
 {
@@ -15,10 +19,7 @@ static void write_register(unsigned short index, unsigned short data)
 static void draw_pixel(struct bga_driver *self, unsigned int x, unsigned int y, unsigned int color)
 {
 
-    //struct pci_device *device = (struct pci_device *)driver.base.device;
-    //unsigned int *video = device->configuration.bar0;
-
-    unsigned int *video = (unsigned int *)self->bank;
+    unsigned int *video = (unsigned int *)self->lfb;
 
     unsigned int offset = (y * self->xres + x);
 
@@ -60,14 +61,7 @@ static void set_mode(struct bga_driver *self, unsigned int xres, unsigned int yr
     write_register(BGA_INDEX_XRES, self->xres);
     write_register(BGA_INDEX_YRES, self->yres);
     write_register(BGA_INDEX_BPP, self->bpp);
-    write_register(BGA_INDEX_ENABLE, 0x01 | 0x40);
-
-}
-
-static void set_bank(struct bga_driver *self, unsigned int index)
-{
-
-    write_register(BGA_INDEX_BANK, index);
+    write_register(BGA_INDEX_ENABLE, 0x40 | 0x01);
 
 }
 
@@ -76,9 +70,22 @@ static void start(struct modules_driver *self)
 
     struct bga_driver *driver = (struct bga_driver *)self;
 
-    driver->set_mode(driver, 1024, 768, BGA_BPP_32);
-    driver->set_bank(driver, 0);
+    mmu_memory_init(&memory, driver->lfb, driver->lfb, 0x100000); 
+    mmu_map_kernel_memory(&memory);
+    mmu_reload_memory();
+
+    driver->set_mode(driver, 800, 600, BGA_BPP_32);
     draw_example(driver);
+
+}
+
+static void attach(struct modules_driver *self, struct modules_device *device)
+{
+
+    struct bga_driver *driver = (struct bga_driver *)self;
+    struct pci_device *pciDevice = (struct pci_device *)device;
+
+    driver->lfb = (unsigned int *)pciDevice->configuration.bar0;
 
 }
 
@@ -102,10 +109,10 @@ void bga_driver_init(struct bga_driver *driver)
     modules_driver_init(&driver->base, BGA_DRIVER_TYPE, "bga");
 
     driver->base.start = start;
+    driver->base.attach = attach;
     driver->base.check = check;
     driver->bank = (unsigned int *)0xA0000;
     driver->set_mode = set_mode;
-    driver->set_bank = set_bank;
 
 }
 
