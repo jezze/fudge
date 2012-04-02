@@ -19,6 +19,7 @@ user:
 	@${GCC} ${GCCFLAGS} user/tail.c ${LIB} -o user/tail
 	@${GCC} ${GCCFLAGS} user/timer.c ${LIB} -o user/timer
 	@${GCC} ${GCCFLAGS} user/unload.c ${LIB} -o user/unload
+	@${GCC} ${GCCFLAGS} user/wm.c ${LIB} -o user/wm
 	@${GCC} user/test.c -o user/test
 
 user-clean:
@@ -39,5 +40,6 @@ user-clean:
 	@rm -f user/tail
 	@rm -f user/timer
 	@rm -f user/unload
+	@rm -f user/wm
 	@rm -f user/test
 

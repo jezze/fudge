@@ -33,7 +33,7 @@ struct bga_driver
     unsigned int xres;
     unsigned int yres;
     unsigned int bpp;
-    void (*set_mode)(struct bga_driver *self, unsigned int xres, unsigned int yres, unsigned int bpp);
+    void (*set_mode)(struct bga_driver *self);
 
 };
 

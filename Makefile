@@ -37,6 +37,7 @@ ramdisk:
 	@cp user/tail build/root/bin/tail
 	@cp user/timer build/root/bin/timer
 	@cp user/unload build/root/bin/unload
+	@cp user/wm build/root/bin/wm
 	@cp user/test build/root/bin/test
 	@tar -cvf initrd.tar build/root
 	@find build/root -depth -print | cpio -ov > initrd.cpio
@@ -83,6 +84,7 @@ clean: lib-clean kernel-clean modules-clean user-clean
 	@rm -f build/root/bin/tail
 	@rm -f build/root/bin/timer
 	@rm -f build/root/bin/unload
+	@rm -f build/root/bin/wm
 	@rm -f build/root/bin/test
 	@rm -f build/root/mod/*.ko
 	@rm -f build/root/boot/*.bin
