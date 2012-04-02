@@ -4,6 +4,38 @@
 #define YRES 600
 #define BPP 32
 
+static unsigned int mx;
+static unsigned int my;
+
+static void draw_box(unsigned int x1, unsigned int y1, unsigned int x2, unsigned int y2, unsigned int color)
+{
+
+    unsigned char buffer[0xC80];
+
+    unsigned int width = x2 - x1;
+    unsigned int height = y2 - y1;
+
+    unsigned int i;
+
+    for (i = 0; i < width; i++)
+        memory_copy(buffer + i * 4, &color, 4);
+
+    unsigned int fd = file_open("/module/bga/lfb");
+
+    for (i = y1; i < y1 + height; i++)
+    {
+
+        unsigned int offset = (i * XRES + x1) * 4;
+
+        file_write(fd, offset, width * 4, &buffer);
+
+    }
+
+    file_close(fd);
+
+
+}
+
 static void draw_pixel(unsigned int x, unsigned int y, unsigned int color)
 {
 
@@ -53,6 +85,18 @@ void enable()
 
 }
 
+void mouse()
+{
+
+    draw_pixel(mx, mx, 0x00FF0000);
+
+    mx++;
+    my++;
+
+    call_wait();
+
+}
+
 void main(int argc, char *argv[])
 {
 
@@ -65,12 +109,13 @@ void main(int argc, char *argv[])
     set_bpp(bpp);
     enable();
 
-    unsigned int i;
-    unsigned int j;
+    draw_box(0, 0, xres, yres, 0x00223344);
 
-    for (i = 10; i < 20; i++)
-        for (j = 10; j < 20; j++)
-            draw_pixel(i, j, 0x00FF0000);
+    mx = 240;
+    my = 240;
+
+    call_attach(0x0C, mouse);
+    call_wait();
 
 }
 
