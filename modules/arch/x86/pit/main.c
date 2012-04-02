@@ -8,7 +8,7 @@ static struct pit_device device;
 static struct pit_driver driver;
 static struct nodefs_node jiffies;
 
-static unsigned int jiffies_read(struct nodefs_node *self, unsigned int count, void *buffer)
+static unsigned int jiffies_read(struct nodefs_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     string_write(buffer, "%d", device.jiffies);

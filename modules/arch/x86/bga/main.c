@@ -11,7 +11,7 @@ static struct nodefs_node bpp;
 static struct nodefs_node enable;
 static struct nodefs_node lfb;
 
-static unsigned int xres_read(struct nodefs_node *self, unsigned int count, void *buffer)
+static unsigned int xres_read(struct nodefs_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     memory_copy(buffer, &driver.xres, 4);
@@ -20,7 +20,7 @@ static unsigned int xres_read(struct nodefs_node *self, unsigned int count, void
 
 }
 
-static unsigned int xres_write(struct nodefs_node *self, unsigned int count, void *buffer)
+static unsigned int xres_write(struct nodefs_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     memory_copy(&driver.xres, buffer, 4);
@@ -29,7 +29,7 @@ static unsigned int xres_write(struct nodefs_node *self, unsigned int count, voi
 
 }
 
-static unsigned int yres_read(struct nodefs_node *self, unsigned int count, void *buffer)
+static unsigned int yres_read(struct nodefs_node *self, unsigned int offset,  unsigned int count, void *buffer)
 {
 
     memory_copy(buffer, &driver.yres, 4);
@@ -38,7 +38,7 @@ static unsigned int yres_read(struct nodefs_node *self, unsigned int count, void
 
 }
 
-static unsigned int yres_write(struct nodefs_node *self, unsigned int count, void *buffer)
+static unsigned int yres_write(struct nodefs_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     memory_copy(&driver.yres, buffer, 4);
@@ -47,7 +47,7 @@ static unsigned int yres_write(struct nodefs_node *self, unsigned int count, voi
 
 }
 
-static unsigned int bpp_read(struct nodefs_node *self, unsigned int count, void *buffer)
+static unsigned int bpp_read(struct nodefs_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     memory_copy(buffer, &driver.bpp, 4);
@@ -56,7 +56,7 @@ static unsigned int bpp_read(struct nodefs_node *self, unsigned int count, void 
 
 }
 
-static unsigned int bpp_write(struct nodefs_node *self, unsigned int count, void *buffer)
+static unsigned int bpp_write(struct nodefs_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     memory_copy(&driver.bpp, buffer, 4);
@@ -65,7 +65,7 @@ static unsigned int bpp_write(struct nodefs_node *self, unsigned int count, void
 
 }
 
-static unsigned int enable_write(struct nodefs_node *self, unsigned int count, void *buffer)
+static unsigned int enable_write(struct nodefs_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     driver.set_mode(&driver);
@@ -74,10 +74,10 @@ static unsigned int enable_write(struct nodefs_node *self, unsigned int count, v
 
 }
 
-static unsigned int lfb_write(struct nodefs_node *self, unsigned int count, void *buffer)
+static unsigned int lfb_write(struct nodefs_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    memory_copy(driver.lfb, buffer, count);
+    memory_copy(driver.lfb + offset, buffer, count);
 
     return count;
 

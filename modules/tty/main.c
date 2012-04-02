@@ -13,7 +13,7 @@ static struct nodefs_node err;
 static struct nodefs_node cwd;
 static struct nodefs_node pwd;
 
-static unsigned int in_read(struct nodefs_node *self, unsigned int count, void *buffer)
+static unsigned int in_read(struct nodefs_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     unsigned int i;
@@ -34,7 +34,7 @@ static unsigned int in_read(struct nodefs_node *self, unsigned int count, void *
 
 }
 
-static unsigned int out_write(struct nodefs_node *self, unsigned int count, void *buffer)
+static unsigned int out_write(struct nodefs_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     unsigned int i;
@@ -48,7 +48,7 @@ static unsigned int out_write(struct nodefs_node *self, unsigned int count, void
 
 }
 
-static unsigned int cwd_read(struct nodefs_node *self, unsigned int count, void *buffer)
+static unsigned int cwd_read(struct nodefs_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     count = string_length(driver.cwdname);
@@ -59,7 +59,7 @@ static unsigned int cwd_read(struct nodefs_node *self, unsigned int count, void 
 
 }
 
-static unsigned int cwd_write(struct nodefs_node *self, unsigned int count, void *buffer)
+static unsigned int cwd_write(struct nodefs_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     if (((char *)buffer)[string_length(buffer) - 1] != '/')
@@ -74,7 +74,7 @@ static unsigned int cwd_write(struct nodefs_node *self, unsigned int count, void
 
 }
 
-static unsigned int pwd_read(struct nodefs_node *self, unsigned int count, void *buffer)
+static unsigned int pwd_read(struct nodefs_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct vfs_mount *mount = vfs_find_mount(driver.cwdname);
@@ -87,7 +87,7 @@ static unsigned int pwd_read(struct nodefs_node *self, unsigned int count, void 
     if (!id)
         return 0;
 
-    return mount->filesystem->read(mount->filesystem, id, 0, count, buffer);
+    return mount->filesystem->read(mount->filesystem, id, offset, count, buffer);
 
 }
 

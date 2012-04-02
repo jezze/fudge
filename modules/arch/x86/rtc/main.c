@@ -7,7 +7,7 @@
 static struct rtc_device device;
 static struct nodefs_node timestamp;
 
-static unsigned int timestamp_read(struct nodefs_node *self, unsigned int count, void *buffer)
+static unsigned int timestamp_read(struct nodefs_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     string_write(buffer, "%d", 0);

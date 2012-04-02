@@ -64,7 +64,12 @@ void main(int argc, char *argv[])
     set_bpp(bpp);
     enable();
 
-    draw_pixel(0, 0, 0x00FF0000);
+    unsigned int i;
+    unsigned int j;
+
+    for (i = 10; i < 20; i++)
+        for (j = 10; j < 20; j++)
+            draw_pixel(i, j, 0x00FF0000);
 
 }
 
