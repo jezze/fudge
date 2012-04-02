@@ -44,7 +44,7 @@ static void attach(struct modules_driver *self, struct modules_device *device)
     struct bga_driver *driver = (struct bga_driver *)self;
     struct pci_device *pciDevice = (struct pci_device *)device;
 
-    driver->lfb = (unsigned int *)pciDevice->configuration.bar0;
+    driver->lfb = (void *)pciDevice->configuration.bar0;
 
 }
 
@@ -73,7 +73,7 @@ void bga_driver_init(struct bga_driver *driver)
     driver->xres = 800;
     driver->yres = 600;
     driver->bpp = BGA_BPP_32;
-    driver->bank = (unsigned int *)0xA0000;
+    driver->bank = (void *)0xA0000;
     driver->set_mode = set_mode;
 
 }

@@ -28,8 +28,8 @@ struct bga_driver
 {
 
     struct modules_driver base;
-    unsigned int *bank;
-    unsigned int *lfb;
+    void *bank;
+    void *lfb;
     unsigned int xres;
     unsigned int yres;
     unsigned int bpp;
