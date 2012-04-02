@@ -4,8 +4,8 @@
 #define YRES 600
 #define BPP 32
 
-static unsigned int mx;
-static unsigned int my;
+static int mx;
+static int my;
 
 static void draw_box(unsigned int x1, unsigned int y1, unsigned int x2, unsigned int y2, unsigned int color)
 {
@@ -88,10 +88,21 @@ void enable()
 void mouse()
 {
 
-    draw_pixel(mx, mx, 0x00FF0000);
+    char dx;
+    char dy;
 
-    mx++;
-    my++;
+    unsigned int fdx = file_open("/module/ps2/mx");
+    file_read(fdx, 0, 1, &dx);
+    file_close(fdx);
+
+    unsigned int fdy = file_open("/module/ps2/my");
+    file_read(fdy, 0, 1, &dy);
+    file_close(fdy);
+
+    mx += dx / 2;
+    my += dy / 2;
+
+    draw_pixel(mx, my, 0x00FF0000);
 
     call_wait();
 
@@ -111,8 +122,8 @@ void main(int argc, char *argv[])
 
     draw_box(0, 0, xres, yres, 0x00223344);
 
-    mx = 240;
-    my = 240;
+    mx = 400;
+    my = 300;
 
     call_attach(0x0C, mouse);
     call_wait();
