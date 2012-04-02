@@ -11,6 +11,7 @@ static void draw_pixel(unsigned int x, unsigned int y, unsigned int color)
 
     unsigned int fd = file_open("/module/bga/lfb");
     file_write(fd, offset, 4, &color);
+    file_close(fd);
 
 }
 
