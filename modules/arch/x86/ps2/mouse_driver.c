@@ -33,10 +33,6 @@ static void handle_irq(struct modules_device *self)
             mouse->y = io_inb(0x60);
             mouse->cycle = 0;
 
-            log_write("Byte 0: 0x%x\n", mouse->status);
-            log_write("Byte 1: 0x%x\n", mouse->x);
-            log_write("Byte 2: 0x%x\n", mouse->y);
-
             event_raise(EVENT_IRQ_MOUSE);
 
             break;
