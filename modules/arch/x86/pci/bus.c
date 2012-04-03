@@ -34,7 +34,7 @@ unsigned char pci_inb(unsigned int address, unsigned short offset)
 
 }
 
-static unsigned int scan(struct pci_bus *self, unsigned int num, void (*callback)(unsigned int num, unsigned int slot, unsigned int function))
+static unsigned int scan(struct pci_bus *self, unsigned int num)
 {
 
     unsigned int slot;
@@ -50,10 +50,10 @@ static unsigned int scan(struct pci_bus *self, unsigned int num, void (*callback
         unsigned short header = pci_inb(address, 0x0E);
 
         if ((header & 0x01))
-            scan(self, pci_inb(address, 0x19), callback);
+            scan(self, pci_inb(address, 0x19));
 
         if ((header & 0x02))
-            scan(self, pci_inb(address, 0x18), callback);
+            scan(self, pci_inb(address, 0x18));
 
         if ((header & 0x80))
         {
@@ -68,7 +68,7 @@ static unsigned int scan(struct pci_bus *self, unsigned int num, void (*callback
                 if (pci_inw(address, 0x00) == 0xFFFF)
                     continue;
 
-                callback(num, slot, function);
+                self->add_device(self, num, slot, function);
 
             }
 
@@ -76,11 +76,23 @@ static unsigned int scan(struct pci_bus *self, unsigned int num, void (*callback
 
         }
 
-        callback(num, slot, 0);
+        self->add_device(self, num, slot, 0);
 
     }
 
     return 0;
+
+}
+
+static void add_device(struct pci_bus *self, unsigned int num, unsigned int slot, unsigned int function)
+{
+
+    struct pci_device *device = &self->devices[self->devicesCount];
+
+    pci_device_init(device, self, num, slot, function, 0x80000000 | (num << 16) | (slot << 11) | (function << 8));
+    modules_register_device(&device->base);
+
+    self->devicesCount++;
 
 }
 
@@ -92,6 +104,7 @@ void pci_bus_init(struct pci_bus *bus)
     modules_bus_init(&bus->base, PCI_BUS_TYPE, "pci:0");
 
     bus->scan = scan;
+    bus->add_device = add_device;
 
 }
 

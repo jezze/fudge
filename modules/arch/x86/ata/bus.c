@@ -203,7 +203,6 @@ void ata_bus_init(struct ata_bus *bus, unsigned int control, unsigned int data)
 
     bus->control = control;
     bus->data = data;
-    bus->devicesCount = 0;
     bus->sleep = sleep;
     bus->wait = wait;
     bus->select = select;
