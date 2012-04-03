@@ -10,9 +10,6 @@ static void handle_irq(struct modules_device *self)
 
     struct mouse_driver *mouse = (struct mouse_driver *)self->driver;
 
-    if (!mouse)
-        return;
-
     switch (mouse->cycle)
     {
 
@@ -37,11 +34,11 @@ static void handle_irq(struct modules_device *self)
             mouse->y = mouse->byte[2];
             mouse->cycle = 0;
 
+            event_raise(EVENT_IRQ_MOUSE);
+
             break;
 
     }
-
-    event_raise(EVENT_IRQ_MOUSE);
 
 }
 

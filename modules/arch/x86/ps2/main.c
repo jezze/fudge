@@ -15,7 +15,7 @@ static struct nodefs_node my;
 static unsigned int mx_read(struct nodefs_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    memory_copy(buffer, &mouseDriver.byte[1], 1);
+    memory_copy(buffer, &mouseDriver.x, 1);
 
     return 1;
 
@@ -24,7 +24,7 @@ static unsigned int mx_read(struct nodefs_node *self, unsigned int offset, unsig
 static unsigned int my_read(struct nodefs_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    memory_copy(buffer, &mouseDriver.byte[2], 1);
+    memory_copy(buffer, &mouseDriver.y, 1);
 
     return 1;
 

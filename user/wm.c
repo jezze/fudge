@@ -99,8 +99,8 @@ void mouse()
     file_read(fdy, 0, 1, &dy);
     file_close(fdy);
 
-    mx += dx / 2;
-    my += dy / 2;
+    mx += dx / 4;
+    my += dy / 4;
 
     draw_pixel(mx, my, 0x00FF0000);
 
