@@ -5,6 +5,7 @@
 #define MBR_PARTITION_OFFSET 0x1BE
 #define MBR_PARTITION_SIZE 16
 
+#define MBR_DEVICE_TYPE 0x0300
 #define MBR_DRIVER_TYPE 0x0300
 
 struct mbr_partition
@@ -23,6 +24,15 @@ struct mbr_partition
 
 } __attribute__((packed));
 
+struct mbr_device
+{
+
+    struct modules_device base;
+    struct ata_device *atadevice;
+    struct mbr_partition *partition;
+
+};
+
 struct mbr_driver
 {
 
@@ -31,6 +41,7 @@ struct mbr_driver
 
 };
 
+void mbr_device_init(struct mbr_device *device, struct ata_device *ataDevice, struct mbr_partition *partition);
 void mbr_driver_init(struct mbr_driver *driver);
 
 #endif

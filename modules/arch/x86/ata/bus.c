@@ -3,6 +3,9 @@
 #include <kernel/modules.h>
 #include <modules/ata/ata.h>
 
+static struct ata_device devices[8];
+static unsigned int devicesCount;
+
 static unsigned int read_block(struct ata_bus *self, unsigned int count, void *buffer)
 {
 
@@ -160,16 +163,37 @@ static unsigned int detect(struct ata_bus *self, unsigned int slave)
 
 }
 
-void ata_bus_scan(struct ata_bus *self, void (*callback)(struct ata_bus *bus, unsigned int slave, unsigned int type))
+void ata_bus_scan(struct ata_bus *self)
 {
 
     unsigned int type;
 
     if ((type = self->detect(self, 0)))
-        callback(self, 0, type);
+        self->add_device(self, 0, type);
 
     if ((type = self->detect(self, 1)))
-        callback(self, 1, type);
+        self->add_device(self, 1, type);
+
+}
+
+static void add_device(struct ata_bus *self, unsigned int slave, unsigned int type)
+{
+
+    struct ata_device *device = &devices[devicesCount];
+
+    unsigned int irq = (slave) ? 0x0F : 0x0E;
+
+    ata_device_init(device, self, irq, slave, type);
+
+    if (type == ATA_DEVICE_TYPE_ATA)
+        device->configure_ata(device);
+
+    if (type == ATA_DEVICE_TYPE_ATAPI)
+        device->configure_atapi(device);
+
+    modules_register_device(&device->base);
+
+    devicesCount++;
 
 }
 
@@ -194,6 +218,9 @@ void ata_bus_init(struct ata_bus *bus, unsigned int control, unsigned int data)
     bus->write_block = write_block;
     bus->write_blocks = write_blocks;
     bus->scan = ata_bus_scan;
+    bus->add_device = add_device;
+
+    devicesCount = 0;
 
 }
 

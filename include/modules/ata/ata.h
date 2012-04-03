@@ -106,7 +106,8 @@ struct ata_bus
     unsigned int (*read_blocks)(struct ata_bus *self, unsigned int count, void *buffer);
     unsigned int (*write_block)(struct ata_bus *self, unsigned int count, void *buffer);
     unsigned int (*write_blocks)(struct ata_bus *self, unsigned int count, void *buffer);
-    void (*scan)(struct ata_bus *self, void (*callback)(struct ata_bus *bus, unsigned int slave, unsigned int type));
+    void (*scan)(struct ata_bus *self);
+    void (*add_device)(struct ata_bus *self, unsigned int slave, unsigned int type);
 
 };
 
