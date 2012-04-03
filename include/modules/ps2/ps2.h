@@ -54,7 +54,7 @@ struct mouse_driver
 
     struct modules_driver base;
     unsigned char cycle;
-    char byte[3];
+    char status;
     char x;
     char y;
 

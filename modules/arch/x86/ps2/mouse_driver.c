@@ -1,6 +1,7 @@
 #include <lib/memory.h>
 #include <kernel/arch/x86/io.h>
 #include <kernel/event.h>
+#include <kernel/log.h>
 #include <kernel/irq.h>
 #include <kernel/modules.h>
 #include <modules/ps2/ps2.h>
@@ -15,24 +16,26 @@ static void handle_irq(struct modules_device *self)
 
         case 0:
 
-            mouse->byte[0] = io_inb(0x60);
+            mouse->status = io_inb(0x60);
             mouse->cycle++;
 
             break;
 
         case 1:
 
-            mouse->byte[1] = io_inb(0x60);
+            mouse->x = io_inb(0x60);
             mouse->cycle++;
 
             break;
 
         case 2:
 
-            mouse->byte[2] = io_inb(0x60);
-            mouse->x = mouse->byte[1];
-            mouse->y = mouse->byte[2];
+            mouse->y = io_inb(0x60);
             mouse->cycle = 0;
+
+            log_write("Byte 0: 0x%x\n", mouse->status);
+            log_write("Byte 1: 0x%x\n", mouse->x);
+            log_write("Byte 2: 0x%x\n", mouse->y);
 
             event_raise(EVENT_IRQ_MOUSE);
 
@@ -67,7 +70,8 @@ void mouse_driver_init(struct mouse_driver *driver)
 
     driver->base.attach = attach;
     driver->base.check = check;
-    driver->cycle = 0;
+    driver->cycle = 2;
+    driver->status = 0;
     driver->x = 0;
     driver->y = 0;
 

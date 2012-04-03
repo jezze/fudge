@@ -3,34 +3,31 @@
 #include <kernel/modules.h>
 #include <modules/ps2/ps2.h>
 
-static void wait(unsigned char type)
+static void wait_read()
 {
 
     unsigned int timeout = 100000;
 
-    if (type)
+    while (timeout--)
     {
 
-        while (timeout--)
-        {
-
-            if ((io_inb(0x64) & 2) == 0)
-                return;
-
-        }
+        if ((io_inb(0x64) & 1) == 1)
+            return;
 
     }
 
-    else
+}
+
+static void wait_write()
+{
+
+    unsigned int timeout = 100000;
+
+    while (timeout--)
     {
 
-        while (timeout--)
-        {
-
-            if ((io_inb(0x64) & 1) == 1)
-                return;
-
-        }
+        if ((io_inb(0x64) & 2) == 0)
+            return;
 
     }
 
@@ -39,9 +36,9 @@ static void wait(unsigned char type)
 static void write(unsigned char value)
 {
 
-    wait(1);
+    wait_write();
     io_outb(0x64, 0xD4);
-    wait(1);
+    wait_write();
     io_outb(0x60, value);
 
 }
@@ -49,7 +46,7 @@ static void write(unsigned char value)
 static unsigned char read()
 {
 
-    wait(0);
+    wait_read();
 
     return io_inb(0x60);
 
@@ -66,15 +63,15 @@ void mouse_device_init(struct mouse_device *device, unsigned int irq)
 
     unsigned char status;
 
-    wait(1);
+    wait_write();
     io_outb(0x64, 0xA8);
-    wait(1);
+    wait_write();
     io_outb(0x64, 0x20);
-    wait(0);
+    wait_read();
     status = (io_inb(0x60) | 2);
-    wait(1);
+    wait_write();
     io_outb(0x64, 0x60);
-    wait(1);
+    wait_write();
     io_outb(0x60, status);
     write(0xF6);
     read();
