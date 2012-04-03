@@ -3,9 +3,6 @@
 #include <kernel/modules.h>
 #include <modules/ata/ata.h>
 
-static struct ata_device devices[8];
-static unsigned int devicesCount;
-
 static unsigned int read_block(struct ata_bus *self, unsigned int count, void *buffer)
 {
 
@@ -179,7 +176,7 @@ void ata_bus_scan(struct ata_bus *self)
 static void add_device(struct ata_bus *self, unsigned int slave, unsigned int type)
 {
 
-    struct ata_device *device = &devices[devicesCount];
+    struct ata_device *device = &self->devices[self->devicesCount];
 
     unsigned int irq = (slave) ? 0x0F : 0x0E;
 
@@ -193,7 +190,7 @@ static void add_device(struct ata_bus *self, unsigned int slave, unsigned int ty
 
     modules_register_device(&device->base);
 
-    devicesCount++;
+    self->devicesCount++;
 
 }
 
@@ -206,6 +203,7 @@ void ata_bus_init(struct ata_bus *bus, unsigned int control, unsigned int data)
 
     bus->control = control;
     bus->data = data;
+    bus->devicesCount = 0;
     bus->sleep = sleep;
     bus->wait = wait;
     bus->select = select;
@@ -219,8 +217,6 @@ void ata_bus_init(struct ata_bus *bus, unsigned int control, unsigned int data)
     bus->write_blocks = write_blocks;
     bus->scan = ata_bus_scan;
     bus->add_device = add_device;
-
-    devicesCount = 0;
 
 }
 

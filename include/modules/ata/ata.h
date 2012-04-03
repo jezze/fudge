@@ -95,6 +95,8 @@ struct ata_bus
     struct modules_bus base;
     unsigned short control;
     unsigned short data;
+    struct ata_device devices[8];
+    unsigned int devicesCount;
     void (*sleep)(struct ata_bus *self);
     void (*wait)(struct ata_bus *self);
     void (*select)(struct ata_bus *self, unsigned char operation, unsigned int slave);
