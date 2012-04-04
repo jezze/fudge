@@ -5,26 +5,15 @@
 #include <modules/ata/ata.h>
 #include <modules/mbr/mbr.h>
 
-static struct mbr_partition partitions[MBR_PARTITION_SLOTS];
-
-static struct mbr_partition *get_partition(struct mbr_driver *self, struct ata_device *device, unsigned int index)
+static struct mbr_device *get_device(struct mbr_driver *self, unsigned int index)
 {
 
-    char buffer[512];
+    struct mbr_device *device = &self->devices[index];
 
-    device->read_lba28(device, 0, 1, buffer);
-
-    unsigned int i;
-
-    for (i = 0; i < MBR_PARTITION_SLOTS; i++)
-        memory_copy(&partitions[i], buffer + MBR_PARTITION_OFFSET + i * MBR_PARTITION_SIZE, sizeof (struct mbr_partition));
-
-    struct mbr_partition *partition = &partitions[index];
-
-    if (!partitions->systemId)
+    if (!device->partition.systemId)
         return 0;
 
-    return partition;
+    return device;
 
 }
 
@@ -86,7 +75,7 @@ void mbr_driver_init(struct mbr_driver *driver)
     driver->base.check = check;
     driver->base.attach = attach;
     driver->add_device = add_device;
-    driver->get_partition = get_partition;
+    driver->get_device = get_device;
 
 }
 

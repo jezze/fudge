@@ -30,6 +30,8 @@ struct mbr_device
     struct modules_device base;
     struct ata_device *ataDevice;
     struct mbr_partition partition;
+    unsigned int (*read)(struct mbr_device *self, unsigned int offset, unsigned int count, void *buffer);
+    unsigned int (*write)(struct mbr_device *self, unsigned int offset, unsigned int count, void *buffer);
 
 };
 
@@ -40,7 +42,7 @@ struct mbr_driver
     struct mbr_device devices[8];
     unsigned int devicesCount;
     void (*add_device)(struct mbr_driver *self, struct ata_device *ataDevice, void *buffer);
-    struct mbr_partition *(*get_partition)(struct mbr_driver *self, struct ata_device *device, unsigned int index);
+    struct mbr_device *(*get_device)(struct mbr_driver *self, unsigned int index);
 
 };
 
