@@ -10,7 +10,7 @@
 
 static void *routines[ISR_ROUTINE_SLOTS];
 
-static void isr_save_irq_state(struct runtime_task *task, struct isr_irq_registers *registers)
+static void save_irq_state(struct runtime_task *task, struct isr_irq_registers *registers)
 {
 
     task->registers.ip = registers->eip;
@@ -19,7 +19,7 @@ static void isr_save_irq_state(struct runtime_task *task, struct isr_irq_registe
 
 }
 
-static void isr_load_irq_state(struct runtime_task *task, struct isr_irq_registers *registers)
+static void load_irq_state(struct runtime_task *task, struct isr_irq_registers *registers)
 {
 
     registers->eip = task->registers.ip;
@@ -28,7 +28,7 @@ static void isr_load_irq_state(struct runtime_task *task, struct isr_irq_registe
 
 }
 
-static void isr_save_syscall_state(struct runtime_task *task, struct isr_syscall_registers *registers)
+static void save_syscall_state(struct runtime_task *task, struct isr_syscall_registers *registers)
 {
 
     task->registers.ip = registers->eip;
@@ -37,7 +37,7 @@ static void isr_save_syscall_state(struct runtime_task *task, struct isr_syscall
 
 }
 
-static void isr_load_syscall_state(struct runtime_task *task, struct isr_syscall_registers *registers)
+static void load_syscall_state(struct runtime_task *task, struct isr_syscall_registers *registers)
 {
 
     registers->eip = task->registers.ip;
@@ -46,7 +46,7 @@ static void isr_load_syscall_state(struct runtime_task *task, struct isr_syscall
 
 }
 
-static void isr_remap_irq()
+static void remap_irq()
 {
 
     io_outb(0x20, 0x11);
@@ -62,7 +62,7 @@ static void isr_remap_irq()
 
 }
 
-static void isr_reset_irq(unsigned int slave)
+static void reset_irq(unsigned int slave)
 {
 
     if (slave)
@@ -95,13 +95,13 @@ void isr_handle_irq(struct isr_irq_registers *registers)
 {
 
     if (registers->ds == 0x23)
-        isr_save_irq_state(runtime_get_running_task(), registers);
+        save_irq_state(runtime_get_running_task(), registers);
 
     irq_raise(registers->index);
-    isr_reset_irq(registers->slave);
+    reset_irq(registers->slave);
 
     if (registers->ds == 0x23)
-        isr_load_irq_state(runtime_get_running_task(), registers);
+        load_irq_state(runtime_get_running_task(), registers);
 
 }
 
@@ -110,11 +110,11 @@ void isr_handle_syscall(struct isr_syscall_registers *registers)
 
     struct runtime_task *task = runtime_get_running_task();
 
-    isr_save_syscall_state(task, registers);
+    save_syscall_state(task, registers);
 
     registers->eax = syscall_raise(registers->eax, task, registers->useresp);
 
-    isr_load_syscall_state(runtime_get_running_task(), registers);
+    load_syscall_state(runtime_get_running_task(), registers);
 
 }
 
@@ -135,7 +135,7 @@ void isr_unregister_routine(unsigned int index)
 void isr_init()
 {
 
-    isr_remap_irq();
+    remap_irq();
 
     idt_set_gate(ISR_ROUTINE_DE, isr_routine00, 0x08, 0x8E);
     idt_set_gate(ISR_ROUTINE_DB, isr_routine01, 0x08, 0x8E);

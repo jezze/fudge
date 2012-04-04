@@ -53,7 +53,7 @@ void runtime_activate(struct runtime_task *task, struct runtime_task *ptask)
 
 }
 
-static void runtime_copy_args(unsigned int argc, char **argv, void *buffer)
+static void copy_args(unsigned int argc, char **argv, void *buffer)
 {
 
     char **nargv = (char **)(buffer);
@@ -72,12 +72,12 @@ static void runtime_copy_args(unsigned int argc, char **argv, void *buffer)
 
 }
 
-static unsigned int runtime_task_load(struct runtime_task *self, void *entry, unsigned int argc, char **argv)
+static unsigned int load(struct runtime_task *self, void *entry, unsigned int argc, char **argv)
 {
 
     char temp[128];
 
-    runtime_copy_args(argc, argv, temp);
+    copy_args(argc, argv, temp);
 
     self->used = 1;
 
@@ -89,7 +89,7 @@ static unsigned int runtime_task_load(struct runtime_task *self, void *entry, un
     void *stack = memory->vaddress + memory->size;
     void *address = stack - 0x200;
 
-    runtime_copy_args(argc, (char **)(temp), address);
+    copy_args(argc, (char **)(temp), address);
 
     stack = memory_copy(stack - 0x4, &address, 4);
     stack = memory_copy(stack - 0x4, &argc, 4);
@@ -101,7 +101,7 @@ static unsigned int runtime_task_load(struct runtime_task *self, void *entry, un
 
 }
 
-static void runtime_task_unload(struct runtime_task *self)
+static void unload(struct runtime_task *self)
 {
 
     self->used = 0;
@@ -110,7 +110,7 @@ static void runtime_task_unload(struct runtime_task *self)
 
 }
 
-static unsigned int runtime_task_get_descriptor_slot(struct runtime_task *self)
+static unsigned int get_descriptor_slot(struct runtime_task *self)
 {
 
     unsigned int i;
@@ -127,7 +127,7 @@ static unsigned int runtime_task_get_descriptor_slot(struct runtime_task *self)
 
 }
 
-static struct runtime_descriptor *runtime_task_get_descriptor(struct runtime_task *self, unsigned int index)
+static struct runtime_descriptor *get_descriptor(struct runtime_task *self, unsigned int index)
 {
 
     if (!index)
@@ -167,10 +167,10 @@ void runtime_task_init(struct runtime_task *task, unsigned int id)
     task->id = id;
     task->used = 0;
     task->event = 0;
-    task->load = runtime_task_load;
-    task->unload = runtime_task_unload;
-    task->get_descriptor_slot = runtime_task_get_descriptor_slot;
-    task->get_descriptor = runtime_task_get_descriptor;
+    task->load = load;
+    task->unload = unload;
+    task->get_descriptor_slot = get_descriptor_slot;
+    task->get_descriptor = get_descriptor;
 
     void *address = (void *)(RUNTIME_TASK_ADDRESS_BASE + task->id * RUNTIME_TASK_ADDRESS_SIZE);
 

@@ -61,7 +61,7 @@ void kernel_init(struct kernel_arch *arch)
     ramdisk_init(kernelArch->ramdiskc, kernelArch->ramdiskv);
     symbol_init();
 
-    unsigned int index = syscall_execute(0, "/ramdisk/bin/init", 0, 0);
+    unsigned int index = syscall_execute("/ramdisk/bin/init");
 
     if (!index)
         error_panic("Could not start init", __FILE__, __LINE__);

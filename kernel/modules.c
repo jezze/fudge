@@ -5,7 +5,7 @@
 
 static struct modules_module *modules[MODULES_MODULE_SLOTS];
 
-static void modules_attach(struct modules_driver *driver)
+static void attach(struct modules_driver *driver)
 {
 
     if (!driver->check)
@@ -102,7 +102,7 @@ void modules_register_driver(struct modules_driver *driver)
 {
 
     modules_register_module(&driver->module);
-    modules_attach(driver);
+    attach(driver);
 
     if (driver->start)
         driver->start(driver);
