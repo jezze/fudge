@@ -32,7 +32,7 @@ static void modules_attach(struct modules_driver *driver)
         device->driver = driver;
 
         if (driver->attach)
-            driver->attach(driver, device);
+            driver->attach(device);
 
     }
 
