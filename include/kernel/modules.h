@@ -43,8 +43,8 @@ struct modules_driver
     struct modules_module module;
     unsigned int type;
     void (*start)(struct modules_driver *self);
-    void (*attach)(struct modules_driver *self, struct modules_device *device);
     unsigned int (*check)(struct modules_driver *self, struct modules_device *device);
+    void (*attach)(struct modules_device *device);
 
 };
 

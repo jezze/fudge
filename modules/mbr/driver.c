@@ -34,11 +34,11 @@ static void add_device(struct mbr_driver *self, struct ata_device *ataDevice, vo
 
 }
 
-static void attach(struct modules_driver *self, struct modules_device *device)
+static void attach(struct modules_device *device)
 {
 
-    struct mbr_driver *driver = (struct mbr_driver *)self;
     struct ata_device *ataDevice = (struct ata_device *)device;
+    struct mbr_driver *driver = (struct mbr_driver *)device->driver;
 
     irq_register_routine(ataDevice->irq, device, handle_irq);
 

@@ -38,11 +38,11 @@ static void start(struct modules_driver *self)
 
 }
 
-static void attach(struct modules_driver *self, struct modules_device *device)
+static void attach(struct modules_device *device)
 {
 
-    struct bga_driver *driver = (struct bga_driver *)self;
     struct pci_device *pciDevice = (struct pci_device *)device;
+    struct bga_driver *driver = (struct bga_driver *)device->driver;
 
     driver->lfb = (void *)pciDevice->configuration.bar0;
 

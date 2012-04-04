@@ -119,7 +119,7 @@ static void handle_irq(struct modules_device *self)
 
 }
 
-static void attach(struct modules_driver *self, struct modules_device *device)
+static void attach(struct modules_device *device)
 {
 
     struct kbd_device *kbdDevice = (struct kbd_device *)device;
