@@ -33,12 +33,39 @@ static void handle_irq(struct modules_device *device)
 
 }
 
+static void add_device(struct mbr_driver *self, struct ata_device *ataDevice, struct mbr_partition *partition)
+{
+
+    struct mbr_device *device = &self->devices[self->devicesCount];
+
+    mbr_device_init(device, ataDevice, 0);
+    modules_register_device(&device->base);
+
+    self->devicesCount++;
+
+}
+
 static void attach(struct modules_driver *self, struct modules_device *device)
 {
 
+    struct mbr_driver *driver = (struct mbr_driver *)self;
     struct ata_device *ataDevice = (struct ata_device *)device;
 
     irq_register_routine(ataDevice->irq, device, handle_irq);
+
+    char buffer[512];
+
+    ataDevice->read_lba28(ataDevice, 0, 1, buffer);
+
+    unsigned int i;
+
+    for (i = 0; i < MBR_PARTITION_SLOTS; i++)
+    {
+
+        memory_copy(&partitions[i], buffer + MBR_PARTITION_OFFSET + i * MBR_PARTITION_SIZE, sizeof (struct mbr_partition));
+        driver->add_device(driver, ataDevice, &partitions[i]);
+
+    }
 
 }
 
@@ -63,6 +90,7 @@ void mbr_driver_init(struct mbr_driver *driver)
 
     driver->base.check = check;
     driver->base.attach = attach;
+    driver->add_device = add_device;
     driver->get_partition = get_partition;
 
 }

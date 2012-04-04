@@ -8,7 +8,7 @@ void mbr_device_init(struct mbr_device *device, struct ata_device *ataDevice, st
 
     memory_clear(device, sizeof (struct mbr_device));
 
-    modules_device_init(&driver->base, MBR_DEVICE_TYPE, "hdaX:X");
+    modules_device_init(&device->base, MBR_DEVICE_TYPE, "hda:0:0:0");
 
     device->ataDevice = ataDevice;
     device->partition = partition;

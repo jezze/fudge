@@ -28,7 +28,7 @@ struct mbr_device
 {
 
     struct modules_device base;
-    struct ata_device *atadevice;
+    struct ata_device *ataDevice;
     struct mbr_partition *partition;
 
 };
@@ -37,6 +37,9 @@ struct mbr_driver
 {
 
     struct modules_driver base;
+    struct mbr_device devices[8];
+    unsigned int devicesCount;
+    void (*add_device)(struct mbr_driver *self, struct ata_device *ataDevice, struct mbr_partition *partition);
     struct mbr_partition *(*get_partition)(struct mbr_driver *self, struct ata_device *device, unsigned int index);
 
 };
