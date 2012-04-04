@@ -13,9 +13,6 @@ void init()
     modules_register_bus(&primary.base);
     modules_register_bus(&secondary.base);
 
-    primary.scan(&primary);
-    secondary.scan(&secondary);
-
 }
 
 void destroy()

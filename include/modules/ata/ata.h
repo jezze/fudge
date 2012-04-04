@@ -103,12 +103,10 @@ struct ata_bus
     void (*set_lba)(struct ata_bus *self, unsigned char count, unsigned char lba0, unsigned char lba1, unsigned char lba2);
     void (*set_lba2)(struct ata_bus *self, unsigned char count, unsigned char lba3, unsigned char lba4, unsigned char lba5);
     void (*set_command)(struct ata_bus *self, unsigned char command);
-    unsigned int (*detect)(struct ata_bus *self, unsigned int slave);
     unsigned int (*read_block)(struct ata_bus *self, unsigned int count, void *buffer);
     unsigned int (*read_blocks)(struct ata_bus *self, unsigned int count, void *buffer);
     unsigned int (*write_block)(struct ata_bus *self, unsigned int count, void *buffer);
     unsigned int (*write_blocks)(struct ata_bus *self, unsigned int count, void *buffer);
-    void (*scan)(struct ata_bus *self);
     void (*add_device)(struct ata_bus *self, unsigned int slave, unsigned int type);
 
 };

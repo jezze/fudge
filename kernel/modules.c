@@ -134,6 +134,9 @@ void modules_register_bus(struct modules_bus *bus)
 
     modules_register_module(&bus->module);
 
+    if (bus->scan)
+        bus->scan(bus);
+
 }
 
 void modules_register_device(struct modules_device *device)

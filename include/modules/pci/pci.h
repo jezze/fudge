@@ -81,7 +81,6 @@ struct pci_bus
     struct modules_bus base;
     struct pci_device devices[64];
     unsigned int devicesCount;
-    unsigned int (*scan)(struct pci_bus *self, unsigned int num);
     void (*add_device)(struct pci_bus *self, unsigned int num, unsigned int slot, unsigned int function);
 
 };

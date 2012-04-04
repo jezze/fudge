@@ -24,6 +24,7 @@ struct modules_bus
 
     struct modules_module module;
     unsigned int type;
+    void (*scan)(struct modules_bus *self);
 
 };
 

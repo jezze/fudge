@@ -10,8 +10,6 @@ void init()
 
     modules_register_bus(&bus.base);
 
-    bus.scan(&bus, 0);
-
 }
 
 void destroy()

@@ -160,16 +160,18 @@ static unsigned int detect(struct ata_bus *self, unsigned int slave)
 
 }
 
-void ata_bus_scan(struct ata_bus *self)
+static void scan(struct modules_bus *self)
 {
+
+    struct ata_bus *bus = (struct ata_bus *)self;
 
     unsigned int type;
 
-    if ((type = self->detect(self, 0)))
-        self->add_device(self, 0, type);
+    if ((type = detect(bus, 0)))
+        bus->add_device(bus, 0, type);
 
-    if ((type = self->detect(self, 1)))
-        self->add_device(self, 1, type);
+    if ((type = detect(bus, 1)))
+        bus->add_device(bus, 1, type);
 
 }
 
@@ -201,6 +203,7 @@ void ata_bus_init(struct ata_bus *bus, unsigned int control, unsigned int data)
 
     modules_bus_init(&bus->base, ATA_BUS_TYPE, "ata:0");
 
+    bus->base.scan = scan;
     bus->control = control;
     bus->data = data;
     bus->sleep = sleep;
@@ -209,12 +212,10 @@ void ata_bus_init(struct ata_bus *bus, unsigned int control, unsigned int data)
     bus->set_lba = set_lba;
     bus->set_lba2 = set_lba2;
     bus->set_command = set_command;
-    bus->detect = detect;
     bus->read_block = read_block;
     bus->read_blocks = read_blocks;
     bus->write_block = write_block;
     bus->write_blocks = write_blocks;
-    bus->scan = ata_bus_scan;
     bus->add_device = add_device;
 
 }
