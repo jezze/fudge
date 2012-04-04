@@ -81,13 +81,13 @@ struct pci_bus
     struct modules_bus base;
     struct pci_device devices[64];
     unsigned int devicesCount;
+    unsigned int (*ind)(unsigned int address, unsigned short offset);
+    unsigned short (*inw)(unsigned int address, unsigned short offset);
+    unsigned char (*inb)(unsigned int address, unsigned short offset);
     void (*add_device)(struct pci_bus *self, unsigned int num, unsigned int slot, unsigned int function);
 
 };
 
-unsigned int pci_ind(unsigned int address, unsigned short offset);
-unsigned char pci_inb(unsigned int address, unsigned short offset);
-unsigned short pci_inw(unsigned int address, unsigned short offset);
 void pci_bus_init(struct pci_bus *bus);
 void pci_device_init(struct pci_device *device, struct pci_bus *bus, unsigned int num, unsigned int slot, unsigned int function, unsigned int address);
 

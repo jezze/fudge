@@ -4,14 +4,14 @@
 #include <kernel/modules.h>
 #include <modules/pci/pci.h>
 
-unsigned int get_address(unsigned int num, unsigned int slot, unsigned int function)
+static unsigned int get_address(unsigned int num, unsigned int slot, unsigned int function)
 {
 
     return 0x80000000 | (num << 16) | (slot << 11) | (function << 8);
 
 }
 
-unsigned int pci_ind(unsigned int address, unsigned short offset)
+static unsigned int ind(unsigned int address, unsigned short offset)
 {
 
     io_outd(PCI_ADDRESS, address | (offset & 0xFC));
@@ -20,21 +20,21 @@ unsigned int pci_ind(unsigned int address, unsigned short offset)
 
 }
 
-unsigned short pci_inw(unsigned int address, unsigned short offset)
+static unsigned short inw(unsigned int address, unsigned short offset)
 {
 
-    return (unsigned short)((pci_ind(address, offset) >> ((offset & 2) * 8)) & 0xFFFF);
+    return (unsigned short)((ind(address, offset) >> ((offset & 2) * 8)) & 0xFFFF);
 
 }
 
-unsigned char pci_inb(unsigned int address, unsigned short offset)
+static unsigned char inb(unsigned int address, unsigned short offset)
 {
 
-    return (unsigned char)((pci_ind(address, offset) >> ((offset & 3) * 8)) & 0xFF);
+    return (unsigned char)((ind(address, offset) >> ((offset & 3) * 8)) & 0xFF);
 
 }
 
-void detect(struct pci_bus *self, unsigned int num)
+static void detect(struct pci_bus *self, unsigned int num)
 {
 
     unsigned int slot;
@@ -44,16 +44,16 @@ void detect(struct pci_bus *self, unsigned int num)
 
         unsigned int address = get_address(num, slot, 0x00);
 
-        if (pci_inw(address, 0x00) == 0xFFFF)
+        if (inw(address, 0x00) == 0xFFFF)
             continue;
 
-        unsigned short header = pci_inb(address, 0x0E);
+        unsigned short header = inb(address, 0x0E);
 
         if ((header & 0x01))
-            detect(self, pci_inb(address, 0x19));
+            detect(self, inb(address, 0x19));
 
         if ((header & 0x02))
-            detect(self, pci_inb(address, 0x18));
+            detect(self, inb(address, 0x18));
 
         if ((header & 0x80))
         {
@@ -65,7 +65,7 @@ void detect(struct pci_bus *self, unsigned int num)
 
                 unsigned int address = get_address(num, slot, function);
 
-                if (pci_inw(address, 0x00) == 0xFFFF)
+                if (inw(address, 0x00) == 0xFFFF)
                     continue;
 
                 self->add_device(self, num, slot, function);
@@ -111,6 +111,9 @@ void pci_bus_init(struct pci_bus *bus)
     modules_bus_init(&bus->base, PCI_BUS_TYPE, "pci:0");
 
     bus->base.scan = scan;
+    bus->ind = ind;
+    bus->inw = inw;
+    bus->inb = inb;
     bus->add_device = add_device;
 
 }
