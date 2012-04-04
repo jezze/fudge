@@ -33,12 +33,12 @@ static void handle_irq(struct modules_device *device)
 
 }
 
-static void add_device(struct mbr_driver *self, struct ata_device *ataDevice, struct mbr_partition *partition)
+static void add_device(struct mbr_driver *self, struct ata_device *ataDevice, void *buffer)
 {
 
     struct mbr_device *device = &self->devices[self->devicesCount];
 
-    mbr_device_init(device, ataDevice, 0);
+    mbr_device_init(device, ataDevice, buffer);
     modules_register_device(&device->base);
 
     self->devicesCount++;
@@ -60,12 +60,7 @@ static void attach(struct modules_driver *self, struct modules_device *device)
     unsigned int i;
 
     for (i = 0; i < MBR_PARTITION_SLOTS; i++)
-    {
-
-        memory_copy(&partitions[i], buffer + MBR_PARTITION_OFFSET + i * MBR_PARTITION_SIZE, sizeof (struct mbr_partition));
-        driver->add_device(driver, ataDevice, &partitions[i]);
-
-    }
+        driver->add_device(driver, ataDevice, buffer + MBR_PARTITION_OFFSET + i * MBR_PARTITION_SIZE);
 
 }
 
