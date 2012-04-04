@@ -38,54 +38,6 @@ static void modules_attach(struct modules_driver *driver)
 
 }
 
-struct modules_bus *modules_get_bus(unsigned int type)
-{
-
-    unsigned int i;
-
-    for (i = 0; i < MODULES_MODULE_SLOTS; i++)
-    {
-
-        struct modules_module *module = modules[i];
-
-        if (!module || module->type != MODULES_TYPE_BUS)
-            continue;
-
-        struct modules_bus *bus = (struct modules_bus *)module;
-
-        if (bus->type == type)
-            return bus;
-
-    }
-
-    return 0;
-
-}
-
-struct modules_device *modules_get_device(unsigned int type)
-{
-
-    unsigned int i;
-
-    for (i = 0; i < MODULES_MODULE_SLOTS; i++)
-    {
-
-        struct modules_module *module = modules[i];
-
-        if (!module || module->type != MODULES_TYPE_DEVICE)
-            continue;
-
-        struct modules_device *device = (struct modules_device *)module;
-
-        if (device->type == type)
-            return device;
-
-    }
-
-    return 0;
-
-}
-
 struct modules_driver *modules_get_driver(unsigned int type)
 {
 

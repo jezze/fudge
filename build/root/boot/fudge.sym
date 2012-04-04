@@ -14,8 +14,6 @@ mmu_reload_memory
 modules_bus_init
 modules_device_init
 modules_driver_init
-modules_get_bus
-modules_get_device
 modules_get_driver
 modules_register_bus
 modules_register_device

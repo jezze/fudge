@@ -48,8 +48,6 @@ struct modules_driver
 
 };
 
-struct modules_bus *modules_get_bus(unsigned int type);
-struct modules_device *modules_get_device(unsigned int type);
 struct modules_driver *modules_get_driver(unsigned int type);
 void modules_register_bus(struct modules_bus *bus);
 void modules_register_device(struct modules_device *device);
