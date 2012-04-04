@@ -144,7 +144,6 @@ struct ext2_driver
 {
 
     struct modules_driver base;
-    struct mbr_driver *mbrDriver;
     struct ext2_filesystem filesystems[8];
     unsigned int filesystemsCount;
     void (*read_blockgroup)(struct mbr_device *device, unsigned int id, struct ext2_blockgroup *bg);
@@ -153,7 +152,7 @@ struct ext2_driver
 
 };
 
-void ext2_driver_init(struct ext2_driver *driver, struct mbr_driver *mbrDriver);
+void ext2_driver_init(struct ext2_driver *driver);
 void ext2_filesystem_init(struct ext2_filesystem *filesystem, struct ext2_driver *driver, struct mbr_device *device);
 
 #endif

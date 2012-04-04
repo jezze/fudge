@@ -8,12 +8,7 @@ static struct ext2_driver driver;
 void init()
 {
 
-    struct mbr_driver *mbrDriver = (struct mbr_driver *)modules_get_driver(MBR_DRIVER_TYPE);
-
-    if (!mbrDriver)
-        return;
-
-    ext2_driver_init(&driver, mbrDriver);
+    ext2_driver_init(&driver);
 
     modules_register_driver(&driver.base);
 

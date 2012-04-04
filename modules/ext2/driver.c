@@ -76,11 +76,6 @@ static void read_content(struct mbr_device *device, struct ext2_node *node, void
 
 }
 
-static void start(struct modules_driver *self)
-{
-
-}
-
 static void attach(struct modules_device *device)
 {
 
@@ -112,17 +107,15 @@ static unsigned int check(struct modules_driver *self, struct modules_device *de
 
 }
 
-void ext2_driver_init(struct ext2_driver *driver, struct mbr_driver *mbrDriver)
+void ext2_driver_init(struct ext2_driver *driver)
 {
 
     memory_clear(driver, sizeof (struct ext2_driver));
 
     modules_driver_init(&driver->base, EXT2_DRIVER_TYPE, "ext2");
 
-    driver->base.start = start;
     driver->base.check = check;
     driver->base.attach = attach;
-    driver->mbrDriver = mbrDriver;
     driver->read_blockgroup = read_blockgroup;
     driver->read_node = read_node;
     driver->read_content = read_content;
