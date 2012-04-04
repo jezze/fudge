@@ -150,7 +150,7 @@ struct ext2_filesystem
 
 };
 
-void ext2_driver_init(struct ext2_driver *driver);
+void ext2_driver_init(struct ext2_driver *driver, struct mbr_driver *mbrDriver);
 void ext2_filesystem_init(struct ext2_filesystem *filesystem, struct ext2_driver *driver);
 
 #endif

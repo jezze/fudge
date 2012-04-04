@@ -37,13 +37,13 @@ void init()
     rtl8139_driver_init(&driver);
     modules_register_driver(&driver.base);
 
-    struct nodefs_driver *nodefs = (struct nodefs_driver *)modules_get_driver(NODEFS_DRIVER_TYPE);
+    struct nodefs_driver *nodefsDriver = (struct nodefs_driver *)modules_get_driver(NODEFS_DRIVER_TYPE);
 
-    if (!nodefs)
+    if (!nodefsDriver)
         return;
 
-    nodefs->register_node(nodefs, &mac, "rtl8139/mac", &driver.base.module, mac_read, 0);
-    nodefs->register_node(nodefs, &data, "rtl8139/data", &driver.base.module, data_read, data_write);
+    nodefsDriver->register_node(nodefsDriver, &mac, "rtl8139/mac", &driver.base.module, mac_read, 0);
+    nodefsDriver->register_node(nodefsDriver, &data, "rtl8139/data", &driver.base.module, data_read, data_write);
 
 }
 

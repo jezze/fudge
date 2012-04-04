@@ -12,12 +12,12 @@ void init()
     vga_driver_init(&driver);
     modules_register_driver(&driver.base);
 
-    struct nodefs_driver *nodefs = (struct nodefs_driver *)modules_get_driver(NODEFS_DRIVER_TYPE);
+    struct nodefs_driver *nodefsDriver = (struct nodefs_driver *)modules_get_driver(NODEFS_DRIVER_TYPE);
 
-    if (!nodefs)
+    if (!nodefsDriver)
         return;
 
-    nodefs->register_node(nodefs, &console, "vga/console", &driver.base.module, 0, 0);
+    nodefsDriver->register_node(nodefsDriver, &console, "vga/console", &driver.base.module, 0, 0);
 
 }
 

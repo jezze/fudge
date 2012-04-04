@@ -72,17 +72,7 @@ static void start(struct modules_driver *self)
 
     struct smp_driver *driver = (struct smp_driver *)self;
 
-    struct acpi_driver *acpiDriver = (struct acpi_driver *)modules_get_driver(ACPI_DRIVER_TYPE);
-
-    if (!acpiDriver)
-        return;
-
-    struct cpuid_driver *cpuidDriver = (struct cpuid_driver *)modules_get_driver(CPUID_DRIVER_TYPE);
-
-    if (!cpuidDriver)
-        return;
-
-//    if (!cpuidDriver->is_supported(CPUID_INSTRUCTION_VENDOR, CPUID_FEATURES0_EDX_FLAG_HTT))
+//    if (!driver->cpuidDriver->is_supported(CPUID_INSTRUCTION_VENDOR, CPUID_FEATURES0_EDX_FLAG_HTT))
 //        return;
 
     unsigned int i;
@@ -99,8 +89,8 @@ static void start(struct modules_driver *self)
 
     }
 
-    setup_madt(driver, acpiDriver);
-    setup_srat(driver, acpiDriver);
+    setup_madt(driver, driver->acpiDriver);
+    setup_srat(driver, driver->acpiDriver);
 
     for (i = 0; i < driver->count; i++)
     {
@@ -113,7 +103,7 @@ static void start(struct modules_driver *self)
 
 }
 
-void smp_driver_init(struct smp_driver *driver)
+void smp_driver_init(struct smp_driver *driver, struct acpi_driver *acpiDriver, struct cpuid_driver *cpuidDriver)
 {
 
     memory_clear(driver, sizeof (struct smp_driver));
@@ -122,6 +112,8 @@ void smp_driver_init(struct smp_driver *driver)
 
     driver->base.start = start;
     driver->count = 0;
+    driver->acpiDriver = acpiDriver;
+    driver->cpuidDriver = cpuidDriver;
 
 }
 

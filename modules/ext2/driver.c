@@ -64,12 +64,6 @@ static void start(struct modules_driver *self)
 {
 
     struct ext2_driver *driver = (struct ext2_driver *)self;
-
-    driver->mbrDriver = (struct mbr_driver *)modules_get_driver(MBR_DRIVER_TYPE);
-
-    if (!driver->mbrDriver)
-        return;
-
     struct mbr_device *device = driver->mbrDriver->get_device(driver->mbrDriver, 0);
 
     char mem[1024];
@@ -91,7 +85,7 @@ static unsigned int check(struct modules_driver *self, struct modules_device *de
 
 }
 
-void ext2_driver_init(struct ext2_driver *driver)
+void ext2_driver_init(struct ext2_driver *driver, struct mbr_driver *mbrDriver)
 {
 
     memory_clear(driver, sizeof (struct ext2_driver));
@@ -100,6 +94,7 @@ void ext2_driver_init(struct ext2_driver *driver)
 
     driver->base.start = start;
     driver->base.check = check;
+    driver->mbrDriver = mbrDriver;
     driver->read_blockgroup = read_blockgroup;
     driver->read_node = read_node;
     driver->read_content = read_content;

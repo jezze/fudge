@@ -45,13 +45,13 @@ void init()
     mouse_driver_init(&mouseDriver);
     modules_register_driver(&mouseDriver.base);
 
-    struct nodefs_driver *nodefs = (struct nodefs_driver *)modules_get_driver(NODEFS_DRIVER_TYPE);
+    struct nodefs_driver *nodefsDriver = (struct nodefs_driver *)modules_get_driver(NODEFS_DRIVER_TYPE);
 
-    if (!nodefs)
+    if (!nodefsDriver)
         return;
 
-    nodefs->register_node(nodefs, &mx, "ps2/mx", &mouseDriver.base.module, mx_read, 0);
-    nodefs->register_node(nodefs, &my, "ps2/my", &mouseDriver.base.module, my_read, 0);
+    nodefsDriver->register_node(nodefsDriver, &mx, "ps2/mx", &mouseDriver.base.module, mx_read, 0);
+    nodefsDriver->register_node(nodefsDriver, &my, "ps2/my", &mouseDriver.base.module, my_read, 0);
 
 }
 

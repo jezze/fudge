@@ -26,12 +26,12 @@ void init()
     pit_driver_init(&driver);
     modules_register_driver(&driver.base);
 
-    struct nodefs_driver *nodefs = (struct nodefs_driver *)modules_get_driver(NODEFS_DRIVER_TYPE);
+    struct nodefs_driver *nodefsDriver = (struct nodefs_driver *)modules_get_driver(NODEFS_DRIVER_TYPE);
 
-    if (!nodefs)
+    if (!nodefsDriver)
         return;
 
-    nodefs->register_node(nodefs, &jiffies, "pit/jiffies", &driver.base.module, jiffies_read, 0);
+    nodefsDriver->register_node(nodefsDriver, &jiffies, "pit/jiffies", &driver.base.module, jiffies_read, 0);
 
 }
 

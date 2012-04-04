@@ -94,19 +94,29 @@ static unsigned int pwd_read(struct nodefs_node *self, unsigned int offset, unsi
 void init()
 {
 
-    tty_driver_init(&driver, "/ramdisk/home/");
-    modules_register_driver(&driver.base);
+    struct kbd_driver *kbdDriver = (struct kbd_driver *)modules_get_driver(KBD_DRIVER_TYPE);
 
-    struct nodefs_driver *nodefs = (struct nodefs_driver *)modules_get_driver(NODEFS_DRIVER_TYPE);
-
-    if (!nodefs)
+    if (!kbdDriver)
         return;
 
-    nodefs->register_node(nodefs, &in, "tty/stdin", &driver.base.module, in_read, 0);
-    nodefs->register_node(nodefs, &out, "tty/stdout", &driver.base.module, 0, out_write);
-    nodefs->register_node(nodefs, &err, "tty/stderr", &driver.base.module, 0, out_write);
-    nodefs->register_node(nodefs, &cwd, "tty/cwd", &driver.base.module, cwd_read, cwd_write);
-    nodefs->register_node(nodefs, &pwd, "tty/pwd", &driver.base.module, pwd_read, 0);
+    struct vga_driver *vgaDriver = (struct vga_driver *)modules_get_driver(VGA_DRIVER_TYPE);
+
+    if (!vgaDriver)
+        return;
+
+    tty_driver_init(&driver, kbdDriver, vgaDriver, "/ramdisk/home/");
+    modules_register_driver(&driver.base);
+
+    struct nodefs_driver *nodefsDriver = (struct nodefs_driver *)modules_get_driver(NODEFS_DRIVER_TYPE);
+
+    if (!nodefsDriver)
+        return;
+
+    nodefsDriver->register_node(nodefsDriver, &in, "tty/stdin", &driver.base.module, in_read, 0);
+    nodefsDriver->register_node(nodefsDriver, &out, "tty/stdout", &driver.base.module, 0, out_write);
+    nodefsDriver->register_node(nodefsDriver, &err, "tty/stderr", &driver.base.module, 0, out_write);
+    nodefsDriver->register_node(nodefsDriver, &cwd, "tty/cwd", &driver.base.module, cwd_read, cwd_write);
+    nodefsDriver->register_node(nodefsDriver, &pwd, "tty/pwd", &driver.base.module, pwd_read, 0);
 
 }
 

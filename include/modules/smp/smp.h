@@ -19,10 +19,12 @@ struct smp_driver
     struct modules_driver base;
     struct smp_cpu cpus[32];
     unsigned int count;
+    struct acpi_driver *acpiDriver;
+    struct cpuid_driver *cpuidDriver;
 
 };
 
-void smp_driver_init(struct smp_driver *driver);
+void smp_driver_init(struct smp_driver *driver, struct acpi_driver *acpiDriver, struct cpuid_driver *cpuidDriver);
 
 #endif
 

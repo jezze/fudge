@@ -22,12 +22,12 @@ void init()
     rtc_device_init(&device);
     modules_register_device(&device.base);
 
-    struct nodefs_driver *nodefs = (struct nodefs_driver *)modules_get_driver(NODEFS_DRIVER_TYPE);
+    struct nodefs_driver *nodefsDriver = (struct nodefs_driver *)modules_get_driver(NODEFS_DRIVER_TYPE);
 
-    if (!nodefs)
+    if (!nodefsDriver)
         return;
 
-    nodefs->register_node(nodefs, &timestamp, "rtc/timestamp", &device.base.module, timestamp_read, 0);
+    nodefsDriver->register_node(nodefsDriver, &timestamp, "rtc/timestamp", &device.base.module, timestamp_read, 0);
 
 }
 

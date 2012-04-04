@@ -38,6 +38,6 @@ struct tty_driver
 
 };
 
-void tty_driver_init(struct tty_driver *driver, char *cwdname);
+void tty_driver_init(struct tty_driver *driver, struct kbd_driver *kbdDriver, struct vga_driver *vgaDriver, char *cwdname);
 
 #endif
