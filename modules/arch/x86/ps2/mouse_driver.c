@@ -67,9 +67,6 @@ void mouse_driver_init(struct mouse_driver *driver)
     driver->base.attach = attach;
     driver->base.check = check;
     driver->cycle = 2;
-    driver->status = 0;
-    driver->x = 0;
-    driver->y = 0;
 
 }
 

@@ -78,8 +78,6 @@ void uart_driver_init(struct uart_driver *driver)
     driver->base.attach = attach;
     driver->base.check = check;
     driver->buffer.size = 256;
-    driver->buffer.head = 0;
-    driver->buffer.tail = 0;
     driver->buffer.getc = buffer_getc;
     driver->buffer.putc = buffer_putc;
 

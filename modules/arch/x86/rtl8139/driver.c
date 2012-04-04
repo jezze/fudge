@@ -198,7 +198,6 @@ void rtl8139_driver_init(struct rtl8139_driver *driver)
     driver->base.check = check;
     driver->read = read;
     driver->write = write;
-    driver->txp = 0;
 
 }
 

@@ -12,7 +12,6 @@ void pit_device_init(struct pit_device *device, unsigned int irq)
 
     device->irq = irq;
     device->divisor = PIT_HERTZ / PIT_FREQUENCY;
-    device->jiffies = 0;
 
     io_outb(0x43, 0x36);
     io_outb(0x40, (unsigned char)(device->divisor & 0xFF));

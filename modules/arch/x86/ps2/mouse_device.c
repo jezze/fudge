@@ -6,30 +6,14 @@
 static void wait_read()
 {
 
-    unsigned int timeout = 100000;
-
-    while (timeout--)
-    {
-
-        if ((io_inb(0x64) & 1) == 1)
-            return;
-
-    }
+    while ((io_inb(0x64) & 1) != 1);
 
 }
 
 static void wait_write()
 {
 
-    unsigned int timeout = 100000;
-
-    while (timeout--)
-    {
-
-        if ((io_inb(0x64) & 2) == 0)
-            return;
-
-    }
+    while ((io_inb(0x64) & 2) != 0);
 
 }
 

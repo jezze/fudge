@@ -153,13 +153,10 @@ void ata_device_init(struct ata_device *device, struct ata_bus *bus, unsigned in
     device->slave = slave;
     device->configure_ata = configure_ata;
     device->configure_atapi = configure_atapi;
-    device->lba28Max = 0;
     device->read_lba28 = read_lba28;
     device->read_lba28_async = read_lba28_async;
     device->write_lba28 = write_lba28;
     device->write_lba28_async = write_lba28_async;
-    device->lba48MaxLow = 0;
-    device->lba48MaxHigh = 0;
     device->read_lba48 = read_lba48;
     device->read_lba48_async = read_lba48_async;
     device->write_lba48 = write_lba48;
