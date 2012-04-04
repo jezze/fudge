@@ -32,8 +32,22 @@ static unsigned int read(struct vfs_filesystem *self, unsigned int id, unsigned 
                 return c;
 
             memory_copy(buffer + c, private + 8, entry->length);
-            memory_copy(buffer + c + entry->length, "\n", 1);
-            c += entry->length + 1;
+
+            if (entry->type == 2)
+            {
+
+                memory_copy(buffer + c + entry->length, "/\n", 2);
+                c += entry->length + 2;
+
+            }
+
+            else
+            {
+
+                memory_copy(buffer + c + entry->length, "\n", 1);
+                c += entry->length + 1;
+
+            }
 
             private += entry->size;
 
