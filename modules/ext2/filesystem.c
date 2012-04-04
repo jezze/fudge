@@ -14,9 +14,9 @@ static unsigned int read(struct vfs_filesystem *self, unsigned int id, unsigned 
     char mem[1024];
     void *private = mem;
 
-    filesystem->driver->read_blockgroup(filesystem->driver, id, &bg);
-    filesystem->driver->read_node(filesystem->driver, id, &bg, &node);
-    filesystem->driver->read_content(filesystem->driver, &node, private);
+    filesystem->driver->read_blockgroup(filesystem->device, id, &bg);
+    filesystem->driver->read_node(filesystem->device, id, &bg, &node);
+    filesystem->driver->read_content(filesystem->device, &node, private);
 
     if ((node.type & 0xF000) == EXT2_NODE_TYPE_DIR)
     {
@@ -80,9 +80,9 @@ static struct ext2_entry *finddir(struct vfs_filesystem *self, unsigned int id, 
     char mem[1024];
     void *private = mem;
 
-    filesystem->driver->read_blockgroup(filesystem->driver, id, &bg);
-    filesystem->driver->read_node(filesystem->driver, id, &bg, &node);
-    filesystem->driver->read_content(filesystem->driver, &node, private);
+    filesystem->driver->read_blockgroup(filesystem->device, id, &bg);
+    filesystem->driver->read_node(filesystem->device, id, &bg, &node);
+    filesystem->driver->read_content(filesystem->device, &node, private);
 
     if ((node.type & 0xF000) == EXT2_NODE_TYPE_DIR)
     {
@@ -132,7 +132,7 @@ static unsigned int find(struct vfs_filesystem *self, char *name)
 
 }
 
-void ext2_filesystem_init(struct ext2_filesystem *filesystem, struct ext2_driver *driver)
+void ext2_filesystem_init(struct ext2_filesystem *filesystem, struct ext2_driver *driver, struct mbr_device *device)
 {
 
     memory_clear(filesystem, sizeof (struct ext2_filesystem));
@@ -141,6 +141,7 @@ void ext2_filesystem_init(struct ext2_filesystem *filesystem, struct ext2_driver
     vfs_mount(&filesystem->base, "/hda/");
 
     filesystem->driver = driver;
+    filesystem->device = device;
 
 }
 

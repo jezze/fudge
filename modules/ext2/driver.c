@@ -6,20 +6,32 @@
 #include <modules/mbr/mbr.h>
 #include <modules/ext2/ext2.h>
 
-static struct ext2_superblock superblock;
-
-static void read_blockgroup(struct ext2_driver *self, unsigned int id, struct ext2_blockgroup *bg)
+static void read_superblock(struct mbr_device *device, struct ext2_superblock *sb)
 {
+
+    char mem[1024];
+    void *buffer = &mem;
+
+    device->read(device, 2, 2, buffer);
+
+    memory_copy(sb, buffer, sizeof (struct ext2_superblock));
+
+}
+
+static void read_blockgroup(struct mbr_device *device, unsigned int id, struct ext2_blockgroup *bg)
+{
+
+    struct ext2_superblock sb;
+
+    read_superblock(device, &sb);
 
     char mem[1024];
     void *buffer = mem;
 
-    struct mbr_device *device = self->mbrDriver->get_device(self->mbrDriver, 0);
-
-    unsigned int blocksize = 1024 << superblock.blockSize;
+    unsigned int blocksize = 1024 << sb.blockSize;
     unsigned int sectorsize = blocksize / 512;
 
-    unsigned int nodegroup = (id - 1) / superblock.nodeCountGroup;
+    unsigned int nodegroup = (id - 1) / sb.nodeCountGroup;
 
     device->read(device, 2 * sectorsize, sectorsize, buffer);
 
@@ -27,19 +39,21 @@ static void read_blockgroup(struct ext2_driver *self, unsigned int id, struct ex
 
 }
 
-static void read_node(struct ext2_driver *self, unsigned int id, struct ext2_blockgroup *bg, struct ext2_node *node)
+static void read_node(struct mbr_device *device, unsigned int id, struct ext2_blockgroup *bg, struct ext2_node *node)
 {
+
+    struct ext2_superblock sb;
+
+    read_superblock(device, &sb);
 
     char mem[1024];
     void *buffer = mem;
 
-    struct mbr_device *device = self->mbrDriver->get_device(self->mbrDriver, 0);
-
-    unsigned int blocksize = 1024 << superblock.blockSize;
+    unsigned int blocksize = 1024 << sb.blockSize;
     unsigned int sectorsize = blocksize / 512;
 
-    unsigned int nodesize = superblock.nodeSize;
-    unsigned int nodeindex = (id - 1) % superblock.nodeCountGroup;
+    unsigned int nodesize = sb.nodeSize;
+    unsigned int nodeindex = (id - 1) % sb.nodeCountGroup;
     unsigned int nodeblock = (id * nodesize) / blocksize;
 
     device->read(device, (bg->blockTableAddress + nodeblock) * sectorsize, sectorsize, buffer);
@@ -48,12 +62,14 @@ static void read_node(struct ext2_driver *self, unsigned int id, struct ext2_blo
 
 }
 
-static void read_content(struct ext2_driver *self, struct ext2_node *node, void *buffer)
+static void read_content(struct mbr_device *device, struct ext2_node *node, void *buffer)
 {
 
-    struct mbr_device *device = self->mbrDriver->get_device(self->mbrDriver, 0);
+    struct ext2_superblock sb;
 
-    unsigned int blocksize = 1024 << superblock.blockSize;
+    read_superblock(device, &sb);
+
+    unsigned int blocksize = 1024 << sb.blockSize;
     unsigned int sectorsize = blocksize / 512;
 
     device->read(device, (node->pointer0) * sectorsize, sectorsize, buffer);
@@ -63,25 +79,36 @@ static void read_content(struct ext2_driver *self, struct ext2_node *node, void 
 static void start(struct modules_driver *self)
 {
 
-    struct ext2_driver *driver = (struct ext2_driver *)self;
-    struct mbr_device *device = driver->mbrDriver->get_device(driver->mbrDriver, 0);
+}
 
-    char mem[1024];
-    void *buffer = &mem;
+static void attach(struct modules_device *device)
+{
 
-    device->read(device, 2, 2, buffer);
+    struct mbr_device *mbrDevice = (struct mbr_device *)device;
+    struct ext2_driver *driver = (struct ext2_driver *)device->driver;
+    struct ext2_filesystem *filesystem = &driver->filesystems[driver->filesystemsCount];
 
-    memory_copy(&superblock, buffer, sizeof (struct ext2_superblock));
+    ext2_filesystem_init(filesystem, driver, mbrDevice);
 
-    if (superblock.signature != 0xEF53)
-        return;
+    driver->filesystemsCount++;
 
 }
 
 static unsigned int check(struct modules_driver *self, struct modules_device *device)
 {
 
-    return device->type == MBR_DEVICE_TYPE;
+    if (device->type != MBR_DEVICE_TYPE)
+        return 0;
+
+    struct mbr_device *mbrDevice = (struct mbr_device *)device;
+    struct ext2_superblock sb;
+
+    read_superblock(mbrDevice, &sb);
+
+    if (sb.signature != 0xEF53)
+        return 0;
+
+    return 1;
 
 }
 
@@ -94,6 +121,7 @@ void ext2_driver_init(struct ext2_driver *driver, struct mbr_driver *mbrDriver)
 
     driver->base.start = start;
     driver->base.check = check;
+    driver->base.attach = attach;
     driver->mbrDriver = mbrDriver;
     driver->read_blockgroup = read_blockgroup;
     driver->read_node = read_node;

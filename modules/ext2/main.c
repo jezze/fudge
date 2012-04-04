@@ -4,7 +4,6 @@
 #include <modules/ext2/ext2.h>
 
 static struct ext2_driver driver;
-static struct ext2_filesystem filesystem;
 
 void init()
 {
@@ -15,9 +14,8 @@ void init()
         return;
 
     ext2_driver_init(&driver, mbrDriver);
-    modules_register_driver(&driver.base);
 
-    ext2_filesystem_init(&filesystem, &driver);
+    modules_register_driver(&driver.base);
 
 }
 

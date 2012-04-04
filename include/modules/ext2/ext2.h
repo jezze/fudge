@@ -131,27 +131,30 @@ struct ext2_entry
 
 } __attribute__((packed));
 
-struct ext2_driver
-{
-
-    struct modules_driver base;
-    struct mbr_driver *mbrDriver;
-    void (*read_blockgroup)(struct ext2_driver *self, unsigned int id, struct ext2_blockgroup *bg);
-    void (*read_node)(struct ext2_driver *self, unsigned int id, struct ext2_blockgroup *bg, struct ext2_node *node);
-    void (*read_content)(struct ext2_driver *self, struct ext2_node *node, void *buffer);
-
-};
-
 struct ext2_filesystem
 {
 
     struct vfs_filesystem base;
     struct ext2_driver *driver;
+    struct mbr_device *device;
+
+};
+
+struct ext2_driver
+{
+
+    struct modules_driver base;
+    struct mbr_driver *mbrDriver;
+    struct ext2_filesystem filesystems[8];
+    unsigned int filesystemsCount;
+    void (*read_blockgroup)(struct mbr_device *device, unsigned int id, struct ext2_blockgroup *bg);
+    void (*read_node)(struct mbr_device *device, unsigned int id, struct ext2_blockgroup *bg, struct ext2_node *node);
+    void (*read_content)(struct mbr_device *device, struct ext2_node *node, void *buffer);
 
 };
 
 void ext2_driver_init(struct ext2_driver *driver, struct mbr_driver *mbrDriver);
-void ext2_filesystem_init(struct ext2_filesystem *filesystem, struct ext2_driver *driver);
+void ext2_filesystem_init(struct ext2_filesystem *filesystem, struct ext2_driver *driver, struct mbr_device *device);
 
 #endif
 
