@@ -51,9 +51,6 @@ void kernel_init(struct kernel_arch *arch)
 
     kernelArch->setup(kernelArch);
 
-    if (kernelArch->setup_mmu)
-        kernelArch->setup_mmu();
-
     vfs_init();
     modules_init();
     syscall_init();

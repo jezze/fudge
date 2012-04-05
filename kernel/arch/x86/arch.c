@@ -38,6 +38,7 @@ static void setup(struct kernel_arch *arch)
     idt_init();
     fpu_init();
     isr_init();
+    mmu_setup();
 
 }
 
@@ -47,7 +48,6 @@ void arch_x86_init(struct arch_x86 *x86, struct mboot_header *header, unsigned i
     memory_clear(x86, sizeof (struct arch_x86));
 
     x86->base.setup = setup;
-    x86->base.setup_mmu = mmu_setup;
     x86->base.reboot = reboot;
     x86->base.halt = cpu_halt;
     x86->base.enable_interrupts = cpu_enable_interrupts;
