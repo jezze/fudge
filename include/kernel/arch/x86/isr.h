@@ -31,13 +31,19 @@
 #define ISR_ROUTINE_ATAS    0x2F
 #define ISR_ROUTINE_SYSCALL 0x80
 
-struct isr_base_registers
+struct isr_segment_registers
 {
 
     unsigned int gs;
     unsigned int fs;
     unsigned int es;
     unsigned int ds;
+
+};
+
+struct isr_general_registers
+{
+
     unsigned int edi;
     unsigned int esi;
     unsigned int ebp;
@@ -63,7 +69,8 @@ struct isr_interrupt_registers
 struct isr_cpu_registers
 {
 
-    struct isr_base_registers base;
+    struct isr_segment_registers segment;
+    struct isr_general_registers general;
     unsigned int index;
     unsigned int error;
     struct isr_interrupt_registers interrupt;
@@ -73,7 +80,8 @@ struct isr_cpu_registers
 struct isr_irq_registers
 {
 
-    struct isr_base_registers base;
+    struct isr_segment_registers segment;
+    struct isr_general_registers general;
     unsigned int index;
     unsigned int slave;
     struct isr_interrupt_registers interrupt;
@@ -83,7 +91,7 @@ struct isr_irq_registers
 struct isr_syscall_registers
 {
 
-    struct isr_base_registers base;
+    struct isr_general_registers general;
     struct isr_interrupt_registers interrupt;
 
 };

@@ -336,23 +336,20 @@ global isr_routine80
 isr_routine80:
     cli
     pusha
-    push ds
-    push es
-    push fs
-    push gs
+    mov eax, esp
+    push eax
     mov ax, 0x10
     mov ds, ax
     mov es, ax
     mov fs, ax
     mov gs, ax
-    mov eax, esp
-    push eax
     call isr_handle_syscall
+    mov ax, 0x23
+    mov ds, ax
+    mov es, ax
+    mov fs, ax
+    mov gs, ax
     pop eax
-    pop gs
-    pop fs
-    pop es
-    pop ds
     popa
     iret
 
@@ -362,13 +359,13 @@ isr_common_cpu:
     push es
     push fs
     push gs
+    mov eax, esp
+    push eax
     mov ax, 0x10
     mov ds, ax
     mov es, ax
     mov fs, ax
     mov gs, ax
-    mov eax, esp
-    push eax
     call isr_handle_cpu
     pop eax
     pop gs
@@ -385,13 +382,13 @@ isr_common_irq:
     push es
     push fs
     push gs
+    mov eax, esp
+    push eax
     mov ax, 0x10
     mov ds, ax
     mov es, ax
     mov fs, ax
     mov gs, ax
-    mov eax, esp
-    push eax
     call isr_handle_irq
     pop eax
     pop gs
