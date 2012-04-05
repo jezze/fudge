@@ -16,8 +16,6 @@ struct arch_x86 arch_x86;
 static void reboot()
 {
 
-    cpu_disable_interrupts();
-
     unsigned char ready = 0x02;
 
     while ((ready & 0x02))

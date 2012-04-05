@@ -29,6 +29,7 @@ void kernel_enable_interrupts()
 void kernel_reboot()
 {
 
+    kernelArch->disable_interrupts();
     kernelArch->reboot();
 
 }
