@@ -457,10 +457,15 @@ unsigned int syscall_raise(unsigned int index, struct runtime_task *task, unsign
 
 }
 
-unsigned int syscall_execute(char *path)
+struct runtime_task *syscall_execute(char *path)
 {
 
-    return execute(0, path, 0, 0);
+    unsigned int index = execute(0, path, 0, 0);
+
+    if (!index)
+        return 0;
+
+    return runtime_get_task(index);
 
 }
 

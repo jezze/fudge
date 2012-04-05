@@ -72,11 +72,9 @@ void kernel_init(struct kernel_arch *arch)
     ramdisk_init(kernelArch->ramdiskc, kernelArch->ramdiskv);
     symbol_init();
 
-    unsigned int index = syscall_execute("/ramdisk/bin/init");
+    struct runtime_task *task = syscall_execute("/ramdisk/bin/init");
 
-    error_assert(index, "Init not found", __FILE__, __LINE__);
-
-    struct runtime_task *task = runtime_get_task(index);
+    error_assert(task != 0, "Init not found", __FILE__, __LINE__);
 
     kernelArch->enter_usermode(task->registers.ip, task->registers.sp);
 
