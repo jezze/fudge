@@ -30,7 +30,7 @@ static void setup(struct kernel_arch *arch)
 
     struct arch_x86 *x86 = (struct arch_x86 *)arch;
 
-    mboot_init(x86->mboot);
+    mboot_init(x86->header);
     gdt_init();
     tss_init(x86->stack);
     idt_init();
@@ -47,7 +47,7 @@ void arch_x86_init(struct arch_x86 *x86, struct mboot_header *header, unsigned i
 
     kernel_arch_init(&x86->base, setup, reboot, cpu_halt, cpu_enable_interrupts, cpu_disable_interrupts, cpu_enter_usermode, header->modules.count, header->modules.address);
 
-    x86->mboot = header;
+    x86->header = header;
     x86->magic = magic;
     x86->stack = stack;
 
