@@ -47,16 +47,7 @@ void arch_x86_init(struct arch_x86 *x86, struct mboot_header *header, unsigned i
 
     memory_clear(x86, sizeof (struct arch_x86));
 
-    x86->base.setup = setup;
-    x86->base.reboot = reboot;
-    x86->base.halt = cpu_halt;
-    x86->base.enable_interrupts = cpu_enable_interrupts;
-    x86->base.disable_interrupts = cpu_disable_interrupts;
-    x86->base.enter_usermode = cpu_enter_usermode;
-    x86->base.stack = stack;
-    x86->base.set_stack = tss_set_stack;
-    x86->base.ramdiskc = header->modules.count;
-    x86->base.ramdiskv = header->modules.address;
+    kernel_arch_init(&x86->base, setup, reboot, cpu_halt, cpu_enable_interrupts, cpu_disable_interrupts, cpu_enter_usermode, stack, tss_set_stack, header->modules.count, header->modules.address);
 
     x86->mboot = header;
     x86->magic = magic;
