@@ -13,7 +13,6 @@ struct kernel_arch
     void (*reboot)();
     void (*halt)();
     void *stack;
-    void *mboot;
     unsigned int ramdiskc;
     void **ramdiskv;
 
