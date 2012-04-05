@@ -27,7 +27,7 @@ void init()
     if (!nodefsDriver)
         return;
 
-    nodefsDriver->register_node(nodefsDriver, &timestamp, "rtc/timestamp", &device.base.module, timestamp_read, 0);
+    nodefsDriver->register_node(nodefsDriver, &timestamp, "rtc/timestamp", &device.base.base, timestamp_read, 0);
 
 }
 

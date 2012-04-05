@@ -31,7 +31,7 @@ void init()
     if (!nodefsDriver)
         return;
 
-    nodefsDriver->register_node(nodefsDriver, &jiffies, "pit/jiffies", &driver.base.module, jiffies_read, 0);
+    nodefsDriver->register_node(nodefsDriver, &jiffies, "pit/jiffies", &driver.base.base, jiffies_read, 0);
 
 }
 

@@ -94,11 +94,11 @@ void init()
     if (!nodefsDriver)
         return;
 
-    nodefsDriver->register_node(nodefsDriver, &xres, "bga/xres", &driver.base.module, xres_read, xres_write);
-    nodefsDriver->register_node(nodefsDriver, &yres, "bga/yres", &driver.base.module, yres_read, yres_write);
-    nodefsDriver->register_node(nodefsDriver, &bpp, "bga/bpp", &driver.base.module, bpp_read, bpp_write);
-    nodefsDriver->register_node(nodefsDriver, &enable, "bga/enable", &driver.base.module, 0, enable_write);
-    nodefsDriver->register_node(nodefsDriver, &lfb, "bga/lfb", &driver.base.module, 0, lfb_write);
+    nodefsDriver->register_node(nodefsDriver, &xres, "bga/xres", &driver.base.base, xres_read, xres_write);
+    nodefsDriver->register_node(nodefsDriver, &yres, "bga/yres", &driver.base.base, yres_read, yres_write);
+    nodefsDriver->register_node(nodefsDriver, &bpp, "bga/bpp", &driver.base.base, bpp_read, bpp_write);
+    nodefsDriver->register_node(nodefsDriver, &enable, "bga/enable", &driver.base.base, 0, enable_write);
+    nodefsDriver->register_node(nodefsDriver, &lfb, "bga/lfb", &driver.base.base, 0, lfb_write);
 
 }
 

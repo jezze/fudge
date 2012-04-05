@@ -112,11 +112,11 @@ void init()
     if (!nodefsDriver)
         return;
 
-    nodefsDriver->register_node(nodefsDriver, &in, "tty/stdin", &driver.base.module, in_read, 0);
-    nodefsDriver->register_node(nodefsDriver, &out, "tty/stdout", &driver.base.module, 0, out_write);
-    nodefsDriver->register_node(nodefsDriver, &err, "tty/stderr", &driver.base.module, 0, out_write);
-    nodefsDriver->register_node(nodefsDriver, &cwd, "tty/cwd", &driver.base.module, cwd_read, cwd_write);
-    nodefsDriver->register_node(nodefsDriver, &pwd, "tty/pwd", &driver.base.module, pwd_read, 0);
+    nodefsDriver->register_node(nodefsDriver, &in, "tty/stdin", &driver.base.base, in_read, 0);
+    nodefsDriver->register_node(nodefsDriver, &out, "tty/stdout", &driver.base.base, 0, out_write);
+    nodefsDriver->register_node(nodefsDriver, &err, "tty/stderr", &driver.base.base, 0, out_write);
+    nodefsDriver->register_node(nodefsDriver, &cwd, "tty/cwd", &driver.base.base, cwd_read, cwd_write);
+    nodefsDriver->register_node(nodefsDriver, &pwd, "tty/pwd", &driver.base.base, pwd_read, 0);
 
 }
 

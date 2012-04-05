@@ -42,8 +42,8 @@ void init()
     if (!nodefsDriver)
         return;
 
-    nodefsDriver->register_node(nodefsDriver, &mac, "rtl8139/mac", &driver.base.module, mac_read, 0);
-    nodefsDriver->register_node(nodefsDriver, &data, "rtl8139/data", &driver.base.module, data_read, data_write);
+    nodefsDriver->register_node(nodefsDriver, &mac, "rtl8139/mac", &driver.base.base, mac_read, 0);
+    nodefsDriver->register_node(nodefsDriver, &data, "rtl8139/data", &driver.base.base, data_read, data_write);
 
 }
 

@@ -4,7 +4,7 @@
 #include <kernel/vfs.h>
 #include <kernel/vfs/sys.h>
 
-static struct modules_module **modules;
+static union modules_module **modules;
 static struct vfs_filesystem filesystem;
 
 static unsigned int read(struct vfs_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
@@ -33,18 +33,18 @@ static unsigned int read(struct vfs_filesystem *self, unsigned int id, unsigned 
         if (id != 2)
         {
 
-            if (id == 3 && modules[i]->type != MODULES_TYPE_BUS)
+            if (id == 3 && modules[i]->base.type != MODULES_TYPE_BUS)
                 continue;
 
-            if (id == 4 && modules[i]->type != MODULES_TYPE_DEVICE)
+            if (id == 4 && modules[i]->base.type != MODULES_TYPE_DEVICE)
                 continue;
 
-            if (id == 5 && modules[i]->type != MODULES_TYPE_DRIVER)
+            if (id == 5 && modules[i]->base.type != MODULES_TYPE_DRIVER)
                 continue;
 
         }
 
-        string_write(buffer + length, "%s\n", modules[i]->name);
+        string_write(buffer + length, "%s\n", modules[i]->base.name);
         length += string_length(buffer + length);
 
     }
@@ -77,7 +77,7 @@ static unsigned int find(struct vfs_filesystem *self, char *name)
 
 }
 
-void vfs_sys_init(struct modules_module **m)
+void vfs_sys_init(union modules_module **m)
 {
 
     modules = m;

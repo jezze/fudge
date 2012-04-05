@@ -17,7 +17,7 @@ void init()
     if (!nodefsDriver)
         return;
 
-    nodefsDriver->register_node(nodefsDriver, &console, "vga/console", &driver.base.module, 0, 0);
+    nodefsDriver->register_node(nodefsDriver, &console, "vga/console", &driver.base.base, 0, 0);
 
 }
 

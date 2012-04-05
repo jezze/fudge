@@ -3,7 +3,7 @@
 #include <kernel/vfs.h>
 #include <kernel/vfs/sys.h>
 
-static struct modules_module *modules[MODULES_MODULE_SLOTS];
+static union modules_module *modules[MODULES_MODULE_SLOTS];
 
 static void attach(struct modules_driver *driver)
 {
@@ -16,23 +16,21 @@ static void attach(struct modules_driver *driver)
     for (i = 0; i < MODULES_MODULE_SLOTS; i++)
     {
 
-        struct modules_module *module = modules[i];
+        union modules_module *module = modules[i];
 
-        if (!module || module->type != MODULES_TYPE_DEVICE)
+        if (!module || module->base.type != MODULES_TYPE_DEVICE)
             continue;
 
-        struct modules_device *device = (struct modules_device *)module;
-
-        if (device->driver)
+        if (module->device.driver)
             continue;
 
-        if (!driver->check(driver, device))
+        if (!driver->check(driver, &module->device))
             continue;
 
-        device->driver = driver;
+        module->device.driver = driver;
 
         if (driver->attach)
-            driver->attach(device);
+            driver->attach(&module->device);
 
     }
 
@@ -46,15 +44,13 @@ struct modules_driver *modules_get_driver(unsigned int type)
     for (i = 0; i < MODULES_MODULE_SLOTS; i++)
     {
 
-        struct modules_module *module = modules[i];
+        union modules_module *module = modules[i];
 
-        if (!module || module->type != MODULES_TYPE_DRIVER)
+        if (!module || module->base.type != MODULES_TYPE_DRIVER)
             continue;
 
-        struct modules_driver *driver = (struct modules_driver *)module;
-
-        if (driver->type == type)
-            return driver;
+        if (module->driver.type == type)
+            return &module->driver;
 
     }
 
@@ -62,8 +58,10 @@ struct modules_driver *modules_get_driver(unsigned int type)
 
 }
 
-void modules_register_module(struct modules_module *module)
+static void register_module(struct modules_base *base)
 {
+
+    union modules_module *module = (union modules_module *)base;
 
     unsigned int i;
 
@@ -84,7 +82,7 @@ void modules_register_module(struct modules_module *module)
 void modules_register_bus(struct modules_bus *bus)
 {
 
-    modules_register_module(&bus->module);
+    register_module(&bus->base);
 
     if (bus->scan)
         bus->scan(bus);
@@ -94,14 +92,14 @@ void modules_register_bus(struct modules_bus *bus)
 void modules_register_device(struct modules_device *device)
 {
 
-    modules_register_module(&device->module);
+    register_module(&device->base);
 
 }
 
 void modules_register_driver(struct modules_driver *driver)
 {
 
-    modules_register_module(&driver->module);
+    register_module(&driver->base);
     attach(driver);
 
     if (driver->start)
@@ -109,8 +107,10 @@ void modules_register_driver(struct modules_driver *driver)
 
 }
 
-void modules_unregister_module(struct modules_module *module)
+static void unregister_module(struct modules_base *base)
 {
+
+    union modules_module *module = (union modules_module *)base;
 
     unsigned int i;
 
@@ -134,28 +134,28 @@ void modules_unregister_module(struct modules_module *module)
 void modules_unregister_bus(struct modules_bus *bus)
 {
 
-    modules_unregister_module(&bus->module);
+    unregister_module(&bus->base);
 
 }
 
 void modules_unregister_device(struct modules_device *device)
 {
 
-    modules_unregister_module(&device->module);
+    unregister_module(&device->base);
 
 }
 
 void modules_unregister_driver(struct modules_driver *driver)
 {
 
-    modules_unregister_module(&driver->module);
+    unregister_module(&driver->base);
 
 }
 
-void modules_module_init(struct modules_module *module, unsigned int type, char *name)
+static void base_init(struct modules_base *module, unsigned int type, char *name)
 {
 
-    memory_clear(module, sizeof (struct modules_module));
+    memory_clear(module, sizeof (struct modules_base));
 
     module->type = type;
     module->name = name;
@@ -167,7 +167,7 @@ void modules_bus_init(struct modules_bus *bus, unsigned int type, char *name)
 
     memory_clear(bus, sizeof (struct modules_bus));
 
-    modules_module_init(&bus->module, MODULES_TYPE_BUS, name);
+    base_init(&bus->base, MODULES_TYPE_BUS, name);
 
     bus->type = type;
 
@@ -178,7 +178,7 @@ void modules_device_init(struct modules_device *device, unsigned int type, char 
 
     memory_clear(device, sizeof (struct modules_device));
 
-    modules_module_init(&device->module, MODULES_TYPE_DEVICE, name);
+    base_init(&device->base, MODULES_TYPE_DEVICE, name);
 
     device->type = type;
 
@@ -189,7 +189,7 @@ void modules_driver_init(struct modules_driver *driver, unsigned int type, char 
 
     memory_clear(driver, sizeof (struct modules_driver));
 
-    modules_module_init(&driver->module, MODULES_TYPE_DRIVER, name);
+    base_init(&driver->base, MODULES_TYPE_DRIVER, name);
 
     driver->type = type;
 

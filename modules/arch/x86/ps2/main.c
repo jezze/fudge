@@ -50,8 +50,8 @@ void init()
     if (!nodefsDriver)
         return;
 
-    nodefsDriver->register_node(nodefsDriver, &mx, "ps2/mx", &mouseDriver.base.module, mx_read, 0);
-    nodefsDriver->register_node(nodefsDriver, &my, "ps2/my", &mouseDriver.base.module, my_read, 0);
+    nodefsDriver->register_node(nodefsDriver, &mx, "ps2/mx", &mouseDriver.base.base, mx_read, 0);
+    nodefsDriver->register_node(nodefsDriver, &my, "ps2/my", &mouseDriver.base.base, my_read, 0);
 
 }
 
