@@ -138,7 +138,6 @@ void ext2_filesystem_init(struct ext2_filesystem *filesystem, struct ext2_driver
     memory_clear(filesystem, sizeof (struct ext2_filesystem));
 
     vfs_filesystem_init(&filesystem->base, 0, 0, read, 0, find, 0); 
-    vfs_mount(&filesystem->base, "/hda/");
 
     filesystem->driver = driver;
     filesystem->device = device;

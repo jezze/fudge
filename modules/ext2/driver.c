@@ -76,16 +76,25 @@ static void read_content(struct mbr_device *device, struct ext2_node *node, void
 
 }
 
+static void add_filesystem(struct ext2_driver *driver, struct mbr_device *device)
+{
+
+    struct ext2_filesystem *filesystem = &driver->filesystems[driver->filesystemsCount];
+
+    ext2_filesystem_init(filesystem, driver, device);
+    vfs_mount(&filesystem->base, "/hda/");
+
+    driver->filesystemsCount++;
+
+}
+
 static void attach(struct modules_device *device)
 {
 
     struct mbr_device *mbrDevice = (struct mbr_device *)device;
     struct ext2_driver *driver = (struct ext2_driver *)device->driver;
-    struct ext2_filesystem *filesystem = &driver->filesystems[driver->filesystemsCount];
 
-    ext2_filesystem_init(filesystem, driver, mbrDevice);
-
-    driver->filesystemsCount++;
+    add_filesystem(driver, mbrDevice);
 
 }
 
