@@ -25,7 +25,7 @@ static char mapUS[256] =
        0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0
 };
 
-static unsigned int buffer_getc(struct kbd_buffer *self, char *buffer)
+static unsigned int buffer_getc(struct ps2_kbd_buffer *self, char *buffer)
 {
 
     if (self->head != self->tail)
@@ -42,7 +42,7 @@ static unsigned int buffer_getc(struct kbd_buffer *self, char *buffer)
 
 }
 
-static unsigned int buffer_putc(struct kbd_buffer *self, char *buffer)
+static unsigned int buffer_putc(struct ps2_kbd_buffer *self, char *buffer)
 {
 
     if ((self->head + 1) % self->size != self->tail)
@@ -62,12 +62,12 @@ static unsigned int buffer_putc(struct kbd_buffer *self, char *buffer)
 static void handle_irq(struct modules_device *self)
 {
 
-    struct kbd_driver *kbd = (struct kbd_driver *)self->driver;
+    struct ps2_kbd_driver *kbd = (struct ps2_kbd_driver *)self->driver;
 
     if (!kbd)
         return;
 
-    unsigned char scancode = io_inb(KBD_PORT_READ);
+    unsigned char scancode = io_inb(PS2_REGISTER_DATA);
 
     if (kbd->escaped)
     {
@@ -122,7 +122,7 @@ static void handle_irq(struct modules_device *self)
 static void attach(struct modules_device *device)
 {
 
-    struct kbd_device *kbdDevice = (struct kbd_device *)device;
+    struct ps2_kbd_device *kbdDevice = (struct ps2_kbd_device *)device;
 
     irq_register_routine(kbdDevice->irq, device, handle_irq);
 
@@ -131,16 +131,16 @@ static void attach(struct modules_device *device)
 static unsigned int check(struct modules_driver *self, struct modules_device *device)
 {
 
-    return device->type == KBD_DEVICE_TYPE;
+    return device->type == PS2_KBD_DEVICE_TYPE;
 
 }
 
-void kbd_driver_init(struct kbd_driver *driver)
+void ps2_kbd_driver_init(struct ps2_kbd_driver *driver)
 {
 
-    memory_clear(driver, sizeof (struct kbd_driver));
+    memory_clear(driver, sizeof (struct ps2_kbd_driver));
 
-    modules_driver_init(&driver->base, KBD_DRIVER_TYPE, "kbd", 0, check, attach);
+    modules_driver_init(&driver->base, PS2_KBD_DRIVER_TYPE, "kbd", 0, check, attach);
 
     driver->buffer.size = 256;
     driver->buffer.getc = buffer_getc;

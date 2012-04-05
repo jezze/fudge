@@ -6,14 +6,14 @@
 static void wait_read()
 {
 
-    while ((io_inb(0x64) & 1) != 1);
+    while ((io_inb(PS2_REGISTER_COMMAND) & 1) != 1);
 
 }
 
 static void wait_write()
 {
 
-    while ((io_inb(0x64) & 2) != 0);
+    while ((io_inb(PS2_REGISTER_COMMAND) & 2) != 0);
 
 }
 
@@ -21,9 +21,9 @@ static void write(unsigned char value)
 {
 
     wait_write();
-    io_outb(0x64, 0xD4);
+    io_outb(PS2_REGISTER_COMMAND, 0xD4);
     wait_write();
-    io_outb(0x60, value);
+    io_outb(PS2_REGISTER_DATA, value);
 
 }
 
@@ -32,31 +32,31 @@ static unsigned char read()
 
     wait_read();
 
-    return io_inb(0x60);
+    return io_inb(PS2_REGISTER_DATA);
 
 }
 
-void mouse_device_init(struct mouse_device *device, unsigned int irq)
+void ps2_mouse_device_init(struct ps2_mouse_device *device, unsigned int irq)
 {
 
-    memory_clear(device, sizeof (struct mouse_device));
+    memory_clear(device, sizeof (struct ps2_mouse_device));
 
-    modules_device_init(&device->base, MOUSE_DEVICE_TYPE, "mouse");
+    modules_device_init(&device->base, PS2_MOUSE_DEVICE_TYPE, "mouse");
 
     device->irq = irq;
 
     unsigned char status;
 
     wait_write();
-    io_outb(0x64, 0xA8);
+    io_outb(PS2_REGISTER_COMMAND, 0xA8);
     wait_write();
-    io_outb(0x64, 0x20);
+    io_outb(PS2_REGISTER_COMMAND, 0x20);
     wait_read();
-    status = (io_inb(0x60) | 2);
+    status = (io_inb(PS2_REGISTER_DATA) | 2);
     wait_write();
-    io_outb(0x64, 0x60);
+    io_outb(PS2_REGISTER_COMMAND, 0x60);
     wait_write();
-    io_outb(0x60, status);
+    io_outb(PS2_REGISTER_DATA, status);
     write(0xF6);
     read();
     write(0xF4);

@@ -1,29 +1,30 @@
 #ifndef MODULES_PS2_H
 #define MODULES_PS2_H
 
-#define KBD_PORT_READ 0x60
+#define PS2_REGISTER_DATA    0x60
+#define PS2_REGISTER_COMMAND 0x64
 
 #define PS2_IRQ_KBD 0x01
 #define PS2_IRQ_MOUSE 0x0C
 
-#define KBD_DEVICE_TYPE   0x3205
-#define KBD_DRIVER_TYPE   0x0005
-#define MOUSE_DEVICE_TYPE 0x4205
-#define MOUSE_DRIVER_TYPE 0x0059
+#define PS2_KBD_DEVICE_TYPE   0x3205
+#define PS2_KBD_DRIVER_TYPE   0x0005
+#define PS2_MOUSE_DEVICE_TYPE 0x4205
+#define PS2_MOUSE_DRIVER_TYPE 0x0059
 
-struct kbd_buffer
+struct ps2_kbd_buffer
 {
 
     char buffer[256];
     unsigned int size;
     unsigned int head;
     unsigned int tail;
-    unsigned int (*getc)(struct kbd_buffer *self, char *buffer);
-    unsigned int (*putc)(struct kbd_buffer *self, char *buffer);
+    unsigned int (*getc)(struct ps2_kbd_buffer *self, char *buffer);
+    unsigned int (*putc)(struct ps2_kbd_buffer *self, char *buffer);
 
 };
 
-struct kbd_device
+struct ps2_kbd_device
 {
 
     struct modules_device base;
@@ -31,11 +32,11 @@ struct kbd_device
 
 };
 
-struct kbd_driver
+struct ps2_kbd_driver
 {
 
     struct modules_driver base;
-    struct kbd_buffer buffer;
+    struct ps2_kbd_buffer buffer;
     char *map;
     unsigned int escaped;
     unsigned int toggleAlt;
@@ -44,7 +45,7 @@ struct kbd_driver
 
 };
 
-struct mouse_device
+struct ps2_mouse_device
 {
 
     struct modules_device base;
@@ -52,7 +53,7 @@ struct mouse_device
 
 };
 
-struct mouse_driver
+struct ps2_mouse_driver
 {
 
     struct modules_driver base;
@@ -63,10 +64,10 @@ struct mouse_driver
 
 };
 
-void kbd_device_init(struct kbd_device *device, unsigned int irq);
-void kbd_driver_init(struct kbd_driver *driver);
-void mouse_device_init(struct mouse_device *device, unsigned int irq);
-void mouse_driver_init(struct mouse_driver *driver);
+void ps2_kbd_device_init(struct ps2_kbd_device *device, unsigned int irq);
+void ps2_kbd_driver_init(struct ps2_kbd_driver *driver);
+void ps2_mouse_device_init(struct ps2_mouse_device *device, unsigned int irq);
+void ps2_mouse_driver_init(struct ps2_mouse_driver *driver);
 
 #endif
 

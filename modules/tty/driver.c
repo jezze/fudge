@@ -88,7 +88,7 @@ static void start(struct modules_driver *self)
 
 }
 
-void tty_driver_init(struct tty_driver *driver, struct kbd_driver *kbdDriver, struct vga_driver *vgaDriver, char *cwdname)
+void tty_driver_init(struct tty_driver *driver, struct ps2_kbd_driver *kbdDriver, struct vga_driver *vgaDriver, char *cwdname)
 {
 
     memory_clear(driver, sizeof (struct tty_driver));

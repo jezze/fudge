@@ -4,10 +4,10 @@
 #include <modules/nodefs/nodefs.h>
 #include <modules/ps2/ps2.h>
 
-static struct kbd_device kbdDevice;
-static struct kbd_driver kbdDriver;
-static struct mouse_device mouseDevice;
-static struct mouse_driver mouseDriver;
+static struct ps2_kbd_device kbdDevice;
+static struct ps2_kbd_driver kbdDriver;
+static struct ps2_mouse_device mouseDevice;
+static struct ps2_mouse_driver mouseDriver;
 
 static struct nodefs_node mx;
 static struct nodefs_node my;
@@ -33,16 +33,16 @@ static unsigned int my_read(struct nodefs_node *self, unsigned int offset, unsig
 void init()
 {
 
-    kbd_device_init(&kbdDevice, PS2_IRQ_KBD);
+    ps2_kbd_device_init(&kbdDevice, PS2_IRQ_KBD);
     modules_register_device(&kbdDevice.base);
 
-    mouse_device_init(&mouseDevice, PS2_IRQ_MOUSE);
+    ps2_mouse_device_init(&mouseDevice, PS2_IRQ_MOUSE);
     modules_register_device(&mouseDevice.base);
 
-    kbd_driver_init(&kbdDriver);
+    ps2_kbd_driver_init(&kbdDriver);
     modules_register_driver(&kbdDriver.base);
 
-    mouse_driver_init(&mouseDriver);
+    ps2_mouse_driver_init(&mouseDriver);
     modules_register_driver(&mouseDriver.base);
 
     struct nodefs_driver *nodefsDriver = (struct nodefs_driver *)modules_get_driver(NODEFS_DRIVER_TYPE);

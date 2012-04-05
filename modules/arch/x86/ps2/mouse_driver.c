@@ -9,7 +9,7 @@
 static void handle_irq(struct modules_device *self)
 {
 
-    struct mouse_driver *mouse = (struct mouse_driver *)self->driver;
+    struct ps2_mouse_driver *mouse = (struct ps2_mouse_driver *)self->driver;
 
     switch (mouse->cycle)
     {
@@ -44,7 +44,7 @@ static void handle_irq(struct modules_device *self)
 static void attach(struct modules_device *device)
 {
 
-    struct mouse_device *mouseDevice = (struct mouse_device *)device;
+    struct ps2_mouse_device *mouseDevice = (struct ps2_mouse_device *)device;
 
     irq_register_routine(mouseDevice->irq, device, handle_irq);
 
@@ -53,16 +53,16 @@ static void attach(struct modules_device *device)
 static unsigned int check(struct modules_driver *self, struct modules_device *device)
 {
 
-    return device->type == MOUSE_DEVICE_TYPE;
+    return device->type == PS2_MOUSE_DEVICE_TYPE;
 
 }
 
-void mouse_driver_init(struct mouse_driver *driver)
+void ps2_mouse_driver_init(struct ps2_mouse_driver *driver)
 {
 
-    memory_clear(driver, sizeof (struct mouse_driver));
+    memory_clear(driver, sizeof (struct ps2_mouse_driver));
 
-    modules_driver_init(&driver->base, MOUSE_DRIVER_TYPE, "mouse", 0, check, attach);
+    modules_driver_init(&driver->base, PS2_MOUSE_DRIVER_TYPE, "mouse", 0, check, attach);
 
     driver->cycle = 2;
 

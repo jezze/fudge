@@ -94,7 +94,7 @@ static unsigned int pwd_read(struct nodefs_node *self, unsigned int offset, unsi
 void init()
 {
 
-    struct kbd_driver *kbdDriver = (struct kbd_driver *)modules_get_driver(KBD_DRIVER_TYPE);
+    struct ps2_kbd_driver *kbdDriver = (struct ps2_kbd_driver *)modules_get_driver(PS2_KBD_DRIVER_TYPE);
 
     if (!kbdDriver)
         return;

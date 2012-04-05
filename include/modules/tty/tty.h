@@ -30,7 +30,7 @@ struct tty_driver
     struct modules_driver base;
     char cwdname[32];
     unsigned short cursorOffset;
-    struct kbd_driver *kbdDriver;
+    struct ps2_kbd_driver *kbdDriver;
     struct vga_driver *vgaDriver;
     void (*clear)(struct tty_driver *self);
     void (*scroll)(struct tty_driver *self);
@@ -38,6 +38,6 @@ struct tty_driver
 
 };
 
-void tty_driver_init(struct tty_driver *driver, struct kbd_driver *kbdDriver, struct vga_driver *vgaDriver, char *cwdname);
+void tty_driver_init(struct tty_driver *driver, struct ps2_kbd_driver *kbdDriver, struct vga_driver *vgaDriver, char *cwdname);
 
 #endif
