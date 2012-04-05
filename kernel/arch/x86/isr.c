@@ -10,39 +10,21 @@
 
 static void *routines[ISR_ROUTINE_SLOTS];
 
-static void save_irq_state(struct runtime_task *task, struct isr_irq_registers *registers)
+static void save_state(struct runtime_task *task, struct isr_base_registers *base, struct isr_interrupt_registers *interrupt)
 {
 
-    task->registers.ip = registers->eip;
-    task->registers.sp = registers->useresp;
-    task->registers.sb = registers->ebp;
+    task->registers.ip = interrupt->eip;
+    task->registers.sp = interrupt->useresp;
+    task->registers.sb = base->ebp;
 
 }
 
-static void load_irq_state(struct runtime_task *task, struct isr_irq_registers *registers)
+static void load_state(struct runtime_task *task, struct isr_base_registers *base, struct isr_interrupt_registers *interrupt)
 {
 
-    registers->eip = task->registers.ip;
-    registers->useresp = task->registers.sp;
-    registers->ebp = task->registers.sb;
-
-}
-
-static void save_syscall_state(struct runtime_task *task, struct isr_syscall_registers *registers)
-{
-
-    task->registers.ip = registers->eip;
-    task->registers.sp = registers->useresp;
-    task->registers.sb = registers->ebp;
-
-}
-
-static void load_syscall_state(struct runtime_task *task, struct isr_syscall_registers *registers)
-{
-
-    registers->eip = task->registers.ip;
-    registers->useresp = task->registers.sp;
-    registers->ebp = task->registers.sb;
+    interrupt->eip = task->registers.ip;
+    interrupt->useresp = task->registers.sp;
+    base->ebp = task->registers.sb;
 
 }
 
@@ -94,14 +76,14 @@ void isr_handle_cpu(struct isr_cpu_registers *registers)
 void isr_handle_irq(struct isr_irq_registers *registers)
 {
 
-    if (registers->ds == 0x23)
-        save_irq_state(runtime_get_running_task(), registers);
+    if (registers->base.ds == 0x23)
+        save_state(runtime_get_running_task(), &registers->base, &registers->interrupt);
 
     irq_raise(registers->index);
     reset_irq(registers->slave);
 
-    if (registers->ds == 0x23)
-        load_irq_state(runtime_get_running_task(), registers);
+    if (registers->base.ds == 0x23)
+        load_state(runtime_get_running_task(), &registers->base, &registers->interrupt);
 
 }
 
@@ -110,11 +92,11 @@ void isr_handle_syscall(struct isr_syscall_registers *registers)
 
     struct runtime_task *task = runtime_get_running_task();
 
-    save_syscall_state(task, registers);
+    save_state(task, &registers->base, &registers->interrupt);
 
-    registers->eax = syscall_raise(registers->eax, task, registers->useresp);
+    registers->base.eax = syscall_raise(registers->base.eax, task, registers->interrupt.useresp);
 
-    load_syscall_state(runtime_get_running_task(), registers);
+    load_state(runtime_get_running_task(), &registers->base, &registers->interrupt);
 
 }
 

@@ -31,32 +31,60 @@
 #define ISR_ROUTINE_ATAS    0x2F
 #define ISR_ROUTINE_SYSCALL 0x80
 
+struct isr_base_registers
+{
+
+    unsigned int gs;
+    unsigned int fs;
+    unsigned int es;
+    unsigned int ds;
+    unsigned int edi;
+    unsigned int esi;
+    unsigned int ebp;
+    unsigned int esp;
+    unsigned int ebx;
+    unsigned int edx;
+    unsigned int ecx;
+    unsigned int eax;
+
+};
+
+struct isr_interrupt_registers
+{
+
+    unsigned int eip;
+    unsigned int cs;
+    unsigned int eflags;
+    unsigned int useresp;
+    unsigned int ss;
+
+};
+
 struct isr_cpu_registers
 {
 
-    unsigned int gs, fs, es, ds;
-    unsigned int edi, esi, ebp, esp, ebx, edx, ecx, eax;
-    unsigned int index, error;
-    unsigned int eip, cs, eflags, useresp, ss;
+    struct isr_base_registers base;
+    unsigned int index;
+    unsigned int error;
+    struct isr_interrupt_registers interrupt;
 
 };
 
 struct isr_irq_registers
 {
 
-    unsigned int gs, fs, es, ds;
-    unsigned int edi, esi, ebp, esp, ebx, edx, ecx, eax;
-    unsigned int index, slave;
-    unsigned int eip, cs, eflags, useresp, ss;
+    struct isr_base_registers base;
+    unsigned int index;
+    unsigned int slave;
+    struct isr_interrupt_registers interrupt;
 
 };
 
 struct isr_syscall_registers
 {
 
-    unsigned int gs, fs, es, ds;
-    unsigned int edi, esi, ebp, esp, ebx, edx, ecx, eax;
-    unsigned int eip, cs, eflags, useresp, ss;
+    struct isr_base_registers base;
+    struct isr_interrupt_registers interrupt;
 
 };
 
