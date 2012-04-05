@@ -41,7 +41,7 @@ void kernel_halt()
 
 }
 
-void kernel_arch_init(struct kernel_arch *arch, void (*setup)(struct kernel_arch *arch), void (*reboot)(), void (*halt)(), void (*enable_interrupts)(), void (*disable_interrupts)(), void (*enter_usermode)(unsigned int ip, unsigned int sp), void *stack, void (*set_stack)(void *address), unsigned int ramdiskc, void **ramdiskv)
+void kernel_arch_init(struct kernel_arch *arch, void (*setup)(struct kernel_arch *arch), void (*reboot)(), void (*halt)(), void (*enable_interrupts)(), void (*disable_interrupts)(), void (*enter_usermode)(unsigned int ip, unsigned int sp), unsigned int ramdiskc, void **ramdiskv)
 {
 
     memory_clear(arch, sizeof (struct kernel_arch));
@@ -52,8 +52,6 @@ void kernel_arch_init(struct kernel_arch *arch, void (*setup)(struct kernel_arch
     arch->enable_interrupts = enable_interrupts;
     arch->disable_interrupts = disable_interrupts;
     arch->enter_usermode = enter_usermode;
-    arch->stack = stack;
-    arch->set_stack = set_stack;
     arch->ramdiskc = ramdiskc;
     arch->ramdiskv = ramdiskv;
 
@@ -80,7 +78,6 @@ void kernel_init(struct kernel_arch *arch)
 
     struct runtime_task *task = runtime_get_task(index);
 
-    kernelArch->set_stack(kernelArch->stack);
     kernelArch->enter_usermode(task->registers.ip, task->registers.sp);
 
 }
