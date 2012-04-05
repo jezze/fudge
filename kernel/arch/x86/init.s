@@ -6,7 +6,9 @@ INIT_MBOOT_HEADER_FLAGS equ INIT_MBOOT_PAGE_ALIGN | INIT_MBOOT_MEMORY_INFO | INI
 INIT_MBOOT_CHECKSUM     equ - (INIT_MBOOT_HEADER_MAGIC + INIT_MBOOT_HEADER_FLAGS)
 INIT_STACK_SIZE         equ 0x8000
 
-extern arch_init
+extern arch_x86
+extern arch_x86_init
+extern kernel_init
 
 section .mboot
 align 4
@@ -35,7 +37,10 @@ init:
     push esp
     push eax
     push ebx
-    call arch_init
+    mov eax, arch_x86
+    push eax
+    call arch_x86_init
+    call kernel_init
     hlt
 
 section .bss

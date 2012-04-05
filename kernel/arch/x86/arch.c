@@ -1,3 +1,4 @@
+#include <lib/memory.h>
 #include <kernel/kernel.h>
 #include <kernel/arch/x86/arch.h>
 #include <kernel/arch/x86/cpu.h>
@@ -10,7 +11,7 @@
 #include <kernel/arch/x86/mmu.h>
 #include <kernel/arch/x86/tss.h>
 
-static struct arch_x86 x86;
+struct arch_x86 arch_x86;
 
 static void reboot()
 {
@@ -40,24 +41,25 @@ static void setup(struct kernel_arch *arch)
 
 }
 
-void arch_init(struct mboot_header *header, unsigned int magic, void *stack)
+void arch_x86_init(struct arch_x86 *x86, struct mboot_header *header, unsigned int magic, void *stack)
 {
 
-    x86.base.setup = setup;
-    x86.base.setup_mmu = mmu_setup;
-    x86.base.reboot = reboot;
-    x86.base.halt = cpu_halt;
-    x86.base.enable_interrupts = cpu_enable_interrupts;
-    x86.base.disable_interrupts = cpu_disable_interrupts;
-    x86.base.enter_usermode = cpu_enter_usermode;
-    x86.base.stack = stack;
-    x86.base.set_stack = tss_set_stack;
-    x86.base.ramdiskc = header->modules.count;
-    x86.base.ramdiskv = header->modules.address;
-    x86.mboot = header;
-    x86.magic = magic;
+    memory_clear(x86, sizeof (struct arch_x86));
 
-    kernel_init(&x86.base);
+    x86->base.setup = setup;
+    x86->base.setup_mmu = mmu_setup;
+    x86->base.reboot = reboot;
+    x86->base.halt = cpu_halt;
+    x86->base.enable_interrupts = cpu_enable_interrupts;
+    x86->base.disable_interrupts = cpu_disable_interrupts;
+    x86->base.enter_usermode = cpu_enter_usermode;
+    x86->base.stack = stack;
+    x86->base.set_stack = tss_set_stack;
+    x86->base.ramdiskc = header->modules.count;
+    x86->base.ramdiskv = header->modules.address;
+
+    x86->mboot = header;
+    x86->magic = magic;
 
 }
 
