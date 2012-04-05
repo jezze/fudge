@@ -37,10 +37,7 @@ void pit_driver_init(struct pit_driver *driver)
 
     memory_clear(driver, sizeof (struct pit_driver));
 
-    modules_driver_init(&driver->base, PIT_DRIVER_TYPE, "pit");
-
-    driver->base.attach = attach;
-    driver->base.check = check;
+    modules_driver_init(&driver->base, PIT_DRIVER_TYPE, "pit", 0, check, attach);
 
 }
 

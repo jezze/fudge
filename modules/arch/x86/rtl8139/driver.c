@@ -191,11 +191,8 @@ void rtl8139_driver_init(struct rtl8139_driver *driver)
 
     memory_clear(driver, sizeof (struct rtl8139_driver));
 
-    modules_driver_init(&driver->base, RTL8139_DRIVER_TYPE, "rtl8139");
+    modules_driver_init(&driver->base, RTL8139_DRIVER_TYPE, "rtl8139", start, check, attach);
 
-    driver->base.start = start;
-    driver->base.attach = attach;
-    driver->base.check = check;
     driver->read = read;
     driver->write = write;
 

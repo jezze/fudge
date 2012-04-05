@@ -93,9 +93,8 @@ void tty_driver_init(struct tty_driver *driver, struct kbd_driver *kbdDriver, st
 
     memory_clear(driver, sizeof (struct tty_driver));
 
-    modules_driver_init(&driver->base, TTY_DRIVER_TYPE, "tty");
+    modules_driver_init(&driver->base, TTY_DRIVER_TYPE, "tty", start, 0, 0);
 
-    driver->base.start = start;
     driver->kbdDriver = kbdDriver;
     driver->vgaDriver = vgaDriver;
     driver->clear = clear;

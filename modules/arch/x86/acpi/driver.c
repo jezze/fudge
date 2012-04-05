@@ -74,9 +74,8 @@ void acpi_driver_init(struct acpi_driver *driver)
 
     memory_clear(driver, sizeof (struct acpi_driver));
 
-    modules_driver_init(&driver->base, ACPI_DRIVER_TYPE, "acpi");
+    modules_driver_init(&driver->base, ACPI_DRIVER_TYPE, "acpi", start, 0, 0);
 
-    driver->base.start = start;
     driver->find_header = find_header;
 
 }

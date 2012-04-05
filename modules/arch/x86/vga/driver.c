@@ -70,7 +70,7 @@ void vga_driver_init(struct vga_driver *driver)
 
     memory_clear(driver, sizeof (struct vga_driver));
 
-    modules_driver_init(&driver->base, VGA_DRIVER_TYPE, "vga");
+    modules_driver_init(&driver->base, VGA_DRIVER_TYPE, "vga", 0, 0, 0);
 
     driver->read_framebuffer = read_framebuffer;
     driver->write_framebuffer = write_framebuffer;

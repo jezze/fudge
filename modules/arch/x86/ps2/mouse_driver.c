@@ -62,10 +62,8 @@ void mouse_driver_init(struct mouse_driver *driver)
 
     memory_clear(driver, sizeof (struct mouse_driver));
 
-    modules_driver_init(&driver->base, MOUSE_DRIVER_TYPE, "mouse");
+    modules_driver_init(&driver->base, MOUSE_DRIVER_TYPE, "mouse", 0, check, attach);
 
-    driver->base.attach = attach;
-    driver->base.check = check;
     driver->cycle = 2;
 
 }

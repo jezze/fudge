@@ -177,11 +177,7 @@ void i915_driver_init(struct i915_driver *driver)
 
     memory_clear(driver, sizeof (struct i915_driver));
 
-    modules_driver_init(&driver->base, I915_DRIVER_TYPE, "i915");
-
-    driver->base.start = start;
-    driver->base.attach = attach;
-    driver->base.check = check;
+    modules_driver_init(&driver->base, I915_DRIVER_TYPE, "i915", start, check, attach);
 
 }
 

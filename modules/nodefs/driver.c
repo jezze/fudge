@@ -135,7 +135,7 @@ void nodefs_driver_init(struct nodefs_driver *driver)
 
     memory_clear(driver, sizeof (struct nodefs_driver));
 
-    modules_driver_init(&driver->base, NODEFS_DRIVER_TYPE, "nodefs");
+    modules_driver_init(&driver->base, NODEFS_DRIVER_TYPE, "nodefs", 0, 0, 0);
     nodefs_filesystem_init(&driver->filesystem);
 
     driver->register_node = register_node;

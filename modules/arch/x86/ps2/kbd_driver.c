@@ -140,10 +140,8 @@ void kbd_driver_init(struct kbd_driver *driver)
 
     memory_clear(driver, sizeof (struct kbd_driver));
 
-    modules_driver_init(&driver->base, KBD_DRIVER_TYPE, "kbd");
+    modules_driver_init(&driver->base, KBD_DRIVER_TYPE, "kbd", 0, check, attach);
 
-    driver->base.attach = attach;
-    driver->base.check = check;
     driver->buffer.size = 256;
     driver->buffer.getc = buffer_getc;
     driver->buffer.putc = buffer_putc;

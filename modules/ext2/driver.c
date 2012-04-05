@@ -112,10 +112,8 @@ void ext2_driver_init(struct ext2_driver *driver)
 
     memory_clear(driver, sizeof (struct ext2_driver));
 
-    modules_driver_init(&driver->base, EXT2_DRIVER_TYPE, "ext2");
+    modules_driver_init(&driver->base, EXT2_DRIVER_TYPE, "ext2", 0, check, attach);
 
-    driver->base.check = check;
-    driver->base.attach = attach;
     driver->read_blockgroup = read_blockgroup;
     driver->read_node = read_node;
     driver->read_content = read_content;

@@ -70,10 +70,8 @@ void mbr_driver_init(struct mbr_driver *driver)
 
     memory_clear(driver, sizeof (struct mbr_driver));
 
-    modules_driver_init(&driver->base, MBR_DRIVER_TYPE, "mbr");
+    modules_driver_init(&driver->base, MBR_DRIVER_TYPE, "mbr", 0, check, attach);
 
-    driver->base.check = check;
-    driver->base.attach = attach;
     driver->add_device = add_device;
     driver->get_device = get_device;
 

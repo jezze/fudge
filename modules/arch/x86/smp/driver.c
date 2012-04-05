@@ -108,9 +108,8 @@ void smp_driver_init(struct smp_driver *driver, struct acpi_driver *acpiDriver, 
 
     memory_clear(driver, sizeof (struct smp_driver));
 
-    modules_driver_init(&driver->base, SMP_DRIVER_TYPE, "smp");
+    modules_driver_init(&driver->base, SMP_DRIVER_TYPE, "smp", start, 0, 0);
 
-    driver->base.start = start;
     driver->acpiDriver = acpiDriver;
     driver->cpuidDriver = cpuidDriver;
 

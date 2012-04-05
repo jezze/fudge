@@ -65,11 +65,8 @@ void bga_driver_init(struct bga_driver *driver)
 
     memory_clear(driver, sizeof (struct bga_driver));
 
-    modules_driver_init(&driver->base, BGA_DRIVER_TYPE, "bga");
+    modules_driver_init(&driver->base, BGA_DRIVER_TYPE, "bga", start, check, attach);
 
-    driver->base.start = start;
-    driver->base.attach = attach;
-    driver->base.check = check;
     driver->xres = 800;
     driver->yres = 600;
     driver->bpp = BGA_BPP_32;

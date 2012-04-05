@@ -162,7 +162,7 @@ static void base_init(struct modules_base *base, unsigned int type, char *name)
 
 }
 
-void modules_bus_init(struct modules_bus *bus, unsigned int type, char *name)
+void modules_bus_init(struct modules_bus *bus, unsigned int type, char *name, void (*scan)(struct modules_bus *self))
 {
 
     memory_clear(bus, sizeof (struct modules_bus));
@@ -170,6 +170,7 @@ void modules_bus_init(struct modules_bus *bus, unsigned int type, char *name)
     base_init(&bus->base, MODULES_TYPE_BUS, name);
 
     bus->type = type;
+    bus->scan = scan;
 
 }
 
@@ -184,7 +185,7 @@ void modules_device_init(struct modules_device *device, unsigned int type, char 
 
 }
 
-void modules_driver_init(struct modules_driver *driver, unsigned int type, char *name)
+void modules_driver_init(struct modules_driver *driver, unsigned int type, char *name, void (*start)(struct modules_driver *self), unsigned int (*check)(struct modules_driver *self, struct modules_device *device), void (*attach)(struct modules_device *device))
 {
 
     memory_clear(driver, sizeof (struct modules_driver));
@@ -192,6 +193,9 @@ void modules_driver_init(struct modules_driver *driver, unsigned int type, char 
     base_init(&driver->base, MODULES_TYPE_DRIVER, name);
 
     driver->type = type;
+    driver->start = start;
+    driver->check = check;
+    driver->attach = attach;
 
 }
 

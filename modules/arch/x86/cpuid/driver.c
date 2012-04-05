@@ -26,9 +26,8 @@ void cpuid_driver_init(struct cpuid_driver *driver)
 
     memory_clear(driver, sizeof (struct cpuid_driver));
 
-    modules_driver_init(&driver->base, CPUID_DRIVER_TYPE, "cpuid");
+    modules_driver_init(&driver->base, CPUID_DRIVER_TYPE, "cpuid", start, 0, 0);
 
-    driver->base.start = start;
     driver->is_supported = is_supported;
 
 }

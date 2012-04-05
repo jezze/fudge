@@ -73,10 +73,8 @@ void uart_driver_init(struct uart_driver *driver)
 
     memory_clear(driver, sizeof (struct uart_driver));
 
-    modules_driver_init(&driver->base, UART_DRIVER_TYPE, "uart");
+    modules_driver_init(&driver->base, UART_DRIVER_TYPE, "uart", 0, check, attach);
 
-    driver->base.attach = attach;
-    driver->base.check = check;
     driver->buffer.size = 256;
     driver->buffer.getc = buffer_getc;
     driver->buffer.putc = buffer_putc;
