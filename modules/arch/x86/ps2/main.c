@@ -33,10 +33,10 @@ static unsigned int my_read(struct nodefs_node *self, unsigned int offset, unsig
 void init()
 {
 
-    kbd_device_init(&kbdDevice, 0x01);
+    kbd_device_init(&kbdDevice, PS2_IRQ_KBD);
     modules_register_device(&kbdDevice.base);
 
-    mouse_device_init(&mouseDevice, 0x0C);
+    mouse_device_init(&mouseDevice, PS2_IRQ_MOUSE);
     modules_register_device(&mouseDevice.base);
 
     kbd_driver_init(&kbdDriver);

@@ -3,6 +3,9 @@
 
 #define KBD_PORT_READ 0x60
 
+#define PS2_IRQ_KBD 0x01
+#define PS2_IRQ_MOUSE 0x0C
+
 #define KBD_DEVICE_TYPE   0x3205
 #define KBD_DRIVER_TYPE   0x0005
 #define MOUSE_DEVICE_TYPE 0x4205

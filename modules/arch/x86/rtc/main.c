@@ -19,7 +19,7 @@ static unsigned int timestamp_read(struct nodefs_node *self, unsigned int offset
 void init()
 {
 
-    rtc_device_init(&device);
+    rtc_device_init(&device, RTC_IRQ);
     modules_register_device(&device.base);
 
     struct nodefs_driver *nodefsDriver = (struct nodefs_driver *)modules_get_driver(NODEFS_DRIVER_TYPE);

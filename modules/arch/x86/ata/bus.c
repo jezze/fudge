@@ -180,7 +180,7 @@ static void add_device(struct ata_bus *self, unsigned int slave, unsigned int ty
 
     struct ata_device *device = &self->devices[self->devicesCount];
 
-    unsigned int irq = (slave) ? 0x0F : 0x0E;
+    unsigned int irq = (slave) ? ATA_IRQ_SECONDARY : ATA_IRQ_PRIMARY;
 
     ata_device_init(device, self, irq, slave, type);
 

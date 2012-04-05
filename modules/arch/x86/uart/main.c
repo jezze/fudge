@@ -10,10 +10,10 @@ static struct uart_driver driver;
 void init()
 {
 
-    uart_device_init(&device1, UART_BASE1, 0x04);
-    uart_device_init(&device2, UART_BASE2, 0x03);
-    uart_device_init(&device3, UART_BASE3, 0x04);
-    uart_device_init(&device4, UART_BASE4, 0x03);
+    uart_device_init(&device1, UART_BASE1, UART_IRQ1);
+    uart_device_init(&device2, UART_BASE2, UART_IRQ2);
+    uart_device_init(&device3, UART_BASE3, UART_IRQ1);
+    uart_device_init(&device4, UART_BASE4, UART_IRQ2);
     uart_driver_init(&driver);
 
     modules_register_device(&device1.base);
