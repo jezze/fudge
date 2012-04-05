@@ -152,13 +152,13 @@ void modules_unregister_driver(struct modules_driver *driver)
 
 }
 
-static void base_init(struct modules_base *module, unsigned int type, char *name)
+static void base_init(struct modules_base *base, unsigned int type, char *name)
 {
 
-    memory_clear(module, sizeof (struct modules_base));
+    memory_clear(base, sizeof (struct modules_base));
 
-    module->type = type;
-    module->name = name;
+    base->type = type;
+    base->name = name;
 
 }
 
