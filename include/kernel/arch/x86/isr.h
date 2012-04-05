@@ -23,10 +23,15 @@
 #define ISR_ROUTINE_XM      0x13
 #define ISR_ROUTINE_PIT     0x20
 #define ISR_ROUTINE_KBD     0x21
+#define ISR_ROUTINE_CASCADE 0x22
 #define ISR_ROUTINE_COM2    0x23
 #define ISR_ROUTINE_COM1    0x24
+#define ISR_ROUTINE_SOUND   0x25
 #define ISR_ROUTINE_SDA     0x26
+#define ISR_ROUTINE_PP      0x27
 #define ISR_ROUTINE_RTC     0x28
+#define ISR_ROUTINE_MOUSE   0x2C
+#define ISR_ROUTINE_FPU     0x2D
 #define ISR_ROUTINE_ATAP    0x2E
 #define ISR_ROUTINE_ATAS    0x2F
 #define ISR_ROUTINE_SYSCALL 0x80
@@ -61,7 +66,7 @@ struct isr_interrupt_registers
     unsigned int eip;
     unsigned int cs;
     unsigned int eflags;
-    unsigned int useresp;
+    unsigned int esp;
     unsigned int ss;
 
 };

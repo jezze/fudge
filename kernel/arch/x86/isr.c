@@ -14,7 +14,7 @@ static void save_state(struct runtime_task *task, struct isr_general_registers *
 {
 
     task->registers.ip = interrupt->eip;
-    task->registers.sp = interrupt->useresp;
+    task->registers.sp = interrupt->esp;
     task->registers.sb = general->ebp;
 
 }
@@ -23,7 +23,7 @@ static void load_state(struct runtime_task *task, struct isr_general_registers *
 {
 
     interrupt->eip = task->registers.ip;
-    interrupt->useresp = task->registers.sp;
+    interrupt->esp = task->registers.sp;
     general->ebp = task->registers.sb;
 
 }
@@ -94,7 +94,7 @@ void isr_handle_syscall(struct isr_syscall_registers *registers)
 
     save_state(task, &registers->general, &registers->interrupt);
 
-    registers->general.eax = syscall_raise(registers->general.eax, task, registers->interrupt.useresp);
+    registers->general.eax = syscall_raise(registers->general.eax, task, registers->interrupt.esp);
 
     load_state(runtime_get_running_task(), &registers->general, &registers->interrupt);
 
@@ -153,18 +153,18 @@ void isr_init()
     idt_set_gate(0x1F, isr_routine1F, 0x08, 0x8E);
     idt_set_gate(ISR_ROUTINE_PIT, isr_routine20, 0x08, 0x8E);
     idt_set_gate(ISR_ROUTINE_KBD, isr_routine21, 0x08, 0x8E);
-    idt_set_gate(0x22, isr_routine22, 0x08, 0x8E);
+    idt_set_gate(ISR_ROUTINE_CASCADE, isr_routine22, 0x08, 0x8E);
     idt_set_gate(ISR_ROUTINE_COM2, isr_routine23, 0x08, 0x8E);
     idt_set_gate(ISR_ROUTINE_COM1, isr_routine24, 0x08, 0x8E);
-    idt_set_gate(0x25, isr_routine25, 0x08, 0x8E);
+    idt_set_gate(ISR_ROUTINE_SOUND, isr_routine25, 0x08, 0x8E);
     idt_set_gate(ISR_ROUTINE_SDA, isr_routine26, 0x08, 0x8E);
-    idt_set_gate(0x27, isr_routine27, 0x08, 0x8E);
+    idt_set_gate(ISR_ROUTINE_PP, isr_routine27, 0x08, 0x8E);
     idt_set_gate(ISR_ROUTINE_RTC, isr_routine28, 0x08, 0x8E);
     idt_set_gate(0x29, isr_routine29, 0x08, 0x8E);
     idt_set_gate(0x2A, isr_routine2A, 0x08, 0x8E);
     idt_set_gate(0x2B, isr_routine2B, 0x08, 0x8E);
-    idt_set_gate(0x2C, isr_routine2C, 0x08, 0x8E);
-    idt_set_gate(0x2D, isr_routine2D, 0x08, 0x8E);
+    idt_set_gate(ISR_ROUTINE_MOUSE, isr_routine2C, 0x08, 0x8E);
+    idt_set_gate(ISR_ROUTINE_FPU, isr_routine2D, 0x08, 0x8E);
     idt_set_gate(ISR_ROUTINE_ATAP, isr_routine2E, 0x08, 0x8E);
     idt_set_gate(ISR_ROUTINE_ATAS, isr_routine2F, 0x08, 0x8E);
     idt_set_gate(ISR_ROUTINE_SYSCALL, isr_routine80, 0x08, 0xEE);
