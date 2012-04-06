@@ -1,6 +1,5 @@
 #include <lib/memory.h>
 #include <kernel/arch/x86/io.h>
-#include <kernel/log.h>
 #include <kernel/mmu.h>
 #include <kernel/modules.h>
 #include <modules/pci/pci.h>

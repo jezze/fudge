@@ -1,6 +1,5 @@
 #include <lib/memory.h>
 #include <lib/string.h>
-#include <kernel/log.h>
 #include <kernel/modules.h>
 #include <modules/nodefs/nodefs.h>
 

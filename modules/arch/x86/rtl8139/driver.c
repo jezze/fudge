@@ -2,7 +2,6 @@
 #include <kernel/arch/x86/io.h>
 #include <kernel/event.h>
 #include <kernel/irq.h>
-#include <kernel/log.h>
 #include <kernel/modules.h>
 #include <modules/pci/pci.h>
 #include <modules/rtl8139/rtl8139.h>
