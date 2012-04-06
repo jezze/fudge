@@ -1,7 +1,6 @@
 #include <lib/memory.h>
-#include <lib/string.h>
-#include <kernel/arch/x86/io.h>
 #include <kernel/modules.h>
+#include <kernel/arch/x86/io.h>
 #include <modules/pci/pci.h>
 
 static unsigned int get_address(unsigned int num, unsigned int slot, unsigned int function)

@@ -1,7 +1,6 @@
 #include <lib/memory.h>
-#include <lib/string.h>
-#include <kernel/arch/x86/io.h>
 #include <kernel/modules.h>
+#include <kernel/arch/x86/io.h>
 #include <modules/pci/pci.h>
 
 void pci_device_init(struct pci_device *device, struct pci_bus *bus, unsigned int num, unsigned int slot, unsigned int function, unsigned int address)

@@ -1,6 +1,6 @@
 #include <lib/memory.h>
-#include <kernel/arch/x86/io.h>
 #include <kernel/modules.h>
+#include <kernel/arch/x86/io.h>
 #include <modules/ps2/ps2.h>
 
 static void wait_read()

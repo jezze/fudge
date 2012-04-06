@@ -1,5 +1,4 @@
 #include <kernel/modules.h>
-#include <modules/ata/ata.h>
 #include <modules/mbr/mbr.h>
 
 static struct mbr_driver driver;

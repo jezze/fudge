@@ -1,6 +1,6 @@
 #include <lib/memory.h>
-#include <kernel/arch/x86/io.h>
 #include <kernel/modules.h>
+#include <kernel/arch/x86/io.h>
 #include <modules/uart/uart.h>
 
 static char read(struct uart_device *self)

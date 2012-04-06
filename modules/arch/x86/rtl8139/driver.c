@@ -1,10 +1,10 @@
 #include <lib/memory.h>
-#include <kernel/arch/x86/io.h>
 #include <kernel/event.h>
 #include <kernel/irq.h>
 #include <kernel/modules.h>
-#include <modules/pci/pci.h>
+#include <kernel/arch/x86/io.h>
 #include <modules/rtl8139/rtl8139.h>
+#include <modules/pci/pci.h>
 
 static void poweron(struct rtl8139_driver *self)
 {

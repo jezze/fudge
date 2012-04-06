@@ -1,6 +1,5 @@
 #include <lib/memory.h>
 #include <kernel/modules.h>
-#include <modules/ata/ata.h>
 #include <modules/mbr/mbr.h>
 #include <modules/ext2/ext2.h>
 

@@ -1,5 +1,4 @@
 #include <kernel/modules.h>
-#include <modules/mbr/mbr.h>
 #include <modules/ext2/ext2.h>
 
 static struct ext2_driver driver;

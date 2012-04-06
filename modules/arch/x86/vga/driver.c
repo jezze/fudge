@@ -1,6 +1,6 @@
 #include <lib/memory.h>
-#include <kernel/arch/x86/io.h>
 #include <kernel/modules.h>
+#include <kernel/arch/x86/io.h>
 #include <modules/vga/vga.h>
 
 static unsigned int read_framebuffer(struct vga_driver *self, unsigned int offset, unsigned int count, void *buffer)

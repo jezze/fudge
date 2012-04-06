@@ -1,5 +1,4 @@
 #include <lib/memory.h>
-#include <kernel/arch/x86/io.h>
 #include <kernel/event.h>
 #include <kernel/irq.h>
 #include <kernel/modules.h>
