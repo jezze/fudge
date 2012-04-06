@@ -1,4 +1,3 @@
-#include <lib/memory.h>
 #include <kernel/arch/x86/mboot.h>
 #include <kernel/arch/x86/vbe.h>
 

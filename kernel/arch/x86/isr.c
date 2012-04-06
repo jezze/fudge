@@ -1,12 +1,12 @@
-#include <kernel/mmu.h>
-#include <kernel/runtime.h>
 #include <kernel/error.h>
 #include <kernel/irq.h>
 #include <kernel/log.h>
+#include <kernel/mmu.h>
+#include <kernel/runtime.h>
 #include <kernel/syscall.h>
 #include <kernel/arch/x86/idt.h>
-#include <kernel/arch/x86/isr.h>
 #include <kernel/arch/x86/io.h>
+#include <kernel/arch/x86/isr.h>
 
 static void *routines[ISR_ROUTINE_SLOTS];
 
