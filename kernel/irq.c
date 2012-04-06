@@ -1,5 +1,5 @@
-#include <kernel/modules.h>
 #include <kernel/irq.h>
+#include <kernel/modules.h>
 
 static struct irq_routine routines[IRQ_ROUTINE_SLOTS];
 

@@ -1,8 +1,8 @@
 #include <lib/memory.h>
 #include <lib/string.h>
 #include <lib/tar.h>
-#include <kernel/ramdisk.h>
 #include <kernel/modules.h>
+#include <kernel/ramdisk.h>
 #include <kernel/vfs/ramdisk.h>
 
 static struct ramdisk_node *nodes;

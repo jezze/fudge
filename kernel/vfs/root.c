@@ -1,4 +1,3 @@
-#include <lib/memory.h>
 #include <lib/string.h>
 #include <kernel/modules.h>
 #include <kernel/vfs/root.h>
