@@ -50,12 +50,17 @@ static unsigned int read(struct modules_filesystem *self, unsigned int id, unsig
     else
     {
 
-        if (count > node->size)
-            count = node->size;
+        if (offset > node->size)
+            return 0;
 
-        memory_copy(buffer, node->data, count);
+        unsigned int c = node->size - offset;
 
-        return count;
+        if (c > count)
+            c = count;
+
+        memory_copy(buffer, node->data + offset, c);
+
+        return c;
 
     }
 

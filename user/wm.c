@@ -1,13 +1,36 @@
 #include <fudge.h>
+#include <ppm.h>
 
 #define XRES 800
 #define YRES 600
 #define BPP 32
 
+static unsigned int fdbuf;
+static unsigned int fdx;
+static unsigned int fdy;
+
 static int mx;
 static int my;
 
-static void draw_box(unsigned int x1, unsigned int y1, unsigned int x2, unsigned int y2, unsigned int color)
+static void draw_pixel(unsigned int x, unsigned int y, unsigned int color)
+{
+
+    unsigned int offset = (y * XRES + x) * 4;
+
+    file_write(fdbuf, offset, 4, &color);
+
+}
+
+static void draw_buffer(unsigned int x, unsigned int y, unsigned int count, void *buffer)
+{
+
+    unsigned int offset = (y * XRES + x) * 4;
+
+    file_write(fdbuf, offset, count, buffer);
+
+}
+
+static void draw_fill(unsigned int x1, unsigned int y1, unsigned int x2, unsigned int y2, unsigned int color)
 {
 
     unsigned char buffer[0xC80];
@@ -20,29 +43,43 @@ static void draw_box(unsigned int x1, unsigned int y1, unsigned int x2, unsigned
     for (i = 0; i < width; i++)
         memory_copy(buffer + i * 4, &color, 4);
 
-    unsigned int fd = file_open("/module/bga/lfb");
-
     for (i = y1; i < y1 + height; i++)
-    {
-
-        unsigned int offset = (i * XRES + x1) * 4;
-
-        file_write(fd, offset, width * 4, &buffer);
-
-    }
-
-    file_close(fd);
-
+        draw_buffer(x1, i, width * 4, &buffer);
 
 }
 
-static void draw_pixel(unsigned int x, unsigned int y, unsigned int color)
+static void draw_ppm(char *name, unsigned int x, unsigned int y)
 {
 
-    unsigned int offset = (y * XRES + x) * 4;
+    unsigned char buffer[0xC80];
 
-    unsigned int fd = file_open("/module/bga/lfb");
-    file_write(fd, offset, 4, &color);
+    unsigned int fd = file_open(name);
+    unsigned int count = file_read(fd, 0x34, 0xC80, buffer);
+
+    int cx = x;
+    int cy = y;
+
+    unsigned int i;
+
+    for (i = 1; i < count; i += 3)
+    {
+
+        unsigned int color = *(unsigned int *)(buffer + i);
+
+        draw_pixel(cx, cy, color);
+
+        cx++;
+
+        if (cx > x + 19)
+        {
+
+            cx = x;
+            cy++;
+
+        }
+
+    }
+
     file_close(fd);
 
 }
@@ -91,18 +128,13 @@ void mouse()
     char dx;
     char dy;
 
-    unsigned int fdx = file_open("/module/ps2/mx");
     file_read(fdx, 0, 1, &dx);
-    file_close(fdx);
-
-    unsigned int fdy = file_open("/module/ps2/my");
     file_read(fdy, 0, 1, &dy);
-    file_close(fdy);
 
     mx += (dx * 0.2);
     my -= (dy * 0.2);
 
-    draw_pixel(mx, my, 0x00FF0000);
+    draw_ppm("/ramdisk/home/fu-raw.ppm", mx, my);
 
     call_wait();
 
@@ -110,6 +142,14 @@ void mouse()
 
 void main(int argc, char *argv[])
 {
+
+    fdbuf = file_open("/module/bga/lfb");
+
+    if (!fdbuf)
+        return;
+
+    fdx = file_open("/module/ps2/mx");
+    fdy = file_open("/module/ps2/my");
 
     unsigned int xres = XRES;
     unsigned int yres = YRES;
@@ -120,7 +160,7 @@ void main(int argc, char *argv[])
     set_bpp(bpp);
     enable();
 
-    draw_box(0, 0, xres, yres, 0x00223344);
+    draw_fill(0, 0, xres, yres, 0x00FFFFFF);
 
     mx = 400;
     my = 300;
