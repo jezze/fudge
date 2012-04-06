@@ -5,9 +5,9 @@
 #define YRES 600
 #define BPP 32
 
-static unsigned int fdbuf;
-static unsigned int fdx;
-static unsigned int fdy;
+static unsigned int fdlfb;
+static unsigned int fdmx;
+static unsigned int fdmy;
 
 static int mx;
 static int my;
@@ -17,7 +17,7 @@ static void draw_pixel(unsigned int x, unsigned int y, unsigned int color)
 
     unsigned int offset = (y * XRES + x) * 4;
 
-    file_write(fdbuf, offset, 4, &color);
+    file_write(fdlfb, offset, 4, &color);
 
 }
 
@@ -26,7 +26,7 @@ static void draw_buffer(unsigned int x, unsigned int y, unsigned int count, void
 
     unsigned int offset = (y * XRES + x) * 4;
 
-    file_write(fdbuf, offset, count, buffer);
+    file_write(fdlfb, offset, count, buffer);
 
 }
 
@@ -130,17 +130,30 @@ void enable()
 
 }
 
-void mouse()
+void set_mouse_coords(unsigned int x, unsigned int y)
+{
+
+    mx = x;
+    my = y;
+
+    if (mx > XRES)
+        mx = XRES;
+
+    if (my > YRES)
+        my = YRES;
+
+}
+
+void mouse_event()
 {
 
     char dx;
     char dy;
 
-    file_read(fdx, 0, 1, &dx);
-    file_read(fdy, 0, 1, &dy);
+    file_read(fdmx, 0, 1, &dx);
+    file_read(fdmy, 0, 1, &dy);
 
-    mx += (dx * 0.2);
-    my -= (dy * 0.2);
+    set_mouse_coords(mx + (dx * 0.2), my - (dy * 0.2));
 
     draw_ppm("/ramdisk/home/fu-raw.ppm", mx, my);
 
@@ -151,29 +164,24 @@ void mouse()
 void main(int argc, char *argv[])
 {
 
-    fdbuf = file_open("/module/bga/lfb");
+    fdlfb = file_open("/module/bga/lfb");
 
-    if (!fdbuf)
+    if (!fdlfb)
         return;
 
-    fdx = file_open("/module/ps2/mx");
-    fdy = file_open("/module/ps2/my");
+    fdmx = file_open("/module/ps2/mx");
+    fdmy = file_open("/module/ps2/my");
 
-    unsigned int xres = XRES;
-    unsigned int yres = YRES;
-    unsigned int bpp = BPP;
-
-    set_xres(xres);
-    set_yres(yres);
-    set_bpp(bpp);
+    set_xres(XRES);
+    set_yres(YRES);
+    set_bpp(BPP);
     enable();
 
-    draw_fill(0, 0, xres, yres, 0x00FFFFFF);
+    set_mouse_coords(XRES / 2, YRES / 2);
 
-    mx = 400;
-    my = 300;
+    draw_fill(0, 0, XRES, YRES, 0x00FFFFFF);
 
-    call_attach(0x0C, mouse);
+    call_attach(0x0C, mouse_event);
     call_wait();
 
 }
