@@ -29,13 +29,11 @@ void symbol_init()
 
     struct modules_filesystem *filesystem = modules_get_filesystem("/ramdisk/");
 
-    if (!filesystem)
-        error_panic("Symbol table not found", __FILE__, __LINE__);
+    error_assert(filesystem != 0, "Symbol table not found", __FILE__, __LINE__);
 
     unsigned int id = filesystem->find(filesystem, "boot/fudge.map");
 
-    if (!id)
-        error_panic("Symbol table not found", __FILE__, __LINE__);
+    error_assert(id != 0, "Symbol table not found", __FILE__, __LINE__);
 
     unsigned int count = filesystem->read(filesystem, id, 0, SYMBOL_BUFFER_SIZE, buffer);
 
