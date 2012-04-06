@@ -155,13 +155,7 @@ static void enable()
 void mmu_setup()
 {
 
-    unit.enable = enable;
-    unit.load_memory = load_memory;
-    unit.reload_memory = reload_memory;
-    unit.map_kernel_memory = map_kernel_memory;
-    unit.map_user_memory = map_user_memory;
-    unit.unmap_memory = unmap_memory;
-
+    mmu_unit_init(&unit, enable, load_memory, reload_memory, map_kernel_memory, map_user_memory, unmap_memory);
     mmu_init(&unit);
 
 }

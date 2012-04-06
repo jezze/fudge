@@ -78,17 +78,27 @@ void mmu_memory_init(struct mmu_memory *memory, void *paddress, void *vaddress, 
 
 }
 
+void mmu_unit_init(struct mmu_unit *unit, void (*enable)(), void (*load_memory)(unsigned int index), void (*reload_memory)(), void (*map_kernel_memory)(struct mmu_memory *memory), void (*map_user_memory)(unsigned int index, struct mmu_memory *memory), void (*unmap_memory)(unsigned int index))
+{
+
+    unit->enable = enable;
+    unit->load_memory = load_memory;
+    unit->reload_memory = reload_memory;
+    unit->map_kernel_memory = map_kernel_memory;
+    unit->map_user_memory = map_user_memory;
+    unit->unmap_memory = unmap_memory;
+
+}
+
 void mmu_init(struct mmu_unit *unit)
 {
 
-    mmuUnit = unit;
+    error_assert(unit != 0, "No MMU registered", __FILE__, __LINE__);
 
     mmu_memory_init(&mmuKernelMemory[0], (void *)0x00000000, (void *)0x00000000, 0x00400000);
     mmu_memory_init(&mmuKernelMemory[1], (void *)0x00400000, (void *)0x00400000, 0x00400000);
 
-    if (!mmuUnit)
-        error_panic("No MMU registered", __FILE__, __LINE__);
-
+    mmuUnit = unit;
     mmuUnit->map_kernel_memory(&mmuKernelMemory[0]);
     mmuUnit->map_kernel_memory(&mmuKernelMemory[1]);
     mmuUnit->load_memory(0);
