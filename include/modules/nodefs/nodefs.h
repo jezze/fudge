@@ -16,7 +16,7 @@ struct nodefs_node
 struct nodefs_filesystem
 {
 
-    struct vfs_filesystem base;
+    struct modules_filesystem base;
     struct nodefs_node *nodes[128];
     unsigned int count;
 

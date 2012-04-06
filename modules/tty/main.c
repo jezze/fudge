@@ -1,6 +1,5 @@
 #include <lib/string.h>
 #include <kernel/modules.h>
-#include <kernel/vfs.h>
 #include <modules/nodefs/nodefs.h>
 #include <modules/ps2/ps2.h>
 #include <modules/vga/vga.h>
@@ -77,17 +76,17 @@ static unsigned int cwd_write(struct nodefs_node *self, unsigned int offset, uns
 static unsigned int pwd_read(struct nodefs_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct vfs_mount *mount = vfs_find_mount(driver.cwdname);
+    struct modules_filesystem *filesystem = modules_get_filesystem(driver.cwdname);
 
-    if (!mount)
+    if (!filesystem)
         return 0;
 
-    unsigned int id = mount->filesystem->find(mount->filesystem, driver.cwdname + string_length(mount->path));
+    unsigned int id = filesystem->find(filesystem, driver.cwdname + string_length(filesystem->path));
 
     if (!id)
         return 0;
 
-    return mount->filesystem->read(mount->filesystem, id, offset, count, buffer);
+    return filesystem->read(filesystem, id, offset, count, buffer);
 
 }
 

@@ -1,6 +1,5 @@
 #include <lib/string.h>
 #include <kernel/modules.h>
-#include <kernel/vfs.h>
 #include <modules/nodefs/nodefs.h>
 #include <modules/pit/pit.h>
 

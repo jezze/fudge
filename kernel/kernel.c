@@ -1,6 +1,5 @@
 #include <lib/memory.h>
 #include <kernel/error.h>
-#include <kernel/vfs.h>
 #include <kernel/ramdisk.h>
 #include <kernel/kernel.h>
 #include <kernel/log.h>
@@ -65,7 +64,6 @@ void kernel_init(struct kernel_arch *arch)
     kernelArch = arch;
     kernelArch->setup(kernelArch);
 
-    vfs_init();
     modules_init();
     syscall_init();
     runtime_init();

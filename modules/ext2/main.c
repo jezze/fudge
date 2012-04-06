@@ -1,5 +1,4 @@
 #include <kernel/modules.h>
-#include <kernel/vfs.h>
 #include <modules/mbr/mbr.h>
 #include <modules/ext2/ext2.h>
 

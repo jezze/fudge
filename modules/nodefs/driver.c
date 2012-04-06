@@ -2,10 +2,9 @@
 #include <lib/string.h>
 #include <kernel/log.h>
 #include <kernel/modules.h>
-#include <kernel/vfs.h>
 #include <modules/nodefs/nodefs.h>
 
-static unsigned int filesystem_read(struct vfs_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int filesystem_read(struct modules_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct nodefs_filesystem *filesystem = (struct nodefs_filesystem *)self;
@@ -34,7 +33,7 @@ static unsigned int filesystem_read(struct vfs_filesystem *self, unsigned int id
 
 }
 
-static unsigned int filesystem_write(struct vfs_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int filesystem_write(struct modules_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct nodefs_filesystem *filesystem = (struct nodefs_filesystem *)self;
@@ -45,7 +44,7 @@ static unsigned int filesystem_write(struct vfs_filesystem *self, unsigned int i
 
 }
 
-static unsigned int filesystem_find(struct vfs_filesystem *self, char *name)
+static unsigned int filesystem_find(struct modules_filesystem *self, char *name)
 {
 
     unsigned int length = string_length(name);
@@ -123,10 +122,10 @@ void nodefs_filesystem_init(struct nodefs_filesystem *filesystem)
 
     memory_clear(filesystem, sizeof (struct nodefs_filesystem));
 
-    vfs_filesystem_init(&filesystem->base, 0, 0, filesystem_read, filesystem_write, filesystem_find, 0); 
+    modules_filesystem_init(&filesystem->base, 0x0001, "nodefs", 0, 0, filesystem_read, filesystem_write, filesystem_find, 0); 
     filesystem->count = 0;
 
-    vfs_mount(&filesystem->base, "/module/");
+    modules_register_filesystem(&filesystem->base, "/module/");
 
 }
 

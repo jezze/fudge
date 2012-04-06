@@ -1,6 +1,5 @@
 #include <lib/memory.h>
 #include <kernel/modules.h>
-#include <kernel/vfs.h>
 #include <modules/nodefs/nodefs.h>
 #include <modules/rtl8139/rtl8139.h>
 

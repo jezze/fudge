@@ -14,13 +14,14 @@ mmu_reload_memory
 modules_bus_init
 modules_device_init
 modules_driver_init
+modules_filesystem_init
 modules_get_driver
+modules_get_filesystem
 modules_register_bus
 modules_register_device
 modules_register_driver
+modules_register_filesystem
 modules_unregister_bus
 modules_unregister_device
 modules_unregister_driver
-vfs_filesystem_init
-vfs_find_mount
-vfs_mount
+modules_unregister_filesystem

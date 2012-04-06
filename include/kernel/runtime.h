@@ -19,7 +19,7 @@ struct runtime_descriptor
 {
 
     unsigned int id;
-    struct vfs_filesystem *filesystem;
+    struct modules_filesystem *filesystem;
     unsigned int permissions;
 
 };
@@ -46,7 +46,7 @@ struct runtime_task *runtime_get_task(unsigned int index);
 struct runtime_task *runtime_get_running_task();
 void runtime_activate(struct runtime_task *task, struct runtime_task *ptask);
 void runtime_registers_init(struct runtime_registers *registers, unsigned int ip, unsigned int sp, unsigned int sb);
-void runtime_descriptor_init(struct runtime_descriptor *descriptor, unsigned int id, struct vfs_filesystem *filesystem, unsigned int permissions);
+void runtime_descriptor_init(struct runtime_descriptor *descriptor, unsigned int id, struct modules_filesystem *filesystem, unsigned int permissions);
 void runtime_task_init(struct runtime_task *task, unsigned int id);
 void runtime_init();
 

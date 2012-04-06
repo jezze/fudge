@@ -134,7 +134,7 @@ struct ext2_entry
 struct ext2_filesystem
 {
 
-    struct vfs_filesystem base;
+    struct modules_filesystem base;
     struct ext2_driver *driver;
     struct mbr_device *device;
 

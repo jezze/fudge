@@ -2,7 +2,7 @@
 #include <lib/string.h>
 #include <kernel/error.h>
 #include <kernel/symbol.h>
-#include <kernel/vfs.h>
+#include <kernel/modules.h>
 
 static struct symbol_entry entries[SYMBOL_ENTRY_SLOTS];
 static char buffer[SYMBOL_BUFFER_SIZE];
@@ -27,17 +27,17 @@ void *symbol_find(char *name)
 void symbol_init()
 {
 
-    struct vfs_mount *mount = vfs_find_mount("/ramdisk/");
+    struct modules_filesystem *filesystem = modules_get_filesystem("/ramdisk/");
 
-    if (!mount)
+    if (!filesystem)
         error_panic("Symbol table not found", __FILE__, __LINE__);
 
-    unsigned int id = mount->filesystem->find(mount->filesystem, "boot/fudge.map");
+    unsigned int id = filesystem->find(filesystem, "boot/fudge.map");
 
     if (!id)
         error_panic("Symbol table not found", __FILE__, __LINE__);
 
-    unsigned int count = mount->filesystem->read(mount->filesystem, id, 0, SYMBOL_BUFFER_SIZE, buffer);
+    unsigned int count = filesystem->read(filesystem, id, 0, SYMBOL_BUFFER_SIZE, buffer);
 
     unsigned int i;
     unsigned int start = 0;

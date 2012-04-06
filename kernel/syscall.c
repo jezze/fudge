@@ -1,9 +1,9 @@
 #include <lib/elf.h>
 #include <lib/string.h>
 #include <kernel/elf.h>
-#include <kernel/vfs.h>
 #include <kernel/event.h>
 #include <kernel/kernel.h>
+#include <kernel/modules.h>
 #include <kernel/mmu.h>
 #include <kernel/runtime.h>
 #include <kernel/syscall.h>
@@ -77,17 +77,17 @@ static unsigned int execute(struct runtime_task *task, char *path, unsigned int 
 
     runtime_task_init(ntask, index);
 
-    struct vfs_mount *mount = vfs_find_mount(path);
+    struct modules_filesystem *filesystem = modules_get_filesystem(path);
 
-    if (!mount)
+    if (!filesystem)
         return 0;
 
-    unsigned int id = mount->filesystem->find(mount->filesystem, path + string_length(mount->path));
+    unsigned int id = filesystem->find(filesystem, path + string_length(filesystem->path));
 
     if (!id)
         return 0;
 
-    unsigned int count = mount->filesystem->read(mount->filesystem, id, 0, ntask->memory.size, ntask->memory.paddress);
+    unsigned int count = filesystem->read(filesystem, id, 0, ntask->memory.size, ntask->memory.paddress);
 
     if (!count)
         return 0;
@@ -109,14 +109,14 @@ static unsigned int execute(struct runtime_task *task, char *path, unsigned int 
 
     runtime_activate(ntask, task);
 
-    struct vfs_filesystem *filesystem = vfs_find_mount("/module/")->filesystem;
+    struct modules_filesystem *filesystem2 = modules_get_filesystem("/module/");
 
-    if (filesystem)
+    if (filesystem2)
     {
 
-        runtime_descriptor_init(ntask->get_descriptor(ntask, 1), filesystem->find(filesystem, "tty/stdin"), filesystem, 0);
-        runtime_descriptor_init(ntask->get_descriptor(ntask, 2), filesystem->find(filesystem, "tty/stdout"), filesystem, 0);
-        runtime_descriptor_init(ntask->get_descriptor(ntask, 3), filesystem->find(filesystem, "tty/stderr"), filesystem, 0);
+        runtime_descriptor_init(ntask->get_descriptor(ntask, 1), filesystem2->find(filesystem2, "tty/stdin"), filesystem2, 0);
+        runtime_descriptor_init(ntask->get_descriptor(ntask, 2), filesystem2->find(filesystem2, "tty/stdout"), filesystem2, 0);
+        runtime_descriptor_init(ntask->get_descriptor(ntask, 3), filesystem2->find(filesystem2, "tty/stderr"), filesystem2, 0);
 
     }
 
@@ -155,17 +155,17 @@ static unsigned int load(struct runtime_task *task, char *path)
     if (!path)
         return 0;
 
-    struct vfs_mount *mount = vfs_find_mount(path);
+    struct modules_filesystem *filesystem = modules_get_filesystem(path);
 
-    if (!mount)
+    if (!filesystem)
         return 0;
 
-    unsigned int id = mount->filesystem->find(mount->filesystem, path + string_length(mount->path));
+    unsigned int id = filesystem->find(filesystem, path + string_length(filesystem->path));
 
     if (!id)
         return 0;
 
-    void *physical = mount->filesystem->get_physical(mount->filesystem, id);
+    void *physical = filesystem->get_physical(filesystem, id);
 
     if (!physical)
         return 0;
@@ -201,17 +201,17 @@ static unsigned int open(struct runtime_task *task, char *path)
     if (!descriptor)
         return 0;
 
-    struct vfs_mount *mount = vfs_find_mount(path);
+    struct modules_filesystem *filesystem = modules_get_filesystem(path);
 
-    if (!mount)
+    if (!filesystem)
         return 0;
 
-    unsigned int id = mount->filesystem->find(mount->filesystem, path + string_length(mount->path));
+    unsigned int id = filesystem->find(filesystem, path + string_length(filesystem->path));
 
     if (!id)
         return 0;
 
-    runtime_descriptor_init(descriptor, id, mount->filesystem, 0);
+    runtime_descriptor_init(descriptor, id, filesystem, 0);
 
     if (descriptor->filesystem->open)
         descriptor->filesystem->open(descriptor->filesystem, descriptor->id);
@@ -253,17 +253,17 @@ static unsigned int unload(struct runtime_task *task, char *path)
     if (!path)
         return 0;
 
-    struct vfs_mount *mount = vfs_find_mount(path);
+    struct modules_filesystem *filesystem = modules_get_filesystem(path);
 
-    if (!mount)
+    if (!filesystem)
         return 0;
 
-    unsigned int id = mount->filesystem->find(mount->filesystem, path + string_length(mount->path));
+    unsigned int id = filesystem->find(filesystem, path + string_length(filesystem->path));
 
     if (!id)
         return 0;
 
-    void *physical = mount->filesystem->get_physical(mount->filesystem, id);
+    void *physical = filesystem->get_physical(filesystem, id);
 
     if (!physical)
         return 0;

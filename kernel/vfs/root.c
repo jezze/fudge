@@ -1,13 +1,12 @@
 #include <lib/memory.h>
 #include <lib/string.h>
 #include <kernel/modules.h>
-#include <kernel/vfs.h>
 #include <kernel/vfs/root.h>
 
-static struct vfs_mount *mounts;
-static struct vfs_filesystem filesystem;
+static union modules_module **modules;
+static struct modules_filesystem filesystem;
 
-static unsigned int read(struct vfs_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int read(struct modules_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     if (id != 1)
@@ -18,17 +17,18 @@ static unsigned int read(struct vfs_filesystem *self, unsigned int id, unsigned 
     unsigned int length = 7;
     unsigned int i;
 
-
-    for (i = 0; i < VFS_MOUNT_SLOTS; i++)
+    for (i = 0; i < MODULES_MODULE_SLOTS; i++)
     {
 
-        if (!mounts[i].filesystem)
+        union modules_module *module = modules[i];
+
+        if (!module || module->base.type != MODULES_TYPE_FILESYSTEM)
             continue;
 
-        if (mounts[i].filesystem == self)
+        if (&module->filesystem == self)
             continue;
 
-        string_write(buffer + length, "%s\n", mounts[i].path + 1);
+        string_write(buffer + length, "%s\n", module->filesystem.path + 1);
         length += string_length(buffer + length);
 
     }
@@ -37,20 +37,20 @@ static unsigned int read(struct vfs_filesystem *self, unsigned int id, unsigned 
 
 }
 
-static unsigned int find(struct vfs_filesystem *self, char *name)
+static unsigned int find(struct modules_filesystem *self, char *name)
 {
 
     return 1;
 
 }
 
-void vfs_root_init(struct vfs_mount *m)
+void vfs_root_init(union modules_module **m)
 {
 
-    mounts = m;
+    modules = m;
 
-    vfs_filesystem_init(&filesystem, 0, 0, read, 0, find, 0);
-    vfs_mount(&filesystem, "/");
+    modules_filesystem_init(&filesystem, 0x0001, "root", 0, 0, read, 0, find, 0);
+    modules_register_filesystem(&filesystem, "/");
 
 }
 

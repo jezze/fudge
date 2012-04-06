@@ -1,17 +1,17 @@
 #include <lib/memory.h>
 #include <lib/string.h>
 #include <kernel/log.h>
-#include <kernel/vfs.h>
+#include <kernel/modules.h>
 
 void log_write(const char *buffer, ...)
 {
 
-    struct vfs_mount *mount = vfs_find_mount("/module/");
+    struct modules_filesystem *filesystem = modules_get_filesystem("/module/");
 
-    if (!mount)
+    if (!filesystem)
         return;
 
-    unsigned int id = mount->filesystem->find(mount->filesystem, "tty/stdout");
+    unsigned int id = filesystem->find(filesystem, "tty/stdout");
 
     if (!id)
         return;
@@ -23,7 +23,7 @@ void log_write(const char *buffer, ...)
 
     unsigned int count = string_length(temp) + 1;
 
-    mount->filesystem->write(mount->filesystem, id, 0, count, temp);
+    filesystem->write(filesystem, id, 0, count, temp);
 
 }
 

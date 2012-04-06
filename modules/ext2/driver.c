@@ -1,7 +1,6 @@
 #include <lib/memory.h>
 #include <kernel/log.h>
 #include <kernel/modules.h>
-#include <kernel/vfs.h>
 #include <modules/ata/ata.h>
 #include <modules/mbr/mbr.h>
 #include <modules/ext2/ext2.h>
@@ -82,7 +81,7 @@ static void add_filesystem(struct ext2_driver *driver, struct mbr_device *device
     struct ext2_filesystem *filesystem = &driver->filesystems[driver->filesystemsCount];
 
     ext2_filesystem_init(filesystem, driver, device);
-    vfs_mount(&filesystem->base, "/hda/");
+    modules_register_filesystem(&filesystem->base, "/hda/");
 
     driver->filesystemsCount++;
 
