@@ -54,7 +54,17 @@ static void draw_ppm(char *name, unsigned int x, unsigned int y)
     unsigned char buffer[0xC80];
 
     unsigned int fd = file_open(name);
-    unsigned int count = file_read(fd, 0x34, 0xC80, buffer);
+    file_read(fd, 0, 0xC80, buffer);
+
+    struct ppm_header header;
+
+    ppm_parse(&header, buffer);
+
+    header.width = 20;
+    header.height = 20;
+    unsigned int offset = 0x34;
+
+    unsigned int count = file_read(fd, offset, 0xC80, buffer);
 
     int cx = x;
     int cy = y;
@@ -64,13 +74,11 @@ static void draw_ppm(char *name, unsigned int x, unsigned int y)
     for (i = 1; i < count; i += 3)
     {
 
-        unsigned int color = *(unsigned int *)(buffer + i);
-
-        draw_pixel(cx, cy, color);
+        draw_pixel(cx, cy, *(unsigned int *)(buffer + i));
 
         cx++;
 
-        if (cx > x + 19)
+        if (cx == x + header.width)
         {
 
             cx = x;
