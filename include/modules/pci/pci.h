@@ -84,7 +84,7 @@ struct pci_bus
     unsigned int (*ind)(unsigned int address, unsigned short offset);
     unsigned short (*inw)(unsigned int address, unsigned short offset);
     unsigned char (*inb)(unsigned int address, unsigned short offset);
-    void (*add_device)(struct pci_bus *self, unsigned int num, unsigned int slot, unsigned int function);
+    void (*add_device)(struct pci_bus *self, unsigned int num, unsigned int slot, unsigned int function, unsigned int address);
 
 };
 

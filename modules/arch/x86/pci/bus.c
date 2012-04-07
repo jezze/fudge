@@ -67,7 +67,7 @@ static void detect(struct pci_bus *self, unsigned int num)
                 if (inw(address, 0x00) == 0xFFFF)
                     continue;
 
-                self->add_device(self, num, slot, function);
+                self->add_device(self, num, slot, function, address);
 
             }
 
@@ -75,7 +75,7 @@ static void detect(struct pci_bus *self, unsigned int num)
 
         }
 
-        self->add_device(self, num, slot, 0);
+        self->add_device(self, num, slot, 0, address);
 
     }
 
@@ -90,12 +90,12 @@ static void scan(struct modules_bus *self)
 
 }
 
-static void add_device(struct pci_bus *self, unsigned int num, unsigned int slot, unsigned int function)
+static void add_device(struct pci_bus *self, unsigned int num, unsigned int slot, unsigned int function, unsigned int address)
 {
 
     struct pci_device *device = &self->devices[self->devicesCount];
 
-    pci_device_init(device, self, num, slot, function, 0x80000000 | (num << 16) | (slot << 11) | (function << 8));
+    pci_device_init(device, self, num, slot, function, address);
     modules_register_device(&device->base);
 
     self->devicesCount++;
