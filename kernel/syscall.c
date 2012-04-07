@@ -7,7 +7,7 @@
 #include <kernel/runtime.h>
 #include <kernel/syscall.h>
 
-static void *routines[SYSCALL_ROUTINE_SLOTS];
+static unsigned int (*routines[SYSCALL_ROUTINE_SLOTS])(struct runtime_task *task, unsigned int stack);
 
 static unsigned int attach(struct runtime_task *task, unsigned int index, void (*routine)())
 {

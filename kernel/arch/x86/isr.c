@@ -8,7 +8,7 @@
 #include <kernel/arch/x86/idt.h>
 #include <kernel/arch/x86/isr.h>
 
-static void *routines[ISR_ROUTINE_SLOTS];
+static void (*routines[ISR_ROUTINE_SLOTS])(struct isr_cpu_registers *registers);
 
 static void save_state(struct runtime_task *task, struct isr_general_registers *general, struct isr_interrupt_registers *interrupt)
 {
