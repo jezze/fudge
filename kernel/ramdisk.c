@@ -9,20 +9,23 @@ static struct ramdisk_node nodes[RAMDISK_NODE_SLOTS];
 static unsigned int parse(void *address)
 {
 
+    char *current = (char *)address;
+
     unsigned int i;
 
-    for (i = 0; *(char *)address; i++)
+
+    for (i = 0; *current; i++)
     {
 
-        struct tar_header *header = address;
+        struct tar_header *header = (struct tar_header *)current;
         unsigned int size = string_read_num(header->size, 8);
 
-        ramdisk_node_init(&nodes[i], header->name + 11, size, header, address + TAR_BLOCK_SIZE);
+        ramdisk_node_init(&nodes[i], header->name + 11, size, header, current + TAR_BLOCK_SIZE);
 
-        address += ((size / TAR_BLOCK_SIZE) + 1) * TAR_BLOCK_SIZE;
+        current += ((size / TAR_BLOCK_SIZE) + 1) * TAR_BLOCK_SIZE;
 
         if (size % TAR_BLOCK_SIZE)
-            address += TAR_BLOCK_SIZE;
+            current += TAR_BLOCK_SIZE;
 
     }
 
