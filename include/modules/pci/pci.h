@@ -24,44 +24,26 @@
 #define PCI_CLASS_SIGNAL    0x11
 #define PCI_CLASS_OTHER     0xFF
 
+#define PCI_CONFIG_VENDOR    0x00
+#define PCI_CONFIG_DEVICE    0x02
+#define PCI_CONFIG_REVISION  0x08
+#define PCI_CONFIG_INTERFACE 0x09
+#define PCI_CONFIG_SUBCLASS  0x0A
+#define PCI_CONFIG_CLASS     0x0B
+#define PCI_CONFIG_HEADER    0x0E
+#define PCI_CONFIG_BAR0      0x10
+#define PCI_CONFIG_BAR1      0x14
+#define PCI_CONFIG_BAR2      0x18
+#define PCI_CONFIG_BAR3      0x1C
+#define PCI_CONFIG_BAR4      0x20
+#define PCI_CONFIG_BAR5      0x24
+#define PCI_CONFIG_IRQ_LINE  0x3C
+#define PCI_CONFIG_IRQ_PIN   0x3C
+
 #define PCI_BUS_TYPE    0x0004
 #define PCI_DEVICE_TYPE 0x0006
 
 struct pci_bus;
-
-struct pci_configuration
-{
-
-    unsigned short vendorid;
-    unsigned short deviceid;
-    unsigned short command;
-    unsigned short status;
-    unsigned char revision;
-    unsigned char interface;
-    unsigned char subclasscode;
-    unsigned char classcode;
-    unsigned char cachelinesize;
-    unsigned char latencytimer;
-    unsigned char headertype;
-    unsigned char bist;
-    unsigned int bar0;
-    unsigned int bar1;
-    unsigned int bar2;
-    unsigned int bar3;
-    unsigned int bar4;
-    unsigned int bar5;
-    unsigned int cis;
-    unsigned short subvendor;
-    unsigned short subsystem;
-    unsigned int expansion;
-    unsigned int capabilities;
-    unsigned int reserved;
-    unsigned char interruptline;
-    unsigned char interruptpin;
-    unsigned char mingrant;
-    unsigned char maxlatency;
-
-};
 
 struct pci_device
 {
@@ -71,7 +53,10 @@ struct pci_device
     unsigned int num;
     unsigned int slot;
     unsigned int function;
-    struct pci_configuration configuration;
+    unsigned int address;
+    unsigned int (*config_ind)(struct pci_device *device, unsigned int offset);
+    unsigned short (*config_inw)(struct pci_device *device, unsigned int offset);
+    unsigned char (*config_inb)(struct pci_device *device, unsigned int offset);
 
 };
 

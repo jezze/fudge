@@ -156,7 +156,9 @@ static void attach(struct modules_device *device)
 
     struct pci_device *pciDevice = (struct pci_device *)device;
 
-    irq_register_routine(pciDevice->configuration.interruptline, device, handle_irq);
+    unsigned int irq = pciDevice->config_inb(pciDevice, PCI_CONFIG_IRQ_LINE);
+
+    irq_register_routine(irq, device, handle_irq);
 
 }
 
@@ -168,7 +170,7 @@ static unsigned int check(struct modules_driver *self, struct modules_device *de
 
     struct pci_device *pciDevice = (struct pci_device *)device;
 
-    return pciDevice->configuration.vendorid == 0x8086 && pciDevice->configuration.deviceid == 0x27AE;
+    return pciDevice->config_inw(pciDevice, PCI_CONFIG_VENDOR) == 0x8086 && pciDevice->config_inw(pciDevice, PCI_CONFIG_DEVICE) == 0x27AE;
 
 }
 

@@ -43,7 +43,7 @@ static void attach(struct modules_device *device)
     struct pci_device *pciDevice = (struct pci_device *)device;
     struct bga_driver *driver = (struct bga_driver *)device->driver;
 
-    driver->lfb = (void *)pciDevice->configuration.bar0;
+    driver->lfb = (void *)pciDevice->config_ind(pciDevice, PCI_CONFIG_BAR0);
 
 }
 
@@ -55,7 +55,7 @@ static unsigned int check(struct modules_driver *self, struct modules_device *de
 
     struct pci_device *pciDevice = (struct pci_device *)device;
 
-    return pciDevice->configuration.vendorid == 0x1234 && pciDevice->configuration.deviceid == 0x1111;
+    return pciDevice->config_inw(pciDevice, PCI_CONFIG_VENDOR) == 0x1234 && pciDevice->config_inw(pciDevice, PCI_CONFIG_DEVICE) == 0x1111;
 
 }
 

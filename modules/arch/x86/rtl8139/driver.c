@@ -167,9 +167,12 @@ static void attach(struct modules_device *device)
     struct pci_device *pciDevice = (struct pci_device *)device;
     struct rtl8139_driver *driver = (struct rtl8139_driver *)device->driver;
 
-    driver->io = (pciDevice->configuration.bar0 & ~1);
+    unsigned int bar0 = pciDevice->config_ind(pciDevice, PCI_CONFIG_BAR0);
+    unsigned int irq = pciDevice->config_inb(pciDevice, PCI_CONFIG_IRQ_LINE);
 
-    irq_register_routine(pciDevice->configuration.interruptline, device, handle_irq);
+    driver->io = bar0 & ~1;
+
+    irq_register_routine(irq, device, handle_irq);
 
 }
 
@@ -181,7 +184,7 @@ static unsigned int check(struct modules_driver *self, struct modules_device *de
 
     struct pci_device *pciDevice = (struct pci_device *)device;
 
-    return pciDevice->configuration.vendorid == 0x10EC && pciDevice->configuration.deviceid == 0x8139;
+    return pciDevice->config_inw(pciDevice, PCI_CONFIG_VENDOR) == 0x10EC && pciDevice->config_inw(pciDevice, PCI_CONFIG_DEVICE) == 0x8139;
 
 }
 
