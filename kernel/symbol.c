@@ -7,7 +7,7 @@
 static struct symbol_entry entries[SYMBOL_ENTRY_SLOTS];
 static char buffer[SYMBOL_BUFFER_SIZE];
 
-void *symbol_find(char *name)
+unsigned int symbol_find(char *name)
 {
 
     unsigned int i;
@@ -58,7 +58,7 @@ void symbol_init()
                 buffer[i] = '\0';
 
                 string_write(entries[index].name, "%s", buffer + start + 11);
-                entries[index].paddress = (void *)string_read_num(buffer + start, 16);
+                entries[index].paddress = string_read_num(buffer + start, 16);
                 index++;
 
                 start = i + 1;

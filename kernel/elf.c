@@ -45,7 +45,7 @@ unsigned int elf_get_virtual(void *address)
     if (!header)
         return 0;
 
-    struct elf_program_header *pheader = address + header->phoffset;
+    struct elf_program_header *pheader = (struct elf_program_header *)((unsigned int)address + header->phoffset);
 
     return pheader->vaddress;
 
@@ -59,13 +59,13 @@ unsigned int elf_get_symbol(void *address, char *name)
     if (!header)
         return 0;
 
-    struct elf_section_header *sheader = address + header->shoffset;
+    struct elf_section_header *sheader = (struct elf_section_header *)((unsigned int)address + header->shoffset);
     struct elf_section_header *relHeader = &sheader[2];
     struct elf_section_header *symHeader = &sheader[relHeader->link];
 
-    struct elf_symbol *symTable = address + symHeader->offset;
-    void *infoTable = address + sheader[relHeader->info].offset;
-    char *strTable = address + sheader[symHeader->link].offset;
+    struct elf_symbol *symTable = (struct elf_symbol *)((unsigned int)address + symHeader->offset);
+    char *infoTable = (char *)address + sheader[relHeader->info].offset;
+    char *strTable = (char *)address + sheader[symHeader->link].offset;
 
     unsigned int i;
     unsigned int count = symHeader->size / symHeader->esize;
@@ -92,7 +92,7 @@ void elf_prepare(void *address)
     if (!header)
         return;
 
-    struct elf_section_header *sheader = address + header->shoffset;
+    struct elf_section_header *sheader = (struct elf_section_header *)((unsigned int)address + header->shoffset);
 
     unsigned int i;
 
@@ -100,7 +100,7 @@ void elf_prepare(void *address)
     {
 
         if (sheader[i].type == 8)
-            memory_clear(address + sheader[i].offset, sheader[i].size);
+            memory_clear((char *)address + sheader[i].offset, sheader[i].size);
 
     }
 
@@ -114,14 +114,14 @@ void elf_relocate(void *address)
     if (!header)
         return;
 
-    struct elf_section_header *sheader = address + header->shoffset;
+    struct elf_section_header *sheader = (struct elf_section_header *)((unsigned int)address + header->shoffset);
     struct elf_section_header *relHeader = &sheader[2];
     struct elf_section_header *symHeader = &sheader[relHeader->link];
 
-    struct elf_relocate *relTable = address + relHeader->offset;
-    struct elf_symbol *symTable = address + symHeader->offset;
-    void *infoTable = address + sheader[relHeader->info].offset;
-    char *strTable = address + sheader[symHeader->link].offset;
+    struct elf_relocate *relTable = (struct elf_relocate *)((unsigned int)address + relHeader->offset);
+    struct elf_symbol *symTable = (struct elf_symbol *)((unsigned int)address + symHeader->offset);
+    char *infoTable = (char *)address + sheader[relHeader->info].offset;
+    char *strTable = (char *)address + sheader[symHeader->link].offset;
 
     unsigned int i;
     unsigned int count = relHeader->size / relHeader->esize; 
@@ -137,7 +137,7 @@ void elf_relocate(void *address)
         struct elf_symbol *symEntry = &symTable[index];
         unsigned int *entry = (unsigned int *)(infoTable + relEntry->offset);
         unsigned int value = *entry;
-        unsigned int addend = (symEntry->shindex) ? (unsigned int)(address + sheader[symEntry->shindex].offset + symEntry->value) : (unsigned int)symbol_find(strTable + symEntry->name);
+        unsigned int addend = (symEntry->shindex) ? (unsigned int)address + sheader[symEntry->shindex].offset + symEntry->value : symbol_find(strTable + symEntry->name);
 
         switch (type)
         {

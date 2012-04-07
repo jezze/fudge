@@ -8,11 +8,11 @@ struct symbol_entry
 {
 
     char name[32];
-    void *paddress;
+    unsigned int paddress;
 
 };
 
-void *symbol_find(char *name);
+unsigned int symbol_find(char *name);
 void symbol_init();
 
 #endif
