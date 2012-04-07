@@ -15,13 +15,13 @@ static void setup_madt(struct smp_driver *driver, struct acpi_driver *acpiDriver
 
     log_write("[smp] Madt found\n");
 
-    void *madttable = (void *)madt + sizeof (struct acpi_madt);
-    void *madtend = (void *)madt + madt->base.length;
+    unsigned int madttable = (unsigned int)madt + sizeof (struct acpi_madt);
+    unsigned int madtend = (unsigned int)madt + madt->base.length;
 
     while (madttable < madtend)
     {
 
-        struct acpi_madt_entry *entry = madttable;
+        struct acpi_madt_entry *entry = (struct acpi_madt_entry *)madttable;
 
         if (entry->type == 0)
         {
@@ -50,13 +50,14 @@ static void setup_srat(struct smp_driver *driver, struct acpi_driver *acpiDriver
 
     log_write("[smp] Srat found\n");
 
-    void *srattable = (void *)srat + sizeof (struct acpi_srat);
-    void *sratend = (void *)srat + srat->base.length;
+    unsigned int srattable = (unsigned int)srat + sizeof (struct acpi_srat);
+    unsigned int sratend = (unsigned int)srat + srat->base.length;
 
     while (srattable < sratend)
     {
 
-        struct acpi_srat_entry *entry = srattable;
+        struct acpi_srat_entry *entry = (struct acpi_srat_entry *)srattable;
+
         if (entry->type == 0)
         {
 

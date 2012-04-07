@@ -11,11 +11,13 @@ static unsigned int read(struct modules_filesystem *self, unsigned int id, unsig
     struct ext2_blockgroup bg;
     struct ext2_node node;
     char mem[1024];
-    void *private = mem;
+    char *private = mem;
 
     filesystem->driver->read_blockgroup(filesystem->device, id, &bg);
     filesystem->driver->read_node(filesystem->device, id, &bg, &node);
     filesystem->driver->read_content(filesystem->device, &node, private);
+
+    char *in = (char *)buffer;
 
     if ((node.type & 0xF000) == EXT2_NODE_TYPE_DIR)
     {
@@ -25,17 +27,17 @@ static unsigned int read(struct modules_filesystem *self, unsigned int id, unsig
         for (;;)
         {
 
-            struct ext2_entry *entry = private;
+            struct ext2_entry *entry = (struct ext2_entry *)private;
 
             if (!entry->length)
                 return c;
 
-            memory_copy(buffer + c, private + 8, entry->length);
+            memory_copy(in + c, private + 8, entry->length);
 
             if (entry->type == 2)
             {
 
-                memory_copy(buffer + c + entry->length, "/\n", 2);
+                memory_copy(in + c + entry->length, "/\n", 2);
                 c += entry->length + 2;
 
             }
@@ -43,7 +45,7 @@ static unsigned int read(struct modules_filesystem *self, unsigned int id, unsig
             else
             {
 
-                memory_copy(buffer + c + entry->length, "\n", 1);
+                memory_copy(in + c + entry->length, "\n", 1);
                 c += entry->length + 1;
 
             }
@@ -59,7 +61,7 @@ static unsigned int read(struct modules_filesystem *self, unsigned int id, unsig
     if ((node.type & 0xF000) == EXT2_NODE_TYPE_REGULAR)
     {
 
-        memory_copy(buffer, private, node.sizeLow);
+        memory_copy(in, private, node.sizeLow);
 
         return node.sizeLow;
 
@@ -77,7 +79,7 @@ static struct ext2_entry *finddir(struct modules_filesystem *self, unsigned int 
     struct ext2_blockgroup bg;
     struct ext2_node node;
     char mem[1024];
-    void *private = mem;
+    char *private = mem;
 
     filesystem->driver->read_blockgroup(filesystem->device, id, &bg);
     filesystem->driver->read_node(filesystem->device, id, &bg, &node);
@@ -89,7 +91,7 @@ static struct ext2_entry *finddir(struct modules_filesystem *self, unsigned int 
         for (;;)
         {
 
-            struct ext2_entry *entry = private;
+            struct ext2_entry *entry = (struct ext2_entry *)private;
 
             if (!entry->length)
                 return 0;

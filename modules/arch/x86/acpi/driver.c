@@ -24,16 +24,16 @@ static struct acpi_sdth *find_header(struct acpi_driver *self, char *name)
 
 }
 
-static void *find_rsdp()
+static unsigned int find_rsdp()
 {
 
-    void *rsdp;
+    unsigned int rsdp;
     char *signature = "RSD PTR ";
 
-    for (rsdp = (void *)0x000E0000; rsdp < (void *)0x00100000; rsdp += 0x10)
+    for (rsdp = 0x000E0000; rsdp < 0x00100000; rsdp += 0x10)
     {
 
-        if (!memory_compare(rsdp, signature, 8))
+        if (!memory_compare((void *)rsdp, signature, 8))
             return rsdp;
 
     }
@@ -41,10 +41,10 @@ static void *find_rsdp()
     unsigned int ebda = *((unsigned int *)0x40E);
     ebda = ebda * 0x10 & 0x000FFFFF;
 
-    for (rsdp = (void *)ebda; rsdp < (void *)(ebda + 0x400); rsdp += 0x10)
+    for (rsdp = ebda; rsdp < ebda + 0x400; rsdp += 0x10)
     {
 
-        if (!memory_compare(rsdp, signature, 8))
+        if (!memory_compare((void *)rsdp, signature, 8))
             return rsdp;
 
     }
@@ -58,7 +58,7 @@ static void start(struct modules_driver *self)
 
     struct acpi_driver *driver = (struct acpi_driver *)self;
 
-    driver->rsdp = find_rsdp();
+    driver->rsdp = (void *)find_rsdp();
 
     if (!driver->rsdp)
         return;

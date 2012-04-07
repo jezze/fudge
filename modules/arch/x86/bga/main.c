@@ -76,7 +76,7 @@ static unsigned int enable_write(struct nodefs_node *self, unsigned int offset, 
 static unsigned int lfb_write(struct nodefs_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    memory_copy(driver.lfb + offset, buffer, count);
+    memory_copy((char *)driver.lfb + offset, buffer, count);
 
     return count;
 

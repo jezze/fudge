@@ -9,6 +9,8 @@ static unsigned int read_framebuffer(struct vga_driver *self, unsigned int offse
     unsigned int i;
     unsigned int j = 0;
 
+    char *in = (char *)buffer;
+
     for (i = offset; i < offset + count; i++, j++)
     {
 
@@ -17,7 +19,7 @@ static unsigned int read_framebuffer(struct vga_driver *self, unsigned int offse
 
         volatile char *address = (char *)(VGA_FB_ADDRESS + i * 2);
 
-        memory_copy(buffer + j, (void *)address, 1);
+        memory_copy(in + j, (void *)address, 1);
 
     }
 
@@ -31,6 +33,8 @@ static unsigned int write_framebuffer(struct vga_driver *self, unsigned int offs
     unsigned int i;
     unsigned int j = 0;
 
+    char *in = (char *)buffer;
+
     for (i = offset; i < offset + count; i++, j++)
     {
 
@@ -39,7 +43,7 @@ static unsigned int write_framebuffer(struct vga_driver *self, unsigned int offs
 
         volatile char *address = (char *)(VGA_FB_ADDRESS + i * 2);
 
-        memory_copy((void *)address, buffer + j, 1);
+        memory_copy((void *)address, in + j, 1);
         memory_copy((void *)(address + 1), &self->cursorColor, 1);
 
     }

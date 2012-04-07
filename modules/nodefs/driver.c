@@ -11,7 +11,7 @@ static unsigned int filesystem_read(struct modules_filesystem *self, unsigned in
     if (id == 1)
     {
 
-        void *b = buffer;
+        char *b = (char *)buffer;
         unsigned int i;
 
         for (i = 0; i < filesystem->count; i++)

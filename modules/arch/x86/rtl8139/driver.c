@@ -61,7 +61,7 @@ static unsigned int read(struct rtl8139_driver *self, void *buffer)
 
     struct rtl8139_header *header = (struct rtl8139_header *)(self->rx + current);
 
-    memory_copy(buffer, (void *)self->rx + current + 4, header->length);
+    memory_copy(buffer, (char *)self->rx + current + 4, header->length);
 
     current += (header->length + 4 + 3) & ~3;
 
