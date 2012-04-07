@@ -96,7 +96,7 @@ static unsigned int execute(struct runtime_task *task, char *path, unsigned int 
     if (!ntask->memory.vaddress)
         return 0;
 
-    void *entry = elf_get_entry(ntask->memory.paddress);
+    void (*entry)() = elf_get_entry(ntask->memory.paddress);
 
     if (!entry)
         return 0;

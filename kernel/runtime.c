@@ -71,7 +71,7 @@ static void copy_args(unsigned int argc, char **argv, void *buffer)
 
 }
 
-static unsigned int load(struct runtime_task *self, void *entry, unsigned int argc, char **argv)
+static unsigned int load(struct runtime_task *self, void (*entry)(), unsigned int argc, char **argv)
 {
 
     char temp[128];
