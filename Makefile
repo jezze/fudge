@@ -18,8 +18,10 @@ toolchain:
 ramdisk:
 	@cp kernel/fudge image/boot/fudge
 	@nm image/boot/fudge | grep -f image/boot/fudge.sym > image/boot/fudge.map
+	@mkdir -p image/mod
 	@cp modules/*/*.ko image/mod/
 	@cp modules/arch/*/*/*.ko image/mod/
+	@mkdir -p image/bin
 	@cp user/cat image/bin/cat
 	@cp user/cd image/bin/cd
 	@cp user/date image/bin/date
@@ -67,26 +69,6 @@ hda:
 clean: lib-clean kernel-clean modules-clean user-clean
 	@rm -f fudge.img
 	@rm -f fudge.iso
-	@rm -f image/bin/cat
-	@rm -f image/bin/cd
-	@rm -f image/bin/date
-	@rm -f image/bin/echo
-	@rm -f image/bin/event1
-	@rm -f image/bin/event2
-	@rm -f image/bin/event3
-	@rm -f image/bin/hello
-	@rm -f image/bin/init
-	@rm -f image/bin/load
-	@rm -f image/bin/ls
-	@rm -f image/bin/ncat
-	@rm -f image/bin/reboot
-	@rm -f image/bin/shell
-	@rm -f image/bin/tail
-	@rm -f image/bin/timer
-	@rm -f image/bin/unload
-	@rm -f image/bin/wm
-	@rm -f image/bin/test
-	@rm -f image/mod/*.ko
 	@rm -f image/boot/*.bin
 	@rm -f image/boot/*.uimg
 	@rm -f image/boot/fudge
@@ -94,4 +76,6 @@ clean: lib-clean kernel-clean modules-clean user-clean
 	@rm -f image/boot/initrd
 	@rm -f image/boot/initrd.tar
 	@rm -f image/boot/initrd.cpio
+	@rm -rf image/mod
+	@rm -rf image/bin
 
