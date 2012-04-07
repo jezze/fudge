@@ -6,7 +6,7 @@
 void file_close(unsigned int fd)
 {
 
-    return call_close(fd);
+    call_close(fd);
 
 }
 

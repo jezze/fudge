@@ -25,21 +25,20 @@ void ppm_parse(struct ppm_header *header, void *buffer)
 {
 
     unsigned int offset = 0;
+    char *in = (char *)buffer;
 
-    memory_copy(header->sign, buffer, 2);
+    memory_copy(header->sign, in, 2);
 
-    offset = read_line(buffer + offset);
+    offset = read_line(in + offset);
 
-    // COMMENT
-
-    offset = read_line(buffer + offset);
+    offset = read_line(in + offset);
 
     header->width = 20;
     header->height = 20;
 
-    offset = read_line(buffer + offset);
+    offset = read_line(in + offset);
 
-    header->data = buffer + 0x34;
+    header->data = in + 0x34;
 
 }
 
