@@ -6,8 +6,7 @@
 static void read_superblock(struct mbr_device *device, struct ext2_superblock *sb)
 {
 
-    char mem[1024];
-    void *buffer = &mem;
+    char buffer[1024];
 
     device->read(device, 2, 2, buffer);
 
@@ -22,8 +21,7 @@ static void read_blockgroup(struct mbr_device *device, unsigned int id, struct e
 
     read_superblock(device, &sb);
 
-    char mem[1024];
-    void *buffer = mem;
+    char buffer[1024];
 
     unsigned int blocksize = 1024 << sb.blockSize;
     unsigned int sectorsize = blocksize / 512;
@@ -43,8 +41,7 @@ static void read_node(struct mbr_device *device, unsigned int id, struct ext2_bl
 
     read_superblock(device, &sb);
 
-    char mem[1024];
-    void *buffer = mem;
+    char buffer[1024];
 
     unsigned int blocksize = 1024 << sb.blockSize;
     unsigned int sectorsize = blocksize / 512;
