@@ -1,7 +1,7 @@
+#include <lib/io.h>
 #include <lib/memory.h>
 #include <kernel/mmu.h>
 #include <kernel/modules.h>
-#include <kernel/arch/x86/io.h>
 #include <modules/bga/bga.h>
 #include <modules/pci/pci.h>
 

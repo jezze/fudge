@@ -1,3 +1,4 @@
+#include <lib/io.h>
 #include <lib/memory.h>
 #include <kernel/kernel.h>
 #include <kernel/arch/x86/arch.h>
@@ -5,7 +6,6 @@
 #include <kernel/arch/x86/fpu.h>
 #include <kernel/arch/x86/gdt.h>
 #include <kernel/arch/x86/idt.h>
-#include <kernel/arch/x86/io.h>
 #include <kernel/arch/x86/isr.h>
 #include <kernel/arch/x86/mboot.h>
 #include <kernel/arch/x86/mmu.h>

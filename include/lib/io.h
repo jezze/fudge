@@ -1,5 +1,5 @@
-#ifndef ARCH_IO_H
-#define ARCH_IO_H
+#ifndef LIB_IO_H
+#define LIB_IO_H
 
 unsigned char io_inb(unsigned short port);
 unsigned short io_inw(unsigned short port);

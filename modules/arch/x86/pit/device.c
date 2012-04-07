@@ -1,6 +1,6 @@
+#include <lib/io.h>
 #include <lib/memory.h>
 #include <kernel/modules.h>
-#include <kernel/arch/x86/io.h>
 #include <modules/pit/pit.h>
 
 void pit_device_init(struct pit_device *device, unsigned int irq)
