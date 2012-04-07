@@ -11,7 +11,9 @@ static unsigned int read(struct modules_filesystem *self, unsigned int id, unsig
     if (id != 1)
         return 0;
 
-    string_write(buffer, "./\n../\n", 7);
+    char *in = (char *)buffer;
+
+    string_write(in, "./\n../\n", 7);
 
     unsigned int length = 7;
     unsigned int i;
@@ -27,8 +29,8 @@ static unsigned int read(struct modules_filesystem *self, unsigned int id, unsig
         if (&module->filesystem == self)
             continue;
 
-        string_write(buffer + length, "%s\n", module->filesystem.path + 1);
-        length += string_length(buffer + length);
+        string_write(in + length, "%s\n", module->filesystem.path + 1);
+        length += string_length(in + length);
 
     }
 

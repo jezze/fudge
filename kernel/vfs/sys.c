@@ -9,16 +9,18 @@ static struct modules_filesystem filesystem;
 static unsigned int read(struct modules_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
+    char *in = (char *)buffer;
+
     if (id == 1)
     {
 
-        memory_copy(buffer, "./\n../\nall/\nbus/\ndevice/\ndriver/\n", 33);
+        memory_copy(in, "./\n../\nall/\nbus/\ndevice/\ndriver/\n", 33);
 
         return 33;
 
     }
 
-    string_write(buffer, "./\n../\n", 7);
+    string_write(in, "./\n../\n", 7);
 
     unsigned int length = 7;
     unsigned int i;
@@ -45,8 +47,8 @@ static unsigned int read(struct modules_filesystem *self, unsigned int id, unsig
 
         }
 
-        string_write(buffer + length, "%s\n", module->base.name);
-        length += string_length(buffer + length);
+        string_write(in + length, "%s\n", module->base.name);
+        length += string_length(in + length);
 
     }
 
