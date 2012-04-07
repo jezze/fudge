@@ -37,7 +37,7 @@ unsigned int elf_get_entry(void *address)
 
 }
 
-void *elf_get_virtual(void *address)
+unsigned int elf_get_virtual(void *address)
 {
 
     struct elf_header *header = get_header(address);

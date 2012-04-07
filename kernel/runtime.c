@@ -85,8 +85,8 @@ static unsigned int load(struct runtime_task *self, void (*entry)(), unsigned in
     mmu_map_user_memory(self->id, memory);
     mmu_load_memory(self->id);
 
-    void *stack = memory->vaddress + memory->size;
-    void *address = stack - 0x200;
+    void *stack = (void *)memory->vaddress + memory->size;
+    void *address = (void *)stack - 0x200;
 
     copy_args(argc, (char **)(temp), address);
 
@@ -171,7 +171,7 @@ void runtime_task_init(struct runtime_task *task, unsigned int id)
     task->get_descriptor_slot = get_descriptor_slot;
     task->get_descriptor = get_descriptor;
 
-    void *address = (void *)(RUNTIME_TASK_ADDRESS_BASE + task->id * RUNTIME_TASK_ADDRESS_SIZE);
+    unsigned int address = RUNTIME_TASK_ADDRESS_BASE + task->id * RUNTIME_TASK_ADDRESS_SIZE;
 
     mmu_memory_init(&task->memory, address, address, RUNTIME_TASK_ADDRESS_SIZE);
 

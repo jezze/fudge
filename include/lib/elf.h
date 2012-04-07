@@ -84,8 +84,8 @@ struct elf_program_header
 
     unsigned int type;
     unsigned int offset;
-    void *vaddress;
-    void *paddress;
+    unsigned int vaddress;
+    unsigned int paddress;
     unsigned int fsize;
     unsigned int msize;
     unsigned int flags;
@@ -99,7 +99,7 @@ struct elf_section_header
     unsigned int name;
     unsigned int type;
     unsigned int flags;
-    void *address;
+    unsigned int address;
     unsigned int offset;
     unsigned int size;
     unsigned int link;

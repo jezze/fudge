@@ -67,7 +67,7 @@ void mmu_unmap_memory(unsigned int index)
 
 }
 
-void mmu_memory_init(struct mmu_memory *memory, void *paddress, void *vaddress, unsigned int size)
+void mmu_memory_init(struct mmu_memory *memory, unsigned int paddress, unsigned int vaddress, unsigned int size)
 {
 
     memory_clear(memory, sizeof (struct mmu_memory));
@@ -95,8 +95,8 @@ void mmu_init(struct mmu_unit *unit)
 
     error_assert(unit != 0, "MMU not found", __FILE__, __LINE__);
 
-    mmu_memory_init(&mmuKernelMemory[0], (void *)0x00000000, (void *)0x00000000, 0x00400000);
-    mmu_memory_init(&mmuKernelMemory[1], (void *)0x00400000, (void *)0x00400000, 0x00400000);
+    mmu_memory_init(&mmuKernelMemory[0], 0x00000000, 0x00000000, 0x00400000);
+    mmu_memory_init(&mmuKernelMemory[1], 0x00400000, 0x00400000, 0x00400000);
 
     mmuUnit = unit;
     mmuUnit->map_kernel_memory(&mmuKernelMemory[0]);

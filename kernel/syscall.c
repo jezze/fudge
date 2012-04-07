@@ -86,17 +86,17 @@ static unsigned int execute(struct runtime_task *task, char *path, unsigned int 
     if (!id)
         return 0;
 
-    unsigned int count = filesystem->read(filesystem, id, 0, ntask->memory.size, ntask->memory.paddress);
+    unsigned int count = filesystem->read(filesystem, id, 0, ntask->memory.size, (void *)ntask->memory.paddress);
 
     if (!count)
         return 0;
 
-    ntask->memory.vaddress = elf_get_virtual(ntask->memory.paddress);
+    ntask->memory.vaddress = elf_get_virtual((void *)ntask->memory.paddress);
 
     if (!ntask->memory.vaddress)
         return 0;
 
-    void (*entry)() = (void (*)())elf_get_entry(ntask->memory.paddress);
+    void (*entry)() = (void (*)())elf_get_entry((void *)ntask->memory.paddress);
 
     if (!entry)
         return 0;
@@ -104,7 +104,7 @@ static unsigned int execute(struct runtime_task *task, char *path, unsigned int 
     if (!ntask->load(ntask, entry, argc, argv))
         return 0;
 
-    elf_prepare(ntask->memory.vaddress);
+    elf_prepare((void *)ntask->memory.vaddress);
 
     runtime_activate(ntask, task);
 

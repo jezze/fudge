@@ -10,8 +10,8 @@
 struct mmu_memory
 {
 
-    void *paddress;
-    void *vaddress;
+    unsigned int paddress;
+    unsigned int vaddress;
     unsigned int size;
 
 };
@@ -35,7 +35,7 @@ void mmu_reload_memory();
 void mmu_map_kernel_memory(struct mmu_memory *memory);
 void mmu_map_user_memory(unsigned int index, struct mmu_memory *memory);
 void mmu_unmap_memory(unsigned int index);
-void mmu_memory_init(struct mmu_memory *memory, void *paddress, void *vaddress, unsigned int size);
+void mmu_memory_init(struct mmu_memory *memory, unsigned int paddress, unsigned int vaddress, unsigned int size);
 void mmu_unit_init(struct mmu_unit *unit, void (*enable)(), void (*load_memory)(unsigned int index), void (*reload_memory)(), void (*map_kernel_memory)(struct mmu_memory *memory), void (*map_user_memory)(unsigned int index, struct mmu_memory *memory), void (*unmap_memory)(unsigned int index));
 void mmu_init(struct mmu_unit *unit);
 

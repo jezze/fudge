@@ -31,7 +31,7 @@ static void start(struct modules_driver *self)
 
     struct bga_driver *driver = (struct bga_driver *)self;
 
-    mmu_memory_init(&memory, driver->lfb, driver->lfb, 0x400000); 
+    mmu_memory_init(&memory, (unsigned int)driver->lfb, (unsigned int)driver->lfb, 0x400000); 
     mmu_map_kernel_memory(&memory);
     mmu_reload_memory();
 

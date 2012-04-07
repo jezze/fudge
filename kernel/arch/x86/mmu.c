@@ -38,17 +38,17 @@ static void table_clear(struct mmu_table *table)
 
 }
 
-static void table_set_page(struct mmu_table *table, unsigned int frame, void *page, unsigned int pflags)
+static void table_set_page(struct mmu_table *table, unsigned int frame, unsigned int page, unsigned int pflags)
 {
 
-    table->pages[frame % MMU_TABLE_SLOTS] = (void *)((unsigned int)page | pflags);
+    table->pages[frame % MMU_TABLE_SLOTS] = (void *)(page | pflags);
 
 }
 
 static unsigned int get_frame(struct mmu_memory *memory)
 {
 
-    return (unsigned int)memory->vaddress / MMU_PAGE_SIZE;
+    return memory->vaddress / MMU_PAGE_SIZE;
 
 }
 
@@ -91,7 +91,7 @@ static void map_kernel_memory(struct mmu_memory *memory)
     // FIX THIS
     struct mmu_table *table;
 
-    switch ((unsigned int)memory->paddress)
+    switch (memory->paddress)
     {
 
         case 0x00000000:
