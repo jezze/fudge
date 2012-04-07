@@ -1,6 +1,5 @@
 #include <lib/memory.h>
 #include <kernel/irq.h>
-#include <kernel/log.h>
 #include <kernel/modules.h>
 #include <modules/pci/pci.h>
 #include <modules/i915/i915.h>
@@ -41,7 +40,7 @@ static void wait(unsigned int num)
 static void wait_vblank()
 {
 
-    log_write("[i915] Wait vblank\n");
+    //log_write("[i915] Wait vblank\n");
 
     write(I915_PIPEB_STATUS, I915_PIPE_STATUS_VBLANK);
 
@@ -64,7 +63,7 @@ static void enable_dpll()
     if (!(pllb & I915_DPLL_CONTROL_ENABLE_VCO))
     {
 
-        log_write("[i915] Enable dpll\n");
+        //log_write("[i915] Enable dpll\n");
 
         write(I915_DPLLB_CONTROL, pllb);
         read(I915_DPLLB_CONTROL);
@@ -83,7 +82,7 @@ static void enable_dpll()
 static void enable_pipe()
 {
 
-    log_write("[i915] Enable pipe\n");
+    //log_write("[i915] Enable pipe\n");
 
     write(I915_PIPEB_CONFIG, read(I915_PIPEB_CONFIG) & I915_PIPE_CONFIG_ENABLE);
 
@@ -92,7 +91,7 @@ static void enable_pipe()
 static void enable_plane()
 {
 
-    log_write("[i915] Enable plane\n");
+    //log_write("[i915] Enable plane\n");
 
     write(I915_DISPLAYB_CONTROL, read(I915_DISPLAYB_CONTROL) & I915_DISPLAY_CONTROL_ENABLE_PLANE);
 
@@ -113,10 +112,10 @@ static void set_pipe_mode(unsigned int width, unsigned int height)
     unsigned int vsyncs = (read(I915_DISPLAYB_VSYNC) >> 16) + 1;
     unsigned int vsynce = (read(I915_DISPLAYB_VSYNC) & 0xFFFF) + 1;
 
-    log_write("[i915] htotal: %d\t hdisplay: %d\n", htotal, hdisplay);
-    log_write("[i915] hsyncs: %d\t hsynce: %d\n", hsyncs, hsynce);
-    log_write("[i915] vtotal: %d\t vdisplay: %d\n", vtotal, vdisplay);
-    log_write("[i915] vsyncs: %d\t vsynce: %d\n", vsyncs, vsynce);
+    //log_write("[i915] htotal: %d\t hdisplay: %d\n", htotal, hdisplay);
+    //log_write("[i915] hsyncs: %d\t hsynce: %d\n", hsyncs, hsynce);
+    //log_write("[i915] vtotal: %d\t vdisplay: %d\n", vtotal, vdisplay);
+    //log_write("[i915] vsyncs: %d\t vsynce: %d\n", vsyncs, vsynce);
 
     write(I915_DISPLAYB_HTOTAL, ((htotal - 1) << 16) | ((hdisplay - 1)));
     write(I915_DISPLAYB_HBLANK, ((htotal - 1) << 16) | ((hdisplay - 1)));
@@ -130,15 +129,15 @@ static void set_pipe_mode(unsigned int width, unsigned int height)
 static void handle_irq(struct modules_device *device)
 {
 
-    log_write("[i915] IRQ\n");
+    //log_write("[i915] IRQ\n");
 
 }
 
 static void start(struct modules_driver *self)
 {
 
-    log_write("[i915] PIPEACONF: 0x%x\n", read(I915_PIPEA_CONFIG));
-    log_write("[i915] PIPEBCONF: 0x%x\n", read(I915_PIPEB_CONFIG));
+    //log_write("[i915] PIPEACONF: 0x%x\n", read(I915_PIPEA_CONFIG));
+    //log_write("[i915] PIPEBCONF: 0x%x\n", read(I915_PIPEB_CONFIG));
 
     enable_dpll();
     enable_pipe();

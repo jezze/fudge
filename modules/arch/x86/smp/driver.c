@@ -1,5 +1,4 @@
 #include <lib/memory.h>
-#include <kernel/log.h>
 #include <kernel/modules.h>
 #include <modules/acpi/acpi.h>
 #include <modules/cpuid/cpuid.h>
@@ -13,7 +12,7 @@ static void setup_madt(struct smp_driver *driver, struct acpi_driver *acpiDriver
     if (!madt)
         return;
 
-    log_write("[smp] Madt found\n");
+    //log_write("[smp] Madt found\n");
 
     unsigned int madttable = (unsigned int)madt + sizeof (struct acpi_madt);
     unsigned int madtend = (unsigned int)madt + madt->base.length;
@@ -48,7 +47,7 @@ static void setup_srat(struct smp_driver *driver, struct acpi_driver *acpiDriver
     if (!srat)
         return;
 
-    log_write("[smp] Srat found\n");
+    //log_write("[smp] Srat found\n");
 
     unsigned int srattable = (unsigned int)srat + sizeof (struct acpi_srat);
     unsigned int sratend = (unsigned int)srat + srat->base.length;
@@ -96,9 +95,9 @@ static void start(struct modules_driver *self)
     for (i = 0; i < driver->count; i++)
     {
 
-        struct smp_cpu *cpu = &driver->cpus[i];
+        //struct smp_cpu *cpu = &driver->cpus[i];
 
-        log_write("[smp] CPU %d: %d:%d:%d:%d\n", i, cpu->domain, cpu->chip, cpu->core, cpu->id);
+        //log_write("[smp] CPU %d: %d:%d:%d:%d\n", i, cpu->domain, cpu->chip, cpu->core, cpu->id);
 
     }
 

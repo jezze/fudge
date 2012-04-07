@@ -1,13 +1,6 @@
 event_raise
-io_inb
-io_inw
-io_ind
-io_outb
-io_outw
-io_outd
 irq_register_routine
 irq_unregister_routine
-log_write
 mmu_map_kernel_memory
 mmu_memory_init
 mmu_reload_memory
