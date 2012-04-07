@@ -25,7 +25,7 @@ static struct elf_header *get_header(void *address)
 
 }
 
-void *elf_get_entry(void *address)
+unsigned int elf_get_entry(void *address)
 {
 
     struct elf_header *header = get_header(address);
@@ -51,7 +51,7 @@ void *elf_get_virtual(void *address)
 
 }
 
-void *elf_get_symbol(void *address, char *name)
+unsigned int elf_get_symbol(void *address, char *name)
 {
 
     struct elf_header *header = get_header(address);
@@ -76,7 +76,7 @@ void *elf_get_symbol(void *address, char *name)
         struct elf_symbol *symEntry = &symTable[i];
 
         if (!memory_compare(name, strTable + symEntry->name, string_length(name)))
-            return infoTable + symEntry->value;
+            return (unsigned int)(infoTable + symEntry->value);
 
     }
 

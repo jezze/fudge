@@ -66,7 +66,7 @@ struct elf_header
     unsigned short type;
     unsigned short machine;
     unsigned int version;
-    void *entry;
+    unsigned int entry;
     unsigned int phoffset;
     unsigned int shoffset;
     unsigned int flags;

@@ -96,7 +96,7 @@ static unsigned int execute(struct runtime_task *task, char *path, unsigned int 
     if (!ntask->memory.vaddress)
         return 0;
 
-    void (*entry)() = elf_get_entry(ntask->memory.paddress);
+    void (*entry)() = (void (*)())elf_get_entry(ntask->memory.paddress);
 
     if (!entry)
         return 0;
@@ -171,7 +171,7 @@ static unsigned int load(struct runtime_task *task, char *path)
 
     elf_relocate(physical);
 
-    void (*init)() = elf_get_symbol(physical, "init");
+    void (*init)() = (void (*)())elf_get_symbol(physical, "init");
 
     if (!init)
         return 0;
@@ -267,7 +267,7 @@ static unsigned int unload(struct runtime_task *task, char *path)
     if (!physical)
         return 0;
 
-    void (*destroy)() = elf_get_symbol(physical, "destroy");
+    void (*destroy)() = (void (*)())elf_get_symbol(physical, "destroy");
 
     if (!destroy)
         return 0;
@@ -323,7 +323,7 @@ static unsigned int handle_attach(struct runtime_task *task, unsigned int stack)
 {
 
     unsigned int index = *(unsigned int *)(stack + 4);
-    void (*routine)() = *(void **)(stack + 8);
+    void (*routine)() = (void (*)())*(unsigned int *)(stack + 8);
 
     return attach(task, index, routine);
 
