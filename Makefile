@@ -16,50 +16,50 @@ toolchain:
 	@make -C toolchain all TARGET=${TARGET}
 
 ramdisk:
-	@cp kernel/fudge build/root/boot/fudge
-	@nm build/root/boot/fudge | grep -f build/root/boot/fudge.sym > build/root/boot/fudge.map
-	@cp modules/*/*.ko build/root/mod/
-	@cp modules/arch/*/*/*.ko build/root/mod/
-	@cp user/cat build/root/bin/cat
-	@cp user/cd build/root/bin/cd
-	@cp user/date build/root/bin/date
-	@cp user/echo build/root/bin/echo
-	@cp user/event1 build/root/bin/event1
-	@cp user/event2 build/root/bin/event2
-	@cp user/event3 build/root/bin/event3
-	@cp user/hello build/root/bin/hello
-	@cp user/init build/root/bin/init
-	@cp user/load build/root/bin/load
-	@cp user/ls build/root/bin/ls
-	@cp user/ncat build/root/bin/ncat
-	@cp user/reboot build/root/bin/reboot
-	@cp user/shell build/root/bin/shell
-	@cp user/tail build/root/bin/tail
-	@cp user/timer build/root/bin/timer
-	@cp user/unload build/root/bin/unload
-	@cp user/wm build/root/bin/wm
-	@cp user/test build/root/bin/test
-	@tar -cvf initrd.tar build/root
-	@find build/root -depth -print | cpio -ov > initrd.cpio
-	@mv initrd.tar build/root/boot
-	@mv initrd.cpio build/root/boot
+	@cp kernel/fudge image/boot/fudge
+	@nm image/boot/fudge | grep -f image/boot/fudge.sym > image/boot/fudge.map
+	@cp modules/*/*.ko image/mod/
+	@cp modules/arch/*/*/*.ko image/mod/
+	@cp user/cat image/bin/cat
+	@cp user/cd image/bin/cd
+	@cp user/date image/bin/date
+	@cp user/echo image/bin/echo
+	@cp user/event1 image/bin/event1
+	@cp user/event2 image/bin/event2
+	@cp user/event3 image/bin/event3
+	@cp user/hello image/bin/hello
+	@cp user/init image/bin/init
+	@cp user/load image/bin/load
+	@cp user/ls image/bin/ls
+	@cp user/ncat image/bin/ncat
+	@cp user/reboot image/bin/reboot
+	@cp user/shell image/bin/shell
+	@cp user/tail image/bin/tail
+	@cp user/timer image/bin/timer
+	@cp user/unload image/bin/unload
+	@cp user/wm image/bin/wm
+	@cp user/test image/bin/test
+	@tar -cvf initrd.tar image
+	@find image -depth -print | cpio -ov > initrd.cpio
+	@mv initrd.tar image/boot
+	@mv initrd.cpio image/boot
 
 image-arm:
-	@arm-none-eabi-objcopy -O binary build/root/boot/fudge build/root/boot/fudge.bin
-	@mkimage -A arm -C none -O linux -T kernel -d build/root/boot/fudge.bin -a 0x00100000 -e 0x00100000 build/root/boot/fudge.uimg
-	@cat build/root/boot/uboot/u-boot.bin build/root/boot/fudge.uimg > fudge.img
+	@arm-none-eabi-objcopy -O binary image/boot/fudge image/boot/fudge.bin
+	@mkimage -A arm -C none -O linux -T kernel -d image/boot/fudge.bin -a 0x00100000 -e 0x00100000 image/boot/fudge.uimg
+	@cat image/boot/uboot/u-boot.bin image/boot/fudge.uimg > fudge.img
 
 sda:
 	@dd if=/dev/zero of=fudge.img bs=512 count=2880
-	@dd if=build/root/boot/grub/stage1 conv=notrunc of=fudge.img bs=512 seek=0
-	@dd if=build/root/boot/grub/stage2 conv=notrunc of=fudge.img bs=512 seek=1
+	@dd if=image/boot/grub/stage1 conv=notrunc of=fudge.img bs=512 seek=0
+	@dd if=image/boot/grub/stage2 conv=notrunc of=fudge.img bs=512 seek=1
 	@dd if=menu.lst conv=notrunc of=fudge.img bs=512 seek=200
-	@dd if=build/root/boot/fudge conv=notrunc of=fudge.img bs=512 seek=300
-	@dd if=build/root/boot/initrd.tar conv=notrunc of=fudge.img bs=512 seek=400
+	@dd if=image/boot/fudge conv=notrunc of=fudge.img bs=512 seek=300
+	@dd if=image/boot/initrd.tar conv=notrunc of=fudge.img bs=512 seek=400
 	@sh x86-write-image.sh
 
 iso:
-	@genisoimage -R -b boot/grub/iso9660_stage1_5 -no-emul-boot -boot-load-size 4 -boot-info-table -o fudge.iso build/root
+	@genisoimage -R -b boot/grub/iso9660_stage1_5 -no-emul-boot -boot-load-size 4 -boot-info-table -o fudge.iso image
 
 hda:
 	@dd if=/dev/zero of=hda.img bs=512 count=2880
@@ -67,31 +67,31 @@ hda:
 clean: lib-clean kernel-clean modules-clean user-clean
 	@rm -f fudge.img
 	@rm -f fudge.iso
-	@rm -f build/root/bin/cat
-	@rm -f build/root/bin/cd
-	@rm -f build/root/bin/date
-	@rm -f build/root/bin/echo
-	@rm -f build/root/bin/event1
-	@rm -f build/root/bin/event2
-	@rm -f build/root/bin/event3
-	@rm -f build/root/bin/hello
-	@rm -f build/root/bin/init
-	@rm -f build/root/bin/load
-	@rm -f build/root/bin/ls
-	@rm -f build/root/bin/ncat
-	@rm -f build/root/bin/reboot
-	@rm -f build/root/bin/shell
-	@rm -f build/root/bin/tail
-	@rm -f build/root/bin/timer
-	@rm -f build/root/bin/unload
-	@rm -f build/root/bin/wm
-	@rm -f build/root/bin/test
-	@rm -f build/root/mod/*.ko
-	@rm -f build/root/boot/*.bin
-	@rm -f build/root/boot/*.uimg
-	@rm -f build/root/boot/fudge
-	@rm -f build/root/boot/fudge.map
-	@rm -f build/root/boot/initrd
-	@rm -f build/root/boot/initrd.tar
-	@rm -f build/root/boot/initrd.cpio
+	@rm -f image/bin/cat
+	@rm -f image/bin/cd
+	@rm -f image/bin/date
+	@rm -f image/bin/echo
+	@rm -f image/bin/event1
+	@rm -f image/bin/event2
+	@rm -f image/bin/event3
+	@rm -f image/bin/hello
+	@rm -f image/bin/init
+	@rm -f image/bin/load
+	@rm -f image/bin/ls
+	@rm -f image/bin/ncat
+	@rm -f image/bin/reboot
+	@rm -f image/bin/shell
+	@rm -f image/bin/tail
+	@rm -f image/bin/timer
+	@rm -f image/bin/unload
+	@rm -f image/bin/wm
+	@rm -f image/bin/test
+	@rm -f image/mod/*.ko
+	@rm -f image/boot/*.bin
+	@rm -f image/boot/*.uimg
+	@rm -f image/boot/fudge
+	@rm -f image/boot/fudge.map
+	@rm -f image/boot/initrd
+	@rm -f image/boot/initrd.tar
+	@rm -f image/boot/initrd.cpio
 
