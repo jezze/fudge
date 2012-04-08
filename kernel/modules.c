@@ -92,7 +92,7 @@ struct modules_filesystem *modules_get_filesystem(char *path)
 
 }
 
-static void register_module(struct modules_base *base)
+static void register_base(struct modules_base *base)
 {
 
     union modules_module *module = (union modules_module *)base;
@@ -116,7 +116,7 @@ static void register_module(struct modules_base *base)
 void modules_register_bus(struct modules_bus *bus)
 {
 
-    register_module(&bus->base);
+    register_base(&bus->base);
 
     if (bus->scan)
         bus->scan(bus);
@@ -126,14 +126,14 @@ void modules_register_bus(struct modules_bus *bus)
 void modules_register_device(struct modules_device *device)
 {
 
-    register_module(&device->base);
+    register_base(&device->base);
 
 }
 
 void modules_register_driver(struct modules_driver *driver)
 {
 
-    register_module(&driver->base);
+    register_base(&driver->base);
     attach(driver);
 
     if (driver->start)
@@ -144,13 +144,13 @@ void modules_register_driver(struct modules_driver *driver)
 void modules_register_filesystem(struct modules_filesystem *filesystem, char *path)
 {
 
-    register_module(&filesystem->base);
+    register_base(&filesystem->base);
 
     filesystem->path = path;
 
 }
 
-static void unregister_module(struct modules_base *base)
+static void unregister_base(struct modules_base *base)
 {
 
     union modules_module *module = (union modules_module *)base;
@@ -177,28 +177,28 @@ static void unregister_module(struct modules_base *base)
 void modules_unregister_bus(struct modules_bus *bus)
 {
 
-    unregister_module(&bus->base);
+    unregister_base(&bus->base);
 
 }
 
 void modules_unregister_device(struct modules_device *device)
 {
 
-    unregister_module(&device->base);
+    unregister_base(&device->base);
 
 }
 
 void modules_unregister_driver(struct modules_driver *driver)
 {
 
-    unregister_module(&driver->base);
+    unregister_base(&driver->base);
 
 }
 
 void modules_unregister_filesystem(struct modules_filesystem *filesystem)
 {
 
-    unregister_module(&filesystem->base);
+    unregister_base(&filesystem->base);
 
 }
 
