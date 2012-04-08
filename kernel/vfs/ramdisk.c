@@ -110,7 +110,8 @@ void vfs_ramdisk_init(struct ramdisk_node *n, unsigned int c)
     nodesCount = c;
 
     modules_filesystem_init(&filesystem, 0x0001, "ramdisk", 0, 0, read, 0, find, get_physical);
-    modules_register_filesystem(&filesystem, "/ramdisk/");
+    modules_register_filesystem(&filesystem);
+    filesystem.path = "/ramdisk/";
 
 }
 

@@ -124,7 +124,8 @@ void nodefs_filesystem_init(struct nodefs_filesystem *filesystem)
     modules_filesystem_init(&filesystem->base, 0x0001, "nodefs", 0, 0, filesystem_read, filesystem_write, filesystem_find, 0); 
     filesystem->count = 0;
 
-    modules_register_filesystem(&filesystem->base, "/module/");
+    modules_register_filesystem(&filesystem->base);
+    filesystem->base.path = "/module/";
 
 }
 

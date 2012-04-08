@@ -51,7 +51,8 @@ void vfs_root_init(union modules_module **m)
     modules = m;
 
     modules_filesystem_init(&filesystem, 0x0001, "root", 0, 0, read, 0, find, 0);
-    modules_register_filesystem(&filesystem, "/");
+    modules_register_filesystem(&filesystem);
+    filesystem.path = "/";
 
 }
 

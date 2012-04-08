@@ -141,12 +141,10 @@ void modules_register_driver(struct modules_driver *driver)
 
 }
 
-void modules_register_filesystem(struct modules_filesystem *filesystem, char *path)
+void modules_register_filesystem(struct modules_filesystem *filesystem)
 {
 
     register_base(&filesystem->base);
-
-    filesystem->path = path;
 
 }
 
