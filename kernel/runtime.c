@@ -64,8 +64,12 @@ static void copy_args(unsigned int argc, char **argv, void *buffer)
     {
 
         nargv[i] = (void *)offset;
-        string_write(nargv[i], "%s", argv[i]);
-        offset += string_length(argv[i]) + 1;
+
+        unsigned int count = string_length(argv[i]) + 1;
+
+        memory_copy(nargv[i], argv[i], count);
+
+        offset += count;
 
     }
 

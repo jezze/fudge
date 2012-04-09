@@ -20,7 +20,7 @@ static unsigned int read(struct modules_filesystem *self, unsigned int id, unsig
 
     }
 
-    string_write(in, "./\n../\n", 7);
+    memory_copy(in, "./\n../\n", 8);
 
     unsigned int length = 7;
     unsigned int i;

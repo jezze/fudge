@@ -1,3 +1,4 @@
+#include <lib/memory.h>
 #include <lib/string.h>
 #include <kernel/modules.h>
 #include <kernel/vfs/root.h>
@@ -13,7 +14,7 @@ static unsigned int read(struct modules_filesystem *self, unsigned int id, unsig
 
     char *in = (char *)buffer;
 
-    string_write(in, "./\n../\n", 7);
+    memory_copy(in, "./\n../\n", 8);
 
     unsigned int length = 7;
     unsigned int i;
