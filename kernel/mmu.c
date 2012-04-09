@@ -45,10 +45,10 @@ void mmu_reload_memory()
 
 }
 
-void mmu_map_kernel_memory(unsigned int paddress, unsigned int vaddress, unsigned int size)
+void mmu_map_kernel_memory(unsigned int index, unsigned int paddress, unsigned int vaddress, unsigned int size)
 {
 
-    mmuUnit->map_kernel_memory(paddress, vaddress, size);
+    mmuUnit->map_kernel_memory(index, paddress, vaddress, size);
 
 }
 
@@ -66,7 +66,7 @@ void mmu_unmap_memory(unsigned int index)
 
 }
 
-void mmu_unit_init(struct mmu_unit *unit, void (*enable)(), void (*load_memory)(unsigned int index), void (*reload_memory)(), void (*map_kernel_memory)(unsigned int paddress, unsigned int vaddress, unsigned int size), void (*map_user_memory)(unsigned int index, unsigned int paddress, unsigned int vaddress, unsigned int size), void (*unmap_memory)(unsigned int index))
+void mmu_unit_init(struct mmu_unit *unit, void (*enable)(), void (*load_memory)(unsigned int index), void (*reload_memory)(), void (*map_kernel_memory)(unsigned int index, unsigned int paddress, unsigned int vaddress, unsigned int size), void (*map_user_memory)(unsigned int index, unsigned int paddress, unsigned int vaddress, unsigned int size), void (*unmap_memory)(unsigned int index))
 {
 
     unit->enable = enable;
@@ -84,8 +84,8 @@ void mmu_init(struct mmu_unit *unit)
     error_assert(unit != 0, "MMU not found", __FILE__, __LINE__);
 
     mmuUnit = unit;
-    mmuUnit->map_kernel_memory(0x00000000, 0x00000000, 0x00400000);
-    mmuUnit->map_kernel_memory(0x00400000, 0x00400000, 0x00400000);
+    mmuUnit->map_kernel_memory(0, 0x00000000, 0x00000000, 0x00400000);
+    mmuUnit->map_kernel_memory(1, 0x00400000, 0x00400000, 0x00400000);
     mmuUnit->load_memory(0);
     mmuUnit->enable();
 

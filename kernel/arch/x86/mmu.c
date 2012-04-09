@@ -83,36 +83,11 @@ static void map_memory(struct mmu_directory *directory, struct mmu_table *table,
 
 }
 
-static void map_kernel_memory(unsigned int paddress, unsigned int vaddress, unsigned int size)
+static void map_kernel_memory(unsigned int index, unsigned int paddress, unsigned int vaddress, unsigned int size)
 {
 
     struct mmu_directory *directory = &kernelDirectory;
-
-    // FIX THIS
-    struct mmu_table *table;
-
-    switch (paddress)
-    {
-
-        case 0x00000000:
-
-            table = &kernelTables[0];
-
-            break;
-
-        case 0x00400000:
-
-            table = &kernelTables[1];
-
-            break;
-
-        default:
-
-            table = &kernelTables[2];
-
-            break;
-
-    }
+    struct mmu_table *table = &kernelTables[index];
 
     map_memory(directory, table, paddress, vaddress, size, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE);
 

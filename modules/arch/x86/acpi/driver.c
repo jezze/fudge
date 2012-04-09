@@ -61,7 +61,7 @@ static void start(struct modules_driver *self)
     if (!driver->rsdp)
         return;
 
-    mmu_map_kernel_memory((unsigned int)driver->rsdp->rsdt, (unsigned int)driver->rsdp->rsdt, 0x00100000);
+    mmu_map_kernel_memory(2, (unsigned int)driver->rsdp->rsdt, (unsigned int)driver->rsdp->rsdt, 0x00100000);
     mmu_reload_memory();
 
 }
