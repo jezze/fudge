@@ -1,7 +1,6 @@
 #include <lib/memory.h>
 #include <kernel/error.h>
 #include <kernel/kernel.h>
-#include <kernel/mmu.h>
 #include <kernel/modules.h>
 #include <kernel/ramdisk.h>
 #include <kernel/runtime.h>

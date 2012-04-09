@@ -2,7 +2,6 @@ event_raise
 irq_register_routine
 irq_unregister_routine
 mmu_map_kernel_memory
-mmu_memory_init
 mmu_reload_memory
 modules_bus_init
 modules_device_init

@@ -2,7 +2,6 @@
 #include <kernel/elf.h>
 #include <kernel/event.h>
 #include <kernel/kernel.h>
-#include <kernel/mmu.h>
 #include <kernel/modules.h>
 #include <kernel/runtime.h>
 #include <kernel/syscall.h>

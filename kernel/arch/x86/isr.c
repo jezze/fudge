@@ -2,7 +2,6 @@
 #include <kernel/error.h>
 #include <kernel/irq.h>
 #include <kernel/log.h>
-#include <kernel/mmu.h>
 #include <kernel/runtime.h>
 #include <kernel/syscall.h>
 #include <kernel/arch/x86/idt.h>
