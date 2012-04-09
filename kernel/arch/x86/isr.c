@@ -76,27 +76,31 @@ void isr_handle_cpu(struct isr_cpu_registers *registers)
 void isr_handle_irq(struct isr_irq_registers *registers)
 {
 
-    if (registers->segment.ds == 0x23)
-        save_state(runtime_get_running_task(), &registers->general, &registers->interrupt);
+    struct runtime_task *off = runtime_get_running_task();
+
+    save_state(off, &registers->general, &registers->interrupt);
 
     irq_raise(registers->index);
     reset_irq(registers->slave);
 
-    if (registers->segment.ds == 0x23)
-        load_state(runtime_get_running_task(), &registers->general, &registers->interrupt);
+    struct runtime_task *on = runtime_get_running_task();
+
+    load_state(on, &registers->general, &registers->interrupt);
 
 }
 
 void isr_handle_syscall(struct isr_syscall_registers *registers)
 {
 
-    struct runtime_task *task = runtime_get_running_task();
+    struct runtime_task *off = runtime_get_running_task();
 
-    save_state(task, &registers->general, &registers->interrupt);
+    save_state(off, &registers->general, &registers->interrupt);
 
-    registers->general.eax = syscall_raise(registers->general.eax, task, registers->interrupt.esp);
+    registers->general.eax = syscall_raise(registers->general.eax, off, registers->interrupt.esp);
 
-    load_state(runtime_get_running_task(), &registers->general, &registers->interrupt);
+    struct runtime_task *on = runtime_get_running_task();
+
+    load_state(on, &registers->general, &registers->interrupt);
 
 }
 

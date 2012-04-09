@@ -19,8 +19,7 @@ void main(int argc, char *argv[])
 
     call_execute("/ramdisk/bin/shell", 0, 0);
 
-    for (;;)
-        call_halt();
+    for (;;);
 
 }
 
