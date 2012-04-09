@@ -96,7 +96,7 @@ void isr_handle_syscall(struct isr_syscall_registers *registers)
 
     save_state(off, &registers->general, &registers->interrupt);
 
-    registers->general.eax = syscall_raise(registers->general.eax, off, registers->interrupt.esp);
+    registers->general.eax = syscall_raise(registers->general.eax, off);
 
     struct runtime_task *on = runtime_get_running_task();
 

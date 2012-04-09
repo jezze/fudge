@@ -378,10 +378,6 @@ isr_common_cpu:
 
 isr_common_irq:
     pusha
-    push ds
-    push es
-    push fs
-    push gs
     mov eax, esp
     push eax
     mov ax, 0x10
@@ -390,11 +386,12 @@ isr_common_irq:
     mov fs, ax
     mov gs, ax
     call isr_handle_irq
+    mov ax, 0x23
+    mov ds, ax
+    mov es, ax
+    mov fs, ax
+    mov gs, ax
     pop eax
-    pop gs
-    pop fs
-    pop es
-    pop ds
     popa
     add esp, 8
     iret

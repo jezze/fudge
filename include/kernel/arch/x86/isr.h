@@ -85,7 +85,6 @@ struct isr_cpu_registers
 struct isr_irq_registers
 {
 
-    struct isr_segment_registers segment;
     struct isr_general_registers general;
     unsigned int index;
     unsigned int slave;

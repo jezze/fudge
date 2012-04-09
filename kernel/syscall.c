@@ -444,7 +444,7 @@ static void syscall_register_routine(unsigned char index, unsigned int (*routine
 
 }
 
-unsigned int syscall_raise(unsigned int index, struct runtime_task *task, unsigned int stack)
+unsigned int syscall_raise(unsigned int index, struct runtime_task *task)
 {
 
     unsigned int (*routine)(struct runtime_task *task, unsigned int stack) = routines[index];
@@ -452,7 +452,7 @@ unsigned int syscall_raise(unsigned int index, struct runtime_task *task, unsign
     if (!routine)
         return 0;
 
-    return routine(task, stack);
+    return routine(task, task->registers.sp);
 
 }
 
