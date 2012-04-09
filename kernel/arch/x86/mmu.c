@@ -45,10 +45,10 @@ static void table_set_page(struct mmu_table *table, unsigned int frame, unsigned
 
 }
 
-static unsigned int get_frame(struct mmu_memory *memory)
+static unsigned int get_frame(unsigned int vaddress)
 {
 
-    return memory->vaddress / MMU_PAGE_SIZE;
+    return vaddress / MMU_PAGE_SIZE;
 
 }
 
@@ -68,22 +68,22 @@ static void reload_memory()
 
 }
 
-static void map_memory(struct mmu_directory *directory, struct mmu_table *table, struct mmu_memory *memory, unsigned int tflags, unsigned int pflags)
+static void map_memory(struct mmu_directory *directory, struct mmu_table *table, unsigned int paddress, unsigned int vaddress, unsigned int size, unsigned int tflags, unsigned int pflags)
 {
 
     table_clear(table);
 
-    unsigned int frame = get_frame(memory);
+    unsigned int frame = get_frame(vaddress);
     unsigned int i;
 
-    for (i = 0; i < memory->size / MMU_PAGE_SIZE; i++)
-        table_set_page(table, frame + i, memory->paddress + i * MMU_PAGE_SIZE, pflags); 
+    for (i = 0; i < size / MMU_PAGE_SIZE; i++)
+        table_set_page(table, frame + i, paddress + i * MMU_PAGE_SIZE, pflags); 
 
     directory_set_table(directory, frame, table, tflags);
 
 }
 
-static void map_kernel_memory(struct mmu_memory *memory)
+static void map_kernel_memory(unsigned int paddress, unsigned int vaddress, unsigned int size)
 {
 
     struct mmu_directory *directory = &kernelDirectory;
@@ -91,7 +91,7 @@ static void map_kernel_memory(struct mmu_memory *memory)
     // FIX THIS
     struct mmu_table *table;
 
-    switch (memory->paddress)
+    switch (paddress)
     {
 
         case 0x00000000:
@@ -114,16 +114,16 @@ static void map_kernel_memory(struct mmu_memory *memory)
 
     }
 
-    map_memory(directory, table, memory, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE);
+    map_memory(directory, table, paddress, vaddress, size, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE);
 
     unsigned int i;
 
     for (i = 0; i < MMU_HEADER_SLOTS; i++)
-        map_memory(&directories[i], table, memory, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE);
+        map_memory(&directories[i], table, paddress, vaddress, size, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE);
 
 }
 
-static void map_user_memory(unsigned int index, struct mmu_memory *memory)
+static void map_user_memory(unsigned int index, unsigned int paddress, unsigned int vaddress, unsigned int size)
 {
 
     struct mmu_directory *directory = &directories[index];
@@ -131,7 +131,7 @@ static void map_user_memory(unsigned int index, struct mmu_memory *memory)
 
     memory_copy(directory, &kernelDirectory, sizeof (struct mmu_directory));
 
-    map_memory(directory, table, memory, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);
+    map_memory(directory, table, paddress, vaddress, size, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);
 
 }
 

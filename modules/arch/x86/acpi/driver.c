@@ -3,8 +3,6 @@
 #include <kernel/mmu.h>
 #include <modules/acpi/acpi.h>
 
-static struct mmu_memory memory;
-
 static struct acpi_sdth *find_header(struct acpi_driver *self, char *name)
 {
 
@@ -63,8 +61,7 @@ static void start(struct modules_driver *self)
     if (!driver->rsdp)
         return;
 
-    mmu_memory_init(&memory, (unsigned int)driver->rsdp->rsdt, (unsigned int)driver->rsdp->rsdt, 0x10000); 
-    mmu_map_kernel_memory(&memory);
+    mmu_map_kernel_memory((unsigned int)driver->rsdp->rsdt, (unsigned int)driver->rsdp->rsdt, 0x00100000);
     mmu_reload_memory();
 
 }

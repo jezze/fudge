@@ -4,7 +4,6 @@
 #include <kernel/mmu.h>
 
 static struct mmu_unit *mmuUnit;
-static struct mmu_memory mmuKernelMemory[2];
 
 void mmu_pagefault(unsigned int address, unsigned int flags)
 {
@@ -46,17 +45,17 @@ void mmu_reload_memory()
 
 }
 
-void mmu_map_kernel_memory(struct mmu_memory *memory)
+void mmu_map_kernel_memory(unsigned int paddress, unsigned int vaddress, unsigned int size)
 {
 
-    mmuUnit->map_kernel_memory(memory);
+    mmuUnit->map_kernel_memory(paddress, vaddress, size);
 
 }
 
-void mmu_map_user_memory(unsigned int index, struct mmu_memory *memory)
+void mmu_map_user_memory(unsigned int index, unsigned int paddress, unsigned int vaddress, unsigned int size)
 {
 
-    mmuUnit->map_user_memory(index, memory);
+    mmuUnit->map_user_memory(index, paddress, vaddress, size);
 
 }
 
@@ -67,18 +66,7 @@ void mmu_unmap_memory(unsigned int index)
 
 }
 
-void mmu_memory_init(struct mmu_memory *memory, unsigned int paddress, unsigned int vaddress, unsigned int size)
-{
-
-    memory_clear(memory, sizeof (struct mmu_memory));
-
-    memory->paddress = paddress;
-    memory->vaddress = vaddress;
-    memory->size = size;
-
-}
-
-void mmu_unit_init(struct mmu_unit *unit, void (*enable)(), void (*load_memory)(unsigned int index), void (*reload_memory)(), void (*map_kernel_memory)(struct mmu_memory *memory), void (*map_user_memory)(unsigned int index, struct mmu_memory *memory), void (*unmap_memory)(unsigned int index))
+void mmu_unit_init(struct mmu_unit *unit, void (*enable)(), void (*load_memory)(unsigned int index), void (*reload_memory)(), void (*map_kernel_memory)(unsigned int paddress, unsigned int vaddress, unsigned int size), void (*map_user_memory)(unsigned int index, unsigned int paddress, unsigned int vaddress, unsigned int size), void (*unmap_memory)(unsigned int index))
 {
 
     unit->enable = enable;
@@ -95,12 +83,9 @@ void mmu_init(struct mmu_unit *unit)
 
     error_assert(unit != 0, "MMU not found", __FILE__, __LINE__);
 
-    mmu_memory_init(&mmuKernelMemory[0], 0x00000000, 0x00000000, 0x00400000);
-    mmu_memory_init(&mmuKernelMemory[1], 0x00400000, 0x00400000, 0x00400000);
-
     mmuUnit = unit;
-    mmuUnit->map_kernel_memory(&mmuKernelMemory[0]);
-    mmuUnit->map_kernel_memory(&mmuKernelMemory[1]);
+    mmuUnit->map_kernel_memory(0x00000000, 0x00000000, 0x00400000);
+    mmuUnit->map_kernel_memory(0x00400000, 0x00400000, 0x00400000);
     mmuUnit->load_memory(0);
     mmuUnit->enable();
 

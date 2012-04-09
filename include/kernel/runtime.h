@@ -24,6 +24,15 @@ struct runtime_descriptor
 
 };
 
+struct runtime_memory
+{
+
+    unsigned int paddress;
+    unsigned int vaddress;
+    unsigned int size;
+
+};
+
 struct runtime_task
 {
 
@@ -32,7 +41,7 @@ struct runtime_task
     unsigned int used;
     unsigned int event;
     struct runtime_registers registers;
-    struct mmu_memory memory;
+    struct runtime_memory memory;
     struct runtime_descriptor descriptors[RUNTIME_TASK_DESCRIPTOR_SLOTS];
     unsigned int (*load)(struct runtime_task *self, void (*entry)(), unsigned int argc, char **argv);
     void (*unload)(struct runtime_task *self);
@@ -47,6 +56,7 @@ struct runtime_task *runtime_get_running_task();
 void runtime_activate(struct runtime_task *task, struct runtime_task *ptask);
 void runtime_registers_init(struct runtime_registers *registers, unsigned int ip, unsigned int sp, unsigned int sb);
 void runtime_descriptor_init(struct runtime_descriptor *descriptor, unsigned int id, struct modules_filesystem *filesystem, unsigned int permissions);
+void runtime_memory_init(struct runtime_memory *memory, unsigned int paddress, unsigned int vaddress, unsigned int size);
 void runtime_task_init(struct runtime_task *task, unsigned int id);
 void runtime_init();
 

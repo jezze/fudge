@@ -7,23 +7,14 @@
 #define MMU_ERROR_RESERVED 1 << 3
 #define MMU_ERROR_FETCH    1 << 4
 
-struct mmu_memory
-{
-
-    unsigned int paddress;
-    unsigned int vaddress;
-    unsigned int size;
-
-};
-
 struct mmu_unit
 {
 
     void (*enable)();
     void (*load_memory)(unsigned int index);
     void (*reload_memory)();
-    void (*map_kernel_memory)(struct mmu_memory *memory);
-    void (*map_user_memory)(unsigned int index, struct mmu_memory *memory);
+    void (*map_kernel_memory)(unsigned int paddress, unsigned int vaddress, unsigned int size);
+    void (*map_user_memory)(unsigned int index, unsigned int paddress, unsigned int vaddress, unsigned int size);
     void (*unmap_memory)(unsigned int index);
 
 };
@@ -32,11 +23,10 @@ void mmu_pagefault(unsigned int address, unsigned int flags);
 struct mmu_memory *mmu_get_task_memory();
 void mmu_load_memory(unsigned int index);
 void mmu_reload_memory();
-void mmu_map_kernel_memory(struct mmu_memory *memory);
-void mmu_map_user_memory(unsigned int index, struct mmu_memory *memory);
+void mmu_map_kernel_memory(unsigned int paddress, unsigned int vaddress, unsigned int size);
+void mmu_map_user_memory(unsigned int index, unsigned int paddress, unsigned int vaddress, unsigned int size);
 void mmu_unmap_memory(unsigned int index);
-void mmu_memory_init(struct mmu_memory *memory, unsigned int paddress, unsigned int vaddress, unsigned int size);
-void mmu_unit_init(struct mmu_unit *unit, void (*enable)(), void (*load_memory)(unsigned int index), void (*reload_memory)(), void (*map_kernel_memory)(struct mmu_memory *memory), void (*map_user_memory)(unsigned int index, struct mmu_memory *memory), void (*unmap_memory)(unsigned int index));
+void mmu_unit_init(struct mmu_unit *unit, void (*enable)(), void (*load_memory)(unsigned int index), void (*reload_memory)(), void (*map_kernel_memory)(unsigned int paddress, unsigned int vaddress, unsigned int size), void (*map_user_memory)(unsigned int index, unsigned int paddress, unsigned int vaddress, unsigned int size), void (*unmap_memory)(unsigned int index));
 void mmu_init(struct mmu_unit *unit);
 
 #endif
