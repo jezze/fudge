@@ -37,6 +37,8 @@ void symbol_init()
 
     unsigned int count = filesystem->read(filesystem, id, 0, SYMBOL_BUFFER_SIZE, buffer);
 
+    error_assert(count != 0, "Symbol table not found", __FILE__, __LINE__);
+
     unsigned int i;
     unsigned int start = 0;
     unsigned int index = 0;
@@ -57,8 +59,12 @@ void symbol_init()
 
                 buffer[i] = '\0';
 
-                string_write(entries[index].name, "%s", buffer + start + 11);
-                entries[index].paddress = string_read_num(buffer + start, 16);
+                char *address = buffer + start;
+                char *name = buffer + start + 11;
+
+                memory_copy(entries[index].name, name, string_length(name) + 1);
+                entries[index].paddress = string_read_num(address, 16);
+
                 index++;
 
                 start = i + 1;
