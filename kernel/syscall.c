@@ -35,8 +35,6 @@ static unsigned int close(struct runtime_task *task, unsigned int index)
 
     runtime_descriptor_init(descriptor, 0, 0, 0);
 
-    event_raise(EVENT_SYSCALL_CLOSE);
-
     return 1;
 
 }
@@ -119,8 +117,6 @@ static unsigned int execute(struct runtime_task *task, char *path, unsigned int 
 
     }
 
-    event_raise(EVENT_SYSCALL_EXECUTE);
-
     return ntask->id;
 
 }
@@ -141,8 +137,6 @@ static unsigned int exit(struct runtime_task *task)
     }
 
     runtime_activate(ptask, 0);
-
-    event_raise(EVENT_SYSCALL_EXIT);
 
     return ptask->id;
 
@@ -177,8 +171,6 @@ static unsigned int load(struct runtime_task *task, char *path)
         return 0;
 
     init();
-
-    event_raise(EVENT_SYSCALL_LOAD);
 
     return 1;
 
@@ -215,8 +207,6 @@ static unsigned int open(struct runtime_task *task, char *path)
     if (descriptor->filesystem->open)
         descriptor->filesystem->open(descriptor->filesystem, descriptor->id);
 
-    event_raise(EVENT_SYSCALL_OPEN);
-
     return index;
 
 }
@@ -230,8 +220,6 @@ static unsigned int read(struct runtime_task *task, unsigned int id, unsigned in
         return 0;
 
     unsigned int c = descriptor->filesystem->read(descriptor->filesystem, descriptor->id, offset, count, buffer);
-
-    event_raise(EVENT_SYSCALL_READ);
 
     return c;
 
@@ -274,8 +262,6 @@ static unsigned int unload(struct runtime_task *task, char *path)
 
     destroy();
 
-    event_raise(EVENT_SYSCALL_UNLOAD);
-
     return 1;
 
 }
@@ -297,8 +283,6 @@ static unsigned int wait(struct runtime_task *task)
 
     runtime_activate(ptask, 0);
 
-    event_raise(EVENT_SYSCALL_WAIT);
-
     return ptask->id;
 
 }
@@ -312,8 +296,6 @@ static unsigned int write(struct runtime_task *task, unsigned int id, unsigned i
         return 0;
 
     unsigned int c = descriptor->filesystem->write(descriptor->filesystem, descriptor->id, offset, count, buffer);
-
-    event_raise(EVENT_SYSCALL_WRITE);
 
     return c;
 
@@ -452,7 +434,11 @@ unsigned int syscall_raise(unsigned int index, struct runtime_task *task)
     if (!routine)
         return 0;
 
-    return routine(task, task->registers.sp);
+    unsigned int value = routine(task, task->registers.sp);
+
+    event_raise(index + 0x80);
+
+    return value;
 
 }
 

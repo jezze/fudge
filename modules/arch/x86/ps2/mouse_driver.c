@@ -32,8 +32,6 @@ static void handle_irq(struct modules_device *self)
             mouse->y = io_inb(0x60);
             mouse->cycle = 0;
 
-            event_raise(EVENT_IRQ_MOUSE);
-
             break;
 
     }

@@ -28,7 +28,6 @@ ramdisk:
 	@cp user/echo image/bin/echo
 	@cp user/event1 image/bin/event1
 	@cp user/event2 image/bin/event2
-	@cp user/event3 image/bin/event3
 	@cp user/hello image/bin/hello
 	@cp user/init image/bin/init
 	@cp user/load image/bin/load

@@ -124,19 +124,10 @@ static void handle_irq(struct modules_device *device)
     unsigned int status = io_inw(driver->io + RTL8139_REGISTER_ISR);
 
     if (status & RTL8139_ISR_FLAG_ROK)
-    {
-
         io_outw(driver->io + RTL8139_REGISTER_ISR, RTL8139_ISR_FLAG_ROK);
-        event_raise(EVENT_IRQ_NETWORK);
-
-    }
 
     if (status & RTL8139_ISR_FLAG_TOK)
-    {
-
         io_outw(driver->io + RTL8139_REGISTER_ISR, RTL8139_ISR_FLAG_TOK);
-
-    }
 
 }
 

@@ -1,3 +1,4 @@
+#include <kernel/event.h>
 #include <kernel/irq.h>
 #include <kernel/modules.h>
 
@@ -42,6 +43,8 @@ void irq_raise(unsigned int index)
         return;
 
     routine->callback(routine->device);
+
+    event_raise(index);
 
 }
 
