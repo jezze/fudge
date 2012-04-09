@@ -179,8 +179,6 @@ void runtime_task_init(struct runtime_task *task, unsigned int id)
     memory_clear(task, sizeof (struct runtime_task));
 
     task->id = id;
-    task->used = 0;
-    task->event = 0;
     task->load = load;
     task->unload = unload;
     task->get_descriptor_slot = get_descriptor_slot;
