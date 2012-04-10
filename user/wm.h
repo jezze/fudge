@@ -1,8 +1,8 @@
 #ifndef WM
 #define WM
 
-#define SCREEN_WIDTH                800
-#define SCREEN_HEIGHT               600
+#define SCREEN_WIDTH                1024
+#define SCREEN_HEIGHT               768
 #define SCREEN_BPP                  32
 
 #define SCREEN_BACKGROUND           0x002C1319

@@ -30,7 +30,7 @@ static void draw_buffer(unsigned int x, unsigned int y, unsigned int count, void
 static void draw_stroke(unsigned int x1, unsigned int y1, unsigned int x2, unsigned int y2, unsigned int color)
 {
 
-    unsigned char buffer[0xC80];
+    unsigned char buffer[0x2000];
     unsigned int width = x2 - x1 + 1;
     unsigned int i;
 
@@ -54,7 +54,7 @@ static void draw_stroke(unsigned int x1, unsigned int y1, unsigned int x2, unsig
 static void draw_fill(unsigned int x1, unsigned int y1, unsigned int x2, unsigned int y2, unsigned int color)
 {
 
-    unsigned char buffer[0xC80];
+    unsigned char buffer[0x2000];
     unsigned int width = x2 - x1 + 1;
     unsigned int i;
 
@@ -69,10 +69,10 @@ static void draw_fill(unsigned int x1, unsigned int y1, unsigned int x2, unsigne
 static void draw_ppm(char *name, unsigned int x, unsigned int y)
 {
 
-    unsigned char buffer[0xC80];
+    unsigned char buffer[0x2000];
 
     unsigned int fd = file_open(name);
-    file_read(fd, 0, 0xC80, buffer);
+    file_read(fd, 0, 0x2000, buffer);
 
     struct ppm_header header;
 
@@ -82,7 +82,7 @@ static void draw_ppm(char *name, unsigned int x, unsigned int y)
     header.height = 20;
     unsigned int offset = 0x34;
 
-    unsigned int count = file_read(fd, offset, 0xC80, buffer);
+    unsigned int count = file_read(fd, offset, 0x2000, buffer);
 
     int cx = x;
     int cy = y;
