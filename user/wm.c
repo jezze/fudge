@@ -204,8 +204,8 @@ void draw_window(unsigned int x, unsigned int y, unsigned int w, unsigned int h)
 
     draw_frame(x, y, w, h);
     draw_fill(x + 6, y + 36, w - 6, h - 6, WINDOW_BACKGROUND);
-    draw_panel(x + 24, y + 60, w - 24, y + 92);
-    draw_panel(x + 24, y + 92, w - 24, h - 24);
+    draw_panel(x + 24, y + 54, w - 24, y + 86);
+    draw_panel(x + 24, y + 86, w - 24, h - 24);
 
 }
 
