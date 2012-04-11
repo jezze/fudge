@@ -6,6 +6,8 @@ static unsigned int fdlfb;
 static unsigned int fdmx;
 static unsigned int fdmy;
 
+static char buffer[0x2000];
+
 static int mx;
 static int my;
 
@@ -30,7 +32,6 @@ static void draw_buffer(unsigned int x, unsigned int y, unsigned int count, void
 static void draw_stroke(unsigned int x1, unsigned int y1, unsigned int x2, unsigned int y2, unsigned int color)
 {
 
-    unsigned char buffer[0x2000];
     unsigned int width = x2 - x1 + 1;
     unsigned int i;
 
@@ -54,7 +55,6 @@ static void draw_stroke(unsigned int x1, unsigned int y1, unsigned int x2, unsig
 static void draw_fill(unsigned int x1, unsigned int y1, unsigned int x2, unsigned int y2, unsigned int color)
 {
 
-    unsigned char buffer[0x2000];
     unsigned int width = x2 - x1 + 1;
     unsigned int i;
 
@@ -68,8 +68,6 @@ static void draw_fill(unsigned int x1, unsigned int y1, unsigned int x2, unsigne
 
 static void draw_ppm(char *name, unsigned int x, unsigned int y)
 {
-
-    unsigned char buffer[0x2000];
 
     unsigned int fd = file_open(name);
     file_read(fd, 0, 0x2000, buffer);
@@ -204,8 +202,8 @@ void draw_window(unsigned int x, unsigned int y, unsigned int w, unsigned int h)
 
     draw_frame(x, y, w, h);
     draw_fill(x + 6, y + 36, w - 6, h - 6, WINDOW_BACKGROUND);
-    draw_panel(x + 24, y + 54, w - 24, y + 86);
-    draw_panel(x + 24, y + 86, w - 24, h - 24);
+    draw_panel(x + 24, y + 54, w - 24, y + 112);
+    draw_panel(x + 24, y + 112, w - 24, h - 24);
 
 }
 
@@ -228,7 +226,7 @@ void main(int argc, char *argv[])
     set_mouse_coords(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2);
 
     draw_fill(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_BACKGROUND);
-    draw_window(200, 100, 600, 500);
+    draw_window(200, 100, 600, 400);
 
     call_attach(0x0C, mouse_event);
     call_wait();
