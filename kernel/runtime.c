@@ -2,6 +2,7 @@
 #include <lib/string.h>
 #include <kernel/mmu.h>
 #include <kernel/runtime.h>
+#include <kernel/vfs/proc.h>
 
 static struct runtime_task tasks[RUNTIME_TASK_SLOTS];
 static struct runtime_task *running;
@@ -194,6 +195,8 @@ void runtime_init()
 {
 
     running = 0;
+
+    vfs_proc_init(tasks);
 
 }
 
