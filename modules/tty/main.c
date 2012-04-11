@@ -8,7 +8,6 @@
 static struct tty_driver driver;
 static struct nodefs_node in;
 static struct nodefs_node out;
-static struct nodefs_node err;
 static struct nodefs_node cwd;
 static struct nodefs_node pwd;
 
@@ -113,7 +112,6 @@ void init()
 
     nodefsDriver->register_node(nodefsDriver, &in, "tty/stdin", &driver.base.base, in_read, 0);
     nodefsDriver->register_node(nodefsDriver, &out, "tty/stdout", &driver.base.base, 0, out_write);
-    nodefsDriver->register_node(nodefsDriver, &err, "tty/stderr", &driver.base.base, 0, out_write);
     nodefsDriver->register_node(nodefsDriver, &cwd, "tty/cwd", &driver.base.base, cwd_read, cwd_write);
     nodefsDriver->register_node(nodefsDriver, &pwd, "tty/pwd", &driver.base.base, pwd_read, 0);
 

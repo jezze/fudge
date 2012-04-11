@@ -3,7 +3,6 @@
 
 #define FILE_STDIN  1
 #define FILE_STDOUT 2
-#define FILE_STDERR 3
 
 void file_close(unsigned int fd);
 unsigned int file_open(char *path);
