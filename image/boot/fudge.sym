@@ -1,4 +1,3 @@
-event_raise
 irq_register_routine
 irq_unregister_routine
 mmu_map_kernel_memory
