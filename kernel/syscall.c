@@ -11,9 +11,6 @@ static unsigned int (*routines[SYSCALL_ROUTINE_SLOTS])(struct runtime_task *task
 static unsigned int attach(struct runtime_task *task, unsigned int index, void (*routine)())
 {
 
-    if (!index)
-        return 0;
-
     if (!routine)
         return 0;
 
@@ -40,9 +37,6 @@ static unsigned int close(struct runtime_task *task, unsigned int index)
 
 static unsigned int detach(struct runtime_task *task, unsigned int index)
 {
-
-    if (!index)
-        return 0;
 
     return event_unregister_routine(index, task);
 
