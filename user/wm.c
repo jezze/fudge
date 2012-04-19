@@ -171,7 +171,7 @@ void mouse_event()
 
     set_mouse_coords(mx + (dx * 0.2), my - (dy * 0.2));
 
-    draw_ppm("/ramdisk/home/fu-raw.ppm", mx, my);
+    draw_ppm("/ramdisk/data/fu-raw.ppm", mx, my);
 
     call_wait();
 
