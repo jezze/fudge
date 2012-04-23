@@ -3,7 +3,8 @@
 void main(int argc, char *argv[])
 {
 
-    file_write_format(FILE_STDOUT, 0, "System is rebooting...");
+    file_write(FILE_STDOUT, 0, 23, "System is rebooting...\n");
+
     call_reboot();
 
 }

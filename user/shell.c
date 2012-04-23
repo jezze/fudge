@@ -35,7 +35,7 @@ static void stack_clear()
 static void clear()
 {
 
-    file_write_format(FILE_STDOUT, 0, "fudge:/$ ");
+    file_write(FILE_STDOUT, 0, 9, "fudge:/$ ");
     stack_clear();
 
 }
@@ -54,7 +54,7 @@ static void interpret(char *command)
     string_write(binary, "/ramdisk/bin/%s", argv[0]);
 
     if (!call_execute(binary, argc, argv))
-        file_write_format(FILE_STDOUT, 0, "%s: Invalid command\n", binary);
+        file_write(FILE_STDOUT, 0, 18, "Could not execute\n");
 
 }
 
@@ -74,7 +74,7 @@ static void handle_input(char c)
             if (!stack_pop())
                 break;
 
-            file_write_format(FILE_STDOUT, 0, "\b \b");
+            file_write(FILE_STDOUT, 0, 3, "\b \b");
 
             break;
 
@@ -82,7 +82,7 @@ static void handle_input(char c)
         case '\n':
 
             stack_push('\0');
-            file_write_format(FILE_STDOUT, 0, "%c", c);
+            file_write(FILE_STDOUT, 0, 1, &c);
             interpret(buffer);
             clear();
 
@@ -91,7 +91,7 @@ static void handle_input(char c)
         default:
 
             stack_push(c);
-            file_write_format(FILE_STDOUT, 0, "%c", c);
+            file_write(FILE_STDOUT, 0, 1, &c);
 
             break;
 
@@ -117,8 +117,8 @@ static void read_keyboard()
 void main(int argc, char *argv[])
 {
 
-    file_write_format(FILE_STDOUT, 0, "Fudge operating system\n");
-    file_write_format(FILE_STDOUT, 0, "Write `cat help.txt` for a short list if commands\n\n");
+    file_write(FILE_STDOUT, 0, 23, "Fudge operating system\n");
+    file_write(FILE_STDOUT, 0, 51, "Write `cat help.txt` for a short list if commands\n\n");
 
     clear();
 

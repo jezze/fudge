@@ -31,17 +31,3 @@ unsigned int file_write(unsigned int fd, unsigned int offset, unsigned int count
 
 }
 
-unsigned int file_write_format(unsigned int fd, unsigned int offset, char *buffer, ...)
-{
-
-    char temp[0x1000];
-    void **arg = (void **)&buffer + 1;
-
-    string_write(temp, buffer, *arg);
-
-    unsigned int count = string_length(temp) + 1;
-
-    return call_write(fd, offset, count, temp);
-
-}
-

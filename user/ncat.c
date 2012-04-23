@@ -110,7 +110,7 @@ void handle_network_event()
     file_write(fd2, 0, sizeof (struct frame_header) + sizeof (struct arp_header), buffer);
     file_close(fd2);
 
-    file_write_format(FILE_STDOUT, 0, "Responding to ARP\n");
+    file_write(FILE_STDOUT, 0, 18, "Responding to ARP\n");
 
     call_wait();
 
@@ -127,9 +127,6 @@ void main(int argc, char *argv[])
     unsigned int fd = file_open("/module/rtl8139/mac");
     file_read(fd, 0, 6, eth0.mac);
     file_close(fd);
-
-    file_write_format(FILE_STDOUT, 0, "IP: %d.%d.%d.%d\n", eth0.ip[0], eth0.ip[1], eth0.ip[2], eth0.ip[3]);
-    file_write_format(FILE_STDOUT, 0, "Mac: %x:%x:%x:%x:%x:%x\n", eth0.mac[0], eth0.mac[1], eth0.mac[2], eth0.mac[3], eth0.mac[4], eth0.mac[5]);
 
     call_attach(0x07, handle_network_event);
     call_wait();

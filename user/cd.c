@@ -10,8 +10,9 @@ void main(int argc, char *argv[])
     if (argc == 1)
     {
 
-        file_read(fd, 0, 256, buffer);
-        file_write_format(FILE_STDOUT, 0, "%s\n", buffer);
+        unsigned int count = file_read(fd, 0, 256, buffer);
+        file_write(FILE_STDOUT, 0, count, buffer);
+        file_write(FILE_STDOUT, 0, 1, "\n");
 
     }
 

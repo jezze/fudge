@@ -8,7 +8,6 @@ void file_close(unsigned int fd);
 unsigned int file_open(char *path);
 unsigned int file_read(unsigned int fd, unsigned int offset, unsigned int count, void *buffer);
 unsigned int file_write(unsigned int fd, unsigned int offset, unsigned int count, void *buffer);
-unsigned int file_write_format(unsigned int fd, unsigned int offset, char *buffer, ...);
 
 #endif
 

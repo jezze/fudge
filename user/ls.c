@@ -10,7 +10,8 @@ void main(int argc, char *argv[])
     if (!fd)
     {
 
-        file_write_format(FILE_STDOUT, 0, "%s: File does not exist.\n", argv[1]);
+        file_write(FILE_STDOUT, 0, string_length(argv[1]), argv[1]);
+        file_write(FILE_STDOUT, 0, 23, ": File does not exist.\n");
 
         return;
 
