@@ -1,7 +1,6 @@
 #include <kernel/event.h>
 #include <kernel/irq.h>
 #include <kernel/modules.h>
-#include <kernel/runtime.h>
 
 static struct irq_routine routines[IRQ_ROUTINE_SLOTS];
 
@@ -35,7 +34,7 @@ unsigned int irq_unregister_routine(unsigned int index, struct modules_device *d
 
 }
 
-void irq_raise(unsigned int index, struct runtime_task *task)
+void irq_raise(unsigned int index)
 {
 
     struct irq_routine *routine = &routines[index];
@@ -45,7 +44,7 @@ void irq_raise(unsigned int index, struct runtime_task *task)
 
     routine->callback(routine->device);
 
-    event_raise(index, task);
+    event_raise(index);
 
 }
 

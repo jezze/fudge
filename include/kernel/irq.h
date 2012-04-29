@@ -16,7 +16,7 @@ struct irq_routine
 
 unsigned int irq_register_routine(unsigned int index, struct modules_device *device, void (*callback)(struct modules_device *device));
 unsigned int irq_unregister_routine(unsigned int index, struct modules_device *device);
-void irq_raise(unsigned int index, struct runtime_task *task);
+void irq_raise(unsigned int index);
 
 #endif
 
