@@ -64,10 +64,6 @@ static unsigned int execute(struct runtime_task *task, char *path, unsigned int 
     if (!index)
         return 0;
 
-    struct runtime_task *ntask = runtime_get_task(index);
-
-    runtime_task_init(ntask, index);
-
     struct modules_filesystem *filesystem = modules_get_filesystem(path);
 
     if (!filesystem)
@@ -77,6 +73,13 @@ static unsigned int execute(struct runtime_task *task, char *path, unsigned int 
 
     if (!id)
         return 0;
+
+    struct runtime_task *ntask = runtime_get_task(index);
+
+    if (task)
+        runtime_task_clone(ntask, task, index);
+    else
+        runtime_task_init(ntask, index);
 
     unsigned int count = filesystem->read(filesystem, id, 0, ntask->memory.size, (void *)ntask->memory.paddress);
 

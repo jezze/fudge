@@ -191,6 +191,19 @@ void runtime_task_init(struct runtime_task *task, unsigned int id)
 
 }
 
+void runtime_task_clone(struct runtime_task *task, struct runtime_task *original, unsigned int id)
+{
+
+    memory_copy(task, original, sizeof (struct runtime_task));
+
+    task->id = id;
+
+    unsigned int address = RUNTIME_TASK_ADDRESS_BASE + task->id * RUNTIME_TASK_ADDRESS_SIZE;
+
+    runtime_memory_init(&task->memory, address, address, RUNTIME_TASK_ADDRESS_SIZE);
+
+}
+
 void runtime_init()
 {
 
