@@ -12,7 +12,7 @@ unsigned int runtime_get_task_slot()
 
     unsigned int i;
 
-    for (i = 1; i < RUNTIME_TASK_SLOTS; i++)
+    for (i = 1; i < RUNTIME_TASK_SLOTS - 1; i++)
     {
 
         if (!tasks[i].used)
@@ -27,15 +27,15 @@ unsigned int runtime_get_task_slot()
 struct runtime_task *runtime_get_task(unsigned int index)
 {
 
+    if (!index)
+        return 0;
+
     return &tasks[index];
 
 }
 
 struct runtime_task *runtime_get_running_task()
 {
-
-    if (!running->used)
-        return 0;
 
     return running;
 
@@ -193,6 +193,8 @@ void runtime_task_init(struct runtime_task *task, unsigned int id)
 
 void runtime_init()
 {
+
+    memory_clear(tasks, sizeof (struct runtime_task) * RUNTIME_TASK_SLOTS);
 
     running = 0;
 

@@ -14,7 +14,7 @@ static unsigned int read(struct modules_filesystem *self, unsigned int id, unsig
     unsigned int off = 0;
     unsigned int i;
 
-    for (i = 0; i < RUNTIME_TASK_SLOTS; i++)
+    for (i = 1; i < RUNTIME_TASK_SLOTS - 1; i++)
     {
 
         struct runtime_task *task = &tasks[i];
@@ -23,7 +23,7 @@ static unsigned int read(struct modules_filesystem *self, unsigned int id, unsig
         {
 
             string_write(out + off, "%d/\n", i);
-            off += string_length(out);
+            off += string_length(out + off);
 
         }
 
