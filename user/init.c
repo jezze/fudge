@@ -13,6 +13,9 @@ void main(int argc, char *argv[])
     call_load("/ramdisk/mod/tty.ko");
     call_load("/ramdisk/mod/bga.ko");
 
+    file_open("/module/tty/stdin");
+    file_open("/module/tty/stdout");
+
 //    call_load("/ramdisk/mod/ata.ko");
 //    call_load("/ramdisk/mod/mbr.ko");
 //    call_load("/ramdisk/mod/ext2.ko");

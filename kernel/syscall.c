@@ -103,11 +103,6 @@ static unsigned int execute(struct runtime_task *task, char *path, unsigned int 
 
     runtime_activate(ntask, task);
 
-    struct modules_filesystem *filesystem2 = modules_get_filesystem("/module/");
-
-    runtime_descriptor_init(ntask->get_descriptor(ntask, 1), filesystem2->find(filesystem2, "tty/stdin"), filesystem2, 0);
-    runtime_descriptor_init(ntask->get_descriptor(ntask, 2), filesystem2->find(filesystem2, "tty/stdout"), filesystem2, 0);
-
     return ntask->id;
 
 }
