@@ -21,8 +21,8 @@ void mouse()
 void main(int argc, char *argv[])
 {
 
-    call_attach(0x01, keyboard);
-    call_attach(0x0C, mouse);
+    call_attach(0x21, keyboard);
+    call_attach(0x2C, mouse);
     call_wait();
 
 }

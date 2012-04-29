@@ -22,7 +22,7 @@ void explain()
     if (counter < 10)
         call_wait();
 
-    call_detach(0x00);
+    call_detach(0x20);
     call_exit();
 
 }
@@ -33,7 +33,7 @@ void main(int argc, char *argv[])
     counter = 0;
     ticks = 0;
 
-    call_attach(0x00, explain);
+    call_attach(0x20, explain);
     call_wait();
 
 }

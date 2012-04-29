@@ -44,7 +44,7 @@ void irq_raise(unsigned int index)
 
     routine->callback(routine->device);
 
-    event_raise(index);
+    event_raise(index + 0x20);
 
 }
 

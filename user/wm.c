@@ -228,7 +228,7 @@ void main(int argc, char *argv[])
     draw_fill(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_BACKGROUND);
     draw_window(200, 100, 600, 400);
 
-    call_attach(0x0C, mouse_event);
+    call_attach(0x2C, mouse_event);
     call_wait();
 
 }

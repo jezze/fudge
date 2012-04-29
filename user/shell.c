@@ -122,7 +122,7 @@ void main(int argc, char *argv[])
 
     clear();
 
-    call_attach(0x01, read_keyboard);
+    call_attach(0x21, read_keyboard);
     call_wait();
 
 }

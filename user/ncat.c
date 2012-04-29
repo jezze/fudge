@@ -128,7 +128,7 @@ void main(int argc, char *argv[])
     file_read(fd, 0, 6, eth0.mac);
     file_close(fd);
 
-    call_attach(0x07, handle_network_event);
+    call_attach(0x27, handle_network_event);
     call_wait();
 
 }
