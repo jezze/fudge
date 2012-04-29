@@ -1,3 +1,4 @@
+#include <lib/memory.h>
 #include <lib/string.h>
 #include <kernel/elf.h>
 #include <kernel/event.h>
@@ -101,13 +102,8 @@ static unsigned int execute(struct runtime_task *task, char *path, unsigned int 
 
     struct modules_filesystem *filesystem2 = modules_get_filesystem("/module/");
 
-    if (filesystem2)
-    {
-
-        runtime_descriptor_init(ntask->get_descriptor(ntask, 1), filesystem2->find(filesystem2, "tty/stdin"), filesystem2, 0);
-        runtime_descriptor_init(ntask->get_descriptor(ntask, 2), filesystem2->find(filesystem2, "tty/stdout"), filesystem2, 0);
-
-    }
+    runtime_descriptor_init(ntask->get_descriptor(ntask, 1), filesystem2->find(filesystem2, "tty/stdin"), filesystem2, 0);
+    runtime_descriptor_init(ntask->get_descriptor(ntask, 2), filesystem2->find(filesystem2, "tty/stdout"), filesystem2, 0);
 
     return ntask->id;
 
@@ -208,12 +204,10 @@ static unsigned int read(struct runtime_task *task, unsigned int id, unsigned in
 
     struct runtime_descriptor *descriptor = task->get_descriptor(task, id);
 
-    if (!descriptor->id || !descriptor->filesystem || !descriptor->filesystem->read)
+    if (!descriptor || !descriptor->id || !descriptor->filesystem || !descriptor->filesystem->read)
         return 0;
 
-    unsigned int c = descriptor->filesystem->read(descriptor->filesystem, descriptor->id, offset, count, buffer);
-
-    return c;
+    return descriptor->filesystem->read(descriptor->filesystem, descriptor->id, offset, count, buffer);
 
 }
 
@@ -284,12 +278,10 @@ static unsigned int write(struct runtime_task *task, unsigned int id, unsigned i
 
     struct runtime_descriptor *descriptor = task->get_descriptor(task, id);
 
-    if (!descriptor->id || !descriptor->filesystem || !descriptor->filesystem->write)
+    if (!descriptor || !descriptor->id || !descriptor->filesystem || !descriptor->filesystem->write)
         return 0;
 
-    unsigned int c = descriptor->filesystem->write(descriptor->filesystem, descriptor->id, offset, count, buffer);
-
-    return c;
+    return descriptor->filesystem->write(descriptor->filesystem, descriptor->id, offset, count, buffer);
 
 }
 
