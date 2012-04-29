@@ -59,11 +59,6 @@ static unsigned int execute(struct runtime_task *task, char *path, unsigned int 
     if (!path)
         return 0;
 
-    unsigned int index = runtime_get_task_slot();
-
-    if (!index)
-        return 0;
-
     struct modules_filesystem *filesystem = modules_get_filesystem(path);
 
     if (!filesystem)
@@ -72,6 +67,11 @@ static unsigned int execute(struct runtime_task *task, char *path, unsigned int 
     unsigned int id = filesystem->find(filesystem, path + string_length(filesystem->path));
 
     if (!id)
+        return 0;
+
+    unsigned int index = runtime_get_task_slot();
+
+    if (!index)
         return 0;
 
     struct runtime_task *ntask = runtime_get_task(index);
@@ -120,17 +120,9 @@ static unsigned int execute(struct runtime_task *task, char *path, unsigned int 
 static unsigned int exit(struct runtime_task *task)
 {
 
-    task->unload(task);
+    task->used = 0;
 
     struct runtime_task *ptask = runtime_get_task(task->parentid);
-
-    if (!ptask->used)
-    {
-
-        kernel_enable_interrupts();
-        kernel_halt();
-
-    }
 
     runtime_activate(ptask);
 
@@ -266,14 +258,6 @@ static unsigned int wait(struct runtime_task *task)
     task->event = 0;
 
     struct runtime_task *ptask = runtime_get_task(task->parentid);
-
-    if (!ptask->used)
-    {
-
-        kernel_enable_interrupts();
-        kernel_halt();
-
-    }
 
     runtime_activate(ptask);
 

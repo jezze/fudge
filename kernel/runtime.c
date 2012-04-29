@@ -102,15 +102,6 @@ static unsigned int load(struct runtime_task *self, void (*entry)(), unsigned in
 
 }
 
-static void unload(struct runtime_task *self)
-{
-
-    self->used = 0;
-
-    mmu_unmap_memory(self->id);
-
-}
-
 static unsigned int get_descriptor_slot(struct runtime_task *self)
 {
 
@@ -178,7 +169,6 @@ void runtime_task_init(struct runtime_task *task, unsigned int id)
 
     task->id = id;
     task->load = load;
-    task->unload = unload;
     task->get_descriptor_slot = get_descriptor_slot;
     task->get_descriptor = get_descriptor;
 
