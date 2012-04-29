@@ -152,7 +152,7 @@ void runtime_registers_init(struct runtime_registers *registers, unsigned int ip
 
 }
 
-void runtime_descriptor_init(struct runtime_descriptor *descriptor, unsigned int id,  struct modules_filesystem *filesystem, unsigned int permissions)
+void runtime_descriptor_init(struct runtime_descriptor *descriptor, unsigned int id, struct modules_filesystem *filesystem, unsigned int permissions)
 {
 
     memory_clear(descriptor, sizeof (struct runtime_descriptor));
