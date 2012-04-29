@@ -41,11 +41,8 @@ struct runtime_task *runtime_get_running_task()
 
 }
 
-void runtime_activate(struct runtime_task *task, struct runtime_task *ptask)
+void runtime_activate(struct runtime_task *task)
 {
-
-    if (ptask)
-        task->parentid = ptask->id;
 
     mmu_load_memory(task->id);
 

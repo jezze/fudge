@@ -49,9 +49,10 @@ void event_raise(unsigned int index)
         return;
 
     etask->event = 1;
+    etask->parentid = task->id;
     etask->load(etask, routine->callback, 0, 0);
 
-    runtime_activate(etask, task);
+    runtime_activate(etask);
 
 }
 

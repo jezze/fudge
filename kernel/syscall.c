@@ -77,9 +77,19 @@ static unsigned int execute(struct runtime_task *task, char *path, unsigned int 
     struct runtime_task *ntask = runtime_get_task(index);
 
     if (task)
+    {
+
         runtime_task_clone(ntask, task, index);
+        ntask->parentid = task->id;
+
+    }
+
     else
+    {
+
         runtime_task_init(ntask, index);
+
+    }
 
     unsigned int count = filesystem->read(filesystem, id, 0, ntask->memory.size, (void *)ntask->memory.paddress);
 
@@ -101,7 +111,7 @@ static unsigned int execute(struct runtime_task *task, char *path, unsigned int 
 
     elf_prepare((void *)ntask->memory.vaddress);
 
-    runtime_activate(ntask, task);
+    runtime_activate(ntask);
 
     return ntask->id;
 
@@ -122,7 +132,7 @@ static unsigned int exit(struct runtime_task *task)
 
     }
 
-    runtime_activate(ptask, 0);
+    runtime_activate(ptask);
 
     return ptask->id;
 
@@ -265,7 +275,7 @@ static unsigned int wait(struct runtime_task *task)
 
     }
 
-    runtime_activate(ptask, 0);
+    runtime_activate(ptask);
 
     return ptask->id;
 
