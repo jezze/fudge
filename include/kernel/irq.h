@@ -3,6 +3,7 @@
 
 #define IRQ_ROUTINE_SLOTS 16
 
+struct modules_device;
 struct runtime_task;
 
 struct irq_routine

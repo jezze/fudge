@@ -1,6 +1,9 @@
 #ifndef ARCH_ARCH_H
 #define ARCH_ARCH_H
 
+struct kernel_arch;
+struct mboot_header;
+
 struct arch_x86
 {
 

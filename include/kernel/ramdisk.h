@@ -3,6 +3,8 @@
 
 #define RAMDISK_NODE_SLOTS 64
 
+struct tar_header;
+
 struct ramdisk_node
 {
 
