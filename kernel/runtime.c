@@ -119,7 +119,7 @@ static unsigned int get_descriptor_slot(struct runtime_task *self)
 
     unsigned int i;
 
-    for (i = 1; i < RUNTIME_TASK_DESCRIPTOR_SLOTS; i++)
+    for (i = 1; i < RUNTIME_TASK_DESCRIPTOR_SLOTS - 1; i++)
     {
 
         if (!self->descriptors[i].id)
