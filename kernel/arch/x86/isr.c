@@ -79,7 +79,7 @@ void isr_handle_irq(struct isr_irq_registers *registers)
 
     save_state(off, &registers->general, &registers->interrupt);
 
-    irq_raise(registers->index);
+    irq_raise(registers->index, off);
     reset_irq(registers->slave);
 
     struct runtime_task *on = runtime_get_running_task();
