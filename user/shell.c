@@ -49,12 +49,45 @@ static void interpret(char *command)
     if (!argc)
         return;
 
-    char binary[32];
+    char buffer[256];
 
-    string_write(binary, "/ramdisk/bin/%s", argv[0]);
+    unsigned int fd = file_open("/module/tty/cwd");
+    unsigned int count = file_read(fd, 0, 256, buffer);
+    file_close(fd);
 
-    if (!call_execute(binary, argc, argv))
-        file_write(FILE_STDOUT, 0, 18, "Could not execute\n");
+    unsigned int i;
+
+    for (i = 1; i < argc; i++)
+    {
+
+        if (argv[i][0] == '/')
+        {
+
+            file_open(argv[i]);
+
+        }
+
+        else
+        {
+
+            memory_copy(buffer + count, argv[i], string_length(argv[i]) + 1);
+
+            file_open(buffer);
+
+        }
+
+    }
+
+    string_write(buffer, "/ramdisk/bin/%s", argv[0]);
+
+    call_execute(buffer, argc, argv);
+
+    for (i = 1; i < argc; i++)
+    {
+
+        file_close(i + 2);
+
+    }
 
 }
 
