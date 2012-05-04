@@ -1,16 +1,21 @@
 #include <fudge.h>
 
+#define BUFFER_SIZE 0x1000
+
 void main(int argc, char *argv[])
 {
 
-    char buffer[0x4000];
+    char buffer[BUFFER_SIZE];
 
-    unsigned int count = file_read(3, 0, 0x4000, buffer);
+    unsigned int offset;
+    unsigned int count;
 
-    if (!count)
-        return;
+    for (offset = 0; (count = file_read(3, offset, BUFFER_SIZE, buffer)); offset += BUFFER_SIZE)
+    {
 
-    file_write(FILE_STDOUT, 0, count, buffer);
+        file_write(FILE_STDOUT, 0, count, buffer);
+
+    }
 
 }
 
