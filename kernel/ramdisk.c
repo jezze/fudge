@@ -9,10 +9,9 @@ static struct ramdisk_node nodes[RAMDISK_NODE_SLOTS];
 static unsigned int parse(void *address)
 {
 
-    char *current = (char *)address;
+    char *current = address;
 
     unsigned int i;
-
 
     for (i = 0; *current; i++)
     {

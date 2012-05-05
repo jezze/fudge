@@ -17,7 +17,7 @@ static unsigned int read(struct modules_filesystem *self, unsigned int id, unsig
     filesystem->driver->read_node(filesystem->device, id, &bg, &node);
     filesystem->driver->read_content(filesystem->device, &node, private);
 
-    char *in = (char *)buffer;
+    char *in = buffer;
 
     if ((node.type & 0xF000) == EXT2_NODE_TYPE_DIR)
     {

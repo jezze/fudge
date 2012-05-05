@@ -12,7 +12,7 @@ static unsigned int read(struct modules_filesystem *self, unsigned int id, unsig
     if (id != 1)
         return 0;
 
-    char *in = (char *)buffer;
+    char *in = buffer;
 
     memory_copy(in, "./\n../\n", 8);
 

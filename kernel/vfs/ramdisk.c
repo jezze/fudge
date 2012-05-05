@@ -12,7 +12,7 @@ static struct modules_filesystem filesystem;
 static unsigned int read(struct modules_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    char *in = (char *)buffer;
+    char *in = buffer;
     struct ramdisk_node *node = &nodes[id - 1];
 
     if (node->header->typeflag[0] == TAR_FILETYPE_DIR)

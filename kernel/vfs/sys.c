@@ -9,7 +9,7 @@ static struct modules_filesystem filesystem;
 static unsigned int read(struct modules_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    char *in = (char *)buffer;
+    char *in = buffer;
 
     if (id == 1)
     {

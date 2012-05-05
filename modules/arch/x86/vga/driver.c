@@ -9,7 +9,7 @@ static unsigned int read_framebuffer(struct vga_driver *self, unsigned int offse
     unsigned int i;
     unsigned int j = 0;
 
-    char *in = (char *)buffer;
+    char *in = buffer;
 
     for (i = offset; i < offset + count; i++, j++)
     {
@@ -33,7 +33,7 @@ static unsigned int write_framebuffer(struct vga_driver *self, unsigned int offs
     unsigned int i;
     unsigned int j = 0;
 
-    char *in = (char *)buffer;
+    char *in = buffer;
 
     for (i = offset; i < offset + count; i++, j++)
     {
