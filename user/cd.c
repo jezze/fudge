@@ -1,16 +1,18 @@
 #include <fudge.h>
 
+#define BUFFER_SIZE 0x100
+
 void main(int argc, char *argv[])
 {
 
-    char buffer[256];
+    char buffer[BUFFER_SIZE];
 
     unsigned int fd = call_open("/module/tty/cwd");
 
     if (argc == 1)
     {
 
-        unsigned int count = call_read(fd, 0, 256, buffer);
+        unsigned int count = call_read(fd, 0, BUFFER_SIZE, buffer);
         call_write(FILE_STDOUT, 0, count, buffer);
         call_write(FILE_STDOUT, 0, 1, "\n");
 

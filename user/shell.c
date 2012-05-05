@@ -1,14 +1,14 @@
 #include <fudge.h>
 
-#define SHELL_BUFFER_SIZE 256
+#define BUFFER_SIZE 256
 
-char buffer[SHELL_BUFFER_SIZE];
+char buffer[BUFFER_SIZE];
 unsigned int bufferHead;
 
 static void stack_push(char c)
 {
 
-    if (bufferHead < SHELL_BUFFER_SIZE)
+    if (bufferHead < BUFFER_SIZE)
     {
 
         buffer[bufferHead] = c;
