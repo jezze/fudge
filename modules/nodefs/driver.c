@@ -61,7 +61,7 @@ static unsigned int filesystem_find(struct modules_filesystem *self, char *name)
     for (i = 0; i < filesystem->count; i++)
     {
 
-        if (string_find(filesystem->nodes[i]->name, name))
+        if (memory_compare(filesystem->nodes[i]->name, name, string_length(filesystem->nodes[i]->name) + 1))
             return i + 2;
 
     }

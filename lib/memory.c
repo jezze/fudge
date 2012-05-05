@@ -43,16 +43,22 @@ void *memory_copy(void *out, const void *in, unsigned int count)
 
 }
 
-void *memory_index(const void *in, char value, unsigned int count)
+void *memory_find(const void *in1, const void *in2, unsigned int count1, unsigned int count2)
 {
 
-    const char *ip = in;
+    if (count2 > count1)
+        return 0;
+
+    const char *ip = in1;
+    unsigned int count = count1 - count2;
 
     for (; count; count--)
     {
 
-        if (*ip++ == value)
+        if (memory_compare(ip, in2, count2))
             return (void *)ip;
+
+        ip++;
 
     }
 

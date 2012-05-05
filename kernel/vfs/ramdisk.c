@@ -29,12 +29,12 @@ static unsigned int read(struct modules_filesystem *self, unsigned int id, unsig
             if (&nodes[i] == node)
                 continue;
 
-            if (!string_find(nodes[i].name, node->name))
+            if (!memory_find(nodes[i].name, node->name, string_length(nodes[i].name), string_length(node->name)))
                 continue;
 
             char *start = nodes[i].name + string_length(node->name);
             unsigned int size = string_length(start);
-            char *slash = memory_index(start, '/', size);
+            char *slash = memory_find(start, "/", size, 1);
 
             if (slash && slash < start + size)
                 continue;

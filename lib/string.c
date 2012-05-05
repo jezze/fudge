@@ -1,39 +1,6 @@
 #include <lib/memory.h>
 #include <lib/string.h>
 
-char *string_find(const char *in, const char *str)
-{
-
-    char c = *str++;
-
-    if (!c)
-        return (char *)in;
-
-    unsigned int len = string_length(str);
-
-    do
-    {
-
-        char sc;
-
-        do
-        {
-
-            sc = *in++;
-
-            if (!sc)
-                return (char *)0;
-
-        }
-        while (sc != c);
-
-    }
-    while (!memory_compare(in, str, len));
-
-    return (char *)(in - 1);
-
-}
-
 unsigned int string_length(const char *in)
 {
 
