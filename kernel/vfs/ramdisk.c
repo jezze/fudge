@@ -88,7 +88,7 @@ static unsigned int find(struct modules_filesystem *self, char *name)
         if (length != l2)
             continue;
 
-        if (!memory_compare(nodes[i].name, name, length))
+        if (memory_compare(nodes[i].name, name, length))
             return i + 1;
 
     }

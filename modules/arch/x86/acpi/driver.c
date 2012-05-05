@@ -13,7 +13,7 @@ static struct acpi_sdth *find_header(struct acpi_driver *self, char *name)
     for (i = 0; i < entries; i++)
     {
 
-        if (!memory_compare(self->rsdp->rsdt->entries[i]->signature, name, 4))
+        if (memory_compare(self->rsdp->rsdt->entries[i]->signature, name, 4))
             return self->rsdp->rsdt->entries[i];
 
     }
@@ -31,7 +31,7 @@ static unsigned int find_rsdp()
     for (rsdp = 0x000E0000; rsdp < 0x00100000; rsdp += 0x10)
     {
 
-        if (!memory_compare((void *)rsdp, signature, 8))
+        if (memory_compare((void *)rsdp, signature, 8))
             return rsdp;
 
     }
@@ -42,7 +42,7 @@ static unsigned int find_rsdp()
     for (rsdp = ebda; rsdp < ebda + 0x400; rsdp += 0x10)
     {
 
-        if (!memory_compare((void *)rsdp, signature, 8))
+        if (memory_compare((void *)rsdp, signature, 8))
             return rsdp;
 
     }

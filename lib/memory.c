@@ -22,11 +22,11 @@ int memory_compare(const void *in1, const void *in2, unsigned int count)
     {
 
         if (*ip1++ != *ip2++)
-            return 1;
+            return 0;
 
     }
 
-    return 0;
+    return 1;
 
 }
 

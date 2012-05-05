@@ -65,7 +65,7 @@ static unsigned int cwd_write(struct nodefs_node *self, unsigned int offset, uns
 
     ((char *)buffer)[count] = '\0';
 
-    if (!memory_compare(buffer, "/", 1))
+    if (memory_compare(buffer, "/", 1))
         memory_copy(driver.cwdname, buffer, count + 1);
     else
         memory_copy(driver.cwdname + string_length(driver.cwdname), buffer, count + 1);

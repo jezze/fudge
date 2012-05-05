@@ -77,7 +77,7 @@ struct modules_filesystem *modules_get_filesystem(char *path)
 
         unsigned int length = string_length(module->filesystem.path);
 
-        if (memory_compare(module->filesystem.path, path, length))
+        if (!memory_compare(module->filesystem.path, path, length))
             continue;
 
         if (length < max)

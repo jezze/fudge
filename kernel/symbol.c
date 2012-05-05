@@ -15,7 +15,7 @@ unsigned int symbol_find(char *name)
     for (i = 0; i < SYMBOL_ENTRY_SLOTS; i++)
     {
 
-        if (!memory_compare(entries[i].name, name, string_length(entries[i].name)))
+        if (memory_compare(entries[i].name, name, string_length(entries[i].name)))
             return entries[i].paddress;
 
     }

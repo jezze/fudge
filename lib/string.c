@@ -28,7 +28,7 @@ char *string_find(const char *in, const char *str)
         while (sc != c);
 
     }
-    while (memory_compare(in, str, len));
+    while (!memory_compare(in, str, len));
 
     return (char *)(in - 1);
 

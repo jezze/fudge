@@ -75,7 +75,7 @@ unsigned int elf_get_symbol(void *address, char *name)
 
         struct elf_symbol *symEntry = &symTable[i];
 
-        if (!memory_compare(name, strTable + symEntry->name, string_length(name)))
+        if (memory_compare(name, strTable + symEntry->name, string_length(name)))
             return (unsigned int)(infoTable + symEntry->value);
 
     }

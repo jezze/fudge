@@ -67,16 +67,16 @@ static unsigned int find(struct modules_filesystem *self, char *name)
     if (!length)
         return 1;
 
-    if (!memory_compare(name, "all/", 4))
+    if (memory_compare(name, "all/", 4))
         return 2;
 
-    if (!memory_compare(name, "bus/", 4))
+    if (memory_compare(name, "bus/", 4))
         return 3;
 
-    if (!memory_compare(name, "device/", 7))
+    if (memory_compare(name, "device/", 7))
         return 4;
 
-    if (!memory_compare(name, "driver/", 7))
+    if (memory_compare(name, "driver/", 7))
         return 5;
 
     return 0;
