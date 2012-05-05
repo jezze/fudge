@@ -58,7 +58,7 @@ static unsigned int execute(struct runtime_task *task, unsigned int index, unsig
 
     struct runtime_descriptor *descriptor = task->get_descriptor(task, index);
 
-    if (!descriptor || !descriptor->id)
+    if (!descriptor || !descriptor->id || !descriptor->filesystem || !descriptor->filesystem->read)
         return 0;
 
     unsigned int slot = runtime_get_task_slot();
@@ -93,7 +93,7 @@ static unsigned int execute(struct runtime_task *task, unsigned int index, unsig
 
     runtime_activate(ntask);
 
-    return ntask->id;
+    return slot;
 
 }
 
@@ -142,12 +142,12 @@ static unsigned int open(struct runtime_task *task, char *path)
     if (!path)
         return 0;
 
-    unsigned int index = task->get_descriptor_slot(task);
+    unsigned int slot = task->get_descriptor_slot(task);
 
-    if (!index)
+    if (!slot)
         return 0;
 
-    struct runtime_descriptor *descriptor = task->get_descriptor(task, index);
+    struct runtime_descriptor *descriptor = task->get_descriptor(task, slot);
 
     if (!descriptor)
         return 0;
@@ -167,7 +167,7 @@ static unsigned int open(struct runtime_task *task, char *path)
     if (descriptor->filesystem->open)
         descriptor->filesystem->open(descriptor->filesystem, descriptor->id);
 
-    return index;
+    return slot;
 
 }
 

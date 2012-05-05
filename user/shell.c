@@ -89,7 +89,7 @@ static void interpret(char *command)
 
         call_close(FILE_STDIN);
 
-        if (argv[1][0] == '/')
+        if (memory_compare(argv[1], "/", 1))
         {
 
             call_open(argv[1]);
