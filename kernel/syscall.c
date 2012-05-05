@@ -24,7 +24,7 @@ static unsigned int close(struct runtime_task *task, unsigned int index)
 
     struct runtime_descriptor *descriptor = task->get_descriptor(task, index);
 
-    if (!descriptor || !descriptor->id)
+    if (!descriptor || !descriptor->id || !descriptor->filesystem)
         return 0;
 
     if (descriptor->filesystem->close)
