@@ -115,7 +115,7 @@ static unsigned int load(struct runtime_task *task, unsigned int index)
 
     struct runtime_descriptor *descriptor = task->get_descriptor(task, index);
 
-    if (!descriptor)
+    if (!descriptor || !descriptor->id || !descriptor->filesystem || !descriptor->filesystem->get_physical)
         return 0;
 
     void *physical = descriptor->filesystem->get_physical(descriptor->filesystem, descriptor->id);
@@ -171,10 +171,10 @@ static unsigned int open(struct runtime_task *task, char *path)
 
 }
 
-static unsigned int read(struct runtime_task *task, unsigned int id, unsigned int offset, unsigned int count, char *buffer)
+static unsigned int read(struct runtime_task *task, unsigned int index, unsigned int offset, unsigned int count, char *buffer)
 {
 
-    struct runtime_descriptor *descriptor = task->get_descriptor(task, id);
+    struct runtime_descriptor *descriptor = task->get_descriptor(task, index);
 
     if (!descriptor || !descriptor->id || !descriptor->filesystem || !descriptor->filesystem->read)
         return 0;
@@ -197,7 +197,7 @@ static unsigned int unload(struct runtime_task *task, unsigned int index)
 
     struct runtime_descriptor *descriptor = task->get_descriptor(task, index);
 
-    if (!descriptor)
+    if (!descriptor || !descriptor->id || !descriptor->filesystem || !descriptor->filesystem->get_physical)
         return 0;
 
     void *physical = descriptor->filesystem->get_physical(descriptor->filesystem, descriptor->id);
@@ -229,10 +229,10 @@ static unsigned int wait(struct runtime_task *task)
 
 }
 
-static unsigned int write(struct runtime_task *task, unsigned int id, unsigned int offset, unsigned int count, char *buffer)
+static unsigned int write(struct runtime_task *task, unsigned int index, unsigned int offset, unsigned int count, char *buffer)
 {
 
-    struct runtime_descriptor *descriptor = task->get_descriptor(task, id);
+    struct runtime_descriptor *descriptor = task->get_descriptor(task, index);
 
     if (!descriptor || !descriptor->id || !descriptor->filesystem || !descriptor->filesystem->write)
         return 0;
