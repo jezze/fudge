@@ -41,9 +41,6 @@ void main(int argc, char *argv[])
     call_load(fd);
     call_close(fd);
 
-    call_open("/module/tty/stdin");
-    call_open("/module/tty/stdout");
-
     call_execute("/ramdisk/bin/shell", 0, 0);
 
     for (;;);

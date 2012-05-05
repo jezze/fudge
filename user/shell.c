@@ -180,6 +180,8 @@ static void read_keyboard()
 void main(int argc, char *argv[])
 {
 
+    call_open("/module/tty/stdin");
+    call_open("/module/tty/stdout");
     call_write(FILE_STDOUT, 0, 23, "Fudge operating system\n");
     call_write(FILE_STDOUT, 0, 51, "Write `cat help.txt` for a short list if commands\n\n");
     clear();
