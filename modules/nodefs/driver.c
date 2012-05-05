@@ -11,14 +11,17 @@ static unsigned int filesystem_read(struct modules_filesystem *self, unsigned in
     if (id == 1)
     {
 
-        char *b = (char *)buffer;
+        char *offset = buffer;
         unsigned int i;
 
         for (i = 0; i < filesystem->count; i++)
         {
 
-            string_write(b, "%s\n", filesystem->nodes[i]->name);
-            b += string_length(b);
+            unsigned int length = string_length(filesystem->nodes[i]->name);
+
+            memory_copy(offset, filesystem->nodes[i]->name, length);
+            memory_copy(offset + length, "\n", 1);
+            offset += length + 1;
 
         }
 
