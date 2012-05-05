@@ -34,9 +34,9 @@ static unsigned int read(struct modules_filesystem *self, unsigned int id, unsig
 
             char *start = nodes[i].name + string_length(node->name);
             unsigned int size = string_length(start);
-            unsigned int slash = memory_index(start, '/', size);
+            char *slash = memory_index(start, '/', size);
 
-            if (slash != size && slash != size - 1)
+            if (slash && slash < start + size)
                 continue;
 
             memory_copy(in + length, start, size);
