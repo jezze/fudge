@@ -110,7 +110,9 @@ static void interpret(char *command)
     memory_copy(buffer, "/ramdisk/bin/", 13);
     memory_copy(buffer + 13, argv[0], string_length(argv[0]) + 1);
 
-    call_execute(buffer, argc, argv);
+    unsigned int efd = call_open(buffer);
+    call_execute(efd, argc, argv);
+    call_close(efd);
 
     if (argc > 1)
     {
@@ -181,6 +183,8 @@ static void read_keyboard()
 void main(int argc, char *argv[])
 {
 
+    call_close(FILE_STDIN);
+    call_close(FILE_STDOUT);
     call_open("/module/tty/stdin");
     call_open("/module/tty/stdout");
     call_write(FILE_STDOUT, 0, 23, "Fudge operating system\n");

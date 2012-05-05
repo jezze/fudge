@@ -41,7 +41,9 @@ void main(int argc, char *argv[])
     call_load(fd);
     call_close(fd);
 
-    call_execute("/ramdisk/bin/shell", 0, 0);
+    fd = call_open("/ramdisk/bin/shell");
+    call_execute(fd, 0, 0);
+    call_close(fd);
 
     for (;;);
 

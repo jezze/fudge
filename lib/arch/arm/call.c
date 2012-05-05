@@ -24,7 +24,7 @@ unsigned int call_write(unsigned int fd, unsigned int offset, unsigned int count
 
 }
 
-unsigned int call_execute(char *path, unsigned int argc, char **argv)
+unsigned int call_execute(unsigned int fd, unsigned int argc, char **argv)
 {
 
     return 0;

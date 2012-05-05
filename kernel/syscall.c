@@ -53,20 +53,12 @@ static unsigned int halt(struct runtime_task *task)
 
 }
 
-static unsigned int execute(struct runtime_task *task, char *path, unsigned int argc, char **argv)
+static unsigned int execute(struct runtime_task *task, unsigned int index, unsigned int argc, char **argv)
 {
 
-    if (!path)
-        return 0;
+    struct runtime_descriptor *descriptor = task->get_descriptor(task, index);
 
-    struct modules_filesystem *filesystem = modules_get_filesystem(path);
-
-    if (!filesystem)
-        return 0;
-
-    unsigned int id = filesystem->find(filesystem, path + string_length(filesystem->path));
-
-    if (!id)
+    if (!descriptor || !descriptor->id)
         return 0;
 
     unsigned int slot = runtime_get_task_slot();
@@ -79,7 +71,7 @@ static unsigned int execute(struct runtime_task *task, char *path, unsigned int 
     runtime_task_clone(ntask, task, slot);
     ntask->parentid = task->id;
 
-    unsigned int count = filesystem->read(filesystem, id, 0, ntask->memory.size, (void *)ntask->memory.paddress);
+    unsigned int count = descriptor->filesystem->read(descriptor->filesystem, descriptor->id, 0, ntask->memory.size, (void *)ntask->memory.paddress);
 
     if (!count)
         return 0;
@@ -287,11 +279,11 @@ static unsigned int handle_halt(struct runtime_task *task, unsigned int stack)
 static unsigned int handle_execute(struct runtime_task *task, unsigned int stack)
 {
 
-    char *path = *(char **)(stack + 24);
+    unsigned int index = *(unsigned int *)(stack + 24);
     unsigned int argc = *(unsigned int *)(stack + 28);
     char **argv = *(char ***)(stack + 32);
 
-    return execute(task, path, argc, argv);
+    return execute(task, index, argc, argv);
 
 }
 
@@ -397,8 +389,9 @@ struct runtime_task *syscall_execute(char *path)
     struct runtime_task *task = runtime_get_task(slot);
 
     runtime_task_init(task, slot);
+    unsigned int fd = open(task, path);
 
-    unsigned int index = execute(task, path, 0, 0);
+    unsigned int index = execute(task, fd, 0, 0);
 
     if (!index)
         return 0;
