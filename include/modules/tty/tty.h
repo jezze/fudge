@@ -28,7 +28,7 @@ struct tty_driver
 {
 
     struct modules_driver base;
-    char cwdname[32];
+    char cwdname[128];
     unsigned short cursorOffset;
     struct ps2_kbd_driver *kbdDriver;
     struct vga_driver *vgaDriver;

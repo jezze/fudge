@@ -1,3 +1,4 @@
+#include <lib/memory.h>
 #include <lib/string.h>
 #include <kernel/modules.h>
 #include <modules/nodefs/nodefs.h>
@@ -14,6 +15,7 @@ static struct nodefs_node pwd;
 static unsigned int in_read(struct nodefs_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
+    char *stream = buffer;
     unsigned int i;
 
     for (i = 0; i < count; i++)
@@ -24,7 +26,7 @@ static unsigned int in_read(struct nodefs_node *self, unsigned int offset, unsig
         if (!driver.kbdDriver->buffer.getc(&driver.kbdDriver->buffer, &c))
             break;
 
-        ((char *)buffer)[i] = c;
+        stream[i] = c;
 
     }
 
@@ -35,10 +37,11 @@ static unsigned int in_read(struct nodefs_node *self, unsigned int offset, unsig
 static unsigned int out_write(struct nodefs_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
+    char *stream = buffer;
     unsigned int i;
 
     for (i = 0; i < count; i++)
-        driver.putc(&driver, ((char *)buffer)[i]);
+        driver.putc(&driver, stream[i]);
 
     driver.vgaDriver->set_cursor_offset(driver.vgaDriver, driver.cursorOffset);
 
@@ -51,7 +54,7 @@ static unsigned int cwd_read(struct nodefs_node *self, unsigned int offset, unsi
 
     count = string_length(driver.cwdname);
 
-    string_write(buffer, "%s", driver.cwdname);
+    memory_copy(buffer, driver.cwdname, count);
 
     return count;
 
@@ -60,13 +63,12 @@ static unsigned int cwd_read(struct nodefs_node *self, unsigned int offset, unsi
 static unsigned int cwd_write(struct nodefs_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    if (((char *)buffer)[string_length(buffer) - 1] != '/')
-        return 0;
+    ((char *)buffer)[count] = '\0';
 
-    if (((char *)buffer)[0] == '/')
-        string_write(driver.cwdname, "%s", buffer);
+    if (!memory_compare(buffer, "/", 1))
+        memory_copy(driver.cwdname, buffer, count + 1);
     else
-        string_write(driver.cwdname + string_length(driver.cwdname), "%s", buffer);
+        memory_copy(driver.cwdname + string_length(driver.cwdname), buffer, count + 1);
 
     return count;
 
