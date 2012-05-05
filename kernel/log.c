@@ -15,14 +15,9 @@ void log_write(const char *buffer, ...)
     if (!id)
         return;
 
-    char temp[0x100];
-    void **arg = (void **)&buffer + 1;
+    unsigned int count = string_length(buffer) + 1;
 
-    string_write(temp, buffer, *arg);
-
-    unsigned int count = string_length(temp) + 1;
-
-    filesystem->write(filesystem, id, 0, count, temp);
+    filesystem->write(filesystem, id, 0, count, (void *)buffer);
 
 }
 

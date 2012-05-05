@@ -107,7 +107,8 @@ static void interpret(char *command)
 
     }
 
-    string_write(buffer, "/ramdisk/bin/%s", argv[0]);
+    memory_copy(buffer, "/ramdisk/bin/", 13);
+    memory_copy(buffer + 13, argv[0], string_length(argv[0]) + 1);
 
     call_execute(buffer, argc, argv);
 
