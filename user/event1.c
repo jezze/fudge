@@ -3,8 +3,7 @@
 void before()
 {
 
-    file_write(FILE_STDOUT, 0, 6, "START\n");
-
+    call_write(FILE_STDOUT, 0, 6, "START\n");
     call_wait();
 
 }
@@ -12,8 +11,7 @@ void before()
 void after()
 {
 
-    file_write(FILE_STDOUT, 0, 4, "END\n");
-
+    call_write(FILE_STDOUT, 0, 4, "END\n");
     call_detach(0x90);
     call_detach(0x91);
     call_exit();

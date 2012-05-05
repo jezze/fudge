@@ -5,15 +5,15 @@ void main(int argc, char *argv[])
 
     char buffer[64];
 
-    unsigned int fd = file_open("/module/rtc/timestamp");
+    unsigned int fd = call_open("/module/rtc/timestamp");
 
     if (!fd)
         return;
 
-    unsigned int count = file_read(fd, 0, 64, buffer);
-    file_close(fd);
+    unsigned int count = call_read(fd, 0, 64, buffer);
+    call_close(fd);
 
-    file_write(FILE_STDOUT, 0, count, buffer);
+    call_write(FILE_STDOUT, 0, count, buffer);
 
 }
 

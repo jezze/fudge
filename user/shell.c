@@ -64,7 +64,7 @@ static unsigned int split(char *out[], char *in, char value)
 static void clear()
 {
 
-    file_write(FILE_STDOUT, 0, 9, "fudge:/$ ");
+    call_write(FILE_STDOUT, 0, 9, "fudge:/$ ");
     stack_clear();
 
 }
@@ -80,9 +80,9 @@ static void interpret(char *command)
 
     char buffer[256];
 
-    unsigned int fd = file_open("/module/tty/cwd");
-    unsigned int count = file_read(fd, 0, 256, buffer);
-    file_close(fd);
+    unsigned int fd = call_open("/module/tty/cwd");
+    unsigned int count = call_read(fd, 0, 256, buffer);
+    call_close(fd);
 
     unsigned int i;
 
@@ -92,7 +92,7 @@ static void interpret(char *command)
         if (argv[i][0] == '/')
         {
 
-            file_open(argv[i]);
+            call_open(argv[i]);
 
         }
 
@@ -101,7 +101,7 @@ static void interpret(char *command)
 
             memory_copy(buffer + count, argv[i], string_length(argv[i]) + 1);
 
-            file_open(buffer);
+            call_open(buffer);
 
         }
 
@@ -115,7 +115,7 @@ static void interpret(char *command)
     for (i = 1; i < argc; i++)
     {
 
-        file_close(i + 2);
+        call_close(i + 2);
 
     }
 
@@ -137,7 +137,7 @@ static void handle_input(char c)
             if (!stack_pop())
                 break;
 
-            file_write(FILE_STDOUT, 0, 3, "\b \b");
+            call_write(FILE_STDOUT, 0, 3, "\b \b");
 
             break;
 
@@ -145,7 +145,7 @@ static void handle_input(char c)
         case '\n':
 
             stack_push('\0');
-            file_write(FILE_STDOUT, 0, 1, &c);
+            call_write(FILE_STDOUT, 0, 1, &c);
             interpret(buffer);
             clear();
 
@@ -154,7 +154,7 @@ static void handle_input(char c)
         default:
 
             stack_push(c);
-            file_write(FILE_STDOUT, 0, 1, &c);
+            call_write(FILE_STDOUT, 0, 1, &c);
 
             break;
 
@@ -167,7 +167,7 @@ static void read_keyboard()
 
     char buffer[32];
 
-    unsigned int num = file_read(FILE_STDIN, 0, 32, buffer);
+    unsigned int num = call_read(FILE_STDIN, 0, 32, buffer);
     unsigned int i;
 
     for (i = 0; i < num; i++)
@@ -180,11 +180,9 @@ static void read_keyboard()
 void main(int argc, char *argv[])
 {
 
-    file_write(FILE_STDOUT, 0, 23, "Fudge operating system\n");
-    file_write(FILE_STDOUT, 0, 51, "Write `cat help.txt` for a short list if commands\n\n");
-
+    call_write(FILE_STDOUT, 0, 23, "Fudge operating system\n");
+    call_write(FILE_STDOUT, 0, 51, "Write `cat help.txt` for a short list if commands\n\n");
     clear();
-
     call_attach(0x21, read_keyboard);
     call_wait();
 

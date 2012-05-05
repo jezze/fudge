@@ -3,7 +3,6 @@ include lib/arch/${ARCH}/rules.mk
 lib: GCCFLAGS+=-Iinclude
 
 lib: lib-arch
-	@${GCC} ${GCCFLAGS} lib/file.c -o lib/file.o
 	@${GCC} ${GCCFLAGS} lib/flake.c -o lib/flake.o
 	@${GCC} ${GCCFLAGS} lib/memory.c -o lib/memory.o
 	@${GCC} ${GCCFLAGS} lib/ppm.c -o lib/ppm.o

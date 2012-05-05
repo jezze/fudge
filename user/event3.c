@@ -3,8 +3,7 @@
 void keyboard()
 {
 
-    file_write(FILE_STDOUT, 0, 4, "Key\n");
-
+    call_write(FILE_STDOUT, 0, 4, "Key\n");
     call_wait();
 
 }
@@ -12,8 +11,7 @@ void keyboard()
 void mouse()
 {
 
-    file_write(FILE_STDOUT, 0, 6, "Mouse\n");
-
+    call_write(FILE_STDOUT, 0, 6, "Mouse\n");
     call_wait();
 
 }

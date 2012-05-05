@@ -16,7 +16,7 @@ static void draw_pixel(unsigned int x, unsigned int y, unsigned int color)
 
     unsigned int offset = (y * SCREEN_WIDTH + x) * 4;
 
-    file_write(fdlfb, offset, 4, &color);
+    call_write(fdlfb, offset, 4, &color);
 
 }
 
@@ -25,7 +25,7 @@ static void draw_buffer(unsigned int x, unsigned int y, unsigned int count, void
 
     unsigned int offset = (y * SCREEN_WIDTH + x) * 4;
 
-    file_write(fdlfb, offset, count, buffer);
+    call_write(fdlfb, offset, count, buffer);
 
 }
 
@@ -69,8 +69,8 @@ static void draw_fill(unsigned int x1, unsigned int y1, unsigned int x2, unsigne
 static void draw_ppm(char *name, unsigned int x, unsigned int y)
 {
 
-    unsigned int fd = file_open(name);
-    file_read(fd, 0, 0x2000, buffer);
+    unsigned int fd = call_open(name);
+    call_read(fd, 0, 0x2000, buffer);
 
     struct ppm_header header;
 
@@ -80,7 +80,7 @@ static void draw_ppm(char *name, unsigned int x, unsigned int y)
     header.height = 20;
     unsigned int offset = 0x34;
 
-    unsigned int count = file_read(fd, offset, 0x2000, buffer);
+    unsigned int count = call_read(fd, offset, 0x2000, buffer);
 
     int cx = x;
     int cy = y;
@@ -104,34 +104,34 @@ static void draw_ppm(char *name, unsigned int x, unsigned int y)
 
     }
 
-    file_close(fd);
+    call_close(fd);
 
 }
 
 void set_xres(unsigned int xres)
 {
 
-    unsigned int fd = file_open("/module/bga/xres");
-    file_write(fd, 0, 4, &xres);
-    file_close(fd);
+    unsigned int fd = call_open("/module/bga/xres");
+    call_write(fd, 0, 4, &xres);
+    call_close(fd);
 
 }
 
 void set_yres(unsigned int yres)
 {
 
-    unsigned int fd = file_open("/module/bga/yres");
-    file_write(fd, 0, 4, &yres);
-    file_close(fd);
+    unsigned int fd = call_open("/module/bga/yres");
+    call_write(fd, 0, 4, &yres);
+    call_close(fd);
 
 }
 
 void set_bpp(unsigned int bpp)
 {
 
-    unsigned int fd = file_open("/module/bga/bpp");
-    file_write(fd, 0, 4, &bpp);
-    file_close(fd);
+    unsigned int fd = call_open("/module/bga/bpp");
+    call_write(fd, 0, 4, &bpp);
+    call_close(fd);
 
 }
 
@@ -140,9 +140,9 @@ void enable()
 
     unsigned int enable = 1;
 
-    unsigned int fd = file_open("/module/bga/enable");
-    file_write(fd, 0, 4, &enable);
-    file_close(fd);
+    unsigned int fd = call_open("/module/bga/enable");
+    call_write(fd, 0, 4, &enable);
+    call_close(fd);
 
 }
 
@@ -166,8 +166,8 @@ void mouse_event()
     char dx;
     char dy;
 
-    file_read(fdmx, 0, 1, &dx);
-    file_read(fdmy, 0, 1, &dy);
+    call_read(fdmx, 0, 1, &dx);
+    call_read(fdmy, 0, 1, &dy);
 
     set_mouse_coords(mx + (dx * 0.2), my - (dy * 0.2));
 
@@ -210,13 +210,13 @@ void draw_window(unsigned int x, unsigned int y, unsigned int w, unsigned int h)
 void main(int argc, char *argv[])
 {
 
-    fdlfb = file_open("/module/bga/lfb");
+    fdlfb = call_open("/module/bga/lfb");
 
     if (!fdlfb)
         return;
 
-    fdmx = file_open("/module/ps2/mx");
-    fdmy = file_open("/module/ps2/my");
+    fdmx = call_open("/module/ps2/mx");
+    fdmy = call_open("/module/ps2/my");
 
     set_xres(SCREEN_WIDTH);
     set_yres(SCREEN_HEIGHT);

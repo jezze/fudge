@@ -70,9 +70,9 @@ static struct arp_header *read_arp(void *data)
 void handle_network_event()
 {
 
-    unsigned int fd = file_open("/module/rtl8139/data");
-    file_read(fd, 0, 0x800, buffer);
-    file_close(fd);
+    unsigned int fd = call_open("/module/rtl8139/data");
+    call_read(fd, 0, 0x800, buffer);
+    call_close(fd);
 
     struct arp_header *header = read_arp(buffer);
 
@@ -106,12 +106,10 @@ void handle_network_event()
     memory_copy(buffer, &fheader, sizeof (struct frame_header));
     memory_copy(buffer + sizeof (struct frame_header), &aheader, sizeof (struct arp_header));
 
-    unsigned int fd2 = file_open("/module/rtl8139/data");
-    file_write(fd2, 0, sizeof (struct frame_header) + sizeof (struct arp_header), buffer);
-    file_close(fd2);
-
-    file_write(FILE_STDOUT, 0, 18, "Responding to ARP\n");
-
+    unsigned int fd2 = call_open("/module/rtl8139/data");
+    call_write(fd2, 0, sizeof (struct frame_header) + sizeof (struct arp_header), buffer);
+    call_close(fd2);
+    call_write(FILE_STDOUT, 0, 18, "Responding to ARP\n");
     call_wait();
 
 }
@@ -124,10 +122,9 @@ void main(int argc, char *argv[])
     eth0.ip[2] = 0x00;
     eth0.ip[3] = 0x05;
 
-    unsigned int fd = file_open("/module/rtl8139/mac");
-    file_read(fd, 0, 6, eth0.mac);
-    file_close(fd);
-
+    unsigned int fd = call_open("/module/rtl8139/mac");
+    call_read(fd, 0, 6, eth0.mac);
+    call_close(fd);
     call_attach(0x27, handle_network_event);
     call_wait();
 
