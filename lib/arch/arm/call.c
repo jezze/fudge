@@ -31,14 +31,14 @@ unsigned int call_execute(char *path, unsigned int argc, char **argv)
 
 }
 
-unsigned int call_load(char *path)
+unsigned int call_load(unsigned int fd)
 {
 
     return 0;
 
 }
 
-unsigned int call_unload(char *path)
+unsigned int call_unload(unsigned int fd)
 {
 
     return 0;

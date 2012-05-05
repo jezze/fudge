@@ -130,23 +130,15 @@ static unsigned int exit(struct runtime_task *task)
 
 }
 
-static unsigned int load(struct runtime_task *task, char *path)
+static unsigned int load(struct runtime_task *task, unsigned int index)
 {
 
-    if (!path)
+    struct runtime_descriptor *descriptor = task->get_descriptor(task, index);
+
+    if (!descriptor)
         return 0;
 
-    struct modules_filesystem *filesystem = modules_get_filesystem(path);
-
-    if (!filesystem)
-        return 0;
-
-    unsigned int id = filesystem->find(filesystem, path + string_length(filesystem->path));
-
-    if (!id)
-        return 0;
-
-    void *physical = filesystem->get_physical(filesystem, id);
+    void *physical = descriptor->filesystem->get_physical(descriptor->filesystem, descriptor->id);
 
     if (!physical)
         return 0;
@@ -220,23 +212,15 @@ static unsigned int reboot(struct runtime_task *task)
 
 }
 
-static unsigned int unload(struct runtime_task *task, char *path)
+static unsigned int unload(struct runtime_task *task, unsigned int index)
 {
 
-    if (!path)
+    struct runtime_descriptor *descriptor = task->get_descriptor(task, index);
+
+    if (!descriptor)
         return 0;
 
-    struct modules_filesystem *filesystem = modules_get_filesystem(path);
-
-    if (!filesystem)
-        return 0;
-
-    unsigned int id = filesystem->find(filesystem, path + string_length(filesystem->path));
-
-    if (!id)
-        return 0;
-
-    void *physical = filesystem->get_physical(filesystem, id);
+    void *physical = descriptor->filesystem->get_physical(descriptor->filesystem, descriptor->id);
 
     if (!physical)
         return 0;
@@ -333,9 +317,9 @@ static unsigned int handle_exit(struct runtime_task *task, unsigned int stack)
 static unsigned int handle_load(struct runtime_task *task, unsigned int stack)
 {
 
-    char *path = *(char **)(stack + 4);
+    unsigned int index = *(unsigned int *)(stack + 4);
 
-    return load(task, path);
+    return load(task, index);
 
 }
 
@@ -370,9 +354,9 @@ static unsigned int handle_reboot(struct runtime_task *task, unsigned int stack)
 static unsigned int handle_unload(struct runtime_task *task, unsigned int stack)
 {
 
-    char *path = *(char **)(stack + 4);
+    unsigned int index = *(unsigned int *)(stack + 4);
 
-    return unload(task, path);
+    return unload(task, index);
 
 }
 
