@@ -84,22 +84,22 @@ static void interpret(char *command)
     unsigned int count = call_read(fd, 0, 256, buffer);
     call_close(fd);
 
-    unsigned int i;
-
-    for (i = 1; i < argc; i++)
+    if (argc > 1)
     {
 
-        if (argv[i][0] == '/')
+        call_close(FILE_STDIN);
+
+        if (argv[1][0] == '/')
         {
 
-            call_open(argv[i]);
+            call_open(argv[1]);
 
         }
 
         else
         {
 
-            memory_copy(buffer + count, argv[i], string_length(argv[i]) + 1);
+            memory_copy(buffer + count, argv[1], string_length(argv[1]) + 1);
 
             call_open(buffer);
 
@@ -112,10 +112,11 @@ static void interpret(char *command)
 
     call_execute(buffer, argc, argv);
 
-    for (i = 1; i < argc; i++)
+    if (argc > 1)
     {
 
-        call_close(i + 2);
+        call_close(FILE_STDIN);
+        call_open("/module/tty/stdin");
 
     }
 

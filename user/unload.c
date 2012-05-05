@@ -3,7 +3,7 @@
 void main(int argc, char *argv[])
 {
 
-    call_unload(3);
+    call_unload(FILE_STDIN);
 
 }
 
