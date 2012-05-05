@@ -69,6 +69,26 @@ static void clear()
 
 }
 
+static unsigned int setup_stream(char *path, unsigned int index)
+{
+
+    call_close(index);
+
+    if (memory_compare(path, "/", 1))
+        return call_open(path) == index;
+
+    char buffer[256];
+
+    unsigned int fd = call_open("/module/tty/cwd");
+    unsigned int count = call_read(fd, 0, 256, buffer);
+    call_close(fd);
+
+    memory_copy(buffer + count, path, string_length(path) + 1);
+
+    return call_open(buffer) == index;
+
+}
+
 static void interpret(char *command)
 {
 
@@ -78,49 +98,22 @@ static void interpret(char *command)
     if (!argc)
         return;
 
-    char buffer[256];
-
-    unsigned int fd = call_open("/module/tty/cwd");
-    unsigned int count = call_read(fd, 0, 256, buffer);
-    call_close(fd);
-
     if (argc > 1)
-    {
+        setup_stream(argv[1], FILE_STDIN);
 
-        call_close(FILE_STDIN);
+    if (argc > 2)
+        setup_stream(argv[2], FILE_STDOUT);
 
-        if (memory_compare(argv[1], "/", 1))
-        {
-
-            call_open(argv[1]);
-
-        }
-
-        else
-        {
-
-            memory_copy(buffer + count, argv[1], string_length(argv[1]) + 1);
-
-            call_open(buffer);
-
-        }
-
-    }
-
+    char buffer[256];
     memory_copy(buffer, "/ramdisk/bin/", 13);
     memory_copy(buffer + 13, argv[0], string_length(argv[0]) + 1);
 
-    unsigned int efd = call_open(buffer);
-    call_execute(efd, argc, argv);
-    call_close(efd);
+    unsigned int fd = call_open(buffer);
+    call_execute(fd, argc, argv);
+    call_close(fd);
 
-    if (argc > 1)
-    {
-
-        call_close(FILE_STDIN);
-        call_open("/module/tty/stdin");
-
-    }
+    setup_stream("/module/tty/stdin", FILE_STDIN);
+    setup_stream("/module/tty/stdout", FILE_STDOUT);
 
 }
 
@@ -183,13 +176,14 @@ static void read_keyboard()
 void main(int argc, char *argv[])
 {
 
-    call_close(FILE_STDIN);
-    call_close(FILE_STDOUT);
-    call_open("/module/tty/stdin");
-    call_open("/module/tty/stdout");
+    setup_stream("/module/tty/stdin", FILE_STDIN);
+    setup_stream("/module/tty/stdout", FILE_STDOUT);
+
     call_write(FILE_STDOUT, 0, 23, "Fudge operating system\n");
     call_write(FILE_STDOUT, 0, 51, "Write `cat help.txt` for a short list if commands\n\n");
+
     clear();
+
     call_attach(0x21, read_keyboard);
     call_wait();
 
