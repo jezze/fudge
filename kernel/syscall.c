@@ -69,27 +69,15 @@ static unsigned int execute(struct runtime_task *task, char *path, unsigned int 
     if (!id)
         return 0;
 
-    unsigned int index = runtime_get_task_slot();
+    unsigned int slot = runtime_get_task_slot();
 
-    if (!index)
+    if (!slot)
         return 0;
 
-    struct runtime_task *ntask = runtime_get_task(index);
+    struct runtime_task *ntask = runtime_get_task(slot);
 
-    if (task)
-    {
-
-        runtime_task_clone(ntask, task, index);
-        ntask->parentid = task->id;
-
-    }
-
-    else
-    {
-
-        runtime_task_init(ntask, index);
-
-    }
+    runtime_task_clone(ntask, task, slot);
+    ntask->parentid = task->id;
 
     unsigned int count = filesystem->read(filesystem, id, 0, ntask->memory.size, (void *)ntask->memory.paddress);
 
@@ -405,7 +393,12 @@ unsigned int syscall_raise(unsigned int index, struct runtime_task *task)
 struct runtime_task *syscall_execute(char *path)
 {
 
-    unsigned int index = execute(0, path, 0, 0);
+    unsigned int slot = runtime_get_task_slot();
+    struct runtime_task *task = runtime_get_task(slot);
+
+    runtime_task_init(task, slot);
+
+    unsigned int index = execute(task, path, 0, 0);
 
     if (!index)
         return 0;
