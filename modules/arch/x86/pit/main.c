@@ -1,4 +1,4 @@
-#include <lib/string.h>
+#include <lib/memory.h>
 #include <kernel/modules.h>
 #include <modules/nodefs/nodefs.h>
 #include <modules/pit/pit.h>
@@ -10,9 +10,9 @@ static struct nodefs_node jiffies;
 static unsigned int jiffies_read(struct nodefs_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    string_write(buffer, "%d", device.jiffies);
+    memory_copy(buffer, &device.jiffies, 4);
 
-    return string_length(buffer);
+    return 4;
 
 }
 

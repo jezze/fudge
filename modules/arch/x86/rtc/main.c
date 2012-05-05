@@ -1,4 +1,4 @@
-#include <lib/string.h>
+#include <lib/memory.h>
 #include <kernel/modules.h>
 #include <modules/nodefs/nodefs.h>
 #include <modules/rtc/rtc.h>
@@ -9,9 +9,9 @@ static struct nodefs_node timestamp;
 static unsigned int timestamp_read(struct nodefs_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    string_write(buffer, "%d", 0);
+    memory_copy(buffer, 0, 0);
 
-    return string_length(buffer);
+    return 0;
 
 }
 

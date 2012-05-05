@@ -66,14 +66,14 @@ unsigned int string_read_num(const char *in, unsigned int base)
 
 }
 
-static char *string_write_string(char *out, const char *in)
+char *string_write_string(char *out, const char *in)
 {
 
     return memory_copy(out, in, string_length(in) + 1);
 
 }
 
-static char *string_write_num(char *out, unsigned int num, unsigned int base)
+char *string_write_num(char *out, unsigned int num, unsigned int base)
 {
 
     if (!num)
