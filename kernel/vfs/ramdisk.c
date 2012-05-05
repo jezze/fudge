@@ -39,7 +39,8 @@ static unsigned int read(struct modules_filesystem *self, unsigned int id, unsig
             if (slash != size && slash != size - 1)
                 continue;
 
-            string_write(in + length, "%s\n", start);
+            memory_copy(in + length, start, size);
+            memory_copy(in + length + size, "\n", 2);
             length += string_length(in + length);
 
         }

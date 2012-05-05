@@ -22,7 +22,7 @@ static unsigned int read(struct modules_filesystem *self, unsigned int id, unsig
         if (task->used)
         {
 
-            string_write(out + off, "%d/\n", i);
+            //string_write(out + off, "%d/\n", i);
             off += string_length(out + off);
 
         }

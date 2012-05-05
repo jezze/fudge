@@ -66,18 +66,11 @@ unsigned int string_read_num(const char *in, unsigned int base)
 
 }
 
-char *string_write_string(char *out, const char *in)
-{
-
-    return memory_copy(out, in, string_length(in) + 1);
-
-}
-
 char *string_write_num(char *out, unsigned int num, unsigned int base)
 {
 
     if (!num)
-        return string_write_string(out, "0");
+        return memory_copy(out, "0", 2);
 
     char buffer[32];
     memory_clear(buffer, 32);
@@ -87,77 +80,7 @@ char *string_write_num(char *out, unsigned int num, unsigned int base)
     for (i = 30; num && i; --i, num /= base)
         buffer[i] = "0123456789abcdef"[num % base];
 
-    return string_write_string(out, buffer + i + 1);
-
-}
-
-char *string_write(char *out, const char *in, ...)
-{
-
-    char *ret = out;
-    char **arg = (char **)&in;
-    arg++;
-
-    char num[32];
-    char c;
-
-    while ((c = *in++))
-    {
-
-        if (c != '%')
-        {
-
-            memory_copy(out, &c, 1);
-            out += 1;
-
-            continue;
-
-        }
-
-        c = *in++;
-
-        switch (c)
-        {
-
-            case 'c':
-
-                memory_copy(out, arg, 1);
-                out += 1;
-
-                break;
-
-            case 'd':
-
-                string_write_num(num, *(int *)arg, 10);
-                string_write_string(out, num);
-                out += string_length(num);
-
-                break;
-
-            case 's':
-
-                string_write_string(out, *(char **)arg);
-                out += string_length(*(char **)arg);
-
-                break;
-
-            case 'x':
-
-                string_write_num(num, *(int *)arg, 16);
-                string_write_string(out, num);
-                out += string_length(num);
-
-                break;
-
-        }
-
-        arg++;
-
-    }
-
-    *(out) = '\0';
-
-    return ret;
+    return memory_copy(out, buffer + i + 1, string_length(buffer) + 1);
 
 }
 

@@ -30,7 +30,10 @@ static unsigned int read(struct modules_filesystem *self, unsigned int id, unsig
         if (&module->filesystem == self)
             continue;
 
-        string_write(in + length, "%s\n", module->filesystem.path + 1);
+        unsigned int size = string_length(module->filesystem.path) - 1;
+
+        memory_copy(in + length, module->filesystem.path + 1, size);
+        memory_copy(in + length + size, "\n", 2);
         length += string_length(in + length);
 
     }
