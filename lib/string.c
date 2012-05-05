@@ -66,35 +66,6 @@ unsigned int string_read_num(const char *in, unsigned int base)
 
 }
 
-unsigned int string_split(char *out[], char *in, char value)
-{
-
-    if (in[0] == '\0')
-        return 0;
-
-    unsigned int count = 1;
-    out[0] = in;
-
-    unsigned int i;
-
-    for (i = 1; in[i] != '\0'; i++)
-    {
-
-        if (in[i - 1] == value)
-        {
-
-            in[i - 1] = '\0';
-            out[count] = in + i;
-            count++;
-
-        }
-
-    }
-
-    return count;
-
-}
-
 static char *string_write_string(char *out, const char *in)
 {
 

@@ -32,6 +32,35 @@ static void stack_clear()
 
 }
 
+static unsigned int split(char *out[], char *in, char value)
+{
+
+    if (in[0] == '\0')
+        return 0;
+
+    unsigned int count = 1;
+    out[0] = in;
+
+    unsigned int i;
+
+    for (i = 1; in[i] != '\0'; i++)
+    {
+
+        if (in[i - 1] == value)
+        {
+
+            in[i - 1] = '\0';
+            out[count] = in + i;
+            count++;
+
+        }
+
+    }
+
+    return count;
+
+}
+
 static void clear()
 {
 
@@ -44,7 +73,7 @@ static void interpret(char *command)
 {
 
     char *argv[32];
-    unsigned int argc = string_split(argv, command, ' ');
+    unsigned int argc = split(argv, command, ' ');
 
     if (!argc)
         return;
