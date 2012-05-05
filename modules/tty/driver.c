@@ -95,12 +95,12 @@ void tty_driver_init(struct tty_driver *driver, struct ps2_kbd_driver *kbdDriver
 
     modules_driver_init(&driver->base, TTY_DRIVER_TYPE, "tty", start, 0, 0);
 
+    memory_copy(driver->cwdname, cwdname, string_length(cwdname) + 1);
     driver->kbdDriver = kbdDriver;
     driver->vgaDriver = vgaDriver;
     driver->clear = clear;
     driver->scroll = scroll;
     driver->putc = putc;
-    string_write(driver->cwdname, "%s", cwdname);
 
 }
 
