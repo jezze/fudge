@@ -12,17 +12,14 @@ static unsigned int read(struct modules_filesystem *self, unsigned int id, unsig
     if (id == 1)
     {
 
-        memory_copy(buffer, "./\n../\nall/\nbus/\ndevice/\ndriver/\n", 33);
+        memory_copy(buffer, "all/\nbus/\ndevice/\ndriver/\n", 26);
 
-        return 33;
+        return 26;
 
     }
 
     char *out = buffer;
-
-    memory_copy(out, "./\n../\n", 8);
-
-    unsigned int length = 7;
+    unsigned int length = 0;
     unsigned int i;
 
     for (i = 0; i < MODULES_MODULE_SLOTS; i++)

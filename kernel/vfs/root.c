@@ -9,14 +9,8 @@ static struct modules_filesystem filesystem;
 static unsigned int read(struct modules_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    if (id != 1)
-        return 0;
-
     char *out = buffer;
-
-    memory_copy(out, "./\n../\n", 8);
-
-    unsigned int length = 7;
+    unsigned int length = 0;
     unsigned int i;
 
     for (i = 0; i < MODULES_MODULE_SLOTS; i++)

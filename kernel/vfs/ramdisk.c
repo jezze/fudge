@@ -18,10 +18,7 @@ static unsigned int read(struct modules_filesystem *self, unsigned int id, unsig
     {
 
         char *out = buffer;
-
-        memory_copy(out, "./\n../\n", 8);
-
-        unsigned int length = 7;
+        unsigned int length = 0;
         unsigned int i;
 
         for (i = 0; i < nodesCount; i++)

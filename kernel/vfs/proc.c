@@ -10,8 +10,8 @@ static struct modules_filesystem filesystem;
 static unsigned int read(struct modules_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    char *out = buffer;
-    unsigned int off = 0;
+    //char *out = buffer;
+    unsigned int length = 0;
     unsigned int i;
 
     for (i = 1; i < RUNTIME_TASK_SLOTS - 1; i++)
@@ -23,13 +23,13 @@ static unsigned int read(struct modules_filesystem *self, unsigned int id, unsig
         {
 
             //string_write(out + off, "%d/\n", i);
-            off += string_length(out + off);
+            length += 0;
 
         }
 
     }
 
-    return off;
+    return length;
 
 }
 

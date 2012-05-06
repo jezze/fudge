@@ -17,12 +17,11 @@ static unsigned int read(struct modules_filesystem *self, unsigned int id, unsig
     filesystem->driver->read_node(filesystem->device, id, &bg, &node);
     filesystem->driver->read_content(filesystem->device, &node, private);
 
-    char *in = buffer;
-
     if ((node.type & 0xF000) == EXT2_NODE_TYPE_DIR)
     {
 
-        unsigned int c = 0;
+        char *out = buffer;
+        unsigned int length = 0;
 
         for (;;)
         {
@@ -30,23 +29,23 @@ static unsigned int read(struct modules_filesystem *self, unsigned int id, unsig
             struct ext2_entry *entry = (struct ext2_entry *)private;
 
             if (!entry->length)
-                return c;
+                return length;
 
-            memory_copy(in + c, private + 8, entry->length);
+            memory_copy(out + length, private + 8, entry->length);
 
             if (entry->type == 2)
             {
 
-                memory_copy(in + c + entry->length, "/\n", 2);
-                c += entry->length + 2;
+                memory_copy(out + length + entry->length, "/\n", 2);
+                length += entry->length + 2;
 
             }
 
             else
             {
 
-                memory_copy(in + c + entry->length, "\n", 1);
-                c += entry->length + 1;
+                memory_copy(out + length + entry->length, "\n", 1);
+                length += entry->length + 1;
 
             }
 
@@ -54,14 +53,14 @@ static unsigned int read(struct modules_filesystem *self, unsigned int id, unsig
 
         }
 
-        return c;
+        return length;
 
     }
 
     if ((node.type & 0xF000) == EXT2_NODE_TYPE_REGULAR)
     {
 
-        memory_copy(in, private, node.sizeLow);
+        memory_copy(buffer, private, node.sizeLow);
 
         return node.sizeLow;
 
