@@ -22,16 +22,7 @@ unsigned int symbol_find(char *name)
         char *description = symbolBuffer + start + 11;
 
         if (memory_compare(name, description, string_length(name)))
-        {
-
-            char num[16];
-
-            memory_clear(num, 16);
-            memory_copy(num, address, 8);
-
-            return string_read_num(num, 16);
-
-        }
+            return string_read_num(address, 16);
 
         start = i + 1;
 
