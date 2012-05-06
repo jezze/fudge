@@ -72,10 +72,8 @@ static void clear()
 static unsigned int setup_stream(char *path, unsigned int index)
 {
 
-    call_close(index);
-
     if (memory_compare(path, "/", 1))
-        return call_open(FILE_NEW, path) == index;
+        return call_open(index, path);
 
     char buffer[256];
 
@@ -85,7 +83,7 @@ static unsigned int setup_stream(char *path, unsigned int index)
 
     memory_copy(buffer + count, path, string_length(path) + 1);
 
-    return call_open(FILE_NEW, buffer) == index;
+    return call_open(index, buffer);
 
 }
 
