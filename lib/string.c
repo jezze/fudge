@@ -18,14 +18,12 @@ unsigned int string_read_num(const char *in, unsigned int base)
     const char *ip = in;
     int num = 0;
 
-    while ((*ip >= '0' && *ip <= '9') || (base > 10 && (*ip >= 'a' && *ip <= 'f')))
+    for (ip = in; (*ip >= '0' && *ip <= '9') || (base > 10 && (*ip >= 'a' && *ip <= 'f')); ip++)
     {
 
         unsigned int offset = (*ip > '9') ? *ip - 'a' + 10 : *ip - '0';
 
         num = num * base + offset;
-
-        ip++;
 
     }
 
