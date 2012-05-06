@@ -4,19 +4,37 @@
 #include <kernel/symbol.h>
 #include <kernel/modules.h>
 
-static struct symbol_entry entries[SYMBOL_ENTRY_SLOTS];
 static char buffer[SYMBOL_BUFFER_SIZE];
+static unsigned int bufferCount;
 
 unsigned int symbol_find(char *name)
 {
 
+    unsigned int start = 0;
     unsigned int i;
 
-    for (i = 0; i < SYMBOL_ENTRY_SLOTS; i++)
+    for (i = 0; i < bufferCount; i++)
     {
 
-        if (memory_compare(entries[i].name, name, string_length(entries[i].name)))
-            return entries[i].paddress;
+        if (buffer[i] != '\n')
+            continue;
+
+        char *address = buffer + start;
+        char *description = buffer + start + 11;
+
+        if (memory_compare(name, description, string_length(name)))
+        {
+
+            char num[16];
+
+            memory_clear(num, 16);
+            memory_copy(num, address, 8);
+
+            return string_read_num(num, 16);
+
+        }
+
+        start = i + 1;
 
     }
 
@@ -35,45 +53,9 @@ void symbol_init()
 
     error_assert(id != 0, "Symbol table not found", __FILE__, __LINE__);
 
-    unsigned int count = filesystem->read(filesystem, id, 0, SYMBOL_BUFFER_SIZE, buffer);
+    bufferCount = filesystem->read(filesystem, id, 0, SYMBOL_BUFFER_SIZE, buffer);
 
-    error_assert(count != 0, "Symbol table not found", __FILE__, __LINE__);
-
-    unsigned int i;
-    unsigned int start = 0;
-    unsigned int index = 0;
-
-    for (i = 0; i < count; i++)
-    {
-
-        switch (buffer[i])
-        {
-
-            case ' ':
-
-                buffer[i] = '\0';
-
-                break;
-
-            case '\n':
-
-                buffer[i] = '\0';
-
-                char *address = buffer + start;
-                char *name = buffer + start + 11;
-
-                memory_copy(entries[index].name, name, string_length(name) + 1);
-                entries[index].paddress = string_read_num(address, 16);
-
-                index++;
-
-                start = i + 1;
-
-                break;
-
-        }
-
-    }
+    error_assert(bufferCount != 0, "Symbol table not found", __FILE__, __LINE__);
 
 }
 
