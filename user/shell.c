@@ -75,17 +75,17 @@ static unsigned int setup_stream(char *path, unsigned int index)
     call_close(index);
 
     if (memory_compare(path, "/", 1))
-        return call_open(path) == index;
+        return call_open(FILE_NEW, path) == index;
 
     char buffer[256];
 
-    unsigned int id = call_open("/module/tty/cwd");
+    unsigned int id = call_open(FILE_NEW, "/module/tty/cwd");
     unsigned int count = call_read(id, 0, 256, buffer);
     call_close(id);
 
     memory_copy(buffer + count, path, string_length(path) + 1);
 
-    return call_open(buffer) == index;
+    return call_open(FILE_NEW, buffer) == index;
 
 }
 
@@ -108,7 +108,7 @@ static void interpret(char *command)
     memory_copy(buffer, "/ramdisk/bin/", 13);
     memory_copy(buffer + 13, argv[0], string_length(argv[0]) + 1);
 
-    unsigned int id = call_open(buffer);
+    unsigned int id = call_open(FILE_NEW, buffer);
     call_execute(id, argc, argv);
     call_close(id);
 

@@ -7,7 +7,7 @@ void main(int argc, char *argv[])
 
     char buffer[BUFFER_SIZE];
 
-    unsigned int id = call_open("/module/pit/jiffies");
+    unsigned int id = call_open(FILE_NEW, "/module/pit/jiffies");
 
     if (!id)
         return;

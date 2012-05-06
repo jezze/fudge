@@ -44,7 +44,7 @@ unsigned int symbol_find(char *name)
 void main(int argc, char *argv[])
 {
 
-    unsigned int id = call_open("/ramdisk/boot/fudge.map");
+    unsigned int id = call_open(FILE_NEW, "/ramdisk/boot/fudge.map");
     symbolCount = call_read(id, 0, 0x1000, symbolBuffer);
     call_close(id);
 

@@ -137,13 +137,13 @@ static unsigned int load(struct runtime_task *task, unsigned int index)
 
 }
 
-static unsigned int open(struct runtime_task *task, char *path)
+static unsigned int open(struct runtime_task *task, unsigned int index, char *path)
 {
 
     if (!path)
         return 0;
 
-    unsigned int slot = task->get_descriptor_slot(task);
+    unsigned int slot = (index) ? index : task->get_descriptor_slot(task);
 
     if (!slot)
         return 0;
@@ -307,9 +307,10 @@ static unsigned int handle_load(struct runtime_task *task, unsigned int stack)
 static unsigned int handle_open(struct runtime_task *task, unsigned int stack)
 {
 
-    char *path = *(char **)(stack + 4);
+    unsigned int index = *(unsigned int *)(stack + 4);
+    char *path = *(char **)(stack + 8);
 
-    return open(task, path);
+    return open(task, index, path);
 
 }
 
@@ -390,7 +391,7 @@ struct runtime_task *syscall_execute(char *path)
     struct runtime_task *task = runtime_get_task(slot);
 
     runtime_task_init(task, slot);
-    unsigned int id = open(task, path);
+    unsigned int id = open(task, 0, path);
 
     unsigned int index = execute(task, id, 0, 0);
 

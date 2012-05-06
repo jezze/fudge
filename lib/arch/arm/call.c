@@ -1,4 +1,4 @@
-unsigned int call_open(char *path)
+unsigned int call_open(unsigned int id, char *path)
 {
 
     return 0;

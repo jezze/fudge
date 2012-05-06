@@ -69,7 +69,7 @@ static void draw_fill(unsigned int x1, unsigned int y1, unsigned int x2, unsigne
 static void draw_ppm(char *name, unsigned int x, unsigned int y)
 {
 
-    unsigned int id = call_open(name);
+    unsigned int id = call_open(FILE_NEW, name);
     call_read(id, 0, 0x2000, buffer);
 
     struct ppm_header header;
@@ -111,7 +111,7 @@ static void draw_ppm(char *name, unsigned int x, unsigned int y)
 void set_xres(unsigned int xres)
 {
 
-    unsigned int id = call_open("/module/bga/xres");
+    unsigned int id = call_open(FILE_NEW, "/module/bga/xres");
     call_write(id, 0, 4, &xres);
     call_close(id);
 
@@ -120,7 +120,7 @@ void set_xres(unsigned int xres)
 void set_yres(unsigned int yres)
 {
 
-    unsigned int id = call_open("/module/bga/yres");
+    unsigned int id = call_open(FILE_NEW, "/module/bga/yres");
     call_write(id, 0, 4, &yres);
     call_close(id);
 
@@ -129,7 +129,7 @@ void set_yres(unsigned int yres)
 void set_bpp(unsigned int bpp)
 {
 
-    unsigned int id = call_open("/module/bga/bpp");
+    unsigned int id = call_open(FILE_NEW, "/module/bga/bpp");
     call_write(id, 0, 4, &bpp);
     call_close(id);
 
@@ -140,7 +140,7 @@ void enable()
 
     unsigned int enable = 1;
 
-    unsigned int id = call_open("/module/bga/enable");
+    unsigned int id = call_open(FILE_NEW, "/module/bga/enable");
     call_write(id, 0, 4, &enable);
     call_close(id);
 
@@ -210,13 +210,13 @@ void draw_window(unsigned int x, unsigned int y, unsigned int w, unsigned int h)
 void main(int argc, char *argv[])
 {
 
-    idlfb = call_open("/module/bga/lfb");
+    idlfb = call_open(FILE_NEW, "/module/bga/lfb");
 
     if (!idlfb)
         return;
 
-    idmx = call_open("/module/ps2/mx");
-    idmy = call_open("/module/ps2/my");
+    idmx = call_open(FILE_NEW, "/module/ps2/mx");
+    idmy = call_open(FILE_NEW, "/module/ps2/my");
 
     set_xres(SCREEN_WIDTH);
     set_yres(SCREEN_HEIGHT);

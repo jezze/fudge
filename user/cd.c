@@ -7,7 +7,7 @@ void main(int argc, char *argv[])
 
     char buffer[BUFFER_SIZE];
 
-    unsigned int id = call_open("/module/tty/cwd");
+    unsigned int id = call_open(FILE_NEW, "/module/tty/cwd");
 
     if (argc == 1)
     {
