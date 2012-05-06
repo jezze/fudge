@@ -138,5 +138,11 @@ struct elf_relocatea
 
 };
 
+unsigned int elf_get_entry(void *address);
+unsigned int elf_get_virtual(void *address);
+unsigned int elf_get_symbol(void *address, char *name);
+void elf_prepare(void *address);
+void elf_relocate(void *address, unsigned int (*get_symbol)(char *name));
+
 #endif
 

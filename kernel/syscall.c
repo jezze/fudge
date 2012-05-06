@@ -1,6 +1,6 @@
+#include <lib/elf.h>
 #include <lib/memory.h>
 #include <lib/string.h>
-#include <kernel/elf.h>
 #include <kernel/event.h>
 #include <kernel/kernel.h>
 #include <kernel/modules.h>

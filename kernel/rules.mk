@@ -5,7 +5,6 @@ kernel: GCCFLAGS+=-Iinclude
 kernel: LDFLAGS+=-Tkernel/arch/${ARCH}/linker.ld
 
 kernel: kernel-arch vfs
-	@${GCC} ${GCCFLAGS} kernel/elf.c -o kernel/elf.o
 	@${GCC} ${GCCFLAGS} kernel/error.c -o kernel/error.o
 	@${GCC} ${GCCFLAGS} kernel/event.c -o kernel/event.o
 	@${GCC} ${GCCFLAGS} kernel/ramdisk.c -o kernel/ramdisk.o
