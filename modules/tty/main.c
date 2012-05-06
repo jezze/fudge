@@ -21,12 +21,26 @@ static unsigned int in_read(struct nodefs_node *self, unsigned int offset, unsig
     for (i = 0; i < count; i++)
     {
 
-        char c;
-
-        if (!driver.kbdDriver->buffer.getc(&driver.kbdDriver->buffer, &c))
+        if (!driver.kbdDriver->buffer.getc(&driver.kbdDriver->buffer, stream + i))
             break;
 
-        stream[i] = c;
+    }
+
+    return i;
+
+}
+
+static unsigned int in_write(struct nodefs_node *self, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    char *stream = buffer;
+    unsigned int i;
+
+    for (i = 0; i < count; i++)
+    {
+
+        if (!driver.kbdDriver->buffer.putc(&driver.kbdDriver->buffer, stream + i))
+            break;
 
     }
 
@@ -112,7 +126,7 @@ void init()
     if (!nodefsDriver)
         return;
 
-    nodefsDriver->register_node(nodefsDriver, &in, "tty/stdin", &driver.base.base, in_read, 0);
+    nodefsDriver->register_node(nodefsDriver, &in, "tty/stdin", &driver.base.base, in_read, in_write);
     nodefsDriver->register_node(nodefsDriver, &out, "tty/stdout", &driver.base.base, 0, out_write);
     nodefsDriver->register_node(nodefsDriver, &cwd, "tty/cwd", &driver.base.base, cwd_read, cwd_write);
     nodefsDriver->register_node(nodefsDriver, &pwd, "tty/pwd", &driver.base.base, pwd_read, 0);
