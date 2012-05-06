@@ -68,6 +68,28 @@ static unsigned int read(struct modules_filesystem *self, unsigned int id, unsig
 
 }
 
+static unsigned int write(struct modules_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    struct ramdisk_node *node = &nodes[id - 1];
+
+    if (node->header->typeflag[0] == TAR_FILETYPE_DIR)
+        return 0;
+
+    if (offset > node->size)
+        return 0;
+
+    unsigned int c = node->size - offset;
+
+    if (c > count)
+        c = count;
+
+    memory_copy((char *)node->data + offset, buffer, c);
+
+    return c;
+
+}
+
 static unsigned int find(struct modules_filesystem *self, char *name)
 {
 
@@ -108,7 +130,7 @@ void vfs_ramdisk_init(struct ramdisk_node *n, unsigned int c)
     nodes = n;
     nodesCount = c;
 
-    modules_filesystem_init(&filesystem, 0x0001, "ramdisk", 0, 0, read, 0, find, get_physical);
+    modules_filesystem_init(&filesystem, 0x0001, "ramdisk", 0, 0, read, write, find, get_physical);
     modules_register_filesystem(&filesystem);
     filesystem.path = "/ramdisk/";
 
