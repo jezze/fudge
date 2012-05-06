@@ -5,7 +5,7 @@ SECTIONS
 
     . = 0x00100000;
 
-    .text :
+    .text ALIGN (0x1000) :
     {
         *(.mboot)
         *(.text)
@@ -13,8 +13,12 @@ SECTIONS
 
     .data ALIGN (0x1000) :
     {
+        *(.rodata*)
         *(.data)
-        *(.rodata)
+    }
+
+    .bss :
+    {
         *(.bss)
     }
 
