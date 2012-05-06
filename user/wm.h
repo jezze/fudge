@@ -14,5 +14,15 @@
 #define PANEL_BORDER_DARK           0x00C6B6B0
 #define PANEL_BORDER_LIGHT          0x00F6E6E0
 
+struct ppm_header
+{
+
+    char sign[2];
+    unsigned int width;
+    unsigned int height;
+    char *data;
+
+};
+
 #endif
 
