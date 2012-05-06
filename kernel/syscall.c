@@ -389,9 +389,9 @@ struct runtime_task *syscall_execute(char *path)
     struct runtime_task *task = runtime_get_task(slot);
 
     runtime_task_init(task, slot);
-    unsigned int fd = open(task, path);
+    unsigned int id = open(task, path);
 
-    unsigned int index = execute(task, fd, 0, 0);
+    unsigned int index = execute(task, id, 0, 0);
 
     if (!index)
         return 0;

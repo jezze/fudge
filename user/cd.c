@@ -7,12 +7,12 @@ void main(int argc, char *argv[])
 
     char buffer[BUFFER_SIZE];
 
-    unsigned int fd = call_open("/module/tty/cwd");
+    unsigned int id = call_open("/module/tty/cwd");
 
     if (argc == 1)
     {
 
-        unsigned int count = call_read(fd, 0, BUFFER_SIZE, buffer);
+        unsigned int count = call_read(id, 0, BUFFER_SIZE, buffer);
         call_write(FILE_STDOUT, 0, count, buffer);
         call_write(FILE_STDOUT, 0, 1, "\n");
 
@@ -21,12 +21,12 @@ void main(int argc, char *argv[])
     if (argc == 2)
     {
 
-        call_write(fd, 0, string_length(argv[1]), argv[1]);
+        call_write(id, 0, string_length(argv[1]), argv[1]);
 
 
     }
 
-    call_close(fd);
+    call_close(id);
 
 }
 

@@ -5,40 +5,40 @@ unsigned int call_open(char *path)
 
 }
 
-void call_close(unsigned int fd)
+void call_close(unsigned int id)
 {
 
 }
 
-unsigned int call_read(unsigned int fd, unsigned int offset, unsigned int count, void *buffer)
-{
-
-    return 0;
-
-}
-
-unsigned int call_write(unsigned int fd, unsigned int offset, unsigned int count, void *buffer)
+unsigned int call_read(unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     return 0;
 
 }
 
-unsigned int call_execute(unsigned int fd, unsigned int argc, char **argv)
+unsigned int call_write(unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     return 0;
 
 }
 
-unsigned int call_load(unsigned int fd)
+unsigned int call_execute(unsigned int id, unsigned int argc, char **argv)
 {
 
     return 0;
 
 }
 
-unsigned int call_unload(unsigned int fd)
+unsigned int call_load(unsigned int id)
+{
+
+    return 0;
+
+}
+
+unsigned int call_unload(unsigned int id)
 {
 
     return 0;
@@ -59,14 +59,14 @@ unsigned int call_wait()
 
 }
 
-unsigned int call_attach(int index, void (*routine)())
+unsigned int call_attach(unsigned int id, void (*routine)())
 {
 
     return 0;
 
 }
 
-unsigned int call_detach(int index)
+unsigned int call_detach(unsigned int id)
 {
 
     return 0;
@@ -77,6 +77,7 @@ void call_halt()
 {
 
 }
+
 
 void call_reboot()
 {

@@ -79,9 +79,9 @@ static unsigned int setup_stream(char *path, unsigned int index)
 
     char buffer[256];
 
-    unsigned int fd = call_open("/module/tty/cwd");
-    unsigned int count = call_read(fd, 0, 256, buffer);
-    call_close(fd);
+    unsigned int id = call_open("/module/tty/cwd");
+    unsigned int count = call_read(id, 0, 256, buffer);
+    call_close(id);
 
     memory_copy(buffer + count, path, string_length(path) + 1);
 
@@ -108,9 +108,9 @@ static void interpret(char *command)
     memory_copy(buffer, "/ramdisk/bin/", 13);
     memory_copy(buffer + 13, argv[0], string_length(argv[0]) + 1);
 
-    unsigned int fd = call_open(buffer);
-    call_execute(fd, argc, argv);
-    call_close(fd);
+    unsigned int id = call_open(buffer);
+    call_execute(id, argc, argv);
+    call_close(id);
 
     setup_stream("/module/tty/stdin", FILE_STDIN);
     setup_stream("/module/tty/stdout", FILE_STDOUT);
