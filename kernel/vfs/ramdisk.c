@@ -12,13 +12,14 @@ static struct modules_filesystem filesystem;
 static unsigned int read(struct modules_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    char *in = buffer;
     struct ramdisk_node *node = &nodes[id - 1];
 
     if (node->header->typeflag[0] == TAR_FILETYPE_DIR)
     {
 
-        memory_copy(in, "./\n../\n", 8);
+        char *out = buffer;
+
+        memory_copy(out, "./\n../\n", 8);
 
         unsigned int length = 7;
         unsigned int i;
@@ -39,9 +40,9 @@ static unsigned int read(struct modules_filesystem *self, unsigned int id, unsig
             if (slash && slash < start + size)
                 continue;
 
-            memory_copy(in + length, start, size);
-            memory_copy(in + length + size, "\n", 2);
-            length += string_length(in + length);
+            memory_copy(out + length, start, size);
+            memory_copy(out + length + size, "\n", 1);
+            length += size + 1;
 
         }
 
@@ -60,7 +61,7 @@ static unsigned int read(struct modules_filesystem *self, unsigned int id, unsig
         if (c > count)
             c = count;
 
-        memory_copy(in, (char *)node->data + offset, c);
+        memory_copy(buffer, (char *)node->data + offset, c);
 
         return c;
 

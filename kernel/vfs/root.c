@@ -12,9 +12,9 @@ static unsigned int read(struct modules_filesystem *self, unsigned int id, unsig
     if (id != 1)
         return 0;
 
-    char *in = buffer;
+    char *out = buffer;
 
-    memory_copy(in, "./\n../\n", 8);
+    memory_copy(out, "./\n../\n", 8);
 
     unsigned int length = 7;
     unsigned int i;
@@ -32,9 +32,9 @@ static unsigned int read(struct modules_filesystem *self, unsigned int id, unsig
 
         unsigned int size = string_length(module->filesystem.path) - 1;
 
-        memory_copy(in + length, module->filesystem.path + 1, size);
-        memory_copy(in + length + size, "\n", 2);
-        length += string_length(in + length);
+        memory_copy(out + length, module->filesystem.path + 1, size);
+        memory_copy(out + length + size, "\n", 1);
+        length += size + 1;
 
     }
 

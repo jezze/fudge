@@ -11,7 +11,7 @@ static unsigned int filesystem_read(struct modules_filesystem *self, unsigned in
     if (id == 1)
     {
 
-        char *in = buffer;
+        char *out = buffer;
         unsigned int length = 0;
         unsigned int i;
 
@@ -20,9 +20,9 @@ static unsigned int filesystem_read(struct modules_filesystem *self, unsigned in
 
             unsigned int size = string_length(filesystem->nodes[i]->name);
 
-            memory_copy(in + length, filesystem->nodes[i]->name, size);
-            memory_copy(in + length + size, "\n", 2);
-            length += string_length(in + length);
+            memory_copy(out + length, filesystem->nodes[i]->name, size);
+            memory_copy(out + length + size, "\n", 1);
+            length += size + 1;
 
         }
 
