@@ -11,21 +11,22 @@ static unsigned int filesystem_read(struct modules_filesystem *self, unsigned in
     if (id == 1)
     {
 
-        char *offset = buffer;
+        char *in = buffer;
+        unsigned int length = 0;
         unsigned int i;
 
         for (i = 0; i < filesystem->count; i++)
         {
 
-            unsigned int length = string_length(filesystem->nodes[i]->name);
+            unsigned int size = string_length(filesystem->nodes[i]->name);
 
-            memory_copy(offset, filesystem->nodes[i]->name, length);
-            memory_copy(offset + length, "\n", 1);
-            offset += length + 1;
+            memory_copy(in + length, filesystem->nodes[i]->name, size);
+            memory_copy(in + length + size, "\n", 2);
+            length += string_length(in + length);
 
         }
 
-        return string_length(buffer);
+        return length;
 
     }
 
