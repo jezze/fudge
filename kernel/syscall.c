@@ -5,6 +5,7 @@
 #include <kernel/kernel.h>
 #include <kernel/modules.h>
 #include <kernel/runtime.h>
+#include <kernel/symbol.h>
 #include <kernel/syscall.h>
 
 static unsigned int (*routines[SYSCALL_ROUTINE_SLOTS])(struct runtime_task *task, unsigned int stack);
@@ -123,7 +124,7 @@ static unsigned int load(struct runtime_task *task, unsigned int index)
     if (!physical)
         return 0;
 
-    elf_relocate(physical);
+    elf_relocate(physical, symbol_find);
 
     void (*init)() = (void (*)())elf_get_symbol(physical, "init");
 

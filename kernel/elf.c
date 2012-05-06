@@ -2,7 +2,6 @@
 #include <lib/memory.h>
 #include <lib/string.h>
 #include <kernel/elf.h>
-#include <kernel/symbol.h>
 
 static struct elf_header *get_header(void *address)
 {
@@ -106,7 +105,7 @@ void elf_prepare(void *address)
 
 }
 
-void elf_relocate(void *address)
+void elf_relocate(void *address, unsigned int (*get_symbol)(char *name))
 {
 
     struct elf_header *header = get_header(address);
@@ -137,7 +136,8 @@ void elf_relocate(void *address)
         struct elf_symbol *symEntry = &symTable[index];
         unsigned int *entry = (unsigned int *)(infoTable + relEntry->offset);
         unsigned int value = *entry;
-        unsigned int addend = (symEntry->shindex) ? (unsigned int)address + sheader[symEntry->shindex].offset + symEntry->value : symbol_find(strTable + symEntry->name);
+
+        unsigned int addend = (symEntry->shindex) ? (unsigned int)address + sheader[symEntry->shindex].offset + symEntry->value : get_symbol(strTable + symEntry->name);
 
         switch (type)
         {
