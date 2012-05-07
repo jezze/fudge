@@ -10,7 +10,6 @@ static struct tty_driver driver;
 static struct nodefs_node in;
 static struct nodefs_node out;
 static struct nodefs_node cwd;
-static struct nodefs_node pwd;
 
 static unsigned int in_read(struct nodefs_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
@@ -66,7 +65,7 @@ static unsigned int out_write(struct nodefs_node *self, unsigned int offset, uns
 static unsigned int cwd_read(struct nodefs_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    count = string_length(driver.cwdname);
+    count = string_length(driver.cwdname) + 1;
 
     memory_copy(buffer, driver.cwdname, count);
 
@@ -77,31 +76,14 @@ static unsigned int cwd_read(struct nodefs_node *self, unsigned int offset, unsi
 static unsigned int cwd_write(struct nodefs_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    ((char *)buffer)[count] = '\0';
-
     if (memory_compare(buffer, "/", 1))
-        memory_copy(driver.cwdname, buffer, count + 1);
+        memory_copy(driver.cwdname, buffer, count);
     else
-        memory_copy(driver.cwdname + string_length(driver.cwdname), buffer, count + 1);
+        memory_copy(driver.cwdname + string_length(driver.cwdname), buffer, count);
+
+    driver.cwdname[count] = '\0';
 
     return count;
-
-}
-
-static unsigned int pwd_read(struct nodefs_node *self, unsigned int offset, unsigned int count, void *buffer)
-{
-
-    struct modules_filesystem *filesystem = modules_get_filesystem(driver.cwdname);
-
-    if (!filesystem)
-        return 0;
-
-    unsigned int id = filesystem->find(filesystem, driver.cwdname + string_length(filesystem->path));
-
-    if (!id)
-        return 0;
-
-    return filesystem->read(filesystem, id, offset, count, buffer);
 
 }
 
@@ -129,7 +111,6 @@ void init()
     nodefsDriver->register_node(nodefsDriver, &in, "tty/stdin", &driver.base.base, in_read, in_write);
     nodefsDriver->register_node(nodefsDriver, &out, "tty/stdout", &driver.base.base, 0, out_write);
     nodefsDriver->register_node(nodefsDriver, &cwd, "tty/cwd", &driver.base.base, cwd_read, cwd_write);
-    nodefsDriver->register_node(nodefsDriver, &pwd, "tty/pwd", &driver.base.base, pwd_read, 0);
 
 }
 
