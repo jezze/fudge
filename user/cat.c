@@ -6,7 +6,6 @@ void main(int argc, char *argv[])
 {
 
     char buffer[BUFFER_SIZE];
-
     unsigned int offset;
     unsigned int count;
 

@@ -3,11 +3,16 @@
 void main(int argc, char *argv[])
 {
 
-    if (argc != 2)
-        return;
+    char buffer[BUFFER_SIZE];
+    unsigned int offset;
+    unsigned int count;
 
-    call_write(FILE_STDOUT, 0, string_length(argv[1]), argv[1]);
-    call_write(FILE_STDOUT, 0, 1, "\n");
+    for (offset = 0; (count = call_read(FILE_STDIN, offset, BUFFER_SIZE, buffer)); offset += BUFFER_SIZE)
+    {
+
+        call_write(FILE_STDOUT, 0, count, buffer);
+
+    }
 
 }
 
