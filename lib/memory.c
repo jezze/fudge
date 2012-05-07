@@ -50,7 +50,7 @@ void *memory_find(const void *in1, const void *in2, unsigned int count1, unsigne
         return 0;
 
     const char *ip = in1;
-    unsigned int count = count1 - count2;
+    unsigned int count = count1 - count2 + 1;
 
     for (; count; count--)
     {
