@@ -1,5 +1,7 @@
 #include <fudge.h>
 
+#define BUFFER_SIZE 0x1000
+
 void main(int argc, char *argv[])
 {
 

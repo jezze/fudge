@@ -86,7 +86,7 @@ static unsigned int setup_stream(char *path, unsigned int index)
     unsigned int count = call_read(id, 0, 256 - length, buffer);
     call_close(id);
 
-    memory_copy(buffer + count, path + 1, length);
+    memory_copy(buffer + count - 1, path + 1, length);
 
     return call_open(index, buffer);
 
