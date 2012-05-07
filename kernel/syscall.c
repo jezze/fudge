@@ -101,11 +101,11 @@ static unsigned int execute(struct runtime_task *task, unsigned int index)
 static unsigned int exit(struct runtime_task *task)
 {
 
-    task->used = 0;
-
     struct runtime_task *ptask = runtime_get_task(task->parentid);
 
     runtime_activate(ptask);
+
+    task->unload(task);
 
     return ptask->id;
 
@@ -220,11 +220,11 @@ static unsigned int unload(struct runtime_task *task, unsigned int index)
 static unsigned int wait(struct runtime_task *task)
 {
 
-    task->event = 0;
-
     struct runtime_task *ptask = runtime_get_task(task->parentid);
 
     runtime_activate(ptask);
+
+    task->event = 0;
 
     return ptask->id;
 

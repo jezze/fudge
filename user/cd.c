@@ -11,6 +11,9 @@ void main()
 
     count = call_read(FILE_STDIN, 0, BUFFER_SIZE, buffer);
 
+    if (!count)
+        return;
+
     id = call_open(FILE_NEW, "/module/tty/cwd");
     call_write(id, 0, count, buffer);
 

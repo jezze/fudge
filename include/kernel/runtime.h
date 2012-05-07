@@ -46,6 +46,7 @@ struct runtime_task
     struct runtime_memory memory;
     struct runtime_descriptor descriptors[RUNTIME_TASK_DESCRIPTOR_SLOTS];
     unsigned int (*load)(struct runtime_task *self, void (*entry)());
+    unsigned int (*unload)(struct runtime_task *self);
     unsigned int (*get_descriptor_slot)(struct runtime_task *self);
     struct runtime_descriptor *(*get_descriptor)(struct runtime_task *self, unsigned int index);
 
