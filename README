@@ -48,12 +48,10 @@ will never be out of memory and the kernel will be less occupied with
 allocating and deallocating memory. All preallocated areas of RAM will show up
 as files in the virtual filesystem.
 
-* No directory structure
-Fudge virtual filesystem does not have directories in the classical sense.
-Instead it has views which is simular to what a branch is in git. This has a
-lot of advantages because you never have to think about where one file exist in
-relation to another and if you should use relative or absolute paths to
-reference it. It is very intuitive from a user standpoint.
+* No program arguments
+A program does not utilize the typical argc and **argv structure. Instead all
+programs in Fudge must use the input and output streams. This is to keep
+everything as small as possible.
 
 ## FEATURES
 
@@ -106,13 +104,7 @@ $ git clone git://github.com/Jezze/fudge.git fudge
 
 ### COMPILING
 
-First you need to create the cross compilation tools.
-
-$ cd fudge
-$ export PATH=$PATH:/path/to/fudge/toolchain/local/bin
-$ make toolchain
-
-Compile fudge.
+Compile Fudge.
 
 $ make
 
@@ -126,8 +118,8 @@ $ qemu[-system-x86] -cdrom fudge.iso
 
 ### CLEANING
 
-This will remove all fudge content but leave the cross compilation tools
-intact so you don't need to compile that again.
+This will remove all Fudge content but leave the cross compilation tools
+intact so you don't need to compile them again.
 
 $ make clean
 

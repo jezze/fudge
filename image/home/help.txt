@@ -1,8 +1,8 @@
-To execute a program simply type the name of the program.
+To execute a program simply type the name of the program. It is optional to
+pass a second argument that acts either as data or as an input stream.
 
-cat             : Display content of file
-cpu             : Display cpu information
-date            : Display date
-hello           : Hello world!
-ls              : Display files in directory
-timer           : Display current timer value
+echo hello                  | Print some data
+echo <help.txt              | Print content of help.txt
+
+Commands:
+cd date echo hello ls timer load reboot unload wm

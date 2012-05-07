@@ -22,7 +22,6 @@ ramdisk:
 	@cp modules/*/*.ko image/mod/
 	@cp modules/arch/*/*/*.ko image/mod/
 	@mkdir -p image/bin
-	@cp user/cat image/bin/cat
 	@cp user/cd image/bin/cd
 	@cp user/date image/bin/date
 	@cp user/echo image/bin/echo

@@ -180,7 +180,7 @@ void main()
     setup_stream("</module/tty/stdout", FILE_STDOUT);
 
     call_write(FILE_STDOUT, 0, 23, "Fudge operating system\n");
-    call_write(FILE_STDOUT, 0, 51, "Write `cat help.txt` for a short list if commands\n\n");
+    call_write(FILE_STDOUT, 0, 53, "Write `echo <help.txt` for a short list if commands\n\n");
 
     clear();
 
