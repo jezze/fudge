@@ -1,6 +1,6 @@
 #include <fudge.h>
 
-void main(int argc, char *argv[])
+void main()
 {
 
     call_unload(FILE_STDIN);

@@ -5,7 +5,7 @@ unsigned int call_open(unsigned int id, char *path);
 void call_close(unsigned int id);
 unsigned int call_read(unsigned int id, unsigned int offset, unsigned int count, void *buffer);
 unsigned int call_write(unsigned int id, unsigned int offset, unsigned int count, void *buffer);
-unsigned int call_execute(unsigned int id, unsigned int argc, char **argv);
+unsigned int call_execute(unsigned int id);
 unsigned int call_load(unsigned int id);
 unsigned int call_unload(unsigned int id);
 unsigned int call_exit();

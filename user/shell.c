@@ -109,7 +109,7 @@ static void interpret(char *command)
     memory_copy(buffer + 13, argv[0], string_length(argv[0]) + 1);
 
     unsigned int id = call_open(FILE_NEW, buffer);
-    call_execute(id, argc, argv);
+    call_execute(id);
     call_close(id);
 
     setup_stream("</module/tty/stdin", FILE_STDIN);
@@ -173,7 +173,7 @@ static void read_keyboard()
 
 }
 
-void main(int argc, char *argv[])
+void main()
 {
 
     setup_stream("</module/tty/stdin", FILE_STDIN);

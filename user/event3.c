@@ -16,7 +16,7 @@ void mouse()
 
 }
 
-void main(int argc, char *argv[])
+void main()
 {
 
     call_attach(0x21, keyboard);

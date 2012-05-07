@@ -54,7 +54,7 @@ static unsigned int halt(struct runtime_task *task)
 
 }
 
-static unsigned int execute(struct runtime_task *task, unsigned int index, unsigned int argc, char **argv)
+static unsigned int execute(struct runtime_task *task, unsigned int index)
 {
 
     struct runtime_descriptor *descriptor = task->get_descriptor(task, index);
@@ -87,7 +87,7 @@ static unsigned int execute(struct runtime_task *task, unsigned int index, unsig
     if (!entry)
         return 0;
 
-    if (!ntask->load(ntask, entry, argc, argv))
+    if (!ntask->load(ntask, entry))
         return 0;
 
     elf_prepare((void *)ntask->memory.vaddress);
@@ -281,10 +281,8 @@ static unsigned int handle_execute(struct runtime_task *task, unsigned int stack
 {
 
     unsigned int index = *(unsigned int *)(stack + 24);
-    unsigned int argc = *(unsigned int *)(stack + 28);
-    char **argv = *(char ***)(stack + 32);
 
-    return execute(task, index, argc, argv);
+    return execute(task, index);
 
 }
 
@@ -393,7 +391,7 @@ struct runtime_task *syscall_execute(char *path)
     runtime_task_init(task, slot);
     unsigned int id = open(task, 0, path);
 
-    unsigned int index = execute(task, id, 0, 0);
+    unsigned int index = execute(task, id);
 
     if (!index)
         return 0;

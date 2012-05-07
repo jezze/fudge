@@ -50,35 +50,8 @@ void runtime_activate(struct runtime_task *task)
 
 }
 
-static void copy_args(unsigned int argc, char **argv, void *buffer)
+static unsigned int load(struct runtime_task *self, void (*entry)())
 {
-
-    char **nargv = (char **)(buffer);
-    unsigned int offset = (unsigned int)nargv + argc * 4;
-
-    unsigned int i;
-
-    for (i = 0; i < argc; i++)
-    {
-
-        nargv[i] = (void *)offset;
-
-        unsigned int count = string_length(argv[i]) + 1;
-
-        memory_copy(nargv[i], argv[i], count);
-
-        offset += count;
-
-    }
-
-}
-
-static unsigned int load(struct runtime_task *self, void (*entry)(), unsigned int argc, char **argv)
-{
-
-    char temp[128];
-
-    copy_args(argc, argv, temp);
 
     self->used = 1;
 
@@ -88,13 +61,6 @@ static unsigned int load(struct runtime_task *self, void (*entry)(), unsigned in
     mmu_load_memory(self->id);
 
     unsigned int stack = memory->vaddress + memory->size;
-    unsigned int address = stack - 0x200;
-
-    copy_args(argc, (char **)(temp), (void *)address);
-
-    stack = (unsigned int)memory_copy((void *)(stack - 0x4), &address, 4);
-    stack = (unsigned int)memory_copy((void *)(stack - 0x4), &argc, 4);
-    stack = (unsigned int)memory_copy((void *)(stack - 0x4), &entry, 4);
 
     runtime_registers_init(&self->registers, (unsigned int)entry, stack, stack);
 

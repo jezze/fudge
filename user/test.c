@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <unistd.h>
 
-int main(int argc, char *argv[])
+int main()
 {
 
     write(STDOUT_FILENO, "test1\n", 6);

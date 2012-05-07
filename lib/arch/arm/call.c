@@ -24,7 +24,7 @@ unsigned int call_write(unsigned int id, unsigned int offset, unsigned int count
 
 }
 
-unsigned int call_execute(unsigned int id, unsigned int argc, char **argv)
+unsigned int call_execute(unsigned int id)
 {
 
     return 0;

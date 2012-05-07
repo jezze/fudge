@@ -32,7 +32,7 @@ unsigned int symbol_find(char *name)
 
 }
 
-void main(int argc, char *argv[])
+void main()
 {
 
     unsigned int id = call_open(FILE_NEW, "/ramdisk/boot/fudge.map");
@@ -41,7 +41,7 @@ void main(int argc, char *argv[])
 
     moduleCount = call_read(FILE_STDIN, 0, 0x8000, moduleBuffer);
 
-    elf_relocate(moduleBuffer, symbol_find);
+//    elf_relocate(moduleBuffer, symbol_find);
 
 //    call_write(FILE_STDIN, 0, moduleCount, moduleBuffer);
 

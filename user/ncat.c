@@ -114,7 +114,7 @@ void handle_network_event()
 
 }
 
-void main(int argc, char *argv[])
+void main()
 {
 
     eth0.ip[0] = 0xC0;

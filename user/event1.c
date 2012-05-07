@@ -18,7 +18,7 @@ void after()
 
 }
 
-void main(int argc, char *argv[])
+void main()
 {
 
     call_attach(0x90, before);

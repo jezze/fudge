@@ -2,7 +2,7 @@
 
 #define BUFFER_SIZE 0x1000
 
-void main(int argc, char *argv[])
+void main()
 {
 
     char buffer[BUFFER_SIZE];

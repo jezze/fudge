@@ -27,7 +27,7 @@ void explain()
 
 }
 
-void main(int argc, char *argv[])
+void main()
 {
 
     counter = 0;

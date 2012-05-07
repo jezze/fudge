@@ -246,7 +246,7 @@ void draw_window(unsigned int x, unsigned int y, unsigned int w, unsigned int h)
 
 }
 
-void main(int argc, char *argv[])
+void main()
 {
 
     idlfb = call_open(FILE_NEW, "/module/bga/lfb");
