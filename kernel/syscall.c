@@ -87,8 +87,7 @@ static unsigned int execute(struct runtime_task *task, unsigned int index)
     if (!entry)
         return 0;
 
-    if (!ntask->load(ntask, entry))
-        return 0;
+    ntask->load(ntask, entry);
 
     elf_prepare((void *)ntask->memory.vaddress);
 
