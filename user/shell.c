@@ -101,14 +101,18 @@ static void interpret(char *command)
     if (!argc)
         return;
 
-    if (argc > 1)
-        setup_stream(argv[1], FILE_STDIN);
-
     char buffer[256];
     memory_copy(buffer, "/ramdisk/bin/", 13);
     memory_copy(buffer + 13, argv[0], string_length(argv[0]) + 1);
 
     unsigned int id = call_open(FILE_NEW, buffer);
+
+    if (!id)
+        return;
+
+    if (argc > 1)
+        setup_stream(argv[1], FILE_STDIN);
+
     call_execute(id);
     call_close(id);
 
