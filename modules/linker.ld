@@ -10,10 +10,6 @@ SECTIONS
     {
         *(.rodata*)
         *(.data)
-    }
-
-    .bss :
-    {
         *(.bss)
     }
 
