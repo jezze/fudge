@@ -7,7 +7,7 @@ static unsigned int read_block(struct ata_bus *self, unsigned int count, void *b
 {
 
     unsigned int i;
-    unsigned short *out = (unsigned short *)buffer;
+    unsigned short *out = buffer;
 
     for (i = 0; i < 256; i++)
         *out++ = io_inw(self->data);
@@ -20,7 +20,7 @@ static unsigned int read_blocks(struct ata_bus *self, unsigned int count, void *
 {
 
     unsigned int i;
-    unsigned short *out = (unsigned short *)buffer;
+    unsigned short *out = buffer;
 
     for (i = 0; i < count; i++)
     {
@@ -43,7 +43,7 @@ static unsigned int write_block(struct ata_bus *self, unsigned int count, void *
 {
 
     unsigned int i;
-    unsigned short *out = (unsigned short *)buffer;
+    unsigned short *out = buffer;
 
     for (i = 0; i < 256; i++)
         io_outw(self->data, *out++);
@@ -56,7 +56,7 @@ static unsigned int write_blocks(struct ata_bus *self, unsigned int count, void 
 {
 
     unsigned int i;
-    unsigned short *out = (unsigned short *)buffer;
+    unsigned short *out = buffer;
 
     for (i = 0; i < count; i++)
     {
