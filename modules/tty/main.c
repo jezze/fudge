@@ -65,7 +65,7 @@ static unsigned int out_write(struct nodefs_node *self, unsigned int offset, uns
 static unsigned int cwd_read(struct nodefs_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    count = string_length(driver.cwdname) + 1;
+    count = string_length(driver.cwdname);
 
     memory_copy(buffer, driver.cwdname, count);
 
@@ -76,12 +76,8 @@ static unsigned int cwd_read(struct nodefs_node *self, unsigned int offset, unsi
 static unsigned int cwd_write(struct nodefs_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    if (memory_compare(buffer, "/", 1))
-        memory_copy(driver.cwdname, buffer, count);
-    else
-        memory_copy(driver.cwdname + string_length(driver.cwdname), buffer, count);
-
-    driver.cwdname[count] = '\0';
+    memory_clear(driver.cwdname, 128);
+    memory_copy(driver.cwdname, buffer, count);
 
     return count;
 

@@ -9,6 +9,8 @@ void main()
     unsigned int id;
     unsigned int count;
 
+    memory_clear(buffer, BUFFER_SIZE);
+
     id = call_open(FILE_NEW, "/module/tty/cwd");
     count = call_read(id, 0, BUFFER_SIZE, buffer);
     call_close(id);
