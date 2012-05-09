@@ -1,4 +1,4 @@
-modules: LDFLAGS+=lib/arch/x86/io.o
+modules-arch: LDFLAGS+=lib/arch/x86/io.o
 
 modules-arch:
 	@${GCC} ${GCCFLAGS} modules/arch/x86/acpi/driver.c -o modules/arch/x86/acpi/driver.o
