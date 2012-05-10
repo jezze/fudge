@@ -120,6 +120,9 @@ static void interpret(char *command)
     unsigned int sout = find(command, '>', length);
     unsigned int data = find(command, '-', length);
 
+    if (data && (data < sin || data < sout))
+        return;
+
     if (data)
         replace(command, data);
     else
