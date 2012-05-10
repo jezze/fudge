@@ -5,6 +5,38 @@
 char buffer[BUFFER_SIZE];
 unsigned int bufferHead;
 
+static void replace(char *str, unsigned int length)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < length; i++)
+    {
+
+        if (str[i] == ' ')
+            str[i] = '\0';
+
+    }
+
+}
+
+static unsigned int find(char *str, char x, unsigned int length)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < length; i++)
+    {
+
+        if (str[i] == x)
+            return i;
+
+    }
+
+    return 0;
+
+}
+
 static void stack_push(char c)
 {
 
@@ -32,32 +64,39 @@ static void stack_clear()
 
 }
 
-static unsigned int split(char *out[], char *in, char value)
+static unsigned int setup_executable(char *path)
 {
 
-    if (in[0] == '\0')
-        return 0;
+    unsigned int length = string_length(path);
 
-    unsigned int count = 1;
-    out[0] = in;
+    if (memory_compare(path, "/", 1))
+        return call_open(FILE_NEW, path);
 
-    unsigned int i;
+    char buffer[256];
+    memory_copy(buffer, "/ramdisk/bin/", 13);
+    memory_copy(buffer + 13, path, length + 1);
 
-    for (i = 1; in[i] != '\0'; i++)
-    {
+    return call_open(FILE_NEW, buffer);
 
-        if (in[i - 1] == value)
-        {
+}
 
-            in[i - 1] = '\0';
-            out[count] = in + i;
-            count++;
+static unsigned int setup_stream(char *path, unsigned int index)
+{
 
-        }
+    unsigned int length = string_length(path);
 
-    }
+    if (memory_compare(path, "/", 1))
+        return call_open(index, path);
 
-    return count;
+    char buffer[256];
+
+    unsigned int id = call_open(FILE_NEW, "/module/tty/cwd");
+    unsigned int count = call_read(id, 0, 256 - length, buffer);
+    call_close(id);
+
+    memory_copy(buffer + count, path, length + 1);
+
+    return call_open(index, buffer);
 
 }
 
@@ -69,55 +108,42 @@ static void clear()
 
 }
 
-static unsigned int setup_stream(char *path, unsigned int index)
-{
-
-    unsigned int length = string_length(path);
-
-    if (!memory_compare(path, "<", 1))
-        return call_write(FILE_STDIN, 0, length, path);
-
-    if (memory_compare(path, "</", 2))
-        return call_open(index, path + 1);
-
-    char buffer[256];
-
-    unsigned int id = call_open(FILE_NEW, "/module/tty/cwd");
-    unsigned int count = call_read(id, 0, 256 - length, buffer);
-    call_close(id);
-
-    memory_copy(buffer + count, path + 1, length);
-
-    return call_open(index, buffer);
-
-}
-
 static void interpret(char *command)
 {
 
-    char *argv[32];
-    unsigned int argc = split(argv, command, ' ');
+    unsigned int length = string_length(command);
 
-    if (!argc)
+    if (!length)
         return;
 
-    char buffer[256];
-    memory_copy(buffer, "/ramdisk/bin/", 13);
-    memory_copy(buffer + 13, argv[0], string_length(argv[0]) + 1);
+    unsigned int sin = find(command, '<', length);
+    unsigned int sout = find(command, '>', length);
+    unsigned int data = find(command, '-', length);
 
-    unsigned int id = call_open(FILE_NEW, buffer);
+    if (data)
+        replace(command, data);
+    else
+        replace(command, length);
+
+    unsigned int id = setup_executable(command);
 
     if (!id)
         return;
 
-    if (argc > 1)
-        setup_stream(argv[1], FILE_STDIN);
+    if (sin)
+        setup_stream(command + sin + 1, FILE_STDIN);
+
+    if (sout)
+        setup_stream(command + sout + 1, FILE_STDOUT);
+
+    if (data)
+        call_write(FILE_STDIN, 0, length - data, command + data + 1);
 
     call_execute(id);
     call_close(id);
 
-    setup_stream("</module/tty/stdin", FILE_STDIN);
-    setup_stream("</module/tty/stdout", FILE_STDOUT);
+    setup_stream("/module/tty/stdin", FILE_STDIN);
+    setup_stream("/module/tty/stdout", FILE_STDOUT);
 
 }
 
@@ -180,8 +206,8 @@ static void read_keyboard()
 void main()
 {
 
-    setup_stream("</module/tty/stdin", FILE_STDIN);
-    setup_stream("</module/tty/stdout", FILE_STDOUT);
+    setup_stream("/module/tty/stdin", FILE_STDIN);
+    setup_stream("/module/tty/stdout", FILE_STDOUT);
 
     call_write(FILE_STDOUT, 0, 23, "Fudge operating system\n");
     call_write(FILE_STDOUT, 0, 53, "Write `echo <help.txt` for a short list if commands\n\n");
