@@ -103,7 +103,7 @@ static unsigned int setup_stream(char *path, unsigned int index)
 static void clear()
 {
 
-    call_write(FILE_STDOUT, 0, 9, "fudge:/$ ");
+    call_write(FILE_STDOUT, 0, 2, "$ ");
     stack_clear();
 
 }
