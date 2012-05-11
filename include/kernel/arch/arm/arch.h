@@ -1,8 +1,6 @@
 #ifndef ARCH_ARCH_H
 #define ARCH_ARCH_H
 
-struct kernel_arch;
-
 struct arch_arm
 {
 
