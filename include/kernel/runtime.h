@@ -6,8 +6,6 @@
 #define RUNTIME_TASK_ADDRESS_BASE 0x00400000
 #define RUNTIME_TASK_ADDRESS_SIZE 0x00010000
 
-struct modules_filesystem;
-
 struct runtime_registers
 {
 

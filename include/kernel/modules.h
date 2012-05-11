@@ -11,6 +11,7 @@
 struct modules_bus;
 struct modules_device;
 struct modules_driver;
+struct modules_filesystem;
 
 union modules_module
 {

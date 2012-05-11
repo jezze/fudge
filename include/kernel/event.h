@@ -17,8 +17,6 @@
 #define EVENT_SYSCALL_ATTACH  0xB0
 #define EVENT_SYSCALL_DETACH  0xB1
 
-struct runtime_task;
-
 struct event_routine
 {
 
