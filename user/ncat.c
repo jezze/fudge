@@ -36,7 +36,6 @@ struct interface
 
 } __attribute__((packed));
 
-static unsigned char buffer[0x800];
 struct interface eth0;
 
 static struct frame_header *read_frame(void *data)
@@ -69,6 +68,10 @@ static struct arp_header *read_arp(void *data)
 
 void handle_network_event()
 {
+
+    unsigned char buffer[0x800];
+
+    call_write(FILE_STDOUT, 0, 9, "INCOMING\n");
 
     unsigned int id = call_open(FILE_NEW, "/module/rtl8139/data");
     call_read(id, 0, 0x800, buffer);
@@ -116,6 +119,8 @@ void handle_network_event()
 
 void main()
 {
+
+    call_write(FILE_STDOUT, 0, 13, "Listening...\n");
 
     eth0.ip[0] = 0xC0;
     eth0.ip[1] = 0xA8;

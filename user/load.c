@@ -9,8 +9,12 @@ static unsigned int symbolCount;
 unsigned int symbol_find(char *name)
 {
 
-    unsigned int start = 0;
+    unsigned int start;
     unsigned int i;
+    char *address;
+    char *description;
+
+    start = 0;
 
     for (i = 0; i < symbolCount; i++)
     {
@@ -18,8 +22,8 @@ unsigned int symbol_find(char *name)
         if (symbolBuffer[i] != '\n')
             continue;
 
-        char *address = symbolBuffer + start;
-        char *description = symbolBuffer + start + 11;
+        address = symbolBuffer + start;
+        description = symbolBuffer + start + 11;
 
         if (memory_compare(name, description, string_length(name)))
             return string_read_num(address, 16);
@@ -35,7 +39,9 @@ unsigned int symbol_find(char *name)
 void main()
 {
 
-    unsigned int id = call_open(FILE_NEW, "/ramdisk/boot/fudge.map");
+    unsigned int id;
+
+    id = call_open(FILE_NEW, "/ramdisk/boot/fudge.map");
     symbolCount = call_read(id, 0, 0x1000, symbolBuffer);
     call_close(id);
 

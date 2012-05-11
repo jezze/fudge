@@ -67,12 +67,14 @@ static void stack_clear()
 static unsigned int setup_executable(char *path)
 {
 
-    unsigned int length = string_length(path);
+    char buffer[256];
+    unsigned int length;
 
     if (memory_compare(path, "/", 1))
         return call_open(FILE_NEW, path);
 
-    char buffer[256];
+    length = string_length(path);
+
     memory_copy(buffer, "/ramdisk/bin/", 13);
     memory_copy(buffer + 13, path, length + 1);
 
@@ -83,15 +85,18 @@ static unsigned int setup_executable(char *path)
 static unsigned int setup_stream(char *path, unsigned int index)
 {
 
-    unsigned int length = string_length(path);
+    char buffer[256];
+    unsigned int length;
+    unsigned int id;
+    unsigned int count;
 
     if (memory_compare(path, "/", 1))
         return call_open(index, path);
 
-    char buffer[256];
+    length = string_length(path);
 
-    unsigned int id = call_open(FILE_NEW, "/module/tty/cwd");
-    unsigned int count = call_read(id, 0, 256 - length, buffer);
+    id = call_open(FILE_NEW, "/module/tty/cwd");
+    count = call_read(id, 0, 256 - length, buffer);
     call_close(id);
 
     memory_copy(buffer + count, path, length + 1);
@@ -111,14 +116,20 @@ static void clear()
 static void interpret(char *command)
 {
 
-    unsigned int length = string_length(command);
+    unsigned int length;
+    unsigned int sin;
+    unsigned int sout;
+    unsigned int data;
+    unsigned int exec;
+
+    length = string_length(command);
 
     if (!length)
         return;
 
-    unsigned int sin = find(command, '<', length);
-    unsigned int sout = find(command, '>', length);
-    unsigned int data = find(command, '-', length);
+    sin = find(command, '<', length);
+    sout = find(command, '>', length);
+    data = find(command, '-', length);
 
     if (data && (data < sin || data < sout))
         return;
@@ -128,9 +139,9 @@ static void interpret(char *command)
     else
         replace(command, length);
 
-    unsigned int id = setup_executable(command);
+    exec = setup_executable(command);
 
-    if (!id)
+    if (!exec)
         return;
 
     if (sin)
@@ -142,8 +153,8 @@ static void interpret(char *command)
     if (data)
         call_write(FILE_STDIN, 0, length - data, command + data + 1);
 
-    call_execute(id);
-    call_close(id);
+    call_execute(exec);
+    call_close(exec);
 
     setup_stream("/module/tty/stdin", FILE_STDIN);
     setup_stream("/module/tty/stdout", FILE_STDOUT);
@@ -195,11 +206,12 @@ static void read_keyboard()
 {
 
     char buffer[32];
-
-    unsigned int num = call_read(FILE_STDIN, 0, 32, buffer);
+    unsigned int count;
     unsigned int i;
 
-    for (i = 0; i < num; i++)
+    count = call_read(FILE_STDIN, 0, 32, buffer);
+
+    for (i = 0; i < count; i++)
         handle_input(buffer[i]);
 
     call_wait();
