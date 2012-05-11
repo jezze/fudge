@@ -123,7 +123,8 @@ static unsigned int load(struct runtime_task *task, unsigned int index)
     if (!physical)
         return 0;
 
-    elf_relocate(physical, symbol_find);
+    elf_symbolize(physical, symbol_find);
+    elf_relocate(physical);
 
     void (*init)() = (void (*)())elf_get_symbol(physical, "init");
 

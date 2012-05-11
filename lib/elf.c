@@ -104,7 +104,64 @@ void elf_prepare(void *address)
 
 }
 
-void elf_relocate(void *address, unsigned int (*get_symbol)(char *name))
+void elf_relocate(void *address)
+{
+
+    struct elf_header *header = get_header(address);
+
+    if (!header)
+        return;
+
+    struct elf_section_header *sheader = (struct elf_section_header *)((unsigned int)address + header->shoffset);
+    struct elf_section_header *relHeader = &sheader[2];
+    struct elf_section_header *symHeader = &sheader[relHeader->link];
+
+    struct elf_relocate *relTable = (struct elf_relocate *)((unsigned int)address + relHeader->offset);
+    struct elf_symbol *symTable = (struct elf_symbol *)((unsigned int)address + symHeader->offset);
+    char *infoTable = (char *)address + sheader[relHeader->info].offset;
+
+    unsigned int i;
+    unsigned int count = relHeader->size / relHeader->esize; 
+
+    for (i = 0; i < count; i++)
+    {
+
+        struct elf_relocate *relEntry = &relTable[i];
+
+        unsigned char type = relEntry->info & 0x0F;
+        unsigned char index = relEntry->info >> 8;
+
+        struct elf_symbol *symEntry = &symTable[index];
+        unsigned int *entry = (unsigned int *)(infoTable + relEntry->offset);
+        unsigned int value = *entry;
+
+        if (!symEntry->shindex)
+            continue;
+
+        unsigned int addend = (unsigned int)address + sheader[symEntry->shindex].offset + symEntry->value;
+
+        switch (type)
+        {
+
+            case 1:
+
+                *entry = value + addend;
+
+                break;
+
+            case 2:
+
+                *entry = value + addend - (unsigned int)entry;
+
+                break;
+
+        }
+
+    }
+
+}
+
+void elf_symbolize(void *address, unsigned int (*get_symbol)(char *name))
 {
 
     struct elf_header *header = get_header(address);
@@ -136,7 +193,10 @@ void elf_relocate(void *address, unsigned int (*get_symbol)(char *name))
         unsigned int *entry = (unsigned int *)(infoTable + relEntry->offset);
         unsigned int value = *entry;
 
-        unsigned int addend = (symEntry->shindex) ? (unsigned int)address + sheader[symEntry->shindex].offset + symEntry->value : get_symbol(strTable + symEntry->name);
+        if (symEntry->shindex)
+            continue;
+
+        unsigned int addend = get_symbol(strTable + symEntry->name);
 
         switch (type)
         {
