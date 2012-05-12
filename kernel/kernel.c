@@ -4,7 +4,6 @@
 #include <kernel/modules.h>
 #include <kernel/ramdisk.h>
 #include <kernel/runtime.h>
-#include <kernel/symbol.h>
 #include <kernel/syscall.h>
 
 static struct kernel_arch *kernelArch;
@@ -66,7 +65,6 @@ void kernel_init(struct kernel_arch *arch)
     syscall_init();
     runtime_init();
     ramdisk_init(kernelArch->ramdiskc, kernelArch->ramdiskv);
-    symbol_init();
 
     struct runtime_task *task = syscall_execute("/ramdisk/bin/init");
 

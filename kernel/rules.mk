@@ -14,7 +14,6 @@ kernel: kernel-arch vfs
 	@${GCC} ${GCCFLAGS} kernel/mmu.c -o kernel/mmu.o
 	@${GCC} ${GCCFLAGS} kernel/modules.c -o kernel/modules.o
 	@${GCC} ${GCCFLAGS} kernel/runtime.c -o kernel/runtime.o
-	@${GCC} ${GCCFLAGS} kernel/symbol.c -o kernel/symbol.o
 	@${GCC} ${GCCFLAGS} kernel/syscall.c -o kernel/syscall.o
 	@${LD} ${LDFLAGS} kernel/*.o kernel/arch/${ARCH}/*.o kernel/vfs/*.o lib/libfudge.a -o kernel/fudge
 

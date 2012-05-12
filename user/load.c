@@ -47,9 +47,9 @@ void main()
 
     moduleCount = call_read(FILE_STDIN, 0, 0x8000, moduleBuffer);
 
-//    elf_relocate(moduleBuffer, symbol_find);
+    elf_symbolize(moduleBuffer, symbol_find);
 
-//    call_write(FILE_STDIN, 0, moduleCount, moduleBuffer);
+    call_write(FILE_STDIN, 0, moduleCount, moduleBuffer);
 
     call_load(FILE_STDIN);
 
