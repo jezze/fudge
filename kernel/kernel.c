@@ -22,14 +22,6 @@ void kernel_enable_interrupts()
 
 }
 
-void kernel_reboot()
-{
-
-    kernelArch->disable_interrupts();
-    kernelArch->reboot();
-
-}
-
 void kernel_halt()
 {
 
@@ -37,13 +29,12 @@ void kernel_halt()
 
 }
 
-void kernel_arch_init(struct kernel_arch *arch, void (*setup)(struct kernel_arch *arch), void (*reboot)(), void (*halt)(), void (*enable_interrupts)(), void (*disable_interrupts)(), void (*enter_usermode)(unsigned int ip, unsigned int sp), unsigned int ramdiskc, void **ramdiskv)
+void kernel_arch_init(struct kernel_arch *arch, void (*setup)(struct kernel_arch *arch), void (*halt)(), void (*enable_interrupts)(), void (*disable_interrupts)(), void (*enter_usermode)(unsigned int ip, unsigned int sp), unsigned int ramdiskc, void **ramdiskv)
 {
 
     memory_clear(arch, sizeof (struct kernel_arch));
 
     arch->setup = setup;
-    arch->reboot = reboot;
     arch->halt = halt;
     arch->enable_interrupts = enable_interrupts;
     arch->disable_interrupts = disable_interrupts;

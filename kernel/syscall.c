@@ -185,8 +185,6 @@ static unsigned int read(struct runtime_task *task, unsigned int index, unsigned
 static unsigned int reboot(struct runtime_task *task)
 {
 
-    kernel_reboot();
-
     return 1;
 
 }
