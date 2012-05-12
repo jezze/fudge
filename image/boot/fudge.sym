@@ -7,7 +7,6 @@ modules_device_init
 modules_driver_init
 modules_filesystem_init
 modules_get_driver
-modules_get_filesystem
 modules_register_bus
 modules_register_device
 modules_register_driver
