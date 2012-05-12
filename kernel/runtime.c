@@ -53,14 +53,10 @@ void runtime_activate(struct runtime_task *task)
 static unsigned int load(struct runtime_task *self, void (*entry)())
 {
 
-    struct runtime_memory *memory = &self->memory;
-    unsigned int stack = memory->vaddress + memory->size;
-
     self->used = 1;
 
-    mmu_map_user_memory(self->id, memory->paddress, memory->vaddress, memory->size);
-
-    runtime_registers_init(&self->registers, (unsigned int)entry, stack, stack);
+    mmu_map_user_memory(self->id, self->memory.paddress, self->memory.vaddress, self->memory.size);
+    runtime_registers_init(&self->registers, (unsigned int)entry, self->memory.vaddress + self->memory.size, self->memory.vaddress + self->memory.size);
 
     return 1;
 
