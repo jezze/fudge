@@ -69,7 +69,6 @@ static unsigned int execute(struct runtime_task *task, unsigned int index)
     struct runtime_task *ntask = runtime_get_task(slot);
 
     runtime_task_clone(ntask, task, slot);
-    ntask->parentid = task->id;
 
     unsigned int count = descriptor->filesystem->read(descriptor->filesystem, descriptor->id, 0, ntask->memory.size, (void *)ntask->memory.paddress);
 
@@ -86,9 +85,8 @@ static unsigned int execute(struct runtime_task *task, unsigned int index)
     if (!entry)
         return 0;
 
+    ntask->parentid = task->id;
     ntask->load(ntask, entry);
-
-    elf_prepare((void *)ntask->memory.vaddress);
 
     runtime_activate(ntask);
 
