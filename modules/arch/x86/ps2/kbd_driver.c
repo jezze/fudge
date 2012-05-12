@@ -72,7 +72,6 @@ static void handle_irq(struct modules_device *self)
     if (kbd->escaped)
     {
 
-        //scancode += 256;
         kbd->escaped = 0;
 
     }
@@ -100,8 +99,6 @@ static void handle_irq(struct modules_device *self)
 
     if (scancode & 0x80)
     {
-
-        // Break codes
 
     }
 

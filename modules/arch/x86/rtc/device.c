@@ -13,9 +13,6 @@ static unsigned char convert(unsigned char num)
 static unsigned char get_value(unsigned int type)
 {
 
-//    do { io_outb(RTC_PORT_WRITE, 0x0A); }
-//    while (io_inb(RTC_PORT_READ) != 0x80);
-
     io_outb(RTC_PORT_WRITE, type);
 
     return convert(io_inb(RTC_PORT_READ));

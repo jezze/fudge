@@ -10,7 +10,6 @@ static struct modules_filesystem filesystem;
 static unsigned int read(struct modules_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    //char *out = buffer;
     unsigned int length = 0;
     unsigned int i;
 
@@ -22,7 +21,6 @@ static unsigned int read(struct modules_filesystem *self, unsigned int id, unsig
         if (task->used)
         {
 
-            //string_write(out + off, "%d/\n", i);
             length += 0;
 
         }
