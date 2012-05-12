@@ -1,66 +1,30 @@
 #include <fudge.h>
 
-struct arp_header
+static struct ethernet_interface eth0;
+
+static struct ethernet_header *read_ethernet(void *data)
 {
 
-    unsigned char htypeHigh;
-    unsigned char htypeLow;
-    unsigned char ptypeHigh;
-    unsigned char ptypeLow;
-    unsigned char hlength;
-    unsigned char plength;
-    unsigned char operationHigh;
-    unsigned char operationLow;
-    unsigned char sha[6];
-    unsigned char spa[4];
-    unsigned char tha[6];
-    unsigned char tpa[4];
+    struct ethernet_header *eheader = data;
 
-} __attribute__((packed));
-
-struct frame_header
-{
-
-    unsigned char tha[6];
-    unsigned char sha[6];
-    unsigned char typeHigh;
-    unsigned char typeLow;
-
-} __attribute__((packed));
-
-struct interface
-{
-
-    unsigned char mac[6];
-    unsigned char ip[4];
-
-} __attribute__((packed));
-
-struct interface eth0;
-
-static struct frame_header *read_frame(void *data)
-{
-
-    struct frame_header *fheader = data;
-
-    return fheader;
+    return eheader;
 
 }
 
 static struct arp_header *read_arp(void *data)
 {
 
-    struct frame_header *fheader = read_frame(data);
+    struct ethernet_header *eheader = read_ethernet(data);
 
-    if (!fheader)
+    if (!eheader)
         return 0;
 
-    unsigned short type = (fheader->typeHigh << 8) | fheader->typeLow;
+    unsigned short type = (eheader->typeHigh << 8) | eheader->typeLow;
 
     if (type != 0x0806)
         return 0;
 
-    struct arp_header *aheader = (void *)fheader + 14;
+    struct arp_header *aheader = (void *)eheader + 14;
 
     return aheader;
 
@@ -82,13 +46,13 @@ void handle_network_event()
     if (!header)
         call_wait();
 
-    struct frame_header fheader;
+    struct ethernet_header eheader;
 
-    fheader.typeHigh = 0x08;
-    fheader.typeLow = 0x06;
+    eheader.typeHigh = 0x08;
+    eheader.typeLow = 0x06;
 
-    memory_copy(fheader.sha, eth0.mac, 6);
-    memory_copy(fheader.tha, header->sha, 6);
+    memory_copy(eheader.sha, eth0.mac, 6);
+    memory_copy(eheader.tha, header->sha, 6);
 
     struct arp_header aheader;
 
@@ -106,11 +70,11 @@ void handle_network_event()
     memory_copy(aheader.tha, header->sha, 6);
     memory_copy(aheader.tpa, header->spa, 4);
 
-    memory_copy(buffer, &fheader, sizeof (struct frame_header));
-    memory_copy(buffer + sizeof (struct frame_header), &aheader, sizeof (struct arp_header));
+    memory_copy(buffer, &eheader, sizeof (struct ethernet_header));
+    memory_copy(buffer + sizeof (struct ethernet_header), &aheader, sizeof (struct arp_header));
 
     unsigned int id2 = call_open(FILE_NEW, "/module/rtl8139/data");
-    call_write(id2, 0, sizeof (struct frame_header) + sizeof (struct arp_header), buffer);
+    call_write(id2, 0, sizeof (struct ethernet_header) + sizeof (struct arp_header), buffer);
     call_close(id2);
     call_write(FILE_STDOUT, 0, 18, "Responding to ARP\n");
     call_wait();

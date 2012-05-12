@@ -5,7 +5,9 @@
 #define FILE_STDIN  1
 #define FILE_STDOUT 2
 
+#include "arp.h"
 #include "call.h"
+#include "ethernet.h"
 #include "memory.h"
 #include "string.h"
 
