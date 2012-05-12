@@ -135,10 +135,7 @@ void elf_relocate(void *address)
         unsigned int *entry = (unsigned int *)(infoTable + relEntry->offset);
         unsigned int value = *entry;
 
-        if (!symEntry->shindex)
-            continue;
-
-        unsigned int addend = (unsigned int)address + sheader[symEntry->shindex].offset + symEntry->value;
+        unsigned int addend = (symEntry->shindex) ? (unsigned int)address + sheader[symEntry->shindex].offset + symEntry->value : 0;
 
         switch (type)
         {
@@ -209,7 +206,7 @@ void elf_symbolize(void *address, unsigned int (*get_symbol)(char *name))
 
             case 2:
 
-                *entry = value + addend - (unsigned int)entry;
+                *entry = value + addend;
 
                 break;
 
