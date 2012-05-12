@@ -3,7 +3,7 @@
 
 static char moduleBuffer[0x8000];
 static unsigned int moduleCount;
-static char symbolBuffer[0x1000];
+static char symbolBuffer[0x400];
 static unsigned int symbolCount;
 
 unsigned int symbol_find(char *name)
@@ -42,7 +42,7 @@ void main()
     unsigned int id;
 
     id = call_open(FILE_NEW, "/ramdisk/boot/fudge.map");
-    symbolCount = call_read(id, 0, 0x1000, symbolBuffer);
+    symbolCount = call_read(id, 0, 0x400, symbolBuffer);
     call_close(id);
 
     moduleCount = call_read(FILE_STDIN, 0, 0x8000, moduleBuffer);
