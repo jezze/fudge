@@ -1,12 +1,13 @@
 #include <fudge.h>
 #include <elf.h>
 
-static char moduleBuffer[0x8000];
-static unsigned int moduleCount;
+#define BUFFER_SIZE 0x8000
+
+static char buffer[BUFFER_SIZE];
 static char symbolBuffer[0x400];
 static unsigned int symbolCount;
 
-unsigned int symbol_find(char *name)
+unsigned int find(char *name)
 {
 
     unsigned int start;
@@ -36,7 +37,7 @@ unsigned int symbol_find(char *name)
 
 }
 
-void main()
+void parse()
 {
 
     unsigned int id;
@@ -45,12 +46,18 @@ void main()
     symbolCount = call_read(id, 0, 0x400, symbolBuffer);
     call_close(id);
 
-    moduleCount = call_read(FILE_STDIN, 0, 0x8000, moduleBuffer);
+}
 
-    elf_symbolize(moduleBuffer, symbol_find);
+void main()
+{
 
-    call_write(FILE_STDIN, 0, moduleCount, moduleBuffer);
+    unsigned int count;
 
+    parse();
+
+    count = call_read(FILE_STDIN, 0, BUFFER_SIZE, buffer);
+    elf_symbolize(buffer, find);
+    call_write(FILE_STDIN, 0, count, buffer);
     call_load(FILE_STDIN);
 
 }
