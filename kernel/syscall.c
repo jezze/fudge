@@ -78,13 +78,20 @@ static unsigned int execute(struct runtime_task *task, unsigned int index)
     if (!count)
         return 0;
 
-    ntask->memory.vaddress = elf_get_virtual((void *)ntask->memory.paddress);
+    struct elf_header *header = elf_get_header((void *)ntask->memory.paddress);
+
+    /* Fix: Header should not be able to be zero */
+    unsigned int entry;
+
+    if (header)
+        entry = header->entry;
+    else
+        entry = 0;
+
+    ntask->memory.vaddress = elf_get_virtual(header);
 
     if (!ntask->memory.vaddress)
         return 0;
-
-    struct elf_header *header = elf_get_header((void *)ntask->memory.paddress);
-    unsigned int entry = (header) ? header->entry : 0;
 
     mmu_map_user_memory(ntask->id, ntask->memory.paddress, ntask->memory.vaddress, ntask->memory.size);
     mmu_load_memory(ntask->id);
@@ -121,13 +128,14 @@ static unsigned int load(struct runtime_task *task, unsigned int index)
         return 0;
 
     void *physical = descriptor->filesystem->get_physical(descriptor->filesystem, descriptor->id);
+    struct elf_header *header = elf_get_header(physical);
 
-    if (!physical)
+    if (!header)
         return 0;
 
-    elf_relocate(physical);
+    elf_relocate(header);
 
-    void (*init)() = (void (*)())elf_get_symbol(physical, "init");
+    void (*init)() = (void (*)())elf_get_symbol(header, "init");
 
     if (!init)
         return 0;
@@ -201,11 +209,12 @@ static unsigned int unload(struct runtime_task *task, unsigned int index)
         return 0;
 
     void *physical = descriptor->filesystem->get_physical(descriptor->filesystem, descriptor->id);
+    struct elf_header *header = elf_get_header(physical);
 
-    if (!physical)
+    if (!header)
         return 0;
 
-    void (*destroy)() = (void (*)())elf_get_symbol(physical, "destroy");
+    void (*destroy)() = (void (*)())elf_get_symbol(header, "destroy");
 
     if (!destroy)
         return 0;
