@@ -5,7 +5,7 @@
 
 static struct event_routine routines[EVENT_ROUTINE_SLOTS];
 
-unsigned int event_register_routine(unsigned int index, struct runtime_task *task, void (*callback)())
+unsigned int event_register_routine(unsigned int index, struct runtime_task *task, unsigned int callback)
 {
 
     struct event_routine *routine = &routines[index];

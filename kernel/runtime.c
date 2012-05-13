@@ -47,12 +47,12 @@ void runtime_set_running_task(struct runtime_task *task)
 
 }
 
-static unsigned int load(struct runtime_task *self, void (*entry)())
+static unsigned int load(struct runtime_task *self, unsigned int entry)
 {
 
     self->used = 1;
 
-    runtime_registers_init(&self->registers, (unsigned int)entry, self->memory.vaddress + self->memory.size, self->memory.vaddress + self->memory.size);
+    runtime_registers_init(&self->registers, entry, self->memory.vaddress + self->memory.size, self->memory.vaddress + self->memory.size);
 
     return 1;
 

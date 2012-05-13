@@ -10,13 +10,13 @@
 
 static unsigned int (*routines[SYSCALL_ROUTINE_SLOTS])(struct runtime_task *task, unsigned int stack);
 
-static unsigned int attach(struct runtime_task *task, unsigned int index, void (*routine)())
+static unsigned int attach(struct runtime_task *task, unsigned int index, unsigned int callback)
 {
 
-    if (!routine)
+    if (!callback)
         return 0;
 
-    return event_register_routine(index, task, routine);
+    return event_register_routine(index, task, callback);
 
 }
 
@@ -83,7 +83,7 @@ static unsigned int execute(struct runtime_task *task, unsigned int index)
     if (!ntask->memory.vaddress)
         return 0;
 
-    void (*entry)() = (void (*)())elf_get_entry((void *)ntask->memory.paddress);
+    unsigned int entry = elf_get_entry((void *)ntask->memory.paddress);
 
     if (!entry)
         return 0;
@@ -248,9 +248,9 @@ static unsigned int handle_attach(struct runtime_task *task, unsigned int stack)
 {
 
     unsigned int index = *(unsigned int *)(stack + 4);
-    void (*routine)() = (void (*)())*(unsigned int *)(stack + 8);
+    unsigned int callback = *(unsigned int *)(stack + 8);
 
-    return attach(task, index, routine);
+    return attach(task, index, callback);
 
 }
 
