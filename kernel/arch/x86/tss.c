@@ -15,10 +15,7 @@ void tss_init(void *stack)
     entry.cs = 0x0B;
     entry.ss = entry.ds = entry.es = entry.fs = entry.gs = 0x13;
 
-    unsigned int base = (unsigned int)&entry;
-    unsigned int limit = base + sizeof (struct tss_entry);
-
-    gdt_set_gate(0x05, base, limit, 0xE9, 0x00);
+    gdt_set_gate(0x05, (unsigned int)&entry, (unsigned int)&entry + sizeof (struct tss_entry), 0xE9, 0x00);
 
     cpu_enable_tss();
 

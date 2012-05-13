@@ -6,10 +6,12 @@
 void *flake_parse(unsigned int type, unsigned int count, void *buffer)
 {
 
+    struct flake_header *header;
+
     if (count < sizeof (struct flake_header))
         return 0;
 
-    struct flake_header *header = (struct flake_header *)buffer;
+    header = (struct flake_header *)buffer;
 
     if (!(header->type & type))
         return 0;

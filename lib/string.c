@@ -4,11 +4,11 @@
 unsigned int string_length(const char *in)
 {
 
-    unsigned int i;
+    unsigned int offset;
 
-    for (i = 0; in[i]; i++);
+    for (offset = 0; in[offset]; offset++);
 
-    return i;
+    return offset;
 
 }
 
@@ -16,7 +16,7 @@ unsigned int string_read_num(const char *in, unsigned int base)
 {
 
     const char *ip;
-    int num = 0;
+    unsigned int num = 0;
 
     for (ip = in; (*ip >= '0' && *ip <= '9') || (base > 10 && (*ip >= 'a' && *ip <= 'f')); ip++)
     {
@@ -34,18 +34,18 @@ unsigned int string_read_num(const char *in, unsigned int base)
 char *string_write_num(char *out, unsigned int num, unsigned int base)
 {
 
+    char buffer[32];
+    unsigned int offset;
+
     if (!num)
         return memory_copy(out, "0", 2);
 
-    char buffer[32];
     memory_clear(buffer, 32);
 
-    int i;
+    for (offset = 30; num && offset; --offset, num /= base)
+        buffer[offset] = "0123456789abcdef"[num % base];
 
-    for (i = 30; num && i; --i, num /= base)
-        buffer[i] = "0123456789abcdef"[num % base];
-
-    return memory_copy(out, buffer + i + 1, string_length(buffer) + 1);
+    return memory_copy(out, buffer + offset + 1, string_length(buffer) + 1);
 
 }
 
