@@ -12,7 +12,7 @@ void *memory_clear(void *out, unsigned int count)
 
 }
 
-int memory_compare(const void *in1, const void *in2, unsigned int count)
+unsigned int memory_compare(const void *in1, const void *in2, unsigned int count)
 {
 
     const char *ip1 = in1;
