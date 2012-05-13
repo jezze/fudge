@@ -2,7 +2,7 @@
 #include <lib/memory.h>
 #include <lib/string.h>
 
-static struct elf_header *get_header(void *address)
+struct elf_header *elf_get_header(void *address)
 {
 
     struct elf_header *header = (struct elf_header *)address;
@@ -26,7 +26,7 @@ static struct elf_header *get_header(void *address)
 unsigned int elf_get_entry(void *address)
 {
 
-    struct elf_header *header = get_header(address);
+    struct elf_header *header = elf_get_header(address);
 
     if (!header)
         return 0;
@@ -38,7 +38,7 @@ unsigned int elf_get_entry(void *address)
 unsigned int elf_get_virtual(void *address)
 {
 
-    struct elf_header *header = get_header(address);
+    struct elf_header *header = elf_get_header(address);
 
     if (!header)
         return 0;
@@ -52,7 +52,7 @@ unsigned int elf_get_virtual(void *address)
 unsigned int elf_get_symbol(void *address, char *name)
 {
 
-    struct elf_header *header = get_header(address);
+    struct elf_header *header = elf_get_header(address);
 
     if (!header)
         return 0;
@@ -85,7 +85,7 @@ unsigned int elf_get_symbol(void *address, char *name)
 void elf_prepare(void *address)
 {
 
-    struct elf_header *header = get_header(address);
+    struct elf_header *header = elf_get_header(address);
 
     if (!header)
         return;
@@ -107,7 +107,7 @@ void elf_prepare(void *address)
 void elf_relocate(void *address)
 {
 
-    struct elf_header *header = get_header(address);
+    struct elf_header *header = elf_get_header(address);
 
     if (!header)
         return;
@@ -161,7 +161,7 @@ void elf_relocate(void *address)
 void elf_symbolize(void *address, unsigned int (*get_symbol)(char *name))
 {
 
-    struct elf_header *header = get_header(address);
+    struct elf_header *header = elf_get_header(address);
 
     if (!header)
         return;
