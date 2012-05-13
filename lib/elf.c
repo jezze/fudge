@@ -23,18 +23,6 @@ struct elf_header *elf_get_header(void *address)
 
 }
 
-unsigned int elf_get_entry(void *address)
-{
-
-    struct elf_header *header = elf_get_header(address);
-
-    if (!header)
-        return 0;
-
-    return header->entry;
-
-}
-
 unsigned int elf_get_virtual(void *address)
 {
 

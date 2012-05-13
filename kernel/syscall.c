@@ -83,10 +83,8 @@ static unsigned int execute(struct runtime_task *task, unsigned int index)
     if (!ntask->memory.vaddress)
         return 0;
 
-    unsigned int entry = elf_get_entry((void *)ntask->memory.paddress);
-
-    if (!entry)
-        return 0;
+    struct elf_header *header = elf_get_header((void *)ntask->memory.paddress);
+    unsigned int entry = (header) ? header->entry : 0;
 
     mmu_map_user_memory(ntask->id, ntask->memory.paddress, ntask->memory.vaddress, ntask->memory.size);
     mmu_load_memory(ntask->id);
