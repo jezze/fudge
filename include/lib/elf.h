@@ -139,11 +139,11 @@ struct elf_relocatea
 };
 
 struct elf_header *elf_get_header(void *address);
-unsigned int elf_get_virtual(void *address);
-unsigned int elf_get_symbol(void *address, char *name);
-void elf_prepare(void *address);
-void elf_relocate(void *address);
-void elf_symbolize(void *address, unsigned int (*get_symbol)(char *name));
+unsigned int elf_get_virtual(struct elf_header *header);
+unsigned int elf_get_symbol(struct elf_header *header, char *name);
+void elf_prepare(struct elf_header *header);
+void elf_relocate(struct elf_header *header);
+void elf_symbolize(struct elf_header *header, unsigned int (*get_symbol)(char *name));
 
 #endif
 

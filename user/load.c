@@ -52,11 +52,12 @@ void main()
 {
 
     unsigned int count;
+    struct elf_header *header = (struct elf_header *)buffer;
 
     parse();
 
     count = call_read(FILE_STDIN, 0, BUFFER_SIZE, buffer);
-    elf_symbolize(buffer, find);
+    elf_symbolize(header, find);
     call_write(FILE_STDIN, 0, count, buffer);
     call_load(FILE_STDIN);
 
