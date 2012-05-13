@@ -85,7 +85,6 @@ void mmu_init(struct mmu_unit *unit)
 
     mmuUnit = unit;
     mmuUnit->map_kernel_memory(0, 0x00000000, 0x00000000, 0x00400000);
-    mmuUnit->map_kernel_memory(1, 0x00400000, 0x00400000, 0x00400000);
     mmuUnit->load_memory(0);
     mmuUnit->enable();
 

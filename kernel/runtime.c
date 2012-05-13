@@ -1,6 +1,5 @@
 #include <lib/memory.h>
 #include <lib/string.h>
-#include <kernel/mmu.h>
 #include <kernel/runtime.h>
 #include <kernel/vfs/proc.h>
 
@@ -44,8 +43,6 @@ struct runtime_task *runtime_get_running_task()
 void runtime_activate(struct runtime_task *task)
 {
 
-    mmu_load_memory(task->id);
-
     running = task;
 
 }
@@ -55,7 +52,6 @@ static unsigned int load(struct runtime_task *self, void (*entry)())
 
     self->used = 1;
 
-    mmu_map_user_memory(self->id, self->memory.paddress, self->memory.vaddress, self->memory.size);
     runtime_registers_init(&self->registers, (unsigned int)entry, self->memory.vaddress + self->memory.size, self->memory.vaddress + self->memory.size);
 
     return 1;

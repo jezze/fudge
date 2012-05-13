@@ -1,5 +1,6 @@
 #include <kernel/event.h>
 #include <kernel/kernel.h>
+#include <kernel/mmu.h>
 #include <kernel/runtime.h>
 
 static struct event_routine routines[EVENT_ROUTINE_SLOTS];
@@ -52,6 +53,7 @@ void event_raise(unsigned int index)
     etask->parentid = task->id;
     etask->load(etask, routine->callback);
 
+    mmu_load_memory(etask->id);
     runtime_activate(etask);
 
 }

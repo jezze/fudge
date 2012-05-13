@@ -3,6 +3,7 @@
 #include <lib/string.h>
 #include <kernel/event.h>
 #include <kernel/kernel.h>
+#include <kernel/mmu.h>
 #include <kernel/modules.h>
 #include <kernel/runtime.h>
 #include <kernel/syscall.h>
@@ -69,6 +70,9 @@ static unsigned int execute(struct runtime_task *task, unsigned int index)
     struct runtime_task *ntask = runtime_get_task(slot);
 
     runtime_task_clone(ntask, task, slot);
+    mmu_map_user_memory(ntask->id, ntask->memory.paddress, ntask->memory.paddress, ntask->memory.size);
+    mmu_load_memory(ntask->id);
+    runtime_activate(ntask);
 
     unsigned int count = descriptor->filesystem->read(descriptor->filesystem, descriptor->id, 0, ntask->memory.size, (void *)ntask->memory.paddress);
 
@@ -85,9 +89,11 @@ static unsigned int execute(struct runtime_task *task, unsigned int index)
     if (!entry)
         return 0;
 
+    mmu_map_user_memory(ntask->id, ntask->memory.paddress, ntask->memory.vaddress, ntask->memory.size);
     ntask->parentid = task->id;
     ntask->load(ntask, entry);
 
+    mmu_load_memory(ntask->id);
     runtime_activate(ntask);
 
     return slot;
@@ -99,6 +105,7 @@ static unsigned int exit(struct runtime_task *task)
 
     struct runtime_task *ptask = runtime_get_task(task->parentid);
 
+    mmu_load_memory(ptask->id);
     runtime_activate(ptask);
 
     task->unload(task);
@@ -216,6 +223,7 @@ static unsigned int wait(struct runtime_task *task)
 
     struct runtime_task *ptask = runtime_get_task(task->parentid);
 
+    mmu_load_memory(ptask->id);
     runtime_activate(ptask);
 
     task->event = 0;
