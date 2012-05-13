@@ -40,7 +40,7 @@ struct runtime_task *runtime_get_running_task()
 
 }
 
-void runtime_activate(struct runtime_task *task)
+void runtime_set_running_task(struct runtime_task *task)
 {
 
     running = task;

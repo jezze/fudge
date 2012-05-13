@@ -72,7 +72,6 @@ static unsigned int execute(struct runtime_task *task, unsigned int index)
     runtime_task_clone(ntask, task, slot);
     mmu_map_user_memory(ntask->id, ntask->memory.paddress, ntask->memory.paddress, ntask->memory.size);
     mmu_load_memory(ntask->id);
-    runtime_activate(ntask);
 
     unsigned int count = descriptor->filesystem->read(descriptor->filesystem, descriptor->id, 0, ntask->memory.size, (void *)ntask->memory.paddress);
 
@@ -90,11 +89,12 @@ static unsigned int execute(struct runtime_task *task, unsigned int index)
         return 0;
 
     mmu_map_user_memory(ntask->id, ntask->memory.paddress, ntask->memory.vaddress, ntask->memory.size);
+    mmu_load_memory(ntask->id);
+
     ntask->parentid = task->id;
     ntask->load(ntask, entry);
 
-    mmu_load_memory(ntask->id);
-    runtime_activate(ntask);
+    runtime_set_running_task(ntask);
 
     return slot;
 
@@ -105,10 +105,10 @@ static unsigned int exit(struct runtime_task *task)
 
     struct runtime_task *ptask = runtime_get_task(task->parentid);
 
-    mmu_load_memory(ptask->id);
-    runtime_activate(ptask);
-
     task->unload(task);
+
+    mmu_load_memory(ptask->id);
+    runtime_set_running_task(ptask);
 
     return ptask->id;
 
@@ -223,10 +223,10 @@ static unsigned int wait(struct runtime_task *task)
 
     struct runtime_task *ptask = runtime_get_task(task->parentid);
 
-    mmu_load_memory(ptask->id);
-    runtime_activate(ptask);
-
     task->event = 0;
+
+    mmu_load_memory(ptask->id);
+    runtime_set_running_task(ptask);
 
     return ptask->id;
 

@@ -54,7 +54,7 @@ void event_raise(unsigned int index)
     etask->load(etask, routine->callback);
 
     mmu_load_memory(etask->id);
-    runtime_activate(etask);
+    runtime_set_running_task(etask);
 
 }
 
