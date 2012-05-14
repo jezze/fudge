@@ -26,20 +26,8 @@ call_write:
 
 .global call_execute
 call_execute:
-    push ebp
-    mov ebp, esp
-    push ebx
-    push ecx
-    push esi
-    push edi
     mov eax, 0x10
     int 0x80
-    pop edi
-    pop esi
-    pop ecx
-    pop ebx
-    mov esp, ebp
-    pop ebp
     ret
 
 .global call_exit

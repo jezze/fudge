@@ -284,7 +284,7 @@ static unsigned int handle_halt(struct runtime_task *task, unsigned int stack)
 static unsigned int handle_execute(struct runtime_task *task, unsigned int stack)
 {
 
-    unsigned int index = *(unsigned int *)(stack + 24);
+    unsigned int index = *(unsigned int *)(stack + 4);
 
     return execute(task, index);
 
