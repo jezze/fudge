@@ -51,9 +51,10 @@ void event_raise(unsigned int index)
 
     etask->event = 1;
     etask->parentid = task->id;
-    etask->load(etask, routine->callback);
 
     mmu_load_memory(etask->id);
+
+    runtime_registers_init(&etask->registers, routine->callback, etask->memory.vaddress + etask->memory.size, etask->memory.vaddress + etask->memory.size);
     runtime_set_running_task(etask);
 
 }

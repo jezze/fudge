@@ -47,26 +47,6 @@ void runtime_set_running_task(struct runtime_task *task)
 
 }
 
-static unsigned int load(struct runtime_task *self, unsigned int entry)
-{
-
-    self->used = 1;
-
-    runtime_registers_init(&self->registers, entry, self->memory.vaddress + self->memory.size, self->memory.vaddress + self->memory.size);
-
-    return 1;
-
-}
-
-static unsigned int unload(struct runtime_task *self)
-{
-
-    self->used = 0;
-
-    return 1;
-
-}
-
 static unsigned int get_descriptor_slot(struct runtime_task *self)
 {
 
@@ -133,8 +113,6 @@ void runtime_task_init(struct runtime_task *task, unsigned int id)
     memory_clear(task, sizeof (struct runtime_task));
 
     task->id = id;
-    task->load = load;
-    task->unload = unload;
     task->get_descriptor_slot = get_descriptor_slot;
     task->get_descriptor = get_descriptor;
 

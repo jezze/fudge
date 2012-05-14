@@ -88,12 +88,13 @@ static unsigned int execute(struct runtime_task *task, unsigned int index)
     if (!ntask->memory.vaddress)
         return 0;
 
+    ntask->used = 1;
+    ntask->parentid = task->id;
+
     mmu_map_user_memory(ntask->id, ntask->memory.paddress, ntask->memory.vaddress, ntask->memory.size);
     mmu_load_memory(ntask->id);
 
-    ntask->parentid = task->id;
-    ntask->load(ntask, entry);
-
+    runtime_registers_init(&ntask->registers, entry, ntask->memory.vaddress + ntask->memory.size, ntask->memory.vaddress + ntask->memory.size);
     runtime_set_running_task(ntask);
 
     return slot;
@@ -105,7 +106,7 @@ static unsigned int exit(struct runtime_task *task)
 
     struct runtime_task *ptask = runtime_get_task(task->parentid);
 
-    task->unload(task);
+    task->used = 0;
 
     mmu_load_memory(ptask->id);
     runtime_set_running_task(ptask);
