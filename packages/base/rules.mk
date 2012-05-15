@@ -6,9 +6,6 @@ packages-base:
 	@${GCC} ${GCCFLAGS} packages/base/cd.c ${LIB} -o image/bin/cd
 	@${GCC} ${GCCFLAGS} packages/base/date.c ${LIB} -o image/bin/date
 	@${GCC} ${GCCFLAGS} packages/base/echo.c ${LIB} -o image/bin/echo
-	@${GCC} ${GCCFLAGS} packages/base/event1.c ${LIB} -o image/bin/event1
-	@${GCC} ${GCCFLAGS} packages/base/event2.c ${LIB} -o image/bin/event2
-	@${GCC} ${GCCFLAGS} packages/base/event3.c ${LIB} -o image/bin/event3
 	@${GCC} ${GCCFLAGS} packages/base/hello.c ${LIB} -o image/bin/hello
 	@${GCC} ${GCCFLAGS} packages/base/init.c ${LIB} -o image/bin/init
 	@${GCC} ${GCCFLAGS} packages/base/load.c ${LIB} -o image/bin/load
@@ -19,15 +16,11 @@ packages-base:
 	@${GCC} ${GCCFLAGS} packages/base/tail.c ${LIB} -o image/bin/tail
 	@${GCC} ${GCCFLAGS} packages/base/timer.c ${LIB} -o image/bin/timer
 	@${GCC} ${GCCFLAGS} packages/base/unload.c ${LIB} -o image/bin/unload
-	@${GCC} ${GCCFLAGS} packages/base/wm.c ${LIB} -o image/bin/wm
 
 packages-base-clean:
 	@rm -f image/bin/cd
 	@rm -f image/bin/date
 	@rm -f image/bin/echo
-	@rm -f image/bin/event1
-	@rm -f image/bin/event2
-	@rm -f image/bin/event3
 	@rm -f image/bin/hello
 	@rm -f image/bin/init
 	@rm -f image/bin/load
@@ -38,5 +31,4 @@ packages-base-clean:
 	@rm -f image/bin/tail
 	@rm -f image/bin/timer
 	@rm -f image/bin/unload
-	@rm -f image/bin/wm
 
