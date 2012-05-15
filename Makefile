@@ -1,14 +1,14 @@
 include rules.mk
 include rules.${ARCH}.mk
 
-.PHONY: all clean toolchain kernel lib modules user ramdisk
+.PHONY: all clean toolchain kernel lib modules packages ramdisk
 
-all: lib kernel modules user ramdisk
+all: lib kernel modules packages ramdisk
 
 include lib/rules.mk
 include kernel/rules.mk
 include modules/rules.mk
-include user/rules.mk
+include packages/rules.mk
 
 toolchain:
 	@git submodule init toolchain
@@ -21,24 +21,6 @@ ramdisk:
 	@mkdir -p image/mod
 	@cp modules/*/*.ko image/mod/
 	@cp modules/arch/*/*/*.ko image/mod/
-	@mkdir -p image/bin
-	@cp user/cd image/bin/cd
-	@cp user/date image/bin/date
-	@cp user/echo image/bin/echo
-	@cp user/event1 image/bin/event1
-	@cp user/event2 image/bin/event2
-	@cp user/hello image/bin/hello
-	@cp user/init image/bin/init
-	@cp user/load image/bin/load
-	@cp user/ls image/bin/ls
-	@cp user/ncat image/bin/ncat
-	@cp user/reboot image/bin/reboot
-	@cp user/shell image/bin/shell
-	@cp user/tail image/bin/tail
-	@cp user/timer image/bin/timer
-	@cp user/unload image/bin/unload
-	@cp user/wm image/bin/wm
-	@cp user/test image/bin/test
 	@tar -cvf initrd.tar image
 	@find image -depth -print | cpio -ov > initrd.cpio
 	@mv initrd.tar image/boot
@@ -64,7 +46,7 @@ iso:
 hda:
 	@dd if=/dev/zero of=hda.img bs=512 count=2880
 
-clean: lib-clean kernel-clean modules-clean user-clean
+clean: lib-clean kernel-clean modules-clean packages-clean
 	@rm -f fudge.img
 	@rm -f fudge.iso
 	@rm -f image/boot/*.bin
