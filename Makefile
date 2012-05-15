@@ -18,9 +18,6 @@ toolchain:
 ramdisk:
 	@cp kernel/fudge image/boot/fudge
 	@nm image/boot/fudge | grep -f image/boot/fudge.sym > image/boot/fudge.map
-	@mkdir -p image/mod
-	@cp modules/*/*.ko image/mod/
-	@cp modules/arch/*/*/*.ko image/mod/
 	@tar -cvf initrd.tar image
 	@find image -depth -print | cpio -ov > initrd.cpio
 	@mv initrd.tar image/boot
@@ -56,6 +53,4 @@ clean: lib-clean kernel-clean modules-clean packages-clean
 	@rm -f image/boot/initrd
 	@rm -f image/boot/initrd.tar
 	@rm -f image/boot/initrd.cpio
-	@rm -rf image/mod
-	@rm -rf image/bin
 

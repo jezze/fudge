@@ -14,12 +14,17 @@ modules: modules-arch
 	@${GCC} ${GCCFLAGS} modules/nodefs/main.c -o modules/nodefs/main.o
 	@${GCC} ${GCCFLAGS} modules/tty/driver.c -o modules/tty/driver.o
 	@${GCC} ${GCCFLAGS} modules/tty/main.c -o modules/tty/main.o
-	@${LD} ${LDFLAGS} modules/ext2/driver.o modules/ext2/filesystem.o modules/ext2/main.o -o modules/ext2/ext2.ko
-	@${LD} ${LDFLAGS} modules/mbr/device.o modules/mbr/driver.o modules/mbr/main.o -o modules/mbr/mbr.ko
-	@${LD} ${LDFLAGS} modules/nodefs/driver.o modules/nodefs/main.o -o modules/nodefs/nodefs.ko
-	@${LD} ${LDFLAGS} modules/tty/driver.o modules/tty/main.o -o modules/tty/tty.ko
+	@mkdir -p image/mod
+	@${LD} ${LDFLAGS} modules/ext2/driver.o modules/ext2/filesystem.o modules/ext2/main.o -o image/mod/ext2.ko
+	@${LD} ${LDFLAGS} modules/mbr/device.o modules/mbr/driver.o modules/mbr/main.o -o image/mod/mbr.ko
+	@${LD} ${LDFLAGS} modules/nodefs/driver.o modules/nodefs/main.o -o image/mod/nodefs.ko
+	@${LD} ${LDFLAGS} modules/tty/driver.o modules/tty/main.o -o image/mod/tty.ko
 
 modules-clean: modules-arch-clean
 	@rm -f modules/*/*.o
-	@rm -f modules/*/*.ko
+	@rm -f image/mod/ext2.ko
+	@rm -f image/mod/mbr.ko
+	@rm -f image/mod/nodefs.ko
+	@rm -f image/mod/tty.ko
+	@rm -rf image/mod
 
