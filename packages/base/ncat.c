@@ -94,7 +94,7 @@ void main()
     unsigned int id = call_open(FILE_NEW, "/module/rtl8139/mac");
     call_read(id, 0, 6, eth0.mac);
     call_close(id);
-    call_attach(0x27, handle_network_event);
+    call_attach(0x2b, handle_network_event);
     call_wait();
 
 }
