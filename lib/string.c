@@ -45,7 +45,7 @@ char *string_write_num(char *out, unsigned int num, unsigned int base)
     for (offset = 30; num && offset; --offset, num /= base)
         buffer[offset] = "0123456789abcdef"[num % base];
 
-    return memory_copy(out, buffer + offset + 1, string_length(buffer) + 1);
+    return memory_copy(out, buffer + offset + 1, 32 - offset);
 
 }
 
