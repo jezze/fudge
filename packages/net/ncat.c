@@ -84,6 +84,8 @@ void handle_network_event()
 void main()
 {
 
+    call_attach(0x2B, handle_network_event);
+
     call_write(FILE_STDOUT, 0, 13, "Listening...\n");
 
     eth0.ip[0] = 0xC0;
@@ -94,7 +96,7 @@ void main()
     unsigned int id = call_open(FILE_NEW, "/module/rtl8139/mac");
     call_read(id, 0, 6, eth0.mac);
     call_close(id);
-    call_attach(0x2b, handle_network_event);
+
     call_wait();
 
 }
