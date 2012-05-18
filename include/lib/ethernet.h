@@ -19,7 +19,5 @@ struct ethernet_interface
 
 } __attribute__((packed));
 
-
-
 #endif
 
