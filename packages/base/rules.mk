@@ -10,7 +10,6 @@ packages-base:
 	@${GCC} ${GCCFLAGS} packages/base/init.c ${LIB} -o image/bin/init
 	@${GCC} ${GCCFLAGS} packages/base/load.c ${LIB} -o image/bin/load
 	@${GCC} ${GCCFLAGS} packages/base/ls.c ${LIB} -o image/bin/ls
-	@${GCC} ${GCCFLAGS} packages/base/ncat.c ${LIB} -o image/bin/ncat
 	@${GCC} ${GCCFLAGS} packages/base/reboot.c ${LIB} -o image/bin/reboot
 	@${GCC} ${GCCFLAGS} packages/base/shell.c ${LIB} -o image/bin/shell
 	@${GCC} ${GCCFLAGS} packages/base/tail.c ${LIB} -o image/bin/tail
@@ -25,7 +24,6 @@ packages-base-clean:
 	@rm -f image/bin/init
 	@rm -f image/bin/load
 	@rm -f image/bin/ls
-	@rm -f image/bin/ncat
 	@rm -f image/bin/reboot
 	@rm -f image/bin/shell
 	@rm -f image/bin/tail
