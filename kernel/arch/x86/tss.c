@@ -5,13 +5,13 @@
 
 static struct tss_entry entry;
 
-void tss_init(void *stack)
+void tss_init(unsigned int stack)
 {
 
     memory_clear(&entry, sizeof (struct tss_entry));
 
     entry.ss0 = 0x10;
-    entry.esp0 = (unsigned int)stack;
+    entry.esp0 = stack;
     entry.cs = 0x0B;
     entry.ss = entry.ds = entry.es = entry.fs = entry.gs = 0x13;
 
