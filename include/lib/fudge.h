@@ -10,6 +10,7 @@
 #include "ethernet.h"
 #include "memory.h"
 #include "string.h"
+#include "tcp.h"
 #include "udp.h"
 
 #endif
