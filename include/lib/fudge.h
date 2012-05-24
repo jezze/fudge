@@ -8,6 +8,8 @@
 #include "arp.h"
 #include "call.h"
 #include "ethernet.h"
+#include "icmpv4.h"
+#include "icmpv6.h"
 #include "memory.h"
 #include "string.h"
 #include "tcp.h"
