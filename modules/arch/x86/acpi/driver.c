@@ -13,8 +13,8 @@ static struct acpi_sdth *find_header(struct acpi_driver *self, char *name)
     for (i = 0; i < entries; i++)
     {
 
-        if (memory_compare(self->rsdp->rsdt->entries[i]->signature, name, 4))
-            return self->rsdp->rsdt->entries[i];
+//        if (memory_compare(self->rsdp->rsdt->entries[i]->signature, name, 4))
+//            return self->rsdp->rsdt->entries[i];
 
     }
 
@@ -61,7 +61,7 @@ static void start(struct modules_driver *self)
     if (!driver->rsdp)
         return;
 
-    mmu_map_kernel_memory(2, (unsigned int)driver->rsdp->rsdt, (unsigned int)driver->rsdp->rsdt, 0x00100000);
+    mmu_map_kernel_memory(1, (unsigned int)driver->rsdp->rsdt, (unsigned int)driver->rsdp->rsdt, 0x00100000);
     mmu_reload_memory();
 
 }

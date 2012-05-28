@@ -19,6 +19,12 @@ void load_modules()
     call_open(FILE_STDIN, "/ramdisk/mod/pci.ko");
     call_execute(id);
 
+    call_open(FILE_STDIN, "/ramdisk/mod/cpuid.ko");
+    call_execute(id);
+
+    call_open(FILE_STDIN, "/ramdisk/mod/acpi.ko");
+    call_execute(id);
+
     call_open(FILE_STDIN, "/ramdisk/mod/pit.ko");
     call_execute(id);
 

@@ -3,7 +3,7 @@
 #include <modules/cpuid/cpuid.h>
 #include <modules/smp/smp.h>
 
-struct smp_driver driver;
+static struct smp_driver driver;
 
 void init()
 {

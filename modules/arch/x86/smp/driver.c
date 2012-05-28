@@ -34,7 +34,6 @@ static void setup_madt(struct smp_driver *driver, struct acpi_driver *acpiDriver
 
     }
 
-
 }
 
 static void setup_srat(struct smp_driver *driver, struct acpi_driver *acpiDriver)
