@@ -107,7 +107,7 @@ void pci_bus_init(struct pci_bus *bus)
 
     memory_clear(bus, sizeof (struct pci_bus));
 
-    modules_bus_init(&bus->base, PCI_BUS_TYPE, "pci:0", scan);
+    modules_bus_init(&bus->base, PCI_BUS_TYPE, "pci", scan);
 
     bus->ind = ind;
     bus->inw = inw;

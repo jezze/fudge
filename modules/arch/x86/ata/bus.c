@@ -201,7 +201,7 @@ void ata_bus_init(struct ata_bus *bus, unsigned int control, unsigned int data)
 
     memory_clear(bus, sizeof (struct ata_bus));
 
-    modules_bus_init(&bus->base, ATA_BUS_TYPE, "ata:0", scan);
+    modules_bus_init(&bus->base, ATA_BUS_TYPE, "ata", scan);
 
     bus->control = control;
     bus->data = data;

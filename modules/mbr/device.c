@@ -22,7 +22,7 @@ void mbr_device_init(struct mbr_device *device, struct ata_device *ataDevice, vo
 
     memory_clear(device, sizeof (struct mbr_device));
 
-    modules_device_init(&device->base, MBR_DEVICE_TYPE, "hda:0:0:0");
+    modules_device_init(&device->base, MBR_DEVICE_TYPE, "mbr");
 
     device->ataDevice = ataDevice;
     memory_copy(&device->partition, buffer, sizeof (struct mbr_partition));

@@ -145,7 +145,7 @@ void ata_device_init(struct ata_device *device, struct ata_bus *bus, unsigned in
 
     memory_clear(device, sizeof (struct ata_device));
 
-    modules_device_init(&device->base, ATA_DEVICE_TYPE, "ata:0:0");
+    modules_device_init(&device->base, ATA_DEVICE_TYPE, "ata");
 
     device->bus = bus;
     device->type = type;
