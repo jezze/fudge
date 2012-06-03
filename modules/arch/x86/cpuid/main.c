@@ -1,7 +1,7 @@
 #include <kernel/modules.h>
 #include <modules/cpuid/cpuid.h>
 
-struct cpuid_driver driver;
+static struct cpuid_driver driver;
 
 void init()
 {
