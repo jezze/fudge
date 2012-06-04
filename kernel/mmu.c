@@ -1,11 +1,23 @@
 #include <lib/memory.h>
 #include <kernel/error.h>
 #include <kernel/mmu.h>
+#include <kernel/runtime.h>
 
 static struct mmu_unit *mmuUnit;
 
 void mmu_pagefault(unsigned int address, unsigned int flags)
 {
+
+    struct runtime_task *task = runtime_get_running_task();
+
+    if (address >= task->memory.vaddress && address < task->memory.vaddress + task->memory.size)
+    {
+
+        mmu_map_user_memory(task->id, task->memory.paddress, task->memory.vaddress, task->memory.size);
+
+        return;
+
+    }
 
     error_register(0, address);
     error_register(1, flags);

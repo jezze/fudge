@@ -90,7 +90,6 @@ static unsigned int execute(struct runtime_task *task, unsigned int index)
 
     runtime_registers_init(&ntask->registers, header->entry, ntask->memory.vaddress + ntask->memory.size, ntask->memory.vaddress + ntask->memory.size);
 
-    mmu_map_user_memory(ntask->id, ntask->memory.paddress, ntask->memory.vaddress, ntask->memory.size);
     mmu_load_memory(ntask->id);
 
     runtime_set_running_task(ntask);
