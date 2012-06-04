@@ -1,6 +1,7 @@
 #include <kernel/error.h>
 #include <kernel/kernel.h>
-#include <kernel/log.h>
+
+static struct error_status status;
 
 void error_assert(unsigned int condition, char *message, char *file, unsigned int line)
 {
@@ -8,20 +9,27 @@ void error_assert(unsigned int condition, char *message, char *file, unsigned in
     if (condition)
         return;
 
-    kernel_disable_interrupts();
-    log_write("ASSERTION FAIL (%s) at (%s:%d)\n", message, file, line);
-
-    for (;;);
+    error_panic(message, file, line);
 
 }
 
 void error_panic(char *message, char *file, unsigned int line)
 {
 
+    status.message = message;
+    status.file = file;
+    status.line = line;
+
     kernel_disable_interrupts();
-    log_write("KERNEL PANIC (%s) at (%s:%d)\n", message, file, line);
 
     for (;;);
+
+}
+
+void error_register(unsigned int index, unsigned int value)
+{
+
+    status.registers[index] = value;
 
 }
 

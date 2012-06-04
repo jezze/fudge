@@ -1,6 +1,5 @@
 #include <lib/memory.h>
 #include <kernel/error.h>
-#include <kernel/log.h>
 #include <kernel/mmu.h>
 
 static struct mmu_unit *mmuUnit;
@@ -8,25 +7,8 @@ static struct mmu_unit *mmuUnit;
 void mmu_pagefault(unsigned int address, unsigned int flags)
 {
 
-    log_write("ERROR!\n");
-
-    if (!(flags & MMU_ERROR_PRESENT))
-        log_write("Page: present\n");
-
-    if (flags & MMU_ERROR_RW)
-        log_write("Page: read-only\n");
-
-    if (flags & MMU_ERROR_USER)
-        log_write("Page: user-mode\n");
-
-    if (flags & MMU_ERROR_RESERVED)
-        log_write("Page: reserved\n");
-
-    if (flags & MMU_ERROR_FETCH)
-        log_write("Page: fetch\n");
-
-    log_write("Address: 0x%x\n", address);
-
+    error_register(0, address);
+    error_register(1, flags);
     error_panic("PAGE FAULT", __FILE__, __LINE__);
 
 }

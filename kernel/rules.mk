@@ -10,7 +10,6 @@ kernel: kernel-arch vfs
 	@${GCC} ${GCCFLAGS} kernel/ramdisk.c -o kernel/ramdisk.o
 	@${GCC} ${GCCFLAGS} kernel/irq.c -o kernel/irq.o
 	@${GCC} ${GCCFLAGS} kernel/kernel.c -o kernel/kernel.o
-	@${GCC} ${GCCFLAGS} kernel/log.c -o kernel/log.o
 	@${GCC} ${GCCFLAGS} kernel/mmu.c -o kernel/mmu.o
 	@${GCC} ${GCCFLAGS} kernel/modules.c -o kernel/modules.o
 	@${GCC} ${GCCFLAGS} kernel/runtime.c -o kernel/runtime.o

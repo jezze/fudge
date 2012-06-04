@@ -1,7 +1,6 @@
 #include <lib/io.h>
 #include <kernel/error.h>
 #include <kernel/irq.h>
-#include <kernel/log.h>
 #include <kernel/runtime.h>
 #include <kernel/syscall.h>
 #include <kernel/arch/x86/idt.h>
@@ -65,9 +64,8 @@ void isr_handle_cpu(struct isr_cpu_registers *registers)
     if (!routine)
     {
 
-        log_write("ERROR!\n");
-        log_write("Interrupt: 0x%x\n", registers->index);
-        log_write("Error code: %d\n", registers->error);
+        error_register(0, registers->index);
+        error_register(1, registers->error);
         error_panic("UNHANDLED INTERRUPT", __FILE__, __LINE__);
 
     }
