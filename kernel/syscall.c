@@ -80,9 +80,6 @@ static unsigned int execute(struct runtime_task *task, unsigned int index)
 
     struct elf_header *header = elf_get_header((void *)ntask->memory.paddress);
 
-    /* Fix: Header should not be able to be zero */
-    unsigned int entry = (header) ? header->entry : 0;
-
     ntask->memory.vaddress = elf_get_virtual(header);
 
     if (!ntask->memory.vaddress)
@@ -91,10 +88,11 @@ static unsigned int execute(struct runtime_task *task, unsigned int index)
     ntask->used = 1;
     ntask->parentid = task->id;
 
+    runtime_registers_init(&ntask->registers, header->entry, ntask->memory.vaddress + ntask->memory.size, ntask->memory.vaddress + ntask->memory.size);
+
     mmu_map_user_memory(ntask->id, ntask->memory.paddress, ntask->memory.vaddress, ntask->memory.size);
     mmu_load_memory(ntask->id);
 
-    runtime_registers_init(&ntask->registers, entry, ntask->memory.vaddress + ntask->memory.size, ntask->memory.vaddress + ntask->memory.size);
     runtime_set_running_task(ntask);
 
     return slot;
