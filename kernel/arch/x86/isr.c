@@ -83,7 +83,7 @@ void isr_handle_irq(struct isr_irq_registers *registers)
     irq_raise(registers->index);
     reset_irq(registers->slave);
 
-    event_raise(registers->index + 0x20);
+    event_raise(registers->index + 0x20, runtime_get_running_task());
 
     load_state(&registers->general, &registers->interrupt);
 
@@ -98,7 +98,7 @@ void isr_handle_syscall(struct isr_syscall_registers *registers)
 
     registers->general.eax = syscall_raise(index, runtime_get_running_task());
 
-    event_raise(index + 0x80);
+    event_raise(index + 0x80, runtime_get_running_task());
 
     load_state(&registers->general, &registers->interrupt);
 

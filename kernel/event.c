@@ -34,7 +34,7 @@ unsigned int event_unregister_routine(unsigned int index, struct runtime_task *t
 
 }
 
-void event_raise(unsigned int index)
+void event_raise(unsigned int index, struct runtime_task *task)
 {
 
     struct event_routine *routine = &routines[index];
@@ -42,7 +42,6 @@ void event_raise(unsigned int index)
     if (!routine->callback)
         return;
 
-    struct runtime_task *task = runtime_get_running_task();
     struct runtime_task *etask = runtime_get_task(routine->task->id);
 
     if (etask->event)
