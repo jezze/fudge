@@ -34,18 +34,18 @@ unsigned int event_unregister_routine(unsigned int index, struct runtime_task *t
 
 }
 
-void event_raise(unsigned int index, struct runtime_task *task)
+struct runtime_task *event_raise(unsigned int index, struct runtime_task *task)
 {
 
     struct event_routine *routine = &routines[index];
 
     if (!routine->callback)
-        return;
+        return task;
 
     struct runtime_task *etask = runtime_get_task(routine->task->id);
 
     if (etask->event)
-        return;
+        return task;
 
     etask->event = 1;
     etask->parentid = task->id;
@@ -55,6 +55,8 @@ void event_raise(unsigned int index, struct runtime_task *task)
     mmu_load_memory(etask->id);
 
     runtime_set_running_task(etask);
+
+    return etask;
 
 }
 

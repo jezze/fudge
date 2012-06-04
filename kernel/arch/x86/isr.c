@@ -9,10 +9,8 @@
 
 static void (*routines[ISR_ROUTINE_SLOTS])(struct isr_cpu_registers *registers);
 
-static void save_state(struct isr_general_registers *general, struct isr_interrupt_registers *interrupt)
+static void save_state(struct runtime_task *task, struct isr_general_registers *general, struct isr_interrupt_registers *interrupt)
 {
-
-    struct runtime_task *task = runtime_get_running_task();
 
     task->registers.ip = interrupt->eip;
     task->registers.sp = interrupt->esp;
@@ -20,10 +18,8 @@ static void save_state(struct isr_general_registers *general, struct isr_interru
 
 }
 
-static void load_state(struct isr_general_registers *general, struct isr_interrupt_registers *interrupt)
+static void load_state(struct runtime_task *task, struct isr_general_registers *general, struct isr_interrupt_registers *interrupt)
 {
-
-    struct runtime_task *task = runtime_get_running_task();
 
     interrupt->eip = task->registers.ip;
     interrupt->esp = task->registers.sp;
@@ -78,29 +74,33 @@ void isr_handle_cpu(struct isr_cpu_registers *registers)
 void isr_handle_irq(struct isr_irq_registers *registers)
 {
 
-    save_state(&registers->general, &registers->interrupt);
+    struct runtime_task *task = runtime_get_running_task();
+
+    save_state(task, &registers->general, &registers->interrupt);
 
     irq_raise(registers->index);
     reset_irq(registers->slave);
 
-    event_raise(registers->index + 0x20, runtime_get_running_task());
+    task = event_raise(registers->index + 0x20, task);
 
-    load_state(&registers->general, &registers->interrupt);
+    load_state(task, &registers->general, &registers->interrupt);
 
 }
 
 void isr_handle_syscall(struct isr_syscall_registers *registers)
 {
 
-    save_state(&registers->general, &registers->interrupt);
+    struct runtime_task *task = runtime_get_running_task();
+
+    save_state(task, &registers->general, &registers->interrupt);
 
     unsigned int index = registers->general.eax;
 
-    registers->general.eax = syscall_raise(index, runtime_get_running_task());
+    registers->general.eax = syscall_raise(index, task);
 
-    event_raise(index + 0x80, runtime_get_running_task());
+    task = event_raise(index + 0x80, runtime_get_running_task());
 
-    load_state(&registers->general, &registers->interrupt);
+    load_state(task, &registers->general, &registers->interrupt);
 
 }
 
