@@ -102,7 +102,6 @@ static unsigned int exit(struct runtime_task *task)
 
     task->used = 0;
 
-    mmu_load_memory(ptask->id);
     runtime_set_running_task(ptask);
 
     return ptask->id;
@@ -222,7 +221,6 @@ static unsigned int wait(struct runtime_task *task)
 
     task->event = 0;
 
-    mmu_load_memory(ptask->id);
     runtime_set_running_task(ptask);
 
     return ptask->id;

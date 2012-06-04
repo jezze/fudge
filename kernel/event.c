@@ -51,9 +51,6 @@ struct runtime_task *event_raise(unsigned int index, struct runtime_task *task)
     etask->parentid = task->id;
 
     runtime_registers_init(&etask->registers, routine->callback, etask->memory.vaddress + etask->memory.size, etask->memory.vaddress + etask->memory.size);
-
-    mmu_load_memory(etask->id);
-
     runtime_set_running_task(etask);
 
     return etask;

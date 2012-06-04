@@ -2,6 +2,7 @@
 #include <kernel/error.h>
 #include <kernel/event.h>
 #include <kernel/irq.h>
+#include <kernel/mmu.h>
 #include <kernel/runtime.h>
 #include <kernel/syscall.h>
 #include <kernel/arch/x86/idt.h>
@@ -82,6 +83,7 @@ void isr_handle_irq(struct isr_irq_registers *registers)
     reset_irq(registers->slave);
 
     task = event_raise(registers->index + 0x20, task);
+    mmu_load_memory(task->id);
 
     load_state(task, &registers->general, &registers->interrupt);
 
@@ -99,6 +101,7 @@ void isr_handle_syscall(struct isr_syscall_registers *registers)
     registers->general.eax = syscall_raise(index, task);
 
     task = event_raise(index + 0x80, runtime_get_running_task());
+    mmu_load_memory(task->id);
 
     load_state(task, &registers->general, &registers->interrupt);
 
