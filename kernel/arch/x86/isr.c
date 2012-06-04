@@ -1,5 +1,6 @@
 #include <lib/io.h>
 #include <kernel/error.h>
+#include <kernel/event.h>
 #include <kernel/irq.h>
 #include <kernel/runtime.h>
 #include <kernel/syscall.h>
@@ -82,6 +83,8 @@ void isr_handle_irq(struct isr_irq_registers *registers)
     irq_raise(registers->index);
     reset_irq(registers->slave);
 
+    event_raise(registers->index + 0x20);
+
     load_state(&registers->general, &registers->interrupt);
 
 }
@@ -91,7 +94,11 @@ void isr_handle_syscall(struct isr_syscall_registers *registers)
 
     save_state(&registers->general, &registers->interrupt);
 
-    registers->general.eax = syscall_raise(registers->general.eax, runtime_get_running_task());
+    unsigned int index = registers->general.eax;
+
+    registers->general.eax = syscall_raise(index, runtime_get_running_task());
+
+    event_raise(index + 0x80);
 
     load_state(&registers->general, &registers->interrupt);
 
