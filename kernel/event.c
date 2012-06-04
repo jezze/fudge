@@ -1,5 +1,4 @@
 #include <kernel/event.h>
-#include <kernel/mmu.h>
 #include <kernel/runtime.h>
 
 static struct event_routine routines[EVENT_ROUTINE_SLOTS];
