@@ -5,11 +5,14 @@
 static void configure_ata(struct ata_device *self)
 {
 
+    unsigned int i;
     unsigned short buffer[256];
+    unsigned int lba48;
+    char *model;
 
     self->bus->read_blocks(self->bus, 1, buffer);
 
-    unsigned int lba48 = buffer[ATA_ID_SUPPORT] & (1 << 10);
+    lba48 = buffer[ATA_ID_SUPPORT] & (1 << 10);
 
     self->lba28Max = (buffer[ATA_ID_LBA28MAX] << 16) | buffer[ATA_ID_LBA28MAX + 1];
 
@@ -21,9 +24,7 @@ static void configure_ata(struct ata_device *self)
 
     }
 
-    unsigned int i;
-
-    char *model = (char *)&buffer[ATA_ID_MODEL];
+    model = (char *)&buffer[ATA_ID_MODEL];
 
     for (i = 0; i < 40; i++)
         self->model[i] = model[i + 1 - ((i & 1) << 1)];

@@ -6,15 +6,16 @@
 static struct acpi_sdth *find_header(struct acpi_driver *self, char *name)
 {
 
-    unsigned int entries = (self->rsdp->rsdt->base.length - sizeof (struct acpi_sdth)) / 4;
-
     unsigned int i;
+    unsigned int entries = (self->rsdp->rsdt->base.length - sizeof (struct acpi_sdth)) / 4;
 
     for (i = 0; i < entries; i++)
     {
 
-//        if (memory_compare(self->rsdp->rsdt->entries[i]->signature, name, 4))
-//            return self->rsdp->rsdt->entries[i];
+/*
+        if (memory_compare(self->rsdp->rsdt->entries[i]->signature, name, 4))
+            return self->rsdp->rsdt->entries[i];
+*/
 
     }
 
@@ -26,6 +27,7 @@ static unsigned int find_rsdp()
 {
 
     unsigned int rsdp;
+    unsigned int ebda;
     char *signature = "RSD PTR ";
 
     for (rsdp = 0x000E0000; rsdp < 0x00100000; rsdp += 0x10)
@@ -36,7 +38,7 @@ static unsigned int find_rsdp()
 
     }
 
-    unsigned int ebda = *((unsigned int *)0x40E);
+    ebda = *((unsigned int *)0x40E);
     ebda = ebda * 0x10 & 0x000FFFFF;
 
     for (rsdp = ebda; rsdp < ebda + 0x400; rsdp += 0x10)

@@ -9,6 +9,10 @@ static struct modules_filesystem filesystem;
 static unsigned int read(struct modules_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
+    char *out = buffer;
+    unsigned int length = 0;
+    unsigned int i;
+
     if (id == 1)
     {
 
@@ -18,13 +22,10 @@ static unsigned int read(struct modules_filesystem *self, unsigned int id, unsig
 
     }
 
-    char *out = buffer;
-    unsigned int length = 0;
-    unsigned int i;
-
     for (i = 0; i < MODULES_MODULE_SLOTS; i++)
     {
 
+        unsigned int size;
         union modules_module *module = modules[i];
 
         if (!module)
@@ -44,7 +45,7 @@ static unsigned int read(struct modules_filesystem *self, unsigned int id, unsig
 
         }
 
-        unsigned int size = string_length(module->base.name);
+        size = string_length(module->base.name);
 
         memory_copy(out + length, module->base.name, size);
         memory_copy(out + length + size, "\n", 1);

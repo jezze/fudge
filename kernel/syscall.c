@@ -55,28 +55,32 @@ unsigned int syscall_halt(struct runtime_task *task)
 unsigned int syscall_execute(struct runtime_task *task, unsigned int index)
 {
 
+    unsigned int slot;
+    unsigned int count;
+    struct runtime_task *ntask;
+    struct elf_header *header;
     struct runtime_descriptor *descriptor = task->get_descriptor(task, index);
 
     if (!descriptor || !descriptor->id || !descriptor->filesystem || !descriptor->filesystem->read)
         return 0;
 
-    unsigned int slot = runtime_get_task_slot();
+    slot = runtime_get_task_slot();
 
     if (!slot)
         return 0;
 
-    struct runtime_task *ntask = runtime_get_task(slot);
+    ntask = runtime_get_task(slot);
 
     runtime_task_clone(ntask, task, slot);
     mmu_map_user_memory(ntask->id, ntask->memory.paddress, ntask->memory.paddress, ntask->memory.size);
     mmu_load_memory(ntask->id);
 
-    unsigned int count = descriptor->filesystem->read(descriptor->filesystem, descriptor->id, 0, ntask->memory.size, (void *)ntask->memory.paddress);
+    count = descriptor->filesystem->read(descriptor->filesystem, descriptor->id, 0, ntask->memory.size, (void *)ntask->memory.paddress);
 
     if (!count)
         return 0;
 
-    struct elf_header *header = elf_get_header((void *)ntask->memory.paddress);
+    header = elf_get_header((void *)ntask->memory.paddress);
 
     ntask->memory.vaddress = elf_get_virtual(header);
 
@@ -109,20 +113,23 @@ unsigned int syscall_exit(struct runtime_task *task)
 unsigned int syscall_load(struct runtime_task *task, unsigned int index)
 {
 
+    void *physical;
+    void (*init)();
+    struct elf_header *header;
     struct runtime_descriptor *descriptor = task->get_descriptor(task, index);
 
     if (!descriptor || !descriptor->id || !descriptor->filesystem || !descriptor->filesystem->get_physical)
         return 0;
 
-    void *physical = descriptor->filesystem->get_physical(descriptor->filesystem, descriptor->id);
-    struct elf_header *header = elf_get_header(physical);
+    physical = descriptor->filesystem->get_physical(descriptor->filesystem, descriptor->id);
+    header = elf_get_header(physical);
 
     if (!header)
         return 0;
 
     elf_relocate(header);
 
-    void (*init)() = (void (*)())elf_get_symbol(header, "init");
+    init = (void (*)())elf_get_symbol(header, "init");
 
     if (!init)
         return 0;
@@ -136,25 +143,30 @@ unsigned int syscall_load(struct runtime_task *task, unsigned int index)
 unsigned int syscall_open(struct runtime_task *task, unsigned int index, char *path)
 {
 
+    unsigned int slot;
+    unsigned int id;
+    struct runtime_descriptor *descriptor;
+    struct modules_filesystem *filesystem;
+
     if (!path)
         return 0;
 
-    unsigned int slot = (index) ? index : task->get_descriptor_slot(task);
+    slot = (index) ? index : task->get_descriptor_slot(task);
 
     if (!slot)
         return 0;
 
-    struct runtime_descriptor *descriptor = task->get_descriptor(task, slot);
+    descriptor = task->get_descriptor(task, slot);
 
     if (!descriptor)
         return 0;
 
-    struct modules_filesystem *filesystem = modules_get_filesystem(path);
+    filesystem = modules_get_filesystem(path);
 
     if (!filesystem)
         return 0;
 
-    unsigned int id = filesystem->find(filesystem, path + string_length(filesystem->path));
+    id = filesystem->find(filesystem, path + string_length(filesystem->path));
 
     if (!id)
         return 0;
@@ -190,18 +202,21 @@ unsigned int syscall_reboot(struct runtime_task *task)
 unsigned int syscall_unload(struct runtime_task *task, unsigned int index)
 {
 
+    void *physical;
+    void (*destroy)();
+    struct elf_header *header;
     struct runtime_descriptor *descriptor = task->get_descriptor(task, index);
 
     if (!descriptor || !descriptor->id || !descriptor->filesystem || !descriptor->filesystem->get_physical)
         return 0;
 
-    void *physical = descriptor->filesystem->get_physical(descriptor->filesystem, descriptor->id);
-    struct elf_header *header = elf_get_header(physical);
+    physical = descriptor->filesystem->get_physical(descriptor->filesystem, descriptor->id);
+    header = elf_get_header(physical);
 
     if (!header)
         return 0;
 
-    void (*destroy)() = (void (*)())elf_get_symbol(header, "destroy");
+    destroy = (void (*)())elf_get_symbol(header, "destroy");
 
     if (!destroy)
         return 0;

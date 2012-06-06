@@ -25,12 +25,12 @@ static unsigned int read_blocks(struct ata_bus *self, unsigned int count, void *
     for (i = 0; i < count; i++)
     {
 
+        unsigned int j;
+
         self->sleep(self);
         self->wait(self);
 
-        unsigned int i;
-
-        for (i = 0; i < 256; i++)
+        for (j = 0; j < 256; j++)
             *out++ = io_inw(self->data);
 
     }
@@ -61,12 +61,12 @@ static unsigned int write_blocks(struct ata_bus *self, unsigned int count, void 
     for (i = 0; i < count; i++)
     {
 
+        unsigned int j;
+
         self->sleep(self);
         self->wait(self);
 
-        unsigned int i;
-
-        for (i = 0; i < 256; i++)
+        for (j = 0; j < 256; j++)
             io_outw(self->data, *out++);
 
     }
@@ -131,18 +131,21 @@ static void set_command(struct ata_bus *self, unsigned char command)
 static unsigned int detect(struct ata_bus *self, unsigned int slave)
 {
 
+    unsigned char status;
+    unsigned short lba;
+
     self->select(self, 0xA0, slave);
     self->set_lba(self, 0, 0, 0, 0);
     self->set_command(self, ATA_COMMAND_ID_ATA);
 
-    unsigned char status = io_inb(self->data + ATA_DATA_COMMAND);
+    status = io_inb(self->data + ATA_DATA_COMMAND);
 
     if (!status)
         return 0;
 
     self->wait(self);
 
-    unsigned short lba = (io_inb(self->data + ATA_DATA_LBA2) << 8) | io_inb(self->data + ATA_DATA_LBA1);
+    lba = (io_inb(self->data + ATA_DATA_LBA2) << 8) | io_inb(self->data + ATA_DATA_LBA1);
 
     if (lba == 0x0000)
         return ATA_DEVICE_TYPE_ATA;
@@ -163,9 +166,8 @@ static unsigned int detect(struct ata_bus *self, unsigned int slave)
 static void scan(struct modules_bus *self)
 {
 
-    struct ata_bus *bus = (struct ata_bus *)self;
-
     unsigned int type;
+    struct ata_bus *bus = (struct ata_bus *)self;
 
     if ((type = detect(bus, 0)))
         bus->add_device(bus, 0, type);
@@ -179,7 +181,6 @@ static void add_device(struct ata_bus *self, unsigned int slave, unsigned int ty
 {
 
     struct ata_device *device = &self->devices[self->devicesCount];
-
     unsigned int irq = (slave) ? ATA_IRQ_SECONDARY : ATA_IRQ_PRIMARY;
 
     ata_device_init(device, self, irq, slave, type);

@@ -57,7 +57,6 @@ static unsigned int read(struct rtl8139_driver *self, void *buffer)
 {
 
     unsigned short current = io_inw(self->io + RTL8139_REGISTER_CAPR) + 0x10;
-
     struct rtl8139_header *header = (struct rtl8139_header *)(self->rx + current);
 
     memory_copy(buffer, (char *)self->rx + current + 4, header->length);
@@ -119,7 +118,6 @@ static void handle_irq(struct modules_device *device)
 {
 
     struct rtl8139_driver *driver = (struct rtl8139_driver *)device->driver;
-
     unsigned int status = io_inw(driver->io + RTL8139_REGISTER_ISR);
 
     if (status & RTL8139_ISR_FLAG_ROK)
@@ -156,7 +154,6 @@ static void attach(struct modules_device *device)
 
     struct pci_device *pciDevice = (struct pci_device *)device;
     struct rtl8139_driver *driver = (struct rtl8139_driver *)device->driver;
-
     unsigned int bar0 = pciDevice->config_ind(pciDevice, PCI_CONFIG_BAR0);
     unsigned int irq = pciDevice->config_inb(pciDevice, PCI_CONFIG_IRQ_LINE);
 
@@ -169,10 +166,12 @@ static void attach(struct modules_device *device)
 static unsigned int check(struct modules_driver *self, struct modules_device *device)
 {
 
+    struct pci_device *pciDevice;
+
     if (device->type != PCI_DEVICE_TYPE)
         return 0;
 
-    struct pci_device *pciDevice = (struct pci_device *)device;
+    pciDevice = (struct pci_device *)device;
 
     return pciDevice->config_inw(pciDevice, PCI_CONFIG_VENDOR) == 0x10EC && pciDevice->config_inw(pciDevice, PCI_CONFIG_DEVICE) == 0x8139;
 

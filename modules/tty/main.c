@@ -87,19 +87,17 @@ void init()
 {
 
     struct ps2_kbd_driver *kbdDriver = (struct ps2_kbd_driver *)modules_get_driver(PS2_KBD_DRIVER_TYPE);
+    struct vga_driver *vgaDriver = (struct vga_driver *)modules_get_driver(VGA_DRIVER_TYPE);
+    struct nodefs_driver *nodefsDriver = (struct nodefs_driver *)modules_get_driver(NODEFS_DRIVER_TYPE);
 
     if (!kbdDriver)
         return;
-
-    struct vga_driver *vgaDriver = (struct vga_driver *)modules_get_driver(VGA_DRIVER_TYPE);
 
     if (!vgaDriver)
         return;
 
     tty_driver_init(&driver, kbdDriver, vgaDriver, "/ramdisk/home/");
     modules_register_driver(&driver.base);
-
-    struct nodefs_driver *nodefsDriver = (struct nodefs_driver *)modules_get_driver(NODEFS_DRIVER_TYPE);
 
     if (!nodefsDriver)
         return;

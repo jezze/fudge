@@ -9,11 +9,10 @@ void init()
 {
 
     struct acpi_driver *acpiDriver = (struct acpi_driver *)modules_get_driver(ACPI_DRIVER_TYPE);
+    struct cpuid_driver *cpuidDriver = (struct cpuid_driver *)modules_get_driver(CPUID_DRIVER_TYPE);
 
     if (!acpiDriver)
         return;
-
-    struct cpuid_driver *cpuidDriver = (struct cpuid_driver *)modules_get_driver(CPUID_DRIVER_TYPE);
 
     if (!cpuidDriver)
         return;

@@ -36,16 +36,14 @@ static void add_device(struct mbr_driver *self, struct ata_device *ataDevice, vo
 static void attach(struct modules_device *device)
 {
 
+    unsigned int i;
+    char buffer[512];
     struct ata_device *ataDevice = (struct ata_device *)device;
     struct mbr_driver *driver = (struct mbr_driver *)device->driver;
 
     irq_register_routine(ataDevice->irq, device, handle_irq);
 
-    char buffer[512];
-
     ataDevice->read_lba28(ataDevice, 0, 1, buffer);
-
-    unsigned int i;
 
     for (i = 0; i < MBR_PARTITION_SLOTS; i++)
         driver->add_device(driver, ataDevice, buffer + MBR_PARTITION_OFFSET + i * MBR_PARTITION_SIZE);
@@ -55,10 +53,12 @@ static void attach(struct modules_device *device)
 static unsigned int check(struct modules_driver *self, struct modules_device *device)
 {
 
+    struct ata_device *ataDevice;
+
     if (device->type != ATA_DEVICE_TYPE)
         return 0;
 
-    struct ata_device *ataDevice = (struct ata_device *)device;
+    ataDevice = (struct ata_device *)device;
 
     return ataDevice->type == ATA_DEVICE_TYPE_ATA;
 

@@ -8,10 +8,10 @@ static struct nodefs_node console;
 void init()
 {
 
+    struct nodefs_driver *nodefsDriver = (struct nodefs_driver *)modules_get_driver(NODEFS_DRIVER_TYPE);
+
     vga_driver_init(&driver);
     modules_register_driver(&driver.base);
-
-    struct nodefs_driver *nodefsDriver = (struct nodefs_driver *)modules_get_driver(NODEFS_DRIVER_TYPE);
 
     if (!nodefsDriver)
         return;

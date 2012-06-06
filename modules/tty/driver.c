@@ -19,11 +19,10 @@ static void clear(struct tty_driver *self)
 static void scroll(struct tty_driver *self)
 {
 
+    unsigned int i;
     char buffer[TTY_CHARACTER_SIZE];
 
     self->vgaDriver->read_framebuffer(self->vgaDriver, TTY_CHARACTER_WIDTH, TTY_CHARACTER_SIZE - TTY_CHARACTER_WIDTH, buffer);
-
-    unsigned int i;
 
     for (i = TTY_CHARACTER_SIZE - TTY_CHARACTER_WIDTH; i < TTY_CHARACTER_SIZE; i++)
         buffer[i] = ' ';

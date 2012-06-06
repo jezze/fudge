@@ -61,12 +61,13 @@ static unsigned int buffer_putc(struct ps2_kbd_buffer *self, char *buffer)
 static void handle_irq(struct modules_device *self)
 {
 
+    unsigned int scancode;
     struct ps2_kbd_driver *kbd = (struct ps2_kbd_driver *)self->driver;
 
     if (!kbd)
         return;
 
-    unsigned char scancode = io_inb(PS2_REGISTER_DATA);
+    scancode = io_inb(PS2_REGISTER_DATA);
 
     if (kbd->escaped)
     {

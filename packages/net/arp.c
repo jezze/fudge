@@ -16,15 +16,6 @@ static void write_ethernet_header(void *buffer, struct ethernet_header *header)
 
 }
 
-static struct arp_header *read_arp_header(void *buffer)
-{
-
-    char *in = buffer;
-
-    return (struct arp_header *)(in + sizeof (struct ethernet_header));
-
-}
-
 static void write_arp_header(void *buffer, struct arp_header *header)
 {
 
@@ -37,16 +28,16 @@ static void write_arp_header(void *buffer, struct arp_header *header)
 static void receive()
 {
 
+    unsigned int id;
+    char num[32];
     char buffer[0x800];
+    struct ethernet_header *eheader;
 
-    unsigned int id = call_open(FILE_NEW, "/module/rtl8139/data");
+    id = call_open(FILE_NEW, "/module/rtl8139/data");
     call_read(id, 0, 0x800, buffer);
     call_close(id);
 
-    struct ethernet_header *eheader = read_ethernet_header(buffer);
-    struct arp_header *aheader = read_arp_header(buffer);
-
-    char num[32];
+    eheader = read_ethernet_header(buffer);
 
     call_write(FILE_STDOUT, 0, 6, "FROM: ");
     string_write_num(num, eheader->sha[0], 16);
@@ -75,6 +66,7 @@ static void receive()
 static void send()
 {
 
+    unsigned int id;
     char buffer[0x800];
     char tpa[] = {0xC0, 0xA8, 0x00, 0x01};
     char tha[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
@@ -104,7 +96,7 @@ static void send()
     write_ethernet_header(buffer, &eheader);
     write_arp_header(buffer, &aheader);
 
-    unsigned int id = call_open(FILE_NEW, "/module/rtl8139/data");
+    id = call_open(FILE_NEW, "/module/rtl8139/data");
     call_write(id, 0, sizeof (struct ethernet_header) + sizeof (struct arp_header), buffer);
     call_close(id);
 
@@ -113,6 +105,8 @@ static void send()
 void main()
 {
 
+    unsigned int id;
+
     call_attach(0x2B, receive);
 
     eth0.ip[0] = 0xC0;
@@ -120,7 +114,7 @@ void main()
     eth0.ip[2] = 0x00;
     eth0.ip[3] = 0x05;
 
-    unsigned int id = call_open(FILE_NEW, "/module/rtl8139/mac");
+    id = call_open(FILE_NEW, "/module/rtl8139/mac");
     call_read(id, 0, 6, eth0.mac);
     call_close(id);
 

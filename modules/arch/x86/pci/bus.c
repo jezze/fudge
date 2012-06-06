@@ -41,12 +41,13 @@ static void detect(struct pci_bus *self, unsigned int num)
     for (slot = 0; slot < 32; slot++)
     {
 
+        unsigned int header;
         unsigned int address = get_address(num, slot, 0x00);
 
         if (inw(address, 0x00) == 0xFFFF)
             continue;
 
-        unsigned short header = inb(address, 0x0E);
+        header = inb(address, 0x0E);
 
         if ((header & 0x01))
             detect(self, inb(address, 0x19));

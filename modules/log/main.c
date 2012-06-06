@@ -24,10 +24,10 @@ static unsigned int messages_write(struct nodefs_node *self, unsigned int offset
 void init()
 {
 
+    struct nodefs_driver *nodefsDriver = (struct nodefs_driver *)modules_get_driver(NODEFS_DRIVER_TYPE);
+
     log_driver_init(&driver);
     modules_register_driver(&driver.base);
-
-    struct nodefs_driver *nodefsDriver = (struct nodefs_driver *)modules_get_driver(NODEFS_DRIVER_TYPE);
 
     if (!nodefsDriver)
         return;

@@ -7,13 +7,15 @@
 static void setup_madt(struct smp_driver *driver, struct acpi_driver *acpiDriver)
 {
 
+    unsigned int madttable;
+    unsigned int madtend;
     struct acpi_madt *madt = (struct acpi_madt *)acpiDriver->find_header(acpiDriver, "APIC");
 
     if (!madt)
         return;
 
-    unsigned int madttable = (unsigned int)madt + sizeof (struct acpi_madt);
-    unsigned int madtend = (unsigned int)madt + madt->base.length;
+    madttable = (unsigned int)madt + sizeof (struct acpi_madt);
+    madtend = (unsigned int)madt + madt->base.length;
 
     while (madttable < madtend)
     {
@@ -39,13 +41,15 @@ static void setup_madt(struct smp_driver *driver, struct acpi_driver *acpiDriver
 static void setup_srat(struct smp_driver *driver, struct acpi_driver *acpiDriver)
 {
 
+    unsigned int srattable;
+    unsigned int sratend;
     struct acpi_srat *srat = (struct acpi_srat *)acpiDriver->find_header(acpiDriver, "SRAT");
 
     if (!srat)
         return;
 
-    unsigned int srattable = (unsigned int)srat + sizeof (struct acpi_srat);
-    unsigned int sratend = (unsigned int)srat + srat->base.length;
+    srattable = (unsigned int)srat + sizeof (struct acpi_srat);
+    sratend = (unsigned int)srat + srat->base.length;
 
     while (srattable < sratend)
     {
@@ -65,9 +69,8 @@ static void setup_srat(struct smp_driver *driver, struct acpi_driver *acpiDriver
 static void start(struct modules_driver *self)
 {
 
-    struct smp_driver *driver = (struct smp_driver *)self;
-
     unsigned int i;
+    struct smp_driver *driver = (struct smp_driver *)self;
 
     for (i = 0; i < 32; i++)
     {

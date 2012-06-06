@@ -85,10 +85,10 @@ static unsigned int lfb_write(struct nodefs_node *self, unsigned int offset, uns
 void init()
 {
 
+    struct nodefs_driver *nodefsDriver = (struct nodefs_driver *)modules_get_driver(NODEFS_DRIVER_TYPE);
+
     bga_driver_init(&driver);
     modules_register_driver(&driver.base);
-
-    struct nodefs_driver *nodefsDriver = (struct nodefs_driver *)modules_get_driver(NODEFS_DRIVER_TYPE);
 
     if (!nodefsDriver)
         return;

@@ -24,15 +24,19 @@ static unsigned int read(struct modules_filesystem *self, unsigned int id, unsig
         for (i = 0; i < nodesCount; i++)
         {
 
+            char *start;
+            char *slash;
+            unsigned int size;
+
             if (&nodes[i] == node)
                 continue;
 
             if (!memory_find(nodes[i].name, node->name, string_length(nodes[i].name), string_length(node->name)))
                 continue;
 
-            char *start = nodes[i].name + string_length(node->name);
-            unsigned int size = string_length(start);
-            char *slash = memory_find(start, "/", size, 1);
+            start = nodes[i].name + string_length(node->name);
+            size = string_length(start);
+            slash = memory_find(start, "/", size, 1);
 
             if (slash && slash < start + size)
                 continue;
@@ -50,10 +54,12 @@ static unsigned int read(struct modules_filesystem *self, unsigned int id, unsig
     else
     {
 
+        unsigned int c;
+
         if (offset > node->size)
             return 0;
 
-        unsigned int c = node->size - offset;
+        c = node->size - offset;
 
         if (c > count)
             c = count;
@@ -71,6 +77,7 @@ static unsigned int read(struct modules_filesystem *self, unsigned int id, unsig
 static unsigned int write(struct modules_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
+    unsigned int c;
     struct ramdisk_node *node = &nodes[id - 1];
 
     if (node->header->typeflag[0] == TAR_FILETYPE_DIR)
@@ -79,7 +86,7 @@ static unsigned int write(struct modules_filesystem *self, unsigned int id, unsi
     if (offset > node->size)
         return 0;
 
-    unsigned int c = node->size - offset;
+    c = node->size - offset;
 
     if (c > count)
         c = count;
@@ -93,12 +100,11 @@ static unsigned int write(struct modules_filesystem *self, unsigned int id, unsi
 static unsigned int find(struct modules_filesystem *self, char *name)
 {
 
+    unsigned int i;
     unsigned int length = string_length(name);
 
     if (!length)
         return 1;
-
-    unsigned int i;
 
     for (i = 0; i < nodesCount; i++)
     {

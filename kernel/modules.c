@@ -9,10 +9,10 @@ static union modules_module *modules[MODULES_MODULE_SLOTS];
 static void attach(struct modules_driver *driver)
 {
 
+    unsigned int i;
+
     if (!driver->check)
         return;
-
-    unsigned int i;
 
     for (i = 0; i < MODULES_MODULE_SLOTS; i++)
     {
@@ -62,20 +62,20 @@ struct modules_driver *modules_get_driver(unsigned int type)
 struct modules_filesystem *modules_get_filesystem(char *path)
 {
 
+    unsigned int i;
     struct modules_filesystem *current = 0;
     unsigned int max = 0;
-
-    unsigned int i;
 
     for (i = 0; i < MODULES_MODULE_SLOTS; i++)
     {
 
+        unsigned int length;
         union modules_module *module = modules[i];
 
         if (!module || module->base.type != MODULES_TYPE_FILESYSTEM)
             continue;
 
-        unsigned int length = string_length(module->filesystem.path);
+        length = string_length(module->filesystem.path);
 
         if (!memory_compare(module->filesystem.path, path, length))
             continue;
@@ -95,9 +95,8 @@ struct modules_filesystem *modules_get_filesystem(char *path)
 static void register_base(struct modules_base *base)
 {
 
-    union modules_module *module = (union modules_module *)base;
-
     unsigned int i;
+    union modules_module *module = (union modules_module *)base;
 
     for (i = 0; i < MODULES_MODULE_SLOTS; i++)
     {
@@ -151,9 +150,8 @@ void modules_register_filesystem(struct modules_filesystem *filesystem)
 static void unregister_base(struct modules_base *base)
 {
 
-    union modules_module *module = (union modules_module *)base;
-
     unsigned int i;
+    union modules_module *module = (union modules_module *)base;
 
     for (i = 0; i < MODULES_MODULE_SLOTS; i++)
     {

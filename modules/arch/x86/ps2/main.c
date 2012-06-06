@@ -47,6 +47,8 @@ static unsigned int my_read(struct nodefs_node *self, unsigned int offset, unsig
 void init()
 {
 
+    struct nodefs_driver *nodefsDriver = (struct nodefs_driver *)modules_get_driver(NODEFS_DRIVER_TYPE);
+
     ps2_kbd_device_init(&kbdDevice, PS2_IRQ_KBD);
     modules_register_device(&kbdDevice.base);
 
@@ -58,8 +60,6 @@ void init()
 
     ps2_mouse_driver_init(&mouseDriver);
     modules_register_driver(&mouseDriver.base);
-
-    struct nodefs_driver *nodefsDriver = (struct nodefs_driver *)modules_get_driver(NODEFS_DRIVER_TYPE);
 
     if (!nodefsDriver)
         return;

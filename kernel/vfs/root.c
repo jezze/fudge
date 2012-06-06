@@ -16,6 +16,7 @@ static unsigned int read(struct modules_filesystem *self, unsigned int id, unsig
     for (i = 0; i < MODULES_MODULE_SLOTS; i++)
     {
 
+        unsigned int size;
         union modules_module *module = modules[i];
 
         if (!module || module->base.type != MODULES_TYPE_FILESYSTEM)
@@ -24,7 +25,7 @@ static unsigned int read(struct modules_filesystem *self, unsigned int id, unsig
         if (&module->filesystem == self)
             continue;
 
-        unsigned int size = string_length(module->filesystem.path) - 1;
+        size = string_length(module->filesystem.path) - 1;
 
         memory_copy(out + length, module->filesystem.path + 1, size);
         memory_copy(out + length + size, "\n", 1);

@@ -93,10 +93,11 @@ void isr_handle_syscall(struct isr_syscall_registers *registers)
 {
 
     struct runtime_task *task = runtime_get_running_task();
+    unsigned int index;
 
     save_state(task, &registers->general, &registers->interrupt);
 
-    unsigned int index = registers->general.eax;
+    index = registers->general.eax;
 
     registers->general.eax = syscall_raise(index, task);
 

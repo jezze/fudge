@@ -17,16 +17,17 @@ static void read_superblock(struct mbr_device *device, struct ext2_superblock *s
 static void read_blockgroup(struct mbr_device *device, unsigned int id, struct ext2_blockgroup *bg)
 {
 
+    char buffer[1024];
+    unsigned int blocksize;
+    unsigned int sectorsize;
+    unsigned int nodegroup;
     struct ext2_superblock sb;
 
     read_superblock(device, &sb);
 
-    char buffer[1024];
-
-    unsigned int blocksize = 1024 << sb.blockSize;
-    unsigned int sectorsize = blocksize / 512;
-
-    unsigned int nodegroup = (id - 1) / sb.nodeCountGroup;
+    blocksize = 1024 << sb.blockSize;
+    sectorsize = blocksize / 512;
+    nodegroup = (id - 1) / sb.nodeCountGroup;
 
     device->read(device, 2 * sectorsize, sectorsize, buffer);
 
@@ -37,18 +38,21 @@ static void read_blockgroup(struct mbr_device *device, unsigned int id, struct e
 static void read_node(struct mbr_device *device, unsigned int id, struct ext2_blockgroup *bg, struct ext2_node *node)
 {
 
+    char buffer[1024];
+    unsigned int blocksize;
+    unsigned int sectorsize;
+    unsigned int nodesize;
+    unsigned int nodeindex;
+    unsigned int nodeblock;
     struct ext2_superblock sb;
 
     read_superblock(device, &sb);
 
-    char buffer[1024];
-
-    unsigned int blocksize = 1024 << sb.blockSize;
-    unsigned int sectorsize = blocksize / 512;
-
-    unsigned int nodesize = sb.nodeSize;
-    unsigned int nodeindex = (id - 1) % sb.nodeCountGroup;
-    unsigned int nodeblock = (id * nodesize) / blocksize;
+    blocksize = 1024 << sb.blockSize;
+    sectorsize = blocksize / 512;
+    nodesize = sb.nodeSize;
+    nodeindex = (id - 1) % sb.nodeCountGroup;
+    nodeblock = (id * nodesize) / blocksize;
 
     device->read(device, (bg->blockTableAddress + nodeblock) * sectorsize, sectorsize, buffer);
 
@@ -59,12 +63,14 @@ static void read_node(struct mbr_device *device, unsigned int id, struct ext2_bl
 static void read_content(struct mbr_device *device, struct ext2_node *node, void *buffer)
 {
 
+    unsigned int blocksize;
+    unsigned int sectorsize;
     struct ext2_superblock sb;
 
     read_superblock(device, &sb);
 
-    unsigned int blocksize = 1024 << sb.blockSize;
-    unsigned int sectorsize = blocksize / 512;
+    blocksize = 1024 << sb.blockSize;
+    sectorsize = blocksize / 512;
 
     device->read(device, (node->pointer0) * sectorsize, sectorsize, buffer);
 
@@ -96,11 +102,13 @@ static void attach(struct modules_device *device)
 static unsigned int check(struct modules_driver *self, struct modules_device *device)
 {
 
+    struct ext2_superblock sb;
+    struct mbr_device *mbrDevice;
+
     if (device->type != MBR_DEVICE_TYPE)
         return 0;
 
-    struct mbr_device *mbrDevice = (struct mbr_device *)device;
-    struct ext2_superblock sb;
+    mbrDevice = (struct mbr_device *)device;
 
     read_superblock(mbrDevice, &sb);
 

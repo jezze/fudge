@@ -39,13 +39,13 @@ static unsigned char read()
 void ps2_mouse_device_init(struct ps2_mouse_device *device, unsigned int irq)
 {
 
+    unsigned char status;
+
     memory_clear(device, sizeof (struct ps2_mouse_device));
 
     modules_device_init(&device->base, PS2_MOUSE_DEVICE_TYPE, "mouse");
 
     device->irq = irq;
-
-    unsigned char status;
 
     wait_write();
     io_outb(PS2_REGISTER_COMMAND, 0xA8);

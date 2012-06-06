@@ -47,13 +47,14 @@ void kernel_arch_init(struct kernel_arch *arch, void (*setup)(struct kernel_arch
 static struct runtime_task *execute_init()
 {
 
+    unsigned int id;
+    unsigned int index;
     unsigned int slot = runtime_get_task_slot();
     struct runtime_task *task = runtime_get_task(slot);
 
     runtime_task_init(task, slot);
-    unsigned int id = syscall_open(task, 0, "/ramdisk/bin/init");
-
-    unsigned int index = syscall_execute(task, id);
+    id = syscall_open(task, 0, "/ramdisk/bin/init");
+    index = syscall_execute(task, id);
 
     if (!index)
         return 0;
@@ -65,6 +66,8 @@ static struct runtime_task *execute_init()
 void kernel_init(struct kernel_arch *arch)
 {
 
+    struct runtime_task *task;
+
     error_assert(arch != 0, "Architecture not found", __FILE__, __LINE__);
 
     kernelArch = arch;
@@ -74,7 +77,7 @@ void kernel_init(struct kernel_arch *arch)
     runtime_init();
     ramdisk_init(kernelArch->ramdiskc, kernelArch->ramdiskv);
 
-    struct runtime_task *task = execute_init();
+    task = execute_init();
 
     error_assert(task != 0, "Init not found", __FILE__, __LINE__);
 

@@ -6,8 +6,6 @@
 static void start(struct modules_driver *self)
 {
 
-    struct log_driver *driver = (struct log_driver *)self;
-
 }
 
 void log_driver_init(struct log_driver *driver)

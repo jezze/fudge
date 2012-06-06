@@ -6,6 +6,7 @@
 static unsigned int filesystem_read(struct modules_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
+    struct nodefs_node *node;
     struct nodefs_filesystem *filesystem = (struct nodefs_filesystem *)self;
 
     if (id == 1)
@@ -30,7 +31,7 @@ static unsigned int filesystem_read(struct modules_filesystem *self, unsigned in
 
     }
 
-    struct nodefs_node *node = filesystem->nodes[id - 2];
+    node = filesystem->nodes[id - 2];
 
     return node->read(node, offset, count, buffer);
 
@@ -40,7 +41,6 @@ static unsigned int filesystem_write(struct modules_filesystem *self, unsigned i
 {
 
     struct nodefs_filesystem *filesystem = (struct nodefs_filesystem *)self;
-
     struct nodefs_node *node = filesystem->nodes[id - 2];
 
     return node->write(node, offset, count, buffer);
@@ -50,14 +50,14 @@ static unsigned int filesystem_write(struct modules_filesystem *self, unsigned i
 static unsigned int filesystem_find(struct modules_filesystem *self, char *name)
 {
 
+    unsigned int i;
     unsigned int length = string_length(name);
+    struct nodefs_filesystem *filesystem;
 
     if (!length)
         return 1;
 
-    struct nodefs_filesystem *filesystem = (struct nodefs_filesystem *)self;
-
-    unsigned int i;
+    filesystem = (struct nodefs_filesystem *)self;
 
     for (i = 0; i < filesystem->count; i++)
     {

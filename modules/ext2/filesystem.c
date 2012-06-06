@@ -6,12 +6,11 @@
 static unsigned int read(struct modules_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct ext2_filesystem *filesystem = (struct ext2_filesystem *)self;
-
     struct ext2_blockgroup bg;
     struct ext2_node node;
     char mem[1024];
     char *private = mem;
+    struct ext2_filesystem *filesystem = (struct ext2_filesystem *)self;
 
     filesystem->driver->read_blockgroup(filesystem->device, id, &bg);
     filesystem->driver->read_node(filesystem->device, id, &bg, &node);
@@ -73,12 +72,11 @@ static unsigned int read(struct modules_filesystem *self, unsigned int id, unsig
 static struct ext2_entry *finddir(struct modules_filesystem *self, unsigned int id, char *name)
 {
 
-    struct ext2_filesystem *filesystem = (struct ext2_filesystem *)self;
-
     struct ext2_blockgroup bg;
     struct ext2_node node;
     char mem[1024];
     char *private = mem;
+    struct ext2_filesystem *filesystem = (struct ext2_filesystem *)self;
 
     filesystem->driver->read_blockgroup(filesystem->device, id, &bg);
     filesystem->driver->read_node(filesystem->device, id, &bg, &node);
@@ -111,14 +109,13 @@ static struct ext2_entry *finddir(struct modules_filesystem *self, unsigned int 
 static unsigned int find(struct modules_filesystem *self, char *name)
 {
 
+    char *temp = name;
+    struct ext2_entry *entry;
+    unsigned int id = 2;
     unsigned int length = string_length(name);
 
     if (!length)
         return 2;
-
-    char *temp = name;
-    struct ext2_entry *entry;
-    unsigned int id = 2;
 
     while ((entry = finddir(self, id, temp)))
     {
