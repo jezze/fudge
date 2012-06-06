@@ -10,7 +10,7 @@ static struct mmu_table tables[MMU_HEADER_SLOTS];
 static struct mmu_directory kernelDirectory;
 static struct mmu_table kernelTables[4];
 
-static void handle_pagefault(struct isr_cpu_registers *registers)
+static void handle_interrupt(struct isr_cpu_registers *registers)
 {
 
     mmu_pagefault(cpu_get_cr2(), registers->error);
@@ -120,7 +120,7 @@ static void unmap_memory(unsigned int index)
 static void enable()
 {
 
-    isr_register_routine(ISR_INDEX_PF, handle_pagefault);
+    isr_register_routine(ISR_INDEX_PF, handle_interrupt);
     cpu_set_cr0(cpu_get_cr0() | 0x80000000);
 
 }
