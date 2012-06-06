@@ -8,9 +8,7 @@
 #include <kernel/runtime.h>
 #include <kernel/syscall.h>
 
-static unsigned int (*routines[SYSCALL_TABLE_SLOTS])(struct runtime_task *task, unsigned int stack);
-
-static unsigned int attach(struct runtime_task *task, unsigned int index, unsigned int callback)
+unsigned int syscall_attach(struct runtime_task *task, unsigned int index, unsigned int callback)
 {
 
     if (!callback)
@@ -20,7 +18,7 @@ static unsigned int attach(struct runtime_task *task, unsigned int index, unsign
 
 }
 
-static unsigned int close(struct runtime_task *task, unsigned int index)
+unsigned int syscall_close(struct runtime_task *task, unsigned int index)
 {
 
     struct runtime_descriptor *descriptor = task->get_descriptor(task, index);
@@ -37,14 +35,14 @@ static unsigned int close(struct runtime_task *task, unsigned int index)
 
 }
 
-static unsigned int detach(struct runtime_task *task, unsigned int index)
+unsigned int syscall_detach(struct runtime_task *task, unsigned int index)
 {
 
     return event_unregister_routine(index, task);
 
 }
 
-static unsigned int halt(struct runtime_task *task)
+unsigned int syscall_halt(struct runtime_task *task)
 {
 
     kernel_enable_interrupts();
@@ -54,7 +52,7 @@ static unsigned int halt(struct runtime_task *task)
 
 }
 
-static unsigned int execute(struct runtime_task *task, unsigned int index)
+unsigned int syscall_execute(struct runtime_task *task, unsigned int index)
 {
 
     struct runtime_descriptor *descriptor = task->get_descriptor(task, index);
@@ -95,7 +93,7 @@ static unsigned int execute(struct runtime_task *task, unsigned int index)
 
 }
 
-static unsigned int exit(struct runtime_task *task)
+unsigned int syscall_exit(struct runtime_task *task)
 {
 
     struct runtime_task *ptask = runtime_get_task(task->parentid);
@@ -108,7 +106,7 @@ static unsigned int exit(struct runtime_task *task)
 
 }
 
-static unsigned int load(struct runtime_task *task, unsigned int index)
+unsigned int syscall_load(struct runtime_task *task, unsigned int index)
 {
 
     struct runtime_descriptor *descriptor = task->get_descriptor(task, index);
@@ -135,7 +133,7 @@ static unsigned int load(struct runtime_task *task, unsigned int index)
 
 }
 
-static unsigned int open(struct runtime_task *task, unsigned int index, char *path)
+unsigned int syscall_open(struct runtime_task *task, unsigned int index, char *path)
 {
 
     if (!path)
@@ -170,7 +168,7 @@ static unsigned int open(struct runtime_task *task, unsigned int index, char *pa
 
 }
 
-static unsigned int read(struct runtime_task *task, unsigned int index, unsigned int offset, unsigned int count, char *buffer)
+unsigned int syscall_read(struct runtime_task *task, unsigned int index, unsigned int offset, unsigned int count, char *buffer)
 {
 
     struct runtime_descriptor *descriptor = task->get_descriptor(task, index);
@@ -182,14 +180,14 @@ static unsigned int read(struct runtime_task *task, unsigned int index, unsigned
 
 }
 
-static unsigned int reboot(struct runtime_task *task)
+unsigned int syscall_reboot(struct runtime_task *task)
 {
 
     return 1;
 
 }
 
-static unsigned int unload(struct runtime_task *task, unsigned int index)
+unsigned int syscall_unload(struct runtime_task *task, unsigned int index)
 {
 
     struct runtime_descriptor *descriptor = task->get_descriptor(task, index);
@@ -214,7 +212,7 @@ static unsigned int unload(struct runtime_task *task, unsigned int index)
 
 }
 
-static unsigned int wait(struct runtime_task *task)
+unsigned int syscall_wait(struct runtime_task *task)
 {
 
     struct runtime_task *ptask = runtime_get_task(task->parentid);
@@ -227,7 +225,7 @@ static unsigned int wait(struct runtime_task *task)
 
 }
 
-static unsigned int write(struct runtime_task *task, unsigned int index, unsigned int offset, unsigned int count, char *buffer)
+unsigned int syscall_write(struct runtime_task *task, unsigned int index, unsigned int offset, unsigned int count, char *buffer)
 {
 
     struct runtime_descriptor *descriptor = task->get_descriptor(task, index);
@@ -236,179 +234,6 @@ static unsigned int write(struct runtime_task *task, unsigned int index, unsigne
         return 0;
 
     return descriptor->filesystem->write(descriptor->filesystem, descriptor->id, offset, count, buffer);
-
-}
-
-static unsigned int handle_attach(struct runtime_task *task, unsigned int stack)
-{
-
-    unsigned int index = *(unsigned int *)(stack + 4);
-    unsigned int callback = *(unsigned int *)(stack + 8);
-
-    return attach(task, index, callback);
-
-}
-
-static unsigned int handle_close(struct runtime_task *task, unsigned int stack)
-{
-
-    unsigned int index = *(unsigned int *)(stack + 4);
-
-    return close(task, index);
-
-}
-
-static unsigned int handle_detach(struct runtime_task *task, unsigned int stack)
-{
-
-    unsigned int index = *(unsigned int *)(stack + 4);
-
-    return detach(task, index);
-
-}
-
-static unsigned int handle_halt(struct runtime_task *task, unsigned int stack)
-{
-
-    return halt(task);
-
-}
-
-static unsigned int handle_execute(struct runtime_task *task, unsigned int stack)
-{
-
-    unsigned int index = *(unsigned int *)(stack + 4);
-
-    return execute(task, index);
-
-}
-
-static unsigned int handle_exit(struct runtime_task *task, unsigned int stack)
-{
-
-    return exit(task);
-
-}
-
-static unsigned int handle_load(struct runtime_task *task, unsigned int stack)
-{
-
-    unsigned int index = *(unsigned int *)(stack + 4);
-
-    return load(task, index);
-
-}
-
-static unsigned int handle_open(struct runtime_task *task, unsigned int stack)
-{
-
-    unsigned int index = *(unsigned int *)(stack + 4);
-    char *path = *(char **)(stack + 8);
-
-    return open(task, index, path);
-
-}
-
-static unsigned int handle_read(struct runtime_task *task, unsigned int stack)
-{
-
-    unsigned int id = *(unsigned int *)(stack + 4);
-    unsigned int offset = *(unsigned int *)(stack + 8);
-    unsigned int count = *(unsigned int *)(stack + 12);
-    char *buffer = *(char **)(stack + 16);
-
-    return read(task, id, offset, count, buffer);
-
-}
-
-static unsigned int handle_reboot(struct runtime_task *task, unsigned int stack)
-{
-
-    return reboot(task);
-
-}
-
-static unsigned int handle_unload(struct runtime_task *task, unsigned int stack)
-{
-
-    unsigned int index = *(unsigned int *)(stack + 4);
-
-    return unload(task, index);
-
-}
-
-static unsigned int handle_wait(struct runtime_task *task, unsigned int stack)
-{
-
-    return wait(task);
-
-}
-
-static unsigned int handle_write(struct runtime_task *task, unsigned int stack)
-{
-
-    unsigned int id = *(unsigned int *)(stack + 4);
-    unsigned int offset = *(unsigned int *)(stack + 8);
-    unsigned int count = *(unsigned int *)(stack + 12);
-    char *buffer = *(char **)(stack + 16);
-
-    return write(task, id, offset, count, buffer);
-
-}
-
-static void syscall_register_routine(unsigned char index, unsigned int (*routine)(struct runtime_task *task, unsigned int stack))
-{
-
-    routines[index] = routine;
-
-}
-
-unsigned int syscall_raise(unsigned int index, struct runtime_task *task)
-{
-
-    unsigned int (*routine)(struct runtime_task *task, unsigned int stack) = routines[index];
-
-    if (!routine)
-        return 0;
-
-    return routine(task, task->registers.sp);
-
-}
-
-struct runtime_task *syscall_execute(char *path)
-{
-
-    unsigned int slot = runtime_get_task_slot();
-    struct runtime_task *task = runtime_get_task(slot);
-
-    runtime_task_init(task, slot);
-    unsigned int id = open(task, 0, path);
-
-    unsigned int index = execute(task, id);
-
-    if (!index)
-        return 0;
-
-    return runtime_get_task(index);
-
-}
-
-void syscall_init()
-{
-
-    syscall_register_routine(SYSCALL_INDEX_OPEN, handle_open);
-    syscall_register_routine(SYSCALL_INDEX_CLOSE, handle_close);
-    syscall_register_routine(SYSCALL_INDEX_READ, handle_read);
-    syscall_register_routine(SYSCALL_INDEX_WRITE, handle_write);
-    syscall_register_routine(SYSCALL_INDEX_EXECUTE, handle_execute);
-    syscall_register_routine(SYSCALL_INDEX_EXIT, handle_exit);
-    syscall_register_routine(SYSCALL_INDEX_WAIT, handle_wait);
-    syscall_register_routine(SYSCALL_INDEX_LOAD, handle_load);
-    syscall_register_routine(SYSCALL_INDEX_UNLOAD, handle_unload);
-    syscall_register_routine(SYSCALL_INDEX_HALT, handle_halt);
-    syscall_register_routine(SYSCALL_INDEX_REBOOT, handle_reboot);
-    syscall_register_routine(SYSCALL_INDEX_ATTACH, handle_attach);
-    syscall_register_routine(SYSCALL_INDEX_DETACH, handle_detach);
 
 }
 

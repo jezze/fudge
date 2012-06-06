@@ -9,6 +9,7 @@
 #include <kernel/arch/x86/isr.h>
 #include <kernel/arch/x86/mboot.h>
 #include <kernel/arch/x86/mmu.h>
+#include <kernel/arch/x86/syscall.h>
 #include <kernel/arch/x86/tss.h>
 
 struct arch_x86 arch_x86;
@@ -24,6 +25,7 @@ static void setup(struct kernel_arch *arch)
     idt_init();
     fpu_init();
     isr_init();
+    syscall_init();
     mmu_setup();
 
 }

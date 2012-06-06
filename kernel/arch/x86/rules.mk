@@ -14,6 +14,7 @@ kernel-arch: kernel-arch-init
 	@${ASM} ${ASMFLAGS} kernel/arch/x86/isrs.s -o kernel/arch/x86/isrs.o
 	@${GCC} ${GCCFLAGS} kernel/arch/x86/mmu.c -o kernel/arch/x86/mmu.o
 	@${GCC} ${GCCFLAGS} kernel/arch/x86/mboot.c -o kernel/arch/x86/mboot.o
+	@${GCC} ${GCCFLAGS} kernel/arch/x86/syscall.c -o kernel/arch/x86/syscall.o
 	@${GCC} ${GCCFLAGS} kernel/arch/x86/tss.c -o kernel/arch/x86/tss.o
 
 kernel-arch-clean:

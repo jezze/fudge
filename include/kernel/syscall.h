@@ -16,9 +16,19 @@
 #define SYSCALL_INDEX_ATTACH  0x30
 #define SYSCALL_INDEX_DETACH  0x31
 
-struct runtime_task *syscall_execute(char *path);
-unsigned int syscall_raise(unsigned int index, struct runtime_task *task);
-void syscall_init();
+unsigned int syscall_attach(struct runtime_task *task, unsigned int index, unsigned int callback);
+unsigned int syscall_close(struct runtime_task *task, unsigned int index);
+unsigned int syscall_detach(struct runtime_task *task, unsigned int index);
+unsigned int syscall_halt(struct runtime_task *task);
+unsigned int syscall_execute(struct runtime_task *task, unsigned int index);
+unsigned int syscall_exit(struct runtime_task *task);
+unsigned int syscall_load(struct runtime_task *task, unsigned int index);
+unsigned int syscall_open(struct runtime_task *task, unsigned int index, char *path);
+unsigned int syscall_read(struct runtime_task *task, unsigned int index, unsigned int offset, unsigned int count, char *buffer);
+unsigned int syscall_reboot(struct runtime_task *task);
+unsigned int syscall_unload(struct runtime_task *task, unsigned int index);
+unsigned int syscall_wait(struct runtime_task *task);
+unsigned int syscall_write(struct runtime_task *task, unsigned int index, unsigned int offset, unsigned int count, char *buffer);
 
 #endif
 
