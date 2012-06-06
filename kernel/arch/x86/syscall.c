@@ -131,12 +131,10 @@ static void register_routine(unsigned char index, unsigned int (*routine)(struct
 unsigned int syscall_raise(unsigned int index, struct runtime_task *task)
 {
 
-    unsigned int (*routine)(struct runtime_task *task) = routines[index];
-
-    if (!routine)
+    if (!routines[index])
         return 0;
 
-    return routine(task);
+    return routines[index](task);
 
 }
 
