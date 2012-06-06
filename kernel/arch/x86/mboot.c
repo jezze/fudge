@@ -1,5 +1,4 @@
 #include <kernel/arch/x86/mboot.h>
-#include <kernel/arch/x86/vbe.h>
 
 void mboot_init(struct mboot_header *header)
 {

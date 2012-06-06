@@ -71,8 +71,8 @@ static void reload_memory()
 static void map_memory(struct mmu_directory *directory, struct mmu_table *table, unsigned int paddress, unsigned int vaddress, unsigned int size, unsigned int tflags, unsigned int pflags)
 {
 
-    unsigned int frame = get_frame(vaddress);
     unsigned int i;
+    unsigned int frame = get_frame(vaddress);
 
     table_clear(table);
 
@@ -86,9 +86,9 @@ static void map_memory(struct mmu_directory *directory, struct mmu_table *table,
 static void map_kernel_memory(unsigned int index, unsigned int paddress, unsigned int vaddress, unsigned int size)
 {
 
+    unsigned int i;
     struct mmu_directory *directory = &kernelDirectory;
     struct mmu_table *table = &kernelTables[index];
-    unsigned int i;
 
     map_memory(directory, table, paddress, vaddress, size, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE);
 
