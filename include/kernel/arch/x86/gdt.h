@@ -1,13 +1,13 @@
 #ifndef ARCH_GDT_H
 #define ARCH_GDT_H
 
-#define GDT_TABLE_SLOTS       6
-#define GDT_ENTRY_NULL        0
-#define GDT_ENTRY_KERNEL_CODE 1
-#define GDT_ENTRY_KERNEL_DATA 2
-#define GDT_ENTRY_USER_CODE   3
-#define GDT_ENTRY_USER_DATA   4
-#define GDT_ENTRY_TSS         5
+#define GDT_TABLE_SLOTS      6
+#define GDT_INDEX_NULL       0x00
+#define GDT_INDEX_KERNELCODE 0x01
+#define GDT_INDEX_KERNELDATA 0x02
+#define GDT_INDEX_USERCODE   0x03
+#define GDT_INDEX_USERDATA   0x04
+#define GDT_INDEX_TSS        0x05
 
 struct gdt_entry
 {

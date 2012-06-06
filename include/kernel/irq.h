@@ -1,7 +1,7 @@
 #ifndef KERNEL_IRQ_H
 #define KERNEL_IRQ_H
 
-#define IRQ_ROUTINE_SLOTS 16
+#define IRQ_TABLE_SLOTS 16
 
 struct irq_routine
 {

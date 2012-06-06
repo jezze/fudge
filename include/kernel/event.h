@@ -1,7 +1,7 @@
 #ifndef KERNEL_EVENT_H
 #define KERNEL_EVENT_H
 
-#define EVENT_ROUTINE_SLOTS   256
+#define EVENT_TABLE_SLOTS 256
 
 struct event_routine
 {

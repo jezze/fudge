@@ -8,7 +8,7 @@
 #include <kernel/runtime.h>
 #include <kernel/syscall.h>
 
-static unsigned int (*routines[SYSCALL_ROUTINE_SLOTS])(struct runtime_task *task, unsigned int stack);
+static unsigned int (*routines[SYSCALL_TABLE_SLOTS])(struct runtime_task *task, unsigned int stack);
 
 static unsigned int attach(struct runtime_task *task, unsigned int index, unsigned int callback)
 {
@@ -396,19 +396,19 @@ struct runtime_task *syscall_execute(char *path)
 void syscall_init()
 {
 
-    syscall_register_routine(SYSCALL_ROUTINE_OPEN, handle_open);
-    syscall_register_routine(SYSCALL_ROUTINE_CLOSE, handle_close);
-    syscall_register_routine(SYSCALL_ROUTINE_READ, handle_read);
-    syscall_register_routine(SYSCALL_ROUTINE_WRITE, handle_write);
-    syscall_register_routine(SYSCALL_ROUTINE_EXECUTE, handle_execute);
-    syscall_register_routine(SYSCALL_ROUTINE_EXIT, handle_exit);
-    syscall_register_routine(SYSCALL_ROUTINE_WAIT, handle_wait);
-    syscall_register_routine(SYSCALL_ROUTINE_LOAD, handle_load);
-    syscall_register_routine(SYSCALL_ROUTINE_UNLOAD, handle_unload);
-    syscall_register_routine(SYSCALL_ROUTINE_HALT, handle_halt);
-    syscall_register_routine(SYSCALL_ROUTINE_REBOOT, handle_reboot);
-    syscall_register_routine(SYSCALL_ROUTINE_ATTACH, handle_attach);
-    syscall_register_routine(SYSCALL_ROUTINE_DETACH, handle_detach);
+    syscall_register_routine(SYSCALL_INDEX_OPEN, handle_open);
+    syscall_register_routine(SYSCALL_INDEX_CLOSE, handle_close);
+    syscall_register_routine(SYSCALL_INDEX_READ, handle_read);
+    syscall_register_routine(SYSCALL_INDEX_WRITE, handle_write);
+    syscall_register_routine(SYSCALL_INDEX_EXECUTE, handle_execute);
+    syscall_register_routine(SYSCALL_INDEX_EXIT, handle_exit);
+    syscall_register_routine(SYSCALL_INDEX_WAIT, handle_wait);
+    syscall_register_routine(SYSCALL_INDEX_LOAD, handle_load);
+    syscall_register_routine(SYSCALL_INDEX_UNLOAD, handle_unload);
+    syscall_register_routine(SYSCALL_INDEX_HALT, handle_halt);
+    syscall_register_routine(SYSCALL_INDEX_REBOOT, handle_reboot);
+    syscall_register_routine(SYSCALL_INDEX_ATTACH, handle_attach);
+    syscall_register_routine(SYSCALL_INDEX_DETACH, handle_detach);
 
 }
 

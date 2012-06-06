@@ -120,7 +120,7 @@ static void unmap_memory(unsigned int index)
 static void enable()
 {
 
-    isr_register_routine(ISR_ROUTINE_PF, handle_pagefault);
+    isr_register_routine(ISR_INDEX_PF, handle_pagefault);
     cpu_set_cr0(cpu_get_cr0() | 0x80000000);
 
 }

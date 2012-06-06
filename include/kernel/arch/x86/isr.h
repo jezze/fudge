@@ -1,40 +1,40 @@
 #ifndef ARCH_ISR_H
 #define ARCH_ISR_H
 
-#define ISR_ROUTINE_SLOTS   256
-#define ISR_ROUTINE_DE      0x00
-#define ISR_ROUTINE_DB      0x01
-#define ISR_ROUTINE_NI      0x02
-#define ISR_ROUTINE_BP      0x03
-#define ISR_ROUTINE_OF      0x04
-#define ISR_ROUTINE_BR      0x05
-#define ISR_ROUTINE_UD      0x06
-#define ISR_ROUTINE_NM      0x07
-#define ISR_ROUTINE_DF      0x08
-#define ISR_ROUTINE_CO      0x09
-#define ISR_ROUTINE_TS      0x0A
-#define ISR_ROUTINE_NP      0x0B
-#define ISR_ROUTINE_SS      0x0C
-#define ISR_ROUTINE_GP      0x0D
-#define ISR_ROUTINE_PF      0x0E
-#define ISR_ROUTINE_MF      0x10
-#define ISR_ROUTINE_AC      0x11
-#define ISR_ROUTINE_MC      0x12
-#define ISR_ROUTINE_XM      0x13
-#define ISR_ROUTINE_PIT     0x20
-#define ISR_ROUTINE_KBD     0x21
-#define ISR_ROUTINE_CASCADE 0x22
-#define ISR_ROUTINE_COM2    0x23
-#define ISR_ROUTINE_COM1    0x24
-#define ISR_ROUTINE_SOUND   0x25
-#define ISR_ROUTINE_SDA     0x26
-#define ISR_ROUTINE_PP      0x27
-#define ISR_ROUTINE_RTC     0x28
-#define ISR_ROUTINE_MOUSE   0x2C
-#define ISR_ROUTINE_FPU     0x2D
-#define ISR_ROUTINE_ATAP    0x2E
-#define ISR_ROUTINE_ATAS    0x2F
-#define ISR_ROUTINE_SYSCALL 0x80
+#define ISR_TABLE_SLOTS   256
+#define ISR_INDEX_DE      0x00
+#define ISR_INDEX_DB      0x01
+#define ISR_INDEX_NI      0x02
+#define ISR_INDEX_BP      0x03
+#define ISR_INDEX_OF      0x04
+#define ISR_INDEX_BR      0x05
+#define ISR_INDEX_UD      0x06
+#define ISR_INDEX_NM      0x07
+#define ISR_INDEX_DF      0x08
+#define ISR_INDEX_CO      0x09
+#define ISR_INDEX_TS      0x0A
+#define ISR_INDEX_NP      0x0B
+#define ISR_INDEX_SS      0x0C
+#define ISR_INDEX_GP      0x0D
+#define ISR_INDEX_PF      0x0E
+#define ISR_INDEX_MF      0x10
+#define ISR_INDEX_AC      0x11
+#define ISR_INDEX_MC      0x12
+#define ISR_INDEX_XM      0x13
+#define ISR_INDEX_PIT     0x20
+#define ISR_INDEX_KBD     0x21
+#define ISR_INDEX_CASCADE 0x22
+#define ISR_INDEX_COM2    0x23
+#define ISR_INDEX_COM1    0x24
+#define ISR_INDEX_SOUND   0x25
+#define ISR_INDEX_SDA     0x26
+#define ISR_INDEX_PP      0x27
+#define ISR_INDEX_RTC     0x28
+#define ISR_INDEX_MOUSE   0x2C
+#define ISR_INDEX_FPU     0x2D
+#define ISR_INDEX_ATAP    0x2E
+#define ISR_INDEX_ATAS    0x2F
+#define ISR_INDEX_SYSCALL 0x80
 
 struct isr_segment_registers
 {

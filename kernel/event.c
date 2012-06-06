@@ -1,7 +1,7 @@
 #include <kernel/event.h>
 #include <kernel/runtime.h>
 
-static struct event_routine routines[EVENT_ROUTINE_SLOTS];
+static struct event_routine routines[EVENT_TABLE_SLOTS];
 
 unsigned int event_register_routine(unsigned int index, struct runtime_task *task, unsigned int callback)
 {
