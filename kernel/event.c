@@ -31,23 +31,19 @@ unsigned int event_unregister_routine(unsigned int index, struct runtime_task *t
 struct runtime_task *event_raise(unsigned int index, struct runtime_task *task)
 {
 
-    struct runtime_task *etask;
-
     if (!routines[index].callback)
         return task;
 
-    etask = runtime_get_task(routines[index].task->id);
-
-    if (etask->event)
+    if (routines[index].task->event)
         return task;
 
-    etask->event = 1;
-    etask->parentid = task->id;
+    routines[index].task->event = 1;
+    routines[index].task->parentid = task->id;
 
-    runtime_registers_init(&etask->registers, routines[index].callback, etask->memory.vaddress + etask->memory.size, etask->memory.vaddress + etask->memory.size);
-    runtime_set_running_task(etask);
+    runtime_registers_init(&routines[index].task->registers, routines[index].callback, routines[index].task->memory.vaddress + routines[index].task->memory.size, routines[index].task->memory.vaddress + routines[index].task->memory.size);
+    runtime_set_running_task(routines[index].task);
 
-    return etask;
+    return routines[index].task;
 
 }
 
