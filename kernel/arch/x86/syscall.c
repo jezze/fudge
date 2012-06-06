@@ -121,7 +121,7 @@ static unsigned int handle_write(struct runtime_task *task, unsigned int stack)
 
 }
 
-static void syscall_register_routine(unsigned char index, unsigned int (*routine)(struct runtime_task *task, unsigned int stack))
+static void register_routine(unsigned char index, unsigned int (*routine)(struct runtime_task *task, unsigned int stack))
 {
 
     routines[index] = routine;
@@ -143,19 +143,19 @@ unsigned int syscall_raise(unsigned int index, struct runtime_task *task)
 void syscall_init()
 {
 
-    syscall_register_routine(SYSCALL_INDEX_OPEN, handle_open);
-    syscall_register_routine(SYSCALL_INDEX_CLOSE, handle_close);
-    syscall_register_routine(SYSCALL_INDEX_READ, handle_read);
-    syscall_register_routine(SYSCALL_INDEX_WRITE, handle_write);
-    syscall_register_routine(SYSCALL_INDEX_EXECUTE, handle_execute);
-    syscall_register_routine(SYSCALL_INDEX_EXIT, handle_exit);
-    syscall_register_routine(SYSCALL_INDEX_WAIT, handle_wait);
-    syscall_register_routine(SYSCALL_INDEX_LOAD, handle_load);
-    syscall_register_routine(SYSCALL_INDEX_UNLOAD, handle_unload);
-    syscall_register_routine(SYSCALL_INDEX_HALT, handle_halt);
-    syscall_register_routine(SYSCALL_INDEX_REBOOT, handle_reboot);
-    syscall_register_routine(SYSCALL_INDEX_ATTACH, handle_attach);
-    syscall_register_routine(SYSCALL_INDEX_DETACH, handle_detach);
+    register_routine(SYSCALL_INDEX_OPEN, handle_open);
+    register_routine(SYSCALL_INDEX_CLOSE, handle_close);
+    register_routine(SYSCALL_INDEX_READ, handle_read);
+    register_routine(SYSCALL_INDEX_WRITE, handle_write);
+    register_routine(SYSCALL_INDEX_EXECUTE, handle_execute);
+    register_routine(SYSCALL_INDEX_EXIT, handle_exit);
+    register_routine(SYSCALL_INDEX_WAIT, handle_wait);
+    register_routine(SYSCALL_INDEX_LOAD, handle_load);
+    register_routine(SYSCALL_INDEX_UNLOAD, handle_unload);
+    register_routine(SYSCALL_INDEX_HALT, handle_halt);
+    register_routine(SYSCALL_INDEX_REBOOT, handle_reboot);
+    register_routine(SYSCALL_INDEX_ATTACH, handle_attach);
+    register_routine(SYSCALL_INDEX_DETACH, handle_detach);
 
 }
 
