@@ -9,9 +9,9 @@ static struct modules_filesystem filesystem;
 static unsigned int read(struct modules_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    char *out = buffer;
-    unsigned int length = 0;
     unsigned int i;
+    unsigned int length = 0;
+    char *out = buffer;
 
     for (i = 0; i < MODULES_MODULE_SLOTS; i++)
     {

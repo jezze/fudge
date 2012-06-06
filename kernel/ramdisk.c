@@ -9,9 +9,8 @@ static struct ramdisk_node nodes[RAMDISK_NODE_SLOTS];
 static unsigned int parse(void *address)
 {
 
-    char *current = address;
-
     unsigned int i;
+    char *current = address;
 
     for (i = 0; *current; i++)
     {
@@ -47,8 +46,8 @@ void ramdisk_node_init(struct ramdisk_node *node, char *name, unsigned int size,
 void ramdisk_init(unsigned int ramdiskc, void **ramdiskv)
 {
 
-    unsigned int count = 0;
     unsigned int i;
+    unsigned int count = 0;
 
     for (i = 0; i < ramdiskc; i++)
         count += parse(*(ramdiskv + i));

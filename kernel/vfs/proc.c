@@ -10,8 +10,8 @@ static struct modules_filesystem filesystem;
 static unsigned int read(struct modules_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    unsigned int length = 0;
     unsigned int i;
+    unsigned int length = 0;
 
     for (i = 1; i < RUNTIME_TASK_SLOTS - 1; i++)
     {

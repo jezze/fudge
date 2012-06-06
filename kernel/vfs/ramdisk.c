@@ -17,9 +17,9 @@ static unsigned int read(struct modules_filesystem *self, unsigned int id, unsig
     if (node->header->typeflag[0] == TAR_FILETYPE_DIR)
     {
 
-        char *out = buffer;
-        unsigned int length = 0;
         unsigned int i;
+        unsigned int length = 0;
+        char *out = buffer;
 
         for (i = 0; i < nodesCount; i++)
         {

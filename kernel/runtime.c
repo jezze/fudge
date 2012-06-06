@@ -142,9 +142,9 @@ void runtime_task_clone(struct runtime_task *task, struct runtime_task *original
 void runtime_init()
 {
 
-    memory_clear(tasks, sizeof (struct runtime_task) * RUNTIME_TASK_SLOTS);
-
     running = 0;
+
+    memory_clear(tasks, sizeof (struct runtime_task) * RUNTIME_TASK_SLOTS);
 
     vfs_proc_init(tasks);
 

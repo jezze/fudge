@@ -63,8 +63,8 @@ struct modules_filesystem *modules_get_filesystem(char *path)
 {
 
     unsigned int i;
-    struct modules_filesystem *current = 0;
     unsigned int max = 0;
+    struct modules_filesystem *current = 0;
 
     for (i = 0; i < MODULES_MODULE_SLOTS; i++)
     {
