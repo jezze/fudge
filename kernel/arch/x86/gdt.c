@@ -23,11 +23,11 @@ void gdt_init()
 
     memory_clear(&entries, sizeof (struct gdt_entry) * GDT_TABLE_SLOTS);
 
-    gdt_set_gate(0x00, 0x00000000, 0x00000000, 0x00, 0x00); /* Null segment */
-    gdt_set_gate(0x01, 0x00000000, 0xFFFFFFFF, 0x9A, 0xCF); /* Kernel code segment */
-    gdt_set_gate(0x02, 0x00000000, 0xFFFFFFFF, 0x92, 0xCF); /* Kernel data segment */
-    gdt_set_gate(0x03, 0x00000000, 0xFFFFFFFF, 0xFA, 0xCF); /* User code segment */
-    gdt_set_gate(0x04, 0x00000000, 0xFFFFFFFF, 0xF2, 0xCF); /* User data segment */
+    gdt_set_gate(GDT_ENTRY_NULL, 0x00000000, 0x00000000, 0x00, 0x00);
+    gdt_set_gate(GDT_ENTRY_KERNEL_CODE, 0x00000000, 0xFFFFFFFF, 0x9A, 0xCF);
+    gdt_set_gate(GDT_ENTRY_KERNEL_DATA, 0x00000000, 0xFFFFFFFF, 0x92, 0xCF);
+    gdt_set_gate(GDT_ENTRY_USER_CODE, 0x00000000, 0xFFFFFFFF, 0xFA, 0xCF);
+    gdt_set_gate(GDT_ENTRY_USER_DATA, 0x00000000, 0xFFFFFFFF, 0xF2, 0xCF);
 
     pointer.base = entries;
     pointer.limit = (sizeof (struct gdt_entry) * GDT_TABLE_SLOTS) - 1;
