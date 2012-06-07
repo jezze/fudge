@@ -1,7 +1,6 @@
 .intel_syntax noprefix
 
 .extern isr_handle_cpu
-.extern isr_handle_syscall
 
 .global isr_routine00
 isr_routine00:
