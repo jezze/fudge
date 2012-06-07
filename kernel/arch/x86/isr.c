@@ -28,35 +28,10 @@ static void load_state(struct runtime_task *task, struct isr_general_registers *
 
 }
 
-static void remap_irq()
-{
-
-    io_outb(0x20, 0x11);
-    io_outb(0xA0, 0x11);
-    io_outb(0x21, 0x20);
-    io_outb(0xA1, 0x28);
-    io_outb(0x21, 0x04);
-    io_outb(0xA1, 0x02);
-    io_outb(0x21, 0x01);
-    io_outb(0xA1, 0x01);
-    io_outb(0x21, 0x00);
-    io_outb(0xA1, 0x00);
-
-}
-
-static void reset_irq(unsigned int slave)
-{
-
-    if (slave)
-        io_outb(0xA0, 0x20);
-
-    io_outb(0x20, 0x20);
-
-}
-
 void isr_handle_cpu(struct isr_cpu_registers *registers)
 {
 
+    struct runtime_task *task;
     void (*routine)(struct isr_cpu_registers *registers) = routines[registers->index];
 
     if (!routine)
@@ -68,19 +43,11 @@ void isr_handle_cpu(struct isr_cpu_registers *registers)
 
     }
 
-    routine(registers);
-
-}
-
-static void isr_handle_irq(struct isr_cpu_registers *registers)
-{
-
-    struct runtime_task *task = runtime_get_running_task();
+    task = runtime_get_running_task();
 
     save_state(task, &registers->general, &registers->interrupt);
 
-    irq_raise(registers->index - 0x20);
-    reset_irq(registers->error);
+    routine(registers);
 
     task = event_raise(registers->index, task);
     mmu_load_memory(task->id);
@@ -124,8 +91,6 @@ void isr_unregister_routine(unsigned int index)
 
 void isr_init()
 {
-
-    remap_irq();
 
     idt_set_gate(ISR_INDEX_DE, isr_routine00, 0x08, 0x8E);
     idt_set_gate(ISR_INDEX_DB, isr_routine01, 0x08, 0x8E);
@@ -176,23 +141,6 @@ void isr_init()
     idt_set_gate(ISR_INDEX_ATAP, isr_routine2E, 0x08, 0x8E);
     idt_set_gate(ISR_INDEX_ATAS, isr_routine2F, 0x08, 0x8E);
     idt_set_gate(ISR_INDEX_SYSCALL, isr_routine80, 0x08, 0xEE);
-
-    isr_register_routine(0x20, isr_handle_irq);
-    isr_register_routine(0x21, isr_handle_irq);
-    isr_register_routine(0x22, isr_handle_irq);
-    isr_register_routine(0x23, isr_handle_irq);
-    isr_register_routine(0x24, isr_handle_irq);
-    isr_register_routine(0x25, isr_handle_irq);
-    isr_register_routine(0x26, isr_handle_irq);
-    isr_register_routine(0x27, isr_handle_irq);
-    isr_register_routine(0x28, isr_handle_irq);
-    isr_register_routine(0x29, isr_handle_irq);
-    isr_register_routine(0x2A, isr_handle_irq);
-    isr_register_routine(0x2B, isr_handle_irq);
-    isr_register_routine(0x2C, isr_handle_irq);
-    isr_register_routine(0x2D, isr_handle_irq);
-    isr_register_routine(0x2E, isr_handle_irq);
-    isr_register_routine(0x2F, isr_handle_irq);
 
 }
 
