@@ -1,6 +1,7 @@
 .intel_syntax noprefix
 
 .extern isr_handle_cpu
+.extern runtime_get_running_task
 
 .global isr_routine00
 isr_routine00:
@@ -348,12 +349,15 @@ isr_common_cpu:
     mov es, ax
     mov fs, ax
     mov gs, ax
+    call runtime_get_running_task
+    push eax
     call isr_handle_cpu
     mov ax, 0x23
     mov ds, ax
     mov es, ax
     mov fs, ax
     mov gs, ax
+    pop eax
     pop eax
     popa
     add esp, 8

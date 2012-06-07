@@ -25,10 +25,9 @@ static void load_state(struct runtime_task *task, struct isr_general_registers *
 
 }
 
-void isr_handle_cpu(struct isr_cpu_registers *registers)
+void isr_handle_cpu(struct runtime_task *task, struct isr_cpu_registers *registers)
 {
 
-    struct runtime_task *task;
     void (*routine)(struct runtime_task *task, struct isr_cpu_registers *registers) = routines[registers->index];
 
     if (!routine)
