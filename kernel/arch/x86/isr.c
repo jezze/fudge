@@ -43,7 +43,7 @@ void isr_handle_cpu(struct kernel_context *context, struct isr_cpu_registers *re
     save_state(context->running, registers);
 
     routine(context, registers);
-    event_raise(registers->index, context);
+    event_raise(context, registers->index);
     mmu_load_memory(context->running->id);
 
     load_state(context->running, registers);

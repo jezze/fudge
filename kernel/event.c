@@ -29,7 +29,7 @@ unsigned int event_unregister_routine(unsigned int index, struct runtime_task *t
 
 }
 
-void event_raise(unsigned int index, struct kernel_context *context)
+void event_raise(struct kernel_context *context, unsigned int index)
 {
 
     unsigned int id = context->running->id;
