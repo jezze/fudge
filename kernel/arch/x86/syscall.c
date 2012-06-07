@@ -1,5 +1,6 @@
 #include <kernel/runtime.h>
 #include <kernel/syscall.h>
+#include <kernel/arch/x86/isr.h>
 #include <kernel/arch/x86/syscall.h>
 
 static unsigned int (*routines[SYSCALL_TABLE_SLOTS])(struct runtime_task *task);
@@ -128,13 +129,21 @@ static void register_routine(unsigned char index, unsigned int (*routine)(struct
 
 }
 
-unsigned int syscall_raise(unsigned int index, struct runtime_task *task)
+static void handle_interrupt(struct isr_cpu_registers *registers)
 {
 
-    if (!routines[index])
-        return 0;
+    struct runtime_task *task = runtime_get_running_task();
 
-    return routines[index](task);
+    if (!routines[registers->error])
+    {
+
+        registers->general.eax = 0;
+
+        return;
+
+    }
+
+    registers->general.eax = routines[registers->error](task);
 
 }
 
@@ -154,6 +163,8 @@ void syscall_init()
     register_routine(SYSCALL_INDEX_REBOOT, handle_reboot);
     register_routine(SYSCALL_INDEX_ATTACH, handle_attach);
     register_routine(SYSCALL_INDEX_DETACH, handle_detach);
+
+    isr_register_routine(ISR_INDEX_SYSCALL, handle_interrupt);
 
 }
 

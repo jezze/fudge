@@ -336,23 +336,9 @@ isr_routine2F:
 .global isr_routine80
 isr_routine80:
     cli
-    pusha
-    mov eax, esp
     push eax
-    mov ax, 0x10
-    mov ds, ax
-    mov es, ax
-    mov fs, ax
-    mov gs, ax
-    call isr_handle_syscall
-    mov ax, 0x23
-    mov ds, ax
-    mov es, ax
-    mov fs, ax
-    mov gs, ax
-    pop eax
-    popa
-    iret
+    push 0x80
+    jmp isr_common_cpu
 
 isr_common_cpu:
     pusha
