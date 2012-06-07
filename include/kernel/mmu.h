@@ -19,7 +19,7 @@ struct mmu_unit
 
 };
 
-void mmu_pagefault(unsigned int address, unsigned int flags);
+void mmu_pagefault(unsigned int index, unsigned int address, unsigned int flags);
 struct mmu_memory *mmu_get_task_memory();
 void mmu_load_memory(unsigned int index);
 void mmu_reload_memory();

@@ -5,10 +5,10 @@
 
 static struct mmu_unit *mmuUnit;
 
-void mmu_pagefault(unsigned int address, unsigned int flags)
+void mmu_pagefault(unsigned int index, unsigned int address, unsigned int flags)
 {
 
-    struct runtime_task *task = runtime_get_running_task();
+    struct runtime_task *task = runtime_get_task(index);
 
     if (address >= task->memory.vaddress && address < task->memory.vaddress + task->memory.size)
     {
