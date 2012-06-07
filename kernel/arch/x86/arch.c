@@ -1,4 +1,3 @@
-#include <lib/io.h>
 #include <lib/memory.h>
 #include <kernel/kernel.h>
 #include <kernel/arch/x86/arch.h>

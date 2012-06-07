@@ -1,7 +1,5 @@
-#include <lib/io.h>
 #include <kernel/error.h>
 #include <kernel/event.h>
-#include <kernel/irq.h>
 #include <kernel/mmu.h>
 #include <kernel/runtime.h>
 #include <kernel/arch/x86/idt.h>
