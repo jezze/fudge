@@ -1,7 +1,7 @@
 .intel_syntax noprefix
 
 .extern isr_handle_cpu
-.extern kernel_get_running_task
+.extern kernel_get_context
 
 .global isr_routine00
 isr_routine00:
@@ -349,7 +349,7 @@ isr_common_cpu:
     mov es, ax
     mov fs, ax
     mov gs, ax
-    call kernel_get_running_task
+    call kernel_get_context
     push eax
     call isr_handle_cpu
     mov ax, 0x23

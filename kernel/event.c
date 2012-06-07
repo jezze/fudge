@@ -1,6 +1,6 @@
 #include <lib/memory.h>
-#include <kernel/event.h>
 #include <kernel/kernel.h>
+#include <kernel/event.h>
 #include <kernel/runtime.h>
 
 static struct event_routine routines[EVENT_TABLE_SLOTS];
@@ -29,10 +29,10 @@ unsigned int event_unregister_routine(unsigned int index, struct runtime_task *t
 
 }
 
-void event_raise(unsigned int index, struct runtime_task *task)
+void event_raise(unsigned int index, struct kernel_context *context)
 {
 
-    unsigned int id = task->id;
+    unsigned int id = context->running->id;
 
     if (!routines[index].callback)
         return;
@@ -40,13 +40,12 @@ void event_raise(unsigned int index, struct runtime_task *task)
     if (routines[index].task->event)
         return;
 
-    task = routines[index].task;
+    context->running = routines[index].task;
 
-    task->event = 1;
-    task->parentid = id;
+    context->running->event = 1;
+    context->running->parentid = id;
 
-    runtime_registers_init(&task->registers, routines[index].callback, task->memory.vaddress + task->memory.size, task->memory.vaddress + task->memory.size);
-    kernel_set_running_task(task);
+    runtime_registers_init(&context->running->registers, routines[index].callback, context->running->memory.vaddress + context->running->memory.size, context->running->memory.vaddress + context->running->memory.size);
 
 }
 

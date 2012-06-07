@@ -1,6 +1,6 @@
 #include <kernel/error.h>
-#include <kernel/event.h>
 #include <kernel/kernel.h>
+#include <kernel/event.h>
 #include <kernel/mmu.h>
 #include <kernel/runtime.h>
 #include <kernel/arch/x86/idt.h>
@@ -26,10 +26,9 @@ static void save_state(struct runtime_task *task, struct isr_cpu_registers *regi
 
 }
 
-void isr_handle_cpu(struct runtime_task *task, struct isr_cpu_registers *registers)
+void isr_handle_cpu(struct kernel_context *context, struct isr_cpu_registers *registers)
 {
 
-    struct kernel_context context;
     void (*routine)(struct kernel_context *context, struct isr_cpu_registers *registers) = routines[registers->index];
 
     if (!routine)
@@ -41,23 +40,13 @@ void isr_handle_cpu(struct runtime_task *task, struct isr_cpu_registers *registe
 
     }
 
-    context.running = kernel_get_running_task();
+    save_state(context->running, registers);
 
-    task = kernel_get_running_task();
+    routine(context, registers);
+    event_raise(registers->index, context);
+    mmu_load_memory(context->running->id);
 
-    save_state(task, registers);
-
-    routine(&context, registers);
-
-    task = kernel_get_running_task();
-
-    event_raise(registers->index, task);
-
-    task = kernel_get_running_task();
-
-    mmu_load_memory(task->id);
-
-    load_state(task, registers);
+    load_state(context->running, registers);
 
 }
 

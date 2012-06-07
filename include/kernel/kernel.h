@@ -22,8 +22,7 @@ struct kernel_arch
 
 };
 
-struct runtime_task *kernel_get_running_task();
-void kernel_set_running_task(struct runtime_task *task);
+struct kernel_context *kernel_get_context();
 void kernel_disable_interrupts();
 void kernel_enable_interrupts();
 void kernel_halt();

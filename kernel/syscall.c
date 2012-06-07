@@ -1,8 +1,8 @@
 #include <lib/elf.h>
 #include <lib/memory.h>
 #include <lib/string.h>
-#include <kernel/event.h>
 #include <kernel/kernel.h>
+#include <kernel/event.h>
 #include <kernel/mmu.h>
 #include <kernel/modules.h>
 #include <kernel/runtime.h>
@@ -91,7 +91,8 @@ unsigned int syscall_execute(struct kernel_context *context, unsigned int index)
     ntask->parentid = context->running->id;
 
     runtime_registers_init(&ntask->registers, header->entry, ntask->memory.vaddress + ntask->memory.size, ntask->memory.vaddress + ntask->memory.size);
-    kernel_set_running_task(ntask);
+
+    context->running = ntask;
 
     return slot;
 
@@ -102,8 +103,6 @@ unsigned int syscall_exit(struct kernel_context *context)
 
     context->running->used = 0;
     context->running = runtime_get_task(context->running->parentid);
-
-    kernel_set_running_task(context->running);
 
     return context->running->id;
 
@@ -231,8 +230,6 @@ unsigned int syscall_wait(struct kernel_context *context)
 
     context->running->event = 0;
     context->running = runtime_get_task(context->running->parentid);
-
-    kernel_set_running_task(context->running);
 
     return context->running->id;
 
