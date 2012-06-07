@@ -36,16 +36,6 @@
 #define ISR_INDEX_ATAS    0x2F
 #define ISR_INDEX_SYSCALL 0x80
 
-struct isr_segment_registers
-{
-
-    unsigned int gs;
-    unsigned int fs;
-    unsigned int es;
-    unsigned int ds;
-
-};
-
 struct isr_general_registers
 {
 
@@ -74,7 +64,6 @@ struct isr_interrupt_registers
 struct isr_cpu_registers
 {
 
-    struct isr_segment_registers segment;
     struct isr_general_registers general;
     unsigned int index;
     unsigned int error;
