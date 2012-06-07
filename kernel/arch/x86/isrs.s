@@ -1,7 +1,6 @@
 .intel_syntax noprefix
 
 .extern isr_handle_cpu
-.extern isr_handle_irq
 .extern isr_handle_syscall
 
 .global isr_routine00
@@ -226,113 +225,113 @@ isr_routine1F:
 isr_routine20:
     cli
     push 0
-    push 0x00
-    jmp isr_common_irq
+    push 0x20
+    jmp isr_common_cpu
 
 .global isr_routine21
 isr_routine21:
     cli
     push 0
-    push 0x01
-    jmp isr_common_irq
+    push 0x21
+    jmp isr_common_cpu
 
 .global isr_routine22
 isr_routine22:
     cli
     push 0
-    push 0x02
-    jmp isr_common_irq
+    push 0x22
+    jmp isr_common_cpu
 
 .global isr_routine23
 isr_routine23:
     cli
     push 0
-    push 0x03
-    jmp isr_common_irq
+    push 0x23
+    jmp isr_common_cpu
 
 .global isr_routine24
 isr_routine24:
     cli
     push 0
-    push 0x04
-    jmp isr_common_irq
+    push 0x24
+    jmp isr_common_cpu
 
 .global isr_routine25
 isr_routine25:
     cli
     push 0
-    push 0x05
-    jmp isr_common_irq
+    push 0x25
+    jmp isr_common_cpu
 
 .global isr_routine26
 isr_routine26:
     cli
     push 0
-    push 0x06
-    jmp isr_common_irq
+    push 0x26
+    jmp isr_common_cpu
 
 .global isr_routine27
 isr_routine27:
     cli
     push 0
-    push 0x07
-    jmp isr_common_irq
+    push 0x27
+    jmp isr_common_cpu
 
 .global isr_routine28
 isr_routine28:
     cli
     push 1
-    push 0x08
-    jmp isr_common_irq
+    push 0x28
+    jmp isr_common_cpu
 
 .global isr_routine29
 isr_routine29:
     cli
     push 1
-    push 0x09
-    jmp isr_common_irq
+    push 0x29
+    jmp isr_common_cpu
 
 .global isr_routine2A
 isr_routine2A:
     cli
     push 1
-    push 0x0A
-    jmp isr_common_irq
+    push 0x2A
+    jmp isr_common_cpu
 
 .global isr_routine2B
 isr_routine2B:
     cli
     push 1
-    push 0x0B
-    jmp isr_common_irq
+    push 0x2B
+    jmp isr_common_cpu
 
 .global isr_routine2C
 isr_routine2C:
     cli
     push 1
-    push 0x0C
-    jmp isr_common_irq
+    push 0x2C
+    jmp isr_common_cpu
 
 .global isr_routine2D
 isr_routine2D:
     cli
     push 1
-    push 0x0D
-    jmp isr_common_irq
+    push 0x2D
+    jmp isr_common_cpu
 
 .global isr_routine2E
 isr_routine2E:
     cli
     push 1
-    push 0x0E
-    jmp isr_common_irq
+    push 0x2E
+    jmp isr_common_cpu
 
 .global isr_routine2F
 isr_routine2F:
     cli
     push 1
-    push 0x0F
-    jmp isr_common_irq
+    push 0x2F
+    jmp isr_common_cpu
 
 .global isr_routine80
 isr_routine80:
@@ -365,26 +364,6 @@ isr_common_cpu:
     mov fs, ax
     mov gs, ax
     call isr_handle_cpu
-    mov ax, 0x23
-    mov ds, ax
-    mov es, ax
-    mov fs, ax
-    mov gs, ax
-    pop eax
-    popa
-    add esp, 8
-    iret
-
-isr_common_irq:
-    pusha
-    mov eax, esp
-    push eax
-    mov ax, 0x10
-    mov ds, ax
-    mov es, ax
-    mov fs, ax
-    mov gs, ax
-    call isr_handle_irq
     mov ax, 0x23
     mov ds, ax
     mov es, ax

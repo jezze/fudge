@@ -72,17 +72,17 @@ void isr_handle_cpu(struct isr_cpu_registers *registers)
 
 }
 
-void isr_handle_irq(struct isr_irq_registers *registers)
+static void isr_handle_irq(struct isr_cpu_registers *registers)
 {
 
     struct runtime_task *task = runtime_get_running_task();
 
     save_state(task, &registers->general, &registers->interrupt);
 
-    irq_raise(registers->index);
-    reset_irq(registers->slave);
+    irq_raise(registers->index - 0x20);
+    reset_irq(registers->error);
 
-    task = event_raise(registers->index + 0x20, task);
+    task = event_raise(registers->index, task);
     mmu_load_memory(task->id);
 
     load_state(task, &registers->general, &registers->interrupt);
@@ -176,6 +176,23 @@ void isr_init()
     idt_set_gate(ISR_INDEX_ATAP, isr_routine2E, 0x08, 0x8E);
     idt_set_gate(ISR_INDEX_ATAS, isr_routine2F, 0x08, 0x8E);
     idt_set_gate(ISR_INDEX_SYSCALL, isr_routine80, 0x08, 0xEE);
+
+    isr_register_routine(0x20, isr_handle_irq);
+    isr_register_routine(0x21, isr_handle_irq);
+    isr_register_routine(0x22, isr_handle_irq);
+    isr_register_routine(0x23, isr_handle_irq);
+    isr_register_routine(0x24, isr_handle_irq);
+    isr_register_routine(0x25, isr_handle_irq);
+    isr_register_routine(0x26, isr_handle_irq);
+    isr_register_routine(0x27, isr_handle_irq);
+    isr_register_routine(0x28, isr_handle_irq);
+    isr_register_routine(0x29, isr_handle_irq);
+    isr_register_routine(0x2A, isr_handle_irq);
+    isr_register_routine(0x2B, isr_handle_irq);
+    isr_register_routine(0x2C, isr_handle_irq);
+    isr_register_routine(0x2D, isr_handle_irq);
+    isr_register_routine(0x2E, isr_handle_irq);
+    isr_register_routine(0x2F, isr_handle_irq);
 
 }
 
