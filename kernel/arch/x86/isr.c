@@ -26,23 +26,21 @@ static void save_state(struct runtime_task *task, struct isr_cpu_registers *regi
 
 }
 
+static void isr_handle_undefined(struct kernel_context *context, struct isr_cpu_registers *registers)
+{
+
+    error_register(0, registers->index);
+    error_register(1, registers->error);
+    error_panic("UNHANDLED INTERRUPT", __FILE__, __LINE__);
+
+}
+
 void isr_handle_cpu(struct kernel_context *context, struct isr_cpu_registers *registers)
 {
 
-    void (*routine)(struct kernel_context *context, struct isr_cpu_registers *registers) = routines[registers->index];
-
-    if (!routine)
-    {
-
-        error_register(0, registers->index);
-        error_register(1, registers->error);
-        error_panic("UNHANDLED INTERRUPT", __FILE__, __LINE__);
-
-    }
-
     save_state(context->running, registers);
 
-    routine(context, registers);
+    routines[registers->index](context, registers);
     event_raise(context, registers->index);
     mmu_load_memory(context->running->id);
 
@@ -66,6 +64,11 @@ void isr_unregister_routine(unsigned int index)
 
 void isr_init()
 {
+
+    unsigned int i;
+
+    for (i = 0; i < ISR_TABLE_SLOTS; i++)
+        isr_register_routine(i, isr_handle_undefined);
 
     idt_set_gate(ISR_INDEX_DE, isr_routine00, 0x08, 0x8E);
     idt_set_gate(ISR_INDEX_DB, isr_routine01, 0x08, 0x8E);
