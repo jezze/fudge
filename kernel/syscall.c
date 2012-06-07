@@ -100,13 +100,12 @@ unsigned int syscall_execute(struct runtime_task *task, unsigned int index)
 unsigned int syscall_exit(struct runtime_task *task)
 {
 
-    struct runtime_task *ptask = runtime_get_task(task->parentid);
-
     task->used = 0;
+    task = runtime_get_task(task->parentid);
 
-    runtime_set_running_task(ptask);
+    runtime_set_running_task(task);
 
-    return ptask->id;
+    return task->id;
 
 }
 
@@ -230,13 +229,12 @@ unsigned int syscall_unload(struct runtime_task *task, unsigned int index)
 unsigned int syscall_wait(struct runtime_task *task)
 {
 
-    struct runtime_task *ptask = runtime_get_task(task->parentid);
-
     task->event = 0;
+    task = runtime_get_task(task->parentid);
 
-    runtime_set_running_task(ptask);
+    runtime_set_running_task(task);
 
-    return ptask->id;
+    return task->id;
 
 }
 

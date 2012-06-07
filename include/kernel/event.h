@@ -13,7 +13,7 @@ struct event_routine
 
 unsigned int event_register_routine(unsigned int index, struct runtime_task *task, unsigned int callback);
 unsigned int event_unregister_routine(unsigned int index, struct runtime_task *task);
-struct runtime_task *event_raise(unsigned int index, struct runtime_task *task);
+void event_raise(unsigned int index, struct runtime_task *task);
 void event_routine_init(struct event_routine *routine, struct runtime_task *task, unsigned int callback);
 
 #endif

@@ -48,7 +48,10 @@ void isr_handle_cpu(struct isr_cpu_registers *registers)
 
     task = runtime_get_running_task();
 
-    task = event_raise(registers->index, task);
+    event_raise(registers->index, task);
+
+    task = runtime_get_running_task();
+
     mmu_load_memory(task->id);
 
     load_state(task, &registers->general, &registers->interrupt);
