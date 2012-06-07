@@ -7,21 +7,21 @@
 
 static void (*routines[ISR_TABLE_SLOTS])(struct runtime_task *task, struct isr_cpu_registers *registers);
 
-static void save_state(struct runtime_task *task, struct isr_general_registers *general, struct isr_interrupt_registers *interrupt)
+static void load_state(struct runtime_task *task, struct isr_cpu_registers *registers)
 {
 
-    task->registers.ip = interrupt->eip;
-    task->registers.sp = interrupt->esp;
-    task->registers.sb = general->ebp;
+    registers->interrupt.eip = task->registers.ip;
+    registers->interrupt.esp = task->registers.sp;
+    registers->general.ebp = task->registers.sb;
 
 }
 
-static void load_state(struct runtime_task *task, struct isr_general_registers *general, struct isr_interrupt_registers *interrupt)
+static void save_state(struct runtime_task *task, struct isr_cpu_registers *registers)
 {
 
-    interrupt->eip = task->registers.ip;
-    interrupt->esp = task->registers.sp;
-    general->ebp = task->registers.sb;
+    task->registers.ip = registers->interrupt.eip;
+    task->registers.sp = registers->interrupt.esp;
+    task->registers.sb = registers->general.ebp;
 
 }
 
@@ -41,7 +41,7 @@ void isr_handle_cpu(struct runtime_task *task, struct isr_cpu_registers *registe
 
     task = runtime_get_running_task();
 
-    save_state(task, &registers->general, &registers->interrupt);
+    save_state(task, registers);
 
     routine(task, registers);
 
@@ -53,7 +53,7 @@ void isr_handle_cpu(struct runtime_task *task, struct isr_cpu_registers *registe
 
     mmu_load_memory(task->id);
 
-    load_state(task, &registers->general, &registers->interrupt);
+    load_state(task, registers);
 
 }
 
