@@ -11,9 +11,12 @@ struct kernel_arch
     void (*enter_usermode)(unsigned int ip, unsigned int sp);
     unsigned int ramdiskc;
     void **ramdiskv;
+    struct runtime_task *running;
 
 };
 
+struct runtime_task *kernel_get_running_task();
+void kernel_set_running_task(struct runtime_task *task);
 void kernel_disable_interrupts();
 void kernel_enable_interrupts();
 void kernel_halt();

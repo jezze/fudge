@@ -91,7 +91,7 @@ unsigned int syscall_execute(struct runtime_task *task, unsigned int index)
     ntask->parentid = task->id;
 
     runtime_registers_init(&ntask->registers, header->entry, ntask->memory.vaddress + ntask->memory.size, ntask->memory.vaddress + ntask->memory.size);
-    runtime_set_running_task(ntask);
+    kernel_set_running_task(ntask);
 
     return slot;
 
@@ -103,7 +103,7 @@ unsigned int syscall_exit(struct runtime_task *task)
     task->used = 0;
     task = runtime_get_task(task->parentid);
 
-    runtime_set_running_task(task);
+    kernel_set_running_task(task);
 
     return task->id;
 
@@ -232,7 +232,7 @@ unsigned int syscall_wait(struct runtime_task *task)
     task->event = 0;
     task = runtime_get_task(task->parentid);
 
-    runtime_set_running_task(task);
+    kernel_set_running_task(task);
 
     return task->id;
 

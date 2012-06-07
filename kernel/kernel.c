@@ -8,6 +8,20 @@
 
 static struct kernel_arch *kernelArch;
 
+struct runtime_task *kernel_get_running_task()
+{
+
+    return kernelArch->running;
+
+}
+
+void kernel_set_running_task(struct runtime_task *task)
+{
+
+    kernelArch->running = task;
+
+}
+
 void kernel_disable_interrupts()
 {
 

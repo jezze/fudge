@@ -4,7 +4,6 @@
 #include <kernel/vfs/proc.h>
 
 static struct runtime_task tasks[RUNTIME_TASK_SLOTS];
-static struct runtime_task *running;
 
 unsigned int runtime_get_task_slot()
 {
@@ -30,20 +29,6 @@ struct runtime_task *runtime_get_task(unsigned int index)
         return 0;
 
     return &tasks[index];
-
-}
-
-struct runtime_task *runtime_get_running_task()
-{
-
-    return running;
-
-}
-
-void runtime_set_running_task(struct runtime_task *task)
-{
-
-    running = task;
 
 }
 
@@ -141,8 +126,6 @@ void runtime_task_clone(struct runtime_task *task, struct runtime_task *original
 
 void runtime_init()
 {
-
-    running = 0;
 
     memory_clear(tasks, sizeof (struct runtime_task) * RUNTIME_TASK_SLOTS);
 

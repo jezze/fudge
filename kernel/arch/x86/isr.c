@@ -1,5 +1,6 @@
 #include <kernel/error.h>
 #include <kernel/event.h>
+#include <kernel/kernel.h>
 #include <kernel/mmu.h>
 #include <kernel/runtime.h>
 #include <kernel/arch/x86/idt.h>
@@ -39,17 +40,17 @@ void isr_handle_cpu(struct runtime_task *task, struct isr_cpu_registers *registe
 
     }
 
-    task = runtime_get_running_task();
+    task = kernel_get_running_task();
 
     save_state(task, registers);
 
     routine(task, registers);
 
-    task = runtime_get_running_task();
+    task = kernel_get_running_task();
 
     event_raise(registers->index, task);
 
-    task = runtime_get_running_task();
+    task = kernel_get_running_task();
 
     mmu_load_memory(task->id);
 
