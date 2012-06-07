@@ -29,7 +29,7 @@ static void reset(unsigned int slave)
 
 }
 
-static void handle_irq(struct isr_cpu_registers *registers)
+static void handle_interrupt(struct isr_cpu_registers *registers)
 {
 
     irq_raise(registers->index - 0x20);
@@ -42,22 +42,19 @@ void irq_init()
 
     remap();
 
-    isr_register_routine(0x20, handle_irq);
-    isr_register_routine(0x21, handle_irq);
-    isr_register_routine(0x22, handle_irq);
-    isr_register_routine(0x23, handle_irq);
-    isr_register_routine(0x24, handle_irq);
-    isr_register_routine(0x25, handle_irq);
-    isr_register_routine(0x26, handle_irq);
-    isr_register_routine(0x27, handle_irq);
-    isr_register_routine(0x28, handle_irq);
-    isr_register_routine(0x29, handle_irq);
-    isr_register_routine(0x2A, handle_irq);
-    isr_register_routine(0x2B, handle_irq);
-    isr_register_routine(0x2C, handle_irq);
-    isr_register_routine(0x2D, handle_irq);
-    isr_register_routine(0x2E, handle_irq);
-    isr_register_routine(0x2F, handle_irq);
+    isr_register_routine(ISR_INDEX_PIT, handle_interrupt);
+    isr_register_routine(ISR_INDEX_KBD, handle_interrupt);
+    isr_register_routine(ISR_INDEX_CASCADE, handle_interrupt);
+    isr_register_routine(ISR_INDEX_COM2, handle_interrupt);
+    isr_register_routine(ISR_INDEX_COM1, handle_interrupt);
+    isr_register_routine(ISR_INDEX_SOUND, handle_interrupt);
+    isr_register_routine(ISR_INDEX_SDA, handle_interrupt);
+    isr_register_routine(ISR_INDEX_PP, handle_interrupt);
+    isr_register_routine(ISR_INDEX_RTC, handle_interrupt);
+    isr_register_routine(ISR_INDEX_MOUSE, handle_interrupt);
+    isr_register_routine(ISR_INDEX_FPU, handle_interrupt);
+    isr_register_routine(ISR_INDEX_ATAP, handle_interrupt);
+    isr_register_routine(ISR_INDEX_ATAS, handle_interrupt);
 
 }
 
