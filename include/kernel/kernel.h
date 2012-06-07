@@ -1,6 +1,13 @@
 #ifndef KERNEL_KERNEL_H
 #define KERNEL_KERNEL_H
 
+struct kernel_context
+{
+
+    struct runtime_task *running;
+
+};
+
 struct kernel_arch
 {
 
@@ -11,7 +18,7 @@ struct kernel_arch
     void (*enter_usermode)(unsigned int ip, unsigned int sp);
     unsigned int ramdiskc;
     void **ramdiskv;
-    struct runtime_task *running;
+    struct kernel_context context;
 
 };
 

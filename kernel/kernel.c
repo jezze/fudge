@@ -11,14 +11,14 @@ static struct kernel_arch *kernelArch;
 struct runtime_task *kernel_get_running_task()
 {
 
-    return kernelArch->running;
+    return kernelArch->context.running;
 
 }
 
 void kernel_set_running_task(struct runtime_task *task)
 {
 
-    kernelArch->running = task;
+    kernelArch->context.running = task;
 
 }
 
@@ -64,11 +64,11 @@ static struct runtime_task *execute_init()
     unsigned int id;
     unsigned int index;
     unsigned int slot = runtime_get_task_slot();
-    struct runtime_task *task = runtime_get_task(slot);
+    kernelArch->context.running = runtime_get_task(slot);
 
-    runtime_task_init(task, slot);
-    id = syscall_open(task, 0, "/ramdisk/bin/init");
-    index = syscall_execute(task, id);
+    runtime_task_init(kernelArch->context.running, slot);
+    id = syscall_open(&kernelArch->context, 0, "/ramdisk/bin/init");
+    index = syscall_execute(&kernelArch->context, id);
 
     if (!index)
         return 0;

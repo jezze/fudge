@@ -1,135 +1,136 @@
+#include <kernel/kernel.h>
 #include <kernel/runtime.h>
 #include <kernel/syscall.h>
 #include <kernel/arch/x86/isr.h>
 #include <kernel/arch/x86/syscall.h>
 
-static unsigned int (*routines[SYSCALL_TABLE_SLOTS])(struct runtime_task *task);
+static unsigned int (*routines[SYSCALL_TABLE_SLOTS])(struct kernel_context *context);
 
-static unsigned int handle_attach(struct runtime_task *task)
+static unsigned int handle_attach(struct kernel_context *context)
 {
 
-    unsigned int index = *(unsigned int *)(task->registers.sp + 4);
-    unsigned int callback = *(unsigned int *)(task->registers.sp + 8);
+    unsigned int index = *(unsigned int *)(context->running->registers.sp + 4);
+    unsigned int callback = *(unsigned int *)(context->running->registers.sp + 8);
 
-    return syscall_attach(task, index, callback);
+    return syscall_attach(context, index, callback);
 
 }
 
-static unsigned int handle_close(struct runtime_task *task)
+static unsigned int handle_close(struct kernel_context *context)
 {
 
-    unsigned int index = *(unsigned int *)(task->registers.sp + 4);
+    unsigned int index = *(unsigned int *)(context->running->registers.sp + 4);
 
-    return syscall_close(task, index);
+    return syscall_close(context, index);
 
 }
 
-static unsigned int handle_detach(struct runtime_task *task)
+static unsigned int handle_detach(struct kernel_context *context)
 {
 
-    unsigned int index = *(unsigned int *)(task->registers.sp + 4);
+    unsigned int index = *(unsigned int *)(context->running->registers.sp + 4);
 
-    return syscall_detach(task, index);
+    return syscall_detach(context, index);
 
 }
 
-static unsigned int handle_halt(struct runtime_task *task)
+static unsigned int handle_halt(struct kernel_context *context)
 {
 
-    return syscall_halt(task);
+    return syscall_halt(context);
 
 }
 
-static unsigned int handle_execute(struct runtime_task *task)
+static unsigned int handle_execute(struct kernel_context *context)
 {
 
-    unsigned int index = *(unsigned int *)(task->registers.sp + 4);
+    unsigned int index = *(unsigned int *)(context->running->registers.sp + 4);
 
-    return syscall_execute(task, index);
+    return syscall_execute(context, index);
 
 }
 
-static unsigned int handle_exit(struct runtime_task *task)
+static unsigned int handle_exit(struct kernel_context *context)
 {
 
-    return syscall_exit(task);
+    return syscall_exit(context);
 
 }
 
-static unsigned int handle_load(struct runtime_task *task)
+static unsigned int handle_load(struct kernel_context *context)
 {
 
-    unsigned int index = *(unsigned int *)(task->registers.sp + 4);
+    unsigned int index = *(unsigned int *)(context->running->registers.sp + 4);
 
-    return syscall_load(task, index);
+    return syscall_load(context, index);
 
 }
 
-static unsigned int handle_open(struct runtime_task *task)
+static unsigned int handle_open(struct kernel_context *context)
 {
 
-    unsigned int index = *(unsigned int *)(task->registers.sp + 4);
-    char *path = *(char **)(task->registers.sp + 8);
+    unsigned int index = *(unsigned int *)(context->running->registers.sp + 4);
+    char *path = *(char **)(context->running->registers.sp + 8);
 
-    return syscall_open(task, index, path);
+    return syscall_open(context, index, path);
 
 }
 
-static unsigned int handle_read(struct runtime_task *task)
+static unsigned int handle_read(struct kernel_context *context)
 {
 
-    unsigned int id = *(unsigned int *)(task->registers.sp + 4);
-    unsigned int offset = *(unsigned int *)(task->registers.sp + 8);
-    unsigned int count = *(unsigned int *)(task->registers.sp + 12);
-    char *buffer = *(char **)(task->registers.sp + 16);
+    unsigned int id = *(unsigned int *)(context->running->registers.sp + 4);
+    unsigned int offset = *(unsigned int *)(context->running->registers.sp + 8);
+    unsigned int count = *(unsigned int *)(context->running->registers.sp + 12);
+    char *buffer = *(char **)(context->running->registers.sp + 16);
 
-    return syscall_read(task, id, offset, count, buffer);
+    return syscall_read(context, id, offset, count, buffer);
 
 }
 
-static unsigned int handle_reboot(struct runtime_task *task)
+static unsigned int handle_reboot(struct kernel_context *context)
 {
 
-    return syscall_reboot(task);
+    return syscall_reboot(context);
 
 }
 
-static unsigned int handle_unload(struct runtime_task *task)
+static unsigned int handle_unload(struct kernel_context *context)
 {
 
-    unsigned int index = *(unsigned int *)(task->registers.sp + 4);
+    unsigned int index = *(unsigned int *)(context->running->registers.sp + 4);
 
-    return syscall_unload(task, index);
+    return syscall_unload(context, index);
 
 }
 
-static unsigned int handle_wait(struct runtime_task *task)
+static unsigned int handle_wait(struct kernel_context *context)
 {
 
-    return syscall_wait(task);
+    return syscall_wait(context);
 
 }
 
-static unsigned int handle_write(struct runtime_task *task)
+static unsigned int handle_write(struct kernel_context *context)
 {
 
-    unsigned int id = *(unsigned int *)(task->registers.sp + 4);
-    unsigned int offset = *(unsigned int *)(task->registers.sp + 8);
-    unsigned int count = *(unsigned int *)(task->registers.sp + 12);
-    char *buffer = *(char **)(task->registers.sp + 16);
+    unsigned int id = *(unsigned int *)(context->running->registers.sp + 4);
+    unsigned int offset = *(unsigned int *)(context->running->registers.sp + 8);
+    unsigned int count = *(unsigned int *)(context->running->registers.sp + 12);
+    char *buffer = *(char **)(context->running->registers.sp + 16);
 
-    return syscall_write(task, id, offset, count, buffer);
+    return syscall_write(context, id, offset, count, buffer);
 
 }
 
-static void register_routine(unsigned char index, unsigned int (*routine)(struct runtime_task *task))
+static void register_routine(unsigned char index, unsigned int (*routine)(struct kernel_context *context))
 {
 
     routines[index] = routine;
 
 }
 
-static void handle_interrupt(struct runtime_task *task, struct isr_cpu_registers *registers)
+static void handle_interrupt(struct kernel_context *context, struct isr_cpu_registers *registers)
 {
 
     if (!routines[registers->error])
@@ -141,7 +142,7 @@ static void handle_interrupt(struct runtime_task *task, struct isr_cpu_registers
 
     }
 
-    registers->general.eax = routines[registers->error](task);
+    registers->general.eax = routines[registers->error](context);
 
 }
 

@@ -16,19 +16,19 @@
 #define SYSCALL_INDEX_ATTACH  0x30
 #define SYSCALL_INDEX_DETACH  0x31
 
-unsigned int syscall_attach(struct runtime_task *task, unsigned int index, unsigned int callback);
-unsigned int syscall_close(struct runtime_task *task, unsigned int index);
-unsigned int syscall_detach(struct runtime_task *task, unsigned int index);
-unsigned int syscall_halt(struct runtime_task *task);
-unsigned int syscall_execute(struct runtime_task *task, unsigned int index);
-unsigned int syscall_exit(struct runtime_task *task);
-unsigned int syscall_load(struct runtime_task *task, unsigned int index);
-unsigned int syscall_open(struct runtime_task *task, unsigned int index, char *path);
-unsigned int syscall_read(struct runtime_task *task, unsigned int index, unsigned int offset, unsigned int count, char *buffer);
-unsigned int syscall_reboot(struct runtime_task *task);
-unsigned int syscall_unload(struct runtime_task *task, unsigned int index);
-unsigned int syscall_wait(struct runtime_task *task);
-unsigned int syscall_write(struct runtime_task *task, unsigned int index, unsigned int offset, unsigned int count, char *buffer);
+unsigned int syscall_attach(struct kernel_context *context, unsigned int index, unsigned int callback);
+unsigned int syscall_close(struct kernel_context *context, unsigned int index);
+unsigned int syscall_detach(struct kernel_context *context, unsigned int index);
+unsigned int syscall_halt(struct kernel_context *context);
+unsigned int syscall_execute(struct kernel_context *context, unsigned int index);
+unsigned int syscall_exit(struct kernel_context *context);
+unsigned int syscall_load(struct kernel_context *context, unsigned int index);
+unsigned int syscall_open(struct kernel_context *context, unsigned int index, char *path);
+unsigned int syscall_read(struct kernel_context *context, unsigned int index, unsigned int offset, unsigned int count, char *buffer);
+unsigned int syscall_reboot(struct kernel_context *context);
+unsigned int syscall_unload(struct kernel_context *context, unsigned int index);
+unsigned int syscall_wait(struct kernel_context *context);
+unsigned int syscall_write(struct kernel_context *context, unsigned int index, unsigned int offset, unsigned int count, char *buffer);
 
 #endif
 
