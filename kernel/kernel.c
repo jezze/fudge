@@ -51,29 +51,27 @@ void kernel_arch_init(struct kernel_arch *arch, void (*setup)(struct kernel_arch
 
 }
 
-static struct runtime_task *execute_init()
+void load_usermode()
 {
 
     unsigned int id;
-    unsigned int index;
     unsigned int slot = runtime_get_task_slot();
     kernelArch->context.running = runtime_get_task(slot);
 
     runtime_task_init(kernelArch->context.running, slot);
     id = syscall_open(&kernelArch->context, 0, "/ramdisk/bin/init");
-    index = syscall_execute(&kernelArch->context, id);
 
-    if (!index)
-        return 0;
+    error_assert(id != 0, "Init not found", __FILE__, __LINE__);
 
-    return runtime_get_task(index);
+    slot = syscall_execute(&kernelArch->context, id);
+
+    kernelArch->context.running = runtime_get_task(slot);
+    kernelArch->enter_usermode(kernelArch->context.running->registers.ip, kernelArch->context.running->registers.sp);
 
 }
 
 void kernel_init(struct kernel_arch *arch)
 {
-
-    struct runtime_task *task;
 
     error_assert(arch != 0, "Architecture not found", __FILE__, __LINE__);
 
@@ -83,12 +81,7 @@ void kernel_init(struct kernel_arch *arch)
     modules_init();
     runtime_init();
     ramdisk_init(kernelArch->ramdiskc, kernelArch->ramdiskv);
-
-    task = execute_init();
-
-    error_assert(task != 0, "Init not found", __FILE__, __LINE__);
-
-    kernelArch->enter_usermode(task->registers.ip, task->registers.sp);
+    load_usermode();
 
 }
 
