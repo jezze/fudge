@@ -4,7 +4,6 @@
 #include <kernel/runtime.h>
 #include <kernel/arch/x86/idt.h>
 #include <kernel/arch/x86/isr.h>
-#include <kernel/arch/x86/syscall.h>
 
 static void (*routines[ISR_TABLE_SLOTS])(struct isr_cpu_registers *registers);
 
