@@ -1,5 +1,6 @@
 #include <lib/memory.h>
 #include <kernel/kernel.h>
+#include <kernel/runtime.h>
 #include <kernel/arch/x86/arch.h>
 #include <kernel/arch/x86/cpu.h>
 #include <kernel/arch/x86/fpu.h>

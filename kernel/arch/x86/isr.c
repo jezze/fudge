@@ -5,7 +5,7 @@
 #include <kernel/arch/x86/idt.h>
 #include <kernel/arch/x86/isr.h>
 
-static void (*routines[ISR_TABLE_SLOTS])(struct isr_cpu_registers *registers);
+static void (*routines[ISR_TABLE_SLOTS])(struct runtime_task *task, struct isr_cpu_registers *registers);
 
 static void save_state(struct runtime_task *task, struct isr_general_registers *general, struct isr_interrupt_registers *interrupt)
 {
@@ -29,7 +29,7 @@ void isr_handle_cpu(struct isr_cpu_registers *registers)
 {
 
     struct runtime_task *task;
-    void (*routine)(struct isr_cpu_registers *registers) = routines[registers->index];
+    void (*routine)(struct runtime_task *task, struct isr_cpu_registers *registers) = routines[registers->index];
 
     if (!routine)
     {
@@ -44,7 +44,7 @@ void isr_handle_cpu(struct isr_cpu_registers *registers)
 
     save_state(task, &registers->general, &registers->interrupt);
 
-    routine(registers);
+    routine(task, registers);
 
     task = runtime_get_running_task();
 
@@ -55,7 +55,7 @@ void isr_handle_cpu(struct isr_cpu_registers *registers)
 
 }
 
-void isr_register_routine(unsigned int index, void (*routine)(struct isr_cpu_registers *registers))
+void isr_register_routine(unsigned int index, void (*routine)(struct runtime_task *task, struct isr_cpu_registers *registers))
 {
 
     routines[index] = routine;

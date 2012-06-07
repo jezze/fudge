@@ -129,10 +129,8 @@ static void register_routine(unsigned char index, unsigned int (*routine)(struct
 
 }
 
-static void handle_interrupt(struct isr_cpu_registers *registers)
+static void handle_interrupt(struct runtime_task *task, struct isr_cpu_registers *registers)
 {
-
-    struct runtime_task *task = runtime_get_running_task();
 
     if (!routines[registers->error])
     {

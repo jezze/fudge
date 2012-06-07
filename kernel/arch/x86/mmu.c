@@ -1,5 +1,6 @@
 #include <lib/memory.h>
 #include <kernel/mmu.h>
+#include <kernel/runtime.h>
 #include <kernel/arch/x86/cpu.h>
 #include <kernel/arch/x86/isr.h>
 #include <kernel/arch/x86/mmu.h>
@@ -117,7 +118,7 @@ static void enable()
 
 }
 
-static void handle_interrupt(struct isr_cpu_registers *registers)
+static void handle_interrupt(struct runtime_task *task, struct isr_cpu_registers *registers)
 {
 
     mmu_pagefault(cpu_get_cr2(), registers->error);

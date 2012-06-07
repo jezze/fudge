@@ -1,5 +1,6 @@
 #include <lib/io.h>
 #include <kernel/irq.h>
+#include <kernel/runtime.h>
 #include <kernel/arch/x86/isr.h>
 #include <kernel/arch/x86/irq.h>
 
@@ -29,7 +30,7 @@ static void reset(unsigned int slave)
 
 }
 
-static void handle_interrupt(struct isr_cpu_registers *registers)
+static void handle_interrupt(struct runtime_task *task, struct isr_cpu_registers *registers)
 {
 
     irq_raise(registers->index - 0x20);
