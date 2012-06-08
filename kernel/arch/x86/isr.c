@@ -8,7 +8,7 @@
 
 static void (*routines[ISR_TABLE_SLOTS])(struct kernel_context *context, struct isr_cpu_registers *registers);
 
-static void load_state(struct kernel_context *context, struct isr_cpu_registers *registers)
+void isr_load_state(struct kernel_context *context, struct isr_cpu_registers *registers)
 {
 
     registers->interrupt.eip = context->running->registers.ip;
@@ -17,7 +17,7 @@ static void load_state(struct kernel_context *context, struct isr_cpu_registers 
 
 }
 
-static void save_state(struct kernel_context *context, struct isr_cpu_registers *registers)
+void isr_save_state(struct kernel_context *context, struct isr_cpu_registers *registers)
 {
 
     context->running->registers.ip = registers->interrupt.eip;
@@ -38,13 +38,9 @@ static void isr_handle_undefined(struct kernel_context *context, struct isr_cpu_
 void isr_handle_cpu(struct kernel_context *context, struct isr_cpu_registers *registers)
 {
 
-    save_state(context, registers);
-
     routines[registers->index](context, registers);
     event_raise(context, registers->index);
     mmu_load_memory(context->running->id);
-
-    load_state(context, registers);
 
 }
 

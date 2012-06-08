@@ -1,6 +1,8 @@
 .intel_syntax noprefix
 
 .extern isr_handle_cpu
+.extern isr_save_state
+.extern isr_load_state
 .extern kernel_get_context
 
 .global isr_routine00
@@ -342,22 +344,25 @@ isr_routine80:
 
 isr_common_cpu:
     pusha
+    mov eax, esp
+    push eax
     mov ax, 0x10
     mov ds, ax
     mov es, ax
     mov fs, ax
     mov gs, ax
-    mov eax, esp
-    push eax
     call kernel_get_context
     push eax
+    call isr_save_state
     call isr_handle_cpu
-    add esp, 8
+    call isr_load_state
+    add esp, 4
     mov ax, 0x23
     mov ds, ax
     mov es, ax
     mov fs, ax
     mov gs, ax
+    add esp, 4
     popa
     add esp, 8
     iret
