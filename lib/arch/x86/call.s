@@ -26,55 +26,55 @@ call_write:
 
 .global call_execute
 call_execute:
-    mov eax, 0x10
+    mov eax, 0x04
     int 0x80
     ret
 
 .global call_exit
 call_exit:
-    mov eax, 0x11
+    mov eax, 0x05
     int 0x80
     ret
 
 .global call_wait
 call_wait:
-    mov eax, 0x12
+    mov eax, 0x06
     int 0x80
     ret
 
 .global call_load
 call_load:
-    mov eax, 0x16
+    mov eax, 0x07
     int 0x80
     ret
 
 .global call_unload
 call_unload:
-    mov eax, 0x17
+    mov eax, 0x08
     int 0x80
     ret
 
 .global call_halt
 call_halt:
-    mov eax, 0x20
+    mov eax, 0x09
     int 0x80
     ret
 
 .global call_reboot
 call_reboot:
-    mov eax, 0x21
+    mov eax, 0x0A
     int 0x80
     ret
 
 .global call_attach
 call_attach:
-    mov eax, 0x30
+    mov eax, 0x0B
     int 0x80
     ret
 
 .global call_detach
 call_detach:
-    mov eax, 0x31
+    mov eax, 0x0C
     int 0x80
     ret
 
