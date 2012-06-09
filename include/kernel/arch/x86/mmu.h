@@ -1,7 +1,7 @@
 #ifndef ARCH_MMU_H
 #define ARCH_MMU_H
 
-#define MMU_HEADER_SLOTS 8
+#define MMU_HEADER_SLOTS 64
 #define MMU_DIRECTORY_SLOTS 1024
 
 #define MMU_TABLE_SLOTS 1024
