@@ -1,15 +1,8 @@
-include lib/arch/${ARCH}/rules.mk
+include lib/arch/$(ARCH)/rules.mk
+
+LIBOBJ+=lib/elf.o lib/flake.o lib/memory.o lib/string.o
+CLEAN+=$(LIBOBJ) lib/libfudge.a
 
 lib: GCCFLAGS+=-Iinclude
-
-lib: lib-arch
-	@${GCC} ${GCCFLAGS} lib/elf.c -o lib/elf.o
-	@${GCC} ${GCCFLAGS} lib/flake.c -o lib/flake.o
-	@${GCC} ${GCCFLAGS} lib/memory.c -o lib/memory.o
-	@${GCC} ${GCCFLAGS} lib/string.c -o lib/string.o
-	@${AR} ${ARFLAGS} lib/libfudge.a lib/*.o lib/arch/${ARCH}/*.o
-
-lib-clean: lib-arch-clean
-	@rm -f lib/*.o
-	@rm -f lib/libfudge.a
-
+lib: $(LIBOBJ)
+	$(AR) $(ARFLAGS) lib/libfudge.a $(LIBOBJ)

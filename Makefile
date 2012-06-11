@@ -1,14 +1,32 @@
+.PHONY: all lib kernel modules packages
+
+all: lib kernel modules packages ramdisk iso
+
 include rules.mk
-include rules.${ARCH}.mk
-
-.PHONY: all clean toolchain kernel lib modules packages ramdisk
-
-all: lib kernel modules packages ramdisk
-
+include rules.$(ARCH).mk
 include lib/rules.mk
 include kernel/rules.mk
 include modules/rules.mk
 include packages/rules.mk
+
+%.o: %.s
+	$(ASM) -c $(ASMFLAGS) -o $@ $<
+
+%.o: %.c
+	$(GCC) -c $(GCCFLAGS) -o $@ $<
+
+%: %.c
+	$(GCC) -s $(GCCFLAGS) -o $@ $< lib/libfudge.a
+
+clean:
+	rm -f $(CLEAN)
+	rm -f fudge.iso
+	rm -rf image/bin
+	rm -rf image/mod
+	rm -f image/boot/fudge
+	rm -f image/boot/fudge.map
+	rm -f image/boot/initrd.tar
+	rm -f image/boot/initrd.cpio
 
 toolchain:
 	@git submodule init toolchain
@@ -16,6 +34,10 @@ toolchain:
 	@make -C toolchain all TARGET=${TARGET}
 
 ramdisk:
+	@mkdir -p image/bin
+	@cp $(PACKAGESOBJ) image/bin
+	@mkdir -p image/mod
+	@cp $(BUILD) image/mod
 	@cp kernel/fudge image/boot/fudge
 	@nm image/boot/fudge | grep -f image/boot/fudge.sym > image/boot/fudge.map
 	@tar -cvf initrd.tar image
@@ -42,15 +64,4 @@ iso:
 
 hda:
 	@dd if=/dev/zero of=hda.img bs=512 count=2880
-
-clean: lib-clean kernel-clean modules-clean packages-clean
-	@rm -f fudge.img
-	@rm -f fudge.iso
-	@rm -f image/boot/*.bin
-	@rm -f image/boot/*.uimg
-	@rm -f image/boot/fudge
-	@rm -f image/boot/fudge.map
-	@rm -f image/boot/initrd
-	@rm -f image/boot/initrd.tar
-	@rm -f image/boot/initrd.cpio
 

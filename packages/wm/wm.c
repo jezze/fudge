@@ -108,23 +108,25 @@ static void draw_fill(unsigned int x1, unsigned int y1, unsigned int x2, unsigne
 static void draw_ppm(char *name, unsigned int x, unsigned int y)
 {
 
+    struct ppm_header header;
+    unsigned int offset;
+    unsigned int count;
+    unsigned int i;
+    int cx, cy;
+
     unsigned int id = call_open(FILE_NEW, name);
     call_read(id, 0, 0x2000, buffer);
-
-    struct ppm_header header;
 
     ppm_parse(&header, buffer);
 
     header.width = 20;
     header.height = 20;
-    unsigned int offset = 0x34;
+    offset = 0x34;
 
-    unsigned int count = call_read(id, offset, 0x2000, buffer);
+    count = call_read(id, offset, 0x2000, buffer);
 
-    int cx = x;
-    int cy = y;
-
-    unsigned int i;
+    cx = x;
+    cy = y;
 
     for (i = 1; i < count; i += 3)
     {

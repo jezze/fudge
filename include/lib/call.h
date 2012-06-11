@@ -10,7 +10,7 @@ unsigned int call_load(unsigned int id);
 unsigned int call_unload(unsigned int id);
 unsigned int call_exit();
 unsigned int call_wait();
-unsigned int call_attach(unsigned int id, void *callback);
+unsigned int call_attach(unsigned int id, void (*callback)());
 unsigned int call_detach(unsigned int id);
 void call_halt();
 void call_reboot();

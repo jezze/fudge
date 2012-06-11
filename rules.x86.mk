@@ -1,2 +1,3 @@
+ASMFLAGS+=-32
 GCCFLAGS+=-m32
-
+LDFLAGS+=-melf_i386

@@ -40,20 +40,24 @@ void load_modules()
     call_open(FILE_STDIN, "/ramdisk/mod/tty.ko");
     call_execute(id);
 
-    //call_open(FILE_STDIN, "/ramdisk/mod/ata.ko");
-    //call_execute(id);
+    /*
 
-    //call_open(FILE_STDIN, "/ramdisk/mod/mbr.ko");
-    //call_execute(id);
+    call_open(FILE_STDIN, "/ramdisk/mod/ata.ko");
+    call_execute(id);
 
-    //call_open(FILE_STDIN, "/ramdisk/mod/ext2.ko");
-    //call_execute(id);
+    call_open(FILE_STDIN, "/ramdisk/mod/mbr.ko");
+    call_execute(id);
 
-    //call_open(FILE_STDIN, "/ramdisk/mod/rtl8139.ko");
-    //call_execute(id);
+    call_open(FILE_STDIN, "/ramdisk/mod/ext2.ko");
+    call_execute(id);
 
-    //call_open(FILE_STDIN, "/ramdisk/mod/bga.ko");
-    //call_execute(id);
+    call_open(FILE_STDIN, "/ramdisk/mod/rtl8139.ko");
+    call_execute(id);
+
+    call_open(FILE_STDIN, "/ramdisk/mod/bga.ko");
+    call_execute(id);
+
+    */
 
     call_close(FILE_STDIN);
     call_close(id);
