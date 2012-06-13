@@ -13,7 +13,7 @@
 #include <kernel/arch/x86/syscall.h>
 #include <kernel/arch/x86/tss.h>
 
-struct arch_x86 arch_x86;
+static struct arch_x86 arch_x86;
 
 static void setup(struct kernel_arch *arch)
 {
@@ -32,16 +32,18 @@ static void setup(struct kernel_arch *arch)
 
 }
 
-void arch_x86_init(struct arch_x86 *x86, struct mboot_header *header, unsigned int magic, unsigned int stack)
+void arch_init(struct mboot_header *header, unsigned int magic)
 {
 
-    memory_clear(x86, sizeof (struct arch_x86));
+    memory_clear(&arch_x86, sizeof (struct arch_x86));
 
-    kernel_arch_init(&x86->base, setup, cpu_halt, cpu_enable_interrupts, cpu_disable_interrupts, cpu_enter_usermode, header->modules.count, header->modules.address);
+    kernel_arch_init(&arch_x86.base, setup, cpu_halt, cpu_enable_interrupts, cpu_disable_interrupts, cpu_enter_usermode, header->modules.count, header->modules.address);
 
-    x86->header = header;
-    x86->magic = magic;
-    x86->stack = stack;
+    arch_x86.header = header;
+    arch_x86.magic = magic;
+    arch_x86.stack = 0x00400000;
+
+    kernel_init(&arch_x86.base);
 
 }
 

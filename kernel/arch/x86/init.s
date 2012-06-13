@@ -1,37 +1,26 @@
-INIT_MBOOT_HEADER_MAGIC equ 0x1BADB002
-INIT_MBOOT_HEADER_FLAGS equ 0x00000001
-INIT_MBOOT_CHECKSUM     equ - (INIT_MBOOT_HEADER_MAGIC + INIT_MBOOT_HEADER_FLAGS)
-INIT_STACK_SIZE         equ 0x8000
+.intel_syntax noprefix
 
-extern arch_x86
-extern arch_x86_init
-extern kernel_init
+.set INIT_MBOOT_HEADER_MAGIC, 0x1BADB002
+.set INIT_MBOOT_HEADER_FLAGS, 0x00000001
+.set INIT_MBOOT_CHECKSUM, - (INIT_MBOOT_HEADER_MAGIC + INIT_MBOOT_HEADER_FLAGS)
 
-section .mboot
-align 4
+.extern arch_init
 
-dd INIT_MBOOT_HEADER_MAGIC
-dd INIT_MBOOT_HEADER_FLAGS
-dd INIT_MBOOT_CHECKSUM
+.section .mboot
+.align 4
 
-section .text
-align 4
+.int INIT_MBOOT_HEADER_MAGIC
+.int INIT_MBOOT_HEADER_FLAGS
+.int INIT_MBOOT_CHECKSUM
 
-global init
+.section .text
+.align 4
+
+.global init
 init:
     cli
-    mov esp, stack + INIT_STACK_SIZE
-    push esp
     push eax
     push ebx
-    mov eax, arch_x86
-    push eax
-    call arch_x86_init
-    call kernel_init
+    call arch_init
     hlt
 
-section .bss
-align 4
-
-stack:
-    resb INIT_STACK_SIZE
