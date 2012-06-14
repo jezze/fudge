@@ -23,7 +23,6 @@ cpu_enable_tss:
 
 .global cpu_enter_usermode
 cpu_enter_usermode:
-    cli
     mov ax, 0x23
     mov ds, ax
     mov es, ax
