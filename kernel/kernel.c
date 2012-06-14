@@ -73,11 +73,7 @@ void load_usermode()
 void kernel_init(struct kernel_arch *arch)
 {
 
-    memory_copy(0xB8000, "A ", 2);
-
     error_assert(arch != 0, "Architecture not found", __FILE__, __LINE__);
-
-    memory_copy(0xB8000, "B ", 2);
 
     kernelArch = arch;
     kernelArch->setup(kernelArch);

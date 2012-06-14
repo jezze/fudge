@@ -91,7 +91,8 @@ work on Windows if you have cygwin installed but this has not been tested.
 
 To compile and run Fudge you need to have the following tools installed.
 
-* nasm (compile assembler code)
+* binutils (assembly linker)
+* gcc or clang (compile c)
 * dd (to create disk image)
 * genisoimage (to create cd image)
 * qemu or bochs (emulator)
@@ -107,10 +108,6 @@ $ git clone git://github.com/Jezze/fudge.git fudge
 Compile Fudge.
 
 $ make
-
-Create an iso image.
-
-$ make iso
 
 ### RUNNING
 
