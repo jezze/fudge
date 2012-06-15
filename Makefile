@@ -1,6 +1,6 @@
 .PHONY: all lib kernel modules packages
 
-all: lib kernel modules packages ramdisk iso
+all: lib/libfudge.a kernel/fudge modules packages ramdisk iso
 
 include rules.mk
 include rules.$(ARCH).mk
