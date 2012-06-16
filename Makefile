@@ -2,7 +2,7 @@ ARCH=x86
 TARGET=
 AS=$(TARGET)as
 CC=$(TARGET)gcc
-CCFLAGS=-Wall -ffreestanding -nostdlib -std=c89 -pedantic -O2 -fno-optimize-sibling-calls
+CCFLAGS=-Wall -ffreestanding -nostdlib -std=c89 -pedantic
 LD=$(TARGET)ld
 AR=ar
 ARFLAGS=rs
