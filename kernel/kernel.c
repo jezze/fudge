@@ -6,15 +6,6 @@
 #include <kernel/runtime.h>
 #include <kernel/syscall.h>
 
-static struct kernel_arch *kernelArch;
-
-struct kernel_context *kernel_get_context()
-{
-
-    return &kernelArch->context;
-
-}
-
 static void load_usermode(struct kernel_arch *arch)
 {
 
@@ -53,8 +44,6 @@ void kernel_init(struct kernel_arch *arch)
 {
 
     error_assert(arch != 0, "Architecture not found", __FILE__, __LINE__);
-
-    kernelArch = arch;
 
     arch->setup(arch);
 

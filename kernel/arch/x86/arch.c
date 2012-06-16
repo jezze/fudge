@@ -15,6 +15,13 @@
 
 static struct arch_x86 arch_x86;
 
+struct kernel_context *arch_get_context()
+{
+
+    return &arch_x86.base.context;
+
+}
+
 static void setup(struct kernel_arch *arch)
 {
 

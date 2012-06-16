@@ -3,7 +3,7 @@
 .extern isr_handle_cpu
 .extern isr_save_state
 .extern isr_load_state
-.extern kernel_get_context
+.extern arch_get_context
 
 .global isr_routine00
 isr_routine00:
@@ -351,7 +351,7 @@ isr_common_cpu:
     mov es, ax
     mov fs, ax
     mov gs, ax
-    call kernel_get_context
+    call arch_get_context
     push eax
     call isr_save_state
     call isr_handle_cpu
