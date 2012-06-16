@@ -45,9 +45,6 @@ unsigned int syscall_detach(struct kernel_context *context, unsigned int index)
 unsigned int syscall_halt(struct kernel_context *context)
 {
 
-    kernel_enable_interrupts();
-    kernel_halt();
-
     return 1;
 
 }

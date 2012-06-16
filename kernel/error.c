@@ -20,8 +20,6 @@ void error_panic(char *message, char *file, unsigned int line)
     status.file = file;
     status.line = line;
 
-    kernel_disable_interrupts();
-
     for (;;);
 
 }
