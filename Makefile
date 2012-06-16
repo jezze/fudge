@@ -23,7 +23,7 @@ include packages/rules.mk
 %.o: %.c
 	$(CC) -c $(CCFLAGS) -o $@ $<
 
-%: %.c
+%: %.c lib/libfudge.a
 	$(CC) -s $(CCFLAGS) -o $@ $< lib/libfudge.a
 
 clean:

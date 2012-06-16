@@ -7,4 +7,4 @@ CLEAN+=$(PACKAGESOBJ)
 
 packages/%: CCFLAGS+=-Iinclude/lib
 
-packages: lib $(PACKAGESOBJ)
+packages: $(PACKAGESOBJ)
