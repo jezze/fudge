@@ -3,6 +3,7 @@ include lib/arch/$(ARCH)/rules.mk
 LIBOBJ+=lib/elf.o lib/flake.o lib/memory.o lib/string.o
 CLEAN+=$(LIBOBJ) lib/libfudge.a
 
-lib/libfudge.a: GCCFLAGS+=-Iinclude
+lib/%.o: GCCFLAGS+=-Iinclude
+
 lib/libfudge.a: $(LIBOBJ)
 	$(AR) $(ARFLAGS) $@ $^
