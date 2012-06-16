@@ -2,8 +2,8 @@
 
 #define BUFFER_SIZE 256
 
-char buffer[BUFFER_SIZE];
-unsigned int bufferHead;
+static char buffer[BUFFER_SIZE];
+static unsigned int bufferHead;
 
 static void replace(char *str, unsigned int length)
 {
