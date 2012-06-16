@@ -1,8 +1,16 @@
+ARCH=x86
+TARGET=
+ASM=$(TARGET)as
+GCC=$(TARGET)gcc
+GCCFLAGS=-Wall -ffreestanding -nostdlib -std=c89 -pedantic
+LD=$(TARGET)ld
+AR=ar
+ARFLAGS=rs
+
 .PHONY: all lib kernel modules packages
 
 all: lib/libfudge.a kernel/fudge modules packages ramdisk fudge.iso
 
-include rules.mk
 include rules.$(ARCH).mk
 include lib/rules.mk
 include kernel/rules.mk
@@ -19,7 +27,7 @@ include packages/rules.mk
 	$(GCC) -s $(GCCFLAGS) -o $@ $< lib/libfudge.a
 
 clean:
-	rm -f $(CLEAN)
+	rm -rf $(CLEAN)
 	rm -f fudge.iso
 	rm -rf image/bin
 	rm -rf image/mod
