@@ -1,1 +1,1 @@
-ASMFLAGS+=-mfpu=softfpa
+ASFLAGS+=-mfpu=softfpa

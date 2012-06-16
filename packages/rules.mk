@@ -5,5 +5,6 @@ include packages/wm/rules.mk
 
 CLEAN+=$(PACKAGESOBJ)
 
-packages: GCCFLAGS+=-Iinclude/lib
+packages/%: CCFLAGS+=-Iinclude/lib
+
 packages: lib $(PACKAGESOBJ)

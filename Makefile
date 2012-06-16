@@ -1,8 +1,8 @@
 ARCH=x86
 TARGET=
-ASM=$(TARGET)as
-GCC=$(TARGET)gcc
-GCCFLAGS=-Wall -ffreestanding -nostdlib -std=c89 -pedantic
+AS=$(TARGET)as
+CC=$(TARGET)gcc
+CCFLAGS=-Wall -ffreestanding -nostdlib -std=c89 -pedantic
 LD=$(TARGET)ld
 AR=ar
 ARFLAGS=rs
@@ -18,13 +18,13 @@ include modules/rules.mk
 include packages/rules.mk
 
 %.o: %.s
-	$(ASM) -c $(ASMFLAGS) -o $@ $<
+	$(AS) -c $(ASFLAGS) -o $@ $<
 
 %.o: %.c
-	$(GCC) -c $(GCCFLAGS) -o $@ $<
+	$(CC) -c $(CCFLAGS) -o $@ $<
 
 %: %.c
-	$(GCC) -s $(GCCFLAGS) -o $@ $< lib/libfudge.a
+	$(CC) -s $(CCFLAGS) -o $@ $< lib/libfudge.a
 
 clean:
 	rm -rf $(CLEAN)
