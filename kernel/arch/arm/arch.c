@@ -33,12 +33,14 @@ static void setup(struct kernel_arch *arch)
 
 }
 
-void arch_arm_init()
+void arch_init()
 {
 
     memory_clear(&arm, sizeof (struct arch_arm));
 
-    kernel_arch_init(&arm.base, setup, 0, 0, cpu_enable_interrupts, cpu_disable_interrupts, 0, 0, 0);
+    kernel_arch_init(&arm.base, setup, 0, cpu_enable_interrupts, cpu_disable_interrupts, 0, 0, 0);
+
+    kernel_init(&arm.base);
 
 }
 

@@ -8,7 +8,7 @@ struct arch_arm
 
 };
 
-void arch_arm_init();
+void arch_init();
 
 #endif
 
