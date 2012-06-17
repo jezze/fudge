@@ -56,6 +56,7 @@ unsigned int syscall_execute(struct kernel_context *context, unsigned int index)
     unsigned int count;
     struct runtime_task *ntask;
     struct elf_header *header;
+    struct elf_program_header *pheaders;
     struct runtime_descriptor *descriptor = context->running->get_descriptor(context->running, index);
 
     if (!descriptor || !descriptor->id || !descriptor->filesystem || !descriptor->filesystem->read)
@@ -78,8 +79,8 @@ unsigned int syscall_execute(struct kernel_context *context, unsigned int index)
         return 0;
 
     header = elf_get_header((void *)ntask->memory.paddress);
-
-    ntask->memory.vaddress = elf_get_virtual(header);
+    pheaders = ntask->memory.paddress + header->phoffset;
+    ntask->memory.vaddress = pheaders[0].vaddress;
 
     if (!ntask->memory.vaddress)
         return 0;

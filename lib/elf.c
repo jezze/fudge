@@ -26,16 +26,6 @@ struct elf_header *elf_get_header(void *address)
 
 }
 
-unsigned int elf_get_virtual(struct elf_header *header)
-{
-
-    unsigned int address = (unsigned int)header;
-    struct elf_program_header *pheader = (struct elf_program_header *)(address + header->phoffset);
-
-    return pheader->vaddress;
-
-}
-
 unsigned int elf_get_symbol(struct elf_header *header, char *name)
 {
 
