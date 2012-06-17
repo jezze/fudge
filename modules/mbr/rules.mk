@@ -1,7 +1,5 @@
 MODULES+=modules/mbr/mbr.ko
-CLEAN+=$(OBJ_modules/mbr/mbr.ko) modules/mbr/mbr.ko
+CLEAN+=modules/mbr/main.o modules/mbr/driver.o modules/mbr/device.o
 
-OBJ_modules/mbr/mbr.ko:=modules/mbr/main.o modules/mbr/driver.o modules/mbr/device.o
-
-modules/mbr/mbr.ko: lib/memory.o lib/string.o $(OBJ_modules/mbr/mbr.ko)
+modules/mbr/mbr.ko: lib/memory.o lib/string.o modules/mbr/main.o modules/mbr/driver.o modules/mbr/device.o
 	$(LD) $(LDFLAGS) -o $@ $^

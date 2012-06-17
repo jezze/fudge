@@ -5,6 +5,8 @@ include modules/nodefs/rules.mk
 include modules/tty/rules.mk
 include modules/arch/$(ARCH)/rules.mk
 
+CLEAN+=$(MODULES)
+
 modules/%.ko: CCFLAGS+=-Iinclude
 modules/%.ko: LDFLAGS+=-Tmodules/linker.ld -r
 
