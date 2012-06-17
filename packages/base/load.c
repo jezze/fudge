@@ -4,15 +4,16 @@
 unsigned int find(char *name)
 {
 
+    char headerBuffer[0x1000];
     char sectionBuffer[0x1000];
     char symbolBuffer[0x2000];
     char strTable[0x2000];
-    struct elf_header *header = (struct elf_header *)sectionBuffer;
+    struct elf_header *header = (struct elf_header *)headerBuffer;
     struct elf_section_header *sectionHeader = (struct elf_section_header *)sectionBuffer;
     struct elf_symbol *symTable = (struct elf_symbol *)symbolBuffer;
     unsigned int id = call_open(FILE_NEW, "/ramdisk/boot/fudge");
 
-    call_read(id, 0, sizeof (struct elf_header), sectionBuffer);
+    call_read(id, 0, sizeof (struct elf_header), headerBuffer);
     call_read(id, header->shoffset, header->shsize * header->shcount, sectionBuffer);
     call_read(id, sectionHeader[7].offset, sectionHeader[7].size, symbolBuffer);
     call_read(id, sectionHeader[sectionHeader[7].link].offset, sectionHeader[sectionHeader[7].link].size, strTable);
