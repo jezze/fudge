@@ -26,17 +26,12 @@ struct elf_header *elf_get_header(void *address)
 
 }
 
-unsigned int elf_get_symbol_plain(struct elf_header *header, char *name)
+unsigned int elf_search_table(struct elf_symbol *symTable, unsigned int count, char *strTable, char *name)
 {
 
-    unsigned int address = (unsigned int)header;
-    struct elf_section_header *sheader = (struct elf_section_header *)(address + header->shoffset);
-    struct elf_section_header *symHeader = &sheader[7];
-    struct elf_symbol *symTable = (struct elf_symbol *)(address + symHeader->offset);
-    char *strTable = (char *)(address + sheader[symHeader->link].offset);
     unsigned int i;
 
-    for (i = 0; i < symHeader->size / symHeader->esize; i++)
+    for (i = 0; i < count; i++)
     {
 
         struct elf_symbol *symEntry = &symTable[i];
@@ -50,6 +45,19 @@ unsigned int elf_get_symbol_plain(struct elf_header *header, char *name)
 
 }
 
+unsigned int elf_get_symbol_plain(struct elf_header *header, char *name)
+{
+
+    unsigned int address = (unsigned int)header;
+    struct elf_section_header *sheader = (struct elf_section_header *)(address + header->shoffset);
+    struct elf_section_header *symHeader = &sheader[7];
+    struct elf_symbol *symTable = (struct elf_symbol *)(address + symHeader->offset);
+    char *strTable = (char *)(address + sheader[symHeader->link].offset);
+
+    return elf_search_table(symTable, symHeader->size / symHeader->esize, strTable, name);
+
+}
+
 unsigned int elf_get_symbol(struct elf_header *header, char *name)
 {
 
@@ -60,19 +68,8 @@ unsigned int elf_get_symbol(struct elf_header *header, char *name)
     struct elf_symbol *symTable = (struct elf_symbol *)(address + symHeader->offset);
     char *infoTable = (char *)(address + sheader[relHeader->info].offset);
     char *strTable = (char *)(address + sheader[symHeader->link].offset);
-    unsigned int i;
 
-    for (i = 0; i < symHeader->size / symHeader->esize; i++)
-    {
-
-        struct elf_symbol *symEntry = &symTable[i];
-
-        if (memory_compare(name, strTable + symEntry->name, string_length(name)))
-            return (unsigned int)(infoTable + symEntry->value);
-
-    }
-
-    return 0;
+    return (unsigned int)(infoTable + elf_search_table(symTable, symHeader->size / symHeader->esize, strTable, name));
 
 }
 
