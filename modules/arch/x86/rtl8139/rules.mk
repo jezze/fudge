@@ -1,4 +1,4 @@
-BUILD+=modules/arch/x86/rtl8139/rtl8139.ko
+MODULES+=modules/arch/x86/rtl8139/rtl8139.ko
 CLEAN+=$(OBJ_modules/arch/x86/rtl8139/rtl8139.ko) modules/arch/x86/rtl8139/rtl8139.ko
 
 OBJ_modules/arch/x86/rtl8139/rtl8139.ko:=modules/arch/x86/rtl8139/main.o modules/arch/x86/rtl8139/driver.o

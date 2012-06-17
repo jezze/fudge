@@ -1,4 +1,4 @@
-BUILD+=modules/tty/tty.ko
+MODULES+=modules/tty/tty.ko
 CLEAN+=$(OBJ_modules/tty/tty.ko) modules/tty/tty.ko
 
 OBJ_modules/tty/tty.ko:=modules/tty/main.o modules/tty/driver.o

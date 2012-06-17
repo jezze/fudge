@@ -1,4 +1,4 @@
-BUILD+=modules/arch/x86/ata/ata.ko
+MODULES+=modules/arch/x86/ata/ata.ko
 CLEAN+=$(OBJ_modules/arch/x86/ata/ata.ko) modules/arch/x86/ata/ata.ko
 
 OBJ_modules/arch/x86/ata/ata.ko:=modules/arch/x86/ata/main.o modules/arch/x86/ata/bus.o modules/arch/x86/ata/device.o

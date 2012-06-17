@@ -1,4 +1,4 @@
-BUILD+=modules/arch/x86/uart/uart.ko
+MODULES+=modules/arch/x86/uart/uart.ko
 CLEAN+=$(OBJ_modules/arch/x86/uart/uart.ko) modules/arch/x86/uart/uart.ko
 
 OBJ_modules/arch/x86/uart/uart.ko:=modules/arch/x86/uart/main.o modules/arch/x86/uart/driver.o modules/arch/x86/uart/device.o

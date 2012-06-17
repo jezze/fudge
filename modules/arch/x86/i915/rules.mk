@@ -1,4 +1,4 @@
-BUILD+=modules/arch/x86/i915/i915.ko
+MODULES+=modules/arch/x86/i915/i915.ko
 CLEAN+=$(OBJ_modules/arch/x86/i915/i915.ko) modules/arch/x86/i915/i915.ko
 
 OBJ_modules/arch/x86/i915/i915.ko:=modules/arch/x86/i915/main.o modules/arch/x86/i915/driver.o

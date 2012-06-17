@@ -1,4 +1,4 @@
-BUILD+=modules/nodefs/nodefs.ko
+MODULES+=modules/nodefs/nodefs.ko
 CLEAN+=$(OBJ_modules/nodefs/nodefs.ko) modules/nodefs/nodefs.ko
 
 OBJ_modules/nodefs/nodefs.ko:=modules/nodefs/main.o modules/nodefs/driver.o

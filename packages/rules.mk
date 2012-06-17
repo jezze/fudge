@@ -3,8 +3,8 @@ include packages/net/rules.mk
 include packages/test/rules.mk
 include packages/wm/rules.mk
 
-CLEAN+=$(PACKAGESOBJ)
+CLEAN+=$(PACKAGES)
 
 packages/%: CCFLAGS+=-Iinclude/lib
 
-packages: $(PACKAGESOBJ)
+packages: $(PACKAGES)

@@ -1,1 +1,1 @@
-PACKAGESOBJ+=packages/net/arp packages/net/ncat
+PACKAGES+=packages/net/arp packages/net/ncat

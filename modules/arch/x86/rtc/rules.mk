@@ -1,4 +1,4 @@
-BUILD+=modules/arch/x86/rtc/rtc.ko
+MODULES+=modules/arch/x86/rtc/rtc.ko
 CLEAN+=$(OBJ_modules/arch/x86/rtc/rtc.ko) modules/arch/x86/rtc/rtc.ko
 
 OBJ_modules/arch/x86/rtc/rtc.ko:=modules/arch/x86/rtc/main.o modules/arch/x86/rtc/device.o

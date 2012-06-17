@@ -1,4 +1,4 @@
-BUILD+=modules/arch/x86/cpuid/cpuid.ko
+MODULES+=modules/arch/x86/cpuid/cpuid.ko
 CLEAN+=$(OBJ_modules/arch/x86/cpuid/cpuid.ko) modules/arch/x86/cpuid/cpuid.ko
 
 OBJ_modules/arch/x86/cpuid/cpuid.ko:=modules/arch/x86/cpuid/main.o modules/arch/x86/cpuid/driver.o modules/arch/x86/cpuid/cpuid.o

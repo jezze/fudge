@@ -1,4 +1,4 @@
-BUILD+=modules/log/log.ko
+MODULES+=modules/log/log.ko
 CLEAN+=$(OBJ_modules/log/log.ko) modules/log/log.ko
 
 OBJ_modules/log/log.ko:=modules/log/main.o modules/log/driver.o

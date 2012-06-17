@@ -1,4 +1,4 @@
-BUILD+=modules/arch/x86/smp/smp.ko
+MODULES+=modules/arch/x86/smp/smp.ko
 CLEAN+=$(OBJ_modules/arch/x86/smp/smp.ko) modules/arch/x86/smp/smp.ko
 
 OBJ_modules/arch/x86/smp/smp.ko:=modules/arch/x86/smp/main.o modules/arch/x86/smp/driver.o

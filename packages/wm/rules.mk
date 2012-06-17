@@ -1,1 +1,1 @@
-PACKAGESOBJ+=packages/wm/wm
+PACKAGES+=packages/wm/wm

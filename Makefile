@@ -37,9 +37,9 @@ clean:
 
 ramdisk:
 	mkdir -p image/bin
-	cp $(PACKAGESOBJ) image/bin
+	cp $(PACKAGES) image/bin
 	mkdir -p image/mod
-	cp $(BUILD) image/mod
+	cp $(MODULES) image/mod
 	cp kernel/fudge image/boot/fudge
 	tar -cf initrd.tar image
 	find image -depth | cpio -o > initrd.cpio
