@@ -10,8 +10,13 @@ unsigned int find(char *name)
 {
 
     struct elf_header *header = (struct elf_header *)symbolBuffer;
+    unsigned int address = (unsigned int)header;
+    struct elf_section_header *sheader = (struct elf_section_header *)(address + header->shoffset);
+    struct elf_section_header *symHeader = &sheader[7];
+    struct elf_symbol *symTable = (struct elf_symbol *)(address + symHeader->offset);
+    char *strTable = (char *)(address + sheader[symHeader->link].offset);
 
-    return elf_get_symbol_plain(header, name);
+    return elf_search_table(symTable, symHeader->size / symHeader->esize, strTable, name);
 
 }
 
