@@ -17,9 +17,9 @@ unsigned int find(char *name)
     unsigned int id = call_open(FILE_NEW, "/ramdisk/boot/fudge");
 
     call_read(id, 0, 0x2000, symbolBuffer);
-    call_read(id, header->shoffset, 0x2000, symbolBuffer);
-    call_read(id, sheader[7].offset, 0x2000, symBuffer);
-    call_read(id, sheader[sheader[7].link].offset, 0x2000, strBuffer);
+    call_read(id, header->shoffset, header->shsize * header->shcount, symbolBuffer);
+    call_read(id, sheader[7].offset, sheader[7].size, symBuffer);
+    call_read(id, sheader[sheader[7].link].offset, sheader[sheader[7].link].size, strBuffer);
     call_close(id);
 
     return elf_search_table(symTable, sheader[7].size / sheader[7].esize, strBuffer, name);
