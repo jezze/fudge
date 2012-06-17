@@ -4,7 +4,7 @@
 #define BUFFER_SIZE 0x8000
 
 static char buffer[BUFFER_SIZE];
-static char symbolBuffer[0x2000];
+static char symbolBuffer[0x1000];
 static char symBuffer[0x2000];
 static char strBuffer[0x2000];
 
@@ -16,7 +16,7 @@ unsigned int find(char *name)
     struct elf_symbol *symTable = (struct elf_symbol *)symBuffer;
     unsigned int id = call_open(FILE_NEW, "/ramdisk/boot/fudge");
 
-    call_read(id, 0, 0x2000, symbolBuffer);
+    call_read(id, 0, sizeof (struct elf_header), symbolBuffer);
     call_read(id, header->shoffset, header->shsize * header->shcount, symbolBuffer);
     call_read(id, sheader[7].offset, sheader[7].size, symBuffer);
     call_read(id, sheader[sheader[7].link].offset, sheader[sheader[7].link].size, strBuffer);
