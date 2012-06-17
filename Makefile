@@ -32,7 +32,6 @@ clean:
 	rm -rf image/bin
 	rm -rf image/mod
 	rm -f image/boot/fudge
-	rm -f image/boot/fudge.map
 	rm -f image/boot/initrd.tar
 	rm -f image/boot/initrd.cpio
 
@@ -42,7 +41,6 @@ ramdisk:
 	mkdir -p image/mod
 	cp $(BUILD) image/mod
 	cp kernel/fudge image/boot/fudge
-	nm image/boot/fudge | grep -f image/boot/fudge.sym > image/boot/fudge.map
 	tar -cf initrd.tar image
 	find image -depth | cpio -o > initrd.cpio
 	mv initrd.tar image/boot
