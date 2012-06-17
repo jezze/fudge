@@ -79,7 +79,7 @@ unsigned int syscall_execute(struct kernel_context *context, unsigned int index)
         return 0;
 
     header = elf_get_header((void *)ntask->memory.paddress);
-    pheaders = ntask->memory.paddress + header->phoffset;
+    pheaders = (struct elf_program_header *)(ntask->memory.paddress + header->phoffset);
     ntask->memory.vaddress = pheaders[0].vaddress;
 
     if (!ntask->memory.vaddress)
