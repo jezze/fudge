@@ -18,7 +18,7 @@ static unsigned int parse(void *address)
         struct tar_header *header = (struct tar_header *)current;
         unsigned int size = string_read_num(header->size, 8);
 
-        ramdisk_node_init(&nodes[i], header->name + 6, size, header, current + TAR_BLOCK_SIZE);
+        ramdisk_node_init(&nodes[i], header->name + 6, size, header, (unsigned int)(current + TAR_BLOCK_SIZE));
 
         current += ((size / TAR_BLOCK_SIZE) + 1) * TAR_BLOCK_SIZE;
 
@@ -31,7 +31,7 @@ static unsigned int parse(void *address)
 
 }
 
-void ramdisk_node_init(struct ramdisk_node *node, char *name, unsigned int size, struct tar_header *header, void *data)
+void ramdisk_node_init(struct ramdisk_node *node, char *name, unsigned int size, struct tar_header *header, unsigned int data)
 {
 
     memory_clear(node, sizeof (struct ramdisk_node));

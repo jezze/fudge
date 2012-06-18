@@ -2,7 +2,7 @@
 #include <lib/memory.h>
 #include <lib/string.h>
 
-struct elf_header *elf_get_header(void *address)
+struct elf_header *elf_get_header(unsigned int address)
 {
 
     struct elf_header *header = (struct elf_header *)address;

@@ -78,7 +78,7 @@ unsigned int syscall_execute(struct kernel_context *context, unsigned int index)
     if (!count)
         return 0;
 
-    header = elf_get_header((void *)ntask->memory.paddress);
+    header = elf_get_header(ntask->memory.paddress);
     pheaders = (struct elf_program_header *)(ntask->memory.paddress + header->phoffset);
     ntask->memory.vaddress = pheaders[0].vaddress;
 
@@ -109,7 +109,7 @@ unsigned int syscall_exit(struct kernel_context *context)
 unsigned int syscall_load(struct kernel_context *context, unsigned int index)
 {
 
-    void *physical;
+    unsigned int physical;
     void (*init)();
     struct elf_header *header;
     struct elf_section_header *sheader;
@@ -130,17 +130,17 @@ unsigned int syscall_load(struct kernel_context *context, unsigned int index)
     if (!header)
         return 0;
 
-    elf_relocate(header, (unsigned int)physical);
+    elf_relocate(header, physical);
 
-    sheader = (struct elf_section_header *)((unsigned int)physical + header->shoffset);
+    sheader = (struct elf_section_header *)(physical + header->shoffset);
     relHeader = &sheader[2];
     relData = &sheader[relHeader->info];
     symHeader = &sheader[relHeader->link];
     strHeader = &sheader[symHeader->link];
-    symTable = (struct elf_symbol *)((unsigned int)physical + symHeader->offset);
-    strTable = (char *)((unsigned int)physical + strHeader->offset);
+    symTable = (struct elf_symbol *)(physical + symHeader->offset);
+    strTable = (char *)(physical + strHeader->offset);
 
-    init = (void (*)())(elf_find_symbol(symHeader, symTable, strTable, "init") + (unsigned int)physical + relData->offset);
+    init = (void (*)())(elf_find_symbol(symHeader, symTable, strTable, "init") + physical + relData->offset);
 
     if (!init)
         return 0;
@@ -213,7 +213,7 @@ unsigned int syscall_reboot(struct kernel_context *context)
 unsigned int syscall_unload(struct kernel_context *context, unsigned int index)
 {
 
-    void *physical;
+    unsigned int physical;
     void (*destroy)();
     struct elf_header *header;
     struct elf_section_header *sheader;
@@ -234,15 +234,15 @@ unsigned int syscall_unload(struct kernel_context *context, unsigned int index)
     if (!header)
         return 0;
 
-    sheader = (struct elf_section_header *)((unsigned int)physical + header->shoffset);
+    sheader = (struct elf_section_header *)(physical + header->shoffset);
     relHeader = &sheader[2];
     relData = &sheader[relHeader->info];
     symHeader = &sheader[relHeader->link];
     strHeader = &sheader[symHeader->link];
-    symTable = (struct elf_symbol *)((unsigned int)physical + symHeader->offset);
-    strTable = (char *)((unsigned int)physical + strHeader->offset);
+    symTable = (struct elf_symbol *)(physical + symHeader->offset);
+    strTable = (char *)(physical + strHeader->offset);
 
-    destroy = (void (*)())(elf_find_symbol(symHeader, symTable, strTable, "destroy") + (unsigned int)physical + relData->offset);
+    destroy = (void (*)())(elf_find_symbol(symHeader, symTable, strTable, "destroy") + physical + relData->offset);
 
     if (!destroy)
         return 0;

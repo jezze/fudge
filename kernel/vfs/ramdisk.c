@@ -64,7 +64,7 @@ static unsigned int read(struct modules_filesystem *self, unsigned int id, unsig
         if (c > count)
             c = count;
 
-        memory_copy(buffer, (char *)node->data + offset, c);
+        memory_copy(buffer, (void *)(node->data + offset), c);
 
         return c;
 
@@ -91,7 +91,7 @@ static unsigned int write(struct modules_filesystem *self, unsigned int id, unsi
     if (c > count)
         c = count;
 
-    memory_copy((char *)node->data + offset, buffer, c);
+    memory_copy((void *)(node->data + offset), buffer, c);
 
     return c;
 
@@ -123,7 +123,7 @@ static unsigned int find(struct modules_filesystem *self, char *name)
 
 }
 
-static void *get_physical(struct modules_filesystem *self, unsigned int id)
+static unsigned int get_physical(struct modules_filesystem *self, unsigned int id)
 {
 
     return nodes[id - 1].data;
