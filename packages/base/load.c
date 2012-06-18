@@ -29,12 +29,12 @@ static unsigned int get_symbol(char *symbol)
     unsigned int index;
 
     call_read(id, 0, sizeof (struct elf_header), &header);
-    call_read(id, header.shoffset, header.shsize * header.shcount, &sectionHeader);
+    call_read(id, header.shoffset, header.shsize * header.shcount, sectionHeader);
     
     index = get_symbol_section(sectionHeader, header.shcount);
 
-    call_read(id, sectionHeader[index].offset, sectionHeader[index].size, &symbolTable);
-    call_read(id, sectionHeader[sectionHeader[index].link].offset, sectionHeader[sectionHeader[index].link].size, &stringTable);
+    call_read(id, sectionHeader[index].offset, sectionHeader[index].size, symbolTable);
+    call_read(id, sectionHeader[sectionHeader[index].link].offset, sectionHeader[sectionHeader[index].link].size, stringTable);
     call_close(id);
 
     return elf_find_symbol(&sectionHeader[index], symbolTable, stringTable, symbol);
@@ -92,7 +92,7 @@ void main()
     unsigned int i;
 
     call_read(FILE_STDIN, 0, sizeof (struct elf_header), &header);
-    call_read(FILE_STDIN, header.shoffset, header.shsize * header.shcount, &sectionHeader);
+    call_read(FILE_STDIN, header.shoffset, header.shsize * header.shcount, sectionHeader);
 
     for (i = 0; i < header.shcount; i++)
     {
@@ -110,10 +110,10 @@ void main()
         symbolHeader = &sectionHeader[relocateHeader->link];
         stringHeader = &sectionHeader[symbolHeader->link];
 
-        call_read(FILE_STDIN, symbolHeader->offset, symbolHeader->size, &symbolTable);
-        call_read(FILE_STDIN, stringHeader->offset, stringHeader->size, &stringTable);
-        call_read(FILE_STDIN, relocateHeader->offset, relocateHeader->size, &relocateTable);
-        call_read(FILE_STDIN, relocateData->offset, relocateData->size, &buffer);
+        call_read(FILE_STDIN, symbolHeader->offset, symbolHeader->size, symbolTable);
+        call_read(FILE_STDIN, stringHeader->offset, stringHeader->size, stringTable);
+        call_read(FILE_STDIN, relocateHeader->offset, relocateHeader->size, relocateTable);
+        call_read(FILE_STDIN, relocateData->offset, relocateData->size, buffer);
 
         resolve_symbols(relocateHeader, relocateTable, symbolTable, stringTable, buffer);
         call_write(FILE_STDIN, relocateData->offset, relocateData->size, buffer);
