@@ -41,18 +41,10 @@ static unsigned int get_symbol(char *symbol)
 
 }
 
-static void resolve_symbols(struct elf_header *header, unsigned int (*get_symbol)(char *symbol))
+static void resolve_symbols(struct elf_section_header *relHeader, struct elf_section_header *relData, struct elf_relocate *relTable, struct elf_symbol *symTable, struct elf_section_header *strHeader, unsigned int address)
 {
 
-    unsigned int address = (unsigned int)header;
-    struct elf_section_header *sheader = (struct elf_section_header *)(address + header->shoffset);
-    struct elf_section_header *relHeader = &sheader[2];
-    struct elf_section_header *relData = &sheader[relHeader->info];
-    struct elf_section_header *symHeader = &sheader[relHeader->link];
-    struct elf_section_header *strHeader = &sheader[symHeader->link];
-    struct elf_relocate *relTable = (struct elf_relocate *)(address + relHeader->offset);
-    struct elf_symbol *symTable = (struct elf_symbol *)(address + symHeader->offset);
-    unsigned int i;
+   unsigned int i;
 
     for (i = 0; i < relHeader->size / relHeader->esize; i++)
     {
@@ -92,10 +84,18 @@ void main()
 {
 
     char moduleBuffer[0x8000];
-    struct elf_header *header = (struct elf_header *)moduleBuffer;
     unsigned int count = call_read(FILE_STDIN, 0, 0x8000, moduleBuffer);
+    struct elf_header *header = (struct elf_header *)moduleBuffer;
+    unsigned int address = (unsigned int)header;
+    struct elf_section_header *sheader = (struct elf_section_header *)(address + header->shoffset);
+    struct elf_section_header *relHeader = &sheader[2];
+    struct elf_section_header *relData = &sheader[relHeader->info];
+    struct elf_section_header *symHeader = &sheader[relHeader->link];
+    struct elf_section_header *strHeader = &sheader[symHeader->link];
+    struct elf_relocate *relTable = (struct elf_relocate *)(address + relHeader->offset);
+    struct elf_symbol *symTable = (struct elf_symbol *)(address + symHeader->offset);
 
-    resolve_symbols(header, get_symbol);
+    resolve_symbols(relHeader, relData, relTable, symTable, strHeader, address);
     call_write(FILE_STDIN, 0, count, moduleBuffer);
     call_load(FILE_STDIN);
 
