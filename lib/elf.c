@@ -51,13 +51,12 @@ unsigned int elf_get_symbol(struct elf_header *header, char *name)
     unsigned int address = (unsigned int)header;
     struct elf_section_header *sheader = (struct elf_section_header *)(address + header->shoffset);
     struct elf_section_header *relHeader = &sheader[2];
-    struct elf_section_header *relData = &sheader[relHeader->info];
     struct elf_section_header *symHeader = &sheader[relHeader->link];
     struct elf_section_header *strHeader = &sheader[symHeader->link];
     struct elf_symbol *symTable = (struct elf_symbol *)(address + symHeader->offset);
     char *strTable = (char *)(address + strHeader->offset);
 
-    return (unsigned int)(address + relData->offset + elf_search_table(symTable, symHeader->size / symHeader->esize, strTable, name));
+    return (unsigned int)(elf_search_table(symTable, symHeader->size / symHeader->esize, strTable, name));
 
 }
 
@@ -176,13 +175,13 @@ void elf_symbolize(struct elf_header *header, unsigned int (*get_symbol)(char *n
 
             case 1:
 
-                *entry = value + get_symbol(address + strHeader->offset + symEntry->name);
+                *entry = value + get_symbol((char *)(address + strHeader->offset + symEntry->name));
 
                 break;
 
             case 2:
 
-                *entry = value + get_symbol(address + strHeader->offset + symEntry->name);
+                *entry = value + get_symbol((char *)(address + strHeader->offset + symEntry->name));
 
                 break;
 

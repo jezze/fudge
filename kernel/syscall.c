@@ -112,6 +112,9 @@ unsigned int syscall_load(struct kernel_context *context, unsigned int index)
     void *physical;
     void (*init)();
     struct elf_header *header;
+    struct elf_section_header *sheader;
+    struct elf_section_header *relHeader;
+    struct elf_section_header *relData;
     struct runtime_descriptor *descriptor = context->running->get_descriptor(context->running, index);
 
     if (!descriptor || !descriptor->id || !descriptor->filesystem || !descriptor->filesystem->get_physical)
@@ -125,7 +128,11 @@ unsigned int syscall_load(struct kernel_context *context, unsigned int index)
 
     elf_relocate(header, (unsigned int)physical);
 
-    init = (void (*)())elf_get_symbol(header, "init");
+    sheader = (struct elf_section_header *)((unsigned int)physical + header->shoffset);
+    relHeader = &sheader[2];
+    relData = &sheader[relHeader->info];
+
+    init = (void (*)())(elf_get_symbol(header, "init") + (unsigned int)physical + relData->offset);
 
     if (!init)
         return 0;
@@ -201,6 +208,9 @@ unsigned int syscall_unload(struct kernel_context *context, unsigned int index)
     void *physical;
     void (*destroy)();
     struct elf_header *header;
+    struct elf_section_header *sheader;
+    struct elf_section_header *relHeader;
+    struct elf_section_header *relData;
     struct runtime_descriptor *descriptor = context->running->get_descriptor(context->running, index);
 
     if (!descriptor || !descriptor->id || !descriptor->filesystem || !descriptor->filesystem->get_physical)
@@ -212,7 +222,11 @@ unsigned int syscall_unload(struct kernel_context *context, unsigned int index)
     if (!header)
         return 0;
 
-    destroy = (void (*)())elf_get_symbol(header, "destroy");
+    sheader = (struct elf_section_header *)((unsigned int)physical + header->shoffset);
+    relHeader = &sheader[2];
+    relData = &sheader[relHeader->info];
+
+    destroy = (void (*)())(elf_get_symbol(header, "destroy") + (unsigned int)physical + relData->offset);
 
     if (!destroy)
         return 0;
