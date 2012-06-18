@@ -139,8 +139,7 @@ struct elf_relocatea
 };
 
 struct elf_header *elf_get_header(void *address);
-unsigned int elf_search_table(struct elf_section_header *symHeader, struct elf_symbol *symTable, char *strTable, char *name);
-unsigned int elf_get_symbol(struct elf_header *header, char *name);
+unsigned int elf_find_symbol(struct elf_section_header *symHeader, struct elf_symbol *symTable, char *strTable, char *symbol);
 void elf_prepare(struct elf_header *header);
 void elf_relocate(struct elf_header *header, unsigned int address);
 void elf_symbolize(struct elf_header *header, unsigned int (*get_symbol)(char *name));

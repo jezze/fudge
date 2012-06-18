@@ -26,7 +26,7 @@ struct elf_header *elf_get_header(void *address)
 
 }
 
-unsigned int elf_search_table(struct elf_section_header *symHeader, struct elf_symbol *symTable, char *strTable, char *name)
+unsigned int elf_find_symbol(struct elf_section_header *symHeader, struct elf_symbol *symTable, char *strTable, char *symbol)
 {
 
     unsigned int i;
@@ -36,27 +36,12 @@ unsigned int elf_search_table(struct elf_section_header *symHeader, struct elf_s
 
         struct elf_symbol *symEntry = &symTable[i];
 
-        if (memory_compare(name, strTable + symEntry->name, string_length(name)))
+        if (memory_compare(symbol, strTable + symEntry->name, string_length(symbol)))
             return symEntry->value;
 
     }
 
     return 0;
-
-}
-
-unsigned int elf_get_symbol(struct elf_header *header, char *name)
-{
-
-    unsigned int address = (unsigned int)header;
-    struct elf_section_header *sheader = (struct elf_section_header *)(address + header->shoffset);
-    struct elf_section_header *relHeader = &sheader[2];
-    struct elf_section_header *symHeader = &sheader[relHeader->link];
-    struct elf_section_header *strHeader = &sheader[symHeader->link];
-    struct elf_symbol *symTable = (struct elf_symbol *)(address + symHeader->offset);
-    char *strTable = (char *)(address + strHeader->offset);
-
-    return (unsigned int)(elf_search_table(symHeader, symTable, strTable, name));
 
 }
 

@@ -115,6 +115,10 @@ unsigned int syscall_load(struct kernel_context *context, unsigned int index)
     struct elf_section_header *sheader;
     struct elf_section_header *relHeader;
     struct elf_section_header *relData;
+    struct elf_section_header *symHeader;
+    struct elf_section_header *strHeader;
+    struct elf_symbol *symTable;
+    char *strTable;
     struct runtime_descriptor *descriptor = context->running->get_descriptor(context->running, index);
 
     if (!descriptor || !descriptor->id || !descriptor->filesystem || !descriptor->filesystem->get_physical)
@@ -131,8 +135,12 @@ unsigned int syscall_load(struct kernel_context *context, unsigned int index)
     sheader = (struct elf_section_header *)((unsigned int)physical + header->shoffset);
     relHeader = &sheader[2];
     relData = &sheader[relHeader->info];
+    symHeader = &sheader[relHeader->link];
+    strHeader = &sheader[symHeader->link];
+    symTable = (struct elf_symbol *)((unsigned int)physical + symHeader->offset);
+    strTable = (char *)((unsigned int)physical + strHeader->offset);
 
-    init = (void (*)())(elf_get_symbol(header, "init") + (unsigned int)physical + relData->offset);
+    init = (void (*)())(elf_find_symbol(symHeader, symTable, strTable, "init") + (unsigned int)physical + relData->offset);
 
     if (!init)
         return 0;
@@ -211,6 +219,10 @@ unsigned int syscall_unload(struct kernel_context *context, unsigned int index)
     struct elf_section_header *sheader;
     struct elf_section_header *relHeader;
     struct elf_section_header *relData;
+    struct elf_section_header *symHeader;
+    struct elf_section_header *strHeader;
+    struct elf_symbol *symTable;
+    char *strTable;
     struct runtime_descriptor *descriptor = context->running->get_descriptor(context->running, index);
 
     if (!descriptor || !descriptor->id || !descriptor->filesystem || !descriptor->filesystem->get_physical)
@@ -225,8 +237,12 @@ unsigned int syscall_unload(struct kernel_context *context, unsigned int index)
     sheader = (struct elf_section_header *)((unsigned int)physical + header->shoffset);
     relHeader = &sheader[2];
     relData = &sheader[relHeader->info];
+    symHeader = &sheader[relHeader->link];
+    strHeader = &sheader[symHeader->link];
+    symTable = (struct elf_symbol *)((unsigned int)physical + symHeader->offset);
+    strTable = (char *)((unsigned int)physical + strHeader->offset);
 
-    destroy = (void (*)())(elf_get_symbol(header, "destroy") + (unsigned int)physical + relData->offset);
+    destroy = (void (*)())(elf_find_symbol(symHeader, symTable, strTable, "destroy") + (unsigned int)physical + relData->offset);
 
     if (!destroy)
         return 0;
