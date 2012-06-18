@@ -77,15 +77,9 @@ void elf_prepare(struct elf_header *header)
 
 }
 
-void elf_relocate(struct elf_header *header, unsigned int address)
+static void elf_relocate_section(struct elf_section_header *sheader, struct elf_section_header *relHeader, struct elf_relocate *relTable, struct elf_section_header *symHeader, struct elf_symbol *symTable, char *infoTable, unsigned int address)
 {
 
-    struct elf_section_header *sheader = (struct elf_section_header *)(address + header->shoffset);
-    struct elf_section_header *relHeader = &sheader[2];
-    struct elf_section_header *symHeader = &sheader[relHeader->link];
-    struct elf_relocate *relTable = (struct elf_relocate *)(address + relHeader->offset);
-    struct elf_symbol *symTable = (struct elf_symbol *)(address + symHeader->offset);
-    char *infoTable = (char *)(address + sheader[relHeader->info].offset);
     unsigned int i;
 
     for (i = 0; i < relHeader->size / relHeader->esize; i++)
@@ -115,6 +109,36 @@ void elf_relocate(struct elf_header *header, unsigned int address)
                 break;
 
         }
+
+    }
+
+}
+
+void elf_relocate(struct elf_header *header, unsigned int address)
+{
+
+    struct elf_section_header *sheader = (struct elf_section_header *)(address + header->shoffset);
+    unsigned int i;
+
+    for (i = 0; i < header->shcount; i++)
+    {
+
+        struct elf_section_header *relHeader;
+        struct elf_section_header *symHeader;
+        struct elf_relocate *relTable;
+        struct elf_symbol *symTable;
+        char *infoTable;
+
+        if (sheader[i].type != ELF_SECTION_TYPE_REL)
+            continue;
+
+        relHeader = &sheader[i];
+        symHeader = &sheader[relHeader->link];
+        relTable = (struct elf_relocate *)(address + relHeader->offset);
+        symTable = (struct elf_symbol *)(address + symHeader->offset);
+        infoTable = (char *)(address + sheader[relHeader->info].offset);
+
+        elf_relocate_section(sheader, relHeader, relTable, symHeader, symTable, infoTable, address);
 
     }
 
