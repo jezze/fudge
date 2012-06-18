@@ -45,23 +45,6 @@ unsigned int elf_find_symbol(struct elf_section_header *symHeader, struct elf_sy
 
 }
 
-void elf_prepare(struct elf_header *header)
-{
-
-    unsigned int address = (unsigned int)header;
-    struct elf_section_header *sheader = (struct elf_section_header *)(address + header->shoffset);
-    unsigned int i;
-
-    for (i = 0; i < header->shcount; i++)
-    {
-
-        if (sheader[i].type == 8)
-            memory_clear((char *)(address + sheader[i].offset), sheader[i].size);
-
-    }
-
-}
-
 static void elf_relocate_section(struct elf_section_header *sheader, struct elf_section_header *relHeader, struct elf_section_header *relData, struct elf_relocate *relTable, struct elf_section_header *symHeader, struct elf_symbol *symTable, unsigned int address)
 {
 
