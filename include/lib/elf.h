@@ -142,7 +142,7 @@ struct elf_header *elf_get_header(void *address);
 unsigned int elf_search_table(struct elf_symbol *symTable, unsigned int count, char *strTable, char *name);
 unsigned int elf_get_symbol(struct elf_header *header, char *name);
 void elf_prepare(struct elf_header *header);
-void elf_relocate(struct elf_header *header);
+void elf_relocate(struct elf_header *header, unsigned int address);
 void elf_symbolize(struct elf_header *header, unsigned int (*get_symbol)(char *name));
 
 #endif

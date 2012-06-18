@@ -123,7 +123,7 @@ unsigned int syscall_load(struct kernel_context *context, unsigned int index)
     if (!header)
         return 0;
 
-    elf_relocate(header);
+    elf_relocate(header, (unsigned int)physical);
 
     init = (void (*)())elf_get_symbol(header, "init");
 

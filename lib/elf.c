@@ -77,10 +77,9 @@ void elf_prepare(struct elf_header *header)
 
 }
 
-void elf_relocate(struct elf_header *header)
+void elf_relocate(struct elf_header *header, unsigned int address)
 {
 
-    unsigned int address = (unsigned int)header;
     struct elf_section_header *sheader = (struct elf_section_header *)(address + header->shoffset);
     struct elf_section_header *relHeader = &sheader[2];
     struct elf_section_header *symHeader = &sheader[relHeader->link];
