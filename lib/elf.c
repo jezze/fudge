@@ -77,7 +77,7 @@ void elf_prepare(struct elf_header *header)
 
 }
 
-static void elf_relocate_section(struct elf_section_header *sheader, struct elf_section_header *relHeader, struct elf_relocate *relTable, struct elf_section_header *symHeader, struct elf_symbol *symTable, char *infoTable, unsigned int address)
+static void elf_relocate_section(struct elf_section_header *sheader, struct elf_section_header *relHeader, struct elf_section_header *relData, struct elf_relocate *relTable, struct elf_section_header *symHeader, struct elf_symbol *symTable, unsigned int address)
 {
 
     unsigned int i;
@@ -89,7 +89,7 @@ static void elf_relocate_section(struct elf_section_header *sheader, struct elf_
         unsigned char type = relEntry->info & 0x0F;
         unsigned char index = relEntry->info >> 8;
         struct elf_symbol *symEntry = &symTable[index];
-        unsigned int *entry = (unsigned int *)(infoTable + relEntry->offset);
+        unsigned int *entry = (unsigned int *)(address + relData->offset + relEntry->offset);
         unsigned int value = *entry;
         unsigned int addend = (symEntry->shindex) ? address + sheader[symEntry->shindex].offset + symEntry->value : 0;
 
@@ -124,21 +124,21 @@ void elf_relocate(struct elf_header *header, unsigned int address)
     {
 
         struct elf_section_header *relHeader;
+        struct elf_section_header *relData;
         struct elf_section_header *symHeader;
         struct elf_relocate *relTable;
         struct elf_symbol *symTable;
-        char *infoTable;
 
         if (sheader[i].type != ELF_SECTION_TYPE_REL)
             continue;
 
         relHeader = &sheader[i];
+        relData = &sheader[relHeader->info];
         symHeader = &sheader[relHeader->link];
         relTable = (struct elf_relocate *)(address + relHeader->offset);
         symTable = (struct elf_symbol *)(address + symHeader->offset);
-        infoTable = (char *)(address + sheader[relHeader->info].offset);
 
-        elf_relocate_section(sheader, relHeader, relTable, symHeader, symTable, infoTable, address);
+        elf_relocate_section(sheader, relHeader, relData, relTable, symHeader, symTable, address);
 
     }
 
