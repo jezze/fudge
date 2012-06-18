@@ -31,7 +31,7 @@ static unsigned int parse(void *address)
 
 }
 
-void ramdisk_node_init(struct ramdisk_node *node, char *name, unsigned int size, struct tar_header *header, unsigned int data)
+void ramdisk_node_init(struct ramdisk_node *node, char *name, unsigned int size, struct tar_header *header, unsigned int offset)
 {
 
     memory_clear(node, sizeof (struct ramdisk_node));
@@ -39,7 +39,7 @@ void ramdisk_node_init(struct ramdisk_node *node, char *name, unsigned int size,
     node->name = name;
     node->size = size;
     node->header = header;
-    node->data = data;
+    node->offset = offset;
 
 }
 
