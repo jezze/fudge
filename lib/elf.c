@@ -26,12 +26,12 @@ struct elf_header *elf_get_header(void *address)
 
 }
 
-unsigned int elf_search_table(struct elf_symbol *symTable, unsigned int count, char *strTable, char *name)
+unsigned int elf_search_table(struct elf_section_header *symHeader, struct elf_symbol *symTable, char *strTable, char *name)
 {
 
     unsigned int i;
 
-    for (i = 0; i < count; i++)
+    for (i = 0; i < symHeader->size / symHeader->esize; i++)
     {
 
         struct elf_symbol *symEntry = &symTable[i];
@@ -56,7 +56,7 @@ unsigned int elf_get_symbol(struct elf_header *header, char *name)
     struct elf_symbol *symTable = (struct elf_symbol *)(address + symHeader->offset);
     char *strTable = (char *)(address + strHeader->offset);
 
-    return (unsigned int)(elf_search_table(symTable, symHeader->size / symHeader->esize, strTable, name));
+    return (unsigned int)(elf_search_table(symHeader, symTable, strTable, name));
 
 }
 

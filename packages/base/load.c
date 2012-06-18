@@ -37,7 +37,7 @@ static unsigned int find(char *name)
     call_read(id, sectionHeader[sectionHeader[index].link].offset, sectionHeader[sectionHeader[index].link].size, &stringTable);
     call_close(id);
 
-    return elf_search_table(symbolTable, sectionHeader[index].size / sectionHeader[index].esize, stringTable, name);
+    return elf_search_table(&sectionHeader[index], symbolTable, stringTable, name);
 
 }
 
