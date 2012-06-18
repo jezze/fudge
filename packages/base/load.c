@@ -41,7 +41,7 @@ static unsigned int get_symbol(char *symbol)
 
 }
 
-static void resolve_symbols(struct elf_section_header *relHeader, struct elf_section_header *relData, struct elf_relocate *relTable, struct elf_symbol *symTable, struct elf_section_header *strHeader, unsigned int address)
+static void resolve_symbols(struct elf_section_header *relHeader, struct elf_section_header *relData, struct elf_relocate *relTable, struct elf_symbol *symTable, char *strTable, char *buffer)
 {
 
    unsigned int i;
@@ -53,7 +53,7 @@ static void resolve_symbols(struct elf_section_header *relHeader, struct elf_sec
         unsigned char type = relEntry->info & 0x0F;
         unsigned char index = relEntry->info >> 8;
         struct elf_symbol *symEntry = &symTable[index];
-        unsigned int *entry = (unsigned int *)(address + relData->offset + relEntry->offset);
+        unsigned int *entry = (unsigned int *)(buffer + relEntry->offset);
         unsigned int value = *entry;
 
         if (symEntry->shindex)
@@ -64,13 +64,13 @@ static void resolve_symbols(struct elf_section_header *relHeader, struct elf_sec
 
             case 1:
 
-                *entry = value + get_symbol((char *)(address + strHeader->offset + symEntry->name));
+                *entry = value + get_symbol(strTable + symEntry->name);
 
                 break;
 
             case 2:
 
-                *entry = value + get_symbol((char *)(address + strHeader->offset + symEntry->name));
+                *entry = value + get_symbol(strTable + symEntry->name);
 
                 break;
 
@@ -83,20 +83,32 @@ static void resolve_symbols(struct elf_section_header *relHeader, struct elf_sec
 void main()
 {
 
-    char moduleBuffer[0x8000];
-    unsigned int count = call_read(FILE_STDIN, 0, 0x8000, moduleBuffer);
-    struct elf_header *header = (struct elf_header *)moduleBuffer;
-    unsigned int address = (unsigned int)header;
-    struct elf_section_header *sheader = (struct elf_section_header *)(address + header->shoffset);
-    struct elf_section_header *relHeader = &sheader[2];
-    struct elf_section_header *relData = &sheader[relHeader->info];
-    struct elf_section_header *symHeader = &sheader[relHeader->link];
-    struct elf_section_header *strHeader = &sheader[symHeader->link];
-    struct elf_relocate *relTable = (struct elf_relocate *)(address + relHeader->offset);
-    struct elf_symbol *symTable = (struct elf_symbol *)(address + symHeader->offset);
+    struct elf_header header;
+    struct elf_section_header sectionHeader[20];
+    struct elf_relocate relocateTable[400];
+    struct elf_symbol symbolTable[400];
+    char stringTable[0x1000];
+    char dataBuffer[0x4000];
+    struct elf_section_header *relocateHeader;
+    struct elf_section_header *relocateData;
+    struct elf_section_header *symbolHeader;
+    struct elf_section_header *stringHeader;
 
-    resolve_symbols(relHeader, relData, relTable, symTable, strHeader, address);
-    call_write(FILE_STDIN, 0, count, moduleBuffer);
+    call_read(FILE_STDIN, 0, sizeof (struct elf_header), &header);
+    call_read(FILE_STDIN, header.shoffset, header.shsize * header.shcount, &sectionHeader);
+
+    relocateHeader = &sectionHeader[2];
+    relocateData = &sectionHeader[relocateHeader->info];
+    symbolHeader = &sectionHeader[relocateHeader->link];
+    stringHeader = &sectionHeader[symbolHeader->link];
+
+    call_read(FILE_STDIN, symbolHeader->offset, symbolHeader->size, &symbolTable);
+    call_read(FILE_STDIN, stringHeader->offset, stringHeader->size, &stringTable);
+    call_read(FILE_STDIN, relocateHeader->offset, relocateHeader->size, &relocateTable);
+    call_read(FILE_STDIN, relocateData->offset, relocateData->size, &dataBuffer);
+
+    resolve_symbols(relocateHeader, relocateData, relocateTable, symbolTable, stringTable, dataBuffer);
+    call_write(FILE_STDIN, relocateData->offset, relocateData->size, dataBuffer);
     call_load(FILE_STDIN);
 
 }
