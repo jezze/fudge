@@ -41,7 +41,7 @@ static unsigned int get_symbol(char *symbol)
 
 }
 
-static void resolve_symbols(struct elf_section_header *relHeader, struct elf_section_header *relData, struct elf_relocate *relTable, struct elf_symbol *symTable, char *strTable, char *buffer)
+static void resolve_symbols(struct elf_section_header *relHeader, struct elf_relocate *relTable, struct elf_symbol *symTable, char *strTable, char *buffer)
 {
 
    unsigned int i;
@@ -88,27 +88,38 @@ void main()
     struct elf_relocate relocateTable[400];
     struct elf_symbol symbolTable[400];
     char stringTable[0x1000];
-    char dataBuffer[0x4000];
-    struct elf_section_header *relocateHeader;
-    struct elf_section_header *relocateData;
-    struct elf_section_header *symbolHeader;
-    struct elf_section_header *stringHeader;
+    char buffer[0x4000];
+    unsigned int i;
 
     call_read(FILE_STDIN, 0, sizeof (struct elf_header), &header);
     call_read(FILE_STDIN, header.shoffset, header.shsize * header.shcount, &sectionHeader);
 
-    relocateHeader = &sectionHeader[2];
-    relocateData = &sectionHeader[relocateHeader->info];
-    symbolHeader = &sectionHeader[relocateHeader->link];
-    stringHeader = &sectionHeader[symbolHeader->link];
+    for (i = 0; i < header.shcount; i++)
+    {
 
-    call_read(FILE_STDIN, symbolHeader->offset, symbolHeader->size, &symbolTable);
-    call_read(FILE_STDIN, stringHeader->offset, stringHeader->size, &stringTable);
-    call_read(FILE_STDIN, relocateHeader->offset, relocateHeader->size, &relocateTable);
-    call_read(FILE_STDIN, relocateData->offset, relocateData->size, &dataBuffer);
+        struct elf_section_header *relocateHeader;
+        struct elf_section_header *relocateData;
+        struct elf_section_header *symbolHeader;
+        struct elf_section_header *stringHeader;
 
-    resolve_symbols(relocateHeader, relocateData, relocateTable, symbolTable, stringTable, dataBuffer);
-    call_write(FILE_STDIN, relocateData->offset, relocateData->size, dataBuffer);
+        if (sectionHeader[i].type != ELF_SECTION_TYPE_REL)
+            continue;
+
+        relocateHeader = &sectionHeader[i];
+        relocateData = &sectionHeader[relocateHeader->info];
+        symbolHeader = &sectionHeader[relocateHeader->link];
+        stringHeader = &sectionHeader[symbolHeader->link];
+
+        call_read(FILE_STDIN, symbolHeader->offset, symbolHeader->size, &symbolTable);
+        call_read(FILE_STDIN, stringHeader->offset, stringHeader->size, &stringTable);
+        call_read(FILE_STDIN, relocateHeader->offset, relocateHeader->size, &relocateTable);
+        call_read(FILE_STDIN, relocateData->offset, relocateData->size, &buffer);
+
+        resolve_symbols(relocateHeader, relocateTable, symbolTable, stringTable, buffer);
+        call_write(FILE_STDIN, relocateData->offset, relocateData->size, buffer);
+
+    }
+
     call_load(FILE_STDIN);
 
 }
