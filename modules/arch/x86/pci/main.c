@@ -7,7 +7,6 @@ void init()
 {
 
     pci_bus_init(&bus);
-
     modules_register_bus(&bus.base);
 
 }

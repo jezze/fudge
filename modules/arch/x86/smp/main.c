@@ -8,16 +8,7 @@ static struct smp_driver driver;
 void init()
 {
 
-    struct acpi_driver *acpiDriver = (struct acpi_driver *)modules_get_driver(ACPI_DRIVER_TYPE);
-    struct cpuid_driver *cpuidDriver = (struct cpuid_driver *)modules_get_driver(CPUID_DRIVER_TYPE);
-
-    if (!acpiDriver)
-        return;
-
-    if (!cpuidDriver)
-        return;
-
-    smp_driver_init(&driver, acpiDriver, cpuidDriver);
+    smp_driver_init(&driver, 0, 0);
     modules_register_driver(&driver.base);
 
 }

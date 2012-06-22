@@ -85,19 +85,14 @@ static unsigned int lfb_write(struct nodefs_node *self, unsigned int offset, uns
 void init()
 {
 
-    struct nodefs_driver *nodefsDriver = (struct nodefs_driver *)modules_get_driver(NODEFS_DRIVER_TYPE);
-
     bga_driver_init(&driver);
     modules_register_driver(&driver.base);
 
-    if (!nodefsDriver)
-        return;
-
-    nodefsDriver->register_node(nodefsDriver, &xres, "bga/xres", &driver.base.base, xres_read, xres_write);
-    nodefsDriver->register_node(nodefsDriver, &yres, "bga/yres", &driver.base.base, yres_read, yres_write);
-    nodefsDriver->register_node(nodefsDriver, &bpp, "bga/bpp", &driver.base.base, bpp_read, bpp_write);
-    nodefsDriver->register_node(nodefsDriver, &enable, "bga/enable", &driver.base.base, 0, enable_write);
-    nodefsDriver->register_node(nodefsDriver, &lfb, "bga/lfb", &driver.base.base, 0, lfb_write);
+    nodefs_register_node(&xres, "bga/xres", &driver.base.base, xres_read, xres_write);
+    nodefs_register_node(&yres, "bga/yres", &driver.base.base, yres_read, yres_write);
+    nodefs_register_node(&bpp, "bga/bpp", &driver.base.base, bpp_read, bpp_write);
+    nodefs_register_node(&enable, "bga/enable", &driver.base.base, 0, enable_write);
+    nodefs_register_node(&lfb, "bga/lfb", &driver.base.base, 0, lfb_write);
 
 }
 

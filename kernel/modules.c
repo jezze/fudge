@@ -37,28 +37,6 @@ static void attach(struct modules_driver *driver)
 
 }
 
-struct modules_driver *modules_get_driver(unsigned int type)
-{
-
-    unsigned int i;
-
-    for (i = 0; i < MODULES_MODULE_SLOTS; i++)
-    {
-
-        union modules_module *module = modules[i];
-
-        if (!module || module->base.type != MODULES_TYPE_DRIVER)
-            continue;
-
-        if (module->driver.type == type)
-            return &module->driver;
-
-    }
-
-    return 0;
-
-}
-
 struct modules_filesystem *modules_get_filesystem(char *path)
 {
 

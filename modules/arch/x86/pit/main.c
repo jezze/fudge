@@ -19,18 +19,13 @@ static unsigned int jiffies_read(struct nodefs_node *self, unsigned int offset, 
 void init()
 {
 
-    struct nodefs_driver *nodefsDriver = (struct nodefs_driver *)modules_get_driver(NODEFS_DRIVER_TYPE);
-
     pit_device_init(&device, PIT_IRQ);
     modules_register_device(&device.base);
 
     pit_driver_init(&driver);
     modules_register_driver(&driver.base);
 
-    if (!nodefsDriver)
-        return;
-
-    nodefsDriver->register_node(nodefsDriver, &jiffies, "pit/jiffies", &driver.base.base, jiffies_read, 0);
+    nodefs_register_node(&jiffies, "pit/jiffies", &driver.base.base, jiffies_read, 0);
 
 }
 

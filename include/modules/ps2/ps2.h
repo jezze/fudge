@@ -64,6 +64,8 @@ struct ps2_mouse_driver
 
 };
 
+unsigned int ps2_getc(char *buffer);
+unsigned int ps2_putc(char *buffer);
 void ps2_kbd_device_init(struct ps2_kbd_device *device, unsigned int irq);
 void ps2_kbd_driver_init(struct ps2_kbd_driver *driver);
 void ps2_mouse_device_init(struct ps2_mouse_device *device, unsigned int irq);

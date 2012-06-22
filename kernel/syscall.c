@@ -113,8 +113,6 @@ unsigned int syscall_load(struct kernel_context *context, unsigned int index)
     void (*init)();
     struct elf_header *header;
     struct elf_section_header *sheader;
-    struct elf_section_header *relHeader;
-    struct elf_section_header *relData;
     struct elf_section_header *symHeader;
     struct elf_section_header *strHeader;
     struct elf_symbol *symTable;
@@ -133,14 +131,12 @@ unsigned int syscall_load(struct kernel_context *context, unsigned int index)
     elf_relocate(header, physical);
 
     sheader = (struct elf_section_header *)(physical + header->shoffset);
-    relHeader = &sheader[2];
-    relData = &sheader[relHeader->info];
-    symHeader = &sheader[relHeader->link];
+    symHeader = elf_get_section(header, sheader, ELF_SECTION_TYPE_SYMTAB);
     strHeader = &sheader[symHeader->link];
     symTable = (struct elf_symbol *)(physical + symHeader->offset);
     strTable = (char *)(physical + strHeader->offset);
 
-    init = (void (*)())(elf_find_symbol(symHeader, symTable, strTable, "init") + physical + relData->offset);
+    init = (void (*)())(elf_find_symbol(header, sheader, symHeader, symTable, strTable, "init"));
 
     if (!init)
         return 0;
@@ -217,8 +213,6 @@ unsigned int syscall_unload(struct kernel_context *context, unsigned int index)
     void (*destroy)();
     struct elf_header *header;
     struct elf_section_header *sheader;
-    struct elf_section_header *relHeader;
-    struct elf_section_header *relData;
     struct elf_section_header *symHeader;
     struct elf_section_header *strHeader;
     struct elf_symbol *symTable;
@@ -235,14 +229,12 @@ unsigned int syscall_unload(struct kernel_context *context, unsigned int index)
         return 0;
 
     sheader = (struct elf_section_header *)(physical + header->shoffset);
-    relHeader = &sheader[2];
-    relData = &sheader[relHeader->info];
-    symHeader = &sheader[relHeader->link];
+    symHeader = elf_get_section(header, sheader, ELF_SECTION_TYPE_SYMTAB);
     strHeader = &sheader[symHeader->link];
     symTable = (struct elf_symbol *)(physical + symHeader->offset);
     strTable = (char *)(physical + strHeader->offset);
 
-    destroy = (void (*)())(elf_find_symbol(symHeader, symTable, strTable, "destroy") + physical + relData->offset);
+    destroy = (void (*)())(elf_find_symbol(header, sheader, symHeader, symTable, strTable, "destroy"));
 
     if (!destroy)
         return 0;

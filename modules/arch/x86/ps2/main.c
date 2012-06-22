@@ -12,6 +12,20 @@ static struct nodefs_node buffer;
 static struct nodefs_node mx;
 static struct nodefs_node my;
 
+unsigned int ps2_getc(char *buffer)
+{
+
+    return kbdDriver.buffer.getc(&kbdDriver.buffer, buffer);
+
+}
+
+unsigned int ps2_putc(char *buffer)
+{
+
+    return kbdDriver.buffer.putc(&kbdDriver.buffer, buffer);
+
+}
+
 static unsigned int buffer_read(struct nodefs_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
@@ -47,8 +61,6 @@ static unsigned int my_read(struct nodefs_node *self, unsigned int offset, unsig
 void init()
 {
 
-    struct nodefs_driver *nodefsDriver = (struct nodefs_driver *)modules_get_driver(NODEFS_DRIVER_TYPE);
-
     ps2_kbd_device_init(&kbdDevice, PS2_IRQ_KBD);
     modules_register_device(&kbdDevice.base);
 
@@ -61,12 +73,9 @@ void init()
     ps2_mouse_driver_init(&mouseDriver);
     modules_register_driver(&mouseDriver.base);
 
-    if (!nodefsDriver)
-        return;
-
-    nodefsDriver->register_node(nodefsDriver, &buffer, "ps2/buffer", &kbdDriver.base.base, buffer_read, buffer_write);
-    nodefsDriver->register_node(nodefsDriver, &mx, "ps2/mx", &mouseDriver.base.base, mx_read, 0);
-    nodefsDriver->register_node(nodefsDriver, &my, "ps2/my", &mouseDriver.base.base, my_read, 0);
+    nodefs_register_node(&buffer, "ps2/buffer", &kbdDriver.base.base, buffer_read, buffer_write);
+    nodefs_register_node(&mx, "ps2/mx", &mouseDriver.base.base, mx_read, 0);
+    nodefs_register_node(&my, "ps2/my", &mouseDriver.base.base, my_read, 0);
 
 }
 

@@ -20,7 +20,7 @@ static unsigned int in_read(struct nodefs_node *self, unsigned int offset, unsig
     for (i = 0; i < count; i++)
     {
 
-        if (!driver.kbdDriver->buffer.getc(&driver.kbdDriver->buffer, stream + i))
+        if (!ps2_getc(stream + i))
             break;
 
     }
@@ -38,7 +38,7 @@ static unsigned int in_write(struct nodefs_node *self, unsigned int offset, unsi
     for (i = 0; i < count; i++)
     {
 
-        if (!driver.kbdDriver->buffer.putc(&driver.kbdDriver->buffer, stream + i))
+        if (!ps2_putc(stream + i))
             break;
 
     }
@@ -56,7 +56,7 @@ static unsigned int out_write(struct nodefs_node *self, unsigned int offset, uns
     for (i = 0; i < count; i++)
         driver.putc(&driver, stream[i]);
 
-    driver.vgaDriver->set_cursor_offset(driver.vgaDriver, driver.cursorOffset);
+    vga_set_cursor_offset(driver.cursorOffset);
 
     return count;
 
@@ -86,25 +86,12 @@ static unsigned int cwd_write(struct nodefs_node *self, unsigned int offset, uns
 void init()
 {
 
-    struct ps2_kbd_driver *kbdDriver = (struct ps2_kbd_driver *)modules_get_driver(PS2_KBD_DRIVER_TYPE);
-    struct vga_driver *vgaDriver = (struct vga_driver *)modules_get_driver(VGA_DRIVER_TYPE);
-    struct nodefs_driver *nodefsDriver = (struct nodefs_driver *)modules_get_driver(NODEFS_DRIVER_TYPE);
-
-    if (!kbdDriver)
-        return;
-
-    if (!vgaDriver)
-        return;
-
-    tty_driver_init(&driver, kbdDriver, vgaDriver, "/ramdisk/home/");
+    tty_driver_init(&driver, "/ramdisk/home/");
     modules_register_driver(&driver.base);
 
-    if (!nodefsDriver)
-        return;
-
-    nodefsDriver->register_node(nodefsDriver, &in, "tty/stdin", &driver.base.base, in_read, in_write);
-    nodefsDriver->register_node(nodefsDriver, &out, "tty/stdout", &driver.base.base, 0, out_write);
-    nodefsDriver->register_node(nodefsDriver, &cwd, "tty/cwd", &driver.base.base, cwd_read, cwd_write);
+    nodefs_register_node(&in, "tty/stdin", &driver.base.base, in_read, in_write);
+    nodefs_register_node(&out, "tty/stdout", &driver.base.base, 0, out_write);
+    nodefs_register_node(&cwd, "tty/cwd", &driver.base.base, cwd_read, cwd_write);
 
 }
 

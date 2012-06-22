@@ -70,7 +70,6 @@ union modules_module
 
 };
 
-struct modules_driver *modules_get_driver(unsigned int type);
 struct modules_filesystem *modules_get_filesystem(char *path);
 void modules_register_bus(struct modules_bus *bus);
 void modules_register_device(struct modules_device *device);

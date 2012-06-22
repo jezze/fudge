@@ -7,7 +7,6 @@ void init()
 {
 
     ext2_driver_init(&driver);
-
     modules_register_driver(&driver.base);
 
 }
