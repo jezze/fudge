@@ -114,7 +114,6 @@ unsigned int syscall_load(struct kernel_context *context, unsigned int index)
     struct elf_header *header;
     struct elf_section_header *sheader;
     struct elf_section_header *symHeader;
-    struct elf_section_header *strHeader;
     struct elf_symbol *symTable;
     char *strTable;
     struct runtime_descriptor *descriptor = context->running->get_descriptor(context->running, index);
@@ -132,9 +131,8 @@ unsigned int syscall_load(struct kernel_context *context, unsigned int index)
 
     sheader = (struct elf_section_header *)(header->entry + header->shoffset);
     symHeader = elf_get_section(header, sheader, ELF_SECTION_TYPE_SYMTAB);
-    strHeader = &sheader[symHeader->link];
     symTable = (struct elf_symbol *)(header->entry + symHeader->offset);
-    strTable = (char *)(header->entry + strHeader->offset);
+    strTable = (char *)(header->entry + sheader[symHeader->link].offset);
 
     init = (void (*)())(elf_find_symbol(header, sheader, symHeader, symTable, strTable, "init"));
 
@@ -214,7 +212,6 @@ unsigned int syscall_unload(struct kernel_context *context, unsigned int index)
     struct elf_header *header;
     struct elf_section_header *sheader;
     struct elf_section_header *symHeader;
-    struct elf_section_header *strHeader;
     struct elf_symbol *symTable;
     char *strTable;
     struct runtime_descriptor *descriptor = context->running->get_descriptor(context->running, index);
@@ -230,9 +227,8 @@ unsigned int syscall_unload(struct kernel_context *context, unsigned int index)
 
     sheader = (struct elf_section_header *)(header->entry + header->shoffset);
     symHeader = elf_get_section(header, sheader, ELF_SECTION_TYPE_SYMTAB);
-    strHeader = &sheader[symHeader->link];
     symTable = (struct elf_symbol *)(header->entry + symHeader->offset);
-    strTable = (char *)(header->entry + strHeader->offset);
+    strTable = (char *)(header->entry + sheader[symHeader->link].offset);
 
     destroy = (void (*)())(elf_find_symbol(header, sheader, symHeader, symTable, strTable, "destroy"));
 
