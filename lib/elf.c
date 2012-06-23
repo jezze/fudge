@@ -112,6 +112,8 @@ void elf_relocate(struct elf_header *header, unsigned int address)
     struct elf_section_header *sheader = (struct elf_section_header *)(address + header->shoffset);
     unsigned int i;
 
+    header->entry = address;
+
     for (i = 0; i < header->shcount; i++)
     {
 
@@ -127,12 +129,12 @@ void elf_relocate(struct elf_header *header, unsigned int address)
         relHeader = &sheader[i];
         relData = &sheader[relHeader->info];
         symHeader = &sheader[relHeader->link];
-        relTable = (struct elf_relocate *)(address + relHeader->offset);
-        symTable = (struct elf_symbol *)(address + symHeader->offset);
+        relTable = (struct elf_relocate *)(header->entry + relHeader->offset);
+        symTable = (struct elf_symbol *)(header->entry + symHeader->offset);
 
         elf_relocate_section(sheader, relHeader, relData, relTable, symHeader, symTable, address);
 
-        relData->address = address;
+        relData->address += header->entry;
 
     }
 
