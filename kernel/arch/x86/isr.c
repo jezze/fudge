@@ -31,7 +31,6 @@ static void isr_handle_undefined(struct kernel_context *context, struct isr_cpu_
 
     error_register(0, registers->index);
     error_register(1, registers->error);
-    error_panic("UNHANDLED INTERRUPT", __FILE__, __LINE__);
 
 }
 

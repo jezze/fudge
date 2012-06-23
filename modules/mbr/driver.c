@@ -1,6 +1,6 @@
 #include <lib/memory.h>
-#include <kernel/irq.h>
 #include <kernel/modules.h>
+#include <modules/ioapic/ioapic.h>
 #include <modules/ata/ata.h>
 #include <modules/mbr/mbr.h>
 
@@ -41,7 +41,7 @@ static void attach(struct modules_device *device)
     struct ata_device *ataDevice = (struct ata_device *)device;
     struct mbr_driver *driver = (struct mbr_driver *)device->driver;
 
-    irq_register_routine(ataDevice->irq, device, handle_irq);
+    ioapic_register_routine(ataDevice->irq, device, handle_irq);
 
     ataDevice->read_lba28(ataDevice, 0, 1, buffer);
 

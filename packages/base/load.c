@@ -29,6 +29,8 @@ static unsigned int get_symbol(char *symbol)
 
     if (memory_compare(symbol, "nodefs_", 7))
         return get_symbol_module(symbol, "/ramdisk/mod/nodefs.ko");
+    else if (memory_compare(symbol, "ioapic_", 7))
+        return get_symbol_module(symbol, "/ramdisk/mod/ioapic.ko");
     else if (memory_compare(symbol, "ps2_", 4))
         return get_symbol_module(symbol, "/ramdisk/mod/ps2.ko");
     else if (memory_compare(symbol, "vga_", 4))

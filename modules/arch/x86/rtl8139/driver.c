@@ -1,7 +1,7 @@
 #include <lib/io.h>
 #include <lib/memory.h>
-#include <kernel/irq.h>
 #include <kernel/modules.h>
+#include <modules/ioapic/ioapic.h>
 #include <modules/pci/pci.h>
 #include <modules/rtl8139/rtl8139.h>
 
@@ -159,7 +159,7 @@ static void attach(struct modules_device *device)
 
     driver->io = bar0 & ~1;
 
-    irq_register_routine(irq, device, handle_irq);
+    ioapic_register_routine(irq, device, handle_irq);
 
 }
 

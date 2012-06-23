@@ -1,7 +1,7 @@
 #include <lib/io.h>
 #include <lib/memory.h>
-#include <kernel/irq.h>
 #include <kernel/modules.h>
+#include <modules/ioapic/ioapic.h>
 #include <modules/ps2/ps2.h>
 
 static void handle_irq(struct modules_device *self)
@@ -42,7 +42,7 @@ static void attach(struct modules_device *device)
 
     struct ps2_mouse_device *mouseDevice = (struct ps2_mouse_device *)device;
 
-    irq_register_routine(mouseDevice->irq, device, handle_irq);
+    ioapic_register_routine(mouseDevice->irq, device, handle_irq);
 
 }
 
