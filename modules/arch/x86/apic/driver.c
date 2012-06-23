@@ -46,16 +46,23 @@ static void raise(unsigned int index)
 static void remap()
 {
 
-    io_outb(0x20, 0x11);
-    io_outb(0xA0, 0x11);
-    io_outb(0x21, 0x20);
-    io_outb(0xA1, 0x28);
-    io_outb(0x21, 0x04);
-    io_outb(0xA1, 0x02);
-    io_outb(0x21, 0x01);
-    io_outb(0xA1, 0x01);
-    io_outb(0x21, 0x00);
-    io_outb(0xA1, 0x00);
+    io_outb(APIC_MASTER_COMMAND, APIC_COMMAND_CONFIG);
+    io_outb(APIC_MASTER_DATA, APIC_DATA_MASTERVECTOR);
+    io_outb(APIC_MASTER_DATA, 0x04);
+    io_outb(APIC_MASTER_DATA, APIC_DATA_8086);
+
+    io_outb(APIC_SLAVE_COMMAND, APIC_COMMAND_CONFIG);
+    io_outb(APIC_SLAVE_DATA, APIC_DATA_SLAVEVECTOR);
+    io_outb(APIC_SLAVE_DATA, 0x02);
+    io_outb(APIC_SLAVE_DATA, APIC_DATA_8086);
+
+}
+
+static void enable()
+{
+
+    io_outb(APIC_MASTER_DATA, 0x00);
+    io_outb(APIC_SLAVE_DATA, 0x00);
 
 }
 
@@ -63,24 +70,22 @@ static void reset(unsigned int slave)
 {
 
     if (slave)
-        io_outb(0xA0, 0x20);
+        io_outb(APIC_SLAVE_COMMAND, APIC_COMMAND_EOI);
 
-    io_outb(0x20, 0x20);
+    io_outb(APIC_MASTER_COMMAND, APIC_COMMAND_EOI);
 
 }
 
 static void handle_interrupt(struct kernel_context *context, struct isr_cpu_registers *registers)
 {
 
-    raise(registers->index - 0x20);
+    raise(registers->index - APIC_DATA_MASTERVECTOR);
     reset(registers->error);
 
 }
 
 static void start(struct modules_driver *self)
 {
-
-    remap();
 
     isr_register_routine(ISR_INDEX_PIT, handle_interrupt);
     isr_register_routine(ISR_INDEX_KBD, handle_interrupt);
@@ -95,6 +100,9 @@ static void start(struct modules_driver *self)
     isr_register_routine(ISR_INDEX_FPU, handle_interrupt);
     isr_register_routine(ISR_INDEX_ATAP, handle_interrupt);
     isr_register_routine(ISR_INDEX_ATAS, handle_interrupt);
+
+    remap();
+    enable();
 
 }
 
