@@ -5,6 +5,13 @@ cpu_disable_interrupts:
     cli
     ret
 
+.global cpu_disable_apic
+cpu_disable_apic:
+    mov al, 0xFF
+    out 0xA1, al
+    out 0x21, al
+    ret
+
 .global cpu_enable_fpu
 cpu_enable_fpu:
     finit
