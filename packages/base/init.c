@@ -13,7 +13,7 @@ void load_modules()
     call_open(FILE_STDIN, "/ramdisk/mod/log.ko");
     call_execute(id);
 
-    call_open(FILE_STDIN, "/ramdisk/mod/ioapic.ko");
+    call_open(FILE_STDIN, "/ramdisk/mod/apic.ko");
     call_execute(id);
 
     call_open(FILE_STDIN, "/ramdisk/mod/uart.ko");

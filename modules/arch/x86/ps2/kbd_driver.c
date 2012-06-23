@@ -1,7 +1,7 @@
 #include <lib/io.h>
 #include <lib/memory.h>
 #include <kernel/modules.h>
-#include <modules/ioapic/ioapic.h>
+#include <modules/apic/apic.h>
 #include <modules/ps2/ps2.h>
 
 static char mapUS[256] =
@@ -119,7 +119,7 @@ static void attach(struct modules_device *device)
 
     struct ps2_kbd_device *kbdDevice = (struct ps2_kbd_device *)device;
 
-    ioapic_register_routine(kbdDevice->irq, device, handle_irq);
+    apic_register_routine(kbdDevice->irq, device, handle_irq);
 
 }
 

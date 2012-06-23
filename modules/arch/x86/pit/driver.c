@@ -1,6 +1,6 @@
 #include <lib/memory.h>
 #include <kernel/modules.h>
-#include <modules/ioapic/ioapic.h>
+#include <modules/apic/apic.h>
 #include <modules/pit/pit.h>
 
 static void handle_irq(struct modules_device *self)
@@ -17,7 +17,7 @@ static void attach(struct modules_device *device)
 
     struct pit_device *pitDevice = (struct pit_device *)device;
 
-    ioapic_register_routine(pitDevice->irq, device, handle_irq);
+    apic_register_routine(pitDevice->irq, device, handle_irq);
 
 }
 

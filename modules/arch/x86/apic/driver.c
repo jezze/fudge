@@ -3,11 +3,11 @@
 #include <kernel/kernel.h>
 #include <kernel/modules.h>
 #include <kernel/arch/x86/isr.h>
-#include <modules/ioapic/ioapic.h>
+#include <modules/apic/apic.h>
 
-static struct ioapic_routine routines[IOAPIC_TABLE_SLOTS];
+static struct apic_routine routines[APIC_TABLE_SLOTS];
 
-static unsigned int register_routine(struct ioapic_driver *driver, unsigned int index, struct modules_device *device, void (*callback)(struct modules_device *device))
+static unsigned int register_routine(struct apic_driver *driver, unsigned int index, struct modules_device *device, void (*callback)(struct modules_device *device))
 {
 
     if (routines[index].device)
@@ -20,7 +20,7 @@ static unsigned int register_routine(struct ioapic_driver *driver, unsigned int 
 
 }
 
-static unsigned int unregister_routine(struct ioapic_driver *driver, unsigned int index, struct modules_device *device)
+static unsigned int unregister_routine(struct apic_driver *driver, unsigned int index, struct modules_device *device)
 {
 
     if (routines[index].device != device)
@@ -98,12 +98,12 @@ static void start(struct modules_driver *self)
 
 }
 
-void ioapic_driver_init(struct ioapic_driver *driver)
+void apic_driver_init(struct apic_driver *driver)
 {
 
-    memory_clear(driver, sizeof (struct ioapic_driver));
+    memory_clear(driver, sizeof (struct apic_driver));
 
-    modules_driver_init(&driver->base, IOAPIC_DRIVER_TYPE, "ioapic", start, 0, 0);
+    modules_driver_init(&driver->base, APIC_DRIVER_TYPE, "apic", start, 0, 0);
 
     driver->register_routine = register_routine;
     driver->unregister_routine = unregister_routine;

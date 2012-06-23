@@ -1,6 +1,6 @@
 #include <lib/memory.h>
 #include <kernel/modules.h>
-#include <modules/ioapic/ioapic.h>
+#include <modules/apic/apic.h>
 #include <modules/uart/uart.h>
 
 static unsigned int buffer_getc(struct uart_buffer *self, char *buffer)
@@ -54,7 +54,7 @@ static void attach(struct modules_device *device)
 
     struct uart_device *uartDevice = (struct uart_device *)device;
 
-    ioapic_register_routine(uartDevice->irq, device, handle_irq);
+    apic_register_routine(uartDevice->irq, device, handle_irq);
 
 }
 

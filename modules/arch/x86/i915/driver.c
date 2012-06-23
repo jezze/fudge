@@ -1,6 +1,6 @@
 #include <lib/memory.h>
 #include <kernel/modules.h>
-#include <modules/ioapic/ioapic.h>
+#include <modules/apic/apic.h>
 #include <modules/pci/pci.h>
 #include <modules/i915/i915.h>
 
@@ -139,7 +139,7 @@ static void attach(struct modules_device *device)
 
     unsigned int irq = pciDevice->config_inb(pciDevice, PCI_CONFIG_IRQ_LINE);
 
-    ioapic_register_routine(irq, device, handle_irq);
+    apic_register_routine(irq, device, handle_irq);
 
 }
 
