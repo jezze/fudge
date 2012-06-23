@@ -3,7 +3,6 @@
 #include <kernel/runtime.h>
 #include <kernel/arch/x86/arch.h>
 #include <kernel/arch/x86/cpu.h>
-#include <kernel/arch/x86/fpu.h>
 #include <kernel/arch/x86/gdt.h>
 #include <kernel/arch/x86/idt.h>
 #include <kernel/arch/x86/isr.h>
@@ -30,7 +29,6 @@ static void setup(struct kernel_arch *arch)
     gdt_init();
     tss_init(x86->stack);
     idt_init();
-    fpu_init();
     isr_init();
     cpu_disable_apic();
     mmu_setup();

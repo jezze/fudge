@@ -12,11 +12,6 @@ cpu_disable_apic:
     out 0x21, al
     ret
 
-.global cpu_enable_fpu
-cpu_enable_fpu:
-    finit
-    ret
-
 .global cpu_enable_interrupts
 cpu_enable_interrupts:
     sti

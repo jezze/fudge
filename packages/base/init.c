@@ -13,6 +13,9 @@ void load_modules()
     call_open(FILE_STDIN, "/ramdisk/mod/log.ko");
     call_execute(id);
 
+    call_open(FILE_STDIN, "/ramdisk/mod/fpu.ko");
+    call_execute(id);
+
     call_open(FILE_STDIN, "/ramdisk/mod/apic.ko");
     call_execute(id);
 
