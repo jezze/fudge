@@ -1,11 +1,7 @@
 #include <fudge.h>
 
-void load_modules()
+void load_modules_core(unsigned int id)
 {
-
-    unsigned int id;
-
-    id = call_open(3, "/ramdisk/bin/load");
 
     call_open(FILE_STDIN, "/ramdisk/mod/nodefs.ko");
     call_execute(id);
@@ -13,16 +9,27 @@ void load_modules()
     call_open(FILE_STDIN, "/ramdisk/mod/log.ko");
     call_execute(id);
 
-    call_open(FILE_STDIN, "/ramdisk/mod/fpu.ko");
-    call_execute(id);
-
     call_open(FILE_STDIN, "/ramdisk/mod/apic.ko");
     call_execute(id);
+
+    call_open(FILE_STDIN, "/ramdisk/mod/vga.ko");
+    call_execute(id);
+
+    call_open(FILE_STDIN, "/ramdisk/mod/ps2.ko");
+    call_execute(id);
+
+    call_open(FILE_STDIN, "/ramdisk/mod/tty.ko");
+    call_execute(id);
+
+}
+
+void load_modules_extra(unsigned int id)
+{
 
     call_open(FILE_STDIN, "/ramdisk/mod/uart.ko");
     call_execute(id);
 
-    call_open(FILE_STDIN, "/ramdisk/mod/vga.ko");
+    call_open(FILE_STDIN, "/ramdisk/mod/fpu.ko");
     call_execute(id);
 
     call_open(FILE_STDIN, "/ramdisk/mod/pci.ko");
@@ -40,13 +47,10 @@ void load_modules()
     call_open(FILE_STDIN, "/ramdisk/mod/rtc.ko");
     call_execute(id);
 
-    call_open(FILE_STDIN, "/ramdisk/mod/ps2.ko");
-    call_execute(id);
+}
 
-    call_open(FILE_STDIN, "/ramdisk/mod/tty.ko");
-    call_execute(id);
-
-    /*
+void load_modules_testing(unsigned int id)
+{
 
     call_open(FILE_STDIN, "/ramdisk/mod/ata.ko");
     call_execute(id);
@@ -63,7 +67,18 @@ void load_modules()
     call_open(FILE_STDIN, "/ramdisk/mod/bga.ko");
     call_execute(id);
 
-    */
+}
+
+void load_modules()
+{
+
+    unsigned int id;
+
+    id = call_open(3, "/ramdisk/bin/load");
+
+    load_modules_core(id);
+    load_modules_extra(id);
+    /* load_modules_testing(id); */
 
     call_close(FILE_STDIN);
     call_close(id);
