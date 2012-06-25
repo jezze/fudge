@@ -42,13 +42,6 @@ unsigned int syscall_detach(struct kernel_context *context, unsigned int index)
 
 }
 
-unsigned int syscall_halt(struct kernel_context *context)
-{
-
-    return 1;
-
-}
-
 unsigned int syscall_execute(struct kernel_context *context, unsigned int index)
 {
 
@@ -194,13 +187,6 @@ unsigned int syscall_read(struct kernel_context *context, unsigned int index, un
         return 0;
 
     return descriptor->filesystem->read(descriptor->filesystem, descriptor->id, offset, count, buffer);
-
-}
-
-unsigned int syscall_reboot(struct kernel_context *context)
-{
-
-    return 1;
 
 }
 

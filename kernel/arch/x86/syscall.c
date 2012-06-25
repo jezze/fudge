@@ -34,13 +34,6 @@ static unsigned int handle_detach(struct kernel_context *context)
 
 }
 
-static unsigned int handle_halt(struct kernel_context *context)
-{
-
-    return syscall_halt(context);
-
-}
-
 static unsigned int handle_execute(struct kernel_context *context)
 {
 
@@ -85,13 +78,6 @@ static unsigned int handle_read(struct kernel_context *context)
     char *buffer = *(char **)(context->running->registers.sp + 16);
 
     return syscall_read(context, id, offset, count, buffer);
-
-}
-
-static unsigned int handle_reboot(struct kernel_context *context)
-{
-
-    return syscall_reboot(context);
 
 }
 
@@ -158,8 +144,6 @@ void syscall_init()
     register_routine(SYSCALL_INDEX_WAIT, handle_wait);
     register_routine(SYSCALL_INDEX_LOAD, handle_load);
     register_routine(SYSCALL_INDEX_UNLOAD, handle_unload);
-    register_routine(SYSCALL_INDEX_HALT, handle_halt);
-    register_routine(SYSCALL_INDEX_REBOOT, handle_reboot);
     register_routine(SYSCALL_INDEX_ATTACH, handle_attach);
     register_routine(SYSCALL_INDEX_DETACH, handle_detach);
 
