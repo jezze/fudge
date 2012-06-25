@@ -12,8 +12,8 @@ void after()
 {
 
     call_write(FILE_STDOUT, 0, 4, "END\n");
-    call_detach(0x90);
-    call_detach(0x91);
+    call_detach(0x85);
+    call_detach(0x86);
     call_exit();
 
 }
@@ -21,8 +21,8 @@ void after()
 void main()
 {
 
-    call_attach(0x90, before);
-    call_attach(0x91, after);
+    call_attach(0x85, before);
+    call_attach(0x86, after);
     call_wait();
 
 }

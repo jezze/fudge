@@ -39,7 +39,12 @@ void isr_handle_cpu(struct kernel_context *context, struct isr_cpu_registers *re
 {
 
     routines[registers->index](context, registers);
-    event_raise(context, registers->index);
+
+    if (registers->index == 0x80)
+        event_raise(context, registers->error + 0x80);
+    else
+        event_raise(context, registers->index);
+
     mmu_load_memory(context->running->id);
 
 }
