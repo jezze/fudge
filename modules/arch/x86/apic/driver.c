@@ -4,6 +4,7 @@
 #include <kernel/modules.h>
 #include <kernel/arch/x86/isr.h>
 #include <modules/apic/apic.h>
+#include <modules/cpuid/cpuid.h>
 
 static struct apic_routine routines[APIC_TABLE_SLOTS];
 
@@ -86,6 +87,9 @@ static void handle_interrupt(struct kernel_context *context, struct isr_cpu_regi
 
 static void start(struct modules_driver *self)
 {
+
+    if (!cpuid_is_supported(CPUID_FEATURES0_EDX_FLAG_APIC))
+        return;
 
     isr_register_routine(ISR_INDEX_PIT, handle_interrupt);
     isr_register_routine(ISR_INDEX_KBD, handle_interrupt);
