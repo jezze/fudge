@@ -15,5 +15,7 @@ void log_driver_init(struct log_driver *driver)
 
     modules_driver_init(&driver->base, LOG_DRIVER_TYPE, "log", start, 0, 0);
 
+    driver->buffer.count = 0;
+
 }
 

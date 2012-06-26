@@ -10,14 +10,34 @@ static struct nodefs_node messages;
 static unsigned int messages_read(struct nodefs_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    return 0;
+    if (count > driver.buffer.count)
+        count = driver.buffer.count;
+
+    memory_copy(buffer, driver.buffer.buffer, count);
+
+    return count;
 
 }
 
 static unsigned int messages_write(struct nodefs_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    return 0;
+    memory_copy(driver.buffer.buffer + driver.buffer.count, driver.buffer.buffer, count);
+
+    driver.buffer.count += count;
+
+    return count;
+
+}
+
+unsigned int log_write(unsigned int module, unsigned int count, char *buffer)
+{
+
+    memory_copy(driver.buffer.buffer + driver.buffer.count, driver.buffer.buffer, count);
+
+    driver.buffer.count += count;
+
+    return count;
 
 }
 
