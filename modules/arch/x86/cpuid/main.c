@@ -3,6 +3,13 @@
 
 static struct cpuid_driver driver;
 
+unsigned int cpuid_is_supported(unsigned int flag)
+{
+
+    return driver.is_supported(1, flag);
+
+}
+
 void init()
 {
 

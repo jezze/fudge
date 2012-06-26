@@ -115,6 +115,7 @@ unsigned int cpuid_check_cpuid();
 unsigned int cpuid_fill(unsigned int instruction, struct cpuid_data *data);
 void cpuid_get_vendor(char *destination);
 void cpuid_get_brand(char *destination);
+unsigned int cpuid_is_supported(unsigned int flag);
 void cpuid_driver_init(struct cpuid_driver *driver);
 
 #endif
