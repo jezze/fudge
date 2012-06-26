@@ -220,6 +220,9 @@ void mouse_event()
     call_read(idmx, 0, 1, &dx);
     call_read(idmy, 0, 1, &dy);
 
+    dx = dx / 2;
+    dy = dy / 2;
+
     set_mouse_coords(mx + dx, my - dy);
 
     draw_ppm("/ramdisk/data/fu-raw.ppm", mx, my);
