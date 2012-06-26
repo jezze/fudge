@@ -4,16 +4,13 @@
 msr_get:
     push ebp
     mov ebp, esp
-    push eax
-    push ecx
-    push edx
+    pusha
     mov ecx, [ebp + 8]
+    mov edi, [ebp + 12]
     rdmsr
-    mov [ebp + 12], eax
-    mov [ebp + 16], edx
-    pop edx
-    pop ecx
-    pop eax
+    mov [edi + 0], eax
+    mov [edi + 4], edx
+    popa
     pop ebp
     ret
 
@@ -21,16 +18,13 @@ msr_get:
 msr_set:
     push ebp
     mov ebp, esp
-    push eax
-    push ecx
-    push edx
+    pusha
     mov ecx, [ebp + 8]
-    mov eax, [ebp + 12]
-    mov edx, [ebp + 16]
+    mov edi, [ebp + 12]
+    mov eax, [edi + 0]
+    mov edx, [edi + 4]
     wrmsr
-    pop edx
-    pop ecx
-    pop eax
+    popa
     pop ebp
     ret
 
