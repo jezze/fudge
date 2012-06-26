@@ -27,7 +27,9 @@ static unsigned int get_symbol_module(char *symbol, char *module)
 static unsigned int get_symbol(char *symbol)
 {
 
-    if (memory_compare(symbol, "log_", 4))
+    if (memory_compare(symbol, "cpuid_", 6))
+        return get_symbol_module(symbol, "/ramdisk/mod/cpuid.ko");
+    else if (memory_compare(symbol, "log_", 4))
         return get_symbol_module(symbol, "/ramdisk/mod/log.ko");
     else if (memory_compare(symbol, "nodefs_", 7))
         return get_symbol_module(symbol, "/ramdisk/mod/nodefs.ko");
