@@ -27,7 +27,7 @@ void log_write(unsigned int module, unsigned int count, char *buffer)
 
     char num[32];
 
-    string_write(num, module, 16);
+    string_write_num(num, module, 16);
 
     memory_copy(driver.buffer.buffer + driver.buffer.count, "[", 1);
     driver.buffer.count += 1;
