@@ -15,8 +15,8 @@ cpuid_check_cpuid:
     and eax, 1
     ret
 
-.global cpuid_fill
-cpuid_fill:
+.global cpuid_get
+cpuid_get:
     push ebp
     mov ebp, esp
     pusha

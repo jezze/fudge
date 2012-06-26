@@ -7,7 +7,7 @@ static unsigned int is_supported(unsigned int instruction, unsigned int flag)
 
     struct cpuid_data data;
 
-    cpuid_fill(instruction, &data);
+    cpuid_get(instruction, &data);
 
     return data.edx & flag;
 
