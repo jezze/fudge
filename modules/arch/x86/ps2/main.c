@@ -9,6 +9,8 @@ static struct ps2_mouse_device mouseDevice;
 static struct ps2_mouse_driver mouseDriver;
 
 static struct nodefs_node buffer;
+static struct nodefs_node mcycle;
+static struct nodefs_node mstatus;
 static struct nodefs_node mx;
 static struct nodefs_node my;
 
@@ -37,6 +39,24 @@ static unsigned int buffer_write(struct nodefs_node *self, unsigned int offset, 
 {
 
     return kbdDriver.buffer.putc(&kbdDriver.buffer, buffer);
+
+}
+
+static unsigned int mcycle_read(struct nodefs_node *self, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    memory_copy(buffer, &mouseDriver.cycle, 1);
+
+    return 1;
+
+}
+
+static unsigned int mstatus_read(struct nodefs_node *self, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    memory_copy(buffer, &mouseDriver.status, 1);
+
+    return 1;
 
 }
 
@@ -74,6 +94,8 @@ void init()
     modules_register_driver(&mouseDriver.base);
 
     nodefs_register_node(&buffer, "ps2/buffer", &kbdDriver.base.base, buffer_read, buffer_write);
+    nodefs_register_node(&mcycle, "ps2/mcycle", &mouseDriver.base.base, mcycle_read, 0);
+    nodefs_register_node(&mstatus, "ps2/mstatus", &mouseDriver.base.base, mstatus_read, 0);
     nodefs_register_node(&mx, "ps2/mx", &mouseDriver.base.base, mx_read, 0);
     nodefs_register_node(&my, "ps2/my", &mouseDriver.base.base, my_read, 0);
 

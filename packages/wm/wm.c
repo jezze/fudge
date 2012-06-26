@@ -42,6 +42,8 @@ void ppm_parse(struct ppm_header *header, void *buffer)
 }
 
 static unsigned int idlfb;
+static unsigned int idmcycle;
+static unsigned int idmstatus;
 static unsigned int idmx;
 static unsigned int idmy;
 
@@ -204,13 +206,21 @@ void set_mouse_coords(unsigned int x, unsigned int y)
 void mouse_event()
 {
 
+    char cycle;
+    char status;
     char dx;
     char dy;
 
+    call_read(idmcycle, 0, 1, &cycle);
+
+    if (cycle)
+        call_wait();
+
+    call_read(idmstatus, 0, 1, &status);
     call_read(idmx, 0, 1, &dx);
     call_read(idmy, 0, 1, &dy);
 
-    set_mouse_coords(mx + (dx * 0.2), my - (dy * 0.2));
+    set_mouse_coords(mx + dx, my - dy);
 
     draw_ppm("/ramdisk/data/fu-raw.ppm", mx, my);
 
@@ -256,6 +266,8 @@ void main()
     if (!idlfb)
         return;
 
+    idmcycle = call_open(FILE_NEW, "/module/ps2/mcycle");
+    idmstatus = call_open(FILE_NEW, "/module/ps2/mstatus");
     idmx = call_open(FILE_NEW, "/module/ps2/mx");
     idmy = call_open(FILE_NEW, "/module/ps2/my");
 
