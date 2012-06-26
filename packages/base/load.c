@@ -44,7 +44,7 @@ static unsigned int get_symbol(char *symbol)
 
 }
 
-static void resolve_symbols(struct elf_section_header *relHeader, struct elf_relocate *relTable, struct elf_symbol *symTable, char *strTable, char *buffer)
+static unsigned int resolve_symbols(struct elf_section_header *relHeader, struct elf_relocate *relTable, struct elf_symbol *symTable, char *strTable, char *buffer)
 {
 
    unsigned int i;
@@ -58,28 +58,36 @@ static void resolve_symbols(struct elf_section_header *relHeader, struct elf_rel
         struct elf_symbol *symEntry = &symTable[index];
         unsigned int *entry = (unsigned int *)(buffer + relEntry->offset);
         unsigned int value = *entry;
+        unsigned int symbol;
 
         if (symEntry->shindex)
             continue;
+
+        symbol = get_symbol(strTable + symEntry->name);
+
+        if (!symbol)
+            return 0;
 
         switch (type)
         {
 
             case 1:
 
-                *entry = value + get_symbol(strTable + symEntry->name);
+                *entry = value + symbol;
 
                 break;
 
             case 2:
 
-                *entry = value + get_symbol(strTable + symEntry->name);
+                *entry = value + symbol;
 
                 break;
 
         }
 
     }
+
+    return 1;
 
 }
 
@@ -118,7 +126,9 @@ void main()
         call_read(FILE_STDIN, relocateHeader->offset, relocateHeader->size, relocateTable);
         call_read(FILE_STDIN, relocateData->offset, relocateData->size, buffer);
 
-        resolve_symbols(relocateHeader, relocateTable, symbolTable, stringTable, buffer);
+        if (!resolve_symbols(relocateHeader, relocateTable, symbolTable, stringTable, buffer))
+            return;
+
         call_write(FILE_STDIN, relocateData->offset, relocateData->size, buffer);
 
     }
