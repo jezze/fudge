@@ -10,9 +10,9 @@ static void start(struct modules_driver *self)
     if (!cpuid_is_supported(CPUID_FEATURES0_EDX_FLAG_FPU))
         return;
 
-    log_write(FPU_DRIVER_TYPE, 13, "Enabling FPU\n");
-
     fpu_enable();
+
+    log_write(FPU_DRIVER_TYPE, 11, "FPU Enabled");
 
 }
 

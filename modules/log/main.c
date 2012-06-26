@@ -41,6 +41,9 @@ void log_write(unsigned int module, unsigned int count, char *buffer)
     memory_copy(driver.buffer.buffer + driver.buffer.count, buffer, count);
     driver.buffer.count += count;
 
+    memory_copy(driver.buffer.buffer + driver.buffer.count, "\n", 1);
+    driver.buffer.count += 1;
+
 }
 
 void init()
