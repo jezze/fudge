@@ -12,6 +12,9 @@ void load_modules_core(unsigned int id)
     call_open(FILE_STDIN, "/ramdisk/mod/cpuid.ko");
     call_execute(id);
 
+    call_open(FILE_STDIN, "/ramdisk/mod/msr.ko");
+    call_execute(id);
+
     call_open(FILE_STDIN, "/ramdisk/mod/apic.ko");
     call_execute(id);
 

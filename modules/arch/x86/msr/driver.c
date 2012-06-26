@@ -1,9 +1,13 @@
 #include <lib/memory.h>
 #include <kernel/modules.h>
+#include <modules/cpuid/cpuid.h>
 #include <modules/msr/msr.h>
 
 static void start(struct modules_driver *self)
 {
+
+    if (!cpuid_is_supported(CPUID_FEATURES0_EDX_FLAG_MSR))
+        return;
 
 }
 
