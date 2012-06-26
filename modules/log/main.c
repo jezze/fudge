@@ -22,25 +22,24 @@ static unsigned int messages_read(struct nodefs_node *self, unsigned int offset,
 
 }
 
-static unsigned int messages_write(struct nodefs_node *self, unsigned int offset, unsigned int count, void *buffer)
+void log_write(unsigned int module, unsigned int count, char *buffer)
 {
 
+    char num[32];
+
+    string_write(num, module, 16);
+
+    memory_copy(driver.buffer.buffer + driver.buffer.count, "[", 1);
+    driver.buffer.count += 1;
+
+    memory_copy(driver.buffer.buffer + driver.buffer.count, num, string_length(num));
+    driver.buffer.count += string_length(num);
+
+    memory_copy(driver.buffer.buffer + driver.buffer.count, "] ", 2);
+    driver.buffer.count += 2;
+
     memory_copy(driver.buffer.buffer + driver.buffer.count, buffer, count);
-
     driver.buffer.count += count;
-
-    return count;
-
-}
-
-unsigned int log_write(unsigned int module, unsigned int count, char *buffer)
-{
-
-    memory_copy(driver.buffer.buffer + driver.buffer.count, buffer, count);
-
-    driver.buffer.count += count;
-
-    return count;
 
 }
 
@@ -50,7 +49,7 @@ void init()
     log_driver_init(&driver);
     modules_register_driver(&driver.base);
 
-    nodefs_register_node(&messages, "log/messages", &driver.base.base, messages_read, messages_write);
+    nodefs_register_node(&messages, "log/messages", &driver.base.base, messages_read, 0);
 
 }
 
