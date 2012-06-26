@@ -19,12 +19,7 @@ cpuid_check_cpuid:
 cpuid_fill:
     push ebp
     mov ebp, esp
-    push eax
-    push ebx
-    push ecx
-    push edx
-    push esi
-    push edi
+    pusha
     mov eax, [ebp + 8]
     cpuid
     mov edi, [ebp + 12]
@@ -32,12 +27,7 @@ cpuid_fill:
     mov [edi + 4], ebx
     mov [edi + 8], ecx
     mov [edi + 12], edx
-    pop edi
-    pop esi
-    pop edx
-    pop ecx
-    pop ebx
-    pop eax
+    popa
     pop ebp
     ret
 
@@ -45,24 +35,14 @@ cpuid_fill:
 cpuid_get_vendor:
     push ebp
     mov ebp, esp
-    push eax
-    push ebx
-    push ecx
-    push edx
-    push esi
-    push edi
+    pusha
     mov edi, [ebp + 8]
     mov eax, 0x00
     cpuid
     mov [edi + 0], ebx
     mov [edi + 4], edx
     mov [edi + 8], ecx
-    pop edi
-    pop esi
-    pop edx
-    pop ecx
-    pop ebx
-    pop eax
+    popa
     pop ebp
     ret
 
@@ -70,12 +50,7 @@ cpuid_get_vendor:
 cpuid_get_brand:
     push ebp
     mov ebp, esp
-    push eax
-    push ebx
-    push ecx
-    push edx
-    push esi
-    push edi
+    pusha
     mov edi, [ebp + 8]
     mov eax, 0x80000002
     cpuid
@@ -95,12 +70,7 @@ cpuid_get_brand:
     mov [edi + 36], ebx
     mov [edi + 40], ecx
     mov [edi + 44], edx
-    pop edi
-    pop esi
-    pop edx
-    pop ecx
-    pop ebx
-    pop eax
+    popa
     pop ebp
     ret
 
