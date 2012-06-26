@@ -21,8 +21,8 @@ cpuid_fill:
     mov ebp, esp
     pusha
     mov eax, [ebp + 8]
-    cpuid
     mov edi, [ebp + 12]
+    cpuid
     mov [edi + 0], eax
     mov [edi + 4], ebx
     mov [edi + 8], ecx
@@ -36,8 +36,8 @@ cpuid_get_vendor:
     push ebp
     mov ebp, esp
     pusha
-    mov edi, [ebp + 8]
     mov eax, 0x00
+    mov edi, [ebp + 8]
     cpuid
     mov [edi + 0], ebx
     mov [edi + 4], edx
@@ -51,8 +51,8 @@ cpuid_get_brand:
     push ebp
     mov ebp, esp
     pusha
-    mov edi, [ebp + 8]
     mov eax, 0x80000002
+    mov edi, [ebp + 8]
     cpuid
     mov [edi + 0], eax
     mov [edi + 4], ebx
