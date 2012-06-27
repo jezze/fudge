@@ -1,46 +1,6 @@
 #include <fudge.h>
 #include "wm.h"
 
-unsigned int read_line(void *buffer)
-{
-
-    char *in = (char *)buffer;
-
-    unsigned int i;
-
-    for (i = 0; i < 512; i++)
-    {
-
-        if (in[i] == '\n')
-            return i + 1;
-
-    }
-
-    return 0;
-
-}
-
-void ppm_parse(struct ppm_header *header, void *buffer)
-{
-
-    unsigned int offset = 0;
-    char *in = (char *)buffer;
-
-    memory_copy(header->sign, in, 2);
-
-    offset = read_line(in + offset);
-
-    offset = read_line(in + offset);
-
-    header->width = 20;
-    header->height = 20;
-
-    offset = read_line(in + offset);
-
-    header->data = in + 0x34;
-
-}
-
 static unsigned int idlfb;
 static unsigned int idmcycle;
 static unsigned int idmstatus;
@@ -104,50 +64,6 @@ static void draw_fill(unsigned int x1, unsigned int y1, unsigned int x2, unsigne
 
     for (i = y1; i <= y2; i++)
         draw_buffer(x1, i, width * 4, &buffer);
-
-}
-
-static void draw_ppm(char *name, unsigned int x, unsigned int y)
-{
-
-    struct ppm_header header;
-    unsigned int offset;
-    unsigned int count;
-    unsigned int i;
-    int cx, cy;
-
-    unsigned int id = call_open(FILE_NEW, name);
-    call_read(id, 0, 0x2000, buffer);
-
-    ppm_parse(&header, buffer);
-
-    header.width = 20;
-    header.height = 20;
-    offset = 0x34;
-
-    count = call_read(id, offset, 0x2000, buffer);
-
-    cx = x;
-    cy = y;
-
-    for (i = 1; i < count; i += 3)
-    {
-
-        draw_pixel(cx, cy, *(unsigned int *)(buffer + i));
-
-        cx++;
-
-        if (cx == x + header.width)
-        {
-
-            cx = x;
-            cy++;
-
-        }
-
-    }
-
-    call_close(id);
 
 }
 
@@ -225,7 +141,7 @@ void mouse_event()
 
     set_mouse_coords(mx + dx, my - dy);
 
-    draw_ppm("/ramdisk/data/fu-raw.ppm", mx, my);
+    draw_fill(mx, my, mx + 10, my + 10, 0xFFFFFF);
 
     call_wait();
 
