@@ -50,14 +50,12 @@ static unsigned int filesystem_write(struct modules_filesystem *self, unsigned i
 static unsigned int filesystem_find(struct modules_filesystem *self, char *name)
 {
 
-    unsigned int i;
+    struct nodefs_filesystem *filesystem = (struct nodefs_filesystem *)self;
     unsigned int length = string_length(name);
-    struct nodefs_filesystem *filesystem;
+    unsigned int i;
 
     if (!length)
         return 1;
-
-    filesystem = (struct nodefs_filesystem *)self;
 
     for (i = 0; i < filesystem->count; i++)
     {

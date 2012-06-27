@@ -109,11 +109,6 @@ static unsigned int find(struct modules_filesystem *self, char *name)
     for (i = 0; i < nodesCount; i++)
     {
 
-        unsigned int l2 = string_length(nodes[i].name);
-
-        if (length != l2)
-            continue;
-
         if (memory_compare(nodes[i].name, name, length))
             return i + 1;
 
