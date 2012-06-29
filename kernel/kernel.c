@@ -28,8 +28,6 @@ static void load_usermode(struct kernel_arch *arch)
 static void start(struct kernel_arch *self)
 {
 
-    error_assert(self != 0, "Architecture not found", __FILE__, __LINE__);
-
     self->setup(self);
 
     modules_init();
