@@ -19,10 +19,10 @@ struct kernel_context *arch_get_context()
 
 }
 
-static void setup(struct kernel_arch *arch)
+static void setup(struct kernel_arch *self)
 {
 
-    struct arch_x86 *x86 = (struct arch_x86 *)arch;
+    struct arch_x86 *x86 = (struct arch_x86 *)self;
 
     mboot_init(x86->header);
     gdt_init();
@@ -46,7 +46,7 @@ void arch_init(struct mboot_header *header, unsigned int magic)
     arch_x86.magic = magic;
     arch_x86.stack = 0x00400000;
 
-    kernel_init(&arch_x86.base);
+    arch_x86.base.start(&arch_x86.base);
 
 }
 

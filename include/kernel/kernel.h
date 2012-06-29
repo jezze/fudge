@@ -11,7 +11,8 @@ struct kernel_context
 struct kernel_arch
 {
 
-    void (*setup)(struct kernel_arch *arch);
+    void (*start)(struct kernel_arch *self);
+    void (*setup)(struct kernel_arch *self);
     void (*halt)();
     void (*enable_interrupts)();
     void (*disable_interrupts)();
@@ -22,8 +23,7 @@ struct kernel_arch
 
 };
 
-void kernel_arch_init(struct kernel_arch *arch, void (*setup)(struct kernel_arch *arch), void (*halt)(), void (*enable_interrupts)(), void (*disable_interrupts)(), void (*enter_usermode)(unsigned int ip, unsigned int sp), unsigned int ramdiskc, void **ramdiskv);
-void kernel_init(struct kernel_arch *arch);
+void kernel_arch_init(struct kernel_arch *arch, void (*setup)(struct kernel_arch *self), void (*halt)(), void (*enable_interrupts)(), void (*disable_interrupts)(), void (*enter_usermode)(unsigned int ip, unsigned int sp), unsigned int ramdiskc, void **ramdiskv);
 
 #endif
 

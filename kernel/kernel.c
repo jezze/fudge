@@ -25,7 +25,21 @@ static void load_usermode(struct kernel_arch *arch)
 
 }
 
-void kernel_arch_init(struct kernel_arch *arch, void (*setup)(struct kernel_arch *arch), void (*halt)(), void (*enable_interrupts)(), void (*disable_interrupts)(), void (*enter_usermode)(unsigned int ip, unsigned int sp), unsigned int ramdiskc, void **ramdiskv)
+static void start(struct kernel_arch *self)
+{
+
+    error_assert(self != 0, "Architecture not found", __FILE__, __LINE__);
+
+    self->setup(self);
+
+    modules_init();
+    runtime_init();
+    ramdisk_init(self->ramdiskc, self->ramdiskv);
+    load_usermode(self);
+
+}
+
+void kernel_arch_init(struct kernel_arch *arch, void (*setup)(struct kernel_arch *self), void (*halt)(), void (*enable_interrupts)(), void (*disable_interrupts)(), void (*enter_usermode)(unsigned int ip, unsigned int sp), unsigned int ramdiskc, void **ramdiskv)
 {
 
     memory_clear(arch, sizeof (struct kernel_arch));
@@ -37,20 +51,7 @@ void kernel_arch_init(struct kernel_arch *arch, void (*setup)(struct kernel_arch
     arch->enter_usermode = enter_usermode;
     arch->ramdiskc = ramdiskc;
     arch->ramdiskv = ramdiskv;
-
-}
-
-void kernel_init(struct kernel_arch *arch)
-{
-
-    error_assert(arch != 0, "Architecture not found", __FILE__, __LINE__);
-
-    arch->setup(arch);
-
-    modules_init();
-    runtime_init();
-    ramdisk_init(arch->ramdiskc, arch->ramdiskv);
-    load_usermode(arch);
+    arch->start = start;
 
 }
 
