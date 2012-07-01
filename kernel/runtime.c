@@ -1,7 +1,6 @@
 #include <lib/memory.h>
 #include <lib/string.h>
 #include <kernel/runtime.h>
-#include <kernel/vfs/proc.h>
 
 static struct runtime_task tasks[RUNTIME_TASK_SLOTS];
 
@@ -128,8 +127,6 @@ void runtime_init()
 {
 
     memory_clear(tasks, sizeof (struct runtime_task) * RUNTIME_TASK_SLOTS);
-
-    vfs_proc_init(tasks);
 
 }
 
