@@ -1,0 +1,1 @@
+KERNELOBJ+=kernel/src/arch/x86/arch.o kernel/src/arch/x86/cpu.o kernel/src/arch/x86/gdt.o kernel/src/arch/x86/idt.o kernel/src/arch/x86/init.o kernel/src/arch/x86/isr.o kernel/src/arch/x86/isrs.o kernel/src/arch/x86/mmu.o kernel/src/arch/x86/mboot.o kernel/src/arch/x86/syscall.o kernel/src/arch/x86/tss.o
