@@ -1,6 +1,6 @@
-include lib/arch/$(ARCH)/rules.mk
+include lib/src/arch/$(ARCH).mk
 
-LIBOBJ+=lib/elf.o lib/flake.o lib/memory.o lib/string.o
+LIBOBJ+=lib/src/elf.o lib/src/flake.o lib/src/memory.o lib/src/string.o
 CLEAN+=$(LIBOBJ) lib/libfudge.a
 
 lib/%.o: CCFLAGS+=-Ilib/include
