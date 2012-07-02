@@ -1,5 +1,5 @@
 #include <modules.h>
-#include <pci/pci.h>
+#include <arch/x86/pci/pci.h>
 
 static struct pci_bus bus;
 

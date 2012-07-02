@@ -1,7 +1,7 @@
 #include <memory.h>
 #include <modules.h>
-#include <cpuid/cpuid.h>
-#include <fpu/fpu.h>
+#include <arch/x86/cpuid/cpuid.h>
+#include <arch/x86/fpu/fpu.h>
 #include <log/log.h>
 
 static void start(struct modules_driver *self)

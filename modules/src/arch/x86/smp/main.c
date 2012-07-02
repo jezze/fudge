@@ -1,7 +1,7 @@
 #include <modules.h>
-#include <acpi/acpi.h>
-#include <cpuid/cpuid.h>
-#include <smp/smp.h>
+#include <arch/x86/acpi/acpi.h>
+#include <arch/x86/cpuid/cpuid.h>
+#include <arch/x86/smp/smp.h>
 
 static struct smp_driver driver;
 

@@ -1,5 +1,5 @@
 #include <modules.h>
-#include <fpu/fpu.h>
+#include <arch/x86/fpu/fpu.h>
 
 static struct fpu_driver driver;
 

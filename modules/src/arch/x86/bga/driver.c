@@ -2,8 +2,8 @@
 #include <memory.h>
 #include <mmu.h>
 #include <modules.h>
-#include <bga/bga.h>
-#include <pci/pci.h>
+#include <arch/x86/bga/bga.h>
+#include <arch/x86/pci/pci.h>
 
 static void write_register(unsigned short index, unsigned short data)
 {

@@ -1,7 +1,7 @@
 #include <memory.h>
 #include <modules.h>
 #include <mmu.h>
-#include <acpi/acpi.h>
+#include <arch/x86/acpi/acpi.h>
 
 static struct acpi_sdth *find_header(struct acpi_driver *self, char *name)
 {

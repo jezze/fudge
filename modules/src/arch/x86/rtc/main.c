@@ -1,7 +1,7 @@
 #include <memory.h>
 #include <modules.h>
 #include <nodefs/nodefs.h>
-#include <rtc/rtc.h>
+#include <arch/x86/rtc/rtc.h>
 
 static struct rtc_device device;
 static struct nodefs_node timestamp;

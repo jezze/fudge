@@ -1,5 +1,5 @@
 #include <modules.h>
-#include <cpuid/cpuid.h>
+#include <arch/x86/cpuid/cpuid.h>
 
 static struct cpuid_driver driver;
 

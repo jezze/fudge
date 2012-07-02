@@ -1,7 +1,7 @@
 #include <io.h>
 #include <memory.h>
 #include <modules.h>
-#include <rtc/rtc.h>
+#include <arch/x86/rtc/rtc.h>
 
 static unsigned char convert(unsigned char num)
 {

@@ -1,7 +1,7 @@
 #include <memory.h>
 #include <modules.h>
-#include <apic/apic.h>
-#include <ata/ata.h>
+#include <arch/x86/apic/apic.h>
+#include <arch/x86/ata/ata.h>
 #include <mbr/mbr.h>
 
 static struct mbr_device *get_device(struct mbr_driver *self, unsigned int index)

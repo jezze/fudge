@@ -1,6 +1,6 @@
 #include <memory.h>
 #include <modules.h>
-#include <bga/bga.h>
+#include <arch/x86/bga/bga.h>
 #include <nodefs/nodefs.h>
 
 static struct bga_driver driver;

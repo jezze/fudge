@@ -1,5 +1,5 @@
 #include <modules.h>
-#include <i915/i915.h>
+#include <arch/x86/i915/i915.h>
 
 static struct i915_driver driver;
 

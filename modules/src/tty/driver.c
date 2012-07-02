@@ -1,8 +1,8 @@
 #include <memory.h>
 #include <string.h>
 #include <modules.h>
-#include <vga/vga.h>
-#include <ps2/ps2.h>
+#include <arch/x86/vga/vga.h>
+#include <arch/x86/ps2/ps2.h>
 #include <tty/tty.h>
 
 static void clear(struct tty_driver *self)

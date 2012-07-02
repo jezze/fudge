@@ -1,8 +1,8 @@
 #include <memory.h>
 #include <modules.h>
-#include <apic/apic.h>
-#include <pci/pci.h>
-#include <i915/i915.h>
+#include <arch/x86/apic/apic.h>
+#include <arch/x86/pci/pci.h>
+#include <arch/x86/i915/i915.h>
 
 static unsigned int read(unsigned int reg)
 {

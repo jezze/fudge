@@ -1,6 +1,6 @@
 #include <modules.h>
 #include <nodefs/nodefs.h>
-#include <vga/vga.h>
+#include <arch/x86/vga/vga.h>
 
 static struct vga_driver driver;
 static struct nodefs_node console;

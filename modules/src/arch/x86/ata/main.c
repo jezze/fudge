@@ -1,5 +1,5 @@
 #include <modules.h>
-#include <ata/ata.h>
+#include <arch/x86/ata/ata.h>
 
 static struct ata_bus primary;
 static struct ata_bus secondary;

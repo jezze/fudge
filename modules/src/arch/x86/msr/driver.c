@@ -1,7 +1,7 @@
 #include <memory.h>
 #include <modules.h>
-#include <cpuid/cpuid.h>
-#include <msr/msr.h>
+#include <arch/x86/cpuid/cpuid.h>
+#include <arch/x86/msr/msr.h>
 
 static void start(struct modules_driver *self)
 {
