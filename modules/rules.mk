@@ -1,9 +1,9 @@
-include modules/ext2/rules.mk
-include modules/log/rules.mk
-include modules/mbr/rules.mk
-include modules/nodefs/rules.mk
-include modules/tty/rules.mk
-include modules/arch/$(ARCH)/rules.mk
+include modules/src/ext2/rules.mk
+include modules/src/log/rules.mk
+include modules/src/mbr/rules.mk
+include modules/src/nodefs/rules.mk
+include modules/src/tty/rules.mk
+include modules/src/arch/$(ARCH).mk
 
 CLEAN+=$(MODULES)
 
