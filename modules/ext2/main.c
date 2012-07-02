@@ -1,5 +1,5 @@
-#include <kernel/modules.h>
-#include <modules/ext2/ext2.h>
+#include <modules.h>
+#include <ext2/ext2.h>
 
 static struct ext2_driver driver;
 

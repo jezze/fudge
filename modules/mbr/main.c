@@ -1,5 +1,5 @@
-#include <kernel/modules.h>
-#include <modules/mbr/mbr.h>
+#include <modules.h>
+#include <mbr/mbr.h>
 
 static struct mbr_driver driver;
 

@@ -1,4 +1,4 @@
-#include <kernel/arch/x86/mboot.h>
+#include <arch/x86/mboot.h>
 
 void mboot_init(struct mboot_header *header)
 {

@@ -1,6 +1,6 @@
-#include <lib/memory.h>
-#include <kernel/arch/x86/cpu.h>
-#include <kernel/arch/x86/idt.h>
+#include <memory.h>
+#include <arch/x86/cpu.h>
+#include <arch/x86/idt.h>
 
 static struct idt_entry entries[IDT_TABLE_SLOTS];
 static struct idt_pointer pointer;

@@ -1,5 +1,5 @@
-#include <kernel/modules.h>
-#include <modules/msr/msr.h>
+#include <modules.h>
+#include <msr/msr.h>
 
 static struct msr_driver driver;
 

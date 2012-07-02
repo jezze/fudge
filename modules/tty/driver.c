@@ -1,9 +1,9 @@
-#include <lib/memory.h>
-#include <lib/string.h>
-#include <kernel/modules.h>
-#include <modules/vga/vga.h>
-#include <modules/ps2/ps2.h>
-#include <modules/tty/tty.h>
+#include <memory.h>
+#include <string.h>
+#include <modules.h>
+#include <vga/vga.h>
+#include <ps2/ps2.h>
+#include <tty/tty.h>
 
 static void clear(struct tty_driver *self)
 {

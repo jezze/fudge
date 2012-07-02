@@ -1,8 +1,8 @@
-#include <lib/memory.h>
-#include <lib/string.h>
-#include <kernel/modules.h>
-#include <modules/nodefs/nodefs.h>
-#include <modules/log/log.h>
+#include <memory.h>
+#include <string.h>
+#include <modules.h>
+#include <nodefs/nodefs.h>
+#include <log/log.h>
 
 static struct log_driver driver;
 static struct nodefs_node messages;

@@ -1,12 +1,12 @@
-#include <lib/elf.h>
-#include <lib/memory.h>
-#include <lib/string.h>
-#include <kernel/kernel.h>
-#include <kernel/event.h>
-#include <kernel/mmu.h>
-#include <kernel/modules.h>
-#include <kernel/runtime.h>
-#include <kernel/syscall.h>
+#include <elf.h>
+#include <memory.h>
+#include <string.h>
+#include <kernel.h>
+#include <event.h>
+#include <mmu.h>
+#include <modules.h>
+#include <runtime.h>
+#include <syscall.h>
 
 unsigned int syscall_attach(struct kernel_context *context, unsigned int index, unsigned int callback)
 {

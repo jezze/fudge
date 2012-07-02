@@ -1,5 +1,5 @@
-#include <kernel/modules.h>
-#include <modules/acpi/acpi.h>
+#include <modules.h>
+#include <acpi/acpi.h>
 
 static struct acpi_driver driver;
 

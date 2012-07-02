@@ -1,5 +1,5 @@
-#include <kernel/modules.h>
-#include <modules/uart/uart.h>
+#include <modules.h>
+#include <uart/uart.h>
 
 static struct uart_device device1;
 static struct uart_device device2;

@@ -1,8 +1,8 @@
-#include <lib/memory.h>
-#include <kernel/modules.h>
-#include <modules/acpi/acpi.h>
-#include <modules/cpuid/cpuid.h>
-#include <modules/smp/smp.h>
+#include <memory.h>
+#include <modules.h>
+#include <acpi/acpi.h>
+#include <cpuid/cpuid.h>
+#include <smp/smp.h>
 
 static void setup_madt(struct smp_driver *driver, struct acpi_driver *acpiDriver)
 {

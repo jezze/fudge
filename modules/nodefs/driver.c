@@ -1,7 +1,7 @@
-#include <lib/memory.h>
-#include <lib/string.h>
-#include <kernel/modules.h>
-#include <modules/nodefs/nodefs.h>
+#include <memory.h>
+#include <string.h>
+#include <modules.h>
+#include <nodefs/nodefs.h>
 
 static unsigned int filesystem_read(struct modules_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {

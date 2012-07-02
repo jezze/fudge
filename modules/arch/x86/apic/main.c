@@ -1,5 +1,5 @@
-#include <kernel/modules.h>
-#include <modules/apic/apic.h>
+#include <modules.h>
+#include <apic/apic.h>
 
 static struct apic_driver driver;
 

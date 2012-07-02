@@ -1,5 +1,5 @@
-#include <kernel/modules.h>
-#include <modules/nodefs/nodefs.h>
+#include <modules.h>
+#include <nodefs/nodefs.h>
 
 static struct nodefs_driver driver;
 

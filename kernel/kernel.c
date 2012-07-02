@@ -1,10 +1,10 @@
-#include <lib/memory.h>
-#include <kernel/error.h>
-#include <kernel/kernel.h>
-#include <kernel/modules.h>
-#include <kernel/ramdisk.h>
-#include <kernel/runtime.h>
-#include <kernel/syscall.h>
+#include <memory.h>
+#include <error.h>
+#include <kernel.h>
+#include <modules.h>
+#include <ramdisk.h>
+#include <runtime.h>
+#include <syscall.h>
 
 static void load_usermode(struct kernel_arch *arch)
 {

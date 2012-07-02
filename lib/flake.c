@@ -1,7 +1,7 @@
-#include <lib/call.h>
-#include <lib/flake.h>
-#include <lib/memory.h>
-#include <lib/string.h>
+#include <call.h>
+#include <flake.h>
+#include <memory.h>
+#include <string.h>
 
 void *flake_parse(unsigned int type, unsigned int count, void *buffer)
 {

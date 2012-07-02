@@ -1,8 +1,8 @@
-#include <lib/memory.h>
-#include <lib/string.h>
-#include <kernel/modules.h>
-#include <kernel/vfs/root.h>
-#include <kernel/vfs/sys.h>
+#include <memory.h>
+#include <string.h>
+#include <modules.h>
+#include <vfs/root.h>
+#include <vfs/sys.h>
 
 static union modules_module *modules[MODULES_MODULE_SLOTS];
 

@@ -1,8 +1,8 @@
-#include <lib/io.h>
-#include <lib/memory.h>
-#include <kernel/modules.h>
-#include <modules/apic/apic.h>
-#include <modules/ps2/ps2.h>
+#include <io.h>
+#include <memory.h>
+#include <modules.h>
+#include <apic/apic.h>
+#include <ps2/ps2.h>
 
 static void handle_irq(struct modules_device *self)
 {

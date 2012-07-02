@@ -1,14 +1,14 @@
-#include <lib/memory.h>
-#include <kernel/kernel.h>
-#include <kernel/arch/x86/arch.h>
-#include <kernel/arch/x86/cpu.h>
-#include <kernel/arch/x86/gdt.h>
-#include <kernel/arch/x86/idt.h>
-#include <kernel/arch/x86/isr.h>
-#include <kernel/arch/x86/mboot.h>
-#include <kernel/arch/x86/mmu.h>
-#include <kernel/arch/x86/syscall.h>
-#include <kernel/arch/x86/tss.h>
+#include <memory.h>
+#include <kernel.h>
+#include <arch/x86/arch.h>
+#include <arch/x86/cpu.h>
+#include <arch/x86/gdt.h>
+#include <arch/x86/idt.h>
+#include <arch/x86/isr.h>
+#include <arch/x86/mboot.h>
+#include <arch/x86/mmu.h>
+#include <arch/x86/syscall.h>
+#include <arch/x86/tss.h>
 
 static struct arch_x86 arch_x86;
 

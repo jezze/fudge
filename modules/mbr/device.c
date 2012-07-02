@@ -1,7 +1,7 @@
-#include <lib/memory.h>
-#include <kernel/modules.h>
-#include <modules/ata/ata.h>
-#include <modules/mbr/mbr.h>
+#include <memory.h>
+#include <modules.h>
+#include <ata/ata.h>
+#include <mbr/mbr.h>
 
 static unsigned int read(struct mbr_device *self, unsigned int offset, unsigned int count, void *buffer)
 {

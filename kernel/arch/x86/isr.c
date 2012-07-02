@@ -1,10 +1,10 @@
-#include <kernel/error.h>
-#include <kernel/kernel.h>
-#include <kernel/event.h>
-#include <kernel/mmu.h>
-#include <kernel/runtime.h>
-#include <kernel/arch/x86/idt.h>
-#include <kernel/arch/x86/isr.h>
+#include <error.h>
+#include <kernel.h>
+#include <event.h>
+#include <mmu.h>
+#include <runtime.h>
+#include <arch/x86/idt.h>
+#include <arch/x86/isr.h>
 
 static void (*routines[ISR_TABLE_SLOTS])(struct kernel_context *context, struct isr_cpu_registers *registers);
 

@@ -1,10 +1,10 @@
-#include <lib/memory.h>
-#include <kernel/kernel.h>
-#include <kernel/mmu.h>
-#include <kernel/runtime.h>
-#include <kernel/arch/x86/cpu.h>
-#include <kernel/arch/x86/isr.h>
-#include <kernel/arch/x86/mmu.h>
+#include <memory.h>
+#include <kernel.h>
+#include <mmu.h>
+#include <runtime.h>
+#include <arch/x86/cpu.h>
+#include <arch/x86/isr.h>
+#include <arch/x86/mmu.h>
 
 static struct mmu_unit unit;
 static struct mmu_directory directories[MMU_HEADER_SLOTS];

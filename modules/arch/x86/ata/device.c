@@ -1,6 +1,6 @@
-#include <lib/memory.h>
-#include <kernel/modules.h>
-#include <modules/ata/ata.h>
+#include <memory.h>
+#include <modules.h>
+#include <ata/ata.h>
 
 static void configure_ata(struct ata_device *self)
 {

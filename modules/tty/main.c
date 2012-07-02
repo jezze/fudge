@@ -1,10 +1,10 @@
-#include <lib/memory.h>
-#include <lib/string.h>
-#include <kernel/modules.h>
-#include <modules/nodefs/nodefs.h>
-#include <modules/ps2/ps2.h>
-#include <modules/vga/vga.h>
-#include <modules/tty/tty.h>
+#include <memory.h>
+#include <string.h>
+#include <modules.h>
+#include <nodefs/nodefs.h>
+#include <ps2/ps2.h>
+#include <vga/vga.h>
+#include <tty/tty.h>
 
 static struct tty_driver driver;
 static struct nodefs_node in;

@@ -1,8 +1,8 @@
-#include <kernel/kernel.h>
-#include <kernel/runtime.h>
-#include <kernel/syscall.h>
-#include <kernel/arch/x86/isr.h>
-#include <kernel/arch/x86/syscall.h>
+#include <kernel.h>
+#include <runtime.h>
+#include <syscall.h>
+#include <arch/x86/isr.h>
+#include <arch/x86/syscall.h>
 
 static unsigned int (*routines[SYSCALL_TABLE_SLOTS])(struct kernel_context *context);
 

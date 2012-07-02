@@ -1,7 +1,7 @@
-#include <lib/memory.h>
-#include <kernel/modules.h>
-#include <modules/apic/apic.h>
-#include <modules/pit/pit.h>
+#include <memory.h>
+#include <modules.h>
+#include <apic/apic.h>
+#include <pit/pit.h>
 
 static void handle_irq(struct modules_device *self)
 {

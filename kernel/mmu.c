@@ -1,7 +1,7 @@
-#include <lib/memory.h>
-#include <kernel/error.h>
-#include <kernel/mmu.h>
-#include <kernel/runtime.h>
+#include <memory.h>
+#include <error.h>
+#include <mmu.h>
+#include <runtime.h>
 
 static struct mmu_unit *mmuUnit;
 

@@ -1,9 +1,9 @@
-#include <lib/io.h>
-#include <lib/memory.h>
-#include <kernel/mmu.h>
-#include <kernel/modules.h>
-#include <modules/bga/bga.h>
-#include <modules/pci/pci.h>
+#include <io.h>
+#include <memory.h>
+#include <mmu.h>
+#include <modules.h>
+#include <bga/bga.h>
+#include <pci/pci.h>
 
 static void write_register(unsigned short index, unsigned short data)
 {

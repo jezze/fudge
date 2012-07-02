@@ -1,7 +1,7 @@
-#include <lib/io.h>
-#include <lib/memory.h>
-#include <kernel/modules.h>
-#include <modules/pci/pci.h>
+#include <io.h>
+#include <memory.h>
+#include <modules.h>
+#include <pci/pci.h>
 
 static unsigned int config_ind(struct pci_device *device, unsigned int offset)
 {

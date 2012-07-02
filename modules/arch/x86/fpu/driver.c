@@ -1,8 +1,8 @@
-#include <lib/memory.h>
-#include <kernel/modules.h>
-#include <modules/cpuid/cpuid.h>
-#include <modules/fpu/fpu.h>
-#include <modules/log/log.h>
+#include <memory.h>
+#include <modules.h>
+#include <cpuid/cpuid.h>
+#include <fpu/fpu.h>
+#include <log/log.h>
 
 static void start(struct modules_driver *self)
 {

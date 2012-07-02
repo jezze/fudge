@@ -1,5 +1,5 @@
-#include <lib/memory.h>
-#include <lib/string.h>
+#include <memory.h>
+#include <string.h>
 
 unsigned int string_length(const char *in)
 {

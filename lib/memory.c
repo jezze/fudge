@@ -1,4 +1,4 @@
-#include <lib/memory.h>
+#include <memory.h>
 
 void *memory_clear(void *out, unsigned int count)
 {

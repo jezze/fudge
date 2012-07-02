@@ -1,6 +1,6 @@
-#include <lib/memory.h>
-#include <kernel/arch/x86/cpu.h>
-#include <kernel/arch/x86/gdt.h>
+#include <memory.h>
+#include <arch/x86/cpu.h>
+#include <arch/x86/gdt.h>
 
 static struct gdt_entry entries[GDT_TABLE_SLOTS];
 static struct gdt_pointer pointer;

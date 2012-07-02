@@ -1,6 +1,6 @@
-#include <lib/elf.h>
-#include <lib/memory.h>
-#include <lib/string.h>
+#include <elf.h>
+#include <memory.h>
+#include <string.h>
 
 struct elf_header *elf_get_header(unsigned int address)
 {

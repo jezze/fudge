@@ -1,7 +1,7 @@
-#include <lib/memory.h>
-#include <kernel/arch/x86/cpu.h>
-#include <kernel/arch/x86/gdt.h>
-#include <kernel/arch/x86/tss.h>
+#include <memory.h>
+#include <arch/x86/cpu.h>
+#include <arch/x86/gdt.h>
+#include <arch/x86/tss.h>
 
 static struct tss_entry entry;
 

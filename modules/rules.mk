@@ -7,7 +7,7 @@ include modules/arch/$(ARCH)/rules.mk
 
 CLEAN+=$(MODULES)
 
-modules/%.ko: CCFLAGS+=-Iinclude
+modules/%.ko: CCFLAGS+=-Ilib/include -Ikernel/include -Imodules/include
 modules/%.ko: LDFLAGS+=-Tmodules/linker.ld -r
 
 modules: $(MODULES)

@@ -1,7 +1,7 @@
-#include <lib/memory.h>
-#include <kernel/modules.h>
-#include <modules/nodefs/nodefs.h>
-#include <modules/pit/pit.h>
+#include <memory.h>
+#include <modules.h>
+#include <nodefs/nodefs.h>
+#include <pit/pit.h>
 
 static struct pit_device device;
 static struct pit_driver driver;

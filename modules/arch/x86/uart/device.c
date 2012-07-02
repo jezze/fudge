@@ -1,7 +1,7 @@
-#include <lib/io.h>
-#include <lib/memory.h>
-#include <kernel/modules.h>
-#include <modules/uart/uart.h>
+#include <io.h>
+#include <memory.h>
+#include <modules.h>
+#include <uart/uart.h>
 
 static char read(struct uart_device *self)
 {

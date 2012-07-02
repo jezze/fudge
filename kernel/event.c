@@ -1,7 +1,7 @@
-#include <lib/memory.h>
-#include <kernel/kernel.h>
-#include <kernel/event.h>
-#include <kernel/runtime.h>
+#include <memory.h>
+#include <kernel.h>
+#include <event.h>
+#include <runtime.h>
 
 static struct event_routine routines[EVENT_TABLE_SLOTS];
 

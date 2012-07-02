@@ -1,6 +1,6 @@
-#include <lib/memory.h>
-#include <kernel/modules.h>
-#include <modules/cpuid/cpuid.h>
+#include <memory.h>
+#include <modules.h>
+#include <cpuid/cpuid.h>
 
 static unsigned int is_supported(unsigned int instruction, unsigned int flag)
 {

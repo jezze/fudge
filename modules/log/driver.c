@@ -1,7 +1,7 @@
-#include <lib/memory.h>
-#include <lib/string.h>
-#include <kernel/modules.h>
-#include <modules/log/log.h>
+#include <memory.h>
+#include <string.h>
+#include <modules.h>
+#include <log/log.h>
 
 static void start(struct modules_driver *self)
 {

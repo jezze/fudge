@@ -1,7 +1,7 @@
-#include <lib/memory.h>
-#include <kernel/modules.h>
-#include <modules/nodefs/nodefs.h>
-#include <modules/ps2/ps2.h>
+#include <memory.h>
+#include <modules.h>
+#include <nodefs/nodefs.h>
+#include <ps2/ps2.h>
 
 static struct ps2_kbd_device kbdDevice;
 static struct ps2_kbd_driver kbdDriver;

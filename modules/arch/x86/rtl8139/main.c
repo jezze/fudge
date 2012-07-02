@@ -1,7 +1,7 @@
-#include <lib/memory.h>
-#include <kernel/modules.h>
-#include <modules/nodefs/nodefs.h>
-#include <modules/rtl8139/rtl8139.h>
+#include <memory.h>
+#include <modules.h>
+#include <nodefs/nodefs.h>
+#include <rtl8139/rtl8139.h>
 
 static struct rtl8139_driver driver;
 static struct nodefs_node mac;

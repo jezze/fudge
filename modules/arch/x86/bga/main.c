@@ -1,7 +1,7 @@
-#include <lib/memory.h>
-#include <kernel/modules.h>
-#include <modules/bga/bga.h>
-#include <modules/nodefs/nodefs.h>
+#include <memory.h>
+#include <modules.h>
+#include <bga/bga.h>
+#include <nodefs/nodefs.h>
 
 static struct bga_driver driver;
 static struct nodefs_node xres;

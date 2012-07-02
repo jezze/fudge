@@ -1,9 +1,9 @@
-#include <lib/io.h>
-#include <lib/memory.h>
-#include <kernel/modules.h>
-#include <modules/apic/apic.h>
-#include <modules/pci/pci.h>
-#include <modules/rtl8139/rtl8139.h>
+#include <io.h>
+#include <memory.h>
+#include <modules.h>
+#include <apic/apic.h>
+#include <pci/pci.h>
+#include <rtl8139/rtl8139.h>
 
 static void poweron(struct rtl8139_driver *self)
 {

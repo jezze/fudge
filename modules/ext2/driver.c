@@ -1,7 +1,7 @@
-#include <lib/memory.h>
-#include <kernel/modules.h>
-#include <modules/mbr/mbr.h>
-#include <modules/ext2/ext2.h>
+#include <memory.h>
+#include <modules.h>
+#include <mbr/mbr.h>
+#include <ext2/ext2.h>
 
 static void read_superblock(struct mbr_device *device, struct ext2_superblock *sb)
 {

@@ -1,7 +1,7 @@
-#include <lib/memory.h>
-#include <kernel/modules.h>
-#include <modules/apic/apic.h>
-#include <modules/uart/uart.h>
+#include <memory.h>
+#include <modules.h>
+#include <apic/apic.h>
+#include <uart/uart.h>
 
 static unsigned int buffer_getc(struct uart_buffer *self, char *buffer)
 {

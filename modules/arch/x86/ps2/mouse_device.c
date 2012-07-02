@@ -1,7 +1,7 @@
-#include <lib/io.h>
-#include <lib/memory.h>
-#include <kernel/modules.h>
-#include <modules/ps2/ps2.h>
+#include <io.h>
+#include <memory.h>
+#include <modules.h>
+#include <ps2/ps2.h>
 
 static void wait_read()
 {

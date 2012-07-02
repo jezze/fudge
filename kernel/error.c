@@ -1,5 +1,5 @@
-#include <kernel/error.h>
-#include <kernel/kernel.h>
+#include <error.h>
+#include <kernel.h>
 
 static struct error_status status;
 
