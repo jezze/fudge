@@ -88,7 +88,11 @@ static void handle_interrupt(struct kernel_context *context, struct isr_cpu_regi
 static void start(struct modules_driver *self)
 {
 
-    if (!cpuid_is_supported(CPUID_FEATURES0_EDX_FLAG_APIC))
+    struct cpuid_data data;
+
+    cpuid_get(CPUID_INSTRUCTION_FEATURES0, &data);
+
+    if (!(data.edx & CPUID_FEATURES0_EDX_FLAG_APIC))
         return;
 
     isr_register_routine(ISR_INDEX_PIT, handle_interrupt);
