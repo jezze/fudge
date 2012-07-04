@@ -13,7 +13,6 @@ SECTIONS
 
     .data ALIGN (0x1000) :
     {
-        *(.rodata*)
         *(.data)
     }
 
