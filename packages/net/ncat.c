@@ -21,7 +21,7 @@ static struct arp_header *read_arp(void *data)
     if (!eheader)
         return 0;
 
-    type = (eheader->typeHigh << 8) | eheader->typeLow;
+    type = (eheader->type[0] << 8) | eheader->type[1];
 
     if (type != 0x0806)
         return 0;
@@ -52,20 +52,20 @@ void handle_network_event()
     if (!header)
         call_wait();
 
-    eheader.typeHigh = 0x08;
-    eheader.typeLow = 0x06;
+    eheader.type[0] = 0x08;
+    eheader.type[1] = 0x06;
 
     memory_copy(eheader.sha, eth0.mac, 6);
     memory_copy(eheader.tha, header->sha, 6);
 
-    aheader.htypeHigh = 0x00;
-    aheader.htypeLow = 0x01;
-    aheader.ptypeHigh = 0x08;
-    aheader.ptypeLow = 0x00;
+    aheader.htype[0] = 0x00;
+    aheader.htype[1] = 0x01;
+    aheader.ptype[0] = 0x08;
+    aheader.ptype[1] = 0x00;
     aheader.hlength = 0x06;
     aheader.plength = 0x04;
-    aheader.operationHigh = 0x00;
-    aheader.operationLow = 0x02;
+    aheader.operation[0] = 0x00;
+    aheader.operation[1] = 0x02;
 
     memory_copy(aheader.sha, eth0.mac, 6);
     memory_copy(aheader.spa, eth0.ip, 4);

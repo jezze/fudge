@@ -6,10 +6,16 @@ struct ethernet_header
 
     unsigned char tha[6];
     unsigned char sha[6];
-    unsigned char typeHigh;
-    unsigned char typeLow;
+    unsigned char type[2];
 
 } __attribute__((packed));
+
+struct ethernet_footer
+{
+
+    unsigned char crc[4];
+
+};
 
 struct ethernet_interface
 {

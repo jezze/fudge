@@ -73,20 +73,20 @@ static void send()
     struct ethernet_header eheader;
     struct arp_header aheader;
 
-    eheader.typeHigh = 0x08;
-    eheader.typeLow = 0x06;
+    eheader.type[0] = 0x08;
+    eheader.type[1] = 0x06;
 
     memory_copy(eheader.sha, eth0.mac, 6);
     memory_copy(eheader.tha, tha, 6);
 
-    aheader.htypeHigh = 0x00;
-    aheader.htypeLow = 0x01;
-    aheader.ptypeHigh = 0x08;
-    aheader.ptypeLow = 0x00;
+    aheader.htype[0] = 0x00;
+    aheader.htype[1] = 0x01;
+    aheader.ptype[0] = 0x08;
+    aheader.ptype[1] = 0x00;
     aheader.hlength = 0x06;
     aheader.plength = 0x04;
-    aheader.operationHigh = 0x00;
-    aheader.operationLow = 0x01;
+    aheader.operation[0] = 0x00;
+    aheader.operation[1] = 0x01;
 
     memory_copy(aheader.sha, eth0.mac, 6);
     memory_copy(aheader.tha, tha, 6);
