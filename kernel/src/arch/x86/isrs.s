@@ -1,9 +1,6 @@
 .intel_syntax noprefix
 
 .extern isr_handle_cpu
-.extern isr_save_state
-.extern isr_load_state
-.extern arch_get_context
 
 .global isr_routine00
 isr_routine00:
@@ -351,12 +348,7 @@ isr_common_cpu:
     mov es, ax
     mov fs, ax
     mov gs, ax
-    call arch_get_context
-    push eax
-    call isr_save_state
     call isr_handle_cpu
-    call isr_load_state
-    add esp, 4
     mov ax, 0x23
     mov ds, ax
     mov es, ax

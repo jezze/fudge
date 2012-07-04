@@ -122,11 +122,8 @@ void isr_routine2F();
 void isr_routine80();
 void isr_register_routine(unsigned int index, void (*routine)(struct kernel_context *context, struct isr_cpu_registers *registers));
 void isr_unregister_routine(unsigned int index);
+void isr_handle_cpu(struct isr_cpu_registers *registers);
 void isr_init();
-
-void isr_handle_cpu(struct kernel_context *context, struct isr_cpu_registers *registers);
-void isr_load_state(struct kernel_context *context, struct isr_cpu_registers *registers);
-void isr_save_state(struct kernel_context *context, struct isr_cpu_registers *registers);
 
 #endif
 

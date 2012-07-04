@@ -3,12 +3,13 @@
 #include <event.h>
 #include <mmu.h>
 #include <runtime.h>
+#include <arch/x86/arch.h>
 #include <arch/x86/idt.h>
 #include <arch/x86/isr.h>
 
 static void (*routines[ISR_TABLE_SLOTS])(struct kernel_context *context, struct isr_cpu_registers *registers);
 
-void isr_load_state(struct kernel_context *context, struct isr_cpu_registers *registers)
+static void load_state(struct kernel_context *context, struct isr_cpu_registers *registers)
 {
 
     registers->interrupt.eip = context->running->registers.ip;
@@ -17,7 +18,7 @@ void isr_load_state(struct kernel_context *context, struct isr_cpu_registers *re
 
 }
 
-void isr_save_state(struct kernel_context *context, struct isr_cpu_registers *registers)
+static void save_state(struct kernel_context *context, struct isr_cpu_registers *registers)
 {
 
     context->running->registers.ip = registers->interrupt.eip;
@@ -35,8 +36,12 @@ static void isr_handle_undefined(struct kernel_context *context, struct isr_cpu_
 
 }
 
-void isr_handle_cpu(struct kernel_context *context, struct isr_cpu_registers *registers)
+void isr_handle_cpu(struct isr_cpu_registers *registers)
 {
+
+    struct kernel_context *context = arch_get_context();
+
+    save_state(context, registers);
 
     routines[registers->index](context, registers);
 
@@ -44,6 +49,8 @@ void isr_handle_cpu(struct kernel_context *context, struct isr_cpu_registers *re
         event_raise(context, registers->error + 0x80);
     else
         event_raise(context, registers->index);
+
+    load_state(context, registers);
 
     mmu_load_memory(context->running->id);
 
