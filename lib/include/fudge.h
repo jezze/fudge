@@ -10,6 +10,8 @@
 #include "ethernet.h"
 #include "icmpv4.h"
 #include "icmpv6.h"
+#include "ipv4.h"
+#include "ipv6.h"
 #include "memory.h"
 #include "string.h"
 #include "tcp.h"
