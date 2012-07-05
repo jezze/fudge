@@ -164,7 +164,7 @@ unsigned int syscall_open(struct kernel_context *context, unsigned int index, ch
     if (!filesystem)
         return 0;
 
-    id = filesystem->walk(filesystem, descriptor->id, path + string_length(filesystem->path));
+    id = filesystem->walk(filesystem, descriptor->id, string_length(path + string_length(filesystem->path)), path + string_length(filesystem->path));
 
     if (!id)
         return 0;

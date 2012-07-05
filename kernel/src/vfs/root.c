@@ -37,7 +37,7 @@ static unsigned int read(struct modules_filesystem *self, unsigned int id, unsig
 
 }
 
-static unsigned int walk(struct modules_filesystem *self, unsigned int id, char *name)
+static unsigned int walk(struct modules_filesystem *self, unsigned int id, unsigned int count, char *name)
 {
 
     return 1;

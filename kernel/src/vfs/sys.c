@@ -57,12 +57,10 @@ static unsigned int read(struct modules_filesystem *self, unsigned int id, unsig
 
 }
 
-static unsigned int walk(struct modules_filesystem *self, unsigned int id, char *name)
+static unsigned int walk(struct modules_filesystem *self, unsigned int id, unsigned int count, char *name)
 {
 
-    unsigned int length = string_length(name);
-
-    if (!length)
+    if (!count)
         return 1;
 
     if (memory_compare(name, "all/", 4))

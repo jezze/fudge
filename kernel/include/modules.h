@@ -63,7 +63,7 @@ union modules_module
         void (*close)(struct modules_filesystem *self, unsigned int id);
         unsigned int (*read)(struct modules_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer);
         unsigned int (*write)(struct modules_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer);
-        unsigned int (*walk)(struct modules_filesystem *self, unsigned int id, char *path);
+        unsigned int (*walk)(struct modules_filesystem *self, unsigned int id, unsigned int count, char *path);
         unsigned int (*get_physical)(struct modules_filesystem *self, unsigned int id);
 
     } filesystem;
@@ -82,7 +82,7 @@ void modules_unregister_filesystem(struct modules_filesystem *filesystem);
 void modules_bus_init(struct modules_bus *bus, unsigned int type, char *name, void (*scan)(struct modules_bus *self));
 void modules_device_init(struct modules_device *device, unsigned int type, char *name);
 void modules_driver_init(struct modules_driver *driver, unsigned int type, char *name, void (*start)(struct modules_driver *self), unsigned int (*check)(struct modules_driver *self, struct modules_device *device), void (*attach)(struct modules_device *device));
-void modules_filesystem_init(struct modules_filesystem *filesystem, unsigned int type, char *name, void (*open)(struct modules_filesystem *self, unsigned int id), void (*close)(struct modules_filesystem *self, unsigned int id), unsigned int (*read)(struct modules_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write)(struct modules_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer), unsigned int (*walk)(struct modules_filesystem *self, unsigned int id, char *path), unsigned int (*get_physical)(struct modules_filesystem *self, unsigned int id));
+void modules_filesystem_init(struct modules_filesystem *filesystem, unsigned int type, char *name, void (*open)(struct modules_filesystem *self, unsigned int id), void (*close)(struct modules_filesystem *self, unsigned int id), unsigned int (*read)(struct modules_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write)(struct modules_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer), unsigned int (*walk)(struct modules_filesystem *self, unsigned int id, unsigned int count, char *path), unsigned int (*get_physical)(struct modules_filesystem *self, unsigned int id));
 void modules_init();
 
 #endif

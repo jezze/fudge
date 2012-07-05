@@ -106,15 +106,14 @@ static struct ext2_entry *finddir(struct modules_filesystem *self, unsigned int 
 
 }
 
-static unsigned int walk(struct modules_filesystem *self, unsigned int id, char *name)
+static unsigned int walk(struct modules_filesystem *self, unsigned int id, unsigned int count, char *name)
 {
 
     char *temp = name;
     struct ext2_entry *entry;
     unsigned int index = 2;
-    unsigned int length = string_length(name);
 
-    if (!length)
+    if (!count)
         return 2;
 
     while ((entry = finddir(self, index, temp)))
