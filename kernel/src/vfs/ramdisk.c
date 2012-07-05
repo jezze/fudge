@@ -97,7 +97,7 @@ static unsigned int write(struct modules_filesystem *self, unsigned int id, unsi
 
 }
 
-static unsigned int find(struct modules_filesystem *self, char *name)
+static unsigned int walk(struct modules_filesystem *self, unsigned int id, char *name)
 {
 
     unsigned int i;
@@ -131,7 +131,7 @@ void vfs_ramdisk_init(struct ramdisk_node *n, unsigned int c)
     nodes = n;
     nodesCount = c;
 
-    modules_filesystem_init(&filesystem, 0x0001, "ramdisk", 0, 0, read, write, find, get_physical);
+    modules_filesystem_init(&filesystem, 0x0001, "ramdisk", 0, 0, read, write, walk, get_physical);
     modules_register_filesystem(&filesystem);
     filesystem.path = "/ramdisk/";
 

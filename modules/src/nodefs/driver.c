@@ -47,7 +47,7 @@ static unsigned int filesystem_write(struct modules_filesystem *self, unsigned i
 
 }
 
-static unsigned int filesystem_find(struct modules_filesystem *self, char *name)
+static unsigned int filesystem_walk(struct modules_filesystem *self, unsigned int id, char *name)
 {
 
     struct nodefs_filesystem *filesystem = (struct nodefs_filesystem *)self;
@@ -123,7 +123,7 @@ void nodefs_filesystem_init(struct nodefs_filesystem *filesystem)
 
     memory_clear(filesystem, sizeof (struct nodefs_filesystem));
 
-    modules_filesystem_init(&filesystem->base, 0x0001, "nodefs", 0, 0, filesystem_read, filesystem_write, filesystem_find, 0); 
+    modules_filesystem_init(&filesystem->base, 0x0001, "nodefs", 0, 0, filesystem_read, filesystem_write, filesystem_walk, 0); 
     filesystem->count = 0;
 
     modules_register_filesystem(&filesystem->base);

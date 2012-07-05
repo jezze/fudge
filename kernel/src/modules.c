@@ -223,7 +223,7 @@ void modules_driver_init(struct modules_driver *driver, unsigned int type, char 
 
 }
 
-void modules_filesystem_init(struct modules_filesystem *filesystem, unsigned int type, char *name, void (*open)(struct modules_filesystem *self, unsigned int id), void (*close)(struct modules_filesystem *self, unsigned int id), unsigned int (*read)(struct modules_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write)(struct modules_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer), unsigned int (*find)(struct modules_filesystem *self, char *path), unsigned int (*get_physical)(struct modules_filesystem *self, unsigned int id))
+void modules_filesystem_init(struct modules_filesystem *filesystem, unsigned int type, char *name, void (*open)(struct modules_filesystem *self, unsigned int id), void (*close)(struct modules_filesystem *self, unsigned int id), unsigned int (*read)(struct modules_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write)(struct modules_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer), unsigned int (*walk)(struct modules_filesystem *self, unsigned int id, char *path), unsigned int (*get_physical)(struct modules_filesystem *self, unsigned int id))
 {
 
     memory_clear(filesystem, sizeof (struct modules_filesystem));
@@ -235,7 +235,7 @@ void modules_filesystem_init(struct modules_filesystem *filesystem, unsigned int
     filesystem->close = close;
     filesystem->read = read;
     filesystem->write = write;
-    filesystem->find = find;
+    filesystem->walk = walk;
     filesystem->get_physical = get_physical;
 
 }

@@ -106,26 +106,26 @@ static struct ext2_entry *finddir(struct modules_filesystem *self, unsigned int 
 
 }
 
-static unsigned int find(struct modules_filesystem *self, char *name)
+static unsigned int walk(struct modules_filesystem *self, unsigned int id, char *name)
 {
 
     char *temp = name;
     struct ext2_entry *entry;
-    unsigned int id = 2;
+    unsigned int index = 2;
     unsigned int length = string_length(name);
 
     if (!length)
         return 2;
 
-    while ((entry = finddir(self, id, temp)))
+    while ((entry = finddir(self, index, temp)))
     {
 
         temp += entry->length + 1;
-        id = entry->node;
+        index = entry->node;
 
     }
 
-    return id;
+    return index;
 
 }
 
@@ -134,7 +134,7 @@ void ext2_filesystem_init(struct ext2_filesystem *filesystem, struct ext2_driver
 
     memory_clear(filesystem, sizeof (struct ext2_filesystem));
 
-    modules_filesystem_init(&filesystem->base, 0x0001, "hda", 0, 0, read, 0, find, 0); 
+    modules_filesystem_init(&filesystem->base, 0x0001, "hda", 0, 0, read, 0, walk, 0); 
 
     filesystem->driver = driver;
     filesystem->device = device;

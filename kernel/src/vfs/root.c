@@ -37,7 +37,7 @@ static unsigned int read(struct modules_filesystem *self, unsigned int id, unsig
 
 }
 
-static unsigned int find(struct modules_filesystem *self, char *name)
+static unsigned int walk(struct modules_filesystem *self, unsigned int id, char *name)
 {
 
     return 1;
@@ -49,7 +49,7 @@ void vfs_root_init(union modules_module **m)
 
     modules = m;
 
-    modules_filesystem_init(&filesystem, 0x0001, "root", 0, 0, read, 0, find, 0);
+    modules_filesystem_init(&filesystem, 0x0001, "root", 0, 0, read, 0, walk, 0);
     modules_register_filesystem(&filesystem);
     filesystem.path = "/";
 
