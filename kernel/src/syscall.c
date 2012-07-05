@@ -138,7 +138,7 @@ unsigned int syscall_load(struct kernel_context *context, unsigned int index)
 
 }
 
-unsigned int syscall_open(struct kernel_context *context, unsigned int index, char *path)
+unsigned int syscall_open(struct kernel_context *context, unsigned int index, void *buffer)
 {
 
     unsigned int slot;
@@ -146,7 +146,7 @@ unsigned int syscall_open(struct kernel_context *context, unsigned int index, ch
     struct runtime_descriptor *descriptor;
     struct modules_filesystem *filesystem;
 
-    if (!path)
+    if (!buffer)
         return 0;
 
     slot = (index) ? index : context->running->get_descriptor_slot(context->running);
@@ -159,12 +159,12 @@ unsigned int syscall_open(struct kernel_context *context, unsigned int index, ch
     if (!descriptor)
         return 0;
 
-    filesystem = modules_get_filesystem(path);
+    filesystem = modules_get_filesystem(buffer);
 
     if (!filesystem)
         return 0;
 
-    id = filesystem->walk(filesystem, descriptor->id, string_length(path + string_length(filesystem->path)), path + string_length(filesystem->path));
+    id = filesystem->walk(filesystem, descriptor->id, string_length((char *)buffer + string_length(filesystem->path)), (char *)buffer + string_length(filesystem->path));
 
     if (!id)
         return 0;
@@ -178,7 +178,7 @@ unsigned int syscall_open(struct kernel_context *context, unsigned int index, ch
 
 }
 
-unsigned int syscall_read(struct kernel_context *context, unsigned int index, unsigned int offset, unsigned int count, char *buffer)
+unsigned int syscall_read(struct kernel_context *context, unsigned int index, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct runtime_descriptor *descriptor = context->running->get_descriptor(context->running, index);
@@ -237,7 +237,7 @@ unsigned int syscall_wait(struct kernel_context *context)
 
 }
 
-unsigned int syscall_write(struct kernel_context *context, unsigned int index, unsigned int offset, unsigned int count, char *buffer)
+unsigned int syscall_write(struct kernel_context *context, unsigned int index, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct runtime_descriptor *descriptor = context->running->get_descriptor(context->running, index);

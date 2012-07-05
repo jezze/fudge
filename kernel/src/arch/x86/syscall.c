@@ -63,21 +63,21 @@ static unsigned int handle_open(struct kernel_context *context)
 {
 
     unsigned int index = *(unsigned int *)(context->running->registers.sp + 4);
-    char *path = *(char **)(context->running->registers.sp + 8);
+    void *buffer = *(char **)(context->running->registers.sp + 8);
 
-    return syscall_open(context, index, path);
+    return syscall_open(context, index, buffer);
 
 }
 
 static unsigned int handle_read(struct kernel_context *context)
 {
 
-    unsigned int id = *(unsigned int *)(context->running->registers.sp + 4);
+    unsigned int index = *(unsigned int *)(context->running->registers.sp + 4);
     unsigned int offset = *(unsigned int *)(context->running->registers.sp + 8);
     unsigned int count = *(unsigned int *)(context->running->registers.sp + 12);
-    char *buffer = *(char **)(context->running->registers.sp + 16);
+    void *buffer = *(char **)(context->running->registers.sp + 16);
 
-    return syscall_read(context, id, offset, count, buffer);
+    return syscall_read(context, index, offset, count, buffer);
 
 }
 
@@ -100,12 +100,12 @@ static unsigned int handle_wait(struct kernel_context *context)
 static unsigned int handle_write(struct kernel_context *context)
 {
 
-    unsigned int id = *(unsigned int *)(context->running->registers.sp + 4);
+    unsigned int index = *(unsigned int *)(context->running->registers.sp + 4);
     unsigned int offset = *(unsigned int *)(context->running->registers.sp + 8);
     unsigned int count = *(unsigned int *)(context->running->registers.sp + 12);
-    char *buffer = *(char **)(context->running->registers.sp + 16);
+    void *buffer = *(char **)(context->running->registers.sp + 16);
 
-    return syscall_write(context, id, offset, count, buffer);
+    return syscall_write(context, index, offset, count, buffer);
 
 }
 

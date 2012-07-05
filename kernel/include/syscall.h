@@ -21,11 +21,11 @@ unsigned int syscall_detach(struct kernel_context *context, unsigned int index);
 unsigned int syscall_execute(struct kernel_context *context, unsigned int index);
 unsigned int syscall_exit(struct kernel_context *context);
 unsigned int syscall_load(struct kernel_context *context, unsigned int index);
-unsigned int syscall_open(struct kernel_context *context, unsigned int index, char *path);
-unsigned int syscall_read(struct kernel_context *context, unsigned int index, unsigned int offset, unsigned int count, char *buffer);
+unsigned int syscall_open(struct kernel_context *context, unsigned int index, void *buffer);
+unsigned int syscall_read(struct kernel_context *context, unsigned int index, unsigned int offset, unsigned int count, void *buffer);
 unsigned int syscall_unload(struct kernel_context *context, unsigned int index);
 unsigned int syscall_wait(struct kernel_context *context);
-unsigned int syscall_write(struct kernel_context *context, unsigned int index, unsigned int offset, unsigned int count, char *buffer);
+unsigned int syscall_write(struct kernel_context *context, unsigned int index, unsigned int offset, unsigned int count, void *buffer);
 
 #endif
 
