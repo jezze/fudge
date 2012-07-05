@@ -11,7 +11,6 @@ struct arch_x86
 
 };
 
-struct kernel_context *arch_get_context();
 void arch_init(struct mboot_header *header, unsigned int magic);
 
 #endif

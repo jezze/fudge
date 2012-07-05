@@ -1,33 +1,35 @@
 #include <error.h>
-#include <kernel.h>
+#include <isr.h>
 #include <event.h>
+#include <kernel.h>
 #include <mmu.h>
 #include <runtime.h>
 #include <arch/x86/arch.h>
 #include <arch/x86/idt.h>
 #include <arch/x86/isr.h>
 
-static void (*routines[ISR_TABLE_SLOTS])(struct kernel_context *context, struct isr_cpu_registers *registers);
+static struct isr_context context;
+static void (*routines[ISR_TABLE_SLOTS])(struct isr_context *context, struct isr_cpu_registers *registers);
 
-static void load_state(struct kernel_context *context, struct isr_cpu_registers *registers)
+static void load_state(struct isr_cpu_registers *registers)
 {
 
-    registers->interrupt.eip = context->running->registers.ip;
-    registers->interrupt.esp = context->running->registers.sp;
-    registers->general.ebp = context->running->registers.sb;
+    registers->interrupt.eip = context.running->registers.ip;
+    registers->interrupt.esp = context.running->registers.sp;
+    registers->general.ebp = context.running->registers.sb;
 
 }
 
-static void save_state(struct kernel_context *context, struct isr_cpu_registers *registers)
+static void save_state(struct isr_cpu_registers *registers)
 {
 
-    context->running->registers.ip = registers->interrupt.eip;
-    context->running->registers.sp = registers->interrupt.esp;
-    context->running->registers.sb = registers->general.ebp;
+    context.running->registers.ip = registers->interrupt.eip;
+    context.running->registers.sp = registers->interrupt.esp;
+    context.running->registers.sb = registers->general.ebp;
 
 }
 
-static void isr_handle_undefined(struct kernel_context *context, struct isr_cpu_registers *registers)
+static void isr_handle_undefined(struct isr_context *context, struct isr_cpu_registers *registers)
 {
 
     error_register(0, registers->index);
@@ -39,24 +41,22 @@ static void isr_handle_undefined(struct kernel_context *context, struct isr_cpu_
 void isr_handle_cpu(struct isr_cpu_registers *registers)
 {
 
-    struct kernel_context *context = arch_get_context();
+    save_state(registers);
 
-    save_state(context, registers);
-
-    routines[registers->index](context, registers);
+    routines[registers->index](&context, registers);
 
     if (registers->index == 0x80)
-        event_raise(context, registers->error + 0x80);
+        event_raise(&context, registers->error + 0x80);
     else
-        event_raise(context, registers->index);
+        event_raise(&context, registers->index);
 
-    load_state(context, registers);
+    load_state(registers);
 
-    mmu_load_memory(context->running->id);
+    mmu_load_memory(context.running->id);
 
 }
 
-void isr_register_routine(unsigned int index, void (*routine)(struct kernel_context *context, struct isr_cpu_registers *registers))
+void isr_register_routine(unsigned int index, void (*routine)(struct isr_context *context, struct isr_cpu_registers *registers))
 {
 
     routines[index] = routine;
@@ -70,7 +70,7 @@ void isr_unregister_routine(unsigned int index)
 
 }
 
-void isr_init()
+struct isr_context *isr_init()
 {
 
     unsigned int i;
@@ -127,6 +127,8 @@ void isr_init()
     idt_set_gate(ISR_INDEX_ATAP, isr_routine2E, 0x08, 0x8E);
     idt_set_gate(ISR_INDEX_ATAS, isr_routine2F, 0x08, 0x8E);
     idt_set_gate(ISR_INDEX_SYSCALL, isr_routine80, 0x08, 0xEE);
+
+    return &context;
 
 }
 

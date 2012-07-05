@@ -1,5 +1,5 @@
 #include <memory.h>
-#include <kernel.h>
+#include <isr.h>
 #include <event.h>
 #include <runtime.h>
 
@@ -29,7 +29,7 @@ unsigned int event_unregister_routine(unsigned int index, struct runtime_task *t
 
 }
 
-void event_raise(struct kernel_context *context, unsigned int index)
+void event_raise(struct isr_context *context, unsigned int index)
 {
 
     unsigned int id = context->running->id;

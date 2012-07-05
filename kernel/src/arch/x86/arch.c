@@ -1,4 +1,5 @@
 #include <memory.h>
+#include <isr.h>
 #include <kernel.h>
 #include <arch/x86/arch.h>
 #include <arch/x86/cpu.h>
@@ -12,13 +13,6 @@
 
 static struct arch_x86 arch_x86;
 
-struct kernel_context *arch_get_context()
-{
-
-    return &arch_x86.base.context;
-
-}
-
 static void setup(struct kernel_arch *self)
 {
 
@@ -28,7 +22,9 @@ static void setup(struct kernel_arch *self)
     gdt_init();
     tss_init(x86->stack);
     idt_init();
-    isr_init();
+
+    self->context = isr_init();
+
     cpu_disable_apic();
     mmu_setup();
     syscall_init();

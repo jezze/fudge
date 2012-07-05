@@ -1,12 +1,12 @@
-#include <kernel.h>
+#include <isr.h>
 #include <runtime.h>
 #include <syscall.h>
 #include <arch/x86/isr.h>
 #include <arch/x86/syscall.h>
 
-static unsigned int (*routines[SYSCALL_TABLE_SLOTS])(struct kernel_context *context);
+static unsigned int (*routines[SYSCALL_TABLE_SLOTS])(struct isr_context *context);
 
-static unsigned int handle_attach(struct kernel_context *context)
+static unsigned int handle_attach(struct isr_context *context)
 {
 
     unsigned int index = *(unsigned int *)(context->running->registers.sp + 4);
@@ -16,7 +16,7 @@ static unsigned int handle_attach(struct kernel_context *context)
 
 }
 
-static unsigned int handle_close(struct kernel_context *context)
+static unsigned int handle_close(struct isr_context *context)
 {
 
     unsigned int index = *(unsigned int *)(context->running->registers.sp + 4);
@@ -25,7 +25,7 @@ static unsigned int handle_close(struct kernel_context *context)
 
 }
 
-static unsigned int handle_detach(struct kernel_context *context)
+static unsigned int handle_detach(struct isr_context *context)
 {
 
     unsigned int index = *(unsigned int *)(context->running->registers.sp + 4);
@@ -34,7 +34,7 @@ static unsigned int handle_detach(struct kernel_context *context)
 
 }
 
-static unsigned int handle_execute(struct kernel_context *context)
+static unsigned int handle_execute(struct isr_context *context)
 {
 
     unsigned int index = *(unsigned int *)(context->running->registers.sp + 4);
@@ -43,14 +43,14 @@ static unsigned int handle_execute(struct kernel_context *context)
 
 }
 
-static unsigned int handle_exit(struct kernel_context *context)
+static unsigned int handle_exit(struct isr_context *context)
 {
 
     return syscall_exit(context);
 
 }
 
-static unsigned int handle_load(struct kernel_context *context)
+static unsigned int handle_load(struct isr_context *context)
 {
 
     unsigned int index = *(unsigned int *)(context->running->registers.sp + 4);
@@ -59,7 +59,7 @@ static unsigned int handle_load(struct kernel_context *context)
 
 }
 
-static unsigned int handle_open(struct kernel_context *context)
+static unsigned int handle_open(struct isr_context *context)
 {
 
     unsigned int index = *(unsigned int *)(context->running->registers.sp + 4);
@@ -69,7 +69,7 @@ static unsigned int handle_open(struct kernel_context *context)
 
 }
 
-static unsigned int handle_read(struct kernel_context *context)
+static unsigned int handle_read(struct isr_context *context)
 {
 
     unsigned int index = *(unsigned int *)(context->running->registers.sp + 4);
@@ -81,7 +81,7 @@ static unsigned int handle_read(struct kernel_context *context)
 
 }
 
-static unsigned int handle_unload(struct kernel_context *context)
+static unsigned int handle_unload(struct isr_context *context)
 {
 
     unsigned int index = *(unsigned int *)(context->running->registers.sp + 4);
@@ -90,14 +90,14 @@ static unsigned int handle_unload(struct kernel_context *context)
 
 }
 
-static unsigned int handle_wait(struct kernel_context *context)
+static unsigned int handle_wait(struct isr_context *context)
 {
 
     return syscall_wait(context);
 
 }
 
-static unsigned int handle_write(struct kernel_context *context)
+static unsigned int handle_write(struct isr_context *context)
 {
 
     unsigned int index = *(unsigned int *)(context->running->registers.sp + 4);
@@ -109,14 +109,14 @@ static unsigned int handle_write(struct kernel_context *context)
 
 }
 
-static void register_routine(unsigned char index, unsigned int (*routine)(struct kernel_context *context))
+static void register_routine(unsigned char index, unsigned int (*routine)(struct isr_context *context))
 {
 
     routines[index] = routine;
 
 }
 
-static void handle_interrupt(struct kernel_context *context, struct isr_cpu_registers *registers)
+static void handle_interrupt(struct isr_context *context, struct isr_cpu_registers *registers)
 {
 
     if (!routines[registers->error])

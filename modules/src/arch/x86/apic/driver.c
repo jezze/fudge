@@ -1,6 +1,6 @@
 #include <io.h>
 #include <memory.h>
-#include <kernel.h>
+#include <isr.h>
 #include <modules.h>
 #include <arch/x86/isr.h>
 #include <arch/x86/apic/apic.h>
@@ -77,7 +77,7 @@ static void reset(unsigned int slave)
 
 }
 
-static void handle_interrupt(struct kernel_context *context, struct isr_cpu_registers *registers)
+static void handle_interrupt(struct isr_context *context, struct isr_cpu_registers *registers)
 {
 
     raise(registers->index - APIC_DATA_MASTERVECTOR);
