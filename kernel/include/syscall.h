@@ -15,17 +15,17 @@
 #define SYSCALL_INDEX_ATTACH  0x0A
 #define SYSCALL_INDEX_DETACH  0x0B
 
-unsigned int syscall_attach(struct isr_context *context, unsigned int index, unsigned int callback);
-unsigned int syscall_close(struct isr_context *context, unsigned int index);
-unsigned int syscall_detach(struct isr_context *context, unsigned int index);
-unsigned int syscall_execute(struct isr_context *context, unsigned int index);
-unsigned int syscall_exit(struct isr_context *context);
-unsigned int syscall_load(struct isr_context *context, unsigned int index);
-unsigned int syscall_open(struct isr_context *context, unsigned int index, void *buffer);
-unsigned int syscall_read(struct isr_context *context, unsigned int index, unsigned int offset, unsigned int count, void *buffer);
-unsigned int syscall_unload(struct isr_context *context, unsigned int index);
-unsigned int syscall_wait(struct isr_context *context);
-unsigned int syscall_write(struct isr_context *context, unsigned int index, unsigned int offset, unsigned int count, void *buffer);
+unsigned int syscall_attach(struct runtime_task *task, unsigned int index, unsigned int callback);
+unsigned int syscall_close(struct runtime_task *task, unsigned int index);
+unsigned int syscall_detach(struct runtime_task *task, unsigned int index);
+unsigned int syscall_execute(struct runtime_task *task, unsigned int index);
+unsigned int syscall_exit(struct runtime_task *task);
+unsigned int syscall_load(struct runtime_task *task, unsigned int index);
+unsigned int syscall_open(struct runtime_task *task, unsigned int index, void *buffer);
+unsigned int syscall_read(struct runtime_task *task, unsigned int index, unsigned int offset, unsigned int count, void *buffer);
+unsigned int syscall_unload(struct runtime_task *task, unsigned int index);
+unsigned int syscall_wait(struct runtime_task *task);
+unsigned int syscall_write(struct runtime_task *task, unsigned int index, unsigned int offset, unsigned int count, void *buffer);
 
 #endif
 

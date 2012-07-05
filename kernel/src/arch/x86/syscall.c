@@ -12,7 +12,7 @@ static unsigned int handle_attach(struct isr_context *context)
     unsigned int index = *(unsigned int *)(context->running->registers.sp + 4);
     unsigned int callback = *(unsigned int *)(context->running->registers.sp + 8);
 
-    return syscall_attach(context, index, callback);
+    return syscall_attach(context->running, index, callback);
 
 }
 
@@ -21,7 +21,7 @@ static unsigned int handle_close(struct isr_context *context)
 
     unsigned int index = *(unsigned int *)(context->running->registers.sp + 4);
 
-    return syscall_close(context, index);
+    return syscall_close(context->running, index);
 
 }
 
@@ -30,7 +30,7 @@ static unsigned int handle_detach(struct isr_context *context)
 
     unsigned int index = *(unsigned int *)(context->running->registers.sp + 4);
 
-    return syscall_detach(context, index);
+    return syscall_detach(context->running, index);
 
 }
 
@@ -39,14 +39,34 @@ static unsigned int handle_execute(struct isr_context *context)
 
     unsigned int index = *(unsigned int *)(context->running->registers.sp + 4);
 
-    return syscall_execute(context, index);
+    unsigned int id = syscall_execute(context->running, index);
+
+    if (id == context->running->id)
+        return id;
+
+    context->running = runtime_get_task(id);
+
+    return id;
 
 }
 
 static unsigned int handle_exit(struct isr_context *context)
 {
 
-    return syscall_exit(context);
+    unsigned int id = syscall_exit(context->running);
+
+    if (id)
+    {
+
+        context->running = runtime_get_task(id);
+
+        return id;
+
+    }
+
+    context->running = 0;
+
+    return 0;
 
 }
 
@@ -55,7 +75,7 @@ static unsigned int handle_load(struct isr_context *context)
 
     unsigned int index = *(unsigned int *)(context->running->registers.sp + 4);
 
-    return syscall_load(context, index);
+    return syscall_load(context->running, index);
 
 }
 
@@ -65,7 +85,7 @@ static unsigned int handle_open(struct isr_context *context)
     unsigned int index = *(unsigned int *)(context->running->registers.sp + 4);
     void *buffer = *(char **)(context->running->registers.sp + 8);
 
-    return syscall_open(context, index, buffer);
+    return syscall_open(context->running, index, buffer);
 
 }
 
@@ -77,7 +97,7 @@ static unsigned int handle_read(struct isr_context *context)
     unsigned int count = *(unsigned int *)(context->running->registers.sp + 12);
     void *buffer = *(char **)(context->running->registers.sp + 16);
 
-    return syscall_read(context, index, offset, count, buffer);
+    return syscall_read(context->running, index, offset, count, buffer);
 
 }
 
@@ -86,14 +106,27 @@ static unsigned int handle_unload(struct isr_context *context)
 
     unsigned int index = *(unsigned int *)(context->running->registers.sp + 4);
 
-    return syscall_unload(context, index);
+    return syscall_unload(context->running, index);
 
 }
 
 static unsigned int handle_wait(struct isr_context *context)
 {
 
-    return syscall_wait(context);
+    unsigned int id = syscall_wait(context->running);
+
+    if (id)
+    {
+
+        context->running = runtime_get_task(id);
+
+        return id;
+
+    }
+
+    context->running = 0;
+
+    return 0;
 
 }
 
@@ -105,7 +138,7 @@ static unsigned int handle_write(struct isr_context *context)
     unsigned int count = *(unsigned int *)(context->running->registers.sp + 12);
     void *buffer = *(char **)(context->running->registers.sp + 16);
 
-    return syscall_write(context, index, offset, count, buffer);
+    return syscall_write(context->running, index, offset, count, buffer);
 
 }
 

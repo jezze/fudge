@@ -8,20 +8,20 @@
 #include <runtime.h>
 #include <syscall.h>
 
-unsigned int syscall_attach(struct isr_context *context, unsigned int index, unsigned int callback)
+unsigned int syscall_attach(struct runtime_task *task, unsigned int index, unsigned int callback)
 {
 
     if (!callback)
         return 0;
 
-    return event_register_routine(index, context->running, callback);
+    return event_register_routine(index, task, callback);
 
 }
 
-unsigned int syscall_close(struct isr_context *context, unsigned int index)
+unsigned int syscall_close(struct runtime_task *task, unsigned int index)
 {
 
-    struct runtime_descriptor *descriptor = context->running->get_descriptor(context->running, index);
+    struct runtime_descriptor *descriptor = task->get_descriptor(task, index);
 
     if (!descriptor || !descriptor->id || !descriptor->filesystem)
         return 0;
@@ -35,14 +35,14 @@ unsigned int syscall_close(struct isr_context *context, unsigned int index)
 
 }
 
-unsigned int syscall_detach(struct isr_context *context, unsigned int index)
+unsigned int syscall_detach(struct runtime_task *task, unsigned int index)
 {
 
-    return event_unregister_routine(index, context->running);
+    return event_unregister_routine(index, task);
 
 }
 
-unsigned int syscall_execute(struct isr_context *context, unsigned int index)
+unsigned int syscall_execute(struct runtime_task *task, unsigned int index)
 {
 
     unsigned int slot;
@@ -50,7 +50,7 @@ unsigned int syscall_execute(struct isr_context *context, unsigned int index)
     struct runtime_task *ntask;
     struct elf_header *header;
     struct elf_program_header *pheaders;
-    struct runtime_descriptor *descriptor = context->running->get_descriptor(context->running, index);
+    struct runtime_descriptor *descriptor = task->get_descriptor(task, index);
 
     if (!descriptor || !descriptor->id || !descriptor->filesystem || !descriptor->filesystem->read)
         return 0;
@@ -62,7 +62,7 @@ unsigned int syscall_execute(struct isr_context *context, unsigned int index)
 
     ntask = runtime_get_task(slot);
 
-    runtime_task_clone(ntask, context->running, slot);
+    runtime_task_clone(ntask, task, slot);
     mmu_map_user_memory(ntask->id, ntask->memory.paddress, ntask->memory.paddress, ntask->memory.size);
     mmu_load_memory(ntask->id);
 
@@ -79,27 +79,24 @@ unsigned int syscall_execute(struct isr_context *context, unsigned int index)
         return 0;
 
     ntask->used = 1;
-    ntask->parentid = context->running->id;
+    ntask->parentid = task->id;
 
     runtime_registers_init(&ntask->registers, header->entry, ntask->memory.vaddress + ntask->memory.size, ntask->memory.vaddress + ntask->memory.size);
-
-    context->running = ntask;
 
     return slot;
 
 }
 
-unsigned int syscall_exit(struct isr_context *context)
+unsigned int syscall_exit(struct runtime_task *task)
 {
 
-    context->running->used = 0;
-    context->running = runtime_get_task(context->running->parentid);
+    task->used = 0;
 
-    return context->running->id;
+    return task->id;
 
 }
 
-unsigned int syscall_load(struct isr_context *context, unsigned int index)
+unsigned int syscall_load(struct runtime_task *task, unsigned int index)
 {
 
     unsigned int physical;
@@ -109,7 +106,7 @@ unsigned int syscall_load(struct isr_context *context, unsigned int index)
     struct elf_section_header *symHeader;
     struct elf_symbol *symTable;
     char *strTable;
-    struct runtime_descriptor *descriptor = context->running->get_descriptor(context->running, index);
+    struct runtime_descriptor *descriptor = task->get_descriptor(task, index);
 
     if (!descriptor || !descriptor->id || !descriptor->filesystem || !descriptor->filesystem->get_physical)
         return 0;
@@ -138,7 +135,7 @@ unsigned int syscall_load(struct isr_context *context, unsigned int index)
 
 }
 
-unsigned int syscall_open(struct isr_context *context, unsigned int index, void *buffer)
+unsigned int syscall_open(struct runtime_task *task, unsigned int index, void *buffer)
 {
 
     unsigned int slot;
@@ -149,12 +146,12 @@ unsigned int syscall_open(struct isr_context *context, unsigned int index, void 
     if (!buffer)
         return 0;
 
-    slot = (index) ? index : context->running->get_descriptor_slot(context->running);
+    slot = (index) ? index : task->get_descriptor_slot(task);
 
     if (!slot)
         return 0;
 
-    descriptor = context->running->get_descriptor(context->running, slot);
+    descriptor = task->get_descriptor(task, slot);
 
     if (!descriptor)
         return 0;
@@ -178,10 +175,10 @@ unsigned int syscall_open(struct isr_context *context, unsigned int index, void 
 
 }
 
-unsigned int syscall_read(struct isr_context *context, unsigned int index, unsigned int offset, unsigned int count, void *buffer)
+unsigned int syscall_read(struct runtime_task *task, unsigned int index, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct runtime_descriptor *descriptor = context->running->get_descriptor(context->running, index);
+    struct runtime_descriptor *descriptor = task->get_descriptor(task, index);
 
     if (!descriptor || !descriptor->id || !descriptor->filesystem || !descriptor->filesystem->read)
         return 0;
@@ -190,7 +187,7 @@ unsigned int syscall_read(struct isr_context *context, unsigned int index, unsig
 
 }
 
-unsigned int syscall_unload(struct isr_context *context, unsigned int index)
+unsigned int syscall_unload(struct runtime_task *task, unsigned int index)
 {
 
     unsigned int physical;
@@ -200,7 +197,7 @@ unsigned int syscall_unload(struct isr_context *context, unsigned int index)
     struct elf_section_header *symHeader;
     struct elf_symbol *symTable;
     char *strTable;
-    struct runtime_descriptor *descriptor = context->running->get_descriptor(context->running, index);
+    struct runtime_descriptor *descriptor = task->get_descriptor(task, index);
 
     if (!descriptor || !descriptor->id || !descriptor->filesystem || !descriptor->filesystem->get_physical)
         return 0;
@@ -227,20 +224,19 @@ unsigned int syscall_unload(struct isr_context *context, unsigned int index)
 
 }
 
-unsigned int syscall_wait(struct isr_context *context)
+unsigned int syscall_wait(struct runtime_task *task)
 {
 
-    context->running->event = 0;
-    context->running = runtime_get_task(context->running->parentid);
+    task->event = 0;
 
-    return context->running->id;
+    return task->parentid;
 
 }
 
-unsigned int syscall_write(struct isr_context *context, unsigned int index, unsigned int offset, unsigned int count, void *buffer)
+unsigned int syscall_write(struct runtime_task *task, unsigned int index, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct runtime_descriptor *descriptor = context->running->get_descriptor(context->running, index);
+    struct runtime_descriptor *descriptor = task->get_descriptor(task, index);
 
     if (!descriptor || !descriptor->id || !descriptor->filesystem || !descriptor->filesystem->write)
         return 0;
