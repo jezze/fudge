@@ -122,7 +122,7 @@ static void enable()
 static void handle_interrupt(struct isr_context *context, struct isr_cpu_registers *registers)
 {
 
-    mmu_pagefault(context->running->id, cpu_get_cr2(), registers->error);
+    mmu_pagefault(context, cpu_get_cr2(), registers->error);
 
 }
 

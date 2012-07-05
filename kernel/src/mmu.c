@@ -1,19 +1,18 @@
 #include <memory.h>
 #include <error.h>
+#include <isr.h>
 #include <mmu.h>
 #include <runtime.h>
 
 static struct mmu_unit *mmuUnit;
 
-void mmu_pagefault(unsigned int index, unsigned int address, unsigned int flags)
+void mmu_pagefault(struct isr_context *context, unsigned int address, unsigned int flags)
 {
 
-    struct runtime_task *task = runtime_get_task(index);
-
-    if (address >= task->memory.vaddress && address < task->memory.vaddress + task->memory.size)
+    if (address >= context->running->memory.vaddress && address < context->running->memory.vaddress + context->running->memory.size)
     {
 
-        mmu_map_user_memory(task->id, task->memory.paddress, task->memory.vaddress, task->memory.size);
+        mmu_map_user_memory(context->running->id, context->running->memory.paddress, context->running->memory.vaddress, context->running->memory.size);
 
         return;
 
