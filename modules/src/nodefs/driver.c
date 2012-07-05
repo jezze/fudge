@@ -47,7 +47,7 @@ static unsigned int filesystem_write(struct modules_filesystem *self, unsigned i
 
 }
 
-static unsigned int filesystem_walk(struct modules_filesystem *self, unsigned int id, unsigned int count, char *name)
+static unsigned int filesystem_walk(struct modules_filesystem *self, unsigned int id, unsigned int count, void *buffer)
 {
 
     struct nodefs_filesystem *filesystem = (struct nodefs_filesystem *)self;
@@ -59,7 +59,7 @@ static unsigned int filesystem_walk(struct modules_filesystem *self, unsigned in
     for (i = 0; i < filesystem->count; i++)
     {
 
-        if (memory_compare(filesystem->nodes[i]->name, name, string_length(filesystem->nodes[i]->name) + 1))
+        if (memory_compare(filesystem->nodes[i]->name, buffer, string_length(filesystem->nodes[i]->name) + 1))
             return i + 2;
 
     }

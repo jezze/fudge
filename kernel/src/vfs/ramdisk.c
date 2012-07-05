@@ -97,7 +97,7 @@ static unsigned int write(struct modules_filesystem *self, unsigned int id, unsi
 
 }
 
-static unsigned int walk(struct modules_filesystem *self, unsigned int id, unsigned int count, char *name)
+static unsigned int walk(struct modules_filesystem *self, unsigned int id, unsigned int count, void *buffer)
 {
 
     unsigned int i;
@@ -108,7 +108,7 @@ static unsigned int walk(struct modules_filesystem *self, unsigned int id, unsig
     for (i = 0; i < nodesCount; i++)
     {
 
-        if (memory_compare(nodes[i].name, name, count))
+        if (memory_compare(nodes[i].name, buffer, count))
             return i + 1;
 
     }

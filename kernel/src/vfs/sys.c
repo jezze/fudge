@@ -57,22 +57,22 @@ static unsigned int read(struct modules_filesystem *self, unsigned int id, unsig
 
 }
 
-static unsigned int walk(struct modules_filesystem *self, unsigned int id, unsigned int count, char *name)
+static unsigned int walk(struct modules_filesystem *self, unsigned int id, unsigned int count, void *buffer)
 {
 
     if (!count)
         return 1;
 
-    if (memory_compare(name, "all/", 4))
+    if (memory_compare(buffer, "all/", 4))
         return 2;
 
-    if (memory_compare(name, "bus/", 4))
+    if (memory_compare(buffer, "bus/", 4))
         return 3;
 
-    if (memory_compare(name, "device/", 7))
+    if (memory_compare(buffer, "device/", 7))
         return 4;
 
-    if (memory_compare(name, "driver/", 7))
+    if (memory_compare(buffer, "driver/", 7))
         return 5;
 
     return 0;
