@@ -18,6 +18,17 @@ void mmu_pagefault(struct isr_context *context, unsigned int address, unsigned i
 
     }
 
+    if (context->running->parentid)
+    {
+
+        context->running = runtime_get_task(context->running->parentid);
+
+        mmu_map_user_memory(context->running->id, context->running->memory.paddress, context->running->memory.vaddress, context->running->memory.size);
+
+        return;
+
+    }
+
     error_register(0, address);
     error_register(1, flags);
     error_panic("PAGE FAULT", __FILE__, __LINE__);
