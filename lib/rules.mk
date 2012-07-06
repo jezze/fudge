@@ -1,4 +1,4 @@
-include lib/src/arch/$(ARCH).mk
+include lib/src/arch/rules.$(ARCH).mk
 
 LIBOBJ+=lib/src/elf.o lib/src/flake.o lib/src/memory.o lib/src/string.o
 
