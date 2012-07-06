@@ -35,16 +35,24 @@ clean:
 	rm -f image/boot/initrd.tar
 	rm -f image/boot/initrd.cpio
 
-ramdisk:
+prepare:
 	mkdir -p image/bin
 	cp $(PACKAGES) image/bin
 	mkdir -p image/mod
 	cp $(MODULES) image/mod
+
+image/boot/fudge:
 	cp kernel/fudge image/boot/fudge
+
+image/boot/initrd.tar:
 	tar -cf initrd.tar image
+	mv initrd.tar $@
+
+image/boot/initrd.cpio:
 	find image -depth | cpio -o > initrd.cpio
-	mv initrd.tar image/boot
 	mv initrd.cpio image/boot
+
+ramdisk: prepare image/boot/fudge image/boot/initrd.tar image/boot/initrd.cpio
 
 fudge.iso:
 	genisoimage -R -b boot/grub/iso9660_stage1_5 -no-emul-boot -boot-load-size 4 -boot-info-table -o $@ image
