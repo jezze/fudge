@@ -4,7 +4,7 @@
 .set INIT_MBOOT_HEADER_FLAGS, 0x00000001
 .set INIT_MBOOT_CHECKSUM, - (INIT_MBOOT_HEADER_MAGIC + INIT_MBOOT_HEADER_FLAGS)
 
-.extern arch_init
+.extern arch_setup
 
 .section .mboot
 .align 4
@@ -21,6 +21,6 @@ init:
     cli
     push eax
     push ebx
-    call arch_init
+    call arch_setup
     hlt
 
