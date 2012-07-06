@@ -24,7 +24,7 @@ static void load_usermode(struct kernel_arch *arch)
     slot = syscall_execute(arch->context->running, id);
 
     arch->context->running = runtime_get_task(slot);
-    arch->context->running->parentid = 0;
+    arch->context->running->parent = 0;
     arch->context->running->wait = 0;
     arch->enter_usermode(arch->context->running->registers.ip, arch->context->running->registers.sp);
 

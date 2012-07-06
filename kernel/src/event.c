@@ -40,9 +40,9 @@ void event_raise(struct runtime_task *task, unsigned int index)
 
     task->wait = 1;
 
+    routines[index].task->parent = task;
     routines[index].task->event = 1;
     routines[index].task->wait = 0;
-    routines[index].task->parentid = task->id;
 
     runtime_registers_init(&routines[index].task->registers, routines[index].callback, routines[index].task->memory.vaddress + routines[index].task->memory.size, routines[index].task->memory.vaddress + routines[index].task->memory.size);
 

@@ -36,8 +36,8 @@ struct runtime_memory
 struct runtime_task
 {
 
+    struct runtime_task *parent;
     unsigned int id;
-    unsigned int parentid;
     unsigned int used;
     unsigned int event;
     unsigned int wait;
