@@ -1,4 +1,4 @@
-include modules/src/arch/$(ARCH).mk
+include modules/src/arch/rules.$(ARCH).mk
 
 MODULES+=modules/src/ext2/ext2.ko
 MODULES+=modules/src/log/log.ko
