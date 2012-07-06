@@ -43,7 +43,7 @@ void ramdisk_node_init(struct ramdisk_node *node, char *name, unsigned int size,
 
 }
 
-void ramdisk_init(unsigned int ramdiskc, void **ramdiskv)
+void ramdisk_setup(unsigned int ramdiskc, void **ramdiskv)
 {
 
     unsigned int i;
@@ -52,7 +52,7 @@ void ramdisk_init(unsigned int ramdiskc, void **ramdiskv)
     for (i = 0; i < ramdiskc; i++)
         count += parse(*(ramdiskv + i));
 
-    vfs_ramdisk_init(nodes, count);
+    vfs_ramdisk_setup(nodes, count);
 
 }
 

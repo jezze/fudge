@@ -44,7 +44,7 @@ static unsigned int walk(struct modules_filesystem *self, unsigned int id, unsig
 
 }
 
-void vfs_root_init(union modules_module **m)
+void vfs_root_setup(union modules_module **m)
 {
 
     modules = m;

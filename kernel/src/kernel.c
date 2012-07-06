@@ -32,9 +32,9 @@ static void start(struct kernel_arch *self)
 
     self->setup(self);
 
-    modules_init();
-    runtime_init();
-    ramdisk_init(self->ramdiskc, self->ramdiskv);
+    modules_setup();
+    runtime_setup();
+    ramdisk_setup(self->ramdiskc, self->ramdiskv);
     load_usermode(self);
 
 }

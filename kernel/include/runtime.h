@@ -57,7 +57,7 @@ void runtime_descriptor_init(struct runtime_descriptor *descriptor, unsigned int
 void runtime_memory_init(struct runtime_memory *memory, unsigned int paddress, unsigned int vaddress, unsigned int size);
 void runtime_task_init(struct runtime_task *task, unsigned int id);
 void runtime_task_clone(struct runtime_task *task, struct runtime_task *original, unsigned int id);
-void runtime_init();
+void runtime_setup();
 
 #endif
 

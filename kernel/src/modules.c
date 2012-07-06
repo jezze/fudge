@@ -240,11 +240,11 @@ void modules_filesystem_init(struct modules_filesystem *filesystem, unsigned int
 
 }
 
-void modules_init()
+void modules_setup()
 {
 
-    vfs_root_init(modules);
-    vfs_sys_init(modules);
+    vfs_root_setup(modules);
+    vfs_sys_setup(modules);
 
 }
 

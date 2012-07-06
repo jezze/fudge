@@ -124,7 +124,7 @@ static unsigned int get_physical(struct modules_filesystem *self, unsigned int i
 
 }
 
-void vfs_ramdisk_init(struct ramdisk_node *n, unsigned int c)
+void vfs_ramdisk_setup(struct ramdisk_node *n, unsigned int c)
 {
 
     nodes = n;
