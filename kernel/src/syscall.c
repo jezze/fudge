@@ -92,7 +92,7 @@ unsigned int syscall_exit(struct runtime_task *task)
 
     task->used = 0;
 
-    return task->id;
+    return task->parentid;
 
 }
 
