@@ -46,15 +46,19 @@ ramdisk-mod:
 image/boot/fudge:
 	cp kernel/fudge image/boot/fudge
 
-image/boot/initrd.tar:
+initrd.tar:
 	tar -cf initrd.tar image
+
+image/boot/initrd.tar:
 	mv initrd.tar $@
 
-image/boot/initrd.cpio:
+initrd.cpio:
 	find image -depth | cpio -o > initrd.cpio
+
+image/boot/initrd.cpio:
 	mv initrd.cpio image/boot
 
-ramdisk: ramdisk-bin ramdisk-mod image/boot/fudge image/boot/initrd.tar image/boot/initrd.cpio
+ramdisk: ramdisk-bin ramdisk-mod image/boot/fudge initrd.tar initrd.cpio image/boot/initrd.tar image/boot/initrd.cpio
 
 fudge.iso:
 	genisoimage -R -b boot/grub/iso9660_stage1_5 -no-emul-boot -boot-load-size 4 -boot-info-table -o $@ image
