@@ -119,10 +119,10 @@ static void enable()
 
 }
 
-static void handle_interrupt(struct isr_context *context, struct isr_cpu_registers *registers)
+static void handle_interrupt(struct runtime_task *task, struct isr_cpu_registers *registers)
 {
 
-    mmu_pagefault(context, cpu_get_cr2(), registers->error);
+    mmu_pagefault(task, cpu_get_cr2(), registers->error);
 
 }
 

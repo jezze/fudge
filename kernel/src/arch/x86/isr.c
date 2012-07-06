@@ -9,7 +9,7 @@
 #include <arch/x86/isr.h>
 
 static struct isr_context context;
-static void (*routines[ISR_TABLE_SLOTS])(struct isr_context *context, struct isr_cpu_registers *registers);
+static void (*routines[ISR_TABLE_SLOTS])(struct runtime_task *task, struct isr_cpu_registers *registers);
 
 static void load_state(struct isr_cpu_registers *registers)
 {
@@ -29,7 +29,7 @@ static void save_state(struct isr_cpu_registers *registers)
 
 }
 
-static void isr_handle_undefined(struct isr_context *context, struct isr_cpu_registers *registers)
+static void isr_handle_undefined(struct runtime_task *task, struct isr_cpu_registers *registers)
 {
 
     error_register(0, registers->index);
@@ -43,7 +43,7 @@ void isr_handle_cpu(struct isr_cpu_registers *registers)
 
     save_state(registers);
 
-    routines[registers->index](&context, registers);
+    routines[registers->index](context.running, registers);
 
     if (registers->index == 0x80)
         event_raise(context.running, registers->error + 0x80);
@@ -58,7 +58,7 @@ void isr_handle_cpu(struct isr_cpu_registers *registers)
 
 }
 
-void isr_register_routine(unsigned int index, void (*routine)(struct isr_context *context, struct isr_cpu_registers *registers))
+void isr_register_routine(unsigned int index, void (*routine)(struct runtime_task *task, struct isr_cpu_registers *registers))
 {
 
     routines[index] = routine;

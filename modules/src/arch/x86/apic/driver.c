@@ -77,7 +77,7 @@ static void reset(unsigned int slave)
 
 }
 
-static void handle_interrupt(struct isr_context *context, struct isr_cpu_registers *registers)
+static void handle_interrupt(struct runtime_task *task, struct isr_cpu_registers *registers)
 {
 
     raise(registers->index - APIC_DATA_MASTERVECTOR);

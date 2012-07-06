@@ -6,24 +6,13 @@
 
 static struct mmu_unit *mmuUnit;
 
-void mmu_pagefault(struct isr_context *context, unsigned int address, unsigned int flags)
+void mmu_pagefault(struct runtime_task *task, unsigned int address, unsigned int flags)
 {
 
-    if (address >= context->running->memory.vaddress && address < context->running->memory.vaddress + context->running->memory.size)
+    if (address >= task->memory.vaddress && address < task->memory.vaddress + task->memory.size)
     {
 
-        mmu_map_user_memory(context->running->id, context->running->memory.paddress, context->running->memory.vaddress, context->running->memory.size);
-
-        return;
-
-    }
-
-    if (context->running->parentid)
-    {
-
-        context->running = runtime_get_task(context->running->parentid);
-
-        mmu_map_user_memory(context->running->id, context->running->memory.paddress, context->running->memory.vaddress, context->running->memory.size);
+        mmu_map_user_memory(task->id, task->memory.paddress, task->memory.vaddress, task->memory.size);
 
         return;
 
