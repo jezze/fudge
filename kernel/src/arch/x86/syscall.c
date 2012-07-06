@@ -1,3 +1,4 @@
+#include <kernel.h>
 #include <runtime.h>
 #include <syscall.h>
 #include <arch/x86/isr.h>

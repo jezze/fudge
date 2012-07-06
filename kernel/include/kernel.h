@@ -12,7 +12,7 @@ struct kernel_arch
     void (*enter_usermode)(unsigned int ip, unsigned int sp);
     unsigned int ramdiskc;
     void **ramdiskv;
-    struct isr_context *context;
+    struct runtime_task *running;
 
 };
 

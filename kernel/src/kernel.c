@@ -1,6 +1,5 @@
 #include <memory.h>
 #include <error.h>
-#include <isr.h>
 #include <kernel.h>
 #include <modules.h>
 #include <ramdisk.h>
@@ -13,20 +12,18 @@ static void load_usermode(struct kernel_arch *arch)
     unsigned int id;
     unsigned int slot;
 
-    arch->context->running = runtime_get_task(1);
+    runtime_task_init(arch->running, 1);
 
-    runtime_task_init(arch->context->running, 1);
-
-    id = syscall_open(arch->context->running, 0, "/ramdisk/bin/init");
+    id = syscall_open(arch->running, 0, "/ramdisk/bin/init");
 
     error_assert(id != 0, "Init not found", __FILE__, __LINE__);
 
-    slot = syscall_execute(arch->context->running, id);
+    slot = syscall_execute(arch->running, id);
 
-    arch->context->running = runtime_get_task(slot);
-    arch->context->running->parent = 0;
-    arch->context->running->wait = 0;
-    arch->enter_usermode(arch->context->running->registers.ip, arch->context->running->registers.sp);
+    arch->running = runtime_get_task(slot);
+    arch->running->parent = 0;
+    arch->running->wait = 0;
+    arch->enter_usermode(arch->running->registers.ip, arch->running->registers.sp);
 
 }
 

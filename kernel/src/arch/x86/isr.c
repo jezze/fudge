@@ -1,5 +1,4 @@
 #include <error.h>
-#include <isr.h>
 #include <event.h>
 #include <kernel.h>
 #include <mmu.h>
@@ -8,24 +7,24 @@
 #include <arch/x86/idt.h>
 #include <arch/x86/isr.h>
 
-static struct isr_context context;
+static struct runtime_task *running;
 static void (*routines[ISR_TABLE_SLOTS])(struct runtime_task *task, struct isr_cpu_registers *registers);
 
 static void load_state(struct isr_cpu_registers *registers)
 {
 
-    registers->interrupt.eip = context.running->registers.ip;
-    registers->interrupt.esp = context.running->registers.sp;
-    registers->general.ebp = context.running->registers.sb;
+    registers->interrupt.eip = running->registers.ip;
+    registers->interrupt.esp = running->registers.sp;
+    registers->general.ebp = running->registers.sb;
 
 }
 
 static void save_state(struct isr_cpu_registers *registers)
 {
 
-    context.running->registers.ip = registers->interrupt.eip;
-    context.running->registers.sp = registers->interrupt.esp;
-    context.running->registers.sb = registers->general.ebp;
+    running->registers.ip = registers->interrupt.eip;
+    running->registers.sp = registers->interrupt.esp;
+    running->registers.sb = registers->general.ebp;
 
 }
 
@@ -43,18 +42,18 @@ void isr_handle_cpu(struct isr_cpu_registers *registers)
 
     save_state(registers);
 
-    routines[registers->index](context.running, registers);
+    routines[registers->index](running, registers);
 
     if (registers->index == 0x80)
-        event_raise(context.running, registers->error + 0x80);
+        event_raise(running, registers->error + 0x80);
     else
-        event_raise(context.running, registers->index);
+        event_raise(running, registers->index);
 
-    context.running = runtime_schedule();
+    running = runtime_schedule();
 
     load_state(registers);
 
-    mmu_load_memory(context.running->id);
+    mmu_load_memory(running->id);
 
 }
 
@@ -72,7 +71,7 @@ void isr_unregister_routine(unsigned int index)
 
 }
 
-struct isr_context *isr_init()
+void isr_init(struct kernel_arch *arch)
 {
 
     unsigned int i;
@@ -130,7 +129,7 @@ struct isr_context *isr_init()
     idt_set_gate(ISR_INDEX_ATAS, isr_routine2F, 0x08, 0x8E);
     idt_set_gate(ISR_INDEX_SYSCALL, isr_routine80, 0x08, 0xEE);
 
-    return &context;
+    arch->running = running = runtime_get_task(1);
 
 }
 
