@@ -11,6 +11,9 @@ static unsigned int get_symbol_module(char *symbol, char *module)
     char stringTable[0x1000];
     unsigned int id = call_open(FILE_NEW, module);
 
+    if (!id)
+        return 0;
+
     call_read(id, 0, sizeof (struct elf_header), &header);
     call_read(id, header.shoffset, header.shsize * header.shcount, sectionHeader);
     
@@ -27,20 +30,20 @@ static unsigned int get_symbol_module(char *symbol, char *module)
 static unsigned int get_symbol(char *symbol)
 {
 
-    if (memory_compare(symbol, "cpuid_", 6))
-        return get_symbol_module(symbol, "/ramdisk/mod/cpuid.ko");
-    else if (memory_compare(symbol, "log_", 4))
-        return get_symbol_module(symbol, "/ramdisk/mod/log.ko");
-    else if (memory_compare(symbol, "nodefs_", 7))
-        return get_symbol_module(symbol, "/ramdisk/mod/nodefs.ko");
-    else if (memory_compare(symbol, "apic_", 5))
-        return get_symbol_module(symbol, "/ramdisk/mod/apic.ko");
-    else if (memory_compare(symbol, "ps2_", 4))
-        return get_symbol_module(symbol, "/ramdisk/mod/ps2.ko");
-    else if (memory_compare(symbol, "vga_", 4))
-        return get_symbol_module(symbol, "/ramdisk/mod/vga.ko");
-    else
-        return get_symbol_module(symbol, "/ramdisk/boot/fudge");
+    char buffer[64];
+    unsigned int address;
+    unsigned int plength = (unsigned int)((char *)memory_find(symbol, "_", string_length(symbol), 1) - symbol);
+
+    memory_copy(buffer, "/ramdisk/mod/", 13);
+    memory_copy(buffer + 13, symbol, plength);
+    memory_copy(buffer + 13 + plength, ".ko", 4);
+
+    address = get_symbol_module(symbol, buffer);
+
+    if (address)
+        return address;
+
+    return get_symbol_module(symbol, "/ramdisk/boot/fudge");
 
 }
 
