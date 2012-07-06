@@ -1,6 +1,6 @@
 #include <io.h>
 #include <memory.h>
-#include <isr.h>
+#include <runtime.h>
 #include <mmu.h>
 #include <modules.h>
 #include <arch/x86/bga/bga.h>

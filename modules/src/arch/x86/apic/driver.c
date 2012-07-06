@@ -1,7 +1,7 @@
 #include <io.h>
 #include <memory.h>
-#include <isr.h>
 #include <modules.h>
+#include <runtime.h>
 #include <arch/x86/isr.h>
 #include <arch/x86/apic/apic.h>
 #include <arch/x86/cpuid/cpuid.h>

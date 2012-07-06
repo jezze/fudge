@@ -1,6 +1,6 @@
 #include <memory.h>
-#include <isr.h>
 #include <modules.h>
+#include <runtime.h>
 #include <mmu.h>
 #include <arch/x86/acpi/acpi.h>
 
