@@ -13,6 +13,7 @@ static void load_usermode(struct kernel_arch *arch)
     unsigned int slot;
 
     runtime_task_init(arch->running, 1);
+    arch->running->parent = 0;
 
     id = syscall_open(arch->running, 0, "/ramdisk/bin/init");
 
@@ -22,7 +23,6 @@ static void load_usermode(struct kernel_arch *arch)
 
     arch->running = runtime_get_task(slot);
     arch->running->parent = 0;
-    arch->running->wait = 0;
     arch->enter_usermode(arch->running->registers.ip, arch->running->registers.sp);
 
 }
