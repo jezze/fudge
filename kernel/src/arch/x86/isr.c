@@ -46,9 +46,11 @@ void isr_handle_cpu(struct isr_cpu_registers *registers)
     routines[registers->index](&context, registers);
 
     if (registers->index == 0x80)
-        event_raise(&context, registers->error + 0x80);
+        event_raise(context.running, registers->error + 0x80);
     else
-        event_raise(&context, registers->index);
+        event_raise(context.running, registers->index);
+
+    context.running = runtime_schedule();
 
     load_state(registers);
 

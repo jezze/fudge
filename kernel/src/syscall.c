@@ -80,6 +80,8 @@ unsigned int syscall_execute(struct runtime_task *task, unsigned int index)
 
     ntask->used = 1;
     ntask->parentid = task->id;
+    task->wait = 1;
+    ntask->wait = 0;
 
     runtime_registers_init(&ntask->registers, header->entry, ntask->memory.vaddress + ntask->memory.size, ntask->memory.vaddress + ntask->memory.size);
 
@@ -90,7 +92,11 @@ unsigned int syscall_execute(struct runtime_task *task, unsigned int index)
 unsigned int syscall_exit(struct runtime_task *task)
 {
 
+    struct runtime_task *ntask = runtime_get_task(task->parentid);
+
     task->used = 0;
+    task->wait = 1;
+    ntask->wait = 0;
 
     return task->parentid;
 
@@ -227,7 +233,11 @@ unsigned int syscall_unload(struct runtime_task *task, unsigned int index)
 unsigned int syscall_wait(struct runtime_task *task)
 {
 
+    struct runtime_task *ntask = runtime_get_task(task->parentid);
+
     task->event = 0;
+    task->wait = 1;
+    ntask->wait = 0;
 
     return task->parentid;
 

@@ -39,34 +39,14 @@ static unsigned int handle_execute(struct isr_context *context)
 
     unsigned int index = *(unsigned int *)(context->running->registers.sp + 4);
 
-    unsigned int id = syscall_execute(context->running, index);
-
-    if (id == context->running->id)
-        return id;
-
-    context->running = runtime_get_task(id);
-
-    return id;
+    return syscall_execute(context->running, index);
 
 }
 
 static unsigned int handle_exit(struct isr_context *context)
 {
 
-    unsigned int id = syscall_exit(context->running);
-
-    if (id)
-    {
-
-        context->running = runtime_get_task(id);
-
-        return id;
-
-    }
-
-    context->running = 0;
-
-    return 0;
+    return syscall_exit(context->running);
 
 }
 
@@ -113,20 +93,7 @@ static unsigned int handle_unload(struct isr_context *context)
 static unsigned int handle_wait(struct isr_context *context)
 {
 
-    unsigned int id = syscall_wait(context->running);
-
-    if (id)
-    {
-
-        context->running = runtime_get_task(id);
-
-        return id;
-
-    }
-
-    context->running = 0;
-
-    return 0;
+    return syscall_wait(context->running);
 
 }
 

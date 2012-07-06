@@ -29,6 +29,7 @@ unsigned int event_unregister_routine(unsigned int index, struct runtime_task *t
 
 }
 
+/*
 void event_raise(struct isr_context *context, unsigned int index)
 {
 
@@ -40,12 +41,37 @@ void event_raise(struct isr_context *context, unsigned int index)
     if (routines[index].task->event)
         return;
 
+    context->running->wait = 1;
     context->running = routines[index].task;
 
     context->running->event = 1;
+    context->running->wait = 0;
     context->running->parentid = id;
 
     runtime_registers_init(&context->running->registers, routines[index].callback, context->running->memory.vaddress + context->running->memory.size, context->running->memory.vaddress + context->running->memory.size);
+
+}
+*/
+
+void event_raise(struct runtime_task *task, unsigned int index)
+{
+
+    unsigned int id = task->id;
+
+    if (!routines[index].callback)
+        return;
+
+    if (routines[index].task->event)
+        return;
+
+    task->wait = 1;
+    task = routines[index].task;
+
+    task->event = 1;
+    task->wait = 0;
+    task->parentid = id;
+
+    runtime_registers_init(&task->registers, routines[index].callback, task->memory.vaddress + task->memory.size, task->memory.vaddress + task->memory.size);
 
 }
 

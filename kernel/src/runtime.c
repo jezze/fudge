@@ -21,6 +21,23 @@ unsigned int runtime_get_task_slot()
 
 }
 
+struct runtime_task *runtime_schedule()
+{
+
+    unsigned int i;
+
+    for (i = 1; i < RUNTIME_TASK_SLOTS - 1; i++)
+    {
+
+        if (!tasks[i].wait)
+            return &tasks[i];
+
+    }
+
+    return 0;
+
+}
+
 struct runtime_task *runtime_get_task(unsigned int index)
 {
 
@@ -99,6 +116,7 @@ void runtime_task_init(struct runtime_task *task, unsigned int id)
     memory_clear(task, sizeof (struct runtime_task));
 
     task->id = id;
+    task->wait = 1;
     task->get_descriptor_slot = get_descriptor_slot;
     task->get_descriptor = get_descriptor;
 
@@ -116,6 +134,7 @@ void runtime_task_clone(struct runtime_task *task, struct runtime_task *original
     memory_copy(task, original, sizeof (struct runtime_task));
 
     task->id = id;
+    task->wait = 1;
 
     address = RUNTIME_TASK_ADDRESS_BASE + task->id * RUNTIME_TASK_ADDRESS_SIZE;
 

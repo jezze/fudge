@@ -40,6 +40,7 @@ struct runtime_task
     unsigned int parentid;
     unsigned int used;
     unsigned int event;
+    unsigned int wait;
     struct runtime_registers registers;
     struct runtime_memory memory;
     struct runtime_descriptor descriptors[RUNTIME_TASK_DESCRIPTOR_SLOTS];
@@ -49,6 +50,7 @@ struct runtime_task
 };
 
 unsigned int runtime_get_task_slot();
+struct runtime_task *runtime_schedule();
 struct runtime_task *runtime_get_task(unsigned int index);
 void runtime_registers_init(struct runtime_registers *registers, unsigned int ip, unsigned int sp, unsigned int sb);
 void runtime_descriptor_init(struct runtime_descriptor *descriptor, unsigned int id, struct modules_filesystem *filesystem, unsigned int permissions);
