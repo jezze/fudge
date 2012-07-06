@@ -1,6 +1,6 @@
 #include <arch/x86/mboot.h>
 
-void mboot_init(struct mboot_header *header)
+void mboot_setup(struct mboot_header *header)
 {
 
     if (header->flags & MBOOT_FLAG_LOADER)

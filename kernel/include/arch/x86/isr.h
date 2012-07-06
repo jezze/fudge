@@ -123,7 +123,7 @@ void isr_routine80();
 void isr_register_routine(unsigned int index, void (*routine)(struct runtime_task *taskk, struct isr_cpu_registers *registers));
 void isr_unregister_routine(unsigned int index);
 void isr_handle_cpu(struct isr_cpu_registers *registers);
-void isr_init(struct kernel_arch *arch);
+void isr_setup(struct kernel_arch *arch);
 
 #endif
 

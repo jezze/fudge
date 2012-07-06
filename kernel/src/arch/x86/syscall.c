@@ -132,7 +132,7 @@ static void handle_interrupt(struct runtime_task *task, struct isr_cpu_registers
 
 }
 
-void syscall_init()
+void syscall_setup()
 {
 
     register_routine(SYSCALL_INDEX_OPEN, handle_open);

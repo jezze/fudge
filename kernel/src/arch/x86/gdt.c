@@ -18,7 +18,7 @@ void gdt_set_gate(unsigned int index, unsigned int base, unsigned int limit, uns
 
 }
 
-void gdt_init()
+void gdt_setup()
 {
 
     memory_clear(&entries, sizeof (struct gdt_entry) * GDT_TABLE_SLOTS);

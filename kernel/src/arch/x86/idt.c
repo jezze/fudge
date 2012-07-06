@@ -18,7 +18,7 @@ void idt_set_gate(unsigned int index, void (*callback)(), unsigned short selecto
 
 }
 
-void idt_init()
+void idt_setup()
 {
 
     memory_clear(&entries, sizeof (struct idt_entry) * IDT_TABLE_SLOTS);

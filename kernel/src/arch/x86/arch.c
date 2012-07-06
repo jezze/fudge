@@ -18,14 +18,14 @@ static void setup(struct kernel_arch *self)
 
     struct arch_x86 *x86 = (struct arch_x86 *)self;
 
-    mboot_init(x86->header);
-    gdt_init();
-    tss_init(x86->stack);
-    idt_init();
-    isr_init(self);
+    mboot_setup(x86->header);
+    gdt_setup();
+    tss_setup(x86->stack);
+    idt_setup();
+    isr_setup(self);
     cpu_disable_apic();
     mmu_setup();
-    syscall_init();
+    syscall_setup();
 
 }
 

@@ -29,8 +29,8 @@ struct gdt_pointer
 
 } __attribute__((packed));
 
-void gdt_init();
 void gdt_set_gate(unsigned int index, unsigned int base, unsigned int limit, unsigned char access, unsigned char granularity);
+void gdt_setup();
 
 #endif
 

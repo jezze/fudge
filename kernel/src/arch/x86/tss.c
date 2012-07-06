@@ -5,7 +5,7 @@
 
 static struct tss_entry entry;
 
-void tss_init(unsigned int stack)
+void tss_setup(unsigned int stack)
 {
 
     memory_clear(&entry, sizeof (struct tss_entry));
