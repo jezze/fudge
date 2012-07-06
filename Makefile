@@ -35,9 +35,11 @@ clean:
 	rm -f image/boot/initrd.tar
 	rm -f image/boot/initrd.cpio
 
-prepare:
+ramdisk-bin:
 	mkdir -p image/bin
 	cp $(PACKAGES) image/bin
+
+ramdisk-mod:
 	mkdir -p image/mod
 	cp $(MODULES) image/mod
 
@@ -52,7 +54,7 @@ image/boot/initrd.cpio:
 	find image -depth | cpio -o > initrd.cpio
 	mv initrd.cpio image/boot
 
-ramdisk: prepare image/boot/fudge image/boot/initrd.tar image/boot/initrd.cpio
+ramdisk: ramdisk-bin ramdisk-mod image/boot/fudge image/boot/initrd.tar image/boot/initrd.cpio
 
 fudge.iso:
 	genisoimage -R -b boot/grub/iso9660_stage1_5 -no-emul-boot -boot-load-size 4 -boot-info-table -o $@ image
@@ -62,18 +64,18 @@ toolchain:
 	git submodule update toolchain
 	make -C toolchain all TARGET=${TARGET}
 
-image-arm:
+image-arm: image/boot/fudge
 	arm-none-eabi-objcopy -O binary image/boot/fudge image/boot/fudge.bin
 	mkimage -A arm -C none -O linux -T kernel -d image/boot/fudge.bin -a 0x00100000 -e 0x00100000 image/boot/fudge.uimg
 	cat image/boot/uboot/u-boot.bin image/boot/fudge.uimg > fudge.img
 
-sda:
-	dd if=/dev/zero of=fudge.img bs=512 count=2880
-	dd if=image/boot/grub/stage1 conv=notrunc of=fudge.img bs=512 seek=0
-	dd if=image/boot/grub/stage2 conv=notrunc of=fudge.img bs=512 seek=1
-	dd if=menu.lst conv=notrunc of=fudge.img bs=512 seek=200
-	dd if=image/boot/fudge conv=notrunc of=fudge.img bs=512 seek=300
-	dd if=image/boot/initrd.tar conv=notrunc of=fudge.img bs=512 seek=400
+fudge.img: image/boot/fudge image/boot/initrd.tar
+	dd if=/dev/zero of=$@ bs=512 count=2880
+	dd if=image/boot/grub/stage1 conv=notrunc of=$@ bs=512 seek=0
+	dd if=image/boot/grub/stage2 conv=notrunc of=$@ bs=512 seek=1
+	dd if=menu.lst conv=notrunc of=$@ bs=512 seek=200
+	dd if=image/boot/fudge conv=notrunc of=$@ bs=512 seek=300
+	dd if=image/boot/initrd.tar conv=notrunc of=$@ bs=512 seek=400
 	sh x86-write-image.sh
 
 
