@@ -9,37 +9,36 @@ static unsigned int (*routines[SYSCALL_TABLE_SLOTS])(struct runtime_task *task);
 static unsigned int handle_attach(struct runtime_task *task)
 {
 
-    unsigned int index = *(unsigned int *)(task->registers.sp + 4);
-    unsigned int callback = *(unsigned int *)(task->registers.sp + 8);
+    struct syscall_attach_args *args = (struct syscall_attach_args *)task->registers.sp;
 
-    return syscall_attach(task, index, callback);
+    return syscall_attach(task, args->index, args->callback);
 
 }
 
 static unsigned int handle_close(struct runtime_task *task)
 {
 
-    unsigned int index = *(unsigned int *)(task->registers.sp + 4);
+    struct syscall_close_args *args = (struct syscall_close_args *)task->registers.sp;
 
-    return syscall_close(task, index);
+    return syscall_close(task, args->index);
 
 }
 
 static unsigned int handle_detach(struct runtime_task *task)
 {
 
-    unsigned int index = *(unsigned int *)(task->registers.sp + 4);
+    struct syscall_detach_args *args = (struct syscall_detach_args *)task->registers.sp;
 
-    return syscall_detach(task, index);
+    return syscall_detach(task, args->index);
 
 }
 
 static unsigned int handle_execute(struct runtime_task *task)
 {
 
-    unsigned int index = *(unsigned int *)(task->registers.sp + 4);
+    struct syscall_execute_args *args = (struct syscall_execute_args *)task->registers.sp;
 
-    return syscall_execute(task, index);
+    return syscall_execute(task, args->index);
 
 }
 
@@ -53,40 +52,36 @@ static unsigned int handle_exit(struct runtime_task *task)
 static unsigned int handle_load(struct runtime_task *task)
 {
 
-    unsigned int index = *(unsigned int *)(task->registers.sp + 4);
+    struct syscall_load_args *args = (struct syscall_load_args *)task->registers.sp;
 
-    return syscall_load(task, index);
+    return syscall_load(task, args->index);
 
 }
 
 static unsigned int handle_open(struct runtime_task *task)
 {
 
-    unsigned int index = *(unsigned int *)(task->registers.sp + 4);
-    void *buffer = *(char **)(task->registers.sp + 8);
+    struct syscall_open_args *args = (struct syscall_open_args *)task->registers.sp;
 
-    return syscall_open(task, index, buffer);
+    return syscall_open(task, args->index, args->buffer);
 
 }
 
 static unsigned int handle_read(struct runtime_task *task)
 {
 
-    unsigned int index = *(unsigned int *)(task->registers.sp + 4);
-    unsigned int offset = *(unsigned int *)(task->registers.sp + 8);
-    unsigned int count = *(unsigned int *)(task->registers.sp + 12);
-    void *buffer = *(char **)(task->registers.sp + 16);
+    struct syscall_read_args *args = (struct syscall_read_args *)task->registers.sp;
 
-    return syscall_read(task, index, offset, count, buffer);
+    return syscall_read(task, args->index, args->offset, args->count, args->buffer);
 
 }
 
 static unsigned int handle_unload(struct runtime_task *task)
 {
 
-    unsigned int index = *(unsigned int *)(task->registers.sp + 4);
+    struct syscall_unload_args *args = (struct syscall_unload_args *)task->registers.sp;
 
-    return syscall_unload(task, index);
+    return syscall_unload(task, args->index);
 
 }
 
@@ -100,12 +95,9 @@ static unsigned int handle_wait(struct runtime_task *task)
 static unsigned int handle_write(struct runtime_task *task)
 {
 
-    unsigned int index = *(unsigned int *)(task->registers.sp + 4);
-    unsigned int offset = *(unsigned int *)(task->registers.sp + 8);
-    unsigned int count = *(unsigned int *)(task->registers.sp + 12);
-    void *buffer = *(char **)(task->registers.sp + 16);
+    struct syscall_write_args *args = (struct syscall_write_args *)task->registers.sp;
 
-    return syscall_write(task, index, offset, count, buffer);
+    return syscall_write(task, args->index, args->offset, args->count, args->buffer);
 
 }
 

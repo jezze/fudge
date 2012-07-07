@@ -15,6 +15,100 @@
 #define SYSCALL_INDEX_ATTACH  0x0A
 #define SYSCALL_INDEX_DETACH  0x0B
 
+struct syscall_attach_args
+{
+
+    void *caller;
+    unsigned int index;
+    unsigned int callback;
+
+};
+
+struct syscall_close_args
+{
+
+    void *caller;
+    unsigned int index;
+
+};
+
+struct syscall_detach_args
+{
+
+    void *caller;
+    unsigned int index;
+
+};
+
+struct syscall_execute_args
+{
+
+    void *caller;
+    unsigned int index;
+
+};
+
+struct syscall_exit_args
+{
+
+    void *caller;
+
+};
+
+struct syscall_load_args
+{
+
+    void *caller;
+    unsigned int index;
+
+};
+
+struct syscall_open_args
+{
+
+    void *caller;
+    unsigned int index;
+    void *buffer;
+
+};
+
+struct syscall_read_args
+{
+
+    void *caller;
+    unsigned int index;
+    unsigned int offset;
+    unsigned int count;
+    void *buffer;
+
+};
+
+struct syscall_unload_args
+{
+
+    void *caller;
+    unsigned int index;
+
+};
+
+struct syscall_wait_args
+{
+
+    void *caller;
+
+};
+
+struct syscall_write_args
+{
+
+    void *caller;
+    unsigned int index;
+    unsigned int offset;
+    unsigned int count;
+    void *buffer;
+
+};
+
 unsigned int syscall_attach(struct runtime_task *task, unsigned int index, unsigned int callback);
 unsigned int syscall_close(struct runtime_task *task, unsigned int index);
 unsigned int syscall_detach(struct runtime_task *task, unsigned int index);
