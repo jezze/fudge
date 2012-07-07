@@ -11,15 +11,22 @@ static void load_usermode(struct kernel_arch *arch)
 
     unsigned int id;
     unsigned int slot;
+    struct syscall_open_args oargs;
+    struct syscall_execute_args eargs;
 
     runtime_task_init(arch->running, 1);
     arch->running->parent = 0;
 
-    id = syscall_open(arch->running, 0, "/ramdisk/bin/init");
+    oargs.index = 0;
+    oargs.buffer = "/ramdisk/bin/init";
+
+    id = syscall_open(arch->running, &oargs);
 
     error_assert(id != 0, "Init not found", __FILE__, __LINE__);
 
-    slot = syscall_execute(arch->running, id);
+    eargs.index = id;
+
+    slot = syscall_execute(arch->running, &eargs);
 
     arch->running = runtime_get_task(slot);
     arch->running->parent = 0;
