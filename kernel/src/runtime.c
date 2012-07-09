@@ -182,10 +182,12 @@ void runtime_task_clone(struct runtime_task *task, struct runtime_task *original
 
 }
 
-void runtime_setup()
+struct runtime_task *runtime_setup()
 {
 
     memory_clear(tasks, sizeof (struct runtime_task) * RUNTIME_TASK_SLOTS);
+
+    return tasks;
 
 }
 

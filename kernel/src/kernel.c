@@ -9,13 +9,17 @@
 #include <vfs/root.h>
 #include <vfs/sys.h>
 
-static void load_usermode(struct kernel_arch *arch)
+static void load_usermode(struct kernel_arch *arch, struct runtime_task *tasks, union modules_module **modules, struct ramdisk_image *image)
 {
 
     unsigned int id;
     unsigned int slot;
     struct syscall_open_args oargs;
     struct syscall_execute_args eargs;
+
+    vfs_root_setup(modules);
+    vfs_sys_setup(modules);
+    vfs_ramdisk_setup(image);
 
     runtime_task_init(arch->running, 1);
     arch->running->parent = 0;
@@ -40,22 +44,17 @@ static void load_usermode(struct kernel_arch *arch)
 static void start(struct kernel_arch *self)
 {
 
+    struct runtime_task *tasks;
     union modules_module **modules;
-    struct ramdisk_image *ramdisk;
+    struct ramdisk_image *image;
 
     self->setup(self);
 
+    tasks = runtime_setup();
     modules = modules_setup();
+    image = ramdisk_setup(self->ramdiskc, self->ramdiskv);
 
-    vfs_root_setup(modules);
-    vfs_sys_setup(modules);
-
-    runtime_setup();
-
-    ramdisk = ramdisk_setup(self->ramdiskc, self->ramdiskv);
-    vfs_ramdisk_setup(ramdisk);
-
-    load_usermode(self);
+    load_usermode(self, tasks, modules, image);
 
 }
 

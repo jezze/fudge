@@ -71,7 +71,7 @@ void runtime_mount_init(struct runtime_mount *mount, unsigned int id, struct mod
 void runtime_registers_init(struct runtime_registers *registers, unsigned int ip, unsigned int sp, unsigned int sb);
 void runtime_task_init(struct runtime_task *task, unsigned int id);
 void runtime_task_clone(struct runtime_task *task, struct runtime_task *original, unsigned int id);
-void runtime_setup();
+struct runtime_task *runtime_setup();
 
 #endif
 
