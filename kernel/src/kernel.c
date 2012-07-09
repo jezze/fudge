@@ -16,13 +16,17 @@ static void load_usermode(struct kernel_arch *arch, struct runtime_task *tasks, 
     unsigned int slot;
     struct syscall_open_args oargs;
     struct syscall_execute_args eargs;
-
-    vfs_root_setup(modules);
-    vfs_sys_setup(modules);
-    vfs_ramdisk_setup(image);
+    struct runtime_mount *mount;
 
     runtime_task_init(arch->running, 1);
     arch->running->parent = 0;
+
+    mount = arch->running->get_mount(arch->running, 1);
+    runtime_mount_init(mount, 1, vfs_root_setup(modules), "/");
+    mount = arch->running->get_mount(arch->running, 2);
+    runtime_mount_init(mount, 2, vfs_sys_setup(modules), "/sys/");
+    mount = arch->running->get_mount(arch->running, 3);
+    runtime_mount_init(mount, 3, vfs_ramdisk_setup(image), "/ramdisk/");
 
     oargs.index = 0;
     oargs.buffer = "/ramdisk/bin/init";
