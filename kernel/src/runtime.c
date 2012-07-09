@@ -1,5 +1,4 @@
 #include <memory.h>
-#include <string.h>
 #include <runtime.h>
 
 static struct runtime_task tasks[RUNTIME_TASK_SLOTS];
