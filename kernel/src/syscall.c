@@ -98,9 +98,17 @@ unsigned int syscall_exit(struct runtime_task *task, void *stack)
 
     task->used = 0;
     task->wait = 1;
-    task->parent->wait = 0;
 
-    return task->parent->id;
+    if (task->parent && task->parent->id)
+    {
+
+        task->parent->wait = 0;
+
+        return task->parent->id;
+
+    }
+
+    return 0;
 
 }
 
@@ -241,9 +249,17 @@ unsigned int syscall_wait(struct runtime_task *task, void *stack)
 
     task->event = 0;
     task->wait = 1;
-    task->parent->wait = 0;
 
-    return task->parent->id;
+    if (task->parent && task->parent->id)
+    {
+
+        task->parent->wait = 0;
+
+        return task->parent->id;
+
+    }
+
+    return 0;
 
 }
 
