@@ -48,6 +48,16 @@ struct runtime_task *runtime_get_task(unsigned int index)
 
 }
 
+static struct runtime_descriptor *get_descriptor(struct runtime_task *self, unsigned int index)
+{
+
+    if (!index || index >= RUNTIME_TASK_DESCRIPTOR_SLOTS)
+        return 0;
+
+    return &self->descriptors[index];
+
+}
+
 static unsigned int get_descriptor_slot(struct runtime_task *self)
 {
 
@@ -65,24 +75,30 @@ static unsigned int get_descriptor_slot(struct runtime_task *self)
 
 }
 
-static struct runtime_descriptor *get_descriptor(struct runtime_task *self, unsigned int index)
+static struct runtime_mount *get_mount(struct runtime_task *self, unsigned int index)
 {
 
-    if (!index)
+    if (!index || index >= RUNTIME_TASK_MOUNT_SLOTS)
         return 0;
 
-    return &self->descriptors[index];
+    return &self->mounts[index];
 
 }
 
-void runtime_registers_init(struct runtime_registers *registers, unsigned int ip, unsigned int sp, unsigned int sb)
+static unsigned int get_mount_slot(struct runtime_task *self)
 {
 
-    memory_clear(registers, sizeof (struct runtime_registers));
+    unsigned int i;
 
-    registers->ip = ip;
-    registers->sp = sp;
-    registers->sb = sb;
+    for (i = 1; i < RUNTIME_TASK_MOUNT_SLOTS - 1; i++)
+    {
+
+        if (!self->mounts[i].id)
+            return i;
+
+    }
+
+    return 0;
 
 }
 
@@ -108,6 +124,28 @@ void runtime_memory_init(struct runtime_memory *memory, unsigned int paddress, u
 
 }
 
+void runtime_mount_init(struct runtime_mount *mount, unsigned int id, struct modules_filesystem *filesystem, char *path)
+{
+
+    memory_clear(mount, sizeof (struct runtime_mount));
+
+    mount->id = id;
+    mount->filesystem = filesystem;
+    mount->path = path;
+
+}
+
+void runtime_registers_init(struct runtime_registers *registers, unsigned int ip, unsigned int sp, unsigned int sb)
+{
+
+    memory_clear(registers, sizeof (struct runtime_registers));
+
+    registers->ip = ip;
+    registers->sp = sp;
+    registers->sb = sb;
+
+}
+
 void runtime_task_init(struct runtime_task *task, unsigned int id)
 {
 
@@ -117,8 +155,10 @@ void runtime_task_init(struct runtime_task *task, unsigned int id)
 
     task->id = id;
     task->wait = 1;
-    task->get_descriptor_slot = get_descriptor_slot;
     task->get_descriptor = get_descriptor;
+    task->get_descriptor_slot = get_descriptor_slot;
+    task->get_mount = get_mount;
+    task->get_mount_slot = get_mount_slot;
 
     address = RUNTIME_TASK_ADDRESS_BASE + task->id * RUNTIME_TASK_ADDRESS_SIZE;
 
