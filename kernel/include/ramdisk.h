@@ -22,6 +22,7 @@ struct ramdisk_image
 };
 
 void ramdisk_node_init(struct ramdisk_node *node, char *name, unsigned int size, struct tar_header *header, unsigned int offset);
+void ramdisk_image_init(struct ramdisk_image *image, unsigned int ramdiskc, void **ramdiskv);
 struct ramdisk_image *ramdisk_setup(unsigned int ramdiskc, void **ramdiskv);
 
 #endif
