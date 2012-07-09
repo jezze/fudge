@@ -79,7 +79,7 @@ static unsigned int walk(struct modules_filesystem *self, unsigned int id, unsig
 
 }
 
-void vfs_sys_setup(union modules_module **m)
+struct modules_filesystem *vfs_sys_setup(union modules_module **m)
 {
 
     modules = m;
@@ -87,6 +87,8 @@ void vfs_sys_setup(union modules_module **m)
     modules_filesystem_init(&filesystem, 0x0001, "sys", 0, 0, read, 0, walk, 0);
     modules_register_filesystem(&filesystem);
     filesystem.path = "/sys/";
+
+    return &filesystem;
 
 }
 
