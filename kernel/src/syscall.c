@@ -30,7 +30,7 @@ unsigned int syscall_close(struct runtime_task *task, void *stack)
     if (descriptor->filesystem->close)
         descriptor->filesystem->close(descriptor->filesystem, descriptor->id);
 
-    runtime_descriptor_init(descriptor, 0, 0, 0);
+    descriptor->id = 0;
 
     return 1;
 
