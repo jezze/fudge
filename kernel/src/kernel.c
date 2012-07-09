@@ -22,11 +22,11 @@ static void load_usermode(struct kernel_arch *arch, struct runtime_task *tasks, 
     arch->running->parent = 0;
 
     mount = arch->running->get_mount(arch->running, 1);
-    runtime_mount_init(mount, 1, vfs_root_setup(modules), "/");
+    runtime_mount_init(mount, 1, vfs_root_setup(modules), 1, "/");
     mount = arch->running->get_mount(arch->running, 2);
-    runtime_mount_init(mount, 2, vfs_sys_setup(modules), "/sys/");
+    runtime_mount_init(mount, 2, vfs_sys_setup(modules), 5, "/sys/");
     mount = arch->running->get_mount(arch->running, 3);
-    runtime_mount_init(mount, 3, vfs_ramdisk_setup(image), "/ramdisk/");
+    runtime_mount_init(mount, 3, vfs_ramdisk_setup(image), 9, "/ramdisk/");
 
     oargs.index = 0;
     oargs.buffer = "/ramdisk/bin/init";

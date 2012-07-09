@@ -123,13 +123,14 @@ void runtime_memory_init(struct runtime_memory *memory, unsigned int paddress, u
 
 }
 
-void runtime_mount_init(struct runtime_mount *mount, unsigned int id, struct modules_filesystem *filesystem, char *path)
+void runtime_mount_init(struct runtime_mount *mount, unsigned int id, struct modules_filesystem *filesystem, unsigned int count, char *path)
 {
 
     memory_clear(mount, sizeof (struct runtime_mount));
 
     mount->id = id;
     mount->filesystem = filesystem;
+    mount->count = count;
     mount->path = path;
 
 }
