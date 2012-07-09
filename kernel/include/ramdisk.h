@@ -13,8 +13,16 @@ struct ramdisk_node
 
 };
 
+struct ramdisk_image
+{
+
+    struct ramdisk_node nodes[RAMDISK_NODE_SLOTS];
+    unsigned int count;
+
+};
+
 void ramdisk_node_init(struct ramdisk_node *node, char *name, unsigned int size, struct tar_header *header, unsigned int offset);
-void ramdisk_setup(unsigned int ramdiskc, void **ramdiskv);
+struct ramdisk_image *ramdisk_setup(unsigned int ramdiskc, void **ramdiskv);
 
 #endif
 

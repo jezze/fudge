@@ -2,9 +2,8 @@
 #include <string.h>
 #include <tar.h>
 #include <ramdisk.h>
-#include <vfs/ramdisk.h>
 
-static struct ramdisk_node nodes[RAMDISK_NODE_SLOTS];
+static struct ramdisk_image image;
 
 static unsigned int parse(void *address)
 {
@@ -18,7 +17,7 @@ static unsigned int parse(void *address)
         struct tar_header *header = (struct tar_header *)current;
         unsigned int size = string_read_num(header->size, 8);
 
-        ramdisk_node_init(&nodes[i], header->name + 6, size, header, (unsigned int)(current + TAR_BLOCK_SIZE));
+        ramdisk_node_init(&image.nodes[i], header->name + 6, size, header, (unsigned int)(current + TAR_BLOCK_SIZE));
 
         current += ((size / TAR_BLOCK_SIZE) + 1) * TAR_BLOCK_SIZE;
 
@@ -43,16 +42,15 @@ void ramdisk_node_init(struct ramdisk_node *node, char *name, unsigned int size,
 
 }
 
-void ramdisk_setup(unsigned int ramdiskc, void **ramdiskv)
+struct ramdisk_image *ramdisk_setup(unsigned int ramdiskc, void **ramdiskv)
 {
 
     unsigned int i;
-    unsigned int count = 0;
 
     for (i = 0; i < ramdiskc; i++)
-        count += parse(*(ramdiskv + i));
+        image.count += parse(*(ramdiskv + i));
 
-    vfs_ramdisk_setup(nodes, count);
+    return &image;
 
 }
 

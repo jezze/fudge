@@ -5,6 +5,7 @@
 #include <ramdisk.h>
 #include <runtime.h>
 #include <syscall.h>
+#include <vfs/ramdisk.h>
 
 static void load_usermode(struct kernel_arch *arch)
 {
@@ -37,11 +38,16 @@ static void load_usermode(struct kernel_arch *arch)
 static void start(struct kernel_arch *self)
 {
 
+    struct ramdisk_image *ramdisk;
+
     self->setup(self);
 
     modules_setup();
     runtime_setup();
-    ramdisk_setup(self->ramdiskc, self->ramdiskv);
+
+    ramdisk = ramdisk_setup(self->ramdiskc, self->ramdiskv);
+    vfs_ramdisk_setup(ramdisk);
+
     load_usermode(self);
 
 }
