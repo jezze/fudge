@@ -1,8 +1,6 @@
 #include <memory.h>
 #include <string.h>
 #include <modules.h>
-#include <vfs/root.h>
-#include <vfs/sys.h>
 
 static union modules_module *modules[MODULES_MODULE_SLOTS];
 
@@ -240,11 +238,10 @@ void modules_filesystem_init(struct modules_filesystem *filesystem, unsigned int
 
 }
 
-void modules_setup()
+union modules_module **modules_setup()
 {
 
-    vfs_root_setup(modules);
-    vfs_sys_setup(modules);
+    return modules;
 
 }
 
