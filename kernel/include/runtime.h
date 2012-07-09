@@ -63,15 +63,15 @@ struct runtime_task
 
 };
 
-unsigned int runtime_get_task_slot();
-struct runtime_task *runtime_schedule();
 struct runtime_task *runtime_get_task(unsigned int index);
+unsigned int runtime_get_task_slot();
 void runtime_descriptor_init(struct runtime_descriptor *descriptor, unsigned int id, struct modules_filesystem *filesystem, unsigned int permissions);
 void runtime_memory_init(struct runtime_memory *memory, unsigned int paddress, unsigned int vaddress, unsigned int size);
 void runtime_mount_init(struct runtime_mount *mount, unsigned int id, struct modules_filesystem *filesystem, unsigned int count, char *path);
 void runtime_registers_init(struct runtime_registers *registers, unsigned int ip, unsigned int sp, unsigned int sb);
 void runtime_task_init(struct runtime_task *task, unsigned int id);
 void runtime_task_clone(struct runtime_task *task, struct runtime_task *original, unsigned int id);
+struct runtime_task *runtime_schedule();
 struct runtime_task *runtime_setup();
 
 #endif

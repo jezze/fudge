@@ -3,50 +3,6 @@
 
 static struct runtime_task tasks[RUNTIME_TASK_SLOTS];
 
-unsigned int runtime_get_task_slot()
-{
-
-    unsigned int i;
-
-    for (i = 1; i < RUNTIME_TASK_SLOTS - 1; i++)
-    {
-
-        if (!tasks[i].used)
-            return i;
-
-    }
-
-    return 0;
-
-}
-
-struct runtime_task *runtime_schedule()
-{
-
-    unsigned int i;
-
-    for (i = 1; i < RUNTIME_TASK_SLOTS - 1; i++)
-    {
-
-        if (!tasks[i].wait)
-            return &tasks[i];
-
-    }
-
-    return 0;
-
-}
-
-struct runtime_task *runtime_get_task(unsigned int index)
-{
-
-    if (!index)
-        return 0;
-
-    return &tasks[index];
-
-}
-
 static struct runtime_descriptor *get_descriptor(struct runtime_task *self, unsigned int index)
 {
 
@@ -93,6 +49,33 @@ static unsigned int get_mount_slot(struct runtime_task *self)
     {
 
         if (!self->mounts[i].id)
+            return i;
+
+    }
+
+    return 0;
+
+}
+
+struct runtime_task *runtime_get_task(unsigned int index)
+{
+
+    if (!index || index >= RUNTIME_TASK_SLOTS)
+        return 0;
+
+    return &tasks[index];
+
+}
+
+unsigned int runtime_get_task_slot()
+{
+
+    unsigned int i;
+
+    for (i = 1; i < RUNTIME_TASK_SLOTS - 1; i++)
+    {
+
+        if (!tasks[i].used)
             return i;
 
     }
@@ -179,6 +162,23 @@ void runtime_task_clone(struct runtime_task *task, struct runtime_task *original
     address = RUNTIME_TASK_ADDRESS_BASE + task->id * RUNTIME_TASK_ADDRESS_SIZE;
 
     runtime_memory_init(&task->memory, address, address, RUNTIME_TASK_ADDRESS_SIZE);
+
+}
+
+struct runtime_task *runtime_schedule()
+{
+
+    unsigned int i;
+
+    for (i = 1; i < RUNTIME_TASK_SLOTS - 1; i++)
+    {
+
+        if (!tasks[i].wait)
+            return &tasks[i];
+
+    }
+
+    return 0;
 
 }
 
