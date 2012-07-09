@@ -2,6 +2,8 @@
 
 .extern isr_handle_cpu
 
+.section .text
+
 .align 4
 
 .global isr_routine00

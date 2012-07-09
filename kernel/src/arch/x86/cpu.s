@@ -1,5 +1,7 @@
 .intel_syntax noprefix
 
+.section .text
+
 .align 4
 
 .global cpu_disable_interrupts

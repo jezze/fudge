@@ -7,6 +7,7 @@
 .extern arch_setup
 
 .section .mboot
+
 .align 4
 
 .int INIT_MBOOT_HEADER_MAGIC
@@ -14,6 +15,7 @@
 .int INIT_MBOOT_CHECKSUM
 
 .section .text
+
 .align 4
 
 .global init
