@@ -5,13 +5,13 @@
 #include <ramdisk.h>
 #include <vfs/ramdisk.h>
 
-static struct ramdisk_image *image;
-static struct modules_filesystem filesystem;
+static struct vfs_ramdisk_filesystem filesystem;
 
 static unsigned int read(struct modules_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct ramdisk_node *node = &image->nodes[id - 1];
+    struct vfs_ramdisk_filesystem *filesystem = (struct vfs_ramdisk_filesystem *)self;
+    struct ramdisk_node *node = &filesystem->image->nodes[id - 1];
 
     if (node->header->typeflag[0] == TAR_FILETYPE_DIR)
     {
@@ -20,20 +20,20 @@ static unsigned int read(struct modules_filesystem *self, unsigned int id, unsig
         unsigned int length = 0;
         char *out = buffer;
 
-        for (i = 0; i < image->count; i++)
+        for (i = 0; i < filesystem->image->count; i++)
         {
 
             char *start;
             char *slash;
             unsigned int size;
 
-            if (&image->nodes[i] == node)
+            if (&filesystem->image->nodes[i] == node)
                 continue;
 
-            if (!memory_find(image->nodes[i].name, node->name, string_length(image->nodes[i].name), string_length(node->name)))
+            if (!memory_find(filesystem->image->nodes[i].name, node->name, string_length(filesystem->image->nodes[i].name), string_length(node->name)))
                 continue;
 
-            start = image->nodes[i].name + string_length(node->name);
+            start = filesystem->image->nodes[i].name + string_length(node->name);
             size = string_length(start);
             slash = memory_find(start, "/", size, 1);
 
@@ -76,8 +76,9 @@ static unsigned int read(struct modules_filesystem *self, unsigned int id, unsig
 static unsigned int write(struct modules_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
+    struct vfs_ramdisk_filesystem *filesystem = (struct vfs_ramdisk_filesystem *)self;
+    struct ramdisk_node *node = &filesystem->image->nodes[id - 1];
     unsigned int c;
-    struct ramdisk_node *node = &image->nodes[id - 1];
 
     if (node->header->typeflag[0] == TAR_FILETYPE_DIR)
         return 0;
@@ -99,15 +100,17 @@ static unsigned int write(struct modules_filesystem *self, unsigned int id, unsi
 static unsigned int walk(struct modules_filesystem *self, unsigned int id, unsigned int count, void *buffer)
 {
 
+    struct vfs_ramdisk_filesystem *filesystem = (struct vfs_ramdisk_filesystem *)self;
+
     unsigned int i;
 
     if (!count)
         return 1;
 
-    for (i = 0; i < image->count; i++)
+    for (i = 0; i < filesystem->image->count; i++)
     {
 
-        if (memory_compare(image->nodes[i].name, buffer, count))
+        if (memory_compare(filesystem->image->nodes[i].name, buffer, count))
             return i + 1;
 
     }
@@ -119,18 +122,29 @@ static unsigned int walk(struct modules_filesystem *self, unsigned int id, unsig
 static unsigned int get_physical(struct modules_filesystem *self, unsigned int id)
 {
 
-    return image->nodes[id - 1].offset;
+    struct vfs_ramdisk_filesystem *filesystem = (struct vfs_ramdisk_filesystem *)self;
+
+    return filesystem->image->nodes[id - 1].offset;
 
 }
 
-void vfs_ramdisk_setup(struct ramdisk_image *i)
+void vfs_ramdisk_filesystem_init(struct vfs_ramdisk_filesystem *filesystem, struct ramdisk_image *image)
 {
 
-    image = i;
+    memory_clear(filesystem, sizeof (struct vfs_ramdisk_filesystem));
 
-    modules_filesystem_init(&filesystem, 0x0001, "ramdisk", 0, 0, read, write, walk, get_physical);
-    modules_register_filesystem(&filesystem);
-    filesystem.path = "/ramdisk/";
+    modules_filesystem_init(&filesystem->base, 0x0001, "ramdisk", 0, 0, read, write, walk, get_physical);
+
+    filesystem->image = image;
+
+}
+
+void vfs_ramdisk_setup(struct ramdisk_image *image)
+{
+
+    vfs_ramdisk_filesystem_init(&filesystem, image);
+    modules_register_filesystem(&filesystem.base);
+    filesystem.base.path = "/ramdisk/";
 
 }
 
