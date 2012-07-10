@@ -1,9 +1,9 @@
 ARCH=x86
-TARGET=
-AS=$(TARGET)as
-CC=$(TARGET)gcc
+PREFIX=
+AS=$(PREFIX)as
+CC=$(PREFIX)gcc
 CCFLAGS=-Wall -Werror -ffreestanding -nostdlib -std=c89 -pedantic -O2
-LD=$(TARGET)ld
+LD=$(PREFIX)ld
 AR=ar
 ARFLAGS=rs
 
@@ -66,7 +66,7 @@ fudge.iso:
 toolchain:
 	git submodule init toolchain
 	git submodule update toolchain
-	make -C toolchain all TARGET=${TARGET}
+	make -C toolchain all PREFIX=${PREFIX}
 
 image-arm: image/boot/fudge
 	arm-none-eabi-objcopy -O binary image/boot/fudge image/boot/fudge.bin
