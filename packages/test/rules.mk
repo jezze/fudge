@@ -1,1 +1,3 @@
-PACKAGES+=packages/test/event1 packages/test/event2 packages/test/event3
+PACKAGES+=packages/test/event1/event1
+PACKAGES+=packages/test/event2/event2
+PACKAGES+=packages/test/event3/event3

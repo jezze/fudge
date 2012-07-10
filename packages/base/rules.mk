@@ -1,1 +1,13 @@
-PACKAGES+=packages/base/cd packages/base/date packages/base/echo packages/base/hello packages/base/init packages/base/load packages/base/ls packages/base/reboot packages/base/shell packages/base/tail packages/base/timer packages/base/unload
+PACKAGES+=packages/base/cd/cd
+PACKAGES+=packages/base/date/date
+PACKAGES+=packages/base/echo/echo
+PACKAGES+=packages/base/hello/hello
+PACKAGES+=packages/base/init/init
+PACKAGES+=packages/base/load/load
+PACKAGES+=packages/base/ls/ls
+PACKAGES+=packages/base/reboot/reboot
+PACKAGES+=packages/base/shell/shell
+PACKAGES+=packages/base/tail/tail
+PACKAGES+=packages/base/timer/timer
+PACKAGES+=packages/base/unload/unload
+PACKAGES+=packages/base/wm/wm

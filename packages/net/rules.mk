@@ -1,1 +1,2 @@
-PACKAGES+=packages/net/arp packages/net/ncat
+PACKAGES+=packages/net/arp/arp
+PACKAGES+=packages/net/ncat/ncat

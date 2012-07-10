@@ -1,1 +1,0 @@
-PACKAGES+=packages/wm/wm
