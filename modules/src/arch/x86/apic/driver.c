@@ -90,25 +90,15 @@ static void start(struct modules_driver *self)
 {
 
     struct cpuid_data data;
+    unsigned int i;
 
     cpuid_get(CPUID_INSTRUCTION_FEATURES0, &data);
 
     if (!(data.edx & CPUID_FEATURES0_EDX_FLAG_APIC))
         return;
 
-    isr_register_routine(ISR_INDEX_PIT, handle_interrupt);
-    isr_register_routine(ISR_INDEX_KBD, handle_interrupt);
-    isr_register_routine(ISR_INDEX_CASCADE, handle_interrupt);
-    isr_register_routine(ISR_INDEX_COM2, handle_interrupt);
-    isr_register_routine(ISR_INDEX_COM1, handle_interrupt);
-    isr_register_routine(ISR_INDEX_SOUND, handle_interrupt);
-    isr_register_routine(ISR_INDEX_SDA, handle_interrupt);
-    isr_register_routine(ISR_INDEX_PP, handle_interrupt);
-    isr_register_routine(ISR_INDEX_RTC, handle_interrupt);
-    isr_register_routine(ISR_INDEX_MOUSE, handle_interrupt);
-    isr_register_routine(ISR_INDEX_FPU, handle_interrupt);
-    isr_register_routine(ISR_INDEX_ATAP, handle_interrupt);
-    isr_register_routine(ISR_INDEX_ATAS, handle_interrupt);
+    for (i = 0; i < APIC_TABLE_SLOTS; i++)
+        isr_register_routine(i + APIC_DATA_MASTERVECTOR, handle_interrupt);
 
     remap();
     enable();
