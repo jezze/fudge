@@ -41,9 +41,6 @@ void load_modules_extra(unsigned int id)
     call_open(FILE_STDIN, "/ramdisk/mod/pci.ko");
     call_execute(id);
 
-    call_open(FILE_STDIN, "/ramdisk/mod/acpi.ko");
-    call_execute(id);
-
     call_open(FILE_STDIN, "/ramdisk/mod/pit.ko");
     call_execute(id);
 
@@ -68,6 +65,9 @@ void load_modules_testing(unsigned int id)
     call_execute(id);
 
     call_open(FILE_STDIN, "/ramdisk/mod/bga.ko");
+    call_execute(id);
+
+    call_open(FILE_STDIN, "/ramdisk/mod/acpi.ko");
     call_execute(id);
 
 }
