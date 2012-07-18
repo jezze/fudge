@@ -9,29 +9,29 @@ void main()
     char bufferCwd[BUFFER_SIZE];
     unsigned int countIn;
     unsigned int countCwd;
-    unsigned int id;
 
     countIn = call_read(FILE_STDIN, 0, BUFFER_SIZE, bufferIn);
 
     if (!countIn)
         return;
 
-    id = call_open(FILE_NEW, "/module/tty/cwd");
+    call_open(3, "/module/tty/cwd");
 
     if (memory_compare(bufferIn, "/", 1))
     {
 
-        call_write(id, 0, countIn, bufferIn);
+        call_write(3, 0, countIn, bufferIn);
 
         return;
 
     }
 
-    countCwd = call_read(id, 0, BUFFER_SIZE, bufferCwd);
+    countCwd = call_read(3, 0, BUFFER_SIZE, bufferCwd);
 
     memory_copy(bufferCwd + countCwd, bufferIn, countIn);
 
-    call_write(id, 0, countCwd + countIn, bufferCwd); 
+    call_write(3, 0, countCwd + countIn, bufferCwd); 
+    call_close(3);
 
 }
 

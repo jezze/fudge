@@ -9,19 +9,18 @@ static unsigned int get_symbol_module(char *symbol, char *module)
     struct elf_section_header *symbolHeader;
     struct elf_symbol symbolTable[400];
     char stringTable[0x1000];
-    unsigned int id = call_open(FILE_NEW, module);
 
-    if (!id)
+    if (!call_open(3, module))
         return 0;
 
-    call_read(id, 0, sizeof (struct elf_header), &header);
-    call_read(id, header.shoffset, header.shsize * header.shcount, sectionHeader);
+    call_read(3, 0, sizeof (struct elf_header), &header);
+    call_read(3, header.shoffset, header.shsize * header.shcount, sectionHeader);
     
     symbolHeader = elf_get_section(&header, sectionHeader, ELF_SECTION_TYPE_SYMTAB);
 
-    call_read(id, symbolHeader->offset, symbolHeader->size, symbolTable);
-    call_read(id, sectionHeader[symbolHeader->link].offset, sectionHeader[symbolHeader->link].size, stringTable);
-    call_close(id);
+    call_read(3, symbolHeader->offset, symbolHeader->size, symbolTable);
+    call_read(3, sectionHeader[symbolHeader->link].offset, sectionHeader[symbolHeader->link].size, stringTable);
+    call_close(3);
 
     return elf_find_symbol(&header, sectionHeader, symbolHeader, symbolTable, stringTable, symbol);
 

@@ -156,7 +156,6 @@ unsigned int syscall_open(struct runtime_task *task, void *stack)
 {
 
     struct syscall_open_args *args = stack;
-    unsigned int slot;
     unsigned int id;
     struct runtime_descriptor *descriptor;
     struct modules_filesystem *filesystem;
@@ -164,12 +163,10 @@ unsigned int syscall_open(struct runtime_task *task, void *stack)
     if (!args->buffer)
         return 0;
 
-    slot = (args->index) ? args->index : task->get_descriptor_slot(task);
-
-    if (!slot)
+    if (!args->index)
         return 0;
 
-    descriptor = task->get_descriptor(task, slot);
+    descriptor = task->get_descriptor(task, args->index);
 
     if (!descriptor)
         return 0;
@@ -189,7 +186,7 @@ unsigned int syscall_open(struct runtime_task *task, void *stack)
     if (descriptor->filesystem->open)
         descriptor->filesystem->open(descriptor->filesystem, descriptor->id);
 
-    return slot;
+    return args->index;
 
 }
 

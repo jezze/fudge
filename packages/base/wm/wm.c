@@ -70,27 +70,27 @@ static void draw_fill(unsigned int x1, unsigned int y1, unsigned int x2, unsigne
 void set_xres(unsigned int xres)
 {
 
-    unsigned int id = call_open(FILE_NEW, "/module/bga/xres");
-    call_write(id, 0, 4, &xres);
-    call_close(id);
+    call_open(3, "/module/bga/xres");
+    call_write(3, 0, 4, &xres);
+    call_close(3);
 
 }
 
 void set_yres(unsigned int yres)
 {
 
-    unsigned int id = call_open(FILE_NEW, "/module/bga/yres");
-    call_write(id, 0, 4, &yres);
-    call_close(id);
+    call_open(3, "/module/bga/yres");
+    call_write(3, 0, 4, &yres);
+    call_close(3);
 
 }
 
 void set_bpp(unsigned int bpp)
 {
 
-    unsigned int id = call_open(FILE_NEW, "/module/bga/bpp");
-    call_write(id, 0, 4, &bpp);
-    call_close(id);
+    call_open(3, "/module/bga/bpp");
+    call_write(3, 0, 4, &bpp);
+    call_close(3);
 
 }
 
@@ -99,9 +99,9 @@ void enable()
 
     unsigned int enable = 1;
 
-    unsigned int id = call_open(FILE_NEW, "/module/bga/enable");
-    call_write(id, 0, 4, &enable);
-    call_close(id);
+    call_open(3, "/module/bga/enable");
+    call_write(3, 0, 4, &enable);
+    call_close(3);
 
 }
 
@@ -180,15 +180,15 @@ void draw_window(unsigned int x, unsigned int y, unsigned int w, unsigned int h)
 void main()
 {
 
-    idlfb = call_open(FILE_NEW, "/module/bga/lfb");
+    idlfb = call_open(4, "/module/bga/lfb");
 
     if (!idlfb)
         return;
 
-    idmcycle = call_open(FILE_NEW, "/module/ps2/mcycle");
-    idmstatus = call_open(FILE_NEW, "/module/ps2/mstatus");
-    idmx = call_open(FILE_NEW, "/module/ps2/mx");
-    idmy = call_open(FILE_NEW, "/module/ps2/my");
+    idmcycle = call_open(5, "/module/ps2/mcycle");
+    idmstatus = call_open(6, "/module/ps2/mstatus");
+    idmx = call_open(7, "/module/ps2/mx");
+    idmy = call_open(8, "/module/ps2/my");
 
     set_xres(SCREEN_WIDTH);
     set_yres(SCREEN_HEIGHT);

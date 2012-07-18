@@ -6,17 +6,14 @@ void main()
 {
 
     char buffer[BUFFER_SIZE];
-    unsigned int id;
     unsigned int count;
 
-    id = call_open(FILE_NEW, "/module/rtc/timestamp");
-
-    if (!id)
+    if (!call_open(3, "/module/rtc/timestamp"))
         return;
 
-    count = call_read(id, 0, BUFFER_SIZE, buffer);
+    count = call_read(3, 0, BUFFER_SIZE, buffer);
 
-    call_close(id);
+    call_close(3);
     call_write(FILE_STDOUT, 0, count, buffer);
 
 }

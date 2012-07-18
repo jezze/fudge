@@ -28,7 +28,7 @@ static void load_usermode(struct kernel_arch *arch, struct runtime_task *tasks, 
     mount = arch->running->get_mount(arch->running, 3);
     runtime_mount_init(mount, 3, vfs_ramdisk_setup(image), 9, "/ramdisk/");
 
-    oargs.index = 0;
+    oargs.index = 1;
     oargs.buffer = "/ramdisk/bin/init";
 
     id = syscall_open(arch->running, &oargs);
