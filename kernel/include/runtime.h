@@ -31,7 +31,7 @@ struct runtime_mount
     unsigned int id;
     struct modules_filesystem *filesystem;
     unsigned int count;
-    char *path;
+    char path[64];
 
 };
 

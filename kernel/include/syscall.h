@@ -14,6 +14,7 @@
 #define SYSCALL_INDEX_UNLOAD  0x09
 #define SYSCALL_INDEX_ATTACH  0x0A
 #define SYSCALL_INDEX_DETACH  0x0B
+#define SYSCALL_INDEX_MOUNT   0x0C
 
 struct syscall_attach_args
 {
@@ -60,6 +61,15 @@ struct syscall_load_args
 
     void *caller;
     unsigned int index;
+
+};
+
+struct syscall_mount_args
+{
+
+    void *caller;
+    unsigned int count;
+    void *buffer;
 
 };
 
@@ -116,6 +126,7 @@ unsigned int syscall_detach(struct runtime_task *task, void *stack);
 unsigned int syscall_execute(struct runtime_task *task, void *stack);
 unsigned int syscall_exit(struct runtime_task *task, void *stack);
 unsigned int syscall_load(struct runtime_task *task, void *stack);
+unsigned int syscall_mount(struct runtime_task *task, void *stack);
 unsigned int syscall_open(struct runtime_task *task, void *stack);
 unsigned int syscall_read(struct runtime_task *task, void *stack);
 unsigned int syscall_unload(struct runtime_task *task, void *stack);

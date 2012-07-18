@@ -12,6 +12,7 @@ unsigned int call_load(unsigned int id);
 unsigned int call_unload(unsigned int id);
 unsigned int call_attach(unsigned int id, void (*callback)());
 unsigned int call_detach(unsigned int id);
+unsigned int call_mount(unsigned int count, void *buffer);
 
 #endif
 

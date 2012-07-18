@@ -1,4 +1,5 @@
 #include <elf.h>
+#include <memory.h>
 #include <string.h>
 #include <event.h>
 #include <mmu.h>
@@ -165,12 +166,68 @@ unsigned int syscall_load(struct runtime_task *task, void *stack)
 
 }
 
+unsigned int syscall_mount(struct runtime_task *task, void *stack)
+{
+
+    struct syscall_mount_args *args = stack;
+    struct runtime_mount *mount;
+    struct modules_filesystem *filesystem;
+    unsigned int slot;
+
+    slot = task->get_mount_slot(task);
+
+    if (!slot)
+        return 0;
+
+    mount = task->get_mount(task, slot);
+
+    filesystem = modules_get_filesystem(args->buffer);
+
+    if (!filesystem)
+        return 0;
+    
+    runtime_mount_init(mount, slot, filesystem, args->count, args->buffer);
+
+    return slot;
+
+}
+
+static struct runtime_mount *get_mount(struct runtime_task *task, void *path)
+{
+
+    unsigned int i;
+    unsigned int max = 0;
+    struct runtime_mount *current = 0;
+
+    for (i = 1; i < RUNTIME_TASK_MOUNT_SLOTS - 1; i++)
+    {
+
+        if (!task->mounts[i].id)
+            continue;
+
+        if (task->mounts[i].count < max)
+            continue;
+
+        if (memory_compare(task->mounts[i].path, path, task->mounts[i].count))
+        {
+
+            current = &task->mounts[i];
+            max = task->mounts[i].count;
+
+        }
+
+    }
+
+    return current;
+
+}
+
 unsigned int syscall_open(struct runtime_task *task, void *stack)
 {
 
     unsigned int id;
     struct syscall_open_args *args = stack;
-    struct modules_filesystem *filesystem;
+    struct runtime_mount *mount;
     struct runtime_descriptor *descriptor = task->get_descriptor(task, args->index);
 
     if (!descriptor)
@@ -179,17 +236,17 @@ unsigned int syscall_open(struct runtime_task *task, void *stack)
     if (!args->count)
         return 0;
 
-    filesystem = modules_get_filesystem(args->buffer);
+    mount = get_mount(task, args->buffer);
 
-    if (!filesystem)
+    if (!mount)
         return 0;
 
-    id = filesystem->walk(filesystem, descriptor->id, args->count - string_length(filesystem->path), (char *)args->buffer + string_length(filesystem->path));
+    id = mount->filesystem->walk(mount->filesystem, descriptor->id, args->count - mount->count, (char *)args->buffer + mount->count);
 
     if (!id)
         return 0;
 
-    runtime_descriptor_init(descriptor, id, filesystem, 0);
+    runtime_descriptor_init(descriptor, id, mount->filesystem, 0);
 
     if (descriptor->filesystem->open)
         descriptor->filesystem->open(descriptor->filesystem, descriptor->id);

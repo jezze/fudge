@@ -43,6 +43,7 @@ void syscall_setup()
     register_routine(SYSCALL_INDEX_UNLOAD, syscall_unload);
     register_routine(SYSCALL_INDEX_ATTACH, syscall_attach);
     register_routine(SYSCALL_INDEX_DETACH, syscall_detach);
+    register_routine(SYSCALL_INDEX_MOUNT, syscall_mount);
 
     isr_register_routine(ISR_INDEX_SYSCALL, handle_interrupt);
 

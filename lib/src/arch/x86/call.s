@@ -12,6 +12,7 @@
 .set CALL_INDEX_UNLOAD,  0x09
 .set CALL_INDEX_ATTACH,  0x0A
 .set CALL_INDEX_DETACH,  0x0B
+.set CALL_INDEX_MOUNT,   0x0C
 
 .section .text
 
@@ -100,6 +101,14 @@ call_attach:
 .global call_detach
 call_detach:
     mov eax, CALL_INDEX_DETACH
+    int CALL_INTERRUPT
+    ret
+
+.align 4
+
+.global call_mount
+call_mount:
+    mov eax, CALL_INDEX_MOUNT
     int CALL_INTERRUPT
     ret
 

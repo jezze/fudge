@@ -114,7 +114,7 @@ void runtime_mount_init(struct runtime_mount *mount, unsigned int id, struct mod
     mount->id = id;
     mount->filesystem = filesystem;
     mount->count = count;
-    mount->path = path;
+    memory_copy(mount->path, path, mount->count);
 
 }
 
