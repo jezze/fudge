@@ -76,9 +76,9 @@ static unsigned int setup_executable(char *path)
     length = string_length(path);
 
     memory_copy(buffer, "/ramdisk/bin/", 13);
-    memory_copy(buffer + 13, path, length + 1);
+    memory_copy(buffer + 13, path, length);
 
-    return call_open(3, string_length(buffer), buffer);
+    return call_open(3, length + 13, buffer);
 
 }
 
@@ -98,9 +98,9 @@ static unsigned int setup_stream(char *path, unsigned int index)
     count = call_read(4, 0, 256 - length, buffer);
     call_close(4);
 
-    memory_copy(buffer + count, path, length + 1);
+    memory_copy(buffer + count, path, length);
 
-    return call_open(index, string_length(buffer), buffer);
+    return call_open(index, count + length, buffer);
 
 }
 
