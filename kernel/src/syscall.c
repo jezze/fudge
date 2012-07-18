@@ -155,20 +155,17 @@ unsigned int syscall_load(struct runtime_task *task, void *stack)
 unsigned int syscall_open(struct runtime_task *task, void *stack)
 {
 
-    struct syscall_open_args *args = stack;
     unsigned int id;
+    struct syscall_open_args *args = stack;
     struct runtime_descriptor *descriptor;
     struct modules_filesystem *filesystem;
-
-    if (!args->buffer)
-        return 0;
-
-    if (!args->index)
-        return 0;
 
     descriptor = task->get_descriptor(task, args->index);
 
     if (!descriptor)
+        return 0;
+
+    if (!args->buffer)
         return 0;
 
     filesystem = modules_get_filesystem(args->buffer);
