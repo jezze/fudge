@@ -157,10 +157,8 @@ unsigned int syscall_open(struct runtime_task *task, void *stack)
 
     unsigned int id;
     struct syscall_open_args *args = stack;
-    struct runtime_descriptor *descriptor;
     struct modules_filesystem *filesystem;
-
-    descriptor = task->get_descriptor(task, args->index);
+    struct runtime_descriptor *descriptor = task->get_descriptor(task, args->index);
 
     if (!descriptor)
         return 0;
