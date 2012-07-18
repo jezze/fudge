@@ -6,6 +6,27 @@
 #include <runtime.h>
 #include <syscall.h>
 
+static unsigned int get_module_func(unsigned int physical, char *func)
+{
+
+    struct elf_header *header = elf_get_header(physical);
+    struct elf_section_header *sheader;
+    struct elf_section_header *symHeader;
+    struct elf_symbol *symTable;
+    char *strTable;
+
+    if (!header)
+        return 0;
+
+    sheader = (struct elf_section_header *)(header->entry + header->shoffset);
+    symHeader = elf_get_section(header, sheader, ELF_SECTION_TYPE_SYMTAB);
+    symTable = (struct elf_symbol *)(header->entry + symHeader->offset);
+    strTable = (char *)(header->entry + sheader[symHeader->link].offset);
+
+    return elf_find_symbol(header, sheader, symHeader, symTable, strTable, func);
+
+}
+
 unsigned int syscall_attach(struct runtime_task *task, void *stack)
 {
 
@@ -117,18 +138,15 @@ unsigned int syscall_load(struct runtime_task *task, void *stack)
 
     struct syscall_load_args *args = stack;
     unsigned int physical;
-    void (*init)();
     struct elf_header *header;
-    struct elf_section_header *sheader;
-    struct elf_section_header *symHeader;
-    struct elf_symbol *symTable;
-    char *strTable;
+    void (*init)();
     struct runtime_descriptor *descriptor = task->get_descriptor(task, args->index);
 
     if (!descriptor || !descriptor->id || !descriptor->filesystem || !descriptor->filesystem->get_physical)
         return 0;
 
     physical = descriptor->filesystem->get_physical(descriptor->filesystem, descriptor->id);
+
     header = elf_get_header(physical);
 
     if (!header)
@@ -136,12 +154,7 @@ unsigned int syscall_load(struct runtime_task *task, void *stack)
 
     elf_relocate(header, physical);
 
-    sheader = (struct elf_section_header *)(header->entry + header->shoffset);
-    symHeader = elf_get_section(header, sheader, ELF_SECTION_TYPE_SYMTAB);
-    symTable = (struct elf_symbol *)(header->entry + symHeader->offset);
-    strTable = (char *)(header->entry + sheader[symHeader->link].offset);
-
-    init = (void (*)())(elf_find_symbol(header, sheader, symHeader, symTable, strTable, "init"));
+    init = (void (*)())(get_module_func(physical, "init"));
 
     if (!init)
         return 0;
@@ -207,28 +220,13 @@ unsigned int syscall_unload(struct runtime_task *task, void *stack)
     struct syscall_unload_args *args = stack;
     unsigned int physical;
     void (*destroy)();
-    struct elf_header *header;
-    struct elf_section_header *sheader;
-    struct elf_section_header *symHeader;
-    struct elf_symbol *symTable;
-    char *strTable;
     struct runtime_descriptor *descriptor = task->get_descriptor(task, args->index);
 
     if (!descriptor || !descriptor->id || !descriptor->filesystem || !descriptor->filesystem->get_physical)
         return 0;
 
     physical = descriptor->filesystem->get_physical(descriptor->filesystem, descriptor->id);
-    header = elf_get_header(physical);
-
-    if (!header)
-        return 0;
-
-    sheader = (struct elf_section_header *)(header->entry + header->shoffset);
-    symHeader = elf_get_section(header, sheader, ELF_SECTION_TYPE_SYMTAB);
-    symTable = (struct elf_symbol *)(header->entry + symHeader->offset);
-    strTable = (char *)(header->entry + sheader[symHeader->link].offset);
-
-    destroy = (void (*)())(elf_find_symbol(header, sheader, symHeader, symTable, strTable, "destroy"));
+    destroy = (void (*)())(get_module_func(physical, "destroy"));
 
     if (!destroy)
         return 0;
