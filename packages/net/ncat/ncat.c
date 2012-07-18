@@ -42,7 +42,7 @@ void handle_network_event()
 
     call_write(FILE_STDOUT, 0, 9, "INCOMING\n");
 
-    call_open(3, "/module/rtl8139/data");
+    call_open(3, 0, "/module/rtl8139/data");
     call_read(3, 0, 0x800, buffer);
     call_close(3);
 
@@ -74,7 +74,7 @@ void handle_network_event()
     memory_copy(buffer, &eheader, sizeof (struct ethernet_header));
     memory_copy(buffer + sizeof (struct ethernet_header), &aheader, sizeof (struct arp_header));
 
-    call_open(3, "/module/rtl8139/data");
+    call_open(3, 0, "/module/rtl8139/data");
     call_write(3, 0, sizeof (struct ethernet_header) + sizeof (struct arp_header), buffer);
     call_close(3);
     call_write(FILE_STDOUT, 0, 18, "Responding to ARP\n");
@@ -94,7 +94,7 @@ void main()
     eth0.ip[2] = 0x00;
     eth0.ip[3] = 0x05;
 
-    call_open(3, "/module/rtl8139/mac");
+    call_open(3, 0, "/module/rtl8139/mac");
     call_read(3, 0, 6, eth0.mac);
     call_close(3);
 

@@ -8,7 +8,7 @@ void main()
     char buffer[BUFFER_SIZE];
     unsigned int count;
 
-    if (!call_open(3, "/module/pit/jiffies"))
+    if (!call_open(3, 0, "/module/pit/jiffies"))
         return;
 
     count = call_read(3, 0, BUFFER_SIZE, buffer);
