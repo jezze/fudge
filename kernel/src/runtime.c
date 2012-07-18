@@ -40,6 +40,36 @@ static struct runtime_mount *get_mount(struct runtime_task *self, unsigned int i
 
 }
 
+static struct runtime_mount *find_mount(struct runtime_task *self, void *path)
+{
+
+    unsigned int i;
+    unsigned int max = 0;
+    struct runtime_mount *current = 0;
+
+    for (i = 1; i < RUNTIME_TASK_MOUNT_SLOTS - 1; i++)
+    {
+
+        if (!self->mounts[i].id)
+            continue;
+
+        if (self->mounts[i].count < max)
+            continue;
+
+        if (memory_compare(self->mounts[i].path, path, self->mounts[i].count))
+        {
+
+            current = &self->mounts[i];
+            max = self->mounts[i].count;
+
+        }
+
+    }
+
+    return current;
+
+}
+
 static unsigned int get_mount_slot(struct runtime_task *self)
 {
 
@@ -141,6 +171,7 @@ void runtime_task_init(struct runtime_task *task, unsigned int id)
     task->get_descriptor = get_descriptor;
     task->get_descriptor_slot = get_descriptor_slot;
     task->get_mount = get_mount;
+    task->find_mount = find_mount;
     task->get_mount_slot = get_mount_slot;
 
     address = RUNTIME_TASK_ADDRESS_BASE + task->id * RUNTIME_TASK_ADDRESS_SIZE;

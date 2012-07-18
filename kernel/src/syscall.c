@@ -192,36 +192,6 @@ unsigned int syscall_mount(struct runtime_task *task, void *stack)
 
 }
 
-static struct runtime_mount *get_mount(struct runtime_task *task, void *path)
-{
-
-    unsigned int i;
-    unsigned int max = 0;
-    struct runtime_mount *current = 0;
-
-    for (i = 1; i < RUNTIME_TASK_MOUNT_SLOTS - 1; i++)
-    {
-
-        if (!task->mounts[i].id)
-            continue;
-
-        if (task->mounts[i].count < max)
-            continue;
-
-        if (memory_compare(task->mounts[i].path, path, task->mounts[i].count))
-        {
-
-            current = &task->mounts[i];
-            max = task->mounts[i].count;
-
-        }
-
-    }
-
-    return current;
-
-}
-
 unsigned int syscall_open(struct runtime_task *task, void *stack)
 {
 
@@ -236,7 +206,7 @@ unsigned int syscall_open(struct runtime_task *task, void *stack)
     if (!args->count)
         return 0;
 
-    mount = get_mount(task, args->buffer);
+    mount = task->find_mount(task, args->buffer);
 
     if (!mount)
         return 0;
