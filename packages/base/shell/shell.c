@@ -71,14 +71,14 @@ static unsigned int setup_executable(char *path)
     unsigned int length;
 
     if (memory_compare(path, "/", 1))
-        return call_open(3, 0, path);
+        return call_open(3, string_length(path), path);
 
     length = string_length(path);
 
     memory_copy(buffer, "/ramdisk/bin/", 13);
     memory_copy(buffer + 13, path, length + 1);
 
-    return call_open(3, 0, buffer);
+    return call_open(3, string_length(buffer), buffer);
 
 }
 
@@ -90,17 +90,17 @@ static unsigned int setup_stream(char *path, unsigned int index)
     unsigned int count;
 
     if (memory_compare(path, "/", 1))
-        return call_open(index, 0, path);
+        return call_open(index, string_length(path), path);
 
     length = string_length(path);
 
-    call_open(4, 0, "/module/tty/cwd");
+    call_open(4, 15, "/module/tty/cwd");
     count = call_read(4, 0, 256 - length, buffer);
     call_close(4);
 
     memory_copy(buffer + count, path, length + 1);
 
-    return call_open(index, 0, buffer);
+    return call_open(index, string_length(buffer), buffer);
 
 }
 

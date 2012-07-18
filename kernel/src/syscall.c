@@ -163,7 +163,7 @@ unsigned int syscall_open(struct runtime_task *task, void *stack)
     if (!descriptor)
         return 0;
 
-    if (!args->buffer)
+    if (!args->count)
         return 0;
 
     filesystem = modules_get_filesystem(args->buffer);
@@ -171,7 +171,7 @@ unsigned int syscall_open(struct runtime_task *task, void *stack)
     if (!filesystem)
         return 0;
 
-    id = filesystem->walk(filesystem, descriptor->id, string_length((char *)args->buffer + string_length(filesystem->path)), (char *)args->buffer + string_length(filesystem->path));
+    id = filesystem->walk(filesystem, descriptor->id, args->count - string_length(filesystem->path), (char *)args->buffer + string_length(filesystem->path));
 
     if (!id)
         return 0;
@@ -192,6 +192,9 @@ unsigned int syscall_read(struct runtime_task *task, void *stack)
     struct runtime_descriptor *descriptor = task->get_descriptor(task, args->index);
 
     if (!descriptor || !descriptor->id || !descriptor->filesystem || !descriptor->filesystem->read)
+        return 0;
+
+    if (!args->count)
         return 0;
 
     return descriptor->filesystem->read(descriptor->filesystem, descriptor->id, args->offset, args->count, args->buffer);
@@ -262,6 +265,9 @@ unsigned int syscall_write(struct runtime_task *task, void *stack)
     struct runtime_descriptor *descriptor = task->get_descriptor(task, args->index);
 
     if (!descriptor || !descriptor->id || !descriptor->filesystem || !descriptor->filesystem->write)
+        return 0;
+
+    if (!args->count)
         return 0;
 
     return descriptor->filesystem->write(descriptor->filesystem, descriptor->id, args->offset, args->count, args->buffer);

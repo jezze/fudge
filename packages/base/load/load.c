@@ -10,7 +10,7 @@ static unsigned int get_symbol_module(char *symbol, char *module)
     struct elf_symbol symbolTable[400];
     char stringTable[0x1000];
 
-    if (!call_open(3, 0, module))
+    if (!call_open(3, string_length(module), module))
         return 0;
 
     call_read(3, 0, sizeof (struct elf_header), &header);
