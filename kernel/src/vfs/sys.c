@@ -85,12 +85,19 @@ static unsigned int walk(struct modules_filesystem *self, unsigned int id, unsig
 
 }
 
+static unsigned int parent(struct modules_filesystem *self, unsigned int id)
+{
+
+    return 1;
+
+}
+
 struct modules_filesystem *vfs_sys_setup(union modules_module **m)
 {
 
     modules = m;
 
-    modules_filesystem_init(&filesystem, 0x0001, "sys", 0, 0, read, 0, walk, 0);
+    modules_filesystem_init(&filesystem, 0x0001, "sys", 0, 0, read, 0, parent, walk, 0);
     modules_register_filesystem(&filesystem);
 
     return &filesystem;

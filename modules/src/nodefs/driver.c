@@ -122,7 +122,7 @@ void nodefs_filesystem_init(struct nodefs_filesystem *filesystem)
 
     memory_clear(filesystem, sizeof (struct nodefs_filesystem));
 
-    modules_filesystem_init(&filesystem->base, 0x1001, "nodefs", 0, 0, filesystem_read, filesystem_write, filesystem_walk, 0); 
+    modules_filesystem_init(&filesystem->base, 0x1001, "nodefs", 0, 0, filesystem_read, filesystem_write, 0, filesystem_walk, 0); 
     filesystem->count = 0;
 
     modules_register_filesystem(&filesystem->base);
