@@ -16,9 +16,9 @@ static unsigned int read(struct modules_filesystem *self, unsigned int id, unsig
     if (id == 1)
     {
 
-        memory_copy(buffer, "all/\nbus/\ndevice/\ndriver/\n", 26);
+        memory_copy(buffer, "all/\nbus/\ndevice/\ndriver/\nfilesystem/\n", 38);
 
-        return 26;
+        return 38;
 
     }
 
@@ -41,6 +41,9 @@ static unsigned int read(struct modules_filesystem *self, unsigned int id, unsig
                 continue;
 
             if (id == 5 && module->base.type != MODULES_TYPE_DRIVER)
+                continue;
+
+            if (id == 6 && module->base.type != MODULES_TYPE_FILESYSTEM)
                 continue;
 
         }
@@ -74,6 +77,9 @@ static unsigned int walk(struct modules_filesystem *self, unsigned int id, unsig
 
     if (memory_compare(buffer, "driver/", 7))
         return 5;
+
+    if (memory_compare(buffer, "filesystem/", 7))
+        return 6;
 
     return 0;
 
