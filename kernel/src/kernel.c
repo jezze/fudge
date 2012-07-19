@@ -6,7 +6,6 @@
 #include <runtime.h>
 #include <syscall.h>
 #include <vfs/ramdisk.h>
-#include <vfs/root.h>
 #include <vfs/sys.h>
 
 static void load_usermode(struct kernel_arch *arch, struct runtime_task *tasks, union modules_module **modules, struct ramdisk_image *image)
@@ -22,11 +21,9 @@ static void load_usermode(struct kernel_arch *arch, struct runtime_task *tasks, 
     arch->running->parent = 0;
 
     mount = arch->running->get_mount(arch->running, 1);
-    runtime_mount_init(mount, 1, vfs_root_setup(modules), 1, "/");
+    runtime_mount_init(mount, 1, vfs_sys_setup(modules), 1, "/");
     mount = arch->running->get_mount(arch->running, 2);
-    runtime_mount_init(mount, 2, vfs_sys_setup(modules), 5, "/sys/");
-    mount = arch->running->get_mount(arch->running, 3);
-    runtime_mount_init(mount, 3, vfs_ramdisk_setup(image), 9, "/ramdisk/");
+    runtime_mount_init(mount, 2, vfs_ramdisk_setup(image), 9, "/ramdisk/");
 
     oargs.index = 1;
     oargs.count = 17;
