@@ -58,7 +58,6 @@ union modules_module
 
         struct modules_base base;
         unsigned int type;
-        char *path;
         void (*open)(struct modules_filesystem *self, unsigned int id);
         void (*close)(struct modules_filesystem *self, unsigned int id);
         unsigned int (*read)(struct modules_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer);
@@ -70,7 +69,6 @@ union modules_module
 
 };
 
-struct modules_filesystem *modules_get_filesystem(char *path);
 void modules_register_bus(struct modules_bus *bus);
 void modules_register_device(struct modules_device *device);
 void modules_register_driver(struct modules_driver *driver);

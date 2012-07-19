@@ -35,39 +35,6 @@ static void attach(struct modules_driver *driver)
 
 }
 
-struct modules_filesystem *modules_get_filesystem(char *path)
-{
-
-    unsigned int i;
-    unsigned int max = 0;
-    struct modules_filesystem *current = 0;
-
-    for (i = 0; i < MODULES_MODULE_SLOTS; i++)
-    {
-
-        unsigned int length;
-        union modules_module *module = modules[i];
-
-        if (!module || module->base.type != MODULES_TYPE_FILESYSTEM)
-            continue;
-
-        length = string_length(module->filesystem.path);
-
-        if (!memory_compare(module->filesystem.path, path, length))
-            continue;
-
-        if (length < max)
-            continue;
-
-        current = &module->filesystem;
-        max = length;
-
-    }
-
-    return current;
-
-}
-
 static void register_base(struct modules_base *base)
 {
 

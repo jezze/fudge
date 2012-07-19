@@ -173,6 +173,20 @@ unsigned int syscall_mount(struct runtime_task *task, void *stack)
     struct runtime_mount *mount;
     struct modules_filesystem *filesystem;
     unsigned int slot;
+    unsigned int physical;
+    struct elf_header *header;
+    struct modules_filesystem *(*get_filesystem)();
+    struct runtime_descriptor *descriptor = task->get_descriptor(task, args->index);
+
+    if (!descriptor || !descriptor->id || !descriptor->filesystem || !descriptor->filesystem->get_physical)
+        return 0;
+
+    physical = descriptor->filesystem->get_physical(descriptor->filesystem, descriptor->id);
+
+    header = elf_get_header(physical);
+
+    if (!header)
+        return 0;
 
     slot = task->get_mount_slot(task);
 
@@ -181,7 +195,12 @@ unsigned int syscall_mount(struct runtime_task *task, void *stack)
 
     mount = task->get_mount(task, slot);
 
-    filesystem = modules_get_filesystem(args->buffer);
+    get_filesystem = (struct modules_filesystem *(*)())(get_module_func(physical, "get_filesystem"));
+
+    if (!get_filesystem)
+        return 0;
+
+    filesystem = get_filesystem();
 
     if (!filesystem)
         return 0;

@@ -83,7 +83,6 @@ static void add_filesystem(struct ext2_driver *driver, struct mbr_device *device
 
     ext2_filesystem_init(filesystem, driver, device);
     modules_register_filesystem(&filesystem->base);
-    filesystem->base.path = "/hda/";
 
     driver->filesystemsCount++;
 

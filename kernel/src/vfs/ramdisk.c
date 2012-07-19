@@ -144,7 +144,6 @@ struct modules_filesystem *vfs_ramdisk_setup(struct ramdisk_image *image)
 
     vfs_ramdisk_filesystem_init(&filesystem, image);
     modules_register_filesystem(&filesystem.base);
-    filesystem.base.path = "/ramdisk/";
 
     return &filesystem.base;
 

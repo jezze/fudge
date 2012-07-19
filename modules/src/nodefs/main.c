@@ -10,6 +10,13 @@ void nodefs_register_node(struct nodefs_node *node, char *name, struct modules_b
 
 }
 
+struct modules_filesystem *get_filesystem()
+{
+
+    return &driver.filesystem.base;
+
+}
+
 void init()
 {
 

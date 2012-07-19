@@ -25,11 +25,11 @@ static unsigned int read(struct modules_filesystem *self, unsigned int id, unsig
         if (&module->filesystem == self)
             continue;
 
-        size = string_length(module->filesystem.path) - 1;
+        size = string_length(module->filesystem.base.name);
 
-        memory_copy(out + length, module->filesystem.path + 1, size);
-        memory_copy(out + length + size, "\n", 1);
-        length += size + 1;
+        memory_copy(out + length, module->filesystem.base.name, size);
+        memory_copy(out + length + size, "/\n", 2);
+        length += size + 2;
 
     }
 
@@ -51,7 +51,6 @@ struct modules_filesystem *vfs_root_setup(union modules_module **m)
 
     modules_filesystem_init(&filesystem, 0x0001, "root", 0, 0, read, 0, walk, 0);
     modules_register_filesystem(&filesystem);
-    filesystem.path = "/";
 
     return &filesystem;
 
