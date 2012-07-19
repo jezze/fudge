@@ -51,8 +51,8 @@ static unsigned int read(struct modules_filesystem *self, unsigned int id, unsig
         size = string_length(module->base.name);
 
         memory_copy(out + length, module->base.name, size);
-        memory_copy(out + length + size, "\n", 1);
-        length += size + 1;
+        memory_copy(out + length + size, "/\n", 2);
+        length += size + 2;
 
     }
 
