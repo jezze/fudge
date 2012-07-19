@@ -68,6 +68,7 @@ struct syscall_mount_args
 {
 
     void *caller;
+    unsigned int index;
     unsigned int count;
     void *buffer;
 
