@@ -8,7 +8,7 @@ void main()
     char buffer[BUFFER_SIZE];
     unsigned int count;
 
-    if (!call_open(3, 21, "/module/rtc/timestamp"))
+    if (!call_open(3, 21, "/module/rtc_timestamp"))
         return;
 
     count = call_read(3, 0, BUFFER_SIZE, buffer);

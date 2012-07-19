@@ -21,7 +21,7 @@ void init()
     rtc_device_init(&device, RTC_IRQ);
     modules_register_device(&device.base);
 
-    nodefs_register_node(&timestamp, "rtc/timestamp", &device.base.base, timestamp_read, 0);
+    nodefs_register_node(&timestamp, "rtc_timestamp", &device.base.base, timestamp_read, 0);
 
 }
 

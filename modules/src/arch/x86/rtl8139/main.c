@@ -36,8 +36,8 @@ void init()
     rtl8139_driver_init(&driver);
     modules_register_driver(&driver.base);
 
-    nodefs_register_node(&mac, "rtl8139/mac", &driver.base.base, mac_read, 0);
-    nodefs_register_node(&data, "rtl8139/data", &driver.base.base, data_read, data_write);
+    nodefs_register_node(&mac, "rtl8139_mac", &driver.base.base, mac_read, 0);
+    nodefs_register_node(&data, "rtl8139_data", &driver.base.base, data_read, data_write);
 
 }
 

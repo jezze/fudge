@@ -93,11 +93,11 @@ void init()
     ps2_mouse_driver_init(&mouseDriver);
     modules_register_driver(&mouseDriver.base);
 
-    nodefs_register_node(&buffer, "ps2/buffer", &kbdDriver.base.base, buffer_read, buffer_write);
-    nodefs_register_node(&mcycle, "ps2/mcycle", &mouseDriver.base.base, mcycle_read, 0);
-    nodefs_register_node(&mstatus, "ps2/mstatus", &mouseDriver.base.base, mstatus_read, 0);
-    nodefs_register_node(&mx, "ps2/mx", &mouseDriver.base.base, mx_read, 0);
-    nodefs_register_node(&my, "ps2/my", &mouseDriver.base.base, my_read, 0);
+    nodefs_register_node(&buffer, "ps2_buffer", &kbdDriver.base.base, buffer_read, buffer_write);
+    nodefs_register_node(&mcycle, "ps2_mcycle", &mouseDriver.base.base, mcycle_read, 0);
+    nodefs_register_node(&mstatus, "ps2_mstatus", &mouseDriver.base.base, mstatus_read, 0);
+    nodefs_register_node(&mx, "ps2_mx", &mouseDriver.base.base, mx_read, 0);
+    nodefs_register_node(&my, "ps2_my", &mouseDriver.base.base, my_read, 0);
 
 }
 

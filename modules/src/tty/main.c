@@ -89,9 +89,9 @@ void init()
     tty_driver_init(&driver, "/ramdisk/home/");
     modules_register_driver(&driver.base);
 
-    nodefs_register_node(&in, "tty/stdin", &driver.base.base, in_read, in_write);
-    nodefs_register_node(&out, "tty/stdout", &driver.base.base, 0, out_write);
-    nodefs_register_node(&cwd, "tty/cwd", &driver.base.base, cwd_read, cwd_write);
+    nodefs_register_node(&in, "tty_stdin", &driver.base.base, in_read, in_write);
+    nodefs_register_node(&out, "tty_stdout", &driver.base.base, 0, out_write);
+    nodefs_register_node(&cwd, "tty_cwd", &driver.base.base, cwd_read, cwd_write);
 
 }
 

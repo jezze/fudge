@@ -25,7 +25,7 @@ void init()
     pit_driver_init(&driver);
     modules_register_driver(&driver.base);
 
-    nodefs_register_node(&jiffies, "pit/jiffies", &driver.base.base, jiffies_read, 0);
+    nodefs_register_node(&jiffies, "pit_jiffies", &driver.base.base, jiffies_read, 0);
 
 }
 

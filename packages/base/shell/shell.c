@@ -94,7 +94,7 @@ static unsigned int setup_stream(char *path, unsigned int index)
 
     length = string_length(path);
 
-    call_open(4, 15, "/module/tty/cwd");
+    call_open(4, 15, "/module/tty_cwd");
     count = call_read(4, 0, 256 - length, buffer);
     call_close(4);
 
@@ -155,8 +155,8 @@ static void interpret(char *command)
     call_execute(exec);
     call_close(exec);
 
-    setup_stream("/module/tty/stdin", FILE_STDIN);
-    setup_stream("/module/tty/stdout", FILE_STDOUT);
+    setup_stream("/module/tty_stdin", FILE_STDIN);
+    setup_stream("/module/tty_stdout", FILE_STDOUT);
 
 }
 
@@ -220,8 +220,8 @@ static void read_keyboard()
 void main()
 {
 
-    setup_stream("/module/tty/stdin", FILE_STDIN);
-    setup_stream("/module/tty/stdout", FILE_STDOUT);
+    setup_stream("/module/tty_stdin", FILE_STDIN);
+    setup_stream("/module/tty_stdout", FILE_STDOUT);
 
     call_write(FILE_STDOUT, 0, 23, "Fudge operating system\n");
     call_write(FILE_STDOUT, 0, 53, "Write `echo <help.txt` for a short list if commands\n\n");

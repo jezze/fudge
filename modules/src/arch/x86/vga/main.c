@@ -39,7 +39,7 @@ void init()
     vga_driver_init(&driver);
     modules_register_driver(&driver.base);
 
-    nodefs_register_node(&console, "vga/console", &driver.base.base, 0, 0);
+    nodefs_register_node(&console, "vga_console", &driver.base.base, 0, 0);
 
 }
 

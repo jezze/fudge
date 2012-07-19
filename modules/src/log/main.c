@@ -52,7 +52,7 @@ void init()
     log_driver_init(&driver);
     modules_register_driver(&driver.base);
 
-    nodefs_register_node(&messages, "log/messages", &driver.base.base, messages_read, 0);
+    nodefs_register_node(&messages, "log_messages", &driver.base.base, messages_read, 0);
 
 }
 
