@@ -16,9 +16,9 @@ static unsigned int read(struct modules_filesystem *self, unsigned int id, unsig
     if (id == 1)
     {
 
-        memory_copy(buffer, "all/\nbus/\ndevice/\ndriver/\nfilesystem/\n", 38);
+        memory_copy(buffer, "all/\nbus/\ndevice/\ndriver/\nfilesystem/\nramdisk/\nmodule/\n", 55);
 
-        return 38;
+        return 55;
 
     }
 
