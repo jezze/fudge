@@ -7,9 +7,10 @@
 #include <runtime.h>
 #include <syscall.h>
 
-static unsigned int get_module_func(unsigned int physical, char *func)
+static unsigned int get_module_func(struct runtime_descriptor *descriptor, char *func)
 {
 
+    unsigned int physical = descriptor->filesystem->get_physical(descriptor->filesystem, descriptor->id);
     struct elf_header *header = elf_get_header(physical);
     struct elf_section_header *sheader;
     struct elf_section_header *symHeader;
@@ -155,7 +156,7 @@ unsigned int syscall_load(struct runtime_task *task, void *stack)
 
     elf_relocate(header, physical);
 
-    init = (void (*)())(get_module_func(physical, "init"));
+    init = (void (*)())(get_module_func(descriptor, "init"));
 
     if (!init)
         return 0;
@@ -170,22 +171,12 @@ unsigned int syscall_mount(struct runtime_task *task, void *stack)
 {
 
     struct syscall_mount_args *args = stack;
-    struct runtime_mount *mount;
-    struct modules_filesystem *filesystem;
     unsigned int slot;
-    unsigned int physical;
-    struct elf_header *header;
+    struct runtime_mount *mount;
     struct modules_filesystem *(*get_filesystem)();
     struct runtime_descriptor *descriptor = task->get_descriptor(task, args->index);
 
     if (!descriptor || !descriptor->id || !descriptor->filesystem || !descriptor->filesystem->get_physical)
-        return 0;
-
-    physical = descriptor->filesystem->get_physical(descriptor->filesystem, descriptor->id);
-
-    header = elf_get_header(physical);
-
-    if (!header)
         return 0;
 
     slot = task->get_mount_slot(task);
@@ -195,17 +186,15 @@ unsigned int syscall_mount(struct runtime_task *task, void *stack)
 
     mount = task->get_mount(task, slot);
 
-    get_filesystem = (struct modules_filesystem *(*)())(get_module_func(physical, "get_filesystem"));
+    if (!mount)
+        return 0;
+
+    get_filesystem = (struct modules_filesystem *(*)())(get_module_func(descriptor, "get_filesystem"));
 
     if (!get_filesystem)
         return 0;
 
-    filesystem = get_filesystem();
-
-    if (!filesystem)
-        return 0;
-    
-    runtime_mount_init(mount, slot, filesystem, args->count, args->buffer);
+    runtime_mount_init(mount, slot, get_filesystem(), args->count, args->buffer);
 
     return slot;
 
@@ -264,15 +253,13 @@ unsigned int syscall_unload(struct runtime_task *task, void *stack)
 {
 
     struct syscall_unload_args *args = stack;
-    unsigned int physical;
     void (*destroy)();
     struct runtime_descriptor *descriptor = task->get_descriptor(task, args->index);
 
     if (!descriptor || !descriptor->id || !descriptor->filesystem || !descriptor->filesystem->get_physical)
         return 0;
 
-    physical = descriptor->filesystem->get_physical(descriptor->filesystem, descriptor->id);
-    destroy = (void (*)())(get_module_func(physical, "destroy"));
+    destroy = (void (*)())(get_module_func(descriptor, "destroy"));
 
     if (!destroy)
         return 0;
