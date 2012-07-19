@@ -10,7 +10,7 @@
 static unsigned int get_module_func(struct runtime_descriptor *descriptor, char *func)
 {
 
-    unsigned int physical = descriptor->filesystem->get_physical(descriptor->filesystem, descriptor->id);
+    unsigned int physical = descriptor->mount->filesystem->get_physical(descriptor->mount->filesystem, descriptor->id);
     struct elf_header *header = elf_get_header(physical);
     struct elf_section_header *sheader;
     struct elf_section_header *symHeader;
@@ -47,11 +47,11 @@ unsigned int syscall_close(struct runtime_task *task, void *stack)
     struct syscall_close_args *args = stack;
     struct runtime_descriptor *descriptor = task->get_descriptor(task, args->index);
 
-    if (!descriptor || !descriptor->id || !descriptor->filesystem)
+    if (!descriptor || !descriptor->id)
         return 0;
 
-    if (descriptor->filesystem->close)
-        descriptor->filesystem->close(descriptor->filesystem, descriptor->id);
+    if (descriptor->mount->filesystem->close)
+        descriptor->mount->filesystem->close(descriptor->mount->filesystem, descriptor->id);
 
     descriptor->id = 0;
 
@@ -79,7 +79,7 @@ unsigned int syscall_execute(struct runtime_task *task, void *stack)
     struct elf_program_header *pheaders;
     struct runtime_descriptor *descriptor = task->get_descriptor(task, args->index);
 
-    if (!descriptor || !descriptor->id || !descriptor->filesystem || !descriptor->filesystem->read)
+    if (!descriptor || !descriptor->id || !descriptor->mount->filesystem->read)
         return 0;
 
     slot = runtime_get_task_slot();
@@ -93,7 +93,7 @@ unsigned int syscall_execute(struct runtime_task *task, void *stack)
     mmu_map_user_memory(ntask->id, ntask->memory.paddress, ntask->memory.paddress, ntask->memory.size);
     mmu_load_memory(ntask->id);
 
-    count = descriptor->filesystem->read(descriptor->filesystem, descriptor->id, 0, ntask->memory.size, (void *)ntask->memory.paddress);
+    count = descriptor->mount->filesystem->read(descriptor->mount->filesystem, descriptor->id, 0, ntask->memory.size, (void *)ntask->memory.paddress);
 
     if (!count)
         return 0;
@@ -144,10 +144,10 @@ unsigned int syscall_load(struct runtime_task *task, void *stack)
     void (*init)();
     struct runtime_descriptor *descriptor = task->get_descriptor(task, args->index);
 
-    if (!descriptor || !descriptor->id || !descriptor->filesystem || !descriptor->filesystem->get_physical)
+    if (!descriptor || !descriptor->id || !descriptor->mount->filesystem->get_physical)
         return 0;
 
-    physical = descriptor->filesystem->get_physical(descriptor->filesystem, descriptor->id);
+    physical = descriptor->mount->filesystem->get_physical(descriptor->mount->filesystem, descriptor->id);
 
     header = elf_get_header(physical);
 
@@ -176,7 +176,7 @@ unsigned int syscall_mount(struct runtime_task *task, void *stack)
     struct modules_filesystem *(*get_filesystem)();
     struct runtime_descriptor *descriptor = task->get_descriptor(task, args->index);
 
-    if (!descriptor || !descriptor->id || !descriptor->filesystem || !descriptor->filesystem->get_physical)
+    if (!descriptor || !descriptor->id || !descriptor->mount->filesystem->get_physical)
         return 0;
 
     slot = task->get_mount_slot(task);
@@ -224,10 +224,10 @@ unsigned int syscall_open(struct runtime_task *task, void *stack)
     if (!id)
         return 0;
 
-    runtime_descriptor_init(descriptor, id, mount->filesystem, 0);
+    runtime_descriptor_init(descriptor, id, mount, 0);
 
-    if (descriptor->filesystem->open)
-        descriptor->filesystem->open(descriptor->filesystem, descriptor->id);
+    if (descriptor->mount->filesystem->open)
+        descriptor->mount->filesystem->open(descriptor->mount->filesystem, descriptor->id);
 
     return args->index;
 
@@ -239,13 +239,13 @@ unsigned int syscall_read(struct runtime_task *task, void *stack)
     struct syscall_read_args *args = stack;
     struct runtime_descriptor *descriptor = task->get_descriptor(task, args->index);
 
-    if (!descriptor || !descriptor->id || !descriptor->filesystem || !descriptor->filesystem->read)
+    if (!descriptor || !descriptor->id || !descriptor->mount->filesystem->read)
         return 0;
 
     if (!args->count)
         return 0;
 
-    return descriptor->filesystem->read(descriptor->filesystem, descriptor->id, args->offset, args->count, args->buffer);
+    return descriptor->mount->filesystem->read(descriptor->mount->filesystem, descriptor->id, args->offset, args->count, args->buffer);
 
 }
 
@@ -256,7 +256,7 @@ unsigned int syscall_unload(struct runtime_task *task, void *stack)
     void (*destroy)();
     struct runtime_descriptor *descriptor = task->get_descriptor(task, args->index);
 
-    if (!descriptor || !descriptor->id || !descriptor->filesystem || !descriptor->filesystem->get_physical)
+    if (!descriptor || !descriptor->id || !descriptor->mount->filesystem->get_physical)
         return 0;
 
     destroy = (void (*)())(get_module_func(descriptor, "destroy"));
@@ -295,13 +295,13 @@ unsigned int syscall_write(struct runtime_task *task, void *stack)
     struct syscall_write_args *args = stack;
     struct runtime_descriptor *descriptor = task->get_descriptor(task, args->index);
 
-    if (!descriptor || !descriptor->id || !descriptor->filesystem || !descriptor->filesystem->write)
+    if (!descriptor || !descriptor->id || !descriptor->mount->filesystem->write)
         return 0;
 
     if (!args->count)
         return 0;
 
-    return descriptor->filesystem->write(descriptor->filesystem, descriptor->id, args->offset, args->count, args->buffer);
+    return descriptor->mount->filesystem->write(descriptor->mount->filesystem, descriptor->id, args->offset, args->count, args->buffer);
 
 }
 
