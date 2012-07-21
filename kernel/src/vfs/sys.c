@@ -3,8 +3,14 @@
 #include <modules.h>
 #include <vfs/sys.h>
 
-static union modules_module **modules;
-static struct modules_filesystem filesystem;
+static struct vfs_sys_filesystem filesystem;
+
+static unsigned int parent(struct modules_filesystem *self, unsigned int id)
+{
+
+    return 1;
+
+}
 
 static unsigned int read_root(unsigned int count, void *buffer)
 {
@@ -15,7 +21,7 @@ static unsigned int read_root(unsigned int count, void *buffer)
 
 }
 
-static unsigned int read_category(unsigned int id, unsigned int count, char *buffer)
+static unsigned int read_category(struct vfs_sys_filesystem *filesystem, unsigned int id, unsigned int count, char *buffer)
 {
 
     unsigned int i;
@@ -25,7 +31,7 @@ static unsigned int read_category(unsigned int id, unsigned int count, char *buf
     {
 
         unsigned int size;
-        union modules_module *module = modules[i];
+        union modules_module *module = filesystem->modules[i];
 
         if (!module)
             continue;
@@ -57,10 +63,12 @@ static unsigned int read_category(unsigned int id, unsigned int count, char *buf
 static unsigned int read(struct modules_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
+    struct vfs_sys_filesystem *filesystem = (struct vfs_sys_filesystem *)self;
+
     if (id == 1)
         return read_root(count, buffer);
 
-    return read_category(id, count, buffer);
+    return read_category(filesystem, id, count, buffer);
 
 }
 
@@ -89,22 +97,24 @@ static unsigned int walk(struct modules_filesystem *self, unsigned int id, unsig
 
 }
 
-static unsigned int parent(struct modules_filesystem *self, unsigned int id)
+void vfs_sys_filesystem_init(struct vfs_sys_filesystem *filesystem, union modules_module **modules)
 {
 
-    return 1;
+    memory_clear(filesystem, sizeof (struct vfs_sys_filesystem));
+
+    modules_filesystem_init(&filesystem->base, 0x0002, "sys", 0, 0, read, 0, parent, walk, 0);
+
+    filesystem->modules = modules;
 
 }
 
-struct modules_filesystem *vfs_sys_setup(union modules_module **m)
+struct modules_filesystem *vfs_sys_setup(union modules_module **modules)
 {
 
-    modules = m;
+    vfs_sys_filesystem_init(&filesystem, modules);
+    modules_register_filesystem(&filesystem.base);
 
-    modules_filesystem_init(&filesystem, 0x0001, "sys", 0, 0, read, 0, parent, walk, 0);
-    modules_register_filesystem(&filesystem);
-
-    return &filesystem;
+    return &filesystem.base;
 
 }
 
