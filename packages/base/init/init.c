@@ -43,9 +43,6 @@ void load_modules_extra(unsigned int id)
     call_open(FILE_STDIN, 19, "/ramdisk/mod/pci.ko");
     call_execute(id);
 
-    call_open(FILE_STDIN, 19, "/ramdisk/mod/pit.ko");
-    call_execute(id);
-
     call_open(FILE_STDIN, 19, "/ramdisk/mod/rtc.ko");
     call_execute(id);
 
@@ -54,22 +51,32 @@ void load_modules_extra(unsigned int id)
 void load_modules_testing(unsigned int id)
 {
 
+    /* Has caused problems */
+    call_open(FILE_STDIN, 20, "/ramdisk/mod/acpi.ko");
+    call_execute(id);
+
+    /* Has caused problems */
+    call_open(FILE_STDIN, 19, "/ramdisk/mod/pit.ko");
+    call_execute(id);
+
+    /* Experimental */
     call_open(FILE_STDIN, 19, "/ramdisk/mod/ata.ko");
     call_execute(id);
 
+    /* Experimental */
     call_open(FILE_STDIN, 19, "/ramdisk/mod/mbr.ko");
     call_execute(id);
 
+    /* Experimental */
     call_open(FILE_STDIN, 20, "/ramdisk/mod/ext2.ko");
     call_execute(id);
 
+    /* Does not work if device is non-existing */
     call_open(FILE_STDIN, 23, "/ramdisk/mod/rtl8139.ko");
     call_execute(id);
 
+    /* Does not work if device is non-existing */
     call_open(FILE_STDIN, 19, "/ramdisk/mod/bga.ko");
-    call_execute(id);
-
-    call_open(FILE_STDIN, 20, "/ramdisk/mod/acpi.ko");
     call_execute(id);
 
 }
@@ -83,7 +90,6 @@ void load_modules()
 
     load_modules_core(id);
     load_modules_extra(id);
-    /* load_modules_testing(id); */
 
     call_close(FILE_STDIN);
     call_close(id);
