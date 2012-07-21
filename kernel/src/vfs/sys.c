@@ -6,21 +6,20 @@
 static union modules_module **modules;
 static struct modules_filesystem filesystem;
 
-static unsigned int read(struct modules_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int read_root(unsigned int count, void *buffer)
+{
+
+    memory_copy(buffer, "all/\nbus/\ndevice/\ndriver/\nfilesystem/\nramdisk/\nmodule/\n", 55);
+
+    return 55;
+
+}
+
+static unsigned int read_category(unsigned int id, unsigned int count, char *buffer)
 {
 
     unsigned int i;
     unsigned int length = 0;
-    char *out = buffer;
-
-    if (id == 1)
-    {
-
-        memory_copy(buffer, "all/\nbus/\ndevice/\ndriver/\nfilesystem/\nramdisk/\nmodule/\n", 55);
-
-        return 55;
-
-    }
 
     for (i = 0; i < MODULES_MODULE_SLOTS; i++)
     {
@@ -31,32 +30,37 @@ static unsigned int read(struct modules_filesystem *self, unsigned int id, unsig
         if (!module)
             continue;
 
-        if (id != 2)
-        {
+        if (id == 3 && module->base.type != MODULES_TYPE_BUS)
+            continue;
 
-            if (id == 3 && module->base.type != MODULES_TYPE_BUS)
-                continue;
+        if (id == 4 && module->base.type != MODULES_TYPE_DEVICE)
+            continue;
 
-            if (id == 4 && module->base.type != MODULES_TYPE_DEVICE)
-                continue;
+        if (id == 5 && module->base.type != MODULES_TYPE_DRIVER)
+            continue;
 
-            if (id == 5 && module->base.type != MODULES_TYPE_DRIVER)
-                continue;
-
-            if (id == 6 && module->base.type != MODULES_TYPE_FILESYSTEM)
-                continue;
-
-        }
+        if (id == 6 && module->base.type != MODULES_TYPE_FILESYSTEM)
+            continue;
 
         size = string_length(module->base.name);
 
-        memory_copy(out + length, module->base.name, size);
-        memory_copy(out + length + size, "/\n", 2);
+        memory_copy(buffer + length, module->base.name, size);
+        memory_copy(buffer + length + size, "/\n", 2);
         length += size + 2;
 
     }
 
     return length;
+
+}
+
+static unsigned int read(struct modules_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    if (id == 1)
+        return read_root(count, buffer);
+
+    return read_category(id, count, buffer);
 
 }
 
