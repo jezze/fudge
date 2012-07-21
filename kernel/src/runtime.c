@@ -114,14 +114,13 @@ unsigned int runtime_get_task_slot()
 
 }
 
-void runtime_descriptor_init(struct runtime_descriptor *descriptor, unsigned int id, struct runtime_mount *mount, unsigned int permissions)
+void runtime_descriptor_init(struct runtime_descriptor *descriptor, unsigned int id, struct runtime_mount *mount)
 {
 
     memory_clear(descriptor, sizeof (struct runtime_descriptor));
 
     descriptor->id = id;
     descriptor->mount = mount;
-    descriptor->permissions = permissions;
 
 }
 

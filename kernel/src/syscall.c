@@ -224,7 +224,7 @@ unsigned int syscall_open(struct runtime_task *task, void *stack)
     if (!id)
         return 0;
 
-    runtime_descriptor_init(descriptor, id, mount, 0);
+    runtime_descriptor_init(descriptor, id, mount);
 
     if (descriptor->mount->filesystem->open)
         descriptor->mount->filesystem->open(descriptor->mount->filesystem, descriptor->id);
