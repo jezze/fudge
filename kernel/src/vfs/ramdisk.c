@@ -35,9 +35,13 @@ static unsigned int read(struct modules_filesystem *self, unsigned int id, unsig
 
             start = filesystem->image->nodes[i].name + string_length(node->name);
             size = string_length(start);
+
+            if (!size)
+                continue;
+
             slash = memory_find(start, "/", size, 1);
 
-            if (slash && slash < start + size)
+            if (slash && slash < start + size - 1)
                 continue;
 
             memory_copy(out + length, start, size);
