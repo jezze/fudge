@@ -9,7 +9,7 @@ ARFLAGS=rs
 
 .PHONY: all lib kernel modules packages
 
-all: lib/libfudge.a kernel/fudge modules packages ramdisk fudge.iso
+all: fudge.iso
 
 include rules.$(ARCH).mk
 include lib/rules.mk
@@ -17,63 +17,53 @@ include kernel/rules.mk
 include modules/rules.mk
 include packages/rules.mk
 
+lib: $(LIB)
+
+kernel: $(KERNEL)
+
+modules: $(MODULES)
+
+packages: $(PACKAGES)
+
+image: $(IMAGE)
+
 %.o: %.s
 	$(AS) -c $(ASFLAGS) -o $@ $<
 
 %.o: %.c
 	$(CC) -c $(CCFLAGS) -o $@ $<
 
-%: %.c lib/libfudge.a
-	$(CC) -s $(CCFLAGS) -o $@ $< lib/libfudge.a
+%: %.c $(LIB)
+	$(CC) -s $(CCFLAGS) -o $@ $< $(LIB)
+
+IMAGE=image/bin image/mod image/boot/fudge image/boot/initrd.tar
+
+CLEAN+=$(IMAGE)
 
 clean:
-	rm -rf $(CLEAN)
-	rm -f fudge.iso
-	rm -rf image/bin
-	rm -rf image/mod
-	rm -f image/boot/fudge
-	rm -f image/boot/initrd.tar
-	rm -f image/boot/initrd.cpio
+	rm -rf $(CLEAN) fudge.iso
 
-ramdisk-bin:
-	mkdir -p image/bin
-	cp $(PACKAGES) image/bin
+image/bin: $(PACKAGES)
+	mkdir -p $@
+	cp $(PACKAGES) $@
 
-ramdisk-mod:
-	mkdir -p image/mod
-	cp $(MODULES) image/mod
+image/mod: $(MODULES)
+	mkdir -p $@
+	cp $(MODULES) $@
 
-image/boot/fudge:
-	cp kernel/fudge image/boot/fudge
+image/boot/fudge: $(KERNEL)
+	cp $(KERNEL) $@
 
-initrd.tar:
-	tar -cf initrd.tar image
-
-image/boot/initrd.tar:
+image/boot/initrd.tar: initrd.tar
 	mv initrd.tar $@
 
-initrd.cpio:
-	find image -depth | cpio -o > initrd.cpio
+image/boot/initrd.cpio: initrd.cpio
+	mv initrd.cpio $@
 
-image/boot/initrd.cpio:
-	mv initrd.cpio image/boot
-
-ramdisk: ramdisk-bin ramdisk-mod image/boot/fudge initrd.tar initrd.cpio image/boot/initrd.tar image/boot/initrd.cpio
-
-fudge.iso:
+fudge.iso: $(LIB) $(KERNEL) $(MODULES) $(PACKAGES) $(IMAGE)
 	genisoimage -R -b boot/grub/iso9660_stage1_5 -no-emul-boot -boot-load-size 4 -boot-info-table -o $@ image
 
-toolchain:
-	git submodule init toolchain
-	git submodule update toolchain
-	make -C toolchain all PREFIX=${PREFIX}
-
-image-arm: image/boot/fudge
-	arm-none-eabi-objcopy -O binary image/boot/fudge image/boot/fudge.bin
-	mkimage -A arm -C none -O linux -T kernel -d image/boot/fudge.bin -a 0x00100000 -e 0x00100000 image/boot/fudge.uimg
-	cat image/boot/uboot/u-boot.bin image/boot/fudge.uimg > fudge.img
-
-fudge.img: image/boot/fudge image/boot/initrd.tar
+fudge.img: $(LIB) $(KERNEL) $(MODULES) $(PACKAGES) $(IMAGE)
 	dd if=/dev/zero of=$@ bs=512 count=2880
 	dd if=image/boot/grub/stage1 conv=notrunc of=$@ bs=512 seek=0
 	dd if=image/boot/grub/stage2 conv=notrunc of=$@ bs=512 seek=1
@@ -82,4 +72,20 @@ fudge.img: image/boot/fudge image/boot/initrd.tar
 	dd if=image/boot/initrd.tar conv=notrunc of=$@ bs=512 seek=400
 	sh x86-write-image.sh
 
+initrd.tar:
+	tar -cf $@ image
 
+initrd.cpio:
+	find image -depth | cpio -o > $@
+
+# Experimental
+
+image-arm: image/boot/fudge
+	arm-none-eabi-objcopy -O binary image/boot/fudge image/boot/fudge.bin
+	mkimage -A arm -C none -O linux -T kernel -d image/boot/fudge.bin -a 0x00100000 -e 0x00100000 image/boot/fudge.uimg
+	cat image/boot/uboot/u-boot.bin image/boot/fudge.uimg > fudge.img
+
+toolchain:
+	git submodule init toolchain
+	git submodule update toolchain
+	make -C toolchain all PREFIX=$(PREFIX)

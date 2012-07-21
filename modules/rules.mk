@@ -31,5 +31,3 @@ modules/src/tty/tty.ko: lib/src/memory.o lib/src/string.o modules/src/tty/main.o
 
 modules/%.ko: CCFLAGS+=-Ilib/include -Ikernel/include -Imodules/include
 modules/%.ko: LDFLAGS+=-Tmodules/linker.ld -r
-
-modules: $(MODULES)

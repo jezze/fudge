@@ -5,5 +5,3 @@ include packages/test/rules.mk
 CLEAN+=$(PACKAGES)
 
 packages/%: CCFLAGS+=-Ilib/include
-
-packages: $(PACKAGES)
