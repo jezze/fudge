@@ -17,23 +17,24 @@ static unsigned int read(struct modules_filesystem *self, unsigned int id, unsig
     {
 
         unsigned int i;
-        unsigned int length = 0;
+        unsigned int c = 0;
         char *out = buffer;
 
         for (i = 0; i < filesystem->image->count; i++)
         {
 
+            struct ramdisk_node *current = &filesystem->image->nodes[i];
             char *start;
             char *slash;
             unsigned int size;
 
-            if (&filesystem->image->nodes[i] == node)
+            if (current == node)
                 continue;
 
-            if (!memory_find(filesystem->image->nodes[i].name, node->name, string_length(filesystem->image->nodes[i].name), string_length(node->name)))
+            if (!memory_find(current->name, node->name, string_length(current->name), string_length(node->name)))
                 continue;
 
-            start = filesystem->image->nodes[i].name + string_length(node->name);
+            start = current->name + string_length(node->name);
             size = string_length(start);
 
             if (!size)
@@ -44,25 +45,20 @@ static unsigned int read(struct modules_filesystem *self, unsigned int id, unsig
             if (slash && slash < start + size - 1)
                 continue;
 
-            memory_copy(out + length, start, size);
-            memory_copy(out + length + size, "\n", 1);
-            length += size + 1;
+            memory_copy(out + c, start, size);
+            memory_copy(out + c + size, "\n", 1);
+            c += size + 1;
 
         }
 
-        return length;
+        return c;
 
     }
     
     else
     {
 
-        unsigned int c;
-
-        if (offset > node->size)
-            return 0;
-
-        c = node->size - offset;
+        unsigned int c = (node->size > offset) ? node->size - offset : 0;
 
         if (c > count)
             c = count;
@@ -82,22 +78,29 @@ static unsigned int write(struct modules_filesystem *self, unsigned int id, unsi
 
     struct vfs_ramdisk_filesystem *filesystem = (struct vfs_ramdisk_filesystem *)self;
     struct ramdisk_node *node = &filesystem->image->nodes[id - 1];
-    unsigned int c;
 
     if (node->header->typeflag[0] == TAR_FILETYPE_DIR)
+    {
+
         return 0;
 
-    if (offset > node->size)
-        return 0;
+    }
 
-    c = node->size - offset;
+    else
+    {
 
-    if (c > count)
-        c = count;
+        unsigned int c = (node->size > offset) ? node->size - offset : 0;
 
-    memory_copy((void *)(node->offset + offset), buffer, c);
+        if (c > count)
+            c = count;
 
-    return c;
+        memory_copy((void *)(node->offset + offset), buffer, c);
+
+        return c;
+
+    }
+
+    return 0;
 
 }
 
