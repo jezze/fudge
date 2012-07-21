@@ -7,6 +7,20 @@
 
 static struct vfs_ramdisk_filesystem filesystem;
 
+static unsigned int read_file(struct ramdisk_node *node, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    unsigned int c = (node->size > offset) ? node->size - offset : 0;
+
+    if (c > count)
+        c = count;
+
+    memory_copy(buffer, (void *)(node->offset + offset), c);
+
+    return c;
+
+}
+
 static unsigned int read(struct modules_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
@@ -54,22 +68,22 @@ static unsigned int read(struct modules_filesystem *self, unsigned int id, unsig
         return c;
 
     }
-    
-    else
-    {
 
-        unsigned int c = (node->size > offset) ? node->size - offset : 0;
+    return read_file(node, offset, count, buffer);
 
-        if (c > count)
-            c = count;
+}
 
-        memory_copy(buffer, (void *)(node->offset + offset), c);
+static unsigned int write_file(struct ramdisk_node *node, unsigned int offset, unsigned int count, void *buffer)
+{
 
-        return c;
+    unsigned int c = (node->size > offset) ? node->size - offset : 0;
 
-    }
+    if (c > count)
+        c = count;
 
-    return 0;
+    memory_copy((void *)(node->offset + offset), buffer, c);
+
+    return c;
 
 }
 
@@ -80,27 +94,9 @@ static unsigned int write(struct modules_filesystem *self, unsigned int id, unsi
     struct ramdisk_node *node = &filesystem->image->nodes[id - 1];
 
     if (node->header->typeflag[0] == TAR_FILETYPE_DIR)
-    {
-
         return 0;
 
-    }
-
-    else
-    {
-
-        unsigned int c = (node->size > offset) ? node->size - offset : 0;
-
-        if (c > count)
-            c = count;
-
-        memory_copy((void *)(node->offset + offset), buffer, c);
-
-        return c;
-
-    }
-
-    return 0;
+    return write_file(node, offset, count, buffer);
 
 }
 
