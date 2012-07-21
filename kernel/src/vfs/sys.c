@@ -65,6 +65,9 @@ static unsigned int read(struct modules_filesystem *self, unsigned int id, unsig
 
     struct vfs_sys_filesystem *filesystem = (struct vfs_sys_filesystem *)self;
 
+    if (offset > 0)
+        return 0;
+
     if (id == 1)
         return read_root(count, buffer);
 

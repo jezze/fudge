@@ -34,6 +34,9 @@ static unsigned int read(struct modules_filesystem *self, unsigned int id, unsig
         unsigned int c = 0;
         char *out = buffer;
 
+        if (offset > 0)
+            return 0;
+
         for (i = 0; i < filesystem->image->count; i++)
         {
 
