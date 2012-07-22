@@ -15,8 +15,6 @@ MODULES_SMP=modules/src/arch/x86/smp/smp.ko
 MODULES_UART=modules/src/arch/x86/uart/uart.ko
 MODULES_VGA=modules/src/arch/x86/vga/vga.ko
 
-MODULES+=$(MODULES_ACPI) $(MODULES_APIC) $(MODULES_ATA) $(MODULES_BGA) $(MODULES_CPUID) $(MODULES_FPU) $(MODULES_I915) $(MODULES_MSR) $(MODULES_PCI) $(MODULES_PIT) $(MODULES_PS2) $(MODULES_RTC) $(MODULES_RTL8139) $(MODULES_SMP) $(MODULES_UART) $(MODULES_VGA)
-
 MODULES_OBJECTS_ACPI=modules/src/arch/x86/acpi/main.o modules/src/arch/x86/acpi/driver.o
 MODULES_OBJECTS_APIC=modules/src/arch/x86/apic/main.o modules/src/arch/x86/apic/driver.o
 MODULES_OBJECTS_ATA=modules/src/arch/x86/ata/main.o modules/src/arch/x86/ata/bus.o modules/src/arch/x86/ata/device.o
@@ -34,52 +32,53 @@ MODULES_OBJECTS_SMP=modules/src/arch/x86/smp/main.o modules/src/arch/x86/smp/dri
 MODULES_OBJECTS_UART=modules/src/arch/x86/uart/main.o modules/src/arch/x86/uart/driver.o modules/src/arch/x86/uart/device.o
 MODULES_OBJECTS_VGA=modules/src/arch/x86/vga/main.o modules/src/arch/x86/vga/driver.o
 
+MODULES+=$(MODULES_ACPI) $(MODULES_APIC) $(MODULES_ATA) $(MODULES_BGA) $(MODULES_CPUID) $(MODULES_FPU) $(MODULES_I915) $(MODULES_MSR) $(MODULES_PCI) $(MODULES_PIT) $(MODULES_PS2) $(MODULES_RTC) $(MODULES_RTL8139) $(MODULES_SMP) $(MODULES_UART) $(MODULES_VGA)
 MODULES_OBJECTS+=$(MODULES_OBJECTS_ACPI) $(MODULES_OBJECTS_APIC) $(MODULES_OBJECTS_ATA) $(MODULES_OBJECTS_BGA) $(MODULES_OBJECTS_CPUID) $(MODULES_OBJECTS_FPU) $(MODULES_OBJECTS_I915) $(MODULES_OBJECTS_MSR) $(MODULES_OBJECTS_PCI) $(MODULES_OBJECTS_PIT) $(MODULES_OBJECTS_PS2) $(MODULES_OBJECTS_RTC) $(MODULES_OBJECTS_RTL8139) $(MODULES_OBJECTS_SMP) $(MODULES_OBJECTS_UART) $(MODULES_OBJECTS_VGA)
 
-modules/src/arch/x86/acpi/acpi.ko: lib/src/memory.o lib/src/string.o lib/src/arch/x86/io.o $(MODULES_OBJECTS_ACPI)
+$(MODULES_ACPI): lib/src/memory.o lib/src/string.o lib/src/arch/x86/io.o $(MODULES_OBJECTS_ACPI)
 	$(LD) $(LDFLAGS) -o $@ $^
 
-modules/src/arch/x86/apic/apic.ko: lib/src/memory.o lib/src/string.o lib/src/arch/x86/io.o $(MODULES_OBJECTS_APIC) 
+$(MODULES_APIC): lib/src/memory.o lib/src/string.o lib/src/arch/x86/io.o $(MODULES_OBJECTS_APIC) 
 	$(LD) $(LDFLAGS) -o $@ $^
 
-modules/src/arch/x86/ata/ata.ko: lib/src/memory.o lib/src/string.o lib/src/arch/x86/io.o $(MODULES_OBJECTS_ATA)
+$(MODULES_ATA): lib/src/memory.o lib/src/string.o lib/src/arch/x86/io.o $(MODULES_OBJECTS_ATA)
 	$(LD) $(LDFLAGS) -o $@ $^
 
-modules/src/arch/x86/bga/bga.ko: lib/src/memory.o lib/src/string.o lib/src/arch/x86/io.o $(MODULES_OBJECTS_BGA)
+$(MODULES_BGA): lib/src/memory.o lib/src/string.o lib/src/arch/x86/io.o $(MODULES_OBJECTS_BGA)
 	$(LD) $(LDFLAGS) -o $@ $^
 
-modules/src/arch/x86/cpuid/cpuid.ko: lib/src/memory.o lib/src/string.o lib/src/arch/x86/io.o $(MODULES_OBJECTS_CPUID)
+$(MODULES_CPUID): lib/src/memory.o lib/src/string.o lib/src/arch/x86/io.o $(MODULES_OBJECTS_CPUID)
 	$(LD) $(LDFLAGS) -o $@ $^
 
-modules/src/arch/x86/fpu/fpu.ko: lib/src/memory.o lib/src/string.o lib/src/arch/x86/io.o $(MODULES_OBJECTS_FPU)
+$(MODULES_FPU): lib/src/memory.o lib/src/string.o lib/src/arch/x86/io.o $(MODULES_OBJECTS_FPU)
 	$(LD) $(LDFLAGS) -o $@ $^
 
-modules/src/arch/x86/i915/i915.ko: lib/src/memory.o lib/src/string.o lib/src/arch/x86/io.o $(MODULES_OBJECTS_I915)
+$(MODULES_I915): lib/src/memory.o lib/src/string.o lib/src/arch/x86/io.o $(MODULES_OBJECTS_I915)
 	$(LD) $(LDFLAGS) -o $@ $^
 
-modules/src/arch/x86/msr/msr.ko: lib/src/memory.o lib/src/string.o lib/src/arch/x86/io.o $(MODULES_OBJECTS_MSR)
+$(MODULES_MSR): lib/src/memory.o lib/src/string.o lib/src/arch/x86/io.o $(MODULES_OBJECTS_MSR)
 	$(LD) $(LDFLAGS) -o $@ $^
 
-modules/src/arch/x86/pci/pci.ko: lib/src/memory.o lib/src/string.o lib/src/arch/x86/io.o $(MODULES_OBJECTS_PCI)
+$(MODULES_PCI): lib/src/memory.o lib/src/string.o lib/src/arch/x86/io.o $(MODULES_OBJECTS_PCI)
 	$(LD) $(LDFLAGS) -o $@ $^
 
-modules/src/arch/x86/pit/pit.ko: lib/src/memory.o lib/src/string.o lib/src/arch/x86/io.o $(MODULES_OBJECTS_PIT)
+$(MODULES_PIT): lib/src/memory.o lib/src/string.o lib/src/arch/x86/io.o $(MODULES_OBJECTS_PIT)
 	$(LD) $(LDFLAGS) -o $@ $^
 
-modules/src/arch/x86/ps2/ps2.ko: lib/src/memory.o lib/src/string.o lib/src/arch/x86/io.o $(MODULES_OBJECTS_PS2)
+$(MODULES_PS2): lib/src/memory.o lib/src/string.o lib/src/arch/x86/io.o $(MODULES_OBJECTS_PS2)
 	$(LD) $(LDFLAGS) -o $@ $^
 
-modules/src/arch/x86/rtc/rtc.ko: lib/src/memory.o lib/src/string.o lib/src/arch/x86/io.o $(MODULES_OBJECTS_RTC)
+$(MODULES_RTC): lib/src/memory.o lib/src/string.o lib/src/arch/x86/io.o $(MODULES_OBJECTS_RTC)
 	$(LD) $(LDFLAGS) -o $@ $^
 
-modules/src/arch/x86/rtl8139/rtl8139.ko: lib/src/memory.o lib/src/string.o lib/src/arch/x86/io.o $(MODULES_OBJECTS_RTL8139)
+$(MODULES_RTL8139): lib/src/memory.o lib/src/string.o lib/src/arch/x86/io.o $(MODULES_OBJECTS_RTL8139)
 	$(LD) $(LDFLAGS) -o $@ $^
 
-modules/src/arch/x86/smp/smp.ko: lib/src/memory.o lib/src/string.o lib/src/arch/x86/io.o $(MODULES_OBJECTS_SMP)
+$(MODULES_SMP): lib/src/memory.o lib/src/string.o lib/src/arch/x86/io.o $(MODULES_OBJECTS_SMP)
 	$(LD) $(LDFLAGS) -o $@ $^
 
-modules/src/arch/x86/uart/uart.ko: lib/src/memory.o lib/src/string.o lib/src/arch/x86/io.o $(MODULES_OBJECTS_UART)
+$(MODULES_UART): lib/src/memory.o lib/src/string.o lib/src/arch/x86/io.o $(MODULES_OBJECTS_UART)
 	$(LD) $(LDFLAGS) -o $@ $^
 
-modules/src/arch/x86/vga/vga.ko: lib/src/memory.o lib/src/string.o lib/src/arch/x86/io.o $(MODULES_OBJECTS_VGA)
+$(MODULES_VGA): lib/src/memory.o lib/src/string.o lib/src/arch/x86/io.o $(MODULES_OBJECTS_VGA)
 	$(LD) $(LDFLAGS) -o $@ $^
