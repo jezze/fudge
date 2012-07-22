@@ -247,9 +247,6 @@ unsigned int syscall_read(struct runtime_task *task, void *stack)
     if (!descriptor || !descriptor->id || !descriptor->mount->filesystem->read)
         return 0;
 
-    if (!args->count)
-        return 0;
-
     return descriptor->mount->filesystem->read(descriptor->mount->filesystem, descriptor->id, args->offset, args->count, args->buffer);
 
 }
@@ -301,9 +298,6 @@ unsigned int syscall_write(struct runtime_task *task, void *stack)
     struct runtime_descriptor *descriptor = task->get_descriptor(task, args->index);
 
     if (!descriptor || !descriptor->id || !descriptor->mount->filesystem->write)
-        return 0;
-
-    if (!args->count)
         return 0;
 
     return descriptor->mount->filesystem->write(descriptor->mount->filesystem, descriptor->id, args->offset, args->count, args->buffer);
