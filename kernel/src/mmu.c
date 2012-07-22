@@ -8,15 +8,6 @@ static struct mmu_unit *mmuUnit;
 void mmu_pagefault(struct runtime_task *task, unsigned int address, unsigned int flags)
 {
 
-    if (address >= task->memory.vaddress && address < task->memory.vaddress + task->memory.size)
-    {
-
-        mmu_map_user_memory(task->id, task->memory.paddress, task->memory.vaddress, task->memory.size);
-
-        return;
-
-    }
-
     error_register(0, address);
     error_register(1, flags);
     error_panic("PAGE FAULT", __FILE__, __LINE__);
