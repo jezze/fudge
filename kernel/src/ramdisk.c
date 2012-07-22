@@ -42,22 +42,22 @@ void ramdisk_node_init(struct ramdisk_node *node, char *name, unsigned int size,
 
 }
 
-void ramdisk_image_init(struct ramdisk_image *image, unsigned int ramdiskc, void **ramdiskv)
+void ramdisk_image_init(struct ramdisk_image *image)
 {
 
-    unsigned int i;
-
     memory_clear(image, sizeof (struct ramdisk_image));
-
-    for (i = 0; i < ramdiskc; i++)
-        image->count += parse(*(ramdiskv + i));
 
 }
 
 struct ramdisk_image *ramdisk_setup(unsigned int ramdiskc, void **ramdiskv)
 {
 
-    ramdisk_image_init(&image, ramdiskc, ramdiskv);
+    unsigned int i;
+
+    ramdisk_image_init(&image);
+
+    for (i = 0; i < ramdiskc; i++)
+        image.count += parse(*(ramdiskv + i));
 
     return &image;
 
