@@ -138,10 +138,9 @@ struct elf_relocatea
 
 };
 
-struct elf_header *elf_get_header(unsigned int address);
+unsigned int elf_validate(struct elf_header *header);
 struct elf_section_header *elf_get_section(struct elf_header *header, struct elf_section_header *sectionHeader, unsigned int type);
 unsigned int elf_find_symbol(struct elf_header *header, struct elf_section_header *sheader, struct elf_section_header *symHeader, struct elf_symbol *symTable, char *strTable, char *symbol);
-void elf_relocate(struct elf_header *header, unsigned int address);
 
 #endif
 

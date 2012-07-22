@@ -7,11 +7,11 @@
 #include <runtime.h>
 #include <syscall.h>
 
-static unsigned int get_module_func(struct runtime_descriptor *descriptor, char *func)
+static unsigned int elf_get_func(struct runtime_descriptor *descriptor, char *func)
 {
 
     unsigned int physical = descriptor->mount->filesystem->get_physical(descriptor->mount->filesystem, descriptor->id);
-    struct elf_header *header = elf_get_header(physical);
+    struct elf_header *header = (struct elf_header *)physical;
     struct elf_section_header *sheader;
     struct elf_section_header *symHeader;
     struct elf_symbol *symTable;
@@ -26,6 +26,77 @@ static unsigned int get_module_func(struct runtime_descriptor *descriptor, char 
     strTable = (char *)(header->entry + sheader[symHeader->link].offset);
 
     return elf_find_symbol(header, sheader, symHeader, symTable, strTable, func);
+
+}
+
+static void elf_relocate_section(struct elf_section_header *sheader, struct elf_section_header *relHeader, struct elf_section_header *relData, struct elf_relocate *relTable, struct elf_section_header *symHeader, struct elf_symbol *symTable, unsigned int address)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < relHeader->size / relHeader->esize; i++)
+    {
+
+        struct elf_relocate *relEntry = &relTable[i];
+        unsigned char type = relEntry->info & 0x0F;
+        unsigned char index = relEntry->info >> 8;
+        struct elf_symbol *symEntry = &symTable[index];
+        unsigned int *entry = (unsigned int *)(address + relData->offset + relEntry->offset);
+        unsigned int value = *entry;
+        unsigned int addend = (symEntry->shindex) ? address + sheader[symEntry->shindex].offset + symEntry->value : 0;
+
+        switch (type)
+        {
+
+            case 1:
+
+                *entry = value + addend;
+
+                break;
+
+            case 2:
+
+                *entry = value + addend - (unsigned int)entry;
+
+                break;
+
+        }
+
+    }
+
+}
+
+static void elf_relocate(struct elf_header *header, unsigned int address)
+{
+
+    struct elf_section_header *sheader = (struct elf_section_header *)(address + header->shoffset);
+    unsigned int i;
+
+    header->entry = address;
+
+    for (i = 0; i < header->shcount; i++)
+    {
+
+        struct elf_section_header *relHeader;
+        struct elf_section_header *relData;
+        struct elf_section_header *symHeader;
+        struct elf_relocate *relTable;
+        struct elf_symbol *symTable;
+
+        if (sheader[i].type != ELF_SECTION_TYPE_REL)
+            continue;
+
+        relHeader = &sheader[i];
+        relData = &sheader[relHeader->info];
+        symHeader = &sheader[relHeader->link];
+        relTable = (struct elf_relocate *)(header->entry + relHeader->offset);
+        symTable = (struct elf_symbol *)(header->entry + symHeader->offset);
+
+        elf_relocate_section(sheader, relHeader, relData, relTable, symHeader, symTable, address);
+
+        relData->address += header->entry;
+
+    }
 
 }
 
@@ -154,14 +225,14 @@ unsigned int syscall_load(struct runtime_task *task, void *stack)
 
     physical = descriptor->mount->filesystem->get_physical(descriptor->mount->filesystem, descriptor->id);
 
-    header = elf_get_header(physical);
+    header = (struct elf_header *)physical;
 
-    if (!header)
+    if (!elf_validate(header))
         return 0;
 
     elf_relocate(header, physical);
 
-    init = (void (*)())(get_module_func(descriptor, "init"));
+    init = (void (*)())(elf_get_func(descriptor, "init"));
 
     if (!init)
         return 0;
@@ -194,7 +265,7 @@ unsigned int syscall_mount(struct runtime_task *task, void *stack)
     if (!mount)
         return 0;
 
-    get_filesystem = (struct modules_filesystem *(*)())(get_module_func(descriptor, "get_filesystem"));
+    get_filesystem = (struct modules_filesystem *(*)())(elf_get_func(descriptor, "get_filesystem"));
 
     if (!get_filesystem)
         return 0;
@@ -261,7 +332,7 @@ unsigned int syscall_unload(struct runtime_task *task, void *stack)
     if (!descriptor || !descriptor->id || !descriptor->mount->filesystem->get_physical)
         return 0;
 
-    destroy = (void (*)())(get_module_func(descriptor, "destroy"));
+    destroy = (void (*)())(elf_get_func(descriptor, "destroy"));
 
     if (!destroy)
         return 0;
