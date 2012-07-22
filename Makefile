@@ -8,7 +8,7 @@ AR=ar
 ARFLAGS=rs
 IMAGE=image image/bin image/boot image/home image/data image/mod image/boot/fudge image/boot/initrd.tar
 
-.PHONY: all lib kernel modules packages image
+.PHONY: all clean lib kernel modules packages
 
 all: fudge.iso
 
