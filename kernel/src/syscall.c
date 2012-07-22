@@ -66,9 +66,11 @@ static void elf_relocate_section(struct elf_section_header *sectionHeader, struc
 
 }
 
-static void elf_relocate(struct elf_header *header, struct elf_section_header *sectionHeader, unsigned int address)
+static void elf_relocate(struct runtime_descriptor *descriptor, unsigned int address)
 {
 
+    struct elf_header *header = (struct elf_header *)address;
+    struct elf_section_header *sectionHeader = (struct elf_section_header *)(address + header->shoffset);
     unsigned int i;
 
     header->entry = address;
@@ -215,8 +217,6 @@ unsigned int syscall_load(struct runtime_task *task, void *stack)
 
     struct syscall_load_args *args = stack;
     unsigned int physical;
-    struct elf_header *header;
-    struct elf_section_header *sectionHeader;
     void (*init)();
     struct runtime_descriptor *descriptor = task->get_descriptor(task, args->index);
 
@@ -225,13 +225,7 @@ unsigned int syscall_load(struct runtime_task *task, void *stack)
 
     physical = descriptor->mount->filesystem->get_physical(descriptor->mount->filesystem, descriptor->id);
 
-    header = (struct elf_header *)physical;
-    sectionHeader = (struct elf_section_header *)(physical + header->shoffset);
-
-    if (!elf_validate(header))
-        return 0;
-
-    elf_relocate(header, sectionHeader, physical);
+    elf_relocate(descriptor, physical);
 
     init = (void (*)())(elf_get_func(descriptor, "init"));
 
