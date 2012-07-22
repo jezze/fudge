@@ -72,32 +72,34 @@ static void elf_relocate_section(struct elf_section_header *sectionHeader, struc
 static void elf_relocate(struct runtime_descriptor *descriptor, unsigned int address)
 {
 
-    unsigned int physical = descriptor->mount->filesystem->get_physical(descriptor->mount->filesystem, descriptor->id);
-    struct elf_header *header = (struct elf_header *)physical;
-    struct elf_section_header *sectionHeader = (struct elf_section_header *)(physical + header->shoffset);
+    struct elf_header header;
+    struct elf_section_header sectionHeader[20];
     unsigned int i;
 
-    for (i = 0; i < header->shcount; i++)
+    descriptor->mount->filesystem->read(descriptor->mount->filesystem, descriptor->id, 0, sizeof (struct elf_header), &header);
+
+    if (!elf_validate(&header))
+        return;
+
+    descriptor->mount->filesystem->read(descriptor->mount->filesystem, descriptor->id, header.shoffset, header.shsize * header.shcount, sectionHeader);
+
+    for (i = 0; i < header.shcount; i++)
     {
 
-        struct elf_section_header *relocateHeader;
-        struct elf_section_header *relocateData;
-        struct elf_section_header *symbolHeader;
-        struct elf_relocate *relocateTable;
-        struct elf_symbol *symbolTable;
+        struct elf_relocate relocateTable[200];
+        struct elf_symbol symbolTable[400];
 
         if (sectionHeader[i].type != ELF_SECTION_TYPE_REL)
             continue;
 
-        relocateHeader = &sectionHeader[i];
-        relocateData = &sectionHeader[relocateHeader->info];
-        symbolHeader = &sectionHeader[relocateHeader->link];
-        relocateTable = (struct elf_relocate *)(physical + relocateHeader->offset);
-        symbolTable = (struct elf_symbol *)(physical + symbolHeader->offset);
+        descriptor->mount->filesystem->read(descriptor->mount->filesystem, descriptor->id, sectionHeader[i].offset, sectionHeader[i].size, relocateTable);
+        descriptor->mount->filesystem->read(descriptor->mount->filesystem, descriptor->id, sectionHeader[sectionHeader[i].link].offset, sectionHeader[sectionHeader[i].link].size, symbolTable);
 
-        elf_relocate_section(sectionHeader, relocateHeader, relocateData, relocateTable, symbolHeader, symbolTable, address);
+        elf_relocate_section(sectionHeader, &sectionHeader[i], &sectionHeader[sectionHeader[i].info], relocateTable, &sectionHeader[sectionHeader[i].link], symbolTable, address);
 
-        relocateData->address += address;
+        sectionHeader[sectionHeader[i].info].address += address;
+
+        descriptor->mount->filesystem->write(descriptor->mount->filesystem, descriptor->id, header.shoffset, header.shsize * header.shcount, sectionHeader);
 
     }
 
