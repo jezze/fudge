@@ -75,11 +75,21 @@ unsigned int syscall_execute(struct runtime_task *task, void *stack)
     unsigned int slot;
     unsigned int count;
     struct runtime_task *ntask;
-    struct elf_header *header;
-    struct elf_program_header *pheaders;
+    struct elf_header header;
+    struct elf_program_header pheader;
     struct runtime_descriptor *descriptor = task->get_descriptor(task, args->index);
 
     if (!descriptor || !descriptor->id || !descriptor->mount->filesystem->read)
+        return 0;
+
+    count = descriptor->mount->filesystem->read(descriptor->mount->filesystem, descriptor->id, 0, sizeof (struct elf_header), &header);
+
+    if (!count)
+        return 0;
+
+    count = descriptor->mount->filesystem->read(descriptor->mount->filesystem, descriptor->id, header.phoffset, sizeof (struct elf_program_header), &pheader);
+
+    if (!count)
         return 0;
 
     slot = runtime_get_task_slot();
@@ -90,27 +100,22 @@ unsigned int syscall_execute(struct runtime_task *task, void *stack)
     ntask = runtime_get_task(slot);
 
     runtime_task_clone(ntask, task, slot);
-    mmu_map_user_memory(ntask->id, ntask->memory.paddress, ntask->memory.paddress, ntask->memory.size);
+    ntask->memory.vaddress = pheader.vaddress;
+
+    runtime_registers_init(&ntask->registers, header.entry, ntask->memory.vaddress + ntask->memory.size, ntask->memory.vaddress + ntask->memory.size);
+
+    mmu_map_user_memory(ntask->id, ntask->memory.paddress, ntask->memory.vaddress, ntask->memory.size);
     mmu_load_memory(ntask->id);
 
-    count = descriptor->mount->filesystem->read(descriptor->mount->filesystem, descriptor->id, 0, ntask->memory.size, (void *)ntask->memory.paddress);
+    count = descriptor->mount->filesystem->read(descriptor->mount->filesystem, descriptor->id, 0, ntask->memory.size, (void *)ntask->memory.vaddress);
 
     if (!count)
-        return 0;
-
-    header = elf_get_header(ntask->memory.paddress);
-    pheaders = (struct elf_program_header *)(ntask->memory.paddress + header->phoffset);
-    ntask->memory.vaddress = pheaders[0].vaddress;
-
-    if (!ntask->memory.vaddress)
         return 0;
 
     task->wait = 1;
     ntask->parent = task;
     ntask->used = 1;
     ntask->wait = 0;
-
-    runtime_registers_init(&ntask->registers, header->entry, ntask->memory.vaddress + ntask->memory.size, ntask->memory.vaddress + ntask->memory.size);
 
     return slot;
 
