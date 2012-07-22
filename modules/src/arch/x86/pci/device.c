@@ -1,6 +1,6 @@
-#include <io.h>
 #include <memory.h>
 #include <modules.h>
+#include <arch/x86/io/io.h>
 #include <arch/x86/pci/pci.h>
 
 static unsigned int config_ind(struct pci_device *device, unsigned int offset)

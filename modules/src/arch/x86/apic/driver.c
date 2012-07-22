@@ -1,4 +1,3 @@
-#include <io.h>
 #include <memory.h>
 #include <kernel.h>
 #include <modules.h>
@@ -6,6 +5,7 @@
 #include <arch/x86/isr.h>
 #include <arch/x86/apic/apic.h>
 #include <arch/x86/cpuid/cpuid.h>
+#include <arch/x86/io/io.h>
 
 static struct apic_routine routines[APIC_TABLE_SLOTS];
 

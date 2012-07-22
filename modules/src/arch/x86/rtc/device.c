@@ -1,6 +1,6 @@
-#include <io.h>
 #include <memory.h>
 #include <modules.h>
+#include <arch/x86/io/io.h>
 #include <arch/x86/rtc/rtc.h>
 
 static unsigned char convert(unsigned char num)

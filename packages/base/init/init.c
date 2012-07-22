@@ -11,6 +11,9 @@ void load_modules_core(unsigned int id)
     call_open(FILE_STDIN, 19, "/ramdisk/mod/log.ko");
     call_execute(id);
 
+    call_open(FILE_STDIN, 18, "/ramdisk/mod/io.ko");
+    call_execute(id);
+
     call_open(FILE_STDIN, 21, "/ramdisk/mod/cpuid.ko");
     call_execute(id);
 
@@ -43,9 +46,6 @@ void load_modules_extra(unsigned int id)
     call_open(FILE_STDIN, 19, "/ramdisk/mod/pci.ko");
     call_execute(id);
 
-    call_open(FILE_STDIN, 19, "/ramdisk/mod/rtc.ko");
-    call_execute(id);
-
 }
 
 void load_modules_testing(unsigned int id)
@@ -57,6 +57,10 @@ void load_modules_testing(unsigned int id)
 
     /* Has caused problems */
     call_open(FILE_STDIN, 19, "/ramdisk/mod/pit.ko");
+    call_execute(id);
+
+    /* Has caused problems */
+    call_open(FILE_STDIN, 19, "/ramdisk/mod/rtc.ko");
     call_execute(id);
 
     /* Experimental */

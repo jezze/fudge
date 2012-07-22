@@ -1,7 +1,7 @@
-#include <io.h>
 #include <memory.h>
 #include <modules.h>
 #include <arch/x86/ata/ata.h>
+#include <arch/x86/io/io.h>
 
 static unsigned int read_block(struct ata_bus *self, unsigned int count, void *buffer)
 {

@@ -1,7 +1,7 @@
-#include <io.h>
 #include <memory.h>
 #include <modules.h>
 #include <arch/x86/apic/apic.h>
+#include <arch/x86/io/io.h>
 #include <arch/x86/pci/pci.h>
 #include <arch/x86/rtl8139/rtl8139.h>
 
