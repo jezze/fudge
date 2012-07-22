@@ -87,9 +87,6 @@ packages: $(PACKAGES)
 %.o: %.c
 	$(CC) -c $(CCFLAGS) -o $@ $<
 
-%: %.c $(LIB)
-	$(CC) -s $(CCFLAGS) -o $@ $< $(LIB)
-
 # Experimental
 
 image-arm: image/boot/fudge
