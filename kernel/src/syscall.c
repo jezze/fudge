@@ -146,12 +146,12 @@ unsigned int syscall_execute(struct runtime_task *task, void *stack)
 {
 
     struct syscall_execute_args *args = stack;
-    unsigned int slot;
-    unsigned int count;
+    struct runtime_descriptor *descriptor = task->get_descriptor(task, args->index);
     struct runtime_task *ntask;
     struct elf_header header;
     struct elf_program_header programHeader;
-    struct runtime_descriptor *descriptor = task->get_descriptor(task, args->index);
+    unsigned int slot;
+    unsigned int count;
 
     if (!descriptor || !descriptor->id || !descriptor->mount->filesystem->read)
         return 0;
@@ -218,9 +218,9 @@ unsigned int syscall_load(struct runtime_task *task, void *stack)
 {
 
     struct syscall_load_args *args = stack;
-    unsigned int physical;
-    void (*init)();
     struct runtime_descriptor *descriptor = task->get_descriptor(task, args->index);
+    void (*init)();
+    unsigned int physical;
 
     if (!descriptor || !descriptor->id || !descriptor->mount->filesystem->get_physical)
         return 0;
@@ -248,18 +248,12 @@ unsigned int syscall_mount(struct runtime_task *task, void *stack)
 {
 
     struct syscall_mount_args *args = stack;
-    unsigned int physical;
-    unsigned int slot;
+    struct runtime_descriptor *descriptor = task->get_descriptor(task, args->index);
     struct runtime_mount *mount;
     struct modules_filesystem *(*get_filesystem)();
-    struct runtime_descriptor *descriptor = task->get_descriptor(task, args->index);
+    unsigned int slot;
 
-    if (!descriptor || !descriptor->id || !descriptor->mount->filesystem->get_physical)
-        return 0;
-
-    physical = descriptor->mount->filesystem->get_physical(descriptor->mount->filesystem, descriptor->id);
-
-    if (!physical)
+    if (!descriptor || !descriptor->id)
         return 0;
 
     slot = task->get_mount_slot(task);
@@ -286,10 +280,10 @@ unsigned int syscall_mount(struct runtime_task *task, void *stack)
 unsigned int syscall_open(struct runtime_task *task, void *stack)
 {
 
-    unsigned int id;
     struct syscall_open_args *args = stack;
-    struct runtime_mount *mount;
     struct runtime_descriptor *descriptor = task->get_descriptor(task, args->index);
+    struct runtime_mount *mount;
+    unsigned int id;
 
     if (!descriptor)
         return 0;
@@ -333,10 +327,10 @@ unsigned int syscall_unload(struct runtime_task *task, void *stack)
 {
 
     struct syscall_unload_args *args = stack;
-    void (*destroy)();
     struct runtime_descriptor *descriptor = task->get_descriptor(task, args->index);
+    void (*destroy)();
 
-    if (!descriptor || !descriptor->id || !descriptor->mount->filesystem->get_physical)
+    if (!descriptor || !descriptor->id)
         return 0;
 
     destroy = (void (*)())(elf_get_func(descriptor, "destroy"));
