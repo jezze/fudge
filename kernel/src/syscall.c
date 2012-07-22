@@ -12,19 +12,10 @@ static unsigned int elf_get_func(struct runtime_descriptor *descriptor, char *fu
 
     unsigned int physical = descriptor->mount->filesystem->get_physical(descriptor->mount->filesystem, descriptor->id);
     struct elf_header *header = (struct elf_header *)physical;
-    struct elf_section_header *sectionHeader;
-    struct elf_section_header *symbolHeader;
-    struct elf_symbol *symbolTable;
-    char *stringTable;
-
-    /* This actually happens sometimes!!! */
-    if (!header)
-        return 0;
-
-    sectionHeader = (struct elf_section_header *)(physical + header->shoffset);
-    symbolHeader = elf_get_section(header, sectionHeader, ELF_SECTION_TYPE_SYMTAB);
-    symbolTable = (struct elf_symbol *)(physical + symbolHeader->offset);
-    stringTable = (char *)(physical + sectionHeader[symbolHeader->link].offset);
+    struct elf_section_header *sectionHeader = (struct elf_section_header *)(physical + header->shoffset);
+    struct elf_section_header *symbolHeader = elf_get_section(header, sectionHeader, ELF_SECTION_TYPE_SYMTAB);
+    struct elf_symbol *symbolTable = (struct elf_symbol *)(physical + symbolHeader->offset);
+    char *stringTable = (char *)(physical + sectionHeader[symbolHeader->link].offset);
 
     return elf_find_symbol(header, sectionHeader, symbolHeader, symbolTable, stringTable, func);
 
@@ -70,11 +61,10 @@ static void elf_relocate_section(struct elf_section_header *sectionHeader, struc
 static void elf_relocate(struct runtime_descriptor *descriptor, unsigned int address)
 {
 
-    struct elf_header *header = (struct elf_header *)address;
-    struct elf_section_header *sectionHeader = (struct elf_section_header *)(address + header->shoffset);
+    unsigned int physical = descriptor->mount->filesystem->get_physical(descriptor->mount->filesystem, descriptor->id);
+    struct elf_header *header = (struct elf_header *)physical;
+    struct elf_section_header *sectionHeader = (struct elf_section_header *)(physical + header->shoffset);
     unsigned int i;
-
-    header->entry = address;
 
     for (i = 0; i < header->shcount; i++)
     {
@@ -91,12 +81,12 @@ static void elf_relocate(struct runtime_descriptor *descriptor, unsigned int add
         relocateHeader = &sectionHeader[i];
         relocateData = &sectionHeader[relocateHeader->info];
         symbolHeader = &sectionHeader[relocateHeader->link];
-        relocateTable = (struct elf_relocate *)(header->entry + relocateHeader->offset);
-        symbolTable = (struct elf_symbol *)(header->entry + symbolHeader->offset);
+        relocateTable = (struct elf_relocate *)(physical + relocateHeader->offset);
+        symbolTable = (struct elf_symbol *)(physical + symbolHeader->offset);
 
         elf_relocate_section(sectionHeader, relocateHeader, relocateData, relocateTable, symbolHeader, symbolTable, address);
 
-        relocateData->address += header->entry;
+        relocateData->address += address;
 
     }
 
@@ -226,6 +216,10 @@ unsigned int syscall_load(struct runtime_task *task, void *stack)
 
     physical = descriptor->mount->filesystem->get_physical(descriptor->mount->filesystem, descriptor->id);
 
+    if (!physical)
+        return 0;
+
+    /* Physical should be replaced with known address later on */
     elf_relocate(descriptor, physical);
 
     init = (void (*)())(elf_get_func(descriptor, "init"));
@@ -243,12 +237,18 @@ unsigned int syscall_mount(struct runtime_task *task, void *stack)
 {
 
     struct syscall_mount_args *args = stack;
+    unsigned int physical;
     unsigned int slot;
     struct runtime_mount *mount;
     struct modules_filesystem *(*get_filesystem)();
     struct runtime_descriptor *descriptor = task->get_descriptor(task, args->index);
 
     if (!descriptor || !descriptor->id || !descriptor->mount->filesystem->get_physical)
+        return 0;
+
+    physical = descriptor->mount->filesystem->get_physical(descriptor->mount->filesystem, descriptor->id);
+
+    if (!physical)
         return 0;
 
     slot = task->get_mount_slot(task);
