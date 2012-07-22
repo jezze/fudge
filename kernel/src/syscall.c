@@ -139,7 +139,7 @@ unsigned int syscall_execute(struct runtime_task *task, void *stack)
     unsigned int count;
     struct runtime_task *ntask;
     struct elf_header header;
-    struct elf_program_header pheader;
+    struct elf_program_header programHeader;
     struct runtime_descriptor *descriptor = task->get_descriptor(task, args->index);
 
     if (!descriptor || !descriptor->id || !descriptor->mount->filesystem->read)
@@ -150,7 +150,7 @@ unsigned int syscall_execute(struct runtime_task *task, void *stack)
     if (!count)
         return 0;
 
-    count = descriptor->mount->filesystem->read(descriptor->mount->filesystem, descriptor->id, header.phoffset, sizeof (struct elf_program_header), &pheader);
+    count = descriptor->mount->filesystem->read(descriptor->mount->filesystem, descriptor->id, header.phoffset, sizeof (struct elf_program_header), &programHeader);
 
     if (!count)
         return 0;
@@ -163,7 +163,7 @@ unsigned int syscall_execute(struct runtime_task *task, void *stack)
     ntask = runtime_get_task(slot);
 
     runtime_task_clone(ntask, task, slot);
-    ntask->memory.vaddress = pheader.vaddress;
+    ntask->memory.vaddress = programHeader.vaddress;
 
     runtime_registers_init(&ntask->registers, header.entry, ntask->memory.vaddress + ntask->memory.size, ntask->memory.vaddress + ntask->memory.size);
 
