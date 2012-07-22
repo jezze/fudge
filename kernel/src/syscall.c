@@ -17,13 +17,14 @@ static unsigned int elf_get_func(struct runtime_descriptor *descriptor, char *fu
     struct elf_symbol *symbolTable;
     char *stringTable;
 
+    /* This actually happens sometimes!!! */
     if (!header)
         return 0;
 
-    sectionHeader = (struct elf_section_header *)(header->entry + header->shoffset);
+    sectionHeader = (struct elf_section_header *)(physical + header->shoffset);
     symbolHeader = elf_get_section(header, sectionHeader, ELF_SECTION_TYPE_SYMTAB);
-    symbolTable = (struct elf_symbol *)(header->entry + symbolHeader->offset);
-    stringTable = (char *)(header->entry + sectionHeader[symbolHeader->link].offset);
+    symbolTable = (struct elf_symbol *)(physical + symbolHeader->offset);
+    stringTable = (char *)(physical + sectionHeader[symbolHeader->link].offset);
 
     return elf_find_symbol(header, sectionHeader, symbolHeader, symbolTable, stringTable, func);
 
