@@ -38,10 +38,13 @@ image: $(IMAGE)
 
 IMAGE=image/bin image/mod image/boot/fudge image/boot/initrd.tar
 
-CLEAN+=$(IMAGE)
-
 clean:
-	rm -rf $(CLEAN) fudge.iso
+	rm -rf $(LIB) $(LIB_OBJECTS)
+	rm -rf $(KERNEL) $(KERNEL_OBJECTS)
+	rm -rf $(MODULES) $(MODULES_OBJECTS)
+	rm -rf $(PACKAGES)
+	rm -rf $(IMAGE)
+	rm -rf fudge.iso
 
 image/bin: $(PACKAGES)
 	mkdir -p $@
