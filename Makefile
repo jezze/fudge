@@ -7,7 +7,7 @@ LD=$(PREFIX)ld
 AR=ar
 ARFLAGS=rs
 
-.PHONY: all lib kernel modules packages
+.PHONY: all lib kernel modules packages image
 
 all: fudge.iso
 
@@ -25,8 +25,6 @@ modules: $(MODULES)
 
 packages: $(PACKAGES)
 
-image: $(IMAGE)
-
 %.o: %.s
 	$(AS) -c $(ASFLAGS) -o $@ $<
 
@@ -36,7 +34,7 @@ image: $(IMAGE)
 %: %.c $(LIB)
 	$(CC) -s $(CCFLAGS) -o $@ $< $(LIB)
 
-IMAGE=image/bin image/mod image/boot/fudge image/boot/initrd.tar
+IMAGE=image image/bin image/mod image/boot/fudge image/boot/initrd.tar
 
 clean:
 	rm -rf $(LIB) $(LIB_OBJECTS)
@@ -45,6 +43,10 @@ clean:
 	rm -rf $(PACKAGES)
 	rm -rf $(IMAGE)
 	rm -rf fudge.iso
+
+image:
+	mkdir -p $@
+	cp -r system/* $@
 
 image/bin: $(PACKAGES)
 	mkdir -p $@
