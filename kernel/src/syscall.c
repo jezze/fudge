@@ -12,38 +12,38 @@ static unsigned int elf_get_func(struct runtime_descriptor *descriptor, char *fu
 
     unsigned int physical = descriptor->mount->filesystem->get_physical(descriptor->mount->filesystem, descriptor->id);
     struct elf_header *header = (struct elf_header *)physical;
-    struct elf_section_header *sheader;
-    struct elf_section_header *symHeader;
-    struct elf_symbol *symTable;
-    char *strTable;
+    struct elf_section_header *sectionHeader;
+    struct elf_section_header *symbolHeader;
+    struct elf_symbol *symbolTable;
+    char *stringTable;
 
     if (!header)
         return 0;
 
-    sheader = (struct elf_section_header *)(header->entry + header->shoffset);
-    symHeader = elf_get_section(header, sheader, ELF_SECTION_TYPE_SYMTAB);
-    symTable = (struct elf_symbol *)(header->entry + symHeader->offset);
-    strTable = (char *)(header->entry + sheader[symHeader->link].offset);
+    sectionHeader = (struct elf_section_header *)(header->entry + header->shoffset);
+    symbolHeader = elf_get_section(header, sectionHeader, ELF_SECTION_TYPE_SYMTAB);
+    symbolTable = (struct elf_symbol *)(header->entry + symbolHeader->offset);
+    stringTable = (char *)(header->entry + sectionHeader[symbolHeader->link].offset);
 
-    return elf_find_symbol(header, sheader, symHeader, symTable, strTable, func);
+    return elf_find_symbol(header, sectionHeader, symbolHeader, symbolTable, stringTable, func);
 
 }
 
-static void elf_relocate_section(struct elf_section_header *sheader, struct elf_section_header *relHeader, struct elf_section_header *relData, struct elf_relocate *relTable, struct elf_section_header *symHeader, struct elf_symbol *symTable, unsigned int address)
+static void elf_relocate_section(struct elf_section_header *sectionHeader, struct elf_section_header *relocateHeader, struct elf_section_header *relocateData, struct elf_relocate *relocateTable, struct elf_section_header *symbolHeader, struct elf_symbol *symbolTable, unsigned int address)
 {
 
     unsigned int i;
 
-    for (i = 0; i < relHeader->size / relHeader->esize; i++)
+    for (i = 0; i < relocateHeader->size / relocateHeader->esize; i++)
     {
 
-        struct elf_relocate *relEntry = &relTable[i];
-        unsigned char type = relEntry->info & 0x0F;
-        unsigned char index = relEntry->info >> 8;
-        struct elf_symbol *symEntry = &symTable[index];
-        unsigned int *entry = (unsigned int *)(address + relData->offset + relEntry->offset);
+        struct elf_relocate *relocateEntry = &relocateTable[i];
+        unsigned char type = relocateEntry->info & 0x0F;
+        unsigned char index = relocateEntry->info >> 8;
+        struct elf_symbol *symbolEntry = &symbolTable[index];
+        unsigned int *entry = (unsigned int *)(address + relocateData->offset + relocateEntry->offset);
         unsigned int value = *entry;
-        unsigned int addend = (symEntry->shindex) ? address + sheader[symEntry->shindex].offset + symEntry->value : 0;
+        unsigned int addend = (symbolEntry->shindex) ? address + sectionHeader[symbolEntry->shindex].offset + symbolEntry->value : 0;
 
         switch (type)
         {
@@ -66,10 +66,9 @@ static void elf_relocate_section(struct elf_section_header *sheader, struct elf_
 
 }
 
-static void elf_relocate(struct elf_header *header, unsigned int address)
+static void elf_relocate(struct elf_header *header, struct elf_section_header *sectionHeader, unsigned int address)
 {
 
-    struct elf_section_header *sheader = (struct elf_section_header *)(address + header->shoffset);
     unsigned int i;
 
     header->entry = address;
@@ -77,24 +76,24 @@ static void elf_relocate(struct elf_header *header, unsigned int address)
     for (i = 0; i < header->shcount; i++)
     {
 
-        struct elf_section_header *relHeader;
-        struct elf_section_header *relData;
-        struct elf_section_header *symHeader;
-        struct elf_relocate *relTable;
-        struct elf_symbol *symTable;
+        struct elf_section_header *relocateHeader;
+        struct elf_section_header *relocateData;
+        struct elf_section_header *symbolHeader;
+        struct elf_relocate *relocateTable;
+        struct elf_symbol *symbolTable;
 
-        if (sheader[i].type != ELF_SECTION_TYPE_REL)
+        if (sectionHeader[i].type != ELF_SECTION_TYPE_REL)
             continue;
 
-        relHeader = &sheader[i];
-        relData = &sheader[relHeader->info];
-        symHeader = &sheader[relHeader->link];
-        relTable = (struct elf_relocate *)(header->entry + relHeader->offset);
-        symTable = (struct elf_symbol *)(header->entry + symHeader->offset);
+        relocateHeader = &sectionHeader[i];
+        relocateData = &sectionHeader[relocateHeader->info];
+        symbolHeader = &sectionHeader[relocateHeader->link];
+        relocateTable = (struct elf_relocate *)(header->entry + relocateHeader->offset);
+        symbolTable = (struct elf_symbol *)(header->entry + symbolHeader->offset);
 
-        elf_relocate_section(sheader, relHeader, relData, relTable, symHeader, symTable, address);
+        elf_relocate_section(sectionHeader, relocateHeader, relocateData, relocateTable, symbolHeader, symbolTable, address);
 
-        relData->address += header->entry;
+        relocateData->address += header->entry;
 
     }
 
@@ -217,6 +216,7 @@ unsigned int syscall_load(struct runtime_task *task, void *stack)
     struct syscall_load_args *args = stack;
     unsigned int physical;
     struct elf_header *header;
+    struct elf_section_header *sectionHeader;
     void (*init)();
     struct runtime_descriptor *descriptor = task->get_descriptor(task, args->index);
 
@@ -226,11 +226,12 @@ unsigned int syscall_load(struct runtime_task *task, void *stack)
     physical = descriptor->mount->filesystem->get_physical(descriptor->mount->filesystem, descriptor->id);
 
     header = (struct elf_header *)physical;
+    sectionHeader = (struct elf_section_header *)(physical + header->shoffset);
 
     if (!elf_validate(header))
         return 0;
 
-    elf_relocate(header, physical);
+    elf_relocate(header, sectionHeader, physical);
 
     init = (void (*)())(elf_get_func(descriptor, "init"));
 

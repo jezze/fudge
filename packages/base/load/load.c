@@ -46,26 +46,26 @@ static unsigned int get_symbol(char *symbol)
 
 }
 
-static unsigned int resolve_symbols(struct elf_section_header *relHeader, struct elf_relocate *relTable, struct elf_symbol *symTable, char *strTable, char *buffer)
+static unsigned int resolve_symbols(struct elf_section_header *relocateHeader, struct elf_relocate *relocateTable, struct elf_symbol *symbolTable, char *stringTable, char *buffer)
 {
 
    unsigned int i;
 
-    for (i = 0; i < relHeader->size / relHeader->esize; i++)
+    for (i = 0; i < relocateHeader->size / relocateHeader->esize; i++)
     {
 
-        struct elf_relocate *relEntry = &relTable[i];
-        unsigned char type = relEntry->info & 0x0F;
-        unsigned char index = relEntry->info >> 8;
-        struct elf_symbol *symEntry = &symTable[index];
-        unsigned int *entry = (unsigned int *)(buffer + relEntry->offset);
+        struct elf_relocate *relocateEntry = &relocateTable[i];
+        unsigned char type = relocateEntry->info & 0x0F;
+        unsigned char index = relocateEntry->info >> 8;
+        struct elf_symbol *symbolEntry = &symbolTable[index];
+        unsigned int *entry = (unsigned int *)(buffer + relocateEntry->offset);
         unsigned int value = *entry;
         unsigned int symbol;
 
-        if (symEntry->shindex)
+        if (symbolEntry->shindex)
             continue;
 
-        symbol = get_symbol(strTable + symEntry->name);
+        symbol = get_symbol(stringTable + symbolEntry->name);
 
         if (!symbol)
             return 0;
