@@ -10,14 +10,25 @@
 static unsigned int elf_get_func(struct runtime_descriptor *descriptor, char *func)
 {
 
-    unsigned int physical = descriptor->mount->filesystem->get_physical(descriptor->mount->filesystem, descriptor->id);
-    struct elf_header *header = (struct elf_header *)physical;
-    struct elf_section_header *sectionHeader = (struct elf_section_header *)(physical + header->shoffset);
-    struct elf_section_header *symbolHeader = elf_get_section(header, sectionHeader, ELF_SECTION_TYPE_SYMTAB);
-    struct elf_symbol *symbolTable = (struct elf_symbol *)(physical + symbolHeader->offset);
-    char *stringTable = (char *)(physical + sectionHeader[symbolHeader->link].offset);
+    struct elf_header header;
+    struct elf_section_header sectionHeader[20];
+    struct elf_section_header *symbolHeader;
+    struct elf_symbol symbolTable[400];
+    char stringTable[0x1000];
 
-    return elf_find_symbol(header, sectionHeader, symbolHeader, symbolTable, stringTable, func);
+    descriptor->mount->filesystem->read(descriptor->mount->filesystem, descriptor->id, 0, sizeof (struct elf_header), &header);
+
+    if (!elf_validate(&header))
+        return 0;
+
+    descriptor->mount->filesystem->read(descriptor->mount->filesystem, descriptor->id, header.shoffset, header.shsize * header.shcount, sectionHeader);
+
+    symbolHeader = elf_get_section(&header, sectionHeader, ELF_SECTION_TYPE_SYMTAB);
+
+    descriptor->mount->filesystem->read(descriptor->mount->filesystem, descriptor->id, symbolHeader->offset, symbolHeader->size, symbolTable);
+    descriptor->mount->filesystem->read(descriptor->mount->filesystem, descriptor->id, sectionHeader[symbolHeader->link].offset, sectionHeader[symbolHeader->link].size, stringTable);
+
+    return elf_find_symbol(&header, sectionHeader, symbolHeader, symbolTable, stringTable, func);
 
 }
 

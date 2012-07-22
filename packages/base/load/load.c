@@ -14,6 +14,10 @@ static unsigned int get_symbol_module(char *symbol, char *module)
         return 0;
 
     call_read(3, 0, sizeof (struct elf_header), &header);
+
+    if (!elf_validate(&header))
+        return 0;
+
     call_read(3, header.shoffset, header.shsize * header.shcount, sectionHeader);
     
     symbolHeader = elf_get_section(&header, sectionHeader, ELF_SECTION_TYPE_SYMTAB);
