@@ -34,36 +34,36 @@ packages: $(PACKAGES)
 %: %.c $(LIB)
 	$(CC) -s $(CCFLAGS) -o $@ $< $(LIB)
 
-IMAGE=image image/bin image/mod image/boot/fudge image/boot/initrd.tar
-
-clean:
-	rm -rf $(LIB) $(LIB_OBJECTS)
-	rm -rf $(KERNEL) $(KERNEL_OBJECTS)
-	rm -rf $(MODULES) $(MODULES_OBJECTS)
-	rm -rf $(PACKAGES)
-	rm -rf $(IMAGE)
-	rm -rf fudge.iso
+IMAGE=image image/bin image/boot image/home image/data image/mod image/boot/fudge image/boot/initrd.tar
 
 image:
 	mkdir -p $@
-	cp -r system/* $@
 
-image/bin: $(PACKAGES)
+image/bin: image $(PACKAGES)
 	mkdir -p $@
 	cp $(PACKAGES) $@
 
-image/mod: $(MODULES)
-	mkdir -p $@
-	cp $(MODULES) $@
+image/boot: image
+	cp -r system/boot $@
 
-image/boot/fudge: $(KERNEL)
+image/boot/fudge: image/boot $(KERNEL)
 	cp $(KERNEL) $@
 
-image/boot/initrd.tar: initrd.tar
+image/boot/initrd.tar: image/boot initrd.tar
 	mv initrd.tar $@
 
-image/boot/initrd.cpio: initrd.cpio
+image/boot/initrd.cpio: image/boot initrd.cpio
 	mv initrd.cpio $@
+
+image/home: image
+	cp -r system/home $@
+
+image/data: image
+	cp -r system/data $@
+
+image/mod: image $(MODULES)
+	mkdir -p $@
+	cp $(MODULES) $@
 
 fudge.iso: $(LIB) $(KERNEL) $(MODULES) $(PACKAGES) $(IMAGE)
 	genisoimage -R -b boot/grub/iso9660_stage1_5 -no-emul-boot -boot-load-size 4 -boot-info-table -o $@ image
@@ -77,11 +77,19 @@ fudge.img: $(LIB) $(KERNEL) $(MODULES) $(PACKAGES) $(IMAGE)
 	dd if=image/boot/initrd.tar conv=notrunc of=$@ bs=512 seek=400
 	sh x86-write-image.sh
 
-initrd.tar:
+initrd.tar: image
 	tar -cf $@ image
 
-initrd.cpio:
+initrd.cpio: image
 	find image -depth | cpio -o > $@
+
+clean:
+	rm -rf $(LIB) $(LIB_OBJECTS)
+	rm -rf $(KERNEL) $(KERNEL_OBJECTS)
+	rm -rf $(MODULES) $(MODULES_OBJECTS)
+	rm -rf $(PACKAGES)
+	rm -rf $(IMAGE)
+	rm -rf fudge.iso
 
 # Experimental
 
