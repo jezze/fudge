@@ -10,7 +10,8 @@ static struct vfs_ramdisk_filesystem filesystem;
 static unsigned int read_file(struct ramdisk_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    unsigned int c = (node->size > offset) ? node->size - offset : 0;
+    unsigned int size = string_read_num(node->header->size, 8);
+    unsigned int c = (size > offset) ? size - offset : 0;
 
     if (c > count)
         c = count;
@@ -26,8 +27,9 @@ static unsigned int read(struct modules_filesystem *self, unsigned int id, unsig
 
     struct vfs_ramdisk_filesystem *filesystem = (struct vfs_ramdisk_filesystem *)self;
     struct ramdisk_node *node = &filesystem->image->nodes[id - 1];
+    unsigned int length = string_length(node->header->name);
 
-    if (node->header->typeflag[0] == TAR_FILETYPE_DIR)
+    if (node->header->name[length - 1] == '/')
     {
 
         unsigned int i;
@@ -48,10 +50,10 @@ static unsigned int read(struct modules_filesystem *self, unsigned int id, unsig
             if (current == node)
                 continue;
 
-            if (!memory_find(current->name, node->name, string_length(current->name), string_length(node->name)))
+            if (!memory_find(current->header->name, node->header->name, string_length(current->header->name), string_length(node->header->name)))
                 continue;
 
-            start = current->name + string_length(node->name);
+            start = current->header->name + string_length(node->header->name);
             size = string_length(start);
 
             if (!size)
@@ -79,7 +81,8 @@ static unsigned int read(struct modules_filesystem *self, unsigned int id, unsig
 static unsigned int write_file(struct ramdisk_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    unsigned int c = (node->size > offset) ? node->size - offset : 0;
+    unsigned int size = string_read_num(node->header->size, 8);
+    unsigned int c = (size > offset) ? size - offset : 0;
 
     if (c > count)
         c = count;
@@ -95,8 +98,9 @@ static unsigned int write(struct modules_filesystem *self, unsigned int id, unsi
 
     struct vfs_ramdisk_filesystem *filesystem = (struct vfs_ramdisk_filesystem *)self;
     struct ramdisk_node *node = &filesystem->image->nodes[id - 1];
+    unsigned int length = string_length(node->header->name);
 
-    if (node->header->typeflag[0] == TAR_FILETYPE_DIR)
+    if (node->header->name[length - 1] == '/')
         return 0;
 
     return write_file(node, offset, count, buffer);
@@ -116,7 +120,7 @@ static unsigned int walk(struct modules_filesystem *self, unsigned int id, unsig
     for (i = 0; i < filesystem->image->count; i++)
     {
 
-        if (memory_compare(filesystem->image->nodes[i].name, buffer, count))
+        if (memory_compare(filesystem->image->nodes[i].header->name + 6, buffer, count))
             return i + 1;
 
     }
