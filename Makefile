@@ -2,7 +2,7 @@ ARCH=x86
 PREFIX=
 AS=$(PREFIX)as
 CC=$(PREFIX)gcc
-CCFLAGS=-Wall -Werror -ffreestanding -nostdlib -std=c89 -pedantic
+CCFLAGS=-Wall -Werror -ffreestanding -nostdlib -std=c89 -pedantic -O2
 LD=$(PREFIX)ld
 AR=ar
 ARFLAGS=rs
