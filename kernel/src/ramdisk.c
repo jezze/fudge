@@ -17,9 +17,23 @@ static unsigned int parse(void *address)
         struct tar_header *header = (struct tar_header *)current;
         unsigned int size = string_read_num(header->size, 8);
 
-        ramdisk_node_init(&image.nodes[i], header, (unsigned int)(current + TAR_BLOCK_SIZE));
+        if (!size)
+        {
 
-        current += ((size / TAR_BLOCK_SIZE) + ((size % TAR_BLOCK_SIZE) ? 2 : 1)) * TAR_BLOCK_SIZE;
+            ramdisk_node_init(&image.nodes[i], header, 0);
+
+            current += TAR_BLOCK_SIZE;
+
+        }
+
+        else
+        {
+
+            ramdisk_node_init(&image.nodes[i], header, (unsigned int)(current + TAR_BLOCK_SIZE));
+
+            current += ((size / TAR_BLOCK_SIZE) + ((size % TAR_BLOCK_SIZE) ? 2 : 1)) * TAR_BLOCK_SIZE;
+
+        }
 
     }
 

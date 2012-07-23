@@ -1,7 +1,7 @@
 #ifndef KERNEL_RAMDISK_H
 #define KERNEL_RAMDISK_H
 
-#define RAMDISK_NODE_SLOTS 64
+#define RAMDISK_NODE_SLOTS 128
 
 struct ramdisk_node
 {
