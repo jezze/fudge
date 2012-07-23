@@ -37,7 +37,7 @@ void load_modules_core(unsigned int id)
 void load_modules_extra(unsigned int id)
 {
 
-    call_open(FILE_STDIN, 20, "/ramdisk/mod/uart.ko");
+    call_open(FILE_STDIN, 20, "/ramdisk/mod/acpi.ko");
     call_execute(id);
 
     call_open(FILE_STDIN, 19, "/ramdisk/mod/fpu.ko");
@@ -46,22 +46,19 @@ void load_modules_extra(unsigned int id)
     call_open(FILE_STDIN, 19, "/ramdisk/mod/pci.ko");
     call_execute(id);
 
+    call_open(FILE_STDIN, 19, "/ramdisk/mod/pit.ko");
+    call_execute(id);
+
+    call_open(FILE_STDIN, 19, "/ramdisk/mod/rtc.ko");
+    call_execute(id);
+
+    call_open(FILE_STDIN, 20, "/ramdisk/mod/uart.ko");
+    call_execute(id);
+
 }
 
 void load_modules_testing(unsigned int id)
 {
-
-    /* Has caused problems */
-    call_open(FILE_STDIN, 20, "/ramdisk/mod/acpi.ko");
-    call_execute(id);
-
-    /* Has caused problems */
-    call_open(FILE_STDIN, 19, "/ramdisk/mod/pit.ko");
-    call_execute(id);
-
-    /* Has caused problems */
-    call_open(FILE_STDIN, 19, "/ramdisk/mod/rtc.ko");
-    call_execute(id);
 
     /* Experimental */
     call_open(FILE_STDIN, 19, "/ramdisk/mod/ata.ko");
