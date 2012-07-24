@@ -1,6 +1,5 @@
 #include <elf.h>
 #include <memory.h>
-#include <string.h>
 #include <event.h>
 #include <mmu.h>
 #include <modules.h>

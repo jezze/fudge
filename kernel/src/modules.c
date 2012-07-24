@@ -1,5 +1,4 @@
 #include <memory.h>
-#include <string.h>
 #include <modules.h>
 
 static union modules_module *modules[MODULES_MODULE_SLOTS];
