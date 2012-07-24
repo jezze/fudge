@@ -58,7 +58,6 @@ struct runtime_task
     struct runtime_mount mounts[RUNTIME_TASK_MOUNT_SLOTS];
     struct runtime_mount *(*get_mount)(struct runtime_task *self, unsigned int index);
     struct runtime_mount *(*find_mount)(struct runtime_task *self, void *path);
-    unsigned int (*get_mount_slot)(struct runtime_task *self);
 
 };
 

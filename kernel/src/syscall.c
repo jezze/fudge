@@ -251,17 +251,11 @@ unsigned int syscall_mount(struct runtime_task *task, void *stack)
     struct runtime_descriptor *descriptor = task->get_descriptor(task, args->index);
     struct runtime_mount *mount;
     struct modules_filesystem *(*get_filesystem)();
-    unsigned int slot;
 
     if (!descriptor || !descriptor->id)
         return 0;
 
-    slot = task->get_mount_slot(task);
-
-    if (!slot)
-        return 0;
-
-    mount = task->get_mount(task, slot);
+    mount = task->get_mount(task, args->offset);
 
     if (!mount)
         return 0;
@@ -271,9 +265,9 @@ unsigned int syscall_mount(struct runtime_task *task, void *stack)
     if (!get_filesystem)
         return 0;
 
-    runtime_mount_init(mount, slot, get_filesystem(), args->count, args->buffer);
+    runtime_mount_init(mount, args->offset, get_filesystem(), args->count, args->buffer);
 
-    return slot;
+    return 1;
 
 }
 
