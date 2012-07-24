@@ -13,23 +13,6 @@ static struct runtime_descriptor *get_descriptor(struct runtime_task *self, unsi
 
 }
 
-static unsigned int get_descriptor_slot(struct runtime_task *self)
-{
-
-    unsigned int i;
-
-    for (i = 1; i < RUNTIME_TASK_DESCRIPTOR_SLOTS - 1; i++)
-    {
-
-        if (!self->descriptors[i].id)
-            return i;
-
-    }
-
-    return 0;
-
-}
-
 static struct runtime_mount *get_mount(struct runtime_task *self, unsigned int index)
 {
 
@@ -168,7 +151,6 @@ void runtime_task_init(struct runtime_task *task, unsigned int id)
     task->id = id;
     task->wait = 1;
     task->get_descriptor = get_descriptor;
-    task->get_descriptor_slot = get_descriptor_slot;
     task->get_mount = get_mount;
     task->find_mount = find_mount;
     task->get_mount_slot = get_mount_slot;

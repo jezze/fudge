@@ -55,7 +55,6 @@ struct runtime_task
     struct runtime_memory memory;
     struct runtime_descriptor descriptors[RUNTIME_TASK_DESCRIPTOR_SLOTS];
     struct runtime_descriptor *(*get_descriptor)(struct runtime_task *self, unsigned int index);
-    unsigned int (*get_descriptor_slot)(struct runtime_task *self);
     struct runtime_mount mounts[RUNTIME_TASK_MOUNT_SLOTS];
     struct runtime_mount *(*get_mount)(struct runtime_task *self, unsigned int index);
     struct runtime_mount *(*find_mount)(struct runtime_task *self, void *path);
