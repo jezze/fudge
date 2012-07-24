@@ -21,19 +21,6 @@
 #define ISR_INDEX_AC      0x11
 #define ISR_INDEX_MC      0x12
 #define ISR_INDEX_XM      0x13
-#define ISR_INDEX_PIT     0x20
-#define ISR_INDEX_KBD     0x21
-#define ISR_INDEX_CASCADE 0x22
-#define ISR_INDEX_COM2    0x23
-#define ISR_INDEX_COM1    0x24
-#define ISR_INDEX_SOUND   0x25
-#define ISR_INDEX_SDA     0x26
-#define ISR_INDEX_PP      0x27
-#define ISR_INDEX_RTC     0x28
-#define ISR_INDEX_MOUSE   0x2C
-#define ISR_INDEX_FPU     0x2D
-#define ISR_INDEX_ATAP    0x2E
-#define ISR_INDEX_ATAS    0x2F
 #define ISR_INDEX_SYSCALL 0x80
 
 struct isr_general_registers
@@ -61,12 +48,12 @@ struct isr_interrupt_registers
 
 };
 
-struct isr_cpu_registers
+struct isr_registers
 {
 
     struct isr_general_registers general;
     unsigned int index;
-    unsigned int error;
+    unsigned int extra;
     struct isr_interrupt_registers interrupt;
 
 };
@@ -120,9 +107,9 @@ void isr_routine2D();
 void isr_routine2E();
 void isr_routine2F();
 void isr_routine80();
-void isr_register_routine(unsigned int index, void (*routine)(struct runtime_task *task, struct isr_cpu_registers *registers));
+void isr_register_routine(unsigned int index, void (*routine)(struct runtime_task *task, struct isr_registers *registers));
 void isr_unregister_routine(unsigned int index);
-void isr_handle_cpu(struct isr_cpu_registers *registers);
+void isr_handle(struct isr_registers *registers);
 struct runtime_task *isr_setup();
 
 #endif

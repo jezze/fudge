@@ -12,10 +12,10 @@ static void register_routine(unsigned int index, unsigned int (*routine)(struct 
 
 }
 
-static void handle_interrupt(struct runtime_task *task, struct isr_cpu_registers *registers)
+static void handle_interrupt(struct runtime_task *task, struct isr_registers *registers)
 {
 
-    if (!routines[registers->error])
+    if (!routines[registers->extra])
     {
 
         registers->general.eax = 0;
@@ -24,7 +24,7 @@ static void handle_interrupt(struct runtime_task *task, struct isr_cpu_registers
 
     }
 
-    registers->general.eax = routines[registers->error](task, (void *)task->registers.sp);
+    registers->general.eax = routines[registers->extra](task, (void *)task->registers.sp);
 
 }
 

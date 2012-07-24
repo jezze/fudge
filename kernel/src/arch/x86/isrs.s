@@ -1,6 +1,6 @@
 .intel_syntax noprefix
 
-.extern isr_handle_cpu
+.extern isr_handle
 
 .global isr_routine00
 isr_routine00:
@@ -348,7 +348,7 @@ isr_common_cpu:
     mov es, ax
     mov fs, ax
     mov gs, ax
-    call isr_handle_cpu
+    call isr_handle
     mov ax, 0x23
     mov ds, ax
     mov es, ax

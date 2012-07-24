@@ -6,9 +6,9 @@
 #include <arch/x86/isr.h>
 
 static struct runtime_task *running;
-static void (*routines[ISR_TABLE_SLOTS])(struct runtime_task *task, struct isr_cpu_registers *registers);
+static void (*routines[ISR_TABLE_SLOTS])(struct runtime_task *task, struct isr_registers *registers);
 
-static void load_state(struct isr_cpu_registers *registers)
+static void load_state(struct isr_registers *registers)
 {
 
     registers->interrupt.eip = running->registers.ip;
@@ -17,7 +17,7 @@ static void load_state(struct isr_cpu_registers *registers)
 
 }
 
-static void save_state(struct isr_cpu_registers *registers)
+static void save_state(struct isr_registers *registers)
 {
 
     running->registers.ip = registers->interrupt.eip;
@@ -26,16 +26,16 @@ static void save_state(struct isr_cpu_registers *registers)
 
 }
 
-static void isr_handle_undefined(struct runtime_task *task, struct isr_cpu_registers *registers)
+static void isr_handle_undefined(struct runtime_task *task, struct isr_registers *registers)
 {
 
     error_register(0, registers->index);
-    error_register(1, registers->error);
+    error_register(1, registers->extra);
     error_panic("UNHANDLED INTERRUPT", __FILE__, __LINE__);
 
 }
 
-void isr_handle_cpu(struct isr_cpu_registers *registers)
+void isr_handle(struct isr_registers *registers)
 {
 
     save_state(registers);
@@ -43,7 +43,7 @@ void isr_handle_cpu(struct isr_cpu_registers *registers)
     routines[registers->index](running, registers);
 
     if (registers->index == 0x80)
-        event_raise(running, registers->error + 0x80);
+        event_raise(running, registers->extra + 0x80);
     else
         event_raise(running, registers->index);
 
@@ -55,7 +55,7 @@ void isr_handle_cpu(struct isr_cpu_registers *registers)
 
 }
 
-void isr_register_routine(unsigned int index, void (*routine)(struct runtime_task *task, struct isr_cpu_registers *registers))
+void isr_register_routine(unsigned int index, void (*routine)(struct runtime_task *task, struct isr_registers *registers))
 {
 
     routines[index] = routine;
@@ -109,22 +109,22 @@ struct runtime_task *isr_setup()
     idt_set_gate(0x1D, isr_routine1D, 0x08, 0x8E);
     idt_set_gate(0x1E, isr_routine1E, 0x08, 0x8E);
     idt_set_gate(0x1F, isr_routine1F, 0x08, 0x8E);
-    idt_set_gate(ISR_INDEX_PIT, isr_routine20, 0x08, 0x8E);
-    idt_set_gate(ISR_INDEX_KBD, isr_routine21, 0x08, 0x8E);
-    idt_set_gate(ISR_INDEX_CASCADE, isr_routine22, 0x08, 0x8E);
-    idt_set_gate(ISR_INDEX_COM2, isr_routine23, 0x08, 0x8E);
-    idt_set_gate(ISR_INDEX_COM1, isr_routine24, 0x08, 0x8E);
-    idt_set_gate(ISR_INDEX_SOUND, isr_routine25, 0x08, 0x8E);
-    idt_set_gate(ISR_INDEX_SDA, isr_routine26, 0x08, 0x8E);
-    idt_set_gate(ISR_INDEX_PP, isr_routine27, 0x08, 0x8E);
-    idt_set_gate(ISR_INDEX_RTC, isr_routine28, 0x08, 0x8E);
+    idt_set_gate(0x20, isr_routine20, 0x08, 0x8E);
+    idt_set_gate(0x21, isr_routine21, 0x08, 0x8E);
+    idt_set_gate(0x22, isr_routine22, 0x08, 0x8E);
+    idt_set_gate(0x23, isr_routine23, 0x08, 0x8E);
+    idt_set_gate(0x24, isr_routine24, 0x08, 0x8E);
+    idt_set_gate(0x25, isr_routine25, 0x08, 0x8E);
+    idt_set_gate(0x26, isr_routine26, 0x08, 0x8E);
+    idt_set_gate(0x27, isr_routine27, 0x08, 0x8E);
+    idt_set_gate(0x28, isr_routine28, 0x08, 0x8E);
     idt_set_gate(0x29, isr_routine29, 0x08, 0x8E);
     idt_set_gate(0x2A, isr_routine2A, 0x08, 0x8E);
     idt_set_gate(0x2B, isr_routine2B, 0x08, 0x8E);
-    idt_set_gate(ISR_INDEX_MOUSE, isr_routine2C, 0x08, 0x8E);
-    idt_set_gate(ISR_INDEX_FPU, isr_routine2D, 0x08, 0x8E);
-    idt_set_gate(ISR_INDEX_ATAP, isr_routine2E, 0x08, 0x8E);
-    idt_set_gate(ISR_INDEX_ATAS, isr_routine2F, 0x08, 0x8E);
+    idt_set_gate(0x2C, isr_routine2C, 0x08, 0x8E);
+    idt_set_gate(0x2D, isr_routine2D, 0x08, 0x8E);
+    idt_set_gate(0x2E, isr_routine2E, 0x08, 0x8E);
+    idt_set_gate(0x2F, isr_routine2F, 0x08, 0x8E);
     idt_set_gate(ISR_INDEX_SYSCALL, isr_routine80, 0x08, 0xEE);
 
     return running = runtime_get_task(1);
