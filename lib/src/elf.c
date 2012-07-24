@@ -48,7 +48,7 @@ unsigned int elf_find_symbol(struct elf_header *header, struct elf_section_heade
 
         struct elf_symbol *symEntry = &symTable[i];
 
-        if (memory_compare(symbol, strTable + symEntry->name, string_length(symbol)))
+        if (memory_match(symbol, strTable + symEntry->name, string_length(symbol)))
         {
 
             if (header->type == ELF_TYPE_RELOCATABLE)

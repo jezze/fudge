@@ -12,24 +12,6 @@ void *memory_clear(void *out, unsigned int count)
 
 }
 
-unsigned int memory_compare(const void *in1, const void *in2, unsigned int count)
-{
-
-    const char *ip1 = in1;
-    const char *ip2 = in2;
-
-    for (; count; count--)
-    {
-
-        if (*ip1++ != *ip2++)
-            return 0;
-
-    }
-
-    return 1;
-
-}
-
 void *memory_copy(void *out, const void *in, unsigned int count)
 {
 
@@ -57,7 +39,7 @@ void *memory_find(const void *in1, const void *in2, unsigned int count1, unsigne
     for (; count; count--)
     {
 
-        if (memory_compare(ip, in2, count2))
+        if (memory_match(ip, in2, count2))
             return (void *)ip;
 
         ip++;
@@ -65,6 +47,24 @@ void *memory_find(const void *in1, const void *in2, unsigned int count1, unsigne
     }
 
     return 0;
+
+}
+
+unsigned int memory_match(const void *in1, const void *in2, unsigned int count)
+{
+
+    const char *ip1 = in1;
+    const char *ip2 = in2;
+
+    for (; count; count--)
+    {
+
+        if (*ip1++ != *ip2++)
+            return 0;
+
+    }
+
+    return 1;
 
 }
 

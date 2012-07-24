@@ -70,7 +70,7 @@ static unsigned int setup_executable(char *path)
     char buffer[256];
     unsigned int length;
 
-    if (memory_compare(path, "/", 1))
+    if (memory_match(path, "/", 1))
         return call_open(3, string_length(path), path);
 
     length = string_length(path);
@@ -89,7 +89,7 @@ static unsigned int setup_stream(char *path, unsigned int index)
     unsigned int length;
     unsigned int count;
 
-    if (memory_compare(path, "/", 1))
+    if (memory_match(path, "/", 1))
         return call_open(index, string_length(path), path);
 
     length = string_length(path);

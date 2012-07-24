@@ -39,7 +39,7 @@ static struct runtime_mount *find_mount(struct runtime_task *self, void *path)
         if (self->mounts[i].count < max)
             continue;
 
-        if (memory_compare(self->mounts[i].path, path, self->mounts[i].count))
+        if (memory_match(self->mounts[i].path, path, self->mounts[i].count))
         {
 
             current = &self->mounts[i];

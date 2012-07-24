@@ -17,7 +17,7 @@ void main()
 
     call_open(3, 15, "/module/tty_cwd");
 
-    if (memory_compare(bufferIn, "/", 1))
+    if (memory_match(bufferIn, "/", 1))
     {
 
         call_write(3, 0, countIn, bufferIn);

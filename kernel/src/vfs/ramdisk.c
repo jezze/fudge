@@ -120,7 +120,7 @@ static unsigned int walk(struct modules_filesystem *self, unsigned int id, unsig
     for (i = 0; i < filesystem->image->count; i++)
     {
 
-        if (memory_compare(filesystem->image->nodes[i].header->name + 6, buffer, count))
+        if (memory_match(filesystem->image->nodes[i].header->name + 6, buffer, count))
             return i + 1;
 
     }

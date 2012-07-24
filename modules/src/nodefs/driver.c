@@ -59,7 +59,7 @@ static unsigned int filesystem_walk(struct modules_filesystem *self, unsigned in
     for (i = 0; i < filesystem->count; i++)
     {
 
-        if (memory_compare(filesystem->nodes[i]->name, buffer, string_length(filesystem->nodes[i]->name) + 1))
+        if (memory_match(filesystem->nodes[i]->name, buffer, string_length(filesystem->nodes[i]->name) + 1))
             return i + 2;
 
     }

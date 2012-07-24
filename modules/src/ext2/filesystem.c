@@ -92,7 +92,7 @@ static struct ext2_entry *finddir(struct modules_filesystem *self, unsigned int 
             if (!entry->length)
                 return 0;
 
-            if (memory_compare(name, private + 8, entry->length))
+            if (memory_match(name, private + 8, entry->length))
                 return entry;
 
             private += entry->size;
