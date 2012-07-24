@@ -1,5 +1,4 @@
 #include <memory.h>
-#include <string.h>
 #include <modules.h>
 #include <log/log.h>
 

@@ -1,5 +1,4 @@
 #include <memory.h>
-#include <kernel.h>
 #include <modules.h>
 #include <runtime.h>
 #include <arch/x86/isr.h>
