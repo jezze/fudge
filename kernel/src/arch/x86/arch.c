@@ -21,7 +21,7 @@ static void setup(struct kernel_arch *self)
     gdt_setup();
     tss_setup(x86->stack);
     idt_setup();
-    isr_setup(self);
+    self->running = isr_setup();
     cpu_disable_apic();
     mmu_setup();
     syscall_setup();

@@ -1,9 +1,7 @@
 #include <error.h>
 #include <event.h>
-#include <kernel.h>
 #include <mmu.h>
 #include <runtime.h>
-#include <arch/x86/arch.h>
 #include <arch/x86/idt.h>
 #include <arch/x86/isr.h>
 
@@ -71,7 +69,7 @@ void isr_unregister_routine(unsigned int index)
 
 }
 
-void isr_setup(struct kernel_arch *arch)
+struct runtime_task *isr_setup()
 {
 
     unsigned int i;
@@ -129,7 +127,7 @@ void isr_setup(struct kernel_arch *arch)
     idt_set_gate(ISR_INDEX_ATAS, isr_routine2F, 0x08, 0x8E);
     idt_set_gate(ISR_INDEX_SYSCALL, isr_routine80, 0x08, 0xEE);
 
-    arch->running = running = runtime_get_task(1);
+    return running = runtime_get_task(1);
 
 }
 

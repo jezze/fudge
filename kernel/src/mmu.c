@@ -1,4 +1,3 @@
-#include <memory.h>
 #include <error.h>
 #include <runtime.h>
 #include <mmu.h>
