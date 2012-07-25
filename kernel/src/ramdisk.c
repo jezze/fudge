@@ -3,8 +3,6 @@
 #include <tar.h>
 #include <ramdisk.h>
 
-static struct ramdisk_image image;
-
 static unsigned int validate(struct tar_header *header)
 {
 
@@ -56,20 +54,6 @@ void ramdisk_image_init(struct ramdisk_image *image)
     memory_clear(image, sizeof (struct ramdisk_image));
 
     image->parse = parse;
-
-}
-
-struct ramdisk_image *ramdisk_setup(unsigned int ramdiskc, void **ramdiskv)
-{
-
-    unsigned int i;
-
-    ramdisk_image_init(&image);
-
-    for (i = 0; i < ramdiskc; i++)
-        image.parse(&image, *(ramdiskv + i));
-
-    return &image;
 
 }
 

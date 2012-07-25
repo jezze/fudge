@@ -8,6 +8,8 @@
 #include <vfs/ramdisk.h>
 #include <vfs/sys.h>
 
+static struct ramdisk_image image;
+
 static void load_usermode(struct kernel_arch *arch, struct runtime_task *tasks, union modules_module **modules, struct ramdisk_image *image)
 {
 
@@ -51,15 +53,19 @@ static void start(struct kernel_arch *self)
 
     struct runtime_task *tasks;
     union modules_module **modules;
-    struct ramdisk_image *image;
+    unsigned int i;
 
     self->setup(self);
 
     tasks = runtime_setup();
     modules = modules_setup();
-    image = ramdisk_setup(self->ramdiskc, self->ramdiskv);
 
-    load_usermode(self, tasks, modules, image);
+    ramdisk_image_init(&image);
+
+    for (i = 0; i < self->ramdiskc; i++)
+        image.parse(&image, *(self->ramdiskv + i));
+
+    load_usermode(self, tasks, modules, &image);
 
 }
 

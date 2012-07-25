@@ -13,7 +13,6 @@ struct ramdisk_image
 };
 
 void ramdisk_image_init(struct ramdisk_image *image);
-struct ramdisk_image *ramdisk_setup(unsigned int ramdiskc, void **ramdiskv);
 
 #endif
 
