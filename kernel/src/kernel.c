@@ -65,7 +65,13 @@ static void start(struct kernel_arch *self)
     ramdisk_image_init(&ramdiskImage);
 
     for (i = 0; i < self->ramdiskc; i++)
-        ramdiskImage.parse(&ramdiskImage, *(self->ramdiskv + i));
+    {
+
+        unsigned int count = ramdiskImage.parse(&ramdiskImage, *(self->ramdiskv + i));
+
+        error_assert(count != 0, "Ramdisk error", __FILE__, __LINE__);
+
+    }
 
     vfs_sys_filesystem_init(&sysFilesystem, modules);
     modules_register_filesystem(&sysFilesystem.base);
