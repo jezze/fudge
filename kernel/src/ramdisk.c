@@ -14,14 +14,7 @@ static unsigned int validate(struct tar_header *header)
     unsigned int checksum = string_read_num(header->checksum, 8);
 
     for (i = 0; i < TAR_BLOCK_SIZE; i++)
-    {
-
-        if (i < 148 || i > 155)
-            sum += address[i];
-        else
-            sum += 32;
-
-    }
+        sum += (i < 148 || i > 155) ? address[i] : 32;
 
     return sum == checksum;
 
