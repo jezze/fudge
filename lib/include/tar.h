@@ -26,7 +26,7 @@ struct tar_header
     char gid[TAR_GID_SIZE];
     char size[TAR_SIZE_SIZE];
     char mtime[TAR_MTIME_SIZE];
-    char chksum[TAR_CHECKSUM_SIZE];
+    char checksum[TAR_CHECKSUM_SIZE];
     char typeflag[TAR_TYPEFLAG_SIZE];
     char linkname[TAR_LINKNAME_SIZE];
 
