@@ -5,49 +5,24 @@
 
 static struct ramdisk_image image;
 
-static unsigned int parse(void *address)
+static unsigned int parse(struct ramdisk_image *image, void *address)
 {
 
-    unsigned int i;
     char *current = address;
 
-    for (i = 0; *current; i++)
+    for (; *current; image->count++)
     {
 
         struct tar_header *header = (struct tar_header *)current;
         unsigned int size = string_read_num(header->size, 8);
 
-        if (!size)
-        {
+        image->headers[image->count] = header;
 
-            ramdisk_node_init(&image.nodes[i], header, 0);
-
-            current += TAR_BLOCK_SIZE;
-
-        }
-
-        else
-        {
-
-            ramdisk_node_init(&image.nodes[i], header, (unsigned int)(current + TAR_BLOCK_SIZE));
-
-            current += ((size / TAR_BLOCK_SIZE) + ((size % TAR_BLOCK_SIZE) ? 2 : 1)) * TAR_BLOCK_SIZE;
-
-        }
+        current += ((size / TAR_BLOCK_SIZE) + ((size % TAR_BLOCK_SIZE) ? 2 : 1)) * TAR_BLOCK_SIZE;
 
     }
 
-    return i;
-
-}
-
-void ramdisk_node_init(struct ramdisk_node *node, struct tar_header *header, unsigned int offset)
-{
-
-    memory_clear(node, sizeof (struct ramdisk_node));
-
-    node->header = header;
-    node->offset = offset;
+    return image->count;
 
 }
 
@@ -55,6 +30,8 @@ void ramdisk_image_init(struct ramdisk_image *image)
 {
 
     memory_clear(image, sizeof (struct ramdisk_image));
+
+    image->parse = parse;
 
 }
 
@@ -66,7 +43,7 @@ struct ramdisk_image *ramdisk_setup(unsigned int ramdiskc, void **ramdiskv)
     ramdisk_image_init(&image);
 
     for (i = 0; i < ramdiskc; i++)
-        image.count += parse(*(ramdiskv + i));
+        image.parse(&image, *(ramdiskv + i));
 
     return &image;
 

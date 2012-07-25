@@ -7,16 +7,17 @@
 
 static struct vfs_ramdisk_filesystem filesystem;
 
-static unsigned int read_file(struct ramdisk_node *node, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int read_file(struct tar_header *header, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    unsigned int size = string_read_num(node->header->size, 8);
+    unsigned int size = string_read_num(header->size, 8);
     unsigned int c = (size > offset) ? size - offset : 0;
+    unsigned int data = (unsigned int)header + TAR_BLOCK_SIZE;
 
     if (c > count)
         c = count;
 
-    memory_copy(buffer, (void *)(node->offset + offset), c);
+    memory_copy(buffer, (void *)(data + offset), c);
 
     return c;
 
@@ -26,10 +27,10 @@ static unsigned int read(struct modules_filesystem *self, unsigned int id, unsig
 {
 
     struct vfs_ramdisk_filesystem *filesystem = (struct vfs_ramdisk_filesystem *)self;
-    struct ramdisk_node *node = &filesystem->image->nodes[id - 1];
-    unsigned int length = string_length(node->header->name);
+    struct tar_header *header = filesystem->image->headers[id - 1];
+    unsigned int length = string_length(header->name);
 
-    if (node->header->name[length - 1] == '/')
+    if (header->name[length - 1] == '/')
     {
 
         unsigned int i;
@@ -42,18 +43,18 @@ static unsigned int read(struct modules_filesystem *self, unsigned int id, unsig
         for (i = 0; i < filesystem->image->count; i++)
         {
 
-            struct ramdisk_node *current = &filesystem->image->nodes[i];
+            struct tar_header *current = filesystem->image->headers[i];
             char *start;
             char *slash;
             unsigned int size;
 
-            if (current == node)
+            if (current == header)
                 continue;
 
-            if (!memory_find(current->header->name, node->header->name, string_length(current->header->name), string_length(node->header->name)))
+            if (!memory_find(current->name, header->name, string_length(current->name), string_length(header->name)))
                 continue;
 
-            start = current->header->name + string_length(node->header->name);
+            start = current->name + string_length(header->name);
             size = string_length(start);
 
             if (!size)
@@ -74,20 +75,21 @@ static unsigned int read(struct modules_filesystem *self, unsigned int id, unsig
 
     }
 
-    return read_file(node, offset, count, buffer);
+    return read_file(header, offset, count, buffer);
 
 }
 
-static unsigned int write_file(struct ramdisk_node *node, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int write_file(struct tar_header *header, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    unsigned int size = string_read_num(node->header->size, 8);
+    unsigned int size = string_read_num(header->size, 8);
     unsigned int c = (size > offset) ? size - offset : 0;
+    unsigned int data = (unsigned int)header + TAR_BLOCK_SIZE;
 
     if (c > count)
         c = count;
 
-    memory_copy((void *)(node->offset + offset), buffer, c);
+    memory_copy((void *)(data + offset), buffer, c);
 
     return c;
 
@@ -97,13 +99,13 @@ static unsigned int write(struct modules_filesystem *self, unsigned int id, unsi
 {
 
     struct vfs_ramdisk_filesystem *filesystem = (struct vfs_ramdisk_filesystem *)self;
-    struct ramdisk_node *node = &filesystem->image->nodes[id - 1];
-    unsigned int length = string_length(node->header->name);
+    struct tar_header *header = filesystem->image->headers[id - 1];
+    unsigned int length = string_length(header->name);
 
-    if (node->header->name[length - 1] == '/')
+    if (header->name[length - 1] == '/')
         return 0;
 
-    return write_file(node, offset, count, buffer);
+    return write_file(header, offset, count, buffer);
 
 }
 
@@ -120,7 +122,7 @@ static unsigned int walk(struct modules_filesystem *self, unsigned int id, unsig
     for (i = 0; i < filesystem->image->count; i++)
     {
 
-        if (memory_match(filesystem->image->nodes[i].header->name + 6, buffer, count))
+        if (memory_match(filesystem->image->headers[i]->name + 6, buffer, count))
             return i + 1;
 
     }
@@ -133,8 +135,10 @@ static unsigned int get_physical(struct modules_filesystem *self, unsigned int i
 {
 
     struct vfs_ramdisk_filesystem *filesystem = (struct vfs_ramdisk_filesystem *)self;
+    struct tar_header *header = filesystem->image->headers[id - 1];
+    unsigned int data = (unsigned int)header + TAR_BLOCK_SIZE;
 
-    return filesystem->image->nodes[id - 1].offset;
+    return data;
 
 }
 
