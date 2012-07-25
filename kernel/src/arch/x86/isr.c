@@ -69,7 +69,7 @@ void isr_unregister_routine(unsigned int index)
 
 }
 
-struct runtime_task *isr_setup()
+void isr_setup()
 {
 
     unsigned int i;
@@ -127,7 +127,7 @@ struct runtime_task *isr_setup()
     idt_set_gate(0x2F, isr_routine2F, 0x08, 0x8E);
     idt_set_gate(ISR_INDEX_SYSCALL, isr_routine80, 0x08, 0xEE);
 
-    return running = runtime_get_task(1);
+    running = runtime_get_task(1);
 
 }
 

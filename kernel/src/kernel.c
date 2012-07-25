@@ -16,30 +16,33 @@ static void load_usermode(struct kernel_arch *arch, struct runtime_task *tasks, 
     struct syscall_open_args oargs;
     struct syscall_execute_args eargs;
     struct runtime_mount *mount;
+    struct runtime_task *task;
+    
+    task = runtime_get_task(1);
+    runtime_task_init(task, 1);
+    task->parent = 0;
 
-    runtime_task_init(arch->running, 1);
-    arch->running->parent = 0;
-
-    mount = arch->running->get_mount(arch->running, 1);
+    mount = task->get_mount(task, 1);
     runtime_mount_init(mount, 1, vfs_sys_setup(modules), 1, "/");
-    mount = arch->running->get_mount(arch->running, 2);
+    mount = task->get_mount(task, 2);
     runtime_mount_init(mount, 2, vfs_ramdisk_setup(image), 9, "/ramdisk/");
 
     oargs.index = 1;
     oargs.count = 17;
     oargs.buffer = "/ramdisk/bin/init";
 
-    id = syscall_open(arch->running, &oargs);
+    id = syscall_open(task, &oargs);
 
     error_assert(id != 0, "Init not found", __FILE__, __LINE__);
 
     eargs.index = id;
 
-    slot = syscall_execute(arch->running, &eargs);
+    slot = syscall_execute(task, &eargs);
 
-    arch->running = runtime_get_task(slot);
-    arch->running->parent = 0;
-    arch->enter_usermode(arch->running->registers.ip, arch->running->registers.sp);
+    task = runtime_get_task(slot);
+    task->parent = 0;
+
+    arch->enter_usermode(task->registers.ip, task->registers.sp);
 
 }
 

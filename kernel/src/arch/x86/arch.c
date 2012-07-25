@@ -1,5 +1,6 @@
 #include <memory.h>
 #include <kernel.h>
+#include <runtime.h>
 #include <arch/x86/arch.h>
 #include <arch/x86/cpu.h>
 #include <arch/x86/gdt.h>
@@ -21,7 +22,7 @@ static void setup(struct kernel_arch *self)
     gdt_setup();
     tss_setup(x86->stack);
     idt_setup();
-    self->running = isr_setup();
+    isr_setup();
     cpu_disable_apic();
     mmu_setup();
     syscall_setup();
