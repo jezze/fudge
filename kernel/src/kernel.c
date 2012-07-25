@@ -10,7 +10,7 @@
 
 static struct ramdisk_image image;
 
-static void load_usermode(struct kernel_arch *arch, struct runtime_task *tasks, union modules_module **modules, struct ramdisk_image *image)
+static void load_usermode(struct kernel_arch *arch, struct runtime_task *tasks, union modules_module **modules)
 {
 
     unsigned int id;
@@ -27,7 +27,7 @@ static void load_usermode(struct kernel_arch *arch, struct runtime_task *tasks, 
     mount = task->get_mount(task, 1);
     runtime_mount_init(mount, 1, vfs_sys_setup(modules), 1, "/");
     mount = task->get_mount(task, 2);
-    runtime_mount_init(mount, 2, vfs_ramdisk_setup(image), 9, "/ramdisk/");
+    runtime_mount_init(mount, 2, vfs_ramdisk_setup(&image), 9, "/ramdisk/");
 
     oargs.index = 1;
     oargs.count = 17;
@@ -65,7 +65,7 @@ static void start(struct kernel_arch *self)
     for (i = 0; i < self->ramdiskc; i++)
         image.parse(&image, *(self->ramdiskv + i));
 
-    load_usermode(self, tasks, modules, &image);
+    load_usermode(self, tasks, modules);
 
 }
 
