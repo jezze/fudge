@@ -8,7 +8,7 @@ struct ramdisk_image
 
     struct tar_header *headers[RAMDISK_HEADER_SLOTS];
     unsigned int count;
-    unsigned int (*parse)(struct ramdisk_image *image, void *address);
+    unsigned int (*parse)(struct ramdisk_image *self, void *address);
 
 };
 

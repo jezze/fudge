@@ -23,7 +23,7 @@ static unsigned int validate(struct tar_header *header)
 
 }
 
-static unsigned int parse(struct ramdisk_image *image, void *address)
+static unsigned int parse(struct ramdisk_image *self, void *address)
 {
 
     char *current;
@@ -35,16 +35,16 @@ static unsigned int parse(struct ramdisk_image *image, void *address)
         unsigned int size = string_read_num(header->size, 8);
 
         if (!validate(header))
-            break;
+            return 0;
 
-        image->headers[image->count] = header;
-        image->count++;
+        self->headers[self->count] = header;
+        self->count++;
 
         current += ((size / TAR_BLOCK_SIZE) + ((size % TAR_BLOCK_SIZE) ? 1 : 0)) * TAR_BLOCK_SIZE;
 
     }
 
-    return image->count;
+    return self->count;
 
 }
 
