@@ -13,10 +13,10 @@ static unsigned int parse(struct ramdisk_image *image, void *address)
     for (; *current; image->count++)
     {
 
-        struct tar_header *header = (struct tar_header *)current;
-        unsigned int size = string_read_num(header->size, 8);
+        unsigned int size;
 
-        image->headers[image->count] = header;
+        image->headers[image->count] = (struct tar_header *)current;
+        size = string_read_num(image->headers[image->count]->size, 8);
 
         current += ((size / TAR_BLOCK_SIZE) + ((size % TAR_BLOCK_SIZE) ? 2 : 1)) * TAR_BLOCK_SIZE;
 
