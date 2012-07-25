@@ -10,7 +10,6 @@ struct vfs_sys_filesystem
 };
 
 void vfs_sys_filesystem_init(struct vfs_sys_filesystem *filesystem, union modules_module **modules);
-struct modules_filesystem *vfs_sys_setup(union modules_module **modules);
 
 #endif
 

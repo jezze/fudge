@@ -3,8 +3,6 @@
 #include <modules.h>
 #include <vfs/sys.h>
 
-static struct vfs_sys_filesystem filesystem;
-
 static unsigned int parent(struct modules_filesystem *self, unsigned int id)
 {
 
@@ -108,16 +106,6 @@ void vfs_sys_filesystem_init(struct vfs_sys_filesystem *filesystem, union module
     modules_filesystem_init(&filesystem->base, 0x0002, "sys", 0, 0, read, 0, parent, walk, 0);
 
     filesystem->modules = modules;
-
-}
-
-struct modules_filesystem *vfs_sys_setup(union modules_module **modules)
-{
-
-    vfs_sys_filesystem_init(&filesystem, modules);
-    modules_register_filesystem(&filesystem.base);
-
-    return &filesystem.base;
 
 }
 

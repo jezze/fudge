@@ -8,9 +8,11 @@
 #include <vfs/ramdisk.h>
 #include <vfs/sys.h>
 
-static struct ramdisk_image image;
+static struct ramdisk_image ramdiskImage;
+static struct vfs_sys_filesystem sysFilesystem;
+static struct vfs_ramdisk_filesystem ramdiskFilesystem;
 
-static void load_usermode(struct kernel_arch *arch, struct runtime_task *tasks, union modules_module **modules)
+static void load_usermode(struct kernel_arch *arch, struct runtime_task *tasks)
 {
 
     unsigned int id;
@@ -19,15 +21,15 @@ static void load_usermode(struct kernel_arch *arch, struct runtime_task *tasks, 
     struct syscall_execute_args eargs;
     struct runtime_mount *mount;
     struct runtime_task *task;
-    
+
     task = runtime_get_task(1);
     runtime_task_init(task, 1);
     task->parent = 0;
 
     mount = task->get_mount(task, 1);
-    runtime_mount_init(mount, 1, vfs_sys_setup(modules), 1, "/");
+    runtime_mount_init(mount, 1, &sysFilesystem.base, 1, "/");
     mount = task->get_mount(task, 2);
-    runtime_mount_init(mount, 2, vfs_ramdisk_setup(&image), 9, "/ramdisk/");
+    runtime_mount_init(mount, 2, &ramdiskFilesystem.base, 9, "/ramdisk/");
 
     oargs.index = 1;
     oargs.count = 17;
@@ -60,12 +62,18 @@ static void start(struct kernel_arch *self)
     tasks = runtime_setup();
     modules = modules_setup();
 
-    ramdisk_image_init(&image);
+    ramdisk_image_init(&ramdiskImage);
 
     for (i = 0; i < self->ramdiskc; i++)
-        image.parse(&image, *(self->ramdiskv + i));
+        ramdiskImage.parse(&ramdiskImage, *(self->ramdiskv + i));
 
-    load_usermode(self, tasks, modules);
+    vfs_sys_filesystem_init(&sysFilesystem, modules);
+    modules_register_filesystem(&sysFilesystem.base);
+
+    vfs_ramdisk_filesystem_init(&ramdiskFilesystem, &ramdiskImage);
+    modules_register_filesystem(&ramdiskFilesystem.base);
+
+    load_usermode(self, tasks);
 
 }
 

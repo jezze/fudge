@@ -5,8 +5,6 @@
 #include <ramdisk.h>
 #include <vfs/ramdisk.h>
 
-static struct vfs_ramdisk_filesystem filesystem;
-
 static unsigned int read_file(struct tar_header *header, unsigned int offset, unsigned int count, void *buffer)
 {
 
@@ -150,16 +148,6 @@ void vfs_ramdisk_filesystem_init(struct vfs_ramdisk_filesystem *filesystem, stru
     modules_filesystem_init(&filesystem->base, 0x0001, "ramdisk", 0, 0, read, write, 0, walk, get_physical);
 
     filesystem->image = image;
-
-}
-
-struct modules_filesystem *vfs_ramdisk_setup(struct ramdisk_image *image)
-{
-
-    vfs_ramdisk_filesystem_init(&filesystem, image);
-    modules_register_filesystem(&filesystem.base);
-
-    return &filesystem.base;
 
 }
 

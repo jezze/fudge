@@ -10,7 +10,6 @@ struct vfs_ramdisk_filesystem
 };
 
 void vfs_ramdisk_filesystem_init(struct vfs_ramdisk_filesystem *filesystem, struct ramdisk_image *image);
-struct modules_filesystem *vfs_ramdisk_setup(struct ramdisk_image *image);
 
 #endif
 
