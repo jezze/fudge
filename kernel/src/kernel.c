@@ -12,7 +12,7 @@ static struct ramdisk_image ramdiskImage;
 static struct vfs_sys_filesystem sysFilesystem;
 static struct vfs_ramdisk_filesystem ramdiskFilesystem;
 
-static void load_usermode(struct kernel_arch *arch, struct runtime_task *tasks)
+static void load_usermode(struct kernel_arch *arch)
 {
 
     unsigned int id;
@@ -53,13 +53,12 @@ static void load_usermode(struct kernel_arch *arch, struct runtime_task *tasks)
 static void start(struct kernel_arch *self)
 {
 
-    struct runtime_task *tasks;
     union modules_module **modules;
     unsigned int i;
 
     self->setup(self);
 
-    tasks = runtime_setup();
+    runtime_setup();
     modules = modules_setup();
 
     ramdisk_image_init(&ramdiskImage);
@@ -79,7 +78,7 @@ static void start(struct kernel_arch *self)
     vfs_ramdisk_filesystem_init(&ramdiskFilesystem, &ramdiskImage);
     modules_register_filesystem(&ramdiskFilesystem.base);
 
-    load_usermode(self, tasks);
+    load_usermode(self);
 
 }
 
