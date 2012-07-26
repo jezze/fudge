@@ -5,19 +5,9 @@
 unsigned int elf_validate(struct elf_header *header)
 {
 
-    if (header->identify[0] != ELF_IDENTITY_MAGIC0)
-        return 0;
+    char id[] = {ELF_IDENTITY_MAGIC0, ELF_IDENTITY_MAGIC1, ELF_IDENTITY_MAGIC2, ELF_IDENTITY_MAGIC3};
 
-    if (header->identify[1] != ELF_IDENTITY_MAGIC1)
-        return 0;
-
-    if (header->identify[2] != ELF_IDENTITY_MAGIC2)
-        return 0;
-
-    if (header->identify[3] != ELF_IDENTITY_MAGIC3)
-        return 0;
-
-    return 1;
+    return memory_match(header->identify, id, 4);
 
 }
 
