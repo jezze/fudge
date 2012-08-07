@@ -12,15 +12,39 @@ static struct ramdisk_image ramdiskImage;
 static struct vfs_sys_filesystem sysFilesystem;
 static struct vfs_ramdisk_filesystem ramdiskFilesystem;
 
-static void load_usermode(struct kernel_arch *arch)
+static void start(struct kernel_arch *self)
 {
 
-    unsigned int id;
-    unsigned int slot;
+    union modules_module **modules;
     struct syscall_open_args oargs;
     struct syscall_execute_args eargs;
     struct runtime_mount *mount;
     struct runtime_task *task;
+    unsigned int i;
+    unsigned int id;
+    unsigned int slot;
+
+    self->setup(self);
+
+    runtime_setup();
+    modules = modules_setup();
+
+    ramdisk_image_init(&ramdiskImage);
+
+    for (i = 0; i < self->ramdiskc; i++)
+    {
+
+        unsigned int count = ramdiskImage.parse(&ramdiskImage, *(self->ramdiskv + i));
+
+        error_assert(count != 0, "Ramdisk error", __FILE__, __LINE__);
+
+    }
+
+    vfs_sys_filesystem_init(&sysFilesystem, modules);
+    modules_register_filesystem(&sysFilesystem.base);
+
+    vfs_ramdisk_filesystem_init(&ramdiskFilesystem, &ramdiskImage);
+    modules_register_filesystem(&ramdiskFilesystem.base);
 
     task = runtime_get_task(1);
     runtime_task_init(task, 1);
@@ -46,39 +70,7 @@ static void load_usermode(struct kernel_arch *arch)
     task = runtime_get_task(slot);
     task->parent = 0;
 
-    arch->enter_usermode(task->registers.ip, task->registers.sp);
-
-}
-
-static void start(struct kernel_arch *self)
-{
-
-    union modules_module **modules;
-    unsigned int i;
-
-    self->setup(self);
-
-    runtime_setup();
-    modules = modules_setup();
-
-    ramdisk_image_init(&ramdiskImage);
-
-    for (i = 0; i < self->ramdiskc; i++)
-    {
-
-        unsigned int count = ramdiskImage.parse(&ramdiskImage, *(self->ramdiskv + i));
-
-        error_assert(count != 0, "Ramdisk error", __FILE__, __LINE__);
-
-    }
-
-    vfs_sys_filesystem_init(&sysFilesystem, modules);
-    modules_register_filesystem(&sysFilesystem.base);
-
-    vfs_ramdisk_filesystem_init(&ramdiskFilesystem, &ramdiskImage);
-    modules_register_filesystem(&ramdiskFilesystem.base);
-
-    load_usermode(self);
+    self->enter_usermode(task->registers.ip, task->registers.sp);
 
 }
 
