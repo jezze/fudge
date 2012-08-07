@@ -35,23 +35,10 @@ static void isr_handle_undefined(struct runtime_task *task, struct isr_registers
 
 }
 
-void isr_handle(struct isr_registers *registers)
+static void isr_raise(unsigned int index, struct runtime_task *task, struct isr_registers *registers)
 {
 
-    save_state(registers);
-
     routines[registers->index](running, registers);
-
-    if (registers->index == 0x80)
-        event_raise(running, registers->extra + 0x80);
-    else
-        event_raise(running, registers->index);
-
-    running = runtime_schedule();
-
-    load_state(registers);
-
-    mmu_load_memory(running->id);
 
 }
 
@@ -66,6 +53,22 @@ void isr_unregister_routine(unsigned int index)
 {
 
     routines[index] = 0;
+
+}
+
+void isr_handle(struct isr_registers *registers)
+{
+
+    save_state(registers);
+
+    isr_raise(registers->index, running, registers);
+    event_raise(registers->index, running);
+
+    running = runtime_schedule();
+
+    load_state(registers);
+
+    mmu_load_memory(running->id);
 
 }
 
