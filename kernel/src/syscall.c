@@ -1,107 +1,9 @@
-#include <elf.h>
 #include <event.h>
 #include <mmu.h>
 #include <modules.h>
 #include <runtime.h>
+#include <binary.h>
 #include <syscall.h>
-
-static unsigned int elf_get_func(struct runtime_descriptor *descriptor, char *func)
-{
-
-    struct elf_header header;
-    struct elf_section_header sectionHeader[20];
-    struct elf_section_header *symbolHeader;
-    struct elf_symbol symbolTable[400];
-    char stringTable[0x1000];
-
-    descriptor->mount->filesystem->read(descriptor->mount->filesystem, descriptor->id, 0, sizeof (struct elf_header), &header);
-
-    if (!elf_validate(&header))
-        return 0;
-
-    descriptor->mount->filesystem->read(descriptor->mount->filesystem, descriptor->id, header.shoffset, header.shsize * header.shcount, sectionHeader);
-
-    symbolHeader = elf_get_section(&header, sectionHeader, ELF_SECTION_TYPE_SYMTAB);
-
-    descriptor->mount->filesystem->read(descriptor->mount->filesystem, descriptor->id, symbolHeader->offset, symbolHeader->size, symbolTable);
-    descriptor->mount->filesystem->read(descriptor->mount->filesystem, descriptor->id, sectionHeader[symbolHeader->link].offset, sectionHeader[symbolHeader->link].size, stringTable);
-
-    return elf_find_symbol(&header, sectionHeader, symbolHeader, symbolTable, stringTable, func);
-
-}
-
-static void elf_relocate_section(struct elf_section_header *sectionHeader, struct elf_section_header *relocateHeader, struct elf_section_header *relocateData, struct elf_relocate *relocateTable, struct elf_section_header *symbolHeader, struct elf_symbol *symbolTable, unsigned int address)
-{
-
-    unsigned int i;
-
-    for (i = 0; i < relocateHeader->size / relocateHeader->esize; i++)
-    {
-
-        struct elf_relocate *relocateEntry = &relocateTable[i];
-        unsigned char type = relocateEntry->info & 0x0F;
-        unsigned char index = relocateEntry->info >> 8;
-        struct elf_symbol *symbolEntry = &symbolTable[index];
-        unsigned int *entry = (unsigned int *)(address + relocateData->offset + relocateEntry->offset);
-        unsigned int value = *entry;
-        unsigned int addend = (symbolEntry->shindex) ? address + sectionHeader[symbolEntry->shindex].offset + symbolEntry->value : 0;
-
-        switch (type)
-        {
-
-            case 1:
-
-                *entry = value + addend;
-
-                break;
-
-            case 2:
-
-                *entry = value + addend - (unsigned int)entry;
-
-                break;
-
-        }
-
-    }
-
-}
-
-static void elf_relocate(struct runtime_descriptor *descriptor, unsigned int address)
-{
-
-    struct elf_header header;
-    struct elf_section_header sectionHeader[20];
-    unsigned int i;
-
-    descriptor->mount->filesystem->read(descriptor->mount->filesystem, descriptor->id, 0, sizeof (struct elf_header), &header);
-
-    if (!elf_validate(&header))
-        return;
-
-    descriptor->mount->filesystem->read(descriptor->mount->filesystem, descriptor->id, header.shoffset, header.shsize * header.shcount, sectionHeader);
-
-    for (i = 0; i < header.shcount; i++)
-    {
-
-        struct elf_relocate relocateTable[200];
-        struct elf_symbol symbolTable[400];
-
-        if (sectionHeader[i].type != ELF_SECTION_TYPE_REL)
-            continue;
-
-        descriptor->mount->filesystem->read(descriptor->mount->filesystem, descriptor->id, sectionHeader[i].offset, sectionHeader[i].size, relocateTable);
-        descriptor->mount->filesystem->read(descriptor->mount->filesystem, descriptor->id, sectionHeader[sectionHeader[i].link].offset, sectionHeader[sectionHeader[i].link].size, symbolTable);
-
-        elf_relocate_section(sectionHeader, &sectionHeader[i], &sectionHeader[sectionHeader[i].info], relocateTable, &sectionHeader[sectionHeader[i].link], symbolTable, address);
-
-        sectionHeader[sectionHeader[i].info].address += address;
-
-        descriptor->mount->filesystem->write(descriptor->mount->filesystem, descriptor->id, header.shoffset, header.shsize * header.shcount, sectionHeader);
-
-    }
-
-}
 
 unsigned int syscall_attach(struct runtime_task *task, void *stack)
 {
@@ -148,22 +50,12 @@ unsigned int syscall_execute(struct runtime_task *task, void *stack)
     struct syscall_execute_args *args = stack;
     struct runtime_descriptor *descriptor = task->get_descriptor(task, args->index);
     struct runtime_task *ntask;
-    struct elf_header header;
-    struct elf_program_header programHeader;
     unsigned int slot;
+    unsigned int entry;
+    unsigned int vaddress;
     unsigned int count;
 
     if (!descriptor || !descriptor->id || !descriptor->mount->filesystem->read)
-        return 0;
-
-    count = descriptor->mount->filesystem->read(descriptor->mount->filesystem, descriptor->id, 0, sizeof (struct elf_header), &header);
-
-    if (!count)
-        return 0;
-
-    count = descriptor->mount->filesystem->read(descriptor->mount->filesystem, descriptor->id, header.phoffset, sizeof (struct elf_program_header), &programHeader);
-
-    if (!count)
         return 0;
 
     slot = runtime_get_task_slot();
@@ -171,12 +63,22 @@ unsigned int syscall_execute(struct runtime_task *task, void *stack)
     if (!slot)
         return 0;
 
+    entry = binary_get_entry(descriptor);
+
+    if (!entry)
+        return 0;
+
+    vaddress = binary_get_vaddress(descriptor);
+
+    if (!vaddress)
+        return 0;
+
     ntask = runtime_get_task(slot);
 
     runtime_task_clone(ntask, task, slot);
-    ntask->memory.vaddress = programHeader.vaddress;
+    ntask->memory.vaddress = vaddress;
 
-    runtime_registers_init(&ntask->registers, header.entry, ntask->memory.vaddress + ntask->memory.size, ntask->memory.vaddress + ntask->memory.size);
+    runtime_registers_init(&ntask->registers, entry, ntask->memory.vaddress + ntask->memory.size, ntask->memory.vaddress + ntask->memory.size);
 
     mmu_map_user_memory(ntask->id, ntask->memory.paddress, ntask->memory.vaddress, ntask->memory.size);
     mmu_load_memory(ntask->id);
@@ -231,9 +133,9 @@ unsigned int syscall_load(struct runtime_task *task, void *stack)
         return 0;
 
     /* Physical should be replaced with known address later on */
-    elf_relocate(descriptor, physical);
+    binary_relocate(descriptor, physical);
 
-    init = (void (*)())(elf_get_func(descriptor, "init"));
+    init = (void (*)())(binary_find_symbol(descriptor, "init"));
 
     if (!init)
         return 0;
@@ -260,7 +162,7 @@ unsigned int syscall_mount(struct runtime_task *task, void *stack)
     if (!mount)
         return 0;
 
-    get_filesystem = (struct modules_filesystem *(*)())(elf_get_func(descriptor, "get_filesystem"));
+    get_filesystem = (struct modules_filesystem *(*)())(binary_find_symbol(descriptor, "get_filesystem"));
 
     if (!get_filesystem)
         return 0;
@@ -327,7 +229,7 @@ unsigned int syscall_unload(struct runtime_task *task, void *stack)
     if (!descriptor || !descriptor->id)
         return 0;
 
-    destroy = (void (*)())(elf_get_func(descriptor, "destroy"));
+    destroy = (void (*)())(binary_find_symbol(descriptor, "destroy"));
 
     if (!destroy)
         return 0;
