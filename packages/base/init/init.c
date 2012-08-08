@@ -90,13 +90,18 @@ void load_modules()
     load_modules_core(3);
     load_modules_extra(3);
 
-    call_close(FILE_STDIN);
     call_close(3);
 
 }
 
 void start_shell()
 {
+
+    call_open(FILE_STDIN, 17, "/module/tty_stdin");
+    call_open(FILE_STDOUT, 18, "/module/tty_stdout");
+
+    call_write(FILE_STDOUT, 0, 23, "Fudge operating system\n");
+    call_write(FILE_STDOUT, 0, 53, "Write `echo <help.txt` for a short list if commands\n\n");
 
     call_open(3, 18, "/ramdisk/bin/shell");
     call_execute(3);

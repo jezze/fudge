@@ -217,12 +217,6 @@ static void read_keyboard()
 void main()
 {
 
-    setup_stream("/module/tty_stdin", FILE_STDIN);
-    setup_stream("/module/tty_stdout", FILE_STDOUT);
-
-    call_write(FILE_STDOUT, 0, 23, "Fudge operating system\n");
-    call_write(FILE_STDOUT, 0, 53, "Write `echo <help.txt` for a short list if commands\n\n");
-
     clear();
 
     call_attach(0x21, read_keyboard);
