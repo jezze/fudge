@@ -11,13 +11,6 @@ static struct mmu_table kernelTables[8];
 static struct mmu_directory runtimeDirectories[RUNTIME_TASK_SLOTS];
 static struct mmu_table runtimeTables[RUNTIME_TASK_SLOTS];
 
-static void directory_clear(struct mmu_directory *directory)
-{
-
-    memory_clear(directory, sizeof (struct mmu_directory));
-
-}
-
 static void directory_set_table(struct mmu_directory *directory, unsigned int frame, struct mmu_table *table, unsigned int tflags)
 {
 
@@ -25,24 +18,10 @@ static void directory_set_table(struct mmu_directory *directory, unsigned int fr
 
 }
 
-static void table_clear(struct mmu_table *table)
-{
-
-    memory_clear(table, sizeof (struct mmu_table));
-
-}
-
 static void table_set_page(struct mmu_table *table, unsigned int frame, unsigned int page, unsigned int pflags)
 {
 
     table->pages[frame % MMU_PAGE_SLOTS] = (void *)(page | pflags);
-
-}
-
-static unsigned int get_frame(unsigned int vaddress)
-{
-
-    return vaddress / MMU_PAGE_SIZE;
 
 }
 
@@ -70,10 +49,10 @@ static void reload_memory()
 static void map_memory(struct mmu_directory *directory, struct mmu_table *table, unsigned int paddress, unsigned int vaddress, unsigned int size, unsigned int tflags, unsigned int pflags)
 {
 
+    unsigned int frame = vaddress / MMU_PAGE_SIZE;
     unsigned int i;
-    unsigned int frame = get_frame(vaddress);
 
-    table_clear(table);
+    memory_clear(table, sizeof (struct mmu_table));
 
     for (i = 0; i < size / MMU_PAGE_SIZE; i++)
         table_set_page(table, frame + i, paddress + i * MMU_PAGE_SIZE, pflags); 
@@ -85,9 +64,9 @@ static void map_memory(struct mmu_directory *directory, struct mmu_table *table,
 static void map_kernel_memory(unsigned int index, unsigned int paddress, unsigned int vaddress, unsigned int size)
 {
 
-    unsigned int i;
     struct mmu_directory *directory = &kernelDirectory;
     struct mmu_table *table = &kernelTables[index];
+    unsigned int i;
 
     map_memory(directory, table, paddress, vaddress, size, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE);
 
@@ -110,7 +89,7 @@ static void map_user_memory(unsigned int index, unsigned int paddress, unsigned 
 static void unmap_memory(struct mmu_directory *directory)
 {
 
-    directory_clear(directory);
+    memory_clear(directory, sizeof (struct mmu_directory));
 
 }
 
