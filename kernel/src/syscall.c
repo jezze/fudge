@@ -81,7 +81,7 @@ unsigned int syscall_execute(struct runtime_task *task, void *stack)
     runtime_registers_init(&ntask->registers, entry, ntask->memory.vaddress + ntask->memory.size, ntask->memory.vaddress + ntask->memory.size);
 
     mmu_map_user_memory(ntask->id, ntask->memory.paddress, ntask->memory.vaddress, ntask->memory.size);
-    mmu_load_memory(ntask->id);
+    mmu_load_user_memory(ntask->id);
 
     count = descriptor->mount->filesystem->read(descriptor->mount->filesystem, descriptor->id, 0, ntask->memory.size, (void *)ntask->memory.vaddress);
 

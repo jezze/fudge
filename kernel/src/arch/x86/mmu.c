@@ -46,12 +46,17 @@ static unsigned int get_frame(unsigned int vaddress)
 
 }
 
-static void load_memory(unsigned int index)
+static void load_memory(struct mmu_directory *directory)
 {
 
-    struct mmu_directory *directory = (index) ? &runtimeDirectories[index] : &kernelDirectory;
-
     cpu_set_cr3((unsigned int)directory);
+
+}
+
+static void load_user_memory(unsigned int index)
+{
+
+    load_memory(&runtimeDirectories[index]);
 
 }
 
@@ -102,12 +107,17 @@ static void map_user_memory(unsigned int index, unsigned int paddress, unsigned 
 
 }
 
-static void unmap_memory(unsigned int index)
+static void unmap_memory(struct mmu_directory *directory)
 {
 
-    struct mmu_directory *directory = &runtimeDirectories[index];
-
     directory_clear(directory);
+
+}
+
+static void unmap_user_memory(unsigned int index)
+{
+
+    unmap_memory(&runtimeDirectories[index]);
 
 }
 
@@ -128,7 +138,7 @@ static void handle_interrupt(struct runtime_task *task, struct isr_registers *re
 void mmu_setup()
 {
 
-    mmu_unit_init(&unit, enable, load_memory, reload_memory, map_kernel_memory, map_user_memory, unmap_memory);
+    mmu_unit_init(&unit, enable, load_user_memory, reload_memory, map_kernel_memory, map_user_memory, unmap_user_memory);
     mmu_init(&unit);
 
     isr_register_routine(ISR_INDEX_PF, handle_interrupt);

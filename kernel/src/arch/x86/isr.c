@@ -68,7 +68,7 @@ void isr_handle(struct isr_registers *registers)
 
     load_state(registers);
 
-    mmu_load_memory(running->id);
+    mmu_load_user_memory(running->id);
 
 }
 

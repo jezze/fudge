@@ -11,22 +11,22 @@ struct mmu_unit
 {
 
     void (*enable)();
-    void (*load_memory)(unsigned int index);
+    void (*load_user_memory)(unsigned int index);
     void (*reload_memory)();
     void (*map_kernel_memory)(unsigned int index, unsigned int paddress, unsigned int vaddress, unsigned int size);
     void (*map_user_memory)(unsigned int index, unsigned int paddress, unsigned int vaddress, unsigned int size);
-    void (*unmap_memory)(unsigned int index);
+    void (*unmap_user_memory)(unsigned int index);
 
 };
 
 void mmu_pagefault(struct runtime_task *task, unsigned int address, unsigned int flags);
 struct mmu_memory *mmu_get_task_memory();
-void mmu_load_memory(unsigned int index);
+void mmu_load_user_memory(unsigned int index);
 void mmu_reload_memory();
 void mmu_map_kernel_memory(unsigned int index, unsigned int paddress, unsigned int vaddress, unsigned int size);
 void mmu_map_user_memory(unsigned int index, unsigned int paddress, unsigned int vaddress, unsigned int size);
-void mmu_unmap_memory(unsigned int index);
-void mmu_unit_init(struct mmu_unit *unit, void (*enable)(), void (*load_memory)(unsigned int index), void (*reload_memory)(), void (*map_kernel_memory)(unsigned int index, unsigned int paddress, unsigned int vaddress, unsigned int size), void (*map_user_memory)(unsigned int index, unsigned int paddress, unsigned int vaddress, unsigned int size), void (*unmap_memory)(unsigned int index));
+void mmu_unmap_user_memory(unsigned int index);
+void mmu_unit_init(struct mmu_unit *unit, void (*enable)(), void (*load_user_memory)(unsigned int index), void (*reload_memory)(), void (*map_kernel_memory)(unsigned int index, unsigned int paddress, unsigned int vaddress, unsigned int size), void (*map_user_memory)(unsigned int index, unsigned int paddress, unsigned int vaddress, unsigned int size), void (*unmap_user_memory)(unsigned int index));
 void mmu_init(struct mmu_unit *unit);
 
 #endif
