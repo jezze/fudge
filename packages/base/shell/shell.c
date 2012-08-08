@@ -5,38 +5,6 @@
 static char buffer[BUFFER_SIZE];
 static unsigned int bufferHead;
 
-static void replace(char *str, unsigned int length)
-{
-
-    unsigned int i;
-
-    for (i = 0; i < length; i++)
-    {
-
-        if (str[i] == ' ')
-            str[i] = '\0';
-
-    }
-
-}
-
-static unsigned int find(char *str, char x, unsigned int length)
-{
-
-    unsigned int i;
-
-    for (i = 0; i < length; i++)
-    {
-
-        if (str[i] == x)
-            return i;
-
-    }
-
-    return 0;
-
-}
-
 static void stack_push(char c)
 {
 
@@ -106,42 +74,78 @@ static void clear()
 
 }
 
+#define STATE_NONE    0
+#define STATE_COMMAND 1
+#define STATE_STDIN   2
+#define STATE_STDOUT  3
+#define STATE_DATA    4
+
 static void interpret(unsigned int length, char *command)
 {
 
-    unsigned int sin;
-    unsigned int sout;
-    unsigned int data;
-    unsigned int exec;
+    unsigned int exec = 0;
+    unsigned int i;
+    unsigned int start = 0;
+    unsigned int state = STATE_COMMAND;
 
-    if (!length)
-        return;
+    for (i = 0; i < length; i++)
+    {
 
-    sin = find(command, '<', length);
-    sout = find(command, '>', length);
-    data = find(command, '-', length);
+        if (command[i] == ' ')
+        {
 
-    if (data && (data < sin || data < sout))
-        return;
+            if (state == STATE_COMMAND)
+                exec = setup_executable(i - start, command + start);
 
-    if (data)
-        replace(command, data);
-    else
-        replace(command, length);
+            if (state == STATE_STDIN)
+                setup_stream(i - start, command + start, FILE_STDIN);
 
-    exec = setup_executable(string_length(command), command);
+            if (state == STATE_STDOUT)
+                setup_stream(i - start, command + start, FILE_STDOUT);
 
-    if (!exec)
-        return;
+            state = STATE_NONE;
 
-    if (sin)
-        setup_stream(string_length(command + sin + 1), command + sin + 1, FILE_STDIN);
+        }
 
-    if (sout)
-        setup_stream(string_length(command + sout + 1), command + sout + 1, FILE_STDOUT);
+        if (command[i] == '<')
+        {
 
-    if (data)
-        call_write(FILE_STDIN, 0, length - data, command + data + 1);
+            state = STATE_STDIN;
+            start = i + 1;
+
+        }
+
+        if (command[i] == '>')
+        {
+
+            state = STATE_STDOUT;
+            start = i + 1;
+
+        }
+
+        if (command[i] == '-')
+        {
+
+            state = STATE_DATA;
+            start = i + 1;
+
+            break;
+
+        }
+
+    }
+
+    if (state == STATE_COMMAND)
+        exec = setup_executable(length - start, command + start);
+
+    if (state == STATE_STDIN)
+        setup_stream(length - start, command + start, FILE_STDIN);
+
+    if (state == STATE_STDOUT)
+        setup_stream(length - start, command + start, FILE_STDOUT);
+
+    if (state == STATE_DATA)
+        call_write(FILE_STDIN, 0, length - start, command + start);
 
     call_execute(exec);
     call_close(exec);
