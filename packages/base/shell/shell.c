@@ -147,8 +147,13 @@ static void interpret(unsigned int length, char *command)
     if (state == STATE_DATA)
         call_write(FILE_STDIN, 0, length - start, command + start);
 
-    call_execute(exec);
-    call_close(exec);
+    if (exec)
+    {
+
+        call_execute(exec);
+        call_close(exec);
+
+    }
 
     setup_stream(17, "/module/tty_stdin", FILE_STDIN);
     setup_stream(18, "/module/tty_stdout", FILE_STDOUT);
@@ -178,9 +183,11 @@ static void handle_input(char c)
         case '\r':
         case '\n':
 
-            stack_push('\0');
             call_write(FILE_STDOUT, 0, 1, &c);
-            interpret(bufferHead, buffer);
+
+            if (bufferHead)
+                interpret(bufferHead, buffer);
+
             clear();
 
             break;
