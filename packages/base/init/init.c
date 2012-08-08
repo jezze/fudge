@@ -85,28 +85,30 @@ void load_modules_testing(unsigned int id)
 void load_modules()
 {
 
-    unsigned int id;
+    call_open(3, 17, "/ramdisk/bin/load");
 
-    id = call_open(3, 17, "/ramdisk/bin/load");
-
-    load_modules_core(id);
-    load_modules_extra(id);
+    load_modules_core(3);
+    load_modules_extra(3);
 
     call_close(FILE_STDIN);
-    call_close(id);
+    call_close(3);
+
+}
+
+void start_shell()
+{
+
+    call_open(3, 18, "/ramdisk/bin/shell");
+    call_execute(3);
+    call_close(3);
 
 }
 
 void main()
 {
 
-    unsigned int id;
-
     load_modules();
-
-    id = call_open(3, 18, "/ramdisk/bin/shell");
-    call_execute(id);
-    call_close(id);
+    start_shell();
 
     for (;;);
 
