@@ -112,16 +112,13 @@ static void clear()
 
 }
 
-static void interpret(char *command)
+static void interpret(unsigned int length, char *command)
 {
 
-    unsigned int length;
     unsigned int sin;
     unsigned int sout;
     unsigned int data;
     unsigned int exec;
-
-    length = string_length(command);
 
     if (!length)
         return;
@@ -185,7 +182,7 @@ static void handle_input(char c)
 
             stack_push('\0');
             call_write(FILE_STDOUT, 0, 1, &c);
-            interpret(buffer);
+            interpret(bufferHead, buffer);
             clear();
 
             break;
