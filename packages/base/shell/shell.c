@@ -64,16 +64,13 @@ static void stack_clear()
 
 }
 
-static unsigned int setup_executable(char *path)
+static unsigned int setup_executable(unsigned int length, char *path)
 {
 
     char buffer[256];
-    unsigned int length;
 
     if (memory_match(path, "/", 1))
-        return call_open(3, string_length(path), path);
-
-    length = string_length(path);
+        return call_open(3, length, path);
 
     memory_copy(buffer, "/ramdisk/bin/", 13);
     memory_copy(buffer + 13, path, length);
@@ -82,17 +79,14 @@ static unsigned int setup_executable(char *path)
 
 }
 
-static unsigned int setup_stream(char *path, unsigned int index)
+static unsigned int setup_stream(unsigned int length, char *path, unsigned int index)
 {
 
     char buffer[256];
-    unsigned int length;
     unsigned int count;
 
     if (memory_match(path, "/", 1))
-        return call_open(index, string_length(path), path);
-
-    length = string_length(path);
+        return call_open(index, length, path);
 
     call_open(4, 15, "/module/tty_cwd");
     count = call_read(4, 0, 256 - length, buffer);
@@ -135,16 +129,16 @@ static void interpret(unsigned int length, char *command)
     else
         replace(command, length);
 
-    exec = setup_executable(command);
+    exec = setup_executable(string_length(command), command);
 
     if (!exec)
         return;
 
     if (sin)
-        setup_stream(command + sin + 1, FILE_STDIN);
+        setup_stream(string_length(command + sin + 1), command + sin + 1, FILE_STDIN);
 
     if (sout)
-        setup_stream(command + sout + 1, FILE_STDOUT);
+        setup_stream(string_length(command + sout + 1), command + sout + 1, FILE_STDOUT);
 
     if (data)
         call_write(FILE_STDIN, 0, length - data, command + data + 1);
@@ -152,8 +146,8 @@ static void interpret(unsigned int length, char *command)
     call_execute(exec);
     call_close(exec);
 
-    setup_stream("/module/tty_stdin", FILE_STDIN);
-    setup_stream("/module/tty_stdout", FILE_STDOUT);
+    setup_stream(17, "/module/tty_stdin", FILE_STDIN);
+    setup_stream(18, "/module/tty_stdout", FILE_STDOUT);
 
 }
 
