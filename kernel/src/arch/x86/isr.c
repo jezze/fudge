@@ -5,24 +5,23 @@
 #include <arch/x86/idt.h>
 #include <arch/x86/isr.h>
 
-static struct runtime_task *running;
 static void (*routines[ISR_TABLE_SLOTS])(struct runtime_task *task, struct isr_registers *registers);
 
-static void load_state(struct isr_registers *registers)
+static void load_state(struct runtime_task *task, struct isr_registers *registers)
 {
 
-    registers->interrupt.eip = running->registers.ip;
-    registers->interrupt.esp = running->registers.sp;
-    registers->general.ebp = running->registers.sb;
+    registers->interrupt.eip = task->registers.ip;
+    registers->interrupt.esp = task->registers.sp;
+    registers->general.ebp = task->registers.sb;
 
 }
 
-static void save_state(struct isr_registers *registers)
+static void save_state(struct runtime_task *task, struct isr_registers *registers)
 {
 
-    running->registers.ip = registers->interrupt.eip;
-    running->registers.sp = registers->interrupt.esp;
-    running->registers.sb = registers->general.ebp;
+    task->registers.ip = registers->interrupt.eip;
+    task->registers.sp = registers->interrupt.esp;
+    task->registers.sb = registers->general.ebp;
 
 }
 
@@ -59,16 +58,20 @@ void isr_unregister_routine(unsigned int index)
 void isr_handle(struct isr_registers *registers)
 {
 
-    save_state(registers);
+    struct runtime_task *task;
 
-    isr_raise(registers->index, running, registers);
-    event_raise(registers->index, running);
+    task = runtime_schedule();
 
-    running = runtime_schedule();
+    save_state(task, registers);
 
-    load_state(registers);
+    isr_raise(registers->index, task, registers);
+    event_raise(registers->index, task);
 
-    mmu_load_user_memory(running->id);
+    task = runtime_schedule();
+
+    load_state(task, registers);
+
+    mmu_load_user_memory(task->id);
 
 }
 
@@ -129,8 +132,6 @@ void isr_setup()
     idt_set_gate(0x2E, isr_routine2E, 0x08, 0x8E);
     idt_set_gate(0x2F, isr_routine2F, 0x08, 0x8E);
     idt_set_gate(ISR_INDEX_SYSCALL, isr_routine80, 0x08, 0xEE);
-
-    running = runtime_get_task(1);
 
 }
 
