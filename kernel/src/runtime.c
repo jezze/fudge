@@ -132,7 +132,7 @@ void runtime_task_init(struct runtime_task *task, unsigned int id)
     memory_clear(task, sizeof (struct runtime_task));
 
     task->id = id;
-    task->wait = 1;
+    task->idle = 1;
     task->get_descriptor = get_descriptor;
     task->get_mount = get_mount;
     task->find_mount = find_mount;
@@ -151,7 +151,7 @@ void runtime_task_clone(struct runtime_task *task, struct runtime_task *original
     memory_copy(task, original, sizeof (struct runtime_task));
 
     task->id = id;
-    task->wait = 1;
+    task->idle = 1;
 
     address = RUNTIME_TASK_ADDRESS_BASE + task->id * RUNTIME_TASK_ADDRESS_SIZE;
 
@@ -167,7 +167,7 @@ struct runtime_task *runtime_schedule()
     for (i = 1; i < RUNTIME_TASK_SLOTS - 1; i++)
     {
 
-        if (!tasks[i].wait)
+        if (!tasks[i].idle)
             return &tasks[i];
 
     }

@@ -50,7 +50,7 @@ struct runtime_task
     unsigned int id;
     unsigned int used;
     unsigned int event;
-    unsigned int wait;
+    unsigned int idle;
     struct runtime_registers registers;
     struct runtime_memory memory;
     struct runtime_descriptor descriptors[RUNTIME_TASK_DESCRIPTOR_SLOTS];

@@ -49,7 +49,7 @@ void handle_network_event()
     header = read_arp(buffer);
 
     if (!header)
-        call_wait();
+        call_idle();
 
     eheader.type[0] = 0x08;
     eheader.type[1] = 0x06;
@@ -78,7 +78,7 @@ void handle_network_event()
     call_write(3, 0, sizeof (struct ethernet_header) + sizeof (struct arp_header), buffer);
     call_close(3);
     call_write(FILE_STDOUT, 0, 18, "Responding to ARP\n");
-    call_wait();
+    call_idle();
 
 }
 
@@ -98,7 +98,7 @@ void main()
     call_read(3, 0, 6, eth0.mac);
     call_close(3);
 
-    call_wait();
+    call_idle();
 
 }
 

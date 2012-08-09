@@ -9,7 +9,7 @@ void explain()
     ticks++;
 
     if (ticks < 10)
-        call_wait();
+        call_idle();
 
     ticks = 0;
     counter++;
@@ -20,7 +20,7 @@ void explain()
         call_write(FILE_STDOUT, 0, 5, "Even\n");
 
     if (counter < 10)
-        call_wait();
+        call_idle();
 
     call_detach(0x20);
     call_exit();
@@ -34,7 +34,7 @@ void main()
     ticks = 0;
 
     call_attach(0x20, explain);
-    call_wait();
+    call_idle();
 
 }
 

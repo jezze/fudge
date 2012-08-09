@@ -37,7 +37,7 @@ void syscall_setup()
     register_routine(SYSCALL_INDEX_WRITE, syscall_write);
     register_routine(SYSCALL_INDEX_EXECUTE, syscall_execute);
     register_routine(SYSCALL_INDEX_EXIT, syscall_exit);
-    register_routine(SYSCALL_INDEX_WAIT, syscall_wait);
+    register_routine(SYSCALL_INDEX_IDLE, syscall_idle);
     register_routine(SYSCALL_INDEX_LOAD, syscall_load);
     register_routine(SYSCALL_INDEX_UNLOAD, syscall_unload);
     register_routine(SYSCALL_INDEX_ATTACH, syscall_attach);

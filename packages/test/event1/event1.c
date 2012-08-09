@@ -4,7 +4,7 @@ void before()
 {
 
     call_write(FILE_STDOUT, 0, 6, "START\n");
-    call_wait();
+    call_idle();
 
 }
 
@@ -23,7 +23,7 @@ void main()
 
     call_attach(0x85, before);
     call_attach(0x86, after);
-    call_wait();
+    call_idle();
 
 }
 

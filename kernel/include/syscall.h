@@ -9,7 +9,7 @@
 #define SYSCALL_INDEX_WRITE   0x04
 #define SYSCALL_INDEX_EXECUTE 0x05
 #define SYSCALL_INDEX_EXIT    0x06
-#define SYSCALL_INDEX_WAIT    0x07
+#define SYSCALL_INDEX_IDLE    0x07
 #define SYSCALL_INDEX_LOAD    0x08
 #define SYSCALL_INDEX_UNLOAD  0x09
 #define SYSCALL_INDEX_ATTACH  0x0A
@@ -104,7 +104,7 @@ struct syscall_unload_args
 
 };
 
-struct syscall_wait_args
+struct syscall_idle_args
 {
 
     void *caller;
@@ -132,7 +132,7 @@ unsigned int syscall_mount(struct runtime_task *task, void *stack);
 unsigned int syscall_open(struct runtime_task *task, void *stack);
 unsigned int syscall_read(struct runtime_task *task, void *stack);
 unsigned int syscall_unload(struct runtime_task *task, void *stack);
-unsigned int syscall_wait(struct runtime_task *task, void *stack);
+unsigned int syscall_idle(struct runtime_task *task, void *stack);
 unsigned int syscall_write(struct runtime_task *task, void *stack);
 
 #endif

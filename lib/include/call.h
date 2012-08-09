@@ -7,7 +7,7 @@ unsigned int call_read(unsigned int id, unsigned int offset, unsigned int count,
 unsigned int call_write(unsigned int id, unsigned int offset, unsigned int count, void *buffer);
 unsigned int call_execute(unsigned int id);
 unsigned int call_exit();
-unsigned int call_wait();
+unsigned int call_idle();
 unsigned int call_load(unsigned int id);
 unsigned int call_unload(unsigned int id);
 unsigned int call_attach(unsigned int id, void (*callback)());

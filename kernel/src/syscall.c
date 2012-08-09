@@ -88,10 +88,10 @@ unsigned int syscall_execute(struct runtime_task *task, void *stack)
     if (!count)
         return 0;
 
-    task->wait = 1;
+    task->idle = 1;
     ntask->parent = task;
     ntask->used = 1;
-    ntask->wait = 0;
+    ntask->idle = 0;
 
     return slot;
 
@@ -101,12 +101,12 @@ unsigned int syscall_exit(struct runtime_task *task, void *stack)
 {
 
     task->used = 0;
-    task->wait = 1;
+    task->idle = 1;
 
     if (task->parent && task->parent->id)
     {
 
-        task->parent->wait = 0;
+        task->parent->idle = 0;
 
         return task->parent->id;
 
@@ -240,16 +240,16 @@ unsigned int syscall_unload(struct runtime_task *task, void *stack)
 
 }
 
-unsigned int syscall_wait(struct runtime_task *task, void *stack)
+unsigned int syscall_idle(struct runtime_task *task, void *stack)
 {
 
     task->event = 0;
-    task->wait = 1;
+    task->idle = 1;
 
     if (task->parent && task->parent->id)
     {
 
-        task->parent->wait = 0;
+        task->parent->idle = 0;
 
         return task->parent->id;
 

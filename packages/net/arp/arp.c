@@ -58,7 +58,7 @@ static void receive()
     call_write(FILE_STDOUT, 0, string_length(num), num);
     call_write(FILE_STDOUT, 0, 1, "\n");
 
-    call_wait();
+    call_idle();
 
 }
 
@@ -116,7 +116,7 @@ void main()
 
     send();
 
-    call_wait();
+    call_idle();
 
 }
 

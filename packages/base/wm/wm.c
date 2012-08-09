@@ -130,7 +130,7 @@ void mouse_event()
     call_read(idmcycle, 0, 1, &cycle);
 
     if (cycle)
-        call_wait();
+        call_idle();
 
     call_read(idmstatus, 0, 1, &status);
     call_read(idmx, 0, 1, &dx);
@@ -143,7 +143,7 @@ void mouse_event()
 
     draw_fill(mx, my, mx + 10, my + 10, 0xFFFFFF);
 
-    call_wait();
+    call_idle();
 
 }
 
@@ -201,7 +201,7 @@ void main()
     draw_window(200, 100, 600, 400);
 
     call_attach(0x2C, mouse_event);
-    call_wait();
+    call_idle();
 
 }
 

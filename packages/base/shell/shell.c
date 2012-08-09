@@ -215,7 +215,7 @@ static void read_keyboard()
     for (i = 0; i < count; i++)
         handle_input(buffer[i]);
 
-    call_wait();
+    call_idle();
 
 }
 
@@ -225,7 +225,7 @@ void main()
     clear();
 
     call_attach(0x21, read_keyboard);
-    call_wait();
+    call_idle();
 
 }
 

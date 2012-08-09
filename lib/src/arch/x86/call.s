@@ -7,7 +7,7 @@
 .set CALL_INDEX_WRITE,   0x04
 .set CALL_INDEX_EXECUTE, 0x05
 .set CALL_INDEX_EXIT,    0x06
-.set CALL_INDEX_WAIT,    0x07
+.set CALL_INDEX_IDLE,    0x07
 .set CALL_INDEX_LOAD,    0x08
 .set CALL_INDEX_UNLOAD,  0x09
 .set CALL_INDEX_ATTACH,  0x0A
@@ -50,9 +50,9 @@ call_exit:
     int CALL_INTERRUPT
     ret
 
-.global call_wait
-call_wait:
-    mov eax, CALL_INDEX_WAIT
+.global call_idle
+call_idle:
+    mov eax, CALL_INDEX_IDLE
     int CALL_INTERRUPT
     ret
 
