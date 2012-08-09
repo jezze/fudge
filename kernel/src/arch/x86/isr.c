@@ -38,7 +38,7 @@ static void isr_handle_undefined(struct runtime_task *task, struct isr_registers
 static void isr_raise(unsigned int index, struct runtime_task *task, struct isr_registers *registers)
 {
 
-    routines[registers->index](running, registers);
+    routines[index](task, registers);
 
 }
 

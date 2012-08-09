@@ -24,7 +24,7 @@ static void handle_interrupt(struct runtime_task *task, struct isr_registers *re
 
     }
 
-    registers->general.eax = routines[registers->extra](task, (void *)task->registers.sp);
+    registers->general.eax = routines[registers->extra](task, (void *)registers->interrupt.esp);
 
 }
 
