@@ -59,7 +59,7 @@ unsigned int binary_get_vaddress(struct runtime_descriptor *descriptor)
 
 }
 
-static void binary_relocate_section(struct elf_section_header *sectionHeader, struct elf_section_header *relocateHeader, struct elf_section_header *relocateData, struct elf_relocate *relocateTable, struct elf_section_header *symbolHeader, struct elf_symbol *symbolTable, unsigned int address)
+static void binary_relocate_section(struct elf_section_header *sectionHeader, struct elf_section_header *relocateHeader, struct elf_section_header *relocateData, struct elf_relocate *relocateTable, struct elf_symbol *symbolTable, unsigned int address)
 {
 
     unsigned int i;
@@ -122,7 +122,7 @@ void binary_relocate(struct runtime_descriptor *descriptor, unsigned int address
         descriptor->mount->filesystem->read(descriptor->mount->filesystem, descriptor->id, sectionHeader[i].offset, sectionHeader[i].size, relocateTable);
         descriptor->mount->filesystem->read(descriptor->mount->filesystem, descriptor->id, sectionHeader[sectionHeader[i].link].offset, sectionHeader[sectionHeader[i].link].size, symbolTable);
 
-        binary_relocate_section(sectionHeader, &sectionHeader[i], &sectionHeader[sectionHeader[i].info], relocateTable, &sectionHeader[sectionHeader[i].link], symbolTable, address);
+        binary_relocate_section(sectionHeader, &sectionHeader[i], &sectionHeader[sectionHeader[i].info], relocateTable, symbolTable, address);
 
         sectionHeader[sectionHeader[i].info].address += address;
 
