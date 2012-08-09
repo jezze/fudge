@@ -116,6 +116,25 @@ unsigned int syscall_exit(struct runtime_task *task, void *stack)
 
 }
 
+unsigned int syscall_idle(struct runtime_task *task, void *stack)
+{
+
+    task->event = 0;
+    task->idle = 1;
+
+    if (task->parent && task->parent->id)
+    {
+
+        task->parent->idle = 0;
+
+        return task->parent->id;
+
+    }
+
+    return 0;
+
+}
+
 unsigned int syscall_load(struct runtime_task *task, void *stack)
 {
 
@@ -237,25 +256,6 @@ unsigned int syscall_unload(struct runtime_task *task, void *stack)
     destroy();
 
     return 1;
-
-}
-
-unsigned int syscall_idle(struct runtime_task *task, void *stack)
-{
-
-    task->event = 0;
-    task->idle = 1;
-
-    if (task->parent && task->parent->id)
-    {
-
-        task->parent->idle = 0;
-
-        return task->parent->id;
-
-    }
-
-    return 0;
 
 }
 

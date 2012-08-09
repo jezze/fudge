@@ -56,6 +56,13 @@ struct syscall_exit_args
 
 };
 
+struct syscall_idle_args
+{
+
+    void *caller;
+
+};
+
 struct syscall_load_args
 {
 
@@ -101,13 +108,6 @@ struct syscall_unload_args
 
     void *caller;
     unsigned int index;
-
-};
-
-struct syscall_idle_args
-{
-
-    void *caller;
 
 };
 
