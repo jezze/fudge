@@ -58,20 +58,24 @@ void isr_unregister_routine(unsigned int index)
 void isr_handle(struct isr_registers *registers)
 {
 
-    struct runtime_task *task;
+    struct runtime_task *task1;
+    struct runtime_task *task2;
 
-    task = runtime_schedule();
+    task1 = runtime_schedule();
 
-    save_state(task, registers);
+    save_state(task1, registers);
 
-    isr_raise(registers->index, task, registers);
-    event_raise(registers->index, task);
+    isr_raise(registers->index, task1, registers);
+    event_raise(registers->index, task1);
 
-    task = runtime_schedule();
+    task2 = runtime_schedule();
 
-    load_state(task, registers);
+    load_state(task2, registers);
 
-    mmu_load_user_memory(task->id);
+    if (task1 == task2)
+        return;
+
+    mmu_load_user_memory(task2->id);
 
 }
 
