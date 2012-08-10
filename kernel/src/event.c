@@ -43,7 +43,7 @@ void event_raise(unsigned int index, struct runtime_task *task)
     routines[index].task->event = 1;
     routines[index].task->idle = 0;
 
-    runtime_registers_init(&routines[index].task->registers, routines[index].callback, routines[index].task->memory.vaddress + routines[index].task->memory.size, routines[index].task->memory.vaddress + routines[index].task->memory.size);
+    runtime_registers_init(&routines[index].task->registers, routines[index].callback, routines[index].task->memory.address + routines[index].task->memory.size, routines[index].task->memory.address + routines[index].task->memory.size);
 
 }
 

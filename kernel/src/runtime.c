@@ -90,13 +90,12 @@ void runtime_descriptor_init(struct runtime_descriptor *descriptor, unsigned int
 
 }
 
-void runtime_memory_init(struct runtime_memory *memory, unsigned int paddress, unsigned int vaddress, unsigned int size)
+void runtime_memory_init(struct runtime_memory *memory, unsigned int address, unsigned int size)
 {
 
     memory_clear(memory, sizeof (struct runtime_memory));
 
-    memory->paddress = paddress;
-    memory->vaddress = vaddress;
+    memory->address = address;
     memory->size = size;
 
 }
@@ -127,8 +126,6 @@ void runtime_registers_init(struct runtime_registers *registers, unsigned int ip
 void runtime_task_init(struct runtime_task *task, unsigned int id)
 {
 
-    unsigned int address;
-
     memory_clear(task, sizeof (struct runtime_task));
 
     task->id = id;
@@ -137,25 +134,15 @@ void runtime_task_init(struct runtime_task *task, unsigned int id)
     task->get_mount = get_mount;
     task->find_mount = find_mount;
 
-    address = RUNTIME_TASK_ADDRESS_BASE + task->id * RUNTIME_TASK_ADDRESS_SIZE;
-
-    runtime_memory_init(&task->memory, address, address, RUNTIME_TASK_ADDRESS_SIZE);
-
 }
 
 void runtime_task_clone(struct runtime_task *task, struct runtime_task *original, unsigned int id)
 {
 
-    unsigned int address;
-
     memory_copy(task, original, sizeof (struct runtime_task));
 
     task->id = id;
     task->idle = 1;
-
-    address = RUNTIME_TASK_ADDRESS_BASE + task->id * RUNTIME_TASK_ADDRESS_SIZE;
-
-    runtime_memory_init(&task->memory, address, address, RUNTIME_TASK_ADDRESS_SIZE);
 
 }
 

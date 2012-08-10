@@ -52,7 +52,7 @@ unsigned int syscall_execute(struct runtime_task *task, void *stack)
     struct runtime_task *ntask;
     unsigned int slot;
     unsigned int entry;
-    unsigned int vaddress;
+    unsigned int address;
     unsigned int count;
 
     if (!descriptor || !descriptor->id || !descriptor->mount->filesystem->read)
@@ -68,22 +68,20 @@ unsigned int syscall_execute(struct runtime_task *task, void *stack)
     if (!entry)
         return 0;
 
-    vaddress = binary_get_vaddress(descriptor);
+    address = binary_get_vaddress(descriptor);
 
-    if (!vaddress)
+    if (!address)
         return 0;
 
     ntask = runtime_get_task(slot);
 
     runtime_task_clone(ntask, task, slot);
-    ntask->memory.vaddress = vaddress;
+    runtime_memory_init(&ntask->memory, address, RUNTIME_TASK_ADDRESS_SIZE);
 
-    runtime_registers_init(&ntask->registers, entry, ntask->memory.vaddress + ntask->memory.size, ntask->memory.vaddress + ntask->memory.size);
-
-    mmu_map_user_memory(ntask->id, ntask->memory.paddress, ntask->memory.vaddress, ntask->memory.size);
+    mmu_map_user_memory(ntask->id, RUNTIME_TASK_ADDRESS_BASE + ntask->id * RUNTIME_TASK_ADDRESS_SIZE, ntask->memory.address, ntask->memory.size);
     mmu_load_user_memory(ntask->id);
 
-    count = descriptor->mount->filesystem->read(descriptor->mount->filesystem, descriptor->id, 0, ntask->memory.size, (void *)ntask->memory.vaddress);
+    count = descriptor->mount->filesystem->read(descriptor->mount->filesystem, descriptor->id, 0, ntask->memory.size, (void *)ntask->memory.address);
 
     if (!count)
         return 0;
@@ -92,6 +90,8 @@ unsigned int syscall_execute(struct runtime_task *task, void *stack)
     ntask->parent = task;
     ntask->used = 1;
     ntask->idle = 0;
+
+    runtime_registers_init(&ntask->registers, entry, ntask->memory.address + ntask->memory.size, ntask->memory.address + ntask->memory.size);
 
     return slot;
 
