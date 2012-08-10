@@ -46,16 +46,41 @@ unsigned int binary_get_vaddress(struct runtime_descriptor *descriptor)
 {
 
     struct elf_header header;
-    struct elf_program_header programHeader;
+    struct elf_program_header programHeader[8];
 
     descriptor->mount->filesystem->read(descriptor->mount->filesystem, descriptor->id, 0, sizeof (struct elf_header), &header);
 
     if (!elf_validate(&header))
         return 0;
 
-    descriptor->mount->filesystem->read(descriptor->mount->filesystem, descriptor->id, header.phoffset, sizeof (struct elf_program_header), &programHeader);
+    descriptor->mount->filesystem->read(descriptor->mount->filesystem, descriptor->id, header.phoffset, header.phsize * header.phcount, programHeader);
 
-    return programHeader.vaddress;
+    return programHeader[0].vaddress;
+
+}
+
+unsigned int binary_copy_program(struct runtime_descriptor *descriptor)
+{
+
+    struct elf_header header;
+    struct elf_program_header programHeader[8];
+    unsigned int i;
+
+    descriptor->mount->filesystem->read(descriptor->mount->filesystem, descriptor->id, 0, sizeof (struct elf_header), &header);
+
+    if (!elf_validate(&header))
+        return 0;
+
+    descriptor->mount->filesystem->read(descriptor->mount->filesystem, descriptor->id, header.phoffset, header.phsize * header.phcount, programHeader);
+
+    for (i = 0; i < header.phcount; i++)
+    {
+
+        descriptor->mount->filesystem->read(descriptor->mount->filesystem, descriptor->id, programHeader[i].offset, programHeader[i].fsize, (void *)programHeader[i].vaddress);
+
+    }
+
+    return 1;
 
 }
 
@@ -96,7 +121,7 @@ static void binary_relocate_section(struct elf_section_header *sectionHeader, st
 
 }
 
-void binary_relocate(struct runtime_descriptor *descriptor, unsigned int address)
+unsigned int binary_relocate(struct runtime_descriptor *descriptor, unsigned int address)
 {
 
     struct elf_header header;
@@ -106,7 +131,7 @@ void binary_relocate(struct runtime_descriptor *descriptor, unsigned int address
     descriptor->mount->filesystem->read(descriptor->mount->filesystem, descriptor->id, 0, sizeof (struct elf_header), &header);
 
     if (!elf_validate(&header))
-        return;
+        return 0;
 
     descriptor->mount->filesystem->read(descriptor->mount->filesystem, descriptor->id, header.shoffset, header.shsize * header.shcount, sectionHeader);
 
@@ -129,6 +154,8 @@ void binary_relocate(struct runtime_descriptor *descriptor, unsigned int address
         descriptor->mount->filesystem->write(descriptor->mount->filesystem, descriptor->id, header.shoffset, header.shsize * header.shcount, sectionHeader);
 
     }
+
+    return 1;
 
 }
 

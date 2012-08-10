@@ -53,7 +53,6 @@ unsigned int syscall_execute(struct runtime_task *task, void *stack)
     unsigned int slot;
     unsigned int entry;
     unsigned int address;
-    unsigned int count;
 
     if (!descriptor || !descriptor->id || !descriptor->mount->filesystem->read)
         return 0;
@@ -79,12 +78,10 @@ unsigned int syscall_execute(struct runtime_task *task, void *stack)
 
     runtime_memory_init(&ntask->memory, address, RUNTIME_TASK_ADDRESS_SIZE);
 
-    mmu_map_user_memory(ntask->id, RUNTIME_TASK_ADDRESS_BASE + ntask->id * RUNTIME_TASK_ADDRESS_SIZE, ntask->memory.address, ntask->memory.size);
+    mmu_map_user_memory(ntask->id, RUNTIME_TASK_ADDRESS_BASE + ntask->id * RUNTIME_TASK_ADDRESS_SIZE, address, RUNTIME_TASK_ADDRESS_SIZE);
     mmu_load_user_memory(ntask->id);
 
-    count = descriptor->mount->filesystem->read(descriptor->mount->filesystem, descriptor->id, 0, ntask->memory.size, (void *)ntask->memory.address);
-
-    if (!count)
+    if (!binary_copy_program(descriptor))
         return 0;
 
     task->idle = 1;
@@ -153,7 +150,8 @@ unsigned int syscall_load(struct runtime_task *task, void *stack)
         return 0;
 
     /* Physical should be replaced with known address later on */
-    binary_relocate(descriptor, physical);
+    if (!binary_relocate(descriptor, physical))
+        return 0;
 
     init = (void (*)())(binary_find_symbol(descriptor, "init"));
 
