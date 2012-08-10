@@ -1,1 +1,3 @@
-KERNEL_OBJECTS+=kernel/src/arch/arm/arch.o kernel/src/arch/arm/cpu.o kernel/src/arch/arm/init.o
+KERNEL_OBJECTS+=kernel/src/arch/arm/arch.o
+KERNEL_OBJECTS+=kernel/src/arch/arm/cpu.o
+KERNEL_OBJECTS+=kernel/src/arch/arm/init.o
