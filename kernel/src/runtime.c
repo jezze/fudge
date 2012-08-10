@@ -142,7 +142,6 @@ void runtime_task_clone(struct runtime_task *task, struct runtime_task *original
     memory_copy(task, original, sizeof (struct runtime_task));
 
     task->id = id;
-    task->idle = 1;
 
 }
 
