@@ -36,7 +36,6 @@ fudge.img: $(LIB) $(KERNEL) $(MODULES) $(PACKAGES) $(IMAGE)
 	dd if=menu.lst conv=notrunc of=$@ bs=512 seek=200
 	dd if=image/boot/fudge conv=notrunc of=$@ bs=512 seek=300
 	dd if=image/boot/initrd.tar conv=notrunc of=$@ bs=512 seek=400
-	sh x86-write-image.sh
 
 image:
 	mkdir -p $@
