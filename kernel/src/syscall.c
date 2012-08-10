@@ -63,6 +63,10 @@ unsigned int syscall_execute(struct runtime_task *task, void *stack)
     if (!slot)
         return 0;
 
+    ntask = runtime_get_task(slot);
+
+    task->clone(task, ntask, slot);
+
     entry = binary_get_entry(descriptor);
 
     if (!entry)
@@ -73,9 +77,6 @@ unsigned int syscall_execute(struct runtime_task *task, void *stack)
     if (!address)
         return 0;
 
-    ntask = runtime_get_task(slot);
-
-    runtime_task_clone(ntask, task, slot);
     runtime_memory_init(&ntask->memory, address, RUNTIME_TASK_ADDRESS_SIZE);
 
     mmu_map_user_memory(ntask->id, RUNTIME_TASK_ADDRESS_BASE + ntask->id * RUNTIME_TASK_ADDRESS_SIZE, ntask->memory.address, ntask->memory.size);

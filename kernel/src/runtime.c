@@ -3,6 +3,15 @@
 
 static struct runtime_task tasks[RUNTIME_TASK_SLOTS];
 
+static void clone(struct runtime_task *self, struct runtime_task *task, unsigned int id)
+{
+
+    memory_copy(task, self, sizeof (struct runtime_task));
+
+    task->id = id;
+
+}
+
 static struct runtime_descriptor *get_descriptor(struct runtime_task *self, unsigned int index)
 {
 
@@ -130,18 +139,10 @@ void runtime_task_init(struct runtime_task *task, unsigned int id)
 
     task->id = id;
     task->idle = 1;
+    task->clone = clone;
     task->get_descriptor = get_descriptor;
     task->get_mount = get_mount;
     task->find_mount = find_mount;
-
-}
-
-void runtime_task_clone(struct runtime_task *task, struct runtime_task *original, unsigned int id)
-{
-
-    memory_copy(task, original, sizeof (struct runtime_task));
-
-    task->id = id;
 
 }
 
