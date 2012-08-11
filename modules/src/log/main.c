@@ -10,19 +10,21 @@ static struct nodefs_node messages;
 static unsigned int messages_read(struct nodefs_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    if (offset > driver.buffer.count)
+    struct log_driver *driver = (struct log_driver *)self->module;
+
+    if (offset > driver->buffer.count)
         return 0;
 
-    if (count > driver.buffer.count - offset)
-        count = driver.buffer.count - offset;
+    if (count > driver->buffer.count - offset)
+        count = driver->buffer.count - offset;
 
-    memory_copy(buffer, driver.buffer.buffer + offset, count);
+    memory_copy(buffer, driver->buffer.buffer + offset, count);
 
     return count;
 
 }
 
-void log_write(unsigned int module, unsigned int count, char *buffer)
+void log_write(unsigned int module, unsigned int count, void *buffer)
 {
 
     char num[32];
@@ -59,6 +61,7 @@ void init()
 void destroy()
 {
 
+    nodefs_unregister_node(&messages);
     modules_unregister_driver(&driver.base);
 
 }

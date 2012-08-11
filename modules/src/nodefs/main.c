@@ -11,6 +11,13 @@ void nodefs_register_node(struct nodefs_node *node, char *name, struct modules_b
 
 }
 
+void nodefs_unregister_node(struct nodefs_node *node)
+{
+
+    driver.unregister_node(&driver, node);
+
+}
+
 struct modules_filesystem *get_filesystem()
 {
 

@@ -19,7 +19,7 @@ struct log_driver
 
 };
 
-void log_write(unsigned int module, unsigned int count, char *buffer);
+void log_write(unsigned int module, unsigned int count, void *buffer);
 void log_driver_init(struct log_driver *driver);
 
 #endif

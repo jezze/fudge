@@ -25,6 +25,7 @@ struct nodefs_driver
 };
 
 void nodefs_register_node(struct nodefs_node *node, char *name, struct modules_base *module, unsigned int (*read)(struct nodefs_node *self, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write)(struct nodefs_node *self, unsigned int offset, unsigned int count, void *buffer));
+void nodefs_unregister_node(struct nodefs_node *node);
 void nodefs_driver_init(struct nodefs_driver *driver);
 void nodefs_filesystem_init(struct modules_filesystem *filesystem, struct modules_driver *driver);
 
