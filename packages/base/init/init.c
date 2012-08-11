@@ -104,6 +104,10 @@ void load_modules()
 void start_shell()
 {
 
+    call_open(3, 8, "/tty/cwd");
+    call_write(3, 0, 14, "/ramdisk/home/");
+    call_close(3);
+
     call_open(FILE_STDIN, 10, "/tty/stdin");
     call_open(FILE_STDOUT, 11, "/tty/stdout");
 

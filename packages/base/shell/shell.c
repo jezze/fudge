@@ -69,6 +69,14 @@ static unsigned int setup_stream(unsigned int length, char *path, unsigned int i
 static void clear()
 {
 
+    char buffer[128];
+    unsigned int count;
+
+    call_open(3, 8, "/tty/cwd");
+    count = call_read(3, 0, 128, buffer);
+    call_close(3);
+
+    call_write(FILE_STDOUT, 0, count, buffer);
     call_write(FILE_STDOUT, 0, 2, "$ ");
     stack_clear();
 

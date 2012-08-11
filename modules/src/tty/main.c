@@ -16,7 +16,7 @@ struct modules_filesystem *get_filesystem()
 void init()
 {
 
-    tty_driver_init(&driver, "/ramdisk/home/");
+    tty_driver_init(&driver, "/");
     modules_register_driver(&driver.base);
 
     tty_filesystem_init(&filesystem, &driver.base);
