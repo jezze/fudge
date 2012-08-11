@@ -8,7 +8,8 @@ static void register_interface(struct net_driver *self, struct net_interface *in
     interface->read = read;
     interface->write = write;
 
-    self->interfaces[0] = interface;
+    self->interfaces[self->interfacesCount] = interface;
+    self->interfacesCount++;
 
 }
 

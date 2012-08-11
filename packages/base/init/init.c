@@ -3,15 +3,17 @@
 void load_modules_core(unsigned int id)
 {
 
-    call_open(FILE_STDIN, 19, "/ramdisk/mod/net.ko");
-    call_execute(id);
-
-/*    call_mount(FILE_STDIN, 3, 5, "/net/"); */
-
     call_open(FILE_STDIN, 22, "/ramdisk/mod/nodefs.ko");
     call_execute(id);
 
     call_mount(FILE_STDIN, 3, 8, "/module/");
+
+    call_open(FILE_STDIN, 19, "/ramdisk/mod/net.ko");
+    call_execute(id);
+
+/*
+    call_mount(FILE_STDIN, 4, 5, "/net/");
+*/
 
     call_open(FILE_STDIN, 19, "/ramdisk/mod/log.ko");
     call_execute(id);

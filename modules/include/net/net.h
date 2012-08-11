@@ -3,6 +3,13 @@
 
 #define NET_DRIVER_TYPE 0x1327
 
+struct net_filesystem
+{
+
+    struct modules_filesystem base;
+
+};
+
 struct net_interface
 {
 
@@ -22,6 +29,9 @@ struct net_driver
 
 };
 
+void net_register_interface(struct net_interface *interface, unsigned int (*read)(struct net_interface *self, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write)(struct net_interface *self, unsigned int offset, unsigned int count, void *buffer));
+void net_unregister_interface(struct net_interface *interface);
+void net_filesystem_init(struct net_filesystem *filesystem);
 void net_driver_init(struct net_driver *driver);
 
 #endif
