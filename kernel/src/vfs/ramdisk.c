@@ -145,7 +145,7 @@ void vfs_ramdisk_filesystem_init(struct vfs_ramdisk_filesystem *filesystem, stru
 
     memory_clear(filesystem, sizeof (struct vfs_ramdisk_filesystem));
 
-    modules_filesystem_init(&filesystem->base, 0x0001, "ramdisk", 0, 0, read, write, 0, walk, get_physical);
+    modules_filesystem_init(&filesystem->base, 0x0001, 0, "ramdisk", 0, 0, read, write, 0, walk, get_physical);
 
     filesystem->image = image;
 

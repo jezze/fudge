@@ -135,7 +135,6 @@ struct ext2_filesystem
 {
 
     struct modules_filesystem base;
-    struct ext2_driver *driver;
     struct mbr_device *device;
 
 };

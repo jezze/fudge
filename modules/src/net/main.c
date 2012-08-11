@@ -31,7 +31,7 @@ void init()
     net_driver_init(&driver);
     modules_register_driver(&driver.base);
 
-    net_filesystem_init(&filesystem);
+    net_filesystem_init(&filesystem, &driver);
     modules_register_filesystem(&filesystem.base);
 
 }

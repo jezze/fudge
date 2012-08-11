@@ -117,12 +117,12 @@ static void unregister_node(struct nodefs_driver *self, struct nodefs_node *node
 
 }
 
-void nodefs_filesystem_init(struct nodefs_filesystem *filesystem)
+void nodefs_filesystem_init(struct nodefs_filesystem *filesystem, struct nodefs_driver *driver)
 {
 
     memory_clear(filesystem, sizeof (struct nodefs_filesystem));
 
-    modules_filesystem_init(&filesystem->base, 0x1001, "nodefs", 0, 0, filesystem_read, filesystem_write, 0, filesystem_walk, 0); 
+    modules_filesystem_init(&filesystem->base, 0x1001, &driver->base, "nodefs", 0, 0, filesystem_read, filesystem_write, 0, filesystem_walk, 0); 
     filesystem->count = 0;
 
     modules_register_filesystem(&filesystem->base);
@@ -135,7 +135,7 @@ void nodefs_driver_init(struct nodefs_driver *driver)
     memory_clear(driver, sizeof (struct nodefs_driver));
 
     modules_driver_init(&driver->base, NODEFS_DRIVER_TYPE, "nodefs", 0, 0, 0);
-    nodefs_filesystem_init(&driver->filesystem);
+    nodefs_filesystem_init(&driver->filesystem, driver);
 
     driver->register_node = register_node;
     driver->unregister_node = unregister_node;

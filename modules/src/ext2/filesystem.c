@@ -10,10 +10,11 @@ static unsigned int read(struct modules_filesystem *self, unsigned int id, unsig
     char mem[1024];
     char *private = mem;
     struct ext2_filesystem *filesystem = (struct ext2_filesystem *)self;
+    struct ext2_driver *driver = (struct ext2_driver *)self->driver;
 
-    filesystem->driver->read_blockgroup(filesystem->device, id, &bg);
-    filesystem->driver->read_node(filesystem->device, id, &bg, &node);
-    filesystem->driver->read_content(filesystem->device, &node, private);
+    driver->read_blockgroup(filesystem->device, id, &bg);
+    driver->read_node(filesystem->device, id, &bg, &node);
+    driver->read_content(filesystem->device, &node, private);
 
     if ((node.type & 0xF000) == EXT2_NODE_TYPE_DIR)
     {
@@ -76,10 +77,11 @@ static struct ext2_entry *finddir(struct modules_filesystem *self, unsigned int 
     char mem[1024];
     char *private = mem;
     struct ext2_filesystem *filesystem = (struct ext2_filesystem *)self;
+    struct ext2_driver *driver = (struct ext2_driver *)self->driver;
 
-    filesystem->driver->read_blockgroup(filesystem->device, id, &bg);
-    filesystem->driver->read_node(filesystem->device, id, &bg, &node);
-    filesystem->driver->read_content(filesystem->device, &node, private);
+    driver->read_blockgroup(filesystem->device, id, &bg);
+    driver->read_node(filesystem->device, id, &bg, &node);
+    driver->read_content(filesystem->device, &node, private);
 
     if ((node.type & 0xF000) == EXT2_NODE_TYPE_DIR)
     {
@@ -132,9 +134,8 @@ void ext2_filesystem_init(struct ext2_filesystem *filesystem, struct ext2_driver
 
     memory_clear(filesystem, sizeof (struct ext2_filesystem));
 
-    modules_filesystem_init(&filesystem->base, 0x0001, "hda", 0, 0, read, 0, 0, walk, 0); 
+    modules_filesystem_init(&filesystem->base, 0x0001, &driver->base, "hda", 0, 0, read, 0, 0, walk, 0); 
 
-    filesystem->driver = driver;
     filesystem->device = device;
 
 }
