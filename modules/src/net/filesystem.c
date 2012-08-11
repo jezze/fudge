@@ -23,12 +23,12 @@ static unsigned int walk(struct modules_filesystem *self, unsigned int id, unsig
 
 }
 
-void net_filesystem_init(struct net_filesystem *filesystem, struct net_driver *driver)
+void net_filesystem_init(struct modules_filesystem *filesystem, struct modules_driver *driver)
 {
 
-    memory_clear(filesystem, sizeof (struct net_filesystem));
+    memory_clear(filesystem, sizeof (struct modules_filesystem));
 
-    modules_filesystem_init(&filesystem->base, 0x1001, &driver->base, "net", 0, 0, read, write, 0, walk, 0); 
+    modules_filesystem_init(filesystem, 0x1001, driver, "net", 0, 0, read, write, 0, walk, 0); 
 
 }
 

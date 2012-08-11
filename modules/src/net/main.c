@@ -2,7 +2,7 @@
 #include <net/net.h>
 
 static struct net_driver driver;
-static struct net_filesystem filesystem;
+static struct modules_filesystem filesystem;
 
 void net_register_interface(struct net_interface *interface, struct modules_base *module, unsigned int (*read)(struct net_interface *self, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write)(struct net_interface *self, unsigned int offset, unsigned int count, void *buffer))
 {
@@ -21,7 +21,7 @@ void net_unregister_interface(struct net_interface *interface)
 struct modules_filesystem *get_filesystem()
 {
 
-    return &filesystem.base;
+    return &filesystem;
 
 }
 
@@ -31,15 +31,15 @@ void init()
     net_driver_init(&driver);
     modules_register_driver(&driver.base);
 
-    net_filesystem_init(&filesystem, &driver);
-    modules_register_filesystem(&filesystem.base);
+    net_filesystem_init(&filesystem, &driver.base);
+    modules_register_filesystem(&filesystem);
 
 }
 
 void destroy()
 {
 
-    modules_unregister_filesystem(&filesystem.base);
+    modules_unregister_filesystem(&filesystem);
     modules_unregister_driver(&driver.base);
 
 }
