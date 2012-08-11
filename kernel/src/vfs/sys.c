@@ -13,9 +13,9 @@ static unsigned int parent(struct modules_filesystem *self, unsigned int id)
 static unsigned int read_root(unsigned int count, void *buffer)
 {
 
-    memory_copy(buffer, "all/\nbus/\ndevice/\ndriver/\nfilesystem/\nramdisk/\nmodule/\n", 55);
+    memory_copy(buffer, "all/\nbus/\ndevice/\ndriver/\nfilesystem/\nramdisk/\nmodule/\nnet/\n", 60);
 
-    return 55;
+    return 60;
 
 }
 
