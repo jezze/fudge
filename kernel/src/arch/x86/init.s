@@ -8,15 +8,11 @@
 
 .section .mboot
 
-.align 4
-
 .int INIT_MBOOT_HEADER_MAGIC
 .int INIT_MBOOT_HEADER_FLAGS
 .int INIT_MBOOT_CHECKSUM
 
 .section .text
-
-.align 4
 
 .global init
 init:
