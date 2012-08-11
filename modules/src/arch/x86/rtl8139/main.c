@@ -1,5 +1,6 @@
 #include <memory.h>
 #include <modules.h>
+#include <net/net.h>
 #include <nodefs/nodefs.h>
 #include <arch/x86/rtl8139/rtl8139.h>
 
@@ -19,14 +20,14 @@ static unsigned int mac_read(struct nodefs_node *self, unsigned int offset, unsi
 static unsigned int data_read(struct nodefs_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    return driver.read(&driver, buffer);
+    return driver.interface.read(&driver.interface, offset, count, buffer);
 
 }
 
 static unsigned int data_write(struct nodefs_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    return driver.write(&driver, count, buffer);
+    return driver.interface.write(&driver.interface, offset, count, buffer);
 
 }
 

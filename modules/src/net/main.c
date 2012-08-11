@@ -4,10 +4,10 @@
 static struct net_driver driver;
 static struct net_filesystem filesystem;
 
-void net_register_interface(struct net_interface *interface, unsigned int (*read)(struct net_interface *self, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write)(struct net_interface *self, unsigned int offset, unsigned int count, void *buffer))
+void net_register_interface(struct net_interface *interface, struct modules_base *module, unsigned int (*read)(struct net_interface *self, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write)(struct net_interface *self, unsigned int offset, unsigned int count, void *buffer))
 {
 
-    driver.register_interface(&driver, interface, read, write);
+    driver.register_interface(&driver, interface, module, read, write);
 
 }
 
