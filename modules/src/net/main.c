@@ -11,10 +11,24 @@ void net_register_interface(struct net_interface *interface, struct modules_base
 
 }
 
+void net_register_protocol(struct net_protocol *protocol, char *name)
+{
+
+    driver.register_protocol(&driver, protocol, name);
+
+}
+
 void net_unregister_interface(struct net_interface *interface)
 {
 
     driver.unregister_interface(&driver, interface);
+
+}
+
+void net_unregister_protocol(struct net_protocol *protocol)
+{
+
+    driver.unregister_protocol(&driver, protocol);
 
 }
 

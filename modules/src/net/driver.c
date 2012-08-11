@@ -13,10 +13,27 @@ static void register_interface(struct net_driver *self, struct net_interface *in
 
 }
 
+static void register_protocol(struct net_driver *self, struct net_protocol *protocol, char *name)
+{
+
+    protocol->name = name;
+
+    self->protocols[self->protocolsCount] = protocol;
+    self->protocolsCount++;
+
+}
+
 static void unregister_interface(struct net_driver *self, struct net_interface *interface)
 {
 
-    self->interfaces[0] = 0;
+    self->interfacesCount--;
+
+}
+
+static void unregister_protocol(struct net_driver *self, struct net_protocol *protocol)
+{
+
+    self->protocolsCount--;
 
 }
 
@@ -28,7 +45,9 @@ void net_driver_init(struct net_driver *driver)
     modules_driver_init(&driver->base, NET_DRIVER_TYPE, "net", 0, 0, 0);
 
     driver->register_interface = register_interface;
+    driver->register_protocol = register_protocol;
     driver->unregister_interface = unregister_interface;
+    driver->unregister_protocol = unregister_protocol;
 
 }
 
