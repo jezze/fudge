@@ -37,6 +37,8 @@ void load_modules_core(unsigned int id)
     call_open(FILE_STDIN, 19, "/ramdisk/mod/tty.ko");
     call_execute(id);
 
+    call_mount(FILE_STDIN, 5, 5, "/tty/");
+
 }
 
 void load_modules_extra(unsigned int id)
@@ -102,8 +104,8 @@ void load_modules()
 void start_shell()
 {
 
-    call_open(FILE_STDIN, 17, "/module/tty_stdin");
-    call_open(FILE_STDOUT, 18, "/module/tty_stdout");
+    call_open(FILE_STDIN, 10, "/tty/stdin");
+    call_open(FILE_STDOUT, 11, "/tty/stdout");
 
     call_write(FILE_STDOUT, 0, 23, "Fudge operating system\n");
     call_write(FILE_STDOUT, 0, 53, "Write `echo <help.txt` for a short list if commands\n\n");

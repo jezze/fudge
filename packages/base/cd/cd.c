@@ -15,7 +15,7 @@ void main()
     if (!countIn)
         return;
 
-    call_open(3, 15, "/module/tty_cwd");
+    call_open(3, 8, "/tty/cwd");
 
     if (memory_match(bufferIn, "/", 1))
     {

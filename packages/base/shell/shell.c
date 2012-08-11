@@ -56,7 +56,7 @@ static unsigned int setup_stream(unsigned int length, char *path, unsigned int i
     if (memory_match(path, "/", 1))
         return call_open(index, length, path);
 
-    call_open(4, 15, "/module/tty_cwd");
+    call_open(4, 8, "/tty/cwd");
     count = call_read(4, 0, 256 - length, buffer);
     call_close(4);
 
@@ -155,8 +155,8 @@ static void interpret(unsigned int length, char *command)
 
     }
 
-    setup_stream(17, "/module/tty_stdin", FILE_STDIN);
-    setup_stream(18, "/module/tty_stdout", FILE_STDOUT);
+    setup_stream(10, "/tty/stdin", FILE_STDIN);
+    setup_stream(11, "/tty/stdout", FILE_STDOUT);
 
 }
 

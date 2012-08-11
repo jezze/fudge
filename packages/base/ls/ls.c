@@ -8,7 +8,7 @@ void main()
     char buffer[BUFFER_SIZE];
     unsigned int count;
 
-    if (!call_open(3, 15, "/module/tty_cwd"))
+    if (!call_open(3, 8, "/tty/cwd"))
         return;
 
     count = call_read(3, 0, BUFFER_SIZE, buffer);
