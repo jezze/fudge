@@ -5,7 +5,20 @@
 static unsigned int read(struct modules_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    return 0;
+    struct net_driver *driver = (struct net_driver *)self->driver;
+    unsigned int i;
+
+    if (offset > 0)
+        return 0;
+
+    for (i = 0; i < driver->interfacesCount; i++)
+    {
+
+        memory_copy(buffer, "net:0/\n", 7);
+
+    }
+
+    return driver->interfacesCount * 7;
 
 }
 
@@ -19,7 +32,7 @@ static unsigned int write(struct modules_filesystem *self, unsigned int id, unsi
 static unsigned int walk(struct modules_filesystem *self, unsigned int id, unsigned int count, void *buffer)
 {
 
-    return 0;
+    return 1;
 
 }
 
