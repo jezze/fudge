@@ -14,21 +14,33 @@ static unsigned int read_root(struct modules_filesystem *self, unsigned int id, 
     for (i = 0; i < driver->interfacesCount; i++)
     {
 
-        memory_copy(buffer, "eth0\n", 5);
+        memory_copy(buffer, "eth0/\n", 6);
 
     }
 
-    return driver->interfacesCount * 5;
+    return driver->interfacesCount * 6;
 
 }
 
-static unsigned int read_interface(struct modules_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int read_interface_data(struct modules_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct net_driver *driver = (struct net_driver *)self->driver;
-    struct net_interface *interface = driver->interfaces[id - 2];
+    struct net_interface *interface = driver->interfaces[0];
 
     return interface->read(interface, offset, count, buffer);
+
+}
+
+static unsigned int read_interface_mac(struct modules_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    struct net_driver *driver = (struct net_driver *)self->driver;
+    struct net_interface *interface = driver->interfaces[0];
+
+    memory_copy(buffer, interface->mac, 6);
+
+    return 6;
 
 }
 
@@ -38,18 +50,21 @@ static unsigned int read(struct modules_filesystem *self, unsigned int id, unsig
     if (id == 1)
         return read_root(self, id, offset, count, buffer);
 
-    if (id > 1)
-        return read_interface(self, id, offset, count, buffer);
+    if (id == 2)
+        return read_interface_data(self, id, offset, count, buffer);
+
+    if (id == 3)
+        return read_interface_mac(self, id, offset, count, buffer);
 
     return 0;
 
 }
 
-static unsigned int write_interface(struct modules_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int write_interface_data(struct modules_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct net_driver *driver = (struct net_driver *)self->driver;
-    struct net_interface *interface = driver->interfaces[id - 2];
+    struct net_interface *interface = driver->interfaces[0];
 
     return interface->write(interface, offset, count, buffer);
 
@@ -58,8 +73,24 @@ static unsigned int write_interface(struct modules_filesystem *self, unsigned in
 static unsigned int write(struct modules_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    if (id > 1)
-        return write_interface(self, id, offset, count, buffer);
+    if (id == 2)
+        return write_interface_data(self, id, offset, count, buffer);
+
+    return 0;
+
+}
+
+static unsigned int walk_interface(struct modules_filesystem *self, unsigned int id, unsigned int count, void *buffer)
+{
+
+    if (!count)
+        return id;
+
+    if (memory_match(buffer, "data", 4))
+        return 2;
+
+    if (memory_match(buffer, "mac", 3))
+        return 3;
 
     return 0;
 
@@ -71,8 +102,8 @@ static unsigned int walk(struct modules_filesystem *self, unsigned int id, unsig
     if (!count)
         return 1;
 
-    if (memory_match(buffer, "eth0", 4))
-        return 2;
+    if (memory_match(buffer, "eth0/", 5))
+        return walk_interface(self, id, count - 5, (char *)buffer + 5);
 
     return 0;
 
