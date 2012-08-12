@@ -86,6 +86,7 @@ unsigned int syscall_execute(struct runtime_task *task, void *stack)
 
     ntask->used = 1;
     ntask->idle = 0;
+    ntask->event = 0;
 
     runtime_registers_init(&ntask->registers, entry, ntask->memory.address + ntask->memory.size, ntask->memory.address + ntask->memory.size);
 
