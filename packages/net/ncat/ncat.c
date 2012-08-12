@@ -91,8 +91,8 @@ void main()
 
     eth0.ip[0] = 0xC0;
     eth0.ip[1] = 0xA8;
-    eth0.ip[2] = 0x00;
-    eth0.ip[3] = 0x05;
+    eth0.ip[2] = 0x01;
+    eth0.ip[3] = 0x02;
 
     call_open(3, 19, "/module/rtl8139_mac");
     call_read(3, 0, 6, eth0.mac);
