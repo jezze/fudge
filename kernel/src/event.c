@@ -28,7 +28,7 @@ unsigned int event_unregister_routine(unsigned int index, struct runtime_task *t
 
 }
 
-void event_raise(unsigned int index, struct runtime_task *task)
+void event_raise(unsigned int index)
 {
 
     if (!routines[index].callback)

@@ -66,7 +66,7 @@ void isr_handle(struct isr_registers *registers)
     save_state(task1, registers);
 
     isr_raise(registers->index, registers);
-    event_raise(registers->index, task1);
+    event_raise(registers->index);
 
     task2 = runtime_schedule();
 
