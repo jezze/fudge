@@ -1,8 +1,13 @@
-To execute a program simply type the name of the program. It is optional to
-pass a second argument that acts either as data or as an input stream.
+To execute a program simply type the name of the program.
 
-echo hello                  | Print some data
-echo <help.txt              | Print content of help.txt
+hello                       | Hello World!
+ls                          | Print files in current working tree
 
-Commands:
-cd date echo hello ls timer load reboot unload wm
+A program does not use arguments. It only uses streams.
+
+echo -hello                 | Write hello to stdout
+echo <help.txt              | Print content of help.txt to stdout
+cd -/                       | Change to root directory
+cd -/home/                  | Change to home directory (from anywhere)
+cd -home/                   | Change to home directory (from root)
+
