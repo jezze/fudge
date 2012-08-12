@@ -107,7 +107,7 @@ void isr_routine2D();
 void isr_routine2E();
 void isr_routine2F();
 void isr_routine80();
-void isr_register_routine(unsigned int index, void (*routine)(struct runtime_task *task, struct isr_registers *registers));
+void isr_register_routine(unsigned int index, void (*routine)(struct isr_registers *registers));
 void isr_unregister_routine(unsigned int index);
 void isr_handle(struct isr_registers *registers);
 void isr_setup();

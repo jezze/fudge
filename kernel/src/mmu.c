@@ -4,7 +4,7 @@
 
 static struct mmu_unit *mmuUnit;
 
-void mmu_pagefault(struct runtime_task *task, unsigned int address, unsigned int flags)
+void mmu_pagefault(unsigned int address, unsigned int flags)
 {
 
     error_register(0, address);

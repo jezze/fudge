@@ -12,8 +12,10 @@ static void register_routine(unsigned int index, unsigned int (*routine)(struct 
 
 }
 
-static void handle_interrupt(struct runtime_task *task, struct isr_registers *registers)
+static void handle_interrupt(struct isr_registers *registers)
 {
+
+    struct runtime_task *task = runtime_schedule();
 
     if (!routines[registers->extra])
     {

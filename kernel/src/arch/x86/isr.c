@@ -5,7 +5,7 @@
 #include <arch/x86/idt.h>
 #include <arch/x86/isr.h>
 
-static void (*routines[ISR_TABLE_SLOTS])(struct runtime_task *task, struct isr_registers *registers);
+static void (*routines[ISR_TABLE_SLOTS])(struct isr_registers *registers);
 
 static void load_state(struct runtime_task *task, struct isr_registers *registers)
 {
@@ -25,7 +25,7 @@ static void save_state(struct runtime_task *task, struct isr_registers *register
 
 }
 
-static void isr_handle_undefined(struct runtime_task *task, struct isr_registers *registers)
+static void isr_handle_undefined(struct isr_registers *registers)
 {
 
     error_register(0, registers->index);
@@ -34,14 +34,14 @@ static void isr_handle_undefined(struct runtime_task *task, struct isr_registers
 
 }
 
-static void isr_raise(unsigned int index, struct runtime_task *task, struct isr_registers *registers)
+static void isr_raise(unsigned int index, struct isr_registers *registers)
 {
 
-    routines[index](task, registers);
+    routines[index](registers);
 
 }
 
-void isr_register_routine(unsigned int index, void (*routine)(struct runtime_task *task, struct isr_registers *registers))
+void isr_register_routine(unsigned int index, void (*routine)(struct isr_registers *registers))
 {
 
     routines[index] = routine;
@@ -65,7 +65,7 @@ void isr_handle(struct isr_registers *registers)
 
     save_state(task1, registers);
 
-    isr_raise(registers->index, task1, registers);
+    isr_raise(registers->index, registers);
     event_raise(registers->index, task1);
 
     task2 = runtime_schedule();

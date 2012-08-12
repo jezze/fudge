@@ -37,7 +37,8 @@ void event_raise(unsigned int index, struct runtime_task *task)
     if (routines[index].task->event)
         return;
 
-    task->idle = 1;
+    if (task)
+        task->idle = 1;
 
     routines[index].task->parent = task;
     routines[index].task->event = 1;
