@@ -2,7 +2,7 @@
 #include <modules.h>
 #include <net/net.h>
 
-static unsigned int read(struct modules_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int read_root(struct modules_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct net_driver *driver = (struct net_driver *)self->driver;
@@ -14,16 +14,52 @@ static unsigned int read(struct modules_filesystem *self, unsigned int id, unsig
     for (i = 0; i < driver->interfacesCount; i++)
     {
 
-        memory_copy(buffer, "net:0/\n", 7);
+        memory_copy(buffer, "eth0\n", 5);
 
     }
 
-    return driver->interfacesCount * 7;
+    return driver->interfacesCount * 5;
+
+}
+
+static unsigned int read_interface(struct modules_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    struct net_driver *driver = (struct net_driver *)self->driver;
+    struct net_interface *interface = driver->interfaces[id - 2];
+
+    return interface->read(interface, offset, count, buffer);
+
+}
+
+static unsigned int read(struct modules_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    if (id == 1)
+        return read_root(self, id, offset, count, buffer);
+
+    if (id > 1)
+        return read_interface(self, id, offset, count, buffer);
+
+    return 0;
+
+}
+
+static unsigned int write_interface(struct modules_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    struct net_driver *driver = (struct net_driver *)self->driver;
+    struct net_interface *interface = driver->interfaces[id - 2];
+
+    return interface->write(interface, offset, count, buffer);
 
 }
 
 static unsigned int write(struct modules_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
+
+    if (id > 1)
+        return write_interface(self, id, offset, count, buffer);
 
     return 0;
 
@@ -32,7 +68,13 @@ static unsigned int write(struct modules_filesystem *self, unsigned int id, unsi
 static unsigned int walk(struct modules_filesystem *self, unsigned int id, unsigned int count, void *buffer)
 {
 
-    return 1;
+    if (!count)
+        return 1;
+
+    if (memory_match(buffer, "eth0", 4))
+        return 2;
+
+    return 0;
 
 }
 
