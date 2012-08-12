@@ -5,9 +5,11 @@
 #include <ramdisk.h>
 #include <vfs/ramdisk.h>
 
-static unsigned int read_file(struct tar_header *header, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int read_file(struct modules_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
+    struct vfs_ramdisk_filesystem *filesystem = (struct vfs_ramdisk_filesystem *)self;
+    struct tar_header *header = filesystem->image->headers[id - 1];
     unsigned int size = string_read_num(header->size, 8);
     unsigned int c = (size > offset) ? size - offset : 0;
     unsigned int data = (unsigned int)header + TAR_BLOCK_SIZE;
@@ -73,13 +75,15 @@ static unsigned int read(struct modules_filesystem *self, unsigned int id, unsig
 
     }
 
-    return read_file(header, offset, count, buffer);
+    return read_file(self, id, offset, count, buffer);
 
 }
 
-static unsigned int write_file(struct tar_header *header, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int write_file(struct modules_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
+    struct vfs_ramdisk_filesystem *filesystem = (struct vfs_ramdisk_filesystem *)self;
+    struct tar_header *header = filesystem->image->headers[id - 1];
     unsigned int size = string_read_num(header->size, 8);
     unsigned int c = (size > offset) ? size - offset : 0;
     unsigned int data = (unsigned int)header + TAR_BLOCK_SIZE;
@@ -103,7 +107,7 @@ static unsigned int write(struct modules_filesystem *self, unsigned int id, unsi
     if (header->name[length - 1] == '/')
         return 0;
 
-    return write_file(header, offset, count, buffer);
+    return write_file(self, id, offset, count, buffer);
 
 }
 

@@ -10,7 +10,7 @@ static unsigned int parent(struct modules_filesystem *self, unsigned int id)
 
 }
 
-static unsigned int read_root(unsigned int count, void *buffer)
+static unsigned int read_root(struct modules_filesystem *self, unsigned int id, unsigned int count, char *buffer)
 {
 
     memory_copy(buffer, "all/\nbus/\ndevice/\ndriver/\nfilesystem/\nramdisk/\nmodule/\nnet/\ntty/\n", 65);
@@ -19,9 +19,10 @@ static unsigned int read_root(unsigned int count, void *buffer)
 
 }
 
-static unsigned int read_category(struct vfs_sys_filesystem *filesystem, unsigned int id, unsigned int count, char *buffer)
+static unsigned int read_category(struct modules_filesystem *self, unsigned int id, unsigned int count, char *buffer)
 {
 
+    struct vfs_sys_filesystem *filesystem = (struct vfs_sys_filesystem *)self;
     unsigned int i;
     unsigned int length = 0;
 
@@ -61,15 +62,13 @@ static unsigned int read_category(struct vfs_sys_filesystem *filesystem, unsigne
 static unsigned int read(struct modules_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct vfs_sys_filesystem *filesystem = (struct vfs_sys_filesystem *)self;
-
     if (offset > 0)
         return 0;
 
     if (id == 1)
-        return read_root(count, buffer);
+        return read_root(self, id, count, buffer);
 
-    return read_category(filesystem, id, count, buffer);
+    return read_category(self, id, count, buffer);
 
 }
 
