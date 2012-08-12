@@ -111,7 +111,7 @@ void start_shell()
     call_open(FILE_STDIN, 10, "/tty/stdin");
     call_open(FILE_STDOUT, 11, "/tty/stdout");
 
-    call_write(FILE_STDOUT, 0, 23, "Fudge operating system\n");
+    call_write(FILE_STDOUT, 0, 23, "FUDGE OPERATING SYSTEM\n");
     call_write(FILE_STDOUT, 0, 12, "Build date: ");
     call_write(FILE_STDOUT, 0, 11, __DATE__);
     call_write(FILE_STDOUT, 0, 1, " ");
