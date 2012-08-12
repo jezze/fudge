@@ -48,7 +48,6 @@ static void start(struct kernel_arch *self)
 
     task = runtime_get_task(1);
     runtime_task_init(task, 1);
-    task->parent = 0;
 
     mount = task->get_mount(task, 1);
     runtime_mount_init(mount, 1, &sysFilesystem.base, 1, "/");
@@ -68,7 +67,6 @@ static void start(struct kernel_arch *self)
     slot = syscall_execute(task, &eargs);
 
     task = runtime_get_task(slot);
-    task->parent = 0;
 
     self->enter_usermode(task->registers.ip, task->registers.sp);
 

@@ -151,10 +151,10 @@ struct runtime_task *runtime_schedule()
 
     unsigned int i;
 
-    for (i = 1; i < RUNTIME_TASK_SLOTS - 1; i++)
+    for (i = RUNTIME_TASK_SLOTS - 1; i >= 0; i--)
     {
 
-        if (!tasks[i].idle)
+        if (tasks[i].used && !tasks[i].idle)
             return &tasks[i];
 
     }

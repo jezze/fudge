@@ -45,7 +45,6 @@ struct runtime_registers
 struct runtime_task
 {
 
-    struct runtime_task *parent;
     unsigned int id;
     unsigned int used;
     unsigned int event;

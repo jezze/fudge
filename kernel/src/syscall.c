@@ -84,8 +84,6 @@ unsigned int syscall_execute(struct runtime_task *task, void *stack)
     if (!binary_copy_program(descriptor->mount->filesystem, descriptor->id))
         return 0;
 
-    task->idle = 1;
-    ntask->parent = task;
     ntask->used = 1;
     ntask->idle = 0;
 
@@ -101,15 +99,6 @@ unsigned int syscall_exit(struct runtime_task *task, void *stack)
     task->used = 0;
     task->idle = 1;
 
-    if (task->parent && task->parent->id)
-    {
-
-        task->parent->idle = 0;
-
-        return task->parent->id;
-
-    }
-
     return 0;
 
 }
@@ -119,15 +108,6 @@ unsigned int syscall_idle(struct runtime_task *task, void *stack)
 
     task->event = 0;
     task->idle = 1;
-
-    if (task->parent && task->parent->id)
-    {
-
-        task->parent->idle = 0;
-
-        return task->parent->id;
-
-    }
 
     return 0;
 
