@@ -11,7 +11,7 @@ static struct nodefs_node data;
 static unsigned int mac_read(struct nodefs_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    memory_copy(buffer, driver.mac, 6);
+    memory_copy(buffer, driver.interface.mac, 6);
 
     return 6;
 

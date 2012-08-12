@@ -143,12 +143,12 @@ static void start(struct modules_driver *self)
     setup_transmitter(driver);
     enable(driver);
 
-    driver->mac[0] = io_inb(driver->io + RTL8139_REGISTER_IDR0);
-    driver->mac[1] = io_inb(driver->io + RTL8139_REGISTER_IDR1);
-    driver->mac[2] = io_inb(driver->io + RTL8139_REGISTER_IDR2);
-    driver->mac[3] = io_inb(driver->io + RTL8139_REGISTER_IDR3);
-    driver->mac[4] = io_inb(driver->io + RTL8139_REGISTER_IDR4);
-    driver->mac[5] = io_inb(driver->io + RTL8139_REGISTER_IDR5);
+    driver->interface.mac[0] = io_inb(driver->io + RTL8139_REGISTER_IDR0);
+    driver->interface.mac[1] = io_inb(driver->io + RTL8139_REGISTER_IDR1);
+    driver->interface.mac[2] = io_inb(driver->io + RTL8139_REGISTER_IDR2);
+    driver->interface.mac[3] = io_inb(driver->io + RTL8139_REGISTER_IDR3);
+    driver->interface.mac[4] = io_inb(driver->io + RTL8139_REGISTER_IDR4);
+    driver->interface.mac[5] = io_inb(driver->io + RTL8139_REGISTER_IDR5);
 
 }
 

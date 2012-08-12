@@ -7,6 +7,7 @@ struct net_interface
 {
 
     struct modules_base *module;
+    char mac[6];
     unsigned int (*read)(struct net_interface *self, unsigned int offset, unsigned int count, void *buffer);
     unsigned int (*write)(struct net_interface *self, unsigned int offset, unsigned int count, void *buffer);
 

@@ -105,12 +105,11 @@ struct rtl8139_driver
     struct modules_driver base;
     struct net_interface interface;
     unsigned short io; 
-    char mac[6];
-    char rx[0x2600];
-    char tx0[0x800];
-    char tx1[0x800];
-    char tx2[0x800];
-    char tx3[0x800];
+    char rx[0x2600] __attribute__((aligned(4)));
+    char tx0[0x800] __attribute__((aligned(4)));
+    char tx1[0x800] __attribute__((aligned(4)));
+    char tx2[0x800] __attribute__((aligned(4)));
+    char tx3[0x800] __attribute__((aligned(4)));
     unsigned int txp;
 
 };
