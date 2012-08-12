@@ -1,11 +1,11 @@
 #ifndef KERNEL_BINARY_H
 #define KERNEL_BINARY_H
 
-unsigned int binary_find_symbol(struct runtime_descriptor *descriptor, char *func);
-unsigned int binary_get_entry(struct runtime_descriptor *descriptor);
-unsigned int binary_get_vaddress(struct runtime_descriptor *descriptor);
-unsigned int binary_copy_program(struct runtime_descriptor *descriptor);
-unsigned int binary_relocate(struct runtime_descriptor *descriptor, unsigned int address);
+unsigned int binary_find_symbol(struct modules_filesystem *filesystem, unsigned int id, char *func);
+unsigned int binary_get_entry(struct modules_filesystem *filesystem, unsigned int id);
+unsigned int binary_get_vaddress(struct modules_filesystem *filesystem, unsigned int id);
+unsigned int binary_copy_program(struct modules_filesystem *filesystem, unsigned int id);
+unsigned int binary_relocate(struct modules_filesystem *filesystem, unsigned int id, unsigned int address);
 
 #endif
 

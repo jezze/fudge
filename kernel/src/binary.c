@@ -1,9 +1,8 @@
 #include <elf.h>
-#include <runtime.h>
-#include <binary.h>
 #include <modules.h>
+#include <binary.h>
 
-unsigned int binary_find_symbol(struct runtime_descriptor *descriptor, char *func)
+unsigned int binary_find_symbol(struct modules_filesystem *filesystem, unsigned int id, char *func)
 {
 
     struct elf_header header;
@@ -12,28 +11,28 @@ unsigned int binary_find_symbol(struct runtime_descriptor *descriptor, char *fun
     struct elf_symbol symbolTable[400];
     char stringTable[0x1000];
 
-    descriptor->mount->filesystem->read(descriptor->mount->filesystem, descriptor->id, 0, sizeof (struct elf_header), &header);
+    filesystem->read(filesystem, id, 0, sizeof (struct elf_header), &header);
 
     if (!elf_validate(&header))
         return 0;
 
-    descriptor->mount->filesystem->read(descriptor->mount->filesystem, descriptor->id, header.shoffset, header.shsize * header.shcount, sectionHeader);
+    filesystem->read(filesystem, id, header.shoffset, header.shsize * header.shcount, sectionHeader);
 
     symbolHeader = elf_get_section(&header, sectionHeader, ELF_SECTION_TYPE_SYMTAB);
 
-    descriptor->mount->filesystem->read(descriptor->mount->filesystem, descriptor->id, symbolHeader->offset, symbolHeader->size, symbolTable);
-    descriptor->mount->filesystem->read(descriptor->mount->filesystem, descriptor->id, sectionHeader[symbolHeader->link].offset, sectionHeader[symbolHeader->link].size, stringTable);
+    filesystem->read(filesystem, id, symbolHeader->offset, symbolHeader->size, symbolTable);
+    filesystem->read(filesystem, id, sectionHeader[symbolHeader->link].offset, sectionHeader[symbolHeader->link].size, stringTable);
 
     return elf_find_symbol(&header, sectionHeader, symbolHeader, symbolTable, stringTable, func);
 
 }
 
-unsigned int binary_get_entry(struct runtime_descriptor *descriptor)
+unsigned int binary_get_entry(struct modules_filesystem *filesystem, unsigned int id)
 {
 
     struct elf_header header;
 
-    descriptor->mount->filesystem->read(descriptor->mount->filesystem, descriptor->id, 0, sizeof (struct elf_header), &header);
+    filesystem->read(filesystem, id, 0, sizeof (struct elf_header), &header);
 
     if (!elf_validate(&header))
         return 0;
@@ -42,43 +41,39 @@ unsigned int binary_get_entry(struct runtime_descriptor *descriptor)
 
 }
 
-unsigned int binary_get_vaddress(struct runtime_descriptor *descriptor)
+unsigned int binary_get_vaddress(struct modules_filesystem *filesystem, unsigned int id)
 {
 
     struct elf_header header;
     struct elf_program_header programHeader[8];
 
-    descriptor->mount->filesystem->read(descriptor->mount->filesystem, descriptor->id, 0, sizeof (struct elf_header), &header);
+    filesystem->read(filesystem, id, 0, sizeof (struct elf_header), &header);
 
     if (!elf_validate(&header))
         return 0;
 
-    descriptor->mount->filesystem->read(descriptor->mount->filesystem, descriptor->id, header.phoffset, header.phsize * header.phcount, programHeader);
+    filesystem->read(filesystem, id, header.phoffset, header.phsize * header.phcount, programHeader);
 
     return programHeader[0].vaddress;
 
 }
 
-unsigned int binary_copy_program(struct runtime_descriptor *descriptor)
+unsigned int binary_copy_program(struct modules_filesystem *filesystem, unsigned int id)
 {
 
     struct elf_header header;
     struct elf_program_header programHeader[8];
     unsigned int i;
 
-    descriptor->mount->filesystem->read(descriptor->mount->filesystem, descriptor->id, 0, sizeof (struct elf_header), &header);
+    filesystem->read(filesystem, id, 0, sizeof (struct elf_header), &header);
 
     if (!elf_validate(&header))
         return 0;
 
-    descriptor->mount->filesystem->read(descriptor->mount->filesystem, descriptor->id, header.phoffset, header.phsize * header.phcount, programHeader);
+    filesystem->read(filesystem, id, header.phoffset, header.phsize * header.phcount, programHeader);
 
     for (i = 0; i < header.phcount; i++)
-    {
-
-        descriptor->mount->filesystem->read(descriptor->mount->filesystem, descriptor->id, programHeader[i].offset, programHeader[i].fsize, (void *)programHeader[i].vaddress);
-
-    }
+        filesystem->read(filesystem, id, programHeader[i].offset, programHeader[i].fsize, (void *)programHeader[i].vaddress);
 
     return 1;
 
@@ -121,19 +116,19 @@ static void binary_relocate_section(struct elf_section_header *sectionHeader, st
 
 }
 
-unsigned int binary_relocate(struct runtime_descriptor *descriptor, unsigned int address)
+unsigned int binary_relocate(struct modules_filesystem *filesystem, unsigned int id, unsigned int address)
 {
 
     struct elf_header header;
     struct elf_section_header sectionHeader[20];
     unsigned int i;
 
-    descriptor->mount->filesystem->read(descriptor->mount->filesystem, descriptor->id, 0, sizeof (struct elf_header), &header);
+    filesystem->read(filesystem, id, 0, sizeof (struct elf_header), &header);
 
     if (!elf_validate(&header))
         return 0;
 
-    descriptor->mount->filesystem->read(descriptor->mount->filesystem, descriptor->id, header.shoffset, header.shsize * header.shcount, sectionHeader);
+    filesystem->read(filesystem, id, header.shoffset, header.shsize * header.shcount, sectionHeader);
 
     for (i = 0; i < header.shcount; i++)
     {
@@ -144,14 +139,14 @@ unsigned int binary_relocate(struct runtime_descriptor *descriptor, unsigned int
         if (sectionHeader[i].type != ELF_SECTION_TYPE_REL)
             continue;
 
-        descriptor->mount->filesystem->read(descriptor->mount->filesystem, descriptor->id, sectionHeader[i].offset, sectionHeader[i].size, relocateTable);
-        descriptor->mount->filesystem->read(descriptor->mount->filesystem, descriptor->id, sectionHeader[sectionHeader[i].link].offset, sectionHeader[sectionHeader[i].link].size, symbolTable);
+        filesystem->read(filesystem, id, sectionHeader[i].offset, sectionHeader[i].size, relocateTable);
+        filesystem->read(filesystem, id, sectionHeader[sectionHeader[i].link].offset, sectionHeader[sectionHeader[i].link].size, symbolTable);
 
         binary_relocate_section(sectionHeader, &sectionHeader[i], &sectionHeader[sectionHeader[i].info], relocateTable, symbolTable, address);
 
         sectionHeader[sectionHeader[i].info].address += address;
 
-        descriptor->mount->filesystem->write(descriptor->mount->filesystem, descriptor->id, header.shoffset, header.shsize * header.shcount, sectionHeader);
+        filesystem->write(filesystem, id, header.shoffset, header.shsize * header.shcount, sectionHeader);
 
     }
 

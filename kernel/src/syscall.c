@@ -1,8 +1,8 @@
 #include <event.h>
 #include <mmu.h>
 #include <modules.h>
-#include <runtime.h>
 #include <binary.h>
+#include <runtime.h>
 #include <syscall.h>
 
 unsigned int syscall_attach(struct runtime_task *task, void *stack)
@@ -66,12 +66,12 @@ unsigned int syscall_execute(struct runtime_task *task, void *stack)
 
     task->clone(task, ntask, slot);
 
-    entry = binary_get_entry(descriptor);
+    entry = binary_get_entry(descriptor->mount->filesystem, descriptor->id);
 
     if (!entry)
         return 0;
 
-    address = binary_get_vaddress(descriptor);
+    address = binary_get_vaddress(descriptor->mount->filesystem, descriptor->id);
 
     if (!address)
         return 0;
@@ -81,7 +81,7 @@ unsigned int syscall_execute(struct runtime_task *task, void *stack)
     mmu_map_user_memory(ntask->id, RUNTIME_TASK_ADDRESS_BASE + ntask->id * RUNTIME_TASK_ADDRESS_SIZE, address, RUNTIME_TASK_ADDRESS_SIZE);
     mmu_load_user_memory(ntask->id);
 
-    if (!binary_copy_program(descriptor))
+    if (!binary_copy_program(descriptor->mount->filesystem, descriptor->id))
         return 0;
 
     task->idle = 1;
@@ -150,10 +150,10 @@ unsigned int syscall_load(struct runtime_task *task, void *stack)
         return 0;
 
     /* Physical should be replaced with known address later on */
-    if (!binary_relocate(descriptor, physical))
+    if (!binary_relocate(descriptor->mount->filesystem, descriptor->id, physical))
         return 0;
 
-    init = (void (*)())(binary_find_symbol(descriptor, "init"));
+    init = (void (*)())(binary_find_symbol(descriptor->mount->filesystem, descriptor->id, "init"));
 
     if (!init)
         return 0;
@@ -180,7 +180,7 @@ unsigned int syscall_mount(struct runtime_task *task, void *stack)
     if (!mount)
         return 0;
 
-    get_filesystem = (struct modules_filesystem *(*)())(binary_find_symbol(descriptor, "get_filesystem"));
+    get_filesystem = (struct modules_filesystem *(*)())(binary_find_symbol(descriptor->mount->filesystem, descriptor->id, "get_filesystem"));
 
     if (!get_filesystem)
         return 0;
@@ -247,7 +247,7 @@ unsigned int syscall_unload(struct runtime_task *task, void *stack)
     if (!descriptor || !descriptor->id)
         return 0;
 
-    destroy = (void (*)())(binary_find_symbol(descriptor, "destroy"));
+    destroy = (void (*)())(binary_find_symbol(descriptor->mount->filesystem, descriptor->id, "destroy"));
 
     if (!destroy)
         return 0;
