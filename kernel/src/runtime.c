@@ -32,7 +32,7 @@ static struct runtime_mount *get_mount(struct runtime_task *self, unsigned int i
 
 }
 
-static struct runtime_mount *find_mount(struct runtime_task *self, void *path)
+static struct runtime_mount *find_mount(struct runtime_task *self, char *path)
 {
 
     unsigned int i;

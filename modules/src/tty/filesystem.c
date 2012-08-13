@@ -134,19 +134,19 @@ static unsigned int write(struct modules_filesystem *self, unsigned int id, unsi
 
 }
 
-static unsigned int walk(struct modules_filesystem *self, unsigned int id, unsigned int count, void *buffer)
+static unsigned int walk(struct modules_filesystem *self, unsigned int id, unsigned int count, char *path)
 {
 
     if (!count)
         return 1;
 
-    if (memory_match(buffer, "stdin", 5))
+    if (memory_match(path, "stdin", 5))
         return 2;
 
-    if (memory_match(buffer, "stdout", 6))
+    if (memory_match(path, "stdout", 6))
         return 3;
 
-    if (memory_match(buffer, "cwd", 3))
+    if (memory_match(path, "cwd", 3))
         return 4;
 
     return 0;

@@ -165,7 +165,7 @@ unsigned int syscall_mount(struct runtime_task *task, void *stack)
     if (!get_filesystem)
         return 0;
 
-    runtime_mount_init(mount, args->offset, get_filesystem(), args->count, args->buffer);
+    runtime_mount_init(mount, args->offset, get_filesystem(), args->count, args->path);
 
     return 1;
 
@@ -185,12 +185,12 @@ unsigned int syscall_open(struct runtime_task *task, void *stack)
     if (!args->count)
         return 0;
 
-    mount = task->find_mount(task, args->buffer);
+    mount = task->find_mount(task, args->path);
 
     if (!mount)
         return 0;
 
-    id = mount->filesystem->walk(mount->filesystem, descriptor->id, args->count - mount->count, (char *)args->buffer + mount->count);
+    id = mount->filesystem->walk(mount->filesystem, descriptor->id, args->count - mount->count, args->path + mount->count);
 
     if (!id)
         return 0;

@@ -80,30 +80,30 @@ static unsigned int write(struct modules_filesystem *self, unsigned int id, unsi
 
 }
 
-static unsigned int walk_interface(struct modules_filesystem *self, unsigned int id, unsigned int count, void *buffer)
+static unsigned int walk_interface(struct modules_filesystem *self, unsigned int id, unsigned int count, char *path)
 {
 
     if (!count)
         return id;
 
-    if (memory_match(buffer, "data", 4))
+    if (memory_match(path, "data", 4))
         return 2;
 
-    if (memory_match(buffer, "mac", 3))
+    if (memory_match(path, "mac", 3))
         return 3;
 
     return 0;
 
 }
 
-static unsigned int walk(struct modules_filesystem *self, unsigned int id, unsigned int count, void *buffer)
+static unsigned int walk(struct modules_filesystem *self, unsigned int id, unsigned int count, char *path)
 {
 
     if (!count)
         return 1;
 
-    if (memory_match(buffer, "eth0/", 5))
-        return walk_interface(self, id, count - 5, (char *)buffer + 5);
+    if (memory_match(path, "eth0/", 5))
+        return walk_interface(self, id, count - 5, path + 5);
 
     return 0;
 

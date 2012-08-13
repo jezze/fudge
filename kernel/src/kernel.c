@@ -56,7 +56,7 @@ static void start(struct kernel_arch *self)
 
     oargs.index = 1;
     oargs.count = 17;
-    oargs.buffer = "/ramdisk/bin/init";
+    oargs.path = "/ramdisk/bin/init";
 
     id = syscall_open(task, &oargs);
 

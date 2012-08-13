@@ -78,7 +78,7 @@ struct syscall_mount_args
     unsigned int index;
     unsigned int offset;
     unsigned int count;
-    void *buffer;
+    char *path;
 
 };
 
@@ -88,7 +88,7 @@ struct syscall_open_args
     void *caller;
     unsigned int index;
     unsigned int count;
-    void *buffer;
+    char *path;
 
 };
 

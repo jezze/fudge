@@ -111,7 +111,7 @@ static unsigned int write(struct modules_filesystem *self, unsigned int id, unsi
 
 }
 
-static unsigned int walk(struct modules_filesystem *self, unsigned int id, unsigned int count, void *buffer)
+static unsigned int walk(struct modules_filesystem *self, unsigned int id, unsigned int count, char *path)
 {
 
     struct vfs_ramdisk_filesystem *filesystem = (struct vfs_ramdisk_filesystem *)self;
@@ -124,7 +124,7 @@ static unsigned int walk(struct modules_filesystem *self, unsigned int id, unsig
     for (i = 0; i < filesystem->image->count; i++)
     {
 
-        if (memory_match(filesystem->image->headers[i]->name + 6, buffer, count))
+        if (memory_match(filesystem->image->headers[i]->name + 6, path, count))
             return i + 1;
 
     }

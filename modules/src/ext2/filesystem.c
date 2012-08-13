@@ -107,10 +107,10 @@ static struct ext2_entry *finddir(struct modules_filesystem *self, unsigned int 
 
 }
 
-static unsigned int walk(struct modules_filesystem *self, unsigned int id, unsigned int count, void *buffer)
+static unsigned int walk(struct modules_filesystem *self, unsigned int id, unsigned int count, char *path)
 {
 
-    char *temp = buffer;
+    char *temp = path;
     struct ext2_entry *entry;
     unsigned int index = 2;
 

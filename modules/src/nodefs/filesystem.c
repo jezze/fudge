@@ -47,7 +47,7 @@ static unsigned int write(struct modules_filesystem *self, unsigned int id, unsi
 
 }
 
-static unsigned int walk(struct modules_filesystem *self, unsigned int id, unsigned int count, void *buffer)
+static unsigned int walk(struct modules_filesystem *self, unsigned int id, unsigned int count, char *path)
 {
 
     struct nodefs_driver *driver = (struct nodefs_driver *)self->driver;
@@ -59,7 +59,7 @@ static unsigned int walk(struct modules_filesystem *self, unsigned int id, unsig
     for (i = 0; i < driver->nodesCount; i++)
     {
 
-        if (memory_match(driver->nodes[i]->name, buffer, string_length(driver->nodes[i]->name) + 1))
+        if (memory_match(driver->nodes[i]->name, path, string_length(driver->nodes[i]->name) + 1))
             return i + 2;
 
     }
