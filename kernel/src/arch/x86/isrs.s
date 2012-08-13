@@ -343,17 +343,16 @@ isr_common_cpu:
     pusha
     mov eax, esp
     push eax
-    mov ax, 0x10
-    mov ds, ax
-    mov es, ax
-    mov fs, ax
-    mov gs, ax
+    mov eax, 0x10
+    mov ds, eax
+    mov es, eax
+    mov fs, eax
+    mov gs, eax
     call isr_handle
-    mov ax, 0x23
-    mov ds, ax
-    mov es, ax
-    mov fs, ax
-    mov gs, ax
+    mov ds, eax
+    mov es, eax
+    mov fs, eax
+    mov gs, eax
     add esp, 4
     popa
     add esp, 8
