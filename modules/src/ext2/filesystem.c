@@ -112,20 +112,19 @@ static unsigned int walk(struct modules_filesystem *self, unsigned int id, unsig
 
     char *temp = path;
     struct ext2_entry *entry;
-    unsigned int index = 2;
 
     if (!count)
-        return 2;
+        return id;
 
-    while ((entry = finddir(self, index, temp)))
+    while ((entry = finddir(self, id, temp)))
     {
 
         temp += entry->length + 1;
-        index = entry->node;
+        id = entry->node;
 
     }
 
-    return index;
+    return id;
 
 }
 
@@ -134,7 +133,7 @@ void ext2_filesystem_init(struct ext2_filesystem *filesystem, struct ext2_driver
 
     memory_clear(filesystem, sizeof (struct ext2_filesystem));
 
-    modules_filesystem_init(&filesystem->base, 0x0001, &driver->base, "hda", 0, 0, read, 0, 0, walk, 0); 
+    modules_filesystem_init(&filesystem->base, 0x0001, &driver->base, 2, "hda", 0, 0, read, 0, 0, walk, 0); 
 
     filesystem->device = device;
 

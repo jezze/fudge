@@ -54,7 +54,7 @@ static unsigned int walk(struct modules_filesystem *self, unsigned int id, unsig
     unsigned int i;
 
     if (!count)
-        return 1;
+        return id;
 
     for (i = 0; i < driver->nodesCount; i++)
     {
@@ -73,7 +73,7 @@ void nodefs_filesystem_init(struct modules_filesystem *filesystem, struct module
 
     memory_clear(filesystem, sizeof (struct modules_filesystem));
 
-    modules_filesystem_init(filesystem, 0x1001, driver, "nodefs", 0, 0, read, write, 0, walk, 0); 
+    modules_filesystem_init(filesystem, 0x1001, driver, 1, "nodefs", 0, 0, read, write, 0, walk, 0); 
 
 }
 

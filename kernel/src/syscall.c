@@ -190,7 +190,7 @@ unsigned int syscall_open(struct runtime_task *task, void *stack)
     if (!mount)
         return 0;
 
-    id = mount->filesystem->walk(mount->filesystem, descriptor->id, args->count - mount->count, args->path + mount->count);
+    id = mount->filesystem->walk(mount->filesystem, mount->filesystem->rootid, args->count - mount->count, args->path + mount->count);
 
     if (!id)
         return 0;

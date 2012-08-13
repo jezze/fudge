@@ -187,7 +187,7 @@ void modules_driver_init(struct modules_driver *driver, unsigned int type, char 
 
 }
 
-void modules_filesystem_init(struct modules_filesystem *filesystem, unsigned int type, struct modules_driver *driver, char *name, void (*open)(struct modules_filesystem *self, unsigned int id), void (*close)(struct modules_filesystem *self, unsigned int id), unsigned int (*read)(struct modules_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write)(struct modules_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer), unsigned int (*parent)(struct modules_filesystem *self, unsigned int id), unsigned int (*walk)(struct modules_filesystem *self, unsigned int id, unsigned int count, char *path), unsigned int (*get_physical)(struct modules_filesystem *self, unsigned int id))
+void modules_filesystem_init(struct modules_filesystem *filesystem, unsigned int type, struct modules_driver *driver, unsigned int rootid, char *name, void (*open)(struct modules_filesystem *self, unsigned int id), void (*close)(struct modules_filesystem *self, unsigned int id), unsigned int (*read)(struct modules_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write)(struct modules_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer), unsigned int (*parent)(struct modules_filesystem *self, unsigned int id), unsigned int (*walk)(struct modules_filesystem *self, unsigned int id, unsigned int count, char *path), unsigned int (*get_physical)(struct modules_filesystem *self, unsigned int id))
 {
 
     memory_clear(filesystem, sizeof (struct modules_filesystem));
@@ -196,6 +196,7 @@ void modules_filesystem_init(struct modules_filesystem *filesystem, unsigned int
 
     filesystem->type = type;
     filesystem->driver = driver;
+    filesystem->rootid = rootid;
     filesystem->open = open;
     filesystem->close = close;
     filesystem->read = read;

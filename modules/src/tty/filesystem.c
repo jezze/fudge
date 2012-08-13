@@ -138,7 +138,7 @@ static unsigned int walk(struct modules_filesystem *self, unsigned int id, unsig
 {
 
     if (!count)
-        return 1;
+        return id;
 
     if (memory_match(path, "stdin", 5))
         return 2;
@@ -158,7 +158,7 @@ void tty_filesystem_init(struct modules_filesystem *filesystem, struct modules_d
 
     memory_clear(filesystem, sizeof (struct modules_filesystem));
 
-    modules_filesystem_init(filesystem, 0x1451, driver, "tty", 0, 0, read, write, 0, walk, 0); 
+    modules_filesystem_init(filesystem, 0x1451, driver, 1, "tty", 0, 0, read, write, 0, walk, 0); 
 
 }
 
