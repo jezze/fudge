@@ -138,7 +138,6 @@ void runtime_task_init(struct runtime_task *task, unsigned int id)
     memory_clear(task, sizeof (struct runtime_task));
 
     task->id = id;
-    task->idle = 1;
     task->clone = clone;
     task->get_descriptor = get_descriptor;
     task->get_mount = get_mount;
