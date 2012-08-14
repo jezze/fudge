@@ -1,6 +1,5 @@
 #include <memory.h>
 #include <kernel.h>
-#include <runtime.h>
 #include <arch/x86/arch.h>
 #include <arch/x86/cpu.h>
 #include <arch/x86/gdt.h>
