@@ -32,7 +32,7 @@ static void receive()
     char buffer[0x800];
     struct ethernet_header *eheader;
 
-    call_open(3, 14, "/net/eth0/data");
+    call_open(3, 11, "/net/0/data");
     call_read(3, 0, 0x800, buffer);
     call_close(3);
 
@@ -94,7 +94,7 @@ static void send()
     write_ethernet_header(buffer, &eheader);
     write_arp_header(buffer, &aheader);
 
-    call_open(3, 14, "/net/eth0/data");
+    call_open(3, 11, "/net/0/data");
     call_write(3, 0, sizeof (struct ethernet_header) + sizeof (struct arp_header), buffer);
     call_close(3);
 
@@ -110,7 +110,7 @@ void main()
     eth0.ip[2] = 0x01;
     eth0.ip[3] = 0x02;
 
-    call_open(3, 13, "/net/eth0/mac");
+    call_open(3, 10, "/net/0/mac");
     call_read(3, 0, 6, eth0.mac);
     call_close(3);
 
