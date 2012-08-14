@@ -9,8 +9,6 @@
 #define GDT_INDEX_USERDATA   0x04
 #define GDT_INDEX_TSS        0x05
 
-#define GDT_SLOTSIZE         0x08
-
 #define GDT_ACCESS_ACCESSED  (0x01 << 0)
 #define GDT_ACCESS_RW        (0x01 << 1)
 #define GDT_ACCESS_DC        (0x01 << 2)

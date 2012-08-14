@@ -8,7 +8,7 @@ static struct gdt_pointer pointer;
 unsigned int gdt_get_segment(unsigned int index)
 {
 
-    return (GDT_SLOTSIZE * index) | ((entries[index].access >> 5) & 0x03);
+    return (sizeof (struct gdt_entry) * index) | ((entries[index].access >> 5) & 0x03);
 
 }
 
@@ -27,6 +27,8 @@ void gdt_set_gate(unsigned int index, unsigned int base, unsigned int limit, uns
 void gdt_setup()
 {
 
+    memory_clear(&entries, sizeof (struct gdt_entry) * GDT_TABLE_SLOTS);
+
     gdt_set_gate(GDT_INDEX_NULL, 0x00000000, 0x00000000, 0x00, 0x00);
     gdt_set_gate(GDT_INDEX_KERNELCODE, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_RING0 | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_EXECUTE | GDT_ACCESS_RW, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
     gdt_set_gate(GDT_INDEX_KERNELDATA, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_RING0 | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
@@ -34,7 +36,7 @@ void gdt_setup()
     gdt_set_gate(GDT_INDEX_USERDATA, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_RING3 | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
 
     pointer.base = entries;
-    pointer.limit = (GDT_SLOTSIZE * GDT_TABLE_SLOTS) - 1;
+    pointer.limit = (sizeof (struct gdt_entry) * GDT_TABLE_SLOTS) - 1;
 
     cpu_set_gdt(&pointer);
 

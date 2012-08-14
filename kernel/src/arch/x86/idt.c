@@ -11,9 +11,8 @@ void idt_set_gate(unsigned int index, void (*callback)(), unsigned short selecto
     unsigned int base = (unsigned int)callback;
 
     entries[index].baseLow = (base & 0xFFFF);
-    entries[index].baseHigh = (base >> 16) & 0xFFFF;
+    entries[index].baseHigh = (base >> 16);
     entries[index].selector = selector;
-    entries[index].zero = 0;
     entries[index].flags = flags;
 
 }
