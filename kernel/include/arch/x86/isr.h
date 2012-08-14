@@ -110,7 +110,7 @@ void isr_routine80();
 void isr_register_routine(unsigned int index, void (*routine)(struct isr_registers *registers));
 void isr_unregister_routine(unsigned int index);
 unsigned int isr_handle(struct isr_registers *registers);
-void isr_setup();
+void isr_setup(unsigned int cs);
 
 #endif
 

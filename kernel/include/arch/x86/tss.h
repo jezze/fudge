@@ -34,7 +34,7 @@ struct tss_entry
 
 } __attribute__((packed));
 
-void tss_setup(unsigned int stack);
+void tss_setup(unsigned int ss, unsigned int esp);
 
 #endif
 
