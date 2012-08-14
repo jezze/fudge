@@ -7,7 +7,6 @@ struct arch_x86
     struct kernel_arch base;
     struct mboot_header *header;
     unsigned int magic;
-    unsigned int stack;
 
 };
 

@@ -17,18 +17,18 @@ static void setup(struct kernel_arch *self)
 {
 
     struct arch_x86 *x86 = (struct arch_x86 *)self;
-    unsigned int code;
-    unsigned int data;
+    unsigned int cs;
+    unsigned int ss;
 
     mboot_setup(x86->header);
     gdt_setup();
     idt_setup();
 
-    code = gdt_get_segment(GDT_INDEX_KERNELCODE);
-    data = gdt_get_segment(GDT_INDEX_KERNELDATA);
+    cs = gdt_get_segment(GDT_INDEX_KERNELCODE);
+    ss = gdt_get_segment(GDT_INDEX_KERNELDATA);
 
-    tss_setup(data, x86->stack);
-    isr_setup(code);
+    tss_setup(ss, 0x00400000);
+    isr_setup(cs);
     cpu_disable_apic();
     mmu_setup();
     syscall_setup();
@@ -44,7 +44,6 @@ void arch_x86_init(struct arch_x86 *x86, struct mboot_header *header, unsigned i
 
     x86->header = header;
     x86->magic = magic;
-    x86->stack = 0x00400000;
 
 }
 
