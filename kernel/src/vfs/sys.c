@@ -111,7 +111,7 @@ void vfs_sys_filesystem_init(struct vfs_sys_filesystem *filesystem, union module
 
     memory_clear(filesystem, sizeof (struct vfs_sys_filesystem));
 
-    modules_filesystem_init(&filesystem->base, 0x0002, 0, 1, "sys", 0, 0, read, 0, 0, walk, 0);
+    modules_filesystem_init(&filesystem->base, 0x0002, 0, 1, "sys", 0, 0, read, 0, walk, 0);
 
     filesystem->modules = modules;
 

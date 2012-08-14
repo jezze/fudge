@@ -133,7 +133,7 @@ void ext2_filesystem_init(struct ext2_filesystem *filesystem, struct ext2_driver
 
     memory_clear(filesystem, sizeof (struct ext2_filesystem));
 
-    modules_filesystem_init(&filesystem->base, 0x0001, &driver->base, 2, "hda", 0, 0, read, 0, 0, walk, 0); 
+    modules_filesystem_init(&filesystem->base, 0x0001, &driver->base, 2, "hda", 0, 0, read, 0, walk, 0); 
 
     filesystem->device = device;
 
