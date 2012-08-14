@@ -3,10 +3,10 @@
 
 #define GDT_TABLE_SLOTS      6
 #define GDT_INDEX_NULL       0x00
-#define GDT_INDEX_KERNELCODE 0x01
-#define GDT_INDEX_KERNELDATA 0x02
-#define GDT_INDEX_USERCODE   0x03
-#define GDT_INDEX_USERDATA   0x04
+#define GDT_INDEX_KCODE      0x01
+#define GDT_INDEX_KDATA      0x02
+#define GDT_INDEX_UCODE      0x03
+#define GDT_INDEX_UDATA      0x04
 #define GDT_INDEX_TSS        0x05
 
 #define GDT_ACCESS_ACCESSED  (0x01 << 0)

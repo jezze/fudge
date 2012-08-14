@@ -24,8 +24,8 @@ static void setup(struct kernel_arch *self)
     gdt_setup();
     idt_setup();
 
-    cs = gdt_get_segment(GDT_INDEX_KERNELCODE);
-    ss = gdt_get_segment(GDT_INDEX_KERNELDATA);
+    cs = gdt_get_segment(GDT_INDEX_KCODE);
+    ss = gdt_get_segment(GDT_INDEX_KDATA);
 
     tss_setup(ss, 0x00400000);
     isr_setup(cs);

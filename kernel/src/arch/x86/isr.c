@@ -80,11 +80,11 @@ unsigned int isr_handle(struct isr_registers *registers)
         if (task1 != task2)
             mmu_load_user_memory(task2->id);
 
-        return gdt_get_segment(GDT_INDEX_USERDATA);
+        return gdt_get_segment(GDT_INDEX_UDATA);
 
     }
 
-    return gdt_get_segment(GDT_INDEX_KERNELDATA);
+    return gdt_get_segment(GDT_INDEX_KDATA);
 
 }
 
