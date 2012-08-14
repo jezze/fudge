@@ -9,6 +9,22 @@
 #define GDT_INDEX_USERDATA   0x04
 #define GDT_INDEX_TSS        0x05
 
+#define GDT_SLOTSIZE         0x08
+
+#define GDT_ACCESS_USED      (0x01 << 0)
+#define GDT_ACCESS_RW        (0x01 << 1)
+#define GDT_ACCESS_DC        (0x01 << 2)
+#define GDT_ACCESS_EXECUTE   (0x01 << 3)
+#define GDT_ACCESS_ALWAYS1   (0x01 << 4)
+#define GDT_ACCESS_RING0     (0x00 << 5)
+#define GDT_ACCESS_RING1     (0x01 << 5)
+#define GDT_ACCESS_RING2     (0x02 << 5)
+#define GDT_ACCESS_RING3     (0x03 << 5)
+#define GDT_ACCESS_PRESENT   (0x01 << 7)
+
+#define GDT_FLAG_32BIT       (0x01 << 6)
+#define GDT_FLAG_GRANULARITY (0x01 << 7)
+
 struct gdt_entry
 {
 
@@ -16,7 +32,7 @@ struct gdt_entry
     unsigned short baseLow;
     unsigned char baseMiddle;
     unsigned char access;
-    unsigned char granularity;
+    unsigned char limitHigh;
     unsigned char baseHigh;
 
 } __attribute__((packed));
@@ -29,6 +45,7 @@ struct gdt_pointer
 
 } __attribute__((packed));
 
+unsigned int gdt_get_segment(unsigned int index);
 void gdt_set_gate(unsigned int index, unsigned int base, unsigned int limit, unsigned char access, unsigned char granularity);
 void gdt_setup();
 

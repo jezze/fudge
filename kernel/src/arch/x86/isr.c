@@ -2,6 +2,7 @@
 #include <event.h>
 #include <mmu.h>
 #include <runtime.h>
+#include <arch/x86/gdt.h>
 #include <arch/x86/idt.h>
 #include <arch/x86/isr.h>
 
@@ -71,12 +72,19 @@ unsigned int isr_handle(struct isr_registers *registers)
 
     task2 = runtime_schedule();
 
-    load_state(task2, registers);
+    if (task2)
+    {
 
-    if (task1 != task2)
-        mmu_load_user_memory(task2->id);
+        load_state(task2, registers);
 
-    return 0x23;
+        if (task1 != task2)
+            mmu_load_user_memory(task2->id);
+
+        return gdt_get_segment(GDT_INDEX_USERDATA);
+
+    }
+
+    return gdt_get_segment(GDT_INDEX_KERNELDATA);
 
 }
 
