@@ -11,7 +11,7 @@
 
 #define GDT_SLOTSIZE         0x08
 
-#define GDT_ACCESS_USED      (0x01 << 0)
+#define GDT_ACCESS_ACCESSED  (0x01 << 0)
 #define GDT_ACCESS_RW        (0x01 << 1)
 #define GDT_ACCESS_DC        (0x01 << 2)
 #define GDT_ACCESS_EXECUTE   (0x01 << 3)
