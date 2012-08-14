@@ -10,12 +10,10 @@ void tss_setup(unsigned int stack)
 
     memory_clear(&entry, sizeof (struct tss_entry));
 
-    entry.ss0 = 0x10;
+    entry.ss0 = gdt_get_segment(GDT_INDEX_KERNELDATA);
     entry.esp0 = stack;
-    entry.cs = 0x0B;
-    entry.ss = entry.ds = entry.es = entry.fs = entry.gs = 0x13;
 
-    gdt_set_gate(GDT_INDEX_TSS, (unsigned int)&entry, (unsigned int)&entry + sizeof (struct tss_entry), 0xE9, 0x00);
+    gdt_set_gate(GDT_INDEX_TSS, (unsigned int)&entry, (unsigned int)&entry + sizeof (struct tss_entry), GDT_ACCESS_PRESENT | GDT_ACCESS_RING3 | GDT_ACCESS_EXECUTE | GDT_ACCESS_USED, 0x00);
 
     cpu_enable_tss();
 
