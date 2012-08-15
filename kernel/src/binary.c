@@ -2,7 +2,7 @@
 #include <modules.h>
 #include <binary.h>
 
-unsigned int binary_find_symbol(struct modules_filesystem *filesystem, unsigned int id, char *func)
+unsigned int binary_find_symbol(struct modules_filesystem *filesystem, unsigned int id, char *symbol)
 {
 
     struct elf_header header;
@@ -23,7 +23,7 @@ unsigned int binary_find_symbol(struct modules_filesystem *filesystem, unsigned 
     filesystem->read(filesystem, id, symbolHeader->offset, symbolHeader->size, symbolTable);
     filesystem->read(filesystem, id, sectionHeader[symbolHeader->link].offset, sectionHeader[symbolHeader->link].size, stringTable);
 
-    return elf_find_symbol(&header, sectionHeader, symbolHeader, symbolTable, stringTable, func);
+    return elf_find_symbol(&header, sectionHeader, symbolHeader, symbolTable, stringTable, symbol);
 
 }
 
