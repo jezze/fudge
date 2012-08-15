@@ -23,26 +23,26 @@ static unsigned int read_category(struct modules_filesystem *self, unsigned int 
     {
 
         unsigned int size;
-        union modules_module *module = filesystem->modules[i];
+        struct modules_base *module = filesystem->modules[i];
 
         if (!module)
             continue;
 
-        if (id == 2000 && module->base.type != MODULES_TYPE_BUS)
+        if (id == 2000 && module->type != MODULES_TYPE_BUS)
             continue;
 
-        if (id == 3000 && module->base.type != MODULES_TYPE_DEVICE)
+        if (id == 3000 && module->type != MODULES_TYPE_DEVICE)
             continue;
 
-        if (id == 4000 && module->base.type != MODULES_TYPE_DRIVER)
+        if (id == 4000 && module->type != MODULES_TYPE_DRIVER)
             continue;
 
-        if (id == 5000 && module->base.type != MODULES_TYPE_FILESYSTEM)
+        if (id == 5000 && module->type != MODULES_TYPE_FILESYSTEM)
             continue;
 
-        size = string_length(module->base.name);
+        size = string_length(module->name);
 
-        memory_copy(buffer + length, module->base.name, size);
+        memory_copy(buffer + length, module->name, size);
         memory_copy(buffer + length + size, "/\n", 2);
         length += size + 2;
 
@@ -106,7 +106,7 @@ static unsigned int walk(struct modules_filesystem *self, unsigned int id, unsig
 
 }
 
-void vfs_sys_filesystem_init(struct vfs_sys_filesystem *filesystem, union modules_module **modules)
+void vfs_sys_filesystem_init(struct vfs_sys_filesystem *filesystem, struct modules_base **modules)
 {
 
     memory_clear(filesystem, sizeof (struct vfs_sys_filesystem));

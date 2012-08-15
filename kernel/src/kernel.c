@@ -15,7 +15,7 @@ static struct vfs_ramdisk_filesystem ramdiskFilesystem;
 static void start(struct kernel_arch *self)
 {
 
-    union modules_module **modules;
+    struct modules_base **modules;
     struct syscall_open_args oargs;
     struct syscall_execute_args eargs;
     struct runtime_mount *mount;

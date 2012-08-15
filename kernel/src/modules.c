@@ -1,7 +1,7 @@
 #include <memory.h>
 #include <modules.h>
 
-static union modules_module *modules[MODULES_MODULE_SLOTS];
+static struct modules_base *modules[MODULES_MODULE_SLOTS];
 
 static void attach(struct modules_driver *driver)
 {
@@ -14,21 +14,21 @@ static void attach(struct modules_driver *driver)
     for (i = 0; i < MODULES_MODULE_SLOTS; i++)
     {
 
-        union modules_module *module = modules[i];
+        struct modules_device *device = (struct modules_device *)modules[i];
 
-        if (!module || module->base.type != MODULES_TYPE_DEVICE)
+        if (!device || device->base.type != MODULES_TYPE_DEVICE)
             continue;
 
-        if (module->device.driver)
+        if (device->driver)
             continue;
 
-        if (!driver->check(driver, &module->device))
+        if (!driver->check(driver, device))
             continue;
 
-        module->device.driver = driver;
+        device->driver = driver;
 
         if (driver->attach)
-            driver->attach(&module->device);
+            driver->attach(device);
 
     }
 
@@ -38,7 +38,6 @@ static void register_base(struct modules_base *base)
 {
 
     unsigned int i;
-    union modules_module *module = (union modules_module *)base;
 
     for (i = 0; i < MODULES_MODULE_SLOTS; i++)
     {
@@ -46,7 +45,7 @@ static void register_base(struct modules_base *base)
         if (modules[i])
             continue;
 
-        modules[i] = module;
+        modules[i] = base;
 
         break;
 
@@ -93,7 +92,6 @@ static void unregister_base(struct modules_base *base)
 {
 
     unsigned int i;
-    union modules_module *module = (union modules_module *)base;
 
     for (i = 0; i < MODULES_MODULE_SLOTS; i++)
     {
@@ -101,7 +99,7 @@ static void unregister_base(struct modules_base *base)
         if (!modules[i])
             continue;
 
-        if (modules[i] != module)
+        if (modules[i] != base)
             continue;
 
         modules[i] = 0;
@@ -206,7 +204,7 @@ void modules_filesystem_init(struct modules_filesystem *filesystem, unsigned int
 
 }
 
-union modules_module **modules_setup()
+struct modules_base **modules_setup()
 {
 
     return modules;
