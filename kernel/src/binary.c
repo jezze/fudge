@@ -7,7 +7,7 @@ unsigned int binary_find_symbol(struct modules_filesystem *filesystem, unsigned 
 
     struct elf_header header;
     struct elf_section_header sectionHeader[20];
-    struct elf_section_header *symbolHeader;
+    unsigned int symbolHeaderIndex;
     struct elf_symbol symbolTable[400];
     char stringTable[0x1000];
 
@@ -18,12 +18,12 @@ unsigned int binary_find_symbol(struct modules_filesystem *filesystem, unsigned 
 
     filesystem->read(filesystem, id, header.shoffset, header.shsize * header.shcount, sectionHeader);
 
-    symbolHeader = elf_get_section(&header, sectionHeader, ELF_SECTION_TYPE_SYMTAB);
+    symbolHeaderIndex = elf_find_section(&header, sectionHeader, ELF_SECTION_TYPE_SYMTAB);
 
-    filesystem->read(filesystem, id, symbolHeader->offset, symbolHeader->size, symbolTable);
-    filesystem->read(filesystem, id, sectionHeader[symbolHeader->link].offset, sectionHeader[symbolHeader->link].size, stringTable);
+    filesystem->read(filesystem, id, sectionHeader[symbolHeaderIndex].offset, sectionHeader[symbolHeaderIndex].size, symbolTable);
+    filesystem->read(filesystem, id, sectionHeader[sectionHeader[symbolHeaderIndex].link].offset, sectionHeader[sectionHeader[symbolHeaderIndex].link].size, stringTable);
 
-    return elf_find_symbol(&header, sectionHeader, symbolHeader, symbolTable, stringTable, symbol);
+    return elf_find_symbol(&header, sectionHeader, symbolHeaderIndex, symbolTable, stringTable, symbol);
 
 }
 
@@ -62,17 +62,17 @@ unsigned int binary_copy_program(struct modules_filesystem *filesystem, unsigned
 
 }
 
-static void binary_relocate_section(struct elf_section_header *sectionHeader, struct elf_section_header *relocateHeader, struct elf_section_header *relocateData, struct elf_relocate *relocateTable, struct elf_symbol *symbolTable, unsigned int address)
+static void binary_relocate_section(struct elf_section_header *sectionHeader, unsigned int relocateHeaderIndex, unsigned int relocateDataIndex, struct elf_relocate *relocateTable, struct elf_symbol *symbolTable, unsigned int address)
 {
 
     unsigned int i;
 
-    for (i = 0; i < relocateHeader->size / relocateHeader->esize; i++)
+    for (i = 0; i < sectionHeader[relocateHeaderIndex].size / sectionHeader[relocateHeaderIndex].esize; i++)
     {
 
         unsigned char type = relocateTable[i].info & 0x0F;
         unsigned char index = relocateTable[i].info >> 8;
-        unsigned int offset = address + relocateData->offset + relocateTable[i].offset;
+        unsigned int offset = address + sectionHeader[relocateDataIndex].offset + relocateTable[i].offset;
         unsigned int addend = (symbolTable[index].shindex) ? address + sectionHeader[symbolTable[index].shindex].offset + symbolTable[index].value : 0;
         unsigned int *entry = (unsigned int *)(offset);
 
@@ -123,7 +123,7 @@ unsigned int binary_relocate(struct modules_filesystem *filesystem, unsigned int
         filesystem->read(filesystem, id, sectionHeader[i].offset, sectionHeader[i].size, relocateTable);
         filesystem->read(filesystem, id, sectionHeader[sectionHeader[i].link].offset, sectionHeader[sectionHeader[i].link].size, symbolTable);
 
-        binary_relocate_section(sectionHeader, &sectionHeader[i], &sectionHeader[sectionHeader[i].info], relocateTable, symbolTable, address);
+        binary_relocate_section(sectionHeader, i, sectionHeader[i].info, relocateTable, symbolTable, address);
 
         sectionHeader[sectionHeader[i].info].address += address;
 

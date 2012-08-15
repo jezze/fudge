@@ -11,7 +11,7 @@ unsigned int elf_validate(struct elf_header *header)
 
 }
 
-struct elf_section_header *elf_get_section(struct elf_header *header, struct elf_section_header *sectionHeader, unsigned int type)
+unsigned int elf_find_section(struct elf_header *header, struct elf_section_header *sectionHeader, unsigned int type)
 {
 
     unsigned int i;
@@ -20,7 +20,7 @@ struct elf_section_header *elf_get_section(struct elf_header *header, struct elf
     {
 
         if (sectionHeader[i].type == type)
-            return &sectionHeader[i];
+            return i;
 
     }
 
@@ -28,18 +28,18 @@ struct elf_section_header *elf_get_section(struct elf_header *header, struct elf
 
 }
 
-unsigned int elf_find_symbol(struct elf_header *header, struct elf_section_header *sheader, struct elf_section_header *symHeader, struct elf_symbol *symTable, char *strTable, char *symbol)
+unsigned int elf_find_symbol(struct elf_header *header, struct elf_section_header *sectionHeader, unsigned int symbolHeaderIndex, struct elf_symbol *symbolTable, char *stringTable, char *symbol)
 {
 
     unsigned int i;
 
-    for (i = 0; i < symHeader->size / symHeader->esize; i++)
+    for (i = 0; i < sectionHeader[symbolHeaderIndex].size / sectionHeader[symbolHeaderIndex].esize; i++)
     {
 
-        if (!memory_match(symbol, strTable + symTable[i].name, string_length(symbol)))
+        if (!memory_match(symbol, stringTable + symbolTable[i].name, string_length(symbol)))
             continue;
 
-        return (header->type == ELF_TYPE_RELOCATABLE) ? sheader[symTable[i].shindex].address + sheader[symTable[i].shindex].offset + symTable[i].value : symTable[i].value;
+        return (header->type == ELF_TYPE_RELOCATABLE) ? sectionHeader[symbolTable[i].shindex].address + sectionHeader[symbolTable[i].shindex].offset + symbolTable[i].value : symbolTable[i].value;
 
     }
 
