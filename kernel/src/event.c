@@ -34,11 +34,11 @@ void event_raise(unsigned int index)
     if (!routines[index].callback)
         return;
 
-    if (routines[index].task->event)
+    if (routines[index].task->status.event)
         return;
 
-    routines[index].task->event = 1;
-    routines[index].task->idle = 0;
+    routines[index].task->status.event = 1;
+    routines[index].task->status.idle = 0;
 
     runtime_registers_init(&routines[index].task->registers, routines[index].callback, RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE, RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE);
 

@@ -78,9 +78,9 @@ unsigned int syscall_execute(struct runtime_task *task, void *stack)
     if (!binary_copy_program(descriptor->mount->filesystem, descriptor->id))
         return 0;
 
-    ntask->used = 1;
-    ntask->idle = 0;
-    ntask->event = 0;
+    ntask->status.used = 1;
+    ntask->status.idle = 0;
+    ntask->status.event = 0;
 
     return slot;
 
@@ -89,7 +89,7 @@ unsigned int syscall_execute(struct runtime_task *task, void *stack)
 unsigned int syscall_exit(struct runtime_task *task, void *stack)
 {
 
-    task->used = 0;
+    task->status.used = 0;
 
     return 1;
 
@@ -98,8 +98,8 @@ unsigned int syscall_exit(struct runtime_task *task, void *stack)
 unsigned int syscall_idle(struct runtime_task *task, void *stack)
 {
 
-    task->idle = 1;
-    task->event = 0;
+    task->status.idle = 1;
+    task->status.event = 0;
 
     return 1;
 

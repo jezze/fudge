@@ -35,13 +35,20 @@ struct runtime_registers
 
 };
 
+struct runtime_status
+{
+
+    unsigned int used;
+    unsigned int event;
+    unsigned int idle;
+
+};
+
 struct runtime_task
 {
 
     unsigned int id;
-    unsigned int used;
-    unsigned int event;
-    unsigned int idle;
+    struct runtime_status status;
     struct runtime_registers registers;
     void (*clone)(struct runtime_task *self, struct runtime_task *task, unsigned int id);
     struct runtime_descriptor descriptors[RUNTIME_TASK_DESCRIPTOR_SLOTS];

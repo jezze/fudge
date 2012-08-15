@@ -80,7 +80,7 @@ unsigned int runtime_get_task_slot()
     for (i = 1; i < RUNTIME_TASK_SLOTS - 1; i++)
     {
 
-        if (!tasks[i].used)
+        if (!tasks[i].status.used)
             return i;
 
     }
@@ -143,7 +143,7 @@ struct runtime_task *runtime_schedule()
     for (i = RUNTIME_TASK_SLOTS - 1; i >= 0; i--)
     {
 
-        if (tasks[i].used && !tasks[i].idle)
+        if (tasks[i].status.used && !tasks[i].status.idle)
             return &tasks[i];
 
     }
