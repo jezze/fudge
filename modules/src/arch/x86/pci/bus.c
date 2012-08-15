@@ -22,14 +22,14 @@ static unsigned int ind(unsigned int address, unsigned short offset)
 static unsigned short inw(unsigned int address, unsigned short offset)
 {
 
-    return (unsigned short)((ind(address, offset) >> ((offset & 2) * 8)) & 0xFFFF);
+    return (unsigned short)((ind(address, offset) >> ((offset & 2) * 8)));
 
 }
 
 static unsigned char inb(unsigned int address, unsigned short offset)
 {
 
-    return (unsigned char)((ind(address, offset) >> ((offset & 3) * 8)) & 0xFF);
+    return (unsigned char)((ind(address, offset) >> ((offset & 3) * 8)));
 
 }
 
