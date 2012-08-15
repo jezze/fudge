@@ -3,7 +3,6 @@
 
 unsigned int binary_find_symbol(struct modules_filesystem *filesystem, unsigned int id, char *func);
 unsigned int binary_get_entry(struct modules_filesystem *filesystem, unsigned int id);
-unsigned int binary_get_vaddress(struct modules_filesystem *filesystem, unsigned int id);
 unsigned int binary_copy_program(struct modules_filesystem *filesystem, unsigned int id);
 unsigned int binary_relocate(struct modules_filesystem *filesystem, unsigned int id, unsigned int address);
 

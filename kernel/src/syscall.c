@@ -52,7 +52,6 @@ unsigned int syscall_execute(struct runtime_task *task, void *stack)
     struct runtime_task *ntask;
     unsigned int slot;
     unsigned int entry;
-    unsigned int address;
 
     if (!descriptor || !descriptor->id || !descriptor->mount->filesystem->read)
         return 0;
@@ -71,14 +70,9 @@ unsigned int syscall_execute(struct runtime_task *task, void *stack)
     if (!entry)
         return 0;
 
-    address = binary_get_vaddress(descriptor->mount->filesystem, descriptor->id);
+    runtime_registers_init(&ntask->registers, entry, RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE, RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE);
 
-    if (!address)
-        return 0;
-
-    runtime_memory_init(&ntask->memory, address, RUNTIME_TASK_ADDRESS_SIZE);
-
-    mmu_map_user_memory(ntask->id, RUNTIME_TASK_ADDRESS_BASE + ntask->id * RUNTIME_TASK_ADDRESS_SIZE, address, RUNTIME_TASK_ADDRESS_SIZE);
+    mmu_map_user_memory(ntask->id, RUNTIME_TASK_PADDRESS_BASE + ntask->id * RUNTIME_TASK_ADDRESS_SIZE, RUNTIME_TASK_VADDRESS_BASE, RUNTIME_TASK_ADDRESS_SIZE);
     mmu_load_user_memory(ntask->id);
 
     if (!binary_copy_program(descriptor->mount->filesystem, descriptor->id))
@@ -87,8 +81,6 @@ unsigned int syscall_execute(struct runtime_task *task, void *stack)
     ntask->used = 1;
     ntask->idle = 0;
     ntask->event = 0;
-
-    runtime_registers_init(&ntask->registers, entry, ntask->memory.address + ntask->memory.size, ntask->memory.address + ntask->memory.size);
 
     return slot;
 

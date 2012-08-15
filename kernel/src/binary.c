@@ -41,23 +41,6 @@ unsigned int binary_get_entry(struct modules_filesystem *filesystem, unsigned in
 
 }
 
-unsigned int binary_get_vaddress(struct modules_filesystem *filesystem, unsigned int id)
-{
-
-    struct elf_header header;
-    struct elf_program_header programHeader[8];
-
-    filesystem->read(filesystem, id, 0, sizeof (struct elf_header), &header);
-
-    if (!elf_validate(&header))
-        return 0;
-
-    filesystem->read(filesystem, id, header.phoffset, header.phsize * header.phcount, programHeader);
-
-    return programHeader[0].vaddress;
-
-}
-
 unsigned int binary_copy_program(struct modules_filesystem *filesystem, unsigned int id)
 {
 

@@ -99,16 +99,6 @@ void runtime_descriptor_init(struct runtime_descriptor *descriptor, unsigned int
 
 }
 
-void runtime_memory_init(struct runtime_memory *memory, unsigned int address, unsigned int size)
-{
-
-    memory_clear(memory, sizeof (struct runtime_memory));
-
-    memory->address = address;
-    memory->size = size;
-
-}
-
 void runtime_mount_init(struct runtime_mount *mount, unsigned int id, struct modules_filesystem *filesystem, unsigned int count, char *path)
 {
 
