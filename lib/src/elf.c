@@ -36,17 +36,10 @@ unsigned int elf_find_symbol(struct elf_header *header, struct elf_section_heade
     for (i = 0; i < symHeader->size / symHeader->esize; i++)
     {
 
-        struct elf_symbol *symEntry = &symTable[i];
+        if (!memory_match(symbol, strTable + symTable[i].name, string_length(symbol)))
+            continue;
 
-        if (memory_match(symbol, strTable + symEntry->name, string_length(symbol)))
-        {
-
-            if (header->type == ELF_TYPE_RELOCATABLE)
-                return symEntry->value + sheader[symEntry->shindex].address + sheader[symEntry->shindex].offset;
-            else
-                return symEntry->value;
-            
-        }
+        return (header->type == ELF_TYPE_RELOCATABLE) ? sheader[symTable[i].shindex].address + sheader[symTable[i].shindex].offset + symTable[i].value : symTable[i].value;
 
     }
 
