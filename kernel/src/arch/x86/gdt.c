@@ -19,7 +19,7 @@ void gdt_set_gate(unsigned int index, unsigned int base, unsigned int limit, uns
     entries[index].baseMiddle = (base >> 16);
     entries[index].baseHigh = (base >> 24);
     entries[index].limitLow = (limit & 0xFFFF);
-    entries[index].limitHigh = (limit >> 16) | flags;
+    entries[index].limitHigh = (flags & 0xF0) | ((limit >> 16) & 0x0F);
     entries[index].access = access;
 
 }
