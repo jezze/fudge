@@ -6,9 +6,9 @@
 static unsigned int read_root(struct modules_filesystem *self, unsigned int id, unsigned int count, char *buffer)
 {
 
-    memory_copy(buffer, "all/\nbus/\ndevice/\ndriver/\nfilesystem/\nramdisk/\nmodule/\nnet/\ntty/\n", 65);
+    memory_copy(buffer, "all/\nbus/\ndevice/\ndriver/\nfilesystem/\nramdisk/\nmodule/\nblock/\nnet/\ntty/\n", 72);
 
-    return 65;
+    return 72;
 
 }
 
