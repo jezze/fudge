@@ -42,7 +42,7 @@ void load_modules_core(unsigned int id)
     call_open(FILE_STDIN, 19, "/ramdisk/mod/tty.ko");
     call_execute(id);
 
-    call_mount(FILE_STDIN, 5, 5, "/tty/");
+    call_mount(FILE_STDIN, 6, 5, "/tty/");
 
 }
 
