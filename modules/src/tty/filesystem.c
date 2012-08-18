@@ -44,14 +44,14 @@ static unsigned int write_stdin(struct modules_filesystem *self, unsigned int id
 static unsigned int write_stdout(struct modules_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct tty_driver *driver = (struct tty_driver *)self->driver;
+    struct tty_filesystem *filesystem = (struct tty_filesystem *)self;
     char *stream = buffer;
     unsigned int i;
 
     for (i = 0; i < count; i++)
-        driver->putc(driver, stream[i]);
+        filesystem->driver->putc(filesystem->driver, stream[i]);
 
-    vga_set_cursor_offset(driver->cursorOffset);
+    vga_set_cursor_offset(filesystem->driver->cursorOffset);
 
     return count;
 
@@ -60,8 +60,8 @@ static unsigned int write_stdout(struct modules_filesystem *self, unsigned int i
 static unsigned int read_cwd(struct modules_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct tty_driver *driver = (struct tty_driver *)self->driver;
-    unsigned int length = string_length(driver->cwdname);
+    struct tty_filesystem *filesystem = (struct tty_filesystem *)self;
+    unsigned int length = string_length(filesystem->driver->cwdname);
 
     if (offset > length)
         return 0;
@@ -69,7 +69,7 @@ static unsigned int read_cwd(struct modules_filesystem *self, unsigned int id, u
     if (count > length - offset)
         count = length - offset;
 
-    memory_copy(buffer, driver->cwdname + offset, count);
+    memory_copy(buffer, filesystem->driver->cwdname + offset, count);
 
     return count;
 
@@ -78,10 +78,10 @@ static unsigned int read_cwd(struct modules_filesystem *self, unsigned int id, u
 static unsigned int write_cwd(struct modules_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct tty_driver *driver = (struct tty_driver *)self->driver;
+    struct tty_filesystem *filesystem = (struct tty_filesystem *)self;
 
-    memory_clear(driver->cwdname, 128);
-    memory_copy(driver->cwdname, buffer, count);
+    memory_clear(filesystem->driver->cwdname, 128);
+    memory_copy(filesystem->driver->cwdname, buffer, count);
 
     return count;
 
@@ -153,12 +153,14 @@ static unsigned int walk(struct modules_filesystem *self, unsigned int id, unsig
 
 }
 
-void tty_filesystem_init(struct modules_filesystem *filesystem, struct modules_driver *driver)
+void tty_filesystem_init(struct tty_filesystem *filesystem, struct tty_driver *driver)
 {
 
     memory_clear(filesystem, sizeof (struct modules_filesystem));
 
-    modules_filesystem_init(filesystem, 0x1451, driver, 1, "tty", 0, 0, read, write, walk, 0); 
+    modules_filesystem_init(&filesystem->base, 0x1451, 0, 1, "tty", 0, 0, read, write, walk, 0); 
+
+    filesystem->driver = driver;
 
 }
 

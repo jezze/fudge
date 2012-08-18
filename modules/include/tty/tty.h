@@ -36,7 +36,15 @@ struct tty_driver
 
 };
 
+struct tty_filesystem
+{
+
+    struct modules_filesystem base;
+    struct tty_driver *driver;
+
+};
+
 void tty_driver_init(struct tty_driver *driver, char *cwdname);
-void tty_filesystem_init(struct modules_filesystem *filesystem, struct modules_driver *driver);
+void tty_filesystem_init(struct tty_filesystem *filesystem, struct tty_driver *driver);
 
 #endif
