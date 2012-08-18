@@ -6,11 +6,11 @@
 static unsigned int read_root(struct modules_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct net_driver *driver = (struct net_driver *)self->driver;
+    struct net_filesystem *filesystem = (struct net_filesystem *)self;
     unsigned int i;
     unsigned int c = 0;
 
-    for (i = 0; i < driver->interfacesCount; i++)
+    for (i = 0; i < filesystem->interfacesCount; i++)
     {
 
         char num[32];
@@ -43,8 +43,8 @@ static unsigned int read_interface(struct modules_filesystem *self, unsigned int
 static unsigned int read_interface_data(struct modules_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct net_driver *driver = (struct net_driver *)self->driver;
-    struct net_interface *interface = driver->interfaces[id];
+    struct net_filesystem *filesystem = (struct net_filesystem *)self;
+    struct net_interface *interface = filesystem->interfaces[id];
 
     return interface->read(interface, offset, count, buffer);
 
@@ -53,8 +53,8 @@ static unsigned int read_interface_data(struct modules_filesystem *self, unsigne
 static unsigned int read_interface_mac(struct modules_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct net_driver *driver = (struct net_driver *)self->driver;
-    struct net_interface *interface = driver->interfaces[id];
+    struct net_filesystem *filesystem = (struct net_filesystem *)self;
+    struct net_interface *interface = filesystem->interfaces[id];
 
     memory_copy(buffer, interface->mac, 6);
 
@@ -84,8 +84,8 @@ static unsigned int read(struct modules_filesystem *self, unsigned int id, unsig
 static unsigned int write_interface_data(struct modules_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct net_driver *driver = (struct net_driver *)self->driver;
-    struct net_interface *interface = driver->interfaces[id];
+    struct net_filesystem *filesystem = (struct net_filesystem *)self;
+    struct net_interface *interface = filesystem->interfaces[id];
 
     return interface->write(interface, offset, count, buffer);
 
@@ -133,12 +133,52 @@ static unsigned int walk(struct modules_filesystem *self, unsigned int id, unsig
 
 }
 
-void net_filesystem_init(struct modules_filesystem *filesystem, struct modules_driver *driver)
+static void register_interface(struct net_filesystem *self, struct net_interface *interface, struct modules_base *module, unsigned int (*read)(struct net_interface *self, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write)(struct net_interface *self, unsigned int offset, unsigned int count, void *buffer))
 {
 
-    memory_clear(filesystem, sizeof (struct modules_filesystem));
+    interface->read = read;
+    interface->write = write;
 
-    modules_filesystem_init(filesystem, 0x1001, driver, 1, "net", 0, 0, read, write, walk, 0); 
+    self->interfaces[self->interfacesCount] = interface;
+    self->interfacesCount++;
+
+}
+
+static void register_protocol(struct net_filesystem *self, struct net_protocol *protocol, char *name)
+{
+
+    protocol->name = name;
+
+    self->protocols[self->protocolsCount] = protocol;
+    self->protocolsCount++;
+
+}
+
+static void unregister_interface(struct net_filesystem *self, struct net_interface *interface)
+{
+
+    self->interfacesCount--;
+
+}
+
+static void unregister_protocol(struct net_filesystem *self, struct net_protocol *protocol)
+{
+
+    self->protocolsCount--;
+
+}
+
+void net_filesystem_init(struct net_filesystem *filesystem)
+{
+
+    memory_clear(filesystem, sizeof (struct net_filesystem));
+
+    modules_filesystem_init(&filesystem->base, 0x1001, 0, 1, "net", 0, 0, read, write, walk, 0); 
+
+    filesystem->register_interface = register_interface;
+    filesystem->register_protocol = register_protocol;
+    filesystem->unregister_interface = unregister_interface;
+    filesystem->unregister_protocol = unregister_protocol;
 
 }
 
