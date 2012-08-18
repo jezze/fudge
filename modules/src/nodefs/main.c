@@ -2,7 +2,7 @@
 #include <nodefs/nodefs.h>
 
 static struct nodefs_driver driver;
-static struct modules_filesystem filesystem;
+static struct nodefs_filesystem filesystem;
 
 void nodefs_register_node(struct nodefs_node *node, char *name, struct modules_base *module, unsigned int (*read)(struct nodefs_node *self, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write)(struct nodefs_node *self, unsigned int offset, unsigned int count, void *buffer))
 {
@@ -21,7 +21,7 @@ void nodefs_unregister_node(struct nodefs_node *node)
 struct modules_filesystem *get_filesystem()
 {
 
-    return &filesystem;
+    return &filesystem.base;
 
 }
 
@@ -31,15 +31,15 @@ void init()
     nodefs_driver_init(&driver);
     modules_register_driver(&driver.base);
 
-    nodefs_filesystem_init(&filesystem, &driver.base);
-    modules_register_filesystem(&filesystem);
+    nodefs_filesystem_init(&filesystem, &driver);
+    modules_register_filesystem(&filesystem.base);
 
 }
 
 void destroy()
 {
 
-    modules_unregister_filesystem(&filesystem);
+    modules_unregister_filesystem(&filesystem.base);
     modules_unregister_driver(&driver.base);
 
 }

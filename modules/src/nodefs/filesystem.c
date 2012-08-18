@@ -7,7 +7,7 @@ static unsigned int read(struct modules_filesystem *self, unsigned int id, unsig
 {
 
     struct nodefs_node *node;
-    struct nodefs_driver *driver = (struct nodefs_driver *)self->driver;
+    struct nodefs_filesystem *filesystem = (struct nodefs_filesystem *)self;
 
     if (id == 1)
     {
@@ -16,12 +16,12 @@ static unsigned int read(struct modules_filesystem *self, unsigned int id, unsig
         unsigned int length = 0;
         unsigned int i;
 
-        for (i = 0; i < driver->nodesCount; i++)
+        for (i = 0; i < filesystem->driver->nodesCount; i++)
         {
 
-            unsigned int size = string_length(driver->nodes[i]->name);
+            unsigned int size = string_length(filesystem->driver->nodes[i]->name);
 
-            memory_copy(out + length, driver->nodes[i]->name, size);
+            memory_copy(out + length, filesystem->driver->nodes[i]->name, size);
             memory_copy(out + length + size, "\n", 1);
             length += size + 1;
 
@@ -31,7 +31,7 @@ static unsigned int read(struct modules_filesystem *self, unsigned int id, unsig
 
     }
 
-    node = driver->nodes[id - 2];
+    node = filesystem->driver->nodes[id - 2];
 
     return node->read(node, offset, count, buffer);
 
@@ -40,8 +40,8 @@ static unsigned int read(struct modules_filesystem *self, unsigned int id, unsig
 static unsigned int write(struct modules_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct nodefs_driver *driver = (struct nodefs_driver *)self->driver;
-    struct nodefs_node *node = driver->nodes[id - 2];
+    struct nodefs_filesystem *filesystem = (struct nodefs_filesystem *)self;
+    struct nodefs_node *node = filesystem->driver->nodes[id - 2];
 
     return node->write(node, offset, count, buffer);
 
@@ -50,16 +50,16 @@ static unsigned int write(struct modules_filesystem *self, unsigned int id, unsi
 static unsigned int walk(struct modules_filesystem *self, unsigned int id, unsigned int count, char *path)
 {
 
-    struct nodefs_driver *driver = (struct nodefs_driver *)self->driver;
+    struct nodefs_filesystem *filesystem = (struct nodefs_filesystem *)self;
     unsigned int i;
 
     if (!count)
         return id;
 
-    for (i = 0; i < driver->nodesCount; i++)
+    for (i = 0; i < filesystem->driver->nodesCount; i++)
     {
 
-        if (memory_match(driver->nodes[i]->name, path, string_length(driver->nodes[i]->name) + 1))
+        if (memory_match(filesystem->driver->nodes[i]->name, path, string_length(filesystem->driver->nodes[i]->name) + 1))
             return i + 2;
 
     }
@@ -68,12 +68,14 @@ static unsigned int walk(struct modules_filesystem *self, unsigned int id, unsig
 
 }
 
-void nodefs_filesystem_init(struct modules_filesystem *filesystem, struct modules_driver *driver)
+void nodefs_filesystem_init(struct nodefs_filesystem *filesystem, struct nodefs_driver *driver)
 {
 
-    memory_clear(filesystem, sizeof (struct modules_filesystem));
+    memory_clear(filesystem, sizeof (struct nodefs_filesystem));
 
-    modules_filesystem_init(filesystem, 0x1001, driver, 1, "nodefs", 0, 0, read, write, walk, 0); 
+    modules_filesystem_init(&filesystem->base, 0x1001, 0, 1, "nodefs", 0, 0, read, write, walk, 0); 
+
+    filesystem->driver = driver;
 
 }
 
