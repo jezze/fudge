@@ -3,10 +3,10 @@
 
 static struct net_filesystem filesystem;
 
-void net_register_interface(struct net_interface *interface, struct modules_base *module, unsigned int (*read)(struct net_interface *self, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write)(struct net_interface *self, unsigned int offset, unsigned int count, void *buffer))
+void net_register_driver(struct net_driver *driver, unsigned int (*read)(struct net_driver *self, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write)(struct net_driver *self, unsigned int offset, unsigned int count, void *buffer))
 {
 
-    filesystem.register_interface(&filesystem, interface, module, read, write);
+    filesystem.register_driver(&filesystem, driver, read, write);
 
 }
 
@@ -17,10 +17,10 @@ void net_register_protocol(struct net_protocol *protocol, char *name)
 
 }
 
-void net_unregister_interface(struct net_interface *interface)
+void net_unregister_driver(struct net_driver *driver)
 {
 
-    filesystem.unregister_interface(&filesystem, interface);
+    filesystem.unregister_driver(&filesystem, driver);
 
 }
 
