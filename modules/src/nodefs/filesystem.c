@@ -73,7 +73,7 @@ void nodefs_filesystem_init(struct nodefs_filesystem *filesystem, struct nodefs_
 
     memory_clear(filesystem, sizeof (struct nodefs_filesystem));
 
-    modules_filesystem_init(&filesystem->base, 0x1001, 0, 1, "nodefs", 0, 0, read, write, walk, 0); 
+    modules_filesystem_init(&filesystem->base, 0x1001, 1, "nodefs", 0, 0, read, write, walk, 0); 
 
     filesystem->driver = driver;
 
