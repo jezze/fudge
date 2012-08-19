@@ -1,8 +1,6 @@
 #ifndef MODULES_SMP_H
 #define MODULES_SMP_H
 
-#define SMP_DRIVER_TYPE 0x6401
-
 struct smp_cpu
 {
 
@@ -13,18 +11,13 @@ struct smp_cpu
 
 };
 
-struct smp_driver
+struct smp_architecture
 {
 
-    struct modules_driver base;
     struct smp_cpu cpus[32];
     unsigned int count;
-    struct acpi_driver *acpiDriver;
-    struct cpuid_driver *cpuidDriver;
 
 };
-
-void smp_driver_init(struct smp_driver *driver, struct acpi_driver *acpiDriver, struct cpuid_driver *cpuidDriver);
 
 #endif
 

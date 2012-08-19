@@ -30,7 +30,7 @@ MODULES_OBJECTS_PIT=modules/src/arch/x86/pit/main.o modules/src/arch/x86/pit/dri
 MODULES_OBJECTS_PS2=modules/src/arch/x86/ps2/main.o modules/src/arch/x86/ps2/kbd_driver.o modules/src/arch/x86/ps2/kbd_device.o modules/src/arch/x86/ps2/mouse_driver.o modules/src/arch/x86/ps2/mouse_device.o
 MODULES_OBJECTS_RTC=modules/src/arch/x86/rtc/main.o modules/src/arch/x86/rtc/device.o
 MODULES_OBJECTS_RTL8139=modules/src/arch/x86/rtl8139/main.o modules/src/arch/x86/rtl8139/driver.o
-MODULES_OBJECTS_SMP=modules/src/arch/x86/smp/main.o modules/src/arch/x86/smp/driver.o
+MODULES_OBJECTS_SMP=modules/src/arch/x86/smp/main.o
 MODULES_OBJECTS_UART=modules/src/arch/x86/uart/main.o modules/src/arch/x86/uart/driver.o modules/src/arch/x86/uart/device.o
 MODULES_OBJECTS_VGA=modules/src/arch/x86/vga/main.o modules/src/arch/x86/vga/driver.o
 

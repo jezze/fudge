@@ -106,6 +106,7 @@ struct acpi_driver
 
 };
 
+struct acpi_sdth *acpi_find_header(char *name);
 void acpi_driver_init(struct acpi_driver *driver);
 
 #endif

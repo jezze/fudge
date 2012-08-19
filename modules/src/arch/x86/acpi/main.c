@@ -3,6 +3,13 @@
 
 static struct acpi_driver driver;
 
+struct acpi_sdth *acpi_find_header(char *name)
+{
+
+    return driver.find_header(&driver, name);
+
+}
+
 void init()
 {
 
