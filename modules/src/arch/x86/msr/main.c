@@ -1,20 +1,21 @@
 #include <modules.h>
+#include <arch/x86/cpuid/cpuid.h>
 #include <arch/x86/msr/msr.h>
-
-static struct msr_driver driver;
 
 void init()
 {
 
-    msr_driver_init(&driver);
-    modules_register_driver(&driver.base);
+    struct cpuid_data data;
+
+    cpuid_get(CPUID_INSTRUCTION_FEATURES0, &data);
+
+    if (!(data.edx & CPUID_FEATURES0_EDX_FLAG_MSR))
+        return;
 
 }
 
 void destroy()
 {
-
-    modules_unregister_driver(&driver.base);
 
 }
 
