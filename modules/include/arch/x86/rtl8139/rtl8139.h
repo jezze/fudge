@@ -99,10 +99,19 @@
 
 #define RTL8139_DRIVER_TYPE 0x0423
 
+struct rtl8139_header
+{
+
+    unsigned short flags;
+    unsigned short length;
+
+};
+
 struct rtl8139_driver
 {
 
-    struct net_driver base;
+    struct modules_driver base;
+    struct net_interface interface;
     unsigned short io;
     char rx[0x2600] __attribute__((aligned(4)));
     char tx0[0x800] __attribute__((aligned(4)));
@@ -112,14 +121,6 @@ struct rtl8139_driver
     unsigned int txp;
     unsigned int (*read)(struct rtl8139_driver *self, unsigned int count, void *buffer);
     unsigned int (*write)(struct rtl8139_driver *self, unsigned int count, void *buffer);
-
-};
-
-struct rtl8139_header
-{
-
-    unsigned short flags;
-    unsigned short length;
 
 };
 

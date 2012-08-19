@@ -10,7 +10,7 @@ static unsigned int read_root(struct modules_filesystem *self, unsigned int id, 
     unsigned int i;
     unsigned int c = 0;
 
-    for (i = 0; i < filesystem->driversCount; i++)
+    for (i = 0; i < filesystem->interfacesCount; i++)
     {
 
         char num[32];
@@ -31,7 +31,7 @@ static unsigned int read_root(struct modules_filesystem *self, unsigned int id, 
 
 }
 
-static unsigned int read_driver(struct modules_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int read_interface(struct modules_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     memory_copy(buffer, "data\nmac\n", 9);
@@ -40,23 +40,23 @@ static unsigned int read_driver(struct modules_filesystem *self, unsigned int id
 
 }
 
-static unsigned int read_driver_data(struct modules_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int read_interface_data(struct modules_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct net_filesystem *filesystem = (struct net_filesystem *)self;
-    struct net_driver *driver = filesystem->drivers[id];
+    struct net_interface *interface = filesystem->interfaces[id];
 
-    return driver->read(driver, offset, count, buffer);
+    return interface->read(interface, offset, count, buffer);
 
 }
 
-static unsigned int read_driver_mac(struct modules_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int read_interface_mac(struct modules_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct net_filesystem *filesystem = (struct net_filesystem *)self;
-    struct net_driver *driver = filesystem->drivers[id];
+    struct net_interface *interface = filesystem->interfaces[id];
 
-    memory_copy(buffer, driver->mac, 6);
+    memory_copy(buffer, interface->mac, 6);
 
     return 6;
 
@@ -66,13 +66,13 @@ static unsigned int read(struct modules_filesystem *self, unsigned int id, unsig
 {
 
     if (id >= 21000)
-        return read_driver_mac(self, id - 21000, offset, count, buffer);
+        return read_interface_mac(self, id - 21000, offset, count, buffer);
 
     if (id >= 11000)
-        return read_driver_data(self, id - 11000, offset, count, buffer);
+        return read_interface_data(self, id - 11000, offset, count, buffer);
 
     if (id >= 1000)
-        return read_driver(self, id - 1000, offset, count, buffer);
+        return read_interface(self, id - 1000, offset, count, buffer);
 
     if (id == 1)
         return read_root(self, id, offset, count, buffer);
@@ -81,13 +81,13 @@ static unsigned int read(struct modules_filesystem *self, unsigned int id, unsig
 
 }
 
-static unsigned int write_driver_data(struct modules_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int write_interface_data(struct modules_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct net_filesystem *filesystem = (struct net_filesystem *)self;
-    struct net_driver *driver = filesystem->drivers[id];
+    struct net_interface *interface = filesystem->interfaces[id];
 
-    return driver->write(driver, offset, count, buffer);
+    return interface->write(interface, offset, count, buffer);
 
 }
 
@@ -98,13 +98,13 @@ static unsigned int write(struct modules_filesystem *self, unsigned int id, unsi
         return 0;
 
     if (id >= 11000)
-        return write_driver_data(self, id - 11000, offset, count, buffer);
+        return write_interface_data(self, id - 11000, offset, count, buffer);
 
     return 0;
 
 }
 
-static unsigned int walk_driver(struct modules_filesystem *self, unsigned int id, unsigned int count, char *path)
+static unsigned int walk_interface(struct modules_filesystem *self, unsigned int id, unsigned int count, char *path)
 {
 
     if (!count)
@@ -127,22 +127,21 @@ static unsigned int walk(struct modules_filesystem *self, unsigned int id, unsig
         return id;
 
     if (memory_match(path, "0/", 2))
-        return walk_driver(self, 1000, count - 2, path + 2);
+        return walk_interface(self, 1000, count - 2, path + 2);
 
     return 0;
 
 }
 
-static void register_driver(struct net_filesystem *self, struct net_driver *driver, unsigned int (*read)(struct net_driver *self, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write)(struct net_driver *self, unsigned int offset, unsigned int count, void *buffer))
+static void register_interface(struct net_filesystem *self, struct net_interface *interface, struct modules_driver *driver, unsigned int (*read)(struct net_interface *self, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write)(struct net_interface *self, unsigned int offset, unsigned int count, void *buffer))
 {
 
-    modules_register_driver(&driver->base);
+    interface->driver = driver;
+    interface->read = read;
+    interface->write = write;
 
-    driver->read = read;
-    driver->write = write;
-
-    self->drivers[self->driversCount] = driver;
-    self->driversCount++;
+    self->interfaces[self->interfacesCount] = interface;
+    self->interfacesCount++;
 
 }
 
@@ -156,12 +155,10 @@ static void register_protocol(struct net_filesystem *self, struct net_protocol *
 
 }
 
-static void unregister_driver(struct net_filesystem *self, struct net_driver *driver)
+static void unregister_interface(struct net_filesystem *self, struct net_interface *interface)
 {
 
-    modules_unregister_driver(&driver->base);
-
-    self->driversCount--;
+    self->interfacesCount--;
 
 }
 
@@ -179,9 +176,9 @@ void net_filesystem_init(struct net_filesystem *filesystem)
 
     modules_filesystem_init(&filesystem->base, 0x1001, 1, "net", 0, 0, read, write, walk, 0);
 
-    filesystem->register_driver = register_driver;
+    filesystem->register_interface = register_interface;
     filesystem->register_protocol = register_protocol;
-    filesystem->unregister_driver = unregister_driver;
+    filesystem->unregister_interface = unregister_interface;
     filesystem->unregister_protocol = unregister_protocol;
 
 }

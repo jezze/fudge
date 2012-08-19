@@ -141,12 +141,12 @@ static void start(struct modules_driver *self)
     setup_transmitter(driver);
     enable(driver);
 
-    driver->base.mac[0] = io_inb(driver->io + RTL8139_REGISTER_IDR0);
-    driver->base.mac[1] = io_inb(driver->io + RTL8139_REGISTER_IDR1);
-    driver->base.mac[2] = io_inb(driver->io + RTL8139_REGISTER_IDR2);
-    driver->base.mac[3] = io_inb(driver->io + RTL8139_REGISTER_IDR3);
-    driver->base.mac[4] = io_inb(driver->io + RTL8139_REGISTER_IDR4);
-    driver->base.mac[5] = io_inb(driver->io + RTL8139_REGISTER_IDR5);
+    driver->interface.mac[0] = io_inb(driver->io + RTL8139_REGISTER_IDR0);
+    driver->interface.mac[1] = io_inb(driver->io + RTL8139_REGISTER_IDR1);
+    driver->interface.mac[2] = io_inb(driver->io + RTL8139_REGISTER_IDR2);
+    driver->interface.mac[3] = io_inb(driver->io + RTL8139_REGISTER_IDR3);
+    driver->interface.mac[4] = io_inb(driver->io + RTL8139_REGISTER_IDR4);
+    driver->interface.mac[5] = io_inb(driver->io + RTL8139_REGISTER_IDR5);
 
 }
 
@@ -183,7 +183,7 @@ void rtl8139_driver_init(struct rtl8139_driver *driver)
 
     memory_clear(driver, sizeof (struct rtl8139_driver));
 
-    modules_driver_init(&driver->base.base, RTL8139_DRIVER_TYPE, "rtl8139", start, check, attach);
+    modules_driver_init(&driver->base, RTL8139_DRIVER_TYPE, "rtl8139", start, check, attach);
 
     driver->read = read;
     driver->write = write;
