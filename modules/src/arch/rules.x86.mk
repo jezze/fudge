@@ -18,7 +18,7 @@ MODULES_VGA=modules/src/arch/x86/vga/vga.ko
 
 MODULES_OBJECTS_ACPI=modules/src/arch/x86/acpi/main.o
 MODULES_OBJECTS_APIC=modules/src/arch/x86/apic/main.o
-MODULES_OBJECTS_ATA=modules/src/arch/x86/ata/main.o modules/src/arch/x86/ata/bus.o modules/src/arch/x86/ata/device.o
+MODULES_OBJECTS_ATA=modules/src/arch/x86/ata/main.o modules/src/arch/x86/ata/bus.o modules/src/arch/x86/ata/device.o modules/src/arch/x86/ata/driver.o
 MODULES_OBJECTS_BGA=modules/src/arch/x86/bga/main.o modules/src/arch/x86/bga/driver.o
 MODULES_OBJECTS_CPUID=modules/src/arch/x86/cpuid/main.o modules/src/arch/x86/cpuid/cpuid.o
 MODULES_OBJECTS_FPU=modules/src/arch/x86/fpu/main.o modules/src/arch/x86/fpu/fpu.o

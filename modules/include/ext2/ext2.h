@@ -136,7 +136,7 @@ struct ext2_filesystem
 
     struct modules_filesystem base;
     struct ext2_driver *driver;
-    struct mbr_device *device;
+    struct block_interface *interface;
 
 };
 
@@ -146,14 +146,15 @@ struct ext2_driver
     struct modules_driver base;
     struct ext2_filesystem filesystems[8];
     unsigned int filesystemsCount;
-    void (*read_blockgroup)(struct mbr_device *device, unsigned int id, struct ext2_blockgroup *bg);
-    void (*read_node)(struct mbr_device *device, unsigned int id, struct ext2_blockgroup *bg, struct ext2_node *node);
-    void (*read_content)(struct mbr_device *device, struct ext2_node *node, void *buffer);
+    unsigned int (*validate)(struct block_interface *interface);
+    void (*read_blockgroup)(struct block_interface *interface, unsigned int id, struct ext2_blockgroup *bg);
+    void (*read_node)(struct block_interface *interface, unsigned int id, struct ext2_blockgroup *bg, struct ext2_node *node);
+    void (*read_content)(struct block_interface *interface, struct ext2_node *node, void *buffer);
 
 };
 
 void ext2_driver_init(struct ext2_driver *driver);
-void ext2_filesystem_init(struct ext2_filesystem *filesystem, struct ext2_driver *driver, struct mbr_device *device);
+void ext2_filesystem_init(struct ext2_filesystem *filesystem, struct ext2_driver *driver, struct block_interface *interface);
 
 #endif
 

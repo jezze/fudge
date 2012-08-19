@@ -74,10 +74,6 @@ void load_modules_testing(unsigned int id)
     call_execute(id);
 
     /* Experimental */
-    call_open(FILE_STDIN, 19, "/ramdisk/mod/mbr.ko");
-    call_execute(id);
-
-    /* Experimental */
     call_open(FILE_STDIN, 20, "/ramdisk/mod/ext2.ko");
     call_execute(id);
 

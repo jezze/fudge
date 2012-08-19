@@ -12,9 +12,9 @@ static unsigned int read(struct modules_filesystem *self, unsigned int id, unsig
     struct ext2_filesystem *filesystem = (struct ext2_filesystem *)self;
     struct ext2_driver *driver = (struct ext2_driver *)filesystem->driver;
 
-    driver->read_blockgroup(filesystem->device, id, &bg);
-    driver->read_node(filesystem->device, id, &bg, &node);
-    driver->read_content(filesystem->device, &node, private);
+    driver->read_blockgroup(filesystem->interface, id, &bg);
+    driver->read_node(filesystem->interface, id, &bg, &node);
+    driver->read_content(filesystem->interface, &node, private);
 
     if ((node.type & 0xF000) == EXT2_NODE_TYPE_DIR)
     {
@@ -79,9 +79,9 @@ static struct ext2_entry *finddir(struct modules_filesystem *self, unsigned int 
     struct ext2_filesystem *filesystem = (struct ext2_filesystem *)self;
     struct ext2_driver *driver = (struct ext2_driver *)filesystem->driver;
 
-    driver->read_blockgroup(filesystem->device, id, &bg);
-    driver->read_node(filesystem->device, id, &bg, &node);
-    driver->read_content(filesystem->device, &node, private);
+    driver->read_blockgroup(filesystem->interface, id, &bg);
+    driver->read_node(filesystem->interface, id, &bg, &node);
+    driver->read_content(filesystem->interface, &node, private);
 
     if ((node.type & 0xF000) == EXT2_NODE_TYPE_DIR)
     {
@@ -128,7 +128,7 @@ static unsigned int walk(struct modules_filesystem *self, unsigned int id, unsig
 
 }
 
-void ext2_filesystem_init(struct ext2_filesystem *filesystem, struct ext2_driver *driver, struct mbr_device *device)
+void ext2_filesystem_init(struct ext2_filesystem *filesystem, struct ext2_driver *driver, struct block_interface *interface)
 {
 
     memory_clear(filesystem, sizeof (struct ext2_filesystem));
@@ -136,7 +136,7 @@ void ext2_filesystem_init(struct ext2_filesystem *filesystem, struct ext2_driver
     modules_filesystem_init(&filesystem->base, 2, "hda", 0, 0, read, 0, walk, 0);
 
     filesystem->driver = driver;
-    filesystem->device = device;
+    filesystem->interface = interface;
 
 }
 

@@ -63,8 +63,25 @@
 
 #define ATA_BUS_TYPE    0x0002
 #define ATA_DEVICE_TYPE 0x0004
+#define ATA_DRIVER_TYPE 0x6324
 
 struct ata_bus;
+
+struct ata_partition
+{
+
+    unsigned char boot;
+    unsigned char headStart;
+    unsigned char sectorStart;
+    unsigned char cylinderStart;
+    unsigned char systemId;
+    unsigned char headEnd;
+    unsigned char sectorEnd;
+    unsigned char cylinderEnd;
+    unsigned int sectorLba;
+    unsigned int sectorTotal;
+
+} __attribute__((packed));
 
 struct ata_device
 {
@@ -114,8 +131,17 @@ struct ata_bus
 
 };
 
+struct ata_driver
+{
+
+    struct modules_driver base;
+    struct block_interface interface;
+
+};
+
 void ata_device_init(struct ata_device *device, struct ata_bus *bus, unsigned int irq, unsigned int slave, unsigned int type);
 void ata_bus_init(struct ata_bus *bus, unsigned int control, unsigned int data);
+void ata_driver_init(struct ata_driver *driver);
 
 #endif
 

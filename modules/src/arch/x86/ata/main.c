@@ -1,8 +1,10 @@
 #include <modules.h>
+#include <block/block.h>
 #include <arch/x86/ata/ata.h>
 
 static struct ata_bus primary;
 static struct ata_bus secondary;
+static struct ata_driver driver;
 
 void init()
 {
@@ -13,11 +15,15 @@ void init()
     modules_register_bus(&primary.base);
     modules_register_bus(&secondary.base);
 
+    ata_driver_init(&driver);
+    modules_register_driver(&driver.base);
+
 }
 
 void destroy()
 {
 
+    modules_unregister_driver(&driver.base);
     modules_unregister_bus(&primary.base);
     modules_unregister_bus(&secondary.base);
 
