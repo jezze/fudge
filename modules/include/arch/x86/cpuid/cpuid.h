@@ -91,8 +91,6 @@
 #define CPUID_FEATURES0_EDX_FLAG_IA64    1 << 30
 #define CPUID_FEATURES0_EDX_FLAG_PBE     1 << 31
 
-#define CPUID_DRIVER_TYPE 0x9421
-
 struct cpuid_data
 {
 
@@ -103,19 +101,10 @@ struct cpuid_data
 
 };
 
-struct cpuid_driver
-{
-
-    struct modules_driver base;
-    unsigned int (*is_supported)(unsigned int instruction, unsigned int flag);
-
-};
-
 unsigned int cpuid_check_cpuid();
 void cpuid_get(unsigned int instruction, struct cpuid_data *data);
 void cpuid_get_vendor(char *destination);
 void cpuid_get_brand(char *destination);
-void cpuid_driver_init(struct cpuid_driver *driver);
 
 #endif
 
