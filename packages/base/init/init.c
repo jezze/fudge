@@ -18,9 +18,6 @@ void load_modules_core(unsigned int id)
 
     call_mount(FILE_STDIN, 5, 7, "/block/");
 
-    call_open(FILE_STDIN, 19, "/ramdisk/mod/log.ko");
-    call_execute(id);
-
     call_open(FILE_STDIN, 18, "/ramdisk/mod/io.ko");
     call_execute(id);
 

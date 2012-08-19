@@ -2,7 +2,6 @@
 #include <modules.h>
 #include <arch/x86/cpuid/cpuid.h>
 #include <arch/x86/fpu/fpu.h>
-#include <log/log.h>
 
 static void start(struct modules_driver *self)
 {
@@ -15,8 +14,6 @@ static void start(struct modules_driver *self)
         return;
 
     fpu_enable();
-
-    log_write(FPU_DRIVER_TYPE, 11, "FPU Enabled");
 
 }
 
