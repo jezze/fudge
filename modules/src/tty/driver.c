@@ -82,7 +82,6 @@ static void start(struct modules_driver *self)
 
     struct tty_driver *driver = (struct tty_driver *)self;
 
-    vga_set_cursor_color(TTY_COLOR_WHITE, TTY_COLOR_BLACK);
     driver->clear(driver);
 
 }

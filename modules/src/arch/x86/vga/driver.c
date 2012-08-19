@@ -71,12 +71,21 @@ static void set_cursor_offset(struct vga_driver *self, unsigned short offset)
 
 }
 
+static void start(struct modules_driver *self)
+{
+
+    struct vga_driver *driver = (struct vga_driver *)self;
+
+    driver->set_cursor_color(driver, VGA_FB_COLOR_WHITE, VGA_FB_COLOR_BLACK);
+
+}
+
 void vga_driver_init(struct vga_driver *driver)
 {
 
     memory_clear(driver, sizeof (struct vga_driver));
 
-    modules_driver_init(&driver->base, VGA_DRIVER_TYPE, "vga", 0, 0, 0);
+    modules_driver_init(&driver->base, VGA_DRIVER_TYPE, "vga", start, 0, 0);
 
     driver->read_framebuffer = read_framebuffer;
     driver->write_framebuffer = write_framebuffer;
