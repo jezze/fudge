@@ -110,6 +110,8 @@ struct rtl8139_driver
     char tx2[0x800] __attribute__((aligned(4)));
     char tx3[0x800] __attribute__((aligned(4)));
     unsigned int txp;
+    unsigned int (*read)(struct rtl8139_driver *self, unsigned int count, void *buffer);
+    unsigned int (*write)(struct rtl8139_driver *self, unsigned int count, void *buffer);
 
 };
 

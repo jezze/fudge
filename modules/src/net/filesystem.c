@@ -136,6 +136,8 @@ static unsigned int walk(struct modules_filesystem *self, unsigned int id, unsig
 static void register_driver(struct net_filesystem *self, struct net_driver *driver, unsigned int (*read)(struct net_driver *self, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write)(struct net_driver *self, unsigned int offset, unsigned int count, void *buffer))
 {
 
+    modules_register_driver(&driver->base);
+
     driver->read = read;
     driver->write = write;
 
@@ -156,6 +158,8 @@ static void register_protocol(struct net_filesystem *self, struct net_protocol *
 
 static void unregister_driver(struct net_filesystem *self, struct net_driver *driver)
 {
+
+    modules_unregister_driver(&driver->base);
 
     self->driversCount--;
 

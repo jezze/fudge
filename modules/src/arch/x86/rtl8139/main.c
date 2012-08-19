@@ -5,18 +5,32 @@
 
 static struct rtl8139_driver driver;
 
+static unsigned int read(struct net_driver *self, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    return driver.read(&driver, count, buffer);
+
+}
+
+static unsigned int write(struct net_driver *self, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    return driver.write(&driver, count, buffer);
+
+}
+
 void init()
 {
 
     rtl8139_driver_init(&driver);
-    modules_register_driver(&driver.base.base);
+    net_register_driver(&driver.base, read, write);
 
 }
 
 void destroy()
 {
 
-    modules_unregister_driver(&driver.base.base);
+    net_unregister_driver(&driver.base);
 
 }
 
