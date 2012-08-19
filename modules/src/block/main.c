@@ -3,10 +3,10 @@
 
 static struct block_filesystem filesystem;
 
-void block_register_driver(struct block_driver *driver, unsigned int (*read)(struct block_driver *self, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write)(struct block_driver *self, unsigned int offset, unsigned int count, void *buffer))
+void block_register_interface(struct block_interface *interface, struct modules_driver *driver, unsigned int (*read)(struct block_interface *self, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write)(struct block_interface *self, unsigned int offset, unsigned int count, void *buffer))
 {
 
-    filesystem.register_driver(&filesystem, driver, read, write);
+    filesystem.register_interface(&filesystem, interface, driver, read, write);
 
 }
 
@@ -17,10 +17,10 @@ void block_register_protocol(struct block_protocol *protocol, char *name)
 
 }
 
-void block_unregister_driver(struct block_driver *driver)
+void block_unregister_interface(struct block_interface *interface)
 {
 
-    filesystem.unregister_driver(&filesystem, driver);
+    filesystem.unregister_interface(&filesystem, interface);
 
 }
 
