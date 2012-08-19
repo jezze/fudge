@@ -19,7 +19,7 @@ static unsigned int get_symbol_module(char *symbol, char *module)
         return 0;
 
     call_read(3, header.shoffset, header.shsize * header.shcount, sectionHeader);
-    
+
     symbolHeaderIndex = elf_find_section(&header, sectionHeader, ELF_SECTION_TYPE_SYMTAB);
 
     call_read(3, sectionHeader[symbolHeaderIndex].offset, sectionHeader[symbolHeaderIndex].size, symbolTable);

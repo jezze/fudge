@@ -103,7 +103,7 @@ struct rtl8139_driver
 {
 
     struct net_driver base;
-    unsigned short io; 
+    unsigned short io;
     char rx[0x2600] __attribute__((aligned(4)));
     char tx0[0x800] __attribute__((aligned(4)));
     char tx1[0x800] __attribute__((aligned(4)));

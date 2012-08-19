@@ -40,7 +40,7 @@ MODULES_OBJECTS+=$(MODULES_OBJECTS_ACPI) $(MODULES_OBJECTS_APIC) $(MODULES_OBJEC
 $(MODULES_ACPI): lib/src/memory.o lib/src/string.o $(MODULES_OBJECTS_ACPI)
 	$(LD) $(LDFLAGS) -o $@ $^
 
-$(MODULES_APIC): lib/src/memory.o lib/src/string.o $(MODULES_OBJECTS_APIC) 
+$(MODULES_APIC): lib/src/memory.o lib/src/string.o $(MODULES_OBJECTS_APIC)
 	$(LD) $(LDFLAGS) -o $@ $^
 
 $(MODULES_ATA): lib/src/memory.o lib/src/string.o $(MODULES_OBJECTS_ATA)

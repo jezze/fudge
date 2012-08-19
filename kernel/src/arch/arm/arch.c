@@ -6,7 +6,7 @@
 #define SERIAL_BASE 0x16000000
 #define SERIAL_FLAG_REGISTER 0x18
 #define SERIAL_BUFFER_FULL (1 << 5)
- 
+
 static struct arch_arm arm;
 
 static void putc(char c)
@@ -17,7 +17,7 @@ static void putc(char c)
     *(volatile unsigned long*)SERIAL_BASE = c;
 
 }
-                                                         
+
 static void puts(const char *s)
 {
 

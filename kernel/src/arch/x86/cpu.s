@@ -139,7 +139,7 @@ cpu_set_idt:
 .global cpu_set_stack
 cpu_set_stack:
     mov eax, [esp + 4]
-    mov ecx, [esp] 
+    mov ecx, [esp]
     mov esp, eax
     push ecx
     ret

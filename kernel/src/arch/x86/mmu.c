@@ -54,7 +54,7 @@ static void map_memory(struct mmu_directory *directory, struct mmu_table *table,
     memory_clear(table, sizeof (struct mmu_table));
 
     for (i = 0; i < size / MMU_PAGE_SIZE; i++)
-        table_set_page(table, frame + i, paddress + i * MMU_PAGE_SIZE, pflags); 
+        table_set_page(table, frame + i, paddress + i * MMU_PAGE_SIZE, pflags);
 
     directory_set_table(directory, frame, table, tflags);
 

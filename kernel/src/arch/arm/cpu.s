@@ -11,5 +11,5 @@ cpu_enable_interrupts:
     mrs r0, cpsr
     bic r0, r0, #0x80
     msr cpsr_c, r0
-    bx lr 
+    bx lr
 

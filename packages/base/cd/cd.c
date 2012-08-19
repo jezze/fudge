@@ -30,7 +30,7 @@ void main()
 
     memory_copy(bufferCwd + countCwd, bufferIn, countIn);
 
-    call_write(3, 0, countCwd + countIn, bufferCwd); 
+    call_write(3, 0, countCwd + countIn, bufferCwd);
     call_close(3);
 
 }

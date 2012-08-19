@@ -63,7 +63,7 @@ static void putc(struct tty_driver *self, char c)
         self->cursorOffset += TTY_CHARACTER_WIDTH - (self->cursorOffset % TTY_CHARACTER_WIDTH);
 
     }
-    
+
     else if (c >= ' ')
     {
 

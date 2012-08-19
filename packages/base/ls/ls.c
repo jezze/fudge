@@ -23,7 +23,7 @@ void main()
 
     if (!call_open(3, count, buffer))
         return;
-        
+
     count = call_read(3, 0, BUFFER_SIZE, buffer);
     call_close(3);
 
