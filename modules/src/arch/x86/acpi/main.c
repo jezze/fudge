@@ -42,10 +42,8 @@ struct acpi_sdth *acpi_find_header(char *name)
     for (i = 0; i < entries; i++)
     {
 
-/*
-        if (memory_match(self->rsdp->rsdt->entries[i]->signature, name, 4))
-            return self->rsdp->rsdt->entries[i];
-*/
+        if (memory_match(rsdp->rsdt->entries[i]->signature, name, 4))
+            return rsdp->rsdt->entries[i];
 
     }
 
