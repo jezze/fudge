@@ -16,12 +16,12 @@ static unsigned int read(struct modules_filesystem *self, unsigned int id, unsig
         unsigned int length = 0;
         unsigned int i;
 
-        for (i = 0; i < filesystem->driver->nodesCount; i++)
+        for (i = 0; i < filesystem->nodesCount; i++)
         {
 
-            unsigned int size = string_length(filesystem->driver->nodes[i]->name);
+            unsigned int size = string_length(filesystem->nodes[i]->name);
 
-            memory_copy(out + length, filesystem->driver->nodes[i]->name, size);
+            memory_copy(out + length, filesystem->nodes[i]->name, size);
             memory_copy(out + length + size, "\n", 1);
             length += size + 1;
 
@@ -31,7 +31,7 @@ static unsigned int read(struct modules_filesystem *self, unsigned int id, unsig
 
     }
 
-    node = filesystem->driver->nodes[id - 2];
+    node = filesystem->nodes[id - 2];
 
     return node->read(node, offset, count, buffer);
 
@@ -41,7 +41,7 @@ static unsigned int write(struct modules_filesystem *self, unsigned int id, unsi
 {
 
     struct nodefs_filesystem *filesystem = (struct nodefs_filesystem *)self;
-    struct nodefs_node *node = filesystem->driver->nodes[id - 2];
+    struct nodefs_node *node = filesystem->nodes[id - 2];
 
     return node->write(node, offset, count, buffer);
 
@@ -56,10 +56,10 @@ static unsigned int walk(struct modules_filesystem *self, unsigned int id, unsig
     if (!count)
         return id;
 
-    for (i = 0; i < filesystem->driver->nodesCount; i++)
+    for (i = 0; i < filesystem->nodesCount; i++)
     {
 
-        if (memory_match(filesystem->driver->nodes[i]->name, path, string_length(filesystem->driver->nodes[i]->name) + 1))
+        if (memory_match(filesystem->nodes[i]->name, path, string_length(filesystem->nodes[i]->name) + 1))
             return i + 2;
 
     }
@@ -68,14 +68,64 @@ static unsigned int walk(struct modules_filesystem *self, unsigned int id, unsig
 
 }
 
-void nodefs_filesystem_init(struct nodefs_filesystem *filesystem, struct nodefs_driver *driver)
+static void register_node(struct nodefs_filesystem *self, struct nodefs_node *node, char *name, struct modules_base *module, unsigned int (*read)(struct nodefs_node *self, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write)(struct nodefs_node *self, unsigned int offset, unsigned int count, void *buffer))
+{
+
+    unsigned int i;
+
+    for (i = 0; i < 128; i++)
+    {
+
+        if (!self->nodes[i])
+        {
+
+            node->name = name;
+            node->module = module;
+            node->read = read;
+            node->write = write;
+
+            self->nodes[i] = node;
+            self->nodesCount++;
+
+            break;
+
+        }
+
+    }
+
+}
+
+static void unregister_node(struct nodefs_filesystem *self, struct nodefs_node *node)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < 128; i++)
+    {
+
+        if (self->nodes[i] == node)
+        {
+
+            self->nodes[i] = 0;
+            self->nodesCount--;
+
+            break;
+
+        }
+
+    }
+
+}
+
+void nodefs_filesystem_init(struct nodefs_filesystem *filesystem)
 {
 
     memory_clear(filesystem, sizeof (struct nodefs_filesystem));
 
     modules_filesystem_init(&filesystem->base, 0x1001, 1, "nodefs", 0, 0, read, write, walk, 0);
 
-    filesystem->driver = driver;
+    filesystem->register_node = register_node;
+    filesystem->unregister_node = unregister_node;
 
 }
 

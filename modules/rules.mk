@@ -11,7 +11,7 @@ MODULES_OBJECTS_BLOCK=modules/src/block/main.o modules/src/block/filesystem.o
 MODULES_OBJECTS_EXT2=modules/src/ext2/main.o modules/src/ext2/driver.o modules/src/ext2/filesystem.o
 MODULES_OBJECTS_MBR=modules/src/mbr/main.o modules/src/mbr/driver.o modules/src/mbr/device.o
 MODULES_OBJECTS_NET=modules/src/net/main.o modules/src/net/filesystem.o
-MODULES_OBJECTS_NODEFS=modules/src/nodefs/main.o modules/src/nodefs/driver.o modules/src/nodefs/filesystem.o
+MODULES_OBJECTS_NODEFS=modules/src/nodefs/main.o modules/src/nodefs/filesystem.o
 MODULES_OBJECTS_TTY=modules/src/tty/main.o modules/src/tty/driver.o modules/src/tty/filesystem.o
 
 MODULES+=$(MODULES_BLOCK) $(MODULES_EXT2) $(MODULES_MBR) $(MODULES_NET) $(MODULES_NODEFS) $(MODULES_TTY)
