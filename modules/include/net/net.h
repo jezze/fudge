@@ -1,8 +1,6 @@
 #ifndef MODULES_NET_H
 #define MODULES_NET_H
 
-#define NET_DRIVER_TYPE 0x1327
-
 struct net_driver
 {
 

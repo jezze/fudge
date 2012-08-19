@@ -1,8 +1,6 @@
 #ifndef MODULES_BLOCK_H
 #define MODULES_BLOCK_H
 
-#define BLOCK_DRIVER_TYPE 0x1327
-
 struct block_driver
 {
 
