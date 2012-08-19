@@ -1,27 +1,73 @@
-#include <modules.h>
+#include <memory.h>
+#include <mmu.h>
 #include <arch/x86/acpi/acpi.h>
 
-static struct acpi_driver driver;
+static struct acpi_rsdp *find_rsdp()
+{
+
+    unsigned int rsdp;
+    unsigned int ebda;
+    char *signature = "RSD PTR ";
+
+    for (rsdp = 0x000E0000; rsdp < 0x00100000; rsdp += 0x10)
+    {
+
+        if (memory_match((void *)rsdp, signature, 8))
+            return (struct acpi_rsdp *)rsdp;
+
+    }
+
+    ebda = *((unsigned int *)0x40E);
+    ebda = ebda * 0x10 & 0x000FFFFF;
+
+    for (rsdp = ebda; rsdp < ebda + 0x400; rsdp += 0x10)
+    {
+
+        if (memory_match((void *)rsdp, signature, 8))
+            return (struct acpi_rsdp *)rsdp;
+
+    }
+
+    return 0;
+
+}
 
 struct acpi_sdth *acpi_find_header(char *name)
 {
 
-    return driver.find_header(&driver, name);
+    unsigned int i;
+    struct acpi_rsdp *rsdp = find_rsdp();
+    unsigned int entries = (rsdp->rsdt->base.length - sizeof (struct acpi_sdth)) / 4;
+
+    for (i = 0; i < entries; i++)
+    {
+
+/*
+        if (memory_match(self->rsdp->rsdt->entries[i]->signature, name, 4))
+            return self->rsdp->rsdt->entries[i];
+*/
+
+    }
+
+    return 0;
 
 }
 
 void init()
 {
 
-    acpi_driver_init(&driver);
-    modules_register_driver(&driver.base);
+    struct acpi_rsdp *rsdp = find_rsdp();
+
+    if (!rsdp)
+        return;
+
+    mmu_map_kernel_memory(1, (unsigned int)rsdp->rsdt, (unsigned int)rsdp->rsdt, 0x00100000);
+    mmu_reload_memory();
 
 }
 
 void destroy()
 {
-
-    modules_unregister_driver(&driver.base);
 
 }
 

@@ -1,8 +1,6 @@
 #ifndef MODULES_ACPI_H
 #define MODULES_ACPI_H
 
-#define ACPI_DRIVER_TYPE 0x2010
-
 struct acpi_sdth
 {
 
@@ -97,17 +95,7 @@ struct acpi_rsdp
 
 };
 
-struct acpi_driver
-{
-
-    struct modules_driver base;
-    struct acpi_rsdp *rsdp;
-    struct acpi_sdth *(*find_header)(struct acpi_driver *self, char *name);
-
-};
-
 struct acpi_sdth *acpi_find_header(char *name);
-void acpi_driver_init(struct acpi_driver *driver);
 
 #endif
 
