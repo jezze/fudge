@@ -158,7 +158,7 @@ void tty_filesystem_init(struct tty_filesystem *filesystem, struct tty_driver *d
 
     memory_clear(filesystem, sizeof (struct modules_filesystem));
 
-    modules_filesystem_init(&filesystem->base, 0x1451, 1, "tty", 0, 0, read, write, walk, 0);
+    modules_filesystem_init(&filesystem->base, 1, "tty", 0, 0, read, write, walk, 0);
 
     filesystem->driver = driver;
 
