@@ -174,7 +174,7 @@ static unsigned int check(struct modules_driver *self, struct modules_device *de
 
     pciDevice = (struct pci_device *)device;
 
-    return pciDevice->config_inw(pciDevice, PCI_CONFIG_VENDOR) == 0x10EC && pciDevice->config_inw(pciDevice, PCI_CONFIG_DEVICE) == 0x8139;
+    return pciDevice->config_inw(pciDevice, PCI_CONFIG_VENDOR) == RTL8139_PCI_VENDOR && pciDevice->config_inw(pciDevice, PCI_CONFIG_DEVICE) == RTL8139_PCI_DEVICE;
 
 }
 

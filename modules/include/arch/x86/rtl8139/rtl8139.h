@@ -97,6 +97,9 @@
 #define RTL8139_HEADER_FLAG_PAM  (1 << 14)
 #define RTL8139_HEADER_FLAG_MAR  (1 << 15)
 
+#define RTL8139_PCI_VENDOR 0x10EC
+#define RTL8139_PCI_DEVICE 0x8139
+
 #define RTL8139_DRIVER_TYPE 0x0423
 
 struct rtl8139_header
