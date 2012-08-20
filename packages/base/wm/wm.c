@@ -118,17 +118,23 @@ void enable()
 
 }
 
-void set_mouse_coords(unsigned int x, unsigned int y)
+void set_mouse_coords(float x, float y)
 {
 
     mx = x;
     my = y;
 
-    if (mx > SCREEN_WIDTH)
-        mx = SCREEN_WIDTH;
+    if (mx < 0)
+        mx = 0;
 
-    if (my > SCREEN_HEIGHT)
-        my = SCREEN_HEIGHT;
+    if (mx > SCREEN_WIDTH - 10)
+        mx = SCREEN_WIDTH - 10;
+
+    if (my < 0)
+        my = 0;
+
+    if (my > SCREEN_HEIGHT - 10)
+        my = SCREEN_HEIGHT - 10;
 
 }
 
