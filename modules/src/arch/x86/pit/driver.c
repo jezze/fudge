@@ -1,6 +1,7 @@
 #include <memory.h>
 #include <modules.h>
 #include <arch/x86/apic/apic.h>
+#include <arch/x86/io/io.h>
 #include <arch/x86/pit/pit.h>
 
 static void handle_irq(struct modules_device *self)
@@ -16,6 +17,10 @@ static void attach(struct modules_device *device)
 {
 
     struct pit_device *pitDevice = (struct pit_device *)device;
+
+    io_outb(0x43, 0x36);
+    io_outb(0x40, (unsigned char)(pitDevice->divisor & 0xFF));
+    io_outb(0x40, (unsigned char)((pitDevice->divisor >> 8) & 0xFF));
 
     apic_register_routine(pitDevice->irq, device, handle_irq);
 
