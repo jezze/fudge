@@ -4,6 +4,7 @@
 #define SCREEN_WIDTH                1024
 #define SCREEN_HEIGHT               768
 #define SCREEN_BPP                  32
+#define SCREEN_BSIZE                4
 
 #define SCREEN_BACKGROUND           0x002C1319
 #define FRAME_BACKGROUND            0x003C2329
