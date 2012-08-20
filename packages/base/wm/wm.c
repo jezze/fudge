@@ -141,10 +141,12 @@ void set_mouse_coords(float x, float y)
 void mouse_event()
 {
 
-    char cycle;
-    char status;
-    char dx;
-    char dy;
+    unsigned char cycle;
+    unsigned char status;
+    unsigned char dx;
+    unsigned char dy;
+    int relx;
+    int rely;
 
     call_read(idmcycle, 0, 1, &cycle);
 
@@ -157,7 +159,10 @@ void mouse_event()
 
     write_buffer_rect((unsigned int)mx, (unsigned int)my, 10, 10, buffer);
 
-    set_mouse_coords(mx + dx, my - dy);
+    relx = dx - ((status << 4) & 0x100);
+    rely = dy - ((status << 3) & 0x100);
+
+    set_mouse_coords(mx + relx, my - rely);
 
     read_buffer_rect((unsigned int)mx, (unsigned int)my, 10, 10, buffer);
 
