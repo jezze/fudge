@@ -17,12 +17,14 @@ void init()
 
     ata_driver_init(&driver);
     modules_register_driver(&driver.base);
+    block_register_interface(&driver.interface, &driver.base, 0, 0);
 
 }
 
 void destroy()
 {
 
+    block_unregister_interface(&driver.interface);
     modules_unregister_driver(&driver.base);
     modules_unregister_bus(&primary.base);
     modules_unregister_bus(&secondary.base);

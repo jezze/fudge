@@ -36,7 +36,7 @@ static unsigned int read_interface(struct modules_filesystem *self, unsigned int
 
     memory_copy(buffer, "data\n", 5);
 
-    return 9;
+    return 5;
 
 }
 
