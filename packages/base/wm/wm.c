@@ -9,8 +9,8 @@ static unsigned int idmy;
 
 static char buffer[0x2000];
 
-static int mx;
-static int my;
+static float mx;
+static float my;
 
 static void draw_pixel(unsigned int x, unsigned int y, unsigned int color)
 {
