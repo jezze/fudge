@@ -138,6 +138,30 @@ void set_mouse_coords(float x, float y)
 
 }
 
+float acc(int x)
+{
+
+    float val = x;
+
+    if (x > -1 && x < 1)
+        return 1 * val;
+
+    if (x > -2 && x < 2)
+        return 2 * val;
+
+    if (x > -4 && x < 4)
+        return 3 * val;
+
+    if (x > -6 && x < 6)
+        return 4 * val;
+
+    if (x > -8 && x < 8)
+        return 5 * val;
+
+    return 6 * val;
+
+}
+
 void mouse_event()
 {
 
@@ -162,7 +186,7 @@ void mouse_event()
     relx = dx - ((status << 4) & 0x100);
     rely = dy - ((status << 3) & 0x100);
 
-    set_mouse_coords(mx + relx, my - rely);
+    set_mouse_coords(mx + acc(relx), my - acc(rely));
 
     read_buffer_rect((unsigned int)mx, (unsigned int)my, 10, 10, buffer);
 
