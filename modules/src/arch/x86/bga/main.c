@@ -73,6 +73,15 @@ static unsigned int enable_write(struct nodefs_node *self, unsigned int offset, 
 
 }
 
+static unsigned int lfb_read(struct nodefs_node *self, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    memory_copy(buffer, (char *)driver.lfb + offset, count);
+
+    return count;
+
+}
+
 static unsigned int lfb_write(struct nodefs_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
@@ -92,7 +101,7 @@ void init()
     nodefs_register_node(&yres, "bga_yres", &driver.base.base, yres_read, yres_write);
     nodefs_register_node(&bpp, "bga_bpp", &driver.base.base, bpp_read, bpp_write);
     nodefs_register_node(&enable, "bga_enable", &driver.base.base, 0, enable_write);
-    nodefs_register_node(&lfb, "bga_lfb", &driver.base.base, 0, lfb_write);
+    nodefs_register_node(&lfb, "bga_lfb", &driver.base.base, lfb_read, lfb_write);
 
 }
 
