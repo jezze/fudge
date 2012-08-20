@@ -1,6 +1,7 @@
 #include <memory.h>
 #include <modules.h>
 #include <arch/x86/apic/apic.h>
+#include <arch/x86/io/io.h>
 #include <arch/x86/uart/uart.h>
 
 static unsigned int buffer_getc(struct uart_buffer *self, char *buffer)
@@ -53,6 +54,15 @@ static void attach(struct modules_device *device)
 {
 
     struct uart_device *uartDevice = (struct uart_device *)device;
+
+    io_outb(uartDevice->port + UART_IER, 0x00);
+    io_outb(uartDevice->port + UART_LCR, 0x80);
+    io_outb(uartDevice->port + UART_THR, 0x03);
+    io_outb(uartDevice->port + UART_IER, 0x00);
+    io_outb(uartDevice->port + UART_LCR, 0x03);
+    io_outb(uartDevice->port + UART_FCR, 0xC7);
+    io_outb(uartDevice->port + UART_MCR, 0x0B);
+    io_outb(uartDevice->port + UART_IER, 0x01);
 
     apic_register_routine(uartDevice->irq, device, handle_irq);
 

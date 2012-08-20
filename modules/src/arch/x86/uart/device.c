@@ -33,14 +33,5 @@ void uart_device_init(struct uart_device *device, unsigned int port, unsigned in
     device->read = read;
     device->write = write;
 
-    io_outb(device->port + UART_IER, 0x00);
-    io_outb(device->port + UART_LCR, 0x80);
-    io_outb(device->port + UART_THR, 0x03);
-    io_outb(device->port + UART_IER, 0x00);
-    io_outb(device->port + UART_LCR, 0x03);
-    io_outb(device->port + UART_FCR, 0xC7);
-    io_outb(device->port + UART_MCR, 0x0B);
-    io_outb(device->port + UART_IER, 0x01);
-
 }
 
