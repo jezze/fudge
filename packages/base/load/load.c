@@ -1,7 +1,7 @@
 #include <fudge.h>
 #include <elf.h>
 
-static unsigned int get_symbol_module(char *symbol, char *module)
+static unsigned int get_symbol_module(char *symbol, unsigned int count, char *module)
 {
 
     struct elf_header header;
@@ -10,7 +10,7 @@ static unsigned int get_symbol_module(char *symbol, char *module)
     struct elf_symbol symbolTable[400];
     char stringTable[0x1000];
 
-    if (!call_open(3, string_length(module), module))
+    if (!call_open(3, count, module))
         return 0;
 
     call_read(3, 0, sizeof (struct elf_header), &header);
@@ -39,14 +39,14 @@ static unsigned int get_symbol(char *symbol)
 
     memory_copy(buffer, "/ramdisk/mod/", 13);
     memory_copy(buffer + 13, symbol, plength);
-    memory_copy(buffer + 13 + plength, ".ko", 4);
+    memory_copy(buffer + 13 + plength, ".ko", 3);
 
-    address = get_symbol_module(symbol, buffer);
+    address = get_symbol_module(symbol, 13 + plength + 3, buffer);
 
     if (address)
         return address;
 
-    return get_symbol_module(symbol, "/ramdisk/boot/fudge");
+    return get_symbol_module(symbol, 20, "/ramdisk/boot/fudge");
 
 }
 
