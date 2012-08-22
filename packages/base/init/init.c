@@ -13,7 +13,7 @@ void load_modules_core(unsigned int id)
 
     call_mount(FILE_STDIN, 4, 5, "/net/");
 
-    call_open(FILE_STDIN, 19, "/ramdisk/mod/block.ko");
+    call_open(FILE_STDIN, 21, "/ramdisk/mod/block.ko");
     call_execute(id);
 
     call_mount(FILE_STDIN, 5, 7, "/block/");
