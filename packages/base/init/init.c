@@ -109,13 +109,9 @@ void start_shell()
     call_open(FILE_STDIN, 10, "/module/ps2_buffer");
     call_open(FILE_STDOUT, 11, "/tty/stdout");
 
-    call_write(FILE_STDOUT, 0, 23, "FUDGE OPERATING SYSTEM\n");
-    call_write(FILE_STDOUT, 0, 12, "Build date: ");
-    call_write(FILE_STDOUT, 0, 11, __DATE__);
-    call_write(FILE_STDOUT, 0, 1, " ");
-    call_write(FILE_STDOUT, 0, 8, __TIME__);
-    call_write(FILE_STDOUT, 0, 2, "\n\n");
-    call_write(FILE_STDOUT, 0, 53, "Write `echo <help.txt` for a short list if commands\n\n");
+    call_open(3, 17, "/ramdisk/bin/motd");
+    call_execute(3);
+    call_close(3);
 
     call_open(3, 18, "/ramdisk/bin/shell");
     call_execute(3);

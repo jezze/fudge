@@ -4,6 +4,7 @@ PACKAGES+=packages/base/echo/echo
 PACKAGES+=packages/base/hello/hello
 PACKAGES+=packages/base/init/init
 PACKAGES+=packages/base/load/load
+PACKAGES+=packages/base/motd/motd
 PACKAGES+=packages/base/ls/ls
 PACKAGES+=packages/base/reboot/reboot
 PACKAGES+=packages/base/shell/shell
