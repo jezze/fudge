@@ -39,7 +39,7 @@ static struct runtime_mount *find_mount(struct runtime_task *self, char *path)
     unsigned int max = 0;
     struct runtime_mount *current = 0;
 
-    for (i = 1; i < RUNTIME_TASK_MOUNT_SLOTS - 1; i++)
+    for (i = 1; i < RUNTIME_TASK_MOUNT_SLOTS; i++)
     {
 
         if (!self->mounts[i].id)
@@ -77,7 +77,7 @@ unsigned int runtime_get_task_slot()
 
     unsigned int i;
 
-    for (i = 1; i < RUNTIME_TASK_SLOTS - 1; i++)
+    for (i = 1; i < RUNTIME_TASK_SLOTS; i++)
     {
 
         if (!tasks[i].status.used)
