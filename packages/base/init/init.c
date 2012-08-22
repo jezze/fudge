@@ -106,7 +106,7 @@ void start_shell()
     call_write(3, 0, 14, "/ramdisk/home/");
     call_close(3);
 
-    call_open(FILE_STDIN, 10, "/tty/stdin");
+    call_open(FILE_STDIN, 10, "/module/ps2_buffer");
     call_open(FILE_STDOUT, 11, "/tty/stdout");
 
     call_write(FILE_STDOUT, 0, 23, "FUDGE OPERATING SYSTEM\n");

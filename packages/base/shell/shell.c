@@ -163,7 +163,7 @@ static void interpret(unsigned int length, char *command)
 
     }
 
-    setup_stream(10, "/tty/stdin", FILE_STDIN);
+    setup_stream(10, "/module/ps2_buffer", FILE_STDIN);
     setup_stream(11, "/tty/stdout", FILE_STDOUT);
 
 }

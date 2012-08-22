@@ -2,7 +2,6 @@
 #include <string.h>
 #include <modules.h>
 #include <arch/x86/vga/vga.h>
-#include <arch/x86/ps2/ps2.h>
 #include <tty/tty.h>
 
 static void clear(struct tty_driver *self)

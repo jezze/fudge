@@ -1,45 +1,8 @@
 #include <memory.h>
 #include <string.h>
 #include <modules.h>
-#include <arch/x86/ps2/ps2.h>
 #include <arch/x86/vga/vga.h>
 #include <tty/tty.h>
-
-static unsigned int read_stdin(struct modules_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
-{
-
-    char *stream = buffer;
-    unsigned int i;
-
-    for (i = 0; i < count; i++)
-    {
-
-        if (!ps2_getc(stream + i))
-            break;
-
-    }
-
-    return i;
-
-}
-
-static unsigned int write_stdin(struct modules_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
-{
-
-    char *stream = buffer;
-    unsigned int i;
-
-    for (i = 0; i < count; i++)
-    {
-
-        if (!ps2_putc(stream + i))
-            break;
-
-    }
-
-    return i;
-
-}
 
 static unsigned int write_stdout(struct modules_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
@@ -80,7 +43,7 @@ static unsigned int write_cwd(struct modules_filesystem *self, unsigned int id, 
 
     struct tty_filesystem *filesystem = (struct tty_filesystem *)self;
 
-    memory_clear(filesystem->driver->cwdname, 128);
+    memory_clear(filesystem->driver->cwdname, TTY_CWD_SIZE);
     memory_copy(filesystem->driver->cwdname, buffer, count);
 
     return count;
@@ -108,9 +71,6 @@ static unsigned int read(struct modules_filesystem *self, unsigned int id, unsig
     if (id == 1)
         return read_root(self, id, offset, count, buffer);
 
-    if (id == 2)
-        return read_stdin(self, id, offset, count, buffer);
-
     if (id == 4)
         return read_cwd(self, id, offset, count, buffer);
 
@@ -120,9 +80,6 @@ static unsigned int read(struct modules_filesystem *self, unsigned int id, unsig
 
 static unsigned int write(struct modules_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
-
-    if (id == 2)
-        return write_stdin(self, id, offset, count, buffer);
 
     if (id == 3)
         return write_stdout(self, id, offset, count, buffer);
@@ -139,9 +96,6 @@ static unsigned int walk(struct modules_filesystem *self, unsigned int id, unsig
 
     if (!count)
         return id;
-
-    if (memory_match(path, "stdin", 5))
-        return 2;
 
     if (memory_match(path, "stdout", 6))
         return 3;

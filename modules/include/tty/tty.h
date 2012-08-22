@@ -12,7 +12,7 @@ struct tty_driver
 {
 
     struct modules_driver base;
-    char cwdname[128];
+    char cwdname[TTY_CWD_SIZE];
     unsigned short cursorOffset;
     void (*clear)(struct tty_driver *self);
     void (*scroll)(struct tty_driver *self);
