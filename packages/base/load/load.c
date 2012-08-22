@@ -46,7 +46,7 @@ static unsigned int get_symbol(char *symbol)
     if (address)
         return address;
 
-    return get_symbol_module(symbol, 20, "/ramdisk/boot/fudge");
+    return get_symbol_module(symbol, 19, "/ramdisk/boot/fudge");
 
 }
 
