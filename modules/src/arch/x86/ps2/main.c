@@ -14,20 +14,6 @@ static struct nodefs_node mstatus;
 static struct nodefs_node mx;
 static struct nodefs_node my;
 
-unsigned int ps2_getc(char *buffer)
-{
-
-    return kbdDriver.buffer.getc(&kbdDriver.buffer, buffer);
-
-}
-
-unsigned int ps2_putc(char *buffer)
-{
-
-    return kbdDriver.buffer.putc(&kbdDriver.buffer, buffer);
-
-}
-
 static unsigned int buffer_read(struct nodefs_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
