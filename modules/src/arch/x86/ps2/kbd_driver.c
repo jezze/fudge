@@ -24,37 +24,47 @@ static char mapUS[256] =
        0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0
 };
 
-static unsigned int buffer_getc(struct ps2_kbd_buffer *self, char *buffer)
+static unsigned int buffer_read(struct ps2_kbd_buffer *self, unsigned int count, char *buffer)
 {
 
-    if (self->head != self->tail)
+    unsigned int i;
+
+    for (i = 0; i < count; i++)
     {
 
-        buffer[0] = self->buffer[self->tail];
-        self->tail = ((self->tail + 1) % self->size);
+        unsigned int tail = (self->tail + 1) % self->size;
 
-        return 1;
+        if (self->head == self->tail)
+            break;
+
+        buffer[i] = self->buffer[self->tail];
+        self->tail = tail;
 
     }
 
-    return 0;
+    return i;
 
 }
 
-static unsigned int buffer_putc(struct ps2_kbd_buffer *self, char *buffer)
+static unsigned int buffer_write(struct ps2_kbd_buffer *self, unsigned int count, char *buffer)
 {
 
-    if ((self->head + 1) % self->size != self->tail)
+    unsigned int i;
+
+    for (i = 0; i < count; i++)
     {
 
-        self->buffer[self->head] = buffer[0];
-        self->head = ((self->head + 1) % self->size);
+        unsigned int head = (self->head + 1) % self->size;
 
-        return 1;
+        if (head == self->tail)
+            break;
+
+        self->buffer[self->head] = buffer[i];
+        self->head = head;
 
     }
 
-    return 0;
+    return i;
 
 }
 
@@ -108,7 +118,7 @@ static void handle_irq(struct modules_device *self)
         if (kbd->toggleShift)
             scancode += 128;
 
-        kbd->buffer.putc(&kbd->buffer, &kbd->map[scancode]);
+        kbd->buffer.write(&kbd->buffer, 1, &kbd->map[scancode]);
 
     }
 
@@ -138,8 +148,8 @@ void ps2_kbd_driver_init(struct ps2_kbd_driver *driver)
     modules_driver_init(&driver->base, PS2_KBD_DRIVER_TYPE, "kbd", 0, check, attach);
 
     driver->buffer.size = 256;
-    driver->buffer.getc = buffer_getc;
-    driver->buffer.putc = buffer_putc;
+    driver->buffer.read = buffer_read;
+    driver->buffer.write = buffer_write;
     driver->map = mapUS;
 
 }

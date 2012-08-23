@@ -19,8 +19,8 @@ struct ps2_kbd_buffer
     unsigned int size;
     unsigned int head;
     unsigned int tail;
-    unsigned int (*getc)(struct ps2_kbd_buffer *self, char *buffer);
-    unsigned int (*putc)(struct ps2_kbd_buffer *self, char *buffer);
+    unsigned int (*read)(struct ps2_kbd_buffer *self, unsigned int count, char *buffer);
+    unsigned int (*write)(struct ps2_kbd_buffer *self, unsigned int count, char *buffer);
 
 };
 

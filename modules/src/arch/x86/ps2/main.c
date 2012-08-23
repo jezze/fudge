@@ -17,14 +17,14 @@ static struct nodefs_node my;
 static unsigned int buffer_read(struct nodefs_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    return kbdDriver.buffer.getc(&kbdDriver.buffer, buffer);
+    return kbdDriver.buffer.read(&kbdDriver.buffer, count, buffer);
 
 }
 
 static unsigned int buffer_write(struct nodefs_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    return kbdDriver.buffer.putc(&kbdDriver.buffer, buffer);
+    return kbdDriver.buffer.write(&kbdDriver.buffer, count, buffer);
 
 }
 
