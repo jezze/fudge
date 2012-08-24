@@ -6,7 +6,7 @@ void load_modules_core(unsigned int id)
     call_open(FILE_STDIN, 22, "/ramdisk/mod/nodefs.ko");
     call_execute(id);
 
-    call_mount(FILE_STDIN, 3, 8, "/module/");
+    call_mount(FILE_STDIN, 3, 8, "/nodefs/");
 
     call_open(FILE_STDIN, 19, "/ramdisk/mod/net.ko");
     call_execute(id);
@@ -106,7 +106,7 @@ void start_shell()
     call_write(3, 0, 14, "/ramdisk/home/");
     call_close(3);
 
-    call_open(FILE_STDIN, 10, "/module/ps2_buffer");
+    call_open(FILE_STDIN, 10, "/nodefs/ps2_buffer");
     call_open(FILE_STDOUT, 11, "/tty/stdout");
 
     call_open(3, 17, "/ramdisk/bin/motd");

@@ -83,7 +83,7 @@ static void write_fill(unsigned int x, unsigned int y, unsigned int w, unsigned 
 void set_xres(unsigned int xres)
 {
 
-    call_open(3, 16, "/module/bga_xres");
+    call_open(3, 16, "/nodefs/bga_xres");
     call_write(3, 0, 4, &xres);
     call_close(3);
 
@@ -92,7 +92,7 @@ void set_xres(unsigned int xres)
 void set_yres(unsigned int yres)
 {
 
-    call_open(3, 16, "/module/bga_yres");
+    call_open(3, 16, "/nodefs/bga_yres");
     call_write(3, 0, 4, &yres);
     call_close(3);
 
@@ -101,7 +101,7 @@ void set_yres(unsigned int yres)
 void set_bpp(unsigned int bpp)
 {
 
-    call_open(3, 15, "/module/bga_bpp");
+    call_open(3, 15, "/nodefs/bga_bpp");
     call_write(3, 0, 4, &bpp);
     call_close(3);
 
@@ -112,7 +112,7 @@ void enable()
 
     unsigned int enable = 1;
 
-    call_open(3, 18, "/module/bga_enable");
+    call_open(3, 18, "/nodefs/bga_enable");
     call_write(3, 0, 4, &enable);
     call_close(3);
 
@@ -199,15 +199,15 @@ void mouse_event()
 void main()
 {
 
-    idlfb = call_open(4, 15, "/module/bga_lfb");
+    idlfb = call_open(4, 15, "/nodefs/bga_lfb");
 
     if (!idlfb)
         return;
 
-    idmcycle = call_open(5, 18, "/module/ps2_mcycle");
-    idmstatus = call_open(6, 19, "/module/ps2_mstatus");
-    idmx = call_open(7, 14, "/module/ps2_mx");
-    idmy = call_open(8, 14, "/module/ps2_my");
+    idmcycle = call_open(5, 18, "/nodefs/ps2_mcycle");
+    idmstatus = call_open(6, 19, "/nodefs/ps2_mstatus");
+    idmx = call_open(7, 14, "/nodefs/ps2_mx");
+    idmy = call_open(8, 14, "/nodefs/ps2_my");
 
     set_xres(SCREEN_WIDTH);
     set_yres(SCREEN_HEIGHT);
