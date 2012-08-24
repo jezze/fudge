@@ -16,12 +16,10 @@ static void start(struct kernel_arch *self)
 {
 
     struct modules_base **modules;
-    struct syscall_open_args oargs;
     struct syscall_execute_args eargs;
     struct runtime_mount *mount;
     struct runtime_task *task;
     unsigned int i;
-    unsigned int id;
     unsigned int slot;
 
     self->setup(self);
@@ -54,15 +52,9 @@ static void start(struct kernel_arch *self)
     mount = task->get_mount(task, 2);
     runtime_mount_init(mount, 2, &ramdiskFilesystem.base, 9, "/ramdisk/");
 
-    oargs.index = 1;
-    oargs.count = 17;
-    oargs.path = "/ramdisk/bin/init";
+    runtime_descriptor_init(&task->descriptors[1], mount->filesystem->walk(mount->filesystem, mount->filesystem->rootid, 8, "bin/init"), mount);
 
-    id = syscall_open(task, &oargs);
-
-    error_assert(id != 0, "Init not found", __FILE__, __LINE__);
-
-    eargs.index = id;
+    eargs.index = 1;
 
     slot = syscall_execute(task, &eargs);
 
