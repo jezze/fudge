@@ -1,10 +1,7 @@
-#include <vfs.h>
 #include <modules/modules.h>
-#include <nodefs/nodefs.h>
 #include <arch/x86/vga/vga.h>
 
 static struct vga_driver driver;
-static struct nodefs_node console;
 
 unsigned int vga_read_framebuffer(unsigned int offset, unsigned int count, void *buffer)
 {
@@ -39,8 +36,6 @@ void init()
 
     vga_driver_init(&driver);
     modules_register_driver(&driver.base);
-
-    nodefs_register_node(&console, "vga_console", &driver.base.base, 0, 0);
 
 }
 
