@@ -111,7 +111,7 @@ static unsigned int walk(struct vfs_filesystem *self, unsigned int id, unsigned 
 void tty_filesystem_init(struct tty_filesystem *filesystem, struct tty_driver *driver)
 {
 
-    memory_clear(filesystem, sizeof (struct vfs_filesystem));
+    memory_clear(filesystem, sizeof (struct tty_filesystem));
 
     vfs_filesystem_init(&filesystem->base, 1, "tty", 0, 0, read, write, walk, 0);
 
