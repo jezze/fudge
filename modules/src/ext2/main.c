@@ -1,21 +1,21 @@
 #include <vfs.h>
-#include <modules/modules.h>
+#include <block/block.h>
 #include <ext2/ext2.h>
 
-static struct ext2_driver driver;
+static struct ext2_protocol protocol;
 
 void init()
 {
 
-    ext2_driver_init(&driver);
-    modules_register_driver(&driver.base);
+    ext2_protocol_init(&protocol);
+    block_register_protocol(&protocol.base, "ext2");
 
 }
 
 void destroy()
 {
 
-    modules_unregister_driver(&driver.base);
+    block_unregister_protocol(&protocol.base);
 
 }
 

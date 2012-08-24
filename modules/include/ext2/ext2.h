@@ -131,21 +131,10 @@ struct ext2_entry
 
 } __attribute__((packed));
 
-struct ext2_filesystem
+struct ext2_protocol
 {
 
-    struct vfs_filesystem base;
-    struct ext2_driver *driver;
-    struct block_interface *interface;
-
-};
-
-struct ext2_driver
-{
-
-    struct modules_driver base;
-    struct ext2_filesystem filesystems[8];
-    unsigned int filesystemsCount;
+    struct block_protocol base;
     unsigned int (*validate)(struct block_interface *interface);
     void (*read_blockgroup)(struct block_interface *interface, unsigned int id, struct ext2_blockgroup *bg);
     void (*read_node)(struct block_interface *interface, unsigned int id, struct ext2_blockgroup *bg, struct ext2_node *node);
@@ -153,8 +142,17 @@ struct ext2_driver
 
 };
 
-void ext2_driver_init(struct ext2_driver *driver);
-void ext2_filesystem_init(struct ext2_filesystem *filesystem, struct ext2_driver *driver, struct block_interface *interface);
+struct ext2_filesystem
+{
+
+    struct vfs_filesystem base;
+    struct ext2_protocol *protocol;
+    struct block_interface *interface;
+
+};
+
+void ext2_protocol_init(struct ext2_protocol *protocol);
+void ext2_filesystem_init(struct ext2_filesystem *filesystem, struct ext2_protocol *protocol, struct block_interface *interface);
 
 #endif
 

@@ -1,6 +1,5 @@
 #include <memory.h>
 #include <vfs.h>
-#include <modules/modules.h>
 #include <block/block.h>
 #include <ext2/ext2.h>
 
@@ -91,17 +90,15 @@ static unsigned int validate(struct block_interface *interface)
 
 }
 
-void ext2_driver_init(struct ext2_driver *driver)
+void ext2_protocol_init(struct ext2_protocol *protocol)
 {
 
-    memory_clear(driver, sizeof (struct ext2_driver));
+    memory_clear(protocol, sizeof (struct ext2_protocol));
 
-    modules_driver_init(&driver->base, EXT2_DRIVER_TYPE, "ext2", 0, 0, 0);
-
-    driver->validate = validate;
-    driver->read_blockgroup = read_blockgroup;
-    driver->read_node = read_node;
-    driver->read_content = read_content;
+    protocol->validate = validate;
+    protocol->read_blockgroup = read_blockgroup;
+    protocol->read_node = read_node;
+    protocol->read_content = read_content;
 
 }
 

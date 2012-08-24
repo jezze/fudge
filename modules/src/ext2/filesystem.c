@@ -1,6 +1,6 @@
 #include <memory.h>
 #include <vfs.h>
-#include <modules/modules.h>
+#include <block/block.h>
 #include <ext2/ext2.h>
 
 static unsigned int read(struct vfs_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
@@ -11,11 +11,11 @@ static unsigned int read(struct vfs_filesystem *self, unsigned int id, unsigned 
     char mem[1024];
     char *private = mem;
     struct ext2_filesystem *filesystem = (struct ext2_filesystem *)self;
-    struct ext2_driver *driver = (struct ext2_driver *)filesystem->driver;
+    struct ext2_protocol *protocol = (struct ext2_protocol *)filesystem->protocol;
 
-    driver->read_blockgroup(filesystem->interface, id, &bg);
-    driver->read_node(filesystem->interface, id, &bg, &node);
-    driver->read_content(filesystem->interface, &node, private);
+    protocol->read_blockgroup(filesystem->interface, id, &bg);
+    protocol->read_node(filesystem->interface, id, &bg, &node);
+    protocol->read_content(filesystem->interface, &node, private);
 
     if ((node.type & 0xF000) == EXT2_NODE_TYPE_DIR)
     {
@@ -78,11 +78,11 @@ static struct ext2_entry *finddir(struct vfs_filesystem *self, unsigned int id, 
     char mem[1024];
     char *private = mem;
     struct ext2_filesystem *filesystem = (struct ext2_filesystem *)self;
-    struct ext2_driver *driver = (struct ext2_driver *)filesystem->driver;
+    struct ext2_protocol *protocol = (struct ext2_protocol *)filesystem->protocol;
 
-    driver->read_blockgroup(filesystem->interface, id, &bg);
-    driver->read_node(filesystem->interface, id, &bg, &node);
-    driver->read_content(filesystem->interface, &node, private);
+    protocol->read_blockgroup(filesystem->interface, id, &bg);
+    protocol->read_node(filesystem->interface, id, &bg, &node);
+    protocol->read_content(filesystem->interface, &node, private);
 
     if ((node.type & 0xF000) == EXT2_NODE_TYPE_DIR)
     {
@@ -129,14 +129,14 @@ static unsigned int walk(struct vfs_filesystem *self, unsigned int id, unsigned 
 
 }
 
-void ext2_filesystem_init(struct ext2_filesystem *filesystem, struct ext2_driver *driver, struct block_interface *interface)
+void ext2_filesystem_init(struct ext2_filesystem *filesystem, struct ext2_protocol *protocol, struct block_interface *interface)
 {
 
     memory_clear(filesystem, sizeof (struct ext2_filesystem));
 
     vfs_filesystem_init(&filesystem->base, 2, "hda", 0, 0, read, 0, walk, 0);
 
-    filesystem->driver = driver;
+    filesystem->protocol = protocol;
     filesystem->interface = interface;
 
 }

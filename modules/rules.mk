@@ -8,7 +8,7 @@ MODULES_NODEFS=modules/src/nodefs/nodefs.ko
 MODULES_TTY=modules/src/tty/tty.ko
 
 MODULES_OBJECTS_BLOCK=modules/src/block/main.o modules/src/block/filesystem.o
-MODULES_OBJECTS_EXT2=modules/src/ext2/main.o modules/src/ext2/driver.o modules/src/ext2/filesystem.o
+MODULES_OBJECTS_EXT2=modules/src/ext2/main.o modules/src/ext2/protocol.o modules/src/ext2/filesystem.o
 MODULES_OBJECTS_MODULES=modules/src/modules/main.o
 MODULES_OBJECTS_NET=modules/src/net/main.o modules/src/net/filesystem.o
 MODULES_OBJECTS_NODEFS=modules/src/nodefs/main.o modules/src/nodefs/filesystem.o
