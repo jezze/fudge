@@ -58,7 +58,6 @@ static unsigned int resolve_symbols(struct elf_section_header *relocateHeader, s
     for (i = 0; i < relocateHeader->size / relocateHeader->esize; i++)
     {
 
-        unsigned char type = relocateTable[i].info & 0x0F;
         unsigned char index = relocateTable[i].info >> 8;
         unsigned int *entry = (unsigned int *)(buffer + relocateTable[i].offset);
         unsigned int symbol;
@@ -71,22 +70,7 @@ static unsigned int resolve_symbols(struct elf_section_header *relocateHeader, s
         if (!symbol)
             return 0;
 
-        switch (type)
-        {
-
-            case 1:
-
-                *entry += symbol;
-
-                break;
-
-            case 2:
-
-                *entry += symbol;
-
-                break;
-
-        }
+        *entry += symbol;
 
     }
 
