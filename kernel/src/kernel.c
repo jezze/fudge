@@ -39,10 +39,7 @@ static void start(struct kernel_arch *self)
     }
 
     vfs_sys_filesystem_init(&sysFilesystem, modules);
-    modules_register_filesystem(&sysFilesystem.base);
-
     vfs_ramdisk_filesystem_init(&ramdiskFilesystem, &ramdiskImage);
-    modules_register_filesystem(&ramdiskFilesystem.base);
 
     task = runtime_get_task(1);
     runtime_task_init(task, 1);
