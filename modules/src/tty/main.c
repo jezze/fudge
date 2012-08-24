@@ -21,14 +21,12 @@ void init()
     modules_register_driver(&driver.base);
 
     tty_filesystem_init(&filesystem, &driver);
-    vfs_register_filesystem(&filesystem.base);
 
 }
 
 void destroy()
 {
 
-    vfs_unregister_filesystem(&filesystem.base);
     modules_unregister_driver(&driver.base);
 
 }

@@ -43,14 +43,11 @@ void init()
 {
 
     net_filesystem_init(&filesystem);
-    vfs_register_filesystem(&filesystem.base);
 
 }
 
 void destroy()
 {
-
-    vfs_unregister_filesystem(&filesystem.base);
 
 }
 
