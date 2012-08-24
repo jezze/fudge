@@ -1,6 +1,8 @@
 #ifndef LIB_ELF_H
 #define LIB_ELF_H
 
+#define ELF_HEADER_SIZE         52
+
 #define ELF_IDENTITY_MAGIC0     0x7F
 #define ELF_IDENTITY_MAGIC1     'E'
 #define ELF_IDENTITY_MAGIC2     'L'

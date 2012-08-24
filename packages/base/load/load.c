@@ -13,7 +13,7 @@ static unsigned int get_symbol_module(char *symbol, unsigned int count, char *mo
     if (!call_open(3, count, module))
         return 0;
 
-    call_read(3, 0, sizeof (struct elf_header), &header);
+    call_read(3, 0, ELF_HEADER_SIZE, &header);
 
     if (!elf_validate(&header))
         return 0;
@@ -89,7 +89,7 @@ void main()
     char buffer[0x4000];
     unsigned int i;
 
-    call_read(FILE_STDIN, 0, sizeof (struct elf_header), &header);
+    call_read(FILE_STDIN, 0, ELF_HEADER_SIZE, &header);
     call_read(FILE_STDIN, header.shoffset, header.shsize * header.shcount, sectionHeader);
 
     for (i = 0; i < header.shcount; i++)

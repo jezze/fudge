@@ -11,7 +11,7 @@ unsigned int binary_find_symbol(struct vfs_filesystem *filesystem, unsigned int 
     struct elf_symbol symbolTable[400];
     char stringTable[0x1000];
 
-    filesystem->read(filesystem, id, 0, sizeof (struct elf_header), &header);
+    filesystem->read(filesystem, id, 0, ELF_HEADER_SIZE, &header);
 
     if (!elf_validate(&header))
         return 0;
@@ -32,7 +32,7 @@ unsigned int binary_get_entry(struct vfs_filesystem *filesystem, unsigned int id
 
     struct elf_header header;
 
-    filesystem->read(filesystem, id, 0, sizeof (struct elf_header), &header);
+    filesystem->read(filesystem, id, 0, ELF_HEADER_SIZE, &header);
 
     if (!elf_validate(&header))
         return 0;
@@ -48,7 +48,7 @@ unsigned int binary_copy_program(struct vfs_filesystem *filesystem, unsigned int
     struct elf_program_header programHeader[8];
     unsigned int i;
 
-    filesystem->read(filesystem, id, 0, sizeof (struct elf_header), &header);
+    filesystem->read(filesystem, id, 0, ELF_HEADER_SIZE, &header);
 
     if (!elf_validate(&header))
         return 0;
@@ -104,7 +104,7 @@ unsigned int binary_relocate(struct vfs_filesystem *filesystem, unsigned int id,
     struct elf_section_header sectionHeader[20];
     unsigned int i;
 
-    filesystem->read(filesystem, id, 0, sizeof (struct elf_header), &header);
+    filesystem->read(filesystem, id, 0, ELF_HEADER_SIZE, &header);
 
     if (!elf_validate(&header))
         return 0;
