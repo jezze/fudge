@@ -1,7 +1,7 @@
 #include <memory.h>
 #include <string.h>
-#include <modules.h>
 #include <vfs.h>
+#include <modules/modules.h>
 #include <nodefs/nodefs.h>
 
 static unsigned int read(struct vfs_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)

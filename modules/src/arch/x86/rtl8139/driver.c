@@ -1,6 +1,6 @@
 #include <memory.h>
-#include <modules.h>
 #include <vfs.h>
+#include <modules/modules.h>
 #include <net/net.h>
 #include <arch/x86/apic/apic.h>
 #include <arch/x86/io/io.h>

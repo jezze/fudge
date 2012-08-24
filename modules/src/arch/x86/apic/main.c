@@ -1,5 +1,5 @@
 #include <memory.h>
-#include <modules.h>
+#include <modules/modules.h>
 #include <arch/x86/isr.h>
 #include <arch/x86/apic/apic.h>
 #include <arch/x86/cpuid/cpuid.h>

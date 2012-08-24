@@ -1,8 +1,8 @@
 #include <memory.h>
-#include <modules.h>
 #include <vfs.h>
-#include <arch/x86/bga/bga.h>
+#include <modules/modules.h>
 #include <nodefs/nodefs.h>
+#include <arch/x86/bga/bga.h>
 
 static struct bga_driver driver;
 static struct nodefs_node xres;

@@ -1,7 +1,6 @@
 #include <memory.h>
 #include <error.h>
 #include <kernel.h>
-#include <modules.h>
 #include <ramdisk.h>
 #include <runtime.h>
 #include <syscall.h>
@@ -23,7 +22,6 @@ static void start(struct kernel_arch *self)
     self->setup(self);
 
     runtime_setup();
-    modules_setup();
 
     ramdisk_image_init(&ramdiskImage);
 

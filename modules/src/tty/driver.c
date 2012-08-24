@@ -1,9 +1,9 @@
 #include <memory.h>
 #include <string.h>
-#include <modules.h>
 #include <vfs.h>
-#include <arch/x86/vga/vga.h>
+#include <modules/modules.h>
 #include <tty/tty.h>
+#include <arch/x86/vga/vga.h>
 
 static void clear(struct tty_driver *self)
 {

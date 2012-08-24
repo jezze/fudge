@@ -1,5 +1,5 @@
-#ifndef KERNEL_MODULES_H
-#define KERNEL_MODULES_H
+#ifndef MODULES_MODULES_H
+#define MODULES_MODULES_H
 
 #define MODULES_TYPE_BUS        1
 #define MODULES_TYPE_DEVICE     2
@@ -57,7 +57,6 @@ void modules_unregister_driver(struct modules_driver *driver);
 void modules_bus_init(struct modules_bus *bus, unsigned int type, char *name, void (*scan)(struct modules_bus *self));
 void modules_device_init(struct modules_device *device, unsigned int type, char *name);
 void modules_driver_init(struct modules_driver *driver, unsigned int type, char *name, void (*start)(struct modules_driver *self), unsigned int (*check)(struct modules_driver *self, struct modules_device *device), void (*attach)(struct modules_device *device));
-struct modules_base **modules_setup();
 
 #endif
 

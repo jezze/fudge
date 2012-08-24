@@ -1,5 +1,5 @@
-#include <modules.h>
 #include <vfs.h>
+#include <modules/modules.h>
 #include <nodefs/nodefs.h>
 
 static struct nodefs_filesystem filesystem;

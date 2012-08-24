@@ -1,5 +1,5 @@
 #include <memory.h>
-#include <modules.h>
+#include <modules/modules.h>
 #include <arch/x86/apic/apic.h>
 #include <arch/x86/pci/pci.h>
 #include <arch/x86/i915/i915.h>

@@ -1,4 +1,3 @@
-#include <modules.h>
 #include <arch/x86/cpuid/cpuid.h>
 #include <arch/x86/fpu/fpu.h>
 

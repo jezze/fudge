@@ -6,7 +6,6 @@ KERNEL_OBJECTS+=kernel/src/error.o
 KERNEL_OBJECTS+=kernel/src/event.o
 KERNEL_OBJECTS+=kernel/src/kernel.o
 KERNEL_OBJECTS+=kernel/src/mmu.o
-KERNEL_OBJECTS+=kernel/src/modules.o
 KERNEL_OBJECTS+=kernel/src/ramdisk.o
 KERNEL_OBJECTS+=kernel/src/runtime.o
 KERNEL_OBJECTS+=kernel/src/syscall.o

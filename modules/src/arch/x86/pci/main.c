@@ -1,4 +1,4 @@
-#include <modules.h>
+#include <modules/modules.h>
 #include <arch/x86/pci/pci.h>
 
 static struct pci_bus bus;

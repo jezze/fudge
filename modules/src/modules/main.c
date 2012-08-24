@@ -1,5 +1,5 @@
 #include <memory.h>
-#include <modules.h>
+#include <modules/modules.h>
 
 static struct modules_base *modules[MODULES_MODULE_SLOTS];
 
@@ -171,10 +171,14 @@ void modules_driver_init(struct modules_driver *driver, unsigned int type, char 
 
 }
 
-struct modules_base **modules_setup()
+void init()
 {
 
-    return modules;
+    memory_clear(modules, sizeof (struct modules_base *) * MODULES_MODULE_SLOTS);
 
 }
 
+void destroy()
+{
+
+}

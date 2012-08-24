@@ -1,4 +1,4 @@
-#include <modules.h>
+#include <modules/modules.h>
 #include <arch/x86/i915/i915.h>
 
 static struct i915_driver driver;

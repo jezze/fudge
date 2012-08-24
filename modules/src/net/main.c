@@ -1,5 +1,5 @@
-#include <modules.h>
 #include <vfs.h>
+#include <modules/modules.h>
 #include <net/net.h>
 
 static struct net_filesystem filesystem;

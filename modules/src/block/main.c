@@ -1,5 +1,5 @@
-#include <modules.h>
 #include <vfs.h>
+#include <modules/modules.h>
 #include <block/block.h>
 
 static struct block_filesystem filesystem;

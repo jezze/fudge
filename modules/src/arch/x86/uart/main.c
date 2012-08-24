@@ -1,4 +1,4 @@
-#include <modules.h>
+#include <modules/modules.h>
 #include <arch/x86/uart/uart.h>
 
 static struct uart_device device1;
