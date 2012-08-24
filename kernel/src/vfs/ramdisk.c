@@ -1,11 +1,11 @@
 #include <memory.h>
 #include <string.h>
 #include <tar.h>
-#include <modules.h>
+#include <vfs.h>
 #include <ramdisk.h>
 #include <vfs/ramdisk.h>
 
-static unsigned int read_file(struct modules_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int read_file(struct vfs_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct vfs_ramdisk_filesystem *filesystem = (struct vfs_ramdisk_filesystem *)self;
@@ -23,7 +23,7 @@ static unsigned int read_file(struct modules_filesystem *self, unsigned int id, 
 
 }
 
-static unsigned int read(struct modules_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int read(struct vfs_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct vfs_ramdisk_filesystem *filesystem = (struct vfs_ramdisk_filesystem *)self;
@@ -79,7 +79,7 @@ static unsigned int read(struct modules_filesystem *self, unsigned int id, unsig
 
 }
 
-static unsigned int write_file(struct modules_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int write_file(struct vfs_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct vfs_ramdisk_filesystem *filesystem = (struct vfs_ramdisk_filesystem *)self;
@@ -97,7 +97,7 @@ static unsigned int write_file(struct modules_filesystem *self, unsigned int id,
 
 }
 
-static unsigned int write(struct modules_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int write(struct vfs_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct vfs_ramdisk_filesystem *filesystem = (struct vfs_ramdisk_filesystem *)self;
@@ -111,7 +111,7 @@ static unsigned int write(struct modules_filesystem *self, unsigned int id, unsi
 
 }
 
-static unsigned int walk(struct modules_filesystem *self, unsigned int id, unsigned int count, char *path)
+static unsigned int walk(struct vfs_filesystem *self, unsigned int id, unsigned int count, char *path)
 {
 
     struct vfs_ramdisk_filesystem *filesystem = (struct vfs_ramdisk_filesystem *)self;
@@ -133,7 +133,7 @@ static unsigned int walk(struct modules_filesystem *self, unsigned int id, unsig
 
 }
 
-static unsigned int get_physical(struct modules_filesystem *self, unsigned int id)
+static unsigned int get_physical(struct vfs_filesystem *self, unsigned int id)
 {
 
     struct vfs_ramdisk_filesystem *filesystem = (struct vfs_ramdisk_filesystem *)self;
@@ -149,7 +149,7 @@ void vfs_ramdisk_filesystem_init(struct vfs_ramdisk_filesystem *filesystem, stru
 
     memory_clear(filesystem, sizeof (struct vfs_ramdisk_filesystem));
 
-    modules_filesystem_init(&filesystem->base, 1, "ramdisk", 0, 0, read, write, walk, get_physical);
+    vfs_filesystem_init(&filesystem->base, 1, "ramdisk", 0, 0, read, write, walk, get_physical);
 
     filesystem->image = image;
 

@@ -1,9 +1,10 @@
 #include <memory.h>
 #include <string.h>
 #include <modules.h>
+#include <vfs.h>
 #include <net/net.h>
 
-static unsigned int read_root(struct modules_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int read_root(struct vfs_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct net_filesystem *filesystem = (struct net_filesystem *)self;
@@ -31,7 +32,7 @@ static unsigned int read_root(struct modules_filesystem *self, unsigned int id, 
 
 }
 
-static unsigned int read_interface(struct modules_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int read_interface(struct vfs_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     memory_copy(buffer, "data\nmac\n", 9);
@@ -40,7 +41,7 @@ static unsigned int read_interface(struct modules_filesystem *self, unsigned int
 
 }
 
-static unsigned int read_interface_data(struct modules_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int read_interface_data(struct vfs_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct net_filesystem *filesystem = (struct net_filesystem *)self;
@@ -50,7 +51,7 @@ static unsigned int read_interface_data(struct modules_filesystem *self, unsigne
 
 }
 
-static unsigned int read_interface_mac(struct modules_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int read_interface_mac(struct vfs_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct net_filesystem *filesystem = (struct net_filesystem *)self;
@@ -62,7 +63,7 @@ static unsigned int read_interface_mac(struct modules_filesystem *self, unsigned
 
 }
 
-static unsigned int read(struct modules_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int read(struct vfs_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     if (id >= 21000)
@@ -81,7 +82,7 @@ static unsigned int read(struct modules_filesystem *self, unsigned int id, unsig
 
 }
 
-static unsigned int write_interface_data(struct modules_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int write_interface_data(struct vfs_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct net_filesystem *filesystem = (struct net_filesystem *)self;
@@ -91,7 +92,7 @@ static unsigned int write_interface_data(struct modules_filesystem *self, unsign
 
 }
 
-static unsigned int write(struct modules_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int write(struct vfs_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     if (id >= 21000)
@@ -104,7 +105,7 @@ static unsigned int write(struct modules_filesystem *self, unsigned int id, unsi
 
 }
 
-static unsigned int walk_interface(struct modules_filesystem *self, unsigned int id, unsigned int count, char *path)
+static unsigned int walk_interface(struct vfs_filesystem *self, unsigned int id, unsigned int count, char *path)
 {
 
     if (!count)
@@ -120,7 +121,7 @@ static unsigned int walk_interface(struct modules_filesystem *self, unsigned int
 
 }
 
-static unsigned int walk(struct modules_filesystem *self, unsigned int id, unsigned int count, char *path)
+static unsigned int walk(struct vfs_filesystem *self, unsigned int id, unsigned int count, char *path)
 {
 
     if (!count)
@@ -174,7 +175,7 @@ void net_filesystem_init(struct net_filesystem *filesystem)
 
     memory_clear(filesystem, sizeof (struct net_filesystem));
 
-    modules_filesystem_init(&filesystem->base, 1, "net", 0, 0, read, write, walk, 0);
+    vfs_filesystem_init(&filesystem->base, 1, "net", 0, 0, read, write, walk, 0);
 
     filesystem->register_interface = register_interface;
     filesystem->register_protocol = register_protocol;

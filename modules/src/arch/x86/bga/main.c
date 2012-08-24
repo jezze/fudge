@@ -1,5 +1,6 @@
 #include <memory.h>
 #include <modules.h>
+#include <vfs.h>
 #include <arch/x86/bga/bga.h>
 #include <nodefs/nodefs.h>
 

@@ -5,17 +5,15 @@
 #include <ramdisk.h>
 #include <runtime.h>
 #include <syscall.h>
+#include <vfs.h>
 #include <vfs/ramdisk.h>
-#include <vfs/sys.h>
 
 static struct ramdisk_image ramdiskImage;
-static struct vfs_sys_filesystem sysFilesystem;
 static struct vfs_ramdisk_filesystem ramdiskFilesystem;
 
 static void start(struct kernel_arch *self)
 {
 
-    struct modules_base **modules;
     struct syscall_execute_args eargs;
     struct runtime_mount *mount;
     struct runtime_task *task;
@@ -25,7 +23,7 @@ static void start(struct kernel_arch *self)
     self->setup(self);
 
     runtime_setup();
-    modules = modules_setup();
+    modules_setup();
 
     ramdisk_image_init(&ramdiskImage);
 
@@ -38,14 +36,11 @@ static void start(struct kernel_arch *self)
 
     }
 
-    vfs_sys_filesystem_init(&sysFilesystem, modules);
     vfs_ramdisk_filesystem_init(&ramdiskFilesystem, &ramdiskImage);
 
     task = runtime_get_task(1);
     runtime_task_init(task, 1);
 
-    mount = task->get_mount(task, 1);
-    runtime_mount_init(mount, 1, &sysFilesystem.base, 1, "/");
     mount = task->get_mount(task, 2);
     runtime_mount_init(mount, 2, &ramdiskFilesystem.base, 9, "/ramdisk/");
 

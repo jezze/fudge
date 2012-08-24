@@ -1,4 +1,5 @@
 #include <modules.h>
+#include <vfs.h>
 #include <nodefs/nodefs.h>
 
 static struct nodefs_filesystem filesystem;
@@ -17,7 +18,7 @@ void nodefs_unregister_node(struct nodefs_node *node)
 
 }
 
-struct modules_filesystem *get_filesystem()
+struct vfs_filesystem *get_filesystem()
 {
 
     return &filesystem.base;
@@ -28,14 +29,14 @@ void init()
 {
 
     nodefs_filesystem_init(&filesystem);
-    modules_register_filesystem(&filesystem.base);
+    vfs_register_filesystem(&filesystem.base);
 
 }
 
 void destroy()
 {
 
-    modules_unregister_filesystem(&filesystem.base);
+    vfs_unregister_filesystem(&filesystem.base);
 
 }
 

@@ -1,6 +1,7 @@
 #include <memory.h>
 #include <string.h>
 #include <modules.h>
+#include <vfs.h>
 #include <arch/x86/vga/vga.h>
 #include <tty/tty.h>
 

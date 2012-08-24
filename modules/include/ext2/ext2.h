@@ -134,7 +134,7 @@ struct ext2_entry
 struct ext2_filesystem
 {
 
-    struct modules_filesystem base;
+    struct vfs_filesystem base;
     struct ext2_driver *driver;
     struct block_interface *interface;
 

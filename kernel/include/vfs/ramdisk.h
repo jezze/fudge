@@ -4,7 +4,7 @@
 struct vfs_ramdisk_filesystem
 {
 
-    struct modules_filesystem base;
+    struct vfs_filesystem base;
     struct ramdisk_image *image;
 
 };

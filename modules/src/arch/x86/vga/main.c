@@ -1,4 +1,5 @@
 #include <modules.h>
+#include <vfs.h>
 #include <nodefs/nodefs.h>
 #include <arch/x86/vga/vga.h>
 

@@ -1,4 +1,5 @@
 #include <modules.h>
+#include <vfs.h>
 #include <net/net.h>
 
 static struct net_filesystem filesystem;
@@ -31,7 +32,7 @@ void net_unregister_protocol(struct net_protocol *protocol)
 
 }
 
-struct modules_filesystem *get_filesystem()
+struct vfs_filesystem *get_filesystem()
 {
 
     return &filesystem.base;
@@ -42,14 +43,14 @@ void init()
 {
 
     net_filesystem_init(&filesystem);
-    modules_register_filesystem(&filesystem.base);
+    vfs_register_filesystem(&filesystem.base);
 
 }
 
 void destroy()
 {
 
-    modules_unregister_filesystem(&filesystem.base);
+    vfs_unregister_filesystem(&filesystem.base);
 
 }
 

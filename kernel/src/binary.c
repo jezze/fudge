@@ -1,8 +1,8 @@
 #include <elf.h>
-#include <modules.h>
+#include <vfs.h>
 #include <binary.h>
 
-unsigned int binary_find_symbol(struct modules_filesystem *filesystem, unsigned int id, char *symbol)
+unsigned int binary_find_symbol(struct vfs_filesystem *filesystem, unsigned int id, char *symbol)
 {
 
     struct elf_header header;
@@ -27,7 +27,7 @@ unsigned int binary_find_symbol(struct modules_filesystem *filesystem, unsigned 
 
 }
 
-unsigned int binary_get_entry(struct modules_filesystem *filesystem, unsigned int id)
+unsigned int binary_get_entry(struct vfs_filesystem *filesystem, unsigned int id)
 {
 
     struct elf_header header;
@@ -41,7 +41,7 @@ unsigned int binary_get_entry(struct modules_filesystem *filesystem, unsigned in
 
 }
 
-unsigned int binary_copy_program(struct modules_filesystem *filesystem, unsigned int id)
+unsigned int binary_copy_program(struct vfs_filesystem *filesystem, unsigned int id)
 {
 
     struct elf_header header;
@@ -97,7 +97,7 @@ static void binary_relocate_section(struct elf_section_header *sectionHeader, un
 
 }
 
-unsigned int binary_relocate(struct modules_filesystem *filesystem, unsigned int id, unsigned int address)
+unsigned int binary_relocate(struct vfs_filesystem *filesystem, unsigned int id, unsigned int address)
 {
 
     struct elf_header header;

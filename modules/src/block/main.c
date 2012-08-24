@@ -1,4 +1,5 @@
 #include <modules.h>
+#include <vfs.h>
 #include <block/block.h>
 
 static struct block_filesystem filesystem;
@@ -31,7 +32,7 @@ void block_unregister_protocol(struct block_protocol *protocol)
 
 }
 
-struct modules_filesystem *get_filesystem()
+struct vfs_filesystem *get_filesystem()
 {
 
     return &filesystem.base;
@@ -42,14 +43,14 @@ void init()
 {
 
     block_filesystem_init(&filesystem);
-    modules_register_filesystem(&filesystem.base);
+    vfs_register_filesystem(&filesystem.base);
 
 }
 
 void destroy()
 {
 
-    modules_unregister_filesystem(&filesystem.base);
+    vfs_unregister_filesystem(&filesystem.base);
 
 }
 

@@ -1,5 +1,6 @@
 #include <memory.h>
 #include <modules.h>
+#include <vfs.h>
 #include <nodefs/nodefs.h>
 #include <arch/x86/ps2/ps2.h>
 

@@ -1,8 +1,9 @@
 #include <memory.h>
 #include <modules.h>
+#include <vfs.h>
 #include <ext2/ext2.h>
 
-static unsigned int read(struct modules_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int read(struct vfs_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct ext2_blockgroup bg;
@@ -69,7 +70,7 @@ static unsigned int read(struct modules_filesystem *self, unsigned int id, unsig
 
 }
 
-static struct ext2_entry *finddir(struct modules_filesystem *self, unsigned int id, char *name)
+static struct ext2_entry *finddir(struct vfs_filesystem *self, unsigned int id, char *name)
 {
 
     struct ext2_blockgroup bg;
@@ -107,7 +108,7 @@ static struct ext2_entry *finddir(struct modules_filesystem *self, unsigned int 
 
 }
 
-static unsigned int walk(struct modules_filesystem *self, unsigned int id, unsigned int count, char *path)
+static unsigned int walk(struct vfs_filesystem *self, unsigned int id, unsigned int count, char *path)
 {
 
     char *temp = path;
@@ -133,7 +134,7 @@ void ext2_filesystem_init(struct ext2_filesystem *filesystem, struct ext2_driver
 
     memory_clear(filesystem, sizeof (struct ext2_filesystem));
 
-    modules_filesystem_init(&filesystem->base, 2, "hda", 0, 0, read, 0, walk, 0);
+    vfs_filesystem_init(&filesystem->base, 2, "hda", 0, 0, read, 0, walk, 0);
 
     filesystem->driver = driver;
     filesystem->interface = interface;

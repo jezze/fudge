@@ -1,6 +1,6 @@
 #include <event.h>
 #include <mmu.h>
-#include <modules.h>
+#include <vfs.h>
 #include <binary.h>
 #include <runtime.h>
 #include <syscall.h>
@@ -142,7 +142,7 @@ unsigned int syscall_mount(struct runtime_task *task, void *stack)
     struct syscall_mount_args *args = stack;
     struct runtime_descriptor *descriptor = task->get_descriptor(task, args->index);
     struct runtime_mount *mount;
-    struct modules_filesystem *(*get_filesystem)();
+    struct vfs_filesystem *(*get_filesystem)();
 
     if (!args->count || !args->path || !descriptor)
         return 0;
@@ -152,7 +152,7 @@ unsigned int syscall_mount(struct runtime_task *task, void *stack)
     if (!mount)
         return 0;
 
-    get_filesystem = (struct modules_filesystem *(*)())(binary_find_symbol(descriptor->mount->filesystem, descriptor->id, "get_filesystem"));
+    get_filesystem = (struct vfs_filesystem *(*)())(binary_find_symbol(descriptor->mount->filesystem, descriptor->id, "get_filesystem"));
 
     if (!get_filesystem)
         return 0;

@@ -21,7 +21,7 @@ struct net_protocol
 struct net_filesystem
 {
 
-    struct modules_filesystem base;
+    struct vfs_filesystem base;
     struct net_interface *interfaces[8];
     unsigned int interfacesCount;
     struct net_protocol *protocols[16];

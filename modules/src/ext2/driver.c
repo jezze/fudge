@@ -1,5 +1,6 @@
 #include <memory.h>
 #include <modules.h>
+#include <vfs.h>
 #include <block/block.h>
 #include <ext2/ext2.h>
 

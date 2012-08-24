@@ -20,7 +20,7 @@ struct block_protocol
 struct block_filesystem
 {
 
-    struct modules_filesystem base;
+    struct vfs_filesystem base;
     struct block_interface *interfaces[8];
     unsigned int interfacesCount;
     struct block_protocol *protocols[16];

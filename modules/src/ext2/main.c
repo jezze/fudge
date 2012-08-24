@@ -1,4 +1,5 @@
 #include <modules.h>
+#include <vfs.h>
 #include <ext2/ext2.h>
 
 static struct ext2_driver driver;

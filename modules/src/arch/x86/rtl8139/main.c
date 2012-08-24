@@ -1,5 +1,6 @@
 #include <memory.h>
 #include <modules.h>
+#include <vfs.h>
 #include <net/net.h>
 #include <arch/x86/rtl8139/rtl8139.h>
 

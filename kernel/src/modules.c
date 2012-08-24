@@ -81,13 +81,6 @@ void modules_register_driver(struct modules_driver *driver)
 
 }
 
-void modules_register_filesystem(struct modules_filesystem *filesystem)
-{
-
-    register_base(&filesystem->base);
-
-}
-
 static void unregister_base(struct modules_base *base)
 {
 
@@ -128,13 +121,6 @@ void modules_unregister_driver(struct modules_driver *driver)
 {
 
     unregister_base(&driver->base);
-
-}
-
-void modules_unregister_filesystem(struct modules_filesystem *filesystem)
-{
-
-    unregister_base(&filesystem->base);
 
 }
 
@@ -182,23 +168,6 @@ void modules_driver_init(struct modules_driver *driver, unsigned int type, char 
     driver->start = start;
     driver->check = check;
     driver->attach = attach;
-
-}
-
-void modules_filesystem_init(struct modules_filesystem *filesystem, unsigned int rootid, char *name, void (*open)(struct modules_filesystem *self, unsigned int id), void (*close)(struct modules_filesystem *self, unsigned int id), unsigned int (*read)(struct modules_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write)(struct modules_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer), unsigned int (*walk)(struct modules_filesystem *self, unsigned int id, unsigned int count, char *path), unsigned int (*get_physical)(struct modules_filesystem *self, unsigned int id))
-{
-
-    memory_clear(filesystem, sizeof (struct modules_filesystem));
-
-    base_init(&filesystem->base, MODULES_TYPE_FILESYSTEM, name);
-
-    filesystem->rootid = rootid;
-    filesystem->open = open;
-    filesystem->close = close;
-    filesystem->read = read;
-    filesystem->write = write;
-    filesystem->walk = walk;
-    filesystem->get_physical = get_physical;
 
 }
 

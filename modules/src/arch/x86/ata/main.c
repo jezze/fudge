@@ -1,4 +1,5 @@
 #include <modules.h>
+#include <vfs.h>
 #include <block/block.h>
 #include <arch/x86/ata/ata.h>
 
