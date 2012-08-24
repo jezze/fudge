@@ -1,11 +1,10 @@
 #include <memory.h>
 #include <error.h>
 #include <kernel.h>
+#include <vfs.h>
 #include <ramdisk.h>
 #include <runtime.h>
 #include <syscall.h>
-#include <vfs.h>
-#include <vfs/ramdisk.h>
 
 static struct ramdisk_image ramdiskImage;
 static struct vfs_ramdisk_filesystem ramdiskFilesystem;

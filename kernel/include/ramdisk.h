@@ -12,7 +12,16 @@ struct ramdisk_image
 
 };
 
+struct vfs_ramdisk_filesystem
+{
+
+    struct vfs_filesystem base;
+    struct ramdisk_image *image;
+
+};
+
 void ramdisk_image_init(struct ramdisk_image *image);
+void vfs_ramdisk_filesystem_init(struct vfs_ramdisk_filesystem *filesystem, struct ramdisk_image *image);
 
 #endif
 

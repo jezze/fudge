@@ -10,7 +10,6 @@ KERNEL_OBJECTS+=kernel/src/ramdisk.o
 KERNEL_OBJECTS+=kernel/src/runtime.o
 KERNEL_OBJECTS+=kernel/src/syscall.o
 KERNEL_OBJECTS+=kernel/src/vfs.o
-KERNEL_OBJECTS+=kernel/src/vfs/ramdisk.o
 
 kernel/%.o: CCFLAGS+=-Ilib/include -Ikernel/include
 
