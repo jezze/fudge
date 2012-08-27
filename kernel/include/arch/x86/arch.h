@@ -1,16 +1,16 @@
 #ifndef ARCH_ARCH_H
 #define ARCH_ARCH_H
 
-struct arch_x86
+struct arch_interface
 {
 
-    struct kernel_arch base;
+    struct kernel_interface base;
     struct mboot_header *header;
     unsigned int magic;
 
 };
 
-void arch_x86_init(struct arch_x86 *x86, struct mboot_header *header, unsigned int magic);
+void arch_interface_init(struct arch_interface *interface, struct mboot_header *header, unsigned int magic);
 void arch_setup(struct mboot_header *header, unsigned int magic);
 
 #endif

@@ -10,16 +10,16 @@
 #include <arch/x86/syscall.h>
 #include <arch/x86/tss.h>
 
-static struct arch_x86 x86;
+static struct arch_interface interface;
 
-static void setup(struct kernel_arch *self)
+static void setup(struct kernel_interface *self)
 {
 
-    struct arch_x86 *x86 = (struct arch_x86 *)self;
+    struct arch_interface *interface = (struct arch_interface *)self;
     unsigned int cs;
     unsigned int ss;
 
-    mboot_setup(x86->header);
+    mboot_setup(interface->header);
     gdt_setup();
     idt_setup();
 
@@ -34,24 +34,24 @@ static void setup(struct kernel_arch *self)
 
 }
 
-void arch_x86_init(struct arch_x86 *x86, struct mboot_header *header, unsigned int magic)
+void arch_interface_init(struct arch_interface *interface, struct mboot_header *header, unsigned int magic)
 {
 
-    memory_clear(x86, sizeof (struct arch_x86));
+    memory_clear(interface, sizeof (struct arch_interface));
 
-    kernel_arch_init(&x86->base, setup, cpu_enter_usermode, header->modules.count, header->modules.address);
+    kernel_interface_init(&interface->base, setup, cpu_enter_usermode, header->modules.count, header->modules.address);
 
-    x86->header = header;
-    x86->magic = magic;
+    interface->header = header;
+    interface->magic = magic;
 
 }
 
 void arch_setup(struct mboot_header *header, unsigned int magic)
 {
 
-    arch_x86_init(&x86, header, magic);
+    arch_interface_init(&interface, header, magic);
 
-    x86.base.start(&x86.base);
+    interface.base.start(&interface.base);
 
 }
 

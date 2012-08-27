@@ -9,7 +9,7 @@
 static struct ramdisk_image ramdiskImage;
 static struct ramdisk_filesystem ramdiskFilesystem;
 
-static void start(struct kernel_arch *self)
+static void start(struct kernel_interface *self)
 {
 
     struct syscall_execute_args eargs;
@@ -53,16 +53,16 @@ static void start(struct kernel_arch *self)
 
 }
 
-void kernel_arch_init(struct kernel_arch *arch, void (*setup)(struct kernel_arch *self), void (*enter_usermode)(unsigned int ip, unsigned int sp), unsigned int ramdiskc, void **ramdiskv)
+void kernel_interface_init(struct kernel_interface *interface, void (*setup)(struct kernel_interface *self), void (*enter_usermode)(unsigned int ip, unsigned int sp), unsigned int ramdiskc, void **ramdiskv)
 {
 
-    memory_clear(arch, sizeof (struct kernel_arch));
+    memory_clear(interface, sizeof (struct kernel_interface));
 
-    arch->setup = setup;
-    arch->enter_usermode = enter_usermode;
-    arch->ramdiskc = ramdiskc;
-    arch->ramdiskv = ramdiskv;
-    arch->start = start;
+    interface->setup = setup;
+    interface->enter_usermode = enter_usermode;
+    interface->ramdiskc = ramdiskc;
+    interface->ramdiskv = ramdiskv;
+    interface->start = start;
 
 }
 
