@@ -21,7 +21,7 @@ unsigned int syscall_close(struct runtime_task *task, void *stack)
 {
 
     struct syscall_close_args *args = stack;
-    struct runtime_descriptor *descriptor = task->get_descriptor(task, args->index);
+    struct runtime_descriptor *descriptor = runtime_get_task_descriptor(task, args->index);
 
     if (!descriptor)
         return 0;
@@ -48,7 +48,7 @@ unsigned int syscall_execute(struct runtime_task *task, void *stack)
 {
 
     struct syscall_execute_args *args = stack;
-    struct runtime_descriptor *descriptor = task->get_descriptor(task, args->index);
+    struct runtime_descriptor *descriptor = runtime_get_task_descriptor(task, args->index);
     struct runtime_task *ntask;
     unsigned int slot;
     unsigned int entry;
@@ -68,7 +68,7 @@ unsigned int syscall_execute(struct runtime_task *task, void *stack)
 
     ntask = runtime_get_task(slot);
 
-    task->clone(task, ntask, slot, entry);
+    runtime_task_clone(task, ntask, slot, entry);
 
     mmu_map_user_memory(ntask->id, RUNTIME_TASK_PADDRESS_BASE + ntask->id * RUNTIME_TASK_ADDRESS_SIZE, RUNTIME_TASK_VADDRESS_BASE, RUNTIME_TASK_ADDRESS_SIZE);
     mmu_load_user_memory(ntask->id);
@@ -107,7 +107,7 @@ unsigned int syscall_load(struct runtime_task *task, void *stack)
 {
 
     struct syscall_load_args *args = stack;
-    struct runtime_descriptor *descriptor = task->get_descriptor(task, args->index);
+    struct runtime_descriptor *descriptor = runtime_get_task_descriptor(task, args->index);
     void (*init)();
     unsigned int physical;
 
@@ -138,16 +138,11 @@ unsigned int syscall_mount(struct runtime_task *task, void *stack)
 {
 
     struct syscall_mount_args *args = stack;
-    struct runtime_descriptor *descriptor = task->get_descriptor(task, args->index);
-    struct runtime_mount *mount;
+    struct runtime_descriptor *descriptor = runtime_get_task_descriptor(task, args->index);
+    struct runtime_mount *mount = runtime_get_task_mount(task, args->offset);
     struct vfs_filesystem *(*get_filesystem)();
 
-    if (!args->count || !args->path || !descriptor)
-        return 0;
-
-    mount = task->get_mount(task, args->offset);
-
-    if (!mount)
+    if (!args->count || !args->path || !descriptor || !mount)
         return 0;
 
     get_filesystem = (struct vfs_filesystem *(*)())(binary_find_symbol(descriptor->mount->filesystem, descriptor->id, "get_filesystem"));
@@ -165,16 +160,11 @@ unsigned int syscall_open(struct runtime_task *task, void *stack)
 {
 
     struct syscall_open_args *args = stack;
-    struct runtime_descriptor *descriptor = task->get_descriptor(task, args->index);
-    struct runtime_mount *mount;
+    struct runtime_descriptor *descriptor = runtime_get_task_descriptor(task, args->index);
+    struct runtime_mount *mount = runtime_find_task_mount(task, args->path);
     unsigned int id;
 
-    if (!args->count || !args->path || !descriptor)
-        return 0;
-
-    mount = task->find_mount(task, args->path);
-
-    if (!mount)
+    if (!args->count || !args->path || !descriptor || !mount)
         return 0;
 
     id = mount->filesystem->walk(mount->filesystem, mount->filesystem->rootid, args->count - mount->count, args->path + mount->count);
@@ -195,7 +185,7 @@ unsigned int syscall_read(struct runtime_task *task, void *stack)
 {
 
     struct syscall_read_args *args = stack;
-    struct runtime_descriptor *descriptor = task->get_descriptor(task, args->index);
+    struct runtime_descriptor *descriptor = runtime_get_task_descriptor(task, args->index);
 
     if (!descriptor || !descriptor->mount->filesystem->read)
         return 0;
@@ -208,7 +198,7 @@ unsigned int syscall_unload(struct runtime_task *task, void *stack)
 {
 
     struct syscall_unload_args *args = stack;
-    struct runtime_descriptor *descriptor = task->get_descriptor(task, args->index);
+    struct runtime_descriptor *descriptor = runtime_get_task_descriptor(task, args->index);
     void (*destroy)();
 
     if (!descriptor)
@@ -229,7 +219,7 @@ unsigned int syscall_write(struct runtime_task *task, void *stack)
 {
 
     struct syscall_write_args *args = stack;
-    struct runtime_descriptor *descriptor = task->get_descriptor(task, args->index);
+    struct runtime_descriptor *descriptor = runtime_get_task_descriptor(task, args->index);
 
     if (!descriptor || !descriptor->mount->filesystem->write)
         return 0;

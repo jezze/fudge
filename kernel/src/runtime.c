@@ -3,39 +3,54 @@
 
 static struct runtime_task tasks[RUNTIME_TASK_SLOTS];
 
-static void clone(struct runtime_task *self, struct runtime_task *task, unsigned int id, unsigned int ip)
+struct runtime_task *runtime_get_task(unsigned int index)
 {
 
-    memory_copy(task, self, sizeof (struct runtime_task));
+    if (!index || index >= RUNTIME_TASK_SLOTS)
+        return 0;
 
-    task->id = id;
-    task->registers.ip = ip;
-    task->registers.sp = RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE;
-    task->registers.sb = RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE;
+    return &tasks[index];
 
 }
 
-static struct runtime_descriptor *get_descriptor(struct runtime_task *self, unsigned int index)
+struct runtime_descriptor *runtime_get_task_descriptor(struct runtime_task *task, unsigned int index)
 {
 
     if (!index || index >= RUNTIME_TASK_DESCRIPTOR_SLOTS)
         return 0;
 
-    return &self->descriptors[index];
+    return &task->descriptors[index];
 
 }
 
-static struct runtime_mount *get_mount(struct runtime_task *self, unsigned int index)
+struct runtime_mount *runtime_get_task_mount(struct runtime_task *task, unsigned int index)
 {
 
     if (!index || index >= RUNTIME_TASK_MOUNT_SLOTS)
         return 0;
 
-    return &self->mounts[index];
+    return &task->mounts[index];
 
 }
 
-static struct runtime_mount *find_mount(struct runtime_task *self, char *path)
+unsigned int runtime_get_task_slot(unsigned int parent)
+{
+
+    unsigned int i;
+
+    for (i = parent; i < RUNTIME_TASK_SLOTS; i++)
+    {
+
+        if (!tasks[i].status.used)
+            return i;
+
+    }
+
+    return 0;
+
+}
+
+struct runtime_mount *runtime_find_task_mount(struct runtime_task *self, char *path)
 {
 
     unsigned int i;
@@ -62,33 +77,6 @@ static struct runtime_mount *find_mount(struct runtime_task *self, char *path)
     }
 
     return current;
-
-}
-
-struct runtime_task *runtime_get_task(unsigned int index)
-{
-
-    if (!index || index >= RUNTIME_TASK_SLOTS)
-        return 0;
-
-    return &tasks[index];
-
-}
-
-unsigned int runtime_get_task_slot(unsigned int parent)
-{
-
-    unsigned int i;
-
-    for (i = parent; i < RUNTIME_TASK_SLOTS; i++)
-    {
-
-        if (!tasks[i].status.used)
-            return i;
-
-    }
-
-    return 0;
 
 }
 
@@ -120,10 +108,18 @@ void runtime_task_init(struct runtime_task *task, unsigned int id)
     memory_clear(task, sizeof (struct runtime_task));
 
     task->id = id;
-    task->clone = clone;
-    task->get_descriptor = get_descriptor;
-    task->get_mount = get_mount;
-    task->find_mount = find_mount;
+
+}
+
+void runtime_task_clone(struct runtime_task *from, struct runtime_task *to, unsigned int id, unsigned int ip)
+{
+
+    memory_copy(to, from, sizeof (struct runtime_task));
+
+    to->id = id;
+    to->registers.ip = ip;
+    to->registers.sp = RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE;
+    to->registers.sb = RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE;
 
 }
 
