@@ -7,12 +7,6 @@ cpu_disable_apic:
     out 0x21, al
     ret
 
-.global cpu_enable_tss
-cpu_enable_tss:
-    mov ax, 0x2B
-    ltr ax
-    ret
-
 .global cpu_enter_usermode
 cpu_enter_usermode:
     mov ax, 0x23
@@ -126,5 +120,11 @@ cpu_set_stack:
     mov ecx, [esp]
     mov esp, eax
     push ecx
+    ret
+
+.global cpu_set_tss
+cpu_set_tss:
+    mov ax, [esp + 4]
+    ltr ax
     ret
 
