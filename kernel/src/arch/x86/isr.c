@@ -9,18 +9,11 @@
 
 static void (*routines[ISR_TABLE_SLOTS])(struct isr_registers *registers);
 
-static void sleep()
-{
-
-    for(;;);
-
-}
-
 static void load_kstate(struct isr_registers *registers)
 {
 
     registers->interrupt.cs = gdt_get_segment(GDT_INDEX_KCODE);
-    registers->interrupt.eip = (unsigned int)sleep;
+    registers->interrupt.eip = (unsigned int)cpu_halt;
     registers->interrupt.esp = 0x00400000;
     registers->general.ebp = 0;
 
