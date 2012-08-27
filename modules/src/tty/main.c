@@ -7,7 +7,7 @@
 static struct tty_driver driver;
 static struct tty_filesystem filesystem;
 
-struct vfs_filesystem *get_filesystem()
+struct vfs_interface *get_filesystem()
 {
 
     return &filesystem.base;

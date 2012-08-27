@@ -23,7 +23,7 @@ struct tty_driver
 struct tty_filesystem
 {
 
-    struct vfs_filesystem base;
+    struct vfs_interface base;
     struct tty_driver *driver;
 
 };

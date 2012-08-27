@@ -11,7 +11,7 @@
 struct runtime_mount
 {
 
-    struct vfs_filesystem *filesystem;
+    struct vfs_interface *interface;
     unsigned int count;
     char path[64];
 
@@ -60,7 +60,7 @@ struct runtime_mount *runtime_get_task_mount(struct runtime_task *task, unsigned
 unsigned int runtime_get_task_slot(unsigned int parent);
 struct runtime_mount *runtime_find_task_mount(struct runtime_task *self, char *path);
 void runtime_descriptor_init(struct runtime_descriptor *descriptor, unsigned int id, struct runtime_mount *mount);
-void runtime_mount_init(struct runtime_mount *mount, struct vfs_filesystem *filesystem, unsigned int count, char *path);
+void runtime_mount_init(struct runtime_mount *mount, struct vfs_interface *interface, unsigned int count, char *path);
 void runtime_task_init(struct runtime_task *task, unsigned int id);
 void runtime_task_clone(struct runtime_task *from, struct runtime_task *to, unsigned int id, unsigned int ip);
 struct runtime_task *runtime_schedule();

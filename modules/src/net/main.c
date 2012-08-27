@@ -32,7 +32,7 @@ void net_unregister_protocol(struct net_protocol *protocol)
 
 }
 
-struct vfs_filesystem *get_filesystem()
+struct vfs_interface *get_filesystem()
 {
 
     return &filesystem.base;

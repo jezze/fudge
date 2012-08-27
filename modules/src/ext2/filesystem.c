@@ -3,7 +3,7 @@
 #include <block/block.h>
 #include <ext2/ext2.h>
 
-static unsigned int read(struct vfs_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int read(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct ext2_blockgroup bg;
@@ -70,7 +70,7 @@ static unsigned int read(struct vfs_filesystem *self, unsigned int id, unsigned 
 
 }
 
-static struct ext2_entry *finddir(struct vfs_filesystem *self, unsigned int id, char *name)
+static struct ext2_entry *finddir(struct vfs_interface *self, unsigned int id, char *name)
 {
 
     struct ext2_blockgroup bg;
@@ -108,7 +108,7 @@ static struct ext2_entry *finddir(struct vfs_filesystem *self, unsigned int id, 
 
 }
 
-static unsigned int walk(struct vfs_filesystem *self, unsigned int id, unsigned int count, char *path)
+static unsigned int walk(struct vfs_interface *self, unsigned int id, unsigned int count, char *path)
 {
 
     char *temp = path;
@@ -134,7 +134,7 @@ void ext2_filesystem_init(struct ext2_filesystem *filesystem, struct ext2_protoc
 
     memory_clear(filesystem, sizeof (struct ext2_filesystem));
 
-    vfs_filesystem_init(&filesystem->base, 2, "hda", 0, 0, read, 0, walk, 0);
+    vfs_interface_init(&filesystem->base, 2, "hda", 0, 0, read, 0, walk, 0);
 
     filesystem->protocol = protocol;
     filesystem->interface = interface;

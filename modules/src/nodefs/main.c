@@ -18,7 +18,7 @@ void nodefs_unregister_node(struct nodefs_node *node)
 
 }
 
-struct vfs_filesystem *get_filesystem()
+struct vfs_interface *get_filesystem()
 {
 
     return &filesystem.base;

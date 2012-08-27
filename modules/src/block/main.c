@@ -32,7 +32,7 @@ void block_unregister_protocol(struct block_protocol *protocol)
 
 }
 
-struct vfs_filesystem *get_filesystem()
+struct vfs_interface *get_filesystem()
 {
 
     return &filesystem.base;

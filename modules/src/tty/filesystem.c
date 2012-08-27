@@ -5,7 +5,7 @@
 #include <arch/x86/vga/vga.h>
 #include <tty/tty.h>
 
-static unsigned int write_stdout(struct vfs_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int write_stdout(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct tty_filesystem *filesystem = (struct tty_filesystem *)self;
@@ -21,7 +21,7 @@ static unsigned int write_stdout(struct vfs_filesystem *self, unsigned int id, u
 
 }
 
-static unsigned int read_cwd(struct vfs_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int read_cwd(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct tty_filesystem *filesystem = (struct tty_filesystem *)self;
@@ -39,7 +39,7 @@ static unsigned int read_cwd(struct vfs_filesystem *self, unsigned int id, unsig
 
 }
 
-static unsigned int write_cwd(struct vfs_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int write_cwd(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct tty_filesystem *filesystem = (struct tty_filesystem *)self;
@@ -51,7 +51,7 @@ static unsigned int write_cwd(struct vfs_filesystem *self, unsigned int id, unsi
 
 }
 
-static unsigned int read_root(struct vfs_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int read_root(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     if (offset > 17)
@@ -66,7 +66,7 @@ static unsigned int read_root(struct vfs_filesystem *self, unsigned int id, unsi
 
 }
 
-static unsigned int read(struct vfs_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int read(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     if (id == 1)
@@ -79,7 +79,7 @@ static unsigned int read(struct vfs_filesystem *self, unsigned int id, unsigned 
 
 }
 
-static unsigned int write(struct vfs_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int write(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     if (id == 3)
@@ -92,7 +92,7 @@ static unsigned int write(struct vfs_filesystem *self, unsigned int id, unsigned
 
 }
 
-static unsigned int walk(struct vfs_filesystem *self, unsigned int id, unsigned int count, char *path)
+static unsigned int walk(struct vfs_interface *self, unsigned int id, unsigned int count, char *path)
 {
 
     if (!count)
@@ -113,7 +113,7 @@ void tty_filesystem_init(struct tty_filesystem *filesystem, struct tty_driver *d
 
     memory_clear(filesystem, sizeof (struct tty_filesystem));
 
-    vfs_filesystem_init(&filesystem->base, 1, "tty", 0, 0, read, write, walk, 0);
+    vfs_interface_init(&filesystem->base, 1, "tty", 0, 0, read, write, walk, 0);
 
     filesystem->driver = driver;
 

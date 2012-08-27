@@ -2,7 +2,7 @@
 #include <runtime.h>
 #include <mmu.h>
 
-static struct mmu_interface *interfaces[2];
+static struct mmu_interface *interfaces[MMU_INTERFACE_SLOTS];
 
 void mmu_pagefault(unsigned int address, unsigned int flags)
 {

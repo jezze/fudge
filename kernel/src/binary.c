@@ -2,7 +2,7 @@
 #include <vfs.h>
 #include <binary.h>
 
-unsigned int binary_find_symbol(struct vfs_filesystem *filesystem, unsigned int id, char *symbol)
+unsigned int binary_find_symbol(struct vfs_interface *interface, unsigned int id, char *symbol)
 {
 
     struct elf_header header;
@@ -11,28 +11,28 @@ unsigned int binary_find_symbol(struct vfs_filesystem *filesystem, unsigned int 
     struct elf_symbol symbolTable[400];
     char stringTable[0x1000];
 
-    filesystem->read(filesystem, id, 0, ELF_HEADER_SIZE, &header);
+    interface->read(interface, id, 0, ELF_HEADER_SIZE, &header);
 
     if (!elf_validate(&header))
         return 0;
 
-    filesystem->read(filesystem, id, header.shoffset, header.shsize * header.shcount, sectionHeader);
+    interface->read(interface, id, header.shoffset, header.shsize * header.shcount, sectionHeader);
 
     symbolHeaderIndex = elf_find_section(&header, sectionHeader, ELF_SECTION_TYPE_SYMTAB);
 
-    filesystem->read(filesystem, id, sectionHeader[symbolHeaderIndex].offset, sectionHeader[symbolHeaderIndex].size, symbolTable);
-    filesystem->read(filesystem, id, sectionHeader[sectionHeader[symbolHeaderIndex].link].offset, sectionHeader[sectionHeader[symbolHeaderIndex].link].size, stringTable);
+    interface->read(interface, id, sectionHeader[symbolHeaderIndex].offset, sectionHeader[symbolHeaderIndex].size, symbolTable);
+    interface->read(interface, id, sectionHeader[sectionHeader[symbolHeaderIndex].link].offset, sectionHeader[sectionHeader[symbolHeaderIndex].link].size, stringTable);
 
     return elf_find_symbol(&header, sectionHeader, symbolHeaderIndex, symbolTable, stringTable, symbol);
 
 }
 
-unsigned int binary_get_entry(struct vfs_filesystem *filesystem, unsigned int id)
+unsigned int binary_get_entry(struct vfs_interface *interface, unsigned int id)
 {
 
     struct elf_header header;
 
-    filesystem->read(filesystem, id, 0, ELF_HEADER_SIZE, &header);
+    interface->read(interface, id, 0, ELF_HEADER_SIZE, &header);
 
     if (!elf_validate(&header))
         return 0;
@@ -41,22 +41,22 @@ unsigned int binary_get_entry(struct vfs_filesystem *filesystem, unsigned int id
 
 }
 
-unsigned int binary_copy_program(struct vfs_filesystem *filesystem, unsigned int id)
+unsigned int binary_copy_program(struct vfs_interface *interface, unsigned int id)
 {
 
     struct elf_header header;
     struct elf_program_header programHeader[8];
     unsigned int i;
 
-    filesystem->read(filesystem, id, 0, ELF_HEADER_SIZE, &header);
+    interface->read(interface, id, 0, ELF_HEADER_SIZE, &header);
 
     if (!elf_validate(&header))
         return 0;
 
-    filesystem->read(filesystem, id, header.phoffset, header.phsize * header.phcount, programHeader);
+    interface->read(interface, id, header.phoffset, header.phsize * header.phcount, programHeader);
 
     for (i = 0; i < header.phcount; i++)
-        filesystem->read(filesystem, id, programHeader[i].offset, programHeader[i].fsize, (void *)programHeader[i].vaddress);
+        interface->read(interface, id, programHeader[i].offset, programHeader[i].fsize, (void *)programHeader[i].vaddress);
 
     return 1;
 
@@ -97,19 +97,19 @@ static void binary_relocate_section(struct elf_section_header *sectionHeader, un
 
 }
 
-unsigned int binary_relocate(struct vfs_filesystem *filesystem, unsigned int id, unsigned int address)
+unsigned int binary_relocate(struct vfs_interface *interface, unsigned int id, unsigned int address)
 {
 
     struct elf_header header;
     struct elf_section_header sectionHeader[20];
     unsigned int i;
 
-    filesystem->read(filesystem, id, 0, ELF_HEADER_SIZE, &header);
+    interface->read(interface, id, 0, ELF_HEADER_SIZE, &header);
 
     if (!elf_validate(&header))
         return 0;
 
-    filesystem->read(filesystem, id, header.shoffset, header.shsize * header.shcount, sectionHeader);
+    interface->read(interface, id, header.shoffset, header.shsize * header.shcount, sectionHeader);
 
     for (i = 0; i < header.shcount; i++)
     {
@@ -120,14 +120,14 @@ unsigned int binary_relocate(struct vfs_filesystem *filesystem, unsigned int id,
         if (sectionHeader[i].type != ELF_SECTION_TYPE_REL)
             continue;
 
-        filesystem->read(filesystem, id, sectionHeader[i].offset, sectionHeader[i].size, relocateTable);
-        filesystem->read(filesystem, id, sectionHeader[sectionHeader[i].link].offset, sectionHeader[sectionHeader[i].link].size, symbolTable);
+        interface->read(interface, id, sectionHeader[i].offset, sectionHeader[i].size, relocateTable);
+        interface->read(interface, id, sectionHeader[sectionHeader[i].link].offset, sectionHeader[sectionHeader[i].link].size, symbolTable);
 
         binary_relocate_section(sectionHeader, i, sectionHeader[i].info, relocateTable, symbolTable, address);
 
         sectionHeader[sectionHeader[i].info].address += address;
 
-        filesystem->write(filesystem, id, header.shoffset, header.shsize * header.shcount, sectionHeader);
+        interface->write(interface, id, header.shoffset, header.shsize * header.shcount, sectionHeader);
 
     }
 

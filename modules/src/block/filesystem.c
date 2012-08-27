@@ -4,7 +4,7 @@
 #include <modules/modules.h>
 #include <block/block.h>
 
-static unsigned int read_root(struct vfs_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int read_root(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct block_filesystem *filesystem = (struct block_filesystem *)self;
@@ -32,7 +32,7 @@ static unsigned int read_root(struct vfs_filesystem *self, unsigned int id, unsi
 
 }
 
-static unsigned int read_interface(struct vfs_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int read_interface(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     memory_copy(buffer, "data\n", 5);
@@ -41,7 +41,7 @@ static unsigned int read_interface(struct vfs_filesystem *self, unsigned int id,
 
 }
 
-static unsigned int read_interface_data(struct vfs_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int read_interface_data(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct block_filesystem *filesystem = (struct block_filesystem *)self;
@@ -51,7 +51,7 @@ static unsigned int read_interface_data(struct vfs_filesystem *self, unsigned in
 
 }
 
-static unsigned int read(struct vfs_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int read(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     if (id >= 11000)
@@ -67,7 +67,7 @@ static unsigned int read(struct vfs_filesystem *self, unsigned int id, unsigned 
 
 }
 
-static unsigned int write_interface_data(struct vfs_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int write_interface_data(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct block_filesystem *filesystem = (struct block_filesystem *)self;
@@ -77,7 +77,7 @@ static unsigned int write_interface_data(struct vfs_filesystem *self, unsigned i
 
 }
 
-static unsigned int write(struct vfs_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int write(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     if (id >= 21000)
@@ -90,7 +90,7 @@ static unsigned int write(struct vfs_filesystem *self, unsigned int id, unsigned
 
 }
 
-static unsigned int walk_interface(struct vfs_filesystem *self, unsigned int id, unsigned int count, char *path)
+static unsigned int walk_interface(struct vfs_interface *self, unsigned int id, unsigned int count, char *path)
 {
 
     if (!count)
@@ -103,7 +103,7 @@ static unsigned int walk_interface(struct vfs_filesystem *self, unsigned int id,
 
 }
 
-static unsigned int walk(struct vfs_filesystem *self, unsigned int id, unsigned int count, char *path)
+static unsigned int walk(struct vfs_interface *self, unsigned int id, unsigned int count, char *path)
 {
 
     if (!count)
@@ -157,7 +157,7 @@ void block_filesystem_init(struct block_filesystem *filesystem)
 
     memory_clear(filesystem, sizeof (struct block_filesystem));
 
-    vfs_filesystem_init(&filesystem->base, 1, "block", 0, 0, read, write, walk, 0);
+    vfs_interface_init(&filesystem->base, 1, "block", 0, 0, read, write, walk, 0);
 
     filesystem->register_interface = register_interface;
     filesystem->register_protocol = register_protocol;

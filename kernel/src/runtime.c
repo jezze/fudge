@@ -90,12 +90,12 @@ void runtime_descriptor_init(struct runtime_descriptor *descriptor, unsigned int
 
 }
 
-void runtime_mount_init(struct runtime_mount *mount, struct vfs_filesystem *filesystem, unsigned int count, char *path)
+void runtime_mount_init(struct runtime_mount *mount, struct vfs_interface *interface, unsigned int count, char *path)
 {
 
     memory_clear(mount, sizeof (struct runtime_mount));
 
-    mount->filesystem = filesystem;
+    mount->interface = interface;
     mount->count = count;
     memory_copy(mount->path, path, mount->count);
 

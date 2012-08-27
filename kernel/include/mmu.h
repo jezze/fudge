@@ -1,6 +1,7 @@
 #ifndef KERNEL_MMU_H
 #define KERNEL_MMU_H
 
+#define MMU_INTERFACE_SLOTS     2
 #define MMU_ERROR_PRESENT  1 << 0
 #define MMU_ERROR_RW       1 << 1
 #define MMU_ERROR_USER     1 << 2

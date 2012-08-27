@@ -4,7 +4,7 @@
 #include <modules/modules.h>
 #include <nodefs/nodefs.h>
 
-static unsigned int read(struct vfs_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int read(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct nodefs_node *node;
@@ -38,7 +38,7 @@ static unsigned int read(struct vfs_filesystem *self, unsigned int id, unsigned 
 
 }
 
-static unsigned int write(struct vfs_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int write(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct nodefs_filesystem *filesystem = (struct nodefs_filesystem *)self;
@@ -48,7 +48,7 @@ static unsigned int write(struct vfs_filesystem *self, unsigned int id, unsigned
 
 }
 
-static unsigned int walk(struct vfs_filesystem *self, unsigned int id, unsigned int count, char *path)
+static unsigned int walk(struct vfs_interface *self, unsigned int id, unsigned int count, char *path)
 {
 
     struct nodefs_filesystem *filesystem = (struct nodefs_filesystem *)self;
@@ -123,7 +123,7 @@ void nodefs_filesystem_init(struct nodefs_filesystem *filesystem)
 
     memory_clear(filesystem, sizeof (struct nodefs_filesystem));
 
-    vfs_filesystem_init(&filesystem->base, 1, "nodefs", 0, 0, read, write, walk, 0);
+    vfs_interface_init(&filesystem->base, 1, "nodefs", 0, 0, read, write, walk, 0);
 
     filesystem->register_node = register_node;
     filesystem->unregister_node = unregister_node;

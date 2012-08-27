@@ -20,7 +20,7 @@ struct video_protocol
 struct video_filesystem
 {
 
-    struct vfs_filesystem base;
+    struct vfs_interface base;
     struct video_interface *interfaces[8];
     unsigned int interfacesCount;
     struct video_protocol *protocols[16];

@@ -49,10 +49,10 @@ static unsigned int parse(struct ramdisk_image *self, void *address)
 
 }
 
-static unsigned int read_file(struct vfs_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int read_file(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct vfs_ramdisk_filesystem *filesystem = (struct vfs_ramdisk_filesystem *)self;
+    struct ramdisk_filesystem *filesystem = (struct ramdisk_filesystem *)self;
     struct tar_header *header = filesystem->image->headers[id - 1];
     unsigned int size = string_read_num(header->size, 8);
     unsigned int c = (size > offset) ? size - offset : 0;
@@ -67,10 +67,10 @@ static unsigned int read_file(struct vfs_filesystem *self, unsigned int id, unsi
 
 }
 
-static unsigned int read(struct vfs_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int read(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct vfs_ramdisk_filesystem *filesystem = (struct vfs_ramdisk_filesystem *)self;
+    struct ramdisk_filesystem *filesystem = (struct ramdisk_filesystem *)self;
     struct tar_header *header = filesystem->image->headers[id - 1];
     unsigned int length = string_length(header->name);
 
@@ -123,10 +123,10 @@ static unsigned int read(struct vfs_filesystem *self, unsigned int id, unsigned 
 
 }
 
-static unsigned int write_file(struct vfs_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int write_file(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct vfs_ramdisk_filesystem *filesystem = (struct vfs_ramdisk_filesystem *)self;
+    struct ramdisk_filesystem *filesystem = (struct ramdisk_filesystem *)self;
     struct tar_header *header = filesystem->image->headers[id - 1];
     unsigned int size = string_read_num(header->size, 8);
     unsigned int c = (size > offset) ? size - offset : 0;
@@ -141,10 +141,10 @@ static unsigned int write_file(struct vfs_filesystem *self, unsigned int id, uns
 
 }
 
-static unsigned int write(struct vfs_filesystem *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int write(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct vfs_ramdisk_filesystem *filesystem = (struct vfs_ramdisk_filesystem *)self;
+    struct ramdisk_filesystem *filesystem = (struct ramdisk_filesystem *)self;
     struct tar_header *header = filesystem->image->headers[id - 1];
     unsigned int length = string_length(header->name);
 
@@ -155,10 +155,10 @@ static unsigned int write(struct vfs_filesystem *self, unsigned int id, unsigned
 
 }
 
-static unsigned int walk(struct vfs_filesystem *self, unsigned int id, unsigned int count, char *path)
+static unsigned int walk(struct vfs_interface *self, unsigned int id, unsigned int count, char *path)
 {
 
-    struct vfs_ramdisk_filesystem *filesystem = (struct vfs_ramdisk_filesystem *)self;
+    struct ramdisk_filesystem *filesystem = (struct ramdisk_filesystem *)self;
 
     unsigned int i;
 
@@ -177,10 +177,10 @@ static unsigned int walk(struct vfs_filesystem *self, unsigned int id, unsigned 
 
 }
 
-static unsigned int get_physical(struct vfs_filesystem *self, unsigned int id)
+static unsigned int get_physical(struct vfs_interface *self, unsigned int id)
 {
 
-    struct vfs_ramdisk_filesystem *filesystem = (struct vfs_ramdisk_filesystem *)self;
+    struct ramdisk_filesystem *filesystem = (struct ramdisk_filesystem *)self;
     struct tar_header *header = filesystem->image->headers[id - 1];
     unsigned int data = (unsigned int)header + TAR_BLOCK_SIZE;
 
@@ -197,12 +197,12 @@ void ramdisk_image_init(struct ramdisk_image *image)
 
 }
 
-void vfs_ramdisk_filesystem_init(struct vfs_ramdisk_filesystem *filesystem, struct ramdisk_image *image)
+void ramdisk_filesystem_init(struct ramdisk_filesystem *filesystem, struct ramdisk_image *image)
 {
 
-    memory_clear(filesystem, sizeof (struct vfs_ramdisk_filesystem));
+    memory_clear(filesystem, sizeof (struct ramdisk_filesystem));
 
-    vfs_filesystem_init(&filesystem->base, 1, "ramdisk", 0, 0, read, write, walk, get_physical);
+    vfs_interface_init(&filesystem->interface, 1, "ramdisk", 0, 0, read, write, walk, get_physical);
 
     filesystem->image = image;
 
