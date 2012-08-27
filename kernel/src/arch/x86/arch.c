@@ -39,7 +39,7 @@ void arch_x86_init(struct arch_x86 *x86, struct mboot_header *header, unsigned i
 
     memory_clear(x86, sizeof (struct arch_x86));
 
-    kernel_arch_init(&x86->base, setup, cpu_halt, cpu_enable_interrupts, cpu_disable_interrupts, cpu_enter_usermode, header->modules.count, header->modules.address);
+    kernel_arch_init(&x86->base, setup, cpu_enter_usermode, header->modules.count, header->modules.address);
 
     x86->header = header;
     x86->magic = magic;

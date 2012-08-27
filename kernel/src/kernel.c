@@ -53,15 +53,12 @@ static void start(struct kernel_arch *self)
 
 }
 
-void kernel_arch_init(struct kernel_arch *arch, void (*setup)(struct kernel_arch *self), void (*halt)(), void (*enable_interrupts)(), void (*disable_interrupts)(), void (*enter_usermode)(unsigned int ip, unsigned int sp), unsigned int ramdiskc, void **ramdiskv)
+void kernel_arch_init(struct kernel_arch *arch, void (*setup)(struct kernel_arch *self), void (*enter_usermode)(unsigned int ip, unsigned int sp), unsigned int ramdiskc, void **ramdiskv)
 {
 
     memory_clear(arch, sizeof (struct kernel_arch));
 
     arch->setup = setup;
-    arch->halt = halt;
-    arch->enable_interrupts = enable_interrupts;
-    arch->disable_interrupts = disable_interrupts;
     arch->enter_usermode = enter_usermode;
     arch->ramdiskc = ramdiskc;
     arch->ramdiskv = ramdiskv;

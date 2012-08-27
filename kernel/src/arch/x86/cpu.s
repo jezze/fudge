@@ -1,20 +1,10 @@
 .intel_syntax noprefix
 
-.global cpu_disable_interrupts
-cpu_disable_interrupts:
-    cli
-    ret
-
 .global cpu_disable_apic
 cpu_disable_apic:
     mov al, 0xFF
     out 0xA1, al
     out 0x21, al
-    ret
-
-.global cpu_enable_interrupts
-cpu_enable_interrupts:
-    sti
     ret
 
 .global cpu_enable_tss
@@ -77,12 +67,6 @@ cpu_get_stack:
 cpu_halt:
     hlt
     ret
-
-.global cpu_idle
-cpu_idle:
-    mov eax, [esp]
-    sti
-    jmp $
 
 .global cpu_set_cr0
 cpu_set_cr0:
