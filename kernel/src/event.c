@@ -39,8 +39,9 @@ void event_raise(unsigned int index)
 
     routines[index].task->status.event = 1;
     routines[index].task->status.idle = 0;
-
-    runtime_registers_init(&routines[index].task->registers, routines[index].callback, RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE, RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE);
+    routines[index].task->registers.ip = routines[index].callback;
+    routines[index].task->registers.sp = RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE;
+    routines[index].task->registers.sb = RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE;
 
 }
 

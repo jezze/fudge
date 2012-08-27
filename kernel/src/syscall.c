@@ -56,21 +56,19 @@ unsigned int syscall_execute(struct runtime_task *task, void *stack)
     if (!descriptor || !descriptor->mount->filesystem->read)
         return 0;
 
-    entry = binary_get_entry(descriptor->mount->filesystem, descriptor->id);
-
-    if (!entry)
-        return 0;
-
     slot = runtime_get_task_slot(task->id);
 
     if (!slot)
         return 0;
 
+    entry = binary_get_entry(descriptor->mount->filesystem, descriptor->id);
+
+    if (!entry)
+        return 0;
+
     ntask = runtime_get_task(slot);
 
-    task->clone(task, ntask, slot);
-
-    runtime_registers_init(&ntask->registers, entry, RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE, RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE);
+    task->clone(task, ntask, slot, entry);
 
     mmu_map_user_memory(ntask->id, RUNTIME_TASK_PADDRESS_BASE + ntask->id * RUNTIME_TASK_ADDRESS_SIZE, RUNTIME_TASK_VADDRESS_BASE, RUNTIME_TASK_ADDRESS_SIZE);
     mmu_load_user_memory(ntask->id);

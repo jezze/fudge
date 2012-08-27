@@ -3,12 +3,15 @@
 
 static struct runtime_task tasks[RUNTIME_TASK_SLOTS];
 
-static void clone(struct runtime_task *self, struct runtime_task *task, unsigned int id)
+static void clone(struct runtime_task *self, struct runtime_task *task, unsigned int id, unsigned int ip)
 {
 
     memory_copy(task, self, sizeof (struct runtime_task));
 
     task->id = id;
+    task->registers.ip = ip;
+    task->registers.sp = RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE;
+    task->registers.sb = RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE;
 
 }
 
@@ -108,17 +111,6 @@ void runtime_mount_init(struct runtime_mount *mount, unsigned int id, struct vfs
     mount->filesystem = filesystem;
     mount->count = count;
     memory_copy(mount->path, path, mount->count);
-
-}
-
-void runtime_registers_init(struct runtime_registers *registers, unsigned int ip, unsigned int sp, unsigned int sb)
-{
-
-    memory_clear(registers, sizeof (struct runtime_registers));
-
-    registers->ip = ip;
-    registers->sp = sp;
-    registers->sb = sb;
 
 }
 
