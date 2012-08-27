@@ -7,7 +7,7 @@
 #define SERIAL_FLAG_REGISTER 0x18
 #define SERIAL_BUFFER_FULL (1 << 5)
 
-static struct arch_arm arm;
+static struct arch_interface interface;
 
 static void putc(char c)
 {
@@ -33,21 +33,21 @@ static void setup(struct kernel_arch *arch)
 
 }
 
-void arch_arm_init(struct arch_arm *arm)
+void arch_interface_init(struct arch_interface *interface)
 {
 
-    memory_clear(arm, sizeof (struct arch_arm));
+    memory_clear(interface, sizeof (struct arch_interface));
 
-    kernel_arch_init(&arm->base, setup, 0, cpu_enable_interrupts, cpu_disable_interrupts, 0, 0, 0);
+    kernel_arch_init(&interface->base, setup, 0, 0, 0);
 
 }
 
 void arch_setup()
 {
 
-    arch_arm_init(&arm);
+    arch_interface_init(&interface);
 
-    arm.base.start(&arm.base);
+    interface.base.start(&interface.base);
 
 }
 

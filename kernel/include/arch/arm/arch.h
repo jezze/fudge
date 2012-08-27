@@ -1,10 +1,10 @@
 #ifndef ARCH_ARCH_H
 #define ARCH_ARCH_H
 
-struct arch_arm
+struct arch_interface
 {
 
-    struct kernel_arch base;
+    struct kernel_interface base;
 
 };
 
