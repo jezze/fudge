@@ -133,7 +133,5 @@ void main()
     load_modules();
     start_shell();
 
-    for (;;);
-
 }
 

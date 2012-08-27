@@ -60,7 +60,7 @@ struct runtime_task
 };
 
 struct runtime_task *runtime_get_task(unsigned int index);
-unsigned int runtime_get_task_slot();
+unsigned int runtime_get_task_slot(unsigned int parent);
 void runtime_descriptor_init(struct runtime_descriptor *descriptor, unsigned int id, struct runtime_mount *mount);
 void runtime_mount_init(struct runtime_mount *mount, unsigned int id, struct vfs_filesystem *filesystem, unsigned int count, char *path);
 void runtime_registers_init(struct runtime_registers *registers, unsigned int ip, unsigned int sp, unsigned int sb);

@@ -2,22 +2,41 @@
 #include <event.h>
 #include <mmu.h>
 #include <runtime.h>
+#include <arch/x86/cpu.h>
 #include <arch/x86/gdt.h>
 #include <arch/x86/idt.h>
 #include <arch/x86/isr.h>
 
 static void (*routines[ISR_TABLE_SLOTS])(struct isr_registers *registers);
 
-static void load_state(struct runtime_task *task, struct isr_registers *registers)
+static void sleep()
 {
 
+    for(;;);
+
+}
+
+static void load_kstate(struct isr_registers *registers)
+{
+
+    registers->interrupt.cs = gdt_get_segment(GDT_INDEX_KCODE);
+    registers->interrupt.eip = (unsigned int)sleep;
+    registers->interrupt.esp = 0x00400000;
+    registers->general.ebp = 0;
+
+}
+
+static void load_ustate(struct runtime_task *task, struct isr_registers *registers)
+{
+
+    registers->interrupt.cs = gdt_get_segment(GDT_INDEX_UCODE);
     registers->interrupt.eip = task->registers.ip;
     registers->interrupt.esp = task->registers.sp;
     registers->general.ebp = task->registers.sb;
 
 }
 
-static void save_state(struct runtime_task *task, struct isr_registers *registers)
+static void save_ustate(struct runtime_task *task, struct isr_registers *registers)
 {
 
     task->registers.ip = registers->interrupt.eip;
@@ -65,7 +84,7 @@ unsigned int isr_handle(struct isr_registers *registers)
     task1 = runtime_schedule();
 
     if (task1)
-        save_state(task1, registers);
+        save_ustate(task1, registers);
 
     isr_raise(registers->index, registers);
     event_raise(registers->index);
@@ -75,14 +94,15 @@ unsigned int isr_handle(struct isr_registers *registers)
     if (task2)
     {
 
-        load_state(task2, registers);
+        load_ustate(task2, registers);
 
-        if (task1 != task2)
-            mmu_load_user_memory(task2->id);
+        mmu_load_user_memory(task2->id);
 
         return gdt_get_segment(GDT_INDEX_UDATA);
 
     }
+
+    load_kstate(registers);
 
     return gdt_get_segment(GDT_INDEX_KDATA);
 

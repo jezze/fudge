@@ -61,7 +61,7 @@ unsigned int syscall_execute(struct runtime_task *task, void *stack)
     if (!entry)
         return 0;
 
-    slot = runtime_get_task_slot();
+    slot = runtime_get_task_slot(task->id);
 
     if (!slot)
         return 0;

@@ -72,12 +72,12 @@ struct runtime_task *runtime_get_task(unsigned int index)
 
 }
 
-unsigned int runtime_get_task_slot()
+unsigned int runtime_get_task_slot(unsigned int parent)
 {
 
     unsigned int i;
 
-    for (i = 1; i < RUNTIME_TASK_SLOTS; i++)
+    for (i = parent; i < RUNTIME_TASK_SLOTS; i++)
     {
 
         if (!tasks[i].status.used)
@@ -140,7 +140,7 @@ struct runtime_task *runtime_schedule()
 
     unsigned int i;
 
-    for (i = RUNTIME_TASK_SLOTS - 1; i >= 0; i--)
+    for (i = RUNTIME_TASK_SLOTS - 1; i > 0; i--)
     {
 
         if (tasks[i].status.used && !tasks[i].status.idle)
