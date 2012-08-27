@@ -76,13 +76,13 @@ unsigned int isr_handle(struct isr_registers *registers)
 
     task1 = runtime_schedule();
 
-    if (task1)
-        save_ustate(task1, registers);
-
     isr_raise(registers->index, registers);
     event_raise(registers->index);
 
     task2 = runtime_schedule();
+
+    if (task1)
+        save_ustate(task1, registers);
 
     if (task2)
     {
