@@ -39,7 +39,7 @@ static void start(struct kernel_arch *self)
     runtime_task_init(task, 1);
 
     mount = runtime_get_task_mount(task, 2);
-    runtime_mount_init(mount, 2, &ramdiskFilesystem.base, 9, "/ramdisk/");
+    runtime_mount_init(mount, &ramdiskFilesystem.base, 9, "/ramdisk/");
 
     runtime_descriptor_init(&task->descriptors[1], mount->filesystem->walk(mount->filesystem, mount->filesystem->rootid, 8, "bin/init"), mount);
 

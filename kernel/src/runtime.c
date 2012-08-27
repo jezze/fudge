@@ -60,7 +60,7 @@ struct runtime_mount *runtime_find_task_mount(struct runtime_task *self, char *p
     for (i = 1; i < RUNTIME_TASK_MOUNT_SLOTS; i++)
     {
 
-        if (!self->mounts[i].id)
+        if (!self->mounts[i].count)
             continue;
 
         if (self->mounts[i].count < max)
@@ -90,12 +90,11 @@ void runtime_descriptor_init(struct runtime_descriptor *descriptor, unsigned int
 
 }
 
-void runtime_mount_init(struct runtime_mount *mount, unsigned int id, struct vfs_filesystem *filesystem, unsigned int count, char *path)
+void runtime_mount_init(struct runtime_mount *mount, struct vfs_filesystem *filesystem, unsigned int count, char *path)
 {
 
     memory_clear(mount, sizeof (struct runtime_mount));
 
-    mount->id = id;
     mount->filesystem = filesystem;
     mount->count = count;
     memory_copy(mount->path, path, mount->count);

@@ -150,7 +150,7 @@ unsigned int syscall_mount(struct runtime_task *task, void *stack)
     if (!get_filesystem)
         return 0;
 
-    runtime_mount_init(mount, args->offset, get_filesystem(), args->count, args->path);
+    runtime_mount_init(mount, get_filesystem(), args->count, args->path);
 
     return 1;
 
