@@ -199,7 +199,7 @@ void mouse_event()
 void main()
 {
 
-    idlfb = call_open(4, 15, "/nodefs/bga_lfb");
+    idlfb = call_open(4, 15, "/video/0/data");
 
     if (!idlfb)
         return;

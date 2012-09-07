@@ -2,6 +2,7 @@
 #include <vfs.h>
 #include <modules/modules.h>
 #include <nodefs/nodefs.h>
+#include <video/video.h>
 #include <arch/x86/bga/bga.h>
 
 static struct bga_driver driver;
@@ -92,11 +93,34 @@ static unsigned int lfb_write(struct nodefs_node *self, unsigned int offset, uns
 
 }
 
+static unsigned int interface_read(struct video_interface *self, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    struct bga_driver *driver = (struct bga_driver *)self->driver;
+
+    memory_copy(buffer, (char *)driver->lfb + offset, count);
+
+    return count;
+
+}
+
+static unsigned int interface_write(struct video_interface *self, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    struct bga_driver *driver = (struct bga_driver *)self->driver;
+
+    memory_copy((char *)driver->lfb + offset, buffer, count);
+
+    return count;
+
+}
+
 void init()
 {
 
     bga_driver_init(&driver);
     modules_register_driver(&driver.base);
+    video_register_interface(&driver.interface, &driver.base, interface_read, interface_write);
 
     nodefs_register_node(&xres, "bga_xres", &driver.base.base, xres_read, xres_write);
     nodefs_register_node(&yres, "bga_yres", &driver.base.base, yres_read, yres_write);
@@ -109,6 +133,7 @@ void init()
 void destroy()
 {
 
+    video_unregister_interface(&driver.interface);
     modules_unregister_driver(&driver.base);
 
 }

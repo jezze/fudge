@@ -28,6 +28,7 @@ struct bga_driver
 {
 
     struct modules_driver base;
+    struct video_interface interface;
     void *bank;
     void *lfb;
     unsigned int xres;
