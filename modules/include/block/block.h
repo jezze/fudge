@@ -25,10 +25,6 @@ struct block_filesystem
     unsigned int interfacesCount;
     struct block_protocol *protocols[16];
     unsigned int protocolsCount;
-    void (*register_interface)(struct block_filesystem *self, struct block_interface *interface, struct modules_driver *driver, unsigned int (*read)(struct block_interface *self, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write)(struct block_interface *self, unsigned int offset, unsigned int count, void *buffer));
-    void (*register_protocol)(struct block_filesystem *self, struct block_protocol *protocol, char *name);
-    void (*unregister_interface)(struct block_filesystem *self, struct block_interface *interface);
-    void (*unregister_protocol)(struct block_filesystem *self, struct block_protocol *protocol);
 
 };
 

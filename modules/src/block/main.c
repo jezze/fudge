@@ -7,28 +7,32 @@ static struct block_filesystem filesystem;
 void block_register_interface(struct block_interface *interface, struct modules_driver *driver, unsigned int (*read)(struct block_interface *self, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write)(struct block_interface *self, unsigned int offset, unsigned int count, void *buffer))
 {
 
-    filesystem.register_interface(&filesystem, interface, driver, read, write);
+    interface->driver = driver;
+    interface->read = read;
+    interface->write = write;
+
+    filesystem.interfaces[filesystem.interfacesCount] = interface;
+    filesystem.interfacesCount++;
 
 }
 
 void block_register_protocol(struct block_protocol *protocol, char *name)
 {
 
-    filesystem.register_protocol(&filesystem, protocol, name);
+    protocol->name = name;
+
+    filesystem.protocols[filesystem.protocolsCount] = protocol;
+    filesystem.protocolsCount++;
 
 }
 
 void block_unregister_interface(struct block_interface *interface)
 {
 
-    filesystem.unregister_interface(&filesystem, interface);
-
 }
 
 void block_unregister_protocol(struct block_protocol *protocol)
 {
-
-    filesystem.unregister_protocol(&filesystem, protocol);
 
 }
 
