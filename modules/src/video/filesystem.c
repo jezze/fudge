@@ -47,7 +47,7 @@ static unsigned int read_interface_data(struct vfs_interface *self, unsigned int
     struct video_filesystem *filesystem = (struct video_filesystem *)self;
     struct video_interface *interface = filesystem->interfaces[id];
 
-    return interface->read(interface, offset, count, buffer);
+    return interface->read_data(interface, offset, count, buffer);
 
 }
 
@@ -73,7 +73,7 @@ static unsigned int write_interface_data(struct vfs_interface *self, unsigned in
     struct video_filesystem *filesystem = (struct video_filesystem *)self;
     struct video_interface *interface = filesystem->interfaces[id];
 
-    return interface->write(interface, offset, count, buffer);
+    return interface->write_data(interface, offset, count, buffer);
 
 }
 
@@ -116,53 +116,12 @@ static unsigned int walk(struct vfs_interface *self, unsigned int id, unsigned i
 
 }
 
-static void register_interface(struct video_filesystem *self, struct video_interface *interface, struct modules_driver *driver, unsigned int (*read)(struct video_interface *self, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write)(struct video_interface *self, unsigned int offset, unsigned int count, void *buffer))
-{
-
-    interface->driver = driver;
-    interface->read = read;
-    interface->write = write;
-
-    self->interfaces[self->interfacesCount] = interface;
-    self->interfacesCount++;
-
-}
-
-static void register_protocol(struct video_filesystem *self, struct video_protocol *protocol, char *name)
-{
-
-    protocol->name = name;
-
-    self->protocols[self->protocolsCount] = protocol;
-    self->protocolsCount++;
-
-}
-
-static void unregister_interface(struct video_filesystem *self, struct video_interface *interface)
-{
-
-    self->interfacesCount--;
-
-}
-
-static void unregister_protocol(struct video_filesystem *self, struct video_protocol *protocol)
-{
-
-    self->protocolsCount--;
-
-}
-
 void video_filesystem_init(struct video_filesystem *filesystem)
 {
 
     memory_clear(filesystem, sizeof (struct video_filesystem));
 
     vfs_interface_init(&filesystem->base, 1, "video", 0, 0, read, write, walk, 0);
-
-    filesystem->register_interface = register_interface;
-    filesystem->register_protocol = register_protocol;
-    filesystem->unregister_interface = unregister_interface;
-    filesystem->unregister_protocol = unregister_protocol;
 
 }
 

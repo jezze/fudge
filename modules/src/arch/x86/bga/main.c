@@ -74,7 +74,7 @@ static unsigned int enable_write(struct nodefs_node *self, unsigned int offset, 
 
 }
 
-static unsigned int interface_read(struct video_interface *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int read_data(struct video_interface *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct bga_driver *driver = (struct bga_driver *)self->driver;
@@ -85,7 +85,7 @@ static unsigned int interface_read(struct video_interface *self, unsigned int of
 
 }
 
-static unsigned int interface_write(struct video_interface *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int write_data(struct video_interface *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct bga_driver *driver = (struct bga_driver *)self->driver;
@@ -96,12 +96,30 @@ static unsigned int interface_write(struct video_interface *self, unsigned int o
 
 }
 
+static unsigned int read_bpp(struct video_interface *self)
+{
+
+    struct bga_driver *driver = (struct bga_driver *)self->driver;
+    
+    return driver->bpp;
+
+}
+
+static void write_bpp(struct video_interface *self, unsigned int bpp)
+{
+
+    struct bga_driver *driver = (struct bga_driver *)self->driver;
+
+    driver->bpp = bpp;
+
+}
+
 void init()
 {
 
     bga_driver_init(&driver);
     modules_register_driver(&driver.base);
-    video_register_interface(&driver.interface, &driver.base, interface_read, interface_write);
+    video_register_interface(&driver.interface, &driver.base, read_data, write_data, read_bpp, write_bpp);
 
     nodefs_register_node(&xres, "bga_xres", &driver.base.base, xres_read, xres_write);
     nodefs_register_node(&yres, "bga_yres", &driver.base.base, yres_read, yres_write);
