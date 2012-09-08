@@ -35,9 +35,9 @@ static unsigned int read_root(struct vfs_interface *self, unsigned int id, unsig
 static unsigned int read_interface(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    memory_copy(buffer, "bpp\ndata\nxres\nyres\n", 19);
+    memory_copy(buffer, "bpp\ndata\nenable\nxres\nyres\n", 26);
 
-    return 19;
+    return 26;
 
 }
 
@@ -62,6 +62,13 @@ static unsigned int read_interface_data(struct vfs_interface *self, unsigned int
     struct video_interface *interface = filesystem->interfaces[id];
 
     return interface->read_data(interface, offset, count, buffer);
+
+}
+
+static unsigned int read_interface_enable(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    return 0;
 
 }
 
@@ -95,6 +102,9 @@ static unsigned int read_interface_yres(struct vfs_interface *self, unsigned int
 
 static unsigned int read(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
+
+    if (id >= 51000)
+        return read_interface_enable(self, id - 51000, offset, count, buffer);
 
     if (id >= 41000)
         return read_interface_yres(self, id - 41000, offset, count, buffer);
@@ -143,6 +153,18 @@ static unsigned int write_interface_data(struct vfs_interface *self, unsigned in
 
 }
 
+static unsigned int write_interface_enable(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    struct video_filesystem *filesystem = (struct video_filesystem *)self;
+    struct video_interface *interface = filesystem->interfaces[id];
+
+    interface->enable(interface);
+
+    return 0;
+
+}
+
 static unsigned int write_interface_xres(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
@@ -175,6 +197,9 @@ static unsigned int write_interface_yres(struct vfs_interface *self, unsigned in
 
 static unsigned int write(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
+
+    if (id >= 51000)
+        return write_interface_enable(self, id - 51000, offset, count, buffer);;
 
     if (id >= 41000)
         return write_interface_yres(self, id - 41000, offset, count, buffer);;
@@ -209,6 +234,9 @@ static unsigned int walk_interface(struct vfs_interface *self, unsigned int id, 
 
     if (memory_match(path, "yres", 4))
         return id + 40000;
+
+    if (memory_match(path, "enable", 6))
+        return id + 50000;
 
     return 0;
 

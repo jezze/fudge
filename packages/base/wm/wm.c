@@ -112,7 +112,7 @@ void enable()
 
     unsigned int enable = 1;
 
-    call_open(3, 18, "/nodefs/bga_enable");
+    call_open(3, 15, "/video/0/enable");
     call_write(3, 0, 4, &enable);
     call_close(3);
 

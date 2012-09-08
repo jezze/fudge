@@ -1,19 +1,17 @@
 #include <memory.h>
 #include <vfs.h>
 #include <modules/modules.h>
-#include <nodefs/nodefs.h>
 #include <video/video.h>
 #include <arch/x86/bga/bga.h>
 
 static struct bga_driver driver;
-static struct nodefs_node enable;
 
-static unsigned int enable_write(struct nodefs_node *self, unsigned int offset, unsigned int count, void *buffer)
+static void enable(struct video_interface *self)
 {
 
-    driver.set_mode(&driver);
+    struct bga_driver *driver = (struct bga_driver *)self->driver;
 
-    return 0;
+    driver->set_mode(driver);
 
 }
 
@@ -98,9 +96,7 @@ void init()
 
     bga_driver_init(&driver);
     modules_register_driver(&driver.base);
-    video_register_interface(&driver.interface, &driver.base, read_data, write_data, read_bpp, write_bpp, read_xres, write_xres, read_yres, write_yres);
-
-    nodefs_register_node(&enable, "bga_enable", &driver.base.base, 0, enable_write);
+    video_register_interface(&driver.interface, &driver.base, enable, read_data, write_data, read_bpp, write_bpp, read_xres, write_xres, read_yres, write_yres);
 
 }
 
