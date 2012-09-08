@@ -1,4 +1,4 @@
-#include <modules/modules.h>
+#include <base/base.h>
 #include <arch/x86/uart/uart.h>
 
 static struct uart_device device1;
@@ -16,22 +16,22 @@ void init()
     uart_device_init(&device4, UART_BASE4, UART_IRQ2);
     uart_driver_init(&driver);
 
-    modules_register_device(&device1.base);
-    modules_register_device(&device2.base);
-    modules_register_device(&device3.base);
-    modules_register_device(&device4.base);
-    modules_register_driver(&driver.base);
+    base_register_device(&device1.base);
+    base_register_device(&device2.base);
+    base_register_device(&device3.base);
+    base_register_device(&device4.base);
+    base_register_driver(&driver.base);
 
 }
 
 void destroy()
 {
 
-    modules_unregister_driver(&driver.base);
-    modules_unregister_device(&device1.base);
-    modules_unregister_device(&device2.base);
-    modules_unregister_device(&device3.base);
-    modules_unregister_device(&device4.base);
+    base_unregister_driver(&driver.base);
+    base_unregister_device(&device1.base);
+    base_unregister_device(&device2.base);
+    base_unregister_device(&device3.base);
+    base_unregister_device(&device4.base);
 
 }
 

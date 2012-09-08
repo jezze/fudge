@@ -1,10 +1,10 @@
 #include <vfs.h>
-#include <modules/modules.h>
+#include <base/base.h>
 #include <video/video.h>
 
 static struct video_filesystem filesystem;
 
-void video_register_interface(struct video_interface *interface, struct modules_driver *driver)
+void video_register_interface(struct video_interface *interface, struct base_driver *driver)
 {
 
     interface->driver = driver;

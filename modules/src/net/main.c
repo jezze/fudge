@@ -1,10 +1,10 @@
 #include <vfs.h>
-#include <modules/modules.h>
+#include <base/base.h>
 #include <net/net.h>
 
 static struct net_filesystem filesystem;
 
-void net_register_interface(struct net_interface *interface, struct modules_driver *driver)
+void net_register_interface(struct net_interface *interface, struct base_driver *driver)
 {
 
     interface->driver = driver;

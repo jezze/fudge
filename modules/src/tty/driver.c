@@ -1,7 +1,7 @@
 #include <memory.h>
 #include <string.h>
 #include <vfs.h>
-#include <modules/modules.h>
+#include <base/base.h>
 #include <tty/tty.h>
 #include <arch/x86/vga/vga.h>
 
@@ -77,7 +77,7 @@ static void putc(struct tty_driver *self, char c)
 
 }
 
-static void start(struct modules_driver *self)
+static void start(struct base_driver *self)
 {
 
     struct tty_driver *driver = (struct tty_driver *)self;
@@ -91,7 +91,7 @@ void tty_driver_init(struct tty_driver *driver, char *cwdname)
 
     memory_clear(driver, sizeof (struct tty_driver));
 
-    modules_driver_init(&driver->base, TTY_DRIVER_TYPE, "tty", start, 0, 0);
+    base_driver_init(&driver->base, TTY_DRIVER_TYPE, "tty", start, 0, 0);
 
     memory_copy(driver->cwdname, cwdname, string_length(cwdname) + 1);
     driver->clear = clear;

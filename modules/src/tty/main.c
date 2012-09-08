@@ -1,7 +1,7 @@
 #include <memory.h>
 #include <string.h>
 #include <vfs.h>
-#include <modules/modules.h>
+#include <base/base.h>
 #include <tty/tty.h>
 
 static struct tty_driver driver;
@@ -18,7 +18,7 @@ void init()
 {
 
     tty_driver_init(&driver, "/");
-    modules_register_driver(&driver.base);
+    base_register_driver(&driver.base);
 
     tty_filesystem_init(&filesystem, &driver);
 
@@ -27,7 +27,7 @@ void init()
 void destroy()
 {
 
-    modules_unregister_driver(&driver.base);
+    base_unregister_driver(&driver.base);
 
 }
 

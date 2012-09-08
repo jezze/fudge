@@ -27,7 +27,7 @@ struct ps2_kbd_buffer
 struct ps2_kbd_device
 {
 
-    struct modules_device base;
+    struct base_device base;
     unsigned int irq;
 
 };
@@ -35,7 +35,7 @@ struct ps2_kbd_device
 struct ps2_kbd_driver
 {
 
-    struct modules_driver base;
+    struct base_driver base;
     struct ps2_kbd_buffer buffer;
     char *map;
     unsigned int escaped;
@@ -48,7 +48,7 @@ struct ps2_kbd_driver
 struct ps2_mouse_device
 {
 
-    struct modules_device base;
+    struct base_device base;
     unsigned int irq;
 
 };
@@ -56,7 +56,7 @@ struct ps2_mouse_device
 struct ps2_mouse_driver
 {
 
-    struct modules_driver base;
+    struct base_driver base;
     unsigned char cycle;
     char status;
     char x;

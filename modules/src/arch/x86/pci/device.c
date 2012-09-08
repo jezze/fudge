@@ -1,5 +1,5 @@
 #include <memory.h>
-#include <modules/modules.h>
+#include <base/base.h>
 #include <arch/x86/io/io.h>
 #include <arch/x86/pci/pci.h>
 
@@ -29,7 +29,7 @@ void pci_device_init(struct pci_device *device, struct pci_bus *bus, unsigned in
 
     memory_clear(device, sizeof (struct pci_device));
 
-    modules_device_init(&device->base, PCI_DEVICE_TYPE, "pci");
+    base_device_init(&device->base, PCI_DEVICE_TYPE, "pci");
 
     device->bus = bus;
     device->num = num;

@@ -112,7 +112,7 @@
 struct i915_driver
 {
 
-    struct modules_driver base;
+    struct base_driver base;
 
 };
 

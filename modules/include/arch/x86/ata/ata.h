@@ -86,7 +86,7 @@ struct ata_partition
 struct ata_device
 {
 
-    struct modules_device base;
+    struct base_device base;
     struct ata_bus *bus;
     struct pci_device *pciDevice;
     unsigned int irq;
@@ -112,7 +112,7 @@ struct ata_device
 struct ata_bus
 {
 
-    struct modules_bus base;
+    struct base_bus base;
     unsigned short control;
     unsigned short data;
     struct ata_device devices[8];
@@ -134,7 +134,7 @@ struct ata_bus
 struct ata_driver
 {
 
-    struct modules_driver base;
+    struct base_driver base;
     struct block_interface interface;
 
 };

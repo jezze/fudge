@@ -1,5 +1,5 @@
 #include <memory.h>
-#include <modules/modules.h>
+#include <base/base.h>
 #include <arch/x86/io/io.h>
 #include <arch/x86/vga/vga.h>
 
@@ -71,7 +71,7 @@ static void set_cursor_offset(struct vga_driver *self, unsigned short offset)
 
 }
 
-static void start(struct modules_driver *self)
+static void start(struct base_driver *self)
 {
 
     struct vga_driver *driver = (struct vga_driver *)self;
@@ -85,7 +85,7 @@ void vga_driver_init(struct vga_driver *driver)
 
     memory_clear(driver, sizeof (struct vga_driver));
 
-    modules_driver_init(&driver->base, VGA_DRIVER_TYPE, "vga", start, 0, 0);
+    base_driver_init(&driver->base, VGA_DRIVER_TYPE, "vga", start, 0, 0);
 
     driver->read_framebuffer = read_framebuffer;
     driver->write_framebuffer = write_framebuffer;

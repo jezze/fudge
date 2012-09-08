@@ -1,6 +1,6 @@
 #include <memory.h>
 #include <vfs.h>
-#include <modules/modules.h>
+#include <base/base.h>
 #include <net/net.h>
 #include <arch/x86/apic/apic.h>
 #include <arch/x86/io/io.h>
@@ -116,7 +116,7 @@ static unsigned int write(struct rtl8139_driver *self, unsigned int count, void 
 
 }
 
-static void handle_irq(struct modules_device *device)
+static void handle_irq(struct base_device *device)
 {
 
     struct rtl8139_driver *driver = (struct rtl8139_driver *)device->driver;
@@ -130,7 +130,7 @@ static void handle_irq(struct modules_device *device)
 
 }
 
-static void start(struct modules_driver *self)
+static void start(struct base_driver *self)
 {
 
     struct rtl8139_driver *driver = (struct rtl8139_driver *)self;
@@ -151,7 +151,7 @@ static void start(struct modules_driver *self)
 
 }
 
-static void attach(struct modules_device *device)
+static void attach(struct base_device *device)
 {
 
     struct pci_device *pciDevice = (struct pci_device *)device;
@@ -165,7 +165,7 @@ static void attach(struct modules_device *device)
 
 }
 
-static unsigned int check(struct modules_driver *self, struct modules_device *device)
+static unsigned int check(struct base_driver *self, struct base_device *device)
 {
 
     struct pci_device *pciDevice;
@@ -202,7 +202,7 @@ void rtl8139_driver_init(struct rtl8139_driver *driver)
 
     memory_clear(driver, sizeof (struct rtl8139_driver));
 
-    modules_driver_init(&driver->base, RTL8139_DRIVER_TYPE, "rtl8139", start, check, attach);
+    base_driver_init(&driver->base, RTL8139_DRIVER_TYPE, "rtl8139", start, check, attach);
 
     driver->read = read;
     driver->write = write;

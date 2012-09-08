@@ -1,5 +1,5 @@
 #include <memory.h>
-#include <modules/modules.h>
+#include <base/base.h>
 #include <arch/x86/apic/apic.h>
 #include <arch/x86/io/io.h>
 #include <arch/x86/uart/uart.h>
@@ -38,7 +38,7 @@ static unsigned int buffer_putc(struct uart_buffer *self, char *buffer)
 
 }
 
-static void handle_irq(struct modules_device *self)
+static void handle_irq(struct base_device *self)
 {
 
     struct uart_device *device = (struct uart_device *)self;
@@ -50,7 +50,7 @@ static void handle_irq(struct modules_device *self)
 
 }
 
-static void attach(struct modules_device *device)
+static void attach(struct base_device *device)
 {
 
     struct uart_device *uartDevice = (struct uart_device *)device;
@@ -68,7 +68,7 @@ static void attach(struct modules_device *device)
 
 }
 
-static unsigned int check(struct modules_driver *self, struct modules_device *device)
+static unsigned int check(struct base_driver *self, struct base_device *device)
 {
 
     if (device->type != UART_DEVICE_TYPE)
@@ -83,7 +83,7 @@ void uart_driver_init(struct uart_driver *driver)
 
     memory_clear(driver, sizeof (struct uart_driver));
 
-    modules_driver_init(&driver->base, UART_DRIVER_TYPE, "uart", 0, check, attach);
+    base_driver_init(&driver->base, UART_DRIVER_TYPE, "uart", 0, check, attach);
 
     driver->buffer.size = 256;
     driver->buffer.getc = buffer_getc;

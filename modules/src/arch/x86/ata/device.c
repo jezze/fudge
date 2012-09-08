@@ -1,6 +1,6 @@
 #include <memory.h>
 #include <vfs.h>
-#include <modules/modules.h>
+#include <base/base.h>
 #include <block/block.h>
 #include <arch/x86/ata/ata.h>
 
@@ -148,7 +148,7 @@ void ata_device_init(struct ata_device *device, struct ata_bus *bus, unsigned in
 
     memory_clear(device, sizeof (struct ata_device));
 
-    modules_device_init(&device->base, ATA_DEVICE_TYPE, "ata");
+    base_device_init(&device->base, ATA_DEVICE_TYPE, "ata");
 
     device->bus = bus;
     device->type = type;

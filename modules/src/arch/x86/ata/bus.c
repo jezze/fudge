@@ -1,6 +1,6 @@
 #include <memory.h>
 #include <vfs.h>
-#include <modules/modules.h>
+#include <base/base.h>
 #include <block/block.h>
 #include <arch/x86/ata/ata.h>
 #include <arch/x86/io/io.h>
@@ -165,7 +165,7 @@ static unsigned int detect(struct ata_bus *self, unsigned int slave)
 
 }
 
-static void scan(struct modules_bus *self)
+static void scan(struct base_bus *self)
 {
 
     unsigned int type;
@@ -193,7 +193,7 @@ static void add_device(struct ata_bus *self, unsigned int slave, unsigned int ty
     if (type == ATA_DEVICE_TYPE_ATAPI)
         device->configure_atapi(device);
 
-    modules_register_device(&device->base);
+    base_register_device(&device->base);
 
     self->devicesCount++;
 
@@ -204,7 +204,7 @@ void ata_bus_init(struct ata_bus *bus, unsigned int control, unsigned int data)
 
     memory_clear(bus, sizeof (struct ata_bus));
 
-    modules_bus_init(&bus->base, ATA_BUS_TYPE, "ata", scan);
+    base_bus_init(&bus->base, ATA_BUS_TYPE, "ata", scan);
 
     bus->control = control;
     bus->data = data;

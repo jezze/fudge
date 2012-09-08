@@ -4,7 +4,7 @@
 struct video_interface
 {
 
-    struct modules_driver *driver;
+    struct base_driver *driver;
     unsigned int bpp;
     unsigned int xres;
     unsigned int yres;
@@ -32,7 +32,7 @@ struct video_filesystem
 
 };
 
-void video_register_interface(struct video_interface *interface, struct modules_driver *driver);
+void video_register_interface(struct video_interface *interface, struct base_driver *driver);
 void video_register_protocol(struct video_protocol *protocol);
 void video_unregister_interface(struct video_interface *interface);
 void video_unregister_protocol(struct video_protocol *protocol);

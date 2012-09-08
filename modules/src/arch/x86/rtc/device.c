@@ -1,5 +1,5 @@
 #include <memory.h>
-#include <modules/modules.h>
+#include <base/base.h>
 #include <arch/x86/io/io.h>
 #include <arch/x86/rtc/rtc.h>
 
@@ -24,7 +24,7 @@ void rtc_device_init(struct rtc_device *device, unsigned int irq)
 
     memory_clear(device, sizeof (struct rtc_device));
 
-    modules_device_init(&device->base, RTC_DEVICE_TYPE, "rtc");
+    base_device_init(&device->base, RTC_DEVICE_TYPE, "rtc");
 
     device->irq = irq;
     device->get_value = get_value;

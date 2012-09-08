@@ -4,7 +4,7 @@
 struct net_interface
 {
 
-    struct modules_driver *driver;
+    struct base_driver *driver;
     char mac[6];
     unsigned int (*read)(struct net_interface *self, unsigned int offset, unsigned int count, void *buffer);
     unsigned int (*write)(struct net_interface *self, unsigned int offset, unsigned int count, void *buffer);
@@ -29,7 +29,7 @@ struct net_filesystem
 
 };
 
-void net_register_interface(struct net_interface *interface, struct modules_driver *driver);
+void net_register_interface(struct net_interface *interface, struct base_driver *driver);
 void net_register_protocol(struct net_protocol *protocol);
 void net_unregister_interface(struct net_interface *interface);
 void net_unregister_protocol(struct net_protocol *protocol);

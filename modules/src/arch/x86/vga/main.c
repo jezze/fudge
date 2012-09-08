@@ -1,4 +1,4 @@
-#include <modules/modules.h>
+#include <base/base.h>
 #include <arch/x86/vga/vga.h>
 
 static struct vga_driver driver;
@@ -35,14 +35,14 @@ void init()
 {
 
     vga_driver_init(&driver);
-    modules_register_driver(&driver.base);
+    base_register_driver(&driver.base);
 
 }
 
 void destroy()
 {
 
-    modules_unregister_driver(&driver.base);
+    base_unregister_driver(&driver.base);
 
 }
 

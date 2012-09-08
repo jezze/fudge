@@ -1,6 +1,6 @@
 #include <memory.h>
 #include <vfs.h>
-#include <modules/modules.h>
+#include <base/base.h>
 #include <nodefs/nodefs.h>
 #include <arch/x86/ps2/ps2.h>
 
@@ -69,33 +69,33 @@ void init()
 {
 
     ps2_kbd_device_init(&kbdDevice, PS2_IRQ_KBD);
-    modules_register_device(&kbdDevice.base);
+    base_register_device(&kbdDevice.base);
 
     ps2_mouse_device_init(&mouseDevice, PS2_IRQ_MOUSE);
-    modules_register_device(&mouseDevice.base);
+    base_register_device(&mouseDevice.base);
 
     ps2_kbd_driver_init(&kbdDriver);
-    modules_register_driver(&kbdDriver.base);
+    base_register_driver(&kbdDriver.base);
 
     ps2_mouse_driver_init(&mouseDriver);
-    modules_register_driver(&mouseDriver.base);
+    base_register_driver(&mouseDriver.base);
 
-    nodefs_register_node(&buffer, "ps2_buffer", &kbdDriver.base.base, buffer_read, buffer_write);
-    nodefs_register_node(&mcycle, "ps2_mcycle", &mouseDriver.base.base, mcycle_read, 0);
-    nodefs_register_node(&mstatus, "ps2_mstatus", &mouseDriver.base.base, mstatus_read, 0);
-    nodefs_register_node(&mx, "ps2_mx", &mouseDriver.base.base, mx_read, 0);
-    nodefs_register_node(&my, "ps2_my", &mouseDriver.base.base, my_read, 0);
+    nodefs_register_node(&buffer, "ps2_buffer", &kbdDriver.base.module, buffer_read, buffer_write);
+    nodefs_register_node(&mcycle, "ps2_mcycle", &mouseDriver.base.module, mcycle_read, 0);
+    nodefs_register_node(&mstatus, "ps2_mstatus", &mouseDriver.base.module, mstatus_read, 0);
+    nodefs_register_node(&mx, "ps2_mx", &mouseDriver.base.module, mx_read, 0);
+    nodefs_register_node(&my, "ps2_my", &mouseDriver.base.module, my_read, 0);
 
 }
 
 void destroy()
 {
 
-    modules_unregister_driver(&kbdDriver.base);
-    modules_unregister_driver(&mouseDriver.base);
+    base_unregister_driver(&kbdDriver.base);
+    base_unregister_driver(&mouseDriver.base);
 
-    modules_unregister_device(&kbdDevice.base);
-    modules_unregister_device(&mouseDevice.base);
+    base_unregister_device(&kbdDevice.base);
+    base_unregister_device(&mouseDevice.base);
 
 }
 

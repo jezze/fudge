@@ -12,7 +12,7 @@
 struct pit_device
 {
 
-    struct modules_device base;
+    struct base_device base;
     unsigned int irq;
     unsigned short divisor;
     unsigned short jiffies;
@@ -22,7 +22,7 @@ struct pit_device
 struct pit_driver
 {
 
-    struct modules_driver base;
+    struct base_driver base;
 
 };
 

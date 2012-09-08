@@ -48,7 +48,7 @@ struct pci_bus;
 struct pci_device
 {
 
-    struct modules_device base;
+    struct base_device base;
     struct pci_bus *bus;
     unsigned int num;
     unsigned int slot;
@@ -63,7 +63,7 @@ struct pci_device
 struct pci_bus
 {
 
-    struct modules_bus base;
+    struct base_bus base;
     struct pci_device devices[64];
     unsigned int devicesCount;
     unsigned int (*ind)(unsigned int address, unsigned short offset);

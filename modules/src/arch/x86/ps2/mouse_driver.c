@@ -1,5 +1,5 @@
 #include <memory.h>
-#include <modules/modules.h>
+#include <base/base.h>
 #include <arch/x86/apic/apic.h>
 #include <arch/x86/io/io.h>
 #include <arch/x86/ps2/ps2.h>
@@ -37,7 +37,7 @@ static unsigned char read()
 
 }
 
-static void handle_irq(struct modules_device *self)
+static void handle_irq(struct base_device *self)
 {
 
     struct ps2_mouse_driver *mouse = (struct ps2_mouse_driver *)self->driver;
@@ -70,7 +70,7 @@ static void handle_irq(struct modules_device *self)
 
 }
 
-static void start(struct modules_driver *self)
+static void start(struct base_driver *self)
 {
 
     unsigned int status;
@@ -92,7 +92,7 @@ static void start(struct modules_driver *self)
 
 }
 
-static void attach(struct modules_device *device)
+static void attach(struct base_device *device)
 {
 
     struct ps2_mouse_device *mouseDevice = (struct ps2_mouse_device *)device;
@@ -101,7 +101,7 @@ static void attach(struct modules_device *device)
 
 }
 
-static unsigned int check(struct modules_driver *self, struct modules_device *device)
+static unsigned int check(struct base_driver *self, struct base_device *device)
 {
 
     return device->type == PS2_MOUSE_DEVICE_TYPE;
@@ -114,7 +114,7 @@ void ps2_mouse_driver_init(struct ps2_mouse_driver *driver)
 
     memory_clear(driver, sizeof (struct ps2_mouse_driver));
 
-    modules_driver_init(&driver->base, PS2_MOUSE_DRIVER_TYPE, "mouse", start, check, attach);
+    base_driver_init(&driver->base, PS2_MOUSE_DRIVER_TYPE, "mouse", start, check, attach);
 
     driver->cycle = 2;
 

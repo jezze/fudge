@@ -1,5 +1,5 @@
 #include <memory.h>
-#include <modules/modules.h>
+#include <base/base.h>
 #include <arch/x86/isr.h>
 #include <arch/x86/apic/apic.h>
 #include <arch/x86/cpuid/cpuid.h>
@@ -58,7 +58,7 @@ static void handle_interrupt(struct isr_registers *registers)
 
 }
 
-unsigned int apic_register_routine(unsigned int index, struct modules_device *device, void (*callback)(struct modules_device *device))
+unsigned int apic_register_routine(unsigned int index, struct base_device *device, void (*callback)(struct base_device *device))
 {
 
     if (routines[index].device)
@@ -71,7 +71,7 @@ unsigned int apic_register_routine(unsigned int index, struct modules_device *de
 
 }
 
-unsigned int apic_unregister_routine(unsigned int index, struct modules_device *device)
+unsigned int apic_unregister_routine(unsigned int index, struct base_device *device)
 {
 
     if (routines[index].device != device)

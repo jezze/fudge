@@ -2,7 +2,7 @@
 #include <runtime.h>
 #include <mmu.h>
 #include <vfs.h>
-#include <modules/modules.h>
+#include <base/base.h>
 #include <video/video.h>
 #include <arch/x86/bga/bga.h>
 #include <arch/x86/io/io.h>
@@ -27,7 +27,7 @@ static void set_mode(struct bga_driver *self)
 
 }
 
-static void start(struct modules_driver *self)
+static void start(struct base_driver *self)
 {
 
     struct bga_driver *driver = (struct bga_driver *)self;
@@ -37,7 +37,7 @@ static void start(struct modules_driver *self)
 
 }
 
-static void attach(struct modules_device *device)
+static void attach(struct base_device *device)
 {
 
     struct pci_device *pciDevice = (struct pci_device *)device;
@@ -47,7 +47,7 @@ static void attach(struct modules_device *device)
 
 }
 
-static unsigned int check(struct modules_driver *self, struct modules_device *device)
+static unsigned int check(struct base_driver *self, struct base_device *device)
 {
 
     struct pci_device *pciDevice;
@@ -97,7 +97,7 @@ void bga_driver_init(struct bga_driver *driver)
 
     memory_clear(driver, sizeof (struct bga_driver));
 
-    modules_driver_init(&driver->base, BGA_DRIVER_TYPE, "bga", start, check, attach);
+    base_driver_init(&driver->base, BGA_DRIVER_TYPE, "bga", start, check, attach);
 
     driver->bank = (void *)0xA0000;
     driver->set_mode = set_mode;

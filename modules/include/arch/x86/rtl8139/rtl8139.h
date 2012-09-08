@@ -113,7 +113,7 @@ struct rtl8139_header
 struct rtl8139_driver
 {
 
-    struct modules_driver base;
+    struct base_driver base;
     struct net_interface interface;
     unsigned short io;
     char rx[0x2600] __attribute__((aligned(4)));

@@ -27,7 +27,7 @@
 struct uart_device
 {
 
-    struct modules_device base;
+    struct base_device base;
     unsigned int port;
     unsigned int irq;
     char (*read)(struct uart_device *self);
@@ -50,7 +50,7 @@ struct uart_buffer
 struct uart_driver
 {
 
-    struct modules_driver base;
+    struct base_driver base;
     struct uart_buffer buffer;
 
 };

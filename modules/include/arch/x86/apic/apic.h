@@ -17,13 +17,13 @@
 struct apic_routine
 {
 
-    struct modules_device *device;
-    void (*callback)(struct modules_device *device);
+    struct base_device *device;
+    void (*callback)(struct base_device *device);
 
 };
 
-unsigned int apic_register_routine(unsigned int index, struct modules_device *device, void (*callback)(struct modules_device *device));
-unsigned int apic_unregister_routine(unsigned int index, struct modules_device *device);
+unsigned int apic_register_routine(unsigned int index, struct base_device *device, void (*callback)(struct base_device *device));
+unsigned int apic_unregister_routine(unsigned int index, struct base_device *device);
 
 #endif
 

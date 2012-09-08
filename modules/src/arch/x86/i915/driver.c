@@ -1,5 +1,5 @@
 #include <memory.h>
-#include <modules/modules.h>
+#include <base/base.h>
 #include <arch/x86/apic/apic.h>
 #include <arch/x86/pci/pci.h>
 #include <arch/x86/i915/i915.h>
@@ -113,12 +113,12 @@ static void set_pipe_mode(unsigned int width, unsigned int height)
 
 }
 
-static void handle_irq(struct modules_device *device)
+static void handle_irq(struct base_device *device)
 {
 
 }
 
-static void start(struct modules_driver *self)
+static void start(struct base_driver *self)
 {
 
     enable_dpll();
@@ -132,7 +132,7 @@ static void start(struct modules_driver *self)
 
 }
 
-static void attach(struct modules_device *device)
+static void attach(struct base_device *device)
 {
 
     struct pci_device *pciDevice = (struct pci_device *)device;
@@ -143,7 +143,7 @@ static void attach(struct modules_device *device)
 
 }
 
-static unsigned int check(struct modules_driver *self, struct modules_device *device)
+static unsigned int check(struct base_driver *self, struct base_device *device)
 {
 
     struct pci_device *pciDevice;
@@ -162,7 +162,7 @@ void i915_driver_init(struct i915_driver *driver)
 
     memory_clear(driver, sizeof (struct i915_driver));
 
-    modules_driver_init(&driver->base, I915_DRIVER_TYPE, "i915", start, check, attach);
+    base_driver_init(&driver->base, I915_DRIVER_TYPE, "i915", start, check, attach);
 
 }
 

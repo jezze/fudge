@@ -1,5 +1,5 @@
 #include <memory.h>
-#include <modules/modules.h>
+#include <base/base.h>
 #include <arch/x86/io/io.h>
 #include <arch/x86/pci/pci.h>
 
@@ -82,7 +82,7 @@ static void detect(struct pci_bus *self, unsigned int num)
 
 }
 
-static void scan(struct modules_bus *self)
+static void scan(struct base_bus *self)
 {
 
     struct pci_bus *bus = (struct pci_bus *)self;
@@ -97,7 +97,7 @@ static void add_device(struct pci_bus *self, unsigned int num, unsigned int slot
     struct pci_device *device = &self->devices[self->devicesCount];
 
     pci_device_init(device, self, num, slot, function, address);
-    modules_register_device(&device->base);
+    base_register_device(&device->base);
 
     self->devicesCount++;
 
@@ -108,7 +108,7 @@ void pci_bus_init(struct pci_bus *bus)
 
     memory_clear(bus, sizeof (struct pci_bus));
 
-    modules_bus_init(&bus->base, PCI_BUS_TYPE, "pci", scan);
+    base_bus_init(&bus->base, PCI_BUS_TYPE, "pci", scan);
 
     bus->ind = ind;
     bus->inw = inw;

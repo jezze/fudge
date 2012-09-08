@@ -3,7 +3,7 @@
 void load_modules_core(unsigned int id)
 {
 
-    call_open(FILE_STDIN, 23, "/ramdisk/mod/modules.ko");
+    call_open(FILE_STDIN, 20, "/ramdisk/mod/base.ko");
     call_execute(id);
 
     call_open(FILE_STDIN, 22, "/ramdisk/mod/nodefs.ko");

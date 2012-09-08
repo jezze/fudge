@@ -1,10 +1,10 @@
 #include <vfs.h>
-#include <modules/modules.h>
+#include <base/base.h>
 #include <block/block.h>
 
 static struct block_filesystem filesystem;
 
-void block_register_interface(struct block_interface *interface, struct modules_driver *driver)
+void block_register_interface(struct block_interface *interface, struct base_driver *driver)
 {
 
     interface->driver = driver;

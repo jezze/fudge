@@ -1,7 +1,7 @@
 #include <memory.h>
 #include <string.h>
 #include <vfs.h>
-#include <modules/modules.h>
+#include <base/base.h>
 #include <nodefs/nodefs.h>
 
 static unsigned int read(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
@@ -69,7 +69,7 @@ static unsigned int walk(struct vfs_interface *self, unsigned int id, unsigned i
 
 }
 
-static void register_node(struct nodefs_filesystem *self, struct nodefs_node *node, char *name, struct modules_base *module, unsigned int (*read)(struct nodefs_node *self, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write)(struct nodefs_node *self, unsigned int offset, unsigned int count, void *buffer))
+static void register_node(struct nodefs_filesystem *self, struct nodefs_node *node, char *name, struct base_module *module, unsigned int (*read)(struct nodefs_node *self, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write)(struct nodefs_node *self, unsigned int offset, unsigned int count, void *buffer))
 {
 
     unsigned int i;
