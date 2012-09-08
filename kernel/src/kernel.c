@@ -2,9 +2,10 @@
 #include <error.h>
 #include <kernel.h>
 #include <vfs.h>
+#include <binary.h>
+#include <mmu.h>
 #include <ramdisk.h>
 #include <runtime.h>
-#include <syscall.h>
 
 static struct ramdisk_image ramdiskImage;
 static struct ramdisk_filesystem ramdiskFilesystem;
@@ -12,11 +13,10 @@ static struct ramdisk_filesystem ramdiskFilesystem;
 static void start(struct kernel_interface *self)
 {
 
-    struct syscall_execute_args eargs;
-    struct runtime_mount *mount;
     struct runtime_task *task;
+    struct runtime_mount *mount;
+    struct runtime_descriptor *descriptor;
     unsigned int i;
-    unsigned int slot;
 
     self->setup(self);
 
@@ -41,13 +41,18 @@ static void start(struct kernel_interface *self)
     mount = runtime_get_task_mount(task, 2);
     runtime_mount_init(mount, &ramdiskFilesystem.interface, 9, "/ramdisk/");
 
-    runtime_descriptor_init(&task->descriptors[1], mount->interface->walk(mount->interface, mount->interface->rootid, 8, "bin/init"), mount);
+    descriptor = runtime_get_task_descriptor(task, 1);
+    runtime_descriptor_init(descriptor, mount->interface->walk(mount->interface, mount->interface->rootid, 8, "bin/init"), mount);
 
-    eargs.index = 1;
+    task->status.used = 1;
+    task->registers.ip = binary_get_entry(mount->interface, descriptor->id);
+    task->registers.sp = RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE;
+    task->registers.sb = RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE;
 
-    slot = syscall_execute(task, &eargs);
+    mmu_map_user_memory(task->id, RUNTIME_TASK_PADDRESS_BASE + task->id * RUNTIME_TASK_ADDRESS_SIZE, RUNTIME_TASK_VADDRESS_BASE, RUNTIME_TASK_ADDRESS_SIZE);
+    mmu_load_user_memory(task->id);
 
-    task = runtime_get_task(slot);
+    binary_copy_program(mount->interface, descriptor->id);
 
     self->enter_usermode(task->registers.ip, task->registers.sp);
 
