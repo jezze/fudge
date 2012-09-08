@@ -26,8 +26,8 @@ unsigned int syscall_close(struct runtime_task *task, void *stack)
     if (!descriptor)
         return 0;
 
-    if (descriptor->mount->interface->close)
-        descriptor->mount->interface->close(descriptor->mount->interface, descriptor->id);
+    if (descriptor->interface->close)
+        descriptor->interface->close(descriptor->interface, descriptor->id);
 
     descriptor->id = 0;
 
@@ -53,7 +53,7 @@ unsigned int syscall_execute(struct runtime_task *task, void *stack)
     unsigned int slot;
     unsigned int entry;
 
-    if (!descriptor || !descriptor->mount->interface->read)
+    if (!descriptor || !descriptor->interface->read)
         return 0;
 
     slot = runtime_get_task_slot(task->id);
@@ -61,7 +61,7 @@ unsigned int syscall_execute(struct runtime_task *task, void *stack)
     if (!slot)
         return 0;
 
-    entry = binary_get_entry(descriptor->mount->interface, descriptor->id);
+    entry = binary_get_entry(descriptor->interface, descriptor->id);
 
     if (!entry)
         return 0;
@@ -73,7 +73,7 @@ unsigned int syscall_execute(struct runtime_task *task, void *stack)
     mmu_map_user_memory(ntask->id, RUNTIME_TASK_PADDRESS_BASE + ntask->id * RUNTIME_TASK_ADDRESS_SIZE, RUNTIME_TASK_VADDRESS_BASE, RUNTIME_TASK_ADDRESS_SIZE);
     mmu_load_user_memory(ntask->id);
 
-    if (!binary_copy_program(descriptor->mount->interface, descriptor->id))
+    if (!binary_copy_program(descriptor->interface, descriptor->id))
         return 0;
 
     ntask->status.used = 1;
@@ -111,19 +111,19 @@ unsigned int syscall_load(struct runtime_task *task, void *stack)
     void (*init)();
     unsigned int physical;
 
-    if (!descriptor || !descriptor->mount->interface->get_physical)
+    if (!descriptor || !descriptor->interface->get_physical)
         return 0;
 
-    physical = descriptor->mount->interface->get_physical(descriptor->mount->interface, descriptor->id);
+    physical = descriptor->interface->get_physical(descriptor->interface, descriptor->id);
 
     if (!physical)
         return 0;
 
     /* Physical should be replaced with known address later on */
-    if (!binary_relocate(descriptor->mount->interface, descriptor->id, physical))
+    if (!binary_relocate(descriptor->interface, descriptor->id, physical))
         return 0;
 
-    init = (void (*)())(binary_find_symbol(descriptor->mount->interface, descriptor->id, "init"));
+    init = (void (*)())(binary_find_symbol(descriptor->interface, descriptor->id, "init"));
 
     if (!init)
         return 0;
@@ -145,7 +145,7 @@ unsigned int syscall_mount(struct runtime_task *task, void *stack)
     if (!args->count || !args->path || !descriptor || !mount)
         return 0;
 
-    get_interface = (struct vfs_interface *(*)())(binary_find_symbol(descriptor->mount->interface, descriptor->id, "get_filesystem"));
+    get_interface = (struct vfs_interface *(*)())(binary_find_symbol(descriptor->interface, descriptor->id, "get_filesystem"));
 
     if (!get_interface)
         return 0;
@@ -172,10 +172,10 @@ unsigned int syscall_open(struct runtime_task *task, void *stack)
     if (!id)
         return 0;
 
-    runtime_descriptor_init(descriptor, id, mount);
+    runtime_descriptor_init(descriptor, id, mount->interface);
 
-    if (descriptor->mount->interface->open)
-        descriptor->mount->interface->open(descriptor->mount->interface, descriptor->id);
+    if (descriptor->interface->open)
+        descriptor->interface->open(descriptor->interface, descriptor->id);
 
     return args->index;
 
@@ -187,10 +187,10 @@ unsigned int syscall_read(struct runtime_task *task, void *stack)
     struct syscall_read_args *args = stack;
     struct runtime_descriptor *descriptor = runtime_get_task_descriptor(task, args->index);
 
-    if (!descriptor || !descriptor->mount->interface->read)
+    if (!descriptor || !descriptor->interface->read)
         return 0;
 
-    return descriptor->mount->interface->read(descriptor->mount->interface, descriptor->id, args->offset, args->count, args->buffer);
+    return descriptor->interface->read(descriptor->interface, descriptor->id, args->offset, args->count, args->buffer);
 
 }
 
@@ -204,7 +204,7 @@ unsigned int syscall_unload(struct runtime_task *task, void *stack)
     if (!descriptor)
         return 0;
 
-    destroy = (void (*)())(binary_find_symbol(descriptor->mount->interface, descriptor->id, "destroy"));
+    destroy = (void (*)())(binary_find_symbol(descriptor->interface, descriptor->id, "destroy"));
 
     if (!destroy)
         return 0;
@@ -221,10 +221,10 @@ unsigned int syscall_write(struct runtime_task *task, void *stack)
     struct syscall_write_args *args = stack;
     struct runtime_descriptor *descriptor = runtime_get_task_descriptor(task, args->index);
 
-    if (!descriptor || !descriptor->mount->interface->write)
+    if (!descriptor || !descriptor->interface->write)
         return 0;
 
-    return descriptor->mount->interface->write(descriptor->mount->interface, descriptor->id, args->offset, args->count, args->buffer);
+    return descriptor->interface->write(descriptor->interface, descriptor->id, args->offset, args->count, args->buffer);
 
 }
 

@@ -80,13 +80,13 @@ struct runtime_mount *runtime_find_task_mount(struct runtime_task *self, char *p
 
 }
 
-void runtime_descriptor_init(struct runtime_descriptor *descriptor, unsigned int id, struct runtime_mount *mount)
+void runtime_descriptor_init(struct runtime_descriptor *descriptor, unsigned int id, struct vfs_interface *interface)
 {
 
     memory_clear(descriptor, sizeof (struct runtime_descriptor));
 
     descriptor->id = id;
-    descriptor->mount = mount;
+    descriptor->interface = interface;
 
 }
 
