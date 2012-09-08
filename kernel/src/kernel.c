@@ -38,7 +38,7 @@ static void start(struct kernel_interface *self)
     task = runtime_get_task(1);
     runtime_task_init(task, 1);
 
-    mount = runtime_get_task_mount(task, 2);
+    mount = runtime_get_task_mount(task, 1);
     runtime_mount_init(mount, &ramdiskFilesystem.interface, 9, "/ramdisk/");
 
     descriptor = runtime_get_task_descriptor(task, 1);
