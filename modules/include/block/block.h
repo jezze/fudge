@@ -32,7 +32,6 @@ void block_register_interface(struct block_interface *interface, struct modules_
 void block_register_protocol(struct block_protocol *protocol);
 void block_unregister_interface(struct block_interface *interface);
 void block_unregister_protocol(struct block_protocol *protocol);
-void block_interface_init(struct block_interface *interface);
 void block_filesystem_init(struct block_filesystem *filesystem);
 
 #endif
