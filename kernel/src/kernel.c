@@ -3,7 +3,6 @@
 #include <kernel.h>
 #include <vfs.h>
 #include <binary.h>
-#include <mmu.h>
 #include <ramdisk.h>
 #include <runtime.h>
 
@@ -48,9 +47,6 @@ static void start(struct kernel_interface *self)
     task->registers.ip = binary_get_entry(mount->interface, descriptor->id);
     task->registers.sp = RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE;
     task->registers.sb = RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE;
-
-    mmu_map_user_memory(task->id, RUNTIME_TASK_PADDRESS_BASE + task->id * RUNTIME_TASK_ADDRESS_SIZE, RUNTIME_TASK_VADDRESS_BASE, RUNTIME_TASK_ADDRESS_SIZE);
-    mmu_load_user_memory(task->id);
 
     binary_copy_program(mount->interface, descriptor->id);
 

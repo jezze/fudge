@@ -55,6 +55,7 @@ void mmu_register_interface(struct mmu_interface *interface)
 
     interfaces[0] = interface;
     interfaces[0]->map_kernel_memory(0, 0x00000000, 0x00000000, 0x00400000);
+    interfaces[0]->map_user_memory(1, RUNTIME_TASK_PADDRESS_BASE + 1 * RUNTIME_TASK_ADDRESS_SIZE, RUNTIME_TASK_VADDRESS_BASE, RUNTIME_TASK_ADDRESS_SIZE);
     interfaces[0]->load_user_memory(1);
     interfaces[0]->enable();
 
