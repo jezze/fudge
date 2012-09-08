@@ -77,8 +77,6 @@ unsigned int syscall_execute(struct runtime_task *task, void *stack)
         return 0;
 
     ntask->status.used = 1;
-    ntask->status.idle = 0;
-    ntask->status.event = 0;
 
     return slot;
 

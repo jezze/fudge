@@ -41,10 +41,10 @@ static void start(struct kernel_interface *self)
 
     binary_copy_program(&ramdiskFilesystem.interface, id);
 
+    task->status.used = 1;
+
     mount = runtime_get_task_mount(task, 1);
     runtime_mount_init(mount, &ramdiskFilesystem.interface, 9, "/ramdisk/");
-
-    task->status.used = 1;
 
     self->enter_usermode(task->registers.ip, task->registers.sp);
 
