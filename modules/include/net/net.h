@@ -29,8 +29,8 @@ struct net_filesystem
 
 };
 
-void net_register_interface(struct net_interface *interface, struct modules_driver *driver, unsigned int (*read)(struct net_interface *self, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write)(struct net_interface *self, unsigned int offset, unsigned int count, void *buffer));
-void net_register_protocol(struct net_protocol *protocol, char *name);
+void net_register_interface(struct net_interface *interface, struct modules_driver *driver);
+void net_register_protocol(struct net_protocol *protocol);
 void net_unregister_interface(struct net_interface *interface);
 void net_unregister_protocol(struct net_protocol *protocol);
 void net_filesystem_init(struct net_filesystem *filesystem);

@@ -4,22 +4,18 @@
 
 static struct net_filesystem filesystem;
 
-void net_register_interface(struct net_interface *interface, struct modules_driver *driver, unsigned int (*read)(struct net_interface *self, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write)(struct net_interface *self, unsigned int offset, unsigned int count, void *buffer))
+void net_register_interface(struct net_interface *interface, struct modules_driver *driver)
 {
 
     interface->driver = driver;
-    interface->read = read;
-    interface->write = write;
 
     filesystem.interfaces[filesystem.interfacesCount] = interface;
     filesystem.interfacesCount++;
 
 }
 
-void net_register_protocol(struct net_protocol *protocol, char *name)
+void net_register_protocol(struct net_protocol *protocol)
 {
-
-    protocol->name = name;
 
     filesystem.protocols[filesystem.protocolsCount] = protocol;
     filesystem.protocolsCount++;
