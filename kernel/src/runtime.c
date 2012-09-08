@@ -101,12 +101,15 @@ void runtime_mount_init(struct runtime_mount *mount, struct vfs_interface *inter
 
 }
 
-void runtime_task_init(struct runtime_task *task, unsigned int id)
+void runtime_task_init(struct runtime_task *task, unsigned int id, unsigned int ip)
 {
 
     memory_clear(task, sizeof (struct runtime_task));
 
     task->id = id;
+    task->registers.ip = ip;
+    task->registers.sp = RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE;
+    task->registers.sb = RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE;
 
 }
 

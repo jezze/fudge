@@ -16,6 +16,7 @@ static void start(struct kernel_interface *self)
     struct runtime_mount *mount;
     struct runtime_descriptor *descriptor;
     unsigned int i;
+    unsigned int id;
 
     self->setup(self);
 
@@ -34,19 +35,18 @@ static void start(struct kernel_interface *self)
 
     ramdisk_filesystem_init(&ramdiskFilesystem, &ramdiskImage);
 
+    id = ramdiskFilesystem.interface.walk(&ramdiskFilesystem.interface, ramdiskFilesystem.interface.rootid, 8, "bin/init");
+
     task = runtime_get_task(1);
-    runtime_task_init(task, 1);
+    runtime_task_init(task, 1, binary_get_entry(&ramdiskFilesystem.interface, id));
 
     mount = runtime_get_task_mount(task, 1);
     runtime_mount_init(mount, &ramdiskFilesystem.interface, 9, "/ramdisk/");
 
     descriptor = runtime_get_task_descriptor(task, 1);
-    runtime_descriptor_init(descriptor, mount->interface->walk(mount->interface, mount->interface->rootid, 8, "bin/init"), mount);
+    runtime_descriptor_init(descriptor, id, mount);
 
     task->status.used = 1;
-    task->registers.ip = binary_get_entry(mount->interface, descriptor->id);
-    task->registers.sp = RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE;
-    task->registers.sb = RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE;
 
     binary_copy_program(mount->interface, descriptor->id);
 
