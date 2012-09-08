@@ -6,45 +6,30 @@
 #include <ramdisk.h>
 #include <runtime.h>
 
-static struct ramdisk_image ramdiskImage;
-static struct ramdisk_filesystem ramdiskFilesystem;
-
 static void start(struct kernel_interface *self)
 {
 
+    struct vfs_interface *ramdisk;
     struct runtime_task *task;
     struct runtime_mount *mount;
-    unsigned int i;
     unsigned int id;
 
     self->setup(self);
 
     runtime_setup();
+    ramdisk = ramdisk_setup(self->ramdiskc, self->ramdiskv);
 
-    ramdisk_image_init(&ramdiskImage);
-
-    for (i = 0; i < self->ramdiskc; i++)
-    {
-
-        unsigned int count = ramdiskImage.parse(&ramdiskImage, *(self->ramdiskv + i));
-
-        error_assert(count != 0, "Ramdisk error", __FILE__, __LINE__);
-
-    }
-
-    ramdisk_filesystem_init(&ramdiskFilesystem, &ramdiskImage);
-
-    id = ramdiskFilesystem.interface.walk(&ramdiskFilesystem.interface, ramdiskFilesystem.interface.rootid, 8, "bin/init");
+    id = ramdisk->walk(ramdisk, ramdisk->rootid, 8, "bin/init");
 
     task = runtime_get_task(1);
-    runtime_task_init(task, 1, binary_get_entry(&ramdiskFilesystem.interface, id));
+    runtime_task_init(task, 1, binary_get_entry(ramdisk, id));
 
-    binary_copy_program(&ramdiskFilesystem.interface, id);
+    binary_copy_program(ramdisk, id);
 
     task->status.used = 1;
 
     mount = runtime_get_task_mount(task, 1);
-    runtime_mount_init(mount, &ramdiskFilesystem.interface, 9, "/ramdisk/");
+    runtime_mount_init(mount, ramdisk, 9, "/ramdisk/");
 
     self->enter_usermode(task->registers.ip, task->registers.sp);
 

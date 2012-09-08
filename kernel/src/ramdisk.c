@@ -4,6 +4,9 @@
 #include <vfs.h>
 #include <ramdisk.h>
 
+static struct ramdisk_image ramdiskImage;
+static struct ramdisk_filesystem ramdiskFilesystem;
+
 static unsigned int validate(struct tar_header *header)
 {
 
@@ -208,3 +211,18 @@ void ramdisk_filesystem_init(struct ramdisk_filesystem *filesystem, struct ramdi
 
 }
 
+struct vfs_interface *ramdisk_setup(int ramdiskc, void **ramdiskv)
+{
+
+    unsigned int i;
+
+    ramdisk_image_init(&ramdiskImage);
+
+    for (i = 0; i < ramdiskc; i++)
+        ramdiskImage.parse(&ramdiskImage, *(ramdiskv + i));
+
+    ramdisk_filesystem_init(&ramdiskFilesystem, &ramdiskImage);
+
+    return &ramdiskFilesystem.interface;
+
+}
