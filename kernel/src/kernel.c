@@ -14,7 +14,6 @@ static void start(struct kernel_interface *self)
 
     struct runtime_task *task;
     struct runtime_mount *mount;
-    struct runtime_descriptor *descriptor;
     unsigned int i;
     unsigned int id;
 
@@ -40,15 +39,12 @@ static void start(struct kernel_interface *self)
     task = runtime_get_task(1);
     runtime_task_init(task, 1, binary_get_entry(&ramdiskFilesystem.interface, id));
 
+    binary_copy_program(&ramdiskFilesystem.interface, id);
+
     mount = runtime_get_task_mount(task, 1);
     runtime_mount_init(mount, &ramdiskFilesystem.interface, 9, "/ramdisk/");
 
-    descriptor = runtime_get_task_descriptor(task, 1);
-    runtime_descriptor_init(descriptor, id, mount);
-
     task->status.used = 1;
-
-    binary_copy_program(mount->interface, descriptor->id);
 
     self->enter_usermode(task->registers.ip, task->registers.sp);
 
