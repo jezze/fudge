@@ -47,9 +47,7 @@ static unsigned int read_interface_bpp(struct vfs_interface *self, unsigned int 
     struct video_filesystem *filesystem = (struct video_filesystem *)self;
     struct video_interface *interface = filesystem->interfaces[id];
 
-    unsigned int bpp = interface->read_bpp(interface);
-
-    memory_copy(buffer, &bpp, 4);
+    memory_copy(buffer, &interface->bpp, 4);
 
     return 4;
 
@@ -78,9 +76,7 @@ static unsigned int read_interface_xres(struct vfs_interface *self, unsigned int
     struct video_filesystem *filesystem = (struct video_filesystem *)self;
     struct video_interface *interface = filesystem->interfaces[id];
 
-    unsigned int xres = interface->read_xres(interface);
-
-    memory_copy(buffer, &xres, 4);
+    memory_copy(buffer, &interface->xres, 4);
 
     return 4;
 
@@ -92,9 +88,7 @@ static unsigned int read_interface_yres(struct vfs_interface *self, unsigned int
     struct video_filesystem *filesystem = (struct video_filesystem *)self;
     struct video_interface *interface = filesystem->interfaces[id];
 
-    unsigned int yres = interface->read_yres(interface);
-
-    memory_copy(buffer, &yres, 4);
+    memory_copy(buffer, &interface->yres, 4);
 
     return 4;
 
@@ -133,11 +127,8 @@ static unsigned int write_interface_bpp(struct vfs_interface *self, unsigned int
 
     struct video_filesystem *filesystem = (struct video_filesystem *)self;
     struct video_interface *interface = filesystem->interfaces[id];
-    unsigned int bpp = 0;
 
-    memory_copy(&bpp, buffer, 4);
-
-    interface->write_bpp(interface, bpp);
+    memory_copy(&interface->bpp, buffer, 4);
 
     return 4;
 
@@ -170,11 +161,8 @@ static unsigned int write_interface_xres(struct vfs_interface *self, unsigned in
 
     struct video_filesystem *filesystem = (struct video_filesystem *)self;
     struct video_interface *interface = filesystem->interfaces[id];
-    unsigned int xres = 0;
 
-    memory_copy(&xres, buffer, 4);
-
-    interface->write_xres(interface, xres);
+    memory_copy(&interface->xres, buffer, 4);
 
     return 4;
 
@@ -185,11 +173,8 @@ static unsigned int write_interface_yres(struct vfs_interface *self, unsigned in
 
     struct video_filesystem *filesystem = (struct video_filesystem *)self;
     struct video_interface *interface = filesystem->interfaces[id];
-    unsigned int yres = 0;
 
-    memory_copy(&yres, buffer, 4);
-
-    interface->write_yres(interface, yres);
+    memory_copy(&interface->yres, buffer, 4);
 
     return 4;
 

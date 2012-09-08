@@ -31,9 +31,6 @@ struct bga_driver
     struct video_interface interface;
     void *bank;
     void *lfb;
-    unsigned int xres;
-    unsigned int yres;
-    unsigned int bpp;
     void (*set_mode)(struct bga_driver *self);
 
 };
