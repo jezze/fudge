@@ -20,17 +20,29 @@ void main()
     if (memory_match(bufferIn, "/", 1))
     {
 
+        if (!call_open(4, countIn, bufferIn))
+            return;
+
         call_write(3, 0, countIn, bufferIn);
 
         return;
 
     }
 
-    countCwd = call_read(3, 0, BUFFER_SIZE, bufferCwd);
+    else
+    {
 
-    memory_copy(bufferCwd + countCwd, bufferIn, countIn);
+        countCwd = call_read(3, 0, BUFFER_SIZE, bufferCwd);
 
-    call_write(3, 0, countCwd + countIn, bufferCwd);
+        memory_copy(bufferCwd + countCwd, bufferIn, countIn);
+
+        if (!call_open(4, countCwd + countIn, bufferCwd))
+            return;
+
+        call_write(3, 0, countCwd + countIn, bufferCwd);
+
+    }
+
     call_close(3);
 
 }
