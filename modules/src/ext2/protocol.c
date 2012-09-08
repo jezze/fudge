@@ -95,6 +95,7 @@ void ext2_protocol_init(struct ext2_protocol *protocol)
 
     memory_clear(protocol, sizeof (struct ext2_protocol));
 
+    protocol->base.name = "ext2";
     protocol->validate = validate;
     protocol->read_blockgroup = read_blockgroup;
     protocol->read_node = read_node;

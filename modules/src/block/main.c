@@ -4,22 +4,18 @@
 
 static struct block_filesystem filesystem;
 
-void block_register_interface(struct block_interface *interface, struct modules_driver *driver, unsigned int (*read)(struct block_interface *self, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write)(struct block_interface *self, unsigned int offset, unsigned int count, void *buffer))
+void block_register_interface(struct block_interface *interface, struct modules_driver *driver)
 {
 
     interface->driver = driver;
-    interface->read = read;
-    interface->write = write;
 
     filesystem.interfaces[filesystem.interfacesCount] = interface;
     filesystem.interfacesCount++;
 
 }
 
-void block_register_protocol(struct block_protocol *protocol, char *name)
+void block_register_protocol(struct block_protocol *protocol)
 {
-
-    protocol->name = name;
 
     filesystem.protocols[filesystem.protocolsCount] = protocol;
     filesystem.protocolsCount++;

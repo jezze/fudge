@@ -8,7 +8,7 @@ void init()
 {
 
     ext2_protocol_init(&protocol);
-    block_register_protocol(&protocol.base, "ext2");
+    block_register_protocol(&protocol.base);
 
 }
 

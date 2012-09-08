@@ -18,7 +18,7 @@ void init()
 
     ata_driver_init(&driver);
     modules_register_driver(&driver.base);
-    block_register_interface(&driver.interface, &driver.base, 0, 0);
+    block_register_interface(&driver.interface, &driver.base);
 
 }
 
