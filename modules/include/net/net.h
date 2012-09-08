@@ -26,10 +26,6 @@ struct net_filesystem
     unsigned int interfacesCount;
     struct net_protocol *protocols[16];
     unsigned int protocolsCount;
-    void (*register_interface)(struct net_filesystem *self, struct net_interface *interface, struct modules_driver *driver, unsigned int (*read)(struct net_interface *self, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write)(struct net_interface *self, unsigned int offset, unsigned int count, void *buffer));
-    void (*register_protocol)(struct net_filesystem *self, struct net_protocol *protocol, char *name);
-    void (*unregister_interface)(struct net_filesystem *self, struct net_interface *interface);
-    void (*unregister_protocol)(struct net_filesystem *self, struct net_protocol *protocol);
 
 };
 

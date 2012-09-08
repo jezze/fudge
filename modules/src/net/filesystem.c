@@ -134,53 +134,12 @@ static unsigned int walk(struct vfs_interface *self, unsigned int id, unsigned i
 
 }
 
-static void register_interface(struct net_filesystem *self, struct net_interface *interface, struct modules_driver *driver, unsigned int (*read)(struct net_interface *self, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write)(struct net_interface *self, unsigned int offset, unsigned int count, void *buffer))
-{
-
-    interface->driver = driver;
-    interface->read = read;
-    interface->write = write;
-
-    self->interfaces[self->interfacesCount] = interface;
-    self->interfacesCount++;
-
-}
-
-static void register_protocol(struct net_filesystem *self, struct net_protocol *protocol, char *name)
-{
-
-    protocol->name = name;
-
-    self->protocols[self->protocolsCount] = protocol;
-    self->protocolsCount++;
-
-}
-
-static void unregister_interface(struct net_filesystem *self, struct net_interface *interface)
-{
-
-    self->interfacesCount--;
-
-}
-
-static void unregister_protocol(struct net_filesystem *self, struct net_protocol *protocol)
-{
-
-    self->protocolsCount--;
-
-}
-
 void net_filesystem_init(struct net_filesystem *filesystem)
 {
 
     memory_clear(filesystem, sizeof (struct net_filesystem));
 
     vfs_interface_init(&filesystem->base, 1, "net", 0, 0, read, write, walk, 0);
-
-    filesystem->register_interface = register_interface;
-    filesystem->register_protocol = register_protocol;
-    filesystem->unregister_interface = unregister_interface;
-    filesystem->unregister_protocol = unregister_protocol;
 
 }
 
