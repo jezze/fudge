@@ -83,7 +83,7 @@ static void write_fill(unsigned int x, unsigned int y, unsigned int w, unsigned 
 void set_xres(unsigned int xres)
 {
 
-    call_open(3, 16, "/nodefs/bga_xres");
+    call_open(3, 13, "/video/0/xres");
     call_write(3, 0, 4, &xres);
     call_close(3);
 
@@ -92,7 +92,7 @@ void set_xres(unsigned int xres)
 void set_yres(unsigned int yres)
 {
 
-    call_open(3, 16, "/nodefs/bga_yres");
+    call_open(3, 13, "/video/0/yres");
     call_write(3, 0, 4, &yres);
     call_close(3);
 
