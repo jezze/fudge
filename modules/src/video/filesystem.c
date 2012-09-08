@@ -35,9 +35,23 @@ static unsigned int read_root(struct vfs_interface *self, unsigned int id, unsig
 static unsigned int read_interface(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    memory_copy(buffer, "data\n", 5);
+    memory_copy(buffer, "bpp\ndata\n", 9);
 
-    return 5;
+    return 9;
+
+}
+
+static unsigned int read_interface_bpp(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    struct video_filesystem *filesystem = (struct video_filesystem *)self;
+    struct video_interface *interface = filesystem->interfaces[id];
+
+    unsigned int bpp = interface->read_bpp(interface);
+
+    memory_copy(buffer, &bpp, 4);
+
+    return 4;
 
 }
 
@@ -54,6 +68,9 @@ static unsigned int read_interface_data(struct vfs_interface *self, unsigned int
 static unsigned int read(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
+    if (id >= 21000)
+        return read_interface_bpp(self, id - 21000, offset, count, buffer);
+
     if (id >= 11000)
         return read_interface_data(self, id - 11000, offset, count, buffer);
 
@@ -64,6 +81,21 @@ static unsigned int read(struct vfs_interface *self, unsigned int id, unsigned i
         return read_root(self, id, offset, count, buffer);
 
     return 0;
+
+}
+
+static unsigned int write_interface_bpp(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    struct video_filesystem *filesystem = (struct video_filesystem *)self;
+    struct video_interface *interface = filesystem->interfaces[id];
+    unsigned int bpp = 0;
+
+    memory_copy(&bpp, buffer, 4);
+
+    interface->write_bpp(interface, bpp);
+
+    return 4;
 
 }
 
@@ -81,7 +113,7 @@ static unsigned int write(struct vfs_interface *self, unsigned int id, unsigned 
 {
 
     if (id >= 21000)
-        return 0;
+        return write_interface_bpp(self, id - 21000, offset, count, buffer);;
 
     if (id >= 11000)
         return write_interface_data(self, id - 11000, offset, count, buffer);
@@ -98,6 +130,9 @@ static unsigned int walk_interface(struct vfs_interface *self, unsigned int id, 
 
     if (memory_match(path, "data", 4))
         return id + 10000;
+
+    if (memory_match(path, "bpp", 4))
+        return id + 20000;
 
     return 0;
 

@@ -101,7 +101,7 @@ void set_yres(unsigned int yres)
 void set_bpp(unsigned int bpp)
 {
 
-    call_open(3, 15, "/nodefs/bga_bpp");
+    call_open(3, 12, "/video/0/bpp");
     call_write(3, 0, 4, &bpp);
     call_close(3);
 
@@ -199,7 +199,7 @@ void mouse_event()
 void main()
 {
 
-    idlfb = call_open(4, 15, "/video/0/data");
+    idlfb = call_open(4, 13, "/video/0/data");
 
     if (!idlfb)
         return;
