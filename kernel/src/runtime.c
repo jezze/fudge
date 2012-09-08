@@ -113,15 +113,15 @@ void runtime_task_init(struct runtime_task *task, unsigned int id, unsigned int 
 
 }
 
-void runtime_task_clone(struct runtime_task *from, struct runtime_task *to, unsigned int id, unsigned int ip)
+void runtime_task_clone(struct runtime_task *task, struct runtime_task *from, unsigned int id, unsigned int ip)
 {
 
-    memory_copy(to, from, sizeof (struct runtime_task));
+    memory_copy(task, from, sizeof (struct runtime_task));
 
-    to->id = id;
-    to->registers.ip = ip;
-    to->registers.sp = RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE;
-    to->registers.sb = RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE;
+    task->id = id;
+    task->registers.ip = ip;
+    task->registers.sp = RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE;
+    task->registers.sb = RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE;
 
 }
 

@@ -68,7 +68,7 @@ unsigned int syscall_execute(struct runtime_task *task, void *stack)
 
     ntask = runtime_get_task(slot);
 
-    runtime_task_clone(task, ntask, slot, entry);
+    runtime_task_clone(ntask, task, slot, entry);
 
     mmu_map_user_memory(ntask->id, RUNTIME_TASK_PADDRESS_BASE + ntask->id * RUNTIME_TASK_ADDRESS_SIZE, RUNTIME_TASK_VADDRESS_BASE, RUNTIME_TASK_ADDRESS_SIZE);
     mmu_load_user_memory(ntask->id);
