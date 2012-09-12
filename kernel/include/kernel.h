@@ -4,7 +4,6 @@
 struct kernel_interface
 {
 
-    void (*start)(struct kernel_interface *self);
     void (*setup)(struct kernel_interface *self);
     void (*enter_usermode)(unsigned int ip, unsigned int sp);
     unsigned int ramdiskc;
