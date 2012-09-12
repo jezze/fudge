@@ -5,6 +5,7 @@
 #include <binary.h>
 #include <ramdisk.h>
 #include <runtime.h>
+#include <syscall.h>
 
 static void start(struct kernel_interface *self)
 {
@@ -16,6 +17,7 @@ static void start(struct kernel_interface *self)
 
     self->setup(self);
 
+    syscall_setup();
     runtime_setup();
     ramdisk = ramdisk_setup(self->ramdiskc, self->ramdiskv);
 

@@ -36,7 +36,7 @@ struct mmu_directory
 
 } __attribute__((aligned(MMU_PAGE_SIZE)));
 
-void mmu_setup();
+void mmu_setup_arch();
 
 #endif
 

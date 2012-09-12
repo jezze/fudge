@@ -6,6 +6,15 @@
 #include <runtime.h>
 #include <syscall.h>
 
+static unsigned int (*routines[SYSCALL_TABLE_SLOTS])(struct runtime_task *task, void *stack);
+
+static void register_routine(unsigned int index, unsigned int (*routine)(struct runtime_task *task, void *stack))
+{
+
+    routines[index] = routine;
+
+}
+
 unsigned int syscall_attach(struct runtime_task *task, void *stack)
 {
 
@@ -248,6 +257,37 @@ unsigned int syscall_write(struct runtime_task *task, void *stack)
         return 0;
 
     return descriptor->interface->write(descriptor->interface, descriptor->id, args->offset, args->count, args->buffer);
+
+}
+
+unsigned int syscall_raise(unsigned int index, void *stack)
+{
+
+    struct runtime_task *task = runtime_schedule();
+
+    if (!routines[index])
+        return 0;
+
+    return routines[index](task, stack);
+
+}
+
+void syscall_setup()
+{
+
+    register_routine(SYSCALL_INDEX_OPEN, syscall_open);
+    register_routine(SYSCALL_INDEX_CLOSE, syscall_close);
+    register_routine(SYSCALL_INDEX_READ, syscall_read);
+    register_routine(SYSCALL_INDEX_WRITE, syscall_write);
+    register_routine(SYSCALL_INDEX_MOUNT, syscall_mount);
+    register_routine(SYSCALL_INDEX_EXECUTE, syscall_execute);
+    register_routine(SYSCALL_INDEX_SPAWN, syscall_spawn);
+    register_routine(SYSCALL_INDEX_EXIT, syscall_exit);
+    register_routine(SYSCALL_INDEX_IDLE, syscall_idle);
+    register_routine(SYSCALL_INDEX_LOAD, syscall_load);
+    register_routine(SYSCALL_INDEX_UNLOAD, syscall_unload);
+    register_routine(SYSCALL_INDEX_ATTACH, syscall_attach);
+    register_routine(SYSCALL_INDEX_DETACH, syscall_detach);
 
 }
 

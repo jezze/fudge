@@ -105,7 +105,7 @@ static void handle_interrupt(struct isr_registers *registers)
 
 }
 
-void mmu_setup()
+void mmu_setup_arch()
 {
 
     mmu_interface_init(&interface, enable, load_user_memory, reload_memory, map_kernel_memory, map_user_memory, unmap_user_memory);

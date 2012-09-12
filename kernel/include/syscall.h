@@ -144,6 +144,8 @@ unsigned int syscall_spawn(struct runtime_task *task, void *stack);
 unsigned int syscall_unload(struct runtime_task *task, void *stack);
 unsigned int syscall_idle(struct runtime_task *task, void *stack);
 unsigned int syscall_write(struct runtime_task *task, void *stack);
+unsigned int syscall_raise(unsigned int index, void *stack);
+void syscall_setup();
 
 #endif
 
