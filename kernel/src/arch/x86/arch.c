@@ -52,7 +52,7 @@ void arch_setup(struct mboot_header *header, unsigned int magic)
 
     arch_interface_init(&interface, header, magic);
 
-    interface.base.start(&interface.base);
+    kernel_register_interface(&interface.base);
 
 }
 

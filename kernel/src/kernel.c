@@ -7,7 +7,7 @@
 #include <runtime.h>
 #include <syscall.h>
 
-static void start(struct kernel_interface *self)
+void kernel_register_interface(struct kernel_interface *interface)
 {
 
     struct vfs_interface *ramdisk;
@@ -15,11 +15,11 @@ static void start(struct kernel_interface *self)
     struct runtime_mount *mount;
     unsigned int id;
 
-    self->setup(self);
+    interface->setup(interface);
 
     syscall_setup();
     runtime_setup();
-    ramdisk = ramdisk_setup(self->ramdiskc, self->ramdiskv);
+    ramdisk = ramdisk_setup(interface->ramdiskc, interface->ramdiskv);
 
     id = ramdisk->walk(ramdisk, ramdisk->rootid, 8, "bin/init");
 
@@ -33,7 +33,7 @@ static void start(struct kernel_interface *self)
     mount = runtime_get_task_mount(task, 1);
     runtime_mount_init(mount, ramdisk, 9, "/ramdisk/");
 
-    self->enter_usermode(task->registers.ip, task->registers.sp);
+    interface->enter_usermode(task->registers.ip, task->registers.sp);
 
 }
 
@@ -46,7 +46,6 @@ void kernel_interface_init(struct kernel_interface *interface, void (*setup)(str
     interface->enter_usermode = enter_usermode;
     interface->ramdiskc = ramdiskc;
     interface->ramdiskv = ramdiskv;
-    interface->start = start;
 
 }
 
