@@ -158,7 +158,7 @@ static void interpret(unsigned int length, char *command)
     if (exec)
     {
 
-        call_execute(exec);
+        call_spawn(exec);
         call_close(exec);
 
     }

@@ -1,3 +1,4 @@
+#include <memory.h>
 #include <event.h>
 #include <mmu.h>
 #include <vfs.h>
@@ -49,16 +50,9 @@ unsigned int syscall_execute(struct runtime_task *task, void *stack)
 
     struct syscall_execute_args *args = stack;
     struct runtime_descriptor *descriptor = runtime_get_task_descriptor(task, args->index);
-    struct runtime_task *ntask;
-    unsigned int slot;
     unsigned int entry;
 
     if (!descriptor || !descriptor->interface->read)
-        return 0;
-
-    slot = runtime_get_task_slot(task->id);
-
-    if (!slot)
         return 0;
 
     entry = binary_get_entry(descriptor->interface, descriptor->id);
@@ -66,19 +60,12 @@ unsigned int syscall_execute(struct runtime_task *task, void *stack)
     if (!entry)
         return 0;
 
-    ntask = runtime_get_task(slot);
-
-    runtime_task_clone(ntask, task, slot, entry);
-
-    mmu_map_user_memory(ntask->id, RUNTIME_TASK_PADDRESS_BASE + ntask->id * RUNTIME_TASK_ADDRESS_SIZE, RUNTIME_TASK_VADDRESS_BASE, RUNTIME_TASK_ADDRESS_SIZE);
-    mmu_load_user_memory(ntask->id);
-
     if (!binary_copy_program(descriptor->interface, descriptor->id))
         return 0;
 
-    ntask->status.used = 1;
+    runtime_task_reset(task, entry);
 
-    return slot;
+    return task->id;
 
 }
 
@@ -189,6 +176,44 @@ unsigned int syscall_read(struct runtime_task *task, void *stack)
         return 0;
 
     return descriptor->interface->read(descriptor->interface, descriptor->id, args->offset, args->count, args->buffer);
+
+}
+
+unsigned int syscall_spawn(struct runtime_task *task, void *stack)
+{
+
+    struct syscall_spawn_args *args = stack;
+    struct runtime_descriptor *descriptor = runtime_get_task_descriptor(task, args->index);
+    struct runtime_task *ntask;
+    unsigned int slot;
+    unsigned int entry;
+
+    if (!descriptor || !descriptor->interface->read)
+        return 0;
+
+    slot = runtime_get_task_slot(task->id);
+
+    if (!slot)
+        return 0;
+
+    entry = binary_get_entry(descriptor->interface, descriptor->id);
+
+    if (!entry)
+        return 0;
+
+    ntask = runtime_get_task(slot);
+
+    runtime_task_clone(ntask, task, slot, entry);
+
+    mmu_map_user_memory(ntask->id, RUNTIME_TASK_PADDRESS_BASE + ntask->id * RUNTIME_TASK_ADDRESS_SIZE, RUNTIME_TASK_VADDRESS_BASE, RUNTIME_TASK_ADDRESS_SIZE);
+    mmu_load_user_memory(ntask->id);
+
+    if (!binary_copy_program(descriptor->interface, descriptor->id))
+        return 0;
+
+    ntask->status.used = 1;
+
+    return slot;
 
 }
 

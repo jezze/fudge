@@ -37,14 +37,15 @@ void syscall_setup()
     register_routine(SYSCALL_INDEX_CLOSE, syscall_close);
     register_routine(SYSCALL_INDEX_READ, syscall_read);
     register_routine(SYSCALL_INDEX_WRITE, syscall_write);
+    register_routine(SYSCALL_INDEX_MOUNT, syscall_mount);
     register_routine(SYSCALL_INDEX_EXECUTE, syscall_execute);
+    register_routine(SYSCALL_INDEX_SPAWN, syscall_spawn);
     register_routine(SYSCALL_INDEX_EXIT, syscall_exit);
     register_routine(SYSCALL_INDEX_IDLE, syscall_idle);
     register_routine(SYSCALL_INDEX_LOAD, syscall_load);
     register_routine(SYSCALL_INDEX_UNLOAD, syscall_unload);
     register_routine(SYSCALL_INDEX_ATTACH, syscall_attach);
     register_routine(SYSCALL_INDEX_DETACH, syscall_detach);
-    register_routine(SYSCALL_INDEX_MOUNT, syscall_mount);
 
     isr_register_routine(ISR_INDEX_SYSCALL, handle_interrupt);
 

@@ -5,14 +5,15 @@
 .set CALL_INDEX_CLOSE,   0x02
 .set CALL_INDEX_READ,    0x03
 .set CALL_INDEX_WRITE,   0x04
-.set CALL_INDEX_EXECUTE, 0x05
-.set CALL_INDEX_EXIT,    0x06
-.set CALL_INDEX_IDLE,    0x07
-.set CALL_INDEX_LOAD,    0x08
-.set CALL_INDEX_UNLOAD,  0x09
-.set CALL_INDEX_ATTACH,  0x0A
-.set CALL_INDEX_DETACH,  0x0B
-.set CALL_INDEX_MOUNT,   0x0C
+.set CALL_INDEX_MOUNT,   0x05
+.set CALL_INDEX_EXECUTE, 0x06
+.set CALL_INDEX_SPAWN,   0x07
+.set CALL_INDEX_EXIT,    0x08
+.set CALL_INDEX_IDLE,    0x09
+.set CALL_INDEX_LOAD,    0x0A
+.set CALL_INDEX_UNLOAD,  0x0B
+.set CALL_INDEX_ATTACH,  0x0C
+.set CALL_INDEX_DETACH,  0x0D
 
 .global call_open
 call_open:
@@ -41,6 +42,12 @@ call_write:
 .global call_execute
 call_execute:
     mov eax, CALL_INDEX_EXECUTE
+    int CALL_INTERRUPT
+    ret
+
+.global call_spawn
+call_spawn:
+    mov eax, CALL_INDEX_SPAWN
     int CALL_INTERRUPT
     ret
 
