@@ -7,6 +7,9 @@ static struct event_routine routines[EVENT_TABLE_SLOTS];
 unsigned int event_register_routine(unsigned int index, struct runtime_task *task, unsigned int callback)
 {
 
+    if (index > EVENT_TABLE_SLOTS)
+        return 0;
+
     if (routines[index].task)
         return 0;
 
@@ -18,6 +21,9 @@ unsigned int event_register_routine(unsigned int index, struct runtime_task *tas
 
 unsigned int event_unregister_routine(unsigned int index, struct runtime_task *task)
 {
+
+    if (index > EVENT_TABLE_SLOTS)
+        return 0;
 
     if (routines[index].task != task)
         return 0;

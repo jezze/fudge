@@ -131,19 +131,8 @@ struct syscall_write_args
 
 };
 
-unsigned int syscall_attach(struct runtime_task *task, void *stack);
-unsigned int syscall_close(struct runtime_task *task, void *stack);
-unsigned int syscall_detach(struct runtime_task *task, void *stack);
-unsigned int syscall_execute(struct runtime_task *task, void *stack);
-unsigned int syscall_exit(struct runtime_task *task, void *stack);
-unsigned int syscall_load(struct runtime_task *task, void *stack);
-unsigned int syscall_mount(struct runtime_task *task, void *stack);
-unsigned int syscall_open(struct runtime_task *task, void *stack);
-unsigned int syscall_read(struct runtime_task *task, void *stack);
-unsigned int syscall_spawn(struct runtime_task *task, void *stack);
-unsigned int syscall_unload(struct runtime_task *task, void *stack);
-unsigned int syscall_idle(struct runtime_task *task, void *stack);
-unsigned int syscall_write(struct runtime_task *task, void *stack);
+unsigned int syscall_register_routine(unsigned int index, unsigned int (*routine)(struct runtime_task *task, void *stack));
+unsigned int syscall_unregister_routine(unsigned int index);
 unsigned int syscall_raise(unsigned int index, void *stack);
 void syscall_setup();
 
