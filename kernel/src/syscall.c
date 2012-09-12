@@ -16,7 +16,7 @@ static unsigned int syscall_attach(struct runtime_task *task, void *stack)
     if (!args->callback)
         return 0;
 
-    return event_register_routine(args->index, task, args->callback);
+    return event_set_routine(args->index, task, args->callback);
 
 }
 
@@ -43,7 +43,7 @@ static unsigned int syscall_detach(struct runtime_task *task, void *stack)
 
     struct syscall_detach_args *args = stack;
 
-    return event_unregister_routine(args->index, task);
+    return event_unset_routine(args->index, task);
 
 }
 
@@ -253,7 +253,7 @@ static unsigned int syscall_write(struct runtime_task *task, void *stack)
 
 }
 
-unsigned int syscall_register_routine(unsigned int index, unsigned int (*routine)(struct runtime_task *task, void *stack))
+unsigned int syscall_set_routine(unsigned int index, unsigned int (*routine)(struct runtime_task *task, void *stack))
 {
 
     if (index > SYSCALL_TABLE_SLOTS)
@@ -265,7 +265,7 @@ unsigned int syscall_register_routine(unsigned int index, unsigned int (*routine
 
 }
 
-unsigned int syscall_unregister_routine(unsigned int index)
+unsigned int syscall_unset_routine(unsigned int index)
 {
 
     if (index > SYSCALL_TABLE_SLOTS)
@@ -292,19 +292,19 @@ unsigned int syscall_raise(unsigned int index, void *stack)
 void syscall_setup()
 {
 
-    syscall_register_routine(SYSCALL_INDEX_OPEN, syscall_open);
-    syscall_register_routine(SYSCALL_INDEX_CLOSE, syscall_close);
-    syscall_register_routine(SYSCALL_INDEX_READ, syscall_read);
-    syscall_register_routine(SYSCALL_INDEX_WRITE, syscall_write);
-    syscall_register_routine(SYSCALL_INDEX_MOUNT, syscall_mount);
-    syscall_register_routine(SYSCALL_INDEX_EXECUTE, syscall_execute);
-    syscall_register_routine(SYSCALL_INDEX_SPAWN, syscall_spawn);
-    syscall_register_routine(SYSCALL_INDEX_EXIT, syscall_exit);
-    syscall_register_routine(SYSCALL_INDEX_IDLE, syscall_idle);
-    syscall_register_routine(SYSCALL_INDEX_LOAD, syscall_load);
-    syscall_register_routine(SYSCALL_INDEX_UNLOAD, syscall_unload);
-    syscall_register_routine(SYSCALL_INDEX_ATTACH, syscall_attach);
-    syscall_register_routine(SYSCALL_INDEX_DETACH, syscall_detach);
+    syscall_set_routine(SYSCALL_INDEX_OPEN, syscall_open);
+    syscall_set_routine(SYSCALL_INDEX_CLOSE, syscall_close);
+    syscall_set_routine(SYSCALL_INDEX_READ, syscall_read);
+    syscall_set_routine(SYSCALL_INDEX_WRITE, syscall_write);
+    syscall_set_routine(SYSCALL_INDEX_MOUNT, syscall_mount);
+    syscall_set_routine(SYSCALL_INDEX_EXECUTE, syscall_execute);
+    syscall_set_routine(SYSCALL_INDEX_SPAWN, syscall_spawn);
+    syscall_set_routine(SYSCALL_INDEX_EXIT, syscall_exit);
+    syscall_set_routine(SYSCALL_INDEX_IDLE, syscall_idle);
+    syscall_set_routine(SYSCALL_INDEX_LOAD, syscall_load);
+    syscall_set_routine(SYSCALL_INDEX_UNLOAD, syscall_unload);
+    syscall_set_routine(SYSCALL_INDEX_ATTACH, syscall_attach);
+    syscall_set_routine(SYSCALL_INDEX_DETACH, syscall_detach);
 
 }
 
