@@ -96,7 +96,7 @@ void init()
         return;
 
     for (i = 0; i < APIC_TABLE_SLOTS; i++)
-        isr_register_routine(i + APIC_DATA_MASTERVECTOR, handle_interrupt);
+        isr_set_routine(i + APIC_DATA_MASTERVECTOR, handle_interrupt);
 
     remap();
     enable();

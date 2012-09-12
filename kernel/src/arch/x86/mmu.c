@@ -109,7 +109,7 @@ void mmu_setup_arch()
 
     mmu_set_interface(0, enable, load_user_memory, reload_memory, map_kernel_memory, map_user_memory, unmap_user_memory);
 
-    isr_register_routine(ISR_INDEX_PF, handle_interrupt);
+    isr_set_routine(ISR_INDEX_PF, handle_interrupt);
 
 }
 

@@ -47,27 +47,6 @@ static void isr_handle_undefined(struct isr_registers *registers)
 
 }
 
-static void isr_raise(unsigned int index, struct isr_registers *registers)
-{
-
-    routines[index](registers);
-
-}
-
-void isr_register_routine(unsigned int index, void (*routine)(struct isr_registers *registers))
-{
-
-    routines[index] = routine;
-
-}
-
-void isr_unregister_routine(unsigned int index)
-{
-
-    routines[index] = 0;
-
-}
-
 unsigned int isr_handle(struct isr_registers *registers)
 {
 
@@ -101,13 +80,43 @@ unsigned int isr_handle(struct isr_registers *registers)
 
 }
 
+void isr_set_routine(unsigned int index, void (*routine)(struct isr_registers *registers))
+{
+
+    if (index > ISR_TABLE_SLOTS)
+        return;
+
+    routines[index] = routine;
+
+}
+
+void isr_unset_routine(unsigned int index)
+{
+
+    if (index > ISR_TABLE_SLOTS)
+        return;
+
+    routines[index] = 0;
+
+}
+
+void isr_raise(unsigned int index, struct isr_registers *registers)
+{
+
+    if (index > ISR_TABLE_SLOTS)
+        return;
+
+    routines[index](registers);
+
+}
+
 void isr_setup(unsigned int cs)
 {
 
     unsigned int i;
 
     for (i = 0; i < ISR_TABLE_SLOTS; i++)
-        isr_register_routine(i, isr_handle_undefined);
+        isr_set_routine(i, isr_handle_undefined);
 
     idt_set_gate(ISR_INDEX_DE, isr_routine00, cs, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
     idt_set_gate(ISR_INDEX_DB, isr_routine01, cs, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);

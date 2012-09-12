@@ -13,7 +13,7 @@ static void handle_interrupt(struct isr_registers *registers)
 void syscall_setup_arch()
 {
 
-    isr_register_routine(ISR_INDEX_SYSCALL, handle_interrupt);
+    isr_set_routine(ISR_INDEX_SYSCALL, handle_interrupt);
 
 }
 
