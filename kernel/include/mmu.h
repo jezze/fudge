@@ -27,8 +27,7 @@ void mmu_reload_memory();
 void mmu_map_kernel_memory(unsigned int index, unsigned int paddress, unsigned int vaddress, unsigned int size);
 void mmu_map_user_memory(unsigned int index, unsigned int paddress, unsigned int vaddress, unsigned int size);
 void mmu_unmap_user_memory(unsigned int index);
-void mmu_register_interface(struct mmu_interface *interface);
-void mmu_interface_init(struct mmu_interface *interface, void (*enable)(), void (*load_user_memory)(unsigned int index), void (*reload_memory)(), void (*map_kernel_memory)(unsigned int index, unsigned int paddress, unsigned int vaddress, unsigned int size), void (*map_user_memory)(unsigned int index, unsigned int paddress, unsigned int vaddress, unsigned int size), void (*unmap_user_memory)(unsigned int index));
+void mmu_register_interface(unsigned int index, void (*enable)(), void (*load_user_memory)(unsigned int index), void (*reload_memory)(), void (*map_kernel_memory)(unsigned int index, unsigned int paddress, unsigned int vaddress, unsigned int size), void (*map_user_memory)(unsigned int index, unsigned int paddress, unsigned int vaddress, unsigned int size), void (*unmap_user_memory)(unsigned int index));
 
 #endif
 

@@ -5,7 +5,6 @@
 #include <arch/x86/isr.h>
 #include <arch/x86/mmu.h>
 
-static struct mmu_interface interface;
 static struct mmu_table kernelTables[8];
 static struct mmu_directory runtimeDirectories[RUNTIME_TASK_SLOTS];
 static struct mmu_table runtimeTables[RUNTIME_TASK_SLOTS];
@@ -108,8 +107,7 @@ static void handle_interrupt(struct isr_registers *registers)
 void mmu_setup_arch()
 {
 
-    mmu_interface_init(&interface, enable, load_user_memory, reload_memory, map_kernel_memory, map_user_memory, unmap_user_memory);
-    mmu_register_interface(&interface);
+    mmu_register_interface(0, enable, load_user_memory, reload_memory, map_kernel_memory, map_user_memory, unmap_user_memory);
 
     isr_register_routine(ISR_INDEX_PF, handle_interrupt);
 
