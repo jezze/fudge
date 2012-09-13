@@ -1,6 +1,6 @@
 #include <memory.h>
-#include <runtime.h>
 #include <mmu.h>
+#include <runtime.h>
 #include <arch/x86/cpu.h>
 #include <arch/x86/isr.h>
 #include <arch/x86/mmu.h>
