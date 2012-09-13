@@ -1,8 +1,6 @@
 #ifndef KERNEL_VFS_H
 #define KERNEL_VFS_H
 
-#define VFS_INTERFACE_SLOTS 128
-
 struct vfs_interface
 {
 
