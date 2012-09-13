@@ -38,7 +38,7 @@ static void save_ustate(struct runtime_task *task, struct isr_registers *registe
 
 }
 
-static void isr_handle_undefined(struct isr_registers *registers)
+static void handle_undefined(struct isr_registers *registers)
 {
 
     error_register(0, registers->index);
@@ -116,7 +116,7 @@ void isr_setup(unsigned int cs)
     unsigned int i;
 
     for (i = 0; i < ISR_TABLE_SLOTS; i++)
-        isr_set_routine(i, isr_handle_undefined);
+        isr_set_routine(i, handle_undefined);
 
     idt_set_entry(ISR_INDEX_DE, isr_routine00, cs, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
     idt_set_entry(ISR_INDEX_DB, isr_routine01, cs, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);

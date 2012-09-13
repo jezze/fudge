@@ -62,7 +62,7 @@ unsigned int binary_copy_program(struct vfs_interface *interface, unsigned int i
 
 }
 
-static void binary_relocate_section(struct elf_section_header *sectionHeader, unsigned int relocateHeaderIndex, unsigned int relocateDataIndex, struct elf_relocate *relocateTable, struct elf_symbol *symbolTable, unsigned int address)
+static void relocate_section(struct elf_section_header *sectionHeader, unsigned int relocateHeaderIndex, unsigned int relocateDataIndex, struct elf_relocate *relocateTable, struct elf_symbol *symbolTable, unsigned int address)
 {
 
     unsigned int i;
@@ -123,7 +123,7 @@ unsigned int binary_relocate(struct vfs_interface *interface, unsigned int id, u
         interface->read(interface, id, sectionHeader[i].offset, sectionHeader[i].size, relocateTable);
         interface->read(interface, id, sectionHeader[sectionHeader[i].link].offset, sectionHeader[sectionHeader[i].link].size, symbolTable);
 
-        binary_relocate_section(sectionHeader, i, sectionHeader[i].info, relocateTable, symbolTable, address);
+        relocate_section(sectionHeader, i, sectionHeader[i].info, relocateTable, symbolTable, address);
 
         sectionHeader[sectionHeader[i].info].address += address;
 

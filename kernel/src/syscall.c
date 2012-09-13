@@ -8,7 +8,7 @@
 
 static unsigned int (*routines[SYSCALL_TABLE_SLOTS])(struct runtime_task *task, void *stack);
 
-static unsigned int syscall_attach(struct runtime_task *task, void *stack)
+static unsigned int attach(struct runtime_task *task, void *stack)
 {
 
     struct syscall_attach_args *args = stack;
@@ -20,7 +20,7 @@ static unsigned int syscall_attach(struct runtime_task *task, void *stack)
 
 }
 
-static unsigned int syscall_close(struct runtime_task *task, void *stack)
+static unsigned int close(struct runtime_task *task, void *stack)
 {
 
     struct syscall_close_args *args = stack;
@@ -38,7 +38,7 @@ static unsigned int syscall_close(struct runtime_task *task, void *stack)
 
 }
 
-static unsigned int syscall_detach(struct runtime_task *task, void *stack)
+static unsigned int detach(struct runtime_task *task, void *stack)
 {
 
     struct syscall_detach_args *args = stack;
@@ -47,7 +47,7 @@ static unsigned int syscall_detach(struct runtime_task *task, void *stack)
 
 }
 
-static unsigned int syscall_execute(struct runtime_task *task, void *stack)
+static unsigned int execute(struct runtime_task *task, void *stack)
 {
 
     struct syscall_execute_args *args = stack;
@@ -71,7 +71,7 @@ static unsigned int syscall_execute(struct runtime_task *task, void *stack)
 
 }
 
-static unsigned int syscall_exit(struct runtime_task *task, void *stack)
+static unsigned int exit(struct runtime_task *task, void *stack)
 {
 
     task->status.used = 0;
@@ -80,7 +80,7 @@ static unsigned int syscall_exit(struct runtime_task *task, void *stack)
 
 }
 
-static unsigned int syscall_idle(struct runtime_task *task, void *stack)
+static unsigned int idle(struct runtime_task *task, void *stack)
 {
 
     task->status.idle = 1;
@@ -90,7 +90,7 @@ static unsigned int syscall_idle(struct runtime_task *task, void *stack)
 
 }
 
-static unsigned int syscall_load(struct runtime_task *task, void *stack)
+static unsigned int load(struct runtime_task *task, void *stack)
 {
 
     struct syscall_load_args *args = stack;
@@ -121,7 +121,7 @@ static unsigned int syscall_load(struct runtime_task *task, void *stack)
 
 }
 
-static unsigned int syscall_mount(struct runtime_task *task, void *stack)
+static unsigned int mount(struct runtime_task *task, void *stack)
 {
 
     struct syscall_mount_args *args = stack;
@@ -143,7 +143,7 @@ static unsigned int syscall_mount(struct runtime_task *task, void *stack)
 
 }
 
-static unsigned int syscall_open(struct runtime_task *task, void *stack)
+static unsigned int open(struct runtime_task *task, void *stack)
 {
 
     struct syscall_open_args *args = stack;
@@ -168,7 +168,7 @@ static unsigned int syscall_open(struct runtime_task *task, void *stack)
 
 }
 
-static unsigned int syscall_read(struct runtime_task *task, void *stack)
+static unsigned int read(struct runtime_task *task, void *stack)
 {
 
     struct syscall_read_args *args = stack;
@@ -181,7 +181,7 @@ static unsigned int syscall_read(struct runtime_task *task, void *stack)
 
 }
 
-static unsigned int syscall_spawn(struct runtime_task *task, void *stack)
+static unsigned int spawn(struct runtime_task *task, void *stack)
 {
 
     struct syscall_spawn_args *args = stack;
@@ -219,7 +219,7 @@ static unsigned int syscall_spawn(struct runtime_task *task, void *stack)
 
 }
 
-static unsigned int syscall_unload(struct runtime_task *task, void *stack)
+static unsigned int unload(struct runtime_task *task, void *stack)
 {
 
     struct syscall_unload_args *args = stack;
@@ -240,7 +240,7 @@ static unsigned int syscall_unload(struct runtime_task *task, void *stack)
 
 }
 
-static unsigned int syscall_write(struct runtime_task *task, void *stack)
+static unsigned int write(struct runtime_task *task, void *stack)
 {
 
     struct syscall_write_args *args = stack;
@@ -292,19 +292,19 @@ unsigned int syscall_raise(unsigned int index, void *stack)
 void syscall_setup()
 {
 
-    syscall_set_routine(SYSCALL_INDEX_OPEN, syscall_open);
-    syscall_set_routine(SYSCALL_INDEX_CLOSE, syscall_close);
-    syscall_set_routine(SYSCALL_INDEX_READ, syscall_read);
-    syscall_set_routine(SYSCALL_INDEX_WRITE, syscall_write);
-    syscall_set_routine(SYSCALL_INDEX_MOUNT, syscall_mount);
-    syscall_set_routine(SYSCALL_INDEX_EXECUTE, syscall_execute);
-    syscall_set_routine(SYSCALL_INDEX_SPAWN, syscall_spawn);
-    syscall_set_routine(SYSCALL_INDEX_EXIT, syscall_exit);
-    syscall_set_routine(SYSCALL_INDEX_IDLE, syscall_idle);
-    syscall_set_routine(SYSCALL_INDEX_LOAD, syscall_load);
-    syscall_set_routine(SYSCALL_INDEX_UNLOAD, syscall_unload);
-    syscall_set_routine(SYSCALL_INDEX_ATTACH, syscall_attach);
-    syscall_set_routine(SYSCALL_INDEX_DETACH, syscall_detach);
+    syscall_set_routine(SYSCALL_INDEX_OPEN, open);
+    syscall_set_routine(SYSCALL_INDEX_CLOSE, close);
+    syscall_set_routine(SYSCALL_INDEX_READ, read);
+    syscall_set_routine(SYSCALL_INDEX_WRITE, write);
+    syscall_set_routine(SYSCALL_INDEX_MOUNT, mount);
+    syscall_set_routine(SYSCALL_INDEX_EXECUTE, execute);
+    syscall_set_routine(SYSCALL_INDEX_SPAWN, spawn);
+    syscall_set_routine(SYSCALL_INDEX_EXIT, exit);
+    syscall_set_routine(SYSCALL_INDEX_IDLE, idle);
+    syscall_set_routine(SYSCALL_INDEX_LOAD, load);
+    syscall_set_routine(SYSCALL_INDEX_UNLOAD, unload);
+    syscall_set_routine(SYSCALL_INDEX_ATTACH, attach);
+    syscall_set_routine(SYSCALL_INDEX_DETACH, detach);
 
 }
 

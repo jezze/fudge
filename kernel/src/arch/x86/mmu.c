@@ -9,14 +9,14 @@ static struct mmu_table kernelTables[8];
 static struct mmu_directory runtimeDirectories[RUNTIME_TASK_SLOTS];
 static struct mmu_table runtimeTables[RUNTIME_TASK_SLOTS];
 
-static void directory_set_table(struct mmu_directory *directory, unsigned int frame, struct mmu_table *table, unsigned int tflags)
+static void set_directory_table(struct mmu_directory *directory, unsigned int frame, struct mmu_table *table, unsigned int tflags)
 {
 
     directory->tables[frame / MMU_TABLE_SLOTS] = (struct mmu_table *)((unsigned int)table | tflags);
 
 }
 
-static void table_set_page(struct mmu_table *table, unsigned int frame, unsigned int page, unsigned int pflags)
+static void set_table_page(struct mmu_table *table, unsigned int frame, unsigned int page, unsigned int pflags)
 {
 
     table->pages[frame % MMU_PAGE_SLOTS] = (void *)(page | pflags);
@@ -53,9 +53,9 @@ static void map_memory(struct mmu_directory *directory, struct mmu_table *table,
     memory_clear(table, sizeof (struct mmu_table));
 
     for (i = 0; i < size / MMU_PAGE_SIZE; i++)
-        table_set_page(table, frame + i, paddress + i * MMU_PAGE_SIZE, pflags);
+        set_table_page(table, frame + i, paddress + i * MMU_PAGE_SIZE, pflags);
 
-    directory_set_table(directory, frame, table, tflags);
+    set_directory_table(directory, frame, table, tflags);
 
 }
 
