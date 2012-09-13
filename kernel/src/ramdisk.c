@@ -191,7 +191,7 @@ static unsigned int get_physical(struct vfs_interface *self, unsigned int id)
 
 }
 
-void ramdisk_image_init(struct ramdisk_image *image)
+void ramdisk_init_image(struct ramdisk_image *image)
 {
 
     memory_clear(image, sizeof (struct ramdisk_image));
@@ -200,12 +200,12 @@ void ramdisk_image_init(struct ramdisk_image *image)
 
 }
 
-void ramdisk_filesystem_init(struct ramdisk_filesystem *filesystem, struct ramdisk_image *image)
+void ramdisk_init_filesystem(struct ramdisk_filesystem *filesystem, struct ramdisk_image *image)
 {
 
     memory_clear(filesystem, sizeof (struct ramdisk_filesystem));
 
-    vfs_interface_init(&filesystem->interface, 1, "ramdisk", 0, 0, read, write, walk, get_physical);
+    vfs_init_interface(&filesystem->interface, 1, "ramdisk", 0, 0, read, write, walk, get_physical);
 
     filesystem->image = image;
 
@@ -216,12 +216,12 @@ struct vfs_interface *ramdisk_setup(int ramdiskc, void **ramdiskv)
 
     unsigned int i;
 
-    ramdisk_image_init(&ramdiskImage);
+    ramdisk_init_image(&ramdiskImage);
 
     for (i = 0; i < ramdiskc; i++)
         ramdiskImage.parse(&ramdiskImage, *(ramdiskv + i));
 
-    ramdisk_filesystem_init(&ramdiskFilesystem, &ramdiskImage);
+    ramdisk_init_filesystem(&ramdiskFilesystem, &ramdiskImage);
 
     return &ramdiskFilesystem.interface;
 

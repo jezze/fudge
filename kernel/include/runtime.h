@@ -59,11 +59,11 @@ struct runtime_descriptor *runtime_get_task_descriptor(struct runtime_task *task
 struct runtime_mount *runtime_get_task_mount(struct runtime_task *task, unsigned int index);
 unsigned int runtime_get_task_slot(unsigned int parent);
 struct runtime_mount *runtime_find_task_mount(struct runtime_task *self, char *path);
-void runtime_descriptor_init(struct runtime_descriptor *descriptor, unsigned int id, struct vfs_interface *interface);
-void runtime_mount_init(struct runtime_mount *mount, struct vfs_interface *interface, unsigned int count, char *path);
-void runtime_task_init(struct runtime_task *task, unsigned int id, unsigned int ip);
-void runtime_task_reset(struct runtime_task *task, unsigned int ip);
-void runtime_task_clone(struct runtime_task *task, struct runtime_task *from, unsigned int id, unsigned int ip);
+void runtime_init_descriptor(struct runtime_descriptor *descriptor, unsigned int id, struct vfs_interface *interface);
+void runtime_init_mount(struct runtime_mount *mount, struct vfs_interface *interface, unsigned int count, char *path);
+void runtime_init_task(struct runtime_task *task, unsigned int id, unsigned int ip);
+void runtime_reset_task(struct runtime_task *task, unsigned int ip);
+void runtime_clone_task(struct runtime_task *task, struct runtime_task *from, unsigned int id, unsigned int ip);
 struct runtime_task *runtime_schedule();
 struct runtime_task *runtime_setup();
 

@@ -35,12 +35,12 @@ static void setup(struct kernel_interface *self)
 
 }
 
-void arch_interface_init(struct arch_interface *interface, struct mboot_header *header, unsigned int magic)
+void arch_init_interface(struct arch_interface *interface, struct mboot_header *header, unsigned int magic)
 {
 
     memory_clear(interface, sizeof (struct arch_interface));
 
-    kernel_interface_init(&interface->base, setup, cpu_enter_usermode, header->modules.count, header->modules.address);
+    kernel_init_interface(&interface->base, setup, cpu_enter_usermode, header->modules.count, header->modules.address);
 
     interface->header = header;
     interface->magic = magic;
@@ -50,7 +50,7 @@ void arch_interface_init(struct arch_interface *interface, struct mboot_header *
 void arch_setup(struct mboot_header *header, unsigned int magic)
 {
 
-    arch_interface_init(&interface, header, magic);
+    arch_init_interface(&interface, header, magic);
 
     kernel_register_interface(&interface.base);
 

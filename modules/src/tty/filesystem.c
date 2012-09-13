@@ -113,7 +113,7 @@ void tty_filesystem_init(struct tty_filesystem *filesystem, struct tty_driver *d
 
     memory_clear(filesystem, sizeof (struct tty_filesystem));
 
-    vfs_interface_init(&filesystem->base, 1, "tty", 0, 0, read, write, walk, 0);
+    vfs_init_interface(&filesystem->base, 1, "tty", 0, 0, read, write, walk, 0);
 
     filesystem->driver = driver;
 

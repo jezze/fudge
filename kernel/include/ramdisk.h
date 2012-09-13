@@ -20,8 +20,8 @@ struct ramdisk_filesystem
 
 };
 
-void ramdisk_image_init(struct ramdisk_image *image);
-void ramdisk_filesystem_init(struct ramdisk_filesystem *filesystem, struct ramdisk_image *image);
+void ramdisk_init_image(struct ramdisk_image *image);
+void ramdisk_init_filesystem(struct ramdisk_filesystem *filesystem, struct ramdisk_image *image);
 struct vfs_interface *ramdisk_setup(int ramdiskc, void **ramdiskv);
 
 #endif

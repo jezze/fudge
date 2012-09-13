@@ -65,7 +65,7 @@ static unsigned int execute(struct runtime_task *task, void *stack)
     if (!binary_copy_program(descriptor->interface, descriptor->id))
         return 0;
 
-    runtime_task_reset(task, entry);
+    runtime_reset_task(task, entry);
 
     return task->id;
 
@@ -137,7 +137,7 @@ static unsigned int mount(struct runtime_task *task, void *stack)
     if (!get_interface)
         return 0;
 
-    runtime_mount_init(mount, get_interface(), args->count, args->path);
+    runtime_init_mount(mount, get_interface(), args->count, args->path);
 
     return 1;
 
@@ -159,7 +159,7 @@ static unsigned int open(struct runtime_task *task, void *stack)
     if (!id)
         return 0;
 
-    runtime_descriptor_init(descriptor, id, mount->interface);
+    runtime_init_descriptor(descriptor, id, mount->interface);
 
     if (descriptor->interface->open)
         descriptor->interface->open(descriptor->interface, descriptor->id);
@@ -205,7 +205,7 @@ static unsigned int spawn(struct runtime_task *task, void *stack)
 
     ntask = runtime_get_task(slot);
 
-    runtime_task_clone(ntask, task, slot, entry);
+    runtime_clone_task(ntask, task, slot, entry);
 
     mmu_map_user_memory(ntask->id, RUNTIME_TASK_PADDRESS_BASE + ntask->id * RUNTIME_TASK_ADDRESS_SIZE, RUNTIME_TASK_VADDRESS_BASE, RUNTIME_TASK_ADDRESS_SIZE);
     mmu_load_user_memory(ntask->id);

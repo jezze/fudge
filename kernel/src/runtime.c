@@ -80,7 +80,7 @@ struct runtime_mount *runtime_find_task_mount(struct runtime_task *self, char *p
 
 }
 
-void runtime_descriptor_init(struct runtime_descriptor *descriptor, unsigned int id, struct vfs_interface *interface)
+void runtime_init_descriptor(struct runtime_descriptor *descriptor, unsigned int id, struct vfs_interface *interface)
 {
 
     memory_clear(descriptor, sizeof (struct runtime_descriptor));
@@ -90,7 +90,7 @@ void runtime_descriptor_init(struct runtime_descriptor *descriptor, unsigned int
 
 }
 
-void runtime_mount_init(struct runtime_mount *mount, struct vfs_interface *interface, unsigned int count, char *path)
+void runtime_init_mount(struct runtime_mount *mount, struct vfs_interface *interface, unsigned int count, char *path)
 {
 
     memory_clear(mount, sizeof (struct runtime_mount));
@@ -101,7 +101,7 @@ void runtime_mount_init(struct runtime_mount *mount, struct vfs_interface *inter
 
 }
 
-void runtime_task_init(struct runtime_task *task, unsigned int id, unsigned int ip)
+void runtime_init_task(struct runtime_task *task, unsigned int id, unsigned int ip)
 {
 
     memory_clear(task, sizeof (struct runtime_task));
@@ -113,7 +113,7 @@ void runtime_task_init(struct runtime_task *task, unsigned int id, unsigned int 
 
 }
 
-void runtime_task_reset(struct runtime_task *task, unsigned int ip)
+void runtime_reset_task(struct runtime_task *task, unsigned int ip)
 {
 
     task->registers.ip = ip;
@@ -122,7 +122,7 @@ void runtime_task_reset(struct runtime_task *task, unsigned int ip)
 
 }
 
-void runtime_task_clone(struct runtime_task *task, struct runtime_task *from, unsigned int id, unsigned int ip)
+void runtime_clone_task(struct runtime_task *task, struct runtime_task *from, unsigned int id, unsigned int ip)
 {
 
     memory_copy(task, from, sizeof (struct runtime_task));
