@@ -34,7 +34,7 @@ struct idt_pointer
 
 } __attribute__((packed));
 
-void idt_set_gate(unsigned int index, void (*callback)(), unsigned short selector, unsigned char flags);
+void idt_set_entry(unsigned int index, void (*callback)(), unsigned short selector, unsigned char flags);
 void idt_setup();
 
 #endif
