@@ -7,6 +7,7 @@
 #include "arp.h"
 #include "call.h"
 #include "ethernet.h"
+#include "gfx.h"
 #include "icmpv4.h"
 #include "icmpv6.h"
 #include "ipv4.h"
