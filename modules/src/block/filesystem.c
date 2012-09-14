@@ -121,7 +121,7 @@ void block_filesystem_init(struct block_filesystem *filesystem)
 
     memory_clear(filesystem, sizeof (struct block_filesystem));
 
-    vfs_init_interface(&filesystem->base, 1, "block", 0, 0, read, write, walk, 0);
+    vfs_init_interface(&filesystem->base, 1, "block", 0, 0, read, write, 0, walk, 0);
 
 }
 

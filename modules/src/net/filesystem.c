@@ -139,7 +139,7 @@ void net_filesystem_init(struct net_filesystem *filesystem)
 
     memory_clear(filesystem, sizeof (struct net_filesystem));
 
-    vfs_init_interface(&filesystem->base, 1, "net", 0, 0, read, write, walk, 0);
+    vfs_init_interface(&filesystem->base, 1, "net", 0, 0, read, write, 0, walk, 0);
 
 }
 

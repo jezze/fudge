@@ -245,7 +245,7 @@ void video_filesystem_init(struct video_filesystem *filesystem)
 
     memory_clear(filesystem, sizeof (struct video_filesystem));
 
-    vfs_init_interface(&filesystem->base, 1, "video", 0, 0, read, write, walk, 0);
+    vfs_init_interface(&filesystem->base, 1, "video", 0, 0, read, write, 0, walk, 0);
 
 }
 

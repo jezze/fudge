@@ -251,7 +251,7 @@ void ramdisk_init_filesystem(struct ramdisk_filesystem *filesystem, struct ramdi
 
     memory_clear(filesystem, sizeof (struct ramdisk_filesystem));
 
-    vfs_init_interface(&filesystem->interface, 1, "ramdisk", 0, 0, read, write, walk, get_physical);
+    vfs_init_interface(&filesystem->interface, 1, "ramdisk", 0, 0, read, write, parent, walk, get_physical);
 
     filesystem->image = image;
 
@@ -272,3 +272,4 @@ struct vfs_interface *ramdisk_setup(int ramdiskc, void **ramdiskv)
     return &ramdiskFilesystem.interface;
 
 }
+
