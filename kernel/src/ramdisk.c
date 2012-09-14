@@ -87,6 +87,9 @@ static unsigned int read(struct vfs_interface *self, unsigned int id, unsigned i
         if (offset > 0)
             return 0;
 
+        memory_copy(out + c, "../\n", 4);
+        c += 4;
+
         for (i = 0; i < filesystem->image->count; i++)
         {
 
@@ -163,22 +166,24 @@ static unsigned int parent(struct vfs_interface *self, unsigned int id)
 
     struct ramdisk_filesystem *filesystem = (struct ramdisk_filesystem *)self;
     struct tar_header *header = filesystem->image->headers[id - 1];
-    unsigned int count = string_length(header->name);
+    unsigned int length = string_length(header->name);
     unsigned int i;
 
-    for (i = count; i > 0; i--)
+    while (--length)
     {
 
-        if (header->name[i] == '/')
-            count = i;
+        if (header->name[length - 1] == '/')
+            break;
 
     }
 
-    for (i = 0; i < id; i++)
+    for (i = 0; i < id - 1; i++)
     {
 
-        if (memory_match(filesystem->image->headers[i]->name, header->name, count))
-            return i + 1;
+        if (!memory_match(filesystem->image->headers[i]->name, header->name, length))
+            continue;
+
+        return i + 1;
 
     }
 
@@ -192,14 +197,13 @@ static unsigned int walk(struct vfs_interface *self, unsigned int id, unsigned i
     struct ramdisk_filesystem *filesystem = (struct ramdisk_filesystem *)self;
     struct tar_header *header = filesystem->image->headers[id - 1];
     unsigned int offset = string_length(header->name);
-
     unsigned int i;
 
     if (!count)
         return id;
 
     if (memory_match(path, "../", 3))
-        walk(self, parent(self, id), count - 3, path + 3);
+        return walk(self, parent(self, id), count - 3, path + 3);
 
     for (i = id; i < filesystem->image->count; i++)
     {
