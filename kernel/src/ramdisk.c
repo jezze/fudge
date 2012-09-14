@@ -204,8 +204,12 @@ static unsigned int walk(struct vfs_interface *self, unsigned int id, unsigned i
     for (i = id; i < filesystem->image->count; i++)
     {
 
-        if (memory_match(filesystem->image->headers[i]->name + offset, path, count))
-            return i + 1;
+        if (!memory_match(filesystem->image->headers[i]->name + offset, path, count))
+            continue;
+
+        offset = string_length(filesystem->image->headers[i]->name) - offset; 
+
+        return walk(self, i + 1, count - offset, path + offset);
 
     }
 
