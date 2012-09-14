@@ -209,12 +209,12 @@ static unsigned int walk(struct vfs_interface *self, unsigned int id, unsigned i
         if (length < offset)
             break;
 
-        if (!memory_match(filesystem->image->headers[i]->name + offset, path, count))
+        length -= offset;
+
+        if (!memory_match(filesystem->image->headers[i]->name + offset, path, length))
             continue;
 
-        offset = length - offset; 
-
-        return walk(self, i + 1, count - offset, path + offset);
+        return walk(self, i + 1, count - length, path + length);
 
     }
 
