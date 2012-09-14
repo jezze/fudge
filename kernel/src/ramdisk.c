@@ -158,20 +158,53 @@ static unsigned int write(struct vfs_interface *self, unsigned int id, unsigned 
 
 }
 
+static unsigned int parent(struct vfs_interface *self, unsigned int id)
+{
+
+    struct ramdisk_filesystem *filesystem = (struct ramdisk_filesystem *)self;
+    struct tar_header *header = filesystem->image->headers[id - 1];
+    unsigned int count = string_length(header->name);
+    unsigned int i;
+
+    for (i = count; i > 0; i--)
+    {
+
+        if (header->name[i] == '/')
+            count = i;
+
+    }
+
+    for (i = 0; i < id; i++)
+    {
+
+        if (memory_match(filesystem->image->headers[i]->name, header->name, count))
+            return i + 1;
+
+    }
+
+    return 1;
+
+}
+
 static unsigned int walk(struct vfs_interface *self, unsigned int id, unsigned int count, char *path)
 {
 
     struct ramdisk_filesystem *filesystem = (struct ramdisk_filesystem *)self;
+    struct tar_header *header = filesystem->image->headers[id - 1];
+    unsigned int offset = string_length(header->name);
 
     unsigned int i;
 
     if (!count)
         return id;
 
-    for (i = 0; i < filesystem->image->count; i++)
+    if (memory_match(path, "../", 3))
+        walk(self, parent(self, id), count - 3, path + 3);
+
+    for (i = id; i < filesystem->image->count; i++)
     {
 
-        if (memory_match(filesystem->image->headers[i]->name + 6, path, count))
+        if (memory_match(filesystem->image->headers[i]->name + offset, path, count))
             return i + 1;
 
     }
