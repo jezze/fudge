@@ -52,25 +52,10 @@ static unsigned int parse(struct ramdisk_image *self, void *address)
 
 }
 
-static unsigned int read_file(struct tar_header *header, unsigned int offset, unsigned int count, void *buffer)
-{
-
-    unsigned int size = string_read_num(header->size, 8);
-    unsigned int c = (size > offset) ? size - offset : 0;
-    unsigned int data = (unsigned int)header + TAR_BLOCK_SIZE;
-
-    if (c > count)
-        c = count;
-
-    memory_copy(buffer, (void *)(data + offset), c);
-
-    return c;
-
-}
-
 static unsigned int read_directory(struct ramdisk_filesystem *filesystem, struct tar_header *header, unsigned int offset, unsigned int count, void *buffer)
 {
 
+    unsigned int length = string_length(header->name);
     unsigned int i;
     unsigned int c = 0;
     char *out = buffer;
@@ -84,33 +69,38 @@ static unsigned int read_directory(struct ramdisk_filesystem *filesystem, struct
     for (i = 0; i < filesystem->image->count; i++)
     {
 
-        struct tar_header *current = filesystem->image->headers[i];
-        char *start;
-        char *slash;
+        unsigned int parent = filesystem->interface.parent(&filesystem->interface, i + 1) - 1;
         unsigned int size;
 
-        if (current == header)
+        if (filesystem->image->headers[i] == header)
             continue;
 
-        if (!memory_find(current->name, header->name, string_length(current->name), string_length(header->name)))
+        if (filesystem->image->headers[parent] != header)
             continue;
 
-        start = current->name + string_length(header->name);
-        size = string_length(start);
+        size = string_length(filesystem->image->headers[i]->name) - length;
 
-        if (!size)
-            continue;
-
-        slash = memory_find(start, "/", size, 1);
-
-        if (slash && slash < start + size - 1)
-            continue;
-
-        memory_copy(out + c, start, size);
+        memory_copy(out + c, filesystem->image->headers[i]->name + length, size);
         memory_copy(out + c + size, "\n", 1);
         c += size + 1;
 
     }
+
+    return c;
+
+}
+
+static unsigned int read_file(struct tar_header *header, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    unsigned int size = string_read_num(header->size, 8);
+    unsigned int c = (size > offset) ? size - offset : 0;
+    unsigned int data = (unsigned int)header + TAR_BLOCK_SIZE;
+
+    if (c > count)
+        c = count;
+
+    memory_copy(buffer, (void *)(data + offset), c);
 
     return c;
 
