@@ -52,11 +52,9 @@ static unsigned int parse(struct ramdisk_image *self, void *address)
 
 }
 
-static unsigned int read_file(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int read_file(struct tar_header *header, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct ramdisk_filesystem *filesystem = (struct ramdisk_filesystem *)self;
-    struct tar_header *header = filesystem->image->headers[id - 1];
     unsigned int size = string_read_num(header->size, 8);
     unsigned int c = (size > offset) ? size - offset : 0;
     unsigned int data = (unsigned int)header + TAR_BLOCK_SIZE;
@@ -70,6 +68,54 @@ static unsigned int read_file(struct vfs_interface *self, unsigned int id, unsig
 
 }
 
+static unsigned int read_directory(struct ramdisk_filesystem *filesystem, struct tar_header *header, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    unsigned int i;
+    unsigned int c = 0;
+    char *out = buffer;
+
+    if (offset > 0)
+        return 0;
+
+    memory_copy(out + c, "../\n", 4);
+    c += 4;
+
+    for (i = 0; i < filesystem->image->count; i++)
+    {
+
+        struct tar_header *current = filesystem->image->headers[i];
+        char *start;
+        char *slash;
+        unsigned int size;
+
+        if (current == header)
+            continue;
+
+        if (!memory_find(current->name, header->name, string_length(current->name), string_length(header->name)))
+            continue;
+
+        start = current->name + string_length(header->name);
+        size = string_length(start);
+
+        if (!size)
+            continue;
+
+        slash = memory_find(start, "/", size, 1);
+
+        if (slash && slash < start + size - 1)
+            continue;
+
+        memory_copy(out + c, start, size);
+        memory_copy(out + c + size, "\n", 1);
+        c += size + 1;
+
+    }
+
+    return c;
+
+}
+
 static unsigned int read(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
@@ -78,62 +124,15 @@ static unsigned int read(struct vfs_interface *self, unsigned int id, unsigned i
     unsigned int length = string_length(header->name);
 
     if (header->name[length - 1] == '/')
-    {
+        return read_directory(filesystem, header, offset, count, buffer);
 
-        unsigned int i;
-        unsigned int c = 0;
-        char *out = buffer;
-
-        if (offset > 0)
-            return 0;
-
-        memory_copy(out + c, "../\n", 4);
-        c += 4;
-
-        for (i = 0; i < filesystem->image->count; i++)
-        {
-
-            struct tar_header *current = filesystem->image->headers[i];
-            char *start;
-            char *slash;
-            unsigned int size;
-
-            if (current == header)
-                continue;
-
-            if (!memory_find(current->name, header->name, string_length(current->name), string_length(header->name)))
-                continue;
-
-            start = current->name + string_length(header->name);
-            size = string_length(start);
-
-            if (!size)
-                continue;
-
-            slash = memory_find(start, "/", size, 1);
-
-            if (slash && slash < start + size - 1)
-                continue;
-
-            memory_copy(out + c, start, size);
-            memory_copy(out + c + size, "\n", 1);
-            c += size + 1;
-
-        }
-
-        return c;
-
-    }
-
-    return read_file(self, id, offset, count, buffer);
+    return read_file(header, offset, count, buffer);
 
 }
 
-static unsigned int write_file(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int write_file(struct tar_header *header, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct ramdisk_filesystem *filesystem = (struct ramdisk_filesystem *)self;
-    struct tar_header *header = filesystem->image->headers[id - 1];
     unsigned int size = string_read_num(header->size, 8);
     unsigned int c = (size > offset) ? size - offset : 0;
     unsigned int data = (unsigned int)header + TAR_BLOCK_SIZE;
@@ -157,7 +156,7 @@ static unsigned int write(struct vfs_interface *self, unsigned int id, unsigned 
     if (header->name[length - 1] == '/')
         return 0;
 
-    return write_file(self, id, offset, count, buffer);
+    return write_file(header, offset, count, buffer);
 
 }
 
