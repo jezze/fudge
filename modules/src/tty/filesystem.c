@@ -60,7 +60,7 @@ static unsigned int read_root(struct vfs_interface *self, unsigned int id, unsig
     if (count > 17 - offset)
         count = 17 - offset;
 
-    memory_copy(buffer, "stdin\nstdout\ncwd\n" + offset, count);
+    memory_copy((char *)buffer + offset, "stdin\nstdout\ncwd\n", count);
 
     return count;
 
