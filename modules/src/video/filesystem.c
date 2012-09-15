@@ -11,6 +11,9 @@ static unsigned int read_root(struct vfs_interface *self, unsigned int id, unsig
     unsigned int i;
     unsigned int c = 0;
 
+    memory_copy((char *)buffer + c, "../\n", 4);
+    c += 4;
+
     for (i = 0; i < filesystem->interfacesCount; i++)
     {
 
@@ -35,9 +38,9 @@ static unsigned int read_root(struct vfs_interface *self, unsigned int id, unsig
 static unsigned int read_interface(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    memory_copy(buffer, "bpp\ndata\nenable\nxres\nyres\n", 26);
+    memory_copy(buffer, "../\nbpp\ndata\nenable\nxres\nyres\n", 30);
 
-    return 26;
+    return 30;
 
 }
 
@@ -97,25 +100,25 @@ static unsigned int read_interface_yres(struct vfs_interface *self, unsigned int
 static unsigned int read(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    if (id >= 51000)
-        return read_interface_enable(self, id - 51000, offset, count, buffer);
+    if (id >= 0x00005100)
+        return read_interface_enable(self, id - 0x00005100, offset, count, buffer);
 
-    if (id >= 41000)
-        return read_interface_yres(self, id - 41000, offset, count, buffer);
+    if (id >= 0x00004100)
+        return read_interface_yres(self, id - 0x00004100, offset, count, buffer);
 
-    if (id >= 31000)
-        return read_interface_xres(self, id - 31000, offset, count, buffer);
+    if (id >= 0x00003100)
+        return read_interface_xres(self, id - 0x00003100, offset, count, buffer);
 
-    if (id >= 21000)
-        return read_interface_bpp(self, id - 21000, offset, count, buffer);
+    if (id >= 0x00002100)
+        return read_interface_bpp(self, id - 0x00002100, offset, count, buffer);
 
-    if (id >= 11000)
-        return read_interface_data(self, id - 11000, offset, count, buffer);
+    if (id >= 0x00001100)
+        return read_interface_data(self, id - 0x00001100, offset, count, buffer);
 
-    if (id >= 1000)
-        return read_interface(self, id - 1000, offset, count, buffer);
+    if (id >= 0x00000100)
+        return read_interface(self, id - 0x00000100, offset, count, buffer);
 
-    if (id == 1)
+    if (id == 0x00000001)
         return read_root(self, id, offset, count, buffer);
 
     return 0;
@@ -183,45 +186,20 @@ static unsigned int write_interface_yres(struct vfs_interface *self, unsigned in
 static unsigned int write(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    if (id >= 51000)
-        return write_interface_enable(self, id - 51000, offset, count, buffer);;
+    if (id >= 0x00005100)
+        return write_interface_enable(self, id - 0x00005100, offset, count, buffer);;
 
-    if (id >= 41000)
-        return write_interface_yres(self, id - 41000, offset, count, buffer);;
+    if (id >= 0x00004100)
+        return write_interface_yres(self, id - 0x00004100, offset, count, buffer);;
 
-    if (id >= 31000)
-        return write_interface_xres(self, id - 31000, offset, count, buffer);;
+    if (id >= 0x00003100)
+        return write_interface_xres(self, id - 0x00003100, offset, count, buffer);;
 
-    if (id >= 21000)
-        return write_interface_bpp(self, id - 21000, offset, count, buffer);;
+    if (id >= 0x00002100)
+        return write_interface_bpp(self, id - 0x00002100, offset, count, buffer);;
 
-    if (id >= 11000)
-        return write_interface_data(self, id - 11000, offset, count, buffer);
-
-    return 0;
-
-}
-
-static unsigned int walk_interface(struct vfs_interface *self, unsigned int id, unsigned int count, char *path)
-{
-
-    if (!count)
-        return id;
-
-    if (memory_match(path, "data", 4))
-        return id + 10000;
-
-    if (memory_match(path, "bpp", 3))
-        return id + 20000;
-
-    if (memory_match(path, "xres", 4))
-        return id + 30000;
-
-    if (memory_match(path, "yres", 4))
-        return id + 40000;
-
-    if (memory_match(path, "enable", 6))
-        return id + 50000;
+    if (id >= 0x00001100)
+        return write_interface_data(self, id - 0x00001100, offset, count, buffer);
 
     return 0;
 
@@ -233,8 +211,39 @@ static unsigned int walk(struct vfs_interface *self, unsigned int id, unsigned i
     if (!count)
         return id;
 
-    if (memory_match(path, "0/", 2))
-        return walk_interface(self, 1000, count - 2, path + 2);
+    if (id >= 0x00000100)
+    {
+
+        if (memory_match(path, "../", 3))
+            return walk(self, 0x00000001, count - 3, path + 3);
+
+        if (memory_match(path, "data", 4))
+            return walk(self, id + 0x00001000, count - 4, path + 4);
+
+        if (memory_match(path, "bpp", 3))
+            return walk(self, id + 0x00002000, count - 3, path + 3);
+
+        if (memory_match(path, "xres", 4))
+            return walk(self, id + 0x00003000, count - 4, path + 4);
+
+        if (memory_match(path, "yres", 4))
+            return walk(self, id + 0x00004000, count - 4, path + 4);
+
+        if (memory_match(path, "enable", 6))
+            return walk(self, id + 0x00005000, count - 6, path + 6);
+
+    }
+
+    if (id == 0x00000001)
+    {
+
+        if (memory_match(path, "../", 3))
+            return walk(self, id, count - 3, path + 3);
+
+        if (memory_match(path, "0/", 2))
+            return walk(self, id << 8, count - 2, path + 2);
+
+    }
 
     return 0;
 
