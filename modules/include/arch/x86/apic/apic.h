@@ -22,6 +22,23 @@ struct apic_routine
 
 };
 
+void apic_routine00();
+void apic_routine01();
+void apic_routine02();
+void apic_routine03();
+void apic_routine04();
+void apic_routine05();
+void apic_routine06();
+void apic_routine07();
+void apic_routine08();
+void apic_routine09();
+void apic_routine0A();
+void apic_routine0B();
+void apic_routine0C();
+void apic_routine0D();
+void apic_routine0E();
+void apic_routine0F();
+
 unsigned int apic_register_routine(unsigned int index, struct base_device *device, void (*callback)(struct base_device *device));
 unsigned int apic_unregister_routine(unsigned int index, struct base_device *device);
 
