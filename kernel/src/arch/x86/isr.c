@@ -150,7 +150,6 @@ void isr_setup(unsigned int cs)
     idt_set_entry(0x1D, isr_routine1D, cs, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
     idt_set_entry(0x1E, isr_routine1E, cs, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
     idt_set_entry(0x1F, isr_routine1F, cs, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
-    idt_set_entry(ISR_INDEX_SYSCALL, isr_routine80, cs, IDT_FLAG_PRESENT | IDT_FLAG_RING3 | IDT_FLAG_TYPE32INT);
 
 }
 

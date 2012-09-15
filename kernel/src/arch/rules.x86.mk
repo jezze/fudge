@@ -8,4 +8,5 @@ KERNEL_OBJECTS+=kernel/src/arch/x86/isrs.o
 KERNEL_OBJECTS+=kernel/src/arch/x86/mmu.o
 KERNEL_OBJECTS+=kernel/src/arch/x86/mboot.o
 KERNEL_OBJECTS+=kernel/src/arch/x86/syscall.o
+KERNEL_OBJECTS+=kernel/src/arch/x86/syscalls.o
 KERNEL_OBJECTS+=kernel/src/arch/x86/tss.o

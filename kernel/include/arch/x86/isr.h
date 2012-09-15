@@ -21,7 +21,6 @@
 #define ISR_INDEX_AC      0x11
 #define ISR_INDEX_MC      0x12
 #define ISR_INDEX_XM      0x13
-#define ISR_INDEX_SYSCALL 0x80
 
 struct isr_general_registers
 {
@@ -90,7 +89,6 @@ void isr_routine1C();
 void isr_routine1D();
 void isr_routine1E();
 void isr_routine1F();
-void isr_routine80();
 unsigned int isr_handle(struct isr_registers *registers);
 void isr_set_routine(unsigned int index, void (*routine)(struct isr_registers *registers));
 void isr_unset_routine(unsigned int index);

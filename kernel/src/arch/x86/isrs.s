@@ -220,13 +220,7 @@ isr_routine1F:
     push 0x1F
     jmp isr_common_cpu
 
-.global isr_routine80
-isr_routine80:
-    cli
-    push eax
-    push 0x80
-    jmp isr_common_cpu
-
+.global isr_common_cpu
 isr_common_cpu:
     pusha
     mov eax, esp
