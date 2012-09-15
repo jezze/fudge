@@ -2,7 +2,7 @@
 #define ARCH_SYSCALL_H
 
 void syscall_routine();
-void syscall_setup_arch();
+void syscall_setup_arch(unsigned int cs);
 
 #endif
 
