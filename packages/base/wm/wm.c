@@ -10,8 +10,8 @@ static unsigned int idmy;
 static char buffer[0x2000];
 static char buffer2[0x2000];
 
-static float mx;
-static float my;
+static unsigned int mx;
+static unsigned int my;
 
 static unsigned int get_offset(unsigned int x, unsigned int y)
 {
@@ -118,30 +118,24 @@ void enable()
 
 }
 
-void set_mouse_coords(float x, float y)
+void set_mouse_coords(unsigned int x, unsigned int y)
 {
 
     mx = x;
     my = y;
 
-    if (mx < 0)
-        mx = 0;
-
     if (mx > SCREEN_WIDTH - 10)
         mx = SCREEN_WIDTH - 10;
-
-    if (my < 0)
-        my = 0;
 
     if (my > SCREEN_HEIGHT - 10)
         my = SCREEN_HEIGHT - 10;
 
 }
 
-float acc(int x)
+int acc(int x)
 {
 
-    float val = x;
+    int val = x;
 
     if (x > -1 && x < 1)
         return 1 * val;
@@ -181,16 +175,16 @@ void mouse_event()
     call_read(idmx, 0, 1, &dx);
     call_read(idmy, 0, 1, &dy);
 
-    write_buffer_rect((unsigned int)mx, (unsigned int)my, 10, 10, buffer);
+    write_buffer_rect(mx, my, 10, 10, buffer);
 
     relx = dx - ((status << 4) & 0x100);
     rely = dy - ((status << 3) & 0x100);
 
     set_mouse_coords(mx + acc(relx), my - acc(rely));
 
-    read_buffer_rect((unsigned int)mx, (unsigned int)my, 10, 10, buffer);
+    read_buffer_rect(mx, my, 10, 10, buffer);
 
-    write_fill((unsigned int)mx, (unsigned int)my, 10, 10, buffer2, 0xFFFFFF);
+    write_fill(mx, my, 10, 10, buffer2, 0xFFFFFF);
 
     call_idle();
 
@@ -219,7 +213,7 @@ void main()
     write_fill(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, buffer2, SCREEN_BACKGROUND);
     write_fill(100, 200, 300, 200, buffer2, WINDOW_BACKGROUND);
 
-    read_buffer_rect((unsigned int)mx, (unsigned int)my, 10, 10, buffer);
+    read_buffer_rect(mx, my, 10, 10, buffer);
 
     call_attach(0x2C, mouse_event);
     call_idle();
