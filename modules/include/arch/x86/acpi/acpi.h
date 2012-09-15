@@ -20,7 +20,7 @@ struct acpi_rsdt
 {
 
     struct acpi_sdth base;
-    struct acpi_sdth **entries;
+    struct acpi_sdth *entries[64];
 
 };
 
