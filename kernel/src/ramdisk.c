@@ -70,7 +70,7 @@ static unsigned int read_directory(struct ramdisk_filesystem *filesystem, struct
     {
 
         unsigned int parent = filesystem->interface.parent(&filesystem->interface, i + 1) - 1;
-        unsigned int size;
+        unsigned int clength;
 
         if (filesystem->image->headers[i] == header)
             continue;
@@ -78,11 +78,11 @@ static unsigned int read_directory(struct ramdisk_filesystem *filesystem, struct
         if (filesystem->image->headers[parent] != header)
             continue;
 
-        size = string_length(filesystem->image->headers[i]->name) - length;
+        clength = string_length(filesystem->image->headers[i]->name) - length;
 
-        memory_copy(out + c, filesystem->image->headers[i]->name + length, size);
-        memory_copy(out + c + size, "\n", 1);
-        c += size + 1;
+        memory_copy(out + c, filesystem->image->headers[i]->name + length, clength);
+        memory_copy(out + c + clength, "\n", 1);
+        c += clength + 1;
 
     }
 
@@ -185,7 +185,7 @@ static unsigned int walk(struct vfs_interface *self, unsigned int id, unsigned i
 
     struct ramdisk_filesystem *filesystem = (struct ramdisk_filesystem *)self;
     struct tar_header *header = filesystem->image->headers[id - 1];
-    unsigned int offset = string_length(header->name);
+    unsigned int length = string_length(header->name);
     unsigned int i;
 
     if (!count)
@@ -197,17 +197,17 @@ static unsigned int walk(struct vfs_interface *self, unsigned int id, unsigned i
     for (i = id; i < filesystem->image->count; i++)
     {
 
-        unsigned int length = string_length(filesystem->image->headers[i]->name);
+        unsigned int clength = string_length(filesystem->image->headers[i]->name);
 
-        if (length < offset)
+        if (clength < length)
             break;
 
-        length -= offset;
+        clength -= length;
 
-        if (!memory_match(filesystem->image->headers[i]->name + offset, path, length))
+        if (!memory_match(filesystem->image->headers[i]->name + length, path, clength))
             continue;
 
-        return walk(self, i + 1, count - length, path + length);
+        return walk(self, i + 1, count - clength, path + clength);
 
     }
 
