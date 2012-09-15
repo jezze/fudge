@@ -30,7 +30,7 @@ static void setup(struct kernel_interface *self)
     isr_setup(cs);
     cpu_disable_apic();
 
-    mmu_setup_arch();
+    mmu_setup_arch(cs);
     syscall_setup_arch(cs);
 
 }

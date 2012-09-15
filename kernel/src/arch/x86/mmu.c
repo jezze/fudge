@@ -2,6 +2,7 @@
 #include <mmu.h>
 #include <runtime.h>
 #include <arch/x86/cpu.h>
+#include <arch/x86/idt.h>
 #include <arch/x86/isr.h>
 #include <arch/x86/mmu.h>
 
@@ -104,12 +105,13 @@ static void handle_interrupt(struct isr_registers *registers)
 
 }
 
-void mmu_setup_arch()
+void mmu_setup_arch(unsigned int cs)
 {
 
     mmu_set_interface(0, enable, load_user_memory, reload_memory, map_kernel_memory, map_user_memory, unmap_user_memory);
 
-    isr_set_routine(ISR_INDEX_PF, handle_interrupt);
+    idt_set_entry(0x0E, mmu_routine, cs, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
+    isr_set_routine(0x0E, handle_interrupt);
 
 }
 

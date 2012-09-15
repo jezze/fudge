@@ -6,6 +6,7 @@ KERNEL_OBJECTS+=kernel/src/arch/x86/init.o
 KERNEL_OBJECTS+=kernel/src/arch/x86/isr.o
 KERNEL_OBJECTS+=kernel/src/arch/x86/isrs.o
 KERNEL_OBJECTS+=kernel/src/arch/x86/mmu.o
+KERNEL_OBJECTS+=kernel/src/arch/x86/mmus.o
 KERNEL_OBJECTS+=kernel/src/arch/x86/mboot.o
 KERNEL_OBJECTS+=kernel/src/arch/x86/syscall.o
 KERNEL_OBJECTS+=kernel/src/arch/x86/syscalls.o
