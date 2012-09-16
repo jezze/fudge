@@ -11,6 +11,9 @@ static unsigned int read_root(struct vfs_interface *self, unsigned int id, unsig
     unsigned int i;
     unsigned int c = 0;
 
+    if (offset > 0)
+        return 0;
+
     memory_copy((char *)buffer + c, "../\n", 4);
     c += 4;
 
@@ -37,6 +40,9 @@ static unsigned int read_root(struct vfs_interface *self, unsigned int id, unsig
 
 static unsigned int read_interface(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
+
+    if (offset > 0)
+        return 0;
 
     memory_copy(buffer, "../\nbpp\ndata\nenable\nxres\nyres\n", 30);
 

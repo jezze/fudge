@@ -10,6 +10,9 @@ static unsigned int read(struct vfs_interface *self, unsigned int id, unsigned i
     struct nodefs_node *node;
     struct nodefs_filesystem *filesystem = (struct nodefs_filesystem *)self;
 
+    if (offset > 0)
+        return 0;
+
     if (id == 1)
     {
 

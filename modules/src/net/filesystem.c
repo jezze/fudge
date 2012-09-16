@@ -11,6 +11,12 @@ static unsigned int read_root(struct vfs_interface *self, unsigned int id, unsig
     unsigned int i;
     unsigned int c = 0;
 
+    if (offset > 0)
+        return 0;
+
+    memory_copy((char *)buffer + c, "../\n", 4);
+    c += 4;
+
     for (i = 0; i < filesystem->interfacesCount; i++)
     {
 
@@ -35,9 +41,12 @@ static unsigned int read_root(struct vfs_interface *self, unsigned int id, unsig
 static unsigned int read_interface(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    memory_copy(buffer, "data\nmac\n", 9);
+    if (offset > 0)
+        return 0;
 
-    return 9;
+    memory_copy(buffer, "../\ndata\nmac\n", 13);
+
+    return 13;
 
 }
 
