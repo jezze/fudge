@@ -4,9 +4,9 @@
 #include <nodefs/nodefs.h>
 #include <arch/x86/ps2/ps2.h>
 
-static struct ps2_kbd_device kbdDevice;
+static struct ps2_device kbdDevice;
+static struct ps2_device mouseDevice;
 static struct ps2_kbd_driver kbdDriver;
-static struct ps2_mouse_device mouseDevice;
 static struct ps2_mouse_driver mouseDriver;
 
 static struct nodefs_node buffer;
@@ -68,10 +68,10 @@ static unsigned int my_read(struct nodefs_node *self, unsigned int offset, unsig
 void init()
 {
 
-    ps2_kbd_device_init(&kbdDevice, PS2_IRQ_KBD);
+    ps2_device_init(&kbdDevice, "ps2kbd", PS2_IRQ_KBD);
     base_register_device(&kbdDevice.base);
 
-    ps2_mouse_device_init(&mouseDevice, PS2_IRQ_MOUSE);
+    ps2_device_init(&mouseDevice, "ps2mouse", PS2_IRQ_MOUSE);
     base_register_device(&mouseDevice.base);
 
     ps2_kbd_driver_init(&kbdDriver);

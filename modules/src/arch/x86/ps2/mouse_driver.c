@@ -95,19 +95,23 @@ static void start(struct base_driver *self)
 static void attach(struct base_device *device)
 {
 
-    struct ps2_mouse_device *mouseDevice = (struct ps2_mouse_device *)device;
+    struct ps2_device *ps2device = (struct ps2_device *)device;
 
-    apic_register_routine(mouseDevice->irq, device, handle_irq);
+    apic_register_routine(ps2device->irq, device, handle_irq);
 
 }
 
 static unsigned int check(struct base_driver *self, struct base_device *device)
 {
 
-    return device->type == PS2_MOUSE_DEVICE_TYPE;
+    struct ps2_device *ps2device = (struct ps2_device *)device;
+
+    if (device->type != PS2_DEVICE_TYPE)
+        return 0;
+
+    return ps2device->irq == PS2_IRQ_MOUSE;
 
 }
-
 
 void ps2_mouse_driver_init(struct ps2_mouse_driver *driver)
 {

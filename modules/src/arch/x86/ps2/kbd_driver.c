@@ -127,16 +127,21 @@ static void handle_irq(struct base_device *self)
 static void attach(struct base_device *device)
 {
 
-    struct ps2_kbd_device *kbdDevice = (struct ps2_kbd_device *)device;
+    struct ps2_device *ps2device = (struct ps2_device *)device;
 
-    apic_register_routine(kbdDevice->irq, device, handle_irq);
+    apic_register_routine(ps2device->irq, device, handle_irq);
 
 }
 
 static unsigned int check(struct base_driver *self, struct base_device *device)
 {
 
-    return device->type == PS2_KBD_DEVICE_TYPE;
+    struct ps2_device *ps2device = (struct ps2_device *)device;
+
+    if (device->type != PS2_DEVICE_TYPE)
+        return 0;
+
+    return ps2device->irq == PS2_IRQ_KBD;
 
 }
 

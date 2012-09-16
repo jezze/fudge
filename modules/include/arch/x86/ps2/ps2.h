@@ -7,10 +7,17 @@
 #define PS2_IRQ_KBD 0x01
 #define PS2_IRQ_MOUSE 0x0C
 
-#define PS2_KBD_DEVICE_TYPE   0x3205
+#define PS2_DEVICE_TYPE       0x3205
 #define PS2_KBD_DRIVER_TYPE   0x0005
-#define PS2_MOUSE_DEVICE_TYPE 0x4205
 #define PS2_MOUSE_DRIVER_TYPE 0x0059
+
+struct ps2_device
+{
+
+    struct base_device base;
+    unsigned int irq;
+
+};
 
 struct ps2_kbd_buffer
 {
@@ -21,14 +28,6 @@ struct ps2_kbd_buffer
     unsigned int tail;
     unsigned int (*read)(struct ps2_kbd_buffer *self, unsigned int count, char *buffer);
     unsigned int (*write)(struct ps2_kbd_buffer *self, unsigned int count, char *buffer);
-
-};
-
-struct ps2_kbd_device
-{
-
-    struct base_device base;
-    unsigned int irq;
 
 };
 
@@ -45,14 +44,6 @@ struct ps2_kbd_driver
 
 };
 
-struct ps2_mouse_device
-{
-
-    struct base_device base;
-    unsigned int irq;
-
-};
-
 struct ps2_mouse_driver
 {
 
@@ -64,9 +55,8 @@ struct ps2_mouse_driver
 
 };
 
-void ps2_kbd_device_init(struct ps2_kbd_device *device, unsigned int irq);
+void ps2_device_init(struct ps2_device *device, char *name, unsigned int irq);
 void ps2_kbd_driver_init(struct ps2_kbd_driver *driver);
-void ps2_mouse_device_init(struct ps2_mouse_device *device, unsigned int irq);
 void ps2_mouse_driver_init(struct ps2_mouse_driver *driver);
 
 #endif
