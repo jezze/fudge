@@ -69,15 +69,13 @@ void init()
 {
 
     ps2_device_init(&kbdDevice, "ps2kbd", PS2_IRQ_KBD);
-    base_register_device(&kbdDevice.base);
-
     ps2_device_init(&mouseDevice, "ps2mouse", PS2_IRQ_MOUSE);
-    base_register_device(&mouseDevice.base);
-
     ps2_kbd_driver_init(&kbdDriver);
-    base_register_driver(&kbdDriver.base);
-
     ps2_mouse_driver_init(&mouseDriver);
+
+    base_register_device(&kbdDevice.base);
+    base_register_device(&mouseDevice.base);
+    base_register_driver(&kbdDriver.base);
     base_register_driver(&mouseDriver.base);
 
     nodefs_register_node(&buffer, "ps2_buffer", &kbdDriver.base.module, buffer_read, buffer_write);
@@ -93,7 +91,6 @@ void destroy()
 
     base_unregister_driver(&kbdDriver.base);
     base_unregister_driver(&mouseDriver.base);
-
     base_unregister_device(&kbdDevice.base);
     base_unregister_device(&mouseDevice.base);
 
