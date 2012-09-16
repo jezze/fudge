@@ -2,8 +2,15 @@
 
 .extern isr_handle
 
-.global isr_common_cpu
-isr_common_cpu:
+.global isr_routine
+isr_routine:
+    cli
+    push 0xff
+    push 0xff
+    jmp isr_common
+
+.global isr_common
+isr_common:
     pusha
     mov eax, esp
     push eax
