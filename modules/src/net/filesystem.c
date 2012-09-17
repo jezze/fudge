@@ -12,18 +12,18 @@ static unsigned int read_root(struct net_filesystem *filesystem, unsigned int of
     unsigned int c = 1024;
     unsigned int i;
 
-    o += vfs_read(temp + o, c - o, "../\n", 4, 0);
+    o += vfs_write(temp, c - o, "../\n", 4, o);
 
     for (i = 0; i < filesystem->interfacesCount; i++)
     {
 
         string_write_num(temp + o, i, 10);
         o += string_length(temp + o);
-        o += vfs_read(temp + o, c - o, "/\n", 2, 0);
+        o += vfs_write(temp, c - o, "/\n", 2, o);
 
     }
 
-    return vfs_read(buffer, count, temp, o, 0);
+    return vfs_read(buffer, count, temp, o, offset);
 
 }
 
