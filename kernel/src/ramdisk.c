@@ -55,22 +55,18 @@ static unsigned int parse(struct ramdisk_image *self, void *address)
 static unsigned int read_directory(struct ramdisk_filesystem *filesystem, struct tar_header *header, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    unsigned int length = string_length(header->name);
+    char temp[1024];
+    unsigned int o = 0;
+    unsigned int c = 1024;
     unsigned int i;
-    unsigned int c = 0;
-    char *out = buffer;
+    unsigned int length = string_length(header->name);
 
-    if (offset > 0)
-        return 0;
-
-    memory_copy(out + c, "../\n", 4);
-    c += 4;
+    o += vfs_write(temp, c - o, "../\n", 4, o);
 
     for (i = 0; i < filesystem->image->count; i++)
     {
 
         unsigned int parent = filesystem->interface.parent(&filesystem->interface, i + 1) - 1;
-        unsigned int clength;
 
         if (filesystem->image->headers[i] == header)
             continue;
@@ -78,15 +74,12 @@ static unsigned int read_directory(struct ramdisk_filesystem *filesystem, struct
         if (filesystem->image->headers[parent] != header)
             continue;
 
-        clength = string_length(filesystem->image->headers[i]->name) - length;
-
-        memory_copy(out + c, filesystem->image->headers[i]->name + length, clength);
-        memory_copy(out + c + clength, "\n", 1);
-        c += clength + 1;
+        o += vfs_write(temp, c - o, filesystem->image->headers[i]->name + length, string_length(filesystem->image->headers[i]->name) - length, o);
+        o += vfs_write(temp, c - o, "\n", 2, o);
 
     }
 
-    return c;
+    return vfs_read(buffer, count, temp, o, offset);
 
 }
 
