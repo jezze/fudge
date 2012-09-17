@@ -179,7 +179,7 @@ static unsigned int check(struct base_driver *self, struct base_device *device)
 
 }
 
-static unsigned int interface_read(struct net_interface *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int read_data(struct net_interface *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct rtl8139_driver *driver = (struct rtl8139_driver *)self->driver;
@@ -188,7 +188,7 @@ static unsigned int interface_read(struct net_interface *self, unsigned int offs
 
 }
 
-static unsigned int interface_write(struct net_interface *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int write_data(struct net_interface *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct rtl8139_driver *driver = (struct rtl8139_driver *)self->driver;
@@ -207,8 +207,8 @@ void rtl8139_driver_init(struct rtl8139_driver *driver)
     driver->read = read;
     driver->write = write;
 
-    driver->interface.read = interface_read;
-    driver->interface.write = interface_write;
+    driver->interface.read_data = read_data;
+    driver->interface.write_data = write_data;
 
 }
 
