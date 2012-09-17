@@ -12,18 +12,18 @@ static unsigned int read_root(struct block_filesystem *filesystem, unsigned int 
     unsigned int c = 1024;
     unsigned int i;
 
-    o += vfs_copy(temp + o, c - o, "../\n", 4, 0);
+    o += vfs_read(temp + o, c - o, "../\n", 4, 0);
 
     for (i = 0; i < filesystem->interfacesCount; i++)
     {
 
         string_write_num(temp + o, i, 10);
         o += string_length(temp + o);
-        o += vfs_copy(temp + o, c - o, "/\n", 2, 0);
+        o += vfs_read(temp + o, c - o, "/\n", 2, 0);
 
     }
 
-    return vfs_copy(buffer, count, temp, o, 0);
+    return vfs_read(buffer, count, temp, o, 0);
 
 }
 
@@ -45,7 +45,7 @@ static unsigned int read(struct vfs_interface *self, unsigned int id, unsigned i
     }
 
     if (id >= 0x00000100)
-        return vfs_copy(buffer, count, "../\ndata\n", 9, offset);
+        return vfs_read(buffer, count, "../\ndata\n", 9, offset);
 
     if (id == 0x00000001)
         return read_root(filesystem, offset, count, buffer);

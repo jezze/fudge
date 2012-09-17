@@ -96,7 +96,7 @@ static unsigned int read_file(struct tar_header *header, unsigned int offset, un
     unsigned int size = string_read_num(header->size, 8);
     unsigned int data = (unsigned int)header + TAR_BLOCK_SIZE;
 
-    return vfs_copy(buffer, count, (void *)data, size, offset);
+    return vfs_read(buffer, count, (void *)data, size, offset);
 
 }
 
@@ -120,7 +120,7 @@ static unsigned int write_file(struct tar_header *header, unsigned int offset, u
     unsigned int size = string_read_num(header->size, 8);
     unsigned int data = (unsigned int)header + TAR_BLOCK_SIZE;
 
-    return vfs_copy((void *)(data + offset), size, buffer, count, 0);
+    return vfs_write((void *)data, size, buffer, count, offset);
 
 }
 

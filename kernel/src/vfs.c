@@ -1,7 +1,7 @@
 #include <memory.h>
 #include <vfs.h>
 
-unsigned int vfs_copy(void *out, unsigned int ocount, void *in, unsigned int icount, unsigned int offset)
+unsigned int vfs_read(void *out, unsigned int ocount, void *in, unsigned int icount, unsigned int offset)
 {
 
     char *op = out;
@@ -20,6 +20,28 @@ unsigned int vfs_copy(void *out, unsigned int ocount, void *in, unsigned int ico
         *op++ = *ip++;
 
     return ocount;
+
+}
+
+unsigned int vfs_write(void *out, unsigned int ocount, void *in, unsigned int icount, unsigned int offset)
+{
+
+    char *op = out;
+    const char *ip = in;
+    unsigned int count;
+
+    if (offset >= ocount)
+        return 0;
+
+    if (icount > ocount - offset)
+        icount = ocount - offset;
+
+    op += offset;
+
+    for (count = icount; count; count--)
+        *op++ = *ip++;
+
+    return icount;
 
 }
 
