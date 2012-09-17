@@ -53,8 +53,9 @@ static unsigned int read_interface(struct vfs_interface *self, unsigned int id, 
 static unsigned int read_interface_bpp(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
+    unsigned int index = (id >> 8) & 0xFF;
     struct video_filesystem *filesystem = (struct video_filesystem *)self;
-    struct video_interface *interface = filesystem->interfaces[id];
+    struct video_interface *interface = filesystem->interfaces[index];
 
     memory_copy(buffer, &interface->bpp, 4);
 
@@ -65,8 +66,9 @@ static unsigned int read_interface_bpp(struct vfs_interface *self, unsigned int 
 static unsigned int read_interface_data(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
+    unsigned int index = (id >> 8) & 0xFF;
     struct video_filesystem *filesystem = (struct video_filesystem *)self;
-    struct video_interface *interface = filesystem->interfaces[id];
+    struct video_interface *interface = filesystem->interfaces[index];
 
     return interface->read_data(interface, offset, count, buffer);
 
@@ -82,8 +84,9 @@ static unsigned int read_interface_enable(struct vfs_interface *self, unsigned i
 static unsigned int read_interface_xres(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
+    unsigned int index = (id >> 8) & 0xFF;
     struct video_filesystem *filesystem = (struct video_filesystem *)self;
-    struct video_interface *interface = filesystem->interfaces[id];
+    struct video_interface *interface = filesystem->interfaces[index];
 
     memory_copy(buffer, &interface->xres, 4);
 
@@ -94,8 +97,9 @@ static unsigned int read_interface_xres(struct vfs_interface *self, unsigned int
 static unsigned int read_interface_yres(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
+    unsigned int index = (id >> 8) & 0xFF;
     struct video_filesystem *filesystem = (struct video_filesystem *)self;
-    struct video_interface *interface = filesystem->interfaces[id];
+    struct video_interface *interface = filesystem->interfaces[index];
 
     memory_copy(buffer, &interface->yres, 4);
 
@@ -106,23 +110,30 @@ static unsigned int read_interface_yres(struct vfs_interface *self, unsigned int
 static unsigned int read(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    if (id >= 0x00005100)
-        return read_interface_enable(self, id - 0x00005100, offset, count, buffer);
+    unsigned int type = id & 0xFF;
 
-    if (id >= 0x00004100)
-        return read_interface_yres(self, id - 0x00004100, offset, count, buffer);
+    if (id >= 0x00010000)
+    {
 
-    if (id >= 0x00003100)
-        return read_interface_xres(self, id - 0x00003100, offset, count, buffer);
+        if (type == 0)
+            return read_interface_data(self, id, offset, count, buffer);
 
-    if (id >= 0x00002100)
-        return read_interface_bpp(self, id - 0x00002100, offset, count, buffer);
+        if (type == 1)
+            return read_interface_bpp(self, id, offset, count, buffer);;
 
-    if (id >= 0x00001100)
-        return read_interface_data(self, id - 0x00001100, offset, count, buffer);
+        if (type == 2)
+            return read_interface_xres(self, id, offset, count, buffer);;
+
+        if (type == 3)
+            return read_interface_yres(self, id, offset, count, buffer);;
+
+        if (type == 4)
+            return read_interface_enable(self, id, offset, count, buffer);;
+
+    }
 
     if (id >= 0x00000100)
-        return read_interface(self, id - 0x00000100, offset, count, buffer);
+        return read_interface(self, id, offset, count, buffer);
 
     if (id == 0x00000001)
         return read_root(self, id, offset, count, buffer);
@@ -134,8 +145,9 @@ static unsigned int read(struct vfs_interface *self, unsigned int id, unsigned i
 static unsigned int write_interface_bpp(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
+    unsigned int index = (id >> 8) & 0xFF;
     struct video_filesystem *filesystem = (struct video_filesystem *)self;
-    struct video_interface *interface = filesystem->interfaces[id];
+    struct video_interface *interface = filesystem->interfaces[index];
 
     memory_copy(&interface->bpp, buffer, 4);
 
@@ -146,8 +158,9 @@ static unsigned int write_interface_bpp(struct vfs_interface *self, unsigned int
 static unsigned int write_interface_data(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
+    unsigned int index = (id >> 8) & 0xFF;
     struct video_filesystem *filesystem = (struct video_filesystem *)self;
-    struct video_interface *interface = filesystem->interfaces[id];
+    struct video_interface *interface = filesystem->interfaces[index];
 
     return interface->write_data(interface, offset, count, buffer);
 
@@ -156,8 +169,9 @@ static unsigned int write_interface_data(struct vfs_interface *self, unsigned in
 static unsigned int write_interface_enable(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
+    unsigned int index = (id >> 8) & 0xFF;
     struct video_filesystem *filesystem = (struct video_filesystem *)self;
-    struct video_interface *interface = filesystem->interfaces[id];
+    struct video_interface *interface = filesystem->interfaces[index];
 
     interface->enable(interface);
 
@@ -168,8 +182,9 @@ static unsigned int write_interface_enable(struct vfs_interface *self, unsigned 
 static unsigned int write_interface_xres(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
+    unsigned int index = (id >> 8) & 0xFF;
     struct video_filesystem *filesystem = (struct video_filesystem *)self;
-    struct video_interface *interface = filesystem->interfaces[id];
+    struct video_interface *interface = filesystem->interfaces[index];
 
     memory_copy(&interface->xres, buffer, 4);
 
@@ -180,8 +195,9 @@ static unsigned int write_interface_xres(struct vfs_interface *self, unsigned in
 static unsigned int write_interface_yres(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
+    unsigned int index = (id >> 8) & 0xFF;
     struct video_filesystem *filesystem = (struct video_filesystem *)self;
-    struct video_interface *interface = filesystem->interfaces[id];
+    struct video_interface *interface = filesystem->interfaces[index];
 
     memory_copy(&interface->yres, buffer, 4);
 
@@ -192,20 +208,27 @@ static unsigned int write_interface_yres(struct vfs_interface *self, unsigned in
 static unsigned int write(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    if (id >= 0x00005100)
-        return write_interface_enable(self, id - 0x00005100, offset, count, buffer);;
+    unsigned int type = id & 0xFF;
 
-    if (id >= 0x00004100)
-        return write_interface_yres(self, id - 0x00004100, offset, count, buffer);;
+    if (id >= 0x00010000)
+    {
 
-    if (id >= 0x00003100)
-        return write_interface_xres(self, id - 0x00003100, offset, count, buffer);;
+        if (type == 0)
+            return write_interface_data(self, id, offset, count, buffer);
 
-    if (id >= 0x00002100)
-        return write_interface_bpp(self, id - 0x00002100, offset, count, buffer);;
+        if (type == 1)
+            return write_interface_bpp(self, id, offset, count, buffer);;
 
-    if (id >= 0x00001100)
-        return write_interface_data(self, id - 0x00001100, offset, count, buffer);
+        if (type == 2)
+            return write_interface_xres(self, id, offset, count, buffer);;
+
+        if (type == 3)
+            return write_interface_yres(self, id, offset, count, buffer);;
+
+        if (type == 4)
+            return write_interface_enable(self, id, offset, count, buffer);;
+
+    }
 
     return 0;
 
@@ -221,33 +244,39 @@ static unsigned int walk(struct vfs_interface *self, unsigned int id, unsigned i
     {
 
         if (memory_match(path, "../", 3))
-            return walk(self, 0x00000001, count - 3, path + 3);
+            return walk(self, id >> 8, count - 3, path + 3);
 
         if (memory_match(path, "data", 4))
-            return walk(self, id + 0x00001000, count - 4, path + 4);
+            return walk(self, (id << 8) + 0, count - 4, path + 4);
 
         if (memory_match(path, "bpp", 3))
-            return walk(self, id + 0x00002000, count - 3, path + 3);
+            return walk(self, (id << 8) + 1, count - 3, path + 3);
 
         if (memory_match(path, "xres", 4))
-            return walk(self, id + 0x00003000, count - 4, path + 4);
+            return walk(self, (id << 8) + 2, count - 4, path + 4);
 
         if (memory_match(path, "yres", 4))
-            return walk(self, id + 0x00004000, count - 4, path + 4);
+            return walk(self, (id << 8) + 3, count - 4, path + 4);
 
         if (memory_match(path, "enable", 6))
-            return walk(self, id + 0x00005000, count - 6, path + 6);
+            return walk(self, (id << 8) + 4, count - 6, path + 6);
 
     }
 
-    if (id == 0x00000001)
+    if (id >= 0x00000001)
     {
 
         if (memory_match(path, "../", 3))
-            return walk(self, id, count - 3, path + 3);
+            return walk(self, 1, count - 3, path + 3);
 
         if (memory_match(path, "0/", 2))
-            return walk(self, id << 8, count - 2, path + 2);
+            return walk(self, (id << 8) + 0, count - 2, path + 2);
+
+        if (memory_match(path, "1/", 2))
+            return walk(self, (id << 8) + 1, count - 2, path + 2);
+
+        if (memory_match(path, "2/", 2))
+            return walk(self, (id << 8) + 2, count - 2, path + 2);
 
     }
 
