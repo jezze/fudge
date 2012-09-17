@@ -55,67 +55,6 @@ static void setup_transmitter(struct rtl8139_driver *self)
 
 }
 
-static unsigned int read(struct rtl8139_driver *self, unsigned int count, void *buffer)
-{
-
-    unsigned short current = io_inw(self->io + RTL8139_REGISTER_CAPR) + 0x10;
-    struct rtl8139_header *header = (struct rtl8139_header *)(self->rx + current);
-
-    memory_copy(buffer, (char *)self->rx + current + 4, header->length);
-
-    current += (header->length + 4 + 3) & ~3;
-
-    io_outw(self->io + RTL8139_REGISTER_CAPR, current - 0x10);
-
-    return header->length;
-
-}
-
-static unsigned int write(struct rtl8139_driver *self, unsigned int count, void *buffer)
-{
-
-    unsigned int status = (0x3F << 16) | (count & 0x1FFF);
-
-    switch (self->txp)
-    {
-
-        case 0:
-
-            memory_copy(self->tx0, buffer, count);
-            io_outd(self->io + RTL8139_REGISTER_TSD0, status);
-
-            break;
-
-        case 1:
-
-            memory_copy(self->tx1, buffer, count);
-            io_outd(self->io + RTL8139_REGISTER_TSD1, status);
-
-            break;
-
-        case 2:
-
-            memory_copy(self->tx2, buffer, count);
-            io_outd(self->io + RTL8139_REGISTER_TSD2, status);
-
-            break;
-
-        case 3:
-
-            memory_copy(self->tx3, buffer, count);
-            io_outd(self->io + RTL8139_REGISTER_TSD3, status);
-
-            break;
-
-    }
-
-    self->txp++;
-    self->txp %= 4;
-
-    return count;
-
-}
-
 static void handle_irq(struct base_device *device)
 {
 
@@ -183,8 +122,16 @@ static unsigned int read_data(struct net_interface *self, unsigned int offset, u
 {
 
     struct rtl8139_driver *driver = (struct rtl8139_driver *)self->driver;
+    unsigned short current = io_inw(driver->io + RTL8139_REGISTER_CAPR) + 0x10;
+    struct rtl8139_header *header = (struct rtl8139_header *)(driver->rx + current);
 
-    return driver->read(driver, count, buffer);
+    memory_copy(buffer, (char *)driver->rx + current + 4, header->length);
+
+    current += (header->length + 4 + 3) & ~3;
+
+    io_outw(driver->io + RTL8139_REGISTER_CAPR, current - 0x10);
+
+    return header->length;
 
 }
 
@@ -192,8 +139,45 @@ static unsigned int write_data(struct net_interface *self, unsigned int offset, 
 {
 
     struct rtl8139_driver *driver = (struct rtl8139_driver *)self->driver;
+    unsigned int status = (0x3F << 16) | (count & 0x1FFF);
 
-    return driver->write(driver, count, buffer);
+    switch (driver->txp)
+    {
+
+        case 0:
+
+            memory_copy(driver->tx0, buffer, count);
+            io_outd(driver->io + RTL8139_REGISTER_TSD0, status);
+
+            break;
+
+        case 1:
+
+            memory_copy(driver->tx1, buffer, count);
+            io_outd(driver->io + RTL8139_REGISTER_TSD1, status);
+
+            break;
+
+        case 2:
+
+            memory_copy(driver->tx2, buffer, count);
+            io_outd(driver->io + RTL8139_REGISTER_TSD2, status);
+
+            break;
+
+        case 3:
+
+            memory_copy(driver->tx3, buffer, count);
+            io_outd(driver->io + RTL8139_REGISTER_TSD3, status);
+
+            break;
+
+    }
+
+    driver->txp++;
+    driver->txp %= 4;
+
+    return count;
 
 }
 
@@ -203,9 +187,6 @@ void rtl8139_driver_init(struct rtl8139_driver *driver)
     memory_clear(driver, sizeof (struct rtl8139_driver));
 
     base_driver_init(&driver->base, RTL8139_DRIVER_TYPE, "rtl8139", start, check, attach);
-
-    driver->read = read;
-    driver->write = write;
 
     driver->interface.read_data = read_data;
     driver->interface.write_data = write_data;
