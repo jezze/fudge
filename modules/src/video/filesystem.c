@@ -47,56 +47,24 @@ static unsigned int read(struct vfs_interface *self, unsigned int id, unsigned i
         struct video_interface *interface = filesystem->interfaces[index];
 
         if (type == 0)
-        {
-
             return interface->read_data(interface, offset, count, buffer);
 
-        }
-
         if (type == 1)
-        {
-
-            memory_copy(buffer, &interface->bpp, 4);
-
-            return 4;
-
-        }
+            return vfs_read(&interface->bpp, 4, offset, count, buffer);
 
         if (type == 2)
-        {
-
-            memory_copy(buffer, &interface->xres, 4);
-
-            return 4;
-
-        }
+            return vfs_read(&interface->xres, 4, offset, count, buffer);
 
         if (type == 3)
-        {
-
-            memory_copy(buffer, &interface->yres, 4);
-
-            return 4;
-
-        }
+            return vfs_read(&interface->yres, 4, offset, count, buffer);
 
         if (type == 4)
-        {
-
             return 0;
-
-        }
 
     }
 
     if (id >= 0x00000100)
-    {
-
-        memory_copy(buffer, "../\nbpp\ndata\nenable\nxres\nyres\n", 30);
-
-        return 30;
-
-    }
+        return vfs_read("../\nbpp\ndata\nenable\nxres\nyres\n", 30, offset, count, buffer);
 
     if (id == 0x00000001)
         return read_root(filesystem, offset, count, buffer);
@@ -118,38 +86,16 @@ static unsigned int write(struct vfs_interface *self, unsigned int id, unsigned 
         struct video_interface *interface = filesystem->interfaces[index];
 
         if (type == 0)
-        {
-
             return interface->write_data(interface, offset, count, buffer);
 
-        }
-
         if (type == 1)
-        {
-
-            memory_copy(&interface->bpp, buffer, 4);
-
-            return 4;
-
-        }
+            return vfs_write(&interface->bpp, 4, offset, count, buffer);
 
         if (type == 2)
-        {
-
-            memory_copy(&interface->xres, buffer, 4);
-
-            return 4;
-
-        }
+            return vfs_write(&interface->xres, 4, offset, count, buffer);
 
         if (type == 3)
-        {
-
-            memory_copy(&interface->yres, buffer, 4);
-
-            return 4;
-
-        }
+            return vfs_write(&interface->yres, 4, offset, count, buffer);
 
         if (type == 4)
         {
