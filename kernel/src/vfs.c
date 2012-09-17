@@ -1,33 +1,25 @@
 #include <memory.h>
 #include <vfs.h>
 
-unsigned int vfs_read(void *value, unsigned int length, unsigned int offset, unsigned int count, void *buffer)
+unsigned int vfs_copy(void *out, unsigned int ocount, void *in, unsigned int icount, unsigned int offset)
 {
 
-    if (offset >= length)
+    char *op = out;
+    const char *ip = in;
+    unsigned int count;
+
+    if (offset >= icount)
         return 0;
 
-    if (count + offset >= length)
-        count = length - offset;
+    if (ocount > icount - offset)
+        ocount = icount - offset;
 
-    memory_copy(buffer, ((char *)value) + offset, count);
+    ip += offset;
 
-    return count;
+    for (count = ocount; count; count--)
+        *op++ = *ip++;
 
-}
-
-unsigned int vfs_write(void *value, unsigned int length, unsigned int offset, unsigned int count, void *buffer)
-{
-
-    if (offset >= length)
-        return 0;
-
-    if (count + offset >= length)
-        count = length - offset;
-
-    memory_copy(((char *)value) + offset, buffer, count);
-
-    return count;
+    return ocount;
 
 }
 

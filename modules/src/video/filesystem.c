@@ -24,7 +24,7 @@ static unsigned int read_root(struct video_filesystem *filesystem, unsigned int 
 
     }
 
-    return vfs_read(temp, (unsigned int)(b - temp), offset, count, buffer);
+    return vfs_copy(buffer, count, temp, (unsigned int)(b - temp), offset);
 
 }
 
@@ -44,18 +44,18 @@ static unsigned int read(struct vfs_interface *self, unsigned int id, unsigned i
             return interface->read_data(interface, offset, count, buffer);
 
         if (type == 1)
-            return vfs_read(&interface->bpp, 4, offset, count, buffer);
+            return vfs_copy(buffer, count, &interface->bpp, 4, offset);
 
         if (type == 2)
-            return vfs_read(&interface->xres, 4, offset, count, buffer);
+            return vfs_copy(buffer, count, &interface->xres, 4, offset);
 
         if (type == 3)
-            return vfs_read(&interface->yres, 4, offset, count, buffer);
+            return vfs_copy(buffer, count, &interface->yres, 4, offset);
 
     }
 
     if (id >= 0x00000100)
-        return vfs_read("../\nbpp\ndata\nenable\nxres\nyres\n", 30, offset, count, buffer);
+        return vfs_copy(buffer, count, "../\nbpp\ndata\nenable\nxres\nyres\n", 30, offset);
 
     if (id == 0x00000001)
         return read_root(filesystem, offset, count, buffer);
@@ -80,13 +80,13 @@ static unsigned int write(struct vfs_interface *self, unsigned int id, unsigned 
             return interface->write_data(interface, offset, count, buffer);
 
         if (type == 1)
-            return vfs_write(&interface->bpp, 4, offset, count, buffer);
+            return vfs_copy(&interface->bpp, 4, buffer, count, offset);
 
         if (type == 2)
-            return vfs_write(&interface->xres, 4, offset, count, buffer);
+            return vfs_copy(&interface->xres, 4, buffer, count, offset);
 
         if (type == 3)
-            return vfs_write(&interface->yres, 4, offset, count, buffer);
+            return vfs_copy(&interface->yres, 4, buffer, count, offset);
 
         if (type == 4)
         {

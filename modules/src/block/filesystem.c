@@ -24,7 +24,7 @@ static unsigned int read_root(struct block_filesystem *filesystem, unsigned int 
 
     }
 
-    return vfs_read(temp, (unsigned int)(b - temp), offset, count, buffer);
+    return vfs_copy(buffer, count, temp, (unsigned int)(b - temp), offset);
 
 }
 
@@ -46,7 +46,7 @@ static unsigned int read(struct vfs_interface *self, unsigned int id, unsigned i
     }
 
     if (id >= 0x00000100)
-        return vfs_read("../\ndata\n", 9, offset, count, buffer);
+        return vfs_copy(buffer, count, "../\ndata\n", 9, offset);
 
     if (id == 0x00000001)
         return read_root(filesystem, offset, count, buffer);

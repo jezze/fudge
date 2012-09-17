@@ -24,7 +24,7 @@ static unsigned int read_root(struct net_filesystem *filesystem, unsigned int of
 
     }
 
-    return vfs_read(temp, (unsigned int)(b - temp), offset, count, buffer);
+    return vfs_copy(buffer, count, temp, (unsigned int)(b - temp), offset);
 
 }
 
@@ -44,12 +44,12 @@ static unsigned int read(struct vfs_interface *self, unsigned int id, unsigned i
             return interface->read_data(interface, offset, count, buffer);
 
         if (type == 1)
-            return vfs_read(interface->mac, 6, offset, count, buffer);
+            return vfs_copy(buffer, count, interface->mac, 6, offset);
 
     }
 
     if (id >= 0x00000100)
-        return vfs_read("../\ndata\nmac\n", 13, offset, count, buffer);
+        return vfs_copy(buffer, count, "../\ndata\nmac\n", 13, offset);
 
     if (id == 0x00000001)
         return read_root(filesystem, offset, count, buffer);
@@ -74,7 +74,7 @@ static unsigned int write(struct vfs_interface *self, unsigned int id, unsigned 
             return interface->write_data(interface, offset, count, buffer);
 
         if (type == 1)
-            return vfs_write(interface->mac, 6, offset, count, buffer);
+            return vfs_copy(interface->mac, 6, buffer, count, offset);
 
     }
 
