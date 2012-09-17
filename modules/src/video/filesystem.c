@@ -52,9 +52,6 @@ static unsigned int read(struct vfs_interface *self, unsigned int id, unsigned i
         if (type == 3)
             return vfs_read(&interface->yres, 4, offset, count, buffer);
 
-        if (type == 4)
-            return 0;
-
     }
 
     if (id >= 0x00000100)
