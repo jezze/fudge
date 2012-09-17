@@ -8,23 +8,22 @@ static unsigned int read_root(struct block_filesystem *filesystem, unsigned int 
 {
 
     char temp[1024];
-    char *b = temp;
+    unsigned int o = 0;
+    unsigned int c = 1024;
     unsigned int i;
 
-    memory_copy(b, "../\n", 4);
-    b += string_length(b);
+    o += vfs_copy(temp + o, c - o, "../\n", 4, 0);
 
     for (i = 0; i < filesystem->interfacesCount; i++)
     {
 
-        string_write_num(b, i, 10);
-        b += string_length(b);
-        memory_copy(b, "/\n", 2);
-        b += string_length(b);
+        string_write_num(temp + o, i, 10);
+        o += string_length(temp + o);
+        o += vfs_copy(temp + o, c - o, "/\n", 2, 0);
 
     }
 
-    return vfs_copy(buffer, count, temp, (unsigned int)(b - temp), offset);
+    return vfs_copy(buffer, count, temp, o, 0);
 
 }
 
