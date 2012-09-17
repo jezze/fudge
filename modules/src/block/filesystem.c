@@ -4,109 +4,73 @@
 #include <base/base.h>
 #include <block/block.h>
 
-static unsigned int read_root(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int read_root(struct block_filesystem *filesystem, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct block_filesystem *filesystem = (struct block_filesystem *)self;
+    char temp[1024];
+    char *b = temp;
     unsigned int i;
-    unsigned int c = 0;
 
-    if (offset > 0)
-        return 0;
-
-    memory_copy((char *)buffer + c, "../\n", 4);
-    c += 4;
+    memory_copy(b, "../\n", 4);
+    b += string_length(b);
 
     for (i = 0; i < filesystem->interfacesCount; i++)
     {
 
-        char num[32];
-        unsigned int length;
-
-        string_write_num(num, i, 10);
-
-        length = string_length(num);
-
-        memory_copy((char *)buffer + c, num, length);
-        memory_copy((char *)buffer + c + length, "/\n", 2);
-
-        c += length + 2;
+        string_write_num(b, i, 10);
+        b += string_length(b);
+        memory_copy(b, "/\n", 2);
+        b += string_length(b);
 
     }
 
-    return c;
-
-}
-
-static unsigned int read_interface(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
-{
-
-    if (offset > 0)
-        return 0;
-
-    memory_copy(buffer, "../\ndata\n", 9);
-
-    return 9;
-
-}
-
-static unsigned int read_interface_data(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
-{
-
-    struct block_filesystem *filesystem = (struct block_filesystem *)self;
-    struct block_interface *interface = filesystem->interfaces[id];
-
-    return interface->read(interface, offset, count, buffer);
+    return vfs_read(temp, (unsigned int)(b - temp), offset, count, buffer);
 
 }
 
 static unsigned int read(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    if (id >= 11000)
-        return read_interface_data(self, id - 11000, offset, count, buffer);
+    struct block_filesystem *filesystem = (struct block_filesystem *)self;
 
-    if (id >= 1000)
-        return read_interface(self, id - 1000, offset, count, buffer);
+    if (id >= 0x00010000)
+    {
 
-    if (id == 1)
-        return read_root(self, id, offset, count, buffer);
+        unsigned int type = (id) & 0xFF;
+        unsigned int index = (id >> 8) & 0xFF;
+        struct block_interface *interface = filesystem->interfaces[index];
+
+        if (type == 0)
+            return interface->read_data(interface, offset, count, buffer);
+
+    }
+
+    if (id >= 0x00000100)
+        return vfs_read("../\ndata\n", 9, offset, count, buffer);
+
+    if (id == 0x00000001)
+        return read_root(filesystem, offset, count, buffer);
 
     return 0;
-
-}
-
-static unsigned int write_interface_data(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
-{
-
-    struct block_filesystem *filesystem = (struct block_filesystem *)self;
-    struct block_interface *interface = filesystem->interfaces[id];
-
-    return interface->write(interface, offset, count, buffer);
 
 }
 
 static unsigned int write(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    if (id >= 21000)
-        return 0;
+    struct block_filesystem *filesystem = (struct block_filesystem *)self;
 
-    if (id >= 11000)
-        return write_interface_data(self, id - 11000, offset, count, buffer);
+    if (id >= 0x00010000)
+    {
 
-    return 0;
+        unsigned int type = (id) & 0xFF;
+        unsigned int index = (id >> 8) & 0xFF;
+        struct block_interface *interface = filesystem->interfaces[index];
 
-}
+        if (type == 0)
+            return interface->write_data(interface, offset, count, buffer);
 
-static unsigned int walk_interface(struct vfs_interface *self, unsigned int id, unsigned int count, char *path)
-{
-
-    if (!count)
-        return id;
-
-    if (memory_match(path, "data", 4))
-        return id + 10000;
+    }
 
     return 0;
 
@@ -118,8 +82,36 @@ static unsigned int walk(struct vfs_interface *self, unsigned int id, unsigned i
     if (!count)
         return id;
 
-    if (memory_match(path, "0/", 2))
-        return walk_interface(self, 1000, count - 2, path + 2);
+    if (id >= 0x00010000)
+        return 0;
+
+    if (id >= 0x00000100)
+    {
+
+        if (memory_match(path, "../", 3))
+            return walk(self, id >> 8, count - 3, path + 3);
+
+        if (memory_match(path, "data", 4))
+            return walk(self, (id << 8) + 0, count - 4, path + 4);
+
+    }
+
+    if (id >= 0x00000001)
+    {
+
+        if (memory_match(path, "../", 3))
+            return walk(self, 1, count - 3, path + 3);
+
+        if (memory_match(path, "0/", 2))
+            return walk(self, (id << 8) + 0, count - 2, path + 2);
+
+        if (memory_match(path, "1/", 2))
+            return walk(self, (id << 8) + 1, count - 2, path + 2);
+
+        if (memory_match(path, "2/", 2))
+            return walk(self, (id << 8) + 2, count - 2, path + 2);
+
+    }
 
     return 0;
 

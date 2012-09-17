@@ -5,8 +5,8 @@ struct block_interface
 {
 
     struct base_driver *driver;
-    unsigned int (*read)(struct block_interface *self, unsigned int offset, unsigned int count, void *buffer);
-    unsigned int (*write)(struct block_interface *self, unsigned int offset, unsigned int count, void *buffer);
+    unsigned int (*read_data)(struct block_interface *self, unsigned int offset, unsigned int count, void *buffer);
+    unsigned int (*write_data)(struct block_interface *self, unsigned int offset, unsigned int count, void *buffer);
 
 };
 
