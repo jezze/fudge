@@ -27,6 +27,30 @@ static unsigned int read_root(struct net_filesystem *filesystem, unsigned int of
 
 }
 
+static unsigned int read_interfaces(struct net_filesystem *filesystem, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    char temp[1024];
+    unsigned int o = 0;
+    unsigned int c = 1024;
+    unsigned int i;
+
+    o += vfs_write(temp, c - o, "../\ndata\nmac\n", 13, o);
+
+    for (i = 0; i < filesystem->protocolsCount; i++)
+    {
+
+        struct net_protocol *protocol = filesystem->protocols[i];
+
+        o += vfs_write(temp, c - o, protocol->name, string_length(protocol->name), o);
+        o += vfs_write(temp, c - o, "\n", 1, o);
+
+    }
+
+    return vfs_read(buffer, count, temp, o, offset);
+
+}
+
 static unsigned int read(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
@@ -39,16 +63,28 @@ static unsigned int read(struct vfs_interface *self, unsigned int id, unsigned i
         unsigned int index = (id >> 8) & 0xFF;
         struct net_interface *interface = filesystem->interfaces[index];
 
-        if (type == 0)
-            return interface->read_data(interface, offset, count, buffer);
+        if (type >= filesystem->protocolsCount + 2)
+            return 0;
+
+        if (type >= 2)
+        {
+
+            struct net_protocol *protocol = filesystem->protocols[type - 2];
+
+            return protocol->read(protocol, interface, offset, count, buffer);
+
+        }
 
         if (type == 1)
             return vfs_read(buffer, count, interface->mac, 6, offset);
 
+        if (type == 0)
+            return interface->read_data(interface, offset, count, buffer);
+
     }
 
     if (id >= 0x00000100)
-        return vfs_read(buffer, count, "../\ndata\nmac\n", 13, offset);
+        return read_interfaces(filesystem, offset, count, buffer);
 
     if (id == 0x00000001)
         return read_root(filesystem, offset, count, buffer);
@@ -69,11 +105,23 @@ static unsigned int write(struct vfs_interface *self, unsigned int id, unsigned 
         unsigned int index = (id >> 8) & 0xFF;
         struct net_interface *interface = filesystem->interfaces[index];
 
-        if (type == 0)
-            return interface->write_data(interface, offset, count, buffer);
+        if (type >= filesystem->protocolsCount + 2)
+            return 0;
+
+        if (type >= 2)
+        {
+
+            struct net_protocol *protocol = filesystem->protocols[type - 2];
+
+            return protocol->write(protocol, interface, offset, count, buffer);
+
+        }
 
         if (type == 1)
             return vfs_write(interface->mac, 6, buffer, count, offset);
+
+        if (type == 0)
+            return interface->write_data(interface, offset, count, buffer);
 
     }
 
@@ -84,6 +132,8 @@ static unsigned int write(struct vfs_interface *self, unsigned int id, unsigned 
 static unsigned int walk(struct vfs_interface *self, unsigned int id, unsigned int count, char *path)
 {
 
+    struct net_filesystem *filesystem = (struct net_filesystem *)self;
+
     if (!count)
         return id;
 
@@ -93,6 +143,8 @@ static unsigned int walk(struct vfs_interface *self, unsigned int id, unsigned i
     if (id >= 0x00000100)
     {
 
+        unsigned int i;
+
         if (memory_match(path, "../", 3))
             return walk(self, id >> 8, count - 3, path + 3);
 
@@ -101,6 +153,17 @@ static unsigned int walk(struct vfs_interface *self, unsigned int id, unsigned i
 
         if (memory_match(path, "mac", 3))
             return walk(self, (id << 8) + 1, count - 3, path + 3);
+
+        for (i = 0; i < filesystem->protocolsCount; i++)
+        {
+
+            struct net_protocol *protocol = filesystem->protocols[i];
+            unsigned int length = string_length(protocol->name);
+
+            if (memory_match(path, protocol->name, length))
+                return walk(self, (id << 8) + (i + 2), count - length, path + length);
+
+        }
 
     }
 
