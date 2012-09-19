@@ -39,17 +39,17 @@ static unsigned int read(struct vfs_interface *self, unsigned int id, unsigned i
         unsigned int index = (id >> 8) & 0xFF;
         struct video_interface *interface = filesystem->interfaces[index];
 
-        if (type == 0)
-            return interface->read_data(interface, offset, count, buffer);
-
-        if (type == 1)
-            return vfs_read(buffer, count, &interface->bpp, 4, offset);
+        if (type == 3)
+            return vfs_read(buffer, count, &interface->yres, 4, offset);
 
         if (type == 2)
             return vfs_read(buffer, count, &interface->xres, 4, offset);
 
-        if (type == 3)
-            return vfs_read(buffer, count, &interface->yres, 4, offset);
+        if (type == 1)
+            return vfs_read(buffer, count, &interface->bpp, 4, offset);
+
+        if (type == 0)
+            return interface->read_data(interface, offset, count, buffer);
 
     }
 
@@ -75,18 +75,6 @@ static unsigned int write(struct vfs_interface *self, unsigned int id, unsigned 
         unsigned int index = (id >> 8) & 0xFF;
         struct video_interface *interface = filesystem->interfaces[index];
 
-        if (type == 0)
-            return interface->write_data(interface, offset, count, buffer);
-
-        if (type == 1)
-            return vfs_write(&interface->bpp, 4, buffer, count, offset);
-
-        if (type == 2)
-            return vfs_write(&interface->xres, 4, buffer, count, offset);
-
-        if (type == 3)
-            return vfs_write(&interface->yres, 4, buffer, count, offset);
-
         if (type == 4)
         {
 
@@ -95,6 +83,18 @@ static unsigned int write(struct vfs_interface *self, unsigned int id, unsigned 
             return 0;
 
         }
+
+        if (type == 3)
+            return vfs_write(&interface->yres, 4, buffer, count, offset);
+
+        if (type == 2)
+            return vfs_write(&interface->xres, 4, buffer, count, offset);
+
+        if (type == 1)
+            return vfs_write(&interface->bpp, 4, buffer, count, offset);
+
+        if (type == 0)
+            return interface->write_data(interface, offset, count, buffer);
 
     }
 
