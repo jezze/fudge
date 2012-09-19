@@ -6,6 +6,7 @@ struct ipv4_protocol
 
     struct net_protocol base;
     unsigned char address[4];
+    unsigned char buffer[8192];
 
 };
 
