@@ -14,11 +14,10 @@ void net_register_interface(struct net_interface *interface, struct base_driver 
 
 }
 
-void net_register_protocol(struct net_protocol *protocol)
+void net_register_protocol(unsigned short index, struct net_protocol *protocol)
 {
 
-    filesystem.protocols[filesystem.protocolsCount] = protocol;
-    filesystem.protocolsCount++;
+    filesystem.protocols[index] = protocol;
 
 }
 
@@ -27,8 +26,10 @@ void net_unregister_interface(struct net_interface *interface)
 
 }
 
-void net_unregister_protocol(struct net_protocol *protocol)
+void net_unregister_protocol(unsigned short index)
 {
+
+    filesystem.protocols[index] = 0;
 
 }
 

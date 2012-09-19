@@ -15,7 +15,6 @@ struct net_protocol
 {
 
     char *name;
-    unsigned char type[2];
     unsigned int (*read)(struct net_protocol *self, struct net_interface *interface, unsigned int offset, unsigned int count, void *buffer);
     unsigned int (*write)(struct net_protocol *self, struct net_interface *interface, unsigned int offset, unsigned int count, void *buffer);
 
@@ -27,15 +26,15 @@ struct net_filesystem
     struct vfs_interface base;
     struct net_interface *interfaces[8];
     unsigned int interfacesCount;
-    struct net_protocol *protocols[16];
+    struct net_protocol *protocols[0xFFFF];
     unsigned int protocolsCount;
 
 };
 
 void net_register_interface(struct net_interface *interface, struct base_driver *driver);
-void net_register_protocol(struct net_protocol *protocol);
+void net_register_protocol(unsigned short index, struct net_protocol *protocol);
 void net_unregister_interface(struct net_interface *interface);
-void net_unregister_protocol(struct net_protocol *protocol);
+void net_unregister_protocol(unsigned short index);
 void net_filesystem_init(struct net_filesystem *filesystem);
 
 #endif

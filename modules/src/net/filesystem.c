@@ -37,10 +37,13 @@ static unsigned int read_interfaces(struct net_filesystem *filesystem, unsigned 
 
     o += vfs_write(temp, c - o, "../\ndata\nmac\n", 13, o);
 
-    for (i = 0; i < filesystem->protocolsCount; i++)
+    for (i = 0; i < 0x10000; i++)
     {
 
         struct net_protocol *protocol = filesystem->protocols[i];
+
+        if (!protocol)
+            continue;
 
         o += vfs_write(temp, c - o, protocol->name, string_length(protocol->name), o);
         o += vfs_write(temp, c - o, "\n", 1, o);
@@ -154,11 +157,16 @@ static unsigned int walk(struct vfs_interface *self, unsigned int id, unsigned i
         if (memory_match(path, "mac", 3))
             return walk(self, (id << 8) + 1, count - 3, path + 3);
 
-        for (i = 0; i < filesystem->protocolsCount; i++)
+        for (i = 0; i < 0x10000; i++)
         {
 
             struct net_protocol *protocol = filesystem->protocols[i];
-            unsigned int length = string_length(protocol->name);
+            unsigned int length;
+
+            if (!protocol)
+                continue;
+
+            length = string_length(protocol->name);
 
             if (memory_match(path, protocol->name, length))
                 return walk(self, (id << 8) + (i + 2), count - length, path + length);
