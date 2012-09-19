@@ -1,13 +1,13 @@
 #include <vfs.h>
 #include <net/net.h>
-#include <tcp/tcp.h>
+#include <ipv4/ipv4.h>
 
-static struct tcp_protocol protocol;
+static struct ipv4_protocol protocol;
 
 void init()
 {
 
-    tcp_protocol_init(&protocol);
+    ipv4_protocol_init(&protocol);
     net_register_protocol(&protocol.base);
 
 }
