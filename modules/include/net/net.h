@@ -15,8 +15,8 @@ struct net_protocol
 {
 
     char *name;
-    unsigned int (*read)(struct net_protocol *self, struct net_interface *interface, unsigned int offset, unsigned int count, void *buffer);
-    unsigned int (*write)(struct net_protocol *self, struct net_interface *interface, unsigned int offset, unsigned int count, void *buffer);
+    unsigned int (*read)(struct net_interface *interface, unsigned int offset, unsigned int count, void *buffer);
+    unsigned int (*write)(struct net_interface *interface, unsigned int offset, unsigned int count, void *buffer);
 
 };
 

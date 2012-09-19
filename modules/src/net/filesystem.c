@@ -74,7 +74,7 @@ static unsigned int read(struct vfs_interface *self, unsigned int id, unsigned i
 
             struct net_protocol *protocol = filesystem->protocols[type - 2];
 
-            return protocol->read(protocol, interface, offset, count, buffer);
+            return protocol->read(interface, offset, count, buffer);
 
         }
 
@@ -116,7 +116,7 @@ static unsigned int write(struct vfs_interface *self, unsigned int id, unsigned 
 
             struct net_protocol *protocol = filesystem->protocols[type - 2];
 
-            return protocol->write(protocol, interface, offset, count, buffer);
+            return protocol->write(interface, offset, count, buffer);
 
         }
 
