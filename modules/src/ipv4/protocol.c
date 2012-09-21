@@ -8,7 +8,7 @@ static void handle_read(struct net_protocol *self, struct net_interface *interfa
 
     struct ipv4_protocol *protocol = (struct ipv4_protocol *)self;
 
-    protocol->count = interface->read_data(interface, 0x10, protocol->buffer);
+    protocol->count = interface->read_data(interface, 8192, protocol->buffer);
 
 }
 
