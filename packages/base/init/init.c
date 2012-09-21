@@ -69,10 +69,13 @@ void load_modules_extra(unsigned int id)
     call_open(FILE_STDIN, 19, "/ramdisk/mod/rtc.ko");
     call_spawn(id);
 
-    call_open(FILE_STDIN, 20, "/ramdisk/mod/ipv4.ko");
+    call_open(FILE_STDIN, 20, "/ramdisk/mod/uart.ko");
     call_spawn(id);
 
-    call_open(FILE_STDIN, 20, "/ramdisk/mod/uart.ko");
+    call_open(FILE_STDIN, 19, "/ramdisk/mod/arp.ko");
+    call_spawn(id);
+
+    call_open(FILE_STDIN, 20, "/ramdisk/mod/ipv4.ko");
     call_spawn(id);
 
 }

@@ -1,5 +1,6 @@
 include modules/src/arch/rules.$(ARCH).mk
 
+MODULES_ARP=modules/src/arp/arp.ko
 MODULES_BASE=modules/src/base/base.ko
 MODULES_BLOCK=modules/src/block/block.ko
 MODULES_EXT2=modules/src/ext2/ext2.ko
@@ -9,6 +10,7 @@ MODULES_IPV4=modules/src/ipv4/ipv4.ko
 MODULES_TTY=modules/src/tty/tty.ko
 MODULES_VIDEO=modules/src/video/video.ko
 
+MODULES_OBJECTS_ARP=modules/src/arp/main.o modules/src/arp/protocol.o
 MODULES_OBJECTS_BASE=modules/src/base/main.o
 MODULES_OBJECTS_BLOCK=modules/src/block/main.o modules/src/block/filesystem.o
 MODULES_OBJECTS_EXT2=modules/src/ext2/main.o modules/src/ext2/protocol.o modules/src/ext2/filesystem.o
@@ -18,11 +20,14 @@ MODULES_OBJECTS_IPV4=modules/src/ipv4/main.o modules/src/ipv4/protocol.o
 MODULES_OBJECTS_TTY=modules/src/tty/main.o modules/src/tty/driver.o modules/src/tty/filesystem.o
 MODULES_OBJECTS_VIDEO=modules/src/video/main.o modules/src/video/filesystem.o
 
-MODULES+=$(MODULES_BASE) $(MODULES_BLOCK) $(MODULES_EXT2) $(MODULES_NET) $(MODULES_NODEFS) $(MODULES_IPV4) $(MODULES_TTY) $(MODULES_VIDEO)
-MODULES_OBJECTS+=$(MODULES_OBJECTS_BASE) $(MODULES_OBJECTS_BLOCK) $(MODULES_OBJECTS_EXT2) $(MODULES_OBJECTS_NET) $(MODULES_OBJECTS_NODEFS) $(MODULES_OBJECTS_IPV4) $(MODULES_OBJECTS_TTY) $(MODULES_OBJECTS_VIDEO)
+MODULES+=$(MODULES_ARP) $(MODULES_BASE) $(MODULES_BLOCK) $(MODULES_EXT2) $(MODULES_NET) $(MODULES_NODEFS) $(MODULES_IPV4) $(MODULES_TTY) $(MODULES_VIDEO)
+MODULES_OBJECTS+=$(MODULES_OBJECTS_ARP) $(MODULES_OBJECTS_BASE) $(MODULES_OBJECTS_BLOCK) $(MODULES_OBJECTS_EXT2) $(MODULES_OBJECTS_NET) $(MODULES_OBJECTS_NODEFS) $(MODULES_OBJECTS_IPV4) $(MODULES_OBJECTS_TTY) $(MODULES_OBJECTS_VIDEO)
 
 modules/%.ko: CCFLAGS+=-Ilib/include -Ikernel/include -Imodules/include
 modules/%.ko: LDFLAGS+=-Tmodules/linker.ld -r
+
+$(MODULES_ARP): lib/src/memory.o lib/src/string.o $(MODULES_OBJECTS_ARP)
+	$(LD) $(LDFLAGS) -o $@ $^
 
 $(MODULES_BASE): lib/src/memory.o lib/src/string.o $(MODULES_OBJECTS_BASE)
 	$(LD) $(LDFLAGS) -o $@ $^
