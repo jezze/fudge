@@ -80,6 +80,9 @@ static void clear()
     call_write(FILE_STDOUT, 0, 2, "$ ");
     stack_clear();
 
+    setup_stream(10, "/nodefs/ps2_buffer", FILE_STDIN);
+    setup_stream(11, "/tty/stdout", FILE_STDOUT);
+
 }
 
 #define STATE_NONE    0
@@ -103,13 +106,34 @@ static void interpret(unsigned int length, char *command)
         {
 
             if (state == STATE_COMMAND)
+            {
+
                 exec = setup_executable(i - start, command + start);
 
+                if (!exec)
+                    return;
+
+            }
+
             if (state == STATE_STDIN)
-                setup_stream(i - start, command + start, FILE_STDIN);
+            {
+
+                unsigned int id = setup_stream(i - start, command + start, FILE_STDIN);
+
+                if (!id)
+                    return;
+
+            }
 
             if (state == STATE_STDOUT)
-                setup_stream(i - start, command + start, FILE_STDOUT);
+            {
+
+                unsigned int id = setup_stream(i - start, command + start, FILE_STDOUT);
+
+                if (!id)
+                    return;
+
+            }
 
             state = STATE_NONE;
 
@@ -144,13 +168,34 @@ static void interpret(unsigned int length, char *command)
     }
 
     if (state == STATE_COMMAND)
+    {
+
         exec = setup_executable(length - start, command + start);
 
+        if (!exec)
+            return;
+
+    }
+
     if (state == STATE_STDIN)
-        setup_stream(length - start, command + start, FILE_STDIN);
+    {
+
+        unsigned int id = setup_stream(length - start, command + start, FILE_STDIN);
+
+        if (!id)
+            return;
+
+    }
 
     if (state == STATE_STDOUT)
-        setup_stream(length - start, command + start, FILE_STDOUT);
+    {
+
+        unsigned int id = setup_stream(length - start, command + start, FILE_STDOUT);
+
+        if (!id)
+            return;
+
+    }
 
     if (state == STATE_DATA)
         call_write(FILE_STDIN, 0, length - start, command + start);
@@ -162,9 +207,6 @@ static void interpret(unsigned int length, char *command)
         call_close(exec);
 
     }
-
-    setup_stream(10, "/nodefs/ps2_buffer", FILE_STDIN);
-    setup_stream(11, "/tty/stdout", FILE_STDOUT);
 
 }
 
