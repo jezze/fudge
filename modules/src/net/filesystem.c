@@ -66,13 +66,10 @@ static unsigned int read(struct vfs_interface *self, unsigned int id, unsigned i
         unsigned int index = (id >> 8) & 0xFF;
         struct net_interface *interface = filesystem->interfaces[index];
 
-        if (type >= filesystem->protocolsCount + 2)
-            return 0;
-
         if (type >= 2)
         {
 
-            struct net_protocol *protocol = filesystem->protocols[type - 2];
+            struct net_protocol *protocol = filesystem->protocols[0x0806];
 
             return protocol->read(protocol, interface, offset, count, buffer);
 
@@ -108,13 +105,10 @@ static unsigned int write(struct vfs_interface *self, unsigned int id, unsigned 
         unsigned int index = (id >> 8) & 0xFF;
         struct net_interface *interface = filesystem->interfaces[index];
 
-        if (type >= filesystem->protocolsCount + 2)
-            return 0;
-
         if (type >= 2)
         {
 
-            struct net_protocol *protocol = filesystem->protocols[type - 2];
+            struct net_protocol *protocol = filesystem->protocols[0x0806];
 
             return protocol->write(protocol, interface, offset, count, buffer);
 
