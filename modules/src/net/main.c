@@ -4,6 +4,11 @@
 
 static struct net_filesystem filesystem;
 
+void net_handle_read(struct net_interface *interface)
+{
+
+}
+
 void net_register_interface(struct net_interface *interface, struct base_driver *driver)
 {
 

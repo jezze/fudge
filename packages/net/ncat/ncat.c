@@ -42,7 +42,7 @@ void handle_network_event()
 
     call_write(FILE_STDOUT, 0, 9, "INCOMING\n");
 
-    call_open(3, 11, "/net/0/data");
+    call_open(3, 11, "/net/0/ipv4");
     call_read(3, 0, 0x800, buffer);
     call_close(3);
 
@@ -74,7 +74,7 @@ void handle_network_event()
     memory_copy(buffer, &eheader, sizeof (struct ethernet_header));
     memory_copy(buffer + sizeof (struct ethernet_header), &aheader, sizeof (struct arp_header));
 
-    call_open(3, 11, "/net/0/data");
+    call_open(3, 11, "/net/0/ipv4");
     call_write(3, 0, sizeof (struct ethernet_header) + sizeof (struct arp_header), buffer);
     call_close(3);
     call_write(FILE_STDOUT, 0, 18, "Responding to ARP\n");

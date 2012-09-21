@@ -62,7 +62,13 @@ static void handle_irq(struct base_device *device)
     unsigned int status = io_inw(driver->io + RTL8139_REGISTER_ISR);
 
     if (status & RTL8139_ISR_FLAG_ROK)
+    {
+
+        net_handle_read(&driver->interface);
+
         io_outw(driver->io + RTL8139_REGISTER_ISR, RTL8139_ISR_FLAG_ROK);
+
+    }
 
     if (status & RTL8139_ISR_FLAG_TOK)
         io_outw(driver->io + RTL8139_REGISTER_ISR, RTL8139_ISR_FLAG_TOK);
@@ -118,7 +124,7 @@ static unsigned int check(struct base_driver *self, struct base_device *device)
 
 }
 
-static unsigned int read_data(struct net_interface *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int read_data(struct net_interface *self, unsigned int count, void *buffer)
 {
 
     struct rtl8139_driver *driver = (struct rtl8139_driver *)self->driver;
@@ -135,7 +141,7 @@ static unsigned int read_data(struct net_interface *self, unsigned int offset, u
 
 }
 
-static unsigned int write_data(struct net_interface *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int write_data(struct net_interface *self, unsigned int count, void *buffer)
 {
 
     struct rtl8139_driver *driver = (struct rtl8139_driver *)self->driver;
