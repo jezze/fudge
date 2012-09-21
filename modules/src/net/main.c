@@ -1,3 +1,4 @@
+#include <ethernet.h>
 #include <vfs.h>
 #include <base/base.h>
 #include <net/net.h>
@@ -6,6 +7,16 @@ static struct net_filesystem filesystem;
 
 void net_handle_read(struct net_interface *interface)
 {
+
+    struct ethernet_header header;
+    struct net_protocol *protocol;
+
+    interface->read_data(interface, sizeof (struct ethernet_header), &header);
+
+    protocol = filesystem.protocols[0x0800];
+    protocol->handle_read(protocol, interface);
+
+    interface->read_data_complete(interface);
 
 }
 

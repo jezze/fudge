@@ -131,13 +131,20 @@ static unsigned int read_data(struct net_interface *self, unsigned int count, vo
     unsigned short current = io_inw(driver->io + RTL8139_REGISTER_CAPR) + 0x10;
     struct rtl8139_header *header = (struct rtl8139_header *)(driver->rx + current);
 
-    memory_copy(buffer, (char *)driver->rx + current + 4, header->length);
+    return vfs_read(buffer, count, (char *)driver->rx + current + 4, header->length, 0);
+
+}
+
+static void read_data_complete(struct net_interface *self)
+{
+
+    struct rtl8139_driver *driver = (struct rtl8139_driver *)self->driver;
+    unsigned short current = io_inw(driver->io + RTL8139_REGISTER_CAPR) + 0x10;
+    struct rtl8139_header *header = (struct rtl8139_header *)(driver->rx + current);
 
     current += (header->length + 4 + 3) & ~3;
 
     io_outw(driver->io + RTL8139_REGISTER_CAPR, current - 0x10);
-
-    return header->length;
 
 }
 
@@ -195,6 +202,7 @@ void rtl8139_driver_init(struct rtl8139_driver *driver)
     base_driver_init(&driver->base, RTL8139_DRIVER_TYPE, "rtl8139", start, check, attach);
 
     driver->interface.read_data = read_data;
+    driver->interface.read_data_complete = read_data_complete;
     driver->interface.write_data = write_data;
 
 }

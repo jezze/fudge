@@ -7,6 +7,7 @@ struct net_interface
     struct base_driver *driver;
     char mac[6];
     unsigned int (*read_data)(struct net_interface *self, unsigned int count, void *buffer);
+    void (*read_data_complete)(struct net_interface *self);
     unsigned int (*write_data)(struct net_interface *self, unsigned int count, void *buffer);
 
 };
