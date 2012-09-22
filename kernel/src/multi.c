@@ -2,12 +2,12 @@
 #include <multi.h>
 #include <runtime.h>
 
-static struct runtime_task tasks[RUNTIME_TASK_SLOTS];
+static struct runtime_task tasks[MULTI_TASK_SLOTS];
 
 struct runtime_task *multi_get_task(unsigned int index)
 {
 
-    if (!index || index >= RUNTIME_TASK_SLOTS)
+    if (!index || index >= MULTI_TASK_SLOTS)
         return 0;
 
     return &tasks[index];
@@ -19,7 +19,7 @@ unsigned int multi_get_task_slot(unsigned int parent)
 
     unsigned int i;
 
-    for (i = parent; i < RUNTIME_TASK_SLOTS; i++)
+    for (i = parent; i < MULTI_TASK_SLOTS; i++)
     {
 
         if (!tasks[i].status.used)
@@ -48,7 +48,7 @@ struct runtime_task *multi_schedule()
 
     unsigned int i;
 
-    for (i = RUNTIME_TASK_SLOTS - 1; i > 0; i--)
+    for (i = MULTI_TASK_SLOTS - 1; i > 0; i--)
     {
 
         if (tasks[i].status.used && !tasks[i].status.idle)
@@ -63,7 +63,7 @@ struct runtime_task *multi_schedule()
 struct runtime_task *multi_setup()
 {
 
-    memory_clear(tasks, sizeof (struct runtime_task) * RUNTIME_TASK_SLOTS);
+    memory_clear(tasks, sizeof (struct runtime_task) * MULTI_TASK_SLOTS);
 
     return tasks;
 
