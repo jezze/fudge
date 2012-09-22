@@ -12,7 +12,7 @@ MODULES_VIDEO=modules/src/video/video.ko
 
 MODULES_OBJECTS_ARP=modules/src/arp/main.o modules/src/arp/protocol.o
 MODULES_OBJECTS_BASE=modules/src/base/main.o
-MODULES_OBJECTS_BLOCK=modules/src/block/main.o modules/src/block/filesystem.o
+MODULES_OBJECTS_BLOCK=modules/src/block/main.o modules/src/block/filesystem.o modules/src/block/interface.o
 MODULES_OBJECTS_EXT2=modules/src/ext2/main.o modules/src/ext2/protocol.o modules/src/ext2/filesystem.o
 MODULES_OBJECTS_NET=modules/src/net/main.o modules/src/net/filesystem.o modules/src/net/interface.o
 MODULES_OBJECTS_NODEFS=modules/src/nodefs/main.o modules/src/nodefs/filesystem.o

@@ -4,10 +4,8 @@
 
 static struct block_filesystem filesystem;
 
-void block_register_interface(struct block_interface *interface, struct base_driver *driver)
+void block_register_interface(struct block_interface *interface)
 {
-
-    interface->driver = driver;
 
     filesystem.interfaces[filesystem.interfacesCount] = interface;
     filesystem.interfacesCount++;
