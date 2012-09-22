@@ -1,6 +1,7 @@
 #include <memory.h>
 #include <event.h>
 #include <mmu.h>
+#include <multi.h>
 #include <vfs.h>
 #include <binary.h>
 #include <runtime.h>
@@ -193,7 +194,7 @@ static unsigned int spawn(struct runtime_task *task, void *stack)
     if (!descriptor || !descriptor->interface->read)
         return 0;
 
-    slot = runtime_get_task_slot(task->id);
+    slot = multi_get_task_slot(task->id);
 
     if (!slot)
         return 0;
@@ -203,9 +204,9 @@ static unsigned int spawn(struct runtime_task *task, void *stack)
     if (!entry)
         return 0;
 
-    ntask = runtime_get_task(slot);
+    ntask = multi_get_task(slot);
 
-    runtime_clone_task(ntask, task, slot, entry);
+    multi_clone_task(ntask, task, slot, entry);
 
     mmu_map_user_memory(ntask->id, RUNTIME_TASK_PADDRESS_BASE + ntask->id * RUNTIME_TASK_ADDRESS_SIZE, RUNTIME_TASK_VADDRESS_BASE, RUNTIME_TASK_ADDRESS_SIZE);
     mmu_load_user_memory(ntask->id);
@@ -280,7 +281,7 @@ unsigned int syscall_unset_routine(unsigned int index)
 unsigned int syscall_raise(unsigned int index, void *stack)
 {
 
-    struct runtime_task *task = runtime_schedule();
+    struct runtime_task *task = multi_schedule();
 
     if (!routines[index])
         return 0;

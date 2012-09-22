@@ -1,6 +1,7 @@
 #include <error.h>
 #include <event.h>
 #include <mmu.h>
+#include <multi.h>
 #include <runtime.h>
 #include <arch/x86/cpu.h>
 #include <arch/x86/gdt.h>
@@ -53,7 +54,7 @@ unsigned int isr_handle(struct isr_registers *registers)
     struct runtime_task *task1;
     struct runtime_task *task2;
 
-    task1 = runtime_schedule();
+    task1 = multi_schedule();
 
     if (task1)
         save_ustate(task1, registers);
@@ -61,7 +62,7 @@ unsigned int isr_handle(struct isr_registers *registers)
     isr_raise(registers->index, registers);
     event_raise(registers->index);
 
-    task2 = runtime_schedule();
+    task2 = multi_schedule();
 
     if (task2)
     {
