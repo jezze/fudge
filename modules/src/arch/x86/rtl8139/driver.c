@@ -64,8 +64,14 @@ static void handle_irq(struct base_device *device)
     if (status & RTL8139_ISR_FLAG_ROK)
     {
 
-        net_handle_read(&driver->interface);
+        unsigned short current = io_inw(driver->io + RTL8139_REGISTER_CAPR) + 0x10;
+        struct rtl8139_header *header = (struct rtl8139_header *)(driver->rx + current);
 
+        net_handle_read(&driver->interface, header->length, driver->rx + current + 4);
+
+        current += (header->length + 4 + 3) & ~3;
+
+        io_outw(driver->io + RTL8139_REGISTER_CAPR, current - 0x10);
         io_outw(driver->io + RTL8139_REGISTER_ISR, RTL8139_ISR_FLAG_ROK);
 
     }
@@ -124,31 +130,7 @@ static unsigned int check(struct base_driver *self, struct base_device *device)
 
 }
 
-static unsigned int read_data(struct net_interface *self, unsigned int count, void *buffer)
-{
-
-    struct rtl8139_driver *driver = (struct rtl8139_driver *)self->driver;
-    unsigned short current = io_inw(driver->io + RTL8139_REGISTER_CAPR) + 0x10;
-    struct rtl8139_header *header = (struct rtl8139_header *)(driver->rx + current);
-
-    return vfs_read(buffer, count, (char *)driver->rx + current + 4, header->length, 0);
-
-}
-
-static void read_data_complete(struct net_interface *self)
-{
-
-    struct rtl8139_driver *driver = (struct rtl8139_driver *)self->driver;
-    unsigned short current = io_inw(driver->io + RTL8139_REGISTER_CAPR) + 0x10;
-    struct rtl8139_header *header = (struct rtl8139_header *)(driver->rx + current);
-
-    current += (header->length + 4 + 3) & ~3;
-
-    io_outw(driver->io + RTL8139_REGISTER_CAPR, current - 0x10);
-
-}
-
-static unsigned int write_data(struct net_interface *self, unsigned int count, void *buffer)
+static unsigned int send(struct net_interface *self, unsigned int count, void *buffer)
 {
 
     struct rtl8139_driver *driver = (struct rtl8139_driver *)self->driver;
@@ -201,9 +183,7 @@ void rtl8139_driver_init(struct rtl8139_driver *driver)
 
     base_driver_init(&driver->base, RTL8139_DRIVER_TYPE, "rtl8139", start, check, attach);
 
-    driver->interface.read_data = read_data;
-    driver->interface.read_data_complete = read_data_complete;
-    driver->interface.write_data = write_data;
+    driver->interface.send = send;
 
 }
 

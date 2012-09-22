@@ -3,12 +3,12 @@
 #include <net/net.h>
 #include <ipv4/ipv4.h>
 
-static void handle_read(struct net_protocol *self, struct net_interface *interface)
+static void handle_read(struct net_protocol *self, struct net_interface *interface, unsigned int count, void *buffer)
 {
 
     struct ipv4_protocol *protocol = (struct ipv4_protocol *)self;
 
-    protocol->count = interface->read_data(interface, 8192, protocol->buffer);
+    protocol->count = vfs_write(protocol->buffer, 8192, buffer, count, 0);
 
 }
 

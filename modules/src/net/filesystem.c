@@ -79,7 +79,7 @@ static unsigned int read(struct vfs_interface *self, unsigned int id, unsigned i
             return vfs_read(buffer, count, interface->mac, 6, offset);
 
         if (type == 0)
-            return interface->read_data(interface, count, buffer);
+            return 0;
 
     }
 
@@ -118,7 +118,7 @@ static unsigned int write(struct vfs_interface *self, unsigned int id, unsigned 
             return vfs_write(interface->mac, 6, buffer, count, offset);
 
         if (type == 0)
-            return interface->write_data(interface, count, buffer);
+            return 0;
 
     }
 

@@ -3,12 +3,12 @@
 #include <net/net.h>
 #include <arp/arp.h>
 
-static void handle_read(struct net_protocol *self, struct net_interface *interface)
+static void handle_read(struct net_protocol *self, struct net_interface *interface, unsigned int count, void *buffer)
 {
 
     struct arp_protocol *protocol = (struct arp_protocol *)self;
 
-    protocol->count = interface->read_data(interface, 8192, protocol->buffer);
+    protocol->count = vfs_write(protocol->buffer, 8192, buffer, count, 0);
 
 }
 

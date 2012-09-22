@@ -6,23 +6,15 @@
 
 static struct net_filesystem filesystem;
 
-void net_handle_read(struct net_interface *interface)
+void net_handle_read(struct net_interface *interface, unsigned int count, void *buffer)
 {
 
-    struct ethernet_header header;
-    struct net_protocol *protocol;
-    unsigned short type;
-
-    interface->read_data(interface, sizeof (struct ethernet_header), &header);
-
-    type = (header.type[0] << 8) | header.type[1];
-
-    protocol = filesystem.protocols[type];
+    struct ethernet_header *header = buffer;
+    unsigned short type = (header->type[0] << 8) | header->type[1];
+    struct net_protocol *protocol = filesystem.protocols[type];
 
     if (protocol)
-        protocol->handle_read(protocol, interface);
-
-    interface->read_data_complete(interface);
+        protocol->handle_read(protocol, interface, count - sizeof (struct ethernet_header), (char *)buffer + sizeof (struct ethernet_header));
 
 }
 

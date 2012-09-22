@@ -6,9 +6,7 @@ struct net_interface
 
     struct base_driver *driver;
     char mac[6];
-    unsigned int (*read_data)(struct net_interface *self, unsigned int count, void *buffer);
-    void (*read_data_complete)(struct net_interface *self);
-    unsigned int (*write_data)(struct net_interface *self, unsigned int count, void *buffer);
+    unsigned int (*send)(struct net_interface *self, unsigned int count, void *buffer);
 
 };
 
@@ -16,7 +14,7 @@ struct net_protocol
 {
 
     char *name;
-    void (*handle_read)(struct net_protocol *self, struct net_interface *interface);
+    void (*handle_read)(struct net_protocol *self, struct net_interface *interface, unsigned int count, void *buffer);
     unsigned int (*read)(struct net_protocol *self, struct net_interface *interface, unsigned int offset, unsigned int count, void *buffer);
     unsigned int (*write)(struct net_protocol *self, struct net_interface *interface, unsigned int offset, unsigned int count, void *buffer);
 
@@ -33,7 +31,7 @@ struct net_filesystem
 
 };
 
-void net_handle_read(struct net_interface *interface);
+void net_handle_read(struct net_interface *interface, unsigned int count, void *buffer);
 void net_register_interface(struct net_interface *interface, struct base_driver *driver);
 void net_register_protocol(unsigned short index, struct net_protocol *protocol);
 void net_unregister_interface(struct net_interface *interface);
