@@ -14,7 +14,7 @@ void net_handle_read(struct net_interface *interface, unsigned int count, void *
     struct net_protocol *protocol = filesystem.protocols[type];
 
     if (protocol)
-        protocol->handle_read(protocol, interface, count - sizeof (struct ethernet_header), (char *)buffer + sizeof (struct ethernet_header));
+        protocol->handle_read(protocol, count - sizeof (struct ethernet_header), (char *)buffer + sizeof (struct ethernet_header));
 
 }
 

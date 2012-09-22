@@ -3,7 +3,7 @@
 #include <net/net.h>
 #include <arp/arp.h>
 
-static void handle_read(struct net_protocol *self, struct net_interface *interface, unsigned int count, void *buffer)
+static void handle_read(struct net_protocol *self, unsigned int count, void *buffer)
 {
 
     struct arp_protocol *protocol = (struct arp_protocol *)self;

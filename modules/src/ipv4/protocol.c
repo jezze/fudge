@@ -3,7 +3,7 @@
 #include <net/net.h>
 #include <ipv4/ipv4.h>
 
-static void handle_read(struct net_protocol *self, struct net_interface *interface, unsigned int count, void *buffer)
+static void handle_read(struct net_protocol *self, unsigned int count, void *buffer)
 {
 
     struct ipv4_protocol *protocol = (struct ipv4_protocol *)self;
