@@ -7,7 +7,7 @@ static struct ext2_protocol protocol;
 void init()
 {
 
-    ext2_protocol_init(&protocol);
+    ext2_init_protocol(&protocol);
     block_register_protocol(&protocol.base);
 
 }

@@ -33,12 +33,12 @@ static unsigned int check(struct base_driver *self, struct base_device *device)
 
 }
 
-void ata_driver_init(struct ata_driver *driver)
+void ata_init_driver(struct ata_driver *driver)
 {
 
     memory_clear(driver, sizeof (struct ata_driver));
 
-    base_driver_init(&driver->base, ATA_DRIVER_TYPE, "ata", 0, check, attach);
+    base_init_driver(&driver->base, ATA_DRIVER_TYPE, "ata", 0, check, attach);
 
 }
 

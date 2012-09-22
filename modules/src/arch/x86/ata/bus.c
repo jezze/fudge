@@ -185,7 +185,7 @@ static void add_device(struct ata_bus *self, unsigned int slave, unsigned int ty
     struct ata_device *device = &self->devices[self->devicesCount];
     unsigned int irq = (slave) ? ATA_IRQ_SECONDARY : ATA_IRQ_PRIMARY;
 
-    ata_device_init(device, self, irq, slave, type);
+    ata_init_device(device, self, irq, slave, type);
 
     if (type == ATA_DEVICE_TYPE_ATA)
         device->configure_ata(device);
@@ -199,12 +199,12 @@ static void add_device(struct ata_bus *self, unsigned int slave, unsigned int ty
 
 }
 
-void ata_bus_init(struct ata_bus *bus, unsigned int control, unsigned int data)
+void ata_init_bus(struct ata_bus *bus, unsigned int control, unsigned int data)
 {
 
     memory_clear(bus, sizeof (struct ata_bus));
 
-    base_bus_init(&bus->base, ATA_BUS_TYPE, "ata", scan);
+    base_init_bus(&bus->base, ATA_BUS_TYPE, "ata", scan);
 
     bus->control = control;
     bus->data = data;

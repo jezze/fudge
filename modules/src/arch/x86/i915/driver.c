@@ -157,12 +157,12 @@ static unsigned int check(struct base_driver *self, struct base_device *device)
 
 }
 
-void i915_driver_init(struct i915_driver *driver)
+void i915_init_driver(struct i915_driver *driver)
 {
 
     memory_clear(driver, sizeof (struct i915_driver));
 
-    base_driver_init(&driver->base, I915_DRIVER_TYPE, "i915", start, check, attach);
+    base_init_driver(&driver->base, I915_DRIVER_TYPE, "i915", start, check, attach);
 
 }
 

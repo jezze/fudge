@@ -155,7 +155,7 @@ static unsigned int walk(struct vfs_interface *self, unsigned int id, unsigned i
 
 }
 
-void video_filesystem_init(struct video_filesystem *filesystem)
+void video_init_filesystem(struct video_filesystem *filesystem)
 {
 
     memory_clear(filesystem, sizeof (struct video_filesystem));

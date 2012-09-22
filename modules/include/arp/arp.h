@@ -11,7 +11,7 @@ struct arp_protocol
 
 };
 
-void arp_protocol_init(struct arp_protocol *protocol);
+void arp_init_protocol(struct arp_protocol *protocol);
 
 #endif
 

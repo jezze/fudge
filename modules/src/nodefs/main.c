@@ -28,7 +28,7 @@ struct vfs_interface *get_filesystem()
 void init()
 {
 
-    nodefs_filesystem_init(&filesystem);
+    nodefs_init_filesystem(&filesystem);
 
 }
 

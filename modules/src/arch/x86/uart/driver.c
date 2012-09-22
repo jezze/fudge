@@ -78,12 +78,12 @@ static unsigned int check(struct base_driver *self, struct base_device *device)
 
 }
 
-void uart_driver_init(struct uart_driver *driver)
+void uart_init_driver(struct uart_driver *driver)
 {
 
     memory_clear(driver, sizeof (struct uart_driver));
 
-    base_driver_init(&driver->base, UART_DRIVER_TYPE, "uart", 0, check, attach);
+    base_init_driver(&driver->base, UART_DRIVER_TYPE, "uart", 0, check, attach);
 
     driver->buffer.size = 256;
     driver->buffer.getc = buffer_getc;

@@ -7,7 +7,7 @@ static struct rtc_device device;
 void init()
 {
 
-    rtc_device_init(&device, RTC_IRQ);
+    rtc_init_device(&device, RTC_IRQ);
     base_register_device(&device.base);
 
 }

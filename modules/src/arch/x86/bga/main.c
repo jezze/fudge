@@ -9,7 +9,7 @@ static struct bga_driver driver;
 void init()
 {
 
-    bga_driver_init(&driver);
+    bga_init_driver(&driver);
     base_register_driver(&driver.base);
     video_register_interface(&driver.interface, &driver.base);
 

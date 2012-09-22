@@ -129,7 +129,7 @@ static unsigned int walk(struct vfs_interface *self, unsigned int id, unsigned i
 
 }
 
-void ext2_filesystem_init(struct ext2_filesystem *filesystem, struct ext2_protocol *protocol, struct block_interface *interface)
+void ext2_init_filesystem(struct ext2_filesystem *filesystem, struct ext2_protocol *protocol, struct block_interface *interface)
 {
 
     memory_clear(filesystem, sizeof (struct ext2_filesystem));

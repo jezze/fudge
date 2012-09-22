@@ -7,7 +7,7 @@ static struct ipv4_protocol protocol;
 void init()
 {
 
-    ipv4_protocol_init(&protocol);
+    ipv4_init_protocol(&protocol);
     net_register_protocol(0x0800, &protocol.base);
 
 }

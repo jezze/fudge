@@ -143,12 +143,12 @@ static void write_lba48_async(struct ata_device *self, unsigned int sectorlow, u
 
 }
 
-void ata_device_init(struct ata_device *device, struct ata_bus *bus, unsigned int irq, unsigned int slave, unsigned int type)
+void ata_init_device(struct ata_device *device, struct ata_bus *bus, unsigned int irq, unsigned int slave, unsigned int type)
 {
 
     memory_clear(device, sizeof (struct ata_device));
 
-    base_device_init(&device->base, ATA_DEVICE_TYPE, "ata");
+    base_init_device(&device->base, ATA_DEVICE_TYPE, "ata");
 
     device->bus = bus;
     device->type = type;

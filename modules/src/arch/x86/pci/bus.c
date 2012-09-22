@@ -96,19 +96,19 @@ static void add_device(struct pci_bus *self, unsigned int num, unsigned int slot
 
     struct pci_device *device = &self->devices[self->devicesCount];
 
-    pci_device_init(device, self, num, slot, function, address);
+    pci_init_device(device, self, num, slot, function, address);
     base_register_device(&device->base);
 
     self->devicesCount++;
 
 }
 
-void pci_bus_init(struct pci_bus *bus)
+void pci_init_bus(struct pci_bus *bus)
 {
 
     memory_clear(bus, sizeof (struct pci_bus));
 
-    base_bus_init(&bus->base, PCI_BUS_TYPE, "pci", scan);
+    base_init_bus(&bus->base, PCI_BUS_TYPE, "pci", scan);
 
     bus->ind = ind;
     bus->inw = inw;

@@ -34,7 +34,7 @@ void vga_set_cursor_offset(unsigned short offset)
 void init()
 {
 
-    vga_driver_init(&driver);
+    vga_init_driver(&driver);
     base_register_driver(&driver.base);
 
 }

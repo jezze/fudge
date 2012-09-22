@@ -113,12 +113,12 @@ static unsigned int check(struct base_driver *self, struct base_device *device)
 
 }
 
-void ps2_mouse_driver_init(struct ps2_mouse_driver *driver)
+void ps2_init_mouse_driver(struct ps2_mouse_driver *driver)
 {
 
     memory_clear(driver, sizeof (struct ps2_mouse_driver));
 
-    base_driver_init(&driver->base, PS2_MOUSE_DRIVER_TYPE, "mouse", start, check, attach);
+    base_init_driver(&driver->base, PS2_MOUSE_DRIVER_TYPE, "mouse", start, check, attach);
 
     driver->cycle = 2;
 

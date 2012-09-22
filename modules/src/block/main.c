@@ -42,7 +42,7 @@ struct vfs_interface *get_filesystem()
 void init()
 {
 
-    block_filesystem_init(&filesystem);
+    block_init_filesystem(&filesystem);
 
 }
 

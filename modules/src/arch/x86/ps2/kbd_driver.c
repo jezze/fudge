@@ -145,12 +145,12 @@ static unsigned int check(struct base_driver *self, struct base_device *device)
 
 }
 
-void ps2_kbd_driver_init(struct ps2_kbd_driver *driver)
+void ps2_init_kbd_driver(struct ps2_kbd_driver *driver)
 {
 
     memory_clear(driver, sizeof (struct ps2_kbd_driver));
 
-    base_driver_init(&driver->base, PS2_KBD_DRIVER_TYPE, "kbd", 0, check, attach);
+    base_init_driver(&driver->base, PS2_KBD_DRIVER_TYPE, "kbd", 0, check, attach);
 
     driver->buffer.size = 256;
     driver->buffer.read = buffer_read;

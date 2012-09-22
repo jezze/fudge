@@ -121,7 +121,7 @@ static void unregister_node(struct nodefs_filesystem *self, struct nodefs_node *
 
 }
 
-void nodefs_filesystem_init(struct nodefs_filesystem *filesystem)
+void nodefs_init_filesystem(struct nodefs_filesystem *filesystem)
 {
 
     memory_clear(filesystem, sizeof (struct nodefs_filesystem));

@@ -116,7 +116,7 @@ static unsigned int walk(struct vfs_interface *self, unsigned int id, unsigned i
 
 }
 
-void block_filesystem_init(struct block_filesystem *filesystem)
+void block_init_filesystem(struct block_filesystem *filesystem)
 {
 
     memory_clear(filesystem, sizeof (struct block_filesystem));

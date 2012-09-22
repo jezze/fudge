@@ -24,7 +24,7 @@ struct rtc_device
 
 };
 
-void rtc_device_init(struct rtc_device *device, unsigned int irq);
+void rtc_init_device(struct rtc_device *device, unsigned int irq);
 
 #endif
 

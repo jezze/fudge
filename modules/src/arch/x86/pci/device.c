@@ -24,12 +24,12 @@ static unsigned char config_inb(struct pci_device *device, unsigned int offset)
 
 }
 
-void pci_device_init(struct pci_device *device, struct pci_bus *bus, unsigned int num, unsigned int slot, unsigned int function, unsigned int address)
+void pci_init_device(struct pci_device *device, struct pci_bus *bus, unsigned int num, unsigned int slot, unsigned int function, unsigned int address)
 {
 
     memory_clear(device, sizeof (struct pci_device));
 
-    base_device_init(&device->base, PCI_DEVICE_TYPE, "pci");
+    base_init_device(&device->base, PCI_DEVICE_TYPE, "pci");
 
     device->bus = bus;
     device->num = num;

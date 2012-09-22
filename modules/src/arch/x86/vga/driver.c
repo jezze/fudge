@@ -80,12 +80,12 @@ static void start(struct base_driver *self)
 
 }
 
-void vga_driver_init(struct vga_driver *driver)
+void vga_init_driver(struct vga_driver *driver)
 {
 
     memory_clear(driver, sizeof (struct vga_driver));
 
-    base_driver_init(&driver->base, VGA_DRIVER_TYPE, "vga", start, 0, 0);
+    base_init_driver(&driver->base, VGA_DRIVER_TYPE, "vga", start, 0, 0);
 
     driver->read_framebuffer = read_framebuffer;
     driver->write_framebuffer = write_framebuffer;

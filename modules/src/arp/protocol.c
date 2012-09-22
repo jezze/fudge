@@ -28,7 +28,7 @@ unsigned int write(struct net_protocol *self, struct net_interface *interface, u
 
 }
 
-void arp_protocol_init(struct arp_protocol *protocol)
+void arp_init_protocol(struct arp_protocol *protocol)
 {
 
     memory_clear(protocol, sizeof (struct arp_protocol));

@@ -35,7 +35,7 @@ struct bga_driver
 
 };
 
-void bga_driver_init(struct bga_driver *driver);
+void bga_init_driver(struct bga_driver *driver);
 
 #endif
 

@@ -6,7 +6,7 @@ static struct i915_driver driver;
 void init()
 {
 
-    i915_driver_init(&driver);
+    i915_init_driver(&driver);
     base_register_driver(&driver.base);
 
 }

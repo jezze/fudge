@@ -151,8 +151,8 @@ struct ext2_filesystem
 
 };
 
-void ext2_protocol_init(struct ext2_protocol *protocol);
-void ext2_filesystem_init(struct ext2_filesystem *filesystem, struct ext2_protocol *protocol, struct block_interface *interface);
+void ext2_init_protocol(struct ext2_protocol *protocol);
+void ext2_init_filesystem(struct ext2_filesystem *filesystem, struct ext2_protocol *protocol, struct block_interface *interface);
 
 #endif
 

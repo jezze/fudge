@@ -42,7 +42,7 @@ struct vfs_interface *get_filesystem()
 void init()
 {
 
-    video_filesystem_init(&filesystem);
+    video_init_filesystem(&filesystem);
 
 }
 

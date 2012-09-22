@@ -8,10 +8,10 @@ static struct pit_driver driver;
 void init()
 {
 
-    pit_device_init(&device, PIT_IRQ);
+    pit_init_device(&device, PIT_IRQ);
     base_register_device(&device.base);
 
-    pit_driver_init(&driver);
+    pit_init_driver(&driver);
     base_register_driver(&driver.base);
 
 }

@@ -21,12 +21,12 @@ static void write(struct uart_device *self, char c)
 
 }
 
-void uart_device_init(struct uart_device *device, unsigned int port, unsigned int irq)
+void uart_init_device(struct uart_device *device, unsigned int port, unsigned int irq)
 {
 
     memory_clear(device, sizeof (struct uart_device));
 
-    base_device_init(&device->base, UART_DEVICE_TYPE, "uart");
+    base_init_device(&device->base, UART_DEVICE_TYPE, "uart");
 
     device->port = port;
     device->irq = irq;

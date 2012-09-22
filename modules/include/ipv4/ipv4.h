@@ -11,7 +11,7 @@ struct ipv4_protocol
 
 };
 
-void ipv4_protocol_init(struct ipv4_protocol *protocol);
+void ipv4_init_protocol(struct ipv4_protocol *protocol);
 
 #endif
 

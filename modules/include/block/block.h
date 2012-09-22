@@ -32,7 +32,7 @@ void block_register_interface(struct block_interface *interface, struct base_dri
 void block_register_protocol(struct block_protocol *protocol);
 void block_unregister_interface(struct block_interface *interface);
 void block_unregister_protocol(struct block_protocol *protocol);
-void block_filesystem_init(struct block_filesystem *filesystem);
+void block_init_filesystem(struct block_filesystem *filesystem);
 
 #endif
 

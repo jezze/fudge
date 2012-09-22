@@ -9,7 +9,7 @@ static struct rtl8139_driver driver;
 void init()
 {
 
-    rtl8139_driver_init(&driver);
+    rtl8139_init_driver(&driver);
     base_register_driver(&driver.base);
     net_register_interface(&driver.interface);
 

@@ -28,7 +28,7 @@ struct tty_filesystem
 
 };
 
-void tty_driver_init(struct tty_driver *driver, char *cwdname);
-void tty_filesystem_init(struct tty_filesystem *filesystem, struct tty_driver *driver);
+void tty_init_driver(struct tty_driver *driver, char *cwdname);
+void tty_init_filesystem(struct tty_filesystem *filesystem, struct tty_driver *driver);
 
 #endif

@@ -55,7 +55,7 @@ struct vfs_interface *get_filesystem()
 void init()
 {
 
-    net_filesystem_init(&filesystem);
+    net_init_filesystem(&filesystem);
 
 }
 

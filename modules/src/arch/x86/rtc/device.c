@@ -19,12 +19,12 @@ static unsigned char get_value(unsigned int type)
 
 }
 
-void rtc_device_init(struct rtc_device *device, unsigned int irq)
+void rtc_init_device(struct rtc_device *device, unsigned int irq)
 {
 
     memory_clear(device, sizeof (struct rtc_device));
 
-    base_device_init(&device->base, RTC_DEVICE_TYPE, "rtc");
+    base_init_device(&device->base, RTC_DEVICE_TYPE, "rtc");
 
     device->irq = irq;
     device->get_value = get_value;

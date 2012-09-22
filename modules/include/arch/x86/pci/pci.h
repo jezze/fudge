@@ -73,8 +73,8 @@ struct pci_bus
 
 };
 
-void pci_bus_init(struct pci_bus *bus);
-void pci_device_init(struct pci_device *device, struct pci_bus *bus, unsigned int num, unsigned int slot, unsigned int function, unsigned int address);
+void pci_init_bus(struct pci_bus *bus);
+void pci_init_device(struct pci_device *device, struct pci_bus *bus, unsigned int num, unsigned int slot, unsigned int function, unsigned int address);
 
 #endif
 

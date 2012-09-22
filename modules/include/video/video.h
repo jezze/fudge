@@ -36,7 +36,7 @@ void video_register_interface(struct video_interface *interface, struct base_dri
 void video_register_protocol(struct video_protocol *protocol);
 void video_unregister_interface(struct video_interface *interface);
 void video_unregister_protocol(struct video_protocol *protocol);
-void video_filesystem_init(struct video_filesystem *filesystem);
+void video_init_filesystem(struct video_filesystem *filesystem);
 
 #endif
 

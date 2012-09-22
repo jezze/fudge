@@ -6,7 +6,7 @@ static struct pci_bus bus;
 void init()
 {
 
-    pci_bus_init(&bus);
+    pci_init_bus(&bus);
     base_register_bus(&bus.base);
 
 }

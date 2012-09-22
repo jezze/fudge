@@ -26,8 +26,8 @@ struct pit_driver
 
 };
 
-void pit_device_init(struct pit_device *device, unsigned int irq);
-void pit_driver_init(struct pit_driver *driver);
+void pit_init_device(struct pit_device *device, unsigned int irq);
+void pit_init_driver(struct pit_driver *driver);
 
 #endif
 

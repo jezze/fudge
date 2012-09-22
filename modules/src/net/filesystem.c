@@ -190,7 +190,7 @@ static unsigned int walk(struct vfs_interface *self, unsigned int id, unsigned i
 
 }
 
-void net_filesystem_init(struct net_filesystem *filesystem)
+void net_init_filesystem(struct net_filesystem *filesystem)
 {
 
     memory_clear(filesystem, sizeof (struct net_filesystem));

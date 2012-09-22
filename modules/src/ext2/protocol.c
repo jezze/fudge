@@ -90,7 +90,7 @@ static unsigned int validate(struct block_interface *interface)
 
 }
 
-void ext2_protocol_init(struct ext2_protocol *protocol)
+void ext2_init_protocol(struct ext2_protocol *protocol)
 {
 
     memory_clear(protocol, sizeof (struct ext2_protocol));

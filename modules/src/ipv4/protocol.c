@@ -28,7 +28,7 @@ unsigned int write(struct net_protocol *self, struct net_interface *interface, u
 
 }
 
-void ipv4_protocol_init(struct ipv4_protocol *protocol)
+void ipv4_init_protocol(struct ipv4_protocol *protocol)
 {
 
     memory_clear(protocol, sizeof (struct ipv4_protocol));

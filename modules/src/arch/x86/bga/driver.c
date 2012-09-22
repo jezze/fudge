@@ -92,12 +92,12 @@ static unsigned int write_data(struct video_interface *self, unsigned int offset
 
 }
 
-void bga_driver_init(struct bga_driver *driver)
+void bga_init_driver(struct bga_driver *driver)
 {
 
     memory_clear(driver, sizeof (struct bga_driver));
 
-    base_driver_init(&driver->base, BGA_DRIVER_TYPE, "bga", start, check, attach);
+    base_init_driver(&driver->base, BGA_DRIVER_TYPE, "bga", start, check, attach);
 
     driver->bank = (void *)0xA0000;
     driver->set_mode = set_mode;

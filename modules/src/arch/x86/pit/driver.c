@@ -33,12 +33,12 @@ static unsigned int check(struct base_driver *self, struct base_device *device)
 
 }
 
-void pit_driver_init(struct pit_driver *driver)
+void pit_init_driver(struct pit_driver *driver)
 {
 
     memory_clear(driver, sizeof (struct pit_driver));
 
-    base_driver_init(&driver->base, PIT_DRIVER_TYPE, "pit", 0, check, attach);
+    base_init_driver(&driver->base, PIT_DRIVER_TYPE, "pit", 0, check, attach);
 
 }
 

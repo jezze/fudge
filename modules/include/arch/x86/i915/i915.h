@@ -116,7 +116,7 @@ struct i915_driver
 
 };
 
-void i915_driver_init(struct i915_driver *driver);
+void i915_init_driver(struct i915_driver *driver);
 
 #endif
 

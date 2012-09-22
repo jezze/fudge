@@ -139,9 +139,9 @@ struct ata_driver
 
 };
 
-void ata_device_init(struct ata_device *device, struct ata_bus *bus, unsigned int irq, unsigned int slave, unsigned int type);
-void ata_bus_init(struct ata_bus *bus, unsigned int control, unsigned int data);
-void ata_driver_init(struct ata_driver *driver);
+void ata_init_device(struct ata_device *device, struct ata_bus *bus, unsigned int irq, unsigned int slave, unsigned int type);
+void ata_init_bus(struct ata_bus *bus, unsigned int control, unsigned int data);
+void ata_init_driver(struct ata_driver *driver);
 
 #endif
 
