@@ -124,13 +124,13 @@ void base_unregister_driver(struct base_driver *driver)
 
 }
 
-static void base_init(struct base_module *base, unsigned int type, char *name)
+static void base_init_module(struct base_module *module, unsigned int type, char *name)
 {
 
-    memory_clear(base, sizeof (struct base_module));
+    memory_clear(module, sizeof (struct base_module));
 
-    base->type = type;
-    base->name = name;
+    module->type = type;
+    module->name = name;
 
 }
 
@@ -139,7 +139,7 @@ void base_init_bus(struct base_bus *bus, unsigned int type, char *name, void (*s
 
     memory_clear(bus, sizeof (struct base_bus));
 
-    base_init(&bus->module, BASE_TYPE_BUS, name);
+    base_init_module(&bus->module, BASE_TYPE_BUS, name);
 
     bus->type = type;
     bus->scan = scan;
@@ -151,7 +151,7 @@ void base_init_device(struct base_device *device, unsigned int type, char *name)
 
     memory_clear(device, sizeof (struct base_device));
 
-    base_init(&device->module, BASE_TYPE_DEVICE, name);
+    base_init_module(&device->module, BASE_TYPE_DEVICE, name);
 
     device->type = type;
 
@@ -162,7 +162,7 @@ void base_init_driver(struct base_driver *driver, unsigned int type, char *name,
 
     memory_clear(driver, sizeof (struct base_driver));
 
-    base_init(&driver->module, BASE_TYPE_DRIVER, name);
+    base_init_module(&driver->module, BASE_TYPE_DRIVER, name);
 
     driver->type = type;
     driver->start = start;
