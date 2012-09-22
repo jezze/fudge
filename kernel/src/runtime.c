@@ -72,6 +72,17 @@ void runtime_init_mount(struct runtime_mount *mount, struct vfs_interface *inter
 
 }
 
+void runtime_init_registers(struct runtime_registers *registers, unsigned int ip, unsigned int sp, unsigned int sb)
+{
+
+    memory_clear(registers, sizeof (struct runtime_registers));
+
+    registers->ip = ip;
+    registers->sp = sp;
+    registers->sb = sb;
+
+}
+
 void runtime_init_task(struct runtime_task *task, unsigned int id, unsigned int ip)
 {
 

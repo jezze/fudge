@@ -30,15 +30,6 @@ static void load_ustate(struct runtime_task *task, struct isr_registers *registe
 
 }
 
-static void save_ustate(struct runtime_task *task, struct isr_registers *registers)
-{
-
-    task->registers.ip = registers->interrupt.eip;
-    task->registers.sp = registers->interrupt.esp;
-    task->registers.sb = registers->general.ebp;
-
-}
-
 static void handle_undefined(struct isr_registers *registers)
 {
 
@@ -57,7 +48,7 @@ unsigned int isr_handle(struct isr_registers *registers)
     task1 = multi_schedule();
 
     if (task1)
-        save_ustate(task1, registers);
+        runtime_init_registers(&task1->registers, registers->interrupt.eip, registers->interrupt.esp, registers->general.ebp);
 
     isr_raise(registers->index, registers);
     event_raise(registers->index);
