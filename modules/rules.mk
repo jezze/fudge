@@ -18,7 +18,7 @@ MODULES_OBJECTS_NET=modules/src/net/main.o modules/src/net/filesystem.o modules/
 MODULES_OBJECTS_NODEFS=modules/src/nodefs/main.o modules/src/nodefs/filesystem.o
 MODULES_OBJECTS_IPV4=modules/src/ipv4/main.o modules/src/ipv4/protocol.o
 MODULES_OBJECTS_TTY=modules/src/tty/main.o modules/src/tty/driver.o modules/src/tty/filesystem.o
-MODULES_OBJECTS_VIDEO=modules/src/video/main.o modules/src/video/filesystem.o
+MODULES_OBJECTS_VIDEO=modules/src/video/main.o modules/src/video/filesystem.o modules/src/video/interface.o
 
 MODULES+=$(MODULES_ARP) $(MODULES_BASE) $(MODULES_BLOCK) $(MODULES_EXT2) $(MODULES_NET) $(MODULES_NODEFS) $(MODULES_IPV4) $(MODULES_TTY) $(MODULES_VIDEO)
 MODULES_OBJECTS+=$(MODULES_OBJECTS_ARP) $(MODULES_OBJECTS_BASE) $(MODULES_OBJECTS_BLOCK) $(MODULES_OBJECTS_EXT2) $(MODULES_OBJECTS_NET) $(MODULES_OBJECTS_NODEFS) $(MODULES_OBJECTS_IPV4) $(MODULES_OBJECTS_TTY) $(MODULES_OBJECTS_VIDEO)

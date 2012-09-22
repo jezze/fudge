@@ -11,7 +11,7 @@ void init()
 
     bga_init_driver(&driver);
     base_register_driver(&driver.base);
-    video_register_interface(&driver.interface, &driver.base);
+    video_register_interface(&driver.interface);
 
 }
 

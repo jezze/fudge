@@ -4,10 +4,8 @@
 
 static struct video_filesystem filesystem;
 
-void video_register_interface(struct video_interface *interface, struct base_driver *driver)
+void video_register_interface(struct video_interface *interface)
 {
-
-    interface->driver = driver;
 
     filesystem.interfaces[filesystem.interfacesCount] = interface;
     filesystem.interfacesCount++;

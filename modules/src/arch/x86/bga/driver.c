@@ -98,16 +98,14 @@ void bga_init_driver(struct bga_driver *driver)
     memory_clear(driver, sizeof (struct bga_driver));
 
     base_init_driver(&driver->base, BGA_DRIVER_TYPE, "bga", start, check, attach);
-
-    driver->bank = (void *)0xA0000;
-    driver->set_mode = set_mode;
+    video_init_interface(&driver->interface, &driver->base, enable, read_data, write_data);
 
     driver->interface.xres = 800;
     driver->interface.yres = 600;
     driver->interface.bpp = BGA_BPP_32;
-    driver->interface.enable = enable;
-    driver->interface.read_data = read_data;
-    driver->interface.write_data = write_data;
+
+    driver->bank = (void *)0xA0000;
+    driver->set_mode = set_mode;
 
 }
 
