@@ -11,7 +11,7 @@ void init()
 
     rtl8139_driver_init(&driver);
     base_register_driver(&driver.base);
-    net_register_interface(&driver.interface, &driver.base);
+    net_register_interface(&driver.interface);
 
 }
 

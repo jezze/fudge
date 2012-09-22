@@ -18,10 +18,8 @@ void net_handle_read(struct net_interface *interface, unsigned int count, void *
 
 }
 
-void net_register_interface(struct net_interface *interface, struct base_driver *driver)
+void net_register_interface(struct net_interface *interface)
 {
-
-    interface->driver = driver;
 
     filesystem.interfaces[filesystem.interfacesCount] = interface;
     filesystem.interfacesCount++;
