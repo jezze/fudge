@@ -75,7 +75,7 @@ unsigned int isr_handle(struct isr_registers *registers)
 void isr_set_routine(unsigned int index, void (*routine)(struct isr_registers *registers))
 {
 
-    if (index > ISR_TABLE_SLOTS)
+    if (index >= ISR_TABLE_SLOTS)
         return;
 
     routines[index] = routine;
@@ -85,7 +85,7 @@ void isr_set_routine(unsigned int index, void (*routine)(struct isr_registers *r
 void isr_unset_routine(unsigned int index)
 {
 
-    if (index > ISR_TABLE_SLOTS)
+    if (index >= ISR_TABLE_SLOTS)
         return;
 
     routines[index] = 0;
@@ -95,7 +95,7 @@ void isr_unset_routine(unsigned int index)
 void isr_raise(unsigned int index, struct isr_registers *registers)
 {
 
-    if (index > ISR_TABLE_SLOTS)
+    if (index >= ISR_TABLE_SLOTS)
         return;
 
     routines[index](registers);
