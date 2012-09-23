@@ -15,6 +15,7 @@ void kernel_register_interface(struct kernel_interface *interface)
     struct runtime_task *task;
     struct runtime_mount *mount;
     unsigned int id;
+    unsigned int entry;
 
     interface->setup(interface);
 
@@ -23,11 +24,10 @@ void kernel_register_interface(struct kernel_interface *interface)
     ramdisk = ramdisk_setup(interface->ramdiskc, interface->ramdiskv);
 
     id = ramdisk->walk(ramdisk, ramdisk->rootid, 8, "bin/init");
+    entry = binary_copy_program(ramdisk, id);
 
     task = multi_get_task(1);
-    runtime_init_task(task, 1, binary_get_entry(ramdisk, id));
-
-    binary_copy_program(ramdisk, id);
+    runtime_init_task(task, 1, entry);
 
     task->status.used = 1;
 

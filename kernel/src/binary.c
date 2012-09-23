@@ -27,20 +27,6 @@ unsigned int binary_find_symbol(struct vfs_interface *interface, unsigned int id
 
 }
 
-unsigned int binary_get_entry(struct vfs_interface *interface, unsigned int id)
-{
-
-    struct elf_header header;
-
-    interface->read(interface, id, 0, ELF_HEADER_SIZE, &header);
-
-    if (!elf_validate(&header))
-        return 0;
-
-    return header.entry;
-
-}
-
 unsigned int binary_copy_program(struct vfs_interface *interface, unsigned int id)
 {
 
@@ -58,7 +44,7 @@ unsigned int binary_copy_program(struct vfs_interface *interface, unsigned int i
     for (i = 0; i < header.phcount; i++)
         interface->read(interface, id, programHeader[i].offset, programHeader[i].fsize, (void *)programHeader[i].vaddress);
 
-    return 1;
+    return header.entry;
 
 }
 
