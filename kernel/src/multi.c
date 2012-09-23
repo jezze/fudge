@@ -60,12 +60,10 @@ struct runtime_task *multi_schedule()
 
 }
 
-struct runtime_task *multi_setup()
+void multi_setup()
 {
 
     memory_clear(tasks, sizeof (struct runtime_task) * MULTI_TASK_SLOTS);
-
-    return tasks;
 
 }
 
