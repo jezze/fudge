@@ -88,19 +88,16 @@ void runtime_init_task(struct runtime_task *task, unsigned int id, unsigned int 
 
     memory_clear(task, sizeof (struct runtime_task));
 
+    runtime_init_registers(&task->registers, ip, RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE, RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE);
+
     task->id = id;
-    task->registers.ip = ip;
-    task->registers.sp = RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE;
-    task->registers.sb = RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE;
 
 }
 
 void runtime_reset_task(struct runtime_task *task, unsigned int ip)
 {
 
-    task->registers.ip = ip;
-    task->registers.sp = RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE;
-    task->registers.sb = RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE;
+    runtime_init_registers(&task->registers, ip, RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE, RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE);
 
 }
 
