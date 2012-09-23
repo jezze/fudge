@@ -8,12 +8,18 @@ static struct gdt_pointer pointer;
 unsigned int gdt_get_segment(unsigned int index)
 {
 
+    if (index >= GDT_TABLE_SLOTS)
+        return 0;
+
     return (sizeof (struct gdt_entry) * index) | ((entries[index].access >> 5) & 0x03);
 
 }
 
 void gdt_set_entry(unsigned int index, unsigned int base, unsigned int limit, unsigned char access, unsigned char flags)
 {
+
+    if (index >= GDT_TABLE_SLOTS)
+        return;
 
     entries[index].baseLow = (base & 0xFFFF);
     entries[index].baseMiddle = (base >> 16);

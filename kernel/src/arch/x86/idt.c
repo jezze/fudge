@@ -10,6 +10,9 @@ void idt_set_entry(unsigned int index, void (*callback)(), unsigned short select
 
     unsigned int base = (unsigned int)callback;
 
+    if (index >= IDT_TABLE_SLOTS)
+        return;
+
     entries[index].baseLow = (base & 0xFFFF);
     entries[index].baseHigh = (base >> 16);
     entries[index].selector = selector;

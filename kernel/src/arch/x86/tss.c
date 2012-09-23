@@ -8,6 +8,9 @@ static struct tss_entry entries[TSS_TABLE_SLOTS];
 void tss_set_entry(unsigned int index, unsigned int ss, unsigned int esp)
 {
 
+    if (index >= TSS_TABLE_SLOTS)
+        return;
+
     entries[index].ss0 = ss;
     entries[index].esp0 = esp;
 
