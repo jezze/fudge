@@ -5,8 +5,8 @@
 .global isr_routine
 isr_routine:
     cli
-    push 0xff
-    push 0xff
+    push 0xFF
+    push 0xFF
     jmp isr_common
 
 .global isr_common
