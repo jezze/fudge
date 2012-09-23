@@ -33,21 +33,21 @@ static void setup(struct kernel_arch *arch)
 
 }
 
-void arch_interface_init(struct arch_interface *interface)
+void arch_init_interface(struct arch_interface *interface)
 {
 
     memory_clear(interface, sizeof (struct arch_interface));
 
-    kernel_arch_init(&interface->base, setup, 0, 0, 0);
+    kernel_init_interface(&interface->base, setup, 0, 0, 0);
 
 }
 
 void arch_setup()
 {
 
-    arch_interface_init(&interface);
+    arch_init_interface(&interface);
 
-    interface.base.start(&interface.base);
+    kernel_register_interface(&interface.base);
 
 }
 
