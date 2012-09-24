@@ -2,6 +2,8 @@
 #define MODULES_PIT_H
 
 #define PIT_COUNTER0            0x40
+#define PIT_COUNTER1            0x41
+#define PIT_COUNTER2            0x42
 #define PIT_COMMAND             0x43
 
 #define PIT_COMMAND_BINARY      0x00
@@ -24,7 +26,7 @@
 #define PIT_COMMAND_COUNTER2    0x80
 #define PIT_COMMAND_READBACK    0xC0
 
-#define PIT_FREQUENCY           1193180
+#define PIT_FREQUENCY           1193182
 #define PIT_HERTZ               100
 
 #define PIT_IRQ                 0x00
