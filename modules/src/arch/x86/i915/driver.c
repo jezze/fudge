@@ -1,5 +1,7 @@
 #include <memory.h>
+#include <vfs.h>
 #include <base/base.h>
+#include <video/video.h>
 #include <arch/x86/apic/apic.h>
 #include <arch/x86/pci/pci.h>
 #include <arch/x86/i915/i915.h>
@@ -157,12 +159,32 @@ static unsigned int check(struct base_driver *self, struct base_device *device)
 
 }
 
+static void enable(struct video_interface *self)
+{
+
+}
+
+static unsigned int read_data(struct video_interface *self, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    return 0;
+
+}
+
+static unsigned int write_data(struct video_interface *self, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    return 0;
+
+}
+
 void i915_init_driver(struct i915_driver *driver)
 {
 
     memory_clear(driver, sizeof (struct i915_driver));
 
     base_init_driver(&driver->base, I915_DRIVER_TYPE, "i915", start, check, attach);
+    video_init_interface(&driver->interface, &driver->base, enable, read_data, write_data);
 
 }
 
