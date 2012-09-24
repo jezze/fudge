@@ -10,7 +10,7 @@ void pit_init_device(struct pit_device *device, unsigned int irq)
     base_init_device(&device->base, PIT_DEVICE_TYPE, "pit");
 
     device->irq = irq;
-    device->divisor = PIT_HERTZ / PIT_FREQUENCY;
+    device->divisor = PIT_FREQUENCY / PIT_HERTZ;
 
 }
 
