@@ -14,6 +14,7 @@ struct event_routine
 unsigned int event_set_routine(unsigned int index, struct runtime_task *task, unsigned int callback);
 unsigned int event_unset_routine(unsigned int index, struct runtime_task *task);
 void event_raise(unsigned int index);
+void event_init();
 
 #endif
 

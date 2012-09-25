@@ -7,7 +7,7 @@ static struct event_routine routines[EVENT_TABLE_SLOTS];
 unsigned int event_set_routine(unsigned int index, struct runtime_task *task, unsigned int callback)
 {
 
-    if (index > EVENT_TABLE_SLOTS)
+    if (index >= EVENT_TABLE_SLOTS)
         return 0;
 
     if (routines[index].task)
@@ -23,7 +23,7 @@ unsigned int event_set_routine(unsigned int index, struct runtime_task *task, un
 unsigned int event_unset_routine(unsigned int index, struct runtime_task *task)
 {
 
-    if (index > EVENT_TABLE_SLOTS)
+    if (index >= EVENT_TABLE_SLOTS)
         return 0;
 
     if (routines[index].task != task)
@@ -50,6 +50,13 @@ void event_raise(unsigned int index)
     routines[index].task->registers.ip = routines[index].callback;
     routines[index].task->registers.sp = RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE;
     routines[index].task->registers.sb = RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE;
+
+}
+
+void event_init()
+{
+
+    memory_clear(routines, sizeof (struct event_routine) * EVENT_TABLE_SLOTS);
 
 }
 
