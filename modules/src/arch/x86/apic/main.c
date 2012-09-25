@@ -88,13 +88,16 @@ unsigned int apic_unregister_routine(unsigned int index, struct base_device *dev
 void init()
 {
 
+/*
     struct cpuid_data data;
-    unsigned int i;
 
     cpuid_get(CPUID_INSTRUCTION_FEATURES0, &data);
 
     if (!(data.edx & CPUID_FEATURES0_EDX_FLAG_APIC))
         return;
+*/
+
+    unsigned int i;
 
     idt_set_entry(0x20, apic_routine00, 0x08, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
     idt_set_entry(0x21, apic_routine01, 0x08, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
