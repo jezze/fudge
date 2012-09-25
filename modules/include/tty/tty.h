@@ -29,7 +29,7 @@ struct tty_filesystem
 
 };
 
-void tty_init_driver(struct tty_driver *driver, char *cwdname);
+void tty_init_driver(struct tty_driver *driver, char *cwdname, unsigned int cwdcount);
 void tty_init_filesystem(struct tty_filesystem *filesystem, struct tty_driver *driver);
 
 #endif

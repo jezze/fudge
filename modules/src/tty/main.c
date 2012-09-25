@@ -17,7 +17,7 @@ struct vfs_interface *get_filesystem()
 void init()
 {
 
-    tty_init_driver(&driver, "/");
+    tty_init_driver(&driver, "/", 1);
     base_register_driver(&driver.base);
 
     tty_init_filesystem(&filesystem, &driver);

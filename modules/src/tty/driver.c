@@ -86,14 +86,15 @@ static void start(struct base_driver *self)
 
 }
 
-void tty_init_driver(struct tty_driver *driver, char *cwdname)
+void tty_init_driver(struct tty_driver *driver, char *cwdname, unsigned int cwdcount)
 {
 
     memory_clear(driver, sizeof (struct tty_driver));
 
     base_init_driver(&driver->base, TTY_DRIVER_TYPE, "tty", start, 0, 0);
 
-    memory_copy(driver->cwdname, cwdname, string_length(cwdname) + 1);
+    memory_copy(driver->cwdname, cwdname, cwdcount);
+    driver->cwdcount = cwdcount;
     driver->clear = clear;
     driver->scroll = scroll;
     driver->putc = putc;
