@@ -25,17 +25,8 @@ static unsigned int read_cwd(struct vfs_interface *self, unsigned int id, unsign
 {
 
     struct tty_filesystem *filesystem = (struct tty_filesystem *)self;
-    unsigned int length = string_length(filesystem->driver->cwdname);
 
-    if (offset > length)
-        return 0;
-
-    if (count > length - offset)
-        count = length - offset;
-
-    memory_copy(buffer, filesystem->driver->cwdname + offset, count);
-
-    return count;
+    return vfs_read(buffer, count, filesystem->driver->cwdname, filesystem->driver->cwdcount, offset);
 
 }
 
@@ -44,25 +35,16 @@ static unsigned int write_cwd(struct vfs_interface *self, unsigned int id, unsig
 
     struct tty_filesystem *filesystem = (struct tty_filesystem *)self;
 
-    memory_clear(filesystem->driver->cwdname, TTY_CWD_SIZE);
-    memory_copy(filesystem->driver->cwdname, buffer, count);
+    filesystem->driver->cwdcount = count;
 
-    return count;
+    return vfs_write(filesystem->driver->cwdname, TTY_CWD_SIZE, buffer, count, offset);
 
 }
 
 static unsigned int read_root(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    if (offset > 17)
-        return 0;
-
-    if (count > 17 - offset)
-        count = 17 - offset;
-
-    memory_copy((char *)buffer + offset, "stdin\nstdout\ncwd\n", count);
-
-    return count;
+    return vfs_read(buffer, count, "stdin\nstdout\ncwd\n", 17, offset);
 
 }
 
@@ -99,10 +81,10 @@ static unsigned int walk(struct vfs_interface *self, unsigned int id, unsigned i
         return id;
 
     if (memory_match(path, "stdout", 6))
-        return 3;
+        return walk(self, 3, count - 6, path + 6);
 
     if (memory_match(path, "cwd", 3))
-        return 4;
+        return walk(self, 4, count - 3, path + 3);
 
     return 0;
 
