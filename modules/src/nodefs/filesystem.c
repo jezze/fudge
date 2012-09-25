@@ -126,7 +126,7 @@ void nodefs_init_filesystem(struct nodefs_filesystem *filesystem)
 
     memory_clear(filesystem, sizeof (struct nodefs_filesystem));
 
-    vfs_init_interface(&filesystem->base, 1, "nodefs", 0, 0, read, write, 0, walk, 0);
+    vfs_init_interface(&filesystem->base, 1, "nodefs", 0, 0, read, write, walk, 0);
 
     filesystem->register_node = register_node;
     filesystem->unregister_node = unregister_node;

@@ -52,6 +52,35 @@ static unsigned int parse(struct ramdisk_image *self, void *address)
 
 }
 
+static unsigned int parent(struct ramdisk_filesystem *filesystem, unsigned int id)
+{
+
+    struct tar_header *header = filesystem->image->headers[id - 1];
+    unsigned int length = string_length(header->name);
+    unsigned int i;
+
+    while (--length)
+    {
+
+        if (header->name[length - 1] == '/')
+            break;
+
+    }
+
+    for (i = 0; i < id - 1; i++)
+    {
+
+        if (!memory_match(filesystem->image->headers[i]->name, header->name, length))
+            continue;
+
+        return i + 1;
+
+    }
+
+    return 1;
+
+}
+
 static unsigned int read_directory(struct ramdisk_filesystem *filesystem, struct tar_header *header, unsigned int offset, unsigned int count, void *buffer)
 {
 
@@ -66,12 +95,12 @@ static unsigned int read_directory(struct ramdisk_filesystem *filesystem, struct
     for (i = 0; i < filesystem->image->count; i++)
     {
 
-        unsigned int parent = filesystem->interface.parent(&filesystem->interface, i + 1) - 1;
+        unsigned int p = parent(filesystem, i + 1) - 1;
 
         if (filesystem->image->headers[i] == header)
             continue;
 
-        if (filesystem->image->headers[parent] != header)
+        if (filesystem->image->headers[p] != header)
             continue;
 
         o += vfs_write(temp, c - o, filesystem->image->headers[i]->name + length, string_length(filesystem->image->headers[i]->name) - length, o);
@@ -131,36 +160,6 @@ static unsigned int write(struct vfs_interface *self, unsigned int id, unsigned 
 
 }
 
-static unsigned int parent(struct vfs_interface *self, unsigned int id)
-{
-
-    struct ramdisk_filesystem *filesystem = (struct ramdisk_filesystem *)self;
-    struct tar_header *header = filesystem->image->headers[id - 1];
-    unsigned int length = string_length(header->name);
-    unsigned int i;
-
-    while (--length)
-    {
-
-        if (header->name[length - 1] == '/')
-            break;
-
-    }
-
-    for (i = 0; i < id - 1; i++)
-    {
-
-        if (!memory_match(filesystem->image->headers[i]->name, header->name, length))
-            continue;
-
-        return i + 1;
-
-    }
-
-    return 1;
-
-}
-
 static unsigned int walk(struct vfs_interface *self, unsigned int id, unsigned int count, char *path)
 {
 
@@ -173,7 +172,7 @@ static unsigned int walk(struct vfs_interface *self, unsigned int id, unsigned i
         return id;
 
     if (memory_match(path, "../", 3))
-        return walk(self, parent(self, id), count - 3, path + 3);
+        return walk(self, parent(filesystem, id), count - 3, path + 3);
 
     for (i = id; i < filesystem->image->count; i++)
     {
@@ -221,7 +220,7 @@ void ramdisk_init_filesystem(struct ramdisk_filesystem *filesystem, struct ramdi
 
     memory_clear(filesystem, sizeof (struct ramdisk_filesystem));
 
-    vfs_init_interface(&filesystem->interface, 1, "ramdisk", 0, 0, read, write, parent, walk, get_physical);
+    vfs_init_interface(&filesystem->interface, 1, "ramdisk", 0, 0, read, write, walk, get_physical);
 
     filesystem->image = image;
 
