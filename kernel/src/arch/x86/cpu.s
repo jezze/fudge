@@ -1,12 +1,5 @@
 .intel_syntax noprefix
 
-.global cpu_disable_apic
-cpu_disable_apic:
-    mov al, 0xFF
-    out 0xA1, al
-    out 0x21, al
-    ret
-
 .global cpu_enter_usermode
 cpu_enter_usermode:
     mov ax, 0x23

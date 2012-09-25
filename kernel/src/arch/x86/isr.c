@@ -1,3 +1,4 @@
+#include <memory.h>
 #include <error.h>
 #include <event.h>
 #include <mmu.h>
@@ -35,7 +36,6 @@ static void handle_undefined(struct isr_registers *registers)
 
     error_register(0, registers->index);
     error_register(1, registers->extra);
-    error_panic("UNHANDLED INTERRUPT", __FILE__, __LINE__);
 
 }
 
