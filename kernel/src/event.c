@@ -1,6 +1,7 @@
 #include <memory.h>
 #include <event.h>
 #include <runtime.h>
+#include <mmu.h>
 
 static struct event_routine routines[EVENT_TABLE_SLOTS];
 
@@ -50,6 +51,9 @@ void event_raise(unsigned int index)
     routines[index].task->registers.ip = routines[index].callback;
     routines[index].task->registers.sp = RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE;
     routines[index].task->registers.sb = RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE;
+
+    runtime_set_task(routines[index].task);
+    mmu_load_user_memory(routines[index].task->id);
 
 }
 

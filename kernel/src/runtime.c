@@ -1,6 +1,22 @@
 #include <memory.h>
 #include <runtime.h>
 
+struct runtime_task *running;
+
+struct runtime_task *runtime_get_task()
+{
+
+    return running;
+
+}
+
+void runtime_set_task(struct runtime_task *task)
+{
+
+    running = task;
+
+}
+
 struct runtime_descriptor *runtime_get_task_descriptor(struct runtime_task *task, unsigned int index)
 {
 

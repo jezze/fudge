@@ -1,7 +1,5 @@
 #include <memory.h>
 #include <event.h>
-#include <mmu.h>
-#include <multi.h>
 #include <vfs.h>
 #include <binary.h>
 #include <runtime.h>
@@ -182,32 +180,7 @@ static unsigned int read(struct runtime_task *task, void *stack)
 static unsigned int spawn(struct runtime_task *task, void *stack)
 {
 
-    struct syscall_spawn_args *args = stack;
-    struct runtime_descriptor *descriptor = runtime_get_task_descriptor(task, args->index);
-    struct runtime_task *ntask;
-    unsigned int id;
-    unsigned int entry;
-
-    if (!descriptor || !descriptor->interface->read)
-        return 0;
-
-    id = multi_get_task_slot(task->id);
-
-    if (!id)
-        return 0;
-
-    mmu_map_user_memory(id, RUNTIME_TASK_PADDRESS_BASE + id * RUNTIME_TASK_ADDRESS_SIZE, RUNTIME_TASK_VADDRESS_BASE, RUNTIME_TASK_ADDRESS_SIZE);
-    mmu_load_user_memory(id);
-
-    entry = binary_copy_program(descriptor->interface, descriptor->id);
-
-    if (!entry)
-        return 0;
-
-    ntask = multi_get_task(id);
-    multi_clone_task(ntask, task, id, entry);
-
-    return id;
+    return 0;
 
 }
 
@@ -272,7 +245,7 @@ unsigned int syscall_unset_routine(unsigned int index)
 unsigned int syscall_raise(unsigned int index, void *stack)
 {
 
-    struct runtime_task *task = multi_schedule();
+    struct runtime_task *task = runtime_get_task();
 
     if (!routines[index])
         return 0;
@@ -290,13 +263,13 @@ void syscall_setup()
     syscall_set_routine(SYSCALL_INDEX_WRITE, write);
     syscall_set_routine(SYSCALL_INDEX_MOUNT, mount);
     syscall_set_routine(SYSCALL_INDEX_EXECUTE, execute);
-    syscall_set_routine(SYSCALL_INDEX_SPAWN, spawn);
     syscall_set_routine(SYSCALL_INDEX_EXIT, exit);
     syscall_set_routine(SYSCALL_INDEX_IDLE, idle);
     syscall_set_routine(SYSCALL_INDEX_LOAD, load);
     syscall_set_routine(SYSCALL_INDEX_UNLOAD, unload);
     syscall_set_routine(SYSCALL_INDEX_ATTACH, attach);
     syscall_set_routine(SYSCALL_INDEX_DETACH, detach);
+    syscall_set_routine(SYSCALL_INDEX_SPAWN, spawn);
 
 }
 

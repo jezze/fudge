@@ -1,8 +1,6 @@
 #include <memory.h>
 #include <error.h>
 #include <event.h>
-#include <mmu.h>
-#include <multi.h>
 #include <runtime.h>
 #include <arch/x86/cpu.h>
 #include <arch/x86/gdt.h>
@@ -42,25 +40,19 @@ static void handle_undefined(struct isr_registers *registers)
 unsigned int isr_handle(struct isr_registers *registers)
 {
 
-    struct runtime_task *task1;
-    struct runtime_task *task2;
+    struct runtime_task *task = runtime_get_task();
 
-    task1 = multi_schedule();
-
-    if (task1)
-        runtime_init_registers(&task1->registers, registers->interrupt.eip, registers->interrupt.esp, registers->general.ebp);
+    runtime_init_registers(&task->registers, registers->interrupt.eip, registers->interrupt.esp, registers->general.ebp);
 
     isr_raise(registers->index, registers);
     event_raise(registers->index);
 
-    task2 = multi_schedule();
+    task = runtime_get_task();
 
-    if (task2)
+    if (task->status.used && !task->status.idle)
     {
 
-        load_ustate(task2, registers);
-
-        mmu_load_user_memory(task2->id);
+        load_ustate(task, registers);
 
         return gdt_get_segment(GDT_INDEX_UDATA);
 

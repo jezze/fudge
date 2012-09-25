@@ -1,14 +1,13 @@
 #include <memory.h>
 #include <mmu.h>
-#include <multi.h>
 #include <arch/x86/cpu.h>
 #include <arch/x86/idt.h>
 #include <arch/x86/isr.h>
 #include <arch/x86/mmu.h>
 
 static struct mmu_table kernelTables[8];
-static struct mmu_directory runtimeDirectories[MULTI_TASK_SLOTS];
-static struct mmu_table runtimeTables[MULTI_TASK_SLOTS];
+static struct mmu_directory runtimeDirectories[32];
+static struct mmu_table runtimeTables[32];
 
 static void set_directory_table(struct mmu_directory *directory, unsigned int frame, struct mmu_table *table, unsigned int tflags)
 {
@@ -65,7 +64,7 @@ static void map_kernel_memory(unsigned int index, unsigned int paddress, unsigne
 
     unsigned int i;
 
-    for (i = 0; i < MULTI_TASK_SLOTS; i++)
+    for (i = 0; i < 32; i++)
         map_memory(&runtimeDirectories[i], &kernelTables[index], paddress, vaddress, size, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE);
 
 }

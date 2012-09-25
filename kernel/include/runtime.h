@@ -53,6 +53,8 @@ struct runtime_task
 
 };
 
+struct runtime_task *runtime_get_task();
+void runtime_set_task(struct runtime_task *task);
 struct runtime_descriptor *runtime_get_task_descriptor(struct runtime_task *task, unsigned int index);
 struct runtime_mount *runtime_get_task_mount(struct runtime_task *task, unsigned int index);
 struct runtime_mount *runtime_find_task_mount(struct runtime_task *self, char *path);
