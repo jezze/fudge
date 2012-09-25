@@ -5,21 +5,16 @@
 #include <arch/x86/gdt.h>
 #include <arch/x86/idt.h>
 #include <arch/x86/isr.h>
-#include <arch/x86/mboot.h>
 #include <arch/x86/mmu.h>
 #include <arch/x86/syscall.h>
 #include <arch/x86/tss.h>
 
-static struct arch_interface interface;
-
 static void setup(struct kernel_interface *self)
 {
 
-    struct arch_interface *interface = (struct arch_interface *)self;
     unsigned int cs;
     unsigned int ss;
 
-    mboot_setup(interface->header);
     gdt_setup();
     idt_setup();
 
@@ -34,24 +29,12 @@ static void setup(struct kernel_interface *self)
 
 }
 
-void arch_init_interface(struct arch_interface *interface, struct mboot_header *header, unsigned int magic)
+void arch_init_interface(struct arch_interface *interface, unsigned int ramdiskc, void **ramdiskv)
 {
 
     memory_clear(interface, sizeof (struct arch_interface));
 
-    kernel_init_interface(&interface->base, setup, cpu_enter_usermode, header->modules.count, header->modules.address);
-
-    interface->header = header;
-    interface->magic = magic;
-
-}
-
-void arch_setup(struct mboot_header *header, unsigned int magic)
-{
-
-    arch_init_interface(&interface, header, magic);
-
-    kernel_register_interface(&interface.base);
+    kernel_init_interface(&interface->base, setup, cpu_enter_usermode, ramdiskc, ramdiskv);
 
 }
 

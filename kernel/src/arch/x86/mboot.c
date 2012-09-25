@@ -1,6 +1,10 @@
+#include <kernel.h>
+#include <arch/x86/arch.h>
 #include <arch/x86/mboot.h>
 
-void mboot_setup(struct mboot_header *header)
+static struct arch_interface interface;
+
+void mboot_setup(struct mboot_header *header, unsigned int magic)
 {
 
     if (header->flags & MBOOT_FLAG_LOADER)
@@ -75,6 +79,10 @@ void mboot_setup(struct mboot_header *header)
         }
 
     }
+
+    arch_init_interface(&interface, header->modules.count, header->modules.address);
+
+    kernel_register_interface(&interface.base);
 
 }
 

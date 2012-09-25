@@ -102,7 +102,7 @@ struct mboot_module
 
 };
 
-void mboot_setup(struct mboot_header *header);
+void mboot_setup(struct mboot_header *header, unsigned int magic);
 
 #endif
 
