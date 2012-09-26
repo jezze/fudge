@@ -57,7 +57,7 @@ struct isr_registers
 
 };
 
-void isr_routine();
+void isr_undefined();
 unsigned int isr_handle(struct isr_registers *registers);
 void isr_set_routine(unsigned int index, void (*routine)(struct isr_registers *registers));
 void isr_unset_routine(unsigned int index);

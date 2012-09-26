@@ -2,8 +2,8 @@
 
 .extern isr_handle
 
-.global isr_routine
-isr_routine:
+.global isr_undefined
+isr_undefined:
     cli
     push 0xFF
     push 0xFF
