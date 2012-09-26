@@ -29,14 +29,6 @@ static void load_ustate(struct runtime_task *task, struct isr_registers *registe
 
 }
 
-static void undefined(struct isr_registers *registers)
-{
-
-    error_register(0, registers->index);
-    error_register(1, registers->extra);
-
-}
-
 unsigned int isr_raise(struct isr_registers *registers)
 {
 
@@ -90,12 +82,7 @@ void isr_setup(unsigned int cs)
     unsigned int i;
 
     for (i = 0; i < ISR_TABLE_SLOTS; i++)
-    {
-
         idt_set_entry(i, isr_undefined, cs, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
-        isr_set_routine(i, undefined);
-
-    }
 
 }
 

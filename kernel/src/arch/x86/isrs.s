@@ -5,9 +5,7 @@
 .global isr_undefined
 isr_undefined:
     cli
-    push 0xFF
-    push 0xFF
-    jmp isr_common
+    iret
 
 .global isr_common
 isr_common:
