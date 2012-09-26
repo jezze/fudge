@@ -131,8 +131,8 @@ struct syscall_write_args
 
 };
 
-unsigned int syscall_set_routine(unsigned int index, unsigned int (*routine)(struct runtime_task *task, void *stack));
-unsigned int syscall_unset_routine(unsigned int index);
+void syscall_set_routine(unsigned int index, unsigned int (*routine)(struct runtime_task *task, void *stack));
+void syscall_unset_routine(unsigned int index);
 unsigned int syscall_raise(unsigned int index, void *stack);
 void syscall_setup();
 

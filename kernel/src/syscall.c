@@ -177,7 +177,7 @@ static unsigned int read(struct runtime_task *task, void *stack)
 
 }
 
-static unsigned int spawn(struct runtime_task *task, void *stack)
+static unsigned int undefined(struct runtime_task *task, void *stack)
 {
 
     return 0;
@@ -218,27 +218,23 @@ static unsigned int write(struct runtime_task *task, void *stack)
 
 }
 
-unsigned int syscall_set_routine(unsigned int index, unsigned int (*routine)(struct runtime_task *task, void *stack))
+void syscall_set_routine(unsigned int index, unsigned int (*routine)(struct runtime_task *task, void *stack))
 {
 
-    if (index > SYSCALL_TABLE_SLOTS)
-        return 0;
+    if (index >= SYSCALL_TABLE_SLOTS)
+        return;
 
     routines[index] = routine;
 
-    return 1;
-
 }
 
-unsigned int syscall_unset_routine(unsigned int index)
+void syscall_unset_routine(unsigned int index)
 {
 
-    if (index > SYSCALL_TABLE_SLOTS)
-        return 0;
+    if (index >= SYSCALL_TABLE_SLOTS)
+        return;
 
     routines[index] = 0;
-
-    return 1;
 
 }
 
@@ -247,7 +243,7 @@ unsigned int syscall_raise(unsigned int index, void *stack)
 
     struct runtime_task *task = runtime_get_task();
 
-    if (!routines[index])
+    if (index >= SYSCALL_TABLE_SLOTS)
         return 0;
 
     return routines[index](task, stack);
@@ -256,6 +252,11 @@ unsigned int syscall_raise(unsigned int index, void *stack)
 
 void syscall_setup()
 {
+
+    unsigned int i;
+
+    for (i = 0; i < SYSCALL_TABLE_SLOTS; i++)
+        syscall_set_routine(i, undefined);
 
     syscall_set_routine(SYSCALL_INDEX_OPEN, open);
     syscall_set_routine(SYSCALL_INDEX_CLOSE, close);
@@ -269,7 +270,6 @@ void syscall_setup()
     syscall_set_routine(SYSCALL_INDEX_UNLOAD, unload);
     syscall_set_routine(SYSCALL_INDEX_ATTACH, attach);
     syscall_set_routine(SYSCALL_INDEX_DETACH, detach);
-    syscall_set_routine(SYSCALL_INDEX_SPAWN, spawn);
 
 }
 
