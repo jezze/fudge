@@ -57,7 +57,7 @@ void event_raise(unsigned int index)
 
 }
 
-void event_init()
+void event_setup()
 {
 
     memory_clear(routines, sizeof (struct event_routine) * EVENT_TABLE_SLOTS);

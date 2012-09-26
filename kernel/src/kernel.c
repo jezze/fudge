@@ -8,7 +8,7 @@
 #include <runtime.h>
 #include <syscall.h>
 
-struct runtime_task task;
+static struct runtime_task task;
 
 void kernel_register_interface(struct kernel_interface *interface)
 {
@@ -20,7 +20,7 @@ void kernel_register_interface(struct kernel_interface *interface)
     interface->setup(interface);
 
     syscall_setup();
-    event_init();
+    event_setup();
     ramdisk = ramdisk_setup(interface->ramdiskc, interface->ramdiskv);
 
     id = ramdisk->walk(ramdisk, ramdisk->rootid, 9, "bin/inits");
