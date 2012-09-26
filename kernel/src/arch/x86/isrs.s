@@ -1,6 +1,6 @@
 .intel_syntax noprefix
 
-.extern isr_handle
+.extern isr_raise
 
 .global isr_undefined
 isr_undefined:
@@ -19,7 +19,7 @@ isr_common:
     mov es, eax
     mov fs, eax
     mov gs, eax
-    call isr_handle
+    call isr_raise
     mov ds, eax
     mov es, eax
     mov fs, eax

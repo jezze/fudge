@@ -37,14 +37,14 @@ static void undefined(struct isr_registers *registers)
 
 }
 
-unsigned int isr_handle(struct isr_registers *registers)
+unsigned int isr_raise(struct isr_registers *registers)
 {
 
     struct runtime_task *task = runtime_get_task();
 
     runtime_init_registers(&task->registers, registers->interrupt.eip, registers->interrupt.esp, registers->general.ebp);
 
-    isr_raise(registers->index, registers);
+    routines[registers->index](registers);
     event_raise(registers->index);
 
     task = runtime_get_task();
@@ -81,16 +81,6 @@ void isr_unset_routine(unsigned int index)
         return;
 
     routines[index] = 0;
-
-}
-
-void isr_raise(unsigned int index, struct isr_registers *registers)
-{
-
-    if (index >= ISR_TABLE_SLOTS)
-        return;
-
-    routines[index](registers);
 
 }
 
