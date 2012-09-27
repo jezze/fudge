@@ -45,7 +45,6 @@ struct runtime_status
 {
 
     unsigned int used;
-    unsigned int event;
     unsigned int idle;
 
 };

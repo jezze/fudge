@@ -79,7 +79,6 @@ static void notify_pre_event(struct runtime_task *task, unsigned int index)
         {
 
             tasks[i].status.idle = 0;
-            tasks[i].status.event = 1;
             tasks[i].registers.ip = tasks[i].events[index].callback;
             tasks[i].registers.sp = RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE;
             tasks[i].registers.sb = RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE;

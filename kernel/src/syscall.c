@@ -79,7 +79,6 @@ static unsigned int idle(struct runtime_task *task, void *stack)
 {
 
     task->status.idle = 1;
-    task->status.event = 0;
 
     return 1;
 
