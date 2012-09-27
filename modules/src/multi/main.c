@@ -46,16 +46,14 @@ static void schedule()
         if (!tasks[i].status.used)
             continue;
 
-        if (!tasks[i].status.idle)
-        {
+        if (tasks[i].status.idle)
+            continue;
 
-            runtime_set_task(&tasks[i]);
+        runtime_set_task(&tasks[i]);
 
-            mmu_load_memory(tasks[i].id);
+        mmu_load_memory(tasks[i].id);
 
-            break;
-
-        }
+        break;
 
     }
 
@@ -75,13 +73,11 @@ static void notify_pre_event(struct runtime_task *task, unsigned int index)
         if (!tasks[i].status.idle)
             continue;
 
-        if (tasks[i].events[index].callback)
-        {
+        if (!tasks[i].events[index].callback)
+            continue;
 
-            tasks[i].status.idle = 0;
-            runtime_init_registers(&tasks[i].registers, tasks[i].events[index].callback, RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE, RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE);
-
-        }
+        tasks[i].status.idle = 0;
+        runtime_init_registers(&tasks[i].registers, tasks[i].events[index].callback, RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE, RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE);
 
     }
 
