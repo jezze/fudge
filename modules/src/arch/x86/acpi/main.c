@@ -1,5 +1,5 @@
 #include <memory.h>
-#include <mmu.h>
+#include <arch/x86/mmu.h>
 #include <arch/x86/acpi/acpi.h>
 
 static struct acpi_rsdp *find_rsdp()

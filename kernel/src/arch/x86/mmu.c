@@ -1,5 +1,6 @@
 #include <memory.h>
-#include <mmu.h>
+#include <error.h>
+#include <runtime.h>
 #include <arch/x86/cpu.h>
 #include <arch/x86/idt.h>
 #include <arch/x86/isr.h>
@@ -8,6 +9,13 @@
 static struct mmu_table kernelTables[8];
 static struct mmu_directory runtimeDirectories[32];
 static struct mmu_table runtimeTables[32];
+
+static void enable()
+{
+
+    cpu_set_cr0(cpu_get_cr0() | 0x80000000);
+
+}
 
 static void set_directory_table(struct mmu_directory *directory, unsigned int frame, struct mmu_table *table, unsigned int tflags)
 {
@@ -20,20 +28,6 @@ static void set_table_page(struct mmu_table *table, unsigned int frame, unsigned
 {
 
     table->pages[frame % MMU_PAGE_SLOTS] = (void *)(page | pflags);
-
-}
-
-static void load_memory(unsigned int index)
-{
-
-    cpu_set_cr3((unsigned int)&runtimeDirectories[index]);
-
-}
-
-static void reload_memory()
-{
-
-    cpu_set_cr3(cpu_get_cr3());
 
 }
 
@@ -52,7 +46,14 @@ static void map_memory(struct mmu_directory *directory, struct mmu_table *table,
 
 }
 
-static void map_kernel_memory(unsigned int index, unsigned int paddress, unsigned int vaddress, unsigned int size)
+void mmu_load_memory(unsigned int index)
+{
+
+    cpu_set_cr3((unsigned int)&runtimeDirectories[index]);
+
+}
+
+void mmu_map_kernel_memory(unsigned int index, unsigned int paddress, unsigned int vaddress, unsigned int size)
 {
 
     unsigned int i;
@@ -62,34 +63,40 @@ static void map_kernel_memory(unsigned int index, unsigned int paddress, unsigne
 
 }
 
-static void map_user_memory(unsigned int index, unsigned int paddress, unsigned int vaddress, unsigned int size)
+void mmu_map_user_memory(unsigned int index, unsigned int paddress, unsigned int vaddress, unsigned int size)
 {
 
     map_memory(&runtimeDirectories[index], &runtimeTables[index], paddress, vaddress, size, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);
 
 }
 
-static void enable()
+void mmu_reload_memory()
 {
 
-    cpu_set_cr0(cpu_get_cr0() | 0x80000000);
+    cpu_set_cr3(cpu_get_cr3());
 
 }
 
 static void handle_interrupt(struct isr_registers *registers)
 {
 
-    mmu_pagefault(cpu_get_cr2(), registers->extra);
+    unsigned int address = cpu_get_cr2();
+
+    error_register(1, address);
+    error_register(2, registers->extra);
 
 }
 
 void mmu_setup_arch(unsigned int cs)
 {
 
-    mmu_set_interface(0, enable, load_memory, reload_memory, map_kernel_memory, map_user_memory);
-
     idt_set_entry(0x0E, mmu_routine, cs, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
     isr_set_routine(0x0E, handle_interrupt);
+
+    mmu_map_kernel_memory(0, 0x00000000, 0x00000000, 0x00400000);
+    mmu_map_user_memory(1, RUNTIME_TASK_PADDRESS_BASE + 1 * RUNTIME_TASK_ADDRESS_SIZE, RUNTIME_TASK_VADDRESS_BASE, RUNTIME_TASK_ADDRESS_SIZE);
+    mmu_load_memory(1);
+    enable();
 
 }
 

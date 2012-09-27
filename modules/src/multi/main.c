@@ -1,9 +1,9 @@
 #include <memory.h>
 #include <vfs.h>
 #include <binary.h>
-#include <mmu.h>
 #include <runtime.h>
 #include <syscall.h>
+#include <arch/x86/mmu.h>
 #include <multi/multi.h>
 
 static struct runtime_task tasks[MULTI_TASK_SLOTS];

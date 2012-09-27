@@ -1,7 +1,7 @@
 #include <memory.h>
 #include <runtime.h>
-#include <mmu.h>
 #include <vfs.h>
+#include <arch/x86/mmu.h>
 #include <base/base.h>
 #include <video/video.h>
 #include <arch/x86/bga/bga.h>
