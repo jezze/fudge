@@ -1,6 +1,5 @@
 #include <memory.h>
 #include <error.h>
-#include <event.h>
 #include <kernel.h>
 #include <vfs.h>
 #include <binary.h>
@@ -20,7 +19,6 @@ void kernel_register_interface(struct kernel_interface *interface)
     interface->setup(interface);
 
     syscall_setup();
-    event_setup();
     ramdisk = ramdisk_setup(interface->ramdiskc, interface->ramdiskv);
 
     id = ramdisk->walk(ramdisk, ramdisk->rootid, 9, "bin/inits");

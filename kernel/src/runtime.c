@@ -17,6 +17,40 @@ void runtime_set_task(struct runtime_task *task)
 
 }
 
+unsigned int runtime_set_task_event(struct runtime_task *task, unsigned int index, unsigned int callback)
+{
+
+    if (index >= RUNTIME_TASK_EVENT_SLOTS)
+        return 0;
+
+    task->events[index].callback = callback;
+
+    return 1;
+
+}
+
+unsigned int runtime_unset_task_event(struct runtime_task *task, unsigned int index)
+{
+
+    if (index >= RUNTIME_TASK_EVENT_SLOTS)
+        return 0;
+
+    task->events[index].callback = 0;
+
+    return 1;
+
+}
+
+static void notify_pre_event(struct runtime_task *task, unsigned int index)
+{
+
+}
+
+static void notify_post_event(struct runtime_task *task, unsigned int index)
+{
+
+}
+
 struct runtime_descriptor *runtime_get_task_descriptor(struct runtime_task *task, unsigned int index)
 {
 
@@ -107,6 +141,8 @@ void runtime_init_task(struct runtime_task *task, unsigned int id, unsigned int 
     runtime_init_registers(&task->registers, ip, RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE, RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE);
 
     task->id = id;
+    task->notify_pre_event = notify_pre_event;
+    task->notify_post_event = notify_post_event;
 
 }
 

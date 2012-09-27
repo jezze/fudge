@@ -1,5 +1,4 @@
 #include <memory.h>
-#include <event.h>
 #include <vfs.h>
 #include <binary.h>
 #include <runtime.h>
@@ -15,7 +14,7 @@ static unsigned int attach(struct runtime_task *task, void *stack)
     if (!args->callback)
         return 0;
 
-    return event_set_routine(args->index, task, args->callback);
+    return runtime_set_task_event(task, args->index, args->callback);
 
 }
 
@@ -42,7 +41,7 @@ static unsigned int detach(struct runtime_task *task, void *stack)
 
     struct syscall_detach_args *args = stack;
 
-    return event_unset_routine(args->index, task);
+    return runtime_unset_task_event(task, args->index);
 
 }
 

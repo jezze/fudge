@@ -3,7 +3,6 @@ include kernel/src/arch/rules.$(ARCH).mk
 KERNEL+=kernel/fudge
 KERNEL_OBJECTS+=kernel/src/binary.o
 KERNEL_OBJECTS+=kernel/src/error.o
-KERNEL_OBJECTS+=kernel/src/event.o
 KERNEL_OBJECTS+=kernel/src/kernel.o
 KERNEL_OBJECTS+=kernel/src/mmu.o
 KERNEL_OBJECTS+=kernel/src/ramdisk.o

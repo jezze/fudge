@@ -1,6 +1,5 @@
 #include <memory.h>
 #include <error.h>
-#include <event.h>
 #include <runtime.h>
 #include <arch/x86/cpu.h>
 #include <arch/x86/gdt.h>
@@ -36,8 +35,11 @@ unsigned int isr_raise(struct isr_registers *registers)
 
     runtime_init_registers(&task->registers, registers->interrupt.eip, registers->interrupt.esp, registers->general.ebp);
 
+    task->notify_pre_event(task, registers->index);
+
     routines[registers->index](registers);
-    event_raise(registers->index);
+
+    task->notify_post_event(task, registers->index);
 
     task = runtime_get_task();
 

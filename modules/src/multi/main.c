@@ -8,7 +8,7 @@
 
 static struct runtime_task tasks[MULTI_TASK_SLOTS];
 
-struct runtime_task *multi_get_task(unsigned int index)
+static struct runtime_task *get_task(unsigned int index)
 {
 
     if (!index || index >= MULTI_TASK_SLOTS)
@@ -18,7 +18,7 @@ struct runtime_task *multi_get_task(unsigned int index)
 
 }
 
-unsigned int multi_get_task_slot(unsigned int parent)
+static unsigned int get_task_slot(unsigned int parent)
 {
 
     unsigned int i;
@@ -35,19 +35,7 @@ unsigned int multi_get_task_slot(unsigned int parent)
 
 }
 
-void multi_clone_task(struct runtime_task *task, struct runtime_task *from, unsigned int id, unsigned int ip)
-{
-
-    memory_copy(task, from, sizeof (struct runtime_task));
-
-    task->id = id;
-    task->registers.ip = ip;
-    task->registers.sp = RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE;
-    task->registers.sb = RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE;
-
-}
-
-void multi_schedule()
+static void schedule()
 {
 
     unsigned int i;
@@ -55,7 +43,10 @@ void multi_schedule()
     for (i = MULTI_TASK_SLOTS - 1; i > 0; i--)
     {
 
-        if (tasks[i].status.used && !tasks[i].status.idle)
+        if (!tasks[i].status.used)
+            continue;
+
+        if (!tasks[i].status.idle)
         {
 
             runtime_set_task(&tasks[i]);
@@ -70,26 +61,53 @@ void multi_schedule()
 
 }
 
-static unsigned int exit(struct runtime_task *task, void *stack)
+static void notify_pre_event(struct runtime_task *task, unsigned int index)
 {
 
-    task->status.used = 0;
+    unsigned int i;
 
-    multi_schedule();
+    for (i = 1; i < MULTI_TASK_SLOTS - 1; i++)
+    {
 
-    return 1;
+        if (!tasks[i].status.used)
+            continue;
+
+        if (!tasks[i].status.idle)
+            continue;
+
+        if (tasks[i].events[index].callback)
+        {
+
+            tasks[i].status.idle = 0;
+            tasks[i].status.event = 1;
+            tasks[i].registers.ip = tasks[i].events[index].callback;
+            tasks[i].registers.sp = RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE;
+            tasks[i].registers.sb = RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE;
+
+        }
+
+    }
 
 }
 
-static unsigned int idle(struct runtime_task *task, void *stack)
+static void notify_post_event(struct runtime_task *task, unsigned int index)
 {
 
-    task->status.idle = 1;
-    task->status.event = 0;
+    schedule();
 
-    multi_schedule();
+}
 
-    return 1;
+void multi_clone_task(struct runtime_task *task, struct runtime_task *from, unsigned int id, unsigned int ip)
+{
+
+    memory_copy(task, from, sizeof (struct runtime_task));
+
+    task->id = id;
+    task->registers.ip = ip;
+    task->registers.sp = RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE;
+    task->registers.sb = RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE;
+    task->notify_pre_event = notify_pre_event;
+    task->notify_post_event = notify_post_event;
 
 }
 
@@ -105,7 +123,7 @@ static unsigned int spawn(struct runtime_task *task, void *stack)
     if (!descriptor || !descriptor->interface->read)
         return 0;
 
-    id = multi_get_task_slot(task->id);
+    id = get_task_slot(task->id);
 
     if (!id)
         return 0;
@@ -118,10 +136,10 @@ static unsigned int spawn(struct runtime_task *task, void *stack)
     if (!entry)
         return 0;
 
-    ntask = multi_get_task(id);
+    ntask = get_task(id);
     multi_clone_task(ntask, task, id, entry);
 
-    multi_schedule();
+    schedule();
 
     return id;
 
@@ -132,8 +150,6 @@ void init()
 
     memory_clear(tasks, sizeof (struct runtime_task) * MULTI_TASK_SLOTS);
 
-    syscall_set_routine(SYSCALL_INDEX_EXIT, exit);
-    syscall_set_routine(SYSCALL_INDEX_IDLE, idle);
     syscall_set_routine(SYSCALL_INDEX_SPAWN, spawn);
 
 }
