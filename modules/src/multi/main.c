@@ -79,9 +79,7 @@ static void notify_pre_event(struct runtime_task *task, unsigned int index)
         {
 
             tasks[i].status.idle = 0;
-            tasks[i].registers.ip = tasks[i].events[index].callback;
-            tasks[i].registers.sp = RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE;
-            tasks[i].registers.sb = RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE;
+            runtime_init_registers(&tasks[i].registers, tasks[i].events[index].callback, RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE, RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE);
 
         }
 
@@ -96,15 +94,14 @@ static void notify_post_event(struct runtime_task *task, unsigned int index)
 
 }
 
-void multi_clone_task(struct runtime_task *task, struct runtime_task *from, unsigned int id, unsigned int ip)
+void clone_task(struct runtime_task *task, struct runtime_task *from, unsigned int id, unsigned int ip)
 {
 
     memory_copy(task, from, sizeof (struct runtime_task));
 
+    runtime_init_registers(&task->registers, ip, RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE, RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE);
+
     task->id = id;
-    task->registers.ip = ip;
-    task->registers.sp = RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE;
-    task->registers.sb = RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE;
     task->notify_pre_event = notify_pre_event;
     task->notify_post_event = notify_post_event;
 
@@ -136,7 +133,7 @@ static unsigned int spawn(struct runtime_task *task, void *stack)
         return 0;
 
     ntask = get_task(id);
-    multi_clone_task(ntask, task, id, entry);
+    clone_task(ntask, task, id, entry);
 
     schedule();
 
