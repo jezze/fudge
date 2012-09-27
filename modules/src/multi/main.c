@@ -60,7 +60,7 @@ void multi_schedule()
 
             runtime_set_task(&tasks[i]);
 
-            mmu_load_user_memory(tasks[i].id);
+            mmu_load_memory(tasks[i].id);
 
             break;
 
@@ -111,7 +111,7 @@ static unsigned int spawn(struct runtime_task *task, void *stack)
         return 0;
 
     mmu_map_user_memory(id, RUNTIME_TASK_PADDRESS_BASE + id * RUNTIME_TASK_ADDRESS_SIZE, RUNTIME_TASK_VADDRESS_BASE, RUNTIME_TASK_ADDRESS_SIZE);
-    mmu_load_user_memory(id);
+    mmu_load_memory(id);
 
     entry = binary_copy_program(descriptor->interface, descriptor->id);
 

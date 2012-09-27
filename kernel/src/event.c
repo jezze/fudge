@@ -53,7 +53,7 @@ void event_raise(unsigned int index)
     routines[index].task->registers.sb = RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE;
 
     runtime_set_task(routines[index].task);
-    mmu_load_user_memory(routines[index].task->id);
+    mmu_load_memory(routines[index].task->id);
 
 }
 

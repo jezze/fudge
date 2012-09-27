@@ -23,17 +23,10 @@ static void set_table_page(struct mmu_table *table, unsigned int frame, unsigned
 
 }
 
-static void load_memory(struct mmu_directory *directory)
+static void load_memory(unsigned int index)
 {
 
-    cpu_set_cr3((unsigned int)directory);
-
-}
-
-static void load_user_memory(unsigned int index)
-{
-
-    load_memory(&runtimeDirectories[index]);
+    cpu_set_cr3((unsigned int)&runtimeDirectories[index]);
 
 }
 
@@ -76,20 +69,6 @@ static void map_user_memory(unsigned int index, unsigned int paddress, unsigned 
 
 }
 
-static void unmap_memory(struct mmu_directory *directory)
-{
-
-    memory_clear(directory, sizeof (struct mmu_directory));
-
-}
-
-static void unmap_user_memory(unsigned int index)
-{
-
-    unmap_memory(&runtimeDirectories[index]);
-
-}
-
 static void enable()
 {
 
@@ -107,7 +86,7 @@ static void handle_interrupt(struct isr_registers *registers)
 void mmu_setup_arch(unsigned int cs)
 {
 
-    mmu_set_interface(0, enable, load_user_memory, reload_memory, map_kernel_memory, map_user_memory, unmap_user_memory);
+    mmu_set_interface(0, enable, load_memory, reload_memory, map_kernel_memory, map_user_memory);
 
     idt_set_entry(0x0E, mmu_routine, cs, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
     isr_set_routine(0x0E, handle_interrupt);
