@@ -12,18 +12,18 @@ static unsigned int read_root(struct net_filesystem *filesystem, unsigned int of
     unsigned int c = 1024;
     unsigned int i;
 
-    o += vfs_write(temp, c - o, "../\n", 4, o);
+    o += memory_write(temp, c - o, "../\n", 4, o);
 
     for (i = 0; i < filesystem->interfacesCount; i++)
     {
 
         string_write_num(temp + o, i, 10);
         o += string_length(temp + o);
-        o += vfs_write(temp, c - o, "/\n", 2, o);
+        o += memory_write(temp, c - o, "/\n", 2, o);
 
     }
 
-    return vfs_read(buffer, count, temp, o, offset);
+    return memory_read(buffer, count, temp, o, offset);
 
 }
 
@@ -35,7 +35,7 @@ static unsigned int read_interfaces(struct net_filesystem *filesystem, unsigned 
     unsigned int c = 1024;
     unsigned int i;
 
-    o += vfs_write(temp, c - o, "../\ndata\nmac\n", 13, o);
+    o += memory_write(temp, c - o, "../\ndata\nmac\n", 13, o);
 
     for (i = 0; i < 0x10000; i++)
     {
@@ -45,12 +45,12 @@ static unsigned int read_interfaces(struct net_filesystem *filesystem, unsigned 
         if (!protocol)
             continue;
 
-        o += vfs_write(temp, c - o, protocol->name, string_length(protocol->name), o);
-        o += vfs_write(temp, c - o, "\n", 1, o);
+        o += memory_write(temp, c - o, protocol->name, string_length(protocol->name), o);
+        o += memory_write(temp, c - o, "\n", 1, o);
 
     }
 
-    return vfs_read(buffer, count, temp, o, offset);
+    return memory_read(buffer, count, temp, o, offset);
 
 }
 
@@ -76,7 +76,7 @@ static unsigned int read(struct vfs_interface *self, unsigned int id, unsigned i
         }
 
         if (type == 1)
-            return vfs_read(buffer, count, interface->mac, 6, offset);
+            return memory_read(buffer, count, interface->mac, 6, offset);
 
         if (type == 0)
             return 0;
@@ -115,7 +115,7 @@ static unsigned int write(struct vfs_interface *self, unsigned int id, unsigned 
         }
 
         if (type == 1)
-            return vfs_write(interface->mac, 6, buffer, count, offset);
+            return memory_write(interface->mac, 6, buffer, count, offset);
 
         if (type == 0)
             return 0;

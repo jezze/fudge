@@ -8,7 +8,7 @@ static void handle_read(struct net_protocol *self, unsigned int count, void *buf
 
     struct arp_protocol *protocol = (struct arp_protocol *)self;
 
-    protocol->count = vfs_write(protocol->buffer, 8192, buffer, count, 0);
+    protocol->count = memory_write(protocol->buffer, 8192, buffer, count, 0);
 
 }
 
@@ -17,7 +17,7 @@ unsigned int read(struct net_protocol *self, struct net_interface *interface, un
 
     struct arp_protocol *protocol = (struct arp_protocol *)self;
 
-    return vfs_read(buffer, count, protocol->buffer, protocol->count, offset);
+    return memory_read(buffer, count, protocol->buffer, protocol->count, offset);
 
 }
 

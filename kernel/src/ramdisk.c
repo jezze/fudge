@@ -90,7 +90,7 @@ static unsigned int read_directory(struct ramdisk_filesystem *filesystem, struct
     unsigned int i;
     unsigned int length = string_length(header->name);
 
-    o += vfs_write(temp, c - o, "../\n", 4, o);
+    o += memory_write(temp, c - o, "../\n", 4, o);
 
     for (i = 0; i < filesystem->image->count; i++)
     {
@@ -103,12 +103,12 @@ static unsigned int read_directory(struct ramdisk_filesystem *filesystem, struct
         if (filesystem->image->headers[p] != header)
             continue;
 
-        o += vfs_write(temp, c - o, filesystem->image->headers[i]->name + length, string_length(filesystem->image->headers[i]->name) - length, o);
-        o += vfs_write(temp, c - o, "\n", 2, o);
+        o += memory_write(temp, c - o, filesystem->image->headers[i]->name + length, string_length(filesystem->image->headers[i]->name) - length, o);
+        o += memory_write(temp, c - o, "\n", 2, o);
 
     }
 
-    return vfs_read(buffer, count, temp, o, offset);
+    return memory_read(buffer, count, temp, o, offset);
 
 }
 
@@ -118,7 +118,7 @@ static unsigned int read_file(struct tar_header *header, unsigned int offset, un
     unsigned int size = string_read_num(header->size, 8);
     unsigned int data = (unsigned int)header + TAR_BLOCK_SIZE;
 
-    return vfs_read(buffer, count, (void *)data, size, offset);
+    return memory_read(buffer, count, (void *)data, size, offset);
 
 }
 
@@ -142,7 +142,7 @@ static unsigned int write_file(struct tar_header *header, unsigned int offset, u
     unsigned int size = string_read_num(header->size, 8);
     unsigned int data = (unsigned int)header + TAR_BLOCK_SIZE;
 
-    return vfs_write((void *)data, size, buffer, count, offset);
+    return memory_write((void *)data, size, buffer, count, offset);
 
 }
 

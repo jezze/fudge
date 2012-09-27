@@ -12,18 +12,18 @@ static unsigned int read_root(struct video_filesystem *filesystem, unsigned int 
     unsigned int c = 1024;
     unsigned int i;
 
-    o += vfs_write(temp, c - o, "../\n", 4, o);
+    o += memory_write(temp, c - o, "../\n", 4, o);
 
     for (i = 0; i < filesystem->interfacesCount; i++)
     {
 
         string_write_num(temp + o, i, 10);
         o += string_length(temp + o);
-        o += vfs_write(temp, c - o, "/\n", 2, o);
+        o += memory_write(temp, c - o, "/\n", 2, o);
 
     }
 
-    return vfs_read(buffer, count, temp, o, offset);
+    return memory_read(buffer, count, temp, o, offset);
 
 }
 
@@ -40,13 +40,13 @@ static unsigned int read(struct vfs_interface *self, unsigned int id, unsigned i
         struct video_interface *interface = filesystem->interfaces[index];
 
         if (type == 3)
-            return vfs_read(buffer, count, &interface->yres, 4, offset);
+            return memory_read(buffer, count, &interface->yres, 4, offset);
 
         if (type == 2)
-            return vfs_read(buffer, count, &interface->xres, 4, offset);
+            return memory_read(buffer, count, &interface->xres, 4, offset);
 
         if (type == 1)
-            return vfs_read(buffer, count, &interface->bpp, 4, offset);
+            return memory_read(buffer, count, &interface->bpp, 4, offset);
 
         if (type == 0)
             return interface->read_data(interface, offset, count, buffer);
@@ -54,7 +54,7 @@ static unsigned int read(struct vfs_interface *self, unsigned int id, unsigned i
     }
 
     if (id >= 0x00000100)
-        return vfs_read(buffer, count, "../\nbpp\ndata\nenable\nxres\nyres\n", 30, offset);
+        return memory_read(buffer, count, "../\nbpp\ndata\nenable\nxres\nyres\n", 30, offset);
 
     if (id == 0x00000001)
         return read_root(filesystem, offset, count, buffer);
@@ -85,13 +85,13 @@ static unsigned int write(struct vfs_interface *self, unsigned int id, unsigned 
         }
 
         if (type == 3)
-            return vfs_write(&interface->yres, 4, buffer, count, offset);
+            return memory_write(&interface->yres, 4, buffer, count, offset);
 
         if (type == 2)
-            return vfs_write(&interface->xres, 4, buffer, count, offset);
+            return memory_write(&interface->xres, 4, buffer, count, offset);
 
         if (type == 1)
-            return vfs_write(&interface->bpp, 4, buffer, count, offset);
+            return memory_write(&interface->bpp, 4, buffer, count, offset);
 
         if (type == 0)
             return interface->write_data(interface, offset, count, buffer);

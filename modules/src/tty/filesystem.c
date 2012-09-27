@@ -26,7 +26,7 @@ static unsigned int read_cwd(struct vfs_interface *self, unsigned int id, unsign
 
     struct tty_filesystem *filesystem = (struct tty_filesystem *)self;
 
-    return vfs_read(buffer, count, filesystem->driver->cwdname, filesystem->driver->cwdcount, offset);
+    return memory_read(buffer, count, filesystem->driver->cwdname, filesystem->driver->cwdcount, offset);
 
 }
 
@@ -37,14 +37,14 @@ static unsigned int write_cwd(struct vfs_interface *self, unsigned int id, unsig
 
     filesystem->driver->cwdcount = count;
 
-    return vfs_write(filesystem->driver->cwdname, TTY_CWD_SIZE, buffer, count, offset);
+    return memory_write(filesystem->driver->cwdname, TTY_CWD_SIZE, buffer, count, offset);
 
 }
 
 static unsigned int read_root(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    return vfs_read(buffer, count, "stdin\nstdout\ncwd\n", 17, offset);
+    return memory_read(buffer, count, "stdin\nstdout\ncwd\n", 17, offset);
 
 }
 
