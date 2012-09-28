@@ -3,13 +3,11 @@
 
 static struct base_module *modules[BASE_MODULE_SLOTS];
 
-static void attach(struct base_driver *driver)
+static unsigned int attach(struct base_driver *driver)
 {
 
     unsigned int i;
-
-    if (!driver->check)
-        return;
+    unsigned int found = 0;
 
     for (i = 0; i < BASE_MODULE_SLOTS; i++)
     {
@@ -30,7 +28,11 @@ static void attach(struct base_driver *driver)
         if (driver->attach)
             driver->attach(device);
 
+        found = 1;
+
     }
+
+    return found;
 
 }
 
@@ -74,10 +76,25 @@ void base_register_driver(struct base_driver *driver)
 {
 
     register_module(&driver->module);
-    attach(driver);
 
-    if (driver->start)
-        driver->start(driver);
+    if (driver->check)
+    {
+
+        if (!attach(driver))
+            return;
+
+        if (driver->start)
+            driver->start(driver);
+
+    }
+
+    else
+    {
+
+        if (driver->start)
+            driver->start(driver);
+
+    }
 
 }
 
