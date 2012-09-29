@@ -53,7 +53,6 @@ struct runtime_status
 struct runtime_task
 {
 
-    unsigned int id;
     struct runtime_status status;
     struct runtime_registers registers;
     struct runtime_descriptor descriptors[RUNTIME_TASK_DESCRIPTOR_SLOTS];
@@ -74,7 +73,7 @@ struct runtime_mount *runtime_find_task_mount(struct runtime_task *self, char *p
 void runtime_init_descriptor(struct runtime_descriptor *descriptor, unsigned int id, struct vfs_interface *interface);
 void runtime_init_mount(struct runtime_mount *mount, struct vfs_interface *interface, unsigned int count, char *path);
 void runtime_init_registers(struct runtime_registers *registers, unsigned int ip, unsigned int sp, unsigned int sb, unsigned int status);
-void runtime_init_task(struct runtime_task *task, unsigned int id, unsigned int ip);
+void runtime_init_task(struct runtime_task *task, unsigned int ip);
 void runtime_reset_task(struct runtime_task *task, unsigned int ip);
 
 #endif

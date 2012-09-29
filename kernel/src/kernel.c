@@ -24,7 +24,7 @@ void kernel_register_interface(struct kernel_interface *interface)
     id = ramdisk->walk(ramdisk, ramdisk->rootid, 9, "bin/inits");
     entry = binary_copy_program(ramdisk, id);
 
-    runtime_init_task(&task, 1, entry);
+    runtime_init_task(&task, entry);
     task.status.used = 1;
 
     runtime_init_mount(&task.mounts[1], ramdisk, 9, "/ramdisk/");

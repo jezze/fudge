@@ -62,7 +62,7 @@ static unsigned int execute(struct runtime_task *task, void *stack)
 
     runtime_reset_task(task, entry);
 
-    return task->id;
+    return 1;
 
 }
 

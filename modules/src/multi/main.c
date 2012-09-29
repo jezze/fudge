@@ -18,12 +18,12 @@ static struct runtime_task *get_task(unsigned int index)
 
 }
 
-static unsigned int get_task_slot(unsigned int parent)
+static unsigned int get_task_slot()
 {
 
     unsigned int i;
 
-    for (i = parent; i < MULTI_TASK_SLOTS; i++)
+    for (i = 1; i < MULTI_TASK_SLOTS; i++)
     {
 
         if (!tasks[i].status.used)
@@ -51,7 +51,7 @@ static void schedule()
 
         runtime_set_task(&tasks[i]);
 
-        mmu_load_memory(tasks[i].id);
+        mmu_load_memory(i);
 
         break;
 
@@ -90,14 +90,13 @@ static void notify_post_event(struct runtime_task *task, unsigned int index)
 
 }
 
-void clone_task(struct runtime_task *task, struct runtime_task *from, unsigned int id, unsigned int ip)
+void clone_task(struct runtime_task *task, struct runtime_task *from, unsigned int ip, unsigned int status)
 {
 
     memory_copy(task, from, sizeof (struct runtime_task));
 
-    runtime_init_registers(&task->registers, ip, RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE, RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE, id);
+    runtime_init_registers(&task->registers, ip, RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE, RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE, status);
 
-    task->id = id;
     task->notify_pre_event = notify_pre_event;
     task->notify_post_event = notify_post_event;
 
@@ -115,7 +114,7 @@ static unsigned int spawn(struct runtime_task *task, void *stack)
     if (!descriptor || !descriptor->interface->read)
         return 0;
 
-    id = get_task_slot(task->id);
+    id = get_task_slot();
 
     if (!id)
         return 0;
@@ -129,7 +128,7 @@ static unsigned int spawn(struct runtime_task *task, void *stack)
         return 0;
 
     ntask = get_task(id);
-    clone_task(ntask, task, id, entry);
+    clone_task(ntask, task, entry, id);
 
     schedule();
 
