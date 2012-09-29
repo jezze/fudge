@@ -90,33 +90,19 @@ static void notify_post_event(struct runtime_task *task, unsigned int index)
 
 }
 
-void clone_task(struct runtime_task *task, struct runtime_task *from, unsigned int ip, unsigned int status)
-{
-
-    memory_copy(task, from, sizeof (struct runtime_task));
-
-    runtime_init_registers(&task->registers, ip, RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE, RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE, status);
-
-    task->notify_pre_event = notify_pre_event;
-    task->notify_post_event = notify_post_event;
-
-}
-
 static unsigned int spawn(struct runtime_task *task, void *stack)
 {
 
     struct multi_spawn_args *args = stack;
     struct runtime_descriptor *descriptor = runtime_get_task_descriptor(task, args->index);
-    struct runtime_task *ntask;
-    unsigned int index;
+    unsigned int index = get_task_slot();
+    struct runtime_task *ntask = get_task(index);
     unsigned int entry;
 
     if (!descriptor || !descriptor->interface->read)
         return 0;
 
-    index = get_task_slot();
-
-    if (!index)
+    if (!ntask)
         return 0;
 
     mmu_map_user_memory(index, RUNTIME_TASK_PADDRESS_BASE + index * RUNTIME_TASK_ADDRESS_SIZE, RUNTIME_TASK_VADDRESS_BASE, RUNTIME_TASK_ADDRESS_SIZE);
@@ -127,8 +113,12 @@ static unsigned int spawn(struct runtime_task *task, void *stack)
     if (!entry)
         return 0;
 
-    ntask = get_task(index);
-    clone_task(ntask, task, entry, index);
+    memory_copy(ntask, task, sizeof (struct runtime_task));
+
+    runtime_init_registers(&ntask->registers, entry, RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE, RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE, index);
+
+    ntask->notify_pre_event = notify_pre_event;
+    ntask->notify_post_event = notify_post_event;
 
     schedule();
 
