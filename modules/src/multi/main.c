@@ -77,7 +77,7 @@ static void notify_pre_event(struct runtime_task *task, unsigned int index)
             continue;
 
         tasks[i].status.idle = 0;
-        runtime_init_registers(&tasks[i].registers, tasks[i].events[index].callback, RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE, RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE);
+        runtime_init_registers(&tasks[i].registers, tasks[i].events[index].callback, RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE, RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE, tasks[i].registers.status);
 
     }
 
@@ -95,7 +95,7 @@ void clone_task(struct runtime_task *task, struct runtime_task *from, unsigned i
 
     memory_copy(task, from, sizeof (struct runtime_task));
 
-    runtime_init_registers(&task->registers, ip, RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE, RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE);
+    runtime_init_registers(&task->registers, ip, RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE, RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE, id);
 
     task->id = id;
     task->notify_pre_event = notify_pre_event;
@@ -106,7 +106,7 @@ void clone_task(struct runtime_task *task, struct runtime_task *from, unsigned i
 static unsigned int spawn(struct runtime_task *task, void *stack)
 {
 
-    struct syscall_spawn_args *args = stack;
+    struct multi_spawn_args *args = stack;
     struct runtime_descriptor *descriptor = runtime_get_task_descriptor(task, args->index);
     struct runtime_task *ntask;
     unsigned int id;

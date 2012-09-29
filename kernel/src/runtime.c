@@ -122,7 +122,7 @@ void runtime_init_mount(struct runtime_mount *mount, struct vfs_interface *inter
 
 }
 
-void runtime_init_registers(struct runtime_registers *registers, unsigned int ip, unsigned int sp, unsigned int sb)
+void runtime_init_registers(struct runtime_registers *registers, unsigned int ip, unsigned int sp, unsigned int sb, unsigned int status)
 {
 
     memory_clear(registers, sizeof (struct runtime_registers));
@@ -130,6 +130,7 @@ void runtime_init_registers(struct runtime_registers *registers, unsigned int ip
     registers->ip = ip;
     registers->sp = sp;
     registers->sb = sb;
+    registers->status = status;
 
 }
 
@@ -138,7 +139,7 @@ void runtime_init_task(struct runtime_task *task, unsigned int id, unsigned int 
 
     memory_clear(task, sizeof (struct runtime_task));
 
-    runtime_init_registers(&task->registers, ip, RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE, RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE);
+    runtime_init_registers(&task->registers, ip, RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE, RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE, 0);
 
     task->id = id;
     task->notify_pre_event = notify_pre_event;
@@ -149,7 +150,7 @@ void runtime_init_task(struct runtime_task *task, unsigned int id, unsigned int 
 void runtime_reset_task(struct runtime_task *task, unsigned int ip)
 {
 
-    runtime_init_registers(&task->registers, ip, RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE, RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE);
+    runtime_init_registers(&task->registers, ip, RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE, RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE, 0);
 
 }
 

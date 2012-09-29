@@ -2,7 +2,6 @@
 #define KERNEL_SYSCALL_H
 
 #define SYSCALL_TABLE_SLOTS     16
-#define SYSCALL_INDEX_NULL      0x00
 #define SYSCALL_INDEX_OPEN      0x01
 #define SYSCALL_INDEX_CLOSE     0x02
 #define SYSCALL_INDEX_READ      0x03
@@ -101,14 +100,6 @@ struct syscall_read_args
     unsigned int offset;
     unsigned int count;
     void *buffer;
-
-};
-
-struct syscall_spawn_args
-{
-
-    void *caller;
-    unsigned int index;
 
 };
 

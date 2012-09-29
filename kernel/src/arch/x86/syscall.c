@@ -10,9 +10,7 @@ static void handle_interrupt(struct isr_registers *registers)
     struct runtime_task *task = runtime_get_task();
 
     task->notify_pre_event(task, registers->index + registers->extra);
-
-    registers->general.eax = syscall_raise(registers->extra, task, (void *)registers->interrupt.esp);
-
+    task->registers.status = syscall_raise(registers->extra, task, (void *)registers->interrupt.esp);
     task->notify_post_event(task, registers->index + registers->extra);
 
 }
