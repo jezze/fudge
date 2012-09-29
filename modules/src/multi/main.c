@@ -108,31 +108,31 @@ static unsigned int spawn(struct runtime_task *task, void *stack)
     struct multi_spawn_args *args = stack;
     struct runtime_descriptor *descriptor = runtime_get_task_descriptor(task, args->index);
     struct runtime_task *ntask;
-    unsigned int id;
+    unsigned int index;
     unsigned int entry;
 
     if (!descriptor || !descriptor->interface->read)
         return 0;
 
-    id = get_task_slot();
+    index = get_task_slot();
 
-    if (!id)
+    if (!index)
         return 0;
 
-    mmu_map_user_memory(id, RUNTIME_TASK_PADDRESS_BASE + id * RUNTIME_TASK_ADDRESS_SIZE, RUNTIME_TASK_VADDRESS_BASE, RUNTIME_TASK_ADDRESS_SIZE);
-    mmu_load_memory(id);
+    mmu_map_user_memory(index, RUNTIME_TASK_PADDRESS_BASE + index * RUNTIME_TASK_ADDRESS_SIZE, RUNTIME_TASK_VADDRESS_BASE, RUNTIME_TASK_ADDRESS_SIZE);
+    mmu_load_memory(index);
 
     entry = binary_copy_program(descriptor->interface, descriptor->id);
 
     if (!entry)
         return 0;
 
-    ntask = get_task(id);
-    clone_task(ntask, task, entry, id);
+    ntask = get_task(index);
+    clone_task(ntask, task, entry, index);
 
     schedule();
 
-    return id;
+    return index;
 
 }
 
