@@ -1,7 +1,7 @@
 #ifndef KERNEL_SYSCALL_H
 #define KERNEL_SYSCALL_H
 
-#define SYSCALL_TABLE_SLOTS     16
+#define SYSCALL_TABLE_SLOTS     32
 #define SYSCALL_INDEX_OPEN      0x01
 #define SYSCALL_INDEX_CLOSE     0x02
 #define SYSCALL_INDEX_READ      0x03
