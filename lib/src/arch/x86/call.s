@@ -15,9 +15,9 @@
 .set CALL_INDEX_ATTACH,  0x0C
 .set CALL_INDEX_DETACH,  0x0D
 
-.global call_open
-call_open:
-    mov eax, CALL_INDEX_OPEN
+.global call_attach
+call_attach:
+    mov eax, CALL_INDEX_ATTACH
     int CALL_INTERRUPT
     ret
 
@@ -27,27 +27,15 @@ call_close:
     int CALL_INTERRUPT
     ret
 
-.global call_read
-call_read:
-    mov eax, CALL_INDEX_READ
-    int CALL_INTERRUPT
-    ret
-
-.global call_write
-call_write:
-    mov eax, CALL_INDEX_WRITE
+.global call_detach
+call_detach:
+    mov eax, CALL_INDEX_DETACH
     int CALL_INTERRUPT
     ret
 
 .global call_execute
 call_execute:
     mov eax, CALL_INDEX_EXECUTE
-    int CALL_INTERRUPT
-    ret
-
-.global call_spawn
-call_spawn:
-    mov eax, CALL_INDEX_SPAWN
     int CALL_INTERRUPT
     ret
 
@@ -69,27 +57,39 @@ call_load:
     int CALL_INTERRUPT
     ret
 
+.global call_mount
+call_mount:
+    mov eax, CALL_INDEX_MOUNT
+    int CALL_INTERRUPT
+    ret
+
+.global call_open
+call_open:
+    mov eax, CALL_INDEX_OPEN
+    int CALL_INTERRUPT
+    ret
+
+.global call_read
+call_read:
+    mov eax, CALL_INDEX_READ
+    int CALL_INTERRUPT
+    ret
+
+.global call_spawn
+call_spawn:
+    mov eax, CALL_INDEX_SPAWN
+    int CALL_INTERRUPT
+    ret
+
 .global call_unload
 call_unload:
     mov eax, CALL_INDEX_UNLOAD
     int CALL_INTERRUPT
     ret
 
-.global call_attach
-call_attach:
-    mov eax, CALL_INDEX_ATTACH
-    int CALL_INTERRUPT
-    ret
-
-.global call_detach
-call_detach:
-    mov eax, CALL_INDEX_DETACH
-    int CALL_INTERRUPT
-    ret
-
-.global call_mount
-call_mount:
-    mov eax, CALL_INDEX_MOUNT
+.global call_write
+call_write:
+    mov eax, CALL_INDEX_WRITE
     int CALL_INTERRUPT
     ret
 
