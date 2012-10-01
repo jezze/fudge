@@ -2,92 +2,46 @@
 
 ## ABOUT
 
-Fudge is a powerful yet elegant operating system written by Jens Nyberg. It
-started as a hobby somewhere around early 2009 but has since grown to become
-quite useful. Even if it takes a lot of inspiration from other operating
-systems Fudge is fundamentally different in many aspects and tries to
-incorporate new and unusual ideas.
+Fudge is a small and elegant operating system. It started as a project to see if
+it would be possible to create an operating system that came as close as
+possible to be fully deterministic. Today, operating systems often show
+unpredictable behaviour because they implement technical solutions that are not
+determinstic in nature such as task scheduling, caching and dynamic memory
+allocation. Fudge tries to find alternative solutions to these problems and has
+so far been found to work quite well.
 
-Keywords for this project is simplicity, clarity and speed.
+### Determinism
 
-* Deterministic behaviour
-One of the main goals of Fudge is to be as deterministic as possible. This is
-not the same as a realtime operating system that tries to finish workloads
-within given timelimits but deterministic in the sense that running one task
-multiple times will always take the same amount of time. Fudge tries to
-accomplish this by replacing various parts normally found in most operating
-systems that isn't deterministic in nature such as memory allocation and
-multitasking. Not only does this make the system more deterministic but also
-less complex because of the decreased amount of states the operating system can
-exist in which makes it both easier to analyze and less complex to write.
+Determinism in the term of computers could mean many different things. It could
+mean that a program, given input, should always return a conclusive result.
+However unlikely that sounds it is actually quite common because of unwanted
+side-effects such as time delays or incorrectly handled input. Determinism could
+also mean that every time you execute a program it will always take the same
+amount of time to complete given the same input and the same environment in
+which it operates.
 
-* No multitasking
-There is no scheduling or timeslices to consider. Fudge is designed to work on
-one task at a time. This does not mean Fudge is limited to run only one program
-at a time. To have multiple programs working in unison Fudge uses an event
-system that let programs delay their own execution until a specific event
-occurs, like when data is ready to be read from a disk, and will register a
-callback that takes precedence over the program currently running. Events are
-triggered both by system calls and interrupt requests. Using this method it is
-even possible to construct a multitasking scenario by simply listening on the
-internal clock.
-
-* Terminate and stay resident
-In Fudge a user space program is not encouraged to run busy waits. Instead they
-should issue a certain system call as soon as it is not working on anything or
-waiting for some sort of external event. No matter the type of operating system
-a typical program is for the most part in a waiting state. Because of how Fudge
-works it can look at all the running programs and see that all are in a waiting
-state and simple put the CPU to halt. This basically means, in a somewhat
-simplified example, that your computer is only running from the time you hit a
-key until you release it again. The rest of the time it is off.
-
-* No memory allocation
-It is not possible to dynamically allocate memory at runtime. In this way Fudge
-will never be out of memory and the kernel will be less occupied with
-allocating and deallocating memory. All preallocated areas of RAM will show up
-as files in the virtual filesystem.
-
-* No program arguments
-A program does not utilize the typical argc and **argv structure. Instead all
-programs in Fudge must use the input and output streams. This is to keep
-everything as small as possible.
-
-## FEATURES
-
-I have a long way to go but these are the features I've implemented so far.
-Some of them might be incomplete at the moment but they exist in one way or another.
-
-Kernel:
-* Multi-architectural code
-* Memory protection using paging
-* Virtual filesystem interface
-* ELF binary support incl. relocation
-* TAR ramdisk support
-
-Drivers:
-* VGA support
-* Serial support
-* PIT support
-* RTC support
-* FPU support
-* PCI support
-* ATA support (lba read-only)
-* Ext2 detection
-* Bochs graphics adapter
-* PS/2 keyboard
-* PS/2 mouse
-* RTL8139 network card
-* TTY devices
+Fudge focus is on the latter where each programs should complete in the same
+amount of time or as close as possible. This is not to be confused with a
+real-time operating system that is only concerned about making sure each task is
+guaranteed a certain amount of time. Here instead we are concerned with the
+actual execution time. In order to achieve this Fudge will only run one task at
+a time and will not interrupt the running task unless an interrupt occurs from
+hardware or software. This does not mean that Fudge is limited to only run one
+task at a time because tasks can delay there own execution until such an
+interrupt occurs and take presedence if the interrupt is of the type it was
+waiting for. While Fudge operates in kernel mode it can not be interrupted at
+all so the kernel in that sense is fully deterministic. The kernel also does not
+keep track of things in a dynamic fashion so each interrupt of the same type
+should always take the exact same time as any previous. The kernel is not even
+aware of the fact there can be many tasks running because it can only see the
+current running one.
 
 ## BUILDING
 
-NOTE: The ARM port is not working at the moment so this is for x86 only.
-
 ### PREREQUISITIES
 
-To try Fudge you need a Unix compatible system like Linux or *BSD. It might
-work on Windows if you have cygwin installed but this has not been tested.
+To try Fudge you need a Unix compatible system like Linux or *BSD. It might work
+on Windows if you have cygwin installed but this has not been tested.
 
 To compile and run Fudge you need to have the following tools installed.
 
@@ -115,8 +69,8 @@ $ qemu[-system-x86] -cdrom fudge.iso
 
 ### CLEANING
 
-This will remove all Fudge content but leave the cross compilation tools
-intact so you don't need to compile them again.
+This will remove all Fudge content but leave the cross compilation tools intact
+so you don't need to compile them again.
 
 $ make clean
 
