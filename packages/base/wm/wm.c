@@ -1,9 +1,10 @@
 #include <fudge.h>
 #include "wm.h"
 
-static struct gfx_video_surface rootSurface;
+static struct gfx_backend backend;
+static struct gfx_surface rootSurface;
 static struct gfx_window rootWindow;
-static struct gfx_video_surface helloSurface;
+static struct gfx_surface helloSurface;
 static struct gfx_window helloWindow;
 
 void set_xres(unsigned int xres)
@@ -64,18 +65,20 @@ void main()
     if (!id)
         return;
 
-    gfx_init_video_surface(&rootSurface, id, SCREEN_WIDTH, SCREEN_HEIGHT, ARGB32);
-    gfx_init_window(&rootWindow, 0, 0, &rootSurface.base);
+    gfx_init_backend(&backend, id);
+    gfx_init_surface(&rootSurface, SCREEN_WIDTH, SCREEN_HEIGHT, ARGB32, &backend);
+    gfx_init_window(&rootWindow, 0, 0, &rootSurface);
 
-    set_xres(rootSurface.base.width);
-    set_yres(rootSurface.base.height);
+    set_xres(rootSurface.width);
+    set_yres(rootSurface.height);
     set_bpp(32);
     enable();
 
-    rootSurface.base.fill(&rootSurface.base, SCREEN_BACKGROUND);
+    gfx_set_color(&rootSurface, SCREEN_BACKGROUND);
+    gfx_fill(&rootSurface);
 
-    gfx_init_video_surface(&helloSurface, id, 320, 240, ARGB32);
-    gfx_init_window(&helloWindow, 64, 64, &helloSurface.base);
+    gfx_init_surface(&helloSurface, 320, 240, ARGB32, &backend);
+    gfx_init_window(&helloWindow, 64, 64, &helloSurface);
 
     call_attach(0x2C, mouse_event);
     call_idle();
