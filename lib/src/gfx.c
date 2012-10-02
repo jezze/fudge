@@ -9,6 +9,20 @@ void gfx_set_color(struct gfx_surface *self, unsigned int color)
 
 }
 
+void gfx_set_color_rgb(struct gfx_surface *self, unsigned char red, unsigned char green, unsigned char blue)
+{
+
+    self->context.color = (red << 24) | (green << 16) | (blue << 8) | 0xFF;
+
+}
+
+void gfx_set_color_rgba(struct gfx_surface *self, unsigned char red, unsigned char green, unsigned char blue, unsigned char alpha)
+{
+
+    self->context.color = (red << 24) | (green << 16) | (blue << 8) | alpha;
+
+}
+
 void gfx_fill(struct gfx_surface *self)
 {
 
