@@ -13,5 +13,5 @@ kernel/%.o: CCFLAGS+=-Ilib/include -Ikernel/include
 
 kernel/%: LDFLAGS+=-Tkernel/src/arch/linker.$(ARCH).ld
 
-$(KERNEL): $(KERNEL_OBJECTS) $(LIB)
+$(KERNEL): $(KERNEL_OBJECTS) lib/src/elf.o lib/src/memory.o lib/src/string.o
 	$(LD) $(LDFLAGS) -o $@ $^
