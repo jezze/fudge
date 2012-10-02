@@ -2,6 +2,48 @@
 #include <gfx.h>
 #include <memory.h>
 
+static void gfx_fill_all(struct gfx_surface *self)
+{
+
+    char buffer[0x1000];
+    unsigned int size = self->width * self->height * self->bpp;
+    unsigned int i;
+
+    for (i = 0; i < 0x1000; i += 4)
+        memory_copy(buffer + i, &self->context.color, 4);
+
+    for (i = 0; i < size; i += 0x1000)
+        self->backend->write(self->backend, i, 0x1000, buffer);
+
+}
+
+static void gfx_fill_rectangle(struct gfx_surface *self)
+{
+
+}
+
+void gfx_fill(struct gfx_surface *self)
+{
+
+    switch (self->context.primitive)
+    {
+
+        case GFX_RECTANGLE:
+
+            gfx_fill_rectangle(self);
+
+            break;
+
+        default:
+
+            gfx_fill_all(self);
+
+            break;
+
+    }
+
+}
+
 void gfx_set_color(struct gfx_surface *self, unsigned int color)
 {
 
@@ -23,18 +65,14 @@ void gfx_set_color_rgba(struct gfx_surface *self, unsigned char red, unsigned ch
 
 }
 
-void gfx_fill(struct gfx_surface *self)
+void gfx_set_rectangle(struct gfx_surface *surface, unsigned int x, unsigned int y, unsigned int width, unsigned int height)
 {
 
-    char buffer[0x1000];
-    unsigned int size = self->width * self->height * self->bpp;
-    unsigned int i;
-
-    for (i = 0; i < 0x1000; i += 4)
-        memory_copy(buffer + i, &self->context.color, 4);
-
-    for (i = 0; i < size; i += 0x1000)
-        self->backend->write(self->backend, i, 0x1000, buffer);
+    surface->context.primitive = GFX_RECTANGLE;
+    surface->context.x = x;
+    surface->context.y = y;
+    surface->context.width = width;
+    surface->context.height = height;
 
 }
 
@@ -63,10 +101,22 @@ void gfx_init_backend(struct gfx_backend *backend, unsigned int id)
 
 }
 
+void gfx_init_context(struct gfx_context *context)
+{
+
+    memory_clear(context, sizeof (struct gfx_context));
+
+    context->color = 0xFFFFFF;
+    context->primitive = GFX_NONE;
+
+}
+
 void gfx_init_surface(struct gfx_surface *surface, unsigned int width, unsigned int height, enum gfx_surface_type type, struct gfx_backend *backend)
 {
 
     memory_clear(surface, sizeof (struct gfx_surface));
+
+    gfx_init_context(&surface->context);
 
     surface->width = width;
     surface->height = height;
