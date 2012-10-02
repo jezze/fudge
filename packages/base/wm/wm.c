@@ -57,6 +57,22 @@ void mouse_event()
 
 }
 
+void rootwindow_draw(struct gfx_window *self)
+{
+
+    gfx_set_color(self->surface, SCREEN_BACKGROUND);
+    gfx_fill(self->surface);
+
+}
+
+void hellowindow_draw(struct gfx_window *self)
+{
+
+    gfx_set_color(self->surface, SCREEN_BACKGROUND);
+    gfx_fill(self->surface);
+
+}
+
 void main()
 {
 
@@ -67,18 +83,17 @@ void main()
 
     gfx_init_backend(&backend, id);
     gfx_init_surface(&rootSurface, SCREEN_WIDTH, SCREEN_HEIGHT, ARGB32, &backend);
-    gfx_init_window(&rootWindow, 0, 0, &rootSurface);
+    gfx_init_window(&rootWindow, 0, 0, &rootSurface, rootwindow_draw);
 
     set_xres(rootSurface.width);
     set_yres(rootSurface.height);
     set_bpp(32);
     enable();
 
-    gfx_set_color(&rootSurface, SCREEN_BACKGROUND);
-    gfx_fill(&rootSurface);
+    rootWindow.draw(&rootWindow);
 
     gfx_init_surface(&helloSurface, 320, 240, ARGB32, &backend);
-    gfx_init_window(&helloWindow, 64, 64, &helloSurface);
+    gfx_init_window(&helloWindow, 64, 64, &helloSurface, hellowindow_draw);
 
     call_attach(0x2C, mouse_event);
     call_idle();

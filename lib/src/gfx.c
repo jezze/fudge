@@ -62,7 +62,7 @@ void gfx_init_surface(struct gfx_surface *surface, unsigned int width, unsigned 
 
 }
 
-void gfx_init_window(struct gfx_window *window, unsigned int x, unsigned int y, struct gfx_surface *surface)
+void gfx_init_window(struct gfx_window *window, unsigned int x, unsigned int y, struct gfx_surface *surface, void (*draw)(struct gfx_window *self))
 {
 
     memory_clear(window, sizeof (struct gfx_window));
@@ -70,6 +70,7 @@ void gfx_init_window(struct gfx_window *window, unsigned int x, unsigned int y, 
     window->x = x;
     window->y = y;
     window->surface = surface;
+    window->draw = draw;
 
 }
 
