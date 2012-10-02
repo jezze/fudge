@@ -1,11 +1,10 @@
 #include <fudge.h>
 #include "wm.h"
 
-static unsigned int idlfb;
-
-static char buffer[0x1000];
-static struct gfx_memory_surface window;
-static struct gfx_video_surface screen;
+static struct gfx_video_surface rootSurface;
+static struct gfx_window rootWindow;
+static struct gfx_video_surface helloSurface;
+static struct gfx_window helloWindow;
 
 void set_xres(unsigned int xres)
 {
@@ -60,20 +59,23 @@ void mouse_event()
 void main()
 {
 
-    idlfb = call_open(4, 13, "/video/0/data");
+    unsigned int id = call_open(4, 13, "/video/0/data");
 
-    if (!idlfb)
+    if (!id)
         return;
 
-    gfx_init_video_surface(&screen, idlfb, SCREEN_WIDTH, SCREEN_HEIGHT, ARGB32);
-    gfx_init_memory_surface(&window, buffer, 320, 240, ARGB32);
+    gfx_init_video_surface(&rootSurface, id, SCREEN_WIDTH, SCREEN_HEIGHT, ARGB32);
+    gfx_init_window(&rootWindow, 0, 0, &rootSurface.base);
 
-    set_xres(screen.base.width);
-    set_yres(screen.base.height);
+    set_xres(rootSurface.base.width);
+    set_yres(rootSurface.base.height);
     set_bpp(32);
     enable();
 
-    screen.base.fill(&screen.base, SCREEN_BACKGROUND);
+    rootSurface.base.fill(&rootSurface.base, SCREEN_BACKGROUND);
+
+    gfx_init_video_surface(&helloSurface, id, 320, 240, ARGB32);
+    gfx_init_window(&helloWindow, 64, 64, &helloSurface.base);
 
     call_attach(0x2C, mouse_event);
     call_idle();

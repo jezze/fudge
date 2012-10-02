@@ -53,3 +53,14 @@ void gfx_init_video_surface(struct gfx_video_surface *surface, unsigned int id, 
 
 }
 
+void gfx_init_window(struct gfx_window *window, unsigned int x, unsigned int y, struct gfx_surface *surface)
+{
+
+    memory_clear(window, sizeof (struct gfx_window));
+
+    window->x = x;
+    window->y = y;
+    window->surface = surface;
+
+}
+
