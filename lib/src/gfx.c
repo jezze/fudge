@@ -2,23 +2,21 @@
 #include <gfx.h>
 #include <memory.h>
 
-static void gfx_fill_all(struct gfx_surface *self)
+static void gfx_fill_rectangle(struct gfx_surface *self)
 {
 
     char buffer[GFX_BUFFER_SIZE];
-    unsigned int size = self->width * self->height * self->bpp;
+    unsigned int line = self->width * self->bpp;
+    unsigned int recline = self->context.width * self->bpp;
+    unsigned int size = line * self->context.height;
+    unsigned int offset = (self->context.y * self->width + self->context.x) * self->bpp;
     unsigned int i;
 
-    for (i = 0; i < GFX_BUFFER_SIZE; i += self->bpp)
+    for (i = 0; i < recline; i += self->bpp)
         memory_copy(buffer + i, &self->context.color, self->bpp);
 
-    for (i = 0; i < size; i += GFX_BUFFER_SIZE)
-        self->backend->write(self->backend, i, GFX_BUFFER_SIZE, buffer);
-
-}
-
-static void gfx_fill_rectangle(struct gfx_surface *self)
-{
+    for (i = offset; i < size; i += line)
+        self->backend->write(self->backend, i, recline, buffer);
 
 }
 
@@ -35,8 +33,6 @@ void gfx_fill(struct gfx_surface *self)
             break;
 
         default:
-
-            gfx_fill_all(self);
 
             break;
 

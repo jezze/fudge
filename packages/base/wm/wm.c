@@ -12,6 +12,7 @@ static void rootwindow_draw(struct window *self)
 {
 
     gfx_set_color(self->surface, SCREEN_BACKGROUND);
+    gfx_set_rectangle(self->surface, self->x, self->y, self->width, self->height);
     gfx_fill(self->surface);
 
 }
@@ -19,8 +20,8 @@ static void rootwindow_draw(struct window *self)
 static void hellowindow_draw(struct window *self)
 {
 
-    gfx_set_rectangle(self->surface, self->x, self->y, self->width, self->height);
     gfx_set_color(self->surface, WINDOW_BACKGROUND);
+    gfx_set_rectangle(self->surface, self->x, self->y, self->width, self->height);
     gfx_fill(self->surface);
 
 }
