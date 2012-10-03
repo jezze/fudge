@@ -15,5 +15,15 @@
 #define PANEL_BORDER_DARK           0x00C6B6B0
 #define PANEL_BORDER_LIGHT          0x00F6E6E0
 
+struct window
+{
+
+    unsigned int x;
+    unsigned int y;
+    struct gfx_surface *surface;
+    void (*draw)(struct window *self);
+
+};
+
 #endif
 
