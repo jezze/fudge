@@ -20,6 +20,8 @@ struct window
 
     unsigned int x;
     unsigned int y;
+    unsigned int width;
+    unsigned int height;
     struct gfx_surface *surface;
     void (*draw)(struct window *self);
 
