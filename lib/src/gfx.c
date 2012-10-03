@@ -5,15 +5,15 @@
 static void gfx_fill_all(struct gfx_surface *self)
 {
 
-    char buffer[0x1000];
+    char buffer[GFX_BUFFER_SIZE];
     unsigned int size = self->width * self->height * self->bpp;
     unsigned int i;
 
-    for (i = 0; i < 0x1000; i += 4)
-        memory_copy(buffer + i, &self->context.color, 4);
+    for (i = 0; i < GFX_BUFFER_SIZE; i += self->bpp)
+        memory_copy(buffer + i, &self->context.color, self->bpp);
 
-    for (i = 0; i < size; i += 0x1000)
-        self->backend->write(self->backend, i, 0x1000, buffer);
+    for (i = 0; i < size; i += GFX_BUFFER_SIZE)
+        self->backend->write(self->backend, i, GFX_BUFFER_SIZE, buffer);
 
 }
 
