@@ -1,44 +1,27 @@
-unsigned int call_open(unsigned int id, char *path)
+#include <call.h>
+
+unsigned int call_attach(unsigned int index, void (*callback)())
 {
 
     return 0;
 
 }
 
-void call_close(unsigned int id)
-{
-
-}
-
-unsigned int call_read(unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+unsigned int call_close(unsigned int index)
 {
 
     return 0;
 
 }
 
-unsigned int call_write(unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+unsigned int call_detach(unsigned int index)
 {
 
     return 0;
 
 }
 
-unsigned int call_execute(unsigned int id)
-{
-
-    return 0;
-
-}
-
-unsigned int call_load(unsigned int id)
-{
-
-    return 0;
-
-}
-
-unsigned int call_unload(unsigned int id)
+unsigned int call_execute(unsigned int index)
 {
 
     return 0;
@@ -52,35 +35,59 @@ unsigned int call_exit()
 
 }
 
-unsigned int call_wait()
+unsigned int call_idle()
 {
 
     return 0;
 
 }
 
-unsigned int call_attach(unsigned int id, void (*routine)())
+unsigned int call_open(unsigned int index, unsigned int count, char *path)
 {
 
     return 0;
 
 }
 
-unsigned int call_detach(unsigned int id)
+unsigned int call_load(unsigned int index)
 {
 
     return 0;
 
 }
 
-void call_halt()
+unsigned int call_mount(unsigned int index, unsigned int offset, unsigned int count, void *path)
 {
+
+    return 0;
 
 }
 
-
-void call_reboot()
+unsigned int call_read(unsigned int index, unsigned int offset, unsigned int count, void *buffer)
 {
+
+    return 0;
+
+}
+
+unsigned int call_spawn(unsigned int index)
+{
+
+    return 0;
+
+}
+
+unsigned int call_unload(unsigned int index)
+{
+
+    return 0;
+
+}
+
+unsigned int call_write(unsigned int index, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    return 0;
 
 }
 

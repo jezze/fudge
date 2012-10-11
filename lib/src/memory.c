@@ -25,6 +25,13 @@ void *memory_copy(void *out, const void *in, unsigned int count)
 
 }
 
+void *memcpy(void *out, const void *in, unsigned int count)
+{
+
+    return memory_copy(out, in, count);
+
+}
+
 void *memory_find(const void *in1, const void *in2, unsigned int count1, unsigned int count2)
 {
 

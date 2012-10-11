@@ -26,7 +26,7 @@ static void puts(const char *s)
 
 }
 
-static void setup(struct kernel_arch *arch)
+static void setup(struct kernel_interface *arch)
 {
 
     puts("Fudge Console Text\n\n");
