@@ -57,20 +57,57 @@ Download the source using git.
 
 $ git clone git://github.com/Jezze/fudge.git fudge
 
-### COMPILING
+### BUILDING
 
-Compile Fudge.
+At the moment Fudge only runs properly on x86 but there is an ARM port under
+development. It is very limited at the moment.
+
+Depending on what architecture and compiler you use you can edit the top
+Makefile and change the ARCH and PREFIX settings.
+
+The default is:
+
+ARCH=x86
+PREFIX=
+
+If you want to compile for ARM with arm-eabi- you can change to:
+
+ARCH=arm
+PREFIX=arm-eabi-
+
+Then you only need to run make in order to compile.
 
 $ make
 
-### RUNNING
+These settings can also be applied without modifing the Makefile:
 
-$ qemu[-system-x86] -cdrom fudge.iso
+$ make ARCH=arm PREFIX=arm-eabi-
 
 ### CLEANING
 
-This will remove all Fudge content but leave the cross compilation tools intact
-so you don't need to compile them again.
+With modified makefile:
 
 $ make clean
+
+Without a modified makefile:
+
+$ make ARCH=arm clean
+
+## RUNNING IN QEMU
+
+### x86 EXAMPLES
+
+With GRUB image:
+
+$ qemu-system-x86 -cdrom fudge.iso -vga std
+
+With QEMU bootloader:
+
+$ qemu-system-x86 -kernel image/boot/fudge -initrd image/boot/initrd.tar -vga std
+
+### ARM EXAMPLES
+
+With QEMU bootloader:
+
+$ qemu-system-arm -kernel image/boot/fudge -initrd image/boot/initrd.tar -serial stdio
 
