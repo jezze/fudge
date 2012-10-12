@@ -8,11 +8,14 @@ KERNEL_OBJECTS+=kernel/src/ramdisk.o
 KERNEL_OBJECTS+=kernel/src/runtime.o
 KERNEL_OBJECTS+=kernel/src/syscall.o
 KERNEL_OBJECTS+=kernel/src/vfs.o
+KERNEL_OBJECTS+=lib/src/elf.o
+KERNEL_OBJECTS+=lib/src/memory.o
+KERNEL_OBJECTS+=lib/src/string.o
 
 kernel/%.o: CCFLAGS+=-Ilib/include -Ikernel/include
 
 kernel/%: LDFLAGS+=-Tkernel/src/arch/linker.$(ARCH).ld
 
-$(KERNEL): $(KERNEL_OBJECTS) lib/src/elf.o lib/src/memory.o lib/src/string.o
-	$(LD) $(LDFLAGS) -o $@ $^ /usr/lib/gcc/arm-eabi/4.7.0/libgcc.a
+$(KERNEL): $(KERNEL_OBJECTS)
+	$(LD) $(LDFLAGS) -o $@ $^ $(KERNEL_EXTRA)
 
