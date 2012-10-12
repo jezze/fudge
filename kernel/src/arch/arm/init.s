@@ -1,12 +1,12 @@
 interrupt_vector_table:
-    b .
-    b .
-    b .
-    b .
-    b .
-    b .
-    b .
-    b .
+    b isr_undefined
+    b isr_undefined
+    b isr_undefined
+    b isr_undefined
+    b isr_undefined
+    b isr_undefined
+    b isr_undefined
+    b isr_undefined
 
 .comm stack, 0x10000
 
