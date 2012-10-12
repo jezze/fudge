@@ -56,6 +56,7 @@
 
 #define KMI_STATUS_FULL         (1 << 4)
 
+static void *ramdiskv[1];
 static struct arch_interface interface;
 
 static char mapUS[256] =
@@ -131,10 +132,9 @@ static void puts(const char *s)
 
 }
 
+/*
 static void enable_interrupts()
 {
-
-    char num[32];
 
     write_reg32(PIC_REG_IRQ_ENABLECLR, PIC_IRQ_KEYBOARD);
 
@@ -142,11 +142,21 @@ static void enable_interrupts()
 
     write_reg32(PIC_REG_IRQ_ENABLESET, read_reg32(PIC_REG_IRQ_ENABLESET) | PIC_IRQ_KEYBOARD);
 
-    string_write_num(num, read_reg32(PIC_REG_IRQ_ENABLESET), 16);
+}
+*/
 
-    puts("CLR: ");
-    puts(num);
-    puts("\n");
+static void setup(struct kernel_interface *arch)
+{
+
+    puts("Fudge Console Text\n");
+    puts("SETUP\n");
+
+}
+
+static void enter_usermode(unsigned int ip, unsigned int sp)
+{
+
+    puts("USERMODE\n");
 
     for (;;)
     {
@@ -168,17 +178,6 @@ static void enable_interrupts()
 
 }
 
-static void setup(struct kernel_interface *arch)
-{
-
-    puts("Fudge Console Text\n\n");
-
-    enable_interrupts();
-
-    for (;;);
-
-}
-
 void isr_undefined()
 {
 
@@ -193,7 +192,9 @@ void arch_init_interface(struct arch_interface *interface)
 
     memory_clear(interface, sizeof (struct arch_interface));
 
-    kernel_init_interface(&interface->base, setup, 0, 0, 0);
+    ramdiskv[0] = (void *)0x00800000;
+
+    kernel_init_interface(&interface->base, setup, enter_usermode, 1, ramdiskv);
 
 }
 
