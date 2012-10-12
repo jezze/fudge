@@ -10,6 +10,7 @@ KERNEL_OBJECTS+=kernel/src/syscall.o
 KERNEL_OBJECTS+=kernel/src/vfs.o
 KERNEL_OBJECTS+=lib/src/elf.o
 KERNEL_OBJECTS+=lib/src/memory.o
+KERNEL_OBJECTS+=lib/src/posix.o
 KERNEL_OBJECTS+=lib/src/string.o
 
 kernel/%.o: CCFLAGS+=-Ilib/include -Ikernel/include
@@ -17,5 +18,5 @@ kernel/%.o: CCFLAGS+=-Ilib/include -Ikernel/include
 kernel/%: LDFLAGS+=-Tkernel/src/arch/linker.$(ARCH).ld
 
 $(KERNEL): $(KERNEL_OBJECTS)
-	$(LD) $(LDFLAGS) -o $@ $^ $(KERNEL_EXTRA)
+	$(LD) $(LDFLAGS) -o $@ $^ $(EXTRA)
 
