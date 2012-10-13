@@ -88,10 +88,14 @@ packages: $(PACKAGES)
 
 # Experimental
 
-image-arm: image/boot/fudge
-	arm-none-eabi-objcopy -O binary image/boot/fudge image/boot/fudge.bin
-	mkimage -A arm -C none -O linux -T kernel -d image/boot/fudge.bin -a 0x00100000 -e 0x00100000 image/boot/fudge.uimg
-	cat image/boot/uboot/u-boot.bin image/boot/fudge.uimg > fudge.img
+image/boot/fudge.bin: image/boot/fudge
+	$(PREFIX)objcopy -O binary image/boot/fudge $@
+
+image/boot/fudge.uimg: image/boot/fudge.bin
+	mkimage -A arm -C none -O linux -T kernel -n Fudge -d image/boot/fudge.bin -a 0x00100000 -e 0x00100000 $@
+
+fudge-versatilepb.img: image/boot/fudge.uimg
+	cat image/boot/uboot/u-boot.bin image/boot/fudge.uimg > $@
 
 toolchain:
 	git submodule init toolchain
