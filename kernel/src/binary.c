@@ -48,41 +48,6 @@ unsigned int binary_copy_program(struct vfs_interface *interface, unsigned int i
 
 }
 
-static void relocate_section(struct elf_section_header *sectionHeader, unsigned int relocateHeaderIndex, unsigned int relocateDataIndex, struct elf_relocate *relocateTable, struct elf_symbol *symbolTable, unsigned int address)
-{
-
-    unsigned int i;
-
-    for (i = 0; i < sectionHeader[relocateHeaderIndex].size / sectionHeader[relocateHeaderIndex].esize; i++)
-    {
-
-        unsigned char type = relocateTable[i].info & 0x0F;
-        unsigned char index = relocateTable[i].info >> 8;
-        unsigned int offset = address + sectionHeader[relocateDataIndex].offset + relocateTable[i].offset;
-        unsigned int addend = (symbolTable[index].shindex) ? address + sectionHeader[symbolTable[index].shindex].offset + symbolTable[index].value : 0;
-        unsigned int *entry = (unsigned int *)(offset);
-
-        switch (type)
-        {
-
-            case 1:
-
-                *entry += addend;
-
-                break;
-
-            case 2:
-
-                *entry += addend - offset;
-
-                break;
-
-        }
-
-    }
-
-}
-
 unsigned int binary_relocate(struct vfs_interface *interface, unsigned int id, unsigned int address)
 {
 
@@ -109,7 +74,7 @@ unsigned int binary_relocate(struct vfs_interface *interface, unsigned int id, u
         interface->read(interface, id, sectionHeader[i].offset, sectionHeader[i].size, relocateTable);
         interface->read(interface, id, sectionHeader[sectionHeader[i].link].offset, sectionHeader[sectionHeader[i].link].size, symbolTable);
 
-        relocate_section(sectionHeader, i, sectionHeader[i].info, relocateTable, symbolTable, address);
+        elf_relocate_section(sectionHeader, i, sectionHeader[i].info, relocateTable, symbolTable, address);
 
         sectionHeader[sectionHeader[i].info].address += address;
 

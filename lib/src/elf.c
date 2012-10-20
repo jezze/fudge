@@ -47,3 +47,38 @@ unsigned int elf_find_symbol(struct elf_header *header, struct elf_section_heade
 
 }
 
+void elf_relocate_section(struct elf_section_header *sectionHeader, unsigned int relocateHeaderIndex, unsigned int relocateDataIndex, struct elf_relocate *relocateTable, struct elf_symbol *symbolTable, unsigned int address)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < sectionHeader[relocateHeaderIndex].size / sectionHeader[relocateHeaderIndex].esize; i++)
+    {
+
+        unsigned char type = relocateTable[i].info & 0x0F;
+        unsigned char index = relocateTable[i].info >> 8;
+        unsigned int offset = address + sectionHeader[relocateDataIndex].offset + relocateTable[i].offset;
+        unsigned int addend = (symbolTable[index].shindex) ? address + sectionHeader[symbolTable[index].shindex].offset + symbolTable[index].value : 0;
+        unsigned int *entry = (unsigned int *)(offset);
+
+        switch (type)
+        {
+
+            case 1:
+
+                *entry += addend;
+
+                break;
+
+            case 2:
+
+                *entry += addend - offset;
+
+                break;
+
+        }
+
+    }
+
+}
+
