@@ -47,6 +47,30 @@ unsigned int elf_find_symbol(struct elf_header *header, struct elf_section_heade
 
 }
 
+void elf_relocate_symbol(unsigned int address, unsigned int offset, unsigned int type, unsigned int addend)
+{
+
+    unsigned int *entry = (unsigned int *)(address + offset);
+
+    switch (type)
+    {
+
+        case 1:
+
+            *entry += addend;
+
+            break;
+
+        case 2:
+
+            *entry += addend - offset - address;
+
+            break;
+
+    }
+
+}
+
 void elf_relocate_section(struct elf_section_header *sectionHeader, unsigned int relocateHeaderIndex, unsigned int relocateDataIndex, struct elf_relocate *relocateTable, struct elf_symbol *symbolTable, unsigned int address)
 {
 
@@ -57,26 +81,13 @@ void elf_relocate_section(struct elf_section_header *sectionHeader, unsigned int
 
         unsigned char type = relocateTable[i].info & 0x0F;
         unsigned char index = relocateTable[i].info >> 8;
-        unsigned int offset = address + sectionHeader[relocateDataIndex].offset + relocateTable[i].offset;
-        unsigned int addend = (symbolTable[index].shindex) ? address + sectionHeader[symbolTable[index].shindex].offset + symbolTable[index].value : 0;
-        unsigned int *entry = (unsigned int *)(offset);
+        struct elf_symbol *symbol = &symbolTable[index];
+        unsigned int offset = sectionHeader[relocateDataIndex].offset + relocateTable[i].offset;
 
-        switch (type)
-        {
-
-            case 1:
-
-                *entry += addend;
-
-                break;
-
-            case 2:
-
-                *entry += addend - offset;
-
-                break;
-
-        }
+        if (symbol->shindex)
+            elf_relocate_symbol(address, offset, type, address + sectionHeader[symbol->shindex].offset + symbol->value);
+        else
+            elf_relocate_symbol(address, offset, type, 0);
 
     }
 
