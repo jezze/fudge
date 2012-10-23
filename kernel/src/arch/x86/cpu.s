@@ -45,11 +45,6 @@ cpu_get_eflags:
     pop eax
     ret
 
-.global cpu_get_stack
-cpu_get_stack:
-    mov eax, esp
-    ret
-
 .global cpu_halt
 cpu_halt:
     hlt
@@ -105,14 +100,6 @@ cpu_set_gdt_high:
 cpu_set_idt:
     mov eax, [esp + 4]
     lidt [eax]
-    ret
-
-.global cpu_set_stack
-cpu_set_stack:
-    mov eax, [esp + 4]
-    mov ecx, [esp]
-    mov esp, eax
-    push ecx
     ret
 
 .global cpu_set_tss
