@@ -15,10 +15,10 @@ static void handle_interrupt(struct isr_registers *registers)
 
 }
 
-void syscall_setup_arch(unsigned int cs)
+void syscall_setup_arch(unsigned short selector)
 {
 
-    idt_set_entry(0x80, syscall_routine, cs, IDT_FLAG_PRESENT | IDT_FLAG_RING3 | IDT_FLAG_TYPE32INT);
+    idt_set_entry(0x80, syscall_routine, selector, IDT_FLAG_PRESENT | IDT_FLAG_RING3 | IDT_FLAG_TYPE32INT);
     isr_set_routine(0x80, handle_interrupt);
 
 }

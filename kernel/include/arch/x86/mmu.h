@@ -47,7 +47,7 @@ void mmu_map_kernel_memory(unsigned int index, unsigned int paddress, unsigned i
 void mmu_map_user_memory(unsigned int index, unsigned int paddress, unsigned int vaddress, unsigned int size);
 void mmu_reload_memory();
 void mmu_routine();
-void mmu_setup_arch(unsigned int cs);
+void mmu_setup_arch(unsigned short selector);
 
 #endif
 

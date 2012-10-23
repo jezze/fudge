@@ -12,14 +12,14 @@
 static void setup(struct kernel_interface *self)
 {
 
-    unsigned int cs;
-    unsigned int ss;
+    unsigned short cs;
+    unsigned short ss;
 
     gdt_setup();
     idt_setup();
 
-    cs = gdt_get_segment(GDT_INDEX_KCODE);
-    ss = gdt_get_segment(GDT_INDEX_KDATA);
+    cs = gdt_get_selector(GDT_INDEX_KCODE);
+    ss = gdt_get_selector(GDT_INDEX_KDATA);
 
     tss_setup(ss, 0x00400000);
     isr_setup(cs);

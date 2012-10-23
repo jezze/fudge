@@ -12,16 +12,16 @@ isr_common:
     pusha
     mov eax, esp
     push eax
-    mov eax, 0x10
-    mov ds, eax
-    mov es, eax
-    mov fs, eax
-    mov gs, eax
+    mov ax, 0x10
+    mov ds, ax
+    mov es, ax
+    mov fs, ax
+    mov gs, ax
     call isr_raise
-    mov ds, eax
-    mov es, eax
-    mov fs, eax
-    mov gs, eax
+    mov ds, ax
+    mov es, ax
+    mov fs, ax
+    mov gs, ax
     add esp, 4
     popa
     add esp, 8

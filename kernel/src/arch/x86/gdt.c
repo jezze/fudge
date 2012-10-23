@@ -5,7 +5,7 @@
 static struct gdt_entry entries[GDT_TABLE_SLOTS];
 static struct gdt_pointer pointer;
 
-unsigned int gdt_get_segment(unsigned int index)
+unsigned short gdt_get_selector(unsigned int index)
 {
 
     if (index >= GDT_TABLE_SLOTS)

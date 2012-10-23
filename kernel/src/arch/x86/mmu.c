@@ -87,10 +87,10 @@ static void handle_interrupt(struct isr_registers *registers)
 
 }
 
-void mmu_setup_arch(unsigned int cs)
+void mmu_setup_arch(unsigned short selector)
 {
 
-    idt_set_entry(0x0E, mmu_routine, cs, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
+    idt_set_entry(0x0E, mmu_routine, selector, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
     isr_set_routine(0x0E, handle_interrupt);
 
     mmu_map_kernel_memory(0, 0x00000000, 0x00000000, 0x00400000);

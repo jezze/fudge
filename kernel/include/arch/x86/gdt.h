@@ -43,7 +43,7 @@ struct gdt_pointer
 
 } __attribute__((packed));
 
-unsigned int gdt_get_segment(unsigned int index);
+unsigned short gdt_get_selector(unsigned int index);
 void gdt_set_entry(unsigned int index, unsigned int base, unsigned int limit, unsigned char access, unsigned char granularity);
 void gdt_setup();
 

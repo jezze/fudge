@@ -8,33 +8,33 @@
 
 static void (*routines[ISR_TABLE_SLOTS])(struct isr_registers *registers);
 
-static unsigned int load_kstate(struct isr_registers *registers)
+static unsigned short load_kstate(struct isr_registers *registers)
 {
 
-    registers->interrupt.cs = gdt_get_segment(GDT_INDEX_KCODE);
+    registers->interrupt.cs = gdt_get_selector(GDT_INDEX_KCODE);
     registers->interrupt.eip = (unsigned int)cpu_halt;
     registers->interrupt.esp = 0x00400000;
     registers->general.ebp = 0;
     registers->general.eax = 0;
 
-    return gdt_get_segment(GDT_INDEX_KDATA);
+    return gdt_get_selector(GDT_INDEX_KDATA);
 
 }
 
-static unsigned int load_ustate(struct runtime_task *task, struct isr_registers *registers)
+static unsigned short load_ustate(struct runtime_task *task, struct isr_registers *registers)
 {
 
-    registers->interrupt.cs = gdt_get_segment(GDT_INDEX_UCODE);
+    registers->interrupt.cs = gdt_get_selector(GDT_INDEX_UCODE);
     registers->interrupt.eip = task->registers.ip;
     registers->interrupt.esp = task->registers.sp;
     registers->general.ebp = task->registers.sb;
     registers->general.eax = task->registers.status;
 
-    return gdt_get_segment(GDT_INDEX_UDATA);
+    return gdt_get_selector(GDT_INDEX_UDATA);
 
 }
 
-unsigned int isr_raise(struct isr_registers *registers)
+unsigned short isr_raise(struct isr_registers *registers)
 {
 
     struct runtime_task *task = runtime_get_task();
@@ -74,13 +74,13 @@ void isr_unset_routine(unsigned int index)
 
 }
 
-void isr_setup(unsigned int cs)
+void isr_setup(unsigned short selector)
 {
 
     unsigned int i;
 
     for (i = 0; i < ISR_TABLE_SLOTS; i++)
-        idt_set_entry(i, isr_undefined, cs, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
+        idt_set_entry(i, isr_undefined, selector, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
 
 }
 

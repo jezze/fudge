@@ -36,7 +36,8 @@ struct tss_entry
 
 } __attribute__((packed));
 
-void tss_setup(unsigned int ss, unsigned int esp);
+void tss_set_entry(unsigned int index, unsigned int selector, unsigned int stack);
+void tss_setup(unsigned short selector, unsigned int stack);
 
 #endif
 
