@@ -84,13 +84,11 @@ static unsigned int parent(struct ramdisk_filesystem *filesystem, unsigned int i
 static unsigned int read_directory(struct ramdisk_filesystem *filesystem, struct tar_header *header, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    char temp[1024];
-    unsigned int o = 0;
-    unsigned int c = 1024;
-    unsigned int i;
     unsigned int length = string_length(header->name);
+    unsigned int o = 0;
+    unsigned int i;
 
-    o += memory_write(temp, c - o, "../\n", 4, o);
+    o += memory_write(buffer, count - o, "../\n", 4, o);
 
     for (i = 0; i < filesystem->image->count; i++)
     {
@@ -103,12 +101,12 @@ static unsigned int read_directory(struct ramdisk_filesystem *filesystem, struct
         if (filesystem->image->headers[p] != header)
             continue;
 
-        o += memory_write(temp, c - o, filesystem->image->headers[i]->name + length, string_length(filesystem->image->headers[i]->name) - length, o);
-        o += memory_write(temp, c - o, "\n", 2, o);
+        o += memory_write(buffer, count - o, filesystem->image->headers[i]->name + length, string_length(filesystem->image->headers[i]->name) - length, o);
+        o += memory_write(buffer, count - o, "\n", 2, o);
 
     }
 
-    return memory_read(buffer, count, temp, o, offset);
+    return o;
 
 }
 
