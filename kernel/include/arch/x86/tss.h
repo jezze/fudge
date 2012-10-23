@@ -1,7 +1,7 @@
 #ifndef ARCH_TSS_H
 #define ARCH_TSS_H
 
-#define TSS_TABLE_SLOTS      1
+#define TSS_TABLE_SLOTS 1
 
 struct tss_entry
 {

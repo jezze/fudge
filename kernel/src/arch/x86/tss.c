@@ -22,7 +22,7 @@ void tss_setup(unsigned short selector, unsigned int stack)
     memory_clear(&entries, sizeof (struct tss_entry) * TSS_TABLE_SLOTS);
 
     tss_set_entry(0, selector, stack);
-    gdt_set_entry(GDT_INDEX_TSS, (unsigned int)&entries[0], (unsigned int)&entries[0] + sizeof (struct tss_entry), GDT_ACCESS_PRESENT | GDT_ACCESS_EXECUTE | GDT_ACCESS_ACCESSED, 0x00);
+    gdt_set_entry(GDT_INDEX_TSS, (unsigned int)entries, (unsigned int)entries + sizeof (struct tss_entry) * TSS_TABLE_SLOTS, GDT_ACCESS_PRESENT | GDT_ACCESS_EXECUTE | GDT_ACCESS_ACCESSED, 0x00);
 
     cpu_set_tss(gdt_get_selector(GDT_INDEX_TSS));
 
