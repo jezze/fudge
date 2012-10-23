@@ -8,7 +8,7 @@
 
 static void (*routines[ISR_TABLE_SLOTS])(struct isr_registers *registers);
 
-static void load_kstate(struct isr_registers *registers)
+static unsigned int load_kstate(struct isr_registers *registers)
 {
 
     registers->interrupt.cs = gdt_get_segment(GDT_INDEX_KCODE);
@@ -17,9 +17,11 @@ static void load_kstate(struct isr_registers *registers)
     registers->general.ebp = 0;
     registers->general.eax = 0;
 
+    return gdt_get_segment(GDT_INDEX_KDATA);
+
 }
 
-static void load_ustate(struct runtime_task *task, struct isr_registers *registers)
+static unsigned int load_ustate(struct runtime_task *task, struct isr_registers *registers)
 {
 
     registers->interrupt.cs = gdt_get_segment(GDT_INDEX_UCODE);
@@ -27,6 +29,8 @@ static void load_ustate(struct runtime_task *task, struct isr_registers *registe
     registers->interrupt.esp = task->registers.sp;
     registers->general.ebp = task->registers.sb;
     registers->general.eax = task->registers.status;
+
+    return gdt_get_segment(GDT_INDEX_UDATA);
 
 }
 
@@ -44,17 +48,9 @@ unsigned int isr_raise(struct isr_registers *registers)
     task = runtime_get_task();
 
     if (task->status.used && !task->status.idle)
-    {
+        return load_ustate(task, registers);
 
-        load_ustate(task, registers);
-
-        return gdt_get_segment(GDT_INDEX_UDATA);
-
-    }
-
-    load_kstate(registers);
-
-    return gdt_get_segment(GDT_INDEX_KDATA);
+    return load_kstate(registers);
 
 }
 
