@@ -59,7 +59,7 @@ void init()
     if (!rsdp)
         return;
 
-    mmu_map_kernel_memory(1, (unsigned int)rsdp->rsdt, (unsigned int)rsdp->rsdt, 0x00100000);
+    mmu_map_kernel_memory(2, (unsigned int)rsdp->rsdt, (unsigned int)rsdp->rsdt, 0x00100000);
     mmu_reload_memory();
 
 }
