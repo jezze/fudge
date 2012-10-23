@@ -41,9 +41,11 @@ unsigned short isr_raise(struct isr_registers *registers)
 
     runtime_init_registers(&task->registers, registers->interrupt.eip, registers->interrupt.esp, registers->general.ebp, registers->general.eax);
 
-    task->notify_pre_event(task, registers->index);
+    task->notify_interrupt(task, registers->index);
+
     routines[registers->index](registers);
-    task->notify_post_event(task, registers->index);
+
+    task->notify_complete(task);
 
     task = runtime_get_task();
 

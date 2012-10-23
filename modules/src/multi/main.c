@@ -59,7 +59,7 @@ static void schedule()
 
 }
 
-static void notify_pre_event(struct runtime_task *task, unsigned int index)
+static void notify_interrupt(struct runtime_task *task, unsigned int index)
 {
 
     unsigned int i;
@@ -83,7 +83,7 @@ static void notify_pre_event(struct runtime_task *task, unsigned int index)
 
 }
 
-static void notify_post_event(struct runtime_task *task, unsigned int index)
+static void notify_complete(struct runtime_task *task)
 {
 
     schedule();
@@ -117,8 +117,8 @@ static unsigned int spawn(struct runtime_task *task, void *stack)
 
     runtime_init_registers(&ntask->registers, entry, RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE, RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE, index);
 
-    ntask->notify_pre_event = notify_pre_event;
-    ntask->notify_post_event = notify_post_event;
+    ntask->notify_interrupt = notify_interrupt;
+    ntask->notify_complete = notify_complete;
 
     schedule();
 

@@ -58,8 +58,8 @@ struct runtime_task
     struct runtime_descriptor descriptors[RUNTIME_TASK_DESCRIPTOR_SLOTS];
     struct runtime_event events[RUNTIME_TASK_EVENT_SLOTS];
     struct runtime_mount mounts[RUNTIME_TASK_MOUNT_SLOTS];
-    void (*notify_pre_event)(struct runtime_task *self, unsigned int index);
-    void (*notify_post_event)(struct runtime_task *self, unsigned int index);
+    void (*notify_interrupt)(struct runtime_task *self, unsigned int index);
+    void (*notify_complete)(struct runtime_task *self);
 
 };
 

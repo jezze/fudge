@@ -41,12 +41,12 @@ unsigned int runtime_unset_task_event(struct runtime_task *task, unsigned int in
 
 }
 
-static void notify_pre_event(struct runtime_task *task, unsigned int index)
+static void notify_interrupt(struct runtime_task *task, unsigned int index)
 {
 
 }
 
-static void notify_post_event(struct runtime_task *task, unsigned int index)
+static void notify_complete(struct runtime_task *task)
 {
 
 }
@@ -141,8 +141,8 @@ void runtime_init_task(struct runtime_task *task, unsigned int ip)
 
     runtime_init_registers(&task->registers, ip, RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE, RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE, 0);
 
-    task->notify_pre_event = notify_pre_event;
-    task->notify_post_event = notify_post_event;
+    task->notify_interrupt = notify_interrupt;
+    task->notify_complete = notify_complete;
 
 }
 
