@@ -102,7 +102,7 @@ static unsigned int read_directory(struct ramdisk_filesystem *filesystem, struct
             continue;
 
         o += memory_write(buffer, count - o, filesystem->image->headers[i]->name + length, string_length(filesystem->image->headers[i]->name) - length, o);
-        o += memory_write(buffer, count - o, "\n", 2, o);
+        o += memory_write(buffer, count - o, "\n", 1, o);
 
     }
 
