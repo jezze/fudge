@@ -111,16 +111,15 @@ static struct ext2_entry *finddir(struct vfs_interface *self, unsigned int id, c
 static unsigned int walk(struct vfs_interface *self, unsigned int id, unsigned int count, char *path)
 {
 
-    char *temp = path;
     struct ext2_entry *entry;
 
     if (!count)
         return id;
 
-    while ((entry = finddir(self, id, temp)))
+    while ((entry = finddir(self, id, path)))
     {
 
-        temp += entry->length + 1;
+        path += entry->length + 1;
         id = entry->node;
 
     }
