@@ -7,23 +7,21 @@
 static unsigned int read_root(struct video_filesystem *filesystem, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    char temp[1024];
     unsigned int o = 0;
-    unsigned int c = 1024;
     unsigned int i;
 
-    o += memory_write(temp, c - o, "../\n", 4, o);
+    o += memory_write(buffer, count - o, "../\n", 4, o);
 
     for (i = 0; i < filesystem->interfacesCount; i++)
     {
 
-        string_write_num(temp + o, i, 10);
-        o += string_length(temp + o);
-        o += memory_write(temp, c - o, "/\n", 2, o);
+        string_write_num((char *)buffer + o, i, 10);
+        o += string_length((char *)buffer + o);
+        o += memory_write(buffer, count - o, "/\n", 2, o);
 
     }
 
-    return memory_read(buffer, count, temp, o, offset);
+    return o;
 
 }
 
