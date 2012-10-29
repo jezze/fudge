@@ -11,7 +11,7 @@
 static void write_register(unsigned short index, unsigned short data)
 {
 
-    io_outw(BGA_INDEX, index);
+    io_outw(BGA_COMMAND, index);
     io_outw(BGA_DATA, data);
 
 }
@@ -19,11 +19,11 @@ static void write_register(unsigned short index, unsigned short data)
 static void set_mode(struct bga_driver *self)
 {
 
-    write_register(BGA_INDEX_ENABLE, 0x00);
-    write_register(BGA_INDEX_XRES, self->interface.xres);
-    write_register(BGA_INDEX_YRES, self->interface.yres);
-    write_register(BGA_INDEX_BPP, self->interface.bpp);
-    write_register(BGA_INDEX_ENABLE, 0x40 | 0x01);
+    write_register(BGA_COMMAND_ENABLE, 0x00);
+    write_register(BGA_COMMAND_XRES, self->interface.xres);
+    write_register(BGA_COMMAND_YRES, self->interface.yres);
+    write_register(BGA_COMMAND_BPP, self->interface.bpp);
+    write_register(BGA_COMMAND_ENABLE, 0x40 | 0x01);
 
 }
 

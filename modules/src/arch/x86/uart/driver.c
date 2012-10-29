@@ -64,7 +64,7 @@ static void attach(struct base_device *device)
     io_outb(uartDevice->port + UART_MCR, 0x0B);
     io_outb(uartDevice->port + UART_IER, 0x01);
 
-    apic_register_routine(uartDevice->irq, device, handle_irq);
+    apic_set_routine(uartDevice->irq, device, handle_irq);
 
 }
 

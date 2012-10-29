@@ -129,7 +129,7 @@ static void attach(struct base_device *device)
 
     struct ps2_device *ps2device = (struct ps2_device *)device;
 
-    apic_register_routine(ps2device->irq, device, handle_irq);
+    apic_set_routine(ps2device->irq, device, handle_irq);
 
 }
 

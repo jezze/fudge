@@ -1,7 +1,7 @@
 #ifndef LIB_GFX_H
 #define LIB_GFX_H
 
-#define GFX_BUFFER_SIZE 0x1000
+#define GFX_BUFFER_SIZE                 0x1000
 
 enum gfx_surface_type
 {

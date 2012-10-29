@@ -15,7 +15,7 @@ static void attach(struct base_device *device)
 
     struct ata_device *ataDevice = (struct ata_device *)device;
 
-    apic_register_routine(ataDevice->irq, device, handle_irq);
+    apic_set_routine(ataDevice->irq, device, handle_irq);
 
 }
 

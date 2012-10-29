@@ -1,21 +1,21 @@
 #ifndef LIB_TAR_H
 #define LIB_TAR_H
 
-#define TAR_BLOCK_SIZE 512
+#define TAR_BLOCK_SIZE                  512
 
-#define TAR_NAME_SIZE     100
-#define TAR_MODE_SIZE     8
-#define TAR_UID_SIZE      8
-#define TAR_GID_SIZE      8
-#define TAR_SIZE_SIZE     12
-#define TAR_MTIME_SIZE    12
-#define TAR_CHECKSUM_SIZE 8
-#define TAR_TYPEFLAG_SIZE 1
-#define TAR_LINKNAME_SIZE 100
+#define TAR_NAME_SIZE                   100
+#define TAR_MODE_SIZE                   8
+#define TAR_UID_SIZE                    8
+#define TAR_GID_SIZE                    8
+#define TAR_SIZE_SIZE                   12
+#define TAR_MTIME_SIZE                  12
+#define TAR_CHECKSUM_SIZE               8
+#define TAR_TYPEFLAG_SIZE               1
+#define TAR_LINKNAME_SIZE               100
 
-#define TAR_FILETYPE_NORMAL  '0'
-#define TAR_FILETYPE_LINK    '1'
-#define TAR_FILETYPE_SYMLINK '2'
+#define TAR_FILETYPE_NORMAL             '0'
+#define TAR_FILETYPE_LINK               '1'
+#define TAR_FILETYPE_SYMLINK            '2'
 
 struct tar_header
 {

@@ -6,7 +6,7 @@
 #include <arch/x86/cpuid/cpuid.h>
 #include <arch/x86/io/io.h>
 
-static struct apic_routine routines[APIC_TABLE_SLOTS];
+static struct apic_routine routines[APIC_ROUTINE_SLOTS];
 
 static void raise(unsigned int index)
 {
@@ -59,7 +59,7 @@ static void handle_interrupt(struct isr_registers *registers)
 
 }
 
-unsigned int apic_register_routine(unsigned int index, struct base_device *device, void (*callback)(struct base_device *device))
+unsigned int apic_set_routine(unsigned int index, struct base_device *device, void (*callback)(struct base_device *device))
 {
 
     if (routines[index].device)
@@ -72,7 +72,7 @@ unsigned int apic_register_routine(unsigned int index, struct base_device *devic
 
 }
 
-unsigned int apic_unregister_routine(unsigned int index, struct base_device *device)
+unsigned int apic_unset_routine(unsigned int index, struct base_device *device)
 {
 
     if (routines[index].device != device)
@@ -116,7 +116,7 @@ void init()
     idt_set_entry(0x2E, apic_routine0E, 0x08, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
     idt_set_entry(0x2F, apic_routine0F, 0x08, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
 
-    for (i = 0; i < APIC_TABLE_SLOTS; i++)
+    for (i = 0; i < APIC_ROUTINE_SLOTS; i++)
         isr_set_routine(i + APIC_DATA_MASTERVECTOR, handle_interrupt);
 
     remap();

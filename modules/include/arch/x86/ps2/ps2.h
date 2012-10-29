@@ -1,15 +1,15 @@
 #ifndef MODULES_PS2_H
 #define MODULES_PS2_H
 
-#define PS2_REGISTER_DATA    0x60
-#define PS2_REGISTER_COMMAND 0x64
+#define PS2_REGISTER_DATA               0x60
+#define PS2_REGISTER_COMMAND            0x64
 
-#define PS2_IRQ_KBD 0x01
-#define PS2_IRQ_MOUSE 0x0C
+#define PS2_IRQ_KBD                     0x01
+#define PS2_IRQ_MOUSE                   0x0C
 
-#define PS2_DEVICE_TYPE       0x3205
-#define PS2_KBD_DRIVER_TYPE   0x0005
-#define PS2_MOUSE_DRIVER_TYPE 0x0059
+#define PS2_DEVICE_TYPE                 0x3205
+#define PS2_KBD_DRIVER_TYPE             0x0005
+#define PS2_MOUSE_DRIVER_TYPE           0x0059
 
 struct ps2_device
 {

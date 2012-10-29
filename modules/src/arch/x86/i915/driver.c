@@ -87,7 +87,7 @@ static void enable_pipe()
 static void enable_plane()
 {
 
-    write(I915_DISPLAYB_CONTROL, read(I915_DISPLAYB_CONTROL) & I915_DISPLAY_CONTROL_ENABLE_PLANE);
+    write(I915_DISPLAYB_CONTROL, read(I915_DISPLAYB_CONTROL) & I915_DISPLAY_CONTROL_ENPLANE);
 
 }
 
@@ -141,7 +141,7 @@ static void attach(struct base_device *device)
 
     unsigned int irq = pciDevice->config_inb(pciDevice, PCI_CONFIG_IRQ_LINE);
 
-    apic_register_routine(irq, device, handle_irq);
+    apic_set_routine(irq, device, handle_irq);
 
 }
 

@@ -1,28 +1,28 @@
 #ifndef MODULES_EXT2_H
 #define MODULES_EXT2_H
 
-#define EXT2_STATE_CLEAN        1
-#define EXT2_STATE_DIRTY        2
+#define EXT2_STATE_CLEAN                1
+#define EXT2_STATE_DIRTY                2
 
-#define EXT2_ERROR_IGNORE       1
-#define EXT2_ERROR_RO           2
-#define EXT2_ERROR_PANIC        3
+#define EXT2_ERROR_IGNORE               1
+#define EXT2_ERROR_RO                   2
+#define EXT2_ERROR_PANIC                3
 
-#define EXT2_OSID_LINUX         0
-#define EXT2_OSID_HURD          1
-#define EXT2_OSID_MASIX         2
-#define EXT2_OSID_FREEBSD       3
-#define EXT2_OSID_OTHERBSD      4
+#define EXT2_OSID_LINUX                 0
+#define EXT2_OSID_HURD                  1
+#define EXT2_OSID_MASIX                 2
+#define EXT2_OSID_FREEBSD               3
+#define EXT2_OSID_OTHERBSD              4
 
-#define EXT2_NODE_TYPE_FIFO     0x1000
-#define EXT2_NODE_TYPE_CHAR     0x2000
-#define EXT2_NODE_TYPE_DIR      0x4000
-#define EXT2_NODE_TYPE_BLOCK    0x6000
-#define EXT2_NODE_TYPE_REGULAR  0x8000
-#define EXT2_NODE_TYPE_SYM      0xA000
-#define EXT2_NODE_TYPE_SOCKET   0xC000
+#define EXT2_NODE_TYPE_FIFO             0x1000
+#define EXT2_NODE_TYPE_CHAR             0x2000
+#define EXT2_NODE_TYPE_DIR              0x4000
+#define EXT2_NODE_TYPE_BLOCK            0x6000
+#define EXT2_NODE_TYPE_REGULAR          0x8000
+#define EXT2_NODE_TYPE_SYM              0xA000
+#define EXT2_NODE_TYPE_SOCKET           0xC000
 
-#define EXT2_DRIVER_TYPE        0x0320
+#define EXT2_DRIVER_TYPE                0x0320
 
 struct ext2_superblock
 {

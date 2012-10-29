@@ -1,11 +1,11 @@
 #ifndef MODULES_BASE_H
 #define MODULES_BASE_H
 
-#define BASE_TYPE_BUS        1
-#define BASE_TYPE_DEVICE     2
-#define BASE_TYPE_DRIVER     3
+#define BASE_MODULE_SLOTS               128
 
-#define BASE_MODULE_SLOTS 128
+#define BASE_TYPE_BUS                   1
+#define BASE_TYPE_DEVICE                2
+#define BASE_TYPE_DRIVER                3
 
 struct base_bus;
 struct base_device;

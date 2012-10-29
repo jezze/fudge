@@ -1,8 +1,8 @@
 #ifndef LIB_FUDGE_H
 #define LIB_FUDGE_H
 
-#define FILE_STDIN  1
-#define FILE_STDOUT 2
+#define FILE_STDIN                      1
+#define FILE_STDOUT                     2
 
 #include "arp.h"
 #include "call.h"

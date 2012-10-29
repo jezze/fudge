@@ -22,7 +22,7 @@ static void attach(struct base_device *device)
     io_outb(PIT_COUNTER0, (unsigned char)(pitDevice->divisor >> 0));
     io_outb(PIT_COUNTER0, (unsigned char)(pitDevice->divisor >> 8));
 
-    apic_register_routine(pitDevice->irq, device, handle_irq);
+    apic_set_routine(pitDevice->irq, device, handle_irq);
 
 }
 

@@ -1,7 +1,7 @@
 #ifndef KERNEL_ERROR_H
 #define KERNEL_ERROR_H
 
-#define ERROR_REGISTER_SLOTS 8
+#define ERROR_REGISTER_SLOTS            8
 
 struct error_status
 {

@@ -112,7 +112,7 @@ static void attach(struct base_device *device)
 
     driver->io = bar0 & ~1;
 
-    apic_register_routine(irq, device, handle_irq);
+    apic_set_routine(irq, device, handle_irq);
 
 }
 

@@ -4,7 +4,7 @@
 #include <runtime.h>
 #include <syscall.h>
 
-static unsigned int (*routines[SYSCALL_TABLE_SLOTS])(struct runtime_task *task, void *stack);
+static unsigned int (*routines[SYSCALL_ROUTINE_SLOTS])(struct runtime_task *task, void *stack);
 
 static unsigned int attach(struct runtime_task *task, void *stack)
 {
@@ -219,7 +219,7 @@ static unsigned int write(struct runtime_task *task, void *stack)
 void syscall_set_routine(unsigned int index, unsigned int (*routine)(struct runtime_task *task, void *stack))
 {
 
-    if (!index || index >= SYSCALL_TABLE_SLOTS)
+    if (!index || index >= SYSCALL_ROUTINE_SLOTS)
         return;
 
     routines[index] = routine;
@@ -229,7 +229,7 @@ void syscall_set_routine(unsigned int index, unsigned int (*routine)(struct runt
 void syscall_unset_routine(unsigned int index)
 {
 
-    if (!index || index >= SYSCALL_TABLE_SLOTS)
+    if (!index || index >= SYSCALL_ROUTINE_SLOTS)
         return;
 
     routines[index] = 0;
@@ -239,7 +239,7 @@ void syscall_unset_routine(unsigned int index)
 unsigned int syscall_raise(unsigned int index, struct runtime_task *task, void *stack)
 {
 
-    if (!index || index >= SYSCALL_TABLE_SLOTS)
+    if (!index || index >= SYSCALL_ROUTINE_SLOTS)
         return 0;
 
     return routines[index](task, stack);
@@ -251,7 +251,7 @@ void syscall_setup()
 
     unsigned int i;
 
-    for (i = 0; i < SYSCALL_TABLE_SLOTS; i++)
+    for (i = 0; i < SYSCALL_ROUTINE_SLOTS; i++)
         syscall_set_routine(i, undefined);
 
     syscall_set_routine(SYSCALL_INDEX_OPEN, open);
