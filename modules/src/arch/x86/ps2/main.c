@@ -68,7 +68,7 @@ static unsigned int my_read(struct nodefs_node *self, unsigned int offset, unsig
 void init()
 {
 
-    ps2_init_device(&kbdDevice, "ps2kbd", PS2_IRQ_KBD);
+    ps2_init_device(&kbdDevice, "ps2kbd", PS2_IRQ_KEYBOARD);
     ps2_init_device(&mouseDevice, "ps2mouse", PS2_IRQ_MOUSE);
     ps2_init_kbd_driver(&kbdDriver);
     ps2_init_mouse_driver(&mouseDriver);

@@ -1,10 +1,10 @@
 #ifndef MODULES_PS2_H
 #define MODULES_PS2_H
 
-#define PS2_REGISTER_DATA               0x60
-#define PS2_REGISTER_COMMAND            0x64
+#define PS2_DATA                        0x60
+#define PS2_COMMAND                     0x64
 
-#define PS2_IRQ_KBD                     0x01
+#define PS2_IRQ_KEYBOARD                0x01
 #define PS2_IRQ_MOUSE                   0x0C
 
 #define PS2_DEVICE_TYPE                 0x3205

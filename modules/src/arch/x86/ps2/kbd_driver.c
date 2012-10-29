@@ -77,7 +77,7 @@ static void handle_irq(struct base_device *self)
     if (!kbd)
         return;
 
-    scancode = io_inb(PS2_REGISTER_DATA);
+    scancode = io_inb(PS2_DATA);
 
     if (kbd->escaped)
     {
@@ -141,7 +141,7 @@ static unsigned int check(struct base_driver *self, struct base_device *device)
     if (device->type != PS2_DEVICE_TYPE)
         return 0;
 
-    return ps2device->irq == PS2_IRQ_KBD;
+    return ps2device->irq == PS2_IRQ_KEYBOARD;
 
 }
 

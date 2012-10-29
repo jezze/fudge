@@ -1,8 +1,8 @@
 #ifndef MODULES_RTC_H
 #define MODULES_RTC_H
 
-#define RTC_PORT_WRITE                  0x70
-#define RTC_PORT_READ                   0x71
+#define RTC_COMMAND                     0x70
+#define RTC_DATA                        0x71
 
 #define RTC_FLAG_SECONDS                0x00
 #define RTC_FLAG_MINUTES                0x02

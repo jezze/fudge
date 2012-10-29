@@ -1,25 +1,25 @@
 #ifndef MODULES_CPUID_H
 #define MODULES_CPUID_H
 
-#define CPUID_INSTRUCTION_VENDOR        0x00000000
-#define CPUID_INSTRUCTION_FEATURES0     0x00000001
-#define CPUID_INSTRUCTION_CACHE         0x00000002
-#define CPUID_INSTRUCTION_SERIAL        0x00000003
-#define CPUID_INSTRUCTION_DCACHE        0x00000004
-#define CPUID_INSTRUCTION_MONITOR       0x00000005
-#define CPUID_INSTRUCTION_THERMAL       0x00000006
-#define CPUID_INSTRUCTION_DCA           0x00000009
-#define CPUID_INSTRUCTION_PMON          0x0000000A
-#define CPUID_INSTRUCTION_2XAPIC        0x0000000B
-#define CPUID_INSTRUCTION_XSAVE         0x0000000D
-#define CPUID_INSTRUCTION_LARGEST       0x80000000
-#define CPUID_INSTRUCTION_FEATURES1     0x80000001
-#define CPUID_INSTRUCTION_BRAND0        0x80000002
-#define CPUID_INSTRUCTION_BRAND1        0x80000003
-#define CPUID_INSTRUCTION_BRAND2        0x80000004
-#define CPUID_INSTRUCTION_L2CACHE       0x80000006
-#define CPUID_INSTRUCTION_APM           0x80000007
-#define CPUID_INSTRUCTION_MEMSIZE       0x80000008
+#define CPUID_VENDOR                    0x00000000
+#define CPUID_FEATURES0                 0x00000001
+#define CPUID_CACHE                     0x00000002
+#define CPUID_SERIAL                    0x00000003
+#define CPUID_DCACHE                    0x00000004
+#define CPUID_MONITOR                   0x00000005
+#define CPUID_THERMAL                   0x00000006
+#define CPUID_DCA                       0x00000009
+#define CPUID_PMON                      0x0000000A
+#define CPUID_2XAPIC                    0x0000000B
+#define CPUID_XSAVE                     0x0000000D
+#define CPUID_LARGEST                   0x80000000
+#define CPUID_FEATURES1                 0x80000001
+#define CPUID_BRAND0                    0x80000002
+#define CPUID_BRAND1                    0x80000003
+#define CPUID_BRAND2                    0x80000004
+#define CPUID_L2CACHE                   0x80000006
+#define CPUID_APM                       0x80000007
+#define CPUID_MEMSIZE                   0x80000008
 
 #define CPUID_VENDOR_AMD                "AuthenticAMD"
 #define CPUID_VENDOR_AMD_LEGACY         "AMDisbetter!"
