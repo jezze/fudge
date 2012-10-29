@@ -10,8 +10,8 @@ static struct ata_driver driver;
 void init()
 {
 
-    ata_init_bus(&primary, ATA_PRIMARY_MASTER_CONTROL, ATA_PRIMARY_MASTER_DATA);
-    ata_init_bus(&secondary, ATA_PRIMARY_SLAVE_CONTROL, ATA_PRIMARY_SLAVE_DATA);
+    ata_init_bus(&primary, ATA_BUS0_COMMAND0, ATA_BUS0_DATA0);
+    ata_init_bus(&secondary, ATA_BUS0_COMMAND1, ATA_BUS0_DATA1);
 
     base_register_bus(&primary.base);
     base_register_bus(&secondary.base);

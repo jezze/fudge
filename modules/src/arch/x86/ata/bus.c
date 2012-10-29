@@ -91,7 +91,7 @@ static void sleep(struct ata_bus *self)
 static void wait(struct ata_bus *self)
 {
 
-    while (io_inb(self->data + ATA_DATA_COMMAND) & ATA_STATUS_FLAG_BUSY);
+    while (io_inb(self->data + ATA_DATA_COMMAND) & ATA_STATUS_BUSY);
 
 }
 

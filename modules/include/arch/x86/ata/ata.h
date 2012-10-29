@@ -1,6 +1,15 @@
 #ifndef MODULES_ATA_H
 #define MODULES_ATA_H
 
+#define ATA_BUS1_DATA1                  0x0168
+#define ATA_BUS0_DATA1                  0x0170
+#define ATA_BUS1_DATA0                  0x01E8
+#define ATA_BUS0_DATA0                  0x01F0
+#define ATA_BUS1_COMMAND1               0x0366
+#define ATA_BUS0_COMMAND1               0x0376
+#define ATA_BUS1_COMMAND0               0x03E6
+#define ATA_BUS0_COMMAND0               0x03F6
+
 #define ATA_COMMAND_ATAPI_EJECT         0x1B
 #define ATA_COMMAND_PIO28_READ          0x20
 #define ATA_COMMAND_PIO48_READ          0x24
@@ -36,21 +45,12 @@
 #define ATA_ID_SUPPORT                  0x53
 #define ATA_ID_LBA48MAX                 0x64
 
-#define ATA_PRIMARY_MASTER_DATA         0x1F0
-#define ATA_PRIMARY_MASTER_CONTROL      0x3F6
-#define ATA_PRIMARY_SLAVE_DATA          0x170
-#define ATA_PRIMARY_SLAVE_CONTROL       0x376
-#define ATA_SECONDARY_MASTER_DATA       0x1E8
-#define ATA_SECONDARY_MASTER_CONTROL    0x3E6
-#define ATA_SECONDARY_SLAVE_DATA        0x168
-#define ATA_SECONDARY_SLAVE_CONTROL     0x366
-
-#define ATA_STATUS_FLAG_ERROR           (1 << 0)
-#define ATA_STATUS_FLAG_DRQ             (1 << 3)
-#define ATA_STATUS_FLAG_SRV             (1 << 4)
-#define ATA_STATUS_FLAG_DF              (1 << 5)
-#define ATA_STATUS_FLAG_RDY             (1 << 6)
-#define ATA_STATUS_FLAG_BUSY            (1 << 7)
+#define ATA_STATUS_ERROR                (1 << 0)
+#define ATA_STATUS_DRQ                  (1 << 3)
+#define ATA_STATUS_SRV                  (1 << 4)
+#define ATA_STATUS_DF                   (1 << 5)
+#define ATA_STATUS_RDY                  (1 << 6)
+#define ATA_STATUS_BUSY                 (1 << 7)
 
 #define ATA_DEVICE_TYPE_UNKNOWN         0x00
 #define ATA_DEVICE_TYPE_ATA             0x01
