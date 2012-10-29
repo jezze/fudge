@@ -21,23 +21,23 @@ static void raise(unsigned int index)
 static void remap()
 {
 
-    io_outb(APIC_MASTER_COMMAND, APIC_COMMAND_CONFIG);
-    io_outb(APIC_MASTER_DATA, APIC_DATA_MASTERVECTOR);
-    io_outb(APIC_MASTER_DATA, 0x04);
-    io_outb(APIC_MASTER_DATA, APIC_DATA_8086);
+    io_outb(APIC_COMMAND0, APIC_COMMAND_CONFIG);
+    io_outb(APIC_DATA0, APIC_DATA_VECTOR0);
+    io_outb(APIC_DATA0, 0x04);
+    io_outb(APIC_DATA0, APIC_DATA_8086);
 
-    io_outb(APIC_SLAVE_COMMAND, APIC_COMMAND_CONFIG);
-    io_outb(APIC_SLAVE_DATA, APIC_DATA_SLAVEVECTOR);
-    io_outb(APIC_SLAVE_DATA, 0x02);
-    io_outb(APIC_SLAVE_DATA, APIC_DATA_8086);
+    io_outb(APIC_COMMAND1, APIC_COMMAND_CONFIG);
+    io_outb(APIC_DATA1, APIC_DATA_VECTOR1);
+    io_outb(APIC_DATA1, 0x02);
+    io_outb(APIC_DATA1, APIC_DATA_8086);
 
 }
 
 static void enable()
 {
 
-    io_outb(APIC_MASTER_DATA, 0x00);
-    io_outb(APIC_SLAVE_DATA, 0x00);
+    io_outb(APIC_DATA0, 0x00);
+    io_outb(APIC_DATA1, 0x00);
 
 }
 
@@ -45,16 +45,16 @@ static void reset(unsigned int slave)
 {
 
     if (slave)
-        io_outb(APIC_SLAVE_COMMAND, APIC_COMMAND_EOI);
+        io_outb(APIC_COMMAND1, APIC_COMMAND_EOI);
 
-    io_outb(APIC_MASTER_COMMAND, APIC_COMMAND_EOI);
+    io_outb(APIC_COMMAND0, APIC_COMMAND_EOI);
 
 }
 
 static void handle_interrupt(struct isr_registers *registers)
 {
 
-    raise(registers->index - APIC_DATA_MASTERVECTOR);
+    raise(registers->index - APIC_DATA_VECTOR0);
     reset(registers->extra);
 
 }
@@ -117,7 +117,7 @@ void init()
     idt_set_entry(0x2F, apic_routine0F, 0x08, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
 
     for (i = 0; i < APIC_ROUTINE_SLOTS; i++)
-        isr_set_routine(i + APIC_DATA_MASTERVECTOR, handle_interrupt);
+        isr_set_routine(i + APIC_DATA_VECTOR0, handle_interrupt);
 
     remap();
     enable();
