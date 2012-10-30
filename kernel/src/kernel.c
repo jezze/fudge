@@ -1,5 +1,4 @@
 #include <memory.h>
-#include <error.h>
 #include <kernel.h>
 #include <vfs.h>
 #include <binary.h>

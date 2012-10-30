@@ -1,14 +1,8 @@
-#include <kernel.h>
-#include <runtime.h>
 #include <arch/x86/arch.h>
-#include <arch/x86/cpu.h>
-#include <arch/x86/isr.h>
 #include <arch/x86/mboot.h>
 
 void mboot_setup(struct mboot_header *header, unsigned int magic)
 {
-
-    struct runtime_task *task;
 
     if (header->flags & MBOOT_FLAG_LOADER)
     {
@@ -83,13 +77,7 @@ void mboot_setup(struct mboot_header *header, unsigned int magic)
 
     }
 
-    arch_setup();
-
-    task = kernel_setup(header->modules.count, header->modules.address);
-
-    isr_set_task(task);
-
-    cpu_enter_usermode(task->registers.ip, task->registers.sp);
+    arch_setup(header->modules.count, header->modules.address);
 
 }
 
