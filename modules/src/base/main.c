@@ -83,18 +83,10 @@ void base_register_driver(struct base_driver *driver)
         if (!attach(driver))
             return;
 
-        if (driver->start)
-            driver->start(driver);
-
     }
 
-    else
-    {
-
-        if (driver->start)
-            driver->start(driver);
-
-    }
+    if (driver->start)
+        driver->start(driver);
 
 }
 
