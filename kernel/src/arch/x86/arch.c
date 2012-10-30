@@ -1,5 +1,5 @@
-#include <kernel.h>
 #include <runtime.h>
+#include <kernel.h>
 #include <arch/x86/arch.h>
 #include <arch/x86/cpu.h>
 #include <arch/x86/gdt.h>
@@ -9,10 +9,11 @@
 #include <arch/x86/syscall.h>
 #include <arch/x86/tss.h>
 
+static struct runtime_task task;
+
 void arch_setup(unsigned int ramdiskc, void **ramdiskv)
 {
 
-    struct runtime_task *task;
     unsigned short cs;
     unsigned short ss;
 
@@ -28,11 +29,11 @@ void arch_setup(unsigned int ramdiskc, void **ramdiskv)
     mmu_setup_arch(cs);
     syscall_setup_arch(cs);
 
-    task = kernel_setup(ramdiskc, ramdiskv);
+    kernel_setup(&task, ramdiskc, ramdiskv);
 
-    isr_set_task(task);
+    isr_set_task(&task);
 
-    cpu_enter_usermode(task->registers.ip, task->registers.sp);
+    cpu_enter_usermode(task.registers.ip, task.registers.sp);
 
 }
 
