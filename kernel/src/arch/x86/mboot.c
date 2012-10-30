@@ -1,11 +1,14 @@
 #include <kernel.h>
+#include <runtime.h>
 #include <arch/x86/arch.h>
+#include <arch/x86/cpu.h>
+#include <arch/x86/isr.h>
 #include <arch/x86/mboot.h>
-
-static struct arch_interface interface;
 
 void mboot_setup(struct mboot_header *header, unsigned int magic)
 {
+
+    struct runtime_task *task;
 
     if (header->flags & MBOOT_FLAG_LOADER)
     {
@@ -80,9 +83,13 @@ void mboot_setup(struct mboot_header *header, unsigned int magic)
 
     }
 
-    arch_init_interface(&interface, header->modules.count, header->modules.address);
+    arch_setup();
 
-    kernel_register_interface(&interface.base);
+    task = kernel_setup(header->modules.count, header->modules.address);
+
+    isr_set_task(task);
+
+    cpu_enter_usermode(task->registers.ip, task->registers.sp);
 
 }
 

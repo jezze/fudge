@@ -9,7 +9,7 @@
 #include <arch/x86/syscall.h>
 #include <arch/x86/tss.h>
 
-static void setup(struct kernel_interface *self)
+void arch_setup()
 {
 
     unsigned short cs;
@@ -26,15 +26,6 @@ static void setup(struct kernel_interface *self)
 
     mmu_setup_arch(cs);
     syscall_setup_arch(cs);
-
-}
-
-void arch_init_interface(struct arch_interface *interface, unsigned int ramdiskc, void **ramdiskv)
-{
-
-    memory_clear(interface, sizeof (struct arch_interface));
-
-    kernel_init_interface(&interface->base, setup, cpu_enter_usermode, ramdiskc, ramdiskv);
 
 }
 
