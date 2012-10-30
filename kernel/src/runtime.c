@@ -118,12 +118,10 @@ void runtime_init_registers(struct runtime_registers *registers, unsigned int ip
 
 }
 
-void runtime_init_task(struct runtime_task *task, unsigned int ip)
+void runtime_init_task(struct runtime_task *task)
 {
 
     memory_clear(task, sizeof (struct runtime_task));
-
-    runtime_init_registers(&task->registers, ip, RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE, RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE, 0);
 
     task->notify_interrupt = notify_interrupt;
     task->notify_complete = notify_complete;

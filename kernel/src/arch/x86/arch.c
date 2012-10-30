@@ -29,6 +29,7 @@ void arch_setup(unsigned int ramdiskc, void **ramdiskv)
     mmu_setup_arch(cs);
     syscall_setup_arch(cs);
 
+    runtime_init_task(&task);
     kernel_setup(&task, ramdiskc, ramdiskv);
 
     isr_set_task(&task);
