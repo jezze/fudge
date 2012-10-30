@@ -74,7 +74,6 @@ void runtime_init_descriptor(struct runtime_descriptor *descriptor, unsigned int
 void runtime_init_mount(struct runtime_mount *mount, struct vfs_interface *interface, unsigned int count, char *path);
 void runtime_init_registers(struct runtime_registers *registers, unsigned int ip, unsigned int sp, unsigned int sb, unsigned int status);
 void runtime_init_task(struct runtime_task *task, unsigned int ip);
-void runtime_reset_task(struct runtime_task *task, unsigned int ip);
 
 #endif
 
