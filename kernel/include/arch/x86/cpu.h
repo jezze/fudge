@@ -1,7 +1,6 @@
 #ifndef ARCH_CPU_H
 #define ARCH_CPU_H
 
-void cpu_enter_usermode(unsigned int ip, unsigned int sp);
 unsigned int cpu_get_cr0();
 unsigned int cpu_get_cr2();
 unsigned int cpu_get_cr3();

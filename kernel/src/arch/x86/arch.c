@@ -1,7 +1,6 @@
 #include <runtime.h>
 #include <kernel.h>
 #include <arch/x86/arch.h>
-#include <arch/x86/cpu.h>
 #include <arch/x86/gdt.h>
 #include <arch/x86/idt.h>
 #include <arch/x86/isr.h>
@@ -33,8 +32,7 @@ void arch_setup(unsigned int ramdiskc, void **ramdiskv)
     kernel_setup(&task, ramdiskc, ramdiskv);
 
     isr_set_task(&task);
-
-    cpu_enter_usermode(task.registers.ip, task.registers.sp);
+    isr_usermode(task.registers.ip, task.registers.sp);
 
 }
 
