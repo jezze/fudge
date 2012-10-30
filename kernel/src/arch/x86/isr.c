@@ -6,6 +6,7 @@
 #include <arch/x86/idt.h>
 #include <arch/x86/isr.h>
 
+static struct runtime_task *running;
 static void (*routines[ISR_ROUTINE_SLOTS])(struct isr_registers *registers);
 
 static unsigned short load_kstate(struct isr_registers *registers)
@@ -34,23 +35,26 @@ static unsigned short load_ustate(struct runtime_task *task, struct isr_register
 
 }
 
+struct runtime_task *isr_get_task()
+{
+
+    return running;
+
+}
+
 unsigned short isr_raise(struct isr_registers *registers)
 {
 
-    struct runtime_task *task = runtime_get_task();
+    runtime_init_registers(&running->registers, registers->interrupt.eip, registers->interrupt.esp, registers->general.ebp, registers->general.eax);
 
-    runtime_init_registers(&task->registers, registers->interrupt.eip, registers->interrupt.esp, registers->general.ebp, registers->general.eax);
-
-    task->notify_interrupt(task, registers->index);
+    running->notify_interrupt(running, registers->index);
 
     routines[registers->index](registers);
 
-    task->notify_complete(task);
+    running->notify_complete(running);
 
-    task = runtime_get_task();
-
-    if (task->status.used && !task->status.idle)
-        return load_ustate(task, registers);
+    if (running->status.used && !running->status.idle)
+        return load_ustate(running, registers);
 
     return load_kstate(registers);
 
@@ -63,6 +67,13 @@ void isr_set_routine(unsigned int index, void (*routine)(struct isr_registers *r
         return;
 
     routines[index] = routine;
+
+}
+
+void isr_set_task(struct runtime_task *task)
+{
+
+    running = task;
 
 }
 

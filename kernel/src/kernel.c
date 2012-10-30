@@ -9,6 +9,9 @@
 
 static struct runtime_task task;
 
+/* This needs to be moved */
+extern void isr_set_task(struct runtime_task *task);
+
 void kernel_register_interface(struct kernel_interface *interface)
 {
 
@@ -28,7 +31,7 @@ void kernel_register_interface(struct kernel_interface *interface)
     task.status.used = 1;
 
     runtime_init_mount(&task.mounts[1], ramdisk, 9, "/ramdisk/");
-    runtime_set_task(&task);
+    isr_set_task(&task);
 
     interface->enter_usermode(task.registers.ip, task.registers.sp);
 

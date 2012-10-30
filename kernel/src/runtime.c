@@ -1,22 +1,6 @@
 #include <memory.h>
 #include <runtime.h>
 
-struct runtime_task *running;
-
-struct runtime_task *runtime_get_task()
-{
-
-    return running;
-
-}
-
-void runtime_set_task(struct runtime_task *task)
-{
-
-    running = task;
-
-}
-
 unsigned int runtime_set_task_event(struct runtime_task *task, unsigned int index, unsigned int callback)
 {
 

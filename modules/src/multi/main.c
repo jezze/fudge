@@ -3,6 +3,7 @@
 #include <binary.h>
 #include <runtime.h>
 #include <syscall.h>
+#include <arch/x86/isr.h>
 #include <arch/x86/mmu.h>
 #include <multi/multi.h>
 
@@ -49,7 +50,7 @@ static void schedule()
         if (tasks[i].status.idle)
             continue;
 
-        runtime_set_task(&tasks[i]);
+        isr_set_task(&tasks[i]);
 
         mmu_load_memory(i);
 

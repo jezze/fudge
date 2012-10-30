@@ -63,8 +63,6 @@ struct runtime_task
 
 };
 
-struct runtime_task *runtime_get_task();
-void runtime_set_task(struct runtime_task *task);
 unsigned int runtime_set_task_event(struct runtime_task *task, unsigned int index, unsigned int callback);
 unsigned int runtime_unset_task_event(struct runtime_task *task, unsigned int index);
 struct runtime_descriptor *runtime_get_task_descriptor(struct runtime_task *task, unsigned int index);

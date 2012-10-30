@@ -7,7 +7,7 @@
 static void handle_interrupt(struct isr_registers *registers)
 {
 
-    struct runtime_task *task = runtime_get_task();
+    struct runtime_task *task = isr_get_task();
 
     task->notify_interrupt(task, registers->index + registers->extra);
     task->registers.status = syscall_raise(registers->extra, task, (void *)registers->interrupt.esp);
