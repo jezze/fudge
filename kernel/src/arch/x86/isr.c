@@ -10,32 +10,6 @@
 static struct runtime_task *running;
 static void (*routines[ISR_ROUTINE_SLOTS])(struct isr_registers *registers);
 
-static unsigned short load_kstate(struct isr_registers *registers)
-{
-
-    registers->interrupt.cs = gdt_get_selector(GDT_INDEX_KCODE);
-    registers->interrupt.eip = (unsigned int)cpu_halt;
-    registers->interrupt.esp = ARCH_STACK_BASE;
-    registers->general.ebp = 0;
-    registers->general.eax = 0;
-
-    return gdt_get_selector(GDT_INDEX_KDATA);
-
-}
-
-static unsigned short load_ustate(struct runtime_task *task, struct isr_registers *registers)
-{
-
-    registers->interrupt.cs = gdt_get_selector(GDT_INDEX_UCODE);
-    registers->interrupt.eip = task->registers.ip;
-    registers->interrupt.esp = task->registers.sp;
-    registers->general.ebp = task->registers.sb;
-    registers->general.eax = task->registers.status;
-
-    return gdt_get_selector(GDT_INDEX_UDATA);
-
-}
-
 struct runtime_task *isr_get_task()
 {
 
@@ -55,9 +29,25 @@ unsigned short isr_raise(struct isr_registers *registers)
     running->notify_complete(running);
 
     if (running->status.used && !running->status.idle)
-        return load_ustate(running, registers);
+    {
 
-    return load_kstate(registers);
+        registers->interrupt.cs = gdt_get_selector(GDT_INDEX_UCODE);
+        registers->interrupt.eip = running->registers.ip;
+        registers->interrupt.esp = running->registers.sp;
+        registers->general.ebp = running->registers.sb;
+        registers->general.eax = running->registers.status;
+
+        return gdt_get_selector(GDT_INDEX_UDATA);
+
+    }
+
+    registers->interrupt.cs = gdt_get_selector(GDT_INDEX_KCODE);
+    registers->interrupt.eip = (unsigned int)cpu_halt;
+    registers->interrupt.esp = ARCH_STACK_BASE;
+    registers->general.ebp = 0;
+    registers->general.eax = 0;
+
+    return gdt_get_selector(GDT_INDEX_KDATA);
 
 }
 
