@@ -1,6 +1,7 @@
 #include <memory.h>
 #include <error.h>
 #include <runtime.h>
+#include <arch/x86/arch.h>
 #include <arch/x86/cpu.h>
 #include <arch/x86/idt.h>
 #include <arch/x86/isr.h>
@@ -93,7 +94,7 @@ void mmu_setup_arch(unsigned short selector)
     idt_set_entry(0x0E, mmu_routine, selector, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
     isr_set_routine(0x0E, handle_interrupt);
 
-    mmu_map_kernel_memory(0, 0x00000000, 0x00000000, 0x00400000);
+    mmu_map_kernel_memory(0, ARCH_KERNEL_BASE, ARCH_KERNEL_BASE, ARCH_KERNEL_SIZE);
     mmu_map_user_memory(1, RUNTIME_TASK_PADDRESS_BASE + 1 * RUNTIME_TASK_ADDRESS_SIZE, RUNTIME_TASK_VADDRESS_BASE, RUNTIME_TASK_ADDRESS_SIZE);
     mmu_load_memory(1);
     enable();

@@ -23,7 +23,7 @@ void arch_setup(unsigned int ramdiskc, void **ramdiskv)
     cs = gdt_get_selector(GDT_INDEX_KCODE);
     ss = gdt_get_selector(GDT_INDEX_KDATA);
 
-    tss_setup(ss, 0x00400000);
+    tss_setup(ss, ARCH_STACK_BASE);
     isr_setup(cs);
 
     mmu_setup_arch(cs);

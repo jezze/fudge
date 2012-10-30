@@ -1,6 +1,7 @@
 #include <memory.h>
 #include <error.h>
 #include <runtime.h>
+#include <arch/x86/arch.h>
 #include <arch/x86/cpu.h>
 #include <arch/x86/gdt.h>
 #include <arch/x86/idt.h>
@@ -14,7 +15,7 @@ static unsigned short load_kstate(struct isr_registers *registers)
 
     registers->interrupt.cs = gdt_get_selector(GDT_INDEX_KCODE);
     registers->interrupt.eip = (unsigned int)cpu_halt;
-    registers->interrupt.esp = 0x00400000;
+    registers->interrupt.esp = ARCH_STACK_BASE;
     registers->general.ebp = 0;
     registers->general.eax = 0;
 
