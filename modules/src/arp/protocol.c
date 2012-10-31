@@ -8,7 +8,7 @@ static void handle_read(struct net_protocol *self, unsigned int count, void *buf
 
     struct arp_protocol *protocol = (struct arp_protocol *)self;
 
-    protocol->count = memory_write(protocol->buffer, 8192, buffer, count, 0);
+    protocol->count = memory_read(protocol->buffer, 8192, buffer, count, 0);
 
 }
 

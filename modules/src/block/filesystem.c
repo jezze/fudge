@@ -7,21 +7,29 @@
 static unsigned int read_root(struct block_filesystem *filesystem, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    unsigned int o = 0;
+    unsigned char *b = buffer;
+    unsigned int c = 0;
     unsigned int i;
 
-    o += memory_write(buffer, count - o, "../\n", 4, o);
+    c += memory_read(b + c, count - c, "../\n", 4, offset);
+    offset -= (offset > 4) ? 4 : offset;
 
     for (i = 0; i < filesystem->interfacesCount; i++)
     {
 
-        string_write_num((char *)buffer + o, i, 10);
-        o += string_length((char *)buffer + o);
-        o += memory_write(buffer, count - o, "/\n", 2, o);
+        char num[32];
+
+        string_write_num(num, i, 10);
+
+        c += memory_read(b + c, count - c, num, string_length(num), offset);
+        offset -= (offset > string_length(num)) ? string_length(num) : offset;
+
+        c += memory_read(b + c, count - c, "/\n", 2, offset);
+        offset -= (offset > 2) ? 2 : offset;
 
     }
 
-    return o;
+    return c;
 
 }
 

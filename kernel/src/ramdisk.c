@@ -85,16 +85,18 @@ static unsigned int read_directory(struct ramdisk_filesystem *filesystem, struct
 {
 
     unsigned int length = string_length(header->name);
-    unsigned int o = 0;
+    unsigned char *b = buffer;
+    unsigned int c = 0;
     unsigned int i;
 
-    o += memory_read((char *)buffer + o, count - o, "../\n", 4, offset);
-    offset = (offset > 4) ? offset - 4 : 0;
+    c += memory_read(b + c, count - c, "../\n", 4, offset);
+    offset -= (offset > 4) ? 4 : offset;
 
     for (i = 0; i < filesystem->image->count; i++)
     {
 
         unsigned int p = parent(filesystem, i + 1) - 1;
+        unsigned int l = string_length(filesystem->image->headers[i]->name);
 
         if (filesystem->image->headers[i] == header)
             continue;
@@ -102,15 +104,15 @@ static unsigned int read_directory(struct ramdisk_filesystem *filesystem, struct
         if (filesystem->image->headers[p] != header)
             continue;
 
-        o += memory_read((char *)buffer + o, count - o, filesystem->image->headers[i]->name + length, string_length(filesystem->image->headers[i]->name) - length, offset);
-        offset = (offset > string_length(filesystem->image->headers[i]->name) - length) ? offset - string_length(filesystem->image->headers[i]->name) - length : 0;
+        c += memory_read(b + c, count - c, filesystem->image->headers[i]->name + length, l - length, offset);
+        offset -= (offset > l - length) ? l - length : offset;
 
-        o += memory_read((char *)buffer + o, count - o, "\n", 1, offset);
-        offset = (offset > 1) ? offset - 1 : 0;
+        c += memory_read(b + c, count - c, "\n", 1, offset);
+        offset -= (offset > 1) ? 1 : offset;
 
     }
 
-    return o;
+    return c;
 
 }
 
