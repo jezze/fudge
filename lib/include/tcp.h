@@ -1,6 +1,3 @@
-#ifndef LIB_TCP_H
-#define LIB_TCP_H
-
 struct tcp_header
 {
 
@@ -14,6 +11,3 @@ struct tcp_header
     unsigned short urgent;
 
 } __attribute__((packed));
-
-#endif
-

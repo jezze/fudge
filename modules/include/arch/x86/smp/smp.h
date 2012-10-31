@@ -1,6 +1,3 @@
-#ifndef MODULES_SMP_H
-#define MODULES_SMP_H
-
 struct smp_cpu
 {
 
@@ -18,6 +15,3 @@ struct smp_architecture
     unsigned int count;
 
 };
-
-#endif
-

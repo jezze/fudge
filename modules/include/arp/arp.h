@@ -1,6 +1,3 @@
-#ifndef MODULES_ARP_H
-#define MODULES_ARP_H
-
 struct arp_protocol
 {
 
@@ -12,6 +9,3 @@ struct arp_protocol
 };
 
 void arp_init_protocol(struct arp_protocol *protocol);
-
-#endif
-

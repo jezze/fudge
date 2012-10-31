@@ -1,6 +1,3 @@
-#ifndef LIB_IPV6_H
-#define LIB_IPV6_H
-
 struct ipv6_header
 {
 
@@ -12,6 +9,3 @@ struct ipv6_header
     unsigned char tip[8];
 
 } __attribute__((packed));
-
-#endif
-

@@ -1,6 +1,3 @@
-#ifndef LIB_IPV4_H
-#define LIB_IPV4_H
-
 struct ipv4_header
 {
 
@@ -18,6 +15,3 @@ struct ipv4_header
     unsigned char tip[4];
 
 } __attribute__((packed));
-
-#endif
-

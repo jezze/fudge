@@ -1,6 +1,3 @@
-#ifndef MODULES_BLOCK_H
-#define MODULES_BLOCK_H
-
 struct block_interface
 {
 
@@ -34,6 +31,3 @@ void block_unregister_interface(struct block_interface *interface);
 void block_unregister_protocol(struct block_protocol *protocol);
 void block_init_filesystem(struct block_filesystem *filesystem);
 void block_init_interface(struct block_interface *interface, struct base_driver *driver);
-
-#endif
-

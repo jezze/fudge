@@ -1,6 +1,3 @@
-#ifndef MODULES_PCI_H
-#define MODULES_PCI_H
-
 #define PCI_ADDRESS                     0xCF8
 #define PCI_DATA                        0xCFC
 
@@ -75,6 +72,3 @@ struct pci_bus
 
 void pci_init_bus(struct pci_bus *bus);
 void pci_init_device(struct pci_device *device, struct pci_bus *bus, unsigned int num, unsigned int slot, unsigned int function, unsigned int address);
-
-#endif
-

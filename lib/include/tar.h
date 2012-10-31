@@ -1,6 +1,3 @@
-#ifndef LIB_TAR_H
-#define LIB_TAR_H
-
 #define TAR_BLOCK_SIZE                  512
 
 #define TAR_NAME_SIZE                   100
@@ -31,6 +28,3 @@ struct tar_header
     char linkname[TAR_LINKNAME_SIZE];
 
 };
-
-#endif
-

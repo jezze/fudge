@@ -1,6 +1,3 @@
-#ifndef ARCH_ARCH_H
-#define ARCH_ARCH_H
-
 struct arch_interface
 {
 
@@ -9,6 +6,3 @@ struct arch_interface
 };
 
 void arch_setup();
-
-#endif
-

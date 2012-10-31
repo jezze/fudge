@@ -1,6 +1,3 @@
-#ifndef MODULES_PS2_H
-#define MODULES_PS2_H
-
 #define PS2_DATA                        0x60
 #define PS2_COMMAND                     0x64
 
@@ -58,6 +55,3 @@ struct ps2_mouse_driver
 void ps2_init_device(struct ps2_device *device, char *name, unsigned int irq);
 void ps2_init_kbd_driver(struct ps2_kbd_driver *driver);
 void ps2_init_mouse_driver(struct ps2_mouse_driver *driver);
-
-#endif
-

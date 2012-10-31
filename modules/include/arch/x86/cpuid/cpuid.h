@@ -1,6 +1,3 @@
-#ifndef MODULES_CPUID_H
-#define MODULES_CPUID_H
-
 #define CPUID_VENDOR                    0x00000000
 #define CPUID_FEATURES0                 0x00000001
 #define CPUID_CACHE                     0x00000002
@@ -105,6 +102,3 @@ unsigned int cpuid_check_cpuid();
 void cpuid_get(unsigned int instruction, struct cpuid_data *data);
 void cpuid_get_vendor(char *destination);
 void cpuid_get_brand(char *destination);
-
-#endif
-

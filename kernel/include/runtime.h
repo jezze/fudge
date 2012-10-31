@@ -1,6 +1,3 @@
-#ifndef KERNEL_RUNTIME_H
-#define KERNEL_RUNTIME_H
-
 #define RUNTIME_TASK_DESCRIPTOR_SLOTS   16
 #define RUNTIME_TASK_EVENT_SLOTS        256
 #define RUNTIME_TASK_MOUNT_SLOTS        32
@@ -72,6 +69,3 @@ void runtime_init_descriptor(struct runtime_descriptor *descriptor, unsigned int
 void runtime_init_mount(struct runtime_mount *mount, struct vfs_interface *interface, unsigned int count, char *path);
 void runtime_init_registers(struct runtime_registers *registers, unsigned int ip, unsigned int sp, unsigned int sb, unsigned int status);
 void runtime_init_task(struct runtime_task *task);
-
-#endif
-

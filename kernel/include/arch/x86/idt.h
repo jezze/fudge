@@ -1,6 +1,3 @@
-#ifndef ARCH_IDT_H
-#define ARCH_IDT_H
-
 #define IDT_ENTRY_SLOTS                 256
 
 #define IDT_FLAG_TYPE32TASK             (0x05 << 0)
@@ -36,6 +33,3 @@ struct idt_pointer
 
 void idt_set_entry(unsigned int index, void (*callback)(), unsigned short selector, unsigned char flags);
 void idt_setup();
-
-#endif
-

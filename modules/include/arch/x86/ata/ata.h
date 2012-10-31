@@ -1,6 +1,3 @@
-#ifndef MODULES_ATA_H
-#define MODULES_ATA_H
-
 #define ATA_BUS1_DATA1                  0x0168
 #define ATA_BUS0_DATA1                  0x0170
 #define ATA_BUS1_DATA0                  0x01E8
@@ -142,6 +139,3 @@ struct ata_driver
 void ata_init_device(struct ata_device *device, struct ata_bus *bus, unsigned int irq, unsigned int slave, unsigned int type);
 void ata_init_bus(struct ata_bus *bus, unsigned int control, unsigned int data);
 void ata_init_driver(struct ata_driver *driver);
-
-#endif
-

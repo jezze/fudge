@@ -1,6 +1,3 @@
-#ifndef MODULES_APIC_H
-#define MODULES_APIC_H
-
 #define APIC_ROUTINE_SLOTS              16
 
 #define APIC_COMMAND0                   0x20
@@ -40,6 +37,3 @@ void apic_routine0E();
 void apic_routine0F();
 unsigned int apic_set_routine(unsigned int index, struct base_device *device, void (*callback)(struct base_device *device));
 unsigned int apic_unset_routine(unsigned int index, struct base_device *device);
-
-#endif
-

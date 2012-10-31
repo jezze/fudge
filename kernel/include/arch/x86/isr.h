@@ -1,6 +1,3 @@
-#ifndef ARCH_ISR_H
-#define ARCH_ISR_H
-
 #define ISR_ROUTINE_SLOTS               256
 
 #define ISR_INDEX_DE                    0x00
@@ -66,6 +63,3 @@ void isr_set_routine(unsigned int index, void (*routine)(struct isr_registers *r
 void isr_set_task(struct runtime_task *task);
 void isr_unset_routine(unsigned int index);
 void isr_setup(unsigned short selector);
-
-#endif
-

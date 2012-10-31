@@ -1,6 +1,3 @@
-#ifndef MODULES_MSR_H
-#define MODULES_MSR_H
-
 struct msr_data
 {
 
@@ -11,6 +8,3 @@ struct msr_data
 
 void msr_set(unsigned int msr, struct msr_data *data);
 void msr_get(unsigned int msr, struct msr_data *data);
-
-#endif
-

@@ -1,6 +1,3 @@
-#ifndef LIB_ETHERNET_H
-#define LIB_ETHERNET_H
-
 struct ethernet_header
 {
 
@@ -24,6 +21,3 @@ struct ethernet_interface
     unsigned char ip[4];
 
 } __attribute__((packed));
-
-#endif
-

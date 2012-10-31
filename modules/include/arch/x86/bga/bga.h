@@ -1,6 +1,3 @@
-#ifndef MODULES_BGA_H
-#define MODULES_BGA_H
-
 #define BGA_COMMAND                     0x01CE
 #define BGA_DATA                        0x01CF
 
@@ -36,6 +33,3 @@ struct bga_driver
 };
 
 void bga_init_driver(struct bga_driver *driver);
-
-#endif
-

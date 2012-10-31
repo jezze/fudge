@@ -1,6 +1,3 @@
-#ifndef ARCH_GDT_H
-#define ARCH_GDT_H
-
 #define GDT_ENTRY_SLOTS                 6
 
 #define GDT_INDEX_NULL                  0x00
@@ -47,6 +44,3 @@ struct gdt_pointer
 unsigned short gdt_get_selector(unsigned int index);
 void gdt_set_entry(unsigned int index, unsigned int base, unsigned int limit, unsigned char access, unsigned char granularity);
 void gdt_setup();
-
-#endif
-

@@ -1,6 +1,3 @@
-#ifndef ARCH_TSS_H
-#define ARCH_TSS_H
-
 #define TSS_ENTRY_SLOTS                 1
 
 struct tss_entry
@@ -38,6 +35,3 @@ struct tss_entry
 
 void tss_set_entry(unsigned int index, unsigned int selector, unsigned int stack);
 void tss_setup(unsigned short selector, unsigned int stack);
-
-#endif
-

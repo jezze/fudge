@@ -1,6 +1,3 @@
-#ifndef MODULES_MULTI_H
-#define MODULES_MULTI_H
-
 #define MULTI_TASK_SLOTS                32
 
 struct multi_spawn_args
@@ -10,6 +7,3 @@ struct multi_spawn_args
     unsigned int index;
 
 };
-
-#endif
-

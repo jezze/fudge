@@ -1,6 +1,3 @@
-#ifndef MODULES_BASE_H
-#define MODULES_BASE_H
-
 #define BASE_MODULE_SLOTS               128
 
 #define BASE_TYPE_BUS                   1
@@ -57,6 +54,3 @@ void base_unregister_driver(struct base_driver *driver);
 void base_init_bus(struct base_bus *bus, unsigned int type, char *name, void (*scan)(struct base_bus *self));
 void base_init_device(struct base_device *device, unsigned int type, char *name);
 void base_init_driver(struct base_driver *driver, unsigned int type, char *name, void (*start)(struct base_driver *self), unsigned int (*check)(struct base_driver *self, struct base_device *device), void (*attach)(struct base_device *device));
-
-#endif
-

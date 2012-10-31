@@ -1,6 +1,3 @@
-#ifndef ARCH_MMU_H
-#define ARCH_MMU_H
-
 #define MMU_TABLE_SLOTS                 1024
 #define MMU_TABLE_FLAG_PRESENT          (1 << 0)
 #define MMU_TABLE_FLAG_WRITEABLE        (1 << 1)
@@ -48,6 +45,3 @@ void mmu_map_user_memory(unsigned int index, unsigned int paddress, unsigned int
 void mmu_reload_memory();
 void mmu_routine();
 void mmu_setup_arch(unsigned short selector);
-
-#endif
-

@@ -1,6 +1,3 @@
-#ifndef WM
-#define WM
-
 #define SCREEN_WIDTH                1024
 #define SCREEN_HEIGHT               768
 #define SCREEN_BPP                  32
@@ -26,6 +23,3 @@ struct window
     void (*draw)(struct window *self);
 
 };
-
-#endif
-

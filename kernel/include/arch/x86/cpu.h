@@ -1,6 +1,3 @@
-#ifndef ARCH_CPU_H
-#define ARCH_CPU_H
-
 unsigned int cpu_get_cr0();
 unsigned int cpu_get_cr2();
 unsigned int cpu_get_cr3();
@@ -15,6 +12,3 @@ void cpu_set_gdt(void *pointer);
 void cpu_set_idt(void *pointer);
 void cpu_set_eflags(unsigned int value);
 void cpu_set_tss(unsigned int value);
-
-#endif
-

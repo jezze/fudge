@@ -1,6 +1,3 @@
-#ifndef MODULES_RTL8139_H
-#define MODULES_RTL8139_H
-
 #define RTL8139_IDR0                    0x00
 #define RTL8139_IDR1                    0x01
 #define RTL8139_IDR2                    0x02
@@ -126,6 +123,3 @@ struct rtl8139_driver
 };
 
 void rtl8139_init_driver(struct rtl8139_driver *driver);
-
-#endif
-

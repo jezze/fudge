@@ -1,6 +1,3 @@
-#ifndef LIB_CPIO_H
-#define LIB_CPIO_H
-
 struct cpio_header
 {
 
@@ -20,6 +17,3 @@ struct cpio_header
     char check[8];
 
 };
-
-#endif
-

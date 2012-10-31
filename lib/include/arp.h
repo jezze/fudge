@@ -1,6 +1,3 @@
-#ifndef LIB_ARP_H
-#define LIB_ARP_H
-
 struct arp_header
 {
 
@@ -15,6 +12,3 @@ struct arp_header
     unsigned char tpa[4];
 
 } __attribute__((packed));
-
-#endif
-

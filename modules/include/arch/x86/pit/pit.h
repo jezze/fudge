@@ -1,6 +1,3 @@
-#ifndef MODULES_PIT_H
-#define MODULES_PIT_H
-
 #define PIT_COUNTER0                    0x40
 #define PIT_COUNTER1                    0x41
 #define PIT_COUNTER2                    0x42
@@ -53,6 +50,3 @@ struct pit_driver
 
 void pit_init_device(struct pit_device *device, unsigned int irq);
 void pit_init_driver(struct pit_driver *driver);
-
-#endif
-

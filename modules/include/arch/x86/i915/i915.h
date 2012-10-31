@@ -1,6 +1,3 @@
-#ifndef MODULES_I915_H
-#define MODULES_I915_H
-
 #define I915_GMBUS0                     0x05100
 #define I915_GMBUS1                     0x05104
 #define I915_GMBUS2                     0x05108
@@ -118,6 +115,3 @@ struct i915_driver
 };
 
 void i915_init_driver(struct i915_driver *driver);
-
-#endif
-

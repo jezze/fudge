@@ -1,6 +1,3 @@
-#ifndef MODULES_TTY_H
-#define MODULES_TTY_H
-
 #define TTY_CHARACTER_WIDTH             80
 #define TTY_CHARACTER_HEIGHT            25
 #define TTY_CHARACTER_SIZE              2000
@@ -31,5 +28,3 @@ struct tty_filesystem
 
 void tty_init_driver(struct tty_driver *driver, char *cwdname, unsigned int cwdcount);
 void tty_init_filesystem(struct tty_filesystem *filesystem, struct tty_driver *driver);
-
-#endif

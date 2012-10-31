@@ -1,6 +1,3 @@
-#ifndef MODULES_NET_H
-#define MODULES_NET_H
-
 struct net_interface
 {
 
@@ -38,6 +35,3 @@ void net_unregister_interface(struct net_interface *interface);
 void net_unregister_protocol(unsigned short index);
 void net_init_filesystem(struct net_filesystem *filesystem);
 void net_init_interface(struct net_interface *interface, struct base_driver *driver, unsigned int (*send)(struct net_interface *self, unsigned int count, void *buffer));
-
-#endif
-

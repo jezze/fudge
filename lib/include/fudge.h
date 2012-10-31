@@ -1,6 +1,3 @@
-#ifndef LIB_FUDGE_H
-#define LIB_FUDGE_H
-
 #define FILE_STDIN                      1
 #define FILE_STDOUT                     2
 
@@ -16,6 +13,3 @@
 #include "string.h"
 #include "tcp.h"
 #include "udp.h"
-
-#endif
-

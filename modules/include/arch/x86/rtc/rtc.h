@@ -1,6 +1,3 @@
-#ifndef MODULES_RTC_H
-#define MODULES_RTC_H
-
 #define RTC_COMMAND                     0x70
 #define RTC_DATA                        0x71
 
@@ -25,6 +22,3 @@ struct rtc_device
 };
 
 void rtc_init_device(struct rtc_device *device, unsigned int irq);
-
-#endif
-

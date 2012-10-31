@@ -1,6 +1,3 @@
-#ifndef MODULES_ACPI_H
-#define MODULES_ACPI_H
-
 struct acpi_sdth
 {
 
@@ -96,6 +93,3 @@ struct acpi_rsdp
 };
 
 struct acpi_sdth *acpi_find_header(char *name);
-
-#endif
-

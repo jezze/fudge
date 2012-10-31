@@ -1,6 +1,3 @@
-#ifndef MODULES_VGA_H
-#define MODULES_VGA_H
-
 #define VGA_FB_ADDRESS                  0xB8000
 #define VGA_FB_SIZE                     2000
 #define VGA_FB_COLOR_BLACK              0x00
@@ -40,6 +37,3 @@ unsigned int vga_write_framebuffer(unsigned int offset, unsigned int count, void
 void vga_set_cursor_color(unsigned char fg, unsigned char bg);
 void vga_set_cursor_offset(unsigned short offset);
 void vga_init_driver(struct vga_driver *driver);
-
-#endif
-

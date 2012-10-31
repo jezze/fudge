@@ -1,6 +1,3 @@
-#ifndef KERNEL_SYSCALL_H
-#define KERNEL_SYSCALL_H
-
 #define SYSCALL_ROUTINE_SLOTS           32
 
 #define SYSCALL_INDEX_OPEN              0x01
@@ -127,6 +124,3 @@ void syscall_set_routine(unsigned int index, unsigned int (*routine)(struct runt
 void syscall_unset_routine(unsigned int index);
 unsigned int syscall_raise(unsigned int index, struct runtime_task *task, void *stack);
 void syscall_setup();
-
-#endif
-

@@ -1,6 +1,3 @@
-#ifndef MODULES_EXT2_H
-#define MODULES_EXT2_H
-
 #define EXT2_STATE_CLEAN                1
 #define EXT2_STATE_DIRTY                2
 
@@ -153,6 +150,3 @@ struct ext2_filesystem
 
 void ext2_init_protocol(struct ext2_protocol *protocol);
 void ext2_init_filesystem(struct ext2_filesystem *filesystem, struct ext2_protocol *protocol, struct block_interface *interface);
-
-#endif
-

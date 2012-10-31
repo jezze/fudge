@@ -1,6 +1,3 @@
-#ifndef KERNEL_RAMDISK_H
-#define KERNEL_RAMDISK_H
-
 #define RAMDISK_HEADER_SLOTS            128
 
 struct ramdisk_image
@@ -23,6 +20,3 @@ struct ramdisk_filesystem
 void ramdisk_init_image(struct ramdisk_image *image);
 void ramdisk_init_filesystem(struct ramdisk_filesystem *filesystem, struct ramdisk_image *image);
 struct vfs_interface *ramdisk_setup(int ramdiskc, void **ramdiskv);
-
-#endif
-

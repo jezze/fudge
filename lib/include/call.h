@@ -1,6 +1,3 @@
-#ifndef LIB_CALL_H
-#define LIB_CALL_H
-
 unsigned int call_attach(unsigned int index, void (*callback)());
 unsigned int call_close(unsigned int index);
 unsigned int call_detach(unsigned int index);
@@ -14,6 +11,3 @@ unsigned int call_read(unsigned int index, unsigned int offset, unsigned int cou
 unsigned int call_spawn(unsigned int index);
 unsigned int call_unload(unsigned int index);
 unsigned int call_write(unsigned int index, unsigned int offset, unsigned int count, void *buffer);
-
-#endif
-

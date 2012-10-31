@@ -1,6 +1,3 @@
-#ifndef ARCH_MBOOT_H
-#define ARCH_MBOOT_H
-
 #define MBOOT_MAGIC                     0x2BADB002
 
 #define MBOOT_FLAG_MEMORY               (1 << 0)
@@ -103,6 +100,3 @@ struct mboot_module
 };
 
 void mboot_setup(struct mboot_header *header, unsigned int magic);
-
-#endif
-

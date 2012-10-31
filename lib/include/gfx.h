@@ -1,6 +1,3 @@
-#ifndef LIB_GFX_H
-#define LIB_GFX_H
-
 #define GFX_BUFFER_SIZE                 0x1000
 
 enum gfx_surface_type
@@ -64,6 +61,3 @@ void gfx_set_rectangle(struct gfx_surface *surface, unsigned int x, unsigned int
 void gfx_init_backend(struct gfx_backend *backend, unsigned int id);
 void gfx_init_context(struct gfx_context *context);
 void gfx_init_surface(struct gfx_surface *surface, unsigned int width, unsigned int height, enum gfx_surface_type type, struct gfx_backend *backend);
-
-#endif
-

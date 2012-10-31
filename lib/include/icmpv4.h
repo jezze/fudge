@@ -1,6 +1,3 @@
-#ifndef LIB_ICMPV4_H
-#define LIB_ICMPV4_H
-
 struct icmpv4_header
 {
 
@@ -10,6 +7,3 @@ struct icmpv4_header
     unsigned int data;
 
 } __attribute__((packed));
-
-#endif
-

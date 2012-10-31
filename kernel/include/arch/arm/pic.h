@@ -1,6 +1,3 @@
-#ifndef ARCH_PIC_H
-#define ARCH_PIC_H
-
 #define PIC_REG_IRQ_STATUS              0x14000000
 #define PIC_REG_IRQ_RAWSTAT             0x14000004
 #define PIC_REG_IRQ_ENABLESET           0x14000008
@@ -32,6 +29,3 @@
 #define PIC_IRQ_TOUCH                   (1 << 28)
 
 void pic_setup();
-
-#endif
-

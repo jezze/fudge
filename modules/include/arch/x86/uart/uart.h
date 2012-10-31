@@ -1,6 +1,3 @@
-#ifndef MODULES_UART_H
-#define MODULES_UART_H
-
 #define UART_BASE1                      0x03F8
 #define UART_BASE2                      0x02F8
 #define UART_BASE3                      0x03E8
@@ -57,6 +54,3 @@ struct uart_driver
 
 void uart_init_device(struct uart_device *device, unsigned int port, unsigned int irq);
 void uart_init_driver(struct uart_driver *driver);
-
-#endif
-
