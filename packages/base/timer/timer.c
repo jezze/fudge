@@ -1,20 +1,15 @@
 #include <fudge.h>
 
-#define BUFFER_SIZE 0x100
-
 void main()
 {
 
-    char buffer[BUFFER_SIZE];
-    unsigned int count;
+    char buffer[0x1000];
 
     if (!call_open(3, 19, "/nodefs/pit_jiffies"))
         return;
 
-    count = call_read(3, 0, BUFFER_SIZE, buffer);
-
+    call_write(FILE_STDOUT, 0, call_read(3, 0, 0x1000, buffer), buffer);
     call_close(3);
-    call_write(FILE_STDOUT, 0, count, buffer);
 
 }
 

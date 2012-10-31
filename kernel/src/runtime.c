@@ -102,7 +102,7 @@ void runtime_init_mount(struct runtime_mount *mount, struct vfs_interface *inter
 
     mount->interface = interface;
     mount->count = count;
-    memory_copy(mount->path, path, mount->count);
+    memory_write(mount->path, 64, path, mount->count, 0);
 
 }
 

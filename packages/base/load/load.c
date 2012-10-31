@@ -35,13 +35,13 @@ static unsigned int get_symbol(char *symbol)
 
     char buffer[64];
     unsigned int address;
-    unsigned int plength = (unsigned int)((char *)memory_find(symbol, "_", string_length(symbol), 1) - symbol);
+    unsigned int length = (unsigned int)((char *)memory_find(symbol, "_", string_length(symbol), 1) - symbol);
 
-    memory_copy(buffer, "/ramdisk/mod/", 13);
-    memory_copy(buffer + 13, symbol, plength);
-    memory_copy(buffer + 13 + plength, ".ko", 3);
+    memory_write(buffer, 64, "/ramdisk/mod/", 13, 0);
+    memory_write(buffer, 64, symbol, length, 13);
+    memory_write(buffer, 64, ".ko", 3, 13 + length);
 
-    address = get_symbol_module(symbol, 13 + plength + 3, buffer);
+    address = get_symbol_module(symbol, 13 + length + 3, buffer);
 
     if (address)
         return address;

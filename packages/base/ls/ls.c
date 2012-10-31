@@ -1,14 +1,12 @@
 #include <fudge.h>
 
-#define BUFFER_SIZE 0x1000
-
 void main()
 {
 
-    char buffer[BUFFER_SIZE];
+    char buffer[0x1000];
     unsigned int count;
 
-    count = call_read(FILE_STDIN, 0, BUFFER_SIZE, buffer);
+    count = call_read(FILE_STDIN, 0, 0x1000, buffer);
 
     if (!count)
     {
@@ -16,18 +14,15 @@ void main()
         if (!call_open(3, 8, "/tty/cwd"))
             return;
 
-        count = call_read(3, 0, BUFFER_SIZE, buffer);
-        call_close(3);
+        count = call_read(3, 0, 0x1000, buffer);
 
     }
 
     if (!call_open(3, count, buffer))
         return;
 
-    count = call_read(3, 0, BUFFER_SIZE, buffer);
+    call_write(FILE_STDOUT, 0, call_read(3, 0, 0x1000, buffer), buffer);
     call_close(3);
-
-    call_write(FILE_STDOUT, 0, count, buffer);
 
 }
 

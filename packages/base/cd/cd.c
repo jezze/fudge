@@ -1,49 +1,32 @@
 #include <fudge.h>
 
-#define BUFFER_SIZE 0x100
-
 void main()
 {
 
-    char bufferIn[BUFFER_SIZE];
-    char bufferCwd[BUFFER_SIZE];
-    unsigned int countIn;
-    unsigned int countCwd;
+    char buffer[0x1000];
+    unsigned int count1;
+    unsigned int count2;
 
-    countIn = call_read(FILE_STDIN, 0, BUFFER_SIZE, bufferIn);
-
-    if (!countIn)
+    if (!call_open(3, 8, "/tty/cwd"))
         return;
 
-    call_open(3, 8, "/tty/cwd");
+    count1 = call_read(3, 0, 0x1000, buffer);
+    count2 = call_read(FILE_STDIN, 0, 0x1000 - count1, buffer + count1);
 
-    if (memory_match(bufferIn, "/", 1))
-    {
-
-        if (!call_open(4, countIn, bufferIn))
-            return;
-
-        call_write(3, 0, countIn, bufferIn);
-
+    if (!count1 || !count2)
         return;
 
-    }
-
+    if (memory_match(buffer + count1, "/", 1))
+        count1 = memory_write(buffer, 0x1000, buffer + count1, count2, 0);
     else
-    {
+        count1 += count2;
 
-        countCwd = call_read(3, 0, BUFFER_SIZE, bufferCwd);
+    if (!call_open(4, count1, buffer))
+        return;
 
-        memory_copy(bufferCwd + countCwd, bufferIn, countIn);
-
-        if (!call_open(4, countCwd + countIn, bufferCwd))
-            return;
-
-        call_write(3, 0, countCwd + countIn, bufferCwd);
-
-    }
-
+    call_write(3, 0, count1, buffer);
     call_close(3);
+    call_close(4);
 
 }
 
