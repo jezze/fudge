@@ -29,20 +29,21 @@ isr_undefined:
 
 .global isr_usermode
 isr_usermode:
-    mov ax, 0x23
+    mov ax, [esp + 8]
     mov ds, ax
     mov es, ax
     mov fs, ax
     mov gs, ax
-    mov eax, [esp + 8]
-    push 0x23
+    push eax
+    mov eax, [esp + 20]
     push eax
     pushf
     pop eax
     or eax, 0x200
     push eax
-    push 0x1B
-    mov eax, [esp + 20]
+    mov eax, [esp + 16]
+    push eax
+    mov eax, [esp + 28]
     push eax
     iret
 
