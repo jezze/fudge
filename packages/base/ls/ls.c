@@ -4,6 +4,7 @@ void main()
 {
 
     char buffer[0x1000];
+    unsigned int offset;
     unsigned int count;
 
     count = call_read(FILE_STDIN, 0, 0x1000, buffer);
@@ -21,7 +22,9 @@ void main()
     if (!call_open(3, count, buffer))
         return;
 
-    call_write(FILE_STDOUT, 0, call_read(3, 0, 0x1000, buffer), buffer);
+    for (offset = 0; (count = call_read(3, offset, 0x1000, buffer)); offset += 0x1000)
+        call_write(FILE_STDOUT, offset, count, buffer);
+
     call_close(3);
 
 }

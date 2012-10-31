@@ -88,7 +88,8 @@ static unsigned int read_directory(struct ramdisk_filesystem *filesystem, struct
     unsigned int o = 0;
     unsigned int i;
 
-    o += memory_write(buffer, count - o, "../\n", 4, o);
+    o += memory_read((char *)buffer + o, count - o, "../\n", 4, offset);
+    offset = (offset > 4) ? offset - 4 : 0;
 
     for (i = 0; i < filesystem->image->count; i++)
     {
@@ -101,8 +102,11 @@ static unsigned int read_directory(struct ramdisk_filesystem *filesystem, struct
         if (filesystem->image->headers[p] != header)
             continue;
 
-        o += memory_write(buffer, count - o, filesystem->image->headers[i]->name + length, string_length(filesystem->image->headers[i]->name) - length, o);
-        o += memory_write(buffer, count - o, "\n", 1, o);
+        o += memory_read((char *)buffer + o, count - o, filesystem->image->headers[i]->name + length, string_length(filesystem->image->headers[i]->name) - length, offset);
+        offset = (offset > string_length(filesystem->image->headers[i]->name) - length) ? offset - string_length(filesystem->image->headers[i]->name) - length : 0;
+
+        o += memory_read((char *)buffer + o, count - o, "\n", 1, offset);
+        offset = (offset > 1) ? offset - 1 : 0;
 
     }
 
