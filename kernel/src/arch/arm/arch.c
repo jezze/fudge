@@ -1,5 +1,6 @@
 #include <memory.h>
 #include <string.h>
+#include <runtime.h>
 #include <kernel.h>
 #include <arch/arm/arch.h>
 #include <arch/arm/cpu.h>
@@ -8,8 +9,7 @@
 #include <arch/arm/reg.h>
 #include <arch/arm/uart.h>
 
-static void *ramdiskv[1];
-static struct arch_interface interface;
+static struct runtime_task task;
 
 /*
 static void enable_interrupts()
@@ -23,14 +23,6 @@ static void enable_interrupts()
 
 }
 */
-
-static void setup(struct kernel_interface *arch)
-{
-
-    uart_puts("Fudge Console Text\n");
-    uart_puts("SETUP\n");
-
-}
 
 static void enter_usermode(unsigned int ip, unsigned int sp)
 {
@@ -62,23 +54,12 @@ void isr_undefined()
 
 }
 
-void arch_init_interface(struct arch_interface *interface)
-{
-
-    memory_clear(interface, sizeof (struct arch_interface));
-
-    ramdiskv[0] = (void *)0x00800000;
-
-    kernel_init_interface(&interface->base, setup, enter_usermode, 1, ramdiskv);
-
-}
-
 void arch_setup()
 {
 
-    arch_init_interface(&interface);
-
-    kernel_register_interface(&interface.base);
+    uart_puts("Fudge Console Text\n");
+    kernel_setup(&task, 0, 0);
+    enter_usermode(task.registers.ip, task.registers.sp);
 
 }
 
