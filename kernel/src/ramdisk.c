@@ -181,17 +181,17 @@ static unsigned int walk(struct vfs_interface *self, unsigned int id, unsigned i
     for (i = id; i < filesystem->image->count; i++)
     {
 
-        unsigned int clength = string_length(filesystem->image->headers[i]->name);
+        unsigned int l = string_length(filesystem->image->headers[i]->name);
 
-        if (clength < length)
+        if (l < length)
             break;
 
-        clength -= length;
+        l -= length;
 
-        if (!memory_match(filesystem->image->headers[i]->name + length, path, clength))
+        if (!memory_match(filesystem->image->headers[i]->name + length, path, l))
             continue;
 
-        return walk(self, i + 1, count - clength, path + clength);
+        return walk(self, i + 1, count - l, path + l);
 
     }
 
