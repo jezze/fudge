@@ -5,4 +5,4 @@ include packages/test/rules.mk
 packages/%: CCFLAGS+=-Ilib/include
 
 $(PACKAGES): %: %.c $(LIB)
-	$(CC) -s $(CCFLAGS) -o $@ $< $(LIB) $(EXTRA)
+	$(CC) $(CCFLAGS) -o $@ $< $(LIB) $(EXTRA)
