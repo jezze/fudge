@@ -141,28 +141,28 @@ static unsigned int send(struct net_interface *self, unsigned int count, void *b
 
         case 0:
 
-            memory_copy(driver->tx0, buffer, count);
+            memory_write(driver->tx0, 0x800, buffer, count, 0);
             io_outd(driver->io + RTL8139_TSD0, status);
 
             break;
 
         case 1:
 
-            memory_copy(driver->tx1, buffer, count);
+            memory_write(driver->tx1, 0x800, buffer, count, 0);
             io_outd(driver->io + RTL8139_TSD1, status);
 
             break;
 
         case 2:
 
-            memory_copy(driver->tx2, buffer, count);
+            memory_write(driver->tx2, 0x800, buffer, count, 0);
             io_outd(driver->io + RTL8139_TSD2, status);
 
             break;
 
         case 3:
 
-            memory_copy(driver->tx3, buffer, count);
+            memory_write(driver->tx3, 0x800, buffer, count, 0);
             io_outd(driver->io + RTL8139_TSD3, status);
 
             break;

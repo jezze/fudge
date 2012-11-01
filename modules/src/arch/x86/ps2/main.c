@@ -32,36 +32,28 @@ static unsigned int buffer_write(struct nodefs_node *self, unsigned int offset, 
 static unsigned int mcycle_read(struct nodefs_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    memory_copy(buffer, &mouseDriver.cycle, 1);
-
-    return 1;
+    return memory_read(buffer, count, &mouseDriver.cycle, 1, offset);
 
 }
 
 static unsigned int mstatus_read(struct nodefs_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    memory_copy(buffer, &mouseDriver.status, 1);
-
-    return 1;
+    return memory_read(buffer, count, &mouseDriver.status, 1, offset);
 
 }
 
 static unsigned int mx_read(struct nodefs_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    memory_copy(buffer, &mouseDriver.x, 1);
-
-    return 1;
+    return memory_read(buffer, count, &mouseDriver.x, 1, offset);
 
 }
 
 static unsigned int my_read(struct nodefs_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    memory_copy(buffer, &mouseDriver.y, 1);
-
-    return 1;
+    return memory_read(buffer, count, &mouseDriver.y, 1, offset);
 
 }
 
