@@ -37,12 +37,7 @@ unsigned int elf_find_symbol(struct elf_header *header, struct elf_section_heade
     for (i = 0; i < sectionHeader[symbolHeaderIndex].size / sectionHeader[symbolHeaderIndex].esize; i++)
     {
 
-        unsigned int l = string_length(stringTable + symbolTable[i].name);
-
-        if (l != length)
-            continue;
-
-        if (!memory_match(symbol, stringTable + symbolTable[i].name, l))
+        if (!memory_match(symbol, stringTable + symbolTable[i].name, length + 1))
             continue;
 
         return (header->type == ELF_TYPE_RELOCATABLE) ? sectionHeader[symbolTable[i].shindex].address + sectionHeader[symbolTable[i].shindex].offset + symbolTable[i].value : symbolTable[i].value;
