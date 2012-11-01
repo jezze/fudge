@@ -8,15 +8,11 @@
 void kernel_setup(struct runtime_task *task, unsigned int ramdiskc, void **ramdiskv)
 {
 
-    struct vfs_interface *ramdisk;
-    unsigned int id;
-    unsigned int entry;
+    struct vfs_interface *ramdisk = ramdisk_setup(ramdiskc, ramdiskv);
+    unsigned int id = ramdisk->walk(ramdisk, ramdisk->rootid, 9, "bin/inits");
+    unsigned int entry = binary_copy_program(ramdisk, id);
 
     syscall_setup();
-    ramdisk = ramdisk_setup(ramdiskc, ramdiskv);
-
-    id = ramdisk->walk(ramdisk, ramdisk->rootid, 9, "bin/inits");
-    entry = binary_copy_program(ramdisk, id);
 
     runtime_init_registers(&task->registers, entry, RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE, RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE, 0);
     task->status.used = 1;
