@@ -31,12 +31,18 @@ unsigned int elf_find_section(struct elf_header *header, struct elf_section_head
 unsigned int elf_find_symbol(struct elf_header *header, struct elf_section_header *sectionHeader, unsigned int symbolHeaderIndex, struct elf_symbol *symbolTable, char *stringTable, char *symbol)
 {
 
+    unsigned int length = string_length(symbol);
     unsigned int i;
 
     for (i = 0; i < sectionHeader[symbolHeaderIndex].size / sectionHeader[symbolHeaderIndex].esize; i++)
     {
 
-        if (!memory_match(symbol, stringTable + symbolTable[i].name, string_length(symbol)))
+        unsigned int l = string_length(stringTable + symbolTable[i].name);
+
+        if (l != length)
+            continue;
+
+        if (!memory_match(symbol, stringTable + symbolTable[i].name, l))
             continue;
 
         return (header->type == ELF_TYPE_RELOCATABLE) ? sectionHeader[symbolTable[i].shindex].address + sectionHeader[symbolTable[i].shindex].offset + symbolTable[i].value : symbolTable[i].value;
