@@ -4,6 +4,31 @@
 #include <base/base.h>
 #include <nodefs/nodefs.h>
 
+static unsigned int read_root(struct nodefs_filesystem *filesystem, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    unsigned char *b = buffer;
+    unsigned int c = 0;
+    unsigned int i;
+
+    c += memory_read(b + c, count - c, "../\n", 4, offset);
+    offset -= (offset > 4) ? 4 : offset;
+
+    for (i = 0; i < filesystem->nodesCount; i++)
+    {
+
+        c += memory_read(b + c, count - c, filesystem->nodes[i]->name, string_length(filesystem->nodes[i]->name), offset);
+        offset -= (offset > string_length(filesystem->nodes[i]->name)) ? string_length(filesystem->nodes[i]->name) : offset;
+
+        c += memory_read(b + c, count - c, "\n", 1, offset);
+        offset -= (offset > 1) ? 1 : offset;
+
+    }
+
+    return c;
+
+}
+
 static unsigned int read(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
@@ -14,26 +39,7 @@ static unsigned int read(struct vfs_interface *self, unsigned int id, unsigned i
         return 0;
 
     if (id == 1)
-    {
-
-        char *out = buffer;
-        unsigned int length = 0;
-        unsigned int i;
-
-        for (i = 0; i < filesystem->nodesCount; i++)
-        {
-
-            unsigned int size = string_length(filesystem->nodes[i]->name);
-
-            memory_copy(out + length, filesystem->nodes[i]->name, size);
-            memory_copy(out + length + size, "\n", 1);
-            length += size + 1;
-
-        }
-
-        return length;
-
-    }
+        return read_root(filesystem, offset, count, buffer);
 
     node = filesystem->nodes[id - 2];
 
