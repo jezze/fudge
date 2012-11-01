@@ -74,10 +74,9 @@ static unsigned int read_data(struct video_interface *self, unsigned int offset,
 {
 
     struct bga_driver *driver = (struct bga_driver *)self->driver;
+    unsigned int size = self->xres * self->yres * self->bpp / 4;
 
-    memory_copy(buffer, (char *)driver->lfb + offset, count);
-
-    return count;
+    return memory_read(buffer, count, driver->lfb, size, offset);
 
 }
 
@@ -85,10 +84,9 @@ static unsigned int write_data(struct video_interface *self, unsigned int offset
 {
 
     struct bga_driver *driver = (struct bga_driver *)self->driver;
+    unsigned int size = self->xres * self->yres * self->bpp / 4;
 
-    memory_copy((char *)driver->lfb + offset, buffer, count);
-
-    return count;
+    return memory_write(driver->lfb, size, buffer, count, offset);
 
 }
 

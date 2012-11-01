@@ -93,11 +93,11 @@ void tty_init_driver(struct tty_driver *driver, char *cwdname, unsigned int cwdc
 
     base_init_driver(&driver->base, TTY_DRIVER_TYPE, "tty", start, 0, 0);
 
-    memory_copy(driver->cwdname, cwdname, cwdcount);
     driver->cwdcount = cwdcount;
     driver->clear = clear;
     driver->scroll = scroll;
     driver->putc = putc;
+    memory_write(driver->cwdname, TTY_CWD_SIZE, cwdname, cwdcount, 0);
 
 }
 
