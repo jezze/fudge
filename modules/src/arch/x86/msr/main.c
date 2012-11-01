@@ -4,14 +4,12 @@
 void init()
 {
 
-/*
     struct cpuid_data data;
 
-    cpuid_get(CPUID_INSTRUCTION_FEATURES0, &data);
+    cpuid_get_data(CPUID_FEATURES0, &data);
 
-    if (!(data.edx & CPUID_FEATURES0_EDX_FLAG_MSR))
+    if (!(data.edx & CPUID_FEATURES0_EDX_MSR))
         return;
-*/
 
 }
 

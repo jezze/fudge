@@ -99,6 +99,6 @@ struct cpuid_data
 };
 
 unsigned int cpuid_check_cpuid();
-void cpuid_get(unsigned int instruction, struct cpuid_data *data);
+void cpuid_get_data(unsigned int instruction, struct cpuid_data *data);
 void cpuid_get_vendor(char *destination);
 void cpuid_get_brand(char *destination);
