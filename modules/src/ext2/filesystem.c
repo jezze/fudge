@@ -8,14 +8,14 @@ static unsigned int read(struct vfs_interface *self, unsigned int id, unsigned i
 
     struct ext2_blockgroup bg;
     struct ext2_node node;
-    char mem[1024];
-    char *private = mem;
+    char content[1024];
+    char *private = content;
     struct ext2_filesystem *filesystem = (struct ext2_filesystem *)self;
     struct ext2_protocol *protocol = (struct ext2_protocol *)filesystem->protocol;
 
     protocol->read_blockgroup(filesystem->interface, id, &bg);
     protocol->read_node(filesystem->interface, id, &bg, &node);
-    protocol->read_content(filesystem->interface, &node, private);
+    protocol->read_content(filesystem->interface, &node, content);
 
     if ((node.type & 0xF000) == EXT2_NODE_TYPE_DIR)
     {
@@ -31,23 +31,12 @@ static unsigned int read(struct vfs_interface *self, unsigned int id, unsigned i
             if (!entry->length)
                 return length;
 
-            memory_copy(out + length, private + 8, entry->length);
+            length += memory_read(out + length, 1024, private + 8, entry->length, 0);
 
             if (entry->type == 2)
-            {
-
-                memory_copy(out + length + entry->length, "/\n", 2);
-                length += entry->length + 2;
-
-            }
-
+                length += memory_read(out + length + entry->length, 1024, "/\n", 2, 0);
             else
-            {
-
-                memory_copy(out + length + entry->length, "\n", 1);
-                length += entry->length + 1;
-
-            }
+                length += memory_read(out + length + entry->length, 1024, "\n", 1, 0);
 
             private += entry->size;
 
@@ -58,13 +47,7 @@ static unsigned int read(struct vfs_interface *self, unsigned int id, unsigned i
     }
 
     if ((node.type & 0xF000) == EXT2_NODE_TYPE_REGULAR)
-    {
-
-        memory_copy(buffer, private, node.sizeLow);
-
-        return node.sizeLow;
-
-    }
+        return memory_read(buffer, count, content, node.sizeLow, offset);
 
     return 0;
 
@@ -75,8 +58,8 @@ static struct ext2_entry *finddir(struct vfs_interface *self, unsigned int id, c
 
     struct ext2_blockgroup bg;
     struct ext2_node node;
-    char mem[1024];
-    char *private = mem;
+    char content[1024];
+    char *private = content;
     struct ext2_filesystem *filesystem = (struct ext2_filesystem *)self;
     struct ext2_protocol *protocol = (struct ext2_protocol *)filesystem->protocol;
 
