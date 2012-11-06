@@ -62,4 +62,4 @@ unsigned short isr_raise(struct isr_registers *registers);
 void isr_set_routine(unsigned int index, void (*routine)(struct isr_registers *registers));
 void isr_set_task(struct runtime_task *task);
 void isr_unset_routine(unsigned int index);
-void isr_setup(unsigned short selector);
+void isr_setup(struct runtime_task *task, unsigned short selector);

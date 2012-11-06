@@ -78,13 +78,15 @@ void isr_unset_routine(unsigned int index)
 
 }
 
-void isr_setup(unsigned short selector)
+void isr_setup(struct runtime_task *task, unsigned short selector)
 {
 
     unsigned int i;
 
     for (i = 0; i < ISR_ROUTINE_SLOTS; i++)
         idt_set_entry(i, isr_undefined, selector, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
+
+    running = task;
 
 }
 
