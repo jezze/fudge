@@ -12,7 +12,6 @@ struct tty_driver
     char cwdname[TTY_CWD_SIZE];
     unsigned int cwdcount;
     unsigned short cursorOffset;
-    void (*clear)(struct tty_driver *self);
     void (*scroll)(struct tty_driver *self);
     void (*putc)(struct tty_driver *self, char c);
 

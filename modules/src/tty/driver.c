@@ -6,17 +6,6 @@
 #include <video/video.h>
 #include <arch/x86/vga/vga.h>
 
-static void clear(struct tty_driver *self)
-{
-
-    char c = ' ';
-    int i;
-
-    for (i = 0; i < TTY_CHARACTER_SIZE; i++)
-        vga_write_framebuffer(i, 1, &c);
-
-}
-
 static void scroll(struct tty_driver *self)
 {
 
@@ -81,10 +70,6 @@ static void putc(struct tty_driver *self, char c)
 static void start(struct base_driver *self)
 {
 
-    struct tty_driver *driver = (struct tty_driver *)self;
-
-    driver->clear(driver);
-
 }
 
 void tty_init_driver(struct tty_driver *driver, char *cwdname, unsigned int cwdcount)
@@ -95,7 +80,6 @@ void tty_init_driver(struct tty_driver *driver, char *cwdname, unsigned int cwdc
     base_init_driver(&driver->base, TTY_DRIVER_TYPE, "tty", start, 0, 0);
 
     driver->cwdcount = cwdcount;
-    driver->clear = clear;
     driver->scroll = scroll;
     driver->putc = putc;
     memory_write(driver->cwdname, TTY_CWD_SIZE, cwdname, cwdcount, 0);
