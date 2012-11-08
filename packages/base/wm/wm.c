@@ -45,13 +45,13 @@ static void enable(unsigned int xres, unsigned int yres, unsigned int bpp)
 
     unsigned int enable = 1;
 
-    call_open(3, 13, "/video/0/xres");
+    call_open(3, 13, "/video/1/xres");
     call_write(3, 0, 4, &xres);
-    call_open(3, 13, "/video/0/yres");
+    call_open(3, 13, "/video/1/yres");
     call_write(3, 0, 4, &yres);
-    call_open(3, 12, "/video/0/bpp");
+    call_open(3, 12, "/video/1/bpp");
     call_write(3, 0, 4, &bpp);
-    call_open(3, 15, "/video/0/enable");
+    call_open(3, 15, "/video/1/enable");
     call_write(3, 0, 4, &enable);
     call_close(3);
 
@@ -67,7 +67,7 @@ void mouse_event()
 void main()
 {
 
-    unsigned int id = call_open(4, 13, "/video/0/data");
+    unsigned int id = call_open(4, 13, "/video/1/data");
 
     if (!id)
         return;
