@@ -118,7 +118,7 @@ void start_shell()
     call_close(3);
 
     call_open(FILE_STDIN, 18, "/nodefs/ps2_buffer");
-    call_open(FILE_STDOUT, 11, "/tty/stdout");
+    call_open(FILE_STDOUT, 13, "/video/0/data");
 
     call_open(3, 17, "/ramdisk/bin/motd");
     call_spawn(3);

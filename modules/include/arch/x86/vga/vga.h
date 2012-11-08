@@ -33,8 +33,4 @@ struct vga_driver
 
 };
 
-unsigned int vga_read_framebuffer(unsigned int offset, unsigned int count, void *buffer);
-unsigned int vga_write_framebuffer(unsigned int offset, unsigned int count, void *buffer);
-void vga_set_cursor_color(unsigned char fg, unsigned char bg);
-void vga_set_cursor_offset(unsigned short offset);
 void vga_init_driver(struct vga_driver *driver);

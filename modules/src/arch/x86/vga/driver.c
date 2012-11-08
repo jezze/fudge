@@ -1,7 +1,5 @@
 #include <memory.h>
-#include <runtime.h>
 #include <vfs.h>
-#include <arch/x86/mmu.h>
 #include <base/base.h>
 #include <video/video.h>
 #include <arch/x86/io/io.h>
@@ -92,10 +90,79 @@ static unsigned int read_data(struct video_interface *self, unsigned int offset,
 
 }
 
+static void scroll(struct vga_driver *self)
+{
+
+    unsigned int i;
+    char buffer[2000];
+
+    self->read_framebuffer(self, 80, 2000 - 80, buffer);
+
+    for (i = 2000 - 80; i < 2000; i++)
+        buffer[i] = ' ';
+
+    self->write_framebuffer(self, 0, 2000, buffer);
+
+    self->cursorOffset -= 80;
+
+}
+
+static void putc(struct vga_driver *self, char c)
+{
+
+    if (c == '\b')
+    {
+
+        self->cursorOffset--;
+
+    }
+
+    else if (c == '\t')
+    {
+
+        self->cursorOffset = (self->cursorOffset + 8) & ~(8 - 1);
+
+    }
+
+    else if (c == '\r')
+    {
+
+        self->cursorOffset -= (self->cursorOffset % 80);
+
+    }
+
+    else if (c == '\n')
+    {
+
+        self->cursorOffset += 80 - (self->cursorOffset % 80);
+
+    }
+
+    else if (c >= ' ')
+    {
+
+        self->write_framebuffer(self, self->cursorOffset, 1, &c);
+        self->cursorOffset++;
+
+    }
+
+    if (self->cursorOffset >= 80 * 25)
+        scroll(self);
+
+    self->set_cursor_offset(self, self->cursorOffset);
+
+}
+
 static unsigned int write_data(struct video_interface *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    return memory_write((void *)VGA_FB_ADDRESS, 4000, buffer, count, offset);
+    struct vga_driver *driver = (struct vga_driver *)self->driver;
+    unsigned int i;
+
+    for (i = 0; i < count; i++)
+        putc(driver, ((char *)buffer)[i]);
+
+    return count;
 
 }
 

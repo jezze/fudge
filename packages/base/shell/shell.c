@@ -81,8 +81,8 @@ static void clear()
     call_write(FILE_STDOUT, 0, 2, "$ ");
     stack_clear();
 
-    setup_stream(10, "/nodefs/ps2_buffer", FILE_STDIN);
-    setup_stream(11, "/tty/stdout", FILE_STDOUT);
+    setup_stream(18, "/nodefs/ps2_buffer", FILE_STDIN);
+    setup_stream(13, "/video/0/data", FILE_STDOUT);
 
 }
 

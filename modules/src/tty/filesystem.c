@@ -1,26 +1,7 @@
 #include <memory.h>
-#include <string.h>
 #include <vfs.h>
 #include <base/base.h>
-#include <video/video.h>
-#include <arch/x86/vga/vga.h>
 #include <tty/tty.h>
-
-static unsigned int write_stdout(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
-{
-
-    struct tty_filesystem *filesystem = (struct tty_filesystem *)self;
-    char *stream = buffer;
-    unsigned int i;
-
-    for (i = 0; i < count; i++)
-        filesystem->driver->putc(filesystem->driver, stream[i]);
-
-    vga_set_cursor_offset(filesystem->driver->cursorOffset);
-
-    return count;
-
-}
 
 static unsigned int read_cwd(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
@@ -31,21 +12,10 @@ static unsigned int read_cwd(struct vfs_interface *self, unsigned int id, unsign
 
 }
 
-static unsigned int write_cwd(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
-{
-
-    struct tty_filesystem *filesystem = (struct tty_filesystem *)self;
-
-    filesystem->driver->cwdcount = count;
-
-    return memory_write(filesystem->driver->cwdname, TTY_CWD_SIZE, buffer, count, offset);
-
-}
-
 static unsigned int read_root(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    return memory_read(buffer, count, "stdin\nstdout\ncwd\n", 17, offset);
+    return memory_read(buffer, count, "cwd\n", 4, offset);
 
 }
 
@@ -62,11 +32,19 @@ static unsigned int read(struct vfs_interface *self, unsigned int id, unsigned i
 
 }
 
-static unsigned int write(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int write_cwd(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    if (id == 3)
-        return write_stdout(self, id, offset, count, buffer);
+    struct tty_filesystem *filesystem = (struct tty_filesystem *)self;
+
+    filesystem->driver->cwdcount = count;
+
+    return memory_write(filesystem->driver->cwdname, TTY_CWD_SIZE, buffer, count, offset);
+
+}
+
+static unsigned int write(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+{
 
     if (id == 4)
         return write_cwd(self, id, offset, count, buffer);
@@ -80,9 +58,6 @@ static unsigned int walk(struct vfs_interface *self, unsigned int id, unsigned i
 
     if (!count)
         return id;
-
-    if (memory_match(path, "stdout", 6))
-        return walk(self, 3, count - 6, path + 6);
 
     if (memory_match(path, "cwd", 3))
         return walk(self, 4, count - 3, path + 3);

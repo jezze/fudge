@@ -1,5 +1,3 @@
-#include <memory.h>
-#include <string.h>
 #include <vfs.h>
 #include <base/base.h>
 #include <tty/tty.h>
