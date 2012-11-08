@@ -23,6 +23,7 @@ struct vga_driver
 {
 
     struct base_driver base;
+    struct video_interface interface;
     unsigned char cursorColor;
     unsigned short cursorOffset;
     unsigned int (*read_framebuffer)(struct vga_driver *self, unsigned int offset, unsigned int count, void *buffer);

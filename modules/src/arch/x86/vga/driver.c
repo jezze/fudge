@@ -1,5 +1,9 @@
 #include <memory.h>
+#include <runtime.h>
+#include <vfs.h>
+#include <arch/x86/mmu.h>
 #include <base/base.h>
+#include <video/video.h>
 #include <arch/x86/io/io.h>
 #include <arch/x86/vga/vga.h>
 
@@ -71,6 +75,20 @@ static void set_cursor_offset(struct vga_driver *self, unsigned short offset)
 
 }
 
+static unsigned int read_data(struct video_interface *self, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    return memory_read(buffer, count, (void *)VGA_FB_ADDRESS, 4000, offset);
+
+}
+
+static unsigned int write_data(struct video_interface *self, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    return memory_write((void *)VGA_FB_ADDRESS, 4000, buffer, count, offset);
+
+}
+
 static void start(struct base_driver *self)
 {
 
@@ -86,6 +104,11 @@ void vga_init_driver(struct vga_driver *driver)
     memory_clear(driver, sizeof (struct vga_driver));
 
     base_init_driver(&driver->base, VGA_DRIVER_TYPE, "vga", start, 0, 0);
+    video_init_interface(&driver->interface, &driver->base, 0, read_data, write_data);
+
+    driver->interface.xres = 0;
+    driver->interface.yres = 0;
+    driver->interface.bpp = 0;
 
     driver->read_framebuffer = read_framebuffer;
     driver->write_framebuffer = write_framebuffer;

@@ -3,6 +3,7 @@
 #include <vfs.h>
 #include <base/base.h>
 #include <tty/tty.h>
+#include <video/video.h>
 #include <arch/x86/vga/vga.h>
 
 static void clear(struct tty_driver *self)

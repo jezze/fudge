@@ -2,6 +2,7 @@
 #include <string.h>
 #include <vfs.h>
 #include <base/base.h>
+#include <video/video.h>
 #include <arch/x86/vga/vga.h>
 #include <tty/tty.h>
 
