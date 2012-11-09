@@ -19,17 +19,20 @@
 
 #define VGA_DRIVER_TYPE                 0x0003
 
+struct vga_cursor
+{
+
+    unsigned char color;
+    unsigned short offset;
+
+};
+
 struct vga_driver
 {
 
     struct base_driver base;
     struct video_interface interface;
-    unsigned char cursorColor;
-    unsigned short cursorOffset;
-    unsigned int (*read_framebuffer)(struct vga_driver *self, unsigned int offset, unsigned int count, void *buffer);
-    unsigned int (*write_framebuffer)(struct vga_driver *self, unsigned int offset, unsigned int count, void *buffer);
-    void (*set_cursor_color)(struct vga_driver *self, unsigned char fg, unsigned char bg);
-    void (*set_cursor_offset)(struct vga_driver *self, unsigned short offset);
+    struct vga_cursor cursor;
 
 };
 
