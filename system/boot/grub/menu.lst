@@ -1,7 +1,0 @@
-# Grub boot info
-
-title   Fudge
-root    (cd)
-kernel  /boot/fudge
-module  /boot/initrd.tar
-

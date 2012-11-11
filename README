@@ -10,8 +10,6 @@ determinstic in nature such as task scheduling, caching and dynamic memory
 allocation. Fudge tries to find alternative solutions to these problems and has
 so far been found to work quite well.
 
-### Determinism
-
 Determinism in the term of computers could mean many different things. It could
 mean that a program, given input, should always return a conclusive result.
 However unlikely that sounds it is actually quite common because of unwanted
@@ -45,17 +43,15 @@ on Windows if you have cygwin installed but this has not been tested.
 
 To compile and run Fudge you need to have the following tools installed.
 
-* binutils (assembly linker)
-* gcc or clang (compile c)
-* dd (to create disk image)
-* genisoimage (to create cd image)
-* qemu or bochs (emulator)
+    * binutils (assembly linker)
+    * gcc or clang (compile c)
+    * qemu or bochs (emulator)
 
 ### FETCHING
 
 Download the source using git.
 
-$ git clone git://github.com/Jezze/fudge.git fudge
+    $ git clone git://github.com/Jezze/fudge.git fudge
 
 ### BUILDING
 
@@ -67,47 +63,52 @@ Makefile and change the ARCH and PREFIX settings.
 
 The default is:
 
-ARCH=x86
-PREFIX=
+    ARCH=x86
+    PREFIX=
 
 If you want to compile for ARM with arm-eabi- you can change to:
 
-ARCH=arm
-PREFIX=arm-eabi-
+    ARCH=arm
+    PREFIX=arm-eabi-
 
 Then you only need to run make in order to compile.
 
-$ make
+    $ make
 
 These settings can also be applied without modifing the Makefile:
 
-$ make ARCH=arm PREFIX=arm-eabi-
+    $ make ARCH=arm PREFIX=arm-eabi-
 
 ### CLEANING
 
 With modified makefile:
 
-$ make clean
+    $ make clean
 
 Without a modified makefile:
 
-$ make ARCH=arm clean
+    $ make ARCH=arm clean
 
 ## RUNNING IN QEMU
 
-### x86 EXAMPLES
+The simplest way is to run it inside qemu:
 
-With GRUB image:
+    $ qemu-system-x86 \
+        -kernel image/boot/fudge \
+        -initrd image/boot/initrd.tar \
+        -serial stdio \
+        -vga std
 
-$ qemu-system-x86 -cdrom fudge.iso -vga std
+If you have built for ARM just replace x86 with arm.
 
-With QEMU bootloader:
+## RUNNING ON REAL HARDWARE
 
-$ qemu-system-x86 -kernel image/boot/fudge -initrd image/boot/initrd.tar -vga std
+If you already are using Grub just add an entry in the menu.lst like:
 
-### ARM EXAMPLES
+    title  Fudge
+    root   (hd0,0)
+    kernel /fudge
+    module /initrd.tar
 
-With QEMU bootloader:
-
-$ qemu-system-arm -kernel image/boot/fudge -initrd image/boot/initrd.tar -serial stdio
+Don't forget to copy fudge and initrd.tar to the correct partition first.
 
