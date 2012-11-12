@@ -1,5 +1,3 @@
-include kernel/src/arch/rules.$(ARCH).mk
-
 KERNEL+=kernel/fudge
 
 KERNEL_OBJECTS+=kernel/src/binary.o
@@ -14,7 +12,7 @@ KERNEL_OBJECTS+=lib/src/memory.o
 KERNEL_OBJECTS+=lib/src/posix.o
 KERNEL_OBJECTS+=lib/src/string.o
 
-$(KERNEL): LDFLAGS+=-Tkernel/src/arch/linker.$(ARCH).ld
+$(KERNEL): LDFLAGS+=-Tkernel/linker.$(ARCH).ld
 $(KERNEL): $(KERNEL_OBJECTS)
 	$(LD) $(LDFLAGS) -o $@ $^ $(EXTRA)
 

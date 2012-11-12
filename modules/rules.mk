@@ -1,5 +1,3 @@
-include modules/src/arch/rules.$(ARCH).mk
-
 MODULES_ARP=modules/src/arp/arp.ko
 MODULES_BASE=modules/src/base/base.ko
 MODULES_BLOCK=modules/src/block/block.ko

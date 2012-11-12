@@ -1,5 +1,3 @@
-include lib/src/arch/rules.$(ARCH).mk
-
 LIB+=lib/libfudge.a
 
 LIB_OBJECTS+=lib/src/elf.o

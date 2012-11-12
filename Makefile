@@ -13,8 +13,11 @@ IMAGE=image image/bin image/boot image/home image/data image/mod image/boot/fudg
 all: fudge
 
 include rules.$(ARCH).mk
+include lib/rules.$(ARCH).mk
 include lib/rules.mk
+include kernel/rules.$(ARCH).mk
 include kernel/rules.mk
+include modules/rules.$(ARCH).mk
 include modules/rules.mk
 include packages/rules.mk
 
