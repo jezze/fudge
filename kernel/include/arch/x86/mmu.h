@@ -39,9 +39,8 @@ struct mmu_directory
 
 } __attribute__((aligned(MMU_PAGE_SIZE)));
 
-void mmu_load_memory(unsigned int index);
-void mmu_map_kernel_memory(unsigned int index, unsigned int paddress, unsigned int vaddress, unsigned int size);
-void mmu_map_user_memory(unsigned int index, unsigned int paddress, unsigned int vaddress, unsigned int size);
+void mmu_load_memory(struct mmu_directory *directory);
+void mmu_map_memory(struct mmu_directory *directory, struct mmu_table *table, unsigned int paddress, unsigned int vaddress, unsigned int size, unsigned int tflags, unsigned int pflags);
 void mmu_reload_memory();
 void mmu_routine();
 void mmu_setup_arch(unsigned short selector);

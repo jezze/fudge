@@ -30,10 +30,12 @@ static void set_mode(struct bga_driver *self)
 static void start(struct base_driver *self)
 {
 
+/*
     struct bga_driver *driver = (struct bga_driver *)self;
 
     mmu_map_kernel_memory(3, (unsigned int)driver->lfb, (unsigned int)driver->lfb, 0x00400000);
     mmu_reload_memory();
+*/
 
 }
 

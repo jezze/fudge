@@ -1,4 +1,4 @@
-#define MULTI_TASK_SLOTS                32
+#define MULTI_TASK_SLOTS                8
 
 struct multi_spawn_args
 {

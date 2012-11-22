@@ -7,10 +7,6 @@
 #include <arch/x86/isr.h>
 #include <arch/x86/mmu.h>
 
-static struct mmu_table kernelTables[8];
-static struct mmu_directory runtimeDirectories[32];
-static struct mmu_table runtimeTables[32];
-
 static void enable()
 {
 
@@ -32,7 +28,7 @@ static void set_table_page(struct mmu_table *table, unsigned int frame, unsigned
 
 }
 
-static void map_memory(struct mmu_directory *directory, struct mmu_table *table, unsigned int paddress, unsigned int vaddress, unsigned int size, unsigned int tflags, unsigned int pflags)
+void mmu_map_memory(struct mmu_directory *directory, struct mmu_table *table, unsigned int paddress, unsigned int vaddress, unsigned int size, unsigned int tflags, unsigned int pflags)
 {
 
     unsigned int frame = vaddress / MMU_PAGE_SIZE;
@@ -47,27 +43,10 @@ static void map_memory(struct mmu_directory *directory, struct mmu_table *table,
 
 }
 
-void mmu_load_memory(unsigned int index)
+void mmu_load_memory(struct mmu_directory *directory)
 {
 
-    cpu_set_cr3((unsigned int)&runtimeDirectories[index]);
-
-}
-
-void mmu_map_kernel_memory(unsigned int index, unsigned int paddress, unsigned int vaddress, unsigned int size)
-{
-
-    unsigned int i;
-
-    for (i = 0; i < 32; i++)
-        map_memory(&runtimeDirectories[i], &kernelTables[index], paddress, vaddress, size, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE);
-
-}
-
-void mmu_map_user_memory(unsigned int index, unsigned int paddress, unsigned int vaddress, unsigned int size)
-{
-
-    map_memory(&runtimeDirectories[index], &runtimeTables[index], paddress, vaddress, size, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);
+    cpu_set_cr3((unsigned int)directory);
 
 }
 
@@ -91,12 +70,17 @@ static void handle_interrupt(struct isr_registers *registers)
 void mmu_setup_arch(unsigned short selector)
 {
 
+    struct mmu_directory *directory = (struct mmu_directory *)(0x00300000);
+    struct mmu_table *rtable = (struct mmu_table *)(0x00310000);
+    struct mmu_table *ktable = (struct mmu_table *)(0x00320000);
+
     idt_set_entry(0x0E, mmu_routine, selector, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
     isr_set_routine(0x0E, handle_interrupt);
 
-    mmu_map_kernel_memory(0, ARCH_KERNEL_BASE, ARCH_KERNEL_BASE, ARCH_KERNEL_SIZE);
-    mmu_map_user_memory(1, RUNTIME_TASK_PADDRESS_BASE + 1 * RUNTIME_TASK_ADDRESS_SIZE, RUNTIME_TASK_VADDRESS_BASE, RUNTIME_TASK_ADDRESS_SIZE);
-    mmu_load_memory(1);
+    mmu_map_memory(directory, ktable, ARCH_KERNEL_BASE, ARCH_KERNEL_BASE, ARCH_KERNEL_SIZE, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE);
+    mmu_map_memory(directory, rtable, RUNTIME_TASK_PADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE, RUNTIME_TASK_VADDRESS_BASE, RUNTIME_TASK_ADDRESS_SIZE, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);
+    mmu_load_memory(directory);
+
     enable();
 
 }

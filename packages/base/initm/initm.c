@@ -51,8 +51,10 @@ void load_modules_core(unsigned int id)
 void load_modules_extra(unsigned int id)
 {
 
+/*
     call_open(FILE_STDIN, 20, "/ramdisk/mod/acpi.ko");
     call_spawn(id);
+*/
 
     call_open(FILE_STDIN, 19, "/ramdisk/mod/fpu.ko");
     call_spawn(id);
