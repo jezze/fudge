@@ -69,7 +69,7 @@ static void notify_interrupt(struct runtime_task *task, unsigned int index)
 
     unsigned int i;
 
-    for (i = 5; i < MULTI_TASK_SLOTS - 1; i++)
+    for (i = 1; i < MULTI_TASK_SLOTS - 1; i++)
     {
 
         if (!tasks[i].status.used)
