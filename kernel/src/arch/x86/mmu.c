@@ -71,14 +71,14 @@ void mmu_setup_arch(unsigned short selector)
 {
 
     struct mmu_directory *directory = (struct mmu_directory *)(MMU_ADDRESS_DIRECTORIES);
-    struct mmu_table *rtable = (struct mmu_table *)(MMU_ADDRESS_KTABLES);
     struct mmu_table *ktable = (struct mmu_table *)(MMU_ADDRESS_UTABLES);
+    struct mmu_table *utable = (struct mmu_table *)(MMU_ADDRESS_KTABLES);
 
     idt_set_entry(0x0E, mmu_routine, selector, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
     isr_set_routine(0x0E, handle_interrupt);
 
     mmu_map_memory(directory, ktable, ARCH_KERNEL_BASE, ARCH_KERNEL_BASE, ARCH_KERNEL_SIZE, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE);
-    mmu_map_memory(directory, rtable, RUNTIME_TASK_PADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE, RUNTIME_TASK_VADDRESS_BASE, RUNTIME_TASK_ADDRESS_SIZE, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);
+    mmu_map_memory(directory, utable, RUNTIME_TASK_PADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE, RUNTIME_TASK_VADDRESS_BASE, RUNTIME_TASK_ADDRESS_SIZE, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);
     mmu_load_memory(directory);
 
     enable();
