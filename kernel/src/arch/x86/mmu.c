@@ -70,9 +70,9 @@ static void handle_interrupt(struct isr_registers *registers)
 void mmu_setup_arch(unsigned short selector)
 {
 
-    struct mmu_directory *directory = (struct mmu_directory *)(0x00300000);
-    struct mmu_table *rtable = (struct mmu_table *)(0x00310000);
-    struct mmu_table *ktable = (struct mmu_table *)(0x00320000);
+    struct mmu_directory *directory = (struct mmu_directory *)(MMU_ADDRESS_DIRECTORIES);
+    struct mmu_table *rtable = (struct mmu_table *)(MMU_ADDRESS_KTABLES);
+    struct mmu_table *ktable = (struct mmu_table *)(MMU_ADDRESS_UTABLES);
 
     idt_set_entry(0x0E, mmu_routine, selector, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
     isr_set_routine(0x0E, handle_interrupt);

@@ -8,11 +8,6 @@
 #include <arch/x86/mmu.h>
 #include <arch/x86/multi/multi.h>
 
-/* Temporary layout */
-/* Directories: 0x00300000 + i * 1000 */
-/* Rtables: 0x003100000 + i * 1000 */
-/* Ktables: 0x003200000 + i * 1000 */
-
 static struct runtime_task tasks[MULTI_TASK_SLOTS];
 
 static struct runtime_task *get_task(unsigned int index)
@@ -59,7 +54,7 @@ static void schedule()
 
         isr_set_task(&tasks[i]);
 
-        directory = (struct mmu_directory *)(0x00300000 + i * 0x1000);
+        directory = (struct mmu_directory *)(MMU_ADDRESS_DIRECTORIES + MMU_PAGE_SIZE * i);
 
         mmu_load_memory(directory);
 
@@ -107,9 +102,9 @@ static unsigned int spawn(struct runtime_task *task, void *stack)
     struct runtime_descriptor *descriptor = runtime_get_task_descriptor(task, args->index);
     unsigned int index = get_task_slot();
     struct runtime_task *ntask = get_task(index);
-    struct mmu_directory *directory = (struct mmu_directory *)(0x00300000 + index * 0x1000);
-    struct mmu_table *rtable = (struct mmu_table *)(0x00310000 + index * 0x1000);
-    struct mmu_table *ktable = (struct mmu_table *)(0x00320000 + index * 0x1000);
+    struct mmu_directory *directory = (struct mmu_directory *)(MMU_ADDRESS_DIRECTORIES + MMU_PAGE_SIZE * index);
+    struct mmu_table *ktable = (struct mmu_table *)(MMU_ADDRESS_KTABLES + MMU_PAGE_SIZE * index);
+    struct mmu_table *utable = (struct mmu_table *)(MMU_ADDRESS_UTABLES + MMU_PAGE_SIZE * index);
     unsigned int entry;
 
     if (!descriptor || !descriptor->interface->read)
@@ -120,10 +115,10 @@ static unsigned int spawn(struct runtime_task *task, void *stack)
 
     memory_clear(directory, sizeof (struct mmu_directory));
     memory_clear(ktable, sizeof (struct mmu_table));
-    memory_clear(rtable, sizeof (struct mmu_table));
+    memory_clear(utable, sizeof (struct mmu_table));
 
     mmu_map_memory(directory, ktable, ARCH_KERNEL_BASE, ARCH_KERNEL_BASE, ARCH_KERNEL_SIZE, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE);
-    mmu_map_memory(directory, rtable, RUNTIME_TASK_PADDRESS_BASE + index * RUNTIME_TASK_ADDRESS_SIZE, RUNTIME_TASK_VADDRESS_BASE, RUNTIME_TASK_ADDRESS_SIZE, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);
+    mmu_map_memory(directory, utable, RUNTIME_TASK_PADDRESS_BASE + index * RUNTIME_TASK_ADDRESS_SIZE, RUNTIME_TASK_VADDRESS_BASE, RUNTIME_TASK_ADDRESS_SIZE, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);
     mmu_load_memory(directory);
 
     entry = binary_copy_program(descriptor->interface, descriptor->id);
