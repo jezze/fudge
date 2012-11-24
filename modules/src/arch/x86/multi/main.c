@@ -16,7 +16,7 @@ static struct multi_task *get_task(unsigned int index)
     if (!index || index >= MULTI_TASK_SLOTS)
         return 0;
 
-    return tasks[index];
+    return tasks[index] = (struct multi_task *)(MMU_ADDRESS_DIRECTORIES + index * MMU_PAGE_SIZE * 4);
 
 }
 
@@ -28,8 +28,10 @@ static unsigned int get_task_slot()
     for (i = 1; i < MULTI_TASK_SLOTS; i++)
     {
 
-        if (!tasks[i]->base.status.used)
-            return i;
+        if (tasks[i])
+            continue;
+
+        return i;
 
     }
 
@@ -45,8 +47,17 @@ static void schedule()
     for (i = MULTI_TASK_SLOTS - 1; i > 0; i--)
     {
 
-        if (!tasks[i]->base.status.used)
+        if (!tasks[i])
             continue;
+
+        if (!tasks[i]->base.status.used)
+        {
+
+            tasks[i] = 0;
+
+            continue;
+
+        }
 
         if (tasks[i]->base.status.idle)
             continue;
@@ -67,6 +78,9 @@ static void notify_interrupt(struct runtime_task *task, unsigned int index)
 
     for (i = 1; i < MULTI_TASK_SLOTS - 1; i++)
     {
+
+        if (!tasks[i])
+            continue;
 
         if (!tasks[i]->base.status.used)
             continue;
@@ -131,10 +145,7 @@ static unsigned int spawn(struct runtime_task *task, void *stack)
 void init()
 {
 
-    unsigned int i;
-
-    for (i = 0; i < MULTI_TASK_SLOTS; i++)
-        tasks[i] = (struct multi_task *)(MMU_ADDRESS_DIRECTORIES + i * 0x4000);
+    memory_clear(tasks, sizeof (struct multi_task *) * MULTI_TASK_SLOTS);
 
     syscall_set_routine(SYSCALL_INDEX_SPAWN, spawn);
 
