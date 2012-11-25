@@ -4,8 +4,7 @@ struct multi_task
 {
 
     struct mmu_directory directory;
-    struct mmu_table ktable;
-    struct mmu_table utable;
+    struct mmu_table tables[2];
     struct runtime_task base;
 
 };
