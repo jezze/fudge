@@ -6,6 +6,7 @@
 #include <arch/x86/arch.h>
 #include <arch/x86/isr.h>
 #include <arch/x86/mmu.h>
+#include <arch/x86/syscall.h>
 #include <arch/x86/multi/multi.h>
 
 static struct multi_task *tasks[MULTI_TASK_SLOTS];
@@ -39,7 +40,7 @@ static unsigned int get_task_slot()
 
 }
 
-static void schedule()
+static struct runtime_task *schedule(struct runtime_task *self)
 {
 
     unsigned int i;
@@ -63,15 +64,16 @@ static void schedule()
             continue;
 
         mmu_load_memory(&tasks[i]->directory);
-        isr_set_task(&tasks[i]->base);
 
-        break;
+        return &tasks[i]->base;
 
     }
 
+    return self;
+
 }
 
-static void notify_interrupt(struct runtime_task *task, unsigned int index)
+static struct runtime_task *notify_interrupt(struct runtime_task *self, unsigned int index)
 {
 
     unsigned int i;
@@ -97,12 +99,7 @@ static void notify_interrupt(struct runtime_task *task, unsigned int index)
 
     }
 
-}
-
-static void notify_complete(struct runtime_task *task)
-{
-
-    schedule();
+    return schedule(self);
 
 }
 
@@ -135,10 +132,8 @@ static unsigned int spawn(struct runtime_task *task, void *stack)
 
     runtime_init_registers(&ntask->base.registers, entry, RUNTIME_STACK_VADDRESS_BASE, RUNTIME_STACK_VADDRESS_BASE, index);
 
+    task->notify_interrupt = notify_interrupt;
     ntask->base.notify_interrupt = notify_interrupt;
-    ntask->base.notify_complete = notify_complete;
-
-    schedule();
 
     return index;
 

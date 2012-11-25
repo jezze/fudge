@@ -30,9 +30,9 @@ void arch_setup(unsigned int ramdiskc, void **ramdiskv)
 
     runtime_init_task(&task);
 
-    isr_setup(&task, cs0);
+    isr_setup(cs0);
     mmu_setup_arch(cs0);
-    syscall_setup_arch(cs0);
+    syscall_setup_arch(&task, cs0);
     kernel_setup(&task, ramdiskc, ramdiskv);
     isr_usermode(cs3, ds3, task.registers.ip, task.registers.sp);
 

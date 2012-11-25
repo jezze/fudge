@@ -25,13 +25,10 @@ unsigned int runtime_unset_task_event(struct runtime_task *task, unsigned int in
 
 }
 
-static void notify_interrupt(struct runtime_task *task, unsigned int index)
+static struct runtime_task *notify_interrupt(struct runtime_task *self, unsigned int index)
 {
 
-}
-
-static void notify_complete(struct runtime_task *task)
-{
+    return self;
 
 }
 
@@ -124,7 +121,6 @@ void runtime_init_task(struct runtime_task *task)
     memory_clear(task, sizeof (struct runtime_task));
 
     task->notify_interrupt = notify_interrupt;
-    task->notify_complete = notify_complete;
 
 }
 

@@ -57,9 +57,7 @@ struct isr_registers
 
 void isr_undefined();
 void isr_usermode(unsigned int cs, unsigned int ds, unsigned int ip, unsigned int sp);
-struct runtime_task *isr_get_task();
 unsigned short isr_raise(struct isr_registers *registers);
 void isr_set_routine(unsigned int index, void (*routine)(struct isr_registers *registers));
-void isr_set_task(struct runtime_task *task);
 void isr_unset_routine(unsigned int index);
-void isr_setup(struct runtime_task *task, unsigned short selector);
+void isr_setup(unsigned short selector);
