@@ -25,10 +25,6 @@
 #define MMU_ERROR_RESERVED              (1 << 3)
 #define MMU_ERROR_FETCH                 (1 << 4)
 
-#define MMU_ADDRESS_DIRECTORIES         0x00300000
-#define MMU_ADDRESS_KTABLES             0x00310000
-#define MMU_ADDRESS_UTABLES             0x00320000
-
 struct mmu_table
 {
 

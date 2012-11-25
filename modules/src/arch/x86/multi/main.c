@@ -16,7 +16,7 @@ static struct multi_task *get_task(unsigned int index)
     if (!index || index >= MULTI_TASK_SLOTS)
         return 0;
 
-    return tasks[index] = (struct multi_task *)(MMU_ADDRESS_DIRECTORIES + index * MMU_PAGE_SIZE * 4);
+    return tasks[index] = (struct multi_task *)(MULTI_TASK_BASE + index * MMU_PAGE_SIZE * 4);
 
 }
 

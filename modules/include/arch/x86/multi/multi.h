@@ -1,3 +1,4 @@
+#define MULTI_TASK_BASE                 0x00300000
 #define MULTI_TASK_SLOTS                32
 
 struct multi_task
