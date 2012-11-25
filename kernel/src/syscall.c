@@ -60,7 +60,7 @@ static unsigned int execute(struct runtime_task *task, void *stack)
     if (!entry)
         return 0;
 
-    runtime_init_registers(&task->registers, entry, RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE, RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE, 0);
+    runtime_init_registers(&task->registers, entry, RUNTIME_STACK_VADDRESS_BASE, RUNTIME_STACK_VADDRESS_BASE, 0);
 
     return 1;
 

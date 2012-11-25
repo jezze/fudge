@@ -8,7 +8,7 @@
 #include <arch/x86/mmu.h>
 
 static struct mmu_directory directory;
-static struct mmu_table tables[2];
+static struct mmu_table tables[3];
 
 static void enable()
 {
@@ -78,6 +78,7 @@ void mmu_setup_arch(unsigned short selector)
 
     mmu_map_memory(&directory, &tables[0], ARCH_KERNEL_BASE, ARCH_KERNEL_BASE, ARCH_KERNEL_SIZE, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE);
     mmu_map_memory(&directory, &tables[1], RUNTIME_TASK_PADDRESS_BASE, RUNTIME_TASK_VADDRESS_BASE, RUNTIME_TASK_ADDRESS_SIZE, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);
+    mmu_map_memory(&directory, &tables[2], RUNTIME_STACK_PADDRESS_BASE, RUNTIME_STACK_VADDRESS_BASE - RUNTIME_STACK_ADDRESS_SIZE, RUNTIME_STACK_ADDRESS_SIZE, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);
     mmu_load_memory(&directory);
 
     enable();

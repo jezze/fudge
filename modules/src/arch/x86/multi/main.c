@@ -16,7 +16,7 @@ static struct multi_task *get_task(unsigned int index)
     if (!index || index >= MULTI_TASK_SLOTS)
         return 0;
 
-    return tasks[index] = (struct multi_task *)(MULTI_TASK_BASE + index * MMU_PAGE_SIZE * 4);
+    return tasks[index] = (struct multi_task *)(MULTI_TASK_BASE + index * MMU_PAGE_SIZE * 8);
 
 }
 
@@ -91,7 +91,8 @@ static void notify_interrupt(struct runtime_task *task, unsigned int index)
         if (!tasks[i]->base.events[index].callback)
             continue;
 
-        runtime_init_registers(&tasks[i]->base.registers, tasks[i]->base.events[index].callback, RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE, RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE, tasks[i]->base.registers.status);
+        runtime_init_registers(&tasks[i]->base.registers, tasks[i]->base.events[index].callback, RUNTIME_STACK_VADDRESS_BASE, RUNTIME_STACK_VADDRESS_BASE, tasks[i]->base.registers.status);
+
         tasks[i]->base.status.idle = 0;
 
     }
@@ -122,6 +123,7 @@ static unsigned int spawn(struct runtime_task *task, void *stack)
 
     mmu_map_memory(&ntask->directory, &ntask->tables[0], ARCH_KERNEL_BASE, ARCH_KERNEL_BASE, ARCH_KERNEL_SIZE, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE);
     mmu_map_memory(&ntask->directory, &ntask->tables[1], RUNTIME_TASK_PADDRESS_BASE + index * RUNTIME_TASK_ADDRESS_SIZE, RUNTIME_TASK_VADDRESS_BASE, RUNTIME_TASK_ADDRESS_SIZE, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);
+    mmu_map_memory(&ntask->directory, &ntask->tables[2], RUNTIME_STACK_PADDRESS_BASE + index * RUNTIME_STACK_ADDRESS_SIZE, RUNTIME_STACK_VADDRESS_BASE - RUNTIME_STACK_ADDRESS_SIZE, RUNTIME_STACK_ADDRESS_SIZE, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);
     mmu_load_memory(&ntask->directory);
 
     entry = binary_copy_program(descriptor->interface, descriptor->id);
@@ -131,7 +133,7 @@ static unsigned int spawn(struct runtime_task *task, void *stack)
 
     memory_copy(&ntask->base, task, sizeof (struct runtime_task));
 
-    runtime_init_registers(&ntask->base.registers, entry, RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE, RUNTIME_TASK_VADDRESS_BASE + RUNTIME_TASK_ADDRESS_SIZE, index);
+    runtime_init_registers(&ntask->base.registers, entry, RUNTIME_STACK_VADDRESS_BASE, RUNTIME_STACK_VADDRESS_BASE, index);
 
     ntask->base.notify_interrupt = notify_interrupt;
     ntask->base.notify_complete = notify_complete;
