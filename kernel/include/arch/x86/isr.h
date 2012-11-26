@@ -56,9 +56,6 @@ struct isr_registers
 
 };
 
-void isr_undefined();
+void isr_routine();
 void isr_usermode(unsigned int cs, unsigned int ds, unsigned int ip, unsigned int sp);
-void isr_raise(struct isr_registers *registers);
-void isr_set_routine(unsigned int index, void (*routine)(struct isr_registers *registers));
-void isr_unset_routine(unsigned int index);
 void isr_setup(unsigned short selector);

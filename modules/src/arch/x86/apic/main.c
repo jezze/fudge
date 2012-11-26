@@ -1,7 +1,6 @@
 #include <memory.h>
 #include <base/base.h>
 #include <arch/x86/idt.h>
-#include <arch/x86/isr.h>
 #include <arch/x86/apic/apic.h>
 #include <arch/x86/cpuid/cpuid.h>
 #include <arch/x86/io/io.h>
@@ -51,11 +50,11 @@ static void reset(unsigned int slave)
 
 }
 
-static void handle_interrupt(struct isr_registers *registers)
+void apic_interrupt(struct apic_registers *registers)
 {
 
-    raise(registers->index - APIC_DATA_VECTOR0);
-    reset(registers->extra);
+    raise(registers->index);
+    reset(registers->slave);
 
 }
 
@@ -89,7 +88,6 @@ void init()
 {
 
     struct cpuid_data data;
-    unsigned int i;
 
     cpuid_get_data(CPUID_FEATURES0, &data);
 
@@ -112,9 +110,6 @@ void init()
     idt_set_entry(0x2D, apic_routine0D, 0x08, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
     idt_set_entry(0x2E, apic_routine0E, 0x08, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
     idt_set_entry(0x2F, apic_routine0F, 0x08, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
-
-    for (i = 0; i < APIC_ROUTINE_SLOTS; i++)
-        isr_set_routine(i + APIC_DATA_VECTOR0, handle_interrupt);
 
     remap();
     enable();
