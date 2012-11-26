@@ -60,13 +60,13 @@ void mmu_reload_memory()
 
 }
 
-static void handle_interrupt(struct isr_registers *registers)
+void mmu_interrupt(struct mmu_registers *registers)
 {
 
     unsigned int address = cpu_get_cr2();
 
     error_register(1, address);
-    error_register(2, registers->extra);
+    error_register(2, registers->type);
 
 }
 
@@ -74,7 +74,6 @@ void mmu_setup_arch(unsigned short selector)
 {
 
     idt_set_entry(0x0E, mmu_routine, selector, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
-    isr_set_routine(0x0E, handle_interrupt);
 
     mmu_map_memory(&directory, &tables[0], ARCH_KERNEL_BASE, ARCH_KERNEL_BASE, ARCH_KERNEL_SIZE, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE);
     mmu_map_memory(&directory, &tables[1], RUNTIME_TASK_PADDRESS_BASE, RUNTIME_TASK_VADDRESS_BASE, RUNTIME_TASK_ADDRESS_SIZE, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);
