@@ -1,20 +1,6 @@
 #include <call.h>
 
-unsigned int call_attach(unsigned int index, void (*callback)())
-{
-
-    return 0;
-
-}
-
 unsigned int call_close(unsigned int index)
-{
-
-    return 0;
-
-}
-
-unsigned int call_detach(unsigned int index)
 {
 
     return 0;
@@ -29,13 +15,6 @@ unsigned int call_execute(unsigned int index)
 }
 
 unsigned int call_exit()
-{
-
-    return 0;
-
-}
-
-unsigned int call_idle()
 {
 
     return 0;

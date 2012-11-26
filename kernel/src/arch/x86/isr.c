@@ -7,14 +7,10 @@
 
 static void (*routines[ISR_ROUTINE_SLOTS])(struct isr_registers *registers);
 
-unsigned short isr_raise(struct isr_registers *registers)
+void isr_raise(struct isr_registers *registers)
 {
 
-    syscall_begin(registers);
-
     routines[registers->index](registers);
-
-    return syscall_complete(registers);
 
 }
 

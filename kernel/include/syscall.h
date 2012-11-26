@@ -8,30 +8,10 @@
 #define SYSCALL_INDEX_EXECUTE           0x06
 #define SYSCALL_INDEX_SPAWN             0x07
 #define SYSCALL_INDEX_EXIT              0x08
-#define SYSCALL_INDEX_IDLE              0x09
 #define SYSCALL_INDEX_LOAD              0x0A
 #define SYSCALL_INDEX_UNLOAD            0x0B
-#define SYSCALL_INDEX_ATTACH            0x0C
-#define SYSCALL_INDEX_DETACH            0x0D
-
-struct syscall_attach_args
-{
-
-    void *caller;
-    unsigned int index;
-    unsigned int callback;
-
-};
 
 struct syscall_close_args
-{
-
-    void *caller;
-    unsigned int index;
-
-};
-
-struct syscall_detach_args
 {
 
     void *caller;
@@ -48,13 +28,6 @@ struct syscall_execute_args
 };
 
 struct syscall_exit_args
-{
-
-    void *caller;
-
-};
-
-struct syscall_idle_args
 {
 
     void *caller;

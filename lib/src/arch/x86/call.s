@@ -9,27 +9,12 @@
 .set CALL_INDEX_EXECUTE, 0x06
 .set CALL_INDEX_SPAWN,   0x07
 .set CALL_INDEX_EXIT,    0x08
-.set CALL_INDEX_IDLE,    0x09
 .set CALL_INDEX_LOAD,    0x0A
 .set CALL_INDEX_UNLOAD,  0x0B
-.set CALL_INDEX_ATTACH,  0x0C
-.set CALL_INDEX_DETACH,  0x0D
-
-.global call_attach
-call_attach:
-    mov eax, CALL_INDEX_ATTACH
-    int CALL_INTERRUPT
-    ret
 
 .global call_close
 call_close:
     mov eax, CALL_INDEX_CLOSE
-    int CALL_INTERRUPT
-    ret
-
-.global call_detach
-call_detach:
-    mov eax, CALL_INDEX_DETACH
     int CALL_INTERRUPT
     ret
 
@@ -42,12 +27,6 @@ call_execute:
 .global call_exit
 call_exit:
     mov eax, CALL_INDEX_EXIT
-    int CALL_INTERRUPT
-    ret
-
-.global call_idle
-call_idle:
-    mov eax, CALL_INDEX_IDLE
     int CALL_INTERRUPT
     ret
 

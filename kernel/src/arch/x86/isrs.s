@@ -5,6 +5,8 @@
 .global isr_common
 isr_common:
     pusha
+    mov ax, ds
+    push eax
     mov eax, esp
     push eax
     mov ax, 0x10
@@ -13,11 +15,12 @@ isr_common:
     mov fs, ax
     mov gs, ax
     call isr_raise
+    add esp, 4
+    pop eax
     mov ds, ax
     mov es, ax
     mov fs, ax
     mov gs, ax
-    add esp, 4
     popa
     add esp, 8
     iret

@@ -254,19 +254,22 @@ static void handle_input(char c)
 
 }
 
-static void read_keyboard()
+static void poll()
 {
 
     char buffer[32];
     unsigned int count;
     unsigned int i;
 
-    count = call_read(FILE_STDIN, 0, 32, buffer);
+    for (;;)
+    {
 
-    for (i = 0; i < count; i++)
-        handle_input(buffer[i]);
+        count = call_read(FILE_STDIN, 0, 32, buffer);
 
-    call_idle();
+        for (i = 0; i < count; i++)
+            handle_input(buffer[i]);
+
+    }
 
 }
 
@@ -274,9 +277,7 @@ void main()
 {
 
     clear();
-
-    call_attach(0x21, read_keyboard);
-    call_idle();
+    poll();
 
 }
 

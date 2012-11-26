@@ -57,13 +57,6 @@ static void enable(unsigned int xres, unsigned int yres, unsigned int bpp)
 
 }
 
-void mouse_event()
-{
-
-    call_idle();
-
-}
-
 void main()
 {
 
@@ -83,9 +76,6 @@ void main()
 
     init_window(&helloWindow, 64, 64, 320, 240, &helloSurface, hellowindow_draw);
     helloWindow.draw(&helloWindow);
-
-    call_attach(0x2C, mouse_event);
-    call_idle();
 
 }
 

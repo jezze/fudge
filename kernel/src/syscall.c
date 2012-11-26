@@ -6,18 +6,6 @@
 
 static unsigned int (*routines[SYSCALL_ROUTINE_SLOTS])(struct runtime_task *task, void *stack);
 
-static unsigned int attach(struct runtime_task *task, void *stack)
-{
-
-    struct syscall_attach_args *args = stack;
-
-    if (!args->callback)
-        return 0;
-
-    return runtime_set_task_event(task, args->index, args->callback);
-
-}
-
 static unsigned int close(struct runtime_task *task, void *stack)
 {
 
@@ -33,15 +21,6 @@ static unsigned int close(struct runtime_task *task, void *stack)
     descriptor->id = 0;
 
     return 1;
-
-}
-
-static unsigned int detach(struct runtime_task *task, void *stack)
-{
-
-    struct syscall_detach_args *args = stack;
-
-    return runtime_unset_task_event(task, args->index);
 
 }
 
@@ -70,15 +49,6 @@ static unsigned int exit(struct runtime_task *task, void *stack)
 {
 
     task->status.used = 0;
-
-    return 1;
-
-}
-
-static unsigned int idle(struct runtime_task *task, void *stack)
-{
-
-    task->status.idle = 1;
 
     return 1;
 
@@ -261,11 +231,8 @@ void syscall_setup()
     syscall_set_routine(SYSCALL_INDEX_MOUNT, mount);
     syscall_set_routine(SYSCALL_INDEX_EXECUTE, execute);
     syscall_set_routine(SYSCALL_INDEX_EXIT, exit);
-    syscall_set_routine(SYSCALL_INDEX_IDLE, idle);
     syscall_set_routine(SYSCALL_INDEX_LOAD, load);
     syscall_set_routine(SYSCALL_INDEX_UNLOAD, unload);
-    syscall_set_routine(SYSCALL_INDEX_ATTACH, attach);
-    syscall_set_routine(SYSCALL_INDEX_DETACH, detach);
 
 }
 
