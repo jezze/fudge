@@ -4,9 +4,7 @@
 #include <runtime.h>
 #include <syscall.h>
 #include <arch/x86/arch.h>
-#include <arch/x86/isr.h>
 #include <arch/x86/mmu.h>
-#include <arch/x86/syscall.h>
 #include <arch/x86/multi/multi.h>
 
 static struct multi_task *tasks[MULTI_TASK_SLOTS];

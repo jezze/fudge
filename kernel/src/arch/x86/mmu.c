@@ -4,7 +4,6 @@
 #include <arch/x86/arch.h>
 #include <arch/x86/cpu.h>
 #include <arch/x86/idt.h>
-#include <arch/x86/isr.h>
 #include <arch/x86/mmu.h>
 
 static struct mmu_directory directory;
