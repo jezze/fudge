@@ -5,8 +5,6 @@
 .global syscall_routine
 syscall_routine:
     cli
-    push eax
-    push 0x80
     pusha
     mov eax, esp
     push eax
@@ -22,6 +20,5 @@ syscall_routine:
     mov gs, ax
     add esp, 4
     popa
-    add esp, 8
     iret
 

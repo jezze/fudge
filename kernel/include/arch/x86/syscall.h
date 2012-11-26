@@ -27,8 +27,6 @@ struct syscall_registers
 {
 
     struct syscall_general_registers general;
-    unsigned int index;
-    unsigned int extra;
     struct syscall_interrupt_registers interrupt;
 
 };

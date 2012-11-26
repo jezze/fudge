@@ -12,8 +12,8 @@ unsigned short syscall_interrupt(struct syscall_registers *registers)
 {
 
     runtime_init_registers(&running->registers, registers->interrupt.eip, registers->interrupt.esp, registers->general.ebp, registers->general.eax);
-    running->registers.status = syscall_raise(registers->extra, running, (void *)registers->interrupt.esp);
-    running = running->notify_interrupt(running, registers->index);
+    running->registers.status = syscall_raise(registers->general.eax, running, (void *)registers->interrupt.esp);
+    running = running->notify_interrupt(running, registers->general.eax);
 
     if (running->status.used && !running->status.idle)
     {
