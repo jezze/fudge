@@ -72,7 +72,7 @@ static struct runtime_task *notify_interrupt(struct runtime_task *self, unsigned
 
     unsigned int i;
 
-    for (i = 1; i < MULTI_TASK_SLOTS - 1; i++)
+    for (i = 1; i < MULTI_TASK_SLOTS; i++)
     {
 
         if (!tasks[i])
