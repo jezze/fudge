@@ -9,4 +9,5 @@ LIB_OBJECTS+=lib/src/string.o
 $(LIB): $(LIB_OBJECTS)
 	$(AR) $(ARFLAGS) $@ $^
 
-$(LIB_OBJECTS): CCFLAGS+=-Ilib/include
+lib/%.o: lib/%.c
+	$(CC) -c $(CFLAGS) -Ilib/include -o $@ $<

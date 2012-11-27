@@ -50,3 +50,6 @@ $(MODULES_TTY): lib/src/memory.o lib/src/string.o $(MODULES_OBJECTS_TTY)
 
 $(MODULES_VIDEO): lib/src/memory.o lib/src/string.o $(MODULES_OBJECTS_VIDEO)
 	$(LD) $(LDFLAGS) -o $@ $^
+
+modules/%.o: modules/%.c
+	$(CC) -c $(CFLAGS) -Ilib/include -Ikernel/include -Imodules/include -o $@ $<

@@ -12,8 +12,8 @@ KERNEL_OBJECTS+=lib/src/memory.o
 KERNEL_OBJECTS+=lib/src/posix.o
 KERNEL_OBJECTS+=lib/src/string.o
 
-$(KERNEL): LDFLAGS+=-Tkernel/linker.$(ARCH).ld
-$(KERNEL): $(KERNEL_OBJECTS)
-	$(LD) $(LDFLAGS) -o $@ $^ $(EXTRA)
+$(KERNEL): $(LIB) $(KERNEL_OBJECTS)
+	$(LD) $(LDFLAGS) -Tkernel/linker.$(ARCH).ld -o $@ $^ $(EXTRA)
 
-$(KERNEL_OBJECTS): CCFLAGS+=-Ilib/include -Ikernel/include
+kernel/%.o: kernel/%.c
+	$(CC) -c $(CFLAGS) -Ilib/include -Ikernel/include -o $@ $<
