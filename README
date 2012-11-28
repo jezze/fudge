@@ -94,8 +94,8 @@ Without a modified makefile:
 The simplest way is to run it inside qemu:
 
     $ qemu-system-x86 \
-        -kernel image/boot/fudge \
-        -initrd image/boot/initrd.tar \
+        -kernel kernel/fudge \
+        -initrd initrd.tar \
         -serial stdio \
         -vga std
 
@@ -110,5 +110,8 @@ If you already are using Grub just add an entry in the menu.lst like:
     kernel /fudge
     module /initrd.tar
 
-Don't forget to copy fudge and initrd.tar to the correct partition first.
+Then as root you can execute:
 
+    $ make install [ INSTALL_PATH=/boot ]
+
+This will copy kernel/fudge and initrd.tar to your /boot folder

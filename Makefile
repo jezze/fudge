@@ -6,11 +6,16 @@ CFLAGS=-Wall -Werror -ffreestanding -nostdlib -std=c89 -pedantic -O2
 LD=$(PREFIX)ld
 AR=ar
 ARFLAGS=rs
-IMAGE=image image/bin image/boot image/home image/data image/mod image/boot/fudge image/boot/initrd.tar
+
+RAMDISK_NAME=initrd
+RAMDISK_TYPE=tar
+RAMDISK=$(RAMDISK_NAME).$(RAMDISK_TYPE)
+
+INSTALL_PATH=/boot
 
 .PHONY: all clean lib kernel modules packages
 
-all: fudge
+default: all
 
 include rules.$(ARCH).mk
 include lib/rules.$(ARCH).mk
@@ -21,49 +26,38 @@ include modules/rules.$(ARCH).mk
 include modules/rules.mk
 include packages/rules.mk
 
+all: $(LIB) $(KERNEL) $(MODULES) $(PACKAGES) $(RAMDISK)
+
 clean:
 	rm -rf $(LIB) $(LIB_OBJECTS)
 	rm -rf $(KERNEL) $(KERNEL_OBJECTS)
 	rm -rf $(MODULES) $(MODULES_OBJECTS)
 	rm -rf $(PACKAGES)
-	rm -rf $(IMAGE)
+	rm -rf $(RAMDISK)
 
-fudge: $(LIB) $(KERNEL) $(MODULES) $(PACKAGES) $(IMAGE)
-
-image:
-	mkdir -p $@
-
-image/bin: image $(PACKAGES)
+image/bin: $(PACKAGES)
 	mkdir -p $@
 	cp $(PACKAGES) $@
 
-image/boot: image
+image/boot:
 	mkdir -p $@
 
 image/boot/fudge: image/boot $(KERNEL)
 	cp $(KERNEL) $@
 
-image/boot/initrd.tar: image/boot initrd.tar
-	mv initrd.tar $@
+image/home: system/home
+	cp -r $< $@
 
-image/boot/initrd.cpio: image/boot initrd.cpio
-	mv initrd.cpio $@
+image/data: system/data
+	cp -r $< $@
 
-image/home: image
-	cp -r system/home $@
-
-image/data: image
-	cp -r system/data $@
-
-image/mod: image $(MODULES)
+image/mod: $(MODULES)
 	mkdir -p $@
 	cp $(MODULES) $@
 
-initrd.tar: image
-	tar -cf $@ image
-
-initrd.cpio: image
-	find image -depth | cpio -o > $@
+install:
+	cp $(KERNEL) $(INSTALL_PATH)
+	cp $(RAMDISK) $(INSTALL_PATH)
 
 kernel: $(KERNEL)
 
@@ -72,3 +66,12 @@ lib: $(LIB)
 modules: $(MODULES)
 
 packages: $(PACKAGES)
+
+$(RAMDISK_NAME).tar: image/bin image/boot image/boot/fudge image/home image/data image/mod
+	tar -cf $@ image
+	rm -rf image
+
+$(RAMDISK_NAME).cpio: image/bin image/boot image/boot/fudge image/home image/data image/mod
+	find image -depth | cpio -o > $@
+	rm -rf image
+
