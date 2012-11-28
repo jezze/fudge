@@ -1,3 +1,3 @@
 ASFLAGS+=-32
-CCFLAGS+=-m32
+CFLAGS+=-m32
 LDFLAGS+=-melf_i386
