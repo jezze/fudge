@@ -1,4 +1,3 @@
-#include <call.h>
 #include <gfx.h>
 #include <memory.h>
 
@@ -72,28 +71,14 @@ void gfx_set_rectangle(struct gfx_surface *surface, unsigned int x, unsigned int
 
 }
 
-void backend_read(struct gfx_backend *self, unsigned int offset, unsigned int count, void *buffer)
-{
-
-    call_read(self->id, offset, count, buffer);
-
-}
-
-void backend_write(struct gfx_backend *self, unsigned int offset, unsigned int count, void *buffer)
-{
-
-    call_write(self->id, offset, count, buffer);
-
-}
-
-void gfx_init_backend(struct gfx_backend *backend, unsigned int id)
+void gfx_init_backend(struct gfx_backend *backend, unsigned int id, void (*read)(struct gfx_backend *self, unsigned int offset, unsigned int count, void *buffer), void (*write)(struct gfx_backend *self, unsigned int offset, unsigned int count, void *buffer))
 {
 
     memory_clear(backend, sizeof (struct gfx_backend));
 
     backend->id = id;
-    backend->read = backend_read;
-    backend->write = backend_write;
+    backend->read = read;
+    backend->write = write;
 
 }
 
