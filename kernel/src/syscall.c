@@ -92,6 +92,7 @@ static unsigned int mount(struct runtime_task *task, void *stack)
     struct runtime_descriptor *descriptor = runtime_get_task_descriptor(task, args->index);
     struct runtime_mount *mount = runtime_get_task_mount(task, args->offset);
     struct vfs_interface *(*get_interface)();
+    struct vfs_interface *interface;
 
     if (!args->count || !args->path || !descriptor || !mount)
         return 0;
@@ -101,7 +102,9 @@ static unsigned int mount(struct runtime_task *task, void *stack)
     if (!get_interface)
         return 0;
 
-    runtime_init_mount(mount, get_interface(), args->count, args->path);
+    interface = get_interface();
+
+    runtime_init_mount(mount, 0, 0, interface, interface->rootid, args->count, args->path);
 
     return 1;
 
@@ -118,12 +121,12 @@ static unsigned int open(struct runtime_task *task, void *stack)
     if (!args->count || !args->path || !descriptor || !mount)
         return 0;
 
-    id = mount->interface->walk(mount->interface, mount->interface->rootid, args->count - mount->count, args->path + mount->count);
+    id = mount->child->walk(mount->child, mount->child->rootid, args->count - mount->count, args->path + mount->count);
 
     if (!id)
         return 0;
 
-    runtime_init_descriptor(descriptor, id, mount->interface);
+    runtime_init_descriptor(descriptor, id, mount->child);
 
     if (descriptor->interface->open)
         descriptor->interface->open(descriptor->interface, descriptor->id);

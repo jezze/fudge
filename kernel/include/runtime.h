@@ -26,7 +26,12 @@ struct runtime_event
 struct runtime_mount
 {
 
-    struct vfs_interface *interface;
+    struct vfs_interface *parent;
+    unsigned int parentid;
+    struct vfs_interface *child;
+    unsigned int childid;
+
+    /* remove later */
     unsigned int count;
     char path[64];
 
@@ -68,6 +73,6 @@ struct runtime_descriptor *runtime_get_task_descriptor(struct runtime_task *task
 struct runtime_mount *runtime_get_task_mount(struct runtime_task *task, unsigned int index);
 struct runtime_mount *runtime_find_task_mount(struct runtime_task *self, char *path);
 void runtime_init_descriptor(struct runtime_descriptor *descriptor, unsigned int id, struct vfs_interface *interface);
-void runtime_init_mount(struct runtime_mount *mount, struct vfs_interface *interface, unsigned int count, char *path);
+void runtime_init_mount(struct runtime_mount *mount, struct vfs_interface *parent, unsigned int parentid, struct vfs_interface *child, unsigned int childid, unsigned int count, char *path);
 void runtime_init_registers(struct runtime_registers *registers, unsigned int ip, unsigned int sp, unsigned int sb, unsigned int status);
 void runtime_init_task(struct runtime_task *task);
