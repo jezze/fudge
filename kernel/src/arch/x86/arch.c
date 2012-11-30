@@ -1,6 +1,7 @@
 #include <runtime.h>
 #include <kernel.h>
 #include <arch/x86/arch.h>
+#include <arch/x86/cpu.h>
 #include <arch/x86/gdt.h>
 #include <arch/x86/idt.h>
 #include <arch/x86/isr.h>
@@ -34,6 +35,10 @@ void arch_setup(unsigned int ramdiskc, void **ramdiskv)
     mmu_setup_arch(cs0);
     syscall_setup_arch(&task, cs0);
     kernel_setup(&task, ramdiskc, ramdiskv);
+
+    /* This is a fix for unwanted clock interrupts */
+    cpu_quirkfix();
+
     isr_usermode(cs3, ds3, task.registers.ip, task.registers.sp);
 
 }
