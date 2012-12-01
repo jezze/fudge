@@ -52,7 +52,7 @@ struct runtime_mount *runtime_get_task_mount(struct runtime_task *task, unsigned
 
 }
 
-struct runtime_mount *runtime_find_task_mount(struct runtime_task *self, char *path)
+struct runtime_mount *runtime_find_task_mount(struct runtime_task *self, unsigned int count, char *path)
 {
 
     unsigned int i;

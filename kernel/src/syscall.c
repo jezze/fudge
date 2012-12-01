@@ -90,11 +90,13 @@ static unsigned int mount(struct runtime_task *task, void *stack)
 
     struct syscall_mount_args *args = stack;
     struct runtime_descriptor *descriptor = runtime_get_task_descriptor(task, args->index);
-    struct runtime_mount *mount = runtime_get_task_mount(task, args->offset);
+    struct runtime_mount *pmount = runtime_get_task_mount(task, 1);
+    struct runtime_mount *cmount = runtime_get_task_mount(task, args->offset);
     struct vfs_interface *(*get_interface)();
-    struct vfs_interface *interface;
+    struct vfs_interface *parent = pmount->parent;
+    struct vfs_interface *child;
 
-    if (!args->count || !args->path || !descriptor || !mount)
+    if (!args->count || !args->path || !descriptor || !cmount)
         return 0;
 
     get_interface = (struct vfs_interface *(*)())(binary_find_symbol(descriptor->interface, descriptor->id, "get_filesystem"));
@@ -102,9 +104,9 @@ static unsigned int mount(struct runtime_task *task, void *stack)
     if (!get_interface)
         return 0;
 
-    interface = get_interface();
+    child = get_interface();
 
-    runtime_init_mount(mount, 0, 0, interface, interface->rootid, args->count, args->path);
+    runtime_init_mount(cmount, parent, parent->walk(parent, parent->rootid, args->count - 1, args->path + 1), child, child->rootid, args->count, args->path);
 
     return 1;
 
@@ -115,7 +117,7 @@ static unsigned int open(struct runtime_task *task, void *stack)
 
     struct syscall_open_args *args = stack;
     struct runtime_descriptor *descriptor = runtime_get_task_descriptor(task, args->index);
-    struct runtime_mount *mount = runtime_find_task_mount(task, args->path);
+    struct runtime_mount *mount = runtime_find_task_mount(task, args->count, args->path);
     unsigned int id;
 
     if (!args->count || !args->path || !descriptor || !mount)
