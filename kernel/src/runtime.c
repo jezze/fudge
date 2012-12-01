@@ -125,6 +125,7 @@ void runtime_init_task(struct runtime_task *task)
 
     memory_clear(task, sizeof (struct runtime_task));
 
+    task->status.used = 1;
     task->notify_interrupt = notify_interrupt;
 
 }
