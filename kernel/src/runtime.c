@@ -1,5 +1,6 @@
 #include <memory.h>
 #include <runtime.h>
+#include <vfs.h>
 
 unsigned int runtime_set_task_event(struct runtime_task *task, unsigned int index, unsigned int callback)
 {
@@ -49,6 +50,54 @@ struct runtime_mount *runtime_get_task_mount(struct runtime_task *task, unsigned
         return 0;
 
     return &task->mounts[index];
+
+}
+
+unsigned int runtime_walk(struct runtime_task *task, struct runtime_descriptor *descriptor, struct vfs_interface *interface, unsigned int id, unsigned int count, char *path)
+{
+
+    unsigned int i;
+    unsigned int slash;
+    unsigned int nid;
+
+    if (!count)
+    {
+
+        runtime_init_descriptor(descriptor, id, interface);
+
+        return id;
+
+    }
+
+    for (slash = 0; slash < count; slash++)
+    {
+
+        if (path[slash] == '/')
+            break;
+
+    }
+
+    if (slash < count)
+        slash++;
+
+    nid = interface->walk(interface, id, slash, path);
+
+    if (nid)
+        return runtime_walk(task, descriptor, interface, nid, count - slash, path + slash);
+
+    for (i = 1; i < RUNTIME_TASK_MOUNT_SLOTS; i++)
+    {
+
+        if (task->mounts[i].parent == interface && task->mounts[i].parentid == id)
+        {
+
+            return runtime_walk(task, descriptor, task->mounts[i].child, task->mounts[i].childid, count, path);
+
+        }
+
+    }
+
+    return 0;
 
 }
 

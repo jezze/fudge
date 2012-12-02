@@ -113,82 +113,13 @@ static unsigned int mount(struct runtime_task *task, void *stack)
 
 }
 
-void print(char *s, unsigned int count)
-{
-
-    unsigned int i;
-
-    for (i = 0; i < count; i++)
-        memory_copy((void *)(0xB8000 + 2 * i + 80 * 20), s + i, 1);
-
-}
-
-void printnum(unsigned int num)
-{
-
-    char n[32];
-
-    string_write_num(n, num, 10);
-
-    print(n, string_length(n));
-
-}
-
-unsigned int walk(struct runtime_task *task, struct runtime_descriptor *descriptor, struct vfs_interface *interface, unsigned int id, unsigned int count, char *path)
-{
-
-    unsigned int i;
-    unsigned int slash;
-    unsigned int nid;
-
-    if (!count)
-    {
-
-        runtime_init_descriptor(descriptor, id, interface);
-
-        return id;
-
-    }
-
-    for (slash = 0; slash < count; slash++)
-    {
-
-        if (path[slash] == '/')
-            break;
-
-    }
-
-    if (slash < count)
-        slash++;
-
-    nid = interface->walk(interface, id, slash, path);
-
-    if (nid)
-        return walk(task, descriptor, interface, nid, count - slash, path + slash);
-
-    for (i = 1; i < RUNTIME_TASK_MOUNT_SLOTS; i++)
-    {
-
-        if (task->mounts[i].parent == interface && task->mounts[i].parentid == id)
-        {
-
-            return walk(task, descriptor, task->mounts[i].child, task->mounts[i].childid, count, path);
-
-        }
-
-    }
-
-    return 0;
-
-}
-
 static unsigned int open(struct runtime_task *task, void *stack)
 {
 
     struct syscall_open_args *args = stack;
     struct runtime_mount *mount = runtime_get_task_mount(task, 1);
     struct runtime_descriptor *descriptor = runtime_get_task_descriptor(task, args->index);
-    unsigned int id = walk(task, descriptor, mount->child, mount->child->rootid, args->count - 1, args->path + 1);
+    unsigned int id = runtime_walk(task, descriptor, mount->child, mount->child->rootid, args->count - 1, args->path + 1);
 
     if (!id)
         return 0;
