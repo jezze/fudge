@@ -90,24 +90,23 @@ static unsigned int mount(struct runtime_task *task, void *stack)
 {
 
     struct syscall_mount_args *args = stack;
-    struct runtime_descriptor *descriptor = runtime_get_task_descriptor(task, args->index);
-    struct runtime_mount *pmount = runtime_get_task_mount(task, 1);
-    struct runtime_mount *cmount = runtime_get_task_mount(task, args->offset);
+    struct runtime_mount *mount = runtime_get_task_mount(task, args->index);
+    struct runtime_descriptor *pdescriptor = runtime_get_task_descriptor(task, args->pindex);
+    struct runtime_descriptor *cdescriptor = runtime_get_task_descriptor(task, args->cindex);
     struct vfs_interface *(*get_interface)();
-    struct vfs_interface *parent = pmount->parent.interface;
     struct vfs_interface *child;
 
-    if (!args->count || !args->path || !descriptor || !cmount)
+    if (!mount || !pdescriptor || !cdescriptor)
         return 0;
 
-    get_interface = (struct vfs_interface *(*)())(binary_find_symbol(descriptor->interface, descriptor->id, "get_filesystem"));
+    get_interface = (struct vfs_interface *(*)())(binary_find_symbol(cdescriptor->interface, cdescriptor->id, "get_filesystem"));
 
     if (!get_interface)
         return 0;
 
     child = get_interface();
 
-    runtime_init_mount(cmount, parent, parent->walk(parent, parent->rootid, args->count - 1, args->path + 1), child, child->rootid);
+    runtime_init_mount(mount, pdescriptor->interface, pdescriptor->id, child, child->rootid);
 
     return 1;
 

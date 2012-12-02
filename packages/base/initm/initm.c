@@ -6,12 +6,14 @@ void load_modules_core(unsigned int id)
     call_open(FILE_STDIN, 22, "/ramdisk/mod/nodefs.ko");
     call_spawn(id);
 
-    call_mount(FILE_STDIN, 4, 8, "/nodefs/");
+    call_open(11, 8, "/nodefs/");
+    call_mount(4, 11, FILE_STDIN);
 
     call_open(FILE_STDIN, 21, "/ramdisk/mod/video.ko");
     call_spawn(id);
 
-    call_mount(FILE_STDIN, 5, 7, "/video/");
+    call_open(11, 7, "/video/");
+    call_mount(5, 11, FILE_STDIN);
 
     call_open(FILE_STDIN, 19, "/ramdisk/mod/net.ko");
     call_spawn(id);
@@ -40,7 +42,8 @@ void load_modules_core(unsigned int id)
     call_open(FILE_STDIN, 19, "/ramdisk/mod/tty.ko");
     call_spawn(id);
 
-    call_mount(FILE_STDIN, 3, 5, "/tty/");
+    call_open(11, 5, "/tty/");
+    call_mount(3, 11, FILE_STDIN);
 
 }
 

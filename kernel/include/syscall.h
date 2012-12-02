@@ -47,9 +47,8 @@ struct syscall_mount_args
 
     void *caller;
     unsigned int index;
-    unsigned int offset;
-    unsigned int count;
-    char *path;
+    unsigned int pindex;
+    unsigned int cindex;
 
 };
 
