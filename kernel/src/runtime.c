@@ -62,7 +62,7 @@ void runtime_init_descriptor(struct runtime_descriptor *descriptor, unsigned int
 
 }
 
-void runtime_init_mount(struct runtime_mount *mount, struct vfs_interface *parent, unsigned int parentid, struct vfs_interface *child, unsigned int childid, unsigned int count, char *path)
+void runtime_init_mount(struct runtime_mount *mount, struct vfs_interface *parent, unsigned int parentid, struct vfs_interface *child, unsigned int childid)
 {
 
     memory_clear(mount, sizeof (struct runtime_mount));
@@ -71,10 +71,6 @@ void runtime_init_mount(struct runtime_mount *mount, struct vfs_interface *paren
     mount->parentid = parentid;
     mount->child = child;
     mount->childid = childid;
-
-    /* remove later on */
-    mount->count = count;
-    memory_write(mount->path, 64, path, mount->count, 0);
 
 }
 
