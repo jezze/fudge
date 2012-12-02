@@ -48,7 +48,6 @@ struct runtime_descriptor *runtime_set_task_descriptor(struct runtime_task *task
 
     struct runtime_descriptor *descriptor;
     unsigned int i;
-    unsigned int slash;
     unsigned int nid;
 
     if (!count)
@@ -61,11 +60,7 @@ struct runtime_descriptor *runtime_set_task_descriptor(struct runtime_task *task
                 continue;
 
             if (task->mounts[i].parent == interface && task->mounts[i].parentid == id)
-            {
-
                 return runtime_set_task_descriptor(task, index, task->mounts[i].child, task->mounts[i].childid, count, path);
-
-            }
 
         }
 
@@ -76,31 +71,21 @@ struct runtime_descriptor *runtime_set_task_descriptor(struct runtime_task *task
 
     }
 
-    for (slash = 0; slash < count; slash++)
-    {
+    for (i = 0; i < count && path[i] != '/'; i++);
 
-        if (path[slash] == '/')
-            break;
+    if (i < count)
+        i++;
 
-    }
-
-    if (slash < count)
-        slash++;
-
-    nid = interface->walk(interface, id, slash, path);
+    nid = interface->walk(interface, id, i, path);
 
     if (nid)
-        return runtime_set_task_descriptor(task, index, interface, nid, count - slash, path + slash);
+        return runtime_set_task_descriptor(task, index, interface, nid, count - i, path + i);
 
     for (i = 1; i < RUNTIME_TASK_MOUNT_SLOTS; i++)
     {
 
         if (task->mounts[i].parent == interface && task->mounts[i].parentid == id)
-        {
-
             return runtime_set_task_descriptor(task, index, task->mounts[i].child, task->mounts[i].childid, count, path);
-
-        }
 
     }
 
