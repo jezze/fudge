@@ -70,7 +70,7 @@ struct runtime_descriptor *runtime_set_task_descriptor(struct runtime_task *task
         }
 
         descriptor = runtime_get_task_descriptor(task, index);
-        runtime_init_descriptor(descriptor, id, interface);
+        runtime_init_descriptor(descriptor, interface, id);
 
         return descriptor;
 
@@ -118,13 +118,13 @@ struct runtime_mount *runtime_get_task_mount(struct runtime_task *task, unsigned
 
 }
 
-void runtime_init_descriptor(struct runtime_descriptor *descriptor, unsigned int id, struct vfs_interface *interface)
+void runtime_init_descriptor(struct runtime_descriptor *descriptor, struct vfs_interface *interface, unsigned int id)
 {
 
     memory_clear(descriptor, sizeof (struct runtime_descriptor));
 
-    descriptor->id = id;
     descriptor->interface = interface;
+    descriptor->id = id;
 
 }
 
