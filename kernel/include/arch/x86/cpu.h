@@ -12,4 +12,3 @@ void cpu_set_gdt(void *pointer);
 void cpu_set_idt(void *pointer);
 void cpu_set_eflags(unsigned int value);
 void cpu_set_tss(unsigned int value);
-void cpu_quirkfix();

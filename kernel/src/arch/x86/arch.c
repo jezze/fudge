@@ -36,9 +36,6 @@ void arch_setup(unsigned int ramdiskc, void **ramdiskv)
     syscall_setup_arch(&task, cs0);
     kernel_setup(&task, ramdiskc, ramdiskv);
 
-    /* This is a fix for unwanted clock interrupts */
-    cpu_quirkfix();
-
     isr_usermode(cs3, ds3, task.registers.ip, task.registers.sp);
 
 }

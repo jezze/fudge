@@ -35,6 +35,9 @@ static void remap()
 static void enable()
 {
 
+    io_outb(APIC_COMMAND1, APIC_COMMAND_EOI);
+    io_outb(APIC_COMMAND0, APIC_COMMAND_EOI);
+
     io_outb(APIC_DATA0, 0x00);
     io_outb(APIC_DATA1, 0x00);
 

@@ -89,10 +89,3 @@ cpu_set_tss:
     ltr ax
     ret
 
-.global cpu_quirkfix
-cpu_quirkfix:
-    mov al, 0xFF
-    out 0xA1, al
-    out 0x21, al
-    ret
-
