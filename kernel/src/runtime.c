@@ -63,6 +63,21 @@ unsigned int runtime_walk(struct runtime_task *task, struct runtime_descriptor *
     if (!count)
     {
 
+        for (i = 1; i < RUNTIME_TASK_MOUNT_SLOTS; i++)
+        {
+
+            if (task->mounts[i].child == interface && task->mounts[i].childid == id)
+                continue;
+
+            if (task->mounts[i].parent == interface && task->mounts[i].parentid == id)
+            {
+
+                return runtime_walk(task, descriptor, task->mounts[i].child, task->mounts[i].childid, count, path);
+
+            }
+
+        }
+
         runtime_init_descriptor(descriptor, id, interface);
 
         return id;
