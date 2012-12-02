@@ -16,12 +16,8 @@ void load_modules_core(unsigned int id)
     call_open(FILE_STDIN, 19, "/ramdisk/mod/net.ko");
     call_spawn(id);
 
-    call_mount(FILE_STDIN, 6, 5, "/net/");
-
     call_open(FILE_STDIN, 21, "/ramdisk/mod/block.ko");
     call_spawn(id);
-
-    call_mount(FILE_STDIN, 7, 7, "/block/");
 
     call_open(FILE_STDIN, 18, "/ramdisk/mod/io.ko");
     call_spawn(id);
@@ -44,7 +40,7 @@ void load_modules_core(unsigned int id)
     call_open(FILE_STDIN, 19, "/ramdisk/mod/tty.ko");
     call_spawn(id);
 
-    call_mount(FILE_STDIN, 8, 5, "/tty/");
+    call_mount(FILE_STDIN, 3, 5, "/tty/");
 
 }
 

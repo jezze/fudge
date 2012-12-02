@@ -52,36 +52,6 @@ struct runtime_mount *runtime_get_task_mount(struct runtime_task *task, unsigned
 
 }
 
-struct runtime_mount *runtime_find_task_mount(struct runtime_task *self, unsigned int count, char *path)
-{
-
-    unsigned int i;
-    unsigned int max = 0;
-    struct runtime_mount *current = 0;
-
-    for (i = 1; i < RUNTIME_TASK_MOUNT_SLOTS; i++)
-    {
-
-        if (!self->mounts[i].count)
-            continue;
-
-        if (self->mounts[i].count < max)
-            continue;
-
-        if (memory_match(self->mounts[i].path, path, self->mounts[i].count))
-        {
-
-            current = &self->mounts[i];
-            max = self->mounts[i].count;
-
-        }
-
-    }
-
-    return current;
-
-}
-
 void runtime_init_descriptor(struct runtime_descriptor *descriptor, unsigned int id, struct vfs_interface *interface)
 {
 
