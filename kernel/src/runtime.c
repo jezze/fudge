@@ -43,7 +43,7 @@ struct runtime_descriptor *runtime_get_task_descriptor(struct runtime_task *task
 
 }
 
-static struct runtime_mount *runtime_find_parent_mount(struct runtime_task *task, struct vfs_interface *interface, unsigned int id)
+static struct runtime_descriptor *runtime_find_child_descriptor(struct runtime_task *task, struct vfs_interface *interface, unsigned int id)
 {
 
     unsigned int i;
@@ -55,7 +55,7 @@ static struct runtime_mount *runtime_find_parent_mount(struct runtime_task *task
             continue;
 
         if (task->mounts[i].parent.interface == interface && task->mounts[i].parent.id == id)
-            return &task->mounts[i];
+            return &task->mounts[i].child;
 
     }
 
@@ -66,18 +66,17 @@ static struct runtime_mount *runtime_find_parent_mount(struct runtime_task *task
 struct runtime_descriptor *runtime_set_task_descriptor(struct runtime_task *task, unsigned int index, struct vfs_interface *interface, unsigned int id, unsigned int count, char *path)
 {
 
-    struct runtime_descriptor *descriptor;
-    struct runtime_mount *parent = runtime_find_parent_mount(task, interface, id);
+    struct runtime_descriptor *descriptor = runtime_get_task_descriptor(task, index);
+    struct runtime_descriptor *child = runtime_find_child_descriptor(task, interface, id);
     unsigned int i;
     unsigned int nid;
 
-    if (parent)
-        return runtime_set_task_descriptor(task, index, parent->child.interface, parent->child.id, count, path);
+    if (child)
+        return runtime_set_task_descriptor(task, index, child->interface, child->id, count, path);
 
     if (!count)
     {
 
-        descriptor = runtime_get_task_descriptor(task, index);
         runtime_init_descriptor(descriptor, interface, id);
 
         return descriptor;
