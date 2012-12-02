@@ -43,19 +43,10 @@ struct runtime_descriptor *runtime_get_task_descriptor(struct runtime_task *task
 
 }
 
-struct runtime_mount *runtime_get_task_mount(struct runtime_task *task, unsigned int index)
+struct runtime_descriptor *runtime_set_task_descriptor(struct runtime_task *task, unsigned int index, struct vfs_interface *interface, unsigned int id, unsigned int count, char *path)
 {
 
-    if (!index || index >= RUNTIME_TASK_MOUNT_SLOTS)
-        return 0;
-
-    return &task->mounts[index];
-
-}
-
-unsigned int runtime_walk(struct runtime_task *task, struct runtime_descriptor *descriptor, struct vfs_interface *interface, unsigned int id, unsigned int count, char *path)
-{
-
+    struct runtime_descriptor *descriptor;
     unsigned int i;
     unsigned int slash;
     unsigned int nid;
@@ -72,15 +63,16 @@ unsigned int runtime_walk(struct runtime_task *task, struct runtime_descriptor *
             if (task->mounts[i].parent == interface && task->mounts[i].parentid == id)
             {
 
-                return runtime_walk(task, descriptor, task->mounts[i].child, task->mounts[i].childid, count, path);
+                return runtime_set_task_descriptor(task, index, task->mounts[i].child, task->mounts[i].childid, count, path);
 
             }
 
         }
 
+        descriptor = runtime_get_task_descriptor(task, index);
         runtime_init_descriptor(descriptor, id, interface);
 
-        return id;
+        return descriptor;
 
     }
 
@@ -98,7 +90,7 @@ unsigned int runtime_walk(struct runtime_task *task, struct runtime_descriptor *
     nid = interface->walk(interface, id, slash, path);
 
     if (nid)
-        return runtime_walk(task, descriptor, interface, nid, count - slash, path + slash);
+        return runtime_set_task_descriptor(task, index, interface, nid, count - slash, path + slash);
 
     for (i = 1; i < RUNTIME_TASK_MOUNT_SLOTS; i++)
     {
@@ -106,13 +98,23 @@ unsigned int runtime_walk(struct runtime_task *task, struct runtime_descriptor *
         if (task->mounts[i].parent == interface && task->mounts[i].parentid == id)
         {
 
-            return runtime_walk(task, descriptor, task->mounts[i].child, task->mounts[i].childid, count, path);
+            return runtime_set_task_descriptor(task, index, task->mounts[i].child, task->mounts[i].childid, count, path);
 
         }
 
     }
 
     return 0;
+
+}
+
+struct runtime_mount *runtime_get_task_mount(struct runtime_task *task, unsigned int index)
+{
+
+    if (!index || index >= RUNTIME_TASK_MOUNT_SLOTS)
+        return 0;
+
+    return &task->mounts[index];
 
 }
 

@@ -118,10 +118,9 @@ static unsigned int open(struct runtime_task *task, void *stack)
 
     struct syscall_open_args *args = stack;
     struct runtime_mount *mount = runtime_get_task_mount(task, 1);
-    struct runtime_descriptor *descriptor = runtime_get_task_descriptor(task, args->index);
-    unsigned int id = runtime_walk(task, descriptor, mount->child, mount->child->rootid, args->count - 1, args->path + 1);
+    struct runtime_descriptor *descriptor = runtime_set_task_descriptor(task, args->index, mount->child, mount->child->rootid, args->count - 1, args->path + 1);
 
-    if (!id)
+    if (!descriptor)
         return 0;
 
     if (descriptor->interface->open)
