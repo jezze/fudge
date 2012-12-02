@@ -26,10 +26,8 @@ struct runtime_event
 struct runtime_mount
 {
 
-    struct vfs_interface *parent;
-    unsigned int parentid;
-    struct vfs_interface *child;
-    unsigned int childid;
+    struct runtime_descriptor parent;
+    struct runtime_descriptor child;
 
 };
 

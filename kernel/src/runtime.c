@@ -51,10 +51,10 @@ static struct runtime_mount *runtime_find_parent_mount(struct runtime_task *task
     for (i = 1; i < RUNTIME_TASK_MOUNT_SLOTS; i++)
     {
 
-        if (task->mounts[i].child == interface && task->mounts[i].childid == id)
+        if (task->mounts[i].child.interface == interface && task->mounts[i].child.id == id)
             continue;
 
-        if (task->mounts[i].parent == interface && task->mounts[i].parentid == id)
+        if (task->mounts[i].parent.interface == interface && task->mounts[i].parent.id == id)
             return &task->mounts[i];
 
     }
@@ -72,7 +72,7 @@ struct runtime_descriptor *runtime_set_task_descriptor(struct runtime_task *task
     unsigned int nid;
 
     if (parent)
-        return runtime_set_task_descriptor(task, index, parent->child, parent->childid, count, path);
+        return runtime_set_task_descriptor(task, index, parent->child.interface, parent->child.id, count, path);
 
     if (!count)
     {
@@ -121,10 +121,10 @@ void runtime_init_mount(struct runtime_mount *mount, struct vfs_interface *paren
 
     memory_clear(mount, sizeof (struct runtime_mount));
 
-    mount->parent = parent;
-    mount->parentid = parentid;
-    mount->child = child;
-    mount->childid = childid;
+    mount->parent.interface = parent;
+    mount->parent.id = parentid;
+    mount->child.interface = child;
+    mount->child.id = childid;
 
 }
 
