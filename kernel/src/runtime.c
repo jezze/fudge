@@ -68,8 +68,7 @@ struct runtime_descriptor *runtime_set_task_descriptor(struct runtime_task *task
 
     struct runtime_descriptor *descriptor = runtime_get_task_descriptor(task, index);
     struct runtime_descriptor *child = runtime_find_child_descriptor(task, interface, id);
-    unsigned int i;
-    unsigned int nid;
+    unsigned int length;
 
     if (child)
         return runtime_set_task_descriptor(task, index, child->interface, child->id, count, path);
@@ -83,13 +82,13 @@ struct runtime_descriptor *runtime_set_task_descriptor(struct runtime_task *task
 
     }
 
-    for (i = 0; i < count && path[i] != '/'; i++);
+    for (length = 0; length < count && path[length] != '/'; length++);
 
-    if (i < count)
-        i++;
+    if (length < count)
+        length++;
 
-    if ((nid = interface->walk(interface, id, i, path)))
-        return runtime_set_task_descriptor(task, index, interface, nid, count - i, path + i);
+    if ((id = interface->walk(interface, id, length, path)))
+        return runtime_set_task_descriptor(task, index, interface, id, count - length, path + length);
 
     return 0;
 
