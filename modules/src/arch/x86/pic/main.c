@@ -38,14 +38,14 @@ void pic_set_mask(unsigned short port, unsigned char mask)
 
 }
 
-void pic_set_line(unsigned short port, unsigned char line)
+void pic_enable_line(unsigned short port, unsigned char line)
 {
 
     io_outb(port, io_inb(port) & ~line);
 
 }
 
-void pic_unset_line(unsigned short port, unsigned char line)
+void pic_disable_line(unsigned short port, unsigned char line)
 {
 
     io_outb(port, io_inb(port) | line);
@@ -83,9 +83,9 @@ unsigned int pic_set_routine(unsigned int index, struct base_device *device, voi
     routines[index].callback = callback;
 
     if (index >= 8)
-        pic_set_line(PIC_DATA1, 1 << (index - 8));
+        pic_enable_line(PIC_DATA1, 1 << (index - 8));
     else
-        pic_set_line(PIC_DATA0, 1 << (index - 0));
+        pic_enable_line(PIC_DATA0, 1 << (index - 0));
 
     return 1;
 
@@ -104,9 +104,9 @@ unsigned int pic_unset_routine(unsigned int index, struct base_device *device)
     routines[index].callback = 0;
 
     if (index >= 8)
-        pic_unset_line(PIC_DATA1, 1 << (index - 8));
+        pic_disable_line(PIC_DATA1, 1 << (index - 8));
     else
-        pic_unset_line(PIC_DATA0, 1 << (index - 0));
+        pic_disable_line(PIC_DATA0, 1 << (index - 0));
 
     return 1;
 
