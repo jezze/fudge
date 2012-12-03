@@ -52,6 +52,29 @@ void pic_disable_line(unsigned short port, unsigned char line)
 
 }
 
+static unsigned char pic_get_status(unsigned short port, unsigned char type)
+{
+
+    io_outb(port, type);
+
+    return io_inb(port);
+
+}
+
+unsigned char pic_get_raised_lines(unsigned short port)
+{
+
+    return pic_get_status(port, PIC_COMMAND_IRR);
+
+}
+
+unsigned char pic_get_serviced_lines(unsigned short port)
+{
+
+    return pic_get_status(port, PIC_COMMAND_ISR);
+
+}
+
 static void reset(unsigned int slave)
 {
 
