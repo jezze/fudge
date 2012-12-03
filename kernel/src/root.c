@@ -10,7 +10,7 @@ static unsigned int read(struct vfs_interface *self, unsigned int id, unsigned i
         return memory_read(buffer, count, "../\n", 4, offset);
 
     if (id == 1)
-        return memory_read(buffer, count, "../\nblock/\nnet/\nnodefs/\nramdisk/\ntty/\nvideo/\n", 45, offset);
+        return memory_read(buffer, count, "../\nnodefs/\nramdisk/\ntty/\nvideo/\n", 33, offset);
 
     return 0;
 
