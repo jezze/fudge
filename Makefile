@@ -1,5 +1,5 @@
 ARCH=x86
-BOOT=mboot
+PLATFORM=mboot
 PREFIX=
 AS=$(PREFIX)as
 CC=$(PREFIX)gcc
@@ -21,7 +21,7 @@ default: all
 include rules.$(ARCH).mk
 include lib/rules.$(ARCH).mk
 include lib/rules.mk
-include loader/$(BOOT)/rules.mk
+include loader/$(PLATFORM)/rules.mk
 include kernel/rules.$(ARCH).mk
 include kernel/rules.mk
 include modules/rules.$(ARCH).mk
