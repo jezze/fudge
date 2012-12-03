@@ -1,4 +1,5 @@
 ARCH=x86
+BOOT=mboot
 PREFIX=
 AS=$(PREFIX)as
 CC=$(PREFIX)gcc
@@ -20,16 +21,18 @@ default: all
 include rules.$(ARCH).mk
 include lib/rules.$(ARCH).mk
 include lib/rules.mk
+include loader/$(BOOT)/rules.mk
 include kernel/rules.$(ARCH).mk
 include kernel/rules.mk
 include modules/rules.$(ARCH).mk
 include modules/rules.mk
 include packages/rules.mk
 
-all: $(LIB) $(KERNEL) $(MODULES) $(PACKAGES) $(RAMDISK)
+all: $(LIB) $(LOADER) $(KERNEL) $(MODULES) $(PACKAGES) $(RAMDISK)
 
 clean:
 	rm -rf $(LIB) $(LIB_OBJECTS)
+	rm -rf $(LOADER) $(LOADER_OBJECTS)
 	rm -rf $(KERNEL) $(KERNEL_OBJECTS)
 	rm -rf $(MODULES) $(MODULES_OBJECTS)
 	rm -rf $(PACKAGES)
@@ -62,6 +65,8 @@ install:
 kernel: $(KERNEL)
 
 lib: $(LIB)
+
+loader: $(LOADER)
 
 modules: $(MODULES)
 

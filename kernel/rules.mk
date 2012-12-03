@@ -13,7 +13,7 @@ KERNEL_OBJECTS+=lib/src/memory.o
 KERNEL_OBJECTS+=lib/src/posix.o
 KERNEL_OBJECTS+=lib/src/string.o
 
-$(KERNEL): $(LIB) $(KERNEL_OBJECTS)
+$(KERNEL): $(LIB) $(LOADER) $(KERNEL_OBJECTS)
 	$(LD) $(LDFLAGS) -Tkernel/linker.$(ARCH).ld -o $@ $^ $(EXTRA)
 
 kernel/%.o: kernel/%.c
