@@ -2,7 +2,7 @@
 #include <vfs.h>
 #include <base/base.h>
 #include <net/net.h>
-#include <arch/x86/apic/apic.h>
+#include <arch/x86/pic/pic.h>
 #include <arch/x86/io/io.h>
 #include <arch/x86/pci/pci.h>
 #include <arch/x86/rtl8139/rtl8139.h>
@@ -112,7 +112,7 @@ static void attach(struct base_device *device)
 
     driver->io = bar0 & ~1;
 
-    apic_set_routine(irq, device, handle_irq);
+    pic_set_routine(irq, device, handle_irq);
 
 }
 

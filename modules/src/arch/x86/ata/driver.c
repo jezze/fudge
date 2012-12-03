@@ -2,7 +2,7 @@
 #include <vfs.h>
 #include <base/base.h>
 #include <block/block.h>
-#include <arch/x86/apic/apic.h>
+#include <arch/x86/pic/pic.h>
 #include <arch/x86/ata/ata.h>
 
 static void handle_irq(struct base_device *device)
@@ -15,7 +15,7 @@ static void attach(struct base_device *device)
 
     struct ata_device *ataDevice = (struct ata_device *)device;
 
-    apic_set_routine(ataDevice->irq, device, handle_irq);
+    pic_set_routine(ataDevice->irq, device, handle_irq);
 
 }
 

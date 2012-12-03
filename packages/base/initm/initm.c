@@ -30,7 +30,7 @@ void load_modules_core(unsigned int id)
     call_open(FILE_STDIN, 19, "/ramdisk/mod/msr.ko");
     call_spawn(id);
 
-    call_open(FILE_STDIN, 20, "/ramdisk/mod/apic.ko");
+    call_open(FILE_STDIN, 19, "/ramdisk/mod/pic.ko");
     call_spawn(id);
 
     call_open(FILE_STDIN, 19, "/ramdisk/mod/vga.ko");

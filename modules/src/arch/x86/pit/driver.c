@@ -1,6 +1,6 @@
 #include <memory.h>
 #include <base/base.h>
-#include <arch/x86/apic/apic.h>
+#include <arch/x86/pic/pic.h>
 #include <arch/x86/io/io.h>
 #include <arch/x86/pit/pit.h>
 
@@ -22,7 +22,7 @@ static void attach(struct base_device *device)
     io_outb(PIT_COUNTER0, (unsigned char)(pitDevice->divisor >> 0));
     io_outb(PIT_COUNTER0, (unsigned char)(pitDevice->divisor >> 8));
 
-    apic_set_routine(pitDevice->irq, device, handle_irq);
+    pic_set_routine(pitDevice->irq, device, handle_irq);
 
 }
 

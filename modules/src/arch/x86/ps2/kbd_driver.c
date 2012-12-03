@@ -1,6 +1,6 @@
 #include <memory.h>
 #include <base/base.h>
-#include <arch/x86/apic/apic.h>
+#include <arch/x86/pic/pic.h>
 #include <arch/x86/io/io.h>
 #include <arch/x86/ps2/ps2.h>
 
@@ -129,7 +129,7 @@ static void attach(struct base_device *device)
 
     struct ps2_device *ps2device = (struct ps2_device *)device;
 
-    apic_set_routine(ps2device->irq, device, handle_irq);
+    pic_set_routine(ps2device->irq, device, handle_irq);
 
 }
 

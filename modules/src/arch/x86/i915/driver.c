@@ -2,7 +2,7 @@
 #include <vfs.h>
 #include <base/base.h>
 #include <video/video.h>
-#include <arch/x86/apic/apic.h>
+#include <arch/x86/pic/pic.h>
 #include <arch/x86/pci/pci.h>
 #include <arch/x86/i915/i915.h>
 
@@ -141,7 +141,7 @@ static void attach(struct base_device *device)
 
     unsigned int irq = pciDevice->config_inb(pciDevice, PCI_CONFIG_IRQ_LINE);
 
-    apic_set_routine(irq, device, handle_irq);
+    pic_set_routine(irq, device, handle_irq);
 
 }
 

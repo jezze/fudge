@@ -1,6 +1,6 @@
 #include <memory.h>
 #include <base/base.h>
-#include <arch/x86/apic/apic.h>
+#include <arch/x86/pic/pic.h>
 #include <arch/x86/io/io.h>
 #include <arch/x86/uart/uart.h>
 
@@ -64,7 +64,7 @@ static void attach(struct base_device *device)
     io_outb(uartDevice->port + UART_MCR, 0x0B);
     io_outb(uartDevice->port + UART_IER, 0x01);
 
-    apic_set_routine(uartDevice->irq, device, handle_irq);
+    pic_set_routine(uartDevice->irq, device, handle_irq);
 
 }
 
