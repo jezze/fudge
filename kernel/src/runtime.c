@@ -2,30 +2,6 @@
 #include <runtime.h>
 #include <vfs.h>
 
-unsigned int runtime_set_task_event(struct runtime_task *task, unsigned int index, unsigned int callback)
-{
-
-    if (index >= RUNTIME_TASK_EVENT_SLOTS)
-        return 0;
-
-    task->events[index].callback = callback;
-
-    return 1;
-
-}
-
-unsigned int runtime_unset_task_event(struct runtime_task *task, unsigned int index)
-{
-
-    if (index >= RUNTIME_TASK_EVENT_SLOTS)
-        return 0;
-
-    task->events[index].callback = 0;
-
-    return 1;
-
-}
-
 static struct runtime_task *notify_interrupt(struct runtime_task *self, unsigned int index)
 {
 

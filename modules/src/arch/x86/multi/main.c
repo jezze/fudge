@@ -70,29 +70,6 @@ static struct runtime_task *schedule(struct runtime_task *self)
 static struct runtime_task *notify_interrupt(struct runtime_task *self, unsigned int index)
 {
 
-    unsigned int i;
-
-    for (i = 1; i < MULTI_TASK_SLOTS; i++)
-    {
-
-        if (!tasks[i])
-            continue;
-
-        if (!tasks[i]->base.status.used)
-            continue;
-
-        if (!tasks[i]->base.status.idle)
-            continue;
-
-        if (!tasks[i]->base.events[index].callback)
-            continue;
-
-        runtime_init_registers(&tasks[i]->base.registers, tasks[i]->base.events[index].callback, RUNTIME_STACK_VADDRESS_BASE, RUNTIME_STACK_VADDRESS_BASE, tasks[i]->base.registers.status);
-
-        tasks[i]->base.status.idle = 0;
-
-    }
-
     return schedule(self);
 
 }
