@@ -72,5 +72,7 @@ void pic_routine0D();
 void pic_routine0E();
 void pic_routine0F();
 void pic_interrupt(struct pic_registers *registers);
+void pic_enable();
+void pic_disable();
 unsigned int pic_set_routine(unsigned int index, struct base_device *device, void (*callback)(struct base_device *device));
 unsigned int pic_unset_routine(unsigned int index, struct base_device *device);

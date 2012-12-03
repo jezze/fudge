@@ -31,14 +31,19 @@ static void remap()
 
 }
 
-static void enable()
+void pic_enable()
 {
-
-    io_outb(PIC_COMMAND1, PIC_COMMAND_EOI);
-    io_outb(PIC_COMMAND0, PIC_COMMAND_EOI);
 
     io_outb(PIC_DATA0, 0x00);
     io_outb(PIC_DATA1, 0x00);
+
+}
+
+void pic_disable()
+{
+
+    io_outb(PIC_DATA0, 0xFF);
+    io_outb(PIC_DATA1, 0xFF);
 
 }
 
@@ -107,7 +112,7 @@ void init()
     idt_set_entry(0x2F, pic_routine0F, 0x08, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
 
     remap();
-    enable();
+    pic_enable();
 
 }
 
