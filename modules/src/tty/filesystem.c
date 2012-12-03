@@ -15,7 +15,7 @@ static unsigned int read_cwd(struct vfs_interface *self, unsigned int id, unsign
 static unsigned int read_root(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    return memory_read(buffer, count, "cwd\n", 4, offset);
+    return memory_read(buffer, count, "../\ncwd\n", 8, offset);
 
 }
 

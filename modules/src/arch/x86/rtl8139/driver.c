@@ -67,8 +67,9 @@ static void handle_irq(struct base_device *device)
         unsigned short current = io_inw(driver->io + RTL8139_CAPR) + 0x10;
         struct rtl8139_header *header = (struct rtl8139_header *)(driver->rx + current);
 
+/*
         net_handle_read(&driver->interface, header->length, driver->rx + current + 4);
-
+*/
         current += (header->length + 4 + 3) & ~3;
 
         io_outw(driver->io + RTL8139_CAPR, current - 0x10);
