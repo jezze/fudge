@@ -31,19 +31,24 @@ static void remap()
 
 }
 
-void pic_enable()
+void pic_set_mask(unsigned short port, unsigned char mask)
 {
 
-    io_outb(PIC_DATA0, 0x00);
-    io_outb(PIC_DATA1, 0x00);
+    io_outb(port, mask);
 
 }
 
-void pic_disable()
+void pic_set_line(unsigned short port, unsigned char line)
 {
 
-    io_outb(PIC_DATA0, 0xFF);
-    io_outb(PIC_DATA1, 0xFF);
+    io_outb(port, io_inb(port) & ~line);
+
+}
+
+void pic_unset_line(unsigned short port, unsigned char line)
+{
+
+    io_outb(port, io_inb(port) | line);
 
 }
 
@@ -68,11 +73,19 @@ void pic_interrupt(struct pic_registers *registers)
 unsigned int pic_set_routine(unsigned int index, struct base_device *device, void (*callback)(struct base_device *device))
 {
 
+    if (index > PIC_ROUTINE_SLOTS)
+        return 0;
+
     if (routines[index].device)
         return 0;
 
     routines[index].device = device;
     routines[index].callback = callback;
+
+    if (index >= 8)
+        pic_set_line(PIC_DATA1, 1 << (index - 8));
+    else
+        pic_set_line(PIC_DATA0, 1 << (index - 0));
 
     return 1;
 
@@ -81,11 +94,19 @@ unsigned int pic_set_routine(unsigned int index, struct base_device *device, voi
 unsigned int pic_unset_routine(unsigned int index, struct base_device *device)
 {
 
+    if (index > PIC_ROUTINE_SLOTS)
+        return 0;
+
     if (routines[index].device != device)
         return 0;
 
     routines[index].device = 0;
     routines[index].callback = 0;
+
+    if (index >= 8)
+        pic_unset_line(PIC_DATA1, 1 << (index - 8));
+    else
+        pic_unset_line(PIC_DATA0, 1 << (index - 0));
 
     return 1;
 
@@ -112,7 +133,9 @@ void init()
     idt_set_entry(0x2F, pic_routine0F, 0x08, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
 
     remap();
-    pic_enable();
+
+    pic_set_mask(PIC_DATA0, 0xFF);
+    pic_set_mask(PIC_DATA1, 0xFF);
 
 }
 
