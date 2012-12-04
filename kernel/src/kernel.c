@@ -3,13 +3,12 @@
 #include <vfs.h>
 #include <binary.h>
 #include <ramdisk.h>
-#include <root.h>
 #include <syscall.h>
 
 void kernel_setup(struct runtime_task *task, unsigned int ramdiskc, void **ramdiskv)
 {
 
-    struct vfs_interface *root = root_setup();
+    struct vfs_interface *root = vfs_setup();
     struct vfs_interface *ramdisk = ramdisk_setup(ramdiskc, ramdiskv);
     unsigned int id = ramdisk->walk(ramdisk, ramdisk->rootid, 9, "bin/inits");
     unsigned int entry = binary_copy_program(ramdisk, id);

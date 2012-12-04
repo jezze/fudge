@@ -4,7 +4,6 @@ KERNEL_OBJECTS+=kernel/src/binary.o
 KERNEL_OBJECTS+=kernel/src/error.o
 KERNEL_OBJECTS+=kernel/src/kernel.o
 KERNEL_OBJECTS+=kernel/src/ramdisk.o
-KERNEL_OBJECTS+=kernel/src/root.o
 KERNEL_OBJECTS+=kernel/src/runtime.o
 KERNEL_OBJECTS+=kernel/src/syscall.o
 KERNEL_OBJECTS+=kernel/src/vfs.o
