@@ -3,6 +3,9 @@
 void load_modules_core(unsigned int id)
 {
 
+    call_open(FILE_STDIN, 19, "/ramdisk/mod/dev.ko");
+    call_spawn(id);
+
     call_open(FILE_STDIN, 22, "/ramdisk/mod/nodefs.ko");
     call_spawn(id);
 
@@ -111,6 +114,10 @@ void load_modules()
     call_open(3, 7, "/video/");
     call_open(4, 21, "/ramdisk/mod/video.ko");
     call_mount(5, 3, 4);
+
+    call_open(3, 5, "/dev/");
+    call_open(4, 19, "/ramdisk/mod/dev.ko");
+    call_mount(6, 3, 4);
 
 }
 

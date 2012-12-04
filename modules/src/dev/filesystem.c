@@ -1,7 +1,8 @@
 #include <memory.h>
+#include <string.h>
 #include <vfs.h>
-
-static struct vfs_interface interface;
+#include <base/base.h>
+#include <dev/dev.h>
 
 static unsigned int read(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
@@ -10,7 +11,7 @@ static unsigned int read(struct vfs_interface *self, unsigned int id, unsigned i
         return memory_read(buffer, count, "../\n", 4, offset);
 
     if (id == 1)
-        return memory_read(buffer, count, "../\ndev/\nnodefs/\nramdisk/\ntty/\nvideo/\n", 38, offset);
+        return memory_read(buffer, count, "../\nblock/\nnet/\nnodefs/\ntty/\nvideo/\n", 36, offset);
 
     return 0;
 
@@ -32,14 +33,14 @@ static unsigned int walk(struct vfs_interface *self, unsigned int id, unsigned i
     if (memory_match(path, "../", 3))
         return walk(self, 1, count - 3, path + 3);
 
-    if (memory_match(path, "dev/", 4))
-        return walk(self, 2, count - 4, path + 4);
+    if (memory_match(path, "block/", 6))
+        return walk(self, 2, count - 6, path + 6);
+
+    if (memory_match(path, "net/", 4))
+        return walk(self, 3, count - 4, path + 4);
 
     if (memory_match(path, "nodefs/", 7))
-        return walk(self, 3, count - 7, path + 7);
-
-    if (memory_match(path, "ramdisk/", 8))
-        return walk(self, 4, count - 8, path + 8);
+        return walk(self, 4, count - 7, path + 7);
 
     if (memory_match(path, "tty/", 4))
         return walk(self, 5, count - 4, path + 4);
@@ -51,14 +52,12 @@ static unsigned int walk(struct vfs_interface *self, unsigned int id, unsigned i
 
 }
 
-struct vfs_interface *root_setup()
+void dev_init_filesystem(struct dev_filesystem *filesystem)
 {
 
-    memory_clear(&interface, sizeof (struct vfs_interface));
+    memory_clear(filesystem, sizeof (struct dev_filesystem));
 
-    vfs_init_interface(&interface, 1, "root", 0, 0, read, write, walk, 0);
-
-    return &interface;
+    vfs_init_interface(&filesystem->base, 1, "dev", 0, 0, read, write, walk, 0);
 
 }
 
