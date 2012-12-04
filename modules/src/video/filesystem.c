@@ -108,7 +108,7 @@ static unsigned int write(struct vfs_interface *self, unsigned int id, unsigned 
 
 }
 
-static unsigned int walk(struct vfs_interface *self, unsigned int id, unsigned int count, char *path)
+static unsigned int walk(struct vfs_interface *self, unsigned int id, unsigned int count, const char *path)
 {
 
     if (!count)

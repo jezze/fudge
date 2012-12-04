@@ -53,7 +53,7 @@ static unsigned int read(struct vfs_interface *self, unsigned int id, unsigned i
 
 }
 
-static struct ext2_entry *finddir(struct vfs_interface *self, unsigned int id, char *name)
+static struct ext2_entry *finddir(struct vfs_interface *self, unsigned int id, const char *name)
 {
 
     struct ext2_blockgroup bg;
@@ -91,7 +91,7 @@ static struct ext2_entry *finddir(struct vfs_interface *self, unsigned int id, c
 
 }
 
-static unsigned int walk(struct vfs_interface *self, unsigned int id, unsigned int count, char *path)
+static unsigned int walk(struct vfs_interface *self, unsigned int id, unsigned int count, const char *path)
 {
 
     struct ext2_entry *entry;
