@@ -16,13 +16,6 @@ static unsigned int read(struct vfs_interface *self, unsigned int id, unsigned i
 
 }
 
-static unsigned int write(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
-{
-
-    return 0;
-
-}
-
 static unsigned int walk(struct vfs_interface *self, unsigned int id, unsigned int count, char *path)
 {
 
@@ -47,7 +40,7 @@ struct vfs_interface *root_setup()
 
     memory_clear(&interface, sizeof (struct vfs_interface));
 
-    vfs_init_interface(&interface, 1, "root", 0, 0, read, write, walk, 0);
+    vfs_init_interface(&interface, 1, "root", 0, 0, read, 0, walk, 0);
 
     return &interface;
 
