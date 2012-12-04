@@ -12,7 +12,7 @@ void main()
     if (!count)
     {
 
-        if (!call_open(3, 8, "/tty/cwd"))
+        if (!call_open(3, 12, "/dev/tty/cwd"))
             return;
 
         count = call_read(3, 0, 0x1000, buffer);

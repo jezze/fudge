@@ -103,20 +103,20 @@ void load_modules()
 
     call_close(3);
 
-    call_open(3, 5, "/tty/");
-    call_open(4, 19, "/ramdisk/mod/tty.ko");
-    call_mount(3, 3, 4);
-
-    call_open(3, 8, "/nodefs/");
-    call_open(4, 22, "/ramdisk/mod/nodefs.ko");
-    call_mount(4, 3, 4);
-
-    call_open(3, 7, "/video/");
-    call_open(4, 21, "/ramdisk/mod/video.ko");
-    call_mount(5, 3, 4);
-
     call_open(3, 5, "/dev/");
     call_open(4, 19, "/ramdisk/mod/dev.ko");
+    call_mount(3, 3, 4);
+
+    call_open(3, 9, "/dev/tty/");
+    call_open(4, 19, "/ramdisk/mod/tty.ko");
+    call_mount(4, 3, 4);
+
+    call_open(3, 12, "/dev/nodefs/");
+    call_open(4, 22, "/ramdisk/mod/nodefs.ko");
+    call_mount(5, 3, 4);
+
+    call_open(3, 11, "/dev/video/");
+    call_open(4, 21, "/ramdisk/mod/video.ko");
     call_mount(6, 3, 4);
 
 }
@@ -124,12 +124,12 @@ void load_modules()
 void start_shell()
 {
 
-    call_open(3, 8, "/tty/cwd");
+    call_open(3, 12, "/dev/tty/cwd");
     call_write(3, 0, 14, "/ramdisk/home/");
     call_close(3);
 
-    call_open(FILE_STDIN, 18, "/nodefs/ps2_buffer");
-    call_open(FILE_STDOUT, 13, "/video/0/data");
+    call_open(FILE_STDIN, 22, "/dev/nodefs/ps2_buffer");
+    call_open(FILE_STDOUT, 17, "/dev/video/0/data");
 
     call_open(3, 17, "/ramdisk/bin/motd");
     call_spawn(3);

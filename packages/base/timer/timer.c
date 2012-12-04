@@ -5,7 +5,7 @@ void main()
 
     char buffer[0x1000];
 
-    if (!call_open(3, 19, "/nodefs/pit_jiffies"))
+    if (!call_open(3, 23, "/dev/nodefs/pit_jiffies"))
         return;
 
     call_write(FILE_STDOUT, 0, call_read(3, 0, 0x1000, buffer), buffer);
