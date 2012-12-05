@@ -104,6 +104,15 @@ static void unregister_module(struct base_module *module)
 
     struct base_module *current;
 
+    if (modules == module)
+    {
+
+        modules = modules->next;
+
+        return;
+
+    }
+
     for (current = modules; current; current = current->next)
     {
 
@@ -111,6 +120,8 @@ static void unregister_module(struct base_module *module)
             continue;
 
         current->next = current->next->next;
+
+        return;
 
     }
 
