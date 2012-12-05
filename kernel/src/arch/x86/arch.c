@@ -36,6 +36,9 @@ void arch_setup(unsigned int ramdiskc, void **ramdiskv)
     syscall_setup_arch(&task, cs0);
     kernel_setup(&task, ramdiskc, ramdiskv);
 
+    /* Temporary fix for PIC */
+    cpu_quirk_pic();
+
     isr_usermode(cs3, ds3, task.registers.ip, task.registers.sp);
 
 }

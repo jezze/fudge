@@ -1,20 +1,20 @@
 #include <memory.h>
 #include <base/base.h>
 
-static struct base_module *modules[BASE_MODULE_SLOTS];
+static struct base_module *modules;
 
 static unsigned int attach(struct base_driver *driver)
 {
 
-    unsigned int i;
     unsigned int found = 0;
+    struct base_module *current;
 
-    for (i = 0; i < BASE_MODULE_SLOTS; i++)
+    for (current = modules; current; current = current->next)
     {
 
-        struct base_device *device = (struct base_device *)modules[i];
+        struct base_device *device = (struct base_device *)current;
 
-        if (!device || device->module.type != BASE_TYPE_DEVICE)
+        if (current->type != BASE_TYPE_DEVICE)
             continue;
 
         if (device->driver)
@@ -39,17 +39,26 @@ static unsigned int attach(struct base_driver *driver)
 static void register_module(struct base_module *module)
 {
 
-    unsigned int i;
+    struct base_module *current;
 
-    for (i = 0; i < BASE_MODULE_SLOTS; i++)
+    if (!modules)
     {
 
-        if (modules[i])
+        modules = module;
+
+        return;
+
+    }
+
+    for (current = modules; current; current = current->next)
+    {
+
+        if (current->next)
             continue;
 
-        modules[i] = module;
+        current->next = module;
 
-        break;
+        return;
 
     }
 
@@ -93,20 +102,15 @@ void base_register_driver(struct base_driver *driver)
 static void unregister_module(struct base_module *module)
 {
 
-    unsigned int i;
+    struct base_module *current;
 
-    for (i = 0; i < BASE_MODULE_SLOTS; i++)
+    for (current = modules; current; current = current->next)
     {
 
-        if (!modules[i])
+        if (current->next != module)
             continue;
 
-        if (modules[i] != module)
-            continue;
-
-        modules[i] = 0;
-
-        break;
+        current->next = current->next->next;
 
     }
 
@@ -183,7 +187,7 @@ void base_init_driver(struct base_driver *driver, unsigned int type, char *name,
 void init()
 {
 
-    memory_clear(modules, sizeof (struct base_module *) * BASE_MODULE_SLOTS);
+    modules = 0;
 
 }
 

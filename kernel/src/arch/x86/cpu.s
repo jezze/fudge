@@ -89,3 +89,9 @@ cpu_set_tss:
     ltr ax
     ret
 
+.global cpu_quirk_pic
+cpu_quirk_pic:
+    mov al, 0xFF
+    out 0xA1, al
+    out 0x21, al
+
