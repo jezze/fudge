@@ -3,7 +3,7 @@
 void load_modules_core(unsigned int id)
 {
 
-    call_open(FUDGE_IN, 19, "/ramdisk/mod/dev.ko");
+    call_open(FUDGE_IN, 22, "/ramdisk/mod/system.ko");
     call_spawn(id);
     call_close(FUDGE_IN);
 
@@ -132,25 +132,25 @@ void load_modules()
 void mount_filesystems()
 {
 
-    call_open(3, 5, "/dev/");
-    call_open(4, 19, "/ramdisk/mod/dev.ko");
+    call_open(3, 8, "/system/");
+    call_open(4, 22, "/ramdisk/mod/system.ko");
     call_mount(3, 3, 4);
     call_close(4);
     call_close(3);
 
-    call_open(3, 9, "/dev/tty/");
+    call_open(3, 12, "/system/tty/");
     call_open(4, 19, "/ramdisk/mod/tty.ko");
     call_mount(4, 3, 4);
     call_close(4);
     call_close(3);
 
-    call_open(3, 12, "/dev/nodefs/");
+    call_open(3, 15, "/system/nodefs/");
     call_open(4, 22, "/ramdisk/mod/nodefs.ko");
     call_mount(5, 3, 4);
     call_close(4);
     call_close(3);
 
-    call_open(3, 11, "/dev/video/");
+    call_open(3, 14, "/system/video/");
     call_open(4, 21, "/ramdisk/mod/video.ko");
     call_mount(6, 3, 4);
     call_close(4);
@@ -161,12 +161,12 @@ void mount_filesystems()
 void start_shell()
 {
 
-    call_open(3, 12, "/dev/tty/cwd");
+    call_open(3, 15, "/system/tty/cwd");
     call_write(3, 0, 14, "/ramdisk/home/");
     call_close(3);
 
-    call_open(FUDGE_IN, 22, "/dev/nodefs/ps2_buffer");
-    call_open(FUDGE_OUT, 17, "/dev/video/0/data");
+    call_open(FUDGE_IN, 25, "/system/nodefs/ps2_buffer");
+    call_open(FUDGE_OUT, 20, "/system/video/0/data");
 
     call_open(3, 17, "/ramdisk/bin/motd");
     call_spawn(3);

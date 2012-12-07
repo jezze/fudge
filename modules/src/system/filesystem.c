@@ -2,7 +2,7 @@
 #include <string.h>
 #include <vfs.h>
 #include <base/base.h>
-#include <dev/dev.h>
+#include <system/system.h>
 
 static unsigned int read(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
@@ -45,12 +45,12 @@ static unsigned int walk(struct vfs_interface *self, unsigned int id, unsigned i
 
 }
 
-void dev_init_filesystem(struct dev_filesystem *filesystem)
+void system_init_filesystem(struct system_filesystem *filesystem)
 {
 
-    memory_clear(filesystem, sizeof (struct dev_filesystem));
+    memory_clear(filesystem, sizeof (struct system_filesystem));
 
-    vfs_init_interface(&filesystem->base, 1, "dev", 0, 0, read, 0, walk, 0);
+    vfs_init_interface(&filesystem->base, 1, "system", 0, 0, read, 0, walk, 0);
 
 }
 

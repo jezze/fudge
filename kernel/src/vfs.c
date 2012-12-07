@@ -10,7 +10,7 @@ static unsigned int read(struct vfs_interface *self, unsigned int id, unsigned i
         return memory_read(buffer, count, "../\n", 4, offset);
 
     if (id == 1)
-        return memory_read(buffer, count, "../\ndev/\nramdisk/\n", 18, offset);
+        return memory_read(buffer, count, "../\nramdisk/\nsystem/\n", 21, offset);
 
     return 0;
 
@@ -25,11 +25,11 @@ static unsigned int walk(struct vfs_interface *self, unsigned int id, unsigned i
     if (memory_match(path, "../", 3))
         return walk(self, 1, count - 3, path + 3);
 
-    if (memory_match(path, "dev/", 4))
-        return walk(self, 2, count - 4, path + 4);
-
     if (memory_match(path, "ramdisk/", 8))
-        return walk(self, 3, count - 8, path + 8);
+        return walk(self, 2, count - 8, path + 8);
+
+    if (memory_match(path, "system/", 7))
+        return walk(self, 3, count - 7, path + 7);
 
     return 0;
 

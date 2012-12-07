@@ -55,7 +55,7 @@ static unsigned int setup_stream(unsigned int length, char *path, unsigned int i
     if (memory_match(path, "/", 1))
         return call_open(index, length, path);
 
-    call_open(4, 12, "/dev/tty/cwd");
+    call_open(4, 15, "/system/tty/cwd");
     count = call_read(4, 0, 256, buffer);
     call_close(4);
 
@@ -71,7 +71,7 @@ static void clear()
     char buffer[128];
     unsigned int count;
 
-    call_open(3, 12, "/dev/tty/cwd");
+    call_open(3, 15, "/system/tty/cwd");
     count = call_read(3, 0, 128, buffer);
     call_close(3);
 
@@ -79,8 +79,8 @@ static void clear()
     call_write(FUDGE_OUT, 0, 2, "$ ");
     stack_clear();
 
-    setup_stream(22, "/dev/nodefs/ps2_buffer", FUDGE_IN);
-    setup_stream(17, "/dev/video/0/data", FUDGE_OUT);
+    setup_stream(25, "/system/nodefs/ps2_buffer", FUDGE_IN);
+    setup_stream(20, "/system/video/0/data", FUDGE_OUT);
 
 }
 

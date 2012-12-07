@@ -1,8 +1,8 @@
 #include <vfs.h>
 #include <base/base.h>
-#include <dev/dev.h>
+#include <system/system.h>
 
-static struct dev_filesystem filesystem;
+static struct system_filesystem filesystem;
 
 struct vfs_interface *get_filesystem()
 {
@@ -14,7 +14,7 @@ struct vfs_interface *get_filesystem()
 void init()
 {
 
-    dev_init_filesystem(&filesystem);
+    system_init_filesystem(&filesystem);
 
 }
 
