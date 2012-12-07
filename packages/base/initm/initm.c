@@ -135,26 +135,26 @@ void mount_filesystems()
     call_open(3, 5, "/dev/");
     call_open(4, 19, "/ramdisk/mod/dev.ko");
     call_mount(3, 3, 4);
-    call_close(3);
     call_close(4);
+    call_close(3);
 
     call_open(3, 9, "/dev/tty/");
     call_open(4, 19, "/ramdisk/mod/tty.ko");
     call_mount(4, 3, 4);
-    call_close(3);
     call_close(4);
+    call_close(3);
 
     call_open(3, 12, "/dev/nodefs/");
     call_open(4, 22, "/ramdisk/mod/nodefs.ko");
     call_mount(5, 3, 4);
-    call_close(3);
     call_close(4);
+    call_close(3);
 
     call_open(3, 11, "/dev/video/");
     call_open(4, 21, "/ramdisk/mod/video.ko");
     call_mount(6, 3, 4);
-    call_close(3);
     call_close(4);
+    call_close(3);
 
 }
 
