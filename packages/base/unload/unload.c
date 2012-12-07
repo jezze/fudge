@@ -3,7 +3,7 @@
 void main()
 {
 
-    call_unload(FILE_STDIN);
+    call_unload(FUDGE_IN);
 
 }
 

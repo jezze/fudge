@@ -3,53 +3,53 @@
 void load_modules_core(unsigned int id)
 {
 
-    call_open(FILE_STDIN, 19, "/ramdisk/mod/dev.ko");
+    call_open(FUDGE_IN, 19, "/ramdisk/mod/dev.ko");
     call_spawn(id);
-    call_close(FILE_STDIN);
+    call_close(FUDGE_IN);
 
-    call_open(FILE_STDIN, 22, "/ramdisk/mod/nodefs.ko");
+    call_open(FUDGE_IN, 22, "/ramdisk/mod/nodefs.ko");
     call_spawn(id);
-    call_close(FILE_STDIN);
+    call_close(FUDGE_IN);
 
-    call_open(FILE_STDIN, 21, "/ramdisk/mod/video.ko");
+    call_open(FUDGE_IN, 21, "/ramdisk/mod/video.ko");
     call_spawn(id);
-    call_close(FILE_STDIN);
+    call_close(FUDGE_IN);
 
-    call_open(FILE_STDIN, 19, "/ramdisk/mod/net.ko");
+    call_open(FUDGE_IN, 19, "/ramdisk/mod/net.ko");
     call_spawn(id);
-    call_close(FILE_STDIN);
+    call_close(FUDGE_IN);
 
-    call_open(FILE_STDIN, 21, "/ramdisk/mod/block.ko");
+    call_open(FUDGE_IN, 21, "/ramdisk/mod/block.ko");
     call_spawn(id);
-    call_close(FILE_STDIN);
+    call_close(FUDGE_IN);
 
-    call_open(FILE_STDIN, 18, "/ramdisk/mod/io.ko");
+    call_open(FUDGE_IN, 18, "/ramdisk/mod/io.ko");
     call_spawn(id);
-    call_close(FILE_STDIN);
+    call_close(FUDGE_IN);
 
-    call_open(FILE_STDIN, 21, "/ramdisk/mod/cpuid.ko");
+    call_open(FUDGE_IN, 21, "/ramdisk/mod/cpuid.ko");
     call_spawn(id);
-    call_close(FILE_STDIN);
+    call_close(FUDGE_IN);
 
-    call_open(FILE_STDIN, 19, "/ramdisk/mod/msr.ko");
+    call_open(FUDGE_IN, 19, "/ramdisk/mod/msr.ko");
     call_spawn(id);
-    call_close(FILE_STDIN);
+    call_close(FUDGE_IN);
 
-    call_open(FILE_STDIN, 19, "/ramdisk/mod/pic.ko");
+    call_open(FUDGE_IN, 19, "/ramdisk/mod/pic.ko");
     call_spawn(id);
-    call_close(FILE_STDIN);
+    call_close(FUDGE_IN);
 
-    call_open(FILE_STDIN, 19, "/ramdisk/mod/vga.ko");
+    call_open(FUDGE_IN, 19, "/ramdisk/mod/vga.ko");
     call_spawn(id);
-    call_close(FILE_STDIN);
+    call_close(FUDGE_IN);
 
-    call_open(FILE_STDIN, 19, "/ramdisk/mod/ps2.ko");
+    call_open(FUDGE_IN, 19, "/ramdisk/mod/ps2.ko");
     call_spawn(id);
-    call_close(FILE_STDIN);
+    call_close(FUDGE_IN);
 
-    call_open(FILE_STDIN, 19, "/ramdisk/mod/tty.ko");
+    call_open(FUDGE_IN, 19, "/ramdisk/mod/tty.ko");
     call_spawn(id);
-    call_close(FILE_STDIN);
+    call_close(FUDGE_IN);
 
 }
 
@@ -57,38 +57,38 @@ void load_modules_extra(unsigned int id)
 {
 
 /*
-    call_open(FILE_STDIN, 20, "/ramdisk/mod/acpi.ko");
+    call_open(FUDGE_IN, 20, "/ramdisk/mod/acpi.ko");
     call_spawn(id);
-    call_close(FILE_STDIN);
+    call_close(FUDGE_IN);
 */
 
-    call_open(FILE_STDIN, 19, "/ramdisk/mod/fpu.ko");
+    call_open(FUDGE_IN, 19, "/ramdisk/mod/fpu.ko");
     call_spawn(id);
-    call_close(FILE_STDIN);
+    call_close(FUDGE_IN);
 
-    call_open(FILE_STDIN, 19, "/ramdisk/mod/pci.ko");
+    call_open(FUDGE_IN, 19, "/ramdisk/mod/pci.ko");
     call_spawn(id);
-    call_close(FILE_STDIN);
+    call_close(FUDGE_IN);
 
-    call_open(FILE_STDIN, 19, "/ramdisk/mod/pit.ko");
+    call_open(FUDGE_IN, 19, "/ramdisk/mod/pit.ko");
     call_spawn(id);
-    call_close(FILE_STDIN);
+    call_close(FUDGE_IN);
 
-    call_open(FILE_STDIN, 19, "/ramdisk/mod/rtc.ko");
+    call_open(FUDGE_IN, 19, "/ramdisk/mod/rtc.ko");
     call_spawn(id);
-    call_close(FILE_STDIN);
+    call_close(FUDGE_IN);
 
-    call_open(FILE_STDIN, 20, "/ramdisk/mod/uart.ko");
+    call_open(FUDGE_IN, 20, "/ramdisk/mod/uart.ko");
     call_spawn(id);
-    call_close(FILE_STDIN);
+    call_close(FUDGE_IN);
 
-    call_open(FILE_STDIN, 19, "/ramdisk/mod/arp.ko");
+    call_open(FUDGE_IN, 19, "/ramdisk/mod/arp.ko");
     call_spawn(id);
-    call_close(FILE_STDIN);
+    call_close(FUDGE_IN);
 
-    call_open(FILE_STDIN, 20, "/ramdisk/mod/ipv4.ko");
+    call_open(FUDGE_IN, 20, "/ramdisk/mod/ipv4.ko");
     call_spawn(id);
-    call_close(FILE_STDIN);
+    call_close(FUDGE_IN);
 
 }
 
@@ -96,24 +96,24 @@ void load_modules_testing(unsigned int id)
 {
 
     /* Experimental */
-    call_open(FILE_STDIN, 19, "/ramdisk/mod/ata.ko");
+    call_open(FUDGE_IN, 19, "/ramdisk/mod/ata.ko");
     call_spawn(id);
-    call_close(FILE_STDIN);
+    call_close(FUDGE_IN);
 
     /* Experimental */
-    call_open(FILE_STDIN, 20, "/ramdisk/mod/ext2.ko");
+    call_open(FUDGE_IN, 20, "/ramdisk/mod/ext2.ko");
     call_spawn(id);
-    call_close(FILE_STDIN);
+    call_close(FUDGE_IN);
 
     /* Does not work if device is non-existing */
-    call_open(FILE_STDIN, 23, "/ramdisk/mod/rtl8139.ko");
+    call_open(FUDGE_IN, 23, "/ramdisk/mod/rtl8139.ko");
     call_spawn(id);
-    call_close(FILE_STDIN);
+    call_close(FUDGE_IN);
 
     /* Does not work if device is non-existing */
-    call_open(FILE_STDIN, 19, "/ramdisk/mod/bga.ko");
+    call_open(FUDGE_IN, 19, "/ramdisk/mod/bga.ko");
     call_spawn(id);
-    call_close(FILE_STDIN);
+    call_close(FUDGE_IN);
 
 }
 
@@ -165,8 +165,8 @@ void start_shell()
     call_write(3, 0, 14, "/ramdisk/home/");
     call_close(3);
 
-    call_open(FILE_STDIN, 22, "/dev/nodefs/ps2_buffer");
-    call_open(FILE_STDOUT, 17, "/dev/video/0/data");
+    call_open(FUDGE_IN, 22, "/dev/nodefs/ps2_buffer");
+    call_open(FUDGE_OUT, 17, "/dev/video/0/data");
 
     call_open(3, 17, "/ramdisk/bin/motd");
     call_spawn(3);

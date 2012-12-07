@@ -3,7 +3,7 @@
 void main()
 {
 
-    call_write(FILE_STDOUT, 0, 13, "Hello world!\n");
+    call_write(FUDGE_OUT, 0, 13, "Hello world!\n");
 
 }
 

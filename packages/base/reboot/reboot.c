@@ -3,7 +3,7 @@
 void main()
 {
 
-    call_write(FILE_STDOUT, 0, 23, "System is rebooting...\n");
+    call_write(FUDGE_OUT, 0, 23, "System is rebooting...\n");
 
 }
 

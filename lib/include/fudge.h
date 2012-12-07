@@ -1,5 +1,6 @@
-#define FILE_STDIN                      1
-#define FILE_STDOUT                     2
+#define FUDGE_IN                        1
+#define FUDGE_OUT                       2
+#define FUDGE_BSIZE                     0x1000
 
 #include "arp.h"
 #include "call.h"

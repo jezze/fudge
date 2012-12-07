@@ -3,21 +3,21 @@
 void main()
 {
 
-    char buffer[0x1000];
+    char buffer[FUDGE_BSIZE];
     unsigned int count1;
     unsigned int count2;
 
     if (!call_open(3, 12, "/dev/tty/cwd"))
         return;
 
-    count1 = call_read(3, 0, 0x1000, buffer);
-    count2 = call_read(FILE_STDIN, 0, 0x1000 - count1, buffer + count1);
+    count1 = call_read(3, 0, FUDGE_BSIZE, buffer);
+    count2 = call_read(FUDGE_IN, 0, FUDGE_BSIZE - count1, buffer + count1);
 
     if (!count1 || !count2)
         return;
 
     if (memory_match(buffer + count1, "/", 1))
-        count1 = memory_write(buffer, 0x1000, buffer + count1, count2, 0);
+        count1 = memory_write(buffer, FUDGE_BSIZE, buffer + count1, count2, 0);
     else
         count1 += count2;
 

@@ -1,14 +1,12 @@
 #include <fudge.h>
 
-#define BUFFER_SIZE 256
-
-static char buffer[BUFFER_SIZE];
+static char buffer[FUDGE_BSIZE];
 static unsigned int bufferHead;
 
 static void stack_push(char c)
 {
 
-    if (bufferHead < BUFFER_SIZE)
+    if (bufferHead < FUDGE_BSIZE)
     {
 
         buffer[bufferHead] = c;
@@ -77,12 +75,12 @@ static void clear()
     count = call_read(3, 0, 128, buffer);
     call_close(3);
 
-    call_write(FILE_STDOUT, 0, count, buffer);
-    call_write(FILE_STDOUT, 0, 2, "$ ");
+    call_write(FUDGE_OUT, 0, count, buffer);
+    call_write(FUDGE_OUT, 0, 2, "$ ");
     stack_clear();
 
-    setup_stream(22, "/dev/nodefs/ps2_buffer", FILE_STDIN);
-    setup_stream(17, "/dev/video/0/data", FILE_STDOUT);
+    setup_stream(22, "/dev/nodefs/ps2_buffer", FUDGE_IN);
+    setup_stream(17, "/dev/video/0/data", FUDGE_OUT);
 
 }
 
@@ -119,7 +117,7 @@ static void interpret_command(unsigned int length, char *command)
             if (state == STATE_STDIN)
             {
 
-                unsigned int id = setup_stream(i - start, command + start, FILE_STDIN);
+                unsigned int id = setup_stream(i - start, command + start, FUDGE_IN);
 
                 if (!id)
                     return;
@@ -129,7 +127,7 @@ static void interpret_command(unsigned int length, char *command)
             if (state == STATE_STDOUT)
             {
 
-                unsigned int id = setup_stream(i - start, command + start, FILE_STDOUT);
+                unsigned int id = setup_stream(i - start, command + start, FUDGE_OUT);
 
                 if (!id)
                     return;
@@ -181,7 +179,7 @@ static void interpret_command(unsigned int length, char *command)
     if (state == STATE_STDIN)
     {
 
-        unsigned int id = setup_stream(length - start, command + start, FILE_STDIN);
+        unsigned int id = setup_stream(length - start, command + start, FUDGE_IN);
 
         if (!id)
             return;
@@ -191,7 +189,7 @@ static void interpret_command(unsigned int length, char *command)
     if (state == STATE_STDOUT)
     {
 
-        unsigned int id = setup_stream(length - start, command + start, FILE_STDOUT);
+        unsigned int id = setup_stream(length - start, command + start, FUDGE_OUT);
 
         if (!id)
             return;
@@ -199,7 +197,7 @@ static void interpret_command(unsigned int length, char *command)
     }
 
     if (state == STATE_DATA)
-        call_write(FILE_STDIN, 0, length - start, command + start);
+        call_write(FUDGE_IN, 0, length - start, command + start);
 
     if (exec)
     {
@@ -248,14 +246,14 @@ static void handle_input(char c)
             if (!stack_pop())
                 break;
 
-            call_write(FILE_STDOUT, 0, 3, "\b \b");
+            call_write(FUDGE_OUT, 0, 3, "\b \b");
 
             break;
 
         case '\r':
         case '\n':
 
-            call_write(FILE_STDOUT, 0, 1, &c);
+            call_write(FUDGE_OUT, 0, 1, &c);
 
             if (bufferHead)
                 interpret(bufferHead, buffer);
@@ -267,7 +265,7 @@ static void handle_input(char c)
         default:
 
             stack_push(c);
-            call_write(FILE_STDOUT, 0, 1, &c);
+            call_write(FUDGE_OUT, 0, 1, &c);
 
             break;
 
@@ -285,7 +283,7 @@ static void poll()
     for (;;)
     {
 
-        count = call_read(FILE_STDIN, 0, 32, buffer);
+        count = call_read(FUDGE_IN, 0, 32, buffer);
 
         for (i = 0; i < count; i++)
             handle_input(buffer[i]);

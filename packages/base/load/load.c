@@ -89,8 +89,8 @@ void main()
     char buffer[0x4000];
     unsigned int i;
 
-    call_read(FILE_STDIN, 0, ELF_HEADER_SIZE, &header);
-    call_read(FILE_STDIN, header.shoffset, header.shsize * header.shcount, sectionHeader);
+    call_read(FUDGE_IN, 0, ELF_HEADER_SIZE, &header);
+    call_read(FUDGE_IN, header.shoffset, header.shsize * header.shcount, sectionHeader);
 
     for (i = 0; i < header.shcount; i++)
     {
@@ -108,19 +108,19 @@ void main()
         symbolHeader = &sectionHeader[relocateHeader->link];
         stringHeader = &sectionHeader[symbolHeader->link];
 
-        call_read(FILE_STDIN, symbolHeader->offset, symbolHeader->size, symbolTable);
-        call_read(FILE_STDIN, stringHeader->offset, stringHeader->size, stringTable);
-        call_read(FILE_STDIN, relocateHeader->offset, relocateHeader->size, relocateTable);
-        call_read(FILE_STDIN, relocateData->offset, relocateData->size, buffer);
+        call_read(FUDGE_IN, symbolHeader->offset, symbolHeader->size, symbolTable);
+        call_read(FUDGE_IN, stringHeader->offset, stringHeader->size, stringTable);
+        call_read(FUDGE_IN, relocateHeader->offset, relocateHeader->size, relocateTable);
+        call_read(FUDGE_IN, relocateData->offset, relocateData->size, buffer);
 
         if (!resolve_symbols(relocateHeader, relocateTable, symbolTable, stringTable, buffer))
             return;
 
-        call_write(FILE_STDIN, relocateData->offset, relocateData->size, buffer);
+        call_write(FUDGE_IN, relocateData->offset, relocateData->size, buffer);
 
     }
 
-    call_load(FILE_STDIN);
+    call_load(FUDGE_IN);
 
 }
 
