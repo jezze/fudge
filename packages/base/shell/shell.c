@@ -92,7 +92,7 @@ static void clear()
 #define STATE_STDOUT  3
 #define STATE_DATA    4
 
-static void interpret(unsigned int length, char *command)
+static void interpret_command(unsigned int length, char *command)
 {
 
     unsigned int exec = 0;
@@ -208,6 +208,27 @@ static void interpret(unsigned int length, char *command)
         call_close(exec);
 
     }
+
+}
+
+static void interpret(unsigned int length, char *command)
+{
+
+    unsigned int start = 0;
+    unsigned int i;
+
+    for (i = 0; i < length; i++)
+    {
+
+        if (command[i] != '|')
+            continue;
+
+        interpret_command(i - start, command + start);
+        start += i + 1;
+
+    }
+
+    interpret_command(i - start, command + start);
 
 }
 
