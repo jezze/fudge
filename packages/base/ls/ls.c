@@ -17,15 +17,15 @@ void main()
 
         count = call_read(3, 0, FUDGE_BSIZE, buffer);
 
+        call_close(3);
+
     }
 
-    if (!call_open(3, count, buffer))
+    if (!call_open(FUDGE_IN, count, buffer))
         return;
 
-    for (offset = 0; (count = call_read(3, offset, FUDGE_BSIZE, buffer)); offset += FUDGE_BSIZE)
+    for (offset = 0; (count = call_read(FUDGE_IN, offset, FUDGE_BSIZE, buffer)); offset += count)
         call_write(FUDGE_OUT, offset, count, buffer);
-
-    call_close(3);
 
 }
 
