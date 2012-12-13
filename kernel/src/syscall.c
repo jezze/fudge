@@ -116,8 +116,8 @@ static unsigned int open(struct runtime_task *task, void *stack)
 {
 
     struct syscall_open_args *args = stack;
-    struct runtime_descriptor *pdescriptor = runtime_get_task_descriptor(task, args->pindex);
     struct runtime_descriptor *descriptor = runtime_get_task_descriptor(task, args->index);
+    struct runtime_descriptor *pdescriptor = runtime_get_task_descriptor(task, args->pindex);
    
     if (!descriptor || !pdescriptor)
         return 0;
