@@ -99,19 +99,19 @@ void relocate()
 void main()
 {
 
-    call_open(3, 19, "/ramdisk/boot/fudge");
+    call_open(3, FUDGE_ROOT, 19, "/ramdisk/boot/fudge");
     call_read(3, 0, ELF_HEADER_SIZE, &header);
 
     if (!elf_validate(&header))
         return;
 
-    call_open(FUDGE_IN, 20, "/ramdisk/mod/base.ko");
+    call_open(FUDGE_IN, FUDGE_ROOT, 20, "/ramdisk/mod/base.ko");
     relocate();
 
-    call_open(FUDGE_IN, 21, "/ramdisk/mod/multi.ko");
+    call_open(FUDGE_IN, FUDGE_ROOT, 21, "/ramdisk/mod/multi.ko");
     relocate();
 
-    call_open(3, 18, "/ramdisk/bin/initm");
+    call_open(3, FUDGE_ROOT, 18, "/ramdisk/bin/initm");
     call_spawn(3);
 
 }

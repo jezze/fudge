@@ -5,7 +5,7 @@ void main()
 
     char buffer[FUDGE_BSIZE];
 
-    if (!call_open(3, 26, "/system/nodefs/pit_jiffies"))
+    if (!call_open(3, FUDGE_ROOT, 26, "/system/nodefs/pit_jiffies"))
         return;
 
     call_write(FUDGE_OUT, 0, call_read(3, 0, FUDGE_BSIZE, buffer), buffer);

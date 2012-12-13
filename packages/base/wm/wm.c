@@ -45,13 +45,13 @@ static void enable(unsigned int xres, unsigned int yres, unsigned int bpp)
 
     unsigned int enable = 1;
 
-    call_open(3, 20, "/system/video/1/xres");
+    call_open(3, FUDGE_ROOT, 20, "/system/video/1/xres");
     call_write(3, 0, 4, &xres);
-    call_open(3, 20, "/system/video/1/yres");
+    call_open(3, FUDGE_ROOT, 20, "/system/video/1/yres");
     call_write(3, 0, 4, &yres);
-    call_open(3, 19, "/system/video/1/bpp");
+    call_open(3, FUDGE_ROOT, 19, "/system/video/1/bpp");
     call_write(3, 0, 4, &bpp);
-    call_open(3, 22, "/system/video/1/enable");
+    call_open(3, FUDGE_ROOT, 22, "/system/video/1/enable");
     call_write(3, 0, 4, &enable);
     call_close(3);
 
@@ -74,7 +74,7 @@ void backend_write(struct gfx_backend *self, unsigned int offset, unsigned int c
 void main()
 {
 
-    unsigned int id = call_open(4, 20, "/system/video/1/data");
+    unsigned int id = call_open(4, FUDGE_ROOT, 20, "/system/video/1/data");
 
     if (!id)
         return;

@@ -7,7 +7,7 @@ void main()
     unsigned int count1;
     unsigned int count2;
 
-    if (!call_open(3, 15, "/system/tty/cwd"))
+    if (!call_open(3, FUDGE_ROOT, 15, "/system/tty/cwd"))
         return;
 
     count1 = call_read(3, 0, FUDGE_BSIZE, buffer);
@@ -21,7 +21,7 @@ void main()
     else
         count1 += count2;
 
-    if (!call_open(4, count1, buffer))
+    if (!call_open(4, FUDGE_ROOT, count1, buffer))
         return;
 
     call_write(3, 0, count1, buffer);

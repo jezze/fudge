@@ -37,12 +37,12 @@ static unsigned int setup_executable(unsigned int length, char *path)
     unsigned int o = 0;
 
     if (memory_match(path, "/", 1))
-        return call_open(3, length, path);
+        return call_open(3, FUDGE_ROOT, length, path);
 
     o += memory_write(buffer, 256, "/ramdisk/bin/", 13, 0);
     o += memory_write(buffer, 256, path, length, 13);
 
-    return call_open(3, o, buffer);
+    return call_open(3, FUDGE_ROOT, o, buffer);
 
 }
 
@@ -53,15 +53,15 @@ static unsigned int setup_stream(unsigned int length, char *path, unsigned int i
     unsigned int count;
 
     if (memory_match(path, "/", 1))
-        return call_open(index, length, path);
+        return call_open(index, FUDGE_ROOT, length, path);
 
-    call_open(4, 15, "/system/tty/cwd");
+    call_open(4, FUDGE_ROOT, 15, "/system/tty/cwd");
     count = call_read(4, 0, 256, buffer);
     call_close(4);
 
     count += memory_write(buffer, 256, path, length, count);
 
-    return call_open(index, count, buffer);
+    return call_open(index, FUDGE_ROOT, count, buffer);
 
 }
 
@@ -71,7 +71,7 @@ static void clear()
     char buffer[128];
     unsigned int count;
 
-    call_open(3, 15, "/system/tty/cwd");
+    call_open(3, FUDGE_ROOT, 15, "/system/tty/cwd");
     count = call_read(3, 0, 128, buffer);
     call_close(3);
 

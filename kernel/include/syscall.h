@@ -57,6 +57,7 @@ struct syscall_open_args
 
     void *caller;
     unsigned int index;
+    unsigned int pindex;
     unsigned int count;
     char *path;
 
