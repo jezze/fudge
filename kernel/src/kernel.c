@@ -19,6 +19,7 @@ void kernel_setup(struct runtime_task *task, unsigned int ramdiskc, void **ramdi
     runtime_init_mount(&task->mounts[1], root, root->rootid, root, root->rootid);
     runtime_init_mount(&task->mounts[2], root, root->walk(root, root->rootid, 8, "ramdisk/"), ramdisk, ramdisk->rootid);
     runtime_init_descriptor(&task->descriptors[8], root, root->rootid);
+    runtime_init_descriptor(&task->descriptors[9], root, root->rootid);
 
 }
 
