@@ -37,9 +37,6 @@ static struct runtime_descriptor *runtime_find_child_descriptor(struct runtime_t
     for (i = 1; i < RUNTIME_TASK_MOUNT_SLOTS; i++)
     {
 
-        if (task->mounts[i].child.interface == descriptor->interface && task->mounts[i].child.id == descriptor->id)
-            continue;
-
         if (task->mounts[i].parent.interface == descriptor->interface && task->mounts[i].parent.id == descriptor->id)
             return &task->mounts[i].child;
 
