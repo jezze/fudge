@@ -35,13 +35,14 @@ static unsigned int get_symbol(char *symbol)
 
     char buffer[64];
     unsigned int address;
+    unsigned int offset = 0;
     unsigned int length = (unsigned int)((char *)memory_find(symbol, "_", string_length(symbol), 1) - symbol);
 
-    memory_write(buffer, 64, "ramdisk/mod/", 12, 0);
-    memory_write(buffer, 64, symbol, length, 12);
-    memory_write(buffer, 64, ".ko", 3, 12 + length);
+    offset += memory_write(buffer, 64, "ramdisk/mod/", 12, offset);
+    offset += memory_write(buffer, 64, symbol, length, offset);
+    offset += memory_write(buffer, 64, ".ko", 3, offset);
 
-    address = get_symbol_module(symbol, 12 + length + 3, buffer);
+    address = get_symbol_module(symbol, offset, buffer);
 
     if (address)
         return address;
