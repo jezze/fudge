@@ -6,7 +6,6 @@ MODULES_EXT2=modules/src/ext2/ext2.ko
 MODULES_NET=modules/src/net/net.ko
 MODULES_NODEFS=modules/src/nodefs/nodefs.ko
 MODULES_IPV4=modules/src/ipv4/ipv4.ko
-MODULES_TTY=modules/src/tty/tty.ko
 MODULES_VIDEO=modules/src/video/video.ko
 
 MODULES_OBJECTS_ARP=modules/src/arp/main.o modules/src/arp/protocol.o
@@ -17,11 +16,10 @@ MODULES_OBJECTS_EXT2=modules/src/ext2/main.o modules/src/ext2/protocol.o modules
 MODULES_OBJECTS_NET=modules/src/net/main.o modules/src/net/interface.o
 MODULES_OBJECTS_NODEFS=modules/src/nodefs/main.o modules/src/nodefs/filesystem.o
 MODULES_OBJECTS_IPV4=modules/src/ipv4/main.o modules/src/ipv4/protocol.o
-MODULES_OBJECTS_TTY=modules/src/tty/main.o modules/src/tty/driver.o modules/src/tty/filesystem.o
 MODULES_OBJECTS_VIDEO=modules/src/video/main.o modules/src/video/filesystem.o modules/src/video/interface.o
 
-MODULES+=$(MODULES_ARP) $(MODULES_BASE) $(MODULES_BLOCK) $(MODULES_SYSTEM) $(MODULES_EXT2) $(MODULES_NET) $(MODULES_NODEFS) $(MODULES_IPV4) $(MODULES_TTY) $(MODULES_VIDEO)
-MODULES_OBJECTS+=$(MODULES_OBJECTS_ARP) $(MODULES_OBJECTS_BASE) $(MODULES_OBJECTS_BLOCK) $(MODULES_OBJECTS_SYSTEM) $(MODULES_OBJECTS_EXT2) $(MODULES_OBJECTS_NET) $(MODULES_OBJECTS_NODEFS) $(MODULES_OBJECTS_IPV4) $(MODULES_OBJECTS_TTY) $(MODULES_OBJECTS_VIDEO)
+MODULES+=$(MODULES_ARP) $(MODULES_BASE) $(MODULES_BLOCK) $(MODULES_SYSTEM) $(MODULES_EXT2) $(MODULES_NET) $(MODULES_NODEFS) $(MODULES_IPV4) $(MODULES_VIDEO)
+MODULES_OBJECTS+=$(MODULES_OBJECTS_ARP) $(MODULES_OBJECTS_BASE) $(MODULES_OBJECTS_BLOCK) $(MODULES_OBJECTS_SYSTEM) $(MODULES_OBJECTS_EXT2) $(MODULES_OBJECTS_NET) $(MODULES_OBJECTS_NODEFS) $(MODULES_OBJECTS_IPV4) $(MODULES_OBJECTS_VIDEO)
 
 $(MODULES): LDFLAGS+=-Tmodules/linker.ld -r
 
@@ -47,9 +45,6 @@ $(MODULES_NODEFS): lib/src/memory.o lib/src/string.o $(MODULES_OBJECTS_NODEFS)
 	$(LD) $(LDFLAGS) -o $@ $^
 
 $(MODULES_IPV4): lib/src/memory.o lib/src/string.o $(MODULES_OBJECTS_IPV4)
-	$(LD) $(LDFLAGS) -o $@ $^
-
-$(MODULES_TTY): lib/src/memory.o lib/src/string.o $(MODULES_OBJECTS_TTY)
 	$(LD) $(LDFLAGS) -o $@ $^
 
 $(MODULES_VIDEO): lib/src/memory.o lib/src/string.o $(MODULES_OBJECTS_VIDEO)

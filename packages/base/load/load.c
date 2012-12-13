@@ -37,16 +37,16 @@ static unsigned int get_symbol(char *symbol)
     unsigned int address;
     unsigned int length = (unsigned int)((char *)memory_find(symbol, "_", string_length(symbol), 1) - symbol);
 
-    memory_write(buffer, 64, "/ramdisk/mod/", 13, 0);
-    memory_write(buffer, 64, symbol, length, 13);
-    memory_write(buffer, 64, ".ko", 3, 13 + length);
+    memory_write(buffer, 64, "ramdisk/mod/", 12, 0);
+    memory_write(buffer, 64, symbol, length, 12);
+    memory_write(buffer, 64, ".ko", 3, 12 + length);
 
-    address = get_symbol_module(symbol, 13 + length + 3, buffer);
+    address = get_symbol_module(symbol, 12 + length + 3, buffer);
 
     if (address)
         return address;
 
-    return get_symbol_module(symbol, 19, "/ramdisk/boot/fudge");
+    return get_symbol_module(symbol, 18, "ramdisk/boot/fudge");
 
 }
 

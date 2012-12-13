@@ -1,4 +1,3 @@
-PACKAGES+=packages/base/cd/cd
 PACKAGES+=packages/base/date/date
 PACKAGES+=packages/base/echo/echo
 PACKAGES+=packages/base/hello/hello

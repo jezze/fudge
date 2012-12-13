@@ -37,10 +37,10 @@ static unsigned int setup_executable(unsigned int length, char *path)
     unsigned int o = 0;
 
     if (memory_match(path, "/", 1))
-        return call_open(3, FUDGE_ROOT, length, path);
+        return call_open(3, FUDGE_ROOT, length - 1, path + 1);
 
-    o += memory_write(buffer, 256, "/ramdisk/bin/", 13, 0);
-    o += memory_write(buffer, 256, path, length, 13);
+    o += memory_write(buffer, 256, "ramdisk/bin/", 12, o);
+    o += memory_write(buffer, 256, path, length, o);
 
     return call_open(3, FUDGE_ROOT, o, buffer);
 
@@ -49,33 +49,16 @@ static unsigned int setup_executable(unsigned int length, char *path)
 static unsigned int setup_stream(unsigned int length, char *path, unsigned int index)
 {
 
-    char buffer[256];
-    unsigned int count;
-
     if (memory_match(path, "/", 1))
-        return call_open(index, FUDGE_ROOT, length, path);
+        return call_open(index, FUDGE_ROOT, length - 1, path + 1);
 
-    call_open(4, FUDGE_ROOT, 15, "/system/tty/cwd");
-    count = call_read(4, 0, 256, buffer);
-    call_close(4);
-
-    count += memory_write(buffer, 256, path, length, count);
-
-    return call_open(index, FUDGE_ROOT, count, buffer);
+    return call_open(index, FUDGE_CWD, length, path);
 
 }
 
 static void clear()
 {
 
-    char buffer[128];
-    unsigned int count;
-
-    call_open(3, FUDGE_ROOT, 15, "/system/tty/cwd");
-    count = call_read(3, 0, 128, buffer);
-    call_close(3);
-
-    call_write(FUDGE_OUT, 0, count, buffer);
     call_write(FUDGE_OUT, 0, 2, "$ ");
     stack_clear();
 
@@ -209,11 +192,30 @@ static void interpret_command(unsigned int length, char *command)
 
 }
 
+static void changedir(unsigned int length, char *command)
+{
+
+    if (command[0] == '/')
+        call_open(FUDGE_CWD, FUDGE_ROOT, length - 1, command + 1);
+    else
+        call_open(FUDGE_CWD, FUDGE_CWD, length, command);
+
+}
+
 static void interpret(unsigned int length, char *command)
 {
 
     unsigned int start = 0;
     unsigned int i;
+
+    if (memory_match(command, "cd ", 3))
+    {
+
+        changedir(length - 3, command + 3);
+
+        return;
+
+    }
 
     for (i = 0; i < length; i++)
     {

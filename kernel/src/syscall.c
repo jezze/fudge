@@ -124,7 +124,7 @@ static unsigned int open(struct runtime_task *task, void *stack)
 
     runtime_init_descriptor(descriptor, pdescriptor->interface, pdescriptor->id);
 
-    if (!runtime_update_task_descriptor(task, descriptor, args->count - 1, args->path + 1))
+    if (!runtime_update_task_descriptor(task, descriptor, args->count, args->path))
         return 0;
 
     if (descriptor->interface->open)
