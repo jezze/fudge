@@ -14,25 +14,25 @@ RAMDISK=$(RAMDISK_NAME).$(RAMDISK_TYPE)
 
 INSTALL_PATH=/boot
 
-.PHONY: all clean lib kernel modules packages
+.PHONY: all clean libs kernel modules packages
 
 default: all
 
 include rules.$(ARCH).mk
-include lib/rules.$(ARCH).mk
-include lib/rules.mk
-include loader/$(PLATFORM)/rules.mk
+include libs/fudge/rules.$(ARCH).mk
+include libs/fudge/rules.mk
+include libs/$(PLATFORM)/rules.mk
 include kernel/rules.$(ARCH).mk
 include kernel/rules.mk
 include modules/rules.$(ARCH).mk
 include modules/rules.mk
 include packages/rules.mk
 
-all: $(LIB) $(LOADER) $(KERNEL) $(MODULES) $(PACKAGES) $(RAMDISK)
+all: $(LIBFUDGE) $(LIBMBOOT) $(KERNEL) $(MODULES) $(PACKAGES) $(RAMDISK)
 
 clean:
-	rm -rf $(LIB) $(LIB_OBJECTS)
-	rm -rf $(LOADER) $(LOADER_OBJECTS)
+	rm -rf $(LIBFUDGE) $(LIBFUDGE_OBJECTS)
+	rm -rf $(LIBMBOOT) $(LIBMBOOT_OBJECTS)
 	rm -rf $(KERNEL) $(KERNEL_OBJECTS)
 	rm -rf $(MODULES) $(MODULES_OBJECTS)
 	rm -rf $(PACKAGES)
@@ -64,9 +64,7 @@ install:
 
 kernel: $(KERNEL)
 
-lib: $(LIB)
-
-loader: $(LOADER)
+libs: $(LIBFUDGE) $(LIBMBOOT)
 
 modules: $(MODULES)
 

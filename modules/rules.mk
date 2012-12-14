@@ -23,32 +23,32 @@ MODULES_OBJECTS+=$(MODULES_OBJECTS_ARP) $(MODULES_OBJECTS_BASE) $(MODULES_OBJECT
 
 $(MODULES): LDFLAGS+=-Tmodules/linker.ld -r
 
-$(MODULES_ARP): lib/src/memory.o lib/src/string.o $(MODULES_OBJECTS_ARP)
+$(MODULES_ARP): libs/fudge/src/memory.o libs/fudge/src/string.o $(MODULES_OBJECTS_ARP)
 	$(LD) $(LDFLAGS) -o $@ $^
 
-$(MODULES_BASE): lib/src/memory.o lib/src/string.o $(MODULES_OBJECTS_BASE)
+$(MODULES_BASE): libs/fudge/src/memory.o libs/fudge/src/string.o $(MODULES_OBJECTS_BASE)
 	$(LD) $(LDFLAGS) -o $@ $^
 
-$(MODULES_BLOCK): lib/src/memory.o lib/src/string.o $(MODULES_OBJECTS_BLOCK)
+$(MODULES_BLOCK): libs/fudge/src/memory.o libs/fudge/src/string.o $(MODULES_OBJECTS_BLOCK)
 	$(LD) $(LDFLAGS) -o $@ $^
 
-$(MODULES_SYSTEM): lib/src/memory.o lib/src/string.o $(MODULES_OBJECTS_SYSTEM)
+$(MODULES_SYSTEM): libs/fudge/src/memory.o libs/fudge/src/string.o $(MODULES_OBJECTS_SYSTEM)
 	$(LD) $(LDFLAGS) -o $@ $^
 
-$(MODULES_EXT2): lib/src/memory.o lib/src/string.o $(MODULES_OBJECTS_EXT2)
+$(MODULES_EXT2): libs/fudge/src/memory.o libs/fudge/src/string.o $(MODULES_OBJECTS_EXT2)
 	$(LD) $(LDFLAGS) -o $@ $^
 
-$(MODULES_NET): lib/src/memory.o lib/src/string.o $(MODULES_OBJECTS_NET)
+$(MODULES_NET): libs/fudge/src/memory.o libs/fudge/src/string.o $(MODULES_OBJECTS_NET)
 	$(LD) $(LDFLAGS) -o $@ $^
 
-$(MODULES_NODEFS): lib/src/memory.o lib/src/string.o $(MODULES_OBJECTS_NODEFS)
+$(MODULES_NODEFS): libs/fudge/src/memory.o libs/fudge/src/string.o $(MODULES_OBJECTS_NODEFS)
 	$(LD) $(LDFLAGS) -o $@ $^
 
-$(MODULES_IPV4): lib/src/memory.o lib/src/string.o $(MODULES_OBJECTS_IPV4)
+$(MODULES_IPV4): libs/fudge/src/memory.o libs/fudge/src/string.o $(MODULES_OBJECTS_IPV4)
 	$(LD) $(LDFLAGS) -o $@ $^
 
-$(MODULES_VIDEO): lib/src/memory.o lib/src/string.o $(MODULES_OBJECTS_VIDEO)
+$(MODULES_VIDEO): libs/fudge/src/memory.o libs/fudge/src/string.o $(MODULES_OBJECTS_VIDEO)
 	$(LD) $(LDFLAGS) -o $@ $^
 
 modules/%.o: modules/%.c
-	$(CC) -c $(CFLAGS) -Ilib/include -Ikernel/include -Imodules/include -o $@ $<
+	$(CC) -c $(CFLAGS) -Ilibs/fudge/include -Ikernel/include -Imodules/include -o $@ $<
