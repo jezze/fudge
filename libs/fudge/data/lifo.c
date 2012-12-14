@@ -1,4 +1,4 @@
-#include "define.h"
+#include "../define.h"
 #include "lifo.h"
 
 void lifo_stack_push(struct lifo_stack *stack, char c)

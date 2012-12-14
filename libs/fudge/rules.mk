@@ -1,11 +1,11 @@
 LIBFUDGE=libs/fudge/libfudge.a
 
-LIBFUDGE_OBJECTS+=libs/fudge/elf.o
-LIBFUDGE_OBJECTS+=libs/fudge/gfx.o
-LIBFUDGE_OBJECTS+=libs/fudge/lifo.o
 LIBFUDGE_OBJECTS+=libs/fudge/memory.o
 LIBFUDGE_OBJECTS+=libs/fudge/posix.o
 LIBFUDGE_OBJECTS+=libs/fudge/string.o
+LIBFUDGE_OBJECTS+=libs/fudge/data/lifo.o
+LIBFUDGE_OBJECTS+=libs/fudge/format/elf.o
+LIBFUDGE_OBJECTS+=libs/fudge/gfx/gfx.o
 
 include libs/fudge/arch/$(ARCH)/rules.mk
 

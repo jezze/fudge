@@ -1,6 +1,6 @@
+#include "../memory.h"
+#include "../string.h"
 #include "elf.h"
-#include "memory.h"
-#include "string.h"
 
 unsigned int elf_validate(struct elf_header *header)
 {

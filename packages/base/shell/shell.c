@@ -1,4 +1,5 @@
 #include <fudge.h>
+#include <data/lifo.h>
 
 static struct lifo_stack input;
 

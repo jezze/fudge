@@ -1,5 +1,5 @@
 #include <fudge.h>
-#include <elf.h>
+#include <format/elf.h>
 
 static unsigned int get_symbol_module(char *symbol, unsigned int count, char *module)
 {

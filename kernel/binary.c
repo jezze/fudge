@@ -1,4 +1,4 @@
-#include <fudge/elf.h>
+#include <fudge/format/elf.h>
 #include "vfs.h"
 #include "binary.h"
 
