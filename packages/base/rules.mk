@@ -1,6 +1,7 @@
 PACKAGES+=packages/base/date/date
 PACKAGES+=packages/base/echo/echo
 PACKAGES+=packages/base/hello/hello
+PACKAGES+=packages/base/help/help
 PACKAGES+=packages/base/initm/initm
 PACKAGES+=packages/base/inits/inits
 PACKAGES+=packages/base/load/load
