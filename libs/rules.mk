@@ -16,11 +16,11 @@ LIBMBOOT_OBJECTS+=libs/mboot/mboot.o
 $(LIBFUDGE): $(LIBFUDGE_OBJECTS)
 	$(AR) $(ARFLAGS) $@ $^
 
-$(LIBMBOOT): $(LIBFUDGE) $(LIBMBOOT_OBJECTS)
+$(LIBMBOOT): $(LIBMBOOT_OBJECTS)
 	$(AR) $(ARFLAGS) $@ $^
 
 libs/fudge/%.o: libs/fudge/%.c
 	$(CC) -c $(CFLAGS) -o $@ $<
 
 libs/mboot/%.o: libs/mboot/%.c
-	$(CC) -c $(CFLAGS) -Ikernel/include -Ilibs/fudge/include -o $@ $<
+	$(CC) -c $(CFLAGS) -Ikernel/include -o $@ $<
