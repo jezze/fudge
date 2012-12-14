@@ -16,17 +16,6 @@ static void write_register(unsigned short index, unsigned short data)
 
 }
 
-static void set_mode(struct bga_driver *self)
-{
-
-    write_register(BGA_COMMAND_ENABLE, 0x00);
-    write_register(BGA_COMMAND_XRES, self->interface.xres);
-    write_register(BGA_COMMAND_YRES, self->interface.yres);
-    write_register(BGA_COMMAND_BPP, self->interface.bpp);
-    write_register(BGA_COMMAND_ENABLE, 0x40 | 0x01);
-
-}
-
 static void start(struct base_driver *self)
 {
 
@@ -66,9 +55,11 @@ static unsigned int check(struct base_driver *self, struct base_device *device)
 static void enable(struct video_interface *self)
 {
 
-    struct bga_driver *driver = (struct bga_driver *)self->driver;
-
-    driver->set_mode(driver);
+    write_register(BGA_COMMAND_ENABLE, 0x00);
+    write_register(BGA_COMMAND_XRES, self->xres);
+    write_register(BGA_COMMAND_YRES, self->yres);
+    write_register(BGA_COMMAND_BPP, self->bpp);
+    write_register(BGA_COMMAND_ENABLE, 0x40 | 0x01);
 
 }
 
@@ -105,7 +96,6 @@ void bga_init_driver(struct bga_driver *driver)
     driver->interface.bpp = BGA_BPP_32;
 
     driver->bank = (void *)0xA0000;
-    driver->set_mode = set_mode;
 
 }
 

@@ -28,7 +28,6 @@ struct bga_driver
     struct video_interface interface;
     void *bank;
     void *lfb;
-    void (*set_mode)(struct bga_driver *self);
 
 };
 
