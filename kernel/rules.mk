@@ -1,4 +1,4 @@
-KERNEL+=kernel/fudge
+KERNEL=kernel/fudge
 
 KERNEL_OBJECTS+=kernel/binary.o
 KERNEL_OBJECTS+=kernel/error.o

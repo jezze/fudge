@@ -1,4 +1,4 @@
-LIBFUDGE+=libs/fudge/libfudge.a
+LIBFUDGE=libs/fudge/libfudge.a
 
 LIBFUDGE_OBJECTS+=libs/fudge/elf.o
 LIBFUDGE_OBJECTS+=libs/fudge/gfx.o

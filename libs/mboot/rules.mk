@@ -1,4 +1,4 @@
-LIBMBOOT+=libs/mboot/libmboot.a
+LIBMBOOT=libs/mboot/libmboot.a
 
 LIBMBOOT_OBJECTS+=libs/mboot/init.o
 LIBMBOOT_OBJECTS+=libs/mboot/mboot.o
