@@ -6,30 +6,10 @@
 #include <arch/x86/io/io.h>
 #include "ps2.h"
 
-static char mapUS[256] =
-{
-       0,   27,  '1',  '2',  '3',  '4',  '5',  '6',  '7',  '8',  '9',  '0',  '-',  '+', '\b', '\t',
-     'q',  'w',  'e',  'r',  't',  'y',  'u',  'i',  'o',  'p',  '[',  ']', '\n',    0,  'a',  's',
-     'd',  'f',  'g',  'h',  'j',  'k',  'l',  ';', '\'',  '`',    0, '\\',  'z',  'x',  'c',  'v',
-     'b',  'n',  'm',  ',',  '.',  '/',    0,    0,    0,  ' ',    0,    0,    0,    0,    0,    0,
-       0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-       0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-       0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-       0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-       0,   27,  '!',  '@',  '#',  '$',  '%',  '^',  '&',  '*',  '(',  ')',  '_',  '=', '\b', '\t',
-     'Q',  'W',  'E',  'R',  'T',  'Y',  'U',  'I',  'O',  'P',  '{',  '}', '\n',    0,  'A',  'S',
-     'D',  'F',  'G',  'H',  'J',  'K',  'L',  ':', '\"',  '~',    0,  '|',  'Z',  'X',  'C',  'V',
-     'B',  'N',  'M',  '<',  '>',  '?',    0,    0,    0,  ' ',    0,    0,    0,    0,    0,    0,
-       0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-       0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-       0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-       0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0
-};
-
 static void handle_irq(struct base_device *self)
 {
 
-    unsigned int scancode;
+    unsigned char scancode;
     struct ps2_kbd_driver *kbd = (struct ps2_kbd_driver *)self->driver;
 
     if (!kbd)
@@ -76,7 +56,7 @@ static void handle_irq(struct base_device *self)
         if (kbd->toggleShift)
             scancode += 128;
 
-        circular_stream_write(&kbd->stream, 1, &kbd->map[scancode]);
+        circular_stream_write(&kbd->stream, 1, (char *)&scancode);
 
     }
 
@@ -109,8 +89,6 @@ void ps2_init_kbd_driver(struct ps2_kbd_driver *driver)
     memory_clear(driver, sizeof (struct ps2_kbd_driver));
 
     base_init_driver(&driver->base, PS2_KBD_DRIVER_TYPE, "kbd", 0, check, attach);
-
-    driver->map = mapUS;
 
 }
 

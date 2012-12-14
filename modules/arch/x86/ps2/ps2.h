@@ -21,7 +21,6 @@ struct ps2_kbd_driver
 
     struct base_driver base;
     struct circular_stream stream;
-    char *map;
     unsigned int escaped;
     unsigned int toggleAlt;
     unsigned int toggleCtrl;
