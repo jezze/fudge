@@ -1,4 +1,4 @@
-#include <memory.h>
+#include <fudge/memory.h>
 #include <base/base.h>
 #include <arch/x86/idt.h>
 #include <arch/x86/io/io.h>

@@ -1,4 +1,4 @@
-#include <memory.h>
+#include <fudge/memory.h>
 #include <error.h>
 #include <arch/x86/idt.h>
 #include <arch/x86/isr.h>

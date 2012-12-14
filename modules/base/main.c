@@ -1,4 +1,4 @@
-#include <memory.h>
+#include <fudge/memory.h>
 #include "base.h"
 
 static struct base_module *modules;

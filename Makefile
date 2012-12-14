@@ -18,8 +18,7 @@ INSTALL_PATH=/boot
 default: all
 
 include rules.$(ARCH).mk
-include libs/fudge/rules.mk
-include libs/mboot/rules.mk
+include libs/rules.mk
 include kernel/rules.mk
 include modules/rules.mk
 include packages/rules.mk

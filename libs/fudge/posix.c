@@ -1,5 +1,5 @@
-#include <memory.h>
-#include <posix.h>
+#include "memory.h"
+#include "posix.h"
 
 void *memcpy(void *out, const void *in, unsigned int count)
 {

@@ -1,4 +1,4 @@
-#include <memory.h>
+#include <fudge/memory.h>
 #include <arch/x86/mmu.h>
 #include "acpi.h"
 

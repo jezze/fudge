@@ -1,5 +1,3 @@
-#include <memory.h>
-#include <ethernet.h>
 #include <vfs.h>
 #include <base/base.h>
 #include "net.h"

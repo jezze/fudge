@@ -1,5 +1,5 @@
 #include <arch/x86/arch.h>
-#include <mboot.h>
+#include "mboot.h"
 
 void mboot_setup(struct mboot_header *header, unsigned int magic)
 {

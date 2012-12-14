@@ -1,5 +1,5 @@
-#include <gfx.h>
-#include <memory.h>
+#include "gfx.h"
+#include "memory.h"
 
 static void gfx_fill_rectangle(struct gfx_surface *self)
 {

@@ -1,4 +1,3 @@
-#include <memory.h>
 #include <vfs.h>
 #include <base/base.h>
 #include <net/net.h>
