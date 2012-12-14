@@ -59,8 +59,8 @@ image/mod: $(MODULES)
 	cp $(MODULES) $@
 
 install:
-	cp $(KERNEL) $(INSTALL_PATH)
-	cp $(RAMDISK) $(INSTALL_PATH)
+	install -m 644 $(KERNEL) $(INSTALL_PATH)
+	install -m 644 $(RAMDISK) $(INSTALL_PATH)
 
 kernel: $(KERNEL)
 
