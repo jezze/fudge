@@ -51,9 +51,6 @@ struct pci_device
     unsigned int slot;
     unsigned int function;
     unsigned int address;
-    unsigned int (*config_ind)(struct pci_device *device, unsigned int offset);
-    unsigned short (*config_inw)(struct pci_device *device, unsigned int offset);
-    unsigned char (*config_inb)(struct pci_device *device, unsigned int offset);
 
 };
 
@@ -63,12 +60,12 @@ struct pci_bus
     struct base_bus base;
     struct pci_device devices[64];
     unsigned int devicesCount;
-    unsigned int (*ind)(unsigned int address, unsigned short offset);
-    unsigned short (*inw)(unsigned int address, unsigned short offset);
-    unsigned char (*inb)(unsigned int address, unsigned short offset);
     void (*add_device)(struct pci_bus *self, unsigned int num, unsigned int slot, unsigned int function, unsigned int address);
 
 };
 
+unsigned int pci_bus_ind(unsigned int address, unsigned short offset);
+unsigned short pci_bus_inw(unsigned int address, unsigned short offset);
+unsigned char pci_bus_inb(unsigned int address, unsigned short offset);
 void pci_init_bus(struct pci_bus *bus);
 void pci_init_device(struct pci_device *device, struct pci_bus *bus, unsigned int num, unsigned int slot, unsigned int function, unsigned int address);

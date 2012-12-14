@@ -139,7 +139,7 @@ static void attach(struct base_device *device)
 
     struct pci_device *pciDevice = (struct pci_device *)device;
 
-    unsigned int irq = pciDevice->config_inb(pciDevice, PCI_CONFIG_IRQ_LINE);
+    unsigned int irq = pci_bus_inb(pciDevice->address, PCI_CONFIG_IRQ_LINE);
 
     pic_set_routine(irq, device, handle_irq);
 
@@ -155,7 +155,7 @@ static unsigned int check(struct base_driver *self, struct base_device *device)
 
     pciDevice = (struct pci_device *)device;
 
-    return pciDevice->config_inw(pciDevice, PCI_CONFIG_VENDOR) == 0x8086 && pciDevice->config_inw(pciDevice, PCI_CONFIG_DEVICE) == 0x27AE;
+    return pci_bus_inw(pciDevice->address, PCI_CONFIG_VENDOR) == 0x8086 && pci_bus_inw(pciDevice->address, PCI_CONFIG_DEVICE) == 0x27AE;
 
 }
 

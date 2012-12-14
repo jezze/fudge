@@ -108,8 +108,8 @@ static void attach(struct base_device *device)
 
     struct pci_device *pciDevice = (struct pci_device *)device;
     struct rtl8139_driver *driver = (struct rtl8139_driver *)device->driver;
-    unsigned int bar0 = pciDevice->config_ind(pciDevice, PCI_CONFIG_BAR0);
-    unsigned int irq = pciDevice->config_inb(pciDevice, PCI_CONFIG_IRQ_LINE);
+    unsigned int bar0 = pci_bus_ind(pciDevice->address, PCI_CONFIG_BAR0);
+    unsigned int irq = pci_bus_inb(pciDevice->address, PCI_CONFIG_IRQ_LINE);
 
     driver->io = bar0 & ~1;
 
@@ -127,7 +127,7 @@ static unsigned int check(struct base_driver *self, struct base_device *device)
 
     pciDevice = (struct pci_device *)device;
 
-    return pciDevice->config_inw(pciDevice, PCI_CONFIG_VENDOR) == RTL8139_PCI_VENDOR && pciDevice->config_inw(pciDevice, PCI_CONFIG_DEVICE) == RTL8139_PCI_DEVICE;
+    return pci_bus_inw(pciDevice->address, PCI_CONFIG_VENDOR) == RTL8139_PCI_VENDOR && pci_bus_inw(pciDevice->address, PCI_CONFIG_DEVICE) == RTL8139_PCI_DEVICE;
 
 }
 

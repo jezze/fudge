@@ -3,27 +3,6 @@
 #include <arch/x86/io/io.h>
 #include "pci.h"
 
-static unsigned int config_ind(struct pci_device *device, unsigned int offset)
-{
-
-    return device->bus->ind(device->address, offset);
-
-}
-
-static unsigned short config_inw(struct pci_device *device, unsigned int offset)
-{
-
-    return device->bus->inw(device->address, offset);
-
-}
-
-static unsigned char config_inb(struct pci_device *device, unsigned int offset)
-{
-
-    return device->bus->inb(device->address, offset);
-
-}
-
 void pci_init_device(struct pci_device *device, struct pci_bus *bus, unsigned int num, unsigned int slot, unsigned int function, unsigned int address)
 {
 
@@ -36,9 +15,6 @@ void pci_init_device(struct pci_device *device, struct pci_bus *bus, unsigned in
     device->slot = slot;
     device->function = function;
     device->address = address;
-    device->config_ind = config_ind;
-    device->config_inw = config_inw;
-    device->config_inb = config_inb;
 
 }
 

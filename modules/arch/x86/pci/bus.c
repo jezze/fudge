@@ -10,7 +10,7 @@ static unsigned int get_address(unsigned int num, unsigned int slot, unsigned in
 
 }
 
-static unsigned int ind(unsigned int address, unsigned short offset)
+unsigned int pci_bus_ind(unsigned int address, unsigned short offset)
 {
 
     io_outd(PCI_ADDRESS, address | (offset & 0xFC));
@@ -19,17 +19,17 @@ static unsigned int ind(unsigned int address, unsigned short offset)
 
 }
 
-static unsigned short inw(unsigned int address, unsigned short offset)
+unsigned short pci_bus_inw(unsigned int address, unsigned short offset)
 {
 
-    return (unsigned short)((ind(address, offset) >> ((offset & 2) * 8)));
+    return (unsigned short)((pci_bus_ind(address, offset) >> ((offset & 2) * 8)));
 
 }
 
-static unsigned char inb(unsigned int address, unsigned short offset)
+unsigned char pci_bus_inb(unsigned int address, unsigned short offset)
 {
 
-    return (unsigned char)((ind(address, offset) >> ((offset & 3) * 8)));
+    return (unsigned char)((pci_bus_ind(address, offset) >> ((offset & 3) * 8)));
 
 }
 
@@ -44,16 +44,16 @@ static void detect(struct pci_bus *self, unsigned int num)
         unsigned int header;
         unsigned int address = get_address(num, slot, 0x00);
 
-        if (inw(address, 0x00) == 0xFFFF)
+        if (pci_bus_inw(address, 0x00) == 0xFFFF)
             continue;
 
-        header = inb(address, 0x0E);
+        header = pci_bus_inb(address, 0x0E);
 
         if ((header & 0x01))
-            detect(self, inb(address, 0x19));
+            detect(self, pci_bus_inb(address, 0x19));
 
         if ((header & 0x02))
-            detect(self, inb(address, 0x18));
+            detect(self, pci_bus_inb(address, 0x18));
 
         if ((header & 0x80))
         {
@@ -65,7 +65,7 @@ static void detect(struct pci_bus *self, unsigned int num)
 
                 unsigned int address = get_address(num, slot, function);
 
-                if (inw(address, 0x00) == 0xFFFF)
+                if (pci_bus_inw(address, 0x00) == 0xFFFF)
                     continue;
 
                 self->add_device(self, num, slot, function, address);
@@ -110,9 +110,6 @@ void pci_init_bus(struct pci_bus *bus)
 
     base_init_bus(&bus->base, PCI_BUS_TYPE, "pci", scan);
 
-    bus->ind = ind;
-    bus->inw = inw;
-    bus->inb = inb;
     bus->add_device = add_device;
 
 }
