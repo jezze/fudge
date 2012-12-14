@@ -1,6 +1,12 @@
 #include <fudge.h>
 #include <data/lifo.h>
 
+#define STATE_NONE    0
+#define STATE_COMMAND 1
+#define STATE_STDIN   2
+#define STATE_STDOUT  3
+#define STATE_DATA    4
+
 static struct lifo_stack input;
 
 static char mapUS[256] =
@@ -26,20 +32,20 @@ static char mapUS[256] =
 static unsigned int setup_executable(unsigned int length, char *path)
 {
 
-    char buffer[256];
-    unsigned int o = 0;
+    char buffer[FUDGE_BSIZE];
+    unsigned int offset = 0;
 
     if (memory_match(path, "/", 1))
         return call_open(3, FUDGE_ROOT, length - 1, path + 1);
 
-    o += memory_write(buffer, 256, "ramdisk/bin/", 12, o);
-    o += memory_write(buffer, 256, path, length, o);
+    offset += memory_write(buffer, FUDGE_BSIZE, "ramdisk/bin/", 12, offset);
+    offset += memory_write(buffer, FUDGE_BSIZE, path, length, offset);
 
-    return call_open(3, FUDGE_ROOT, o, buffer);
+    return call_open(3, FUDGE_ROOT, offset, buffer);
 
 }
 
-static unsigned int setup_stream(unsigned int length, char *path, unsigned int index)
+static unsigned int setup_stream(unsigned int index, unsigned int length, char *path)
 {
 
     if (memory_match(path, "/", 1))
@@ -52,27 +58,22 @@ static unsigned int setup_stream(unsigned int length, char *path, unsigned int i
 static void clear()
 {
 
-    call_write(FUDGE_OUT, 0, 2, "$ ");
     lifo_stack_clear(&input);
 
-    setup_stream(25, "/system/nodefs/ps2_buffer", FUDGE_IN);
-    setup_stream(20, "/system/video/0/data", FUDGE_OUT);
+    setup_stream(FUDGE_IN, 25, "/system/nodefs/ps2_buffer");
+    setup_stream(FUDGE_OUT, 20, "/system/video/0/data");
+
+    call_write(FUDGE_OUT, 0, 2, "$ ");
 
 }
-
-#define STATE_NONE    0
-#define STATE_COMMAND 1
-#define STATE_STDIN   2
-#define STATE_STDOUT  3
-#define STATE_DATA    4
 
 static void interpret_command(unsigned int length, char *command)
 {
 
     unsigned int exec = 0;
-    unsigned int i;
     unsigned int start = 0;
     unsigned int state = STATE_COMMAND;
+    unsigned int i;
 
     for (i = 0; i < length; i++)
     {
@@ -93,7 +94,7 @@ static void interpret_command(unsigned int length, char *command)
             if (state == STATE_STDIN)
             {
 
-                unsigned int id = setup_stream(i - start, command + start, FUDGE_IN);
+                unsigned int id = setup_stream(FUDGE_IN, i - start, command + start);
 
                 if (!id)
                     return;
@@ -103,7 +104,7 @@ static void interpret_command(unsigned int length, char *command)
             if (state == STATE_STDOUT)
             {
 
-                unsigned int id = setup_stream(i - start, command + start, FUDGE_OUT);
+                unsigned int id = setup_stream(FUDGE_OUT, i - start, command + start);
 
                 if (!id)
                     return;
@@ -155,7 +156,7 @@ static void interpret_command(unsigned int length, char *command)
     if (state == STATE_STDIN)
     {
 
-        unsigned int id = setup_stream(length - start, command + start, FUDGE_IN);
+        unsigned int id = setup_stream(FUDGE_IN, length - start, command + start);
 
         if (!id)
             return;
@@ -165,7 +166,7 @@ static void interpret_command(unsigned int length, char *command)
     if (state == STATE_STDOUT)
     {
 
-        unsigned int id = setup_stream(length - start, command + start, FUDGE_OUT);
+        unsigned int id = setup_stream(FUDGE_OUT, length - start, command + start);
 
         if (!id)
             return;
@@ -281,7 +282,7 @@ static void handle_input(char c)
 static void poll()
 {
 
-    unsigned char buffer[32];
+    unsigned char buffer[FUDGE_BSIZE];
     unsigned int count;
     unsigned int i;
     unsigned int toggleAlt = 0;
@@ -291,7 +292,7 @@ static void poll()
     for (;;)
     {
 
-        count = call_read(FUDGE_IN, 0, 32, buffer);
+        count = call_read(FUDGE_IN, 0, FUDGE_BSIZE, buffer);
 
         for (i = 0; i < count; i++)
         {
