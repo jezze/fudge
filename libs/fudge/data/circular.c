@@ -1,9 +1,10 @@
 #include "../define.h"
 #include "circular.h"
 
-unsigned int circular_stream_read(struct circular_stream *stream, unsigned int count, char *buffer)
+unsigned int circular_stream_read(struct circular_stream *stream, unsigned int count, void *buffer)
 {
 
+    char *b = (char *)buffer;
     unsigned int i;
 
     for (i = 0; i < count; i++)
@@ -14,7 +15,7 @@ unsigned int circular_stream_read(struct circular_stream *stream, unsigned int c
         if (stream->head == stream->tail)
             break;
 
-        buffer[i] = stream->buffer[stream->tail];
+        b[i] = stream->buffer[stream->tail];
         stream->tail = tail;
 
     }
@@ -23,9 +24,10 @@ unsigned int circular_stream_read(struct circular_stream *stream, unsigned int c
 
 }
 
-unsigned int circular_stream_write(struct circular_stream *stream, unsigned int count, char *buffer)
+unsigned int circular_stream_write(struct circular_stream *stream, unsigned int count, void *buffer)
 {
 
+    char *b = (char *)buffer;
     unsigned int i;
 
     for (i = 0; i < count; i++)
@@ -36,7 +38,7 @@ unsigned int circular_stream_write(struct circular_stream *stream, unsigned int 
         if (head == stream->tail)
             break;
 
-        stream->buffer[stream->head] = buffer[i];
+        stream->buffer[stream->head] = b[i];
         stream->head = head;
 
     }

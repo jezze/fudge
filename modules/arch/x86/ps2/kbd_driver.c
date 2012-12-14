@@ -56,7 +56,7 @@ static void handle_irq(struct base_device *self)
         if (kbd->toggleShift)
             scancode += 128;
 
-        circular_stream_write(&kbd->stream, 1, (char *)&scancode);
+        circular_stream_write(&kbd->stream, 1, &scancode);
 
     }
 
