@@ -1,3 +1,5 @@
+include libs/fudge/rules.$(ARCH).mk
+
 LIBFUDGE+=libs/fudge/libfudge.a
 
 LIBFUDGE_OBJECTS+=libs/fudge/src/elf.o

@@ -1,5 +1,4 @@
 ARCH=x86
-PLATFORM=mboot
 PREFIX=
 AS=$(PREFIX)as
 CC=$(PREFIX)gcc
@@ -19,12 +18,9 @@ INSTALL_PATH=/boot
 default: all
 
 include rules.$(ARCH).mk
-include libs/fudge/rules.$(ARCH).mk
 include libs/fudge/rules.mk
-include libs/$(PLATFORM)/rules.mk
-include kernel/rules.$(ARCH).mk
+include libs/mboot/rules.mk
 include kernel/rules.mk
-include modules/rules.$(ARCH).mk
 include modules/rules.mk
 include packages/rules.mk
 

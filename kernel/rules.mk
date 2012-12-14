@@ -1,3 +1,5 @@
+include kernel/rules.$(ARCH).mk
+
 KERNEL+=kernel/fudge
 
 KERNEL_OBJECTS+=kernel/src/binary.o
