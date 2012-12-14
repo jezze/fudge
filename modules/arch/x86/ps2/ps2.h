@@ -22,9 +22,6 @@ struct ps2_kbd_driver
     struct base_driver base;
     struct circular_stream stream;
     unsigned int escaped;
-    unsigned int toggleAlt;
-    unsigned int toggleCtrl;
-    unsigned int toggleShift;
 
 };
 
