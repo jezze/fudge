@@ -281,9 +281,12 @@ static void handle_input(char c)
 static void poll()
 {
 
-    char buffer[32];
+    unsigned char buffer[32];
     unsigned int count;
     unsigned int i;
+    unsigned int toggleAlt = 0;
+    unsigned int toggleShift = 0;
+    unsigned int toggleCtrl = 0;
 
     for (;;)
     {
@@ -293,9 +296,46 @@ static void poll()
         for (i = 0; i < count; i++)
         {
 
-            unsigned int val = buffer[i];
+            unsigned int scancode = buffer[i];
 
-            handle_input(mapUS[val]);
+            if (scancode == 0x38)
+                toggleAlt = 1;
+
+            if (scancode == 0xB8)
+                toggleAlt = 0;
+
+            if (scancode == 0x1D)
+                toggleCtrl = 1;
+
+            if (scancode == 0x9D)
+                toggleCtrl = 0;
+
+            if (scancode == 0x2A)
+                toggleShift = 1;
+
+            if (scancode == 0xAA)
+                toggleShift = 0;
+
+            if (scancode & 0x80)
+            {
+
+            }
+
+            else
+            {
+
+                if (toggleCtrl)
+                    scancode = 0;
+
+                if (toggleAlt)
+                    scancode = 0;
+
+                if (toggleShift)
+                    scancode += 128;
+
+                handle_input(mapUS[scancode]);
+
+            }
 
         }
 

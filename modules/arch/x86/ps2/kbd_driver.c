@@ -18,47 +18,12 @@ static void handle_irq(struct base_device *self)
     scancode = io_inb(PS2_DATA);
 
     if (kbd->escaped)
-    {
-
         kbd->escaped = 0;
-
-    }
 
     if (scancode == 0xE0)
         kbd->escaped = 1;
 
-    if (scancode == 0x38)
-        kbd->toggleAlt = 1;
-
-    if (scancode == 0xB8)
-        kbd->toggleAlt = 0;
-
-    if (scancode == 0x1D)
-        kbd->toggleCtrl = 1;
-
-    if (scancode == 0x9D)
-        kbd->toggleCtrl = 0;
-
-    if (scancode == 0x2A)
-        kbd->toggleShift = 1;
-
-    if (scancode == 0xAA)
-        kbd->toggleShift = 0;
-
-    if (scancode & 0x80)
-    {
-
-    }
-
-    else
-    {
-
-        if (kbd->toggleShift)
-            scancode += 128;
-
-        circular_stream_write(&kbd->stream, 1, &scancode);
-
-    }
+    circular_stream_write(&kbd->stream, 1, &scancode);
 
 }
 
