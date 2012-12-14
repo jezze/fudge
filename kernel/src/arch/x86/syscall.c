@@ -21,7 +21,7 @@ unsigned short syscall_interrupt(struct syscall_registers *registers)
         registers->interrupt.cs = gdt_get_selector(GDT_INDEX_UCODE);
         registers->interrupt.eip = running->registers.ip;
         registers->interrupt.esp = running->registers.sp;
-        registers->general.ebp = running->registers.sb;
+        registers->general.ebp = running->registers.fp;
         registers->general.eax = running->registers.status;
 
         return gdt_get_selector(GDT_INDEX_UDATA);

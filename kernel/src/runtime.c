@@ -99,14 +99,14 @@ void runtime_init_mount(struct runtime_mount *mount, struct vfs_interface *paren
 
 }
 
-void runtime_init_registers(struct runtime_registers *registers, unsigned int ip, unsigned int sp, unsigned int sb, unsigned int status)
+void runtime_init_registers(struct runtime_registers *registers, unsigned int ip, unsigned int sp, unsigned int fp, unsigned int status)
 {
 
     memory_clear(registers, sizeof (struct runtime_registers));
 
     registers->ip = ip;
     registers->sp = sp;
-    registers->sb = sb;
+    registers->fp = fp;
     registers->status = status;
 
 }

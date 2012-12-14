@@ -28,7 +28,7 @@ struct runtime_registers
 
     unsigned int ip;
     unsigned int sp;
-    unsigned int sb;
+    unsigned int fp;
     unsigned int status;
 
 };
@@ -57,5 +57,5 @@ struct runtime_mount *runtime_get_task_mount(struct runtime_task *task, unsigned
 unsigned int runtime_update_task_descriptor(struct runtime_task *task, struct runtime_descriptor *descriptor, unsigned int count, char *path);
 void runtime_init_descriptor(struct runtime_descriptor *descriptor, struct vfs_interface *interface, unsigned int id);
 void runtime_init_mount(struct runtime_mount *mount, struct vfs_interface *parent, unsigned int parentid, struct vfs_interface *child, unsigned int childid);
-void runtime_init_registers(struct runtime_registers *registers, unsigned int ip, unsigned int sp, unsigned int sb, unsigned int status);
+void runtime_init_registers(struct runtime_registers *registers, unsigned int ip, unsigned int sp, unsigned int fp, unsigned int status);
 void runtime_init_task(struct runtime_task *task);
