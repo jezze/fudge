@@ -41,59 +41,59 @@ MODULES_OBJECTS_VGA=modules/arch/x86/vga/main.o modules/arch/x86/vga/driver.o
 MODULES+=$(MODULES_ACPI) $(MODULES_APIC) $(MODULES_ATA) $(MODULES_BGA) $(MODULES_CPUID) $(MODULES_FPU) $(MODULES_I915) $(MODULES_IO) $(MODULES_MSR) $(MODULES_MULTI) $(MODULES_PCI) $(MODULES_PIC) $(MODULES_PIT) $(MODULES_PS2) $(MODULES_RTC) $(MODULES_RTL8139) $(MODULES_SMP) $(MODULES_UART) $(MODULES_VGA)
 MODULES_OBJECTS+=$(MODULES_OBJECTS_ACPI) $(MODULES_OBJECTS_APIC) $(MODULES_OBJECTS_ATA) $(MODULES_OBJECTS_BGA) $(MODULES_OBJECTS_CPUID) $(MODULES_OBJECTS_FPU) $(MODULES_OBJECTS_I915) $(MODULES_OBJECTS_IO) $(MODULES_OBJECTS_MSR) $(MODULES_OBJECTS_MULTI) $(MODULES_OBJECTS_PCI) $(MODULES_OBJECTS_PIC) $(MODULES_OBJECTS_PIT) $(MODULES_OBJECTS_PS2) $(MODULES_OBJECTS_RTC) $(MODULES_OBJECTS_RTL8139) $(MODULES_OBJECTS_SMP) $(MODULES_OBJECTS_UART) $(MODULES_OBJECTS_VGA)
 
-$(MODULES_ACPI): libs/fudge/memory.o libs/fudge/string.o $(MODULES_OBJECTS_ACPI)
+$(MODULES_ACPI): $(MODULES_OBJECTS_ACPI) $(LIBFUDGE)
 	$(LD) $(LDFLAGS) -o $@ $^
 
-$(MODULES_APIC): libs/fudge/memory.o libs/fudge/string.o $(MODULES_OBJECTS_APIC)
+$(MODULES_APIC): $(MODULES_OBJECTS_APIC) $(LIBFUDGE)
 	$(LD) $(LDFLAGS) -o $@ $^
 
-$(MODULES_ATA): libs/fudge/memory.o libs/fudge/string.o $(MODULES_OBJECTS_ATA)
+$(MODULES_ATA): $(MODULES_OBJECTS_ATA) $(LIBFUDGE)
 	$(LD) $(LDFLAGS) -o $@ $^
 
-$(MODULES_BGA): libs/fudge/memory.o libs/fudge/string.o $(MODULES_OBJECTS_BGA)
+$(MODULES_BGA): $(MODULES_OBJECTS_BGA) $(LIBFUDGE)
 	$(LD) $(LDFLAGS) -o $@ $^
 
-$(MODULES_CPUID): libs/fudge/memory.o libs/fudge/string.o $(MODULES_OBJECTS_CPUID)
+$(MODULES_CPUID): $(MODULES_OBJECTS_CPUID) $(LIBFUDGE)
 	$(LD) $(LDFLAGS) -o $@ $^
 
-$(MODULES_FPU): libs/fudge/memory.o libs/fudge/string.o $(MODULES_OBJECTS_FPU)
+$(MODULES_FPU): $(MODULES_OBJECTS_FPU) $(LIBFUDGE)
 	$(LD) $(LDFLAGS) -o $@ $^
 
-$(MODULES_I915): libs/fudge/memory.o libs/fudge/string.o $(MODULES_OBJECTS_I915)
+$(MODULES_I915): $(MODULES_OBJECTS_I915) $(LIBFUDGE)
 	$(LD) $(LDFLAGS) -o $@ $^
 
-$(MODULES_IO): libs/fudge/memory.o libs/fudge/string.o $(MODULES_OBJECTS_IO)
+$(MODULES_IO): $(MODULES_OBJECTS_IO) $(LIBFUDGE)
 	$(LD) $(LDFLAGS) -o $@ $^
 
-$(MODULES_MSR): libs/fudge/memory.o libs/fudge/string.o $(MODULES_OBJECTS_MSR)
+$(MODULES_MSR): $(MODULES_OBJECTS_MSR) $(LIBFUDGE)
 	$(LD) $(LDFLAGS) -o $@ $^
 
-$(MODULES_MULTI): libs/fudge/memory.o libs/fudge/string.o $(MODULES_OBJECTS_MULTI)
+$(MODULES_MULTI): $(MODULES_OBJECTS_MULTI) $(LIBFUDGE)
 	$(LD) $(LDFLAGS) -o $@ $^
 
-$(MODULES_PCI): libs/fudge/memory.o libs/fudge/string.o $(MODULES_OBJECTS_PCI)
+$(MODULES_PCI): $(MODULES_OBJECTS_PCI) $(LIBFUDGE)
 	$(LD) $(LDFLAGS) -o $@ $^
 
-$(MODULES_PIC): libs/fudge/memory.o libs/fudge/string.o $(MODULES_OBJECTS_PIC)
+$(MODULES_PIC): $(MODULES_OBJECTS_PIC) $(LIBFUDGE)
 	$(LD) $(LDFLAGS) -o $@ $^
 
-$(MODULES_PIT): libs/fudge/memory.o libs/fudge/string.o $(MODULES_OBJECTS_PIT)
+$(MODULES_PIT): $(MODULES_OBJECTS_PIT) $(LIBFUDGE)
 	$(LD) $(LDFLAGS) -o $@ $^
 
-$(MODULES_PS2): libs/fudge/memory.o libs/fudge/string.o $(MODULES_OBJECTS_PS2)
+$(MODULES_PS2): $(MODULES_OBJECTS_PS2) $(LIBFUDGE)
 	$(LD) $(LDFLAGS) -o $@ $^
 
-$(MODULES_RTC): libs/fudge/memory.o libs/fudge/string.o $(MODULES_OBJECTS_RTC)
+$(MODULES_RTC): $(MODULES_OBJECTS_RTC) $(LIBFUDGE)
 	$(LD) $(LDFLAGS) -o $@ $^
 
-$(MODULES_RTL8139): libs/fudge/memory.o libs/fudge/string.o $(MODULES_OBJECTS_RTL8139)
+$(MODULES_RTL8139): $(MODULES_OBJECTS_RTL8139) $(LIBFUDGE)
 	$(LD) $(LDFLAGS) -o $@ $^
 
-$(MODULES_SMP): libs/fudge/memory.o libs/fudge/string.o $(MODULES_OBJECTS_SMP)
+$(MODULES_SMP): $(MODULES_OBJECTS_SMP) $(LIBFUDGE)
 	$(LD) $(LDFLAGS) -o $@ $^
 
-$(MODULES_UART): libs/fudge/memory.o libs/fudge/string.o $(MODULES_OBJECTS_UART)
+$(MODULES_UART): $(MODULES_OBJECTS_UART) $(LIBFUDGE)
 	$(LD) $(LDFLAGS) -o $@ $^
 
-$(MODULES_VGA): libs/fudge/memory.o libs/fudge/string.o $(MODULES_OBJECTS_VGA)
+$(MODULES_VGA): $(MODULES_OBJECTS_VGA) $(LIBFUDGE)
 	$(LD) $(LDFLAGS) -o $@ $^

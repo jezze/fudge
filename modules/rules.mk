@@ -25,31 +25,31 @@ MODULES_OBJECTS+=$(MODULES_OBJECTS_ARP) $(MODULES_OBJECTS_BASE) $(MODULES_OBJECT
 
 $(MODULES): LDFLAGS+=-Tmodules/linker.ld -r
 
-$(MODULES_ARP): libs/fudge/memory.o libs/fudge/string.o $(MODULES_OBJECTS_ARP)
+$(MODULES_ARP): $(MODULES_OBJECTS_ARP) $(LIBFUDGE)
 	$(LD) $(LDFLAGS) -o $@ $^
 
-$(MODULES_BASE): libs/fudge/memory.o libs/fudge/string.o $(MODULES_OBJECTS_BASE)
+$(MODULES_BASE): $(MODULES_OBJECTS_BASE) $(LIBFUDGE)
 	$(LD) $(LDFLAGS) -o $@ $^
 
-$(MODULES_BLOCK): libs/fudge/memory.o libs/fudge/string.o $(MODULES_OBJECTS_BLOCK)
+$(MODULES_BLOCK): $(MODULES_OBJECTS_BLOCK) $(LIBFUDGE)
 	$(LD) $(LDFLAGS) -o $@ $^
 
-$(MODULES_SYSTEM): libs/fudge/memory.o libs/fudge/string.o $(MODULES_OBJECTS_SYSTEM)
+$(MODULES_SYSTEM): $(MODULES_OBJECTS_SYSTEM) $(LIBFUDGE)
 	$(LD) $(LDFLAGS) -o $@ $^
 
-$(MODULES_EXT2): libs/fudge/memory.o libs/fudge/string.o $(MODULES_OBJECTS_EXT2)
+$(MODULES_EXT2): $(MODULES_OBJECTS_EXT2) $(LIBFUDGE)
 	$(LD) $(LDFLAGS) -o $@ $^
 
-$(MODULES_NET): libs/fudge/memory.o libs/fudge/string.o $(MODULES_OBJECTS_NET)
+$(MODULES_NET): $(MODULES_OBJECTS_NET) $(LIBFUDGE)
 	$(LD) $(LDFLAGS) -o $@ $^
 
-$(MODULES_NODEFS): libs/fudge/memory.o libs/fudge/string.o $(MODULES_OBJECTS_NODEFS)
+$(MODULES_NODEFS): $(MODULES_OBJECTS_NODEFS) $(LIBFUDGE)
 	$(LD) $(LDFLAGS) -o $@ $^
 
-$(MODULES_IPV4): libs/fudge/memory.o libs/fudge/string.o $(MODULES_OBJECTS_IPV4)
+$(MODULES_IPV4): $(MODULES_OBJECTS_IPV4) $(LIBFUDGE)
 	$(LD) $(LDFLAGS) -o $@ $^
 
-$(MODULES_VIDEO): libs/fudge/memory.o libs/fudge/string.o $(MODULES_OBJECTS_VIDEO)
+$(MODULES_VIDEO): $(MODULES_OBJECTS_VIDEO) $(LIBFUDGE)
 	$(LD) $(LDFLAGS) -o $@ $^
 
 modules/%.o: modules/%.c
