@@ -1,4 +1,6 @@
+#include <fudge/define.h>
 #include <fudge/memory.h>
+#include <fudge/data/circular.h>
 #include <base/base.h>
 #include <arch/x86/pic/pic.h>
 #include <arch/x86/io/io.h>
@@ -23,50 +25,6 @@ static char mapUS[256] =
        0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
        0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0
 };
-
-static unsigned int buffer_read(struct ps2_kbd_buffer *self, unsigned int count, char *buffer)
-{
-
-    unsigned int i;
-
-    for (i = 0; i < count; i++)
-    {
-
-        unsigned int tail = (self->tail + 1) % self->size;
-
-        if (self->head == self->tail)
-            break;
-
-        buffer[i] = self->buffer[self->tail];
-        self->tail = tail;
-
-    }
-
-    return i;
-
-}
-
-static unsigned int buffer_write(struct ps2_kbd_buffer *self, unsigned int count, char *buffer)
-{
-
-    unsigned int i;
-
-    for (i = 0; i < count; i++)
-    {
-
-        unsigned int head = (self->head + 1) % self->size;
-
-        if (head == self->tail)
-            break;
-
-        self->buffer[self->head] = buffer[i];
-        self->head = head;
-
-    }
-
-    return i;
-
-}
 
 static void handle_irq(struct base_device *self)
 {
@@ -118,7 +76,7 @@ static void handle_irq(struct base_device *self)
         if (kbd->toggleShift)
             scancode += 128;
 
-        kbd->buffer.write(&kbd->buffer, 1, &kbd->map[scancode]);
+        circular_stream_write(&kbd->stream, 1, &kbd->map[scancode]);
 
     }
 
@@ -152,9 +110,6 @@ void ps2_init_kbd_driver(struct ps2_kbd_driver *driver)
 
     base_init_driver(&driver->base, PS2_KBD_DRIVER_TYPE, "kbd", 0, check, attach);
 
-    driver->buffer.size = 256;
-    driver->buffer.read = buffer_read;
-    driver->buffer.write = buffer_write;
     driver->map = mapUS;
 
 }

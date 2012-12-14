@@ -4,7 +4,6 @@ struct lifo_stack
     char buffer[FUDGE_BSIZE];
     unsigned int head;
 
-
 };
 
 void lifo_stack_push(struct lifo_stack *stack, char c);

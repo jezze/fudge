@@ -1,4 +1,6 @@
+#include <fudge/define.h>
 #include <fudge/memory.h>
+#include <fudge/data/circular.h>
 #include <vfs.h>
 #include <base/base.h>
 #include <nodefs/nodefs.h>
@@ -18,14 +20,14 @@ static struct nodefs_node my;
 static unsigned int buffer_read(struct nodefs_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    return kbdDriver.buffer.read(&kbdDriver.buffer, count, buffer);
+    return circular_stream_read(&kbdDriver.stream, count, buffer);
 
 }
 
 static unsigned int buffer_write(struct nodefs_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    return kbdDriver.buffer.write(&kbdDriver.buffer, count, buffer);
+    return circular_stream_write(&kbdDriver.stream, count, buffer);
 
 }
 

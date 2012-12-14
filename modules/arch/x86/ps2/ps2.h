@@ -16,23 +16,11 @@ struct ps2_device
 
 };
 
-struct ps2_kbd_buffer
-{
-
-    char buffer[256];
-    unsigned int size;
-    unsigned int head;
-    unsigned int tail;
-    unsigned int (*read)(struct ps2_kbd_buffer *self, unsigned int count, char *buffer);
-    unsigned int (*write)(struct ps2_kbd_buffer *self, unsigned int count, char *buffer);
-
-};
-
 struct ps2_kbd_driver
 {
 
     struct base_driver base;
-    struct ps2_kbd_buffer buffer;
+    struct circular_stream stream;
     char *map;
     unsigned int escaped;
     unsigned int toggleAlt;

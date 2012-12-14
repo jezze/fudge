@@ -1,4 +1,6 @@
+#include <fudge/define.h>
 #include <fudge/memory.h>
+#include <fudge/data/circular.h>
 #include <base/base.h>
 #include "ps2.h"
 

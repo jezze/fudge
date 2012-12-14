@@ -1,4 +1,6 @@
+#include <fudge/define.h>
 #include <fudge/memory.h>
+#include <fudge/data/circular.h>
 #include <base/base.h>
 #include <arch/x86/pic/pic.h>
 #include <arch/x86/io/io.h>
