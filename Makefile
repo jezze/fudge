@@ -23,12 +23,11 @@ include kernel/rules.mk
 include modules/rules.mk
 include packages/rules.mk
 
-all: $(LIBFUDGE) $(LIBMBOOT) $(KERNEL) $(MODULES) $(PACKAGES) $(RAMDISK)
+all: $(KERNEL) $(LIBS) $(MODULES) $(PACKAGES) $(RAMDISK)
 
 clean:
-	rm -rf $(LIBFUDGE) $(LIBFUDGE_OBJECTS)
-	rm -rf $(LIBMBOOT) $(LIBMBOOT_OBJECTS)
 	rm -rf $(KERNEL) $(KERNEL_OBJECTS)
+	rm -rf $(LIBS) $(LIBS_OBJECTS)
 	rm -rf $(MODULES) $(MODULES_OBJECTS)
 	rm -rf $(PACKAGES)
 	rm -rf $(RAMDISK)
@@ -59,7 +58,7 @@ install:
 
 kernel: $(KERNEL)
 
-libs: $(LIBFUDGE) $(LIBMBOOT)
+libs: $(LIBS)
 
 modules: $(MODULES)
 
@@ -72,4 +71,3 @@ $(RAMDISK_NAME).tar: image/bin image/boot image/boot/fudge image/home image/data
 $(RAMDISK_NAME).cpio: image/bin image/boot image/boot/fudge image/home image/data image/mod
 	find image -depth | cpio -o > $@
 	rm -rf image
-

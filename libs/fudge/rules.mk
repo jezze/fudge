@@ -8,6 +8,9 @@ LIBFUDGE_OBJECTS+=libs/fudge/memory.o
 LIBFUDGE_OBJECTS+=libs/fudge/posix.o
 LIBFUDGE_OBJECTS+=libs/fudge/string.o
 
+LIBS+=$(LIBFUDGE)
+LIBS_OBJECTS+=$(LIBFUDGE_OBJECTS)
+
 $(LIBFUDGE): $(LIBFUDGE_OBJECTS)
 	$(AR) $(ARFLAGS) $@ $^
 
