@@ -15,7 +15,7 @@ KERNEL_OBJECTS+=libs/fudge/posix.o
 KERNEL_OBJECTS+=libs/fudge/string.o
 
 $(KERNEL): $(LIBFUDGE) $(LIBMBOOT) $(KERNEL_OBJECTS)
-	$(LD) $(LDFLAGS) -Tkernel/linker.$(ARCH).ld -o $@ $^ $(EXTRA)
+	$(LD) $(LDFLAGS) -Tlibs/mboot/linker.ld -o $@ $^ $(EXTRA)
 
 kernel/%.o: kernel/%.c
 	$(CC) -c $(CFLAGS) -Ilibs -Ikernel/include -o $@ $<
