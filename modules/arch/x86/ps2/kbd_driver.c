@@ -9,13 +9,8 @@
 static void handle_irq(struct base_device *self)
 {
 
-    unsigned char scancode;
     struct ps2_kbd_driver *kbd = (struct ps2_kbd_driver *)self->driver;
-
-    if (!kbd)
-        return;
-
-    scancode = io_inb(PS2_DATA);
+    unsigned char scancode = io_inb(PS2_DATA);
 
     if (kbd->escaped)
         kbd->escaped = 0;
