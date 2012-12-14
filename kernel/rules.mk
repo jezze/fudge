@@ -9,13 +9,9 @@ KERNEL_OBJECTS+=kernel/ramdisk.o
 KERNEL_OBJECTS+=kernel/runtime.o
 KERNEL_OBJECTS+=kernel/syscall.o
 KERNEL_OBJECTS+=kernel/vfs.o
-KERNEL_OBJECTS+=libs/fudge/elf.o
-KERNEL_OBJECTS+=libs/fudge/memory.o
-KERNEL_OBJECTS+=libs/fudge/posix.o
-KERNEL_OBJECTS+=libs/fudge/string.o
 
-$(KERNEL): $(LIBFUDGE) $(LIBMBOOT) $(KERNEL_OBJECTS)
-	$(LD) $(LDFLAGS) -Tlibs/mboot/linker.ld -o $@ $^ $(EXTRA)
+$(KERNEL): $(KERNEL_OBJECTS) $(LIBFUDGE) $(LIBMBOOT)
+	$(LD) $(LDFLAGS) -Tlibs/mboot/linker.ld -o $@ $^
 
 kernel/%.o: kernel/%.c
 	$(CC) -c $(CFLAGS) -Ilibs -o $@ $<
