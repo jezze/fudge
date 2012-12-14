@@ -1,34 +1,6 @@
 #include <fudge.h>
 
-static char buffer[FUDGE_BSIZE];
-static unsigned int bufferHead;
-
-static void stack_push(char c)
-{
-
-    if (bufferHead < FUDGE_BSIZE)
-    {
-
-        buffer[bufferHead] = c;
-        bufferHead++;
-
-    }
-
-}
-
-static char stack_pop()
-{
-
-    return (bufferHead > 0) ? buffer[--bufferHead] : 0;
-
-}
-
-static void stack_clear()
-{
-
-    bufferHead = 0;
-
-}
+static struct lifo_stack input;
 
 static unsigned int setup_executable(unsigned int length, char *path)
 {
@@ -60,7 +32,7 @@ static void clear()
 {
 
     call_write(FUDGE_OUT, 0, 2, "$ ");
-    stack_clear();
+    lifo_stack_clear(&input);
 
     setup_stream(25, "/system/nodefs/ps2_buffer", FUDGE_IN);
     setup_stream(20, "/system/video/0/data", FUDGE_OUT);
@@ -255,7 +227,7 @@ static void handle_input(char c)
 
         case '\b':
 
-            if (!stack_pop())
+            if (!lifo_stack_pop(&input))
                 break;
 
             call_write(FUDGE_OUT, 0, 3, "\b \b");
@@ -267,8 +239,8 @@ static void handle_input(char c)
 
             call_write(FUDGE_OUT, 0, 1, &c);
 
-            if (bufferHead)
-                interpret(bufferHead, buffer);
+            if (!lifo_stack_isempty(&input))
+                interpret(input.head, input.buffer);
 
             clear();
 
@@ -276,7 +248,7 @@ static void handle_input(char c)
 
         default:
 
-            stack_push(c);
+            lifo_stack_push(&input, c);
             call_write(FUDGE_OUT, 0, 1, &c);
 
             break;
