@@ -195,10 +195,20 @@ static void interpret_command(unsigned int length, char *command)
 static void changedir(unsigned int length, char *command)
 {
 
-    if (command[0] == '/')
-        call_open(FUDGE_CWD, FUDGE_ROOT, length - 1, command + 1);
-    else
-        call_open(FUDGE_CWD, FUDGE_CWD, length, command);
+    unsigned int id;
+    
+    if (!length)
+        return;
+
+    if (command[length - 1] != '/')
+        return;
+
+    id = (command[0] == '/') ? call_open(3, FUDGE_ROOT, length - 1, command + 1) : call_open(3, FUDGE_CWD, length, command);
+
+    if (!id)
+        return;
+
+    call_open(FUDGE_CWD, 3, 0, 0);
 
 }
 
