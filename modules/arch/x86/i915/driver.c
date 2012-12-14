@@ -148,12 +148,10 @@ static void attach(struct base_device *device)
 static unsigned int check(struct base_driver *self, struct base_device *device)
 {
 
-    struct pci_device *pciDevice;
+    struct pci_device *pciDevice = (struct pci_device *)device;
 
     if (device->type != PCI_DEVICE_TYPE)
         return 0;
-
-    pciDevice = (struct pci_device *)device;
 
     return pci_bus_inw(pciDevice->address, PCI_CONFIG_VENDOR) == 0x8086 && pci_bus_inw(pciDevice->address, PCI_CONFIG_DEVICE) == 0x27AE;
 

@@ -1,6 +1,5 @@
 #include <fudge/memory.h>
 #include <base/base.h>
-#include <arch/x86/io/io.h>
 #include "pci.h"
 
 void pci_init_device(struct pci_device *device, struct pci_bus *bus, unsigned int num, unsigned int slot, unsigned int function, unsigned int address)

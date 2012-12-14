@@ -43,7 +43,6 @@ static void handle_irq(struct base_device *self)
 
     struct uart_device *device = (struct uart_device *)self;
     struct uart_driver *driver = (struct uart_driver *)self->driver;
-
     char c = device->read(device);
 
     driver->buffer.putc(&driver->buffer, &c);
