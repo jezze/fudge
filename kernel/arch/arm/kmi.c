@@ -1,6 +1,6 @@
-#include <arch/arm/kmi.h>
-#include <arch/arm/reg.h>
-#include <arch/arm/uart.h>
+#include "kmi.h"
+#include "reg.h"
+#include "uart.h"
 
 static char mapUS[256] =
 {

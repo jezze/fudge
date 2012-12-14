@@ -1,7 +1,7 @@
 #include <fudge/memory.h>
-#include <arch/x86/cpu.h>
-#include <arch/x86/gdt.h>
-#include <arch/x86/tss.h>
+#include "cpu.h"
+#include "gdt.h"
+#include "tss.h"
 
 static struct tss_entry entries[TSS_ENTRY_SLOTS];
 

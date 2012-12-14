@@ -1,13 +1,13 @@
-#include <runtime.h>
-#include <kernel.h>
-#include <arch/x86/arch.h>
-#include <arch/x86/cpu.h>
-#include <arch/x86/gdt.h>
-#include <arch/x86/idt.h>
-#include <arch/x86/isr.h>
-#include <arch/x86/mmu.h>
-#include <arch/x86/syscall.h>
-#include <arch/x86/tss.h>
+#include "../../runtime.h"
+#include "../../kernel.h"
+#include "arch.h"
+#include "cpu.h"
+#include "gdt.h"
+#include "idt.h"
+#include "isr.h"
+#include "mmu.h"
+#include "syscall.h"
+#include "tss.h"
 
 static struct runtime_task task;
 

@@ -7,4 +7,4 @@ $(LIBMBOOT): $(LIBMBOOT_OBJECTS)
 	$(AR) $(ARFLAGS) $@ $^
 
 libs/mboot/%.o: libs/mboot/%.c
-	$(CC) -c $(CFLAGS) -Ikernel/include -o $@ $<
+	$(CC) -c $(CFLAGS) -Ikernel -o $@ $<

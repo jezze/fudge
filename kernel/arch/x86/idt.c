@@ -1,6 +1,6 @@
 #include <fudge/memory.h>
-#include <arch/x86/cpu.h>
-#include <arch/x86/idt.h>
+#include "cpu.h"
+#include "idt.h"
 
 static struct idt_entry entries[IDT_ENTRY_SLOTS];
 static struct idt_pointer pointer;

@@ -1,10 +1,10 @@
 #include <fudge/memory.h>
-#include <error.h>
-#include <runtime.h>
-#include <arch/x86/arch.h>
-#include <arch/x86/cpu.h>
-#include <arch/x86/idt.h>
-#include <arch/x86/mmu.h>
+#include "../../error.h"
+#include "../../runtime.h"
+#include "arch.h"
+#include "cpu.h"
+#include "idt.h"
+#include "mmu.h"
 
 static struct mmu_directory directory;
 static struct mmu_table tables[3];

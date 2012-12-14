@@ -1,13 +1,13 @@
-#include <memory.h>
-#include <string.h>
-#include <runtime.h>
-#include <kernel.h>
-#include <arch/arm/arch.h>
-#include <arch/arm/cpu.h>
-#include <arch/arm/kmi.h>
-#include <arch/arm/pic.h>
-#include <arch/arm/reg.h>
-#include <arch/arm/uart.h>
+#include <fudge/memory.h>
+#include <fudge/string.h>
+#include "../../runtime.h"
+#include "../../kernel.h"
+#include "arch.h"
+#include "cpu.h"
+#include "kmi.h"
+#include "pic.h"
+#include "reg.h"
+#include "uart.h"
 
 static struct runtime_task task;
 

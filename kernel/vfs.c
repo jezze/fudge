@@ -1,5 +1,5 @@
 #include <fudge/memory.h>
-#include <vfs.h>
+#include "vfs.h"
 
 static struct vfs_interface root;
 

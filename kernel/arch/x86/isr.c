@@ -1,7 +1,6 @@
 #include <fudge/memory.h>
-#include <error.h>
-#include <arch/x86/idt.h>
-#include <arch/x86/isr.h>
+#include "idt.h"
+#include "isr.h"
 
 void isr_setup(unsigned short selector)
 {

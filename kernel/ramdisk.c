@@ -1,8 +1,8 @@
 #include <fudge/memory.h>
 #include <fudge/string.h>
 #include <fudge/tar.h>
-#include <vfs.h>
-#include <ramdisk.h>
+#include "vfs.h"
+#include "ramdisk.h"
 
 static struct ramdisk_image ramdiskImage;
 static struct ramdisk_filesystem ramdiskFilesystem;

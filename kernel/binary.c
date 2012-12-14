@@ -1,6 +1,6 @@
 #include <fudge/elf.h>
-#include <vfs.h>
-#include <binary.h>
+#include "vfs.h"
+#include "binary.h"
 
 unsigned int binary_find_symbol(struct vfs_interface *interface, unsigned int id, char *symbol)
 {

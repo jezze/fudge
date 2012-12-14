@@ -1,8 +1,8 @@
 #include <fudge/memory.h>
-#include <vfs.h>
-#include <binary.h>
-#include <runtime.h>
-#include <syscall.h>
+#include "vfs.h"
+#include "binary.h"
+#include "runtime.h"
+#include "syscall.h"
 
 static unsigned int (*routines[SYSCALL_ROUTINE_SLOTS])(struct runtime_task *task, void *stack);
 

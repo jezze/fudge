@@ -53,4 +53,4 @@ $(MODULES_VIDEO): libs/fudge/memory.o libs/fudge/string.o $(MODULES_OBJECTS_VIDE
 	$(LD) $(LDFLAGS) -o $@ $^
 
 modules/%.o: modules/%.c
-	$(CC) -c $(CFLAGS) -Ilibs -Ikernel/include -Imodules -o $@ $<
+	$(CC) -c $(CFLAGS) -Ilibs -Ikernel -Imodules -o $@ $<

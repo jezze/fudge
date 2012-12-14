@@ -1,5 +1,5 @@
-#include <arch/arm/reg.h>
-#include <arch/arm/uart.h>
+#include "reg.h"
+#include "uart.h"
 
 void uart_putc(char c)
 {

@@ -1,6 +1,6 @@
 #include <fudge/memory.h>
-#include <arch/x86/cpu.h>
-#include <arch/x86/gdt.h>
+#include "cpu.h"
+#include "gdt.h"
 
 static struct gdt_entry entries[GDT_ENTRY_SLOTS];
 static struct gdt_pointer pointer;

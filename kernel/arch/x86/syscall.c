@@ -1,10 +1,10 @@
-#include <runtime.h>
-#include <syscall.h>
-#include <arch/x86/arch.h>
-#include <arch/x86/cpu.h>
-#include <arch/x86/gdt.h>
-#include <arch/x86/idt.h>
-#include <arch/x86/syscall.h>
+#include "../../runtime.h"
+#include "../../syscall.h"
+#include "arch.h"
+#include "cpu.h"
+#include "gdt.h"
+#include "idt.h"
+#include "syscall.h"
 
 static struct runtime_task *running;
 

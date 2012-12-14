@@ -1,6 +1,6 @@
 #include <fudge/memory.h>
-#include <runtime.h>
-#include <vfs.h>
+#include "runtime.h"
+#include "vfs.h"
 
 static struct runtime_task *notify_interrupt(struct runtime_task *self, unsigned int index)
 {
