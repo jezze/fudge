@@ -5,6 +5,13 @@ isr_routine:
     cli
     iret
 
+.global isr_disable_pic
+isr_disable_pic:
+    mov al, 0xff
+    outb 0xA1, al
+    outb 0x21, al
+    ret
+
 .global isr_usermode
 isr_usermode:
     mov ax, [esp + 8]

@@ -57,5 +57,6 @@ struct isr_registers
 };
 
 void isr_routine();
+void isr_disable_pic();
 void isr_usermode(unsigned int cs, unsigned int ds, unsigned int ip, unsigned int sp);
 void isr_setup(unsigned short selector);
