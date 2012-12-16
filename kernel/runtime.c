@@ -29,36 +29,24 @@ struct runtime_mount *runtime_get_task_mount(struct runtime_task *task, unsigned
 
 }
 
-static struct runtime_descriptor *runtime_find_child_descriptor(struct runtime_task *task, struct runtime_descriptor *descriptor)
+unsigned int runtime_update_task_descriptor(struct runtime_task *task, struct runtime_descriptor *descriptor, unsigned int count, char *path)
 {
 
     unsigned int i;
+    unsigned int length;
 
     for (i = 1; i < RUNTIME_TASK_MOUNT_SLOTS; i++)
     {
 
         if (task->mounts[i].parent.interface == descriptor->interface && task->mounts[i].parent.id == descriptor->id)
-            return &task->mounts[i].child;
+        {
 
-    }
+            descriptor->id = task->mounts[i].child.id;
+            descriptor->interface = task->mounts[i].child.interface;
 
-    return 0;
+            return runtime_update_task_descriptor(task, descriptor, count, path);
 
-}
-
-unsigned int runtime_update_task_descriptor(struct runtime_task *task, struct runtime_descriptor *descriptor, unsigned int count, char *path)
-{
-
-    struct runtime_descriptor *child = runtime_find_child_descriptor(task, descriptor);
-    unsigned int length;
-
-    if (child)
-    {
-
-        descriptor->id = child->id;
-        descriptor->interface = child->interface;
-
-        return runtime_update_task_descriptor(task, descriptor, count, path);
+        }
 
     }
 
