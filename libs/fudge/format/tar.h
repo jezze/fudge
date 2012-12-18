@@ -28,3 +28,5 @@ struct tar_header
     char linkname[TAR_LINKNAME_SIZE];
 
 };
+
+unsigned int tar_validate(struct tar_header *header);

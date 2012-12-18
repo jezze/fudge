@@ -7,26 +7,6 @@
 static struct ramdisk_image ramdiskImage;
 static struct ramdisk_filesystem ramdiskFilesystem;
 
-static unsigned int validate(struct tar_header *header)
-{
-
-    unsigned int i;
-    unsigned char *address = (unsigned char *)header;
-    unsigned int checksum = string_read_num(header->checksum, 8);
-
-    for (i = 0; i < 148; i++)
-        checksum -= address[i];
-
-    for (i = 148; i < 156; i++)
-        checksum -= 32;
-
-    for (i = 156; i < TAR_BLOCK_SIZE; i++)
-        checksum -= address[i];
-
-    return !checksum;
-
-}
-
 static unsigned int parse(struct ramdisk_image *self, void *address)
 {
 
@@ -38,7 +18,7 @@ static unsigned int parse(struct ramdisk_image *self, void *address)
         struct tar_header *header = (struct tar_header *)current;
         unsigned int size = string_read_num(header->size, 8);
 
-        if (!validate(header))
+        if (!tar_validate(header))
             return 0;
 
         self->headers[self->count] = header;
