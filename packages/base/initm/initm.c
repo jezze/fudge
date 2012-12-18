@@ -74,10 +74,6 @@ void load_modules_extra(unsigned int id)
     call_spawn(id);
     call_close(FUDGE_IN);
 
-    call_open(FUDGE_IN, FUDGE_CWD, 7, "uart.ko");
-    call_spawn(id);
-    call_close(FUDGE_IN);
-
     call_open(FUDGE_IN, FUDGE_CWD, 6, "arp.ko");
     call_spawn(id);
     call_close(FUDGE_IN);
@@ -98,6 +94,11 @@ void load_modules_testing(unsigned int id)
 
     /* Experimental */
     call_open(FUDGE_IN, FUDGE_CWD, 7, "ext2.ko");
+    call_spawn(id);
+    call_close(FUDGE_IN);
+
+    /* Does noot work if device is non-existing */
+    call_open(FUDGE_IN, FUDGE_CWD, 7, "uart.ko");
     call_spawn(id);
     call_close(FUDGE_IN);
 
