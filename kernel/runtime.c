@@ -32,8 +32,9 @@ struct runtime_mount *runtime_get_task_mount(struct runtime_task *task, unsigned
 unsigned int runtime_update_task_descriptor(struct runtime_task *task, struct runtime_descriptor *descriptor, unsigned int count, char *path)
 {
 
+    char *offset = memory_find(path, "/", count, 1);
+    unsigned int length = (offset) ? (unsigned int)(offset - path) + 1 : count;
     unsigned int i;
-    unsigned int length;
 
     for (i = 1; i < RUNTIME_TASK_MOUNT_SLOTS; i++)
     {
@@ -52,11 +53,6 @@ unsigned int runtime_update_task_descriptor(struct runtime_task *task, struct ru
 
     if (!count)
         return 1;
-
-    for (length = 0; length < count && path[length] != '/'; length++);
-
-    if (length < count)
-        length++;
 
     if ((descriptor->id = descriptor->interface->walk(descriptor->interface, descriptor->id, length, path)))
         return runtime_update_task_descriptor(task, descriptor, count - length, path + length);
