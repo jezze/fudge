@@ -7,9 +7,9 @@ unsigned int binary_find_symbol(struct vfs_interface *interface, unsigned int id
 
     struct elf_header header;
     struct elf_section_header sectionHeader[20];
-    unsigned int symbolHeaderIndex;
     struct elf_symbol symbolTable[400];
     char stringTable[0x1000];
+    unsigned int symbolHeaderIndex;
 
     interface->read(interface, id, 0, ELF_HEADER_SIZE, &header);
 

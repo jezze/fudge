@@ -6,9 +6,9 @@ static unsigned int get_symbol_module(char *symbol, unsigned int count, char *mo
 
     struct elf_header header;
     struct elf_section_header sectionHeader[20];
-    unsigned int symbolHeaderIndex;
     struct elf_symbol symbolTable[400];
     char stringTable[0x1000];
+    unsigned int symbolHeaderIndex;
 
     if (!call_open(3, FUDGE_ROOT, count, module))
         return 0;

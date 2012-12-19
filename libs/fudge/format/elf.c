@@ -37,10 +37,8 @@ unsigned int elf_find_symbol(struct elf_header *header, struct elf_section_heade
     for (i = 0; i < sectionHeader[symbolHeaderIndex].size / sectionHeader[symbolHeaderIndex].esize; i++)
     {
 
-        if (!memory_match(symbol, stringTable + symbolTable[i].name, length + 1))
-            continue;
-
-        return (header->type == ELF_TYPE_RELOCATABLE) ? sectionHeader[symbolTable[i].shindex].address + sectionHeader[symbolTable[i].shindex].offset + symbolTable[i].value : symbolTable[i].value;
+        if (memory_match(symbol, stringTable + symbolTable[i].name, length + 1))
+            return (header->type == ELF_TYPE_RELOCATABLE) ? sectionHeader[symbolTable[i].shindex].address + sectionHeader[symbolTable[i].shindex].offset + symbolTable[i].value : symbolTable[i].value;
 
     }
 
@@ -82,11 +80,10 @@ void elf_relocate_section(struct elf_section_header *sectionHeader, unsigned int
 
         unsigned char type = relocateTable[i].info & 0x0F;
         unsigned char index = relocateTable[i].info >> 8;
-        struct elf_symbol *symbol = &symbolTable[index];
         unsigned int offset = sectionHeader[relocateDataIndex].offset + relocateTable[i].offset;
 
-        if (symbol->shindex)
-            elf_relocate_symbol(address, offset, type, address + sectionHeader[symbol->shindex].offset + symbol->value);
+        if (symbolTable[index].shindex)
+            elf_relocate_symbol(address, offset, type, address + sectionHeader[symbolTable[index].shindex].offset + symbolTable[index].value);
         else
             elf_relocate_symbol(address, offset, type, 0);
 

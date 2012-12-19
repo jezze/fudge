@@ -7,9 +7,9 @@ static unsigned int get_symbol(char *symbol)
 {
 
     struct elf_section_header sectionHeader[20];
-    unsigned int symbolHeaderIndex;
     struct elf_symbol symbolTable[400];
     char stringTable[0x1000];
+    unsigned int symbolHeaderIndex;
 
     call_read(3, header.shoffset, header.shsize * header.shcount, sectionHeader);
 
