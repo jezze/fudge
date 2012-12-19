@@ -72,7 +72,6 @@ unsigned int memory_read(void *out, unsigned int ocount, void *in, unsigned int 
 
     char *op = out;
     const char *ip = in;
-    unsigned int count;
 
     if (offset >= icount)
         return 0;
@@ -82,7 +81,7 @@ unsigned int memory_read(void *out, unsigned int ocount, void *in, unsigned int 
 
     ip += offset;
 
-    for (count = ocount; count; count--)
+    for (offset = ocount; offset; offset--)
         *op++ = *ip++;
 
     return ocount;
@@ -94,7 +93,6 @@ unsigned int memory_write(void *out, unsigned int ocount, void *in, unsigned int
 
     char *op = out;
     const char *ip = in;
-    unsigned int count;
 
     if (offset >= ocount)
         return 0;
@@ -104,7 +102,7 @@ unsigned int memory_write(void *out, unsigned int ocount, void *in, unsigned int
 
     op += offset;
 
-    for (count = icount; count; count--)
+    for (offset = icount; offset; offset--)
         *op++ = *ip++;
 
     return icount;
