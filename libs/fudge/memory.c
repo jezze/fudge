@@ -29,14 +29,13 @@ void *memory_find(const void *in1, const void *in2, unsigned int count1, unsigne
 {
 
     const char *ip = in1;
-    unsigned int count;
 
     if (count2 > count1)
         return 0;
 
-    count = count1 - count2 + 1;
+    count1 -= count2 + 1;
 
-    for (; count; count--)
+    for (; count1; count1--)
     {
 
         if (memory_match(ip, in2, count2))
