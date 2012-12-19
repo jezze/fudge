@@ -50,10 +50,8 @@ static unsigned int parent(struct ramdisk_filesystem *filesystem, unsigned int i
     for (i = 0; i < id - 1; i++)
     {
 
-        if (!memory_match(filesystem->image->headers[i]->name, header->name, length))
-            continue;
-
-        return i + 1;
+        if (memory_match(filesystem->image->headers[i]->name, header->name, length))
+            return i + 1;
 
     }
 
@@ -168,10 +166,8 @@ static unsigned int walk(struct vfs_interface *self, unsigned int id, unsigned i
 
         l -= length;
 
-        if (!memory_match(filesystem->image->headers[i]->name + length, path, l))
-            continue;
-
-        return walk(self, i + 1, count - l, path + l);
+        if (memory_match(filesystem->image->headers[i]->name + length, path, l))
+            return walk(self, i + 1, count - l, path + l);
 
     }
 
