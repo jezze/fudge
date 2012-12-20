@@ -24,16 +24,10 @@ static unsigned int find_symbol(struct elf_header *header, struct elf_section_he
 
         address = elf_find_symbol(header, sectionTable, &sectionTable[i], symbolTable, stringTable, symbol);
 
-        if (!address)
-            continue;
-
-        call_close(3);
-
-        return address;
+        if (address)
+            return address;
 
     }
-
-    call_close(3);
 
     return 0;
 
