@@ -58,6 +58,18 @@
 #define ELF_SECTION_FLAG_EXEC           0x00000004
 #define ELF_SECTION_FLAG_MASK           0xF0000000
 
+#define ELF_RELOC_TYPE_NONE             0x00000000
+#define ELF_RELOC_TYPE_32               0x00000001
+#define ELF_RELOC_TYPE_PC32             0x00000002
+#define ELF_RELOC_TYPE_GOT32            0x00000003
+#define ELF_RELOC_TYPE_PLT32            0x00000004
+#define ELF_RELOC_TYPE_COPY             0x00000005
+#define ELF_RELOC_TYPE_GLOB_DAT         0x00000006
+#define ELF_RELOC_TYPE_JMP_SLOT         0x00000007
+#define ELF_RELOC_TYPE_RELATIVE         0x00000008
+#define ELF_RELOC_TYPE_GOTOFF           0x00000009
+#define ELF_RELOC_TYPE_GOTPC            0x0000000A
+
 struct elf_header
 {
 

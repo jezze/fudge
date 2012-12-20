@@ -46,23 +46,23 @@ unsigned int elf_find_symbol(struct elf_header *header, struct elf_section_heade
 
 }
 
-void elf_relocate_symbol(unsigned int address, unsigned int offset, unsigned int type, unsigned int addend)
+void elf_relocate_symbol(unsigned int address, unsigned int type, unsigned int addend)
 {
 
-    unsigned int *entry = (unsigned int *)(address + offset);
+    unsigned int *entry = (unsigned int *)(address);
 
     switch (type)
     {
 
-        case 1:
+        case ELF_RELOC_TYPE_32:
 
             *entry += addend;
 
             break;
 
-        case 2:
+        case ELF_RELOC_TYPE_PC32:
 
-            *entry += addend - offset - address;
+            *entry += addend - address;
 
             break;
 
@@ -83,9 +83,9 @@ void elf_relocate_section(struct elf_section_header *sectionHeader, unsigned int
         unsigned int offset = sectionHeader[relocateDataIndex].offset + relocateTable[i].offset;
 
         if (symbolTable[index].shindex)
-            elf_relocate_symbol(address, offset, type, address + sectionHeader[symbolTable[index].shindex].offset + symbolTable[index].value);
+            elf_relocate_symbol(address + offset, type, address + sectionHeader[symbolTable[index].shindex].offset + symbolTable[index].value);
         else
-            elf_relocate_symbol(address, offset, type, 0);
+            elf_relocate_symbol(address + offset, type, 0);
 
     }
 
