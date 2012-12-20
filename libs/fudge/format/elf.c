@@ -81,9 +81,10 @@ void elf_relocate_section(struct elf_section_header *sectionHeader, unsigned int
         unsigned char type = relocateTable[i].info & 0x0F;
         unsigned char index = relocateTable[i].info >> 8;
         unsigned int offset = sectionHeader[relocateDataIndex].offset + relocateTable[i].offset;
+        unsigned int addend = sectionHeader[symbolTable[index].shindex].offset + symbolTable[index].value;
 
         if (symbolTable[index].shindex)
-            elf_relocate_symbol(address + offset, type, address + sectionHeader[symbolTable[index].shindex].offset + symbolTable[index].value);
+            elf_relocate_symbol(address + offset, type, address + addend);
         else
             elf_relocate_symbol(address + offset, type, 0);
 
