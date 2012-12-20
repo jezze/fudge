@@ -88,20 +88,20 @@ static unsigned int resolve_symbols(struct elf_section_header *relocateHeader, s
 
         unsigned char index = relocateTable[i].info >> 8;
         unsigned int *entry = (unsigned int *)(buffer + relocateTable[i].offset);
-        unsigned int symbol;
+        unsigned int address;
 
         if (symbolTable[index].shindex)
             continue;
 
-        symbol = find_symbol_kernel(stringTable + symbolTable[index].name);
+        address = find_symbol_kernel(stringTable + symbolTable[index].name);
 
-        if (!symbol)
-            symbol = find_symbol_module(stringTable + symbolTable[index].name);
+        if (!address)
+            address = find_symbol_module(stringTable + symbolTable[index].name);
 
-        if (!symbol)
+        if (!address)
             return 0;
 
-        *entry += symbol;
+        *entry += address;
 
     }
 
