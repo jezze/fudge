@@ -6,24 +6,37 @@ unsigned int binary_find_symbol(struct vfs_interface *interface, unsigned int id
 {
 
     struct elf_header header;
-    struct elf_section_header sectionHeader[20];
-    struct elf_symbol symbolTable[400];
-    char stringTable[0x1000];
-    unsigned int symbolHeaderIndex;
+    struct elf_section_header sectionTable[20];
+    unsigned int i;
 
     interface->read(interface, id, 0, ELF_HEADER_SIZE, &header);
 
     if (!elf_validate(&header))
         return 0;
 
-    interface->read(interface, id, header.shoffset, header.shsize * header.shcount, sectionHeader);
+    interface->read(interface, id, header.shoffset, header.shsize * header.shcount, sectionTable);
 
-    symbolHeaderIndex = elf_find_section(&header, sectionHeader, ELF_SECTION_TYPE_SYMTAB);
+    for (i = 0; i < header.shcount; i++)
+    {
 
-    interface->read(interface, id, sectionHeader[symbolHeaderIndex].offset, sectionHeader[symbolHeaderIndex].size, symbolTable);
-    interface->read(interface, id, sectionHeader[sectionHeader[symbolHeaderIndex].link].offset, sectionHeader[sectionHeader[symbolHeaderIndex].link].size, stringTable);
+        struct elf_symbol symbolTable[400];
+        char stringTable[0x1000];
+        unsigned int address;
 
-    return elf_find_symbol(&header, sectionHeader, symbolHeaderIndex, symbolTable, stringTable, symbol);
+        if (sectionTable[i].type != ELF_SECTION_TYPE_SYMTAB)
+            continue;
+
+        interface->read(interface, id, sectionTable[i].offset, sectionTable[i].size, symbolTable);
+        interface->read(interface, id, sectionTable[sectionTable[i].link].offset, sectionTable[sectionTable[i].link].size, stringTable);
+
+        address = elf_find_symbol(&header, sectionTable, &sectionTable[i], symbolTable, stringTable, symbol);
+
+        if (address)
+            return address;
+
+    }
+
+    return 0;
 
 }
 
@@ -52,7 +65,7 @@ unsigned int binary_relocate(struct vfs_interface *interface, unsigned int id, u
 {
 
     struct elf_header header;
-    struct elf_section_header sectionHeader[20];
+    struct elf_section_header sectionTable[20];
     unsigned int i;
 
     interface->read(interface, id, 0, ELF_HEADER_SIZE, &header);
@@ -60,7 +73,7 @@ unsigned int binary_relocate(struct vfs_interface *interface, unsigned int id, u
     if (!elf_validate(&header))
         return 0;
 
-    interface->read(interface, id, header.shoffset, header.shsize * header.shcount, sectionHeader);
+    interface->read(interface, id, header.shoffset, header.shsize * header.shcount, sectionTable);
 
     for (i = 0; i < header.shcount; i++)
     {
@@ -68,17 +81,17 @@ unsigned int binary_relocate(struct vfs_interface *interface, unsigned int id, u
         struct elf_relocate relocateTable[200];
         struct elf_symbol symbolTable[400];
 
-        sectionHeader[i].address += address;
+        sectionTable[i].address += address;
 
-        if (sectionHeader[i].type != ELF_SECTION_TYPE_REL)
+        if (sectionTable[i].type != ELF_SECTION_TYPE_REL)
             continue;
 
-        interface->read(interface, id, sectionHeader[i].offset, sectionHeader[i].size, relocateTable);
-        interface->read(interface, id, sectionHeader[sectionHeader[i].link].offset, sectionHeader[sectionHeader[i].link].size, symbolTable);
+        interface->read(interface, id, sectionTable[i].offset, sectionTable[i].size, relocateTable);
+        interface->read(interface, id, sectionTable[sectionTable[i].link].offset, sectionTable[sectionTable[i].link].size, symbolTable);
 
-        elf_relocate_section(sectionHeader, i, sectionHeader[i].info, relocateTable, symbolTable, address);
+        elf_relocate_section(sectionTable, &sectionTable[i], &sectionTable[sectionTable[i].info], relocateTable, symbolTable, address);
 
-        interface->write(interface, id, header.shoffset, header.shsize * header.shcount, sectionHeader);
+        interface->write(interface, id, header.shoffset, header.shsize * header.shcount, sectionTable);
 
     }
 

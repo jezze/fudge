@@ -2,22 +2,54 @@
 #include <format/elf.h>
 
 static struct elf_header kHeader;
-static struct elf_section_header kSectionHeader[20];
-static struct elf_symbol kSymbolTable[400];
-static char kStringTable[0x1000];
-static unsigned int kSymbolHeaderIndex;
+static struct elf_section_header kSectionTable[20];
 
-static unsigned int find_symbol(char *symbol)
+static unsigned int find_symbol_kernel(char *symbol)
+{
+
+    unsigned int i;
+
+    call_open(3, FUDGE_ROOT, 18, "ramdisk/boot/fudge");
+
+    for (i = 0; i < kHeader.shcount; i++)
+    {
+
+        struct elf_symbol symbolTable[400];
+        char stringTable[0x1000];
+        unsigned int address;
+
+        if (kSectionTable[i].type != ELF_SECTION_TYPE_SYMTAB)
+            continue;
+
+        call_read(3, kSectionTable[i].offset, kSectionTable[i].size, symbolTable);
+        call_read(3, kSectionTable[kSectionTable[i].link].offset, kSectionTable[kSectionTable[i].link].size, stringTable);
+
+        address = elf_find_symbol(&kHeader, kSectionTable, &kSectionTable[i], symbolTable, stringTable, symbol);
+
+        if (!address)
+            continue;
+
+        call_close(3);
+
+        return address;
+
+    }
+
+    call_close(3);
+
+    return 0;
+
+}
+
+static unsigned int find_symbol_module(char *symbol)
 {
 
     struct elf_header header;
-    struct elf_section_header sectionHeader[20];
-    struct elf_symbol symbolTable[400];
-    char stringTable[0x1000];
-    unsigned int symbolHeaderIndex;
+    struct elf_section_header sectionTable[20];
     char module[64];
     unsigned int count = 0;
     unsigned int length = (unsigned int)((char *)memory_find(symbol, "_", string_length(symbol), 1) - symbol);
+    unsigned int i;
 
     count += memory_write(module, 64, "ramdisk/mod/", 12, count);
     count += memory_write(module, 64, symbol, length, count);
@@ -31,15 +63,35 @@ static unsigned int find_symbol(char *symbol)
     if (!elf_validate(&header))
         return 0;
 
-    call_read(3, header.shoffset, header.shsize * header.shcount, sectionHeader);
+    call_read(3, header.shoffset, header.shsize * header.shcount, sectionTable);
 
-    symbolHeaderIndex = elf_find_section(&header, sectionHeader, ELF_SECTION_TYPE_SYMTAB);
+    for (i = 0; i < header.shcount; i++)
+    {
 
-    call_read(3, sectionHeader[symbolHeaderIndex].offset, sectionHeader[symbolHeaderIndex].size, symbolTable);
-    call_read(3, sectionHeader[sectionHeader[symbolHeaderIndex].link].offset, sectionHeader[sectionHeader[symbolHeaderIndex].link].size, stringTable);
+        struct elf_symbol symbolTable[400];
+        char stringTable[0x1000];
+        unsigned int address;
+
+        if (sectionTable[i].type != ELF_SECTION_TYPE_SYMTAB)
+            continue;
+
+        call_read(3, sectionTable[i].offset, sectionTable[i].size, symbolTable);
+        call_read(3, sectionTable[sectionTable[i].link].offset, sectionTable[sectionTable[i].link].size, stringTable);
+
+        address = elf_find_symbol(&header, sectionTable, &sectionTable[i], symbolTable, stringTable, symbol);
+
+        if (!address)
+            continue;
+
+        call_close(3);
+
+        return address;
+
+    }
+
     call_close(3);
 
-    return elf_find_symbol(&header, sectionHeader, symbolHeaderIndex, symbolTable, stringTable, symbol);
+    return 0;
 
 }
 
@@ -58,10 +110,10 @@ static unsigned int resolve_symbols(struct elf_section_header *relocateHeader, s
         if (symbolTable[index].shindex)
             continue;
 
-        symbol = elf_find_symbol(&kHeader, kSectionHeader, kSymbolHeaderIndex, kSymbolTable, kStringTable, stringTable + symbolTable[index].name);
+        symbol = find_symbol_kernel(stringTable + symbolTable[index].name);
 
         if (!symbol)
-            symbol = find_symbol(stringTable + symbolTable[index].name);
+            symbol = find_symbol_module(stringTable + symbolTable[index].name);
 
         if (!symbol)
             return 0;
@@ -78,7 +130,7 @@ unsigned int resolve()
 {
 
     struct elf_header header;
-    struct elf_section_header sectionHeader[20];
+    struct elf_section_header sectionTable[20];
     struct elf_relocate relocateTable[400];
     struct elf_symbol symbolTable[400];
     char stringTable[0x1000];
@@ -86,7 +138,7 @@ unsigned int resolve()
     unsigned int i;
 
     call_read(FUDGE_IN, 0, ELF_HEADER_SIZE, &header);
-    call_read(FUDGE_IN, header.shoffset, header.shsize * header.shcount, sectionHeader);
+    call_read(FUDGE_IN, header.shoffset, header.shsize * header.shcount, sectionTable);
 
     for (i = 0; i < header.shcount; i++)
     {
@@ -96,13 +148,13 @@ unsigned int resolve()
         struct elf_section_header *symbolHeader;
         struct elf_section_header *stringHeader;
 
-        if (sectionHeader[i].type != ELF_SECTION_TYPE_REL)
+        if (sectionTable[i].type != ELF_SECTION_TYPE_REL)
             continue;
 
-        relocateHeader = &sectionHeader[i];
-        relocateData = &sectionHeader[relocateHeader->info];
-        symbolHeader = &sectionHeader[relocateHeader->link];
-        stringHeader = &sectionHeader[symbolHeader->link];
+        relocateHeader = &sectionTable[i];
+        relocateData = &sectionTable[relocateHeader->info];
+        symbolHeader = &sectionTable[relocateHeader->link];
+        stringHeader = &sectionTable[symbolHeader->link];
 
         call_read(FUDGE_IN, symbolHeader->offset, symbolHeader->size, symbolTable);
         call_read(FUDGE_IN, stringHeader->offset, stringHeader->size, stringTable);
@@ -129,12 +181,7 @@ void main()
     if (!elf_validate(&kHeader))
         return;
 
-    call_read(3, kHeader.shoffset, kHeader.shsize * kHeader.shcount, kSectionHeader);
-
-    kSymbolHeaderIndex = elf_find_section(&kHeader, kSectionHeader, ELF_SECTION_TYPE_SYMTAB);
-
-    call_read(3, kSectionHeader[kSymbolHeaderIndex].offset, kSectionHeader[kSymbolHeaderIndex].size, kSymbolTable);
-    call_read(3, kSectionHeader[kSectionHeader[kSymbolHeaderIndex].link].offset, kSectionHeader[kSectionHeader[kSymbolHeaderIndex].link].size, kStringTable);
+    call_read(3, kHeader.shoffset, kHeader.shsize * kHeader.shcount, kSectionTable);
 
     if (resolve())
         call_load(FUDGE_IN);
