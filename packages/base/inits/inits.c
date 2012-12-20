@@ -4,27 +4,25 @@
 static struct elf_header kHeader;
 static struct elf_section_header kSectionTable[20];
 
-static unsigned int find_symbol_kernel(char *symbol)
+static unsigned int find_symbol(struct elf_header *header, struct elf_section_header *sectionTable, char *symbol)
 {
 
     unsigned int i;
 
-    call_open(3, FUDGE_ROOT, 18, "ramdisk/boot/fudge");
-
-    for (i = 0; i < kHeader.shcount; i++)
+    for (i = 0; i < header->shcount; i++)
     {
 
         struct elf_symbol symbolTable[400];
         char stringTable[0x1000];
         unsigned int address;
 
-        if (kSectionTable[i].type != ELF_SECTION_TYPE_SYMTAB)
+        if (sectionTable[i].type != ELF_SECTION_TYPE_SYMTAB)
             continue;
 
-        call_read(3, kSectionTable[i].offset, kSectionTable[i].size, symbolTable);
-        call_read(3, kSectionTable[kSectionTable[i].link].offset, kSectionTable[kSectionTable[i].link].size, stringTable);
+        call_read(3, sectionTable[i].offset, sectionTable[i].size, symbolTable);
+        call_read(3, sectionTable[sectionTable[i].link].offset, sectionTable[sectionTable[i].link].size, stringTable);
 
-        address = elf_find_symbol(&kHeader, kSectionTable, &kSectionTable[i], symbolTable, stringTable, symbol);
+        address = elf_find_symbol(header, sectionTable, &sectionTable[i], symbolTable, stringTable, symbol);
 
         if (!address)
             continue;
@@ -38,6 +36,21 @@ static unsigned int find_symbol_kernel(char *symbol)
     call_close(3);
 
     return 0;
+
+}
+
+static unsigned int find_symbol_kernel(char *symbol)
+{
+
+    unsigned int address;
+
+    call_open(3, FUDGE_ROOT, 18, "ramdisk/boot/fudge");
+
+    address = find_symbol(&kHeader, kSectionTable, symbol);
+
+    call_close(3);
+
+    return address;
 
 }
 
@@ -77,7 +90,7 @@ unsigned int resolve()
     struct elf_relocate relocateTable[400];
     struct elf_symbol symbolTable[400];
     char stringTable[0x1000];
-    char buffer[0x4000];
+    char buffer[0x2000];
     unsigned int i;
 
     call_read(FUDGE_IN, 0, ELF_HEADER_SIZE, &header);
