@@ -35,7 +35,7 @@ static unsigned int resolve_symbols(struct elf_section_header *relocateHeader, s
 
 }
 
-void resolve()
+unsigned int resolve()
 {
 
     struct elf_header header;
@@ -71,13 +71,13 @@ void resolve()
         call_read(FUDGE_IN, relocateData->offset, relocateData->size, buffer);
 
         if (!resolve_symbols(relocateHeader, relocateTable, symbolTable, stringTable, buffer))
-            return;
+            return 0;
 
         call_write(FUDGE_IN, relocateData->offset, relocateData->size, buffer);
 
     }
 
-    call_load(FUDGE_IN);
+    return 1;
 
 }
 
@@ -98,10 +98,14 @@ void main()
     call_read(3, kSectionHeader[kSectionHeader[kSymbolHeaderIndex].link].offset, kSectionHeader[kSectionHeader[kSymbolHeaderIndex].link].size, kStringTable);
 
     call_open(FUDGE_IN, FUDGE_ROOT, 19, "ramdisk/mod/base.ko");
-    resolve();
+
+    if (resolve())
+        call_load(FUDGE_IN);
 
     call_open(FUDGE_IN, FUDGE_ROOT, 20, "ramdisk/mod/multi.ko");
-    resolve();
+
+    if (resolve())
+        call_load(FUDGE_IN);
 
     call_open(3, FUDGE_ROOT, 17, "ramdisk/bin/initm");
     call_spawn(3);
