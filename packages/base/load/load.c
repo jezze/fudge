@@ -76,7 +76,6 @@ static unsigned int find_symbol_module(char *symbol)
 
     return address;
 
-
 }
 
 static unsigned int resolve_symbols(struct elf_section_header *relocateHeader, struct elf_relocate *relocateTable, struct elf_symbol *symbolTable, char *stringTable, char *buffer)
