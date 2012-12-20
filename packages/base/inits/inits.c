@@ -1,26 +1,11 @@
 #include <fudge.h>
 #include <format/elf.h>
 
-static struct elf_header header;
-
-static unsigned int get_symbol(char *symbol)
-{
-
-    struct elf_section_header sectionHeader[20];
-    struct elf_symbol symbolTable[400];
-    char stringTable[0x1000];
-    unsigned int symbolHeaderIndex;
-
-    call_read(3, header.shoffset, header.shsize * header.shcount, sectionHeader);
-
-    symbolHeaderIndex = elf_find_section(&header, sectionHeader, ELF_SECTION_TYPE_SYMTAB);
-
-    call_read(3, sectionHeader[symbolHeaderIndex].offset, sectionHeader[symbolHeaderIndex].size, symbolTable);
-    call_read(3, sectionHeader[sectionHeader[symbolHeaderIndex].link].offset, sectionHeader[sectionHeader[symbolHeaderIndex].link].size, stringTable);
-
-    return elf_find_symbol(&header, sectionHeader, symbolHeaderIndex, symbolTable, stringTable, symbol);
-
-}
+static struct elf_header kHeader;
+static struct elf_section_header kSectionHeader[20];
+static struct elf_symbol kSymbolTable[400];
+static char kStringTable[0x1000];
+static unsigned int kSymbolHeaderIndex;
 
 static unsigned int resolve_symbols(struct elf_section_header *relocateHeader, struct elf_relocate *relocateTable, struct elf_symbol *symbolTable, char *stringTable, char *buffer)
 {
@@ -37,7 +22,7 @@ static unsigned int resolve_symbols(struct elf_section_header *relocateHeader, s
         if (symbolTable[index].shindex)
             continue;
 
-        symbol = get_symbol(stringTable + symbolTable[index].name);
+        symbol = elf_find_symbol(&kHeader, kSectionHeader, kSymbolHeaderIndex, kSymbolTable, kStringTable, stringTable + symbolTable[index].name);
 
         if (!symbol)
             return 0;
@@ -50,7 +35,7 @@ static unsigned int resolve_symbols(struct elf_section_header *relocateHeader, s
 
 }
 
-void relocate()
+void resolve()
 {
 
     struct elf_header header;
@@ -100,16 +85,23 @@ void main()
 {
 
     call_open(3, FUDGE_ROOT, 18, "ramdisk/boot/fudge");
-    call_read(3, 0, ELF_HEADER_SIZE, &header);
+    call_read(3, 0, ELF_HEADER_SIZE, &kHeader);
 
-    if (!elf_validate(&header))
+    if (!elf_validate(&kHeader))
         return;
 
+    call_read(3, kHeader.shoffset, kHeader.shsize * kHeader.shcount, kSectionHeader);
+
+    kSymbolHeaderIndex = elf_find_section(&kHeader, kSectionHeader, ELF_SECTION_TYPE_SYMTAB);
+
+    call_read(3, kSectionHeader[kSymbolHeaderIndex].offset, kSectionHeader[kSymbolHeaderIndex].size, kSymbolTable);
+    call_read(3, kSectionHeader[kSectionHeader[kSymbolHeaderIndex].link].offset, kSectionHeader[kSectionHeader[kSymbolHeaderIndex].link].size, kStringTable);
+
     call_open(FUDGE_IN, FUDGE_ROOT, 19, "ramdisk/mod/base.ko");
-    relocate();
+    resolve();
 
     call_open(FUDGE_IN, FUDGE_ROOT, 20, "ramdisk/mod/multi.ko");
-    relocate();
+    resolve();
 
     call_open(3, FUDGE_ROOT, 17, "ramdisk/bin/initm");
     call_spawn(3);
