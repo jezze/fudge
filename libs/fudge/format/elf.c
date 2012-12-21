@@ -1,5 +1,4 @@
 #include "../memory.h"
-#include "../string.h"
 #include "elf.h"
 
 unsigned int elf_validate(struct elf_header *header)
@@ -11,16 +10,15 @@ unsigned int elf_validate(struct elf_header *header)
 
 }
 
-unsigned int elf_find_symbol(struct elf_header *header, struct elf_section_header *sectionTable, struct elf_section_header *symbolHeader, struct elf_symbol *symbolTable, char *stringTable, char *symbol)
+unsigned int elf_find_symbol(struct elf_header *header, struct elf_section_header *sectionTable, struct elf_section_header *symbolHeader, struct elf_symbol *symbolTable, char *stringTable, unsigned int count, char *symbol)
 {
 
-    unsigned int length = string_length(symbol);
     unsigned int i;
 
     for (i = 0; i < symbolHeader->size / symbolHeader->esize; i++)
     {
 
-        if (memory_match(symbol, stringTable + symbolTable[i].name, length + 1))
+        if (memory_match(symbol, stringTable + symbolTable[i].name, count))
             return (header->type == ELF_TYPE_RELOCATABLE) ? sectionTable[symbolTable[i].shindex].address + sectionTable[symbolTable[i].shindex].offset + symbolTable[i].value : symbolTable[i].value;
 
     }

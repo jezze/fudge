@@ -150,5 +150,5 @@ struct elf_relocatea
 };
 
 unsigned int elf_validate(struct elf_header *header);
-unsigned int elf_find_symbol(struct elf_header *header, struct elf_section_header *sectionTable, struct elf_section_header *symbolHeader, struct elf_symbol *symbolTable, char *stringTable, char *symbol);
+unsigned int elf_find_symbol(struct elf_header *header, struct elf_section_header *sectionTable, struct elf_section_header *symbolHeader, struct elf_symbol *symbolTable, char *stringTable, unsigned int count, char *symbol);
 void elf_relocate_section(struct elf_section_header *sectionTable, struct elf_section_header *relocateHeader, struct elf_section_header *relocateData, struct elf_relocate *relocateTable, struct elf_symbol *symbolTable, unsigned int address);

@@ -74,7 +74,7 @@ static unsigned int load(struct runtime_task *task, void *stack)
     if (!binary_relocate(descriptor->interface, descriptor->id, physical))
         return 0;
 
-    init = (void (*)())(binary_find_symbol(descriptor->interface, descriptor->id, "init"));
+    init = (void (*)())(binary_find_symbol(descriptor->interface, descriptor->id, 4, "init"));
 
     if (!init)
         return 0;
@@ -98,7 +98,7 @@ static unsigned int mount(struct runtime_task *task, void *stack)
     if (!mount || !pdescriptor || !cdescriptor)
         return 0;
 
-    get_interface = (struct vfs_interface *(*)())(binary_find_symbol(cdescriptor->interface, cdescriptor->id, "get_filesystem"));
+    get_interface = (struct vfs_interface *(*)())(binary_find_symbol(cdescriptor->interface, cdescriptor->id, 14, "get_filesystem"));
 
     if (!get_interface)
         return 0;
@@ -163,7 +163,7 @@ static unsigned int unload(struct runtime_task *task, void *stack)
     if (!descriptor)
         return 0;
 
-    destroy = (void (*)())(binary_find_symbol(descriptor->interface, descriptor->id, "destroy"));
+    destroy = (void (*)())(binary_find_symbol(descriptor->interface, descriptor->id, 7, "destroy"));
 
     if (!destroy)
         return 0;

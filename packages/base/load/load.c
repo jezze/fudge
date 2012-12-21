@@ -4,7 +4,7 @@
 static struct elf_header kHeader;
 static struct elf_section_header kSectionTable[20];
 
-static unsigned int find_symbol(struct elf_header *header, struct elf_section_header *sectionTable, char *symbol)
+static unsigned int find_symbol(struct elf_header *header, struct elf_section_header *sectionTable, unsigned int count, char *symbol)
 {
 
     unsigned int i;
@@ -22,7 +22,7 @@ static unsigned int find_symbol(struct elf_header *header, struct elf_section_he
         call_read(3, sectionTable[i].offset, sectionTable[i].size, symbolTable);
         call_read(3, sectionTable[sectionTable[i].link].offset, sectionTable[sectionTable[i].link].size, stringTable);
 
-        address = elf_find_symbol(header, sectionTable, &sectionTable[i], symbolTable, stringTable, symbol);
+        address = elf_find_symbol(header, sectionTable, &sectionTable[i], symbolTable, stringTable, count, symbol);
 
         if (address)
             return address;
@@ -33,14 +33,14 @@ static unsigned int find_symbol(struct elf_header *header, struct elf_section_he
 
 }
 
-static unsigned int find_symbol_kernel(char *symbol)
+static unsigned int find_symbol_kernel(unsigned int count, char *symbol)
 {
 
     unsigned int address;
 
     call_open(3, FUDGE_ROOT, 18, "ramdisk/boot/fudge");
 
-    address = find_symbol(&kHeader, kSectionTable, symbol);
+    address = find_symbol(&kHeader, kSectionTable, count, symbol);
 
     call_close(3);
 
@@ -48,21 +48,21 @@ static unsigned int find_symbol_kernel(char *symbol)
 
 }
 
-static unsigned int find_symbol_module(char *symbol)
+static unsigned int find_symbol_module(unsigned int count, char *symbol)
 {
 
     static struct elf_header header;
     static struct elf_section_header sectionTable[20];
     char module[64];
     unsigned int length = (unsigned int)((char *)memory_find(symbol, "_", string_length(symbol), 1) - symbol);
-    unsigned int count = 0;
+    unsigned int size = 0;
     unsigned int address;
 
-    count += memory_write(module, 64, "ramdisk/mod/", 12, count);
-    count += memory_write(module, 64, symbol, length, count);
-    count += memory_write(module, 64, ".ko", 3, count);
+    size += memory_write(module, 64, "ramdisk/mod/", 12, size);
+    size += memory_write(module, 64, symbol, length, size);
+    size += memory_write(module, 64, ".ko", 3, size);
 
-    call_open(3, FUDGE_ROOT, count, module);
+    call_open(3, FUDGE_ROOT, size, module);
     call_read(3, 0, ELF_HEADER_SIZE, &header);
 
     if (!elf_validate(&header))
@@ -70,7 +70,7 @@ static unsigned int find_symbol_module(char *symbol)
 
     call_read(3, header.shoffset, header.shsize * header.shcount, sectionTable);
 
-    address = find_symbol(&header, sectionTable, symbol);
+    address = find_symbol(&header, sectionTable, count, symbol);
 
     call_close(3);
 
@@ -88,15 +88,17 @@ static unsigned int resolve_symbols(struct elf_section_header *relocateHeader, s
 
         unsigned char index = relocateTable[i].info >> 8;
         unsigned int *entry = (unsigned int *)(buffer + relocateTable[i].offset);
+        char *symbol;
         unsigned int address;
 
         if (symbolTable[index].shindex)
             continue;
 
-        address = find_symbol_kernel(stringTable + symbolTable[index].name);
+        symbol = stringTable + symbolTable[index].name;
+        address = find_symbol_kernel(string_length(symbol), symbol);
 
         if (!address)
-            address = find_symbol_module(stringTable + symbolTable[index].name);
+            address = find_symbol_module(string_length(symbol), symbol);
 
         if (!address)
             return 0;

@@ -2,7 +2,7 @@
 #include "vfs.h"
 #include "binary.h"
 
-unsigned int binary_find_symbol(struct vfs_interface *interface, unsigned int id, char *symbol)
+unsigned int binary_find_symbol(struct vfs_interface *interface, unsigned int id, unsigned int count, char *symbol)
 {
 
     struct elf_header header;
@@ -29,7 +29,7 @@ unsigned int binary_find_symbol(struct vfs_interface *interface, unsigned int id
         interface->read(interface, id, sectionTable[i].offset, sectionTable[i].size, symbolTable);
         interface->read(interface, id, sectionTable[sectionTable[i].link].offset, sectionTable[sectionTable[i].link].size, stringTable);
 
-        address = elf_find_symbol(&header, sectionTable, &sectionTable[i], symbolTable, stringTable, symbol);
+        address = elf_find_symbol(&header, sectionTable, &sectionTable[i], symbolTable, stringTable, count, symbol);
 
         if (address)
             return address;
