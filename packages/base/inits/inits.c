@@ -48,16 +48,16 @@ static unsigned int find_symbol_kernel(unsigned int count, char *symbol)
 
 }
 
-static unsigned int resolve_symbols(struct elf_section_header *relocateHeader, struct elf_relocate *relocateTable, struct elf_symbol *symbolTable, char *stringTable, char *buffer)
+static unsigned int resolve_symbols(struct elf_section_header *relocationHeader, struct elf_relocation *relocationTable, struct elf_symbol *symbolTable, char *stringTable, char *buffer)
 {
 
    unsigned int i;
 
-    for (i = 0; i < relocateHeader->size / relocateHeader->esize; i++)
+    for (i = 0; i < relocationHeader->size / relocationHeader->esize; i++)
     {
 
-        unsigned char index = relocateTable[i].info >> 8;
-        unsigned int *entry = (unsigned int *)(buffer + relocateTable[i].offset);
+        unsigned char index = relocationTable[i].info >> 8;
+        unsigned int *entry = (unsigned int *)(buffer + relocationTable[i].offset);
         char *symbol;
         unsigned int address;
 
@@ -83,7 +83,7 @@ unsigned int resolve()
 
     struct elf_header header;
     struct elf_section_header sectionTable[16];
-    struct elf_relocate relocateTable[512];
+    struct elf_relocation relocationTable[512];
     struct elf_symbol symbolTable[512];
     char stringTable[4096];
     char buffer[8192];
@@ -95,28 +95,28 @@ unsigned int resolve()
     for (i = 0; i < header.shcount; i++)
     {
 
-        struct elf_section_header *relocateHeader;
-        struct elf_section_header *relocateData;
+        struct elf_section_header *relocationHeader;
+        struct elf_section_header *relocationData;
         struct elf_section_header *symbolHeader;
         struct elf_section_header *stringHeader;
 
         if (sectionTable[i].type != ELF_SECTION_TYPE_REL)
             continue;
 
-        relocateHeader = &sectionTable[i];
-        relocateData = &sectionTable[relocateHeader->info];
-        symbolHeader = &sectionTable[relocateHeader->link];
+        relocationHeader = &sectionTable[i];
+        relocationData = &sectionTable[relocationHeader->info];
+        symbolHeader = &sectionTable[relocationHeader->link];
         stringHeader = &sectionTable[symbolHeader->link];
 
         call_read(FUDGE_IN, symbolHeader->offset, symbolHeader->size, symbolTable);
         call_read(FUDGE_IN, stringHeader->offset, stringHeader->size, stringTable);
-        call_read(FUDGE_IN, relocateHeader->offset, relocateHeader->size, relocateTable);
-        call_read(FUDGE_IN, relocateData->offset, relocateData->size, buffer);
+        call_read(FUDGE_IN, relocationHeader->offset, relocationHeader->size, relocationTable);
+        call_read(FUDGE_IN, relocationData->offset, relocationData->size, buffer);
 
-        if (!resolve_symbols(relocateHeader, relocateTable, symbolTable, stringTable, buffer))
+        if (!resolve_symbols(relocationHeader, relocationTable, symbolTable, stringTable, buffer))
             return 0;
 
-        call_write(FUDGE_IN, relocateData->offset, relocateData->size, buffer);
+        call_write(FUDGE_IN, relocationData->offset, relocationData->size, buffer);
 
     }
 

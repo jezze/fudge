@@ -51,17 +51,17 @@ void elf_relocate_symbol(unsigned int address, unsigned int type, unsigned int a
 
 }
 
-void elf_relocate_section(struct elf_section_header *sectionTable, struct elf_section_header *relocateHeader, struct elf_section_header *relocateData, struct elf_relocate *relocateTable, struct elf_symbol *symbolTable, unsigned int address)
+void elf_relocate_section(struct elf_section_header *sectionTable, struct elf_section_header *relocationHeader, struct elf_section_header *relocationData, struct elf_relocation *relocationTable, struct elf_symbol *symbolTable, unsigned int address)
 {
 
     unsigned int i;
 
-    for (i = 0; i < relocateHeader->size / relocateHeader->esize; i++)
+    for (i = 0; i < relocationHeader->size / relocationHeader->esize; i++)
     {
 
-        unsigned char type = relocateTable[i].info & 0x0F;
-        unsigned char index = relocateTable[i].info >> 8;
-        unsigned int offset = relocateData->offset + relocateTable[i].offset;
+        unsigned char type = relocationTable[i].info & 0x0F;
+        unsigned char index = relocationTable[i].info >> 8;
+        unsigned int offset = relocationData->offset + relocationTable[i].offset;
         unsigned int addend = sectionTable[symbolTable[index].shindex].offset + symbolTable[index].value;
 
         if (symbolTable[index].shindex)

@@ -81,16 +81,16 @@ unsigned int binary_relocate(struct vfs_interface *interface, unsigned int id, u
     for (i = 0; i < header.shcount; i++)
     {
 
-        struct elf_relocate relocateTable[256];
+        struct elf_relocation relocationTable[256];
         struct elf_symbol symbolTable[512];
 
         if (sectionTable[i].type != ELF_SECTION_TYPE_REL)
             continue;
 
-        interface->read(interface, id, sectionTable[i].offset, sectionTable[i].size, relocateTable);
+        interface->read(interface, id, sectionTable[i].offset, sectionTable[i].size, relocationTable);
         interface->read(interface, id, sectionTable[sectionTable[i].link].offset, sectionTable[sectionTable[i].link].size, symbolTable);
 
-        elf_relocate_section(sectionTable, &sectionTable[i], &sectionTable[sectionTable[i].info], relocateTable, symbolTable, address);
+        elf_relocate_section(sectionTable, &sectionTable[i], &sectionTable[sectionTable[i].info], relocationTable, symbolTable, address);
 
     }
 
