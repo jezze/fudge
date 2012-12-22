@@ -1,7 +1,7 @@
 #include <fudge/memory.h>
 #include <fudge/string.h>
-#include "../../runtime.h"
-#include "../../kernel.h"
+#include <kernel/runtime.h>
+#include <kernel/kernel.h>
 #include "arch.h"
 #include "cpu.h"
 #include "kmi.h"

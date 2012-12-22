@@ -1,5 +1,5 @@
-#include "../../runtime.h"
-#include "../../syscall.h"
+#include <kernel/runtime.h>
+#include <kernel/syscall.h>
 #include "arch.h"
 #include "cpu.h"
 #include "gdt.h"

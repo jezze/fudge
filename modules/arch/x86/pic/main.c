@@ -1,6 +1,6 @@
 #include <fudge/memory.h>
+#include <x86/idt.h>
 #include <base/base.h>
-#include <arch/x86/idt.h>
 #include <arch/x86/io/io.h>
 #include "pic.h"
 

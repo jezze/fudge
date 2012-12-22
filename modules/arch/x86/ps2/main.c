@@ -1,7 +1,7 @@
 #include <fudge/define.h>
 #include <fudge/memory.h>
 #include <fudge/data/circular.h>
-#include <vfs.h>
+#include <kernel/vfs.h>
 #include <base/base.h>
 #include <nodefs/nodefs.h>
 #include "ps2.h"

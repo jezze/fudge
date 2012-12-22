@@ -1,6 +1,6 @@
 #include <fudge/memory.h>
-#include "../../error.h"
-#include "../../runtime.h"
+#include <kernel/error.h>
+#include <kernel/runtime.h>
 #include "arch.h"
 #include "cpu.h"
 #include "idt.h"

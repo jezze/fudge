@@ -1,10 +1,10 @@
 #include <fudge/memory.h>
-#include <vfs.h>
-#include <binary.h>
-#include <runtime.h>
-#include <syscall.h>
-#include <arch/x86/arch.h>
-#include <arch/x86/mmu.h>
+#include <kernel/vfs.h>
+#include <kernel/binary.h>
+#include <kernel/runtime.h>
+#include <kernel/syscall.h>
+#include <x86/arch.h>
+#include <x86/mmu.h>
 #include "multi.h"
 
 static struct multi_task *tasks[MULTI_TASK_SLOTS];

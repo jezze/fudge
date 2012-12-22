@@ -1,6 +1,6 @@
 #include <fudge/memory.h>
-#include <vfs.h>
-#include <arch/x86/mmu.h>
+#include <kernel/vfs.h>
+#include <x86/mmu.h>
 #include <base/base.h>
 #include <video/video.h>
 #include <arch/x86/io/io.h>

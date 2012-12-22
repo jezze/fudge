@@ -1,4 +1,4 @@
-#include <vfs.h>
+#include <kernel/vfs.h>
 #include <net/net.h>
 #include "arp.h"
 
