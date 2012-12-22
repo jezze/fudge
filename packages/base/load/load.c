@@ -12,8 +12,8 @@ static unsigned int find_symbol(struct elf_header *header, struct elf_section_he
     for (i = 0; i < header->shcount; i++)
     {
 
-        struct elf_symbol symbolTable[400];
-        char stringTable[0x1000];
+        struct elf_symbol symbolTable[512];
+        char stringTable[4096];
         unsigned int address;
 
         if (sectionTable[i].type != ELF_SECTION_TYPE_SYMTAB)
@@ -116,10 +116,10 @@ unsigned int resolve()
 
     struct elf_header header;
     struct elf_section_header sectionTable[16];
-    struct elf_relocate relocateTable[400];
-    struct elf_symbol symbolTable[400];
-    char stringTable[0x1000];
-    char buffer[0x2000];
+    struct elf_relocate relocateTable[512];
+    struct elf_symbol symbolTable[512];
+    char stringTable[4096];
+    char buffer[8192];
     unsigned int i;
 
     call_read(FUDGE_IN, 0, ELF_HEADER_SIZE, &header);

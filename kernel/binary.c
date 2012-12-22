@@ -19,8 +19,8 @@ unsigned int binary_find_symbol(struct vfs_interface *interface, unsigned int id
     for (i = 0; i < header.shcount; i++)
     {
 
-        struct elf_symbol symbolTable[400];
-        char stringTable[0x1000];
+        struct elf_symbol symbolTable[512];
+        char stringTable[4096];
         unsigned int address;
 
         if (sectionTable[i].type != ELF_SECTION_TYPE_SYMTAB)
@@ -81,8 +81,8 @@ unsigned int binary_relocate(struct vfs_interface *interface, unsigned int id, u
     for (i = 0; i < header.shcount; i++)
     {
 
-        struct elf_relocate relocateTable[200];
-        struct elf_symbol symbolTable[400];
+        struct elf_relocate relocateTable[256];
+        struct elf_symbol symbolTable[512];
 
         if (sectionTable[i].type != ELF_SECTION_TYPE_REL)
             continue;
