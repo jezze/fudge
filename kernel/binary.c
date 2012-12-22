@@ -6,7 +6,7 @@ unsigned int binary_find_symbol(struct vfs_interface *interface, unsigned int id
 {
 
     struct elf_header header;
-    struct elf_section_header sectionTable[20];
+    struct elf_section_header sectionTable[16];
     unsigned int i;
 
     interface->read(interface, id, 0, ELF_HEADER_SIZE, &header);
@@ -65,7 +65,7 @@ unsigned int binary_relocate(struct vfs_interface *interface, unsigned int id, u
 {
 
     struct elf_header header;
-    struct elf_section_header sectionTable[20];
+    struct elf_section_header sectionTable[16];
     unsigned int i;
 
     interface->read(interface, id, 0, ELF_HEADER_SIZE, &header);

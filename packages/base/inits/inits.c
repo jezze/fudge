@@ -2,7 +2,7 @@
 #include <format/elf.h>
 
 static struct elf_header kHeader;
-static struct elf_section_header kSectionTable[20];
+static struct elf_section_header kSectionTable[16];
 
 static unsigned int find_symbol(struct elf_header *header, struct elf_section_header *sectionTable, unsigned int count, char *symbol)
 {
@@ -82,7 +82,7 @@ unsigned int resolve()
 {
 
     struct elf_header header;
-    struct elf_section_header sectionTable[20];
+    struct elf_section_header sectionTable[16];
     struct elf_relocate relocateTable[400];
     struct elf_symbol symbolTable[400];
     char stringTable[0x1000];
