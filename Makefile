@@ -13,7 +13,7 @@ RAMDISK=$(RAMDISK_NAME).$(RAMDISK_TYPE)
 
 INSTALL_PATH=/boot
 
-.PHONY: all clean libs kernel modules packages
+.PHONY: all clean kernel libs modules packages
 
 default: all
 
