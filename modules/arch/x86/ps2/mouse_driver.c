@@ -42,29 +42,29 @@ static unsigned char read()
 static void handle_irq(struct base_device *self)
 {
 
-    struct ps2_mouse_driver *mouse = (struct ps2_mouse_driver *)self->driver;
+    struct ps2_mouse_driver *driver = (struct ps2_mouse_driver *)self->driver;
 
-    switch (mouse->cycle)
+    switch (driver->cycle)
     {
 
         case 0:
 
-            mouse->status = io_inb(0x60);
-            mouse->cycle++;
+            driver->status = io_inb(0x60);
+            driver->cycle++;
 
             break;
 
         case 1:
 
-            mouse->x = io_inb(0x60);
-            mouse->cycle++;
+            driver->x = io_inb(0x60);
+            driver->cycle++;
 
             break;
 
         case 2:
 
-            mouse->y = io_inb(0x60);
-            mouse->cycle = 0;
+            driver->y = io_inb(0x60);
+            driver->cycle = 0;
 
             break;
 
@@ -82,7 +82,9 @@ static void start(struct base_driver *self)
     wait_write();
     io_outb(PS2_COMMAND, 0x20);
     wait_read();
+
     status = (io_inb(PS2_DATA) | 2);
+
     wait_write();
     io_outb(PS2_COMMAND, 0x60);
     wait_write();
