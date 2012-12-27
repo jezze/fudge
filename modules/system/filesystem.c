@@ -1,7 +1,7 @@
 #include <fudge/memory.h>
 #include <kernel/vfs.h>
-#include <base/base.h>
 #include "system.h"
+#include "filesystem.h"
 
 static unsigned int read(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {

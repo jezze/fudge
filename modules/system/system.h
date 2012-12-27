@@ -1,8 +1,11 @@
-struct system_filesystem
+struct system_group
 {
 
-    struct vfs_interface base;
+    char *name;
+    struct system_group *next;
 
 };
 
-void system_init_filesystem(struct system_filesystem *filesystem);
+void system_register_group(struct system_group *group);
+void system_unregister_group(struct system_group *group);
+void system_init_group(struct system_group *group, char *name);
