@@ -1,5 +1,4 @@
 #include <fudge/memory.h>
-#include <kernel/vfs.h>
 #include <net/net.h>
 #include "arp.h"
 

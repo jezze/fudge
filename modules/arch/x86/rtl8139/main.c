@@ -1,4 +1,3 @@
-#include <kernel/vfs.h>
 #include <base/base.h>
 #include <net/net.h>
 #include "rtl8139.h"
