@@ -14,10 +14,10 @@ MODULES_OBJECTS_BASE=modules/base/main.o
 MODULES_OBJECTS_BLOCK=modules/block/main.o modules/block/interface.o
 MODULES_OBJECTS_EXT2=modules/ext2/main.o modules/ext2/protocol.o modules/ext2/filesystem.o
 MODULES_OBJECTS_IPV4=modules/ipv4/main.o modules/ipv4/protocol.o
-MODULES_OBJECTS_KBD=modules/kbd/main.o modules/kbd/interface.o
+MODULES_OBJECTS_KBD=modules/kbd/main.o modules/kbd/group.o modules/kbd/interface.o
 MODULES_OBJECTS_NET=modules/net/main.o modules/net/interface.o
 MODULES_OBJECTS_NODEFS=modules/nodefs/main.o modules/nodefs/filesystem.o
-MODULES_OBJECTS_SYSTEM= modules/system/main.o modules/system/filesystem.o modules/system/group.o
+MODULES_OBJECTS_SYSTEM=modules/system/main.o modules/system/filesystem.o modules/system/group.o
 MODULES_OBJECTS_VIDEO=modules/video/main.o modules/video/filesystem.o modules/video/interface.o
 
 MODULES+=$(MODULES_ARP)
