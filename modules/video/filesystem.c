@@ -2,7 +2,9 @@
 #include <fudge/string.h>
 #include <kernel/vfs.h>
 #include <base/base.h>
+#include <system/system.h>
 #include "video.h"
+#include "group.h"
 
 static unsigned int read_root(struct video_filesystem *filesystem, unsigned int offset, unsigned int count, void *buffer)
 {

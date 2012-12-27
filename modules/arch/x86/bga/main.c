@@ -1,4 +1,3 @@
-#include <kernel/vfs.h>
 #include <base/base.h>
 #include <video/video.h>
 #include "bga.h"

@@ -1,5 +1,6 @@
 #include <system/system.h>
 #include "kbd.h"
+#include "group.h"
 
 static struct kbd_group group;
 

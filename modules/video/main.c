@@ -2,8 +2,9 @@
 #include <base/base.h>
 #include <system/system.h>
 #include "video.h"
+#include "group.h"
 
-static struct system_group group;
+static struct video_group group;
 static struct video_filesystem filesystem;
 
 void video_register_interface(struct video_interface *interface)
@@ -42,8 +43,8 @@ struct vfs_interface *get_filesystem()
 void init()
 {
 
-    system_init_group(&group, "video");
-    system_register_group(&group);
+    video_init_group(&group);
+    system_register_group(&group.base);
     video_init_filesystem(&filesystem);
 
 }
@@ -51,7 +52,7 @@ void init()
 void destroy()
 {
 
-    system_unregister_group(&group);
+    system_unregister_group(&group.base);
 
 }
 
