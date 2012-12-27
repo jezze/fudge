@@ -3,6 +3,7 @@
 #include <kernel/vfs.h>
 #include <base/base.h>
 #include "nodefs.h"
+#include "filesystem.h"
 
 static unsigned int read_root(struct nodefs_filesystem *filesystem, unsigned int offset, unsigned int count, void *buffer)
 {

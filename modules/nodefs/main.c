@@ -1,6 +1,7 @@
 #include <kernel/vfs.h>
 #include <base/base.h>
 #include "nodefs.h"
+#include "filesystem.h"
 
 static struct nodefs_filesystem filesystem;
 
