@@ -32,6 +32,27 @@ static unsigned int read_group(struct system_filesystem *filesystem, struct syst
 
 }
 
+static unsigned int read_integer(struct system_filesystem *filesystem, struct system_node *node, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    struct system_integer *integer = (struct system_integer *)node;
+    char num[32];
+
+    string_write_num(num, integer->value, 16);
+
+    return memory_read(buffer, count, num, string_length(num), offset);
+
+}
+
+static unsigned int read_string(struct system_filesystem *filesystem, struct system_node *node, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    struct system_string *string = (struct system_string *)node;
+
+    return memory_read(buffer, count, string->value, string_length(string->value), offset);
+
+}
+
 static unsigned int read_root(struct system_filesystem *filesystem, struct system_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
@@ -113,6 +134,8 @@ void system_init_filesystem(struct system_filesystem *filesystem)
     vfs_init_interface(&filesystem->base, 1, "system", 0, 0, read, write, walk, 0);
 
     readers[SYSTEM_NODE_TYPE_GROUP] = read_group;
+    readers[SYSTEM_NODE_TYPE_INTEGER] = read_integer;
+    readers[SYSTEM_NODE_TYPE_STRING] = read_string;
 
 }
 
