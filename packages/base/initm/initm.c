@@ -135,7 +135,7 @@ void mount_filesystems()
     call_close(4);
     call_close(3);
 
-    call_open(3, FUDGE_ROOT, 14, "system/nodefs/");
+    call_open(3, FUDGE_ROOT, 7, "nodefs/");
     call_open(4, FUDGE_CWD, 9, "nodefs.ko");
     call_mount(4, 3, 4);
     call_close(4);
@@ -146,8 +146,8 @@ void mount_filesystems()
 void start_shell()
 {
 
-    call_open(FUDGE_IN, FUDGE_ROOT, 24, "system/nodefs/ps2_buffer");
-    call_open(FUDGE_OUT, FUDGE_ROOT, 24, "system/nodefs/vga_buffer");
+    call_open(FUDGE_IN, FUDGE_ROOT, 17, "nodefs/ps2_buffer");
+    call_open(FUDGE_OUT, FUDGE_ROOT, 17, "nodefs/vga_buffer");
 
     call_open(3, FUDGE_ROOT, 16, "ramdisk/bin/motd");
     call_spawn(3);

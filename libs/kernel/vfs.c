@@ -10,7 +10,7 @@ static unsigned int read(struct vfs_interface *self, unsigned int id, unsigned i
         return memory_read(buffer, count, "../\n", 4, offset);
 
     if (id == 0x00000001)
-        return memory_read(buffer, count, "../\nconfig/\nramdisk/\nsystem/\n", 29, offset);
+        return memory_read(buffer, count, "../\nconfig/\nramdisk/\nsystem/\nnodefs/\n", 37, offset);
 
     return 0;
 
@@ -33,6 +33,9 @@ static unsigned int walk(struct vfs_interface *self, unsigned int id, unsigned i
 
     if (memory_match(path, "system/", 7))
         return walk(self, 4, count - 7, path + 7);
+
+    if (memory_match(path, "nodefs/", 7))
+        return walk(self, 5, count - 7, path + 7);
 
     return 0;
 
