@@ -28,7 +28,10 @@ void init()
 {
 
     video_init_group(&group);
+
+    /*
     system_register_group(&group.base);
+    */
 
 }
 

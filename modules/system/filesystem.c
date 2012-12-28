@@ -1,4 +1,5 @@
 #include <fudge/memory.h>
+#include <fudge/string.h>
 #include <kernel/vfs.h>
 #include "system.h"
 #include "filesystem.h"
@@ -6,11 +7,24 @@
 static unsigned int read(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    if (id > 0x00000001)
-        return memory_read(buffer, count, "../\n", 4, offset);
+    struct system_filesystem *filesystem = (struct system_filesystem *)self;
+    struct system_node *current;
+    unsigned char *b = buffer;
+    unsigned int c = 0;
 
     if (id == 1)
-        return memory_read(buffer, count, "../\nblock/\nkbd/\nmouse/\nnet/\nvideo/\n", 35, offset);
+    {
+
+        for (current = &filesystem->groups->base; current; current = current->next)
+        {
+
+            c += memory_read(b + c, count - c, current->name, string_length(current->name), offset);
+
+        }
+
+        return c;
+
+    }
 
     return 0;
 
@@ -21,24 +35,6 @@ static unsigned int walk(struct vfs_interface *self, unsigned int id, unsigned i
 
     if (!count)
         return id;
-
-    if (memory_match(path, "../", 3))
-        return walk(self, 1, count - 3, path + 3);
-
-    if (memory_match(path, "block/", 6))
-        return walk(self, 2, count - 6, path + 6);
-
-    if (memory_match(path, "kbd/", 4))
-        return walk(self, 3, count - 4, path + 4);
-
-    if (memory_match(path, "mouse/", 6))
-        return walk(self, 4, count - 6, path + 6);
-
-    if (memory_match(path, "net/", 4))
-        return walk(self, 5, count - 4, path + 4);
-
-    if (memory_match(path, "video/", 6))
-        return walk(self, 6, count - 6, path + 6);
 
     return 0;
 

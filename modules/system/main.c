@@ -7,7 +7,7 @@ static struct system_filesystem filesystem;
 void system_register_group(struct system_group *group)
 {
 
-    struct system_group *current;
+    struct system_node *current;
 
     if (!filesystem.groups)
     {
@@ -18,13 +18,13 @@ void system_register_group(struct system_group *group)
 
     }
 
-    for (current = filesystem.groups; current; current = current->next)
+    for (current = &filesystem.groups->base; current; current = current->next)
     {
 
         if (current->next)
             continue;
 
-        current->next = group;
+        current->next = &group->base;
 
         return;
 
@@ -35,21 +35,21 @@ void system_register_group(struct system_group *group)
 void system_unregister_group(struct system_group *group)
 {
 
-    struct system_group *current;
+    struct system_node *current;
 
     if (filesystem.groups == group)
     {
 
-        filesystem.groups = filesystem.groups->next;
+        filesystem.groups = (struct system_group *)filesystem.groups->base.next;
 
         return;
 
     }
 
-    for (current = filesystem.groups; current; current = current->next)
+    for (current = &filesystem.groups->base; current; current = current->next)
     {
 
-        if (current->next != group)
+        if (current->next != &group->base)
             continue;
 
         current->next = current->next->next;

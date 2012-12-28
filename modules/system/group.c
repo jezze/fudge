@@ -6,7 +6,7 @@ void system_init_group(struct system_group *group, char *name)
 
     memory_clear(group, sizeof (struct system_group));
 
-    group->name = name;
+    system_init_node(&group->base, SYSTEM_NODE_TYPE_GROUP, name);
 
 }
 

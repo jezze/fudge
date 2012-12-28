@@ -23,6 +23,10 @@ void load_modules_core(unsigned int id)
     call_spawn(id);
     call_close(FUDGE_IN);
 
+    call_open(FUDGE_IN, FUDGE_CWD, 6, "kbd.ko");
+    call_spawn(id);
+    call_close(FUDGE_IN);
+
     call_open(FUDGE_IN, FUDGE_CWD, 5, "io.ko");
     call_spawn(id);
     call_close(FUDGE_IN);
