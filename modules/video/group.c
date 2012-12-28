@@ -1,5 +1,4 @@
 #include <fudge/memory.h>
-#include <kernel/vfs.h>
 #include <system/system.h>
 #include "video.h"
 #include "group.h"

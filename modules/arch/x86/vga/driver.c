@@ -99,7 +99,7 @@ static void putc(struct vga_driver *driver, char c)
 
 }
 
-static unsigned int read_data(struct video_interface *driver, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int read_data(struct video_interface *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     return memory_read(buffer, count, (void *)VGA_FB_ADDRESS, 4000, offset);

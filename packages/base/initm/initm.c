@@ -141,19 +141,13 @@ void mount_filesystems()
     call_close(4);
     call_close(3);
 
-    call_open(3, FUDGE_ROOT, 13, "system/video/");
-    call_open(4, FUDGE_CWD, 8, "video.ko");
-    call_mount(5, 3, 4);
-    call_close(4);
-    call_close(3);
-
 }
 
 void start_shell()
 {
 
     call_open(FUDGE_IN, FUDGE_ROOT, 24, "system/nodefs/ps2_buffer");
-    call_open(FUDGE_OUT, FUDGE_ROOT, 19, "system/video/0/data");
+    call_open(FUDGE_OUT, FUDGE_ROOT, 24, "system/nodefs/vga_buffer");
 
     call_open(3, FUDGE_ROOT, 16, "ramdisk/bin/motd");
     call_spawn(3);

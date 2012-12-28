@@ -61,7 +61,7 @@ static void clear()
     lifo_stack_clear(&input);
 
     setup_stream(FUDGE_IN, 25, "/system/nodefs/ps2_buffer");
-    setup_stream(FUDGE_OUT, 20, "/system/video/0/data");
+    setup_stream(FUDGE_OUT, 25, "/system/nodefs/vga_buffer");
 
     call_write(FUDGE_OUT, 0, 2, "$ ");
 
