@@ -14,6 +14,7 @@ struct system_group
 {
 
     struct system_node base;
+    struct system_node *children;
 
 };
 

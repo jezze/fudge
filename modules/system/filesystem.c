@@ -18,7 +18,13 @@ static unsigned int read(struct vfs_interface *self, unsigned int id, unsigned i
         for (current = &filesystem->groups->base; current; current = current->next)
         {
 
-            c += memory_read(b + c, count - c, current->name, string_length(current->name), offset);
+            unsigned int l = string_length(current->name);
+
+            c += memory_read(b + c, count - c, current->name, l, offset);
+            offset -= (offset > l) ? l : offset;
+
+            c += memory_read(b + c, count - c, "/\n", 2, offset);
+            offset -= (offset > 2) ? 2 : offset;
 
         }
 
