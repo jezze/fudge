@@ -54,18 +54,10 @@ static unsigned int read(struct vfs_interface *self, unsigned int id, unsigned i
 {
 
     struct system_filesystem *filesystem = (struct system_filesystem *)self;
+    struct system_node *node = (struct system_node *)id;
 
-    if (id > 1)
-    {
-
-        struct system_node *node = (struct system_node *)id;
-
+    if (filesystem->readers[node->type])
         return filesystem->readers[node->type](node, offset, count, buffer);
-
-    }
-
-    if (id == 1)
-        return filesystem->readers[filesystem->root.base.type](&filesystem->root.base, offset, count, buffer);
 
     return 0;
 
@@ -85,15 +77,10 @@ static unsigned int write(struct vfs_interface *self, unsigned int id, unsigned 
 {
 
     struct system_filesystem *filesystem = (struct system_filesystem *)self;
+    struct system_node *node = (struct system_node *)id;
 
-    if (id > 1)
-    {
-
-        struct system_node *node = (struct system_node *)id;
-
+    if (filesystem->writers[node->type])
         return filesystem->writers[node->type](node, offset, count, buffer);
-
-    }
 
     return 0;
 
@@ -104,8 +91,8 @@ void system_init_filesystem(struct system_filesystem *filesystem)
 
     memory_clear(filesystem, sizeof (struct system_filesystem));
 
-    vfs_init_interface(&filesystem->base, 1, "system", 0, 0, read, write, walk, 0);
-    system_init_group(&filesystem->root, "root");
+    vfs_init_interface(&filesystem->base, (unsigned int)&filesystem->root, "system", 0, 0, read, write, walk, 0);
+    system_init_group(&filesystem->root, "/");
 
     filesystem->readers[SYSTEM_NODE_TYPE_GROUP] = read_group;
     filesystem->readers[SYSTEM_NODE_TYPE_INTEGER] = read_integer;
