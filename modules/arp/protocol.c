@@ -2,21 +2,10 @@
 #include <net/net.h>
 #include "arp.h"
 
-static void handle_read(struct net_protocol *self, unsigned int count, void *buffer)
-{
-
-    struct arp_protocol *protocol = (struct arp_protocol *)self;
-
-    protocol->count = memory_read(protocol->buffer, 8192, buffer, count, 0);
-
-}
-
 unsigned int read(struct net_protocol *self, struct net_interface *interface, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct arp_protocol *protocol = (struct arp_protocol *)self;
-
-    return memory_read(buffer, count, protocol->buffer, protocol->count, offset);
+    return 0;
 
 }
 
@@ -33,7 +22,6 @@ void arp_init_protocol(struct arp_protocol *protocol)
     memory_clear(protocol, sizeof (struct arp_protocol));
 
     protocol->base.name = "arp";
-    protocol->base.handle_read = handle_read;
     protocol->base.read = read;
     protocol->base.write = write;
 
