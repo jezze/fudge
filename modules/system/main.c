@@ -4,27 +4,27 @@
 
 static struct system_filesystem filesystem;
 
-void system_register_group(struct system_group *group)
+void system_register_node(struct system_node *node)
 {
 
     struct system_node *current;
 
-    if (!filesystem.groups)
+    if (!filesystem.root.children)
     {
 
-        filesystem.groups = group;
+        filesystem.root.children = node;
 
         return;
 
     }
 
-    for (current = &filesystem.groups->base; current; current = current->next)
+    for (current = filesystem.root.children; current; current = current->next)
     {
 
         if (current->next)
             continue;
 
-        current->next = &group->base;
+        current->next = node;
 
         return;
 
@@ -32,24 +32,24 @@ void system_register_group(struct system_group *group)
 
 }
 
-void system_unregister_group(struct system_group *group)
+void system_unregister_node(struct system_node *node)
 {
 
     struct system_node *current;
 
-    if (filesystem.groups == group)
+    if (filesystem.root.children == node)
     {
 
-        filesystem.groups = (struct system_group *)filesystem.groups->base.next;
+        filesystem.root.children = filesystem.root.children->next;
 
         return;
 
     }
 
-    for (current = &filesystem.groups->base; current; current = current->next)
+    for (current = filesystem.root.children; current; current = current->next)
     {
 
-        if (current->next != &group->base)
+        if (current->next != node)
             continue;
 
         current->next = current->next->next;

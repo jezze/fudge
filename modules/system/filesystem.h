@@ -2,7 +2,7 @@ struct system_filesystem
 {
 
     struct vfs_interface base;
-    struct system_group *groups;
+    struct system_group root;
 
 };
 

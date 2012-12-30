@@ -28,14 +28,14 @@ void init()
 {
 
     kbd_init_group(&group);
-    system_register_group(&group.base);
+    system_register_node(&group.base.base);
 
 }
 
 void destroy()
 {
 
-    system_unregister_group(&group.base);
+    system_unregister_node(&group.base.base);
 
 }
 

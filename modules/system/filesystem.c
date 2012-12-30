@@ -53,30 +53,6 @@ static unsigned int read_string(struct system_filesystem *filesystem, struct sys
 
 }
 
-static unsigned int read_root(struct system_filesystem *filesystem, struct system_node *node, unsigned int offset, unsigned int count, void *buffer)
-{
-
-    struct system_node *current;
-    unsigned char *b = buffer;
-    unsigned int c = 0;
-
-    for (current = &filesystem->groups->base; current; current = current->next)
-    {
-
-        unsigned int l = string_length(current->name);
-
-        c += memory_read(b + c, count - c, current->name, l, offset);
-        offset -= (offset > l) ? l : offset;
-
-        c += memory_read(b + c, count - c, "/\n", 2, offset);
-        offset -= (offset > 2) ? 2 : offset;
-
-    }
-
-    return c;
-
-}
-
 static unsigned int read(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
@@ -92,7 +68,7 @@ static unsigned int read(struct vfs_interface *self, unsigned int id, unsigned i
     }
 
     if (id == 1)
-        return read_root(filesystem, 0, offset, count, buffer);
+        return read_group(filesystem, &filesystem->root.base, offset, count, buffer);
 
     return 0;
 
@@ -132,6 +108,7 @@ void system_init_filesystem(struct system_filesystem *filesystem)
     memory_clear(filesystem, sizeof (struct system_filesystem));
 
     vfs_init_interface(&filesystem->base, 1, "system", 0, 0, read, write, walk, 0);
+    system_init_group(&filesystem->root, "root");
 
     readers[SYSTEM_NODE_TYPE_GROUP] = read_group;
     readers[SYSTEM_NODE_TYPE_INTEGER] = read_integer;
