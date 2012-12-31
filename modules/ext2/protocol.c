@@ -8,7 +8,7 @@ static void read_superblock(struct block_interface *interface, struct ext2_super
 
     char buffer[1024];
 
-    interface->read_data(interface, 2, 2, buffer);
+    interface->read(interface, 2, 2, buffer);
 
     memory_copy(sb, buffer, sizeof (struct ext2_superblock));
 
@@ -29,7 +29,7 @@ static void read_blockgroup(struct block_interface *interface, unsigned int id, 
     sectorsize = blocksize / 512;
     nodegroup = (id - 1) / sb.nodeCountGroup;
 
-    interface->read_data(interface, 2 * sectorsize, sectorsize, buffer);
+    interface->read(interface, 2 * sectorsize, sectorsize, buffer);
 
     memory_copy(bg, buffer + nodegroup * sizeof (struct ext2_blockgroup), sizeof (struct ext2_blockgroup));
 
@@ -54,7 +54,7 @@ static void read_node(struct block_interface *interface, unsigned int id, struct
     nodeindex = (id - 1) % sb.nodeCountGroup;
     nodeblock = (id * nodesize) / blocksize;
 
-    interface->read_data(interface, (bg->blockTableAddress + nodeblock) * sectorsize, sectorsize, buffer);
+    interface->read(interface, (bg->blockTableAddress + nodeblock) * sectorsize, sectorsize, buffer);
 
     memory_copy(node, buffer + nodesize * (nodeindex % (blocksize / nodesize)), sizeof (struct ext2_node));
 
@@ -72,7 +72,7 @@ static void read_content(struct block_interface *interface, struct ext2_node *no
     blocksize = 1024 << sb.blockSize;
     sectorsize = blocksize / 512;
 
-    interface->read_data(interface, (node->pointer0) * sectorsize, sectorsize, buffer);
+    interface->read(interface, (node->pointer0) * sectorsize, sectorsize, buffer);
 
 }
 
@@ -95,7 +95,8 @@ void ext2_init_protocol(struct ext2_protocol *protocol)
 
     memory_clear(protocol, sizeof (struct ext2_protocol));
 
-    protocol->base.name = "ext2";
+    block_init_protocol(&protocol->base, "ext2");
+
     protocol->validate = validate;
     protocol->read_blockgroup = read_blockgroup;
     protocol->read_node = read_node;
