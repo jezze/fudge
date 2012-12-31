@@ -61,6 +61,14 @@ void system_unregister_node(struct system_node *node)
 
 }
 
+void system_register_routine(unsigned int index, unsigned int (*reader)(struct system_node *node, unsigned int offset, unsigned int count, void *buffer), unsigned int (*writer)(struct system_node *node, unsigned int offset, unsigned int count, void *buffer))
+{
+
+    filesystem.readers[index] = reader;
+    filesystem.writers[index] = writer;
+
+}
+
 static void system_init_node(struct system_node *node, unsigned int type, char *name)
 {
 
