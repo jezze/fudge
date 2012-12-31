@@ -2,6 +2,8 @@
 #include <fudge/memory.h>
 #include <fudge/data/circular.h>
 #include <base/base.h>
+#include <system/system.h>
+#include <kbd/kbd.h>
 #include <arch/x86/pic/pic.h>
 #include <arch/x86/io/io.h>
 #include "ps2.h"
@@ -122,7 +124,7 @@ void ps2_init_mouse_driver(struct ps2_mouse_driver *driver)
 
     memory_clear(driver, sizeof (struct ps2_mouse_driver));
 
-    base_init_driver(&driver->base, PS2_MOUSE_DRIVER_TYPE, "mouse", start, check, attach);
+    base_init_driver(&driver->base, PS2_MOUSE_DRIVER_TYPE, "ps2mouse", start, check, attach);
 
     driver->cycle = 2;
 

@@ -20,6 +20,7 @@ struct ps2_kbd_driver
 {
 
     struct base_driver base;
+    struct kbd_interface interface;
     struct circular_stream stream;
     unsigned int escaped;
 

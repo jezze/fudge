@@ -5,21 +5,21 @@
 
 static struct system_filesystem filesystem;
 
-void system_register_node(struct system_node *node)
+void system_group_add(struct system_group *group, struct system_node *node)
 {
 
     struct system_node *current;
 
-    if (!filesystem.root.children)
+    if (!group->children)
     {
 
-        filesystem.root.children = node;
+        group->children = node;
 
         return;
 
     }
 
-    for (current = filesystem.root.children; current; current = current->next)
+    for (current = group->children; current; current = current->next)
     {
 
         if (current->next)
@@ -33,21 +33,21 @@ void system_register_node(struct system_node *node)
 
 }
 
-void system_unregister_node(struct system_node *node)
+void system_group_remove(struct system_group *group, struct system_node *node)
 {
 
     struct system_node *current;
 
-    if (filesystem.root.children == node)
+    if (group->children == node)
     {
 
-        filesystem.root.children = filesystem.root.children->next;
+        group->children = group->children->next;
 
         return;
 
     }
 
-    for (current = filesystem.root.children; current; current = current->next)
+    for (current = group->children; current; current = current->next)
     {
 
         if (current->next != node)
@@ -58,6 +58,20 @@ void system_unregister_node(struct system_node *node)
         return;
 
     }
+
+}
+
+void system_register_node(struct system_node *node)
+{
+
+    system_group_add(&filesystem.root, node);
+
+}
+
+void system_unregister_node(struct system_node *node)
+{
+
+    system_group_remove(&filesystem.root, node);
 
 }
 

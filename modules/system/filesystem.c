@@ -12,6 +12,9 @@ static unsigned int read_group(struct system_node *node, unsigned int offset, un
     unsigned char *b = buffer;
     unsigned int c = 0;
 
+    c += memory_read(b + c, count - c, "../\n", 4, offset);
+    offset -= (offset > 4) ? 4 : offset;
+
     for (current = group->children; current; current = current->next)
     {
 
@@ -20,8 +23,21 @@ static unsigned int read_group(struct system_node *node, unsigned int offset, un
         c += memory_read(b + c, count - c, current->name, l, offset);
         offset -= (offset > l) ? l : offset;
 
-        c += memory_read(b + c, count - c, "/\n", 2, offset);
-        offset -= (offset > 2) ? 2 : offset;
+        if (current->type == SYSTEM_NODE_TYPE_GROUP)
+        {
+
+            c += memory_read(b + c, count - c, "/\n", 2, offset);
+            offset -= (offset > 2) ? 2 : offset;
+
+        }
+
+        else
+        {
+
+            c += memory_read(b + c, count - c, "\n", 1, offset);
+            offset -= (offset > 1) ? 1 : offset;
+
+        }
 
     }
 
@@ -66,8 +82,33 @@ static unsigned int read(struct vfs_interface *self, unsigned int id, unsigned i
 static unsigned int walk(struct vfs_interface *self, unsigned int id, unsigned int count, const char *path)
 {
 
+    struct system_node *node = (struct system_node *)id;
+    struct system_node *current;
+
     if (!count)
         return id;
+
+    if (node->type == SYSTEM_NODE_TYPE_GROUP)
+    {
+
+        struct system_group *group = (struct system_group *)node;
+
+        for (current = group->children; current; current = current->next)
+        {
+
+            unsigned int l = string_length(current->name);
+
+            if (!memory_match(current->name, path, l))
+                continue;
+
+            if (current->type == SYSTEM_NODE_TYPE_GROUP)
+                return walk(self, (unsigned int)current, count - l - 1, path + l + 1);
+            else
+                return walk(self, (unsigned int)current, count - l, path + l);
+
+        }
+
+    }
 
     return 0;
 

@@ -2,6 +2,8 @@
 #include <fudge/memory.h>
 #include <fudge/data/circular.h>
 #include <base/base.h>
+#include <system/system.h>
+#include <kbd/kbd.h>
 #include "ps2.h"
 
 void ps2_init_device(struct ps2_device *device, char *name, unsigned int irq)

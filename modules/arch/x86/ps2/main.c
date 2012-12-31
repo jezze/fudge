@@ -3,6 +3,8 @@
 #include <fudge/data/circular.h>
 #include <kernel/vfs.h>
 #include <base/base.h>
+#include <system/system.h>
+#include <kbd/kbd.h>
 #include <nodefs/nodefs.h>
 #include "ps2.h"
 
@@ -72,6 +74,8 @@ void init()
     base_register_driver(&kbdDriver.base);
     base_register_driver(&mouseDriver.base);
 
+    kbd_register_interface(&kbdDriver.interface);
+
     nodefs_register_node(&buffer, "ps2_buffer", &kbdDriver.base.module, buffer_read, buffer_write);
     nodefs_register_node(&mcycle, "ps2_mcycle", &mouseDriver.base.module, mcycle_read, 0);
     nodefs_register_node(&mstatus, "ps2_mstatus", &mouseDriver.base.module, mstatus_read, 0);
@@ -82,6 +86,8 @@ void init()
 
 void destroy()
 {
+
+    kbd_unregister_interface(&kbdDriver.interface);
 
     base_unregister_driver(&kbdDriver.base);
     base_unregister_driver(&mouseDriver.base);

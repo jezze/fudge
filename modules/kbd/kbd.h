@@ -1,7 +1,17 @@
+struct kbd_interface_node
+{
+
+    struct system_group root;
+    struct system_string info;
+    struct system_integer size;
+
+};
+
 struct kbd_interface
 {
 
     struct base_driver *driver;
+    struct kbd_interface_node node;
 
 };
 

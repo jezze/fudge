@@ -1,5 +1,6 @@
 #include <fudge/memory.h>
 #include <base/base.h>
+#include <system/system.h>
 #include "kbd.h"
 
 void kbd_init_protocol(struct kbd_protocol *protocol, char *name)
