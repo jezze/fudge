@@ -9,6 +9,7 @@ struct system_node
 
     unsigned int type;
     char *name;
+    struct system_node *parent;
     struct system_node *next;
 
 };

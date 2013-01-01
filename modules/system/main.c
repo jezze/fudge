@@ -14,6 +14,7 @@ void system_group_add(struct system_group *group, struct system_node *node)
     {
 
         group->children = node;
+        node->parent = &group->base;
 
         return;
 
@@ -26,6 +27,7 @@ void system_group_add(struct system_group *group, struct system_node *node)
             continue;
 
         current->next = node;
+        node->parent = &group->base;
 
         return;
 
@@ -42,6 +44,7 @@ void system_group_remove(struct system_group *group, struct system_node *node)
     {
 
         group->children = group->children->next;
+        node->parent = 0;
 
         return;
 
@@ -54,6 +57,7 @@ void system_group_remove(struct system_group *group, struct system_node *node)
             continue;
 
         current->next = current->next->next;
+        node->parent = 0;
 
         return;
 
