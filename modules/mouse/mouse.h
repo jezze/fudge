@@ -10,8 +10,8 @@ struct mouse_interface_node
 struct mouse_interface
 {
 
-    struct base_driver *driver;
     struct mouse_interface_node node;
+    struct base_driver *driver;
     char vx;
     char vy;
 

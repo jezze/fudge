@@ -11,8 +11,8 @@ struct video_interface_node
 struct video_interface
 {
 
-    struct base_driver *driver;
     struct video_interface_node node;
+    struct base_driver *driver;
     unsigned int bpp;
     unsigned int xres;
     unsigned int yres;

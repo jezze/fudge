@@ -1,6 +1,7 @@
 #include <fudge/memory.h>
 #include <kernel/vfs.h>
 #include <base/base.h>
+#include <system/system.h>
 #include <block/block.h>
 #include "ata.h"
 

@@ -10,8 +10,8 @@ struct kbd_interface_node
 struct kbd_interface
 {
 
-    struct base_driver *driver;
     struct kbd_interface_node node;
+    struct base_driver *driver;
 
 };
 

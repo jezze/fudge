@@ -1,6 +1,14 @@
+struct block_interface_node
+{
+
+    struct system_group root;
+
+};
+
 struct block_interface
 {
 
+    struct block_interface_node node;
     struct base_driver *driver;
     unsigned int (*read)(struct block_interface *self, unsigned int offset, unsigned int count, void *buffer);
     unsigned int (*write)(struct block_interface *self, unsigned int offset, unsigned int count, void *buffer);

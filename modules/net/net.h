@@ -1,6 +1,14 @@
+struct net_interface_node
+{
+
+    struct system_group root;
+
+};
+
 struct net_interface
 {
 
+    struct net_interface_node node;
     struct base_driver *driver;
     char mac[6];
     unsigned int (*send)(struct net_interface *self, unsigned int count, void *buffer);
