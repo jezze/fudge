@@ -17,7 +17,7 @@ struct system_node
 struct system_group
 {
 
-    struct system_node base;
+    struct system_node node;
     struct system_node *children;
 
 };
@@ -25,7 +25,7 @@ struct system_group
 struct system_integer
 {
 
-    struct system_node base;
+    struct system_node node;
     int value;
 
 };
@@ -33,7 +33,7 @@ struct system_integer
 struct system_string
 {
 
-    struct system_node base;
+    struct system_node node;
     char *value;
 
 };
@@ -41,7 +41,7 @@ struct system_string
 struct system_stream
 {
 
-    struct system_node base;
+    struct system_node node;
     unsigned int (*read)(unsigned int offset, unsigned int count, void *buffer);
     unsigned int (*write)(unsigned int offset, unsigned int count, void *buffer);
 

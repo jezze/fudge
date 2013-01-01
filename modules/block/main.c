@@ -8,6 +8,8 @@ static struct system_group root;
 void block_register_interface(struct block_interface *interface)
 {
 
+    system_group_add(&root, &interface->node.root.node);
+
 }
 
 void block_register_protocol(struct block_protocol *protocol)
@@ -17,6 +19,8 @@ void block_register_protocol(struct block_protocol *protocol)
 
 void block_unregister_interface(struct block_interface *interface)
 {
+
+    system_group_remove(&root, &interface->node.root.node);
 
 }
 
@@ -49,14 +53,14 @@ void init()
 {
 
     system_init_group(&root, "block");
-    system_register_node(&root.base);
+    system_register_node(&root.node);
 
 }
 
 void destroy()
 {
 
-    system_unregister_node(&root.base);
+    system_unregister_node(&root.node);
 
 }
 

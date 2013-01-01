@@ -52,7 +52,7 @@ void init()
     system_init_group(&root, "video");
 
     /*
-    system_register_node(&root.base);
+    system_register_node(&root.node);
     */
 
 }
@@ -60,7 +60,7 @@ void init()
 void destroy()
 {
 
-    system_unregister_node(&root.base);
+    system_unregister_node(&root.node);
 
 }
 

@@ -8,6 +8,8 @@ static struct system_group root;
 void net_register_interface(struct net_interface *interface)
 {
 
+    system_group_add(&root, &interface->node.root.node);
+
 }
 
 void net_register_protocol(unsigned short index, struct net_protocol *protocol)
@@ -17,6 +19,8 @@ void net_register_protocol(unsigned short index, struct net_protocol *protocol)
 
 void net_unregister_interface(struct net_interface *interface)
 {
+
+    system_group_remove(&root, &interface->node.root.node);
 
 }
 
@@ -50,14 +54,14 @@ void init()
 {
 
     system_init_group(&root, "net");
-    system_register_node(&root.base);
+    system_register_node(&root.node);
 
 }
 
 void destroy()
 {
 
-    system_unregister_node(&root.base);
+    system_unregister_node(&root.node);
 
 }
 

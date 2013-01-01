@@ -10,7 +10,7 @@ void system_group_add(struct system_group *group, struct system_node *node)
 
     struct system_node *current;
 
-    node->parent = &group->base;
+    node->parent = &group->node;
 
     if (!group->children)
     {
@@ -94,7 +94,7 @@ void system_init_group(struct system_group *group, char *name)
 
     memory_clear(group, sizeof (struct system_group));
 
-    system_init_node(&group->base, SYSTEM_NODE_TYPE_GROUP, name);
+    system_init_node(&group->node, SYSTEM_NODE_TYPE_GROUP, name);
 
 }
 
@@ -103,7 +103,7 @@ void system_init_integer(struct system_integer *integer, char *name, int value)
 
     memory_clear(integer, sizeof (struct system_integer));
 
-    system_init_node(&integer->base, SYSTEM_NODE_TYPE_INTEGER, name);
+    system_init_node(&integer->node, SYSTEM_NODE_TYPE_INTEGER, name);
 
     integer->value = value;
 
@@ -114,7 +114,7 @@ void system_init_string(struct system_string *string, char *name, char *value)
 
     memory_clear(string, sizeof (struct system_string));
 
-    system_init_node(&string->base, SYSTEM_NODE_TYPE_STRING, name);
+    system_init_node(&string->node, SYSTEM_NODE_TYPE_STRING, name);
 
     string->value = value;
 
@@ -125,7 +125,7 @@ void system_init_stream(struct system_stream *stream, char *name, unsigned int (
 
     memory_clear(stream, sizeof (struct system_stream));
 
-    system_init_node(&stream->base, SYSTEM_NODE_TYPE_STREAM, name);
+    system_init_node(&stream->node, SYSTEM_NODE_TYPE_STREAM, name);
 
     stream->read = read;
     stream->write = write;

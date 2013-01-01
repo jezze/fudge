@@ -29,7 +29,7 @@ void init()
     video_register_interface(&driver.interface);
 
     system_init_stream(&buffer, "vga_buffer", buffer_read, buffer_write);
-    system_register_node(&buffer.base);
+    system_register_node(&buffer.node);
 
 
 }
@@ -37,7 +37,7 @@ void init()
 void destroy()
 {
 
-    system_unregister_node(&buffer.base);
+    system_unregister_node(&buffer.node);
 
     video_unregister_interface(&driver.interface);
     base_unregister_driver(&driver.base);

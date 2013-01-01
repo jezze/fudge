@@ -45,14 +45,14 @@ void init()
     mouse_register_interface(&mouseDriver.interface);
 
     system_init_stream(&buffer, "ps2_buffer", buffer_read, buffer_write);
-    system_register_node(&buffer.base);
+    system_register_node(&buffer.node);
 
 }
 
 void destroy()
 {
 
-    system_unregister_node(&buffer.base);
+    system_unregister_node(&buffer.node);
 
     kbd_unregister_interface(&kbdDriver.interface);
     mouse_unregister_interface(&mouseDriver.interface);
