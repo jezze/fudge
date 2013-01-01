@@ -59,14 +59,14 @@ static void handle_irq(struct base_device *self)
 
         case 1:
 
-            driver->x = io_inb(0x60);
+            driver->interface.x = io_inb(0x60);
             driver->cycle++;
 
             break;
 
         case 2:
 
-            driver->y = io_inb(0x60);
+            driver->interface.y = io_inb(0x60);
             driver->cycle = 0;
 
             break;

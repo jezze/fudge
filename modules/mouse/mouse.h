@@ -2,6 +2,8 @@ struct mouse_interface_node
 {
 
     struct system_group root;
+    struct system_integer x;
+    struct system_integer y;
 
 };
 
@@ -10,6 +12,8 @@ struct mouse_interface
 
     struct base_driver *driver;
     struct mouse_interface_node node;
+    char x;
+    char y;
 
 };
 
