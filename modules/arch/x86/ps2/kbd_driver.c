@@ -4,6 +4,7 @@
 #include <base/base.h>
 #include <system/system.h>
 #include <kbd/kbd.h>
+#include <mouse/mouse.h>
 #include <arch/x86/pic/pic.h>
 #include <arch/x86/io/io.h>
 #include "ps2.h"

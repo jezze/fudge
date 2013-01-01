@@ -2,8 +2,6 @@ struct mouse_interface_node
 {
 
     struct system_group root;
-    struct system_string info;
-    struct system_integer size;
 
 };
 

@@ -30,6 +30,7 @@ struct ps2_mouse_driver
 {
 
     struct base_driver base;
+    struct mouse_interface interface;
     unsigned char cycle;
     char status;
     char x;
