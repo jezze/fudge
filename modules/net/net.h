@@ -15,9 +15,17 @@ struct net_interface
 
 };
 
+struct net_protocol_node
+{
+
+    struct system_group root;
+
+};
+
 struct net_protocol
 {
 
+    struct net_protocol_node node;
     char *name;
     unsigned int (*read)(struct net_interface *interface, unsigned int offset, unsigned int count, void *buffer);
     unsigned int (*write)(struct net_interface *interface, unsigned int offset, unsigned int count, void *buffer);

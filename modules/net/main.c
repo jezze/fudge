@@ -15,6 +15,8 @@ void net_register_interface(struct net_interface *interface)
 void net_register_protocol(unsigned short index, struct net_protocol *protocol)
 {
 
+    system_group_add(&root, &protocol->node.root.node);
+
 }
 
 void net_unregister_interface(struct net_interface *interface)
@@ -49,6 +51,8 @@ void net_init_protocol(struct net_protocol *protocol, char *name, unsigned int (
     protocol->name = name;
     protocol->read = read;
     protocol->write = write;
+
+    system_init_group(&protocol->node.root, name);
 
 }
 
