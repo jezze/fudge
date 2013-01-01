@@ -51,7 +51,6 @@ void system_group_add(struct system_group *group, struct system_node *node);
 void system_group_remove(struct system_group *group, struct system_node *node);
 void system_register_node(struct system_node *node);
 void system_unregister_node(struct system_node *node);
-void system_register_routine(unsigned int index, unsigned int (*reader)(struct system_node *node, unsigned int offset, unsigned int count, void *buffer), unsigned int (*writer)(struct system_node *node, unsigned int offset, unsigned int count, void *buffer));
 void system_init_group(struct system_group *group, char *name);
 void system_init_integer(struct system_integer *integer, char *name, int value);
 void system_init_string(struct system_string *string, char *name, char *value);
