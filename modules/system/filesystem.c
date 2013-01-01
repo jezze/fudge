@@ -66,6 +66,15 @@ static unsigned int read_string(struct system_node *node, unsigned int offset, u
 
 }
 
+static unsigned int read_stream(struct system_node *node, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    struct system_stream *stream = (struct system_stream *)node;
+
+    return stream->read(offset, count, buffer);
+
+}
+
 static unsigned int read(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
@@ -114,6 +123,15 @@ static unsigned int walk(struct vfs_interface *self, unsigned int id, unsigned i
 
 }
 
+static unsigned int write_stream(struct system_node *node, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    struct system_stream *stream = (struct system_stream *)node;
+
+    return stream->write(offset, count, buffer);
+
+}
+
 static unsigned int write(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
@@ -138,6 +156,8 @@ void system_init_filesystem(struct system_filesystem *filesystem)
     filesystem->readers[SYSTEM_NODE_TYPE_GROUP] = read_group;
     filesystem->readers[SYSTEM_NODE_TYPE_INTEGER] = read_integer;
     filesystem->readers[SYSTEM_NODE_TYPE_STRING] = read_string;
+    filesystem->readers[SYSTEM_NODE_TYPE_STREAM] = read_stream;
+    filesystem->writers[SYSTEM_NODE_TYPE_STREAM] = write_stream;
 
 }
 
