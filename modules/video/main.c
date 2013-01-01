@@ -25,15 +25,17 @@ void video_unregister_protocol(struct video_protocol *protocol)
 
 }
 
-void video_init_interface(struct video_interface *interface, struct base_driver *driver, void (*enable)(struct video_interface *self), unsigned int (*read_data)(struct video_interface *self, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write_data)(struct video_interface *self, unsigned int offset, unsigned int count, void *buffer))
+void video_init_interface(struct video_interface *interface, struct base_driver *driver, void (*enable)(struct video_interface *self), unsigned int (*read)(struct video_interface *self, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write)(struct video_interface *self, unsigned int offset, unsigned int count, void *buffer))
 {
 
     memory_clear(interface, sizeof (struct video_interface));
 
     interface->driver = driver;
     interface->enable = enable;
-    interface->read_data = read_data;
-    interface->write_data = write_data;
+    interface->read = read;
+    interface->write = write;
+
+    system_init_group(&interface->node.root, interface->driver->module.name);
 
 }
 

@@ -10,14 +10,14 @@ static struct system_stream buffer;
 static unsigned int buffer_read(unsigned int offset, unsigned int count, void *buffer)
 {
 
-    return driver.interface.read_data(&driver.interface, offset, count, buffer);
+    return driver.interface.read(&driver.interface, offset, count, buffer);
 
 }
 
 static unsigned int buffer_write(unsigned int offset, unsigned int count, void *buffer)
 {
 
-    return driver.interface.write_data(&driver.interface, offset, count, buffer);
+    return driver.interface.write(&driver.interface, offset, count, buffer);
 
 }
 
@@ -30,7 +30,6 @@ void init()
 
     system_init_stream(&buffer, "vga_buffer", buffer_read, buffer_write);
     system_register_node(&buffer.node);
-
 
 }
 
