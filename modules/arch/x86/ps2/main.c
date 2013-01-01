@@ -1,12 +1,10 @@
 #include <fudge/define.h>
 #include <fudge/memory.h>
 #include <fudge/data/circular.h>
-#include <kernel/vfs.h>
 #include <base/base.h>
 #include <system/system.h>
 #include <kbd/kbd.h>
 #include <mouse/mouse.h>
-#include <nodefs/nodefs.h>
 #include "ps2.h"
 
 static struct ps2_device kbdDevice;
@@ -14,16 +12,16 @@ static struct ps2_device mouseDevice;
 static struct ps2_kbd_driver kbdDriver;
 static struct ps2_mouse_driver mouseDriver;
 
-static struct nodefs_node buffer;
+static struct system_stream buffer;
 
-static unsigned int buffer_read(struct nodefs_node *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int buffer_read(unsigned int offset, unsigned int count, void *buffer)
 {
 
     return circular_stream_read(&kbdDriver.stream, count, buffer);
 
 }
 
-static unsigned int buffer_write(struct nodefs_node *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int buffer_write(unsigned int offset, unsigned int count, void *buffer)
 {
 
     return circular_stream_write(&kbdDriver.stream, count, buffer);
@@ -46,12 +44,15 @@ void init()
     kbd_register_interface(&kbdDriver.interface);
     mouse_register_interface(&mouseDriver.interface);
 
-    nodefs_register_node(&buffer, "ps2_buffer", &kbdDriver.base.module, buffer_read, buffer_write);
+    system_init_stream(&buffer, "ps2_buffer", buffer_read, buffer_write);
+    system_register_node(&buffer.base);
 
 }
 
 void destroy()
 {
+
+    system_unregister_node(&buffer.base);
 
     kbd_unregister_interface(&kbdDriver.interface);
     mouse_unregister_interface(&mouseDriver.interface);

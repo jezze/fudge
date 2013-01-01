@@ -7,10 +7,6 @@ void load_modules_core(unsigned int id)
     call_spawn(id);
     call_close(FUDGE_IN);
 
-    call_open(FUDGE_IN, FUDGE_CWD, 9, "nodefs.ko");
-    call_spawn(id);
-    call_close(FUDGE_IN);
-
     call_open(FUDGE_IN, FUDGE_CWD, 8, "video.ko");
     call_spawn(id);
     call_close(FUDGE_IN);
@@ -143,19 +139,13 @@ void mount_filesystems()
     call_close(4);
     call_close(3);
 
-    call_open(3, FUDGE_ROOT, 7, "nodefs/");
-    call_open(4, FUDGE_CWD, 9, "nodefs.ko");
-    call_mount(4, 3, 4);
-    call_close(4);
-    call_close(3);
-
 }
 
 void start_shell()
 {
 
-    call_open(FUDGE_IN, FUDGE_ROOT, 17, "nodefs/ps2_buffer");
-    call_open(FUDGE_OUT, FUDGE_ROOT, 17, "nodefs/vga_buffer");
+    call_open(FUDGE_IN, FUDGE_ROOT, 17, "system/ps2_buffer");
+    call_open(FUDGE_OUT, FUDGE_ROOT, 17, "system/vga_buffer");
 
     call_open(3, FUDGE_ROOT, 16, "ramdisk/bin/motd");
     call_spawn(3);

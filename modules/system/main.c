@@ -124,6 +124,18 @@ void system_init_string(struct system_string *string, char *name, char *value)
 
 }
 
+void system_init_stream(struct system_stream *stream, char *name, unsigned int (*read)(unsigned int offset, unsigned int count, void *buffer), unsigned int (*write)(unsigned int offset, unsigned int count, void *buffer))
+{
+
+    memory_clear(stream, sizeof (struct system_stream));
+
+    system_init_node(&stream->base, SYSTEM_NODE_TYPE_STREAM, name);
+
+    stream->read = read;
+    stream->write = write;
+
+}
+
 struct vfs_interface *get_filesystem()
 {
 
