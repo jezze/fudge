@@ -29,12 +29,14 @@ void kbd_unregister_protocol(struct kbd_protocol *protocol)
 
 }
 
-void kbd_init_interface(struct kbd_interface *interface, struct base_driver *driver)
+void kbd_init_interface(struct kbd_interface *interface, struct base_driver *driver, unsigned int (*read)(struct kbd_interface *self, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write)(struct kbd_interface *self, unsigned int offset, unsigned int count, void *buffer))
 {
 
     memory_clear(interface, sizeof (struct kbd_interface));
 
     interface->driver = driver;
+    interface->read = read;
+    interface->write = write;
 
     system_init_group(&interface->node.root, interface->driver->module.name);
 

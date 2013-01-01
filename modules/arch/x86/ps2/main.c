@@ -17,14 +17,14 @@ static struct system_stream buffer;
 static unsigned int buffer_read(unsigned int offset, unsigned int count, void *buffer)
 {
 
-    return circular_stream_read(&kbdDriver.stream, count, buffer);
+    return kbdDriver.interface.read(&kbdDriver.interface, offset, count, buffer);
 
 }
 
 static unsigned int buffer_write(unsigned int offset, unsigned int count, void *buffer)
 {
 
-    return circular_stream_write(&kbdDriver.stream, count, buffer);
+    return kbdDriver.interface.write(&kbdDriver.interface, offset, count, buffer);
 
 }
 
