@@ -8,6 +8,8 @@ static struct system_group root;
 void video_register_interface(struct video_interface *interface)
 {
 
+    system_group_add(&root, &interface->node.root.node);
+
 }
 
 void video_register_protocol(struct video_protocol *protocol)
@@ -17,6 +19,8 @@ void video_register_protocol(struct video_protocol *protocol)
 
 void video_unregister_interface(struct video_interface *interface)
 {
+
+    system_group_remove(&root, &interface->node.root.node);
 
 }
 
