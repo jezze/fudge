@@ -1,7 +1,18 @@
+struct video_interface_node
+{
+
+    struct system_group root;
+    struct system_integer bpp;
+    struct system_integer xres;
+    struct system_integer yres;
+
+};
+
 struct video_interface
 {
 
     struct base_driver *driver;
+    struct video_interface_node node;
     unsigned int bpp;
     unsigned int xres;
     unsigned int yres;

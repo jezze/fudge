@@ -1,4 +1,5 @@
 #include <base/base.h>
+#include <system/system.h>
 #include <nodefs/nodefs.h>
 #include <video/video.h>
 #include "vga.h"
@@ -25,8 +26,8 @@ void init()
 {
 
     vga_init_driver(&driver);
-    video_register_interface(&driver.interface);
     base_register_driver(&driver.base);
+    video_register_interface(&driver.interface);
 
     nodefs_register_node(&buffer, "vga_buffer", &driver.base.module, buffer_read, buffer_write);
 

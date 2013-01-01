@@ -20,7 +20,7 @@ MODULES_OBJECTS_MOUSE=modules/mouse/main.o
 MODULES_OBJECTS_NET=modules/net/main.o modules/net/interface.o modules/net/protocol.o
 MODULES_OBJECTS_NODEFS=modules/nodefs/main.o modules/nodefs/filesystem.o
 MODULES_OBJECTS_SYSTEM=modules/system/main.o modules/system/filesystem.o
-MODULES_OBJECTS_VIDEO=modules/video/main.o modules/video/interface.o modules/video/protocol.o
+MODULES_OBJECTS_VIDEO=modules/video/main.o
 
 MODULES+=$(MODULES_ARP)
 MODULES+=$(MODULES_BASE)
