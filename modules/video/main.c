@@ -52,10 +52,7 @@ void init()
 {
 
     system_init_group(&root, "video");
-
-    /*
     system_register_node(&root.node);
-    */
 
 }
 
