@@ -98,7 +98,7 @@ void system_init_group(struct system_group *group, char *name)
 
 }
 
-void system_init_integer(struct system_integer *integer, char *name, int value)
+void system_init_integer(struct system_integer *integer, char *name, int *value)
 {
 
     memory_clear(integer, sizeof (struct system_integer));

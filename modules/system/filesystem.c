@@ -51,7 +51,7 @@ static unsigned int read_integer(struct system_node *node, unsigned int offset, 
     struct system_integer *integer = (struct system_integer *)node;
     char num[32];
 
-    string_write_num(num, integer->value, 16);
+    string_write_num(num, *integer->value, 10);
 
     return memory_read(buffer, count, num, string_length(num), offset);
 
