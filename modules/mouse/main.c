@@ -9,8 +9,8 @@ void mouse_register_interface(struct mouse_interface *interface)
 {
 
     system_group_add(&root, &interface->node.root.base);
-    system_group_add(&interface->node.root, &interface->node.x.base);
-    system_group_add(&interface->node.root, &interface->node.y.base);
+    system_group_add(&interface->node.root, &interface->node.vx.base);
+    system_group_add(&interface->node.root, &interface->node.vy.base);
 
 }
 
@@ -22,8 +22,8 @@ void mouse_register_protocol(struct mouse_protocol *protocol)
 void mouse_unregister_interface(struct mouse_interface *interface)
 {
 
-    system_group_remove(&interface->node.root, &interface->node.x.base);
-    system_group_remove(&interface->node.root, &interface->node.y.base);
+    system_group_remove(&interface->node.root, &interface->node.vx.base);
+    system_group_remove(&interface->node.root, &interface->node.vy.base);
     system_group_remove(&root, &interface->node.root.base);
 
 }
@@ -41,8 +41,8 @@ void mouse_init_interface(struct mouse_interface *interface, struct base_driver 
     interface->driver = driver;
 
     system_init_group(&interface->node.root, interface->driver->module.name);
-    system_init_integer(&interface->node.x, "x", interface->x);
-    system_init_integer(&interface->node.y, "y", interface->y);
+    system_init_integer(&interface->node.vx, "vx", interface->vx);
+    system_init_integer(&interface->node.vy, "vy", interface->vy);
 
 }
 

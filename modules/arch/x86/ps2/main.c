@@ -54,6 +54,7 @@ void destroy()
 {
 
     kbd_unregister_interface(&kbdDriver.interface);
+    mouse_unregister_interface(&mouseDriver.interface);
 
     base_unregister_driver(&kbdDriver.base);
     base_unregister_driver(&mouseDriver.base);
