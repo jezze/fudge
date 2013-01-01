@@ -135,11 +135,6 @@ void main()
 
     call_read(3, kHeader.shoffset, kHeader.shsize * kHeader.shcount, kSectionTable);
 
-    call_open(FUDGE_IN, FUDGE_ROOT, 19, "ramdisk/mod/base.ko");
-
-    if (resolve())
-        call_load(FUDGE_IN);
-
     call_open(FUDGE_IN, FUDGE_ROOT, 20, "ramdisk/mod/multi.ko");
 
     if (resolve())
