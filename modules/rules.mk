@@ -4,6 +4,7 @@ MODULES_BLOCK=modules/block/block.ko
 MODULES_EXT2=modules/ext2/ext2.ko
 MODULES_IPV4=modules/ipv4/ipv4.ko
 MODULES_KBD=modules/kbd/kbd.ko
+MODULES_MOUSE=modules/mouse/mouse.ko
 MODULES_NET=modules/net/net.ko
 MODULES_NODEFS=modules/nodefs/nodefs.ko
 MODULES_SYSTEM=modules/system/system.ko
@@ -15,6 +16,7 @@ MODULES_OBJECTS_BLOCK=modules/block/main.o modules/block/interface.o modules/blo
 MODULES_OBJECTS_EXT2=modules/ext2/main.o modules/ext2/protocol.o modules/ext2/filesystem.o
 MODULES_OBJECTS_IPV4=modules/ipv4/main.o modules/ipv4/protocol.o
 MODULES_OBJECTS_KBD=modules/kbd/main.o
+MODULES_OBJECTS_MOUSE=modules/mouse/main.o
 MODULES_OBJECTS_NET=modules/net/main.o modules/net/interface.o modules/net/protocol.o
 MODULES_OBJECTS_NODEFS=modules/nodefs/main.o modules/nodefs/filesystem.o
 MODULES_OBJECTS_SYSTEM=modules/system/main.o modules/system/filesystem.o
@@ -26,6 +28,7 @@ MODULES+=$(MODULES_BLOCK)
 MODULES+=$(MODULES_EXT2)
 MODULES+=$(MODULES_IPV4)
 MODULES+=$(MODULES_KBD)
+MODULES+=$(MODULES_MOUSE)
 MODULES+=$(MODULES_NODEFS)
 MODULES+=$(MODULES_SYSTEM)
 MODULES+=$(MODULES_VIDEO)
@@ -36,6 +39,7 @@ MODULES_OBJECTS+=$(MODULES_OBJECTS_BLOCK)
 MODULES_OBJECTS+=$(MODULES_OBJECTS_EXT2)
 MODULES_OBJECTS+=$(MODULES_OBJECTS_IPV4)
 MODULES_OBJECTS+=$(MODULES_OBJECTS_KBD)
+MODULES_OBJECTS+=$(MODULES_OBJECTS_MOUSE)
 MODULES_OBJECTS+=$(MODULES_OBJECTS_NET)
 MODULES_OBJECTS+=$(MODULES_OBJECTS_NODEFS)
 MODULES_OBJECTS+=$(MODULES_OBJECTS_SYSTEM)
@@ -61,6 +65,9 @@ $(MODULES_IPV4): $(MODULES_OBJECTS_IPV4) $(LIBFUDGE)
 	$(LD) $(LDFLAGS) -o $@ $^
 
 $(MODULES_KBD): $(MODULES_OBJECTS_KBD) $(LIBFUDGE)
+	$(LD) $(LDFLAGS) -o $@ $^
+
+$(MODULES_MOUSE): $(MODULES_OBJECTS_MOUSE) $(LIBFUDGE)
 	$(LD) $(LDFLAGS) -o $@ $^
 
 $(MODULES_NET): $(MODULES_OBJECTS_NET) $(LIBFUDGE)
