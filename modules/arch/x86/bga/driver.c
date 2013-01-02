@@ -1,7 +1,7 @@
 #include <fudge/memory.h>
 #include <x86/mmu.h>
-#include <base/base.h>
 #include <system/system.h>
+#include <base/base.h>
 #include <video/video.h>
 #include <arch/x86/io/io.h>
 #include <arch/x86/pci/pci.h>

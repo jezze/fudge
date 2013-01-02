@@ -1,6 +1,6 @@
 #include <fudge/memory.h>
-#include <base/base.h>
 #include <system/system.h>
+#include <base/base.h>
 #include "kbd.h"
 
 static struct system_group root;

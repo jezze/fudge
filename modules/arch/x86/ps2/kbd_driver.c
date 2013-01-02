@@ -1,8 +1,8 @@
 #include <fudge/define.h>
 #include <fudge/memory.h>
 #include <fudge/data/circular.h>
-#include <base/base.h>
 #include <system/system.h>
+#include <base/base.h>
 #include <kbd/kbd.h>
 #include <mouse/mouse.h>
 #include <arch/x86/pic/pic.h>

@@ -1,6 +1,6 @@
 #include <fudge/memory.h>
-#include <base/base.h>
 #include <system/system.h>
+#include <base/base.h>
 #include <net/net.h>
 #include <arch/x86/pic/pic.h>
 #include <arch/x86/io/io.h>

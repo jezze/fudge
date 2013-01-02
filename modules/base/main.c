@@ -1,7 +1,9 @@
 #include <fudge/memory.h>
+#include <system/system.h>
 #include "base.h"
 
 static struct base_module *modules;
+static struct system_group root;
 
 static unsigned int attach(struct base_driver *driver)
 {
@@ -40,6 +42,8 @@ static void register_module(struct base_module *module)
 {
 
     struct base_module *current;
+
+    system_group_add(&root, &module->node.root.node);
 
     if (!modules)
     {
@@ -104,6 +108,8 @@ static void unregister_module(struct base_module *module)
 
     struct base_module *current;
 
+    system_group_remove(&root, &module->node.root.node);
+
     if (modules == module)
     {
 
@@ -156,6 +162,8 @@ static void base_init_module(struct base_module *module, unsigned int type, char
     module->type = type;
     module->name = name;
 
+    system_init_group(&module->node.root, module->name);
+
 }
 
 void base_init_bus(struct base_bus *bus, unsigned int type, char *name, void (*scan)(struct base_bus *self))
@@ -199,11 +207,15 @@ void init()
 {
 
     modules = 0;
+    system_init_group(&root, "base");
+    system_register_node(&root.node);
 
 }
 
 void destroy()
 {
+
+    system_unregister_node(&root.node);
 
 }
 

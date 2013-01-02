@@ -3,11 +3,11 @@
 void load_modules_core(unsigned int id)
 {
 
-    call_open(FUDGE_IN, FUDGE_CWD, 7, "base.ko");
+    call_open(FUDGE_IN, FUDGE_CWD, 9, "system.ko");
     call_spawn(id);
     call_close(FUDGE_IN);
 
-    call_open(FUDGE_IN, FUDGE_CWD, 9, "system.ko");
+    call_open(FUDGE_IN, FUDGE_CWD, 7, "base.ko");
     call_spawn(id);
     call_close(FUDGE_IN);
 

@@ -1,4 +1,5 @@
 #include <fudge/memory.h>
+#include <system/system.h>
 #include <base/base.h>
 #include <arch/x86/io/io.h>
 #include "uart.h"
