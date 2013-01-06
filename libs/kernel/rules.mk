@@ -8,6 +8,8 @@ LIBKERNEL_OBJECTS+=libs/kernel/runtime.o
 LIBKERNEL_OBJECTS+=libs/kernel/syscall.o
 LIBKERNEL_OBJECTS+=libs/kernel/vfs.o
 
+include libs/kernel/arch/$(ARCH)/rules.mk
+
 LIBS+=$(LIBKERNEL)
 LIBS_OBJECTS+=$(LIBKERNEL_OBJECTS)
 

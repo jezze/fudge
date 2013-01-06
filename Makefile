@@ -7,6 +7,7 @@ LD=$(PREFIX)ld
 AR=ar
 ARFLAGS=rs
 
+KERNEL=fudge
 RAMDISK_NAME=initrd
 RAMDISK_TYPE=tar
 RAMDISK=$(RAMDISK_NAME).$(RAMDISK_TYPE)
@@ -19,17 +20,16 @@ default: all
 
 include rules.$(ARCH).mk
 include libs/rules.mk
-include kernel/rules.mk
 include modules/rules.mk
 include packages/rules.mk
 
-all: $(KERNEL) $(LIBS) $(MODULES) $(PACKAGES) $(RAMDISK)
+all: $(LIBS) $(KERNEL) $(MODULES) $(PACKAGES) $(RAMDISK)
 
 clean:
-	rm -rf $(KERNEL) $(KERNEL_OBJECTS)
 	rm -rf $(LIBS) $(LIBS_OBJECTS)
 	rm -rf $(MODULES) $(MODULES_OBJECTS)
 	rm -rf $(PACKAGES)
+	rm -rf $(KERNEL)
 	rm -rf $(RAMDISK)
 
 image/bin: $(PACKAGES)
@@ -63,6 +63,9 @@ libs: $(LIBS)
 modules: $(MODULES)
 
 packages: $(PACKAGES)
+
+$(KERNEL): $(LIBMBOOT) $(LIBKERNEL) $(LIBFUDGE)
+	$(LD) $(LDFLAGS) -Tlibs/mboot/linker.ld -o $@ $^
 
 $(RAMDISK_NAME).tar: image/bin image/boot image/boot/fudge image/home image/data image/mod
 	tar -cf $@ image

@@ -58,43 +58,31 @@ Download the source using git.
 At the moment Fudge only runs properly on x86 but there is an ARM port under
 development. It is very limited at the moment.
 
-Depending on what architecture and compiler you use you can edit the top
-Makefile and change the ARCH and PREFIX settings.
-
-The default is:
-
-    ARCH=x86
-    PREFIX=
-
-If you want to compile for ARM with arm-eabi- you can change to:
-
-    ARCH=arm
-    PREFIX=arm-eabi-
-
-Then you only need to run make in order to compile.
+To compile for x86 you write:
 
     $ make
 
-These settings can also be applied without modifing the Makefile:
-
-    $ make ARCH=arm PREFIX=arm-eabi-
-
-### CLEANING
-
-With modified makefile:
+To clean for x86 you write:
 
     $ make clean
 
-Without a modified makefile:
+To compile for ARM you write:
+
+    $ make ARCH=arm PREFIX=arm-eabi-
+
+To clean for ARM you write:
 
     $ make ARCH=arm clean
+
+It is possible to edit the Makefile and set the ARCH and PREFIX variable
+directly so you don't have to supply it every time.
 
 ## RUNNING IN QEMU
 
 The simplest way is to run it inside qemu:
 
     $ qemu-system-x86 \
-        -kernel kernel/fudge \
+        -kernel fudge \
         -initrd initrd.tar \
         -serial stdio \
         -vga std
@@ -114,4 +102,4 @@ Then as root you can execute:
 
     $ make install [ INSTALL_PATH=/boot ]
 
-This will copy kernel/fudge and initrd.tar to your /boot folder
+This will copy fudge and initrd.tar to your /boot folder
