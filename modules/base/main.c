@@ -22,7 +22,7 @@ static unsigned int attach(struct base_driver *driver)
         if (device->driver)
             continue;
 
-        if (!driver->check(driver, device))
+        if (!driver->check(device))
             continue;
 
         device->driver = driver;
@@ -189,7 +189,7 @@ void base_init_device(struct base_device *device, unsigned int type, char *name)
 
 }
 
-void base_init_driver(struct base_driver *driver, unsigned int type, char *name, void (*start)(struct base_driver *self), unsigned int (*check)(struct base_driver *self, struct base_device *device), void (*attach)(struct base_device *device))
+void base_init_driver(struct base_driver *driver, unsigned int type, char *name, void (*start)(struct base_driver *self), unsigned int (*check)(struct base_device *device), void (*attach)(struct base_device *device))
 {
 
     memory_clear(driver, sizeof (struct base_driver));

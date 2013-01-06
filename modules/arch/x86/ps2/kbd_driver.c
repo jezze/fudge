@@ -34,7 +34,7 @@ static void attach(struct base_device *device)
 
 }
 
-static unsigned int check(struct base_driver *self, struct base_device *device)
+static unsigned int check(struct base_device *device)
 {
 
     struct ps2_device *ps2device = (struct ps2_device *)device;

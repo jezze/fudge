@@ -27,7 +27,7 @@ static void attach(struct base_device *device)
 
 }
 
-static unsigned int check(struct base_driver *self, struct base_device *device)
+static unsigned int check(struct base_device *device)
 {
 
     return device->type == PIT_DEVICE_TYPE;

@@ -68,7 +68,7 @@ static void attach(struct base_device *device)
 
 }
 
-static unsigned int check(struct base_driver *self, struct base_device *device)
+static unsigned int check(struct base_device *device)
 {
 
     if (device->type != UART_DEVICE_TYPE)
