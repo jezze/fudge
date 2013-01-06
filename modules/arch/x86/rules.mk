@@ -5,6 +5,7 @@ include modules/arch/x86/bga/rules.mk
 include modules/arch/x86/cpuid/rules.mk
 include modules/arch/x86/fpu/rules.mk
 include modules/arch/x86/i915/rules.mk
+include modules/arch/x86/ide/rules.mk
 include modules/arch/x86/io/rules.mk
 include modules/arch/x86/msr/rules.mk
 include modules/arch/x86/multi/rules.mk
