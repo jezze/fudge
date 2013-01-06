@@ -7,7 +7,9 @@ LD=$(PREFIX)ld
 AR=ar
 ARFLAGS=rs
 
-KERNEL=fudge
+KERNEL_NAME=fudge
+KERNEL=$(KERNEL_NAME)
+
 RAMDISK_NAME=initrd
 RAMDISK_TYPE=tar
 RAMDISK=$(RAMDISK_NAME).$(RAMDISK_TYPE)
@@ -16,19 +18,17 @@ INSTALL_PATH=/boot
 
 .PHONY: all clean kernel libs modules packages
 
-default: all
+all: libs modules packages kernel ramdisk
 
 include rules.$(ARCH).mk
 include libs/rules.mk
 include modules/rules.mk
 include packages/rules.mk
 
-all: $(LIBS) $(KERNEL) $(MODULES) $(PACKAGES) $(RAMDISK)
-
 clean:
 	rm -rf $(LIBS) $(LIBS_OBJECTS)
 	rm -rf $(MODULES) $(MODULES_OBJECTS)
-	rm -rf $(PACKAGES)
+	rm -rf $(PACKAGES) $(PACKAGES_OBJECTS)
 	rm -rf $(KERNEL)
 	rm -rf $(RAMDISK)
 
@@ -56,7 +56,13 @@ install:
 	install -m 644 $(KERNEL) $(INSTALL_PATH)
 	install -m 644 $(RAMDISK) $(INSTALL_PATH)
 
-kernel: $(KERNEL)
+kernel: kernel_$(ARCH)
+
+kernel_arm: $(LIBVERSATILEPB) $(LIBKERNEL) $(LIBFUDGE)
+	$(LD) $(LDFLAGS) -Tlibs/versatilepb/linker.ld -o $(KERNEL) $^
+
+kernel_x86: $(LIBMBOOT) $(LIBKERNEL) $(LIBFUDGE)
+	$(LD) $(LDFLAGS) -Tlibs/mboot/linker.ld -o $(KERNEL) $^
 
 libs: $(LIBS)
 
@@ -64,8 +70,7 @@ modules: $(MODULES)
 
 packages: $(PACKAGES)
 
-$(KERNEL): $(LIBMBOOT) $(LIBKERNEL) $(LIBFUDGE)
-	$(LD) $(LDFLAGS) -Tlibs/mboot/linker.ld -o $@ $^
+ramdisk: $(RAMDISK)
 
 $(RAMDISK_NAME).tar: image/bin image/boot image/boot/fudge image/home image/data image/mod
 	tar -cf $@ image
