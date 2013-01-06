@@ -15,9 +15,17 @@ struct block_interface
 
 };
 
+struct net_protocol_node
+{
+
+    struct system_group root;
+
+};
+
 struct block_protocol
 {
 
+    struct net_protocol_node node;
     char *name;
 
 };
