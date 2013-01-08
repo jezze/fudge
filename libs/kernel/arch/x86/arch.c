@@ -1,3 +1,4 @@
+#include <fudge/kernel.h>
 #include <kernel/runtime.h>
 #include <kernel/kernel.h>
 #include "arch.h"

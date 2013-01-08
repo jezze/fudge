@@ -1,4 +1,4 @@
-#include <fudge/memory.h>
+#include <fudge/kernel.h>
 #include <kernel/error.h>
 #include <kernel/runtime.h>
 #include "arch.h"

@@ -1,4 +1,4 @@
-#include <fudge/memory.h>
+#include <fudge/module.h>
 #include <kernel/vfs.h>
 #include "system.h"
 #include "filesystem.h"

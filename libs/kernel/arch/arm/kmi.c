@@ -1,3 +1,4 @@
+#include <fudge/kernel.h>
 #include "kmi.h"
 #include "reg.h"
 #include "uart.h"

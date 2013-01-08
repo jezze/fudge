@@ -1,3 +1,4 @@
+#include <fudge/kernel.h>
 #include "runtime.h"
 #include "kernel.h"
 #include "vfs.h"

@@ -1,4 +1,4 @@
-#include <fudge/memory.h>
+#include <fudge/kernel.h>
 #include "idt.h"
 #include "isr.h"
 

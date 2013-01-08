@@ -1,5 +1,5 @@
+#include <fudge/module.h>
 #include <fudge/define.h>
-#include <fudge/memory.h>
 #include <fudge/data/circular.h>
 #include <system/system.h>
 #include <base/base.h>

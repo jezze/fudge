@@ -1,3 +1,4 @@
+#include <fudge/module.h>
 #include <system/system.h>
 #include <net/net.h>
 #include "arp.h"

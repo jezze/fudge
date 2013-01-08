@@ -1,4 +1,4 @@
-#include <fudge/memory.h>
+#include <fudge/kernel.h>
 #include "cpu.h"
 #include "gdt.h"
 #include "tss.h"

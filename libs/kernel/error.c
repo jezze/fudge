@@ -1,3 +1,4 @@
+#include <fudge/kernel.h>
 #include "error.h"
 
 static struct error_status status;

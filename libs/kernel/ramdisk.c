@@ -1,6 +1,4 @@
-#include <fudge/memory.h>
-#include <fudge/string.h>
-#include <fudge/format/tar.h>
+#include <fudge/kernel.h>
 #include "vfs.h"
 #include "ramdisk.h"
 

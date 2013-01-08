@@ -1,4 +1,4 @@
-#include <fudge/memory.h>
+#include <fudge/module.h>
 #include <kernel/arch/x86/mmu.h>
 #include <system/system.h>
 #include <base/base.h>
