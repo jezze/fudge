@@ -33,12 +33,11 @@ void kbd_init_interface(struct kbd_interface *interface, struct base_driver *dri
 {
 
     memory_clear(interface, sizeof (struct kbd_interface));
+    system_init_group(&interface->node.root, interface->driver->module.name);
 
     interface->driver = driver;
     interface->read = read;
     interface->write = write;
-
-    system_init_group(&interface->node.root, interface->driver->module.name);
 
 }
 

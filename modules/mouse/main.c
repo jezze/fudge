@@ -37,12 +37,11 @@ void mouse_init_interface(struct mouse_interface *interface, struct base_driver 
 {
 
     memory_clear(interface, sizeof (struct mouse_interface));
-
-    interface->driver = driver;
-
     system_init_group(&interface->node.root, interface->driver->module.name);
     system_init_integer(&interface->node.vx, "vx", (int *)&interface->vx);
     system_init_integer(&interface->node.vy, "vy", (int *)&interface->vy);
+
+    interface->driver = driver;
 
 }
 

@@ -39,16 +39,15 @@ void video_init_interface(struct video_interface *interface, struct base_driver 
 {
 
     memory_clear(interface, sizeof (struct video_interface));
+    system_init_group(&interface->node.root, interface->driver->module.name);
+    system_init_integer(&interface->node.bpp, "bpp", (int *)&interface->bpp);
+    system_init_integer(&interface->node.xres, "xres", (int *)&interface->xres);
+    system_init_integer(&interface->node.yres, "yres", (int *)&interface->yres);
 
     interface->driver = driver;
     interface->enable = enable;
     interface->read = read;
     interface->write = write;
-
-    system_init_group(&interface->node.root, interface->driver->module.name);
-    system_init_integer(&interface->node.bpp, "bpp", (int *)&interface->bpp);
-    system_init_integer(&interface->node.xres, "xres", (int *)&interface->xres);
-    system_init_integer(&interface->node.yres, "yres", (int *)&interface->yres);
 
 }
 
