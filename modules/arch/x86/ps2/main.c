@@ -35,15 +35,12 @@ void init()
     ps2_init_device(&mouseDevice, "ps2mouse", PS2_IRQ_MOUSE);
     ps2_init_kbd_driver(&kbdDriver);
     ps2_init_mouse_driver(&mouseDriver);
-
     base_register_device(&kbdDevice.base);
     base_register_device(&mouseDevice.base);
     base_register_driver(&kbdDriver.base);
     base_register_driver(&mouseDriver.base);
-
     kbd_register_interface(&kbdDriver.interface);
     mouse_register_interface(&mouseDriver.interface);
-
     system_init_stream(&buffer, "ps2_buffer", buffer_read, buffer_write);
     system_register_node(&buffer.node);
 
@@ -53,10 +50,8 @@ void destroy()
 {
 
     system_unregister_node(&buffer.node);
-
     kbd_unregister_interface(&kbdDriver.interface);
     mouse_unregister_interface(&mouseDriver.interface);
-
     base_unregister_driver(&kbdDriver.base);
     base_unregister_driver(&mouseDriver.base);
     base_unregister_device(&kbdDevice.base);

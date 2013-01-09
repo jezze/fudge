@@ -70,6 +70,7 @@ static void handle_irq(struct base_device *device)
 /*
         net_handle_read(&driver->interface, header->length, driver->rx + current + 4);
 */
+
         current += (header->length + 4 + 3) & ~3;
 
         io_outw(driver->io + RTL8139_CAPR, current - 0x10);
@@ -179,7 +180,6 @@ void rtl8139_init_driver(struct rtl8139_driver *driver)
 {
 
     memory_clear(driver, sizeof (struct rtl8139_driver));
-
     base_init_driver(&driver->base, RTL8139_DRIVER_TYPE, "rtl8139", start, check, attach);
     net_init_interface(&driver->interface, &driver->base, send);
 

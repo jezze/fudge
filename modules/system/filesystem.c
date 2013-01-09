@@ -112,10 +112,7 @@ static unsigned int walk(struct vfs_interface *self, unsigned int id, unsigned i
             if (!memory_match(current->name, path, l))
                 continue;
 
-            if (current->type == SYSTEM_NODE_TYPE_GROUP)
-                return walk(self, (unsigned int)current, count - l - 1, path + l + 1);
-            else
-                return walk(self, (unsigned int)current, count - l, path + l);
+            return (current->type == SYSTEM_NODE_TYPE_GROUP) ? walk(self, (unsigned int)current, count - l - 1, path + l + 1) : walk(self, (unsigned int)current, count - l, path + l);
 
         }
 
@@ -151,7 +148,6 @@ void system_init_filesystem(struct system_filesystem *filesystem)
 {
 
     memory_clear(filesystem, sizeof (struct system_filesystem));
-
     vfs_init_interface(&filesystem->base, (unsigned int)&filesystem->root, "system", 0, 0, read, write, walk, 0);
     system_init_group(&filesystem->root, "/");
 

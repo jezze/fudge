@@ -68,7 +68,6 @@ void ps2_init_kbd_driver(struct ps2_kbd_driver *driver)
 {
 
     memory_clear(driver, sizeof (struct ps2_kbd_driver));
-
     base_init_driver(&driver->base, PS2_KBD_DRIVER_TYPE, "ps2kbd", 0, check, attach);
     kbd_init_interface(&driver->interface, &driver->base, read, write);
 

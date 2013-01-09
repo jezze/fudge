@@ -108,7 +108,6 @@ void pci_init_bus(struct pci_bus *bus)
 {
 
     memory_clear(bus, sizeof (struct pci_bus));
-
     base_init_bus(&bus->base, PCI_BUS_TYPE, "pci", scan);
 
     bus->add_device = add_device;

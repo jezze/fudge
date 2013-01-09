@@ -124,7 +124,6 @@ void ps2_init_mouse_driver(struct ps2_mouse_driver *driver)
 {
 
     memory_clear(driver, sizeof (struct ps2_mouse_driver));
-
     base_init_driver(&driver->base, PS2_MOUSE_DRIVER_TYPE, "ps2mouse", start, check, attach);
     mouse_init_interface(&driver->interface, &driver->base);
 

@@ -21,7 +21,6 @@ void arp_init_protocol(struct arp_protocol *protocol)
 {
 
     memory_clear(protocol, sizeof (struct arp_protocol));
-
     net_init_protocol(&protocol->base, "arp", read, write);
 
 }

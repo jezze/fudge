@@ -63,7 +63,6 @@ static void attach(struct base_device *device)
     io_outb(uartDevice->port + UART_FCR, 0xC7);
     io_outb(uartDevice->port + UART_MCR, 0x0B);
     io_outb(uartDevice->port + UART_IER, 0x01);
-
     pic_set_routine(uartDevice->irq, device, handle_irq);
 
 }
@@ -82,7 +81,6 @@ void uart_init_driver(struct uart_driver *driver)
 {
 
     memory_clear(driver, sizeof (struct uart_driver));
-
     base_init_driver(&driver->base, UART_DRIVER_TYPE, "uart", 0, check, attach);
 
     driver->buffer.size = 256;

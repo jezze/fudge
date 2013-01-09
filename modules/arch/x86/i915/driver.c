@@ -30,7 +30,7 @@ static void wait(unsigned int num)
     unsigned int i = 0xcfffffff;
     unsigned int j = 0xcfffffff;
 
-    while(j--)
+    while (j--)
     {
 
         while (i--);
@@ -96,13 +96,10 @@ static void set_pipe_mode(unsigned int width, unsigned int height)
 
     unsigned int htotal = (read(I915_DISPLAYB_HTOTAL) >> 16) + 1;
     unsigned int hdisplay = (read(I915_DISPLAYB_HTOTAL) & 0xFFFF) + 1;
-
     unsigned int hsyncs = (read(I915_DISPLAYB_HSYNC) >> 16) + 1;
     unsigned int hsynce = (read(I915_DISPLAYB_HSYNC) & 0xFFFF) + 1;
-
     unsigned int vtotal = (read(I915_DISPLAYB_VTOTAL) >> 16) + 1;
     unsigned int vdisplay = (read(I915_DISPLAYB_VTOTAL) & 0xFFFF) + 1;
-
     unsigned int vsyncs = (read(I915_DISPLAYB_VSYNC) >> 16) + 1;
     unsigned int vsynce = (read(I915_DISPLAYB_VSYNC) & 0xFFFF) + 1;
 
@@ -127,9 +124,7 @@ static void start(struct base_driver *self)
     enable_pipe();
     enable_plane();
     wait_vblank();
-
     disable_vga();
-
     set_pipe_mode(640, 480);
 
 }
@@ -180,7 +175,6 @@ void i915_init_driver(struct i915_driver *driver)
 {
 
     memory_clear(driver, sizeof (struct i915_driver));
-
     base_init_driver(&driver->base, I915_DRIVER_TYPE, "i915", start, check, attach);
     video_init_interface(&driver->interface, &driver->base, enable, read_data, write_data);
 

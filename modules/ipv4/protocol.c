@@ -21,7 +21,6 @@ void ipv4_init_protocol(struct ipv4_protocol *protocol)
 {
 
     memory_clear(protocol, sizeof (struct ipv4_protocol));
-
     net_init_protocol(&protocol->base, "ipv4", read, write);
 
 }

@@ -33,12 +33,7 @@ static unsigned int read(struct vfs_interface *self, unsigned int id, unsigned i
                 return length;
 
             length += memory_read(out + length, 1024, private + 8, entry->length, 0);
-
-            if (entry->type == 2)
-                length += memory_read(out + length + entry->length, 1024, "/\n", 2, 0);
-            else
-                length += memory_read(out + length + entry->length, 1024, "\n", 1, 0);
-
+            length += (entry->type == 2) ? memory_read(out + length + entry->length, 1024, "/\n", 2, 0) : memory_read(out + length + entry->length, 1024, "\n", 1, 0);
             private += entry->size;
 
         }

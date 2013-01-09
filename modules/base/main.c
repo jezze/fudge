@@ -170,7 +170,6 @@ void base_init_bus(struct base_bus *bus, unsigned int type, char *name, void (*s
 {
 
     memory_clear(bus, sizeof (struct base_bus));
-
     base_init_module(&bus->module, BASE_TYPE_BUS, name);
 
     bus->type = type;
@@ -182,7 +181,6 @@ void base_init_device(struct base_device *device, unsigned int type, char *name)
 {
 
     memory_clear(device, sizeof (struct base_device));
-
     base_init_module(&device->module, BASE_TYPE_DEVICE, name);
 
     device->type = type;
@@ -193,7 +191,6 @@ void base_init_driver(struct base_driver *driver, unsigned int type, char *name,
 {
 
     memory_clear(driver, sizeof (struct base_driver));
-
     base_init_module(&driver->module, BASE_TYPE_DRIVER, name);
 
     driver->type = type;
@@ -207,6 +204,7 @@ void init()
 {
 
     modules = 0;
+
     system_init_group(&root, "base");
     system_register_node(&root.node);
 

@@ -109,7 +109,6 @@ void init()
 {
 
     memory_clear(tasks, sizeof (struct multi_task *) * MULTI_TASK_SLOTS);
-
     syscall_set_routine(SYSCALL_INDEX_SPAWN, spawn);
 
 }

@@ -96,7 +96,6 @@ void gfx_init_surface(struct gfx_surface *surface, unsigned int width, unsigned 
 {
 
     memory_clear(surface, sizeof (struct gfx_surface));
-
     gfx_init_context(&surface->context);
 
     surface->width = width;

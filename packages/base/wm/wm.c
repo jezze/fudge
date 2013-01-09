@@ -81,15 +81,12 @@ void main()
         return;
 
     enable(SCREEN_WIDTH, SCREEN_HEIGHT, 32);
-
     gfx_init_backend(&backend, id, backend_read, backend_write);
     gfx_init_surface(&rootSurface, SCREEN_WIDTH, SCREEN_HEIGHT, GFX_ARGB32, &backend);
     gfx_init_surface(&helloSurface, SCREEN_WIDTH, SCREEN_HEIGHT, GFX_ARGB32, &backend);
-
     init_window(&rootWindow, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, &rootSurface, rootwindow_draw);
-    rootWindow.draw(&rootWindow);
-
     init_window(&helloWindow, 64, 64, 320, 240, &helloSurface, hellowindow_draw);
+    rootWindow.draw(&rootWindow);
     helloWindow.draw(&helloWindow);
 
 }

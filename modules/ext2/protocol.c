@@ -31,7 +31,6 @@ static void read_blockgroup(struct block_interface *interface, unsigned int id, 
     nodegroup = (id - 1) / sb.nodeCountGroup;
 
     interface->read(interface, 2 * sectorsize, sectorsize, buffer);
-
     memory_copy(bg, buffer + nodegroup * sizeof (struct ext2_blockgroup), sizeof (struct ext2_blockgroup));
 
 }
@@ -56,7 +55,6 @@ static void read_node(struct block_interface *interface, unsigned int id, struct
     nodeblock = (id * nodesize) / blocksize;
 
     interface->read(interface, (bg->blockTableAddress + nodeblock) * sectorsize, sectorsize, buffer);
-
     memory_copy(node, buffer + nodesize * (nodeindex % (blocksize / nodesize)), sizeof (struct ext2_node));
 
 }
@@ -95,7 +93,6 @@ void ext2_init_protocol(struct ext2_protocol *protocol)
 {
 
     memory_clear(protocol, sizeof (struct ext2_protocol));
-
     block_init_protocol(&protocol->base, "ext2");
 
     protocol->validate = validate;

@@ -82,7 +82,6 @@ static unsigned int read_directory(struct ramdisk_filesystem *filesystem, struct
 
         c += memory_read(b + c, count - c, filesystem->image->headers[i]->name + length, l - length, offset);
         offset -= (offset > l - length) ? l - length : offset;
-
         c += memory_read(b + c, count - c, "\n", 1, offset);
         offset -= (offset > 1) ? 1 : offset;
 
@@ -197,7 +196,6 @@ void ramdisk_init_filesystem(struct ramdisk_filesystem *filesystem, struct ramdi
 {
 
     memory_clear(filesystem, sizeof (struct ramdisk_filesystem));
-
     vfs_init_interface(&filesystem->interface, 1, "ramdisk", 0, 0, read, write, walk, get_physical);
 
     filesystem->image = image;

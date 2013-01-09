@@ -14,7 +14,6 @@ static void configure_ata(struct ide_device *self)
     self->bus->read_blocks(self->bus, 1, buffer);
 
     lba48 = buffer[IDE_ID_SUPPORT] & (1 << 10);
-
     self->lba28Max = (buffer[IDE_ID_LBA28MAX] << 16) | buffer[IDE_ID_LBA28MAX + 1];
 
     if (lba48)
@@ -146,7 +145,6 @@ void ide_init_device(struct ide_device *device, struct ide_bus *bus, unsigned in
 {
 
     memory_clear(device, sizeof (struct ide_device));
-
     base_init_device(&device->base, IDE_DEVICE_TYPE, "ide");
 
     device->bus = bus;

@@ -6,51 +6,39 @@ void load_modules_core(unsigned int id)
     call_open(FUDGE_IN, FUDGE_CWD, 9, "system.ko");
     call_spawn(id);
     call_close(FUDGE_IN);
-
     call_open(FUDGE_IN, FUDGE_CWD, 7, "base.ko");
     call_spawn(id);
     call_close(FUDGE_IN);
-
     call_open(FUDGE_IN, FUDGE_CWD, 8, "video.ko");
     call_spawn(id);
     call_close(FUDGE_IN);
-
     call_open(FUDGE_IN, FUDGE_CWD, 6, "net.ko");
     call_spawn(id);
     call_close(FUDGE_IN);
-
     call_open(FUDGE_IN, FUDGE_CWD, 8, "block.ko");
     call_spawn(id);
     call_close(FUDGE_IN);
-
     call_open(FUDGE_IN, FUDGE_CWD, 6, "kbd.ko");
     call_spawn(id);
     call_close(FUDGE_IN);
-
     call_open(FUDGE_IN, FUDGE_CWD, 8, "mouse.ko");
     call_spawn(id);
     call_close(FUDGE_IN);
-
     call_open(FUDGE_IN, FUDGE_CWD, 5, "io.ko");
     call_spawn(id);
     call_close(FUDGE_IN);
-
     call_open(FUDGE_IN, FUDGE_CWD, 8, "cpuid.ko");
     call_spawn(id);
     call_close(FUDGE_IN);
-
     call_open(FUDGE_IN, FUDGE_CWD, 6, "msr.ko");
     call_spawn(id);
     call_close(FUDGE_IN);
-
     call_open(FUDGE_IN, FUDGE_CWD, 6, "pic.ko");
     call_spawn(id);
     call_close(FUDGE_IN);
-
     call_open(FUDGE_IN, FUDGE_CWD, 6, "vga.ko");
     call_spawn(id);
     call_close(FUDGE_IN);
-
     call_open(FUDGE_IN, FUDGE_CWD, 6, "ps2.ko");
     call_spawn(id);
     call_close(FUDGE_IN);
@@ -69,23 +57,18 @@ void load_modules_extra(unsigned int id)
     call_open(FUDGE_IN, FUDGE_CWD, 6, "fpu.ko");
     call_spawn(id);
     call_close(FUDGE_IN);
-
     call_open(FUDGE_IN, FUDGE_CWD, 6, "pci.ko");
     call_spawn(id);
     call_close(FUDGE_IN);
-
     call_open(FUDGE_IN, FUDGE_CWD, 6, "pit.ko");
     call_spawn(id);
     call_close(FUDGE_IN);
-
     call_open(FUDGE_IN, FUDGE_CWD, 6, "rtc.ko");
     call_spawn(id);
     call_close(FUDGE_IN);
-
     call_open(FUDGE_IN, FUDGE_CWD, 6, "arp.ko");
     call_spawn(id);
     call_close(FUDGE_IN);
-
     call_open(FUDGE_IN, FUDGE_CWD, 7, "ipv4.ko");
     call_spawn(id);
     call_close(FUDGE_IN);
@@ -136,10 +119,8 @@ void load_modules()
 {
 
     call_open(3, FUDGE_ROOT, 16, "ramdisk/bin/load");
-
     load_modules_core(3);
     load_modules_extra(3);
-
     call_close(3);
 
 }
@@ -160,11 +141,9 @@ void start_shell()
 
     call_open(FUDGE_IN, FUDGE_ROOT, 17, "system/ps2_buffer");
     call_open(FUDGE_OUT, FUDGE_ROOT, 17, "system/vga_buffer");
-
     call_open(3, FUDGE_ROOT, 16, "ramdisk/bin/motd");
     call_spawn(3);
     call_close(3);
-
     call_open(3, FUDGE_ROOT, 17, "ramdisk/bin/shell");
     call_execute(3);
     call_close(3);
@@ -175,12 +154,9 @@ void main()
 {
 
     call_open(FUDGE_CWD, FUDGE_ROOT, 12, "ramdisk/mod/");
-
     load_modules();
     mount_filesystems();
-
     call_open(FUDGE_CWD, FUDGE_ROOT, 0, 0);
-
     start_shell();
 
 }

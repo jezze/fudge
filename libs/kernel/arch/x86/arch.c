@@ -29,14 +29,11 @@ void arch_setup(unsigned int ramdiskc, void **ramdiskv)
     ds3 = gdt_get_selector(GDT_INDEX_UDATA);
 
     tss_setup(ds0, ARCH_STACK_BASE);
-
     runtime_init_task(&task);
-
     isr_setup(cs0);
     mmu_setup_arch(cs0);
     syscall_setup_arch(&task, cs0);
     kernel_setup(&task, ramdiskc, ramdiskv);
-
     isr_usermode(cs3, ds3, task.registers.ip, task.registers.sp);
 
 }

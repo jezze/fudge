@@ -11,9 +11,8 @@ void init()
 {
 
     ide_init_bus(&primary, IDE_BUS0_COMMAND0, IDE_BUS0_DATA0);
-    base_register_bus(&primary.base);
-
     ide_init_bus(&secondary, IDE_BUS0_COMMAND1, IDE_BUS0_DATA1);
+    base_register_bus(&primary.base);
     base_register_bus(&secondary.base);
 
 }

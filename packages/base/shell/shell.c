@@ -59,10 +59,8 @@ static void clear()
 {
 
     lifo_stack_clear(&input);
-
     setup_stream(FUDGE_IN, 18, "/system/ps2_buffer");
     setup_stream(FUDGE_OUT, 18, "/system/vga_buffer");
-
     call_write(FUDGE_OUT, 0, 2, "$ ");
 
 }
@@ -228,6 +226,7 @@ static void interpret(unsigned int length, char *command)
             continue;
 
         interpret_command(i - start, command + start);
+
         start += i + 1;
 
     }
