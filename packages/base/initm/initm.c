@@ -72,6 +72,9 @@ void load_modules_extra(unsigned int id)
     call_open(FUDGE_IN, FUDGE_CWD, 7, "ipv4.ko");
     call_spawn(id);
     call_close(FUDGE_IN);
+    call_open(FUDGE_IN, FUDGE_CWD, 7, "ipv6.ko");
+    call_spawn(id);
+    call_close(FUDGE_IN);
 
 }
 
