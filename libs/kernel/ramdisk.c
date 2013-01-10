@@ -52,7 +52,7 @@ static unsigned int parent(struct ramdisk_filesystem *filesystem, unsigned int i
 
     }
 
-    return 1;
+    return 0;
 
 }
 

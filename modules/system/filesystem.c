@@ -97,7 +97,14 @@ static unsigned int walk(struct vfs_interface *self, unsigned int id, unsigned i
         return id;
 
     if (memory_match(path, "../", 3))
+    {
+
+        if (id == self->rootid)
+            return 0;
+
         return walk(self, (unsigned int)node->parent, count - 3, path + 3);
+
+    }
 
     if (node->type == SYSTEM_NODE_TYPE_GROUP)
     {
