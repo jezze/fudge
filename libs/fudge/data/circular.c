@@ -4,7 +4,7 @@
 unsigned int circular_stream_read(struct circular_stream *stream, unsigned int count, void *buffer)
 {
 
-    char *b = (char *)buffer;
+    char *b = buffer;
     unsigned int i;
 
     for (i = 0; i < count; i++)
@@ -27,7 +27,7 @@ unsigned int circular_stream_read(struct circular_stream *stream, unsigned int c
 unsigned int circular_stream_write(struct circular_stream *stream, unsigned int count, void *buffer)
 {
 
-    char *b = (char *)buffer;
+    char *b = buffer;
     unsigned int i;
 
     for (i = 0; i < count; i++)

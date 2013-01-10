@@ -9,14 +9,7 @@ unsigned int tar_validate(struct tar_header *header)
     unsigned int i;
 
     for (i = 0; i < TAR_BLOCK_SIZE; i++)
-    {
-
-        if (i >= 148 && i < 156)
-            checksum -= 32;
-        else
-            checksum -= address[i];
-
-    }
+        checksum -= (i >= 148 && i < 156) ? 32 : address[i];
 
     return !checksum;
 
