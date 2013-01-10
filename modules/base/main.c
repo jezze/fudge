@@ -158,10 +158,11 @@ static void base_init_module(struct base_module *module, unsigned int type, char
 {
 
     memory_clear(module, sizeof (struct base_module));
-    system_init_group(&module->node.root, module->name);
 
     module->type = type;
     module->name = name;
+
+    system_init_group(&module->node.root, module->name);
 
 }
 
