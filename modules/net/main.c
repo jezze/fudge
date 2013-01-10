@@ -35,11 +35,11 @@ void net_init_interface(struct net_interface *interface, struct base_driver *dri
 {
 
     memory_clear(interface, sizeof (struct net_interface));
+    system_init_group(&interface->node.root, driver->module.name);
 
     interface->driver = driver;
     interface->send = send;
 
-    system_init_group(&interface->node.root, interface->driver->module.name);
 
 }
 
@@ -47,12 +47,11 @@ void net_init_protocol(struct net_protocol *protocol, char *name, unsigned int (
 {
 
     memory_clear(protocol, sizeof (struct net_protocol));
+    system_init_group(&protocol->node.root, name);
 
     protocol->name = name;
     protocol->read = read;
     protocol->write = write;
-
-    system_init_group(&protocol->node.root, name);
 
 }
 
