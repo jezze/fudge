@@ -11,7 +11,7 @@ static unsigned int attach(struct base_driver *driver)
     unsigned int found = 0;
     struct base_module *current;
 
-    for (current = modules; current; current = current->next)
+    for (current = modules; current; current = current->sibling)
     {
 
         struct base_device *device = (struct base_device *)current;
@@ -54,13 +54,13 @@ static void register_module(struct base_module *module)
 
     }
 
-    for (current = modules; current; current = current->next)
+    for (current = modules; current; current = current->sibling)
     {
 
-        if (current->next)
+        if (current->sibling)
             continue;
 
-        current->next = module;
+        current->sibling = module;
 
         return;
 
@@ -113,19 +113,19 @@ static void unregister_module(struct base_module *module)
     if (modules == module)
     {
 
-        modules = modules->next;
+        modules = modules->sibling;
 
         return;
 
     }
 
-    for (current = modules; current; current = current->next)
+    for (current = modules; current; current = current->sibling)
     {
 
-        if (current->next != module)
+        if (current->sibling != module)
             continue;
 
-        current->next = current->next->next;
+        current->sibling = current->sibling->sibling;
 
         return;
 

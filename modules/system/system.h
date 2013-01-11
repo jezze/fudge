@@ -7,10 +7,10 @@
 struct system_node
 {
 
+    struct system_node *parent;
+    struct system_node *sibling;
     unsigned int type;
     char *name;
-    struct system_node *parent;
-    struct system_node *next;
 
 };
 

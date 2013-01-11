@@ -17,7 +17,7 @@ struct base_module
 {
 
     struct base_module_node node;
-    struct base_module *next;
+    struct base_module *sibling;
     unsigned int type;
     char *name;
 

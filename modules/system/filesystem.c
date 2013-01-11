@@ -14,7 +14,7 @@ static unsigned int read_group(struct system_node *node, unsigned int offset, un
     c += memory_read(b + c, count - c, "../\n", 4, offset);
     offset -= (offset > 4) ? 4 : offset;
 
-    for (current = group->children; current; current = current->next)
+    for (current = group->children; current; current = current->sibling)
     {
 
         unsigned int l = string_length(current->name);
@@ -111,7 +111,7 @@ static unsigned int walk(struct vfs_interface *self, unsigned int id, unsigned i
 
         struct system_group *group = (struct system_group *)node;
 
-        for (current = group->children; current; current = current->next)
+        for (current = group->children; current; current = current->sibling)
         {
 
             unsigned int l = string_length(current->name);
