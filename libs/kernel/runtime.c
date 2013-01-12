@@ -29,20 +29,60 @@ struct runtime_mount *runtime_get_task_mount(struct runtime_task *task, unsigned
 
 }
 
-unsigned int runtime_update_task_descriptor(struct runtime_task *task, struct runtime_descriptor *descriptor, unsigned int count, char *path)
+unsigned int runtime_update_child_descriptor(struct runtime_task *task, struct runtime_descriptor *descriptor)
 {
 
     unsigned int i;
+
+    for (i = 1; i < RUNTIME_TASK_MOUNT_SLOTS; i++)
+    {
+
+        if (task->mounts[i].child.interface != descriptor->interface || task->mounts[i].child.id != descriptor->id)
+            continue;
+
+        descriptor->id = task->mounts[i].parent.id;
+        descriptor->interface = task->mounts[i].parent.interface;
+
+        return i;
+
+    }
+
+    return 0;
+
+}
+
+unsigned int runtime_update_parent_descriptor(struct runtime_task *task, struct runtime_descriptor *descriptor)
+{
+
+    unsigned int i;
+
+    for (i = 1; i < RUNTIME_TASK_MOUNT_SLOTS; i++)
+    {
+
+        if (task->mounts[i].parent.interface != descriptor->interface || task->mounts[i].parent.id != descriptor->id)
+            continue;
+
+        descriptor->id = task->mounts[i].child.id;
+        descriptor->interface = task->mounts[i].child.interface;
+
+        return i;
+
+    }
+
+    return 0;
+
+}
+
+unsigned int runtime_update_task_descriptor(struct runtime_task *task, struct runtime_descriptor *descriptor, unsigned int count, char *path)
+{
 
     while (count)
     {
 
         char *offset = memory_find(path, "/", count, 1);
         unsigned int length = (offset) ? (unsigned int)(offset - path) + 1 : count;
-        unsigned int id;
-        unsigned int found = 0;
-
-        id = descriptor->interface->walk(descriptor->interface, descriptor->id, length, path);
+        unsigned int id = descriptor->interface->walk(descriptor->interface, descriptor->id, length, path);
+        unsigned int mount;
 
         if (id)
         {
@@ -56,68 +96,16 @@ unsigned int runtime_update_task_descriptor(struct runtime_task *task, struct ru
         }
 
         if (memory_match(path, "../", 3))
-        {
-
-            for (i = 1; i < RUNTIME_TASK_MOUNT_SLOTS; i++)
-            {
-
-                if (task->mounts[i].child.interface == descriptor->interface && task->mounts[i].child.id == descriptor->id)
-                {
-
-                    descriptor->id = task->mounts[i].parent.id;
-                    descriptor->interface = task->mounts[i].parent.interface;
-                    found = 1;
-
-                    break;
-
-                }
-
-            }
-
-        }
-
+            mount = runtime_update_child_descriptor(task, descriptor);
         else
-        {
+            mount = runtime_update_parent_descriptor(task, descriptor);
 
-            for (i = 1; i < RUNTIME_TASK_MOUNT_SLOTS; i++)
-            {
-
-                if (task->mounts[i].parent.interface == descriptor->interface && task->mounts[i].parent.id == descriptor->id)
-                {
-
-                    descriptor->id = task->mounts[i].child.id;
-                    descriptor->interface = task->mounts[i].child.interface;
-                    found = 1;
-
-                    break;
-
-                }
-
-            }
-
-        }
-
-        if (found)
-            continue;
-
-        return 0;
+        if (!mount)
+            return 0;
 
     }
 
-    for (i = 1; i < RUNTIME_TASK_MOUNT_SLOTS; i++)
-    {
-
-        if (task->mounts[i].parent.interface == descriptor->interface && task->mounts[i].parent.id == descriptor->id)
-        {
-
-            descriptor->id = task->mounts[i].child.id;
-            descriptor->interface = task->mounts[i].child.interface;
-
-            break;
-
-        }
-
-    }
+    runtime_update_parent_descriptor(task, descriptor);
 
     return descriptor->id;
 
