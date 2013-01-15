@@ -15,23 +15,19 @@ static struct runtime_task task;
 void arch_setup(unsigned int ramdiskc, void **ramdiskv)
 {
 
-    unsigned short cs0;
-    unsigned short ds0;
-    unsigned short cs3;
-    unsigned short ds3;
+    struct gdt_pointer *gdtp = gdt_setup();
+    struct idt_pointer *idtp = idt_setup();
+    unsigned short cs0 = gdt_get_selector(GDT_INDEX_KCODE);
+    unsigned short ds0 = gdt_get_selector(GDT_INDEX_KDATA);
+    unsigned short cs3 = gdt_get_selector(GDT_INDEX_UCODE);
+    unsigned short ds3 = gdt_get_selector(GDT_INDEX_UDATA);
 
-    gdt_setup();
-    idt_setup();
-
-    cs0 = gdt_get_selector(GDT_INDEX_KCODE);
-    ds0 = gdt_get_selector(GDT_INDEX_KDATA);
-    cs3 = gdt_get_selector(GDT_INDEX_UCODE);
-    ds3 = gdt_get_selector(GDT_INDEX_UDATA);
-
+    cpu_set_gdt(gdtp);
+    cpu_set_idt(idtp);
     tss_setup(ds0, ARCH_STACK_BASE);
-    runtime_init_task(&task);
     isr_setup(cs0);
     mmu_setup_arch(cs0);
+    runtime_init_task(&task);
     syscall_setup_arch(&task, cs0);
     kernel_setup(&task, ramdiskc, ramdiskv);
     isr_usermode(cs3, ds3, task.registers.ip, task.registers.sp);

@@ -1,5 +1,4 @@
 #include <fudge/kernel.h>
-#include "cpu.h"
 #include "idt.h"
 
 static struct idt_entry entries[IDT_ENTRY_SLOTS];
@@ -20,7 +19,7 @@ void idt_set_entry(unsigned int index, void (*callback)(), unsigned short select
 
 }
 
-void idt_setup()
+struct idt_pointer *idt_setup()
 {
 
     memory_clear(&entries, sizeof (struct idt_entry) * IDT_ENTRY_SLOTS);
@@ -28,7 +27,7 @@ void idt_setup()
     pointer.base = entries;
     pointer.limit = (sizeof (struct idt_entry) * IDT_ENTRY_SLOTS) - 1;
 
-    cpu_set_idt(&pointer);
+    return &pointer;
 
 }
 

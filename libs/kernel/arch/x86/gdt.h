@@ -48,4 +48,4 @@ struct gdt_pointer
 
 unsigned short gdt_get_selector(enum gdt_index index);
 void gdt_set_entry(enum gdt_index index, unsigned int base, unsigned int limit, unsigned char access, unsigned char granularity);
-void gdt_setup();
+struct gdt_pointer *gdt_setup();

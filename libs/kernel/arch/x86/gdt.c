@@ -1,5 +1,4 @@
 #include <fudge/kernel.h>
-#include "cpu.h"
 #include "gdt.h"
 
 static struct gdt_entry entries[GDT_ENTRY_SLOTS];
@@ -24,7 +23,7 @@ void gdt_set_entry(enum gdt_index index, unsigned int base, unsigned int limit, 
 
 }
 
-void gdt_setup()
+struct gdt_pointer *gdt_setup()
 {
 
     memory_clear(&entries, sizeof (struct gdt_entry) * GDT_ENTRY_SLOTS);
@@ -37,7 +36,7 @@ void gdt_setup()
     pointer.base = entries;
     pointer.limit = (sizeof (struct gdt_entry) * GDT_ENTRY_SLOTS) - 1;
 
-    cpu_set_gdt(&pointer);
+    return &pointer;
 
 }
 
