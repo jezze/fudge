@@ -77,7 +77,7 @@ static struct runtime_task *notify_interrupt(struct runtime_task *self, unsigned
 static unsigned int spawn(struct runtime_task *task, void *stack)
 {
 
-    struct multi_spawn_args *args = stack;
+    struct {void *caller; unsigned int index;} *args = stack;
     struct runtime_descriptor *descriptor = runtime_get_task_descriptor(task, args->index);
     struct multi_task *ntask = create_task();
     unsigned int entry;

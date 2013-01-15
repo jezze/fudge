@@ -9,11 +9,3 @@ struct multi_task
     struct runtime_task base;
 
 };
-
-struct multi_spawn_args
-{
-
-    void *caller;
-    unsigned int index;
-
-};
