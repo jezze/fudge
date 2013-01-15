@@ -2,32 +2,6 @@
 #include "vfs.h"
 #include "ramdisk.h"
 
-static struct ramdisk_filesystem ramdiskFilesystem;
-
-static unsigned int parse(struct ramdisk_filesystem *filesystem, void *address)
-{
-
-    char *current;
-
-    for (current = address; *current; current += TAR_BLOCK_SIZE)
-    {
-
-        struct tar_header *header = (struct tar_header *)current;
-        unsigned int size = string_read_num(header->size, 8);
-
-        if (!tar_validate(header))
-            return 0;
-
-        filesystem->image.headers[filesystem->image.count] = header;
-        filesystem->image.count++;
-        current += ((size / TAR_BLOCK_SIZE) + ((size % TAR_BLOCK_SIZE) ? 1 : 0)) * TAR_BLOCK_SIZE;
-
-    }
-
-    return filesystem->image.count;
-
-}
-
 static unsigned int parent(struct ramdisk_filesystem *filesystem, unsigned int id)
 {
 
@@ -181,25 +155,35 @@ static unsigned int get_physical(struct vfs_interface *self, unsigned int id)
 
 }
 
+unsigned int ramdisk_parse(struct ramdisk_filesystem *filesystem, void *address)
+{
+
+    char *current;
+
+    for (current = address; *current; current += TAR_BLOCK_SIZE)
+    {
+
+        struct tar_header *header = (struct tar_header *)current;
+        unsigned int size = string_read_num(header->size, 8);
+
+        if (!tar_validate(header))
+            return 0;
+
+        filesystem->image.headers[filesystem->image.count] = header;
+        filesystem->image.count++;
+        current += ((size / TAR_BLOCK_SIZE) + ((size % TAR_BLOCK_SIZE) ? 1 : 0)) * TAR_BLOCK_SIZE;
+
+    }
+
+    return filesystem->image.count;
+
+}
+
 void ramdisk_init_filesystem(struct ramdisk_filesystem *filesystem)
 {
 
     memory_clear(filesystem, sizeof (struct ramdisk_filesystem));
     vfs_init_interface(&filesystem->interface, 1, "ramdisk", 0, 0, read, write, walk, get_physical);
-
-}
-
-struct vfs_interface *ramdisk_setup(int ramdiskc, void **ramdiskv)
-{
-
-    unsigned int i;
-
-    ramdisk_init_filesystem(&ramdiskFilesystem);
-
-    for (i = 0; i < ramdiskc; i++)
-        parse(&ramdiskFilesystem, *(ramdiskv + i));
-
-    return &ramdiskFilesystem.interface;
 
 }
 

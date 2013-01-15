@@ -1,7 +1,7 @@
 #include <fudge/kernel.h>
 #include "error.h"
 
-struct
+static struct
 {
 
     unsigned int registers[ERROR_REGISTER_SLOTS];

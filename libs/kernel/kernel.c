@@ -6,11 +6,27 @@
 #include "ramdisk.h"
 #include "syscall.h"
 
+static struct ramdisk_filesystem ramdiskFilesystem;
+
+static struct vfs_interface *setup_ramdisk(int ramdiskc, void **ramdiskv)
+{
+
+    unsigned int i;
+
+    ramdisk_init_filesystem(&ramdiskFilesystem);
+
+    for (i = 0; i < ramdiskc; i++)
+        ramdisk_parse(&ramdiskFilesystem, *(ramdiskv + i));
+
+    return &ramdiskFilesystem.interface;
+
+}
+
 void kernel_setup(struct runtime_task *task, unsigned int ramdiskc, void **ramdiskv)
 {
 
     struct vfs_interface *root = vfs_setup();
-    struct vfs_interface *ramdisk = ramdisk_setup(ramdiskc, ramdiskv);
+    struct vfs_interface *ramdisk = setup_ramdisk(ramdiskc, ramdiskv);
     unsigned int id = ramdisk->walk(ramdisk, ramdisk->rootid, 9, "bin/inits");
     unsigned int entry = binary_copy_program(ramdisk, id);
 

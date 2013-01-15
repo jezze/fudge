@@ -8,5 +8,5 @@ struct ramdisk_filesystem
 
 };
 
+unsigned int ramdisk_parse(struct ramdisk_filesystem *filesystem, void *address);
 void ramdisk_init_filesystem(struct ramdisk_filesystem *filesystem);
-struct vfs_interface *ramdisk_setup(int ramdiskc, void **ramdiskv);
