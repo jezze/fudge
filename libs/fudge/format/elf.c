@@ -10,7 +10,7 @@ unsigned int elf_validate(struct elf_header *header)
 
 }
 
-unsigned int elf_find_symbol(struct elf_header *header, struct elf_section_header *sectionTable, struct elf_section_header *symbolHeader, struct elf_symbol *symbolTable, char *stringTable, unsigned int count, char *symbol)
+unsigned int elf_find_symbol(struct elf_header *header, struct elf_section_header *sectionTable, struct elf_section_header *symbolHeader, struct elf_symbol *symbolTable, char *stringTable, unsigned int count, const char *symbol)
 {
 
     unsigned int i;

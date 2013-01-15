@@ -73,7 +73,7 @@ unsigned int runtime_update_parent_descriptor(struct runtime_task *task, struct 
 
 }
 
-unsigned int runtime_update_task_descriptor(struct runtime_task *task, struct runtime_descriptor *descriptor, unsigned int count, char *path)
+unsigned int runtime_update_task_descriptor(struct runtime_task *task, struct runtime_descriptor *descriptor, unsigned int count, const char *path)
 {
 
     while (count)

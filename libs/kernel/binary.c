@@ -2,7 +2,7 @@
 #include "vfs.h"
 #include "binary.h"
 
-unsigned int binary_find_symbol(struct vfs_interface *interface, unsigned int id, unsigned int count, char *symbol)
+unsigned int binary_find_symbol(struct vfs_interface *interface, unsigned int id, unsigned int count, const char *symbol)
 {
 
     struct elf_header header;
