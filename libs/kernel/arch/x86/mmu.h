@@ -25,38 +25,13 @@
 #define MMU_ERROR_RESERVED              (1 << 3)
 #define MMU_ERROR_FETCH                 (1 << 4)
 
-struct mmu_general_registers
-{
-
-    unsigned int edi;
-    unsigned int esi;
-    unsigned int ebp;
-    unsigned int esp;
-    unsigned int ebx;
-    unsigned int edx;
-    unsigned int ecx;
-    unsigned int eax;
-
-};
-
-struct mmu_interrupt_registers
-{
-
-    unsigned int eip;
-    unsigned int cs;
-    unsigned int eflags;
-    unsigned int esp;
-    unsigned int ss;
-
-};
-
 struct mmu_registers
 {
 
     unsigned int ds;
-    struct mmu_general_registers general;
+    struct {unsigned int edi; unsigned int esi; unsigned int ebp; unsigned int esp; unsigned int ebx; unsigned int edx; unsigned int ecx; unsigned int eax;} general;
     unsigned int type;
-    struct mmu_interrupt_registers interrupt;
+    struct {unsigned int eip; unsigned int cs; unsigned int eflags; unsigned int esp; unsigned int ss;} interrupt;
 
 };
 

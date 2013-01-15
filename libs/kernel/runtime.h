@@ -33,18 +33,10 @@ struct runtime_registers
 
 };
 
-struct runtime_status
-{
-
-    unsigned int used;
-    unsigned int idle;
-
-};
-
 struct runtime_task
 {
 
-    struct runtime_status status;
+    struct {unsigned int used; unsigned int idle;} status;
     struct runtime_registers registers;
     struct runtime_descriptor descriptors[RUNTIME_TASK_DESCRIPTOR_SLOTS];
     struct runtime_mount mounts[RUNTIME_TASK_MOUNT_SLOTS];

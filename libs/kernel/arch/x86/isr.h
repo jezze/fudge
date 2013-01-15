@@ -25,42 +25,6 @@ enum isr_index
 
 };
 
-struct isr_general_registers
-{
-
-    unsigned int edi;
-    unsigned int esi;
-    unsigned int ebp;
-    unsigned int esp;
-    unsigned int ebx;
-    unsigned int edx;
-    unsigned int ecx;
-    unsigned int eax;
-
-};
-
-struct isr_interrupt_registers
-{
-
-    unsigned int eip;
-    unsigned int cs;
-    unsigned int eflags;
-    unsigned int esp;
-    unsigned int ss;
-
-};
-
-struct isr_registers
-{
-
-    unsigned int ds;
-    struct isr_general_registers general;
-    unsigned int index;
-    unsigned int extra;
-    struct isr_interrupt_registers interrupt;
-
-};
-
 void isr_routine();
 void isr_disable_pic();
 void isr_usermode(unsigned int cs, unsigned int ds, unsigned int ip, unsigned int sp);

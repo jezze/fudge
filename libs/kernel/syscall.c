@@ -9,7 +9,7 @@ static unsigned int (*routines[SYSCALL_ROUTINE_SLOTS])(struct runtime_task *task
 static unsigned int close(struct runtime_task *task, void *stack)
 {
 
-    struct syscall_close_args *args = stack;
+    struct {void *caller; unsigned int index;} *args = stack;
     struct runtime_descriptor *descriptor = runtime_get_task_descriptor(task, args->index);
 
     if (!descriptor)
@@ -27,7 +27,7 @@ static unsigned int close(struct runtime_task *task, void *stack)
 static unsigned int execute(struct runtime_task *task, void *stack)
 {
 
-    struct syscall_execute_args *args = stack;
+    struct {void *caller; unsigned int index;} *args = stack;
     struct runtime_descriptor *descriptor = runtime_get_task_descriptor(task, args->index);
     unsigned int entry;
 
@@ -57,7 +57,7 @@ static unsigned int exit(struct runtime_task *task, void *stack)
 static unsigned int load(struct runtime_task *task, void *stack)
 {
 
-    struct syscall_load_args *args = stack;
+    struct {void *caller; unsigned int index;} *args = stack;
     struct runtime_descriptor *descriptor = runtime_get_task_descriptor(task, args->index);
     void (*init)();
     unsigned int physical;
@@ -88,7 +88,7 @@ static unsigned int load(struct runtime_task *task, void *stack)
 static unsigned int mount(struct runtime_task *task, void *stack)
 {
 
-    struct syscall_mount_args *args = stack;
+    struct {void *caller; unsigned int index; unsigned int pindex; unsigned int cindex;} *args = stack;
     struct runtime_mount *mount = runtime_get_task_mount(task, args->index);
     struct runtime_descriptor *pdescriptor = runtime_get_task_descriptor(task, args->pindex);
     struct runtime_descriptor *cdescriptor = runtime_get_task_descriptor(task, args->cindex);
@@ -114,7 +114,7 @@ static unsigned int mount(struct runtime_task *task, void *stack)
 static unsigned int open(struct runtime_task *task, void *stack)
 {
 
-    struct syscall_open_args *args = stack;
+    struct {void *caller; unsigned int index; unsigned int pindex; unsigned int count; char *path;} *args = stack;
     struct runtime_descriptor *descriptor = runtime_get_task_descriptor(task, args->index);
     struct runtime_descriptor *pdescriptor = runtime_get_task_descriptor(task, args->pindex);
    
@@ -136,7 +136,7 @@ static unsigned int open(struct runtime_task *task, void *stack)
 static unsigned int read(struct runtime_task *task, void *stack)
 {
 
-    struct syscall_read_args *args = stack;
+    struct {void *caller; unsigned int index; unsigned int offset; unsigned int count; void *buffer;} *args = stack;
     struct runtime_descriptor *descriptor = runtime_get_task_descriptor(task, args->index);
 
     if (!descriptor || !descriptor->interface->read)
@@ -156,7 +156,7 @@ static unsigned int undefined(struct runtime_task *task, void *stack)
 static unsigned int unload(struct runtime_task *task, void *stack)
 {
 
-    struct syscall_unload_args *args = stack;
+    struct {void *caller; unsigned int index;} *args = stack;
     struct runtime_descriptor *descriptor = runtime_get_task_descriptor(task, args->index);
     void (*destroy)();
 
@@ -177,7 +177,7 @@ static unsigned int unload(struct runtime_task *task, void *stack)
 static unsigned int write(struct runtime_task *task, void *stack)
 {
 
-    struct syscall_write_args *args = stack;
+    struct {void *caller; unsigned int index; unsigned int offset; unsigned int count; void *buffer;} *args = stack;
     struct runtime_descriptor *descriptor = runtime_get_task_descriptor(task, args->index);
 
     if (!descriptor || !descriptor->interface->write)

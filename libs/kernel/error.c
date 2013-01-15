@@ -1,7 +1,15 @@
 #include <fudge/kernel.h>
 #include "error.h"
 
-static struct error_status status;
+struct
+{
+
+    unsigned int registers[ERROR_REGISTER_SLOTS];
+    char *message;
+    char *file;
+    unsigned int line;
+
+} status;
 
 void error_assert(unsigned int condition, char *message, char *file, unsigned int line)
 {
