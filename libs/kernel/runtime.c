@@ -111,6 +111,16 @@ unsigned int runtime_update_task_descriptor(struct runtime_task *task, struct ru
 
 }
 
+void runtime_set_registers(struct runtime_task *task, unsigned int ip, unsigned int sp, unsigned int fp, unsigned int status)
+{
+
+    task->registers.ip = ip;
+    task->registers.sp = sp;
+    task->registers.fp = fp;
+    task->registers.status = status;
+
+}
+
 void runtime_init_descriptor(struct runtime_descriptor *descriptor, struct vfs_interface *interface, unsigned int id)
 {
 
@@ -130,18 +140,6 @@ void runtime_init_mount(struct runtime_mount *mount, struct vfs_interface *paren
     mount->parent.id = parentid;
     mount->child.interface = child;
     mount->child.id = childid;
-
-}
-
-void runtime_init_registers(struct runtime_registers *registers, unsigned int ip, unsigned int sp, unsigned int fp, unsigned int status)
-{
-
-    memory_clear(registers, sizeof (struct runtime_registers));
-
-    registers->ip = ip;
-    registers->sp = sp;
-    registers->fp = fp;
-    registers->status = status;
 
 }
 

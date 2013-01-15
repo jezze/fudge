@@ -23,21 +23,11 @@ struct runtime_mount
 
 };
 
-struct runtime_registers
-{
-
-    unsigned int ip;
-    unsigned int sp;
-    unsigned int fp;
-    unsigned int status;
-
-};
-
 struct runtime_task
 {
 
     struct {unsigned int used; unsigned int idle;} status;
-    struct runtime_registers registers;
+    struct {unsigned int ip; unsigned int sp; unsigned int fp; unsigned int status;} registers;
     struct runtime_descriptor descriptors[RUNTIME_TASK_DESCRIPTOR_SLOTS];
     struct runtime_mount mounts[RUNTIME_TASK_MOUNT_SLOTS];
     struct runtime_task *(*notify_interrupt)(struct runtime_task *self, unsigned int index);
@@ -47,7 +37,7 @@ struct runtime_task
 struct runtime_descriptor *runtime_get_task_descriptor(struct runtime_task *task, unsigned int index);
 struct runtime_mount *runtime_get_task_mount(struct runtime_task *task, unsigned int index);
 unsigned int runtime_update_task_descriptor(struct runtime_task *task, struct runtime_descriptor *descriptor, unsigned int count, const char *path);
+void runtime_set_registers(struct runtime_task *task, unsigned int ip, unsigned int sp, unsigned int fp, unsigned int status);
 void runtime_init_descriptor(struct runtime_descriptor *descriptor, struct vfs_interface *interface, unsigned int id);
 void runtime_init_mount(struct runtime_mount *mount, struct vfs_interface *parent, unsigned int parentid, struct vfs_interface *child, unsigned int childid);
-void runtime_init_registers(struct runtime_registers *registers, unsigned int ip, unsigned int sp, unsigned int fp, unsigned int status);
 void runtime_init_task(struct runtime_task *task);

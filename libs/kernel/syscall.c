@@ -39,7 +39,7 @@ static unsigned int execute(struct runtime_task *task, void *stack)
     if (!entry)
         return 0;
 
-    runtime_init_registers(&task->registers, entry, RUNTIME_STACKADDRESS_VIRTUAL, RUNTIME_STACKADDRESS_VIRTUAL, 0);
+    runtime_set_registers(task, entry, RUNTIME_STACKADDRESS_VIRTUAL, RUNTIME_STACKADDRESS_VIRTUAL, 0);
 
     return 1;
 
