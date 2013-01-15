@@ -1,10 +1,5 @@
 .intel_syntax noprefix
 
-.global isr_routine
-isr_routine:
-    cli
-    iret
-
 .global isr_disable_pic
 isr_disable_pic:
     mov al, 0xff

@@ -43,7 +43,7 @@ unsigned short syscall_interrupt(struct syscall_registers *registers)
 void syscall_setup_arch(struct runtime_task *task, unsigned short selector)
 {
 
-    idt_set_entry(0x80, syscall_routine, selector, IDT_FLAG_PRESENT | IDT_FLAG_RING3 | IDT_FLAG_TYPE32INT);
+    idt_set_entry(IDT_INDEX_SYSCALL, syscall_routine, selector, IDT_FLAG_PRESENT | IDT_FLAG_RING3 | IDT_FLAG_TYPE32INT);
 
     running = task;
 

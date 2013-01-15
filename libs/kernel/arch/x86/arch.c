@@ -25,7 +25,7 @@ void arch_setup(unsigned int ramdiskc, void **ramdiskv)
     cpu_set_gdt(gdtp);
     cpu_set_idt(idtp);
     tss_setup(ds0, ARCH_STACK_BASE);
-    isr_setup(cs0);
+    isr_disable_pic();
     mmu_setup_arch(cs0);
     runtime_init_task(&task);
     syscall_setup_arch(&task, cs0);
