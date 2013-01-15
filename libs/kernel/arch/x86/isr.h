@@ -1,24 +1,29 @@
 #define ISR_ROUTINE_SLOTS               256
 
-#define ISR_INDEX_DE                    0x00
-#define ISR_INDEX_DB                    0x01
-#define ISR_INDEX_NI                    0x02
-#define ISR_INDEX_BP                    0x03
-#define ISR_INDEX_OF                    0x04
-#define ISR_INDEX_BR                    0x05
-#define ISR_INDEX_UD                    0x06
-#define ISR_INDEX_NM                    0x07
-#define ISR_INDEX_DF                    0x08
-#define ISR_INDEX_CO                    0x09
-#define ISR_INDEX_TS                    0x0A
-#define ISR_INDEX_NP                    0x0B
-#define ISR_INDEX_SS                    0x0C
-#define ISR_INDEX_GP                    0x0D
-#define ISR_INDEX_PF                    0x0E
-#define ISR_INDEX_MF                    0x10
-#define ISR_INDEX_AC                    0x11
-#define ISR_INDEX_MC                    0x12
-#define ISR_INDEX_XM                    0x13
+enum isr_index
+{
+
+    ISR_INDEX_DE                        = 0x00,
+    ISR_INDEX_DB                        = 0x01,
+    ISR_INDEX_NI                        = 0x02,
+    ISR_INDEX_BP                        = 0x03,
+    ISR_INDEX_OF                        = 0x04,
+    ISR_INDEX_BR                        = 0x05,
+    ISR_INDEX_UD                        = 0x06,
+    ISR_INDEX_NM                        = 0x07,
+    ISR_INDEX_DF                        = 0x08,
+    ISR_INDEX_CO                        = 0x09,
+    ISR_INDEX_TS                        = 0x0A,
+    ISR_INDEX_NP                        = 0x0B,
+    ISR_INDEX_SS                        = 0x0C,
+    ISR_INDEX_GP                        = 0x0D,
+    ISR_INDEX_PF                        = 0x0E,
+    ISR_INDEX_MF                        = 0x10,
+    ISR_INDEX_AC                        = 0x11,
+    ISR_INDEX_MC                        = 0x12,
+    ISR_INDEX_XM                        = 0x13
+
+};
 
 struct isr_general_registers
 {

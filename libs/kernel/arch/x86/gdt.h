@@ -1,12 +1,5 @@
 #define GDT_ENTRY_SLOTS                 6
 
-#define GDT_INDEX_NULL                  0x00
-#define GDT_INDEX_KCODE                 0x01
-#define GDT_INDEX_KDATA                 0x02
-#define GDT_INDEX_UCODE                 0x03
-#define GDT_INDEX_UDATA                 0x04
-#define GDT_INDEX_TSS                   0x05
-
 #define GDT_ACCESS_ACCESSED             (0x01 << 0)
 #define GDT_ACCESS_RW                   (0x01 << 1)
 #define GDT_ACCESS_DC                   (0x01 << 2)
@@ -20,6 +13,18 @@
 
 #define GDT_FLAG_32BIT                  (0x01 << 6)
 #define GDT_FLAG_GRANULARITY            (0x01 << 7)
+
+enum gdt_index
+{
+
+    GDT_INDEX_NULL                      = 0x00,
+    GDT_INDEX_KCODE                     = 0x01,
+    GDT_INDEX_KDATA                     = 0x02,
+    GDT_INDEX_UCODE                     = 0x03,
+    GDT_INDEX_UDATA                     = 0x04,
+    GDT_INDEX_TSS                       = 0x05
+
+};
 
 struct gdt_entry
 {
@@ -41,6 +46,6 @@ struct gdt_pointer
 
 } __attribute__((packed));
 
-unsigned short gdt_get_selector(unsigned int index);
-void gdt_set_entry(unsigned int index, unsigned int base, unsigned int limit, unsigned char access, unsigned char granularity);
+unsigned short gdt_get_selector(enum gdt_index index);
+void gdt_set_entry(enum gdt_index index, unsigned int base, unsigned int limit, unsigned char access, unsigned char granularity);
 void gdt_setup();

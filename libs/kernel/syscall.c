@@ -39,7 +39,7 @@ static unsigned int execute(struct runtime_task *task, void *stack)
     if (!entry)
         return 0;
 
-    runtime_init_registers(&task->registers, entry, RUNTIME_STACK_VADDRESS_BASE, RUNTIME_STACK_VADDRESS_BASE, 0);
+    runtime_init_registers(&task->registers, entry, RUNTIME_STACKADDRESS_VIRTUAL, RUNTIME_STACKADDRESS_VIRTUAL, 0);
 
     return 1;
 
@@ -187,21 +187,15 @@ static unsigned int write(struct runtime_task *task, void *stack)
 
 }
 
-void syscall_set_routine(unsigned int index, unsigned int (*routine)(struct runtime_task *task, void *stack))
+void syscall_set_routine(enum syscall_index index, unsigned int (*routine)(struct runtime_task *task, void *stack))
 {
-
-    if (!index || index >= SYSCALL_ROUTINE_SLOTS)
-        return;
 
     routines[index] = routine;
 
 }
 
-void syscall_unset_routine(unsigned int index)
+void syscall_unset_routine(enum syscall_index index)
 {
-
-    if (!index || index >= SYSCALL_ROUTINE_SLOTS)
-        return;
 
     routines[index] = 0;
 
