@@ -13,39 +13,14 @@
 #define PIC_DATA_VECTOR0                0x20
 #define PIC_DATA_VECTOR1                0x28
 
-struct pic_general_registers
-{
-
-    unsigned int edi;
-    unsigned int esi;
-    unsigned int ebp;
-    unsigned int esp;
-    unsigned int ebx;
-    unsigned int edx;
-    unsigned int ecx;
-    unsigned int eax;
-
-};
-
-struct pic_interrupt_registers
-{
-
-    unsigned int eip;
-    unsigned int cs;
-    unsigned int eflags;
-    unsigned int esp;
-    unsigned int ss;
-
-};
-
 struct pic_registers
 {
 
     unsigned int ds;
-    struct pic_general_registers general;
+    struct {unsigned int edi; unsigned int esi; unsigned int ebp; unsigned int esp; unsigned int ebx; unsigned int edx; unsigned int ecx; unsigned int eax;} general;
     unsigned int index;
     unsigned int slave;
-    struct pic_interrupt_registers interrupt;
+    struct {unsigned int eip; unsigned int cs; unsigned int eflags; unsigned int esp; unsigned int ss;} interrupt;
 
 };
 
