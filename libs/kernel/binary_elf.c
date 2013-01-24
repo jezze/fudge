@@ -28,9 +28,6 @@ static unsigned int binary_elf_find_symbol(struct vfs_interface *interface, unsi
 
     interface->read(interface, id, 0, ELF_HEADER_SIZE, &header);
 
-    if (!elf_validate(&header))
-        return 0;
-
     if (header.shcount > 16)
         return 0;
 
@@ -69,9 +66,6 @@ static unsigned int binary_elf_copy_program(struct vfs_interface *interface, uns
 
     interface->read(interface, id, 0, ELF_HEADER_SIZE, &header);
 
-    if (!elf_validate(&header))
-        return 0;
-
     if (header.phcount > 8)
         return 0;
 
@@ -92,9 +86,6 @@ static unsigned int binary_elf_relocate(struct vfs_interface *interface, unsigne
     unsigned int i;
 
     interface->read(interface, id, 0, ELF_HEADER_SIZE, &header);
-
-    if (!elf_validate(&header))
-        return 0;
 
     if (header.shcount > 16)
         return 0;

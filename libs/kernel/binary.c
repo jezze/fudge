@@ -2,7 +2,7 @@
 #include "vfs.h"
 #include "binary.h"
 
-struct binary_format *formats[BINARY_FORMAT_SLOTS];
+static struct binary_format *formats[BINARY_FORMAT_SLOTS];
 
 static struct binary_format *get_format(struct vfs_interface *interface, unsigned int id)
 {
@@ -73,6 +73,25 @@ void binary_register_format(struct binary_format *format)
             continue;
 
         formats[i] = format;
+
+        return;
+
+    }
+
+}
+
+void binary_unregister_format(struct binary_format *format)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < BINARY_FORMAT_SLOTS; i++)
+    {
+
+        if (formats[i] != format)
+            continue;
+
+        formats[i] = 0;
 
         return;
 
