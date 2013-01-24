@@ -14,6 +14,9 @@ unsigned int binary_find_symbol(struct vfs_interface *interface, unsigned int id
     if (!elf_validate(&header))
         return 0;
 
+    if (header.shcount > 16)
+        return 0;
+
     interface->read(interface, id, header.shoffset, header.shsize * header.shcount, sectionTable);
 
     for (i = 0; i < header.shcount; i++)
@@ -52,6 +55,9 @@ unsigned int binary_copy_program(struct vfs_interface *interface, unsigned int i
     if (!elf_validate(&header))
         return 0;
 
+    if (header.phcount > 8)
+        return 0;
+
     interface->read(interface, id, header.phoffset, header.phsize * header.phcount, programHeader);
 
     for (i = 0; i < header.phcount; i++)
@@ -73,6 +79,9 @@ unsigned int binary_relocate(struct vfs_interface *interface, unsigned int id, u
     if (!elf_validate(&header))
         return 0;
 
+    if (header.shcount > 16)
+        return 0;
+
     interface->read(interface, id, header.shoffset, header.shsize * header.shcount, sectionTable);
 
     for (i = 0; i < header.shcount; i++)
@@ -89,7 +98,6 @@ unsigned int binary_relocate(struct vfs_interface *interface, unsigned int id, u
 
         interface->read(interface, id, sectionTable[i].offset, sectionTable[i].size, relocationTable);
         interface->read(interface, id, sectionTable[sectionTable[i].link].offset, sectionTable[sectionTable[i].link].size, symbolTable);
-
         elf_relocate_section(sectionTable, &sectionTable[i], &sectionTable[sectionTable[i].info], relocationTable, symbolTable, address);
 
     }
