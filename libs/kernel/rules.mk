@@ -1,6 +1,7 @@
 LIBKERNEL=libs/kernel/libkernel.a
 
 LIBKERNEL_OBJECTS+=libs/kernel/binary.o
+LIBKERNEL_OBJECTS+=libs/kernel/binary_elf.o
 LIBKERNEL_OBJECTS+=libs/kernel/error.o
 LIBKERNEL_OBJECTS+=libs/kernel/kernel.o
 LIBKERNEL_OBJECTS+=libs/kernel/ramdisk.o

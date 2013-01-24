@@ -3,6 +3,7 @@
 #include "kernel.h"
 #include "vfs.h"
 #include "binary.h"
+#include "binary_elf.h"
 #include "ramdisk.h"
 #include "syscall.h"
 
@@ -27,10 +28,26 @@ void kernel_setup(struct runtime_task *task, unsigned int ramdiskc, void **ramdi
 
     struct vfs_interface *root = vfs_setup();
     struct vfs_interface *ramdisk = setup_ramdisk(ramdiskc, ramdiskv);
-    unsigned int id = ramdisk->walk(ramdisk, ramdisk->rootid, 9, "bin/inits");
-    unsigned int entry = binary_copy_program(ramdisk, id);
+    unsigned int id;
+    unsigned int entry;
 
+    binary_setup();
+    binary_elf_setup();
     syscall_setup();
+
+    if (!ramdisk)
+        return;
+
+    id = ramdisk->walk(ramdisk, ramdisk->rootid, 9, "bin/inits");
+
+    if (!id)
+        return;
+
+    entry = binary_copy_program(ramdisk, id);
+
+    if (!entry)
+        return;
+
     runtime_set_registers(task, entry, RUNTIME_STACKADDRESS_VIRTUAL, RUNTIME_STACKADDRESS_VIRTUAL, 0);
     runtime_init_mount(&task->mounts[1], 0, 0, root, root->rootid);
     runtime_init_mount(&task->mounts[2], root, root->walk(root, root->rootid, 8, "ramdisk/"), ramdisk, ramdisk->rootid);
