@@ -4,15 +4,15 @@
 static struct idt_entry entries[IDT_ENTRY_SLOTS];
 static struct idt_pointer pointer;
 
-void idt_set_entry(struct idt_entry *entry, void (*callback)(), unsigned short selector, unsigned char flags)
+void idt_set_entry(struct idt_pointer *p, enum idt_index index, void (*callback)(), unsigned short selector, unsigned char flags)
 {
 
     unsigned int base = (unsigned int)callback;
 
-    entry->baseLow = (base & 0xFFFF);
-    entry->baseHigh = (base >> 16);
-    entry->selector = selector;
-    entry->flags = flags;
+    p->base[index].baseLow = (base & 0xFFFF);
+    p->base[index].baseHigh = (base >> 16);
+    p->base[index].selector = selector;
+    p->base[index].flags = flags;
 
 }
 

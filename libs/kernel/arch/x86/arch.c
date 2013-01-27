@@ -61,21 +61,21 @@ void arch_setup(unsigned int ramdiskc, void **ramdiskv)
     struct tss_entry *entries = tss_setup();
     unsigned int tss0;
 
-    gdt_set_entry(&gdtp->base[GDT_INDEX_NULL], GDT_INDEX_NULL, 0x00000000, 0x00000000, 0x00, 0x00);
+    gdt_set_entry(gdtp, GDT_INDEX_NULL, 0x00000000, 0x00000000, 0x00, 0x00);
 
-    x86.segments.cs0 = gdt_set_entry(&gdtp->base[GDT_INDEX_KCODE], GDT_INDEX_KCODE, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_RING0 | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_EXECUTE | GDT_ACCESS_RW, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
-    x86.segments.ds0 = gdt_set_entry(&gdtp->base[GDT_INDEX_KDATA], GDT_INDEX_KDATA, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_RING0 | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
-    x86.segments.cs3 = gdt_set_entry(&gdtp->base[GDT_INDEX_UCODE], GDT_INDEX_UCODE, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_RING3 | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_EXECUTE | GDT_ACCESS_RW, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
-    x86.segments.ds3 = gdt_set_entry(&gdtp->base[GDT_INDEX_UDATA], GDT_INDEX_UDATA, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_RING3 | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
-    tss0 = gdt_set_entry(&gdtp->base[GDT_INDEX_TSS], GDT_INDEX_TSS, (unsigned int)entries, (unsigned int)entries + sizeof (struct tss_entry) * TSS_ENTRY_SLOTS, GDT_ACCESS_PRESENT | GDT_ACCESS_EXECUTE | GDT_ACCESS_ACCESSED, 0x00);
+    x86.segments.cs0 = gdt_set_entry(gdtp, GDT_INDEX_KCODE, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_RING0 | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_EXECUTE | GDT_ACCESS_RW, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
+    x86.segments.ds0 = gdt_set_entry(gdtp, GDT_INDEX_KDATA, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_RING0 | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
+    x86.segments.cs3 = gdt_set_entry(gdtp, GDT_INDEX_UCODE, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_RING3 | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_EXECUTE | GDT_ACCESS_RW, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
+    x86.segments.ds3 = gdt_set_entry(gdtp, GDT_INDEX_UDATA, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_RING3 | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
+    tss0 = gdt_set_entry(gdtp, GDT_INDEX_TSS, (unsigned int)entries, (unsigned int)entries + sizeof (struct tss_entry) * TSS_ENTRY_SLOTS, GDT_ACCESS_PRESENT | GDT_ACCESS_EXECUTE | GDT_ACCESS_ACCESSED, 0x00);
 
     tss_set_entry(&entries[TSS_INDEX_NULL], x86.segments.ds0, ARCH_STACK_BASE);
     cpu_set_gdt(gdtp);
     cpu_set_idt(idtp);
     cpu_set_tss(tss0);
     mmu_setup();
-    idt_set_entry(&idtp->base[IDT_INDEX_PF], arch_isr_pagefault, x86.segments.cs0, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
-    idt_set_entry(&idtp->base[IDT_INDEX_SYSCALL], arch_isr_syscall, x86.segments.cs0, IDT_FLAG_PRESENT | IDT_FLAG_RING3 | IDT_FLAG_TYPE32INT);
+    idt_set_entry(idtp, IDT_INDEX_PF, arch_isr_pagefault, x86.segments.cs0, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
+    idt_set_entry(idtp, IDT_INDEX_SYSCALL, arch_isr_syscall, x86.segments.cs0, IDT_FLAG_PRESENT | IDT_FLAG_RING3 | IDT_FLAG_TYPE32INT);
 
     x86.running = kernel_setup(ramdiskc, ramdiskv);
 
