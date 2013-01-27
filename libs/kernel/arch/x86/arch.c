@@ -58,18 +58,15 @@ void arch_setup(unsigned int ramdiskc, void **ramdiskv)
 
     struct gdt_pointer *gdtp = gdt_setup_pointer();
     struct idt_pointer *idtp = idt_setup_pointer();
-    struct tss_entry *entries = tss_setup();
-    unsigned int tss0;
-
-    gdt_set_entry(gdtp, GDT_INDEX_NULL, 0x00000000, 0x00000000, 0x00, 0x00);
+    struct tss_pointer *tssp = tss_setup_pointer();
+    unsigned int tss0 = gdt_set_entry(gdtp, GDT_INDEX_TSS, (unsigned int)tssp->base, (unsigned int)tssp->base + sizeof (struct tss_entry) * TSS_ENTRY_SLOTS, GDT_ACCESS_PRESENT | GDT_ACCESS_EXECUTE | GDT_ACCESS_ACCESSED, 0x00);
 
     x86.segments.cs0 = gdt_set_entry(gdtp, GDT_INDEX_KCODE, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_RING0 | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_EXECUTE | GDT_ACCESS_RW, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
     x86.segments.ds0 = gdt_set_entry(gdtp, GDT_INDEX_KDATA, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_RING0 | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
     x86.segments.cs3 = gdt_set_entry(gdtp, GDT_INDEX_UCODE, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_RING3 | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_EXECUTE | GDT_ACCESS_RW, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
     x86.segments.ds3 = gdt_set_entry(gdtp, GDT_INDEX_UDATA, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_RING3 | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
-    tss0 = gdt_set_entry(gdtp, GDT_INDEX_TSS, (unsigned int)entries, (unsigned int)entries + sizeof (struct tss_entry) * TSS_ENTRY_SLOTS, GDT_ACCESS_PRESENT | GDT_ACCESS_EXECUTE | GDT_ACCESS_ACCESSED, 0x00);
 
-    tss_set_entry(&entries[TSS_INDEX_NULL], x86.segments.ds0, ARCH_STACK_BASE);
+    tss_set_entry(tssp, TSS_INDEX_NULL, x86.segments.ds0, ARCH_STACK_BASE);
     cpu_set_gdt(gdtp);
     cpu_set_idt(idtp);
     cpu_set_tss(tss0);

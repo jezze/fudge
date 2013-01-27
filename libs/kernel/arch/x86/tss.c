@@ -4,21 +4,24 @@
 #include "tss.h"
 
 static struct tss_entry entries[TSS_ENTRY_SLOTS];
+static struct tss_pointer pointer;
 
-void tss_set_entry(struct tss_entry *entry, unsigned int selector, unsigned int stack)
+void tss_set_entry(struct tss_pointer *p, enum tss_index index, unsigned int selector, unsigned int stack)
 {
 
-    entry->ss0 = selector;
-    entry->esp0 = stack;
+    p->base[index].ss0 = selector;
+    p->base[index].esp0 = stack;
 
 }
 
-struct tss_entry *tss_setup()
+struct tss_pointer *tss_setup_pointer()
 {
 
     memory_clear(&entries, sizeof (struct tss_entry) * TSS_ENTRY_SLOTS);
 
-    return entries;
+    pointer.base = entries;
+
+    return &pointer;
 
 }
 
