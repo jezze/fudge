@@ -35,23 +35,23 @@ unsigned short arch_syscall(struct arch_registers_syscall *registers)
     if (state.running->status.used && !state.running->status.idle)
     {
 
-        registers->interrupt.cs = state.segments.cs3;
+        registers->interrupt.cs = state.selectors.ucode;
         registers->interrupt.eip = state.running->registers.ip;
         registers->interrupt.esp = state.running->registers.sp;
         registers->general.ebp = state.running->registers.fp;
         registers->general.eax = state.running->registers.status;
 
-        return state.segments.ds3;
+        return state.selectors.udata;
 
     }
 
-    registers->interrupt.cs = state.segments.cs0;
+    registers->interrupt.cs = state.selectors.kcode;
     registers->interrupt.eip = (unsigned int)arch_halt;
     registers->interrupt.esp = ARCH_STACK_BASE;
     registers->general.ebp = 0;
     registers->general.eax = 0;
 
-    return state.segments.ds0;
+    return state.selectors.kdata;
 
 }
 
@@ -59,25 +59,25 @@ static void setup_tables(struct gdt_pointer *gdtp, struct idt_pointer *idtp)
 {
 
     struct tss_pointer *tssp = tss_setup_pointer();
-    unsigned int tss0 = gdt_set_entry(gdtp, GDT_INDEX_TSS, (unsigned int)tssp->base, (unsigned int)tssp->base + sizeof (struct tss_entry) * TSS_ENTRY_SLOTS, GDT_ACCESS_PRESENT | GDT_ACCESS_EXECUTE | GDT_ACCESS_ACCESSED, 0x00);
+    unsigned int tss = gdt_set_entry(gdtp, GDT_INDEX_TSS, (unsigned int)tssp->base, (unsigned int)tssp->base + sizeof (struct tss_entry) * TSS_ENTRY_SLOTS, GDT_ACCESS_PRESENT | GDT_ACCESS_EXECUTE | GDT_ACCESS_ACCESSED, 0x00);
 
-    state.segments.cs0 = gdt_set_entry(gdtp, GDT_INDEX_KCODE, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_RING0 | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_EXECUTE | GDT_ACCESS_RW, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
-    state.segments.ds0 = gdt_set_entry(gdtp, GDT_INDEX_KDATA, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_RING0 | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
-    state.segments.cs3 = gdt_set_entry(gdtp, GDT_INDEX_UCODE, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_RING3 | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_EXECUTE | GDT_ACCESS_RW, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
-    state.segments.ds3 = gdt_set_entry(gdtp, GDT_INDEX_UDATA, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_RING3 | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
+    state.selectors.kcode = gdt_set_entry(gdtp, GDT_INDEX_KCODE, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_RING0 | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_EXECUTE | GDT_ACCESS_RW, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
+    state.selectors.kdata = gdt_set_entry(gdtp, GDT_INDEX_KDATA, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_RING0 | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
+    state.selectors.ucode = gdt_set_entry(gdtp, GDT_INDEX_UCODE, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_RING3 | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_EXECUTE | GDT_ACCESS_RW, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
+    state.selectors.udata = gdt_set_entry(gdtp, GDT_INDEX_UDATA, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_RING3 | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
 
-    tss_set_entry(tssp, TSS_INDEX_NULL, state.segments.ds0, ARCH_STACK_BASE);
+    tss_set_entry(tssp, TSS_INDEX_NULL, state.selectors.kdata, ARCH_STACK_BASE);
     cpu_set_gdt(gdtp);
     cpu_set_idt(idtp);
-    cpu_set_tss(tss0);
+    cpu_set_tss(tss);
 
 }
 
 static void setup_routines(struct idt_pointer *idtp)
 {
 
-    idt_set_entry(idtp, IDT_INDEX_PF, arch_isr_pagefault, state.segments.cs0, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
-    idt_set_entry(idtp, IDT_INDEX_SYSCALL, arch_isr_syscall, state.segments.cs0, IDT_FLAG_PRESENT | IDT_FLAG_RING3 | IDT_FLAG_TYPE32INT);
+    idt_set_entry(idtp, IDT_INDEX_PF, arch_isr_pagefault, state.selectors.kcode, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
+    idt_set_entry(idtp, IDT_INDEX_SYSCALL, arch_isr_syscall, state.selectors.kcode, IDT_FLAG_PRESENT | IDT_FLAG_RING3 | IDT_FLAG_TYPE32INT);
 
 }
 
@@ -107,7 +107,7 @@ void arch_setup(unsigned int ramdiskc, void **ramdiskv)
     error_assert(state.running != 0, "Kernel returned no init task", __FILE__, __LINE__);
 
     arch_disable_pic();
-    arch_usermode(state.segments.cs3, state.segments.ds3, state.running->registers.ip, state.running->registers.sp);
+    arch_usermode(state.selectors.ucode, state.selectors.udata, state.running->registers.ip, state.running->registers.sp);
 
 }
 

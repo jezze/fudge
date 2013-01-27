@@ -7,16 +7,21 @@ enum tss_index
 
 };
 
+struct tss_entry_ring
+{
+
+    unsigned int esp;
+    unsigned int ss;
+
+} __attribute__((packed));
+
 struct tss_entry
 {
 
     unsigned int previous;
-    unsigned int esp0;
-    unsigned int ss0;
-    unsigned int esp1;
-    unsigned int ss1;
-    unsigned int esp2;
-    unsigned int ss2;
+    struct tss_entry_ring ring0;
+    struct tss_entry_ring ring1;
+    struct tss_entry_ring ring2;
     unsigned int cr3;
     unsigned int eip;
     unsigned int eflags;
@@ -36,7 +41,7 @@ struct tss_entry
     unsigned int gs;
     unsigned int ldt;
     unsigned short trap;
-    unsigned short iomap_base;
+    unsigned short iomap;
 
 } __attribute__((packed));
 

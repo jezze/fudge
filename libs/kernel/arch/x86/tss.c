@@ -7,8 +7,8 @@ static struct tss_pointer pointer;
 void tss_set_entry(struct tss_pointer *p, enum tss_index index, unsigned int selector, unsigned int stack)
 {
 
-    p->base[index].ss0 = selector;
-    p->base[index].esp0 = stack;
+    p->base[index].ring0.ss = selector;
+    p->base[index].ring0.esp = stack;
 
 }
 

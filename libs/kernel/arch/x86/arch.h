@@ -49,7 +49,7 @@ struct arch_state
 {
 
     struct runtime_task *running;
-    struct {unsigned short cs0; unsigned short ds0; unsigned short cs3; unsigned short ds3;} segments;
+    struct {unsigned short kcode; unsigned short kdata; unsigned short ucode; unsigned short udata;} selectors;
 
 };
 
