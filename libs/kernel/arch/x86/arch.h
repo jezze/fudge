@@ -2,25 +2,50 @@
 #define ARCH_KERNEL_SIZE                0x00400000
 #define ARCH_STACK_BASE                 0x00400000
 
-struct arch_mmu_registers
+struct arch_registers_general
+{
+
+    unsigned int edi;
+    unsigned int esi;
+    unsigned int ebp;
+    unsigned int esp;
+    unsigned int ebx;
+    unsigned int edx;
+    unsigned int ecx;
+    unsigned int eax;
+
+};
+
+struct arch_registers_interrupt
+{
+
+    unsigned int eip;
+    unsigned int cs;
+    unsigned int eflags;
+    unsigned int esp;
+    unsigned int ss;
+
+};
+
+struct arch_registers_mmu
 {
 
     unsigned int ds;
-    struct {unsigned int edi; unsigned int esi; unsigned int ebp; unsigned int esp; unsigned int ebx; unsigned int edx; unsigned int ecx; unsigned int eax;} general;
+    struct arch_registers_general general;
     unsigned int type;
-    struct {unsigned int eip; unsigned int cs; unsigned int eflags; unsigned int esp; unsigned int ss;} interrupt;
+    struct arch_registers_interrupt interrupt;
 
 };
 
-struct arch_syscall_registers
+struct arch_registers_syscall
 {
 
-    struct {unsigned int edi; unsigned int esi; unsigned int ebp; unsigned int esp; unsigned int ebx; unsigned int edx; unsigned int ecx; unsigned int eax;} general;
-    struct {unsigned int eip; unsigned int cs; unsigned int eflags; unsigned int esp; unsigned int ss;} interrupt;
+    struct arch_registers_general general;
+    struct arch_registers_interrupt interrupt;
 
 };
 
-struct arch_x86
+struct arch_state
 {
 
     struct runtime_task *running;
