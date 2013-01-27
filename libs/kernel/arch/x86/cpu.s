@@ -26,9 +26,14 @@ cpu_get_eflags:
     pop eax
     ret
 
-.global cpu_halt
-cpu_halt:
-    hlt
+.global cpu_get_gdt
+cpu_get_gdt:
+    sgdt [eax]
+    ret
+
+.global cpu_get_idt
+cpu_get_idt:
+    sidt [eax]
     ret
 
 .global cpu_set_cr0

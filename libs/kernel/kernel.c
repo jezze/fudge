@@ -7,6 +7,7 @@
 #include "ramdisk.h"
 #include "syscall.h"
 
+static struct runtime_task task;
 static struct ramdisk_filesystem ramdiskFilesystem;
 
 static struct vfs_interface *setup_ramdisk(int ramdiskc, void **ramdiskv)
@@ -23,7 +24,7 @@ static struct vfs_interface *setup_ramdisk(int ramdiskc, void **ramdiskv)
 
 }
 
-void kernel_setup(struct runtime_task *task, unsigned int ramdiskc, void **ramdiskv)
+struct runtime_task *kernel_setup(unsigned int ramdiskc, void **ramdiskv)
 {
 
     struct vfs_interface *root = vfs_setup();
@@ -36,23 +37,26 @@ void kernel_setup(struct runtime_task *task, unsigned int ramdiskc, void **ramdi
     syscall_setup();
 
     if (!ramdisk)
-        return;
+        return 0;
 
     id = ramdisk->walk(ramdisk, ramdisk->rootid, 9, "bin/inits");
 
     if (!id)
-        return;
+        return 0;
 
     entry = binary_copy_program(ramdisk, id);
 
     if (!entry)
-        return;
+        return 0;
 
-    runtime_set_registers(task, entry, RUNTIME_STACKADDRESS_VIRTUAL, RUNTIME_STACKADDRESS_VIRTUAL, 0);
-    runtime_init_mount(&task->mounts[1], 0, 0, root, root->rootid);
-    runtime_init_mount(&task->mounts[2], root, root->walk(root, root->rootid, 8, "ramdisk/"), ramdisk, ramdisk->rootid);
-    runtime_init_descriptor(&task->descriptors[8], root, root->rootid);
-    runtime_init_descriptor(&task->descriptors[9], root, root->rootid);
+    runtime_init_task(&task);
+    runtime_set_registers(&task, entry, RUNTIME_STACKADDRESS_VIRTUAL, RUNTIME_STACKADDRESS_VIRTUAL, 0);
+    runtime_init_mount(&task.mounts[1], 0, 0, root, root->rootid);
+    runtime_init_mount(&task.mounts[2], root, root->walk(root, root->rootid, 8, "ramdisk/"), ramdisk, ramdisk->rootid);
+    runtime_init_descriptor(&task.descriptors[8], root, root->rootid);
+    runtime_init_descriptor(&task.descriptors[9], root, root->rootid);
+
+    return &task;
 
 }
 

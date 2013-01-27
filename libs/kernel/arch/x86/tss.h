@@ -40,5 +40,5 @@ struct tss_entry
 
 } __attribute__((packed));
 
-void tss_set_entry(enum tss_index index, unsigned int selector, unsigned int stack);
-void tss_setup(unsigned short selector, unsigned int stack);
+void tss_set_entry(struct tss_entry *entry, unsigned int selector, unsigned int stack);
+struct tss_entry *tss_setup();

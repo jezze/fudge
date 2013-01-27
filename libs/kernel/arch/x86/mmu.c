@@ -1,9 +1,7 @@
 #include <fudge/kernel.h>
-#include <kernel/error.h>
 #include <kernel/runtime.h>
 #include "arch.h"
 #include "cpu.h"
-#include "idt.h"
 #include "mmu.h"
 
 static struct mmu_directory directory;
@@ -59,20 +57,9 @@ void mmu_reload_memory()
 
 }
 
-void mmu_interrupt(struct mmu_registers *registers)
+void mmu_setup()
 {
 
-    unsigned int address = cpu_get_cr2();
-
-    error_register(1, address);
-    error_register(2, registers->type);
-
-}
-
-void mmu_setup_arch(unsigned short selector)
-{
-
-    idt_set_entry(IDT_INDEX_PF, mmu_routine, selector, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
     mmu_map_memory(&directory, &tables[0], ARCH_KERNEL_BASE, ARCH_KERNEL_BASE, ARCH_KERNEL_SIZE, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE);
     mmu_map_memory(&directory, &tables[1], RUNTIME_TASKADDRESS_PHYSICAL, RUNTIME_TASKADDRESS_VIRTUAL, RUNTIME_TASKADDRESS_SIZE, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);
     mmu_map_memory(&directory, &tables[2], RUNTIME_STACKADDRESS_PHYSICAL, RUNTIME_STACKADDRESS_VIRTUAL - RUNTIME_STACKADDRESS_SIZE, RUNTIME_STACKADDRESS_SIZE, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);

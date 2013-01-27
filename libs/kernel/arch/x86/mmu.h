@@ -25,16 +25,6 @@
 #define MMU_ERROR_RESERVED              (1 << 3)
 #define MMU_ERROR_FETCH                 (1 << 4)
 
-struct mmu_registers
-{
-
-    unsigned int ds;
-    struct {unsigned int edi; unsigned int esi; unsigned int ebp; unsigned int esp; unsigned int ebx; unsigned int edx; unsigned int ecx; unsigned int eax;} general;
-    unsigned int type;
-    struct {unsigned int eip; unsigned int cs; unsigned int eflags; unsigned int esp; unsigned int ss;} interrupt;
-
-};
-
 struct mmu_table
 {
 
@@ -53,5 +43,4 @@ void mmu_load_memory(struct mmu_directory *directory);
 void mmu_map_memory(struct mmu_directory *directory, struct mmu_table *table, unsigned int paddress, unsigned int vaddress, unsigned int size, unsigned int tflags, unsigned int pflags);
 void mmu_reload_memory();
 void mmu_routine();
-void mmu_interrupt(struct mmu_registers *registers);
-void mmu_setup_arch(unsigned short selector);
+void mmu_setup();

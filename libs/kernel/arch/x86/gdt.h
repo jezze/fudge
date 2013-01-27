@@ -46,6 +46,5 @@ struct gdt_pointer
 
 } __attribute__((packed));
 
-unsigned short gdt_get_selector(enum gdt_index index);
-void gdt_set_entry(enum gdt_index index, unsigned int base, unsigned int limit, unsigned char access, unsigned char granularity);
-struct gdt_pointer *gdt_setup();
+unsigned short gdt_set_entry(struct gdt_entry *entry, enum gdt_index index, unsigned int base, unsigned int limit, unsigned char access, unsigned char flags);
+struct gdt_pointer *gdt_setup_pointer();

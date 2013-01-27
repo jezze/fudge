@@ -4,22 +4,19 @@
 static struct idt_entry entries[IDT_ENTRY_SLOTS];
 static struct idt_pointer pointer;
 
-void idt_set_entry(enum idt_index index, void (*callback)(), unsigned short selector, unsigned char flags)
+void idt_set_entry(struct idt_entry *entry, void (*callback)(), unsigned short selector, unsigned char flags)
 {
 
     unsigned int base = (unsigned int)callback;
 
-    if (index >= IDT_ENTRY_SLOTS)
-        return;
-
-    entries[index].baseLow = (base & 0xFFFF);
-    entries[index].baseHigh = (base >> 16);
-    entries[index].selector = selector;
-    entries[index].flags = flags;
+    entry->baseLow = (base & 0xFFFF);
+    entry->baseHigh = (base >> 16);
+    entry->selector = selector;
+    entry->flags = flags;
 
 }
 
-struct idt_pointer *idt_setup()
+struct idt_pointer *idt_setup_pointer()
 {
 
     memory_clear(&entries, sizeof (struct idt_entry) * IDT_ENTRY_SLOTS);
