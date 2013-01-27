@@ -1,6 +1,4 @@
 #include <fudge/kernel.h>
-#include "cpu.h"
-#include "gdt.h"
 #include "tss.h"
 
 static struct tss_entry entries[TSS_ENTRY_SLOTS];
