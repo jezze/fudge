@@ -1,1 +1,1 @@
-void binary_elf_setup();
+struct binary_format *binary_elf_setup();

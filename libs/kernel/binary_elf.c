@@ -5,7 +5,7 @@
 
 static struct binary_format elf;
 
-static unsigned int binary_elf_match(struct vfs_interface *interface, unsigned int id)
+static unsigned int match(struct vfs_interface *interface, unsigned int id)
 {
 
     struct elf_header header;
@@ -19,7 +19,7 @@ static unsigned int binary_elf_match(struct vfs_interface *interface, unsigned i
 
 }
 
-static unsigned int binary_elf_find_symbol(struct vfs_interface *interface, unsigned int id, unsigned int count, const char *symbol)
+static unsigned int find_symbol(struct vfs_interface *interface, unsigned int id, unsigned int count, const char *symbol)
 {
 
     struct elf_header header;
@@ -57,7 +57,7 @@ static unsigned int binary_elf_find_symbol(struct vfs_interface *interface, unsi
 
 }
 
-static unsigned int binary_elf_copy_program(struct vfs_interface *interface, unsigned int id)
+static unsigned int copy_program(struct vfs_interface *interface, unsigned int id)
 {
 
     struct elf_header header;
@@ -78,7 +78,7 @@ static unsigned int binary_elf_copy_program(struct vfs_interface *interface, uns
 
 }
 
-static unsigned int binary_elf_relocate(struct vfs_interface *interface, unsigned int id, unsigned int address)
+static unsigned int relocate(struct vfs_interface *interface, unsigned int id, unsigned int address)
 {
 
     struct elf_header header;
@@ -116,11 +116,12 @@ static unsigned int binary_elf_relocate(struct vfs_interface *interface, unsigne
 
 }
 
-void binary_elf_setup()
+struct binary_format *binary_elf_setup()
 {
 
-    binary_init_format(&elf, binary_elf_match, binary_elf_find_symbol, binary_elf_copy_program, binary_elf_relocate);
-    binary_register_format(&elf);
+    binary_init_format(&elf, match, find_symbol, copy_program, relocate);
+
+    return &elf;
 
 }
 

@@ -30,11 +30,12 @@ struct runtime_task *kernel_setup(unsigned int ramdiskc, void **ramdiskv)
 
     struct vfs_interface *root = vfs_setup();
     struct vfs_interface *ramdisk = setup_ramdisk(ramdiskc, ramdiskv);
+    struct binary_format *elf = binary_elf_setup();
     unsigned int id;
     unsigned int entry;
 
     binary_setup();
-    binary_elf_setup();
+    binary_register_format(elf);
     syscall_setup();
 
     error_assert(ramdisk != 0, "Ramdisk not found", __FILE__, __LINE__);
