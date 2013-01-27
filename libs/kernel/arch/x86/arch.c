@@ -53,11 +53,9 @@ unsigned short arch_syscall(struct arch_syscall_registers *registers)
 
 }
 
-void arch_setup(unsigned int ramdiskc, void **ramdiskv)
+static void setup_tables(struct gdt_pointer *gdtp, struct idt_pointer *idtp)
 {
 
-    struct gdt_pointer *gdtp = gdt_setup_pointer();
-    struct idt_pointer *idtp = idt_setup_pointer();
     struct tss_pointer *tssp = tss_setup_pointer();
     unsigned int tss0 = gdt_set_entry(gdtp, GDT_INDEX_TSS, (unsigned int)tssp->base, (unsigned int)tssp->base + sizeof (struct tss_entry) * TSS_ENTRY_SLOTS, GDT_ACCESS_PRESENT | GDT_ACCESS_EXECUTE | GDT_ACCESS_ACCESSED, 0x00);
 
@@ -70,9 +68,26 @@ void arch_setup(unsigned int ramdiskc, void **ramdiskv)
     cpu_set_gdt(gdtp);
     cpu_set_idt(idtp);
     cpu_set_tss(tss0);
-    mmu_setup();
+
+}
+
+static void setup_routines(struct idt_pointer *idtp)
+{
+
     idt_set_entry(idtp, IDT_INDEX_PF, arch_isr_pagefault, x86.segments.cs0, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
     idt_set_entry(idtp, IDT_INDEX_SYSCALL, arch_isr_syscall, x86.segments.cs0, IDT_FLAG_PRESENT | IDT_FLAG_RING3 | IDT_FLAG_TYPE32INT);
+
+}
+
+void arch_setup(unsigned int ramdiskc, void **ramdiskv)
+{
+
+    struct gdt_pointer *gdtp = gdt_setup_pointer();
+    struct idt_pointer *idtp = idt_setup_pointer();
+
+    setup_tables(gdtp, idtp);
+    setup_routines(idtp);
+    mmu_setup();
 
     x86.running = kernel_setup(ramdiskc, ramdiskv);
 
