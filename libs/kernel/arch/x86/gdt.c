@@ -14,7 +14,7 @@ unsigned short gdt_set_entry(struct gdt_pointer *p, enum gdt_index index, unsign
     p->base[index].limitHigh = (flags & 0xF0) | ((limit >> 16) & 0x0F);
     p->base[index].access = access;
 
-    return (sizeof (struct gdt_entry) * index) | ((p->base[index].access >> 5) & 0x03);
+    return (sizeof (struct gdt_entry) * index) | ((access >> 5) & 0x03);
 
 }
 
