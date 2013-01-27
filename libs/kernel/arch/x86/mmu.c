@@ -1,18 +1,6 @@
 #include <fudge/kernel.h>
-#include <kernel/runtime.h>
-#include "arch.h"
 #include "cpu.h"
 #include "mmu.h"
-
-static struct mmu_directory directory;
-static struct mmu_table tables[3];
-
-static void enable()
-{
-
-    cpu_set_cr0(cpu_get_cr0() | 0x80000000);
-
-}
 
 static void set_directory_table(struct mmu_directory *directory, unsigned int frame, struct mmu_table *table, unsigned int tflags)
 {
@@ -43,6 +31,13 @@ void mmu_map_memory(struct mmu_directory *directory, struct mmu_table *table, un
 
 }
 
+void mmu_enable()
+{
+
+    cpu_set_cr0(cpu_get_cr0() | 0x80000000);
+
+}
+
 void mmu_load_memory(struct mmu_directory *directory)
 {
 
@@ -54,17 +49,6 @@ void mmu_reload_memory()
 {
 
     cpu_set_cr3(cpu_get_cr3());
-
-}
-
-void mmu_setup()
-{
-
-    mmu_map_memory(&directory, &tables[0], ARCH_KERNEL_BASE, ARCH_KERNEL_BASE, ARCH_KERNEL_SIZE, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE);
-    mmu_map_memory(&directory, &tables[1], RUNTIME_TASKADDRESS_PHYSICAL, RUNTIME_TASKADDRESS_VIRTUAL, RUNTIME_TASKADDRESS_SIZE, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);
-    mmu_map_memory(&directory, &tables[2], RUNTIME_STACKADDRESS_PHYSICAL, RUNTIME_STACKADDRESS_VIRTUAL - RUNTIME_STACKADDRESS_SIZE, RUNTIME_STACKADDRESS_SIZE, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);
-    mmu_load_memory(&directory);
-    enable();
 
 }
 

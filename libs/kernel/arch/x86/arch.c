@@ -11,6 +11,8 @@
 #include "tss.h"
 
 static struct arch_x86 x86;
+static struct mmu_directory directory;
+static struct mmu_table tables[3];
 
 void arch_pagefault(struct arch_mmu_registers *registers)
 {
@@ -79,6 +81,17 @@ static void setup_routines(struct idt_pointer *idtp)
 
 }
 
+static void setup_mmu()
+{
+
+    mmu_map_memory(&directory, &tables[0], ARCH_KERNEL_BASE, ARCH_KERNEL_BASE, ARCH_KERNEL_SIZE, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE);
+    mmu_map_memory(&directory, &tables[1], RUNTIME_TASKADDRESS_PHYSICAL, RUNTIME_TASKADDRESS_VIRTUAL, RUNTIME_TASKADDRESS_SIZE, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);
+    mmu_map_memory(&directory, &tables[2], RUNTIME_STACKADDRESS_PHYSICAL, RUNTIME_STACKADDRESS_VIRTUAL - RUNTIME_STACKADDRESS_SIZE, RUNTIME_STACKADDRESS_SIZE, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);
+    mmu_load_memory(&directory);
+    mmu_enable();
+
+}
+
 void arch_setup(unsigned int ramdiskc, void **ramdiskv)
 {
 
@@ -87,7 +100,7 @@ void arch_setup(unsigned int ramdiskc, void **ramdiskv)
 
     setup_tables(gdtp, idtp);
     setup_routines(idtp);
-    mmu_setup();
+    setup_mmu();
 
     x86.running = kernel_setup(ramdiskc, ramdiskv);
 
