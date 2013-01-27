@@ -1,4 +1,5 @@
 #include <fudge/kernel.h>
+#include "error.h"
 #include "runtime.h"
 #include "kernel.h"
 #include "vfs.h"
@@ -36,18 +37,15 @@ struct runtime_task *kernel_setup(unsigned int ramdiskc, void **ramdiskv)
     binary_elf_setup();
     syscall_setup();
 
-    if (!ramdisk)
-        return 0;
+    error_assert(ramdisk != 0, "Ramdisk not found", __FILE__, __LINE__);
 
     id = ramdisk->walk(ramdisk, ramdisk->rootid, 9, "bin/inits");
 
-    if (!id)
-        return 0;
+    error_assert(id != 0, "Init program not found", __FILE__, __LINE__);
 
     entry = binary_copy_program(ramdisk, id);
 
-    if (!entry)
-        return 0;
+    error_assert(entry != 0, "Init program entry point not found", __FILE__, __LINE__);
 
     runtime_init_task(&task);
     runtime_set_registers(&task, entry, RUNTIME_STACKADDRESS_VIRTUAL, RUNTIME_STACKADDRESS_VIRTUAL, 0);
