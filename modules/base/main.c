@@ -43,8 +43,6 @@ static void register_module(struct base_module *module)
 
     struct base_module *current;
 
-    system_group_add(&root, &module->node.root.node);
-
     if (!modules)
     {
 
@@ -108,8 +106,6 @@ static void unregister_module(struct base_module *module)
 
     struct base_module *current;
 
-    system_group_remove(&root, &module->node.root.node);
-
     if (modules == module)
     {
 
@@ -158,7 +154,6 @@ static void base_init_module(struct base_module *module, unsigned int type, char
 {
 
     memory_clear(module, sizeof (struct base_module));
-    system_init_group(&module->node.root, name);
 
     module->type = type;
     module->name = name;

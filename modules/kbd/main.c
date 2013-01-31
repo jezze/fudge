@@ -8,8 +8,6 @@ static struct system_group root;
 void kbd_register_interface(struct kbd_interface *interface)
 {
 
-    system_group_add(&root, &interface->node.root.node);
-
 }
 
 void kbd_register_protocol(struct kbd_protocol *protocol)
@@ -19,8 +17,6 @@ void kbd_register_protocol(struct kbd_protocol *protocol)
 
 void kbd_unregister_interface(struct kbd_interface *interface)
 {
-
-    system_group_remove(&root, &interface->node.root.node);
 
 }
 
@@ -33,7 +29,6 @@ void kbd_init_interface(struct kbd_interface *interface, struct base_driver *dri
 {
 
     memory_clear(interface, sizeof (struct kbd_interface));
-    system_init_group(&interface->node.root, driver->module.name);
 
     interface->driver = driver;
     interface->read = read;

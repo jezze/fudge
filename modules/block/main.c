@@ -8,21 +8,15 @@ static struct system_group root;
 void block_register_interface(struct block_interface *interface)
 {
 
-    system_group_add(&root, &interface->node.root.node);
-
 }
 
 void block_register_protocol(struct block_protocol *protocol)
 {
 
-    system_group_add(&root, &protocol->node.root.node);
-
 }
 
 void block_unregister_interface(struct block_interface *interface)
 {
-
-    system_group_remove(&root, &interface->node.root.node);
 
 }
 
@@ -35,7 +29,6 @@ void block_init_interface(struct block_interface *interface, struct base_driver 
 {
 
     memory_clear(interface, sizeof (struct block_interface));
-    system_init_group(&interface->node.root, driver->module.name);
 
     interface->driver = driver;
     interface->read = read;
@@ -48,7 +41,6 @@ void block_init_protocol(struct block_protocol *protocol, char *name)
 {
 
     memory_clear(protocol, sizeof (struct block_protocol));
-    system_init_group(&protocol->node.root, name);
 
     protocol->name = name;
 

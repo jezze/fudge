@@ -6,17 +6,9 @@ struct base_bus;
 struct base_device;
 struct base_driver;
 
-struct base_module_node
-{
-
-    struct system_group root;
-
-};
-
 struct base_module
 {
 
-    struct base_module_node node;
     struct base_module *sibling;
     unsigned int type;
     char *name;

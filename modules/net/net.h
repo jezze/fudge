@@ -1,17 +1,26 @@
+struct net_interface
+{
+
+    struct base_driver *driver;
+    char mac[6];
+    unsigned int (*send)(struct net_interface *self, unsigned int count, void *buffer);
+
+};
+
 struct net_interface_node
 {
 
     struct system_group root;
+    struct net_interface *interface;
 
 };
 
-struct net_interface
+struct net_protocol
 {
 
-    struct net_interface_node node;
-    struct base_driver *driver;
-    char mac[6];
-    unsigned int (*send)(struct net_interface *self, unsigned int count, void *buffer);
+    char *name;
+    unsigned int (*read)(struct net_interface *interface, unsigned int offset, unsigned int count, void *buffer);
+    unsigned int (*write)(struct net_interface *interface, unsigned int offset, unsigned int count, void *buffer);
 
 };
 
@@ -19,16 +28,7 @@ struct net_protocol_node
 {
 
     struct system_group root;
-
-};
-
-struct net_protocol
-{
-
-    struct net_protocol_node node;
-    char *name;
-    unsigned int (*read)(struct net_interface *interface, unsigned int offset, unsigned int count, void *buffer);
-    unsigned int (*write)(struct net_interface *interface, unsigned int offset, unsigned int count, void *buffer);
+    struct net_protocol *protocol;
 
 };
 

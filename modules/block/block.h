@@ -1,32 +1,32 @@
-struct block_interface_node
-{
-
-    struct system_group root;
-
-};
-
 struct block_interface
 {
 
-    struct block_interface_node node;
     struct base_driver *driver;
     unsigned int (*read)(struct block_interface *self, unsigned int offset, unsigned int count, void *buffer);
     unsigned int (*write)(struct block_interface *self, unsigned int offset, unsigned int count, void *buffer);
 
 };
 
-struct net_protocol_node
+struct block_interface_node
 {
 
     struct system_group root;
+    struct block_interface *interface;
 
 };
 
 struct block_protocol
 {
 
-    struct net_protocol_node node;
     char *name;
+
+};
+
+struct block_protocol_node
+{
+
+    struct system_group root;
+    struct block_protocol *protocol;
 
 };
 
