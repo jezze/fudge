@@ -19,7 +19,7 @@ static struct vfs_interface *setup_ramdisk(int ramdiskc, void **ramdiskv)
     ramdisk_init_filesystem(&ramdiskFilesystem);
 
     for (i = 0; i < ramdiskc; i++)
-        ramdisk_parse(&ramdiskFilesystem, *(ramdiskv + i));
+        ramdisk_parse(&ramdiskFilesystem, ramdiskv[i]);
 
     return &ramdiskFilesystem.interface;
 
