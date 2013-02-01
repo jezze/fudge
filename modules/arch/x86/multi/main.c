@@ -96,7 +96,7 @@ static unsigned int spawn(struct runtime_task *task, void *stack)
     if (!entry)
         return 0;
 
-    runtime_set_registers(&ntask->base, entry, RUNTIME_STACKADDRESS_VIRTUAL, RUNTIME_STACKADDRESS_VIRTUAL, 0);
+    runtime_set_task_registers(&ntask->base, entry, RUNTIME_STACKADDRESS_VIRTUAL, RUNTIME_STACKADDRESS_VIRTUAL, 0);
 
     task->notify_interrupt = notify_interrupt;
     ntask->base.notify_interrupt = notify_interrupt;

@@ -28,7 +28,7 @@ void arch_pagefault(struct arch_registers_mmu *registers)
 unsigned short arch_syscall(struct arch_registers_syscall *registers)
 {
 
-    runtime_set_registers(state.running, registers->interrupt.eip, registers->interrupt.esp, registers->general.ebp, registers->general.eax);
+    runtime_set_task_registers(state.running, registers->interrupt.eip, registers->interrupt.esp, registers->general.ebp, registers->general.eax);
 
     state.running->registers.status = syscall_raise(registers->general.eax, state.running, (void *)registers->interrupt.esp);
     state.running = state.running->notify_interrupt(state.running, registers->general.eax);

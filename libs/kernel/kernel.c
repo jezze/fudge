@@ -49,11 +49,11 @@ struct runtime_task *kernel_setup(unsigned int ramdiskc, void **ramdiskv)
     error_assert(entry != 0, "Init program entry point not found", __FILE__, __LINE__);
 
     runtime_init_task(&task);
-    runtime_set_registers(&task, entry, RUNTIME_STACKADDRESS_VIRTUAL, RUNTIME_STACKADDRESS_VIRTUAL, 0);
-    runtime_init_mount(&task.mounts[1], 0, 0, root, root->rootid);
-    runtime_init_mount(&task.mounts[2], root, root->walk(root, root->rootid, 8, "ramdisk/"), ramdisk, ramdisk->rootid);
-    runtime_init_descriptor(&task.descriptors[8], root, root->rootid);
-    runtime_init_descriptor(&task.descriptors[9], root, root->rootid);
+    runtime_set_task_registers(&task, entry, RUNTIME_STACKADDRESS_VIRTUAL, RUNTIME_STACKADDRESS_VIRTUAL, 0);
+    runtime_set_task_mount(&task, 1, 0, 0, root, root->rootid);
+    runtime_set_task_mount(&task, 2, root, root->walk(root, root->rootid, 8, "ramdisk/"), ramdisk, ramdisk->rootid);
+    runtime_set_task_descriptor(&task, 8, root, root->rootid);
+    runtime_set_task_descriptor(&task, 9, root, root->rootid);
 
     return &task;
 

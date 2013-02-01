@@ -39,7 +39,7 @@ static unsigned int execute(struct runtime_task *task, void *stack)
     if (!entry)
         return 0;
 
-    runtime_set_registers(task, entry, RUNTIME_STACKADDRESS_VIRTUAL, RUNTIME_STACKADDRESS_VIRTUAL, 0);
+    runtime_set_task_registers(task, entry, RUNTIME_STACKADDRESS_VIRTUAL, RUNTIME_STACKADDRESS_VIRTUAL, 0);
 
     return 1;
 
@@ -105,7 +105,7 @@ static unsigned int mount(struct runtime_task *task, void *stack)
 
     child = get_interface();
 
-    runtime_init_mount(mount, pdescriptor->interface, pdescriptor->id, child, child->rootid);
+    runtime_set_task_mount(task, args->index, pdescriptor->interface, pdescriptor->id, child, child->rootid);
 
     return 1;
 
@@ -121,7 +121,7 @@ static unsigned int open(struct runtime_task *task, void *stack)
     if (!descriptor || !pdescriptor)
         return 0;
 
-    runtime_init_descriptor(descriptor, pdescriptor->interface, pdescriptor->id);
+    runtime_set_task_descriptor(task, args->index, pdescriptor->interface, pdescriptor->id);
 
     if (!runtime_update_task_descriptor(task, descriptor, args->count, args->path))
         return 0;

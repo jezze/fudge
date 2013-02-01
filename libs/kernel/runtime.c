@@ -29,7 +29,41 @@ struct runtime_mount *runtime_get_task_mount(struct runtime_task *task, unsigned
 
 }
 
-unsigned int runtime_update_child_descriptor(struct runtime_task *task, struct runtime_descriptor *descriptor)
+void runtime_set_task_registers(struct runtime_task *task, unsigned int ip, unsigned int sp, unsigned int fp, unsigned int status)
+{
+
+    task->registers.ip = ip;
+    task->registers.sp = sp;
+    task->registers.fp = fp;
+    task->registers.status = status;
+
+}
+
+void runtime_set_task_descriptor(struct runtime_task *task, unsigned int index, struct vfs_interface *interface, unsigned int id)
+{
+
+    if (!index || index >= RUNTIME_TASK_DESCRIPTOR_SLOTS)
+        return;
+
+    task->descriptors[index].interface = interface;
+    task->descriptors[index].id = id;
+
+}
+
+void runtime_set_task_mount(struct runtime_task *task, unsigned int index, struct vfs_interface *parent, unsigned int parentid, struct vfs_interface *child, unsigned int childid)
+{
+
+    if (!index || index >= RUNTIME_TASK_MOUNT_SLOTS)
+        return;
+
+    task->mounts[index].parent.interface = parent;
+    task->mounts[index].parent.id = parentid;
+    task->mounts[index].child.interface = child;
+    task->mounts[index].child.id = childid;
+
+}
+
+static unsigned int runtime_update_child_descriptor(struct runtime_task *task, struct runtime_descriptor *descriptor)
 {
 
     unsigned int i;
@@ -51,7 +85,7 @@ unsigned int runtime_update_child_descriptor(struct runtime_task *task, struct r
 
 }
 
-unsigned int runtime_update_parent_descriptor(struct runtime_task *task, struct runtime_descriptor *descriptor)
+static unsigned int runtime_update_parent_descriptor(struct runtime_task *task, struct runtime_descriptor *descriptor)
 {
 
     unsigned int i;
@@ -108,38 +142,6 @@ unsigned int runtime_update_task_descriptor(struct runtime_task *task, struct ru
     runtime_update_parent_descriptor(task, descriptor);
 
     return descriptor->id;
-
-}
-
-void runtime_set_registers(struct runtime_task *task, unsigned int ip, unsigned int sp, unsigned int fp, unsigned int status)
-{
-
-    task->registers.ip = ip;
-    task->registers.sp = sp;
-    task->registers.fp = fp;
-    task->registers.status = status;
-
-}
-
-void runtime_init_descriptor(struct runtime_descriptor *descriptor, struct vfs_interface *interface, unsigned int id)
-{
-
-    memory_clear(descriptor, sizeof (struct runtime_descriptor));
-
-    descriptor->interface = interface;
-    descriptor->id = id;
-
-}
-
-void runtime_init_mount(struct runtime_mount *mount, struct vfs_interface *parent, unsigned int parentid, struct vfs_interface *child, unsigned int childid)
-{
-
-    memory_clear(mount, sizeof (struct runtime_mount));
-
-    mount->parent.interface = parent;
-    mount->parent.id = parentid;
-    mount->child.interface = child;
-    mount->child.id = childid;
 
 }
 
