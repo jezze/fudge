@@ -21,6 +21,7 @@ void arch_pagefault(struct arch_registers_mmu *registers)
 
     error_register(1, address);
     error_register(2, registers->type);
+    error_panic("PAGE FAULT", __FILE__, __LINE__);
 
 }
 
