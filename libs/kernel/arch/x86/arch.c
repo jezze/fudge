@@ -104,8 +104,6 @@ void arch_setup(unsigned int ramdiskc, void **ramdiskv)
 
     state.running = kernel_setup(ramdiskc, ramdiskv);
 
-    error_assert(state.running != 0, "Kernel returned no init task", __FILE__, __LINE__);
-
     arch_disable_pic();
     arch_usermode(state.selectors.ucode, state.selectors.udata, state.running->registers.ip, state.running->registers.sp);
 
