@@ -63,29 +63,7 @@ void runtime_set_task_mount(struct runtime_task *task, unsigned int index, struc
 
 }
 
-static unsigned int runtime_update_child_descriptor(struct runtime_task *task, struct runtime_descriptor *descriptor)
-{
-
-    unsigned int i;
-
-    for (i = 1; i < RUNTIME_TASK_MOUNT_SLOTS; i++)
-    {
-
-        if (task->mounts[i].child.interface != descriptor->interface || task->mounts[i].child.id != descriptor->id)
-            continue;
-
-        descriptor->id = task->mounts[i].parent.id;
-        descriptor->interface = task->mounts[i].parent.interface;
-
-        return i;
-
-    }
-
-    return 0;
-
-}
-
-static unsigned int runtime_update_parent_descriptor(struct runtime_task *task, struct runtime_descriptor *descriptor)
+static unsigned int follow_child(struct runtime_task *task, struct runtime_descriptor *descriptor)
 {
 
     unsigned int i;
@@ -98,6 +76,28 @@ static unsigned int runtime_update_parent_descriptor(struct runtime_task *task, 
 
         descriptor->id = task->mounts[i].child.id;
         descriptor->interface = task->mounts[i].child.interface;
+
+        return i;
+
+    }
+
+    return 0;
+
+}
+
+static unsigned int follow_parent(struct runtime_task *task, struct runtime_descriptor *descriptor)
+{
+
+    unsigned int i;
+
+    for (i = 1; i < RUNTIME_TASK_MOUNT_SLOTS; i++)
+    {
+
+        if (task->mounts[i].child.interface != descriptor->interface || task->mounts[i].child.id != descriptor->id)
+            continue;
+
+        descriptor->id = task->mounts[i].parent.id;
+        descriptor->interface = task->mounts[i].parent.interface;
 
         return i;
 
@@ -129,17 +129,14 @@ unsigned int runtime_update_task_descriptor(struct runtime_task *task, struct ru
 
         }
 
-        if (memory_match(path, "../", 3))
-            mount = runtime_update_child_descriptor(task, descriptor);
-        else
-            mount = runtime_update_parent_descriptor(task, descriptor);
+        mount = (memory_match(path, "../", 3)) ? follow_parent(task, descriptor) : follow_child(task, descriptor);
 
         if (!mount)
             return 0;
 
     }
 
-    runtime_update_parent_descriptor(task, descriptor);
+    follow_child(task, descriptor);
 
     return descriptor->id;
 
