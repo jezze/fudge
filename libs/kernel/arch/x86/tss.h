@@ -48,6 +48,7 @@ struct tss_entry
 struct tss_pointer
 {
 
+    unsigned short limit;
     struct tss_entry *base;
 
 } __attribute__((packed));
