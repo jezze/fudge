@@ -98,8 +98,8 @@ static void scan(struct base_bus *self)
 
     /* Im cheating a bit */
 
-    add_device(bus, 0x01);
-    add_device(bus, 0x0C);
+    add_device(bus, PS2_IRQ_KEYBOARD);
+    add_device(bus, PS2_IRQ_MOUSE);
 
 }
 
@@ -110,8 +110,6 @@ void ps2_init_bus(struct ps2_bus *bus)
     base_init_bus(&bus->base, PS2_BUS_TYPE, "ps2", scan);
 
     bus->read_status = read_status;
-    bus->wait_read = wait_read;
-    bus->wait_write = wait_write;
     bus->read_data = read_data;
     bus->write_command = write_command;
     bus->write_data = write_data;

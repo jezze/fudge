@@ -36,7 +36,6 @@ static void attach(struct base_device *device)
     unsigned char status;
 
     pic_set_routine(ps2device->irq, device, handle_irq);
-
     ps2device->bus->write_command(0xAE);
     ps2device->bus->write_command(0x20);
 
