@@ -181,13 +181,12 @@ void base_init_device(struct base_device *device, unsigned int type, char *name)
 
 }
 
-void base_init_driver(struct base_driver *driver, unsigned int type, char *name, void (*start)(struct base_driver *self), unsigned int (*check)(struct base_device *device), void (*attach)(struct base_device *device))
+void base_init_driver(struct base_driver *driver, char *name, void (*start)(struct base_driver *self), unsigned int (*check)(struct base_device *device), void (*attach)(struct base_device *device))
 {
 
     memory_clear(driver, sizeof (struct base_driver));
     base_init_module(&driver->module, BASE_TYPE_DRIVER, name);
 
-    driver->type = type;
     driver->start = start;
     driver->check = check;
     driver->attach = attach;

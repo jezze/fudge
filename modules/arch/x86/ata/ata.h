@@ -1,5 +1,3 @@
-#define ATA_DRIVER_TYPE                 0x6324
-
 struct ata_driver
 {
 

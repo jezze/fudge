@@ -18,8 +18,7 @@
 #define UART_IRQ1                       0x04
 #define UART_IRQ2                       0x03
 
-#define UART_DEVICE_TYPE                0x0002
-#define UART_DRIVER_TYPE                0x0232
+#define UART_DEVICE_TYPE                0x1000
 
 struct uart_device
 {

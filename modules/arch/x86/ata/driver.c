@@ -38,7 +38,7 @@ void ata_init_driver(struct ata_driver *driver)
 {
 
     memory_clear(driver, sizeof (struct ata_driver));
-    base_init_driver(&driver->base, ATA_DRIVER_TYPE, "ata", 0, check, attach);
+    base_init_driver(&driver->base, "ata", 0, check, attach);
     block_init_interface(&driver->interface, &driver->base, 0, 0);
 
 }

@@ -17,8 +17,6 @@
 #define VGA_FB_COLOR_RED2               0x0C
 #define VGA_FB_COLOR_WHITE              0x0F
 
-#define VGA_DRIVER_TYPE                 0x0003
-
 struct vga_cursor
 {
 

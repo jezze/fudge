@@ -28,8 +28,7 @@
 
 #define PIT_IRQ                         0x00
 
-#define PIT_DEVICE_TYPE                 0x2202
-#define PIT_DRIVER_TYPE                 0x2202
+#define PIT_DEVICE_TYPE                 0x2002
 
 struct pit_device
 {

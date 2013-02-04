@@ -1,5 +1,3 @@
-#define ATAPI_DRIVER_TYPE               0x6325
-
 struct atapi_driver
 {
 

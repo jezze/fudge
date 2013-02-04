@@ -137,7 +137,7 @@ void vga_init_driver(struct vga_driver *driver)
 {
 
     memory_clear(driver, sizeof (struct vga_driver));
-    base_init_driver(&driver->base, VGA_DRIVER_TYPE, "vga", start, 0, 0);
+    base_init_driver(&driver->base, "vga", start, 0, 0);
     video_init_interface(&driver->interface, &driver->base, 0, read_data, write_data);
 
     driver->interface.xres = 80;

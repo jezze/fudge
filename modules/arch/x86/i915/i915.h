@@ -104,8 +104,6 @@
 #define I915_VGA_CONTROL_DISABLE        (0x01 << 31)
 #define I915_VGA_CONTROL_PIPE           (0x01 << 29)
 
-#define I915_DRIVER_TYPE                0x0915
-
 struct i915_driver
 {
 

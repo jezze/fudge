@@ -38,7 +38,7 @@
 #define PCI_CONFIG_IRQ_PIN              0x3C
 
 #define PCI_BUS_TYPE                    0x0004
-#define PCI_DEVICE_TYPE                 0x0006
+#define PCI_DEVICE_TYPE                 0x0004
 
 struct pci_bus;
 

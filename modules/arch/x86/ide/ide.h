@@ -59,7 +59,7 @@
 #define IDE_IRQ_SECONDARY               0x0F
 
 #define IDE_BUS_TYPE                    0x0002
-#define IDE_DEVICE_TYPE                 0x0004
+#define IDE_DEVICE_TYPE                 0x0002
 
 struct ide_bus;
 
