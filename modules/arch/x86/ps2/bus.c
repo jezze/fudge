@@ -58,10 +58,17 @@ static void scan(struct base_bus *self)
 {
 
     struct ps2_bus *bus = (struct ps2_bus *)self;
+    unsigned char config;
     unsigned char status;
 
     write_command(0xAD);
     write_command(0xA7);
+    write_command(0x20);
+
+    config = read_data();
+
+    write_command(0x60);
+    write_data(config & 0xDC);
     write_command(0xAA);
 
     status = read_data();
@@ -69,10 +76,25 @@ static void scan(struct base_bus *self)
     if (status != 0x55)
         return;
 
-    /* Im cheating a bit */
+    if (config & (1 << 4))
+    {
 
-    add_device(bus, PS2_IRQ_KEYBOARD);
-    add_device(bus, PS2_IRQ_MOUSE);
+        write_command(0xAB);
+
+        if (!read_data())
+            add_device(bus, PS2_IRQ_KEYBOARD);
+
+    }
+
+    if (config & (1 << 5))
+    {
+
+        write_command(0xA9);
+
+        if (!read_data())
+            add_device(bus, PS2_IRQ_MOUSE);
+
+    }
 
 }
 
