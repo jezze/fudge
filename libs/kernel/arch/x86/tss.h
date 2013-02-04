@@ -3,7 +3,7 @@
 enum tss_index
 {
 
-    TSS_INDEX_NULL                      = 0x00
+    TSS_INDEX_DEFAULT                   = 0x00
 
 };
 

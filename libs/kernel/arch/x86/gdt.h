@@ -17,7 +17,6 @@
 enum gdt_index
 {
 
-    GDT_INDEX_NULL                      = 0x00,
     GDT_INDEX_KCODE                     = 0x01,
     GDT_INDEX_KDATA                     = 0x02,
     GDT_INDEX_UCODE                     = 0x03,
