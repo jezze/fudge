@@ -26,6 +26,7 @@ struct ps2_bus
     unsigned int devicesCount;
     unsigned char (*read_status)();
     unsigned char (*read_data)();
+    unsigned char (*read_data_async)();
     void (*write_command)(unsigned char value);
     void (*write_data)(unsigned char value);
 

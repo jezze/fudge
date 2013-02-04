@@ -12,20 +12,17 @@
 static void handle_irq(struct base_device *device)
 {
 
-/*
     struct ps2_device *ps2device = (struct ps2_device *)device;
-*/
-
     struct ps2_kbd_driver *driver = (struct ps2_kbd_driver *)device->driver;
-    unsigned char scancode = io_inb(0x60);
+    unsigned char data = ps2device->bus->read_data_async();
 
     if (driver->escaped)
         driver->escaped = 0;
 
-    if (scancode == 0xE0)
+    if (data == 0xE0)
         driver->escaped = 1;
 
-    circular_stream_write(&driver->stream, 1, &scancode);
+    circular_stream_write(&driver->stream, 1, &data);
 
 }
 

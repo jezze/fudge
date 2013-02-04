@@ -24,6 +24,13 @@ static unsigned char read_data()
 
 }
 
+static unsigned char read_data_async()
+{
+
+    return io_inb(PS2_DATA);
+
+}
+
 static void write_command(unsigned char value)
 {
 
@@ -106,6 +113,7 @@ void ps2_init_bus(struct ps2_bus *bus)
 
     bus->read_status = read_status;
     bus->read_data = read_data;
+    bus->read_data_async = read_data_async;
     bus->write_command = write_command;
     bus->write_data = write_data;
 

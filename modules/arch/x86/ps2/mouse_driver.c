@@ -14,27 +14,28 @@ static void handle_irq(struct base_device *device)
 
     struct ps2_device *ps2device = (struct ps2_device *)device;
     struct ps2_mouse_driver *driver = (struct ps2_mouse_driver *)device->driver;
+    unsigned char data = ps2device->bus->read_data_async();
 
     switch (driver->cycle)
     {
 
         case 0:
 
-            driver->status = ps2device->bus->read_data();
+            driver->status = data;
             driver->cycle++;
 
             break;
 
         case 1:
 
-            driver->interface.vx = ps2device->bus->read_data();
+            driver->interface.vx = data;
             driver->cycle++;
 
             break;
 
         case 2:
 
-            driver->interface.vy = ps2device->bus->read_data();
+            driver->interface.vy = data;
             driver->cycle = 0;
 
             break;
