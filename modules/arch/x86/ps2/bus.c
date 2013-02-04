@@ -49,6 +49,13 @@ static void write_data(unsigned char value)
 
 }
 
+static void reset()
+{
+
+    write_command(0xFE);
+
+}
+
 static void add_device(struct ps2_bus *bus, unsigned int irq)
 {
 
@@ -116,6 +123,7 @@ void ps2_init_bus(struct ps2_bus *bus)
     bus->read_data_async = read_data_async;
     bus->write_command = write_command;
     bus->write_data = write_data;
+    bus->reset = reset;
 
 }
 

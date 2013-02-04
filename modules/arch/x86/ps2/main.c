@@ -12,6 +12,7 @@ static struct ps2_kbd_driver kbd;
 static struct ps2_mouse_driver mouse;
 
 static struct system_stream buffer;
+static struct system_stream reset;
 
 static unsigned int buffer_read(unsigned int offset, unsigned int count, void *buffer)
 {
@@ -24,6 +25,22 @@ static unsigned int buffer_write(unsigned int offset, unsigned int count, void *
 {
 
     return kbd.interface.write(&kbd.interface, offset, count, buffer);
+
+}
+
+static unsigned int reset_read(unsigned int offset, unsigned int count, void *buffer)
+{
+
+    return 0;
+
+}
+
+static unsigned int reset_write(unsigned int offset, unsigned int count, void *buffer)
+{
+
+    bus.reset();
+
+    return 0;
 
 }
 
@@ -40,12 +57,15 @@ void init()
     base_register_driver(&mouse.base);
     system_init_stream(&buffer, "ps2_buffer", buffer_read, buffer_write);
     system_register_node(&buffer.node);
+    system_init_stream(&reset, "ps2_reset", reset_read, reset_write);
+    system_register_node(&reset.node);
 
 }
 
 void destroy()
 {
 
+    system_unregister_node(&reset.node);
     system_unregister_node(&buffer.node);
     kbd_unregister_interface(&kbd.interface);
     base_unregister_driver(&kbd.base);

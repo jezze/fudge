@@ -29,6 +29,7 @@ struct ps2_bus
     unsigned char (*read_data_async)();
     void (*write_command)(unsigned char value);
     void (*write_data)(unsigned char value);
+    void (*reset)();
 
 };
 
