@@ -88,19 +88,11 @@ struct ide_device
     unsigned int type;
     unsigned int slave;
     unsigned char model[41];
-    void (*configure_ata)(struct ide_device *self);
-    void (*configure_atapi)(struct ide_device *self);
     unsigned int lba28Max;
-    unsigned int (*read_lba28)(struct ide_device *self, unsigned int sector, unsigned int count, void *buffer);
-    void (*read_lba28_async)(struct ide_device *self, unsigned int sector, unsigned int count, void *buffer);
-    unsigned int (*write_lba28)(struct ide_device *self, unsigned int sector, unsigned int count, void *buffer);
-    void (*write_lba28_async)(struct ide_device *self, unsigned int sector, unsigned int count, void *buffer);
     unsigned int lba48MaxLow;
     unsigned int lba48MaxHigh;
-    unsigned int (*read_lba48)(struct ide_device *self, unsigned int sectorlow, unsigned int sectorhigh, unsigned int count, void *buffer);
-    void (*read_lba48_async)(struct ide_device *self, unsigned int sectorlow, unsigned int sectorhigh, unsigned int count, void *buffer);
-    unsigned int (*write_lba48)(struct ide_device *self, unsigned int sectorlow, unsigned int sectorhigh, unsigned int count, void *buffer);
-    void (*write_lba48_async)(struct ide_device *self, unsigned int sectorlow, unsigned int sectorhigh, unsigned int count, void *buffer);
+    void (*configure_ata)(struct ide_device *self);
+    void (*configure_atapi)(struct ide_device *self);
 
 };
 
@@ -112,18 +104,25 @@ struct ide_bus
     unsigned short data;
     struct ide_device devices[8];
     unsigned int devicesCount;
-    void (*sleep)(struct ide_bus *self);
-    void (*wait)(struct ide_bus *self);
-    void (*select)(struct ide_bus *self, unsigned char operation, unsigned int slave);
-    void (*set_lba)(struct ide_bus *self, unsigned char count, unsigned char lba0, unsigned char lba1, unsigned char lba2);
-    void (*set_lba2)(struct ide_bus *self, unsigned char count, unsigned char lba3, unsigned char lba4, unsigned char lba5);
-    void (*set_command)(struct ide_bus *self, unsigned char command);
-    unsigned int (*read_block)(struct ide_bus *self, unsigned int count, void *buffer);
-    unsigned int (*read_blocks)(struct ide_bus *self, unsigned int count, void *buffer);
-    unsigned int (*write_block)(struct ide_bus *self, unsigned int count, void *buffer);
-    unsigned int (*write_blocks)(struct ide_bus *self, unsigned int count, void *buffer);
 
 };
 
+unsigned int ide_device_read_lba28(struct ide_device *device, unsigned int sector, unsigned int count, void *buffer);
+void ide_device_read_lba28_async(struct ide_device *device, unsigned int sector, unsigned int count, void *buffer);
+unsigned int ide_device_write_lba28(struct ide_device *device, unsigned int sector, unsigned int count, void *buffer);
+void ide_device_write_lba28_async(struct ide_device *device, unsigned int sector, unsigned int count, void *buffer);
+unsigned int ide_device_read_lba48(struct ide_device *device, unsigned int sectorlow, unsigned int sectorhigh, unsigned int count, void *buffer);
+void ide_device_read_lba48_async(struct ide_device *device, unsigned int sectorlow, unsigned int sectorhigh, unsigned int count, void *buffer);
+unsigned int ide_device_write_lba48(struct ide_device *device, unsigned int sectorlow, unsigned int sectorhigh, unsigned int count, void *buffer);
+void ide_device_write_lba48_async(struct ide_device *device, unsigned int sectorlow, unsigned int sectorhigh, unsigned int count, void *buffer);
+void ide_bus_sleep(struct ide_bus *bus);
+void ide_bus_select(struct ide_bus *bus, unsigned char operation, unsigned int slave);
+void ide_bus_set_lba(struct ide_bus *bus, unsigned char count, unsigned char lba0, unsigned char lba1, unsigned char lba2);
+void ide_bus_set_lba2(struct ide_bus *bus, unsigned char count, unsigned char lba3, unsigned char lba4, unsigned char lba5);
+void ide_bus_set_command(struct ide_bus *bus, unsigned char command);
+unsigned int ide_bus_read_block(struct ide_bus *bus, unsigned int count, void *buffer);
+unsigned int ide_bus_read_blocks(struct ide_bus *bus, unsigned int count, void *buffer);
+unsigned int ide_bus_write_block(struct ide_bus *bus, unsigned int count, void *buffer);
+unsigned int ide_bus_write_blocks(struct ide_bus *bus, unsigned int count, void *buffer);
 void ide_init_device(struct ide_device *device, struct ide_bus *bus, unsigned int irq, unsigned int slave, unsigned int type);
 void ide_init_bus(struct ide_bus *bus, unsigned int control, unsigned int data);

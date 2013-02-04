@@ -4,20 +4,72 @@
 #include <arch/x86/io/io.h>
 #include "ide.h"
 
-static unsigned int read_block(struct ide_bus *self, unsigned int count, void *buffer)
+static void wait(struct ide_bus *bus)
+{
+
+    while (io_inb(bus->data + IDE_DATA_COMMAND) & IDE_STATUS_BUSY);
+
+}
+
+void ide_bus_sleep(struct ide_bus *bus)
+{
+
+    io_inb(bus->control);
+    io_inb(bus->control);
+    io_inb(bus->control);
+    io_inb(bus->control);
+
+}
+
+void ide_bus_select(struct ide_bus *bus, unsigned char operation, unsigned int slave)
+{
+
+    io_outb(bus->data + IDE_DATA_SELECT, operation | slave << 4);
+    ide_bus_sleep(bus);
+
+}
+
+void ide_bus_set_lba(struct ide_bus *bus, unsigned char count, unsigned char lba0, unsigned char lba1, unsigned char lba2)
+{
+
+    io_outb(bus->data + IDE_DATA_COUNT0, count);
+    io_outb(bus->data + IDE_DATA_LBA0, lba0);
+    io_outb(bus->data + IDE_DATA_LBA1, lba1);
+    io_outb(bus->data + IDE_DATA_LBA2, lba2);
+
+}
+
+void ide_bus_set_lba2(struct ide_bus *bus, unsigned char count, unsigned char lba3, unsigned char lba4, unsigned char lba5)
+{
+
+    io_outb(bus->data + IDE_DATA_COUNT1, count);
+    io_outb(bus->data + IDE_DATA_LBA3, lba3);
+    io_outb(bus->data + IDE_DATA_LBA4, lba4);
+    io_outb(bus->data + IDE_DATA_LBA5, lba5);
+
+}
+
+void ide_bus_set_command(struct ide_bus *bus, unsigned char command)
+{
+
+    io_outb(bus->data + IDE_DATA_COMMAND, command);
+
+}
+
+unsigned int ide_bus_read_block(struct ide_bus *bus, unsigned int count, void *buffer)
 {
 
     unsigned int i;
     unsigned short *out = buffer;
 
     for (i = 0; i < 256; i++)
-        *out++ = io_inw(self->data);
+        *out++ = io_inw(bus->data);
 
     return 512;
 
 }
 
-static unsigned int read_blocks(struct ide_bus *self, unsigned int count, void *buffer)
+unsigned int ide_bus_read_blocks(struct ide_bus *bus, unsigned int count, void *buffer)
 {
 
     unsigned int i;
@@ -28,11 +80,11 @@ static unsigned int read_blocks(struct ide_bus *self, unsigned int count, void *
 
         unsigned int j;
 
-        self->sleep(self);
-        self->wait(self);
+        ide_bus_sleep(bus);
+        wait(bus);
 
         for (j = 0; j < 256; j++)
-            *out++ = io_inw(self->data);
+            *out++ = io_inw(bus->data);
 
     }
 
@@ -40,20 +92,20 @@ static unsigned int read_blocks(struct ide_bus *self, unsigned int count, void *
 
 }
 
-static unsigned int write_block(struct ide_bus *self, unsigned int count, void *buffer)
+unsigned int ide_bus_write_block(struct ide_bus *bus, unsigned int count, void *buffer)
 {
 
     unsigned int i;
     unsigned short *out = buffer;
 
     for (i = 0; i < 256; i++)
-        io_outw(self->data, *out++);
+        io_outw(bus->data, *out++);
 
     return 512;
 
 }
 
-static unsigned int write_blocks(struct ide_bus *self, unsigned int count, void *buffer)
+unsigned int ide_bus_write_blocks(struct ide_bus *bus, unsigned int count, void *buffer)
 {
 
     unsigned int i;
@@ -64,68 +116,16 @@ static unsigned int write_blocks(struct ide_bus *self, unsigned int count, void 
 
         unsigned int j;
 
-        self->sleep(self);
-        self->wait(self);
+        ide_bus_sleep(bus);
+        wait(bus);
 
         for (j = 0; j < 256; j++)
-            io_outw(self->data, *out++);
+            io_outw(bus->data, *out++);
 
     }
 
     return i;
 
-
-}
-
-static void sleep(struct ide_bus *self)
-{
-
-    io_inb(self->control);
-    io_inb(self->control);
-    io_inb(self->control);
-    io_inb(self->control);
-
-}
-
-static void wait(struct ide_bus *self)
-{
-
-    while (io_inb(self->data + IDE_DATA_COMMAND) & IDE_STATUS_BUSY);
-
-}
-
-static void select(struct ide_bus *self, unsigned char operation, unsigned int slave)
-{
-
-    io_outb(self->data + IDE_DATA_SELECT, operation | slave << 4);
-    self->sleep(self);
-
-}
-
-static void set_lba(struct ide_bus *self, unsigned char count, unsigned char lba0, unsigned char lba1, unsigned char lba2)
-{
-
-    io_outb(self->data + IDE_DATA_COUNT0, count);
-    io_outb(self->data + IDE_DATA_LBA0, lba0);
-    io_outb(self->data + IDE_DATA_LBA1, lba1);
-    io_outb(self->data + IDE_DATA_LBA2, lba2);
-
-}
-
-static void set_lba2(struct ide_bus *self, unsigned char count, unsigned char lba3, unsigned char lba4, unsigned char lba5)
-{
-
-    io_outb(self->data + IDE_DATA_COUNT1, count);
-    io_outb(self->data + IDE_DATA_LBA3, lba3);
-    io_outb(self->data + IDE_DATA_LBA4, lba4);
-    io_outb(self->data + IDE_DATA_LBA5, lba5);
-
-}
-
-static void set_command(struct ide_bus *self, unsigned char command)
-{
-
-    io_outb(self->data + IDE_DATA_COMMAND, command);
 
 }
 
@@ -155,9 +155,9 @@ static unsigned int detect(struct ide_bus *bus, unsigned int slave)
     unsigned char status;
     unsigned short lba;
 
-    select(bus, 0xA0, slave);
-    set_lba(bus, 0, 0, 0, 0);
-    set_command(bus, IDE_COMMAND_ID_ATA);
+    ide_bus_select(bus, 0xA0, slave);
+    ide_bus_set_lba(bus, 0, 0, 0, 0);
+    ide_bus_set_command(bus, IDE_COMMAND_ID_ATA);
 
     status = io_inb(bus->data + IDE_DATA_COMMAND);
 
@@ -206,16 +206,6 @@ void ide_init_bus(struct ide_bus *bus, unsigned int control, unsigned int data)
 
     bus->control = control;
     bus->data = data;
-    bus->sleep = sleep;
-    bus->wait = wait;
-    bus->select = select;
-    bus->set_lba = set_lba;
-    bus->set_lba2 = set_lba2;
-    bus->set_command = set_command;
-    bus->read_block = read_block;
-    bus->read_blocks = read_blocks;
-    bus->write_block = write_block;
-    bus->write_blocks = write_blocks;
 
 }
 
