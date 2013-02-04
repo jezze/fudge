@@ -171,13 +171,14 @@ void base_init_bus(struct base_bus *bus, unsigned int type, char *name, void (*s
 
 }
 
-void base_init_device(struct base_device *device, unsigned int type, char *name)
+void base_init_device(struct base_device *device, unsigned int type, unsigned int irq, char *name)
 {
 
     memory_clear(device, sizeof (struct base_device));
     base_init_module(&device->module, BASE_TYPE_DEVICE, name);
 
     device->type = type;
+    device->irq = irq;
 
 }
 

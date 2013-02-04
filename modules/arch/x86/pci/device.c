@@ -7,7 +7,7 @@ void pci_init_device(struct pci_device *device, struct pci_bus *bus, unsigned in
 {
 
     memory_clear(device, sizeof (struct pci_device));
-    base_init_device(&device->base, PCI_DEVICE_TYPE, "pci");
+    base_init_device(&device->base, PCI_DEVICE_TYPE, 0, "pci");
 
     device->bus = bus;
     device->num = num;

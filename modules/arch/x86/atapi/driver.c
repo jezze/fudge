@@ -14,9 +14,7 @@ static void handle_irq(struct base_device *device)
 static void attach(struct base_device *device)
 {
 
-    struct ide_device *ideDevice = (struct ide_device *)device;
-
-    pic_set_routine(ideDevice->irq, device, handle_irq);
+    pic_set_routine(device->irq, device, handle_irq);
 
 }
 

@@ -14,7 +14,6 @@ struct ps2_device
 
     struct base_device base;
     struct ps2_bus *bus;
-    unsigned int irq;
 
 };
 

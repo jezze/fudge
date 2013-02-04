@@ -34,7 +34,6 @@ struct pit_device
 {
 
     struct base_device base;
-    unsigned int irq;
     unsigned short divisor;
     unsigned short jiffies;
 

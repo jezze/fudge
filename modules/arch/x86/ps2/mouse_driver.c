@@ -50,7 +50,7 @@ static void attach(struct base_device *device)
     struct ps2_device *ps2device = (struct ps2_device *)device;
     unsigned char status;
 
-    pic_set_routine(ps2device->irq, device, handle_irq);
+    pic_set_routine(device->irq, device, handle_irq);
     ps2device->bus->write_command(0xA8);
     ps2device->bus->write_command(0x20);
 
@@ -70,12 +70,10 @@ static void attach(struct base_device *device)
 static unsigned int check(struct base_device *device)
 {
 
-    struct ps2_device *ps2device = (struct ps2_device *)device;
-
     if (device->type != PS2_DEVICE_TYPE)
         return 0;
 
-    return ps2device->irq == PS2_IRQ_MOUSE;
+    return device->irq == PS2_IRQ_MOUSE;
 
 }
 

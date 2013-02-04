@@ -85,7 +85,6 @@ struct ide_device
     struct base_device base;
     struct ide_bus *bus;
     struct pci_device *pciDevice;
-    unsigned int irq;
     unsigned int type;
     unsigned int slave;
     unsigned char model[41];

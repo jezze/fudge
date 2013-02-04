@@ -145,11 +145,10 @@ void ide_init_device(struct ide_device *device, struct ide_bus *bus, unsigned in
 {
 
     memory_clear(device, sizeof (struct ide_device));
-    base_init_device(&device->base, IDE_DEVICE_TYPE, "ide");
+    base_init_device(&device->base, IDE_DEVICE_TYPE, irq, "ide");
 
     device->bus = bus;
     device->type = type;
-    device->irq = irq;
     device->slave = slave;
     device->configure_ata = configure_ata;
     device->configure_atapi = configure_atapi;
