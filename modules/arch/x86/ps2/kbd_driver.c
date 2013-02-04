@@ -9,11 +9,15 @@
 #include <arch/x86/io/io.h>
 #include "ps2.h"
 
-static void handle_irq(struct base_device *self)
+static void handle_irq(struct base_device *device)
 {
 
-    struct ps2_kbd_driver *driver = (struct ps2_kbd_driver *)self->driver;
-    unsigned char scancode = io_inb(PS2_DATA);
+/*
+    struct ps2_device *ps2device = (struct ps2_device *)device;
+*/
+
+    struct ps2_kbd_driver *driver = (struct ps2_kbd_driver *)device->driver;
+    unsigned char scancode = io_inb(0x60);
 
     if (driver->escaped)
         driver->escaped = 0;
@@ -29,8 +33,17 @@ static void attach(struct base_device *device)
 {
 
     struct ps2_device *ps2device = (struct ps2_device *)device;
+    unsigned char status;
 
     pic_set_routine(ps2device->irq, device, handle_irq);
+
+    ps2device->bus->write_command(0xAE);
+    ps2device->bus->write_command(0x20);
+
+    status = ps2device->bus->read_data() | 1;
+
+    ps2device->bus->write_command(0x60);
+    ps2device->bus->write_data(status);
 
 }
 

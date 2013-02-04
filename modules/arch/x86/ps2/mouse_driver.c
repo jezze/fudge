@@ -9,64 +9,32 @@
 #include <arch/x86/io/io.h>
 #include "ps2.h"
 
-static void wait_read()
+static void handle_irq(struct base_device *device)
 {
 
-    while ((io_inb(PS2_COMMAND) & 1) != 1);
-
-}
-
-static void wait_write()
-{
-
-    while ((io_inb(PS2_COMMAND) & 2) != 0);
-
-}
-
-static void write(unsigned char value)
-{
-
-    wait_write();
-    io_outb(PS2_COMMAND, 0xD4);
-    wait_write();
-    io_outb(PS2_DATA, value);
-
-}
-
-static unsigned char read()
-{
-
-    wait_read();
-
-    return io_inb(PS2_DATA);
-
-}
-
-static void handle_irq(struct base_device *self)
-{
-
-    struct ps2_mouse_driver *driver = (struct ps2_mouse_driver *)self->driver;
+    struct ps2_device *ps2device = (struct ps2_device *)device;
+    struct ps2_mouse_driver *driver = (struct ps2_mouse_driver *)device->driver;
 
     switch (driver->cycle)
     {
 
         case 0:
 
-            driver->status = io_inb(0x60);
+            driver->status = ps2device->bus->read_data();
             driver->cycle++;
 
             break;
 
         case 1:
 
-            driver->interface.vx = io_inb(0x60);
+            driver->interface.vx = ps2device->bus->read_data();
             driver->cycle++;
 
             break;
 
         case 2:
 
-            driver->interface.vy = io_inb(0x60);
+            driver->interface.vy = ps2device->bus->read_data();
             driver->cycle = 0;
 
             break;
@@ -75,36 +43,27 @@ static void handle_irq(struct base_device *self)
 
 }
 
-static void start(struct base_driver *self)
-{
-
-    unsigned int status;
-
-    wait_write();
-    io_outb(PS2_COMMAND, 0xA8);
-    wait_write();
-    io_outb(PS2_COMMAND, 0x20);
-    wait_read();
-
-    status = (io_inb(PS2_DATA) | 2);
-
-    wait_write();
-    io_outb(PS2_COMMAND, 0x60);
-    wait_write();
-    io_outb(PS2_DATA, status);
-    write(0xF6);
-    read();
-    write(0xF4);
-    read();
-
-}
-
 static void attach(struct base_device *device)
 {
 
     struct ps2_device *ps2device = (struct ps2_device *)device;
+    unsigned char status;
 
     pic_set_routine(ps2device->irq, device, handle_irq);
+
+    ps2device->bus->write_command(0xA8);
+    ps2device->bus->write_command(0x20);
+
+    status = ps2device->bus->read_data() | 2;
+
+    ps2device->bus->write_command(0x60);
+    ps2device->bus->write_data(status);
+    ps2device->bus->write_command(0xD4);
+    ps2device->bus->write_data(0xF6);
+    ps2device->bus->read_data();
+    ps2device->bus->write_command(0xD4);
+    ps2device->bus->write_data(0xF4);
+    ps2device->bus->read_data();
 
 }
 
@@ -124,7 +83,7 @@ void ps2_init_mouse_driver(struct ps2_mouse_driver *driver)
 {
 
     memory_clear(driver, sizeof (struct ps2_mouse_driver));
-    base_init_driver(&driver->base, "ps2mouse", start, check, attach);
+    base_init_driver(&driver->base, "ps2mouse", 0, check, attach);
     mouse_init_interface(&driver->interface, &driver->base);
 
     driver->cycle = 2;
