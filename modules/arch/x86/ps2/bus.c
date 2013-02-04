@@ -15,24 +15,10 @@ static unsigned char read_status()
 
 }
 
-static void wait_read()
-{
-
-    while ((read_status() & 1) != 1);
-
-}
-
-static void wait_write()
-{
-
-    while ((read_status() & 2) != 0);
-
-}
-
 static unsigned char read_data()
 {
 
-    wait_read();
+    while ((read_status() & 1) != 1);
 
     return io_inb(PS2_DATA);
 
@@ -41,7 +27,8 @@ static unsigned char read_data()
 static void write_command(unsigned char value)
 {
 
-    wait_write();
+    while ((read_status() & 2) != 0);
+
     io_outb(PS2_COMMAND, value);
 
 }
@@ -49,7 +36,8 @@ static void write_command(unsigned char value)
 static void write_data(unsigned char value)
 {
 
-    wait_write();
+    while ((read_status() & 2) != 0);
+
     io_outb(PS2_DATA, value);
 
 }
@@ -66,32 +54,17 @@ static void add_device(struct ps2_bus *bus, unsigned int irq)
 
 }
 
-static void disable_devices()
-{
-
-    write_command(0xAD);
-    write_command(0xA7);
-
-}
-
-static unsigned char check_status()
-{
-
-    write_command(0xAA);
-
-    return read_data();
-
-}
-
 static void scan(struct base_bus *self)
 {
 
     struct ps2_bus *bus = (struct ps2_bus *)self;
     unsigned char status;
 
-    disable_devices();
+    write_command(0xAD);
+    write_command(0xA7);
+    write_command(0xAA);
 
-    status = check_status();
+    status = read_data();
 
     if (status != 0x55)
         return;
