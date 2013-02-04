@@ -2,26 +2,22 @@
 #include "vfs.h"
 #include "binary.h"
 
-static struct binary_format *formats[BINARY_FORMAT_SLOTS];
+static struct binary_format *formats;
 
 static struct binary_format *get_format(struct vfs_interface *interface, unsigned int id)
 {
 
-    unsigned int i;
+    struct binary_format *current;
 
-    for (i = 0; i < BINARY_FORMAT_SLOTS; i++)
+    for (current = formats; current; current = current->sibling)
     {
 
-        if (!formats[i])
-            continue;
+        if (current->match(interface, id))
+            return current;
 
-        if (formats[i]->match(interface, id))
-            return formats[i];
-
-    };
+    }
 
     return 0;
-
 
 }
 
@@ -64,15 +60,24 @@ unsigned int binary_relocate(struct vfs_interface *interface, unsigned int id, u
 void binary_register_format(struct binary_format *format)
 {
 
-    unsigned int i;
+    struct binary_format *current;
 
-    for (i = 0; i < BINARY_FORMAT_SLOTS; i++)
+    if (!formats)
     {
 
-        if (formats[i])
+        formats = format;
+
+        return;
+
+    }
+
+    for (current = formats; current; current = current->sibling)
+    {
+
+        if (current->sibling)
             continue;
 
-        formats[i] = format;
+        current->sibling = format;
 
         return;
 
@@ -83,15 +88,24 @@ void binary_register_format(struct binary_format *format)
 void binary_unregister_format(struct binary_format *format)
 {
 
-    unsigned int i;
+    struct binary_format *current;
 
-    for (i = 0; i < BINARY_FORMAT_SLOTS; i++)
+    if (formats == format)
     {
 
-        if (formats[i] != format)
+        formats = formats->sibling;
+
+        return;
+
+    }
+
+    for (current = formats; current; current = current->sibling)
+    {
+
+        if (current->sibling != format)
             continue;
 
-        formats[i] = 0;
+        current->sibling = current->sibling->sibling;
 
         return;
 
@@ -114,7 +128,7 @@ void binary_init_format(struct binary_format *format, unsigned int (*match)(stru
 void binary_setup()
 {
 
-    memory_clear(formats, sizeof (struct binary_format *) * BINARY_FORMAT_SLOTS);
+    formats = 0;
 
 }
 

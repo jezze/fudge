@@ -1,8 +1,7 @@
-#define BINARY_FORMAT_SLOTS             4
-
 struct binary_format
 {
 
+    struct binary_format *sibling;
     unsigned int (*match)(struct vfs_interface *interface, unsigned int id);
     unsigned int (*find_symbol)(struct vfs_interface *interface, unsigned int id, unsigned int count, const char *symbol);
     unsigned int (*copy_program)(struct vfs_interface *interface, unsigned int id);
