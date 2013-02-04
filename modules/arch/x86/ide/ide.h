@@ -123,7 +123,6 @@ struct ide_bus
     unsigned int (*read_blocks)(struct ide_bus *self, unsigned int count, void *buffer);
     unsigned int (*write_block)(struct ide_bus *self, unsigned int count, void *buffer);
     unsigned int (*write_blocks)(struct ide_bus *self, unsigned int count, void *buffer);
-    void (*add_device)(struct ide_bus *self, unsigned int slave, unsigned int type);
 
 };
 

@@ -129,24 +129,44 @@ static void set_command(struct ide_bus *self, unsigned char command)
 
 }
 
-static unsigned int detect(struct ide_bus *self, unsigned int slave)
+static void add_device(struct ide_bus *bus, unsigned int slave, unsigned int type)
+{
+
+    struct ide_device *device = &bus->devices[bus->devicesCount];
+    unsigned int irq = (slave) ? IDE_IRQ_SECONDARY : IDE_IRQ_PRIMARY;
+
+    ide_init_device(device, bus, irq, slave, type);
+
+    if (type == IDE_DEVICE_TYPE_ATA)
+        device->configure_ata(device);
+
+    if (type == IDE_DEVICE_TYPE_ATAPI)
+        device->configure_atapi(device);
+
+    base_register_device(&device->base);
+
+    bus->devicesCount++;
+
+}
+
+static unsigned int detect(struct ide_bus *bus, unsigned int slave)
 {
 
     unsigned char status;
     unsigned short lba;
 
-    self->select(self, 0xA0, slave);
-    self->set_lba(self, 0, 0, 0, 0);
-    self->set_command(self, IDE_COMMAND_ID_ATA);
+    select(bus, 0xA0, slave);
+    set_lba(bus, 0, 0, 0, 0);
+    set_command(bus, IDE_COMMAND_ID_ATA);
 
-    status = io_inb(self->data + IDE_DATA_COMMAND);
+    status = io_inb(bus->data + IDE_DATA_COMMAND);
 
     if (!status)
         return 0;
 
-    self->wait(self);
+    wait(bus);
 
-    lba = (io_inb(self->data + IDE_DATA_LBA2) << 8) | io_inb(self->data + IDE_DATA_LBA1);
+    lba = (io_inb(bus->data + IDE_DATA_LBA2) << 8) | io_inb(bus->data + IDE_DATA_LBA1);
 
     if (lba == 0x0000)
         return IDE_DEVICE_TYPE_ATA;
@@ -171,30 +191,10 @@ static void scan(struct base_bus *self)
     struct ide_bus *bus = (struct ide_bus *)self;
 
     if ((type = detect(bus, 0)))
-        bus->add_device(bus, 0, type);
+        add_device(bus, 0, type);
 
     if ((type = detect(bus, 1)))
-        bus->add_device(bus, 1, type);
-
-}
-
-static void add_device(struct ide_bus *self, unsigned int slave, unsigned int type)
-{
-
-    struct ide_device *device = &self->devices[self->devicesCount];
-    unsigned int irq = (slave) ? IDE_IRQ_SECONDARY : IDE_IRQ_PRIMARY;
-
-    ide_init_device(device, self, irq, slave, type);
-
-    if (type == IDE_DEVICE_TYPE_ATA)
-        device->configure_ata(device);
-
-    if (type == IDE_DEVICE_TYPE_ATAPI)
-        device->configure_atapi(device);
-
-    base_register_device(&device->base);
-
-    self->devicesCount++;
+        add_device(bus, 1, type);
 
 }
 
@@ -202,7 +202,6 @@ void ide_init_bus(struct ide_bus *bus, unsigned int control, unsigned int data)
 {
 
     memory_clear(bus, sizeof (struct ide_bus));
-
     base_init_bus(&bus->base, IDE_BUS_TYPE, "ide", scan);
 
     bus->control = control;
@@ -217,7 +216,6 @@ void ide_init_bus(struct ide_bus *bus, unsigned int control, unsigned int data)
     bus->read_blocks = read_blocks;
     bus->write_block = write_block;
     bus->write_blocks = write_blocks;
-    bus->add_device = add_device;
 
 }
 
