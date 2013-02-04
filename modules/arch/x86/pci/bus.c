@@ -34,7 +34,19 @@ unsigned char pci_bus_inb(unsigned int address, unsigned short offset)
 
 }
 
-static void detect(struct pci_bus *self, unsigned int num)
+static void add_device(struct pci_bus *bus, unsigned int num, unsigned int slot, unsigned int function, unsigned int address)
+{
+
+    struct pci_device *device = &bus->devices[bus->devicesCount];
+
+    pci_init_device(device, bus, num, slot, function, address);
+    base_register_device(&device->base);
+
+    bus->devicesCount++;
+
+}
+
+static void detect(struct pci_bus *bus, unsigned int num)
 {
 
     unsigned int slot;
@@ -51,10 +63,10 @@ static void detect(struct pci_bus *self, unsigned int num)
         header = pci_bus_inb(address, 0x0E);
 
         if ((header & 0x01))
-            detect(self, pci_bus_inb(address, 0x19));
+            detect(bus, pci_bus_inb(address, 0x19));
 
         if ((header & 0x02))
-            detect(self, pci_bus_inb(address, 0x18));
+            detect(bus, pci_bus_inb(address, 0x18));
 
         if ((header & 0x80))
         {
@@ -69,7 +81,7 @@ static void detect(struct pci_bus *self, unsigned int num)
                 if (pci_bus_inw(address, 0x00) == 0xFFFF)
                     continue;
 
-                self->add_device(self, num, slot, function, address);
+                add_device(bus, num, slot, function, address);
 
             }
 
@@ -77,7 +89,7 @@ static void detect(struct pci_bus *self, unsigned int num)
 
         }
 
-        self->add_device(self, num, slot, 0, address);
+        add_device(bus, num, slot, 0, address);
 
     }
 
@@ -92,25 +104,11 @@ static void scan(struct base_bus *self)
 
 }
 
-static void add_device(struct pci_bus *self, unsigned int num, unsigned int slot, unsigned int function, unsigned int address)
-{
-
-    struct pci_device *device = &self->devices[self->devicesCount];
-
-    pci_init_device(device, self, num, slot, function, address);
-    base_register_device(&device->base);
-
-    self->devicesCount++;
-
-}
-
 void pci_init_bus(struct pci_bus *bus)
 {
 
     memory_clear(bus, sizeof (struct pci_bus));
     base_init_bus(&bus->base, PCI_BUS_TYPE, "pci", scan);
-
-    bus->add_device = add_device;
 
 }
 
