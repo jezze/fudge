@@ -5,12 +5,12 @@
 #include <arch/x86/io/io.h>
 #include "pit.h"
 
-static void handle_irq(struct base_device *self)
+static void handle_irq(struct base_device *device)
 {
 
-    struct pit_device *device = (struct pit_device *)self;
+    struct pit_device *pitDevice = (struct pit_device *)device;
 
-    device->jiffies += 1;
+    pitDevice->jiffies += 1;
 
 }
 

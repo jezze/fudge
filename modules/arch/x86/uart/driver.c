@@ -39,12 +39,12 @@ static unsigned int buffer_putc(struct uart_buffer *self, char *buffer)
 
 }
 
-static void handle_irq(struct base_device *self)
+static void handle_irq(struct base_device *device)
 {
 
-    struct uart_device *device = (struct uart_device *)self;
-    struct uart_driver *driver = (struct uart_driver *)self->driver;
-    char c = device->read(device);
+    struct uart_device *uartDevice = (struct uart_device *)device;
+    struct uart_driver *driver = (struct uart_driver *)device->driver;
+    char c = uartDevice->read(uartDevice);
 
     driver->buffer.putc(&driver->buffer, &c);
 
