@@ -134,7 +134,7 @@ static void attach(struct base_device *device)
 
     struct pci_device *pciDevice = (struct pci_device *)device;
 
-    unsigned int irq = pci_bus_inb(pciDevice->bus, pciDevice->address, PCI_CONFIG_IRQ_LINE);
+    unsigned int irq = pci_device_inb(pciDevice, PCI_CONFIG_IRQ_LINE);
 
     pic_set_routine(irq, device, handle_irq);
 
@@ -148,7 +148,7 @@ static unsigned int check(struct base_device *device)
     if (device->type != PCI_DEVICE_TYPE)
         return 0;
 
-    return pci_bus_inw(pciDevice->bus, pciDevice->address, PCI_CONFIG_VENDOR) == 0x8086 && pci_bus_inw(pciDevice->bus, pciDevice->address, PCI_CONFIG_DEVICE) == 0x27AE;
+    return pci_device_inw(pciDevice, PCI_CONFIG_VENDOR) == 0x8086 && pci_device_inw(pciDevice, PCI_CONFIG_DEVICE) == 0x27AE;
 
 }
 
