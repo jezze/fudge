@@ -102,8 +102,7 @@ struct ide_bus
     struct base_bus base;
     unsigned short control;
     unsigned short data;
-    struct ide_device devices[8];
-    unsigned int devicesCount;
+    struct {struct ide_device item[8]; unsigned int count;} devices;
 
 };
 

@@ -21,8 +21,7 @@ struct ps2_bus
 {
 
     struct base_bus base;
-    struct ps2_device devices[2];
-    unsigned int devicesCount;
+    struct {struct ps2_device item[2]; unsigned int count;} devices;
 
 };
 

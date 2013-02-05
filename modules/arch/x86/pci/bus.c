@@ -37,12 +37,11 @@ unsigned char pci_bus_inb(unsigned int address, unsigned short offset)
 static void add_device(struct pci_bus *bus, unsigned int num, unsigned int slot, unsigned int function, unsigned int address)
 {
 
-    struct pci_device *device = &bus->devices[bus->devicesCount];
+    struct pci_device *device = &bus->devices.item[bus->devices.count];
 
     pci_init_device(device, bus, num, slot, function, address);
-    base_register_device(&device->base);
 
-    bus->devicesCount++;
+    bus->devices.count++;
 
 }
 

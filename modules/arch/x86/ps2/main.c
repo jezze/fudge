@@ -47,8 +47,14 @@ static unsigned int reset_write(unsigned int offset, unsigned int count, void *b
 void init()
 {
 
+    unsigned int i;
+
     ps2_init_bus(&bus);
     base_register_bus(&bus.base);
+
+    for (i = 0; i < bus.devices.count; i++)
+        base_register_device(&bus.devices.item[i].base);
+
     ps2_init_kbd_driver(&kbd);
     kbd_register_interface(&kbd.interface);
     base_register_driver(&kbd.base);
@@ -65,12 +71,18 @@ void init()
 void destroy()
 {
 
+    unsigned int i;
+
     system_unregister_node(&reset.node);
     system_unregister_node(&buffer.node);
     kbd_unregister_interface(&kbd.interface);
     base_unregister_driver(&kbd.base);
     mouse_unregister_interface(&mouse.interface);
     base_unregister_driver(&mouse.base);
+
+    for (i = 0; i < bus.devices.count; i++)
+        base_unregister_device(&bus.devices.item[i].base);
+
     base_unregister_bus(&bus.base);
 
 }

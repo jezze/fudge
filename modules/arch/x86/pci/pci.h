@@ -58,8 +58,7 @@ struct pci_bus
 {
 
     struct base_bus base;
-    struct pci_device devices[64];
-    unsigned int devicesCount;
+    struct {struct pci_device item[64]; unsigned int count;} devices;
 
 };
 

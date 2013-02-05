@@ -132,7 +132,7 @@ unsigned int ide_bus_write_blocks(struct ide_bus *bus, unsigned int count, void 
 static void add_device(struct ide_bus *bus, unsigned int slave, unsigned int type)
 {
 
-    struct ide_device *device = &bus->devices[bus->devicesCount];
+    struct ide_device *device = &bus->devices.item[bus->devices.count];
     unsigned int irq = (slave) ? IDE_IRQ_SECONDARY : IDE_IRQ_PRIMARY;
 
     ide_init_device(device, bus, irq, slave, type);
@@ -143,9 +143,7 @@ static void add_device(struct ide_bus *bus, unsigned int slave, unsigned int typ
     if (type == IDE_DEVICE_TYPE_ATAPI)
         device->configure_atapi(device);
 
-    base_register_device(&device->base);
-
-    bus->devicesCount++;
+    bus->devices.count++;
 
 }
 
