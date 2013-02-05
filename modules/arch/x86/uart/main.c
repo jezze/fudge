@@ -13,14 +13,14 @@ void init()
 {
 
     uart_init_device(&device1, UART_BASE1, UART_IRQ1);
-    uart_init_device(&device2, UART_BASE2, UART_IRQ2);
-    uart_init_device(&device3, UART_BASE3, UART_IRQ1);
-    uart_init_device(&device4, UART_BASE4, UART_IRQ2);
-    uart_init_driver(&driver);
     base_register_device(&device1.base);
+    uart_init_device(&device2, UART_BASE2, UART_IRQ2);
     base_register_device(&device2.base);
+    uart_init_device(&device3, UART_BASE3, UART_IRQ1);
     base_register_device(&device3.base);
+    uart_init_device(&device4, UART_BASE4, UART_IRQ2);
     base_register_device(&device4.base);
+    uart_init_driver(&driver);
     base_register_driver(&driver.base);
 
 }

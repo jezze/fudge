@@ -10,7 +10,6 @@
 static struct ps2_bus bus;
 static struct ps2_kbd_driver kbd;
 static struct ps2_mouse_driver mouse;
-
 static struct system_stream buffer;
 static struct system_stream reset;
 
@@ -56,11 +55,11 @@ void init()
         base_register_device(&bus.devices.item[i].base);
 
     ps2_init_kbd_driver(&kbd);
-    kbd_register_interface(&kbd.interface);
     base_register_driver(&kbd.base);
+    kbd_register_interface(&kbd.interface);
     ps2_init_mouse_driver(&mouse);
-    mouse_register_interface(&mouse.interface);
     base_register_driver(&mouse.base);
+    mouse_register_interface(&mouse.interface);
     system_init_stream(&buffer, "ps2_buffer", buffer_read, buffer_write);
     system_register_node(&buffer.node);
     system_init_stream(&reset, "ps2_reset", reset_read, reset_write);
@@ -73,8 +72,8 @@ void destroy()
 
     unsigned int i;
 
-    system_unregister_node(&reset.node);
     system_unregister_node(&buffer.node);
+    system_unregister_node(&reset.node);
     kbd_unregister_interface(&kbd.interface);
     base_unregister_driver(&kbd.base);
     mouse_unregister_interface(&mouse.interface);

@@ -10,8 +10,8 @@ void init()
 {
 
     pit_init_device(&device, PIT_IRQ);
-    pit_init_driver(&driver);
     base_register_device(&device.base);
+    pit_init_driver(&driver);
     base_register_driver(&driver.base);
 
 }
