@@ -48,7 +48,7 @@ static void configure_atapi(struct ide_device *self)
 
     unsigned short buffer[256];
 
-    ide_bus_set_command(self->bus, IDE_COMMAND_ID_ATAPI);
+    ide_bus_set_command(self->bus, IDE_CONTROL_ID_ATAPI);
     ide_bus_read_blocks(self->bus, 1, buffer);
 
 }
@@ -58,7 +58,7 @@ unsigned int ide_device_read_lba28(struct ide_device *device, unsigned int secto
 
     ide_bus_select(device->bus, 0xE0 | ((sector >> 24) & 0x0F), device->slave);
     ide_bus_set_lba(device->bus, (unsigned char)(count), (unsigned char)(sector >> 0), (unsigned char)(sector >> 8), (unsigned char)(sector >> 16));
-    ide_bus_set_command(device->bus, IDE_COMMAND_PIO28_READ);
+    ide_bus_set_command(device->bus, IDE_CONTROL_PIO28_READ);
 
     return ide_bus_read_blocks(device->bus, count, buffer) * 512;
 
@@ -69,7 +69,7 @@ void ide_device_read_lba28_async(struct ide_device *device, unsigned int sector,
 
     ide_bus_select(device->bus, 0xE0 | ((sector >> 24) & 0x0F), device->slave);
     ide_bus_set_lba(device->bus, (unsigned char)(count), (unsigned char)(sector >> 0), (unsigned char)(sector >> 8), (unsigned char)(sector >> 16));
-    ide_bus_set_command(device->bus, IDE_COMMAND_PIO28_READ);
+    ide_bus_set_command(device->bus, IDE_CONTROL_PIO28_READ);
     ide_bus_sleep(device->bus);
 
 }
@@ -79,7 +79,7 @@ unsigned int ide_device_write_lba28(struct ide_device *device, unsigned int sect
 
     ide_bus_select(device->bus, 0xE0 | ((sector >> 24) & 0x0F), device->slave);
     ide_bus_set_lba(device->bus, (unsigned char)(count), (unsigned char)(sector >> 0), (unsigned char)(sector >> 8), (unsigned char)(sector >> 16));
-    ide_bus_set_command(device->bus, IDE_COMMAND_PIO28_WRITE);
+    ide_bus_set_command(device->bus, IDE_CONTROL_PIO28_WRITE);
 
     return ide_bus_write_blocks(device->bus, count, buffer) * 512;
 
@@ -90,7 +90,7 @@ void ide_device_write_lba28_async(struct ide_device *device, unsigned int sector
 
     ide_bus_select(device->bus, 0xE0 | ((sector >> 24) & 0x0F), device->slave);
     ide_bus_set_lba(device->bus, (unsigned char)(count), (unsigned char)(sector >> 0), (unsigned char)(sector >> 8), (unsigned char)(sector >> 16));
-    ide_bus_set_command(device->bus, IDE_COMMAND_PIO28_WRITE);
+    ide_bus_set_command(device->bus, IDE_CONTROL_PIO28_WRITE);
     ide_bus_sleep(device->bus);
 
 }
@@ -101,7 +101,7 @@ unsigned int ide_device_read_lba48(struct ide_device *device, unsigned int secto
     ide_bus_select(device->bus, 0x40, device->slave);
     ide_bus_set_lba2(device->bus, (unsigned char)(count >> 8), (unsigned char)(sectorhigh >> 0), (unsigned char)(sectorhigh >> 8), (unsigned char)(sectorhigh >> 16));
     ide_bus_set_lba(device->bus, (unsigned char)(count), (unsigned char)(sectorlow >> 0), (unsigned char)(sectorlow >> 8), (unsigned char)(sectorlow >> 16));
-    ide_bus_set_command(device->bus, IDE_COMMAND_PIO48_READ);
+    ide_bus_set_command(device->bus, IDE_CONTROL_PIO48_READ);
 
     return ide_bus_read_blocks(device->bus, count, buffer) * 512;
 
@@ -113,7 +113,7 @@ void ide_device_read_lba48_async(struct ide_device *device, unsigned int sectorl
     ide_bus_select(device->bus, 0x40, device->slave);
     ide_bus_set_lba2(device->bus, (unsigned char)(count >> 8), (unsigned char)(sectorhigh >> 0), (unsigned char)(sectorhigh >> 8), (unsigned char)(sectorhigh >> 16));
     ide_bus_set_lba(device->bus, (unsigned char)(count), (unsigned char)(sectorlow >> 0), (unsigned char)(sectorlow >> 8), (unsigned char)(sectorlow >> 16));
-    ide_bus_set_command(device->bus, IDE_COMMAND_PIO48_READ);
+    ide_bus_set_command(device->bus, IDE_CONTROL_PIO48_READ);
     ide_bus_sleep(device->bus);
 
 }
@@ -124,7 +124,7 @@ unsigned int ide_device_write_lba48(struct ide_device *device, unsigned int sect
     ide_bus_select(device->bus, 0x40, device->slave);
     ide_bus_set_lba2(device->bus, (unsigned char)(count >> 8), (unsigned char)(sectorhigh >> 0), (unsigned char)(sectorhigh >> 8), (unsigned char)(sectorhigh >> 16));
     ide_bus_set_lba(device->bus, (unsigned char)(count), (unsigned char)(sectorlow >> 0), (unsigned char)(sectorlow >> 8), (unsigned char)(sectorlow >> 16));
-    ide_bus_set_command(device->bus, IDE_COMMAND_PIO48_WRITE);
+    ide_bus_set_command(device->bus, IDE_CONTROL_PIO48_WRITE);
 
     return ide_bus_write_blocks(device->bus, count, buffer) * 512;
 
@@ -136,7 +136,7 @@ void ide_device_write_lba48_async(struct ide_device *device, unsigned int sector
     ide_bus_select(device->bus, 0x40, device->slave);
     ide_bus_set_lba2(device->bus, (unsigned char)(count >> 8), (unsigned char)(sectorhigh >> 0), (unsigned char)(sectorhigh >> 8), (unsigned char)(sectorhigh >> 16));
     ide_bus_set_lba(device->bus, (unsigned char)(count), (unsigned char)(sectorlow >> 0), (unsigned char)(sectorlow >> 8), (unsigned char)(sectorlow >> 16));
-    ide_bus_set_command(device->bus, IDE_COMMAND_PIO48_WRITE);
+    ide_bus_set_command(device->bus, IDE_CONTROL_PIO48_WRITE);
     ide_bus_sleep(device->bus);
 
 }

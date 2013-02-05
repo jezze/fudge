@@ -33,7 +33,7 @@ static void attach(struct base_device *device)
     struct pci_device *pciDevice = (struct pci_device *)device;
     struct bga_driver *driver = (struct bga_driver *)device->driver;
 
-    driver->lfb = (void *)pci_bus_ind(pciDevice->address, PCI_CONFIG_BAR0);
+    driver->lfb = (void *)pci_bus_ind(pciDevice->bus, pciDevice->address, PCI_CONFIG_BAR0);
 
 }
 
@@ -45,7 +45,7 @@ static unsigned int check(struct base_device *device)
     if (device->type != PCI_DEVICE_TYPE)
         return 0;
 
-    return pci_bus_inw(pciDevice->address, PCI_CONFIG_VENDOR) == 0x1234 && pci_bus_inw(pciDevice->address, PCI_CONFIG_DEVICE) == 0x1111;
+    return pci_bus_inw(pciDevice->bus, pciDevice->address, PCI_CONFIG_VENDOR) == 0x1234 && pci_bus_inw(pciDevice->bus, pciDevice->address, PCI_CONFIG_DEVICE) == 0x1111;
 
 }
 

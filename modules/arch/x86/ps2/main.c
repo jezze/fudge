@@ -38,7 +38,7 @@ static unsigned int reset_read(unsigned int offset, unsigned int count, void *bu
 static unsigned int reset_write(unsigned int offset, unsigned int count, void *buffer)
 {
 
-    ps2_bus_reset();
+    ps2_bus_reset(&bus);
 
     return 0;
 

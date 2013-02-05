@@ -155,7 +155,7 @@ static unsigned int detect(struct ide_bus *bus, unsigned int slave)
 
     ide_bus_select(bus, 0xA0, slave);
     ide_bus_set_lba(bus, 0, 0, 0, 0);
-    ide_bus_set_command(bus, IDE_COMMAND_ID_ATA);
+    ide_bus_set_command(bus, IDE_CONTROL_ID_ATA);
 
     status = io_inb(bus->data + IDE_DATA_COMMAND);
 
