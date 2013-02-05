@@ -16,7 +16,6 @@ struct rtc_device
 {
 
     struct base_device base;
-    unsigned int irq;
     unsigned char (*get_value)(unsigned int type);
 
 };

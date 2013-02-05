@@ -55,6 +55,7 @@ static void attach(struct base_device *device)
 
     struct uart_device *uartDevice = (struct uart_device *)device;
 
+    pic_set_routine(device->irq, device, handle_irq);
     io_outb(uartDevice->port + UART_IER, 0x00);
     io_outb(uartDevice->port + UART_LCR, 0x80);
     io_outb(uartDevice->port + UART_THR, 0x03);
@@ -63,17 +64,13 @@ static void attach(struct base_device *device)
     io_outb(uartDevice->port + UART_FCR, 0xC7);
     io_outb(uartDevice->port + UART_MCR, 0x0B);
     io_outb(uartDevice->port + UART_IER, 0x01);
-    pic_set_routine(uartDevice->irq, device, handle_irq);
 
 }
 
 static unsigned int check(struct base_device *device)
 {
 
-    if (device->type != UART_DEVICE_TYPE)
-        return 0;
-
-    return 1;
+    return device->type == UART_DEVICE_TYPE;
 
 }
 

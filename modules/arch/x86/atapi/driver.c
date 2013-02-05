@@ -21,12 +21,10 @@ static void attach(struct base_device *device)
 static unsigned int check(struct base_device *device)
 {
 
-    struct ide_device *ideDevice;
+    struct ide_device *ideDevice = (struct ide_device *)device;
 
     if (device->type != IDE_DEVICE_TYPE)
         return 0;
-
-    ideDevice = (struct ide_device *)device;
 
     return ideDevice->type == IDE_DEVICE_TYPE_ATAPI;
 
