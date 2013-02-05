@@ -8,51 +8,51 @@
 #include <arch/x86/io/io.h>
 #include "ps2.h"
 
-static unsigned char read_status()
+unsigned char ps2_bus_read_status()
 {
 
     return io_inb(PS2_COMMAND);
 
 }
 
-static unsigned char read_data()
+unsigned char ps2_bus_read_data()
 {
 
-    while ((read_status() & 1) != 1);
+    while ((ps2_bus_read_status() & 1) != 1);
 
     return io_inb(PS2_DATA);
 
 }
 
-static unsigned char read_data_async()
+unsigned char ps2_bus_read_data_async()
 {
 
     return io_inb(PS2_DATA);
 
 }
 
-static void write_command(unsigned char value)
+void ps2_bus_write_command(unsigned char value)
 {
 
-    while ((read_status() & 2) != 0);
+    while ((ps2_bus_read_status() & 2) != 0);
 
     io_outb(PS2_COMMAND, value);
 
 }
 
-static void write_data(unsigned char value)
+void ps2_bus_write_data(unsigned char value)
 {
 
-    while ((read_status() & 2) != 0);
+    while ((ps2_bus_read_status() & 2) != 0);
 
     io_outb(PS2_DATA, value);
 
 }
 
-static void reset()
+void ps2_bus_reset()
 {
 
-    write_command(0xFE);
+    ps2_bus_write_command(0xFE);
 
 }
 
@@ -75,17 +75,17 @@ static void scan(struct base_bus *self)
     unsigned char config;
     unsigned char status;
 
-    write_command(0xAD);
-    write_command(0xA7);
-    write_command(0x20);
+    ps2_bus_write_command(0xAD);
+    ps2_bus_write_command(0xA7);
+    ps2_bus_write_command(0x20);
 
-    config = read_data();
+    config = ps2_bus_read_data();
 
-    write_command(0x60);
-    write_data(config & 0xDC);
-    write_command(0xAA);
+    ps2_bus_write_command(0x60);
+    ps2_bus_write_data(config & 0xDC);
+    ps2_bus_write_command(0xAA);
 
-    status = read_data();
+    status = ps2_bus_read_data();
 
     if (status != 0x55)
         return;
@@ -93,9 +93,9 @@ static void scan(struct base_bus *self)
     if (config & (1 << 4))
     {
 
-        write_command(0xAB);
+        ps2_bus_write_command(0xAB);
 
-        if (!read_data())
+        if (!ps2_bus_read_data())
             add_device(bus, PS2_IRQ_KEYBOARD);
 
     }
@@ -103,9 +103,9 @@ static void scan(struct base_bus *self)
     if (config & (1 << 5))
     {
 
-        write_command(0xA9);
+        ps2_bus_write_command(0xA9);
 
-        if (!read_data())
+        if (!ps2_bus_read_data())
             add_device(bus, PS2_IRQ_MOUSE);
 
     }
@@ -117,13 +117,6 @@ void ps2_init_bus(struct ps2_bus *bus)
 
     memory_clear(bus, sizeof (struct ps2_bus));
     base_init_bus(&bus->base, PS2_BUS_TYPE, "ps2", scan);
-
-    bus->read_status = read_status;
-    bus->read_data = read_data;
-    bus->read_data_async = read_data_async;
-    bus->write_command = write_command;
-    bus->write_data = write_data;
-    bus->reset = reset;
 
 }
 

@@ -23,12 +23,6 @@ struct ps2_bus
     struct base_bus base;
     struct ps2_device devices[2];
     unsigned int devicesCount;
-    unsigned char (*read_status)();
-    unsigned char (*read_data)();
-    unsigned char (*read_data_async)();
-    void (*write_command)(unsigned char value);
-    void (*write_data)(unsigned char value);
-    void (*reset)();
 
 };
 
@@ -52,6 +46,12 @@ struct ps2_mouse_driver
 
 };
 
+unsigned char ps2_bus_read_status();
+unsigned char ps2_bus_read_data();
+unsigned char ps2_bus_read_data_async();
+void ps2_bus_write_command(unsigned char value);
+void ps2_bus_write_data(unsigned char value);
+void ps2_bus_reset();
 void ps2_init_bus(struct ps2_bus *bus);
 void ps2_init_device(struct ps2_device *device, struct ps2_bus *bus, char *name, unsigned int irq);
 void ps2_init_kbd_driver(struct ps2_kbd_driver *driver);
