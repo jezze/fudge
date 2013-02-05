@@ -25,20 +25,6 @@ struct uart_device
 
     struct base_device base;
     unsigned int port;
-    char (*read)(struct uart_device *self);
-    void (*write)(struct uart_device *self, char c);
-
-};
-
-struct uart_buffer
-{
-
-    char buffer[256];
-    unsigned int size;
-    unsigned int head;
-    unsigned int tail;
-    unsigned int (*getc)(struct uart_buffer *self, char *buffer);
-    unsigned int (*putc)(struct uart_buffer *self, char *buffer);
 
 };
 
@@ -46,9 +32,11 @@ struct uart_driver
 {
 
     struct base_driver base;
-    struct uart_buffer buffer;
+    struct circular_stream stream;
 
 };
 
+char uart_device_read(struct uart_device *device);
+void uart_device_write(struct uart_device *device, char c);
 void uart_init_device(struct uart_device *device, unsigned int port, unsigned int irq);
 void uart_init_driver(struct uart_driver *driver);

@@ -1,24 +1,26 @@
 #include <fudge/module.h>
+#include <fudge/define.h>
+#include <fudge/data/circular.h>
 #include <system/system.h>
 #include <base/base.h>
 #include <arch/x86/io/io.h>
 #include "uart.h"
 
-static char read(struct uart_device *self)
+char uart_device_read(struct uart_device *device)
 {
 
-    while (!(io_inb(self->port + UART_LSR) & 0x01));
+    while (!(io_inb(device->port + UART_LSR) & 0x01));
 
-    return io_inb(self->port);
+    return io_inb(device->port);
 
 }
 
-static void write(struct uart_device *self, char c)
+void uart_device_write(struct uart_device *device, char c)
 {
 
-    while (!(io_inb(self->port + UART_LSR) & 0x20));
+    while (!(io_inb(device->port + UART_LSR) & 0x20));
 
-    io_outb(self->port, c);
+    io_outb(device->port, c);
 
 }
 
@@ -29,8 +31,6 @@ void uart_init_device(struct uart_device *device, unsigned int port, unsigned in
     base_init_device(&device->base, UART_DEVICE_TYPE, irq, "uart");
 
     device->port = port;
-    device->read = read;
-    device->write = write;
 
 }
 
