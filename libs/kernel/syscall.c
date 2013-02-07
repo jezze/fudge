@@ -18,8 +18,6 @@ static unsigned int close(struct runtime_task *task, void *stack)
     if (descriptor->interface->close)
         descriptor->interface->close(descriptor->interface, descriptor->id);
 
-    descriptor->id = 0;
-
     return 1;
 
 }
@@ -39,10 +37,7 @@ static unsigned int execute(struct runtime_task *task, void *stack)
     task->registers.fp = RUNTIME_STACKADDRESS_VIRTUAL;
     task->registers.status = 0;
 
-    if (task->registers.ip)
-        return 1;
-
-    return 0;
+    return task->registers.ip;
 
 }
 
