@@ -4,7 +4,7 @@
 
 static struct binary_format *formats;
 
-static struct binary_format *get_format(struct vfs_interface *interface, unsigned int id)
+struct binary_format *binary_get_format(struct vfs_interface *interface, unsigned int id)
 {
 
     struct binary_format *current;
@@ -18,42 +18,6 @@ static struct binary_format *get_format(struct vfs_interface *interface, unsigne
     }
 
     return 0;
-
-}
-
-unsigned int binary_find_symbol(struct vfs_interface *interface, unsigned int id, unsigned int count, const char *symbol)
-{
-
-    struct binary_format *format = get_format(interface, id);
-
-    if (!format)
-        return 0;
-
-    return format->find_symbol(interface, id, count, symbol);
-
-}
-
-unsigned int binary_copy_program(struct vfs_interface *interface, unsigned int id)
-{
-
-    struct binary_format *format = get_format(interface, id);
-
-    if (!format)
-        return 0;
-
-    return format->copy_program(interface, id);
-
-}
-
-unsigned int binary_relocate(struct vfs_interface *interface, unsigned int id, unsigned int address)
-{
-
-    struct binary_format *format = get_format(interface, id);
-
-    if (!format)
-        return 0;
-
-    return format->relocate(interface, id, address);
 
 }
 

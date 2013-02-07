@@ -79,8 +79,8 @@ static unsigned int spawn(struct runtime_task *task, void *stack)
 
     struct {void *caller; unsigned int index;} *args = stack;
     struct runtime_descriptor *descriptor = runtime_get_task_descriptor(task, args->index);
+    struct binary_format *format = binary_get_format(descriptor->interface, descriptor->id);
     struct multi_task *ntask = create_task();
-    unsigned int entry;
 
     if (!descriptor || !descriptor->interface->read)
         return 0;
@@ -91,15 +91,15 @@ static unsigned int spawn(struct runtime_task *task, void *stack)
     mmu_load_memory(&ntask->directory);
     memory_copy(&ntask->base, task, sizeof (struct runtime_task));
 
-    entry = binary_copy_program(descriptor->interface, descriptor->id);
-
-    if (!entry)
-        return 0;
-
-    runtime_set_task_registers(&ntask->base, entry, RUNTIME_STACKADDRESS_VIRTUAL, RUNTIME_STACKADDRESS_VIRTUAL, 0);
-
     task->notify_interrupt = notify_interrupt;
+    ntask->base.registers.ip = format->copy_program(descriptor->interface, descriptor->id);
+    ntask->base.registers.sp = RUNTIME_STACKADDRESS_VIRTUAL;
+    ntask->base.registers.fp = RUNTIME_STACKADDRESS_VIRTUAL;
+    ntask->base.registers.status = 0;
     ntask->base.notify_interrupt = notify_interrupt;
+
+    if (ntask->base.registers.ip)
+        return 1;
 
     return 0;
 

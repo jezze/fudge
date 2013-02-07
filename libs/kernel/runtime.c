@@ -29,40 +29,6 @@ struct runtime_mount *runtime_get_task_mount(struct runtime_task *task, unsigned
 
 }
 
-void runtime_set_task_registers(struct runtime_task *task, unsigned int ip, unsigned int sp, unsigned int fp, unsigned int status)
-{
-
-    task->registers.ip = ip;
-    task->registers.sp = sp;
-    task->registers.fp = fp;
-    task->registers.status = status;
-
-}
-
-void runtime_set_task_descriptor(struct runtime_task *task, unsigned int index, struct vfs_interface *interface, unsigned int id)
-{
-
-    if (!index || index >= RUNTIME_TASK_DESCRIPTOR_SLOTS)
-        return;
-
-    task->descriptors[index].interface = interface;
-    task->descriptors[index].id = id;
-
-}
-
-void runtime_set_task_mount(struct runtime_task *task, unsigned int index, struct vfs_interface *parent, unsigned int parentid, struct vfs_interface *child, unsigned int childid)
-{
-
-    if (!index || index >= RUNTIME_TASK_MOUNT_SLOTS)
-        return;
-
-    task->mounts[index].parent.interface = parent;
-    task->mounts[index].parent.id = parentid;
-    task->mounts[index].child.interface = child;
-    task->mounts[index].child.id = childid;
-
-}
-
 static unsigned int follow_child(struct runtime_task *task, struct runtime_descriptor *descriptor)
 {
 

@@ -37,6 +37,7 @@ struct runtime_task *kernel_setup(unsigned int ramdiskc, void **ramdiskv)
     binary_setup();
     binary_register_format(elf);
     syscall_setup();
+    runtime_init_task(&task);
 
     error_assert(ramdisk != 0, "Ramdisk not found", __FILE__, __LINE__);
 
@@ -44,16 +45,26 @@ struct runtime_task *kernel_setup(unsigned int ramdiskc, void **ramdiskv)
 
     error_assert(id != 0, "Init program not found", __FILE__, __LINE__);
 
-    entry = binary_copy_program(ramdisk, id);
+    entry = elf->copy_program(ramdisk, id);
 
     error_assert(entry != 0, "Init program entry point not found", __FILE__, __LINE__);
 
-    runtime_init_task(&task);
-    runtime_set_task_registers(&task, entry, RUNTIME_STACKADDRESS_VIRTUAL, RUNTIME_STACKADDRESS_VIRTUAL, 0);
-    runtime_set_task_mount(&task, 1, 0, 0, root, root->rootid);
-    runtime_set_task_mount(&task, 2, root, root->walk(root, root->rootid, 8, "ramdisk/"), ramdisk, ramdisk->rootid);
-    runtime_set_task_descriptor(&task, 8, root, root->rootid);
-    runtime_set_task_descriptor(&task, 9, root, root->rootid);
+    task.registers.ip = entry;
+    task.registers.sp = RUNTIME_STACKADDRESS_VIRTUAL;
+    task.registers.fp = RUNTIME_STACKADDRESS_VIRTUAL;
+    task.registers.status = 0;
+    task.mounts[1].parent.interface = 0;
+    task.mounts[1].parent.id = 0;
+    task.mounts[1].child.interface = root;
+    task.mounts[1].child.id = root->rootid;
+    task.mounts[2].parent.interface = root;
+    task.mounts[2].parent.id = root->walk(root, root->rootid, 8, "ramdisk/");
+    task.mounts[2].child.interface = ramdisk;
+    task.mounts[2].child.id = ramdisk->rootid;
+    task.descriptors[8].interface = root;
+    task.descriptors[8].id = root->rootid;
+    task.descriptors[9].interface = root;
+    task.descriptors[9].id = root->rootid;
 
     return &task;
 

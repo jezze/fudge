@@ -36,8 +36,5 @@ struct runtime_task
 
 struct runtime_descriptor *runtime_get_task_descriptor(struct runtime_task *task, unsigned int index);
 struct runtime_mount *runtime_get_task_mount(struct runtime_task *task, unsigned int index);
-void runtime_set_task_registers(struct runtime_task *task, unsigned int ip, unsigned int sp, unsigned int fp, unsigned int status);
-void runtime_set_task_descriptor(struct runtime_task *task, unsigned int index, struct vfs_interface *interface, unsigned int id);
-void runtime_set_task_mount(struct runtime_task *task, unsigned int index, struct vfs_interface *parent, unsigned int parentid, struct vfs_interface *child, unsigned int childid);
 unsigned int runtime_update_task_descriptor(struct runtime_task *task, struct runtime_descriptor *descriptor, unsigned int count, const char *path);
 void runtime_init_task(struct runtime_task *task);
