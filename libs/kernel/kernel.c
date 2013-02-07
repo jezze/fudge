@@ -32,24 +32,19 @@ struct runtime_task *kernel_setup(unsigned int ramdiskc, void **ramdiskv)
     struct vfs_interface *ramdisk = setup_ramdisk(ramdiskc, ramdiskv);
     struct binary_format *elf = binary_elf_setup();
     unsigned int id;
-    unsigned int entry;
+
+    error_assert(ramdisk != 0, "Ramdisk not found", __FILE__, __LINE__);
 
     binary_setup();
     binary_register_format(elf);
     syscall_setup();
     runtime_init_task(&task);
 
-    error_assert(ramdisk != 0, "Ramdisk not found", __FILE__, __LINE__);
-
     id = ramdisk->walk(ramdisk, ramdisk->rootid, 9, "bin/inits");
 
     error_assert(id != 0, "Init program not found", __FILE__, __LINE__);
 
-    entry = elf->copy_program(ramdisk, id);
-
-    error_assert(entry != 0, "Init program entry point not found", __FILE__, __LINE__);
-
-    task.registers.ip = entry;
+    task.registers.ip = elf->copy_program(ramdisk, id);
     task.registers.sp = RUNTIME_STACKADDRESS_VIRTUAL;
     task.registers.fp = RUNTIME_STACKADDRESS_VIRTUAL;
     task.registers.status = 0;
@@ -65,6 +60,8 @@ struct runtime_task *kernel_setup(unsigned int ramdiskc, void **ramdiskv)
     task.descriptors[8].id = root->rootid;
     task.descriptors[9].interface = root;
     task.descriptors[9].id = root->rootid;
+
+    error_assert(task.registers.ip != 0, "Init program entry point not found", __FILE__, __LINE__);
 
     return &task;
 
