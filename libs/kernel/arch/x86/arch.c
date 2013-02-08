@@ -31,7 +31,7 @@ unsigned short arch_syscall(struct arch_registers_syscall *registers)
     state.running->registers.ip = registers->interrupt.eip;
     state.running->registers.sp = registers->interrupt.esp;
     state.running->registers.fp = registers->general.ebp;
-    state.running->registers.status = syscall_raise(registers->general.eax, state.running, (void *)registers->interrupt.esp);
+    state.running->registers.status = syscall_raise(registers->general.eax, state.running);
     state.running = state.running->notify_interrupt(state.running, registers->general.eax);
 
     if (state.running->status.used && !state.running->status.idle)

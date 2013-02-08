@@ -204,13 +204,13 @@ void syscall_unset_routine(enum syscall_index index)
 
 }
 
-unsigned int syscall_raise(unsigned int index, struct runtime_task *task, void *stack)
+unsigned int syscall_raise(unsigned int index, struct runtime_task *task)
 {
 
     if (!index || index >= SYSCALL_ROUTINE_SLOTS)
         return 0;
 
-    return routines[index](task, stack);
+    return routines[index](task, (void *)task->registers.sp);
 
 }
 
