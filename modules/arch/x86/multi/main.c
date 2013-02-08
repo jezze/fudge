@@ -34,7 +34,7 @@ static struct multi_task *create_task()
 
 }
 
-static struct runtime_task *schedule(struct runtime_task *self)
+static struct runtime_task *notify_interrupt(struct runtime_task *self, unsigned int index)
 {
 
     unsigned int i;
@@ -67,13 +67,6 @@ static struct runtime_task *schedule(struct runtime_task *self)
 
 }
 
-static struct runtime_task *notify_interrupt(struct runtime_task *self, unsigned int index)
-{
-
-    return schedule(self);
-
-}
-
 static unsigned int spawn(struct runtime_task *task, void *stack)
 {
 
@@ -82,26 +75,21 @@ static unsigned int spawn(struct runtime_task *task, void *stack)
     struct binary_format *format = binary_get_format(descriptor->interface, descriptor->id);
     struct multi_task *ntask = create_task();
 
-    if (!descriptor || !descriptor->interface->read)
+    if (!descriptor || !format || !ntask)
         return 0;
 
-    if (!ntask)
-        return 0;
+    task->notify_interrupt = notify_interrupt;
 
     mmu_load_memory(&ntask->directory);
     memory_copy(&ntask->base, task, sizeof (struct runtime_task));
 
-    task->notify_interrupt = notify_interrupt;
     ntask->base.registers.ip = format->copy_program(descriptor->interface, descriptor->id);
     ntask->base.registers.sp = RUNTIME_STACKADDRESS_VIRTUAL;
     ntask->base.registers.fp = RUNTIME_STACKADDRESS_VIRTUAL;
     ntask->base.registers.status = 0;
     ntask->base.notify_interrupt = notify_interrupt;
 
-    if (ntask->base.registers.ip)
-        return 1;
-
-    return 0;
+    return ntask->base.registers.ip;
 
 }
 
