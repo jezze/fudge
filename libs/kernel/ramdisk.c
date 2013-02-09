@@ -2,6 +2,20 @@
 #include "vfs.h"
 #include "ramdisk.h"
 
+static unsigned int open(struct vfs_interface *self, unsigned int id)
+{
+
+    return id;
+
+}
+
+static unsigned int close(struct vfs_interface *self, unsigned int id)
+{
+
+    return id;
+
+}
+
 static unsigned int parent(struct ramdisk_filesystem *filesystem, unsigned int id)
 {
 
@@ -183,7 +197,7 @@ void ramdisk_init_filesystem(struct ramdisk_filesystem *filesystem)
 {
 
     memory_clear(filesystem, sizeof (struct ramdisk_filesystem));
-    vfs_init_interface(&filesystem->interface, 1, "ramdisk", 0, 0, read, write, walk, get_physical);
+    vfs_init_interface(&filesystem->interface, 1, "ramdisk", open, close, read, write, walk, get_physical);
 
 }
 

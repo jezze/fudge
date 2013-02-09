@@ -3,6 +3,20 @@
 
 static struct vfs_interface root;
 
+static unsigned int open(struct vfs_interface *self, unsigned int id)
+{
+
+    return id;
+
+}
+
+static unsigned int close(struct vfs_interface *self, unsigned int id)
+{
+
+    return id;
+
+}
+
 static unsigned int read(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
@@ -11,6 +25,13 @@ static unsigned int read(struct vfs_interface *self, unsigned int id, unsigned i
 
     if (id == 0x00000001)
         return memory_read(buffer, count, "../\nconfig/\nramdisk/\nsystem/\n", 29, offset);
+
+    return 0;
+
+}
+
+static unsigned int write(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+{
 
     return 0;
 
@@ -38,7 +59,7 @@ static unsigned int walk(struct vfs_interface *self, unsigned int id, unsigned i
 
 }
 
-void vfs_init_interface(struct vfs_interface *interface, unsigned int rootid, char *name, void (*open)(struct vfs_interface *self, unsigned int id), void (*close)(struct vfs_interface *self, unsigned int id), unsigned int (*read)(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write)(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer), unsigned int (*walk)(struct vfs_interface *self, unsigned int id, unsigned int count, const char *path), unsigned int (*get_physical)(struct vfs_interface *self, unsigned int id))
+void vfs_init_interface(struct vfs_interface *interface, unsigned int rootid, char *name, unsigned int (*open)(struct vfs_interface *self, unsigned int id), unsigned int (*close)(struct vfs_interface *self, unsigned int id), unsigned int (*read)(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write)(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer), unsigned int (*walk)(struct vfs_interface *self, unsigned int id, unsigned int count, const char *path), unsigned int (*get_physical)(struct vfs_interface *self, unsigned int id))
 {
 
     memory_clear(interface, sizeof (struct vfs_interface));
@@ -56,7 +77,7 @@ void vfs_init_interface(struct vfs_interface *interface, unsigned int rootid, ch
 struct vfs_interface *vfs_setup()
 {
 
-    vfs_init_interface(&root, 1, "root", 0, 0, read, 0, walk, 0);
+    vfs_init_interface(&root, 1, "root", open, close, read, write, walk, 0);
 
     return &root;
 

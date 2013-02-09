@@ -15,10 +15,7 @@ static unsigned int close(struct runtime_task *task, void *stack)
     if (!descriptor)
         return 0;
 
-    if (descriptor->interface->close)
-        descriptor->interface->close(descriptor->interface, descriptor->id);
-
-    return 1;
+    return descriptor->interface->close(descriptor->interface, descriptor->id);
 
 }
 
@@ -128,10 +125,7 @@ static unsigned int open(struct runtime_task *task, void *stack)
     if (!runtime_update_task_descriptor(task, descriptor, args->count, args->path))
         return 0;
 
-    if (descriptor->interface->open)
-        descriptor->interface->open(descriptor->interface, descriptor->id);
-
-    return args->index;
+    return descriptor->interface->open(descriptor->interface, descriptor->id);
 
 }
 
@@ -141,7 +135,7 @@ static unsigned int read(struct runtime_task *task, void *stack)
     struct {void *caller; unsigned int index; unsigned int offset; unsigned int count; void *buffer;} *args = stack;
     struct runtime_descriptor *descriptor = runtime_get_task_descriptor(task, args->index);
 
-    if (!descriptor || !descriptor->interface->read)
+    if (!descriptor)
         return 0;
 
     return descriptor->interface->read(descriptor->interface, descriptor->id, args->offset, args->count, args->buffer);
@@ -183,7 +177,7 @@ static unsigned int write(struct runtime_task *task, void *stack)
     struct {void *caller; unsigned int index; unsigned int offset; unsigned int count; void *buffer;} *args = stack;
     struct runtime_descriptor *descriptor = runtime_get_task_descriptor(task, args->index);
 
-    if (!descriptor || !descriptor->interface->write)
+    if (!descriptor)
         return 0;
 
     return descriptor->interface->write(descriptor->interface, descriptor->id, args->offset, args->count, args->buffer);

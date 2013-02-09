@@ -3,6 +3,20 @@
 #include "system.h"
 #include "filesystem.h"
 
+static unsigned int open(struct vfs_interface *self, unsigned int id)
+{
+
+    return id;
+
+}
+
+static unsigned int close(struct vfs_interface *self, unsigned int id)
+{
+
+    return id;
+
+}
+
 static unsigned int read_group(struct system_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
@@ -155,7 +169,7 @@ void system_init_filesystem(struct system_filesystem *filesystem)
 {
 
     memory_clear(filesystem, sizeof (struct system_filesystem));
-    vfs_init_interface(&filesystem->base, (unsigned int)&filesystem->root, "system", 0, 0, read, write, walk, 0);
+    vfs_init_interface(&filesystem->base, (unsigned int)&filesystem->root, "system", open, close, read, write, walk, 0);
     system_init_group(&filesystem->root, "/");
 
     filesystem->readers[SYSTEM_NODE_TYPE_GROUP] = read_group;

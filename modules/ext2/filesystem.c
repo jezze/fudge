@@ -4,6 +4,20 @@
 #include <block/block.h>
 #include "ext2.h"
 
+static unsigned int open(struct vfs_interface *self, unsigned int id)
+{
+
+    return id;
+
+}
+
+static unsigned int close(struct vfs_interface *self, unsigned int id)
+{
+
+    return id;
+
+}
+
 static unsigned int read(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
@@ -44,6 +58,13 @@ static unsigned int read(struct vfs_interface *self, unsigned int id, unsigned i
 
     if ((node.type & 0xF000) == EXT2_NODE_TYPE_REGULAR)
         return memory_read(buffer, count, content, node.sizeLow, offset);
+
+    return 0;
+
+}
+
+static unsigned int write(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+{
 
     return 0;
 
@@ -112,7 +133,7 @@ void ext2_init_filesystem(struct ext2_filesystem *filesystem, struct ext2_protoc
 
     memory_clear(filesystem, sizeof (struct ext2_filesystem));
 
-    vfs_init_interface(&filesystem->base, 2, "hda", 0, 0, read, 0, walk, 0);
+    vfs_init_interface(&filesystem->base, 2, "hda", open, close, read, write, walk, 0);
 
     filesystem->protocol = protocol;
     filesystem->interface = interface;

@@ -177,8 +177,8 @@ static void interpret_command(unsigned int length, char *command)
     if (exec)
     {
 
-        call_spawn(exec);
-        call_close(exec);
+        call_spawn(3);
+        call_close(3);
 
     }
 
