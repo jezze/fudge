@@ -34,6 +34,7 @@ static unsigned int execute(struct runtime_task *task, void *stack)
     if (!format)
         return 0;
 
+    task->status.used = 1;
     task->registers.ip = format->copy_program(descriptor->interface, descriptor->id);
     task->registers.sp = RUNTIME_STACKADDRESS_VIRTUAL;
     task->registers.fp = RUNTIME_STACKADDRESS_VIRTUAL;
@@ -47,6 +48,10 @@ static unsigned int exit(struct runtime_task *task, void *stack)
 {
 
     task->status.used = 0;
+    task->registers.ip = 0;
+    task->registers.sp = 0;
+    task->registers.fp = 0;
+    task->registers.status = 0;
 
     return 1;
 
