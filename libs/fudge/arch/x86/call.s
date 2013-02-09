@@ -7,10 +7,10 @@
 .set CALL_INDEX_WRITE,                  0x04
 .set CALL_INDEX_MOUNT,                  0x05
 .set CALL_INDEX_EXECUTE,                0x06
-.set CALL_INDEX_SPAWN,                  0x07
-.set CALL_INDEX_EXIT,                   0x08
-.set CALL_INDEX_LOAD,                   0x0A
-.set CALL_INDEX_UNLOAD,                 0x0B
+.set CALL_INDEX_EXIT,                   0x07
+.set CALL_INDEX_LOAD,                   0x08
+.set CALL_INDEX_UNLOAD,                 0x09
+.set CALL_INDEX_SPAWN,                  0x0A
 
 .global call_close
 call_close:
