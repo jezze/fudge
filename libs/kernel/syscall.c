@@ -40,7 +40,7 @@ static unsigned int execute(struct runtime_task *task, void *stack)
     task->registers.fp = RUNTIME_STACKADDRESS_VIRTUAL;
     task->registers.status = 0;
 
-    return task->registers.ip;
+    return task->status.used;
 
 }
 
@@ -53,7 +53,7 @@ static unsigned int exit(struct runtime_task *task, void *stack)
     task->registers.fp = 0;
     task->registers.status = 0;
 
-    return 1;
+    return task->status.used;
 
 }
 
