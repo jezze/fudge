@@ -6,6 +6,33 @@
 
 static unsigned int (*routines[SYSCALL_ROUTINE_SLOTS])(struct runtime_task *task, void *stack);
 
+static unsigned int undefined(struct runtime_task *task, void *stack)
+{
+
+    return 0;
+
+}
+
+static unsigned int open(struct runtime_task *task, void *stack)
+{
+
+    struct {void *caller; unsigned int index; unsigned int pindex; unsigned int count; char *path;} *args = stack;
+    struct runtime_descriptor *descriptor = runtime_get_task_descriptor(task, args->index);
+    struct runtime_descriptor *pdescriptor = runtime_get_task_descriptor(task, args->pindex);
+   
+    if (!descriptor || !pdescriptor)
+        return 0;
+
+    descriptor->interface = pdescriptor->interface;
+    descriptor->id = pdescriptor->id;
+
+    if (!runtime_update_task_descriptor(task, descriptor, args->count, args->path))
+        return 0;
+
+    return descriptor->interface->open(descriptor->interface, descriptor->id);
+
+}
+
 static unsigned int close(struct runtime_task *task, void *stack)
 {
 
@@ -16,6 +43,70 @@ static unsigned int close(struct runtime_task *task, void *stack)
         return 0;
 
     return descriptor->interface->close(descriptor->interface, descriptor->id);
+
+}
+
+static unsigned int read(struct runtime_task *task, void *stack)
+{
+
+    struct {void *caller; unsigned int index; unsigned int offset; unsigned int count; void *buffer;} *args = stack;
+    struct runtime_descriptor *descriptor = runtime_get_task_descriptor(task, args->index);
+
+    if (!descriptor)
+        return 0;
+
+    return descriptor->interface->read(descriptor->interface, descriptor->id, args->offset, args->count, args->buffer);
+
+}
+
+static unsigned int write(struct runtime_task *task, void *stack)
+{
+
+    struct {void *caller; unsigned int index; unsigned int offset; unsigned int count; void *buffer;} *args = stack;
+    struct runtime_descriptor *descriptor = runtime_get_task_descriptor(task, args->index);
+
+    if (!descriptor)
+        return 0;
+
+    return descriptor->interface->write(descriptor->interface, descriptor->id, args->offset, args->count, args->buffer);
+
+}
+
+static unsigned int mount(struct runtime_task *task, void *stack)
+{
+
+    struct {void *caller; unsigned int index; unsigned int pindex; unsigned int cindex;} *args = stack;
+    struct runtime_mount *mount = runtime_get_task_mount(task, args->index);
+    struct runtime_descriptor *pdescriptor = runtime_get_task_descriptor(task, args->pindex);
+    struct runtime_descriptor *cdescriptor = runtime_get_task_descriptor(task, args->cindex);
+    struct binary_format *format;
+    struct vfs_interface *(*get_interface)();
+    struct vfs_interface *child;
+
+    if (!mount || !pdescriptor || !cdescriptor)
+        return 0;
+
+    format = binary_get_format(cdescriptor->interface, cdescriptor->id);
+
+    if (!format)
+        return 0;
+
+    get_interface = (struct vfs_interface *(*)())(format->find_symbol(cdescriptor->interface, cdescriptor->id, 14, "get_filesystem"));
+
+    if (!get_interface)
+        return 0;
+
+    child = get_interface();
+
+    if (!child)
+        return 0;
+
+    mount->parent.interface = pdescriptor->interface;
+    mount->parent.id = pdescriptor->id;
+    mount->child.interface = child;
+    mount->child.id = child->rootid;
+
+    return 1;
 
 }
 
@@ -94,84 +185,6 @@ static unsigned int load(struct runtime_task *task, void *stack)
 
 }
 
-static unsigned int mount(struct runtime_task *task, void *stack)
-{
-
-    struct {void *caller; unsigned int index; unsigned int pindex; unsigned int cindex;} *args = stack;
-    struct runtime_mount *mount = runtime_get_task_mount(task, args->index);
-    struct runtime_descriptor *pdescriptor = runtime_get_task_descriptor(task, args->pindex);
-    struct runtime_descriptor *cdescriptor = runtime_get_task_descriptor(task, args->cindex);
-    struct binary_format *format;
-    struct vfs_interface *(*get_interface)();
-    struct vfs_interface *child;
-
-    if (!mount || !pdescriptor || !cdescriptor)
-        return 0;
-
-    format = binary_get_format(cdescriptor->interface, cdescriptor->id);
-
-    if (!format)
-        return 0;
-
-    get_interface = (struct vfs_interface *(*)())(format->find_symbol(cdescriptor->interface, cdescriptor->id, 14, "get_filesystem"));
-
-    if (!get_interface)
-        return 0;
-
-    child = get_interface();
-
-    if (!child)
-        return 0;
-
-    mount->parent.interface = pdescriptor->interface;
-    mount->parent.id = pdescriptor->id;
-    mount->child.interface = child;
-    mount->child.id = child->rootid;
-
-    return 1;
-
-}
-
-static unsigned int open(struct runtime_task *task, void *stack)
-{
-
-    struct {void *caller; unsigned int index; unsigned int pindex; unsigned int count; char *path;} *args = stack;
-    struct runtime_descriptor *descriptor = runtime_get_task_descriptor(task, args->index);
-    struct runtime_descriptor *pdescriptor = runtime_get_task_descriptor(task, args->pindex);
-   
-    if (!descriptor || !pdescriptor)
-        return 0;
-
-    descriptor->interface = pdescriptor->interface;
-    descriptor->id = pdescriptor->id;
-
-    if (!runtime_update_task_descriptor(task, descriptor, args->count, args->path))
-        return 0;
-
-    return descriptor->interface->open(descriptor->interface, descriptor->id);
-
-}
-
-static unsigned int read(struct runtime_task *task, void *stack)
-{
-
-    struct {void *caller; unsigned int index; unsigned int offset; unsigned int count; void *buffer;} *args = stack;
-    struct runtime_descriptor *descriptor = runtime_get_task_descriptor(task, args->index);
-
-    if (!descriptor)
-        return 0;
-
-    return descriptor->interface->read(descriptor->interface, descriptor->id, args->offset, args->count, args->buffer);
-
-}
-
-static unsigned int undefined(struct runtime_task *task, void *stack)
-{
-
-    return 0;
-
-}
-
 static unsigned int unload(struct runtime_task *task, void *stack)
 {
 
@@ -196,19 +209,6 @@ static unsigned int unload(struct runtime_task *task, void *stack)
     destroy();
 
     return 1;
-
-}
-
-static unsigned int write(struct runtime_task *task, void *stack)
-{
-
-    struct {void *caller; unsigned int index; unsigned int offset; unsigned int count; void *buffer;} *args = stack;
-    struct runtime_descriptor *descriptor = runtime_get_task_descriptor(task, args->index);
-
-    if (!descriptor)
-        return 0;
-
-    return descriptor->interface->write(descriptor->interface, descriptor->id, args->offset, args->count, args->buffer);
 
 }
 
