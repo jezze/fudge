@@ -70,12 +70,13 @@ static struct runtime_task *notify_interrupt(struct runtime_task *self, unsigned
 static unsigned int spawn(struct runtime_task *task, void *stack)
 {
 
-    struct {void *caller; unsigned int index;} *args = stack;
-    struct runtime_descriptor *descriptor = runtime_get_task_descriptor(task, args->index);
-    struct binary_format *format = binary_get_format(descriptor->interface, descriptor->id);
+    struct {void *caller; unsigned int index;} nargs, *args = stack;
     struct multi_task *ntask = create_task();
 
-    if (!descriptor || !format || !ntask)
+    nargs.caller = 0;
+    nargs.index = args->index;
+
+    if (!ntask)
         return 0;
 
     task->notify_interrupt = notify_interrupt;
@@ -83,13 +84,10 @@ static unsigned int spawn(struct runtime_task *task, void *stack)
     mmu_load_memory(&ntask->directory);
     memory_copy(&ntask->base, task, sizeof (struct runtime_task));
 
-    ntask->base.registers.ip = format->copy_program(descriptor->interface, descriptor->id);
-    ntask->base.registers.sp = RUNTIME_STACKADDRESS_VIRTUAL;
-    ntask->base.registers.fp = RUNTIME_STACKADDRESS_VIRTUAL;
-    ntask->base.registers.status = 0;
-    ntask->base.notify_interrupt = notify_interrupt;
+    ntask->base.registers.sp = (unsigned int)&nargs;
+    ntask->base.registers.fp = (unsigned int)&nargs;
 
-    return ntask->base.registers.ip;
+    return syscall_raise(SYSCALL_INDEX_EXECUTE, &ntask->base);
 
 }
 
