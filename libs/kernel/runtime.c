@@ -2,13 +2,6 @@
 #include "runtime.h"
 #include "vfs.h"
 
-static struct runtime_task *notify_interrupt(struct runtime_task *self, unsigned int index)
-{
-
-    return self;
-
-}
-
 struct runtime_descriptor *runtime_get_task_descriptor(struct runtime_task *task, unsigned int index)
 {
 
@@ -114,7 +107,6 @@ void runtime_init_task(struct runtime_task *task)
     memory_clear(task, sizeof (struct runtime_task));
 
     task->status.used = 1;
-    task->notify_interrupt = notify_interrupt;
 
 }
 
