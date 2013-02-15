@@ -31,19 +31,15 @@ static void setup_task(struct binary_format *format)
     unsigned int iid = ramdisk.interface.walk(&ramdisk.interface, ramdisk.interface.rootid, 9, "bin/inits");
 
     runtime_init_task(&task);
-
     error_assert(rid != 0, "Ramdisk mountpoint not found", __FILE__, __LINE__);
     error_assert(iid != 0, "Init program not found", __FILE__, __LINE__);
 
     task.registers.ip = format->copy_program(&ramdisk.interface, iid);
     task.registers.sp = RUNTIME_STACKADDRESS_VIRTUAL;
     task.registers.fp = RUNTIME_STACKADDRESS_VIRTUAL;
-    task.registers.status = 0;
 
     error_assert(task.registers.ip != 0, "Init program entry point not found", __FILE__, __LINE__);
 
-    task.mounts[1].parent.interface = 0;
-    task.mounts[1].parent.id = 0;
     task.mounts[1].child.interface = root;
     task.mounts[1].child.id = root->rootid;
     task.mounts[2].parent.interface = root;
