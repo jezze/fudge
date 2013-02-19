@@ -7,19 +7,19 @@
 #define RUNTIME_STACKADDRESS_VIRTUAL    0x80000000
 #define RUNTIME_STACKADDRESS_SIZE       0x00010000
 
-enum runtime_task_state
-{
-
-    RUNTIME_TASK_STATE_USED             = 1,
-    RUNTIME_TASK_STATE_IDLE             = 2
-
-};
-
 struct runtime_descriptor
 {
 
     struct vfs_interface *interface;
     unsigned int id;
+
+};
+
+enum runtime_task_state
+{
+
+    RUNTIME_TASK_STATE_USED             = 1,
+    RUNTIME_TASK_STATE_IDLE             = 2
 
 };
 
