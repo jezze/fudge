@@ -34,7 +34,7 @@ static struct multi_task *create_task()
 
 }
 
-static struct runtime_task *notify_interrupt(struct runtime_task *self, unsigned int index)
+static void notify_interrupt(struct runtime_container *self, unsigned int index)
 {
 
     unsigned int i;
@@ -59,11 +59,11 @@ static struct runtime_task *notify_interrupt(struct runtime_task *self, unsigned
 
         mmu_load_memory(&tasks[i]->directory);
 
-        return &tasks[i]->base;
+        self->running = &tasks[i]->base;
+
+        break;
 
     }
-
-    return self;
 
 }
 
