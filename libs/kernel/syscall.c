@@ -19,12 +19,46 @@ static unsigned int open(struct runtime_task *task, void *stack)
     struct {void *caller; unsigned int index; unsigned int pindex; unsigned int count; char *path;} *args = stack;
     struct runtime_descriptor *descriptor = runtime_get_descriptor(task, args->index);
     struct runtime_descriptor *pdescriptor = runtime_get_descriptor(task, args->pindex);
-   
+  
     if (!descriptor || !pdescriptor)
         return 0;
 
-    if (!runtime_update_descriptor(task, descriptor, pdescriptor->interface, pdescriptor->id, args->count, args->path))
-        return 0;
+    descriptor->interface = pdescriptor->interface;
+    descriptor->id = pdescriptor->id;
+
+    for (;;)
+    {
+
+        struct runtime_descriptor *temp = (args->count >= 3 && memory_match(args->path, "../", 3)) ? runtime_get_parent(task->container, descriptor->interface, descriptor->id) : runtime_get_child(task->container, descriptor->interface, descriptor->id);
+        unsigned int length;
+
+        if (temp)
+        {
+
+            descriptor->id = temp->id;
+            descriptor->interface = temp->interface;
+
+            continue;
+
+        }
+
+        if (!args->count)
+            break;
+
+        for (length = 0; length <= args->count && !(length > 0 && args->path[length - 1] == '/'); length++);
+
+        if (length > args->count)
+            length = args->count;
+
+        descriptor->id = descriptor->interface->walk(descriptor->interface, descriptor->id, length, args->path);
+
+        if (!descriptor->id)
+            return 0;
+
+        args->count -= length;
+        args->path += length;
+
+    };
 
     return descriptor->interface->open(descriptor->interface, descriptor->id);
 
