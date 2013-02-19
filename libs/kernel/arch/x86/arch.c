@@ -36,7 +36,7 @@ unsigned short arch_syscall(struct arch_registers_syscall *registers)
     if (state.container->notify_interrupt)
         state.container->notify_interrupt(state.container, registers->general.eax);
 
-    if (state.container->running->status.used && !state.container->running->status.idle)
+    if (state.container->running->state & RUNTIME_TASK_STATE_USED)
     {
 
         registers->interrupt.cs = state.selectors.ucode;

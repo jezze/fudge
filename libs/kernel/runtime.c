@@ -122,8 +122,8 @@ void runtime_init_task(struct runtime_task *task, struct runtime_container *cont
 
     memory_clear(task, sizeof (struct runtime_task));
 
+    task->state = RUNTIME_TASK_STATE_USED;
     task->container = container;
-    task->status.used = 1;
 
 }
 

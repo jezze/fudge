@@ -7,6 +7,14 @@
 #define RUNTIME_STACKADDRESS_VIRTUAL    0x80000000
 #define RUNTIME_STACKADDRESS_SIZE       0x00010000
 
+enum runtime_task_state
+{
+
+    RUNTIME_TASK_STATE_USED             = 1,
+    RUNTIME_TASK_STATE_IDLE             = 2
+
+};
+
 struct runtime_descriptor
 {
 
@@ -18,10 +26,10 @@ struct runtime_descriptor
 struct runtime_task
 {
 
-    struct runtime_container *container;
-    struct {unsigned int used; unsigned int idle;} status;
+    unsigned int state;
     struct {unsigned int ip; unsigned int sp; unsigned int fp; unsigned int status;} registers;
     struct runtime_descriptor descriptors[RUNTIME_TASK_DESCRIPTOR_SLOTS];
+    struct runtime_container *container;
 
 };
 

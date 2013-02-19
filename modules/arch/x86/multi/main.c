@@ -45,7 +45,7 @@ static void notify_interrupt(struct runtime_container *self, unsigned int index)
         if (!tasks[i])
             continue;
 
-        if (!tasks[i]->base.status.used)
+        if (!(tasks[i]->base.state & RUNTIME_TASK_STATE_USED))
         {
 
             tasks[i] = 0;
@@ -53,9 +53,6 @@ static void notify_interrupt(struct runtime_container *self, unsigned int index)
             continue;
 
         }
-
-        if (tasks[i]->base.status.idle)
-            continue;
 
         mmu_load_memory(&tasks[i]->directory);
 
