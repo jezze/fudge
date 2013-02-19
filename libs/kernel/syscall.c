@@ -19,6 +19,7 @@ static unsigned int open(struct runtime_task *task, void *stack)
     struct {void *caller; unsigned int index; unsigned int pindex; unsigned int count; char *path;} *args = stack;
     struct runtime_descriptor *descriptor = runtime_get_descriptor(task, args->index);
     struct runtime_descriptor *pdescriptor = runtime_get_descriptor(task, args->pindex);
+    unsigned int length;
   
     if (!descriptor || !pdescriptor)
         return 0;
@@ -29,14 +30,13 @@ static unsigned int open(struct runtime_task *task, void *stack)
     for (;;)
     {
 
-        struct runtime_descriptor *temp = (args->count >= 3 && memory_match(args->path, "../", 3)) ? runtime_get_parent(task->container, descriptor->interface, descriptor->id) : runtime_get_child(task->container, descriptor->interface, descriptor->id);
-        unsigned int length;
+        pdescriptor = (args->count >= 3 && memory_match(args->path, "../", 3)) ? runtime_get_parent(task->container, descriptor->interface, descriptor->id) : runtime_get_child(task->container, descriptor->interface, descriptor->id);
 
-        if (temp)
+        if (pdescriptor)
         {
 
-            descriptor->id = temp->id;
-            descriptor->interface = temp->interface;
+            descriptor->id = pdescriptor->id;
+            descriptor->interface = pdescriptor->interface;
 
             continue;
 
