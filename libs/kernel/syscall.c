@@ -16,11 +16,11 @@ static unsigned int undefined(struct runtime_task *task, void *stack)
 static unsigned int open(struct runtime_task *task, void *stack)
 {
 
-    struct {void *caller; unsigned int index; unsigned int pindex; unsigned int count; char *path;} *args = stack;
+    struct {void *caller; unsigned int index; unsigned int pindex; unsigned int count; const char *path;} *args = stack;
     struct runtime_descriptor *descriptor = runtime_get_descriptor(task, args->index);
     struct runtime_descriptor *pdescriptor = runtime_get_descriptor(task, args->pindex);
     unsigned int length;
-  
+
     if (!descriptor || !pdescriptor)
         return 0;
 
