@@ -48,7 +48,7 @@ struct arch_registers_syscall
 struct arch_state
 {
 
-    struct runtime_task *running;
+    struct runtime_container *container;
     struct {unsigned short kcode; unsigned short kdata; unsigned short ucode; unsigned short udata;} selectors;
 
 };

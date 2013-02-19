@@ -36,6 +36,7 @@ struct runtime_mount
 struct runtime_container
 {
 
+    struct runtime_task *running;
     struct runtime_mount mounts[RUNTIME_CONTAINER_MOUNT_SLOTS];
     struct runtime_task *(*notify_interrupt)(struct runtime_task *self, unsigned int index);
 

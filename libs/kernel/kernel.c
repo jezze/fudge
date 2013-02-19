@@ -33,6 +33,7 @@ static void setup_container()
     error_assert(id != 0, "Ramdisk mountpoint not found", __FILE__, __LINE__);
     runtime_init_container(&icontainer);
 
+    icontainer.running = &itask;
     icontainer.mounts[1].child.interface = root;
     icontainer.mounts[1].child.id = root->rootid;
     icontainer.mounts[2].parent.interface = root;
@@ -65,7 +66,7 @@ static void setup_task(struct binary_format *format)
 
 }
 
-struct runtime_task *kernel_setup(unsigned int ramdiskc, void **ramdiskv)
+struct runtime_container *kernel_setup(unsigned int ramdiskc, void **ramdiskv)
 {
 
     struct binary_format *elf = binary_elf_setup();
@@ -77,7 +78,7 @@ struct runtime_task *kernel_setup(unsigned int ramdiskc, void **ramdiskv)
     setup_container();
     setup_task(elf);
 
-    return &itask;
+    return &icontainer;
 
 }
 

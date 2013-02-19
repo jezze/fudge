@@ -28,22 +28,22 @@ void arch_pagefault(struct arch_registers_mmu *registers)
 unsigned short arch_syscall(struct arch_registers_syscall *registers)
 {
 
-    state.running->registers.ip = registers->interrupt.eip;
-    state.running->registers.sp = registers->interrupt.esp;
-    state.running->registers.fp = registers->general.ebp;
-    state.running->registers.status = syscall_raise(registers->general.eax, state.running);
+    state.container->running->registers.ip = registers->interrupt.eip;
+    state.container->running->registers.sp = registers->interrupt.esp;
+    state.container->running->registers.fp = registers->general.ebp;
+    state.container->running->registers.status = syscall_raise(registers->general.eax, state.container->running);
 
-    if (state.running->container->notify_interrupt)
-        state.running = state.running->container->notify_interrupt(state.running, registers->general.eax);
+    if (state.container->notify_interrupt)
+        state.container->running = state.container->notify_interrupt(state.container->running, registers->general.eax);
 
-    if (state.running->status.used && !state.running->status.idle)
+    if (state.container->running->status.used && !state.container->running->status.idle)
     {
 
         registers->interrupt.cs = state.selectors.ucode;
-        registers->interrupt.eip = state.running->registers.ip;
-        registers->interrupt.esp = state.running->registers.sp;
-        registers->general.ebp = state.running->registers.fp;
-        registers->general.eax = state.running->registers.status;
+        registers->interrupt.eip = state.container->running->registers.ip;
+        registers->interrupt.esp = state.container->running->registers.sp;
+        registers->general.ebp = state.container->running->registers.fp;
+        registers->general.eax = state.container->running->registers.status;
 
         return state.selectors.udata;
 
@@ -106,10 +106,10 @@ void arch_setup(unsigned int ramdiskc, void **ramdiskv)
     setup_routines(idtp);
     setup_mmu();
 
-    state.running = kernel_setup(ramdiskc, ramdiskv);
+    state.container = kernel_setup(ramdiskc, ramdiskv);
 
     arch_disable_pic();
-    arch_usermode(state.selectors.ucode, state.selectors.udata, state.running->registers.ip, state.running->registers.sp);
+    arch_usermode(state.selectors.ucode, state.selectors.udata, state.container->running->registers.ip, state.container->running->registers.sp);
 
 }
 

@@ -1,1 +1,1 @@
-struct runtime_task *kernel_setup(unsigned int ramdiskc, void **ramdiskv);
+struct runtime_container *kernel_setup(unsigned int ramdiskc, void **ramdiskv);
