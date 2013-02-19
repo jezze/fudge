@@ -2,7 +2,7 @@
 #include "runtime.h"
 #include "vfs.h"
 
-struct runtime_descriptor *runtime_get_task_descriptor(struct runtime_task *task, unsigned int index)
+struct runtime_descriptor *runtime_get_descriptor(struct runtime_task *task, unsigned int index)
 {
 
     if (!index || index >= RUNTIME_TASK_DESCRIPTOR_SLOTS)
@@ -12,31 +12,26 @@ struct runtime_descriptor *runtime_get_task_descriptor(struct runtime_task *task
 
 }
 
-struct runtime_mount *runtime_get_task_mount(struct runtime_task *task, unsigned int index)
+struct runtime_mount *runtime_get_mount(struct runtime_task *task, unsigned int index)
 {
 
-    if (!index || index >= RUNTIME_TASK_MOUNT_SLOTS)
+    if (!index || index >= RUNTIME_CONTAINER_MOUNT_SLOTS)
         return 0;
 
-    return &task->mounts[index];
+    return &task->container->mounts[index];
 
 }
 
-static unsigned int follow_child(struct runtime_task *task, struct runtime_descriptor *descriptor)
+static struct runtime_descriptor *follow_child(struct runtime_container *container, struct vfs_interface *interface, unsigned int id)
 {
 
     unsigned int i;
 
-    for (i = 1; i < RUNTIME_TASK_MOUNT_SLOTS; i++)
+    for (i = 1; i < RUNTIME_CONTAINER_MOUNT_SLOTS; i++)
     {
 
-        if (task->mounts[i].parent.interface != descriptor->interface || task->mounts[i].parent.id != descriptor->id)
-            continue;
-
-        descriptor->id = task->mounts[i].child.id;
-        descriptor->interface = task->mounts[i].child.interface;
-
-        return i;
+        if (container->mounts[i].parent.interface == interface && container->mounts[i].parent.id == id)
+            return &container->mounts[i].child;
 
     }
 
@@ -44,21 +39,16 @@ static unsigned int follow_child(struct runtime_task *task, struct runtime_descr
 
 }
 
-static unsigned int follow_parent(struct runtime_task *task, struct runtime_descriptor *descriptor)
+static struct runtime_descriptor *follow_parent(struct runtime_container *container, struct vfs_interface *interface, unsigned int id)
 {
 
     unsigned int i;
 
-    for (i = 1; i < RUNTIME_TASK_MOUNT_SLOTS; i++)
+    for (i = 1; i < RUNTIME_CONTAINER_MOUNT_SLOTS; i++)
     {
 
-        if (task->mounts[i].child.interface != descriptor->interface || task->mounts[i].child.id != descriptor->id)
-            continue;
-
-        descriptor->id = task->mounts[i].parent.id;
-        descriptor->interface = task->mounts[i].parent.interface;
-
-        return i;
+        if (container->mounts[i].child.interface == interface && container->mounts[i].child.id == id)
+            return &container->mounts[i].parent;
 
     }
 
@@ -66,47 +56,81 @@ static unsigned int follow_parent(struct runtime_task *task, struct runtime_desc
 
 }
 
-unsigned int runtime_update_task_descriptor(struct runtime_task *task, struct runtime_descriptor *descriptor, unsigned int count, const char *path)
+static unsigned int get_directory_length(unsigned int count, const char *path)
 {
 
-    while (count)
+    unsigned int length;
+
+    for (length = 0; length <= count && !(length > 0 && path[length - 1] == '/'); length++);
+
+    if (length > count)
+        length = count;
+
+    return length;
+
+}
+
+static unsigned int is_parent(unsigned int count, const char *path)
+{
+
+    return count >= 3 && memory_match(path, "../", 3);
+
+}
+
+unsigned int runtime_update_descriptor(struct runtime_task *task, struct runtime_descriptor *descriptor, struct vfs_interface *interface, unsigned int id, unsigned int count, const char *path)
+{
+
+    for (;;)
     {
 
-        char *offset = memory_find(path, "/", count, 1);
-        unsigned int length = (offset) ? (unsigned int)(offset - path) + 1 : count;
-        unsigned int id = descriptor->interface->walk(descriptor->interface, descriptor->id, length, path);
-        unsigned int mount;
+        struct runtime_descriptor *temp = is_parent(count, path) ? follow_parent(task->container, interface, id) : follow_child(task->container, interface, id);
+        unsigned int length;
 
-        if (id)
+        if (temp)
         {
 
-            count -= length;
-            path += length;
-            descriptor->id = id;
+            id = temp->id;
+            interface = temp->interface;
 
             continue;
 
         }
 
-        mount = (memory_match(path, "../", 3)) ? follow_parent(task, descriptor) : follow_child(task, descriptor);
+        if (!count)
+            break;
 
-        if (!mount)
+        length = get_directory_length(count, path);
+        id = interface->walk(interface, id, length, path);
+
+        if (!id)
             return 0;
 
-    }
+        count -= length;
+        path += length;
 
-    follow_child(task, descriptor);
+    };
+
+    descriptor->id = id;
+    descriptor->interface = interface;
 
     return descriptor->id;
 
 }
 
-void runtime_init_task(struct runtime_task *task)
+void runtime_init_task(struct runtime_task *task, struct runtime_container *container)
 {
 
     memory_clear(task, sizeof (struct runtime_task));
 
+    task->container = container;
     task->status.used = 1;
+
+}
+
+void runtime_init_container(struct runtime_container *container)
+{
+
+    memory_clear(container, sizeof (struct runtime_container));
 
 }
 

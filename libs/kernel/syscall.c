@@ -17,16 +17,13 @@ static unsigned int open(struct runtime_task *task, void *stack)
 {
 
     struct {void *caller; unsigned int index; unsigned int pindex; unsigned int count; char *path;} *args = stack;
-    struct runtime_descriptor *descriptor = runtime_get_task_descriptor(task, args->index);
-    struct runtime_descriptor *pdescriptor = runtime_get_task_descriptor(task, args->pindex);
+    struct runtime_descriptor *descriptor = runtime_get_descriptor(task, args->index);
+    struct runtime_descriptor *pdescriptor = runtime_get_descriptor(task, args->pindex);
    
     if (!descriptor || !pdescriptor)
         return 0;
 
-    descriptor->interface = pdescriptor->interface;
-    descriptor->id = pdescriptor->id;
-
-    if (!runtime_update_task_descriptor(task, descriptor, args->count, args->path))
+    if (!runtime_update_descriptor(task, descriptor, pdescriptor->interface, pdescriptor->id, args->count, args->path))
         return 0;
 
     return descriptor->interface->open(descriptor->interface, descriptor->id);
@@ -37,7 +34,7 @@ static unsigned int close(struct runtime_task *task, void *stack)
 {
 
     struct {void *caller; unsigned int index;} *args = stack;
-    struct runtime_descriptor *descriptor = runtime_get_task_descriptor(task, args->index);
+    struct runtime_descriptor *descriptor = runtime_get_descriptor(task, args->index);
 
     if (!descriptor)
         return 0;
@@ -50,7 +47,7 @@ static unsigned int read(struct runtime_task *task, void *stack)
 {
 
     struct {void *caller; unsigned int index; unsigned int offset; unsigned int count; void *buffer;} *args = stack;
-    struct runtime_descriptor *descriptor = runtime_get_task_descriptor(task, args->index);
+    struct runtime_descriptor *descriptor = runtime_get_descriptor(task, args->index);
 
     if (!descriptor)
         return 0;
@@ -63,7 +60,7 @@ static unsigned int write(struct runtime_task *task, void *stack)
 {
 
     struct {void *caller; unsigned int index; unsigned int offset; unsigned int count; void *buffer;} *args = stack;
-    struct runtime_descriptor *descriptor = runtime_get_task_descriptor(task, args->index);
+    struct runtime_descriptor *descriptor = runtime_get_descriptor(task, args->index);
 
     if (!descriptor)
         return 0;
@@ -76,9 +73,9 @@ static unsigned int mount(struct runtime_task *task, void *stack)
 {
 
     struct {void *caller; unsigned int index; unsigned int pindex; unsigned int cindex;} *args = stack;
-    struct runtime_mount *mount = runtime_get_task_mount(task, args->index);
-    struct runtime_descriptor *pdescriptor = runtime_get_task_descriptor(task, args->pindex);
-    struct runtime_descriptor *cdescriptor = runtime_get_task_descriptor(task, args->cindex);
+    struct runtime_mount *mount = runtime_get_mount(task, args->index);
+    struct runtime_descriptor *pdescriptor = runtime_get_descriptor(task, args->pindex);
+    struct runtime_descriptor *cdescriptor = runtime_get_descriptor(task, args->cindex);
     struct binary_format *format;
     struct vfs_interface *(*get_interface)();
     struct vfs_interface *child;
@@ -114,7 +111,7 @@ static unsigned int execute(struct runtime_task *task, void *stack)
 {
 
     struct {void *caller; unsigned int index;} *args = stack;
-    struct runtime_descriptor *descriptor = runtime_get_task_descriptor(task, args->index);
+    struct runtime_descriptor *descriptor = runtime_get_descriptor(task, args->index);
     struct binary_format *format;
 
     if (!descriptor)
@@ -152,7 +149,7 @@ static unsigned int load(struct runtime_task *task, void *stack)
 {
 
     struct {void *caller; unsigned int index;} *args = stack;
-    struct runtime_descriptor *descriptor = runtime_get_task_descriptor(task, args->index);
+    struct runtime_descriptor *descriptor = runtime_get_descriptor(task, args->index);
     struct binary_format *format;
     unsigned int physical;
     void (*init)();
@@ -189,7 +186,7 @@ static unsigned int unload(struct runtime_task *task, void *stack)
 {
 
     struct {void *caller; unsigned int index;} *args = stack;
-    struct runtime_descriptor *descriptor = runtime_get_task_descriptor(task, args->index);
+    struct runtime_descriptor *descriptor = runtime_get_descriptor(task, args->index);
     struct binary_format *format;
     void (*destroy)();
 
