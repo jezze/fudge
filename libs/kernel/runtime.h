@@ -22,7 +22,6 @@ struct runtime_task
     struct {unsigned int used; unsigned int idle;} status;
     struct {unsigned int ip; unsigned int sp; unsigned int fp; unsigned int status;} registers;
     struct runtime_descriptor descriptors[RUNTIME_TASK_DESCRIPTOR_SLOTS];
-    struct runtime_task *(*notify_interrupt)(struct runtime_task *self, unsigned int index);
 
 };
 
@@ -38,6 +37,7 @@ struct runtime_container
 {
 
     struct runtime_mount mounts[RUNTIME_CONTAINER_MOUNT_SLOTS];
+    struct runtime_task *(*notify_interrupt)(struct runtime_task *self, unsigned int index);
 
 };
 

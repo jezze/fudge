@@ -79,7 +79,7 @@ static unsigned int spawn(struct runtime_task *task, void *stack)
     if (!ntask)
         return 0;
 
-    task->notify_interrupt = notify_interrupt;
+    task->container->notify_interrupt = notify_interrupt;
 
     mmu_load_memory(&ntask->directory);
     memory_copy(&ntask->base, task, sizeof (struct runtime_task));
