@@ -10,12 +10,10 @@ static unsigned int match(struct vfs_interface *interface, unsigned int id)
 
     struct elf_header header;
 
-    interface->read(interface, id, 0, ELF_HEADER_SIZE, &header);
+    if (interface->read(interface, id, 0, ELF_HEADER_SIZE, &header) < ELF_HEADER_SIZE)
+        return 0;
 
-    if (elf_validate(&header))
-        return 1;
-
-    return 0;
+    return elf_validate(&header);
 
 }
 
