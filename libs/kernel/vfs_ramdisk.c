@@ -1,6 +1,16 @@
 #include <fudge/kernel.h>
 #include "vfs.h"
-#include "ramdisk.h"
+#include "vfs_ramdisk.h"
+
+#define RAMDISK_HEADER_SLOTS            128
+
+struct ramdisk_filesystem
+{
+
+    struct vfs_interface interface;
+    struct {struct tar_header *headers[RAMDISK_HEADER_SLOTS]; unsigned int count;} image;
+
+} iramdisk;
 
 static unsigned int open(struct vfs_interface *self, unsigned int id)
 {
@@ -169,7 +179,7 @@ static unsigned int get_physical(struct vfs_interface *self, unsigned int id)
 
 }
 
-unsigned int ramdisk_parse(struct ramdisk_filesystem *filesystem, void *address)
+static unsigned int parse(struct ramdisk_filesystem *filesystem, void *address)
 {
 
     char *current;
@@ -193,11 +203,14 @@ unsigned int ramdisk_parse(struct ramdisk_filesystem *filesystem, void *address)
 
 }
 
-void ramdisk_init_filesystem(struct ramdisk_filesystem *filesystem)
+struct vfs_interface *vfs_ramdisk_setup(void *address)
 {
 
-    memory_clear(filesystem, sizeof (struct ramdisk_filesystem));
-    vfs_init_interface(&filesystem->interface, 1, "ramdisk", open, close, read, write, walk, get_physical);
+    memory_clear(&iramdisk, sizeof (struct ramdisk_filesystem));
+    vfs_init_interface(&iramdisk.interface, 1, "ramdisk", open, close, read, write, walk, get_physical);
+    parse(&iramdisk, address);
+
+    return &iramdisk.interface;
 
 }
 

@@ -4,10 +4,11 @@ LIBKERNEL_OBJECTS+=libs/kernel/binary.o
 LIBKERNEL_OBJECTS+=libs/kernel/binary_elf.o
 LIBKERNEL_OBJECTS+=libs/kernel/error.o
 LIBKERNEL_OBJECTS+=libs/kernel/kernel.o
-LIBKERNEL_OBJECTS+=libs/kernel/ramdisk.o
 LIBKERNEL_OBJECTS+=libs/kernel/runtime.o
 LIBKERNEL_OBJECTS+=libs/kernel/syscall.o
 LIBKERNEL_OBJECTS+=libs/kernel/vfs.o
+LIBKERNEL_OBJECTS+=libs/kernel/vfs_root.o
+LIBKERNEL_OBJECTS+=libs/kernel/vfs_ramdisk.o
 
 include libs/kernel/arch/$(ARCH)/rules.mk
 

@@ -96,7 +96,7 @@ static void setup_mmu()
 
 }
 
-void arch_setup(unsigned int ramdiskc, void **ramdiskv)
+void arch_setup(unsigned int modulesc, void **modulesv)
 {
 
     struct gdt_pointer *gdtp = gdt_setup_pointer();
@@ -106,7 +106,7 @@ void arch_setup(unsigned int ramdiskc, void **ramdiskv)
     setup_routines(idtp);
     setup_mmu();
 
-    state.container = kernel_setup(ramdiskc, ramdiskv);
+    state.container = kernel_setup(modulesc, modulesv);
 
     arch_disable_pic();
     arch_usermode(state.selectors.ucode, state.selectors.udata, state.container->running->registers.ip, state.container->running->registers.sp);

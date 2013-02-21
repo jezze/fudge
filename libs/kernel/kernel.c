@@ -3,31 +3,20 @@
 #include "runtime.h"
 #include "kernel.h"
 #include "vfs.h"
+#include "vfs_root.h"
+#include "vfs_ramdisk.h"
 #include "binary.h"
 #include "binary_elf.h"
-#include "ramdisk.h"
 #include "syscall.h"
 
 static struct runtime_container icontainer;
 static struct runtime_task itask;
-static struct ramdisk_filesystem iramdisk;
 
-static void setup_ramdisk(int ramdiskc, void **ramdiskv)
+static void setup_container(void *ramdiskaddress)
 {
 
-    unsigned int i;
-
-    ramdisk_init_filesystem(&iramdisk);
-
-    for (i = 0; i < ramdiskc; i++)
-        ramdisk_parse(&iramdisk, ramdiskv[i]);
-
-}
-
-static void setup_container()
-{
-
-    struct vfs_interface *root = vfs_setup();
+    struct vfs_interface *root = vfs_root_setup();
+    struct vfs_interface *ramdisk = vfs_ramdisk_setup(ramdiskaddress);
     unsigned int id = root->walk(root, root->rootid, 8, "ramdisk/");
 
     error_assert(id != 0, "Ramdisk mountpoint not found", __FILE__, __LINE__);
@@ -38,8 +27,8 @@ static void setup_container()
     icontainer.mounts[1].child.id = root->rootid;
     icontainer.mounts[2].parent.interface = root;
     icontainer.mounts[2].parent.id = id;
-    icontainer.mounts[2].child.interface = &iramdisk.interface;
-    icontainer.mounts[2].child.id = iramdisk.interface.rootid;
+    icontainer.mounts[2].child.interface = ramdisk;
+    icontainer.mounts[2].child.id = ramdisk->rootid;
 
 }
 
@@ -66,17 +55,16 @@ static void setup_task(struct binary_format *format)
 
 }
 
-struct runtime_container *kernel_setup(unsigned int ramdiskc, void **ramdiskv)
+struct runtime_container *kernel_setup(unsigned int modulesc, void **modulesv)
 {
 
     struct binary_format *elf = binary_elf_setup();
 
     binary_setup();
     binary_register_format(elf);
-    syscall_setup();
-    setup_ramdisk(ramdiskc, ramdiskv);
-    setup_container();
+    setup_container(modulesv[0]);
     setup_task(elf);
+    syscall_setup();
 
     return &icontainer;
 

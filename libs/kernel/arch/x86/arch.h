@@ -58,4 +58,4 @@ void arch_halt();
 void arch_usermode(unsigned int cs, unsigned int ds, unsigned int ip, unsigned int sp);
 void arch_isr_pagefault();
 void arch_isr_syscall();
-void arch_setup(unsigned int ramdiskc, void **ramdiskv);
+void arch_setup(unsigned int modulesc, void **modulesv);
