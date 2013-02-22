@@ -11,29 +11,10 @@ struct video_interface
 
 };
 
-struct video_interface_node
-{
-
-    struct system_group root;
-    struct system_integer bpp;
-    struct system_integer xres;
-    struct system_integer yres;
-    struct video_interface *interface;
-
-};
-
 struct video_protocol
 {
 
     char *name;
-
-};
-
-struct video_protocol_node
-{
-
-    struct system_group root;
-    struct video_protocol *protocol;
 
 };
 

@@ -1,6 +1,5 @@
 #include <fudge/module.h>
 #include <kernel/vfs.h>
-#include <system/system.h>
 #include <block/block.h>
 #include "ext2.h"
 

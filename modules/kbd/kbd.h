@@ -7,26 +7,10 @@ struct kbd_interface
 
 };
 
-struct kbd_interface_node
-{
-
-    struct system_group root;
-    struct kbd_interface *interface;
-
-};
-
 struct kbd_protocol
 {
 
     char *name;
-
-};
-
-struct kbd_protocol_node
-{
-
-    struct system_group root;
-    struct kbd_protocol *protocol;
 
 };
 

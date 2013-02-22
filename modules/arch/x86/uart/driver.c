@@ -1,7 +1,6 @@
 #include <fudge/module.h>
 #include <fudge/define.h>
 #include <fudge/data/circular.h>
-#include <system/system.h>
 #include <base/base.h>
 #include <arch/x86/pic/pic.h>
 #include <arch/x86/io/io.h>

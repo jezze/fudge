@@ -7,26 +7,10 @@ struct block_interface
 
 };
 
-struct block_interface_node
-{
-
-    struct system_group root;
-    struct block_interface *interface;
-
-};
-
 struct block_protocol
 {
 
     char *name;
-
-};
-
-struct block_protocol_node
-{
-
-    struct system_group root;
-    struct block_protocol *protocol;
 
 };
 

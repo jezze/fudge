@@ -7,28 +7,10 @@ struct mouse_interface
 
 };
 
-struct mouse_interface_node
-{
-
-    struct system_group root;
-    struct system_integer vx;
-    struct system_integer vy;
-    struct mouse_interface *interface;
-
-};
-
 struct mouse_protocol
 {
 
     char *name;
-
-};
-
-struct mouse_protocol_node
-{
-
-    struct system_group root;
-    struct mouse_protocol *protocol;
 
 };
 

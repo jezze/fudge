@@ -7,28 +7,12 @@ struct net_interface
 
 };
 
-struct net_interface_node
-{
-
-    struct system_group root;
-    struct net_interface *interface;
-
-};
-
 struct net_protocol
 {
 
     char *name;
     unsigned int (*read)(struct net_interface *interface, unsigned int offset, unsigned int count, void *buffer);
     unsigned int (*write)(struct net_interface *interface, unsigned int offset, unsigned int count, void *buffer);
-
-};
-
-struct net_protocol_node
-{
-
-    struct system_group root;
-    struct net_protocol *protocol;
 
 };
 

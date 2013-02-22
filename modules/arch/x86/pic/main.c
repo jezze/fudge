@@ -1,7 +1,6 @@
 #include <fudge/module.h>
 #include <kernel/arch/x86/cpu.h>
 #include <kernel/arch/x86/idt.h>
-#include <system/system.h>
 #include <base/base.h>
 #include <arch/x86/io/io.h>
 #include "pic.h"
