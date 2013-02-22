@@ -21,10 +21,10 @@ static unsigned int close(struct vfs_interface *self, unsigned int id)
 static unsigned int read(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    if (id > 0x00000001)
+    if (id > 1)
         return memory_read(buffer, count, "../\n", 4, offset);
 
-    if (id == 0x00000001)
+    if (id == 1)
         return memory_read(buffer, count, "../\nconfig/\nramdisk/\nsystem/\n", 29, offset);
 
     return 0;

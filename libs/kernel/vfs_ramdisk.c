@@ -75,7 +75,7 @@ static unsigned int read_directory(struct tar_header *header, unsigned int offse
 {
 
     unsigned int length = string_length(header->name);
-    struct tar_header *current = 0;
+    struct tar_header *current = header;
     unsigned char *b = buffer;
     unsigned int c = 0;
 
@@ -86,9 +86,6 @@ static unsigned int read_directory(struct tar_header *header, unsigned int offse
     {
 
         unsigned int l = string_length(current->name) - length;
-
-        if (current == header)
-            continue;
 
         if (parent(current) != header)
             continue;
