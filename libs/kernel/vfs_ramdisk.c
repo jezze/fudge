@@ -2,7 +2,7 @@
 #include "vfs.h"
 #include "vfs_ramdisk.h"
 
-struct vfs_interface ramdisk;
+static struct vfs_interface ramdisk;
 
 static struct tar_header *next(struct tar_header *header)
 {
