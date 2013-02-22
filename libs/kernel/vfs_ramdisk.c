@@ -50,6 +50,13 @@ static struct tar_header *parent(struct tar_header *header)
 
 }
 
+static unsigned int get_physical(struct vfs_interface *self, unsigned int id)
+{
+
+    return id + TAR_BLOCK_SIZE;
+
+}
+
 static unsigned int open(struct vfs_interface *self, unsigned int id)
 {
 
@@ -78,17 +85,16 @@ static unsigned int read_directory(struct tar_header *header, unsigned int offse
     while ((current = next(current)))
     {
 
-        struct tar_header *p = parent(current);
-        unsigned int l = string_length(current->name);
+        unsigned int l = string_length(current->name) - length;
 
         if (current == header)
             continue;
 
-        if (p != header)
+        if (parent(current) != header)
             continue;
 
-        c += memory_read(b + c, count - c, current->name + length, l - length, offset);
-        offset -= (offset > l - length) ? l - length : offset;
+        c += memory_read(b + c, count - c, current->name + length, l, offset);
+        offset -= (offset > l) ? l : offset;
         c += memory_read(b + c, count - c, "\n", 1, offset);
         offset -= (offset > 1) ? 1 : offset;
 
@@ -102,7 +108,7 @@ static unsigned int read_file(struct tar_header *header, unsigned int offset, un
 {
 
     unsigned int size = string_read_num(header->size, 8);
-    unsigned int data = (unsigned int)header + TAR_BLOCK_SIZE;
+    unsigned int data = get_physical(&ramdisk, (unsigned int)header);
 
     return memory_read(buffer, count, (void *)data, size, offset);
 
@@ -125,7 +131,7 @@ static unsigned int write_file(struct tar_header *header, unsigned int offset, u
 {
 
     unsigned int size = string_read_num(header->size, 8);
-    unsigned int data = (unsigned int)header + TAR_BLOCK_SIZE;
+    unsigned int data = get_physical(&ramdisk, (unsigned int)header);
 
     return memory_write((void *)data, size, buffer, count, offset);
 
@@ -173,13 +179,6 @@ static unsigned int walk(struct vfs_interface *self, unsigned int id, unsigned i
     }
 
     return 0;
-
-}
-
-static unsigned int get_physical(struct vfs_interface *self, unsigned int id)
-{
-
-    return id + TAR_BLOCK_SIZE;
 
 }
 
