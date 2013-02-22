@@ -71,46 +71,6 @@ static unsigned int close(struct vfs_interface *self, unsigned int id)
 
 }
 
-static unsigned int read_directory(struct tar_header *header, unsigned int offset, unsigned int count, void *buffer)
-{
-
-    unsigned int length = string_length(header->name);
-    struct tar_header *current = header;
-    unsigned char *b = buffer;
-    unsigned int c = 0;
-
-    c += memory_read(b + c, count - c, "../\n", 4, offset);
-    offset -= (offset > 4) ? 4 : offset;
-
-    while ((current = next(current)))
-    {
-
-        unsigned int l = string_length(current->name) - length;
-
-        if (parent(current) != header)
-            continue;
-
-        c += memory_read(b + c, count - c, current->name + length, l, offset);
-        offset -= (offset > l) ? l : offset;
-        c += memory_read(b + c, count - c, "\n", 1, offset);
-        offset -= (offset > 1) ? 1 : offset;
-
-    }
-
-    return c;
-
-}
-
-static unsigned int read_file(struct tar_header *header, unsigned int offset, unsigned int count, void *buffer)
-{
-
-    unsigned int size = string_read_num(header->size, 8);
-    unsigned int data = get_physical(&ramdisk, (unsigned int)header);
-
-    return memory_read(buffer, count, (void *)data, size, offset);
-
-}
-
 static unsigned int read(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
@@ -118,19 +78,34 @@ static unsigned int read(struct vfs_interface *self, unsigned int id, unsigned i
     unsigned int length = string_length(header->name);
 
     if (header->name[length - 1] == '/')
-        return read_directory(header, offset, count, buffer);
+    {
 
-    return read_file(header, offset, count, buffer);
+        struct tar_header *current = header;
+        unsigned char *b = buffer;
+        unsigned int c = memory_read(b, count, "../\n", 4, offset);
 
-}
+        offset -= (offset > 4) ? 4 : offset;
 
-static unsigned int write_file(struct tar_header *header, unsigned int offset, unsigned int count, void *buffer)
-{
+        while ((current = next(current)))
+        {
 
-    unsigned int size = string_read_num(header->size, 8);
-    unsigned int data = get_physical(&ramdisk, (unsigned int)header);
+            unsigned int l = string_length(current->name) - length;
 
-    return memory_write((void *)data, size, buffer, count, offset);
+            if (parent(current) != header)
+                continue;
+
+            c += memory_read(b + c, count - c, current->name + length, l, offset);
+            offset -= (offset > l) ? l : offset;
+            c += memory_read(b + c, count - c, "\n", 1, offset);
+            offset -= (offset > 1) ? 1 : offset;
+
+        }
+
+        return c;
+
+    }
+
+    return memory_read(buffer, count, (void *)get_physical(self, id), string_read_num(header->size, 8), offset);
 
 }
 
@@ -143,7 +118,7 @@ static unsigned int write(struct vfs_interface *self, unsigned int id, unsigned 
     if (header->name[length - 1] == '/')
         return 0;
 
-    return write_file(header, offset, count, buffer);
+    return memory_write((void *)get_physical(self, id), string_read_num(header->size, 8), buffer, count, offset);
 
 }
 
