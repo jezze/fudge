@@ -35,6 +35,9 @@ static unsigned int open(struct runtime_task *task, void *stack)
         if (pdescriptor)
         {
 
+            if (!pdescriptor->interface)
+                return 0;
+
             descriptor->id = pdescriptor->id;
             descriptor->interface = pdescriptor->interface;
 
