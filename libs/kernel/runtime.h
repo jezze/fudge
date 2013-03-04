@@ -47,7 +47,7 @@ struct runtime_container
     struct runtime_task *running;
     struct runtime_mount mounts[RUNTIME_CONTAINER_MOUNT_SLOTS];
     void (*notify_pagefault)(struct runtime_container *self, unsigned int address);
-    void (*notify_syscall)(struct runtime_container *self, unsigned int index);
+    void (*notify_syscall)(struct runtime_container *self, unsigned int index, unsigned int ip, unsigned int sp, unsigned int fp);
 
 };
 

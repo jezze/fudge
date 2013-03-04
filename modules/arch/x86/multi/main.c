@@ -73,8 +73,13 @@ static void notify_pagefault(struct runtime_container *self, unsigned int addres
 
 }
 
-static void notify_syscall(struct runtime_container *self, unsigned int index)
+static void notify_syscall(struct runtime_container *self, unsigned int index, unsigned int ip, unsigned int sp, unsigned int fp)
 {
+
+    self->running->registers.ip = ip;
+    self->running->registers.sp = sp;
+    self->running->registers.fp = fp;
+    self->running->registers.status = syscall_raise(index, self->running);
 
     schedule(self);
 
