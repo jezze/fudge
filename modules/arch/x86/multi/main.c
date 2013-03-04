@@ -4,7 +4,6 @@
 #include <kernel/runtime.h>
 #include <kernel/syscall.h>
 #include <kernel/arch/x86/arch.h>
-#include <kernel/arch/x86/idt.h>
 #include <kernel/arch/x86/mmu.h>
 #include "multi.h"
 
@@ -35,13 +34,10 @@ static struct multi_task *create_task()
 
 }
 
-static void notify_interrupt(struct runtime_container *self, unsigned int index)
+static void schedule(struct runtime_container *container)
 {
 
     unsigned int i;
-
-    if (index == IDT_INDEX_PF)
-        self->running->state = 0;
 
     for (i = MULTI_TASK_SLOTS - 1; i > 0; i--)
     {
@@ -60,11 +56,27 @@ static void notify_interrupt(struct runtime_container *self, unsigned int index)
 
         mmu_load_memory(&tasks[i]->directory);
 
-        self->running = &tasks[i]->base;
+        container->running = &tasks[i]->base;
 
         break;
 
     }
+
+}
+
+static void notify_pagefault(struct runtime_container *self, unsigned int address)
+{
+
+    self->running->state = 0;
+
+    schedule(self);
+
+}
+
+static void notify_syscall(struct runtime_container *self, unsigned int index)
+{
+
+    schedule(self);
 
 }
 
@@ -80,7 +92,8 @@ static unsigned int spawn(struct runtime_task *task, void *stack)
     if (!ntask)
         return 0;
 
-    task->container->notify_interrupt = notify_interrupt;
+    task->container->notify_pagefault = notify_pagefault;
+    task->container->notify_syscall = notify_syscall;
 
     mmu_load_memory(&ntask->directory);
     memory_copy(&ntask->base, task, sizeof (struct runtime_task));
