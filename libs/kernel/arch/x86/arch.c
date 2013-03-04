@@ -19,8 +19,7 @@ unsigned short arch_pagefault(struct arch_registers_mmu *registers)
 
     unsigned int address = cpu_get_cr2();
 
-    if (state.container->notify_pagefault)
-        state.container->notify_pagefault(state.container, address);
+    state.container->notify_pagefault(state.container, address);
 
     if (state.container->running->state & RUNTIME_TASK_STATE_USED)
     {
@@ -46,8 +45,7 @@ unsigned short arch_pagefault(struct arch_registers_mmu *registers)
 unsigned short arch_syscall(struct arch_registers_syscall *registers)
 {
 
-    if (state.container->notify_syscall)
-        state.container->notify_syscall(state.container, registers->general.eax, registers->interrupt.eip, registers->interrupt.esp, registers->general.ebp);
+    state.container->notify_syscall(state.container, registers->general.eax, registers->interrupt.eip, registers->interrupt.esp, registers->general.ebp);
 
     if (state.container->running->state & RUNTIME_TASK_STATE_USED)
     {
