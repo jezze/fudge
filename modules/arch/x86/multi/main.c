@@ -4,6 +4,7 @@
 #include <kernel/runtime.h>
 #include <kernel/syscall.h>
 #include <kernel/arch/x86/arch.h>
+#include <kernel/arch/x86/idt.h>
 #include <kernel/arch/x86/mmu.h>
 #include "multi.h"
 
@@ -38,6 +39,9 @@ static void notify_interrupt(struct runtime_container *self, unsigned int index)
 {
 
     unsigned int i;
+
+    if (index == IDT_INDEX_PF)
+        self->running->state = 0;
 
     for (i = MULTI_TASK_SLOTS - 1; i > 0; i--)
     {

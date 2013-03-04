@@ -39,8 +39,6 @@ arch_usermode:
 arch_isr_pagefault:
     cli
     pusha
-    mov ax, ds
-    push eax
     mov eax, esp
     push eax
     mov ax, 0x10
@@ -49,13 +47,13 @@ arch_isr_pagefault:
     mov fs, ax
     mov gs, ax
     call arch_pagefault
-    add esp, 4
-    pop eax
     mov ds, ax
     mov es, ax
     mov fs, ax
     mov gs, ax
+    add esp, 4
     popa
+    add esp, 4
     iret
 
 .global arch_isr_syscall

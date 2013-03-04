@@ -30,7 +30,6 @@ struct arch_registers_interrupt
 struct arch_registers_mmu
 {
 
-    unsigned int ds;
     struct arch_registers_general general;
     unsigned int type;
     struct arch_registers_interrupt interrupt;

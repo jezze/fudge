@@ -14,14 +14,33 @@ static struct arch_state state;
 static struct mmu_directory directory;
 static struct mmu_table tables[3];
 
-void arch_pagefault(struct arch_registers_mmu *registers)
+unsigned short arch_pagefault(struct arch_registers_mmu *registers)
 {
 
     unsigned int address = cpu_get_cr2();
 
     error_register(1, address);
     error_register(2, registers->type);
+
+    if (state.container->notify_interrupt)
+        state.container->notify_interrupt(state.container, IDT_INDEX_PF);
+
+    if (state.container->running->state & RUNTIME_TASK_STATE_USED)
+    {
+
+        registers->interrupt.cs = state.selectors.ucode;
+        registers->interrupt.eip = state.container->running->registers.ip;
+        registers->interrupt.esp = state.container->running->registers.sp;
+        registers->general.ebp = state.container->running->registers.fp;
+        registers->general.eax = state.container->running->registers.status;
+
+        return state.selectors.udata;
+
+    }
+
     error_panic("PAGE FAULT", __FILE__, __LINE__);
+
+    return state.selectors.kdata;
 
 }
 
@@ -34,7 +53,7 @@ unsigned short arch_syscall(struct arch_registers_syscall *registers)
     state.container->running->registers.status = syscall_raise(registers->general.eax, state.container->running);
 
     if (state.container->notify_interrupt)
-        state.container->notify_interrupt(state.container, registers->general.eax);
+        state.container->notify_interrupt(state.container, IDT_INDEX_SYSCALL);
 
     if (state.container->running->state & RUNTIME_TASK_STATE_USED)
     {
