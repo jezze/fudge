@@ -325,20 +325,25 @@ static void interpret(unsigned int count, char *buffer)
 
     }
 
+    call_open(4, FUDGE_IN, 0, 0);
+    call_open(5, FUDGE_OUT, 0, 0);
+
     while (current(&lexer) != TOKEN_NEWLINE)
     {
-
-        call_open(4, FUDGE_IN, 0, 0);
-        call_open(5, FUDGE_OUT, 0, 0);
 
         if (!parse(&lexer))
             return;
 
         call_spawn(3);
-        call_open(FUDGE_IN, 4, 0, 0);
-        call_open(FUDGE_OUT, 5, 0, 0);
+        call_open(6, FUDGE_IN, 0, 0);
+        call_open(7, FUDGE_OUT, 0, 0);
+        call_open(FUDGE_IN, 7, 0, 0);
+        call_open(FUDGE_OUT, 6, 0, 0);
 
     }
+
+    call_open(FUDGE_IN, 4, 0, 0);
+    call_open(FUDGE_OUT, 5, 0, 0);
 
 }
 
