@@ -338,16 +338,6 @@ static void interpret(unsigned int count, char *buffer)
 
 }
 
-static void clear()
-{
-
-    lifo_stack_clear(&input);
-    call_open(FUDGE_IN, FUDGE_ROOT, 17, "system/ps2_buffer");
-    call_open(FUDGE_OUT, FUDGE_ROOT, 17, "system/vga_buffer");
-    call_write(FUDGE_OUT, 0, 2, "$ ");
-
-}
-
 static void handle(char c)
 {
 
@@ -356,6 +346,7 @@ static void handle(char c)
 
         case '\0':
         case '\t':
+        case '\r':
 
             break;
 
@@ -368,13 +359,17 @@ static void handle(char c)
 
             break;
 
-        case '\r':
         case '\n':
 
             lifo_stack_push(&input, c);
             call_write(FUDGE_OUT, 0, 1, &c);
+            call_open(4, FUDGE_IN, 0, 0);
+            call_open(5, FUDGE_OUT, 0, 0);
             interpret(input.head, input.buffer);
-            clear();
+            call_open(FUDGE_IN, 4, 0, 0);
+            call_open(FUDGE_OUT, 5, 0, 0);
+            call_write(FUDGE_OUT, 0, 2, "$ ");
+            lifo_stack_clear(&input);
 
             break;
 
@@ -459,7 +454,8 @@ static void poll()
 void main()
 {
 
-    clear();
+    lifo_stack_clear(&input);
+    call_write(FUDGE_OUT, 0, 2, "$ ");
     poll();
 
 }
