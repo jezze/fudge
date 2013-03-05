@@ -281,20 +281,13 @@ static void parse(struct reader *reader)
 static void interpret_cd(unsigned int count, char *buffer)
 {
 
-    unsigned int id;
-    
     if (!count)
         return;
 
     if (buffer[count - 1] != '/')
         return;
 
-    id = (buffer[0] == '/') ? call_open(3, FUDGE_ROOT, count - 1, buffer + 1) : call_open(3, FUDGE_CWD, count, buffer);
-
-    if (!id)
-        return;
-
-    call_open(FUDGE_CWD, 3, 0, 0);
+    open_file(FUDGE_CWD, count, buffer, 0, 0);
 
 }
 
