@@ -1,33 +1,39 @@
 #include <fudge.h>
 #include <data/lifo.h>
 
-enum symbol
+enum token
 {
 
-    SYM_NULL        = 0,
-    SYM_NUM         = 1,
-    SYM_ALPHA       = 2,
-    SYM_ALPHANUM    = 3,
-    SYM_SPACE       = 4,
-    SYM_LT          = 8,
-    SYM_GT          = 16,
-    SYM_MINUS       = 32,
-    SYM_SEMICOLON   = 64,
-    SYM_DOT         = 128,
-    SYM_SLASH       = 256,
-    SYM_WALL        = 512,
-    SYM_NEWLINE     = 1024
+    TOKEN_NULL                          = 0,
+    TOKEN_NUM                           = 1,
+    TOKEN_ALPHA                         = 2,
+    TOKEN_ALPHANUM                      = 3,
+    TOKEN_SPACE                         = 4,
+    TOKEN_LT                            = 8,
+    TOKEN_GT                            = 16,
+    TOKEN_MINUS                         = 32,
+    TOKEN_SEMICOLON                     = 64,
+    TOKEN_DOT                           = 128,
+    TOKEN_SLASH                         = 256,
+    TOKEN_WALL                          = 512,
+    TOKEN_NEWLINE                       = 1024
+
+};
+
+struct reader
+{
+
+    char *buffer;
+    unsigned int count;
+    unsigned int index;
 
 };
 
 static struct lifo_stack input;
-static char *data;
-static enum symbol sym;
-static unsigned int pos;
-static unsigned int len;
 
 static char mapUS[256] =
 {
+
        0,   27,  '1',  '2',  '3',  '4',  '5',  '6',  '7',  '8',  '9',  '0',  '-',  '+', '\b', '\t',
      'q',  'w',  'e',  'r',  't',  'y',  'u',  'i',  'o',  'p',  '[',  ']', '\n',    0,  'a',  's',
      'd',  'f',  'g',  'h',  'j',  'k',  'l',  ';', '\'',  '`',    0, '\\',  'z',  'x',  'c',  'v',
@@ -44,21 +50,13 @@ static char mapUS[256] =
        0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
        0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
        0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0
+
 };
 
-static void next()
+static enum token tokenize(char c)
 {
 
-    if (pos >= len)
-    {
-
-        sym = SYM_NEWLINE;
-
-        return;
-
-    }
-
-    switch (data[pos])
+    switch (c)
     {
 
         case '0':
@@ -72,9 +70,7 @@ static void next()
         case '8':
         case '9':
 
-            sym = SYM_NUM;
-
-            break;
+            return TOKEN_NUM;
 
         case 'a':
         case 'b':
@@ -102,89 +98,93 @@ static void next()
         case 'x':
         case 'y':
         case 'z':
+        case 'A':
+        case 'B':
+        case 'C':
+        case 'D':
+        case 'E':
+        case 'F':
+        case 'G':
+        case 'H':
+        case 'I':
+        case 'J':
+        case 'K':
+        case 'L':
+        case 'M':
+        case 'N':
+        case 'O':
+        case 'P':
+        case 'Q':
+        case 'R':
+        case 'S':
+        case 'T':
+        case 'U':
+        case 'V':
+        case 'W':
+        case 'X':
+        case 'Y':
+        case 'Z':
 
-            sym = SYM_ALPHA;
-
-            break;
+            return TOKEN_ALPHA;
 
         case ' ':
         case '\t':
 
-            sym = SYM_SPACE;
-
-            break;
+            return TOKEN_SPACE;
 
         case '<':
 
-            sym = SYM_LT;
-
-            break;
+            return TOKEN_LT;
 
         case '>':
 
-            sym = SYM_GT;
-
-            break;
+            return TOKEN_GT;
 
         case '-':
 
-            sym = SYM_MINUS;
-
-            break;
+            return TOKEN_MINUS;
 
         case ';':
 
-            sym = SYM_SEMICOLON;
-
-            break;
+            return TOKEN_SEMICOLON;
 
         case '.':
 
-            sym = SYM_DOT;
-
-            break;
+            return TOKEN_DOT;
 
         case '/':
 
-            sym = SYM_SLASH;
-
-            break;
+            return TOKEN_SLASH;
 
         case '|':
 
-            sym = SYM_WALL;
-
-            break;
+            return TOKEN_WALL;
 
         case '\n':
 
-            sym = SYM_NEWLINE;
-
-            break;
-
-        default:
-
-            sym = SYM_NULL;
-
-            break;
+            return TOKEN_NEWLINE;
 
     }
 
-    pos++;
+    return TOKEN_NULL;
 
 }
 
-static int accept(enum symbol s)
+static unsigned int next(struct reader *reader)
 {
 
-    if (sym & s)
-    {
+    if (reader->index >= reader->count)
+        return reader->index;
 
-        next();
+    return reader->index++;
 
-        return 1;
+}
 
-    }
+static unsigned int accept(struct reader *reader, enum token token)
+{
+
+    if (tokenize(reader->buffer[reader->index - 1]) & token)
+        return next(reader);
 
     return 0;
 
@@ -193,16 +193,16 @@ static int accept(enum symbol s)
 static unsigned int setup_executable(unsigned int length, char *path)
 {
 
-    char buffer[FUDGE_BSIZE];
+    char temp[FUDGE_BSIZE];
     unsigned int offset = 0;
 
     if (memory_match(path, "/", 1))
         return call_open(3, FUDGE_ROOT, length - 1, path + 1);
 
-    offset += memory_write(buffer, FUDGE_BSIZE, "ramdisk/bin/", 12, offset);
-    offset += memory_write(buffer, FUDGE_BSIZE, path, length, offset);
+    offset += memory_write(temp, FUDGE_BSIZE, "ramdisk/bin/", 12, offset);
+    offset += memory_write(temp, FUDGE_BSIZE, path, length, offset);
 
-    return call_open(3, FUDGE_ROOT, offset, buffer);
+    return call_open(3, FUDGE_ROOT, offset, temp);
 
 }
 
@@ -246,47 +246,47 @@ static void changedir(unsigned int length, char *command)
 
 }
 
-static void parse()
+static void parse(struct reader *reader)
 {
 
-    unsigned int pstart;
+    unsigned int index;
 
-    while (accept(SYM_SPACE));
+    while (accept(reader, TOKEN_SPACE));
 
-    pstart = pos;
+    index = reader->index;
 
-    while (accept(SYM_ALPHANUM | SYM_DOT | SYM_SLASH));
+    while (accept(reader, TOKEN_ALPHANUM | TOKEN_DOT | TOKEN_SLASH));
 
-    setup_executable(pos - pstart, data + pstart - 1);
+    setup_executable(reader->index - index, reader->buffer + index - 1);
 
-    while (!accept(SYM_WALL | SYM_NEWLINE))
+    while (!accept(reader, TOKEN_WALL | TOKEN_NEWLINE))
     {
 
-        while (accept(SYM_SPACE));
+        while (accept(reader, TOKEN_SPACE));
 
-        if (accept(SYM_LT))
+        if (accept(reader, TOKEN_LT))
         {
 
-            while (accept(SYM_SPACE));
+            while (accept(reader, TOKEN_SPACE));
 
-            pstart = pos;
+            index = reader->index;
 
-            while (accept(SYM_ALPHANUM | SYM_DOT | SYM_SLASH));
+            while (accept(reader, TOKEN_ALPHANUM | TOKEN_DOT | TOKEN_SLASH));
 
-            setup_stream(FUDGE_IN, pos - pstart, data + pstart - 1);
+            setup_stream(FUDGE_IN, reader->index - index, reader->buffer + index - 1);
 
         }
 
-        else if (accept(SYM_GT))
+        else if (accept(reader, TOKEN_GT))
         {
 
-            while (accept(SYM_SPACE));
+            while (accept(reader, TOKEN_SPACE));
 
-            pstart = pos;
+            index = reader->index;
 
-            while (accept(SYM_ALPHANUM | SYM_DOT | SYM_SLASH));
+            while (accept(reader, TOKEN_ALPHANUM | TOKEN_DOT | TOKEN_SLASH));
 
-            setup_stream(FUDGE_OUT, pos - pstart, data + pstart - 1);
+            setup_stream(FUDGE_OUT, reader->index - index, reader->buffer + index - 1);
 
         }
 
@@ -294,28 +294,28 @@ static void parse()
 
 }
 
-static void interpret(unsigned int length, char *command)
+static void interpret(unsigned int count, char *buffer)
 {
 
-    if (memory_match(command, "cd ", 3))
+    struct reader reader;
+
+    reader.buffer = buffer;
+    reader.count = count;
+    reader.index = 1;
+
+    if (memory_match(reader.buffer, "cd ", 3))
     {
 
-        changedir(length - 4, command + 3);
+        changedir(reader.count - 4, reader.buffer + 3);
 
         return;
 
     }
 
-    data = command;
-    pos = 0;
-    len = length;
-
-    next();
-
-    while (sym != SYM_NEWLINE)
+    while (tokenize(reader.buffer[reader.index - 1]) != TOKEN_NEWLINE)
     {
 
-        parse();
+        parse(&reader);
         call_spawn(3);
         call_close(3);
 
@@ -348,10 +348,7 @@ static void handle_input(char c)
 
             lifo_stack_push(&input, c);
             call_write(FUDGE_OUT, 0, 1, &c);
-
-            if (!lifo_stack_isempty(&input))
-                interpret(input.head, input.buffer);
-
+            interpret(input.head, input.buffer);
             clear();
 
             break;
@@ -373,9 +370,9 @@ static void poll()
     unsigned char buffer[FUDGE_BSIZE];
     unsigned int count;
     unsigned int i;
-    unsigned int toggleAlt = 0;
-    unsigned int toggleShift = 0;
-    unsigned int toggleCtrl = 0;
+    unsigned int alt = 0;
+    unsigned int shift = 0;
+    unsigned int ctrl = 0;
 
     for (;;)
     {
@@ -387,39 +384,39 @@ static void poll()
 
             unsigned int scancode = buffer[i];
 
-            if (scancode == 0x38)
-                toggleAlt = 1;
-
-            if (scancode == 0xB8)
-                toggleAlt = 0;
-
-            if (scancode == 0x1D)
-                toggleCtrl = 1;
-
-            if (scancode == 0x9D)
-                toggleCtrl = 0;
-
-            if (scancode == 0x2A)
-                toggleShift = 1;
-
-            if (scancode == 0xAA)
-                toggleShift = 0;
-
             if (scancode & 0x80)
             {
+
+                if (scancode == 0x9D)
+                    ctrl = 0;
+
+                if (scancode == 0xAA)
+                    shift = 0;
+
+                if (scancode == 0xB8)
+                    alt = 0;
 
             }
 
             else
             {
 
-                if (toggleCtrl)
+                if (scancode == 0x1D)
+                    ctrl = 1;
+
+                if (scancode == 0x2A)
+                    shift = 1;
+
+                if (scancode == 0x38)
+                    alt = 1;
+
+                if (ctrl)
                     scancode = 0;
 
-                if (toggleAlt)
+                if (alt)
                     scancode = 0;
 
-                if (toggleShift)
+                if (shift)
                     scancode += 128;
 
                 handle_input(mapUS[scancode]);
