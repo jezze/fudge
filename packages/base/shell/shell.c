@@ -29,6 +29,177 @@ static char mapUS[256] =
        0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0
 };
 
+enum symbol
+{
+
+    SYM_NULL        = 0,
+    SYM_NUM         = 1,
+    SYM_ALPHA       = 2,
+    SYM_ALPHANUM    = 3,
+    SYM_SPACE       = 4,
+    SYM_LT          = 8,
+    SYM_GT          = 16,
+    SYM_MINUS       = 32,
+    SYM_SEMICOLON   = 64,
+    SYM_DOT         = 128,
+    SYM_SLASH       = 256,
+    SYM_WALL        = 512,
+    SYM_NEWLINE     = 1024
+
+};
+
+static char *data;
+static enum symbol sym;
+static unsigned int pos;
+static unsigned int len;
+
+static void error(const char msg[])
+{
+
+}
+
+static void next()
+{
+
+    if (pos >= len)
+    {
+
+        sym = SYM_NEWLINE;
+
+        return;
+
+    }
+
+    switch (data[pos])
+    {
+
+        case '0':
+        case '1':
+        case '2':
+        case '3':
+        case '4':
+        case '5':
+        case '6':
+        case '7':
+        case '8':
+        case '9':
+
+            sym = SYM_NUM;
+
+            break;
+
+        case 'a':
+        case 'b':
+        case 'c':
+        case 'd':
+        case 'e':
+        case 'f':
+        case 'g':
+        case 'h':
+        case 'i':
+        case 'j':
+        case 'k':
+        case 'l':
+        case 'm':
+        case 'n':
+        case 'o':
+        case 'p':
+        case 'q':
+        case 'r':
+        case 's':
+        case 't':
+        case 'u':
+        case 'v':
+        case 'w':
+        case 'x':
+        case 'y':
+        case 'z':
+
+            sym = SYM_ALPHA;
+
+            break;
+
+        case ' ':
+        case '\t':
+
+            sym = SYM_SPACE;
+
+            break;
+
+        case '<':
+
+            sym = SYM_LT;
+
+            break;
+
+        case '>':
+
+            sym = SYM_GT;
+
+            break;
+
+        case '-':
+
+            sym = SYM_MINUS;
+
+            break;
+
+        case ';':
+
+            sym = SYM_SEMICOLON;
+
+            break;
+
+        case '.':
+
+            sym = SYM_DOT;
+
+            break;
+
+        case '/':
+
+            sym = SYM_SLASH;
+
+            break;
+
+        case '|':
+
+            sym = SYM_WALL;
+
+            break;
+
+        case '\n':
+
+            sym = SYM_NEWLINE;
+
+            break;
+
+        default:
+
+            error("unknown symbol");
+
+    }
+
+    pos++;
+
+}
+
+static int accept(enum symbol s)
+{
+
+    if (sym & s)
+    {
+
+        next();
+
+        return 1;
+
+    }
+
+    return 0;
+
+}
+
 static unsigned int setup_executable(unsigned int length, char *path)
 {
 
@@ -65,125 +236,6 @@ static void clear()
 
 }
 
-static void interpret_command(unsigned int length, char *command)
-{
-
-    unsigned int exec = 0;
-    unsigned int start = 0;
-    unsigned int state = STATE_COMMAND;
-    unsigned int i;
-
-    for (i = 0; i < length; i++)
-    {
-
-        if (command[i] == ' ')
-        {
-
-            if (state == STATE_COMMAND)
-            {
-
-                exec = setup_executable(i - start, command + start);
-
-                if (!exec)
-                    return;
-
-            }
-
-            if (state == STATE_STDIN)
-            {
-
-                unsigned int id = setup_stream(FUDGE_IN, i - start, command + start);
-
-                if (!id)
-                    return;
-
-            }
-
-            if (state == STATE_STDOUT)
-            {
-
-                unsigned int id = setup_stream(FUDGE_OUT, i - start, command + start);
-
-                if (!id)
-                    return;
-
-            }
-
-            state = STATE_NONE;
-
-        }
-
-        if (command[i] == '<')
-        {
-
-            state = STATE_STDIN;
-            start = i + 1;
-
-        }
-
-        if (command[i] == '>')
-        {
-
-            state = STATE_STDOUT;
-            start = i + 1;
-
-        }
-
-        if (command[i] == '-')
-        {
-
-            state = STATE_DATA;
-            start = i + 1;
-
-            break;
-
-        }
-
-    }
-
-    if (state == STATE_COMMAND)
-    {
-
-        exec = setup_executable(length - start, command + start);
-
-        if (!exec)
-            return;
-
-    }
-
-    if (state == STATE_STDIN)
-    {
-
-        unsigned int id = setup_stream(FUDGE_IN, length - start, command + start);
-
-        if (!id)
-            return;
-
-    }
-
-    if (state == STATE_STDOUT)
-    {
-
-        unsigned int id = setup_stream(FUDGE_OUT, length - start, command + start);
-
-        if (!id)
-            return;
-
-    }
-
-    if (state == STATE_DATA)
-        call_write(FUDGE_IN, 0, length - start, command + start);
-
-    if (exec)
-    {
-
-        call_spawn(3);
-        call_close(3);
-
-    }
-
-}
-
 static void changedir(unsigned int length, char *command)
 {
 
@@ -204,34 +256,77 @@ static void changedir(unsigned int length, char *command)
 
 }
 
-static void interpret(unsigned int length, char *command)
+static void parse()
 {
 
-    unsigned int start = 0;
-    unsigned int i;
+    unsigned int pstart;
+
+    while (accept(SYM_SPACE));
+
+    pstart = pos;
+
+    while (accept(SYM_ALPHANUM | SYM_DOT | SYM_SLASH));
+
+    setup_executable(pos - pstart, data + pstart - 1);
+
+    while (!accept(SYM_WALL | SYM_NEWLINE))
+    {
+
+        while (accept(SYM_SPACE));
+
+        if (accept(SYM_LT))
+        {
+
+            while (accept(SYM_SPACE));
+
+            pstart = pos;
+
+            while (accept(SYM_ALPHANUM | SYM_DOT | SYM_SLASH));
+
+            setup_stream(FUDGE_IN, pos - pstart, data + pstart - 1);
+
+        }
+
+        else if (accept(SYM_GT))
+        {
+
+            while (accept(SYM_SPACE));
+
+            pstart = pos;
+
+            while (accept(SYM_ALPHANUM | SYM_DOT | SYM_SLASH));
+
+            setup_stream(FUDGE_OUT, pos - pstart, data + pstart - 1);
+
+        }
+
+    }
+
+}
+
+static void interpret(unsigned int length, char *command)
+{
 
     if (memory_match(command, "cd ", 3))
     {
 
-        changedir(length - 3, command + 3);
+        changedir(length - 4, command + 3);
 
         return;
 
     }
 
-    for (i = 0; i < length; i++)
-    {
+    data = command;
+    pos = 0;
+    len = length;
 
-        if (command[i] != '|')
-            continue;
+    next();
 
-        interpret_command(i - start, command + start);
+    while (sym != SYM_NEWLINE)
+        parse();
 
-        start += i + 1;
-
-    }
-
-    interpret_command(i - start, command + start);
+    call_spawn(3);
+    call_close(3);
 
 }
 
@@ -258,6 +353,7 @@ static void handle_input(char c)
         case '\r':
         case '\n':
 
+            lifo_stack_push(&input, c);
             call_write(FUDGE_OUT, 0, 1, &c);
 
             if (!lifo_stack_isempty(&input))
