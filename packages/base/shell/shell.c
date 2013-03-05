@@ -53,11 +53,6 @@ static enum symbol sym;
 static unsigned int pos;
 static unsigned int len;
 
-static void error(const char msg[])
-{
-
-}
-
 static void next()
 {
 
@@ -176,7 +171,9 @@ static void next()
 
         default:
 
-            error("unknown symbol");
+            sym = SYM_NULL;
+
+            break;
 
     }
 
