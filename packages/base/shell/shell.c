@@ -331,6 +331,8 @@ static void interpret(unsigned int count, char *buffer)
     while (current(&lexer) != TOKEN_NEWLINE)
     {
 
+        call_open(FUDGE_OUT, 5, 0, 0);
+
         if (!parse(&lexer))
             return;
 
