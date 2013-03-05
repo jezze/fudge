@@ -1,13 +1,30 @@
 #include <fudge.h>
 #include <data/lifo.h>
 
-#define STATE_NONE    0
-#define STATE_COMMAND 1
-#define STATE_STDIN   2
-#define STATE_STDOUT  3
-#define STATE_DATA    4
+enum symbol
+{
+
+    SYM_NULL        = 0,
+    SYM_NUM         = 1,
+    SYM_ALPHA       = 2,
+    SYM_ALPHANUM    = 3,
+    SYM_SPACE       = 4,
+    SYM_LT          = 8,
+    SYM_GT          = 16,
+    SYM_MINUS       = 32,
+    SYM_SEMICOLON   = 64,
+    SYM_DOT         = 128,
+    SYM_SLASH       = 256,
+    SYM_WALL        = 512,
+    SYM_NEWLINE     = 1024
+
+};
 
 static struct lifo_stack input;
+static char *data;
+static enum symbol sym;
+static unsigned int pos;
+static unsigned int len;
 
 static char mapUS[256] =
 {
@@ -28,30 +45,6 @@ static char mapUS[256] =
        0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
        0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0
 };
-
-enum symbol
-{
-
-    SYM_NULL        = 0,
-    SYM_NUM         = 1,
-    SYM_ALPHA       = 2,
-    SYM_ALPHANUM    = 3,
-    SYM_SPACE       = 4,
-    SYM_LT          = 8,
-    SYM_GT          = 16,
-    SYM_MINUS       = 32,
-    SYM_SEMICOLON   = 64,
-    SYM_DOT         = 128,
-    SYM_SLASH       = 256,
-    SYM_WALL        = 512,
-    SYM_NEWLINE     = 1024
-
-};
-
-static char *data;
-static enum symbol sym;
-static unsigned int pos;
-static unsigned int len;
 
 static void next()
 {
@@ -320,10 +313,13 @@ static void interpret(unsigned int length, char *command)
     next();
 
     while (sym != SYM_NEWLINE)
-        parse();
+    {
 
-    call_spawn(3);
-    call_close(3);
+        parse();
+        call_spawn(3);
+        call_close(3);
+
+    }
 
 }
 
