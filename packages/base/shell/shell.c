@@ -29,7 +29,21 @@ struct reader
 
 };
 
+struct directory
+{
+
+    char *path;
+    unsigned int count;
+
+};
+
 static struct lifo_stack input;
+static struct directory binaries[1] =
+{
+
+    {"ramdisk/bin/", 12}
+
+};
 
 static char mapUS[256] =
 {
@@ -53,29 +67,29 @@ static char mapUS[256] =
 
 };
 
-static unsigned int open_stream(unsigned int index, unsigned int count, char *path)
+static unsigned int open_file(unsigned int index, unsigned int count, char *path, unsigned int cdir, struct directory *dirs)
 {
+
+    unsigned int i;
 
     if (memory_match(path, "/", 1))
         return call_open(index, FUDGE_ROOT, count - 1, path + 1);
+
+    for (i = 0; i < cdir; i++)
+    {
+
+        char temp[FUDGE_BSIZE];
+        unsigned int offset = 0;
+
+        offset += memory_write(temp, FUDGE_BSIZE, dirs[i].path, dirs[i].count, offset);
+        offset += memory_write(temp, FUDGE_BSIZE, path, count, offset);
+
+        if (call_open(index, FUDGE_ROOT, offset, temp))
+            return index;
+
+    }
 
     return call_open(index, FUDGE_CWD, count, path);
-
-}
-
-static unsigned int open_executable(unsigned int index, unsigned int count, char *path)
-{
-
-    char temp[FUDGE_BSIZE];
-    unsigned int offset = 0;
-
-    if (memory_match(path, "/", 1))
-        return call_open(index, FUDGE_ROOT, count - 1, path + 1);
-
-    offset += memory_write(temp, FUDGE_BSIZE, "ramdisk/bin/", 12, offset);
-    offset += memory_write(temp, FUDGE_BSIZE, path, count, offset);
-
-    return call_open(index, FUDGE_ROOT, offset, temp);
 
 }
 
@@ -227,7 +241,7 @@ static void parse(struct reader *reader)
 
     while (accept(reader, TOKEN_ALPHANUM | TOKEN_DOT | TOKEN_SLASH));
 
-    open_executable(3, reader->index - index, reader->buffer + index - 1);
+    open_file(3, reader->index - index, reader->buffer + index - 1, 1, binaries);
 
     while (!accept(reader, TOKEN_WALL | TOKEN_NEWLINE))
     {
@@ -243,7 +257,7 @@ static void parse(struct reader *reader)
 
             while (accept(reader, TOKEN_ALPHANUM | TOKEN_DOT | TOKEN_SLASH));
 
-            open_stream(FUDGE_IN, reader->index - index, reader->buffer + index - 1);
+            open_file(FUDGE_IN, reader->index - index, reader->buffer + index - 1, 0, 0);
 
         }
 
@@ -256,7 +270,7 @@ static void parse(struct reader *reader)
 
             while (accept(reader, TOKEN_ALPHANUM | TOKEN_DOT | TOKEN_SLASH));
 
-            open_stream(FUDGE_OUT, reader->index - index, reader->buffer + index - 1);
+            open_file(FUDGE_OUT, reader->index - index, reader->buffer + index - 1, 0, 0);
 
         }
 
