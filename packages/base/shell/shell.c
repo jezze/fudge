@@ -237,7 +237,7 @@ static unsigned int accept(struct lexer *lexer, enum token token)
 
 }
 
-static void parse(struct lexer *lexer)
+static unsigned int parse(struct lexer *lexer)
 {
 
     unsigned int index;
@@ -246,7 +246,10 @@ static void parse(struct lexer *lexer)
 
     index = lexer->next;
 
-    while (accept(lexer, TOKEN_ALPHANUM | TOKEN_DOT | TOKEN_SLASH));
+    if (accept(lexer, TOKEN_ALPHANUM | TOKEN_DOT | TOKEN_SLASH))
+        while (accept(lexer, TOKEN_ALPHANUM | TOKEN_DOT | TOKEN_SLASH));
+    else
+        return 0;
 
     open_file(3, lexer->next - index, lexer->buffer + index - 1, 1, binaries);
 
@@ -263,7 +266,10 @@ static void parse(struct lexer *lexer)
 
             index = lexer->next;
 
-            while (accept(lexer, TOKEN_ALPHANUM | TOKEN_DOT | TOKEN_SLASH));
+            if (accept(lexer, TOKEN_ALPHANUM | TOKEN_DOT | TOKEN_SLASH))
+                while (accept(lexer, TOKEN_ALPHANUM | TOKEN_DOT | TOKEN_SLASH));
+            else
+                return 0;
 
             open_file(FUDGE_IN, lexer->next - index, lexer->buffer + index - 1, 0, 0);
 
@@ -278,7 +284,10 @@ static void parse(struct lexer *lexer)
 
             index = lexer->next;
 
-            while (accept(lexer, TOKEN_ALPHANUM | TOKEN_DOT | TOKEN_SLASH));
+            if (accept(lexer, TOKEN_ALPHANUM | TOKEN_DOT | TOKEN_SLASH))
+                while (accept(lexer, TOKEN_ALPHANUM | TOKEN_DOT | TOKEN_SLASH));
+            else
+                return 0;
 
             open_file(FUDGE_OUT, lexer->next - index, lexer->buffer + index - 1, 0, 0);
 
@@ -286,7 +295,11 @@ static void parse(struct lexer *lexer)
 
         }
 
+        return 0;
+
     }
+
+    return 1;
 
 }
 
@@ -315,7 +328,9 @@ static void interpret(unsigned int count, char *buffer)
     while (current(&lexer) != TOKEN_NEWLINE)
     {
 
-        parse(&lexer);
+        if (!parse(&lexer))
+            return;
+
         call_spawn(3);
         call_close(3);
 
