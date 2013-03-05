@@ -335,10 +335,7 @@ static void interpret(unsigned int count, char *buffer)
             return;
 
         call_spawn(3);
-        call_open(6, FUDGE_IN, 0, 0);
-        call_open(7, FUDGE_OUT, 0, 0);
-        call_open(FUDGE_IN, 7, 0, 0);
-        call_open(FUDGE_OUT, 6, 0, 0);
+        call_open(FUDGE_IN, FUDGE_OUT, 0, 0);
 
     }
 
