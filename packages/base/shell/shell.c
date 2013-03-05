@@ -253,7 +253,8 @@ static void parse(struct lexer *lexer)
     while (!accept(lexer, TOKEN_WALL | TOKEN_NEWLINE))
     {
 
-        while (accept(lexer, TOKEN_SPACE));
+        if (accept(lexer, TOKEN_SPACE))
+            continue;
 
         if (accept(lexer, TOKEN_LT))
         {
@@ -266,9 +267,11 @@ static void parse(struct lexer *lexer)
 
             open_file(FUDGE_IN, lexer->next - index, lexer->buffer + index - 1, 0, 0);
 
+            continue;
+
         }
 
-        else if (accept(lexer, TOKEN_GT))
+        if (accept(lexer, TOKEN_GT))
         {
 
             while (accept(lexer, TOKEN_SPACE));
@@ -278,6 +281,8 @@ static void parse(struct lexer *lexer)
             while (accept(lexer, TOKEN_ALPHANUM | TOKEN_DOT | TOKEN_SLASH));
 
             open_file(FUDGE_OUT, lexer->next - index, lexer->buffer + index - 1, 0, 0);
+
+            continue;
 
         }
 
@@ -392,13 +397,15 @@ static void poll()
             if (scancode & 0x80)
             {
 
-                if (scancode == 0x9D)
+                scancode &= ~0x80;
+
+                if (scancode == 0x1D)
                     ctrl = 0;
 
-                if (scancode == 0xAA)
+                if (scancode == 0x2A)
                     shift = 0;
 
-                if (scancode == 0xB8)
+                if (scancode == 0x38)
                     alt = 0;
 
             }
