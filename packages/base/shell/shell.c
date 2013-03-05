@@ -20,12 +20,12 @@ enum token
 
 };
 
-struct reader
+struct lexer
 {
 
     char *buffer;
     unsigned int count;
-    unsigned int index;
+    unsigned int next;
 
 };
 
@@ -210,109 +210,107 @@ static enum token tokenize(char c)
 
 }
 
-static unsigned int next(struct reader *reader)
+static enum token current(struct lexer *lexer)
 {
 
-    if (reader->index < reader->count)
-        reader->index++;
-
-    return reader->index;
+    return tokenize(lexer->buffer[lexer->next - 1]);
 
 }
 
-static unsigned int accept(struct reader *reader, enum token token)
+static unsigned int next(struct lexer *lexer)
 {
 
-    if (tokenize(reader->buffer[reader->index - 1]) & token)
-        return next(reader);
+    if (lexer->next < lexer->count)
+        lexer->next++;
+
+    return lexer->next;
+
+}
+
+static unsigned int accept(struct lexer *lexer, enum token token)
+{
+
+    if (current(lexer) & token)
+        return next(lexer);
 
     return 0;
 
 }
 
-static void parse(struct reader *reader)
+static void parse(struct lexer *lexer)
 {
 
     unsigned int index;
 
-    while (accept(reader, TOKEN_SPACE));
+    while (accept(lexer, TOKEN_SPACE));
 
-    index = reader->index;
+    index = lexer->next;
 
-    while (accept(reader, TOKEN_ALPHANUM | TOKEN_DOT | TOKEN_SLASH));
+    while (accept(lexer, TOKEN_ALPHANUM | TOKEN_DOT | TOKEN_SLASH));
 
-    open_file(3, reader->index - index, reader->buffer + index - 1, 1, binaries);
+    open_file(3, lexer->next - index, lexer->buffer + index - 1, 1, binaries);
 
-    while (!accept(reader, TOKEN_WALL | TOKEN_NEWLINE))
+    while (!accept(lexer, TOKEN_WALL | TOKEN_NEWLINE))
     {
 
-        while (accept(reader, TOKEN_SPACE));
+        while (accept(lexer, TOKEN_SPACE));
 
-        if (accept(reader, TOKEN_LT))
+        if (accept(lexer, TOKEN_LT))
         {
 
-            while (accept(reader, TOKEN_SPACE));
+            while (accept(lexer, TOKEN_SPACE));
 
-            index = reader->index;
+            index = lexer->next;
 
-            while (accept(reader, TOKEN_ALPHANUM | TOKEN_DOT | TOKEN_SLASH));
+            while (accept(lexer, TOKEN_ALPHANUM | TOKEN_DOT | TOKEN_SLASH));
 
-            open_file(FUDGE_IN, reader->index - index, reader->buffer + index - 1, 0, 0);
+            open_file(FUDGE_IN, lexer->next - index, lexer->buffer + index - 1, 0, 0);
 
         }
 
-        else if (accept(reader, TOKEN_GT))
+        else if (accept(lexer, TOKEN_GT))
         {
 
-            while (accept(reader, TOKEN_SPACE));
+            while (accept(lexer, TOKEN_SPACE));
 
-            index = reader->index;
+            index = lexer->next;
 
-            while (accept(reader, TOKEN_ALPHANUM | TOKEN_DOT | TOKEN_SLASH));
+            while (accept(lexer, TOKEN_ALPHANUM | TOKEN_DOT | TOKEN_SLASH));
 
-            open_file(FUDGE_OUT, reader->index - index, reader->buffer + index - 1, 0, 0);
+            open_file(FUDGE_OUT, lexer->next - index, lexer->buffer + index - 1, 0, 0);
 
         }
 
     }
-
-}
-
-static void interpret_cd(unsigned int count, char *buffer)
-{
-
-    if (!count)
-        return;
-
-    if (buffer[count - 1] != '/')
-        return;
-
-    open_file(FUDGE_CWD, count, buffer, 0, 0);
 
 }
 
 static void interpret(unsigned int count, char *buffer)
 {
 
-    struct reader reader;
+    struct lexer lexer;
 
-    reader.buffer = buffer;
-    reader.count = count;
-    reader.index = 1;
+    lexer.buffer = buffer;
+    lexer.count = count;
+    lexer.next = 1;
 
-    if (memory_match(reader.buffer, "cd ", 3))
+    /* This is a temporary fix */
+    if (memory_match(lexer.buffer, "cd ", 3))
     {
 
-        interpret_cd(reader.count - 4, reader.buffer + 3);
+        if (lexer.buffer[lexer.count - 2] != '/')
+            return;
+
+        open_file(FUDGE_CWD, lexer.count - 4, lexer.buffer + 3, 0, 0);
 
         return;
 
     }
 
-    while (tokenize(reader.buffer[reader.index - 1]) != TOKEN_NEWLINE)
+    while (current(&lexer) != TOKEN_NEWLINE)
     {
 
-        parse(&reader);
+        parse(&lexer);
         call_spawn(3);
         call_close(3);
 
