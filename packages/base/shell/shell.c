@@ -328,11 +328,15 @@ static void interpret(unsigned int count, char *buffer)
     while (current(&lexer) != TOKEN_NEWLINE)
     {
 
+        call_open(4, FUDGE_IN, 0, 0);
+        call_open(5, FUDGE_OUT, 0, 0);
+
         if (!parse(&lexer))
             return;
 
         call_spawn(3);
-        call_close(3);
+        call_open(FUDGE_IN, 4, 0, 0);
+        call_open(FUDGE_OUT, 5, 0, 0);
 
     }
 
@@ -363,13 +367,9 @@ static void handle(char c)
 
             lifo_stack_push(&input, c);
             call_write(FUDGE_OUT, 0, 1, &c);
-            call_open(4, FUDGE_IN, 0, 0);
-            call_open(5, FUDGE_OUT, 0, 0);
             interpret(input.head, input.buffer);
-            call_open(FUDGE_IN, 4, 0, 0);
-            call_open(FUDGE_OUT, 5, 0, 0);
-            call_write(FUDGE_OUT, 0, 2, "$ ");
             lifo_stack_clear(&input);
+            call_write(FUDGE_OUT, 0, 2, "$ ");
 
             break;
 
