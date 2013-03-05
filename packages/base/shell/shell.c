@@ -53,6 +53,32 @@ static char mapUS[256] =
 
 };
 
+static unsigned int open_stream(unsigned int index, unsigned int count, char *path)
+{
+
+    if (memory_match(path, "/", 1))
+        return call_open(index, FUDGE_ROOT, count - 1, path + 1);
+
+    return call_open(index, FUDGE_CWD, count, path);
+
+}
+
+static unsigned int open_executable(unsigned int index, unsigned int count, char *path)
+{
+
+    char temp[FUDGE_BSIZE];
+    unsigned int offset = 0;
+
+    if (memory_match(path, "/", 1))
+        return call_open(index, FUDGE_ROOT, count - 1, path + 1);
+
+    offset += memory_write(temp, FUDGE_BSIZE, "ramdisk/bin/", 12, offset);
+    offset += memory_write(temp, FUDGE_BSIZE, path, count, offset);
+
+    return call_open(index, FUDGE_ROOT, offset, temp);
+
+}
+
 static enum token tokenize(char c)
 {
 
@@ -173,10 +199,10 @@ static enum token tokenize(char c)
 static unsigned int next(struct reader *reader)
 {
 
-    if (reader->index >= reader->count)
-        return reader->index;
+    if (reader->index < reader->count)
+        reader->index++;
 
-    return reader->index++;
+    return reader->index;
 
 }
 
@@ -187,62 +213,6 @@ static unsigned int accept(struct reader *reader, enum token token)
         return next(reader);
 
     return 0;
-
-}
-
-static unsigned int setup_executable(unsigned int length, char *path)
-{
-
-    char temp[FUDGE_BSIZE];
-    unsigned int offset = 0;
-
-    if (memory_match(path, "/", 1))
-        return call_open(3, FUDGE_ROOT, length - 1, path + 1);
-
-    offset += memory_write(temp, FUDGE_BSIZE, "ramdisk/bin/", 12, offset);
-    offset += memory_write(temp, FUDGE_BSIZE, path, length, offset);
-
-    return call_open(3, FUDGE_ROOT, offset, temp);
-
-}
-
-static unsigned int setup_stream(unsigned int index, unsigned int length, char *path)
-{
-
-    if (memory_match(path, "/", 1))
-        return call_open(index, FUDGE_ROOT, length - 1, path + 1);
-
-    return call_open(index, FUDGE_CWD, length, path);
-
-}
-
-static void clear()
-{
-
-    lifo_stack_clear(&input);
-    setup_stream(FUDGE_IN, 18, "/system/ps2_buffer");
-    setup_stream(FUDGE_OUT, 18, "/system/vga_buffer");
-    call_write(FUDGE_OUT, 0, 2, "$ ");
-
-}
-
-static void changedir(unsigned int length, char *command)
-{
-
-    unsigned int id;
-    
-    if (!length)
-        return;
-
-    if (command[length - 1] != '/')
-        return;
-
-    id = (command[0] == '/') ? call_open(3, FUDGE_ROOT, length - 1, command + 1) : call_open(3, FUDGE_CWD, length, command);
-
-    if (!id)
-        return;
-
-    call_open(FUDGE_CWD, 3, 0, 0);
 
 }
 
@@ -257,7 +227,7 @@ static void parse(struct reader *reader)
 
     while (accept(reader, TOKEN_ALPHANUM | TOKEN_DOT | TOKEN_SLASH));
 
-    setup_executable(reader->index - index, reader->buffer + index - 1);
+    open_executable(3, reader->index - index, reader->buffer + index - 1);
 
     while (!accept(reader, TOKEN_WALL | TOKEN_NEWLINE))
     {
@@ -273,7 +243,7 @@ static void parse(struct reader *reader)
 
             while (accept(reader, TOKEN_ALPHANUM | TOKEN_DOT | TOKEN_SLASH));
 
-            setup_stream(FUDGE_IN, reader->index - index, reader->buffer + index - 1);
+            open_stream(FUDGE_IN, reader->index - index, reader->buffer + index - 1);
 
         }
 
@@ -286,11 +256,31 @@ static void parse(struct reader *reader)
 
             while (accept(reader, TOKEN_ALPHANUM | TOKEN_DOT | TOKEN_SLASH));
 
-            setup_stream(FUDGE_OUT, reader->index - index, reader->buffer + index - 1);
+            open_stream(FUDGE_OUT, reader->index - index, reader->buffer + index - 1);
 
         }
 
     }
+
+}
+
+static void interpret_cd(unsigned int count, char *buffer)
+{
+
+    unsigned int id;
+    
+    if (!count)
+        return;
+
+    if (buffer[count - 1] != '/')
+        return;
+
+    id = (buffer[0] == '/') ? call_open(3, FUDGE_ROOT, count - 1, buffer + 1) : call_open(3, FUDGE_CWD, count, buffer);
+
+    if (!id)
+        return;
+
+    call_open(FUDGE_CWD, 3, 0, 0);
 
 }
 
@@ -306,7 +296,7 @@ static void interpret(unsigned int count, char *buffer)
     if (memory_match(reader.buffer, "cd ", 3))
     {
 
-        changedir(reader.count - 4, reader.buffer + 3);
+        interpret_cd(reader.count - 4, reader.buffer + 3);
 
         return;
 
@@ -323,7 +313,17 @@ static void interpret(unsigned int count, char *buffer)
 
 }
 
-static void handle_input(char c)
+static void clear()
+{
+
+    lifo_stack_clear(&input);
+    call_open(FUDGE_IN, FUDGE_ROOT, 17, "system/ps2_buffer");
+    call_open(FUDGE_OUT, FUDGE_ROOT, 17, "system/vga_buffer");
+    call_write(FUDGE_OUT, 0, 2, "$ ");
+
+}
+
+static void handle(char c)
 {
 
     switch (c)
@@ -419,7 +419,7 @@ static void poll()
                 if (shift)
                     scancode += 128;
 
-                handle_input(mapUS[scancode]);
+                handle(mapUS[scancode]);
 
             }
 
