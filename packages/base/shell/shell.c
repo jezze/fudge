@@ -67,7 +67,7 @@ static char mapUS[256] =
 
 };
 
-static unsigned int open_file(unsigned int index, unsigned int count, char *path, unsigned int cdir, struct directory *dirs)
+static unsigned int open(unsigned int index, unsigned int count, char *path, unsigned int cdir, struct directory *dirs)
 {
 
     unsigned int i;
@@ -237,67 +237,125 @@ static unsigned int accept(struct lexer *lexer, enum token token)
 
 }
 
-static unsigned int parse(struct lexer *lexer)
+static unsigned int parse_command(struct lexer *lexer)
+{
+
+    unsigned int index = lexer->next;
+
+    if (!accept(lexer, TOKEN_ALPHANUM | TOKEN_DOT | TOKEN_SLASH))
+        return 0;
+
+    while (accept(lexer, TOKEN_ALPHANUM | TOKEN_DOT | TOKEN_SLASH));
+
+    open(3, lexer->next - index, lexer->buffer + index - 1, 1, binaries);
+
+    return 1;
+
+}
+
+static unsigned int parse_stdin(struct lexer *lexer)
 {
 
     unsigned int index;
+
+    if (!accept(lexer, TOKEN_LT))
+        return 0;
 
     while (accept(lexer, TOKEN_SPACE));
 
     index = lexer->next;
 
-    if (accept(lexer, TOKEN_ALPHANUM | TOKEN_DOT | TOKEN_SLASH))
-        while (accept(lexer, TOKEN_ALPHANUM | TOKEN_DOT | TOKEN_SLASH));
-    else
+    if (!accept(lexer, TOKEN_ALPHANUM | TOKEN_DOT | TOKEN_SLASH))
         return 0;
 
-    open_file(3, lexer->next - index, lexer->buffer + index - 1, 1, binaries);
+    while (accept(lexer, TOKEN_ALPHANUM | TOKEN_DOT | TOKEN_SLASH));
 
-    while (!accept(lexer, TOKEN_WALL | TOKEN_NEWLINE))
+    open(FUDGE_IN, lexer->next - index, lexer->buffer + index - 1, 0, 0);
+
+    return 1;
+
+}
+
+static unsigned int parse_stdout(struct lexer *lexer)
+{
+
+    unsigned int index;
+
+    if (!accept(lexer, TOKEN_GT))
+        return 0;
+
+    while (accept(lexer, TOKEN_SPACE));
+
+    index = lexer->next;
+
+    if (!accept(lexer, TOKEN_ALPHANUM | TOKEN_DOT | TOKEN_SLASH))
+        return 0;
+
+    while (accept(lexer, TOKEN_ALPHANUM | TOKEN_DOT | TOKEN_SLASH));
+
+    open(FUDGE_OUT, lexer->next - index, lexer->buffer + index - 1, 0, 0);
+
+    return 1;
+
+}
+
+static unsigned int parse_block(struct lexer *lexer)
+{
+
+    if (!parse_command(lexer))
+        return 0;
+
+    while (accept(lexer, TOKEN_SPACE));
+
+    if (parse_stdin(lexer))
     {
 
-        if (accept(lexer, TOKEN_SPACE))
-            continue;
+        while (accept(lexer, TOKEN_SPACE));
 
-        if (accept(lexer, TOKEN_LT))
-        {
+        parse_stdout(lexer);
 
-            while (accept(lexer, TOKEN_SPACE));
+        return 1;
+        
+    }
 
-            index = lexer->next;
+    if (parse_stdout(lexer))
+    {
 
-            if (accept(lexer, TOKEN_ALPHANUM | TOKEN_DOT | TOKEN_SLASH))
-                while (accept(lexer, TOKEN_ALPHANUM | TOKEN_DOT | TOKEN_SLASH));
-            else
-                return 0;
+        while (accept(lexer, TOKEN_SPACE));
 
-            open_file(FUDGE_IN, lexer->next - index, lexer->buffer + index - 1, 0, 0);
+        parse_stdin(lexer);
 
-            continue;
-
-        }
-
-        if (accept(lexer, TOKEN_GT))
-        {
-
-            while (accept(lexer, TOKEN_SPACE));
-
-            index = lexer->next;
-
-            if (accept(lexer, TOKEN_ALPHANUM | TOKEN_DOT | TOKEN_SLASH))
-                while (accept(lexer, TOKEN_ALPHANUM | TOKEN_DOT | TOKEN_SLASH));
-            else
-                return 0;
-
-            open_file(FUDGE_OUT, lexer->next - index, lexer->buffer + index - 1, 0, 0);
-
-            continue;
-
-        }
-
-        return 0;
+        return 1;
 
     }
+
+    return 1;
+
+}
+
+static unsigned int parse(struct lexer *lexer)
+{
+
+    do
+    {
+
+        while (accept(lexer, TOKEN_SPACE));
+
+        if (parse_block(lexer))
+        {
+
+            call_spawn(3);
+            call_open(FUDGE_IN, FUDGE_OUT, 0, 0);
+            call_open(FUDGE_OUT, 5, 0, 0);
+
+        }
+
+        while (accept(lexer, TOKEN_SPACE));
+
+    } while (accept(lexer, TOKEN_WALL));
+
+    if (!accept(lexer, TOKEN_NEWLINE))
+        return 0;
 
     return 1;
 
@@ -319,7 +377,7 @@ static void interpret(unsigned int count, char *buffer)
         if (lexer.buffer[lexer.count - 2] != '/')
             return;
 
-        open_file(FUDGE_CWD, lexer.count - 4, lexer.buffer + 3, 0, 0);
+        open(FUDGE_CWD, lexer.count - 4, lexer.buffer + 3, 0, 0);
 
         return;
 
@@ -327,20 +385,7 @@ static void interpret(unsigned int count, char *buffer)
 
     call_open(4, FUDGE_IN, 0, 0);
     call_open(5, FUDGE_OUT, 0, 0);
-
-    while (current(&lexer) != TOKEN_NEWLINE)
-    {
-
-        call_open(FUDGE_OUT, 5, 0, 0);
-
-        if (!parse(&lexer))
-            return;
-
-        call_spawn(3);
-        call_open(FUDGE_IN, FUDGE_OUT, 0, 0);
-
-    }
-
+    parse(&lexer);
     call_open(FUDGE_IN, 4, 0, 0);
     call_open(FUDGE_OUT, 5, 0, 0);
 
