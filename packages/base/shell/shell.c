@@ -37,7 +37,6 @@ struct directory
 
 };
 
-static struct lifo_stack input;
 static struct directory binaries[1] =
 {
 
@@ -391,7 +390,7 @@ static void interpret(unsigned int count, char *buffer)
 
 }
 
-static void handle(char c)
+static void handle(struct lifo_stack *stack, char c)
 {
 
     switch (c)
@@ -405,7 +404,7 @@ static void handle(char c)
 
         case '\b':
 
-            if (!lifo_stack_pop(&input))
+            if (!lifo_stack_pop(stack))
                 break;
 
             call_write(FUDGE_OUT, 0, 3, "\b \b");
@@ -414,17 +413,17 @@ static void handle(char c)
 
         case '\n':
 
-            lifo_stack_push(&input, c);
+            lifo_stack_push(stack, c);
             call_write(FUDGE_OUT, 0, 1, &c);
-            interpret(input.head, input.buffer);
-            lifo_stack_clear(&input);
+            interpret(stack->head, stack->buffer);
+            lifo_stack_clear(stack);
             call_write(FUDGE_OUT, 0, 2, "$ ");
 
             break;
 
         default:
 
-            lifo_stack_push(&input, c);
+            lifo_stack_push(stack, c);
             call_write(FUDGE_OUT, 0, 1, &c);
 
             break;
@@ -436,12 +435,15 @@ static void handle(char c)
 static void poll()
 {
 
+    struct lifo_stack input;
     unsigned char buffer[FUDGE_BSIZE];
     unsigned int count;
     unsigned int i;
     unsigned int alt = 0;
     unsigned int shift = 0;
     unsigned int ctrl = 0;
+
+    lifo_stack_clear(&input);
 
     for (;;)
     {
@@ -490,7 +492,7 @@ static void poll()
                 if (shift)
                     scancode += 128;
 
-                handle(mapUS[scancode]);
+                handle(&input, mapUS[scancode]);
 
             }
 
@@ -503,7 +505,6 @@ static void poll()
 void main()
 {
 
-    lifo_stack_clear(&input);
     call_write(FUDGE_OUT, 0, 2, "$ ");
     poll();
 
