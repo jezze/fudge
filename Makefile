@@ -63,13 +63,13 @@ install:
 	install -m 644 $(KERNEL) $(INSTALL_PATH)
 	install -m 644 $(RAMDISK) $(INSTALL_PATH)
 
-kernel: kernel_$(ARCH)
+kernel: $(KERNEL_NAME).$(ARCH)
 
-kernel_arm: $(LIBVERSATILEPB) $(LIBKERNEL) $(LIBFUDGE)
-	$(LD) $(LDFLAGS) -Tlibs/versatilepb/linker.ld -o $(KERNEL) $^
+$(KERNEL_NAME).arm: $(LIBVERSATILEPB) $(LIBKERNEL) $(LIBFUDGE)
+	$(LD) $(LDFLAGS) -Tlibs/versatilepb/linker.ld -o $(KERNEL_NAME) $^
 
-kernel_x86: $(LIBMBOOT) $(LIBKERNEL) $(LIBFUDGE)
-	$(LD) $(LDFLAGS) -Tlibs/mboot/linker.ld -o $(KERNEL) $^
+$(KERNEL_NAME).x86: $(LIBMBOOT) $(LIBKERNEL) $(LIBFUDGE)
+	$(LD) $(LDFLAGS) -Tlibs/mboot/linker.ld -o $(KERNEL_NAME) $^
 
 libs: $(LIBS)
 
@@ -77,7 +77,7 @@ modules: $(MODULES)
 
 packages: $(PACKAGES)
 
-ramdisk: $(RAMDISK)
+ramdisk: $(RAMDISK_NAME).$(RAMDISK_TYPE)
 
 $(RAMDISK_NAME).tar: image/bin image/boot image/boot/fudge image/home image/data image/mod
 	tar -cf $@ image
