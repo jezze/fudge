@@ -1,7 +1,1 @@
-OBJ+=libs/kernel/arch/x86/arch.o
-OBJ+=libs/kernel/arch/x86/archs.o
-OBJ+=libs/kernel/arch/x86/cpu.o
-OBJ+=libs/kernel/arch/x86/gdt.o
-OBJ+=libs/kernel/arch/x86/idt.o
-OBJ+=libs/kernel/arch/x86/mmu.o
-OBJ+=libs/kernel/arch/x86/tss.o
+OBJ+=libs/kernel/arch/x86/arch.o libs/kernel/arch/x86/archs.o libs/kernel/arch/x86/cpu.o libs/kernel/arch/x86/gdt.o libs/kernel/arch/x86/idt.o libs/kernel/arch/x86/mmu.o libs/kernel/arch/x86/tss.o
