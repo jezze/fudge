@@ -1,5 +1,8 @@
-MODULES+=modules/arch/x86/ide/ide.ko
-MODULES_OBJECTS+=modules/arch/x86/ide/main.o modules/arch/x86/ide/bus.o modules/arch/x86/ide/device.o
+MOD:=modules/arch/x86/ide/ide.ko
+OBJ:=modules/arch/x86/ide/main.o modules/arch/x86/ide/bus.o modules/arch/x86/ide/device.o
 
-modules/arch/x86/ide/ide.ko: modules/arch/x86/ide/main.o modules/arch/x86/ide/bus.o modules/arch/x86/ide/device.o $(LIBFUDGE)
+$(MOD): $(OBJ) $(LIBFUDGE)
 	$(LD) $(LDFLAGS) -o $@ $^
+
+MODULES+=$(MOD)
+MODULES_OBJECTS+=$(OBJ)

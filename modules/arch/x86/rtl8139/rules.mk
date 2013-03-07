@@ -1,5 +1,8 @@
-MODULES+=modules/arch/x86/rtl8139/rtl8139.ko
-MODULES_OBJECTS+=modules/arch/x86/rtl8139/main.o modules/arch/x86/rtl8139/driver.o
+MOD:=modules/arch/x86/rtl8139/rtl8139.ko
+OBJ:=modules/arch/x86/rtl8139/main.o modules/arch/x86/rtl8139/driver.o
 
-modules/arch/x86/rtl8139/rtl8139.ko: modules/arch/x86/rtl8139/main.o modules/arch/x86/rtl8139/driver.o $(LIBFUDGE)
+$(MOD): $(OBJ) $(LIBFUDGE)
 	$(LD) $(LDFLAGS) -o $@ $^
+
+MODULES+=$(MOD)
+MODULES_OBJECTS+=$(OBJ)

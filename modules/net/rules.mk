@@ -1,5 +1,8 @@
-MODULES+=modules/net/net.ko
-MODULES_OBJECTS+=modules/net/main.o
+MOD:=modules/net/net.ko
+OBJ:=modules/net/main.o
 
-modules/net/net.ko: modules/net/main.o $(LIBFUDGE)
+$(MOD): $(OBJ) $(LIBFUDGE)
 	$(LD) $(LDFLAGS) -o $@ $^
+
+MODULES+=$(MOD)
+MODULES_OBJECTS+=$(OBJ)

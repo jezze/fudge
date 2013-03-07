@@ -1,5 +1,8 @@
-MODULES+=modules/system/system.ko
-MODULES_OBJECTS+=modules/system/main.o modules/system/filesystem.o
+MOD:=modules/system/system.ko
+OBJ:=modules/system/main.o modules/system/filesystem.o
 
-modules/system/system.ko: modules/system/main.o modules/system/filesystem.o $(LIBFUDGE)
+$(MOD): $(OBJ) $(LIBFUDGE)
 	$(LD) $(LDFLAGS) -o $@ $^
+
+MODULES+=$(MOD)
+MODULES_OBJECTS+=$(OBJ)

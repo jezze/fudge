@@ -1,5 +1,8 @@
-MODULES+=modules/arch/x86/acpi/acpi.ko
-MODULES_OBJECTS+=modules/arch/x86/acpi/main.o
+MOD:=modules/arch/x86/acpi/acpi.ko
+OBJ:=modules/arch/x86/acpi/main.o
 
-modules/arch/x86/acpi/acpi.ko: modules/arch/x86/acpi/main.o $(LIBFUDGE)
+$(MOD): $(OBJ) $(LIBFUDGE)
 	$(LD) $(LDFLAGS) -o $@ $^
+
+MODULES+=$(MOD)
+MODULES_OBJECTS+=$(OBJ)

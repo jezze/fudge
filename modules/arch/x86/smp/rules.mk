@@ -1,5 +1,8 @@
-MODULES+=modules/arch/x86/smp/smp.ko
-MODULES_OBJECTS+=modules/arch/x86/smp/main.o
+MOD:=modules/arch/x86/smp/smp.ko
+OBJ:=modules/arch/x86/smp/main.o
 
-modules/arch/x86/smp/smp.ko: modules/arch/x86/smp/main.o $(LIBFUDGE)
+$(MOD): $(OBJ) $(LIBFUDGE)
 	$(LD) $(LDFLAGS) -o $@ $^
+
+MODULES+=$(MOD)
+MODULES_OBJECTS+=$(OBJ)

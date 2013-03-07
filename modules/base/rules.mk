@@ -1,5 +1,8 @@
-MODULES+=modules/base/base.ko
-MODULES_OBJECTS+=modules/base/main.o
+MOD:=modules/base/base.ko
+OBJ:=modules/base/main.o
 
-modules/base/base.ko: modules/base/main.o $(LIBFUDGE)
+$(MOD): $(OBJ) $(LIBFUDGE)
 	$(LD) $(LDFLAGS) -o $@ $^
+
+MODULES+=$(MOD)
+MODULES_OBJECTS+=$(OBJ)

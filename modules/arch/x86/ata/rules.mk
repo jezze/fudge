@@ -1,5 +1,8 @@
-MODULES+=modules/arch/x86/ata/ata.ko
-MODULES_OBJECTS+=modules/arch/x86/ata/main.o modules/arch/x86/ata/driver.o
+MOD:=modules/arch/x86/ata/ata.ko
+OBJ:=modules/arch/x86/ata/main.o modules/arch/x86/ata/driver.o
 
-modules/arch/x86/ata/ata.ko: modules/arch/x86/ata/main.o modules/arch/x86/ata/driver.o $(LIBFUDGE)
+$(MOD): $(OBJ) $(LIBFUDGE)
 	$(LD) $(LDFLAGS) -o $@ $^
+
+MODULES+=$(MOD)
+MODULES_OBJECTS+=$(OBJ)

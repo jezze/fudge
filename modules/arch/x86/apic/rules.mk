@@ -1,5 +1,8 @@
-MODULES+=modules/arch/x86/apic/apic.ko
-MODULES_OBJECTS+=modules/arch/x86/apic/main.o
+MOD:=modules/arch/x86/apic/apic.ko
+OBJ:=modules/arch/x86/apic/main.o
 
-modules/arch/x86/apic/apic.ko: modules/arch/x86/apic/main.o $(LIBFUDGE)
+$(MOD): $(OBJ) $(LIBFUDGE)
 	$(LD) $(LDFLAGS) -o $@ $^
+
+MODULES+=$(MOD)
+MODULES_OBJECTS+=$(OBJ)

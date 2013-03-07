@@ -1,5 +1,8 @@
-MODULES+=modules/arch/x86/multi/multi.ko
-MODULES_OBJECTS+=modules/arch/x86/multi/main.o
+MOD:=modules/arch/x86/multi/multi.ko
+OBJ:=modules/arch/x86/multi/main.o
 
-modules/arch/x86/multi/multi.ko: modules/arch/x86/multi/main.o $(LIBFUDGE)
+$(MOD): $(OBJ) $(LIBFUDGE)
 	$(LD) $(LDFLAGS) -o $@ $^
+
+MODULES+=$(MOD)
+MODULES_OBJECTS+=$(OBJ)

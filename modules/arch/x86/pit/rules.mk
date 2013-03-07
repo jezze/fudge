@@ -1,5 +1,8 @@
-MODULES+=modules/arch/x86/pit/pit.ko
-MODULES_OBJECTS+=modules/arch/x86/pit/main.o modules/arch/x86/pit/driver.o modules/arch/x86/pit/device.o
+MOD:=modules/arch/x86/pit/pit.ko
+OBJ:=modules/arch/x86/pit/main.o modules/arch/x86/pit/driver.o modules/arch/x86/pit/device.o
 
-modules/arch/x86/pit/pit.ko: modules/arch/x86/pit/main.o modules/arch/x86/pit/driver.o modules/arch/x86/pit/device.o $(LIBFUDGE)
+$(MOD): $(OBJ) $(LIBFUDGE)
 	$(LD) $(LDFLAGS) -o $@ $^
+
+MODULES+=$(MOD)
+MODULES_OBJECTS+=$(OBJ)

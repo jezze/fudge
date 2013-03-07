@@ -1,5 +1,8 @@
-MODULES+=modules/arch/x86/io/io.ko
-MODULES_OBJECTS+=modules/arch/x86/io/main.o modules/arch/x86/io/io.o
+MOD:=modules/arch/x86/io/io.ko
+OBJ:=modules/arch/x86/io/main.o modules/arch/x86/io/io.o
 
-modules/arch/x86/io/io.ko: modules/arch/x86/io/main.o modules/arch/x86/io/io.o $(LIBFUDGE)
+$(MOD): $(OBJ) $(LIBFUDGE)
 	$(LD) $(LDFLAGS) -o $@ $^
+
+MODULES+=$(MOD)
+MODULES_OBJECTS+=$(OBJ)

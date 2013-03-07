@@ -1,5 +1,8 @@
-MODULES+=modules/video/video.ko
-MODULES_OBJECTS+=modules/video/main.o
+MOD:=modules/video/video.ko
+OBJ:=modules/video/main.o
 
-modules/video/video.ko: modules/video/main.o $(LIBFUDGE)
+$(MOD): $(OBJ) $(LIBFUDGE)
 	$(LD) $(LDFLAGS) -o $@ $^
+
+MODULES+=$(MOD)
+MODULES_OBJECTS+=$(OBJ)

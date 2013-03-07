@@ -1,5 +1,8 @@
-MODULES+=modules/ipv4/ipv4.ko
-MODULES_OBJECTS+=modules/ipv4/main.o modules/ipv4/protocol.o
+MOD:=modules/ipv4/ipv4.ko
+OBJ:=modules/ipv4/main.o modules/ipv4/protocol.o
 
-modules/ipv4/ipv4.ko: modules/ipv4/main.o modules/ipv4/protocol.o $(LIBFUDGE)
+$(MOD): $(OBJ) $(LIBFUDGE)
 	$(LD) $(LDFLAGS) -o $@ $^
+
+MODULES+=$(MOD)
+MODULES_OBJECTS+=$(OBJ)

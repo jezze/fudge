@@ -16,6 +16,13 @@ RAMDISK=$(RAMDISK_NAME).$(RAMDISK_TYPE)
 
 INSTALL_PATH=/boot
 
+LIBS:=
+LIBS_OBJECTS:=
+MODULES:=
+MODULES_OBJECTS:=
+PACKAGES:=
+PACKAGES_OBJECTS:=
+
 .PHONY: all clean kernel libs modules packages
 
 all: libs modules packages kernel ramdisk

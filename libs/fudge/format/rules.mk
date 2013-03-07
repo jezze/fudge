@@ -1,2 +1,2 @@
-LIBFUDGE_OBJECTS+=libs/fudge/format/elf.o
-LIBFUDGE_OBJECTS+=libs/fudge/format/tar.o
+OBJ+=libs/fudge/format/elf.o
+OBJ+=libs/fudge/format/tar.o

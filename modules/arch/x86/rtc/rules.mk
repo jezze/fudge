@@ -1,5 +1,8 @@
-MODULES+=modules/arch/x86/rtc/rtc.ko
-MODULES_OBJECTS+=modules/arch/x86/rtc/main.o modules/arch/x86/rtc/device.o
+MOD:=modules/arch/x86/rtc/rtc.ko
+OBJ:=modules/arch/x86/rtc/main.o modules/arch/x86/rtc/device.o
 
-modules/arch/x86/rtc/rtc.ko: modules/arch/x86/rtc/main.o modules/arch/x86/rtc/device.o $(LIBFUDGE)
+$(MOD): $(OBJ) $(LIBFUDGE)
 	$(LD) $(LDFLAGS) -o $@ $^
+
+MODULES+=$(MOD)
+MODULES_OBJECTS+=$(OBJ)

@@ -1,5 +1,8 @@
-MODULES+=modules/ipv6/ipv6.ko
-MODULES_OBJECTS+=modules/ipv6/main.o modules/ipv6/protocol.o
+MOD:=modules/ipv6/ipv6.ko
+OBJ:=modules/ipv6/main.o modules/ipv6/protocol.o
 
-modules/ipv6/ipv6.ko: modules/ipv6/main.o modules/ipv6/protocol.o $(LIBFUDGE)
+$(MOD): $(OBJ) $(LIBFUDGE)
 	$(LD) $(LDFLAGS) -o $@ $^
+
+MODULES+=$(MOD)
+MODULES_OBJECTS+=$(OBJ)

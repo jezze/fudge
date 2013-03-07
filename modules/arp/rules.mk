@@ -1,5 +1,8 @@
-MODULES+=modules/arp/arp.ko
-MODULES_OBJECTS+=modules/arp/main.o modules/arp/protocol.o
+MOD:=modules/arp/arp.ko
+OBJ:=modules/arp/main.o modules/arp/protocol.o
 
-modules/arp/arp.ko: modules/arp/main.o modules/arp/protocol.o $(LIBFUDGE)
+$(MOD): $(OBJ) $(LIBFUDGE)
 	$(LD) $(LDFLAGS) -o $@ $^
+
+MODULES+=$(MOD)
+MODULES_OBJECTS+=$(OBJ)

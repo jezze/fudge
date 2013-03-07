@@ -1,22 +1,20 @@
-LIBKERNEL=libs/kernel/libkernel.a
-
-LIBKERNEL_OBJECTS+=libs/kernel/binary.o
-LIBKERNEL_OBJECTS+=libs/kernel/binary_elf.o
-LIBKERNEL_OBJECTS+=libs/kernel/error.o
-LIBKERNEL_OBJECTS+=libs/kernel/kernel.o
-LIBKERNEL_OBJECTS+=libs/kernel/runtime.o
-LIBKERNEL_OBJECTS+=libs/kernel/syscall.o
-LIBKERNEL_OBJECTS+=libs/kernel/vfs.o
-LIBKERNEL_OBJECTS+=libs/kernel/vfs_root.o
-LIBKERNEL_OBJECTS+=libs/kernel/vfs_ramdisk.o
+LIB:=libs/kernel/libkernel.a
+OBJ:=
+OBJ+=libs/kernel/binary.o
+OBJ+=libs/kernel/binary_elf.o
+OBJ+=libs/kernel/error.o
+OBJ+=libs/kernel/kernel.o
+OBJ+=libs/kernel/runtime.o
+OBJ+=libs/kernel/syscall.o
+OBJ+=libs/kernel/vfs.o
+OBJ+=libs/kernel/vfs_root.o
+OBJ+=libs/kernel/vfs_ramdisk.o
 
 include libs/kernel/arch/$(ARCH)/rules.mk
 
-LIBS+=$(LIBKERNEL)
-LIBS_OBJECTS+=$(LIBKERNEL_OBJECTS)
-
-$(LIBKERNEL): $(LIBKERNEL_OBJECTS)
+$(LIB): $(OBJ)
 	$(AR) $(ARFLAGS) $@ $^
 
-libs/kernel/%.o: libs/kernel/%.c
-	$(CC) -c $(CFLAGS) -Ilibs -o $@ $<
+LIBKERNEL:=$(LIB)
+LIBS+=$(LIB)
+LIBS_OBJECTS+=$(OBJ)

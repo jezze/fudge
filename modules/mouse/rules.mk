@@ -1,5 +1,8 @@
-MODULES+=modules/mouse/mouse.ko
-MODULES_OBJECTS+=modules/mouse/main.o
+MOD:=modules/mouse/mouse.ko
+OBJ:=modules/mouse/main.o
 
-modules/mouse/mouse.ko: modules/mouse/main.o $(LIBFUDGE)
+$(MOD): $(OBJ) $(LIBFUDGE)
 	$(LD) $(LDFLAGS) -o $@ $^
+
+MODULES+=$(MOD)
+MODULES_OBJECTS+=$(OBJ)

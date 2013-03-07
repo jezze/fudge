@@ -1,5 +1,8 @@
-MODULES+=modules/arch/x86/pic/pic.ko
-MODULES_OBJECTS+=modules/arch/x86/pic/main.o modules/arch/x86/pic/pic.o
+MOD:=modules/arch/x86/pic/pic.ko
+OBJ:=modules/arch/x86/pic/main.o modules/arch/x86/pic/pic.o
 
-modules/arch/x86/pic/pic.ko: modules/arch/x86/pic/main.o modules/arch/x86/pic/pic.o $(LIBFUDGE)
+$(MOD): $(OBJ) $(LIBFUDGE)
 	$(LD) $(LDFLAGS) -o $@ $^
+
+MODULES+=$(MOD)
+MODULES_OBJECTS+=$(OBJ)
