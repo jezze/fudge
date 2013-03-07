@@ -1,4 +1,4 @@
 include packages/base/rules.mk
 
-packages/%: packages/%.c $(LIBFUDGE)
-	$(CC) $(CFLAGS) -Ilibs/fudge -o $@ $< $(LIBFUDGE) $(EXTRA)
+packages/%.o: packages/%.c
+	$(CC) -c $(CFLAGS) -Ilibs/fudge -o $@ $<

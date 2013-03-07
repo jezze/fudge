@@ -1,15 +1,15 @@
-PACKAGES+=packages/base/date/date
-PACKAGES+=packages/base/echo/echo
-PACKAGES+=packages/base/hello/hello
-PACKAGES+=packages/base/help/help
-PACKAGES+=packages/base/initm/initm
-PACKAGES+=packages/base/inits/inits
-PACKAGES+=packages/base/load/load
-PACKAGES+=packages/base/motd/motd
-PACKAGES+=packages/base/ls/ls
-PACKAGES+=packages/base/reboot/reboot
-PACKAGES+=packages/base/shell/shell
-PACKAGES+=packages/base/tail/tail
-PACKAGES+=packages/base/timer/timer
-PACKAGES+=packages/base/unload/unload
-PACKAGES+=packages/base/wm/wm
+include packages/base/date/rules.mk
+include packages/base/echo/rules.mk
+include packages/base/hello/rules.mk
+include packages/base/help/rules.mk
+include packages/base/initm/rules.mk
+include packages/base/inits/rules.mk
+include packages/base/load/rules.mk
+include packages/base/motd/rules.mk
+include packages/base/ls/rules.mk
+include packages/base/reboot/rules.mk
+include packages/base/shell/rules.mk
+include packages/base/tail/rules.mk
+include packages/base/timer/rules.mk
+include packages/base/unload/rules.mk
+include packages/base/wm/rules.mk
