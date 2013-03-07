@@ -1,8 +1,5 @@
 LIB:=libs/fudge/libfudge.a
-OBJ:=
-OBJ+=libs/fudge/memory.o
-OBJ+=libs/fudge/posix.o
-OBJ+=libs/fudge/string.o
+OBJ:=libs/fudge/memory.o libs/fudge/posix.o libs/fudge/string.o
 
 include libs/fudge/data/rules.mk
 include libs/fudge/format/rules.mk
