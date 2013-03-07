@@ -80,9 +80,9 @@ packages: $(PACKAGES)
 ramdisk: $(RAMDISK_NAME).$(RAMDISK_TYPE)
 
 $(RAMDISK_NAME).tar: image/bin image/boot image/boot/fudge image/home image/data image/mod
-	tar -cf $@ image
+	tar -cf $(RAMDISK) image
 	rm -rf image
 
 $(RAMDISK_NAME).cpio: image/bin image/boot image/boot/fudge image/home image/data image/mod
-	find image -depth | cpio -o > $@
+	find image -depth | cpio -o > $(RAMDISK)
 	rm -rf image
