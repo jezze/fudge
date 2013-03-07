@@ -13,5 +13,8 @@ include modules/arch/$(ARCH)/rules.mk
 
 $(MODULES): LDFLAGS+=-Tmodules/linker.ld -r
 
+modules/%.o: modules/%.s
+	$(AS) $(ASFLAGS) -o $@ $<
+
 modules/%.o: modules/%.c
 	$(CC) -c $(CFLAGS) -Ilibs -Imodules -o $@ $<
