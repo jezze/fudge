@@ -5,13 +5,10 @@ void main()
 
     char buffer[FUDGE_BSIZE];
     char buffer2[FUDGE_BSIZE];
+    unsigned int count = call_read(FUDGE_IN, 0, FUDGE_BSIZE, buffer);
+    unsigned int count2 = call_read(FUDGE_CWD, 0, FUDGE_BSIZE, buffer2);
     unsigned int start = 0;
-    unsigned int count;
-    unsigned int count2;
     unsigned int i;
-
-    count = call_read(FUDGE_IN, 0, FUDGE_BSIZE, buffer);
-    count2 = call_read(FUDGE_CWD, 0, FUDGE_BSIZE, buffer2);
 
     for (i = 0; i < count2; i++)
     {
