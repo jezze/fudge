@@ -3,23 +3,35 @@
 void main()
 {
 
+    char buffermatch[FUDGE_BSIZE];
     char buffer[FUDGE_BSIZE];
-    char buffer2[FUDGE_BSIZE];
-    unsigned int count = call_read(FUDGE_IN, 0, FUDGE_BSIZE, buffer);
-    unsigned int count2 = call_read(FUDGE_CWD, 0, FUDGE_BSIZE, buffer2);
-    unsigned int start = 0;
-    unsigned int i;
+    unsigned int countmatch = call_read(FUDGE_IN, 0, FUDGE_BSIZE, buffermatch);
+    unsigned int count;
+    unsigned int offset;
+    unsigned int start;
 
-    for (i = 0; i < count2; i++)
+    for (offset = 0; (count = call_read(FUDGE_CWD, offset, FUDGE_BSIZE, buffer)); offset += start)
     {
 
-        if (buffer2[i] != '\n')
-            continue;
+        unsigned int i;
 
-        if (memory_match(buffer2 + start, buffer, count))
-            call_write(FUDGE_OUT, 0, i - start + 1, buffer2 + start);
+        start = 0;
 
-        start = i + 1;
+        for (i = 0; i < count; i++)
+        {
+
+            if (buffer[i] != '\n')
+                continue;
+
+            if (memory_match(buffer + start, buffermatch, countmatch))
+                call_write(FUDGE_OUT, 0, i - start + 1, buffer + start);
+
+            start = i + 1;
+
+        }
+
+        if (!start)
+            return;
 
     }
 
