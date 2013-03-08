@@ -13,6 +13,15 @@ void main()
     count = call_read(FUDGE_IN, 0, FUDGE_BSIZE, buffer);
     count2 = call_read(FUDGE_CWD, 0, FUDGE_BSIZE, buffer2);
 
+    if (count < 4 && memory_match(buffer, "../", count))
+    {
+
+        call_write(FUDGE_OUT, 0, 4, "../\n");
+
+        return;
+
+    }
+
     for (i = 0; i < count2; i++)
     {
 
