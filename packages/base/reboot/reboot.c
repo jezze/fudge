@@ -4,8 +4,11 @@ void main()
 {
 
     call_write(FUDGE_OUT, 0, 23, "System is rebooting...\n");
-    call_open(3, FUDGE_ROOT, 16, "system/ps2_reset");
-    call_write(3, 0, 1, "1");
+
+    if (!call_open(FUDGE_IN, FUDGE_ROOT, 16, "system/ps2_reset"))
+        return;
+
+    call_write(FUDGE_IN, 0, 1, "1");
 
 }
 
