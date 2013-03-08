@@ -16,7 +16,8 @@ enum token
     TOKEN_DOT                           = 128,
     TOKEN_SLASH                         = 256,
     TOKEN_WALL                          = 512,
-    TOKEN_NEWLINE                       = 1024
+    TOKEN_QUOTE                         = 1024,
+    TOKEN_NEWLINE                       = 2048
 
 };
 
@@ -199,6 +200,10 @@ static enum token tokenize(char c)
 
             return TOKEN_WALL;
 
+        case '"':
+
+            return TOKEN_QUOTE;
+
         case '\n':
 
             return TOKEN_NEWLINE;
@@ -298,6 +303,27 @@ static unsigned int parse_stdout(struct lexer *lexer)
 
 }
 
+static unsigned int parse_data(struct lexer *lexer)
+{
+
+    unsigned int index;
+
+    if (!accept(lexer, TOKEN_QUOTE))
+        return 0;
+
+    index = lexer->next;
+
+    while (accept(lexer, TOKEN_ALPHANUM | TOKEN_SPACE));
+
+    if (!accept(lexer, TOKEN_QUOTE))
+        return 0;
+
+    call_write(FUDGE_IN, 0, lexer->next - index - 1, lexer->buffer + index - 1);
+
+    return 1;
+
+}
+
 static unsigned int parse_block(struct lexer *lexer)
 {
 
@@ -327,6 +353,12 @@ static unsigned int parse_block(struct lexer *lexer)
         return 1;
 
     }
+
+    while (accept(lexer, TOKEN_SPACE));
+
+    parse_data(lexer);
+
+    while (accept(lexer, TOKEN_SPACE));
 
     return 1;
 
