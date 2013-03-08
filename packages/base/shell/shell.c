@@ -425,18 +425,20 @@ static void interpret(unsigned int count, char *buffer)
 static void complete(unsigned int count, char *buffer)
 {
 
-    unsigned int offset;
+    unsigned int offset = 0;
 
     call_write(FUDGE_OUT, 0, 1, "\n");
 
-    if (!count)
-        return;
-
-    for (offset = count - 1; offset > 0; offset--)
+    if (count)
     {
 
-        if (buffer[offset - 1] == ' ')
-            break;
+        for (offset = count - 1; offset > 0; offset--)
+        {
+
+            if (buffer[offset - 1] == ' ')
+                break;
+
+        }
 
     }
 
