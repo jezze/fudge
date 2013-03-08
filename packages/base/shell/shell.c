@@ -427,6 +427,11 @@ static void complete(unsigned int count, char *buffer)
 
     unsigned int offset;
 
+    call_write(FUDGE_OUT, 0, 1, "\n");
+
+    if (!count)
+        return;
+
     for (offset = count - 1; offset > 0; offset--)
     {
 
@@ -435,7 +440,6 @@ static void complete(unsigned int count, char *buffer)
 
     }
 
-    call_write(FUDGE_OUT, 0, 1, "\n");
     call_write(FUDGE_IN, 0, count - offset, buffer + offset);
     open(3, 8, "complete", 1, binaries);
     call_spawn(3);
