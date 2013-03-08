@@ -429,8 +429,18 @@ static void handle(struct lifo_stack *stack, char c)
     {
 
         case '\0':
-        case '\t':
         case '\r':
+
+            break;
+
+        case '\t':
+
+            call_write(FUDGE_OUT, 0, 1, "\n");
+            call_write(FUDGE_IN, 0, stack->head, stack->buffer);
+            open(3, 8, "complete", 1, binaries);
+            call_spawn(3);
+            call_write(FUDGE_OUT, 0, 2, "$ ");
+            call_write(FUDGE_OUT, 0, stack->head, stack->buffer);
 
             break;
 
