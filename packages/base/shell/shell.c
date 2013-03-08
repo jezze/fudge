@@ -313,7 +313,7 @@ static unsigned int parse_data(struct lexer *lexer)
 
     index = lexer->next;
 
-    while (accept(lexer, TOKEN_ALPHANUM | TOKEN_SPACE));
+    while (accept(lexer, ~TOKEN_QUOTE));
 
     if (!accept(lexer, TOKEN_QUOTE))
         return 0;
