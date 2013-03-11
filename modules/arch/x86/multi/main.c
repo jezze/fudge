@@ -88,11 +88,8 @@ static void notify_syscall(struct runtime_container *self, unsigned int index, u
 static unsigned int spawn(struct runtime_task *task, void *stack)
 {
 
-    struct {void *caller; unsigned int index;} nargs, *args = stack;
+    struct parameters {void *caller; unsigned int index;} nargs, *args = stack;
     struct multi_task *ntask = create_task();
-
-    nargs.caller = 0;
-    nargs.index = args->index;
 
     if (!ntask)
         return 0;
@@ -100,11 +97,13 @@ static unsigned int spawn(struct runtime_task *task, void *stack)
     task->container->notify_pagefault = notify_pagefault;
     task->container->notify_syscall = notify_syscall;
 
-    mmu_load_memory(&ntask->directory);
     memory_copy(&ntask->base, task, sizeof (struct runtime_task));
+    memory_copy(&nargs, args, sizeof (struct parameters));
 
     ntask->base.registers.sp = (unsigned int)&nargs;
     ntask->base.registers.fp = (unsigned int)&nargs;
+
+    mmu_load_memory(&ntask->directory);
 
     return syscall_raise(SYSCALL_INDEX_EXECUTE, &ntask->base);
 
