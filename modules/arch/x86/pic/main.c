@@ -140,10 +140,8 @@ void init()
 
     struct idt_pointer *idtp = cpu_get_idt();
 
+    memory_clear(&routines, sizeof (struct pic_routine) * PIC_ROUTINE_SLOTS);
     remap();
-    pic_set_mask(PIC_DATA0, 0xFF);
-    pic_set_mask(PIC_DATA1, 0xFF);
-
     idt_set_entry(idtp, 0x20, pic_routine00, 0x08, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
     idt_set_entry(idtp, 0x21, pic_routine01, 0x08, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
     idt_set_entry(idtp, 0x22, pic_routine02, 0x08, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
@@ -160,6 +158,8 @@ void init()
     idt_set_entry(idtp, 0x2D, pic_routine0D, 0x08, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
     idt_set_entry(idtp, 0x2E, pic_routine0E, 0x08, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
     idt_set_entry(idtp, 0x2F, pic_routine0F, 0x08, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
+    pic_set_mask(PIC_DATA0, 0xFF);
+    pic_set_mask(PIC_DATA1, 0xFF);
 
 }
 

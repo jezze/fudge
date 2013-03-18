@@ -5,7 +5,7 @@
 
 .global arch_disable_pic
 arch_disable_pic:
-    mov al, 0xff
+    mov al, 0xFF
     outb 0xA1, al
     outb 0x21, al
     ret
