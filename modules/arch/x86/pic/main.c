@@ -1,6 +1,7 @@
 #include <fudge/module.h>
 #include <kernel/arch/x86/cpu.h>
 #include <kernel/arch/x86/idt.h>
+#include <kernel/arch/x86/gdt.h>
 #include <base/base.h>
 #include <arch/x86/io/io.h>
 #include "pic.h"
@@ -14,20 +15,6 @@ static void raise(unsigned int index)
         return;
 
     routines[index].callback(routines[index].device);
-
-}
-
-static void remap()
-{
-
-    io_outb(PIC_COMMAND0, PIC_COMMAND_CONFIG);
-    io_outb(PIC_DATA0, PIC_DATA_VECTOR0);
-    io_outb(PIC_DATA0, 0x04);
-    io_outb(PIC_DATA0, PIC_DATA_8086);
-    io_outb(PIC_COMMAND1, PIC_COMMAND_CONFIG);
-    io_outb(PIC_DATA1, PIC_DATA_VECTOR1);
-    io_outb(PIC_DATA1, 0x02);
-    io_outb(PIC_DATA1, PIC_DATA_8086);
 
 }
 
@@ -135,29 +122,41 @@ unsigned int pic_unset_routine(unsigned int index, struct base_device *device)
 
 }
 
+void setup_chip(unsigned char command, unsigned char data, unsigned char vector, unsigned char wire)
+{
+
+    io_outb(command, PIC_COMMAND_CONFIG);
+    io_outb(data, vector);
+    io_outb(data, wire);
+    io_outb(data, PIC_DATA_8086);
+
+}
+
 void init()
 {
 
     struct idt_pointer *idtp = cpu_get_idt();
+    unsigned int offset = sizeof (struct gdt_entry) * GDT_INDEX_KCODE;
 
     memory_clear(&routines, sizeof (struct pic_routine) * PIC_ROUTINE_SLOTS);
-    remap();
-    idt_set_entry(idtp, 0x20, pic_routine00, 0x08, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
-    idt_set_entry(idtp, 0x21, pic_routine01, 0x08, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
-    idt_set_entry(idtp, 0x22, pic_routine02, 0x08, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
-    idt_set_entry(idtp, 0x23, pic_routine03, 0x08, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
-    idt_set_entry(idtp, 0x24, pic_routine04, 0x08, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
-    idt_set_entry(idtp, 0x25, pic_routine05, 0x08, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
-    idt_set_entry(idtp, 0x26, pic_routine06, 0x08, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
-    idt_set_entry(idtp, 0x27, pic_routine07, 0x08, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
-    idt_set_entry(idtp, 0x28, pic_routine08, 0x08, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
-    idt_set_entry(idtp, 0x29, pic_routine09, 0x08, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
-    idt_set_entry(idtp, 0x2A, pic_routine0A, 0x08, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
-    idt_set_entry(idtp, 0x2B, pic_routine0B, 0x08, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
-    idt_set_entry(idtp, 0x2C, pic_routine0C, 0x08, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
-    idt_set_entry(idtp, 0x2D, pic_routine0D, 0x08, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
-    idt_set_entry(idtp, 0x2E, pic_routine0E, 0x08, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
-    idt_set_entry(idtp, 0x2F, pic_routine0F, 0x08, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
+    setup_chip(PIC_COMMAND0, PIC_DATA0, PIC_DATA_VECTOR0, 0x04);
+    setup_chip(PIC_COMMAND1, PIC_DATA1, PIC_DATA_VECTOR1, 0x02);
+    idt_set_entry(idtp, PIC_DATA_VECTOR0 + 0x00, pic_routine00, offset, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
+    idt_set_entry(idtp, PIC_DATA_VECTOR0 + 0x01, pic_routine01, offset, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
+    idt_set_entry(idtp, PIC_DATA_VECTOR0 + 0x02, pic_routine02, offset, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
+    idt_set_entry(idtp, PIC_DATA_VECTOR0 + 0x03, pic_routine03, offset, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
+    idt_set_entry(idtp, PIC_DATA_VECTOR0 + 0x04, pic_routine04, offset, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
+    idt_set_entry(idtp, PIC_DATA_VECTOR0 + 0x05, pic_routine05, offset, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
+    idt_set_entry(idtp, PIC_DATA_VECTOR0 + 0x06, pic_routine06, offset, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
+    idt_set_entry(idtp, PIC_DATA_VECTOR0 + 0x07, pic_routine07, offset, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
+    idt_set_entry(idtp, PIC_DATA_VECTOR1 + 0x00, pic_routine08, offset, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
+    idt_set_entry(idtp, PIC_DATA_VECTOR1 + 0x01, pic_routine09, offset, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
+    idt_set_entry(idtp, PIC_DATA_VECTOR1 + 0x02, pic_routine0A, offset, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
+    idt_set_entry(idtp, PIC_DATA_VECTOR1 + 0x03, pic_routine0B, offset, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
+    idt_set_entry(idtp, PIC_DATA_VECTOR1 + 0x04, pic_routine0C, offset, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
+    idt_set_entry(idtp, PIC_DATA_VECTOR1 + 0x05, pic_routine0D, offset, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
+    idt_set_entry(idtp, PIC_DATA_VECTOR1 + 0x06, pic_routine0E, offset, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
+    idt_set_entry(idtp, PIC_DATA_VECTOR1 + 0x07, pic_routine0F, offset, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
     pic_set_mask(PIC_DATA0, 0xFF);
     pic_set_mask(PIC_DATA1, 0xFF);
 
