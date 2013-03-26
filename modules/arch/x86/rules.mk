@@ -19,3 +19,4 @@ include modules/arch/x86/rtl8139/rules.mk
 include modules/arch/x86/smp/rules.mk
 include modules/arch/x86/uart/rules.mk
 include modules/arch/x86/vga/rules.mk
+include modules/arch/x86/vga2/rules.mk
