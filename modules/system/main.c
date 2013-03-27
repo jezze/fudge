@@ -117,7 +117,7 @@ void system_init_string(struct system_string *string, char *name, char *value)
 
 }
 
-void system_init_stream(struct system_stream *stream, char *name, unsigned int (*read)(unsigned int offset, unsigned int count, void *buffer), unsigned int (*write)(unsigned int offset, unsigned int count, void *buffer))
+void system_init_stream(struct system_stream *stream, char *name, unsigned int (*read)(struct system_stream *self, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write)(struct system_stream *self, unsigned int offset, unsigned int count, void *buffer))
 {
 
     memory_clear(stream, sizeof (struct system_stream));

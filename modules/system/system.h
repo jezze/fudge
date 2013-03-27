@@ -42,8 +42,8 @@ struct system_stream
 {
 
     struct system_node node;
-    unsigned int (*read)(unsigned int offset, unsigned int count, void *buffer);
-    unsigned int (*write)(unsigned int offset, unsigned int count, void *buffer);
+    unsigned int (*read)(struct system_stream *self, unsigned int offset, unsigned int count, void *buffer);
+    unsigned int (*write)(struct system_stream *self, unsigned int offset, unsigned int count, void *buffer);
 
 };
 
@@ -54,4 +54,4 @@ void system_unregister_node(struct system_node *node);
 void system_init_group(struct system_group *group, char *name);
 void system_init_integer(struct system_integer *integer, char *name, int *value);
 void system_init_string(struct system_string *string, char *name, char *value);
-void system_init_stream(struct system_stream *stream, char *name, unsigned int (*read)(unsigned int offset, unsigned int count, void *buffer), unsigned int (*write)(unsigned int offset, unsigned int count, void *buffer));
+void system_init_stream(struct system_stream *stream, char *name, unsigned int (*read)(struct system_stream *self, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write)(struct system_stream *self, unsigned int offset, unsigned int count, void *buffer));

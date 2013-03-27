@@ -31,21 +31,85 @@ unsigned int string_read_num(const char *in, unsigned int base)
 
 }
 
-char *string_write_num(char *out, unsigned int num, unsigned int base)
+unsigned int string_write_num(void *out, unsigned int count, unsigned int num, unsigned int base)
 {
 
     char buffer[32];
-    unsigned int offset;
+    unsigned int c;
 
     if (!num)
-        return memory_copy(out, "0", 2);
+        return memory_write(out, count, "0", 2, 0);
 
     memory_clear(buffer, 32);
 
-    for (offset = 30; num && offset; --offset, num /= base)
-        buffer[offset] = "0123456789abcdef"[num % base];
+    for (c = 30; num && c; --c, num /= base)
+        buffer[c] = "0123456789abcdef"[num % base];
 
-    return memory_copy(out, buffer + offset + 1, 32 - offset);
+    return memory_write(out, count, buffer + c + 1, 32 - c, 0);
+
+}
+
+unsigned int string_write_format(void *out, unsigned int count, const char *format, const void **args)
+{
+
+    char *o = out;
+    unsigned int c = 0;
+    unsigned int j = 0;
+    unsigned int i;
+
+    for (i = 0; i < string_length(format) + 1; i++)
+    {
+
+        if (format[i] != '%')
+        {
+
+            c += memory_write(o, count, format + i, 1, c);
+
+            continue;
+
+        }
+
+        switch (format[i + 1])
+        {
+
+            case 'c':
+
+                c += memory_write(o, count, args[j], 1, c);
+
+                break;
+
+            case 's':
+
+                c += memory_write(o, count, args[j], string_length(args[j]), c);
+
+                break;
+
+            case 'u':
+
+                c += string_write_num(o + c, count - c, *((unsigned int *)args[j]), 10);
+
+                break;
+
+            case 'd':
+
+                c += string_write_num(o + c, count - c, *((int *)args[j]), 10);
+
+                break;
+
+            case 'x':
+
+                c += string_write_num(o + c, count - c, *((unsigned int *)args[j]), 16);
+
+                break;
+
+        }
+
+        i++;
+        j++;
+
+    }
+
+    return c;
 
 }
 
