@@ -58,20 +58,6 @@ static void enable(unsigned int xres, unsigned int yres, unsigned int bpp)
 
 }
 
-void backend_read(struct gfx_backend *self, unsigned int offset, unsigned int count, void *buffer)
-{
-
-    call_read(self->id, offset, count, buffer);
-
-}
-
-void backend_write(struct gfx_backend *self, unsigned int offset, unsigned int count, void *buffer)
-{
-
-    call_write(self->id, offset, count, buffer);
-
-}
-
 void main()
 {
 
@@ -81,7 +67,7 @@ void main()
         return;
 
     enable(SCREEN_WIDTH, SCREEN_HEIGHT, 32);
-    gfx_init_backend(&backend, id, backend_read, backend_write);
+    gfx_init_backend(&backend, id);
     gfx_init_surface(&rootSurface, SCREEN_WIDTH, SCREEN_HEIGHT, GFX_ARGB32, &backend);
     gfx_init_surface(&helloSurface, SCREEN_WIDTH, SCREEN_HEIGHT, GFX_ARGB32, &backend);
     init_window(&rootWindow, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, &rootSurface, rootwindow_draw);
