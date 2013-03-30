@@ -9,6 +9,9 @@ void load_modules_core(unsigned int id)
     call_open(FUDGE_IN, FUDGE_CWD, 7, "base.ko");
     call_spawn(id);
     call_close(FUDGE_IN);
+    call_open(FUDGE_IN, FUDGE_CWD, 11, "terminal.ko");
+    call_spawn(id);
+    call_close(FUDGE_IN);
     call_open(FUDGE_IN, FUDGE_CWD, 8, "video.ko");
     call_spawn(id);
     call_close(FUDGE_IN);
