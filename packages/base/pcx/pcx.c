@@ -34,7 +34,7 @@ static char read_byte(unsigned int *offset)
 
     char byte;
 
-    call_read(FUDGE_IN, *offset, 1, &byte);
+    call_read(FUDGE_IN, *offset + 128, 1, &byte);
 
     *offset = *offset + 1;
 
@@ -45,10 +45,11 @@ static char read_byte(unsigned int *offset)
 static void print_data()
 {
 
-    char buffer[0x200];
-    unsigned int buffersize = 0x200;
+    char buffer[320];
+    unsigned int buffersize = 320;
     unsigned int offset = 0;
-    unsigned int index = 0;
+    unsigned int index;
+    unsigned int row;
     char byte;
     unsigned int runcount;
     unsigned int total;
@@ -65,33 +66,42 @@ static void print_data()
     call_write(3, 0, 9, "320x200x8");
     call_close(3);
 
-    do
+    for (row = 0; row < 200; row++)
     {
 
-        byte = read_byte(&offset);
+        index = 0;
+        runcount = 0;
+        runvalue = 0;
 
-        if ((byte & 0xC0) == 0xC0)
+        do
         {
 
-            runcount = byte & 0x3F;
-            runvalue = read_byte(&offset);
+            byte = read_byte(&offset);
 
-        }
+            if ((byte & 0xC0) == 0xC0)
+            {
 
-        else
-        {
+                runcount = byte & 0x3F;
+                runvalue = read_byte(&offset);
 
-            runcount = 1;
-            runvalue = byte;
+            }
 
-        }
+            else
+            {
 
-        for (total += runcount; runcount && index < buffersize; runcount--, index++)
-            buffer[index] = runvalue;
+                runcount = 1;
+                runvalue = byte;
 
-    } while (index < buffersize);
+            }
 
-    call_write(FUDGE_OUT, 0, 0x200, &buffer);
+            for (total += runcount; runcount && index < buffersize; runcount--, index++)
+                buffer[index] = runvalue;
+
+        } while (index < buffersize);
+
+        call_write(FUDGE_OUT, row * 320, 320, &buffer);
+
+    }
 
 }
 
