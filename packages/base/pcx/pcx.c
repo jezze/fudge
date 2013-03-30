@@ -1,29 +1,6 @@
 #include <fudge.h>
 #include <gfx/gfx.h>
-
-struct pcx_header
-{
-
-    char identifier;
-    char version;
-    char encoding;
-    char bpp;
-    short xstart;
-    short ystart;
-    short xend;
-    short yend;
-    short xdpi;
-    short ydpi;
-    char palette[48];
-    char reserved1[1];
-    char nplanes;
-    short bpl;
-    short palettetype;
-    short xscreen;
-    short yscreen;
-    char reserved2[54];
-
-};
+#include <gfx/pcx.h>
 
 static struct gfx_backend backend;
 static struct gfx_surface rootSurface;
