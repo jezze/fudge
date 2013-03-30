@@ -289,14 +289,14 @@ static unsigned int write_terminal_data(struct terminal_interface *self, unsigne
 static unsigned int read_video_data(struct video_interface *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    return memory_read(buffer, count, (void *)VGA_ADDRESS, self->xres * self->yres * self->bpp, offset);
+    return memory_read(buffer, count, (void *)VGA_ADDRESS, self->xres * self->yres * (self->bpp / 8), offset);
 
 }
 
 static unsigned int write_video_data(struct video_interface *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    return memory_write((void *)VGA_ADDRESS, self->xres * self->yres * self->bpp, buffer, count, offset);
+    return memory_write((void *)VGA_ADDRESS, self->xres * self->yres * (self->bpp / 8), buffer, count, offset);
 
 }
 
@@ -328,7 +328,7 @@ void vga_init_driver(struct vga_driver *driver)
 
     driver->video.xres = 80;
     driver->video.yres = 25;
-    driver->video.bpp = 2;
+    driver->video.bpp = 16;
 
 }
 
