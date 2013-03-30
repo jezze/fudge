@@ -1,3 +1,23 @@
+#define VGA_ADDRESS                     0xA0000
+
+#define VGA_RESOLUTION_COM              0x63
+#define VGA_RESOLUTION_W256             0x00
+#define VGA_RESOLUTION_W320             0x00
+#define VGA_RESOLUTION_W360             0x04
+#define VGA_RESOLUTION_W376             0x04
+#define VGA_RESOLUTION_W400             0x04
+#define VGA_RESOLUTION_H200             0x00
+#define VGA_RESOLUTION_H224             0x80
+#define VGA_RESOLUTION_H240             0x80
+#define VGA_RESOLUTION_H256             0x80
+#define VGA_RESOLUTION_H270             0x80
+#define VGA_RESOLUTION_H300             0x80
+#define VGA_RESOLUTION_H360             0x00
+#define VGA_RESOLUTION_H400             0x00
+#define VGA_RESOLUTION_H480             0x80
+#define VGA_RESOLUTION_H564             0x80
+#define VGA_RESOLUTION_H600             0x80
+
 #define VGA_FB_ADDRESS                  0xB8000
 #define VGA_FB_SIZE                     2000
 #define VGA_FB_COLOR_BLACK              0x00

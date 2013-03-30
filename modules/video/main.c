@@ -55,6 +55,14 @@ unsigned int resolution_read(struct system_stream *self, unsigned int offset, un
 unsigned int resolution_write(struct system_stream *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
+    struct video_interface_group *group = (struct video_interface_group *)self->node.parent;
+
+    group->interface->xres = 320;
+    group->interface->yres = 200;
+    group->interface->bpp = 8;
+
+    group->interface->enable(group->interface);
+
     return 0;
 
 }
