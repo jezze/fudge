@@ -1,4 +1,12 @@
-#define VGA_ADDRESS                     0xA0000
+#define VGA_ADDRESS                     0x000A0000
+
+#define VGA_REG_C0                      0x03C0
+#define VGA_REG_C2                      0x03C2
+#define VGA_REG_C4                      0x03C4
+#define VGA_REG_CE                      0x03CE
+#define VGA_REG_D4                      0x03D4
+#define VGA_REG_D5                      0x03D5
+#define VGA_REG_DA                      0x03DA
 
 #define VGA_RESOLUTION_COM              0x63
 #define VGA_RESOLUTION_W256             0x00
@@ -18,7 +26,7 @@
 #define VGA_RESOLUTION_H564             0x80
 #define VGA_RESOLUTION_H600             0x80
 
-#define VGA_FB_ADDRESS                  0xB8000
+#define VGA_FB_ADDRESS                  0x000B8000
 #define VGA_FB_SIZE                     2000
 #define VGA_FB_COLOR_BLACK              0x00
 #define VGA_FB_COLOR_BLUE               0x01

@@ -4,8 +4,6 @@
 #include <arch/x86/io/io.h>
 #include "vga.h"
 
-#define SZ(x) (sizeof(x)/sizeof(x[0]))
-
 static unsigned char hor_regs[] = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x13};
 static unsigned char width_256[] = {0x5F, 0x3F, 0x40, 0x82, 0x4A, 0x9A, 0x20};
 static unsigned char width_320[] = {0x5F, 0x4F, 0x50, 0x82, 0x54, 0x80, 0x28};
@@ -25,206 +23,195 @@ static unsigned char height_480[] = {0x0D, 0x3E, 0x40, 0xEA, 0xAC, 0xDF, 0xE7, 0
 static unsigned char height_564[] = {0x62, 0xF0, 0x60, 0x37, 0x89, 0x33, 0x3C, 0x5C};
 static unsigned char height_600[] = {0x70, 0xF0, 0x60, 0x5B, 0x8C, 0x57, 0x58, 0x70};
 
-static void clear()
+static void clear(struct video_interface *interface)
 {
 
     unsigned int i;
     unsigned char *address = (void *)VGA_ADDRESS;
 
-    for (i = 0; i < 320 * 240; i++)
+    for (i = 0; i < interface->xres * interface->yres; i++)
         *(address + i) = 0x00;
 
 }
 
-static void plot(unsigned int offset, unsigned char color)
-{
-
-    unsigned char *address = (void *)(VGA_ADDRESS + offset);
-
-    *(address) = color;
-
-}
-
-static void mode(int width, int height, int chain4)
+static void mode(struct video_interface *interface, int chain4)
 {
 
     unsigned char *w, *h;
-    unsigned char val;
+    unsigned char settings;
     int a;
 
-    switch (width)
+    if (chain4 && interface->xres * interface->yres > 65536)
+        return;
+
+    switch (interface->xres)
     {
 
-    case 256:
-        w = width_256;
-        val = VGA_RESOLUTION_COM + VGA_RESOLUTION_W256;
+        case 256:
+            w = width_256;
+            settings = VGA_RESOLUTION_COM + VGA_RESOLUTION_W256;
 
-        break;
+            break;
 
-    case 320:
-        w = width_320;
-        val = VGA_RESOLUTION_COM + VGA_RESOLUTION_W320;
+        case 320:
+            w = width_320;
+            settings = VGA_RESOLUTION_COM + VGA_RESOLUTION_W320;
 
-        break;
+            break;
 
-    case 360:
-        w = width_360;
-        val = VGA_RESOLUTION_COM + VGA_RESOLUTION_W360;
+        case 360:
+            w = width_360;
+            settings = VGA_RESOLUTION_COM + VGA_RESOLUTION_W360;
 
-        break;
+            break;
 
-    case 376:
-        w = width_376;
-        val = VGA_RESOLUTION_COM + VGA_RESOLUTION_W376;
+        case 376:
+            w = width_376;
+            settings = VGA_RESOLUTION_COM + VGA_RESOLUTION_W376;
 
-        break;
+            break;
 
-    case 400:
-        w = width_400;
-        val = VGA_RESOLUTION_COM + VGA_RESOLUTION_W400;
+        case 400:
+            w = width_400;
+            settings = VGA_RESOLUTION_COM + VGA_RESOLUTION_W400;
 
-        break;
+            break;
 
-    default:
-        return;
+        default:
+            return;
 
     }
 
-    switch (height)
+    switch (interface->yres)
     {
 
-    case 200:
-        h = height_200;
-        val |= VGA_RESOLUTION_H200;
+        case 200:
+            h = height_200;
+            settings |= VGA_RESOLUTION_H200;
 
-        break;
+            break;
 
-    case 224:
-        h = height_224;
-        val |= VGA_RESOLUTION_H224;
+        case 224:
+            h = height_224;
+            settings |= VGA_RESOLUTION_H224;
 
-        break;
+            break;
 
-    case 240:
-        h = height_240;
-        val |= VGA_RESOLUTION_H240;
+        case 240:
+            h = height_240;
+            settings |= VGA_RESOLUTION_H240;
 
-        break;
+            break;
 
-    case 256:
-        h = height_256;
-        val |= VGA_RESOLUTION_H256;
+        case 256:
+            h = height_256;
+            settings |= VGA_RESOLUTION_H256;
 
-        break;
+            break;
 
-    case 270:
-        h = height_270;
-        val |= VGA_RESOLUTION_H270;
+        case 270:
+            h = height_270;
+            settings |= VGA_RESOLUTION_H270;
 
-        break;
+            break;
 
-    case 300:
-        h = height_300;
-        val |= VGA_RESOLUTION_H300;
+        case 300:
+            h = height_300;
+            settings |= VGA_RESOLUTION_H300;
 
-        break;
+            break;
 
-    case 360:
-        h = height_360;
-        val |= VGA_RESOLUTION_H360;
+        case 360:
+            h = height_360;
+            settings |= VGA_RESOLUTION_H360;
 
-        break;
+            break;
 
-    case 400:
-        h = height_400;
-        val |= VGA_RESOLUTION_H400;
+        case 400:
+            h = height_400;
+            settings |= VGA_RESOLUTION_H400;
 
-        break;
+            break;
 
-    case 480:
-        h = height_480;
-        val |= VGA_RESOLUTION_H480;
+        case 480:
+            h = height_480;
+            settings |= VGA_RESOLUTION_H480;
 
-        break;
+            break;
 
-    case 564:
-        h = height_564;
-        val |= VGA_RESOLUTION_H564;
+        case 564:
+            h = height_564;
+            settings |= VGA_RESOLUTION_H564;
 
-        break;
+            break;
 
-    case 600:
-        h = height_600;
-        val |= VGA_RESOLUTION_H600;
+        case 600:
+            h = height_600;
+            settings |= VGA_RESOLUTION_H600;
 
-        break;
+            break;
 
-    default:
-        return;
+        default:
+            return;
 
     }
 
-    if (chain4 && (unsigned int)width * (unsigned int)height > 65536)
-        return;
+    io_outb(VGA_REG_C2, settings);
+    io_outw(VGA_REG_D4, 0x0E11);
 
-    io_outb(0x3C2, val);
-    io_outw(0x3D4, 0x0E11);
+    for (a = 0; a < (sizeof (hor_regs) / sizeof (hor_regs[0])); ++a)
+        io_outw(VGA_REG_D4, (unsigned short)((w[a] << 8) + hor_regs[a]));
 
-    for (a = 0; a < SZ(hor_regs); ++a)
-        io_outw(0x3D4, (unsigned short)((w[a] << 8) + hor_regs[a]));
+    for (a = 0; a < (sizeof (ver_regs) / sizeof (ver_regs[0])); ++a)
+        io_outw(VGA_REG_D4, (unsigned short)((h[a] << 8) + ver_regs[a]));
 
-    for (a = 0; a < SZ(ver_regs); ++a)
-        io_outw(0x3D4, (unsigned short)((h[a] << 8) + ver_regs[a]));
-
-    io_outw(0x3D4, 0x0008);
+    io_outw(VGA_REG_D4, 0x0008);
 
     if (chain4)
     {
     
-        io_outw(0x3D4, 0x4014);
-        io_outw(0x3D4, 0xA317);
-        io_outw(0x3C4, 0x0E04);
+        io_outw(VGA_REG_D4, 0x4014);
+        io_outw(VGA_REG_D4, 0xA317);
+        io_outw(VGA_REG_C4, 0x0E04);
 
     }
 
     else
     {
 
-        io_outw(0x3D4, 0x0014);
-        io_outw(0x3D4, 0xE317);
-        io_outw(0x3C4, 0x0604);
+        io_outw(VGA_REG_D4, 0x0014);
+        io_outw(VGA_REG_D4, 0xE317);
+        io_outw(VGA_REG_C4, 0x0604);
 
     }
 
-    io_outw(0x3C4, 0x0101);
-    io_outw(0x3C4, 0x0F02);
-    io_outw(0x3CE, 0x4005);
-    io_outw(0x3CE, 0x0506);
-    io_inb(0x3DA);
-    io_outb(0x3C0, 0x30);
-    io_outb(0x3C0, 0x41);
-    io_outb(0x3C0, 0x33);
-    io_outb(0x3C0, 0x00);
+    io_outw(VGA_REG_C4, 0x0101);
+    io_outw(VGA_REG_C4, 0x0F02);
+    io_outw(VGA_REG_CE, 0x4005);
+    io_outw(VGA_REG_CE, 0x0506);
+    io_inb(VGA_REG_DA);
+    io_outb(VGA_REG_C0, 0x30);
+    io_outb(VGA_REG_C0, 0x41);
+    io_outb(VGA_REG_C0, 0x33);
+    io_outb(VGA_REG_C0, 0x00);
 
     for (a = 0; a < 16; a++)
     {
 
-        io_outb(0x3C0, (unsigned char)a);
-        io_outb(0x3C0, (unsigned char)a);
+        io_outb(VGA_REG_C0, (unsigned char)a);
+        io_outb(VGA_REG_C0, (unsigned char)a);
 
     }
 
-    io_outb(0x3C0, 0x20);
+    io_outb(VGA_REG_C0, 0x20);
 
 }
 
 static void enable(struct video_interface *self)
 {
 
-    mode(320, 200, 1);
-    clear();
-    plot(0x00, 0x11);
-    plot(160 * 100, 0x11);
+    mode(self, 1);
+    clear(self);
 
 }
 
@@ -316,10 +303,10 @@ static void putc(struct vga_driver *driver, char c)
     if (driver->cursor.offset >= 80 * 25)
         scroll(driver);
 
-    io_outb(0x3D4, 14);
-    io_outb(0x3D5, driver->cursor.offset >> 8);
-    io_outb(0x3D4, 15);
-    io_outb(0x3D5, driver->cursor.offset);
+    io_outb(VGA_REG_D4, 14);
+    io_outb(VGA_REG_D5, driver->cursor.offset >> 8);
+    io_outb(VGA_REG_D4, 15);
+    io_outb(VGA_REG_D5, driver->cursor.offset);
 
 }
 
@@ -365,7 +352,7 @@ void vga_init_driver(struct vga_driver *driver)
 
     driver->interface.xres = 80;
     driver->interface.yres = 25;
-    driver->interface.bpp = 4;
+    driver->interface.bpp = 2;
 
 }
 

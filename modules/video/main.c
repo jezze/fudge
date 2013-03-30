@@ -63,7 +63,7 @@ unsigned int resolution_write(struct system_stream *self, unsigned int offset, u
 
     group->interface->enable(group->interface);
 
-    return 0;
+    return count;
 
 }
 
