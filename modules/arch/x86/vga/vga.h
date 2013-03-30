@@ -57,7 +57,8 @@ struct vga_driver
 {
 
     struct base_driver base;
-    struct video_interface interface;
+    struct video_interface video;
+    struct terminal_interface terminal;
     struct vga_cursor cursor;
 
 };

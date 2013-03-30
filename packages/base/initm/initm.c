@@ -146,7 +146,7 @@ void start_shell()
 {
 
     call_open(FUDGE_IN, FUDGE_ROOT, 17, "system/ps2_buffer");
-    call_open(FUDGE_OUT, FUDGE_ROOT, 21, "system/video/vga/data");
+    call_open(FUDGE_OUT, FUDGE_ROOT, 24, "system/terminal/vga/data");
     call_open(3, FUDGE_ROOT, 16, "ramdisk/bin/motd");
     call_spawn(3);
     call_close(3);
