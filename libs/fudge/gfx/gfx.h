@@ -1,6 +1,6 @@
 #define GFX_BUFFER_SIZE                 0x1000
 
-enum gfx_surface_type
+enum gfx_surface_bpp
 {
 
     GFX_R01G01B01                       = 0x00010101,
@@ -51,10 +51,9 @@ struct gfx_surface
 
     unsigned int width;
     unsigned int height;
-    unsigned int bpp;
-    unsigned int type;
+    enum gfx_surface_bpp bpp;
     struct gfx_context context;
-    struct gfx_backend *backend;
+    struct gfx_backend backend;
 
 };
 
@@ -65,4 +64,4 @@ void gfx_set_color_rgba(struct gfx_surface *self, unsigned char red, unsigned ch
 void gfx_set_rectangle(struct gfx_surface *surface, unsigned int x, unsigned int y, unsigned int width, unsigned int height);
 void gfx_init_backend(struct gfx_backend *backend, unsigned int id);
 void gfx_init_context(struct gfx_context *context);
-void gfx_init_surface(struct gfx_surface *surface, unsigned int width, unsigned int height, enum gfx_surface_type type, struct gfx_backend *backend);
+void gfx_init_surface(struct gfx_surface *surface, unsigned int id, unsigned int width, unsigned int height, enum gfx_surface_bpp bpp);

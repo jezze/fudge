@@ -2,7 +2,6 @@
 #include <gfx/gfx.h>
 #include "wm.h"
 
-static struct gfx_backend backend;
 static struct gfx_surface rootSurface;
 static struct gfx_surface helloSurface;
 
@@ -67,9 +66,8 @@ void main()
         return;
 
     enable(SCREEN_WIDTH, SCREEN_HEIGHT, 32);
-    gfx_init_backend(&backend, id);
-    gfx_init_surface(&rootSurface, SCREEN_WIDTH, SCREEN_HEIGHT, GFX_R32G32B32, &backend);
-    gfx_init_surface(&helloSurface, SCREEN_WIDTH, SCREEN_HEIGHT, GFX_R32G32B32, &backend);
+    gfx_init_surface(&rootSurface, id, SCREEN_WIDTH, SCREEN_HEIGHT, GFX_R32G32B32);
+    gfx_init_surface(&helloSurface, id, SCREEN_WIDTH, SCREEN_HEIGHT, GFX_R32G32B32);
     init_window(&rootWindow, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, &rootSurface, rootwindow_draw);
     init_window(&helloWindow, 64, 64, 320, 240, &helloSurface, hellowindow_draw);
     rootWindow.draw(&rootWindow);

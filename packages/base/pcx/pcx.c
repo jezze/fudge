@@ -2,8 +2,6 @@
 #include <gfx/gfx.h>
 #include <gfx/pcx.h>
 
-static struct gfx_backend backend;
-static struct gfx_surface rootSurface;
 static struct pcx_header header;
 
 static void set_resolution()
@@ -95,8 +93,6 @@ void main()
 
     call_read(FUDGE_IN, 0, sizeof (struct pcx_header), &header);
     call_open(FUDGE_OUT, FUDGE_ROOT, 21, "system/video/vga/data");
-    gfx_init_backend(&backend, FUDGE_OUT);
-    gfx_init_surface(&rootSurface, 320, 200, GFX_R06G06B06, &backend);
     set_resolution();
     set_colormap();
     render();

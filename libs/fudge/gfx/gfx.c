@@ -16,7 +16,7 @@ static void gfx_fill_rectangle(struct gfx_surface *self)
         memory_copy(buffer + i, &self->context.color, self->bpp);
 
     for (i = offset; i < size; i += line)
-        self->backend->write(self->backend, i, recline, buffer);
+        self->backend.write(&self->backend, i, recline, buffer);
 
 }
 
@@ -107,17 +107,16 @@ void gfx_init_context(struct gfx_context *context)
 
 }
 
-void gfx_init_surface(struct gfx_surface *surface, unsigned int width, unsigned int height, enum gfx_surface_type type, struct gfx_backend *backend)
+void gfx_init_surface(struct gfx_surface *surface, unsigned int id, unsigned int width, unsigned int height, enum gfx_surface_bpp bpp)
 {
 
     memory_clear(surface, sizeof (struct gfx_surface));
+    gfx_init_backend(&surface->backend, id);
     gfx_init_context(&surface->context);
 
     surface->width = width;
     surface->height = height;
-    surface->bpp = 4;
-    surface->type = type;
-    surface->backend = backend;
+    surface->bpp = bpp;
 
 }
 

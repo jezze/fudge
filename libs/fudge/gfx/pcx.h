@@ -29,10 +29,9 @@ struct pcx_header
 struct pcx_surface
 {
 
+    struct gfx_surface base;
     struct pcx_header header;
-    struct gfx_context context;
-    struct gfx_backend *backend;
 
 };
 
-void pcx_init_surface(struct pcx_surface *surface, unsigned int width, unsigned int height, enum gfx_surface_type type, struct gfx_backend *backend);
+void pcx_init_surface(struct pcx_surface *surface, unsigned int id, unsigned int width, unsigned int height, enum gfx_surface_bpp bpp);
