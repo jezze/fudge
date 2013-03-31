@@ -31,9 +31,12 @@ struct pcx_header
 struct pcx_surface
 {
 
-    struct gfx_surface base;
+    unsigned int id;
     struct pcx_header header;
+    unsigned char colormap[768];
 
 };
 
-void pcx_init_surface(struct pcx_surface *surface, unsigned int id, unsigned int width, unsigned int height, enum gfx_surface_bpp bpp);
+unsigned int pcx_read(struct pcx_surface *surface, unsigned int offset, unsigned int count, void *buffer);
+void pcx_load(struct pcx_surface *surface);
+void pcx_init_surface(struct pcx_surface *surface, unsigned int id);

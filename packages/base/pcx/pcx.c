@@ -2,81 +2,7 @@
 #include <gfx/gfx.h>
 #include <gfx/pcx.h>
 
-static struct pcx_header header;
-
-static unsigned int size(unsigned int id)
-{
-
-    unsigned char buffer[FUDGE_BSIZE];
-    unsigned int offset;
-    unsigned int count;
-
-    for (offset = 0; (count = call_read(id, offset, FUDGE_BSIZE, buffer)); offset += count);
-
-    return offset;
-
-}
-
-static unsigned int read_scanline(unsigned int id, unsigned int offset, unsigned int count, void *buffer)
-{
-
-    unsigned char raw[FUDGE_BSIZE];
-    unsigned int width = header.xend - header.xstart + 1;
-    unsigned int rindex = 0;
-    unsigned int oindex = 0;
-    unsigned int repeat;
-    unsigned char current;
-
-    call_read(id, offset, count, raw);
-
-    do
-    {
-
-        repeat = 1;
-        current = raw[rindex];
-        rindex++;
-
-        if ((current & 0xC0) == 0xC0)
-        {
-
-            repeat = current & 0x3F;
-            current = raw[rindex];
-            rindex++;
-
-        }
-
-        while (repeat--)
-        {
-
-            ((char *)buffer)[oindex] = current;
-            oindex++;
-
-        }
-
-    } while (oindex < width);
-
-    return rindex;
-
-}
-
-static unsigned int read_colormap(unsigned int id, unsigned int offset, unsigned int count, void *buffer)
-{
-
-    unsigned char magic;
-
-    call_read(id, size(id) - 768 - 1, 1, &magic);
-
-    if (magic != PCX_COLORMAP_MAGIC)
-        return 0;
-
-    count = call_read(id, size(id) - 768, 768, buffer);
-
-    if (count < 768)
-        return 0;
-
-    return count;
-
-}
+static struct pcx_surface surface;
 
 static void set_resolution()
 {
@@ -87,7 +13,7 @@ static void set_resolution()
 
 }
 
-static void set_colormap(char *colormap)
+static void set_colormap(unsigned char *colormap)
 {
 
     unsigned int i;
@@ -101,16 +27,16 @@ static void set_colormap(char *colormap)
 
 }
 
-static void render(unsigned int id, char *colormap)
+static void render(struct pcx_surface *surface)
 {
 
-    unsigned int width = header.xend - header.xstart + 1;
-    unsigned int height = header.yend - header.ystart + 1;
+    unsigned int width = surface->header.xend - surface->header.xstart + 1;
+    unsigned int height = surface->header.yend - surface->header.ystart + 1;
     unsigned int offset = 128;
     unsigned int row;
 
     set_resolution();
-    set_colormap(colormap);
+    set_colormap(surface->colormap);
     call_open(3, FUDGE_ROOT, 21, "system/video/vga/data");
 
     for (row = 0; row < height; row++)
@@ -118,7 +44,7 @@ static void render(unsigned int id, char *colormap)
 
         char buffer[FUDGE_BSIZE];
 
-        offset += read_scanline(id, offset, FUDGE_BSIZE, buffer);
+        offset += pcx_read(surface, offset, FUDGE_BSIZE, buffer);
 
         call_write(3, row * width, width, buffer);
 
@@ -131,11 +57,9 @@ static void render(unsigned int id, char *colormap)
 void main()
 {
 
-    char colormap[FUDGE_BSIZE];
-
-    call_read(FUDGE_IN, 0, sizeof (struct pcx_header), &header);
-    read_colormap(FUDGE_IN, 0, FUDGE_BSIZE, colormap);
-    render(FUDGE_IN, colormap);
+    pcx_init_surface(&surface, FUDGE_IN);
+    pcx_load(&surface);
+    render(&surface);
 
 }
 
