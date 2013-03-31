@@ -32,7 +32,7 @@ static void set_colormap()
     char colormap[769];
     unsigned int i;
 
-    call_read(FUDGE_IN, size() - 769, 769, &colormap);
+    call_read(FUDGE_IN, size() - 769, 769, colormap);
 
     if (colormap[0] != PCX_COLORMAP_MAGIC)
         return;
@@ -46,56 +46,64 @@ static void set_colormap()
 
 }
 
+static unsigned int render_scanline(unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    unsigned char raw[FUDGE_BSIZE];
+    unsigned int width = header.xend - header.xstart + 1;
+    unsigned int rindex = 0;
+    unsigned int oindex = 0;
+    unsigned int repeat;
+    unsigned char current;
+
+    call_read(id, offset, count, raw);
+
+    do
+    {
+
+        repeat = 1;
+        current = raw[rindex];
+        rindex++;
+
+        if ((current & 0xC0) == 0xC0)
+        {
+
+            repeat = current & 0x3F;
+            current = raw[rindex];
+            rindex++;
+
+        }
+
+        while (repeat--)
+        {
+
+            ((char *)buffer)[oindex] = current;
+            oindex++;
+
+        }
+
+    } while (oindex < width);
+
+    return rindex;
+
+}
+
 static void render()
 {
 
     unsigned int width = header.xend - header.xstart + 1;
     unsigned int height = header.yend - header.ystart + 1;
-    unsigned int scanline = header.nplanes * header.bpl;
     unsigned int offset = 128;
     unsigned int row;
 
     for (row = 0; row < height; row++)
     {
 
-        char raw[FUDGE_BSIZE];
         char buffer[FUDGE_BSIZE];
-        unsigned int rindex = 0;
-        unsigned int bindex = 0;
-        unsigned int count;
-        char current;
 
-        call_read(FUDGE_IN, offset, scanline, &raw);
+        offset += render_scanline(FUDGE_IN, offset, FUDGE_BSIZE, buffer);
 
-        do
-        {
-
-            count = 1;
-            current = raw[rindex];
-            rindex++;
-
-            if ((current & 0xC0) == 0xC0)
-            {
-
-                count = current & 0x3F;
-                current = raw[rindex];
-                rindex++;
-
-            }
-
-            while (count--)
-            {
-
-                buffer[bindex] = current;
-                bindex++;
-
-            }
-
-        } while (bindex < width);
-
-        offset += rindex;
-
-        call_write(FUDGE_OUT, row * width, width, &buffer);
+        call_write(FUDGE_OUT, row * width, width, buffer);
 
     }
 
