@@ -96,7 +96,7 @@ void main()
     call_read(FUDGE_IN, 0, sizeof (struct pcx_header), &header);
     call_open(FUDGE_OUT, FUDGE_ROOT, 21, "system/video/vga/data");
     gfx_init_backend(&backend, FUDGE_OUT);
-    gfx_init_surface(&rootSurface, 320, 200, GFX_RGB8, &backend);
+    gfx_init_surface(&rootSurface, 320, 200, GFX_R06G06B06, &backend);
     set_resolution();
     set_colormap();
     render();

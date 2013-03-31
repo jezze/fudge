@@ -3,12 +3,15 @@
 enum gfx_surface_type
 {
 
-    GFX_RGB8,
-    GFX_ARGB8,
-    GFX_RGB16,
-    GFX_ARGB16,
-    GFX_RGB32,
-    GFX_ARGB32
+    GFX_R01G01B01                       = 0x00010101,
+    GFX_R02G02B02                       = 0x00020202,
+    GFX_R04G04B04                       = 0x00040404,
+    GFX_R06G06B06                       = 0x00060606,
+    GFX_R08G08B08                       = 0x00080808,
+    GFX_R12G12B12                       = 0x000C0C0C,
+    GFX_R16G16B16                       = 0x000F0F0F,
+    GFX_R24G24B24                       = 0x00181818,
+    GFX_R32G32B32                       = 0x00FFFFFF
 
 };
 
