@@ -310,12 +310,15 @@ static unsigned int read_video_colormap(struct video_interface *self, unsigned i
 static unsigned int write_video_colormap(struct video_interface *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    char *b = buffer;
+    char *c = buffer;
+    char r = c[0] * 63 / 255;
+    char g = c[1] * 63 / 255;
+    char b = c[2] * 63 / 255;
 
     io_outb(0x03C8, offset / 4);
-    io_outb(0x03C9, b[0]);
-    io_outb(0x03C9, b[1]);
-    io_outb(0x03C9, b[2]);
+    io_outb(0x03C9, r);
+    io_outb(0x03C9, g);
+    io_outb(0x03C9, b);
 
     return 0;
 
