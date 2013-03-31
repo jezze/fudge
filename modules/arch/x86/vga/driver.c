@@ -300,6 +300,20 @@ static unsigned int write_video_data(struct video_interface *self, unsigned int 
 
 }
 
+static unsigned int read_video_colormap(struct video_interface *self, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    return 0;
+
+}
+
+static unsigned int write_video_colormap(struct video_interface *self, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    return 0;
+
+}
+
 static void start(struct base_driver *self)
 {
 
@@ -324,7 +338,7 @@ void vga_init_driver(struct vga_driver *driver)
     memory_clear(driver, sizeof (struct vga_driver));
     base_init_driver(&driver->base, "vga", start, 0, 0);
     terminal_init_interface(&driver->terminal, &driver->base, read_terminal_data, write_terminal_data);
-    video_init_interface(&driver->video, &driver->base, enable, read_video_data, write_video_data);
+    video_init_interface(&driver->video, &driver->base, enable, read_video_data, write_video_data, read_video_colormap, write_video_colormap);
 
     driver->video.xres = 80;
     driver->video.yres = 25;

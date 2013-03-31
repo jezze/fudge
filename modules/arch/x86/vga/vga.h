@@ -3,6 +3,9 @@
 #define VGA_REG_C0                      0x03C0
 #define VGA_REG_C2                      0x03C2
 #define VGA_REG_C4                      0x03C4
+#define VGA_REG_DAC_READ                0x03C7
+#define VGA_REG_DAC_WRITE               0x03C8
+#define VGA_REG_DAC_DATA                0x03C9
 #define VGA_REG_CE                      0x03CE
 #define VGA_REG_D4                      0x03D4
 #define VGA_REG_D5                      0x03D5
