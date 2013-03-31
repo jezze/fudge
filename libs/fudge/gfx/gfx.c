@@ -1,11 +1,12 @@
 #include "../call.h"
+#include "../define.h"
 #include "../memory.h"
 #include "gfx.h"
 
 static void gfx_fill_rectangle(struct gfx_surface *self)
 {
 
-    char buffer[GFX_BUFFER_SIZE];
+    char buffer[FUDGE_BSIZE];
     unsigned int line = self->width * self->bpp;
     unsigned int recline = self->context.width * self->bpp;
     unsigned int size = line * self->context.height;

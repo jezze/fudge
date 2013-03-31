@@ -4,6 +4,19 @@
 
 static struct pcx_header header;
 
+static unsigned int size()
+{
+
+    unsigned char buffer[FUDGE_BSIZE];
+    unsigned int offset;
+    unsigned int count;
+
+    for (offset = 0; (count = call_read(FUDGE_IN, offset, FUDGE_BSIZE, buffer)); offset += count);
+
+    return offset;
+
+}
+
 static void set_resolution()
 {
 
@@ -19,14 +32,14 @@ static void set_colormap()
     char colormap[769];
     unsigned int i;
 
-    call_read(FUDGE_IN, 31467 - 769, 769, &colormap);
+    call_read(FUDGE_IN, size() - 769, 769, &colormap);
 
-    if (colormap[0] != 0x0C)
+    if (colormap[0] != PCX_COLORMAP_MAGIC)
         return;
 
     call_open(3, FUDGE_ROOT, 25, "system/video/vga/colormap");
 
-    for (i = 0; i < 16; i++)
+    for (i = 0; i < PCX_COLORMAP_SLOTS; i++)
         call_write(3, i * 4, 3, &colormap[i * 3 + 1]);
 
     call_close(3);
@@ -45,8 +58,8 @@ static void render()
     for (row = 0; row < height; row++)
     {
 
-        char raw[0x1000];
-        char buffer[0x1000];
+        char raw[FUDGE_BSIZE];
+        char buffer[FUDGE_BSIZE];
         unsigned int rindex = 0;
         unsigned int bindex = 0;
         unsigned int count;
