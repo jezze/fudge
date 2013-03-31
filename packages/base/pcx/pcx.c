@@ -4,14 +4,14 @@
 
 static struct pcx_header header;
 
-static unsigned int size()
+static unsigned int size(unsigned int id)
 {
 
     unsigned char buffer[FUDGE_BSIZE];
     unsigned int offset;
     unsigned int count;
 
-    for (offset = 0; (count = call_read(FUDGE_IN, offset, FUDGE_BSIZE, buffer)); offset += count);
+    for (offset = 0; (count = call_read(id, offset, FUDGE_BSIZE, buffer)); offset += count);
 
     return offset;
 
@@ -65,8 +65,8 @@ static unsigned int read_colormap(unsigned int id, unsigned int offset, unsigned
     if (count < 769)
         return 0;
 
-    offset = size() - 769;
-    count = call_read(FUDGE_IN, offset, 769, buffer);
+    offset = size(id) - 769;
+    count = call_read(id, offset, 769, buffer);
 
     if (((char *)buffer)[0] != PCX_COLORMAP_MAGIC)
         return 0;
@@ -84,13 +84,11 @@ static void set_resolution()
 
 }
 
-static void set_colormap()
+static void set_colormap(char *colormap)
 {
 
-    char colormap[FUDGE_BSIZE];
     unsigned int i;
 
-    read_colormap(FUDGE_IN, 0, FUDGE_BSIZE, colormap);
     call_open(3, FUDGE_ROOT, 25, "system/video/vga/colormap");
 
     for (i = 0; i < PCX_COLORMAP_SLOTS; i++)
@@ -100,7 +98,7 @@ static void set_colormap()
 
 }
 
-static void render()
+static void render(unsigned int from, unsigned int to)
 {
 
     unsigned int width = header.xend - header.xstart + 1;
@@ -113,9 +111,9 @@ static void render()
 
         char buffer[FUDGE_BSIZE];
 
-        offset += read_scanline(FUDGE_IN, offset, FUDGE_BSIZE, buffer);
+        offset += read_scanline(from, offset, FUDGE_BSIZE, buffer);
 
-        call_write(FUDGE_OUT, row * width, width, buffer);
+        call_write(to, row * width, width, buffer);
 
     }
 
@@ -124,11 +122,14 @@ static void render()
 void main()
 {
 
-    call_read(FUDGE_IN, 0, sizeof (struct pcx_header), &header);
+    char colormap[FUDGE_BSIZE];
+
     call_open(FUDGE_OUT, FUDGE_ROOT, 21, "system/video/vga/data");
+    call_read(FUDGE_IN, 0, sizeof (struct pcx_header), &header);
+    read_colormap(FUDGE_IN, 0, FUDGE_BSIZE, colormap);
     set_resolution();
-    set_colormap();
-    render();
+    set_colormap(colormap);
+    render(FUDGE_IN, FUDGE_OUT);
 
 }
 
