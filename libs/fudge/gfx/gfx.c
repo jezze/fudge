@@ -73,6 +73,18 @@ void gfx_set_rectangle(struct gfx_surface *surface, unsigned int x, unsigned int
 
 }
 
+void gfx_convert_colormap(void *out, void *in, unsigned int count)
+{
+
+    char *o = out;
+    char *i = in;
+    unsigned int index;
+
+    for (index = 0; index < count; index++)
+        o[index] = i[index] * 63 / 255;
+
+}
+
 static unsigned int backend_read(struct gfx_backend *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
