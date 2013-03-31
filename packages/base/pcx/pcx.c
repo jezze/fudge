@@ -62,13 +62,16 @@ static unsigned int read_scanline(unsigned int id, unsigned int offset, unsigned
 static unsigned int read_colormap(unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    if (count < 769)
+    unsigned char magic;
+
+    call_read(id, size(id) - 768 - 1, 1, &magic);
+
+    if (magic != PCX_COLORMAP_MAGIC)
         return 0;
 
-    offset = size(id) - 769;
-    count = call_read(id, offset, 769, buffer);
+    count = call_read(id, size(id) - 768, 768, buffer);
 
-    if (((char *)buffer)[0] != PCX_COLORMAP_MAGIC)
+    if (count < 768)
         return 0;
 
     return count;
@@ -92,7 +95,7 @@ static void set_colormap(char *colormap)
     call_open(3, FUDGE_ROOT, 25, "system/video/vga/colormap");
 
     for (i = 0; i < PCX_COLORMAP_SLOTS; i++)
-        call_write(3, i * 4, 3, &colormap[i * 3 + 1]);
+        call_write(3, i * 4, 3, &colormap[i * 3]);
 
     call_close(3);
 
@@ -108,7 +111,6 @@ static void render(unsigned int id, char *colormap)
 
     set_resolution();
     set_colormap(colormap);
-
     call_open(3, FUDGE_ROOT, 21, "system/video/vga/data");
 
     for (row = 0; row < height; row++)
