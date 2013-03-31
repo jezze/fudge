@@ -70,7 +70,7 @@ static void render()
 
             }
 
-            for (; count; count--)
+            while (count--)
             {
 
                 buffer[bindex] = current;
