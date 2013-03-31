@@ -6,77 +6,56 @@ static struct gfx_backend backend;
 static struct gfx_surface rootSurface;
 static struct pcx_header header;
 
-static char read_byte(unsigned int *offset)
-{
-
-    char byte;
-
-    call_read(FUDGE_IN, *offset + 128, 1, &byte);
-
-    *offset = *offset + 1;
-
-    return byte;
-
-}
-
 static void print_data()
 {
 
-    char buffer[320];
-    unsigned int buffersize = 320;
-    unsigned int offset = 0;
-    unsigned int index;
-    unsigned int row;
-    char byte;
-    unsigned int runcount;
-    unsigned int total;
-    char runvalue;
-
-/*
     unsigned int width = header.xend - header.xstart + 1;
     unsigned int height = header.yend - header.ystart + 1;
     unsigned int scanline = header.nplanes * header.bpl;
-    unsigned int padding = ((header.bpl * header.nplanes) * (8 / header.bpp)) - ((header.xend - header.xstart) + 1);
-*/
+    unsigned int offset = 128;
+    unsigned int row;
 
-    call_open(3, FUDGE_ROOT, 27, "system/video/vga/resolution");
-    call_write(3, 0, 9, "320x200x8");
-    call_close(3);
-
-    for (row = 0; row < 200; row++)
+    for (row = 0; row < height; row++)
     {
 
-        index = 0;
-        runcount = 0;
-        runvalue = 0;
+        char raw[0x1000];
+        char buffer[0x1000];
+        unsigned int rindex = 0;
+        unsigned int bindex = 0;
+        unsigned int count;
+        char current;
+
+        call_read(FUDGE_IN, offset, scanline, &raw);
 
         do
         {
 
-            byte = read_byte(&offset);
+            count = 1;
+            current = raw[rindex];
+            rindex++;
 
-            if ((byte & 0xC0) == 0xC0)
+            if ((current & 0xC0) == 0xC0)
             {
 
-                runcount = byte & 0x3F;
-                runvalue = read_byte(&offset);
+                count = current & 0x3F;
+                current = raw[rindex];
+                rindex++;
 
             }
 
-            else
+            for (; count; count--)
             {
 
-                runcount = 1;
-                runvalue = byte;
+                buffer[bindex] = current;
+                bindex++;
 
             }
 
-            for (total += runcount; runcount && index < buffersize; runcount--, index++)
-                buffer[index] = runvalue;
+        } while (bindex < width);
 
-        } while (index < buffersize);
+        offset += rindex;
 
-        call_write(FUDGE_OUT, row * 320, 320, &buffer);
+        call_write(FUDGE_OUT, row * width, width, &buffer);
 
     }
 
@@ -87,6 +66,9 @@ void main()
 
     call_read(FUDGE_IN, 0, sizeof (struct pcx_header), &header);
     call_open(FUDGE_OUT, FUDGE_ROOT, 21, "system/video/vga/data");
+    call_open(3, FUDGE_ROOT, 27, "system/video/vga/resolution");
+    call_write(3, 0, 9, "320x200x8");
+    call_close(3);
     gfx_init_backend(&backend, FUDGE_OUT);
     gfx_init_surface(&rootSurface, 320, 200, GFX_RGB8, &backend);
     print_data();
