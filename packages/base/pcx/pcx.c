@@ -98,7 +98,7 @@ static void set_colormap(char *colormap)
 
 }
 
-static void render(unsigned int from, unsigned int to)
+static void render(unsigned int id, char *colormap)
 {
 
     unsigned int width = header.xend - header.xstart + 1;
@@ -106,16 +106,23 @@ static void render(unsigned int from, unsigned int to)
     unsigned int offset = 128;
     unsigned int row;
 
+    set_resolution();
+    set_colormap(colormap);
+
+    call_open(3, FUDGE_ROOT, 21, "system/video/vga/data");
+
     for (row = 0; row < height; row++)
     {
 
         char buffer[FUDGE_BSIZE];
 
-        offset += read_scanline(from, offset, FUDGE_BSIZE, buffer);
+        offset += read_scanline(id, offset, FUDGE_BSIZE, buffer);
 
-        call_write(to, row * width, width, buffer);
+        call_write(3, row * width, width, buffer);
 
     }
+
+    call_close(3);
 
 }
 
@@ -124,12 +131,9 @@ void main()
 
     char colormap[FUDGE_BSIZE];
 
-    call_open(FUDGE_OUT, FUDGE_ROOT, 21, "system/video/vga/data");
     call_read(FUDGE_IN, 0, sizeof (struct pcx_header), &header);
     read_colormap(FUDGE_IN, 0, FUDGE_BSIZE, colormap);
-    set_resolution();
-    set_colormap(colormap);
-    render(FUDGE_IN, FUDGE_OUT);
+    render(FUDGE_IN, colormap);
 
 }
 
