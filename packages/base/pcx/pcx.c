@@ -17,36 +17,7 @@ static unsigned int size()
 
 }
 
-static void set_resolution()
-{
-
-    call_open(3, FUDGE_ROOT, 27, "system/video/vga/resolution");
-    call_write(3, 0, 9, "320x200x8");
-    call_close(3);
-
-}
-
-static void set_colormap()
-{
-
-    char colormap[769];
-    unsigned int i;
-
-    call_read(FUDGE_IN, size() - 769, 769, colormap);
-
-    if (colormap[0] != PCX_COLORMAP_MAGIC)
-        return;
-
-    call_open(3, FUDGE_ROOT, 25, "system/video/vga/colormap");
-
-    for (i = 0; i < PCX_COLORMAP_SLOTS; i++)
-        call_write(3, i * 4, 3, &colormap[i * 3 + 1]);
-
-    call_close(3);
-
-}
-
-static unsigned int render_scanline(unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int read_scanline(unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     unsigned char raw[FUDGE_BSIZE];
@@ -88,6 +59,47 @@ static unsigned int render_scanline(unsigned int id, unsigned int offset, unsign
 
 }
 
+static unsigned int read_colormap(unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    if (count < 769)
+        return 0;
+
+    offset = size() - 769;
+    count = call_read(FUDGE_IN, offset, 769, buffer);
+
+    if (((char *)buffer)[0] != PCX_COLORMAP_MAGIC)
+        return 0;
+
+    return count;
+
+}
+
+static void set_resolution()
+{
+
+    call_open(3, FUDGE_ROOT, 27, "system/video/vga/resolution");
+    call_write(3, 0, 9, "320x200x8");
+    call_close(3);
+
+}
+
+static void set_colormap()
+{
+
+    char colormap[FUDGE_BSIZE];
+    unsigned int i;
+
+    read_colormap(FUDGE_IN, 0, FUDGE_BSIZE, colormap);
+    call_open(3, FUDGE_ROOT, 25, "system/video/vga/colormap");
+
+    for (i = 0; i < PCX_COLORMAP_SLOTS; i++)
+        call_write(3, i * 4, 3, &colormap[i * 3 + 1]);
+
+    call_close(3);
+
+}
+
 static void render()
 {
 
@@ -101,7 +113,7 @@ static void render()
 
         char buffer[FUDGE_BSIZE];
 
-        offset += render_scanline(FUDGE_IN, offset, FUDGE_BSIZE, buffer);
+        offset += read_scanline(FUDGE_IN, offset, FUDGE_BSIZE, buffer);
 
         call_write(FUDGE_OUT, row * width, width, buffer);
 
