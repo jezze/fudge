@@ -4,24 +4,6 @@
 
 static struct pcx_surface surface;
 
-static void set_resolution(unsigned int count, char *resolution)
-{
-
-    call_open(3, FUDGE_ROOT, 27, "system/video/vga/resolution");
-    call_write(3, 0, count, resolution);
-    call_close(3);
-
-}
-
-static void set_colormap(unsigned int count, unsigned char *colormap)
-{
-
-    call_open(3, FUDGE_ROOT, 25, "system/video/vga/colormap");
-    call_write(3, 0, count, colormap);
-    call_close(3);
-
-}
-
 static void render(struct pcx_surface *surface)
 {
 
@@ -32,8 +14,12 @@ static void render(struct pcx_surface *surface)
     unsigned int row;
 
     gfx_convert_colormap(colormap, surface->colormap, 768);
-    set_resolution(9, "320x200x8");
-    set_colormap(768, colormap);
+    call_open(3, FUDGE_ROOT, 27, "system/video/vga/resolution");
+    call_write(3, 0, 9, "320x200x8");
+    call_close(3);
+    call_open(3, FUDGE_ROOT, 25, "system/video/vga/colormap");
+    call_write(3, 0, 768, colormap);
+    call_close(3);
     call_open(3, FUDGE_ROOT, 21, "system/video/vga/data");
 
     for (row = 0; row < height; row++)
