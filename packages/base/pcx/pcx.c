@@ -1,15 +1,15 @@
 #include <fudge.h>
 #include <gfx/gfx.h>
 #include <gfx/pcx.h>
+#include <gfx/vga.h>
 
-static struct pcx_surface surface;
+static struct pcx_surface pcx;
+static struct vga_surface vga;
 
 static void render(struct pcx_surface *surface)
 {
 
     unsigned char colormap[768];
-    unsigned int width = surface->header.xend - surface->header.xstart + 1;
-    unsigned int height = surface->header.yend - surface->header.ystart + 1;
     unsigned int offset = 128;
     unsigned int row;
 
@@ -22,14 +22,14 @@ static void render(struct pcx_surface *surface)
     call_close(3);
     call_open(3, FUDGE_ROOT, 21, "system/video/vga/data");
 
-    for (row = 0; row < height; row++)
+    for (row = 0; row < surface->base.height; row++)
     {
 
         char buffer[FUDGE_BSIZE];
 
-        offset += pcx_read(surface, offset, FUDGE_BSIZE, buffer);
+        offset += surface->base.read(&surface->base, offset, FUDGE_BSIZE, buffer);
 
-        call_write(3, row * width, width, buffer);
+        call_write(3, row * surface->base.width, surface->base.width, buffer);
 
     }
 
@@ -40,9 +40,11 @@ static void render(struct pcx_surface *surface)
 void main()
 {
 
-    pcx_init_surface(&surface, FUDGE_IN);
-    pcx_load(&surface);
-    render(&surface);
+    pcx_init_surface(&pcx, FUDGE_IN);
+    pcx_load(&pcx);
+    vga_init_surface(&vga);
+    vga_load(&vga);
+    render(&pcx);
 
 }
 

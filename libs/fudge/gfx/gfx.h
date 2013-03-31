@@ -23,15 +23,6 @@ enum gfx_primitive_type
 
 };
 
-struct gfx_backend
-{
-
-    unsigned int id;
-    unsigned int (*read)(struct gfx_backend *self, unsigned int offset, unsigned int count, void *buffer);
-    unsigned int (*write)(struct gfx_backend *self, unsigned int offset, unsigned int count, void *buffer);
-
-};
-
 struct gfx_context
 {
 
@@ -51,7 +42,8 @@ struct gfx_surface
     unsigned int height;
     enum gfx_surface_bpp bpp;
     struct gfx_context context;
-    struct gfx_backend backend;
+    unsigned int (*read)(struct gfx_surface *self, unsigned int offset, unsigned int count, void *buffer);
+    unsigned int (*write)(struct gfx_surface *self, unsigned int offset, unsigned int count, void *buffer);
 
 };
 
@@ -61,6 +53,5 @@ void gfx_set_color_rgb(struct gfx_surface *self, unsigned char red, unsigned cha
 void gfx_set_color_rgba(struct gfx_surface *self, unsigned char red, unsigned char green, unsigned char blue, unsigned char alpha);
 void gfx_set_rectangle(struct gfx_surface *surface, unsigned int x, unsigned int y, unsigned int width, unsigned int height);
 void gfx_convert_colormap(void *out, void *in, unsigned int count);
-void gfx_init_backend(struct gfx_backend *backend, unsigned int id);
 void gfx_init_context(struct gfx_context *context);
-void gfx_init_surface(struct gfx_surface *surface, unsigned int id, unsigned int width, unsigned int height, enum gfx_surface_bpp bpp);
+void gfx_init_surface(struct gfx_surface *surface, unsigned int (*read)(struct gfx_surface *self, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write)(struct gfx_surface *self, unsigned int offset, unsigned int count, void *buffer));
