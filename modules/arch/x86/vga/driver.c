@@ -5,13 +5,13 @@
 #include <arch/x86/io/io.h>
 #include "vga.h"
 
-static unsigned char wregs[] = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x13};
+static unsigned char windex[] = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x13};
 static unsigned char w256[] = {0x5F, 0x3F, 0x40, 0x82, 0x4A, 0x9A, 0x20};
 static unsigned char w320[] = {0x5F, 0x4F, 0x50, 0x82, 0x54, 0x80, 0x28};
 static unsigned char w360[] = {0x6B, 0x59, 0x5A, 0x8E, 0x5E, 0x8A, 0x2D};
 static unsigned char w376[] = {0x6E, 0x5D, 0x5E, 0x91, 0x62, 0x8F, 0x2F};
 static unsigned char w400[] = {0x70, 0x63, 0x64, 0x92, 0x65, 0x82, 0x32};
-static unsigned char hregs[] = {0x06, 0x07, 0x09, 0x10, 0x11, 0x12, 0x15, 0x16};
+static unsigned char hindex[] = {0x06, 0x07, 0x09, 0x10, 0x11, 0x12, 0x15, 0x16};
 static unsigned char h200[] = {0xBF, 0x1F, 0x41, 0x9C, 0x8E, 0x8F, 0x96, 0xB9};
 static unsigned char h224[] = {0x0B, 0x3E, 0x41, 0xDA, 0x9C, 0xBF, 0xC7, 0x04};
 static unsigned char h240[] = {0x0D, 0x3E, 0x41, 0xEA, 0xAC, 0xDF, 0xE7, 0x06};
@@ -168,17 +168,17 @@ static void mode(struct video_interface *interface, int chain4)
     io_outb(VGA_REG_MISC_CTRL, misc);
 
     for (a = 0; a < 7; a++)
-        write16i(VGA_REG_CR_COLOR_INDEX, wregs[a],  w[a]);
+        write16i(VGA_REG_CR_COLOR_INDEX, windex[a], w[a]);
 
     for (a = 0; a < 8; a++)
-        write16i(VGA_REG_CR_COLOR_INDEX, hregs[a],  h[a]);
+        write16i(VGA_REG_CR_COLOR_INDEX, hindex[a], h[a]);
 
     if (chain4)
     {
     
         write16i(VGA_REG_CR_COLOR_INDEX, VGA_INDEX_CR14, 0x40);
         write16i(VGA_REG_CR_COLOR_INDEX, VGA_INDEX_CR17, 0xA3);
-        write16i(VGA_REG_SR_INDEX, VGA_INDEX_SR04, 0x0E);
+        write16i(VGA_REG_SR_INDEX, VGA_INDEX_SR04, VGA_SR4_EXTENDED | VGA_SR4_ODDEVEN | VGA_SR4_CHAIN);
 
     }
 
@@ -187,7 +187,7 @@ static void mode(struct video_interface *interface, int chain4)
 
         write16i(VGA_REG_CR_COLOR_INDEX, VGA_INDEX_CR14, 0x00);
         write16i(VGA_REG_CR_COLOR_INDEX, VGA_INDEX_CR17, 0xE3);
-        write16i(VGA_REG_SR_INDEX, VGA_INDEX_SR04, 0x06);
+        write16i(VGA_REG_SR_INDEX, VGA_INDEX_SR04, VGA_SR4_EXTENDED | VGA_SR4_ODDEVEN);
 
     }
 
@@ -196,10 +196,10 @@ static void mode(struct video_interface *interface, int chain4)
     write16i(VGA_REG_GR_INDEX, VGA_INDEX_GR05, VGA_GR5_256MODE);
     write16i(VGA_REG_GR_INDEX, VGA_INDEX_GR06, VGA_GR6_GRAPHICS | VGA_GR6_EGAVGA);
     io_inb(VGA_REG_FC_COLOR_CTRL);
-    io_outb(VGA_REG_AR_INDEX, 0x30); /* DISPLAY ENABLE, SET AR REG 0x10 CONTROLLER MODE */
-    io_outb(VGA_REG_AR_INDEX, 0x41); /* GRAPHICS MODE = (1 << 0), PIXEL DOUBLE CLOCK = (1 << 6)  */
-    io_outb(VGA_REG_AR_INDEX, 0x33); /* DISPLAY ENABLE, SET AR REG 0x13 */
-    io_outb(VGA_REG_AR_INDEX, 0x00); /* NO PANNING FOR PIXELS */
+    io_outb(VGA_REG_AR_INDEX, VGA_INDEX_AR10);
+    io_outb(VGA_REG_AR_INDEX, VGA_AR10_GRAPHICS | VGA_AR10_PIXCLK);
+    io_outb(VGA_REG_AR_INDEX, VGA_INDEX_AR13);
+    io_outb(VGA_REG_AR_INDEX, 0x00);
 
     for (a = 0; a < 16; a++)
     {
@@ -209,7 +209,7 @@ static void mode(struct video_interface *interface, int chain4)
 
     }
 
-    io_outb(VGA_REG_AR_INDEX, 0x20);
+    io_outb(VGA_REG_AR_INDEX, VGA_AR_ENABLE);
 
 }
 

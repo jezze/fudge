@@ -89,6 +89,16 @@
 #define VGA_INDEX_SR03                  0x03
 #define VGA_INDEX_SR04                  0x04
 
+#define VGA_AR_ENABLE                   (1 << 5)
+
+#define VGA_AR10_GRAPHICS               (1 << 0)
+#define VGA_AR10_MDA                    (1 << 1)
+#define VGA_AR10_LINE                   (1 << 2)
+#define VGA_AR10_BLINK                  (1 << 3)
+#define VGA_AR10_PIXPAN                 (1 << 5)
+#define VGA_AR10_PIXCLK                 (1 << 6)
+#define VGA_AR10_ENABLE14               (1 << 7)
+
 #define VGA_MISC_MONO                   (0 << 0)
 #define VGA_MISC_COLOR                  (1 << 0)
 #define VGA_MISC_DISABLE                (0 << 1)
