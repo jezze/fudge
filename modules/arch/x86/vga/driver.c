@@ -35,12 +35,20 @@ static void clear(struct video_interface *interface)
 
 }
 
+static void write16i(unsigned short port, unsigned char index, unsigned char value)
+{
+
+    io_outw(port, (value << 8) | index);
+
+}
+
 static void mode(struct video_interface *interface, int chain4)
 {
 
-    unsigned char *w, *h;
     unsigned char misc = VGA_MISC_COLOR | VGA_MISC_ENABLE | VGA_MISC_PAGESELECT;
-    int a;
+    unsigned char *w;
+    unsigned char *h;
+    unsigned int a;
 
     if (chain4 && interface->xres * interface->yres > 65536)
         return;
@@ -160,33 +168,33 @@ static void mode(struct video_interface *interface, int chain4)
     io_outb(VGA_REG_MISC_CTRL, misc);
 
     for (a = 0; a < 7; a++)
-        io_outw(VGA_REG_CR_COLOR_INDEX, (w[a] << 8) + wregs[a]);
+        write16i(VGA_REG_CR_COLOR_INDEX, wregs[a],  w[a]);
 
     for (a = 0; a < 8; a++)
-        io_outw(VGA_REG_CR_COLOR_INDEX, (h[a] << 8) + hregs[a]);
+        write16i(VGA_REG_CR_COLOR_INDEX, hregs[a],  h[a]);
 
     if (chain4)
     {
     
-        io_outw(VGA_REG_CR_COLOR_INDEX, 0x4014);
-        io_outw(VGA_REG_CR_COLOR_INDEX, 0xA317);
-        io_outw(VGA_REG_SR_INDEX, 0x0E04);
+        write16i(VGA_REG_CR_COLOR_INDEX, VGA_INDEX_CR14, 0x40);
+        write16i(VGA_REG_CR_COLOR_INDEX, VGA_INDEX_CR17, 0xA3);
+        write16i(VGA_REG_SR_INDEX, VGA_INDEX_SR04, 0x0E);
 
     }
 
     else
     {
 
-        io_outw(VGA_REG_CR_COLOR_INDEX, 0x0014);
-        io_outw(VGA_REG_CR_COLOR_INDEX, 0xE317);
-        io_outw(VGA_REG_SR_INDEX, 0x0604);
+        write16i(VGA_REG_CR_COLOR_INDEX, VGA_INDEX_CR14, 0x00);
+        write16i(VGA_REG_CR_COLOR_INDEX, VGA_INDEX_CR17, 0xE3);
+        write16i(VGA_REG_SR_INDEX, VGA_INDEX_SR04, 0x06);
 
     }
 
-    io_outw(VGA_REG_SR_INDEX, 0x0101); /* ASYNC RESET (1 << 0) */
-    io_outw(VGA_REG_SR_INDEX, 0x0F02); /* HALFCLOCK (1 << 3) */
-    io_outw(VGA_REG_GR_INDEX, 0x4005); /* 256 COLOR MODE = (1 << 6) */
-    io_outw(VGA_REG_GR_INDEX, 0x0506); /* GRAPHICS MODE = (1 << 0), USE 0xA0000 MMAP (1 << 2) */
+    write16i(VGA_REG_SR_INDEX, VGA_INDEX_SR01, VGA_SR1_DIV8);
+    write16i(VGA_REG_SR_INDEX, VGA_INDEX_SR02, VGA_SR2_ENABLE0 | VGA_SR2_ENABLE1 | VGA_SR2_ENABLE2 | VGA_SR2_ENABLE3);
+    write16i(VGA_REG_GR_INDEX, VGA_INDEX_GR05, VGA_GR5_256MODE);
+    write16i(VGA_REG_GR_INDEX, VGA_INDEX_GR06, VGA_GR6_GRAPHICS | VGA_GR6_EGAVGA);
     io_inb(VGA_REG_FC_COLOR_CTRL);
     io_outb(VGA_REG_AR_INDEX, 0x30); /* DISPLAY ENABLE, SET AR REG 0x10 CONTROLLER MODE */
     io_outb(VGA_REG_AR_INDEX, 0x41); /* GRAPHICS MODE = (1 << 0), PIXEL DOUBLE CLOCK = (1 << 6)  */
@@ -246,25 +254,25 @@ static unsigned int write_terminal_data(struct terminal_interface *self, unsigne
         if (c >= ' ')
         {
 
-            ((char *)VGA_FB_ADDRESS)[driver->cursor.offset * 2] = c;
-            ((char *)VGA_FB_ADDRESS)[driver->cursor.offset * 2 + 1] = driver->cursor.color;
+            ((char *)VGA_TEXT_ADDRESS)[driver->cursor.offset * 2] = c;
+            ((char *)VGA_TEXT_ADDRESS)[driver->cursor.offset * 2 + 1] = driver->cursor.color;
 
             driver->cursor.offset++;
 
         }
 
-        if (driver->cursor.offset >= VGA_FB_SIZE)
+        if (driver->cursor.offset >= VGA_TEXT_SIZE)
         {
 
             unsigned int a;
 
-            memory_copy((void *)VGA_FB_ADDRESS, (void *)(VGA_FB_ADDRESS + 80 * 2), 80 * 24 * 2);
+            memory_copy((void *)VGA_TEXT_ADDRESS, (void *)(VGA_TEXT_ADDRESS + 80 * 2), 80 * 24 * 2);
 
             for (a = 80 * 24 * 2; a < 80 * 25 * 2; a += 2)
             {
 
-                ((char *)VGA_FB_ADDRESS)[a] = ' ';
-                ((char *)VGA_FB_ADDRESS)[a + 1] = driver->cursor.color;
+                ((char *)VGA_TEXT_ADDRESS)[a] = ' ';
+                ((char *)VGA_TEXT_ADDRESS)[a + 1] = driver->cursor.color;
 
             }
 
@@ -272,10 +280,8 @@ static unsigned int write_terminal_data(struct terminal_interface *self, unsigne
 
         }
 
-        io_outb(VGA_REG_CR_COLOR_INDEX, 0x0E);
-        io_outb(VGA_REG_CR_COLOR_DATA, driver->cursor.offset >> 8);
-        io_outb(VGA_REG_CR_COLOR_INDEX, 0x0F);
-        io_outb(VGA_REG_CR_COLOR_DATA, driver->cursor.offset);
+        write16i(VGA_REG_CR_COLOR_INDEX, VGA_INDEX_CR0E, driver->cursor.offset >> 8);
+        write16i(VGA_REG_CR_COLOR_INDEX, VGA_INDEX_CR0F, driver->cursor.offset);
 
     }
 
@@ -313,10 +319,10 @@ static unsigned int write_video_colormap(struct video_interface *self, unsigned 
     for (i = offset / 3; i < count; i += 3)
     {
 
-        io_outb(0x03C8, i / 3);
-        io_outb(0x03C9, c[i + 0]);
-        io_outb(0x03C9, c[i + 1]);
-        io_outb(0x03C9, c[i + 2]);
+        io_outb(VGA_REG_DAC_CTRL, i / 3);
+        io_outb(VGA_REG_DAC_DATA, c[i + 0]);
+        io_outb(VGA_REG_DAC_DATA, c[i + 1]);
+        io_outb(VGA_REG_DAC_DATA, c[i + 2]);
 
     }
 
@@ -330,13 +336,13 @@ static void start(struct base_driver *self)
     struct vga_driver *driver = (struct vga_driver *)self;
     unsigned int a;
 
-    driver->cursor.color = (VGA_FB_COLOR_BLACK << 4) | (VGA_FB_COLOR_WHITE & 0x0F);
+    driver->cursor.color = 0x0F;
 
     for (a = 0; a < 80 * 25 * 2; a += 2)
     {
 
-        ((char *)VGA_FB_ADDRESS)[a] = ' ';
-        ((char *)VGA_FB_ADDRESS)[a + 1] = driver->cursor.color;
+        ((char *)VGA_TEXT_ADDRESS)[a] = ' ';
+        ((char *)VGA_TEXT_ADDRESS)[a + 1] = driver->cursor.color;
 
     }
 
