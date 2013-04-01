@@ -157,54 +157,54 @@ static void mode(struct video_interface *interface, int chain4)
 
     }
 
-    io_outb(VGA_REG_C2, settings);
-    io_outw(VGA_REG_D4, 0x0E11);
+    io_outb(VGA_REG_MISC_WRITE, settings);
+    io_outw(VGA_REG_CR_INDEX, 0x0E11);
 
     for (a = 0; a < 7; a++)
-        io_outw(VGA_REG_D4, (unsigned short)((w[a] << 8) + hor_regs[a]));
+        io_outw(VGA_REG_CR_INDEX, (unsigned short)((w[a] << 8) + hor_regs[a]));
 
     for (a = 0; a < 8; a++)
-        io_outw(VGA_REG_D4, (unsigned short)((h[a] << 8) + ver_regs[a]));
+        io_outw(VGA_REG_CR_INDEX, (unsigned short)((h[a] << 8) + ver_regs[a]));
 
-    io_outw(VGA_REG_D4, 0x0008);
+    io_outw(VGA_REG_CR_INDEX, 0x0008);
 
     if (chain4)
     {
     
-        io_outw(VGA_REG_D4, 0x4014);
-        io_outw(VGA_REG_D4, 0xA317);
-        io_outw(VGA_REG_C4, 0x0E04);
+        io_outw(VGA_REG_CR_INDEX, 0x4014);
+        io_outw(VGA_REG_CR_INDEX, 0xA317);
+        io_outw(VGA_REG_SR_INDEX, 0x0E04);
 
     }
 
     else
     {
 
-        io_outw(VGA_REG_D4, 0x0014);
-        io_outw(VGA_REG_D4, 0xE317);
-        io_outw(VGA_REG_C4, 0x0604);
+        io_outw(VGA_REG_CR_INDEX, 0x0014);
+        io_outw(VGA_REG_CR_INDEX, 0xE317);
+        io_outw(VGA_REG_SR_INDEX, 0x0604);
 
     }
 
-    io_outw(VGA_REG_C4, 0x0101);
-    io_outw(VGA_REG_C4, 0x0F02);
-    io_outw(VGA_REG_CE, 0x4005);
-    io_outw(VGA_REG_CE, 0x0506);
-    io_inb(VGA_REG_DA);
-    io_outb(VGA_REG_C0, 0x30);
-    io_outb(VGA_REG_C0, 0x41);
-    io_outb(VGA_REG_C0, 0x33);
-    io_outb(VGA_REG_C0, 0x00);
+    io_outw(VGA_REG_SR_INDEX, 0x0101);
+    io_outw(VGA_REG_SR_INDEX, 0x0F02);
+    io_outw(VGA_REG_GR_INDEX, 0x4005);
+    io_outw(VGA_REG_GR_INDEX, 0x0506);
+    io_inb(VGA_REG_FC_WRITE);
+    io_outb(VGA_REG_AR_INDEX, 0x30);
+    io_outb(VGA_REG_AR_INDEX, 0x41);
+    io_outb(VGA_REG_AR_INDEX, 0x33);
+    io_outb(VGA_REG_AR_INDEX, 0x00);
 
     for (a = 0; a < 16; a++)
     {
 
-        io_outb(VGA_REG_C0, (unsigned char)a);
-        io_outb(VGA_REG_C0, (unsigned char)a);
+        io_outb(VGA_REG_AR_INDEX, (unsigned char)a);
+        io_outb(VGA_REG_AR_INDEX, (unsigned char)a);
 
     }
 
-    io_outb(VGA_REG_C0, 0x20);
+    io_outb(VGA_REG_AR_INDEX, 0x20);
 
 }
 
@@ -275,10 +275,10 @@ static unsigned int write_terminal_data(struct terminal_interface *self, unsigne
 
         }
 
-        io_outb(VGA_REG_D4, 0x0E);
-        io_outb(VGA_REG_D5, driver->cursor.offset >> 8);
-        io_outb(VGA_REG_D4, 0x0F);
-        io_outb(VGA_REG_D5, driver->cursor.offset);
+        io_outb(VGA_REG_CR_INDEX, 0x0E);
+        io_outb(VGA_REG_CR_DATA, driver->cursor.offset >> 8);
+        io_outb(VGA_REG_CR_INDEX, 0x0F);
+        io_outb(VGA_REG_CR_DATA, driver->cursor.offset);
 
     }
 
