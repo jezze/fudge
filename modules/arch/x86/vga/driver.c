@@ -5,24 +5,24 @@
 #include <arch/x86/io/io.h>
 #include "vga.h"
 
-static unsigned char hor_regs[] = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x13};
-static unsigned char width_256[] = {0x5F, 0x3F, 0x40, 0x82, 0x4A, 0x9A, 0x20};
-static unsigned char width_320[] = {0x5F, 0x4F, 0x50, 0x82, 0x54, 0x80, 0x28};
-static unsigned char width_360[] = {0x6B, 0x59, 0x5A, 0x8E, 0x5E, 0x8A, 0x2D};
-static unsigned char width_376[] = {0x6E, 0x5D, 0x5E, 0x91, 0x62, 0x8F, 0x2F};
-static unsigned char width_400[] = {0x70, 0x63, 0x64, 0x92, 0x65, 0x82, 0x32};
-static unsigned char ver_regs[] = {0x06, 0x07, 0x09, 0x10, 0x11, 0x12, 0x15, 0x16};
-static unsigned char height_200[] = {0xBF, 0x1F, 0x41, 0x9C, 0x8E, 0x8F, 0x96, 0xB9};
-static unsigned char height_224[] = {0x0B, 0x3E, 0x41, 0xDA, 0x9C, 0xBF, 0xC7, 0x04};
-static unsigned char height_240[] = {0x0D, 0x3E, 0x41, 0xEA, 0xAC, 0xDF, 0xE7, 0x06};
-static unsigned char height_256[] = {0x23, 0xB2, 0x61, 0x0A, 0xAC, 0xFF, 0x07, 0x1A};
-static unsigned char height_270[] = {0x30, 0xF0, 0x61, 0x20, 0xA9, 0x1B, 0x1F, 0x2F};
-static unsigned char height_300[] = {0x70, 0xF0, 0x61, 0x5B, 0x8C, 0x57, 0x58, 0x70};
-static unsigned char height_360[] = {0xBF, 0x1F, 0x40, 0x88, 0x85, 0x67, 0x6D, 0xBA};
-static unsigned char height_400[] = {0xBF, 0x1F, 0x40, 0x9C, 0x8E, 0x8F, 0x96, 0xB9};
-static unsigned char height_480[] = {0x0D, 0x3E, 0x40, 0xEA, 0xAC, 0xDF, 0xE7, 0x06};
-static unsigned char height_564[] = {0x62, 0xF0, 0x60, 0x37, 0x89, 0x33, 0x3C, 0x5C};
-static unsigned char height_600[] = {0x70, 0xF0, 0x60, 0x5B, 0x8C, 0x57, 0x58, 0x70};
+static unsigned char wregs[] = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x13};
+static unsigned char w256[] = {0x5F, 0x3F, 0x40, 0x82, 0x4A, 0x9A, 0x20};
+static unsigned char w320[] = {0x5F, 0x4F, 0x50, 0x82, 0x54, 0x80, 0x28};
+static unsigned char w360[] = {0x6B, 0x59, 0x5A, 0x8E, 0x5E, 0x8A, 0x2D};
+static unsigned char w376[] = {0x6E, 0x5D, 0x5E, 0x91, 0x62, 0x8F, 0x2F};
+static unsigned char w400[] = {0x70, 0x63, 0x64, 0x92, 0x65, 0x82, 0x32};
+static unsigned char hregs[] = {0x06, 0x07, 0x09, 0x10, 0x11, 0x12, 0x15, 0x16};
+static unsigned char h200[] = {0xBF, 0x1F, 0x41, 0x9C, 0x8E, 0x8F, 0x96, 0xB9};
+static unsigned char h224[] = {0x0B, 0x3E, 0x41, 0xDA, 0x9C, 0xBF, 0xC7, 0x04};
+static unsigned char h240[] = {0x0D, 0x3E, 0x41, 0xEA, 0xAC, 0xDF, 0xE7, 0x06};
+static unsigned char h256[] = {0x23, 0xB2, 0x61, 0x0A, 0xAC, 0xFF, 0x07, 0x1A};
+static unsigned char h270[] = {0x30, 0xF0, 0x61, 0x20, 0xA9, 0x1B, 0x1F, 0x2F};
+static unsigned char h300[] = {0x70, 0xF0, 0x61, 0x5B, 0x8C, 0x57, 0x58, 0x70};
+static unsigned char h360[] = {0xBF, 0x1F, 0x40, 0x88, 0x85, 0x67, 0x6D, 0xBA};
+static unsigned char h400[] = {0xBF, 0x1F, 0x40, 0x9C, 0x8E, 0x8F, 0x96, 0xB9};
+static unsigned char h480[] = {0x0D, 0x3E, 0x40, 0xEA, 0xAC, 0xDF, 0xE7, 0x06};
+static unsigned char h564[] = {0x62, 0xF0, 0x60, 0x37, 0x89, 0x33, 0x3C, 0x5C};
+static unsigned char h600[] = {0x70, 0xF0, 0x60, 0x5B, 0x8C, 0x57, 0x58, 0x70};
 
 static void clear(struct video_interface *interface)
 {
@@ -39,7 +39,7 @@ static void mode(struct video_interface *interface, int chain4)
 {
 
     unsigned char *w, *h;
-    unsigned char settings;
+    unsigned char misc = VGA_MISC_COLOR | VGA_MISC_ENABLE | VGA_MISC_PAGESELECT;
     int a;
 
     if (chain4 && interface->xres * interface->yres > 65536)
@@ -49,32 +49,32 @@ static void mode(struct video_interface *interface, int chain4)
     {
 
         case 256:
-            w = width_256;
-            settings = VGA_RESOLUTION_COM + VGA_RESOLUTION_W256;
+            w = w256;
+            misc |= VGA_MISC_VCLK0;
 
             break;
 
         case 320:
-            w = width_320;
-            settings = VGA_RESOLUTION_COM + VGA_RESOLUTION_W320;
+            w = w320;
+            misc |= VGA_MISC_VCLK0;
 
             break;
 
         case 360:
-            w = width_360;
-            settings = VGA_RESOLUTION_COM + VGA_RESOLUTION_W360;
+            w = w360;
+            misc |= VGA_MISC_VCLK1;
 
             break;
 
         case 376:
-            w = width_376;
-            settings = VGA_RESOLUTION_COM + VGA_RESOLUTION_W376;
+            w = w376;
+            misc |= VGA_MISC_VCLK1;
 
             break;
 
         case 400:
-            w = width_400;
-            settings = VGA_RESOLUTION_COM + VGA_RESOLUTION_W400;
+            w = w400;
+            misc |= VGA_MISC_VCLK1;
 
             break;
 
@@ -87,68 +87,68 @@ static void mode(struct video_interface *interface, int chain4)
     {
 
         case 200:
-            h = height_200;
-            settings |= VGA_RESOLUTION_H200;
+            h = h200;
+            misc |= VGA_MISC_SYNC400;
 
             break;
 
         case 224:
-            h = height_224;
-            settings |= VGA_RESOLUTION_H224;
+            h = h224;
+            misc |= VGA_MISC_SYNC480;
 
             break;
 
         case 240:
-            h = height_240;
-            settings |= VGA_RESOLUTION_H240;
+            h = h240;
+            misc |= VGA_MISC_SYNC480;
 
             break;
 
         case 256:
-            h = height_256;
-            settings |= VGA_RESOLUTION_H256;
+            h = h256;
+            misc |= VGA_MISC_SYNC480;
 
             break;
 
         case 270:
-            h = height_270;
-            settings |= VGA_RESOLUTION_H270;
+            h = h270;
+            misc |= VGA_MISC_SYNC480;
 
             break;
 
         case 300:
-            h = height_300;
-            settings |= VGA_RESOLUTION_H300;
+            h = h300;
+            misc |= VGA_MISC_SYNC480;
 
             break;
 
         case 360:
-            h = height_360;
-            settings |= VGA_RESOLUTION_H360;
+            h = h360;
+            misc |= VGA_MISC_SYNC400;
 
             break;
 
         case 400:
-            h = height_400;
-            settings |= VGA_RESOLUTION_H400;
+            h = h400;
+            misc |= VGA_MISC_SYNC400;
 
             break;
 
         case 480:
-            h = height_480;
-            settings |= VGA_RESOLUTION_H480;
+            h = h480;
+            misc |= VGA_MISC_SYNC480;
 
             break;
 
         case 564:
-            h = height_564;
-            settings |= VGA_RESOLUTION_H564;
+            h = h564;
+            misc |= VGA_MISC_SYNC480;
 
             break;
 
         case 600:
-            h = height_600;
-            settings |= VGA_RESOLUTION_H600;
+            h = h600;
+            misc |= VGA_MISC_SYNC480;
 
             break;
 
@@ -157,13 +157,13 @@ static void mode(struct video_interface *interface, int chain4)
 
     }
 
-    io_outb(VGA_REG_MISC_CTRL, settings);
+    io_outb(VGA_REG_MISC_CTRL, misc);
 
     for (a = 0; a < 7; a++)
-        io_outw(VGA_REG_CR_COLOR_INDEX, (unsigned short)((w[a] << 8) + hor_regs[a]));
+        io_outw(VGA_REG_CR_COLOR_INDEX, (w[a] << 8) + wregs[a]);
 
     for (a = 0; a < 8; a++)
-        io_outw(VGA_REG_CR_COLOR_INDEX, (unsigned short)((h[a] << 8) + ver_regs[a]));
+        io_outw(VGA_REG_CR_COLOR_INDEX, (h[a] << 8) + hregs[a]);
 
     if (chain4)
     {

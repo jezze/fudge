@@ -20,23 +20,18 @@
 #define VGA_REG_CR_COLOR_DATA           0x03D5
 #define VGA_REG_FC_COLOR_CTRL           0x03DA
 
-#define VGA_RESOLUTION_COM              0x63
-#define VGA_RESOLUTION_W256             0x00
-#define VGA_RESOLUTION_W320             0x00
-#define VGA_RESOLUTION_W360             0x04
-#define VGA_RESOLUTION_W376             0x04
-#define VGA_RESOLUTION_W400             0x04
-#define VGA_RESOLUTION_H200             0x00
-#define VGA_RESOLUTION_H224             0x80
-#define VGA_RESOLUTION_H240             0x80
-#define VGA_RESOLUTION_H256             0x80
-#define VGA_RESOLUTION_H270             0x80
-#define VGA_RESOLUTION_H300             0x80
-#define VGA_RESOLUTION_H360             0x00
-#define VGA_RESOLUTION_H400             0x00
-#define VGA_RESOLUTION_H480             0x80
-#define VGA_RESOLUTION_H564             0x80
-#define VGA_RESOLUTION_H600             0x80
+#define VGA_MISC_MONO                   (0 << 0)
+#define VGA_MISC_COLOR                  (1 << 0)
+#define VGA_MISC_DISABLE                (0 << 1)
+#define VGA_MISC_ENABLE                 (1 << 1)
+#define VGA_MISC_VCLK0                  (0 << 2)
+#define VGA_MISC_VCLK1                  (1 << 2)
+#define VGA_MISC_VCLK2                  (2 << 2)
+#define VGA_MISC_VCLK3                  (3 << 2)
+#define VGA_MISC_PAGESELECT             (1 << 5)
+#define VGA_MISC_SYNC400                (1 << 6)
+#define VGA_MISC_SYNC350                (2 << 6)
+#define VGA_MISC_SYNC480                (3 << 6)
 
 #define VGA_FB_ADDRESS                  0x000B8000
 #define VGA_FB_SIZE                     2000
