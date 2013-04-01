@@ -157,22 +157,19 @@ static void mode(struct video_interface *interface, int chain4)
 
     }
 
-    io_outb(VGA_REG_MISC_WRITE, settings);
-    io_outw(VGA_REG_CR_INDEX, 0x0E11);
+    io_outb(VGA_REG_MISC_CTRL, settings);
 
     for (a = 0; a < 7; a++)
-        io_outw(VGA_REG_CR_INDEX, (unsigned short)((w[a] << 8) + hor_regs[a]));
+        io_outw(VGA_REG_CR_COLOR_INDEX, (unsigned short)((w[a] << 8) + hor_regs[a]));
 
     for (a = 0; a < 8; a++)
-        io_outw(VGA_REG_CR_INDEX, (unsigned short)((h[a] << 8) + ver_regs[a]));
-
-    io_outw(VGA_REG_CR_INDEX, 0x0008);
+        io_outw(VGA_REG_CR_COLOR_INDEX, (unsigned short)((h[a] << 8) + ver_regs[a]));
 
     if (chain4)
     {
     
-        io_outw(VGA_REG_CR_INDEX, 0x4014);
-        io_outw(VGA_REG_CR_INDEX, 0xA317);
+        io_outw(VGA_REG_CR_COLOR_INDEX, 0x4014);
+        io_outw(VGA_REG_CR_COLOR_INDEX, 0xA317);
         io_outw(VGA_REG_SR_INDEX, 0x0E04);
 
     }
@@ -180,27 +177,27 @@ static void mode(struct video_interface *interface, int chain4)
     else
     {
 
-        io_outw(VGA_REG_CR_INDEX, 0x0014);
-        io_outw(VGA_REG_CR_INDEX, 0xE317);
+        io_outw(VGA_REG_CR_COLOR_INDEX, 0x0014);
+        io_outw(VGA_REG_CR_COLOR_INDEX, 0xE317);
         io_outw(VGA_REG_SR_INDEX, 0x0604);
 
     }
 
-    io_outw(VGA_REG_SR_INDEX, 0x0101);
-    io_outw(VGA_REG_SR_INDEX, 0x0F02);
-    io_outw(VGA_REG_GR_INDEX, 0x4005);
-    io_outw(VGA_REG_GR_INDEX, 0x0506);
-    io_inb(VGA_REG_FC_WRITE);
-    io_outb(VGA_REG_AR_INDEX, 0x30);
-    io_outb(VGA_REG_AR_INDEX, 0x41);
-    io_outb(VGA_REG_AR_INDEX, 0x33);
-    io_outb(VGA_REG_AR_INDEX, 0x00);
+    io_outw(VGA_REG_SR_INDEX, 0x0101); /* ASYNC RESET (1 << 0) */
+    io_outw(VGA_REG_SR_INDEX, 0x0F02); /* HALFCLOCK (1 << 3) */
+    io_outw(VGA_REG_GR_INDEX, 0x4005); /* 256 COLOR MODE = (1 << 6) */
+    io_outw(VGA_REG_GR_INDEX, 0x0506); /* GRAPHICS MODE = (1 << 0), USE 0xA0000 MMAP (1 << 2) */
+    io_inb(VGA_REG_FC_COLOR_CTRL);
+    io_outb(VGA_REG_AR_INDEX, 0x30); /* DISPLAY ENABLE, SET AR REG 0x10 CONTROLLER MODE */
+    io_outb(VGA_REG_AR_INDEX, 0x41); /* GRAPHICS MODE = (1 << 0), PIXEL DOUBLE CLOCK = (1 << 6)  */
+    io_outb(VGA_REG_AR_INDEX, 0x33); /* DISPLAY ENABLE, SET AR REG 0x13 */
+    io_outb(VGA_REG_AR_INDEX, 0x00); /* NO PANNING FOR PIXELS */
 
     for (a = 0; a < 16; a++)
     {
 
-        io_outb(VGA_REG_AR_INDEX, (unsigned char)a);
-        io_outb(VGA_REG_AR_INDEX, (unsigned char)a);
+        io_outb(VGA_REG_AR_INDEX, a);
+        io_outb(VGA_REG_AR_INDEX, a);
 
     }
 
@@ -275,10 +272,10 @@ static unsigned int write_terminal_data(struct terminal_interface *self, unsigne
 
         }
 
-        io_outb(VGA_REG_CR_INDEX, 0x0E);
-        io_outb(VGA_REG_CR_DATA, driver->cursor.offset >> 8);
-        io_outb(VGA_REG_CR_INDEX, 0x0F);
-        io_outb(VGA_REG_CR_DATA, driver->cursor.offset);
+        io_outb(VGA_REG_CR_COLOR_INDEX, 0x0E);
+        io_outb(VGA_REG_CR_COLOR_DATA, driver->cursor.offset >> 8);
+        io_outb(VGA_REG_CR_COLOR_INDEX, 0x0F);
+        io_outb(VGA_REG_CR_COLOR_DATA, driver->cursor.offset);
 
     }
 

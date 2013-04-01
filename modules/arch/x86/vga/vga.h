@@ -1,43 +1,24 @@
 #define VGA_ADDRESS                     0x000A0000
 
+#define VGA_REG_CR_MONO_INDEX           0x03B4
+#define VGA_REG_CR_MONO_DATA            0x03B5
+#define VGA_REG_FC_MONO_CTRL            0x03BA
 #define VGA_REG_AR_INDEX                0x03C0
 #define VGA_REG_AR_DATA                 0x03C1
-#define VGA_REG_MISC_WRITE              0x03C2
+#define VGA_REG_MISC_CTRL               0x03C2
 #define VGA_REG_SR_INDEX                0x03C4
 #define VGA_REG_SR_DATA                 0x03C5
-#define VGA_REG_PIXMASK                 0x03C6
-#define VGA_REG_DAC_STATE               0x03C7
-#define VGA_REG_PAL_READ                0x03C7
-#define VGA_REG_PAL_WRITE               0x03C8
-#define VGA_REG_PAL_DATA                0x03C9
-#define VGA_REG_FC_READ                 0x03CA
-#define VGA_REG_MISC_READ               0x03CC
+#define VGA_REG_DAC_PIXMASK             0x03C6
+#define VGA_REG_DAC_STATUS              0x03C7
+#define VGA_REG_DAC_CTRL                0x03C8
+#define VGA_REG_DAC_DATA                0x03C9
+#define VGA_REG_FC_STATUS               0x03CA
+#define VGA_REG_MISC_DATA               0x03CC
 #define VGA_REG_GR_INDEX                0x03CE
 #define VGA_REG_GR_DATA                 0x03CF
-#define VGA_REG_CR_INDEX                0x03D4
-#define VGA_REG_CR_DATA                 0x03D5
-#define VGA_REG_FC_WRITE                0x03DA
-
-#define VGA_MISC_CRTCIO                 (1 << 0)
-#define VGA_MISC_ENABLE                 (1 << 1)
-#define VGA_MISC_CLOCK0                 (1 << 2)
-#define VGA_MISC_CLOCK1                 (1 << 3)
-#define VGA_MISC_PAGESELECT             (1 << 5)
-#define VGA_MISC_HSYNC                  (1 << 6)
-#define VGA_MISC_VSYNC                  (1 << 7)
-
-#define VGA_FC_VSYNC                    (1 << 3)
-
-#define VGA_MISC_FEAT_DACSENDING        (1 << 4)
-#define VGA_MISC_FEAT_INTPENDING        (1 << 7)
-
-#define VGA_MISC_STAT_ENABLE            (1 << 0)
-#define VGA_MISC_STAT_VRETRACE          (1 << 3)
-#define VGA_MISC_STAT_DIAG0             (1 << 4)
-#define VGA_MISC_STAT_DIAG1             (1 << 5)
-
-#define VGA_DAC_STATE_STATE0            (1 << 0)
-#define VGA_DAC_STATE_STATE1            (1 << 1)
+#define VGA_REG_CR_COLOR_INDEX          0x03D4
+#define VGA_REG_CR_COLOR_DATA           0x03D5
+#define VGA_REG_FC_COLOR_CTRL           0x03DA
 
 #define VGA_RESOLUTION_COM              0x63
 #define VGA_RESOLUTION_W256             0x00
