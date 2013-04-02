@@ -9,6 +9,7 @@ void main()
     unsigned int count;
     unsigned int offset;
     unsigned int start;
+    unsigned int o = 0;
 
     for (offset = 0; (count = call_read(FUDGE_CWD, offset, FUDGE_BSIZE, buffer)); offset += start)
     {
@@ -24,7 +25,7 @@ void main()
                 continue;
 
             if (memory_match(buffer + start, buffermatch, countmatch))
-                call_write(FUDGE_OUT, 0, i - start + 1, buffer + start);
+                o += call_write(FUDGE_OUT, o, i - start + 1, buffer + start);
 
             start = i + 1;
 
