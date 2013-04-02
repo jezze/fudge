@@ -6,6 +6,9 @@ void load_modules_core(unsigned int id)
     call_open(FUDGE_IN, FUDGE_CWD, 9, "system.ko");
     call_spawn(id);
     call_close(FUDGE_IN);
+    call_open(FUDGE_IN, FUDGE_CWD, 7, "temp.ko");
+    call_spawn(id);
+    call_close(FUDGE_IN);
     call_open(FUDGE_IN, FUDGE_CWD, 7, "base.ko");
     call_spawn(id);
     call_close(FUDGE_IN);
@@ -137,6 +140,11 @@ void mount_filesystems()
     call_open(3, FUDGE_ROOT, 7, "system/");
     call_open(4, FUDGE_CWD, 9, "system.ko");
     call_mount(3, 3, 4);
+    call_close(4);
+    call_close(3);
+    call_open(3, FUDGE_ROOT, 5, "temp/");
+    call_open(4, FUDGE_CWD, 7, "temp.ko");
+    call_mount(4, 3, 4);
     call_close(4);
     call_close(3);
 

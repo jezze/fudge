@@ -8,6 +8,7 @@ include modules/kbd/rules.mk
 include modules/mouse/rules.mk
 include modules/net/rules.mk
 include modules/system/rules.mk
+include modules/temp/rules.mk
 include modules/terminal/rules.mk
 include modules/video/rules.mk
 include modules/arch/$(ARCH)/rules.mk
