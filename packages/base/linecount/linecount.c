@@ -33,8 +33,7 @@ void main()
 
     }
 
-    offset = call_write(FUDGE_OUT, 0, string_write_num(num, 32, lines, 10), num);
-    call_write(FUDGE_OUT, offset, 1, "\n");
+    call_write(FUDGE_OUT, call_write(FUDGE_OUT, 0, string_write_num(num, 32, lines, 10), num), 1, "\n");
 
 }
 
