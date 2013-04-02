@@ -63,7 +63,7 @@ static unsigned int walk(struct vfs_interface *self, unsigned int id, unsigned i
 struct vfs_interface *vfs_root_setup()
 {
 
-    vfs_init_interface(&root, 1, "root", open, close, read, write, walk, 0);
+    vfs_init_interface(&root, 1, open, close, read, write, walk, 0);
 
     return &root;
 

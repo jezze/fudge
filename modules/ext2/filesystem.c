@@ -132,7 +132,7 @@ void ext2_init_filesystem(struct ext2_filesystem *filesystem, struct ext2_protoc
 
     memory_clear(filesystem, sizeof (struct ext2_filesystem));
 
-    vfs_init_interface(&filesystem->base, 2, "hda", open, close, read, write, walk, 0);
+    vfs_init_interface(&filesystem->base, 2, open, close, read, write, walk, 0);
 
     filesystem->protocol = protocol;
     filesystem->interface = interface;

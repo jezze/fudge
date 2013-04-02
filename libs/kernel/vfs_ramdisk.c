@@ -157,7 +157,7 @@ static unsigned int walk(struct vfs_interface *self, unsigned int id, unsigned i
 struct vfs_interface *vfs_ramdisk_setup(void *address)
 {
 
-    vfs_init_interface(&ramdisk, (unsigned int)address, "ramdisk", open, close, read, write, walk, get_physical);
+    vfs_init_interface(&ramdisk, (unsigned int)address, open, close, read, write, walk, get_physical);
 
     return &ramdisk;
 
