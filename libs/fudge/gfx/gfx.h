@@ -53,5 +53,6 @@ void gfx_set_color_rgb(struct gfx_surface *self, unsigned char red, unsigned cha
 void gfx_set_color_rgba(struct gfx_surface *self, unsigned char red, unsigned char green, unsigned char blue, unsigned char alpha);
 void gfx_set_rectangle(struct gfx_surface *surface, unsigned int x, unsigned int y, unsigned int width, unsigned int height);
 void gfx_convert_colormap(void *out, void *in, unsigned int count);
+void gfx_blit_surface(struct gfx_surface *out, struct gfx_surface *in);
 void gfx_init_context(struct gfx_context *context);
 void gfx_init_surface(struct gfx_surface *surface, unsigned int (*read)(struct gfx_surface *self, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write)(struct gfx_surface *self, unsigned int offset, unsigned int count, void *buffer));

@@ -85,6 +85,28 @@ void gfx_convert_colormap(void *out, void *in, unsigned int count)
 
 }
 
+void gfx_blit_surface(struct gfx_surface *out, struct gfx_surface *in)
+{
+
+    unsigned int offset = 0;
+    unsigned int scanline;
+
+    if (in->width > FUDGE_BSIZE)
+        return;
+
+    for (scanline = 0; scanline < in->height; scanline++)
+    {
+
+        char buffer[FUDGE_BSIZE];
+
+        offset += in->read(in, offset, in->width, buffer);
+
+        out->write(out, scanline * in->width, in->width, buffer);
+
+    }
+
+}
+
 void gfx_init_context(struct gfx_context *context)
 {
 
