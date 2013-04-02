@@ -28,7 +28,7 @@ static unsigned int read(struct gfx_surface *self, unsigned int offset, unsigned
     unsigned int repeat;
     unsigned char current;
 
-    call_read(surface->id, offset, count, raw);
+    call_read(surface->id, offset + 128, count, raw);
 
     do
     {

@@ -25,19 +25,22 @@ static void prepare()
 static void render(struct gfx_surface *surface)
 {
 
-    unsigned int offset = 128;
-    unsigned int row;
+    unsigned int offset = 0;
+    unsigned int scanline;
+
+    if (surface->width > FUDGE_BSIZE)
+        return;
 
     call_open(3, FUDGE_ROOT, 21, "system/video/vga/data");
 
-    for (row = 0; row < surface->height; row++)
+    for (scanline = 0; scanline < surface->height; scanline++)
     {
 
         char buffer[FUDGE_BSIZE];
 
-        offset += surface->read(surface, offset, FUDGE_BSIZE, buffer);
+        offset += surface->read(surface, offset, surface->width, buffer);
 
-        call_write(3, row * surface->width, surface->width, buffer);
+        call_write(3, scanline * surface->width, surface->width, buffer);
 
     }
 
