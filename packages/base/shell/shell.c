@@ -426,26 +426,25 @@ static void interpret(unsigned int count, char *buffer)
 static void complete(unsigned int count, char *buffer)
 {
 
-    unsigned int offset = 0;
+    char data[FUDGE_BSIZE];
 
-    call_write(FUDGE_OUT, 0, 1, "\n");
+    call_open(4, FUDGE_IN, 0, 0);
+    call_open(5, FUDGE_OUT, 0, 0);
 
-    if (count)
-    {
+    call_open(FUDGE_IN, FUDGE_ROOT, 6, "temp/0");
+    call_open(FUDGE_OUT, FUDGE_ROOT, 6, "temp/1");
 
-        for (offset = count - 1; offset > 0; offset--)
-        {
+    call_write(FUDGE_IN, 0, count, buffer);
 
-            if (buffer[offset - 1] == ' ')
-                break;
-
-        }
-
-    }
-
-    call_write(FUDGE_IN, 0, count - offset, buffer + offset);
     open(3, 8, "complete", 1, binaries);
     call_spawn(3);
+
+    count = call_read(FUDGE_OUT, 0, FUDGE_BSIZE, data);
+
+    call_open(FUDGE_IN, 4, 0, 0);
+    call_open(FUDGE_OUT, 5, 0, 0);
+
+    call_write(FUDGE_OUT, 0, count, data);
 
 }
 
@@ -462,6 +461,7 @@ static void handle(struct lifo_stack *stack, char c)
 
         case '\t':
 
+            call_write(FUDGE_OUT, 0, 1, "\n");
             complete(stack->head, stack->buffer);
             call_write(FUDGE_OUT, 0, 2, "$ ");
             call_write(FUDGE_OUT, 0, stack->head, stack->buffer);

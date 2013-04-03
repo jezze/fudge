@@ -71,7 +71,7 @@ static unsigned int write(struct vfs_interface *self, unsigned int id, unsigned 
     struct temp_filesystem *filesystem = (struct temp_filesystem *)self;
 
     if (id > 1)
-        return filesystem->buffers[id - 2].count = memory_write(filesystem->buffers[id - 2].data, 0x1000, buffer, count, offset);
+        return filesystem->buffers[id - 2].count += memory_write(filesystem->buffers[id - 2].data, 0x1000, buffer, count, filesystem->buffers[id - 2].count);
 
     return 0;
 
