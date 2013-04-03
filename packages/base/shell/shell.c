@@ -324,35 +324,46 @@ static unsigned int parse_data(struct lexer *lexer)
 
 }
 
-static unsigned int parse_block(struct lexer *lexer)
+static unsigned int parse_expression(struct lexer *lexer)
 {
 
-    if (!parse_command(lexer))
-        return 0;
-
-    while (accept(lexer, TOKEN_SPACE));
-
-    if (parse_stdin(lexer))
+    do
     {
 
         while (accept(lexer, TOKEN_SPACE));
 
-        parse_stdout(lexer);
-
-    }
-
-    else if (parse_stdout(lexer))
-    {
+        if (!parse_command(lexer))
+            return 0;
 
         while (accept(lexer, TOKEN_SPACE));
 
-        parse_stdin(lexer);
+        if (parse_stdin(lexer))
+        {
 
-    }
+            while (accept(lexer, TOKEN_SPACE));
 
-    while (accept(lexer, TOKEN_SPACE));
+            parse_stdout(lexer);
 
-    parse_data(lexer);
+        }
+
+        else if (parse_stdout(lexer))
+        {
+
+            while (accept(lexer, TOKEN_SPACE));
+
+            parse_stdin(lexer);
+
+        }
+
+        while (accept(lexer, TOKEN_SPACE));
+
+        parse_data(lexer);
+
+        while (accept(lexer, TOKEN_SPACE));
+
+        call_spawn(3);
+
+    } while (accept(lexer, TOKEN_WALL));
 
     return 1;
 
@@ -366,18 +377,14 @@ static unsigned int parse(struct lexer *lexer)
 
         while (accept(lexer, TOKEN_SPACE));
 
-        if (parse_block(lexer))
-        {
-
-            call_spawn(3);
-            call_open(FUDGE_IN, FUDGE_OUT, 0, 0);
-            call_open(FUDGE_OUT, 5, 0, 0);
-
-        }
+        if (!parse_expression(lexer))
+            return 0;
 
         while (accept(lexer, TOKEN_SPACE));
 
-    } while (accept(lexer, TOKEN_WALL));
+    } while (accept(lexer, TOKEN_SEMICOLON));
+
+    while (accept(lexer, TOKEN_SPACE));
 
     if (!accept(lexer, TOKEN_NEWLINE))
         return 0;
