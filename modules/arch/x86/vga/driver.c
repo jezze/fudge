@@ -24,17 +24,6 @@ static unsigned char h480[] = {0x0D, 0x3E, 0x40, 0xEA, 0xAC, 0xDF, 0xE7, 0x06};
 static unsigned char h564[] = {0x62, 0xF0, 0x60, 0x37, 0x89, 0x33, 0x3C, 0x5C};
 static unsigned char h600[] = {0x70, 0xF0, 0x60, 0x5B, 0x8C, 0x57, 0x58, 0x70};
 
-static void clear(struct video_interface *interface)
-{
-
-    unsigned int i;
-    unsigned char *address = (void *)VGA_ADDRESS;
-
-    for (i = 0; i < interface->xres * interface->yres; i++)
-        *(address + i) = 0x00;
-
-}
-
 static void write16i(unsigned short port, unsigned char index, unsigned char value)
 {
 
@@ -217,7 +206,6 @@ static void enable(struct video_interface *self)
 {
 
     mode(self, 1);
-    clear(self);
 
 }
 
