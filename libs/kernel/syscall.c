@@ -30,6 +30,8 @@ static unsigned int open(struct runtime_task *task, void *stack)
     for (;;)
     {
 
+        unsigned int id;
+
         pdescriptor = (args->count >= 3 && memory_match(args->path, "../", 3)) ? runtime_get_parent(task->container, descriptor->interface, descriptor->id) : runtime_get_child(task->container, descriptor->interface, descriptor->id);
 
         if (pdescriptor)
@@ -53,10 +55,12 @@ static unsigned int open(struct runtime_task *task, void *stack)
         if (length > args->count)
             length = args->count;
 
-        descriptor->id = descriptor->interface->walk(descriptor->interface, descriptor->id, length, args->path);
+        id = descriptor->interface->walk(descriptor->interface, descriptor->id, length, args->path);
 
-        if (!descriptor->id)
+        if (!id)
             return 0;
+
+        descriptor->id = id;
 
         args->count -= length;
         args->path += length;
