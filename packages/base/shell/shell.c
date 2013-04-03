@@ -430,10 +430,12 @@ static void complete(struct lifo_stack *stack)
     unsigned int lines = 0;
     unsigned int count;
     unsigned int offset;
+    unsigned int slash;
     unsigned int i;
 
     call_open(4, FUDGE_IN, 0, 0);
     call_open(5, FUDGE_OUT, 0, 0);
+    call_open(6, FUDGE_CWD, 0, 0);
     call_open(FUDGE_IN, FUDGE_ROOT, 6, "temp/0");
     call_open(FUDGE_OUT, FUDGE_ROOT, 6, "temp/1");
 
@@ -445,6 +447,26 @@ static void complete(struct lifo_stack *stack)
 
     }
 
+    if (stack->head > 0)
+    {
+
+        for (slash = stack->head; slash > offset; slash--)
+        {
+
+            if (stack->buffer[slash - 1] != '/')
+                continue;
+
+            if (stack->buffer[offset] == '/')
+                call_open(FUDGE_CWD, FUDGE_ROOT, stack->head - offset - 1, stack->buffer + offset + 1);
+            else
+                call_open(FUDGE_CWD, FUDGE_CWD, stack->head - offset, stack->buffer + offset);
+
+            offset = slash;
+
+        }
+
+    }
+
     call_write(FUDGE_IN, 0, stack->head - offset, stack->buffer + offset);
     open(3, 8, "complete", 1, binaries);
     call_spawn(3);
@@ -453,6 +475,7 @@ static void complete(struct lifo_stack *stack)
 
     call_open(FUDGE_IN, 4, 0, 0);
     call_open(FUDGE_OUT, 5, 0, 0);
+    call_open(FUDGE_CWD, 6, 0, 0);
 
     if (!count)
         return;
