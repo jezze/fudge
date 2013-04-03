@@ -13,6 +13,7 @@ include packages/base/motd/rules.mk
 include packages/base/pcx/rules.mk
 include packages/base/reboot/rules.mk
 include packages/base/shell/rules.mk
+include packages/base/slang/rules.mk
 include packages/base/tail/rules.mk
 include packages/base/timer/rules.mk
 include packages/base/unload/rules.mk
