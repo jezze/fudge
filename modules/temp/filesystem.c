@@ -23,7 +23,15 @@ static unsigned int read(struct vfs_interface *self, unsigned int id, unsigned i
     struct temp_filesystem *filesystem = (struct temp_filesystem *)self;
 
     if (id > 1)
-        return memory_read(buffer, count, filesystem->buffers[id - 2].data, filesystem->buffers[id - 2].count, offset);
+    {
+
+        unsigned int c = filesystem->buffers[id - 2].count;
+
+        filesystem->buffers[id - 2].count = 0;
+
+        return memory_read(buffer, count, filesystem->buffers[id - 2].data, c, offset);
+
+    }
 
     if (id == 1)
         return memory_read(buffer, count, "../\n0\n1\n2\n3\n", 12, offset);
