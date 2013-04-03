@@ -339,26 +339,20 @@ static unsigned int parse_block(struct lexer *lexer)
 
         parse_stdout(lexer);
 
-        return 1;
-        
     }
 
-    if (parse_stdout(lexer))
+    else if (parse_stdout(lexer))
     {
 
         while (accept(lexer, TOKEN_SPACE));
 
         parse_stdin(lexer);
 
-        return 1;
-
     }
 
     while (accept(lexer, TOKEN_SPACE));
 
     parse_data(lexer);
-
-    while (accept(lexer, TOKEN_SPACE));
 
     return 1;
 
