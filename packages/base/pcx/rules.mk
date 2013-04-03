@@ -1,8 +1,13 @@
-BIN:=packages/base/pcx/pcx
-OBJ:=packages/base/pcx/pcx.o
+BIN_DATA:=packages/base/pcx/pcxdata
+OBJ_DATA:=packages/base/pcx/pcxdata.o
+BIN_CMAP:=packages/base/pcx/pcxcmap
+OBJ_CMAP:=packages/base/pcx/pcxcmap.o
 
-$(BIN): $(OBJ) $(LIBFUDGE) $(EXTRA)
+$(BIN_DATA): $(OBJ_DATA) $(LIBFUDGE) $(EXTRA)
 	$(LD) $(LDFLAGS) -o $@ $^
 
-PACKAGES+=$(BIN)
-PACKAGES_OBJECTS+=$(OBJ)
+$(BIN_CMAP): $(OBJ_CMAP) $(LIBFUDGE) $(EXTRA)
+	$(LD) $(LDFLAGS) -o $@ $^
+
+PACKAGES+=$(BIN_DATA) $(BIN_CMAP)
+PACKAGES_OBJECTS+=$(OBJ_DATA) $(OBJ_CMAP)

@@ -85,7 +85,7 @@ void gfx_convert_colormap(void *out, void *in, unsigned int count)
 
 }
 
-void gfx_blit_surface(struct gfx_surface *out, struct gfx_surface *in)
+void gfx_write_surface(unsigned int id, struct gfx_surface *in)
 {
 
     unsigned int offset = 0;
@@ -101,7 +101,7 @@ void gfx_blit_surface(struct gfx_surface *out, struct gfx_surface *in)
 
         offset += in->read(in, offset, in->width, buffer);
 
-        out->write(out, scanline * in->width, in->width, buffer);
+        call_write(id, scanline * in->width, in->width, buffer);
 
     }
 
