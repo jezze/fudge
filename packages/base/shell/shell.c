@@ -463,6 +463,8 @@ static void complete(struct lifo_stack *stack)
 
             offset = slash;
 
+            break;
+
         }
 
     }
