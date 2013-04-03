@@ -423,61 +423,68 @@ static void interpret(unsigned int count, char *buffer)
 
 }
 
-static void complete(struct lifo_stack *stack, unsigned int count, char *buffer)
+static void complete(struct lifo_stack *stack)
 {
 
-    char data[FUDGE_BSIZE];
+    char buffer[FUDGE_BSIZE];
     unsigned int lines = 0;
-    unsigned int c;
+    unsigned int count;
+    unsigned int offset;
     unsigned int i;
 
     call_open(4, FUDGE_IN, 0, 0);
     call_open(5, FUDGE_OUT, 0, 0);
-
     call_open(FUDGE_IN, FUDGE_ROOT, 6, "temp/0");
     call_open(FUDGE_OUT, FUDGE_ROOT, 6, "temp/1");
 
-    call_write(FUDGE_IN, 0, count, buffer);
+    for (offset = stack->head; offset > 0; offset--)
+    {
 
+        if (stack->buffer[offset - 1] == ' ')
+            break;
+
+    }
+
+    call_write(FUDGE_IN, 0, stack->head - offset, stack->buffer + offset);
     open(3, 8, "complete", 1, binaries);
     call_spawn(3);
 
-    c = call_read(FUDGE_OUT, 0, FUDGE_BSIZE, data);
+    count = call_read(FUDGE_OUT, 0, FUDGE_BSIZE, buffer);
 
     call_open(FUDGE_IN, 4, 0, 0);
     call_open(FUDGE_OUT, 5, 0, 0);
 
-    if (!c)
+    if (!count)
         return;
 
-    for (i = 0; i < c; i++)
+    for (i = 0; i < count; i++)
     {
 
-        if (data[i] == '\n')
+        if (buffer[i] == '\n')
             lines++;
 
     }
+
+    if (!lines)
+        return;
 
     if (lines > 1)
     {
 
         call_write(FUDGE_OUT, 0, 1, "\n");
-        call_write(FUDGE_OUT, 0, c, data);
+        call_write(FUDGE_OUT, 0, count, buffer);
         call_write(FUDGE_OUT, 0, 2, "$ ");
         call_write(FUDGE_OUT, 0, stack->head, stack->buffer);
 
+        return;
+
     }
 
-    if (lines == 1)
+    for (i = stack->head - offset; i < count - 1; i++)
     {
 
-        for (i = stack->head; i < c - 1; i++)
-        {
-
-            lifo_stack_push(stack, data[i]);
-            call_write(FUDGE_OUT, 0, 1, &data[i]);
-
-        }
+        lifo_stack_push(stack, buffer[i]);
+        call_write(FUDGE_OUT, 0, 1, &buffer[i]);
 
     }
 
@@ -496,7 +503,7 @@ static void handle(struct lifo_stack *stack, char c)
 
         case '\t':
 
-            complete(stack, stack->head, stack->buffer);
+            complete(stack);
 
             break;
 
