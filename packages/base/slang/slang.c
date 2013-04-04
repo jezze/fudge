@@ -40,7 +40,7 @@ struct directory
 static struct directory binaries[1] =
 {
 
-    {"ramdisk/bin/", 12}
+    {"bin/", 4}
 
 };
 

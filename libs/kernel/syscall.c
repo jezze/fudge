@@ -148,6 +148,26 @@ static unsigned int mount(struct runtime_task *task, void *stack)
 
 }
 
+static unsigned int bind(struct runtime_task *task, void *stack)
+{
+
+    struct {void *caller; unsigned int index; unsigned int pindex; unsigned int cindex;} *args = stack;
+    struct runtime_mount *mount = runtime_get_mount(task, args->index);
+    struct runtime_descriptor *pdescriptor = runtime_get_descriptor(task, args->pindex);
+    struct runtime_descriptor *cdescriptor = runtime_get_descriptor(task, args->cindex);
+
+    if (!mount || !pdescriptor || !cdescriptor)
+        return 0;
+
+    mount->parent.interface = pdescriptor->interface;
+    mount->parent.id = pdescriptor->id;
+    mount->child.interface = cdescriptor->interface;
+    mount->child.id = cdescriptor->id;
+
+    return 1;
+
+}
+
 static unsigned int execute(struct runtime_task *task, void *stack)
 {
 
@@ -287,6 +307,7 @@ void syscall_setup()
     syscall_set_routine(SYSCALL_INDEX_READ, read);
     syscall_set_routine(SYSCALL_INDEX_WRITE, write);
     syscall_set_routine(SYSCALL_INDEX_MOUNT, mount);
+    syscall_set_routine(SYSCALL_INDEX_BIND, bind);
     syscall_set_routine(SYSCALL_INDEX_EXECUTE, execute);
     syscall_set_routine(SYSCALL_INDEX_EXIT, exit);
     syscall_set_routine(SYSCALL_INDEX_LOAD, load);

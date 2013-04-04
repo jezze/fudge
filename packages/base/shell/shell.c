@@ -44,7 +44,7 @@ static void interpret(unsigned int count, char *buffer)
 
     call_open(4, FUDGE_IN, 0, 0);
     call_open(FUDGE_IN, FUDGE_ROOT, 6, "temp/0");
-    call_open(3, FUDGE_ROOT, 17, "ramdisk/bin/slang");
+    call_open(3, FUDGE_ROOT, 9, "bin/slang");
     call_write(FUDGE_IN, 0, count, buffer);
     call_spawn(3);
     call_open(FUDGE_IN, 4, 0, 0);
@@ -98,7 +98,7 @@ static void complete(struct lifo_stack *stack)
     }
 
     call_write(FUDGE_IN, 0, stack->head - offset, stack->buffer + offset);
-    call_open(3, FUDGE_ROOT, 20, "ramdisk/bin/complete");
+    call_open(3, FUDGE_ROOT, 12, "bin/complete");
     call_spawn(3);
 
     count = call_read(FUDGE_OUT, 0, FUDGE_BSIZE, buffer);

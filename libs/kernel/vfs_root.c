@@ -25,7 +25,7 @@ static unsigned int read(struct vfs_interface *self, unsigned int id, unsigned i
         return memory_read(buffer, count, "../\n", 4, offset);
 
     if (id == 1)
-        return memory_read(buffer, count, "../\nconfig/\nramdisk/\nsystem/\ntemp/\n", 35, offset);
+        return memory_read(buffer, count, "../\nbin/\nboot/\nconfig/\nhome/\nramdisk/\nsystem/\ntemp/\n", 52, offset);
 
     return 0;
 
@@ -47,17 +47,26 @@ static unsigned int walk(struct vfs_interface *self, unsigned int id, unsigned i
     if (memory_match(path, "../", 3))
         return walk(self, 1, count - 3, path + 3);
 
+    if (memory_match(path, "bin/", 4))
+        return walk(self, 2, count - 4, path + 4);
+
+    if (memory_match(path, "boot/", 5))
+        return walk(self, 3, count - 5, path + 5);
+
     if (memory_match(path, "config/", 7))
-        return walk(self, 2, count - 7, path + 7);
-
-    if (memory_match(path, "ramdisk/", 8))
-        return walk(self, 3, count - 8, path + 8);
-
-    if (memory_match(path, "system/", 7))
         return walk(self, 4, count - 7, path + 7);
 
-    if (memory_match(path, "temp/", 5))
+    if (memory_match(path, "home/", 5))
         return walk(self, 5, count - 5, path + 5);
+
+    if (memory_match(path, "ramdisk/", 8))
+        return walk(self, 6, count - 8, path + 8);
+
+    if (memory_match(path, "system/", 7))
+        return walk(self, 7, count - 7, path + 7);
+
+    if (memory_match(path, "temp/", 5))
+        return walk(self, 8, count - 5, path + 5);
 
     return 0;
 

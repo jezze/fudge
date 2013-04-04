@@ -1,3 +1,4 @@
+unsigned int call_bind(unsigned int index, unsigned int pindex, unsigned int cindex);
 unsigned int call_close(unsigned int index);
 unsigned int call_execute(unsigned int index);
 unsigned int call_exit();

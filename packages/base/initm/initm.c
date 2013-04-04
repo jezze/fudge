@@ -147,6 +147,21 @@ void mount_filesystems()
     call_mount(4, 3, 4);
     call_close(4);
     call_close(3);
+    call_open(3, FUDGE_ROOT, 4, "bin/");
+    call_open(4, FUDGE_ROOT, 12, "ramdisk/bin/");
+    call_bind(5, 3, 4);
+    call_close(4);
+    call_close(3);
+    call_open(3, FUDGE_ROOT, 5, "boot/");
+    call_open(4, FUDGE_ROOT, 13, "ramdisk/boot/");
+    call_bind(6, 3, 4);
+    call_close(4);
+    call_close(3);
+    call_open(3, FUDGE_ROOT, 5, "home/");
+    call_open(4, FUDGE_ROOT, 13, "ramdisk/home/");
+    call_bind(7, 3, 4);
+    call_close(4);
+    call_close(3);
 
 }
 
