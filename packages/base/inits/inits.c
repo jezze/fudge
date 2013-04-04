@@ -38,7 +38,7 @@ static unsigned int find_symbol_kernel(unsigned int count, char *symbol)
 
     unsigned int address;
 
-    call_open(3, FUDGE_ROOT, 18, "ramdisk/boot/fudge");
+    call_open(3, FUDGE_ROOT, 10, "boot/fudge");
 
     address = find_symbol(&kHeader, kSectionTable, count, symbol);
 
@@ -127,19 +127,19 @@ unsigned int resolve()
 void main()
 {
 
-    call_open(3, FUDGE_ROOT, 18, "ramdisk/boot/fudge");
+    call_open(3, FUDGE_ROOT, 10, "boot/fudge");
     call_read(3, 0, ELF_HEADER_SIZE, &kHeader);
 
     if (!elf_validate(&kHeader))
         return;
 
     call_read(3, kHeader.shoffset, kHeader.shsize * kHeader.shcount, kSectionTable);
-    call_open(FUDGE_IN, FUDGE_ROOT, 20, "ramdisk/mod/multi.ko");
+    call_open(FUDGE_IN, FUDGE_ROOT, 12, "mod/multi.ko");
 
     if (resolve())
         call_load(FUDGE_IN);
 
-    call_open(3, FUDGE_ROOT, 17, "ramdisk/bin/initm");
+    call_open(3, FUDGE_ROOT, 9, "bin/initm");
     call_spawn(3);
 
 }

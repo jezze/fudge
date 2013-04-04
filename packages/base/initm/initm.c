@@ -127,7 +127,7 @@ void load_modules_testing(unsigned int id)
 void load_modules()
 {
 
-    call_open(3, FUDGE_ROOT, 16, "ramdisk/bin/load");
+    call_open(3, FUDGE_ROOT, 8, "bin/load");
     load_modules_core(3);
     load_modules_extra(3);
     call_close(3);
@@ -139,27 +139,12 @@ void mount_filesystems()
 
     call_open(3, FUDGE_ROOT, 7, "system/");
     call_open(4, FUDGE_CWD, 9, "system.ko");
-    call_mount(3, 3, 4);
+    call_mount(2, 3, 4);
     call_close(4);
     call_close(3);
     call_open(3, FUDGE_ROOT, 5, "temp/");
     call_open(4, FUDGE_CWD, 7, "temp.ko");
-    call_mount(4, 3, 4);
-    call_close(4);
-    call_close(3);
-    call_open(3, FUDGE_ROOT, 4, "bin/");
-    call_open(4, FUDGE_ROOT, 12, "ramdisk/bin/");
-    call_bind(5, 3, 4);
-    call_close(4);
-    call_close(3);
-    call_open(3, FUDGE_ROOT, 5, "boot/");
-    call_open(4, FUDGE_ROOT, 13, "ramdisk/boot/");
-    call_bind(6, 3, 4);
-    call_close(4);
-    call_close(3);
-    call_open(3, FUDGE_ROOT, 5, "home/");
-    call_open(4, FUDGE_ROOT, 13, "ramdisk/home/");
-    call_bind(7, 3, 4);
+    call_mount(3, 3, 4);
     call_close(4);
     call_close(3);
 
@@ -170,10 +155,10 @@ void start_shell()
 
     call_open(FUDGE_IN, FUDGE_ROOT, 17, "system/ps2_buffer");
     call_open(FUDGE_OUT, FUDGE_ROOT, 24, "system/terminal/vga/data");
-    call_open(3, FUDGE_ROOT, 16, "ramdisk/bin/motd");
+    call_open(3, FUDGE_ROOT, 8, "bin/motd");
     call_spawn(3);
     call_close(3);
-    call_open(3, FUDGE_ROOT, 17, "ramdisk/bin/shell");
+    call_open(3, FUDGE_ROOT, 9, "bin/shell");
     call_execute(3);
     call_close(3);
 
@@ -182,7 +167,7 @@ void start_shell()
 void main()
 {
 
-    call_open(FUDGE_CWD, FUDGE_ROOT, 12, "ramdisk/mod/");
+    call_open(FUDGE_CWD, FUDGE_ROOT, 4, "mod/");
     load_modules();
     mount_filesystems();
     call_open(FUDGE_CWD, FUDGE_ROOT, 0, 0);
