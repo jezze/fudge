@@ -349,6 +349,9 @@ static unsigned int parse_expression(struct lexer *lexer)
 static unsigned int parse(struct lexer *lexer)
 {
 
+    call_open(4, FUDGE_IN, 0, 0);
+    call_open(5, FUDGE_OUT, 0, 0);
+
     do
     {
 
@@ -358,6 +361,9 @@ static unsigned int parse(struct lexer *lexer)
             return 0;
 
         while (accept(lexer, TOKEN_SPACE));
+
+        call_open(FUDGE_IN, 4, 0, 0);
+        call_open(FUDGE_OUT, 5, 0, 0);
 
     } while (accept(lexer, TOKEN_SEMICOLON));
 
