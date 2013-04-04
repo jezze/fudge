@@ -70,7 +70,7 @@ static void complete(struct lifo_stack *stack)
     for (offset = stack->head; offset > 0; offset--)
     {
 
-        if (stack->buffer[offset - 1] == ' ')
+        if (stack->buffer[offset - 1] == ' ' || stack->buffer[offset - 1] == '>' || stack->buffer[offset - 1] == '<')
             break;
 
     }
