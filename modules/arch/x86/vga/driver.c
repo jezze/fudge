@@ -154,7 +154,7 @@ static void mode(struct video_interface *interface, int chain4)
 
     }
 
-    io_outb(VGA_REG_MISC_CTRL, misc);
+    io_outb(VGA_REG_MISC_WRITE, misc);
 
     for (a = 0; a < 7; a++)
         write16i(VGA_REG_CR_COLOR_INDEX, windex[a], w[a]);
@@ -307,7 +307,7 @@ static unsigned int write_video_colormap(struct video_interface *self, unsigned 
     for (i = offset / 3; i < count; i += 3)
     {
 
-        io_outb(VGA_REG_DAC_CTRL, i / 3);
+        io_outb(VGA_REG_DAC_WINDEX, i / 3);
         io_outb(VGA_REG_DAC_DATA, c[i + 0]);
         io_outb(VGA_REG_DAC_DATA, c[i + 1]);
         io_outb(VGA_REG_DAC_DATA, c[i + 2]);
