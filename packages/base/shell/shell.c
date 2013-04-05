@@ -44,8 +44,8 @@ static void interpret(unsigned int count, char *buffer)
 
     call_open(4, FUDGE_IN, 0, 0);
     call_open(FUDGE_IN, FUDGE_ROOT, 6, "temp/0");
-    call_open(3, FUDGE_ROOT, 9, "bin/slang");
     call_write(FUDGE_IN, 0, count, buffer);
+    call_open(3, FUDGE_ROOT, 9, "bin/slang");
     call_spawn(3);
     call_open(FUDGE_IN, 4, 0, 0);
 

@@ -218,6 +218,10 @@ static unsigned int accept(struct lexer *lexer, enum token token)
 
 }
 
+static unsigned int command;
+static unsigned int in;
+static unsigned int out;
+
 static unsigned int parse_command(struct lexer *lexer)
 {
 
@@ -228,13 +232,13 @@ static unsigned int parse_command(struct lexer *lexer)
 
     while (accept(lexer, TOKEN_ALPHANUM | TOKEN_DOT | TOKEN_SLASH));
 
-    open(3, lexer->next - index, lexer->buffer + index - 1, 1, binaries);
+    command = open(3, lexer->next - index, lexer->buffer + index - 1, 1, binaries);
 
     return 1;
 
 }
 
-static unsigned int parse_stdin(struct lexer *lexer)
+static unsigned int parse_in(struct lexer *lexer)
 {
 
     unsigned int index;
@@ -251,13 +255,13 @@ static unsigned int parse_stdin(struct lexer *lexer)
 
     while (accept(lexer, TOKEN_ALPHANUM | TOKEN_DOT | TOKEN_SLASH));
 
-    open(FUDGE_IN, lexer->next - index, lexer->buffer + index - 1, 0, 0);
+    in = open(FUDGE_IN, lexer->next - index, lexer->buffer + index - 1, 0, 0);
 
     return 1;
 
 }
 
-static unsigned int parse_stdout(struct lexer *lexer)
+static unsigned int parse_out(struct lexer *lexer)
 {
 
     unsigned int index;
@@ -274,7 +278,7 @@ static unsigned int parse_stdout(struct lexer *lexer)
 
     while (accept(lexer, TOKEN_ALPHANUM | TOKEN_DOT | TOKEN_SLASH));
 
-    open(FUDGE_OUT, lexer->next - index, lexer->buffer + index - 1, 0, 0);
+    out = open(FUDGE_OUT, lexer->next - index, lexer->buffer + index - 1, 0, 0);
 
     return 1;
 
@@ -304,8 +308,31 @@ static unsigned int parse_data(struct lexer *lexer)
 static unsigned int parse_expression(struct lexer *lexer)
 {
 
+    char path[64];
+    unsigned int loop = 0;
+
+    call_open(4, FUDGE_IN, 0, 0);
+    call_open(5, FUDGE_OUT, 0, 0);
+
     do
     {
+
+        if (loop)
+        {
+
+            memory_copy(path, "temp/", 5);
+            string_write_num(path + 5, 32, loop, 10);
+
+            call_open(FUDGE_OUT, FUDGE_ROOT, string_length(path), path);
+            call_spawn(3);
+            call_open(FUDGE_IN, FUDGE_OUT, 0, 0);
+            call_open(FUDGE_OUT, 5, 0, 0);
+
+        }
+
+        command = 0;
+        in = 0;
+        out = 0;
 
         while (accept(lexer, TOKEN_SPACE));
 
@@ -314,21 +341,21 @@ static unsigned int parse_expression(struct lexer *lexer)
 
         while (accept(lexer, TOKEN_SPACE));
 
-        if (parse_stdin(lexer))
+        if (parse_in(lexer))
         {
 
             while (accept(lexer, TOKEN_SPACE));
 
-            parse_stdout(lexer);
+            parse_out(lexer);
 
         }
 
-        else if (parse_stdout(lexer))
+        else if (parse_out(lexer))
         {
 
             while (accept(lexer, TOKEN_SPACE));
 
-            parse_stdin(lexer);
+            parse_in(lexer);
 
         }
 
@@ -338,9 +365,11 @@ static unsigned int parse_expression(struct lexer *lexer)
 
         while (accept(lexer, TOKEN_SPACE));
 
-        call_spawn(3);
+        loop++;
 
     } while (accept(lexer, TOKEN_WALL));
+
+    call_spawn(3);
 
     return 1;
 
@@ -348,9 +377,6 @@ static unsigned int parse_expression(struct lexer *lexer)
 
 static unsigned int parse(struct lexer *lexer)
 {
-
-    call_open(4, FUDGE_IN, 0, 0);
-    call_open(5, FUDGE_OUT, 0, 0);
 
     do
     {
@@ -361,9 +387,6 @@ static unsigned int parse(struct lexer *lexer)
             return 0;
 
         while (accept(lexer, TOKEN_SPACE));
-
-        call_open(FUDGE_IN, 4, 0, 0);
-        call_open(FUDGE_OUT, 5, 0, 0);
 
     } while (accept(lexer, TOKEN_SEMICOLON));
 
