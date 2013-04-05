@@ -1,10 +1,10 @@
-#define TEMP_FILESYSTEM_SLOTS           4
+#define TEMP_BUFFER_SLOTS               4
 
 struct temp_filesystem
 {
 
     struct vfs_interface base;
-    struct temp_buffer buffers[TEMP_FILESYSTEM_SLOTS];
+    struct circular_stream buffers[TEMP_BUFFER_SLOTS];
 
 };
 

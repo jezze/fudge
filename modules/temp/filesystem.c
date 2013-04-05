@@ -1,4 +1,6 @@
 #include <fudge/module.h>
+#include <fudge/define.h>
+#include <fudge/data/circular.h>
 #include <kernel/vfs.h>
 #include "temp.h"
 #include "filesystem.h"
@@ -23,15 +25,7 @@ static unsigned int read(struct vfs_interface *self, unsigned int id, unsigned i
     struct temp_filesystem *filesystem = (struct temp_filesystem *)self;
 
     if (id > 1)
-    {
-
-        unsigned int c = filesystem->buffers[id - 2].count;
-
-        filesystem->buffers[id - 2].count = 0;
-
-        return memory_read(buffer, count, filesystem->buffers[id - 2].data, c, offset);
-
-    }
+        return circular_stream_read(&filesystem->buffers[id - 2], count, buffer);
 
     if (id == 1)
         return memory_read(buffer, count, "../\n0\n1\n2\n3\n", 12, offset);
@@ -71,7 +65,7 @@ static unsigned int write(struct vfs_interface *self, unsigned int id, unsigned 
     struct temp_filesystem *filesystem = (struct temp_filesystem *)self;
 
     if (id > 1)
-        return filesystem->buffers[id - 2].count += memory_write(filesystem->buffers[id - 2].data, 0x1000, buffer, count, filesystem->buffers[id - 2].count);
+        return circular_stream_write(&filesystem->buffers[id - 2], count, buffer);
 
     return 0;
 

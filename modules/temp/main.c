@@ -1,4 +1,6 @@
 #include <fudge/module.h>
+#include <fudge/define.h>
+#include <fudge/data/circular.h>
 #include <kernel/vfs.h>
 #include "temp.h"
 #include "filesystem.h"
