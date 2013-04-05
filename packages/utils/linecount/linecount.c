@@ -33,7 +33,7 @@ void main()
 
     }
 
-    call_write(FUDGE_OUT, call_write(FUDGE_OUT, 0, memory_write_num(num, 32, lines, 10, 0), num), 1, "\n");
+    call_write(FUDGE_OUT, call_write(FUDGE_OUT, 0, memory_write_number(num, 32, lines, 10, 0), num), 1, "\n");
 
 }
 

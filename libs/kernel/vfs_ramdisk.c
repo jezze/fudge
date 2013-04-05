@@ -13,7 +13,7 @@ static struct tar_header *next(struct tar_header *header)
     if (!header)
         return (struct tar_header *)ramdisk.rootid;
 
-    size = string_read_num(header->size, 8);
+    size = string_number(header->size, 8);
     address = (unsigned int)header + ((size / TAR_BLOCK_SIZE) + ((size % TAR_BLOCK_SIZE) ? 2 : 1)) * TAR_BLOCK_SIZE;
     header = (struct tar_header *)address;
 
@@ -105,7 +105,7 @@ static unsigned int read(struct vfs_interface *self, unsigned int id, unsigned i
 
     }
 
-    return memory_read(buffer, count, (void *)get_physical(self, id), string_read_num(header->size, 8), offset);
+    return memory_read(buffer, count, (void *)get_physical(self, id), string_number(header->size, 8), offset);
 
 }
 
@@ -118,7 +118,7 @@ static unsigned int write(struct vfs_interface *self, unsigned int id, unsigned 
     if (header->name[length - 1] == '/')
         return 0;
 
-    return memory_write((void *)get_physical(self, id), string_read_num(header->size, 8), buffer, count, offset);
+    return memory_write((void *)get_physical(self, id), string_number(header->size, 8), buffer, count, offset);
 
 }
 

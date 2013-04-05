@@ -5,7 +5,7 @@ unsigned int tar_validate(struct tar_header *header)
 {
 
     unsigned char *address = (unsigned char *)header;
-    unsigned int checksum = string_read_num(header->checksum, 8);
+    unsigned int checksum = string_number(header->checksum, 8);
     unsigned int i;
 
     for (i = 0; i < TAR_BLOCK_SIZE; i++)

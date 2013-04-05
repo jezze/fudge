@@ -109,7 +109,7 @@ unsigned int memory_write(void *out, unsigned int ocount, const void *in, unsign
 
 }
 
-unsigned int memory_write_num(void *out, unsigned int ocount, unsigned int num, unsigned int base, unsigned int offset)
+unsigned int memory_write_number(void *out, unsigned int ocount, unsigned int num, unsigned int base, unsigned int offset)
 {
 
     char buffer[32];

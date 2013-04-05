@@ -4,4 +4,4 @@ void *memory_find(const void *in1, const void *in2, unsigned int count1, unsigne
 unsigned int memory_match(const void *in1, const void *in2, unsigned int count);
 unsigned int memory_read(void *out, unsigned int ocount, const void *in, unsigned int icount, unsigned int offset);
 unsigned int memory_write(void *out, unsigned int ocount, const void *in, unsigned int icount, unsigned int offset);
-unsigned int memory_write_num(void *out, unsigned int ocount, unsigned int num, unsigned int base, unsigned int offset);
+unsigned int memory_write_number(void *out, unsigned int ocount, unsigned int num, unsigned int base, unsigned int offset);
