@@ -388,12 +388,7 @@ static unsigned int parse(struct lexer *lexer)
 
         while (accept(lexer, TOKEN_SPACE));
 
-    } while (accept(lexer, TOKEN_SEMICOLON));
-
-    while (accept(lexer, TOKEN_SPACE));
-
-    if (!accept(lexer, TOKEN_NEWLINE))
-        return 0;
+    } while (accept(lexer, TOKEN_SEMICOLON | TOKEN_NEWLINE));
 
     return 1;
 
