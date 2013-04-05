@@ -24,7 +24,7 @@ void main()
             if (buffer[i] != '\n')
                 continue;
 
-            o += call_write(FUDGE_OUT, o, string_write_num(num, 32, lines, 10) - 1, num);
+            o += call_write(FUDGE_OUT, o, memory_write_num(num, 32, lines, 10, 0), num);
             o += call_write(FUDGE_OUT, o, 2, ": ");
             o += call_write(FUDGE_OUT, o, i - start + 1, buffer + start);
 

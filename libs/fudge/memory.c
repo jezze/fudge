@@ -109,3 +109,19 @@ unsigned int memory_write(void *out, unsigned int ocount, const void *in, unsign
 
 }
 
+unsigned int memory_write_num(void *out, unsigned int ocount, unsigned int num, unsigned int base, unsigned int offset)
+{
+
+    char buffer[32];
+    unsigned int c;
+
+    if (!num)
+        return memory_write(out, ocount, "0", 1, 0);
+
+    for (c = 30; num && c; --c, num /= base)
+        buffer[c] = "0123456789abcdef"[num % base];
+
+    return memory_write(out, ocount, buffer + c + 1, 32 - c - 1, offset);
+
+}
+

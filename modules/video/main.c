@@ -57,17 +57,7 @@ unsigned int colormap_write(struct system_stream *self, unsigned int offset, uns
 unsigned int resolution_read(struct system_stream *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct video_interface_group *group = (struct video_interface_group *)self->node.parent;
-    const void *args[3];
-
-    if (offset > 0)
-        return 0;
-
-    args[0] = &group->interface->xres;
-    args[1] = &group->interface->yres;
-    args[2] = &group->interface->bpp;
-
-    return string_write_format(buffer, count, "%ux%ux%u\n", args);
+    return 0;
 
 }
 
