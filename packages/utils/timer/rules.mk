@@ -1,5 +1,5 @@
-BIN:=packages/base/timer/timer
-OBJ:=packages/base/timer/timer.o
+BIN:=packages/utils/timer/timer
+OBJ:=packages/utils/timer/timer.o
 
 $(BIN): $(OBJ) $(LIBFUDGE) $(EXTRA)
 	$(LD) $(LDFLAGS) -o $@ $^

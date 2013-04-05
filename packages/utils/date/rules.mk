@@ -1,5 +1,5 @@
-BIN:=packages/base/wm/wm
-OBJ:=packages/base/wm/wm.o
+BIN:=packages/utils/date/date
+OBJ:=packages/utils/date/date.o
 
 $(BIN): $(OBJ) $(LIBFUDGE) $(EXTRA)
 	$(LD) $(LDFLAGS) -o $@ $^

@@ -1,5 +1,5 @@
-BIN:=packages/base/tail/tail
-OBJ:=packages/base/tail/tail.o
+BIN:=packages/utils/tail/tail
+OBJ:=packages/utils/tail/tail.o
 
 $(BIN): $(OBJ) $(LIBFUDGE) $(EXTRA)
 	$(LD) $(LDFLAGS) -o $@ $^
