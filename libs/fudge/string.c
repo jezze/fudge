@@ -86,19 +86,19 @@ unsigned int string_write_format(void *out, unsigned int count, const char *form
 
             case 'u':
 
-                c += string_write_num(o + c, count - c, *((unsigned int *)args[j]), 10);
+                c += string_write_num(o + c, count - c, *((unsigned int *)args[j]), 10) - 1;
 
                 break;
 
             case 'd':
 
-                c += string_write_num(o + c, count - c, *((int *)args[j]), 10);
+                c += string_write_num(o + c, count - c, *((int *)args[j]), 10) - 1;
 
                 break;
 
             case 'x':
 
-                c += string_write_num(o + c, count - c, *((unsigned int *)args[j]), 16);
+                c += string_write_num(o + c, count - c, *((unsigned int *)args[j]), 16) - 1;
 
                 break;
 
@@ -109,7 +109,7 @@ unsigned int string_write_format(void *out, unsigned int count, const char *form
 
     }
 
-    return c;
+    return c += memory_write(o, count, "", 1, c);
 
 }
 
