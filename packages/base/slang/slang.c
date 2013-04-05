@@ -351,7 +351,7 @@ static unsigned int parse_pipe(struct lexer *lexer)
             char path[64];
 
             memory_copy(path, "temp/", 5);
-            string_write_num(path + 5, 32, loop, 10);
+            string_write_num(path + 5, 32, loop - 1, 10);
 
             call_open(FUDGE_OUT, FUDGE_ROOT, string_length(path), path);
             call_spawn(3);
