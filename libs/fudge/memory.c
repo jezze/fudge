@@ -113,15 +113,15 @@ unsigned int memory_write_number(void *out, unsigned int ocount, unsigned int nu
 {
 
     char buffer[32];
-    unsigned int c;
+    unsigned int index;
 
     if (!num)
-        return memory_write(out, ocount, "0", 1, 0);
+        return memory_write(out, ocount, "0", 1, offset);
 
-    for (c = 30; num && c; --c, num /= base)
-        buffer[c] = "0123456789abcdef"[num % base];
+    for (index = 31; num && index; --index, num /= base)
+        buffer[index] = "0123456789abcdef"[num % base];
 
-    return memory_write(out, ocount, buffer + c + 1, 32 - c - 1, offset);
+    return memory_write(out, ocount, buffer + index + 1, 31 - index, offset);
 
 }
 
