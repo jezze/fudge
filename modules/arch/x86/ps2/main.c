@@ -60,9 +60,9 @@ void init()
     ps2_init_mouse_driver(&mouse);
     base_register_driver(&mouse.base);
     mouse_register_interface(&mouse.interface);
-    system_init_stream(&buffer, "ps2_buffer", buffer_read, buffer_write);
+    system_init_stream(&buffer, "ps2kbd", buffer_read, buffer_write);
     system_register_node(&buffer.node);
-    system_init_stream(&reset, "ps2_reset", reset_read, reset_write);
+    system_init_stream(&reset, "ps2reset", reset_read, reset_write);
     system_register_node(&reset.node);
 
 }

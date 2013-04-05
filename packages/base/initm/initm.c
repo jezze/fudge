@@ -153,7 +153,7 @@ void mount_filesystems()
 void start_shell()
 {
 
-    call_open(FUDGE_IN, FUDGE_ROOT, 17, "system/ps2_buffer");
+    call_open(FUDGE_IN, FUDGE_ROOT, 13, "system/ps2kbd");
     call_open(FUDGE_OUT, FUDGE_ROOT, 24, "system/terminal/vga/data");
     call_open(3, FUDGE_ROOT, 8, "bin/motd");
     call_spawn(3);
