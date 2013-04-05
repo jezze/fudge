@@ -14,7 +14,7 @@ enum token
     TOKEN_SEMICOLON                     = 64,
     TOKEN_DOT                           = 128,
     TOKEN_SLASH                         = 256,
-    TOKEN_WALL                          = 512,
+    TOKEN_PIPE                          = 512,
     TOKEN_QUOTE                         = 1024,
     TOKEN_NEWLINE                       = 2048
 
@@ -175,7 +175,7 @@ static enum token tokenize(char c)
 
         case '|':
 
-            return TOKEN_WALL;
+            return TOKEN_PIPE;
 
         case '"':
 
@@ -304,6 +304,40 @@ static unsigned int parse_data(struct lexer *lexer)
 static unsigned int parse_expression(struct lexer *lexer)
 {
 
+    if (!parse_command(lexer))
+        return 0;
+
+    while (accept(lexer, TOKEN_SPACE));
+
+    if (parse_in(lexer))
+    {
+
+        while (accept(lexer, TOKEN_SPACE));
+
+        parse_out(lexer);
+
+    }
+
+    else if (parse_out(lexer))
+    {
+
+        while (accept(lexer, TOKEN_SPACE));
+
+        parse_in(lexer);
+
+    }
+
+    while (accept(lexer, TOKEN_SPACE));
+
+    parse_data(lexer);
+
+    return 1;
+
+}
+
+static unsigned int parse_pipe(struct lexer *lexer)
+{
+
     unsigned int loop = 0;
 
     call_open(4, FUDGE_OUT, 0, 0);
@@ -328,38 +362,14 @@ static unsigned int parse_expression(struct lexer *lexer)
 
         while (accept(lexer, TOKEN_SPACE));
 
-        if (!parse_command(lexer))
+        if (!parse_expression(lexer))
             return 0;
-
-        while (accept(lexer, TOKEN_SPACE));
-
-        if (parse_in(lexer))
-        {
-
-            while (accept(lexer, TOKEN_SPACE));
-
-            parse_out(lexer);
-
-        }
-
-        else if (parse_out(lexer))
-        {
-
-            while (accept(lexer, TOKEN_SPACE));
-
-            parse_in(lexer);
-
-        }
-
-        while (accept(lexer, TOKEN_SPACE));
-
-        parse_data(lexer);
 
         while (accept(lexer, TOKEN_SPACE));
 
         loop++;
 
-    } while (accept(lexer, TOKEN_WALL));
+    } while (accept(lexer, TOKEN_PIPE));
 
     call_spawn(3);
 
@@ -375,7 +385,7 @@ static unsigned int parse(struct lexer *lexer)
 
         while (accept(lexer, TOKEN_SPACE));
 
-        if (!parse_expression(lexer))
+        if (!parse_pipe(lexer))
             return 0;
 
         while (accept(lexer, TOKEN_SPACE));
