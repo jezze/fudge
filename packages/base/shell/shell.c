@@ -58,7 +58,6 @@ static void complete(struct lifo_stack *stack)
     unsigned int lines = 0;
     unsigned int count;
     unsigned int offset;
-    unsigned int slash;
     unsigned int i;
 
     call_open(4, FUDGE_IN, 0, 0);
@@ -67,7 +66,7 @@ static void complete(struct lifo_stack *stack)
     call_open(FUDGE_IN, FUDGE_ROOT, 6, "temp/0");
     call_open(FUDGE_OUT, FUDGE_ROOT, 6, "temp/1");
 
-    for (offset = stack->head; offset > 0; offset--)
+    for (offset = stack->head; offset; offset--)
     {
 
         if (stack->buffer[offset - 1] == ' ' || stack->buffer[offset - 1] == '>' || stack->buffer[offset - 1] == '<')
@@ -75,25 +74,20 @@ static void complete(struct lifo_stack *stack)
 
     }
 
-    if (stack->head > 0)
+    for (i = stack->head; i > offset; i--)
     {
 
-        for (slash = stack->head; slash > offset; slash--)
-        {
+        if (stack->buffer[i - 1] != '/')
+            continue;
 
-            if (stack->buffer[slash - 1] != '/')
-                continue;
+        if (stack->buffer[offset] == '/')
+            call_open(FUDGE_CWD, FUDGE_ROOT, stack->head - offset - 1, stack->buffer + offset + 1);
+        else
+            call_open(FUDGE_CWD, FUDGE_CWD, stack->head - offset, stack->buffer + offset);
 
-            if (stack->buffer[offset] == '/')
-                call_open(FUDGE_CWD, FUDGE_ROOT, stack->head - offset - 1, stack->buffer + offset + 1);
-            else
-                call_open(FUDGE_CWD, FUDGE_CWD, stack->head - offset, stack->buffer + offset);
+        offset = i;
 
-            offset = slash;
-
-            break;
-
-        }
+        break;
 
     }
 
