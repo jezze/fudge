@@ -30,6 +30,9 @@ void load_modules_core(unsigned int id)
     call_open(FUDGE_IN, FUDGE_ROOT, 12, "mod/mouse.ko");
     call_spawn(id);
     call_close(FUDGE_IN);
+    call_open(FUDGE_IN, FUDGE_ROOT, 12, "mod/timer.ko");
+    call_spawn(id);
+    call_close(FUDGE_IN);
     call_open(FUDGE_IN, FUDGE_ROOT, 9, "mod/io.ko");
     call_spawn(id);
     call_close(FUDGE_IN);
