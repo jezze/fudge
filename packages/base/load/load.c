@@ -4,6 +4,30 @@
 static struct elf_header kHeader;
 static struct elf_section_header kSectionTable[16];
 
+void *find(const void *in1, const void *in2, unsigned int count1, unsigned int count2)
+{
+
+    const char *ip = in1;
+
+    if (count2 > count1)
+        return 0;
+
+    count1 -= count2 + 1;
+
+    for (; count1; count1--)
+    {
+
+        if (memory_match(ip, in2, count2))
+            return (void *)ip;
+
+        ip++;
+
+    }
+
+    return 0;
+
+}
+
 static unsigned int find_symbol(struct elf_header *header, struct elf_section_header *sectionTable, unsigned int count, char *symbol)
 {
 
@@ -54,7 +78,7 @@ static unsigned int find_symbol_module(unsigned int count, char *symbol)
     static struct elf_header header;
     static struct elf_section_header sectionTable[16];
     char module[64];
-    unsigned int length = (unsigned int)((char *)memory_find(symbol, "_", string_length(symbol), 1) - symbol);
+    unsigned int length = (unsigned int)((char *)find(symbol, "_", string_length(symbol), 1) - symbol);
     unsigned int size = 0;
     unsigned int address;
 

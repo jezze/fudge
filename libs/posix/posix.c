@@ -4,7 +4,9 @@
 void *memcpy(void *out, const void *in, unsigned int count)
 {
 
-    return memory_copy(out, in, count);
+    memory_copy(out, in, count);
+
+    return out;
 
 }
 
