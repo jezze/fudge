@@ -58,25 +58,6 @@ static unsigned int read_group(struct system_node *node, unsigned int offset, un
 
 }
 
-static unsigned int read_integer(struct system_node *node, unsigned int offset, unsigned int count, void *buffer)
-{
-
-    struct system_integer *integer = (struct system_integer *)node;
-    char num[32];
-
-    return memory_read(buffer, count, num, memory_write_number(num, 32, *integer->value, 10, 0), offset);
-
-}
-
-static unsigned int read_string(struct system_node *node, unsigned int offset, unsigned int count, void *buffer)
-{
-
-    struct system_string *string = (struct system_string *)node;
-
-    return memory_read(buffer, count, string->value, string_length(string->value), offset);
-
-}
-
 static unsigned int read_stream(struct system_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
@@ -164,8 +145,6 @@ void system_init_filesystem(struct system_filesystem *filesystem)
     system_init_group(&filesystem->root, "/");
 
     filesystem->readers[SYSTEM_NODE_TYPE_GROUP] = read_group;
-    filesystem->readers[SYSTEM_NODE_TYPE_INTEGER] = read_integer;
-    filesystem->readers[SYSTEM_NODE_TYPE_STRING] = read_string;
     filesystem->readers[SYSTEM_NODE_TYPE_STREAM] = read_stream;
     filesystem->writers[SYSTEM_NODE_TYPE_STREAM] = write_stream;
 
