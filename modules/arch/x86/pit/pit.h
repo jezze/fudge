@@ -43,7 +43,7 @@ struct pit_driver
 {
 
     struct base_driver base;
-    struct timer_interface timer;
+    struct timer_interface itimer;
 
 };
 

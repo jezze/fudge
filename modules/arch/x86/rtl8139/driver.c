@@ -94,12 +94,12 @@ static void start(struct base_driver *self)
     setup_transmitter(driver);
     enable(driver);
 
-    driver->interface.mac[0] = io_inb(driver->io + RTL8139_IDR0);
-    driver->interface.mac[1] = io_inb(driver->io + RTL8139_IDR1);
-    driver->interface.mac[2] = io_inb(driver->io + RTL8139_IDR2);
-    driver->interface.mac[3] = io_inb(driver->io + RTL8139_IDR3);
-    driver->interface.mac[4] = io_inb(driver->io + RTL8139_IDR4);
-    driver->interface.mac[5] = io_inb(driver->io + RTL8139_IDR5);
+    driver->inet.mac[0] = io_inb(driver->io + RTL8139_IDR0);
+    driver->inet.mac[1] = io_inb(driver->io + RTL8139_IDR1);
+    driver->inet.mac[2] = io_inb(driver->io + RTL8139_IDR2);
+    driver->inet.mac[3] = io_inb(driver->io + RTL8139_IDR3);
+    driver->inet.mac[4] = io_inb(driver->io + RTL8139_IDR4);
+    driver->inet.mac[5] = io_inb(driver->io + RTL8139_IDR5);
 
 }
 
@@ -180,7 +180,7 @@ void rtl8139_init_driver(struct rtl8139_driver *driver)
 
     memory_clear(driver, sizeof (struct rtl8139_driver));
     base_init_driver(&driver->base, "rtl8139", start, check, attach);
-    net_init_interface(&driver->interface, &driver->base, send);
+    net_init_interface(&driver->inet, &driver->base, send);
 
 }
 

@@ -108,7 +108,7 @@ struct i915_driver
 {
 
     struct base_driver base;
-    struct video_interface interface;
+    struct video_interface ivideo;
 
 };
 

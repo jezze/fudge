@@ -27,14 +27,14 @@ static void handle_irq(struct base_device *device)
 
         case 1:
 
-            driver->interface.vx = data;
+            driver->imouse.vx = data;
             driver->cycle++;
 
             break;
 
         case 2:
 
-            driver->interface.vy = data;
+            driver->imouse.vy = data;
             driver->cycle = 0;
 
             break;
@@ -81,7 +81,7 @@ void ps2_init_mouse_driver(struct ps2_mouse_driver *driver)
 
     memory_clear(driver, sizeof (struct ps2_mouse_driver));
     base_init_driver(&driver->base, "ps2mouse", 0, check, attach);
-    mouse_init_interface(&driver->interface, &driver->base);
+    mouse_init_interface(&driver->imouse, &driver->base);
 
     driver->cycle = 2;
 

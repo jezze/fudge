@@ -2,7 +2,7 @@ struct ata_driver
 {
 
     struct base_driver base;
-    struct block_interface interface;
+    struct block_interface iblock;
 
 };
 

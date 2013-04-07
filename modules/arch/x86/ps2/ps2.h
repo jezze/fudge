@@ -31,7 +31,7 @@ struct ps2_kbd_driver
 {
 
     struct base_driver base;
-    struct kbd_interface interface;
+    struct kbd_interface ikbd;
     struct circular_stream stream;
     unsigned int escaped;
 
@@ -41,7 +41,7 @@ struct ps2_mouse_driver
 {
 
     struct base_driver base;
-    struct mouse_interface interface;
+    struct mouse_interface imouse;
     unsigned char cycle;
     char status;
 

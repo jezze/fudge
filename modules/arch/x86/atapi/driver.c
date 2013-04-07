@@ -34,7 +34,7 @@ void atapi_init_driver(struct atapi_driver *driver)
 
     memory_clear(driver, sizeof (struct atapi_driver));
     base_init_driver(&driver->base, "atapi", 0, check, attach);
-    block_init_interface(&driver->interface, &driver->base, 0, 0);
+    block_init_interface(&driver->iblock, &driver->base, 0, 0);
 
 }
 
