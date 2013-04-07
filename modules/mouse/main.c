@@ -8,27 +8,12 @@ struct mouse_interface_group
 
     struct system_group base;
     struct mouse_interface *interface;
-    struct system_stream data;
 
 };
 
 static struct system_group root;
 static struct mouse_interface_group interfaces[32];
 static unsigned int ninterfaces;
-
-unsigned int data_read(struct system_stream *self, unsigned int offset, unsigned int count, void *buffer)
-{
-
-    return 0;
-
-}
-
-unsigned int data_write(struct system_stream *self, unsigned int offset, unsigned int count, void *buffer)
-{
-
-    return 0;
-
-}
 
 void mouse_register_interface(struct mouse_interface *interface)
 {
@@ -39,8 +24,6 @@ void mouse_register_interface(struct mouse_interface *interface)
 
     system_init_group(&group->base, interface->driver->module.name);
     system_group_add(&root, &group->base.node);
-    system_init_stream(&group->data, "data", data_read, data_write);
-    system_group_add(&group->base, &group->data.node);
 
     ninterfaces++;
 

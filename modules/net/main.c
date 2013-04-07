@@ -3,10 +3,29 @@
 #include <system/system.h>
 #include "net.h"
 
+struct net_interface_group
+{
+
+    struct system_group base;
+    struct net_interface *interface;
+
+};
+
 static struct system_group root;
+static struct net_interface_group interfaces[32];
+static unsigned int ninterfaces;
 
 void net_register_interface(struct net_interface *interface)
 {
+
+    struct net_interface_group *group = &interfaces[ninterfaces];
+
+    group->interface = interface;
+
+    system_init_group(&group->base, interface->driver->module.name);
+    system_group_add(&root, &group->base.node);
+
+    ninterfaces++;
 
 }
 
@@ -49,6 +68,8 @@ void net_init_protocol(struct net_protocol *protocol, char *name, unsigned int (
 
 void init()
 {
+
+    ninterfaces = 0;
 
     system_init_group(&root, "net");
     system_register_node(&root.node);

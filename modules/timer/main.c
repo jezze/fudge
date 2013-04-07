@@ -3,10 +3,29 @@
 #include <system/system.h>
 #include "timer.h"
 
+struct timer_interface_group
+{
+
+    struct system_group base;
+    struct timer_interface *interface;
+
+};
+
 static struct system_group root;
+static struct timer_interface_group interfaces[32];
+static unsigned int ninterfaces;
 
 void timer_register_interface(struct timer_interface *interface)
 {
+
+    struct timer_interface_group *group = &interfaces[ninterfaces];
+
+    group->interface = interface;
+
+    system_init_group(&group->base, interface->driver->module.name);
+    system_group_add(&root, &group->base.node);
+
+    ninterfaces++;
 
 }
 
@@ -45,6 +64,8 @@ void timer_init_protocol(struct timer_protocol *protocol, char *name)
 
 void init()
 {
+
+    ninterfaces = 0;
 
     system_init_group(&root, "timer");
     system_register_node(&root.node);
