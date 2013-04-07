@@ -1,0 +1,16 @@
+load < /mod/system.ko
+load < /mod/base.ko
+load < /mod/block.ko
+load < /mod/kbd.ko
+load < /mod/mouse.ko
+load < /mod/net.ko
+load < /mod/terminal.ko
+load < /mod/timer.ko
+load < /mod/video.ko
+load < /mod/io.ko
+load < /mod/cpuid.ko
+load < /mod/msr.ko
+load < /mod/pic.ko
+load < /mod/temp.ko
+load < /mod/vga.ko
+load < /mod/ps2.ko
