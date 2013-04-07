@@ -1,5 +1,6 @@
 #include <fudge/module.h>
 #include <base/base.h>
+#include <timer/timer.h>
 #include "pit.h"
 
 static struct pit_device device;

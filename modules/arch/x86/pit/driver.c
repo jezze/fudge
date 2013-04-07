@@ -1,5 +1,6 @@
 #include <fudge/module.h>
 #include <base/base.h>
+#include <timer/timer.h>
 #include <arch/x86/pic/pic.h>
 #include <arch/x86/io/io.h>
 #include "pit.h"
@@ -37,6 +38,7 @@ void pit_init_driver(struct pit_driver *driver)
 
     memory_clear(driver, sizeof (struct pit_driver));
     base_init_driver(&driver->base, "pit", 0, check, attach);
+    timer_init_interface(&driver->timer, &driver->base);
 
 }
 

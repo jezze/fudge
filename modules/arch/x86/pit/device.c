@@ -1,5 +1,6 @@
 #include <fudge/module.h>
 #include <base/base.h>
+#include <timer/timer.h>
 #include "pit.h"
 
 void pit_init_device(struct pit_device *device, unsigned int irq)
