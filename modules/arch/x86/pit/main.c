@@ -13,12 +13,14 @@ void init()
     base_register_device(&device.base);
     pit_init_driver(&driver);
     base_register_driver(&driver.base);
+    timer_register_interface(&driver.timer);
 
 }
 
 void destroy()
 {
 
+    timer_unregister_interface(&driver.timer);
     base_unregister_driver(&driver.base);
     base_unregister_device(&device.base);
 
