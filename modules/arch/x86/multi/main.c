@@ -103,7 +103,7 @@ static unsigned int spawn(struct runtime_task *task, void *stack)
     ntask->base.registers.sp = (unsigned int)&nargs;
     ntask->base.registers.fp = (unsigned int)&nargs;
 
-    mmu_load_memory(&ntask->directory);
+    schedule(task->container);
 
     return syscall_raise(SYSCALL_INDEX_EXECUTE, &ntask->base);
 
