@@ -82,7 +82,7 @@ static unsigned int find_symbol_module(unsigned int count, char *symbol)
     unsigned int size = 0;
     unsigned int address;
 
-    size += memory_write(module, 64, "mod/", 4, size);
+    size += memory_write(module, 64, "boot/mod/", 9, size);
     size += memory_write(module, 64, symbol, length, size);
     size += memory_write(module, 64, ".ko", 3, size);
 

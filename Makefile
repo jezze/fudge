@@ -49,6 +49,10 @@ image/boot:
 image/boot/fudge: image/boot $(KERNEL)
 	cp $(KERNEL) $@
 
+image/boot/mod: image/boot $(MODULES)
+	mkdir -p $@
+	cp $(MODULES) $@
+
 image/config: system/config
 	cp -r $< $@
 
@@ -57,10 +61,6 @@ image/home: system/home
 
 image/data: system/data
 	cp -r $< $@
-
-image/mod: $(MODULES)
-	mkdir -p $@
-	cp $(MODULES) $@
 
 image/system:
 	mkdir -p $@
@@ -88,10 +88,10 @@ packages: $(PACKAGES)
 
 ramdisk: $(RAMDISK_NAME).$(RAMDISK_TYPE)
 
-$(RAMDISK_NAME).tar: image/bin image/boot image/boot/fudge image/config image/home image/data image/mod image/system image/temp
+$(RAMDISK_NAME).tar: image/bin image/boot image/boot/fudge image/boot/mod image/config image/home image/data image/system image/temp
 	tar -cf $(RAMDISK) image
 	rm -rf image
 
-$(RAMDISK_NAME).cpio: image/bin image/boot image/boot/fudge image/config image/home image/data image/mod image/system image/temp
+$(RAMDISK_NAME).cpio: image/bin image/boot image/boot/fudge image/boot/mod image/config image/home image/data image/system image/temp
 	find image -depth | cpio -o > $(RAMDISK)
 	rm -rf image

@@ -128,7 +128,7 @@ unsigned int resolve()
 void main()
 {
 
-    call_open(FUDGE_IN, FUDGE_ROOT, 12, "mod/multi.ko");
+    call_open(FUDGE_IN, FUDGE_ROOT, 17, "boot/mod/multi.ko");
 
     if (resolve())
         call_load(FUDGE_IN);
