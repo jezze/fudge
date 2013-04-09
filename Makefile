@@ -1,20 +1,21 @@
-ARCH=x86
-PREFIX=
-AS=$(PREFIX)as
-CC=$(PREFIX)gcc
-CFLAGS=-Wall -Werror -ffreestanding -nostdlib -std=c89 -pedantic -O2
-LD=$(PREFIX)ld
-AR=ar
-ARFLAGS=rs
+ARCH:=x86
+PREFIX:=
 
-KERNEL_NAME=fudge
-KERNEL=$(KERNEL_NAME)
+AS:=$(PREFIX)$(AS)
+CC:=$(PREFIX)$(CC)
+LD:=$(PREFIX)$(LD)
 
-RAMDISK_NAME=initrd
-RAMDISK_TYPE=tar
-RAMDISK=$(RAMDISK_NAME).$(RAMDISK_TYPE)
+CFLAGS:=-Wall -Werror -ffreestanding -nostdlib -std=c89 -pedantic -O2
+ARFLAGS:=rs
 
-INSTALL_PATH=/boot
+KERNEL_NAME:=fudge
+KERNEL:=$(KERNEL_NAME)
+
+RAMDISK_NAME:=initrd
+RAMDISK_TYPE:=tar
+RAMDISK:=$(RAMDISK_NAME).$(RAMDISK_TYPE)
+
+INSTALL_PATH:=/boot
 
 LIBS:=
 LIBS_OBJECTS:=
