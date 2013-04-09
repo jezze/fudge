@@ -190,10 +190,10 @@ static void poll()
     struct lifo_stack input;
     unsigned char buffer[FUDGE_BSIZE];
     unsigned int count;
-    unsigned int i;
     unsigned int alt = 0;
     unsigned int shift = 0;
     unsigned int ctrl = 0;
+    unsigned int i;
 
     lifo_stack_clear(&input);
 
