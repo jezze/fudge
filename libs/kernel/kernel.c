@@ -29,7 +29,7 @@ static void setup_task(struct binary_format *format)
 {
 
     struct vfs_interface *ramdisk = icontainer.mounts[1].child.interface;
-    unsigned int id = ramdisk->walk(ramdisk, ramdisk->rootid, 9, "bin/inits");
+    unsigned int id = ramdisk->walk(ramdisk, ramdisk->rootid, 8, "bin/init");
 
     error_assert(id != 0, "Init program not found", __FILE__, __LINE__);
     runtime_init_task(&itask, &icontainer);

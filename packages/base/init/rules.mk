@@ -1,5 +1,5 @@
-BIN:=packages/base/initm/initm
-OBJ:=packages/base/initm/initm.o
+BIN:=packages/base/init/init
+OBJ:=packages/base/init/init.o
 
 $(BIN): $(OBJ) $(LIBFUDGE) $(EXTRA)
 	$(LD) $(LDFLAGS) -o $@ $^

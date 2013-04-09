@@ -133,12 +133,14 @@ unsigned int resolve(unsigned int id)
 void main()
 {
 
+    call_open(FUDGE_CWD, FUDGE_ROOT, 5, "home/");
     call_open(FUDGE_IN, FUDGE_ROOT, 17, "boot/mod/multi.ko");
 
     if (resolve(FUDGE_IN))
         call_load(FUDGE_IN);
 
-    call_open(3, FUDGE_ROOT, 9, "bin/initm");
+    call_open(FUDGE_IN, FUDGE_ROOT, 17, "config/init.slang");
+    call_open(3, FUDGE_ROOT, 9, "bin/slang");
     call_spawn(3);
 
 }
