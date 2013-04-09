@@ -1,26 +1,16 @@
 #include <fudge.h>
 #include <format/elf.h>
 
-static struct elf_header kHeader;
-static struct elf_section_header kSectionTable[16];
-
-void *find(const void *in1, const void *in2, unsigned int count1, unsigned int count2)
+unsigned int find(const void *in, unsigned int count, char x)
 {
 
-    const char *ip = in1;
+    const char *ip;
 
-    if (count2 > count1)
-        return 0;
-
-    count1 -= count2 + 1;
-
-    for (; count1; count1--)
+    for (ip = in; count--; ip++)
     {
 
-        if (memory_match(ip, in2, count2))
-            return (void *)ip;
-
-        ip++;
+        if (*ip == x)
+            return (unsigned int)(ip - (char *)in);
 
     }
 
@@ -28,12 +18,21 @@ void *find(const void *in1, const void *in2, unsigned int count1, unsigned int c
 
 }
 
-static unsigned int find_symbol(struct elf_header *header, struct elf_section_header *sectionTable, unsigned int count, char *symbol)
+static unsigned int find_symbol(unsigned int id, unsigned int count, char *symbol)
 {
 
+    struct elf_header header;
+    struct elf_section_header sectionTable[16];
     unsigned int i;
 
-    for (i = 0; i < header->shcount; i++)
+    call_read(id, 0, ELF_HEADER_SIZE, &header);
+
+    if (!elf_validate(&header))
+        return 0;
+
+    call_read(id, header.shoffset, header.shsize * header.shcount, sectionTable);
+
+    for (i = 0; i < header.shcount; i++)
     {
 
         struct elf_symbol symbolTable[512];
@@ -43,10 +42,10 @@ static unsigned int find_symbol(struct elf_header *header, struct elf_section_he
         if (sectionTable[i].type != ELF_SECTION_TYPE_SYMTAB)
             continue;
 
-        call_read(3, sectionTable[i].offset, sectionTable[i].size, symbolTable);
-        call_read(3, sectionTable[sectionTable[i].link].offset, sectionTable[sectionTable[i].link].size, stringTable);
+        call_read(id, sectionTable[i].offset, sectionTable[i].size, symbolTable);
+        call_read(id, sectionTable[sectionTable[i].link].offset, sectionTable[sectionTable[i].link].size, stringTable);
 
-        address = elf_find_symbol(header, sectionTable, &sectionTable[i], symbolTable, stringTable, count, symbol);
+        address = elf_find_symbol(&header, sectionTable, &sectionTable[i], symbolTable, stringTable, count, symbol);
 
         if (address)
             return address;
@@ -64,7 +63,7 @@ static unsigned int find_symbol_kernel(unsigned int count, char *symbol)
 
     call_open(3, FUDGE_ROOT, 10, "boot/fudge");
 
-    address = find_symbol(&kHeader, kSectionTable, count, symbol);
+    address = find_symbol(3, count, symbol);
 
     call_close(3);
 
@@ -75,26 +74,18 @@ static unsigned int find_symbol_kernel(unsigned int count, char *symbol)
 static unsigned int find_symbol_module(unsigned int count, char *symbol)
 {
 
-    static struct elf_header header;
-    static struct elf_section_header sectionTable[16];
-    char module[64];
-    unsigned int length = (unsigned int)((char *)find(symbol, "_", string_length(symbol), 1) - symbol);
-    unsigned int size = 0;
+    unsigned int length = find(symbol, count, '_');
+    unsigned int offset = 0;
     unsigned int address;
+    char module[64];
 
-    size += memory_write(module, 64, "boot/mod/", 9, size);
-    size += memory_write(module, 64, symbol, length, size);
-    size += memory_write(module, 64, ".ko", 3, size);
+    offset += memory_write(module, 64, "boot/mod/", 9, offset);
+    offset += memory_write(module, 64, symbol, length, offset);
+    offset += memory_write(module, 64, ".ko", 3, offset);
 
-    call_open(3, FUDGE_ROOT, size, module);
-    call_read(3, 0, ELF_HEADER_SIZE, &header);
+    call_open(3, FUDGE_ROOT, offset, module);
 
-    if (!elf_validate(&header))
-        return 0;
-
-    call_read(3, header.shoffset, header.shsize * header.shcount, sectionTable);
-
-    address = find_symbol(&header, sectionTable, count, symbol);
+    address = find_symbol(3, count, symbol);
 
     call_close(3);
 
@@ -105,7 +96,7 @@ static unsigned int find_symbol_module(unsigned int count, char *symbol)
 static unsigned int resolve_symbols(struct elf_section_header *relocationHeader, struct elf_relocation *relocationTable, struct elf_symbol *symbolTable, char *stringTable, char *buffer)
 {
 
-   unsigned int i;
+    unsigned int i;
 
     for (i = 0; i < relocationHeader->size / relocationHeader->esize; i++)
     {
@@ -135,7 +126,7 @@ static unsigned int resolve_symbols(struct elf_section_header *relocationHeader,
 
 }
 
-unsigned int resolve()
+unsigned int resolve(unsigned int id)
 {
 
     struct elf_header header;
@@ -146,8 +137,8 @@ unsigned int resolve()
     char buffer[8192];
     unsigned int i;
 
-    call_read(FUDGE_IN, 0, ELF_HEADER_SIZE, &header);
-    call_read(FUDGE_IN, header.shoffset, header.shsize * header.shcount, sectionTable);
+    call_read(id, 0, ELF_HEADER_SIZE, &header);
+    call_read(id, header.shoffset, header.shsize * header.shcount, sectionTable);
 
     for (i = 0; i < header.shcount; i++)
     {
@@ -165,15 +156,15 @@ unsigned int resolve()
         symbolHeader = &sectionTable[relocationHeader->link];
         stringHeader = &sectionTable[symbolHeader->link];
 
-        call_read(FUDGE_IN, symbolHeader->offset, symbolHeader->size, symbolTable);
-        call_read(FUDGE_IN, stringHeader->offset, stringHeader->size, stringTable);
-        call_read(FUDGE_IN, relocationHeader->offset, relocationHeader->size, relocationTable);
-        call_read(FUDGE_IN, relocationData->offset, relocationData->size, buffer);
+        call_read(id, symbolHeader->offset, symbolHeader->size, symbolTable);
+        call_read(id, stringHeader->offset, stringHeader->size, stringTable);
+        call_read(id, relocationHeader->offset, relocationHeader->size, relocationTable);
+        call_read(id, relocationData->offset, relocationData->size, buffer);
 
         if (!resolve_symbols(relocationHeader, relocationTable, symbolTable, stringTable, buffer))
             return 0;
 
-        call_write(FUDGE_IN, relocationData->offset, relocationData->size, buffer);
+        call_write(id, relocationData->offset, relocationData->size, buffer);
 
     }
 
@@ -184,15 +175,7 @@ unsigned int resolve()
 void main()
 {
 
-    call_open(3, FUDGE_ROOT, 10, "boot/fudge");
-    call_read(3, 0, ELF_HEADER_SIZE, &kHeader);
-
-    if (!elf_validate(&kHeader))
-        return;
-
-    call_read(3, kHeader.shoffset, kHeader.shsize * kHeader.shcount, kSectionTable);
-
-    if (resolve())
+    if (resolve(FUDGE_IN))
         call_load(FUDGE_IN);
 
 }
