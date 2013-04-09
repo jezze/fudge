@@ -1,9 +1,6 @@
 #include <fudge.h>
 #include <format/elf.h>
 
-static struct elf_header kHeader;
-static struct elf_section_header kSectionTable[16];
-
 static unsigned int find_symbol(struct elf_header *header, struct elf_section_header *sectionTable, unsigned int count, char *symbol)
 {
 
@@ -36,9 +33,13 @@ static unsigned int find_symbol(struct elf_header *header, struct elf_section_he
 static unsigned int find_symbol_kernel(unsigned int count, char *symbol)
 {
 
+    struct elf_header kHeader;
+    struct elf_section_header kSectionTable[16];
     unsigned int address;
 
     call_open(3, FUDGE_ROOT, 10, "boot/fudge");
+    call_read(3, 0, ELF_HEADER_SIZE, &kHeader);
+    call_read(3, kHeader.shoffset, kHeader.shsize * kHeader.shcount, kSectionTable);
 
     address = find_symbol(&kHeader, kSectionTable, count, symbol);
 
@@ -127,13 +128,6 @@ unsigned int resolve()
 void main()
 {
 
-    call_open(3, FUDGE_ROOT, 10, "boot/fudge");
-    call_read(3, 0, ELF_HEADER_SIZE, &kHeader);
-
-    if (!elf_validate(&kHeader))
-        return;
-
-    call_read(3, kHeader.shoffset, kHeader.shsize * kHeader.shcount, kSectionTable);
     call_open(FUDGE_IN, FUDGE_ROOT, 12, "mod/multi.ko");
 
     if (resolve())
