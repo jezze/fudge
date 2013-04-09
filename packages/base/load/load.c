@@ -1,7 +1,7 @@
 #include <fudge.h>
 #include <format/elf.h>
 
-unsigned int find(const void *in, unsigned int count, char x)
+static unsigned int find(const void *in, unsigned int count, char x)
 {
 
     const char *ip;
