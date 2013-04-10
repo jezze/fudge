@@ -27,7 +27,9 @@ static void interpret(unsigned int count, char *buffer)
     call_write(CALL_DI, 0, count, buffer);
     call_open(CALL_D0, CALL_DR, 9, "bin/slang");
     call_spawn(CALL_D0);
+    call_close(CALL_D0);
     call_open(CALL_DI, CALL_D1, 0, 0);
+    call_close(CALL_D1);
 
 }
 
@@ -74,12 +76,16 @@ static void complete(struct lifo_stack *stack)
     call_write(CALL_DI, 0, stack->head - offset, stack->buffer + offset);
     call_open(CALL_D0, CALL_DR, 12, "bin/complete");
     call_spawn(CALL_D0);
+    call_close(CALL_D0);
 
     count = call_read(CALL_DO, 0, FUDGE_BSIZE, buffer);
 
     call_open(CALL_DI, CALL_D1, 0, 0);
     call_open(CALL_DO, CALL_D2, 0, 0);
     call_open(CALL_DW, CALL_D3, 0, 0);
+    call_close(CALL_D1);
+    call_close(CALL_D2);
+    call_close(CALL_D3);
 
     if (!count)
         return;
@@ -244,6 +250,7 @@ static void read_keymap(void *buffer)
     call_close(CALL_D0);
     call_read(CALL_DO, 0, 256, map);
     call_open(CALL_DO, CALL_D1, 0, 0);
+    call_close(CALL_D1);
 
 }
 
