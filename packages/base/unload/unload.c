@@ -3,7 +3,7 @@
 void main()
 {
 
-    call_unload(FUDGE_DI);
+    call_unload(CALL_DI);
 
 }
 

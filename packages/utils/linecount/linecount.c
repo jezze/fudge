@@ -10,7 +10,7 @@ void main()
     unsigned int start;
     unsigned int lines = 0;
 
-    for (offset = 0; (count = call_read(FUDGE_DI, offset, FUDGE_BSIZE, buffer)); offset += start)
+    for (offset = 0; (count = call_read(CALL_DI, offset, FUDGE_BSIZE, buffer)); offset += start)
     {
 
         unsigned int i;
@@ -33,7 +33,7 @@ void main()
 
     }
 
-    call_write(FUDGE_DO, call_write(FUDGE_DO, 0, memory_write_number(num, 32, lines, 10, 0), num), 1, "\n");
+    call_write(CALL_DO, call_write(CALL_DO, 0, memory_write_number(num, 32, lines, 10, 0), num), 1, "\n");
 
 }
 

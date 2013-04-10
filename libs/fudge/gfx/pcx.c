@@ -72,7 +72,7 @@ void pcx_load(struct pcx_surface *surface)
 
     unsigned char magic;
 
-    call_read(FUDGE_DI, 0, sizeof (struct pcx_header), &surface->header);
+    call_read(CALL_DI, 0, sizeof (struct pcx_header), &surface->header);
 
     surface->base.width = surface->header.xend - surface->header.xstart + 1;
     surface->base.height = surface->header.yend - surface->header.ystart + 1;

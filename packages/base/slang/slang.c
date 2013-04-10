@@ -50,7 +50,7 @@ static unsigned int open(unsigned int index, unsigned int count, char *path, uns
     unsigned int i;
 
     if (memory_match(path, "/", 1))
-        return call_open(index, FUDGE_DR, count - 1, path + 1);
+        return call_open(index, CALL_DR, count - 1, path + 1);
 
     for (i = 0; i < cdir; i++)
     {
@@ -61,12 +61,12 @@ static unsigned int open(unsigned int index, unsigned int count, char *path, uns
         offset += memory_write(temp, FUDGE_BSIZE, dirs[i].path, dirs[i].count, offset);
         offset += memory_write(temp, FUDGE_BSIZE, path, count, offset);
 
-        if (call_open(index, FUDGE_DR, offset, temp))
+        if (call_open(index, CALL_DR, offset, temp))
             return index;
 
     }
 
-    return call_open(index, FUDGE_DW, count, path);
+    return call_open(index, CALL_DW, count, path);
 
 }
 
@@ -251,7 +251,7 @@ static unsigned int parse_in(struct lexer *lexer)
 
     while (accept(lexer, TOKEN_ALPHANUM | TOKEN_DOT | TOKEN_SLASH));
 
-    open(FUDGE_DI, lexer->next - index, lexer->buffer + index - 1, 0, 0);
+    open(CALL_DI, lexer->next - index, lexer->buffer + index - 1, 0, 0);
 
     return 1;
 
@@ -274,7 +274,7 @@ static unsigned int parse_out(struct lexer *lexer)
 
     while (accept(lexer, TOKEN_ALPHANUM | TOKEN_DOT | TOKEN_SLASH));
 
-    open(FUDGE_DO, lexer->next - index, lexer->buffer + index - 1, 0, 0);
+    open(CALL_DO, lexer->next - index, lexer->buffer + index - 1, 0, 0);
 
     return 1;
 
@@ -295,7 +295,7 @@ static unsigned int parse_data(struct lexer *lexer)
     if (!accept(lexer, TOKEN_QUOTE))
         return 0;
 
-    call_write(FUDGE_DI, 0, lexer->next - index - 1, lexer->buffer + index - 1);
+    call_write(CALL_DI, 0, lexer->next - index - 1, lexer->buffer + index - 1);
 
     return 1;
 
@@ -340,7 +340,7 @@ static unsigned int parse_pipe(struct lexer *lexer)
 
     unsigned int loop = 0;
 
-    call_open(4, FUDGE_DO, 0, 0);
+    call_open(4, CALL_DO, 0, 0);
 
     do
     {
@@ -354,10 +354,10 @@ static unsigned int parse_pipe(struct lexer *lexer)
             offset += memory_write(num, 32, "temp/", 5, offset);
             offset += memory_write_number(num, 32, loop - 1, 10, offset);
 
-            call_open(FUDGE_DO, FUDGE_DR, offset, num);
+            call_open(CALL_DO, CALL_DR, offset, num);
             call_spawn(3);
-            call_open(FUDGE_DI, FUDGE_DO, 0, 0);
-            call_open(FUDGE_DO, 4, 0, 0);
+            call_open(CALL_DI, CALL_DO, 0, 0);
+            call_open(CALL_DO, 4, 0, 0);
 
         }
 
@@ -404,7 +404,7 @@ void main()
     struct lexer lexer;
 
     lexer.buffer = buffer;
-    lexer.count = call_read(FUDGE_DI, 0, FUDGE_BSIZE, buffer);
+    lexer.count = call_read(CALL_DI, 0, FUDGE_BSIZE, buffer);
     lexer.next = 1;
 
     parse(&lexer);

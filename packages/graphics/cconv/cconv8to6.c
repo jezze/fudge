@@ -22,12 +22,12 @@ void main()
     unsigned int offset;
     unsigned int count;
 
-    for (offset = 0; (count = call_read(FUDGE_DI, offset, FUDGE_BSIZE, in)); offset += count)
+    for (offset = 0; (count = call_read(CALL_DI, offset, FUDGE_BSIZE, in)); offset += count)
     {
 
         count = convert(out, FUDGE_BSIZE, in, count);
 
-        call_write(FUDGE_DO, offset, count, out);
+        call_write(CALL_DO, offset, count, out);
 
     }
 

@@ -14,20 +14,20 @@ static void interpret(unsigned int count, char *buffer)
             return;
 
         if (buffer[3] == '/')
-            call_open(FUDGE_DW, FUDGE_DR, count - 4, buffer + 4);
+            call_open(CALL_DW, CALL_DR, count - 4, buffer + 4);
         else
-            call_open(FUDGE_DW, FUDGE_DW, count - 3, buffer + 3);
+            call_open(CALL_DW, CALL_DW, count - 3, buffer + 3);
 
         return;
 
     }
 
-    call_open(4, FUDGE_DI, 0, 0);
-    call_open(FUDGE_DI, FUDGE_DR, 6, "temp/0");
-    call_write(FUDGE_DI, 0, count, buffer);
-    call_open(3, FUDGE_DR, 9, "bin/slang");
+    call_open(4, CALL_DI, 0, 0);
+    call_open(CALL_DI, CALL_DR, 6, "temp/0");
+    call_write(CALL_DI, 0, count, buffer);
+    call_open(3, CALL_DR, 9, "bin/slang");
     call_spawn(3);
-    call_open(FUDGE_DI, 4, 0, 0);
+    call_open(CALL_DI, 4, 0, 0);
 
 }
 
@@ -40,11 +40,11 @@ static void complete(struct lifo_stack *stack)
     unsigned int offset;
     unsigned int i;
 
-    call_open(4, FUDGE_DI, 0, 0);
-    call_open(5, FUDGE_DO, 0, 0);
-    call_open(6, FUDGE_DW, 0, 0);
-    call_open(FUDGE_DI, FUDGE_DR, 6, "temp/0");
-    call_open(FUDGE_DO, FUDGE_DR, 6, "temp/1");
+    call_open(4, CALL_DI, 0, 0);
+    call_open(5, CALL_DO, 0, 0);
+    call_open(6, CALL_DW, 0, 0);
+    call_open(CALL_DI, CALL_DR, 6, "temp/0");
+    call_open(CALL_DO, CALL_DR, 6, "temp/1");
 
     for (offset = stack->head; offset; offset--)
     {
@@ -61,9 +61,9 @@ static void complete(struct lifo_stack *stack)
             continue;
 
         if (stack->buffer[offset] == '/')
-            call_open(FUDGE_DW, FUDGE_DR, stack->head - offset - 1, stack->buffer + offset + 1);
+            call_open(CALL_DW, CALL_DR, stack->head - offset - 1, stack->buffer + offset + 1);
         else
-            call_open(FUDGE_DW, FUDGE_DW, stack->head - offset, stack->buffer + offset);
+            call_open(CALL_DW, CALL_DW, stack->head - offset, stack->buffer + offset);
 
         offset = i;
 
@@ -71,15 +71,15 @@ static void complete(struct lifo_stack *stack)
 
     }
 
-    call_write(FUDGE_DI, 0, stack->head - offset, stack->buffer + offset);
-    call_open(3, FUDGE_DR, 12, "bin/complete");
+    call_write(CALL_DI, 0, stack->head - offset, stack->buffer + offset);
+    call_open(3, CALL_DR, 12, "bin/complete");
     call_spawn(3);
 
-    count = call_read(FUDGE_DO, 0, FUDGE_BSIZE, buffer);
+    count = call_read(CALL_DO, 0, FUDGE_BSIZE, buffer);
 
-    call_open(FUDGE_DI, 4, 0, 0);
-    call_open(FUDGE_DO, 5, 0, 0);
-    call_open(FUDGE_DW, 6, 0, 0);
+    call_open(CALL_DI, 4, 0, 0);
+    call_open(CALL_DO, 5, 0, 0);
+    call_open(CALL_DW, 6, 0, 0);
 
     if (!count)
         return;
@@ -98,10 +98,10 @@ static void complete(struct lifo_stack *stack)
     if (lines > 1)
     {
 
-        call_write(FUDGE_DO, 0, 1, "\n");
-        call_write(FUDGE_DO, 0, count, buffer);
-        call_write(FUDGE_DO, 0, 2, "$ ");
-        call_write(FUDGE_DO, 0, stack->head, stack->buffer);
+        call_write(CALL_DO, 0, 1, "\n");
+        call_write(CALL_DO, 0, count, buffer);
+        call_write(CALL_DO, 0, 2, "$ ");
+        call_write(CALL_DO, 0, stack->head, stack->buffer);
 
         return;
 
@@ -111,7 +111,7 @@ static void complete(struct lifo_stack *stack)
     {
 
         lifo_stack_push(stack, buffer[i]);
-        call_write(FUDGE_DO, 0, 1, &buffer[i]);
+        call_write(CALL_DO, 0, 1, &buffer[i]);
 
     }
 
@@ -139,24 +139,24 @@ static void handle(struct lifo_stack *stack, char c)
             if (!lifo_stack_pop(stack))
                 break;
 
-            call_write(FUDGE_DO, 0, 3, "\b \b");
+            call_write(CALL_DO, 0, 3, "\b \b");
 
             break;
 
         case '\n':
 
             lifo_stack_push(stack, c);
-            call_write(FUDGE_DO, 0, 1, &c);
+            call_write(CALL_DO, 0, 1, &c);
             interpret(stack->head, stack->buffer);
             lifo_stack_clear(stack);
-            call_write(FUDGE_DO, 0, 2, "$ ");
+            call_write(CALL_DO, 0, 2, "$ ");
 
             break;
 
         default:
 
             lifo_stack_push(stack, c);
-            call_write(FUDGE_DO, 0, 1, &c);
+            call_write(CALL_DO, 0, 1, &c);
 
             break;
 
@@ -180,7 +180,7 @@ static void poll()
     for (;;)
     {
 
-        count = call_read(FUDGE_DI, 0, FUDGE_BSIZE, buffer);
+        count = call_read(CALL_DI, 0, FUDGE_BSIZE, buffer);
 
         for (i = 0; i < count; i++)
         {
@@ -237,13 +237,13 @@ static void poll()
 static void read_keymap(void *buffer)
 {
 
-    call_open(5, FUDGE_DO, 0, 0);
-    call_open(FUDGE_DO, FUDGE_DR, 6, "temp/0");
-    call_open(3, FUDGE_DR, 12, "bin/keymapus");
+    call_open(5, CALL_DO, 0, 0);
+    call_open(CALL_DO, CALL_DR, 6, "temp/0");
+    call_open(3, CALL_DR, 12, "bin/keymapus");
     call_spawn(3);
     call_close(3);
-    call_read(FUDGE_DO, 0, 256, map);
-    call_open(FUDGE_DO, 5, 0, 0);
+    call_read(CALL_DO, 0, 256, map);
+    call_open(CALL_DO, 5, 0, 0);
 
 }
 
@@ -251,7 +251,7 @@ void main()
 {
 
     read_keymap(map);
-    call_write(FUDGE_DO, 0, 2, "$ ");
+    call_write(CALL_DO, 0, 2, "$ ");
     poll();
 
 }

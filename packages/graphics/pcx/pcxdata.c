@@ -7,9 +7,9 @@ static struct pcx_surface pcx;
 void main()
 {
 
-    pcx_init_surface(&pcx, FUDGE_DI);
+    pcx_init_surface(&pcx, CALL_DI);
     pcx_load(&pcx);
-    gfx_write_surface(FUDGE_DO, &pcx.base);
+    gfx_write_surface(CALL_DO, &pcx.base);
 
 }
 
