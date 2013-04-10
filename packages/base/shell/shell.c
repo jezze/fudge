@@ -237,13 +237,13 @@ static void poll()
 static void read_keymap(void *buffer)
 {
 
-    call_open(CALL_D2, CALL_DO, 0, 0);
+    call_open(CALL_D1, CALL_DO, 0, 0);
     call_open(CALL_DO, CALL_DR, 6, "temp/0");
     call_open(CALL_D0, CALL_DR, 12, "bin/keymapus");
     call_spawn(CALL_D0);
     call_close(CALL_D0);
     call_read(CALL_DO, 0, 256, map);
-    call_open(CALL_DO, 5, 0, 0);
+    call_open(CALL_DO, CALL_D1, 0, 0);
 
 }
 
