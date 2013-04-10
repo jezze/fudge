@@ -3,6 +3,7 @@ include packages/base/echo/rules.mk
 include packages/base/hello/rules.mk
 include packages/base/help/rules.mk
 include packages/base/init/rules.mk
+include packages/base/keymap/rules.mk
 include packages/base/load/rules.mk
 include packages/base/ls/rules.mk
 include packages/base/motd/rules.mk
