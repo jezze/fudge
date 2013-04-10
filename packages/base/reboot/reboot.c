@@ -3,11 +3,11 @@
 void main()
 {
 
-    if (!call_open(FUDGE_IN, FUDGE_ROOT, 12, "system/reset"))
+    if (!call_open(FUDGE_DI, FUDGE_DR, 12, "system/reset"))
         return;
 
-    call_write(FUDGE_OUT, 0, 23, "System is rebooting...\n");
-    call_write(FUDGE_IN, 0, 1, "1");
+    call_write(FUDGE_DO, 0, 23, "System is rebooting...\n");
+    call_write(FUDGE_DI, 0, 1, "1");
 
 }
 

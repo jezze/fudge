@@ -44,7 +44,7 @@ static unsigned int find_symbol_kernel(unsigned int count, char *symbol)
 
     unsigned int address;
 
-    call_open(3, FUDGE_ROOT, 10, "boot/fudge");
+    call_open(3, FUDGE_DR, 10, "boot/fudge");
 
     address = find_symbol(3, count, symbol);
 
@@ -133,14 +133,14 @@ unsigned int resolve(unsigned int id)
 void main()
 {
 
-    call_open(FUDGE_CWD, FUDGE_ROOT, 5, "home/");
-    call_open(FUDGE_IN, FUDGE_ROOT, 17, "boot/mod/multi.ko");
+    call_open(FUDGE_DW, FUDGE_DR, 5, "home/");
+    call_open(FUDGE_DI, FUDGE_DR, 17, "boot/mod/multi.ko");
 
-    if (resolve(FUDGE_IN))
-        call_load(FUDGE_IN);
+    if (resolve(FUDGE_DI))
+        call_load(FUDGE_DI);
 
-    call_open(FUDGE_IN, FUDGE_ROOT, 17, "config/init.slang");
-    call_open(3, FUDGE_ROOT, 9, "bin/slang");
+    call_open(FUDGE_DI, FUDGE_DR, 17, "config/init.slang");
+    call_open(3, FUDGE_DR, 9, "bin/slang");
     call_spawn(3);
 
 }

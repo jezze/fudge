@@ -11,7 +11,7 @@ void main()
     unsigned int o = 0;
     unsigned int lines = 0;
 
-    for (offset = 0; (count = call_read(FUDGE_IN, offset, FUDGE_BSIZE, buffer)); offset += start)
+    for (offset = 0; (count = call_read(FUDGE_DI, offset, FUDGE_BSIZE, buffer)); offset += start)
     {
 
         unsigned int i;
@@ -24,9 +24,9 @@ void main()
             if (buffer[i] != '\n')
                 continue;
 
-            o += call_write(FUDGE_OUT, o, memory_write_number(num, 32, lines, 10, 0), num);
-            o += call_write(FUDGE_OUT, o, 2, ": ");
-            o += call_write(FUDGE_OUT, o, i - start + 1, buffer + start);
+            o += call_write(FUDGE_DO, o, memory_write_number(num, 32, lines, 10, 0), num);
+            o += call_write(FUDGE_DO, o, 2, ": ");
+            o += call_write(FUDGE_DO, o, i - start + 1, buffer + start);
 
             lines++;
             start = i + 1;

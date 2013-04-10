@@ -17,8 +17,8 @@ static void setup_container(struct vfs_interface *ramdisk)
     runtime_init_container(&container);
 
     container.running = &task;
-    container.mounts[1].child.interface = ramdisk;
-    container.mounts[1].child.id = ramdisk->rootid;
+    container.mounts[0x01].child.interface = ramdisk;
+    container.mounts[0x01].child.id = ramdisk->rootid;
 
 }
 
@@ -33,10 +33,10 @@ static void setup_task(struct vfs_interface *ramdisk, struct binary_format *form
 
     error_assert(task.registers.ip != 0, "Init program entry point not found", __FILE__, __LINE__);
 
-    task.descriptors[8].interface = ramdisk;
-    task.descriptors[8].id = ramdisk->rootid;
-    task.descriptors[9].interface = ramdisk;
-    task.descriptors[9].id = ramdisk->rootid;
+    task.descriptors[0x0E].interface = ramdisk;
+    task.descriptors[0x0E].id = ramdisk->rootid;
+    task.descriptors[0x0F].interface = ramdisk;
+    task.descriptors[0x0F].id = ramdisk->rootid;
 
 }
 

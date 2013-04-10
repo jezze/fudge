@@ -25,7 +25,7 @@ static char map[256] =
 void main()
 {
 
-    call_write(FUDGE_OUT, 0, 256, map);
+    call_write(FUDGE_DO, 0, 256, map);
 
 }
 

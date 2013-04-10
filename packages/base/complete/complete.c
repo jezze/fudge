@@ -5,13 +5,13 @@ void main()
 
     unsigned char ibuffer[FUDGE_BSIZE];
     unsigned char cbuffer[FUDGE_BSIZE];
-    unsigned int icount = call_read(FUDGE_IN, 0, FUDGE_BSIZE, ibuffer);
+    unsigned int icount = call_read(FUDGE_DI, 0, FUDGE_BSIZE, ibuffer);
     unsigned int ocount = 0;
     unsigned int ccount;
     unsigned int coffset;
     unsigned int start;
 
-    for (coffset = 0; (ccount = call_read(FUDGE_CWD, coffset, FUDGE_BSIZE, cbuffer)); coffset += start)
+    for (coffset = 0; (ccount = call_read(FUDGE_DW, coffset, FUDGE_BSIZE, cbuffer)); coffset += start)
     {
 
         unsigned int i;
@@ -25,7 +25,7 @@ void main()
                 continue;
 
             if (memory_match(cbuffer + start, ibuffer, icount))
-                ocount += call_write(FUDGE_OUT, ocount, i - start + 1, cbuffer + start);
+                ocount += call_write(FUDGE_DO, ocount, i - start + 1, cbuffer + start);
 
             start = i + 1;
 
