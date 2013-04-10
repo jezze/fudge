@@ -228,7 +228,7 @@ static unsigned int parse_command(struct lexer *lexer)
 
     while (accept(lexer, TOKEN_ALPHANUM | TOKEN_DOT | TOKEN_SLASH));
 
-    open(3, lexer->next - index, lexer->buffer + index - 1, 1, binaries);
+    open(CALL_D0, lexer->next - index, lexer->buffer + index - 1, 1, binaries);
 
     return 1;
 
@@ -340,7 +340,7 @@ static unsigned int parse_pipe(struct lexer *lexer)
 
     unsigned int loop = 0;
 
-    call_open(4, CALL_DO, 0, 0);
+    call_open(CALL_D1, CALL_DO, 0, 0);
 
     do
     {
@@ -355,9 +355,9 @@ static unsigned int parse_pipe(struct lexer *lexer)
             offset += memory_write_number(num, 32, loop - 1, 10, offset);
 
             call_open(CALL_DO, CALL_DR, offset, num);
-            call_spawn(3);
+            call_spawn(CALL_D0);
             call_open(CALL_DI, CALL_DO, 0, 0);
-            call_open(CALL_DO, 4, 0, 0);
+            call_open(CALL_DO, CALL_D1, 0, 0);
 
         }
 
@@ -372,7 +372,7 @@ static unsigned int parse_pipe(struct lexer *lexer)
 
     } while (accept(lexer, TOKEN_PIPE));
 
-    call_spawn(3);
+    call_spawn(CALL_D0);
 
     return 1;
 
