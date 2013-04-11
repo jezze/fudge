@@ -17,7 +17,7 @@ static struct mmu_table tables[3];
 unsigned short arch_genfault(struct arch_registers_genfault *registers)
 {
 
-    return registers->interrupt.ss;
+    return registers->interrupt.data;
 
 }
 
@@ -31,7 +31,7 @@ unsigned short arch_pagefault(struct arch_registers_pagefault *registers)
     if (state.container->running->state & RUNTIME_TASK_STATE_USED)
     {
 
-        registers->interrupt.cs = state.selectors.ucode;
+        registers->interrupt.code = state.selectors.ucode;
         registers->interrupt.eip = state.container->running->registers.ip;
         registers->interrupt.esp = state.container->running->registers.sp;
         registers->general.ebp = state.container->running->registers.fp;
@@ -57,7 +57,7 @@ unsigned short arch_syscall(struct arch_registers_syscall *registers)
     if (state.container->running->state & RUNTIME_TASK_STATE_USED)
     {
 
-        registers->interrupt.cs = state.selectors.ucode;
+        registers->interrupt.code = state.selectors.ucode;
         registers->interrupt.eip = state.container->running->registers.ip;
         registers->interrupt.esp = state.container->running->registers.sp;
         registers->general.ebp = state.container->running->registers.fp;
@@ -67,7 +67,7 @@ unsigned short arch_syscall(struct arch_registers_syscall *registers)
 
     }
 
-    registers->interrupt.cs = state.selectors.kcode;
+    registers->interrupt.code = state.selectors.kcode;
     registers->interrupt.eip = (unsigned int)arch_halt;
     registers->interrupt.esp = ARCH_STACK_BASE;
     registers->general.ebp = 0;

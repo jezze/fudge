@@ -20,10 +20,10 @@ struct arch_registers_interrupt
 {
 
     unsigned int eip;
-    unsigned int cs;
+    unsigned int code;
     unsigned int eflags;
     unsigned int esp;
-    unsigned int ss;
+    unsigned int data;
 
 };
 
@@ -63,7 +63,7 @@ struct arch_state
 
 void arch_disable_pic();
 void arch_halt();
-void arch_usermode(unsigned int cs, unsigned int ds, unsigned int ip, unsigned int sp);
+void arch_usermode(unsigned int code, unsigned int data, unsigned int ip, unsigned int sp);
 void arch_isr_genfault();
 void arch_isr_pagefault();
 void arch_isr_syscall();
