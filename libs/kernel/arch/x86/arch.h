@@ -27,7 +27,16 @@ struct arch_registers_interrupt
 
 };
 
-struct arch_registers_mmu
+struct arch_registers_genfault
+{
+
+    struct arch_registers_general general;
+    unsigned int selector;
+    struct arch_registers_interrupt interrupt;
+
+};
+
+struct arch_registers_pagefault
 {
 
     struct arch_registers_general general;
@@ -55,6 +64,7 @@ struct arch_state
 void arch_disable_pic();
 void arch_halt();
 void arch_usermode(unsigned int cs, unsigned int ds, unsigned int ip, unsigned int sp);
+void arch_isr_genfault();
 void arch_isr_pagefault();
 void arch_isr_syscall();
 void arch_setup(unsigned int modulesc, void **modulesv);

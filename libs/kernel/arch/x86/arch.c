@@ -14,7 +14,27 @@ static struct arch_state state;
 static struct mmu_directory directory;
 static struct mmu_table tables[3];
 
-unsigned short arch_pagefault(struct arch_registers_mmu *registers)
+unsigned short arch_genfault(struct arch_registers_genfault *registers)
+{
+
+    if (state.container->running->state & RUNTIME_TASK_STATE_USED)
+    {
+
+        registers->interrupt.cs = state.selectors.ucode;
+        registers->interrupt.eip = state.container->running->registers.ip;
+        registers->interrupt.esp = state.container->running->registers.sp;
+        registers->general.ebp = state.container->running->registers.fp;
+        registers->general.eax = state.container->running->registers.status;
+
+        return state.selectors.udata;
+
+    }
+
+    return state.selectors.kdata;
+
+}
+
+unsigned short arch_pagefault(struct arch_registers_pagefault *registers)
 {
 
     unsigned int address = cpu_get_cr2();
@@ -91,6 +111,7 @@ static void setup_tables(struct gdt_pointer *gdtp, struct idt_pointer *idtp)
 static void setup_routines(struct idt_pointer *idtp)
 {
 
+    idt_set_entry(idtp, IDT_INDEX_GP, arch_isr_genfault, state.selectors.kcode, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
     idt_set_entry(idtp, IDT_INDEX_PF, arch_isr_pagefault, state.selectors.kcode, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
     idt_set_entry(idtp, IDT_INDEX_SYSCALL, arch_isr_syscall, state.selectors.kcode, IDT_FLAG_PRESENT | IDT_FLAG_RING3 | IDT_FLAG_TYPE32INT);
 
@@ -119,7 +140,6 @@ void arch_setup(unsigned int modulesc, void **modulesv)
 
     state.container = kernel_setup(modulesc, modulesv);
 
-    arch_disable_pic();
     arch_usermode(state.selectors.ucode, state.selectors.udata, state.container->running->registers.ip, state.container->running->registers.sp);
 
 }

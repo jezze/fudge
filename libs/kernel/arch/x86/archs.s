@@ -1,14 +1,8 @@
 .intel_syntax noprefix
 
+.extern arch_genfault
 .extern arch_pagefault
 .extern arch_syscall
-
-.global arch_disable_pic
-arch_disable_pic:
-    mov al, 0xFF
-    outb 0xA1, al
-    outb 0x21, al
-    ret
 
 .global arch_halt
 arch_halt:
@@ -33,6 +27,27 @@ arch_usermode:
     push eax
     mov eax, [esp + 28]
     push eax
+    iret
+
+.global arch_isr_genfault
+arch_isr_genfault:
+    cli
+    pusha
+    mov eax, esp
+    push eax
+    mov ax, 0x10
+    mov ds, ax
+    mov es, ax
+    mov fs, ax
+    mov gs, ax
+    call arch_genfault
+    mov ds, ax
+    mov es, ax
+    mov fs, ax
+    mov gs, ax
+    add esp, 4
+    popa
+    add esp, 4
     iret
 
 .global arch_isr_pagefault
