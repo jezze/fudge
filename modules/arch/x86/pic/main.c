@@ -72,11 +72,13 @@ static void reset(unsigned int slave)
 
 }
 
-void pic_interrupt(struct pic_registers *registers)
+unsigned short pic_interrupt(struct pic_registers *registers)
 {
 
     raise(registers->index);
     reset(registers->slave);
+
+    return registers->interrupt.data;
 
 }
 

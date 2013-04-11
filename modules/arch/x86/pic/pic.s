@@ -1,5 +1,7 @@
 .intel_syntax noprefix
 
+.extern pic_interrupt
+
 .global pic_routine00
 pic_routine00:
     cli
@@ -114,8 +116,6 @@ pic_routine0F:
 
 pic_common:
     pusha
-    mov ax, ds
-    push eax
     mov eax, esp
     push eax
     mov ax, 0x10
@@ -124,12 +124,11 @@ pic_common:
     mov fs, ax
     mov gs, ax
     call pic_interrupt
-    add esp, 4
-    pop eax
     mov ds, ax
     mov es, ax
     mov fs, ax
     mov gs, ax
+    add esp, 4
     popa
     add esp, 8
     iret
