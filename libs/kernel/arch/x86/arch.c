@@ -17,20 +17,7 @@ static struct mmu_table tables[3];
 unsigned short arch_genfault(struct arch_registers_genfault *registers)
 {
 
-    if (state.container->running->state & RUNTIME_TASK_STATE_USED)
-    {
-
-        registers->interrupt.cs = state.selectors.ucode;
-        registers->interrupt.eip = state.container->running->registers.ip;
-        registers->interrupt.esp = state.container->running->registers.sp;
-        registers->general.ebp = state.container->running->registers.fp;
-        registers->general.eax = state.container->running->registers.status;
-
-        return state.selectors.udata;
-
-    }
-
-    return state.selectors.kdata;
+    return registers->interrupt.ss;
 
 }
 
