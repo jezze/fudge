@@ -3,8 +3,8 @@
 #include <kernel/binary.h>
 #include <kernel/runtime.h>
 #include <kernel/syscall.h>
-#include <kernel/arch/x86/arch.h>
-#include <kernel/arch/x86/mmu.h>
+#include <x86/arch.h>
+#include <x86/mmu.h>
 #include "multi.h"
 
 static struct multi_task *tasks[MULTI_TASK_SLOTS];
