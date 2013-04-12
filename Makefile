@@ -1,4 +1,5 @@
 ARCH:=x86
+LOADER:=mboot
 PREFIX:=
 
 AS:=$(PREFIX)$(AS)
@@ -73,12 +74,12 @@ install:
 	install -m 644 $(KERNEL) $(INSTALL_PATH)
 	install -m 644 $(RAMDISK) $(INSTALL_PATH)
 
-kernel: $(KERNEL_NAME).$(ARCH)
+kernel: $(KERNEL_NAME).$(ARCH).$(LOADER)
 
-$(KERNEL_NAME).arm: $(LIBVERSATILEPB) $(LIBARM) $(LIBKERNEL) $(LIBFUDGE)
+$(KERNEL_NAME).arm.versatilepb: $(LIBVERSATILEPB) $(LIBARM) $(LIBKERNEL) $(LIBFUDGE)
 	$(LD) $(LDFLAGS) -Tlibs/versatilepb/linker.ld -o $(KERNEL_NAME) $^
 
-$(KERNEL_NAME).x86: $(LIBMBOOT) $(LIBX86) $(LIBKERNEL) $(LIBFUDGE)
+$(KERNEL_NAME).x86.mboot: $(LIBMBOOT) $(LIBX86) $(LIBKERNEL) $(LIBFUDGE)
 	$(LD) $(LDFLAGS) -Tlibs/mboot/linker.ld -o $(KERNEL_NAME) $^
 
 libs: $(LIBS)

@@ -55,8 +55,8 @@ Download the source using git.
 
 ### BUILDING
 
-At the moment Fudge only runs properly on x86 but there is an ARM port under
-development. It is very limited at the moment.
+At the moment Fudge only runs properly on x86 using a multiboot compliant loader
+but there are other loaders and architectures under development.
 
 To compile for x86 you write:
 
@@ -68,14 +68,14 @@ To clean for x86 you write:
 
 To compile for ARM you write:
 
-    $ make ARCH=arm PREFIX=arm-eabi-
+    $ make ARCH=arm LOADER=versatilepb PREFIX=arm-eabi-
 
 To clean for ARM you write:
 
-    $ make ARCH=arm clean
+    $ make ARCH=arm LOADER=versatilepb clean
 
-It is possible to edit the Makefile and set the ARCH and PREFIX variable
-directly so you don't have to supply it every time.
+It is possible to edit the Makefile and set the ARCH, LOADER and PREFIX variable
+directly so you don't need to supply it every time you compile.
 
 ## RUNNING IN QEMU
 
