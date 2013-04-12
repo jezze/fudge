@@ -75,6 +75,10 @@ static void scan(struct base_bus *self)
 
     ps2_bus_write_command(bus, 0xAD);
     ps2_bus_write_command(bus, 0xA7);
+
+    while (ps2_bus_read_status(bus) & 1)
+        ps2_bus_read_data_async(bus);
+
     ps2_bus_write_command(bus, 0x20);
 
     config = ps2_bus_read_data(bus);
