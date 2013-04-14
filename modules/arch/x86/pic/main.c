@@ -161,6 +161,7 @@ void init()
     idt_set_entry(idtp, PIC_DATA_VECTOR1 + 0x07, pic_routine0F, offset, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
     pic_set_mask(PIC_DATA0, 0xFF);
     pic_set_mask(PIC_DATA1, 0xFF);
+    pic_enable_line(PIC_DATA0, 2);
 
 }
 
