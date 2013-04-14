@@ -40,7 +40,7 @@ static void setup_receiver(struct rtl8139_driver *self)
 {
 
     io_outd(self->io + RTL8139_RBSTART, (unsigned int)self->rx);
-    io_outd(self->io + RTL8139_RCR, 0x0000000F);
+    io_outd(self->io + RTL8139_RCR, 0x80 | 0x1F);
 
 }
 
@@ -61,19 +61,10 @@ static void handle_irq(struct base_device *device)
     unsigned int status = io_inw(driver->io + RTL8139_ISR);
 
     if (status & RTL8139_ISR_ROK)
-    {
-
-        driver->rxp = io_inw(driver->io + RTL8139_CAPR) + 0x10;
         io_outw(driver->io + RTL8139_ISR, RTL8139_ISR_ROK);
 
-    }
-
     if (status & RTL8139_ISR_TOK)
-    {
-
         io_outw(driver->io + RTL8139_ISR, RTL8139_ISR_TOK);
-
-    }
 
 }
 
@@ -128,13 +119,15 @@ static unsigned int receive(struct net_interface *self, unsigned int count, void
 {
 
     struct rtl8139_driver *driver = (struct rtl8139_driver *)self->driver;
-    struct rtl8139_header *header = (struct rtl8139_header *)(driver->rx + driver->rxp);
+    struct rtl8139_header *header;
 
+    driver->rxp = io_inw(driver->io + RTL8139_CAPR) + 0x10;
+    header = (struct rtl8139_header *)(driver->rx + driver->rxp);
     driver->rxp += (header->length + 4 + 3) & ~3;
 
     io_outw(driver->io + RTL8139_CAPR, driver->rxp - 0x10);
 
-    return memory_read(buffer, count, driver->rx + driver->rxp + 4, header->length, 0);
+    return memory_read(buffer, count, driver->rx, 64, 0);
 
 }
 

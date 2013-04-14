@@ -15,3 +15,4 @@ load < /boot/mod/pic.ko
 load < /boot/mod/pci.ko
 load < /boot/mod/vga.ko
 load < /boot/mod/ps2.ko
+load < /boot/mod/rtl8139.ko

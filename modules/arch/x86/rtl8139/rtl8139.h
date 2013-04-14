@@ -116,8 +116,8 @@ struct rtl8139_driver
     char tx1[0x800] __attribute__((aligned(4)));
     char tx2[0x800] __attribute__((aligned(4)));
     char tx3[0x800] __attribute__((aligned(4)));
-    unsigned int rxp;
-    unsigned int txp;
+    unsigned short rxp;
+    unsigned short txp;
 
 };
 
