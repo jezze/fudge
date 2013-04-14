@@ -8,12 +8,56 @@ struct net_interface_group
 
     struct system_group base;
     struct net_interface *interface;
+    struct system_stream data;
+    struct system_stream mac;
 
 };
 
 static struct system_group root;
 static struct net_interface_group interfaces[32];
 static unsigned int ninterfaces;
+
+unsigned int data_read(struct system_stream *self, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    return 0;
+
+}
+
+unsigned int data_write(struct system_stream *self, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    return 0;
+
+}
+
+unsigned int mac_read(struct system_stream *self, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    struct net_interface_group *group = (struct net_interface_group *)self->node.parent;
+    char *mac = "00:00:00:00:00:00\n";
+    unsigned int i;
+
+    for (i = 0; i < 6; i++)
+    {
+
+        if (group->interface->mac[i] < 0x10)
+            memory_write_number(mac, 18, group->interface->mac[i], 16, i * 3 + 1);
+        else
+            memory_write_number(mac, 18, group->interface->mac[i], 16, i * 3);
+
+    }
+
+    return memory_read(buffer, count, mac, 18, offset); 
+
+}
+
+unsigned int mac_write(struct system_stream *self, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    return 0;
+
+}
 
 void net_register_interface(struct net_interface *interface)
 {
@@ -24,6 +68,10 @@ void net_register_interface(struct net_interface *interface)
 
     system_init_group(&group->base, interface->driver->module.name);
     system_group_add(&root, &group->base.node);
+    system_init_stream(&group->data, "data", data_read, data_write);
+    system_group_add(&group->base, &group->data.node);
+    system_init_stream(&group->mac, "mac", mac_read, mac_write);
+    system_group_add(&group->base, &group->mac.node);
 
     ninterfaces++;
 

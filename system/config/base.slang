@@ -7,10 +7,11 @@ load < /boot/mod/net.ko
 load < /boot/mod/terminal.ko
 load < /boot/mod/timer.ko
 load < /boot/mod/video.ko
+load < /boot/mod/temp.ko
 load < /boot/mod/io.ko
 load < /boot/mod/cpuid.ko
 load < /boot/mod/msr.ko
 load < /boot/mod/pic.ko
-load < /boot/mod/temp.ko
+load < /boot/mod/pci.ko
 load < /boot/mod/vga.ko
 load < /boot/mod/ps2.ko
