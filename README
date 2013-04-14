@@ -81,11 +81,13 @@ directly so you don't need to supply it every time you compile.
 
 The simplest way is to run it inside qemu:
 
-    $ qemu-system-x86 \
-        -kernel fudge \
-        -initrd initrd.tar \
-        -serial stdio \
-        -vga std
+    $ qemu-system-x86 -kernel fudge -initrd initrd.tar
+
+Possible extra options that fudge supports:
+
+    -serial stdio
+    -vga std
+    -net nic,model=rtl8139 -net tap,script=no,downscript=no,ifname=tap0
 
 If you have built for ARM just replace x86 with arm.
 
