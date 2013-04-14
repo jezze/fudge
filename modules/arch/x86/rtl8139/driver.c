@@ -61,10 +61,19 @@ static void handle_irq(struct base_device *device)
     unsigned int status = io_inw(driver->io + RTL8139_ISR);
 
     if (status & RTL8139_ISR_ROK)
+    {
+
         driver->rxp = io_inw(driver->io + RTL8139_CAPR) + 0x10;
+        io_outw(driver->io + RTL8139_ISR, RTL8139_ISR_ROK);
+
+    }
 
     if (status & RTL8139_ISR_TOK)
+    {
+
         io_outw(driver->io + RTL8139_ISR, RTL8139_ISR_TOK);
+
+    }
 
 }
 
@@ -124,7 +133,6 @@ static unsigned int receive(struct net_interface *self, unsigned int count, void
     driver->rxp += (header->length + 4 + 3) & ~3;
 
     io_outw(driver->io + RTL8139_CAPR, driver->rxp - 0x10);
-    io_outw(driver->io + RTL8139_ISR, RTL8139_ISR_ROK);
 
     return memory_read(buffer, count, driver->rx + driver->rxp + 4, header->length, 0);
 
