@@ -61,21 +61,7 @@ static void handle_irq(struct base_device *device)
     unsigned int status = io_inw(driver->io + RTL8139_ISR);
 
     if (status & RTL8139_ISR_ROK)
-    {
-
-        unsigned short current = io_inw(driver->io + RTL8139_CAPR) + 0x10;
-        struct rtl8139_header *header = (struct rtl8139_header *)(driver->rx + current);
-
-/*
-        net_handle_read(&driver->interface, header->length, driver->rx + current + 4);
-*/
-
-        current += (header->length + 4 + 3) & ~3;
-
-        io_outw(driver->io + RTL8139_CAPR, current - 0x10);
-        io_outw(driver->io + RTL8139_ISR, RTL8139_ISR_ROK);
-
-    }
+        driver->rxp = io_inw(driver->io + RTL8139_CAPR) + 0x10;
 
     if (status & RTL8139_ISR_TOK)
         io_outw(driver->io + RTL8139_ISR, RTL8139_ISR_TOK);
@@ -126,6 +112,21 @@ static unsigned int check(struct base_device *device)
         return 0;
 
     return pci_device_inw(pciDevice, PCI_CONFIG_VENDOR) == RTL8139_PCI_VENDOR && pci_device_inw(pciDevice, PCI_CONFIG_DEVICE) == RTL8139_PCI_DEVICE;
+
+}
+
+static unsigned int receive(struct net_interface *self, unsigned int count, void *buffer)
+{
+
+    struct rtl8139_driver *driver = (struct rtl8139_driver *)self->driver;
+    struct rtl8139_header *header = (struct rtl8139_header *)(driver->rx + driver->rxp);
+
+    driver->rxp += (header->length + 4 + 3) & ~3;
+
+    io_outw(driver->io + RTL8139_CAPR, driver->rxp - 0x10);
+    io_outw(driver->io + RTL8139_ISR, RTL8139_ISR_ROK);
+
+    return memory_read(buffer, count, driver->rx + driver->rxp + 4, header->length, 0);
 
 }
 
@@ -180,7 +181,7 @@ void rtl8139_init_driver(struct rtl8139_driver *driver)
 
     memory_clear(driver, sizeof (struct rtl8139_driver));
     base_init_driver(&driver->base, "rtl8139", start, check, attach);
-    net_init_interface(&driver->inet, &driver->base, send);
+    net_init_interface(&driver->inet, &driver->base, receive, send);
 
 }
 

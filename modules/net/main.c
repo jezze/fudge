@@ -20,14 +20,24 @@ static unsigned int ninterfaces;
 unsigned int data_read(struct system_stream *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    return 0;
+    struct net_interface_group *group = (struct net_interface_group *)self->node.parent;
+
+    if (offset)
+        return 0;
+
+    return group->interface->receive(group->interface, count, buffer);
 
 }
 
 unsigned int data_write(struct system_stream *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    return 0;
+    struct net_interface_group *group = (struct net_interface_group *)self->node.parent;
+
+    if (offset)
+        return 0;
+
+    return group->interface->send(group->interface, count, buffer);
 
 }
 
@@ -92,14 +102,14 @@ void net_unregister_protocol(unsigned short index)
 
 }
 
-void net_init_interface(struct net_interface *interface, struct base_driver *driver, unsigned int (*send)(struct net_interface *self, unsigned int count, void *buffer))
+void net_init_interface(struct net_interface *interface, struct base_driver *driver, unsigned int (*receive)(struct net_interface *self, unsigned int count, void *buffer), unsigned int (*send)(struct net_interface *self, unsigned int count, void *buffer))
 {
 
     memory_clear(interface, sizeof (struct net_interface));
 
     interface->driver = driver;
+    interface->receive = receive;
     interface->send = send;
-
 
 }
 
