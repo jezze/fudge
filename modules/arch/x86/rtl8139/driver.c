@@ -1,5 +1,6 @@
 #include <fudge/module.h>
 #include <base/base.h>
+#include <log/log.h>
 #include <net/net.h>
 #include <arch/x86/pic/pic.h>
 #include <arch/x86/io/io.h>
@@ -41,6 +42,10 @@ static void setup_receiver(struct rtl8139_driver *self)
 
     io_outd(self->io + RTL8139_RBSTART, (unsigned int)self->rx);
     io_outd(self->io + RTL8139_RCR, 0x80 | 0x1F);
+
+    log_write_string("RBSTART: 0x");
+    log_write_number((unsigned int)self->rx, 16);
+    log_write_string("\n");
 
 }
 
@@ -95,9 +100,18 @@ static void attach(struct base_device *device)
     struct pci_device *pciDevice = (struct pci_device *)device;
     struct rtl8139_driver *driver = (struct rtl8139_driver *)device->driver;
     unsigned int bar0 = pci_device_ind(pciDevice, PCI_CONFIG_BAR0);
+    unsigned int bar1 = pci_device_ind(pciDevice, PCI_CONFIG_BAR1);
     unsigned int irq = pci_device_inb(pciDevice, PCI_CONFIG_IRQ_LINE);
 
     driver->io = bar0 & ~1;
+    driver->mmio = bar1 & ~1;
+
+    log_write_string("BAR0: 0x");
+    log_write_number(bar0, 16);
+    log_write_string("\n");
+    log_write_string("BAR1: 0x");
+    log_write_number(bar1, 16);
+    log_write_string("\n");
 
     pic_set_routine(irq, device, handle_irq);
 
@@ -122,7 +136,19 @@ static unsigned int receive(struct net_interface *self, unsigned int count, void
     struct rtl8139_header *header;
 
     driver->rxp = io_inw(driver->io + RTL8139_CAPR) + 0x10;
+
     header = (struct rtl8139_header *)(driver->rx + driver->rxp);
+
+    log_write_string("RXP: 0x");
+    log_write_number(driver->rxp, 16);
+    log_write_string(" ");
+    log_write_string("HEADER F: 0x");
+    log_write_number(header->flags, 16);
+    log_write_string(" ");
+    log_write_string("HEADER L: 0x");
+    log_write_number(header->length, 16);
+    log_write_string("\n");
+
     driver->rxp += (header->length + 4 + 3) & ~3;
 
     io_outw(driver->io + RTL8139_CAPR, driver->rxp - 0x10);
