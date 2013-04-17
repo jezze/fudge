@@ -1,5 +1,6 @@
 load < /boot/mod/system.ko
 load < /boot/mod/base.ko
+load < /boot/mod/log.ko
 load < /boot/mod/block.ko
 load < /boot/mod/kbd.ko
 load < /boot/mod/mouse.ko
