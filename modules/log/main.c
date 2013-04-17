@@ -41,6 +41,13 @@ unsigned int log_write_number(unsigned int number, unsigned int base)
 
 }
 
+unsigned int log_write_string(char *buffer)
+{
+
+    return log_write(string_length(buffer), buffer);
+
+}
+
 void init()
 {
 
