@@ -41,7 +41,7 @@ static void setup_receiver(struct rtl8139_driver *self)
 {
 
     io_outd(self->io + RTL8139_RBSTART, (unsigned int)self->rx);
-    io_outd(self->io + RTL8139_RCR, 0x80 | 0x1F);
+    io_outd(self->io + RTL8139_RCR, 0xBF);
 
     log_write_string("RBSTART: 0x");
     log_write_number((unsigned int)self->rx, 16);
@@ -63,10 +63,40 @@ static void handle_irq(struct base_device *device)
 {
 
     struct rtl8139_driver *driver = (struct rtl8139_driver *)device->driver;
-    unsigned int status = io_inw(driver->io + RTL8139_ISR);
+    unsigned short status = io_inw(driver->io + RTL8139_ISR);
+
+    log_write_string("Interrupt status: 0x");
+    log_write_number(status, 16);
+    log_write_string("\n");
 
     if (status & RTL8139_ISR_ROK)
+    {
+
+        unsigned char cr = io_ind(driver->io + RTL8139_CR);
+        unsigned short cbr = io_inw(driver->io + RTL8139_CBR);
+        unsigned short capr = io_inw(driver->io + RTL8139_CAPR);
+        struct rtl8139_header *header = (struct rtl8139_header *)(driver->rx);
+
+        log_write_string("CR: 0x");
+        log_write_number(cr, 16);
+        log_write_string(" ");
+        log_write_string("CBR: 0x");
+        log_write_number(cbr, 16);
+        log_write_string(" ");
+        log_write_string("CAPR: 0x");
+        log_write_number(capr, 16);
+        log_write_string(" ");
+        log_write_string("HF: 0x");
+        log_write_number(header->flags, 16);
+        log_write_string(" ");
+        log_write_string("HL: 0x");
+        log_write_number(header->length, 16);
+        log_write_string("\n");
+
+        io_outw(driver->io + RTL8139_CAPR, 0);
         io_outw(driver->io + RTL8139_ISR, RTL8139_ISR_ROK);
+
+    }
 
     if (status & RTL8139_ISR_TOK)
         io_outw(driver->io + RTL8139_ISR, RTL8139_ISR_TOK);
@@ -80,7 +110,7 @@ static void start(struct base_driver *self)
 
     poweron(driver);
     reset(driver);
-    setup_interrupts(driver, RTL8139_ISR_ROK | RTL8139_ISR_TOK);
+    setup_interrupts(driver, 0xD07F);
     setup_receiver(driver);
     setup_transmitter(driver);
     enable(driver);
