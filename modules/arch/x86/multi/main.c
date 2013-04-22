@@ -8,6 +8,9 @@
 #include <x86/mmu.h>
 #include "multi.h"
 
+#define MULTI_TASK_BASE                 0x00300000
+#define MULTI_TASK_SLOTS                32
+
 static struct multi_task *tasks[MULTI_TASK_SLOTS];
 
 static struct multi_task *create_task()

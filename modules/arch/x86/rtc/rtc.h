@@ -1,6 +1,3 @@
-#define RTC_COMMAND                     0x70
-#define RTC_DATA                        0x71
-
 #define RTC_FLAG_SECONDS                0x00
 #define RTC_FLAG_MINUTES                0x02
 #define RTC_FLAG_HOURS                  0x04

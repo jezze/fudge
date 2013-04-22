@@ -150,7 +150,7 @@ void base_unregister_driver(struct base_driver *driver)
 
 }
 
-static void base_init_module(struct base_module *module, unsigned int type, char *name)
+static void base_init_module(struct base_module *module, enum base_type type, char *name)
 {
 
     memory_clear(module, sizeof (struct base_module));

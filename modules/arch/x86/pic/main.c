@@ -6,6 +6,37 @@
 #include <arch/x86/io/io.h>
 #include "pic.h"
 
+#define PIC_ROUTINE_SLOTS               16
+
+enum pic_register
+{
+
+    PIC_REGISTER_COMMAND0               = 0x0020,
+    PIC_REGISTER_DATA0                  = 0x0021,
+    PIC_REGISTER_COMMAND1               = 0x00A0,
+    PIC_REGISTER_DATA1                  = 0x00A1
+
+};
+
+enum pic_command
+{
+
+    PIC_COMMAND_IRR                     = 0x0A,
+    PIC_COMMAND_ISR                     = 0x0B,
+    PIC_COMMAND_CONFIG                  = 0x11,
+    PIC_COMMAND_EOI                     = 0x20
+
+};
+
+enum pic_data
+{
+
+    PIC_DATA_8086                       = 0x01,
+    PIC_DATA_VECTOR0                    = 0x20,
+    PIC_DATA_VECTOR1                    = 0x28
+
+};
+
 static struct pic_routine routines[PIC_ROUTINE_SLOTS];
 
 static void raise(unsigned int index)
@@ -66,9 +97,9 @@ static void reset(unsigned int slave)
 {
 
     if (slave)
-        io_outb(PIC_COMMAND1, PIC_COMMAND_EOI);
+        io_outb(PIC_REGISTER_COMMAND1, PIC_COMMAND_EOI);
 
-    io_outb(PIC_COMMAND0, PIC_COMMAND_EOI);
+    io_outb(PIC_REGISTER_COMMAND0, PIC_COMMAND_EOI);
 
 }
 
@@ -95,9 +126,9 @@ unsigned int pic_set_routine(unsigned int index, struct base_device *device, voi
     routines[index].callback = callback;
 
     if (index >= 8)
-        pic_enable_line(PIC_DATA1, index);
+        pic_enable_line(PIC_REGISTER_DATA1, index);
     else
-        pic_enable_line(PIC_DATA0, index);
+        pic_enable_line(PIC_REGISTER_DATA0, index);
 
     return 1;
 
@@ -116,9 +147,9 @@ unsigned int pic_unset_routine(unsigned int index, struct base_device *device)
     routines[index].callback = 0;
 
     if (index >= 8)
-        pic_disable_line(PIC_DATA1, index);
+        pic_disable_line(PIC_REGISTER_DATA1, index);
     else
-        pic_disable_line(PIC_DATA0, index);
+        pic_disable_line(PIC_REGISTER_DATA0, index);
 
     return 1;
 
@@ -141,8 +172,8 @@ void init()
     unsigned int offset = sizeof (struct gdt_entry) * GDT_INDEX_KCODE;
 
     memory_clear(&routines, sizeof (struct pic_routine) * PIC_ROUTINE_SLOTS);
-    setup_chip(PIC_COMMAND0, PIC_DATA0, PIC_DATA_VECTOR0, 0x04);
-    setup_chip(PIC_COMMAND1, PIC_DATA1, PIC_DATA_VECTOR1, 0x02);
+    setup_chip(PIC_REGISTER_COMMAND0, PIC_REGISTER_DATA0, PIC_DATA_VECTOR0, 0x04);
+    setup_chip(PIC_REGISTER_COMMAND1, PIC_REGISTER_DATA1, PIC_DATA_VECTOR1, 0x02);
     idt_set_entry(idtp, PIC_DATA_VECTOR0 + 0x00, pic_routine00, offset, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
     idt_set_entry(idtp, PIC_DATA_VECTOR0 + 0x01, pic_routine01, offset, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
     idt_set_entry(idtp, PIC_DATA_VECTOR0 + 0x02, pic_routine02, offset, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
@@ -159,9 +190,9 @@ void init()
     idt_set_entry(idtp, PIC_DATA_VECTOR1 + 0x05, pic_routine0D, offset, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
     idt_set_entry(idtp, PIC_DATA_VECTOR1 + 0x06, pic_routine0E, offset, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
     idt_set_entry(idtp, PIC_DATA_VECTOR1 + 0x07, pic_routine0F, offset, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
-    pic_set_mask(PIC_DATA0, 0xFF);
-    pic_set_mask(PIC_DATA1, 0xFF);
-    pic_enable_line(PIC_DATA0, 2);
+    pic_set_mask(PIC_REGISTER_DATA0, 0xFF);
+    pic_set_mask(PIC_REGISTER_DATA1, 0xFF);
+    pic_enable_line(PIC_REGISTER_DATA0, 2);
 
 }
 

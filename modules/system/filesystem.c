@@ -36,7 +36,7 @@ static unsigned int read_group(struct system_node *node, unsigned int offset, un
         c += memory_read(b + c, count - c, current->name, l, offset);
         offset -= (offset > l) ? l : offset;
 
-        if (current->type == SYSTEM_NODE_TYPE_GROUP)
+        if (current->type == SYSTEM_NODETYPE_GROUP)
         {
 
             c += memory_read(b + c, count - c, "/\n", 2, offset);
@@ -92,7 +92,7 @@ static unsigned int walk(struct vfs_interface *self, unsigned int id, unsigned i
     if (memory_match(path, "../", 3))
         return walk(self, (unsigned int)node->parent, count - 3, path + 3);
 
-    if (node->type == SYSTEM_NODE_TYPE_GROUP)
+    if (node->type == SYSTEM_NODETYPE_GROUP)
     {
 
         struct system_group *group = (struct system_group *)node;
@@ -105,7 +105,7 @@ static unsigned int walk(struct vfs_interface *self, unsigned int id, unsigned i
             if (!memory_match(current->name, path, l))
                 continue;
 
-            return (current->type == SYSTEM_NODE_TYPE_GROUP) ? walk(self, (unsigned int)current, count - l - 1, path + l + 1) : walk(self, (unsigned int)current, count - l, path + l);
+            return (current->type == SYSTEM_NODETYPE_GROUP) ? walk(self, (unsigned int)current, count - l - 1, path + l + 1) : walk(self, (unsigned int)current, count - l, path + l);
 
         }
 
@@ -144,9 +144,9 @@ void system_init_filesystem(struct system_filesystem *filesystem)
     vfs_init_interface(&filesystem->base, (unsigned int)&filesystem->root, open, close, read, write, walk, 0);
     system_init_group(&filesystem->root, "/");
 
-    filesystem->readers[SYSTEM_NODE_TYPE_GROUP] = read_group;
-    filesystem->readers[SYSTEM_NODE_TYPE_STREAM] = read_stream;
-    filesystem->writers[SYSTEM_NODE_TYPE_STREAM] = write_stream;
+    filesystem->readers[SYSTEM_NODETYPE_GROUP] = read_group;
+    filesystem->readers[SYSTEM_NODETYPE_STREAM] = read_stream;
+    filesystem->writers[SYSTEM_NODETYPE_STREAM] = write_stream;
 
 }
 

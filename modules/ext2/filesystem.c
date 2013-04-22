@@ -3,6 +3,47 @@
 #include <block/block.h>
 #include "ext2.h"
 
+enum ext2_state
+{
+
+    EXT2_STATE_CLEAN                    = 1,
+    EXT2_STATE_DIRTY                    = 2
+
+};
+
+enum ext2_error
+{
+
+    EXT2_ERROR_IGNORE                   = 1,
+    EXT2_ERROR_RO                       = 2,
+    EXT2_ERROR_PANIC                    = 3
+
+};
+
+enum ext2_osid
+{
+
+    EXT2_OSID_LINUX                     = 0,
+    EXT2_OSID_HURD                      = 1,
+    EXT2_OSID_MASIX                     = 2,
+    EXT2_OSID_FREEBSD                   = 3,
+    EXT2_OSID_OTHERBSD                  = 4
+
+};
+
+enum ext2_nodetype
+{
+
+    EXT2_NODETYPE_FIFO                  = 0x1000,
+    EXT2_NODETYPE_CHAR                  = 0x2000,
+    EXT2_NODETYPE_DIR                   = 0x4000,
+    EXT2_NODETYPE_BLOCK                 = 0x6000,
+    EXT2_NODETYPE_REGULAR               = 0x8000,
+    EXT2_NODETYPE_SYM                   = 0xA000,
+    EXT2_NODETYPE_SOCKET                = 0xC000
+
+};
+
 static unsigned int open(struct vfs_interface *self, unsigned int id)
 {
 
@@ -31,7 +72,7 @@ static unsigned int read(struct vfs_interface *self, unsigned int id, unsigned i
     protocol->read_node(filesystem->interface, id, &bg, &node);
     protocol->read_content(filesystem->interface, &node, content);
 
-    if ((node.type & 0xF000) == EXT2_NODE_TYPE_DIR)
+    if ((node.type & 0xF000) == EXT2_NODETYPE_DIR)
     {
 
         char *out = buffer;
@@ -55,7 +96,7 @@ static unsigned int read(struct vfs_interface *self, unsigned int id, unsigned i
 
     }
 
-    if ((node.type & 0xF000) == EXT2_NODE_TYPE_REGULAR)
+    if ((node.type & 0xF000) == EXT2_NODETYPE_REGULAR)
         return memory_read(buffer, count, content, node.sizeLow, offset);
 
     return 0;
@@ -83,7 +124,7 @@ static struct ext2_entry *finddir(struct vfs_interface *self, unsigned int id, c
     protocol->read_node(filesystem->interface, id, &bg, &node);
     protocol->read_content(filesystem->interface, &node, private);
 
-    if ((node.type & 0xF000) == EXT2_NODE_TYPE_DIR)
+    if ((node.type & 0xF000) == EXT2_NODETYPE_DIR)
     {
 
         for (;;)

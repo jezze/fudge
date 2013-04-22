@@ -1,16 +1,21 @@
-#define BASE_TYPE_BUS                   1
-#define BASE_TYPE_DEVICE                2
-#define BASE_TYPE_DRIVER                3
-
 struct base_bus;
 struct base_device;
 struct base_driver;
+
+enum base_type
+{
+
+    BASE_TYPE_BUS                       = 0x01,
+    BASE_TYPE_DEVICE                    = 0x02,
+    BASE_TYPE_DRIVER                    = 0x03
+
+};
 
 struct base_module
 {
 
     struct base_module *sibling;
-    unsigned int type;
+    enum base_type type;
     char *name;
 
 };

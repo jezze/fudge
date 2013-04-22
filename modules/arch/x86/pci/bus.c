@@ -3,6 +3,14 @@
 #include <arch/x86/io/io.h>
 #include "pci.h"
 
+enum pci_register
+{
+
+    PCI_REGISTER_CONTROL                = 0x0CF8,
+    PCI_REGISTER_DATA                   = 0x0CFC
+
+};
+
 unsigned int pci_bus_ind(struct pci_bus *bus, unsigned int address, unsigned short offset)
 {
 
@@ -105,8 +113,8 @@ void pci_init_bus(struct pci_bus *bus)
     memory_clear(bus, sizeof (struct pci_bus));
     base_init_bus(&bus->base, PCI_BUS_TYPE, "pci", scan);
 
-    bus->control = PCI_BUS_CONTROL;
-    bus->data = PCI_BUS_DATA;
+    bus->control = PCI_REGISTER_CONTROL;
+    bus->data = PCI_REGISTER_DATA;
 
 }
 

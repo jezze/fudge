@@ -7,6 +7,14 @@
 #include <arch/x86/io/io.h>
 #include "ps2.h"
 
+enum ps2_register
+{
+
+    PS2_REGISTER_DATA                   = 0x0060,
+    PS2_REGISTER_CONTROL                = 0x0064
+
+};
+
 unsigned char ps2_bus_read_status(struct ps2_bus *bus)
 {
 
@@ -120,8 +128,8 @@ void ps2_init_bus(struct ps2_bus *bus)
     memory_clear(bus, sizeof (struct ps2_bus));
     base_init_bus(&bus->base, PS2_BUS_TYPE, "ps2", scan);
 
-    bus->control = PS2_BUS_CONTROL;
-    bus->data = PS2_BUS_DATA;
+    bus->control = PS2_REGISTER_CONTROL;
+    bus->data = PS2_REGISTER_DATA;
 
 }
 

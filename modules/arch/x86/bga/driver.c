@@ -6,11 +6,47 @@
 #include <arch/x86/pci/pci.h>
 #include "bga.h"
 
+enum bga_register
+{
+
+    BGA_REGISTER_COMMAND                = 0x01CE,
+    BGA_REGISTER_DATA                   = 0x01CF
+
+};
+
+enum bga_command
+{
+
+    BGA_COMMAND_ID                      = 0x0000,
+    BGA_COMMAND_XRES                    = 0x0001,
+    BGA_COMMAND_YRES                    = 0x0002,
+    BGA_COMMAND_BPP                     = 0x0003,
+    BGA_COMMAND_ENABLE                  = 0x0004,
+    BGA_COMMAND_BANK                    = 0x0005,
+    BGA_COMMAND_VIRT_WIDTH              = 0x0006,
+    BGA_COMMAND_VIRT_HEIGHT             = 0x0007,
+    BGA_COMMAND_XOFF                    = 0x0008,
+    BGA_COMMAND_YOFF                    = 0x0009
+
+};
+
+enum bga_bpp
+{
+
+    BGA_BPP_4                           = 0x04,
+    BGA_BPP_8                           = 0x08,
+    BGA_BPP_15                          = 0x0F,
+    BGA_BPP_16                          = 0x10,
+    BGA_BPP_24                          = 0x18,
+    BGA_BPP_32                          = 0x20
+
+};
+
 static void write_register(unsigned short index, unsigned short data)
 {
 
-    io_outw(BGA_COMMAND, index);
-    io_outw(BGA_DATA, data);
+    io_outw(BGA_REGISTER_COMMAND, index);
+    io_outw(BGA_REGISTER_DATA, data);
 
 }
 

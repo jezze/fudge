@@ -1,6 +1,3 @@
-#define PCI_BUS_CONTROL                 0x0CF8
-#define PCI_BUS_DATA                    0x0CFC
-
 #define PCI_CLASS_UNKNOWN               0x00
 #define PCI_CLASS_STORAGE               0x01
 #define PCI_CLASS_NETWORK               0x02

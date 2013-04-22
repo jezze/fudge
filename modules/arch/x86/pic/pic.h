@@ -1,18 +1,3 @@
-#define PIC_ROUTINE_SLOTS               16
-
-#define PIC_COMMAND0                    0x20
-#define PIC_DATA0                       0x21
-#define PIC_COMMAND1                    0xA0
-#define PIC_DATA1                       0xA1
-
-#define PIC_COMMAND_IRR                 0x0A
-#define PIC_COMMAND_ISR                 0x0B
-#define PIC_COMMAND_CONFIG              0x11
-#define PIC_COMMAND_EOI                 0x20
-#define PIC_DATA_8086                   0x01
-#define PIC_DATA_VECTOR0                0x20
-#define PIC_DATA_VECTOR1                0x28
-
 struct pic_registers
 {
 

@@ -93,7 +93,7 @@ void system_init_group(struct system_group *group, char *name)
 {
 
     memory_clear(group, sizeof (struct system_group));
-    system_init_node(&group->node, SYSTEM_NODE_TYPE_GROUP, name);
+    system_init_node(&group->node, SYSTEM_NODETYPE_GROUP, name);
 
 }
 
@@ -101,7 +101,7 @@ void system_init_stream(struct system_stream *stream, char *name, unsigned int (
 {
 
     memory_clear(stream, sizeof (struct system_stream));
-    system_init_node(&stream->node, SYSTEM_NODE_TYPE_STREAM, name);
+    system_init_node(&stream->node, SYSTEM_NODETYPE_STREAM, name);
 
     stream->read = read;
     stream->write = write;

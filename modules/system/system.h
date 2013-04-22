@@ -1,13 +1,18 @@
-#define SYSTEM_NODE_TYPE_NONE           0
-#define SYSTEM_NODE_TYPE_GROUP          1
-#define SYSTEM_NODE_TYPE_STREAM         2
+enum system_nodetype
+{
+
+    SYSTEM_NODETYPE_NONE                = 0,
+    SYSTEM_NODETYPE_GROUP               = 1,
+    SYSTEM_NODETYPE_STREAM              = 2
+
+};
 
 struct system_node
 {
 
     struct system_node *parent;
     struct system_node *sibling;
-    unsigned int type;
+    enum system_nodetype type;
     char *name;
 
 };
