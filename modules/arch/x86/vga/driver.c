@@ -3,12 +3,12 @@
 #include <terminal/terminal.h>
 #include <video/video.h>
 #include <arch/x86/io/io.h>
+#include <arch/x86/pci/pci.h>
 #include "vga.h"
 
 #define VGA_ADDRESS                     0x000A0000
 #define VGA_TEXT_ADDRESS                0x000B8000
 #define VGA_TEXT_SIZE                   2000
-#define VGA_AR_ENABLE                   (1 << 5)
 
 enum vga_register
 {
@@ -59,7 +59,8 @@ enum vga_arindex
     VGA_ARINDEX_AR11                    = 0x11,
     VGA_ARINDEX_AR12                    = 0x12,
     VGA_ARINDEX_AR13                    = 0x13,
-    VGA_ARINDEX_AR14                    = 0x14
+    VGA_ARINDEX_AR14                    = 0x14,
+    VGA_ARINDEX_ENABLE                  = (1 << 5)
 
 };
 
@@ -445,7 +446,7 @@ static void mode(struct video_interface *interface, int chain4)
 
     }
 
-    io_outb(VGA_REGISTER_ARINDEX, VGA_AR_ENABLE);
+    io_outb(VGA_REGISTER_ARINDEX, VGA_ARINDEX_ENABLE);
 
 }
 
@@ -583,11 +584,28 @@ static void start(struct base_driver *self)
 
 }
 
+static void attach(struct base_device *device)
+{
+
+}
+
+static unsigned int check(struct base_device *device)
+{
+
+    struct pci_device *pciDevice = (struct pci_device *)device;
+
+    if (device->type != PCI_DEVICE_TYPE)
+        return 0;
+
+    return pci_device_inb(pciDevice, PCI_CONFIG_CLASS) == 0x03 && pci_device_inb(pciDevice, PCI_CONFIG_SUBCLASS) == 0x00 && pci_device_inb(pciDevice, PCI_CONFIG_INTERFACE) == 0x00;
+
+}
+
 void vga_init_driver(struct vga_driver *driver)
 {
 
     memory_clear(driver, sizeof (struct vga_driver));
-    base_init_driver(&driver->base, "vga", start, 0, 0);
+    base_init_driver(&driver->base, "vga", start, check, attach);
     terminal_init_interface(&driver->iterminal, &driver->base, read_terminal_data, write_terminal_data);
     video_init_interface(&driver->ivideo, &driver->base, enable, read_video_data, write_video_data, read_video_colormap, write_video_colormap);
 
