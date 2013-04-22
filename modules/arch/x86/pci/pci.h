@@ -1,3 +1,6 @@
+#define PCI_BUS_TYPE                    0x0004
+#define PCI_DEVICE_TYPE                 0x0004
+
 enum pci_class
 {
 
@@ -44,9 +47,6 @@ enum pci_config
 
 };
 
-#define PCI_BUS_TYPE                    0x0004
-#define PCI_DEVICE_TYPE                 0x0004
-
 struct pci_bus;
 
 struct pci_device
@@ -64,16 +64,14 @@ struct pci_bus
 {
 
     struct base_bus base;
-    unsigned short control;
-    unsigned short data;
     struct {struct pci_device item[64]; unsigned int count;} devices;
 
 };
 
-unsigned int pci_calculate_address(unsigned int num, unsigned int slot, unsigned int function);
-unsigned int pci_bus_ind(struct pci_bus *bus, unsigned int address, unsigned short offset);
-unsigned short pci_bus_inw(struct pci_bus *bus, unsigned int address, unsigned short offset);
-unsigned char pci_bus_inb(struct pci_bus *bus, unsigned int address, unsigned short offset);
+unsigned int pci_address(unsigned int num, unsigned int slot, unsigned int function);
+unsigned int pci_ind(unsigned int address, unsigned short offset);
+unsigned short pci_inw(unsigned int address, unsigned short offset);
+unsigned char pci_inb(unsigned int address, unsigned short offset);
 unsigned int pci_device_ind(struct pci_device *device, unsigned short offset);
 unsigned short pci_device_inw(struct pci_device *device, unsigned short offset);
 unsigned char pci_device_inb(struct pci_device *device, unsigned short offset);

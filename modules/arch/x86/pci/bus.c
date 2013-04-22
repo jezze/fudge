@@ -11,30 +11,37 @@ enum pci_register
 
 };
 
-unsigned int pci_bus_ind(struct pci_bus *bus, unsigned int address, unsigned short offset)
+unsigned int pci_address(unsigned int num, unsigned int slot, unsigned int function)
 {
 
-    io_outd(bus->control, address | (offset & 0xFC));
-
-    return io_ind(bus->data);
+    return 0x80000000 | (num << 16) | (slot << 11) | (function << 8);
 
 }
 
-unsigned short pci_bus_inw(struct pci_bus *bus, unsigned int address, unsigned short offset)
+unsigned int pci_ind(unsigned int address, unsigned short offset)
 {
 
-    io_outd(bus->control, address | (offset & 0xFC));
+    io_outd(PCI_REGISTER_CONTROL, address | (offset & 0xFC));
 
-    return (unsigned short)(io_ind(bus->data) >> ((offset & 2) * 8));
+    return io_ind(PCI_REGISTER_DATA);
 
 }
 
-unsigned char pci_bus_inb(struct pci_bus *bus, unsigned int address, unsigned short offset)
+unsigned short pci_inw(unsigned int address, unsigned short offset)
 {
 
-    io_outd(bus->control, address | (offset & 0xFC));
+    io_outd(PCI_REGISTER_CONTROL, address | (offset & 0xFC));
 
-    return (unsigned char)(io_ind(bus->data) >> ((offset & 3) * 8));
+    return (unsigned short)(io_ind(PCI_REGISTER_DATA) >> ((offset & 2) * 8));
+
+}
+
+unsigned char pci_inb(unsigned int address, unsigned short offset)
+{
+
+    io_outd(PCI_REGISTER_CONTROL, address | (offset & 0xFC));
+
+    return (unsigned char)(io_ind(PCI_REGISTER_DATA) >> ((offset & 3) * 8));
 
 }
 
@@ -58,18 +65,18 @@ static void detect(struct pci_bus *bus, unsigned int num)
     {
 
         unsigned int header;
-        unsigned int address = pci_calculate_address(num, slot, 0);
+        unsigned int address = pci_address(num, slot, 0);
 
-        if (pci_bus_inw(bus, address, 0x00) == 0xFFFF)
+        if (pci_inw(address, 0x00) == 0xFFFF)
             continue;
 
-        header = pci_bus_inb(bus, address, 0x0E);
+        header = pci_inb(address, 0x0E);
 
         if ((header & 0x01))
-            detect(bus, pci_bus_inb(bus, address, 0x19));
+            detect(bus, pci_inb(address, 0x19));
 
         if ((header & 0x02))
-            detect(bus, pci_bus_inb(bus, address, 0x18));
+            detect(bus, pci_inb(address, 0x18));
 
         if ((header & 0x80))
         {
@@ -79,9 +86,9 @@ static void detect(struct pci_bus *bus, unsigned int num)
             for (function = 0; function < 8; function++)
             {
 
-                unsigned int address = pci_calculate_address(num, slot, function);
+                unsigned int address = pci_address(num, slot, function);
 
-                if (pci_bus_inw(bus, address, 0x00) == 0xFFFF)
+                if (pci_inw(address, 0x00) == 0xFFFF)
                     continue;
 
                 add_device(bus, num, slot, function);
@@ -112,9 +119,6 @@ void pci_init_bus(struct pci_bus *bus)
 
     memory_clear(bus, sizeof (struct pci_bus));
     base_init_bus(&bus->base, PCI_BUS_TYPE, "pci", scan);
-
-    bus->control = PCI_REGISTER_CONTROL;
-    bus->data = PCI_REGISTER_DATA;
 
 }
 

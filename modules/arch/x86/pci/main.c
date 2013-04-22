@@ -4,13 +4,6 @@
 
 static struct pci_bus bus;
 
-unsigned int pci_calculate_address(unsigned int num, unsigned int slot, unsigned int function)
-{
-
-    return 0x80000000 | (num << 16) | (slot << 11) | (function << 8);
-
-}
-
 void init()
 {
 
