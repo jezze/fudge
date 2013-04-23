@@ -279,18 +279,19 @@ static void write16i(unsigned short port, unsigned char index, unsigned char val
 
 }
 
-static void mode(struct video_interface *interface, int chain4)
+static void mode(struct video_interface *self)
 {
 
+    unsigned int chain4 = 1;
     unsigned char misc = VGA_MISCWRITE_COLOR | VGA_MISCWRITE_ENABLE | VGA_MISCWRITE_PAGESELECT;
     unsigned char *w;
     unsigned char *h;
     unsigned int a;
 
-    if (chain4 && interface->xres * interface->yres > 65536)
+    if (chain4 && self->xres * self->yres > 65536)
         return;
 
-    switch (interface->xres)
+    switch (self->xres)
     {
 
         case 256:
@@ -328,7 +329,7 @@ static void mode(struct video_interface *interface, int chain4)
 
     }
 
-    switch (interface->yres)
+    switch (self->yres)
     {
 
         case 200:
@@ -447,13 +448,6 @@ static void mode(struct video_interface *interface, int chain4)
     }
 
     io_outb(VGA_REGISTER_ARINDEX, VGA_ARINDEX_ENABLE);
-
-}
-
-static void enable(struct video_interface *self)
-{
-
-    mode(self, 1);
 
 }
 
@@ -607,7 +601,7 @@ void vga_init_driver(struct vga_driver *driver)
     memory_clear(driver, sizeof (struct vga_driver));
     base_init_driver(&driver->base, "vga", start, check, attach);
     terminal_init_interface(&driver->iterminal, &driver->base, read_terminal_data, write_terminal_data);
-    video_init_interface(&driver->ivideo, &driver->base, enable, read_video_data, write_video_data, read_video_colormap, write_video_colormap);
+    video_init_interface(&driver->ivideo, &driver->base, mode, read_video_data, write_video_data, read_video_colormap, write_video_colormap);
 
     driver->ivideo.xres = 80;
     driver->ivideo.yres = 25;

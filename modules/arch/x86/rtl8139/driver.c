@@ -162,7 +162,7 @@ static void handle_irq(struct base_device *device)
     if (status & RTL8139_ISR_ROK)
     {
 
-        unsigned char cr = io_ind(driver->io + RTL8139_REGISTER_CR);
+        unsigned char cr = io_inb(driver->io + RTL8139_REGISTER_CR);
         unsigned short cbr = io_inw(driver->io + RTL8139_REGISTER_CBR);
         unsigned short capr = io_inw(driver->io + RTL8139_REGISTER_CAPR);
         struct rtl8139_header *header = (struct rtl8139_header *)(driver->rx);

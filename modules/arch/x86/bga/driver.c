@@ -87,7 +87,7 @@ static unsigned int check(struct base_device *device)
 
 }
 
-static void enable(struct video_interface *self)
+static void mode(struct video_interface *self)
 {
 
     write_register(BGA_COMMAND_ENABLE, 0x00);
@@ -123,7 +123,7 @@ void bga_init_driver(struct bga_driver *driver)
 
     memory_clear(driver, sizeof (struct bga_driver));
     base_init_driver(&driver->base, "bga", start, check, attach);
-    video_init_interface(&driver->ivideo, &driver->base, enable, read_data, write_data, 0, 0);
+    video_init_interface(&driver->ivideo, &driver->base, mode, read_data, write_data, 0, 0);
 
     driver->ivideo.xres = 800;
     driver->ivideo.yres = 600;

@@ -5,11 +5,11 @@ struct rtl8139_driver
     struct net_interface inet;
     unsigned short io;
     unsigned int mmio;
-    char rx[0x2600] __attribute__((aligned(4)));
-    char tx0[0x800] __attribute__((aligned(4)));
-    char tx1[0x800] __attribute__((aligned(4)));
-    char tx2[0x800] __attribute__((aligned(4)));
-    char tx3[0x800] __attribute__((aligned(4)));
+    unsigned char rx[0x2600];
+    unsigned char tx0[0x800];
+    unsigned char tx1[0x800];
+    unsigned char tx2[0x800];
+    unsigned char tx3[0x800];
     unsigned short rxp;
     unsigned short txp;
 
