@@ -115,4 +115,4 @@ unsigned int ide_bus_read_blocks(struct ide_bus *bus, unsigned int count, void *
 unsigned int ide_bus_write_block(struct ide_bus *bus, unsigned int count, void *buffer);
 unsigned int ide_bus_write_blocks(struct ide_bus *bus, unsigned int count, void *buffer);
 void ide_init_device(struct ide_device *device, struct ide_bus *bus, unsigned int irq, unsigned int slave, unsigned int type);
-void ide_init_bus(struct ide_bus *bus, unsigned int control, unsigned int data);
+void ide_init_bus(struct ide_bus *bus, unsigned short control, unsigned short data);

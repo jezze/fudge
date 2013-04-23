@@ -195,7 +195,7 @@ static void scan(struct base_bus *self)
 
 }
 
-void ide_init_bus(struct ide_bus *bus, unsigned int control, unsigned int data)
+void ide_init_bus(struct ide_bus *bus, unsigned short control, unsigned short data)
 {
 
     memory_clear(bus, sizeof (struct ide_bus));
