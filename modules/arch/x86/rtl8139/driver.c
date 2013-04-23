@@ -7,6 +7,9 @@
 #include <arch/x86/pci/pci.h>
 #include "rtl8139.h"
 
+#define RTL8139_PCI_VENDOR              0x10EC
+#define RTL8139_PCI_DEVICE              0x8139
+
 enum rtl8139_register
 {
 
@@ -68,6 +71,29 @@ enum rtl8139_isr
 
     RTL8139_ISR_ROK                     = (1 << 0),
     RTL8139_ISR_TOK                     = (1 << 2)
+
+};
+
+enum rtl8139_headerflag
+{
+
+    RTL8139_HEADERFLAG_ROK              = (1 << 0),
+    RTL8139_HEADERFLAG_FAE              = (1 << 1),
+    RTL8139_HEADERFLAG_CRC              = (1 << 2),
+    RTL8139_HEADERFLAG_LONG             = (1 << 3),
+    RTL8139_HEADERFLAG_RUNT             = (1 << 4),
+    RTL8139_HEADERFLAG_ISE              = (1 << 5),
+    RTL8139_HEADERFLAG_BAR              = (1 << 13),
+    RTL8139_HEADERFLAG_PAM              = (1 << 14),
+    RTL8139_HEADERFLAG_MAR              = (1 << 15)
+
+};
+
+struct rtl8139_header
+{
+
+    unsigned short flags;
+    unsigned short length;
 
 };
 
