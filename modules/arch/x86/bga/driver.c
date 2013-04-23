@@ -6,6 +6,9 @@
 #include <arch/x86/pci/pci.h>
 #include "bga.h"
 
+#define BGA_PCI_VENDOR                  0x1234
+#define BGA_PCI_DEVICE                  0x1111
+
 enum bga_register
 {
 
@@ -80,7 +83,7 @@ static unsigned int check(struct base_device *device)
     if (device->type != PCI_DEVICE_TYPE)
         return 0;
 
-    return pci_device_inw(pciDevice, PCI_CONFIG_VENDOR) == 0x1234 && pci_device_inw(pciDevice, PCI_CONFIG_DEVICE) == 0x1111;
+    return pci_device_inw(pciDevice, PCI_CONFIG_VENDOR) == BGA_PCI_VENDOR && pci_device_inw(pciDevice, PCI_CONFIG_DEVICE) == BGA_PCI_DEVICE;
 
 }
 
