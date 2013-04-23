@@ -7,6 +7,14 @@
 #include <mouse/mouse.h>
 #include "ps2.h"
 
+enum ps2_register
+{
+
+    PS2_REGISTER_DATA                   = 0x0060,
+    PS2_REGISTER_CONTROL                = 0x0064
+
+};
+
 static struct ps2_bus bus;
 static struct ps2_kbd_driver kbd;
 static struct ps2_mouse_driver mouse;
@@ -33,7 +41,7 @@ void init()
 
     unsigned int i;
 
-    ps2_init_bus(&bus);
+    ps2_init_bus(&bus, PS2_REGISTER_CONTROL, PS2_REGISTER_DATA);
     base_register_bus(&bus.base);
 
     for (i = 0; i < bus.devices.count; i++)

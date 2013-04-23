@@ -50,7 +50,7 @@ unsigned char ps2_bus_read_data_async(struct ps2_bus *bus);
 void ps2_bus_write_command(struct ps2_bus *bus, unsigned char value);
 void ps2_bus_write_data(struct ps2_bus *bus, unsigned char value);
 void ps2_bus_reset(struct ps2_bus *bus);
-void ps2_init_bus(struct ps2_bus *bus);
+void ps2_init_bus(struct ps2_bus *bus, unsigned short control, unsigned short data);
 void ps2_init_device(struct ps2_device *device, struct ps2_bus *bus, char *name, unsigned int irq);
 void ps2_init_kbd_driver(struct ps2_kbd_driver *driver);
 void ps2_init_mouse_driver(struct ps2_mouse_driver *driver);

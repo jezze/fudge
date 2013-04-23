@@ -1,12 +1,3 @@
-#define IDE_BUS1_DATA1                  0x0168
-#define IDE_BUS0_DATA1                  0x0170
-#define IDE_BUS1_DATA0                  0x01E8
-#define IDE_BUS0_DATA0                  0x01F0
-#define IDE_BUS1_CONTROL1               0x0366
-#define IDE_BUS0_CONTROL1               0x0376
-#define IDE_BUS1_CONTROL0               0x03E6
-#define IDE_BUS0_CONTROL0               0x03F6
-
 #define IDE_CONTROL_ATAPI_EJECT         0x1B
 #define IDE_CONTROL_PIO28_READ          0x20
 #define IDE_CONTROL_PIO48_READ          0x24
