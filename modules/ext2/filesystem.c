@@ -61,12 +61,12 @@ static unsigned int close(struct vfs_interface *self, unsigned int id)
 static unsigned int read(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct ext2_blockgroup bg;
-    struct ext2_node node;
-    char content[1024];
-    char *private = content;
     struct ext2_filesystem *filesystem = (struct ext2_filesystem *)self;
     struct ext2_protocol *protocol = (struct ext2_protocol *)filesystem->protocol;
+    struct ext2_blockgroup bg;
+    struct ext2_node node;
+    unsigned char content[1024];
+    unsigned char *private = content;
 
     protocol->read_blockgroup(filesystem->interface, id, &bg);
     protocol->read_node(filesystem->interface, id, &bg, &node);
@@ -75,7 +75,7 @@ static unsigned int read(struct vfs_interface *self, unsigned int id, unsigned i
     if ((node.type & 0xF000) == EXT2_NODETYPE_DIR)
     {
 
-        char *out = buffer;
+        unsigned char *out = buffer;
         unsigned int length = 0;
 
         for (;;)
@@ -113,12 +113,12 @@ static unsigned int write(struct vfs_interface *self, unsigned int id, unsigned 
 static struct ext2_entry *finddir(struct vfs_interface *self, unsigned int id, const char *name)
 {
 
-    struct ext2_blockgroup bg;
-    struct ext2_node node;
-    char content[1024];
-    char *private = content;
     struct ext2_filesystem *filesystem = (struct ext2_filesystem *)self;
     struct ext2_protocol *protocol = (struct ext2_protocol *)filesystem->protocol;
+    struct ext2_blockgroup bg;
+    struct ext2_node node;
+    unsigned char content[1024];
+    unsigned char *private = content;
 
     protocol->read_blockgroup(filesystem->interface, id, &bg);
     protocol->read_node(filesystem->interface, id, &bg, &node);
@@ -172,7 +172,6 @@ void ext2_init_filesystem(struct ext2_filesystem *filesystem, struct ext2_protoc
 {
 
     memory_clear(filesystem, sizeof (struct ext2_filesystem));
-
     vfs_init_interface(&filesystem->base, 2, open, close, read, write, walk, 0);
 
     filesystem->protocol = protocol;

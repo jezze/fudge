@@ -17,11 +17,11 @@ static void read_superblock(struct block_interface *interface, struct ext2_super
 static void read_blockgroup(struct block_interface *interface, unsigned int id, struct ext2_blockgroup *bg)
 {
 
-    char buffer[1024];
+    struct ext2_superblock sb;
+    unsigned char buffer[1024];
     unsigned int blocksize;
     unsigned int sectorsize;
     unsigned int nodegroup;
-    struct ext2_superblock sb;
 
     read_superblock(interface, &sb);
 
@@ -37,13 +37,13 @@ static void read_blockgroup(struct block_interface *interface, unsigned int id, 
 static void read_node(struct block_interface *interface, unsigned int id, struct ext2_blockgroup *bg, struct ext2_node *node)
 {
 
-    char buffer[1024];
+    struct ext2_superblock sb;
+    unsigned char buffer[1024];
     unsigned int blocksize;
     unsigned int sectorsize;
     unsigned int nodesize;
     unsigned int nodeindex;
     unsigned int nodeblock;
-    struct ext2_superblock sb;
 
     read_superblock(interface, &sb);
 
@@ -61,9 +61,9 @@ static void read_node(struct block_interface *interface, unsigned int id, struct
 static void read_content(struct block_interface *interface, struct ext2_node *node, void *buffer)
 {
 
+    struct ext2_superblock sb;
     unsigned int blocksize;
     unsigned int sectorsize;
-    struct ext2_superblock sb;
 
     read_superblock(interface, &sb);
 

@@ -2,14 +2,14 @@
 #include <net/net.h>
 #include "ipv4.h"
 
-unsigned int read(struct net_interface *interface, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int read(struct net_interface *interface, unsigned int offset, unsigned int count, void *buffer)
 {
 
     return 0;
 
 }
 
-unsigned int write(struct net_interface *interface, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int write(struct net_interface *interface, unsigned int offset, unsigned int count, void *buffer)
 {
 
     return 0;
