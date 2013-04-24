@@ -70,10 +70,9 @@ struct pci_bus
 
 };
 
-unsigned int pci_address(unsigned int num, unsigned int slot, unsigned int function);
-unsigned int pci_bus_ind(struct pci_bus *bus, unsigned int address, unsigned short offset);
-unsigned short pci_bus_inw(struct pci_bus *bus, unsigned int address, unsigned short offset);
-unsigned char pci_bus_inb(struct pci_bus *bus, unsigned int address, unsigned short offset);
+unsigned int pci_bus_ind(struct pci_bus *bus, unsigned int num, unsigned int slot, unsigned int function, unsigned short offset);
+unsigned short pci_bus_inw(struct pci_bus *bus, unsigned int num, unsigned int slot, unsigned int function, unsigned short offset);
+unsigned char pci_bus_inb(struct pci_bus *bus, unsigned int num, unsigned int slot, unsigned int function, unsigned short offset);
 unsigned int pci_device_ind(struct pci_device *device, unsigned short offset);
 unsigned short pci_device_inw(struct pci_device *device, unsigned short offset);
 unsigned char pci_device_inb(struct pci_device *device, unsigned short offset);

@@ -3,35 +3,35 @@
 #include <arch/x86/io/io.h>
 #include "pci.h"
 
-unsigned int pci_address(unsigned int num, unsigned int slot, unsigned int function)
+static unsigned int calculate_address(unsigned int num, unsigned int slot, unsigned int function)
 {
 
     return 0x80000000 | (num << 16) | (slot << 11) | (function << 8);
 
 }
 
-unsigned int pci_bus_ind(struct pci_bus *bus, unsigned int address, unsigned short offset)
+unsigned int pci_bus_ind(struct pci_bus *bus, unsigned int num, unsigned int slot, unsigned int function, unsigned short offset)
 {
 
-    io_outd(bus->control, address | (offset & 0xFC));
+    io_outd(bus->control, calculate_address(num, slot, function) | (offset & 0xFC));
 
     return io_ind(bus->data);
 
 }
 
-unsigned short pci_bus_inw(struct pci_bus *bus, unsigned int address, unsigned short offset)
+unsigned short pci_bus_inw(struct pci_bus *bus, unsigned int num, unsigned int slot, unsigned int function, unsigned short offset)
 {
 
-    io_outd(bus->control, address | (offset & 0xFC));
+    io_outd(bus->control, calculate_address(num, slot, function) | (offset & 0xFC));
 
     return (unsigned short)(io_ind(bus->data) >> ((offset & 2) * 8));
 
 }
 
-unsigned char pci_bus_inb(struct pci_bus *bus, unsigned int address, unsigned short offset)
+unsigned char pci_bus_inb(struct pci_bus *bus, unsigned int num, unsigned int slot, unsigned int function, unsigned short offset)
 {
 
-    io_outd(bus->control, address | (offset & 0xFC));
+    io_outd(bus->control, calculate_address(num, slot, function) | (offset & 0xFC));
 
     return (unsigned char)(io_ind(bus->data) >> ((offset & 3) * 8));
 
@@ -57,18 +57,17 @@ static void detect(struct pci_bus *bus, unsigned int num)
     {
 
         unsigned int header;
-        unsigned int address = pci_address(num, slot, 0);
 
-        if (pci_bus_inw(bus, address, 0x00) == 0xFFFF)
+        if (pci_bus_inw(bus, num, slot, 0, 0x00) == 0xFFFF)
             continue;
 
-        header = pci_bus_inb(bus, address, 0x0E);
+        header = pci_bus_inb(bus, num, slot, 0, 0x0E);
 
         if ((header & 0x01))
-            detect(bus, pci_bus_inb(bus, address, 0x19));
+            detect(bus, pci_bus_inb(bus, num, slot, 0, 0x19));
 
         if ((header & 0x02))
-            detect(bus, pci_bus_inb(bus, address, 0x18));
+            detect(bus, pci_bus_inb(bus, num, slot, 0, 0x18));
 
         if ((header & 0x80))
         {
@@ -78,9 +77,7 @@ static void detect(struct pci_bus *bus, unsigned int num)
             for (function = 0; function < 8; function++)
             {
 
-                unsigned int address = pci_address(num, slot, function);
-
-                if (pci_bus_inw(bus, address, 0x00) == 0xFFFF)
+                if (pci_bus_inw(bus, num, slot, function, 0x00) == 0xFFFF)
                     continue;
 
                 add_device(bus, num, slot, function);

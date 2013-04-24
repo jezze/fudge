@@ -5,21 +5,21 @@
 unsigned int pci_device_ind(struct pci_device *device, unsigned short offset)
 {
 
-    return pci_bus_ind(device->bus, pci_address(device->num, device->slot, device->function), offset);
+    return pci_bus_ind(device->bus, device->num, device->slot, device->function, offset);
 
 }
 
 unsigned short pci_device_inw(struct pci_device *device, unsigned short offset)
 {
 
-    return pci_bus_inw(device->bus, pci_address(device->num, device->slot, device->function), offset);
+    return pci_bus_inw(device->bus, device->num, device->slot, device->function, offset);
 
 }
 
 unsigned char pci_device_inb(struct pci_device *device, unsigned short offset)
 {
 
-    return pci_bus_inb(device->bus, pci_address(device->num, device->slot, device->function), offset);
+    return pci_bus_inb(device->bus, device->num, device->slot, device->function, offset);
 
 }
 
