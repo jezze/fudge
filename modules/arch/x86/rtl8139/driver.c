@@ -221,7 +221,6 @@ static void attach(struct base_device *device)
     struct rtl8139_driver *driver = (struct rtl8139_driver *)device->driver;
     unsigned int bar0 = pci_device_ind(pciDevice, PCI_CONFIG_BAR0);
     unsigned int bar1 = pci_device_ind(pciDevice, PCI_CONFIG_BAR1);
-    unsigned int irq = pci_device_inb(pciDevice, PCI_CONFIG_IRQ_LINE);
 
     driver->io = bar0 & ~1;
     driver->mmio = bar1 & ~1;
@@ -233,7 +232,7 @@ static void attach(struct base_device *device)
     log_write_number(bar1, 16);
     log_write_string("\n");
 
-    pic_set_routine(irq, device, handle_irq);
+    pic_set_routine(device, handle_irq);
 
 }
 

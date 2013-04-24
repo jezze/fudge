@@ -47,13 +47,10 @@ enum pci_config
 
 };
 
-struct pci_bus;
-
 struct pci_device
 {
 
     struct base_device base;
-    struct pci_bus *bus;
     unsigned int num;
     unsigned int slot;
     unsigned int function;
@@ -77,4 +74,4 @@ unsigned int pci_device_ind(struct pci_device *device, unsigned short offset);
 unsigned short pci_device_inw(struct pci_device *device, unsigned short offset);
 unsigned char pci_device_inb(struct pci_device *device, unsigned short offset);
 void pci_init_bus(struct pci_bus *bus, unsigned short control, unsigned short data);
-void pci_init_device(struct pci_device *device, struct pci_bus *bus, unsigned int num, unsigned int slot, unsigned int function);
+void pci_init_device(struct pci_device *device, struct pci_bus *bus, unsigned int irq, unsigned int num, unsigned int slot, unsigned int function);

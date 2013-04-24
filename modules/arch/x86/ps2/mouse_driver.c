@@ -11,9 +11,9 @@
 static void handle_irq(struct base_device *device)
 {
 
-    struct ps2_device *ps2Device = (struct ps2_device *)device;
+    struct ps2_bus *bus = (struct ps2_bus *)device->bus;
     struct ps2_mouse_driver *driver = (struct ps2_mouse_driver *)device->driver;
-    unsigned char data = ps2_bus_read_data_async(ps2Device->bus);
+    unsigned char data = ps2_bus_read_data_async(bus);
 
     switch (driver->cycle)
     {
@@ -46,23 +46,23 @@ static void handle_irq(struct base_device *device)
 static void attach(struct base_device *device)
 {
 
-    struct ps2_device *ps2Device = (struct ps2_device *)device;
+    struct ps2_bus *bus = (struct ps2_bus *)device->bus;
     unsigned char status;
 
-    pic_set_routine(device->irq, device, handle_irq);
-    ps2_bus_write_command(ps2Device->bus, 0xA8);
-    ps2_bus_write_command(ps2Device->bus, 0x20);
+    pic_set_routine(device, handle_irq);
+    ps2_bus_write_command(bus, 0xA8);
+    ps2_bus_write_command(bus, 0x20);
 
-    status = ps2_bus_read_data(ps2Device->bus) | 2;
+    status = ps2_bus_read_data(bus) | 2;
 
-    ps2_bus_write_command(ps2Device->bus, 0x60);
-    ps2_bus_write_data(ps2Device->bus, status);
-    ps2_bus_write_command(ps2Device->bus, 0xD4);
-    ps2_bus_write_data(ps2Device->bus, 0xF6);
-    ps2_bus_read_data(ps2Device->bus);
-    ps2_bus_write_command(ps2Device->bus, 0xD4);
-    ps2_bus_write_data(ps2Device->bus, 0xF4);
-    ps2_bus_read_data(ps2Device->bus);
+    ps2_bus_write_command(bus, 0x60);
+    ps2_bus_write_data(bus, status);
+    ps2_bus_write_command(bus, 0xD4);
+    ps2_bus_write_data(bus, 0xF6);
+    ps2_bus_read_data(bus);
+    ps2_bus_write_command(bus, 0xD4);
+    ps2_bus_write_data(bus, 0xF4);
+    ps2_bus_read_data(bus);
 
 }
 

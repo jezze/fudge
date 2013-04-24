@@ -24,7 +24,7 @@ unsigned short pci_bus_inw(struct pci_bus *bus, unsigned int num, unsigned int s
 
     io_outd(bus->control, calculate_address(num, slot, function) | (offset & 0xFC));
 
-    return (unsigned short)(io_ind(bus->data) >> ((offset & 2) * 8));
+    return io_ind(bus->data) >> ((offset & 2) * 8);
 
 }
 
@@ -33,7 +33,7 @@ unsigned char pci_bus_inb(struct pci_bus *bus, unsigned int num, unsigned int sl
 
     io_outd(bus->control, calculate_address(num, slot, function) | (offset & 0xFC));
 
-    return (unsigned char)(io_ind(bus->data) >> ((offset & 3) * 8));
+    return io_ind(bus->data) >> ((offset & 3) * 8);
 
 }
 
@@ -41,8 +41,9 @@ static void add_device(struct pci_bus *bus, unsigned int num, unsigned int slot,
 {
 
     struct pci_device *device = &bus->devices.item[bus->devices.count];
+    unsigned int irq = pci_device_inb(device, PCI_CONFIG_IRQ_LINE);
 
-    pci_init_device(device, bus, num, slot, function);
+    pci_init_device(device, bus, irq, num, slot, function);
 
     bus->devices.count++;
 

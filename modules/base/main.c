@@ -171,7 +171,7 @@ void base_init_bus(struct base_bus *bus, unsigned int type, char *name, void (*s
 
 }
 
-void base_init_device(struct base_device *device, unsigned int type, unsigned int irq, char *name)
+void base_init_device(struct base_device *device, unsigned int type, unsigned int irq, char *name, struct base_bus *bus)
 {
 
     memory_clear(device, sizeof (struct base_device));
@@ -179,6 +179,7 @@ void base_init_device(struct base_device *device, unsigned int type, unsigned in
 
     device->type = type;
     device->irq = irq;
+    device->bus = bus;
 
 }
 

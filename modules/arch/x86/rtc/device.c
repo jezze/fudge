@@ -31,7 +31,7 @@ void rtc_init_device(struct rtc_device *device, unsigned int irq)
 {
 
     memory_clear(device, sizeof (struct rtc_device));
-    base_init_device(&device->base, RTC_DEVICE_TYPE, irq, "rtc");
+    base_init_device(&device->base, RTC_DEVICE_TYPE, irq, "rtc", 0);
 
     device->get_value = get_value;
 

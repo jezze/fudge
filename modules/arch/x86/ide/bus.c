@@ -3,6 +3,21 @@
 #include <arch/x86/io/io.h>
 #include "ide.h"
 
+#define IDE_IRQ_PRIMARY                 0x0E
+#define IDE_IRQ_SECONDARY               0x0F
+
+enum ide_status
+{
+
+    IDE_STATUS_ERROR                    = (1 << 0),
+    IDE_STATUS_DRQ                      = (1 << 3),
+    IDE_STATUS_SRV                      = (1 << 4),
+    IDE_STATUS_DF                       = (1 << 5),
+    IDE_STATUS_RDY                      = (1 << 6),
+    IDE_STATUS_BUSY                     = (1 << 7)
+
+};
+
 static void wait(struct ide_bus *bus)
 {
 

@@ -35,6 +35,7 @@ struct base_device
     struct base_module module;
     unsigned int type;
     unsigned int irq;
+    struct base_bus *bus;
     struct base_driver *driver;
 
 };
@@ -56,5 +57,5 @@ void base_unregister_bus(struct base_bus *bus);
 void base_unregister_device(struct base_device *device);
 void base_unregister_driver(struct base_driver *driver);
 void base_init_bus(struct base_bus *bus, unsigned int type, char *name, void (*scan)(struct base_bus *self));
-void base_init_device(struct base_device *device, unsigned int type, unsigned int irq, char *name);
+void base_init_device(struct base_device *device, unsigned int type, unsigned int irq, char *name, struct base_bus *bus);
 void base_init_driver(struct base_driver *driver, char *name, void (*start)(struct base_driver *self), unsigned int (*check)(struct base_device *device), void (*attach)(struct base_device *device));

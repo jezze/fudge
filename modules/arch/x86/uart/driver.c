@@ -22,7 +22,7 @@ static void attach(struct base_device *device)
 
     struct uart_device *uartDevice = (struct uart_device *)device;
 
-    pic_set_routine(device->irq, device, handle_irq);
+    pic_set_routine(device, handle_irq);
     io_outb(uartDevice->port + UART_IER, 0x00);
     io_outb(uartDevice->port + UART_LCR, 0x80);
     io_outb(uartDevice->port + UART_THR, 0x03);

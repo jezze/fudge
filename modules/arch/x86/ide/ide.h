@@ -24,35 +24,14 @@
 #define IDE_DATA_LBA4                   0x0A
 #define IDE_DATA_LBA5                   0x0B
 
-#define IDE_ID_TYPE                     0x00
-#define IDE_ID_SERIAL                   0x0A
-#define IDE_ID_MODEL                    0x1B
-#define IDE_ID_CAP                      0x31
-#define IDE_ID_VALID                    0x35
-#define IDE_ID_LBA28MAX                 0x3C
-#define IDE_ID_SUPPORT                  0x53
-#define IDE_ID_LBA48MAX                 0x64
-
-#define IDE_STATUS_ERROR                (1 << 0)
-#define IDE_STATUS_DRQ                  (1 << 3)
-#define IDE_STATUS_SRV                  (1 << 4)
-#define IDE_STATUS_DF                   (1 << 5)
-#define IDE_STATUS_RDY                  (1 << 6)
-#define IDE_STATUS_BUSY                 (1 << 7)
-
 #define IDE_DEVICE_TYPE_UNKNOWN         0x00
 #define IDE_DEVICE_TYPE_ATA             0x01
 #define IDE_DEVICE_TYPE_ATAPI           0x02
 #define IDE_DEVICE_TYPE_SATA            0x03
 #define IDE_DEVICE_TYPE_SATAPI          0x04
 
-#define IDE_IRQ_PRIMARY                 0x0E
-#define IDE_IRQ_SECONDARY               0x0F
-
 #define IDE_BUS_TYPE                    0x0002
 #define IDE_DEVICE_TYPE                 0x0002
-
-struct ide_bus;
 
 struct ide_partition
 {
@@ -74,7 +53,6 @@ struct ide_device
 {
 
     struct base_device base;
-    struct ide_bus *bus;
     struct pci_device *pciDevice;
     unsigned int type;
     unsigned int slave;

@@ -113,43 +113,43 @@ unsigned short pic_interrupt(struct pic_registers *registers)
 
 }
 
-unsigned int pic_set_routine(unsigned int index, struct base_device *device, void (*callback)(struct base_device *device))
+unsigned int pic_set_routine(struct base_device *device, void (*callback)(struct base_device *device))
 {
 
-    if (index > PIC_ROUTINE_SLOTS)
+    if (device->irq > PIC_ROUTINE_SLOTS)
         return 0;
 
-    if (routines[index].device)
+    if (routines[device->irq].device)
         return 0;
 
-    routines[index].device = device;
-    routines[index].callback = callback;
+    routines[device->irq].device = device;
+    routines[device->irq].callback = callback;
 
-    if (index >= 8)
-        pic_enable_line(PIC_REGISTER_DATA1, index);
+    if (device->irq >= 8)
+        pic_enable_line(PIC_REGISTER_DATA1, device->irq);
     else
-        pic_enable_line(PIC_REGISTER_DATA0, index);
+        pic_enable_line(PIC_REGISTER_DATA0, device->irq);
 
     return 1;
 
 }
 
-unsigned int pic_unset_routine(unsigned int index, struct base_device *device)
+unsigned int pic_unset_routine(struct base_device *device)
 {
 
-    if (index > PIC_ROUTINE_SLOTS)
+    if (device->irq > PIC_ROUTINE_SLOTS)
         return 0;
 
-    if (routines[index].device != device)
+    if (routines[device->irq].device != device)
         return 0;
 
-    routines[index].device = 0;
-    routines[index].callback = 0;
+    routines[device->irq].device = 0;
+    routines[device->irq].callback = 0;
 
-    if (index >= 8)
-        pic_disable_line(PIC_REGISTER_DATA1, index);
+    if (device->irq >= 8)
+        pic_disable_line(PIC_REGISTER_DATA1, device->irq);
     else
-        pic_disable_line(PIC_REGISTER_DATA0, index);
+        pic_disable_line(PIC_REGISTER_DATA0, device->irq);
 
     return 1;
 

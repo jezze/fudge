@@ -60,7 +60,7 @@ static void add_device(struct ps2_bus *bus, unsigned int irq)
 
     struct ps2_device *device = &bus->devices.item[bus->devices.count];
 
-    ps2_init_device(device, bus, "ps2", irq);
+    ps2_init_device(device, bus, irq);
 
     bus->devices.count++;
 

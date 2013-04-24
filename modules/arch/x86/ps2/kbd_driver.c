@@ -11,9 +11,9 @@
 static void handle_irq(struct base_device *device)
 {
 
-    struct ps2_device *ps2Device = (struct ps2_device *)device;
+    struct ps2_bus *bus = (struct ps2_bus *)device->bus;
     struct ps2_kbd_driver *driver = (struct ps2_kbd_driver *)device->driver;
-    unsigned char data = ps2_bus_read_data_async(ps2Device->bus);
+    unsigned char data = ps2_bus_read_data_async(bus);
 
     if (driver->escaped)
         driver->escaped = 0;
@@ -28,17 +28,17 @@ static void handle_irq(struct base_device *device)
 static void attach(struct base_device *device)
 {
 
-    struct ps2_device *ps2Device = (struct ps2_device *)device;
+    struct ps2_bus *bus = (struct ps2_bus *)device->bus;
     unsigned char status;
 
-    pic_set_routine(device->irq, device, handle_irq);
-    ps2_bus_write_command(ps2Device->bus, 0xAE);
-    ps2_bus_write_command(ps2Device->bus, 0x20);
+    pic_set_routine(device, handle_irq);
+    ps2_bus_write_command(bus, 0xAE);
+    ps2_bus_write_command(bus, 0x20);
 
-    status = ps2_bus_read_data(ps2Device->bus) | 1;
+    status = ps2_bus_read_data(bus) | 1;
 
-    ps2_bus_write_command(ps2Device->bus, 0x60);
-    ps2_bus_write_data(ps2Device->bus, status);
+    ps2_bus_write_command(bus, 0x60);
+    ps2_bus_write_data(bus, status);
 
 }
 

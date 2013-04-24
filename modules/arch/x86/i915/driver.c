@@ -131,10 +131,7 @@ static void start(struct base_driver *self)
 static void attach(struct base_device *device)
 {
 
-    struct pci_device *pciDevice = (struct pci_device *)device;
-    unsigned int irq = pci_device_inb(pciDevice, PCI_CONFIG_IRQ_LINE);
-
-    pic_set_routine(irq, device, handle_irq);
+    pic_set_routine(device, handle_irq);
 
 }
 
