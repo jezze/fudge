@@ -2,6 +2,14 @@
 #include <base/base.h>
 #include "pci.h"
 
+enum pci_register
+{
+
+    PCI_REGISTER_CONTROL                = 0x0CF8,
+    PCI_REGISTER_DATA                   = 0x0CFC
+
+};
+
 static struct pci_bus bus;
 
 void init()
@@ -9,7 +17,7 @@ void init()
 
     unsigned int i;
 
-    pci_init_bus(&bus);
+    pci_init_bus(&bus, PCI_REGISTER_CONTROL, PCI_REGISTER_DATA);
     base_register_bus(&bus.base);
 
     for (i = 0; i < bus.devices.count; i++)
