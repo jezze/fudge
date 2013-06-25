@@ -9,7 +9,6 @@ include modules/arch/x86/i915/rules.mk
 include modules/arch/x86/ide/rules.mk
 include modules/arch/x86/io/rules.mk
 include modules/arch/x86/msr/rules.mk
-include modules/arch/x86/multi/rules.mk
 include modules/arch/x86/pci/rules.mk
 include modules/arch/x86/pic/rules.mk
 include modules/arch/x86/pit/rules.mk

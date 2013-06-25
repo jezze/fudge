@@ -8,6 +8,7 @@
 #include "gdt.h"
 #include "idt.h"
 #include "mmu.h"
+#include "multi.h"
 #include "tss.h"
 
 static struct arch_state state;
@@ -26,7 +27,9 @@ unsigned short arch_pagefault(struct arch_registers_pagefault *registers)
 
     unsigned int address = cpu_get_cr2();
 
-    state.container->notify_pagefault(state.container, address);
+    state.container->running->state = 0;
+
+    multi_notify(state.container);
 
     if (state.container->running->state & RUNTIME_TASK_STATE_USED)
     {
@@ -52,7 +55,12 @@ unsigned short arch_pagefault(struct arch_registers_pagefault *registers)
 unsigned short arch_syscall(struct arch_registers_syscall *registers)
 {
 
-    state.container->notify_syscall(state.container, registers->general.eax, registers->interrupt.eip, registers->interrupt.esp, registers->general.ebp);
+    state.container->running->registers.ip = registers->interrupt.eip;
+    state.container->running->registers.sp = registers->interrupt.esp;
+    state.container->running->registers.fp = registers->general.ebp;
+    state.container->running->registers.status = syscall_raise(registers->general.eax, state.container->running);
+
+    multi_notify(state.container);
 
     if (state.container->running->state & RUNTIME_TASK_STATE_USED)
     {
@@ -126,6 +134,8 @@ void arch_setup(unsigned int modulesc, void **modulesv)
     setup_mmu();
 
     state.container = kernel_setup(modulesc, modulesv);
+
+    multi_setup();
 
     arch_usermode(state.selectors.ucode, state.selectors.udata, state.container->running->registers.ip, state.container->running->registers.sp);
 

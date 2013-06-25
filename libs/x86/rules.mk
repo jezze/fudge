@@ -5,6 +5,7 @@ OBJ+=libs/x86/cpu.o
 OBJ+=libs/x86/gdt.o
 OBJ+=libs/x86/idt.o
 OBJ+=libs/x86/mmu.o
+OBJ+=libs/x86/multi.o
 OBJ+=libs/x86/tss.o
 
 $(LIB): $(OBJ)

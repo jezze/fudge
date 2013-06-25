@@ -1,15 +1,22 @@
-#include <fudge/module.h>
-#include <kernel/vfs.h>
-#include <kernel/binary.h>
+#include <fudge/kernel.h>
 #include <kernel/runtime.h>
 #include <kernel/syscall.h>
-#include <x86/arch.h>
-#include <x86/cpu.h>
-#include <x86/mmu.h>
+#include "arch.h"
+#include "cpu.h"
+#include "mmu.h"
 #include "multi.h"
 
 #define MULTI_TASK_BASE                 0x00300000
 #define MULTI_TASK_SLOTS                32
+
+struct multi_task
+{
+
+    struct mmu_directory directory;
+    struct mmu_table tables[2];
+    struct runtime_task base;
+
+};
 
 static struct multi_task *tasks[MULTI_TASK_SLOTS];
 
@@ -75,37 +82,6 @@ static struct multi_task *schedule()
 
 }
 
-static void notify_pagefault(struct runtime_container *self, unsigned int address)
-{
-
-    struct multi_task *task;
-
-    self->running->state = 0;
-
-    task = schedule();
-
-    if (task)
-        activate(self, task);
-
-}
-
-static void notify_syscall(struct runtime_container *self, unsigned int index, unsigned int ip, unsigned int sp, unsigned int fp)
-{
-
-    struct multi_task *task;
-
-    self->running->registers.ip = ip;
-    self->running->registers.sp = sp;
-    self->running->registers.fp = fp;
-    self->running->registers.status = syscall_raise(index, self->running);
-
-    task = schedule();
-
-    if (task)
-        activate(self, task);
-
-}
-
 static unsigned int spawn(struct runtime_task *task, void *stack)
 {
 
@@ -127,28 +103,21 @@ static unsigned int spawn(struct runtime_task *task, void *stack)
 
 }
 
-static unsigned int spawn_first(struct runtime_task *task, void *stack)
+void multi_notify(struct runtime_container *self)
 {
 
-    task->container->notify_pagefault = notify_pagefault;
-    task->container->notify_syscall = notify_syscall;
+    struct multi_task *task = schedule();
 
-    syscall_set_routine(SYSCALL_INDEX_SPAWN, spawn);
-
-    return spawn(task, stack);
+    if (task)
+        activate(self, task);
 
 }
 
-void init()
+void multi_setup()
 {
 
     memory_clear(tasks, sizeof (struct multi_task *) * MULTI_TASK_SLOTS);
-    syscall_set_routine(SYSCALL_INDEX_SPAWN, spawn_first);
-
-}
-
-void destroy()
-{
+    syscall_set_routine(SYSCALL_INDEX_SPAWN, spawn);
 
 }
 
