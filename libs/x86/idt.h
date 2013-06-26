@@ -1,5 +1,3 @@
-#define IDT_ENTRY_SLOTS                 256
-
 #define IDT_FLAG_TYPE32TASK             (0x05 << 0)
 #define IDT_FLAG_TYPE16INT              (0x06 << 0)
 #define IDT_FLAG_TYPE16TRAP             (0x07 << 0)

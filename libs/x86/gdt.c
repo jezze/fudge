@@ -1,6 +1,8 @@
 #include <fudge/kernel.h>
 #include "gdt.h"
 
+#define GDT_ENTRY_SLOTS                 6
+
 static struct gdt_entry entries[GDT_ENTRY_SLOTS];
 static struct gdt_pointer pointer;
 

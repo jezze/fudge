@@ -1,5 +1,3 @@
-#define TSS_ENTRY_SLOTS                 1
-
 enum tss_index
 {
 
@@ -15,6 +13,32 @@ struct tss_entry_ring
 
 } __attribute__((packed));
 
+struct tss_entry_general
+{
+
+    unsigned int eax;
+    unsigned int ecx;
+    unsigned int edx;
+    unsigned int ebx;
+    unsigned int esp;
+    unsigned int ebp;
+    unsigned int esi;
+    unsigned int edi;
+
+} __attribute__((packed));
+
+struct tss_entry_segment
+{
+
+    unsigned int es;
+    unsigned int cs;
+    unsigned int ss;
+    unsigned int ds;
+    unsigned int fs;
+    unsigned int gs;
+
+} __attribute__((packed));
+
 struct tss_entry
 {
 
@@ -25,20 +49,8 @@ struct tss_entry
     unsigned int cr3;
     unsigned int eip;
     unsigned int eflags;
-    unsigned int eax;
-    unsigned int ecx;
-    unsigned int edx;
-    unsigned int ebx;
-    unsigned int esp;
-    unsigned int ebp;
-    unsigned int esi;
-    unsigned int edi;
-    unsigned int es;
-    unsigned int cs;
-    unsigned int ss;
-    unsigned int ds;
-    unsigned int fs;
-    unsigned int gs;
+    struct tss_entry_general general;
+    struct tss_entry_segment segment;
     unsigned int ldt;
     unsigned short trap;
     unsigned short iomap;

@@ -1,5 +1,3 @@
-#define SYSCALL_ROUTINE_SLOTS           16
-
 enum syscall_index
 {
 

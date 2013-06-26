@@ -1,6 +1,8 @@
 #include <fudge/kernel.h>
 #include "error.h"
 
+#define ERROR_REGISTER_SLOTS            8
+
 static struct
 {
 

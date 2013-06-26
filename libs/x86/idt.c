@@ -1,6 +1,8 @@
 #include <fudge/kernel.h>
 #include "idt.h"
 
+#define IDT_ENTRY_SLOTS                 256
+
 static struct idt_entry entries[IDT_ENTRY_SLOTS];
 static struct idt_pointer pointer;
 

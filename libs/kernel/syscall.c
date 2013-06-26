@@ -4,6 +4,8 @@
 #include "runtime.h"
 #include "syscall.h"
 
+#define SYSCALL_ROUTINE_SLOTS           16
+
 static unsigned int (*routines[SYSCALL_ROUTINE_SLOTS])(struct runtime_task *task, void *stack);
 
 static unsigned int undefined(struct runtime_task *task, void *stack)
