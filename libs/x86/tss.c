@@ -15,8 +15,6 @@ void tss_set_entry(struct tss_pointer *p, enum tss_index index, unsigned int sel
 struct tss_pointer *tss_setup_pointer()
 {
 
-    memory_clear(&entries, sizeof (struct tss_entry) * TSS_ENTRY_SLOTS);
-
     pointer.base = entries;
     pointer.limit = sizeof (struct tss_entry) * TSS_ENTRY_SLOTS;
 

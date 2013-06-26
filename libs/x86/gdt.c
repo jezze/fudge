@@ -21,8 +21,6 @@ unsigned short gdt_set_entry(struct gdt_pointer *p, enum gdt_index index, unsign
 struct gdt_pointer *gdt_setup_pointer()
 {
 
-    memory_clear(&entries, sizeof (struct gdt_entry) * GDT_ENTRY_SLOTS);
-
     pointer.base = entries;
     pointer.limit = (sizeof (struct gdt_entry) * GDT_ENTRY_SLOTS) - 1;
 

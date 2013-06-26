@@ -19,8 +19,6 @@ void idt_set_entry(struct idt_pointer *p, enum idt_index index, void (*callback)
 struct idt_pointer *idt_setup_pointer()
 {
 
-    memory_clear(&entries, sizeof (struct idt_entry) * IDT_ENTRY_SLOTS);
-
     pointer.base = entries;
     pointer.limit = (sizeof (struct idt_entry) * IDT_ENTRY_SLOTS) - 1;
 
