@@ -3,7 +3,7 @@
 #include "binary.h"
 #include "binary_elf.h"
 
-static struct binary_format elf;
+static struct binary_interface elf;
 
 static unsigned int match(struct vfs_interface *interface, unsigned int id)
 {
@@ -113,10 +113,10 @@ static unsigned int relocate(struct vfs_interface *interface, unsigned int id, u
 
 }
 
-struct binary_format *binary_elf_setup()
+struct binary_interface *binary_elf_setup()
 {
 
-    binary_init_format(&elf, match, find_symbol, copy_program, relocate);
+    binary_init_interface(&elf, match, find_symbol, copy_program, relocate);
 
     return &elf;
 

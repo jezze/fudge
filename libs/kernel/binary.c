@@ -2,14 +2,14 @@
 #include "vfs.h"
 #include "binary.h"
 
-static struct binary_format *formats;
+static struct binary_interface *interfaces;
 
-struct binary_format *binary_get_format(struct vfs_interface *interface, unsigned int id)
+struct binary_interface *binary_get_interface(struct vfs_interface *interface, unsigned int id)
 {
 
-    struct binary_format *current;
+    struct binary_interface *current;
 
-    for (current = formats; current; current = current->sibling)
+    for (current = interfaces; current; current = current->sibling)
     {
 
         if (current->match(interface, id))
@@ -21,27 +21,27 @@ struct binary_format *binary_get_format(struct vfs_interface *interface, unsigne
 
 }
 
-void binary_register_format(struct binary_format *format)
+void binary_register_interface(struct binary_interface *interface)
 {
 
-    struct binary_format *current;
+    struct binary_interface *current;
 
-    if (!formats)
+    if (!interfaces)
     {
 
-        formats = format;
+        interfaces = interface;
 
         return;
 
     }
 
-    for (current = formats; current; current = current->sibling)
+    for (current = interfaces; current; current = current->sibling)
     {
 
         if (current->sibling)
             continue;
 
-        current->sibling = format;
+        current->sibling = interface;
 
         return;
 
@@ -49,24 +49,24 @@ void binary_register_format(struct binary_format *format)
 
 }
 
-void binary_unregister_format(struct binary_format *format)
+void binary_unregister_interface(struct binary_interface *interface)
 {
 
-    struct binary_format *current;
+    struct binary_interface *current;
 
-    if (formats == format)
+    if (interfaces == interface)
     {
 
-        formats = formats->sibling;
+        interfaces = interfaces->sibling;
 
         return;
 
     }
 
-    for (current = formats; current; current = current->sibling)
+    for (current = interfaces; current; current = current->sibling)
     {
 
-        if (current->sibling != format)
+        if (current->sibling != interface)
             continue;
 
         current->sibling = current->sibling->sibling;
@@ -77,22 +77,22 @@ void binary_unregister_format(struct binary_format *format)
 
 }
 
-void binary_init_format(struct binary_format *format, unsigned int (*match)(struct vfs_interface *interface, unsigned int id), unsigned int (*find_symbol)(struct vfs_interface *interface, unsigned int id, unsigned int count, const char *symbol), unsigned int (*copy_program)(struct vfs_interface *interface, unsigned int id), unsigned int (*relocate)(struct vfs_interface *interface, unsigned int id, unsigned int address))
+void binary_init_interface(struct binary_interface *interface, unsigned int (*match)(struct vfs_interface *interface, unsigned int id), unsigned int (*find_symbol)(struct vfs_interface *interface, unsigned int id, unsigned int count, const char *symbol), unsigned int (*copy_program)(struct vfs_interface *interface, unsigned int id), unsigned int (*relocate)(struct vfs_interface *interface, unsigned int id, unsigned int address))
 {
 
-    memory_clear(format, sizeof (struct binary_format));
+    memory_clear(interface, sizeof (struct binary_interface));
 
-    format->match = match;
-    format->find_symbol = find_symbol;
-    format->copy_program = copy_program;
-    format->relocate = relocate;
+    interface->match = match;
+    interface->find_symbol = find_symbol;
+    interface->copy_program = copy_program;
+    interface->relocate = relocate;
 
 }
 
 void binary_setup()
 {
 
-    formats = 0;
+    interfaces = 0;
 
 }
 

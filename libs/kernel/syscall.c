@@ -119,19 +119,19 @@ static unsigned int mount(struct runtime_task *task, void *stack)
     struct runtime_mount *mount = runtime_get_mount(task, args->index);
     struct runtime_descriptor *pdescriptor = runtime_get_descriptor(task, args->pindex);
     struct runtime_descriptor *cdescriptor = runtime_get_descriptor(task, args->cindex);
-    struct binary_format *format;
+    struct binary_interface *interface;
     struct vfs_interface *(*get_interface)();
     struct vfs_interface *child;
 
     if (!mount || !pdescriptor || !cdescriptor)
         return 0;
 
-    format = binary_get_format(cdescriptor->interface, cdescriptor->id);
+    interface = binary_get_interface(cdescriptor->interface, cdescriptor->id);
 
-    if (!format)
+    if (!interface)
         return 0;
 
-    get_interface = (struct vfs_interface *(*)())(format->find_symbol(cdescriptor->interface, cdescriptor->id, 14, "get_filesystem"));
+    get_interface = (struct vfs_interface *(*)())(interface->find_symbol(cdescriptor->interface, cdescriptor->id, 14, "get_filesystem"));
 
     if (!get_interface)
         return 0;
@@ -175,18 +175,18 @@ static unsigned int execute(struct runtime_task *task, void *stack)
 
     struct {void *caller; unsigned int index;} *args = stack;
     struct runtime_descriptor *descriptor = runtime_get_descriptor(task, args->index);
-    struct binary_format *format;
+    struct binary_interface *interface;
 
     if (!descriptor)
         return 0;
 
-    format = binary_get_format(descriptor->interface, descriptor->id);
+    interface = binary_get_interface(descriptor->interface, descriptor->id);
 
-    if (!format)
+    if (!interface)
         return 0;
 
     task->state |= RUNTIME_TASK_STATE_USED;
-    task->registers.ip = format->copy_program(descriptor->interface, descriptor->id);
+    task->registers.ip = interface->copy_program(descriptor->interface, descriptor->id);
     task->registers.sp = RUNTIME_STACKADDRESS_VIRTUAL;
     task->registers.fp = RUNTIME_STACKADDRESS_VIRTUAL;
     task->registers.status = 0;
@@ -213,7 +213,7 @@ static unsigned int load(struct runtime_task *task, void *stack)
 
     struct {void *caller; unsigned int index;} *args = stack;
     struct runtime_descriptor *descriptor = runtime_get_descriptor(task, args->index);
-    struct binary_format *format;
+    struct binary_interface *interface;
     unsigned int physical;
     void (*init)();
 
@@ -226,15 +226,15 @@ static unsigned int load(struct runtime_task *task, void *stack)
     if (!physical)
         return 0;
 
-    format = binary_get_format(descriptor->interface, descriptor->id);
+    interface = binary_get_interface(descriptor->interface, descriptor->id);
 
-    if (!format)
+    if (!interface)
         return 0;
 
-    if (!format->relocate(descriptor->interface, descriptor->id, physical))
+    if (!interface->relocate(descriptor->interface, descriptor->id, physical))
         return 0;
 
-    init = (void (*)())(format->find_symbol(descriptor->interface, descriptor->id, 4, "init"));
+    init = (void (*)())(interface->find_symbol(descriptor->interface, descriptor->id, 4, "init"));
 
     if (!init)
         return 0;
@@ -250,18 +250,18 @@ static unsigned int unload(struct runtime_task *task, void *stack)
 
     struct {void *caller; unsigned int index;} *args = stack;
     struct runtime_descriptor *descriptor = runtime_get_descriptor(task, args->index);
-    struct binary_format *format;
+    struct binary_interface *interface;
     void (*destroy)();
 
     if (!descriptor)
         return 0;
 
-    format = binary_get_format(descriptor->interface, descriptor->id);
+    interface = binary_get_interface(descriptor->interface, descriptor->id);
 
-    if (!format)
+    if (!interface)
         return 0;
 
-    destroy = (void (*)())(format->find_symbol(descriptor->interface, descriptor->id, 7, "destroy"));
+    destroy = (void (*)())(interface->find_symbol(descriptor->interface, descriptor->id, 7, "destroy"));
 
     if (!destroy)
         return 0;

@@ -22,33 +22,33 @@ static void setup_container(struct vfs_interface *interface)
 
 }
 
-static void setup_task(struct vfs_interface *interface, struct binary_format *format)
+static void setup_task(struct vfs_interface *vinterface, struct binary_interface *binterface)
 {
 
     runtime_init_task(&task, &container);
 
-    task.registers.ip = format->copy_program(interface, interface->walk(interface, interface->rootid, 8, "bin/init"));
+    task.registers.ip = binterface->copy_program(vinterface, vinterface->walk(vinterface, vinterface->rootid, 8, "bin/init"));
     task.registers.sp = RUNTIME_STACKADDRESS_VIRTUAL;
     task.registers.fp = RUNTIME_STACKADDRESS_VIRTUAL;
 
     error_assert(task.registers.ip != 0, "Init program entry point not found", __FILE__, __LINE__);
 
-    task.descriptors[0x0E].interface = interface;
-    task.descriptors[0x0E].id = interface->rootid;
-    task.descriptors[0x0F].interface = interface;
-    task.descriptors[0x0F].id = interface->rootid;
+    task.descriptors[0x0E].interface = vinterface;
+    task.descriptors[0x0E].id = vinterface->rootid;
+    task.descriptors[0x0F].interface = vinterface;
+    task.descriptors[0x0F].id = vinterface->rootid;
 
 }
 
 struct runtime_container *kernel_setup(unsigned int modulesc, void **modulesv)
 {
 
-    struct binary_format *elf = binary_elf_setup();
+    struct binary_interface *elf = binary_elf_setup();
     struct vfs_interface *interface = vfs_tar_setup(modulesv[0]);
 
     error_assert(interface != 0, "Ramdisk not found", __FILE__, __LINE__);
     binary_setup();
-    binary_register_format(elf);
+    binary_register_interface(elf);
     setup_container(interface);
     setup_task(interface, elf);
     syscall_setup();
