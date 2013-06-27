@@ -1,8 +1,8 @@
 #include <fudge/kernel.h>
 #include "vfs.h"
-#include "vfs_ramdisk.h"
+#include "vfs_tar.h"
 
-static struct vfs_interface ramdisk;
+static struct vfs_interface tar;
 
 static struct tar_header *next(struct tar_header *header)
 {
@@ -11,7 +11,7 @@ static struct tar_header *next(struct tar_header *header)
     unsigned int size;
 
     if (!header)
-        return (struct tar_header *)ramdisk.rootid;
+        return (struct tar_header *)tar.rootid;
 
     size = string_number(header->size, 8);
     address = (unsigned int)header + ((size / TAR_BLOCK_SIZE) + ((size % TAR_BLOCK_SIZE) ? 2 : 1)) * TAR_BLOCK_SIZE;
@@ -154,12 +154,12 @@ static unsigned int walk(struct vfs_interface *self, unsigned int id, unsigned i
 
 }
 
-struct vfs_interface *vfs_ramdisk_setup(void *address)
+struct vfs_interface *vfs_tar_setup(void *address)
 {
 
-    vfs_init_interface(&ramdisk, (unsigned int)address, open, close, read, write, walk, get_physical);
+    vfs_init_interface(&tar, (unsigned int)address, open, close, read, write, walk, get_physical);
 
-    return &ramdisk;
+    return &tar;
 
 }
 
