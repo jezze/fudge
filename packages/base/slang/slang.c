@@ -1,399 +1,244 @@
 #include <fudge.h>
+#include "token.h"
 
-enum token
+struct command
 {
 
-    TOKEN_NULL                          = 0,
-    TOKEN_NUM                           = 1,
-    TOKEN_ALPHA                         = 2,
-    TOKEN_ALPHANUM                      = 3,
-    TOKEN_SPACE                         = 4,
-    TOKEN_LT                            = 8,
-    TOKEN_GT                            = 16,
-    TOKEN_MINUS                         = 32,
-    TOKEN_SEMICOLON                     = 64,
-    TOKEN_DOT                           = 128,
-    TOKEN_SLASH                         = 256,
-    TOKEN_PIPE                          = 512,
-    TOKEN_QUOTE                         = 1024,
-    TOKEN_NEWLINE                       = 2048
+    struct token_string binary;
+    struct token_string in;
+    struct token_string out;
+    struct token_string data;
 
 };
 
-struct lexer
+struct pipe
 {
 
-    char *buffer;
-    unsigned int count;
-    unsigned int next;
-
-};
-
-struct directory
-{
-
-    char *path;
+    struct command commands[8];
     unsigned int count;
 
 };
 
-static struct directory binaries[1] =
+struct expression
 {
 
-    {"bin/", 4}
+    struct pipe pipes[64];
+    unsigned int count;
 
 };
 
-static unsigned int open(unsigned int index, unsigned int count, char *path, unsigned int cdir, struct directory *dirs)
+static unsigned int open_path(unsigned int index, struct token_string *string)
 {
 
-    unsigned int i;
+    return memory_match(string->position, "/", 1) ? call_open(index, CALL_DR, string->count - 1, string->position + 1) : call_open(index, CALL_DW, string->count, string->position);
 
-    if (memory_match(path, "/", 1))
-        return call_open(index, CALL_DR, count - 1, path + 1);
+}
 
-    for (i = 0; i < cdir; i++)
+static unsigned int open_pipe(unsigned int index, unsigned int number)
+{
+
+    char path[FUDGE_BSIZE];
+    unsigned int offset = 0;
+
+    offset += memory_write(path, FUDGE_BSIZE, "temp/", 5, offset);
+    offset += memory_write_number(path, FUDGE_BSIZE, number, 10, offset);
+
+    return call_open(index, CALL_DR, offset, path);
+
+}
+
+static unsigned int open_binary(unsigned int index, struct token_string *string)
+{
+
+    char path[FUDGE_BSIZE];
+    unsigned int offset = 0;
+
+    if (open_path(index, string))
+        return index;
+
+    offset += memory_write(path, FUDGE_BSIZE, "bin/", 4, offset);
+    offset += memory_write(path, FUDGE_BSIZE, string->position, string->count, offset);
+
+    return call_open(index, CALL_DR, offset, path);
+
+}
+
+static unsigned int parse_path(struct token_state *state, struct token_string *string)
+{
+
+    unsigned int index = state->next;
+
+    while (token_accept(state, TOKEN_TYPE_ALPHANUM | TOKEN_TYPE_DOT | TOKEN_TYPE_SLASH));
+
+    string->position = state->buffer + index - 1;
+    string->count = state->next - index;
+
+    return string->count;
+
+}
+
+static unsigned int parse_in(struct token_state *state, struct token_string *string)
+{
+
+    if (!token_accept(state, TOKEN_TYPE_LT))
+        return 0;
+
+    while (token_accept(state, TOKEN_TYPE_SPACE));
+
+    return parse_path(state, string);
+
+}
+
+static unsigned int parse_out(struct token_state *state, struct token_string *string)
+{
+
+    if (!token_accept(state, TOKEN_TYPE_GT))
+        return 0;
+
+    while (token_accept(state, TOKEN_TYPE_SPACE));
+
+    return parse_path(state, string);
+
+}
+
+static unsigned int parse_data(struct token_state *state, struct token_string *string)
+{
+
+    unsigned int index = state->next;
+
+    if (!token_accept(state, TOKEN_TYPE_QUOTE))
+        return 0;
+
+    while (token_accept(state, ~TOKEN_TYPE_QUOTE));
+
+    if (!token_accept(state, TOKEN_TYPE_QUOTE))
+        return 0;
+
+    string->position = state->buffer + index;
+    string->count = state->next - index - 2;
+
+    return string->count;
+
+}
+
+static unsigned int parse_command(struct token_state *state, struct command *command)
+{
+
+    if (!parse_path(state, &command->binary))
+        return 0;
+
+    while (token_accept(state, TOKEN_TYPE_SPACE));
+
+    if (parse_in(state, &command->in))
     {
 
-        char temp[FUDGE_BSIZE];
-        unsigned int offset = 0;
+        while (token_accept(state, TOKEN_TYPE_SPACE));
 
-        offset += memory_write(temp, FUDGE_BSIZE, dirs[i].path, dirs[i].count, offset);
-        offset += memory_write(temp, FUDGE_BSIZE, path, count, offset);
-
-        if (call_open(index, CALL_DR, offset, temp))
-            return index;
+        parse_out(state, &command->out);
 
     }
 
-    return call_open(index, CALL_DW, count, path);
-
-}
-
-static enum token tokenize(char c)
-{
-
-    switch (c)
+    else if (parse_out(state, &command->out))
     {
 
-        case '0':
-        case '1':
-        case '2':
-        case '3':
-        case '4':
-        case '5':
-        case '6':
-        case '7':
-        case '8':
-        case '9':
+        while (token_accept(state, TOKEN_TYPE_SPACE));
 
-            return TOKEN_NUM;
-
-        case 'a':
-        case 'b':
-        case 'c':
-        case 'd':
-        case 'e':
-        case 'f':
-        case 'g':
-        case 'h':
-        case 'i':
-        case 'j':
-        case 'k':
-        case 'l':
-        case 'm':
-        case 'n':
-        case 'o':
-        case 'p':
-        case 'q':
-        case 'r':
-        case 's':
-        case 't':
-        case 'u':
-        case 'v':
-        case 'w':
-        case 'x':
-        case 'y':
-        case 'z':
-        case 'A':
-        case 'B':
-        case 'C':
-        case 'D':
-        case 'E':
-        case 'F':
-        case 'G':
-        case 'H':
-        case 'I':
-        case 'J':
-        case 'K':
-        case 'L':
-        case 'M':
-        case 'N':
-        case 'O':
-        case 'P':
-        case 'Q':
-        case 'R':
-        case 'S':
-        case 'T':
-        case 'U':
-        case 'V':
-        case 'W':
-        case 'X':
-        case 'Y':
-        case 'Z':
-
-            return TOKEN_ALPHA;
-
-        case ' ':
-        case '\t':
-
-            return TOKEN_SPACE;
-
-        case '<':
-
-            return TOKEN_LT;
-
-        case '>':
-
-            return TOKEN_GT;
-
-        case '-':
-
-            return TOKEN_MINUS;
-
-        case ';':
-
-            return TOKEN_SEMICOLON;
-
-        case '.':
-
-            return TOKEN_DOT;
-
-        case '/':
-
-            return TOKEN_SLASH;
-
-        case '|':
-
-            return TOKEN_PIPE;
-
-        case '"':
-
-            return TOKEN_QUOTE;
-
-        case '\n':
-
-            return TOKEN_NEWLINE;
+        parse_in(state, &command->in);
 
     }
 
-    return TOKEN_NULL;
+    while (token_accept(state, TOKEN_TYPE_SPACE));
 
-}
-
-static enum token current(struct lexer *lexer)
-{
-
-    return tokenize(lexer->buffer[lexer->next - 1]);
-
-}
-
-static unsigned int next(struct lexer *lexer)
-{
-
-    if (lexer->next < lexer->count)
-        lexer->next++;
-
-    return lexer->next;
-
-}
-
-static unsigned int accept(struct lexer *lexer, enum token token)
-{
-
-    if (current(lexer) & token)
-        return next(lexer);
-
-    return 0;
-
-}
-
-static unsigned int parse_command(struct lexer *lexer)
-{
-
-    unsigned int index = lexer->next;
-
-    if (!accept(lexer, TOKEN_ALPHANUM | TOKEN_DOT | TOKEN_SLASH))
-        return 0;
-
-    while (accept(lexer, TOKEN_ALPHANUM | TOKEN_DOT | TOKEN_SLASH));
-
-    open(CALL_D0, lexer->next - index, lexer->buffer + index - 1, 1, binaries);
+    parse_data(state, &command->data);
 
     return 1;
 
 }
 
-static unsigned int parse_in(struct lexer *lexer)
+static unsigned int parse_pipe(struct token_state *state, struct pipe *pipe)
 {
-
-    unsigned int index;
-
-    if (!accept(lexer, TOKEN_LT))
-        return 0;
-
-    while (accept(lexer, TOKEN_SPACE));
-
-    index = lexer->next;
-
-    if (!accept(lexer, TOKEN_ALPHANUM | TOKEN_DOT | TOKEN_SLASH))
-        return 0;
-
-    while (accept(lexer, TOKEN_ALPHANUM | TOKEN_DOT | TOKEN_SLASH));
-
-    open(CALL_DI, lexer->next - index, lexer->buffer + index - 1, 0, 0);
-
-    return 1;
-
-}
-
-static unsigned int parse_out(struct lexer *lexer)
-{
-
-    unsigned int index;
-
-    if (!accept(lexer, TOKEN_GT))
-        return 0;
-
-    while (accept(lexer, TOKEN_SPACE));
-
-    index = lexer->next;
-
-    if (!accept(lexer, TOKEN_ALPHANUM | TOKEN_DOT | TOKEN_SLASH))
-        return 0;
-
-    while (accept(lexer, TOKEN_ALPHANUM | TOKEN_DOT | TOKEN_SLASH));
-
-    open(CALL_DO, lexer->next - index, lexer->buffer + index - 1, 0, 0);
-
-    return 1;
-
-}
-
-static unsigned int parse_data(struct lexer *lexer)
-{
-
-    unsigned int index;
-
-    if (!accept(lexer, TOKEN_QUOTE))
-        return 0;
-
-    index = lexer->next;
-
-    while (accept(lexer, ~TOKEN_QUOTE));
-
-    if (!accept(lexer, TOKEN_QUOTE))
-        return 0;
-
-    call_write(CALL_DI, 0, lexer->next - index - 1, lexer->buffer + index - 1);
-
-    return 1;
-
-}
-
-static unsigned int parse_expression(struct lexer *lexer)
-{
-
-    if (!parse_command(lexer))
-        return 0;
-
-    while (accept(lexer, TOKEN_SPACE));
-
-    if (parse_in(lexer))
-    {
-
-        while (accept(lexer, TOKEN_SPACE));
-
-        parse_out(lexer);
-
-    }
-
-    else if (parse_out(lexer))
-    {
-
-        while (accept(lexer, TOKEN_SPACE));
-
-        parse_in(lexer);
-
-    }
-
-    while (accept(lexer, TOKEN_SPACE));
-
-    parse_data(lexer);
-
-    return 1;
-
-}
-
-static unsigned int parse_pipe(struct lexer *lexer)
-{
-
-    unsigned int loop = 0;
-
-    call_open(CALL_D1, CALL_DO, 0, 0);
 
     do
     {
 
-        if (loop)
+        while (token_accept(state, TOKEN_TYPE_SPACE));
+
+        if (!parse_command(state, &pipe->commands[pipe->count]))
+            return 0;
+
+        while (token_accept(state, TOKEN_TYPE_SPACE));
+
+        pipe->count++;
+
+    } while (token_accept(state, TOKEN_TYPE_PIPE));
+
+    return 1;
+
+}
+
+static unsigned int parse(struct token_state *state, struct expression *expression)
+{
+
+    do
+    {
+
+        while (token_accept(state, TOKEN_TYPE_SPACE));
+
+        if (!parse_pipe(state, &expression->pipes[expression->count]))
+            return 0;
+
+        while (token_accept(state, TOKEN_TYPE_SPACE));
+
+        expression->count++;
+
+    } while (token_accept(state, TOKEN_TYPE_SEMICOLON | TOKEN_TYPE_NEWLINE));
+
+    return 1;
+
+}
+
+static void execute(struct expression *expression)
+{
+
+    unsigned int pindex;
+    unsigned int cindex;
+
+    call_open(CALL_D1, CALL_DI, 0, 0);
+    call_open(CALL_D2, CALL_DO, 0, 0);
+
+    for (pindex = 0; pindex < expression->count; pindex++)
+    {
+
+        struct pipe *pipe = &expression->pipes[pindex];
+
+        for (cindex = 0; cindex < pipe->count; cindex++)
         {
 
-            char num[32];
-            unsigned int offset = 0;
+            struct command *command = &pipe->commands[cindex];
 
-            offset += memory_write(num, 32, "temp/", 5, offset);
-            offset += memory_write_number(num, 32, loop - 1, 10, offset);
+            if (command->in.count)
+                open_path(CALL_DI, &command->in);
 
-            call_open(CALL_DO, CALL_DR, offset, num);
+            if (command->data.count)
+                call_write(CALL_DI, 0, command->data.count, command->data.position);
+
+            if (command->out.count)
+                open_path(CALL_DO, &command->out);
+
+            if (!command->out.count && pipe->count > 1 && cindex != pipe->count - 1)
+                open_pipe(CALL_DO, cindex);
+
+            open_binary(CALL_D0, &command->binary);
             call_spawn(CALL_D0);
             call_open(CALL_DI, CALL_DO, 0, 0);
-            call_open(CALL_DO, CALL_D1, 0, 0);
+            call_open(CALL_DO, CALL_D2, 0, 0);
 
         }
 
-        while (accept(lexer, TOKEN_SPACE));
+        call_open(CALL_DI, CALL_D1, 0, 0);
+        call_open(CALL_DO, CALL_D2, 0, 0);
 
-        if (!parse_expression(lexer))
-            return 0;
-
-        while (accept(lexer, TOKEN_SPACE));
-
-        loop++;
-
-    } while (accept(lexer, TOKEN_PIPE));
-
-    call_spawn(CALL_D0);
-
-    return 1;
-
-}
-
-static unsigned int parse(struct lexer *lexer)
-{
-
-    do
-    {
-
-        while (accept(lexer, TOKEN_SPACE));
-
-        if (!parse_pipe(lexer))
-            return 0;
-
-        while (accept(lexer, TOKEN_SPACE));
-
-    } while (accept(lexer, TOKEN_SEMICOLON | TOKEN_NEWLINE));
-
-    return 1;
+    }
 
 }
 
@@ -401,13 +246,13 @@ void main()
 {
 
     char buffer[FUDGE_BSIZE];
-    struct lexer lexer;
+    struct token_state state;
+    struct expression expression;
 
-    lexer.buffer = buffer;
-    lexer.count = call_read(CALL_DI, 0, FUDGE_BSIZE, buffer);
-    lexer.next = 1;
-
-    parse(&lexer);
+    memory_clear(&expression, sizeof (struct expression));
+    token_init_state(&state, call_read(CALL_DI, 0, FUDGE_BSIZE, buffer), buffer);
+    parse(&state, &expression);
+    execute(&expression);
 
 }
 
