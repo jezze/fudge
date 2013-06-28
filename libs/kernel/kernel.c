@@ -22,7 +22,7 @@ static void setup(struct vfs_protocol *vprotocol, struct binary_protocol *bproto
 
     runtime_init_task(&task, &container);
 
-    task.registers.ip = bprotocol->copy_program(vprotocol, id);
+    task.registers.ip = bprotocol->copy_program(vprotocol, 0, id);
     task.registers.sp = RUNTIME_STACKADDRESS_VIRTUAL;
     task.registers.fp = RUNTIME_STACKADDRESS_VIRTUAL;
 
@@ -42,15 +42,15 @@ static void detect()
     struct binary_protocol *bprotocol;
     unsigned int id;
 
-    vprotocol = vfs_get_protocol();
+    vprotocol = vfs_get_protocol(0);
 
     error_assert(vprotocol != 0, "Filesystem protocol not recognized", __FILE__, __LINE__);
 
-    id = vprotocol->walk(vprotocol, vprotocol->rootid, 8, "bin/init");
+    id = vprotocol->walk(0, vprotocol->rootid, 8, "bin/init");
 
     error_assert(id != 0, "Init program not found", __FILE__, __LINE__);
 
-    bprotocol = binary_get_protocol(vprotocol, id);
+    bprotocol = binary_get_protocol(vprotocol, 0, id);
 
     error_assert(bprotocol != 0, "Binary protocol not recognized", __FILE__, __LINE__);
 

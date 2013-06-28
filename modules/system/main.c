@@ -3,7 +3,8 @@
 #include "system.h"
 #include "filesystem.h"
 
-static struct system_filesystem filesystem;
+static struct system_backend backend;
+static struct vfs_protocol protocol;
 
 void system_group_add(struct system_group *group, struct system_node *node)
 {
@@ -68,14 +69,14 @@ void system_group_remove(struct system_group *group, struct system_node *node)
 void system_register_node(struct system_node *node)
 {
 
-    system_group_add(&filesystem.root, node);
+    system_group_add(&backend.root, node);
 
 }
 
 void system_unregister_node(struct system_node *node)
 {
 
-    system_group_remove(&filesystem.root, node);
+    system_group_remove(&backend.root, node);
 
 }
 
@@ -108,17 +109,25 @@ void system_init_stream(struct system_stream *stream, char *name, unsigned int (
 
 }
 
-struct vfs_protocol *get_filesystem()
+struct vfs_backend *get_backend()
 {
 
-    return &filesystem.base;
+    return &backend.base;
+
+}
+
+struct vfs_protocol *get_protocol()
+{
+
+    return &protocol;
 
 }
 
 void init()
 {
 
-    system_init_filesystem(&filesystem);
+    system_init_backend(&backend);
+    system_init_protocol(&protocol, &backend);
 
 }
 

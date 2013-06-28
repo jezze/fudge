@@ -44,21 +44,21 @@ enum ext2_nodetype
 
 };
 
-static unsigned int open(struct vfs_protocol *self, unsigned int id)
+static unsigned int open(struct vfs_protocol *self, struct vfs_backend *backend, unsigned int id)
 {
 
     return id;
 
 }
 
-static unsigned int close(struct vfs_protocol *self, unsigned int id)
+static unsigned int close(struct vfs_protocol *self, struct vfs_backend *backend, unsigned int id)
 {
 
     return id;
 
 }
 
-static unsigned int read(struct vfs_protocol *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int read(struct vfs_protocol *self, struct vfs_backend *backend, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct ext2_filesystem *filesystem = (struct ext2_filesystem *)self;
@@ -103,7 +103,7 @@ static unsigned int read(struct vfs_protocol *self, unsigned int id, unsigned in
 
 }
 
-static unsigned int write(struct vfs_protocol *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int write(struct vfs_protocol *self, struct vfs_backend *backend, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     return 0;
@@ -148,7 +148,7 @@ static struct ext2_entry *finddir(struct vfs_protocol *self, unsigned int id, co
 
 }
 
-static unsigned int walk(struct vfs_protocol *self, unsigned int id, unsigned int count, const char *path)
+static unsigned int walk(struct vfs_protocol *self, struct vfs_backend *backend, unsigned int id, unsigned int count, const char *path)
 {
 
     struct ext2_entry *entry;

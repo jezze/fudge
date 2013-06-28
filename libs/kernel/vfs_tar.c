@@ -50,35 +50,35 @@ static struct tar_header *parent(struct tar_header *header)
 
 }
 
-static unsigned int match()
+static unsigned int match(struct vfs_backend *backend)
 {
 
     return 1;
 
 }
 
-static unsigned int get_physical(struct vfs_protocol *self, unsigned int id)
+static unsigned int get_physical(struct vfs_backend *backend, unsigned int id)
 {
 
     return id + TAR_BLOCK_SIZE;
 
 }
 
-static unsigned int open(struct vfs_protocol *self, unsigned int id)
+static unsigned int open(struct vfs_backend *backend, unsigned int id)
 {
 
     return id;
 
 }
 
-static unsigned int close(struct vfs_protocol *self, unsigned int id)
+static unsigned int close(struct vfs_backend *backend, unsigned int id)
 {
 
     return id;
 
 }
 
-static unsigned int read(struct vfs_protocol *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int read(struct vfs_backend *backend, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct tar_header *header = (struct tar_header *)id;
@@ -112,11 +112,11 @@ static unsigned int read(struct vfs_protocol *self, unsigned int id, unsigned in
 
     }
 
-    return memory_read(buffer, count, (void *)get_physical(self, id), string_number(header->size, 8), offset);
+    return memory_read(buffer, count, (void *)get_physical(backend, id), string_number(header->size, 8), offset);
 
 }
 
-static unsigned int write(struct vfs_protocol *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int write(struct vfs_backend *backend, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct tar_header *header = (struct tar_header *)id;
@@ -125,11 +125,11 @@ static unsigned int write(struct vfs_protocol *self, unsigned int id, unsigned i
     if (header->name[length - 1] == '/')
         return 0;
 
-    return memory_write((void *)get_physical(self, id), string_number(header->size, 8), buffer, count, offset);
+    return memory_write((void *)get_physical(backend, id), string_number(header->size, 8), buffer, count, offset);
 
 }
 
-static unsigned int walk(struct vfs_protocol *self, unsigned int id, unsigned int count, const char *path)
+static unsigned int walk(struct vfs_backend *backend, unsigned int id, unsigned int count, const char *path)
 {
 
     struct tar_header *header = (struct tar_header *)id;
@@ -140,7 +140,7 @@ static unsigned int walk(struct vfs_protocol *self, unsigned int id, unsigned in
         return id;
 
     if (memory_match(path, "../", 3))
-        return walk(self, (unsigned int)parent(header), count - 3, path + 3);
+        return walk(backend, (unsigned int)parent(header), count - 3, path + 3);
 
     while ((current = next(current)))
     {
@@ -153,7 +153,7 @@ static unsigned int walk(struct vfs_protocol *self, unsigned int id, unsigned in
         l -= length;
 
         if (memory_match(current->name + length, path, l))
-            return walk(self, (unsigned int)current, count - l, path + l);
+            return walk(backend, (unsigned int)current, count - l, path + l);
 
     }
 

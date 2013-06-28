@@ -10,6 +10,7 @@
 struct runtime_descriptor
 {
 
+    struct vfs_backend *backend;
     struct vfs_protocol *protocol;
     unsigned int id;
 
