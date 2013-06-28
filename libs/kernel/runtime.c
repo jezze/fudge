@@ -23,7 +23,7 @@ struct runtime_mount *runtime_get_mount(struct runtime_task *task, unsigned int 
 
 }
 
-struct runtime_descriptor *runtime_get_child(struct runtime_container *container, struct vfs_interface *interface, unsigned int id)
+struct runtime_descriptor *runtime_get_child(struct runtime_container *container, struct vfs_protocol *protocol, unsigned int id)
 {
 
     unsigned int i;
@@ -31,7 +31,7 @@ struct runtime_descriptor *runtime_get_child(struct runtime_container *container
     for (i = 1; i < RUNTIME_CONTAINER_MOUNT_SLOTS; i++)
     {
 
-        if (container->mounts[i].parent.interface == interface && container->mounts[i].parent.id == id)
+        if (container->mounts[i].parent.protocol == protocol && container->mounts[i].parent.id == id)
             return &container->mounts[i].child;
 
     }
@@ -40,7 +40,7 @@ struct runtime_descriptor *runtime_get_child(struct runtime_container *container
 
 }
 
-struct runtime_descriptor *runtime_get_parent(struct runtime_container *container, struct vfs_interface *interface, unsigned int id)
+struct runtime_descriptor *runtime_get_parent(struct runtime_container *container, struct vfs_protocol *protocol, unsigned int id)
 {
 
     unsigned int i;
@@ -48,7 +48,7 @@ struct runtime_descriptor *runtime_get_parent(struct runtime_container *containe
     for (i = 1; i < RUNTIME_CONTAINER_MOUNT_SLOTS; i++)
     {
 
-        if (container->mounts[i].child.interface == interface && container->mounts[i].child.id == id)
+        if (container->mounts[i].child.protocol == protocol && container->mounts[i].child.id == id)
             return &container->mounts[i].parent;
 
     }

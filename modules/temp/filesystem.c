@@ -7,21 +7,21 @@
 
 static struct circular_stream buffers[TEMP_BUFFER_SLOTS];
 
-static unsigned int open(struct vfs_interface *self, unsigned int id)
+static unsigned int open(struct vfs_protocol *self, unsigned int id)
 {
 
     return id;
 
 }
 
-static unsigned int close(struct vfs_interface *self, unsigned int id)
+static unsigned int close(struct vfs_protocol *self, unsigned int id)
 {
 
     return id;
 
 }
 
-static unsigned int read(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int read(struct vfs_protocol *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     if (id > 1)
@@ -34,7 +34,7 @@ static unsigned int read(struct vfs_interface *self, unsigned int id, unsigned i
 
 }
 
-static unsigned int walk(struct vfs_interface *self, unsigned int id, unsigned int count, const char *path)
+static unsigned int walk(struct vfs_protocol *self, unsigned int id, unsigned int count, const char *path)
 {
 
     if (!count)
@@ -71,7 +71,7 @@ static unsigned int walk(struct vfs_interface *self, unsigned int id, unsigned i
 
 }
 
-static unsigned int write(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int write(struct vfs_protocol *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     if (id > 1)
@@ -85,7 +85,7 @@ void temp_init_filesystem(struct temp_filesystem *filesystem)
 {
 
     memory_clear(filesystem, sizeof (struct temp_filesystem));
-    vfs_init_interface(&filesystem->base, 1, 0, open, close, read, write, walk, 0);
+    vfs_init_protocol(&filesystem->base, 1, 0, open, close, read, write, walk, 0);
 
 }
 

@@ -3,33 +3,33 @@
 #include "binary.h"
 #include "binary_elf.h"
 
-static struct binary_interface elf;
+static struct binary_protocol elf;
 
-static unsigned int match(struct vfs_interface *interface, unsigned int id)
+static unsigned int match(struct vfs_protocol *protocol, unsigned int id)
 {
 
     struct elf_header header;
 
-    if (interface->read(interface, id, 0, ELF_HEADER_SIZE, &header) < ELF_HEADER_SIZE)
+    if (protocol->read(protocol, id, 0, ELF_HEADER_SIZE, &header) < ELF_HEADER_SIZE)
         return 0;
 
     return elf_validate(&header);
 
 }
 
-static unsigned int find_symbol(struct vfs_interface *interface, unsigned int id, unsigned int count, const char *symbol)
+static unsigned int find_symbol(struct vfs_protocol *protocol, unsigned int id, unsigned int count, const char *symbol)
 {
 
     struct elf_header header;
     struct elf_section_header sectionTable[16];
     unsigned int i;
 
-    interface->read(interface, id, 0, ELF_HEADER_SIZE, &header);
+    protocol->read(protocol, id, 0, ELF_HEADER_SIZE, &header);
 
     if (header.shcount > 16)
         return 0;
 
-    interface->read(interface, id, header.shoffset, header.shsize * header.shcount, sectionTable);
+    protocol->read(protocol, id, header.shoffset, header.shsize * header.shcount, sectionTable);
 
     for (i = 0; i < header.shcount; i++)
     {
@@ -41,8 +41,8 @@ static unsigned int find_symbol(struct vfs_interface *interface, unsigned int id
         if (sectionTable[i].type != ELF_SECTION_TYPE_SYMTAB)
             continue;
 
-        interface->read(interface, id, sectionTable[i].offset, sectionTable[i].size, symbolTable);
-        interface->read(interface, id, sectionTable[sectionTable[i].link].offset, sectionTable[sectionTable[i].link].size, stringTable);
+        protocol->read(protocol, id, sectionTable[i].offset, sectionTable[i].size, symbolTable);
+        protocol->read(protocol, id, sectionTable[sectionTable[i].link].offset, sectionTable[sectionTable[i].link].size, stringTable);
 
         address = elf_find_symbol(&header, sectionTable, &sectionTable[i], symbolTable, stringTable, count, symbol);
 
@@ -55,40 +55,40 @@ static unsigned int find_symbol(struct vfs_interface *interface, unsigned int id
 
 }
 
-static unsigned int copy_program(struct vfs_interface *interface, unsigned int id)
+static unsigned int copy_program(struct vfs_protocol *protocol, unsigned int id)
 {
 
     struct elf_header header;
     struct elf_program_header programHeader[8];
     unsigned int i;
 
-    interface->read(interface, id, 0, ELF_HEADER_SIZE, &header);
+    protocol->read(protocol, id, 0, ELF_HEADER_SIZE, &header);
 
     if (header.phcount > 8)
         return 0;
 
-    interface->read(interface, id, header.phoffset, header.phsize * header.phcount, programHeader);
+    protocol->read(protocol, id, header.phoffset, header.phsize * header.phcount, programHeader);
 
     for (i = 0; i < header.phcount; i++)
-        interface->read(interface, id, programHeader[i].offset, programHeader[i].fsize, (void *)programHeader[i].vaddress);
+        protocol->read(protocol, id, programHeader[i].offset, programHeader[i].fsize, (void *)programHeader[i].vaddress);
 
     return header.entry;
 
 }
 
-static unsigned int relocate(struct vfs_interface *interface, unsigned int id, unsigned int address)
+static unsigned int relocate(struct vfs_protocol *protocol, unsigned int id, unsigned int address)
 {
 
     struct elf_header header;
     struct elf_section_header sectionTable[16];
     unsigned int i;
 
-    interface->read(interface, id, 0, ELF_HEADER_SIZE, &header);
+    protocol->read(protocol, id, 0, ELF_HEADER_SIZE, &header);
 
     if (header.shcount > 16)
         return 0;
 
-    interface->read(interface, id, header.shoffset, header.shsize * header.shcount, sectionTable);
+    protocol->read(protocol, id, header.shoffset, header.shsize * header.shcount, sectionTable);
 
     for (i = 0; i < header.shcount; i++)
     {
@@ -101,22 +101,22 @@ static unsigned int relocate(struct vfs_interface *interface, unsigned int id, u
         if (sectionTable[i].type != ELF_SECTION_TYPE_REL)
             continue;
 
-        interface->read(interface, id, sectionTable[i].offset, sectionTable[i].size, relocationTable);
-        interface->read(interface, id, sectionTable[sectionTable[i].link].offset, sectionTable[sectionTable[i].link].size, symbolTable);
+        protocol->read(protocol, id, sectionTable[i].offset, sectionTable[i].size, relocationTable);
+        protocol->read(protocol, id, sectionTable[sectionTable[i].link].offset, sectionTable[sectionTable[i].link].size, symbolTable);
         elf_relocate_section(sectionTable, &sectionTable[i], &sectionTable[sectionTable[i].info], relocationTable, symbolTable, address);
 
     }
 
-    interface->write(interface, id, header.shoffset, header.shsize * header.shcount, sectionTable);
+    protocol->write(protocol, id, header.shoffset, header.shsize * header.shcount, sectionTable);
 
     return 1;
 
 }
 
-struct binary_interface *binary_elf_setup()
+struct binary_protocol *binary_elf_setup()
 {
 
-    binary_init_interface(&elf, match, find_symbol, copy_program, relocate);
+    binary_init_protocol(&elf, match, find_symbol, copy_program, relocate);
 
     return &elf;
 

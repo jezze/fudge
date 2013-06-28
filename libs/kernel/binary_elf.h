@@ -1,1 +1,1 @@
-struct binary_interface *binary_elf_setup();
+struct binary_protocol *binary_elf_setup();

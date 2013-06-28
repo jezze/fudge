@@ -11,63 +11,63 @@
 static struct runtime_container container;
 static struct runtime_task task;
 
-static void setup(struct vfs_interface *vinterface, struct binary_interface *binterface, unsigned int id)
+static void setup(struct vfs_protocol *vprotocol, struct binary_protocol *bprotocol, unsigned int id)
 {
 
     runtime_init_container(&container);
 
     container.running = &task;
-    container.mounts[0x01].child.interface = vinterface;
-    container.mounts[0x01].child.id = vinterface->rootid;
+    container.mounts[0x01].child.protocol = vprotocol;
+    container.mounts[0x01].child.id = vprotocol->rootid;
 
     runtime_init_task(&task, &container);
 
-    task.registers.ip = binterface->copy_program(vinterface, id);
+    task.registers.ip = bprotocol->copy_program(vprotocol, id);
     task.registers.sp = RUNTIME_STACKADDRESS_VIRTUAL;
     task.registers.fp = RUNTIME_STACKADDRESS_VIRTUAL;
 
     error_assert(task.registers.ip != 0, "Init program entry point not found", __FILE__, __LINE__);
 
-    task.descriptors[0x0E].interface = vinterface;
-    task.descriptors[0x0E].id = vinterface->rootid;
-    task.descriptors[0x0F].interface = vinterface;
-    task.descriptors[0x0F].id = vinterface->rootid;
+    task.descriptors[0x0E].protocol = vprotocol;
+    task.descriptors[0x0E].id = vprotocol->rootid;
+    task.descriptors[0x0F].protocol = vprotocol;
+    task.descriptors[0x0F].id = vprotocol->rootid;
 
 }
 
 static void detect()
 {
 
-    struct vfs_interface *vinterface;
-    struct binary_interface *binterface;
+    struct vfs_protocol *vprotocol;
+    struct binary_protocol *bprotocol;
     unsigned int id;
 
-    vinterface = vfs_get_interface();
+    vprotocol = vfs_get_protocol();
 
-    error_assert(vinterface != 0, "Filesystem interface not recognized", __FILE__, __LINE__);
+    error_assert(vprotocol != 0, "Filesystem protocol not recognized", __FILE__, __LINE__);
 
-    id = vinterface->walk(vinterface, vinterface->rootid, 8, "bin/init");
+    id = vprotocol->walk(vprotocol, vprotocol->rootid, 8, "bin/init");
 
     error_assert(id != 0, "Init program not found", __FILE__, __LINE__);
 
-    binterface = binary_get_interface(vinterface, id);
+    bprotocol = binary_get_protocol(vprotocol, id);
 
-    error_assert(binterface != 0, "Binary interface not recognized", __FILE__, __LINE__);
+    error_assert(bprotocol != 0, "Binary protocol not recognized", __FILE__, __LINE__);
 
-    setup(vinterface, binterface, id);
+    setup(vprotocol, bprotocol, id);
 
 }
 
 struct runtime_container *kernel_setup(unsigned int modulesc, void **modulesv)
 {
 
-    struct binary_interface *elf = binary_elf_setup();
-    struct vfs_interface *tar = vfs_tar_setup(modulesv[0]);
+    struct binary_protocol *elf = binary_elf_setup();
+    struct vfs_protocol *tar = vfs_tar_setup(modulesv[0]);
 
     vfs_setup();
-    vfs_register_interface(tar);
+    vfs_register_protocol(tar);
     binary_setup();
-    binary_register_interface(elf);
+    binary_register_protocol(elf);
     syscall_setup();
     detect();
 

@@ -108,7 +108,7 @@ void system_init_stream(struct system_stream *stream, char *name, unsigned int (
 
 }
 
-struct vfs_interface *get_filesystem()
+struct vfs_protocol *get_filesystem()
 {
 
     return &filesystem.base;

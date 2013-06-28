@@ -1,14 +1,14 @@
 #include <fudge/kernel.h>
 #include "vfs.h"
 
-static struct vfs_interface *interfaces;
+static struct vfs_protocol *protocols;
 
-struct vfs_interface *vfs_get_interface()
+struct vfs_protocol *vfs_get_protocol()
 {
 
-    struct vfs_interface *current;
+    struct vfs_protocol *current;
 
-    for (current = interfaces; current; current = current->sibling)
+    for (current = protocols; current; current = current->sibling)
     {
 
         if (current->match())
@@ -20,27 +20,27 @@ struct vfs_interface *vfs_get_interface()
 
 }
 
-void vfs_register_interface(struct vfs_interface *interface)
+void vfs_register_protocol(struct vfs_protocol *protocol)
 {
 
-    struct vfs_interface *current;
+    struct vfs_protocol *current;
 
-    if (!interfaces)
+    if (!protocols)
     {
 
-        interfaces = interface;
+        protocols = protocol;
 
         return;
 
     }
 
-    for (current = interfaces; current; current = current->sibling)
+    for (current = protocols; current; current = current->sibling)
     {
 
         if (current->sibling)
             continue;
 
-        current->sibling = interface;
+        current->sibling = protocol;
 
         return;
 
@@ -48,24 +48,24 @@ void vfs_register_interface(struct vfs_interface *interface)
 
 }
 
-void vfs_unregister_interface(struct vfs_interface *interface)
+void vfs_unregister_protocol(struct vfs_protocol *protocol)
 {
 
-    struct vfs_interface *current;
+    struct vfs_protocol *current;
 
-    if (interfaces == interface)
+    if (protocols == protocol)
     {
 
-        interfaces = interfaces->sibling;
+        protocols = protocols->sibling;
 
         return;
 
     }
 
-    for (current = interfaces; current; current = current->sibling)
+    for (current = protocols; current; current = current->sibling)
     {
 
-        if (current->sibling != interface)
+        if (current->sibling != protocol)
             continue;
 
         current->sibling = current->sibling->sibling;
@@ -76,26 +76,36 @@ void vfs_unregister_interface(struct vfs_interface *interface)
 
 }
 
-void vfs_init_interface(struct vfs_interface *interface, unsigned int rootid, unsigned int (*match)(), unsigned int (*open)(struct vfs_interface *self, unsigned int id), unsigned int (*close)(struct vfs_interface *self, unsigned int id), unsigned int (*read)(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write)(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer), unsigned int (*walk)(struct vfs_interface *self, unsigned int id, unsigned int count, const char *path), unsigned int (*get_physical)(struct vfs_interface *self, unsigned int id))
+void vfs_init_backend(struct vfs_backend *backend, unsigned int (*read)(struct vfs_backend *self, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write)(struct vfs_backend *self, unsigned int offset, unsigned int count, void *buffer))
 {
 
-    memory_clear(interface, sizeof (struct vfs_interface));
+    memory_clear(backend, sizeof (struct vfs_backend));
 
-    interface->rootid = rootid;
-    interface->match = match;
-    interface->open = open;
-    interface->close = close;
-    interface->read = read;
-    interface->write = write;
-    interface->walk = walk;
-    interface->get_physical = get_physical;
+    backend->read = read;
+    backend->write = write;
+
+}
+
+void vfs_init_protocol(struct vfs_protocol *protocol, unsigned int rootid, unsigned int (*match)(), unsigned int (*open)(struct vfs_protocol *self, unsigned int id), unsigned int (*close)(struct vfs_protocol *self, unsigned int id), unsigned int (*read)(struct vfs_protocol *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write)(struct vfs_protocol *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer), unsigned int (*walk)(struct vfs_protocol *self, unsigned int id, unsigned int count, const char *path), unsigned int (*get_physical)(struct vfs_protocol *self, unsigned int id))
+{
+
+    memory_clear(protocol, sizeof (struct vfs_protocol));
+
+    protocol->rootid = rootid;
+    protocol->match = match;
+    protocol->open = open;
+    protocol->close = close;
+    protocol->read = read;
+    protocol->write = write;
+    protocol->walk = walk;
+    protocol->get_physical = get_physical;
 
 }
 
 void vfs_setup()
 {
 
-    interfaces = 0;
+    protocols = 0;
 
 }
 

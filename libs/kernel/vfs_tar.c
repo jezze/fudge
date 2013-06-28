@@ -2,7 +2,7 @@
 #include "vfs.h"
 #include "vfs_tar.h"
 
-static struct vfs_interface tar;
+static struct vfs_protocol tar;
 
 static struct tar_header *next(struct tar_header *header)
 {
@@ -57,28 +57,28 @@ static unsigned int match()
 
 }
 
-static unsigned int get_physical(struct vfs_interface *self, unsigned int id)
+static unsigned int get_physical(struct vfs_protocol *self, unsigned int id)
 {
 
     return id + TAR_BLOCK_SIZE;
 
 }
 
-static unsigned int open(struct vfs_interface *self, unsigned int id)
+static unsigned int open(struct vfs_protocol *self, unsigned int id)
 {
 
     return id;
 
 }
 
-static unsigned int close(struct vfs_interface *self, unsigned int id)
+static unsigned int close(struct vfs_protocol *self, unsigned int id)
 {
 
     return id;
 
 }
 
-static unsigned int read(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int read(struct vfs_protocol *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct tar_header *header = (struct tar_header *)id;
@@ -116,7 +116,7 @@ static unsigned int read(struct vfs_interface *self, unsigned int id, unsigned i
 
 }
 
-static unsigned int write(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int write(struct vfs_protocol *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct tar_header *header = (struct tar_header *)id;
@@ -129,7 +129,7 @@ static unsigned int write(struct vfs_interface *self, unsigned int id, unsigned 
 
 }
 
-static unsigned int walk(struct vfs_interface *self, unsigned int id, unsigned int count, const char *path)
+static unsigned int walk(struct vfs_protocol *self, unsigned int id, unsigned int count, const char *path)
 {
 
     struct tar_header *header = (struct tar_header *)id;
@@ -161,10 +161,10 @@ static unsigned int walk(struct vfs_interface *self, unsigned int id, unsigned i
 
 }
 
-struct vfs_interface *vfs_tar_setup(void *address)
+struct vfs_protocol *vfs_tar_setup(void *address)
 {
 
-    vfs_init_interface(&tar, (unsigned int)address, match, open, close, read, write, walk, get_physical);
+    vfs_init_protocol(&tar, (unsigned int)address, match, open, close, read, write, walk, get_physical);
 
     return &tar;
 

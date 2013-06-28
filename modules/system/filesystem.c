@@ -3,14 +3,14 @@
 #include "system.h"
 #include "filesystem.h"
 
-static unsigned int open(struct vfs_interface *self, unsigned int id)
+static unsigned int open(struct vfs_protocol *self, unsigned int id)
 {
 
     return id;
 
 }
 
-static unsigned int close(struct vfs_interface *self, unsigned int id)
+static unsigned int close(struct vfs_protocol *self, unsigned int id)
 {
 
     return id;
@@ -67,7 +67,7 @@ static unsigned int read_stream(struct system_node *node, unsigned int offset, u
 
 }
 
-static unsigned int read(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int read(struct vfs_protocol *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct system_filesystem *filesystem = (struct system_filesystem *)self;
@@ -80,7 +80,7 @@ static unsigned int read(struct vfs_interface *self, unsigned int id, unsigned i
 
 }
 
-static unsigned int walk(struct vfs_interface *self, unsigned int id, unsigned int count, const char *path)
+static unsigned int walk(struct vfs_protocol *self, unsigned int id, unsigned int count, const char *path)
 {
 
     struct system_node *node = (struct system_node *)id;
@@ -124,7 +124,7 @@ static unsigned int write_stream(struct system_node *node, unsigned int offset, 
 
 }
 
-static unsigned int write(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int write(struct vfs_protocol *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct system_filesystem *filesystem = (struct system_filesystem *)self;
@@ -141,7 +141,7 @@ void system_init_filesystem(struct system_filesystem *filesystem)
 {
 
     memory_clear(filesystem, sizeof (struct system_filesystem));
-    vfs_init_interface(&filesystem->base, (unsigned int)&filesystem->root, 0, open, close, read, write, walk, 0);
+    vfs_init_protocol(&filesystem->base, (unsigned int)&filesystem->root, 0, open, close, read, write, walk, 0);
     system_init_group(&filesystem->root, "/");
 
     filesystem->readers[SYSTEM_NODETYPE_GROUP] = read_group;

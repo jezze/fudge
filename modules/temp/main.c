@@ -7,7 +7,7 @@
 
 static struct temp_filesystem filesystem;
 
-struct vfs_interface *get_filesystem()
+struct vfs_protocol *get_filesystem()
 {
 
     return &filesystem.base;

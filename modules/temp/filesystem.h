@@ -3,7 +3,7 @@
 struct temp_filesystem
 {
 
-    struct vfs_interface base;
+    struct vfs_protocol base;
 
 };
 

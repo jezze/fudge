@@ -2,17 +2,17 @@
 #include "vfs.h"
 #include "binary.h"
 
-static struct binary_interface *interfaces;
+static struct binary_protocol *protocols;
 
-struct binary_interface *binary_get_interface(struct vfs_interface *interface, unsigned int id)
+struct binary_protocol *binary_get_protocol(struct vfs_protocol *protocol, unsigned int id)
 {
 
-    struct binary_interface *current;
+    struct binary_protocol *current;
 
-    for (current = interfaces; current; current = current->sibling)
+    for (current = protocols; current; current = current->sibling)
     {
 
-        if (current->match(interface, id))
+        if (current->match(protocol, id))
             return current;
 
     }
@@ -21,27 +21,27 @@ struct binary_interface *binary_get_interface(struct vfs_interface *interface, u
 
 }
 
-void binary_register_interface(struct binary_interface *interface)
+void binary_register_protocol(struct binary_protocol *protocol)
 {
 
-    struct binary_interface *current;
+    struct binary_protocol *current;
 
-    if (!interfaces)
+    if (!protocols)
     {
 
-        interfaces = interface;
+        protocols = protocol;
 
         return;
 
     }
 
-    for (current = interfaces; current; current = current->sibling)
+    for (current = protocols; current; current = current->sibling)
     {
 
         if (current->sibling)
             continue;
 
-        current->sibling = interface;
+        current->sibling = protocol;
 
         return;
 
@@ -49,24 +49,24 @@ void binary_register_interface(struct binary_interface *interface)
 
 }
 
-void binary_unregister_interface(struct binary_interface *interface)
+void binary_unregister_protocol(struct binary_protocol *protocol)
 {
 
-    struct binary_interface *current;
+    struct binary_protocol *current;
 
-    if (interfaces == interface)
+    if (protocols == protocol)
     {
 
-        interfaces = interfaces->sibling;
+        protocols = protocols->sibling;
 
         return;
 
     }
 
-    for (current = interfaces; current; current = current->sibling)
+    for (current = protocols; current; current = current->sibling)
     {
 
-        if (current->sibling != interface)
+        if (current->sibling != protocol)
             continue;
 
         current->sibling = current->sibling->sibling;
@@ -77,22 +77,22 @@ void binary_unregister_interface(struct binary_interface *interface)
 
 }
 
-void binary_init_interface(struct binary_interface *interface, unsigned int (*match)(struct vfs_interface *interface, unsigned int id), unsigned int (*find_symbol)(struct vfs_interface *interface, unsigned int id, unsigned int count, const char *symbol), unsigned int (*copy_program)(struct vfs_interface *interface, unsigned int id), unsigned int (*relocate)(struct vfs_interface *interface, unsigned int id, unsigned int address))
+void binary_init_protocol(struct binary_protocol *protocol, unsigned int (*match)(struct vfs_protocol *protocol, unsigned int id), unsigned int (*find_symbol)(struct vfs_protocol *protocol, unsigned int id, unsigned int count, const char *symbol), unsigned int (*copy_program)(struct vfs_protocol *protocol, unsigned int id), unsigned int (*relocate)(struct vfs_protocol *protocol, unsigned int id, unsigned int address))
 {
 
-    memory_clear(interface, sizeof (struct binary_interface));
+    memory_clear(protocol, sizeof (struct binary_protocol));
 
-    interface->match = match;
-    interface->find_symbol = find_symbol;
-    interface->copy_program = copy_program;
-    interface->relocate = relocate;
+    protocol->match = match;
+    protocol->find_symbol = find_symbol;
+    protocol->copy_program = copy_program;
+    protocol->relocate = relocate;
 
 }
 
 void binary_setup()
 {
 
-    interfaces = 0;
+    protocols = 0;
 
 }
 

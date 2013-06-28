@@ -44,21 +44,21 @@ enum ext2_nodetype
 
 };
 
-static unsigned int open(struct vfs_interface *self, unsigned int id)
+static unsigned int open(struct vfs_protocol *self, unsigned int id)
 {
 
     return id;
 
 }
 
-static unsigned int close(struct vfs_interface *self, unsigned int id)
+static unsigned int close(struct vfs_protocol *self, unsigned int id)
 {
 
     return id;
 
 }
 
-static unsigned int read(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int read(struct vfs_protocol *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct ext2_filesystem *filesystem = (struct ext2_filesystem *)self;
@@ -103,14 +103,14 @@ static unsigned int read(struct vfs_interface *self, unsigned int id, unsigned i
 
 }
 
-static unsigned int write(struct vfs_interface *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int write(struct vfs_protocol *self, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     return 0;
 
 }
 
-static struct ext2_entry *finddir(struct vfs_interface *self, unsigned int id, const char *name)
+static struct ext2_entry *finddir(struct vfs_protocol *self, unsigned int id, const char *name)
 {
 
     struct ext2_filesystem *filesystem = (struct ext2_filesystem *)self;
@@ -148,7 +148,7 @@ static struct ext2_entry *finddir(struct vfs_interface *self, unsigned int id, c
 
 }
 
-static unsigned int walk(struct vfs_interface *self, unsigned int id, unsigned int count, const char *path)
+static unsigned int walk(struct vfs_protocol *self, unsigned int id, unsigned int count, const char *path)
 {
 
     struct ext2_entry *entry;
@@ -172,7 +172,7 @@ void ext2_init_filesystem(struct ext2_filesystem *filesystem, struct ext2_protoc
 {
 
     memory_clear(filesystem, sizeof (struct ext2_filesystem));
-    vfs_init_interface(&filesystem->base, 2, 0, open, close, read, write, walk, 0);
+    vfs_init_protocol(&filesystem->base, 2, 0, open, close, read, write, walk, 0);
 
     filesystem->protocol = protocol;
     filesystem->interface = interface;

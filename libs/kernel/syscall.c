@@ -26,7 +26,7 @@ static unsigned int open(struct runtime_task *task, void *stack)
     if (!descriptor || !pdescriptor)
         return 0;
 
-    descriptor->interface = pdescriptor->interface;
+    descriptor->protocol = pdescriptor->protocol;
     descriptor->id = pdescriptor->id;
 
     for (;;)
@@ -34,16 +34,16 @@ static unsigned int open(struct runtime_task *task, void *stack)
 
         unsigned int id;
 
-        pdescriptor = (args->count >= 3 && memory_match(args->path, "../", 3)) ? runtime_get_parent(task->container, descriptor->interface, descriptor->id) : runtime_get_child(task->container, descriptor->interface, descriptor->id);
+        pdescriptor = (args->count >= 3 && memory_match(args->path, "../", 3)) ? runtime_get_parent(task->container, descriptor->protocol, descriptor->id) : runtime_get_child(task->container, descriptor->protocol, descriptor->id);
 
         if (pdescriptor)
         {
 
-            if (!pdescriptor->interface)
+            if (!pdescriptor->protocol)
                 return 0;
 
             descriptor->id = pdescriptor->id;
-            descriptor->interface = pdescriptor->interface;
+            descriptor->protocol = pdescriptor->protocol;
 
             continue;
 
@@ -57,7 +57,7 @@ static unsigned int open(struct runtime_task *task, void *stack)
         if (length > args->count)
             length = args->count;
 
-        id = descriptor->interface->walk(descriptor->interface, descriptor->id, length, args->path);
+        id = descriptor->protocol->walk(descriptor->protocol, descriptor->id, length, args->path);
 
         if (!id)
             return 0;
@@ -69,7 +69,7 @@ static unsigned int open(struct runtime_task *task, void *stack)
 
     };
 
-    return descriptor->interface->open(descriptor->interface, descriptor->id);
+    return descriptor->protocol->open(descriptor->protocol, descriptor->id);
 
 }
 
@@ -82,7 +82,7 @@ static unsigned int close(struct runtime_task *task, void *stack)
     if (!descriptor)
         return 0;
 
-    return descriptor->interface->close(descriptor->interface, descriptor->id);
+    return descriptor->protocol->close(descriptor->protocol, descriptor->id);
 
 }
 
@@ -95,7 +95,7 @@ static unsigned int read(struct runtime_task *task, void *stack)
     if (!descriptor)
         return 0;
 
-    return descriptor->interface->read(descriptor->interface, descriptor->id, args->offset, args->count, args->buffer);
+    return descriptor->protocol->read(descriptor->protocol, descriptor->id, args->offset, args->count, args->buffer);
 
 }
 
@@ -108,7 +108,7 @@ static unsigned int write(struct runtime_task *task, void *stack)
     if (!descriptor)
         return 0;
 
-    return descriptor->interface->write(descriptor->interface, descriptor->id, args->offset, args->count, args->buffer);
+    return descriptor->protocol->write(descriptor->protocol, descriptor->id, args->offset, args->count, args->buffer);
 
 }
 
@@ -119,31 +119,31 @@ static unsigned int mount(struct runtime_task *task, void *stack)
     struct runtime_mount *mount = runtime_get_mount(task, args->index);
     struct runtime_descriptor *pdescriptor = runtime_get_descriptor(task, args->pindex);
     struct runtime_descriptor *cdescriptor = runtime_get_descriptor(task, args->cindex);
-    struct binary_interface *interface;
-    struct vfs_interface *(*get_interface)();
-    struct vfs_interface *child;
+    struct binary_protocol *protocol;
+    struct vfs_protocol *(*get_protocol)();
+    struct vfs_protocol *child;
 
     if (!mount || !pdescriptor || !cdescriptor)
         return 0;
 
-    interface = binary_get_interface(cdescriptor->interface, cdescriptor->id);
+    protocol = binary_get_protocol(cdescriptor->protocol, cdescriptor->id);
 
-    if (!interface)
+    if (!protocol)
         return 0;
 
-    get_interface = (struct vfs_interface *(*)())(interface->find_symbol(cdescriptor->interface, cdescriptor->id, 14, "get_filesystem"));
+    get_protocol = (struct vfs_protocol *(*)())(protocol->find_symbol(cdescriptor->protocol, cdescriptor->id, 14, "get_filesystem"));
 
-    if (!get_interface)
+    if (!get_protocol)
         return 0;
 
-    child = get_interface();
+    child = get_protocol();
 
     if (!child)
         return 0;
 
-    mount->parent.interface = pdescriptor->interface;
+    mount->parent.protocol = pdescriptor->protocol;
     mount->parent.id = pdescriptor->id;
-    mount->child.interface = child;
+    mount->child.protocol = child;
     mount->child.id = child->rootid;
 
     return 1;
@@ -161,9 +161,9 @@ static unsigned int bind(struct runtime_task *task, void *stack)
     if (!mount || !pdescriptor || !cdescriptor)
         return 0;
 
-    mount->parent.interface = pdescriptor->interface;
+    mount->parent.protocol = pdescriptor->protocol;
     mount->parent.id = pdescriptor->id;
-    mount->child.interface = cdescriptor->interface;
+    mount->child.protocol = cdescriptor->protocol;
     mount->child.id = cdescriptor->id;
 
     return 1;
@@ -175,18 +175,18 @@ static unsigned int execute(struct runtime_task *task, void *stack)
 
     struct {void *caller; unsigned int index;} *args = stack;
     struct runtime_descriptor *descriptor = runtime_get_descriptor(task, args->index);
-    struct binary_interface *interface;
+    struct binary_protocol *protocol;
 
     if (!descriptor)
         return 0;
 
-    interface = binary_get_interface(descriptor->interface, descriptor->id);
+    protocol = binary_get_protocol(descriptor->protocol, descriptor->id);
 
-    if (!interface)
+    if (!protocol)
         return 0;
 
     task->state |= RUNTIME_TASK_STATE_USED;
-    task->registers.ip = interface->copy_program(descriptor->interface, descriptor->id);
+    task->registers.ip = protocol->copy_program(descriptor->protocol, descriptor->id);
     task->registers.sp = RUNTIME_STACKADDRESS_VIRTUAL;
     task->registers.fp = RUNTIME_STACKADDRESS_VIRTUAL;
     task->registers.status = 0;
@@ -213,28 +213,28 @@ static unsigned int load(struct runtime_task *task, void *stack)
 
     struct {void *caller; unsigned int index;} *args = stack;
     struct runtime_descriptor *descriptor = runtime_get_descriptor(task, args->index);
-    struct binary_interface *interface;
+    struct binary_protocol *protocol;
     unsigned int physical;
     void (*init)();
 
-    if (!descriptor || !descriptor->interface->get_physical)
+    if (!descriptor || !descriptor->protocol->get_physical)
         return 0;
 
     /* Physical should be replaced with known address later on */
-    physical = descriptor->interface->get_physical(descriptor->interface, descriptor->id);
+    physical = descriptor->protocol->get_physical(descriptor->protocol, descriptor->id);
 
     if (!physical)
         return 0;
 
-    interface = binary_get_interface(descriptor->interface, descriptor->id);
+    protocol = binary_get_protocol(descriptor->protocol, descriptor->id);
 
-    if (!interface)
+    if (!protocol)
         return 0;
 
-    if (!interface->relocate(descriptor->interface, descriptor->id, physical))
+    if (!protocol->relocate(descriptor->protocol, descriptor->id, physical))
         return 0;
 
-    init = (void (*)())(interface->find_symbol(descriptor->interface, descriptor->id, 4, "init"));
+    init = (void (*)())(protocol->find_symbol(descriptor->protocol, descriptor->id, 4, "init"));
 
     if (!init)
         return 0;
@@ -250,18 +250,18 @@ static unsigned int unload(struct runtime_task *task, void *stack)
 
     struct {void *caller; unsigned int index;} *args = stack;
     struct runtime_descriptor *descriptor = runtime_get_descriptor(task, args->index);
-    struct binary_interface *interface;
+    struct binary_protocol *protocol;
     void (*destroy)();
 
     if (!descriptor)
         return 0;
 
-    interface = binary_get_interface(descriptor->interface, descriptor->id);
+    protocol = binary_get_protocol(descriptor->protocol, descriptor->id);
 
-    if (!interface)
+    if (!protocol)
         return 0;
 
-    destroy = (void (*)())(interface->find_symbol(descriptor->interface, descriptor->id, 7, "destroy"));
+    destroy = (void (*)())(protocol->find_symbol(descriptor->protocol, descriptor->id, 7, "destroy"));
 
     if (!destroy)
         return 0;
