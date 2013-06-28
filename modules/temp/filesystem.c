@@ -85,7 +85,7 @@ void temp_init_filesystem(struct temp_filesystem *filesystem)
 {
 
     memory_clear(filesystem, sizeof (struct temp_filesystem));
-    vfs_init_interface(&filesystem->base, 1, open, close, read, write, walk, 0);
+    vfs_init_interface(&filesystem->base, 1, 0, open, close, read, write, walk, 0);
 
 }
 

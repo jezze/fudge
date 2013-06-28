@@ -50,6 +50,13 @@ static struct tar_header *parent(struct tar_header *header)
 
 }
 
+static unsigned int match()
+{
+
+    return 1;
+
+}
+
 static unsigned int get_physical(struct vfs_interface *self, unsigned int id)
 {
 
@@ -157,7 +164,7 @@ static unsigned int walk(struct vfs_interface *self, unsigned int id, unsigned i
 struct vfs_interface *vfs_tar_setup(void *address)
 {
 
-    vfs_init_interface(&tar, (unsigned int)address, open, close, read, write, walk, get_physical);
+    vfs_init_interface(&tar, (unsigned int)address, match, open, close, read, write, walk, get_physical);
 
     return &tar;
 
