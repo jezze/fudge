@@ -116,18 +116,12 @@ struct vfs_backend *get_backend()
 
 }
 
-struct vfs_protocol *get_protocol()
-{
-
-    return &protocol;
-
-}
-
 void init()
 {
 
     system_init_backend(&backend);
     system_init_protocol(&protocol, &backend);
+    vfs_register_protocol(&protocol);
 
 }
 

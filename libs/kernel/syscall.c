@@ -124,7 +124,6 @@ static unsigned int mount(struct runtime_task *task, void *stack)
     struct binary_protocol *protocol;
     struct vfs_backend *(*get_backend)();
     struct vfs_backend *cbackend;
-    struct vfs_protocol *(*get_protocol)();
     struct vfs_protocol *cprotocol;
 
     if (!mount || !pdescriptor || !cdescriptor)
@@ -135,7 +134,6 @@ static unsigned int mount(struct runtime_task *task, void *stack)
     if (!protocol)
         return 0;
 
-    /* THIS STEP IS GOING TO BE UNNECCESSARY */
     get_backend = (struct vfs_backend *(*)())(protocol->find_symbol(cdescriptor->protocol, cdescriptor->backend, cdescriptor->id, 11, "get_backend"));
 
     if (!get_backend)
@@ -143,13 +141,10 @@ static unsigned int mount(struct runtime_task *task, void *stack)
 
     cbackend = get_backend();
 
-    /* THIS STEP IS GOING TO BE UNNECCESSARY */
-    get_protocol = (struct vfs_protocol *(*)())(protocol->find_symbol(cdescriptor->protocol, cdescriptor->backend, cdescriptor->id, 12, "get_protocol"));
-
-    if (!get_protocol)
+    if (!cbackend)
         return 0;
 
-    cprotocol = get_protocol();
+    cprotocol = vfs_get_protocol(cbackend);
 
     if (!cprotocol)
         return 0;

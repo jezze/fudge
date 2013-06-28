@@ -7,6 +7,20 @@
 
 static struct circular_stream buffers[TEMP_BUFFER_SLOTS];
 
+static unsigned int backend_read(struct vfs_backend *self, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    return memory_read(buffer, count, "FUDGE_TEMP", 10, offset);
+
+}
+
+static unsigned int backend_write(struct vfs_backend *self, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    return 0;
+
+}
+
 static unsigned int match(struct vfs_backend *backend)
 {
 
@@ -92,11 +106,17 @@ static unsigned int write(struct vfs_backend *backend, unsigned int id, unsigned
 
 }
 
-void temp_init_filesystem(struct temp_filesystem *filesystem)
+void temp_init_backend(struct vfs_backend *backend)
 {
 
-    memory_clear(filesystem, sizeof (struct temp_filesystem));
-    vfs_init_protocol(&filesystem->base, 1, match, open, close, read, write, walk, 0);
+    vfs_init_backend(backend, backend_read, backend_write);
+
+}
+
+void temp_init_protocol(struct vfs_protocol *protocol)
+{
+
+    vfs_init_protocol(protocol, 1, match, open, close, read, write, walk, 0);
 
 }
 

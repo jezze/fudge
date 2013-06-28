@@ -53,7 +53,11 @@ static struct tar_header *parent(struct tar_header *header)
 static unsigned int match(struct vfs_backend *backend)
 {
 
-    return 1;
+    char buffer[16];
+
+    backend->read(backend, 0, 16, buffer);
+
+    return memory_match(buffer, "TAR", 3);
 
 }
 

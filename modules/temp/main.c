@@ -5,26 +5,22 @@
 #include "temp.h"
 #include "filesystem.h"
 
-static struct temp_filesystem filesystem;
+static struct vfs_backend backend;
+static struct vfs_protocol protocol;
 
 struct vfs_backend *get_backend()
 {
 
-    return 0;
-
-}
-
-struct vfs_protocol *get_protocol()
-{
-
-    return &filesystem.base;
+    return &backend;
 
 }
 
 void init()
 {
 
-    temp_init_filesystem(&filesystem);
+    temp_init_backend(&backend);
+    temp_init_protocol(&protocol);
+    vfs_register_protocol(&protocol);
 
 }
 
