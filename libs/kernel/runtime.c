@@ -1,7 +1,7 @@
 #include <fudge/kernel.h>
+#include "vfs.h"
 #include "runtime.h"
 #include "syscall.h"
-#include "vfs.h"
 
 struct runtime_descriptor *runtime_get_descriptor(struct runtime_task *task, unsigned int index)
 {
@@ -23,7 +23,7 @@ struct runtime_mount *runtime_get_mount(struct runtime_task *task, unsigned int 
 
 }
 
-struct runtime_descriptor *runtime_get_child(struct runtime_container *container, struct vfs_protocol *protocol, unsigned int id)
+struct runtime_descriptor *runtime_get_child(struct runtime_container *container, struct runtime_descriptor *descriptor)
 {
 
     unsigned int i;
@@ -31,7 +31,7 @@ struct runtime_descriptor *runtime_get_child(struct runtime_container *container
     for (i = 1; i < RUNTIME_CONTAINER_MOUNT_SLOTS; i++)
     {
 
-        if (container->mounts[i].parent.protocol == protocol && container->mounts[i].parent.id == id)
+        if (container->mounts[i].parent.backend == descriptor->backend && container->mounts[i].parent.protocol == descriptor->protocol && container->mounts[i].parent.id == descriptor->id)
             return &container->mounts[i].child;
 
     }
@@ -40,7 +40,7 @@ struct runtime_descriptor *runtime_get_child(struct runtime_container *container
 
 }
 
-struct runtime_descriptor *runtime_get_parent(struct runtime_container *container, struct vfs_protocol *protocol, unsigned int id)
+struct runtime_descriptor *runtime_get_parent(struct runtime_container *container, struct runtime_descriptor *descriptor)
 {
 
     unsigned int i;
@@ -48,7 +48,7 @@ struct runtime_descriptor *runtime_get_parent(struct runtime_container *containe
     for (i = 1; i < RUNTIME_CONTAINER_MOUNT_SLOTS; i++)
     {
 
-        if (container->mounts[i].child.protocol == protocol && container->mounts[i].child.id == id)
+        if (container->mounts[i].child.backend == descriptor->backend && container->mounts[i].child.protocol == descriptor->protocol && container->mounts[i].child.id == descriptor->id)
             return &container->mounts[i].parent;
 
     }

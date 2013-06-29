@@ -1,13 +1,13 @@
 #include <fudge/kernel.h>
 #include "error.h"
-#include "runtime.h"
-#include "kernel.h"
 #include "vfs.h"
 #include "vfs_module.h"
 #include "vfs_tar.h"
 #include "binary.h"
 #include "binary_elf.h"
+#include "runtime.h"
 #include "syscall.h"
+#include "kernel.h"
 
 static struct runtime_container container;
 static struct runtime_task task;

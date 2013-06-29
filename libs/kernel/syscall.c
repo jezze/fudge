@@ -35,7 +35,7 @@ static unsigned int open(struct runtime_task *task, void *stack)
 
         unsigned int id;
 
-        pdescriptor = (args->count >= 3 && memory_match(args->path, "../", 3)) ? runtime_get_parent(task->container, descriptor->protocol, descriptor->id) : runtime_get_child(task->container, descriptor->protocol, descriptor->id);
+        pdescriptor = (args->count >= 3 && memory_match(args->path, "../", 3)) ? runtime_get_parent(task->container, descriptor) : runtime_get_child(task->container, descriptor);
 
         if (pdescriptor)
         {
