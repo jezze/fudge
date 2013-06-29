@@ -21,7 +21,7 @@ static unsigned int find_symbol(struct vfs_session *session, unsigned int id, un
 {
 
     struct elf_header header;
-    struct elf_section_header sectionTable[16];
+    struct elf_section_header sectionheader[16];
     unsigned int i;
 
     session->protocol->read(session->backend, id, 0, ELF_HEADER_SIZE, &header);
@@ -29,22 +29,22 @@ static unsigned int find_symbol(struct vfs_session *session, unsigned int id, un
     if (header.shcount > 16)
         return 0;
 
-    session->protocol->read(session->backend, id, header.shoffset, header.shsize * header.shcount, sectionTable);
+    session->protocol->read(session->backend, id, header.shoffset, header.shsize * header.shcount, sectionheader);
 
     for (i = 0; i < header.shcount; i++)
     {
 
-        struct elf_symbol symbolTable[512];
-        char stringTable[4096];
+        struct elf_symbol symbols[512];
+        char strings[4096];
         unsigned int address;
 
-        if (sectionTable[i].type != ELF_SECTION_TYPE_SYMTAB)
+        if (sectionheader[i].type != ELF_SECTION_TYPE_SYMTAB)
             continue;
 
-        session->protocol->read(session->backend, id, sectionTable[i].offset, sectionTable[i].size, symbolTable);
-        session->protocol->read(session->backend, id, sectionTable[sectionTable[i].link].offset, sectionTable[sectionTable[i].link].size, stringTable);
+        session->protocol->read(session->backend, id, sectionheader[i].offset, sectionheader[i].size, symbols);
+        session->protocol->read(session->backend, id, sectionheader[sectionheader[i].link].offset, sectionheader[sectionheader[i].link].size, strings);
 
-        address = elf_find_symbol(&header, sectionTable, &sectionTable[i], symbolTable, stringTable, count, symbol);
+        address = elf_find_symbol(&header, sectionheader, &sectionheader[i], symbols, strings, count, symbol);
 
         if (address)
             return address;
@@ -59,7 +59,7 @@ static unsigned int copy_program(struct vfs_session *session, unsigned int id)
 {
 
     struct elf_header header;
-    struct elf_program_header programHeader[8];
+    struct elf_program_header programheader[8];
     unsigned int i;
 
     session->protocol->read(session->backend, id, 0, ELF_HEADER_SIZE, &header);
@@ -67,10 +67,10 @@ static unsigned int copy_program(struct vfs_session *session, unsigned int id)
     if (header.phcount > 8)
         return 0;
 
-    session->protocol->read(session->backend, id, header.phoffset, header.phsize * header.phcount, programHeader);
+    session->protocol->read(session->backend, id, header.phoffset, header.phsize * header.phcount, programheader);
 
     for (i = 0; i < header.phcount; i++)
-        session->protocol->read(session->backend, id, programHeader[i].offset, programHeader[i].fsize, (void *)programHeader[i].vaddress);
+        session->protocol->read(session->backend, id, programheader[i].offset, programheader[i].fsize, (void *)programheader[i].vaddress);
 
     return header.entry;
 
@@ -80,7 +80,7 @@ static unsigned int relocate(struct vfs_session *session, unsigned int id, unsig
 {
 
     struct elf_header header;
-    struct elf_section_header sectionTable[16];
+    struct elf_section_header sectionheader[16];
     unsigned int i;
 
     session->protocol->read(session->backend, id, 0, ELF_HEADER_SIZE, &header);
@@ -88,26 +88,26 @@ static unsigned int relocate(struct vfs_session *session, unsigned int id, unsig
     if (header.shcount > 16)
         return 0;
 
-    session->protocol->read(session->backend, id, header.shoffset, header.shsize * header.shcount, sectionTable);
+    session->protocol->read(session->backend, id, header.shoffset, header.shsize * header.shcount, sectionheader);
 
     for (i = 0; i < header.shcount; i++)
     {
 
-        struct elf_relocation relocationTable[256];
-        struct elf_symbol symbolTable[512];
+        struct elf_relocation relocations[256];
+        struct elf_symbol symbols[512];
 
-        sectionTable[i].address += address;
+        sectionheader[i].address += address;
 
-        if (sectionTable[i].type != ELF_SECTION_TYPE_REL)
+        if (sectionheader[i].type != ELF_SECTION_TYPE_REL)
             continue;
 
-        session->protocol->read(session->backend, id, sectionTable[i].offset, sectionTable[i].size, relocationTable);
-        session->protocol->read(session->backend, id, sectionTable[sectionTable[i].link].offset, sectionTable[sectionTable[i].link].size, symbolTable);
-        elf_relocate_section(sectionTable, &sectionTable[i], &sectionTable[sectionTable[i].info], relocationTable, symbolTable, address);
+        session->protocol->read(session->backend, id, sectionheader[i].offset, sectionheader[i].size, relocations);
+        session->protocol->read(session->backend, id, sectionheader[sectionheader[i].link].offset, sectionheader[sectionheader[i].link].size, symbols);
+        elf_relocate_section(sectionheader, &sectionheader[i], &sectionheader[sectionheader[i].info], relocations, symbols, address);
 
     }
 
-    session->protocol->write(session->backend, id, header.shoffset, header.shsize * header.shcount, sectionTable);
+    session->protocol->write(session->backend, id, header.shoffset, header.shsize * header.shcount, sectionheader);
 
     return 1;
 

@@ -10,16 +10,16 @@ unsigned int elf_validate(struct elf_header *header)
 
 }
 
-unsigned int elf_find_symbol(struct elf_header *header, struct elf_section_header *sectionTable, struct elf_section_header *symbolHeader, struct elf_symbol *symbolTable, char *stringTable, unsigned int count, const char *symbol)
+unsigned int elf_find_symbol(struct elf_header *header, struct elf_section_header *sectionheader, struct elf_section_header *symbolheader, struct elf_symbol *symbols, char *strings, unsigned int count, const char *symbol)
 {
 
     unsigned int i;
 
-    for (i = 0; i < symbolHeader->size / symbolHeader->esize; i++)
+    for (i = 0; i < symbolheader->size / symbolheader->esize; i++)
     {
 
-        if (memory_match(symbol, stringTable + symbolTable[i].name, count))
-            return (header->type == ELF_TYPE_RELOCATABLE) ? sectionTable[symbolTable[i].shindex].address + sectionTable[symbolTable[i].shindex].offset + symbolTable[i].value : symbolTable[i].value;
+        if (memory_match(symbol, strings + symbols[i].name, count))
+            return (header->type == ELF_TYPE_RELOCATABLE) ? sectionheader[symbols[i].shindex].address + sectionheader[symbols[i].shindex].offset + symbols[i].value : symbols[i].value;
 
     }
 
@@ -51,20 +51,20 @@ void elf_relocate_symbol(unsigned int address, unsigned int type, unsigned int a
 
 }
 
-void elf_relocate_section(struct elf_section_header *sectionTable, struct elf_section_header *relocationHeader, struct elf_section_header *relocationData, struct elf_relocation *relocationTable, struct elf_symbol *symbolTable, unsigned int address)
+void elf_relocate_section(struct elf_section_header *sectionheader, struct elf_section_header *relocationheader, struct elf_section_header *dataheader, struct elf_relocation *relocations, struct elf_symbol *symbols, unsigned int address)
 {
 
     unsigned int i;
 
-    for (i = 0; i < relocationHeader->size / relocationHeader->esize; i++)
+    for (i = 0; i < relocationheader->size / relocationheader->esize; i++)
     {
 
-        unsigned char type = relocationTable[i].info & 0x0F;
-        unsigned char index = relocationTable[i].info >> 8;
-        unsigned int offset = relocationData->offset + relocationTable[i].offset;
-        unsigned int addend = sectionTable[symbolTable[index].shindex].offset + symbolTable[index].value;
+        unsigned char type = relocations[i].info & 0x0F;
+        unsigned char index = relocations[i].info >> 8;
+        unsigned int offset = dataheader->offset + relocations[i].offset;
+        unsigned int addend = sectionheader[symbols[index].shindex].offset + symbols[index].value;
 
-        if (symbolTable[index].shindex)
+        if (symbols[index].shindex)
             elf_relocate_symbol(address + offset, type, address + addend);
         else
             elf_relocate_symbol(address + offset, type, 0);

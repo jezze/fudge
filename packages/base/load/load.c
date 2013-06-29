@@ -22,7 +22,7 @@ static unsigned int find_symbol(unsigned int id, unsigned int count, char *symbo
 {
 
     struct elf_header header;
-    struct elf_section_header sectionTable[16];
+    struct elf_section_header sectionheader[16];
     unsigned int i;
 
     call_read(id, 0, ELF_HEADER_SIZE, &header);
@@ -30,22 +30,22 @@ static unsigned int find_symbol(unsigned int id, unsigned int count, char *symbo
     if (!elf_validate(&header))
         return 0;
 
-    call_read(id, header.shoffset, header.shsize * header.shcount, sectionTable);
+    call_read(id, header.shoffset, header.shsize * header.shcount, sectionheader);
 
     for (i = 0; i < header.shcount; i++)
     {
 
-        struct elf_symbol symbolTable[512];
-        char stringTable[4096];
+        struct elf_symbol symbols[512];
+        char strings[4096];
         unsigned int address;
 
-        if (sectionTable[i].type != ELF_SECTION_TYPE_SYMTAB)
+        if (sectionheader[i].type != ELF_SECTION_TYPE_SYMTAB)
             continue;
 
-        call_read(id, sectionTable[i].offset, sectionTable[i].size, symbolTable);
-        call_read(id, sectionTable[sectionTable[i].link].offset, sectionTable[sectionTable[i].link].size, stringTable);
+        call_read(id, sectionheader[i].offset, sectionheader[i].size, symbols);
+        call_read(id, sectionheader[sectionheader[i].link].offset, sectionheader[sectionheader[i].link].size, strings);
 
-        address = elf_find_symbol(&header, sectionTable, &sectionTable[i], symbolTable, stringTable, count, symbol);
+        address = elf_find_symbol(&header, sectionheader, &sectionheader[i], symbols, strings, count, symbol);
 
         if (address)
             return address;
@@ -93,23 +93,23 @@ static unsigned int find_symbol_module(unsigned int count, char *symbol)
 
 }
 
-static unsigned int resolve_symbols(struct elf_section_header *relocationHeader, struct elf_relocation *relocationTable, struct elf_symbol *symbolTable, char *stringTable, char *buffer)
+static unsigned int resolve_symbols(struct elf_section_header *relocationheader, struct elf_relocation *relocations, struct elf_symbol *symbols, char *strings, char *buffer)
 {
 
     unsigned int i;
 
-    for (i = 0; i < relocationHeader->size / relocationHeader->esize; i++)
+    for (i = 0; i < relocationheader->size / relocationheader->esize; i++)
     {
 
-        unsigned char index = relocationTable[i].info >> 8;
-        unsigned int *entry = (unsigned int *)(buffer + relocationTable[i].offset);
+        unsigned char index = relocations[i].info >> 8;
+        unsigned int *entry = (unsigned int *)(buffer + relocations[i].offset);
         char *symbol;
         unsigned int address;
 
-        if (symbolTable[index].shindex)
+        if (symbols[index].shindex)
             continue;
 
-        symbol = stringTable + symbolTable[index].name;
+        symbol = strings + symbols[index].name;
         address = find_symbol_kernel(string_length(symbol), symbol);
 
         if (!address)
@@ -130,41 +130,41 @@ unsigned int resolve(unsigned int id)
 {
 
     struct elf_header header;
-    struct elf_section_header sectionTable[16];
-    struct elf_relocation relocationTable[512];
-    struct elf_symbol symbolTable[512];
-    char stringTable[4096];
+    struct elf_section_header sectionheader[16];
+    struct elf_relocation relocations[512];
+    struct elf_symbol symbols[512];
+    char strings[4096];
     char buffer[8192];
     unsigned int i;
 
     call_read(id, 0, ELF_HEADER_SIZE, &header);
-    call_read(id, header.shoffset, header.shsize * header.shcount, sectionTable);
+    call_read(id, header.shoffset, header.shsize * header.shcount, sectionheader);
 
     for (i = 0; i < header.shcount; i++)
     {
 
-        struct elf_section_header *relocationHeader;
-        struct elf_section_header *relocationData;
-        struct elf_section_header *symbolHeader;
-        struct elf_section_header *stringHeader;
+        struct elf_section_header *relocationheader;
+        struct elf_section_header *dataheader;
+        struct elf_section_header *symbolheader;
+        struct elf_section_header *stringheader;
 
-        if (sectionTable[i].type != ELF_SECTION_TYPE_REL)
+        if (sectionheader[i].type != ELF_SECTION_TYPE_REL)
             continue;
 
-        relocationHeader = &sectionTable[i];
-        relocationData = &sectionTable[relocationHeader->info];
-        symbolHeader = &sectionTable[relocationHeader->link];
-        stringHeader = &sectionTable[symbolHeader->link];
+        relocationheader = &sectionheader[i];
+        dataheader = &sectionheader[relocationheader->info];
+        symbolheader = &sectionheader[relocationheader->link];
+        stringheader = &sectionheader[symbolheader->link];
 
-        call_read(id, symbolHeader->offset, symbolHeader->size, symbolTable);
-        call_read(id, stringHeader->offset, stringHeader->size, stringTable);
-        call_read(id, relocationHeader->offset, relocationHeader->size, relocationTable);
-        call_read(id, relocationData->offset, relocationData->size, buffer);
+        call_read(id, symbolheader->offset, symbolheader->size, symbols);
+        call_read(id, stringheader->offset, stringheader->size, strings);
+        call_read(id, relocationheader->offset, relocationheader->size, relocations);
+        call_read(id, dataheader->offset, dataheader->size, buffer);
 
-        if (!resolve_symbols(relocationHeader, relocationTable, symbolTable, stringTable, buffer))
+        if (!resolve_symbols(relocationheader, relocations, symbols, strings, buffer))
             return 0;
 
-        call_write(id, relocationData->offset, relocationData->size, buffer);
+        call_write(id, dataheader->offset, dataheader->size, buffer);
 
     }
 
