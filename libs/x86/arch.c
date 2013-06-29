@@ -1,8 +1,9 @@
 #include <fudge/kernel.h>
 #include <kernel/error.h>
+#include <kernel/vfs.h>
 #include <kernel/runtime.h>
-#include <kernel/kernel.h>
 #include <kernel/syscall.h>
+#include <kernel/kernel.h>
 #include "arch.h"
 #include "cpu.h"
 #include "gdt.h"

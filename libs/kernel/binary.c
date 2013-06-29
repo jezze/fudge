@@ -4,7 +4,7 @@
 
 static struct binary_protocol *protocols;
 
-struct binary_protocol *binary_get_protocol(struct vfs_protocol *protocol, struct vfs_backend *backend, unsigned int id)
+struct binary_protocol *binary_get_protocol(struct vfs_session *session, unsigned int id)
 {
 
     struct binary_protocol *current;
@@ -12,7 +12,7 @@ struct binary_protocol *binary_get_protocol(struct vfs_protocol *protocol, struc
     for (current = protocols; current; current = current->sibling)
     {
 
-        if (current->match(protocol, backend, id))
+        if (current->match(session, id))
             return current;
 
     }
@@ -77,7 +77,7 @@ void binary_unregister_protocol(struct binary_protocol *protocol)
 
 }
 
-void binary_init_protocol(struct binary_protocol *protocol, unsigned int (*match)(struct vfs_protocol *protocol, struct vfs_backend *backend, unsigned int id), unsigned int (*find_symbol)(struct vfs_protocol *protocol, struct vfs_backend *backend, unsigned int id, unsigned int count, const char *symbol), unsigned int (*copy_program)(struct vfs_protocol *protocol, struct vfs_backend *backend, unsigned int id), unsigned int (*relocate)(struct vfs_protocol *protocol, struct vfs_backend *backend, unsigned int id, unsigned int address))
+void binary_init_protocol(struct binary_protocol *protocol, unsigned int (*match)(struct vfs_session *session, unsigned int id), unsigned int (*find_symbol)(struct vfs_session *session, unsigned int id, unsigned int count, const char *symbol), unsigned int (*copy_program)(struct vfs_session *session, unsigned int id), unsigned int (*relocate)(struct vfs_session *session, unsigned int id, unsigned int address))
 {
 
     memory_clear(protocol, sizeof (struct binary_protocol));

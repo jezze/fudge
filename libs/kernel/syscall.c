@@ -38,7 +38,7 @@ static unsigned int open(struct runtime_task *task, void *stack)
         if (pdescriptor)
         {
 
-            if (!pdescriptor->protocol)
+            if (!pdescriptor->session.protocol)
                 return 0;
 
             memory_copy(descriptor, pdescriptor, sizeof (struct runtime_descriptor));
@@ -55,7 +55,7 @@ static unsigned int open(struct runtime_task *task, void *stack)
         if (length > args->count)
             length = args->count;
 
-        id = descriptor->protocol->walk(descriptor->backend, descriptor->id, length, args->path);
+        id = descriptor->session.protocol->walk(descriptor->session.backend, descriptor->id, length, args->path);
 
         if (!id)
             return 0;
@@ -67,7 +67,7 @@ static unsigned int open(struct runtime_task *task, void *stack)
 
     };
 
-    return descriptor->protocol->open(descriptor->backend, descriptor->id);
+    return descriptor->session.protocol->open(descriptor->session.backend, descriptor->id);
 
 }
 
@@ -80,7 +80,7 @@ static unsigned int close(struct runtime_task *task, void *stack)
     if (!descriptor)
         return 0;
 
-    return descriptor->protocol->close(descriptor->backend, descriptor->id);
+    return descriptor->session.protocol->close(descriptor->session.backend, descriptor->id);
 
 }
 
@@ -93,7 +93,7 @@ static unsigned int read(struct runtime_task *task, void *stack)
     if (!descriptor)
         return 0;
 
-    return descriptor->protocol->read(descriptor->backend, descriptor->id, args->offset, args->count, args->buffer);
+    return descriptor->session.protocol->read(descriptor->session.backend, descriptor->id, args->offset, args->count, args->buffer);
 
 }
 
@@ -106,7 +106,7 @@ static unsigned int write(struct runtime_task *task, void *stack)
     if (!descriptor)
         return 0;
 
-    return descriptor->protocol->write(descriptor->backend, descriptor->id, args->offset, args->count, args->buffer);
+    return descriptor->session.protocol->write(descriptor->session.backend, descriptor->id, args->offset, args->count, args->buffer);
 
 }
 
@@ -123,27 +123,27 @@ static unsigned int mount(struct runtime_task *task, void *stack)
     if (!mount || !pdescriptor || !cdescriptor)
         return 0;
 
-    protocol = binary_get_protocol(cdescriptor->protocol, cdescriptor->backend, cdescriptor->id);
+    protocol = binary_get_protocol(&cdescriptor->session, cdescriptor->id);
 
     if (!protocol)
         return 0;
 
-    get_backend = (struct vfs_backend *(*)())(protocol->find_symbol(cdescriptor->protocol, cdescriptor->backend, cdescriptor->id, 11, "get_backend"));
+    get_backend = (struct vfs_backend *(*)())(protocol->find_symbol(&cdescriptor->session, cdescriptor->id, 11, "get_backend"));
 
     if (!get_backend)
         return 0;
 
-    mount->child.backend = get_backend();
+    mount->child.session.backend = get_backend();
 
-    if (!mount->child.backend)
+    if (!mount->child.session.backend)
         return 0;
 
-    mount->child.protocol = vfs_get_protocol(mount->child.backend);
+    mount->child.session.protocol = vfs_get_protocol(mount->child.session.backend);
 
-    if (!mount->child.protocol)
+    if (!mount->child.session.protocol)
         return 0;
 
-    mount->child.id = mount->child.protocol->rootid;
+    mount->child.id = mount->child.session.protocol->rootid;
 
     memory_copy(&mount->parent, pdescriptor, sizeof (struct runtime_descriptor));
 
@@ -179,13 +179,13 @@ static unsigned int execute(struct runtime_task *task, void *stack)
     if (!descriptor)
         return 0;
 
-    protocol = binary_get_protocol(descriptor->protocol, descriptor->backend, descriptor->id);
+    protocol = binary_get_protocol(&descriptor->session, descriptor->id);
 
     if (!protocol)
         return 0;
 
     task->state |= RUNTIME_TASK_STATE_USED;
-    task->registers.ip = protocol->copy_program(descriptor->protocol, descriptor->backend, descriptor->id);
+    task->registers.ip = protocol->copy_program(&descriptor->session, descriptor->id);
     task->registers.sp = RUNTIME_STACKADDRESS_VIRTUAL;
     task->registers.fp = RUNTIME_STACKADDRESS_VIRTUAL;
     task->registers.status = 0;
@@ -216,24 +216,24 @@ static unsigned int load(struct runtime_task *task, void *stack)
     unsigned int physical;
     void (*init)();
 
-    if (!descriptor || !descriptor->protocol->get_physical)
+    if (!descriptor || !descriptor->session.protocol->get_physical)
         return 0;
 
     /* Physical should be replaced with known address later on */
-    physical = descriptor->protocol->get_physical(descriptor->backend, descriptor->id);
+    physical = descriptor->session.protocol->get_physical(descriptor->session.backend, descriptor->id);
 
     if (!physical)
         return 0;
 
-    protocol = binary_get_protocol(descriptor->protocol, descriptor->backend, descriptor->id);
+    protocol = binary_get_protocol(&descriptor->session, descriptor->id);
 
     if (!protocol)
         return 0;
 
-    if (!protocol->relocate(descriptor->protocol, descriptor->backend, descriptor->id, physical))
+    if (!protocol->relocate(&descriptor->session, descriptor->id, physical))
         return 0;
 
-    init = (void (*)())(protocol->find_symbol(descriptor->protocol, descriptor->backend, descriptor->id, 4, "init"));
+    init = (void (*)())(protocol->find_symbol(&descriptor->session, descriptor->id, 4, "init"));
 
     if (!init)
         return 0;
@@ -255,12 +255,12 @@ static unsigned int unload(struct runtime_task *task, void *stack)
     if (!descriptor)
         return 0;
 
-    protocol = binary_get_protocol(descriptor->protocol, descriptor->backend, descriptor->id);
+    protocol = binary_get_protocol(&descriptor->session, descriptor->id);
 
     if (!protocol)
         return 0;
 
-    destroy = (void (*)())(protocol->find_symbol(descriptor->protocol, descriptor->backend, descriptor->id, 7, "destroy"));
+    destroy = (void (*)())(protocol->find_symbol(&descriptor->session, descriptor->id, 7, "destroy"));
 
     if (!destroy)
         return 0;

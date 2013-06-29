@@ -12,55 +12,57 @@
 static struct runtime_container container;
 static struct runtime_task task;
 
-static void setup(struct vfs_backend *backend, struct vfs_protocol *protocol, unsigned int ip)
+static void setup(struct vfs_session *session, unsigned int ip)
 {
 
     runtime_init_container(&container);
 
     container.running = &task;
-    container.mounts[0x01].child.backend = backend;
-    container.mounts[0x01].child.protocol = protocol;
-    container.mounts[0x01].child.id = protocol->rootid;
+
+    container.mounts[0x01].child.session.backend = session->backend;
+    container.mounts[0x01].child.session.protocol = session->protocol;
+    container.mounts[0x01].child.id = session->protocol->rootid;
 
     runtime_init_task(&task, &container);
 
     task.registers.ip = ip;
     task.registers.sp = RUNTIME_STACKADDRESS_VIRTUAL;
     task.registers.fp = RUNTIME_STACKADDRESS_VIRTUAL;
-    task.descriptors[0x0E].backend = backend;
-    task.descriptors[0x0E].protocol = protocol;
-    task.descriptors[0x0E].id = protocol->rootid;
-    task.descriptors[0x0F].backend = backend;
-    task.descriptors[0x0F].protocol = protocol;
-    task.descriptors[0x0F].id = protocol->rootid;
+    task.descriptors[0x0E].session.backend = session->backend;
+    task.descriptors[0x0E].session.protocol = session->protocol;
+    task.descriptors[0x0E].id = session->protocol->rootid;
+    task.descriptors[0x0F].session.backend = session->backend;
+    task.descriptors[0x0F].session.protocol = session->protocol;
+    task.descriptors[0x0F].id = session->protocol->rootid;
 
 }
 
-static void detect(struct vfs_backend *vbackend)
+static void detect(struct vfs_backend *backend)
 {
 
-    struct vfs_protocol *vprotocol;
-    struct binary_protocol *bprotocol;
+    struct vfs_session session;
+    struct binary_protocol *protocol;
     unsigned int id;
     unsigned int ip;
 
-    vprotocol = vfs_get_protocol(vbackend);
+    session.backend = backend;
+    session.protocol = vfs_get_protocol(session.backend);
 
-    error_assert(vprotocol != 0, "Filesystem protocol not recognized", __FILE__, __LINE__);
+    error_assert(session.protocol != 0, "Filesystem protocol not recognized", __FILE__, __LINE__);
 
-    id = vprotocol->walk(vbackend, vprotocol->rootid, 8, "bin/init");
+    id = session.protocol->walk(session.backend, session.protocol->rootid, 8, "bin/init");
 
     error_assert(id != 0, "Init program not found", __FILE__, __LINE__);
 
-    bprotocol = binary_get_protocol(vprotocol, vbackend, id);
+    protocol = binary_get_protocol(&session, id);
 
-    error_assert(bprotocol != 0, "Binary protocol not recognized", __FILE__, __LINE__);
+    error_assert(protocol != 0, "Binary protocol not recognized", __FILE__, __LINE__);
 
-    ip = bprotocol->copy_program(vprotocol, vbackend, id);
+    ip = protocol->copy_program(&session, id);
 
     error_assert(ip != 0, "Init entry not found", __FILE__, __LINE__);
 
-    setup(vbackend, vprotocol, ip);
+    setup(&session, ip);
 
 }
 

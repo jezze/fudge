@@ -31,7 +31,7 @@ struct runtime_descriptor *runtime_get_child(struct runtime_container *container
     for (i = 1; i < RUNTIME_CONTAINER_MOUNT_SLOTS; i++)
     {
 
-        if (container->mounts[i].parent.backend == descriptor->backend && container->mounts[i].parent.protocol == descriptor->protocol && container->mounts[i].parent.id == descriptor->id)
+        if (memory_match(&container->mounts[i].parent, descriptor, sizeof (struct runtime_descriptor)))
             return &container->mounts[i].child;
 
     }
@@ -48,7 +48,7 @@ struct runtime_descriptor *runtime_get_parent(struct runtime_container *containe
     for (i = 1; i < RUNTIME_CONTAINER_MOUNT_SLOTS; i++)
     {
 
-        if (container->mounts[i].child.backend == descriptor->backend && container->mounts[i].child.protocol == descriptor->protocol && container->mounts[i].child.id == descriptor->id)
+        if (memory_match(&container->mounts[i].child, descriptor, sizeof (struct runtime_descriptor)))
             return &container->mounts[i].parent;
 
     }

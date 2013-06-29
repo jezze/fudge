@@ -21,6 +21,14 @@ struct vfs_protocol
 
 };
 
+struct vfs_session
+{
+
+    struct vfs_backend *backend;
+    struct vfs_protocol *protocol;
+
+};
+
 struct vfs_protocol *vfs_get_protocol(struct vfs_backend *backend);
 void vfs_register_protocol(struct vfs_protocol *protocol);
 void vfs_unregister_protocol(struct vfs_protocol *protocol);
