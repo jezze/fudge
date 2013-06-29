@@ -26,9 +26,7 @@ static unsigned int open(struct runtime_task *task, void *stack)
     if (!descriptor || !pdescriptor)
         return 0;
 
-    descriptor->backend = pdescriptor->backend;
-    descriptor->protocol = pdescriptor->protocol;
-    descriptor->id = pdescriptor->id;
+    memory_copy(descriptor, pdescriptor, sizeof (struct runtime_descriptor));
 
     for (;;)
     {
@@ -43,9 +41,7 @@ static unsigned int open(struct runtime_task *task, void *stack)
             if (!pdescriptor->protocol)
                 return 0;
 
-            descriptor->id = pdescriptor->id;
-            descriptor->backend = pdescriptor->backend;
-            descriptor->protocol = pdescriptor->protocol;
+            memory_copy(descriptor, pdescriptor, sizeof (struct runtime_descriptor));
 
             continue;
 
@@ -123,8 +119,6 @@ static unsigned int mount(struct runtime_task *task, void *stack)
     struct runtime_descriptor *cdescriptor = runtime_get_descriptor(task, args->cindex);
     struct binary_protocol *protocol;
     struct vfs_backend *(*get_backend)();
-    struct vfs_backend *cbackend;
-    struct vfs_protocol *cprotocol;
 
     if (!mount || !pdescriptor || !cdescriptor)
         return 0;
@@ -139,22 +133,19 @@ static unsigned int mount(struct runtime_task *task, void *stack)
     if (!get_backend)
         return 0;
 
-    cbackend = get_backend();
+    mount->child.backend = get_backend();
 
-    if (!cbackend)
+    if (!mount->child.backend)
         return 0;
 
-    cprotocol = vfs_get_protocol(cbackend);
+    mount->child.protocol = vfs_get_protocol(mount->child.backend);
 
-    if (!cprotocol)
+    if (!mount->child.protocol)
         return 0;
 
-    mount->parent.backend = pdescriptor->backend;
-    mount->parent.protocol = pdescriptor->protocol;
-    mount->parent.id = pdescriptor->id;
-    mount->child.backend = cbackend;
-    mount->child.protocol = cprotocol;
-    mount->child.id = cprotocol->rootid;
+    mount->child.id = mount->child.protocol->rootid;
+
+    memory_copy(&mount->parent, pdescriptor, sizeof (struct runtime_descriptor));
 
     return 1;
 
@@ -171,12 +162,8 @@ static unsigned int bind(struct runtime_task *task, void *stack)
     if (!mount || !pdescriptor || !cdescriptor)
         return 0;
 
-    mount->parent.backend = pdescriptor->backend;
-    mount->parent.protocol = pdescriptor->protocol;
-    mount->parent.id = pdescriptor->id;
-    mount->child.backend = cdescriptor->backend;
-    mount->child.protocol = cdescriptor->protocol;
-    mount->child.id = cdescriptor->id;
+    memory_copy(&mount->parent, pdescriptor, sizeof (struct runtime_descriptor));
+    memory_copy(&mount->child, cdescriptor, sizeof (struct runtime_descriptor));
 
     return 1;
 
