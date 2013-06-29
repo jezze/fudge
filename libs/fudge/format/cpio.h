@@ -17,3 +17,5 @@ struct cpio_header
     char check[8];
 
 };
+
+unsigned int cpio_validate(struct cpio_header *header);

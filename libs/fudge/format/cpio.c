@@ -4,7 +4,9 @@
 unsigned int cpio_validate(struct cpio_header *header)
 {
 
-    return memory_match(header->magic, "070701", 6);
+    unsigned char id[] = {0xC7, 0x71};
+
+    return memory_match(header->magic, id, 2);
 
 }
 
