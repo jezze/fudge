@@ -20,7 +20,7 @@ static struct tar_header *next(struct tar_header *header)
 
 }
 
-static struct tar_header *parent(struct tar_header *header)
+static unsigned int parent(struct tar_header *header)
 {
 
     unsigned int length = string_length(header->name);
@@ -38,7 +38,7 @@ static struct tar_header *parent(struct tar_header *header)
     {
 
         if (memory_match(current->name, header->name, length))
-            return current;
+            return (unsigned int)current;
 
     }
 
@@ -105,7 +105,7 @@ static unsigned int read(struct vfs_backend *backend, unsigned int id, unsigned 
 
             unsigned int l = string_length(current->name) - length;
 
-            if (parent(current) != header)
+            if (parent(current) != id)
                 continue;
 
             c += memory_read(b + c, count - c, current->name + length, l, offset);
@@ -154,7 +154,7 @@ static unsigned int walk(struct vfs_backend *backend, unsigned int id, unsigned 
         return id;
 
     if (memory_match(path, "../", 3))
-        return walk(backend, (unsigned int)parent(header), count - 3, path + 3);
+        return walk(backend, parent(header), count - 3, path + 3);
 
     while ((current = next(current)))
     {
