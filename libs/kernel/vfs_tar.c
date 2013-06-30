@@ -46,7 +46,7 @@ static unsigned int parent(struct tar_header *header)
 static unsigned int match(struct vfs_backend *backend)
 {
 
-    char block[TAR_BLOCK_SIZE];
+    unsigned char block[TAR_BLOCK_SIZE];
 
     return tar_validate(backend->read(backend, 0, TAR_BLOCK_SIZE, block), block);
 
@@ -76,7 +76,7 @@ static unsigned int close(struct vfs_backend *backend, unsigned int id)
 static unsigned int read(struct vfs_backend *backend, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    char block[TAR_BLOCK_SIZE];
+    unsigned char block[TAR_BLOCK_SIZE];
     struct tar_header *header = (struct tar_header *)block;
     unsigned int length;
     unsigned int size;
@@ -123,7 +123,7 @@ static unsigned int read(struct vfs_backend *backend, unsigned int id, unsigned 
 static unsigned int write(struct vfs_backend *backend, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    char block[TAR_BLOCK_SIZE];
+    unsigned char block[TAR_BLOCK_SIZE];
     struct tar_header *header = (struct tar_header *)block;
     unsigned int length;
     unsigned int size;
