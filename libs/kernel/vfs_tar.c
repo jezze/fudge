@@ -5,18 +5,6 @@
 
 static struct vfs_protocol tar;
 
-static struct tar_header *next(struct tar_header *header)
-{
-
-    header = (struct tar_header *)tar_next(header, (unsigned int)header);
-
-    if (tar_validate(TAR_BLOCK_SIZE, header))
-        return header;
-
-    return 0;
-
-}
-
 static unsigned int parent(struct tar_header *header)
 {
 
@@ -34,10 +22,13 @@ static unsigned int parent(struct tar_header *header)
     do
     {
 
+        if (!tar_validate(TAR_BLOCK_SIZE, current))
+            break;
+
         if (memory_match(current->name, header->name, length))
             return (unsigned int)current;
 
-    } while ((current = next(current)));
+    } while ((current = (struct tar_header *)tar_next(current, (unsigned int)current)));
 
     return 0;
 
@@ -78,33 +69,39 @@ static unsigned int read(struct vfs_backend *backend, unsigned int id, unsigned 
 
     unsigned char block[TAR_BLOCK_SIZE];
     struct tar_header *header = (struct tar_header *)block;
-    unsigned int length;
     unsigned int size;
 
     backend->read(backend, id - tar.rootid, TAR_BLOCK_SIZE, block);
 
-    length = string_length(header->name);
     size = string_number(header->size, 8) - offset;
 
-    if (header->name[length - 1] == '/')
+    if (header->typeflag[0] == '0')
+        return backend->read(backend, (id - tar.rootid) + TAR_BLOCK_SIZE + offset, (count > size) ? size : count, buffer);
+
+    if (header->typeflag[0] == '5')
     {
 
         struct tar_header *current = (struct tar_header *)id;
         unsigned char *b = buffer;
         unsigned int c = memory_read(b, count, "../\n", 4, offset);
+        unsigned int length = string_length(header->name);
 
         header = (struct tar_header *)id;
 
         offset -= (offset > 4) ? 4 : offset;
 
-        while ((current = next(current)))
+        while ((current = (struct tar_header *)tar_next(current, (unsigned int)current)))
         {
 
-            unsigned int l = string_length(current->name) - length;
+            unsigned int l;
+
+            if (!tar_validate(TAR_BLOCK_SIZE, current))
+                break;
 
             if (parent(current) != id)
                 continue;
 
+            l = string_length(current->name) - length;
             c += memory_read(b + c, count - c, current->name + length, l, offset);
             offset -= (offset > l) ? l : offset;
             c += memory_read(b + c, count - c, "\n", 1, offset);
@@ -116,7 +113,7 @@ static unsigned int read(struct vfs_backend *backend, unsigned int id, unsigned 
 
     }
 
-    return backend->read(backend, (id - tar.rootid) + TAR_BLOCK_SIZE + offset, (count > size) ? size : count, buffer);
+    return 0;
 
 }
 
@@ -125,18 +122,16 @@ static unsigned int write(struct vfs_backend *backend, unsigned int id, unsigned
 
     unsigned char block[TAR_BLOCK_SIZE];
     struct tar_header *header = (struct tar_header *)block;
-    unsigned int length;
     unsigned int size;
 
     backend->read(backend, id - tar.rootid, TAR_BLOCK_SIZE, block);
 
-    length = string_length(header->name);
     size = string_number(header->size, 8) - offset;
 
-    if (header->name[length - 1] == '/')
-        return 0;
+    if (header->typeflag[0] == '0')
+        return backend->write(backend, (id - tar.rootid) + TAR_BLOCK_SIZE + offset, (count > size) ? size : count, buffer);
 
-    return backend->write(backend, (id - tar.rootid) + TAR_BLOCK_SIZE + offset, (count > size) ? size : count, buffer);
+    return 0;
 
 }
 
@@ -153,10 +148,15 @@ static unsigned int walk(struct vfs_backend *backend, unsigned int id, unsigned 
     if (memory_match(path, "../", 3))
         return walk(backend, parent(header), count - 3, path + 3);
 
-    while ((current = next(current)))
+    while ((current = (struct tar_header *)tar_next(current, (unsigned int)current)))
     {
 
-        unsigned int l = string_length(current->name);
+        unsigned int l;
+
+        if (!tar_validate(TAR_BLOCK_SIZE, current))
+            break;
+
+        l = string_length(current->name);
 
         if (l < length)
             break;
