@@ -82,15 +82,24 @@ static unsigned int close(struct vfs_backend *backend, unsigned int id)
 static unsigned int read(struct vfs_backend *backend, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct tar_header *header = (struct tar_header *)id;
-    unsigned int length = string_length(header->name);
+    char block[TAR_BLOCK_SIZE];
+    struct tar_header *header = (struct tar_header *)block;
+    unsigned int length;
+    unsigned int size;
+
+    backend->read(backend, id - tar.rootid, TAR_BLOCK_SIZE, block);
+
+    length = string_length(header->name);
+    size = string_number(header->size, 8) - offset;
 
     if (header->name[length - 1] == '/')
     {
 
-        struct tar_header *current = header;
+        struct tar_header *current = (struct tar_header *)id;
         unsigned char *b = buffer;
         unsigned int c = memory_read(b, count, "../\n", 4, offset);
+
+        header = (struct tar_header *)id;
 
         offset -= (offset > 4) ? 4 : offset;
 
@@ -113,20 +122,27 @@ static unsigned int read(struct vfs_backend *backend, unsigned int id, unsigned 
 
     }
 
-    return memory_read(buffer, count, (void *)get_physical(backend, id), string_number(header->size, 8), offset);
+    return backend->read(backend, (id - tar.rootid) + TAR_BLOCK_SIZE + offset, (count > size) ? size : count, buffer);
 
 }
 
 static unsigned int write(struct vfs_backend *backend, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct tar_header *header = (struct tar_header *)id;
-    unsigned int length = string_length(header->name);
+    char block[TAR_BLOCK_SIZE];
+    struct tar_header *header = (struct tar_header *)block;
+    unsigned int length;
+    unsigned int size;
+
+    backend->read(backend, id - tar.rootid, TAR_BLOCK_SIZE, block);
+
+    length = string_length(header->name);
+    size = string_number(header->size, 8) - offset;
 
     if (header->name[length - 1] == '/')
         return 0;
 
-    return memory_write((void *)get_physical(backend, id), string_number(header->size, 8), buffer, count, offset);
+    return backend->write(backend, (id - tar.rootid) + TAR_BLOCK_SIZE + offset, (count > size) ? size : count, buffer);
 
 }
 

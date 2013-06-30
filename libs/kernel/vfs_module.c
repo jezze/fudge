@@ -19,7 +19,7 @@ static unsigned int module_write(struct vfs_backend *self, unsigned int offset, 
 
     struct module_backend *backend = (struct module_backend *)self;
 
-    return memory_read(backend->module->base, backend->module->size, buffer, count, offset);
+    return memory_write(backend->module->base, backend->module->size, buffer, count, offset);
 
 }
 
