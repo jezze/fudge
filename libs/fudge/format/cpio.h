@@ -16,3 +16,4 @@ struct cpio_header
 };
 
 unsigned int cpio_validate(struct cpio_header *header);
+unsigned int cpio_next(struct cpio_header *header, unsigned int offset);
