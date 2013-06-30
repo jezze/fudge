@@ -8,13 +8,10 @@ static struct vfs_protocol tar;
 static struct tar_header *next(struct tar_header *header)
 {
 
-    unsigned int address;
-
     if (!header)
         return (struct tar_header *)tar.rootid;
 
-    address = tar_next(header, (unsigned int)header);
-    header = (struct tar_header *)address;
+    header = (struct tar_header *)tar_next(header, (unsigned int)header);
 
     if (tar_validate(TAR_BLOCK_SIZE, header))
         return header;
@@ -52,9 +49,9 @@ static struct tar_header *parent(struct tar_header *header)
 static unsigned int match(struct vfs_backend *backend)
 {
 
-    char buffer[TAR_BLOCK_SIZE];
+    char block[TAR_BLOCK_SIZE];
 
-    return tar_validate(backend->read(backend, 0, TAR_BLOCK_SIZE, buffer), buffer);
+    return tar_validate(backend->read(backend, 0, TAR_BLOCK_SIZE, block), block);
 
 }
 
