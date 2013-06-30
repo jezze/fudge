@@ -16,7 +16,7 @@ struct mboot_modules_header
 {
 
     unsigned int count;
-    void **address;
+    unsigned int address;
 
 };
 
@@ -93,7 +93,7 @@ struct mboot_module
 {
 
     unsigned int base;
-    unsigned int length;
+    unsigned int size;
     unsigned int name;
     unsigned int reserved;
 

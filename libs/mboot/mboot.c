@@ -1,5 +1,8 @@
+#include <kernel/kernel.h>
 #include <x86/arch.h>
 #include "mboot.h"
+
+static struct kernel_module modules[4];
 
 void mboot_setup(struct mboot_header *header, unsigned int magic)
 {
@@ -55,6 +58,17 @@ void mboot_setup(struct mboot_header *header, unsigned int magic)
     if (header->flags & MBOOT_FLAG_MODULES)
     {
 
+        unsigned int i;
+        struct mboot_module *mods = (struct mboot_module *)header->modules.address;
+
+        for (i = 0; i < header->modules.count; i++)
+        {
+
+            modules[i].base = (void *)mods[i].base;
+            modules[i].size = mods[i].size;
+
+        }
+
     }
 
     if (header->flags & MBOOT_FLAG_MEMORY)
@@ -77,7 +91,7 @@ void mboot_setup(struct mboot_header *header, unsigned int magic)
 
     }
 
-    arch_setup(header->modules.count, header->modules.address);
+    arch_setup(header->modules.count, modules);
 
 }
 

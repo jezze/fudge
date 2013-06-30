@@ -66,12 +66,12 @@ static void detect(struct vfs_backend *backend)
 
 }
 
-struct runtime_container *kernel_setup(unsigned int modulesc, void **modulesv)
+struct runtime_container *kernel_setup(unsigned int count, struct kernel_module *modules)
 {
 
     struct binary_protocol *elf = binary_elf_setup();
-    struct vfs_protocol *tar = vfs_tar_setup(modulesv[0]);
-    struct vfs_backend *module = vfs_module_setup(modulesc, modulesv);
+    struct vfs_protocol *tar = vfs_tar_setup(&modules[0]);
+    struct vfs_backend *module = vfs_module_setup(count, modules);
 
     vfs_setup();
     vfs_register_protocol(tar);

@@ -3,4 +3,4 @@ void arch_usermode(unsigned int code, unsigned int data, unsigned int ip, unsign
 void arch_isr_genfault();
 void arch_isr_pagefault();
 void arch_isr_syscall();
-void arch_setup(unsigned int modulesc, void **modulesv);
+void arch_setup(unsigned int count, struct kernel_module *modules);

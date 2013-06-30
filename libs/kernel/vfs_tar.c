@@ -1,4 +1,5 @@
 #include <fudge/kernel.h>
+#include "kernel.h"
 #include "vfs.h"
 #include "vfs_tar.h"
 
@@ -163,10 +164,10 @@ static unsigned int walk(struct vfs_backend *backend, unsigned int id, unsigned 
 
 }
 
-struct vfs_protocol *vfs_tar_setup(void *address)
+struct vfs_protocol *vfs_tar_setup(struct kernel_module *module)
 {
 
-    vfs_init_protocol(&tar, (unsigned int)address, match, open, close, read, write, walk, get_physical);
+    vfs_init_protocol(&tar, (unsigned int)module->base, match, open, close, read, write, walk, get_physical);
 
     return &tar;
 

@@ -1,4 +1,5 @@
 #include <fudge/kernel.h>
+#include <kernel/kernel.h>
 #include <kernel/vfs.h>
 #include <kernel/runtime.h>
 #include <kernel/syscall.h>

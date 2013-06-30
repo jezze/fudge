@@ -186,7 +186,7 @@ static void setup_mmu()
 
 }
 
-void arch_setup(unsigned int modulesc, void **modulesv)
+void arch_setup(unsigned int count, struct kernel_module *modules)
 {
 
     struct gdt_pointer *gdtp = gdt_setup_pointer();
@@ -196,7 +196,7 @@ void arch_setup(unsigned int modulesc, void **modulesv)
     setup_routines(idtp);
     setup_mmu();
 
-    state.container = kernel_setup(modulesc, modulesv);
+    state.container = kernel_setup(count, modules);
 
     multi_setup();
 

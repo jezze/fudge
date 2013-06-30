@@ -1,4 +1,5 @@
 #include <fudge/kernel.h>
+#include "kernel.h"
 #include "vfs.h"
 #include "vfs_module.h"
 
@@ -9,7 +10,7 @@ static unsigned int module_read(struct vfs_backend *self, unsigned int offset, u
 
     struct module_backend *backend = (struct module_backend *)self;
 
-    return memory_read(buffer, count, backend->address, backend->size, offset);
+    return memory_read(buffer, count, backend->module->base, backend->module->size, offset);
 
 }
 
@@ -18,22 +19,21 @@ static unsigned int module_write(struct vfs_backend *self, unsigned int offset, 
 
     struct module_backend *backend = (struct module_backend *)self;
 
-    return memory_read(backend->address, backend->size, buffer, count, offset);
+    return memory_read(backend->module->base, backend->module->size, buffer, count, offset);
 
 }
 
-struct vfs_backend *vfs_module_setup(unsigned int modulesc, void **modulesv)
+struct vfs_backend *vfs_module_setup(unsigned int count, struct kernel_module *modules)
 {
 
     unsigned int i;
 
-    for (i = 0; i < modulesc; i++)
+    for (i = 0; i < count; i++)
     {
 
         vfs_init_backend(&backends[i].base, module_read, module_write);
 
-        backends[i].address = modulesv[i];
-        backends[i].size = 0xFFFFFFFF;
+        backends[i].module = &modules[i];
 
     }
 
