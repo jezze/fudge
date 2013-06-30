@@ -5,16 +5,17 @@
 
 static struct vfs_protocol tar;
 
-static unsigned int parent(struct tar_header *header)
+static unsigned int parent(struct vfs_backend *backend, unsigned int count, char *path)
 {
 
-    unsigned int length = string_length(header->name);
-    struct tar_header *current = (struct tar_header *)tar.rootid;
+    unsigned char block[TAR_BLOCK_SIZE];
+    struct tar_header *header = (struct tar_header *)block;
+    unsigned int offset = 0;
 
-    while (--length)
+    while (--count)
     {
 
-        if (header->name[length - 1] == '/')
+        if (path[count - 1] == '/')
             break;
 
     }
@@ -22,13 +23,13 @@ static unsigned int parent(struct tar_header *header)
     do
     {
 
-        if (!tar_validate(TAR_BLOCK_SIZE, current))
+        if (!tar_validate(backend->read(backend, offset, TAR_BLOCK_SIZE, block), block))
             break;
 
-        if (memory_match(current->name, header->name, length))
-            return (unsigned int)current;
+        if (memory_match(header->name, path, count))
+            return tar.rootid + offset;
 
-    } while ((current = (struct tar_header *)tar_next(current, (unsigned int)current)));
+    } while ((offset = tar_next(header, offset)));
 
     return 0;
 
@@ -81,28 +82,26 @@ static unsigned int read(struct vfs_backend *backend, unsigned int id, unsigned 
     if (header->typeflag[0] == '5')
     {
 
-        struct tar_header *current = (struct tar_header *)id;
         unsigned char *b = buffer;
         unsigned int c = memory_read(b, count, "../\n", 4, offset);
         unsigned int length = string_length(header->name);
-
-        header = (struct tar_header *)id;
+        unsigned int idold = id;
 
         offset -= (offset > 4) ? 4 : offset;
 
-        while ((current = (struct tar_header *)tar_next(current, (unsigned int)current)))
+        while ((id = tar_next(header, id)))
         {
 
             unsigned int l;
 
-            if (!tar_validate(TAR_BLOCK_SIZE, current))
+            if (!tar_validate(backend->read(backend, id - tar.rootid, TAR_BLOCK_SIZE, block), block))
                 break;
 
-            if (parent(current) != id)
+            if (parent(backend, string_length(header->name), header->name) != idold)
                 continue;
 
-            l = string_length(current->name) - length;
-            c += memory_read(b + c, count - c, current->name + length, l, offset);
+            l = string_length(header->name) - length;
+            c += memory_read(b + c, count - c, header->name + length, l, offset);
             offset -= (offset > l) ? l : offset;
             c += memory_read(b + c, count - c, "\n", 1, offset);
             offset -= (offset > 1) ? 1 : offset;
@@ -138,33 +137,37 @@ static unsigned int write(struct vfs_backend *backend, unsigned int id, unsigned
 static unsigned int walk(struct vfs_backend *backend, unsigned int id, unsigned int count, const char *path)
 {
 
-    struct tar_header *header = (struct tar_header *)id;
-    struct tar_header *current = header;
-    unsigned int length = string_length(header->name);
+    unsigned char block[TAR_BLOCK_SIZE];
+    struct tar_header *header = (struct tar_header *)block;
+    unsigned int length;
+
+    backend->read(backend, id - tar.rootid, TAR_BLOCK_SIZE, block);
+
+    length = string_length(header->name);
 
     if (!count)
         return id;
 
     if (memory_match(path, "../", 3))
-        return walk(backend, parent(header), count - 3, path + 3);
+        return walk(backend, parent(backend, length, header->name), count - 3, path + 3);
 
-    while ((current = (struct tar_header *)tar_next(current, (unsigned int)current)))
+    while ((id = tar_next(header, id)))
     {
 
         unsigned int l;
 
-        if (!tar_validate(TAR_BLOCK_SIZE, current))
+        if (!tar_validate(backend->read(backend, id - tar.rootid, TAR_BLOCK_SIZE, block), block))
             break;
 
-        l = string_length(current->name);
+        l = string_length(header->name);
 
         if (l < length)
             break;
 
         l -= length;
 
-        if (memory_match(current->name + length, path, l))
-            return walk(backend, (unsigned int)current, count - l, path + l);
+        if (memory_match(header->name + length, path, l))
+            return walk(backend, id, count - l, path + l);
 
     }
 
