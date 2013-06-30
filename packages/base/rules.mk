@@ -1,4 +1,5 @@
 include packages/base/complete/rules.mk
+include packages/base/cpio/rules.mk
 include packages/base/echo/rules.mk
 include packages/base/hello/rules.mk
 include packages/base/help/rules.mk
