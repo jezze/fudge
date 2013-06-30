@@ -21,3 +21,12 @@ unsigned int tar_validate(unsigned int count, void *buffer)
 
 }
 
+unsigned int tar_next(struct tar_header *header, unsigned int offset)
+{
+
+    unsigned int size = string_number(header->size, 8);
+
+    return offset + ((size / TAR_BLOCK_SIZE) + ((size % TAR_BLOCK_SIZE) ? 2 : 1)) * TAR_BLOCK_SIZE;
+
+}
+

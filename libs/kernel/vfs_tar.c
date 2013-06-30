@@ -9,13 +9,11 @@ static struct tar_header *next(struct tar_header *header)
 {
 
     unsigned int address;
-    unsigned int size;
 
     if (!header)
         return (struct tar_header *)tar.rootid;
 
-    size = string_number(header->size, 8);
-    address = (unsigned int)header + ((size / TAR_BLOCK_SIZE) + ((size % TAR_BLOCK_SIZE) ? 2 : 1)) * TAR_BLOCK_SIZE;
+    address = tar_next(header, (unsigned int)header);
     header = (struct tar_header *)address;
 
     if (tar_validate(TAR_BLOCK_SIZE, header))

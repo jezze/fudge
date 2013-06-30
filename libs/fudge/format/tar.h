@@ -30,3 +30,4 @@ struct tar_header
 };
 
 unsigned int tar_validate(unsigned int count, void *buffer);
+unsigned int tar_next(struct tar_header *header, unsigned int offset);
