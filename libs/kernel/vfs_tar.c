@@ -17,7 +17,7 @@ static struct tar_header *next(struct tar_header *header)
     address = (unsigned int)header + ((size / TAR_BLOCK_SIZE) + ((size % TAR_BLOCK_SIZE) ? 2 : 1)) * TAR_BLOCK_SIZE;
     header = (struct tar_header *)address;
 
-    if (tar_validate(header))
+    if (tar_validate(TAR_BLOCK_SIZE, header))
         return header;
 
     return 0;
@@ -53,11 +53,9 @@ static struct tar_header *parent(struct tar_header *header)
 static unsigned int match(struct vfs_backend *backend)
 {
 
-    char buffer[16];
+    char buffer[TAR_BLOCK_SIZE];
 
-    backend->read(backend, 0, 16, buffer);
-
-    return memory_match(buffer, "TAR", 3);
+    return tar_validate(backend->read(backend, 0, TAR_BLOCK_SIZE, buffer), buffer);
 
 }
 

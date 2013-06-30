@@ -7,14 +7,18 @@ static struct module_backend backends[4];
 static unsigned int module_read(struct vfs_backend *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    return memory_read(buffer, count, "TAR", 3, offset);
+    struct module_backend *backend = (struct module_backend *)self;
+
+    return memory_read(buffer, count, backend->address, backend->size, offset);
 
 }
 
 static unsigned int module_write(struct vfs_backend *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    return 0;
+    struct module_backend *backend = (struct module_backend *)self;
+
+    return memory_read(backend->address, backend->size, buffer, count, offset);
 
 }
 

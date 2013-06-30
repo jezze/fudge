@@ -29,4 +29,4 @@ struct tar_header
 
 };
 
-unsigned int tar_validate(struct tar_header *header);
+unsigned int tar_validate(unsigned int count, void *buffer);
