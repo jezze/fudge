@@ -8,9 +8,6 @@ static struct vfs_protocol tar;
 static struct tar_header *next(struct tar_header *header)
 {
 
-    if (!header)
-        return (struct tar_header *)tar.rootid;
-
     header = (struct tar_header *)tar_next(header, (unsigned int)header);
 
     if (tar_validate(TAR_BLOCK_SIZE, header))
@@ -24,7 +21,7 @@ static unsigned int parent(struct tar_header *header)
 {
 
     unsigned int length = string_length(header->name);
-    struct tar_header *current = 0;
+    struct tar_header *current = (struct tar_header *)tar.rootid;
 
     while (--length)
     {
@@ -34,13 +31,13 @@ static unsigned int parent(struct tar_header *header)
 
     }
 
-    while ((current = next(current)))
+    do
     {
 
         if (memory_match(current->name, header->name, length))
             return (unsigned int)current;
 
-    }
+    } while ((current = next(current)));
 
     return 0;
 
