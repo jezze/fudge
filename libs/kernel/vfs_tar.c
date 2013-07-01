@@ -3,7 +3,13 @@
 #include "vfs.h"
 #include "vfs_tar.h"
 
-static struct vfs_protocol tar;
+static struct
+{
+
+    struct vfs_protocol base;
+    unsigned int physical;
+
+} protocol;
 
 static unsigned int parent(struct vfs_backend *backend, unsigned int count, char *path)
 {
@@ -27,7 +33,7 @@ static unsigned int parent(struct vfs_backend *backend, unsigned int count, char
             break;
 
         if (memory_match(header->name, path, count))
-            return tar.rootid + offset;
+            return offset;
 
     } while ((offset = tar_next(header, offset)));
 
@@ -47,7 +53,7 @@ static unsigned int match(struct vfs_backend *backend)
 static unsigned int get_physical(struct vfs_backend *backend, unsigned int id)
 {
 
-    return id + TAR_BLOCK_SIZE;
+    return protocol.physical + id + TAR_BLOCK_SIZE;
 
 }
 
@@ -72,12 +78,12 @@ static unsigned int read(struct vfs_backend *backend, unsigned int id, unsigned 
     struct tar_header *header = (struct tar_header *)block;
     unsigned int size;
 
-    backend->read(backend, id - tar.rootid, TAR_BLOCK_SIZE, block);
+    backend->read(backend, id, TAR_BLOCK_SIZE, block);
 
     size = string_number(header->size, 8) - offset;
 
     if (header->typeflag[0] == '0')
-        return backend->read(backend, (id - tar.rootid) + TAR_BLOCK_SIZE + offset, (count > size) ? size : count, buffer);
+        return backend->read(backend, id + TAR_BLOCK_SIZE + offset, (count > size) ? size : count, buffer);
 
     if (header->typeflag[0] == '5')
     {
@@ -94,7 +100,7 @@ static unsigned int read(struct vfs_backend *backend, unsigned int id, unsigned 
 
             unsigned int l;
 
-            if (!tar_validate(backend->read(backend, id - tar.rootid, TAR_BLOCK_SIZE, block), block))
+            if (!tar_validate(backend->read(backend, id, TAR_BLOCK_SIZE, block), block))
                 break;
 
             if (parent(backend, string_length(header->name), header->name) != idold)
@@ -123,12 +129,12 @@ static unsigned int write(struct vfs_backend *backend, unsigned int id, unsigned
     struct tar_header *header = (struct tar_header *)block;
     unsigned int size;
 
-    backend->read(backend, id - tar.rootid, TAR_BLOCK_SIZE, block);
+    backend->read(backend, id, TAR_BLOCK_SIZE, block);
 
     size = string_number(header->size, 8) - offset;
 
     if (header->typeflag[0] == '0')
-        return backend->write(backend, (id - tar.rootid) + TAR_BLOCK_SIZE + offset, (count > size) ? size : count, buffer);
+        return backend->write(backend, id + TAR_BLOCK_SIZE + offset, (count > size) ? size : count, buffer);
 
     return 0;
 
@@ -141,7 +147,7 @@ static unsigned int walk(struct vfs_backend *backend, unsigned int id, unsigned 
     struct tar_header *header = (struct tar_header *)block;
     unsigned int length;
 
-    backend->read(backend, id - tar.rootid, TAR_BLOCK_SIZE, block);
+    backend->read(backend, id, TAR_BLOCK_SIZE, block);
 
     length = string_length(header->name);
 
@@ -156,7 +162,7 @@ static unsigned int walk(struct vfs_backend *backend, unsigned int id, unsigned 
 
         unsigned int l;
 
-        if (!tar_validate(backend->read(backend, id - tar.rootid, TAR_BLOCK_SIZE, block), block))
+        if (!tar_validate(backend->read(backend, id, TAR_BLOCK_SIZE, block), block))
             break;
 
         l = string_length(header->name);
@@ -175,12 +181,14 @@ static unsigned int walk(struct vfs_backend *backend, unsigned int id, unsigned 
 
 }
 
-struct vfs_protocol *vfs_tar_setup(struct kernel_module *module)
+struct vfs_protocol *vfs_tar_setup(unsigned int physical)
 {
 
-    vfs_init_protocol(&tar, (unsigned int)module->base, match, open, close, read, write, walk, get_physical);
+    vfs_init_protocol(&protocol.base, 0, match, open, close, read, write, walk, get_physical);
 
-    return &tar;
+    protocol.physical = physical;
+
+    return &protocol.base;
 
 }
 

@@ -70,7 +70,7 @@ struct runtime_container *kernel_setup(unsigned int count, struct kernel_module 
 {
 
     struct binary_protocol *elf = binary_elf_setup();
-    struct vfs_protocol *tar = vfs_tar_setup(&modules[0]);
+    struct vfs_protocol *tar = vfs_tar_setup((unsigned int)modules[0].base);
     struct vfs_backend *module = vfs_module_setup(count, modules);
 
     vfs_setup();
