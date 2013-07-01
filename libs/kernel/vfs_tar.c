@@ -18,13 +18,7 @@ static unsigned int parent(struct vfs_backend *backend, unsigned int count, char
     struct tar_header *header = (struct tar_header *)block;
     unsigned int offset = 0;
 
-    while (--count)
-    {
-
-        if (path[count - 1] == '/')
-            break;
-
-    }
+    while (--count && path[count - 1] != '/');
 
     do
     {
