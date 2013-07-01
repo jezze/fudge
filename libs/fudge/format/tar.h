@@ -1,31 +1,32 @@
 #define TAR_BLOCK_SIZE                  512
 
-#define TAR_NAME_SIZE                   100
-#define TAR_MODE_SIZE                   8
-#define TAR_UID_SIZE                    8
-#define TAR_GID_SIZE                    8
-#define TAR_SIZE_SIZE                   12
-#define TAR_MTIME_SIZE                  12
-#define TAR_CHECKSUM_SIZE               8
-#define TAR_TYPEFLAG_SIZE               1
-#define TAR_LINKNAME_SIZE               100
-
-#define TAR_FILETYPE_NORMAL             '0'
-#define TAR_FILETYPE_LINK               '1'
-#define TAR_FILETYPE_SYMLINK            '2'
+#define TAR_TYPEFLAG_REGULAR            '0'
+#define TAR_TYPEFLAG_LINK               '1'
+#define TAR_TYPEFLAG_SYMLINK            '2'
+#define TAR_TYPEFLAG_CHARACTER          '3'
+#define TAR_TYPEFLAG_BLOCK              '4'
+#define TAR_TYPEFLAG_DIRECTORY          '5'
+#define TAR_TYPEFLAG_FIFO               '6'
 
 struct tar_header
 {
 
-    char name[TAR_NAME_SIZE];
-    char mode[TAR_MODE_SIZE];
-    char uid[TAR_UID_SIZE];
-    char gid[TAR_GID_SIZE];
-    char size[TAR_SIZE_SIZE];
-    char mtime[TAR_MTIME_SIZE];
-    char checksum[TAR_CHECKSUM_SIZE];
-    char typeflag[TAR_TYPEFLAG_SIZE];
-    char linkname[TAR_LINKNAME_SIZE];
+    char name[100];
+    char mode[8];
+    char uid[8];
+    char gid[8];
+    char size[12];
+    char mtime[12];
+    char checksum[8];
+    char typeflag[1];
+    char linkname[100];
+    char magic[6];
+    char version[2];
+    char uname[32];
+    char gname[32];
+    char devmajor[8];
+    char devminor[8];
+    char prefix[155];
 
 };
 
