@@ -1,6 +1,7 @@
 #include <fudge/kernel.h>
 #include "error.h"
 #include "vfs.h"
+#include "vfs_cpio.h"
 #include "vfs_module.h"
 #include "vfs_tar.h"
 #include "binary.h"
@@ -69,11 +70,13 @@ static void detect(struct vfs_backend *backend)
 struct runtime_container *kernel_setup(unsigned int count, struct kernel_module *modules)
 {
 
-    struct binary_protocol *elf = binary_elf_setup();
+    struct vfs_protocol *cpio = vfs_cpio_setup((unsigned int)modules[0].base);
     struct vfs_protocol *tar = vfs_tar_setup((unsigned int)modules[0].base);
     struct vfs_backend *module = vfs_module_setup(count, modules);
+    struct binary_protocol *elf = binary_elf_setup();
 
     vfs_setup();
+    vfs_register_protocol(cpio);
     vfs_register_protocol(tar);
     binary_setup();
     binary_register_protocol(elf);

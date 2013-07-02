@@ -6,6 +6,7 @@ OBJ+=libs/kernel/kernel.o
 OBJ+=libs/kernel/runtime.o
 OBJ+=libs/kernel/syscall.o
 OBJ+=libs/kernel/vfs.o
+OBJ+=libs/kernel/vfs_cpio.o
 OBJ+=libs/kernel/vfs_module.o
 OBJ+=libs/kernel/vfs_tar.o
 

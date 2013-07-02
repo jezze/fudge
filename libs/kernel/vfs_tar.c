@@ -141,12 +141,12 @@ static unsigned int walk(struct vfs_backend *backend, unsigned int id, unsigned 
     struct tar_header *header = (struct tar_header *)block;
     unsigned int length;
 
+    if (!count)
+        return id;
+
     backend->read(backend, id, TAR_BLOCK_SIZE, block);
 
     length = string_length(header->name);
-
-    if (!count)
-        return id;
 
     if (memory_match(path, "../", 3))
         return walk(backend, parent(backend, length, header->name), count - 3, path + 3);
