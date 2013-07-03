@@ -11,6 +11,40 @@ static struct
 
 } protocol;
 
+static unsigned int find_top(struct vfs_backend *backend)
+{
+
+    struct cpio_header header;
+    unsigned int offset = 0;
+    unsigned int current = 0;
+    unsigned short namesize = 0xFFFF;
+
+    do
+    {
+
+        if (backend->read(backend, offset, sizeof (struct cpio_header), &header) < sizeof (struct cpio_header))
+            break;
+
+        if (!cpio_validate(&header))
+            break;
+
+        if ((header.mode & 0xF000) == 0x0000)
+            continue;
+
+        if (header.namesize < namesize)
+        {
+
+            namesize = header.namesize;
+            current = offset;
+
+        }
+
+    } while ((offset = cpio_next(&header, offset)));
+
+    return current;
+
+}
+
 static unsigned int parent(struct vfs_backend *backend, unsigned int count, char *path)
 {
 
@@ -29,15 +63,37 @@ static unsigned int parent(struct vfs_backend *backend, unsigned int count, char
         if (!cpio_validate(&header))
             break;
 
-        if (backend->read(backend, offset + sizeof (struct cpio_header), header.namesize, name) < header.namesize)
-            break;
+        if ((header.mode & 0xF000) == 0x4000)
+        {
 
-        if (memory_match(name, path, count))
-            return offset;
+            if (backend->read(backend, offset + sizeof (struct cpio_header), header.namesize, name) < header.namesize)
+                break;
+
+            if (memory_match(name, path, count - 1))
+                return offset;
+
+        }
 
     } while ((offset = cpio_next(&header, offset)));
 
     return 0;
+
+}
+
+static unsigned int getslash(unsigned int count, const char *path)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < count; i++)
+    {
+
+        if (path[i] == '/')
+            return i;
+
+    }
+
+    return count;
 
 }
 
@@ -165,6 +221,9 @@ static unsigned int walk(struct vfs_backend *backend, unsigned int id, unsigned 
     if (!count)
         return id;
 
+    if (id == 0xFFFFFFFF)
+        id = find_top(backend);
+
     if (backend->read(backend, id, sizeof (struct cpio_header), &header) < sizeof (struct cpio_header))
         return 0;
 
@@ -179,10 +238,12 @@ static unsigned int walk(struct vfs_backend *backend, unsigned int id, unsigned 
     if (memory_match(path, "../", 3))
         return walk(backend, parent(backend, header.namesize, name), count - 3, path + 3);
 
-    while ((id = cpio_next(&header, id)))
+    id = 0;
+
+    do
     {
 
-        unsigned int l;
+        unsigned int c;
 
         if (backend->read(backend, id, sizeof (struct cpio_header), &header) < sizeof (struct cpio_header))
             break;
@@ -190,20 +251,31 @@ static unsigned int walk(struct vfs_backend *backend, unsigned int id, unsigned 
         if (!cpio_validate(&header))
             break;
 
+        if (header.namesize < length)
+            continue;
+
+        if (header.namesize - length == 0)
+            continue;
+
         if (backend->read(backend, id + sizeof (struct cpio_header), header.namesize, name) < header.namesize)
             break;
 
-        l = header.namesize;
+        c = getslash(count, path);
 
-        if (l < length)
-            break;
+        if (c + 1 != header.namesize - length)
+            continue;
 
-        l -= length;
+        if (memory_match(name + length, path, c))
+        {
 
-        if (memory_match(name + length, path, l))
-            return walk(backend, id, count - l, path + l);
+            if (c == count)
+                return walk(backend, id, count - c, path + c);
+            else
+                return walk(backend, id, count - c - 1, path + c + 1);
 
-    }
+        }
+
+    } while ((id = cpio_next(&header, id)));
 
     return 0;
 
@@ -212,7 +284,7 @@ static unsigned int walk(struct vfs_backend *backend, unsigned int id, unsigned 
 struct vfs_protocol *vfs_cpio_setup(unsigned int physical)
 {
 
-    vfs_init_protocol(&protocol.base, 0, match, open, close, read, write, walk, get_physical);
+    vfs_init_protocol(&protocol.base, 0xFFFFFFFF, match, open, close, read, write, walk, get_physical);
 
     protocol.physical = physical;
 
