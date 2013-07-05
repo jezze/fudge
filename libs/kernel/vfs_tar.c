@@ -139,6 +139,7 @@ static unsigned int walk(struct vfs_backend *backend, unsigned int id, unsigned 
 
     unsigned char block[TAR_BLOCK_SIZE];
     struct tar_header *header = (struct tar_header *)block;
+    unsigned int n = vfs_findnext(count, path);
     unsigned int length;
 
     if (!count)
@@ -146,28 +147,22 @@ static unsigned int walk(struct vfs_backend *backend, unsigned int id, unsigned 
 
     backend->read(backend, id, TAR_BLOCK_SIZE, block);
 
-    length = string_length(header->name);
+    if (vfs_isparent(n, path))
+        return walk(backend, parent(backend, string_length(header->name), header->name), count - n, path + n);
 
-    if (vfs_isparent(count, path))
-        return walk(backend, parent(backend, length, header->name), count - 3, path + 3);
+    length = string_length(header->name);
 
     while ((id = tar_next(header, id)))
     {
 
-        unsigned int l;
-
         if (!tar_validate(backend->read(backend, id, TAR_BLOCK_SIZE, block), block))
             break;
 
-        l = string_length(header->name);
-
-        if (l < length)
+        if (string_length(header->name) < length)
             break;
 
-        l -= length;
-
-        if (memory_match(header->name + length, path, l))
-            return walk(backend, id, count - l, path + l);
+        if (memory_match(header->name + length, path, n))
+            return walk(backend, id, count - n, path + n);
 
     }
 

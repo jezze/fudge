@@ -28,39 +28,29 @@ static unsigned int open(struct runtime_task *task, void *stack)
 
     memory_copy(descriptor, pdescriptor, sizeof (struct runtime_descriptor));
 
-    for (;;)
+    while ((n = vfs_findnext(args->count, args->path)))
     {
 
-        unsigned int id;
-
-        pdescriptor = runtime_get_child(task->container, descriptor);
-
-        if (pdescriptor)
-        {
-
-            memory_copy(descriptor, pdescriptor, sizeof (struct runtime_descriptor));
-
-            continue;
-
-        }
-
-        n = vfs_findnext(args->count, args->path);
-
-        if (!n)
-            break;
-
-        id = descriptor->session.protocol->walk(descriptor->session.backend, descriptor->id, n, args->path);
+        unsigned int id = descriptor->session.protocol->walk(descriptor->session.backend, descriptor->id, n, args->path);
 
         if (!id)
             return 0;
 
         descriptor->id = id;
+        pdescriptor = runtime_get_child(task->container, descriptor);
+
+        if (pdescriptor)
+            memory_copy(descriptor, pdescriptor, sizeof (struct runtime_descriptor));
+
         args->count -= n;
         args->path += n;
 
     };
 
+    return 1;
+    /*
     return descriptor->session.protocol->open(descriptor->session.backend, descriptor->id);
+    */
 
 }
 
