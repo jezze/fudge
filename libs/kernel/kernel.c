@@ -20,6 +20,9 @@ static void setup(struct vfs_session *session, unsigned int ip)
 
     container.running = &task;
 
+    container.mounts[0x01].parent.session.backend = session->backend;
+    container.mounts[0x01].parent.session.protocol = session->protocol;
+    container.mounts[0x01].parent.id = session->protocol->rootid;
     container.mounts[0x01].child.session.backend = session->backend;
     container.mounts[0x01].child.session.protocol = session->protocol;
     container.mounts[0x01].child.id = session->protocol->rootid;
