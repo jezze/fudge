@@ -29,6 +29,8 @@ struct vfs_session
 
 };
 
+unsigned int vfs_findnext(unsigned int count, const char *path);
+unsigned int vfs_isparent(unsigned int count, const char *path);
 struct vfs_protocol *vfs_get_protocol(struct vfs_backend *backend);
 void vfs_register_protocol(struct vfs_protocol *protocol);
 void vfs_unregister_protocol(struct vfs_protocol *protocol);

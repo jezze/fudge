@@ -80,23 +80,6 @@ static unsigned int parent(struct vfs_backend *backend, unsigned int count, char
 
 }
 
-static unsigned int getslash(unsigned int count, const char *path)
-{
-
-    unsigned int i;
-
-    for (i = 0; i < count; i++)
-    {
-
-        if (path[i] == '/')
-            return i;
-
-    }
-
-    return count;
-
-}
-
 static unsigned int match(struct vfs_backend *backend)
 {
 
@@ -124,14 +107,14 @@ static unsigned int get_physical(struct vfs_backend *backend, unsigned int id)
 static unsigned int open(struct vfs_backend *backend, unsigned int id)
 {
 
-    return id;
+    return 1;
 
 }
 
 static unsigned int close(struct vfs_backend *backend, unsigned int id)
 {
 
-    return id;
+    return 1;
 
 }
 
@@ -235,7 +218,7 @@ static unsigned int walk(struct vfs_backend *backend, unsigned int id, unsigned 
 
     length = header.namesize;
 
-    if (memory_match(path, "../", 3))
+    if (vfs_isparent(count, path))
         return walk(backend, parent(backend, header.namesize, name), count - 3, path + 3);
 
     id = 0;
@@ -260,7 +243,7 @@ static unsigned int walk(struct vfs_backend *backend, unsigned int id, unsigned 
         if (backend->read(backend, id + sizeof (struct cpio_header), header.namesize, name) < header.namesize)
             break;
 
-        c = getslash(count, path);
+        c = vfs_isparent(count, path);
 
         if (c + 1 != header.namesize - length)
             continue;

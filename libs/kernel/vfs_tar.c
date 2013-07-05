@@ -54,14 +54,14 @@ static unsigned int get_physical(struct vfs_backend *backend, unsigned int id)
 static unsigned int open(struct vfs_backend *backend, unsigned int id)
 {
 
-    return id;
+    return 1;
 
 }
 
 static unsigned int close(struct vfs_backend *backend, unsigned int id)
 {
 
-    return id;
+    return 1;
 
 }
 
@@ -148,7 +148,7 @@ static unsigned int walk(struct vfs_backend *backend, unsigned int id, unsigned 
 
     length = string_length(header->name);
 
-    if (memory_match(path, "../", 3))
+    if (vfs_isparent(count, path))
         return walk(backend, parent(backend, length, header->name), count - 3, path + 3);
 
     while ((id = tar_next(header, id)))

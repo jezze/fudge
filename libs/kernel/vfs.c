@@ -3,6 +3,30 @@
 
 static struct vfs_protocol *protocols;
 
+unsigned int vfs_findnext(unsigned int count, const char *path)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < count; i++)
+    {
+
+        if (path[i] == '/')
+            return i + 1;
+
+    }
+
+    return count;
+
+}
+
+unsigned int vfs_isparent(unsigned int count, const char *path)
+{
+
+    return (count >= 3) ? memory_match(path, "../", 3) : 0;
+
+}
+
 struct vfs_protocol *vfs_get_protocol(struct vfs_backend *backend)
 {
 

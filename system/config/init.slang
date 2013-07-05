@@ -1,2 +1,2 @@
-slang < /config/base.slang
-slang < /config/user.slang
+/bin/slang < /config/base.slang
+/bin/slang < /config/user.slang

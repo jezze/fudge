@@ -31,14 +31,14 @@ static unsigned int match(struct vfs_backend *backend)
 static unsigned int open(struct vfs_backend *backend, unsigned int id)
 {
 
-    return id;
+    return 1;
 
 }
 
 static unsigned int close(struct vfs_backend *backend, unsigned int id)
 {
 
-    return id;
+    return 1;
 
 }
 
@@ -114,7 +114,7 @@ static unsigned int walk(struct vfs_backend *backend, unsigned int id, unsigned 
     if (!count)
         return id;
 
-    if (memory_match(path, "../", 3))
+    if (vfs_isparent(count, path))
         return walk(backend, (unsigned int)node->parent, count - 3, path + 3);
 
     if (node->type == SYSTEM_NODETYPE_GROUP)

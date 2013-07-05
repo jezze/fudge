@@ -21,7 +21,7 @@ static unsigned int open(struct runtime_task *task, void *stack)
     struct {void *caller; unsigned int index; unsigned int pindex; unsigned int count; const char *path;} *args = stack;
     struct runtime_descriptor *descriptor = runtime_get_descriptor(task, args->index);
     struct runtime_descriptor *pdescriptor = runtime_get_descriptor(task, args->pindex);
-    unsigned int length;
+    unsigned int n;
 
     if (!descriptor || !pdescriptor)
         return 0;
@@ -33,13 +33,10 @@ static unsigned int open(struct runtime_task *task, void *stack)
 
         unsigned int id;
 
-        pdescriptor = (args->count >= 3 && memory_match(args->path, "../", 3)) ? runtime_get_parent(task->container, descriptor) : runtime_get_child(task->container, descriptor);
+        pdescriptor = runtime_get_child(task->container, descriptor);
 
         if (pdescriptor)
         {
-
-            if (!pdescriptor->session.protocol)
-                return 0;
 
             memory_copy(descriptor, pdescriptor, sizeof (struct runtime_descriptor));
 
@@ -47,23 +44,19 @@ static unsigned int open(struct runtime_task *task, void *stack)
 
         }
 
-        if (!args->count)
+        n = vfs_findnext(args->count, args->path);
+
+        if (!n)
             break;
 
-        for (length = 0; length <= args->count && !(length > 0 && args->path[length - 1] == '/'); length++);
-
-        if (length > args->count)
-            length = args->count;
-
-        id = descriptor->session.protocol->walk(descriptor->session.backend, descriptor->id, length, args->path);
+        id = descriptor->session.protocol->walk(descriptor->session.backend, descriptor->id, n, args->path);
 
         if (!id)
             return 0;
 
         descriptor->id = id;
-
-        args->count -= length;
-        args->path += length;
+        args->count -= n;
+        args->path += n;
 
     };
 
