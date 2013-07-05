@@ -73,14 +73,17 @@ static unsigned int read(struct vfs_backend *backend, unsigned int id, unsigned 
 
     unsigned char block[TAR_BLOCK_SIZE];
     struct tar_header *header = (struct tar_header *)block;
-    unsigned int size;
 
     backend->read(backend, id, TAR_BLOCK_SIZE, block);
 
-    size = string_number(header->size, 8) - offset;
-
     if (header->typeflag[0] == TAR_TYPEFLAG_REGULAR)
+    {
+
+        unsigned int size = string_number(header->size, 8) - offset;
+
         return backend->read(backend, id + TAR_BLOCK_SIZE + offset, (count > size) ? size : count, buffer);
+
+    }
 
     if (header->typeflag[0] == TAR_TYPEFLAG_DIRECTORY)
     {
@@ -124,14 +127,17 @@ static unsigned int write(struct vfs_backend *backend, unsigned int id, unsigned
 
     unsigned char block[TAR_BLOCK_SIZE];
     struct tar_header *header = (struct tar_header *)block;
-    unsigned int size;
 
     backend->read(backend, id, TAR_BLOCK_SIZE, block);
 
-    size = string_number(header->size, 8) - offset;
-
     if (header->typeflag[0] == TAR_TYPEFLAG_REGULAR)
+    {
+
+        unsigned int size = string_number(header->size, 8) - offset;
+
         return backend->write(backend, id + TAR_BLOCK_SIZE + offset, (count > size) ? size : count, buffer);
+
+    }
 
     return 0;
 
