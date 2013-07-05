@@ -26,6 +26,9 @@ static unsigned int parent(struct vfs_backend *backend, unsigned int count, char
         if (!tar_validate(backend->read(backend, offset, TAR_BLOCK_SIZE, block), block))
             break;
 
+        if (header->typeflag[0] != TAR_TYPEFLAG_DIRECTORY)
+            continue;
+
         if (memory_match(header->name, path, count))
             return offset;
 
