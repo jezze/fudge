@@ -14,9 +14,9 @@ static void interpret(unsigned int count, char *buffer)
             return;
 
         if (buffer[3] == '/')
-            call_open(CALL_DW, CALL_DR, count - 4, buffer + 4);
+            call_open(CALL_DW, CALL_DR, count - 5, buffer + 4);
         else
-            call_open(CALL_DW, CALL_DW, count - 3, buffer + 3);
+            call_open(CALL_DW, CALL_DW, count - 4, buffer + 3);
 
         return;
 

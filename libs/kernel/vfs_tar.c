@@ -167,8 +167,8 @@ static unsigned int walk(struct vfs_backend *backend, unsigned int id, unsigned 
         if (!tar_validate(backend->read(backend, id, TAR_BLOCK_SIZE, block), block))
             break;
 
-        if (string_length(header->name) < length)
-            break;
+        if (string_length(header->name) != length + n)
+            continue;
 
         if (memory_match(header->name + length, path, n))
             return walk(backend, id, count - n, path + n);
