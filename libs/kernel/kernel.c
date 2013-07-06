@@ -16,18 +16,8 @@ static struct runtime_task task;
 static void setup(struct vfs_session *session, unsigned int ip)
 {
 
-    runtime_init_container(&container);
-
-    container.running = &task;
-
-    container.mounts[0x01].parent.session.backend = session->backend;
-    container.mounts[0x01].parent.session.protocol = session->protocol;
-    container.mounts[0x01].parent.id = session->protocol->rootid;
-    container.mounts[0x01].child.session.backend = session->backend;
-    container.mounts[0x01].child.session.protocol = session->protocol;
-    container.mounts[0x01].child.id = session->protocol->rootid;
-
     runtime_init_task(&task);
+    runtime_init_container(&container, &task);
 
     task.registers.ip = ip;
     task.registers.sp = RUNTIME_STACKADDRESS_VIRTUAL;
@@ -38,6 +28,12 @@ static void setup(struct vfs_session *session, unsigned int ip)
     task.descriptors[0x0F].session.backend = session->backend;
     task.descriptors[0x0F].session.protocol = session->protocol;
     task.descriptors[0x0F].id = session->protocol->rootid;
+    container.mounts[0x01].parent.session.backend = session->backend;
+    container.mounts[0x01].parent.session.protocol = session->protocol;
+    container.mounts[0x01].parent.id = session->protocol->rootid;
+    container.mounts[0x01].child.session.backend = session->backend;
+    container.mounts[0x01].child.session.protocol = session->protocol;
+    container.mounts[0x01].child.id = session->protocol->rootid;
 
 }
 

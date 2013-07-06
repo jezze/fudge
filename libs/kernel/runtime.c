@@ -66,10 +66,12 @@ void runtime_init_task(struct runtime_task *task)
 
 }
 
-void runtime_init_container(struct runtime_container *container)
+void runtime_init_container(struct runtime_container *container, struct runtime_task *task)
 {
 
     memory_clear(container, sizeof (struct runtime_container));
+
+    container->running = task;
 
 }
 

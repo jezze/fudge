@@ -53,4 +53,4 @@ struct runtime_mount *runtime_get_mount(struct runtime_container *container, uns
 struct runtime_descriptor *runtime_get_child(struct runtime_container *container, struct runtime_descriptor *descriptor);
 struct runtime_descriptor *runtime_get_parent(struct runtime_container *container, struct runtime_descriptor *descriptor);
 void runtime_init_task(struct runtime_task *task);
-void runtime_init_container(struct runtime_container *container);
+void runtime_init_container(struct runtime_container *container, struct runtime_task *task);
