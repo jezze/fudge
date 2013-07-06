@@ -168,6 +168,7 @@ void system_init_backend(struct system_backend *backend)
     memory_clear(backend, sizeof (struct system_backend));
     vfs_init_backend(&backend->base, backend_read, backend_write);
     system_init_group(&backend->root, "/");
+    backend->root.node.parent = &backend->root.node;
 
     backend->readers[SYSTEM_NODETYPE_GROUP] = read_group;
     backend->readers[SYSTEM_NODETYPE_STREAM] = read_stream;
