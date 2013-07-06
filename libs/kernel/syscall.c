@@ -6,16 +6,16 @@
 
 #define SYSCALL_ROUTINE_SLOTS           16
 
-static unsigned int (*routines[SYSCALL_ROUTINE_SLOTS])(struct runtime_task *task, void *stack);
+static unsigned int (*routines[SYSCALL_ROUTINE_SLOTS])(struct runtime_container *container, struct runtime_task *task, void *stack);
 
-static unsigned int undefined(struct runtime_task *task, void *stack)
+static unsigned int undefined(struct runtime_container *container, struct runtime_task *task, void *stack)
 {
 
     return 0;
 
 }
 
-static unsigned int open(struct runtime_task *task, void *stack)
+static unsigned int open(struct runtime_container *container, struct runtime_task *task, void *stack)
 {
 
     struct {void *caller; unsigned int index; unsigned int pindex; unsigned int count; const char *path;} *args = stack;
@@ -36,7 +36,7 @@ static unsigned int open(struct runtime_task *task, void *stack)
         if (!descriptor->id)
             return 0;
 
-        pdescriptor = runtime_get_child(task->container, descriptor);
+        pdescriptor = runtime_get_child(container, descriptor);
 
         if (pdescriptor)
             memory_copy(descriptor, pdescriptor, sizeof (struct runtime_descriptor));
@@ -53,7 +53,7 @@ static unsigned int open(struct runtime_task *task, void *stack)
 
 }
 
-static unsigned int close(struct runtime_task *task, void *stack)
+static unsigned int close(struct runtime_container *container, struct runtime_task *task, void *stack)
 {
 
     struct {void *caller; unsigned int index;} *args = stack;
@@ -66,7 +66,7 @@ static unsigned int close(struct runtime_task *task, void *stack)
 
 }
 
-static unsigned int read(struct runtime_task *task, void *stack)
+static unsigned int read(struct runtime_container *container, struct runtime_task *task, void *stack)
 {
 
     struct {void *caller; unsigned int index; unsigned int offset; unsigned int count; void *buffer;} *args = stack;
@@ -79,7 +79,7 @@ static unsigned int read(struct runtime_task *task, void *stack)
 
 }
 
-static unsigned int write(struct runtime_task *task, void *stack)
+static unsigned int write(struct runtime_container *container, struct runtime_task *task, void *stack)
 {
 
     struct {void *caller; unsigned int index; unsigned int offset; unsigned int count; void *buffer;} *args = stack;
@@ -92,11 +92,11 @@ static unsigned int write(struct runtime_task *task, void *stack)
 
 }
 
-static unsigned int mount(struct runtime_task *task, void *stack)
+static unsigned int mount(struct runtime_container *container, struct runtime_task *task, void *stack)
 {
 
     struct {void *caller; unsigned int index; unsigned int pindex; unsigned int cindex;} *args = stack;
-    struct runtime_mount *mount = runtime_get_mount(task, args->index);
+    struct runtime_mount *mount = runtime_get_mount(container, args->index);
     struct runtime_descriptor *pdescriptor = runtime_get_descriptor(task, args->pindex);
     struct runtime_descriptor *cdescriptor = runtime_get_descriptor(task, args->cindex);
     struct binary_protocol *protocol;
@@ -133,11 +133,11 @@ static unsigned int mount(struct runtime_task *task, void *stack)
 
 }
 
-static unsigned int bind(struct runtime_task *task, void *stack)
+static unsigned int bind(struct runtime_container *container, struct runtime_task *task, void *stack)
 {
 
     struct {void *caller; unsigned int index; unsigned int pindex; unsigned int cindex;} *args = stack;
-    struct runtime_mount *mount = runtime_get_mount(task, args->index);
+    struct runtime_mount *mount = runtime_get_mount(container, args->index);
     struct runtime_descriptor *pdescriptor = runtime_get_descriptor(task, args->pindex);
     struct runtime_descriptor *cdescriptor = runtime_get_descriptor(task, args->cindex);
 
@@ -151,7 +151,7 @@ static unsigned int bind(struct runtime_task *task, void *stack)
 
 }
 
-static unsigned int execute(struct runtime_task *task, void *stack)
+static unsigned int execute(struct runtime_container *container, struct runtime_task *task, void *stack)
 {
 
     struct {void *caller; unsigned int index;} *args = stack;
@@ -176,7 +176,7 @@ static unsigned int execute(struct runtime_task *task, void *stack)
 
 }
 
-static unsigned int exit(struct runtime_task *task, void *stack)
+static unsigned int exit(struct runtime_container *container, struct runtime_task *task, void *stack)
 {
 
     task->state &= ~RUNTIME_TASK_STATE_USED;
@@ -189,7 +189,7 @@ static unsigned int exit(struct runtime_task *task, void *stack)
 
 }
 
-static unsigned int load(struct runtime_task *task, void *stack)
+static unsigned int load(struct runtime_container *container, struct runtime_task *task, void *stack)
 {
 
     struct {void *caller; unsigned int index;} *args = stack;
@@ -226,7 +226,7 @@ static unsigned int load(struct runtime_task *task, void *stack)
 
 }
 
-static unsigned int unload(struct runtime_task *task, void *stack)
+static unsigned int unload(struct runtime_container *container, struct runtime_task *task, void *stack)
 {
 
     struct {void *caller; unsigned int index;} *args = stack;
@@ -253,7 +253,7 @@ static unsigned int unload(struct runtime_task *task, void *stack)
 
 }
 
-void syscall_set_routine(enum syscall_index index, unsigned int (*routine)(struct runtime_task *task, void *stack))
+void syscall_set_routine(enum syscall_index index, unsigned int (*routine)(struct runtime_container *container, struct runtime_task *task, void *stack))
 {
 
     routines[index] = routine;
@@ -267,13 +267,13 @@ void syscall_unset_routine(enum syscall_index index)
 
 }
 
-unsigned int syscall_raise(unsigned int index, struct runtime_task *task)
+unsigned int syscall_raise(unsigned int index, struct runtime_container *container, struct runtime_task *task)
 {
 
     if (!index || index >= SYSCALL_ROUTINE_SLOTS)
         return 0;
 
-    return routines[index](task, (void *)task->registers.sp);
+    return routines[index](container, task, (void *)task->registers.sp);
 
 }
 

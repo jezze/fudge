@@ -121,7 +121,7 @@ unsigned short arch_syscall(struct arch_registers_syscall *registers)
     state.container->running->registers.ip = registers->interrupt.eip;
     state.container->running->registers.sp = registers->interrupt.esp;
     state.container->running->registers.fp = registers->general.ebp;
-    state.container->running->registers.status = syscall_raise(registers->general.eax, state.container->running);
+    state.container->running->registers.status = syscall_raise(registers->general.eax, state.container, state.container->running);
 
     multi_notify(state.container);
 

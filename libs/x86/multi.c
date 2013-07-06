@@ -61,7 +61,7 @@ static struct multi_task *schedule()
 
 }
 
-static unsigned int spawn(struct runtime_task *task, void *stack)
+static unsigned int spawn(struct runtime_container *container, struct runtime_task *task, void *stack)
 {
 
     struct parameters {void *caller; unsigned int index;} nargs, *args = stack;
@@ -78,7 +78,7 @@ static unsigned int spawn(struct runtime_task *task, void *stack)
 
     mmu_load_memory(&ntask->directory);
 
-    return syscall_raise(SYSCALL_INDEX_EXECUTE, &ntask->base);
+    return syscall_raise(SYSCALL_INDEX_EXECUTE, container, &ntask->base);
 
 }
 

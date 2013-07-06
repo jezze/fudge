@@ -27,7 +27,7 @@ static void setup(struct vfs_session *session, unsigned int ip)
     container.mounts[0x01].child.session.protocol = session->protocol;
     container.mounts[0x01].child.id = session->protocol->rootid;
 
-    runtime_init_task(&task, &container);
+    runtime_init_task(&task);
 
     task.registers.ip = ip;
     task.registers.sp = RUNTIME_STACKADDRESS_VIRTUAL;

@@ -13,13 +13,13 @@ struct runtime_descriptor *runtime_get_descriptor(struct runtime_task *task, uns
 
 }
 
-struct runtime_mount *runtime_get_mount(struct runtime_task *task, unsigned int index)
+struct runtime_mount *runtime_get_mount(struct runtime_container *container, unsigned int index)
 {
 
     if (!index || index >= RUNTIME_CONTAINER_MOUNT_SLOTS)
         return 0;
 
-    return &task->container->mounts[index];
+    return &container->mounts[index];
 
 }
 
@@ -57,13 +57,12 @@ struct runtime_descriptor *runtime_get_parent(struct runtime_container *containe
 
 }
 
-void runtime_init_task(struct runtime_task *task, struct runtime_container *container)
+void runtime_init_task(struct runtime_task *task)
 {
 
     memory_clear(task, sizeof (struct runtime_task));
 
     task->state = RUNTIME_TASK_STATE_USED;
-    task->container = container;
 
 }
 
