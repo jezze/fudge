@@ -1,15 +1,9 @@
 #include <fudge/kernel.h>
-#include "kernel.h"
 #include "vfs.h"
 #include "vfs_cpio.h"
+#include "kernel.h"
 
-static struct
-{
-
-    struct vfs_protocol base;
-    unsigned int physical;
-
-} protocol;
+static struct vfs_protocol protocol;
 
 static unsigned int find_top(struct vfs_backend *backend)
 {
@@ -95,12 +89,15 @@ static unsigned int match(struct vfs_backend *backend)
 static unsigned int get_physical(struct vfs_backend *backend, unsigned int id)
 {
 
+    /* TEMPORARY FIX */
+
+    struct kernel_module *module = (struct kernel_module *)backend;
     struct cpio_header header;
 
     if (backend->read(backend, id, sizeof (struct cpio_header), &header) < sizeof (struct cpio_header))
         return 0;
 
-    return protocol.physical + id + sizeof (struct cpio_header) + header.namesize + (header.namesize & 1);
+    return (unsigned int)module->address + id + sizeof (struct cpio_header) + header.namesize + (header.namesize & 1);
 
 }
 
@@ -264,14 +261,12 @@ static unsigned int walk(struct vfs_backend *backend, unsigned int id, unsigned 
 
 }
 
-struct vfs_protocol *vfs_cpio_setup(unsigned int physical)
+struct vfs_protocol *vfs_cpio_setup()
 {
 
-    vfs_init_protocol(&protocol.base, 0xFFFFFFFF, match, open, close, read, write, walk, get_physical);
+    vfs_init_protocol(&protocol, 0xFFFFFFFF, match, open, close, read, write, walk, get_physical);
 
-    protocol.physical = physical;
-
-    return &protocol.base;
+    return &protocol;
 
 }
 

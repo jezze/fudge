@@ -1,15 +1,9 @@
 #include <fudge/kernel.h>
-#include "kernel.h"
 #include "vfs.h"
 #include "vfs_tar.h"
+#include "kernel.h"
 
-static struct
-{
-
-    struct vfs_protocol base;
-    unsigned int physical;
-
-} protocol;
+static struct vfs_protocol protocol;
 
 static unsigned int parent(struct vfs_backend *backend, unsigned int count, char *path)
 {
@@ -50,7 +44,11 @@ static unsigned int match(struct vfs_backend *backend)
 static unsigned int get_physical(struct vfs_backend *backend, unsigned int id)
 {
 
-    return protocol.physical + id + TAR_BLOCK_SIZE;
+    /* TEMPORARY FIX */
+
+    struct kernel_module *module = (struct kernel_module *)backend;
+
+    return (unsigned int)module->address + id + TAR_BLOCK_SIZE;
 
 }
 
@@ -179,14 +177,12 @@ static unsigned int walk(struct vfs_backend *backend, unsigned int id, unsigned 
 
 }
 
-struct vfs_protocol *vfs_tar_setup(unsigned int physical)
+struct vfs_protocol *vfs_tar_setup()
 {
 
-    vfs_init_protocol(&protocol.base, 0, match, open, close, read, write, walk, get_physical);
+    vfs_init_protocol(&protocol, 0, match, open, close, read, write, walk, get_physical);
 
-    protocol.physical = physical;
-
-    return &protocol.base;
+    return &protocol;
 
 }
 

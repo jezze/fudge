@@ -1,14 +1,13 @@
 #include <fudge/kernel.h>
 #include "error.h"
-#include "kernel.h"
 #include "vfs.h"
 #include "vfs_cpio.h"
-#include "vfs_module.h"
 #include "vfs_tar.h"
 #include "binary.h"
 #include "binary_elf.h"
 #include "runtime.h"
 #include "syscall.h"
+#include "kernel.h"
 
 static struct runtime_container container;
 static struct runtime_task task;
@@ -69,10 +68,10 @@ static void detect(struct vfs_backend *backend)
 struct runtime_container *kernel_setup(unsigned int count, struct kernel_module *modules)
 {
 
-    struct vfs_protocol *cpio = vfs_cpio_setup((unsigned int)modules[0].base);
-    struct vfs_protocol *tar = vfs_tar_setup((unsigned int)modules[0].base);
-    struct vfs_backend *module = vfs_module_setup(count, modules);
+    struct vfs_protocol *cpio = vfs_cpio_setup();
+    struct vfs_protocol *tar = vfs_tar_setup();
     struct binary_protocol *elf = binary_elf_setup();
+    unsigned int i;
 
     vfs_setup();
     vfs_register_protocol(cpio);
@@ -80,7 +79,9 @@ struct runtime_container *kernel_setup(unsigned int count, struct kernel_module 
     binary_setup();
     binary_register_protocol(elf);
     syscall_setup();
-    detect(module);
+
+    for (i = 0; i < count; i++)
+        detect(&modules[i].base);
 
     return &container;
 

@@ -1,8 +1,28 @@
+#include <fudge/memory.h>
+#include <kernel/vfs.h>
 #include <kernel/kernel.h>
 #include <x86/arch.h>
 #include "mboot.h"
 
 static struct kernel_module modules[4];
+
+static unsigned int read(struct vfs_backend *self, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    struct kernel_module *module = (struct kernel_module *)self;
+
+    return memory_read(buffer, count, module->address, module->size, offset);
+
+}
+
+static unsigned int write(struct vfs_backend *self, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    struct kernel_module *module = (struct kernel_module *)self;
+
+    return memory_write(module->address, module->size, buffer, count, offset);
+
+}
 
 void mboot_setup(struct mboot_header *header, unsigned int magic)
 {
@@ -64,7 +84,9 @@ void mboot_setup(struct mboot_header *header, unsigned int magic)
         for (i = 0; i < header->modules.count; i++)
         {
 
-            modules[i].base = (void *)mods[i].base;
+            vfs_init_backend(&modules[i].base, read, write);
+
+            modules[i].address = (void *)mods[i].base;
             modules[i].size = mods[i].size;
 
         }

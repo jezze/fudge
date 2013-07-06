@@ -1,7 +1,8 @@
 struct kernel_module
 {
 
-    void *base;
+    struct vfs_backend base;
+    void *address;
     unsigned int size;
 
 };
