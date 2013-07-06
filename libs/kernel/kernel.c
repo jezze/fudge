@@ -12,12 +12,9 @@ static struct runtime_task task;
 static void setup(struct vfs_session *session, unsigned int ip)
 {
 
-    runtime_init_task(&task);
+    runtime_init_task(&task, ip, RUNTIME_STACKADDRESS_VIRTUAL, RUNTIME_STACKADDRESS_VIRTUAL);
     runtime_init_container(&container, &task);
 
-    task.registers.ip = ip;
-    task.registers.sp = RUNTIME_STACKADDRESS_VIRTUAL;
-    task.registers.fp = RUNTIME_STACKADDRESS_VIRTUAL;
     task.descriptors[0x0E].session.backend = session->backend;
     task.descriptors[0x0E].session.protocol = session->protocol;
     task.descriptors[0x0E].id = session->protocol->rootid;

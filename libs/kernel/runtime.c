@@ -57,12 +57,15 @@ struct runtime_descriptor *runtime_get_parent(struct runtime_container *containe
 
 }
 
-void runtime_init_task(struct runtime_task *task)
+void runtime_init_task(struct runtime_task *task, unsigned int ip, unsigned int sp, unsigned int fp)
 {
 
     memory_clear(task, sizeof (struct runtime_task));
 
     task->state = RUNTIME_TASK_STATE_USED;
+    task->registers.ip = ip;
+    task->registers.sp = sp;
+    task->registers.fp = fp;
 
 }
 

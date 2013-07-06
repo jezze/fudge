@@ -52,5 +52,5 @@ struct runtime_descriptor *runtime_get_descriptor(struct runtime_task *task, uns
 struct runtime_mount *runtime_get_mount(struct runtime_container *container, unsigned int index);
 struct runtime_descriptor *runtime_get_child(struct runtime_container *container, struct runtime_descriptor *descriptor);
 struct runtime_descriptor *runtime_get_parent(struct runtime_container *container, struct runtime_descriptor *descriptor);
-void runtime_init_task(struct runtime_task *task);
+void runtime_init_task(struct runtime_task *task, unsigned int ip, unsigned int sp, unsigned int fp);
 void runtime_init_container(struct runtime_container *container, struct runtime_task *task);
