@@ -31,12 +31,11 @@ static unsigned int open(struct runtime_task *task, void *stack)
     while ((n = vfs_findnext(args->count, args->path)))
     {
 
-        unsigned int id = descriptor->session.protocol->walk(descriptor->session.backend, descriptor->id, n, args->path);
+        descriptor->id = descriptor->session.protocol->walk(descriptor->session.backend, descriptor->id, n, args->path);
 
-        if (!id)
+        if (!descriptor->id)
             return 0;
 
-        descriptor->id = id;
         pdescriptor = runtime_get_child(task->container, descriptor);
 
         if (pdescriptor)
