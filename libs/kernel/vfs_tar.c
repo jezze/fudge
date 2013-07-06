@@ -1,6 +1,5 @@
 #include <fudge/kernel.h>
 #include "vfs.h"
-#include "vfs_tar.h"
 #include "kernel.h"
 
 static struct vfs_protocol protocol;

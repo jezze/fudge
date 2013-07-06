@@ -1,10 +1,7 @@
 #include <fudge/kernel.h>
 #include "error.h"
 #include "vfs.h"
-#include "vfs_cpio.h"
-#include "vfs_tar.h"
 #include "binary.h"
-#include "binary_elf.h"
 #include "runtime.h"
 #include "syscall.h"
 #include "kernel.h"

@@ -1,7 +1,6 @@
 #include <fudge/kernel.h>
 #include "vfs.h"
 #include "binary.h"
-#include "binary_elf.h"
 
 static struct binary_protocol elf;
 
