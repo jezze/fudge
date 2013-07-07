@@ -4,12 +4,68 @@
 #include "task.h"
 #include "container.h"
 
-static unsigned int open(struct container *container, struct task *task, void *stack)
+static struct task_descriptor *get_descriptor(struct task *task, unsigned int index)
+{
+
+    if (!index || index >= TASK_DESCRIPTORS)
+        return 0;
+
+    return &task->descriptors[index];
+
+}
+
+static struct container_mount *get_mount(struct container *container, unsigned int index)
+{
+
+    if (!index || index >= CONTAINER_MOUNTS)
+        return 0;
+
+    return &container->mounts[index];
+
+}
+
+static struct task_descriptor *get_child(struct container *container, struct task_descriptor *descriptor)
+{
+
+    unsigned int i;
+
+    for (i = 1; i < CONTAINER_MOUNTS; i++)
+    {
+
+        if (memory_match(&container->mounts[i].parent, descriptor, sizeof (struct task_descriptor)))
+            return &container->mounts[i].child;
+
+    }
+
+    return 0;
+
+}
+
+/*
+static struct task_descriptor *get_parent(struct container *container, struct task_descriptor *descriptor)
+{
+
+    unsigned int i;
+
+    for (i = 1; i < CONTAINER_MOUNTS; i++)
+    {
+
+        if (memory_match(&container->mounts[i].child, descriptor, sizeof (struct task_descriptor)))
+            return &container->mounts[i].parent;
+
+    }
+
+    return 0;
+
+}
+*/
+
+static unsigned int open(struct container *self, struct task *task, void *stack)
 {
 
     struct {void *caller; unsigned int index; unsigned int pindex; unsigned int count; const char *path;} *args = stack;
-    struct task_descriptor *descriptor = task_get_descriptor(task, args->index);
-    struct task_descriptor *pdescriptor = task_get_descriptor(task, args->pindex);
+    struct task_descriptor *descriptor = get_descriptor(task, args->index);
+    struct task_descriptor *pdescriptor = get_descriptor(task, args->pindex);
     unsigned int n;
 
     if (!descriptor || !pdescriptor)
@@ -25,7 +81,7 @@ static unsigned int open(struct container *container, struct task *task, void *s
         if (!descriptor->id)
             return 0;
 
-        pdescriptor = container_get_child(container, descriptor);
+        pdescriptor = get_child(self, descriptor);
 
         if (pdescriptor)
             memory_copy(descriptor, pdescriptor, sizeof (struct task_descriptor));
@@ -42,11 +98,11 @@ static unsigned int open(struct container *container, struct task *task, void *s
 
 }
 
-static unsigned int close(struct container *container, struct task *task, void *stack)
+static unsigned int close(struct container *self, struct task *task, void *stack)
 {
 
     struct {void *caller; unsigned int index;} *args = stack;
-    struct task_descriptor *descriptor = task_get_descriptor(task, args->index);
+    struct task_descriptor *descriptor = get_descriptor(task, args->index);
 
     if (!descriptor)
         return 0;
@@ -55,11 +111,11 @@ static unsigned int close(struct container *container, struct task *task, void *
 
 }
 
-static unsigned int read(struct container *container, struct task *task, void *stack)
+static unsigned int read(struct container *self, struct task *task, void *stack)
 {
 
     struct {void *caller; unsigned int index; unsigned int offset; unsigned int count; void *buffer;} *args = stack;
-    struct task_descriptor *descriptor = task_get_descriptor(task, args->index);
+    struct task_descriptor *descriptor = get_descriptor(task, args->index);
 
     if (!descriptor)
         return 0;
@@ -68,11 +124,11 @@ static unsigned int read(struct container *container, struct task *task, void *s
 
 }
 
-static unsigned int write(struct container *container, struct task *task, void *stack)
+static unsigned int write(struct container *self, struct task *task, void *stack)
 {
 
     struct {void *caller; unsigned int index; unsigned int offset; unsigned int count; void *buffer;} *args = stack;
-    struct task_descriptor *descriptor = task_get_descriptor(task, args->index);
+    struct task_descriptor *descriptor = get_descriptor(task, args->index);
 
     if (!descriptor)
         return 0;
@@ -81,13 +137,13 @@ static unsigned int write(struct container *container, struct task *task, void *
 
 }
 
-static unsigned int mount(struct container *container, struct task *task, void *stack)
+static unsigned int mount(struct container *self, struct task *task, void *stack)
 {
 
     struct {void *caller; unsigned int index; unsigned int pindex; unsigned int cindex;} *args = stack;
-    struct container_mount *mount = container_get_mount(container, args->index);
-    struct task_descriptor *pdescriptor = task_get_descriptor(task, args->pindex);
-    struct task_descriptor *cdescriptor = task_get_descriptor(task, args->cindex);
+    struct container_mount *mount = get_mount(self, args->index);
+    struct task_descriptor *pdescriptor = get_descriptor(task, args->pindex);
+    struct task_descriptor *cdescriptor = get_descriptor(task, args->cindex);
     struct binary_protocol *protocol;
     struct vfs_backend *(*get_backend)();
 
@@ -122,13 +178,13 @@ static unsigned int mount(struct container *container, struct task *task, void *
 
 }
 
-static unsigned int bind(struct container *container, struct task *task, void *stack)
+static unsigned int bind(struct container *self, struct task *task, void *stack)
 {
 
     struct {void *caller; unsigned int index; unsigned int pindex; unsigned int cindex;} *args = stack;
-    struct container_mount *mount = container_get_mount(container, args->index);
-    struct task_descriptor *pdescriptor = task_get_descriptor(task, args->pindex);
-    struct task_descriptor *cdescriptor = task_get_descriptor(task, args->cindex);
+    struct container_mount *mount = get_mount(self, args->index);
+    struct task_descriptor *pdescriptor = get_descriptor(task, args->pindex);
+    struct task_descriptor *cdescriptor = get_descriptor(task, args->cindex);
 
     if (!mount || !pdescriptor || !cdescriptor)
         return 0;
@@ -140,11 +196,11 @@ static unsigned int bind(struct container *container, struct task *task, void *s
 
 }
 
-static unsigned int execute(struct container *container, struct task *task, void *stack)
+static unsigned int execute(struct container *self, struct task *task, void *stack)
 {
 
     struct {void *caller; unsigned int index;} *args = stack;
-    struct task_descriptor *descriptor = task_get_descriptor(task, args->index);
+    struct task_descriptor *descriptor = get_descriptor(task, args->index);
     struct binary_protocol *protocol;
 
     if (!descriptor)
@@ -165,7 +221,7 @@ static unsigned int execute(struct container *container, struct task *task, void
 
 }
 
-static unsigned int exit(struct container *container, struct task *task, void *stack)
+static unsigned int exit(struct container *self, struct task *task, void *stack)
 {
 
     task->state &= ~TASK_STATE_USED;
@@ -178,11 +234,11 @@ static unsigned int exit(struct container *container, struct task *task, void *s
 
 }
 
-static unsigned int load(struct container *container, struct task *task, void *stack)
+static unsigned int load(struct container *self, struct task *task, void *stack)
 {
 
     struct {void *caller; unsigned int index;} *args = stack;
-    struct task_descriptor *descriptor = task_get_descriptor(task, args->index);
+    struct task_descriptor *descriptor = get_descriptor(task, args->index);
     struct binary_protocol *protocol;
     unsigned int physical;
     void (*init)();
@@ -215,11 +271,11 @@ static unsigned int load(struct container *container, struct task *task, void *s
 
 }
 
-static unsigned int unload(struct container *container, struct task *task, void *stack)
+static unsigned int unload(struct container *self, struct task *task, void *stack)
 {
 
     struct {void *caller; unsigned int index;} *args = stack;
-    struct task_descriptor *descriptor = task_get_descriptor(task, args->index);
+    struct task_descriptor *descriptor = get_descriptor(task, args->index);
     struct binary_protocol *protocol;
     void (*destroy)();
 
@@ -239,50 +295,6 @@ static unsigned int unload(struct container *container, struct task *task, void 
     destroy();
 
     return 1;
-
-}
-
-struct container_mount *container_get_mount(struct container *container, unsigned int index)
-{
-
-    if (!index || index >= CONTAINER_MOUNTS)
-        return 0;
-
-    return &container->mounts[index];
-
-}
-
-struct task_descriptor *container_get_child(struct container *container, struct task_descriptor *descriptor)
-{
-
-    unsigned int i;
-
-    for (i = 1; i < CONTAINER_MOUNTS; i++)
-    {
-
-        if (memory_match(&container->mounts[i].parent, descriptor, sizeof (struct task_descriptor)))
-            return &container->mounts[i].child;
-
-    }
-
-    return 0;
-
-}
-
-struct task_descriptor *container_get_parent(struct container *container, struct task_descriptor *descriptor)
-{
-
-    unsigned int i;
-
-    for (i = 1; i < CONTAINER_MOUNTS; i++)
-    {
-
-        if (memory_match(&container->mounts[i].child, descriptor, sizeof (struct task_descriptor)))
-            return &container->mounts[i].parent;
-
-    }
-
-    return 0;
 
 }
 

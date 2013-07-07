@@ -2,16 +2,6 @@
 #include "vfs.h"
 #include "task.h"
 
-struct task_descriptor *task_get_descriptor(struct task *task, unsigned int index)
-{
-
-    if (!index || index >= TASK_DESCRIPTORS)
-        return 0;
-
-    return &task->descriptors[index];
-
-}
-
 void task_init(struct task *task, unsigned int ip, unsigned int sp, unsigned int fp)
 {
 

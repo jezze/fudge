@@ -31,5 +31,4 @@ struct task
 
 };
 
-struct task_descriptor *task_get_descriptor(struct task *task, unsigned int index);
 void task_init(struct task *task, unsigned int ip, unsigned int sp, unsigned int fp);
