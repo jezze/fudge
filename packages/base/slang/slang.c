@@ -113,23 +113,11 @@ static unsigned int parse_command(struct token_state *state, struct command *com
 
     while (token_accept(state, TOKEN_TYPE_SPACE));
 
-    if (parse_in(state, &command->in))
-    {
+    parse_in(state, &command->in);
 
-        while (token_accept(state, TOKEN_TYPE_SPACE));
+    while (token_accept(state, TOKEN_TYPE_SPACE));
 
-        parse_out(state, &command->out);
-
-    }
-
-    else if (parse_out(state, &command->out))
-    {
-
-        while (token_accept(state, TOKEN_TYPE_SPACE));
-
-        parse_in(state, &command->in);
-
-    }
+    parse_out(state, &command->out);
 
     while (token_accept(state, TOKEN_TYPE_SPACE));
 
