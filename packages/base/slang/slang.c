@@ -47,22 +47,6 @@ static unsigned int open_pipe(unsigned int index, unsigned int number)
 
 }
 
-static unsigned int open_binary(unsigned int index, struct token_string *string)
-{
-
-    char path[FUDGE_BSIZE];
-    unsigned int offset = 0;
-
-    if (open_path(index, string))
-        return index;
-
-    offset += memory_write(path, FUDGE_BSIZE, "bin/", 4, offset);
-    offset += memory_write(path, FUDGE_BSIZE, string->position, string->count, offset);
-
-    return call_open(index, CALL_DR, offset, path);
-
-}
-
 static unsigned int parse_path(struct token_state *state, struct token_string *string)
 {
 
@@ -205,6 +189,7 @@ static void execute(struct expression *expression)
 
     call_open(CALL_D1, CALL_DI, 0, 0);
     call_open(CALL_D2, CALL_DO, 0, 0);
+    call_open(CALL_D3, CALL_DW, 0, 0);
 
     for (pindex = 0; pindex < expression->count; pindex++)
     {
@@ -228,7 +213,9 @@ static void execute(struct expression *expression)
             if (!command->out.count && pipe->count > 1 && cindex != pipe->count - 1)
                 open_pipe(CALL_DO, cindex);
 
-            open_binary(CALL_D0, &command->binary);
+            call_open(CALL_DW, CALL_DR, 4, "bin/");
+            open_path(CALL_D0, &command->binary);
+            call_open(CALL_DW, CALL_D3, 0, 0);
             call_spawn(CALL_D0);
             call_open(CALL_DI, CALL_DO, 0, 0);
             call_open(CALL_DO, CALL_D2, 0, 0);
