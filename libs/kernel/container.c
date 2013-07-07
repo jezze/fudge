@@ -41,7 +41,6 @@ static struct task_descriptor *get_child(struct container *container, struct tas
 
 }
 
-/*
 static struct task_descriptor *get_parent(struct container *container, struct task_descriptor *descriptor)
 {
 
@@ -58,7 +57,6 @@ static struct task_descriptor *get_parent(struct container *container, struct ta
     return 0;
 
 }
-*/
 
 static unsigned int open(struct container *self, struct task *task, void *stack)
 {
@@ -75,6 +73,16 @@ static unsigned int open(struct container *self, struct task *task, void *stack)
 
     while ((n = vfs_findnext(args->count, args->path)))
     {
+
+        if (vfs_isparent(n, args->path))
+        {
+
+            pdescriptor = get_parent(self, descriptor);
+
+            if (pdescriptor)
+                memory_copy(descriptor, pdescriptor, sizeof (struct task_descriptor));
+
+        }
 
         descriptor->id = descriptor->session.protocol->walk(descriptor->session.backend, descriptor->id, n, args->path);
 
