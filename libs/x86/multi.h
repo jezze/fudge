@@ -1,1 +1,1 @@
-void multi_setup(struct runtime_container *container);
+void multi_setup(struct container *container);

@@ -2,17 +2,17 @@
 #include "error.h"
 #include "vfs.h"
 #include "binary.h"
-#include "runtime.h"
-#include "syscall.h"
+#include "task.h"
+#include "container.h"
 #include "kernel.h"
 
-static struct runtime_task task;
-static struct runtime_container container;
+static struct task task;
+static struct container container;
 
 static void setup_task(struct vfs_session *session, unsigned int ip)
 {
 
-    runtime_init_task(&task, ip, RUNTIME_STACKADDRESS_VIRTUAL, RUNTIME_STACKADDRESS_VIRTUAL);
+    task_init(&task, ip, STACKADDRESS_VIRTUAL, STACKADDRESS_VIRTUAL);
 
     task.descriptors[0x0E].session.backend = session->backend;
     task.descriptors[0x0E].session.protocol = session->protocol;
@@ -26,7 +26,7 @@ static void setup_task(struct vfs_session *session, unsigned int ip)
 static void setup_container(struct vfs_session *session)
 {
 
-    runtime_init_container(&container, &task);
+    container_init(&container, &task);
 
     container.mounts[0x01].parent.session.backend = session->backend;
     container.mounts[0x01].parent.session.protocol = session->protocol;
@@ -37,7 +37,7 @@ static void setup_container(struct vfs_session *session)
 
 }
 
-struct runtime_container *kernel_setup(unsigned int count, struct kernel_module *modules)
+struct container *kernel_setup(unsigned int count, struct kernel_module *modules)
 {
 
     struct vfs_protocol *cpio = vfs_cpio_setup();
@@ -80,8 +80,6 @@ struct runtime_container *kernel_setup(unsigned int count, struct kernel_module 
         setup_container(&session);
 
     }
-
-    syscall_setup(&container);
 
     return &container;
 

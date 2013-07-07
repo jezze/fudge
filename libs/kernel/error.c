@@ -1,12 +1,12 @@
 #include <fudge/kernel.h>
 #include "error.h"
 
-#define ERROR_REGISTER_SLOTS            8
+#define ERROR_REGISTERS                 8
 
 static struct
 {
 
-    unsigned int registers[ERROR_REGISTER_SLOTS];
+    unsigned int registers[ERROR_REGISTERS];
     char *message;
     char *file;
     unsigned int line;

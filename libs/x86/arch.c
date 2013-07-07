@@ -1,8 +1,8 @@
 #include <fudge/kernel.h>
 #include <kernel/error.h>
 #include <kernel/vfs.h>
-#include <kernel/runtime.h>
-#include <kernel/syscall.h>
+#include <kernel/task.h>
+#include <kernel/container.h>
 #include <kernel/kernel.h>
 #include "arch.h"
 #include "cpu.h"
@@ -70,7 +70,7 @@ struct arch_registers_syscall
 static struct
 {
 
-    struct runtime_container *container;
+    struct container *container;
     struct {unsigned short kcode; unsigned short kdata; unsigned short ucode; unsigned short udata;} selectors;
 
 } state;
@@ -94,7 +94,7 @@ unsigned short arch_pagefault(struct arch_registers_pagefault *registers)
 
     state.container->schedule(state.container);
 
-    if (state.container->running->state & RUNTIME_TASK_STATE_USED)
+    if (state.container->running->state & TASK_STATE_USED)
     {
 
         registers->interrupt.code = state.selectors.ucode;
@@ -118,17 +118,17 @@ unsigned short arch_pagefault(struct arch_registers_pagefault *registers)
 unsigned short arch_syscall(struct arch_registers_syscall *registers)
 {
 
-    if (!registers->general.eax || registers->general.eax >= RUNTIME_CONTAINER_SYSCALL_SLOTS)
+    if (!registers->general.eax || registers->general.eax >= CONTAINER_CALLS)
         return state.selectors.udata;
 
     state.container->running->registers.ip = registers->interrupt.eip;
     state.container->running->registers.sp = registers->interrupt.esp;
     state.container->running->registers.fp = registers->general.ebp;
-    state.container->running->registers.status = state.container->syscalls[registers->general.eax](state.container, state.container->running, (void *)registers->interrupt.esp);
+    state.container->running->registers.status = state.container->calls[registers->general.eax](state.container, state.container->running, (void *)registers->interrupt.esp);
 
     state.container->schedule(state.container);
 
-    if (state.container->running->state & RUNTIME_TASK_STATE_USED)
+    if (state.container->running->state & TASK_STATE_USED)
     {
 
         registers->interrupt.code = state.selectors.ucode;
@@ -182,8 +182,8 @@ static void setup_mmu()
 {
 
     mmu_map_memory(&directory, &tables[0], ARCH_KERNEL_BASE, ARCH_KERNEL_BASE, ARCH_KERNEL_SIZE, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE);
-    mmu_map_memory(&directory, &tables[1], RUNTIME_TASKADDRESS_PHYSICAL, RUNTIME_TASKADDRESS_VIRTUAL, RUNTIME_TASKADDRESS_SIZE, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);
-    mmu_map_memory(&directory, &tables[2], RUNTIME_STACKADDRESS_PHYSICAL, RUNTIME_STACKADDRESS_VIRTUAL - RUNTIME_STACKADDRESS_SIZE, RUNTIME_STACKADDRESS_SIZE, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);
+    mmu_map_memory(&directory, &tables[1], TASKADDRESS_PHYSICAL, TASKADDRESS_VIRTUAL, TASKADDRESS_SIZE, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);
+    mmu_map_memory(&directory, &tables[2], STACKADDRESS_PHYSICAL, STACKADDRESS_VIRTUAL - STACKADDRESS_SIZE, STACKADDRESS_SIZE, MMU_TABLE_FLAG_PRESENT | MMU_TABLE_FLAG_WRITEABLE | MMU_TABLE_FLAG_USERMODE, MMU_PAGE_FLAG_PRESENT | MMU_PAGE_FLAG_WRITEABLE | MMU_PAGE_FLAG_USERMODE);
     mmu_load_memory(&directory);
     mmu_enable();
 

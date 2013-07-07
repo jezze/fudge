@@ -1,4 +1,6 @@
-#define MMU_TABLE_SLOTS                 1024
+#define MMU_PAGESIZE                    4096
+
+#define MMU_TABLES                      1024
 #define MMU_TABLE_FLAG_PRESENT          (1 << 0)
 #define MMU_TABLE_FLAG_WRITEABLE        (1 << 1)
 #define MMU_TABLE_FLAG_USERMODE         (1 << 2)
@@ -8,8 +10,7 @@
 #define MMU_TABLE_FLAG_LARGE            (1 << 6)
 #define MMU_TABLE_FLAG_IGNORED          (1 << 7)
 
-#define MMU_PAGE_SIZE                   4096
-#define MMU_PAGE_SLOTS                  1024
+#define MMU_PAGES                       1024
 #define MMU_PAGE_FLAG_PRESENT           (1 << 0)
 #define MMU_PAGE_FLAG_WRITEABLE         (1 << 1)
 #define MMU_PAGE_FLAG_USERMODE          (1 << 2)
@@ -28,16 +29,16 @@
 struct mmu_table
 {
 
-    void *pages[MMU_PAGE_SLOTS];
+    void *pages[MMU_PAGES];
 
-} __attribute__((aligned(MMU_PAGE_SIZE)));
+} __attribute__((aligned(MMU_PAGESIZE)));
 
 struct mmu_directory
 {
 
-    struct mmu_table *tables[MMU_TABLE_SLOTS];
+    struct mmu_table *tables[MMU_TABLES];
 
-} __attribute__((aligned(MMU_PAGE_SIZE)));
+} __attribute__((aligned(MMU_PAGESIZE)));
 
 void mmu_map_memory(struct mmu_directory *directory, struct mmu_table *table, unsigned int paddress, unsigned int vaddress, unsigned int size, unsigned int tflags, unsigned int pflags);
 void mmu_enable();
