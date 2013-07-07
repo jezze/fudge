@@ -75,24 +75,15 @@ static unsigned int open(struct container *self, struct task *task, void *stack)
     while ((n = vfs_findnext(args->count, args->path)))
     {
 
-        if (vfs_isparent(n, args->path))
-        {
-
-            pdescriptor = get_parent(self, &temp);
-
-            if (pdescriptor)
-                memory_copy(&temp, pdescriptor, sizeof (struct task_descriptor));
-
-        }
+        if (vfs_isparent(n, args->path) && (pdescriptor = get_parent(self, &temp)))
+            memory_copy(&temp, pdescriptor, sizeof (struct task_descriptor));
 
         temp.id = temp.session.protocol->walk(temp.session.backend, temp.id, n, args->path);
 
         if (!temp.id)
             return 0;
 
-        pdescriptor = get_child(self, &temp);
-
-        if (pdescriptor)
+        if ((pdescriptor = get_child(self, &temp)))
             memory_copy(&temp, pdescriptor, sizeof (struct task_descriptor));
 
         args->count -= n;
