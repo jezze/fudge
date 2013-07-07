@@ -61,7 +61,7 @@ static struct multi_task *find_task()
 
 }
 
-static unsigned int spawn(struct container *container, struct task *task, void *stack)
+static unsigned int spawn(struct container *self, struct task *task, void *stack)
 {
 
     struct parameters {void *caller; unsigned int index;} nargs, *args = stack;
@@ -72,13 +72,9 @@ static unsigned int spawn(struct container *container, struct task *task, void *
 
     memory_copy(&ntask->base, task, sizeof (struct task));
     memory_copy(&nargs, args, sizeof (struct parameters));
-
-    ntask->base.registers.sp = (unsigned int)&nargs;
-    ntask->base.registers.fp = (unsigned int)&nargs;
-
     mmu_load_memory(&ntask->directory);
 
-    return container->calls[CONTAINER_CALL_EXECUTE](container, &ntask->base, &nargs);
+    return self->calls[CONTAINER_CALL_EXECUTE](self, &ntask->base, &nargs);
 
 }
 
