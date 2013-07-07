@@ -1,2 +1,1 @@
-void multi_notify(struct runtime_container *self);
-void multi_setup();
+void multi_setup(struct runtime_container *container);

@@ -15,7 +15,5 @@ enum syscall_index
 
 };
 
-void syscall_set_routine(enum syscall_index index, unsigned int (*routine)(struct runtime_container *container, struct runtime_task *task, void *stack));
-void syscall_unset_routine(enum syscall_index index);
-unsigned int syscall_raise(unsigned int index, struct runtime_container *container, struct runtime_task *task);
-void syscall_setup();
+unsigned int syscall_raise(struct runtime_container *container, struct runtime_task *task, unsigned int index);
+void syscall_setup(struct runtime_container *container);

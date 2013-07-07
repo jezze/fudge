@@ -1,5 +1,6 @@
 #define RUNTIME_TASK_DESCRIPTOR_SLOTS   16
 #define RUNTIME_CONTAINER_MOUNT_SLOTS   32
+#define RUNTIME_CONTAINER_SYSCALL_SLOTS 16
 #define RUNTIME_TASKADDRESS_PHYSICAL    0x00400000
 #define RUNTIME_TASKADDRESS_VIRTUAL     0x08048000
 #define RUNTIME_TASKADDRESS_SIZE        0x00010000
@@ -45,6 +46,8 @@ struct runtime_container
 
     struct runtime_task *running;
     struct runtime_mount mounts[RUNTIME_CONTAINER_MOUNT_SLOTS];
+    void (*schedule)(struct runtime_container *self);
+    unsigned int (*syscalls[RUNTIME_CONTAINER_SYSCALL_SLOTS])(struct runtime_container *self, struct runtime_task *task, void *stack);
 
 };
 
@@ -52,5 +55,7 @@ struct runtime_descriptor *runtime_get_descriptor(struct runtime_task *task, uns
 struct runtime_mount *runtime_get_mount(struct runtime_container *container, unsigned int index);
 struct runtime_descriptor *runtime_get_child(struct runtime_container *container, struct runtime_descriptor *descriptor);
 struct runtime_descriptor *runtime_get_parent(struct runtime_container *container, struct runtime_descriptor *descriptor);
+void runtime_set_syscall(struct runtime_container *container, unsigned int index, unsigned int (*routine)(struct runtime_container *container, struct runtime_task *task, void *stack));
+void runtime_unset_syscall(struct runtime_container *container, unsigned int index);
 void runtime_init_task(struct runtime_task *task, unsigned int ip, unsigned int sp, unsigned int fp);
 void runtime_init_container(struct runtime_container *container, struct runtime_task *task);

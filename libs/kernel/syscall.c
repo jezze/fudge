@@ -4,10 +4,6 @@
 #include "runtime.h"
 #include "syscall.h"
 
-#define SYSCALL_ROUTINE_SLOTS           16
-
-static unsigned int (*routines[SYSCALL_ROUTINE_SLOTS])(struct runtime_container *container, struct runtime_task *task, void *stack);
-
 static unsigned int undefined(struct runtime_container *container, struct runtime_task *task, void *stack)
 {
 
@@ -253,48 +249,34 @@ static unsigned int unload(struct runtime_container *container, struct runtime_t
 
 }
 
-void syscall_set_routine(enum syscall_index index, unsigned int (*routine)(struct runtime_container *container, struct runtime_task *task, void *stack))
+unsigned int syscall_raise(struct runtime_container *container, struct runtime_task *task, unsigned int index)
 {
 
-    routines[index] = routine;
-
-}
-
-void syscall_unset_routine(enum syscall_index index)
-{
-
-    routines[index] = 0;
-
-}
-
-unsigned int syscall_raise(unsigned int index, struct runtime_container *container, struct runtime_task *task)
-{
-
-    if (!index || index >= SYSCALL_ROUTINE_SLOTS)
+    if (!index || index >= RUNTIME_CONTAINER_SYSCALL_SLOTS)
         return 0;
 
-    return routines[index](container, task, (void *)task->registers.sp);
+    return container->syscalls[index](container, task, (void *)task->registers.sp);
 
 }
 
-void syscall_setup()
+void syscall_setup(struct runtime_container *container)
 {
 
     unsigned int i;
 
-    for (i = 0; i < SYSCALL_ROUTINE_SLOTS; i++)
-        syscall_set_routine(i, undefined);
+    for (i = 0; i < RUNTIME_CONTAINER_SYSCALL_SLOTS; i++)
+        runtime_set_syscall(container, i, undefined);
 
-    syscall_set_routine(SYSCALL_INDEX_OPEN, open);
-    syscall_set_routine(SYSCALL_INDEX_CLOSE, close);
-    syscall_set_routine(SYSCALL_INDEX_READ, read);
-    syscall_set_routine(SYSCALL_INDEX_WRITE, write);
-    syscall_set_routine(SYSCALL_INDEX_MOUNT, mount);
-    syscall_set_routine(SYSCALL_INDEX_BIND, bind);
-    syscall_set_routine(SYSCALL_INDEX_EXECUTE, execute);
-    syscall_set_routine(SYSCALL_INDEX_EXIT, exit);
-    syscall_set_routine(SYSCALL_INDEX_LOAD, load);
-    syscall_set_routine(SYSCALL_INDEX_UNLOAD, unload);
+    runtime_set_syscall(container, SYSCALL_INDEX_OPEN, open);
+    runtime_set_syscall(container, SYSCALL_INDEX_CLOSE, close);
+    runtime_set_syscall(container, SYSCALL_INDEX_READ, read);
+    runtime_set_syscall(container, SYSCALL_INDEX_WRITE, write);
+    runtime_set_syscall(container, SYSCALL_INDEX_MOUNT, mount);
+    runtime_set_syscall(container, SYSCALL_INDEX_BIND, bind);
+    runtime_set_syscall(container, SYSCALL_INDEX_EXECUTE, execute);
+    runtime_set_syscall(container, SYSCALL_INDEX_EXIT, exit);
+    runtime_set_syscall(container, SYSCALL_INDEX_LOAD, load);
+    runtime_set_syscall(container, SYSCALL_INDEX_UNLOAD, unload);
 
 }
 

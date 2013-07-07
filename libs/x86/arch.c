@@ -92,7 +92,7 @@ unsigned short arch_pagefault(struct arch_registers_pagefault *registers)
 
     state.container->running->state = 0;
 
-    multi_notify(state.container);
+    state.container->schedule(state.container);
 
     if (state.container->running->state & RUNTIME_TASK_STATE_USED)
     {
@@ -121,9 +121,9 @@ unsigned short arch_syscall(struct arch_registers_syscall *registers)
     state.container->running->registers.ip = registers->interrupt.eip;
     state.container->running->registers.sp = registers->interrupt.esp;
     state.container->running->registers.fp = registers->general.ebp;
-    state.container->running->registers.status = syscall_raise(registers->general.eax, state.container, state.container->running);
+    state.container->running->registers.status = syscall_raise(state.container, state.container->running, registers->general.eax);
 
-    multi_notify(state.container);
+    state.container->schedule(state.container);
 
     if (state.container->running->state & RUNTIME_TASK_STATE_USED)
     {
@@ -198,8 +198,7 @@ void arch_setup(unsigned int count, struct kernel_module *modules)
 
     state.container = kernel_setup(count, modules);
 
-    multi_setup();
-
+    multi_setup(state.container);
     arch_usermode(state.selectors.ucode, state.selectors.udata, state.container->running->registers.ip, state.container->running->registers.sp);
 
 }

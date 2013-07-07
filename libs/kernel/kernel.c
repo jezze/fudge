@@ -50,7 +50,6 @@ struct runtime_container *kernel_setup(unsigned int count, struct kernel_module 
     vfs_register_protocol(tar);
     binary_setup();
     binary_register_protocol(elf);
-    syscall_setup();
 
     for (i = 0; i < count; i++)
     {
@@ -81,6 +80,8 @@ struct runtime_container *kernel_setup(unsigned int count, struct kernel_module 
         setup_container(&session);
 
     }
+
+    syscall_setup(&container);
 
     return &container;
 

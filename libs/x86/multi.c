@@ -42,7 +42,7 @@ static struct multi_task *create_task()
 
 }
 
-static struct multi_task *schedule()
+static struct multi_task *find_task()
 {
 
     unsigned int i;
@@ -78,14 +78,15 @@ static unsigned int spawn(struct runtime_container *container, struct runtime_ta
 
     mmu_load_memory(&ntask->directory);
 
-    return syscall_raise(SYSCALL_INDEX_EXECUTE, container, &ntask->base);
+    return syscall_raise(container, &ntask->base, SYSCALL_INDEX_EXECUTE);
 
 }
 
-void multi_notify(struct runtime_container *self)
+
+static void schedule(struct runtime_container *self)
 {
 
-    struct multi_task *task = schedule();
+    struct multi_task *task = find_task();
 
     if (task)
     {
@@ -98,10 +99,11 @@ void multi_notify(struct runtime_container *self)
 
 }
 
-void multi_setup()
+void multi_setup(struct runtime_container *container)
 {
 
-    syscall_set_routine(SYSCALL_INDEX_SPAWN, spawn);
+    container->schedule = schedule;
+    runtime_set_syscall(container, SYSCALL_INDEX_SPAWN, spawn);
 
 }
 
