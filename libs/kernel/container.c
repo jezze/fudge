@@ -64,12 +64,13 @@ static unsigned int open(struct container *self, struct task *task, void *stack)
     struct {void *caller; unsigned int index; unsigned int pindex; unsigned int count; const char *path;} *args = stack;
     struct task_descriptor *descriptor = get_descriptor(task, args->index);
     struct task_descriptor *pdescriptor = get_descriptor(task, args->pindex);
+    struct task_descriptor temp;
     unsigned int n;
 
     if (!descriptor || !pdescriptor)
         return 0;
 
-    memory_copy(descriptor, pdescriptor, sizeof (struct task_descriptor));
+    memory_copy(&temp, pdescriptor, sizeof (struct task_descriptor));
 
     while ((n = vfs_findnext(args->count, args->path)))
     {
@@ -77,27 +78,29 @@ static unsigned int open(struct container *self, struct task *task, void *stack)
         if (vfs_isparent(n, args->path))
         {
 
-            pdescriptor = get_parent(self, descriptor);
+            pdescriptor = get_parent(self, &temp);
 
             if (pdescriptor)
-                memory_copy(descriptor, pdescriptor, sizeof (struct task_descriptor));
+                memory_copy(&temp, pdescriptor, sizeof (struct task_descriptor));
 
         }
 
-        descriptor->id = descriptor->session.protocol->walk(descriptor->session.backend, descriptor->id, n, args->path);
+        temp.id = temp.session.protocol->walk(temp.session.backend, temp.id, n, args->path);
 
-        if (!descriptor->id)
+        if (!temp.id)
             return 0;
 
-        pdescriptor = get_child(self, descriptor);
+        pdescriptor = get_child(self, &temp);
 
         if (pdescriptor)
-            memory_copy(descriptor, pdescriptor, sizeof (struct task_descriptor));
+            memory_copy(&temp, pdescriptor, sizeof (struct task_descriptor));
 
         args->count -= n;
         args->path += n;
 
     };
+
+    memory_copy(descriptor, &temp, sizeof (struct task_descriptor));
 
     return 1;
     /*
