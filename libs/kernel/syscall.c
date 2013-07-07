@@ -249,16 +249,6 @@ static unsigned int unload(struct runtime_container *container, struct runtime_t
 
 }
 
-unsigned int syscall_raise(struct runtime_container *container, struct runtime_task *task, unsigned int index)
-{
-
-    if (!index || index >= RUNTIME_CONTAINER_SYSCALL_SLOTS)
-        return 0;
-
-    return container->syscalls[index](container, task, (void *)task->registers.sp);
-
-}
-
 void syscall_setup(struct runtime_container *container)
 {
 

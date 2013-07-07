@@ -118,10 +118,13 @@ unsigned short arch_pagefault(struct arch_registers_pagefault *registers)
 unsigned short arch_syscall(struct arch_registers_syscall *registers)
 {
 
+    if (!registers->general.eax || registers->general.eax >= RUNTIME_CONTAINER_SYSCALL_SLOTS)
+        return state.selectors.udata;
+
     state.container->running->registers.ip = registers->interrupt.eip;
     state.container->running->registers.sp = registers->interrupt.esp;
     state.container->running->registers.fp = registers->general.ebp;
-    state.container->running->registers.status = syscall_raise(state.container, state.container->running, registers->general.eax);
+    state.container->running->registers.status = state.container->syscalls[registers->general.eax](state.container, state.container->running, (void *)registers->interrupt.esp);
 
     state.container->schedule(state.container);
 

@@ -15,5 +15,4 @@ enum syscall_index
 
 };
 
-unsigned int syscall_raise(struct runtime_container *container, struct runtime_task *task, unsigned int index);
 void syscall_setup(struct runtime_container *container);

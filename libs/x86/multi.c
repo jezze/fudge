@@ -78,10 +78,9 @@ static unsigned int spawn(struct runtime_container *container, struct runtime_ta
 
     mmu_load_memory(&ntask->directory);
 
-    return syscall_raise(container, &ntask->base, SYSCALL_INDEX_EXECUTE);
+    return container->syscalls[SYSCALL_INDEX_EXECUTE](container, &ntask->base, &nargs);
 
 }
-
 
 static void schedule(struct runtime_container *self)
 {
