@@ -56,6 +56,5 @@ struct runtime_mount *runtime_get_mount(struct runtime_container *container, uns
 struct runtime_descriptor *runtime_get_child(struct runtime_container *container, struct runtime_descriptor *descriptor);
 struct runtime_descriptor *runtime_get_parent(struct runtime_container *container, struct runtime_descriptor *descriptor);
 void runtime_set_syscall(struct runtime_container *container, unsigned int index, unsigned int (*routine)(struct runtime_container *container, struct runtime_task *task, void *stack));
-void runtime_unset_syscall(struct runtime_container *container, unsigned int index);
 void runtime_init_task(struct runtime_task *task, unsigned int ip, unsigned int sp, unsigned int fp);
 void runtime_init_container(struct runtime_container *container, struct runtime_task *task);

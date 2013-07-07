@@ -60,14 +60,10 @@ struct runtime_descriptor *runtime_get_parent(struct runtime_container *containe
 void runtime_set_syscall(struct runtime_container *container, unsigned int index, unsigned int (*routine)(struct runtime_container *container, struct runtime_task *task, void *stack))
 {
 
+    if (!index || index >= RUNTIME_CONTAINER_SYSCALL_SLOTS)
+        return;
+
     container->syscalls[index] = routine;
-
-}
-
-void runtime_unset_syscall(struct runtime_container *container, unsigned int index)
-{
-
-    container->syscalls[index] = 0;
 
 }
 
