@@ -4,13 +4,6 @@
 #include "task.h"
 #include "container.h"
 
-static unsigned int undefined(struct container *container, struct task *task, void *stack)
-{
-
-    return 0;
-
-}
-
 static unsigned int open(struct container *container, struct task *task, void *stack)
 {
 
@@ -293,38 +286,22 @@ struct task_descriptor *container_get_parent(struct container *container, struct
 
 }
 
-void container_set_call(struct container *container, unsigned int index, unsigned int (*routine)(struct container *container, struct task *task, void *stack))
-{
-
-    if (!index || index >= CONTAINER_CALLS)
-        return;
-
-    container->calls[index] = routine;
-
-}
-
 void container_init(struct container *container, struct task *task)
 {
-
-    unsigned int i;
 
     memory_clear(container, sizeof (struct container));
 
     container->running = task;
-
-    for (i = 0; i < CONTAINER_CALLS; i++)
-        container_set_call(container, i, undefined);
-
-    container_set_call(container, CONTAINER_CALL_OPEN, open);
-    container_set_call(container, CONTAINER_CALL_CLOSE, close);
-    container_set_call(container, CONTAINER_CALL_READ, read);
-    container_set_call(container, CONTAINER_CALL_WRITE, write);
-    container_set_call(container, CONTAINER_CALL_MOUNT, mount);
-    container_set_call(container, CONTAINER_CALL_BIND, bind);
-    container_set_call(container, CONTAINER_CALL_EXECUTE, execute);
-    container_set_call(container, CONTAINER_CALL_EXIT, exit);
-    container_set_call(container, CONTAINER_CALL_LOAD, load);
-    container_set_call(container, CONTAINER_CALL_UNLOAD, unload);
+    container->calls[CONTAINER_CALL_OPEN] = open;
+    container->calls[CONTAINER_CALL_CLOSE] = close;
+    container->calls[CONTAINER_CALL_READ] = read;
+    container->calls[CONTAINER_CALL_WRITE] = write;
+    container->calls[CONTAINER_CALL_MOUNT] = mount;
+    container->calls[CONTAINER_CALL_BIND] = bind;
+    container->calls[CONTAINER_CALL_EXECUTE] = execute;
+    container->calls[CONTAINER_CALL_EXIT] = exit;
+    container->calls[CONTAINER_CALL_LOAD] = load;
+    container->calls[CONTAINER_CALL_UNLOAD] = unload;
 
 }
 

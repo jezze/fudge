@@ -39,5 +39,4 @@ struct container
 struct container_mount *container_get_mount(struct container *container, unsigned int index);
 struct task_descriptor *container_get_child(struct container *container, struct task_descriptor *descriptor);
 struct task_descriptor *container_get_parent(struct container *container, struct task_descriptor *descriptor);
-void container_set_call(struct container *container, unsigned int index, unsigned int (*routine)(struct container *container, struct task *task, void *stack));
 void container_init(struct container *container, struct task *task);

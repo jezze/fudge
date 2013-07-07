@@ -118,7 +118,7 @@ unsigned short arch_pagefault(struct arch_registers_pagefault *registers)
 unsigned short arch_syscall(struct arch_registers_syscall *registers)
 {
 
-    if (!registers->general.eax || registers->general.eax >= CONTAINER_CALLS)
+    if (!state.container->calls[registers->general.eax])
         return state.selectors.udata;
 
     state.container->running->registers.ip = registers->interrupt.eip;

@@ -102,7 +102,7 @@ void multi_setup(struct container *container)
 {
 
     container->schedule = schedule;
-    container_set_call(container, CONTAINER_CALL_SPAWN, spawn);
+    container->calls[CONTAINER_CALL_SPAWN] = spawn;
 
 }
 
