@@ -47,7 +47,7 @@ static unsigned int open(struct container *self, struct task *task, void *stack)
 
         unsigned int i;
 
-        if (vfs_isparent(count, args->path))
+        if (vfs_isparent(count, args->path + offset))
         {
 
             for (i = 1; i < CONTAINER_MOUNTS; i++)
