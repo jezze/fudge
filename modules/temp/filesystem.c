@@ -21,6 +21,13 @@ static unsigned int backend_write(struct vfs_backend *self, unsigned int offset,
 
 }
 
+static unsigned int parent(struct vfs_backend *backend, unsigned int id)
+{
+
+    return 1;
+
+}
+
 static unsigned int match(struct vfs_backend *backend)
 {
 
@@ -64,9 +71,6 @@ static unsigned int walk(struct vfs_backend *backend, unsigned int id, unsigned 
 
     if (!count)
         return id;
-
-    if (vfs_isparent(count, path))
-        return walk(backend, 1, count - 3, path + 3);
 
     if (memory_match(path, "0", 1))
         return walk(backend, 2, count - 1, path + 1);
@@ -116,7 +120,7 @@ void temp_init_backend(struct vfs_backend *backend)
 void temp_init_protocol(struct vfs_protocol *protocol)
 {
 
-    vfs_init_protocol(protocol, 1, match, open, close, read, write, walk, 0);
+    vfs_init_protocol(protocol, 1, match, open, close, read, write, parent, walk, 0);
 
 }
 

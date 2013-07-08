@@ -11,28 +11,38 @@ static unsigned int recalculate(unsigned int id)
 
 }
 
-static unsigned int parent(struct vfs_backend *backend, unsigned int count, char *path)
+static unsigned int parent(struct vfs_backend *backend, unsigned int id)
 {
 
     unsigned char block[TAR_BLOCK_SIZE];
+    unsigned char block2[TAR_BLOCK_SIZE];
     struct tar_header *header = (struct tar_header *)block;
-    unsigned int offset = 0;
+    struct tar_header *header2 = (struct tar_header *)block2;
+    unsigned int length;
 
-    while (--count && path[count - 1] != '/');
+    id = recalculate(id);
+
+    backend->read(backend, id, TAR_BLOCK_SIZE, block);
+
+    length = string_length(header->name);
+
+    while (--length && header->name[length - 1] != '/');
+
+    id = 0;
 
     do
     {
 
-        if (!tar_validate(backend->read(backend, offset, TAR_BLOCK_SIZE, block), block))
+        if (!tar_validate(backend->read(backend, id, TAR_BLOCK_SIZE, block2), block2))
             break;
 
-        if (header->typeflag[0] != TAR_TYPEFLAG_DIRECTORY)
+        if (header2->typeflag[0] != TAR_TYPEFLAG_DIRECTORY)
             continue;
 
-        if (memory_match(header->name, path, count))
-            return offset;
+        if (memory_match(header->name, header2->name, length))
+            return ((id) ? id : protocol.rootid);
 
-    } while ((offset = tar_next(header, offset)));
+    } while ((id = tar_next(header2, id)));
 
     return 0;
 
@@ -109,7 +119,7 @@ static unsigned int read(struct vfs_backend *backend, unsigned int id, unsigned 
             if (!tar_validate(backend->read(backend, id, TAR_BLOCK_SIZE, block), block))
                 break;
 
-            if (parent(backend, string_length(header->name), header->name) != idold)
+            if (recalculate(parent(backend, id)) != idold)
                 continue;
 
             l = string_length(header->name) - length;
@@ -166,9 +176,6 @@ static unsigned int walk(struct vfs_backend *backend, unsigned int id, unsigned 
 
     backend->read(backend, id, TAR_BLOCK_SIZE, block);
 
-    if (vfs_isparent(n, path))
-        return walk(backend, parent(backend, string_length(header->name), header->name), count - n, path + n);
-
     length = string_length(header->name);
 
     while ((id = tar_next(header, id)))
@@ -192,7 +199,7 @@ static unsigned int walk(struct vfs_backend *backend, unsigned int id, unsigned 
 struct vfs_protocol *vfs_tar_setup()
 {
 
-    vfs_init_protocol(&protocol, 0xFFFFFFFF, match, open, close, read, write, walk, get_physical);
+    vfs_init_protocol(&protocol, 0xFFFFFFFF, match, open, close, read, write, parent, walk, get_physical);
 
     return &protocol;
 

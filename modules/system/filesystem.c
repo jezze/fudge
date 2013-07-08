@@ -17,6 +17,15 @@ static unsigned int backend_write(struct vfs_backend *self, unsigned int offset,
 
 }
 
+static unsigned int parent(struct vfs_backend *backend, unsigned int id)
+{
+
+    struct system_node *node = (struct system_node *)id;
+
+    return (unsigned int)node->parent;
+
+}
+
 static unsigned int match(struct vfs_backend *backend)
 {
 
@@ -114,9 +123,6 @@ static unsigned int walk(struct vfs_backend *backend, unsigned int id, unsigned 
     if (!count)
         return id;
 
-    if (vfs_isparent(count, path))
-        return walk(backend, (unsigned int)node->parent, count - 3, path + 3);
-
     if (node->type == SYSTEM_NODETYPE_GROUP)
     {
 
@@ -179,7 +185,7 @@ void system_init_backend(struct system_backend *backend)
 void system_init_protocol(struct vfs_protocol *protocol, struct system_backend *backend)
 {
 
-    vfs_init_protocol(protocol, (unsigned int)&backend->root, match, open, close, read, write, walk, 0);
+    vfs_init_protocol(protocol, (unsigned int)&backend->root, match, open, close, read, write, parent, walk, 0);
 
 }
 

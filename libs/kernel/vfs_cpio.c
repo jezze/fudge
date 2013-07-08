@@ -35,9 +35,10 @@ static unsigned int find_top(struct vfs_backend *backend)
 
 }
 
-static unsigned int parent(struct vfs_backend *backend, unsigned int count, char *path)
+static unsigned int parent(struct vfs_backend *backend, unsigned int id)
 {
 
+/*
     struct cpio_header header;
     unsigned char name[1024];
     unsigned int offset = 0;
@@ -65,7 +66,7 @@ static unsigned int parent(struct vfs_backend *backend, unsigned int count, char
         }
 
     } while ((offset = cpio_next(&header, offset)));
-
+*/
     return 0;
 
 }
@@ -152,7 +153,7 @@ static unsigned int read(struct vfs_backend *backend, unsigned int id, unsigned 
             if (backend->read(backend, id + sizeof (struct cpio_header), header.namesize, name) < header.namesize)
                 break;
 
-            if (parent(backend, header.namesize, name) != idold)
+            if (parent(backend, id) != idold)
                 continue;
 
             l = header.namesize - length;
@@ -215,9 +216,6 @@ static unsigned int walk(struct vfs_backend *backend, unsigned int id, unsigned 
 
     length = header.namesize;
 
-    if (vfs_isparent(n, path))
-        return walk(backend, parent(backend, header.namesize, name), count - n, path + n);
-
     id = 0;
 
     do
@@ -247,7 +245,7 @@ static unsigned int walk(struct vfs_backend *backend, unsigned int id, unsigned 
 struct vfs_protocol *vfs_cpio_setup()
 {
 
-    vfs_init_protocol(&protocol, 0xFFFFFFFF, match, open, close, read, write, walk, get_physical);
+    vfs_init_protocol(&protocol, 0xFFFFFFFF, match, open, close, read, write, parent, walk, get_physical);
 
     return &protocol;
 
