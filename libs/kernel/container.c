@@ -70,6 +70,9 @@ static unsigned int open(struct container *self, struct task *task, void *stack)
     if (!descriptor || !pdescriptor)
         return 0;
 
+    if (!pdescriptor->session.backend || !pdescriptor->session.protocol)
+        return 0;
+
     memory_copy(&temp, pdescriptor, sizeof (struct task_descriptor));
 
     while ((n = vfs_findnext(args->count, args->path)))
@@ -93,10 +96,7 @@ static unsigned int open(struct container *self, struct task *task, void *stack)
 
     memory_copy(descriptor, &temp, sizeof (struct task_descriptor));
 
-    return 1;
-    /*
     return descriptor->session.protocol->open(descriptor->session.backend, descriptor->id);
-    */
 
 }
 
