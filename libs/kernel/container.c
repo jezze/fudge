@@ -24,40 +24,6 @@ static struct container_mount *get_mount(struct container *container, unsigned i
 
 }
 
-static struct task_descriptor *get_child(struct container *container, struct task_descriptor *descriptor)
-{
-
-    unsigned int i;
-
-    for (i = 1; i < CONTAINER_MOUNTS; i++)
-    {
-
-        if (memory_match(&container->mounts[i].parent, descriptor, sizeof (struct task_descriptor)))
-            return &container->mounts[i].child;
-
-    }
-
-    return 0;
-
-}
-
-static struct task_descriptor *get_parent(struct container *container, struct task_descriptor *descriptor)
-{
-
-    unsigned int i;
-
-    for (i = 1; i < CONTAINER_MOUNTS; i++)
-    {
-
-        if (memory_match(&container->mounts[i].child, descriptor, sizeof (struct task_descriptor)))
-            return &container->mounts[i].parent;
-
-    }
-
-    return 0;
-
-}
-
 static unsigned int open(struct container *self, struct task *task, void *stack)
 {
 
@@ -65,7 +31,8 @@ static unsigned int open(struct container *self, struct task *task, void *stack)
     struct task_descriptor *descriptor = get_descriptor(task, args->index);
     struct task_descriptor *pdescriptor = get_descriptor(task, args->pindex);
     struct task_descriptor temp;
-    unsigned int n;
+    unsigned int offset;
+    unsigned int count;
 
     if (!descriptor || !pdescriptor)
         return 0;
@@ -75,14 +42,21 @@ static unsigned int open(struct container *self, struct task *task, void *stack)
 
     memory_copy(&temp, pdescriptor, sizeof (struct task_descriptor));
 
-    while ((n = vfs_findnext(args->count, args->path)))
+    for (offset = 0; (count = vfs_findnext(args->count - offset, args->path + offset)); offset += count)
     {
 
-        if (vfs_isparent(n, args->path))
+        unsigned int i;
+
+        if (vfs_isparent(count, args->path))
         {
 
-            if ((pdescriptor = get_parent(self, &temp)))
-                memory_copy(&temp, pdescriptor, sizeof (struct task_descriptor));
+            for (i = 1; i < CONTAINER_MOUNTS; i++)
+            {
+
+                if (memory_match(&temp, &self->mounts[i].child, sizeof (struct task_descriptor)))
+                    memory_copy(&temp, &self->mounts[i].parent, sizeof (struct task_descriptor));
+
+            }
 
             temp.id = temp.session.protocol->parent(temp.session.backend, temp.id);
 
@@ -94,20 +68,22 @@ static unsigned int open(struct container *self, struct task *task, void *stack)
         else
         {
 
-            temp.id = temp.session.protocol->walk(temp.session.backend, temp.id, n, args->path);
+            temp.id = temp.session.protocol->walk(temp.session.backend, temp.id, count, args->path + offset);
 
             if (!temp.id)
                 return 0;
 
-            if ((pdescriptor = get_child(self, &temp)))
-                memory_copy(&temp, pdescriptor, sizeof (struct task_descriptor));
+            for (i = 1; i < CONTAINER_MOUNTS; i++)
+            {
+
+                if (memory_match(&temp, &self->mounts[i].parent, sizeof (struct task_descriptor)))
+                    memory_copy(&temp, &self->mounts[i].child, sizeof (struct task_descriptor));
+
+            }
 
         }
 
-        args->count -= n;
-        args->path += n;
-
-    };
+    }
 
     memory_copy(descriptor, &temp, sizeof (struct task_descriptor));
 
