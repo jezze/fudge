@@ -4,18 +4,25 @@
 
 static struct vfs_protocol protocol;
 
+static unsigned int encode(unsigned int address)
+{
+
+    return (address) ? address : protocol.rootid;
+
+}
+
 static unsigned int find_top(struct vfs_backend *backend)
 {
 
     struct cpio_header header;
-    unsigned int offset = 0;
+    unsigned int address = 0;
     unsigned int current = 0;
     unsigned short namesize = 0xFFFF;
 
     do
     {
 
-        if (backend->read(backend, offset, sizeof (struct cpio_header), &header) < sizeof (struct cpio_header))
+        if (backend->read(backend, address, sizeof (struct cpio_header), &header) < sizeof (struct cpio_header))
             break;
 
         if (!cpio_validate(&header))
@@ -25,48 +32,65 @@ static unsigned int find_top(struct vfs_backend *backend)
         {
 
             namesize = header.namesize;
-            current = offset;
+            current = address;
 
         }
 
-    } while ((offset = cpio_next(&header, offset)));
+    } while ((address = cpio_next(&header, address)));
 
-    return current;
+    return encode(current);
+
+}
+
+static unsigned int decode(struct vfs_backend *backend, unsigned int id)
+{
+
+    return (id == protocol.rootid) ? find_top(backend) : id;
 
 }
 
 static unsigned int parent(struct vfs_backend *backend, unsigned int id)
 {
 
-/*
     struct cpio_header header;
     unsigned char name[1024];
-    unsigned int offset = 0;
+    unsigned int address = decode(backend, id);
+    unsigned int length;
 
-    while (--count && path[count - 1] != '/');
+    if (backend->read(backend, address, sizeof (struct cpio_header), &header) < sizeof (struct cpio_header))
+        return 0;
+
+    if (backend->read(backend, address + sizeof (struct cpio_header), header.namesize, name) < header.namesize)
+        return 0;
+
+    length = header.namesize;
+
+    while (--length && name[length - 1] != '/');
+
+    address = 0;
 
     do
     {
 
-        if (backend->read(backend, offset, sizeof (struct cpio_header), &header) < sizeof (struct cpio_header))
+        unsigned char pname[1024];
+
+        if (backend->read(backend, address, sizeof (struct cpio_header), &header) < sizeof (struct cpio_header))
             break;
 
         if (!cpio_validate(&header))
             break;
 
-        if ((header.mode & 0xF000) == 0x4000)
-        {
+        if ((header.mode & 0xF000) != 0x4000)
+            continue;
 
-            if (backend->read(backend, offset + sizeof (struct cpio_header), header.namesize, name) < header.namesize)
-                break;
+        if (backend->read(backend, address + sizeof (struct cpio_header), header.namesize, pname) < header.namesize)
+            break;
 
-            if (memory_match(name, path, count - 1))
-                return offset;
+        if (memory_match(name, pname, length - 1))
+            return encode(address);
 
-        }
+    } while ((address = cpio_next(&header, address)));
 
-    } while ((offset = cpio_next(&header, offset)));
-*/
     return 0;
 
 }
@@ -90,11 +114,12 @@ static unsigned int get_physical(struct vfs_backend *backend, unsigned int id)
 
     struct kernel_module *module = (struct kernel_module *)backend;
     struct cpio_header header;
+    unsigned int address = decode(backend, id);
 
-    if (backend->read(backend, id, sizeof (struct cpio_header), &header) < sizeof (struct cpio_header))
+    if (backend->read(backend, address, sizeof (struct cpio_header), &header) < sizeof (struct cpio_header))
         return 0;
 
-    return (unsigned int)module->address + id + sizeof (struct cpio_header) + header.namesize + (header.namesize & 1);
+    return (unsigned int)module->address + address + sizeof (struct cpio_header) + header.namesize + (header.namesize & 1);
 
 }
 
@@ -116,44 +141,45 @@ static unsigned int read(struct vfs_backend *backend, unsigned int id, unsigned 
 {
 
     struct cpio_header header;
-    unsigned int size;
+    unsigned int address = decode(backend, id);
 
-    id = (id == 0xFFFFFFFF) ? find_top(backend) : id;
-
-    if (backend->read(backend, id, sizeof (struct cpio_header), &header) < sizeof (struct cpio_header))
+    if (backend->read(backend, address, sizeof (struct cpio_header), &header) < sizeof (struct cpio_header))
         return 0;
 
-    size = ((header.filesize[0] << 16) | header.filesize[1]) - offset;
-
     if ((header.mode & 0xF000) == 0x8000)
-        return backend->read(backend, id + sizeof (struct cpio_header) + header.namesize + (header.namesize & 1) + offset, (count > size) ? size : count, buffer);
+    {
+
+        unsigned int size = ((header.filesize[0] << 16) | header.filesize[1]) - offset;
+
+        return backend->read(backend, address + sizeof (struct cpio_header) + header.namesize + (header.namesize & 1) + offset, (count > size) ? size : count, buffer);
+
+    }
 
     if ((header.mode & 0xF000) == 0x4000)
     {
 
-        char name[1024];
         unsigned char *b = buffer;
         unsigned int c = memory_read(b, count, "../\n", 4, offset);
         unsigned int length = header.namesize;
-        unsigned int idold = id;
 
         offset -= (offset > 4) ? 4 : offset;
 
-        while ((id = cpio_next(&header, id)))
+        while ((address = cpio_next(&header, address)))
         {
 
+            unsigned char name[1024];
             unsigned int l;
 
-            if (backend->read(backend, id, sizeof (struct cpio_header), &header) < sizeof (struct cpio_header))
+            if (backend->read(backend, address, sizeof (struct cpio_header), &header) < sizeof (struct cpio_header))
                 break;
 
             if (!cpio_validate(&header))
                 break;
 
-            if (backend->read(backend, id + sizeof (struct cpio_header), header.namesize, name) < header.namesize)
+            if (backend->read(backend, address + sizeof (struct cpio_header), header.namesize, name) < header.namesize)
                 break;
 
-            if (parent(backend, id) != idold)
+            if (parent(backend, encode(address)) != id)
                 continue;
 
             l = header.namesize - length;
@@ -176,17 +202,19 @@ static unsigned int write(struct vfs_backend *backend, unsigned int id, unsigned
 {
 
     struct cpio_header header;
-    unsigned int size;
+    unsigned int address = decode(backend, id);
 
-    id = (id == 0xFFFFFFFF) ? find_top(backend) : id;
-
-    if (backend->read(backend, id, sizeof (struct cpio_header), &header) < sizeof (struct cpio_header))
+    if (backend->read(backend, address, sizeof (struct cpio_header), &header) < sizeof (struct cpio_header))
         return 0;
 
-    size = ((header.filesize[0] << 16) | header.filesize[1]) - offset;
-
     if ((header.mode & 0xF000) == 0x8000)
-        return backend->write(backend, id + sizeof (struct cpio_header) + header.namesize + (header.namesize & 1) + offset, (count > size) ? size : count, buffer);
+    {
+
+        unsigned int size = ((header.filesize[0] << 16) | header.filesize[1]) - offset;
+
+        return backend->write(backend, address + sizeof (struct cpio_header) + header.namesize + (header.namesize & 1) + offset, (count > size) ? size : count, buffer);
+
+    }
 
     return 0;
 
@@ -196,32 +224,27 @@ static unsigned int walk(struct vfs_backend *backend, unsigned int id, unsigned 
 {
 
     struct cpio_header header;
-    char name[1024];
+    unsigned int address = decode(backend, id);
     unsigned int n = vfs_findnext(count, path);
+    unsigned char name[1024];
     unsigned int length;
-
-    id = (id == 0xFFFFFFFF) ? find_top(backend) : id;
 
     if (!count)
         return id;
 
-    if (backend->read(backend, id, sizeof (struct cpio_header), &header) < sizeof (struct cpio_header))
+    if (backend->read(backend, address, sizeof (struct cpio_header), &header) < sizeof (struct cpio_header))
         return 0;
 
-    if (!cpio_validate(&header))
-        return 0;
-
-    if (backend->read(backend, id + sizeof (struct cpio_header), header.namesize, name) < header.namesize)
+    if (backend->read(backend, address + sizeof (struct cpio_header), header.namesize, name) < header.namesize)
         return 0;
 
     length = header.namesize;
-
-    id = 0;
+    address = 0;
 
     do
     {
 
-        if (backend->read(backend, id, sizeof (struct cpio_header), &header) < sizeof (struct cpio_header))
+        if (backend->read(backend, address, sizeof (struct cpio_header), &header) < sizeof (struct cpio_header))
             break;
 
         if (!cpio_validate(&header))
@@ -230,13 +253,13 @@ static unsigned int walk(struct vfs_backend *backend, unsigned int id, unsigned 
         if (header.namesize < length)
             continue;
 
-        if (backend->read(backend, id + sizeof (struct cpio_header), header.namesize, name) < header.namesize)
+        if (backend->read(backend, address + sizeof (struct cpio_header), header.namesize, name) < header.namesize)
             break;
 
         if (memory_match(name + length, path, n))
-            return walk(backend, id, count - n, path + n);
+            return walk(backend, encode(address), count - n, path + n);
 
-    } while ((id = cpio_next(&header, id)));
+    } while ((address = cpio_next(&header, address)));
 
     return 0;
 
