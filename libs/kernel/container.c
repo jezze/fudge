@@ -109,6 +109,9 @@ static unsigned int close(struct container *self, struct task *task, void *stack
     if (!descriptor)
         return 0;
 
+    if (!descriptor->session.backend || !descriptor->session.protocol)
+        return 0;
+
     return descriptor->session.protocol->close(descriptor->session.backend, descriptor->id);
 
 }
@@ -122,6 +125,9 @@ static unsigned int read(struct container *self, struct task *task, void *stack)
     if (!descriptor)
         return 0;
 
+    if (!descriptor->session.backend || !descriptor->session.protocol)
+        return 0;
+
     return descriptor->session.protocol->read(descriptor->session.backend, descriptor->id, args->offset, args->count, args->buffer);
 
 }
@@ -133,6 +139,9 @@ static unsigned int write(struct container *self, struct task *task, void *stack
     struct task_descriptor *descriptor = get_descriptor(task, args->index);
 
     if (!descriptor)
+        return 0;
+
+    if (!descriptor->session.backend || !descriptor->session.protocol)
         return 0;
 
     return descriptor->session.protocol->write(descriptor->session.backend, descriptor->id, args->offset, args->count, args->buffer);
@@ -150,6 +159,12 @@ static unsigned int mount(struct container *self, struct task *task, void *stack
     struct vfs_backend *(*get_backend)();
 
     if (!mount || !pdescriptor || !cdescriptor)
+        return 0;
+
+    if (!pdescriptor->session.backend || !pdescriptor->session.protocol)
+        return 0;
+
+    if (!cdescriptor->session.backend || !cdescriptor->session.protocol)
         return 0;
 
     protocol = binary_get_protocol(&cdescriptor->session, cdescriptor->id);
@@ -191,6 +206,12 @@ static unsigned int bind(struct container *self, struct task *task, void *stack)
     if (!mount || !pdescriptor || !cdescriptor)
         return 0;
 
+    if (!pdescriptor->session.backend || !pdescriptor->session.protocol)
+        return 0;
+
+    if (!cdescriptor->session.backend || !cdescriptor->session.protocol)
+        return 0;
+
     memory_copy(&mount->parent, pdescriptor, sizeof (struct task_descriptor));
     memory_copy(&mount->child, cdescriptor, sizeof (struct task_descriptor));
 
@@ -206,6 +227,9 @@ static unsigned int execute(struct container *self, struct task *task, void *sta
     struct binary_protocol *protocol;
 
     if (!descriptor)
+        return 0;
+
+    if (!descriptor->session.backend || !descriptor->session.protocol)
         return 0;
 
     protocol = binary_get_protocol(&descriptor->session, descriptor->id);
@@ -245,7 +269,13 @@ static unsigned int load(struct container *self, struct task *task, void *stack)
     unsigned int physical;
     void (*init)();
 
-    if (!descriptor || !descriptor->session.protocol->get_physical)
+    if (!descriptor)
+        return 0;
+
+    if (!descriptor->session.backend || !descriptor->session.protocol)
+        return 0;
+
+    if (!descriptor->session.protocol->get_physical)
         return 0;
 
     /* Physical should be replaced with known address later on */
@@ -282,6 +312,9 @@ static unsigned int unload(struct container *self, struct task *task, void *stac
     void (*destroy)();
 
     if (!descriptor)
+        return 0;
+
+    if (!descriptor->session.backend || !descriptor->session.protocol)
         return 0;
 
     protocol = binary_get_protocol(&descriptor->session, descriptor->id);
