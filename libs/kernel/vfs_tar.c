@@ -4,6 +4,13 @@
 
 static struct vfs_protocol protocol;
 
+static unsigned int recalculate(unsigned int id)
+{
+
+    return (id == protocol.rootid) ? 0 : id;
+
+}
+
 static unsigned int parent(struct vfs_backend *backend, unsigned int count, char *path)
 {
 
@@ -47,10 +54,7 @@ static unsigned int get_physical(struct vfs_backend *backend, unsigned int id)
 
     struct kernel_module *module = (struct kernel_module *)backend;
 
-    if (id == 0xFFFFFFFF)
-        id = 0;
-
-    return (unsigned int)module->address + id + TAR_BLOCK_SIZE;
+    return (unsigned int)module->address + recalculate(id) + TAR_BLOCK_SIZE;
 
 }
 
@@ -74,8 +78,7 @@ static unsigned int read(struct vfs_backend *backend, unsigned int id, unsigned 
     unsigned char block[TAR_BLOCK_SIZE];
     struct tar_header *header = (struct tar_header *)block;
 
-    if (id == 0xFFFFFFFF)
-        id = 0;
+    id = recalculate(id);
 
     backend->read(backend, id, TAR_BLOCK_SIZE, block);
 
@@ -131,8 +134,7 @@ static unsigned int write(struct vfs_backend *backend, unsigned int id, unsigned
     unsigned char block[TAR_BLOCK_SIZE];
     struct tar_header *header = (struct tar_header *)block;
 
-    if (id == 0xFFFFFFFF)
-        id = 0;
+    id = recalculate(id);
 
     backend->read(backend, id, TAR_BLOCK_SIZE, block);
 
@@ -158,10 +160,9 @@ static unsigned int walk(struct vfs_backend *backend, unsigned int id, unsigned 
     unsigned int length;
 
     if (!count)
-        return ((id) ? id : 0xFFFFFFFF);
+        return ((id) ? id : protocol.rootid);
 
-    if (id == 0xFFFFFFFF)
-        id = 0;
+    id = recalculate(id);
 
     backend->read(backend, id, TAR_BLOCK_SIZE, block);
 
