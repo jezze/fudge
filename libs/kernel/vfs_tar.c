@@ -47,6 +47,9 @@ static unsigned int get_physical(struct vfs_backend *backend, unsigned int id)
 
     struct kernel_module *module = (struct kernel_module *)backend;
 
+    if (id == 0xFFFFFFFF)
+        id = 0;
+
     return (unsigned int)module->address + id + TAR_BLOCK_SIZE;
 
 }
@@ -70,6 +73,9 @@ static unsigned int read(struct vfs_backend *backend, unsigned int id, unsigned 
 
     unsigned char block[TAR_BLOCK_SIZE];
     struct tar_header *header = (struct tar_header *)block;
+
+    if (id == 0xFFFFFFFF)
+        id = 0;
 
     backend->read(backend, id, TAR_BLOCK_SIZE, block);
 
@@ -125,6 +131,9 @@ static unsigned int write(struct vfs_backend *backend, unsigned int id, unsigned
     unsigned char block[TAR_BLOCK_SIZE];
     struct tar_header *header = (struct tar_header *)block;
 
+    if (id == 0xFFFFFFFF)
+        id = 0;
+
     backend->read(backend, id, TAR_BLOCK_SIZE, block);
 
     if (header->typeflag[0] == TAR_TYPEFLAG_REGULAR)
@@ -149,7 +158,10 @@ static unsigned int walk(struct vfs_backend *backend, unsigned int id, unsigned 
     unsigned int length;
 
     if (!count)
-        return id;
+        return ((id) ? id : 0xFFFFFFFF);
+
+    if (id == 0xFFFFFFFF)
+        id = 0;
 
     backend->read(backend, id, TAR_BLOCK_SIZE, block);
 
@@ -179,7 +191,7 @@ static unsigned int walk(struct vfs_backend *backend, unsigned int id, unsigned 
 struct vfs_protocol *vfs_tar_setup()
 {
 
-    vfs_init_protocol(&protocol, 0, match, open, close, read, write, walk, get_physical);
+    vfs_init_protocol(&protocol, 0xFFFFFFFF, match, open, close, read, write, walk, get_physical);
 
     return &protocol;
 
