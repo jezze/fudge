@@ -54,7 +54,13 @@ static unsigned int open(struct container *self, struct task *task, void *stack)
             {
 
                 if (memory_match(&temp, &self->mounts[i].child, sizeof (struct task_descriptor)))
+                {
+
                     memory_copy(&temp, &self->mounts[i].parent, sizeof (struct task_descriptor));
+
+                    break;
+
+                }
 
             }
 
@@ -77,7 +83,13 @@ static unsigned int open(struct container *self, struct task *task, void *stack)
             {
 
                 if (memory_match(&temp, &self->mounts[i].parent, sizeof (struct task_descriptor)))
+                {
+
                     memory_copy(&temp, &self->mounts[i].child, sizeof (struct task_descriptor));
+
+                    break;
+
+                }
 
             }
 
