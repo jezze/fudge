@@ -38,7 +38,7 @@ static unsigned int find_top(struct vfs_backend *backend)
 
     } while ((address = cpio_next(&header, address)));
 
-    return encode(current);
+    return current;
 
 }
 
