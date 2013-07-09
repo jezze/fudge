@@ -1,14 +1,8 @@
-LIB:=libs/arm/libarm.a
-OBJ:=libs/arm/arch.o
-OBJ+=libs/arm/cpu.o
-OBJ+=libs/arm/init.o
-OBJ+=libs/arm/kmi.o
-OBJ+=libs/arm/reg.o
-OBJ+=libs/arm/uart.o
+LIBARM:=libs/arm/libarm.a
+LIBARM_OBJECTS:=libs/arm/arch.o libs/arm/cpu.o libs/arm/init.o libs/arm/kmi.o libs/arm/reg.o libs/arm/uart.o
 
-$(LIB): $(OBJ)
+$(LIBARM): $(LIBARM_OBJECTS)
 	$(AR) $(ARFLAGS) $@ $^
 
-LIBARM:=$(LIB)
-LIBS+=$(LIB)
-LIBS_OBJECTS+=$(OBJ)
+LIBS+=$(LIBARM)
+LIBS_OBJECTS+=$(LIBARM_OBJECTS)

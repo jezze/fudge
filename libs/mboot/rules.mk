@@ -1,9 +1,8 @@
-LIB:=libs/mboot/libmboot.a
-OBJ:=libs/mboot/init.o libs/mboot/mboot.o
+LIBMBOOT:=libs/mboot/libmboot.a
+LIBMBOOT_OBJECTS:=libs/mboot/init.o libs/mboot/mboot.o
 
-$(LIB): $(OBJ)
+$(LIBMBOOT): $(LIBMBOOT_OBJECTS)
 	$(AR) $(ARFLAGS) $@ $^
 
-LIBMBOOT:=$(LIB)
-LIBS+=$(LIB)
-LIBS_OBJECTS+=$(OBJ)
+LIBS+=$(LIBMBOOT)
+LIBS_OBJECTS+=$(LIBMBOOT_OBJECTS)

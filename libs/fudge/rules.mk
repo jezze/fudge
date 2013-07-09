@@ -1,15 +1,13 @@
-LIB:=libs/fudge/libfudge.a
-OBJ:=libs/fudge/memory.o
-OBJ+=libs/fudge/string.o
+LIBFUDGE:=libs/fudge/libfudge.a
+LIBFUDGE_OBJECTS:=libs/fudge/memory.o libs/fudge/string.o
 
 include libs/fudge/data/rules.mk
 include libs/fudge/format/rules.mk
 include libs/fudge/gfx/rules.mk
 include libs/fudge/arch/$(ARCH)/rules.mk
 
-$(LIB): $(OBJ)
+$(LIBFUDGE): $(LIBFUDGE_OBJECTS)
 	$(AR) $(ARFLAGS) $@ $^
 
-LIBFUDGE:=$(LIB)
-LIBS+=$(LIB)
-LIBS_OBJECTS+=$(OBJ)
+LIBS+=$(LIBFUDGE)
+LIBS_OBJECTS+=$(LIBFUDGE_OBJECTS)

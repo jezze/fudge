@@ -1,17 +1,8 @@
-LIB:=libs/kernel/libkernel.a
-OBJ:=libs/kernel/binary.o
-OBJ+=libs/kernel/binary_elf.o
-OBJ+=libs/kernel/container.o
-OBJ+=libs/kernel/error.o
-OBJ+=libs/kernel/kernel.o
-OBJ+=libs/kernel/task.o
-OBJ+=libs/kernel/vfs.o
-OBJ+=libs/kernel/vfs_cpio.o
-OBJ+=libs/kernel/vfs_tar.o
+LIBKERNEL:=libs/kernel/libkernel.a
+LIBKERNEL_OBJECTS:=libs/kernel/binary.o libs/kernel/binary_elf.o libs/kernel/container.o libs/kernel/error.o libs/kernel/kernel.o libs/kernel/task.o libs/kernel/vfs.o libs/kernel/vfs_cpio.o libs/kernel/vfs_tar.o
 
-$(LIB): $(OBJ)
+$(LIBKERNEL): $(LIBKERNEL_OBJECTS)
 	$(AR) $(ARFLAGS) $@ $^
 
-LIBKERNEL:=$(LIB)
-LIBS+=$(LIB)
-LIBS_OBJECTS+=$(OBJ)
+LIBS+=$(LIBKERNEL)
+LIBS_OBJECTS+=$(LIBKERNEL_OBJECTS)

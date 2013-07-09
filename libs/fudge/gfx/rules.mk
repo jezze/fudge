@@ -1,3 +1,1 @@
-OBJ+=libs/fudge/gfx/gfx.o
-OBJ+=libs/fudge/gfx/pcx.o
-OBJ+=libs/fudge/gfx/vga.o
+LIBFUDGE_OBJECTS+=libs/fudge/gfx/gfx.o libs/fudge/gfx/pcx.o libs/fudge/gfx/vga.o

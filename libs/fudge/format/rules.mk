@@ -1,3 +1,1 @@
-OBJ+=libs/fudge/format/cpio.o
-OBJ+=libs/fudge/format/elf.o
-OBJ+=libs/fudge/format/tar.o
+LIBFUDGE_OBJECTS+=libs/fudge/format/cpio.o libs/fudge/format/elf.o libs/fudge/format/tar.o

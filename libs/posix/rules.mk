@@ -1,9 +1,8 @@
-LIB:=libs/posix/libposix.a
-OBJ:=libs/posix/posix.o
+LIBPOSIX:=libs/posix/libposix.a
+LIBPOSIX_OBJECTS:=libs/posix/posix.o
 
-$(LIB): $(OBJ)
+$(LIBPOSIX): $(LIBPOSIX_OBJECTS)
 	$(AR) $(ARFLAGS) $@ $^
 
-LIBPOSIX:=$(LIB)
-LIBS+=$(LIB)
-LIBS_OBJECTS+=$(OBJ)
+LIBS+=$(LIBPOSIX)
+LIBS_OBJECTS+=$(LIBPOSIX_OBJECTS)

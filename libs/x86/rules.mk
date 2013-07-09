@@ -1,16 +1,8 @@
-LIB:=libs/x86/libx86.a
-OBJ:=libs/x86/arch.o
-OBJ+=libs/x86/archs.o
-OBJ+=libs/x86/cpu.o
-OBJ+=libs/x86/gdt.o
-OBJ+=libs/x86/idt.o
-OBJ+=libs/x86/mmu.o
-OBJ+=libs/x86/multi.o
-OBJ+=libs/x86/tss.o
+LIBX86:=libs/x86/libx86.a
+LIBX86_OBJECTS:=libs/x86/arch.o libs/x86/archs.o libs/x86/cpu.o libs/x86/gdt.o libs/x86/idt.o libs/x86/mmu.o libs/x86/multi.o libs/x86/tss.o
 
-$(LIB): $(OBJ)
+$(LIBX86): $(LIBX86_OBJECTS)
 	$(AR) $(ARFLAGS) $@ $^
 
-LIBX86:=$(LIB)
-LIBS+=$(LIB)
-LIBS_OBJECTS+=$(OBJ)
+LIBS+=$(LIBX86)
+LIBS_OBJECTS+=$(LIBX86_OBJECTS)
