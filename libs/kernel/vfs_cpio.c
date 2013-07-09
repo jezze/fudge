@@ -28,6 +28,9 @@ static unsigned int find_top(struct vfs_backend *backend)
         if (!cpio_validate(&header))
             break;
 
+        if ((header.mode & 0xF000) != 0x4000)
+            continue;
+
         if (header.namesize < namesize)
         {
 
@@ -81,6 +84,9 @@ static unsigned int parent(struct vfs_backend *backend, unsigned int id)
             break;
 
         if ((header.mode & 0xF000) != 0x4000)
+            continue;
+
+        if (header.namesize != length - 1)
             continue;
 
         if (backend->read(backend, address + sizeof (struct cpio_header), header.namesize, pname) < header.namesize)
@@ -226,7 +232,6 @@ static unsigned int walk(struct vfs_backend *backend, unsigned int id, unsigned 
     struct cpio_header header;
     unsigned int address = decode(backend, id);
     unsigned int n = vfs_findnext(count, path);
-    unsigned char name[1024];
     unsigned int length;
 
     if (!count)
@@ -235,14 +240,13 @@ static unsigned int walk(struct vfs_backend *backend, unsigned int id, unsigned 
     if (backend->read(backend, address, sizeof (struct cpio_header), &header) < sizeof (struct cpio_header))
         return 0;
 
-    if (backend->read(backend, address + sizeof (struct cpio_header), header.namesize, name) < header.namesize)
-        return 0;
-
-    length = header.namesize;
+    length = header.namesize + 1;
     address = 0;
 
     do
     {
+
+        unsigned char name[1024];
 
         if (backend->read(backend, address, sizeof (struct cpio_header), &header) < sizeof (struct cpio_header))
             break;
@@ -250,14 +254,30 @@ static unsigned int walk(struct vfs_backend *backend, unsigned int id, unsigned 
         if (!cpio_validate(&header))
             break;
 
+        if ((header.mode & 0xF000) == 0x0000)
+            continue;
+
         if (header.namesize < length)
             continue;
 
         if (backend->read(backend, address + sizeof (struct cpio_header), header.namesize, name) < header.namesize)
             break;
 
-        if (memory_match(name + length, path, n))
-            return walk(backend, encode(address), count - n, path + n);
+        if ((header.mode & 0xF000) == 0x8000)
+        {
+
+            if (memory_match(name + length, path, n))
+                return walk(backend, encode(address), count - n, path + n);
+
+        }
+
+        if ((header.mode & 0xF000) == 0x4000)
+        {
+
+            if (memory_match(name + length, path, n - 1))
+                return walk(backend, encode(address), count - n, path + n);
+
+        }
 
     } while ((address = cpio_next(&header, address)));
 
