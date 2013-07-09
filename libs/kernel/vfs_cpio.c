@@ -240,7 +240,7 @@ static unsigned int walk(struct vfs_backend *backend, unsigned int id, unsigned 
     if (backend->read(backend, address, sizeof (struct cpio_header), &header) < sizeof (struct cpio_header))
         return 0;
 
-    length = header.namesize + 1;
+    length = header.namesize - 1;
     address = 0;
 
     do
@@ -257,16 +257,16 @@ static unsigned int walk(struct vfs_backend *backend, unsigned int id, unsigned 
         if ((header.mode & 0xF000) == 0x0000)
             continue;
 
-        if (header.namesize < length)
-            continue;
-
         if (backend->read(backend, address + sizeof (struct cpio_header), header.namesize, name) < header.namesize)
             break;
 
         if ((header.mode & 0xF000) == 0x8000)
         {
 
-            if (memory_match(name + length, path, n))
+            if ((header.namesize - 1) - length != n + 1)
+                continue;
+
+            if (memory_match(name + length + 1, path, n))
                 return walk(backend, encode(address), count - n, path + n);
 
         }
@@ -274,7 +274,10 @@ static unsigned int walk(struct vfs_backend *backend, unsigned int id, unsigned 
         if ((header.mode & 0xF000) == 0x4000)
         {
 
-            if (memory_match(name + length, path, n - 1))
+            if ((header.namesize - 1) - length != n)
+                continue;
+
+            if (memory_match(name + length + 1, path, n - 1))
                 return walk(backend, encode(address), count - n, path + n);
 
         }
