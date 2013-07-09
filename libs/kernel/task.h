@@ -25,7 +25,7 @@ struct task_descriptor
 struct task
 {
 
-    unsigned int state;
+    enum task_state state;
     struct {unsigned int ip; unsigned int sp; unsigned int fp; unsigned int status;} registers;
     struct task_descriptor descriptors[TASK_DESCRIPTORS];
 
