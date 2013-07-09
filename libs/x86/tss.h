@@ -65,5 +65,5 @@ struct tss_pointer
 
 } __attribute__((packed));
 
-void tss_set_entry(struct tss_pointer *p, enum tss_index index, unsigned int selector, unsigned int stack);
-struct tss_pointer *tss_setup_pointer();
+void tss_set_entry(struct tss_pointer *pointer, enum tss_index index, unsigned int selector, unsigned int stack);
+void tss_init_pointer(struct tss_pointer *pointer, unsigned int count, struct tss_entry *entries);

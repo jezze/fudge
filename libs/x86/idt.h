@@ -55,5 +55,5 @@ struct idt_pointer
 
 } __attribute__((packed));
 
-void idt_set_entry(struct idt_pointer *p, enum idt_index index, void (*callback)(), unsigned short selector, unsigned char flags);
-struct idt_pointer *idt_setup_pointer();
+void idt_set_entry(struct idt_pointer *pointer, enum idt_index index, void (*callback)(), unsigned short selector, unsigned char flags);
+void idt_init_pointer(struct idt_pointer *pointer, unsigned int count, struct idt_entry *entries);
