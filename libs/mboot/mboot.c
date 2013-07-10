@@ -11,7 +11,7 @@ static unsigned int read(struct vfs_backend *self, unsigned int offset, unsigned
 
     struct kernel_module *module = (struct kernel_module *)self;
 
-    return memory_read(buffer, count, module->address, module->size, offset);
+    return memory_read(buffer, count, module->address, module->limit, offset);
 
 }
 
@@ -20,7 +20,7 @@ static unsigned int write(struct vfs_backend *self, unsigned int offset, unsigne
 
     struct kernel_module *module = (struct kernel_module *)self;
 
-    return memory_write(module->address, module->size, buffer, count, offset);
+    return memory_write(module->address, module->limit, buffer, count, offset);
 
 }
 
@@ -78,16 +78,16 @@ void mboot_setup(struct mboot_header *header, unsigned int magic)
     if (header->flags & MBOOT_FLAG_MODULES)
     {
 
+        struct mboot_module *mods = header->modules.address;
         unsigned int i;
-        struct mboot_module *mods = (struct mboot_module *)header->modules.address;
 
         for (i = 0; i < header->modules.count; i++)
         {
 
             vfs_init_backend(&modules[i].base, read, write);
 
-            modules[i].address = (void *)mods[i].base;
-            modules[i].size = mods[i].size;
+            modules[i].address = (void *)mods[i].address;
+            modules[i].limit = mods[i].limit;
 
         }
 

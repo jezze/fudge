@@ -12,15 +12,15 @@
 #define MBOOT_FLAG_APM                  (1 << 9)
 #define MBOOT_FLAG_VBE                  (1 << 10)
 
-struct mboot_modules_header
+struct mboot_header_modules
 {
 
     unsigned int count;
-    unsigned int address;
+    void *address;
 
 };
 
-struct mboot_elf_header
+struct mboot_header_elf
 {
 
     unsigned int shcount;
@@ -30,7 +30,7 @@ struct mboot_elf_header
 
 };
 
-struct mboot_mmap_header
+struct mboot_header_mmap
 {
 
     unsigned int count;
@@ -38,7 +38,7 @@ struct mboot_mmap_header
 
 };
 
-struct mboot_drives_header
+struct mboot_header_drives
 {
 
     unsigned int count;
@@ -46,7 +46,7 @@ struct mboot_drives_header
 
 };
 
-struct mboot_vbe_header
+struct mboot_header_vbe
 {
 
     unsigned int cinfo;
@@ -56,24 +56,24 @@ struct mboot_vbe_header
     unsigned short ioffset;
     unsigned short ilength;
 
-} __attribute__((packed));
+};
 
 struct mboot_header
 {
 
     unsigned int flags;
-    unsigned int mlower;
-    unsigned int mupper;
+    unsigned int lomem;
+    unsigned int himem;
     unsigned int device;
     unsigned int cmdline;
-    struct mboot_modules_header modules;
-    struct mboot_elf_header elf;
-    struct mboot_mmap_header mmap;
-    struct mboot_drives_header drives;
+    struct mboot_header_modules modules;
+    struct mboot_header_elf elf;
+    struct mboot_header_mmap mmap;
+    struct mboot_header_drives drives;
     unsigned int ctable;
     unsigned int name;
     unsigned int atable;
-    struct mboot_vbe_header vbe;
+    struct mboot_header_vbe vbe;
 
 } __attribute__((packed));
 
@@ -81,10 +81,10 @@ struct mboot_mmap
 {
 
     unsigned int size;
-    unsigned int blow;
-    unsigned int bhigh;
-    unsigned int llow;
-    unsigned int lhigh;
+    unsigned int address0;
+    unsigned int address1;
+    unsigned int limit0;
+    unsigned int limit1;
     unsigned int type;
 
 };
@@ -92,8 +92,8 @@ struct mboot_mmap
 struct mboot_module
 {
 
-    unsigned int base;
-    unsigned int size;
+    unsigned int address;
+    unsigned int limit;
     unsigned int name;
     unsigned int reserved;
 

@@ -3,7 +3,7 @@ struct kernel_module
 
     struct vfs_backend base;
     void *address;
-    unsigned int size;
+    unsigned int limit;
 
 };
 
