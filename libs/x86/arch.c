@@ -15,9 +15,10 @@
 #define ARCH_KERNEL_BASE                0x00000000
 #define ARCH_KERNEL_SIZE                0x00400000
 #define ARCH_STACK_BASE                 0x00400000
-#define ARCH_GDTS                       6
-#define ARCH_IDTS                       256
-#define ARCH_TSSS                       1
+#define ARCH_MMU_TABLES                 3
+#define ARCH_GDT_DESCRIPTORS            6
+#define ARCH_IDT_DESCRIPTORS            256
+#define ARCH_TSS_DESCRIPTORS            1
 
 struct arch_registers_general
 {
@@ -79,12 +80,12 @@ static struct
 } state;
 
 static struct mmu_directory directory;
-static struct mmu_table tables[3];
-static struct gdt_entry gdt[ARCH_GDTS];
+static struct mmu_table tables[ARCH_MMU_TABLES];
+static struct gdt_descriptor gdtd[ARCH_GDT_DESCRIPTORS];
+static struct idt_descriptor idtd[ARCH_IDT_DESCRIPTORS];
+static struct tss_descriptor tssd[ARCH_TSS_DESCRIPTORS];
 static struct gdt_pointer gdtp;
-static struct idt_entry idt[ARCH_IDTS];
 static struct idt_pointer idtp;
-static struct tss_entry tss[ARCH_TSSS];
 static struct tss_pointer tssp;
 
 unsigned short arch_genfault(struct arch_registers_genfault *registers)
@@ -165,17 +166,17 @@ static void setup_tables()
 
     unsigned int segment;
 
-    gdt_init_pointer(&gdtp, ARCH_GDTS, gdt);
-    idt_init_pointer(&idtp, ARCH_IDTS, idt);
-    tss_init_pointer(&tssp, ARCH_TSSS, tss);
+    gdt_init_pointer(&gdtp, ARCH_GDT_DESCRIPTORS, gdtd);
+    idt_init_pointer(&idtp, ARCH_IDT_DESCRIPTORS, idtd);
+    tss_init_pointer(&tssp, ARCH_TSS_DESCRIPTORS, tssd);
 
-    state.selectors.kcode = gdt_set_entry(&gdtp, GDT_INDEX_KCODE, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_RING0 | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW | GDT_ACCESS_EXECUTE, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
-    state.selectors.ucode = gdt_set_entry(&gdtp, GDT_INDEX_UCODE, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_RING3 | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW | GDT_ACCESS_EXECUTE, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
-    state.selectors.kdata = gdt_set_entry(&gdtp, GDT_INDEX_KDATA, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_RING0 | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
-    state.selectors.udata = gdt_set_entry(&gdtp, GDT_INDEX_UDATA, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_RING3 | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
-    segment = gdt_set_entry(&gdtp, GDT_INDEX_TSS, (unsigned int)tssp.base, (unsigned int)tssp.base + tssp.limit, GDT_ACCESS_PRESENT | GDT_ACCESS_RING0 | GDT_ACCESS_EXECUTE | GDT_ACCESS_ACCESSED, 0x00);
+    state.selectors.kcode = gdt_set_descriptor(&gdtp, GDT_INDEX_KCODE, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_RING0 | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW | GDT_ACCESS_EXECUTE, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
+    state.selectors.ucode = gdt_set_descriptor(&gdtp, GDT_INDEX_UCODE, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_RING3 | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW | GDT_ACCESS_EXECUTE, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
+    state.selectors.kdata = gdt_set_descriptor(&gdtp, GDT_INDEX_KDATA, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_RING0 | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
+    state.selectors.udata = gdt_set_descriptor(&gdtp, GDT_INDEX_UDATA, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_RING3 | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
+    segment = gdt_set_descriptor(&gdtp, GDT_INDEX_TSS, (unsigned int)tssp.descriptors, (unsigned int)tssp.descriptors + tssp.limit, GDT_ACCESS_PRESENT | GDT_ACCESS_RING0 | GDT_ACCESS_EXECUTE | GDT_ACCESS_ACCESSED, 0x00);
 
-    tss_set_entry(&tssp, TSS_INDEX_DEFAULT, state.selectors.kdata, ARCH_STACK_BASE);
+    tss_set_descriptor(&tssp, TSS_INDEX_DEFAULT, state.selectors.kdata, ARCH_STACK_BASE);
     cpu_set_gdt(&gdtp);
     cpu_set_idt(&idtp);
     cpu_set_tss(segment);
@@ -185,9 +186,9 @@ static void setup_tables()
 static void setup_routines()
 {
 
-    idt_set_entry(&idtp, IDT_INDEX_GP, arch_isr_genfault, state.selectors.kcode, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
-    idt_set_entry(&idtp, IDT_INDEX_PF, arch_isr_pagefault, state.selectors.kcode, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
-    idt_set_entry(&idtp, IDT_INDEX_SYSCALL, arch_isr_syscall, state.selectors.kcode, IDT_FLAG_PRESENT | IDT_FLAG_RING3 | IDT_FLAG_TYPE32INT);
+    idt_set_descriptor(&idtp, IDT_INDEX_GP, arch_isr_genfault, state.selectors.kcode, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
+    idt_set_descriptor(&idtp, IDT_INDEX_PF, arch_isr_pagefault, state.selectors.kcode, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
+    idt_set_descriptor(&idtp, IDT_INDEX_SYSCALL, arch_isr_syscall, state.selectors.kcode, IDT_FLAG_PRESENT | IDT_FLAG_RING3 | IDT_FLAG_TYPE32INT);
 
 }
 

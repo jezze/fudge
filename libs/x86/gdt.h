@@ -23,7 +23,7 @@ enum gdt_index
 
 };
 
-struct gdt_entry
+struct gdt_descriptor
 {
 
     unsigned short limit0;
@@ -39,9 +39,9 @@ struct gdt_pointer
 {
 
     unsigned short limit;
-    struct gdt_entry *base;
+    struct gdt_descriptor *descriptors;
 
 } __attribute__((packed));
 
-unsigned short gdt_set_entry(struct gdt_pointer *pointer, enum gdt_index index, unsigned int base, unsigned int limit, unsigned char access, unsigned char flags);
-void gdt_init_pointer(struct gdt_pointer *pointer, unsigned int count, struct gdt_entry *entries);
+unsigned short gdt_set_descriptor(struct gdt_pointer *pointer, enum gdt_index index, unsigned int base, unsigned int limit, unsigned char access, unsigned char flags);
+void gdt_init_pointer(struct gdt_pointer *pointer, unsigned int count, struct gdt_descriptor *descriptors);

@@ -36,7 +36,7 @@ enum idt_index
 
 };
 
-struct idt_entry
+struct idt_descriptor
 {
 
     unsigned short base0;
@@ -51,9 +51,9 @@ struct idt_pointer
 {
 
     unsigned short limit;
-    struct idt_entry *base;
+    struct idt_descriptor *descriptors;
 
 } __attribute__((packed));
 
-void idt_set_entry(struct idt_pointer *pointer, enum idt_index index, void (*callback)(), unsigned short selector, unsigned char flags);
-void idt_init_pointer(struct idt_pointer *pointer, unsigned int count, struct idt_entry *entries);
+void idt_set_descriptor(struct idt_pointer *pointer, enum idt_index index, void (*callback)(), unsigned short selector, unsigned char flags);
+void idt_init_pointer(struct idt_pointer *pointer, unsigned int count, struct idt_descriptor *descriptors);

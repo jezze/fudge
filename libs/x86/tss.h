@@ -5,7 +5,7 @@ enum tss_index
 
 };
 
-struct tss_entry_ring
+struct tss_descriptor_ring
 {
 
     unsigned int esp;
@@ -13,7 +13,7 @@ struct tss_entry_ring
 
 } __attribute__((packed));
 
-struct tss_entry_general
+struct tss_descriptor_general
 {
 
     unsigned int eax;
@@ -27,7 +27,7 @@ struct tss_entry_general
 
 } __attribute__((packed));
 
-struct tss_entry_segment
+struct tss_descriptor_segment
 {
 
     unsigned int es;
@@ -39,18 +39,18 @@ struct tss_entry_segment
 
 } __attribute__((packed));
 
-struct tss_entry
+struct tss_descriptor
 {
 
     unsigned int previous;
-    struct tss_entry_ring ring0;
-    struct tss_entry_ring ring1;
-    struct tss_entry_ring ring2;
+    struct tss_descriptor_ring ring0;
+    struct tss_descriptor_ring ring1;
+    struct tss_descriptor_ring ring2;
     unsigned int cr3;
     unsigned int eip;
     unsigned int eflags;
-    struct tss_entry_general general;
-    struct tss_entry_segment segment;
+    struct tss_descriptor_general general;
+    struct tss_descriptor_segment segment;
     unsigned int ldt;
     unsigned short trap;
     unsigned short iomap;
@@ -61,9 +61,9 @@ struct tss_pointer
 {
 
     unsigned short limit;
-    struct tss_entry *base;
+    struct tss_descriptor *descriptors;
 
 } __attribute__((packed));
 
-void tss_set_entry(struct tss_pointer *pointer, enum tss_index index, unsigned int selector, unsigned int stack);
-void tss_init_pointer(struct tss_pointer *pointer, unsigned int count, struct tss_entry *entries);
+void tss_set_descriptor(struct tss_pointer *pointer, enum tss_index index, unsigned int selector, unsigned int stack);
+void tss_init_pointer(struct tss_pointer *pointer, unsigned int count, struct tss_descriptor *descriptors);
