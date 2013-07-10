@@ -16,6 +16,8 @@ void idt_set_descriptor(struct idt_pointer *pointer, enum idt_index index, void 
 void idt_init_pointer(struct idt_pointer *pointer, unsigned int count, struct idt_descriptor *descriptors)
 {
 
+    memory_clear(pointer, sizeof (struct idt_pointer));
+
     pointer->descriptors = descriptors;
     pointer->limit = (sizeof (struct idt_descriptor) * count) - 1;
 

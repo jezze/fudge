@@ -113,6 +113,7 @@ static unsigned int relocate(struct vfs_session *session, unsigned int id, unsig
 void binary_init_elf(struct binary_protocol *protocol)
 {
 
+    memory_clear(protocol, sizeof (struct binary_protocol));
     binary_init_protocol(protocol, match, find_symbol, copy_program, relocate);
 
 }

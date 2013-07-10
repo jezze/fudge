@@ -18,6 +18,8 @@ unsigned short gdt_set_descriptor(struct gdt_pointer *pointer, enum gdt_index in
 void gdt_init_pointer(struct gdt_pointer *pointer, unsigned int count, struct gdt_descriptor *descriptors)
 {
 
+    memory_clear(pointer, sizeof (struct gdt_pointer));
+
     pointer->descriptors = descriptors;
     pointer->limit = (sizeof (struct gdt_descriptor) * count) - 1;
 

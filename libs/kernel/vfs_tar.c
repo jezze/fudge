@@ -215,6 +215,7 @@ static unsigned int walk(struct vfs_backend *backend, unsigned int id, unsigned 
 void vfs_init_tar(struct vfs_protocol *protocol)
 {
 
+    memory_clear(protocol, sizeof (struct vfs_protocol));
     vfs_init_protocol(protocol, 0xFFFFFFFF, match, open, close, read, write, parent, walk, get_physical);
 
 }
