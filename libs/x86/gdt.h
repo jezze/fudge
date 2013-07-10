@@ -26,12 +26,12 @@ enum gdt_index
 struct gdt_entry
 {
 
-    unsigned short limitLow;
-    unsigned short baseLow;
-    unsigned char baseMiddle;
+    unsigned short limit0;
+    unsigned short base0;
+    unsigned char base1;
     unsigned char access;
-    unsigned char limitHigh;
-    unsigned char baseHigh;
+    unsigned char limit1;
+    unsigned char base2;
 
 } __attribute__((packed));
 

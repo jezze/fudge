@@ -4,11 +4,11 @@
 unsigned short gdt_set_entry(struct gdt_pointer *pointer, enum gdt_index index, unsigned int base, unsigned int limit, unsigned char access, unsigned char flags)
 {
 
-    pointer->base[index].baseLow = (base & 0xFFFF);
-    pointer->base[index].baseMiddle = (base >> 16);
-    pointer->base[index].baseHigh = (base >> 24);
-    pointer->base[index].limitLow = (limit & 0xFFFF);
-    pointer->base[index].limitHigh = (flags & 0xF0) | ((limit >> 16) & 0x0F);
+    pointer->base[index].base0 = base;
+    pointer->base[index].base1 = base >> 16;
+    pointer->base[index].base2 = base >> 24;
+    pointer->base[index].limit0 = limit;
+    pointer->base[index].limit1 = (flags & 0xF0) | ((limit >> 16) & 0x0F);
     pointer->base[index].access = access;
 
     return (sizeof (struct gdt_entry) * index) | ((access >> 5) & 0x03);

@@ -39,11 +39,11 @@ enum idt_index
 struct idt_entry
 {
 
-    unsigned short baseLow;
+    unsigned short base0;
     unsigned short selector;
     unsigned char zero;
     unsigned char flags;
-    unsigned short baseHigh;
+    unsigned short base1;
 
 } __attribute__((packed));
 

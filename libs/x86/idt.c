@@ -6,8 +6,8 @@ void idt_set_entry(struct idt_pointer *pointer, enum idt_index index, void (*cal
 
     unsigned int base = (unsigned int)callback;
 
-    pointer->base[index].baseLow = (base & 0xFFFF);
-    pointer->base[index].baseHigh = (base >> 16);
+    pointer->base[index].base0 = base;
+    pointer->base[index].base1 = base >> 16;
     pointer->base[index].selector = selector;
     pointer->base[index].flags = flags;
 
