@@ -8,6 +8,8 @@
 
 static struct task task;
 static struct container container;
+static struct binary_protocol bprotocols[4];
+static struct vfs_protocol vprotocols[4];
 
 static void setup_task(struct vfs_session *session, unsigned int ip)
 {
@@ -40,16 +42,16 @@ static void setup_container(struct vfs_session *session)
 struct container *kernel_setup(unsigned int count, struct kernel_module *modules)
 {
 
-    struct vfs_protocol *cpio = vfs_cpio_setup();
-    struct vfs_protocol *tar = vfs_tar_setup();
-    struct binary_protocol *elf = binary_elf_setup();
     unsigned int i;
 
     vfs_setup();
-    vfs_register_protocol(cpio);
-    vfs_register_protocol(tar);
+    vfs_init_cpio(&vprotocols[0]);
+    vfs_init_tar(&vprotocols[1]);
+    vfs_register_protocol(&vprotocols[0]);
+    vfs_register_protocol(&vprotocols[1]);
     binary_setup();
-    binary_register_protocol(elf);
+    binary_init_elf(&bprotocols[0]);
+    binary_register_protocol(&bprotocols[0]);
 
     for (i = 0; i < count; i++)
     {

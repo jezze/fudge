@@ -2,12 +2,10 @@
 #include "vfs.h"
 #include "kernel.h"
 
-static struct vfs_protocol protocol;
-
 static unsigned int encode(unsigned int address)
 {
 
-    return (address) ? address : protocol.rootid;
+    return (address) ? address : 0xFFFFFFFF;
 
 }
 
@@ -48,7 +46,7 @@ static unsigned int find_top(struct vfs_backend *backend)
 static unsigned int decode(struct vfs_backend *backend, unsigned int id)
 {
 
-    return (id == protocol.rootid) ? find_top(backend) : id;
+    return (id == 0xFFFFFFFF) ? find_top(backend) : id;
 
 }
 
@@ -288,12 +286,10 @@ static unsigned int walk(struct vfs_backend *backend, unsigned int id, unsigned 
 
 }
 
-struct vfs_protocol *vfs_cpio_setup()
+void vfs_init_cpio(struct vfs_protocol *protocol)
 {
 
-    vfs_init_protocol(&protocol, 0xFFFFFFFF, match, open, close, read, write, parent, walk, get_physical);
-
-    return &protocol;
+    vfs_init_protocol(protocol, 0xFFFFFFFF, match, open, close, read, write, parent, walk, get_physical);
 
 }
 

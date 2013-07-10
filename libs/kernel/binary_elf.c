@@ -2,8 +2,6 @@
 #include "vfs.h"
 #include "binary.h"
 
-static struct binary_protocol protocol;
-
 static unsigned int match(struct vfs_session *session, unsigned int id)
 {
 
@@ -112,12 +110,10 @@ static unsigned int relocate(struct vfs_session *session, unsigned int id, unsig
 
 }
 
-struct binary_protocol *binary_elf_setup()
+void binary_init_elf(struct binary_protocol *protocol)
 {
 
-    binary_init_protocol(&protocol, match, find_symbol, copy_program, relocate);
-
-    return &protocol;
+    binary_init_protocol(protocol, match, find_symbol, copy_program, relocate);
 
 }
 
