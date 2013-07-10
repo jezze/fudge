@@ -6,10 +6,30 @@
 #include "container.h"
 #include "kernel.h"
 
-static struct task task;
-static struct container container;
 static struct binary_protocol bprotocols[4];
 static struct vfs_protocol vprotocols[4];
+static struct task task;
+static struct container container;
+
+static void setup_vfs()
+{
+
+    vfs_setup();
+    vfs_init_cpio(&vprotocols[0]);
+    vfs_init_tar(&vprotocols[1]);
+    vfs_register_protocol(&vprotocols[0]);
+    vfs_register_protocol(&vprotocols[1]);
+
+}
+
+static void setup_binary()
+{
+
+    binary_setup();
+    binary_init_elf(&bprotocols[0]);
+    binary_register_protocol(&bprotocols[0]);
+
+}
 
 static void setup_task(struct vfs_session *session, unsigned int ip)
 {
@@ -44,14 +64,8 @@ struct container *kernel_setup(unsigned int count, struct kernel_module *modules
 
     unsigned int i;
 
-    vfs_setup();
-    vfs_init_cpio(&vprotocols[0]);
-    vfs_init_tar(&vprotocols[1]);
-    vfs_register_protocol(&vprotocols[0]);
-    vfs_register_protocol(&vprotocols[1]);
-    binary_setup();
-    binary_init_elf(&bprotocols[0]);
-    binary_register_protocol(&bprotocols[0]);
+    setup_vfs();
+    setup_binary();
 
     for (i = 0; i < count; i++)
     {
