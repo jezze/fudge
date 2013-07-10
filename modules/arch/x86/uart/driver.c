@@ -2,6 +2,7 @@
 #include <fudge/define.h>
 #include <fudge/data/circular.h>
 #include <base/base.h>
+#include <terminal/terminal.h>
 #include <arch/x86/pic/pic.h>
 #include <arch/x86/io/io.h>
 #include "uart.h"
@@ -41,11 +42,30 @@ static unsigned int check(struct base_device *device)
 
 }
 
+static unsigned int read_terminal_data(struct terminal_interface *self, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    struct uart_driver *driver = (struct uart_driver *)self->driver;
+
+    return circular_stream_read(&driver->stream, count, buffer);
+
+}
+
+static unsigned int write_terminal_data(struct terminal_interface *self, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    struct uart_driver *driver = (struct uart_driver *)self->driver;
+
+    return circular_stream_write(&driver->stream, count, buffer);
+
+}
+
 void uart_init_driver(struct uart_driver *driver)
 {
 
     memory_clear(driver, sizeof (struct uart_driver));
     base_init_driver(&driver->base, "uart", 0, check, attach);
+    terminal_init_interface(&driver->iterminal, &driver->base, read_terminal_data, write_terminal_data);
 
 }
 

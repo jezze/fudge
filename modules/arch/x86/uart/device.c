@@ -2,6 +2,7 @@
 #include <fudge/define.h>
 #include <fudge/data/circular.h>
 #include <base/base.h>
+#include <terminal/terminal.h>
 #include <arch/x86/io/io.h>
 #include "uart.h"
 
