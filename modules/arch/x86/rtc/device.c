@@ -11,6 +11,18 @@ enum rtc_register
 
 };
 
+enum rtc_flag
+{
+
+    RTC_FLAG_SECONDS                    = 0x00,
+    RTC_FLAG_MINUTES                    = 0x02,
+    RTC_FLAG_HOURS                      = 0x04,
+    RTC_FLAG_DAY                        = 0x07,
+    RTC_FLAG_MONTH                      = 0x08,
+    RTC_FLAG_YEAR                       = 0x09
+
+};
+
 static unsigned char convert(unsigned char num)
 {
 

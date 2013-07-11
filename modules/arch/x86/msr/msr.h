@@ -1,8 +1,8 @@
 struct msr_data
 {
 
-    unsigned int low;
-    unsigned int high;
+    unsigned int data0;
+    unsigned int data1;
 
 };
 

@@ -12,26 +12,13 @@
 #define IDE_CONTROL_DMA28_WRITE         0xCA
 #define IDE_CONTROL_ID_ATA              0xEC
 
-#define IDE_DATA_FEATURE                0x01
-#define IDE_DATA_COUNT0                 0x02
-#define IDE_DATA_LBA0                   0x03
-#define IDE_DATA_LBA1                   0x04
-#define IDE_DATA_LBA2                   0x05
-#define IDE_DATA_SELECT                 0x06
-#define IDE_DATA_COMMAND                0x07
-#define IDE_DATA_COUNT1                 0x08
-#define IDE_DATA_LBA3                   0x09
-#define IDE_DATA_LBA4                   0x0A
-#define IDE_DATA_LBA5                   0x0B
-
+#define IDE_BUS_TYPE                    0x0002
+#define IDE_DEVICE_TYPE                 0x0002
 #define IDE_DEVICE_TYPE_UNKNOWN         0x00
 #define IDE_DEVICE_TYPE_ATA             0x01
 #define IDE_DEVICE_TYPE_ATAPI           0x02
 #define IDE_DEVICE_TYPE_SATA            0x03
 #define IDE_DEVICE_TYPE_SATAPI          0x04
-
-#define IDE_BUS_TYPE                    0x0002
-#define IDE_DEVICE_TYPE                 0x0002
 
 struct ide_partition
 {

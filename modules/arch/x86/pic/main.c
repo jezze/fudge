@@ -6,7 +6,7 @@
 #include <arch/x86/io/io.h>
 #include "pic.h"
 
-#define PIC_ROUTINE_SLOTS               16
+#define PIC_ROUTINES                    16
 
 enum pic_register
 {
@@ -37,7 +37,7 @@ enum pic_data
 
 };
 
-static struct pic_routine routines[PIC_ROUTINE_SLOTS];
+static struct pic_routine routines[PIC_ROUTINES];
 
 static void raise(unsigned int index)
 {
@@ -116,7 +116,7 @@ unsigned short pic_interrupt(struct pic_registers *registers)
 unsigned int pic_set_routine(struct base_device *device, void (*callback)(struct base_device *device))
 {
 
-    if (device->irq > PIC_ROUTINE_SLOTS)
+    if (device->irq > PIC_ROUTINES)
         return 0;
 
     if (routines[device->irq].device)
@@ -137,7 +137,7 @@ unsigned int pic_set_routine(struct base_device *device, void (*callback)(struct
 unsigned int pic_unset_routine(struct base_device *device)
 {
 
-    if (device->irq > PIC_ROUTINE_SLOTS)
+    if (device->irq > PIC_ROUTINES)
         return 0;
 
     if (routines[device->irq].device != device)
@@ -171,7 +171,7 @@ void init()
     struct idt_pointer *idtp = cpu_get_idt();
     unsigned int offset = sizeof (struct gdt_descriptor) * GDT_INDEX_KCODE;
 
-    memory_clear(&routines, sizeof (struct pic_routine) * PIC_ROUTINE_SLOTS);
+    memory_clear(&routines, sizeof (struct pic_routine) * PIC_ROUTINES);
     setup_chip(PIC_REGISTER_COMMAND0, PIC_REGISTER_DATA0, PIC_DATA_VECTOR0, 0x04);
     setup_chip(PIC_REGISTER_COMMAND1, PIC_REGISTER_DATA1, PIC_DATA_VECTOR1, 0x02);
     idt_set_descriptor(idtp, PIC_DATA_VECTOR0 + 0x00, pic_routine00, offset, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);

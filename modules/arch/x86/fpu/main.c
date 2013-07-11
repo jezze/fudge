@@ -9,7 +9,7 @@ void init()
 
     cpuid_get_data(CPUID_FEATURES0, &data);
 
-    if (!(data.edx & CPUID_FEATURES0_EDX_FPU))
+    if (!(data.edx & CPUID_FEATURES01_FPU))
         return;
 
     fpu_enable();

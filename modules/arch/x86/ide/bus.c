@@ -9,12 +9,29 @@
 enum ide_status
 {
 
-    IDE_STATUS_ERROR                    = (1 << 0),
-    IDE_STATUS_DRQ                      = (1 << 3),
-    IDE_STATUS_SRV                      = (1 << 4),
-    IDE_STATUS_DF                       = (1 << 5),
-    IDE_STATUS_RDY                      = (1 << 6),
-    IDE_STATUS_BUSY                     = (1 << 7)
+    IDE_STATUS_ERROR                    = 0x01,
+    IDE_STATUS_DRQ                      = 0x08,
+    IDE_STATUS_SRV                      = 0x10,
+    IDE_STATUS_DF                       = 0x20,
+    IDE_STATUS_RDY                      = 0x40,
+    IDE_STATUS_BUSY                     = 0x80
+
+};
+
+enum ide_data
+{
+
+    IDE_DATA_FEATURE                    = 0x01,
+    IDE_DATA_COUNT0                     = 0x02,
+    IDE_DATA_LBA0                       = 0x03,
+    IDE_DATA_LBA1                       = 0x04,
+    IDE_DATA_LBA2                       = 0x05,
+    IDE_DATA_SELECT                     = 0x06,
+    IDE_DATA_COMMAND                    = 0x07,
+    IDE_DATA_COUNT1                     = 0x08,
+    IDE_DATA_LBA3                       = 0x09,
+    IDE_DATA_LBA4                       = 0x0A,
+    IDE_DATA_LBA5                       = 0x0B
 
 };
 

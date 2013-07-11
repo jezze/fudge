@@ -5,7 +5,9 @@
 #include "temp.h"
 #include "filesystem.h"
 
-static struct circular_stream buffers[TEMP_BUFFER_SLOTS];
+#define TEMP_BUFFERS                    8
+
+static struct circular_stream buffers[TEMP_BUFFERS];
 
 static unsigned int backend_read(struct vfs_backend *self, unsigned int offset, unsigned int count, void *buffer)
 {

@@ -1,30 +1,45 @@
 #define MMU_PAGESIZE                    4096
-
 #define MMU_TABLES                      1024
-#define MMU_TABLE_FLAG_PRESENT          (1 << 0)
-#define MMU_TABLE_FLAG_WRITEABLE        (1 << 1)
-#define MMU_TABLE_FLAG_USERMODE         (1 << 2)
-#define MMU_TABLE_FLAG_CACHEWRITE       (1 << 3)
-#define MMU_TABLE_FLAG_CACHEDISABLE     (1 << 4)
-#define MMU_TABLE_FLAG_ACCESSED         (1 << 5)
-#define MMU_TABLE_FLAG_LARGE            (1 << 6)
-#define MMU_TABLE_FLAG_IGNORED          (1 << 7)
-
 #define MMU_PAGES                       1024
-#define MMU_PAGE_FLAG_PRESENT           (1 << 0)
-#define MMU_PAGE_FLAG_WRITEABLE         (1 << 1)
-#define MMU_PAGE_FLAG_USERMODE          (1 << 2)
-#define MMU_PAGE_FLAG_CACHEWRITE        (1 << 3)
-#define MMU_PAGE_FLAG_CACHEDISABLE      (1 << 4)
-#define MMU_PAGE_FLAG_ACCESSED          (1 << 5)
-#define MMU_PAGE_FLAG_DIRTY             (1 << 6)
-#define MMU_PAGE_FLAG_GLOBAL            (1 << 7)
 
-#define MMU_ERROR_PRESENT               (1 << 0)
-#define MMU_ERROR_RW                    (1 << 1)
-#define MMU_ERROR_USER                  (1 << 2)
-#define MMU_ERROR_RESERVED              (1 << 3)
-#define MMU_ERROR_FETCH                 (1 << 4)
+enum mmu_tflag
+{
+
+    MMU_TFLAG_PRESENT                   = 0x01,
+    MMU_TFLAG_WRITEABLE                 = 0x02,
+    MMU_TFLAG_USERMODE                  = 0x04,
+    MMU_TFLAG_CACHEWRITE                = 0x08,
+    MMU_TFLAG_CACHEDISABLE              = 0x10,
+    MMU_TFLAG_ACCESSED                  = 0x20,
+    MMU_TFLAG_LARGE                     = 0x40,
+    MMU_TFLAG_IGNORED                   = 0x80
+
+};
+
+enum mmu_pflag
+{
+
+    MMU_PFLAG_PRESENT                   = 0x01,
+    MMU_PFLAG_WRITEABLE                 = 0x02,
+    MMU_PFLAG_USERMODE                  = 0x04,
+    MMU_PFLAG_CACHEWRITE                = 0x08,
+    MMU_PFLAG_CACHEDISABLE              = 0x10,
+    MMU_PFLAG_ACCESSED                  = 0x20,
+    MMU_PFLAG_DIRTY                     = 0x40,
+    MMU_PFLAG_GLOBAL                    = 0x80
+
+};
+
+enum mmu_eflag
+{
+
+    MMU_EFLAG_PRESENT                   = 0x01,
+    MMU_EFLAG_RW                        = 0x02,
+    MMU_EFLAG_USER                      = 0x03,
+    MMU_EFLAG_RESERVED                  = 0x04,
+    MMU_EFLAG_FETCH                     = 0x05
+
+};
 
 struct mmu_table
 {

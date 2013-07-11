@@ -1,12 +1,12 @@
-#define SYSTEM_FILESYSTEM_SLOTS         32
+#define SYSTEM_ROUTINES                 32
 
 struct system_backend
 {
 
     struct vfs_backend base;
     struct system_group root;
-    unsigned int (*readers[SYSTEM_FILESYSTEM_SLOTS])(struct system_node *node, unsigned int offset, unsigned int count, void *buffer);
-    unsigned int (*writers[SYSTEM_FILESYSTEM_SLOTS])(struct system_node *node, unsigned int offset, unsigned int count, void *buffer);
+    unsigned int (*readers[SYSTEM_ROUTINES])(struct system_node *node, unsigned int offset, unsigned int count, void *buffer);
+    unsigned int (*writers[SYSTEM_ROUTINES])(struct system_node *node, unsigned int offset, unsigned int count, void *buffer);
 
 };
 
