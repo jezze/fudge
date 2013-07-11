@@ -7,8 +7,7 @@
 #include "vga.h"
 
 #define VGA_ADDRESS                     0x000A0000
-#define VGA_TEXT_ADDRESS                0x000B8000
-#define VGA_TEXT_SIZE                   2000
+#define VGA_TEXT                        0x000B8000
 
 enum vga_register
 {
@@ -484,25 +483,25 @@ static unsigned int write_terminal_data(struct terminal_interface *self, unsigne
         if (c >= ' ')
         {
 
-            ((char *)VGA_TEXT_ADDRESS)[driver->cursor.offset * 2] = c;
-            ((char *)VGA_TEXT_ADDRESS)[driver->cursor.offset * 2 + 1] = driver->cursor.color;
+            ((char *)VGA_TEXT)[driver->cursor.offset * 2] = c;
+            ((char *)VGA_TEXT)[driver->cursor.offset * 2 + 1] = driver->cursor.color;
 
             driver->cursor.offset++;
 
         }
 
-        if (driver->cursor.offset >= VGA_TEXT_SIZE)
+        if (driver->cursor.offset >= 2000)
         {
 
             unsigned int a;
 
-            memory_copy((void *)VGA_TEXT_ADDRESS, (void *)(VGA_TEXT_ADDRESS + 80 * 2), 80 * 24 * 2);
+            memory_copy((void *)VGA_TEXT, (void *)(VGA_TEXT + 80 * 2), 80 * 24 * 2);
 
             for (a = 80 * 24 * 2; a < 80 * 25 * 2; a += 2)
             {
 
-                ((char *)VGA_TEXT_ADDRESS)[a] = ' ';
-                ((char *)VGA_TEXT_ADDRESS)[a + 1] = driver->cursor.color;
+                ((char *)VGA_TEXT)[a] = ' ';
+                ((char *)VGA_TEXT)[a + 1] = driver->cursor.color;
 
             }
 
@@ -571,8 +570,8 @@ static void start(struct base_driver *self)
     for (a = 0; a < 80 * 25 * 2; a += 2)
     {
 
-        ((char *)VGA_TEXT_ADDRESS)[a] = ' ';
-        ((char *)VGA_TEXT_ADDRESS)[a + 1] = driver->cursor.color;
+        ((char *)VGA_TEXT)[a] = ' ';
+        ((char *)VGA_TEXT)[a + 1] = driver->cursor.color;
 
     }
 

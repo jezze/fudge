@@ -1,17 +1,3 @@
-#define IDE_CONTROL_ATAPI_EJECT         0x1B
-#define IDE_CONTROL_PIO28_READ          0x20
-#define IDE_CONTROL_PIO48_READ          0x24
-#define IDE_CONTROL_DMA48_READ          0x25
-#define IDE_CONTROL_PIO28_WRITE         0x30
-#define IDE_CONTROL_PIO48_WRITE         0x34
-#define IDE_CONTROL_DMA48_WRITE         0x35
-#define IDE_CONTROL_ATAPI               0xA0
-#define IDE_CONTROL_ID_ATAPI            0xA1
-#define IDE_CONTROL_ATAPI_READ          0xA8
-#define IDE_CONTROL_DMA28_READ          0xC8
-#define IDE_CONTROL_DMA28_WRITE         0xCA
-#define IDE_CONTROL_ID_ATA              0xEC
-
 #define IDE_BUS_TYPE                    0x0002
 #define IDE_DEVICE_TYPE                 0x0002
 #define IDE_DEVICE_TYPE_UNKNOWN         0x00
@@ -20,19 +6,38 @@
 #define IDE_DEVICE_TYPE_SATA            0x03
 #define IDE_DEVICE_TYPE_SATAPI          0x04
 
+enum ide_control
+{
+
+    IDE_CONTROL_ATAPIEJECT              = 0x1B,
+    IDE_CONTROL_PIO28READ               = 0x20,
+    IDE_CONTROL_PIO48READ               = 0x24,
+    IDE_CONTROL_DMA48READ               = 0x25,
+    IDE_CONTROL_PIO28WRITE              = 0x30,
+    IDE_CONTROL_PIO48WRITE              = 0x34,
+    IDE_CONTROL_DMA48WRITE              = 0x35,
+    IDE_CONTROL_ATAPI                   = 0xA0,
+    IDE_CONTROL_IDATAPI                 = 0xA1,
+    IDE_CONTROL_ATAPIREAD               = 0xA8,
+    IDE_CONTROL_DMA28READ               = 0xC8,
+    IDE_CONTROL_DMA28WRITE              = 0xCA,
+    IDE_CONTROL_IDATA                   = 0xEC
+
+};
+
 struct ide_partition
 {
 
     unsigned char boot;
-    unsigned char headStart;
-    unsigned char sectorStart;
-    unsigned char cylinderStart;
-    unsigned char systemId;
-    unsigned char headEnd;
-    unsigned char sectorEnd;
-    unsigned char cylinderEnd;
-    unsigned int sectorLba;
-    unsigned int sectorTotal;
+    unsigned char headbase;
+    unsigned char sectorbase;
+    unsigned char cylinderbase;
+    unsigned char systemid;
+    unsigned char headlimit;
+    unsigned char sectorlimit;
+    unsigned char cylinderlimit;
+    unsigned int sectorlba;
+    unsigned int sectortotal;
 
 } __attribute__((packed));
 
