@@ -31,19 +31,31 @@ enum pci_config
 
     PCI_CONFIG_VENDOR                   = 0x00,
     PCI_CONFIG_DEVICE                   = 0x02,
+    PCI_CONFIG_COMMAND                  = 0x04,
+    PCI_CONFIG_STATUS                   = 0x06,
     PCI_CONFIG_REVISION                 = 0x08,
     PCI_CONFIG_INTERFACE                = 0x09,
     PCI_CONFIG_SUBCLASS                 = 0x0A,
     PCI_CONFIG_CLASS                    = 0x0B,
+    PCI_CONFIG_CACHE                    = 0x0C,
+    PCI_CONFIG_TIMER                    = 0x0D,
     PCI_CONFIG_HEADER                   = 0x0E,
+    PCI_CONFIG_BIST                     = 0x0F,
     PCI_CONFIG_BAR0                     = 0x10,
     PCI_CONFIG_BAR1                     = 0x14,
     PCI_CONFIG_BAR2                     = 0x18,
     PCI_CONFIG_BAR3                     = 0x1C,
     PCI_CONFIG_BAR4                     = 0x20,
     PCI_CONFIG_BAR5                     = 0x24,
-    PCI_CONFIG_IRQ_LINE                 = 0x3C,
-    PCI_CONFIG_IRQ_PIN                  = 0x3C
+    PCI_CONFIG_CARDBUS                  = 0x28,
+    PCI_CONFIG_SUBVENDOR                = 0x2C,
+    PCI_CONFIG_SUBSYSTEM                = 0x2E,
+    PCI_CONFIG_EXPANSION                = 0x30,
+    PCI_CONFIG_CAPABILITIES             = 0x34,
+    PCI_CONFIG_LINE                     = 0x3C,
+    PCI_CONFIG_PIN                      = 0x3D,
+    PCI_CONFIG_GRANT                    = 0x3E,
+    PCI_CONFIG_LATENCY                  = 0x3F
 
 };
 

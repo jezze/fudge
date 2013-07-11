@@ -41,7 +41,7 @@ static void add_device(struct pci_bus *bus, unsigned int num, unsigned int slot,
 {
 
     struct pci_device *device = &bus->devices.item[bus->devices.count];
-    unsigned int irq = pci_device_inb(device, PCI_CONFIG_IRQ_LINE);
+    unsigned int irq = pci_device_inb(device, PCI_CONFIG_LINE);
 
     pci_init_device(device, bus, irq, num, slot, function);
 
