@@ -6,24 +6,6 @@
 #include <arch/x86/io/io.h>
 #include "uart.h"
 
-char uart_device_read(struct uart_device *device)
-{
-
-    while (!(io_inb(device->port + UART_LSR) & 0x01));
-
-    return io_inb(device->port);
-
-}
-
-void uart_device_write(struct uart_device *device, char c)
-{
-
-    while (!(io_inb(device->port + UART_LSR) & 0x20));
-
-    io_outb(device->port, c);
-
-}
-
 void uart_init_device(struct uart_device *device, unsigned int port, unsigned int irq)
 {
 

@@ -7,6 +7,43 @@
 #include <arch/x86/io/io.h>
 #include "uart.h"
 
+enum uart_register
+{
+
+    UART_REGISTER_RBR                   = 0x0000,
+    UART_REGISTER_THR                   = 0x0000,
+    UART_REGISTER_DLL                   = 0x0000,
+    UART_REGISTER_DLM                   = 0x0000,
+    UART_REGISTER_IER                   = 0x0001,
+    UART_REGISTER_IIR                   = 0x0002,
+    UART_REGISTER_FCR                   = 0x0002,
+    UART_REGISTER_LCR                   = 0x0003,
+    UART_REGISTER_MCR                   = 0x0004,
+    UART_REGISTER_LSR                   = 0x0005,
+    UART_REGISTER_MSR                   = 0x0006,
+    UART_REGISTER_SCR                   = 0x0007
+
+};
+
+enum uart_baudrate
+{
+
+    UART_BAUDRATE_50                    = 0x0900,
+    UART_BAUDRATE_110                   = 0x0417,
+    UART_BAUDRATE_220                   = 0x020C,
+    UART_BAUDRATE_300                   = 0x0180,
+    UART_BAUDRATE_600                   = 0x00C0,
+    UART_BAUDRATE_1200                  = 0x0060,
+    UART_BAUDRATE_2400                  = 0x0030,
+    UART_BAUDRATE_4800                  = 0x0018,
+    UART_BAUDRATE_9600                  = 0x000C,
+    UART_BAUDRATE_19200                 = 0x0006,
+    UART_BAUDRATE_38400                 = 0x0003,
+    UART_BAUDRATE_57600                 = 0x0002,
+    UART_BAUDRATE_115200                = 0x0001
+
+};
+
 enum uart_ier
 {
 
@@ -110,12 +147,32 @@ enum uart_msr
 
 };
 
+static char read(struct uart_device *device)
+{
+
+    while (!(io_inb(device->port + UART_REGISTER_LSR) & UART_LSR_READY));
+
+    return io_inb(device->port);
+
+}
+
+/*
+static void write(struct uart_device *device, char c)
+{
+
+    while (!(io_inb(device->port + UART_REGISTER_LSR) & UART_LSR_TRANSMIT));
+
+    io_outb(device->port, c);
+
+}
+*/
+
 static void handle_irq(struct base_device *device)
 {
 
     struct uart_device *uartDevice = (struct uart_device *)device;
     struct uart_driver *driver = (struct uart_driver *)device->driver;
-    char data = uart_device_read(uartDevice);
+    char data = read(uartDevice);
 
     circular_stream_write(&driver->stream, 1, &data);
 
@@ -127,14 +184,14 @@ static void attach(struct base_device *device)
     struct uart_device *uartDevice = (struct uart_device *)device;
 
     pic_set_routine(device, handle_irq);
-    io_outb(uartDevice->port + UART_IER, UART_IER_NULL);
-    io_outb(uartDevice->port + UART_LCR, UART_LCR_5BITS | UART_LCR_1STOP | UART_LCR_NOPARITY);
-    io_outb(uartDevice->port + UART_THR, 0x03);
-    io_outb(uartDevice->port + UART_IER, UART_IER_NULL);
-    io_outb(uartDevice->port + UART_LCR, UART_LCR_8BITS | UART_LCR_1STOP | UART_LCR_NOPARITY);
-    io_outb(uartDevice->port + UART_FCR, UART_FCR_ENABLE | UART_FCR_RECEIVE | UART_FCR_TRANSMIT | UART_FCR_SIZE3);
-    io_outb(uartDevice->port + UART_MCR, UART_MCR_READY | UART_MCR_REQUEST | UART_MCR_AUX2);
-    io_outb(uartDevice->port + UART_IER, UART_IER_RECEIVE);
+    io_outb(uartDevice->port + UART_REGISTER_IER, UART_IER_NULL);
+    io_outb(uartDevice->port + UART_REGISTER_LCR, UART_LCR_5BITS | UART_LCR_1STOP | UART_LCR_NOPARITY);
+    io_outb(uartDevice->port + UART_REGISTER_THR, 0x03);
+    io_outb(uartDevice->port + UART_REGISTER_IER, UART_IER_NULL);
+    io_outb(uartDevice->port + UART_REGISTER_LCR, UART_LCR_8BITS | UART_LCR_1STOP | UART_LCR_NOPARITY);
+    io_outb(uartDevice->port + UART_REGISTER_FCR, UART_FCR_ENABLE | UART_FCR_RECEIVE | UART_FCR_TRANSMIT | UART_FCR_SIZE3);
+    io_outb(uartDevice->port + UART_REGISTER_MCR, UART_MCR_READY | UART_MCR_REQUEST | UART_MCR_AUX2);
+    io_outb(uartDevice->port + UART_REGISTER_IER, UART_IER_RECEIVE);
 
 }
 
