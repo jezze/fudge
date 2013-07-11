@@ -16,11 +16,10 @@ static unsigned int write(struct net_interface *interface, unsigned int offset, 
 
 }
 
-void ipv6_init_protocol(struct ipv6_protocol *protocol)
+void ipv6_init_protocol(struct net_protocol *protocol)
 {
 
-    memory_clear(protocol, sizeof (struct ipv6_protocol));
-    net_init_protocol(&protocol->base, "ipv6", read, write);
+    net_init_protocol(protocol, "ipv6", read, write);
 
 }
 

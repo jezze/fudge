@@ -2,13 +2,13 @@
 #include <net/net.h>
 #include "arp.h"
 
-static struct arp_protocol protocol;
+static struct net_protocol protocol;
 
 void init()
 {
 
     arp_init_protocol(&protocol);
-    net_register_protocol(0x0806, &protocol.base);
+    net_register_protocol(0x0806, &protocol);
 
 }
 

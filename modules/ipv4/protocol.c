@@ -16,11 +16,10 @@ static unsigned int write(struct net_interface *interface, unsigned int offset, 
 
 }
 
-void ipv4_init_protocol(struct ipv4_protocol *protocol)
+void ipv4_init_protocol(struct net_protocol *protocol)
 {
 
-    memory_clear(protocol, sizeof (struct ipv4_protocol));
-    net_init_protocol(&protocol->base, "ipv4", read, write);
+    net_init_protocol(protocol, "ipv4", read, write);
 
 }
 

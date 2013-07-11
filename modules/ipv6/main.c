@@ -2,13 +2,13 @@
 #include <net/net.h>
 #include "ipv6.h"
 
-static struct ipv6_protocol protocol;
+static struct net_protocol protocol;
 
 void init()
 {
 
     ipv6_init_protocol(&protocol);
-    net_register_protocol(0x86DD, &protocol.base);
+    net_register_protocol(0x86DD, &protocol);
 
 }
 

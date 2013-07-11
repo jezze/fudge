@@ -16,11 +16,10 @@ static unsigned int write(struct net_interface *interface, unsigned int offset, 
 
 }
 
-void arp_init_protocol(struct arp_protocol *protocol)
+void arp_init_protocol(struct net_protocol *protocol)
 {
 
-    memory_clear(protocol, sizeof (struct arp_protocol));
-    net_init_protocol(&protocol->base, "arp", read, write);
+    net_init_protocol(protocol, "arp", read, write);
 
 }
 
