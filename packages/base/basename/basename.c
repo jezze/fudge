@@ -9,8 +9,7 @@ void main()
 
     while (--offset && buffer[offset - 1] != '/');
 
-    count = call_write(CALL_DO, 0, count - offset, buffer + offset);
-    call_write(CALL_DO, count, 1, "\n");
+    call_write(CALL_DO, 0, count - offset, buffer + offset);
 
 }
 
