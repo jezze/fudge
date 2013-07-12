@@ -8,9 +8,9 @@
 #define MTWIST_COMBINE_BITS(x, y)       (((x) & 0x80000000) | ((y) & 0x7FFFFFFF))
 #define MTWIST_MATRIX_MULTIPLY(x, y)    ((x) ^ ((y) >> 1) ^ decider[(y) & 1])
 
-static struct system_stream root;
 static unsigned int decider[2] = {0x00000000, 0x9908B0DF};
 static struct mtwist_state normal;
+static struct system_stream root;
 
 static void refresh(struct mtwist_state *state)
 {
@@ -29,7 +29,6 @@ static void refresh(struct mtwist_state *state)
         current -= 2;
         value2 = current[1];
         value1 = MTWIST_COMBINE_BITS(value1, value2);
-
         current[2] = MTWIST_MATRIX_MULTIPLY(current[-MTWIST_RECURRENCE + 2], value1);
         value1 = current[0];
         value2 = MTWIST_COMBINE_BITS(value2, value1);
@@ -72,6 +71,8 @@ void mtwist_seed1(struct mtwist_state *state, unsigned int seed)
 
     state->current = MTWIST_VECTORS;
 
+    refresh(state);
+
 }
 
 void mtwist_seed2(struct mtwist_state *state, unsigned int seed)
@@ -94,6 +95,8 @@ void mtwist_seed2(struct mtwist_state *state, unsigned int seed)
     }
 
     state->current = MTWIST_VECTORS;
+
+    refresh(state);
 
 }
 
@@ -151,7 +154,6 @@ void init()
 {
 
     mtwist_seed1(&normal, MTWIST_SEED);
-    refresh(&normal);
 
     system_init_stream(&root, "mtwist", read, write);
     system_register_node(&root.node);
