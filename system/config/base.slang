@@ -1,5 +1,6 @@
 /bin/load < /boot/mod/system.ko
 /bin/load < /boot/mod/base.ko
+/bin/load < /boot/mod/null.ko
 /bin/load < /boot/mod/log.ko
 /bin/load < /boot/mod/block.ko
 /bin/load < /boot/mod/kbd.ko
