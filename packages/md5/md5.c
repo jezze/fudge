@@ -17,11 +17,10 @@ struct md5
 
 #define STEP(f, a, b, c, d, x, t, s) \
     (a) += f((b), (c), (d)) + (x) + (t); \
-    (a) = (((a) << (s)) | (((a) & 0xffffffff) >> (32 - (s)))); \
+    (a) = (((a) << (s)) | ((a) >> (32 - (s)))); \
     (a) += (b);
 
 #define SET(n) (*(unsigned int *)&ptr[(n) * 4])
-#define GET(n) SET(n)
 
 static void *body(struct md5 *s, void *data, unsigned int size)
 {
@@ -61,58 +60,58 @@ static void *body(struct md5 *s, void *data, unsigned int size)
         STEP(F, b, c, d, a, SET(15), 0x49b40821, 22)
 
 /* Round 2 */
-        STEP(G, a, b, c, d, GET(1), 0xf61e2562, 5)
-        STEP(G, d, a, b, c, GET(6), 0xc040b340, 9)
-        STEP(G, c, d, a, b, GET(11), 0x265e5a51, 14)
-        STEP(G, b, c, d, a, GET(0), 0xe9b6c7aa, 20)
-        STEP(G, a, b, c, d, GET(5), 0xd62f105d, 5)
-        STEP(G, d, a, b, c, GET(10), 0x02441453, 9)
-        STEP(G, c, d, a, b, GET(15), 0xd8a1e681, 14)
-        STEP(G, b, c, d, a, GET(4), 0xe7d3fbc8, 20)
-        STEP(G, a, b, c, d, GET(9), 0x21e1cde6, 5)
-        STEP(G, d, a, b, c, GET(14), 0xc33707d6, 9)
-        STEP(G, c, d, a, b, GET(3), 0xf4d50d87, 14)
-        STEP(G, b, c, d, a, GET(8), 0x455a14ed, 20)
-        STEP(G, a, b, c, d, GET(13), 0xa9e3e905, 5)
-        STEP(G, d, a, b, c, GET(2), 0xfcefa3f8, 9)
-        STEP(G, c, d, a, b, GET(7), 0x676f02d9, 14)
-        STEP(G, b, c, d, a, GET(12), 0x8d2a4c8a, 20)
+        STEP(G, a, b, c, d, SET(1), 0xf61e2562, 5)
+        STEP(G, d, a, b, c, SET(6), 0xc040b340, 9)
+        STEP(G, c, d, a, b, SET(11), 0x265e5a51, 14)
+        STEP(G, b, c, d, a, SET(0), 0xe9b6c7aa, 20)
+        STEP(G, a, b, c, d, SET(5), 0xd62f105d, 5)
+        STEP(G, d, a, b, c, SET(10), 0x02441453, 9)
+        STEP(G, c, d, a, b, SET(15), 0xd8a1e681, 14)
+        STEP(G, b, c, d, a, SET(4), 0xe7d3fbc8, 20)
+        STEP(G, a, b, c, d, SET(9), 0x21e1cde6, 5)
+        STEP(G, d, a, b, c, SET(14), 0xc33707d6, 9)
+        STEP(G, c, d, a, b, SET(3), 0xf4d50d87, 14)
+        STEP(G, b, c, d, a, SET(8), 0x455a14ed, 20)
+        STEP(G, a, b, c, d, SET(13), 0xa9e3e905, 5)
+        STEP(G, d, a, b, c, SET(2), 0xfcefa3f8, 9)
+        STEP(G, c, d, a, b, SET(7), 0x676f02d9, 14)
+        STEP(G, b, c, d, a, SET(12), 0x8d2a4c8a, 20)
 
 /* Round 3 */
-        STEP(H, a, b, c, d, GET(5), 0xfffa3942, 4)
-        STEP(H, d, a, b, c, GET(8), 0x8771f681, 11)
-        STEP(H, c, d, a, b, GET(11), 0x6d9d6122, 16)
-        STEP(H, b, c, d, a, GET(14), 0xfde5380c, 23)
-        STEP(H, a, b, c, d, GET(1), 0xa4beea44, 4)
-        STEP(H, d, a, b, c, GET(4), 0x4bdecfa9, 11)
-        STEP(H, c, d, a, b, GET(7), 0xf6bb4b60, 16)
-        STEP(H, b, c, d, a, GET(10), 0xbebfbc70, 23)
-        STEP(H, a, b, c, d, GET(13), 0x289b7ec6, 4)
-        STEP(H, d, a, b, c, GET(0), 0xeaa127fa, 11)
-        STEP(H, c, d, a, b, GET(3), 0xd4ef3085, 16)
-        STEP(H, b, c, d, a, GET(6), 0x04881d05, 23)
-        STEP(H, a, b, c, d, GET(9), 0xd9d4d039, 4)
-        STEP(H, d, a, b, c, GET(12), 0xe6db99e5, 11)
-        STEP(H, c, d, a, b, GET(15), 0x1fa27cf8, 16)
-        STEP(H, b, c, d, a, GET(2), 0xc4ac5665, 23)
+        STEP(H, a, b, c, d, SET(5), 0xfffa3942, 4)
+        STEP(H, d, a, b, c, SET(8), 0x8771f681, 11)
+        STEP(H, c, d, a, b, SET(11), 0x6d9d6122, 16)
+        STEP(H, b, c, d, a, SET(14), 0xfde5380c, 23)
+        STEP(H, a, b, c, d, SET(1), 0xa4beea44, 4)
+        STEP(H, d, a, b, c, SET(4), 0x4bdecfa9, 11)
+        STEP(H, c, d, a, b, SET(7), 0xf6bb4b60, 16)
+        STEP(H, b, c, d, a, SET(10), 0xbebfbc70, 23)
+        STEP(H, a, b, c, d, SET(13), 0x289b7ec6, 4)
+        STEP(H, d, a, b, c, SET(0), 0xeaa127fa, 11)
+        STEP(H, c, d, a, b, SET(3), 0xd4ef3085, 16)
+        STEP(H, b, c, d, a, SET(6), 0x04881d05, 23)
+        STEP(H, a, b, c, d, SET(9), 0xd9d4d039, 4)
+        STEP(H, d, a, b, c, SET(12), 0xe6db99e5, 11)
+        STEP(H, c, d, a, b, SET(15), 0x1fa27cf8, 16)
+        STEP(H, b, c, d, a, SET(2), 0xc4ac5665, 23)
 
 /* Round 4 */
-        STEP(I, a, b, c, d, GET(0), 0xf4292244, 6)
-        STEP(I, d, a, b, c, GET(7), 0x432aff97, 10)
-        STEP(I, c, d, a, b, GET(14), 0xab9423a7, 15)
-        STEP(I, b, c, d, a, GET(5), 0xfc93a039, 21)
-        STEP(I, a, b, c, d, GET(12), 0x655b59c3, 6)
-        STEP(I, d, a, b, c, GET(3), 0x8f0ccc92, 10)
-        STEP(I, c, d, a, b, GET(10), 0xffeff47d, 15)
-        STEP(I, b, c, d, a, GET(1), 0x85845dd1, 21)
-        STEP(I, a, b, c, d, GET(8), 0x6fa87e4f, 6)
-        STEP(I, d, a, b, c, GET(15), 0xfe2ce6e0, 10)
-        STEP(I, c, d, a, b, GET(6), 0xa3014314, 15)
-        STEP(I, b, c, d, a, GET(13), 0x4e0811a1, 21)
-        STEP(I, a, b, c, d, GET(4), 0xf7537e82, 6)
-        STEP(I, d, a, b, c, GET(11), 0xbd3af235, 10)
-        STEP(I, c, d, a, b, GET(2), 0x2ad7d2bb, 15)
-        STEP(I, b, c, d, a, GET(9), 0xeb86d391, 21)
+        STEP(I, a, b, c, d, SET(0), 0xf4292244, 6)
+        STEP(I, d, a, b, c, SET(7), 0x432aff97, 10)
+        STEP(I, c, d, a, b, SET(14), 0xab9423a7, 15)
+        STEP(I, b, c, d, a, SET(5), 0xfc93a039, 21)
+        STEP(I, a, b, c, d, SET(12), 0x655b59c3, 6)
+        STEP(I, d, a, b, c, SET(3), 0x8f0ccc92, 10)
+        STEP(I, c, d, a, b, SET(10), 0xffeff47d, 15)
+        STEP(I, b, c, d, a, SET(1), 0x85845dd1, 21)
+        STEP(I, a, b, c, d, SET(8), 0x6fa87e4f, 6)
+        STEP(I, d, a, b, c, SET(15), 0xfe2ce6e0, 10)
+        STEP(I, c, d, a, b, SET(6), 0xa3014314, 15)
+        STEP(I, b, c, d, a, SET(13), 0x4e0811a1, 21)
+        STEP(I, a, b, c, d, SET(4), 0xf7537e82, 6)
+        STEP(I, d, a, b, c, SET(11), 0xbd3af235, 10)
+        STEP(I, c, d, a, b, SET(2), 0x2ad7d2bb, 15)
+        STEP(I, b, c, d, a, SET(9), 0xeb86d391, 21)
 
         a += saved_a;
         b += saved_b;
@@ -190,7 +189,7 @@ void md5_update(struct md5 *s, void *data, unsigned int size)
 
 }
 
-void md5_final(struct md5 *s, unsigned char *result)
+void md5_final(struct md5 *s, unsigned char *digest)
 {
 
     unsigned int used, free;
@@ -224,24 +223,22 @@ void md5_final(struct md5 *s, unsigned char *result)
 
     body(s, s->buffer, 64);
 
-    result[0] = s->a;
-    result[1] = s->a >> 8;
-    result[2] = s->a >> 16;
-    result[3] = s->a >> 24;
-    result[4] = s->b;
-    result[5] = s->b >> 8;
-    result[6] = s->b >> 16;
-    result[7] = s->b >> 24;
-    result[8] = s->c;
-    result[9] = s->c >> 8;
-    result[10] = s->c >> 16;
-    result[11] = s->c >> 24;
-    result[12] = s->d;
-    result[13] = s->d >> 8;
-    result[14] = s->d >> 16;
-    result[15] = s->d >> 24;
-
-    memory_clear(s, sizeof (*s));
+    digest[0] = s->a;
+    digest[1] = s->a >> 8;
+    digest[2] = s->a >> 16;
+    digest[3] = s->a >> 24;
+    digest[4] = s->b;
+    digest[5] = s->b >> 8;
+    digest[6] = s->b >> 16;
+    digest[7] = s->b >> 24;
+    digest[8] = s->c;
+    digest[9] = s->c >> 8;
+    digest[10] = s->c >> 16;
+    digest[11] = s->c >> 24;
+    digest[12] = s->d;
+    digest[13] = s->d >> 8;
+    digest[14] = s->d >> 16;
+    digest[15] = s->d >> 24;
 
 }
 
@@ -264,7 +261,7 @@ void main()
     md5_final(&s, digest);
 
     for (i = 0; i < 16; i++)
-        call_write(CALL_DO, 0, memory_write_paddednumber(num, 32, digest[i], 16, 0, 2), num);
+        call_write(CALL_DO, 0, memory_write_paddednumber(num, 32, digest[i], 16, 2, 0), num);
 
 }
 

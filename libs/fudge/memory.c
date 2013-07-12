@@ -97,7 +97,7 @@ unsigned int memory_write_number(void *out, unsigned int ocount, unsigned int nu
 
 }
 
-unsigned int memory_write_paddednumber(void *out, unsigned int ocount, unsigned int num, unsigned int base, unsigned int offset, unsigned int padding)
+unsigned int memory_write_paddednumber(void *out, unsigned int ocount, unsigned int num, unsigned int base, unsigned int padding, unsigned int offset)
 {
 
     char buffer[32];
