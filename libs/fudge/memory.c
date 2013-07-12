@@ -97,3 +97,25 @@ unsigned int memory_write_number(void *out, unsigned int ocount, unsigned int nu
 
 }
 
+unsigned int memory_write_paddednumber(void *out, unsigned int ocount, unsigned int num, unsigned int base, unsigned int offset, unsigned int padding)
+{
+
+    char buffer[32];
+    unsigned int index;
+
+    for (index = 0; index < 32; index++)
+        buffer[index] = '0';
+
+    if (!num)
+        return memory_write(out, ocount, "0", 1, offset);
+
+    for (index = 31; num && index; --index, num /= base)
+        buffer[index] = "0123456789abcdef"[num % base];
+
+    if (31 - index < padding)
+        index = 31 - padding;
+
+    return memory_write(out, ocount, buffer + index + 1, 31 - index, offset);
+
+}
+
