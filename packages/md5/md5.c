@@ -6,21 +6,14 @@ struct md5
     unsigned int lo, hi;
     unsigned int a, b, c, d;
     unsigned char buffer[64];
-    unsigned int block[16];
 
 };
 
-#define F(x, y, z)                      ((z) ^ ((x) & ((y) ^ (z))))
-#define G(x, y, z)                      ((y) ^ ((z) & ((x) ^ (y))))
-#define H(x, y, z)                      ((x) ^ (y) ^ (z))
-#define I(x, y, z)                      ((y) ^ ((x) | ~(z)))
-
-#define STEP(f, a, b, c, d, t, x, s) \
-    (a) += f((b), (c), (d)) + (x) + (tab[t]); \
-    (a) = (((a) << (s)) | ((a) >> (32 - (s)))); \
-    (a) += (b);
-
-#define SET(n) (*(unsigned int *)(current + (n * 4)))
+#define F(x, y, z)                      (z ^ (x & (y ^ z)))
+#define G(x, y, z)                      (y ^ (z & (x ^ y)))
+#define H(x, y, z)                      (x ^ y ^ z)
+#define I(x, y, z)                      (y ^ (x | ~z))
+#define STEP(f, a, b, c, d, t, x, s)    a += f(b, c, d) + x + t; a = ((a << s) | (a >> (32 - s))); a += b;
 
 static const unsigned int tab[64] =
 {
@@ -36,10 +29,10 @@ static const unsigned int tab[64] =
 
 };
 
-static void *body(struct md5 *s, void *data, unsigned int size)
+static void *body(struct md5 *s, unsigned int count, void *buffer)
 {
 
-    unsigned char *current = data;
+    unsigned int *current = buffer;
     unsigned int a, b, c, d;
     unsigned int sa, sb, sc, sd;
 
@@ -55,78 +48,78 @@ static void *body(struct md5 *s, void *data, unsigned int size)
         sc = c;
         sd = d;
 
-        STEP(F, a, b, c, d, 0x00, SET(0), 7)
-        STEP(F, d, a, b, c, 0x01, SET(1), 12)
-        STEP(F, c, d, a, b, 0x02, SET(2), 17)
-        STEP(F, b, c, d, a, 0x03, SET(3), 22)
-        STEP(F, a, b, c, d, 0x04, SET(4), 7)
-        STEP(F, d, a, b, c, 0x05, SET(5), 12)
-        STEP(F, c, d, a, b, 0x06, SET(6), 17)
-        STEP(F, b, c, d, a, 0x07, SET(7), 22)
-        STEP(F, a, b, c, d, 0x08, SET(8), 7)
-        STEP(F, d, a, b, c, 0x09, SET(9), 12)
-        STEP(F, c, d, a, b, 0x0A, SET(10), 17)
-        STEP(F, b, c, d, a, 0x0B, SET(11), 22)
-        STEP(F, a, b, c, d, 0x0C, SET(12), 7)
-        STEP(F, d, a, b, c, 0x0D, SET(13), 12)
-        STEP(F, c, d, a, b, 0x0E, SET(14), 17)
-        STEP(F, b, c, d, a, 0x0F, SET(15), 22)
-        STEP(G, a, b, c, d, 0x10, SET(1), 5)
-        STEP(G, d, a, b, c, 0x11, SET(6), 9)
-        STEP(G, c, d, a, b, 0x12, SET(11), 14)
-        STEP(G, b, c, d, a, 0x13, SET(0), 20)
-        STEP(G, a, b, c, d, 0x14, SET(5), 5)
-        STEP(G, d, a, b, c, 0x15, SET(10), 9)
-        STEP(G, c, d, a, b, 0x16, SET(15), 14)
-        STEP(G, b, c, d, a, 0x17, SET(4), 20)
-        STEP(G, a, b, c, d, 0x18, SET(9), 5)
-        STEP(G, d, a, b, c, 0x19, SET(14), 9)
-        STEP(G, c, d, a, b, 0x1A, SET(3), 14)
-        STEP(G, b, c, d, a, 0x1B, SET(8), 20)
-        STEP(G, a, b, c, d, 0x1C, SET(13), 5)
-        STEP(G, d, a, b, c, 0x1D, SET(2), 9)
-        STEP(G, c, d, a, b, 0x1E, SET(7), 14)
-        STEP(G, b, c, d, a, 0x1F, SET(12), 20)
-        STEP(H, a, b, c, d, 0x20, SET(5), 4)
-        STEP(H, d, a, b, c, 0x21, SET(8), 11)
-        STEP(H, c, d, a, b, 0x22, SET(11), 16)
-        STEP(H, b, c, d, a, 0x23, SET(14), 23)
-        STEP(H, a, b, c, d, 0x24, SET(1), 4)
-        STEP(H, d, a, b, c, 0x25, SET(4), 11)
-        STEP(H, c, d, a, b, 0x26, SET(7), 16)
-        STEP(H, b, c, d, a, 0x27, SET(10), 23)
-        STEP(H, a, b, c, d, 0x28, SET(13), 4)
-        STEP(H, d, a, b, c, 0x29, SET(0), 11)
-        STEP(H, c, d, a, b, 0x2A, SET(3), 16)
-        STEP(H, b, c, d, a, 0x2B, SET(6), 23)
-        STEP(H, a, b, c, d, 0x2C, SET(9), 4)
-        STEP(H, d, a, b, c, 0x2D, SET(12), 11)
-        STEP(H, c, d, a, b, 0x2E, SET(15), 16)
-        STEP(H, b, c, d, a, 0x2F, SET(2), 23)
-        STEP(I, a, b, c, d, 0x30, SET(0), 6)
-        STEP(I, d, a, b, c, 0x31, SET(7), 10)
-        STEP(I, c, d, a, b, 0x32, SET(14), 15)
-        STEP(I, b, c, d, a, 0x33, SET(5), 21)
-        STEP(I, a, b, c, d, 0x34, SET(12), 6)
-        STEP(I, d, a, b, c, 0x35, SET(3), 10)
-        STEP(I, c, d, a, b, 0x36, SET(10), 15)
-        STEP(I, b, c, d, a, 0x37, SET(1), 21)
-        STEP(I, a, b, c, d, 0x38, SET(8), 6)
-        STEP(I, d, a, b, c, 0x39, SET(15), 10)
-        STEP(I, c, d, a, b, 0x3A, SET(6), 15)
-        STEP(I, b, c, d, a, 0x3B, SET(13), 21)
-        STEP(I, a, b, c, d, 0x3C, SET(4), 6)
-        STEP(I, d, a, b, c, 0x3D, SET(11), 10)
-        STEP(I, c, d, a, b, 0x3E, SET(2), 15)
-        STEP(I, b, c, d, a, 0x3F, SET(9), 21)
+        STEP(F, a, b, c, d, tab[0x00], current[0], 7)
+        STEP(F, d, a, b, c, tab[0x01], current[1], 12)
+        STEP(F, c, d, a, b, tab[0x02], current[2], 17)
+        STEP(F, b, c, d, a, tab[0x03], current[3], 22)
+        STEP(F, a, b, c, d, tab[0x04], current[4], 7)
+        STEP(F, d, a, b, c, tab[0x05], current[5], 12)
+        STEP(F, c, d, a, b, tab[0x06], current[6], 17)
+        STEP(F, b, c, d, a, tab[0x07], current[7], 22)
+        STEP(F, a, b, c, d, tab[0x08], current[8], 7)
+        STEP(F, d, a, b, c, tab[0x09], current[9], 12)
+        STEP(F, c, d, a, b, tab[0x0A], current[10], 17)
+        STEP(F, b, c, d, a, tab[0x0B], current[11], 22)
+        STEP(F, a, b, c, d, tab[0x0C], current[12], 7)
+        STEP(F, d, a, b, c, tab[0x0D], current[13], 12)
+        STEP(F, c, d, a, b, tab[0x0E], current[14], 17)
+        STEP(F, b, c, d, a, tab[0x0F], current[15], 22)
+        STEP(G, a, b, c, d, tab[0x10], current[1], 5)
+        STEP(G, d, a, b, c, tab[0x11], current[6], 9)
+        STEP(G, c, d, a, b, tab[0x12], current[11], 14)
+        STEP(G, b, c, d, a, tab[0x13], current[0], 20)
+        STEP(G, a, b, c, d, tab[0x14], current[5], 5)
+        STEP(G, d, a, b, c, tab[0x15], current[10], 9)
+        STEP(G, c, d, a, b, tab[0x16], current[15], 14)
+        STEP(G, b, c, d, a, tab[0x17], current[4], 20)
+        STEP(G, a, b, c, d, tab[0x18], current[9], 5)
+        STEP(G, d, a, b, c, tab[0x19], current[14], 9)
+        STEP(G, c, d, a, b, tab[0x1A], current[3], 14)
+        STEP(G, b, c, d, a, tab[0x1B], current[8], 20)
+        STEP(G, a, b, c, d, tab[0x1C], current[13], 5)
+        STEP(G, d, a, b, c, tab[0x1D], current[2], 9)
+        STEP(G, c, d, a, b, tab[0x1E], current[7], 14)
+        STEP(G, b, c, d, a, tab[0x1F], current[12], 20)
+        STEP(H, a, b, c, d, tab[0x20], current[5], 4)
+        STEP(H, d, a, b, c, tab[0x21], current[8], 11)
+        STEP(H, c, d, a, b, tab[0x22], current[11], 16)
+        STEP(H, b, c, d, a, tab[0x23], current[14], 23)
+        STEP(H, a, b, c, d, tab[0x24], current[1], 4)
+        STEP(H, d, a, b, c, tab[0x25], current[4], 11)
+        STEP(H, c, d, a, b, tab[0x26], current[7], 16)
+        STEP(H, b, c, d, a, tab[0x27], current[10], 23)
+        STEP(H, a, b, c, d, tab[0x28], current[13], 4)
+        STEP(H, d, a, b, c, tab[0x29], current[0], 11)
+        STEP(H, c, d, a, b, tab[0x2A], current[3], 16)
+        STEP(H, b, c, d, a, tab[0x2B], current[6], 23)
+        STEP(H, a, b, c, d, tab[0x2C], current[9], 4)
+        STEP(H, d, a, b, c, tab[0x2D], current[12], 11)
+        STEP(H, c, d, a, b, tab[0x2E], current[15], 16)
+        STEP(H, b, c, d, a, tab[0x2F], current[2], 23)
+        STEP(I, a, b, c, d, tab[0x30], current[0], 6)
+        STEP(I, d, a, b, c, tab[0x31], current[7], 10)
+        STEP(I, c, d, a, b, tab[0x32], current[14], 15)
+        STEP(I, b, c, d, a, tab[0x33], current[5], 21)
+        STEP(I, a, b, c, d, tab[0x34], current[12], 6)
+        STEP(I, d, a, b, c, tab[0x35], current[3], 10)
+        STEP(I, c, d, a, b, tab[0x36], current[10], 15)
+        STEP(I, b, c, d, a, tab[0x37], current[1], 21)
+        STEP(I, a, b, c, d, tab[0x38], current[8], 6)
+        STEP(I, d, a, b, c, tab[0x39], current[15], 10)
+        STEP(I, c, d, a, b, tab[0x3A], current[6], 15)
+        STEP(I, b, c, d, a, tab[0x3B], current[13], 21)
+        STEP(I, a, b, c, d, tab[0x3C], current[4], 6)
+        STEP(I, d, a, b, c, tab[0x3D], current[11], 10)
+        STEP(I, c, d, a, b, tab[0x3E], current[2], 15)
+        STEP(I, b, c, d, a, tab[0x3F], current[9], 21)
 
         a += sa;
         b += sb;
         c += sc;
         d += sd;
-        current += 64;
+        current += 16;
 
-    } while (size -= 64);
+    } while (count -= 64);
 
     s->a = a;
     s->b = b;
@@ -137,7 +130,7 @@ static void *body(struct md5 *s, void *data, unsigned int size)
 
 }
 
-static void md5_update(struct md5 *s, void *data, unsigned int size)
+static void md5_read(struct md5 *s, unsigned int count, void *buffer)
 {
 
     unsigned int lo;
@@ -145,10 +138,10 @@ static void md5_update(struct md5 *s, void *data, unsigned int size)
 
     lo = s->lo;
 
-    if ((s->lo = (lo + size) & 0x1fffffff) < lo)
+    if ((s->lo = (lo + count) & 0x1fffffff) < lo)
         s->hi++;
 
-    s->hi += size >> 29;
+    s->hi += count >> 29;
     used = lo & 0x3f;
 
     if (used)
@@ -156,35 +149,35 @@ static void md5_update(struct md5 *s, void *data, unsigned int size)
 
         free = 64 - used;
 
-        if (size < free)
+        if (count < free)
         {
 
-            memory_copy(&s->buffer[used], data, size);
+            memory_copy(&s->buffer[used], buffer, count);
 
             return;
 
         }
 
-        memory_copy(&s->buffer[used], data, free);
-        data = (unsigned char *)data + free;
-        size -= free;
-        body(s, s->buffer, 64);
+        memory_copy(&s->buffer[used], buffer, free);
+        buffer = (unsigned char *)buffer + free;
+        count -= free;
+        body(s, 64, s->buffer);
 
     }
 
-    if (size >= 64)
+    if (count >= 64)
     {
 
-        data = body(s, data, size & ~0x3f);
-        size &= 0x3f;
+        buffer = body(s, count & ~0x3f, buffer);
+        count &= 0x3f;
 
     }
 
-    memory_copy(s->buffer, data, size);
+    memory_copy(s->buffer, buffer, count);
 
 }
 
-static void md5_final(struct md5 *s, unsigned char *digest)
+static void md5_write(struct md5 *s, unsigned int count, unsigned char *digest)
 {
 
     unsigned int used, free;
@@ -197,7 +190,7 @@ static void md5_final(struct md5 *s, unsigned char *digest)
     {
 
         memory_clear(&s->buffer[used], free);
-        body(s, s->buffer, 64);
+        body(s, 64, s->buffer);
 
         used = 0;
         free = 64;
@@ -216,7 +209,7 @@ static void md5_final(struct md5 *s, unsigned char *digest)
     s->buffer[62] = s->hi >> 16;
     s->buffer[63] = s->hi >> 24;
 
-    body(s, s->buffer, 64);
+    body(s, 64, s->buffer);
 
     digest[0] = s->a;
     digest[1] = s->a >> 8;
@@ -263,9 +256,9 @@ void main()
     md5_init(&s);
 
     for (offset = 0; (count = call_read(CALL_DI, offset, FUDGE_BSIZE, buffer)); offset += count)
-        md5_update(&s, buffer, count);
+        md5_read(&s, count, buffer);
 
-    md5_final(&s, digest);
+    md5_write(&s, 16, digest);
 
     for (i = 0; i < 16; i++)
         call_write(CALL_DO, 0, memory_write_paddednumber(num, 32, digest[i], 16, 2, 0), num);
