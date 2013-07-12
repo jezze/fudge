@@ -1,5 +1,6 @@
 include packages/cconv/rules.mk
 include packages/complete/rules.mk
+include packages/count/rules.mk
 include packages/cpio/rules.mk
 include packages/date/rules.mk
 include packages/dump/rules.mk
@@ -8,7 +9,6 @@ include packages/hello/rules.mk
 include packages/help/rules.mk
 include packages/init/rules.mk
 include packages/keymap/rules.mk
-include packages/linecount/rules.mk
 include packages/linenumber/rules.mk
 include packages/ls/rules.mk
 include packages/mod/rules.mk

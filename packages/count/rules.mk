@@ -1,5 +1,5 @@
-BIN:=packages/linecount/linecount
-OBJ:=packages/linecount/linecount.o
+BIN:=packages/count/countl
+OBJ:=packages/count/countl.o
 
 $(BIN): $(OBJ) $(LIBFUDGE) $(EXTRA)
 	$(LD) $(LDFLAGS) -o $@ $^
