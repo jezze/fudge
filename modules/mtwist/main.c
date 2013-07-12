@@ -111,7 +111,6 @@ unsigned int mtwist_rand(struct mtwist_state *state)
 
 }
 
-/*
 double mtwist_drand(struct mtwist_state *state)
 {
 
@@ -124,7 +123,6 @@ double mtwist_drand(struct mtwist_state *state)
     return mtwist_rand(state) * conv;
 
 }
-*/
 
 unsigned int read(struct system_stream *self, unsigned int offset, unsigned int count, void *buffer)
 {

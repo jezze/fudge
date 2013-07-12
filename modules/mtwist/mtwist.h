@@ -11,6 +11,4 @@ struct mtwist_state
 void mtwist_seed(struct mtwist_state *state, unsigned int seed);
 void mtwist_seed2(struct mtwist_state *state, unsigned int seed);
 unsigned int mtwist_rand(struct mtwist_state *state);
-/*
 double mtwist_drand(struct mtwist_state *state);
-*/
