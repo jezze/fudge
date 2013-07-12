@@ -1,7 +1,5 @@
-include packages/base/basename/rules.mk
 include packages/base/complete/rules.mk
 include packages/base/cpio/rules.mk
-include packages/base/dirname/rules.mk
 include packages/base/echo/rules.mk
 include packages/base/hello/rules.mk
 include packages/base/help/rules.mk
@@ -11,6 +9,7 @@ include packages/base/load/rules.mk
 include packages/base/ls/rules.mk
 include packages/base/motd/rules.mk
 include packages/base/mount/rules.mk
+include packages/base/name/rules.mk
 include packages/base/reboot/rules.mk
 include packages/base/shell/rules.mk
 include packages/base/slang/rules.mk

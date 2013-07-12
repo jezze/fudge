@@ -1,13 +1,13 @@
-BIN_DATA:=packages/graphics/pcx/pcxdata
-OBJ_DATA:=packages/graphics/pcx/pcxdata.o
-BIN_CMAP:=packages/graphics/pcx/pcxcmap
-OBJ_CMAP:=packages/graphics/pcx/pcxcmap.o
+PCXDATA_BIN:=packages/graphics/pcx/pcxdata
+PCXDATA_OBJ:=packages/graphics/pcx/pcxdata.o
+PCXCMAP_BIN:=packages/graphics/pcx/pcxcmap
+PCXCMAP_OBJ:=packages/graphics/pcx/pcxcmap.o
 
-$(BIN_DATA): $(OBJ_DATA) $(LIBFUDGE) $(EXTRA)
+$(PCXDATA_BIN): $(PCXDATA_OBJ) $(LIBFUDGE) $(EXTRA)
 	$(LD) $(LDFLAGS) -o $@ $^
 
-$(BIN_CMAP): $(OBJ_CMAP) $(LIBFUDGE) $(EXTRA)
+$(PCXCMAP_BIN): $(PCXCMAP_OBJ) $(LIBFUDGE) $(EXTRA)
 	$(LD) $(LDFLAGS) -o $@ $^
 
-PACKAGES+=$(BIN_DATA) $(BIN_CMAP)
-PACKAGES_OBJECTS+=$(OBJ_DATA) $(OBJ_CMAP)
+PACKAGES+=$(PCXDATA_BIN) $(PCXCMAP_BIN)
+PACKAGES_OBJECTS+=$(PCXDATA_OBJ) $(PCXCMAP_OBJ)
