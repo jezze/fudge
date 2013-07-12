@@ -47,3 +47,18 @@ unsigned int circular_stream_write(struct circular_stream *stream, unsigned int 
 
 }
 
+void circular_stream_clear(struct circular_stream *stream)
+{
+
+    stream->head = 0;
+    stream->tail = 0;
+
+}
+
+unsigned int circular_stream_isempty(struct circular_stream *stream)
+{
+
+    return stream->head == stream->tail;
+
+}
+

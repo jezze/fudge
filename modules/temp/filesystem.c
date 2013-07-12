@@ -44,6 +44,9 @@ static unsigned int match(struct vfs_backend *backend)
 static unsigned int open(struct vfs_backend *backend, unsigned int id)
 {
 
+    if (id > 1)
+        circular_stream_clear(&buffers[id - 2]);
+
     return 1;
 
 }
