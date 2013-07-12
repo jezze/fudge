@@ -10,8 +10,8 @@ include packages/init/rules.mk
 include packages/keymap/rules.mk
 include packages/linecount/rules.mk
 include packages/linenumber/rules.mk
-include packages/load/rules.mk
 include packages/ls/rules.mk
+include packages/mod/rules.mk
 include packages/motd/rules.mk
 include packages/mount/rules.mk
 include packages/name/rules.mk
@@ -21,7 +21,6 @@ include packages/shell/rules.mk
 include packages/slang/rules.mk
 include packages/tail/rules.mk
 include packages/timer/rules.mk
-include packages/unload/rules.mk
 include packages/wait/rules.mk
 include packages/wm/rules.mk
 
