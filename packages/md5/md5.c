@@ -41,7 +41,7 @@ static void *body(struct md5 *s, void *data, unsigned int size)
 
     unsigned char *current = data;
     unsigned int a, b, c, d;
-    unsigned int saved_a, saved_b, saved_c, saved_d;
+    unsigned int sa, sb, sc, sd;
 
     a = s->a;
     b = s->b;
@@ -50,10 +50,10 @@ static void *body(struct md5 *s, void *data, unsigned int size)
 
     do {
 
-        saved_a = a;
-        saved_b = b;
-        saved_c = c;
-        saved_d = d;
+        sa = a;
+        sb = b;
+        sc = c;
+        sd = d;
 
         STEP(F, a, b, c, d, 0x00, SET(0), 7)
         STEP(F, d, a, b, c, 0x01, SET(1), 12)
@@ -120,10 +120,10 @@ static void *body(struct md5 *s, void *data, unsigned int size)
         STEP(I, c, d, a, b, 0x3E, SET(2), 15)
         STEP(I, b, c, d, a, 0x3F, SET(9), 21)
 
-        a += saved_a;
-        b += saved_b;
-        c += saved_c;
-        d += saved_d;
+        a += sa;
+        b += sb;
+        c += sc;
+        d += sd;
         current += 64;
 
     } while (size -= 64);
@@ -137,31 +137,19 @@ static void *body(struct md5 *s, void *data, unsigned int size)
 
 }
 
-static void md5_init(struct md5 *s)
-{
-
-    s->a = 0x67452301;
-    s->b = 0xefcdab89;
-    s->c = 0x98badcfe;
-    s->d = 0x10325476;
-    s->lo = 0;
-    s->hi = 0;
-
-}
-
 static void md5_update(struct md5 *s, void *data, unsigned int size)
 {
 
-    unsigned int saved_lo;
+    unsigned int lo;
     unsigned int used, free;
 
-    saved_lo = s->lo;
+    lo = s->lo;
 
-    if ((s->lo = (saved_lo + size) & 0x1fffffff) < saved_lo)
+    if ((s->lo = (lo + size) & 0x1fffffff) < lo)
         s->hi++;
 
     s->hi += size >> 29;
-    used = saved_lo & 0x3f;
+    used = lo & 0x3f;
 
     if (used)
     {
@@ -187,7 +175,7 @@ static void md5_update(struct md5 *s, void *data, unsigned int size)
     if (size >= 64)
     {
 
-        data = body(s, data, size & ~(unsigned int)0x3f);
+        data = body(s, data, size & ~0x3f);
         size &= 0x3f;
 
     }
@@ -246,6 +234,18 @@ static void md5_final(struct md5 *s, unsigned char *digest)
     digest[13] = s->d >> 8;
     digest[14] = s->d >> 16;
     digest[15] = s->d >> 24;
+
+}
+
+static void md5_init(struct md5 *s)
+{
+
+    memory_clear(s, sizeof (struct md5));
+
+    s->a = 0x67452301;
+    s->b = 0xefcdab89;
+    s->c = 0x98badcfe;
+    s->d = 0x10325476;
 
 }
 
