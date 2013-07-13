@@ -9,14 +9,14 @@ struct md5
 
 };
 
-#define F(x,y,z) (z ^ (x & (y ^ z)))
-#define G(x,y,z) (y ^ (z & (y ^ x)))
-#define H(x,y,z) (x ^ y ^ z)
-#define I(x,y,z) (y ^ (x | ~z))
-#define FF(a,b,c,d,w,s,t) a += F(b,c,d) + w + t; a = rol(a,s) + b
-#define GG(a,b,c,d,w,s,t) a += G(b,c,d) + w + t; a = rol(a,s) + b
-#define HH(a,b,c,d,w,s,t) a += H(b,c,d) + w + t; a = rol(a,s) + b
-#define II(a,b,c,d,w,s,t) a += I(b,c,d) + w + t; a = rol(a,s) + b
+#define F(x, y, z)                      (z ^ (x & (y ^ z)))
+#define G(x, y, z)                      (y ^ (z & (y ^ x)))
+#define H(x, y, z)                      (x ^ y ^ z)
+#define I(x, y, z)                      (y ^ (x | ~z))
+#define FF(a, b, c, d, w, s, t)         a += F(b, c, d) + w + t; a = rol(a, s) + b
+#define GG(a, b, c, d, w, s, t)         a += G(b, c, d) + w + t; a = rol(a, s) + b
+#define HH(a, b, c, d, w, s, t)         a += H(b, c, d) + w + t; a = rol(a, s) + b
+#define II(a, b, c, d, w, s, t)         a += I(b, c, d) + w + t; a = rol(a, s) + b
 
 static const unsigned int tab[64] =
 {
@@ -44,76 +44,76 @@ static void processblock(struct md5 *s, unsigned char *buffer)
 
     unsigned int W[16];
     unsigned int a, b, c, d;
-	unsigned int i;
+    unsigned int i;
 
-	for (i = 0; i < 16; i++)
+    for (i = 0; i < 16; i++)
     {
 
-		W[i] = buffer[4 * i];
-		W[i] |= (unsigned int)buffer[4 * i + 1] << 8;
-		W[i] |= (unsigned int)buffer[4 * i + 2] << 16;
-		W[i] |= (unsigned int)buffer[4 * i + 3] << 24;
+        W[i] = buffer[4 * i];
+        W[i] |= (unsigned int)buffer[4 * i + 1] << 8;
+        W[i] |= (unsigned int)buffer[4 * i + 2] << 16;
+        W[i] |= (unsigned int)buffer[4 * i + 3] << 24;
 
-	}
+    }
 
-	a = s->a;
-	b = s->b;
-	c = s->c;
-	d = s->d;
+    a = s->a;
+    b = s->b;
+    c = s->c;
+    d = s->d;
 
-	i = 0;
+    i = 0;
 
-	while (i < 16)
+    while (i < 16)
     {
 
-		FF(a,b,c,d, W[i],  7, tab[i]); i++;
-		FF(d,a,b,c, W[i], 12, tab[i]); i++;
-		FF(c,d,a,b, W[i], 17, tab[i]); i++;
-		FF(b,c,d,a, W[i], 22, tab[i]); i++;
+        FF(a, b, c, d, W[i],  7, tab[i]); i++;
+        FF(d, a, b, c, W[i], 12, tab[i]); i++;
+        FF(c, d, a, b, W[i], 17, tab[i]); i++;
+        FF(b, c, d, a, W[i], 22, tab[i]); i++;
 
-	}
+    }
 
-	while (i < 32)
+    while (i < 32)
     {
 
-		GG(a,b,c,d, W[(5*i+1)%16],  5, tab[i]); i++;
-		GG(d,a,b,c, W[(5*i+1)%16],  9, tab[i]); i++;
-		GG(c,d,a,b, W[(5*i+1)%16], 14, tab[i]); i++;
-		GG(b,c,d,a, W[(5*i+1)%16], 20, tab[i]); i++;
+        GG(a, b, c, d, W[(5 * i + 1) % 16],  5, tab[i]); i++;
+        GG(d, a, b, c, W[(5 * i + 1) % 16],  9, tab[i]); i++;
+        GG(c, d, a, b, W[(5 * i + 1) % 16], 14, tab[i]); i++;
+        GG(b, c, d, a, W[(5 * i + 1) % 16], 20, tab[i]); i++;
 
-	}
+    }
 
-	while (i < 48)
+    while (i < 48)
     {
 
-		HH(a,b,c,d, W[(3*i+5)%16],  4, tab[i]); i++;
-		HH(d,a,b,c, W[(3*i+5)%16], 11, tab[i]); i++;
-		HH(c,d,a,b, W[(3*i+5)%16], 16, tab[i]); i++;
-		HH(b,c,d,a, W[(3*i+5)%16], 23, tab[i]); i++;
+        HH(a, b, c, d, W[(3 * i + 5) % 16],  4, tab[i]); i++;
+        HH(d, a, b, c, W[(3 * i + 5) % 16], 11, tab[i]); i++;
+        HH(c, d, a, b, W[(3 * i + 5) % 16], 16, tab[i]); i++;
+        HH(b, c, d, a, W[(3 * i + 5) % 16], 23, tab[i]); i++;
 
-	}
+    }
 
-	while (i < 64)
+    while (i < 64)
     {
 
-		II(a,b,c,d, W[7*i%16],  6, tab[i]); i++;
-		II(d,a,b,c, W[7*i%16], 10, tab[i]); i++;
-		II(c,d,a,b, W[7*i%16], 15, tab[i]); i++;
-		II(b,c,d,a, W[7*i%16], 21, tab[i]); i++;
+        II(a, b, c, d, W[7 * i % 16],  6, tab[i]); i++;
+        II(d, a, b, c, W[7 * i % 16], 10, tab[i]); i++;
+        II(c, d, a, b, W[7 * i % 16], 15, tab[i]); i++;
+        II(b, c, d, a, W[7 * i % 16], 21, tab[i]); i++;
 
-	}
+    }
 
-	s->a += a;
-	s->b += b;
-	s->c += c;
-	s->d += d;
+    s->a += a;
+    s->b += b;
+    s->c += c;
+    s->d += d;
 
 }
 
 static void pad(struct md5 *s)
 {
 
-    unsigned r = s->lo % 64;
+    unsigned r = s->lo & 0x3f;
 
     s->buffer[r++] = 0x80;
 
@@ -159,7 +159,9 @@ static void md5_read(struct md5 *s, unsigned int count, void *buffer)
     if (r)
     {
 
-        if (count < 64 - r)
+        unsigned int c = 64 - r;
+
+        if (count < c)
         {
 
             memory_copy(s->buffer + r, p, count);
@@ -168,10 +170,10 @@ static void md5_read(struct md5 *s, unsigned int count, void *buffer)
 
         }
 
-        memory_copy(s->buffer + r, p, 64 - r);
+        memory_copy(s->buffer + r, p, c);
 
-        p += 64 - r;
-        count -= 64 - r;
+        p += c;
+        count -= c;
 
         processblock(s, s->buffer);
 

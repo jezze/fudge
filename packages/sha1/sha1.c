@@ -3,20 +3,20 @@
 struct sha1
 {
 
-	unsigned int lo, hi;
-	unsigned int a, b, c, d, e;
-	unsigned char buffer[64];
+    unsigned int lo, hi;
+    unsigned int a, b, c, d, e;
+    unsigned char buffer[64];
 
 };
 
-#define F0(b,c,d) (d ^ (b & (c ^ d)))
-#define F1(b,c,d) (b ^ c ^ d)
-#define F2(b,c,d) ((b & c) | (d & (b | c)))
-#define F3(b,c,d) (b ^ c ^ d)
-#define G0(a,b,c,d,e,i) e += rol(a,5) + F0(b, c, d) + W[i] + 0x5A827999; b = rol(b, 30)
-#define G1(a,b,c,d,e,i) e += rol(a,5) + F1(b, c, d) + W[i] + 0x6ED9EBA1; b = rol(b, 30)
-#define G2(a,b,c,d,e,i) e += rol(a,5) + F2(b, c, d) + W[i] + 0x8F1BBCDC; b = rol(b, 30)
-#define G3(a,b,c,d,e,i) e += rol(a,5) + F3(b, c, d) + W[i] + 0xCA62C1D6; b = rol(b, 30)
+#define F0(b, c, d)                     (d ^ (b & (c ^ d)))
+#define F1(b, c, d)                     (b ^ c ^ d)
+#define F2(b, c, d)                     ((b & c) | (d & (b | c)))
+#define F3(b, c, d)                     (b ^ c ^ d)
+#define G0(a, b, c, d, e, i)            e += rol(a, 5) + F0(b, c, d) + W[i] + 0x5A827999; b = rol(b, 30)
+#define G1(a, b, c, d, e, i)            e += rol(a, 5) + F1(b, c, d) + W[i] + 0x6ED9EBA1; b = rol(b, 30)
+#define G2(a, b, c, d, e, i)            e += rol(a, 5) + F2(b, c, d) + W[i] + 0x8F1BBCDC; b = rol(b, 30)
+#define G3(a, b, c, d, e, i)            e += rol(a, 5) + F3(b, c, d) + W[i] + 0xCA62C1D6; b = rol(b, 30)
 
 static unsigned int rol(unsigned int n, int k)
 {
@@ -28,113 +28,113 @@ static unsigned int rol(unsigned int n, int k)
 static void processblock(struct sha1 *s, unsigned char *buffer)
 {
 
-	unsigned int W[80];
+    unsigned int W[80];
     unsigned int a, b, c, d, e;
-	int i;
+    unsigned int i;
 
-	for (i = 0; i < 16; i++)
+    for (i = 0; i < 16; i++)
     {
 
-		W[i] = (unsigned int)buffer[4 * i] << 24;
-		W[i] |= (unsigned int)buffer[4 * i + 1] << 16;
-		W[i] |= (unsigned int)buffer[4 * i + 2] << 8;
-		W[i] |= buffer[4 * i + 3];
+        W[i] = (unsigned int)buffer[4 * i] << 24;
+        W[i] |= (unsigned int)buffer[4 * i + 1] << 16;
+        W[i] |= (unsigned int)buffer[4 * i + 2] << 8;
+        W[i] |= buffer[4 * i + 3];
 
-	}
+    }
 
-	for (; i < 80; i++)
-		W[i] = rol(W[i - 3] ^ W[i - 8] ^ W[i - 14] ^ W[i - 16], 1);
+    for (; i < 80; i++)
+        W[i] = rol(W[i - 3] ^ W[i - 8] ^ W[i - 14] ^ W[i - 16], 1);
 
-	a = s->a;
-	b = s->b;
-	c = s->c;
-	d = s->d;
-	e = s->e;
+    a = s->a;
+    b = s->b;
+    c = s->c;
+    d = s->d;
+    e = s->e;
 
     i = 0;
 
-	while (i < 20)
+    while (i < 20)
     {
 
-		G0(a,b,c,d,e,i++);
-		G0(e,a,b,c,d,i++);
-		G0(d,e,a,b,c,i++);
-		G0(c,d,e,a,b,i++);
-		G0(b,c,d,e,a,i++);
-	}
+        G0(a, b, c, d, e, i++);
+        G0(e, a, b, c, d, i++);
+        G0(d, e, a, b, c, i++);
+        G0(c, d, e, a, b, i++);
+        G0(b, c, d, e, a, i++);
+    }
 
-	while (i < 40)
+    while (i < 40)
     {
 
-		G1(a,b,c,d,e,i++);
-		G1(e,a,b,c,d,i++);
-		G1(d,e,a,b,c,i++);
-		G1(c,d,e,a,b,i++);
-		G1(b,c,d,e,a,i++);
+        G1(a, b, c, d, e, i++);
+        G1(e, a, b, c, d, i++);
+        G1(d, e, a, b, c, i++);
+        G1(c, d, e, a, b, i++);
+        G1(b, c, d, e, a, i++);
 
-	}
+    }
 
-	while (i < 60)
+    while (i < 60)
     {
 
-		G2(a,b,c,d,e,i++);
-		G2(e,a,b,c,d,i++);
-		G2(d,e,a,b,c,i++);
-		G2(c,d,e,a,b,i++);
-		G2(b,c,d,e,a,i++);
+        G2(a, b, c, d, e, i++);
+        G2(e, a, b, c, d, i++);
+        G2(d, e, a, b, c, i++);
+        G2(c, d, e, a, b, i++);
+        G2(b, c, d, e, a, i++);
 
-	}
+    }
 
-	while (i < 80)
+    while (i < 80)
     {
 
-		G3(a,b,c,d,e,i++);
-		G3(e,a,b,c,d,i++);
-		G3(d,e,a,b,c,i++);
-		G3(c,d,e,a,b,i++);
-		G3(b,c,d,e,a,i++);
+        G3(a, b, c, d, e, i++);
+        G3(e, a, b, c, d, i++);
+        G3(d, e, a, b, c, i++);
+        G3(c, d, e, a, b, i++);
+        G3(b, c, d, e, a, i++);
 
-	}
+    }
 
-	s->a += a;
-	s->b += b;
-	s->c += c;
-	s->d += d;
-	s->e += e;
+    s->a += a;
+    s->b += b;
+    s->c += c;
+    s->d += d;
+    s->e += e;
 
 }
 
 static void pad(struct sha1 *s)
 {
 
-	unsigned r = s->lo % 64;
+    unsigned r = s->lo & 0x3f;
 
-	s->buffer[r++] = 0x80;
+    s->buffer[r++] = 0x80;
 
-	if (r > 56)
+    if (r > 56)
     {
 
-		memory_clear(s->buffer + r, 64 - r);
+        memory_clear(s->buffer + r, 64 - r);
 
-		r = 0;
+        r = 0;
 
-		processblock(s, s->buffer);
+        processblock(s, s->buffer);
 
-	}
+    }
 
-	memory_clear(s->buffer + r, 56 - r);
+    memory_clear(s->buffer + r, 56 - r);
 
-	s->lo *= 8;
-	s->buffer[56] = s->hi >> 24;
-	s->buffer[57] = s->hi >> 16;
-	s->buffer[58] = s->hi >> 8;
-	s->buffer[59] = s->hi;
-	s->buffer[60] = s->lo >> 24;
-	s->buffer[61] = s->lo >> 16;
-	s->buffer[62] = s->lo >> 8;
-	s->buffer[63] = s->lo;
+    s->lo <<= 3;
+    s->buffer[56] = s->hi >> 24;
+    s->buffer[57] = s->hi >> 16;
+    s->buffer[58] = s->hi >> 8;
+    s->buffer[59] = s->hi;
+    s->buffer[60] = s->lo >> 24;
+    s->buffer[61] = s->lo >> 16;
+    s->buffer[62] = s->lo >> 8;
+    s->buffer[63] = s->lo;
 
-	processblock(s, s->buffer);
+    processblock(s, s->buffer);
 
 }
 
@@ -153,7 +153,9 @@ static void sha1_read(struct sha1 *s, unsigned int count, void *buffer)
     if (r)
     {
 
-        if (count < 64 - r)
+        unsigned int c = 64 - r;
+
+        if (count < c)
         {
 
             memory_copy(s->buffer + r, p, count);
@@ -162,10 +164,10 @@ static void sha1_read(struct sha1 *s, unsigned int count, void *buffer)
 
         }
 
-        memory_copy(s->buffer + r, p, 64 - r);
+        memory_copy(s->buffer + r, p, c);
 
-        p += 64 - r;
-        count -= 64 - r;
+        p += c;
+        count -= c;
 
         processblock(s, s->buffer);
 
@@ -181,7 +183,7 @@ static void sha1_read(struct sha1 *s, unsigned int count, void *buffer)
 static void sha1_write(struct sha1 *s, unsigned char digest[20])
 {
 
-	pad(s);
+    pad(s);
 
     digest[0] = s->a >> 24;
     digest[1] = s->a >> 16;
@@ -211,11 +213,11 @@ static void sha1_init(struct sha1 *s)
 
     memory_clear(s, sizeof (struct sha1));
 
-	s->a = 0x67452301;
-	s->b = 0xEFCDAB89;
-	s->c = 0x98BADCFE;
-	s->d = 0x10325476;
-	s->e = 0xC3D2E1F0;
+    s->a = 0x67452301;
+    s->b = 0xEFCDAB89;
+    s->c = 0x98BADCFE;
+    s->d = 0x10325476;
+    s->e = 0xC3D2E1F0;
 
 }
 
