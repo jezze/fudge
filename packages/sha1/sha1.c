@@ -25,10 +25,11 @@ static unsigned int rol(unsigned int n, int k)
 
 }
 
-static void processblock(struct sha1 *s, const unsigned char *buffer)
+static void processblock(struct sha1 *s, unsigned char *buffer)
 {
 
-	unsigned int W[80], a, b, c, d, e;
+	unsigned int W[80];
+    unsigned int a, b, c, d, e;
 	int i;
 
 	for (i = 0; i < 16; i++)
@@ -50,7 +51,9 @@ static void processblock(struct sha1 *s, const unsigned char *buffer)
 	d = s->d;
 	e = s->e;
 
-	for (i = 0; i < 20;)
+    i = 0;
+
+	while (i < 20)
     {
 
 		G0(a,b,c,d,e,i++);
