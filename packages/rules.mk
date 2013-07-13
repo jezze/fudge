@@ -19,6 +19,7 @@ include packages/name/rules.mk
 include packages/nl/rules.mk
 include packages/pcx/rules.mk
 include packages/reboot/rules.mk
+include packages/sha1/rules.mk
 include packages/shell/rules.mk
 include packages/slang/rules.mk
 include packages/tail/rules.mk
