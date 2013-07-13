@@ -242,7 +242,7 @@ void main()
     md5_write(&s, digest);
 
     for (i = 0; i < 16; i++)
-        call_write(CALL_DO, 0, memory_write_paddednumber(num, 32, digest[i], 16, 2, 0), num);
+        call_write(CALL_DO, i * 2, memory_write_paddednumber(num, 32, digest[i], 16, 2, 0), num);
 
 }
 
