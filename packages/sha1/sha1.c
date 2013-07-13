@@ -135,39 +135,43 @@ static void pad(struct sha1 *s)
 
 }
 
-static void sha1_read(struct sha1 *s, unsigned int count, const void *m)
+static void sha1_read(struct sha1 *s, unsigned int count, void *buffer)
 {
 
-	const unsigned char *p = m;
-	unsigned r = s->lo % 64;
+    unsigned char *p = buffer;
+    unsigned int lo = s->lo;
+    unsigned int r = s->lo & 0x3f;
 
-	s->lo += count;
+    if ((s->lo = (lo + count) & 0x1fffffff) < lo)
+        s->hi++;
 
-	if (r)
+    s->hi += count >> 29;
+
+    if (r)
     {
 
-		if (count < 64 - r)
+        if (count < 64 - r)
         {
 
-			memory_copy(s->buffer + r, p, count);
+            memory_copy(s->buffer + r, p, count);
 
-			return;
+            return;
 
-		}
+        }
 
-		memory_copy(s->buffer + r, p, 64 - r);
+        memory_copy(s->buffer + r, p, 64 - r);
 
-		count -= 64 - r;
-		p += 64 - r;
+        p += 64 - r;
+        count -= 64 - r;
 
-		processblock(s, s->buffer);
-        
-	}
+        processblock(s, s->buffer);
 
-	for (; count >= 64; count -= 64, p += 64)
-		processblock(s, p);
+    }
 
-	memory_copy(s->buffer, p, count);
+    for (; count >= 64; count -= 64, p += 64)
+        processblock(s, p);
+
+    memory_copy(s->buffer, p, count);
 
 }
 
