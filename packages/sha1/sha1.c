@@ -107,7 +107,7 @@ static void processblock(struct sha1 *s, unsigned char *buffer)
 static void pad(struct sha1 *s)
 {
 
-    unsigned r = s->lo & 0x3f;
+    unsigned r = s->lo & 0x3F;
 
     s->buffer[r++] = 0x80;
 
@@ -142,7 +142,7 @@ static void sha1_read(struct sha1 *s, unsigned int count, void *buffer)
 {
 
     unsigned char *p = buffer;
-    unsigned int r = s->lo & 0x3f;
+    unsigned int r = s->lo & 0x3F;
     unsigned int temp = s->lo;
 
     s->lo = (s->lo + count) & 0x1FFFFFFF;
