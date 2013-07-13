@@ -2,6 +2,7 @@ include packages/cconv/rules.mk
 include packages/complete/rules.mk
 include packages/count/rules.mk
 include packages/cpio/rules.mk
+include packages/crc/rules.mk
 include packages/date/rules.mk
 include packages/dump/rules.mk
 include packages/echo/rules.mk
