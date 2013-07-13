@@ -172,7 +172,7 @@ static void md5_read(struct md5 *s, unsigned int count, void *buffer)
 
 }
 
-static void md5_write(struct md5 *s, unsigned int count, unsigned char *digest)
+static void md5_write(struct md5 *s, unsigned char digest[16])
 {
 
     unsigned int r = s->lo & 0x3f;
@@ -250,7 +250,7 @@ void main()
     for (offset = 0; (count = call_read(CALL_DI, offset, FUDGE_BSIZE, buffer)); offset += count)
         md5_read(&s, count, buffer);
 
-    md5_write(&s, 16, digest);
+    md5_write(&s, digest);
 
     for (i = 0; i < 16; i++)
         call_write(CALL_DO, 0, memory_write_paddednumber(num, 32, digest[i], 16, 2, 0), num);
