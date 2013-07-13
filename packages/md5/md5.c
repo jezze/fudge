@@ -133,34 +133,29 @@ static void *body(struct md5 *s, unsigned int count, void *buffer)
 static void md5_read(struct md5 *s, unsigned int count, void *buffer)
 {
 
-    unsigned int lo;
-    unsigned int used, free;
-
-    lo = s->lo;
+    unsigned int lo = s->lo;
+    unsigned int r = s->lo & 0x3f;
 
     if ((s->lo = (lo + count) & 0x1fffffff) < lo)
         s->hi++;
 
     s->hi += count >> 29;
-    used = lo & 0x3f;
 
-    if (used)
+    if (r)
     {
 
-        free = 64 - used;
-
-        if (count < free)
+        if (count < 64 - r)
         {
 
-            memory_copy(&s->buffer[used], buffer, count);
+            memory_copy(s->buffer + r, buffer, count);
 
             return;
 
         }
 
-        memory_copy(&s->buffer[used], buffer, free);
-        buffer = (unsigned char *)buffer + free;
-        count -= free;
+        memory_copy(s->buffer + r, buffer, 64 - r);
+        buffer = (unsigned char *)buffer + 64 - r;
+        count -= 64 - r;
         body(s, 64, s->buffer);
 
     }
@@ -180,24 +175,21 @@ static void md5_read(struct md5 *s, unsigned int count, void *buffer)
 static void md5_write(struct md5 *s, unsigned int count, unsigned char *digest)
 {
 
-    unsigned int used, free;
+    unsigned int r = s->lo & 0x3f;
 
-    used = s->lo & 0x3f;
-    s->buffer[used++] = 0x80;
-    free = 64 - used;
+    s->buffer[r++] = 0x80;
 
-    if (free < 8)
+    if (r > 56)
     {
 
-        memory_clear(&s->buffer[used], free);
+        memory_clear(s->buffer + r, 64 - r);
         body(s, 64, s->buffer);
 
-        used = 0;
-        free = 64;
+        r = 0;
 
     }
 
-    memory_clear(&s->buffer[used], free - 8);
+    memory_clear(s->buffer + r, 56 - r);
 
     s->lo <<= 3;
     s->buffer[56] = s->lo;
