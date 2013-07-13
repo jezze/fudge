@@ -13,10 +13,10 @@ struct sha1
 #define F1(b, c, d)                     (b ^ c ^ d)
 #define F2(b, c, d)                     ((b & c) | (d & (b | c)))
 #define F3(b, c, d)                     (b ^ c ^ d)
-#define G0(a, b, c, d, e, i)            e += rol(a, 5) + F0(b, c, d) + W[i] + 0x5A827999; b = rol(b, 30)
-#define G1(a, b, c, d, e, i)            e += rol(a, 5) + F1(b, c, d) + W[i] + 0x6ED9EBA1; b = rol(b, 30)
-#define G2(a, b, c, d, e, i)            e += rol(a, 5) + F2(b, c, d) + W[i] + 0x8F1BBCDC; b = rol(b, 30)
-#define G3(a, b, c, d, e, i)            e += rol(a, 5) + F3(b, c, d) + W[i] + 0xCA62C1D6; b = rol(b, 30)
+#define G0(a, b, c, d, e, w)            e += rol(a, 5) + F0(b, c, d) + w + 0x5A827999; b = rol(b, 30)
+#define G1(a, b, c, d, e, w)            e += rol(a, 5) + F1(b, c, d) + w + 0x6ED9EBA1; b = rol(b, 30)
+#define G2(a, b, c, d, e, w)            e += rol(a, 5) + F2(b, c, d) + w + 0x8F1BBCDC; b = rol(b, 30)
+#define G3(a, b, c, d, e, w)            e += rol(a, 5) + F3(b, c, d) + w + 0xCA62C1D6; b = rol(b, 30)
 
 static unsigned int rol(unsigned int n, int k)
 {
@@ -56,43 +56,43 @@ static void processblock(struct sha1 *s, unsigned char *buffer)
     while (i < 20)
     {
 
-        G0(a, b, c, d, e, i++);
-        G0(e, a, b, c, d, i++);
-        G0(d, e, a, b, c, i++);
-        G0(c, d, e, a, b, i++);
-        G0(b, c, d, e, a, i++);
+        G0(a, b, c, d, e, W[i]); i++;
+        G0(e, a, b, c, d, W[i]); i++;
+        G0(d, e, a, b, c, W[i]); i++;
+        G0(c, d, e, a, b, W[i]); i++;
+        G0(b, c, d, e, a, W[i]); i++;
     }
 
     while (i < 40)
     {
 
-        G1(a, b, c, d, e, i++);
-        G1(e, a, b, c, d, i++);
-        G1(d, e, a, b, c, i++);
-        G1(c, d, e, a, b, i++);
-        G1(b, c, d, e, a, i++);
+        G1(a, b, c, d, e, W[i]); i++;
+        G1(e, a, b, c, d, W[i]); i++;
+        G1(d, e, a, b, c, W[i]); i++;
+        G1(c, d, e, a, b, W[i]); i++;
+        G1(b, c, d, e, a, W[i]); i++;
 
     }
 
     while (i < 60)
     {
 
-        G2(a, b, c, d, e, i++);
-        G2(e, a, b, c, d, i++);
-        G2(d, e, a, b, c, i++);
-        G2(c, d, e, a, b, i++);
-        G2(b, c, d, e, a, i++);
+        G2(a, b, c, d, e, W[i]); i++;
+        G2(e, a, b, c, d, W[i]); i++;
+        G2(d, e, a, b, c, W[i]); i++;
+        G2(c, d, e, a, b, W[i]); i++;
+        G2(b, c, d, e, a, W[i]); i++;
 
     }
 
     while (i < 80)
     {
 
-        G3(a, b, c, d, e, i++);
-        G3(e, a, b, c, d, i++);
-        G3(d, e, a, b, c, i++);
-        G3(c, d, e, a, b, i++);
-        G3(b, c, d, e, a, i++);
+        G3(a, b, c, d, e, W[i]); i++;
+        G3(e, a, b, c, d, W[i]); i++;
+        G3(d, e, a, b, c, W[i]); i++;
+        G3(c, d, e, a, b, W[i]); i++;
+        G3(b, c, d, e, a, W[i]); i++;
 
     }
 
