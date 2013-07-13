@@ -142,13 +142,14 @@ static void sha1_read(struct sha1 *s, unsigned int count, void *buffer)
 {
 
     unsigned char *p = buffer;
-    unsigned int lo = s->lo;
     unsigned int r = s->lo & 0x3f;
+    unsigned int temp = s->lo;
 
-    if ((s->lo = (lo + count) & 0x1fffffff) < lo)
-        s->hi++;
-
+    s->lo = (s->lo + count) & 0x1FFFFFFF;
     s->hi += count >> 29;
+
+    if (s->lo < temp)
+        s->hi++;
 
     if (r)
     {
