@@ -110,45 +110,11 @@ static void processblock(struct md5 *s, unsigned char *buffer)
 
 }
 
-static void pad(struct md5 *s)
-{
-
-    unsigned r = s->lo & 0x3F;
-
-    s->buffer[r++] = 0x80;
-
-    if (r > 56)
-    {
-
-        memory_clear(s->buffer + r, 64 - r);
-
-        r = 0;
-
-        processblock(s, s->buffer);
-
-    }
-
-    memory_clear(s->buffer + r, 56 - r);
-
-    s->lo <<= 3;
-    s->buffer[56] = s->lo;
-    s->buffer[57] = s->lo >> 8;
-    s->buffer[58] = s->lo >> 16;
-    s->buffer[59] = s->lo >> 24;
-    s->buffer[60] = s->hi;
-    s->buffer[61] = s->hi >> 8;
-    s->buffer[62] = s->hi >> 16;
-    s->buffer[63] = s->hi >> 24;
-
-    processblock(s, s->buffer);
-
-}
-
 static void md5_read(struct md5 *s, unsigned int count, void *buffer)
 {
 
-    unsigned char *p = buffer;
     unsigned int r = s->lo & 0x3F;
+    unsigned char *p = buffer;
     unsigned int temp = s->lo;
 
     s->lo = (s->lo + count) & 0x1FFFFFFF;
@@ -190,7 +156,33 @@ static void md5_read(struct md5 *s, unsigned int count, void *buffer)
 static void md5_write(struct md5 *s, unsigned char digest[16])
 {
 
-    pad(s);
+    unsigned r = s->lo & 0x3F;
+
+    s->buffer[r++] = 0x80;
+
+    if (r > 56)
+    {
+
+        memory_clear(s->buffer + r, 64 - r);
+        processblock(s, s->buffer);
+
+        r = 0;
+
+    }
+
+    memory_clear(s->buffer + r, 56 - r);
+
+    s->lo <<= 3;
+    s->buffer[56] = s->lo;
+    s->buffer[57] = s->lo >> 8;
+    s->buffer[58] = s->lo >> 16;
+    s->buffer[59] = s->lo >> 24;
+    s->buffer[60] = s->hi;
+    s->buffer[61] = s->hi >> 8;
+    s->buffer[62] = s->hi >> 16;
+    s->buffer[63] = s->hi >> 24;
+
+    processblock(s, s->buffer);
 
     digest[0] = s->a;
     digest[1] = s->a >> 8;
@@ -232,7 +224,6 @@ void main()
     unsigned char num[32];
     unsigned int count;
     unsigned int offset;
-    unsigned int i;
 
     md5_init(&s);
 
@@ -241,8 +232,8 @@ void main()
 
     md5_write(&s, digest);
 
-    for (i = 0; i < 16; i++)
-        call_write(CALL_DO, i * 2, memory_write_paddednumber(num, 32, digest[i], 16, 2, 0), num);
+    for (offset = 0; offset < 16; offset++)
+        call_write(CALL_DO, offset * 2, memory_write_paddednumber(num, 32, digest[offset], 16, 2, 0), num);
 
 }
 
