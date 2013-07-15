@@ -6,7 +6,9 @@ struct command
 
     struct token_string binary;
     struct token_string in;
+    struct token_string din;
     struct token_string out;
+    struct token_string dout;
     struct token_string data;
 
 };
@@ -73,8 +75,38 @@ static unsigned int parse_in(struct token_state *state, struct token_string *str
 
 }
 
+static unsigned int parse_din(struct token_state *state, struct token_string *string)
+{
+
+    if (!token_accept(state, TOKEN_TYPE_LT))
+        return 0;
+
+    if (!token_accept(state, TOKEN_TYPE_LT))
+        return 0;
+
+    while (token_accept(state, TOKEN_TYPE_SPACE));
+
+    return parse_path(state, string);
+
+}
+
 static unsigned int parse_out(struct token_state *state, struct token_string *string)
 {
+
+    if (!token_accept(state, TOKEN_TYPE_GT))
+        return 0;
+
+    while (token_accept(state, TOKEN_TYPE_SPACE));
+
+    return parse_path(state, string);
+
+}
+
+static unsigned int parse_dout(struct token_state *state, struct token_string *string)
+{
+
+    if (!token_accept(state, TOKEN_TYPE_GT))
+        return 0;
 
     if (!token_accept(state, TOKEN_TYPE_GT))
         return 0;
@@ -117,7 +149,15 @@ static unsigned int parse_command(struct token_state *state, struct command *com
 
     while (token_accept(state, TOKEN_TYPE_SPACE));
 
+    parse_din(state, &command->din);
+
+    while (token_accept(state, TOKEN_TYPE_SPACE));
+
     parse_out(state, &command->out);
+
+    while (token_accept(state, TOKEN_TYPE_SPACE));
+
+    parse_dout(state, &command->dout);
 
     while (token_accept(state, TOKEN_TYPE_SPACE));
 
@@ -192,11 +232,17 @@ static void execute(struct expression *expression)
             if (command->in.count)
                 open_path(CALL_DI, &command->in);
 
+            if (command->din.count)
+                open_path(CALL_DC, &command->din);
+
             if (command->data.count)
                 call_write(CALL_DI, 0, command->data.count, command->data.position);
 
             if (command->out.count)
                 open_path(CALL_DO, &command->out);
+
+            if (command->dout.count)
+                open_path(CALL_DC, &command->dout);
 
             if (!command->out.count && pipe->count > 1 && cindex != pipe->count - 1)
                 open_pipe(CALL_DO, cindex);
