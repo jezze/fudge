@@ -5,11 +5,11 @@ struct command
 {
 
     struct token_string binary;
-    struct token_string in;
-    struct token_string din;
+    struct token_string in0;
+    struct token_string in1;
+    struct token_string data0;
+    struct token_string data1;
     struct token_string out;
-    struct token_string dout;
-    struct token_string data;
 
 };
 
@@ -63,60 +63,6 @@ static unsigned int parse_path(struct token_state *state, struct token_string *s
 
 }
 
-static unsigned int parse_in(struct token_state *state, struct token_string *string)
-{
-
-    if (!token_accept(state, TOKEN_TYPE_LT))
-        return 0;
-
-    while (token_accept(state, TOKEN_TYPE_SPACE));
-
-    return parse_path(state, string);
-
-}
-
-static unsigned int parse_din(struct token_state *state, struct token_string *string)
-{
-
-    if (!token_accept(state, TOKEN_TYPE_LT))
-        return 0;
-
-    if (!token_accept(state, TOKEN_TYPE_LT))
-        return 0;
-
-    while (token_accept(state, TOKEN_TYPE_SPACE));
-
-    return parse_path(state, string);
-
-}
-
-static unsigned int parse_out(struct token_state *state, struct token_string *string)
-{
-
-    if (!token_accept(state, TOKEN_TYPE_GT))
-        return 0;
-
-    while (token_accept(state, TOKEN_TYPE_SPACE));
-
-    return parse_path(state, string);
-
-}
-
-static unsigned int parse_dout(struct token_state *state, struct token_string *string)
-{
-
-    if (!token_accept(state, TOKEN_TYPE_GT))
-        return 0;
-
-    if (!token_accept(state, TOKEN_TYPE_GT))
-        return 0;
-
-    while (token_accept(state, TOKEN_TYPE_SPACE));
-
-    return parse_path(state, string);
-
-}
-
 static unsigned int parse_data(struct token_state *state, struct token_string *string)
 {
 
@@ -137,6 +83,45 @@ static unsigned int parse_data(struct token_state *state, struct token_string *s
 
 }
 
+static unsigned int parse_in0(struct token_state *state, struct token_string *string, struct token_string *string2)
+{
+
+    if (!token_accept(state, TOKEN_TYPE_LT))
+        return 0;
+
+    while (token_accept(state, TOKEN_TYPE_SPACE));
+
+    return parse_path(state, string) || parse_data(state, string2);
+
+}
+
+static unsigned int parse_in1(struct token_state *state, struct token_string *string, struct token_string *string2)
+{
+
+    if (!token_accept(state, TOKEN_TYPE_LT))
+        return 0;
+
+    if (!token_accept(state, TOKEN_TYPE_LT))
+        return 0;
+
+    while (token_accept(state, TOKEN_TYPE_SPACE));
+
+    return parse_path(state, string) || parse_data(state, string2);
+
+}
+
+static unsigned int parse_out(struct token_state *state, struct token_string *string)
+{
+
+    if (!token_accept(state, TOKEN_TYPE_GT))
+        return 0;
+
+    while (token_accept(state, TOKEN_TYPE_SPACE));
+
+    return parse_path(state, string);
+
+}
+
 static unsigned int parse_command(struct token_state *state, struct command *command)
 {
 
@@ -145,23 +130,15 @@ static unsigned int parse_command(struct token_state *state, struct command *com
 
     while (token_accept(state, TOKEN_TYPE_SPACE));
 
-    parse_in(state, &command->in);
+    parse_in0(state, &command->in0, &command->data0);
 
     while (token_accept(state, TOKEN_TYPE_SPACE));
 
-    parse_din(state, &command->din);
+    parse_in1(state, &command->in1, &command->data1);
 
     while (token_accept(state, TOKEN_TYPE_SPACE));
 
     parse_out(state, &command->out);
-
-    while (token_accept(state, TOKEN_TYPE_SPACE));
-
-    parse_dout(state, &command->dout);
-
-    while (token_accept(state, TOKEN_TYPE_SPACE));
-
-    parse_data(state, &command->data);
 
     return 1;
 
@@ -217,7 +194,8 @@ static void execute(struct expression *expression)
 
     call_open(CALL_D1, CALL_DI, 0, 0);
     call_open(CALL_D2, CALL_DO, 0, 0);
-    call_open(CALL_D3, CALL_DW, 0, 0);
+    call_open(CALL_D3, CALL_DC, 0, 0);
+    call_open(CALL_D4, CALL_DW, 0, 0);
 
     for (pindex = 0; pindex < expression->count; pindex++)
     {
@@ -229,27 +207,27 @@ static void execute(struct expression *expression)
 
             struct command *command = &pipe->commands[cindex];
 
-            if (command->in.count)
-                open_path(CALL_DI, &command->in);
+            if (command->in0.count)
+                open_path(CALL_DI, &command->in0);
 
-            if (command->din.count)
-                open_path(CALL_DC, &command->din);
+            if (command->data0.count)
+                call_write(CALL_DI, 0, command->data0.count, command->data0.position);
 
-            if (command->data.count)
-                call_write(CALL_DI, 0, command->data.count, command->data.position);
+            if (command->in1.count)
+                open_path(CALL_DC, &command->in1);
+
+            if (command->data1.count)
+                call_write(CALL_DC, 0, command->data1.count, command->data1.position);
 
             if (command->out.count)
                 open_path(CALL_DO, &command->out);
-
-            if (command->dout.count)
-                open_path(CALL_DC, &command->dout);
 
             if (!command->out.count && pipe->count > 1 && cindex != pipe->count - 1)
                 open_pipe(CALL_DO, cindex);
 
             call_open(CALL_DW, CALL_DR, 4, "bin/");
             open_path(CALL_D0, &command->binary);
-            call_open(CALL_DW, CALL_D3, 0, 0);
+            call_open(CALL_DW, CALL_D4, 0, 0);
             call_spawn(CALL_D0);
             call_open(CALL_DI, CALL_DO, 0, 0);
             call_open(CALL_DO, CALL_D2, 0, 0);
@@ -258,6 +236,7 @@ static void execute(struct expression *expression)
 
         call_open(CALL_DI, CALL_D1, 0, 0);
         call_open(CALL_DO, CALL_D2, 0, 0);
+        call_open(CALL_DC, CALL_D3, 0, 0);
 
     }
 
