@@ -1,3 +1,5 @@
+packages/%.o: CFLAGS+=-Ilibs/fudge
+
 include packages/cconv/rules.mk
 include packages/complete/rules.mk
 include packages/count/rules.mk
@@ -26,6 +28,3 @@ include packages/tail/rules.mk
 include packages/timer/rules.mk
 include packages/wait/rules.mk
 include packages/wm/rules.mk
-
-packages/%.o: packages/%.c
-	$(CC) -c $(CFLAGS) -Ilibs/fudge -o $@ $<

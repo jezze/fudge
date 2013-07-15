@@ -1,3 +1,6 @@
+modules/%.o: CFLAGS+=-Ilibs -Imodules
+modules/%.ko: LDFLAGS+=-Tmodules/linker.ld -r
+
 include modules/arp/rules.mk
 include modules/base/rules.mk
 include modules/block/rules.mk
@@ -15,11 +18,3 @@ include modules/terminal/rules.mk
 include modules/timer/rules.mk
 include modules/video/rules.mk
 include modules/arch/$(ARCH)/rules.mk
-
-$(MODULES): LDFLAGS+=-Tmodules/linker.ld -r
-
-modules/%.o: modules/%.s
-	$(AS) $(ASFLAGS) -o $@ $<
-
-modules/%.o: modules/%.c
-	$(CC) -c $(CFLAGS) -Ilibs -Imodules -o $@ $<

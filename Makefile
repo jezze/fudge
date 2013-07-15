@@ -29,6 +29,12 @@ PACKAGES_OBJECTS:=
 
 all: libs modules packages kernel ramdisk
 
+.s.o:
+	$(AS) $(ASFLAGS) -o $@ $<
+
+.c.o:
+	$(CC) -c $(CFLAGS) -o $@ $<
+
 include rules.$(ARCH).mk
 include libs/rules.mk
 include modules/rules.mk
