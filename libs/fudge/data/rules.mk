@@ -1,1 +1,1 @@
-LIBFUDGE_OBJECTS+=libs/fudge/data/circular.o libs/fudge/data/lifo.o
+LIBFUDGE_OBJ+=libs/fudge/data/circular.o libs/fudge/data/lifo.o

@@ -1,8 +1,8 @@
-BIN_CCONV8TO6:=packages/cconv/cconv8to6
-OBJ_CCONV8TO6:=packages/cconv/cconv8to6.o
+BIN:=packages/cconv/cconv8to6
+OBJ:=packages/cconv/cconv8to6.o
 
-$(BIN_CCONV8TO6): $(OBJ_CCONV8TO6) $(LIBFUDGE) $(EXTRA)
+$(BIN): $(OBJ) $(LIBFUDGE) $(EXTRA)
 	$(LD) $(LDFLAGS) -o $@ $^
 
-PACKAGES+=$(BIN_CCONV8TO6)
-PACKAGES_OBJECTS+=$(OBJ_CCONV8TO6)
+PACKAGES+=$(BIN)
+PACKAGES_OBJECTS+=$(OBJ)
