@@ -33,7 +33,6 @@ void pic_routine0D();
 void pic_routine0E();
 void pic_routine0F();
 unsigned short pic_interrupt(struct pic_registers *registers);
-void pic_set_mask(unsigned short port, unsigned char mask);
 void pic_enable_line(unsigned short port, unsigned char line);
 void pic_disable_line(unsigned short port, unsigned char line);
 unsigned int pic_set_routine(struct base_device *device, void (*callback)(struct base_device *device));

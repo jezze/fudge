@@ -39,20 +39,19 @@ enum pic_data
 
 static struct pic_routine routines[PIC_ROUTINES];
 
-static void raise(unsigned int index)
-{
-
-    if (!routines[index].callback)
-        return;
-
-    routines[index].callback(routines[index].device);
-
-}
-
-void pic_set_mask(unsigned short port, unsigned char mask)
+static void pic_set_mask(unsigned short port, unsigned char mask)
 {
 
     io_outb(port, mask);
+
+}
+
+static unsigned char pic_get_status(unsigned short port, unsigned char type)
+{
+
+    io_outb(port, type);
+
+    return io_inb(port);
 
 }
 
@@ -70,44 +69,18 @@ void pic_disable_line(unsigned short port, unsigned char line)
 
 }
 
-static unsigned char pic_get_status(unsigned short port, unsigned char type)
-{
-
-    io_outb(port, type);
-
-    return io_inb(port);
-
-}
-
-unsigned char pic_get_raised_lines(unsigned short port)
-{
-
-    return pic_get_status(port, PIC_COMMAND_IRR);
-
-}
-
-unsigned char pic_get_serviced_lines(unsigned short port)
-{
-
-    return pic_get_status(port, PIC_COMMAND_ISR);
-
-}
-
-static void reset(unsigned int slave)
-{
-
-    if (slave)
-        io_outb(PIC_REGISTER_COMMAND1, PIC_COMMAND_EOI);
-
-    io_outb(PIC_REGISTER_COMMAND0, PIC_COMMAND_EOI);
-
-}
-
 unsigned short pic_interrupt(struct pic_registers *registers)
 {
 
-    raise(registers->index);
-    reset(registers->slave);
+    if (!routines[registers->index].callback)
+        return registers->interrupt.data;
+
+    routines[registers->index].callback(routines[registers->index].device);
+
+    if (registers->slave)
+        io_outb(PIC_REGISTER_COMMAND1, PIC_COMMAND_EOI);
+
+    io_outb(PIC_REGISTER_COMMAND0, PIC_COMMAND_EOI);
 
     return registers->interrupt.data;
 
@@ -190,9 +163,19 @@ void init()
     idt_set_descriptor(idtp, PIC_DATA_VECTOR1 + 0x05, pic_routine0D, offset, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
     idt_set_descriptor(idtp, PIC_DATA_VECTOR1 + 0x06, pic_routine0E, offset, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
     idt_set_descriptor(idtp, PIC_DATA_VECTOR1 + 0x07, pic_routine0F, offset, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
-    pic_set_mask(PIC_REGISTER_DATA0, 0xFF);
+    pic_set_mask(PIC_REGISTER_DATA0, 0xFB);
     pic_set_mask(PIC_REGISTER_DATA1, 0xFF);
-    pic_enable_line(PIC_REGISTER_DATA0, 2);
+
+    while (pic_get_status(PIC_REGISTER_COMMAND1, PIC_COMMAND_ISR))
+    {
+
+        io_outb(PIC_REGISTER_COMMAND1, PIC_COMMAND_EOI);
+        io_outb(PIC_REGISTER_COMMAND0, PIC_COMMAND_EOI);
+
+    }
+
+    while (pic_get_status(PIC_REGISTER_COMMAND0, PIC_COMMAND_ISR))
+        io_outb(PIC_REGISTER_COMMAND0, PIC_COMMAND_EOI);
 
 }
 
