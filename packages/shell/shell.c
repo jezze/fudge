@@ -129,7 +129,6 @@ static void handle(struct lifo_stack *stack, char c)
     {
 
         case '\0':
-        case '\r':
 
             break;
 
@@ -147,6 +146,10 @@ static void handle(struct lifo_stack *stack, char c)
             call_write(CALL_DO, 0, 3, "\b \b");
 
             break;
+
+        case '\r':
+
+            c = '\n';
 
         case '\n':
 
