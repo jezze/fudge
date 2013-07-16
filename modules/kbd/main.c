@@ -9,6 +9,7 @@ struct kbd_interface_group
     struct system_group base;
     struct kbd_interface *interface;
     struct system_stream data;
+    struct system_stream keymap;
 
 };
 
@@ -34,6 +35,24 @@ unsigned int data_write(struct system_stream *self, unsigned int offset, unsigne
 
 }
 
+unsigned int keymap_read(struct system_stream *self, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    struct kbd_interface_group *group = (struct kbd_interface_group *)self->node.parent;
+
+    return memory_read(buffer, count, group->interface->keymap, 256, offset);
+
+}
+
+unsigned int keymap_write(struct system_stream *self, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    struct kbd_interface_group *group = (struct kbd_interface_group *)self->node.parent;
+
+    return memory_write(group->interface->keymap, 256, buffer, count, offset);
+
+}
+
 void kbd_register_interface(struct kbd_interface *interface)
 {
 
@@ -45,6 +64,8 @@ void kbd_register_interface(struct kbd_interface *interface)
     system_group_add(&root, &group->base.node);
     system_init_stream(&group->data, "data", data_read, data_write);
     system_group_add(&group->base, &group->data.node);
+    system_init_stream(&group->keymap, "keymap", keymap_read, keymap_write);
+    system_group_add(&group->base, &group->keymap.node);
 
     ninterfaces++;
 

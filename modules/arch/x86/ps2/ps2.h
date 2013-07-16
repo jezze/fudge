@@ -27,6 +27,9 @@ struct ps2_kbd_driver
     struct kbd_interface ikbd;
     struct circular_stream stream;
     unsigned int escaped;
+    unsigned int ctrl;
+    unsigned int alt;
+    unsigned int shift;
 
 };
 

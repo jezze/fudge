@@ -4,6 +4,7 @@ struct kbd_interface
     struct base_driver *driver;
     unsigned int (*read_data)(struct kbd_interface *self, unsigned int offset, unsigned int count, void *buffer);
     unsigned int (*write_data)(struct kbd_interface *self, unsigned int offset, unsigned int count, void *buffer);
+    unsigned char keymap[256];
 
 };
 

@@ -1,8 +1,6 @@
 #include <fudge.h>
 #include <data/lifo.h>
 
-static char map[256];
-
 static void interpret(unsigned int count, char *buffer)
 {
 
@@ -177,9 +175,6 @@ static void poll()
     struct lifo_stack input;
     unsigned char buffer[FUDGE_BSIZE];
     unsigned int count;
-    unsigned int alt = 0;
-    unsigned int shift = 0;
-    unsigned int ctrl = 0;
     unsigned int i;
 
     lifo_stack_clear(&input);
@@ -190,75 +185,15 @@ static void poll()
         count = call_read(CALL_DI, 0, FUDGE_BSIZE, buffer);
 
         for (i = 0; i < count; i++)
-        {
-
-            unsigned int scancode = buffer[i];
-
-            if (scancode & 0x80)
-            {
-
-                scancode &= ~0x80;
-
-                if (scancode == 0x1D)
-                    ctrl = 0;
-
-                if (scancode == 0x2A)
-                    shift = 0;
-
-                if (scancode == 0x38)
-                    alt = 0;
-
-            }
-
-            else
-            {
-
-                if (scancode == 0x1D)
-                    ctrl = 1;
-
-                if (scancode == 0x2A)
-                    shift = 1;
-
-                if (scancode == 0x38)
-                    alt = 1;
-
-                if (ctrl)
-                    scancode = 0;
-
-                if (alt)
-                    scancode = 0;
-
-                if (shift)
-                    scancode += 128;
-
-                handle(&input, map[scancode]);
-
-            }
-
-        }
+            handle(&input, buffer[i]);
 
     }
-
-}
-
-static void read_keymap(void *buffer)
-{
-
-    call_open(CALL_D1, CALL_DO, 0, 0);
-    call_open(CALL_DO, CALL_DR, 6, "temp/0");
-    call_open(CALL_D0, CALL_DR, 12, "bin/keymapus");
-    call_spawn(CALL_D0);
-    call_close(CALL_D0);
-    call_read(CALL_DO, 0, 256, map);
-    call_open(CALL_DO, CALL_D1, 0, 0);
-    call_close(CALL_D1);
 
 }
 
 void main()
 {
 
-    read_keymap(map);
     call_write(CALL_DO, 0, 2, "$ ");
     poll();
 

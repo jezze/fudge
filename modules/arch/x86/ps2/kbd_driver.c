@@ -13,15 +13,54 @@ static void handle_irq(struct base_device *device)
 
     struct ps2_bus *bus = (struct ps2_bus *)device->bus;
     struct ps2_kbd_driver *driver = (struct ps2_kbd_driver *)device->driver;
-    unsigned char data = ps2_bus_read_data_async(bus);
+    unsigned char scancode = ps2_bus_read_data_async(bus);
 
     if (driver->escaped)
         driver->escaped = 0;
 
-    if (data == 0xE0)
+    if (scancode == 0xE0)
         driver->escaped = 1;
 
-    circular_stream_write(&driver->stream, 1, &data);
+    if (scancode & 0x80)
+    {
+
+        scancode &= ~0x80;
+
+        if (scancode == 0x1D)
+            driver->ctrl = 0;
+
+        if (scancode == 0x2A)
+            driver->shift = 0;
+
+        if (scancode == 0x38)
+            driver->alt = 0;
+
+    }
+
+    else
+    {
+
+        if (scancode == 0x1D)
+            driver->ctrl = 1;
+
+        if (scancode == 0x2A)
+            driver->shift = 1;
+
+        if (scancode == 0x38)
+            driver->alt = 1;
+
+        if (driver->ctrl)
+            scancode = 0;
+
+        if (driver->alt)
+            scancode = 0;
+
+        if (driver->shift)
+            scancode += 128;
+
+        circular_stream_write(&driver->stream, 1, driver->ikbd.keymap + scancode);
+
+    }
 
 }
 
@@ -52,7 +91,7 @@ static unsigned int check(struct base_device *device)
 
 }
 
-static unsigned int read(struct kbd_interface *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int read_data(struct kbd_interface *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct ps2_kbd_driver *driver = (struct ps2_kbd_driver *)self->driver;
@@ -61,7 +100,7 @@ static unsigned int read(struct kbd_interface *self, unsigned int offset, unsign
 
 }
 
-static unsigned int write(struct kbd_interface *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int write_data(struct kbd_interface *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct ps2_kbd_driver *driver = (struct ps2_kbd_driver *)self->driver;
@@ -75,7 +114,7 @@ void ps2_init_kbd_driver(struct ps2_kbd_driver *driver)
 
     memory_clear(driver, sizeof (struct ps2_kbd_driver));
     base_init_driver(&driver->base, "ps2", 0, check, attach);
-    kbd_init_interface(&driver->ikbd, &driver->base, read, write);
+    kbd_init_interface(&driver->ikbd, &driver->base, read_data, write_data);
 
 }
 
