@@ -2,6 +2,7 @@ packages/%.o: CFLAGS+=-Ilibs/fudge
 
 include packages/cat/rules.mk
 include packages/cconv/rules.mk
+include packages/col/rules.mk
 include packages/complete/rules.mk
 include packages/count/rules.mk
 include packages/cpio/rules.mk
