@@ -31,7 +31,6 @@ void main()
 
             last += call_write(CALL_DO, last, l, buffer + start);
             last += call_write(CALL_DO, last, 20 - l, "                    ");
-
             start = i + 1;
 
         }
