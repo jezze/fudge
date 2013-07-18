@@ -3,9 +3,9 @@
 void main()
 {
 
-    char buffer[FUDGE_BSIZE];
-    unsigned int offset;
+    unsigned char buffer[FUDGE_BSIZE];
     unsigned int count;
+    unsigned int offset;
 
     if (!call_open(CALL_D0, CALL_DR, 14, "share/help.txt"))
         return;

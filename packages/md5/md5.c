@@ -218,12 +218,12 @@ static void md5_init(struct md5 *s)
 void main()
 {
 
-    struct md5 s;
     unsigned char buffer[FUDGE_BSIZE];
-    unsigned char digest[16];
-    unsigned char num[32];
     unsigned int count;
     unsigned int offset;
+    unsigned char num[32];
+    unsigned char digest[16];
+    struct md5 s;
 
     md5_init(&s);
 

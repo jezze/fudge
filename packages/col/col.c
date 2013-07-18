@@ -3,11 +3,11 @@
 void main()
 {
 
-    char buffer[FUDGE_BSIZE];
+    unsigned char buffer[FUDGE_BSIZE];
     unsigned int count;
     unsigned int offset;
     unsigned int start;
-    unsigned int o = 0;
+    unsigned int last = 0;
 
     for (offset = 0; (count = call_read(CALL_DI, offset, FUDGE_BSIZE, buffer)); offset += start)
     {
@@ -29,8 +29,8 @@ void main()
             if (l > 18)
                 l = 18;
 
-            o += call_write(CALL_DO, o, l, buffer + start);
-            o += call_write(CALL_DO, o, 20 - l, "                    ");
+            last += call_write(CALL_DO, last, l, buffer + start);
+            last += call_write(CALL_DO, last, 20 - l, "                    ");
 
             start = i + 1;
 
@@ -41,7 +41,7 @@ void main()
 
     }
 
-    call_write(CALL_DO, o, 1, "\n");
+    call_write(CALL_DO, last, 1, "\n");
 
 }
 

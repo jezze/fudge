@@ -42,9 +42,9 @@ void main()
 {
 
     unsigned char buffer[FUDGE_BSIZE];
-    unsigned char num[32];
     unsigned int count;
     unsigned int offset;
+    unsigned char num[32];
     unsigned int crc = 0;
     unsigned int i;
 

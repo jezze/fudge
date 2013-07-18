@@ -217,12 +217,12 @@ static void sha1_init(struct sha1 *s)
 void main()
 {
 
-    struct sha1 s;
     unsigned char buffer[FUDGE_BSIZE];
-    unsigned char digest[20];
-    unsigned char num[32];
     unsigned int count;
     unsigned int offset;
+    unsigned char num[32];
+    unsigned char digest[20];
+    struct sha1 s;
 
     sha1_init(&s);
 

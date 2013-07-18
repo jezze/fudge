@@ -3,7 +3,7 @@
 void main()
 {
 
-    char buffer[FUDGE_BSIZE];
+    unsigned char buffer[FUDGE_BSIZE];
 
     if (!call_open(CALL_D0, CALL_DR, 27, "system/nodefs/rtc_timestamp"))
         return;

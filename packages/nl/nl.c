@@ -3,12 +3,12 @@
 void main()
 {
 
-    char num[32];
-    char buffer[FUDGE_BSIZE];
+    unsigned char buffer[FUDGE_BSIZE];
     unsigned int count;
     unsigned int offset;
+    unsigned char num[32];
     unsigned int start;
-    unsigned int o = 0;
+    unsigned int last = 0;
     unsigned int lines = 0;
 
     for (offset = 0; (count = call_read(CALL_DI, offset, FUDGE_BSIZE, buffer)); offset += start)
@@ -24,9 +24,9 @@ void main()
             if (buffer[i] != '\n')
                 continue;
 
-            o += call_write(CALL_DO, o, memory_write_number(num, 32, lines, 10, 0), num);
-            o += call_write(CALL_DO, o, 2, ": ");
-            o += call_write(CALL_DO, o, i - start + 1, buffer + start);
+            last += call_write(CALL_DO, last, memory_write_number(num, 32, lines, 10, 0), num);
+            last += call_write(CALL_DO, last, 2, ": ");
+            last += call_write(CALL_DO, last, i - start + 1, buffer + start);
 
             lines++;
             start = i + 1;

@@ -3,10 +3,10 @@
 void main()
 {
 
-    char num[32];
-    char buffer[FUDGE_BSIZE];
+    unsigned char buffer[FUDGE_BSIZE];
     unsigned int count;
     unsigned int offset;
+    unsigned char num[32];
     unsigned int start;
     unsigned int lines = 0;
 

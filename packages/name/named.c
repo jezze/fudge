@@ -3,7 +3,7 @@
 void main()
 {
 
-    char buffer[FUDGE_BSIZE];
+    unsigned char buffer[FUDGE_BSIZE];
     unsigned int count = call_read(CALL_DI, 0, FUDGE_BSIZE, buffer);
     unsigned int offset = count;
 
