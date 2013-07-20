@@ -12,8 +12,8 @@
 enum vga_register
 {
 
-    VGA_REGISTER_CRMINDEX               = 0x03B4,
-    VGA_REGISTER_CRMDATA                = 0x03B5,
+    VGA_REGISTER_CRTINDEX0              = 0x03B4,
+    VGA_REGISTER_CRTDATA0               = 0x03B5,
     VGA_REGISTER_FCMCTRL                = 0x03BA,
     VGA_REGISTER_ARINDEX                = 0x03C0,
     VGA_REGISTER_ARWRITE                = 0x03C0,
@@ -29,8 +29,8 @@ enum vga_register
     VGA_REGISTER_MISCREAD               = 0x03CC,
     VGA_REGISTER_GRINDEX                = 0x03CE,
     VGA_REGISTER_GRDATA                 = 0x03CF,
-    VGA_REGISTER_CRCINDEX               = 0x03D4,
-    VGA_REGISTER_CRCDATA                = 0x03D5,
+    VGA_REGISTER_CRTINDEX1              = 0x03D4,
+    VGA_REGISTER_CRTDATA1               = 0x03D5,
     VGA_REGISTER_FCCCTRL                = 0x03DA
 
 };
@@ -76,37 +76,97 @@ enum vga_ar10
 
 };
 
-enum vga_crindex
+enum vga_ar12
 {
 
-    VGA_CRINDEX_CR00                    = 0x00,
-    VGA_CRINDEX_CR01                    = 0x01,
-    VGA_CRINDEX_CR02                    = 0x02,
-    VGA_CRINDEX_CR03                    = 0x03,
-    VGA_CRINDEX_CR04                    = 0x04,
-    VGA_CRINDEX_CR05                    = 0x05,
-    VGA_CRINDEX_CR06                    = 0x06,
-    VGA_CRINDEX_CR07                    = 0x07,
-    VGA_CRINDEX_CR08                    = 0x08,
-    VGA_CRINDEX_CR09                    = 0x09,
-    VGA_CRINDEX_CR0A                    = 0x0A,
-    VGA_CRINDEX_CR0B                    = 0x0B,
-    VGA_CRINDEX_CR0C                    = 0x0C,
-    VGA_CRINDEX_CR0D                    = 0x0D,
-    VGA_CRINDEX_CR0E                    = 0x0E,
-    VGA_CRINDEX_CR0F                    = 0x0F,
-    VGA_CRINDEX_CR10                    = 0x10,
-    VGA_CRINDEX_CR11                    = 0x11,
-    VGA_CRINDEX_CR12                    = 0x12,
-    VGA_CRINDEX_CR13                    = 0x13,
-    VGA_CRINDEX_CR14                    = 0x14,
-    VGA_CRINDEX_CR15                    = 0x15,
-    VGA_CRINDEX_CR16                    = 0x16,
-    VGA_CRINDEX_CR17                    = 0x17,
-    VGA_CRINDEX_CR18                    = 0x18,
-    VGA_CRINDEX_CR22                    = 0x22,
-    VGA_CRINDEX_CR24                    = 0x24,
-    VGA_CRINDEX_CR26                    = 0x26
+    VGA_AR12_ENABLE0                    = (1 << 0),
+    VGA_AR12_ENABLE1                    = (1 << 1),
+    VGA_AR12_ENABLE2                    = (1 << 2),
+    VGA_AR12_ENABLE3                    = (1 << 3)
+
+};
+
+enum vga_crtindex
+{
+
+    VGA_CRTINDEX_CRT00                  = 0x00,
+    VGA_CRTINDEX_CRT01                  = 0x01,
+    VGA_CRTINDEX_CRT02                  = 0x02,
+    VGA_CRTINDEX_CRT03                  = 0x03,
+    VGA_CRTINDEX_CRT04                  = 0x04,
+    VGA_CRTINDEX_CRT05                  = 0x05,
+    VGA_CRTINDEX_CRT06                  = 0x06,
+    VGA_CRTINDEX_CRT07                  = 0x07,
+    VGA_CRTINDEX_CRT08                  = 0x08,
+    VGA_CRTINDEX_CRT09                  = 0x09,
+    VGA_CRTINDEX_CRT0A                  = 0x0A,
+    VGA_CRTINDEX_CRT0B                  = 0x0B,
+    VGA_CRTINDEX_CRT0C                  = 0x0C,
+    VGA_CRTINDEX_CRT0D                  = 0x0D,
+    VGA_CRTINDEX_CRT0E                  = 0x0E,
+    VGA_CRTINDEX_CRT0F                  = 0x0F,
+    VGA_CRTINDEX_CRT10                  = 0x10,
+    VGA_CRTINDEX_CRT11                  = 0x11,
+    VGA_CRTINDEX_CRT12                  = 0x12,
+    VGA_CRTINDEX_CRT13                  = 0x13,
+    VGA_CRTINDEX_CRT14                  = 0x14,
+    VGA_CRTINDEX_CRT15                  = 0x15,
+    VGA_CRTINDEX_CRT16                  = 0x16,
+    VGA_CRTINDEX_CRT17                  = 0x17,
+    VGA_CRTINDEX_CRT18                  = 0x18,
+    VGA_CRTINDEX_CRT22                  = 0x22,
+    VGA_CRTINDEX_CRT24                  = 0x24,
+    VGA_CRTINDEX_CRT26                  = 0x26
+
+};
+
+enum vga_crt03
+{
+
+    VGA_CRT03_EVRA                      = (1 << 7)
+
+};
+
+enum vga_crt09
+{
+
+    VGA_CRT09_SD                        = (1 << 7)
+
+};
+
+enum vga_crt0A
+{
+
+    VGA_CRT0A_CD                        = (1 << 5)
+
+};
+
+enum vga_crt11
+{
+
+    VGA_CRT11_BANDWIDTH                 = (1 << 6),
+    VGA_CRT11_PROTECT                   = (1 << 7)
+
+};
+
+enum vga_crt14
+{
+
+    VGA_CRT14_DIV4                      = (1 << 5),
+    VGA_CRT14_DW                        = (1 << 6)
+
+};
+
+enum vga_crt17
+{
+
+    VGA_CRT17_MAP13                     = (1 << 0),
+    VGA_CRT17_MAP14                     = (1 << 1),
+    VGA_CRT17_SLDIV                     = (1 << 2),
+    VGA_CRT17_DIV2                      = (1 << 3),
+    VGA_CRT17_AW                        = (1 << 5),
+    VGA_CRT17_WORD                      = (1 << 6),
+    VGA_CRT17_SE                        = (1 << 7)
 
 };
 
@@ -162,21 +222,21 @@ enum vga_gr06
 
 };
 
-enum vga_miscwrite
+enum vga_misc
 {
 
-    VGA_MISCWRITE_MONO                  = (0 << 0),
-    VGA_MISCWRITE_COLOR                 = (1 << 0),
-    VGA_MISCWRITE_DISABLE               = (0 << 1),
-    VGA_MISCWRITE_ENABLE                = (1 << 1),
-    VGA_MISCWRITE_VCLK0                 = (0 << 2),
-    VGA_MISCWRITE_VCLK1                 = (1 << 2),
-    VGA_MISCWRITE_VCLK2                 = (2 << 2),
-    VGA_MISCWRITE_VCLK3                 = (3 << 2),
-    VGA_MISCWRITE_PAGESELECT            = (1 << 5),
-    VGA_MISCWRITE_SYNC400               = (1 << 6),
-    VGA_MISCWRITE_SYNC350               = (2 << 6),
-    VGA_MISCWRITE_SYNC480               = (3 << 6)
+    VGA_MISC_MONO                       = (0 << 0),
+    VGA_MISC_COLOR                      = (1 << 0),
+    VGA_MISC_DISABLE                    = (0 << 1),
+    VGA_MISC_ENABLE                     = (1 << 1),
+    VGA_MISC_VCLK0                      = (0 << 2),
+    VGA_MISC_VCLK1                      = (1 << 2),
+    VGA_MISC_VCLK2                      = (2 << 2),
+    VGA_MISC_VCLK3                      = (3 << 2),
+    VGA_MISC_PAGESELECT                 = (1 << 5),
+    VGA_MISC_SYNC400                    = (1 << 6),
+    VGA_MISC_SYNC350                    = (2 << 6),
+    VGA_MISC_SYNC480                    = (3 << 6)
 
 };
 
@@ -252,6 +312,7 @@ enum vga_sr04
 
 };
 
+/*
 static unsigned char windex[] = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x13};
 static unsigned char w256[] = {0x5F, 0x3F, 0x40, 0x82, 0x4A, 0x9A, 0x20};
 static unsigned char w320[] = {0x5F, 0x4F, 0x50, 0x82, 0x54, 0x80, 0x28};
@@ -270,181 +331,74 @@ static unsigned char h400[] = {0xBF, 0x1F, 0x40, 0x9C, 0x8E, 0x8F, 0x96, 0xB9};
 static unsigned char h480[] = {0x0D, 0x3E, 0x40, 0xEA, 0xAC, 0xDF, 0xE7, 0x06};
 static unsigned char h564[] = {0x62, 0xF0, 0x60, 0x37, 0x89, 0x33, 0x3C, 0x5C};
 static unsigned char h600[] = {0x70, 0xF0, 0x60, 0x5B, 0x8C, 0x57, 0x58, 0x70};
+*/
 
-static void write16i(unsigned short port, unsigned char index, unsigned char value)
+static void outar(unsigned char index, unsigned char value)
 {
 
-    io_outw(port, (value << 8) | index);
+    io_outb(VGA_REGISTER_ARINDEX, index);
+    io_outb(VGA_REGISTER_ARINDEX, value);
+
+}
+
+static void outcrt1(unsigned char index, unsigned char value)
+{
+
+    io_outw(VGA_REGISTER_CRTINDEX1, (value << 8) | index);
+
+}
+
+static void outgr(unsigned char index, unsigned char value)
+{
+
+    io_outw(VGA_REGISTER_GRINDEX, (value << 8) | index);
+
+}
+
+static void outsr(unsigned char index, unsigned char value)
+{
+
+    io_outw(VGA_REGISTER_SRINDEX, (value << 8) | index);
 
 }
 
 static void mode(struct video_interface *self)
 {
 
-    unsigned int chain4 = 1;
-    unsigned char misc = VGA_MISCWRITE_COLOR | VGA_MISCWRITE_ENABLE | VGA_MISCWRITE_PAGESELECT;
-    unsigned char *w;
-    unsigned char *h;
-    unsigned int a;
+    io_outb(VGA_REGISTER_MISCWRITE, VGA_MISC_COLOR | VGA_MISC_ENABLE | VGA_MISC_PAGESELECT | VGA_MISC_SYNC400);
 
-    if (chain4 && self->xres * self->yres > 65536)
-        return;
+    outcrt1(VGA_CRTINDEX_CRT00, 0x5F);
+    outcrt1(VGA_CRTINDEX_CRT01, 0x4F);
+    outcrt1(VGA_CRTINDEX_CRT02, 0x50);
+    outcrt1(VGA_CRTINDEX_CRT03, VGA_CRT03_EVRA | 0x02);
+    outcrt1(VGA_CRTINDEX_CRT04, 0x54);
+    outcrt1(VGA_CRTINDEX_CRT05, 0x80);
+    outcrt1(VGA_CRTINDEX_CRT06, 0xBF);
+    outcrt1(VGA_CRTINDEX_CRT07, 0x1F);
+    outcrt1(VGA_CRTINDEX_CRT08, 0x00);
+    outcrt1(VGA_CRTINDEX_CRT09, 0x41);
+    outcrt1(VGA_CRTINDEX_CRT10, 0x9C);
+    outcrt1(VGA_CRTINDEX_CRT11, VGA_CRT11_PROTECT | 0x0E);
+    outcrt1(VGA_CRTINDEX_CRT12, 0x8F);
+    outcrt1(VGA_CRTINDEX_CRT13, 0x28);
+    outcrt1(VGA_CRTINDEX_CRT14, 0x40);
+    outcrt1(VGA_CRTINDEX_CRT15, 0x96);
+    outcrt1(VGA_CRTINDEX_CRT16, 0x89);
+    outcrt1(VGA_CRTINDEX_CRT17, VGA_CRT17_MAP13 | VGA_CRT17_MAP14 | VGA_CRT17_AW | VGA_CRT17_SE);
 
-    switch (self->xres)
-    {
+    outsr(VGA_SRINDEX_SR01, VGA_SR01_DIV8);
+    outsr(VGA_SRINDEX_SR02, VGA_SR02_ENABLE0 | VGA_SR02_ENABLE1 | VGA_SR02_ENABLE2 | VGA_SR02_ENABLE3);
+    outsr(VGA_SRINDEX_SR03, VGA_SR03_P0K);
+    outsr(VGA_SRINDEX_SR04, VGA_SR04_EXTENDED | VGA_SR04_ODDEVEN | VGA_SR04_CHAIN);
 
-        case 256:
-            w = w256;
-            misc |= VGA_MISCWRITE_VCLK0;
+    outgr(VGA_GRINDEX_GR05, VGA_GR05_256MODE);
+    outgr(VGA_GRINDEX_GR06, VGA_GR06_GRAPHICS | VGA_GR06_EGAVGA);
 
-            break;
-
-        case 320:
-            w = w320;
-            misc |= VGA_MISCWRITE_VCLK0;
-
-            break;
-
-        case 360:
-            w = w360;
-            misc |= VGA_MISCWRITE_VCLK1;
-
-            break;
-
-        case 376:
-            w = w376;
-            misc |= VGA_MISCWRITE_VCLK1;
-
-            break;
-
-        case 400:
-            w = w400;
-            misc |= VGA_MISCWRITE_VCLK1;
-
-            break;
-
-        default:
-            return;
-
-    }
-
-    switch (self->yres)
-    {
-
-        case 200:
-            h = h200;
-            misc |= VGA_MISCWRITE_SYNC400;
-
-            break;
-
-        case 224:
-            h = h224;
-            misc |= VGA_MISCWRITE_SYNC480;
-
-            break;
-
-        case 240:
-            h = h240;
-            misc |= VGA_MISCWRITE_SYNC480;
-
-            break;
-
-        case 256:
-            h = h256;
-            misc |= VGA_MISCWRITE_SYNC480;
-
-            break;
-
-        case 270:
-            h = h270;
-            misc |= VGA_MISCWRITE_SYNC480;
-
-            break;
-
-        case 300:
-            h = h300;
-            misc |= VGA_MISCWRITE_SYNC480;
-
-            break;
-
-        case 360:
-            h = h360;
-            misc |= VGA_MISCWRITE_SYNC400;
-
-            break;
-
-        case 400:
-            h = h400;
-            misc |= VGA_MISCWRITE_SYNC400;
-
-            break;
-
-        case 480:
-            h = h480;
-            misc |= VGA_MISCWRITE_SYNC480;
-
-            break;
-
-        case 564:
-            h = h564;
-            misc |= VGA_MISCWRITE_SYNC480;
-
-            break;
-
-        case 600:
-            h = h600;
-            misc |= VGA_MISCWRITE_SYNC480;
-
-            break;
-
-        default:
-            return;
-
-    }
-
-    io_outb(VGA_REGISTER_MISCWRITE, misc);
-
-    for (a = 0; a < 7; a++)
-        write16i(VGA_REGISTER_CRCINDEX, windex[a], w[a]);
-
-    for (a = 0; a < 8; a++)
-        write16i(VGA_REGISTER_CRCINDEX, hindex[a], h[a]);
-
-    if (chain4)
-    {
-    
-        write16i(VGA_REGISTER_CRCINDEX, VGA_CRINDEX_CR14, 0x40);
-        write16i(VGA_REGISTER_CRCINDEX, VGA_CRINDEX_CR17, 0xA3);
-        write16i(VGA_REGISTER_SRINDEX, VGA_SRINDEX_SR04, VGA_SR04_EXTENDED | VGA_SR04_ODDEVEN | VGA_SR04_CHAIN);
-
-    }
-
-    else
-    {
-
-        write16i(VGA_REGISTER_CRCINDEX, VGA_CRINDEX_CR14, 0x00);
-        write16i(VGA_REGISTER_CRCINDEX, VGA_CRINDEX_CR17, 0xE3);
-        write16i(VGA_REGISTER_SRINDEX, VGA_SRINDEX_SR04, VGA_SR04_EXTENDED | VGA_SR04_ODDEVEN);
-
-    }
-
-    write16i(VGA_REGISTER_SRINDEX, VGA_SRINDEX_SR01, VGA_SR01_DIV8);
-    write16i(VGA_REGISTER_SRINDEX, VGA_SRINDEX_SR02, VGA_SR02_ENABLE0 | VGA_SR02_ENABLE1 | VGA_SR02_ENABLE2 | VGA_SR02_ENABLE3);
-    write16i(VGA_REGISTER_GRINDEX, VGA_GRINDEX_GR05, VGA_GR05_256MODE);
-    write16i(VGA_REGISTER_GRINDEX, VGA_GRINDEX_GR06, VGA_GR06_GRAPHICS | VGA_GR06_EGAVGA);
-    io_inb(VGA_REGISTER_FCCCTRL);
-    io_outb(VGA_REGISTER_ARINDEX, VGA_ARINDEX_AR10);
-    io_outb(VGA_REGISTER_ARINDEX, VGA_AR10_GRAPHICS | VGA_AR10_PIXCLK);
-    io_outb(VGA_REGISTER_ARINDEX, VGA_ARINDEX_AR13);
-    io_outb(VGA_REGISTER_ARINDEX, 0x00);
-
-    for (a = 0; a < 16; a++)
-    {
-
-        io_outb(VGA_REGISTER_ARINDEX, a);
-        io_outb(VGA_REGISTER_ARINDEX, a);
-
-    }
+    outar(VGA_ARINDEX_AR10, VGA_AR10_GRAPHICS | VGA_AR10_PIXCLK);
+    outar(VGA_ARINDEX_AR11, 0x00);
+    outar(VGA_ARINDEX_AR12, VGA_AR12_ENABLE0 | VGA_AR12_ENABLE1 | VGA_AR12_ENABLE2 | VGA_AR12_ENABLE3);
+    outar(VGA_ARINDEX_AR13, 0x00);
+    outar(VGA_ARINDEX_AR14, 0x00);
 
     io_outb(VGA_REGISTER_ARINDEX, VGA_ARINDEX_ENABLE);
 
@@ -509,8 +463,8 @@ static unsigned int write_terminal_data(struct terminal_interface *self, unsigne
 
         }
 
-        write16i(VGA_REGISTER_CRCINDEX, VGA_CRINDEX_CR0E, driver->cursor.offset >> 8);
-        write16i(VGA_REGISTER_CRCINDEX, VGA_CRINDEX_CR0F, driver->cursor.offset);
+        outcrt1(VGA_CRTINDEX_CRT0E, driver->cursor.offset >> 8);
+        outcrt1(VGA_CRTINDEX_CRT0F, driver->cursor.offset);
 
     }
 
