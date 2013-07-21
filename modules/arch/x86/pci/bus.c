@@ -37,6 +37,30 @@ unsigned char pci_bus_inb(struct pci_bus *bus, unsigned int num, unsigned int sl
 
 }
 
+void pci_bus_outd(struct pci_bus *bus, unsigned int num, unsigned int slot, unsigned int function, unsigned short offset, unsigned int value)
+{
+
+    io_outd(bus->control, calculate_address(num, slot, function) | (offset & 0xFC));
+    io_outd(bus->data, value);
+
+}
+
+void pci_bus_outw(struct pci_bus *bus, unsigned int num, unsigned int slot, unsigned int function, unsigned short offset, unsigned short value)
+{
+
+    io_outd(bus->control, calculate_address(num, slot, function) | (offset & 0xFC));
+    io_outw(bus->data, value);
+
+}
+
+void pci_bus_outb(struct pci_bus *bus, unsigned int num, unsigned int slot, unsigned int function, unsigned short offset, unsigned char value)
+{
+
+    io_outd(bus->control, calculate_address(num, slot, function) | (offset & 0xFC));
+    io_outb(bus->data, value);
+
+}
+
 static void add_device(struct pci_bus *bus, unsigned int num, unsigned int slot, unsigned int function)
 {
 

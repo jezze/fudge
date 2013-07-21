@@ -29,6 +29,33 @@ unsigned char pci_device_inb(struct pci_device *device, unsigned short offset)
 
 }
 
+void pci_device_outd(struct pci_device *device, unsigned short offset, unsigned int value)
+{
+
+    struct pci_bus *bus = (struct pci_bus *)device->base.bus;
+
+    pci_bus_outd(bus, device->num, device->slot, device->function, offset, value);
+
+}
+
+void pci_device_outw(struct pci_device *device, unsigned short offset, unsigned short value)
+{
+
+    struct pci_bus *bus = (struct pci_bus *)device->base.bus;
+
+    pci_bus_outw(bus, device->num, device->slot, device->function, offset, value);
+
+}
+
+void pci_device_outb(struct pci_device *device, unsigned short offset, unsigned char value)
+{
+
+    struct pci_bus *bus = (struct pci_bus *)device->base.bus;
+
+    pci_bus_outb(bus, device->num, device->slot, device->function, offset, value);
+
+}
+
 void pci_init_device(struct pci_device *device, struct pci_bus *bus, unsigned int irq, unsigned int num, unsigned int slot, unsigned int function)
 {
 
