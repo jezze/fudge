@@ -5,18 +5,22 @@ void main()
 
     unsigned char buffer[FUDGE_BSIZE];
     unsigned int count;
-    unsigned int i;
+    unsigned int offset;
+    unsigned int last = 0;
 
-    count = call_read(CALL_DI, 0, FUDGE_BSIZE, buffer);
-
-    for (i = 0; i < count; i++)
+    for (offset = 0; (count = call_read(CALL_DI, offset, FUDGE_BSIZE, buffer)); offset += count)
     {
 
-        char num[32];
-        unsigned int c = memory_write_number(num, 32, buffer[i], 16, 0);
+        unsigned char num[32];
+        unsigned int i;
 
-        call_write(CALL_DO, 0, c, num);
-        call_write(CALL_DO, 0, 1, ":");
+        for (i = 0; i < count; i++)
+        {
+
+            last += call_write(CALL_DO, last, memory_write_paddednumber(num, 32, buffer[i], 16, 2, 0), num);
+            last += call_write(CALL_DO, last, 2, "  ");
+
+        }
 
     }
 

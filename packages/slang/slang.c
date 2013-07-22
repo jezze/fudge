@@ -229,6 +229,7 @@ static void execute(struct expression *expression)
             open_path(CALL_D0, &command->binary);
             call_open(CALL_DW, CALL_D4, 0, 0);
             call_spawn(CALL_D0);
+            call_close(CALL_D0);
             call_open(CALL_DI, CALL_DO, 0, 0);
             call_open(CALL_DO, CALL_D2, 0, 0);
 
@@ -239,6 +240,11 @@ static void execute(struct expression *expression)
         call_open(CALL_DC, CALL_D3, 0, 0);
 
     }
+
+    call_close(CALL_D1);
+    call_close(CALL_D2);
+    call_close(CALL_D3);
+    call_close(CALL_D4);
 
 }
 
