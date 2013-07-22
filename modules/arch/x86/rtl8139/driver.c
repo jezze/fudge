@@ -131,11 +131,7 @@ static void setup_receiver(struct rtl8139_driver *self)
 {
 
     io_outd(self->io + RTL8139_REGISTER_RBSTART, (unsigned int)self->rx);
-    io_outd(self->io + RTL8139_REGISTER_RCR, 0xBF);
-
-    log_write_string("RBSTART: 0x");
-    log_write_number((unsigned int)self->rx, 16);
-    log_write_string("\n");
+    io_outd(self->io + RTL8139_REGISTER_RCR, 0x8F);
 
 }
 
@@ -155,38 +151,8 @@ static void handle_irq(struct base_device *device)
     struct rtl8139_driver *driver = (struct rtl8139_driver *)device->driver;
     unsigned short status = io_inw(driver->io + RTL8139_REGISTER_ISR);
 
-    log_write_string("Interrupt status: 0x");
-    log_write_number(status, 16);
-    log_write_string("\n");
-
     if (status & RTL8139_ISR_ROK)
-    {
-
-        unsigned char cr = io_inb(driver->io + RTL8139_REGISTER_CR);
-        unsigned short cbr = io_inw(driver->io + RTL8139_REGISTER_CBR);
-        unsigned short capr = io_inw(driver->io + RTL8139_REGISTER_CAPR);
-        struct rtl8139_header *header = (struct rtl8139_header *)(driver->rx);
-
-        log_write_string("CR: 0x");
-        log_write_number(cr, 16);
-        log_write_string(" ");
-        log_write_string("CBR: 0x");
-        log_write_number(cbr, 16);
-        log_write_string(" ");
-        log_write_string("CAPR: 0x");
-        log_write_number(capr, 16);
-        log_write_string(" ");
-        log_write_string("HF: 0x");
-        log_write_number(header->flags, 16);
-        log_write_string(" ");
-        log_write_string("HL: 0x");
-        log_write_number(header->length, 16);
-        log_write_string("\n");
-
-        io_outw(driver->io + RTL8139_REGISTER_CAPR, 0);
         io_outw(driver->io + RTL8139_REGISTER_ISR, RTL8139_ISR_ROK);
-
-    }
 
     if (status & RTL8139_ISR_TOK)
         io_outw(driver->io + RTL8139_REGISTER_ISR, RTL8139_ISR_TOK);
@@ -200,7 +166,7 @@ static void start(struct base_driver *self)
 
     poweron(driver);
     reset(driver);
-    setup_interrupts(driver, 0xD07F);
+    setup_interrupts(driver, 0x0005);
     setup_receiver(driver);
     setup_transmitter(driver);
     enable(driver);
@@ -221,17 +187,12 @@ static void attach(struct base_device *device)
     struct rtl8139_driver *driver = (struct rtl8139_driver *)device->driver;
     unsigned int bar0 = pci_device_ind(pciDevice, PCI_CONFIG_BAR0);
     unsigned int bar1 = pci_device_ind(pciDevice, PCI_CONFIG_BAR1);
+    unsigned short command = pci_device_inw(pciDevice, PCI_CONFIG_COMMAND);
 
     driver->io = bar0 & ~1;
-    driver->mmio = bar1 & ~1;
+    driver->mmio = bar1;
 
-    log_write_string("BAR0: 0x");
-    log_write_number(bar0, 16);
-    log_write_string("\n");
-    log_write_string("BAR1: 0x");
-    log_write_number(bar1, 16);
-    log_write_string("\n");
-
+    pci_device_outw(pciDevice, PCI_CONFIG_COMMAND, command | (1 << 2));
     pic_set_routine(device, handle_irq);
 
 }
