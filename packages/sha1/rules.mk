@@ -1,7 +1,7 @@
 BIN:=packages/sha1/sha1
 OBJ:=packages/sha1/sha1.o
 
-$(BIN): $(OBJ) $(LIBFUDGE) $(EXTRA)
+$(BIN): $(OBJ) $(USERLIBS)
 	$(LD) $(LDFLAGS) -o $@ $^
 
 PACKAGES+=$(BIN)

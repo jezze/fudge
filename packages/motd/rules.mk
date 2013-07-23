@@ -1,7 +1,7 @@
 BIN:=packages/motd/motd
 OBJ:=packages/motd/motd.o
 
-$(BIN): $(OBJ) $(LIBFUDGE) $(EXTRA)
+$(BIN): $(OBJ) $(USERLIBS)
 	$(LD) $(LDFLAGS) -o $@ $^
 
 PACKAGES+=$(BIN)

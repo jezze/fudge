@@ -3,10 +3,10 @@ NAMED_OBJ:=packages/name/named.o
 NAMEF_BIN:=packages/name/namef
 NAMEF_OBJ:=packages/name/namef.o
 
-$(NAMED_BIN): $(NAMED_OBJ) $(LIBFUDGE) $(EXTRA)
+$(NAMED_BIN): $(NAMED_OBJ) $(USERLIBS)
 	$(LD) $(LDFLAGS) -o $@ $^
 
-$(NAMEF_BIN): $(NAMEF_OBJ) $(LIBFUDGE) $(EXTRA)
+$(NAMEF_BIN): $(NAMEF_OBJ) $(USERLIBS)
 	$(LD) $(LDFLAGS) -o $@ $^
 
 PACKAGES+=$(NAMED_BIN) $(NAMEF_BIN)

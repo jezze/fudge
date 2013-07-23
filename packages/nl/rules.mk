@@ -1,7 +1,7 @@
 BIN:=packages/nl/nl
 OBJ:=packages/nl/nl.o
 
-$(BIN): $(OBJ) $(LIBFUDGE) $(EXTRA)
+$(BIN): $(OBJ) $(USERLIBS)
 	$(LD) $(LDFLAGS) -o $@ $^
 
 PACKAGES+=$(BIN)

@@ -3,10 +3,10 @@ PCXDATA_OBJ:=packages/pcx/pcxdata.o
 PCXCMAP_BIN:=packages/pcx/pcxcmap
 PCXCMAP_OBJ:=packages/pcx/pcxcmap.o
 
-$(PCXDATA_BIN): $(PCXDATA_OBJ) $(LIBFUDGE) $(EXTRA)
+$(PCXDATA_BIN): $(PCXDATA_OBJ) $(USERLIBS)
 	$(LD) $(LDFLAGS) -o $@ $^
 
-$(PCXCMAP_BIN): $(PCXCMAP_OBJ) $(LIBFUDGE) $(EXTRA)
+$(PCXCMAP_BIN): $(PCXCMAP_OBJ) $(USERLIBS)
 	$(LD) $(LDFLAGS) -o $@ $^
 
 PACKAGES+=$(PCXDATA_BIN) $(PCXCMAP_BIN)

@@ -1,7 +1,7 @@
 BIN:=packages/mount/mount
 OBJ:=packages/mount/mount.o
 
-$(BIN): $(OBJ) $(LIBFUDGE) $(EXTRA)
+$(BIN): $(OBJ) $(USERLIBS)
 	$(LD) $(LDFLAGS) -o $@ $^
 
 PACKAGES+=$(BIN)

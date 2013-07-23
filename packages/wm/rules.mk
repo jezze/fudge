@@ -1,7 +1,7 @@
 BIN:=packages/wm/wm
 OBJ:=packages/wm/wm.o
 
-$(BIN): $(OBJ) $(LIBFUDGE) $(EXTRA)
+$(BIN): $(OBJ) $(USERLIBS)
 	$(LD) $(LDFLAGS) -o $@ $^
 
 PACKAGES+=$(BIN)

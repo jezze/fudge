@@ -1,7 +1,7 @@
 BIN:=packages/md5/md5
 OBJ:=packages/md5/md5.o
 
-$(BIN): $(OBJ) $(LIBFUDGE) $(EXTRA)
+$(BIN): $(OBJ) $(USERLIBS)
 	$(LD) $(LDFLAGS) -o $@ $^
 
 PACKAGES+=$(BIN)

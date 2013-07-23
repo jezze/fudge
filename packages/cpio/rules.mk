@@ -1,7 +1,7 @@
 BIN:=packages/cpio/cpio
 OBJ:=packages/cpio/cpio.o
 
-$(BIN): $(OBJ) $(LIBFUDGE) $(EXTRA)
+$(BIN): $(OBJ) $(USERLIBS)
 	$(LD) $(LDFLAGS) -o $@ $^
 
 PACKAGES+=$(BIN)

@@ -1,7 +1,7 @@
 BIN:=packages/cconv/cconv8to6
 OBJ:=packages/cconv/cconv8to6.o
 
-$(BIN): $(OBJ) $(LIBFUDGE) $(EXTRA)
+$(BIN): $(OBJ) $(USERLIBS)
 	$(LD) $(LDFLAGS) -o $@ $^
 
 PACKAGES+=$(BIN)

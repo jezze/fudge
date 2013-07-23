@@ -1,5 +1,7 @@
 packages/%.o: CFLAGS+=-Ilibs/fudge
 
+USERLIBS:=$(LIBFUDGE)
+
 include packages/cat/rules.mk
 include packages/cconv/rules.mk
 include packages/col/rules.mk

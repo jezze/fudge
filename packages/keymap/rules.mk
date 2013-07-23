@@ -3,10 +3,10 @@ KEYMAPSE_OBJ:=packages/keymap/keymapse.o
 KEYMAPUS_BIN:=packages/keymap/keymapus
 KEYMAPUS_OBJ:=packages/keymap/keymapus.o
 
-$(KEYMAPSE_BIN): $(KEYMAPSE_OBJ) $(LIBFUDGE) $(EXTRA)
+$(KEYMAPSE_BIN): $(KEYMAPSE_OBJ) $(USERLIBS)
 	$(LD) $(LDFLAGS) -o $@ $^
 
-$(KEYMAPUS_BIN): $(KEYMAPUS_OBJ) $(LIBFUDGE) $(EXTRA)
+$(KEYMAPUS_BIN): $(KEYMAPUS_OBJ) $(USERLIBS)
 	$(LD) $(LDFLAGS) -o $@ $^
 
 PACKAGES+=$(KEYMAPSE_BIN) $(KEYMAPUS_BIN)

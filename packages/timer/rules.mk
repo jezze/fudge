@@ -1,7 +1,7 @@
 BIN:=packages/timer/timer
 OBJ:=packages/timer/timer.o
 
-$(BIN): $(OBJ) $(LIBFUDGE) $(EXTRA)
+$(BIN): $(OBJ) $(USERLIBS)
 	$(LD) $(LDFLAGS) -o $@ $^
 
 PACKAGES+=$(BIN)

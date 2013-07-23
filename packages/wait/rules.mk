@@ -1,7 +1,7 @@
 BIN:=packages/wait/waitkey
 OBJ:=packages/wait/waitkey.o
 
-$(BIN): $(OBJ) $(LIBFUDGE) $(EXTRA)
+$(BIN): $(OBJ) $(USERLIBS)
 	$(LD) $(LDFLAGS) -o $@ $^
 
 PACKAGES+=$(BIN)

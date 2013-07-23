@@ -1,7 +1,7 @@
 BIN:=packages/shell/shell
 OBJ:=packages/shell/shell.o
 
-$(BIN): $(OBJ) $(LIBFUDGE) $(EXTRA)
+$(BIN): $(OBJ) $(USERLIBS)
 	$(LD) $(LDFLAGS) -o $@ $^
 
 PACKAGES+=$(BIN)
