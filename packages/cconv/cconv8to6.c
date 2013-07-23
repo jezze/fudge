@@ -1,3 +1,4 @@
+#include <arch.h>
 #include <fudge.h>
 
 static unsigned int convert(unsigned char *out, unsigned int ocount, unsigned char *in, unsigned int icount)

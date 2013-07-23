@@ -1,3 +1,4 @@
+#include <arch.h>
 #include <fudge.h>
 #include <format/elf.h>
 

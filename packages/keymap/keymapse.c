@@ -1,3 +1,4 @@
+#include <arch.h>
 #include <fudge.h>
 
 static char map[256] =
