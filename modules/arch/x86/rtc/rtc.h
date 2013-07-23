@@ -5,8 +5,15 @@ struct rtc_device
 {
 
     struct base_device base;
-    unsigned char (*get_value)(unsigned int type);
+
+};
+
+struct rtc_driver
+{
+
+    struct base_driver base;
 
 };
 
 void rtc_init_device(struct rtc_device *device, unsigned int irq);
+void rtc_init_driver(struct rtc_driver *driver);
