@@ -7,8 +7,6 @@ struct pit_device
 {
 
     struct base_device base;
-    unsigned short divisor;
-    unsigned short jiffies;
 
 };
 
@@ -17,6 +15,8 @@ struct pit_driver
 
     struct base_driver base;
     struct timer_interface itimer;
+    unsigned short divisor;
+    unsigned short jiffies;
 
 };
 
