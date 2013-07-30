@@ -1,3 +1,28 @@
+struct cpu_general
+{
+
+    unsigned int edi;
+    unsigned int esi;
+    unsigned int ebp;
+    unsigned int esp;
+    unsigned int ebx;
+    unsigned int edx;
+    unsigned int ecx;
+    unsigned int eax;
+
+};
+
+struct cpu_interrupt
+{
+
+    unsigned int eip;
+    unsigned int code;
+    unsigned int eflags;
+    unsigned int esp;
+    unsigned int data;
+
+};
+
 unsigned int cpu_get_cr0();
 unsigned int cpu_get_cr2();
 unsigned int cpu_get_cr3();

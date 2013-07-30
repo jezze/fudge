@@ -6,66 +6,32 @@
 #include "container.h"
 #include "kernel.h"
 
-static struct binary_protocol bprotocols[4];
-static struct vfs_protocol vprotocols[4];
-static struct task task;
-static struct container container;
+#define KERNEL_BINARY_PROTOCOLS         1
+#define KERNEL_VFS_PROTOCOLS            2
 
-static void setup_vfs()
+static struct
 {
 
-    vfs_setup();
-    vfs_init_cpio(&vprotocols[0]);
-    vfs_init_tar(&vprotocols[1]);
-    vfs_register_protocol(&vprotocols[0]);
-    vfs_register_protocol(&vprotocols[1]);
+    struct task task;
+    struct container container;
+    struct {struct binary_protocol protocols[KERNEL_BINARY_PROTOCOLS];} binary;
+    struct {struct vfs_protocol protocols[KERNEL_VFS_PROTOCOLS];} vfs;
 
-}
-
-static void setup_binary()
-{
-
-    binary_setup();
-    binary_init_elf(&bprotocols[0]);
-    binary_register_protocol(&bprotocols[0]);
-
-}
-
-static void setup_task(struct vfs_session *session, unsigned int ip)
-{
-
-    task_init(&task, ip, STACKADDRESS_VIRTUAL, STACKADDRESS_VIRTUAL);
-
-    task.descriptors[0x0E].session.backend = session->backend;
-    task.descriptors[0x0E].session.protocol = session->protocol;
-    task.descriptors[0x0E].id = session->protocol->rootid;
-    task.descriptors[0x0F].session.backend = session->backend;
-    task.descriptors[0x0F].session.protocol = session->protocol;
-    task.descriptors[0x0F].id = session->protocol->rootid;
-
-}
-
-static void setup_container(struct vfs_session *session)
-{
-
-    container_init(&container, &task);
-
-    container.mounts[0x01].parent.session.backend = session->backend;
-    container.mounts[0x01].parent.session.protocol = session->protocol;
-    container.mounts[0x01].parent.id = session->protocol->rootid;
-    container.mounts[0x01].child.session.backend = session->backend;
-    container.mounts[0x01].child.session.protocol = session->protocol;
-    container.mounts[0x01].child.id = session->protocol->rootid;
-
-}
+} state;
 
 struct container *kernel_setup(unsigned int count, struct kernel_module *modules)
 {
 
     unsigned int i;
 
-    setup_vfs();
-    setup_binary();
+    vfs_setup();
+    vfs_init_cpio(&state.vfs.protocols[0]);
+    vfs_register_protocol(&state.vfs.protocols[0]);
+    vfs_init_tar(&state.vfs.protocols[1]);
+    vfs_register_protocol(&state.vfs.protocols[1]);
+    binary_setup();
+    binary_init_elf(&state.binary.protocols[0]);
+    binary_register_protocol(&state.binary.protocols[0]);
 
     for (i = 0; i < count; i++)
     {
@@ -78,26 +44,49 @@ struct container *kernel_setup(unsigned int count, struct kernel_module *modules
         session.backend = &modules[i].base;
         session.protocol = vfs_get_protocol(session.backend);
 
-        error_assert(session.protocol != 0, "Filesystem protocol not recognized", __FILE__, __LINE__);
+        if (!session.protocol)
+            continue;
 
         id = session.protocol->walk(session.backend, session.protocol->rootid, 8, "bin/init");
 
-        error_assert(id != 0, "Init program not found", __FILE__, __LINE__);
+        if (!id)
+            continue;
 
         protocol = binary_get_protocol(&session, id);
 
-        error_assert(protocol != 0, "Binary protocol not recognized", __FILE__, __LINE__);
+        if (!protocol)
+            continue;
 
         ip = protocol->copy_program(&session, id);
 
-        error_assert(ip != 0, "Init entry not found", __FILE__, __LINE__);
+        if (!ip)
+            continue;
 
-        setup_task(&session, ip);
-        setup_container(&session);
+        task_init(&state.task, ip, STACKADDRESS_VIRTUAL, STACKADDRESS_VIRTUAL);
+
+        state.task.descriptors[0x0E].session.backend = session.backend;
+        state.task.descriptors[0x0E].session.protocol = session.protocol;
+        state.task.descriptors[0x0E].id = session.protocol->rootid;
+        state.task.descriptors[0x0F].session.backend = session.backend;
+        state.task.descriptors[0x0F].session.protocol = session.protocol;
+        state.task.descriptors[0x0F].id = session.protocol->rootid;
+
+        container_init(&state.container, &state.task);
+
+        state.container.mounts[0x01].parent.session.backend = session.backend;
+        state.container.mounts[0x01].parent.session.protocol = session.protocol;
+        state.container.mounts[0x01].parent.id = session.protocol->rootid;
+        state.container.mounts[0x01].child.session.backend = session.backend;
+        state.container.mounts[0x01].child.session.protocol = session.protocol;
+        state.container.mounts[0x01].child.id = session.protocol->rootid;
+
+        return &state.container;
 
     }
 
-    return &container;
+    error_panic("Failed to create container", __FILE__, __LINE__);
+
+    return 0;
 
 }
 

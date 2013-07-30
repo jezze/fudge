@@ -69,8 +69,10 @@ void pic_disable_line(unsigned short port, unsigned char line)
 
 }
 
-unsigned short pic_interrupt(struct pic_registers *registers)
+unsigned short pic_interrupt(void *stack)
 {
+
+    struct {struct cpu_general general; unsigned int index; unsigned int slave; struct cpu_interrupt interrupt;} *registers = stack;
 
     if (!routines[registers->index].callback)
         return registers->interrupt.data;

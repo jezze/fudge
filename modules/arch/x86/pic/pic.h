@@ -1,13 +1,3 @@
-struct pic_registers
-{
-
-    struct {unsigned int edi; unsigned int esi; unsigned int ebp; unsigned int esp; unsigned int ebx; unsigned int edx; unsigned int ecx; unsigned int eax;} general;
-    unsigned int index;
-    unsigned int slave;
-    struct {unsigned int eip; unsigned int code; unsigned int eflags; unsigned int esp; unsigned int data;} interrupt;
-
-};
-
 struct pic_routine
 {
 
@@ -32,7 +22,6 @@ void pic_routine0C();
 void pic_routine0D();
 void pic_routine0E();
 void pic_routine0F();
-unsigned short pic_interrupt(struct pic_registers *registers);
 void pic_enable_line(unsigned short port, unsigned char line);
 void pic_disable_line(unsigned short port, unsigned char line);
 unsigned int pic_set_routine(struct base_device *device, void (*callback)(struct base_device *device));
