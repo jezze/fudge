@@ -242,8 +242,8 @@ static unsigned int execute(struct container *self, struct task *task, void *sta
 
     task->state |= TASK_STATE_USED;
     task->registers.ip = protocol->copy_program(&descriptor->session, descriptor->id);
-    task->registers.sp = STACKADDRESS_VIRTUAL;
-    task->registers.fp = STACKADDRESS_VIRTUAL;
+    task->registers.sp = TASK_STACK;
+    task->registers.fp = TASK_STACK;
     task->registers.status = 0;
 
     return task->state;

@@ -19,19 +19,10 @@ static struct
 
 } state;
 
-struct container *kernel_setup(unsigned int count, struct kernel_module *modules)
+void kernel_setup_modules(unsigned int count, struct kernel_module *modules)
 {
 
     unsigned int i;
-
-    vfs_setup();
-    vfs_init_cpio(&state.vfs.protocols[0]);
-    vfs_register_protocol(&state.vfs.protocols[0]);
-    vfs_init_tar(&state.vfs.protocols[1]);
-    vfs_register_protocol(&state.vfs.protocols[1]);
-    binary_setup();
-    binary_init_elf(&state.binary.protocols[0]);
-    binary_register_protocol(&state.binary.protocols[0]);
 
     for (i = 0; i < count; i++)
     {
@@ -39,7 +30,6 @@ struct container *kernel_setup(unsigned int count, struct kernel_module *modules
         struct vfs_session session;
         struct binary_protocol *protocol;
         unsigned int id;
-        unsigned int ip;
 
         session.backend = &modules[i].base;
         session.protocol = vfs_get_protocol(session.backend);
@@ -57,12 +47,10 @@ struct container *kernel_setup(unsigned int count, struct kernel_module *modules
         if (!protocol)
             continue;
 
-        ip = protocol->copy_program(&session, id);
+        state.task.registers.ip = protocol->copy_program(&session, id);
 
-        if (!ip)
+        if (!state.task.registers.ip)
             continue;
-
-        task_init(&state.task, ip, STACKADDRESS_VIRTUAL, STACKADDRESS_VIRTUAL);
 
         state.task.descriptors[0x0E].session.backend = session.backend;
         state.task.descriptors[0x0E].session.protocol = session.protocol;
@@ -70,9 +58,6 @@ struct container *kernel_setup(unsigned int count, struct kernel_module *modules
         state.task.descriptors[0x0F].session.backend = session.backend;
         state.task.descriptors[0x0F].session.protocol = session.protocol;
         state.task.descriptors[0x0F].id = session.protocol->rootid;
-
-        container_init(&state.container, &state.task);
-
         state.container.mounts[0x01].parent.session.backend = session.backend;
         state.container.mounts[0x01].parent.session.protocol = session.protocol;
         state.container.mounts[0x01].parent.id = session.protocol->rootid;
@@ -80,13 +65,29 @@ struct container *kernel_setup(unsigned int count, struct kernel_module *modules
         state.container.mounts[0x01].child.session.protocol = session.protocol;
         state.container.mounts[0x01].child.id = session.protocol->rootid;
 
-        return &state.container;
+        return;
 
     }
 
-    error_panic("Failed to create container", __FILE__, __LINE__);
+    error_panic("Failed to locate init", __FILE__, __LINE__);
 
-    return 0;
+}
+
+struct container *kernel_setup()
+{
+
+    vfs_setup();
+    vfs_init_cpio(&state.vfs.protocols[0]);
+    vfs_register_protocol(&state.vfs.protocols[0]);
+    vfs_init_tar(&state.vfs.protocols[1]);
+    vfs_register_protocol(&state.vfs.protocols[1]);
+    binary_setup();
+    binary_init_elf(&state.binary.protocols[0]);
+    binary_register_protocol(&state.binary.protocols[0]);
+    task_init(&state.task, 0, TASK_STACK, TASK_STACK);
+    container_init(&state.container, &state.task);
+
+    return &state.container;
 
 }
 

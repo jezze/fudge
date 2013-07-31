@@ -1,10 +1,5 @@
 #define TASK_DESCRIPTORS                16
-#define TASKADDRESS_PHYSICAL            0x00400000
-#define TASKADDRESS_VIRTUAL             0x08048000
-#define TASKADDRESS_SIZE                0x00010000
-#define STACKADDRESS_PHYSICAL           0x00810000
-#define STACKADDRESS_VIRTUAL            0x80000000
-#define STACKADDRESS_SIZE               0x00010000
+#define TASK_STACK                      0x80000000
 
 enum task_state
 {

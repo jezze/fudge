@@ -8,14 +8,10 @@
 #include "cpu.h"
 #include "gdt.h"
 #include "idt.h"
-#include "mmu.h"
 #include "multi.h"
 #include "tss.h"
 
-#define ARCH_KERNEL_BASE                0x00000000
-#define ARCH_KERNEL_SIZE                0x00400000
-#define ARCH_STACK_BASE                 0x00400000
-#define ARCH_MMU_TABLES                 3
+#define ARCH_STACK                      0x00400000
 #define ARCH_GDT_DESCRIPTORS            6
 #define ARCH_IDT_DESCRIPTORS            256
 #define ARCH_TSS_DESCRIPTORS            1
@@ -23,8 +19,6 @@
 static struct
 {
 
-    struct mmu_directory directory;
-    struct mmu_table tables[ARCH_MMU_TABLES];
     struct container *container;
     struct {struct gdt_pointer pointer; struct gdt_descriptor descriptors[ARCH_GDT_DESCRIPTORS];} gdt;
     struct {struct idt_pointer pointer; struct idt_descriptor descriptors[ARCH_IDT_DESCRIPTORS];} idt;
@@ -86,7 +80,7 @@ unsigned short arch_syscall(void *stack)
 
     registers->interrupt.code = state.selectors.kcode;
     registers->interrupt.eip = (unsigned int)arch_halt;
-    registers->interrupt.esp = ARCH_STACK_BASE;
+    registers->interrupt.esp = ARCH_STACK;
     registers->general.ebp = 0;
     registers->general.eax = 0;
 
@@ -108,7 +102,7 @@ void arch_setup(unsigned int count, struct kernel_module *modules)
     state.selectors.kdata = gdt_set_descriptor(&state.gdt.pointer, GDT_INDEX_KDATA, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_RING0 | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
     state.selectors.udata = gdt_set_descriptor(&state.gdt.pointer, GDT_INDEX_UDATA, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_RING3 | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
 
-    tss_set_descriptor(&state.tss.pointer, TSS_INDEX_DEFAULT, state.selectors.kdata, ARCH_STACK_BASE);
+    tss_set_descriptor(&state.tss.pointer, TSS_INDEX_DEFAULT, state.selectors.kdata, ARCH_STACK);
 
     segment = gdt_set_descriptor(&state.gdt.pointer, GDT_INDEX_TSS, (unsigned int)state.tss.pointer.descriptors, (unsigned int)state.tss.pointer.descriptors + state.tss.pointer.limit, GDT_ACCESS_PRESENT | GDT_ACCESS_RING0 | GDT_ACCESS_EXECUTE | GDT_ACCESS_ACCESSED, 0x00);
 
@@ -118,15 +112,11 @@ void arch_setup(unsigned int count, struct kernel_module *modules)
     idt_set_descriptor(&state.idt.pointer, IDT_INDEX_GP, arch_isr_genfault, state.selectors.kcode, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
     idt_set_descriptor(&state.idt.pointer, IDT_INDEX_PF, arch_isr_pagefault, state.selectors.kcode, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
     idt_set_descriptor(&state.idt.pointer, IDT_INDEX_SYSCALL, arch_isr_syscall, state.selectors.kcode, IDT_FLAG_PRESENT | IDT_FLAG_RING3 | IDT_FLAG_TYPE32INT);
-    mmu_map(&state.directory, &state.tables[0], ARCH_KERNEL_BASE, ARCH_KERNEL_BASE, ARCH_KERNEL_SIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
-    mmu_map(&state.directory, &state.tables[1], TASKADDRESS_PHYSICAL, TASKADDRESS_VIRTUAL, TASKADDRESS_SIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
-    mmu_map(&state.directory, &state.tables[2], STACKADDRESS_PHYSICAL, STACKADDRESS_VIRTUAL - STACKADDRESS_SIZE, STACKADDRESS_SIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
-    mmu_set_directory(&state.directory);
-    mmu_enable();
 
-    state.container = kernel_setup(count, modules);
+    state.container = kernel_setup();
 
     multi_setup(state.container);
+    kernel_setup_modules(count, modules);
     arch_usermode(state.selectors.ucode, state.selectors.udata, state.container->running->registers.ip, state.container->running->registers.sp);
 
 }

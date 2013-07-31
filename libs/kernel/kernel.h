@@ -7,4 +7,5 @@ struct kernel_module
 
 };
 
-struct container *kernel_setup(unsigned int count, struct kernel_module *modules);
+void kernel_setup_modules(unsigned int count, struct kernel_module *modules);
+struct container *kernel_setup();

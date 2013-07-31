@@ -8,7 +8,24 @@
 #include "mmu.h"
 #include "multi.h"
 
-#define MULTI_ENTRIES                   16
+#define MULTI_TASKS                     16
+#define MULTI_KERNEL_BASE               0x00000000
+#define MULTI_KERNEL_SIZE               0x00400000
+#define MULTI_KERNEL_TABLES             3
+#define MULTI_TASK_BASE                 0x00400000
+#define MULTI_TASK_BASESIZE             0x00010000
+#define MULTI_TASK_STACK                0x00810000
+#define MULTI_TASK_STACKSIZE            0x00010000
+#define MULTI_TASK_VIRTUAL              0x08048000
+#define MULTI_TASK_TABLES               2
+
+static struct multi_kernel
+{
+
+    struct mmu_directory directory;
+    struct mmu_table tables[MULTI_KERNEL_TABLES];
+
+} kernel;
 
 static struct multi_task
 {
@@ -17,23 +34,23 @@ static struct multi_task
     unsigned int address;
     unsigned int stack;
     struct mmu_directory directory;
-    struct mmu_table tables[2];
+    struct mmu_table tables[MULTI_TASK_TABLES];
 
-} tasks[MULTI_ENTRIES];
+} tasks[MULTI_TASKS];
 
 static struct multi_task *create_task()
 {
 
     unsigned int i;
 
-    for (i = 1; i < MULTI_ENTRIES; i++)
+    for (i = 1; i < MULTI_TASKS; i++)
     {
 
         if (tasks[i].base.state & TASK_STATE_USED)
             continue;
 
-        tasks[i].address = TASKADDRESS_PHYSICAL + i * TASKADDRESS_SIZE;
-        tasks[i].stack = STACKADDRESS_PHYSICAL + i * STACKADDRESS_SIZE;
+        tasks[i].address = MULTI_TASK_BASE + i * MULTI_TASK_BASESIZE;
+        tasks[i].stack = MULTI_TASK_STACK + i * MULTI_TASK_STACKSIZE;
 
         return &tasks[i];
 
@@ -48,7 +65,7 @@ static struct multi_task *find_task()
 
     unsigned int i;
 
-    for (i = MULTI_ENTRIES - 1; i > 0; i--)
+    for (i = MULTI_TASKS - 1; i > 0; i--)
     {
 
         if (!(tasks[i].base.state & TASK_STATE_USED))
@@ -67,7 +84,7 @@ static struct multi_task *find_task_by_directory(struct mmu_directory *directory
 
     unsigned int i;
 
-    for (i = 1; i < MULTI_ENTRIES; i++)
+    for (i = 1; i < MULTI_TASKS; i++)
     {
 
         if (&tasks[i].directory == directory)
@@ -106,8 +123,8 @@ static void map(struct container *self, unsigned int address)
     if (!task)
         return;
 
-    mmu_map(&task->directory, &task->tables[0], task->address, TASKADDRESS_VIRTUAL, TASKADDRESS_SIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
-    mmu_map(&task->directory, &task->tables[1], task->stack, STACKADDRESS_VIRTUAL - STACKADDRESS_SIZE, STACKADDRESS_SIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
+    mmu_map(&task->directory, &task->tables[0], task->address, MULTI_TASK_VIRTUAL, MULTI_TASK_BASESIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
+    mmu_map(&task->directory, &task->tables[1], task->stack, TASK_STACK - MULTI_TASK_STACKSIZE, MULTI_TASK_STACKSIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
     mmu_set_directory(&task->directory);
 
 }
@@ -132,6 +149,12 @@ void multi_setup(struct container *container)
     container->map = map;
     container->schedule = schedule;
     container->calls[CONTAINER_CALL_SPAWN] = spawn;
+
+    mmu_map(&kernel.directory, &kernel.tables[0], MULTI_KERNEL_BASE, MULTI_KERNEL_BASE, MULTI_KERNEL_SIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
+    mmu_map(&kernel.directory, &kernel.tables[1], MULTI_TASK_BASE, MULTI_TASK_VIRTUAL, MULTI_TASK_BASESIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
+    mmu_map(&kernel.directory, &kernel.tables[2], MULTI_TASK_STACK, TASK_STACK - MULTI_TASK_STACKSIZE, MULTI_TASK_STACKSIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
+    mmu_set_directory(&kernel.directory);
+    mmu_enable();
 
 }
 
