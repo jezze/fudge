@@ -27,11 +27,11 @@ void main()
 
             l = i - start;
 
-            if (l > 18)
-                l = 18;
+            if (l > 14)
+                l = 14;
 
             last += call_write(CALL_DO, last, l, buffer + start);
-            last += call_write(CALL_DO, last, 20 - l, "                    ");
+            last += call_write(CALL_DO, last, 16 - l, "                ");
             start = i + 1;
 
         }
