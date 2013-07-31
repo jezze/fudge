@@ -16,7 +16,7 @@ static void set_table_page(struct mmu_table *table, unsigned int frame, unsigned
 
 }
 
-void mmu_map_memory(struct mmu_directory *directory, struct mmu_table *table, unsigned int paddress, unsigned int vaddress, unsigned int size, unsigned int tflags, unsigned int pflags)
+void mmu_map(struct mmu_directory *directory, struct mmu_table *table, unsigned int paddress, unsigned int vaddress, unsigned int size, unsigned int tflags, unsigned int pflags)
 {
 
     unsigned int frame = vaddress / MMU_PAGESIZE;
@@ -38,17 +38,24 @@ void mmu_enable()
 
 }
 
-void mmu_load_memory(struct mmu_directory *directory)
-{
-
-    cpu_set_cr3((unsigned int)directory);
-
-}
-
-void mmu_reload_memory()
+void mmu_reload()
 {
 
     cpu_set_cr3(cpu_get_cr3());
+
+}
+
+struct mmu_directory *mmu_get_directory()
+{
+
+    return (struct mmu_directory *)cpu_get_cr3();
+
+}
+
+void mmu_set_directory(struct mmu_directory *directory)
+{
+
+    cpu_set_cr3((unsigned int)directory);
 
 }
 
