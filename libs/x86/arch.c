@@ -38,6 +38,9 @@ unsigned short arch_genfault(void *stack)
 
     struct {struct cpu_general general; unsigned int selector; struct cpu_interrupt interrupt;} *registers = stack;
 
+    if (registers->interrupt.code == state.selectors.kcode)
+        return state.selectors.kdata;
+
     return registers->interrupt.data;
 
 }
@@ -46,30 +49,18 @@ unsigned short arch_pagefault(void *stack)
 {
 
     struct {struct cpu_general general; unsigned int type; struct cpu_interrupt interrupt;} *registers = stack;
-    unsigned int address = cpu_get_cr2();
+    struct mmu_directory *directory = (struct mmu_directory *)cpu_get_cr3();
+    /* unsigned int address = cpu_get_cr2(); */
 
-    state.container->running->state = 0;
+    mmu_map_memory(directory, &state.tables[0], ARCH_KERNEL_BASE, ARCH_KERNEL_BASE, ARCH_KERNEL_SIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
+    mmu_map_memory(directory, &state.tables[1], TASKADDRESS_PHYSICAL, TASKADDRESS_VIRTUAL, TASKADDRESS_SIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
+    mmu_map_memory(directory, &state.tables[2], STACKADDRESS_PHYSICAL, STACKADDRESS_VIRTUAL - STACKADDRESS_SIZE, STACKADDRESS_SIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
+    mmu_load_memory(directory);
 
-    state.container->schedule(state.container);
+    if (registers->interrupt.code == state.selectors.kcode)
+        return state.selectors.kdata;
 
-    if (state.container->running->state & TASK_STATE_USED)
-    {
-
-        registers->interrupt.code = state.selectors.ucode;
-        registers->interrupt.eip = state.container->running->registers.ip;
-        registers->interrupt.esp = state.container->running->registers.sp;
-        registers->general.ebp = state.container->running->registers.fp;
-        registers->general.eax = state.container->running->registers.status;
-
-        return state.selectors.udata;
-
-    }
-
-    error_register(1, address);
-    error_register(2, registers->type);
-    error_panic("PAGE FAULT", __FILE__, __LINE__);
-
-    return state.selectors.kdata;
+    return registers->interrupt.data;
 
 }
 
@@ -136,8 +127,6 @@ void arch_setup(unsigned int count, struct kernel_module *modules)
     idt_set_descriptor(&state.idt.pointer, IDT_INDEX_PF, arch_isr_pagefault, state.selectors.kcode, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
     idt_set_descriptor(&state.idt.pointer, IDT_INDEX_SYSCALL, arch_isr_syscall, state.selectors.kcode, IDT_FLAG_PRESENT | IDT_FLAG_RING3 | IDT_FLAG_TYPE32INT);
     mmu_map_memory(&state.directory, &state.tables[0], ARCH_KERNEL_BASE, ARCH_KERNEL_BASE, ARCH_KERNEL_SIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
-    mmu_map_memory(&state.directory, &state.tables[1], TASKADDRESS_PHYSICAL, TASKADDRESS_VIRTUAL, TASKADDRESS_SIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
-    mmu_map_memory(&state.directory, &state.tables[2], STACKADDRESS_PHYSICAL, STACKADDRESS_VIRTUAL - STACKADDRESS_SIZE, STACKADDRESS_SIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
     mmu_load_memory(&state.directory);
     mmu_enable();
 
