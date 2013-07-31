@@ -14,6 +14,8 @@ static struct multi_task
 {
 
     struct task base;
+    unsigned int address;
+    unsigned int stack;
     struct mmu_directory directory;
     struct mmu_table tables[2];
 
@@ -30,9 +32,8 @@ static struct multi_task *create_task()
         if (tasks[i].base.state & TASK_STATE_USED)
             continue;
 
-        memory_copy(&tasks[i].directory, mmu_get_directory(), sizeof (struct mmu_directory));
-        mmu_map(&tasks[i].directory, &tasks[i].tables[0], TASKADDRESS_PHYSICAL + i * TASKADDRESS_SIZE, TASKADDRESS_VIRTUAL, TASKADDRESS_SIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
-        mmu_map(&tasks[i].directory, &tasks[i].tables[1], STACKADDRESS_PHYSICAL + i * STACKADDRESS_SIZE, STACKADDRESS_VIRTUAL - STACKADDRESS_SIZE, STACKADDRESS_SIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
+        tasks[i].address = TASKADDRESS_PHYSICAL + i * TASKADDRESS_SIZE;
+        tasks[i].stack = STACKADDRESS_PHYSICAL + i * STACKADDRESS_SIZE;
 
         return &tasks[i];
 
@@ -61,6 +62,23 @@ static struct multi_task *find_task()
 
 }
 
+static struct multi_task *find_task_by_directory(struct mmu_directory *directory)
+{
+
+    unsigned int i;
+
+    for (i = 1; i < MULTI_ENTRIES; i++)
+    {
+
+        if (&tasks[i].directory == directory)
+            return &tasks[i];
+
+    }
+
+    return 0;
+
+}
+
 static unsigned int spawn(struct container *self, struct task *task, void *stack)
 {
 
@@ -70,8 +88,10 @@ static unsigned int spawn(struct container *self, struct task *task, void *stack
     if (!ntask)
         return 0;
 
-    memory_copy(&ntask->base, task, sizeof (struct task));
     memory_copy(&nargs, args, sizeof (struct parameters));
+    memory_copy(&ntask->base, task, sizeof (struct task));
+    memory_clear(&ntask->directory, sizeof (struct mmu_directory));
+    memory_copy(&ntask->directory, mmu_get_directory(), 4);
     mmu_set_directory(&ntask->directory);
 
     return self->calls[CONTAINER_CALL_EXECUTE](self, &ntask->base, &nargs);
@@ -81,6 +101,15 @@ static unsigned int spawn(struct container *self, struct task *task, void *stack
 static void map(struct container *self, unsigned int address)
 {
 
+    struct multi_task *task = find_task_by_directory(mmu_get_directory());
+
+    if (!task)
+        return;
+
+    mmu_map(&task->directory, &task->tables[0], task->address, TASKADDRESS_VIRTUAL, TASKADDRESS_SIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
+    mmu_map(&task->directory, &task->tables[1], task->stack, STACKADDRESS_VIRTUAL - STACKADDRESS_SIZE, STACKADDRESS_SIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
+    mmu_set_directory(&task->directory);
+
 }
 
 static void schedule(struct container *self)
@@ -88,14 +117,12 @@ static void schedule(struct container *self)
 
     struct multi_task *task = find_task();
 
-    if (task)
-    {
+    if (!task)
+        return;
 
-        mmu_set_directory(&task->directory);
+    mmu_set_directory(&task->directory);
 
-        self->running = &task->base;
-
-    }
+    self->running = &task->base;
 
 }
 
