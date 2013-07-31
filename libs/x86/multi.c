@@ -78,6 +78,11 @@ static unsigned int spawn(struct container *self, struct task *task, void *stack
 
 }
 
+static void map(struct container *self, unsigned int address)
+{
+
+}
+
 static void schedule(struct container *self)
 {
 
@@ -97,6 +102,7 @@ static void schedule(struct container *self)
 void multi_setup(struct container *container)
 {
 
+    container->map = map;
     container->schedule = schedule;
     container->calls[CONTAINER_CALL_SPAWN] = spawn;
 
