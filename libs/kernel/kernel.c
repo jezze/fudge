@@ -19,7 +19,7 @@ static struct
 
 } state;
 
-void kernel_setup_modules(unsigned int count, struct kernel_module *modules)
+void kernel_setup_modules(struct container *container, unsigned int count, struct kernel_module *modules)
 {
 
     unsigned int i;
@@ -47,23 +47,23 @@ void kernel_setup_modules(unsigned int count, struct kernel_module *modules)
         if (!protocol)
             continue;
 
-        state.task.registers.ip = protocol->copy_program(&session, id);
+        container->running->registers.ip = protocol->copy_program(&session, id);
 
-        if (!state.task.registers.ip)
+        if (!container->running->registers.ip)
             continue;
 
-        state.task.descriptors[0x0E].session.backend = session.backend;
-        state.task.descriptors[0x0E].session.protocol = session.protocol;
-        state.task.descriptors[0x0E].id = session.protocol->rootid;
-        state.task.descriptors[0x0F].session.backend = session.backend;
-        state.task.descriptors[0x0F].session.protocol = session.protocol;
-        state.task.descriptors[0x0F].id = session.protocol->rootid;
-        state.container.mounts[0x01].parent.session.backend = session.backend;
-        state.container.mounts[0x01].parent.session.protocol = session.protocol;
-        state.container.mounts[0x01].parent.id = session.protocol->rootid;
-        state.container.mounts[0x01].child.session.backend = session.backend;
-        state.container.mounts[0x01].child.session.protocol = session.protocol;
-        state.container.mounts[0x01].child.id = session.protocol->rootid;
+        container->mounts[0x01].parent.session.backend = session.backend;
+        container->mounts[0x01].parent.session.protocol = session.protocol;
+        container->mounts[0x01].parent.id = session.protocol->rootid;
+        container->mounts[0x01].child.session.backend = session.backend;
+        container->mounts[0x01].child.session.protocol = session.protocol;
+        container->mounts[0x01].child.id = session.protocol->rootid;
+        container->running->descriptors[0x0E].session.backend = session.backend;
+        container->running->descriptors[0x0E].session.protocol = session.protocol;
+        container->running->descriptors[0x0E].id = session.protocol->rootid;
+        container->running->descriptors[0x0F].session.backend = session.backend;
+        container->running->descriptors[0x0F].session.protocol = session.protocol;
+        container->running->descriptors[0x0F].id = session.protocol->rootid;
 
         return;
 

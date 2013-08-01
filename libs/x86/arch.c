@@ -117,7 +117,7 @@ void arch_setup(unsigned int count, struct kernel_module *modules)
     state.container = kernel_setup();
 
     multi_setup(state.container);
-    kernel_setup_modules(count, modules);
+    kernel_setup_modules(state.container, count, modules);
     arch_usermode(state.usegment.code, state.usegment.data, state.container->running->registers.ip, state.container->running->registers.sp);
 
 }

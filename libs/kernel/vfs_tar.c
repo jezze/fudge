@@ -1,5 +1,7 @@
 #include <fudge/kernel.h>
 #include "vfs.h"
+#include "task.h"
+#include "container.h"
 #include "kernel.h"
 
 static unsigned int decode(unsigned int id)

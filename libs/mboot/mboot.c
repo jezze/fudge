@@ -1,5 +1,7 @@
 #include <fudge/memory.h>
 #include <kernel/vfs.h>
+#include <kernel/task.h>
+#include <kernel/container.h>
 #include <kernel/kernel.h>
 #include <x86/arch.h>
 #include "mboot.h"
