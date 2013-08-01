@@ -22,8 +22,6 @@ void mmu_map(struct mmu_directory *directory, struct mmu_table *table, unsigned 
     unsigned int frame = vaddress / MMU_PAGESIZE;
     unsigned int i;
 
-    memory_clear(table, sizeof (struct mmu_table));
-
     for (i = 0; i < size / MMU_PAGESIZE; i++)
         set_table_page(table, frame + i, paddress + i * MMU_PAGESIZE, pflags);
 
