@@ -36,24 +36,6 @@ static struct multi_task
 
 } tasks[MULTI_TASKS];
 
-static struct multi_task *find_current_task()
-{
-
-    struct mmu_directory *directory = mmu_get_directory();
-    unsigned int i;
-
-    for (i = 1; i < MULTI_TASKS; i++)
-    {
-
-        if (&tasks[i].directory == directory)
-            return &tasks[i];
-
-    }
-
-    return 0;
-
-}
-
 static struct multi_task *find_next_task()
 {
 
@@ -111,16 +93,13 @@ static struct multi_task *clone_task(struct multi_task *parent)
 
 }
 
-static void map(struct container *self, unsigned int address)
+static void map(struct container *self, struct task *task, unsigned int address)
 {
 
-    struct multi_task *task = find_current_task();
+    struct multi_task *current = (struct multi_task *)task;
 
-    if (!task)
-        return;
-
-    mmu_map(&task->directory, &task->tables[0], task->index * MULTI_TASK_BASESIZE + MULTI_TASK_BASE, address, MULTI_TASK_BASESIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
-    mmu_map(&task->directory, &task->tables[1], task->index * MULTI_TASK_STACKSIZE + MULTI_TASK_STACK, MULTI_TASK_STACKVIRT - MULTI_TASK_STACKSIZE, MULTI_TASK_STACKSIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
+    mmu_map(&current->directory, &current->tables[0], current->index * MULTI_TASK_BASESIZE + MULTI_TASK_BASE, address, MULTI_TASK_BASESIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
+    mmu_map(&current->directory, &current->tables[1], current->index * MULTI_TASK_STACKSIZE + MULTI_TASK_STACK, MULTI_TASK_STACKVIRT - MULTI_TASK_STACKSIZE, MULTI_TASK_STACKSIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
 
 }
 

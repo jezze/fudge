@@ -46,7 +46,7 @@ unsigned short arch_pagefault(void *stack)
 
     struct {struct cpu_general general; unsigned int type; struct cpu_interrupt interrupt;} *registers = stack;
 
-    state.container->map(state.container, cpu_get_cr2());
+    state.container->map(state.container, state.task, cpu_get_cr2());
     state.task = state.container->schedule(state.container);
 
     if (registers->interrupt.code == state.ksegment.code)
