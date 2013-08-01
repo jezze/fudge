@@ -31,8 +31,7 @@ static struct multi_task
 {
 
     struct task base;
-    unsigned int address;
-    unsigned int stack;
+    unsigned int index;
     struct mmu_directory directory;
     struct mmu_table tables[MULTI_TASK_TABLES];
 
@@ -49,8 +48,7 @@ static struct multi_task *create_task()
         if (tasks[i].base.state & TASK_STATE_USED)
             continue;
 
-        tasks[i].address = MULTI_TASK_BASE + i * MULTI_TASK_BASESIZE;
-        tasks[i].stack = MULTI_TASK_STACK + i * MULTI_TASK_STACKSIZE;
+        tasks[i].index = i;
 
         return &tasks[i];
 
@@ -123,8 +121,8 @@ static void map(struct container *self, unsigned int address)
     if (!task)
         return;
 
-    mmu_map(&task->directory, &task->tables[0], task->address, MULTI_TASK_VIRTUAL, MULTI_TASK_BASESIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
-    mmu_map(&task->directory, &task->tables[1], task->stack, TASK_STACK - MULTI_TASK_STACKSIZE, MULTI_TASK_STACKSIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
+    mmu_map(&task->directory, &task->tables[0], task->index * MULTI_TASK_BASESIZE + MULTI_TASK_BASE, MULTI_TASK_VIRTUAL, MULTI_TASK_BASESIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
+    mmu_map(&task->directory, &task->tables[1], task->index * MULTI_TASK_STACKSIZE + MULTI_TASK_STACK, TASK_STACK - MULTI_TASK_STACKSIZE, MULTI_TASK_STACKSIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
     mmu_set_directory(&task->directory);
 
 }
