@@ -336,12 +336,11 @@ static unsigned int unload(struct container *self, struct task *task, void *stac
 
 }
 
-void container_init(struct container *container, struct task *task)
+void container_init(struct container *container)
 {
 
     memory_clear(container, sizeof (struct container));
 
-    container->running = task;
     container->calls[CONTAINER_CALL_OPEN] = open;
     container->calls[CONTAINER_CALL_CLOSE] = close;
     container->calls[CONTAINER_CALL_READ] = read;

@@ -47,7 +47,9 @@ static struct multi_task *create_task(struct task *task)
         if (tasks[i].base.state & TASK_STATE_USED)
             continue;
 
-        memory_copy(&tasks[i].base, task, sizeof (struct task));
+        if (task)
+            memory_copy(&tasks[i].base, task, sizeof (struct task));
+
         tasks[i].index = i;
 
         return &tasks[i];
@@ -126,26 +128,25 @@ static void map(struct container *self, unsigned int address)
 
 }
 
-static void schedule(struct container *self)
+static struct task *schedule(struct container *self)
 {
 
     struct multi_task *task = find_task();
 
     if (!task)
-        return;
+        return 0;
 
     mmu_set_directory(&task->directory);
 
-    self->running = &task->base;
+    return &task->base;
 
 }
 
-void multi_setup(struct container *container)
+struct task *multi_setup(struct container *container)
 {
 
-    struct multi_task *task = create_task(container->running);
+    struct multi_task *task = create_task(0);
 
-    container->running = &task->base;
     container->map = map;
     container->schedule = schedule;
     container->calls[CONTAINER_CALL_SPAWN] = spawn;
@@ -153,6 +154,8 @@ void multi_setup(struct container *container)
     mmu_map(&task->directory, &kernel.tables[0], MULTI_KERNEL_BASE, MULTI_KERNEL_BASE, MULTI_KERNEL_SIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
     mmu_set_directory(&task->directory);
     mmu_enable();
+
+    return &task->base;
 
 }
 

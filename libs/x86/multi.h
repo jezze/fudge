@@ -1,1 +1,1 @@
-void multi_setup(struct container *container);
+struct task *multi_setup(struct container *container);

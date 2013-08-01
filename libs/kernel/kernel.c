@@ -12,14 +12,13 @@
 static struct
 {
 
-    struct task task;
     struct container container;
     struct {struct binary_protocol protocols[KERNEL_BINARY_PROTOCOLS];} binary;
     struct {struct vfs_protocol protocols[KERNEL_VFS_PROTOCOLS];} vfs;
 
 } state;
 
-void kernel_setup_modules(struct container *container, unsigned int count, struct kernel_module *modules)
+void kernel_setup_modules(struct container *container, struct task *task, unsigned int count, struct kernel_module *modules)
 {
 
     unsigned int i;
@@ -47,23 +46,26 @@ void kernel_setup_modules(struct container *container, unsigned int count, struc
         if (!protocol)
             continue;
 
-        container->running->registers.ip = protocol->copy_program(&session, id);
+        task->registers.ip = protocol->copy_program(&session, id);
 
-        if (!container->running->registers.ip)
+        if (!task->registers.ip)
             continue;
 
+        task->state |= TASK_STATE_USED;
+        task->registers.sp = TASK_STACK;
+        task->registers.fp = TASK_STACK;
+        task->descriptors[0x0E].session.backend = session.backend;
+        task->descriptors[0x0E].session.protocol = session.protocol;
+        task->descriptors[0x0E].id = session.protocol->rootid;
+        task->descriptors[0x0F].session.backend = session.backend;
+        task->descriptors[0x0F].session.protocol = session.protocol;
+        task->descriptors[0x0F].id = session.protocol->rootid;
         container->mounts[0x01].parent.session.backend = session.backend;
         container->mounts[0x01].parent.session.protocol = session.protocol;
         container->mounts[0x01].parent.id = session.protocol->rootid;
         container->mounts[0x01].child.session.backend = session.backend;
         container->mounts[0x01].child.session.protocol = session.protocol;
         container->mounts[0x01].child.id = session.protocol->rootid;
-        container->running->descriptors[0x0E].session.backend = session.backend;
-        container->running->descriptors[0x0E].session.protocol = session.protocol;
-        container->running->descriptors[0x0E].id = session.protocol->rootid;
-        container->running->descriptors[0x0F].session.backend = session.backend;
-        container->running->descriptors[0x0F].session.protocol = session.protocol;
-        container->running->descriptors[0x0F].id = session.protocol->rootid;
 
         return;
 
@@ -84,8 +86,7 @@ struct container *kernel_setup()
     binary_setup();
     binary_init_elf(&state.binary.protocols[0]);
     binary_register_protocol(&state.binary.protocols[0]);
-    task_init(&state.task, 0, TASK_STACK, TASK_STACK);
-    container_init(&state.container, &state.task);
+    container_init(&state.container);
 
     return &state.container;
 

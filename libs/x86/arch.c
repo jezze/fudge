@@ -20,6 +20,7 @@ static struct
 {
 
     struct container *container;
+    struct task *task;
     struct {struct gdt_pointer pointer; struct gdt_descriptor descriptors[ARCH_GDT_DESCRIPTORS];} gdt;
     struct {struct idt_pointer pointer; struct idt_descriptor descriptors[ARCH_IDT_DESCRIPTORS];} idt;
     struct {struct tss_pointer pointer; struct tss_descriptor descriptors[ARCH_TSS_DESCRIPTORS];} tss;
@@ -59,21 +60,20 @@ unsigned short arch_syscall(void *stack)
 
     struct {struct cpu_general general; struct cpu_interrupt interrupt;} *registers = stack;
 
-    state.container->running->registers.ip = registers->interrupt.eip;
-    state.container->running->registers.sp = registers->interrupt.esp;
-    state.container->running->registers.fp = registers->general.ebp;
-    state.container->running->registers.status = (state.container->calls[registers->general.eax]) ? state.container->calls[registers->general.eax](state.container, state.container->running, (void *)registers->interrupt.esp) : 0;
+    state.task->registers.ip = registers->interrupt.eip;
+    state.task->registers.sp = registers->interrupt.esp;
+    state.task->registers.fp = registers->general.ebp;
+    state.task->registers.status = (state.container->calls[registers->general.eax]) ? state.container->calls[registers->general.eax](state.container, state.task, (void *)registers->interrupt.esp) : 0;
+    state.task = state.container->schedule(state.container);
 
-    state.container->schedule(state.container);
-
-    if (state.container->running->state & TASK_STATE_USED)
+    if (state.task->state & TASK_STATE_USED)
     {
 
         registers->interrupt.code = state.usegment.code;
-        registers->interrupt.eip = state.container->running->registers.ip;
-        registers->interrupt.esp = state.container->running->registers.sp;
-        registers->general.ebp = state.container->running->registers.fp;
-        registers->general.eax = state.container->running->registers.status;
+        registers->interrupt.eip = state.task->registers.ip;
+        registers->interrupt.esp = state.task->registers.sp;
+        registers->general.ebp = state.task->registers.fp;
+        registers->general.eax = state.task->registers.status;
 
         return state.usegment.data;
 
@@ -115,10 +115,10 @@ void arch_setup(unsigned int count, struct kernel_module *modules)
     idt_set_descriptor(&state.idt.pointer, IDT_INDEX_SYSCALL, arch_isr_syscall, state.ksegment.code, IDT_FLAG_PRESENT | IDT_FLAG_RING3 | IDT_FLAG_TYPE32INT);
 
     state.container = kernel_setup();
+    state.task = multi_setup(state.container);
 
-    multi_setup(state.container);
-    kernel_setup_modules(state.container, count, modules);
-    arch_usermode(state.usegment.code, state.usegment.data, state.container->running->registers.ip, state.container->running->registers.sp);
+    kernel_setup_modules(state.container, state.task, count, modules);
+    arch_usermode(state.usegment.code, state.usegment.data, state.task->registers.ip, state.task->registers.sp);
 
 }
 
