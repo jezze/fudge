@@ -105,7 +105,7 @@ void arch_setup(unsigned int count, struct kernel_module *modules)
 
     tss_set_descriptor(&state.tss.pointer, TSS_INDEX_DEFAULT, state.ksegment.data, ARCH_STACK);
 
-    segment = gdt_set_descriptor(&state.gdt.pointer, GDT_INDEX_TSS, (unsigned int)state.tss.pointer.descriptors, (unsigned int)state.tss.pointer.descriptors + state.tss.pointer.limit, GDT_ACCESS_PRESENT | GDT_ACCESS_RING0 | GDT_ACCESS_EXECUTE | GDT_ACCESS_ACCESSED, 0x00);
+    segment = gdt_set_descriptor(&state.gdt.pointer, GDT_INDEX_TSS, (unsigned int)state.tss.pointer.descriptors, (unsigned int)state.tss.pointer.descriptors + state.tss.pointer.limit, GDT_ACCESS_PRESENT | GDT_ACCESS_RING0 | GDT_ACCESS_EXECUTE | GDT_ACCESS_ACCESSED, 0);
 
     cpu_set_gdt(&state.gdt.pointer);
     cpu_set_idt(&state.idt.pointer);

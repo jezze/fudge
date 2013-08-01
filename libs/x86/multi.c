@@ -10,7 +10,7 @@
 
 #define MULTI_TASKS                     16
 #define MULTI_KERNEL_BASE               0x00000000
-#define MULTI_KERNEL_SIZE               0x00400000
+#define MULTI_KERNEL_BASESIZE           0x00400000
 #define MULTI_KERNEL_TABLES             1
 #define MULTI_TASK_BASE                 0x00400000
 #define MULTI_TASK_BASESIZE             0x00010000
@@ -157,16 +157,15 @@ static unsigned int spawn(struct container *self, struct task *task, void *stack
 struct task *multi_setup(struct container *container)
 {
 
-    struct multi_task *task = &tasks[1];
+    struct multi_task *task = find_free_task();
 
     task_init(&task->base, 0, TASK_STACK, TASK_STACK);
 
-    task->index = 1;
     container->map = map;
     container->schedule = schedule;
     container->calls[CONTAINER_CALL_SPAWN] = spawn;
 
-    mmu_map(&task->directory, &kernel.tables[0], MULTI_KERNEL_BASE, MULTI_KERNEL_BASE, MULTI_KERNEL_SIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
+    mmu_map(&task->directory, &kernel.tables[0], MULTI_KERNEL_BASE, MULTI_KERNEL_BASE, MULTI_KERNEL_BASESIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
     mmu_set_directory(&task->directory);
     mmu_enable();
 
