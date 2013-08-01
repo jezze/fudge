@@ -15,6 +15,7 @@
 #define MULTI_TASK_BASE                 0x00400000
 #define MULTI_TASK_BASESIZE             0x00010000
 #define MULTI_TASK_STACK                0x00810000
+#define MULTI_TASK_STACKVIRT            0x80000000
 #define MULTI_TASK_STACKSIZE            0x00010000
 #define MULTI_TASK_TABLES               2
 
@@ -101,7 +102,8 @@ static struct multi_task *clone_task(struct multi_task *parent)
     if (!child)
         return 0;
 
-    memory_copy(&child->base, &parent->base, sizeof (struct task));
+    task_init(&child->base, 0, MULTI_TASK_STACKVIRT, MULTI_TASK_STACKVIRT);
+    memory_copy(&child->base.descriptors, &parent->base.descriptors, sizeof (struct task_descriptor) * TASK_DESCRIPTORS);
     memory_clear(&child->directory, sizeof (struct mmu_directory));
     memory_copy(&child->directory, &parent->directory, 4);
 
@@ -118,7 +120,7 @@ static void map(struct container *self, unsigned int address)
         return;
 
     mmu_map(&task->directory, &task->tables[0], task->index * MULTI_TASK_BASESIZE + MULTI_TASK_BASE, address, MULTI_TASK_BASESIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
-    mmu_map(&task->directory, &task->tables[1], task->index * MULTI_TASK_STACKSIZE + MULTI_TASK_STACK, TASK_STACK - MULTI_TASK_STACKSIZE, MULTI_TASK_STACKSIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
+    mmu_map(&task->directory, &task->tables[1], task->index * MULTI_TASK_STACKSIZE + MULTI_TASK_STACK, MULTI_TASK_STACKVIRT - MULTI_TASK_STACKSIZE, MULTI_TASK_STACKSIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
     mmu_set_directory(&task->directory);
 
 }
@@ -159,7 +161,7 @@ struct task *multi_setup(struct container *container)
 
     struct multi_task *task = find_free_task();
 
-    task_init(&task->base, 0, TASK_STACK, TASK_STACK);
+    task_init(&task->base, 0, MULTI_TASK_STACKVIRT, MULTI_TASK_STACKVIRT);
 
     container->map = map;
     container->schedule = schedule;

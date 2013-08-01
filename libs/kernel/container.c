@@ -240,11 +240,10 @@ static unsigned int execute(struct container *self, struct task *task, void *sta
     if (!protocol)
         return 0;
 
-    task->state |= TASK_STATE_USED;
     task->registers.ip = protocol->copy_program(&descriptor->session, descriptor->id);
-    task->registers.sp = TASK_STACK;
-    task->registers.fp = TASK_STACK;
-    task->registers.status = 0;
+
+    if (!task->registers.ip)
+        return 0;
 
     return task->state;
 

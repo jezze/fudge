@@ -1,5 +1,4 @@
 #define TASK_DESCRIPTORS                16
-#define TASK_STACK                      0x80000000
 
 enum task_state
 {
