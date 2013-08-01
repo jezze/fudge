@@ -18,6 +18,37 @@ static struct
 
 } state;
 
+static void setup_container(struct container *container, struct vfs_session *session)
+{
+
+    container->mounts[0x01].parent.session.backend = session->backend;
+    container->mounts[0x01].parent.session.protocol = session->protocol;
+    container->mounts[0x01].parent.id = session->protocol->rootid;
+    container->mounts[0x01].child.session.backend = session->backend;
+    container->mounts[0x01].child.session.protocol = session->protocol;
+    container->mounts[0x01].child.id = session->protocol->rootid;
+
+}
+
+static void setup_task(struct task *task, struct vfs_session *session, struct binary_protocol *protocol, unsigned int id)
+{
+
+    task->state |= TASK_STATE_USED;
+    task->registers.ip = protocol->copy_program(session, id);
+    task->registers.sp = TASK_STACK;
+    task->registers.fp = TASK_STACK;
+
+    error_assert(task->registers.ip != 0, "Failed to locate entry point", __FILE__, __LINE__);
+
+    task->descriptors[0x0E].session.backend = session->backend;
+    task->descriptors[0x0E].session.protocol = session->protocol;
+    task->descriptors[0x0E].id = session->protocol->rootid;
+    task->descriptors[0x0F].session.backend = session->backend;
+    task->descriptors[0x0F].session.protocol = session->protocol;
+    task->descriptors[0x0F].id = session->protocol->rootid;
+
+}
+
 void kernel_setup_modules(struct container *container, struct task *task, unsigned int count, struct kernel_module *modules)
 {
 
@@ -46,26 +77,8 @@ void kernel_setup_modules(struct container *container, struct task *task, unsign
         if (!protocol)
             continue;
 
-        task->registers.ip = protocol->copy_program(&session, id);
-
-        if (!task->registers.ip)
-            continue;
-
-        task->state |= TASK_STATE_USED;
-        task->registers.sp = TASK_STACK;
-        task->registers.fp = TASK_STACK;
-        task->descriptors[0x0E].session.backend = session.backend;
-        task->descriptors[0x0E].session.protocol = session.protocol;
-        task->descriptors[0x0E].id = session.protocol->rootid;
-        task->descriptors[0x0F].session.backend = session.backend;
-        task->descriptors[0x0F].session.protocol = session.protocol;
-        task->descriptors[0x0F].id = session.protocol->rootid;
-        container->mounts[0x01].parent.session.backend = session.backend;
-        container->mounts[0x01].parent.session.protocol = session.protocol;
-        container->mounts[0x01].parent.id = session.protocol->rootid;
-        container->mounts[0x01].child.session.backend = session.backend;
-        container->mounts[0x01].child.session.protocol = session.protocol;
-        container->mounts[0x01].child.id = session.protocol->rootid;
+        setup_container(container, &session);
+        setup_task(task, &session, protocol, id);
 
         return;
 
