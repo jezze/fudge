@@ -111,7 +111,7 @@ static struct task *schedule(struct container *self)
     if (!task)
         return 0;
 
-    mmu_set_directory(&task->directory);
+    mmu_load(&task->directory);
 
     return &task->base;
 
@@ -128,7 +128,7 @@ static unsigned int spawn(struct container *self, struct task *task, void *stack
         return 0;
 
     memory_copy(&temp, args, sizeof (struct parameters));
-    mmu_set_directory(&child->directory);
+    mmu_load(&child->directory);
 
     return self->calls[CONTAINER_CALL_EXECUTE](self, &child->base, &temp);
 
@@ -146,7 +146,7 @@ struct task *multi_setup(struct container *container)
     container->calls[CONTAINER_CALL_SPAWN] = spawn;
 
     mmu_map(&task->directory, &kernel.tables[0], MULTI_KERNEL_BASE, MULTI_KERNEL_BASE, MULTI_KERNEL_BASESIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
-    mmu_set_directory(&task->directory);
+    mmu_load(&task->directory);
     mmu_enable();
 
     return &task->base;

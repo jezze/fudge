@@ -46,14 +46,7 @@ void mmu_reload()
 
 }
 
-struct mmu_directory *mmu_get_directory()
-{
-
-    return (struct mmu_directory *)cpu_get_cr3();
-
-}
-
-void mmu_set_directory(struct mmu_directory *directory)
+void mmu_load(struct mmu_directory *directory)
 {
 
     cpu_set_cr3((unsigned int)directory);
