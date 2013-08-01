@@ -33,10 +33,7 @@ static void setup_container(struct container *container, struct vfs_session *ses
 static void setup_task(struct task *task, struct vfs_session *session, struct binary_protocol *protocol, unsigned int id)
 {
 
-    task->state |= TASK_STATE_USED;
     task->registers.ip = protocol->copy_program(session, id);
-    task->registers.sp = TASK_STACK;
-    task->registers.fp = TASK_STACK;
 
     error_assert(task->registers.ip != 0, "Failed to locate entry point", __FILE__, __LINE__);
 

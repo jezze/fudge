@@ -21,7 +21,6 @@
 static struct multi_kernel
 {
 
-    struct mmu_directory directory;
     struct mmu_table tables[MULTI_KERNEL_TABLES];
 
 } kernel;
@@ -36,31 +35,7 @@ static struct multi_task
 
 } tasks[MULTI_TASKS];
 
-static struct multi_task *create_task(struct task *task)
-{
-
-    unsigned int i;
-
-    for (i = 1; i < MULTI_TASKS; i++)
-    {
-
-        if (tasks[i].base.state & TASK_STATE_USED)
-            continue;
-
-        if (task)
-            memory_copy(&tasks[i].base, task, sizeof (struct task));
-
-        tasks[i].index = i;
-
-        return &tasks[i];
-
-    }
-
-    return 0;
-
-}
-
-static struct multi_task *find_task()
+static struct multi_task *find_next_task()
 {
 
     unsigned int i;
@@ -79,7 +54,7 @@ static struct multi_task *find_task()
 
 }
 
-static struct multi_task *find_task_by_directory(struct mmu_directory *directory)
+static struct multi_task *find_current_task(struct mmu_directory *directory)
 {
 
     unsigned int i;
@@ -96,28 +71,47 @@ static struct multi_task *find_task_by_directory(struct mmu_directory *directory
 
 }
 
-static unsigned int spawn(struct container *self, struct task *task, void *stack)
+static struct multi_task *find_free_task()
 {
 
-    struct parameters {void *caller; unsigned int index;} nargs, *args = stack;
-    struct multi_task *ntask = create_task(task);
+    unsigned int i;
 
-    if (!ntask)
+    for (i = 1; i < MULTI_TASKS; i++)
+    {
+
+        if (tasks[i].base.state & TASK_STATE_USED)
+            continue;
+
+        tasks[i].index = i;
+
+        return &tasks[i];
+
+    }
+
+    return 0;
+
+}
+
+static struct multi_task *clone_task(struct task *task)
+{
+
+    struct multi_task *child = find_free_task();
+
+    if (!child)
         return 0;
 
-    memory_copy(&nargs, args, sizeof (struct parameters));
-    memory_clear(&ntask->directory, sizeof (struct mmu_directory));
-    memory_copy(&ntask->directory, mmu_get_directory(), 4);
-    mmu_set_directory(&ntask->directory);
+    memory_copy(&child->base, task, sizeof (struct task));
+    memory_clear(&child->directory, sizeof (struct mmu_directory));
+    memory_copy(&child->directory, mmu_get_directory(), 4);
 
-    return self->calls[CONTAINER_CALL_EXECUTE](self, &ntask->base, &nargs);
+    return child;
 
 }
 
 static void map(struct container *self, unsigned int address)
 {
 
-    struct multi_task *task = find_task_by_directory(mmu_get_directory());
+    struct multi_task *task = find_current_task(mmu_get_directory());
 
     if (!task)
         return;
@@ -131,7 +125,7 @@ static void map(struct container *self, unsigned int address)
 static struct task *schedule(struct container *self)
 {
 
-    struct multi_task *task = find_task();
+    struct multi_task *task = find_next_task();
 
     if (!task)
         return 0;
@@ -142,11 +136,30 @@ static struct task *schedule(struct container *self)
 
 }
 
+static unsigned int spawn(struct container *self, struct task *task, void *stack)
+{
+
+    struct parameters {void *caller; unsigned int index;} temp, *args = stack;
+    struct multi_task *child = clone_task(task);
+
+    if (!child)
+        return 0;
+
+    memory_copy(&temp, args, sizeof (struct parameters));
+    mmu_set_directory(&child->directory);
+
+    return self->calls[CONTAINER_CALL_EXECUTE](self, &child->base, &temp);
+
+}
+
 struct task *multi_setup(struct container *container)
 {
 
-    struct multi_task *task = create_task(0);
+    struct multi_task *task = &tasks[1];
 
+    task_init(&task->base, 0, TASK_STACK, TASK_STACK);
+
+    task->index = 1;
     container->map = map;
     container->schedule = schedule;
     container->calls[CONTAINER_CALL_SPAWN] = spawn;
