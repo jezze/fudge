@@ -35,6 +35,24 @@ static struct multi_task
 
 } tasks[MULTI_TASKS];
 
+static struct multi_task *find_current_task()
+{
+
+    struct mmu_directory *directory = mmu_get_directory();
+    unsigned int i;
+
+    for (i = 1; i < MULTI_TASKS; i++)
+    {
+
+        if (&tasks[i].directory == directory)
+            return &tasks[i];
+
+    }
+
+    return 0;
+
+}
+
 static struct multi_task *find_next_task()
 {
 
@@ -47,23 +65,6 @@ static struct multi_task *find_next_task()
             continue;
 
         return &tasks[i];
-
-    }
-
-    return 0;
-
-}
-
-static struct multi_task *find_current_task(struct mmu_directory *directory)
-{
-
-    unsigned int i;
-
-    for (i = 1; i < MULTI_TASKS; i++)
-    {
-
-        if (&tasks[i].directory == directory)
-            return &tasks[i];
 
     }
 
@@ -92,7 +93,7 @@ static struct multi_task *find_free_task()
 
 }
 
-static struct multi_task *clone_task(struct task *task)
+static struct multi_task *clone_task(struct multi_task *parent)
 {
 
     struct multi_task *child = find_free_task();
@@ -100,9 +101,9 @@ static struct multi_task *clone_task(struct task *task)
     if (!child)
         return 0;
 
-    memory_copy(&child->base, task, sizeof (struct task));
+    memory_copy(&child->base, &parent->base, sizeof (struct task));
     memory_clear(&child->directory, sizeof (struct mmu_directory));
-    memory_copy(&child->directory, mmu_get_directory(), 4);
+    memory_copy(&child->directory, &parent->directory, 4);
 
     return child;
 
@@ -111,7 +112,7 @@ static struct multi_task *clone_task(struct task *task)
 static void map(struct container *self, unsigned int address)
 {
 
-    struct multi_task *task = find_current_task(mmu_get_directory());
+    struct multi_task *task = find_current_task();
 
     if (!task)
         return;
@@ -140,7 +141,8 @@ static unsigned int spawn(struct container *self, struct task *task, void *stack
 {
 
     struct parameters {void *caller; unsigned int index;} temp, *args = stack;
-    struct multi_task *child = clone_task(task);
+    struct multi_task *parent = (struct multi_task *)task;
+    struct multi_task *child = clone_task(parent);
 
     if (!child)
         return 0;
