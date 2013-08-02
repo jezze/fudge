@@ -76,23 +76,6 @@ static struct multi_task *find_free_task()
 
 }
 
-static struct multi_task *clone_task(struct multi_task *parent)
-{
-
-    struct multi_task *child = find_free_task();
-
-    if (!child)
-        return 0;
-
-    task_init(&child->base, 0, MULTI_TASK_STACKVIRT, MULTI_TASK_STACKVIRT);
-    memory_copy(&child->base.descriptors, &parent->base.descriptors, sizeof (struct task_descriptor) * TASK_DESCRIPTORS);
-    memory_clear(&child->directory, sizeof (struct mmu_directory));
-    memory_copy(&child->directory, &parent->directory, 4);
-
-    return child;
-
-}
-
 static void map(struct container *self, struct task *task, unsigned int address)
 {
 
@@ -122,11 +105,15 @@ static unsigned int spawn(struct container *self, struct task *task, void *stack
 
     struct parameters {void *caller; unsigned int index;} temp, *args = stack;
     struct multi_task *parent = (struct multi_task *)task;
-    struct multi_task *child = clone_task(parent);
+    struct multi_task *child = find_free_task();
 
     if (!child)
         return 0;
 
+    task_init(&child->base, 0, MULTI_TASK_STACKVIRT, MULTI_TASK_STACKVIRT);
+    memory_copy(&child->base.descriptors, &parent->base.descriptors, sizeof (struct task_descriptor) * TASK_DESCRIPTORS);
+    memory_clear(&child->directory, sizeof (struct mmu_directory));
+    memory_copy(&child->directory, &parent->directory, 4);
     memory_copy(&temp, args, sizeof (struct parameters));
     mmu_load(&child->directory);
 
