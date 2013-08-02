@@ -59,7 +59,7 @@ void kernel_setup_modules(struct container *container, struct task *task, unsign
         unsigned int id;
 
         session.backend = &modules[i].base;
-        session.protocol = vfs_get_protocol(session.backend);
+        session.protocol = vfs_find_protocol(session.backend);
 
         if (!session.protocol)
             continue;
@@ -69,7 +69,7 @@ void kernel_setup_modules(struct container *container, struct task *task, unsign
         if (!id)
             continue;
 
-        protocol = binary_get_protocol(&session, id);
+        protocol = binary_find_protocol(&session, id);
 
         if (!protocol)
             continue;

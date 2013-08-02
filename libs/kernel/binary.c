@@ -4,7 +4,7 @@
 
 static struct binary_protocol *protocols;
 
-struct binary_protocol *binary_get_protocol(struct vfs_session *session, unsigned int id)
+struct binary_protocol *binary_find_protocol(struct vfs_session *session, unsigned int id)
 {
 
     struct binary_protocol *current;

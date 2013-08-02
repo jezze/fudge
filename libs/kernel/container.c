@@ -170,7 +170,7 @@ static unsigned int mount(struct container *self, struct task *task, void *stack
     if (!cdescriptor->session.backend || !cdescriptor->session.protocol)
         return 0;
 
-    protocol = binary_get_protocol(&cdescriptor->session, cdescriptor->id);
+    protocol = binary_find_protocol(&cdescriptor->session, cdescriptor->id);
 
     if (!protocol)
         return 0;
@@ -185,7 +185,7 @@ static unsigned int mount(struct container *self, struct task *task, void *stack
     if (!mount->child.session.backend)
         return 0;
 
-    mount->child.session.protocol = vfs_get_protocol(mount->child.session.backend);
+    mount->child.session.protocol = vfs_find_protocol(mount->child.session.backend);
 
     if (!mount->child.session.protocol)
         return 0;
@@ -235,7 +235,7 @@ static unsigned int execute(struct container *self, struct task *task, void *sta
     if (!descriptor->session.backend || !descriptor->session.protocol)
         return 0;
 
-    protocol = binary_get_protocol(&descriptor->session, descriptor->id);
+    protocol = binary_find_protocol(&descriptor->session, descriptor->id);
 
     if (!protocol)
         return 0;
@@ -286,7 +286,7 @@ static unsigned int load(struct container *self, struct task *task, void *stack)
     if (!physical)
         return 0;
 
-    protocol = binary_get_protocol(&descriptor->session, descriptor->id);
+    protocol = binary_find_protocol(&descriptor->session, descriptor->id);
 
     if (!protocol)
         return 0;
@@ -319,7 +319,7 @@ static unsigned int unload(struct container *self, struct task *task, void *stac
     if (!descriptor->session.backend || !descriptor->session.protocol)
         return 0;
 
-    protocol = binary_get_protocol(&descriptor->session, descriptor->id);
+    protocol = binary_find_protocol(&descriptor->session, descriptor->id);
 
     if (!protocol)
         return 0;

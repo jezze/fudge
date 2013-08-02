@@ -27,7 +27,7 @@ unsigned int vfs_isparent(unsigned int count, const char *path)
 
 }
 
-struct vfs_protocol *vfs_get_protocol(struct vfs_backend *backend)
+struct vfs_protocol *vfs_find_protocol(struct vfs_backend *backend)
 {
 
     struct vfs_protocol *current;
