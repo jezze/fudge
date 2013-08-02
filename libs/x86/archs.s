@@ -1,6 +1,6 @@
 .intel_syntax noprefix
 
-.extern arch_genfault
+.extern arch_generalfault
 .extern arch_pagefault
 .extern arch_syscall
 
@@ -29,8 +29,8 @@ arch_usermode:
     push eax
     iret
 
-.global arch_isr_genfault
-arch_isr_genfault:
+.global arch_isr_generalfault
+arch_isr_generalfault:
     cli
     pusha
     mov eax, esp
@@ -40,7 +40,7 @@ arch_isr_genfault:
     mov es, ax
     mov fs, ax
     mov gs, ax
-    call arch_genfault
+    call arch_generalfault
     mov ds, ax
     mov es, ax
     mov fs, ax

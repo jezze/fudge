@@ -26,7 +26,7 @@ enum idt_index
     IDT_INDEX_TS                        = 0x0A,
     IDT_INDEX_NP                        = 0x0B,
     IDT_INDEX_SS                        = 0x0C,
-    IDT_INDEX_GP                        = 0x0D,
+    IDT_INDEX_GF                        = 0x0D,
     IDT_INDEX_PF                        = 0x0E,
     IDT_INDEX_MF                        = 0x10,
     IDT_INDEX_AC                        = 0x11,
