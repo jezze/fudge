@@ -143,28 +143,28 @@ void setup_chip(unsigned char command, unsigned char data, unsigned char vector,
 void init()
 {
 
-    struct idt_pointer *idtp = cpu_get_idt();
-    unsigned int offset = sizeof (struct gdt_descriptor) * GDT_INDEX_KCODE;
+    struct idt_pointer *pointer = cpu_get_idt();
+    unsigned short selector = sizeof (struct gdt_descriptor) * GDT_INDEX_KCODE;
 
     memory_clear(&routines, sizeof (struct pic_routine) * PIC_ROUTINES);
     setup_chip(PIC_REGISTER_COMMAND0, PIC_REGISTER_DATA0, PIC_DATA_VECTOR0, 0x04);
     setup_chip(PIC_REGISTER_COMMAND1, PIC_REGISTER_DATA1, PIC_DATA_VECTOR1, 0x02);
-    idt_set_descriptor(idtp, PIC_DATA_VECTOR0 + 0x00, pic_routine00, offset, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
-    idt_set_descriptor(idtp, PIC_DATA_VECTOR0 + 0x01, pic_routine01, offset, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
-    idt_set_descriptor(idtp, PIC_DATA_VECTOR0 + 0x02, pic_routine02, offset, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
-    idt_set_descriptor(idtp, PIC_DATA_VECTOR0 + 0x03, pic_routine03, offset, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
-    idt_set_descriptor(idtp, PIC_DATA_VECTOR0 + 0x04, pic_routine04, offset, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
-    idt_set_descriptor(idtp, PIC_DATA_VECTOR0 + 0x05, pic_routine05, offset, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
-    idt_set_descriptor(idtp, PIC_DATA_VECTOR0 + 0x06, pic_routine06, offset, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
-    idt_set_descriptor(idtp, PIC_DATA_VECTOR0 + 0x07, pic_routine07, offset, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
-    idt_set_descriptor(idtp, PIC_DATA_VECTOR1 + 0x00, pic_routine08, offset, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
-    idt_set_descriptor(idtp, PIC_DATA_VECTOR1 + 0x01, pic_routine09, offset, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
-    idt_set_descriptor(idtp, PIC_DATA_VECTOR1 + 0x02, pic_routine0A, offset, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
-    idt_set_descriptor(idtp, PIC_DATA_VECTOR1 + 0x03, pic_routine0B, offset, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
-    idt_set_descriptor(idtp, PIC_DATA_VECTOR1 + 0x04, pic_routine0C, offset, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
-    idt_set_descriptor(idtp, PIC_DATA_VECTOR1 + 0x05, pic_routine0D, offset, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
-    idt_set_descriptor(idtp, PIC_DATA_VECTOR1 + 0x06, pic_routine0E, offset, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
-    idt_set_descriptor(idtp, PIC_DATA_VECTOR1 + 0x07, pic_routine0F, offset, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
+    idt_set_descriptor(pointer, PIC_DATA_VECTOR0 + 0x00, pic_routine00, selector, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
+    idt_set_descriptor(pointer, PIC_DATA_VECTOR0 + 0x01, pic_routine01, selector, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
+    idt_set_descriptor(pointer, PIC_DATA_VECTOR0 + 0x02, pic_routine02, selector, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
+    idt_set_descriptor(pointer, PIC_DATA_VECTOR0 + 0x03, pic_routine03, selector, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
+    idt_set_descriptor(pointer, PIC_DATA_VECTOR0 + 0x04, pic_routine04, selector, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
+    idt_set_descriptor(pointer, PIC_DATA_VECTOR0 + 0x05, pic_routine05, selector, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
+    idt_set_descriptor(pointer, PIC_DATA_VECTOR0 + 0x06, pic_routine06, selector, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
+    idt_set_descriptor(pointer, PIC_DATA_VECTOR0 + 0x07, pic_routine07, selector, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
+    idt_set_descriptor(pointer, PIC_DATA_VECTOR1 + 0x00, pic_routine08, selector, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
+    idt_set_descriptor(pointer, PIC_DATA_VECTOR1 + 0x01, pic_routine09, selector, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
+    idt_set_descriptor(pointer, PIC_DATA_VECTOR1 + 0x02, pic_routine0A, selector, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
+    idt_set_descriptor(pointer, PIC_DATA_VECTOR1 + 0x03, pic_routine0B, selector, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
+    idt_set_descriptor(pointer, PIC_DATA_VECTOR1 + 0x04, pic_routine0C, selector, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
+    idt_set_descriptor(pointer, PIC_DATA_VECTOR1 + 0x05, pic_routine0D, selector, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
+    idt_set_descriptor(pointer, PIC_DATA_VECTOR1 + 0x06, pic_routine0E, selector, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
+    idt_set_descriptor(pointer, PIC_DATA_VECTOR1 + 0x07, pic_routine0F, selector, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
     pic_set_mask(PIC_REGISTER_DATA0, 0xFB);
     pic_set_mask(PIC_REGISTER_DATA1, 0xFF);
 

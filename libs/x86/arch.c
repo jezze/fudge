@@ -24,8 +24,9 @@ static struct
     struct {struct gdt_pointer pointer; struct gdt_descriptor descriptors[ARCH_GDT_DESCRIPTORS];} gdt;
     struct {struct idt_pointer pointer; struct idt_descriptor descriptors[ARCH_IDT_DESCRIPTORS];} idt;
     struct {struct tss_pointer pointer; struct tss_descriptor descriptors[ARCH_TSS_DESCRIPTORS];} tss;
-    struct {unsigned short code; unsigned short data;} ksegment;
-    struct {unsigned short code; unsigned short data;} usegment;
+    struct {unsigned short code; unsigned short data;} kselector;
+    struct {unsigned short code; unsigned short data;} uselector;
+    struct {unsigned short info;} tselector;
 
 } state;
 
@@ -34,8 +35,8 @@ unsigned short arch_genfault(void *stack)
 
     struct {struct cpu_general general; unsigned int selector; struct cpu_interrupt interrupt;} *registers = stack;
 
-    if (registers->interrupt.code == state.ksegment.code)
-        return state.ksegment.data;
+    if (registers->interrupt.code == state.kselector.code)
+        return state.kselector.data;
 
     return registers->interrupt.data;
 
@@ -49,8 +50,8 @@ unsigned short arch_pagefault(void *stack)
     state.container->map(state.container, state.task, cpu_get_cr2());
     state.task = state.container->schedule(state.container);
 
-    if (registers->interrupt.code == state.ksegment.code)
-        return state.ksegment.data;
+    if (registers->interrupt.code == state.kselector.code)
+        return state.kselector.data;
 
     return registers->interrupt.data;
 
@@ -70,56 +71,52 @@ unsigned short arch_syscall(void *stack)
     if (state.task->state & TASK_STATE_USED)
     {
 
-        registers->interrupt.code = state.usegment.code;
+        registers->interrupt.code = state.uselector.code;
         registers->interrupt.eip = state.task->registers.ip;
         registers->interrupt.esp = state.task->registers.sp;
         registers->general.ebp = state.task->registers.fp;
         registers->general.eax = state.task->registers.status;
 
-        return state.usegment.data;
+        return state.uselector.data;
 
     }
 
-    registers->interrupt.code = state.ksegment.code;
+    registers->interrupt.code = state.kselector.code;
     registers->interrupt.eip = (unsigned int)arch_halt;
     registers->interrupt.esp = ARCH_STACK;
     registers->general.ebp = 0;
     registers->general.eax = 0;
 
-    return state.ksegment.data;
+    return state.kselector.data;
 
 }
 
 void arch_setup(unsigned int count, struct kernel_module *modules)
 {
 
-    unsigned int segment;
-
     gdt_init_pointer(&state.gdt.pointer, ARCH_GDT_DESCRIPTORS, state.gdt.descriptors);
     idt_init_pointer(&state.idt.pointer, ARCH_IDT_DESCRIPTORS, state.idt.descriptors);
     tss_init_pointer(&state.tss.pointer, ARCH_TSS_DESCRIPTORS, state.tss.descriptors);
 
-    state.ksegment.code = gdt_set_descriptor(&state.gdt.pointer, GDT_INDEX_KCODE, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_RING0 | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW | GDT_ACCESS_EXECUTE, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
-    state.ksegment.data = gdt_set_descriptor(&state.gdt.pointer, GDT_INDEX_KDATA, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_RING0 | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
-    state.usegment.code = gdt_set_descriptor(&state.gdt.pointer, GDT_INDEX_UCODE, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_RING3 | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW | GDT_ACCESS_EXECUTE, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
-    state.usegment.data = gdt_set_descriptor(&state.gdt.pointer, GDT_INDEX_UDATA, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_RING3 | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
+    state.kselector.code = gdt_set_descriptor(&state.gdt.pointer, GDT_INDEX_KCODE, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_RING0 | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW | GDT_ACCESS_EXECUTE, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
+    state.kselector.data = gdt_set_descriptor(&state.gdt.pointer, GDT_INDEX_KDATA, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_RING0 | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
+    state.uselector.code = gdt_set_descriptor(&state.gdt.pointer, GDT_INDEX_UCODE, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_RING3 | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW | GDT_ACCESS_EXECUTE, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
+    state.uselector.data = gdt_set_descriptor(&state.gdt.pointer, GDT_INDEX_UDATA, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_RING3 | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
+    state.tselector.info = gdt_set_descriptor(&state.gdt.pointer, GDT_INDEX_TSS, (unsigned int)state.tss.pointer.descriptors, (unsigned int)state.tss.pointer.descriptors + state.tss.pointer.limit, GDT_ACCESS_PRESENT | GDT_ACCESS_RING0 | GDT_ACCESS_EXECUTE | GDT_ACCESS_ACCESSED, 0);
 
-    tss_set_descriptor(&state.tss.pointer, TSS_INDEX_DEFAULT, state.ksegment.data, ARCH_STACK);
-
-    segment = gdt_set_descriptor(&state.gdt.pointer, GDT_INDEX_TSS, (unsigned int)state.tss.pointer.descriptors, (unsigned int)state.tss.pointer.descriptors + state.tss.pointer.limit, GDT_ACCESS_PRESENT | GDT_ACCESS_RING0 | GDT_ACCESS_EXECUTE | GDT_ACCESS_ACCESSED, 0);
-
+    tss_set_descriptor(&state.tss.pointer, TSS_INDEX_DEFAULT, state.kselector.data, ARCH_STACK);
     cpu_set_gdt(&state.gdt.pointer);
     cpu_set_idt(&state.idt.pointer);
-    cpu_set_tss(segment);
-    idt_set_descriptor(&state.idt.pointer, IDT_INDEX_GP, arch_isr_genfault, state.ksegment.code, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
-    idt_set_descriptor(&state.idt.pointer, IDT_INDEX_PF, arch_isr_pagefault, state.ksegment.code, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
-    idt_set_descriptor(&state.idt.pointer, IDT_INDEX_SYSCALL, arch_isr_syscall, state.ksegment.code, IDT_FLAG_PRESENT | IDT_FLAG_RING3 | IDT_FLAG_TYPE32INT);
+    cpu_set_tss(state.tselector.info);
+    idt_set_descriptor(&state.idt.pointer, IDT_INDEX_GP, arch_isr_genfault, state.kselector.code, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
+    idt_set_descriptor(&state.idt.pointer, IDT_INDEX_PF, arch_isr_pagefault, state.kselector.code, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
+    idt_set_descriptor(&state.idt.pointer, IDT_INDEX_SYSCALL, arch_isr_syscall, state.kselector.code, IDT_FLAG_PRESENT | IDT_FLAG_RING3 | IDT_FLAG_TYPE32INT);
 
     state.container = kernel_setup();
     state.task = multi_setup(state.container);
 
     kernel_setup_modules(state.container, state.task, count, modules);
-    arch_usermode(state.usegment.code, state.usegment.data, state.task->registers.ip, state.task->registers.sp);
+    arch_usermode(state.uselector.code, state.uselector.data, state.task->registers.ip, state.task->registers.sp);
 
 }
 
