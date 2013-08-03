@@ -4,13 +4,6 @@
 #include "container.h"
 #include "kernel.h"
 
-static unsigned int encode(unsigned int address)
-{
-
-    return (address) ? address : 0xFFFFFFFF;
-
-}
-
 static unsigned int find_top(struct vfs_backend *backend)
 {
 
@@ -49,6 +42,13 @@ static unsigned int decode(struct vfs_backend *backend, unsigned int id)
 {
 
     return (id == 0xFFFFFFFF) ? find_top(backend) : id;
+
+}
+
+static unsigned int encode(unsigned int address)
+{
+
+    return (address) ? address : 0xFFFFFFFF;
 
 }
 
