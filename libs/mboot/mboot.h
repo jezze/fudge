@@ -75,7 +75,7 @@ struct mboot_header
     unsigned int atable;
     struct mboot_header_vbe vbe;
 
-} __attribute__((packed));
+};
 
 struct mboot_mmap
 {
