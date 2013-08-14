@@ -11,7 +11,7 @@ struct tss_descriptor_ring
     unsigned int esp;
     unsigned int ss;
 
-} __attribute__((packed));
+};
 
 struct tss_descriptor_general
 {
@@ -25,7 +25,7 @@ struct tss_descriptor_general
     unsigned int esi;
     unsigned int edi;
 
-} __attribute__((packed));
+};
 
 struct tss_descriptor_segment
 {
@@ -37,7 +37,7 @@ struct tss_descriptor_segment
     unsigned int fs;
     unsigned int gs;
 
-} __attribute__((packed));
+};
 
 struct tss_descriptor
 {
@@ -52,10 +52,9 @@ struct tss_descriptor
     struct tss_descriptor_general general;
     struct tss_descriptor_segment segment;
     unsigned int ldt;
-    unsigned short trap;
-    unsigned short iomap;
+    unsigned int iopb;
 
-} __attribute__((packed));
+};
 
 struct tss_pointer
 {
@@ -63,7 +62,7 @@ struct tss_pointer
     unsigned short limit;
     struct tss_descriptor *descriptors;
 
-} __attribute__((packed));
+};
 
 void tss_set_descriptor(struct tss_pointer *pointer, enum tss_index index, unsigned int selector, unsigned int stack);
 void tss_init_pointer(struct tss_pointer *pointer, unsigned int count, struct tss_descriptor *descriptors);
