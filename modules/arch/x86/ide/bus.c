@@ -157,7 +157,6 @@ unsigned int ide_bus_write_blocks(struct ide_bus *bus, unsigned int count, void 
 
     return i;
 
-
 }
 
 static void add_device(struct ide_bus *bus, unsigned int slave, unsigned int type)
