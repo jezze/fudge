@@ -1,5 +1,3 @@
-.intel_syntax noprefix
-
 .set CALL_INTERRUPT,                    0x80
 .set CALL_INDEX_OPEN,                   0x01
 .set CALL_INDEX_CLOSE,                  0x02
@@ -15,67 +13,67 @@
 
 .global call_bind
 call_bind:
-    mov eax, CALL_INDEX_BIND
-    int CALL_INTERRUPT
+    movl $CALL_INDEX_BIND, %eax
+    int $CALL_INTERRUPT
     ret
 
 .global call_close
 call_close:
-    mov eax, CALL_INDEX_CLOSE
-    int CALL_INTERRUPT
+    movl $CALL_INDEX_CLOSE, %eax
+    int $CALL_INTERRUPT
     ret
 
 .global call_execute
 call_execute:
-    mov eax, CALL_INDEX_EXECUTE
-    int CALL_INTERRUPT
+    movl $CALL_INDEX_EXECUTE, %eax
+    int $CALL_INTERRUPT
     ret
 
 .global call_exit
 call_exit:
-    mov eax, CALL_INDEX_EXIT
-    int CALL_INTERRUPT
+    movl $CALL_INDEX_EXIT, %eax
+    int $CALL_INTERRUPT
     ret
 
 .global call_load
 call_load:
-    mov eax, CALL_INDEX_LOAD
-    int CALL_INTERRUPT
+    movl $CALL_INDEX_LOAD, %eax
+    int $CALL_INTERRUPT
     ret
 
 .global call_mount
 call_mount:
-    mov eax, CALL_INDEX_MOUNT
-    int CALL_INTERRUPT
+    movl $CALL_INDEX_MOUNT, %eax
+    int $CALL_INTERRUPT
     ret
 
 .global call_open
 call_open:
-    mov eax, CALL_INDEX_OPEN
-    int CALL_INTERRUPT
+    movl $CALL_INDEX_OPEN, %eax
+    int $CALL_INTERRUPT
     ret
 
 .global call_read
 call_read:
-    mov eax, CALL_INDEX_READ
-    int CALL_INTERRUPT
+    movl $CALL_INDEX_READ, %eax
+    int $CALL_INTERRUPT
     ret
 
 .global call_spawn
 call_spawn:
-    mov eax, CALL_INDEX_SPAWN
-    int CALL_INTERRUPT
+    movl $CALL_INDEX_SPAWN, %eax
+    int $CALL_INTERRUPT
     ret
 
 .global call_unload
 call_unload:
-    mov eax, CALL_INDEX_UNLOAD
-    int CALL_INTERRUPT
+    movl $CALL_INDEX_UNLOAD, %eax
+    int $CALL_INTERRUPT
     ret
 
 .global call_write
 call_write:
-    mov eax, CALL_INDEX_WRITE
-    int CALL_INTERRUPT
+    movl $CALL_INDEX_WRITE, %eax
+    int $CALL_INTERRUPT
     ret
 

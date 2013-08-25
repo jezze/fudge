@@ -1,30 +1,28 @@
-.intel_syntax noprefix
-
 .global msr_get
 msr_get:
-    push ebp
-    mov ebp, esp
+    pushl %ebp
+    movl %esp, %ebp
     pusha
-    mov ecx, [ebp + 8]
-    mov edi, [ebp + 12]
+    movl 8(%ebp), %ecx
+    movl 12(%ebp), %edi
     rdmsr
-    mov [edi + 0], eax
-    mov [edi + 4], edx
+    movl %eax, 0(%edi)
+    movl %edx, 4(%edi)
     popa
-    pop ebp
+    popl %ebp
     ret
 
 .global msr_set
 msr_set:
-    push ebp
-    mov ebp, esp
+    pushl %ebp
+    movl %esp, %ebp
     pusha
-    mov ecx, [ebp + 8]
-    mov edi, [ebp + 12]
-    mov eax, [edi + 0]
-    mov edx, [edi + 4]
+    movl 8(%ebp), %ecx
+    movl 12(%ebp), %edi
+    movl 0(%edi), %eax
+    movl 4(%edi), %edx
     wrmsr
     popa
-    pop ebp
+    popl %ebp
     ret
 

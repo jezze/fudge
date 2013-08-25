@@ -1,43 +1,41 @@
-.intel_syntax noprefix
-
 .global io_inb
 io_inb:
-    mov dx, [esp + 4]
-    xor eax, eax
-    in al, dx
+    movw 4(%esp), %dx
+    xorl %eax, %eax
+    inb %dx, %al
     ret
 
 .global io_inw
 io_inw:
-    mov dx, [esp + 4]
-    xor eax, eax
-    in ax, dx
+    movw 4(%esp), %dx
+    xorl %eax, %eax
+    inw %dx, %ax
     ret
 
 .global io_ind
 io_ind:
-    mov dx, [esp + 4]
-    in eax, dx
+    movw 4(%esp), %dx
+    inl %dx, %eax
     ret
 
 .global io_outb
 io_outb:
-    mov dx, [esp + 4]
-    mov al, [esp + 8]
-    out dx, al
+    movw 4(%esp), %dx
+    movb 8(%esp), %al
+    outb %al, %dx
     ret
 
 .global io_outw
 io_outw:
-    mov dx, [esp + 4]
-    mov ax, [esp + 8]
-    out dx, ax
+    movw 4(%esp), %dx
+    movw 8(%esp), %ax
+    outw %ax, %dx
     ret
 
 .global io_outd
 io_outd:
-    mov dx, [esp + 4]
-    mov eax, [esp + 8]
-    out dx, eax
+    movw 4(%esp), %dx
+    movl 8(%esp), %eax
+    outl %eax, %dx
     ret
 

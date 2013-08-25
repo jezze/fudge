@@ -1,96 +1,94 @@
-.intel_syntax noprefix
-
 .global cpu_get_cr0
 cpu_get_cr0:
-    mov eax, cr0
+    movl %cr0,%eax
     ret
 
 .global cpu_get_cr2
 cpu_get_cr2:
-    mov eax, cr2
+    movl %cr2,%eax
     ret
 
 .global cpu_get_cr3
 cpu_get_cr3:
-    mov eax, cr3
+    movl %cr3,%eax
     ret
 
 .global cpu_get_cr4
 cpu_get_cr4:
-    mov eax, cr4
+    movl %cr4, %eax
     ret
 
 .global cpu_get_eflags
 cpu_get_eflags:
     pushf
-    pop eax
+    popl %eax
     ret
 
 .global cpu_get_gdt
 cpu_get_gdt:
-    sgdt [eax]
+    sgdt (%eax)
     ret
 
 .global cpu_get_idt
 cpu_get_idt:
-    sidt [eax]
+    sidt (%eax)
     ret
 
 .global cpu_set_cr0
 cpu_set_cr0:
-    mov eax, [esp + 4]
-    mov cr0, eax
+    movl 4(%esp), %eax
+    movl %eax, %cr0
     ret
 
 .global cpu_set_cr2
 cpu_set_cr2:
-    mov eax, [esp + 4]
-    mov cr2, eax
+    movl 4(%esp), %eax
+    movl %eax, %cr2
     ret
 
 .global cpu_set_cr3
 cpu_set_cr3:
-    mov eax, [esp + 4]
-    mov cr3, eax
+    movl 4(%esp), %eax
+    movl %eax, %cr3
     ret
 
 .global cpu_set_cr4
 cpu_set_cr4:
-    mov eax, [esp + 4]
-    mov cr4, eax
+    movl 4(%esp), %eax
+    movl %eax, %cr4
     ret
 
 .global cpu_set_eflags
 cpu_set_eflags:
-    mov eax, [esp + 4]
-    push eax
+    movl 4(%esp), %eax
+    pushl %eax
     popf
     ret
 
 .global cpu_set_gdt
 cpu_set_gdt:
-    mov eax, [esp + 4]
-    lgdt [eax]
-    mov ax, 0x10
-    mov ds, ax
-    mov es, ax
-    mov fs, ax
-    mov gs, ax
-    mov ss, ax
-    jmp 0x08:cpu_set_gdt_high
+    movl 4(%esp), %eax
+    lgdt (%eax)
+    movw $0x10, %ax
+    movw %ax, %ds
+    movw %ax, %es
+    movw %ax, %fs
+    movw %ax, %gs
+    movw %ax, %ss
+    ljmp $0x08, $cpu_set_gdt_high
 
 cpu_set_gdt_high:
     ret
 
 .global cpu_set_idt
 cpu_set_idt:
-    mov eax, [esp + 4]
-    lidt [eax]
+    movl 4(%esp), %eax
+    lidt (%eax)
     ret
 
 .global cpu_set_tss
 cpu_set_tss:
-    mov ax, [esp + 4]
-    ltr ax
+    movw 4(%esp), %ax
+    ltrw %ax
     ret
 

@@ -1,76 +1,74 @@
-.intel_syntax noprefix
-
 .global cpuid_check_cpuid
 cpuid_check_cpuid:
-    pushfd
-    pop eax
-    mov ecx, eax
-    xor eax, 0x200000
-    push eax
-    popfd
-    pushfd
-    pop eax
-    xor eax, ecx
-    shr eax, 21
-    and eax, 1
+    pushf
+    popl %eax
+    movl %eax, %ecx
+    xorl $0x200000, %eax
+    pushl %eax
+    popf
+    pushf
+    popl %eax
+    xorl %ecx, %eax
+    shrl $21, %eax
+    andl $1, %eax
     ret
 
 .global cpuid_get_data
 cpuid_get_data:
-    push ebp
-    mov ebp, esp
+    pushl %ebp
+    movl %esp, %ebp
     pusha
-    mov eax, [ebp + 8]
-    mov edi, [ebp + 12]
+    movl 8(%ebp), %eax
+    movl 12(%ebp), %edi
     cpuid
-    mov [edi + 0], eax
-    mov [edi + 4], ebx
-    mov [edi + 8], ecx
-    mov [edi + 12], edx
+    movl %eax, (%edi)
+    movl %ebx, 4(%edi)
+    movl %ecx, 8(%edi)
+    movl %edx, 12(%edi)
     popa
-    pop ebp
+    popl %ebp
     ret
 
 .global cpuid_get_vendor
 cpuid_get_vendor:
-    push ebp
-    mov ebp, esp
+    pushl %ebp
+    movl %esp, %ebp
     pusha
-    mov eax, 0x00
-    mov edi, [ebp + 8]
+    movl $0x00, %eax
+    movl 8(%ebp), %edi
     cpuid
-    mov [edi + 0], ebx
-    mov [edi + 4], edx
-    mov [edi + 8], ecx
+    movl %ebx, (%edi)
+    movl %edx, 4(%edi)
+    movl %ecx, 8(%edi)
     popa
-    pop ebp
+    popl %ebp
     ret
 
 .global cpuid_get_brand
 cpuid_get_brand:
-    push ebp
-    mov ebp, esp
+    pushl %ebp
+    movl %esp, %ebp
     pusha
-    mov eax, 0x80000002
-    mov edi, [ebp + 8]
+    movl $0x80000002, %eax
+    movl 8(%ebp), %edi
     cpuid
-    mov [edi + 0], eax
-    mov [edi + 4], ebx
-    mov [edi + 8], ecx
-    mov [edi + 12], edx
-    mov eax, 0x80000003
+    movl %eax, (%edi)
+    movl %ebx, 4(%edi)
+    movl %ecx, 8(%edi)
+    movl %edx, 12(%edi)
+    movl $0x80000003, %eax
     cpuid
-    mov [edi + 16], eax
-    mov [edi + 20], ebx
-    mov [edi + 24], ecx
-    mov [edi + 28], edx
-    mov eax, 0x80000004
+    movl %eax, 16(%edi)
+    movl %ebx, 20(%edi)
+    movl %ecx, 24(%edi)
+    movl %edx, 28(%edi)
+    movl $0x80000004, %eax
     cpuid
-    mov [edi + 32], eax
-    mov [edi + 36], ebx
-    mov [edi + 40], ecx
-    mov [edi + 44], edx
+    movl %eax, 32(%edi)
+    movl %ebx, 36(%edi)
+    movl %ecx, 40(%edi)
+    movl %edx, 44(%edi)
     popa
-    pop ebp
+    popl %ebp
     ret
 
