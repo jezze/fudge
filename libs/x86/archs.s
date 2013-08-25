@@ -39,10 +39,10 @@ arch_isr_generalfault:
     movw %ax, %fs
     movw %ax, %gs
     call arch_generalfault
-    movw %ds, %ax
-    movw %es, %ax
-    movw %fs, %ax
-    movw %gs, %ax
+    movw %ax, %ds
+    movw %ax, %es
+    movw %ax, %fs
+    movw %ax, %gs
     addl $4, %esp
     popa
     addl $4, %esp
@@ -60,10 +60,10 @@ arch_isr_pagefault:
     movw %ax, %fs
     movw %ax, %gs
     call arch_pagefault
-    movw %ds, %ax
-    movw %es, %ax
-    movw %fs, %ax
-    movw %gs, %ax
+    movw %ax, %ds
+    movw %ax, %es
+    movw %ax, %fs
+    movw %ax, %gs
     addl $4, %esp
     popa
     addl $4, %esp
@@ -81,10 +81,10 @@ arch_isr_syscall:
     movw %ax, %fs
     movw %ax, %gs
     call arch_syscall
-    movw %ds, %ax
-    movw %es, %ax
-    movw %fs, %ax
-    movw %gs, %ax
+    movw %ax, %ds
+    movw %ax, %es
+    movw %ax, %fs
+    movw %ax, %gs
     addl $4, %esp
     popa
     iret

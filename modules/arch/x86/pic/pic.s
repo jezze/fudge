@@ -122,10 +122,10 @@ pic_common:
     movw %ax, %fs
     movw %ax, %gs
     call pic_interrupt
-    movw %ds, %ax
-    movw %es, %ax
-    movw %fs, %ax
-    movw %gs, %ax
+    movw %ax, %ds
+    movw %ax, %es
+    movw %ax, %fs
+    movw %ax, %gs
     addl $4,%esp
     popa
     addl $8,%esp
