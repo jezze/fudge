@@ -1,16 +1,16 @@
 .global cpu_get_cr0
 cpu_get_cr0:
-    movl %cr0,%eax
+    movl %cr0, %eax
     ret
 
 .global cpu_get_cr2
 cpu_get_cr2:
-    movl %cr2,%eax
+    movl %cr2, %eax
     ret
 
 .global cpu_get_cr3
 cpu_get_cr3:
-    movl %cr3,%eax
+    movl %cr3, %eax
     ret
 
 .global cpu_get_cr4
