@@ -6,7 +6,17 @@ AS:=$(PREFIX)$(AS)
 CC:=$(PREFIX)$(CC)
 LD:=$(PREFIX)$(LD)
 
-CFLAGS:=-Wall -Werror -ffreestanding -nostdlib -std=c89 -pedantic -O2
+ASFLAGS_x86:=-32
+CFLAGS_x86:=-m32
+LDFLAGS_x86:=-melf_i386
+
+ASFLAGS_arm:=-mfpu=softfpa
+CFLAGS_arm:=
+LDFLAGS_ARM:=
+
+ASFLAGS:=$(ASFLAGS_$(ARCH))
+CFLAGS:=-Wall -Werror -ffreestanding -nostdlib -std=c89 -pedantic -O2 $(CFLAGS_$(ARCH))
+LDFLAGS:=$(LDFLAGS_$(ARCH))
 ARFLAGS:=rs
 
 KERNEL_NAME:=fudge
@@ -35,7 +45,6 @@ all: libs modules packages kernel ramdisk
 .c.o:
 	$(CC) -c $(CFLAGS) -o $@ $<
 
-include rules.$(ARCH).mk
 include libs/rules.mk
 include modules/rules.mk
 include packages/rules.mk
