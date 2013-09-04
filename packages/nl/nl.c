@@ -1,23 +1,22 @@
 #include <arch.h>
 #include <fudge.h>
 
-static unsigned int nextline(unsigned int start, unsigned int count, unsigned char *buffer)
+static unsigned int nextline(unsigned int offset, unsigned int count, unsigned char *buffer)
 {
 
     unsigned int i;
 
-    for (i = start; i < count; i++)
+    for (i = offset; i < count; i++)
     {
 
         if (buffer[i] == '\n')
-            return i + 1 - start;
+            return i - offset + 1;
 
     }
 
     return 0;
 
 }
-
 
 void main()
 {
