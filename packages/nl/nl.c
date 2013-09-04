@@ -39,10 +39,9 @@ void main()
 
             unsigned char num[32];
 
-            last += call_write(CALL_DO, last, memory_write_number(num, 32, lines, 10, 0), num);
+            last += call_write(CALL_DO, last, memory_write_number(num, 32, lines++, 10, 0), num);
             last += call_write(CALL_DO, last, 2, ": ");
             last += call_write(CALL_DO, last, count2, buffer + offset2);
-            lines++;
 
         }
 
