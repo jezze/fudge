@@ -85,6 +85,8 @@ image/system:
 image/temp:
 	mkdir -p $@
 
+image: image/bin image/boot image/boot/fudge image/boot/mod image/config image/home image/share image/system image/temp
+
 install:
 	install -m 644 $(KERNEL) $(INSTALL_PATH)
 	install -m 644 $(RAMDISK) $(INSTALL_PATH)
@@ -102,10 +104,10 @@ packages: $(PACKAGES)
 
 ramdisk: $(RAMDISK_NAME).$(RAMDISK_TYPE)
 
-$(RAMDISK_NAME).tar: image/bin image/boot image/boot/fudge image/boot/mod image/config image/home image/share image/system image/temp
+$(RAMDISK_NAME).tar: image
 	tar -cf $@ image
 	rm -rf image
 
-$(RAMDISK_NAME).cpio: image/bin image/boot image/boot/fudge image/boot/mod image/config image/home image/share image/system image/temp
+$(RAMDISK_NAME).cpio: image
 	find image -depth | cpio -o > $@
 	rm -rf image
