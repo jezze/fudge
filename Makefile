@@ -89,13 +89,8 @@ install:
 	install -m 644 $(KERNEL) $(INSTALL_PATH)
 	install -m 644 $(RAMDISK) $(INSTALL_PATH)
 
-kernel: $(KERNEL_NAME).$(ARCH).$(LOADER)
-
-$(KERNEL_NAME).arm.versatilepb: $(LIBKERNEL) $(LIBFUDGE)
-	$(LD) $(LDFLAGS) -Tlibs/arm/versatilepb/linker.ld -o $(KERNEL) $^
-
-$(KERNEL_NAME).x86.mboot: $(LIBKERNEL) $(LIBFUDGE)
-	$(LD) $(LDFLAGS) -Tlibs/x86/mboot/linker.ld -o $(KERNEL) $^
+kernel: $(LIBKERNEL) $(LIBFUDGE)
+	$(LD) $(LDFLAGS) -Tlibs/$(ARCH)/$(LOADER)/linker.ld -o $(KERNEL) $^
 
 libs: $(LIBS)
 
