@@ -91,10 +91,10 @@ install:
 
 kernel: $(KERNEL_NAME).$(ARCH).$(LOADER)
 
-$(KERNEL_NAME).arm.versatilepb: $(LIBVERSATILEPB) $(LIBARM) $(LIBKERNEL) $(LIBFUDGE)
+$(KERNEL_NAME).arm.versatilepb: $(LIBKERNEL) $(LIBFUDGE)
 	$(LD) $(LDFLAGS) -Tlibs/arm/versatilepb/linker.ld -o $(KERNEL) $^
 
-$(KERNEL_NAME).x86.mboot: $(LIBMBOOT) $(LIBX86) $(LIBKERNEL) $(LIBFUDGE)
+$(KERNEL_NAME).x86.mboot: $(LIBKERNEL) $(LIBFUDGE)
 	$(LD) $(LDFLAGS) -Tlibs/x86/mboot/linker.ld -o $(KERNEL) $^
 
 libs: $(LIBS)
