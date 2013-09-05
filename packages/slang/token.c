@@ -122,18 +122,11 @@ static enum token_type tokenize(char c)
 
 }
 
-enum token_type token_current(struct token_state *state)
-{
-
-    return tokenize(state->buffer[state->next - 1]);
-
-}
-
 unsigned int token_next(struct token_state *state)
 {
 
-    if (state->next < state->count)
-        return ++state->next;
+    if (state->current < state->count - 1)
+        return ++state->current;
 
     return 0;
 
@@ -142,19 +135,27 @@ unsigned int token_next(struct token_state *state)
 unsigned int token_accept(struct token_state *state, enum token_type type)
 {
 
-    if (token_current(state) & type)
+    if (tokenize(state->buffer[state->current]) & type)
         return token_next(state);
 
     return 0;
 
 }
 
+void token_skip(struct token_state *state, enum token_type type)
+{
+
+    while (token_accept(state, type));
+
+}
+
 void token_init_state(struct token_state *state, unsigned int count, char *buffer)
 {
 
+    memory_clear(state, sizeof (struct token_state));
+
     state->buffer = buffer;
     state->count = count;
-    state->next = 1;
 
 }
 

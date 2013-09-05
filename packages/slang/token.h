@@ -18,24 +18,16 @@ enum token_type
 
 };
 
-struct token_string
-{
-
-    char *position;
-    unsigned int count;
-
-};
-
 struct token_state
 {
 
     char *buffer;
     unsigned int count;
-    unsigned int next;
+    unsigned int current;
 
 };
 
-enum token_type token_current(struct token_state *state);
 unsigned int token_next(struct token_state *state);
 unsigned int token_accept(struct token_state *state, enum token_type type);
+void token_skip(struct token_state *state, enum token_type type);
 void token_init_state(struct token_state *state, unsigned int count, char *buffer);
