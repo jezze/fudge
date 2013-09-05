@@ -89,8 +89,10 @@ install:
 	install -m 644 $(KERNEL) $(INSTALL_PATH)
 	install -m 644 $(RAMDISK) $(INSTALL_PATH)
 
-kernel: $(LIBKERNEL) $(LIBFUDGE)
-	$(LD) $(LDFLAGS) -Tlibs/$(ARCH)/$(LOADER)/linker.ld -o $(KERNEL) $^
+kernel: $(KERNEL_NAME)
+
+$(KERNEL_NAME): $(LIBKERNEL) $(LIBFUDGE)
+	$(LD) $(LDFLAGS) -Tlibs/$(ARCH)/$(LOADER)/linker.ld -o $@ $^
 
 libs: $(LIBS)
 
@@ -101,9 +103,9 @@ packages: $(PACKAGES)
 ramdisk: $(RAMDISK_NAME).$(RAMDISK_TYPE)
 
 $(RAMDISK_NAME).tar: image/bin image/boot image/boot/fudge image/boot/mod image/config image/home image/share image/system image/temp
-	tar -cf $(RAMDISK) image
+	tar -cf $@ image
 	rm -rf image
 
 $(RAMDISK_NAME).cpio: image/bin image/boot image/boot/fudge image/boot/mod image/config image/home image/share image/system image/temp
-	find image -depth | cpio -o > $(RAMDISK)
+	find image -depth | cpio -o > $@
 	rm -rf image
