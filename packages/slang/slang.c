@@ -152,12 +152,10 @@ static unsigned int parse_pipe(struct token_state *state, struct pipe *pipe)
 
         while (token_accept(state, TOKEN_TYPE_SPACE));
 
-        if (!parse_command(state, &pipe->commands[pipe->count]))
+        if (!parse_command(state, &pipe->commands[pipe->count++]))
             return 0;
 
         while (token_accept(state, TOKEN_TYPE_SPACE));
-
-        pipe->count++;
 
     } while (token_accept(state, TOKEN_TYPE_PIPE));
 
@@ -173,12 +171,10 @@ static unsigned int parse(struct token_state *state, struct expression *expressi
 
         while (token_accept(state, TOKEN_TYPE_SPACE));
 
-        if (!parse_pipe(state, &expression->pipes[expression->count]))
+        if (!parse_pipe(state, &expression->pipes[expression->count++]))
             return 0;
 
         while (token_accept(state, TOKEN_TYPE_SPACE));
-
-        expression->count++;
 
     } while (token_accept(state, TOKEN_TYPE_SEMICOLON | TOKEN_TYPE_NEWLINE));
 
