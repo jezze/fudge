@@ -1,5 +1,5 @@
 #include <fudge/module.h>
-#include <x86/mmu.h>
+#include <x86/kernel/mmu.h>
 #include <base/base.h>
 #include <video/video.h>
 #include <arch/x86/io/io.h>

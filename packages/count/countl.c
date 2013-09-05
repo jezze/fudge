@@ -1,4 +1,3 @@
-#include <arch.h>
 #include <fudge.h>
 
 static unsigned int nextline(unsigned int offset, unsigned int count, unsigned char *buffer)

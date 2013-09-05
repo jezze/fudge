@@ -1,4 +1,3 @@
-#include <arch.h>
 #include <fudge.h>
 
 static const unsigned int tab[256] =

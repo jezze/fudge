@@ -1,4 +1,4 @@
-packages/%.o: CFLAGS+=-Ilibs/arch -Ilibs/fudge
+packages/%.o: CFLAGS+=-Ilibs/fudge
 
 USERLIBS:=$(LIBARCH) $(LIBFUDGE)
 

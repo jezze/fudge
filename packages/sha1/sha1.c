@@ -1,4 +1,3 @@
-#include <arch.h>
 #include <fudge.h>
 
 struct sha1

@@ -1,5 +1,5 @@
-#include <arch/arch.h>
 #include "../define.h"
+#include "../call.h"
 #include "../memory.h"
 #include "gfx.h"
 #include "vga.h"

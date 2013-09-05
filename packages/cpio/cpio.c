@@ -1,4 +1,3 @@
-#include <arch.h>
 #include <fudge.h>
 #include <format/cpio.h>
 
