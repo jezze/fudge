@@ -219,21 +219,19 @@ void main()
 {
 
     unsigned char buffer[FUDGE_BSIZE];
-    unsigned int count;
-    unsigned int offset;
-    unsigned char num[32];
+    unsigned int count, roff, woff = 0;
     unsigned char digest[16];
     struct md5 s;
 
     md5_init(&s);
 
-    for (offset = 0; (count = call_read(CALL_DI, offset, FUDGE_BSIZE, buffer)); offset += count)
+    for (roff = 0; (count = call_read(CALL_DI, roff, FUDGE_BSIZE, buffer)); roff += count)
         md5_read(&s, count, buffer);
 
     md5_write(&s, digest);
 
-    for (offset = 0; offset < 16; offset++)
-        call_write(CALL_DO, offset * 2, memory_write_paddednumber(num, 32, digest[offset], 16, 2, 0), num);
+    for (roff = 0; roff < 16; roff++)
+        woff += call_write(CALL_DO, woff, memory_write_paddednumber(buffer, 32, digest[roff], 16, 2, 0), buffer);
 
 }
 

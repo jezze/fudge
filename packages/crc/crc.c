@@ -42,13 +42,11 @@ void main()
 {
 
     unsigned char buffer[FUDGE_BSIZE];
-    unsigned int count;
-    unsigned int offset;
-    unsigned char num[32];
-    unsigned int crc = 0;
+    unsigned int count, roff;
     unsigned int i;
+    unsigned int crc = 0;
 
-    for (offset = 0; (count = call_read(CALL_DI, offset, FUDGE_BSIZE, buffer)); offset += count)
+    for (roff = 0; (count = call_read(CALL_DI, roff, FUDGE_BSIZE, buffer)); roff += count)
     {
 
         for (i = 0; i < count; i++)
@@ -56,10 +54,10 @@ void main()
 
     }
 
-    for (i = offset; i > 0; i >>= 8)
+    for (i = roff; i > 0; i >>= 8)
         crc = (crc << 8) ^ tab[(crc >> 24) ^ (i & 0xFF)];
 
-    call_write(CALL_DO, 0, memory_write_number(num, 32, ~crc, 10, 0), num);
+    call_write(CALL_DO, 0, memory_write_number(buffer, 32, ~crc, 10, 0), buffer);
 
 }
 
