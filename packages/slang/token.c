@@ -125,8 +125,8 @@ static enum token_type tokenize(char c)
 unsigned int token_next(struct token_state *state)
 {
 
-    if (state->current < state->count - 1)
-        return ++state->current;
+    if (++state->current < state->count)
+        return state->current;
 
     return 0;
 
