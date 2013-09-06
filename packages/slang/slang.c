@@ -4,7 +4,6 @@
 struct string
 {
 
-    char *position;
     unsigned int index;
     unsigned int count;
 
@@ -51,10 +50,10 @@ struct expression
 
 };
 
-static unsigned int open_path(unsigned int index, struct string *string)
+static unsigned int open_path(unsigned int index, unsigned int count, char *buffer)
 {
 
-    return memory_match(string->position, "/", 1) ? call_open(index, CALL_DR, string->count - 1, string->position + 1) : call_open(index, CALL_DW, string->count, string->position);
+    return memory_match(buffer, "/", 1) ? call_open(index, CALL_DR, count - 1, buffer + 1) : call_open(index, CALL_DW, count, buffer);
 
 }
 
@@ -79,7 +78,6 @@ static unsigned int parse_path(struct token_state *state, struct string *string)
     token_skip(state, TOKEN_TYPE_ALPHANUM | TOKEN_TYPE_DOT | TOKEN_TYPE_SLASH);
 
     string->count = state->current - string->index;
-    string->position = state->buffer + string->index;
 
     return string->count;
 
@@ -96,7 +94,6 @@ static unsigned int parse_data(struct token_state *state, struct string *string)
     token_skip(state, ~TOKEN_TYPE_QUOTE);
 
     string->count = state->current - string->index;
-    string->position = state->buffer + string->index;
 
     if (!token_accept(state, TOKEN_TYPE_QUOTE))
         return 0;
@@ -199,7 +196,7 @@ static unsigned int parse(struct token_state *state, struct expression *expressi
 
 }
 
-static void execute(struct expression *expression)
+static void execute(struct token_state *state, struct expression *expression)
 {
 
     unsigned int pindex;
@@ -221,25 +218,25 @@ static void execute(struct expression *expression)
             struct command *command = &pipe->commands[cindex];
 
             if (command->in0.path.count)
-                open_path(CALL_DI, &command->in0.path);
+                open_path(CALL_DI, command->in0.path.count, state->buffer + command->in0.path.index);
 
             if (command->in0.data.count)
-                call_write(CALL_DI, 0, command->in0.data.count, command->in0.data.position);
+                call_write(CALL_DI, 0, command->in0.data.count, state->buffer + command->in0.data.index);
 
             if (command->in1.path.count)
-                open_path(CALL_DC, &command->in1.path);
+                open_path(CALL_DC, command->in1.path.count, state->buffer + command->in1.path.index);
 
             if (command->in1.data.count)
-                call_write(CALL_DC, 0, command->in1.data.count, command->in1.data.position);
+                call_write(CALL_DC, 0, command->in1.data.count, state->buffer + command->in1.data.index);
 
             if (command->out0.path.count)
-                open_path(CALL_DO, &command->out0.path);
+                open_path(CALL_DO, command->out0.path.count, state->buffer + command->out0.path.index);
 
             if (!command->out0.path.count && pipe->count > 1 && cindex != pipe->count - 1)
                 open_pipe(CALL_DO, cindex);
 
             call_open(CALL_DW, CALL_DR, 4, "bin/");
-            open_path(CALL_D0, &command->binary);
+            open_path(CALL_D0, command->binary.count, state->buffer + command->binary.index);
             call_open(CALL_DW, CALL_D4, 0, 0);
             call_spawn(CALL_D0);
             call_close(CALL_D0);
@@ -272,7 +269,7 @@ void main()
     token_init_state(&state, call_read(CALL_DI, 0, FUDGE_BSIZE, buffer), buffer);
 
     if (parse(&state, &expression))
-        execute(&expression);
+        execute(&state, &expression);
 
 }
 
