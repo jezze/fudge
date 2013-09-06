@@ -93,7 +93,7 @@ static unsigned int parse_data(struct token_state *state, struct string *string)
 
     string->index = state->current;
 
-    while (token_accept(state, ~TOKEN_TYPE_QUOTE));
+    token_skip(state, ~TOKEN_TYPE_QUOTE);
 
     string->count = state->current - string->index;
     string->position = state->buffer + string->index;
