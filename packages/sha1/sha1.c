@@ -1,14 +1,5 @@
 #include <fudge.h>
 
-struct sha1
-{
-
-    unsigned int lo, hi;
-    unsigned int a, b, c, d, e;
-    unsigned char buffer[64];
-
-};
-
 #define F0(b, c, d)                     (d ^ (b & (c ^ d)))
 #define F1(b, c, d)                     (b ^ c ^ d)
 #define F2(b, c, d)                     ((b & c) | (d & (b | c)))
@@ -17,6 +8,15 @@ struct sha1
 #define G1(a, b, c, d, e, w)            e += rol(a, 5) + F1(b, c, d) + w + 0x6ED9EBA1; b = rol(b, 30)
 #define G2(a, b, c, d, e, w)            e += rol(a, 5) + F2(b, c, d) + w + 0x8F1BBCDC; b = rol(b, 30)
 #define G3(a, b, c, d, e, w)            e += rol(a, 5) + F3(b, c, d) + w + 0xCA62C1D6; b = rol(b, 30)
+
+struct sha1
+{
+
+    unsigned int lo, hi;
+    unsigned int a, b, c, d, e;
+    unsigned char buffer[64];
+
+};
 
 static unsigned int rol(unsigned int n, int k)
 {
@@ -50,7 +50,6 @@ static void processblock(struct sha1 *s, unsigned char *buffer)
     c = s->c;
     d = s->d;
     e = s->e;
-
     i = 0;
 
     while (i < 20)
@@ -61,6 +60,7 @@ static void processblock(struct sha1 *s, unsigned char *buffer)
         G0(d, e, a, b, c, W[i]); i++;
         G0(c, d, e, a, b, W[i]); i++;
         G0(b, c, d, e, a, W[i]); i++;
+
     }
 
     while (i < 40)
@@ -132,11 +132,10 @@ static void sha1_read(struct sha1 *s, unsigned int count, void *buffer)
         }
 
         memory_copy(s->buffer + r, p, c);
+        processblock(s, s->buffer);
 
         p += c;
         count -= c;
-
-        processblock(s, s->buffer);
 
     }
 

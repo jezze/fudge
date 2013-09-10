@@ -1,14 +1,5 @@
 #include <fudge.h>
 
-struct md5
-{
-
-    unsigned int lo, hi;
-    unsigned int a, b, c, d;
-    unsigned char buffer[64];
-
-};
-
 #define F(x, y, z)                      (z ^ (x & (y ^ z)))
 #define G(x, y, z)                      (y ^ (z & (y ^ x)))
 #define H(x, y, z)                      (x ^ y ^ z)
@@ -17,6 +8,15 @@ struct md5
 #define GG(a, b, c, d, w, s, t)         a += G(b, c, d) + w + t; a = rol(a, s) + b
 #define HH(a, b, c, d, w, s, t)         a += H(b, c, d) + w + t; a = rol(a, s) + b
 #define II(a, b, c, d, w, s, t)         a += I(b, c, d) + w + t; a = rol(a, s) + b
+
+struct md5
+{
+
+    unsigned int lo, hi;
+    unsigned int a, b, c, d;
+    unsigned char buffer[64];
+
+};
 
 static const unsigned int tab[64] =
 {
@@ -60,7 +60,6 @@ static void processblock(struct md5 *s, unsigned char *buffer)
     b = s->b;
     c = s->c;
     d = s->d;
-
     i = 0;
 
     while (i < 16)
@@ -138,11 +137,10 @@ static void md5_read(struct md5 *s, unsigned int count, void *buffer)
         }
 
         memory_copy(s->buffer + r, p, c);
+        processblock(s, s->buffer);
 
         p += c;
         count -= c;
-
-        processblock(s, s->buffer);
 
     }
 
