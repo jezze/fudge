@@ -25,24 +25,24 @@ unsigned int ticks_write(struct system_stream *self, unsigned int offset, unsign
 
 }
 
-void timer_register_device(struct timer_interface *itimer, struct base_device *device)
+void timer_register_device(struct timer_interface *interface, struct base_device *device)
 {
 
     base_init_node(device);
     system_group_add(&root, &device->node.base.node);
-    system_group_add(&device->node.base, &itimer->base.node);
-    system_group_add(&itimer->base, &ticks.node);
+    system_group_add(&device->node.base, &interface->base.node);
+    system_group_add(&interface->base, &ticks.node);
 
 }
 
-void timer_init_interface(struct timer_interface *itimer, unsigned int (*get_ticks)(struct base_device *device), void (*set_ticks)(struct base_device *device, unsigned int ticks))
+void timer_init_interface(struct timer_interface *interface, unsigned int (*get_ticks)(struct base_device *device), void (*set_ticks)(struct base_device *device, unsigned int ticks))
 {
 
-    memory_clear(itimer, sizeof (struct timer_interface));
-    system_init_group(&itimer->base, "timer");
+    memory_clear(interface, sizeof (struct timer_interface));
+    system_init_group(&interface->base, "timer");
 
-    itimer->get_ticks = get_ticks;
-    itimer->set_ticks = set_ticks;
+    interface->get_ticks = get_ticks;
+    interface->set_ticks = set_ticks;
 
 }
 
