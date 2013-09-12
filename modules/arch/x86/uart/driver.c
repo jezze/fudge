@@ -224,7 +224,7 @@ void uart_init_driver(struct uart_driver *driver)
 {
 
     memory_clear(driver, sizeof (struct uart_driver));
-    base_init_driver(&driver->base, "uart", 0, check, attach);
+    base_init_driver(&driver->base, "uart", check, attach);
     terminal_init_interface(&driver->iterminal, &driver->base, read_terminal_data, write_terminal_data);
 
 }

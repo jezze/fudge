@@ -116,22 +116,16 @@ static void handle_irq(struct base_device *device)
 
 }
 
-static void start(struct base_driver *self)
+static void attach(struct base_device *device)
 {
 
+    pic_set_routine(device, handle_irq);
     enable_dpll();
     enable_pipe();
     enable_plane();
     wait_vblank();
     disable_vga();
     set_pipe_mode(640, 480);
-
-}
-
-static void attach(struct base_device *device)
-{
-
-    pic_set_routine(device, handle_irq);
 
 }
 
@@ -170,7 +164,7 @@ void i915_init_driver(struct i915_driver *driver)
 {
 
     memory_clear(driver, sizeof (struct i915_driver));
-    base_init_driver(&driver->base, "i915", start, check, attach);
+    base_init_driver(&driver->base, "i915", check, attach);
     video_init_interface(&driver->ivideo, &driver->base, enable, read_data, write_data, 0, 0);
 
 }

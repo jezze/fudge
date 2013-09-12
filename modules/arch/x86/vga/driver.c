@@ -513,10 +513,10 @@ static unsigned int write_video_colormap(struct video_interface *self, unsigned 
 
 }
 
-static void start(struct base_driver *self)
+static void attach(struct base_device *device)
 {
 
-    struct vga_driver *driver = (struct vga_driver *)self;
+    struct vga_driver *driver = (struct vga_driver *)device->driver;
     unsigned int a;
 
     driver->cursor.color = 0x0F;
@@ -528,11 +528,6 @@ static void start(struct base_driver *self)
         ((char *)VGA_TEXT)[a + 1] = driver->cursor.color;
 
     }
-
-}
-
-static void attach(struct base_device *device)
-{
 
 }
 
@@ -552,7 +547,7 @@ void vga_init_driver(struct vga_driver *driver)
 {
 
     memory_clear(driver, sizeof (struct vga_driver));
-    base_init_driver(&driver->base, "vga", start, check, attach);
+    base_init_driver(&driver->base, "vga", check, attach);
     terminal_init_interface(&driver->iterminal, &driver->base, read_terminal_data, write_terminal_data);
     video_init_interface(&driver->ivideo, &driver->base, mode, read_video_data, write_video_data, read_video_colormap, write_video_colormap);
 

@@ -53,18 +53,6 @@ static void write_register(unsigned short index, unsigned short data)
 
 }
 
-static void start(struct base_driver *self)
-{
-
-/*
-    struct bga_driver *driver = (struct bga_driver *)self;
-
-    mmu_map_kernel_memory(3, (unsigned int)driver->lfb, (unsigned int)driver->lfb, 0x00400000);
-    mmu_reload_memory();
-*/
-
-}
-
 static void attach(struct base_device *device)
 {
 
@@ -72,6 +60,13 @@ static void attach(struct base_device *device)
     struct bga_driver *driver = (struct bga_driver *)device->driver;
 
     driver->lfb = (void *)pci_device_ind(pciDevice, PCI_CONFIG_BAR0);
+
+/*
+    struct bga_driver *driver = (struct bga_driver *)self;
+
+    mmu_map_kernel_memory(3, (unsigned int)driver->lfb, (unsigned int)driver->lfb, 0x00400000);
+    mmu_reload_memory();
+*/
 
 }
 
@@ -122,7 +117,7 @@ void bga_init_driver(struct bga_driver *driver)
 {
 
     memory_clear(driver, sizeof (struct bga_driver));
-    base_init_driver(&driver->base, "bga", start, check, attach);
+    base_init_driver(&driver->base, "bga", check, attach);
     video_init_interface(&driver->ivideo, &driver->base, mode, read_data, write_data, 0, 0);
 
     driver->ivideo.xres = 800;
