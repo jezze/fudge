@@ -1,73 +1,56 @@
 #include <fudge/module.h>
-#include <base/base.h>
 #include <system/system.h>
+#include <base/base.h>
 #include "timer.h"
 
-struct timer_interface_group
-{
-
-    struct system_group base;
-    struct timer_interface *interface;
-
-};
-
 static struct system_group root;
-static struct timer_interface_group interfaces[32];
-static unsigned int ninterfaces;
+static struct system_stream ticks;
 
-void timer_register_interface(struct timer_interface *interface)
+unsigned int ticks_read(struct system_stream *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct timer_interface_group *group = &interfaces[ninterfaces];
+    struct timer_interface *interface = (struct timer_interface *)self;
+    struct base_device_node *node = (struct base_device_node *)self->node.parent;
+    struct base_device *device = node->device;
+    char num[32];
 
-    group->interface = interface;
-
-    system_init_group(&group->base, interface->driver->module.name);
-    system_group_add(&root, &group->base.node);
-
-    ninterfaces++;
+    return memory_read(buffer, count, num, memory_write_number(num, 32, interface->get_ticks(device), 10, 0), offset);
 
 }
 
-void timer_register_protocol(struct timer_protocol *protocol)
+unsigned int ticks_write(struct system_stream *self, unsigned int offset, unsigned int count, void *buffer)
 {
+
+    return 0;
 
 }
 
-void timer_unregister_interface(struct timer_interface *interface)
+void timer_register_device(struct timer_interface *itimer, struct base_device *device)
 {
+
+    base_init_node(device);
+    system_group_add(&root, &device->node.base.node);
+    system_group_add(&device->node.base, &itimer->base.node);
+    system_group_add(&itimer->base, &ticks.node);
 
 }
 
-void timer_unregister_protocol(struct timer_protocol *protocol)
+void timer_init_interface(struct timer_interface *itimer, unsigned int (*get_ticks)(struct base_device *device), void (*set_ticks)(struct base_device *device, unsigned int ticks))
 {
 
-}
+    memory_clear(itimer, sizeof (struct timer_interface));
+    system_init_group(&itimer->base, "timer");
 
-void timer_init_interface(struct timer_interface *interface, struct base_driver *driver)
-{
-
-    memory_clear(interface, sizeof (struct timer_interface));
-
-    interface->driver = driver;
-
-}
-
-void timer_init_protocol(struct timer_protocol *protocol, char *name)
-{
-
-    memory_clear(protocol, sizeof (struct timer_protocol));
-
-    protocol->name = name;
+    itimer->get_ticks = get_ticks;
+    itimer->set_ticks = set_ticks;
 
 }
 
 void init()
 {
 
-    ninterfaces = 0;
-
     system_init_group(&root, "timer");
+    system_init_stream(&ticks, "ticks", ticks_read, ticks_write);
     system_register_node(&root.node);
 
 }

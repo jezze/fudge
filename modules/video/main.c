@@ -1,6 +1,6 @@
 #include <fudge/module.h>
-#include <base/base.h>
 #include <system/system.h>
+#include <base/base.h>
 #include "video.h"
 
 struct video_interface_group

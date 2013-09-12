@@ -17,5 +17,6 @@
 /bin/modload < /boot/mod/pic.ko
 /bin/modload < /boot/mod/pci.ko
 /bin/modload < /boot/mod/vga.ko
+/bin/modload < /boot/mod/pit.ko
 /bin/modload < /boot/mod/ps2.ko
 /bin/modload < /boot/mod/rtl8139.ko

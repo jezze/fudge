@@ -1,4 +1,5 @@
 #include <fudge/module.h>
+#include <system/system.h>
 #include <base/base.h>
 #include <block/block.h>
 #include <arch/x86/ide/ide.h>

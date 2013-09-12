@@ -1,6 +1,6 @@
 #include <fudge/module.h>
-#include <base/base.h>
 #include <system/system.h>
+#include <base/base.h>
 #include "block.h"
 
 struct block_interface_group

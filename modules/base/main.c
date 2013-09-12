@@ -159,6 +159,15 @@ void base_init_device(struct base_device *device, unsigned int type, unsigned in
 
 }
 
+void base_init_node(struct base_device *device)
+{
+
+    device->node.device = device;
+
+    system_init_group(&device->node.base, "0000");
+
+}
+
 void base_init_driver(struct base_driver *driver, char *name, unsigned int (*check)(struct base_device *device), void (*attach)(struct base_device *device))
 {
 

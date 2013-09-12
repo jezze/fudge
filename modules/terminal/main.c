@@ -1,6 +1,6 @@
 #include <fudge/module.h>
-#include <base/base.h>
 #include <system/system.h>
+#include <base/base.h>
 #include "terminal.h"
 
 struct terminal_interface_group

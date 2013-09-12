@@ -1,4 +1,5 @@
 #include <fudge/module.h>
+#include <system/system.h>
 #include <base/base.h>
 #include <net/net.h>
 #include "rtl8139.h"
