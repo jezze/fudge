@@ -1,7 +1,7 @@
 #include <fudge/module.h>
 #include <system/system.h>
 #include <base/base.h>
-#include <timer/timer.h>
+#include <base/timer.h>
 #include "pit.h"
 
 static struct pit_device device;

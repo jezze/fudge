@@ -1,5 +1,5 @@
 MOD:=modules/base/base.ko
-OBJ:=modules/base/main.o modules/base/keyboard.o modules/base/mouse.o modules/base/terminal.o
+OBJ:=modules/base/main.o modules/base/keyboard.o modules/base/mouse.o modules/base/terminal.o modules/base/timer.o
 
 $(MOD): $(OBJ) $(LIBFUDGE)
 	$(LD) $(LDFLAGS) -o $@ $^

@@ -4,6 +4,7 @@
 #include "keyboard.h"
 #include "mouse.h"
 #include "terminal.h"
+#include "timer.h"
 
 static struct base_module *modules;
 static struct system_group root;
@@ -185,6 +186,7 @@ void init()
     base_setup_keyboard();
     base_setup_mouse();
     base_setup_terminal();
+    base_setup_timer();
 
 }
 

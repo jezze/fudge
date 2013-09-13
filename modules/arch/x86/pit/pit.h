@@ -14,7 +14,7 @@ struct pit_driver
 {
 
     struct base_driver base;
-    struct timer_interface itimer;
+    struct base_timer itimer;
     unsigned short divisor;
     unsigned short jiffies;
 
