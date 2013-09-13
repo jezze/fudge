@@ -2,6 +2,7 @@
 #include <system/system.h>
 #include "base.h"
 #include "keyboard.h"
+#include "mouse.h"
 
 static struct base_module *modules;
 static struct system_group root;
@@ -181,6 +182,7 @@ void init()
     system_register_node(&root.node);
 
     base_setup_keyboard();
+    base_setup_mouse();
 
 }
 

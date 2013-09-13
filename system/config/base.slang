@@ -4,7 +4,6 @@
 /bin/modload < /boot/mod/mtwist.ko
 /bin/modload < /boot/mod/log.ko
 /bin/modload < /boot/mod/block.ko
-/bin/modload < /boot/mod/mouse.ko
 /bin/modload < /boot/mod/net.ko
 /bin/modload < /boot/mod/terminal.ko
 /bin/modload < /boot/mod/timer.ko

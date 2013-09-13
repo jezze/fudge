@@ -1,11 +1,11 @@
 #include <fudge/module.h>
 #include <system/system.h>
-#include <base/base.h>
+#include "base.h"
 #include "mouse.h"
 
 static struct system_group root;
 
-void mouse_register_device(struct mouse_interface *interface, struct base_device *device)
+void base_register_mouse(struct base_mouse *interface, struct base_device *device)
 {
 
     system_group_add(&root, &device->module.base.node);
@@ -13,26 +13,19 @@ void mouse_register_device(struct mouse_interface *interface, struct base_device
 
 }
 
-void mouse_init_interface(struct mouse_interface *interface)
+void base_init_mouse(struct base_mouse *interface)
 {
 
-    memory_clear(interface, sizeof (struct mouse_interface));
+    memory_clear(interface, sizeof (struct base_mouse));
     system_init_group(&interface->base, "mouse");
 
 }
 
-void init()
+void base_setup_mouse()
 {
 
     system_init_group(&root, "mouse");
     system_register_node(&root.node);
-
-}
-
-void destroy()
-{
-
-    system_unregister_node(&root.node);
 
 }
 

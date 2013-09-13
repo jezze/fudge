@@ -7,7 +7,6 @@ include modules/block/rules.mk
 include modules/ipv4/rules.mk
 include modules/ipv6/rules.mk
 include modules/log/rules.mk
-include modules/mouse/rules.mk
 include modules/mtwist/rules.mk
 include modules/net/rules.mk
 include modules/null/rules.mk

@@ -4,7 +4,7 @@
 #include <system/system.h>
 #include <base/base.h>
 #include <base/keyboard.h>
-#include <mouse/mouse.h>
+#include <base/mouse.h>
 #include "ps2.h"
 
 void ps2_init_device(struct ps2_device *device, struct ps2_bus *bus, unsigned int irq)
