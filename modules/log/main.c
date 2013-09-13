@@ -7,14 +7,28 @@ static char dbuffer[0x1000];
 static unsigned int doffset;
 static struct system_stream messages;
 
-static unsigned int messages_read(struct system_stream *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int message_open(struct system_node *self)
+{
+
+    return 1;
+
+}
+
+static unsigned int message_close(struct system_node *self)
+{
+
+    return 1;
+
+}
+
+static unsigned int messages_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     return memory_read(buffer, count, dbuffer, 0x1000, offset);
 
 }
 
-static unsigned int messages_write(struct system_stream *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int messages_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     return 0;
@@ -53,7 +67,7 @@ void init()
 
     doffset = 0;
 
-    system_init_stream(&messages, "messages", messages_read, messages_write);
+    system_init_stream(&messages, "messages", message_open, message_close, messages_read, messages_write);
     system_register_node(&messages.node);
 
 }

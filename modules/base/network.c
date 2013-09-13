@@ -7,11 +7,25 @@ static struct system_group root;
 static struct system_stream data;
 static struct system_stream mac;
 
-unsigned int data_read(struct system_stream *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int data_open(struct system_node *self)
 {
 
-    struct base_network *interface = (struct base_network *)self->node.parent;
-    struct base_device *device = (struct base_device *)interface->base.node.parent;
+    return 1;
+
+}
+
+static unsigned int data_close(struct system_node *self)
+{
+
+    return 1;
+
+}
+
+unsigned int data_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    struct base_network *interface = (struct base_network *)self->parent;
+    struct base_device *device = (struct base_device *)self->parent->parent;
  
     if (offset)
         return 0;
@@ -20,11 +34,11 @@ unsigned int data_read(struct system_stream *self, unsigned int offset, unsigned
 
 }
 
-unsigned int data_write(struct system_stream *self, unsigned int offset, unsigned int count, void *buffer)
+unsigned int data_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct base_network *interface = (struct base_network *)self->node.parent;
-    struct base_device *device = (struct base_device *)interface->base.node.parent;
+    struct base_network *interface = (struct base_network *)self->parent;
+    struct base_device *device = (struct base_device *)self->parent->parent;
  
     if (offset)
         return 0;
@@ -33,10 +47,24 @@ unsigned int data_write(struct system_stream *self, unsigned int offset, unsigne
 
 }
 
-unsigned int mac_read(struct system_stream *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int mac_open(struct system_node *self)
 {
 
-    struct base_network *interface = (struct base_network *)self->node.parent;
+    return 1;
+
+}
+
+static unsigned int mac_close(struct system_node *self)
+{
+
+    return 1;
+
+}
+
+unsigned int mac_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    struct base_network *interface = (struct base_network *)self->parent;
     char *mac = "00:00:00:00:00:00";
     unsigned int i;
 
@@ -47,7 +75,7 @@ unsigned int mac_read(struct system_stream *self, unsigned int offset, unsigned 
 
 }
 
-unsigned int mac_write(struct system_stream *self, unsigned int offset, unsigned int count, void *buffer)
+unsigned int mac_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     return 0;
@@ -79,8 +107,8 @@ void base_setup_network()
 {
 
     system_init_group(&root, "network");
-    system_init_stream(&data, "data", data_read, data_write);
-    system_init_stream(&mac, "mac", mac_read, mac_write);
+    system_init_stream(&data, "data", data_open, data_close, data_read, data_write);
+    system_init_stream(&mac, "mac", mac_open, mac_close, mac_read, mac_write);
     system_register_node(&root.node);
 
 }

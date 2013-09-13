@@ -189,7 +189,7 @@ void init()
     base_setup_mouse();
     base_setup_network();
     base_setup_terminal();
-    base_setup_timer();
+    base_setup_timer(&root);
     base_setup_video();
 
 }

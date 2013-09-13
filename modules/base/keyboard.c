@@ -7,39 +7,67 @@ static struct system_group root;
 static struct system_stream data;
 static struct system_stream keymap;
 
-static unsigned int data_read(struct system_stream *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int data_open(struct system_node *self)
 {
 
-    struct base_keyboard *interface = (struct base_keyboard *)self->node.parent;
-    struct base_device *device = (struct base_device *)interface->base.node.parent;
+    return 1;
+
+}
+
+static unsigned int data_close(struct system_node *self)
+{
+
+    return 1;
+
+}
+
+static unsigned int data_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    struct base_keyboard *interface = (struct base_keyboard *)self->parent;
+    struct base_device *device = (struct base_device *)self->parent->parent;
  
     return interface->read_data(device, offset, count, buffer);
 
 }
 
-static unsigned int data_write(struct system_stream *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int data_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct base_keyboard *interface = (struct base_keyboard *)self->node.parent;
-    struct base_device *device = (struct base_device *)interface->base.node.parent;
+    struct base_keyboard *interface = (struct base_keyboard *)self->parent;
+    struct base_device *device = (struct base_device *)self->parent->parent;
  
     return interface->write_data(device, offset, count, buffer);
 
 }
 
-static unsigned int keymap_read(struct system_stream *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int keymap_open(struct system_node *self)
 {
 
-    struct base_keyboard *interface = (struct base_keyboard *)self->node.parent;
- 
+    return 1;
+
+}
+
+static unsigned int keymap_close(struct system_node *self)
+{
+
+    return 1;
+
+}
+
+static unsigned int keymap_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    struct base_keyboard *interface = (struct base_keyboard *)self->parent;
+
     return memory_read(buffer, count, interface->keymap, 256, offset);
 
 }
 
-static unsigned int keymap_write(struct system_stream *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int keymap_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct base_keyboard *interface = (struct base_keyboard *)self->node.parent;
+    struct base_keyboard *interface = (struct base_keyboard *)self->parent;
 
     return memory_write(interface->keymap, 256, buffer, count, offset);
 
@@ -70,8 +98,8 @@ void base_setup_keyboard()
 {
 
     system_init_group(&root, "keyboard");
-    system_init_stream(&data, "data", data_read, data_write);
-    system_init_stream(&keymap, "keymap", keymap_read, keymap_write);
+    system_init_stream(&data, "data", data_open, data_close, data_read, data_write);
+    system_init_stream(&keymap, "keymap", keymap_open, keymap_close, keymap_read, keymap_write);
     system_register_node(&root.node);
 
 }

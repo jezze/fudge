@@ -3,31 +3,50 @@
 #include "base.h"
 #include "timer.h"
 
-static struct system_stream ticks;
+static struct system_group timer;
+static struct system_stream clone;
+static unsigned int ntimers;
 
-static unsigned int ticks_read(struct system_stream *self, unsigned int offset, unsigned int count, void *buffer)
+static struct
 {
 
-    struct base_timer *interface = (struct base_timer *)self->node.parent;
-    struct base_device *device = (struct base_device *)interface->base.node.parent;
-    char num[32];
+    struct system_group index;
+    struct system_stream control;
+    struct system_stream ticks;
+    struct modules_device *device;
 
-    return memory_read(buffer, count, num, memory_write_number(num, 32, interface->get_ticks(device), 10, 0), offset);
+} timers[8];
+
+static unsigned int clone_open(struct system_node *self)
+{
+
+    return 1;
 
 }
 
-static unsigned int ticks_write(struct system_stream *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int clone_close(struct system_node *self)
+{
+
+    return 1;
+
+}
+
+static unsigned int clone_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     return 0;
 
 }
 
-void base_register_timer(struct base_timer *interface, struct base_device *device)
+static unsigned int clone_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    system_group_add(&device->module.base, &interface->base.node);
-    system_group_add(&interface->base, &ticks.node);
+    ntimers++;
+
+    system_init_group(&timers[ntimers].index, "0");
+    system_group_add(&timer, &timers[ntimers].index.node);
+
+    return ntimers;
 
 }
 
@@ -35,17 +54,21 @@ void base_init_timer(struct base_timer *interface, unsigned int (*get_ticks)(str
 {
 
     memory_clear(interface, sizeof (struct base_timer));
-    system_init_group(&interface->base, "timer");
 
     interface->get_ticks = get_ticks;
     interface->set_ticks = set_ticks;
 
 }
 
-void base_setup_timer()
+void base_setup_timer(struct system_group *root)
 {
 
-    system_init_stream(&ticks, "ticks", ticks_read, ticks_write);
+    ntimers = 0;
+
+    system_init_group(&timer, "timer");
+    system_group_add(root, &timer.node);
+    system_init_stream(&clone, "clone", clone_open, clone_close, clone_read, clone_write);
+    system_group_add(&timer, &clone.node);
 
 }
 

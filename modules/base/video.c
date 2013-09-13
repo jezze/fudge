@@ -8,58 +8,100 @@ static struct system_stream data;
 static struct system_stream colormap;
 static struct system_stream mode;
 
-static unsigned int data_read(struct system_stream *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int data_open(struct system_node *self)
 {
 
-    struct base_video *interface = (struct base_video *)self->node.parent;
-    struct base_device *device = (struct base_device *)interface->base.node.parent;
+    return 1;
+
+}
+
+static unsigned int data_close(struct system_node *self)
+{
+
+    return 1;
+
+}
+
+static unsigned int data_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    struct base_video *interface = (struct base_video *)self->parent;
+    struct base_device *device = (struct base_device *)self->parent->parent;
 
     return interface->read_data(device, offset, count, buffer);
 
 }
 
-static unsigned int data_write(struct system_stream *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int data_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct base_video *interface = (struct base_video *)self->node.parent;
-    struct base_device *device = (struct base_device *)interface->base.node.parent;
+    struct base_video *interface = (struct base_video *)self->parent;
+    struct base_device *device = (struct base_device *)self->parent->parent;
 
     return interface->write_data(device, offset, count, buffer);
 
 }
 
-static unsigned int colormap_read(struct system_stream *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int colormap_open(struct system_node *self)
 {
 
-    struct base_video *interface = (struct base_video *)self->node.parent;
-    struct base_device *device = (struct base_device *)interface->base.node.parent;
+    return 1;
+
+}
+
+static unsigned int colormap_close(struct system_node *self)
+{
+
+    return 1;
+
+}
+
+static unsigned int colormap_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    struct base_video *interface = (struct base_video *)self->parent;
+    struct base_device *device = (struct base_device *)self->parent->parent;
 
     return interface->read_colormap(device, offset, count, buffer);
 
 }
 
-static unsigned int colormap_write(struct system_stream *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int colormap_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct base_video *interface = (struct base_video *)self->node.parent;
-    struct base_device *device = (struct base_device *)interface->base.node.parent;
+    struct base_video *interface = (struct base_video *)self->parent;
+    struct base_device *device = (struct base_device *)self->parent->parent;
 
     return interface->write_colormap(device, offset, count, buffer);
 
 }
 
-static unsigned int mode_read(struct system_stream *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int mode_open(struct system_node *self)
+{
+
+    return 1;
+
+}
+
+static unsigned int mode_close(struct system_node *self)
+{
+
+    return 1;
+
+}
+
+static unsigned int mode_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     return 0;
 
 }
 
-static unsigned int mode_write(struct system_stream *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int mode_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct base_video *interface = (struct base_video *)self->node.parent;
-    struct base_device *device = (struct base_device *)interface->base.node.parent;
+    struct base_video *interface = (struct base_video *)self->parent;
+    struct base_device *device = (struct base_device *)self->parent->parent;
 
     interface->xres = 320;
     interface->yres = 200;
@@ -100,9 +142,9 @@ void base_setup_video()
 {
 
     system_init_group(&root, "video");
-    system_init_stream(&data, "data", data_read, data_write);
-    system_init_stream(&colormap, "colormap", colormap_read, colormap_write);
-    system_init_stream(&mode, "mode", mode_read, mode_write);
+    system_init_stream(&data, "data", data_open, data_close, data_read, data_write);
+    system_init_stream(&colormap, "colormap", colormap_open, colormap_close, colormap_read, colormap_write);
+    system_init_stream(&mode, "mode", mode_open, mode_close, mode_read, mode_write);
     system_register_node(&root.node);
 
 }

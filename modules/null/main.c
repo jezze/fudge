@@ -5,14 +5,28 @@
 
 static struct system_stream root;
 
-unsigned int read(struct system_stream *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int open(struct system_node *self)
+{
+
+    return 1;
+
+}
+
+static unsigned int close(struct system_node *self)
+{
+
+    return 1;
+
+}
+
+unsigned int read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     return 0;
 
 }
 
-unsigned int write(struct system_stream *self, unsigned int offset, unsigned int count, void *buffer)
+unsigned int write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     return 0;
@@ -22,7 +36,7 @@ unsigned int write(struct system_stream *self, unsigned int offset, unsigned int
 void init()
 {
 
-    system_init_stream(&root, "null", read, write);
+    system_init_stream(&root, "null", open, close, read, write);
     system_register_node(&root.node);
 
 }
