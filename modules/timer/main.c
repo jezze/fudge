@@ -6,7 +6,7 @@
 static struct system_group root;
 static struct system_stream ticks;
 
-unsigned int ticks_read(struct system_stream *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int ticks_read(struct system_stream *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct timer_interface *interface = (struct timer_interface *)self->node.parent;
@@ -17,7 +17,7 @@ unsigned int ticks_read(struct system_stream *self, unsigned int offset, unsigne
 
 }
 
-unsigned int ticks_write(struct system_stream *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int ticks_write(struct system_stream *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     return 0;

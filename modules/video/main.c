@@ -8,7 +8,7 @@ static struct system_stream data;
 static struct system_stream colormap;
 static struct system_stream mode;
 
-unsigned int data_read(struct system_stream *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int data_read(struct system_stream *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct video_interface *interface = (struct video_interface *)self->node.parent;
@@ -18,7 +18,7 @@ unsigned int data_read(struct system_stream *self, unsigned int offset, unsigned
 
 }
 
-unsigned int data_write(struct system_stream *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int data_write(struct system_stream *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct video_interface *interface = (struct video_interface *)self->node.parent;
@@ -28,7 +28,7 @@ unsigned int data_write(struct system_stream *self, unsigned int offset, unsigne
 
 }
 
-unsigned int colormap_read(struct system_stream *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int colormap_read(struct system_stream *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct video_interface *interface = (struct video_interface *)self->node.parent;
@@ -38,7 +38,7 @@ unsigned int colormap_read(struct system_stream *self, unsigned int offset, unsi
 
 }
 
-unsigned int colormap_write(struct system_stream *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int colormap_write(struct system_stream *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct video_interface *interface = (struct video_interface *)self->node.parent;
@@ -48,14 +48,14 @@ unsigned int colormap_write(struct system_stream *self, unsigned int offset, uns
 
 }
 
-unsigned int mode_read(struct system_stream *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int mode_read(struct system_stream *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     return 0;
 
 }
 
-unsigned int mode_write(struct system_stream *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int mode_write(struct system_stream *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct video_interface *interface = (struct video_interface *)self->node.parent;

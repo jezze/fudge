@@ -6,7 +6,7 @@
 static struct system_group root;
 static struct system_stream data;
 
-unsigned int data_read(struct system_stream *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int data_read(struct system_stream *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct terminal_interface *interface = (struct terminal_interface *)self->node.parent;
@@ -16,7 +16,7 @@ unsigned int data_read(struct system_stream *self, unsigned int offset, unsigned
 
 }
 
-unsigned int data_write(struct system_stream *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int data_write(struct system_stream *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct terminal_interface *interface = (struct terminal_interface *)self->node.parent;

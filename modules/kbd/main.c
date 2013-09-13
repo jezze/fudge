@@ -7,7 +7,7 @@ static struct system_group root;
 static struct system_stream data;
 static struct system_stream keymap;
 
-unsigned int data_read(struct system_stream *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int data_read(struct system_stream *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct kbd_interface *interface = (struct kbd_interface *)self->node.parent;
@@ -17,7 +17,7 @@ unsigned int data_read(struct system_stream *self, unsigned int offset, unsigned
 
 }
 
-unsigned int data_write(struct system_stream *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int data_write(struct system_stream *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct kbd_interface *interface = (struct kbd_interface *)self->node.parent;
@@ -27,7 +27,7 @@ unsigned int data_write(struct system_stream *self, unsigned int offset, unsigne
 
 }
 
-unsigned int keymap_read(struct system_stream *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int keymap_read(struct system_stream *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct kbd_interface *interface = (struct kbd_interface *)self->node.parent;
@@ -36,7 +36,7 @@ unsigned int keymap_read(struct system_stream *self, unsigned int offset, unsign
 
 }
 
-unsigned int keymap_write(struct system_stream *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int keymap_write(struct system_stream *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct kbd_interface *interface = (struct kbd_interface *)self->node.parent;
