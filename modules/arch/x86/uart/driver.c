@@ -183,7 +183,9 @@ static void attach(struct base_device *device)
 {
 
     struct uart_device *uartDevice = (struct uart_device *)device;
+    struct uart_driver *driver = (struct uart_driver *)device->driver;
 
+    terminal_register_device(&driver->iterminal, device);
     pic_set_routine(device, handle_irq);
     io_outb(uartDevice->port + UART_REGISTER_IER, UART_IER_NULL);
     io_outb(uartDevice->port + UART_REGISTER_LCR, UART_LCR_5BITS | UART_LCR_1STOP | UART_LCR_NOPARITY);
@@ -203,19 +205,19 @@ static unsigned int check(struct base_device *device)
 
 }
 
-static unsigned int read_terminal_data(struct terminal_interface *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int read_terminal_data(struct base_device *device, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct uart_driver *driver = (struct uart_driver *)self->driver;
+    struct uart_driver *driver = (struct uart_driver *)device->driver;
 
     return circular_stream_read(&driver->stream, count, buffer);
 
 }
 
-static unsigned int write_terminal_data(struct terminal_interface *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int write_terminal_data(struct base_device *device, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct uart_driver *driver = (struct uart_driver *)self->driver;
+    struct uart_driver *driver = (struct uart_driver *)device->driver;
 
     return circular_stream_write(&driver->stream, count, buffer);
 
@@ -226,7 +228,7 @@ void uart_init_driver(struct uart_driver *driver)
 
     memory_clear(driver, sizeof (struct uart_driver));
     base_init_driver(&driver->base, "uart", check, attach);
-    terminal_init_interface(&driver->iterminal, &driver->base, read_terminal_data, write_terminal_data);
+    terminal_init_interface(&driver->iterminal, read_terminal_data, write_terminal_data);
 
 }
 

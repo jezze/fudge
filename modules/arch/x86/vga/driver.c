@@ -405,17 +405,17 @@ static void mode(struct base_device *device)
 
 }
 
-static unsigned int read_terminal_data(struct terminal_interface *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int read_terminal_data(struct base_device *device, unsigned int offset, unsigned int count, void *buffer)
 {
 
     return 0;
 
 }
 
-static unsigned int write_terminal_data(struct terminal_interface *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int write_terminal_data(struct base_device *device, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct vga_driver *driver = (struct vga_driver *)self->driver;
+    struct vga_driver *driver = (struct vga_driver *)device->driver;
     unsigned int i;
 
     for (i = 0; i < count; i++)
@@ -525,6 +525,8 @@ static void attach(struct base_device *device)
     unsigned int a;
 
     video_register_device(&driver->ivideo, device);
+    terminal_register_device(&driver->iterminal, device);
+
     driver->cursor.color = 0x0F;
 
     for (a = 0; a < 80 * 25 * 2; a += 2)
@@ -554,7 +556,7 @@ void vga_init_driver(struct vga_driver *driver)
 
     memory_clear(driver, sizeof (struct vga_driver));
     base_init_driver(&driver->base, "vga", check, attach);
-    terminal_init_interface(&driver->iterminal, &driver->base, read_terminal_data, write_terminal_data);
+    terminal_init_interface(&driver->iterminal, read_terminal_data, write_terminal_data);
     video_init_interface(&driver->ivideo, mode, read_video_data, write_video_data, read_video_colormap, write_video_colormap);
 
     driver->ivideo.xres = 80;

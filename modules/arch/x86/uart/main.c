@@ -25,14 +25,12 @@ void init()
     base_register_device(&device4.base);
     uart_init_driver(&driver);
     base_register_driver(&driver.base);
-    terminal_register_interface(&driver.iterminal);
 
 }
 
 void destroy()
 {
 
-    terminal_unregister_interface(&driver.iterminal);
     base_unregister_driver(&driver.base);
     base_unregister_device(&device1.base);
     base_unregister_device(&device2.base);
