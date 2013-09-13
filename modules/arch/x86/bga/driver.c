@@ -60,6 +60,7 @@ static void attach(struct base_device *device)
     struct pci_device *pciDevice = (struct pci_device *)device;
     struct bga_driver *driver = (struct bga_driver *)device->driver;
 
+    video_register_device(&driver->ivideo, device);
     driver->lfb = (void *)pci_device_ind(pciDevice, PCI_CONFIG_BAR0);
 
 /*
@@ -83,32 +84,34 @@ static unsigned int check(struct base_device *device)
 
 }
 
-static void mode(struct video_interface *self)
+static void mode(struct base_device *device)
 {
 
+    struct bga_driver *driver = (struct bga_driver *)device->driver;
+
     write_register(BGA_COMMAND_ENABLE, 0x00);
-    write_register(BGA_COMMAND_XRES, self->xres);
-    write_register(BGA_COMMAND_YRES, self->yres);
-    write_register(BGA_COMMAND_BPP, self->bpp);
+    write_register(BGA_COMMAND_XRES, driver->ivideo.xres);
+    write_register(BGA_COMMAND_YRES, driver->ivideo.yres);
+    write_register(BGA_COMMAND_BPP, driver->ivideo.bpp);
     write_register(BGA_COMMAND_ENABLE, 0x40 | 0x01);
 
 }
 
-static unsigned int read_data(struct video_interface *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int read_data(struct base_device *device, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct bga_driver *driver = (struct bga_driver *)self->driver;
-    unsigned int size = self->xres * self->yres * self->bpp / 4;
+    struct bga_driver *driver = (struct bga_driver *)device->driver;
+    unsigned int size = driver->ivideo.xres * driver->ivideo.yres * driver->ivideo.bpp / 4;
 
     return memory_read(buffer, count, driver->lfb, size, offset);
 
 }
 
-static unsigned int write_data(struct video_interface *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int write_data(struct base_device *device, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct bga_driver *driver = (struct bga_driver *)self->driver;
-    unsigned int size = self->xres * self->yres * self->bpp / 4;
+    struct bga_driver *driver = (struct bga_driver *)device->driver;
+    unsigned int size = driver->ivideo.xres * driver->ivideo.yres * driver->ivideo.bpp / 4;
 
     return memory_write(driver->lfb, size, buffer, count, offset);
 
@@ -119,7 +122,7 @@ void bga_init_driver(struct bga_driver *driver)
 
     memory_clear(driver, sizeof (struct bga_driver));
     base_init_driver(&driver->base, "bga", check, attach);
-    video_init_interface(&driver->ivideo, &driver->base, mode, read_data, write_data, 0, 0);
+    video_init_interface(&driver->ivideo, mode, read_data, write_data, 0, 0);
 
     driver->ivideo.xres = 800;
     driver->ivideo.yres = 600;

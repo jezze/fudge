@@ -9,8 +9,8 @@ static struct system_stream ticks;
 unsigned int ticks_read(struct system_stream *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct timer_interface *interface = (struct timer_interface *)self;
-    struct base_device *device = (struct base_device *)self->node.parent;
+    struct timer_interface *interface = (struct timer_interface *)self->node.parent;
+    struct base_device *device = (struct base_device *)interface->base.node.parent;
     char num[32];
 
     return memory_read(buffer, count, num, memory_write_number(num, 32, interface->get_ticks(device), 10, 0), offset);

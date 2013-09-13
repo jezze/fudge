@@ -363,7 +363,7 @@ static void outsr(unsigned char index, unsigned char value)
 
 }
 
-static void mode(struct video_interface *self)
+static void mode(struct base_device *device)
 {
 
     io_outb(VGA_REGISTER_MISCWRITE, VGA_MISC_COLOR | VGA_MISC_ENABLE | VGA_MISC_PAGESELECT | VGA_MISC_SYNC400);
@@ -473,28 +473,32 @@ static unsigned int write_terminal_data(struct terminal_interface *self, unsigne
 
 }
 
-static unsigned int read_video_data(struct video_interface *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int read_video_data(struct base_device *device, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    return memory_read(buffer, count, (void *)VGA_ADDRESS, self->xres * self->yres * (self->bpp / 8), offset);
+    struct vga_driver *driver = (struct vga_driver *)device->driver;
+
+    return memory_read(buffer, count, (void *)VGA_ADDRESS, driver->ivideo.xres * driver->ivideo.yres * (driver->ivideo.bpp / 8), offset);
 
 }
 
-static unsigned int write_video_data(struct video_interface *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int write_video_data(struct base_device *device, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    return memory_write((void *)VGA_ADDRESS, self->xres * self->yres * (self->bpp / 8), buffer, count, offset);
+    struct vga_driver *driver = (struct vga_driver *)device->driver;
+
+    return memory_write((void *)VGA_ADDRESS, driver->ivideo.xres * driver->ivideo.yres * (driver->ivideo.bpp / 8), buffer, count, offset);
 
 }
 
-static unsigned int read_video_colormap(struct video_interface *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int read_video_colormap(struct base_device *device, unsigned int offset, unsigned int count, void *buffer)
 {
 
     return 0;
 
 }
 
-static unsigned int write_video_colormap(struct video_interface *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int write_video_colormap(struct base_device *device, unsigned int offset, unsigned int count, void *buffer)
 {
 
     char *c = buffer;
@@ -520,6 +524,7 @@ static void attach(struct base_device *device)
     struct vga_driver *driver = (struct vga_driver *)device->driver;
     unsigned int a;
 
+    video_register_device(&driver->ivideo, device);
     driver->cursor.color = 0x0F;
 
     for (a = 0; a < 80 * 25 * 2; a += 2)
@@ -550,7 +555,7 @@ void vga_init_driver(struct vga_driver *driver)
     memory_clear(driver, sizeof (struct vga_driver));
     base_init_driver(&driver->base, "vga", check, attach);
     terminal_init_interface(&driver->iterminal, &driver->base, read_terminal_data, write_terminal_data);
-    video_init_interface(&driver->ivideo, &driver->base, mode, read_video_data, write_video_data, read_video_colormap, write_video_colormap);
+    video_init_interface(&driver->ivideo, mode, read_video_data, write_video_data, read_video_colormap, write_video_colormap);
 
     driver->ivideo.xres = 80;
     driver->ivideo.yres = 25;
