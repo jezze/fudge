@@ -28,7 +28,6 @@ unsigned int ticks_write(struct system_stream *self, unsigned int offset, unsign
 void timer_register_device(struct timer_interface *interface, struct base_device *device)
 {
 
-    base_init_node(device);
     system_group_add(&root, &device->node.base.node);
     system_group_add(&device->node.base, &interface->base.node);
     system_group_add(&interface->base, &ticks.node);
