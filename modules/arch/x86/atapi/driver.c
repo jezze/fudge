@@ -1,7 +1,7 @@
 #include <fudge/module.h>
 #include <system/system.h>
 #include <base/base.h>
-#include <block/block.h>
+#include <base/block.h>
 #include <arch/x86/ide/ide.h>
 #include <arch/x86/pic/pic.h>
 #include "atapi.h"
@@ -14,6 +14,9 @@ static void handle_irq(struct base_device *device)
 static void attach(struct base_device *device)
 {
 
+    struct atapi_driver *driver = (struct atapi_driver *)device->driver;
+
+    base_register_block(&driver->iblock, device);
     pic_set_routine(device, handle_irq);
 
 }
@@ -35,7 +38,7 @@ void atapi_init_driver(struct atapi_driver *driver)
 
     memory_clear(driver, sizeof (struct atapi_driver));
     base_init_driver(&driver->base, "atapi", check, attach);
-    block_init_interface(&driver->iblock, &driver->base, 0, 0);
+    base_init_block(&driver->iblock, 0, 0);
 
 }
 

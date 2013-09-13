@@ -2,7 +2,7 @@ struct atapi_driver
 {
 
     struct base_driver base;
-    struct block_interface iblock;
+    struct base_block iblock;
 
 };
 
