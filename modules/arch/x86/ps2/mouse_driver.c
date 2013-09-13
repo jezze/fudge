@@ -48,8 +48,10 @@ static void attach(struct base_device *device)
 {
 
     struct ps2_bus *bus = (struct ps2_bus *)device->bus;
+    struct ps2_mouse_driver *driver = (struct ps2_mouse_driver *)device->driver;
     unsigned char status;
 
+    mouse_register_device(&driver->imouse, device);
     pic_set_routine(device, handle_irq);
     ps2_bus_write_command(bus, 0xA8);
     ps2_bus_write_command(bus, 0x20);
@@ -82,7 +84,7 @@ void ps2_init_mouse_driver(struct ps2_mouse_driver *driver)
 
     memory_clear(driver, sizeof (struct ps2_mouse_driver));
     base_init_driver(&driver->base, "ps2", check, attach);
-    mouse_init_interface(&driver->imouse, &driver->base);
+    mouse_init_interface(&driver->imouse);
 
     driver->cycle = 2;
 

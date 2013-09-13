@@ -51,7 +51,6 @@ void init()
     base_register_driver(&kbd.base);
     ps2_init_mouse_driver(&mouse);
     base_register_driver(&mouse.base);
-    mouse_register_interface(&mouse.imouse);
     system_init_stream(&reset, "reset", read_reset, write_reset);
     system_register_node(&reset.node);
 
@@ -64,7 +63,6 @@ void destroy()
 
     system_unregister_node(&reset.node);
     base_unregister_driver(&kbd.base);
-    mouse_unregister_interface(&mouse.imouse);
     base_unregister_driver(&mouse.base);
 
     for (i = 0; i < bus.devices.count; i++)
