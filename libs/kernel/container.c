@@ -115,7 +115,7 @@ static unsigned int close(struct container *self, struct task *task, void *stack
     if (!descriptor->session.backend || !descriptor->session.protocol)
         return 0;
 
-    return descriptor->session.protocol->close(descriptor->session.backend, descriptor->id);
+    return descriptor->id = descriptor->session.protocol->close(descriptor->session.backend, descriptor->id);
 
 }
 
