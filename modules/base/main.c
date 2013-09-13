@@ -3,6 +3,7 @@
 #include "base.h"
 #include "keyboard.h"
 #include "mouse.h"
+#include "network.h"
 #include "terminal.h"
 #include "timer.h"
 #include "video.h"
@@ -186,6 +187,7 @@ void init()
 
     base_setup_keyboard();
     base_setup_mouse();
+    base_setup_network();
     base_setup_terminal();
     base_setup_timer();
     base_setup_video();

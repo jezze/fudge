@@ -1,15 +1,18 @@
 #include <fudge/kernel.h>
+#include <system/system.h>
+#include <base/base.h>
+#include <base/network.h>
 #include <net/net.h>
 #include "arp.h"
 
-static unsigned int read(struct net_interface *interface, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int read(struct base_network *interface, unsigned int offset, unsigned int count, void *buffer)
 {
 
     return 0;
 
 }
 
-static unsigned int write(struct net_interface *interface, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int write(struct base_network *interface, unsigned int offset, unsigned int count, void *buffer)
 {
 
     return 0;

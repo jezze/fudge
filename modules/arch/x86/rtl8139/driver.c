@@ -1,8 +1,8 @@
 #include <fudge/module.h>
 #include <system/system.h>
 #include <base/base.h>
+#include <base/network.h>
 #include <log/log.h>
-#include <net/net.h>
 #include <arch/x86/pic/pic.h>
 #include <arch/x86/io/io.h>
 #include <arch/x86/pci/pci.h>
@@ -172,6 +172,7 @@ static void attach(struct base_device *device)
     driver->io = bar0 & ~1;
     driver->mmio = bar1;
 
+    base_register_network(&driver->inetwork, device);
     pci_device_outw(pciDevice, PCI_CONFIG_COMMAND, command | (1 << 2));
     pic_set_routine(device, handle_irq);
     poweron(driver);
@@ -181,12 +182,12 @@ static void attach(struct base_device *device)
     setup_transmitter(driver);
     enable(driver);
 
-    driver->inet.mac[0] = io_inb(driver->io + RTL8139_REGISTER_IDR0);
-    driver->inet.mac[1] = io_inb(driver->io + RTL8139_REGISTER_IDR1);
-    driver->inet.mac[2] = io_inb(driver->io + RTL8139_REGISTER_IDR2);
-    driver->inet.mac[3] = io_inb(driver->io + RTL8139_REGISTER_IDR3);
-    driver->inet.mac[4] = io_inb(driver->io + RTL8139_REGISTER_IDR4);
-    driver->inet.mac[5] = io_inb(driver->io + RTL8139_REGISTER_IDR5);
+    driver->inetwork.mac[0] = io_inb(driver->io + RTL8139_REGISTER_IDR0);
+    driver->inetwork.mac[1] = io_inb(driver->io + RTL8139_REGISTER_IDR1);
+    driver->inetwork.mac[2] = io_inb(driver->io + RTL8139_REGISTER_IDR2);
+    driver->inetwork.mac[3] = io_inb(driver->io + RTL8139_REGISTER_IDR3);
+    driver->inetwork.mac[4] = io_inb(driver->io + RTL8139_REGISTER_IDR4);
+    driver->inetwork.mac[5] = io_inb(driver->io + RTL8139_REGISTER_IDR5);
 
 }
 
@@ -202,10 +203,10 @@ static unsigned int check(struct base_device *device)
 
 }
 
-static unsigned int receive(struct net_interface *self, unsigned int count, void *buffer)
+static unsigned int receive(struct base_device *device, unsigned int count, void *buffer)
 {
 
-    struct rtl8139_driver *driver = (struct rtl8139_driver *)self->driver;
+    struct rtl8139_driver *driver = (struct rtl8139_driver *)device->driver;
     struct rtl8139_header *header;
 
     driver->rxp = io_inw(driver->io + RTL8139_REGISTER_CAPR) + 0x10;
@@ -230,10 +231,10 @@ static unsigned int receive(struct net_interface *self, unsigned int count, void
 
 }
 
-static unsigned int send(struct net_interface *self, unsigned int count, void *buffer)
+static unsigned int send(struct base_device *device, unsigned int count, void *buffer)
 {
 
-    struct rtl8139_driver *driver = (struct rtl8139_driver *)self->driver;
+    struct rtl8139_driver *driver = (struct rtl8139_driver *)device->driver;
     unsigned int status = (0x3F << 16) | (count & 0x1FFF);
 
     switch (driver->txp)
@@ -281,7 +282,7 @@ void rtl8139_init_driver(struct rtl8139_driver *driver)
 
     memory_clear(driver, sizeof (struct rtl8139_driver));
     base_init_driver(&driver->base, "rtl8139", check, attach);
-    net_init_interface(&driver->inet, &driver->base, receive, send);
+    base_init_network(&driver->inetwork, receive, send);
 
 }
 
