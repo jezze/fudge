@@ -16,8 +16,6 @@ static void register_module(struct base_module *module)
 
     struct base_module *current;
 
-    system_group_add(&root, &module->base.node);
-
     if (!modules)
     {
 
@@ -89,8 +87,6 @@ static void unregister_module(struct base_module *module)
 {
 
     struct base_module *current;
-
-    system_group_remove(&root, &module->base.node);
 
     if (modules == module)
     {
