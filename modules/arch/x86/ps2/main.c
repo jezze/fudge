@@ -3,7 +3,7 @@
 #include <fudge/data/circular.h>
 #include <system/system.h>
 #include <base/base.h>
-#include <kbd/kbd.h>
+#include <base/keyboard.h>
 #include <mouse/mouse.h>
 #include "ps2.h"
 
@@ -16,7 +16,7 @@ enum ps2_register
 };
 
 static struct ps2_bus bus;
-static struct ps2_kbd_driver kbd;
+static struct ps2_keyboard_driver keyboard;
 static struct ps2_mouse_driver mouse;
 static struct system_stream reset;
 
@@ -47,8 +47,8 @@ void init()
     for (i = 0; i < bus.devices.count; i++)
         base_register_device(&bus.devices.item[i].base);
 
-    ps2_init_kbd_driver(&kbd);
-    base_register_driver(&kbd.base);
+    ps2_init_keyboard_driver(&keyboard);
+    base_register_driver(&keyboard.base);
     ps2_init_mouse_driver(&mouse);
     base_register_driver(&mouse.base);
     system_init_stream(&reset, "reset", read_reset, write_reset);
@@ -62,7 +62,7 @@ void destroy()
     unsigned int i;
 
     system_unregister_node(&reset.node);
-    base_unregister_driver(&kbd.base);
+    base_unregister_driver(&keyboard.base);
     base_unregister_driver(&mouse.base);
 
     for (i = 0; i < bus.devices.count; i++)

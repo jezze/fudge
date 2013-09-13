@@ -6,7 +6,6 @@ include modules/base/rules.mk
 include modules/block/rules.mk
 include modules/ipv4/rules.mk
 include modules/ipv6/rules.mk
-include modules/kbd/rules.mk
 include modules/log/rules.mk
 include modules/mouse/rules.mk
 include modules/mtwist/rules.mk

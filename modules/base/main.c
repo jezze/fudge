@@ -1,6 +1,7 @@
 #include <fudge/module.h>
 #include <system/system.h>
 #include "base.h"
+#include "keyboard.h"
 
 static struct base_module *modules;
 static struct system_group root;
@@ -178,6 +179,8 @@ void init()
 
     system_init_group(&root, "base");
     system_register_node(&root.node);
+
+    base_setup_keyboard();
 
 }
 

@@ -3,7 +3,7 @@
 #include <fudge/data/circular.h>
 #include <system/system.h>
 #include <base/base.h>
-#include <kbd/kbd.h>
+#include <base/keyboard.h>
 #include <mouse/mouse.h>
 #include <arch/x86/io/io.h>
 #include "ps2.h"
