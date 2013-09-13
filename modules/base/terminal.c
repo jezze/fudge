@@ -1,6 +1,6 @@
 #include <fudge/module.h>
 #include <system/system.h>
-#include <base/base.h>
+#include "base.h"
 #include "terminal.h"
 
 static struct system_group root;
@@ -9,7 +9,7 @@ static struct system_stream data;
 static unsigned int data_read(struct system_stream *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct terminal_interface *interface = (struct terminal_interface *)self->node.parent;
+    struct base_terminal *interface = (struct base_terminal *)self->node.parent;
     struct base_device *device = (struct base_device *)interface->base.node.parent;
  
     return interface->read_data(device, offset, count, buffer);
@@ -19,14 +19,14 @@ static unsigned int data_read(struct system_stream *self, unsigned int offset, u
 static unsigned int data_write(struct system_stream *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct terminal_interface *interface = (struct terminal_interface *)self->node.parent;
+    struct base_terminal *interface = (struct base_terminal *)self->node.parent;
     struct base_device *device = (struct base_device *)interface->base.node.parent;
 
     return interface->write_data(device, offset, count, buffer);
 
 }
 
-void terminal_register_device(struct terminal_interface *interface, struct base_device *device)
+void base_register_terminal(struct base_terminal *interface, struct base_device *device)
 {
 
     system_group_add(&root, &device->module.base.node);
@@ -35,10 +35,10 @@ void terminal_register_device(struct terminal_interface *interface, struct base_
 
 }
 
-void terminal_init_interface(struct terminal_interface *interface, unsigned int (*read_data)(struct base_device *device, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write_data)(struct base_device *device, unsigned int offset, unsigned int count, void *buffer))
+void base_init_terminal(struct base_terminal *interface, unsigned int (*read_data)(struct base_device *device, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write_data)(struct base_device *device, unsigned int offset, unsigned int count, void *buffer))
 {
 
-    memory_clear(interface, sizeof (struct terminal_interface));
+    memory_clear(interface, sizeof (struct base_terminal));
     system_init_group(&interface->base, "terminal");
 
     interface->read_data = read_data;
@@ -46,19 +46,12 @@ void terminal_init_interface(struct terminal_interface *interface, unsigned int 
 
 }
 
-void init()
+void base_setup_terminal()
 {
 
     system_init_group(&root, "terminal");
     system_init_stream(&data, "data", data_read, data_write);
     system_register_node(&root.node);
-
-}
-
-void destroy()
-{
-
-    system_unregister_node(&root.node);
 
 }
 

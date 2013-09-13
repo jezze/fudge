@@ -18,7 +18,7 @@ struct uart_driver
 {
 
     struct base_driver base;
-    struct terminal_interface iterminal;
+    struct base_terminal iterminal;
     struct circular_stream stream;
 
 };

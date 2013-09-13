@@ -3,7 +3,7 @@
 #include <fudge/data/circular.h>
 #include <system/system.h>
 #include <base/base.h>
-#include <terminal/terminal.h>
+#include <base/terminal.h>
 #include <arch/x86/io/io.h>
 #include "uart.h"
 

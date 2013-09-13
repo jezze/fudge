@@ -3,7 +3,7 @@
 #include <fudge/data/circular.h>
 #include <system/system.h>
 #include <base/base.h>
-#include <terminal/terminal.h>
+#include <base/terminal.h>
 #include <arch/x86/pic/pic.h>
 #include <arch/x86/io/io.h>
 #include "uart.h"
@@ -185,7 +185,7 @@ static void attach(struct base_device *device)
     struct uart_device *uartDevice = (struct uart_device *)device;
     struct uart_driver *driver = (struct uart_driver *)device->driver;
 
-    terminal_register_device(&driver->iterminal, device);
+    base_register_terminal(&driver->iterminal, device);
     pic_set_routine(device, handle_irq);
     io_outb(uartDevice->port + UART_REGISTER_IER, UART_IER_NULL);
     io_outb(uartDevice->port + UART_REGISTER_LCR, UART_LCR_5BITS | UART_LCR_1STOP | UART_LCR_NOPARITY);
@@ -228,7 +228,7 @@ void uart_init_driver(struct uart_driver *driver)
 
     memory_clear(driver, sizeof (struct uart_driver));
     base_init_driver(&driver->base, "uart", check, attach);
-    terminal_init_interface(&driver->iterminal, read_terminal_data, write_terminal_data);
+    base_init_terminal(&driver->iterminal, read_terminal_data, write_terminal_data);
 
 }
 

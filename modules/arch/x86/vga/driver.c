@@ -1,7 +1,7 @@
 #include <fudge/module.h>
 #include <system/system.h>
 #include <base/base.h>
-#include <terminal/terminal.h>
+#include <base/terminal.h>
 #include <video/video.h>
 #include <arch/x86/io/io.h>
 #include <arch/x86/pci/pci.h>
@@ -524,8 +524,8 @@ static void attach(struct base_device *device)
     struct vga_driver *driver = (struct vga_driver *)device->driver;
     unsigned int a;
 
+    base_register_terminal(&driver->iterminal, device);
     video_register_device(&driver->ivideo, device);
-    terminal_register_device(&driver->iterminal, device);
 
     driver->cursor.color = 0x0F;
 
@@ -556,7 +556,7 @@ void vga_init_driver(struct vga_driver *driver)
 
     memory_clear(driver, sizeof (struct vga_driver));
     base_init_driver(&driver->base, "vga", check, attach);
-    terminal_init_interface(&driver->iterminal, read_terminal_data, write_terminal_data);
+    base_init_terminal(&driver->iterminal, read_terminal_data, write_terminal_data);
     video_init_interface(&driver->ivideo, mode, read_video_data, write_video_data, read_video_colormap, write_video_colormap);
 
     driver->ivideo.xres = 80;
