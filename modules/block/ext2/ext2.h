@@ -109,10 +109,10 @@ struct ext2_protocol
 {
 
     struct block_protocol base;
-    unsigned int (*validate)(struct block_interface *interface);
-    void (*read_blockgroup)(struct block_interface *interface, unsigned int id, struct ext2_blockgroup *bg);
-    void (*read_node)(struct block_interface *interface, unsigned int id, struct ext2_blockgroup *bg, struct ext2_node *node);
-    void (*read_content)(struct block_interface *interface, struct ext2_node *node, void *buffer);
+    unsigned int (*validate)(struct base_block *interface, struct base_device *device);
+    void (*read_blockgroup)(struct base_block *interface, struct base_device *device, unsigned int id, struct ext2_blockgroup *bg);
+    void (*read_node)(struct base_block *interface, struct base_device *device, unsigned int id, struct ext2_blockgroup *bg, struct ext2_node *node);
+    void (*read_content)(struct base_block *interface, struct base_device *device, struct ext2_node *node, void *buffer);
 
 };
 
@@ -121,9 +121,9 @@ struct ext2_filesystem
 
     struct vfs_protocol base;
     struct ext2_protocol *protocol;
-    struct block_interface *interface;
+    struct base_block *interface;
 
 };
 
 void ext2_init_protocol(struct ext2_protocol *protocol);
-void ext2_init_filesystem(struct ext2_filesystem *filesystem, struct ext2_protocol *protocol, struct block_interface *interface);
+void ext2_init_filesystem(struct ext2_filesystem *filesystem, struct ext2_protocol *protocol, struct base_block *interface);

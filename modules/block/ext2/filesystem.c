@@ -1,5 +1,8 @@
 #include <fudge/module.h>
 #include <kernel/vfs.h>
+#include <system/system.h>
+#include <base/base.h>
+#include <base/block.h>
 #include <block/block.h>
 #include "ext2.h"
 
@@ -44,21 +47,21 @@ enum ext2_nodetype
 
 };
 
-static unsigned int open(struct vfs_protocol *self, struct vfs_backend *backend, unsigned int id)
+static unsigned int open(struct vfs_backend *backend, unsigned int id)
 {
 
     return id;
 
 }
 
-static unsigned int close(struct vfs_protocol *self, struct vfs_backend *backend, unsigned int id)
+static unsigned int close(struct vfs_backend *backend, unsigned int id)
 {
 
     return id;
 
 }
 
-static unsigned int read(struct vfs_protocol *self, struct vfs_backend *backend, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int read(struct vfs_backend *backend, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct ext2_filesystem *filesystem = (struct ext2_filesystem *)self;
@@ -103,16 +106,17 @@ static unsigned int read(struct vfs_protocol *self, struct vfs_backend *backend,
 
 }
 
-static unsigned int write(struct vfs_protocol *self, struct vfs_backend *backend, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int write(struct vfs_backend *backend, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     return 0;
 
 }
 
-static struct ext2_entry *finddir(struct vfs_protocol *self, unsigned int id, const char *name)
+static struct ext2_entry *finddir(struct vfs_backend *backend, unsigned int id, const char *name)
 {
 
+/*
     struct ext2_filesystem *filesystem = (struct ext2_filesystem *)self;
     struct ext2_protocol *protocol = (struct ext2_protocol *)filesystem->protocol;
     struct ext2_blockgroup bg;
@@ -143,12 +147,12 @@ static struct ext2_entry *finddir(struct vfs_protocol *self, unsigned int id, co
         }
 
     }
-
+*/
     return 0;
 
 }
 
-static unsigned int walk(struct vfs_protocol *self, struct vfs_backend *backend, unsigned int id, unsigned int count, const char *path)
+static unsigned int walk(struct vfs_backend *backend, unsigned int id, unsigned int count, const char *path)
 {
 
     struct ext2_entry *entry;
@@ -156,7 +160,7 @@ static unsigned int walk(struct vfs_protocol *self, struct vfs_backend *backend,
     if (!count)
         return id;
 
-    while ((entry = finddir(self, id, path)))
+    while ((entry = finddir(backend, id, path)))
     {
 
         path += entry->length + 1;
@@ -168,11 +172,11 @@ static unsigned int walk(struct vfs_protocol *self, struct vfs_backend *backend,
 
 }
 
-void ext2_init_filesystem(struct ext2_filesystem *filesystem, struct ext2_protocol *protocol, struct block_interface *interface)
+void ext2_init_filesystem(struct ext2_filesystem *filesystem, struct ext2_protocol *protocol, struct base_block *interface)
 {
 
     memory_clear(filesystem, sizeof (struct ext2_filesystem));
-    vfs_init_protocol(&filesystem->base, 2, 0, open, close, read, write, walk, 0);
+    vfs_init_protocol(&filesystem->base, 2, 0, open, close, read, write, 0, walk, 0);
 
     filesystem->protocol = protocol;
     filesystem->interface = interface;

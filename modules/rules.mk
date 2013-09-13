@@ -1,11 +1,8 @@
 modules/%.o: CFLAGS+=-Ilibs -Imodules
 modules/%.ko: LDFLAGS+=-Tmodules/linker.ld -r
 
-include modules/arp/rules.mk
 include modules/base/rules.mk
 include modules/block/rules.mk
-include modules/ipv4/rules.mk
-include modules/ipv6/rules.mk
 include modules/log/rules.mk
 include modules/mtwist/rules.mk
 include modules/net/rules.mk

@@ -1,5 +1,5 @@
-MOD:=modules/arp/arp.ko
-OBJ:=modules/arp/main.o modules/arp/protocol.o
+MOD:=modules/net/arp/arp.ko
+OBJ:=modules/net/arp/main.o modules/net/arp/protocol.o
 
 $(MOD): $(OBJ) $(LIBFUDGE)
 	$(LD) $(LDFLAGS) -o $@ $^

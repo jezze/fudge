@@ -1,5 +1,5 @@
-MOD:=modules/ipv6/ipv6.ko
-OBJ:=modules/ipv6/main.o modules/ipv6/protocol.o
+MOD:=modules/net/ipv6/ipv6.ko
+OBJ:=modules/net/ipv6/main.o modules/net/ipv6/protocol.o
 
 $(MOD): $(OBJ) $(LIBFUDGE)
 	$(LD) $(LDFLAGS) -o $@ $^

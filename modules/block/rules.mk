@@ -1,3 +1,5 @@
+#include modules/block/ext2/rules.mk
+
 MOD:=modules/block/block.ko
 OBJ:=modules/block/main.o
 

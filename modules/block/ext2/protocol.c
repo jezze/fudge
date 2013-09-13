@@ -1,20 +1,23 @@
 #include <fudge/module.h>
 #include <kernel/vfs.h>
+#include <system/system.h>
+#include <base/base.h>
+#include <base/block.h>
 #include <block/block.h>
 #include "ext2.h"
 
-static void read_superblock(struct block_interface *interface, struct ext2_superblock *sb)
+static void read_superblock(struct base_block *interface, struct base_device *device, struct ext2_superblock *sb)
 {
 
     char buffer[1024];
 
-    interface->read(interface, 2, 2, buffer);
+    interface->read(device, 2, 2, buffer);
 
     memory_copy(sb, buffer, sizeof (struct ext2_superblock));
 
 }
 
-static void read_blockgroup(struct block_interface *interface, unsigned int id, struct ext2_blockgroup *bg)
+static void read_blockgroup(struct base_block *interface, struct base_device *device, unsigned int id, struct ext2_blockgroup *bg)
 {
 
     struct ext2_superblock sb;
@@ -23,18 +26,18 @@ static void read_blockgroup(struct block_interface *interface, unsigned int id, 
     unsigned int sectorsize;
     unsigned int nodegroup;
 
-    read_superblock(interface, &sb);
+    read_superblock(interface, device, &sb);
 
     blocksize = 1024 << sb.blockSize;
     sectorsize = blocksize / 512;
     nodegroup = (id - 1) / sb.nodeCountGroup;
 
-    interface->read(interface, 2 * sectorsize, sectorsize, buffer);
+    interface->read(device, 2 * sectorsize, sectorsize, buffer);
     memory_copy(bg, buffer + nodegroup * sizeof (struct ext2_blockgroup), sizeof (struct ext2_blockgroup));
 
 }
 
-static void read_node(struct block_interface *interface, unsigned int id, struct ext2_blockgroup *bg, struct ext2_node *node)
+static void read_node(struct base_block *interface, struct base_device *device, unsigned int id, struct ext2_blockgroup *bg, struct ext2_node *node)
 {
 
     struct ext2_superblock sb;
@@ -45,7 +48,7 @@ static void read_node(struct block_interface *interface, unsigned int id, struct
     unsigned int nodeindex;
     unsigned int nodeblock;
 
-    read_superblock(interface, &sb);
+    read_superblock(interface, device, &sb);
 
     blocksize = 1024 << sb.blockSize;
     sectorsize = blocksize / 512;
@@ -53,33 +56,33 @@ static void read_node(struct block_interface *interface, unsigned int id, struct
     nodeindex = (id - 1) % sb.nodeCountGroup;
     nodeblock = (id * nodesize) / blocksize;
 
-    interface->read(interface, (bg->blockTableAddress + nodeblock) * sectorsize, sectorsize, buffer);
+    interface->read(device, (bg->blockTableAddress + nodeblock) * sectorsize, sectorsize, buffer);
     memory_copy(node, buffer + nodesize * (nodeindex % (blocksize / nodesize)), sizeof (struct ext2_node));
 
 }
 
-static void read_content(struct block_interface *interface, struct ext2_node *node, void *buffer)
+static void read_content(struct base_block *interface, struct base_device *device, struct ext2_node *node, void *buffer)
 {
 
     struct ext2_superblock sb;
     unsigned int blocksize;
     unsigned int sectorsize;
 
-    read_superblock(interface, &sb);
+    read_superblock(interface, device, &sb);
 
     blocksize = 1024 << sb.blockSize;
     sectorsize = blocksize / 512;
 
-    interface->read(interface, (node->pointer0) * sectorsize, sectorsize, buffer);
+    interface->read(device, (node->pointer0) * sectorsize, sectorsize, buffer);
 
 }
 
-static unsigned int validate(struct block_interface *interface)
+static unsigned int validate(struct base_block *interface, struct base_device *device)
 {
 
     struct ext2_superblock sb;
 
-    read_superblock(interface, &sb);
+    read_superblock(interface, device, &sb);
 
     if (sb.signature != 0xEF53)
         return 0;
