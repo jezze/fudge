@@ -130,6 +130,7 @@ static void base_init_module(struct base_module *module, enum base_type type, ch
 {
 
     memory_clear(module, sizeof (struct base_module));
+    system_init_group(&module->base, "0000");
 
     module->type = type;
     module->name = name;
@@ -152,9 +153,7 @@ void base_init_device(struct base_device *device, unsigned int type, unsigned in
 
     memory_clear(device, sizeof (struct base_device));
     base_init_module(&device->module, BASE_TYPE_DEVICE, name);
-    system_init_group(&device->node.base, "0000");
 
-    device->node.device = device;
     device->type = type;
     device->irq = irq;
     device->bus = bus;

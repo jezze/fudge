@@ -10,8 +10,7 @@ unsigned int ticks_read(struct system_stream *self, unsigned int offset, unsigne
 {
 
     struct timer_interface *interface = (struct timer_interface *)self;
-    struct base_device_node *node = (struct base_device_node *)self->node.parent;
-    struct base_device *device = node->device;
+    struct base_device *device = (struct base_device *)self->node.parent;
     char num[32];
 
     return memory_read(buffer, count, num, memory_write_number(num, 32, interface->get_ticks(device), 10, 0), offset);
@@ -28,8 +27,8 @@ unsigned int ticks_write(struct system_stream *self, unsigned int offset, unsign
 void timer_register_device(struct timer_interface *interface, struct base_device *device)
 {
 
-    system_group_add(&root, &device->node.base.node);
-    system_group_add(&device->node.base, &interface->base.node);
+    system_group_add(&root, &device->module.base.node);
+    system_group_add(&device->module.base, &interface->base.node);
     system_group_add(&interface->base, &ticks.node);
 
 }

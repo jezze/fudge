@@ -14,6 +14,7 @@ enum base_type
 struct base_module
 {
 
+    struct system_group base;
     struct base_module *sibling;
     enum base_type type;
     char *name;
@@ -37,7 +38,6 @@ struct base_device
     unsigned int irq;
     struct base_bus *bus;
     struct base_driver *driver;
-    struct base_device_node {struct system_group base; struct base_device *device;} node;
 
 };
 
