@@ -49,7 +49,6 @@ void init()
 
     ps2_init_kbd_driver(&kbd);
     base_register_driver(&kbd.base);
-    kbd_register_interface(&kbd.ikbd);
     ps2_init_mouse_driver(&mouse);
     base_register_driver(&mouse.base);
     mouse_register_interface(&mouse.imouse);
@@ -64,7 +63,6 @@ void destroy()
     unsigned int i;
 
     system_unregister_node(&reset.node);
-    kbd_unregister_interface(&kbd.ikbd);
     base_unregister_driver(&kbd.base);
     mouse_unregister_interface(&mouse.imouse);
     base_unregister_driver(&mouse.base);

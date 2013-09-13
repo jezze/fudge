@@ -69,8 +69,10 @@ static void attach(struct base_device *device)
 {
 
     struct ps2_bus *bus = (struct ps2_bus *)device->bus;
+    struct ps2_kbd_driver *driver = (struct ps2_kbd_driver *)device->driver;
     unsigned char status;
 
+    kbd_register_device(&driver->ikbd, device);
     pic_set_routine(device, handle_irq);
     ps2_bus_write_command(bus, 0xAE);
     ps2_bus_write_command(bus, 0x20);
@@ -92,19 +94,19 @@ static unsigned int check(struct base_device *device)
 
 }
 
-static unsigned int read_data(struct kbd_interface *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int read_data(struct base_device *device, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct ps2_kbd_driver *driver = (struct ps2_kbd_driver *)self->driver;
+    struct ps2_kbd_driver *driver = (struct ps2_kbd_driver *)device->driver;
 
     return circular_stream_read(&driver->stream, count, buffer);
 
 }
 
-static unsigned int write_data(struct kbd_interface *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int write_data(struct base_device *device, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct ps2_kbd_driver *driver = (struct ps2_kbd_driver *)self->driver;
+    struct ps2_kbd_driver *driver = (struct ps2_kbd_driver *)device->driver;
 
     return circular_stream_write(&driver->stream, count, buffer);
 
@@ -115,7 +117,7 @@ void ps2_init_kbd_driver(struct ps2_kbd_driver *driver)
 
     memory_clear(driver, sizeof (struct ps2_kbd_driver));
     base_init_driver(&driver->base, "ps2", check, attach);
-    kbd_init_interface(&driver->ikbd, &driver->base, read_data, write_data);
+    kbd_init_interface(&driver->ikbd, read_data, write_data);
 
 }
 
