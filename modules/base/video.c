@@ -1,6 +1,6 @@
 #include <fudge/module.h>
 #include <system/system.h>
-#include <base/base.h>
+#include "base.h"
 #include "video.h"
 
 static struct system_group root;
@@ -11,7 +11,7 @@ static struct system_stream mode;
 static unsigned int data_read(struct system_stream *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct video_interface *interface = (struct video_interface *)self->node.parent;
+    struct base_video *interface = (struct base_video *)self->node.parent;
     struct base_device *device = (struct base_device *)interface->base.node.parent;
 
     return interface->read_data(device, offset, count, buffer);
@@ -21,7 +21,7 @@ static unsigned int data_read(struct system_stream *self, unsigned int offset, u
 static unsigned int data_write(struct system_stream *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct video_interface *interface = (struct video_interface *)self->node.parent;
+    struct base_video *interface = (struct base_video *)self->node.parent;
     struct base_device *device = (struct base_device *)interface->base.node.parent;
 
     return interface->write_data(device, offset, count, buffer);
@@ -31,7 +31,7 @@ static unsigned int data_write(struct system_stream *self, unsigned int offset, 
 static unsigned int colormap_read(struct system_stream *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct video_interface *interface = (struct video_interface *)self->node.parent;
+    struct base_video *interface = (struct base_video *)self->node.parent;
     struct base_device *device = (struct base_device *)interface->base.node.parent;
 
     return interface->read_colormap(device, offset, count, buffer);
@@ -41,7 +41,7 @@ static unsigned int colormap_read(struct system_stream *self, unsigned int offse
 static unsigned int colormap_write(struct system_stream *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct video_interface *interface = (struct video_interface *)self->node.parent;
+    struct base_video *interface = (struct base_video *)self->node.parent;
     struct base_device *device = (struct base_device *)interface->base.node.parent;
 
     return interface->write_colormap(device, offset, count, buffer);
@@ -58,7 +58,7 @@ static unsigned int mode_read(struct system_stream *self, unsigned int offset, u
 static unsigned int mode_write(struct system_stream *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct video_interface *interface = (struct video_interface *)self->node.parent;
+    struct base_video *interface = (struct base_video *)self->node.parent;
     struct base_device *device = (struct base_device *)interface->base.node.parent;
 
     interface->xres = 320;
@@ -71,7 +71,7 @@ static unsigned int mode_write(struct system_stream *self, unsigned int offset, 
 
 }
 
-void video_register_device(struct video_interface *interface, struct base_device *device)
+void base_register_video(struct base_video *interface, struct base_device *device)
 {
 
     system_group_add(&root, &device->module.base.node);
@@ -82,10 +82,10 @@ void video_register_device(struct video_interface *interface, struct base_device
 
 }
 
-void video_init_interface(struct video_interface *interface, void (*mode)(struct base_device *device), unsigned int (*read_data)(struct base_device *device, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write_data)(struct base_device *device, unsigned int offset, unsigned int count, void *buffer), unsigned int (*read_colormap)(struct base_device *device, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write_colormap)(struct base_device *device, unsigned int offset, unsigned int count, void *buffer))
+void base_init_video(struct base_video *interface, void (*mode)(struct base_device *device), unsigned int (*read_data)(struct base_device *device, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write_data)(struct base_device *device, unsigned int offset, unsigned int count, void *buffer), unsigned int (*read_colormap)(struct base_device *device, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write_colormap)(struct base_device *device, unsigned int offset, unsigned int count, void *buffer))
 {
 
-    memory_clear(interface, sizeof (struct video_interface));
+    memory_clear(interface, sizeof (struct base_video));
     system_init_group(&interface->base, "video");
 
     interface->mode = mode;
@@ -96,7 +96,7 @@ void video_init_interface(struct video_interface *interface, void (*mode)(struct
 
 }
 
-void init()
+void base_setup_video()
 {
 
     system_init_group(&root, "video");
@@ -104,13 +104,6 @@ void init()
     system_init_stream(&colormap, "colormap", colormap_read, colormap_write);
     system_init_stream(&mode, "mode", mode_read, mode_write);
     system_register_node(&root.node);
-
-}
-
-void destroy()
-{
-
-    system_unregister_node(&root.node);
 
 }
 

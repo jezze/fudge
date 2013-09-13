@@ -5,7 +5,6 @@
 /bin/modload < /boot/mod/log.ko
 /bin/modload < /boot/mod/block.ko
 /bin/modload < /boot/mod/net.ko
-/bin/modload < /boot/mod/video.ko
 /bin/modload < /boot/mod/temp.ko
 /bin/modload < /boot/mod/io.ko
 /bin/modload < /boot/mod/cpuid.ko

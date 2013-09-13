@@ -2,7 +2,7 @@
 #include <system/system.h>
 #include <base/base.h>
 #include <base/terminal.h>
-#include <video/video.h>
+#include <base/video.h>
 #include "vga.h"
 
 static struct vga_driver driver;

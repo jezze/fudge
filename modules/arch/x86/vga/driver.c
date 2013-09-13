@@ -2,7 +2,7 @@
 #include <system/system.h>
 #include <base/base.h>
 #include <base/terminal.h>
-#include <video/video.h>
+#include <base/video.h>
 #include <arch/x86/io/io.h>
 #include <arch/x86/pci/pci.h>
 #include "vga.h"
@@ -525,7 +525,7 @@ static void attach(struct base_device *device)
     unsigned int a;
 
     base_register_terminal(&driver->iterminal, device);
-    video_register_device(&driver->ivideo, device);
+    base_register_video(&driver->ivideo, device);
 
     driver->cursor.color = 0x0F;
 
@@ -557,7 +557,7 @@ void vga_init_driver(struct vga_driver *driver)
     memory_clear(driver, sizeof (struct vga_driver));
     base_init_driver(&driver->base, "vga", check, attach);
     base_init_terminal(&driver->iterminal, read_terminal_data, write_terminal_data);
-    video_init_interface(&driver->ivideo, mode, read_video_data, write_video_data, read_video_colormap, write_video_colormap);
+    base_init_video(&driver->ivideo, mode, read_video_data, write_video_data, read_video_colormap, write_video_colormap);
 
     driver->ivideo.xres = 80;
     driver->ivideo.yres = 25;

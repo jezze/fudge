@@ -1,7 +1,7 @@
 #include <fudge/module.h>
 #include <system/system.h>
 #include <base/base.h>
-#include <video/video.h>
+#include <base/video.h>
 #include "i915.h"
 
 static struct i915_driver driver;

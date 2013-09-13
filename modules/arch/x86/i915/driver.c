@@ -1,7 +1,7 @@
 #include <fudge/module.h>
 #include <system/system.h>
 #include <base/base.h>
-#include <video/video.h>
+#include <base/video.h>
 #include <arch/x86/pic/pic.h>
 #include <arch/x86/pci/pci.h>
 #include "i915.h"
@@ -122,7 +122,7 @@ static void attach(struct base_device *device)
 
     struct i915_driver *driver = (struct i915_driver *)device->driver;
 
-    video_register_device(&driver->ivideo, device);
+    base_register_video(&driver->ivideo, device);
     pic_set_routine(device, handle_irq);
     enable_dpll();
     enable_pipe();
@@ -169,7 +169,7 @@ void i915_init_driver(struct i915_driver *driver)
 
     memory_clear(driver, sizeof (struct i915_driver));
     base_init_driver(&driver->base, "i915", check, attach);
-    video_init_interface(&driver->ivideo, enable, read_data, write_data, 0, 0);
+    base_init_video(&driver->ivideo, enable, read_data, write_data, 0, 0);
 
 }
 
