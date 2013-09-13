@@ -10,14 +10,14 @@ static struct system_stream mac;
 static unsigned int data_open(struct system_node *self)
 {
 
-    return 1;
+    return (unsigned int)self;
 
 }
 
 static unsigned int data_close(struct system_node *self)
 {
 
-    return 1;
+    return (unsigned int)self;
 
 }
 
@@ -50,14 +50,14 @@ unsigned int data_write(struct system_node *self, unsigned int offset, unsigned 
 static unsigned int mac_open(struct system_node *self)
 {
 
-    return 1;
+    return (unsigned int)self;
 
 }
 
 static unsigned int mac_close(struct system_node *self)
 {
 
-    return 1;
+    return (unsigned int)self;
 
 }
 

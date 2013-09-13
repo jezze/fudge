@@ -23,14 +23,14 @@ static struct system_stream reset;
 static unsigned int reset_open(struct system_node *self)
 {
 
-    return 1;
+    return (unsigned int)self;
 
 }
 
 static unsigned int reset_close(struct system_node *self)
 {
 
-    return 1;
+    return (unsigned int)self;
 
 }
 

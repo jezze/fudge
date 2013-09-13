@@ -99,7 +99,7 @@ static unsigned int open(struct container *self, struct task *task, void *stack)
 
     memory_copy(descriptor, &temp, sizeof (struct task_descriptor));
 
-    return descriptor->session.protocol->open(descriptor->session.backend, descriptor->id);
+    return descriptor->id = descriptor->session.protocol->open(descriptor->session.backend, descriptor->id);
 
 }
 

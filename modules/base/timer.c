@@ -20,14 +20,14 @@ static struct
 static unsigned int clone_open(struct system_node *self)
 {
 
-    return 1;
+    return (unsigned int)self;
 
 }
 
 static unsigned int clone_close(struct system_node *self)
 {
 
-    return 1;
+    return (unsigned int)self;
 
 }
 

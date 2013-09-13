@@ -10,14 +10,14 @@ static struct system_stream keymap;
 static unsigned int data_open(struct system_node *self)
 {
 
-    return 1;
+    return (unsigned int)self;
 
 }
 
 static unsigned int data_close(struct system_node *self)
 {
 
-    return 1;
+    return (unsigned int)self;
 
 }
 
@@ -44,14 +44,14 @@ static unsigned int data_write(struct system_node *self, unsigned int offset, un
 static unsigned int keymap_open(struct system_node *self)
 {
 
-    return 1;
+    return (unsigned int)self;
 
 }
 
 static unsigned int keymap_close(struct system_node *self)
 {
 
-    return 1;
+    return (unsigned int)self;
 
 }
 

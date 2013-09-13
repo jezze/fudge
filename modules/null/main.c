@@ -8,14 +8,14 @@ static struct system_stream root;
 static unsigned int open(struct system_node *self)
 {
 
-    return 1;
+    return (unsigned int)self;
 
 }
 
 static unsigned int close(struct system_node *self)
 {
 
-    return 1;
+    return (unsigned int)self;
 
 }
 

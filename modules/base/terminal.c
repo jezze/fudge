@@ -9,14 +9,14 @@ static struct system_stream data;
 static unsigned int data_open(struct system_node *self)
 {
 
-    return 1;
+    return (unsigned int)self;
 
 }
 
 static unsigned int data_close(struct system_node *self)
 {
 
-    return 1;
+    return (unsigned int)self;
 
 }
 

@@ -10,14 +10,14 @@ static struct system_stream messages;
 static unsigned int message_open(struct system_node *self)
 {
 
-    return 1;
+    return (unsigned int)self;
 
 }
 
 static unsigned int message_close(struct system_node *self)
 {
 
-    return 1;
+    return (unsigned int)self;
 
 }
 

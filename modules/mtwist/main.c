@@ -130,14 +130,14 @@ double mtwist_drand(struct mtwist_state *state)
 static unsigned int open(struct system_node *self)
 {
 
-    return 1;
+    return (unsigned int)self;
 
 }
 
 static unsigned int close(struct system_node *self)
 {
 
-    return 1;
+    return (unsigned int)self;
 
 }
 

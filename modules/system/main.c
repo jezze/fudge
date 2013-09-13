@@ -91,24 +91,24 @@ static void system_init_node(struct system_node *node, unsigned int type, char *
 
 }
 
-static unsigned int open_group(struct system_node *node)
+static unsigned int open_group(struct system_node *self)
 {
 
-    return 1;
+    return (unsigned int)self;
 
 }
 
-static unsigned int close_group(struct system_node *node)
+static unsigned int close_group(struct system_node *self)
 {
 
-    return 1;
+    return (unsigned int)self;
 
 }
 
-static unsigned int read_group(struct system_node *node, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int read_group(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct system_group *group = (struct system_group *)node;
+    struct system_group *group = (struct system_group *)self;
     struct system_node *current;
     unsigned char *b = buffer;
     unsigned int c = 0;
@@ -146,7 +146,7 @@ static unsigned int read_group(struct system_node *node, unsigned int offset, un
 
 }
 
-static unsigned int write_group(struct system_node *node, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int write_group(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     return 0;

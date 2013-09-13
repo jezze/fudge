@@ -11,14 +11,14 @@ static struct system_stream mode;
 static unsigned int data_open(struct system_node *self)
 {
 
-    return 1;
+    return (unsigned int)self;
 
 }
 
 static unsigned int data_close(struct system_node *self)
 {
 
-    return 1;
+    return (unsigned int)self;
 
 }
 
@@ -45,14 +45,14 @@ static unsigned int data_write(struct system_node *self, unsigned int offset, un
 static unsigned int colormap_open(struct system_node *self)
 {
 
-    return 1;
+    return (unsigned int)self;
 
 }
 
 static unsigned int colormap_close(struct system_node *self)
 {
 
-    return 1;
+    return (unsigned int)self;
 
 }
 
@@ -79,14 +79,14 @@ static unsigned int colormap_write(struct system_node *self, unsigned int offset
 static unsigned int mode_open(struct system_node *self)
 {
 
-    return 1;
+    return (unsigned int)self;
 
 }
 
 static unsigned int mode_close(struct system_node *self)
 {
 
-    return 1;
+    return (unsigned int)self;
 
 }
 
