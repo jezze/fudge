@@ -116,7 +116,7 @@ void ps2_init_keyboard_driver(struct ps2_keyboard_driver *driver)
 {
 
     memory_clear(driver, sizeof (struct ps2_keyboard_driver));
-    base_init_driver(&driver->base, "ps2", check, attach);
+    base_init_driver(&driver->base, "ps2keyboard", check, attach);
     base_init_keyboard(&driver->ikeyboard, read_data, write_data);
 
 }

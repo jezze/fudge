@@ -83,7 +83,7 @@ void ps2_init_mouse_driver(struct ps2_mouse_driver *driver)
 {
 
     memory_clear(driver, sizeof (struct ps2_mouse_driver));
-    base_init_driver(&driver->base, "ps2", check, attach);
+    base_init_driver(&driver->base, "ps2mouse", check, attach);
     base_init_mouse(&driver->imouse);
 
     driver->cycle = 2;

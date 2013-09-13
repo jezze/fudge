@@ -133,7 +133,7 @@ void pci_init_bus(struct pci_bus *bus, unsigned short control, unsigned short da
 {
 
     memory_clear(bus, sizeof (struct pci_bus));
-    base_init_bus(&bus->base, PCI_BUS_TYPE, "pci", scan);
+    base_init_bus(&bus->base, PCI_BUS_TYPE, "pci:0000", scan);
 
     bus->control = control;
     bus->data = data;

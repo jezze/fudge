@@ -75,7 +75,7 @@ static unsigned int parse_path(struct token_state *state, struct string *string)
 
     string->index = state->current;
 
-    token_skip(state, TOKEN_TYPE_ALPHANUM | TOKEN_TYPE_DOT | TOKEN_TYPE_SLASH);
+    token_skip(state, TOKEN_TYPE_ALPHANUM | TOKEN_TYPE_DOT | TOKEN_TYPE_SLASH | TOKEN_TYPE_COLON);
 
     string->count = state->current - string->index;
 
