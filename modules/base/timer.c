@@ -3,21 +3,28 @@
 #include "base.h"
 #include "timer.h"
 
-static struct system_group timer;
-static struct system_stream clone;
-
-static struct
+struct timer_group
 {
 
-    unsigned int count;
-    struct {struct system_group index; char name[8]; struct system_stream control; struct system_stream ticks; struct modules_device *device;} items[8];
+    struct system_group base;
+    struct system_stream control;
+    struct system_stream ticks;
+    char name[8];
+    struct modules_device *device;
 
-} timers;
+};
+
+static struct system_group timer;
+static struct system_stream clone;
+static unsigned int count;
+static struct timer_group groups[8];
 
 static unsigned int control_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    return memory_read(buffer, count, "control", 7, offset);
+    struct timer_group *group = (struct timer_group *)self->parent;
+
+    return memory_read(buffer, count, group->name, string_length(group->name), offset);
 
 }
 
@@ -31,23 +38,25 @@ static unsigned int ticks_read(struct system_node *self, unsigned int offset, un
 static unsigned int clone_open(struct system_node *self)
 {
 
-    timers.count++;
+    struct timer_group *current = &groups[++count];
 
-    memory_clear(timers.items[timers.count].name, 8);
-    memory_write_number(timers.items[timers.count].name, 8, timers.count, 10, 0);
-    system_init_group(&timers.items[timers.count].index, timers.items[timers.count].name);
-    system_group_add(&timer, &timers.items[timers.count].index.node);
-    system_init_stream(&timers.items[timers.count].control, "control");
-    system_group_add(&timers.items[timers.count].index, &timers.items[timers.count].control.node);
+    memory_clear(current->name, 8);
+    memory_write_number(current->name, 8, count, 10, 0);
 
-    timers.items[timers.count].control.node.read = control_read;
+    system_init_group(&current->base, current->name);
+    system_group_add(&timer, &current->base.node);
 
-    system_init_stream(&timers.items[timers.count].ticks, "ticks");
-    system_group_add(&timers.items[timers.count].index, &timers.items[timers.count].ticks.node);
+    system_init_stream(&current->control, "control");
+    system_group_add(&current->base, &current->control.node);
 
-    timers.items[timers.count].ticks.node.read = ticks_read;
+    current->control.node.read = control_read;
 
-    return (unsigned int)&timers.items[timers.count].control;
+    system_init_stream(&current->ticks, "ticks");
+    system_group_add(&current->base, &current->ticks.node);
+
+    current->ticks.node.read = ticks_read;
+
+    return (unsigned int)&current->control;
 
 }
 
@@ -64,7 +73,7 @@ void base_init_timer(struct base_timer *interface, unsigned int (*get_ticks)(str
 void base_setup_timer(struct system_group *root)
 {
 
-    timers.count = 0;
+    count = 0;
 
     system_init_group(&timer, "timer");
     system_group_add(root, &timer.node);
