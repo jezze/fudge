@@ -7,20 +7,6 @@ static struct system_group root;
 static struct system_stream data;
 static struct system_stream keymap;
 
-static unsigned int data_open(struct system_node *self)
-{
-
-    return (unsigned int)self;
-
-}
-
-static unsigned int data_close(struct system_node *self)
-{
-
-    return (unsigned int)self;
-
-}
-
 static unsigned int data_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
@@ -38,20 +24,6 @@ static unsigned int data_write(struct system_node *self, unsigned int offset, un
     struct base_device *device = (struct base_device *)self->parent->parent;
  
     return interface->write_data(device, offset, count, buffer);
-
-}
-
-static unsigned int keymap_open(struct system_node *self)
-{
-
-    return (unsigned int)self;
-
-}
-
-static unsigned int keymap_close(struct system_node *self)
-{
-
-    return (unsigned int)self;
 
 }
 
@@ -98,9 +70,14 @@ void base_setup_keyboard()
 {
 
     system_init_group(&root, "keyboard");
-    system_init_stream(&data, "data", data_open, data_close, data_read, data_write);
-    system_init_stream(&keymap, "keymap", keymap_open, keymap_close, keymap_read, keymap_write);
+    system_init_stream(&data, "data");
+    system_init_stream(&keymap, "keymap");
     system_register_node(&root.node);
+
+    data.node.read = data_read;
+    data.node.write = data_write;
+    keymap.node.read = keymap_read;
+    keymap.node.write = keymap_write;
 
 }
 

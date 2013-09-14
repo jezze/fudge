@@ -81,27 +81,31 @@ void system_unregister_node(struct system_node *node)
 
 }
 
-static void system_init_node(struct system_node *node, unsigned int type, char *name)
-{
-
-    memory_clear(node, sizeof (struct system_node));
-
-    node->type = type;
-    node->name = name;
-
-}
-
-static unsigned int open_group(struct system_node *self)
+static unsigned int open(struct system_node *self)
 {
 
     return (unsigned int)self;
 
 }
 
-static unsigned int close_group(struct system_node *self)
+static unsigned int close(struct system_node *self)
 {
 
     return (unsigned int)self;
+
+}
+
+static unsigned int read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    return 0;
+
+}
+
+static unsigned int write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    return 0;
 
 }
 
@@ -146,10 +150,17 @@ static unsigned int read_group(struct system_node *self, unsigned int offset, un
 
 }
 
-static unsigned int write_group(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+static void system_init_node(struct system_node *node, unsigned int type, char *name)
 {
 
-    return 0;
+    memory_clear(node, sizeof (struct system_node));
+
+    node->type = type;
+    node->name = name;
+    node->open = open;
+    node->close = close;
+    node->read = read;
+    node->write = write;
 
 }
 
@@ -159,23 +170,15 @@ void system_init_group(struct system_group *group, char *name)
     memory_clear(group, sizeof (struct system_group));
     system_init_node(&group->node, SYSTEM_NODETYPE_GROUP, name);
 
-    group->node.open = open_group;
-    group->node.close = close_group;
     group->node.read = read_group;
-    group->node.write = write_group;
 
 }
 
-void system_init_stream(struct system_stream *stream, char *name, unsigned int (*open)(struct system_node *self), unsigned int (*close)(struct system_node *self), unsigned int (*read)(struct system_node *self, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write)(struct system_node *self, unsigned int offset, unsigned int count, void *buffer))
+void system_init_stream(struct system_stream *stream, char *name)
 {
 
     memory_clear(stream, sizeof (struct system_stream));
     system_init_node(&stream->node, SYSTEM_NODETYPE_STREAM, name);
-
-    stream->node.open = open;
-    stream->node.close = close;
-    stream->node.read = read;
-    stream->node.write = write;
 
 }
 

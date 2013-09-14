@@ -6,20 +6,6 @@
 static struct system_group root;
 static struct system_stream data;
 
-static unsigned int data_open(struct system_node *self)
-{
-
-    return (unsigned int)self;
-
-}
-
-static unsigned int data_close(struct system_node *self)
-{
-
-    return (unsigned int)self;
-
-}
-
 static unsigned int data_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
@@ -64,8 +50,11 @@ void base_setup_terminal()
 {
 
     system_init_group(&root, "terminal");
-    system_init_stream(&data, "data", data_open, data_close, data_read, data_write);
+    system_init_stream(&data, "data");
     system_register_node(&root.node);
+
+    data.node.read = data_read;
+    data.node.write = data_write;
 
 }
 

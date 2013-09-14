@@ -7,21 +7,7 @@ static struct system_group root;
 static struct system_stream data;
 static struct system_stream mac;
 
-static unsigned int data_open(struct system_node *self)
-{
-
-    return (unsigned int)self;
-
-}
-
-static unsigned int data_close(struct system_node *self)
-{
-
-    return (unsigned int)self;
-
-}
-
-unsigned int data_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int data_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct base_network *interface = (struct base_network *)self->parent;
@@ -34,7 +20,7 @@ unsigned int data_read(struct system_node *self, unsigned int offset, unsigned i
 
 }
 
-unsigned int data_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int data_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct base_network *interface = (struct base_network *)self->parent;
@@ -47,21 +33,7 @@ unsigned int data_write(struct system_node *self, unsigned int offset, unsigned 
 
 }
 
-static unsigned int mac_open(struct system_node *self)
-{
-
-    return (unsigned int)self;
-
-}
-
-static unsigned int mac_close(struct system_node *self)
-{
-
-    return (unsigned int)self;
-
-}
-
-unsigned int mac_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int mac_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct base_network *interface = (struct base_network *)self->parent;
@@ -72,13 +44,6 @@ unsigned int mac_read(struct system_node *self, unsigned int offset, unsigned in
         memory_write_paddednumber(mac, 17, interface->mac[i], 16, i * 3, 2);
 
     return memory_read(buffer, count, mac, 17, offset); 
-
-}
-
-unsigned int mac_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
-{
-
-    return 0;
 
 }
 
@@ -107,9 +72,13 @@ void base_setup_network()
 {
 
     system_init_group(&root, "network");
-    system_init_stream(&data, "data", data_open, data_close, data_read, data_write);
-    system_init_stream(&mac, "mac", mac_open, mac_close, mac_read, mac_write);
+    system_init_stream(&data, "data");
+    system_init_stream(&mac, "mac");
     system_register_node(&root.node);
+
+    data.node.read = data_read;
+    data.node.write = data_write;
+    mac.node.read = mac_read;
 
 }
 

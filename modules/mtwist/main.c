@@ -127,20 +127,6 @@ double mtwist_drand(struct mtwist_state *state)
 
 }
 
-static unsigned int open(struct system_node *self)
-{
-
-    return (unsigned int)self;
-
-}
-
-static unsigned int close(struct system_node *self)
-{
-
-    return (unsigned int)self;
-
-}
-
 unsigned int read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
@@ -157,20 +143,15 @@ unsigned int read(struct system_node *self, unsigned int offset, unsigned int co
 
 }
 
-unsigned int write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
-{
-
-    return 0;
-
-}
-
 void init()
 {
 
     mtwist_seed1(&normal, MTWIST_SEED);
 
-    system_init_stream(&root, "mtwist", open, close, read, write);
+    system_init_stream(&root, "mtwist");
     system_register_node(&root.node);
+
+    root.node.read = read;
 
 }
 

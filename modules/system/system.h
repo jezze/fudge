@@ -41,4 +41,4 @@ void system_group_remove(struct system_group *group, struct system_node *node);
 void system_register_node(struct system_node *node);
 void system_unregister_node(struct system_node *node);
 void system_init_group(struct system_group *group, char *name);
-void system_init_stream(struct system_stream *stream, char *name, unsigned int (*open)(struct system_node *self), unsigned int (*close)(struct system_node *self), unsigned int (*read)(struct system_node *self, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write)(struct system_node *self, unsigned int offset, unsigned int count, void *buffer));
+void system_init_stream(struct system_stream *stream, char *name);

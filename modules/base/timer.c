@@ -14,45 +14,10 @@ static struct
 
 } timers;
 
-static unsigned int control_open(struct system_node *self)
-{
-
-    return (unsigned int)self;
-
-}
-
-static unsigned int control_close(struct system_node *self)
-{
-
-    return (unsigned int)self;
-
-}
-
 static unsigned int control_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     return memory_read(buffer, count, "control", 7, offset);
-
-}
-
-static unsigned int control_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
-{
-
-    return 0;
-
-}
-
-static unsigned int ticks_open(struct system_node *self)
-{
-
-    return (unsigned int)self;
-
-}
-
-static unsigned int ticks_close(struct system_node *self)
-{
-
-    return (unsigned int)self;
 
 }
 
@@ -63,13 +28,6 @@ static unsigned int ticks_read(struct system_node *self, unsigned int offset, un
 
 }
 
-static unsigned int ticks_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
-{
-
-    return 0;
-
-}
-
 static unsigned int clone_open(struct system_node *self)
 {
 
@@ -77,33 +35,17 @@ static unsigned int clone_open(struct system_node *self)
 
     system_init_group(&timers.items[timers.count].index, "0");
     system_group_add(&timer, &timers.items[timers.count].index.node);
-    system_init_stream(&timers.items[timers.count].control, "control", control_open, control_close, control_read, control_write);
+    system_init_stream(&timers.items[timers.count].control, "control");
     system_group_add(&timers.items[timers.count].index, &timers.items[timers.count].control.node);
-    system_init_stream(&timers.items[timers.count].ticks, "ticks", ticks_open, ticks_close, ticks_read, ticks_write);
+
+    timers.items[timers.count].control.node.read = control_read;
+
+    system_init_stream(&timers.items[timers.count].ticks, "ticks");
     system_group_add(&timers.items[timers.count].index, &timers.items[timers.count].ticks.node);
 
+    timers.items[timers.count].ticks.node.read = ticks_read;
+
     return (unsigned int)&timers.items[timers.count].control;
-
-}
-
-static unsigned int clone_close(struct system_node *self)
-{
-
-    return (unsigned int)self;
-
-}
-
-static unsigned int clone_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
-{
-
-    return 0;
-
-}
-
-static unsigned int clone_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
-{
-
-    return 0;
 
 }
 
@@ -124,8 +66,10 @@ void base_setup_timer(struct system_group *root)
 
     system_init_group(&timer, "timer");
     system_group_add(root, &timer.node);
-    system_init_stream(&clone, "clone", clone_open, clone_close, clone_read, clone_write);
+    system_init_stream(&clone, "clone");
     system_group_add(&timer, &clone.node);
+
+    clone.node.open = clone_open;
 
 }
 

@@ -20,27 +20,6 @@ static struct ps2_keyboard_driver keyboard;
 static struct ps2_mouse_driver mouse;
 static struct system_stream reset;
 
-static unsigned int reset_open(struct system_node *self)
-{
-
-    return (unsigned int)self;
-
-}
-
-static unsigned int reset_close(struct system_node *self)
-{
-
-    return (unsigned int)self;
-
-}
-
-static unsigned int reset_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
-{
-
-    return 0;
-
-}
-
 static unsigned int reset_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
@@ -65,8 +44,10 @@ void init()
     base_register_driver(&keyboard.base);
     ps2_init_mouse_driver(&mouse);
     base_register_driver(&mouse.base);
-    system_init_stream(&reset, "reset", reset_open, reset_close, reset_read, reset_write);
+    system_init_stream(&reset, "reset");
     system_register_node(&reset.node);
+
+    reset.node.write = reset_write;
 
 }
 

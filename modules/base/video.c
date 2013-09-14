@@ -8,20 +8,6 @@ static struct system_stream data;
 static struct system_stream colormap;
 static struct system_stream mode;
 
-static unsigned int data_open(struct system_node *self)
-{
-
-    return (unsigned int)self;
-
-}
-
-static unsigned int data_close(struct system_node *self)
-{
-
-    return (unsigned int)self;
-
-}
-
 static unsigned int data_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
@@ -42,20 +28,6 @@ static unsigned int data_write(struct system_node *self, unsigned int offset, un
 
 }
 
-static unsigned int colormap_open(struct system_node *self)
-{
-
-    return (unsigned int)self;
-
-}
-
-static unsigned int colormap_close(struct system_node *self)
-{
-
-    return (unsigned int)self;
-
-}
-
 static unsigned int colormap_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
@@ -73,27 +45,6 @@ static unsigned int colormap_write(struct system_node *self, unsigned int offset
     struct base_device *device = (struct base_device *)self->parent->parent;
 
     return interface->write_colormap(device, offset, count, buffer);
-
-}
-
-static unsigned int mode_open(struct system_node *self)
-{
-
-    return (unsigned int)self;
-
-}
-
-static unsigned int mode_close(struct system_node *self)
-{
-
-    return (unsigned int)self;
-
-}
-
-static unsigned int mode_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
-{
-
-    return 0;
 
 }
 
@@ -142,10 +93,16 @@ void base_setup_video()
 {
 
     system_init_group(&root, "video");
-    system_init_stream(&data, "data", data_open, data_close, data_read, data_write);
-    system_init_stream(&colormap, "colormap", colormap_open, colormap_close, colormap_read, colormap_write);
-    system_init_stream(&mode, "mode", mode_open, mode_close, mode_read, mode_write);
+    system_init_stream(&data, "data");
+    system_init_stream(&colormap, "colormap");
+    system_init_stream(&mode, "mode");
     system_register_node(&root.node);
+
+    data.node.read = data_read;
+    data.node.write = data_write;
+    colormap.node.read = colormap_read;
+    colormap.node.write = colormap_write;
+    mode.node.write = mode_write;
 
 }
 
