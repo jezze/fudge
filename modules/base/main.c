@@ -136,10 +136,10 @@ static void base_init_module(struct base_module *module, enum base_type type, ch
 {
 
     memory_clear(module, sizeof (struct base_module));
-    system_init_group(&module->base, name);
+    memory_copy(module->name, name, string_length(name));
+    system_init_group(&module->base, module->name);
 
     module->type = type;
-    module->name = name;
 
 }
 
