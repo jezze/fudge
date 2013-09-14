@@ -146,11 +146,16 @@ static void base_init_module(struct base_module *module, enum base_type type, ch
 void base_init_bus(struct base_bus *bus, unsigned int type, char *name, void (*scan)(struct base_bus *self))
 {
 
+    unsigned int offset = 0;
+
     memory_clear(bus, sizeof (struct base_bus));
     base_init_module(&bus->module, BASE_TYPE_BUS, name);
 
     bus->type = type;
     bus->scan = scan;
+    offset += memory_write(bus->module.name, 32, name, string_length(name), string_length(bus->module.name));
+    offset += memory_write(bus->module.name, 32, ":", 1, offset);
+    offset += memory_write_paddednumber(bus->module.name, 32, 0, 16, 4, offset);
 
 }
 
