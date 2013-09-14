@@ -139,7 +139,7 @@ static unsigned int open(struct vfs_backend *backend, unsigned int id)
 static unsigned int close(struct vfs_backend *backend, unsigned int id)
 {
 
-    return id;
+    return 0;
 
 }
 
