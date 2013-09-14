@@ -11,8 +11,7 @@ void ps2_init_device(struct ps2_device *device, struct ps2_bus *bus, unsigned in
 {
 
     memory_clear(device, sizeof (struct ps2_device));
-    base_init_device(&device->base, PS2_DEVICE_TYPE, irq, "ps2:0000:0000", &bus->base);
-    memory_write_paddednumber(device->base.module.name, 13, irq, 16, 4, 9);
+    base_init_device(&device->base, PS2_DEVICE_TYPE, irq, "ps2", &bus->base);
 
 }
 
