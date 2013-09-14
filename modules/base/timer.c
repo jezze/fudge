@@ -5,17 +5,14 @@
 
 static struct system_group timer;
 static struct system_stream clone;
-static unsigned int ntimers;
 
 static struct
 {
 
-    struct system_group index;
-    struct system_stream control;
-    struct system_stream ticks;
-    struct modules_device *device;
+    unsigned int count;
+    struct {struct system_group index; struct system_stream control; struct system_stream ticks; struct modules_device *device;} items[8];
 
-} timers[8];
+} timers;
 
 static unsigned int control_open(struct system_node *self)
 {
@@ -76,16 +73,16 @@ static unsigned int ticks_write(struct system_node *self, unsigned int offset, u
 static unsigned int clone_open(struct system_node *self)
 {
 
-    ntimers++;
+    timers.count++;
 
-    system_init_group(&timers[ntimers].index, "0");
-    system_group_add(&timer, &timers[ntimers].index.node);
-    system_init_stream(&timers[ntimers].control, "control", control_open, control_close, control_read, control_write);
-    system_group_add(&timers[ntimers].index, &timers[ntimers].control.node);
-    system_init_stream(&timers[ntimers].ticks, "ticks", ticks_open, ticks_close, ticks_read, ticks_write);
-    system_group_add(&timers[ntimers].index, &timers[ntimers].ticks.node);
+    system_init_group(&timers.items[timers.count].index, "0");
+    system_group_add(&timer, &timers.items[timers.count].index.node);
+    system_init_stream(&timers.items[timers.count].control, "control", control_open, control_close, control_read, control_write);
+    system_group_add(&timers.items[timers.count].index, &timers.items[timers.count].control.node);
+    system_init_stream(&timers.items[timers.count].ticks, "ticks", ticks_open, ticks_close, ticks_read, ticks_write);
+    system_group_add(&timers.items[timers.count].index, &timers.items[timers.count].ticks.node);
 
-    return (unsigned int)&timers[ntimers].control;
+    return (unsigned int)&timers.items[timers.count].control;
 
 }
 
@@ -123,7 +120,7 @@ void base_init_timer(struct base_timer *interface, unsigned int (*get_ticks)(str
 void base_setup_timer(struct system_group *root)
 {
 
-    ntimers = 0;
+    timers.count = 0;
 
     system_init_group(&timer, "timer");
     system_group_add(root, &timer.node);
