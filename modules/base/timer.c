@@ -9,6 +9,7 @@ struct timer_group
     struct system_group base;
     struct system_stream control;
     struct system_stream ticks;
+    unsigned int used;
     char name[8];
     struct modules_device *device;
 
@@ -16,7 +17,6 @@ struct timer_group
 
 static struct system_group timer;
 static struct system_stream clone;
-static unsigned int count;
 static struct timer_group groups[8];
 
 static unsigned int control_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
@@ -35,25 +35,53 @@ static unsigned int ticks_read(struct system_node *self, unsigned int offset, un
 
 }
 
+static unsigned int find_group()
+{
+
+    unsigned int i;
+
+    for (i = 1; i < 8; i++)
+    {
+
+        if (!groups[i].used)
+            return i;
+
+    }
+
+    return 0;
+
+}
+
+static void init_group(struct timer_group *group, unsigned int id)
+{
+
+    memory_clear(group, sizeof (struct timer_group));
+
+    memory_write_number(group->name, 8, id, 10, 0);
+    system_init_group(&group->base, group->name);
+    system_init_stream(&group->control, "control");
+    system_group_add(&group->base, &group->control.node);
+    system_init_stream(&group->ticks, "ticks");
+    system_group_add(&group->base, &group->ticks.node);
+
+    group->used = 1;
+    group->control.node.read = control_read;
+    group->ticks.node.read = ticks_read;
+
+}
+
 static unsigned int clone_open(struct system_node *self)
 {
 
-    struct timer_group *current = &groups[++count];
+    unsigned int index = find_group();
 
-    memory_clear(current, sizeof (struct timer_group));
-    memory_write_number(current->name, 8, count, 10, 0);
-    system_init_group(&current->base, current->name);
-    system_init_stream(&current->control, "control");
-    system_group_add(&current->base, &current->control.node);
-    system_init_stream(&current->ticks, "ticks");
-    system_group_add(&current->base, &current->ticks.node);
+    if (!index)
+        return 0;
 
-    current->control.node.read = control_read;
-    current->ticks.node.read = ticks_read;
+    init_group(&groups[index], index);
+    system_group_add(&timer, &groups[index].base.node);
 
-    system_group_add(&timer, &current->base.node);
-
-    return (unsigned int)&current->control;
+    return (unsigned int)&groups[index].control;
 
 }
 
@@ -69,8 +97,6 @@ void base_init_timer(struct base_timer *interface, unsigned int (*get_ticks)(str
 
 void base_setup_timer(struct system_group *root)
 {
-
-    count = 0;
 
     system_init_group(&timer, "timer");
     system_group_add(root, &timer.node);
