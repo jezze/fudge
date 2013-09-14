@@ -9,7 +9,6 @@ struct timer_group
     struct system_group base;
     struct system_stream control;
     struct system_stream ticks;
-    unsigned int used;
     char name[8];
     struct modules_device *device;
 
@@ -28,6 +27,19 @@ static unsigned int control_read(struct system_node *self, unsigned int offset, 
 
 }
 
+static unsigned int control_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    struct timer_group *group = (struct timer_group *)self->parent;
+    struct system_group *root = (struct system_group *)self->parent->parent;
+
+    if (memory_match(buffer, "close", 5))
+        system_group_remove(root, &group->base.node);
+
+    return 0;
+
+}
+
 static unsigned int ticks_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
@@ -43,7 +55,7 @@ static unsigned int find_group()
     for (i = 1; i < 8; i++)
     {
 
-        if (!groups[i].used)
+        if (!groups[i].base.node.parent)
             return i;
 
     }
@@ -64,8 +76,8 @@ static void init_group(struct timer_group *group, unsigned int id)
     system_init_stream(&group->ticks, "ticks");
     system_group_add(&group->base, &group->ticks.node);
 
-    group->used = 1;
     group->control.node.read = control_read;
+    group->control.node.write = control_write;
     group->ticks.node.read = ticks_read;
 
 }
