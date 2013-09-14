@@ -82,10 +82,7 @@ image/share: system/share
 image/system:
 	mkdir -p $@
 
-image/temp:
-	mkdir -p $@
-
-image: image/bin image/boot image/boot/fudge image/boot/mod image/config image/home image/share image/system image/temp
+image: image/bin image/boot image/boot/fudge image/boot/mod image/config image/home image/share image/system
 
 install:
 	install -m 644 $(KERNEL) $(INSTALL_PATH)

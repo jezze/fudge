@@ -9,5 +9,4 @@ include modules/net/rules.mk
 include modules/null/rules.mk
 include modules/pipe/rules.mk
 include modules/system/rules.mk
-include modules/temp/rules.mk
 include modules/arch/$(ARCH)/rules.mk

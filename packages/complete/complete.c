@@ -1,37 +1,44 @@
 #include <fudge.h>
 
+static unsigned int nextline(unsigned int offset, unsigned int count, unsigned char *buffer)
+{
+
+    unsigned int i;
+
+    for (i = offset; i < count; i++)
+    {
+
+        if (buffer[i] == '\n')
+            return i - offset + 1;
+
+    }
+
+    return 0;
+
+}
+
 void main()
 {
 
-    unsigned char ibuffer[FUDGE_BSIZE];
-    unsigned char cbuffer[FUDGE_BSIZE];
-    unsigned int icount = call_read(CALL_DI, 0, FUDGE_BSIZE, ibuffer);
-    unsigned int ocount = 0;
-    unsigned int ccount;
-    unsigned int coffset;
-    unsigned int start;
+    unsigned char buffer[FUDGE_BSIZE];
+    unsigned int count, roff, loff, woff = 0;
+    unsigned char kbuffer[FUDGE_BSIZE];
+    unsigned int kcount = call_read(CALL_DC, 0, FUDGE_BSIZE, kbuffer);
 
-    for (coffset = 0; (ccount = call_read(CALL_DW, coffset, FUDGE_BSIZE, cbuffer)); coffset += start)
+    for (roff = 0; (count = call_read(CALL_DI, roff, FUDGE_BSIZE, buffer)); roff += loff)
     {
 
-        unsigned int i;
+        unsigned int count2;
 
-        start = 0;
-
-        for (i = 0; i < ccount; i++)
+        for (loff = 0; (count2 = nextline(loff, count, buffer)); loff += count2)
         {
 
-            if (cbuffer[i] != '\n')
-                continue;
-
-            if (memory_match(cbuffer + start, ibuffer, icount))
-                ocount += call_write(CALL_DO, ocount, i - start + 1, cbuffer + start);
-
-            start = i + 1;
+            if (memory_match(buffer + loff, kbuffer, kcount))
+                woff += call_write(CALL_DO, woff, count2, buffer + loff);
 
         }
 
-        if (!start)
+        if (!loff)
             return;
 
     }

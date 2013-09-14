@@ -21,32 +21,29 @@ void main()
 {
 
     unsigned char buffer[FUDGE_BSIZE];
-    unsigned int count;
-    unsigned int offset;
-    unsigned int offset2;
-    unsigned int last = 0;
+    unsigned int count, roff, loff, woff = 0;
 
-    for (offset = 0; (count = call_read(CALL_DI, offset, FUDGE_BSIZE, buffer)); offset += offset2)
+    for (roff = 0; (count = call_read(CALL_DI, roff, FUDGE_BSIZE, buffer)); roff += loff)
     {
 
         unsigned int count2;
 
-        for (offset2 = 0; (count2 = nextline(offset2, count, buffer)); offset2 += count2)
+        for (loff = 0; (count2 = nextline(loff, count, buffer)); loff += count2)
         {
 
             unsigned int length = (count2 > 14) ? 14 : count2 - 1;
 
-            last += call_write(CALL_DO, last, length, buffer + offset2);
-            last += call_write(CALL_DO, last, 16 - length, "                ");
+            woff += call_write(CALL_DO, woff, length, buffer + loff);
+            woff += call_write(CALL_DO, woff, 16 - length, "                ");
 
         }
 
-        if (!offset2)
+        if (!loff)
             return;
 
     }
 
-    call_write(CALL_DO, last, 1, "\n");
+    call_write(CALL_DO, woff, 1, "\n");
 
 }
 
