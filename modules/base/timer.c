@@ -40,21 +40,18 @@ static unsigned int clone_open(struct system_node *self)
 
     struct timer_group *current = &groups[++count];
 
-    memory_clear(current->name, 8);
+    memory_clear(current, sizeof (struct timer_group));
     memory_write_number(current->name, 8, count, 10, 0);
-
     system_init_group(&current->base, current->name);
-    system_group_add(&timer, &current->base.node);
-
     system_init_stream(&current->control, "control");
     system_group_add(&current->base, &current->control.node);
-
-    current->control.node.read = control_read;
-
     system_init_stream(&current->ticks, "ticks");
     system_group_add(&current->base, &current->ticks.node);
 
+    current->control.node.read = control_read;
     current->ticks.node.read = ticks_read;
+
+    system_group_add(&timer, &current->base.node);
 
     return (unsigned int)&current->control;
 
