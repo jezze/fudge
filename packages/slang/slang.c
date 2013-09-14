@@ -248,6 +248,7 @@ static void execute(struct token_state *state, struct expression *expression)
         call_open(CALL_DI, CALL_D1, 0, 0);
         call_open(CALL_DO, CALL_D2, 0, 0);
         call_open(CALL_DC, CALL_D3, 0, 0);
+        call_open(CALL_DW, CALL_D4, 0, 0);
 
     }
 

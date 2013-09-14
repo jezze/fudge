@@ -91,7 +91,7 @@ static unsigned int open(struct system_node *self)
 static unsigned int close(struct system_node *self)
 {
 
-    return (unsigned int)self;
+    return 0;
 
 }
 
