@@ -10,7 +10,7 @@ static struct
 {
 
     unsigned int count;
-    struct {struct system_group index; struct system_stream control; struct system_stream ticks; struct modules_device *device;} items[8];
+    struct {struct system_group index; char name[8]; struct system_stream control; struct system_stream ticks; struct modules_device *device;} items[8];
 
 } timers;
 
@@ -33,7 +33,9 @@ static unsigned int clone_open(struct system_node *self)
 
     timers.count++;
 
-    system_init_group(&timers.items[timers.count].index, "0");
+    memory_clear(timers.items[timers.count].name, 8);
+    memory_write_number(timers.items[timers.count].name, 8, timers.count, 10, 0);
+    system_init_group(&timers.items[timers.count].index, timers.items[timers.count].name);
     system_group_add(&timer, &timers.items[timers.count].index.node);
     system_init_stream(&timers.items[timers.count].control, "control");
     system_group_add(&timers.items[timers.count].index, &timers.items[timers.count].control.node);
