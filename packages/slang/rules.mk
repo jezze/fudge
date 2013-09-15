@@ -1,5 +1,6 @@
 BIN:=packages/slang/slang
 OBJ:=packages/slang/slang.o
+OBJ+=packages/slang/parse.o
 OBJ+=packages/slang/token.o
 
 $(BIN): $(OBJ) $(USERLIBS)
