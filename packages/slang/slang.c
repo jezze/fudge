@@ -52,8 +52,8 @@ static void open_pipe(unsigned int index, unsigned int total)
     if (total < 2)
         return;
 
-    call_open(CALL_D5, CALL_DR, 17, "system/pipe/clone");
-    ccount = call_read(CALL_D5, 0, 32, num);
+    call_open(CALL_P0, CALL_DR, 17, "system/pipe/clone");
+    ccount = call_read(CALL_P0, 0, 32, num);
 
     offset0 += memory_write(buffer0, FUDGE_BSIZE, "system/pipe/", 12, offset0);
     offset0 += memory_write(buffer0, FUDGE_BSIZE, num, ccount, offset0);
@@ -62,14 +62,8 @@ static void open_pipe(unsigned int index, unsigned int total)
     offset1 += memory_write(buffer1, FUDGE_BSIZE, num, ccount, offset1);
     offset1 += memory_write(buffer1, FUDGE_BSIZE, "/1", 2, offset1);
 
-    if (index > 0)
-        call_open(CALL_DI, CALL_D7, 0, 0);
-
-    call_open(CALL_D6, CALL_DR, offset0, buffer0);
-    call_open(CALL_D7, CALL_DR, offset1, buffer1);
-
-    if (index < total - 1)
-        call_open(CALL_DO, CALL_D6, 0, 0);
+    call_open(CALL_DO, CALL_DR, offset0, buffer0);
+    call_open(CALL_D5, CALL_DR, offset1, buffer1);
 
 }
 
@@ -79,13 +73,15 @@ static void close_pipe(unsigned int index, unsigned int total)
     if (total < 2)
         return;
 
+    call_open(CALL_DI, CALL_D5, 0, 0);
+
     if (index > 0)
-        call_close(CALL_D8);
+        call_close(CALL_P1);
 
     if (index == total - 1)
-        call_close(CALL_D5);
+        call_close(CALL_P0);
     else
-        call_open(CALL_D8, CALL_D5, 0, 0);
+        call_open(CALL_P1, CALL_P0, 0, 0);
 
 }
 
@@ -111,6 +107,12 @@ static void execute(struct token_state *state, struct expression *expression)
             struct command *command = &pipe->commands[cindex];
 
             open_pipe(cindex, pipe->count);
+
+            if (cindex == 0)
+                call_open(CALL_DI, CALL_D1, 0, 0);
+
+            if (cindex == pipe->count - 1)
+                call_open(CALL_DO, CALL_D2, 0, 0);
 
             if (command->in0.path.count)
                 open_path(CALL_DI, command->in0.path.count, state->buffer + command->in0.path.index);
@@ -142,11 +144,6 @@ static void execute(struct token_state *state, struct expression *expression)
                 close_temp(CALL_DC);
 
             close_pipe(cindex, pipe->count);
-
-            call_open(CALL_DI, CALL_D1, 0, 0);
-            call_open(CALL_DO, CALL_D2, 0, 0);
-            call_open(CALL_DC, CALL_D3, 0, 0);
-            call_open(CALL_DW, CALL_D4, 0, 0);
 
         }
 
