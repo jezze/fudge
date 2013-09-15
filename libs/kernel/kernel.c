@@ -37,12 +37,12 @@ static void setup_task(struct task *task, struct vfs_session *session, struct bi
 
     error_assert(task->registers.ip != 0, "Failed to locate entry point", __FILE__, __LINE__);
 
-    task->descriptors[0x0E].session.backend = session->backend;
-    task->descriptors[0x0E].session.protocol = session->protocol;
-    task->descriptors[0x0E].id = session->protocol->rootid;
-    task->descriptors[0x0F].session.backend = session->backend;
-    task->descriptors[0x0F].session.protocol = session->protocol;
-    task->descriptors[0x0F].id = session->protocol->rootid;
+    task->descriptors[0x01].session.backend = session->backend;
+    task->descriptors[0x01].session.protocol = session->protocol;
+    task->descriptors[0x01].id = session->protocol->rootid;
+    task->descriptors[0x02].session.backend = session->backend;
+    task->descriptors[0x02].session.protocol = session->protocol;
+    task->descriptors[0x02].id = session->protocol->rootid;
 
 }
 
