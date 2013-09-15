@@ -9,16 +9,83 @@ static unsigned int open_path(unsigned int index, unsigned int count, char *buff
 
 }
 
-static unsigned int open_pipe(unsigned int index, unsigned int number)
+static void open_temp(unsigned int index, unsigned int count, void *buffer)
 {
 
-    char path[FUDGE_BSIZE];
-    unsigned int offset = 0;
+    char buffer0[FUDGE_BSIZE];
+    char buffer1[FUDGE_BSIZE];
+    char num[32];
+    unsigned int ccount, offset0 = 0, offset1 = 0;
 
-    offset += memory_write(path, FUDGE_BSIZE, "temp/", 5, offset);
-    offset += memory_write_number(path, FUDGE_BSIZE, number, 10, offset);
+    call_open(CALL_D9, CALL_DR, 17, "system/pipe/clone");
+    ccount = call_read(CALL_D9, 0, 32, num);
 
-    return call_open(index, CALL_DR, offset, path);
+    offset0 += memory_write(buffer0, FUDGE_BSIZE, "system/pipe/", 12, offset0);
+    offset0 += memory_write(buffer0, FUDGE_BSIZE, num, ccount, offset0);
+    offset0 += memory_write(buffer0, FUDGE_BSIZE, "/0", 2, offset0);
+    offset1 += memory_write(buffer1, FUDGE_BSIZE, "system/pipe/", 12, offset1);
+    offset1 += memory_write(buffer1, FUDGE_BSIZE, num, ccount, offset1);
+    offset1 += memory_write(buffer1, FUDGE_BSIZE, "/1", 2, offset1);
+
+    call_open(CALL_D0, CALL_DR, offset0, buffer0);
+    call_write(CALL_D0, 0, count, buffer);
+    call_close(CALL_D0);
+    call_open(index, CALL_DR, offset1, buffer1);
+
+}
+
+static void close_temp(unsigned int index)
+{
+
+    call_close(CALL_D9);
+
+}
+
+static void open_pipe(unsigned int index, unsigned int total)
+{
+
+    char buffer0[FUDGE_BSIZE];
+    char buffer1[FUDGE_BSIZE];
+    char num[32];
+    unsigned int ccount, offset0 = 0, offset1 = 0;
+
+    if (total < 2)
+        return;
+
+    call_open(CALL_D5, CALL_DR, 17, "system/pipe/clone");
+    ccount = call_read(CALL_D5, 0, 32, num);
+
+    offset0 += memory_write(buffer0, FUDGE_BSIZE, "system/pipe/", 12, offset0);
+    offset0 += memory_write(buffer0, FUDGE_BSIZE, num, ccount, offset0);
+    offset0 += memory_write(buffer0, FUDGE_BSIZE, "/0", 2, offset0);
+    offset1 += memory_write(buffer1, FUDGE_BSIZE, "system/pipe/", 12, offset1);
+    offset1 += memory_write(buffer1, FUDGE_BSIZE, num, ccount, offset1);
+    offset1 += memory_write(buffer1, FUDGE_BSIZE, "/1", 2, offset1);
+
+    if (index > 0)
+        call_open(CALL_DI, CALL_D7, 0, 0);
+
+    call_open(CALL_D6, CALL_DR, offset0, buffer0);
+    call_open(CALL_D7, CALL_DR, offset1, buffer1);
+
+    if (index < total - 1)
+        call_open(CALL_DO, CALL_D6, 0, 0);
+
+}
+
+static void close_pipe(unsigned int index, unsigned int total)
+{
+
+    if (total < 2)
+        return;
+
+    if (index > 0)
+        call_close(CALL_D8);
+
+    if (index == total - 1)
+        call_close(CALL_D5);
+    else
+        call_open(CALL_D8, CALL_D5, 0, 0);
 
 }
 
@@ -43,38 +110,45 @@ static void execute(struct token_state *state, struct expression *expression)
 
             struct command *command = &pipe->commands[cindex];
 
+            open_pipe(cindex, pipe->count);
+
             if (command->in0.path.count)
                 open_path(CALL_DI, command->in0.path.count, state->buffer + command->in0.path.index);
-
-            if (command->in0.data.count)
-                call_write(CALL_DI, 0, command->in0.data.count, state->buffer + command->in0.data.index);
+            else if (command->in0.data.count)
+                open_temp(CALL_DI, command->in0.data.count, state->buffer + command->in0.data.index);
 
             if (command->in1.path.count)
                 open_path(CALL_DC, command->in1.path.count, state->buffer + command->in1.path.index);
-
-            if (command->in1.data.count)
-                call_write(CALL_DC, 0, command->in1.data.count, state->buffer + command->in1.data.index);
+            else if (command->in1.data.count)
+                open_temp(CALL_DC, command->in1.data.count, state->buffer + command->in1.data.index);
 
             if (command->out0.path.count)
                 open_path(CALL_DO, command->out0.path.count, state->buffer + command->out0.path.index);
-
-            if (!command->out0.path.count && pipe->count > 1 && cindex != pipe->count - 1)
-                open_pipe(CALL_DO, cindex);
 
             call_open(CALL_DW, CALL_DR, 4, "bin/");
             open_path(CALL_D0, command->binary.count, state->buffer + command->binary.index);
             call_open(CALL_DW, CALL_D4, 0, 0);
             call_spawn(CALL_D0);
             call_close(CALL_D0);
-            call_open(CALL_DI, CALL_DO, 0, 0);
+
+            if (command->in0.path.count)
+                call_close(CALL_DI);
+            else if (command->in0.data.count)
+                close_temp(CALL_DI);
+
+            if (command->in1.path.count)
+                call_close(CALL_DC);
+            else if (command->in1.data.count)
+                close_temp(CALL_DC);
+
+            close_pipe(cindex, pipe->count);
+
+            call_open(CALL_DI, CALL_D1, 0, 0);
             call_open(CALL_DO, CALL_D2, 0, 0);
+            call_open(CALL_DC, CALL_D3, 0, 0);
+            call_open(CALL_DW, CALL_D4, 0, 0);
 
         }
-
-        call_open(CALL_DI, CALL_D1, 0, 0);
-        call_open(CALL_DO, CALL_D2, 0, 0);
-        call_open(CALL_DC, CALL_D3, 0, 0);
-        call_open(CALL_DW, CALL_D4, 0, 0);
 
     }
 
