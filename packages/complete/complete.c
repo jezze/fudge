@@ -33,8 +33,22 @@ void main()
         for (loff = 0; (count2 = nextline(loff, count, buffer)); loff += count2)
         {
 
-            if (memory_match(buffer + loff, kbuffer, kcount))
+            unsigned int c;
+
+            if (count2 < kcount)
+                continue;
+
+            for (c = 0; c < count2 - kcount; c++)
+            {
+
+                if (!memory_match(buffer + loff + c, kbuffer, kcount))
+                    continue;
+
                 woff += call_write(CALL_DO, woff, count2, buffer + loff);
+
+                break;
+
+            }
 
         }
 
