@@ -17,16 +17,6 @@ static unsigned int data_read(struct system_node *self, unsigned int offset, uns
 
 }
 
-static unsigned int data_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
-{
-
-    struct base_keyboard *interface = (struct base_keyboard *)self->parent;
-    struct base_device *device = (struct base_device *)self->parent->parent;
- 
-    return interface->write_data(device, offset, count, buffer);
-
-}
-
 static unsigned int keymap_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
@@ -75,7 +65,6 @@ void base_setup_keyboard()
     system_register_node(&root.node);
 
     data.node.read = data_read;
-    data.node.write = data_write;
     keymap.node.read = keymap_read;
     keymap.node.write = keymap_write;
 
