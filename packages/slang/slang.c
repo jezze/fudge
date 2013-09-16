@@ -9,7 +9,7 @@ static unsigned int open_path(unsigned int index, unsigned int count, char *buff
 
 }
 
-static void open_temp(unsigned int index, unsigned int count, void *buffer)
+static void open_temp(unsigned int index, unsigned int index2, unsigned int count, void *buffer)
 {
 
     char buffer0[FUDGE_BSIZE];
@@ -17,8 +17,8 @@ static void open_temp(unsigned int index, unsigned int count, void *buffer)
     char num[32];
     unsigned int ccount, offset0 = 0, offset1 = 0;
 
-    call_open(CALL_D9, CALL_DR, 17, "system/pipe/clone");
-    ccount = call_read(CALL_D9, 0, 32, num);
+    call_open(index2, CALL_DR, 17, "system/pipe/clone");
+    ccount = call_read(index2, 0, 32, num);
 
     offset0 += memory_write(buffer0, FUDGE_BSIZE, "system/pipe/", 12, offset0);
     offset0 += memory_write(buffer0, FUDGE_BSIZE, num, ccount, offset0);
@@ -34,10 +34,10 @@ static void open_temp(unsigned int index, unsigned int count, void *buffer)
 
 }
 
-static void close_temp(unsigned int index)
+static void close_temp(unsigned int index2)
 {
 
-    call_close(CALL_D9);
+    call_close(index2);
 
 }
 
@@ -117,12 +117,12 @@ static void execute(struct token_state *state, struct expression *expression)
             if (command->in0.path.count)
                 open_path(CALL_DI, command->in0.path.count, state->buffer + command->in0.path.index);
             else if (command->in0.data.count)
-                open_temp(CALL_DI, command->in0.data.count, state->buffer + command->in0.data.index);
+                open_temp(CALL_DI, CALL_D8, command->in0.data.count, state->buffer + command->in0.data.index);
 
             if (command->in1.path.count)
                 open_path(CALL_DC, command->in1.path.count, state->buffer + command->in1.path.index);
             else if (command->in1.data.count)
-                open_temp(CALL_DC, command->in1.data.count, state->buffer + command->in1.data.index);
+                open_temp(CALL_DC, CALL_D9, command->in1.data.count, state->buffer + command->in1.data.index);
 
             if (command->out0.path.count)
                 open_path(CALL_DO, command->out0.path.count, state->buffer + command->out0.path.index);
@@ -136,12 +136,12 @@ static void execute(struct token_state *state, struct expression *expression)
             if (command->in0.path.count)
                 call_close(CALL_DI);
             else if (command->in0.data.count)
-                close_temp(CALL_DI);
+                close_temp(CALL_D8);
 
             if (command->in1.path.count)
                 call_close(CALL_DC);
             else if (command->in1.data.count)
-                close_temp(CALL_DC);
+                close_temp(CALL_D9);
 
             close_pipe(cindex, pipe->count);
 
