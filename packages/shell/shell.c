@@ -20,18 +20,10 @@ static void interpret(unsigned int count, char *buffer)
 
     }
 
-    call_open(CALL_D1, CALL_DI, 0, 0);
-    call_open(CALL_D2, CALL_DC, 0, 0);
-    call_open(CALL_DI, CALL_DR, 6, "temp/0");
-    call_open(CALL_DC, CALL_DR, 6, "temp/1");
     call_write(CALL_DI, 0, count, buffer);
     call_open(CALL_D0, CALL_DR, 9, "bin/slang");
     call_spawn(CALL_D0);
     call_close(CALL_D0);
-    call_open(CALL_DI, CALL_D1, 0, 0);
-    call_open(CALL_DC, CALL_D2, 0, 0);
-    call_close(CALL_D1);
-    call_close(CALL_D2);
 
 }
 
