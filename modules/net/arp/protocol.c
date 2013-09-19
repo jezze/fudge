@@ -1,5 +1,4 @@
 #include <fudge/kernel.h>
-#include <system/system.h>
 #include <base/base.h>
 #include <base/network.h>
 #include <net/net.h>

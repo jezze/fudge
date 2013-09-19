@@ -2,7 +2,6 @@
 #include <x86/kernel/cpu.h>
 #include <x86/kernel/idt.h>
 #include <x86/kernel/gdt.h>
-#include <system/system.h>
 #include <base/base.h>
 #include <arch/x86/io/io.h>
 #include "pic.h"
