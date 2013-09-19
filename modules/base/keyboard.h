@@ -1,7 +1,6 @@
 struct base_keyboard
 {
 
-    struct system_group base;
     unsigned char keymap[256];
     unsigned int (*read_data)(struct base_device *device, unsigned int offset, unsigned int count, void *buffer);
     unsigned int (*write_data)(struct base_device *device, unsigned int offset, unsigned int count, void *buffer);

@@ -1,6 +1,7 @@
 #include <fudge/module.h>
 #include <system/system.h>
 #include "base.h"
+#include "block.h"
 #include "keyboard.h"
 #include "mouse.h"
 #include "network.h"
@@ -197,11 +198,12 @@ void init()
     system_init_group(&root, "base");
     system_register_node(&root.node);
 
+    base_setup_block();
     base_setup_keyboard();
     base_setup_mouse();
     base_setup_network();
     base_setup_terminal();
-    base_setup_timer(&root);
+    base_setup_timer();
     base_setup_video();
 
 }

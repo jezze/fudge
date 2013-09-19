@@ -7,45 +7,14 @@ struct timer_group
 {
 
     struct system_group base;
-    struct system_stream control;
-    struct system_stream ticks;
-    char name[8];
-    struct modules_device *device;
+    struct base_timer *interface;
+    struct base_device *device;
 
 };
 
-static struct system_group timer;
-static struct system_stream clone;
+static struct system_group root;
+static struct system_group dev;
 static struct timer_group groups[8];
-
-static unsigned int control_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
-{
-
-    struct timer_group *group = (struct timer_group *)self->parent;
-
-    return memory_read(buffer, count, group->name, string_length(group->name), offset);
-
-}
-
-static unsigned int control_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
-{
-
-    struct timer_group *group = (struct timer_group *)self->parent;
-    struct system_group *root = (struct system_group *)self->parent->parent;
-
-    if (memory_match(buffer, "close", 5))
-        system_group_remove(root, &group->base.node);
-
-    return 0;
-
-}
-
-static unsigned int ticks_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
-{
-
-    return memory_read(buffer, count, "ticks", 5, offset);
-
-}
 
 static unsigned int find_group()
 {
@@ -64,36 +33,27 @@ static unsigned int find_group()
 
 }
 
-static void init_group(struct timer_group *group, unsigned int id)
+static void init_group(struct timer_group *group, struct base_timer *interface, struct base_device *device)
 {
 
     memory_clear(group, sizeof (struct timer_group));
+    system_init_group(&group->base, device->module.name);
 
-    memory_write_number(group->name, 8, id, 10, 0);
-    system_init_group(&group->base, group->name);
-    system_init_stream(&group->control, "control");
-    system_group_add(&group->base, &group->control.node);
-    system_init_stream(&group->ticks, "ticks");
-    system_group_add(&group->base, &group->ticks.node);
-
-    group->control.node.read = control_read;
-    group->control.node.write = control_write;
-    group->ticks.node.read = ticks_read;
+    group->interface = interface;
+    group->device = device;
 
 }
 
-static unsigned int clone_open(struct system_node *self)
+void base_register_timer(struct base_timer *interface, struct base_device *device)
 {
 
     unsigned int index = find_group();
 
     if (!index)
-        return 0;
+        return;
 
-    init_group(&groups[index], index);
-    system_group_add(&timer, &groups[index].base.node);
-
-    return (unsigned int)&groups[index].control;
+    init_group(&groups[index], interface, device);
+    system_group_add(&dev, &groups[index].base.node);
 
 }
 
@@ -107,15 +67,13 @@ void base_init_timer(struct base_timer *interface, unsigned int (*get_ticks)(str
 
 }
 
-void base_setup_timer(struct system_group *root)
+void base_setup_timer()
 {
 
-    system_init_group(&timer, "timer");
-    system_group_add(root, &timer.node);
-    system_init_stream(&clone, "clone");
-    system_group_add(&timer, &clone.node);
-
-    clone.node.open = clone_open;
+    system_init_group(&root, "timer");
+    system_init_group(&dev, "dev");
+    system_group_add(&root, &dev.node);
+    system_register_node(&root.node);
 
 }
 

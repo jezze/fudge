@@ -1,7 +1,6 @@
 struct base_mouse
 {
 
-    struct system_group base;
     char vx;
     char vy;
 

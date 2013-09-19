@@ -1,7 +1,6 @@
 struct base_block
 {
 
-    struct system_group base;
     unsigned int (*read)(struct base_device *device, unsigned int offset, unsigned int count, void *buffer);
     unsigned int (*write)(struct base_device *device, unsigned int offset, unsigned int count, void *buffer);
 

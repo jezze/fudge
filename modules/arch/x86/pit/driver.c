@@ -52,6 +52,7 @@ static void attach(struct base_device *device)
 
     struct pit_driver *driver = (struct pit_driver *)device->driver;
 
+    base_register_timer(&driver->itimer, device);
     pic_set_routine(device, handle_irq);
     io_outb(PIT_REGISTER_COMMAND, PIT_COMMAND_COUNTER0 | PIT_COMMAND_BOTH | PIT_COMMAND_MODE3 | PIT_COMMAND_BINARY);
     io_outb(PIT_REGISTER_COUNTER0, driver->divisor >> 0);

@@ -1,7 +1,6 @@
 struct base_video
 {
 
-    struct system_group base;
     unsigned int bpp;
     unsigned int xres;
     unsigned int yres;

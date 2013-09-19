@@ -1,7 +1,6 @@
 struct base_terminal
 {
 
-    struct system_group base;
     unsigned int (*read_data)(struct base_device *device, unsigned int offset, unsigned int count, void *buffer);
     unsigned int (*write_data)(struct base_device *device, unsigned int offset, unsigned int count, void *buffer);
 

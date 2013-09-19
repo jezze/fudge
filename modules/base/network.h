@@ -1,10 +1,9 @@
 struct base_network
 {
 
-    struct system_group base;
     unsigned int (*receive)(struct base_device *device, unsigned int count, void *buffer);
     unsigned int (*send)(struct base_device *device, unsigned int count, void *buffer);
-    char mac[6];
+    unsigned char mac[6];
 
 };
 
