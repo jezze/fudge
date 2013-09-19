@@ -96,19 +96,6 @@ static unsigned int control_read(struct system_node *self, unsigned int offset, 
 
 }
 
-static unsigned int control_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
-{
-
-    struct pipe_group *group = (struct pipe_group *)self->parent;
-    struct system_group *root = (struct system_group *)self->parent->parent;
-
-    if (memory_match(buffer, "close", 5))
-        system_group_remove(root, &group->base.node);
-
-    return 0;
-
-}
-
 static unsigned int ipipe_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
@@ -178,7 +165,6 @@ static void init_group(struct pipe_group *group, unsigned int id)
 
     group->control.node.close = control_close;
     group->control.node.read = control_read;
-    group->control.node.write = control_write;
     group->ipipe.node.read = ipipe_read;
     group->ipipe.node.write = ipipe_write;
     group->opipe.node.read = opipe_read;
