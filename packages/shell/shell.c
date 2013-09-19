@@ -1,45 +1,68 @@
 #include <fudge.h>
 #include <data/lifo.h>
 
-static void open_temp(unsigned int index, unsigned int index2, unsigned int count, void *buffer)
+static void open_pipe(unsigned int index, unsigned int index0, unsigned int index1)
 {
 
-    char buffer0[FUDGE_BSIZE];
-    char buffer1[FUDGE_BSIZE];
+    char buffer[FUDGE_BSIZE];
     char num[32];
-    unsigned int ccount, offset0 = 0, offset1 = 0;
+    unsigned int offset;
+    unsigned int count = call_read(index, 0, 32, num);
 
-    call_open(index2, CALL_DR, 17, "system/pipe/clone");
-    ccount = call_read(index2, 0, 32, num);
+    offset = memory_write(buffer, FUDGE_BSIZE, "system/pipe/", 12, 0);
+    offset += memory_write(buffer, FUDGE_BSIZE, num, count, offset);
+    offset += memory_write(buffer, FUDGE_BSIZE, "/0", 2, offset);
 
-    offset0 += memory_write(buffer0, FUDGE_BSIZE, "system/pipe/", 12, offset0);
-    offset0 += memory_write(buffer0, FUDGE_BSIZE, num, ccount, offset0);
-    offset0 += memory_write(buffer0, FUDGE_BSIZE, "/0", 2, offset0);
-    offset1 += memory_write(buffer1, FUDGE_BSIZE, "system/pipe/", 12, offset1);
-    offset1 += memory_write(buffer1, FUDGE_BSIZE, num, ccount, offset1);
-    offset1 += memory_write(buffer1, FUDGE_BSIZE, "/1", 2, offset1);
+    call_open(index0, CALL_DR, offset, buffer);
 
-    call_open(CALL_D0, CALL_DR, offset0, buffer0);
-    call_write(CALL_D0, 0, count, buffer);
-    call_close(CALL_D0);
-    call_open(index, CALL_DR, offset1, buffer1);
+    offset = memory_write(buffer, FUDGE_BSIZE, "system/pipe/", 12, 0);
+    offset += memory_write(buffer, FUDGE_BSIZE, num, count, offset);
+    offset += memory_write(buffer, FUDGE_BSIZE, "/1", 2, offset);
+
+    call_open(index1, CALL_DR, offset, buffer);
 
 }
 
-static void interpret(unsigned int count, char *buffer)
+static void close_pipe(unsigned int index, unsigned int index0, unsigned int index1)
+{
+
+    call_close(index1);
+    call_close(index0);
+
+}
+
+static void call_slang(unsigned int index)
+{
+
+    call_open(index, CALL_DR, 9, "bin/slang");
+    call_spawn(index);
+    call_close(index);
+
+}
+
+static void call_complete(unsigned int index)
+{
+
+    call_open(index, CALL_DR, 12, "bin/complete");
+    call_spawn(index);
+    call_close(index);
+
+}
+
+static void interpret(struct lifo_stack *stack)
 {
 
     /* This is a temporary fix */
-    if (memory_match(buffer, "cd ", 3))
+    if (memory_match(stack->buffer, "cd ", 3))
     {
 
-        if (count < 4)
+        if (stack->head < 4)
             return;
 
-        if (buffer[3] == '/')
-            call_open(CALL_DW, CALL_DR, count - 5, buffer + 4);
+        if (stack->buffer[3] == '/')
+            call_open(CALL_DW, CALL_DR, stack->head - 5, stack->buffer + 4);
         else
-            call_open(CALL_DW, CALL_DW, count - 4, buffer + 3);
+            call_open(CALL_DW, CALL_DW, stack->head - 4, stack->buffer + 3);
 
         return;
 
@@ -47,20 +70,48 @@ static void interpret(unsigned int count, char *buffer)
 
     call_open(CALL_D1, CALL_DI, 0, 0);
     call_open(CALL_D2, CALL_DO, 0, 0);
-    open_temp(CALL_DI, CALL_D8, count, buffer);
-    call_open(CALL_D0, CALL_DR, 9, "bin/slang");
-    call_spawn(CALL_D0);
-    call_close(CALL_D0);
-    call_close(CALL_D8);
+    call_open(CALL_D3, CALL_DC, 0, 0);
+    call_open(CALL_P1, CALL_DR, 17, "system/pipe/clone");
+    open_pipe(CALL_P1, CALL_D0, CALL_DI);
+    call_write(CALL_D0, 0, stack->head, stack->buffer);
+    call_slang(CALL_P0);
+    close_pipe(CALL_P1, CALL_D0, CALL_DI);
+    call_close(CALL_P1);
     call_open(CALL_DI, CALL_D1, 0, 0);
     call_open(CALL_DO, CALL_D2, 0, 0);
-    call_close(CALL_D1);
-    call_close(CALL_D2);
+    call_open(CALL_DC, CALL_D3, 0, 0);
 
 }
 
 static void complete(struct lifo_stack *stack)
 {
+
+    char buffer[FUDGE_BSIZE];
+    unsigned int count;
+
+    call_open(CALL_D1, CALL_DI, 0, 0);
+    call_open(CALL_D2, CALL_DO, 0, 0);
+    call_open(CALL_D3, CALL_DC, 0, 0);
+    call_open(CALL_P1, CALL_DR, 17, "system/pipe/clone");
+    open_pipe(CALL_P1, CALL_D0, CALL_DC);
+    call_open(CALL_P2, CALL_DR, 17, "system/pipe/clone");
+    open_pipe(CALL_P2, CALL_DO, CALL_D5);
+    call_open(CALL_DI, CALL_DW, 0, 0);
+    call_write(CALL_D0, 0, stack->head, stack->buffer);
+    call_complete(CALL_P0);
+
+    count = call_read(CALL_D5, 0, FUDGE_BSIZE, buffer);
+
+    close_pipe(CALL_P1, CALL_D0, CALL_DC);
+    call_close(CALL_P1);
+    close_pipe(CALL_P2, CALL_DO, CALL_D5);
+    call_close(CALL_P2);
+    call_open(CALL_DI, CALL_D1, 0, 0);
+    call_open(CALL_DO, CALL_D2, 0, 0);
+    call_open(CALL_DC, CALL_D3, 0, 0);
+    call_write(CALL_DO, 0, 1, "\n");
+    call_write(CALL_DO, 0, count, buffer);
+    call_write(CALL_DO, 0, 2, "$ ");
 
 }
 
@@ -97,7 +148,7 @@ static void handle(struct lifo_stack *stack, char c)
 
             lifo_stack_push(stack, c);
             call_write(CALL_DO, 0, 1, &c);
-            interpret(stack->head, stack->buffer);
+            interpret(stack);
             lifo_stack_clear(stack);
             call_write(CALL_DO, 0, 2, "$ ");
 
