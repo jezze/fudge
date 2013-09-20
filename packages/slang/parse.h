@@ -34,16 +34,16 @@ struct command
 struct pipe
 {
 
-    struct command commands[8];
-    unsigned int count;
+    struct command command[8];
+    unsigned int commands;
 
 };
 
 struct expression
 {
 
-    struct pipe pipes[64];
-    unsigned int count;
+    struct pipe pipe[64];
+    unsigned int pipes;
 
 };
 
