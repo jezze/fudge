@@ -4,22 +4,8 @@
 static void open_pipe(unsigned int index, unsigned int index0, unsigned int index1)
 {
 
-    char buffer[FUDGE_BSIZE];
-    char num[32];
-    unsigned int offset;
-    unsigned int count = call_read(index, 0, 32, num);
-
-    offset = memory_write(buffer, FUDGE_BSIZE, "system/pipe/", 12, 0);
-    offset += memory_write(buffer, FUDGE_BSIZE, num, count, offset);
-    offset += memory_write(buffer, FUDGE_BSIZE, "/0", 2, offset);
-
-    call_open(index0, CALL_DR, offset, buffer);
-
-    offset = memory_write(buffer, FUDGE_BSIZE, "system/pipe/", 12, 0);
-    offset += memory_write(buffer, FUDGE_BSIZE, num, count, offset);
-    offset += memory_write(buffer, FUDGE_BSIZE, "/1", 2, offset);
-
-    call_open(index1, CALL_DR, offset, buffer);
+    call_open(index0, index, 4, "../0");
+    call_open(index1, index, 4, "../1");
 
 }
 
