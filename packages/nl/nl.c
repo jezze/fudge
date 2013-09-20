@@ -24,7 +24,7 @@ void main()
     unsigned int count, roff, loff, woff = 0;
     unsigned int lines = 0;
 
-    for (roff = 0; (count = call_read(CALL_DI, roff, FUDGE_BSIZE, buffer)); roff += loff)
+    for (roff = 0; (count = call_read(CALL_I0, roff, FUDGE_BSIZE, buffer)); roff += loff)
     {
 
         unsigned int count2;
@@ -34,9 +34,9 @@ void main()
 
             unsigned char num[32];
 
-            woff += call_write(CALL_DO, woff, memory_write_number(num, 32, lines++, 10, 0), num);
-            woff += call_write(CALL_DO, woff, 2, ": ");
-            woff += call_write(CALL_DO, woff, count2, buffer + loff);
+            woff += call_write(CALL_O0, woff, memory_write_number(num, 32, lines++, 10, 0), num);
+            woff += call_write(CALL_O0, woff, 2, ": ");
+            woff += call_write(CALL_O0, woff, count2, buffer + loff);
 
         }
 

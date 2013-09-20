@@ -40,6 +40,7 @@ static void call_slang(unsigned int index)
 
 }
 
+/*
 static void call_complete(unsigned int index)
 {
 
@@ -48,6 +49,7 @@ static void call_complete(unsigned int index)
     call_close(index);
 
 }
+*/
 
 static void interpret(struct lifo_stack *stack)
 {
@@ -68,50 +70,53 @@ static void interpret(struct lifo_stack *stack)
 
     }
 
-    call_open(CALL_D1, CALL_DI, 0, 0);
-    call_open(CALL_D2, CALL_DO, 0, 0);
-    call_open(CALL_D3, CALL_DC, 0, 0);
-    call_open(CALL_P1, CALL_DR, 17, "system/pipe/clone");
-    open_pipe(CALL_P1, CALL_D0, CALL_DI);
-    call_write(CALL_D0, 0, stack->head, stack->buffer);
-    call_slang(CALL_P0);
-    close_pipe(CALL_P1, CALL_D0, CALL_DI);
-    call_close(CALL_P1);
-    call_open(CALL_DI, CALL_D1, 0, 0);
-    call_open(CALL_DO, CALL_D2, 0, 0);
-    call_open(CALL_DC, CALL_D3, 0, 0);
+    call_open(CALL_L0, CALL_I0, 0, 0);
+    call_open(CALL_L1, CALL_O0, 0, 0);
+    call_open(CALL_L2, CALL_I1, 0, 0);
+    call_open(CALL_P0, CALL_DR, 17, "system/pipe/clone");
+    open_pipe(CALL_P0, CALL_L4, CALL_I0);
+    call_write(CALL_L4, 0, stack->head, stack->buffer);
+    call_slang(CALL_E0);
+    close_pipe(CALL_P0, CALL_L4, CALL_I0);
+    call_close(CALL_P0);
+    call_open(CALL_I0, CALL_L0, 0, 0);
+    call_open(CALL_O0, CALL_L1, 0, 0);
+    call_open(CALL_I1, CALL_L2, 0, 0);
 
 }
 
 static void complete(struct lifo_stack *stack)
 {
 
+/*
     char buffer[FUDGE_BSIZE];
     unsigned int count;
 
-    call_open(CALL_D1, CALL_DI, 0, 0);
-    call_open(CALL_D2, CALL_DO, 0, 0);
-    call_open(CALL_D3, CALL_DC, 0, 0);
-    call_open(CALL_P1, CALL_DR, 17, "system/pipe/clone");
-    open_pipe(CALL_P1, CALL_D0, CALL_DC);
+    call_open(CALL_L0, CALL_I0, 0, 0);
+    call_open(CALL_L1, CALL_O0, 0, 0);
+    call_open(CALL_L2, CALL_I1, 0, 0);
+    call_open(CALL_P0, CALL_DR, 17, "system/pipe/clone");
+    open_pipe(CALL_P0, CALL_L4, CALL_I1);
     call_open(CALL_P2, CALL_DR, 17, "system/pipe/clone");
-    open_pipe(CALL_P2, CALL_DO, CALL_D5);
-    call_open(CALL_DI, CALL_DW, 0, 0);
-    call_write(CALL_D0, 0, stack->head, stack->buffer);
-    call_complete(CALL_P0);
+    open_pipe(CALL_P2, CALL_O0, CALL_L5);
+    call_open(CALL_I0, CALL_DW, 0, 0);
+    call_write(CALL_L4, 0, stack->head, stack->buffer);
+    call_complete(CALL_E0);
 
-    count = call_read(CALL_D5, 0, FUDGE_BSIZE, buffer);
+    count = call_read(CALL_L5, 0, FUDGE_BSIZE, buffer);
 
-    close_pipe(CALL_P1, CALL_D0, CALL_DC);
-    call_close(CALL_P1);
-    close_pipe(CALL_P2, CALL_DO, CALL_D5);
+    close_pipe(CALL_P0, CALL_L4, CALL_I1);
+    call_close(CALL_P0);
+    close_pipe(CALL_P2, CALL_O0, CALL_L5);
     call_close(CALL_P2);
-    call_open(CALL_DI, CALL_D1, 0, 0);
-    call_open(CALL_DO, CALL_D2, 0, 0);
-    call_open(CALL_DC, CALL_D3, 0, 0);
-    call_write(CALL_DO, 0, 1, "\n");
-    call_write(CALL_DO, 0, count, buffer);
-    call_write(CALL_DO, 0, 2, "$ ");
+    call_open(CALL_I0, CALL_L0, 0, 0);
+    call_open(CALL_O0, CALL_L1, 0, 0);
+    call_open(CALL_I1, CALL_L2, 0, 0);
+    call_write(CALL_O0, 0, 1, "\n");
+    call_write(CALL_O0, 0, count, buffer);
+    call_write(CALL_O0, 0, 2, "$ ");
+    call_write(CALL_O0, 0, stack->head, stack->buffer);
+*/
 
 }
 
@@ -136,7 +141,7 @@ static void handle(struct lifo_stack *stack, char c)
             if (!lifo_stack_pop(stack))
                 break;
 
-            call_write(CALL_DO, 0, 3, "\b \b");
+            call_write(CALL_O0, 0, 3, "\b \b");
 
             break;
 
@@ -147,17 +152,17 @@ static void handle(struct lifo_stack *stack, char c)
         case '\n':
 
             lifo_stack_push(stack, c);
-            call_write(CALL_DO, 0, 1, &c);
+            call_write(CALL_O0, 0, 1, &c);
             interpret(stack);
             lifo_stack_clear(stack);
-            call_write(CALL_DO, 0, 2, "$ ");
+            call_write(CALL_O0, 0, 2, "$ ");
 
             break;
 
         default:
 
             lifo_stack_push(stack, c);
-            call_write(CALL_DO, 0, 1, &c);
+            call_write(CALL_O0, 0, 1, &c);
 
             break;
 
@@ -178,7 +183,7 @@ static void poll()
     for (;;)
     {
 
-        count = call_read(CALL_DI, 0, FUDGE_BSIZE, buffer);
+        count = call_read(CALL_I0, 0, FUDGE_BSIZE, buffer);
 
         for (i = 0; i < count; i++)
             handle(&input, buffer[i]);
@@ -190,7 +195,7 @@ static void poll()
 void main()
 {
 
-    call_write(CALL_DO, 0, 2, "$ ");
+    call_write(CALL_O0, 0, 2, "$ ");
     poll();
 
 }

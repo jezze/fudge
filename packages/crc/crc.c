@@ -46,7 +46,7 @@ void main()
     unsigned int i;
     unsigned int crc = 0;
 
-    for (roff = 0; (count = call_read(CALL_DI, roff, FUDGE_BSIZE, buffer)); roff += count)
+    for (roff = 0; (count = call_read(CALL_I0, roff, FUDGE_BSIZE, buffer)); roff += count)
     {
 
         for (i = 0; i < count; i++)
@@ -57,7 +57,7 @@ void main()
     for (i = roff; i > 0; i >>= 8)
         crc = (crc << 8) ^ tab[(crc >> 24) ^ (i & 0xFF)];
 
-    call_write(CALL_DO, 0, memory_write_number(buffer, 32, ~crc, 10, 0), buffer);
+    call_write(CALL_O0, 0, memory_write_number(buffer, 32, ~crc, 10, 0), buffer);
 
 }
 

@@ -23,7 +23,7 @@ void main()
     unsigned char buffer[FUDGE_BSIZE];
     unsigned int count, roff, loff, woff = 0;
 
-    for (roff = 0; (count = call_read(CALL_DI, roff, FUDGE_BSIZE, buffer)); roff += loff)
+    for (roff = 0; (count = call_read(CALL_I0, roff, FUDGE_BSIZE, buffer)); roff += loff)
     {
 
         unsigned int count2;
@@ -33,8 +33,8 @@ void main()
 
             unsigned int length = (count2 > 14) ? 14 : count2 - 1;
 
-            woff += call_write(CALL_DO, woff, length, buffer + loff);
-            woff += call_write(CALL_DO, woff, 16 - length, "                ");
+            woff += call_write(CALL_O0, woff, length, buffer + loff);
+            woff += call_write(CALL_O0, woff, 16 - length, "                ");
 
         }
 
@@ -43,7 +43,7 @@ void main()
 
     }
 
-    call_write(CALL_DO, woff, 1, "\n");
+    call_write(CALL_O0, woff, 1, "\n");
 
 }
 

@@ -223,13 +223,13 @@ void main()
 
     sha1_init(&s);
 
-    for (roff = 0; (count = call_read(CALL_DI, roff, FUDGE_BSIZE, buffer)); roff += count)
+    for (roff = 0; (count = call_read(CALL_I0, roff, FUDGE_BSIZE, buffer)); roff += count)
         sha1_read(&s, count, buffer);
 
     sha1_write(&s, digest);
 
     for (roff = 0; roff < 20; roff++)
-        woff += call_write(CALL_DO, woff, memory_write_paddednumber(buffer, 32, digest[roff], 16, 2, 0), buffer);
+        woff += call_write(CALL_O0, woff, memory_write_paddednumber(buffer, 32, digest[roff], 16, 2, 0), buffer);
 
 }
 

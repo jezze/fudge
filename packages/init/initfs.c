@@ -38,7 +38,7 @@ void main()
 {
 
     char buffer[FUDGE_BSIZE];
-    unsigned int count = call_read(CALL_DI, 0, FUDGE_BSIZE, buffer);
+    unsigned int count = call_read(CALL_I0, 0, FUDGE_BSIZE, buffer);
     unsigned int nargs = parse(count, buffer);
     unsigned int i;
 
@@ -47,9 +47,9 @@ void main()
 
         unsigned int num = string_number(args[i].position, 10);
 
-        call_open(CALL_DO, CALL_DR, args[i + 1].count - 1, args[i + 1].position + 1);
-        call_open(CALL_DI, CALL_DR, args[i + 2].count - 1, args[i + 2].position + 1);
-        call_mount(num, CALL_DO, CALL_DI);
+        call_open(CALL_O0, CALL_DR, args[i + 1].count - 1, args[i + 1].position + 1);
+        call_open(CALL_I0, CALL_DR, args[i + 2].count - 1, args[i + 2].position + 1);
+        call_mount(num, CALL_O0, CALL_I0);
 
     }
 

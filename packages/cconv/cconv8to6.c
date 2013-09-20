@@ -19,8 +19,8 @@ void main()
     unsigned char in[FUDGE_BSIZE];
     unsigned int count, roff, woff = 0;
 
-    for (roff = 0; (count = call_read(CALL_DI, roff, FUDGE_BSIZE, in)); roff += count)
-        woff += call_write(CALL_DO, woff, convert(out, FUDGE_BSIZE, in, count), out);
+    for (roff = 0; (count = call_read(CALL_I0, roff, FUDGE_BSIZE, in)); roff += count)
+        woff += call_write(CALL_O0, woff, convert(out, FUDGE_BSIZE, in, count), out);
 
 }
 

@@ -3,7 +3,7 @@
 void main()
 {
 
-    call_unload(CALL_DI);
+    call_unload(CALL_I0);
 
 }
 

@@ -1,4 +1,4 @@
-#define TASK_DESCRIPTORS                24
+#define TASK_DESCRIPTORS                32
 
 enum task_state
 {

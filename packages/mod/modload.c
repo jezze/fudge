@@ -61,11 +61,11 @@ static unsigned int find_symbol_kernel(unsigned int count, char *symbol)
 
     unsigned int address;
 
-    call_open(CALL_D0, CALL_DR, 10, "boot/fudge");
+    call_open(CALL_L0, CALL_DR, 10, "boot/fudge");
 
-    address = find_symbol(CALL_D0, count, symbol);
+    address = find_symbol(CALL_L0, count, symbol);
 
-    call_close(CALL_D0);
+    call_close(CALL_L0);
 
     return address;
 
@@ -83,11 +83,11 @@ static unsigned int find_symbol_module(unsigned int count, char *symbol)
     offset += memory_write(module, 64, symbol, length, offset);
     offset += memory_write(module, 64, ".ko", 3, offset);
 
-    call_open(CALL_D0, CALL_DR, offset, module);
+    call_open(CALL_L0, CALL_DR, offset, module);
 
-    address = find_symbol(CALL_D0, count, symbol);
+    address = find_symbol(CALL_L0, count, symbol);
 
-    call_close(CALL_D0);
+    call_close(CALL_L0);
 
     return address;
 
@@ -175,8 +175,8 @@ unsigned int resolve(unsigned int id)
 void main()
 {
 
-    if (resolve(CALL_DI))
-        call_load(CALL_DI);
+    if (resolve(CALL_I0))
+        call_load(CALL_I0);
 
 }
 

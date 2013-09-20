@@ -5,7 +5,7 @@ void main()
 
     char c;
 
-    while (!call_read(CALL_DI, 0, 1, &c));
+    while (!call_read(CALL_I0, 0, 1, &c));
 
 }
 
