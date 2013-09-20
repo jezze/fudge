@@ -2,10 +2,13 @@
 #include "token.h"
 #include "parse.h"
 
-static unsigned int open_path(unsigned int index, unsigned int count, char *buffer)
+static unsigned int open_path(unsigned int index, unsigned int indexw, unsigned int count, char *buffer)
 {
 
-    return memory_match(buffer, "/", 1) ? call_open(index, CALL_DR, count - 1, buffer + 1) : call_open(index, CALL_DW, count, buffer);
+    if (memory_match(buffer, "/", 1))
+        return call_open(index, CALL_DR, count - 1, buffer + 1);
+
+    return call_open(index, indexw, count, buffer);
 
 }
 
@@ -34,59 +37,60 @@ static void open_pipe(unsigned int index, unsigned int index0, unsigned int inde
 static void execute_command(struct command *command, char *buffer)
 {
 
+    if (!open_path(CALL_E0, CALL_L3, command->binary.count, buffer + command->binary.index))
+        return;
+
     if (command->in0.path.count)
     {
 
-        open_path(CALL_I0, command->in0.path.count, buffer + command->in0.path.index);
+        open_path(CALL_I0, CALL_DW, command->in0.path.count, buffer + command->in0.path.index);
 
     }
 
     else if (command->in0.data.count)
     {
 
-        call_open(CALL_L6, CALL_DR, 17, "system/pipe/clone");
-        open_pipe(CALL_L6, CALL_L5, CALL_I0);
-        call_write(CALL_L5, 0, command->in0.data.count, buffer + command->in0.data.index);
+        call_open(CALL_L5, CALL_DR, 17, "system/pipe/clone");
+        open_pipe(CALL_L5, CALL_L4, CALL_I0);
+        call_write(CALL_L4, 0, command->in0.data.count, buffer + command->in0.data.index);
 
     }
 
     if (command->in1.path.count)
     {
 
-        open_path(CALL_I1, command->in1.path.count, buffer + command->in1.path.index);
+        open_path(CALL_I1, CALL_DW, command->in1.path.count, buffer + command->in1.path.index);
 
     }
 
     else if (command->in1.data.count)
     {
 
-        call_open(CALL_L7, CALL_DR, 17, "system/pipe/clone");
-        open_pipe(CALL_L7, CALL_L5, CALL_I1);
-        call_write(CALL_L5, 0, command->in1.data.count, buffer + command->in1.data.index);
+        call_open(CALL_L6, CALL_DR, 17, "system/pipe/clone");
+        open_pipe(CALL_L6, CALL_L4, CALL_I1);
+        call_write(CALL_L4, 0, command->in1.data.count, buffer + command->in1.data.index);
 
     }
 
     if (command->out0.path.count)
-        open_path(CALL_O0, command->out0.path.count, buffer + command->out0.path.index);
+        open_path(CALL_O0, CALL_DW, command->out0.path.count, buffer + command->out0.path.index);
 
-    call_open(CALL_DW, CALL_DR, 4, "bin/");
-    open_path(CALL_E0, command->binary.count, buffer + command->binary.index);
-    call_open(CALL_DW, CALL_L3, 0, 0);
     call_spawn(CALL_E0);
-    call_close(CALL_E0);
 
     if (command->in0.path.count)
         call_close(CALL_I0);
     else if (command->in0.data.count)
-        call_close(CALL_L6);
+        call_close(CALL_L5);
 
     if (command->in1.path.count)
         call_close(CALL_I1);
     else if (command->in1.data.count)
-        call_close(CALL_L7);
+        call_close(CALL_L6);
 
     if (command->out0.path.count)
         call_close(CALL_O0);
+
+    call_close(CALL_E0);
 
 }
 
@@ -99,7 +103,7 @@ static void execute(struct token_state *state, struct expression *expression)
     call_open(CALL_L0, CALL_I0, 0, 0);
     call_open(CALL_L1, CALL_O0, 0, 0);
     call_open(CALL_L2, CALL_I1, 0, 0);
-    call_open(CALL_L3, CALL_DW, 0, 0);
+    call_open(CALL_L3, CALL_DR, 4, "bin/");
 
     for (pindex = 0; pindex < expression->count; pindex++)
     {
