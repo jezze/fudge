@@ -12,6 +12,7 @@ include packages/crc/rules.mk
 include packages/date/rules.mk
 include packages/dump/rules.mk
 include packages/echo/rules.mk
+include packages/head/rules.mk
 include packages/hello/rules.mk
 include packages/help/rules.mk
 include packages/init/rules.mk
