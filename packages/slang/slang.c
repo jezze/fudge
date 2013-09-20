@@ -109,11 +109,12 @@ static void execute(struct token_state *state, struct expression *expression)
     {
 
         struct pipe *pipe = &expression->pipes[pindex];
+        unsigned int clast = pipe->count - 1;
 
-        for (cindex = 0; cindex < pipe->count - 1; cindex++)
+        for (cindex = 0; cindex < clast; cindex++)
             call_open(CALL_P0 + cindex, CALL_DR, 17, "system/pipe/clone");
 
-        for (cindex = 0; cindex < pipe->count - 1; cindex++)
+        for (cindex = 0; cindex < clast; cindex++)
         {
 
             open_pipe(CALL_P0 + cindex, CALL_O0, 0);
@@ -122,11 +123,11 @@ static void execute(struct token_state *state, struct expression *expression)
 
         }
 
-        for (cindex = 0; cindex < pipe->count - 1; cindex++)
+        for (cindex = 0; cindex < clast; cindex++)
             call_close(CALL_P0 + cindex);
 
         call_open(CALL_O0, CALL_L1, 0, 0);
-        execute_command(&pipe->commands[pipe->count - 1], state->buffer);
+        execute_command(&pipe->commands[clast], state->buffer);
 
     }
 
