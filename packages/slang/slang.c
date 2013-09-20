@@ -34,6 +34,14 @@ static void open_pipe(unsigned int index, unsigned int index0, unsigned int inde
 
 }
 
+static void close_pipe(unsigned int index, unsigned int index0, unsigned int index1)
+{
+
+    call_close(index0);
+    call_close(index1);
+
+}
+
 static void execute_command(struct command *command, char *buffer)
 {
 
@@ -51,8 +59,8 @@ static void execute_command(struct command *command, char *buffer)
     {
 
         call_open(CALL_L5, CALL_DR, 17, "system/pipe/clone");
-        open_pipe(CALL_L5, CALL_L4, CALL_I0);
-        call_write(CALL_L4, 0, command->in0.data.count, buffer + command->in0.data.index);
+        open_pipe(CALL_L5, CALL_L6, CALL_I0);
+        call_write(CALL_L6, 0, command->in0.data.count, buffer + command->in0.data.index);
 
     }
 
@@ -66,9 +74,9 @@ static void execute_command(struct command *command, char *buffer)
     else if (command->in1.data.count)
     {
 
-        call_open(CALL_L6, CALL_DR, 17, "system/pipe/clone");
-        open_pipe(CALL_L6, CALL_L4, CALL_I1);
-        call_write(CALL_L4, 0, command->in1.data.count, buffer + command->in1.data.index);
+        call_open(CALL_L7, CALL_DR, 17, "system/pipe/clone");
+        open_pipe(CALL_L7, CALL_L8, CALL_I1);
+        call_write(CALL_L8, 0, command->in1.data.count, buffer + command->in1.data.index);
 
     }
 
@@ -78,14 +86,34 @@ static void execute_command(struct command *command, char *buffer)
     call_spawn(CALL_E0);
 
     if (command->in0.path.count)
+    {
+
         call_close(CALL_I0);
+
+    }
+
     else if (command->in0.data.count)
+    {
+
+        close_pipe(CALL_L5, CALL_L6, CALL_I0);
         call_close(CALL_L5);
 
+    }
+
     if (command->in1.path.count)
+    {
+
         call_close(CALL_I1);
+
+    }
+
     else if (command->in1.data.count)
-        call_close(CALL_L6);
+    {
+
+        close_pipe(CALL_L7, CALL_L8, CALL_I1);
+        call_close(CALL_L7);
+
+    }
 
     if (command->out0.path.count)
         call_close(CALL_O0);

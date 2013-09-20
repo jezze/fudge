@@ -26,8 +26,8 @@ static void open_pipe(unsigned int index, unsigned int index0, unsigned int inde
 static void close_pipe(unsigned int index, unsigned int index0, unsigned int index1)
 {
 
-    call_close(index1);
     call_close(index0);
+    call_close(index1);
 
 }
 
