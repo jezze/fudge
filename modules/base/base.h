@@ -16,7 +16,7 @@ struct base_module
 
     struct base_module *sibling;
     enum base_type type;
-    char name[32];
+    char *name;
 
 };
 

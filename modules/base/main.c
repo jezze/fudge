@@ -121,32 +121,25 @@ static void base_init_module(struct base_module *module, enum base_type type, ch
 {
 
     memory_clear(module, sizeof (struct base_module));
-    memory_copy(module->name, name, string_length(name));
 
     module->type = type;
+    module->name = name;
 
 }
 
 void base_init_bus(struct base_bus *bus, unsigned int type, char *name, void (*scan)(struct base_bus *self))
 {
 
-    unsigned int offset = 0;
-
     memory_clear(bus, sizeof (struct base_bus));
     base_init_module(&bus->module, BASE_TYPE_BUS, name);
 
     bus->type = type;
     bus->scan = scan;
-    offset += memory_write(bus->module.name, 32, name, string_length(name), offset);
-    offset += memory_write(bus->module.name, 32, ":", 1, offset);
-    offset += memory_write_paddednumber(bus->module.name, 32, 0, 16, 4, offset);
 
 }
 
 void base_init_device(struct base_device *device, unsigned int type, unsigned int irq, char *name, struct base_bus *bus)
 {
-
-    unsigned int offset = 0;
 
     memory_clear(device, sizeof (struct base_device));
     base_init_module(&device->module, BASE_TYPE_DEVICE, name);
@@ -154,11 +147,6 @@ void base_init_device(struct base_device *device, unsigned int type, unsigned in
     device->type = type;
     device->irq = irq;
     device->bus = bus;
-    offset += memory_write(device->module.name, 32, name, string_length(name), offset);
-    offset += memory_write(device->module.name, 32, ":", 1, offset);
-    offset += memory_write_paddednumber(device->module.name, 32, 0, 16, 4, offset);
-    offset += memory_write(device->module.name, 32, ":", 1, offset);
-    offset += memory_write_paddednumber(device->module.name, 32, 0, 16, 4, offset);
 
 }
 
