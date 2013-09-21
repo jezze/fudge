@@ -3,7 +3,7 @@
 #include "base.h"
 #include "network.h"
 
-struct network_device_node
+struct network_node
 {
 
     struct system_group base;
@@ -16,12 +16,12 @@ struct network_device_node
 
 static struct system_group root;
 static struct system_group dev;
-static struct network_device_node dnodes[8];
+static struct network_node node[8];
 
 static unsigned int data_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct network_device_node *node = (struct network_device_node *)self->parent;
+    struct network_node *node = (struct network_node *)self->parent;
  
     if (offset)
         return 0;
@@ -33,7 +33,7 @@ static unsigned int data_read(struct system_node *self, unsigned int offset, uns
 static unsigned int data_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct network_device_node *node = (struct network_device_node *)self->parent;
+    struct network_node *node = (struct network_node *)self->parent;
  
     if (offset)
         return 0;
@@ -45,7 +45,7 @@ static unsigned int data_write(struct system_node *self, unsigned int offset, un
 static unsigned int mac_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct network_device_node *node = (struct network_device_node *)self->parent;
+    struct network_node *node = (struct network_node *)self->parent;
     char mac[17];
     unsigned int i;
 
@@ -61,7 +61,7 @@ static unsigned int mac_read(struct system_node *self, unsigned int offset, unsi
 
 }
 
-static unsigned int find_device_node()
+static unsigned int find_node()
 {
 
     unsigned int i;
@@ -69,7 +69,7 @@ static unsigned int find_device_node()
     for (i = 1; i < 8; i++)
     {
 
-        if (!dnodes[i].base.node.parent)
+        if (!node[i].base.node.parent)
             return i;
 
     }
@@ -78,10 +78,10 @@ static unsigned int find_device_node()
 
 }
 
-static void init_device_node(struct network_device_node *node, struct base_network_interface *interface, struct base_device *device)
+static void init_node(struct network_node *node, struct base_network_interface *interface, struct base_device *device)
 {
 
-    memory_clear(node, sizeof (struct network_device_node));
+    memory_clear(node, sizeof (struct network_node));
     system_init_group(&node->base, device->module.name);
     system_init_stream(&node->data, "data");
     system_init_stream(&node->mac, "mac");
@@ -97,15 +97,15 @@ static void init_device_node(struct network_device_node *node, struct base_netwo
 void base_network_register_interface(struct base_network_interface *interface, struct base_device *device)
 {
 
-    unsigned int index = find_device_node();
+    unsigned int index = find_node();
 
     if (!index)
         return;
 
-    init_device_node(&dnodes[index], interface, device);
-    system_group_add(&dnodes[index].base, &dnodes[index].data.node);
-    system_group_add(&dnodes[index].base, &dnodes[index].mac.node);
-    system_group_add(&dev, &dnodes[index].base.node);
+    init_node(&node[index], interface, device);
+    system_group_add(&node[index].base, &node[index].data.node);
+    system_group_add(&node[index].base, &node[index].mac.node);
+    system_group_add(&dev, &node[index].base.node);
 
 }
 

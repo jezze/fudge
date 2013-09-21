@@ -3,7 +3,7 @@
 #include "base.h"
 #include "terminal.h"
 
-struct terminal_device_node
+struct terminal_node
 {
 
     struct system_group base;
@@ -15,12 +15,12 @@ struct terminal_device_node
 
 static struct system_group root;
 static struct system_group dev;
-static struct terminal_device_node dnodes[8];
+static struct terminal_node node[8];
 
 static unsigned int data_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct terminal_device_node *node = (struct terminal_device_node *)self->parent;
+    struct terminal_node *node = (struct terminal_node *)self->parent;
  
     return node->interface->read_data(node->device, offset, count, buffer);
 
@@ -29,13 +29,13 @@ static unsigned int data_read(struct system_node *self, unsigned int offset, uns
 static unsigned int data_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct terminal_device_node *node = (struct terminal_device_node *)self->parent;
+    struct terminal_node *node = (struct terminal_node *)self->parent;
 
     return node->interface->write_data(node->device, offset, count, buffer);
 
 }
 
-static unsigned int find_device_node()
+static unsigned int find_node()
 {
 
     unsigned int i;
@@ -43,7 +43,7 @@ static unsigned int find_device_node()
     for (i = 1; i < 8; i++)
     {
 
-        if (!dnodes[i].base.node.parent)
+        if (!node[i].base.node.parent)
             return i;
 
     }
@@ -52,10 +52,10 @@ static unsigned int find_device_node()
 
 }
 
-static void init_device_node(struct terminal_device_node *node, struct base_terminal_interface *interface, struct base_device *device)
+static void init_node(struct terminal_node *node, struct base_terminal_interface *interface, struct base_device *device)
 {
 
-    memory_clear(node, sizeof (struct terminal_device_node));
+    memory_clear(node, sizeof (struct terminal_node));
     system_init_group(&node->base, device->module.name);
     system_init_stream(&node->data, "data");
 
@@ -69,14 +69,14 @@ static void init_device_node(struct terminal_device_node *node, struct base_term
 void base_terminal_register_interface(struct base_terminal_interface *interface, struct base_device *device)
 {
 
-    unsigned int index = find_device_node();
+    unsigned int index = find_node();
 
     if (!index)
         return;
 
-    init_device_node(&dnodes[index], interface, device);
-    system_group_add(&dnodes[index].base, &dnodes[index].data.node);
-    system_group_add(&dev, &dnodes[index].base.node);
+    init_node(&node[index], interface, device);
+    system_group_add(&node[index].base, &node[index].data.node);
+    system_group_add(&dev, &node[index].base.node);
 
 }
 

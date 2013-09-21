@@ -3,7 +3,7 @@
 #include "base.h"
 #include "block.h"
 
-struct block_device_node
+struct block_node
 {
 
     struct system_group base;
@@ -14,9 +14,9 @@ struct block_device_node
 
 static struct system_group root;
 static struct system_group dev;
-static struct block_device_node dnodes[8];
+static struct block_node node[8];
 
-static unsigned int find_device_node()
+static unsigned int find_node()
 {
 
     unsigned int i;
@@ -24,7 +24,7 @@ static unsigned int find_device_node()
     for (i = 1; i < 8; i++)
     {
 
-        if (!dnodes[i].base.node.parent)
+        if (!node[i].base.node.parent)
             return i;
 
     }
@@ -33,10 +33,10 @@ static unsigned int find_device_node()
 
 }
 
-static void init_device_node(struct block_device_node *node, struct base_block_interface *interface, struct base_device *device)
+static void init_node(struct block_node *node, struct base_block_interface *interface, struct base_device *device)
 {
 
-    memory_clear(node, sizeof (struct block_device_node));
+    memory_clear(node, sizeof (struct block_node));
     system_init_group(&node->base, device->module.name);
 
     node->interface = interface;
@@ -47,13 +47,13 @@ static void init_device_node(struct block_device_node *node, struct base_block_i
 void base_block_register_interface(struct base_block_interface *interface, struct base_device *device)
 {
 
-    unsigned int index = find_device_node();
+    unsigned int index = find_node();
 
     if (!index)
         return;
 
-    init_device_node(&dnodes[index], interface, device);
-    system_group_add(&dev, &dnodes[index].base.node);
+    init_node(&node[index], interface, device);
+    system_group_add(&dev, &node[index].base.node);
 
 }
 

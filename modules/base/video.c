@@ -3,7 +3,7 @@
 #include "base.h"
 #include "video.h"
 
-struct video_device_node
+struct video_node
 {
 
     struct system_group base;
@@ -17,12 +17,12 @@ struct video_device_node
 
 static struct system_group root;
 static struct system_group dev;
-static struct video_device_node dnodes[8];
+static struct video_node node[8];
 
 static unsigned int data_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct video_device_node *node = (struct video_device_node *)self->parent;
+    struct video_node *node = (struct video_node *)self->parent;
 
     return node->interface->read_data(node->device, offset, count, buffer);
 
@@ -31,7 +31,7 @@ static unsigned int data_read(struct system_node *self, unsigned int offset, uns
 static unsigned int data_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct video_device_node *node = (struct video_device_node *)self->parent;
+    struct video_node *node = (struct video_node *)self->parent;
 
     return node->interface->write_data(node->device, offset, count, buffer);
 
@@ -40,7 +40,7 @@ static unsigned int data_write(struct system_node *self, unsigned int offset, un
 static unsigned int colormap_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct video_device_node *node = (struct video_device_node *)self->parent;
+    struct video_node *node = (struct video_node *)self->parent;
 
     return node->interface->read_colormap(node->device, offset, count, buffer);
 
@@ -49,7 +49,7 @@ static unsigned int colormap_read(struct system_node *self, unsigned int offset,
 static unsigned int colormap_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct video_device_node *node = (struct video_device_node *)self->parent;
+    struct video_node *node = (struct video_node *)self->parent;
 
     return node->interface->write_colormap(node->device, offset, count, buffer);
 
@@ -58,7 +58,7 @@ static unsigned int colormap_write(struct system_node *self, unsigned int offset
 static unsigned int mode_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct video_device_node *node = (struct video_device_node *)self->parent;
+    struct video_node *node = (struct video_node *)self->parent;
 
     node->interface->xres = 320;
     node->interface->yres = 200;
@@ -70,7 +70,7 @@ static unsigned int mode_write(struct system_node *self, unsigned int offset, un
 
 }
 
-static unsigned int find_device_node()
+static unsigned int find_node()
 {
 
     unsigned int i;
@@ -78,7 +78,7 @@ static unsigned int find_device_node()
     for (i = 1; i < 8; i++)
     {
 
-        if (!dnodes[i].base.node.parent)
+        if (!node[i].base.node.parent)
             return i;
 
     }
@@ -87,10 +87,10 @@ static unsigned int find_device_node()
 
 }
 
-static void init_device_node(struct video_device_node *node, struct base_video_interface *interface, struct base_device *device)
+static void init_node(struct video_node *node, struct base_video_interface *interface, struct base_device *device)
 {
 
-    memory_clear(node, sizeof (struct video_device_node));
+    memory_clear(node, sizeof (struct video_node));
     system_init_group(&node->base, device->module.name);
     system_init_stream(&node->data, "data");
     system_init_stream(&node->colormap, "colormap");
@@ -109,16 +109,16 @@ static void init_device_node(struct video_device_node *node, struct base_video_i
 void base_video_register_interface(struct base_video_interface *interface, struct base_device *device)
 {
 
-    unsigned int index = find_device_node();
+    unsigned int index = find_node();
 
     if (!index)
         return;
 
-    init_device_node(&dnodes[index], interface, device);
-    system_group_add(&dnodes[index].base, &dnodes[index].data.node);
-    system_group_add(&dnodes[index].base, &dnodes[index].colormap.node);
-    system_group_add(&dnodes[index].base, &dnodes[index].mode.node);
-    system_group_add(&dev, &dnodes[index].base.node);
+    init_node(&node[index], interface, device);
+    system_group_add(&node[index].base, &node[index].data.node);
+    system_group_add(&node[index].base, &node[index].colormap.node);
+    system_group_add(&node[index].base, &node[index].mode.node);
+    system_group_add(&dev, &node[index].base.node);
 
 }
 
