@@ -7,7 +7,7 @@ struct video_group
 {
 
     struct system_group base;
-    struct base_video *interface;
+    struct base_video_interface *interface;
     struct base_device *device;
     struct system_stream data;
     struct system_stream colormap;
@@ -87,7 +87,7 @@ static unsigned int find_group()
 
 }
 
-static void init_group(struct video_group *group, struct base_video *interface, struct base_device *device)
+static void init_group(struct video_group *group, struct base_video_interface *interface, struct base_device *device)
 {
 
     memory_clear(group, sizeof (struct video_group));
@@ -107,7 +107,7 @@ static void init_group(struct video_group *group, struct base_video *interface, 
 
 }
 
-void base_register_video(struct base_video *interface, struct base_device *device)
+void base_video_register_interface(struct base_video_interface *interface, struct base_device *device)
 {
 
     unsigned int index = find_group();
@@ -123,10 +123,10 @@ void base_register_video(struct base_video *interface, struct base_device *devic
 
 }
 
-void base_init_video(struct base_video *interface, void (*mode)(struct base_device *device), unsigned int (*read_data)(struct base_device *device, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write_data)(struct base_device *device, unsigned int offset, unsigned int count, void *buffer), unsigned int (*read_colormap)(struct base_device *device, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write_colormap)(struct base_device *device, unsigned int offset, unsigned int count, void *buffer))
+void base_video_init_interface(struct base_video_interface *interface, void (*mode)(struct base_device *device), unsigned int (*read_data)(struct base_device *device, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write_data)(struct base_device *device, unsigned int offset, unsigned int count, void *buffer), unsigned int (*read_colormap)(struct base_device *device, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write_colormap)(struct base_device *device, unsigned int offset, unsigned int count, void *buffer))
 {
 
-    memory_clear(interface, sizeof (struct base_video));
+    memory_clear(interface, sizeof (struct base_video_interface));
 
     interface->mode = mode;
     interface->read_data = read_data;
@@ -136,7 +136,7 @@ void base_init_video(struct base_video *interface, void (*mode)(struct base_devi
 
 }
 
-void base_setup_video()
+void base_video_setup()
 {
 
     system_init_group(&root, "video");

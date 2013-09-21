@@ -523,8 +523,8 @@ static void attach(struct base_device *device)
     struct vga_driver *driver = (struct vga_driver *)device->driver;
     unsigned int a;
 
-    base_register_terminal(&driver->iterminal, device);
-    base_register_video(&driver->ivideo, device);
+    base_terminal_register_interface(&driver->iterminal, device);
+    base_video_register_interface(&driver->ivideo, device);
 
     driver->cursor.color = 0x0F;
 
@@ -555,8 +555,8 @@ void vga_init_driver(struct vga_driver *driver)
 
     memory_clear(driver, sizeof (struct vga_driver));
     base_init_driver(&driver->base, "vga", check, attach);
-    base_init_terminal(&driver->iterminal, read_terminal_data, write_terminal_data);
-    base_init_video(&driver->ivideo, mode, read_video_data, write_video_data, read_video_colormap, write_video_colormap);
+    base_terminal_init_interface(&driver->iterminal, read_terminal_data, write_terminal_data);
+    base_video_init_interface(&driver->ivideo, mode, read_video_data, write_video_data, read_video_colormap, write_video_colormap);
 
     driver->ivideo.xres = 80;
     driver->ivideo.yres = 25;

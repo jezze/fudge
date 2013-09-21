@@ -171,7 +171,7 @@ static void attach(struct base_device *device)
     driver->io = bar0 & ~1;
     driver->mmio = bar1;
 
-    base_register_network(&driver->inetwork, device);
+    base_network_register_interface(&driver->inetwork, device);
     pci_device_outw(pciDevice, PCI_CONFIG_COMMAND, command | (1 << 2));
     pic_set_routine(device, handle_irq);
     poweron(driver);
@@ -281,7 +281,7 @@ void rtl8139_init_driver(struct rtl8139_driver *driver)
 
     memory_clear(driver, sizeof (struct rtl8139_driver));
     base_init_driver(&driver->base, "rtl8139", check, attach);
-    base_init_network(&driver->inetwork, receive, send);
+    base_network_init_interface(&driver->inetwork, receive, send);
 
 }
 

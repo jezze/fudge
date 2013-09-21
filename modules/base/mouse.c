@@ -7,7 +7,7 @@ struct mouse_group
 {
 
     struct system_group base;
-    struct base_mouse *interface;
+    struct base_mouse_interface *interface;
     struct base_device *device;
 
 };
@@ -33,7 +33,7 @@ static unsigned int find_group()
 
 }
 
-static void init_group(struct mouse_group *group, struct base_mouse *interface, struct base_device *device)
+static void init_group(struct mouse_group *group, struct base_mouse_interface *interface, struct base_device *device)
 {
 
     memory_clear(group, sizeof (struct mouse_group));
@@ -44,7 +44,7 @@ static void init_group(struct mouse_group *group, struct base_mouse *interface, 
 
 }
 
-void base_register_mouse(struct base_mouse *interface, struct base_device *device)
+void base_mouse_register_interface(struct base_mouse_interface *interface, struct base_device *device)
 {
 
     unsigned int index = find_group();
@@ -57,14 +57,14 @@ void base_register_mouse(struct base_mouse *interface, struct base_device *devic
 
 }
 
-void base_init_mouse(struct base_mouse *interface)
+void base_mouse_init_interface(struct base_mouse_interface *interface)
 {
 
-    memory_clear(interface, sizeof (struct base_mouse));
+    memory_clear(interface, sizeof (struct base_mouse_interface));
 
 }
 
-void base_setup_mouse()
+void base_mouse_setup()
 {
 
     system_init_group(&root, "mouse");

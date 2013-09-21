@@ -7,7 +7,7 @@ struct block_group
 {
 
     struct system_group base;
-    struct base_block *interface;
+    struct base_block_interface *interface;
     struct base_device *device;
 
 };
@@ -33,7 +33,7 @@ static unsigned int find_group()
 
 }
 
-static void init_group(struct block_group *group, struct base_block *interface, struct base_device *device)
+static void init_group(struct block_group *group, struct base_block_interface *interface, struct base_device *device)
 {
 
     memory_clear(group, sizeof (struct block_group));
@@ -44,7 +44,7 @@ static void init_group(struct block_group *group, struct base_block *interface, 
 
 }
 
-void base_register_block(struct base_block *interface, struct base_device *device)
+void base_block_register_interface(struct base_block_interface *interface, struct base_device *device)
 {
 
     unsigned int index = find_group();
@@ -57,17 +57,17 @@ void base_register_block(struct base_block *interface, struct base_device *devic
 
 }
 
-void base_init_block(struct base_block *interface, unsigned int (*read)(struct base_device *device, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write)(struct base_device *device, unsigned int offset, unsigned int count, void *buffer))
+void base_block_init_interface(struct base_block_interface *interface, unsigned int (*read)(struct base_device *device, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write)(struct base_device *device, unsigned int offset, unsigned int count, void *buffer))
 {
 
-    memory_clear(interface, sizeof (struct base_block));
+    memory_clear(interface, sizeof (struct base_block_interface));
 
     interface->read = read;
     interface->write = write;
 
 }
 
-void base_setup_block()
+void base_block_setup()
 {
 
     system_init_group(&root, "block");

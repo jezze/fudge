@@ -7,7 +7,7 @@ struct timer_group
 {
 
     struct system_group base;
-    struct base_timer *interface;
+    struct base_timer_interface *interface;
     struct base_device *device;
 
 };
@@ -33,7 +33,7 @@ static unsigned int find_group()
 
 }
 
-static void init_group(struct timer_group *group, struct base_timer *interface, struct base_device *device)
+static void init_group(struct timer_group *group, struct base_timer_interface *interface, struct base_device *device)
 {
 
     memory_clear(group, sizeof (struct timer_group));
@@ -44,7 +44,7 @@ static void init_group(struct timer_group *group, struct base_timer *interface, 
 
 }
 
-void base_register_timer(struct base_timer *interface, struct base_device *device)
+void base_timer_register_interface(struct base_timer_interface *interface, struct base_device *device)
 {
 
     unsigned int index = find_group();
@@ -57,17 +57,17 @@ void base_register_timer(struct base_timer *interface, struct base_device *devic
 
 }
 
-void base_init_timer(struct base_timer *interface, unsigned int (*get_ticks)(struct base_device *device), void (*set_ticks)(struct base_device *device, unsigned int ticks))
+void base_timer_init_interface(struct base_timer_interface *interface, unsigned int (*get_ticks)(struct base_device *device), void (*set_ticks)(struct base_device *device, unsigned int ticks))
 {
 
-    memory_clear(interface, sizeof (struct base_timer));
+    memory_clear(interface, sizeof (struct base_timer_interface));
 
     interface->get_ticks = get_ticks;
     interface->set_ticks = set_ticks;
 
 }
 
-void base_setup_timer()
+void base_timer_setup()
 {
 
     system_init_group(&root, "timer");

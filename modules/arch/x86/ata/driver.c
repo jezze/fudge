@@ -15,7 +15,7 @@ static void attach(struct base_device *device)
 
     struct ata_driver *driver = (struct ata_driver *)device->driver;
 
-    base_register_block(&driver->iblock, device);
+    base_block_register_interface(&driver->iblock, device);
     pic_set_routine(device, handle_irq);
 
 }
@@ -37,7 +37,7 @@ void ata_init_driver(struct ata_driver *driver)
 
     memory_clear(driver, sizeof (struct ata_driver));
     base_init_driver(&driver->base, "ata", check, attach);
-    base_init_block(&driver->iblock, 0, 0);
+    base_block_init_interface(&driver->iblock, 0, 0);
 
 }
 

@@ -1,4 +1,4 @@
-struct base_mouse
+struct base_mouse_interface
 {
 
     char vx;
@@ -6,6 +6,6 @@ struct base_mouse
 
 };
 
-void base_register_mouse(struct base_mouse *interface, struct base_device *device);
-void base_init_mouse(struct base_mouse *interface);
-void base_setup_mouse();
+void base_mouse_register_interface(struct base_mouse_interface *interface, struct base_device *device);
+void base_mouse_init_interface(struct base_mouse_interface *interface);
+void base_mouse_setup();

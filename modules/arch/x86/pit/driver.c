@@ -51,7 +51,7 @@ static void attach(struct base_device *device)
 
     struct pit_driver *driver = (struct pit_driver *)device->driver;
 
-    base_register_timer(&driver->itimer, device);
+    base_timer_register_interface(&driver->itimer, device);
     pic_set_routine(device, handle_irq);
     io_outb(PIT_REGISTER_COMMAND, PIT_COMMAND_COUNTER0 | PIT_COMMAND_BOTH | PIT_COMMAND_MODE3 | PIT_COMMAND_BINARY);
     io_outb(PIT_REGISTER_COUNTER0, driver->divisor >> 0);
@@ -89,7 +89,7 @@ void pit_init_driver(struct pit_driver *driver)
 
     memory_clear(driver, sizeof (struct pit_driver));
     base_init_driver(&driver->base, "pit", check, attach);
-    base_init_timer(&driver->itimer, get_ticks, set_ticks);
+    base_timer_init_interface(&driver->itimer, get_ticks, set_ticks);
 
     driver->divisor = PIT_FREQUENCY / PIT_HERTZ;
 

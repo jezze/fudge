@@ -2,7 +2,7 @@ struct rtl8139_driver
 {
 
     struct base_driver base;
-    struct base_network inetwork;
+    struct base_network_interface inetwork;
     unsigned short io;
     unsigned int mmio;
     unsigned char rx[0x2600];

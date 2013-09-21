@@ -1,4 +1,4 @@
-struct base_terminal
+struct base_terminal_interface
 {
 
     unsigned int (*read_data)(struct base_device *device, unsigned int offset, unsigned int count, void *buffer);
@@ -6,6 +6,6 @@ struct base_terminal
 
 };
 
-void base_register_terminal(struct base_terminal *interface, struct base_device *device);
-void base_init_terminal(struct base_terminal *interface, unsigned int (*read_data)(struct base_device *device, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write_data)(struct base_device *device, unsigned int offset, unsigned int count, void *buffer));
-void base_setup_terminal();
+void base_terminal_register_interface(struct base_terminal_interface *interface, struct base_device *device);
+void base_terminal_init_interface(struct base_terminal_interface *interface, unsigned int (*read_data)(struct base_device *device, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write_data)(struct base_device *device, unsigned int offset, unsigned int count, void *buffer));
+void base_terminal_setup();

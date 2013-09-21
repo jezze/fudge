@@ -59,7 +59,7 @@ static void attach(struct base_device *device)
     struct pci_device *pciDevice = (struct pci_device *)device;
     struct bga_driver *driver = (struct bga_driver *)device->driver;
 
-    base_register_video(&driver->ivideo, device);
+    base_video_register_interface(&driver->ivideo, device);
 
     driver->lfb = (void *)pci_device_ind(pciDevice, PCI_CONFIG_BAR0);
 
@@ -122,7 +122,7 @@ void bga_init_driver(struct bga_driver *driver)
 
     memory_clear(driver, sizeof (struct bga_driver));
     base_init_driver(&driver->base, "bga", check, attach);
-    base_init_video(&driver->ivideo, mode, read_data, write_data, 0, 0);
+    base_video_init_interface(&driver->ivideo, mode, read_data, write_data, 0, 0);
 
     driver->ivideo.xres = 800;
     driver->ivideo.yres = 600;

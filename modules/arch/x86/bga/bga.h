@@ -2,7 +2,7 @@ struct bga_driver
 {
 
     struct base_driver base;
-    struct base_video ivideo;
+    struct base_video_interface ivideo;
     void *bank;
     void *lfb;
 

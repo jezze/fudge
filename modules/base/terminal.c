@@ -7,7 +7,7 @@ struct terminal_group
 {
 
     struct system_group base;
-    struct base_terminal *interface;
+    struct base_terminal_interface *interface;
     struct base_device *device;
     struct system_stream data;
 
@@ -52,7 +52,7 @@ static unsigned int find_group()
 
 }
 
-static void init_group(struct terminal_group *group, struct base_terminal *interface, struct base_device *device)
+static void init_group(struct terminal_group *group, struct base_terminal_interface *interface, struct base_device *device)
 {
 
     memory_clear(group, sizeof (struct terminal_group));
@@ -67,7 +67,7 @@ static void init_group(struct terminal_group *group, struct base_terminal *inter
 
 }
 
-void base_register_terminal(struct base_terminal *interface, struct base_device *device)
+void base_terminal_register_interface(struct base_terminal_interface *interface, struct base_device *device)
 {
 
     unsigned int index = find_group();
@@ -81,17 +81,17 @@ void base_register_terminal(struct base_terminal *interface, struct base_device 
 
 }
 
-void base_init_terminal(struct base_terminal *interface, unsigned int (*read_data)(struct base_device *device, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write_data)(struct base_device *device, unsigned int offset, unsigned int count, void *buffer))
+void base_terminal_init_interface(struct base_terminal_interface *interface, unsigned int (*read_data)(struct base_device *device, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write_data)(struct base_device *device, unsigned int offset, unsigned int count, void *buffer))
 {
 
-    memory_clear(interface, sizeof (struct base_terminal));
+    memory_clear(interface, sizeof (struct base_terminal_interface));
 
     interface->read_data = read_data;
     interface->write_data = write_data;
 
 }
 
-void base_setup_terminal()
+void base_terminal_setup()
 {
 
     system_init_group(&root, "terminal");

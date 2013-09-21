@@ -71,7 +71,7 @@ static void attach(struct base_device *device)
     struct ps2_keyboard_driver *driver = (struct ps2_keyboard_driver *)device->driver;
     unsigned char status;
 
-    base_register_keyboard(&driver->ikeyboard, device);
+    base_keyboard_register_interface(&driver->ikeyboard, device);
     pic_set_routine(device, handle_irq);
     ps2_bus_write_command(bus, 0xAE);
     ps2_bus_write_command(bus, 0x20);
@@ -116,7 +116,7 @@ void ps2_init_keyboard_driver(struct ps2_keyboard_driver *driver)
 
     memory_clear(driver, sizeof (struct ps2_keyboard_driver));
     base_init_driver(&driver->base, "ps2keyboard", check, attach);
-    base_init_keyboard(&driver->ikeyboard, read_data, write_data);
+    base_keyboard_init_interface(&driver->ikeyboard, read_data, write_data);
 
 }
 

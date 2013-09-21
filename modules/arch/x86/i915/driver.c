@@ -121,7 +121,7 @@ static void attach(struct base_device *device)
 
     struct i915_driver *driver = (struct i915_driver *)device->driver;
 
-    base_register_video(&driver->ivideo, device);
+    base_video_register_interface(&driver->ivideo, device);
     pic_set_routine(device, handle_irq);
     enable_dpll();
     enable_pipe();
@@ -168,7 +168,7 @@ void i915_init_driver(struct i915_driver *driver)
 
     memory_clear(driver, sizeof (struct i915_driver));
     base_init_driver(&driver->base, "i915", check, attach);
-    base_init_video(&driver->ivideo, enable, read_data, write_data, 0, 0);
+    base_video_init_interface(&driver->ivideo, enable, read_data, write_data, 0, 0);
 
 }
 

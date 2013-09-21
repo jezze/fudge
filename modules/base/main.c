@@ -197,13 +197,13 @@ void init()
     system_init_group(&root, "base");
     system_register_node(&root.node);
 
-    base_setup_block();
-    base_setup_keyboard();
-    base_setup_mouse();
-    base_setup_network();
-    base_setup_terminal();
-    base_setup_timer();
-    base_setup_video();
+    base_block_setup();
+    base_keyboard_setup();
+    base_mouse_setup();
+    base_network_setup();
+    base_terminal_setup();
+    base_timer_setup();
+    base_video_setup();
 
 }
 

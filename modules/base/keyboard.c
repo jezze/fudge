@@ -7,7 +7,7 @@ struct keyboard_group
 {
 
     struct system_group base;
-    struct base_keyboard *interface;
+    struct base_keyboard_interface *interface;
     struct base_device *device;
     struct system_stream data;
     struct system_stream keymap;
@@ -62,7 +62,7 @@ static unsigned int find_group()
 
 }
 
-static void init_group(struct keyboard_group *group, struct base_keyboard *interface, struct base_device *device)
+static void init_group(struct keyboard_group *group, struct base_keyboard_interface *interface, struct base_device *device)
 {
 
     memory_clear(group, sizeof (struct keyboard_group));
@@ -79,7 +79,7 @@ static void init_group(struct keyboard_group *group, struct base_keyboard *inter
 
 }
 
-void base_register_keyboard(struct base_keyboard *interface, struct base_device *device)
+void base_keyboard_register_interface(struct base_keyboard_interface *interface, struct base_device *device)
 {
 
     unsigned int index = find_group();
@@ -94,17 +94,17 @@ void base_register_keyboard(struct base_keyboard *interface, struct base_device 
 
 }
 
-void base_init_keyboard(struct base_keyboard *interface, unsigned int (*read_data)(struct base_device *device, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write_data)(struct base_device *device, unsigned int offset, unsigned int count, void *buffer))
+void base_keyboard_init_interface(struct base_keyboard_interface *interface, unsigned int (*read_data)(struct base_device *device, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write_data)(struct base_device *device, unsigned int offset, unsigned int count, void *buffer))
 {
 
-    memory_clear(interface, sizeof (struct base_keyboard));
+    memory_clear(interface, sizeof (struct base_keyboard_interface));
 
     interface->read_data = read_data;
     interface->write_data = write_data;
 
 }
 
-void base_setup_keyboard()
+void base_keyboard_setup()
 {
 
     system_init_group(&root, "keyboard");

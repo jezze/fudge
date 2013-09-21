@@ -1,4 +1,4 @@
-struct base_network
+struct base_network_interface
 {
 
     unsigned int (*receive)(struct base_device *device, unsigned int count, void *buffer);
@@ -7,6 +7,6 @@ struct base_network
 
 };
 
-void base_register_network(struct base_network *interface, struct base_device *device);
-void base_init_network(struct base_network *interface, unsigned int (*receive)(struct base_device *device, unsigned int count, void *buffer), unsigned int (*send)(struct base_device *device, unsigned int count, void *buffer));
-void base_setup_network();
+void base_network_register_interface(struct base_network_interface *interface, struct base_device *device);
+void base_network_init_interface(struct base_network_interface *interface, unsigned int (*receive)(struct base_device *device, unsigned int count, void *buffer), unsigned int (*send)(struct base_device *device, unsigned int count, void *buffer));
+void base_network_setup();

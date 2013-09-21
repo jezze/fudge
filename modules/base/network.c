@@ -7,7 +7,7 @@ struct network_group
 {
 
     struct system_group base;
-    struct base_network *interface;
+    struct base_network_interface *interface;
     struct base_device *device;
     struct system_stream data;
     struct system_stream mac;
@@ -73,7 +73,7 @@ static unsigned int find_group()
 
 }
 
-static void init_group(struct network_group *group, struct base_network *interface, struct base_device *device)
+static void init_group(struct network_group *group, struct base_network_interface *interface, struct base_device *device)
 {
 
     memory_clear(group, sizeof (struct network_group));
@@ -90,7 +90,7 @@ static void init_group(struct network_group *group, struct base_network *interfa
 
 }
 
-void base_register_network(struct base_network *interface, struct base_device *device)
+void base_network_register_interface(struct base_network_interface *interface, struct base_device *device)
 {
 
     unsigned int index = find_group();
@@ -105,17 +105,17 @@ void base_register_network(struct base_network *interface, struct base_device *d
 
 }
 
-void base_init_network(struct base_network *interface, unsigned int (*receive)(struct base_device *device, unsigned int count, void *buffer), unsigned int (*send)(struct base_device *device, unsigned int count, void *buffer))
+void base_network_init_interface(struct base_network_interface *interface, unsigned int (*receive)(struct base_device *device, unsigned int count, void *buffer), unsigned int (*send)(struct base_device *device, unsigned int count, void *buffer))
 {
 
-    memory_clear(interface, sizeof (struct base_network));
+    memory_clear(interface, sizeof (struct base_network_interface));
 
     interface->receive = receive;
     interface->send = send;
 
 }
 
-void base_setup_network()
+void base_network_setup()
 {
 
     system_init_group(&root, "network");

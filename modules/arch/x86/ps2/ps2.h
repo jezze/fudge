@@ -24,7 +24,7 @@ struct ps2_keyboard_driver
 {
 
     struct base_driver base;
-    struct base_keyboard ikeyboard;
+    struct base_keyboard_interface ikeyboard;
     struct circular_stream stream;
     unsigned int escaped;
     unsigned int ctrl;
@@ -37,7 +37,7 @@ struct ps2_mouse_driver
 {
 
     struct base_driver base;
-    struct base_mouse imouse;
+    struct base_mouse_interface imouse;
     unsigned char cycle;
     char status;
 
