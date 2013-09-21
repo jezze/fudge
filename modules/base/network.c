@@ -3,7 +3,7 @@
 #include "base.h"
 #include "network.h"
 
-struct network_group
+struct network_device_node
 {
 
     struct system_group base;
@@ -16,43 +16,43 @@ struct network_group
 
 static struct system_group root;
 static struct system_group dev;
-static struct network_group groups[8];
+static struct network_device_node dnodes[8];
 
 static unsigned int data_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct network_group *group = (struct network_group *)self->parent;
+    struct network_device_node *node = (struct network_device_node *)self->parent;
  
     if (offset)
         return 0;
 
-    return group->interface->receive(group->device, count, buffer);
+    return node->interface->receive(node->device, count, buffer);
 
 }
 
 static unsigned int data_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct network_group *group = (struct network_group *)self->parent;
+    struct network_device_node *node = (struct network_device_node *)self->parent;
  
     if (offset)
         return 0;
 
-    return group->interface->send(group->device, count, buffer);
+    return node->interface->send(node->device, count, buffer);
 
 }
 
 static unsigned int mac_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct network_group *group = (struct network_group *)self->parent;
+    struct network_device_node *node = (struct network_device_node *)self->parent;
     char mac[17];
     unsigned int i;
 
     memory_clear(mac, 17);
 
     for (i = 0; i < 6; i++)
-        memory_write_paddednumber(mac, 17, group->interface->mac[i], 16, 2, i * 3);
+        memory_write_paddednumber(mac, 17, node->interface->mac[i], 16, 2, i * 3);
 
     for (i = 2; i < 17; i += 3)
         mac[i] = ':';
@@ -61,7 +61,7 @@ static unsigned int mac_read(struct system_node *self, unsigned int offset, unsi
 
 }
 
-static unsigned int find_group()
+static unsigned int find_device_node()
 {
 
     unsigned int i;
@@ -69,7 +69,7 @@ static unsigned int find_group()
     for (i = 1; i < 8; i++)
     {
 
-        if (!groups[i].base.node.parent)
+        if (!dnodes[i].base.node.parent)
             return i;
 
     }
@@ -78,35 +78,34 @@ static unsigned int find_group()
 
 }
 
-static void init_group(struct network_group *group, struct base_network_interface *interface, struct base_device *device)
+static void init_device_node(struct network_device_node *node, struct base_network_interface *interface, struct base_device *device)
 {
 
-    memory_clear(group, sizeof (struct network_group));
-    system_init_group(&group->base, device->module.name);
-    system_init_stream(&group->data, "data");
-    system_init_stream(&group->mac, "mac");
+    memory_clear(node, sizeof (struct network_device_node));
+    system_init_group(&node->base, device->module.name);
+    system_init_stream(&node->data, "data");
+    system_init_stream(&node->mac, "mac");
 
-    group->interface = interface;
-    group->device = device;
-
-    group->data.node.read = data_read;
-    group->data.node.write = data_write;
-    group->mac.node.read = mac_read;
+    node->interface = interface;
+    node->device = device;
+    node->data.node.read = data_read;
+    node->data.node.write = data_write;
+    node->mac.node.read = mac_read;
 
 }
 
 void base_network_register_interface(struct base_network_interface *interface, struct base_device *device)
 {
 
-    unsigned int index = find_group();
+    unsigned int index = find_device_node();
 
     if (!index)
         return;
 
-    init_group(&groups[index], interface, device);
-    system_group_add(&groups[index].base, &groups[index].data.node);
-    system_group_add(&groups[index].base, &groups[index].mac.node);
-    system_group_add(&dev, &groups[index].base.node);
+    init_device_node(&dnodes[index], interface, device);
+    system_group_add(&dnodes[index].base, &dnodes[index].data.node);
+    system_group_add(&dnodes[index].base, &dnodes[index].mac.node);
+    system_group_add(&dev, &dnodes[index].base.node);
 
 }
 

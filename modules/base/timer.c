@@ -3,7 +3,7 @@
 #include "base.h"
 #include "timer.h"
 
-struct timer_group
+struct timer_device_node
 {
 
     struct system_group base;
@@ -14,9 +14,9 @@ struct timer_group
 
 static struct system_group root;
 static struct system_group dev;
-static struct timer_group groups[8];
+static struct timer_device_node dnodes[8];
 
-static unsigned int find_group()
+static unsigned int find_device_node()
 {
 
     unsigned int i;
@@ -24,7 +24,7 @@ static unsigned int find_group()
     for (i = 1; i < 8; i++)
     {
 
-        if (!groups[i].base.node.parent)
+        if (!dnodes[i].base.node.parent)
             return i;
 
     }
@@ -33,27 +33,27 @@ static unsigned int find_group()
 
 }
 
-static void init_group(struct timer_group *group, struct base_timer_interface *interface, struct base_device *device)
+static void init_device_node(struct timer_device_node *node, struct base_timer_interface *interface, struct base_device *device)
 {
 
-    memory_clear(group, sizeof (struct timer_group));
-    system_init_group(&group->base, device->module.name);
+    memory_clear(node, sizeof (struct timer_device_node));
+    system_init_group(&node->base, device->module.name);
 
-    group->interface = interface;
-    group->device = device;
+    node->interface = interface;
+    node->device = device;
 
 }
 
 void base_timer_register_interface(struct base_timer_interface *interface, struct base_device *device)
 {
 
-    unsigned int index = find_group();
+    unsigned int index = find_device_node();
 
     if (!index)
         return;
 
-    init_group(&groups[index], interface, device);
-    system_group_add(&dev, &groups[index].base.node);
+    init_device_node(&dnodes[index], interface, device);
+    system_group_add(&dev, &dnodes[index].base.node);
 
 }
 

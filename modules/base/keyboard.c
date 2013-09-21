@@ -3,7 +3,7 @@
 #include "base.h"
 #include "keyboard.h"
 
-struct keyboard_group
+struct keyboard_device_node
 {
 
     struct system_group base;
@@ -16,36 +16,36 @@ struct keyboard_group
 
 static struct system_group root;
 static struct system_group dev;
-static struct keyboard_group groups[8];
+static struct keyboard_device_node dnodes[8];
 
 static unsigned int data_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct keyboard_group *group = (struct keyboard_group *)self->parent;
+    struct keyboard_device_node *node = (struct keyboard_device_node *)self->parent;
  
-    return group->interface->read_data(group->device, offset, count, buffer);
+    return node->interface->read_data(node->device, offset, count, buffer);
 
 }
 
 static unsigned int keymap_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct keyboard_group *group = (struct keyboard_group *)self->parent;
+    struct keyboard_device_node *node = (struct keyboard_device_node *)self->parent;
 
-    return memory_read(buffer, count, group->interface->keymap, 256, offset);
+    return memory_read(buffer, count, node->interface->keymap, 256, offset);
 
 }
 
 static unsigned int keymap_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct keyboard_group *group = (struct keyboard_group *)self->parent;
+    struct keyboard_device_node *node = (struct keyboard_device_node *)self->parent;
 
-    return memory_write(group->interface->keymap, 256, buffer, count, offset);
+    return memory_write(node->interface->keymap, 256, buffer, count, offset);
 
 }
 
-static unsigned int find_group()
+static unsigned int find_device_node()
 {
 
     unsigned int i;
@@ -53,7 +53,7 @@ static unsigned int find_group()
     for (i = 1; i < 8; i++)
     {
 
-        if (!groups[i].base.node.parent)
+        if (!dnodes[i].base.node.parent)
             return i;
 
     }
@@ -62,35 +62,34 @@ static unsigned int find_group()
 
 }
 
-static void init_group(struct keyboard_group *group, struct base_keyboard_interface *interface, struct base_device *device)
+static void init_device_node(struct keyboard_device_node *node, struct base_keyboard_interface *interface, struct base_device *device)
 {
 
-    memory_clear(group, sizeof (struct keyboard_group));
-    system_init_group(&group->base, device->module.name);
-    system_init_stream(&group->data, "data");
-    system_init_stream(&group->keymap, "keymap");
+    memory_clear(node, sizeof (struct keyboard_device_node));
+    system_init_group(&node->base, device->module.name);
+    system_init_stream(&node->data, "data");
+    system_init_stream(&node->keymap, "keymap");
 
-    group->interface = interface;
-    group->device = device;
-
-    group->data.node.read = data_read;
-    group->keymap.node.read = keymap_read;
-    group->keymap.node.write = keymap_write;
+    node->interface = interface;
+    node->device = device;
+    node->data.node.read = data_read;
+    node->keymap.node.read = keymap_read;
+    node->keymap.node.write = keymap_write;
 
 }
 
 void base_keyboard_register_interface(struct base_keyboard_interface *interface, struct base_device *device)
 {
 
-    unsigned int index = find_group();
+    unsigned int index = find_device_node();
 
     if (!index)
         return;
 
-    init_group(&groups[index], interface, device);
-    system_group_add(&groups[index].base, &groups[index].data.node);
-    system_group_add(&groups[index].base, &groups[index].keymap.node);
-    system_group_add(&dev, &groups[index].base.node);
+    init_device_node(&dnodes[index], interface, device);
+    system_group_add(&dnodes[index].base, &dnodes[index].data.node);
+    system_group_add(&dnodes[index].base, &dnodes[index].keymap.node);
+    system_group_add(&dev, &dnodes[index].base.node);
 
 }
 

@@ -3,7 +3,7 @@
 #include "base.h"
 #include "terminal.h"
 
-struct terminal_group
+struct terminal_device_node
 {
 
     struct system_group base;
@@ -15,27 +15,27 @@ struct terminal_group
 
 static struct system_group root;
 static struct system_group dev;
-static struct terminal_group groups[8];
+static struct terminal_device_node dnodes[8];
 
 static unsigned int data_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct terminal_group *group = (struct terminal_group *)self->parent;
+    struct terminal_device_node *node = (struct terminal_device_node *)self->parent;
  
-    return group->interface->read_data(group->device, offset, count, buffer);
+    return node->interface->read_data(node->device, offset, count, buffer);
 
 }
 
 static unsigned int data_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct terminal_group *group = (struct terminal_group *)self->parent;
+    struct terminal_device_node *node = (struct terminal_device_node *)self->parent;
 
-    return group->interface->write_data(group->device, offset, count, buffer);
+    return node->interface->write_data(node->device, offset, count, buffer);
 
 }
 
-static unsigned int find_group()
+static unsigned int find_device_node()
 {
 
     unsigned int i;
@@ -43,7 +43,7 @@ static unsigned int find_group()
     for (i = 1; i < 8; i++)
     {
 
-        if (!groups[i].base.node.parent)
+        if (!dnodes[i].base.node.parent)
             return i;
 
     }
@@ -52,32 +52,31 @@ static unsigned int find_group()
 
 }
 
-static void init_group(struct terminal_group *group, struct base_terminal_interface *interface, struct base_device *device)
+static void init_device_node(struct terminal_device_node *node, struct base_terminal_interface *interface, struct base_device *device)
 {
 
-    memory_clear(group, sizeof (struct terminal_group));
-    system_init_group(&group->base, device->module.name);
-    system_init_stream(&group->data, "data");
+    memory_clear(node, sizeof (struct terminal_device_node));
+    system_init_group(&node->base, device->module.name);
+    system_init_stream(&node->data, "data");
 
-    group->interface = interface;
-    group->device = device;
-
-    group->data.node.read = data_read;
-    group->data.node.write = data_write;
+    node->interface = interface;
+    node->device = device;
+    node->data.node.read = data_read;
+    node->data.node.write = data_write;
 
 }
 
 void base_terminal_register_interface(struct base_terminal_interface *interface, struct base_device *device)
 {
 
-    unsigned int index = find_group();
+    unsigned int index = find_device_node();
 
     if (!index)
         return;
 
-    init_group(&groups[index], interface, device);
-    system_group_add(&groups[index].base, &groups[index].data.node);
-    system_group_add(&dev, &groups[index].base.node);
+    init_device_node(&dnodes[index], interface, device);
+    system_group_add(&dnodes[index].base, &dnodes[index].data.node);
+    system_group_add(&dev, &dnodes[index].base.node);
 
 }
 
