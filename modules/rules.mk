@@ -5,7 +5,7 @@ include modules/base/rules.mk
 include modules/block/rules.mk
 include modules/log/rules.mk
 include modules/mtwist/rules.mk
-include modules/net/rules.mk
+include modules/network/rules.mk
 include modules/null/rules.mk
 include modules/pipe/rules.mk
 include modules/system/rules.mk

@@ -4,8 +4,6 @@
 /bin/modload < /boot/mod/null.ko
 /bin/modload < /boot/mod/mtwist.ko
 /bin/modload < /boot/mod/log.ko
-/bin/modload < /boot/mod/block.ko
-/bin/modload < /boot/mod/net.ko
 /bin/modload < /boot/mod/io.ko
 /bin/modload < /boot/mod/cpuid.ko
 /bin/modload < /boot/mod/msr.ko
