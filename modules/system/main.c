@@ -23,17 +23,9 @@ void system_group_add(struct system_group *group, struct system_node *node)
 
     }
 
-    for (current = group->children; current; current = current->sibling)
-    {
+    for (current = group->children; current->sibling; current = current->sibling);
 
-        if (current->sibling)
-            continue;
-
-        current->sibling = node;
-
-        return;
-
-    }
+    current->sibling = node;
 
 }
 
@@ -53,17 +45,9 @@ void system_group_remove(struct system_group *group, struct system_node *node)
 
     }
 
-    for (current = group->children; current; current = current->sibling)
-    {
+    for (current = group->children; current->sibling != node; current = current->sibling);
 
-        if (current->sibling != node)
-            continue;
-
-        current->sibling = current->sibling->sibling;
-
-        return;
-
-    }
+    current->sibling = current->sibling->sibling;
 
 }
 

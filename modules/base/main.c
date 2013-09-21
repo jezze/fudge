@@ -26,17 +26,9 @@ static void register_module(struct base_module *module)
 
     }
 
-    for (current = modules; current; current = current->sibling)
-    {
+    for (current = modules; current->sibling; current = current->sibling);
 
-        if (current->sibling)
-            continue;
-
-        current->sibling = module;
-
-        return;
-
-    }
+    current->sibling = module;
 
 }
 
@@ -98,17 +90,9 @@ static void unregister_module(struct base_module *module)
 
     }
 
-    for (current = modules; current; current = current->sibling)
-    {
+    for (current = modules; current->sibling != module; current = current->sibling);
 
-        if (current->sibling != module)
-            continue;
-
-        current->sibling = current->sibling->sibling;
-
-        return;
-
-    }
+    current->sibling = current->sibling->sibling;
 
 }
 
