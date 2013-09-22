@@ -16,11 +16,11 @@ static unsigned int parent(struct vfs_backend *backend, unsigned int id)
 static unsigned int match(struct vfs_backend *backend)
 {
 
-    char buffer[16];
+    struct system_node root;
 
-    backend->read(backend, 0, 16, buffer);
+    backend->read(backend, 0, sizeof (struct system_node), &root);
 
-    return memory_match(buffer, "FUDGE_SYSTEM", 12);
+    return memory_match(root.name, "FUDGE_SYSTEM", 12);
 
 }
 
