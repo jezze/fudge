@@ -7,7 +7,7 @@
 #include "kernel.h"
 
 #define KERNEL_BINARY_PROTOCOLS         1
-#define KERNEL_VFS_PROTOCOLS            2
+#define KERNEL_VFS_PROTOCOLS            3
 
 static struct
 {
@@ -94,10 +94,12 @@ struct container *kernel_setup()
 {
 
     vfs_setup();
-    vfs_init_cpio(&state.vfs.protocols[0]);
+    vfs_init_system(&state.vfs.protocols[0]);
     vfs_register_protocol(&state.vfs.protocols[0]);
-    vfs_init_tar(&state.vfs.protocols[1]);
+    vfs_init_cpio(&state.vfs.protocols[1]);
     vfs_register_protocol(&state.vfs.protocols[1]);
+    vfs_init_tar(&state.vfs.protocols[2]);
+    vfs_register_protocol(&state.vfs.protocols[2]);
     binary_setup();
     binary_init_elf(&state.binary.protocols[0]);
     binary_register_protocol(&state.binary.protocols[0]);
