@@ -21,59 +21,42 @@ struct binary_protocol *binary_find_protocol(struct vfs_session *session, unsign
 
 }
 
+static struct binary_protocol *find_presibling(struct binary_protocol *protocol)
+{
+
+    struct binary_protocol *current = protocols;
+
+    if (current == protocol)
+        return 0;
+
+    while (current->sibling != protocol)
+        current = current->sibling;
+
+    return current;
+
+}
+
 void binary_register_protocol(struct binary_protocol *protocol)
 {
 
-    struct binary_protocol *current;
+    struct binary_protocol *current = find_presibling(0);
 
-    if (!protocols)
-    {
-
-        protocols = protocol;
-
-        return;
-
-    }
-
-    for (current = protocols; current; current = current->sibling)
-    {
-
-        if (current->sibling)
-            continue;
-
+    if (current)
         current->sibling = protocol;
-
-        return;
-
-    }
+    else
+        protocols = protocol;
 
 }
 
 void binary_unregister_protocol(struct binary_protocol *protocol)
 {
 
-    struct binary_protocol *current;
+    struct binary_protocol *current = find_presibling(protocol);
 
-    if (protocols == protocol)
-    {
-
-        protocols = protocols->sibling;
-
-        return;
-
-    }
-
-    for (current = protocols; current; current = current->sibling)
-    {
-
-        if (current->sibling != protocol)
-            continue;
-
+    if (current)
         current->sibling = current->sibling->sibling;
-
-        return;
-
-    }
+    else
+        protocols = protocols->sibling;
 
 }
 
