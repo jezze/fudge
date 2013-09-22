@@ -44,59 +44,42 @@ struct vfs_protocol *vfs_find_protocol(struct vfs_backend *backend)
 
 }
 
+static struct vfs_protocol *find_presibling(struct vfs_protocol *protocol)
+{
+
+    struct vfs_protocol *current = protocols;
+
+    if (current == protocol)
+        return 0;
+
+    while (current->sibling != protocol)
+        current = current->sibling;
+
+    return current;
+
+}
+
 void vfs_register_protocol(struct vfs_protocol *protocol)
 {
 
-    struct vfs_protocol *current;
+    struct vfs_protocol *current = find_presibling(0);
 
-    if (!protocols)
-    {
-
-        protocols = protocol;
-
-        return;
-
-    }
-
-    for (current = protocols; current; current = current->sibling)
-    {
-
-        if (current->sibling)
-            continue;
-
+    if (current)
         current->sibling = protocol;
-
-        return;
-
-    }
+    else
+        protocols = protocol;
 
 }
 
 void vfs_unregister_protocol(struct vfs_protocol *protocol)
 {
 
-    struct vfs_protocol *current;
+    struct vfs_protocol *current = find_presibling(protocol);
 
-    if (protocols == protocol)
-    {
-
-        protocols = protocols->sibling;
-
-        return;
-
-    }
-
-    for (current = protocols; current; current = current->sibling)
-    {
-
-        if (current->sibling != protocol)
-            continue;
-
+    if (current)
         current->sibling = current->sibling->sibling;
-
-        return;
-
-    }
+    else
+        protocols = protocols->sibling;
 
 }
 
