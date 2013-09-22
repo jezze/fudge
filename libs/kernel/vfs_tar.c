@@ -4,6 +4,13 @@
 #include "container.h"
 #include "kernel.h"
 
+static unsigned int root(struct vfs_backend *backend)
+{
+
+    return 0xFFFFFFFF;
+
+}
+
 static unsigned int decode(unsigned int id)
 {
 
@@ -218,7 +225,7 @@ void vfs_init_tar(struct vfs_protocol *protocol)
 {
 
     memory_clear(protocol, sizeof (struct vfs_protocol));
-    vfs_init_protocol(protocol, 0xFFFFFFFF, match, open, close, read, write, parent, walk, get_physical);
+    vfs_init_protocol(protocol, match, root, open, close, read, write, parent, walk, get_physical);
 
 }
 

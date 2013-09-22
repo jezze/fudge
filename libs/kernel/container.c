@@ -190,7 +190,10 @@ static unsigned int mount(struct container *self, struct task *task, void *stack
     if (!mount->child.session.protocol)
         return 0;
 
-    mount->child.id = mount->child.session.protocol->rootid;
+    mount->child.id = mount->child.session.protocol->root(mount->child.session.backend);
+
+    if (!mount->child.id)
+        return 0;
 
     memory_copy(&mount->parent, pdescriptor, sizeof (struct task_descriptor));
 

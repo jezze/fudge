@@ -24,10 +24,12 @@ void system_init_backend(struct system_backend *backend)
 
     memory_clear(backend, sizeof (struct system_backend));
     vfs_init_backend(&backend->base, backend_read, backend_write);
-    memory_copy(&backend->header.id, "FUDGE_SYSTEM", 12);
-    system_init_group(&backend->header.root, "FUDGE_ROOT");
+    system_init_group(&backend->root, "FUDGE_ROOT");
 
-    backend->header.root.node.parent = &backend->header.root.node;
+    backend->root.node.parent = &backend->root.node;
+
+    memory_copy(&backend->header.id, "FUDGE_SYSTEM", 12);
+    memory_copy(&backend->header.root, &backend->root, 4);
 
 }
 

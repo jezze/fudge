@@ -51,14 +51,14 @@ void system_group_remove(struct system_group *group, struct system_node *node)
 void system_register_node(struct system_node *node)
 {
 
-    system_group_add(&backend.header.root, node);
+    system_group_add(&backend.root, node);
 
 }
 
 void system_unregister_node(struct system_node *node)
 {
 
-    system_group_remove(&backend.header.root, node);
+    system_group_remove(&backend.root, node);
 
 }
 
@@ -174,7 +174,7 @@ void init()
 {
 
     system_init_backend(&backend);
-    system_init_protocol(&protocol, &backend);
+    system_init_protocol(&protocol);
     vfs_register_protocol(&protocol);
 
 }

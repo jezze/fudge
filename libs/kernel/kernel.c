@@ -23,10 +23,10 @@ static void setup_container(struct container *container, struct vfs_session *ses
 
     container->mounts[0x01].parent.session.backend = session->backend;
     container->mounts[0x01].parent.session.protocol = session->protocol;
-    container->mounts[0x01].parent.id = session->protocol->rootid;
+    container->mounts[0x01].parent.id = session->protocol->root(session->backend);
     container->mounts[0x01].child.session.backend = session->backend;
     container->mounts[0x01].child.session.protocol = session->protocol;
-    container->mounts[0x01].child.id = session->protocol->rootid;
+    container->mounts[0x01].child.id = session->protocol->root(session->backend);
 
 }
 
@@ -39,10 +39,10 @@ static void setup_task(struct task *task, struct vfs_session *session, struct bi
 
     task->descriptors[0x01].session.backend = session->backend;
     task->descriptors[0x01].session.protocol = session->protocol;
-    task->descriptors[0x01].id = session->protocol->rootid;
+    task->descriptors[0x01].id = session->protocol->root(session->backend);
     task->descriptors[0x02].session.backend = session->backend;
     task->descriptors[0x02].session.protocol = session->protocol;
-    task->descriptors[0x02].id = session->protocol->rootid;
+    task->descriptors[0x02].id = session->protocol->root(session->backend);
 
 }
 
@@ -64,7 +64,12 @@ void kernel_setup_modules(struct container *container, struct task *task, unsign
         if (!session.protocol)
             continue;
 
-        id = session.protocol->walk(session.backend, session.protocol->rootid, 8, "bin/init");
+        id = session.protocol->root(session.backend);
+
+        if (!id)
+            continue;
+
+        id = session.protocol->walk(session.backend, id, 8, "bin/init");
 
         if (!id)
             continue;

@@ -4,7 +4,7 @@
 #include "container.h"
 #include "kernel.h"
 
-static unsigned int find_top(struct vfs_backend *backend)
+static unsigned int root(struct vfs_backend *backend)
 {
 
     struct cpio_header header;
@@ -41,7 +41,7 @@ static unsigned int find_top(struct vfs_backend *backend)
 static unsigned int decode(struct vfs_backend *backend, unsigned int id)
 {
 
-    return (id == 0xFFFFFFFF) ? find_top(backend) : id;
+    return (id == 0xFFFFFFFF) ? root(backend) : id;
 
 }
 
@@ -292,7 +292,7 @@ void vfs_init_cpio(struct vfs_protocol *protocol)
 {
 
     memory_clear(protocol, sizeof (struct vfs_protocol));
-    vfs_init_protocol(protocol, 0xFFFFFFFF, match, open, close, read, write, parent, walk, get_physical);
+    vfs_init_protocol(protocol, match, root, open, close, read, write, parent, walk, get_physical);
 
 }
 

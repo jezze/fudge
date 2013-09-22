@@ -4,6 +4,17 @@
 #include "backend.h"
 #include "protocol.h"
 
+static unsigned int root(struct vfs_backend *backend)
+{
+
+    struct system_header header;
+
+    backend->read(backend, 0, sizeof (struct system_header), &header);
+
+    return header.root;
+
+}
+
 static unsigned int parent(struct vfs_backend *backend, unsigned int id)
 {
 
@@ -92,10 +103,10 @@ static unsigned int write(struct vfs_backend *backend, unsigned int id, unsigned
 
 }
 
-void system_init_protocol(struct vfs_protocol *protocol, struct system_backend *backend)
+void system_init_protocol(struct vfs_protocol *protocol)
 {
 
-    vfs_init_protocol(protocol, (unsigned int)&backend->header.root, match, open, close, read, write, parent, walk, 0);
+    vfs_init_protocol(protocol, match, root, open, close, read, write, parent, walk, 0);
 
 }
 
