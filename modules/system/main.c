@@ -7,47 +7,44 @@
 static struct system_backend backend;
 static struct vfs_protocol protocol;
 
+static struct system_node *find_presibling(struct system_node *current, struct system_node *node)
+{
+
+    if (current == node)
+        return 0;
+
+    while (current->sibling != node)
+        current = current->sibling;
+
+    return current;
+
+}
+
 void system_group_add(struct system_group *group, struct system_node *node)
 {
 
-    struct system_node *current;
+    struct system_node *current = find_presibling(group->children, 0);
 
-    node->parent = &group->node;
-
-    if (!group->children)
-    {
-
+    if (current)
+        current->sibling = node;
+    else
         group->children = node;
 
-        return;
-
-    }
-
-    for (current = group->children; current->sibling; current = current->sibling);
-
-    current->sibling = node;
+    node->parent = &group->node;
 
 }
 
 void system_group_remove(struct system_group *group, struct system_node *node)
 {
 
-    struct system_node *current;
+    struct system_node *current = find_presibling(group->children, node);
 
-    node->parent = 0;
-
-    if (group->children == node)
-    {
-
+    if (current)
+        current->sibling = current->sibling->sibling;
+    else
         group->children = group->children->sibling;
 
-        return;
-
-    }
-
-    for (current = group->children; current->sibling != node; current = current->sibling);
-
-    current->sibling = current->sibling->sibling;
+    node->parent = 0;
 
 }
 

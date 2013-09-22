@@ -12,23 +12,30 @@
 static struct base_module *modules;
 static struct system_group root;
 
+static struct base_module *find_presibling(struct base_module *module)
+{
+
+    struct base_module *current = modules;
+
+    if (current == module)
+        return 0;
+
+    while (current->sibling != module)
+        current = current->sibling;
+
+    return current;
+
+}
+
 static void register_module(struct base_module *module)
 {
 
-    struct base_module *current;
+    struct base_module *current = find_presibling(0);
 
-    if (!modules)
-    {
-
+    if (current)
+        current->sibling = module;
+    else
         modules = module;
-
-        return;
-
-    }
-
-    for (current = modules; current->sibling; current = current->sibling);
-
-    current->sibling = module;
 
 }
 
@@ -79,20 +86,12 @@ void base_register_driver(struct base_driver *driver)
 static void unregister_module(struct base_module *module)
 {
 
-    struct base_module *current;
+    struct base_module *current = find_presibling(module);
 
-    if (modules == module)
-    {
-
+    if (current)
+        current->sibling = current->sibling->sibling;
+    else
         modules = modules->sibling;
-
-        return;
-
-    }
-
-    for (current = modules; current->sibling != module; current = current->sibling);
-
-    current->sibling = current->sibling->sibling;
 
 }
 
