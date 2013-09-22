@@ -2,8 +2,10 @@
 #include <kernel/vfs.h>
 #include "system.h"
 #include "backend.h"
+#include "protocol.h"
 
 static struct system_backend backend;
+static struct vfs_protocol protocol;
 
 static struct system_node *find_presibling(struct system_node *current, struct system_node *node)
 {
@@ -172,6 +174,8 @@ void init()
 {
 
     system_init_backend(&backend);
+    system_init_protocol(&protocol);
+    vfs_register_protocol(&protocol);
 
 }
 

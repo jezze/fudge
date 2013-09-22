@@ -1,54 +1,8 @@
-#include <fudge/kernel.h>
-#include "vfs.h"
-#include "task.h"
-#include "container.h"
-#include "kernel.h"
-
-struct system_header
-{
-
-    char id[12];
-    unsigned int root;
-
-};
-
-enum system_nodetype
-{
-
-    SYSTEM_NODETYPE_NONE                = 0,
-    SYSTEM_NODETYPE_GROUP               = 1,
-    SYSTEM_NODETYPE_STREAM              = 2
-
-};
-
-struct system_node
-{
-
-    struct system_node *parent;
-    struct system_node *sibling;
-    enum system_nodetype type;
-    char *name;
-    unsigned int (*open)(struct system_node *self);
-    unsigned int (*close)(struct system_node *self);
-    unsigned int (*read)(struct system_node *self, unsigned int offset, unsigned int count, void *buffer);
-    unsigned int (*write)(struct system_node *self, unsigned int offset, unsigned int count, void *buffer);
-
-};
-
-struct system_group
-{
-
-    struct system_node node;
-    struct system_node *children;
-
-};
-
-struct system_stream
-{
-
-    struct system_node node;
-
-};
+#include <fudge/module.h>
+#include <kernel/vfs.h>
+#include "system.h"
+#include "backend.h"
+#include "protocol.h"
 
 static unsigned int root(struct vfs_backend *backend)
 {
@@ -149,10 +103,9 @@ static unsigned int write(struct vfs_backend *backend, unsigned int id, unsigned
 
 }
 
-void vfs_init_system(struct vfs_protocol *protocol)
+void system_init_protocol(struct vfs_protocol *protocol)
 {
 
-    memory_clear(protocol, sizeof (struct vfs_protocol));
     vfs_init_protocol(protocol, match, root, open, close, read, write, parent, walk, 0);
 
 }
