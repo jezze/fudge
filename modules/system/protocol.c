@@ -1,7 +1,6 @@
 #include <fudge/module.h>
 #include <kernel/vfs.h>
 #include "system.h"
-#include "backend.h"
 #include "protocol.h"
 
 static unsigned int root(struct vfs_backend *backend)

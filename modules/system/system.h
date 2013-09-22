@@ -7,6 +7,14 @@ enum system_nodetype
 
 };
 
+struct system_header
+{
+
+    char id[12];
+    unsigned int root;
+
+};
+
 struct system_node
 {
 
