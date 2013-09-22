@@ -16,11 +16,11 @@ static unsigned int parent(struct vfs_backend *backend, unsigned int id)
 static unsigned int match(struct vfs_backend *backend)
 {
 
-    struct system_node root;
+    struct system_header header;
 
-    backend->read(backend, 0, sizeof (struct system_node), &root);
+    backend->read(backend, 0, sizeof (struct system_header), &header);
 
-    return memory_match(root.name, "FUDGE_SYSTEM", 12);
+    return memory_match(header.id, "FUDGE_SYSTEM", 12);
 
 }
 
@@ -95,7 +95,7 @@ static unsigned int write(struct vfs_backend *backend, unsigned int id, unsigned
 void system_init_protocol(struct vfs_protocol *protocol, struct system_backend *backend)
 {
 
-    vfs_init_protocol(protocol, (unsigned int)&backend->root, match, open, close, read, write, parent, walk, 0);
+    vfs_init_protocol(protocol, (unsigned int)&backend->header.root, match, open, close, read, write, parent, walk, 0);
 
 }
 

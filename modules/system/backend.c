@@ -8,7 +8,7 @@ static unsigned int backend_read(struct vfs_backend *self, unsigned int offset, 
 
     struct system_backend *backend = (struct system_backend *)self;
 
-    return memory_read(buffer, count, &backend->root.node, sizeof (struct system_node), offset);
+    return memory_read(buffer, count, &backend->header, sizeof (struct system_header), offset);
 
 }
 
@@ -24,9 +24,10 @@ void system_init_backend(struct system_backend *backend)
 
     memory_clear(backend, sizeof (struct system_backend));
     vfs_init_backend(&backend->base, backend_read, backend_write);
-    system_init_group(&backend->root, "FUDGE_SYSTEM");
+    memory_copy(&backend->header.id, "FUDGE_SYSTEM", 12);
+    system_init_group(&backend->header.root, "FUDGE_ROOT");
 
-    backend->root.node.parent = &backend->root.node;
+    backend->header.root.node.parent = &backend->header.root.node;
 
 }
 
