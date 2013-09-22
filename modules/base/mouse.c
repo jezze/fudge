@@ -3,18 +3,17 @@
 #include "base.h"
 #include "mouse.h"
 
-struct mouse_node
+static struct mouse_node
 {
 
     struct system_group base;
     struct base_mouse_interface *interface;
     struct base_device *device;
 
-};
+} node[8];
 
 static struct system_group root;
 static struct system_group dev;
-static struct mouse_node node[8];
 
 static unsigned int find_node()
 {

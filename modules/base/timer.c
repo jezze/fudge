@@ -3,18 +3,17 @@
 #include "base.h"
 #include "timer.h"
 
-struct timer_node
+static struct timer_node
 {
 
     struct system_group base;
     struct base_timer_interface *interface;
     struct base_device *device;
 
-};
+} node[8];
 
 static struct system_group root;
 static struct system_group dev;
-static struct timer_node node[8];
 
 static unsigned int find_node()
 {

@@ -3,7 +3,7 @@
 #include "base.h"
 #include "network.h"
 
-struct network_node
+static struct network_node
 {
 
     struct system_group base;
@@ -12,11 +12,10 @@ struct network_node
     struct system_stream data;
     struct system_stream mac;
 
-};
+} node[8];
 
 static struct system_group root;
 static struct system_group dev;
-static struct network_node node[8];
 
 static unsigned int data_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {

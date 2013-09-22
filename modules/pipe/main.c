@@ -12,7 +12,7 @@ struct pipe_stream
 
 };
 
-struct pipe_session
+static struct pipe_session
 {
 
     struct system_group base;
@@ -23,11 +23,10 @@ struct pipe_session
     struct pipe_stream istream;
     struct pipe_stream ostream;
 
-};
+} session[8];
 
 static struct system_group root;
 static struct system_stream clone;
-static struct pipe_session session[8];
 
 unsigned int stream_read(struct pipe_stream *stream, unsigned int count, void *buffer)
 {

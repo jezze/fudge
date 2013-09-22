@@ -3,18 +3,17 @@
 #include "base.h"
 #include "block.h"
 
-struct block_node
+static struct block_node
 {
 
     struct system_group base;
     struct base_block_interface *interface;
     struct base_device *device;
 
-};
+} node[8];
 
 static struct system_group root;
 static struct system_group dev;
-static struct block_node node[8];
 
 static unsigned int find_node()
 {

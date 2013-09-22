@@ -3,7 +3,7 @@
 #include "base.h"
 #include "terminal.h"
 
-struct terminal_node
+static struct terminal_node
 {
 
     struct system_group base;
@@ -11,11 +11,10 @@ struct terminal_node
     struct base_device *device;
     struct system_stream data;
 
-};
+} node[8];
 
 static struct system_group root;
 static struct system_group dev;
-static struct terminal_node node[8];
 
 static unsigned int data_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {

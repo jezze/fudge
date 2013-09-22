@@ -3,7 +3,7 @@
 #include "base.h"
 #include "video.h"
 
-struct video_node
+static struct video_node
 {
 
     struct system_group base;
@@ -13,11 +13,10 @@ struct video_node
     struct system_stream colormap;
     struct system_stream mode;
 
-};
+} node[8];
 
 static struct system_group root;
 static struct system_group dev;
-static struct video_node node[8];
 
 static unsigned int data_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
