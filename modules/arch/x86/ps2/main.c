@@ -4,6 +4,8 @@
 #include <base/keyboard.h>
 #include <base/mouse.h>
 #include "ps2.h"
+#include "keyboard_driver.h"
+#include "mouse_driver.h"
 
 enum ps2_register
 {

@@ -1,7 +1,5 @@
 #include <fudge/module.h>
 #include <base/base.h>
-#include <base/keyboard.h>
-#include <base/mouse.h>
 #include <arch/x86/io/io.h>
 #include "ps2.h"
 

@@ -1,10 +1,9 @@
 #include <fudge/module.h>
 #include <base/base.h>
-#include <base/keyboard.h>
 #include <base/mouse.h>
 #include <arch/x86/pic/pic.h>
-#include <arch/x86/io/io.h>
 #include "ps2.h"
+#include "mouse_driver.h"
 
 static void handle_irq(struct base_device *device)
 {
