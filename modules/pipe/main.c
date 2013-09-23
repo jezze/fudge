@@ -1,7 +1,6 @@
 #include <fudge/module.h>
 #include <system/system.h>
 #include <base/base.h>
-#include "pipe.h"
 
 struct pipe_stream
 {
