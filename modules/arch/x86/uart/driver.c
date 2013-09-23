@@ -201,7 +201,6 @@ static char read(struct uart_device *device)
 
 }
 
-/*
 static void write(struct uart_device *device, char c)
 {
 
@@ -210,7 +209,6 @@ static void write(struct uart_device *device, char c)
     io_outb(device->port, c);
 
 }
-*/
 
 static void handle_irq(struct base_device *device)
 {
@@ -261,9 +259,14 @@ static unsigned int read_terminal_data(struct base_device *device, unsigned int 
 static unsigned int write_terminal_data(struct base_device *device, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct uart_driver *driver = (struct uart_driver *)device->driver;
+    struct uart_device *uartDevice = (struct uart_device *)device;
+    unsigned char *b = buffer;
+    unsigned int i;
 
-    return write_stream(&driver->stream, count, buffer);
+    for (i = 0; i < count; i++)
+        write(uartDevice, b[i]);
+
+    return count;
 
 }
 
