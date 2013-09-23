@@ -1,11 +1,10 @@
 #include <fudge/module.h>
-#include <fudge/define.h>
-#include <fudge/data/circular.h>
 #include <base/base.h>
 #include <base/terminal.h>
 #include <arch/x86/pic/pic.h>
 #include <arch/x86/io/io.h>
 #include "uart.h"
+#include "driver.h"
 
 enum uart_register
 {
@@ -147,6 +146,52 @@ enum uart_msr
 
 };
 
+unsigned int read_stream(struct uart_driver_stream *stream, unsigned int count, void *buffer)
+{
+
+    char *b = buffer;
+    unsigned int i;
+
+    for (i = 0; i < count; i++)
+    {
+
+        unsigned int tail = (stream->tail + 1) % 512;
+
+        if (stream->head == stream->tail)
+            break;
+
+        b[i] = stream->buffer[stream->tail];
+        stream->tail = tail;
+
+    }
+
+    return i;
+
+}
+
+unsigned int write_stream(struct uart_driver_stream *stream, unsigned int count, void *buffer)
+{
+
+    char *b = buffer;
+    unsigned int i;
+
+    for (i = 0; i < count; i++)
+    {
+
+        unsigned int head = (stream->head + 1) % 512;
+
+        if (head == stream->tail)
+            break;
+
+        stream->buffer[stream->head] = b[i];
+        stream->head = head;
+
+    }
+
+    return i;
+
+}
+
 static char read(struct uart_device *device)
 {
 
@@ -174,7 +219,7 @@ static void handle_irq(struct base_device *device)
     struct uart_driver *driver = (struct uart_driver *)device->driver;
     char data = read(uartDevice);
 
-    circular_stream_write(&driver->stream, 1, &data);
+    write_stream(&driver->stream, 1, &data);
 
 }
 
@@ -209,7 +254,7 @@ static unsigned int read_terminal_data(struct base_device *device, unsigned int 
 
     struct uart_driver *driver = (struct uart_driver *)device->driver;
 
-    return circular_stream_read(&driver->stream, count, buffer);
+    return read_stream(&driver->stream, count, buffer);
 
 }
 
@@ -218,7 +263,7 @@ static unsigned int write_terminal_data(struct base_device *device, unsigned int
 
     struct uart_driver *driver = (struct uart_driver *)device->driver;
 
-    return circular_stream_write(&driver->stream, count, buffer);
+    return write_stream(&driver->stream, count, buffer);
 
 }
 

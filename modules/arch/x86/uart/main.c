@@ -1,9 +1,8 @@
 #include <fudge/module.h>
-#include <fudge/define.h>
-#include <fudge/data/circular.h>
 #include <base/base.h>
 #include <base/terminal.h>
 #include "uart.h"
+#include "driver.h"
 
 static struct uart_device device1;
 static struct uart_device device2;

@@ -14,14 +14,4 @@ struct uart_device
 
 };
 
-struct uart_driver
-{
-
-    struct base_driver base;
-    struct base_terminal_interface iterminal;
-    struct circular_stream stream;
-
-};
-
 void uart_init_device(struct uart_device *device, unsigned int port, unsigned int irq);
-void uart_init_driver(struct uart_driver *driver);

@@ -1,9 +1,5 @@
 #include <fudge/module.h>
-#include <fudge/define.h>
-#include <fudge/data/circular.h>
 #include <base/base.h>
-#include <base/terminal.h>
-#include <arch/x86/io/io.h>
 #include "uart.h"
 
 void uart_init_device(struct uart_device *device, unsigned int port, unsigned int irq)
