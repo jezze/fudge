@@ -87,7 +87,8 @@ static void complete(struct lifo_stack *stack)
 
     char buffer[FUDGE_BSIZE];
     unsigned int count;
-    unsigned int offset;
+    unsigned int offset = stack->head;
+    unsigned int offset2 = stack->head;
     unsigned int i;
 
     call_open(CALL_L0, CALL_I0, 0, 0);
@@ -95,14 +96,29 @@ static void complete(struct lifo_stack *stack)
     call_open(CALL_L2, CALL_I1, 0, 0);
     open_pipe(CALL_P0, CALL_L4, CALL_I1);
     open_pipe(CALL_P1, CALL_O0, CALL_L5);
-    call_open(CALL_I0, CALL_DW, 0, 0);
-
-    offset = stack->head - 1;
 
     while (offset && stack->buffer[offset - 1] != ' ')
         offset--;
 
-    call_write(CALL_L4, 0, stack->head - offset, stack->buffer + offset);
+    while (offset2 > offset && stack->buffer[offset2 - 1] != '/')
+        offset2--;
+
+    if (offset2 != offset)
+    {
+
+        call_open(CALL_I0, CALL_DW, (stack->head - offset) - (stack->head - offset2), stack->buffer + offset);
+        call_write(CALL_L4, 0, stack->head - offset2, stack->buffer + offset2);
+
+    }
+
+    else
+    {
+
+        call_open(CALL_I0, CALL_DW, 0, 0);
+        call_write(CALL_L4, 0, stack->head - offset, stack->buffer + offset);
+
+    }
+
     call_complete(CALL_E0);
 
     count = call_read(CALL_L5, 0, FUDGE_BSIZE, buffer);
@@ -131,7 +147,7 @@ static void complete(struct lifo_stack *stack)
 
         unsigned int head = stack->head;
 
-        for (i = stack->head - offset; i < count - 1; i++)
+        for (i = stack->head - offset2; i < count - 1; i++)
             lifo_stack_push(stack, buffer[i]);
 
         call_write(CALL_O0, 0, stack->head - head, stack->buffer + head);
