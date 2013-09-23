@@ -40,9 +40,6 @@ static void setup_task(struct task *task, struct vfs_session *session, struct bi
     task->descriptors[0x01].session.backend = session->backend;
     task->descriptors[0x01].session.protocol = session->protocol;
     task->descriptors[0x01].id = session->protocol->root(session->backend);
-    task->descriptors[0x02].session.backend = session->backend;
-    task->descriptors[0x02].session.protocol = session->protocol;
-    task->descriptors[0x02].id = session->protocol->root(session->backend);
 
 }
 
