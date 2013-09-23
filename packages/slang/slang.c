@@ -15,6 +15,7 @@ static unsigned int open_path(unsigned int index, unsigned int indexw, unsigned 
 static void open_pipe(unsigned int index, unsigned int index0, unsigned int index1)
 {
 
+    call_open(index, CALL_DR, 17, "system/pipe/clone");
     call_open(index0, index, 4, "../0");
     call_open(index1, index, 4, "../1");
 
@@ -25,6 +26,7 @@ static void close_pipe(unsigned int index, unsigned int index0, unsigned int ind
 
     call_close(index0);
     call_close(index1);
+    call_close(index);
 
 }
 
@@ -44,7 +46,6 @@ static void execute_command(struct command *command, char *buffer)
     else if (command->in0.data.count)
     {
 
-        call_open(CALL_L5, CALL_DR, 17, "system/pipe/clone");
         open_pipe(CALL_L5, CALL_L6, CALL_I0);
         call_write(CALL_L6, 0, command->in0.data.count, buffer + command->in0.data.index);
 
@@ -60,7 +61,6 @@ static void execute_command(struct command *command, char *buffer)
     else if (command->in1.data.count)
     {
 
-        call_open(CALL_L7, CALL_DR, 17, "system/pipe/clone");
         open_pipe(CALL_L7, CALL_L8, CALL_I1);
         call_write(CALL_L8, 0, command->in1.data.count, buffer + command->in1.data.index);
 
@@ -72,34 +72,14 @@ static void execute_command(struct command *command, char *buffer)
     call_spawn(CALL_E0);
 
     if (command->in0.path.count)
-    {
-
         call_close(CALL_I0);
-
-    }
-
     else if (command->in0.data.count)
-    {
-
         close_pipe(CALL_L5, CALL_L6, CALL_I0);
-        call_close(CALL_L5);
-
-    }
 
     if (command->in1.path.count)
-    {
-
         call_close(CALL_I1);
-
-    }
-
     else if (command->in1.data.count)
-    {
-
         close_pipe(CALL_L7, CALL_L8, CALL_I1);
-        call_close(CALL_L7);
-
-    }
 
     if (command->out0.path.count)
         call_close(CALL_O0);
@@ -112,7 +92,6 @@ static void execute(struct token_state *state, struct expression *expression)
 {
 
     unsigned int pindex;
-    unsigned int cindex;
 
     call_open(CALL_L0, CALL_I0, 0, 0);
     call_open(CALL_L1, CALL_O0, 0, 0);
@@ -124,6 +103,7 @@ static void execute(struct token_state *state, struct expression *expression)
 
         struct pipe *pipe = &expression->pipe[pindex];
         unsigned int clast = pipe->commands - 1;
+        unsigned int cindex;
 
         for (cindex = 0; cindex < clast; cindex++)
             call_open(CALL_P0 + cindex, CALL_DR, 17, "system/pipe/clone");
@@ -131,9 +111,9 @@ static void execute(struct token_state *state, struct expression *expression)
         for (cindex = 0; cindex < clast; cindex++)
         {
 
-            open_pipe(CALL_P0 + cindex, CALL_O0, 0);
+            call_open(CALL_O0, CALL_P0 + cindex, 4, "../0");
             execute_command(&pipe->command[cindex], state->buffer);
-            open_pipe(CALL_P0 + cindex, 0, CALL_I0);
+            call_open(CALL_I0, CALL_P0 + cindex, 4, "../1");
 
         }
 
