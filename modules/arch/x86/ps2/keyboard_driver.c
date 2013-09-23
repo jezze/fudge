@@ -1,12 +1,56 @@
 #include <fudge/module.h>
-#include <fudge/define.h>
-#include <fudge/data/circular.h>
 #include <base/base.h>
 #include <base/keyboard.h>
 #include <base/mouse.h>
 #include <arch/x86/pic/pic.h>
 #include <arch/x86/io/io.h>
 #include "ps2.h"
+
+unsigned int read_stream(struct ps2_keyboard_stream *stream, unsigned int count, void *buffer)
+{
+
+    char *b = buffer;
+    unsigned int i;
+
+    for (i = 0; i < count; i++)
+    {
+
+        unsigned int tail = (stream->tail + 1) % 512;
+
+        if (stream->head == stream->tail)
+            break;
+
+        b[i] = stream->buffer[stream->tail];
+        stream->tail = tail;
+
+    }
+
+    return i;
+
+}
+
+unsigned int write_stream(struct ps2_keyboard_stream *stream, unsigned int count, void *buffer)
+{
+
+    char *b = buffer;
+    unsigned int i;
+
+    for (i = 0; i < count; i++)
+    {
+
+        unsigned int head = (stream->head + 1) % 512;
+
+        if (head == stream->tail)
+            break;
+
+        stream->buffer[stream->head] = b[i];
+        stream->head = head;
+
+    }
+
+    return i;
+
+}
 
 static void handle_irq(struct base_device *device)
 {
@@ -58,7 +102,7 @@ static void handle_irq(struct base_device *device)
         if (driver->shift)
             scancode += 128;
 
-        circular_stream_write(&driver->stream, 1, driver->ikeyboard.keymap + scancode);
+        write_stream(&driver->stream, 1, driver->ikeyboard.keymap + scancode);
 
     }
 
@@ -98,7 +142,7 @@ static unsigned int read_data(struct base_device *device, unsigned int offset, u
 
     struct ps2_keyboard_driver *driver = (struct ps2_keyboard_driver *)device->driver;
 
-    return circular_stream_read(&driver->stream, count, buffer);
+    return read_stream(&driver->stream, count, buffer);
 
 }
 
@@ -107,7 +151,7 @@ static unsigned int write_data(struct base_device *device, unsigned int offset, 
 
     struct ps2_keyboard_driver *driver = (struct ps2_keyboard_driver *)device->driver;
 
-    return circular_stream_write(&driver->stream, count, buffer);
+    return write_stream(&driver->stream, count, buffer);
 
 }
 

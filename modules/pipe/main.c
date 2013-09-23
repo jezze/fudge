@@ -28,7 +28,7 @@ static struct pipe_session
 static struct system_group root;
 static struct system_stream clone;
 
-unsigned int stream_read(struct pipe_stream *stream, unsigned int count, void *buffer)
+unsigned int read_stream(struct pipe_stream *stream, unsigned int count, void *buffer)
 {
 
     char *b = buffer;
@@ -51,7 +51,7 @@ unsigned int stream_read(struct pipe_stream *stream, unsigned int count, void *b
 
 }
 
-unsigned int stream_write(struct pipe_stream *stream, unsigned int count, void *buffer)
+unsigned int write_stream(struct pipe_stream *stream, unsigned int count, void *buffer)
 {
 
     char *b = buffer;
@@ -100,7 +100,7 @@ static unsigned int ipipe_read(struct system_node *self, unsigned int offset, un
 
     struct pipe_session *session = (struct pipe_session *)self->parent;
 
-    return stream_read(&session->ostream, count, buffer);
+    return read_stream(&session->ostream, count, buffer);
 
 }
 
@@ -109,7 +109,7 @@ static unsigned int ipipe_write(struct system_node *self, unsigned int offset, u
 
     struct pipe_session *session = (struct pipe_session *)self->parent;
 
-    return stream_write(&session->istream, count, buffer);
+    return write_stream(&session->istream, count, buffer);
 
 }
 
@@ -118,7 +118,7 @@ static unsigned int opipe_read(struct system_node *self, unsigned int offset, un
 
     struct pipe_session *session = (struct pipe_session *)self->parent;
 
-    return stream_read(&session->istream, count, buffer);
+    return read_stream(&session->istream, count, buffer);
 
 }
 
@@ -127,7 +127,7 @@ static unsigned int opipe_write(struct system_node *self, unsigned int offset, u
 
     struct pipe_session *session = (struct pipe_session *)self->parent;
 
-    return stream_write(&session->ostream, count, buffer);
+    return write_stream(&session->ostream, count, buffer);
 
 }
 
