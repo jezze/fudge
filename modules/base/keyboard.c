@@ -1,4 +1,5 @@
 #include <fudge/module.h>
+#include <kernel/vfs.h>
 #include <system/system.h>
 #include "base.h"
 #include "keyboard.h"
@@ -9,6 +10,7 @@ static struct keyboard_node
     struct system_group base;
     struct base_keyboard_interface *interface;
     struct base_device *device;
+    enum vfs_state *state;
     struct system_stream data;
     struct system_stream keymap;
 
@@ -17,12 +19,39 @@ static struct keyboard_node
 static struct system_group root;
 static struct system_group dev;
 
-static unsigned int data_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int data_open(struct system_node *self, enum vfs_state *state)
 {
 
     struct keyboard_node *node = (struct keyboard_node *)self->parent;
  
-    return node->interface->read_data(node->device, offset, count, buffer);
+    node->state = state;
+
+    return (unsigned int)self;
+
+}
+
+static unsigned int data_close(struct system_node *self, enum vfs_state *state)
+{
+
+    struct keyboard_node *node = (struct keyboard_node *)self->parent;
+
+    node->state = 0;
+
+    return 0;
+
+}
+
+static unsigned int data_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    struct keyboard_node *node = (struct keyboard_node *)self->parent;
+
+    count = node->interface->read_data(node->device, offset, count, buffer);
+
+    if (!count)
+        *node->state &= VFS_STATE_BLOCKED;
+
+    return count;
 
 }
 
@@ -71,6 +100,8 @@ static void init_node(struct keyboard_node *node, struct base_keyboard_interface
 
     node->interface = interface;
     node->device = device;
+    node->data.node.open = data_open;
+    node->data.node.close = data_close;
     node->data.node.read = data_read;
     node->keymap.node.read = keymap_read;
     node->keymap.node.write = keymap_write;

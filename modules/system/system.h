@@ -22,8 +22,8 @@ struct system_node
     struct system_node *sibling;
     enum system_nodetype type;
     char *name;
-    unsigned int (*open)(struct system_node *self);
-    unsigned int (*close)(struct system_node *self);
+    unsigned int (*open)(struct system_node *self, enum vfs_state *state);
+    unsigned int (*close)(struct system_node *self, enum vfs_state *state);
     unsigned int (*read)(struct system_node *self, unsigned int offset, unsigned int count, void *buffer);
     unsigned int (*write)(struct system_node *self, unsigned int offset, unsigned int count, void *buffer);
 

@@ -1,4 +1,5 @@
 #include <fudge/module.h>
+#include <kernel/vfs.h>
 #include <system/system.h>
 #include <base/base.h>
 
@@ -73,7 +74,7 @@ unsigned int write_stream(struct pipe_stream *stream, unsigned int count, void *
 
 }
 
-static unsigned int control_close(struct system_node *self)
+static unsigned int control_close(struct system_node *self, enum vfs_state *state)
 {
 
     struct pipe_session *session = (struct pipe_session *)self->parent;
@@ -170,7 +171,7 @@ static void init_session(struct pipe_session *session, unsigned int id)
 
 }
 
-static unsigned int clone_open(struct system_node *self)
+static unsigned int clone_open(struct system_node *self, enum vfs_state *state)
 {
 
     unsigned int index = find_session();

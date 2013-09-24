@@ -34,21 +34,21 @@ static unsigned int match(struct vfs_backend *backend)
 
 }
 
-static unsigned int open(struct vfs_backend *backend, unsigned int id)
+static unsigned int open(struct vfs_backend *backend, unsigned int id, enum vfs_state *state)
 {
 
     struct system_node *node = (struct system_node *)id;
 
-    return node->open(node);
+    return node->open(node, state);
 
 }
 
-static unsigned int close(struct vfs_backend *backend, unsigned int id)
+static unsigned int close(struct vfs_backend *backend, unsigned int id, enum vfs_state *state)
 {
 
     struct system_node *node = (struct system_node *)id;
 
-    return node->close(node);
+    return node->close(node, state);
 
 }
 
