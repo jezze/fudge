@@ -9,5 +9,7 @@ void main()
     call_spawn(CALL_E0);
     call_close(CALL_E0);
 
+    for (;;);
+
 }
 
