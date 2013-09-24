@@ -11,7 +11,7 @@ struct vfs_mode
 {
 
     enum vfs_state state;
-    unsigned int count;
+    unsigned int status;
 
 };
 

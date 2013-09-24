@@ -21,7 +21,7 @@ struct task
 
     enum task_state state;
     struct vfs_mode mode;
-    struct {unsigned int ip; unsigned int sp; unsigned int fp; unsigned int status;} registers;
+    struct {unsigned int ip; unsigned int sp; unsigned int fp;} registers;
     struct task_descriptor descriptors[TASK_DESCRIPTORS];
 
 };

@@ -109,8 +109,9 @@ static void handle_irq(struct base_device *device)
 
             driver->queue.mode->state &= ~VFS_STATE_BLOCKED;
             /*
-            driver->queue.mode->count = read_stream(&driver->stream, driver->queue.count, driver->queue.buffer);
+            driver->queue.mode->status = read_stream(&driver->stream, driver->queue.count, driver->queue.buffer);
             */
+
         }
 
     }
@@ -162,7 +163,7 @@ static void close_data(struct base_device *device, struct vfs_mode *mode)
     struct ps2_keyboard_driver *driver = (struct ps2_keyboard_driver *)device->driver;
 
     driver->queue.device = 0;
-    driver->queue.mode = mode;
+    driver->queue.mode = 0;
 
 }
 
@@ -175,7 +176,7 @@ static unsigned int read_data(struct base_device *device, unsigned int offset, u
     driver->queue.count = count;
     driver->queue.buffer = buffer;
     driver->queue.mode->state |= VFS_STATE_BLOCKED;
-    driver->queue.mode->count = 0;
+    driver->queue.mode->status = 0;
 
     return read_stream(&driver->stream, driver->queue.count, driver->queue.buffer);
 
