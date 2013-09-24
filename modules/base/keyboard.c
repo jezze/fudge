@@ -18,23 +18,23 @@ static struct keyboard_node
 static struct system_group root;
 static struct system_group dev;
 
-static unsigned int data_open(struct system_node *self, enum vfs_state *state)
+static unsigned int data_open(struct system_node *self, struct vfs_mode *mode)
 {
 
     struct keyboard_node *node = (struct keyboard_node *)self->parent;
 
-    node->interface->open_data(node->device, state);
+    node->interface->open_data(node->device, mode);
 
     return (unsigned int)self;
 
 }
 
-static unsigned int data_close(struct system_node *self, enum vfs_state *state)
+static unsigned int data_close(struct system_node *self, struct vfs_mode *mode)
 {
 
     struct keyboard_node *node = (struct keyboard_node *)self->parent;
 
-    node->interface->close_data(node->device, state);
+    node->interface->close_data(node->device, mode);
 
     return 0;
 
@@ -117,7 +117,7 @@ void base_keyboard_register_interface(struct base_keyboard_interface *interface,
 
 }
 
-void base_keyboard_init_interface(struct base_keyboard_interface *interface, void (*open_data)(struct base_device *device, enum vfs_state *state), void (*close_data)(struct base_device *device, enum vfs_state *state), unsigned int (*read_data)(struct base_device *device, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write_data)(struct base_device *device, unsigned int offset, unsigned int count, void *buffer))
+void base_keyboard_init_interface(struct base_keyboard_interface *interface, void (*open_data)(struct base_device *device, struct vfs_mode *mode), void (*close_data)(struct base_device *device, struct vfs_mode *mode), unsigned int (*read_data)(struct base_device *device, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write_data)(struct base_device *device, unsigned int offset, unsigned int count, void *buffer))
 {
 
     memory_clear(interface, sizeof (struct base_keyboard_interface));

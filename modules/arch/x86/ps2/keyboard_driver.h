@@ -11,7 +11,10 @@ struct ps2_keyboard_queue
 {
 
     struct base_device *device;
-    enum vfs_state *state;
+    struct vfs_mode *mode;
+    unsigned int offset;
+    unsigned int count;
+    void *buffer;
 
 };
 

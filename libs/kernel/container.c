@@ -99,7 +99,7 @@ static unsigned int open(struct container *self, struct task *task, void *stack)
 
     memory_copy(descriptor, &temp, sizeof (struct task_descriptor));
 
-    return descriptor->id = descriptor->session.protocol->open(descriptor->session.backend, descriptor->id, &task->vstate);
+    return descriptor->id = descriptor->session.protocol->open(descriptor->session.backend, descriptor->id, &task->mode);
 
 }
 
@@ -115,7 +115,7 @@ static unsigned int close(struct container *self, struct task *task, void *stack
     if (!descriptor->id || !descriptor->session.backend || !descriptor->session.protocol)
         return 0;
 
-    return descriptor->id = descriptor->session.protocol->close(descriptor->session.backend, descriptor->id, &task->vstate);
+    return descriptor->id = descriptor->session.protocol->close(descriptor->session.backend, descriptor->id, &task->mode);
 
 }
 

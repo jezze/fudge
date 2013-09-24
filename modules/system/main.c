@@ -62,14 +62,14 @@ void system_unregister_node(struct system_node *node)
 
 }
 
-static unsigned int open(struct system_node *self, enum vfs_state *state)
+static unsigned int open(struct system_node *self, struct vfs_mode *mode)
 {
 
     return (unsigned int)self;
 
 }
 
-static unsigned int close(struct system_node *self, enum vfs_state *state)
+static unsigned int close(struct system_node *self, struct vfs_mode *mode)
 {
 
     return 0;
