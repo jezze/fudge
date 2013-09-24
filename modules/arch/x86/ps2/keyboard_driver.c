@@ -1,4 +1,5 @@
 #include <fudge/module.h>
+#include <kernel/vfs.h>
 #include <base/base.h>
 #include <base/keyboard.h>
 #include <arch/x86/pic/pic.h>
@@ -136,6 +137,26 @@ static unsigned int check(struct base_device *device)
 
 }
 
+static void open_data(struct base_device *device, enum vfs_state *state)
+{
+
+    struct ps2_keyboard_driver *driver = (struct ps2_keyboard_driver *)device->driver;
+
+    driver->queue.device = device;
+    driver->queue.state = state;
+
+}
+
+static void close_data(struct base_device *device, enum vfs_state *state)
+{
+
+    struct ps2_keyboard_driver *driver = (struct ps2_keyboard_driver *)device->driver;
+
+    driver->queue.device = 0;
+    driver->queue.state = 0;
+
+}
+
 static unsigned int read_data(struct base_device *device, unsigned int offset, unsigned int count, void *buffer)
 {
 
@@ -159,7 +180,7 @@ void ps2_init_keyboard_driver(struct ps2_keyboard_driver *driver)
 
     memory_clear(driver, sizeof (struct ps2_keyboard_driver));
     base_init_driver(&driver->base, "ps2keyboard", check, attach);
-    base_keyboard_init_interface(&driver->ikeyboard, read_data, write_data);
+    base_keyboard_init_interface(&driver->ikeyboard, open_data, close_data, read_data, write_data);
 
 }
 
