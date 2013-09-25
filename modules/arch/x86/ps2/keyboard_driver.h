@@ -7,21 +7,12 @@ struct ps2_keyboard_stream
 
 };
 
-struct ps2_keyboard_queue
-{
-
-    struct vfs_mode *mode;
-    unsigned int semaphore;
-
-};
-
 struct ps2_keyboard_driver
 {
 
     struct base_driver base;
     struct base_keyboard_interface ikeyboard;
     struct ps2_keyboard_stream stream;
-    struct ps2_keyboard_queue queue;
     unsigned int escaped;
     unsigned int ctrl;
     unsigned int alt;

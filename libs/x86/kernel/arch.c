@@ -65,7 +65,7 @@ unsigned short arch_syscall(void *stack)
     state.task->registers.ip = registers->interrupt.eip;
     state.task->registers.sp = registers->interrupt.esp;
     state.task->registers.fp = registers->general.ebp;
-    state.task->mode.status = (state.container->calls[registers->general.eax]) ? state.container->calls[registers->general.eax](state.container, state.task, (void *)registers->interrupt.esp) : 0;
+    state.task->status = (state.container->calls[registers->general.eax]) ? state.container->calls[registers->general.eax](state.container, state.task, (void *)registers->interrupt.esp) : 0;
     state.task = state.container->schedule(state.container);
 
     if (state.task->state & TASK_STATE_USED)
@@ -75,7 +75,7 @@ unsigned short arch_syscall(void *stack)
         registers->interrupt.eip = state.task->registers.ip;
         registers->interrupt.esp = state.task->registers.sp;
         registers->general.ebp = state.task->registers.fp;
-        registers->general.eax = state.task->mode.status;
+        registers->general.eax = state.task->status;
 
         return state.uselector.data;
 

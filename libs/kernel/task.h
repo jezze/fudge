@@ -4,7 +4,8 @@ enum task_state
 {
 
     TASK_STATE_USED                     = 1,
-    TASK_STATE_IDLE                     = 2
+    TASK_STATE_IDLE                     = 2,
+    TASK_STATE_BLOCKED                  = 4
 
 };
 
@@ -20,7 +21,7 @@ struct task
 {
 
     enum task_state state;
-    struct vfs_mode mode;
+    unsigned int status;
     struct {unsigned int ip; unsigned int sp; unsigned int fp;} registers;
     struct task_descriptor descriptors[TASK_DESCRIPTORS];
 

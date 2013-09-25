@@ -74,7 +74,7 @@ unsigned int write_stream(struct pipe_stream *stream, unsigned int count, void *
 
 }
 
-static unsigned int control_close(struct system_node *self, struct vfs_mode *mode)
+static unsigned int control_close(struct system_node *self)
 {
 
     struct pipe_session *session = (struct pipe_session *)self->parent;
@@ -171,7 +171,7 @@ static void init_session(struct pipe_session *session, unsigned int id)
 
 }
 
-static unsigned int clone_open(struct system_node *self, struct vfs_mode *mode)
+static unsigned int clone_open(struct system_node *self)
 {
 
     unsigned int index = find_session();

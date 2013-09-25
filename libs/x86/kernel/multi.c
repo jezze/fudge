@@ -47,7 +47,7 @@ static struct multi_task *find_next_task()
         if (!(tasks[i].base.state & TASK_STATE_USED))
             continue;
 
-        if (tasks[i].base.mode.state & VFS_STATE_BLOCKED)
+        if (tasks[i].base.state & TASK_STATE_BLOCKED)
             continue;
 
         return &tasks[i];

@@ -88,14 +88,14 @@ static unsigned int get_physical(struct vfs_backend *backend, unsigned int id)
 
 }
 
-static unsigned int open(struct vfs_backend *backend, unsigned int id, struct vfs_mode *mode)
+static unsigned int open(struct vfs_backend *backend, unsigned int id)
 {
 
     return id;
 
 }
 
-static unsigned int close(struct vfs_backend *backend, unsigned int id, struct vfs_mode *mode)
+static unsigned int close(struct vfs_backend *backend, unsigned int id)
 {
 
     return 0;

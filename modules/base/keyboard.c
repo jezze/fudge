@@ -18,28 +18,6 @@ static struct keyboard_node
 static struct system_group root;
 static struct system_group dev;
 
-static unsigned int data_open(struct system_node *self, struct vfs_mode *mode)
-{
-
-    struct keyboard_node *node = (struct keyboard_node *)self->parent;
-
-    node->interface->open_data(node->device, mode);
-
-    return (unsigned int)self;
-
-}
-
-static unsigned int data_close(struct system_node *self, struct vfs_mode *mode)
-{
-
-    struct keyboard_node *node = (struct keyboard_node *)self->parent;
-
-    node->interface->close_data(node->device, mode);
-
-    return 0;
-
-}
-
 static unsigned int data_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
@@ -94,8 +72,6 @@ static void init_node(struct keyboard_node *node, struct base_keyboard_interface
 
     node->interface = interface;
     node->device = device;
-    node->data.node.open = data_open;
-    node->data.node.close = data_close;
     node->data.node.read = data_read;
     node->keymap.node.read = keymap_read;
     node->keymap.node.write = keymap_write;
@@ -117,13 +93,11 @@ void base_keyboard_register_interface(struct base_keyboard_interface *interface,
 
 }
 
-void base_keyboard_init_interface(struct base_keyboard_interface *interface, void (*open_data)(struct base_device *device, struct vfs_mode *mode), void (*close_data)(struct base_device *device, struct vfs_mode *mode), unsigned int (*read_data)(struct base_device *device, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write_data)(struct base_device *device, unsigned int offset, unsigned int count, void *buffer))
+void base_keyboard_init_interface(struct base_keyboard_interface *interface, unsigned int (*read_data)(struct base_device *device, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write_data)(struct base_device *device, unsigned int offset, unsigned int count, void *buffer))
 {
 
     memory_clear(interface, sizeof (struct base_keyboard_interface));
 
-    interface->open_data = open_data;
-    interface->close_data = close_data;
     interface->read_data = read_data;
     interface->write_data = write_data;
 
