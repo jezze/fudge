@@ -13,10 +13,37 @@ static struct
 {
 
     struct container container;
+    struct task *blocked;
     struct {struct binary_protocol protocols[KERNEL_BINARY_PROTOCOLS];} binary;
     struct {struct vfs_protocol protocols[KERNEL_VFS_PROTOCOLS];} vfs;
 
 } state;
+
+void kernel_block_task()
+{
+
+/*
+    if (state.blocked)
+        return;
+
+    state.blocked = state.container.current;
+    state.blocked->state |= TASK_STATE_BLOCKED;
+*/
+
+}
+
+void kernel_unblock_task()
+{
+
+/*
+    if (!state.blocked)
+        return;
+
+    state.blocked->state &= ~TASK_STATE_BLOCKED;
+    state.blocked = 0;
+*/
+
+}
 
 static void setup_container(struct container *container, struct vfs_session *session)
 {

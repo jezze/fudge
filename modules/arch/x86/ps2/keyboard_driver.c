@@ -1,5 +1,8 @@
 #include <fudge/module.h>
 #include <kernel/vfs.h>
+#include <kernel/task.h>
+#include <kernel/container.h>
+#include <kernel/kernel.h>
 #include <base/base.h>
 #include <base/keyboard.h>
 #include <arch/x86/pic/pic.h>
@@ -104,6 +107,8 @@ static void handle_irq(struct base_device *device)
 
         write_stream(&driver->stream, 1, driver->ikeyboard.keymap + scancode);
 
+        kernel_unblock_task();
+
     }
 
 }
@@ -142,7 +147,12 @@ static unsigned int read_data(struct base_device *device, unsigned int offset, u
 
     struct ps2_keyboard_driver *driver = (struct ps2_keyboard_driver *)device->driver;
 
-    return read_stream(&driver->stream, count, buffer);
+    count = read_stream(&driver->stream, count, buffer);
+
+    if (!count)
+        kernel_block_task();
+
+    return count;
 
 }
 
