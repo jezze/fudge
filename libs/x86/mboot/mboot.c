@@ -3,6 +3,7 @@
 #include <kernel/task.h>
 #include <kernel/container.h>
 #include <kernel/kernel.h>
+#include <x86/kernel/cpu.h>
 #include <x86/kernel/arch.h>
 #include "mboot.h"
 

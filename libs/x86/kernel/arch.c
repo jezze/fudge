@@ -4,8 +4,8 @@
 #include <kernel/task.h>
 #include <kernel/container.h>
 #include <kernel/kernel.h>
-#include "arch.h"
 #include "cpu.h"
+#include "arch.h"
 #include "gdt.h"
 #include "idt.h"
 #include "multi.h"
@@ -28,6 +28,34 @@ static struct
     struct {unsigned short info;} tselector;
 
 } state;
+
+unsigned short arch_schedule(struct cpu_general *general, struct cpu_interrupt *interrupt)
+{
+
+    state.container->current = state.container->schedule(state.container);
+
+    if (state.container->current->state & TASK_STATE_USED)
+    {
+
+        interrupt->code = state.uselector.code;
+        interrupt->eip = state.container->current->registers.ip;
+        interrupt->esp = state.container->current->registers.sp;
+        general->ebp = state.container->current->registers.fp;
+        general->eax = state.container->current->status;
+
+        return state.uselector.data;
+
+    }
+
+    interrupt->code = state.kselector.code;
+    interrupt->eip = (unsigned int)arch_halt;
+    interrupt->esp = ARCH_STACK;
+    general->ebp = 0;
+    general->eax = 0;
+
+    return state.kselector.data;
+
+}
 
 unsigned short arch_generalfault(void *stack)
 {
@@ -65,28 +93,8 @@ unsigned short arch_syscall(void *stack)
     state.container->current->registers.sp = registers->interrupt.esp;
     state.container->current->registers.fp = registers->general.ebp;
     state.container->current->status = (state.container->calls[registers->general.eax]) ? state.container->calls[registers->general.eax](state.container, state.container->current, (void *)registers->interrupt.esp) : 0;
-    state.container->current = state.container->schedule(state.container);
 
-    if (state.container->current->state & TASK_STATE_USED)
-    {
-
-        registers->interrupt.code = state.uselector.code;
-        registers->interrupt.eip = state.container->current->registers.ip;
-        registers->interrupt.esp = state.container->current->registers.sp;
-        registers->general.ebp = state.container->current->registers.fp;
-        registers->general.eax = state.container->current->status;
-
-        return state.uselector.data;
-
-    }
-
-    registers->interrupt.code = state.kselector.code;
-    registers->interrupt.eip = (unsigned int)arch_halt;
-    registers->interrupt.esp = ARCH_STACK;
-    registers->general.ebp = 0;
-    registers->general.eax = 0;
-
-    return state.kselector.data;
+    return arch_schedule(&registers->general, &registers->interrupt);
 
 }
 

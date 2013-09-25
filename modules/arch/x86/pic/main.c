@@ -1,5 +1,10 @@
 #include <fudge/module.h>
+#include <kernel/vfs.h>
+#include <kernel/task.h>
+#include <kernel/container.h>
+#include <kernel/kernel.h>
 #include <x86/kernel/cpu.h>
+#include <x86/kernel/arch.h>
 #include <x86/kernel/idt.h>
 #include <x86/kernel/gdt.h>
 #include <base/base.h>
@@ -84,7 +89,7 @@ unsigned short pic_interrupt(void *stack)
 
     io_outb(PIC_REGISTER_COMMAND0, PIC_COMMAND_EOI);
 
-    return registers->interrupt.data;
+    return arch_schedule(&registers->general, &registers->interrupt);
 
 }
 

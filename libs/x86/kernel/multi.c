@@ -3,8 +3,8 @@
 #include <kernel/task.h>
 #include <kernel/container.h>
 #include <kernel/kernel.h>
-#include "arch.h"
 #include "cpu.h"
+#include "arch.h"
 #include "mmu.h"
 #include "multi.h"
 
