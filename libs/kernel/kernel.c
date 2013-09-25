@@ -45,32 +45,7 @@ void kernel_unblock_task()
 
 }
 
-static void setup_container(struct container *container, struct vfs_session *session)
-{
-
-    container->mounts[0x01].parent.session.backend = session->backend;
-    container->mounts[0x01].parent.session.protocol = session->protocol;
-    container->mounts[0x01].parent.id = session->protocol->root(session->backend);
-    container->mounts[0x01].child.session.backend = session->backend;
-    container->mounts[0x01].child.session.protocol = session->protocol;
-    container->mounts[0x01].child.id = session->protocol->root(session->backend);
-
-}
-
-static void setup_task(struct task *task, struct vfs_session *session, struct binary_protocol *protocol, unsigned int id)
-{
-
-    task->registers.ip = protocol->copy_program(session, id);
-
-    error_assert(task->registers.ip != 0, "Failed to locate entry point", __FILE__, __LINE__);
-
-    task->descriptors[0x01].session.backend = session->backend;
-    task->descriptors[0x01].session.protocol = session->protocol;
-    task->descriptors[0x01].id = session->protocol->root(session->backend);
-
-}
-
-void kernel_setup_modules(struct container *container, unsigned int count, struct kernel_module *modules)
+void kernel_setup_modules(unsigned int count, struct kernel_module *modules)
 {
 
     unsigned int i;
@@ -103,8 +78,18 @@ void kernel_setup_modules(struct container *container, unsigned int count, struc
         if (!protocol)
             continue;
 
-        setup_container(container, &session);
-        setup_task(container->current, &session, protocol, id);
+        state.container.mounts[0x01].parent.session.backend = session.backend;
+        state.container.mounts[0x01].parent.session.protocol = session.protocol;
+        state.container.mounts[0x01].parent.id = session.protocol->root(session.backend);
+        state.container.mounts[0x01].child.session.backend = session.backend;
+        state.container.mounts[0x01].child.session.protocol = session.protocol;
+        state.container.mounts[0x01].child.id = session.protocol->root(session.backend);
+        state.container.current->descriptors[0x01].session.backend = session.backend;
+        state.container.current->descriptors[0x01].session.protocol = session.protocol;
+        state.container.current->descriptors[0x01].id = session.protocol->root(session.backend);
+        state.container.current->registers.ip = protocol->copy_program(&session, id);
+
+        error_assert(state.container.current->registers.ip != 0, "Failed to locate entry point", __FILE__, __LINE__);
 
         return;
 
