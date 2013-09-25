@@ -46,6 +46,17 @@ unsigned short arch_schedule(struct cpu_general *general, struct cpu_interrupt *
 
 }
 
+unsigned short arch_schedule_interrupt(struct cpu_general *general, struct cpu_interrupt *interrupt)
+{
+
+    state.container->current->registers.ip = interrupt->eip;
+    state.container->current->registers.sp = interrupt->esp;
+    state.container->current->registers.fp = general->ebp;
+
+    return arch_schedule(general, interrupt);
+
+}
+
 unsigned short arch_generalfault(void *stack)
 {
 
