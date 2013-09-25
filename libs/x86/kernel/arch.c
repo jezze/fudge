@@ -34,7 +34,9 @@ unsigned short arch_schedule(struct cpu_general *general, struct cpu_interrupt *
 
     state.container->current = state.container->schedule(state.container);
 
-    interrupt->code = state.uselector.code;
+    if (interrupt->code == state.kselector.code)
+        return state.kselector.data;
+
     interrupt->eip = state.container->current->registers.ip;
     interrupt->esp = state.container->current->registers.sp;
     general->ebp = state.container->current->registers.fp;
@@ -49,10 +51,7 @@ unsigned short arch_generalfault(void *stack)
 
     struct {struct cpu_general general; unsigned int selector; struct cpu_interrupt interrupt;} *registers = stack;
 
-    if (registers->interrupt.code == state.kselector.code)
-        return state.kselector.data;
-
-    return registers->interrupt.data;
+    return arch_schedule(&registers->general, &registers->interrupt);
 
 }
 
@@ -62,12 +61,8 @@ unsigned short arch_pagefault(void *stack)
     struct {struct cpu_general general; unsigned int type; struct cpu_interrupt interrupt;} *registers = stack;
 
     state.container->map(state.container, state.container->current, cpu_get_cr2());
-    state.container->current = state.container->schedule(state.container);
 
-    if (registers->interrupt.code == state.kselector.code)
-        return state.kselector.data;
-
-    return registers->interrupt.data;
+    return arch_schedule(&registers->general, &registers->interrupt);
 
 }
 
