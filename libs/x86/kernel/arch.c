@@ -52,6 +52,7 @@ unsigned short arch_schedule_interrupt(struct cpu_general *general, struct cpu_i
     state.container->current->registers.ip = interrupt->eip;
     state.container->current->registers.sp = interrupt->esp;
     state.container->current->registers.fp = general->ebp;
+    state.container->current->status = general->eax;
 
     return arch_schedule(general, interrupt);
 
