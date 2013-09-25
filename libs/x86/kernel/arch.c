@@ -34,20 +34,13 @@ unsigned short arch_schedule(struct cpu_general *general, struct cpu_interrupt *
 
     state.container->current = state.container->schedule(state.container);
 
-    if (state.container->current->state & TASK_STATE_USED)
-    {
+    interrupt->code = state.uselector.code;
+    interrupt->eip = state.container->current->registers.ip;
+    interrupt->esp = state.container->current->registers.sp;
+    general->ebp = state.container->current->registers.fp;
+    general->eax = state.container->current->status;
 
-        interrupt->code = state.uselector.code;
-        interrupt->eip = state.container->current->registers.ip;
-        interrupt->esp = state.container->current->registers.sp;
-        general->ebp = state.container->current->registers.fp;
-        general->eax = state.container->current->status;
-
-        return state.uselector.data;
-
-    }
-
-    return interrupt->data;
+    return state.uselector.data;
 
 }
 
