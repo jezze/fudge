@@ -29,6 +29,7 @@ struct container_mount
 struct container
 {
 
+    struct task *current;
     struct container_mount mounts[CONTAINER_MOUNTS];
     void (*map)(struct container *self, struct task *task, unsigned int address);
     struct task *(*schedule)(struct container *self);

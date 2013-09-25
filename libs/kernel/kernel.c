@@ -43,7 +43,7 @@ static void setup_task(struct task *task, struct vfs_session *session, struct bi
 
 }
 
-void kernel_setup_modules(struct container *container, struct task *task, unsigned int count, struct kernel_module *modules)
+void kernel_setup_modules(struct container *container, unsigned int count, struct kernel_module *modules)
 {
 
     unsigned int i;
@@ -77,7 +77,7 @@ void kernel_setup_modules(struct container *container, struct task *task, unsign
             continue;
 
         setup_container(container, &session);
-        setup_task(task, &session, protocol, id);
+        setup_task(container->current, &session, protocol, id);
 
         return;
 

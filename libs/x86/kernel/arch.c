@@ -20,7 +20,6 @@ static struct
 {
 
     struct container *container;
-    struct task *task;
     struct {struct gdt_pointer pointer; struct gdt_descriptor descriptors[ARCH_GDT_DESCRIPTORS];} gdt;
     struct {struct idt_pointer pointer; struct idt_descriptor descriptors[ARCH_IDT_DESCRIPTORS];} idt;
     struct {struct tss_pointer pointer; struct tss_descriptor descriptors[ARCH_TSS_DESCRIPTORS];} tss;
@@ -47,8 +46,8 @@ unsigned short arch_pagefault(void *stack)
 
     struct {struct cpu_general general; unsigned int type; struct cpu_interrupt interrupt;} *registers = stack;
 
-    state.container->map(state.container, state.task, cpu_get_cr2());
-    state.task = state.container->schedule(state.container);
+    state.container->map(state.container, state.container->current, cpu_get_cr2());
+    state.container->current = state.container->schedule(state.container);
 
     if (registers->interrupt.code == state.kselector.code)
         return state.kselector.data;
@@ -62,20 +61,20 @@ unsigned short arch_syscall(void *stack)
 
     struct {struct cpu_general general; struct cpu_interrupt interrupt;} *registers = stack;
 
-    state.task->registers.ip = registers->interrupt.eip;
-    state.task->registers.sp = registers->interrupt.esp;
-    state.task->registers.fp = registers->general.ebp;
-    state.task->status = (state.container->calls[registers->general.eax]) ? state.container->calls[registers->general.eax](state.container, state.task, (void *)registers->interrupt.esp) : 0;
-    state.task = state.container->schedule(state.container);
+    state.container->current->registers.ip = registers->interrupt.eip;
+    state.container->current->registers.sp = registers->interrupt.esp;
+    state.container->current->registers.fp = registers->general.ebp;
+    state.container->current->status = (state.container->calls[registers->general.eax]) ? state.container->calls[registers->general.eax](state.container, state.container->current, (void *)registers->interrupt.esp) : 0;
+    state.container->current = state.container->schedule(state.container);
 
-    if (state.task->state & TASK_STATE_USED)
+    if (state.container->current->state & TASK_STATE_USED)
     {
 
         registers->interrupt.code = state.uselector.code;
-        registers->interrupt.eip = state.task->registers.ip;
-        registers->interrupt.esp = state.task->registers.sp;
-        registers->general.ebp = state.task->registers.fp;
-        registers->general.eax = state.task->status;
+        registers->interrupt.eip = state.container->current->registers.ip;
+        registers->interrupt.esp = state.container->current->registers.sp;
+        registers->general.ebp = state.container->current->registers.fp;
+        registers->general.eax = state.container->current->status;
 
         return state.uselector.data;
 
@@ -113,10 +112,10 @@ void arch_setup(unsigned int count, struct kernel_module *modules)
     cpu_set_tss(state.tselector.info);
 
     state.container = kernel_setup();
-    state.task = multi_setup(state.container);
+    state.container->current = multi_setup(state.container);
 
-    kernel_setup_modules(state.container, state.task, count, modules);
-    arch_usermode(state.uselector.code, state.uselector.data, state.task->registers.ip, state.task->registers.sp);
+    kernel_setup_modules(state.container, count, modules);
+    arch_usermode(state.uselector.code, state.uselector.data, state.container->current->registers.ip, state.container->current->registers.sp);
 
 }
 
