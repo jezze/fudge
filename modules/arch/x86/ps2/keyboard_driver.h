@@ -10,11 +10,8 @@ struct ps2_keyboard_stream
 struct ps2_keyboard_queue
 {
 
-    struct base_device *device;
     struct vfs_mode *mode;
-    unsigned int offset;
-    unsigned int count;
-    void *buffer;
+    unsigned int semaphore;
 
 };
 
