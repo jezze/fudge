@@ -1,7 +1,5 @@
 #include <fudge/module.h>
 #include <kernel/vfs.h>
-#include <kernel/task.h>
-#include <kernel/container.h>
 #include <kernel/kernel.h>
 #include <base/base.h>
 #include <base/keyboard.h>
@@ -106,8 +104,7 @@ static void handle_irq(struct base_device *device)
             scancode += 128;
 
         write_stream(&driver->stream, 1, driver->ikeyboard.keymap + scancode);
-
-        kernel_unblock_task();
+        kernel_rendezvous_unsleep(&driver->rread, 1);
 
     }
 
@@ -149,8 +146,7 @@ static unsigned int read_data(struct base_device *device, unsigned int offset, u
 
     count = read_stream(&driver->stream, count, buffer);
 
-    if (!count)
-        kernel_block_task();
+    kernel_rendezvous_sleep(&driver->rread, !count);
 
     return count;
 
