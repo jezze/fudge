@@ -18,6 +18,20 @@ static struct
 
 } state;
 
+void kernel_lock(struct kernel_lock *lock)
+{
+
+    lock->state = LOCK_STATE_LOCKED;
+
+}
+
+void kernel_unlock(struct kernel_lock *lock)
+{
+
+    lock->state = LOCK_STATE_UNLOCKED;
+
+}
+
 void kernel_rendezvous_sleep(struct kernel_rendezvous *rendezvous, unsigned int condition)
 {
 
