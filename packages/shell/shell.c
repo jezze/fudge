@@ -94,11 +94,21 @@ static void complete(struct lifo_stack *stack)
     call_open(CALL_L0, CALL_I0, 0, 0);
     call_open(CALL_L1, CALL_O0, 0, 0);
     call_open(CALL_L2, CALL_I1, 0, 0);
+    call_open(CALL_L3, CALL_DW, 0, 0);
     open_pipe(CALL_P0, CALL_L4, CALL_I1);
     open_pipe(CALL_P1, CALL_O0, CALL_L5);
 
     while (offset && stack->buffer[offset - 1] != ' ')
         offset--;
+
+    if (stack->buffer[offset] == '/')
+    {
+
+        offset++;
+
+        call_open(CALL_DW, CALL_DR, 0, 0);
+
+    }
 
     while (offset2 > offset && stack->buffer[offset2 - 1] != '/')
         offset2--;
@@ -128,6 +138,7 @@ static void complete(struct lifo_stack *stack)
     call_open(CALL_I0, CALL_L0, 0, 0);
     call_open(CALL_O0, CALL_L1, 0, 0);
     call_open(CALL_I1, CALL_L2, 0, 0);
+    call_open(CALL_DW, CALL_L3, 0, 0);
 
     if (!count)
         return;
