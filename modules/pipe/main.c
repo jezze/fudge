@@ -152,14 +152,11 @@ static void init_session(struct pipe_session *session, unsigned int id)
 {
 
     memory_clear(session, sizeof (struct pipe_session));
-    memory_write_number(session->name, 2, id, 10, 0);
+    memory_write_number(session->name, 8, id, 10, 0);
     system_init_group(&session->base, session->name);
     system_init_stream(&session->control, "control");
-    system_group_add(&session->base, &session->control.node);
     system_init_stream(&session->ipipe, "0");
-    system_group_add(&session->base, &session->ipipe.node);
     system_init_stream(&session->opipe, "1");
-    system_group_add(&session->base, &session->opipe.node);
 
     session->control.node.close = control_close;
     session->control.node.read = control_read;
@@ -180,6 +177,9 @@ static unsigned int clone_open(struct system_node *self)
 
     init_session(&session[index], index);
     system_group_add(&root, &session[index].base.node);
+    system_group_add(&session[index].base, &session[index].control.node);
+    system_group_add(&session[index].base, &session[index].ipipe.node);
+    system_group_add(&session[index].base, &session[index].opipe.node);
 
     return (unsigned int)&session[index].control;
 
@@ -188,6 +188,7 @@ static unsigned int clone_open(struct system_node *self)
 void init()
 {
 
+    memory_clear(session, sizeof (struct pipe_session) * 8);
     system_init_group(&root, "pipe");
     system_register_node(&root.node);
     system_init_stream(&clone, "clone");
