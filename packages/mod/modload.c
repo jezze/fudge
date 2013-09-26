@@ -200,8 +200,6 @@ void main()
 
     if (resolve(CALL_I0))
         call_load(CALL_I0);
-    else
-        for(;;);
 
 }
 
