@@ -11,7 +11,6 @@
 #include "video.h"
 
 static struct base_module *modules;
-static struct system_group root;
 
 static struct base_module *find_presibling(struct base_module *module)
 {
@@ -166,9 +165,6 @@ void init()
 
     modules = 0;
 
-    system_init_group(&root, "base");
-    system_register_node(&root.node);
-
     base_block_setup();
     base_keyboard_setup();
     base_mouse_setup();
@@ -181,8 +177,6 @@ void init()
 
 void destroy()
 {
-
-    system_unregister_node(&root.node);
 
 }
 
