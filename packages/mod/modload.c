@@ -137,7 +137,7 @@ static unsigned int resolve_symbols(unsigned int id, struct elf_section_header *
 
 }
 
-unsigned int resolve(unsigned int id)
+static unsigned int resolve(unsigned int id)
 {
 
     struct elf_header header;
