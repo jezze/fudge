@@ -79,7 +79,7 @@ static struct multi_task *find_free_task()
 
 }
 
-static void map(struct container *self, struct task *task, unsigned int address)
+void multi_map(struct container *self, struct task *task, unsigned int address)
 {
 
     struct multi_task *current = (struct multi_task *)task;
@@ -89,7 +89,7 @@ static void map(struct container *self, struct task *task, unsigned int address)
 
 }
 
-static struct task *schedule(struct container *self)
+struct task *multi_schedule(struct container *self)
 {
 
     struct multi_task *task = find_next_task();
@@ -131,8 +131,6 @@ struct task *multi_setup(struct container *container)
 
     task_init(&task->base, 0, MULTI_TASK_STACKVIRT, MULTI_TASK_STACKVIRT);
 
-    container->map = map;
-    container->schedule = schedule;
     container->calls[CONTAINER_CALL_SPAWN] = spawn;
 
     mmu_map(&task->directory, &kernel.tables[0], MULTI_KERNEL_BASE, MULTI_KERNEL_BASE, MULTI_KERNEL_BASESIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);

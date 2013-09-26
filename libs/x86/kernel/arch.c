@@ -32,7 +32,7 @@ static struct
 unsigned short arch_schedule(struct cpu_general *general, struct cpu_interrupt *interrupt)
 {
 
-    state.container->current = state.container->schedule(state.container);
+    state.container->current = multi_schedule(state.container);
 
     if (interrupt->code == state.kselector.code)
         return state.kselector.data;
@@ -72,7 +72,7 @@ unsigned short arch_pagefault(void *stack)
 
     struct {struct cpu_general general; unsigned int type; struct cpu_interrupt interrupt;} *registers = stack;
 
-    state.container->map(state.container, state.container->current, cpu_get_cr2());
+    multi_map(state.container, state.container->current, cpu_get_cr2());
 
     return arch_schedule(&registers->general, &registers->interrupt);
 

@@ -31,8 +31,6 @@ struct container
 
     struct task *current;
     struct container_mount mounts[CONTAINER_MOUNTS];
-    void (*map)(struct container *self, struct task *task, unsigned int address);
-    struct task *(*schedule)(struct container *self);
     unsigned int (*calls[CONTAINER_CALLS])(struct container *self, struct task *task, void *stack);
 
 };
