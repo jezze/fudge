@@ -22,7 +22,7 @@ static unsigned int find_symbol(unsigned int id, unsigned int count, char *symbo
 {
 
     struct elf_header header;
-    struct elf_section_header sectionheader[64];
+    struct elf_section_header sectionheader[32];
     unsigned int i;
 
     call_read(id, 0, ELF_HEADER_SIZE, &header);
@@ -30,7 +30,7 @@ static unsigned int find_symbol(unsigned int id, unsigned int count, char *symbo
     if (!elf_validate(&header))
         return 0;
 
-    if (header.shcount > 64)
+    if (header.shcount > 32)
         return 0;
 
     call_read(id, header.shoffset, header.shsize * header.shcount, sectionheader);
@@ -141,7 +141,7 @@ unsigned int resolve(unsigned int id)
 {
 
     struct elf_header header;
-    struct elf_section_header sectionheader[64];
+    struct elf_section_header sectionheader[32];
     struct elf_relocation relocations[512];
     struct elf_symbol symbols[512];
     char strings[4096];
@@ -152,7 +152,7 @@ unsigned int resolve(unsigned int id)
     if (!elf_validate(&header))
         return 0;
 
-    if (header.shcount > 64)
+    if (header.shcount > 32)
         return 0;
 
     call_read(id, header.shoffset, header.shsize * header.shcount, sectionheader);
