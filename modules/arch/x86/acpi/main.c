@@ -1,5 +1,5 @@
 #include <fudge/module.h>
-#include <x86/kernel/mmu.h>
+#include <x86/arch/mmu.h>
 #include "acpi.h"
 
 static struct acpi_rsdp *find_rsdp()

@@ -3,10 +3,10 @@
 #include <kernel/task.h>
 #include <kernel/container.h>
 #include <kernel/kernel.h>
-#include <x86/kernel/cpu.h>
-#include <x86/kernel/arch.h>
-#include <x86/kernel/idt.h>
-#include <x86/kernel/gdt.h>
+#include <x86/arch/cpu.h>
+#include <x86/arch/arch.h>
+#include <x86/arch/idt.h>
+#include <x86/arch/gdt.h>
 #include <base/base.h>
 #include <arch/x86/io/io.h>
 #include "pic.h"

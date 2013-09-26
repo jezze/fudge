@@ -3,8 +3,8 @@
 #include <kernel/task.h>
 #include <kernel/container.h>
 #include <kernel/kernel.h>
-#include <x86/kernel/cpu.h>
-#include <x86/kernel/arch.h>
+#include <x86/arch/cpu.h>
+#include <x86/arch/arch.h>
 #include "mboot.h"
 
 static struct kernel_module modules[4];
