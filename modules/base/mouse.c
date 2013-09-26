@@ -67,10 +67,11 @@ void base_mouse_init_interface(struct base_mouse_interface *interface)
 void base_mouse_setup()
 {
 
+    memory_clear(node, sizeof (struct mouse_node) * 8);
     system_init_group(&root, "mouse");
+    system_register_node(&root.node);
     system_init_group(&dev, "dev");
     system_group_add(&root, &dev.node);
-    system_register_node(&root.node);
 
 }
 

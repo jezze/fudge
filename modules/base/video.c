@@ -115,10 +115,10 @@ void base_video_register_interface(struct base_video_interface *interface, struc
         return;
 
     init_node(&node[index], interface, device);
+    system_group_add(&dev, &node[index].base.node);
     system_group_add(&node[index].base, &node[index].data.node);
     system_group_add(&node[index].base, &node[index].colormap.node);
     system_group_add(&node[index].base, &node[index].mode.node);
-    system_group_add(&dev, &node[index].base.node);
 
 }
 
@@ -138,10 +138,11 @@ void base_video_init_interface(struct base_video_interface *interface, void (*mo
 void base_video_setup()
 {
 
+    memory_clear(node, sizeof (struct video_node) * 8);
     system_init_group(&root, "video");
+    system_register_node(&root.node);
     system_init_group(&dev, "dev");
     system_group_add(&root, &dev.node);
-    system_register_node(&root.node);
 
 }
 

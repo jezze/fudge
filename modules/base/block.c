@@ -84,10 +84,11 @@ void base_block_init_protocol(struct base_block_protocol *protocol, char *name)
 void base_block_setup()
 {
 
+    memory_clear(node, sizeof (struct block_node) * 8);
     system_init_group(&root, "block");
+    system_register_node(&root.node);
     system_init_group(&dev, "dev");
     system_group_add(&root, &dev.node);
-    system_register_node(&root.node);
 
 }
 

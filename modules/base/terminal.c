@@ -75,8 +75,8 @@ void base_terminal_register_interface(struct base_terminal_interface *interface,
         return;
 
     init_node(&node[index], interface, device);
-    system_group_add(&node[index].base, &node[index].data.node);
     system_group_add(&dev, &node[index].base.node);
+    system_group_add(&node[index].base, &node[index].data.node);
 
 }
 
@@ -93,10 +93,11 @@ void base_terminal_init_interface(struct base_terminal_interface *interface, uns
 void base_terminal_setup()
 {
 
+    memory_clear(node, sizeof (struct terminal_node) * 8);
     system_init_group(&root, "terminal");
+    system_register_node(&root.node);
     system_init_group(&dev, "dev");
     system_group_add(&root, &dev.node);
-    system_register_node(&root.node);
 
 }
 

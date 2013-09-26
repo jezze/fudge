@@ -87,9 +87,9 @@ void base_keyboard_register_interface(struct base_keyboard_interface *interface,
         return;
 
     init_node(&node[index], interface, device);
+    system_group_add(&dev, &node[index].base.node);
     system_group_add(&node[index].base, &node[index].data.node);
     system_group_add(&node[index].base, &node[index].keymap.node);
-    system_group_add(&dev, &node[index].base.node);
 
 }
 
@@ -106,10 +106,11 @@ void base_keyboard_init_interface(struct base_keyboard_interface *interface, uns
 void base_keyboard_setup()
 {
 
+    memory_clear(node, sizeof (struct keyboard_node) * 8);
     system_init_group(&root, "keyboard");
+    system_register_node(&root.node);
     system_init_group(&dev, "dev");
     system_group_add(&root, &dev.node);
-    system_register_node(&root.node);
 
 }
 

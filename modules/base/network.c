@@ -103,9 +103,9 @@ void base_network_register_interface(struct base_network_interface *interface, s
         return;
 
     init_node(&node[index], interface, device);
+    system_group_add(&dev, &node[index].base.node);
     system_group_add(&node[index].base, &node[index].data.node);
     system_group_add(&node[index].base, &node[index].mac.node);
-    system_group_add(&dev, &node[index].base.node);
 
 }
 
@@ -138,9 +138,10 @@ void base_network_init_protocol(struct base_network_protocol *protocol, char *na
 void base_network_setup()
 {
 
+    memory_clear(node, sizeof (struct network_node) * 8);
     system_init_group(&root, "network");
-    system_init_group(&dev, "dev");
     system_group_add(&root, &dev.node);
+    system_init_group(&dev, "dev");
     system_register_node(&root.node);
 
 }
