@@ -152,8 +152,7 @@ static void init_session(struct pipe_session *session, unsigned int id)
 {
 
     memory_clear(session, sizeof (struct pipe_session));
-
-    memory_write_number(session->name, 8, id, 10, 0);
+    memory_write_number(&session->name, 2, id, 10, 0);
     system_init_group(&session->base, session->name);
     system_init_stream(&session->control, "control");
     system_group_add(&session->base, &session->control.node);

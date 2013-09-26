@@ -13,8 +13,27 @@ static struct timer_node
 
 } node[8];
 
+static struct timer_session
+{
+
+    struct system_group base;
+    struct system_stream control;
+    char name[8];
+
+} session[8];
+
 static struct system_group root;
 static struct system_group dev;
+static struct system_stream clone;
+
+static unsigned int clone_open(struct system_node *self)
+{
+
+    memory_clear(session, 8);
+
+    return (unsigned int)self;
+
+}
 
 static unsigned int find_node()
 {
@@ -71,9 +90,13 @@ void base_timer_setup()
 {
 
     system_init_group(&root, "timer");
+    system_register_node(&root.node);
     system_init_group(&dev, "dev");
     system_group_add(&root, &dev.node);
-    system_register_node(&root.node);
+    system_init_stream(&clone, "clone");
+    system_group_add(&root, &clone.node);
+
+    clone.node.open = clone_open;
 
 }
 
