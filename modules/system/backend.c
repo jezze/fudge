@@ -28,7 +28,7 @@ void system_init_backend(struct system_backend *backend)
 
     backend->root.node.parent = &backend->root.node;
 
-    memory_copy(&backend->header.id, "FUDGE_SYSTEM", 12);
+    memory_copy(backend->header.id, "FUDGE_SYSTEM", 12);
     memory_copy(&backend->header.root, &backend->root, 4);
 
 }

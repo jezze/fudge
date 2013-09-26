@@ -114,7 +114,7 @@ static unsigned int spawn(struct container *self, struct task *task, void *stack
         return 0;
 
     task_init(&child->base, 0, MULTI_TASK_STACKVIRT, MULTI_TASK_STACKVIRT);
-    memory_copy(&child->base.descriptors, &parent->base.descriptors, sizeof (struct task_descriptor) * TASK_DESCRIPTORS);
+    memory_copy(child->base.descriptors, parent->base.descriptors, sizeof (struct task_descriptor) * TASK_DESCRIPTORS);
     memory_clear(&child->directory, sizeof (struct mmu_directory));
     memory_copy(&child->directory, &parent->directory, 4);
     memory_copy(&temp, args, sizeof (struct parameters));

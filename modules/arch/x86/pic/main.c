@@ -151,7 +151,7 @@ void init()
     struct idt_pointer *pointer = cpu_get_idt();
     unsigned short selector = sizeof (struct gdt_descriptor) * GDT_INDEX_KCODE;
 
-    memory_clear(&routines, sizeof (struct pic_routine) * PIC_ROUTINES);
+    memory_clear(routines, sizeof (struct pic_routine) * PIC_ROUTINES);
     setup_chip(PIC_REGISTER_COMMAND0, PIC_REGISTER_DATA0, PIC_DATA_VECTOR0, 0x04);
     setup_chip(PIC_REGISTER_COMMAND1, PIC_REGISTER_DATA1, PIC_DATA_VECTOR1, 0x02);
     idt_set_descriptor(pointer, PIC_DATA_VECTOR0 + 0x00, pic_routine00, selector, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
