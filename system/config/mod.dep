@@ -1,0 +1,15 @@
+system.ko:
+null.ko: system.ko
+pipe.ko: system.ko
+log.ko: system.ko
+mtwist.ko: system.ko
+base.ko: system.ko
+io.ko: base.ko
+cpuid.ko: base.ko
+msr.ko: base.ko cpuid.ko
+pic.ko: base.ko io.ko
+pci.ko: base.ko io.ko
+pit.ko: base.ko io.ko
+ps2.ko: system.ko base.ko io.ko
+vga.ko: base.ko io.ko pci.ko
+rtl8139.ko: base.ko io.ko pci.ko
