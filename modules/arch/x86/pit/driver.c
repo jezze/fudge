@@ -42,7 +42,7 @@ static void handle_irq(struct base_device *device)
 
     struct pit_driver *driver = (struct pit_driver *)device->driver;
 
-    driver->jiffies += 1;
+    driver->itimer.jiffies += 1;
 
 }
 
@@ -66,21 +66,8 @@ static unsigned int check(struct base_device *device)
 
 }
 
-static unsigned int get_ticks(struct base_device *device)
+static void add_duration(struct base_device *device, unsigned int duration)
 {
-
-    struct pit_driver *driver = (struct pit_driver *)device->driver;
-
-    return driver->jiffies;
-
-}
-
-static void set_ticks(struct base_device *device, unsigned int ticks)
-{
-
-    struct pit_driver *driver = (struct pit_driver *)device->driver;
-
-    driver->jiffies = ticks;
 
 }
 
@@ -89,7 +76,7 @@ void pit_init_driver(struct pit_driver *driver)
 
     memory_clear(driver, sizeof (struct pit_driver));
     base_init_driver(&driver->base, "pit", check, attach);
-    base_timer_init_interface(&driver->itimer, get_ticks, set_ticks);
+    base_timer_init_interface(&driver->itimer, add_duration);
 
     driver->divisor = PIT_FREQUENCY / PIT_HERTZ;
 

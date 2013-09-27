@@ -10,6 +10,7 @@ static struct timer_node
     struct system_group base;
     struct base_timer_interface *interface;
     struct base_device *device;
+    struct system_stream jiffies;
 
 } node[8];
 
@@ -17,6 +18,7 @@ static struct timer_session
 {
 
     struct system_group base;
+    struct timer_node *node;
     struct system_stream control;
     struct system_stream sleep;
     char name[8];
@@ -53,7 +55,7 @@ static unsigned int find_session()
 
 }
 
-static void init_session(struct timer_session *session, unsigned int id)
+static void init_session(struct timer_session *session, unsigned int id, struct timer_node *node)
 {
 
     memory_clear(session, sizeof (struct timer_session));
@@ -62,6 +64,7 @@ static void init_session(struct timer_session *session, unsigned int id)
     system_init_stream(&session->control, "control");
     system_init_stream(&session->sleep, "sleep");
 
+    session->node = node;
     session->control.node.read = control_read;
 
 }
@@ -74,12 +77,22 @@ static unsigned int clone_open(struct system_node *self)
     if (!index)
         return 0;
 
-    init_session(&session[index], index);
+    init_session(&session[index], index, &node[1]);
     system_group_add(&root, &session[index].base.node);
     system_group_add(&session[index].base, &session[index].control.node);
     system_group_add(&session[index].base, &session[index].sleep.node);
 
     return (unsigned int)&session[index].control;
+
+}
+
+static unsigned int jiffies_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    struct timer_node *node = (struct timer_node *)self->parent;
+    char num[32];
+
+    return memory_read(buffer, count, num, memory_write_number(num, 32, node->interface->jiffies, 10, 0), offset);
 
 }
 
@@ -105,9 +118,11 @@ static void init_node(struct timer_node *node, struct base_timer_interface *inte
 
     memory_clear(node, sizeof (struct timer_node));
     system_init_group(&node->base, device->module.name);
+    system_init_stream(&node->jiffies, "jiffies");
 
     node->interface = interface;
     node->device = device;
+    node->jiffies.node.read = jiffies_read;
 
 }
 
@@ -121,16 +136,16 @@ void base_timer_register_interface(struct base_timer_interface *interface, struc
 
     init_node(&node[index], interface, device);
     system_group_add(&dev, &node[index].base.node);
+    system_group_add(&node[index].base, &node[index].jiffies.node);
 
 }
 
-void base_timer_init_interface(struct base_timer_interface *interface, unsigned int (*get_ticks)(struct base_device *device), void (*set_ticks)(struct base_device *device, unsigned int ticks))
+void base_timer_init_interface(struct base_timer_interface *interface, void (*add_timeout)(struct base_device *device, unsigned int duration))
 {
 
     memory_clear(interface, sizeof (struct base_timer_interface));
 
-    interface->get_ticks = get_ticks;
-    interface->set_ticks = set_ticks;
+    interface->add_timeout = add_timeout;
 
 }
 
