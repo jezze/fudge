@@ -52,7 +52,7 @@ static unsigned int find_symbol(struct vfs_session *session, unsigned int id, un
         session->protocol->read(session->backend, id, symbolheader->offset, symbolheader->size, symbols);
         session->protocol->read(session->backend, id, stringheader->offset, stringheader->size, strings);
 
-        address = elf_find_symbol(&header, sectionheader, &sectionheader[i], symbols, strings, count, symbol);
+        address = elf_find_symbol(&header, sectionheader, symbolheader, symbols, strings, count, symbol);
 
         if (address)
             return address;
