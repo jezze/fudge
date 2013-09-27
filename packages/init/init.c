@@ -8,6 +8,8 @@ void main()
     call_open(CALL_E0, CALL_DR, 9, "bin/slang");
     call_spawn(CALL_E0);
     call_close(CALL_E0);
+    call_close(CALL_I0);
+    call_close(CALL_DW);
 
     for (;;);
 
