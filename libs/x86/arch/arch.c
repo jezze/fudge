@@ -32,17 +32,16 @@ static struct
 unsigned short arch_schedule(struct cpu_general *general, struct cpu_interrupt *interrupt)
 {
 
-    struct task *current = state.container->current;
-
-    state.container->current = multi_schedule(state.container);
+    struct task *current = multi_schedule(state.container);
 
     if (current == state.container->current)
         return state.uselector.data;
 
-    current->registers.ip = interrupt->eip;
-    current->registers.sp = interrupt->esp;
-    current->registers.fp = general->ebp;
-    current->status = general->eax;
+    state.container->current->registers.ip = interrupt->eip;
+    state.container->current->registers.sp = interrupt->esp;
+    state.container->current->registers.fp = general->ebp;
+    state.container->current->status = general->eax;
+    state.container->current = current;
     interrupt->eip = state.container->current->registers.ip;
     interrupt->esp = state.container->current->registers.sp;
     general->ebp = state.container->current->registers.fp;
