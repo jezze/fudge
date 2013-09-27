@@ -79,19 +79,13 @@ unsigned short arch_syscall(void *stack)
 
     struct {struct cpu_general general; struct cpu_interrupt interrupt;} *registers = stack;
 
+    registers->general.eax = (state.container->calls[registers->general.eax]) ? state.container->calls[registers->general.eax](state.container, state.container->current, (void *)registers->interrupt.esp) : 0;
     state.container->current->registers.ip = registers->interrupt.eip;
     state.container->current->registers.sp = registers->interrupt.esp;
     state.container->current->registers.fp = registers->general.ebp;
-    state.container->current->status = (state.container->calls[registers->general.eax]) ? state.container->calls[registers->general.eax](state.container, state.container->current, (void *)registers->interrupt.esp) : 0;
+    state.container->current->status = registers->general.eax;
 
-    state.container->current = multi_schedule(state.container);
-
-    registers->interrupt.eip = state.container->current->registers.ip;
-    registers->interrupt.esp = state.container->current->registers.sp;
-    registers->general.ebp = state.container->current->registers.fp;
-    registers->general.eax = state.container->current->status;
-
-    return state.uselector.data;
+    return arch_schedule(&registers->general, &registers->interrupt);
 
 }
 
