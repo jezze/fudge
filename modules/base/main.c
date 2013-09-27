@@ -1,6 +1,4 @@
 #include <fudge/module.h>
-#include <kernel/vfs.h>
-#include <system/system.h>
 #include "base.h"
 #include "block.h"
 #include "keyboard.h"
