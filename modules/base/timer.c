@@ -29,6 +29,17 @@ static struct system_group root;
 static struct system_group dev;
 static struct system_stream clone;
 
+static unsigned int sleep_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    struct timer_session *session = (struct timer_session *)self->parent;
+
+    session->node->interface->add_duration(session->node->device, 3);
+
+    return 0;
+
+}
+
 static unsigned int control_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
@@ -66,6 +77,7 @@ static void init_session(struct timer_session *session, unsigned int id, struct 
 
     session->node = node;
     session->control.node.read = control_read;
+    session->sleep.node.write = sleep_write;
 
 }
 
@@ -140,12 +152,12 @@ void base_timer_register_interface(struct base_timer_interface *interface, struc
 
 }
 
-void base_timer_init_interface(struct base_timer_interface *interface, void (*add_timeout)(struct base_device *device, unsigned int duration))
+void base_timer_init_interface(struct base_timer_interface *interface, void (*add_duration)(struct base_device *device, unsigned int duration))
 {
 
     memory_clear(interface, sizeof (struct base_timer_interface));
 
-    interface->add_timeout = add_timeout;
+    interface->add_duration = add_duration;
 
 }
 

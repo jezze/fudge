@@ -15,6 +15,7 @@ struct pit_driver
 
     struct base_driver base;
     struct base_timer_interface itimer;
+    struct kernel_rendezvous rduration;
     unsigned short divisor;
 
 };
