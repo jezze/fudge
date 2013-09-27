@@ -69,6 +69,9 @@ static struct multi_task *find_free_task()
         if (tasks[i].base.state & TASK_STATE_USED)
             continue;
 
+        if (tasks[i].base.state & TASK_STATE_BLOCKED)
+            continue;
+
         tasks[i].index = i;
 
         return &tasks[i];
