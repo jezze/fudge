@@ -1,5 +1,5 @@
-BIN:=packages/timer/timer
-OBJ:=packages/timer/timer.o
+BIN:=packages/sleep/sleep
+OBJ:=packages/sleep/sleep.o
 
 $(BIN): $(OBJ) $(USERLIBS)
 	$(LD) $(LDFLAGS) -o $@ $^
