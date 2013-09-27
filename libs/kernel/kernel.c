@@ -18,20 +18,6 @@ static struct
 
 } state;
 
-void kernel_lock(struct kernel_lock *lock)
-{
-
-    lock->state = LOCK_STATE_LOCKED;
-
-}
-
-void kernel_unlock(struct kernel_lock *lock)
-{
-
-    lock->state = LOCK_STATE_UNLOCKED;
-
-}
-
 void kernel_rendezvous_sleep(struct kernel_rendezvous *rendezvous, unsigned int condition)
 {
 
@@ -39,10 +25,7 @@ void kernel_rendezvous_sleep(struct kernel_rendezvous *rendezvous, unsigned int 
         return;
 
     rendezvous->task = state.container.current;
-
-/*
     rendezvous->task->state |= TASK_STATE_BLOCKED;
-*/
 
 }
 
@@ -52,10 +35,7 @@ void kernel_rendezvous_unsleep(struct kernel_rendezvous *rendezvous, unsigned in
     if (!condition)
         return;
 
-/*
     rendezvous->task->state &= ~TASK_STATE_BLOCKED;
-*/
-
     rendezvous->task = 0;
 
 }

@@ -29,7 +29,7 @@ static struct system_group root;
 static struct system_group dev;
 static struct system_stream clone;
 
-static unsigned int sleep_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int sleep_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct timer_session *session = (struct timer_session *)self->parent;
@@ -77,7 +77,7 @@ static void init_session(struct timer_session *session, unsigned int id, struct 
 
     session->node = node;
     session->control.node.read = control_read;
-    session->sleep.node.write = sleep_write;
+    session->sleep.node.read = sleep_read;
 
 }
 
