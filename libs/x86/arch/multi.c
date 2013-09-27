@@ -79,13 +79,14 @@ static struct multi_task *find_free_task()
 
 }
 
-void multi_map(struct container *self, struct task *task, unsigned int address)
+void multi_map(struct container *self, unsigned int address)
 {
 
-    struct multi_task *current = (struct multi_task *)task;
+    struct multi_task *current = find_next_task();
 
     mmu_map(&current->directory, &current->tables[0], current->index * MULTI_TASK_BASESIZE + MULTI_TASK_BASE, address, MULTI_TASK_BASESIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
     mmu_map(&current->directory, &current->tables[1], current->index * MULTI_TASK_STACKSIZE + MULTI_TASK_STACK, MULTI_TASK_STACKVIRT - MULTI_TASK_STACKSIZE, MULTI_TASK_STACKSIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
+    mmu_load(&current->directory);
 
 }
 
