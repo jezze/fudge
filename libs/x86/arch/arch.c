@@ -32,29 +32,26 @@ static struct
 unsigned short arch_schedule(struct cpu_general *general, struct cpu_interrupt *interrupt)
 {
 
+    struct task *current = state.container->current;
+
     state.container->current = multi_schedule(state.container);
 
     if (interrupt->code == state.kselector.code)
         return state.kselector.data;
 
+    if (current == state.container->current)
+        return state.uselector.data;
+
+    current->registers.ip = interrupt->eip;
+    current->registers.sp = interrupt->esp;
+    current->registers.fp = general->ebp;
+    current->status = general->eax;
     interrupt->eip = state.container->current->registers.ip;
     interrupt->esp = state.container->current->registers.sp;
     general->ebp = state.container->current->registers.fp;
     general->eax = state.container->current->status;
 
     return state.uselector.data;
-
-}
-
-unsigned short arch_schedule_interrupt(struct cpu_general *general, struct cpu_interrupt *interrupt)
-{
-
-    state.container->current->registers.ip = interrupt->eip;
-    state.container->current->registers.sp = interrupt->esp;
-    state.container->current->registers.fp = general->ebp;
-    state.container->current->status = general->eax;
-
-    return arch_schedule(general, interrupt);
 
 }
 
@@ -88,7 +85,14 @@ unsigned short arch_syscall(void *stack)
     state.container->current->registers.fp = registers->general.ebp;
     state.container->current->status = (state.container->calls[registers->general.eax]) ? state.container->calls[registers->general.eax](state.container, state.container->current, (void *)registers->interrupt.esp) : 0;
 
-    return arch_schedule(&registers->general, &registers->interrupt);
+    state.container->current = multi_schedule(state.container);
+
+    registers->interrupt.eip = state.container->current->registers.ip;
+    registers->interrupt.esp = state.container->current->registers.sp;
+    registers->general.ebp = state.container->current->registers.fp;
+    registers->general.eax = state.container->current->status;
+
+    return state.uselector.data;
 
 }
 

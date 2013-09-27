@@ -80,7 +80,7 @@ unsigned short pic_interrupt(void *stack)
     struct {struct cpu_general general; unsigned int index; unsigned int slave; struct cpu_interrupt interrupt;} *registers = stack;
 
     if (!routines[registers->index].callback)
-        return arch_schedule_interrupt(&registers->general, &registers->interrupt);
+        return arch_schedule(&registers->general, &registers->interrupt);
 
     routines[registers->index].callback(routines[registers->index].device);
 
@@ -89,7 +89,7 @@ unsigned short pic_interrupt(void *stack)
 
     io_outb(PIC_REGISTER_COMMAND0, PIC_COMMAND_EOI);
 
-    return arch_schedule_interrupt(&registers->general, &registers->interrupt);
+    return arch_schedule(&registers->general, &registers->interrupt);
 
 }
 
