@@ -1,6 +1,7 @@
 #include <fudge/module.h>
 #include "base.h"
 #include "block.h"
+#include "clock.h"
 #include "keyboard.h"
 #include "mouse.h"
 #include "network.h"
@@ -164,6 +165,7 @@ void init()
     modules = 0;
 
     base_block_setup();
+    base_clock_setup();
     base_keyboard_setup();
     base_mouse_setup();
     base_network_setup();
