@@ -69,6 +69,9 @@ static void execute_command(struct command *command, char *buffer)
     if (command->out0.path.count)
         open_path(CALL_O0, CALL_DW, command->out0.path.count, buffer + command->out0.path.index);
 
+    if (command->out1.path.count)
+        open_path(CALL_O1, CALL_DW, command->out1.path.count, buffer + command->out1.path.index);
+
     call_spawn(CALL_E0);
 
     if (command->in0.path.count)
@@ -83,6 +86,9 @@ static void execute_command(struct command *command, char *buffer)
 
     if (command->out0.path.count)
         call_close(CALL_O0);
+
+    if (command->out1.path.count)
+        call_close(CALL_O1);
 
     call_close(CALL_E0);
 

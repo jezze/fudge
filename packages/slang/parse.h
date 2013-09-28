@@ -28,6 +28,7 @@ struct command
     struct input in0;
     struct input in1;
     struct output out0;
+    struct output out1;
 
 };
 
