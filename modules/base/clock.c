@@ -22,10 +22,9 @@ static struct system_group dev;
 static unsigned int timestamp_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    unsigned int timestamp = 42;
     char num[32];
 
-    return memory_read(buffer, count, num, memory_write_number(num, 32, timestamp, 10, 0), offset);
+    return memory_read(buffer, count, num, memory_write_number(num, 32, 0, 10, 0), offset);
 
 }
 
