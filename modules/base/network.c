@@ -215,9 +215,9 @@ void base_network_setup()
     memory_clear(node, sizeof (struct network_node) * 8);
     memory_clear(session, sizeof (struct network_session) * 8);
     system_init_group(&root, "network");
-    system_group_add(&root, &dev.node);
-    system_init_group(&dev, "dev");
     system_register_node(&root.node);
+    system_init_group(&dev, "dev");
+    system_group_add(&root, &dev.node);
     system_init_stream(&clone, "clone");
     system_group_add(&root, &clone.node);
 
