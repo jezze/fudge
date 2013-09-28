@@ -38,13 +38,13 @@ static unsigned int timestamp_read(struct system_node *self, unsigned int offset
 {
 
     struct clock_node *node = (struct clock_node *)self->parent;
-    unsigned int year = node->interface->get_year(node->device);
+    unsigned int year = node->interface->get_year(node->device) - 1970;
     unsigned int month = node->interface->get_month(node->device);
     unsigned int day = node->interface->get_day(node->device);
     unsigned int hour = node->interface->get_hours(node->device);
     unsigned int minute = node->interface->get_minutes(node->device);
     unsigned int second = node->interface->get_seconds(node->device);
-    unsigned int dyear = 365 * (year - 1970);
+    unsigned int dyear = ((((365 * year) + (year / 4)) - (year / 100)) + (year / 400));
     unsigned int dmonth = isleapyear(year) ? dotm366[month - 1] : dotm365[month - 1];
     unsigned int timestamp = ((dyear + dmonth + day) * 86400) + ((hour * 3600) + (minute * 60) + second);
     char num[32];
