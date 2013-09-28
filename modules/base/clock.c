@@ -34,32 +34,20 @@ static unsigned int isleapyear(unsigned short year)
 
 }
 
-static unsigned int dateticks(unsigned int year, unsigned int month, unsigned int day)
-{
-
-    unsigned int dyear = 365 * (year - 1970);
-    unsigned int dmonth = isleapyear(year) ? dotm366[month - 1] : dotm365[month - 1];
-
-    return (dyear + dmonth + day) * 86400;
-
-}
-
-static unsigned int timeticks(unsigned int hour, unsigned int minute, unsigned int second)
-{
-
-    return ((hour * 3600) + (minute * 60) + second);
-
-}
-
 static unsigned int timestamp_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct clock_node *node = (struct clock_node *)self->parent;
+    unsigned int year = node->interface->get_year(node->device);
+    unsigned int month = node->interface->get_month(node->device);
+    unsigned int day = node->interface->get_day(node->device);
+    unsigned int hour = node->interface->get_hours(node->device);
+    unsigned int minute = node->interface->get_minutes(node->device);
+    unsigned int second = node->interface->get_seconds(node->device);
+    unsigned int dyear = 365 * (year - 1970);
+    unsigned int dmonth = isleapyear(year) ? dotm366[month - 1] : dotm365[month - 1];
+    unsigned int timestamp = ((dyear + dmonth + day) * 86400) + ((hour * 3600) + (minute * 60) + second);
     char num[32];
-    unsigned int timestamp = 0;
-    
-    timestamp += dateticks(node->interface->get_year(node->device), node->interface->get_month(node->device), node->interface->get_day(node->device));
-    timestamp += timeticks(node->interface->get_hours(node->device), node->interface->get_minutes(node->device), node->interface->get_seconds(node->device));
 
     return memory_read(buffer, count, num, memory_write_number(num, 32, timestamp, 10, 0), offset);
 
