@@ -46,7 +46,7 @@ static void handle_irq(struct base_device *device)
 
     driver->itimer.jiffies += 1;
 
-    kernel_rendezvous_unsleep(&driver->rduration, 1);
+    kernel_rendezvous_unsleep(&driver->rduration, 0);
 
 }
 

@@ -89,7 +89,6 @@ void multi_map(struct container *self, unsigned int address)
 
     mmu_map(&current->directory, &current->tables[0], current->index * MULTI_TASK_BASESIZE + MULTI_TASK_BASE, address, MULTI_TASK_BASESIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
     mmu_map(&current->directory, &current->tables[1], current->index * MULTI_TASK_STACKSIZE + MULTI_TASK_STACK, MULTI_TASK_STACKVIRT - MULTI_TASK_STACKSIZE, MULTI_TASK_STACKSIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
-    mmu_load(&current->directory);
 
 }
 
