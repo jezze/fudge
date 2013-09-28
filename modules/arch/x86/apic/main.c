@@ -1,6 +1,5 @@
 #include <fudge/module.h>
 #include <arch/x86/cpuid/cpuid.h>
-#include "apic.h"
 
 void init()
 {
