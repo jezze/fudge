@@ -15,8 +15,87 @@ static struct network_node
 
 } node[8];
 
+static struct network_session
+{
+
+    struct system_group base;
+    struct network_node *node;
+    struct system_group device;
+    struct system_stream control;
+    char name[8];
+
+} session[8];
+
 static struct system_group root;
 static struct system_group dev;
+static struct system_stream clone;
+
+static unsigned int control_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    struct network_session *session = (struct network_session *)self->parent;
+
+    return memory_read(buffer, count, session->name, string_length(session->name), offset);
+
+}
+
+static unsigned int device_open(struct system_node *self)
+{
+
+    struct network_session *session = (struct network_session *)self->parent;
+
+    return session->node->base.node.open(&session->node->base.node);
+
+}
+
+static unsigned int find_session()
+{
+
+    unsigned int i;
+
+    for (i = 1; i < 8; i++)
+    {
+
+        if (!session[i].base.node.parent)
+            return i;
+
+    }
+
+    return 0;
+
+}
+
+static void init_session(struct network_session *session, unsigned int id, struct network_node *node)
+{
+
+    memory_clear(session, sizeof (struct network_session));
+    memory_write_number(session->name, 8, id, 10, 0);
+    system_init_group(&session->base, session->name);
+    system_init_group(&session->device, "device");
+    system_init_stream(&session->control, "control");
+
+    session->node = node;
+    session->device.node.open = device_open;
+    session->control.node.read = control_read;
+
+}
+
+static unsigned int clone_open(struct system_node *self)
+{
+
+    unsigned int index = find_session();
+
+    if (!index)
+        return 0;
+
+    init_session(&session[index], index, &node[1]);
+    system_group_add(&root, &session[index].base.node);
+    system_group_add(&session[index].base, &session[index].device.node);
+    system_group_add(&session[index].base, &session[index].control.node);
+
+    return (unsigned int)&session[index].control;
+
+}
 
 static unsigned int data_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
@@ -134,10 +213,15 @@ void base_network_setup()
 {
 
     memory_clear(node, sizeof (struct network_node) * 8);
+    memory_clear(session, sizeof (struct network_session) * 8);
     system_init_group(&root, "network");
     system_group_add(&root, &dev.node);
     system_init_group(&dev, "dev");
     system_register_node(&root.node);
+    system_init_stream(&clone, "clone");
+    system_group_add(&root, &clone.node);
+
+    clone.node.open = clone_open;
 
 }
 
