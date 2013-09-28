@@ -30,7 +30,4 @@ include packages/reboot/rules.mk
 include packages/sha1/rules.mk
 include packages/shell/rules.mk
 include packages/slang/rules.mk
-include packages/tail/rules.mk
 include packages/sleep/rules.mk
-include packages/wait/rules.mk
-include packages/wm/rules.mk
