@@ -14,4 +14,4 @@ struct uart_device
 
 };
 
-void uart_init_device(struct uart_device *device, unsigned int port, unsigned int irq);
+void uart_init_device(struct uart_device *device, unsigned int port, unsigned int irq, char *name);
