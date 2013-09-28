@@ -65,10 +65,14 @@ unsigned short arch_pagefault(void *stack)
 
     struct {struct cpu_general general; unsigned int type; struct cpu_interrupt interrupt;} *registers = stack;
 
-    multi_map(state.container, cpu_get_cr2());
-
     if (registers->interrupt.code == state.kselector.code)
+    {
+
+        multi_map(state.container, cpu_get_cr2());
+
         return state.kselector.data;
+
+    }
 
     return arch_schedule(&registers->general, &registers->interrupt);
 
