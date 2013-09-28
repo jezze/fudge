@@ -12,6 +12,7 @@ struct rtc_driver
 {
 
     struct base_driver base;
+    struct base_clock_interface iclock;
 
 };
 

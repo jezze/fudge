@@ -1,5 +1,6 @@
 #include <fudge/module.h>
 #include <base/base.h>
+#include <base/clock.h>
 #include "rtc.h"
 
 static struct rtc_device device;

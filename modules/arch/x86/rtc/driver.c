@@ -1,6 +1,6 @@
 #include <fudge/module.h>
 #include <base/base.h>
-#include <timer/timer.h>
+#include <base/clock.h>
 #include <arch/x86/pic/pic.h>
 #include <arch/x86/io/io.h>
 #include "rtc.h"
@@ -41,12 +41,63 @@ static unsigned char get_value(unsigned int type)
 
 }
 
-static void handle_irq(struct base_device *device)
+static unsigned int get_timestamp(struct base_device *device)
 {
+
+    return 0;
 
 }
 
-static void start(struct base_driver *self)
+static unsigned char get_seconds(struct base_device *device)
+{
+
+    return get_value(0x00);
+
+}
+
+static unsigned char get_minutes(struct base_device *device)
+{
+
+    return get_value(0x02);
+
+}
+
+static unsigned char get_hours(struct base_device *device)
+{
+
+    return get_value(0x04);
+
+}
+
+static unsigned char get_weekday(struct base_device *device)
+{
+
+    return get_value(0x06);
+
+}
+
+static unsigned char get_day(struct base_device *device)
+{
+
+    return get_value(0x07);
+
+}
+
+static unsigned char get_month(struct base_device *device)
+{
+
+    return get_value(0x08);
+
+}
+
+static unsigned short get_year(struct base_device *device)
+{
+
+    return 2000 + get_value(0x09);
+
+}
+
+static void handle_irq(struct base_device *device)
 {
 
 }
@@ -54,6 +105,9 @@ static void start(struct base_driver *self)
 static void attach(struct base_device *device)
 {
 
+    struct rtc_driver *driver = (struct rtc_driver *)device->driver;
+
+    base_clock_register_interface(&driver->iclock, device);
     pic_set_routine(device, handle_irq);
 
 }
@@ -69,7 +123,8 @@ void rtc_init_driver(struct rtc_driver *driver)
 {
 
     memory_clear(driver, sizeof (struct rtc_driver));
-    base_init_driver(&driver->base, "rtc", start, check, attach);
+    base_init_driver(&driver->base, "rtc", check, attach);
+    base_clock_init_interface(&driver->iclock, get_timestamp, get_seconds, get_minutes, get_hours, get_weekday, get_day, get_month, get_year);
 
 }
 

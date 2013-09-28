@@ -1,5 +1,6 @@
 #include <fudge/module.h>
 #include <base/base.h>
+#include <base/clock.h>
 #include "rtc.h"
 
 void rtc_init_device(struct rtc_device *device, unsigned int irq)
