@@ -46,7 +46,7 @@ static void handle_irq(struct base_device *device)
 
     driver->itimer.jiffies += 1;
 
-    kernel_rendezvous_unsleep(&driver->rduration, 1);
+    kernel_rendezvous_unsleep(&driver->rduration, driver->duration + 500 < driver->itimer.jiffies);
 
 }
 
@@ -76,6 +76,7 @@ static void add_duration(struct base_device *device, unsigned int duration)
     struct pit_driver *driver = (struct pit_driver *)device->driver;
 
     kernel_rendezvous_sleep(&driver->rduration, 1);
+    driver->duration = driver->itimer.jiffies;
 
 }
 
