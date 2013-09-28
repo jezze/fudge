@@ -46,16 +46,11 @@ static unsigned int mac_read(struct system_node *self, unsigned int offset, unsi
 {
 
     struct network_node *node = (struct network_node *)self->parent;
-    char mac[17];
+    char *mac = "00:00:00:00:00:00";
     unsigned int i;
-
-    memory_clear(mac, 17);
 
     for (i = 0; i < 6; i++)
         memory_write_paddednumber(mac, 17, node->interface->mac[i], 16, 2, i * 3);
-
-    for (i = 2; i < 17; i += 3)
-        mac[i] = ':';
 
     return memory_read(buffer, count, mac, 17, offset); 
 
