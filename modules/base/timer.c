@@ -19,6 +19,7 @@ static struct timer_session
 
     struct system_group base;
     struct timer_node *node;
+    struct system_group device;
     struct system_stream control;
     struct system_stream sleep;
     char name[8];
@@ -49,6 +50,15 @@ static unsigned int control_read(struct system_node *self, unsigned int offset, 
 
 }
 
+static unsigned int device_open(struct system_node *self)
+{
+
+    struct timer_session *session = (struct timer_session *)self->parent;
+
+    return session->node->base.node.open(&session->node->base.node);
+
+}
+
 static unsigned int find_session()
 {
 
@@ -72,10 +82,12 @@ static void init_session(struct timer_session *session, unsigned int id, struct 
     memory_clear(session, sizeof (struct timer_session));
     memory_write_number(session->name, 8, id, 10, 0);
     system_init_group(&session->base, session->name);
+    system_init_group(&session->device, "device");
     system_init_stream(&session->control, "control");
     system_init_stream(&session->sleep, "sleep");
 
     session->node = node;
+    session->device.node.open = device_open;
     session->control.node.read = control_read;
     session->sleep.node.read = sleep_read;
 
@@ -91,6 +103,7 @@ static unsigned int clone_open(struct system_node *self)
 
     init_session(&session[index], index, &node[1]);
     system_group_add(&root, &session[index].base.node);
+    system_group_add(&session[index].base, &session[index].device.node);
     system_group_add(&session[index].base, &session[index].control.node);
     system_group_add(&session[index].base, &session[index].sleep.node);
 
