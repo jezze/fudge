@@ -33,7 +33,7 @@ static void close_pipe(unsigned int index, unsigned int index0, unsigned int ind
 static void execute_command(struct command *command, char *buffer)
 {
 
-    if (!open_path(CALL_E0, CALL_L3, command->binary.count, buffer + command->binary.index))
+    if (!open_path(CALL_E0, CALL_L4, command->binary.count, buffer + command->binary.index))
         return;
 
     if (command->in0.path.count)
@@ -100,9 +100,10 @@ static void execute(struct token_state *state, struct expression *expression)
     unsigned int pindex;
 
     call_open(CALL_L0, CALL_I0, 0, 0);
-    call_open(CALL_L1, CALL_O0, 0, 0);
-    call_open(CALL_L2, CALL_I1, 0, 0);
-    call_open(CALL_L3, CALL_DR, 4, "bin/");
+    call_open(CALL_L1, CALL_I1, 0, 0);
+    call_open(CALL_L2, CALL_O0, 0, 0);
+    call_open(CALL_L3, CALL_O1, 0, 0);
+    call_open(CALL_L4, CALL_DR, 4, "bin/");
 
     for (pindex = 0; pindex < expression->pipes; pindex++)
     {
@@ -126,7 +127,7 @@ static void execute(struct token_state *state, struct expression *expression)
         for (cindex = 0; cindex < clast; cindex++)
             call_close(CALL_P0 + cindex);
 
-        call_open(CALL_O0, CALL_L1, 0, 0);
+        call_open(CALL_O0, CALL_L2, 0, 0);
         execute_command(&pipe->command[clast], state->buffer);
 
     }
@@ -135,6 +136,7 @@ static void execute(struct token_state *state, struct expression *expression)
     call_close(CALL_L1);
     call_close(CALL_L2);
     call_close(CALL_L3);
+    call_close(CALL_L4);
 
 }
 
