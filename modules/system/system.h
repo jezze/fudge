@@ -26,6 +26,7 @@ struct system_node
     unsigned int (*close)(struct system_node *self);
     unsigned int (*read)(struct system_node *self, unsigned int offset, unsigned int count, void *buffer);
     unsigned int (*write)(struct system_node *self, unsigned int offset, unsigned int count, void *buffer);
+    unsigned int (*walk)(struct system_node *self, unsigned int count, const char *path);
 
 };
 

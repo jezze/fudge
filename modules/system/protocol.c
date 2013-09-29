@@ -65,31 +65,8 @@ static unsigned int walk(struct vfs_backend *backend, unsigned int id, unsigned 
 {
 
     struct system_node *node = (struct system_node *)id;
-    struct system_node *current;
 
-    if (!count)
-        return id;
-
-    if (node->type == SYSTEM_NODETYPE_GROUP)
-    {
-
-        struct system_group *group = (struct system_group *)node;
-
-        for (current = group->children; current; current = current->sibling)
-        {
-
-            unsigned int l = string_length(current->name);
-
-            if (!memory_match(current->name, path, l))
-                continue;
-
-            return (current->type == SYSTEM_NODETYPE_GROUP) ? walk(backend, (unsigned int)current, count - l - 1, path + l + 1) : walk(backend, (unsigned int)current, count - l, path + l);
-
-        }
-
-    }
-
-    return 0;
+    return node->walk(node, count, path);
 
 }
 

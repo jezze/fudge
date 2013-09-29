@@ -90,6 +90,16 @@ static unsigned int write(struct system_node *self, unsigned int offset, unsigne
 
 }
 
+unsigned int walk(struct system_node *self, unsigned int count, const char *path)
+{
+
+    if (count)
+        return 0;
+
+    return (unsigned int)self;
+
+}
+
 static unsigned int read_group(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
@@ -131,6 +141,31 @@ static unsigned int read_group(struct system_node *self, unsigned int offset, un
 
 }
 
+unsigned int walk_group(struct system_node *self, unsigned int count, const char *path)
+{
+
+    struct system_group *group = (struct system_group *)self;
+    struct system_node *current;
+
+    if (!count)
+        return (unsigned int)self;
+
+    for (current = group->children; current; current = current->sibling)
+    {
+
+        unsigned int l = string_length(current->name);
+
+        if (!memory_match(current->name, path, l))
+            continue;
+
+        return (current->type == SYSTEM_NODETYPE_GROUP) ? current->walk(current, count - l - 1, path + l + 1) : current->walk(current, count - l, path + l);
+
+    }
+
+    return 0;
+
+}
+
 static void system_init_node(struct system_node *node, unsigned int type, char *name)
 {
 
@@ -142,6 +177,7 @@ static void system_init_node(struct system_node *node, unsigned int type, char *
     node->close = close;
     node->read = read;
     node->write = write;
+    node->walk = walk;
 
 }
 
@@ -152,6 +188,7 @@ void system_init_group(struct system_group *group, char *name)
     system_init_node(&group->node, SYSTEM_NODETYPE_GROUP, name);
 
     group->node.read = read_group;
+    group->node.walk = walk_group;
 
 }
 
