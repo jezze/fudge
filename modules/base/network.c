@@ -15,12 +15,22 @@ static struct interface_node
 
 } inode[8];
 
+static struct protocol_node
+{
+
+    struct system_group base;
+    struct base_network_protocol *protocol;
+
+} pnode[8];
+
 static struct session_node
 {
 
     struct system_group base;
     struct interface_node *inode;
+    struct protocol_node *pnode;
     struct system_group device;
+    struct system_group protocol;
     struct system_stream control;
     char name[8];
 
@@ -28,6 +38,7 @@ static struct session_node
 
 static struct system_group root;
 static struct system_group dev;
+static struct system_group protocols;
 static struct system_stream clone;
 
 static unsigned int control_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
@@ -74,16 +85,18 @@ static unsigned int find_snode()
 
 }
 
-static void init_snode(struct session_node *node, unsigned int id, struct interface_node *inode)
+static void init_snode(struct session_node *node, unsigned int id, struct interface_node *inode, struct protocol_node *pnode)
 {
 
     memory_clear(node, sizeof (struct session_node));
     memory_write_number(node->name, 8, id, 10, 0);
     system_init_group(&node->base, node->name);
     system_init_group(&node->device, "device");
+    system_init_group(&node->protocol, "protocol");
     system_init_stream(&node->control, "control");
 
     node->inode = inode;
+    node->pnode = pnode;
     node->device.node.open = device_open;
     node->device.node.walk = device_walk;
     node->control.node.read = control_read;
@@ -98,9 +111,10 @@ static unsigned int clone_open(struct system_node *self)
     if (!index)
         return 0;
 
-    init_snode(&snode[index], index, &inode[1]);
+    init_snode(&snode[index], index, &inode[1], &pnode[1]);
     system_group_add(&root, &snode[index].base.node);
     system_group_add(&snode[index].base, &snode[index].device.node);
+    system_group_add(&snode[index].base, &snode[index].protocol.node);
     system_group_add(&snode[index].base, &snode[index].control.node);
 
     return (unsigned int)&snode[index].control;
@@ -162,6 +176,23 @@ static unsigned int find_inode()
 
 }
 
+static unsigned int find_pnode()
+{
+
+    unsigned int i;
+
+    for (i = 1; i < 8; i++)
+    {
+
+        if (!pnode[i].base.node.parent)
+            return i;
+
+    }
+
+    return 0;
+
+}
+
 static void init_inode(struct interface_node *node, struct base_network_interface *interface, struct base_device *device)
 {
 
@@ -175,6 +206,16 @@ static void init_inode(struct interface_node *node, struct base_network_interfac
     node->data.node.read = data_read;
     node->data.node.write = data_write;
     node->mac.node.read = mac_read;
+
+}
+
+static void init_pnode(struct protocol_node *node, struct base_network_protocol *protocol)
+{
+
+    memory_clear(node, sizeof (struct protocol_node));
+    system_init_group(&node->base, protocol->name);
+
+    node->protocol = protocol;
 
 }
 
@@ -193,8 +234,16 @@ void base_network_register_interface(struct base_network_interface *interface, s
 
 }
 
-void base_network_register_protocol(unsigned short index, struct base_network_protocol *protocol)
+void base_network_register_protocol(struct base_network_protocol *protocol)
 {
+
+    unsigned int index = find_pnode();
+
+    if (!index)
+        return;
+
+    init_pnode(&pnode[index], protocol);
+    system_group_add(&protocols, &pnode[index].base.node);
 
 }
 
@@ -223,11 +272,14 @@ void base_network_setup()
 {
 
     memory_clear(inode, sizeof (struct interface_node) * 8);
+    memory_clear(pnode, sizeof (struct protocol_node) * 8);
     memory_clear(snode, sizeof (struct session_node) * 8);
     system_init_group(&root, "network");
     system_register_node(&root.node);
     system_init_group(&dev, "dev");
     system_group_add(&root, &dev.node);
+    system_init_group(&protocols, "protocols");
+    system_group_add(&root, &protocols.node);
     system_init_stream(&clone, "clone");
     system_group_add(&root, &clone.node);
 

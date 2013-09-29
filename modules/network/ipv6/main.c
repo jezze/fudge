@@ -9,7 +9,7 @@ void init()
 {
 
     ipv6_init_protocol(&protocol);
-    base_network_register_protocol(0x86DD, &protocol);
+    base_network_register_protocol(&protocol);
 
 }
 

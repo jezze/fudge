@@ -9,7 +9,7 @@ void init()
 {
 
     arp_init_protocol(&protocol);
-    base_network_register_protocol(0x0806, &protocol);
+    base_network_register_protocol(&protocol);
 
 }
 
