@@ -10,6 +10,8 @@ static struct mouse_node
     struct system_group base;
     struct base_mouse_interface *interface;
     struct base_device *device;
+    struct system_stream vx;
+    struct system_stream vy;
 
 } node[8];
 
@@ -105,6 +107,26 @@ static unsigned int clone_open(struct system_node *self)
 
 }
 
+static unsigned int vx_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    struct mouse_node *node = (struct mouse_node *)self->parent;
+    unsigned char num[32];
+
+    return memory_read(buffer, count, num, memory_write_number(num, 32, node->interface->vx, 10, 0), offset);
+
+}
+
+static unsigned int vy_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    struct mouse_node *node = (struct mouse_node *)self->parent;
+    unsigned char num[32];
+
+    return memory_read(buffer, count, num, memory_write_number(num, 32, node->interface->vy, 10, 0), offset);
+
+}
+
 static unsigned int find_node()
 {
 
@@ -127,9 +149,13 @@ static void init_node(struct mouse_node *node, struct base_mouse_interface *inte
 
     memory_clear(node, sizeof (struct mouse_node));
     system_init_group(&node->base, device->module.name);
+    system_init_stream(&node->vx, "vx");
+    system_init_stream(&node->vy, "vy");
 
     node->interface = interface;
     node->device = device;
+    node->vx.node.read = vx_read;
+    node->vy.node.read = vy_read;
 
 }
 
@@ -143,6 +169,8 @@ void base_mouse_register_interface(struct base_mouse_interface *interface, struc
 
     init_node(&node[index], interface, device);
     system_group_add(&dev, &node[index].base.node);
+    system_group_add(&node[index].base, &node[index].vx.node);
+    system_group_add(&node[index].base, &node[index].vy.node);
 
 }
 
