@@ -4,19 +4,19 @@
 #include "base.h"
 #include "block.h"
 
-static struct block_node
+static struct interface_node
 {
 
     struct system_group base;
     struct base_block_interface *interface;
     struct base_device *device;
 
-} node[8];
+} inode[8];
 
 static struct system_group root;
 static struct system_group dev;
 
-static unsigned int find_node()
+static unsigned int find_inode()
 {
 
     unsigned int i;
@@ -24,7 +24,7 @@ static unsigned int find_node()
     for (i = 1; i < 8; i++)
     {
 
-        if (!node[i].base.node.parent)
+        if (!inode[i].base.node.parent)
             return i;
 
     }
@@ -33,10 +33,10 @@ static unsigned int find_node()
 
 }
 
-static void init_node(struct block_node *node, struct base_block_interface *interface, struct base_device *device)
+static void init_inode(struct interface_node *node, struct base_block_interface *interface, struct base_device *device)
 {
 
-    memory_clear(node, sizeof (struct block_node));
+    memory_clear(node, sizeof (struct interface_node));
     system_init_group(&node->base, device->module.name);
 
     node->interface = interface;
@@ -47,13 +47,13 @@ static void init_node(struct block_node *node, struct base_block_interface *inte
 void base_block_register_interface(struct base_block_interface *interface, struct base_device *device)
 {
 
-    unsigned int index = find_node();
+    unsigned int index = find_inode();
 
     if (!index)
         return;
 
-    init_node(&node[index], interface, device);
-    system_group_add(&dev, &node[index].base.node);
+    init_inode(&inode[index], interface, device);
+    system_group_add(&dev, &inode[index].base.node);
 
 }
 
@@ -84,7 +84,7 @@ void base_block_init_protocol(struct base_block_protocol *protocol, char *name)
 void base_block_setup()
 {
 
-    memory_clear(node, sizeof (struct block_node) * 8);
+    memory_clear(inode, sizeof (struct interface_node) * 8);
     system_init_group(&root, "block");
     system_register_node(&root.node);
     system_init_group(&dev, "dev");

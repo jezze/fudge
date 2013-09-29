@@ -4,7 +4,7 @@
 #include "base.h"
 #include "clock.h"
 
-static struct clock_node
+static struct interface_node
 {
 
     struct system_group base;
@@ -14,7 +14,7 @@ static struct clock_node
     struct system_stream date;
     struct system_stream time;
 
-} node[8];
+} inode[8];
 
 static struct system_group root;
 static struct system_group dev;
@@ -37,7 +37,7 @@ static unsigned int isleapyear(unsigned short year)
 static unsigned int timestamp_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct clock_node *node = (struct clock_node *)self->parent;
+    struct interface_node *node = (struct interface_node *)self->parent;
     unsigned int year = node->interface->get_year(node->device) - 1970;
     unsigned int month = node->interface->get_month(node->device);
     unsigned int day = node->interface->get_day(node->device);
@@ -56,7 +56,7 @@ static unsigned int timestamp_read(struct system_node *self, unsigned int offset
 static unsigned int date_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct clock_node *node = (struct clock_node *)self->parent;
+    struct interface_node *node = (struct interface_node *)self->parent;
     char *num = "0000-00-00";
 
     memory_write_paddednumber(num, 10, node->interface->get_year(node->device), 10, 4, 0);
@@ -70,7 +70,7 @@ static unsigned int date_read(struct system_node *self, unsigned int offset, uns
 static unsigned int time_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct clock_node *node = (struct clock_node *)self->parent;
+    struct interface_node *node = (struct interface_node *)self->parent;
     char *num = "00:00:00";
 
     memory_write_paddednumber(num, 8, node->interface->get_hours(node->device), 10, 2, 0);
@@ -81,7 +81,7 @@ static unsigned int time_read(struct system_node *self, unsigned int offset, uns
 
 }
 
-static unsigned int find_node()
+static unsigned int find_inode()
 {
 
     unsigned int i;
@@ -89,7 +89,7 @@ static unsigned int find_node()
     for (i = 1; i < 8; i++)
     {
 
-        if (!node[i].base.node.parent)
+        if (!inode[i].base.node.parent)
             return i;
 
     }
@@ -98,10 +98,10 @@ static unsigned int find_node()
 
 }
 
-static void init_node(struct clock_node *node, struct base_clock_interface *interface, struct base_device *device)
+static void init_inode(struct interface_node *node, struct base_clock_interface *interface, struct base_device *device)
 {
 
-    memory_clear(node, sizeof (struct clock_node));
+    memory_clear(node, sizeof (struct interface_node));
     system_init_group(&node->base, device->module.name);
     system_init_stream(&node->timestamp, "timestamp");
     system_init_stream(&node->date, "date");
@@ -118,16 +118,16 @@ static void init_node(struct clock_node *node, struct base_clock_interface *inte
 void base_clock_register_interface(struct base_clock_interface *interface, struct base_device *device)
 {
 
-    unsigned int index = find_node();
+    unsigned int index = find_inode();
 
     if (!index)
         return;
 
-    init_node(&node[index], interface, device);
-    system_group_add(&dev, &node[index].base.node);
-    system_group_add(&node[index].base, &node[index].timestamp.node);
-    system_group_add(&node[index].base, &node[index].date.node);
-    system_group_add(&node[index].base, &node[index].time.node);
+    init_inode(&inode[index], interface, device);
+    system_group_add(&dev, &inode[index].base.node);
+    system_group_add(&inode[index].base, &inode[index].timestamp.node);
+    system_group_add(&inode[index].base, &inode[index].date.node);
+    system_group_add(&inode[index].base, &inode[index].time.node);
 
 }
 
@@ -150,7 +150,7 @@ void base_clock_init_interface(struct base_clock_interface *interface, unsigned 
 void base_clock_setup()
 {
 
-    memory_clear(node, sizeof (struct clock_node) * 8);
+    memory_clear(inode, sizeof (struct interface_node) * 8);
     system_init_group(&root, "clock");
     system_register_node(&root.node);
     system_init_group(&dev, "dev");
