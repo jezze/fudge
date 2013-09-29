@@ -47,6 +47,15 @@ static unsigned int device_open(struct system_node *self)
 
 }
 
+static unsigned int device_walk(struct system_node *self, unsigned int count, const char *path)
+{
+
+    struct terminal_session *session = (struct terminal_session *)self->parent;
+
+    return session->node->base.node.walk(&session->node->base.node, count, path);
+
+}
+
 static unsigned int find_session()
 {
 
@@ -75,6 +84,7 @@ static void init_session(struct terminal_session *session, unsigned int id, stru
 
     session->node = node;
     session->device.node.open = device_open;
+    session->device.node.walk = device_walk;
     session->control.node.read = control_read;
 
 }
