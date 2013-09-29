@@ -18,6 +18,7 @@ include packages/hello/rules.mk
 include packages/help/rules.mk
 include packages/init/rules.mk
 include packages/keymap/rules.mk
+include packages/ls/rules.mk
 include packages/md5/rules.mk
 include packages/mod/rules.mk
 include packages/motd/rules.mk
