@@ -30,66 +30,67 @@ static void close_pipe(unsigned int index, unsigned int index0, unsigned int ind
 
 }
 
+static void redirect_input(struct input *input, char *buffer, unsigned int i, unsigned int p, unsigned int p0)
+{
+
+    if (input->path.count)
+    {
+
+        open_path(i, CALL_DW, input->path.count, buffer + input->path.index);
+
+    }
+
+    else if (input->data.count)
+    {
+
+        open_pipe(p, p0, i);
+        call_write(p0, 0, input->data.count, buffer + input->data.index);
+
+    }
+
+}
+
+static void redirect_output(struct output *output, char *buffer, unsigned int o)
+{
+
+    if (output->path.count)
+        open_path(o, CALL_DW, output->path.count, buffer + output->path.index);
+
+}
+
+static void unredirect_input(struct input *input, unsigned int i, unsigned int p, unsigned int p0)
+{
+
+    if (input->path.count)
+        call_close(i);
+    else if (input->data.count)
+        close_pipe(p, p0, i);
+
+}
+
+static void unredirect_output(struct output *output, unsigned int o)
+{
+
+    if (output->path.count)
+        call_close(o);
+
+}
+
 static void execute_command(struct command *command, char *buffer)
 {
 
     if (!open_path(CALL_E0, CALL_L4, command->binary.count, buffer + command->binary.index))
         return;
 
-    if (command->in0.path.count)
-    {
-
-        open_path(CALL_I0, CALL_DW, command->in0.path.count, buffer + command->in0.path.index);
-
-    }
-
-    else if (command->in0.data.count)
-    {
-
-        open_pipe(CALL_L5, CALL_L6, CALL_I0);
-        call_write(CALL_L6, 0, command->in0.data.count, buffer + command->in0.data.index);
-
-    }
-
-    if (command->in1.path.count)
-    {
-
-        open_path(CALL_I1, CALL_DW, command->in1.path.count, buffer + command->in1.path.index);
-
-    }
-
-    else if (command->in1.data.count)
-    {
-
-        open_pipe(CALL_L7, CALL_L8, CALL_I1);
-        call_write(CALL_L8, 0, command->in1.data.count, buffer + command->in1.data.index);
-
-    }
-
-    if (command->out0.path.count)
-        open_path(CALL_O0, CALL_DW, command->out0.path.count, buffer + command->out0.path.index);
-
-    if (command->out1.path.count)
-        open_path(CALL_O1, CALL_DW, command->out1.path.count, buffer + command->out1.path.index);
-
+    redirect_input(&command->in0, buffer, CALL_I0, CALL_L5, CALL_L6);
+    redirect_input(&command->in1, buffer, CALL_I1, CALL_L7, CALL_L8);
+    redirect_output(&command->out0, buffer, CALL_O0);
+    redirect_output(&command->out1, buffer, CALL_O1);
     call_spawn(CALL_E0);
-
-    if (command->in0.path.count)
-        call_close(CALL_I0);
-    else if (command->in0.data.count)
-        close_pipe(CALL_L5, CALL_L6, CALL_I0);
-
-    if (command->in1.path.count)
-        call_close(CALL_I1);
-    else if (command->in1.data.count)
-        close_pipe(CALL_L7, CALL_L8, CALL_I1);
-
-    if (command->out0.path.count)
-        call_close(CALL_O0);
-
-    if (command->out1.path.count)
-        call_close(CALL_O1);
-
+    unredirect_input(&command->in0, CALL_I0, CALL_L5, CALL_L6);
+    unredirect_input(&command->in1, CALL_I1, CALL_L7, CALL_L8);
+    unredirect_output(&command->out0, CALL_O0);
+    unredirect_output(&command->out1, CALL_O1);
     call_close(CALL_E0);
 
 }
