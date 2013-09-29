@@ -38,7 +38,7 @@ static unsigned int find_symbol(unsigned int id, unsigned int count, char *symbo
     for (i = 0; i < header.shcount; i++)
     {
 
-        struct elf_symbol symbols[512];
+        struct elf_symbol symbols[1024];
         char strings[4096];
         unsigned int address;
         struct elf_section_header *symbolheader;
@@ -50,7 +50,7 @@ static unsigned int find_symbol(unsigned int id, unsigned int count, char *symbo
         symbolheader = &sectionheader[i];
         stringheader = &sectionheader[symbolheader->link];
 
-        if (symbolheader->size > sizeof (struct elf_symbol) * 512)
+        if (symbolheader->size > sizeof (struct elf_symbol) * 1024)
             return 0;
 
         if (stringheader->size > 4096)
@@ -142,8 +142,8 @@ static unsigned int resolve(unsigned int id)
 
     struct elf_header header;
     struct elf_section_header sectionheader[32];
-    struct elf_relocation relocations[512];
-    struct elf_symbol symbols[512];
+    struct elf_relocation relocations[1024];
+    struct elf_symbol symbols[1024];
     char strings[4096];
     unsigned int i;
 
@@ -173,10 +173,10 @@ static unsigned int resolve(unsigned int id)
         symbolheader = &sectionheader[relocationheader->link];
         stringheader = &sectionheader[symbolheader->link];
 
-        if (relocationheader->size > sizeof (struct elf_relocation) * 512)
+        if (relocationheader->size > sizeof (struct elf_relocation) * 1024)
             return 0;
 
-        if (symbolheader->size > sizeof (struct elf_symbol) * 512)
+        if (symbolheader->size > sizeof (struct elf_symbol) * 1024)
             return 0;
 
         if (stringheader->size > 4096)

@@ -31,7 +31,7 @@ static unsigned int find_symbol(struct vfs_session *session, unsigned int id, un
     for (i = 0; i < header.shcount; i++)
     {
 
-        struct elf_symbol symbols[512];
+        struct elf_symbol symbols[1024];
         char strings[4096];
         unsigned int address;
         struct elf_section_header *symbolheader;
@@ -43,7 +43,7 @@ static unsigned int find_symbol(struct vfs_session *session, unsigned int id, un
         symbolheader = &sectionheader[i];
         stringheader = &sectionheader[symbolheader->link];
 
-        if (symbolheader->size > sizeof (struct elf_symbol) * 512)
+        if (symbolheader->size > sizeof (struct elf_symbol) * 1024)
             return 0;
 
         if (stringheader->size > 4096)
@@ -101,8 +101,8 @@ static unsigned int relocate(struct vfs_session *session, unsigned int id, unsig
     for (i = 0; i < header.shcount; i++)
     {
 
-        struct elf_relocation relocations[512];
-        struct elf_symbol symbols[512];
+        struct elf_relocation relocations[1024];
+        struct elf_symbol symbols[1024];
         struct elf_section_header *relocationheader;
         struct elf_section_header *dataheader;
         struct elf_section_header *symbolheader;
@@ -116,10 +116,10 @@ static unsigned int relocate(struct vfs_session *session, unsigned int id, unsig
         dataheader = &sectionheader[relocationheader->info];
         symbolheader = &sectionheader[relocationheader->link];
 
-        if (relocationheader->size > sizeof (struct elf_relocation) * 512)
+        if (relocationheader->size > sizeof (struct elf_relocation) * 1024)
             return 0;
 
-        if (symbolheader->size > sizeof (struct elf_symbol) * 512)
+        if (symbolheader->size > sizeof (struct elf_symbol) * 1024)
             return 0;
 
         session->protocol->read(session->backend, id, relocationheader->offset, relocationheader->size, relocations);
