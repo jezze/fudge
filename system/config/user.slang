@@ -1,4 +1,4 @@
-/bin/echo < /config/initmod.conf | /bin/dep | /bin/initmod
+/bin/dep < /config/initmod.conf | /bin/initmod
 /bin/echo < /system/keyboard/clone
 /bin/echo < /system/terminal/clone
 /bin/keymapus > /system/keyboard/1/device/keymap
