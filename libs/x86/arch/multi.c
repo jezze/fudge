@@ -98,10 +98,24 @@ static void map_user(struct multi_task *task, unsigned int address)
 
 }
 
+void multi_activate(struct container *self, struct task *current)
+{
+
+    struct multi_task *task = (struct multi_task *)current;
+
+    self->current = current;
+
+    mmu_load(&task->directory);
+
+}
+
 void multi_map(struct container *self, unsigned int address)
 {
 
     struct multi_task *task = find_next_task();
+
+    if (!task)
+        return;
 
     map_user(task, address);
 
@@ -114,8 +128,6 @@ struct task *multi_schedule(struct container *self)
 
     if (!task)
         return 0;
-
-    mmu_load(&task->directory);
 
     return &task->base;
 
