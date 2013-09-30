@@ -82,13 +82,28 @@ static struct multi_task *find_free_task()
 
 }
 
+static void map_kernel(struct multi_task *task)
+{
+
+    memory_clear(&task->directory, sizeof (struct mmu_directory));
+    mmu_map(&task->directory, &kernel.tables[0], MULTI_KERNEL_BASE, MULTI_KERNEL_BASE, MULTI_KERNEL_BASESIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
+
+}
+
+static void map_user(struct multi_task *task, unsigned int address)
+{
+
+    mmu_map(&task->directory, &task->tables[0], task->index * MULTI_TASK_BASESIZE + MULTI_TASK_BASE, address, MULTI_TASK_BASESIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
+    mmu_map(&task->directory, &task->tables[1], task->index * MULTI_TASK_STACKSIZE + MULTI_TASK_STACK, MULTI_TASK_STACKVIRT - MULTI_TASK_STACKSIZE, MULTI_TASK_STACKSIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
+
+}
+
 void multi_map(struct container *self, unsigned int address)
 {
 
-    struct multi_task *current = find_next_task();
+    struct multi_task *task = find_next_task();
 
-    mmu_map(&current->directory, &current->tables[0], current->index * MULTI_TASK_BASESIZE + MULTI_TASK_BASE, address, MULTI_TASK_BASESIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
-    mmu_map(&current->directory, &current->tables[1], current->index * MULTI_TASK_STACKSIZE + MULTI_TASK_STACK, MULTI_TASK_STACKVIRT - MULTI_TASK_STACKSIZE, MULTI_TASK_STACKSIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
+    map_user(task, address);
 
 }
 
@@ -116,12 +131,13 @@ static unsigned int spawn(struct container *self, struct task *task, void *stack
     if (!child)
         return 0;
 
-    task_init(&child->base, 0, MULTI_TASK_STACKVIRT, MULTI_TASK_STACKVIRT);
-    memory_copy(child->base.descriptors, parent->base.descriptors, sizeof (struct task_descriptor) * TASK_DESCRIPTORS);
-    memory_clear(&child->directory, sizeof (struct mmu_directory));
-    memory_copy(&child->directory, &parent->directory, 4);
     memory_copy(&temp, args, sizeof (struct parameters));
+
+    task_init(&child->base, 0, MULTI_TASK_STACKVIRT, MULTI_TASK_STACKVIRT);
+    map_kernel(child);
     mmu_load(&child->directory);
+
+    memory_copy(child->base.descriptors, parent->base.descriptors, sizeof (struct task_descriptor) * TASK_DESCRIPTORS);
 
     return self->calls[CONTAINER_CALL_EXECUTE](self, &child->base, &temp);
 
@@ -132,11 +148,10 @@ struct task *multi_setup(struct container *container)
 
     struct multi_task *task = find_free_task();
 
-    task_init(&task->base, 0, MULTI_TASK_STACKVIRT, MULTI_TASK_STACKVIRT);
-
     container->calls[CONTAINER_CALL_SPAWN] = spawn;
 
-    mmu_map(&task->directory, &kernel.tables[0], MULTI_KERNEL_BASE, MULTI_KERNEL_BASE, MULTI_KERNEL_BASESIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
+    task_init(&task->base, 0, MULTI_TASK_STACKVIRT, MULTI_TASK_STACKVIRT);
+    map_kernel(task);
     mmu_load(&task->directory);
     mmu_enable();
 
