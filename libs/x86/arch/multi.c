@@ -139,7 +139,9 @@ static unsigned int spawn(struct container *self, struct task *task, void *stack
 
     memory_copy(child->base.descriptors, parent->base.descriptors, sizeof (struct task_descriptor) * TASK_DESCRIPTORS);
 
-    return self->calls[CONTAINER_CALL_EXECUTE](self, &child->base, &temp);
+    child->base.status = self->calls[CONTAINER_CALL_EXECUTE](self, &child->base, &temp);
+
+    return 0;
 
 }
 
