@@ -15,9 +15,19 @@ void list_add(struct list *list, struct list_item *item)
 
     }
 
-    for (current = list->head; current->next != 0; current = current->next);
+    for (current = list->head; current; current = current->next)
+    {
 
-    current->next = item;
+        if (current->next == 0)
+        {
+
+            current->next = item;
+
+            break;
+
+        }
+
+    }
 
 }
 
@@ -35,9 +45,19 @@ void list_remove(struct list *list, struct list_item *item)
 
     }
 
-    for (current = list->head; current->next != item; current = current->next);
+    for (current = list->head; current; current = current->next)
+    {
 
-    current->next = current->next->next;
+        if (current->next == item)
+        {
+
+            current->next = current->next->next;
+
+            break;
+
+        }
+
+    }
 
 }
 
