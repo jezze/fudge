@@ -9,39 +9,12 @@
 #include "timer.h"
 #include "video.h"
 
-static struct base_module *modules;
-
-static struct base_module *find_presibling(struct base_module *module)
-{
-
-    struct base_module *current = modules;
-
-    if (current == module)
-        return 0;
-
-    while (current->sibling != module)
-        current = current->sibling;
-
-    return current;
-
-}
-
-static void register_module(struct base_module *module)
-{
-
-    struct base_module *current = find_presibling(0);
-
-    if (current)
-        current->sibling = module;
-    else
-        modules = module;
-
-}
+static struct list modules;
 
 void base_register_bus(struct base_bus *bus)
 {
 
-    register_module(&bus->module);
+    list_add(&modules, &bus->module.item);
 
     bus->scan(bus);
 
@@ -50,23 +23,24 @@ void base_register_bus(struct base_bus *bus)
 void base_register_device(struct base_device *device)
 {
 
-    register_module(&device->module);
+    list_add(&modules, &device->module.item);
 
 }
 
 void base_register_driver(struct base_driver *driver)
 {
 
-    struct base_module *current;
+    struct list_item *current;
 
-    register_module(&driver->module);
+    list_add(&modules, &driver->module.item);
 
-    for (current = modules; current; current = current->sibling)
+    for (current = modules.head; current; current = current->next)
     {
 
-        struct base_device *device = (struct base_device *)current;
+        struct base_module *module = current->self;
+        struct base_device *device = current->self;
 
-        if (current->type != BASE_TYPE_DEVICE)
+        if (module->type != BASE_TYPE_DEVICE)
             continue;
 
         if (device->driver)
@@ -82,36 +56,24 @@ void base_register_driver(struct base_driver *driver)
 
 }
 
-static void unregister_module(struct base_module *module)
-{
-
-    struct base_module *current = find_presibling(module);
-
-    if (current)
-        current->sibling = current->sibling->sibling;
-    else
-        modules = modules->sibling;
-
-}
-
 void base_unregister_bus(struct base_bus *bus)
 {
 
-    unregister_module(&bus->module);
+    list_remove(&modules, &bus->module.item);
 
 }
 
 void base_unregister_device(struct base_device *device)
 {
 
-    unregister_module(&device->module);
+    list_remove(&modules, &device->module.item);
 
 }
 
 void base_unregister_driver(struct base_driver *driver)
 {
 
-    unregister_module(&driver->module);
+    list_remove(&modules, &driver->module.item);
 
 }
 
@@ -119,6 +81,7 @@ static void base_init_module(struct base_module *module, enum base_type type, ch
 {
 
     memory_clear(module, sizeof (struct base_module));
+    list_init_item(&module->item, module);
 
     module->type = type;
     module->name = name;
@@ -162,8 +125,7 @@ void base_init_driver(struct base_driver *driver, char *name, unsigned int (*che
 void init()
 {
 
-    modules = 0;
-
+    list_init(&modules);
     base_block_setup();
     base_clock_setup();
     base_keyboard_setup();

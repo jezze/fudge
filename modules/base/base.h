@@ -14,7 +14,7 @@ enum base_type
 struct base_module
 {
 
-    struct base_module *sibling;
+    struct list_item item;
     enum base_type type;
     char *name;
 
