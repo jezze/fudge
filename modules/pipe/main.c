@@ -28,7 +28,7 @@ static struct pipe_session
 static struct system_group root;
 static struct system_stream clone;
 
-unsigned int read_stream(struct pipe_stream *stream, unsigned int count, void *buffer)
+static unsigned int read_stream(struct pipe_stream *stream, unsigned int count, void *buffer)
 {
 
     char *b = buffer;
@@ -51,7 +51,7 @@ unsigned int read_stream(struct pipe_stream *stream, unsigned int count, void *b
 
 }
 
-unsigned int write_stream(struct pipe_stream *stream, unsigned int count, void *buffer)
+static unsigned int write_stream(struct pipe_stream *stream, unsigned int count, void *buffer)
 {
 
     char *b = buffer;

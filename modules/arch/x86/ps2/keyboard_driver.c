@@ -7,7 +7,7 @@
 #include "ps2.h"
 #include "keyboard_driver.h"
 
-unsigned int read_stream(struct ps2_keyboard_stream *stream, unsigned int count, void *buffer)
+static unsigned int read_stream(struct ps2_keyboard_stream *stream, unsigned int count, void *buffer)
 {
 
     char *b = buffer;
@@ -30,7 +30,7 @@ unsigned int read_stream(struct ps2_keyboard_stream *stream, unsigned int count,
 
 }
 
-unsigned int write_stream(struct ps2_keyboard_stream *stream, unsigned int count, void *buffer)
+static unsigned int write_stream(struct ps2_keyboard_stream *stream, unsigned int count, void *buffer)
 {
 
     char *b = buffer;

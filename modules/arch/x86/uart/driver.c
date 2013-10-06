@@ -146,7 +146,7 @@ enum uart_msr
 
 };
 
-unsigned int read_stream(struct uart_driver_stream *stream, unsigned int count, void *buffer)
+static unsigned int read_stream(struct uart_driver_stream *stream, unsigned int count, void *buffer)
 {
 
     char *b = buffer;
@@ -169,7 +169,7 @@ unsigned int read_stream(struct uart_driver_stream *stream, unsigned int count, 
 
 }
 
-unsigned int write_stream(struct uart_driver_stream *stream, unsigned int count, void *buffer)
+static unsigned int write_stream(struct uart_driver_stream *stream, unsigned int count, void *buffer)
 {
 
     char *b = buffer;
