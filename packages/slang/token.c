@@ -76,7 +76,6 @@ static enum token_type tokenize(char c)
             return TOKEN_TYPE_ALPHA;
 
         case ' ':
-        case '\t':
 
             return TOKEN_TYPE_SPACE;
 
@@ -91,10 +90,6 @@ static enum token_type tokenize(char c)
         case '-':
 
             return TOKEN_TYPE_MINUS;
-
-        case ':':
-
-            return TOKEN_TYPE_COLON;
 
         case ';':
 

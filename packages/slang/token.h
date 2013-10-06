@@ -14,8 +14,7 @@ enum token_type
     TOKEN_TYPE_SLASH                    = 256,
     TOKEN_TYPE_PIPE                     = 512,
     TOKEN_TYPE_QUOTE                    = 1024,
-    TOKEN_TYPE_NEWLINE                  = 2048,
-    TOKEN_TYPE_COLON                    = 4096
+    TOKEN_TYPE_NEWLINE                  = 2048
 
 };
 
