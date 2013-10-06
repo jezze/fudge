@@ -93,10 +93,10 @@ static unsigned int write(struct system_node *self, unsigned int offset, unsigne
 unsigned int walk(struct system_node *self, unsigned int count, const char *path)
 {
 
-    if (count)
-        return 0;
+    if (!count)
+        return (unsigned int)self;
 
-    return (unsigned int)self;
+    return 0;
 
 }
 
