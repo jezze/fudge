@@ -27,6 +27,7 @@ static struct multi_task
 
     struct task base;
     unsigned int index;
+    struct {unsigned int ebx; unsigned int esi; unsigned int edi;} registers;
 
 } tasks[TASKS];
 
@@ -89,17 +90,6 @@ static void map_user(struct multi_task *task, unsigned int address)
 
 }
 
-void multi_activate(struct container *self, struct task *current)
-{
-
-    struct multi_task *task = (struct multi_task *)current;
-
-    self->current = current;
-
-    mmu_load(&directories[task->index]);
-
-}
-
 void multi_map(struct container *self, unsigned int address)
 {
 
@@ -112,13 +102,35 @@ void multi_map(struct container *self, unsigned int address)
 
 }
 
-struct task *multi_schedule(struct container *self)
+struct task *multi_schedule(struct container *self, struct cpu_general *general, struct cpu_interrupt *interrupt)
 {
 
+    struct multi_task *current = (struct multi_task *)self->current;
     struct multi_task *task = find_next_task();
 
     if (!task)
-        return 0;
+        return &current->base;
+
+    if (current == task)
+        return &current->base;
+
+    current->base.registers.ip = interrupt->eip;
+    current->base.registers.sp = interrupt->esp;
+    current->base.registers.fp = general->ebp;
+    current->base.status = general->eax;
+    current->registers.ebx = general->ebx;
+    current->registers.esi = general->esi;
+    current->registers.edi = general->edi;
+
+    mmu_load(&directories[task->index]);
+
+    interrupt->eip = task->base.registers.ip;
+    interrupt->esp = task->base.registers.sp;
+    general->ebp = task->base.registers.fp;
+    general->eax = task->base.status;
+    general->ebx = task->registers.ebx;
+    general->esi = task->registers.esi;
+    general->edi = task->registers.edi;
 
     return &task->base;
 
