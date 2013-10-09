@@ -7,28 +7,10 @@
 static struct system_backend backend;
 static struct vfs_protocol protocol;
 
-static struct system_node *find_presibling(struct system_node *current, struct system_node *node)
-{
-
-    if (current == node)
-        return 0;
-
-    while (current->sibling != node)
-        current = current->sibling;
-
-    return current;
-
-}
-
 void system_group_add(struct system_group *group, struct system_node *node)
 {
 
-    struct system_node *current = find_presibling(group->children, 0);
-
-    if (current)
-        current->sibling = node;
-    else
-        group->children = node;
+    list_add(&group->children, &node->item);
 
     node->parent = &group->node;
 
@@ -37,12 +19,7 @@ void system_group_add(struct system_group *group, struct system_node *node)
 void system_group_remove(struct system_group *group, struct system_node *node)
 {
 
-    struct system_node *current = find_presibling(group->children, node);
-
-    if (current)
-        current->sibling = current->sibling->sibling;
-    else
-        group->children = group->children->sibling;
+    list_remove(&group->children, &node->item);
 
     node->parent = 0;
 
@@ -104,22 +81,23 @@ static unsigned int read_group(struct system_node *self, unsigned int offset, un
 {
 
     struct system_group *group = (struct system_group *)self;
-    struct system_node *current;
+    struct list_item *current;
     unsigned char *b = buffer;
     unsigned int c = 0;
 
     c += memory_read(b + c, count - c, "../\n", 4, offset);
     offset -= (offset > 4) ? 4 : offset;
 
-    for (current = group->children; current; current = current->sibling)
+    for (current = group->children.head; current; current = current->next)
     {
 
-        unsigned int l = string_length(current->name);
+        struct system_node *node = current->self;
+        unsigned int l = string_length(node->name);
 
-        c += memory_read(b + c, count - c, current->name, l, offset);
+        c += memory_read(b + c, count - c, node->name, l, offset);
         offset -= (offset > l) ? l : offset;
 
-        if (current->type == SYSTEM_NODETYPE_GROUP)
+        if (node->type == SYSTEM_NODETYPE_GROUP)
         {
 
             c += memory_read(b + c, count - c, "/\n", 2, offset);
@@ -145,20 +123,21 @@ unsigned int walk_group(struct system_node *self, unsigned int count, const char
 {
 
     struct system_group *group = (struct system_group *)self;
-    struct system_node *current;
+    struct list_item *current;
 
     if (!count)
         return (unsigned int)self;
 
-    for (current = group->children; current; current = current->sibling)
+    for (current = group->children.head; current; current = current->next)
     {
 
-        unsigned int l = string_length(current->name);
+        struct system_node *node = current->self;
+        unsigned int l = string_length(node->name);
 
-        if (!memory_match(current->name, path, l))
+        if (!memory_match(node->name, path, l))
             continue;
 
-        return (current->type == SYSTEM_NODETYPE_GROUP) ? current->walk(current, count - l - 1, path + l + 1) : current->walk(current, count - l, path + l);
+        return (node->type == SYSTEM_NODETYPE_GROUP) ? node->walk(node, count - l - 1, path + l + 1) : node->walk(node, count - l, path + l);
 
     }
 
@@ -170,6 +149,7 @@ static void system_init_node(struct system_node *node, unsigned int type, char *
 {
 
     memory_clear(node, sizeof (struct system_node));
+    list_init_item(&node->item, node);
 
     node->type = type;
     node->name = name;
@@ -186,6 +166,7 @@ void system_init_group(struct system_group *group, char *name)
 
     memory_clear(group, sizeof (struct system_group));
     system_init_node(&group->node, SYSTEM_NODETYPE_GROUP, name);
+    list_init(&group->children);
 
     group->node.read = read_group;
     group->node.walk = walk_group;

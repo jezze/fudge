@@ -18,8 +18,8 @@ struct system_header
 struct system_node
 {
 
+    struct list_item item;
     struct system_node *parent;
-    struct system_node *sibling;
     enum system_nodetype type;
     char *name;
     unsigned int (*open)(struct system_node *self);
@@ -34,7 +34,7 @@ struct system_group
 {
 
     struct system_node node;
-    struct system_node *children;
+    struct list children;
 
 };
 
