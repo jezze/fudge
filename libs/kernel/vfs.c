@@ -2,6 +2,7 @@
 #include "vfs.h"
 
 static struct list protocols;
+static struct list backends;
 
 unsigned int vfs_findnext(unsigned int count, const char *path)
 {
@@ -46,10 +47,24 @@ struct vfs_protocol *vfs_find_protocol(struct vfs_backend *backend)
 
 }
 
+void vfs_register_backend(struct vfs_backend *backend)
+{
+
+    list_add(&backends, &backend->item);
+
+}
+
 void vfs_register_protocol(struct vfs_protocol *protocol)
 {
 
     list_add(&protocols, &protocol->item);
+
+}
+
+void vfs_unregister_backend(struct vfs_backend *backend)
+{
+
+    list_remove(&backends, &backend->item);
 
 }
 
@@ -64,6 +79,7 @@ void vfs_init_backend(struct vfs_backend *backend, unsigned int (*read)(struct v
 {
 
     memory_clear(backend, sizeof (struct vfs_backend));
+    list_init_item(&backend->item, backend);
 
     backend->read = read;
     backend->write = write;
@@ -92,6 +108,7 @@ void vfs_setup()
 {
 
     list_init(&protocols);
+    list_init(&backends);
 
 }
 
