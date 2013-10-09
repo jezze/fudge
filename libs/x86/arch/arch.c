@@ -41,12 +41,22 @@ unsigned short arch_schedule(struct cpu_general *general, struct cpu_interrupt *
     state.container->current->registers.fp = general->ebp;
     state.container->current->status = general->eax;
 
+    /* TEMP FIX */
+    state.container->current->tempregs.ebx = general->ebx;
+    state.container->current->tempregs.esi = general->esi;
+    state.container->current->tempregs.edi = general->edi;
+
     multi_activate(state.container, current);
 
     interrupt->eip = state.container->current->registers.ip;
     interrupt->esp = state.container->current->registers.sp;
     general->ebp = state.container->current->registers.fp;
     general->eax = state.container->current->status;
+
+    /* TEMP FIX */
+    general->ebx = state.container->current->tempregs.ebx;
+    general->esi = state.container->current->tempregs.esi;
+    general->edi = state.container->current->tempregs.edi;
 
     return state.uselector.data;
 

@@ -25,6 +25,9 @@ struct task
     struct {unsigned int ip; unsigned int sp; unsigned int fp;} registers;
     struct task_descriptor descriptors[TASK_DESCRIPTORS];
 
+    /* TEMPORARY: THIS SOLVES THE CDECL PROBLEM OF CORRUPT REGISTERS */
+    struct {unsigned int ebx; unsigned int esi; unsigned int edi;} tempregs;
+
 };
 
 void task_init(struct task *task, unsigned int ip, unsigned int sp, unsigned int fp);
