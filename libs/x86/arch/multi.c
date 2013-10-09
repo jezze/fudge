@@ -90,7 +90,7 @@ static void map_user(struct multi_task *task, unsigned int address)
 
 }
 
-void multi_map(struct container *self, unsigned int address)
+void multi_map(unsigned int address)
 {
 
     struct multi_task *task = find_next_task();
@@ -102,17 +102,17 @@ void multi_map(struct container *self, unsigned int address)
 
 }
 
-struct task *multi_schedule(struct container *self, struct cpu_general *general, struct cpu_interrupt *interrupt)
+struct task *multi_schedule(struct task *running, struct cpu_general *general, struct cpu_interrupt *interrupt)
 {
 
-    struct multi_task *current = (struct multi_task *)self->current;
+    struct multi_task *current = (struct multi_task *)running;
     struct multi_task *task = find_next_task();
 
     if (!task)
-        return &current->base;
+        return running;
 
     if (current == task)
-        return &current->base;
+        return running;
 
     current->base.registers.ip = interrupt->eip;
     current->base.registers.sp = interrupt->esp;
