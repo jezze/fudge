@@ -2,18 +2,20 @@
 #include "vfs.h"
 #include "binary.h"
 
-static struct binary_protocol *protocols;
+static struct list protocols;
 
 struct binary_protocol *binary_find_protocol(struct vfs_session *session, unsigned int id)
 {
 
-    struct binary_protocol *current;
+    struct list_item *current;
 
-    for (current = protocols; current; current = current->sibling)
+    for (current = protocols.head; current; current = current->next)
     {
 
-        if (current->match(session, id))
-            return current;
+        struct binary_protocol *protocol = current->self;
+
+        if (protocol->match(session, id))
+            return protocol;
 
     }
 
@@ -21,42 +23,17 @@ struct binary_protocol *binary_find_protocol(struct vfs_session *session, unsign
 
 }
 
-static struct binary_protocol *find_presibling(struct binary_protocol *protocol)
-{
-
-    struct binary_protocol *current = protocols;
-
-    if (current == protocol)
-        return 0;
-
-    while (current->sibling != protocol)
-        current = current->sibling;
-
-    return current;
-
-}
-
 void binary_register_protocol(struct binary_protocol *protocol)
 {
 
-    struct binary_protocol *current = find_presibling(0);
-
-    if (current)
-        current->sibling = protocol;
-    else
-        protocols = protocol;
+    list_add(&protocols, &protocol->item);
 
 }
 
 void binary_unregister_protocol(struct binary_protocol *protocol)
 {
 
-    struct binary_protocol *current = find_presibling(protocol);
-
-    if (current)
-        current->sibling = current->sibling->sibling;
-    else
-        protocols = protocols->sibling;
+    list_remove(&protocols, &protocol->item);
 
 }
 
@@ -64,6 +41,7 @@ void binary_init_protocol(struct binary_protocol *protocol, unsigned int (*match
 {
 
     memory_clear(protocol, sizeof (struct binary_protocol));
+    list_init_item(&protocol->item, protocol);
 
     protocol->match = match;
     protocol->find_symbol = find_symbol;
@@ -75,7 +53,7 @@ void binary_init_protocol(struct binary_protocol *protocol, unsigned int (*match
 void binary_setup()
 {
 
-    protocols = 0;
+    list_init(&protocols);
 
 }
 

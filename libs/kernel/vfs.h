@@ -9,7 +9,7 @@ struct vfs_backend
 struct vfs_protocol
 {
 
-    struct vfs_protocol *sibling;
+    struct list_item item;
     unsigned int (*match)(struct vfs_backend *backend);
     unsigned int (*root)(struct vfs_backend *backend);
     unsigned int (*open)(struct vfs_backend *backend, unsigned int id);

@@ -1,7 +1,7 @@
 struct binary_protocol
 {
 
-    struct binary_protocol *sibling;
+    struct list_item item;
     unsigned int (*match)(struct vfs_session *session, unsigned int id);
     unsigned int (*find_symbol)(struct vfs_session *session, unsigned int id, unsigned int count, const char *symbol);
     unsigned int (*copy_program)(struct vfs_session *session, unsigned int id);

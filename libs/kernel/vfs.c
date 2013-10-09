@@ -1,7 +1,7 @@
 #include <fudge/kernel.h>
 #include "vfs.h"
 
-static struct vfs_protocol *protocols;
+static struct list protocols;
 
 unsigned int vfs_findnext(unsigned int count, const char *path)
 {
@@ -30,13 +30,15 @@ unsigned int vfs_isparent(unsigned int count, const char *path)
 struct vfs_protocol *vfs_find_protocol(struct vfs_backend *backend)
 {
 
-    struct vfs_protocol *current;
+    struct list_item *current;
 
-    for (current = protocols; current; current = current->sibling)
+    for (current = protocols.head; current; current = current->next)
     {
 
-        if (current->match(backend))
-            return current;
+        struct vfs_protocol *protocol = current->self;
+
+        if (protocol->match(backend))
+            return protocol;
 
     }
 
@@ -44,42 +46,17 @@ struct vfs_protocol *vfs_find_protocol(struct vfs_backend *backend)
 
 }
 
-static struct vfs_protocol *find_presibling(struct vfs_protocol *protocol)
-{
-
-    struct vfs_protocol *current = protocols;
-
-    if (current == protocol)
-        return 0;
-
-    while (current->sibling != protocol)
-        current = current->sibling;
-
-    return current;
-
-}
-
 void vfs_register_protocol(struct vfs_protocol *protocol)
 {
 
-    struct vfs_protocol *current = find_presibling(0);
-
-    if (current)
-        current->sibling = protocol;
-    else
-        protocols = protocol;
+    list_add(&protocols, &protocol->item);
 
 }
 
 void vfs_unregister_protocol(struct vfs_protocol *protocol)
 {
 
-    struct vfs_protocol *current = find_presibling(protocol);
-
-    if (current)
-        current->sibling = current->sibling->sibling;
-    else
-        protocols = protocols->sibling;
+    list_remove(&protocols, &protocol->item);
 
 }
 
@@ -97,6 +74,7 @@ void vfs_init_protocol(struct vfs_protocol *protocol, unsigned int (*match)(stru
 {
 
     memory_clear(protocol, sizeof (struct vfs_protocol));
+    list_init_item(&protocol->item, protocol);
 
     protocol->match = match;
     protocol->root = root;
@@ -113,7 +91,7 @@ void vfs_init_protocol(struct vfs_protocol *protocol, unsigned int (*match)(stru
 void vfs_setup()
 {
 
-    protocols = 0;
+    list_init(&protocols);
 
 }
 
