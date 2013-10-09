@@ -17,10 +17,10 @@
 #define TASK_STACKLIMIT                 0x80000000
 #define TASK_STACKBASE                  (TASK_STACKLIMIT - TASK_STACKSIZE)
 
-struct mmu_directory *directories = (struct mmu_directory *)ARCH_DIRECTORY_BASE;
-struct mmu_table *kcode = (struct mmu_table *)ARCH_TABLE_KCODE_BASE;
-struct mmu_table *ucode = (struct mmu_table *)ARCH_TABLE_UCODE_BASE;
-struct mmu_table *ustack = (struct mmu_table *)ARCH_TABLE_USTACK_BASE;
+static struct mmu_directory *directories = (struct mmu_directory *)ARCH_DIRECTORY_BASE;
+static struct mmu_table *kcode = (struct mmu_table *)ARCH_TABLE_KCODE_BASE;
+static struct mmu_table *ucode = (struct mmu_table *)ARCH_TABLE_UCODE_BASE;
+static struct mmu_table *ustack = (struct mmu_table *)ARCH_TABLE_USTACK_BASE;
 
 static struct multi_task
 {
