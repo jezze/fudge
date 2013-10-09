@@ -1,8 +1,8 @@
 #include <fudge/kernel.h>
 #include "vfs.h"
 
-static struct list protocols;
 static struct list backends;
+static struct list protocols;
 
 unsigned int vfs_findnext(unsigned int count, const char *path)
 {
@@ -107,8 +107,8 @@ void vfs_init_protocol(struct vfs_protocol *protocol, unsigned int (*match)(stru
 void vfs_setup()
 {
 
-    list_init(&protocols);
     list_init(&backends);
+    list_init(&protocols);
 
 }
 
