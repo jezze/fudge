@@ -10,7 +10,7 @@ static unsigned int root(struct vfs_backend *backend)
 
     backend->read(backend, 0, sizeof (struct system_header), &header);
 
-    return header.root;
+    return (unsigned int)header.root;
 
 }
 
