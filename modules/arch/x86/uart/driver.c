@@ -1,10 +1,10 @@
 #include <fudge/module.h>
 #include <base/base.h>
 #include <base/terminal.h>
+#include <arch/x86/platform/platform.h>
 #include <arch/x86/pic/pic.h>
 #include <arch/x86/io/io.h>
 #include "uart.h"
-#include "driver.h"
 
 enum uart_register
 {
@@ -192,30 +192,30 @@ static unsigned int write_stream(struct uart_driver_stream *stream, unsigned int
 
 }
 
-static char read(struct uart_device *device)
+static char read(struct platform_device *device)
 {
 
-    while (!(io_inb(device->port + UART_REGISTER_LSR) & UART_LSR_READY));
+    while (!(io_inb(device->registers + UART_REGISTER_LSR) & UART_LSR_READY));
 
-    return io_inb(device->port);
+    return io_inb(device->registers);
 
 }
 
-static void write(struct uart_device *device, char c)
+static void write(struct platform_device *device, char c)
 {
 
-    while (!(io_inb(device->port + UART_REGISTER_LSR) & UART_LSR_TRANSMIT));
+    while (!(io_inb(device->registers + UART_REGISTER_LSR) & UART_LSR_TRANSMIT));
 
-    io_outb(device->port, c);
+    io_outb(device->registers, c);
 
 }
 
 static void handle_irq(struct base_device *device)
 {
 
-    struct uart_device *uartDevice = (struct uart_device *)device;
+    struct platform_device *platformDevice = (struct platform_device *)device;
     struct uart_driver *driver = (struct uart_driver *)device->driver;
-    char data = read(uartDevice);
+    char data = read(platformDevice);
 
     write_stream(&driver->stream, 1, &data);
 
@@ -224,26 +224,26 @@ static void handle_irq(struct base_device *device)
 static void attach(struct base_device *device)
 {
 
-    struct uart_device *uartDevice = (struct uart_device *)device;
+    struct platform_device *platformDevice = (struct platform_device *)device;
     struct uart_driver *driver = (struct uart_driver *)device->driver;
 
     base_terminal_register_interface(&driver->iterminal, device);
     pic_set_routine(device, handle_irq);
-    io_outb(uartDevice->port + UART_REGISTER_IER, UART_IER_NULL);
-    io_outb(uartDevice->port + UART_REGISTER_LCR, UART_LCR_5BITS | UART_LCR_1STOP | UART_LCR_NOPARITY);
-    io_outb(uartDevice->port + UART_REGISTER_THR, 0x03);
-    io_outb(uartDevice->port + UART_REGISTER_IER, UART_IER_NULL);
-    io_outb(uartDevice->port + UART_REGISTER_LCR, UART_LCR_8BITS | UART_LCR_1STOP | UART_LCR_NOPARITY);
-    io_outb(uartDevice->port + UART_REGISTER_FCR, UART_FCR_ENABLE | UART_FCR_RECEIVE | UART_FCR_TRANSMIT | UART_FCR_SIZE3);
-    io_outb(uartDevice->port + UART_REGISTER_MCR, UART_MCR_READY | UART_MCR_REQUEST | UART_MCR_AUX2);
-    io_outb(uartDevice->port + UART_REGISTER_IER, UART_IER_RECEIVE);
+    io_outb(platformDevice->registers + UART_REGISTER_IER, UART_IER_NULL);
+    io_outb(platformDevice->registers + UART_REGISTER_LCR, UART_LCR_5BITS | UART_LCR_1STOP | UART_LCR_NOPARITY);
+    io_outb(platformDevice->registers + UART_REGISTER_THR, 0x03);
+    io_outb(platformDevice->registers + UART_REGISTER_IER, UART_IER_NULL);
+    io_outb(platformDevice->registers + UART_REGISTER_LCR, UART_LCR_8BITS | UART_LCR_1STOP | UART_LCR_NOPARITY);
+    io_outb(platformDevice->registers + UART_REGISTER_FCR, UART_FCR_ENABLE | UART_FCR_RECEIVE | UART_FCR_TRANSMIT | UART_FCR_SIZE3);
+    io_outb(platformDevice->registers + UART_REGISTER_MCR, UART_MCR_READY | UART_MCR_REQUEST | UART_MCR_AUX2);
+    io_outb(platformDevice->registers + UART_REGISTER_IER, UART_IER_RECEIVE);
 
 }
 
 static unsigned int check(struct base_device *device)
 {
 
-    return device->type == UART_DEVICE_TYPE;
+    return device->type == PLATFORM_UART_DEVICE_TYPE;
 
 }
 
@@ -259,12 +259,12 @@ static unsigned int read_terminal_data(struct base_device *device, unsigned int 
 static unsigned int write_terminal_data(struct base_device *device, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct uart_device *uartDevice = (struct uart_device *)device;
+    struct platform_device *platformDevice = (struct platform_device *)device;
     unsigned char *b = buffer;
     unsigned int i;
 
     for (i = 0; i < count; i++)
-        write(uartDevice, b[i]);
+        write(platformDevice, b[i]);
 
     return count;
 

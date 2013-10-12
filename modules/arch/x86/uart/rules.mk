@@ -1,5 +1,5 @@
 MOD:=modules/arch/x86/uart/uart.ko
-OBJ:=modules/arch/x86/uart/main.o modules/arch/x86/uart/driver.o modules/arch/x86/uart/device.o
+OBJ:=modules/arch/x86/uart/main.o modules/arch/x86/uart/driver.o
 
 $(MOD): $(OBJ) $(LIBFUDGE)
 	$(LD) $(LDFLAGS) -o $@ $^

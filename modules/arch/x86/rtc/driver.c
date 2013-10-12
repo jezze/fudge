@@ -1,6 +1,7 @@
 #include <fudge/module.h>
 #include <base/base.h>
 #include <base/clock.h>
+#include <arch/x86/platform/platform.h>
 #include <arch/x86/pic/pic.h>
 #include <arch/x86/io/io.h>
 #include "rtc.h"
@@ -115,7 +116,7 @@ static void attach(struct base_device *device)
 static unsigned int check(struct base_device *device)
 {
 
-    return device->type == RTC_DEVICE_TYPE;
+    return device->type == PLATFORM_RTC_DEVICE_TYPE;
 
 }
 

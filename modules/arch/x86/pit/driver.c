@@ -5,15 +5,16 @@
 #include <base/timer.h>
 #include <arch/x86/pic/pic.h>
 #include <arch/x86/io/io.h>
+#include <arch/x86/platform/platform.h>
 #include "pit.h"
 
 enum pit_register
 {
 
-    PIT_REGISTER_COUNTER0               = 0x40,
-    PIT_REGISTER_COUNTER1               = 0x41,
-    PIT_REGISTER_COUNTER2               = 0x42,
-    PIT_REGISTER_COMMAND                = 0x43
+    PIT_REGISTER_COUNTER0               = 0x00,
+    PIT_REGISTER_COUNTER1               = 0x01,
+    PIT_REGISTER_COUNTER2               = 0x02,
+    PIT_REGISTER_COMMAND                = 0x03
 
 };
 
@@ -53,20 +54,21 @@ static void handle_irq(struct base_device *device)
 static void attach(struct base_device *device)
 {
 
+    struct platform_device *platformDevice = (struct platform_device *)device;
     struct pit_driver *driver = (struct pit_driver *)device->driver;
 
     base_timer_register_interface(&driver->itimer, device);
     pic_set_routine(device, handle_irq);
-    io_outb(PIT_REGISTER_COMMAND, PIT_COMMAND_COUNTER0 | PIT_COMMAND_BOTH | PIT_COMMAND_MODE3 | PIT_COMMAND_BINARY);
-    io_outb(PIT_REGISTER_COUNTER0, driver->divisor >> 0);
-    io_outb(PIT_REGISTER_COUNTER0, driver->divisor >> 8);
+    io_outb(platformDevice->registers + PIT_REGISTER_COMMAND, PIT_COMMAND_COUNTER0 | PIT_COMMAND_BOTH | PIT_COMMAND_MODE3 | PIT_COMMAND_BINARY);
+    io_outb(platformDevice->registers + PIT_REGISTER_COUNTER0, driver->divisor >> 0);
+    io_outb(platformDevice->registers + PIT_REGISTER_COUNTER0, driver->divisor >> 8);
 
 }
 
 static unsigned int check(struct base_device *device)
 {
 
-    return device->type == PIT_DEVICE_TYPE;
+    return device->type == PLATFORM_PIT_DEVICE_TYPE;
 
 }
 
