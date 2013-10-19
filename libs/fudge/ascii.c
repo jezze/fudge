@@ -17,10 +17,21 @@ unsigned int ascii_toint(unsigned char c)
 
 }
 
-unsigned char ascii_tochar(unsigned int value, unsigned int base)
+unsigned int ascii_fromint(char *out, unsigned int count, unsigned int value, unsigned int base)
 {
 
-    return "0123456789abcdef"[value % base];
+    unsigned int current = value / base;
+    unsigned int i = 0;
+
+    if (!count)
+        return 0;
+
+    if (current)
+        i = ascii_fromint(out, count - 1, current, base);
+
+    out[i++] = "0123456789abcdef"[value % base];
+
+    return i;
 
 }
 
@@ -41,15 +52,9 @@ unsigned int ascii_write_value(void *out, unsigned int count, unsigned int value
 {
 
     char buffer[32];
-    unsigned int index;
+    unsigned int bcount = ascii_fromint(buffer, 32, value, base);
 
-    if (!value)
-        return memory_write(out, count, "0", 1, offset);
-
-    for (index = 31; value && index; --index, value /= base)
-        buffer[index] = ascii_tochar(value, base);
-
-    return memory_write(out, count, buffer + index + 1, 31 - index, offset);
+    return memory_write(out, count, buffer, bcount, offset);
 
 }
 
@@ -57,24 +62,14 @@ unsigned int ascii_write_zerovalue(void *out, unsigned int count, unsigned int v
 {
 
     char buffer[32];
-    unsigned int index;
+    unsigned int bcount = ascii_fromint(buffer, 32, value, base);
+    unsigned int pcount = 0;
+    unsigned int i;
 
-    if (padding > 32)
-        return 0;
+    for (i = bcount; i < padding; i++)
+        pcount += memory_write(out, count, "0", 1, offset);
 
-    for (index = 0; index < 32; index++)
-        buffer[index] = '0';
-
-    if (!value)
-        return memory_write(out, count, buffer, padding, offset);
-
-    for (index = 31; value && index; --index, value /= base)
-        buffer[index] = ascii_tochar(value, base);
-
-    if (31 - index < padding)
-        index = 31 - padding;
-
-    return memory_write(out, count, buffer + index + 1, 31 - index, offset);
+    return pcount + memory_write(out, count, buffer, bcount, offset + pcount);
 
 }
 
