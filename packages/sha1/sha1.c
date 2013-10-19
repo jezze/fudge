@@ -229,7 +229,7 @@ void main()
     sha1_write(&s, digest);
 
     for (roff = 0; roff < 20; roff++)
-        woff += call_write(CALL_O0, woff, memory_write_paddednumber(buffer, 32, digest[roff], 16, 2, 0), buffer);
+        woff += call_write(CALL_O0, woff, ascii_write_zerovalue(buffer, 32, digest[roff], 16, 2, 0), buffer);
 
 }
 

@@ -138,7 +138,7 @@ unsigned int read(struct system_node *self, unsigned int offset, unsigned int co
         return 0;
 
     for (i = 0; i < count / 4; i += 4)
-        o += memory_write_number(buffer, count, mtwist_rand(&normal), 16, o);
+        o += ascii_write_value(buffer, count, mtwist_rand(&normal), 16, o);
 
     return o;
 

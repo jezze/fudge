@@ -57,7 +57,7 @@ void main()
     for (i = roff; i > 0; i >>= 8)
         crc = (crc << 8) ^ tab[(crc >> 24) ^ (i & 0xFF)];
 
-    call_write(CALL_O0, 0, memory_write_number(buffer, 32, ~crc, 10, 0), buffer);
+    call_write(CALL_O0, 0, ascii_write_value(buffer, 32, ~crc, 10, 0), buffer);
 
 }
 

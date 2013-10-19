@@ -15,7 +15,7 @@ void main()
     if (count == 32)
         return;
 
-    total = string_number(num, 10);
+    total = ascii_read_value(num, count, 10);
 
     for (roff = 0; (count = call_read(CALL_I0, roff, FUDGE_BSIZE, buffer)); roff += count)
     {

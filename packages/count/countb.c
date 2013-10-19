@@ -8,7 +8,7 @@ void main()
 
     for (roff = 0; (count = call_read(CALL_I0, roff, FUDGE_BSIZE, buffer)); roff += count);
 
-    call_write(CALL_O0, 0, memory_write_number(buffer, FUDGE_BSIZE, roff + count, 10, 0), buffer);
+    call_write(CALL_O0, 0, ascii_write_value(buffer, FUDGE_BSIZE, roff + count, 10, 0), buffer);
 
 }
 

@@ -29,7 +29,7 @@ unsigned int log_write_number(unsigned int number, unsigned int base)
 {
 
     char n[32];
-    unsigned int count = memory_write_number(n, 32, number, base, 0);
+    unsigned int count = ascii_write_value(n, 32, number, base, 0);
 
     return log_write(count, n);
 

@@ -37,7 +37,7 @@ void main()
 
     }
 
-    call_write(CALL_O0, 0, memory_write_number(buffer, FUDGE_BSIZE, lines, 10, 0), buffer);
+    call_write(CALL_O0, 0, ascii_write_value(buffer, FUDGE_BSIZE, lines, 10, 0), buffer);
 
 }
 

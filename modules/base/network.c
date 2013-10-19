@@ -89,7 +89,7 @@ static void init_snode(struct session_node *node, unsigned int id, struct interf
 {
 
     memory_clear(node, sizeof (struct session_node));
-    memory_write_number(node->name, 8, id, 10, 0);
+    ascii_write_value(node->name, 8, id, 10, 0);
     system_init_group(&node->base, node->name);
     system_init_group(&node->device, "device");
     system_init_group(&node->protocol, "protocol");
@@ -153,7 +153,7 @@ static unsigned int mac_read(struct system_node *self, unsigned int offset, unsi
     unsigned int i;
 
     for (i = 0; i < 6; i++)
-        memory_write_paddednumber(mac, 17, node->interface->mac[i], 16, 2, i * 3);
+        ascii_write_zerovalue(mac, 17, node->interface->mac[i], 16, 2, i * 3);
 
     return memory_read(buffer, count, mac, 17, offset); 
 

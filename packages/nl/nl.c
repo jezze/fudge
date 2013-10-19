@@ -34,7 +34,7 @@ void main()
 
             unsigned char num[32];
 
-            woff += call_write(CALL_O0, woff, memory_write_number(num, 32, lines++, 10, 0), num);
+            woff += call_write(CALL_O0, woff, ascii_write_value(num, 32, lines++, 10, 0), num);
             woff += call_write(CALL_O0, woff, 2, ": ");
             woff += call_write(CALL_O0, woff, count2, buffer + loff);
 

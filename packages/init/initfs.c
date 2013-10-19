@@ -45,7 +45,7 @@ void main()
     for (i = 0; i < nargs; i += 3)
     {
 
-        unsigned int num = string_number(args[i].position, 10);
+        unsigned int num = ascii_read_value(args[i].position, args[i].count, 10);
 
         call_open(CALL_O0, CALL_DR, args[i + 1].count - 1, args[i + 1].position + 1);
         call_open(CALL_I0, CALL_DR, args[i + 2].count - 1, args[i + 2].position + 1);

@@ -79,7 +79,7 @@ static void init_snode(struct session_node *node, unsigned int id, struct interf
 {
 
     memory_clear(node, sizeof (struct session_node));
-    memory_write_number(node->name, 8, id, 10, 0);
+    ascii_write_value(node->name, 8, id, 10, 0);
     system_init_group(&node->base, node->name);
     system_init_group(&node->device, "device");
     system_init_stream(&node->control, "control");

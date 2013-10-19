@@ -49,7 +49,7 @@ static unsigned int timestamp_read(struct system_node *self, unsigned int offset
     unsigned int timestamp = ((dyear + dmonth + day) * 86400) + ((hour * 3600) + (minute * 60) + second);
     char num[32];
 
-    return memory_read(buffer, count, num, memory_write_number(num, 32, timestamp, 10, 0), offset);
+    return memory_read(buffer, count, num, ascii_write_value(num, 32, timestamp, 10, 0), offset);
 
 }
 
@@ -59,9 +59,9 @@ static unsigned int date_read(struct system_node *self, unsigned int offset, uns
     struct interface_node *node = (struct interface_node *)self->parent;
     char *num = "0000-00-00";
 
-    memory_write_paddednumber(num, 10, node->interface->get_year(node->device), 10, 4, 0);
-    memory_write_paddednumber(num, 10, node->interface->get_month(node->device), 10, 2, 5);
-    memory_write_paddednumber(num, 10, node->interface->get_day(node->device), 10, 2, 8);
+    ascii_write_zerovalue(num, 10, node->interface->get_year(node->device), 10, 4, 0);
+    ascii_write_zerovalue(num, 10, node->interface->get_month(node->device), 10, 2, 5);
+    ascii_write_zerovalue(num, 10, node->interface->get_day(node->device), 10, 2, 8);
 
     return memory_read(buffer, count, num, 10, offset);
 
@@ -73,9 +73,9 @@ static unsigned int time_read(struct system_node *self, unsigned int offset, uns
     struct interface_node *node = (struct interface_node *)self->parent;
     char *num = "00:00:00";
 
-    memory_write_paddednumber(num, 8, node->interface->get_hours(node->device), 10, 2, 0);
-    memory_write_paddednumber(num, 8, node->interface->get_minutes(node->device), 10, 2, 3);
-    memory_write_paddednumber(num, 8, node->interface->get_seconds(node->device), 10, 2, 6);
+    ascii_write_zerovalue(num, 8, node->interface->get_hours(node->device), 10, 2, 0);
+    ascii_write_zerovalue(num, 8, node->interface->get_minutes(node->device), 10, 2, 3);
+    ascii_write_zerovalue(num, 8, node->interface->get_seconds(node->device), 10, 2, 6);
 
     return memory_read(buffer, count, num, 8, offset);
 

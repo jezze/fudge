@@ -1,5 +1,5 @@
 LIBFUDGE:=libs/fudge/libfudge.a
-LIBFUDGE_OBJ:=libs/fudge/memory.o libs/fudge/string.o libs/fudge/list.o
+LIBFUDGE_OBJ:=libs/fudge/ascii.o libs/fudge/memory.o libs/fudge/string.o libs/fudge/list.o
 
 include libs/fudge/data/rules.mk
 include libs/fudge/format/rules.mk

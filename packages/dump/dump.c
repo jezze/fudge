@@ -16,7 +16,7 @@ void main()
 
             unsigned char num[32];
 
-            woff += call_write(CALL_O0, woff, memory_write_paddednumber(num, 32, buffer[i], 16, 2, 0), num);
+            woff += call_write(CALL_O0, woff, ascii_write_zerovalue(num, 32, buffer[i], 16, 2, 0), num);
             woff += call_write(CALL_O0, woff, 2, "  ");
 
         }

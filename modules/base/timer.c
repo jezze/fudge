@@ -89,7 +89,7 @@ static void init_snode(struct session_node *node, unsigned int id, struct interf
 {
 
     memory_clear(node, sizeof (struct session_node));
-    memory_write_number(node->name, 8, id, 10, 0);
+    ascii_write_value(node->name, 8, id, 10, 0);
     system_init_group(&node->base, node->name);
     system_init_group(&node->device, "device");
     system_init_stream(&node->control, "control");
@@ -127,7 +127,7 @@ static unsigned int jiffies_read(struct system_node *self, unsigned int offset, 
     struct interface_node *node = (struct interface_node *)self->parent;
     char num[32];
 
-    return memory_read(buffer, count, num, memory_write_number(num, 32, node->interface->jiffies, 10, 0), offset);
+    return memory_read(buffer, count, num, ascii_write_value(num, 32, node->interface->jiffies, 10, 0), offset);
 
 }
 
