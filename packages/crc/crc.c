@@ -41,7 +41,7 @@ static const unsigned int tab[256] =
 void main()
 {
 
-    unsigned char buffer[FUDGE_BSIZE];
+    char buffer[FUDGE_BSIZE];
     unsigned int count, roff;
     unsigned int i;
     unsigned int crc = 0;
@@ -57,7 +57,7 @@ void main()
     for (i = roff; i > 0; i >>= 8)
         crc = (crc << 8) ^ tab[(crc >> 24) ^ (i & 0xFF)];
 
-    call_write(CALL_O0, 0, ascii_write_value(buffer, 32, ~crc, 10, 0), buffer);
+    call_write(CALL_O0, 0, ascii_fromint(buffer, 32, ~crc, 10), buffer);
 
 }
 

@@ -1,6 +1,6 @@
 #include <fudge.h>
 
-static unsigned int nextline(unsigned int offset, unsigned int count, unsigned char *buffer)
+static unsigned int nextline(unsigned int offset, unsigned int count, char *buffer)
 {
 
     unsigned int i;
@@ -20,7 +20,7 @@ static unsigned int nextline(unsigned int offset, unsigned int count, unsigned c
 void main()
 {
 
-    unsigned char buffer[FUDGE_BSIZE];
+    char buffer[FUDGE_BSIZE];
     unsigned int count, roff, loff;
     unsigned int lines = 0;
 
@@ -37,7 +37,7 @@ void main()
 
     }
 
-    call_write(CALL_O0, 0, ascii_write_value(buffer, FUDGE_BSIZE, lines, 10, 0), buffer);
+    call_write(CALL_O0, 0, ascii_fromint(buffer, FUDGE_BSIZE, lines, 10), buffer);
 
 }
 
