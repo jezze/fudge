@@ -21,6 +21,18 @@ void memory_copy(void *out, const void *in, unsigned int count)
 
 }
 
+unsigned int memory_findbyte(const void *in, unsigned int count, char value)
+{
+
+    const char *ip = in;
+    unsigned int offset;
+
+    for (offset = 0; offset < count && ip[offset] != value; offset++);
+
+    return offset;
+
+}
+
 unsigned int memory_match(const void *in1, const void *in2, unsigned int count)
 {
 
