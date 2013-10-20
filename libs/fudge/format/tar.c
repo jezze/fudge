@@ -8,10 +8,16 @@ unsigned int tar_validate(void *buffer)
     struct tar_header *header = buffer;
     unsigned int checksum = ascii_read_value(header->checksum, memory_findbyte(header->checksum, 8, '\0'), 8);
     unsigned char *address = buffer;
-    unsigned int i;
+    unsigned int i = 0;
 
-    for (i = 0; i < TAR_BLOCK_SIZE; i++)
-        checksum -= (i >= 148 && i < 156) ? 32 : address[i];
+    for (; i < 148; i++)
+        checksum -= address[i];
+
+    for (; i < 156; i++)
+        checksum -= 32;
+
+    for (; i < TAR_BLOCK_SIZE; i++)
+        checksum -= address[i];
 
     return !checksum;
 
