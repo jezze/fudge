@@ -312,26 +312,339 @@ enum vga_sr04
 
 };
 
+enum vga_timing_flags
+{
+
+    PHSYNC                              = 0x0001,
+    NHSYNC                              = 0x0002,
+    PVSYNC                              = 0x0004,
+    NVSYNC                              = 0x0008,
+    INTERLACED                          = 0x0010,
+    DOUBLESCAN                          = 0x0020,
+    HADJUSTED                           = 0x0040,
+    VADJUSTED                           = 0x0080,
+    USEPROGCLOCK                        = 0x0100,
+    TVMODE                              = 0x0200,
+    TVPAL                               = 0x0400,
+    TVNTSC                              = 0x0800
+
+};
+
+struct vga_timing
+{
+
+    int pxclock;
+    int hdisplay;
+    int hsyncstart;
+    int hsyncend;
+    int htotal;
+    int vdisplay;
+    int vsyncstart;
+    int vsyncend;
+    int vtotal;
+    int flags;
+    int progclock;
+    int clockno;
+    int crtchdisplay;
+    int crtchsyncstart;
+    int crtchsyncend;
+    int crtcvdisplay;
+    int crtcvsyncstart;
+    int crtcvsyncend;
+    int crtcvtotal;
+
+};
+
+struct vga_mode
+{
+
+    short width;
+    short height;
+    char bytespp;
+    char bitspp;
+    char colorbits;
+    char __padding1;
+    char redw;
+    char greenw;
+    char bluew;
+    char __padding2;
+    char redoffset;
+    char blueoffset;
+    char greenoffset;
+    char __padding3;
+    unsigned int redmask;
+    unsigned int bluemask;
+    unsigned int greenmask;
+    int linewidth;
+    short realwidth;
+    short realheight;
+    int flags;
+
+};
+
+struct vga_modetable
+{
+
+    unsigned short number;
+    unsigned char *registers;
+
+};
+
+struct vga_info
+{
+
+    int xdim;
+    int ydim;
+    int colors;
+    int xbytes;
+    int bytespp;
+
+};
+
+/* BIOS mode 0Dh - 320x200x16 */
+static const unsigned char g320x200x16[60] = {
+    0x2D, 0x27, 0x28, 0x90, 0x2B, 0x80, 0xBF, 0x1F, 0x00, 0xC0, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x9C, 0x8E, 0x8F, 0x14, 0x00, 0x96, 0xB9, 0xE3,
+    0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B,
+    0x0C, 0x0D, 0x0E, 0x0F, 0x01, 0x00, 0x0F, 0x00, 0x00,
+    0x00, 0x0F, 0x00, 0x20, 0x00, 0x00, 0x05, 0x0F, 0xFF,
+    0x03, 0x09, 0x0F, 0x00, 0x06,
+    0x63
+};
+
+/* BIOS mode 0Eh - 640x200x16 */
+static const unsigned char g640x200x16[60] = {
+    0x5F, 0x4F, 0x50, 0x82, 0x54, 0x80, 0xBF, 0x1F, 0x00, 0xC0, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x9C, 0x8E, 0x8F, 0x28, 0x00, 0x96, 0xB9, 0xE3,
+    0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B,
+    0x0C, 0x0D, 0x0E, 0x0F, 0x01, 0x00, 0x0F, 0x00, 0x00,
+    0x00, 0x0F, 0x00, 0x20, 0x00, 0x00, 0x05, 0x0F, 0xFF,
+    0x03, 0x01, 0x0F, 0x00, 0x06,
+    0x63
+};
+
+/* BIOS mode 10h - 640x350x16 */
+static const unsigned char g640x350x16[60] = {
+    0x5F, 0x4F, 0x50, 0x82, 0x54, 0x80, 0xBF, 0x1F, 0x00, 0x40, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x83, 0x85, 0x5D, 0x28, 0x0F, 0x63, 0xBA, 0xE3,
+    0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B,
+    0x0C, 0x0D, 0x0E, 0x0F, 0x01, 0x00, 0x0F, 0x00, 0x00,
+    0x00, 0x0F, 0x00, 0x20, 0x00, 0x00, 0x05, 0x0F, 0xFF,
+    0x03, 0x01, 0x0F, 0x00, 0x06,
+    0xA3
+};
+
+/* BIOS mode 12h - 640x480x16 */
+static const unsigned char g640x480x16[60] = {
+    0x5F, 0x4F, 0x50, 0x82, 0x54, 0x80, 0x0B, 0x3E, 0x00, 0x40, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0xEA, 0x8C, 0xDF, 0x28, 0x00, 0xE7, 0x04, 0xE3,
+    0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B,
+    0x0C, 0x0D, 0x0E, 0x0F, 0x01, 0x00, 0x0F, 0x00, 0x00,
+    0x00, 0x0F, 0x00, 0x20, 0x00, 0x00, 0x05, 0x0F, 0xFF,
+    0x03, 0x01, 0x0F, 0x00, 0x06,
+    0xE3
+};
+
+/* BIOS mode 13h - 320x200x256 */
+static const unsigned char g320x200x256[60] = {
+    0x5F, 0x4F, 0x50, 0x82, 0x54, 0x80, 0xBF, 0x1F, 0x00, 0x41, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x9C, 0x8E, 0x8F, 0x28, 0x40, 0x96, 0xB9, 0xA3,
+    0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B,
+    0x0C, 0x0D, 0x0E, 0x0F, 0x41, 0x00, 0x0F, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x40, 0x05, 0x0F, 0xFF,
+    0x03, 0x01, 0x0F, 0x00, 0x0E,
+    0x63
+};
+
+/* non-BIOS mode - 320x240x256 */
+static const unsigned char g320x240x256[60] = {
+    0x5F, 0x4F, 0x50, 0x82, 0x54, 0x80, 0x0D, 0x3E, 0x00, 0x41, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0xEA, 0xAC, 0xDF, 0x28, 0x00, 0xE7, 0x06, 0xE3,
+    0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B,
+    0x0C, 0x0D, 0x0E, 0x0F, 0x41, 0x00, 0x0F, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x40, 0x05, 0x0F, 0xFF,
+    0x03, 0x01, 0x0F, 0x00, 0x06,
+    0xE3
+};
+
+/* non-BIOS mode - 320x400x256 */
+static const unsigned char g320x400x256[60] = {
+    0x5F, 0x4F, 0x50, 0x82, 0x54, 0x80, 0xBF, 0x1F, 0x00, 0x40, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x9C, 0x8E, 0x8F, 0x28, 0x00, 0x96, 0xB9, 0xE3,
+    0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B,
+    0x0C, 0x0D, 0x0E, 0x0F, 0x41, 0x00, 0x0F, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x40, 0x05, 0x0F, 0xFF,
+    0x03, 0x01, 0x0F, 0x00, 0x06,
+    0x63
+};
+
+/* non-BIOS mode - 360x480x256 */
+static const unsigned char g360x480x256[60] = {
+    0x6B, 0x59, 0x5A, 0x8E, 0x5E, 0x8A, 0x0D, 0x3E, 0x00, 0x40, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0xEA, 0xAC, 0xDF, 0x2D, 0x00, 0xE7, 0x06, 0xE3,
+    0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B,
+    0x0C, 0x0D, 0x0E, 0x0F, 0x41, 0x00, 0x0F, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x40, 0x05, 0x0F, 0xFF,
+    0x03, 0x01, 0x0F, 0x00, 0x06,
+    0xE7
+};
+
+/* non BIOS mode - 720x348x2 based on mode 10h */
+static const unsigned char g720x348x2[60] = {
+    0x6B, 0x59, 0x5A, 0x8E, 0x5E, 0x8A, 0xBF, 0x1F, 0x00, 0x40, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x83, 0x85, 0x5D, 0x2D, 0x0F, 0x63, 0xBA, 0xE3,
+    0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B,
+    0x0C, 0x0D, 0x0E, 0x0F, 0x01, 0x00, 0x0F, 0x00, 0x00,
+    0x00, 0x0F, 0x00, 0x20, 0x00, 0x00, 0x05, 0x0F, 0xFF,
+    0x03, 0x01, 0x0F, 0x00, 0x06,
+    0xA7
+};
+
+/* non-BIOS mode - 400x300x256 */
+static const unsigned char g400x300x256X[60] = {
+    0x71, 0x63, 0x64, 0x92, 0x65, 0x82, 0x46, 0x1F, 0x00, 0x40, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x31, 0x80, 0x2B, 0x32, 0x00, 0x2F, 0x44, 0xE3,
+    0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B,
+    0x0C, 0x0D, 0x0E, 0x0F, 0x41, 0x00, 0x0F, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x40, 0x05, 0x0F, 0xFF,
+    0x03, 0x01, 0x0F, 0x00, 0x06,
+    0xA7
+};
+
+static const struct vga_timing timings[] = {
+    /* 320x200 @ 70 Hz, 31.5 kHz hsync */
+    {12588, 320, 336, 384, 400, 200, 204, 206, 225, DOUBLESCAN}, 
+    /* 320x200 @ 83 Hz, 37.5 kHz hsync */
+    {13333, 320, 336, 384, 400, 200, 204, 206, 225, DOUBLESCAN}, 
+    /* 320x240 @ 60 Hz, 31.5 kHz hsync */
+    {12588, 320, 336, 384, 400, 240, 245, 247, 263, DOUBLESCAN}, 
+    /* 320x240 @ 72Hz, 38.5 kHz hsync */
+    {15000, 320, 336, 384, 400, 240, 244, 246, 261, DOUBLESCAN}, 
+    /* 320x400 @ 70 Hz, 31.5 kHz hsync */
+    {12588, 320, 336, 384, 400, 400, 408, 412, 450, 0}, 
+    /* 320x400 @ 83 Hz, 37.5 kHz hsync */
+    {13333, 320, 336, 384, 400, 400, 408, 412, 450, 0}, 
+    /* 320x480 @ 60 Hz, 31.5 kHz hsync */
+    {12588, 320, 336, 384, 400, 480, 490, 494, 526, 0}, 
+    /* 320x480 @ 72Hz, 38.5 kHz hsync */
+    {15000, 320, 336, 384, 400, 480, 488, 492, 522, 0}, 
+    /* 400x300 @ 56 Hz, 35.2 kHz hsync, 4:3 aspect ratio */
+    {18000, 400, 416, 448, 512, 300, 301, 302, 312, DOUBLESCAN},
+    /* 400x300 @ 60 Hz, 37.8 kHz hsync */
+    {20000, 400, 416, 480, 528, 300, 301, 303, 314, DOUBLESCAN},
+    /* 400x300 @ 72 Hz, 48.0 kHz hsync*/
+    {25000, 400, 424, 488, 520, 300, 319, 322, 333, DOUBLESCAN},
+    /* 400x600 @ 56 Hz, 35.2 kHz hsync, 4:3 aspect ratio */
+    {18000, 400, 416, 448, 512, 600, 602, 604, 624, 0},
+    /* 400x600 @ 60 Hz, 37.8 kHz hsync */
+    {20000, 400, 416, 480, 528, 600, 602, 606, 628, 0},
+    /* 400x600 @ 72 Hz, 48.0 kHz hsync*/
+    {25000, 400, 424, 488, 520, 600, 639, 644, 666, 0},
+    /* 512x384 @ 67Hz */
+    {19600, 512, 522, 598, 646, 384, 418, 426, 454, 0 },
+    /* 512x384 @ 86Hz */
+    {25175, 512, 522, 598, 646, 384, 418, 426, 454,0},
+    /* 512x480 @ 55Hz */
+    {19600, 512, 522, 598, 646, 480, 500, 510, 550, 0},
+    /* 512x480 @ 71Hz */
+    {25175, 512, 522, 598, 646, 480, 500, 510, 550,0},
+    {25175, 640, 664, 760, 800, 400, 409, 411, 450, 0},
+    /* 640x480 at 60 Hz, 31.5 kHz hsync */
+    {25175, 640, 664, 760, 800, 480, 491, 493, 525, 0},
+    /* 640x480 at 72 Hz, 36.5 kHz hsync */
 /*
-static unsigned char windex[] = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x13};
-static unsigned char w256[] = {0x5F, 0x3F, 0x40, 0x82, 0x4A, 0x9A, 0x20};
-static unsigned char w320[] = {0x5F, 0x4F, 0x50, 0x82, 0x54, 0x80, 0x28};
-static unsigned char w360[] = {0x6B, 0x59, 0x5A, 0x8E, 0x5E, 0x8A, 0x2D};
-static unsigned char w376[] = {0x6E, 0x5D, 0x5E, 0x91, 0x62, 0x8F, 0x2F};
-static unsigned char w400[] = {0x70, 0x63, 0x64, 0x92, 0x65, 0x82, 0x32};
-static unsigned char hindex[] = {0x06, 0x07, 0x09, 0x10, 0x11, 0x12, 0x15, 0x16};
-static unsigned char h200[] = {0xBF, 0x1F, 0x41, 0x9C, 0x8E, 0x8F, 0x96, 0xB9};
-static unsigned char h224[] = {0x0B, 0x3E, 0x41, 0xDA, 0x9C, 0xBF, 0xC7, 0x04};
-static unsigned char h240[] = {0x0D, 0x3E, 0x41, 0xEA, 0xAC, 0xDF, 0xE7, 0x06};
-static unsigned char h256[] = {0x23, 0xB2, 0x61, 0x0A, 0xAC, 0xFF, 0x07, 0x1A};
-static unsigned char h270[] = {0x30, 0xF0, 0x61, 0x20, 0xA9, 0x1B, 0x1F, 0x2F};
-static unsigned char h300[] = {0x70, 0xF0, 0x61, 0x5B, 0x8C, 0x57, 0x58, 0x70};
-static unsigned char h360[] = {0xBF, 0x1F, 0x40, 0x88, 0x85, 0x67, 0x6D, 0xBA};
-static unsigned char h400[] = {0xBF, 0x1F, 0x40, 0x9C, 0x8E, 0x8F, 0x96, 0xB9};
-static unsigned char h480[] = {0x0D, 0x3E, 0x40, 0xEA, 0xAC, 0xDF, 0xE7, 0x06};
-static unsigned char h564[] = {0x62, 0xF0, 0x60, 0x37, 0x89, 0x33, 0x3C, 0x5C};
-static unsigned char h600[] = {0x70, 0xF0, 0x60, 0x5B, 0x8C, 0x57, 0x58, 0x70};
+#ifdef USE_XORG_DEFAULT_TIMINGS
+    {31500, 640, 664, 704, 832, 480, 489, 491, 520, 0},
+#else
+    {31500, 640, 680, 720, 864, 480, 488, 491, 521, 0},
+#endif
 */
+    /* 800x600 at 56 Hz, 35.15 kHz hsync */
+    {36000, 800, 824, 896, 1024, 600, 601, 603, 625, 0},
+    /* 800x600 at 60 Hz, 37.8 kHz hsync */
+    {40000, 800, 840, 968, 1056, 600, 601, 605, 628, PHSYNC | PVSYNC},
+    /* 800x600 at 72 Hz, 48.0 kHz hsync */
+    {50000, 800, 856, 976, 1040, 600, 637, 643, 666, PHSYNC | PVSYNC},
+    /* 960x720 @ 70Hz */
+    {66000, 960, 984, 1112, 1248, 720, 723, 729, 756, NHSYNC | NVSYNC},
+    /* 960x720* interlaced, 35.5 kHz hsync */
+    {40000, 960, 984, 1192, 1216, 720, 728, 784, 817, INTERLACED},
+    /* 1024x768 at 87 Hz interlaced, 35.5 kHz hsync */
+    {44900, 1024, 1048, 1208, 1264, 768, 776, 784, 817, INTERLACED},
+    /* 1024x768 at 100 Hz, 40.9 kHz hsync */
+    {55000, 1024, 1048, 1208, 1264, 768, 776, 784, 817, INTERLACED},
+    /* 1024x768 at 60 Hz, 48.4 kHz hsync */
+    {65000, 1024, 1032, 1176, 1344, 768, 771, 777, 806, NHSYNC | NVSYNC},
+    /* 1024x768 at 70 Hz, 56.6 kHz hsync */
+    {75000, 1024, 1048, 1184, 1328, 768, 771, 777, 806, NHSYNC | NVSYNC},
+    /* 1152x864 at 59.3Hz */
+    {85000, 1152, 1214, 1326, 1600, 864, 870, 885, 895, 0},
+    /* 1280x1024 at 87 Hz interlaced, 51 kHz hsync */
+    {80000, 1280, 1296, 1512, 1568, 1024, 1025, 1037, 1165, INTERLACED},
+    /* 1024x768 at 76 Hz, 62.5 kHz hsync */
+    {85000, 1024, 1032, 1152, 1360, 768, 784, 787, 823, 0},
+    /* 1280x1024 at 60 Hz, 64.3 kHz hsync */
+    {110000, 1280, 1328, 1512, 1712, 1024, 1025, 1028, 1054, 0},
+    /* 1280x1024 at 74 Hz, 78.9 kHz hsync */
+    {135000, 1280, 1312, 1456, 1712, 1024, 1027, 1030, 1064, 0},
+    /* 1600x1200 at 60Hz */
+    {162000, 1600, 1668, 1860, 2168, 1200, 1201, 1204, 1250, 0},
+    /* 1600x1200 at 68Hz */
+    {188500, 1600, 1792, 1856, 2208, 1200, 1202, 1205, 1256, 0},
+    /* 1600x1200 at 75 Hz */
+    {198000, 1600, 1616, 1776, 2112, 1200, 1201, 1204, 1250, 0},
+    /* 720x540 at 56 Hz, 35.15 kHz hsync */
+    {32400, 720, 744, 808, 920, 540, 541, 543, 563, 0},
+    /* 720x540 at 60 Hz, 37.8 kHz hsync */
+    {36000, 720, 760, 872, 952, 540, 541, 545, 565, 0},
+    /* 720x540 at 72 Hz, 48.0 kHz hsync */
+    {45000, 720, 768, 880, 936, 540, 552, 558, 599, 0},
+    /* 1072x600 at 57 Hz interlaced, 35.5 kHz hsync */
+    {44900, 1072, 1096, 1208, 1264, 600, 602, 604, 625, 0},
+    /* 1072x600 at 65 Hz, 40.9 kHz hsync */
+    {55000, 1072, 1096, 1208, 1264, 600, 602, 604, 625, 0},
+    /* 1072x600 at 78 Hz, 48.4 kHz hsync */
+    {65000, 1072, 1088, 1184, 1344, 600, 603, 607, 625, NHSYNC | NVSYNC},
+    /* 1072x600 at 90 Hz, 56.6 kHz hsync */
+    {75000, 1072, 1096, 1200, 1328, 768, 603, 607, 625, NHSYNC | NVSYNC},
+    /* 1072x600 at 100 Hz, 62.5 kHz hsync */
+    {85000, 1072, 1088, 1160, 1360, 768, 603, 607, 625, 0},
+};
+
+static const struct vga_info infos[] = {
+    /* VGA modes */
+    {80, 25, 16, 160, 0},
+    {320, 200, 16, 40, 0},
+    {640, 200, 16, 80, 0},
+    {640, 350, 16, 80, 0},
+    {640, 480, 16, 80, 0},
+    {320, 200, 256, 320, 1},
+    {320, 240, 256, 80, 0},
+    {320, 400, 256, 80, 0},
+    {360, 480, 256, 90, 0},
+    {640, 480, 2, 80, 0},
+    /* SVGA modes */
+    {640, 480, 256, 640, 1},
+    {800, 600, 256, 800, 1},
+    {1024, 768, 256, 1024, 1},
+    {1280, 1024, 256, 1280, 1},
+    /* Hicolor/truecolor modes */
+    {320, 200, 1 << 15, 640, 2},
+    {320, 200, 1 << 16, 640, 2},
+    {320, 200, 1 << 24, 320 * 3, 3},
+    {640, 480, 1 << 15, 640 * 2, 2},
+    {640, 480, 1 << 16, 640 * 2, 2},
+    {640, 480, 1 << 24, 640 * 3, 3},
+    {800, 600, 1 << 15, 800 * 2, 2},
+    {800, 600, 1 << 16, 800 * 2, 2},
+    {800, 600, 1 << 24, 800 * 3, 3},
+    {1024, 768, 1 << 15, 1024 * 2, 2},
+    {1024, 768, 1 << 16, 1024 * 2, 2},
+    {1024, 768, 1 << 24, 1024 * 3, 3},
+    {1280, 1024, 1 << 15, 1280 * 2, 2},
+    {1280, 1024, 1 << 16, 1280 * 2, 2},
+    {1280, 1024, 1 << 24, 1280 * 3, 3},
+};
 
 static void outar(unsigned char index, unsigned char value)
 {
@@ -362,7 +675,7 @@ static void outsr(unsigned char index, unsigned char value)
 
 }
 
-static void mode(struct base_device *device)
+static void set_regs(const unsigned char *regs)
 {
 
     io_outb(VGA_REGISTER_MISCWRITE, VGA_MISC_COLOR | VGA_MISC_ENABLE | VGA_MISC_PAGESELECT | VGA_MISC_SYNC400);
@@ -370,7 +683,7 @@ static void mode(struct base_device *device)
     outcrt1(VGA_CRTINDEX_CRT00, 0x5F);
     outcrt1(VGA_CRTINDEX_CRT01, 0x4F);
     outcrt1(VGA_CRTINDEX_CRT02, 0x50);
-    outcrt1(VGA_CRTINDEX_CRT03, VGA_CRT03_EVRA | 0x02);
+    outcrt1(VGA_CRTINDEX_CRT03, 0x82);
     outcrt1(VGA_CRTINDEX_CRT04, 0x54);
     outcrt1(VGA_CRTINDEX_CRT05, 0x80);
     outcrt1(VGA_CRTINDEX_CRT06, 0xBF);
@@ -401,6 +714,13 @@ static void mode(struct base_device *device)
     outar(VGA_ARINDEX_AR14, 0x00);
 
     io_outb(VGA_REGISTER_ARINDEX, VGA_ARINDEX_ENABLE);
+
+}
+
+static void mode(struct base_device *device)
+{
+
+    set_regs(g320x200x256);
 
 }
 
@@ -493,7 +813,26 @@ static unsigned int write_video_data(struct base_device *device, unsigned int of
 static unsigned int read_video_colormap(struct base_device *device, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    return 0;
+    char *c = buffer;
+    unsigned int i;
+
+    if (count > 256)
+        count = 256;
+
+    if (offset > count)
+        return 0;
+
+    for (i = offset; i < count; i += 3)
+    {
+
+        io_outb(VGA_REGISTER_DACRINDEX, i / 3);
+        c[i + 0] = io_inb(VGA_REGISTER_DACDATA);
+        c[i + 1] = io_inb(VGA_REGISTER_DACDATA);
+        c[i + 2] = io_inb(VGA_REGISTER_DACDATA);
+
+    }
+
+    return i - offset;
 
 }
 
@@ -503,7 +842,13 @@ static unsigned int write_video_colormap(struct base_device *device, unsigned in
     char *c = buffer;
     unsigned int i;
 
-    for (i = offset / 3; i < count; i += 3)
+    if (count > 256)
+        count = 256;
+
+    if (offset > count)
+        return 0;
+
+    for (i = offset; i < count; i += 3)
     {
 
         io_outb(VGA_REGISTER_DACWINDEX, i / 3);
@@ -512,6 +857,13 @@ static unsigned int write_video_colormap(struct base_device *device, unsigned in
         io_outb(VGA_REGISTER_DACDATA, c[i + 2]);
 
     }
+
+    return i - offset;
+
+}
+
+static unsigned int read_video_info(struct base_device *device, unsigned int offset, unsigned int count, void *buffer)
+{
 
     return 0;
 
@@ -556,7 +908,7 @@ void vga_init_driver(struct vga_driver *driver)
     memory_clear(driver, sizeof (struct vga_driver));
     base_init_driver(&driver->base, "vga", check, attach);
     base_terminal_init_interface(&driver->iterminal, read_terminal_data, write_terminal_data);
-    base_video_init_interface(&driver->ivideo, mode, read_video_data, write_video_data, read_video_colormap, write_video_colormap);
+    base_video_init_interface(&driver->ivideo, mode, read_video_data, write_video_data, read_video_colormap, write_video_colormap, read_video_info);
 
     driver->ivideo.xres = 80;
     driver->ivideo.yres = 25;

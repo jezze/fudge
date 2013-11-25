@@ -168,7 +168,7 @@ void i915_init_driver(struct i915_driver *driver)
 
     memory_clear(driver, sizeof (struct i915_driver));
     base_init_driver(&driver->base, "i915", check, attach);
-    base_video_init_interface(&driver->ivideo, enable, read_data, write_data, 0, 0);
+    base_video_init_interface(&driver->ivideo, enable, read_data, write_data, 0, 0, 0);
 
 }
 
