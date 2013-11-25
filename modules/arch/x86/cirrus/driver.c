@@ -42,13 +42,6 @@ static unsigned int write_video_colormap(struct base_device *device, unsigned in
 
 }
 
-static unsigned int read_video_info(struct base_device *device, unsigned int offset, unsigned int count, void *buffer)
-{
-
-    return 0;
-
-}
-
 static void attach(struct base_device *device)
 {
 
@@ -75,7 +68,7 @@ void cirrus_init_driver(struct cirrus_driver *driver)
 
     memory_clear(driver, sizeof (struct cirrus_driver));
     base_init_driver(&driver->base, "cirrus", check, attach);
-    base_video_init_interface(&driver->ivideo, mode, read_video_data, write_video_data, read_video_colormap, write_video_colormap, read_video_info);
+    base_video_init_interface(&driver->ivideo, mode, read_video_data, write_video_data, read_video_colormap, write_video_colormap);
 
     driver->ivideo.xres = 80;
     driver->ivideo.yres = 25;

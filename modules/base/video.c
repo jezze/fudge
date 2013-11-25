@@ -149,8 +149,14 @@ static unsigned int info_read(struct system_node *self, unsigned int offset, uns
 {
 
     struct interface_node *node = (struct interface_node *)self->parent;
+    char info[256];
+    unsigned int c = 0;
 
-    return node->interface->read_info(node->device, offset, count, buffer);
+    c += memory_write(info, 256, "driver: ", 8, c);
+    c += memory_write(info, 256, node->device->driver->module.name, string_length(node->device->driver->module.name), c);
+    c += memory_write(info, 256, "\n", 1, c);
+
+    return memory_read(buffer, count, info, c, offset);
 
 }
 
@@ -224,7 +230,7 @@ void base_video_register_interface(struct base_video_interface *interface, struc
 
 }
 
-void base_video_init_interface(struct base_video_interface *interface, void (*mode)(struct base_device *device), unsigned int (*read_data)(struct base_device *device, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write_data)(struct base_device *device, unsigned int offset, unsigned int count, void *buffer), unsigned int (*read_colormap)(struct base_device *device, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write_colormap)(struct base_device *device, unsigned int offset, unsigned int count, void *buffer), unsigned int (*read_info)(struct base_device *device, unsigned int offset, unsigned int count, void *buffer))
+void base_video_init_interface(struct base_video_interface *interface, void (*mode)(struct base_device *device), unsigned int (*read_data)(struct base_device *device, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write_data)(struct base_device *device, unsigned int offset, unsigned int count, void *buffer), unsigned int (*read_colormap)(struct base_device *device, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write_colormap)(struct base_device *device, unsigned int offset, unsigned int count, void *buffer))
 {
 
     memory_clear(interface, sizeof (struct base_video_interface));
@@ -234,7 +240,6 @@ void base_video_init_interface(struct base_video_interface *interface, void (*mo
     interface->write_data = write_data;
     interface->read_colormap = read_colormap;
     interface->write_colormap = write_colormap;
-    interface->read_info = read_info;
 
 }
 
