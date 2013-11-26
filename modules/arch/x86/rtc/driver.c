@@ -42,13 +42,6 @@ static unsigned char get_value(unsigned int type)
 
 }
 
-static unsigned int get_timestamp(struct base_device *device)
-{
-
-    return 0;
-
-}
-
 static unsigned char get_seconds(struct base_device *device)
 {
 
@@ -125,7 +118,7 @@ void rtc_init_driver(struct rtc_driver *driver)
 
     memory_clear(driver, sizeof (struct rtc_driver));
     base_init_driver(&driver->base, "rtc", check, attach);
-    base_clock_init_interface(&driver->iclock, get_timestamp, get_seconds, get_minutes, get_hours, get_weekday, get_day, get_month, get_year);
+    base_clock_init_interface(&driver->iclock, get_seconds, get_minutes, get_hours, get_weekday, get_day, get_month, get_year);
 
 }
 
