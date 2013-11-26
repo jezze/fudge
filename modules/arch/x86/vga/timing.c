@@ -75,39 +75,158 @@
 #define VGA_SR3                         VGAREG_SR(0x03)
 #define VGA_SR4                         VGAREG_SR(0x04)
 
+#define CLOCK_ALLOWANCE                 10
+#define PROGRAMMABLE_CLOCK_MAGIC_NUMBER 0x1234
+
 static struct vga_info infos[] = {
-    /* VGA modes */
-    {80, 25, 16, 160, 0},
-    {320, 200, 16, 40, 0},
-    {640, 200, 16, 80, 0},
-    {640, 350, 16, 80, 0},
-    {640, 480, 16, 80, 0},
-    {320, 200, 256, 320, 1},
-    {320, 240, 256, 80, 0},
-    {320, 400, 256, 80, 0},
-    {360, 480, 256, 90, 0},
-    {640, 480, 2, 80, 0},
-    /* SVGA modes */
-    {640, 480, 256, 640, 1},
-    {800, 600, 256, 800, 1},
-    {1024, 768, 256, 1024, 1},
-    {1280, 1024, 256, 1280, 1},
-    /* Hicolor/truecolor modes */
-    {320, 200, 1 << 15, 640, 2},
-    {320, 200, 1 << 16, 640, 2},
-    {320, 200, 1 << 24, 320 * 3, 3},
-    {640, 480, 1 << 15, 640 * 2, 2},
-    {640, 480, 1 << 16, 640 * 2, 2},
-    {640, 480, 1 << 24, 640 * 3, 3},
-    {800, 600, 1 << 15, 800 * 2, 2},
-    {800, 600, 1 << 16, 800 * 2, 2},
-    {800, 600, 1 << 24, 800 * 3, 3},
-    {1024, 768, 1 << 15, 1024 * 2, 2},
-    {1024, 768, 1 << 16, 1024 * 2, 2},
-    {1024, 768, 1 << 24, 1024 * 3, 3},
-    {1280, 1024, 1 << 15, 1280 * 2, 2},
-    {1280, 1024, 1 << 16, 1280 * 2, 2},
-    {1280, 1024, 1 << 24, 1280 * 3, 3},
+    {80, 25, VGA_COLOR4, 160, 0},
+    {320, 200, VGA_COLOR4, 40, 0},
+    {640, 200, VGA_COLOR4, 80, 0},
+    {640, 350, VGA_COLOR4, 80, 0},
+    {640, 480, VGA_COLOR4, 80, 0},
+    {320, 200, VGA_COLOR8, 320, 1},
+    {320, 240, VGA_COLOR8, 80, 0},
+    {320, 400, VGA_COLOR8, 80, 0},
+    {360, 480, VGA_COLOR8, 90, 0},
+    {640, 480, VGA_COLOR1, 80, 0},
+    {640, 480, VGA_COLOR8, 640, 1},
+    {800, 600, VGA_COLOR8, 800, 1},
+    {1024, 768, VGA_COLOR8, 1024, 1},
+    {1280, 1024, VGA_COLOR8, 1280, 1},
+    {320, 200, VGA_COLOR15, 640, 2},
+    {320, 200, VGA_COLOR16, 640, 2},
+    {320, 200, VGA_COLOR24, 320 * 3, 3},
+    {640, 480, VGA_COLOR15, 640 * 2, 2},
+    {640, 480, VGA_COLOR16, 640 * 2, 2},
+    {640, 480, VGA_COLOR24, 640 * 3, 3},
+    {800, 600, VGA_COLOR15, 800 * 2, 2},
+    {800, 600, VGA_COLOR16, 800 * 2, 2},
+    {800, 600, VGA_COLOR24, 800 * 3, 3},
+    {1024, 768, VGA_COLOR15, 1024 * 2, 2},
+    {1024, 768, VGA_COLOR16, 1024 * 2, 2},
+    {1024, 768, VGA_COLOR24, 1024 * 3, 3},
+    {1280, 1024, VGA_COLOR15, 1280 * 2, 2},
+    {1280, 1024, VGA_COLOR16, 1280 * 2, 2},
+    {1280, 1024, VGA_COLOR24, 1280 * 3, 3},
+    {800, 600, VGA_COLOR4, 100, 0},
+    {1024, 768, VGA_COLOR4, 128, 0},
+    {1280, 1024, VGA_COLOR4, 160, 0},
+    {720, 348, VGA_COLOR1, 90, 0},
+    {320, 200, VGA_COLOR24, 320 * 4, 4},
+    {640, 480, VGA_COLOR24, 640 * 4, 4},
+    {800, 600, VGA_COLOR24, 800 * 4, 4},
+    {1024, 768, VGA_COLOR24, 1024 * 4, 4},
+    {1280, 1024, VGA_COLOR24, 1280 * 4, 4},
+    {1152, 864, VGA_COLOR4, 144, 0},
+    {1152, 864, VGA_COLOR8, 1152, 1},
+    {1152, 864, VGA_COLOR15, 1152 * 2, 2},
+    {1152, 864, VGA_COLOR16, 1152 * 2, 2},
+    {1152, 864, VGA_COLOR24, 1152 * 3, 3},
+    {1152, 864, VGA_COLOR24, 1152 * 4, 4},
+    {1600, 1200, VGA_COLOR4, 200, 0},
+    {1600, 1200, VGA_COLOR8, 1600, 1},
+    {1600, 1200, VGA_COLOR15, 1600 * 2, 2},
+    {1600, 1200, VGA_COLOR16, 1600 * 2, 2},
+    {1600, 1200, VGA_COLOR24, 1600 * 3, 3},
+    {1600, 1200, VGA_COLOR24, 1600 * 4, 4},
+    {320, 240, VGA_COLOR8, 320, 1},
+    {320, 240, VGA_COLOR15, 320 * 2, 2},
+    {320, 240, VGA_COLOR16, 320 * 2, 2},
+    {320, 240, VGA_COLOR24, 320 * 3, 3},
+    {320, 240, VGA_COLOR24, 320 * 4, 4},
+    {400, 300, VGA_COLOR8, 400, 1},
+    {400, 300, VGA_COLOR15, 400 * 2, 2},
+    {400, 300, VGA_COLOR16, 400 * 2, 2},
+    {400, 300, VGA_COLOR24, 400 * 3, 3},
+    {400, 300, VGA_COLOR24, 400 * 4, 4},
+    {512, 384, VGA_COLOR8, 512, 1}, 
+    {512, 384, VGA_COLOR15, 512 * 2, 2},
+    {512, 384, VGA_COLOR16, 512 * 2, 2},
+    {512, 384, VGA_COLOR24, 512 * 3, 3},
+    {512, 384, VGA_COLOR24, 512 * 4, 4},
+    {960, 720, VGA_COLOR8, 960, 1},
+    {960, 720, VGA_COLOR15, 960 * 2, 2},
+    {960, 720, VGA_COLOR16, 960 * 2, 2},
+    {960, 720, VGA_COLOR24, 960 * 3, 3},
+    {960, 720, VGA_COLOR24, 960 * 4, 4},
+    {1920, 1440, VGA_COLOR8, 1920, 1},
+    {1920, 1440, VGA_COLOR15, 1920 * 2, 2},
+    {1920, 1440, VGA_COLOR16, 1920 * 2, 2},
+    {1920, 1440, VGA_COLOR24, 1920 * 3, 3},
+    {1920, 1440, VGA_COLOR24, 1920 * 4, 4},
+    {320, 400, VGA_COLOR8, 320, 1},
+    {320, 400, VGA_COLOR15, 320 * 2, 2},
+    {320, 400, VGA_COLOR16, 320 * 2, 2},
+    {320, 400, VGA_COLOR24, 320 * 3, 3},
+    {320, 400, VGA_COLOR24, 320 * 4, 4},
+    {640, 400, VGA_COLOR8, 640, 1},
+    {640, 400, VGA_COLOR15, 640 * 2, 2},
+    {640, 400, VGA_COLOR16, 640 * 2, 2},
+    {640, 400, VGA_COLOR24, 640 * 3, 3},
+    {640, 400, VGA_COLOR24, 640 * 4, 4},
+    {320, 480, VGA_COLOR8, 320, 1},
+    {320, 480, VGA_COLOR15, 320 * 2, 2},
+    {320, 480, VGA_COLOR16, 320 * 2, 2},
+    {320, 480, VGA_COLOR24, 320 * 3, 3},
+    {320, 480, VGA_COLOR24, 320 * 4, 4},
+    {720, 540, VGA_COLOR8, 720, 1},
+    {720, 540, VGA_COLOR15, 720 * 2, 2},
+    {720, 540, VGA_COLOR16, 720 * 2, 2},
+    {720, 540, VGA_COLOR24, 720 * 3, 3},
+    {720, 540, VGA_COLOR24, 720 * 4, 4},
+    {848, 480, VGA_COLOR8, 848, 1},
+    {848, 480, VGA_COLOR15, 848 * 2, 2},
+    {848, 480, VGA_COLOR16, 848 * 2, 2},
+    {848, 480, VGA_COLOR24, 848 * 3, 3},
+    {848, 480, VGA_COLOR24, 848 * 4, 4},
+    {1072, 600, VGA_COLOR8, 1072, 1},
+    {1072, 600, VGA_COLOR15, 1072 * 2, 2},
+    {1072, 600, VGA_COLOR16, 1072 * 2, 2},
+    {1072, 600, VGA_COLOR24, 1072 * 3, 3},
+    {1072, 600, VGA_COLOR24, 1072 * 4, 4},
+    {1280, 720, VGA_COLOR8, 1280, 1},
+    {1280, 720, VGA_COLOR15, 1280 * 2, 2},
+    {1280, 720, VGA_COLOR16, 1280 * 2, 2},
+    {1280, 720, VGA_COLOR24, 1280 * 3, 3},
+    {1280, 720, VGA_COLOR24, 1280 * 4, 4},
+    {1360, 768, VGA_COLOR8, 1360, 1},
+    {1360, 768, VGA_COLOR15, 1360 * 2, 2},
+    {1360, 768, VGA_COLOR16, 1360 * 2, 2},
+    {1360, 768, VGA_COLOR24, 1360 * 3, 3},
+    {1360, 768, VGA_COLOR24, 1360 * 4, 4},
+    {1800, 1012, VGA_COLOR8, 1800, 1},
+    {1800, 1012, VGA_COLOR15, 1800 * 2, 2},
+    {1800, 1012, VGA_COLOR16, 1800 * 2, 2},
+    {1800, 1012, VGA_COLOR24, 1800 * 3, 3},
+    {1800, 1012, VGA_COLOR24, 1800 * 4, 4},
+    {1920, 1080, VGA_COLOR8, 1920, 1},
+    {1920, 1080, VGA_COLOR15, 1920 * 2, 2},
+    {1920, 1080, VGA_COLOR16, 1920 * 2, 2},
+    {1920, 1080, VGA_COLOR24, 1920 * 3, 3},
+    {1920, 1080, VGA_COLOR24, 1920 * 4, 4},
+    {2048, 1152, VGA_COLOR8, 2048, 1},
+    {2048, 1152, VGA_COLOR15, 2048 * 2, 2},
+    {2048, 1152, VGA_COLOR16, 2048 * 2, 2},
+    {2048, 1152, VGA_COLOR24, 2048 * 3, 3},
+    {2048, 1152, VGA_COLOR24, 2048 * 4, 4},
+    {2048, 1536, VGA_COLOR8, 2048, 1},
+    {2048, 1536, VGA_COLOR15, 2048 * 2, 2},
+    {2048, 1536, VGA_COLOR16, 2048 * 2, 2},
+    {2048, 1536, VGA_COLOR24, 2048 * 3, 3},
+    {2048, 1536, VGA_COLOR24, 2048 * 4, 4},
+    {512, 480, VGA_COLOR8, 512, 1},
+    {512, 480, VGA_COLOR15, 512 * 2, 2},
+    {512, 480, VGA_COLOR16, 512 * 2, 2},
+    {512, 480, VGA_COLOR24, 512 * 3, 3},
+    {512, 480, VGA_COLOR24, 512 * 4, 4},
+    {400, 600, VGA_COLOR8, 400, 1},
+    {400, 600, VGA_COLOR15, 400 * 2, 2},
+    {400, 600, VGA_COLOR16, 400 * 2, 2},
+    {400, 600, VGA_COLOR24, 400 * 3, 3},
+    {400, 600, VGA_COLOR24, 400 * 4, 4},
+    {400, 300, VGA_COLOR8, 100, 0},
+    {320, 200, VGA_COLOR8, 320, 1},
+
 };
 
 static struct vga_monitormodetiming timings[] = {
@@ -151,13 +270,7 @@ static struct vga_monitormodetiming timings[] = {
     /* 640x480 at 60 Hz, 31.5 kHz hsync */
     {25175, 640, 664, 760, 800, 480, 491, 493, 525, 0},
     /* 640x480 at 72 Hz, 36.5 kHz hsync */
-/*
-#ifdef USE_XORG_DEFAULT_TIMINGS
     {31500, 640, 664, 704, 832, 480, 489, 491, 520, 0},
-#else
-    {31500, 640, 680, 720, 864, 480, 488, 491, 521, 0},
-#endif
-*/
     /* 800x600 at 56 Hz, 35.15 kHz hsync */
     {36000, 800, 824, 896, 1024, 600, 601, 603, 625, 0},
     /* 800x600 at 60 Hz, 37.8 kHz hsync */
@@ -244,7 +357,7 @@ void vga_initregisters(unsigned char *registers, struct vga_modetiming *modetimi
 
     registers[VGA_SR0] = 0x00;
 
-    if (modeinfo->bitsPerPixel == 4)
+    if (modeinfo->bpp == VGA_BPP4)
         registers[VGA_SR0] = 0x02;
 
     registers[VGA_SR1] = 0x01;
@@ -252,7 +365,7 @@ void vga_initregisters(unsigned char *registers, struct vga_modetiming *modetimi
     registers[VGA_SR3] = 0x00;
     registers[VGA_SR4] = 0x0E;
 
-    if (modeinfo->bitsPerPixel == 4)
+    if (modeinfo->bpp == VGA_BPP4)
         registers[VGA_SR4] = 0x06;
 
     registers[VGA_CR0] = (modetiming->CrtcHTotal / 8) - 5;
@@ -284,7 +397,7 @@ void vga_initregisters(unsigned char *registers, struct vga_modetiming *modetimi
     registers[VGA_CR16] = (modetiming->CrtcVSyncStart + 1) & 0xFF;
     registers[VGA_CR17] = 0xC3;
 
-    if (modeinfo->bitsPerPixel == 4)
+    if (modeinfo->bpp == VGA_BPP4)
         registers[VGA_CR17] = 0xE3;
 
     registers[VGA_CR18] = 0xFF;
@@ -295,7 +408,7 @@ void vga_initregisters(unsigned char *registers, struct vga_modetiming *modetimi
     registers[VGA_GR4] = 0x00;
     registers[VGA_GR5] = 0x40;
 
-    if (modeinfo->bitsPerPixel == 4)
+    if (modeinfo->bpp == VGA_BPP4)
         registers[VGA_GR5] = 0x02;
 
     registers[VGA_GR6] = 0x05;
@@ -307,7 +420,7 @@ void vga_initregisters(unsigned char *registers, struct vga_modetiming *modetimi
 
     registers[VGA_AR10] = 0x41;
 
-    if (modeinfo->bitsPerPixel == 4)
+    if (modeinfo->bpp == VGA_BPP4)
         registers[VGA_AR10] = 0x01;
 
     registers[VGA_AR11] = 0x00;
@@ -316,9 +429,6 @@ void vga_initregisters(unsigned char *registers, struct vga_modetiming *modetimi
     registers[VGA_AR14] = 0x00;
 
 }
-
-#define CLOCK_ALLOWANCE                 10
-#define PROGRAMMABLE_CLOCK_MAGIC_NUMBER 0x1234
 
 static int findclock(int clock, struct vga_cardspecs *cardspecs)
 {
@@ -389,7 +499,7 @@ static struct vga_monitormodetiming *search_mode(struct vga_monitormodetiming *t
     for (t = timings; t; t = t->next)
     {
 
-        if (t->HDisplay == modeinfo->width && t->VDisplay == modeinfo->height && ((!(t->flags&INTERLACED)) || (!(cardspecs->flags&NO_INTERLACE))) && timing_within_monitor_spec(t) && t->pixelClock <= maxclock && t->pixelClock > bestclock && cardspecs->mapHorizontalCrtc(modeinfo->bitsPerPixel, t->pixelClock, t->HTotal) <= cardspecs->maxHorizontalCrtc && findclock(cardspecs->mapClock(modeinfo->bitsPerPixel, t->pixelClock), cardspecs) != -1)
+        if (t->HDisplay == modeinfo->width && t->VDisplay == modeinfo->height && ((!(t->flags&INTERLACED)) || (!(cardspecs->flags&NO_INTERLACE))) && timing_within_monitor_spec(t) && t->pixelClock <= maxclock && t->pixelClock > bestclock && cardspecs->mapHorizontalCrtc(modeinfo->bpp, t->pixelClock, t->HTotal) <= cardspecs->maxHorizontalCrtc && findclock(cardspecs->mapClock(modeinfo->bpp, t->pixelClock), cardspecs) != -1)
         {
 
             bestclock = t->pixelClock;
@@ -420,15 +530,15 @@ void vga_initmodetiming(struct vga_modetiming *modetiming, struct vga_modeinfo *
 
     }
 
-    if (modeinfo->bitsPerPixel == 4)
+    if (modeinfo->bpp == VGA_BPP4)
         maxclock = cardspecs->maxPixelClock4bpp;
-    else if (modeinfo->bitsPerPixel == 8)
+    else if (modeinfo->bpp == VGA_BPP8)
         maxclock = cardspecs->maxPixelClock8bpp;
-    else if (modeinfo->bitsPerPixel == 16)
+    else if (modeinfo->bpp == VGA_BPP16)
         maxclock = cardspecs->maxPixelClock16bpp;
-    else if (modeinfo->bitsPerPixel == 24)
+    else if (modeinfo->bpp == VGA_BPP24)
         maxclock = cardspecs->maxPixelClock24bpp;
-    else if (modeinfo->bitsPerPixel == 32)
+    else if (modeinfo->bpp == VGA_BPP32)
         maxclock = cardspecs->maxPixelClock32bpp;
     else
         maxclock = 0;
@@ -445,7 +555,7 @@ void vga_initmodetiming(struct vga_modetiming *modetiming, struct vga_modeinfo *
 
     modetiming->flags = besttiming->flags;
     modetiming->pixelClock = besttiming->pixelClock;
-    desiredclock = cardspecs->mapClock(modeinfo->bitsPerPixel, besttiming->pixelClock);
+    desiredclock = cardspecs->mapClock(modeinfo->bpp, besttiming->pixelClock);
     modetiming->selectedClockNo = findclock(desiredclock, cardspecs);
 
     if (modetiming->selectedClockNo == PROGRAMMABLE_CLOCK_MAGIC_NUMBER)
@@ -468,13 +578,13 @@ void vga_initmodetiming(struct vga_modetiming *modetiming, struct vga_modeinfo *
     modetiming->HSyncEnd = besttiming->HSyncEnd;
     modetiming->HTotal = besttiming->HTotal;
 
-    if (cardspecs->mapHorizontalCrtc(modeinfo->bitsPerPixel, modetiming->programmedClock, besttiming->HTotal) != besttiming->HTotal)
+    if (cardspecs->mapHorizontalCrtc(modeinfo->bpp, modetiming->programmedClock, besttiming->HTotal) != besttiming->HTotal)
     {
 
-        modetiming->CrtcHDisplay = cardspecs->mapHorizontalCrtc(modeinfo->bitsPerPixel, modetiming->programmedClock, besttiming->HDisplay);
-        modetiming->CrtcHSyncStart = cardspecs->mapHorizontalCrtc(modeinfo->bitsPerPixel, modetiming->programmedClock, besttiming->HSyncStart);
-        modetiming->CrtcHSyncEnd = cardspecs->mapHorizontalCrtc(modeinfo->bitsPerPixel, modetiming->programmedClock, besttiming->HSyncEnd);
-        modetiming->CrtcHTotal = cardspecs->mapHorizontalCrtc(modeinfo->bitsPerPixel, modetiming->programmedClock, besttiming->HTotal);
+        modetiming->CrtcHDisplay = cardspecs->mapHorizontalCrtc(modeinfo->bpp, modetiming->programmedClock, besttiming->HDisplay);
+        modetiming->CrtcHSyncStart = cardspecs->mapHorizontalCrtc(modeinfo->bpp, modetiming->programmedClock, besttiming->HSyncStart);
+        modetiming->CrtcHSyncEnd = cardspecs->mapHorizontalCrtc(modeinfo->bpp, modetiming->programmedClock, besttiming->HSyncEnd);
+        modetiming->CrtcHTotal = cardspecs->mapHorizontalCrtc(modeinfo->bpp, modetiming->programmedClock, besttiming->HTotal);
         modetiming->flags |= HADJUSTED;
 
     }
@@ -527,23 +637,23 @@ void vga_initmodeinfo(struct vga_modeinfo *modeinfo, int mode)
 
     modeinfo->width = infos[mode].xdim;
     modeinfo->height = infos[mode].ydim;
-    modeinfo->bytesPerPixel = infos[mode].bytespp;
+    modeinfo->bytespp = infos[mode].bytespp;
 
     switch (infos[mode].colors)
     {
 
-    case 16:
-        modeinfo->colorBits = 4;
+    case VGA_COLOR4:
+        modeinfo->colorBits = VGA_BPP4;
 
         break;
 
-    case 256:
-        modeinfo->colorBits = 8;
+    case VGA_COLOR8:
+        modeinfo->colorBits = VGA_BPP8;
 
         break;
 
-    case 32768:
-        modeinfo->colorBits = 15;
+    case VGA_COLOR15:
+        modeinfo->colorBits = VGA_BPP15;
         modeinfo->blueOffset = 0;
         modeinfo->greenOffset = 5;
         modeinfo->redOffset = 10;
@@ -553,8 +663,8 @@ void vga_initmodeinfo(struct vga_modeinfo *modeinfo, int mode)
 
         break;
 
-    case 65536:
-        modeinfo->colorBits = 16;
+    case VGA_COLOR16:
+        modeinfo->colorBits = VGA_BPP16;
         modeinfo->blueOffset = 0;
         modeinfo->greenOffset = 5;
         modeinfo->redOffset = 11;
@@ -564,8 +674,8 @@ void vga_initmodeinfo(struct vga_modeinfo *modeinfo, int mode)
 
         break;
 
-    case 256 * 65536:
-        modeinfo->colorBits = 24;
+    case VGA_COLOR24:
+        modeinfo->colorBits = VGA_BPP24;
         modeinfo->blueOffset = 0;
         modeinfo->greenOffset = 8;
         modeinfo->redOffset = 16;
@@ -577,10 +687,10 @@ void vga_initmodeinfo(struct vga_modeinfo *modeinfo, int mode)
 
     }
 
-    modeinfo->bitsPerPixel = modeinfo->bytesPerPixel * 8;
+    modeinfo->bpp = modeinfo->bytespp * 8;
 
-    if (infos[mode].colors == 16)
-        modeinfo->bitsPerPixel = 4;
+    if (infos[mode].colors == VGA_COLOR4)
+        modeinfo->bpp = VGA_BPP4;
 
     modeinfo->lineWidth = infos[mode].xbytes;
 

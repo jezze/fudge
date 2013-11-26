@@ -1,27 +1,3 @@
-#define CLOCK_PROGRAMMABLE              0x1
-#define INTERLACE_DIVIDE_VERT           0x2
-#define GREATER_1024_DIVIDE_VERT        0x4
-#define NO_RGB16_565                    0x8
-#define NO_INTERLACE                    0x10
-#define EMULATE_BANK                    0x20
-
-struct vga_monitormodetiming
-{
-
-    int pixelClock;
-    int HDisplay;
-    int HSyncStart;
-    int HSyncEnd;
-    int HTotal;
-    int VDisplay;
-    int VSyncStart;
-    int VSyncEnd;
-    int VTotal;
-    int flags;
-    struct vga_monitormodetiming *next;
-
-};
-
 enum vga_modetiming_flags
 {
 
@@ -40,43 +16,72 @@ enum vga_modetiming_flags
 
 };
 
+struct vga_monitormodetiming
+{
+
+    unsigned int pixelClock;
+    unsigned int HDisplay;
+    unsigned int HSyncStart;
+    unsigned int HSyncEnd;
+    unsigned int HTotal;
+    unsigned int VDisplay;
+    unsigned int VSyncStart;
+    unsigned int VSyncEnd;
+    unsigned int VTotal;
+    unsigned int flags;
+    struct vga_monitormodetiming *next;
+
+};
+
 struct vga_modetiming
 {
 
-    int pixelClock;
-    int HDisplay;
-    int HSyncStart;
-    int HSyncEnd;
-    int HTotal;
-    int VDisplay;
-    int VSyncStart;
-    int VSyncEnd;
-    int VTotal;
-    int flags;
-    int programmedClock;
-    int selectedClockNo;
-    int CrtcHDisplay;
-    int CrtcHSyncStart;
-    int CrtcHSyncEnd;
-    int CrtcHTotal;
-    int CrtcVDisplay;
-    int CrtcVSyncStart;
-    int CrtcVSyncEnd;
-    int CrtcVTotal;
+    unsigned int pixelClock;
+    unsigned int HDisplay;
+    unsigned int HSyncStart;
+    unsigned int HSyncEnd;
+    unsigned int HTotal;
+    unsigned int VDisplay;
+    unsigned int VSyncStart;
+    unsigned int VSyncEnd;
+    unsigned int VTotal;
+    unsigned int flags;
+    unsigned int programmedClock;
+    unsigned int selectedClockNo;
+    unsigned int CrtcHDisplay;
+    unsigned int CrtcHSyncStart;
+    unsigned int CrtcHSyncEnd;
+    unsigned int CrtcHTotal;
+    unsigned int CrtcVDisplay;
+    unsigned int CrtcVSyncStart;
+    unsigned int CrtcVSyncEnd;
+    unsigned int CrtcVTotal;
+
+};
+
+enum vga_cardspecs_flags
+{
+
+    CLOCK_PROGRAMMABLE                  = 0x0001,
+    INTERLACE_DIVIDE_VERT               = 0x0002,
+    GREATER_1024_DIVIDE_VERT            = 0x0004,
+    NO_RGB16_565                        = 0x0008,
+    NO_INTERLACE                        = 0x0010,
+    EMULATE_BANK                        = 0x0020
 
 };
 
 struct vga_cardspecs
 {
 
-    int videoMemory;
-    int maxPixelClock4bpp;
-    int maxPixelClock8bpp;
-    int maxPixelClock16bpp;
-    int maxPixelClock24bpp;
-    int maxPixelClock32bpp;
-    int flags;
-    int nClocks;
+    unsigned int videoMemory;
+    unsigned int maxPixelClock4bpp;
+    unsigned int maxPixelClock8bpp;
+    unsigned int maxPixelClock16bpp;
+    unsigned int maxPixelClock24bpp;
+    unsigned int maxPixelClock32bpp;
+    unsigned int flags;
+    unsigned int nClocks;
     int *clocks;
     int maxHorizontalCrtc;
     int (*mapClock) (int bpp, int pixelclock);
@@ -85,30 +90,52 @@ struct vga_cardspecs
 
 };
 
+enum
+{
+
+    VGA_BPP2                            = 2,
+    VGA_BPP4                            = 4,
+    VGA_BPP8                            = 8,
+    VGA_BPP15                           = 15,
+    VGA_BPP16                           = 16,
+    VGA_BPP24                           = 24,
+    VGA_BPP32                           = 32
+
+};
+
 struct vga_modeinfo
 {
 
-    short width;
-    short height;
-    char bytesPerPixel;
-    char bitsPerPixel;
-    char colorBits;
-    char __padding1;
-    char redWeight;
-    char greenWeight;
-    char blueWeight;
-    char __padding2;
-    char redOffset;
-    char blueOffset;
-    char greenOffset;
-    char __padding3;
-    unsigned redMask;
-    unsigned blueMask;
-    unsigned greenMask;
-    int lineWidth;
-    short realWidth;
-    short realHeight;
-    int flags;
+    unsigned short width;
+    unsigned short height;
+    unsigned char bytespp;
+    unsigned char bpp;
+    unsigned char colorBits;
+    unsigned char redWeight;
+    unsigned char greenWeight;
+    unsigned char blueWeight;
+    unsigned char redOffset;
+    unsigned char blueOffset;
+    unsigned char greenOffset;
+    unsigned int redMask;
+    unsigned int blueMask;
+    unsigned int greenMask;
+    unsigned int lineWidth;
+    unsigned short realWidth;
+    unsigned short realHeight;
+    unsigned int flags;
+
+};
+
+enum vga_info_colors
+{
+
+    VGA_COLOR1                          = (1 << 1),
+    VGA_COLOR4                          = (1 << 4),
+    VGA_COLOR8                          = (1 << 8),
+    VGA_COLOR15                         = (1 << 15),
+    VGA_COLOR16                         = (1 << 16),
+    VGA_COLOR24                         = (1 << 24)
 
 };
 
