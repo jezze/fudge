@@ -465,97 +465,73 @@ static int findclock(int clock, struct vga_cardspecs *cardspecs)
 
 }
 
-/*
-#define INRANGE(x,y) ((x) > __svgalib_##y.min * (1.0f - SYNC_ALLOWANCE / 100.0f) && (x) < __svgalib_##y.max * (1.0f + SYNC_ALLOWANCE / 100.0f))
-*/
-
-static int timing_within_monitor_spec(struct vga_monitormodetiming *mmtp)
+static unsigned int get_maxclock(unsigned int bpp, struct vga_cardspecs *cardspecs)
 {
 
-/*
-    float hsf = mmtp->pixelClock * 1000.0f / mmtp->HTotal;
-    float vsf = hsf / mmtp->VTotal;
+    if (bpp == VGA_BPP4)
+        return cardspecs->maxPixelClock4bpp;
+    else if (bpp == VGA_BPP8)
+        return cardspecs->maxPixelClock8bpp;
+    else if (bpp == VGA_BPP16)
+        return cardspecs->maxPixelClock16bpp;
+    else if (bpp == VGA_BPP24)
+        return cardspecs->maxPixelClock24bpp;
+    else if (bpp == VGA_BPP32)
+        return cardspecs->maxPixelClock32bpp;
 
-    if ((mmtp->flags & INTERLACED))
-        vsf *= 2.0f;
-
-    if ((mmtp->flags & DOUBLESCAN))
-        vsf /= 2.0f;
-
-    return INRANGE(hsf, horizsync) && INRANGE(vsf, vertrefresh);
-*/
-
-    return 1;
+    return 0;
 
 }
 
-static struct vga_monitormodetiming *search_mode(struct vga_monitormodetiming *timings, int maxclock, struct vga_modeinfo *modeinfo, struct vga_cardspecs *cardspecs)
+static struct vga_monitormodetiming *find_timing(struct vga_modeinfo *modeinfo, struct vga_cardspecs *cardspecs)
 {
 
-    int bestclock = 0;
-    struct vga_monitormodetiming *besttiming = 0;
-    struct vga_monitormodetiming *t;
+    int maxclock = get_maxclock(modeinfo->bpp, cardspecs);
+    int clock = 0;
+    struct vga_monitormodetiming *timing = 0;
+    struct vga_monitormodetiming *current;
 
-    for (t = timings; t; t = t->next)
+    for (current = timings; current; current = current->next)
     {
 
-        if (t->HDisplay == modeinfo->width && t->VDisplay == modeinfo->height && ((!(t->flags&INTERLACED)) || (!(cardspecs->flags&NO_INTERLACE))) && timing_within_monitor_spec(t) && t->pixelClock <= maxclock && t->pixelClock > bestclock && cardspecs->mapHorizontalCrtc(modeinfo->bpp, t->pixelClock, t->HTotal) <= cardspecs->maxHorizontalCrtc && findclock(cardspecs->mapClock(modeinfo->bpp, t->pixelClock), cardspecs) != -1)
+        if (current->HDisplay != modeinfo->width)
+            continue;
+
+        if (current->VDisplay != modeinfo->height)
+            continue;
+
+        if (current->pixelClock > maxclock)
+            continue;
+
+        if (current->pixelClock <= clock)
+            continue;
+
+        if (((!(current->flags & INTERLACED)) || (!(cardspecs->flags & NO_INTERLACE))) && cardspecs->mapHorizontalCrtc(modeinfo->bpp, current->pixelClock, current->HTotal) <= cardspecs->maxHorizontalCrtc && findclock(cardspecs->mapClock(modeinfo->bpp, current->pixelClock), cardspecs) != -1)
         {
 
-            bestclock = t->pixelClock;
-            besttiming = t;
+            clock = current->pixelClock;
+            timing = current;
 
         }
 
     }
 
-    return besttiming;
+    return timing;
 
 }
-
-static struct vga_monitormodetiming *force_timing = 0;
 
 void vga_initmodetiming(struct vga_modetiming *modetiming, struct vga_modeinfo *modeinfo, struct vga_cardspecs *cardspecs)
 {
 
-    int maxclock;
+    struct vga_monitormodetiming *timing = find_timing(modeinfo, cardspecs);
     int desiredclock;
-    struct vga_monitormodetiming *besttiming = 0;
 
-    if (force_timing)
-    {
+    if (!timing)
+        return;
 
-        if (timing_within_monitor_spec(force_timing) && force_timing->HDisplay == modeinfo->width && force_timing->VDisplay == modeinfo->height)
-            besttiming = force_timing;
-
-    }
-
-    if (modeinfo->bpp == VGA_BPP4)
-        maxclock = cardspecs->maxPixelClock4bpp;
-    else if (modeinfo->bpp == VGA_BPP8)
-        maxclock = cardspecs->maxPixelClock8bpp;
-    else if (modeinfo->bpp == VGA_BPP16)
-        maxclock = cardspecs->maxPixelClock16bpp;
-    else if (modeinfo->bpp == VGA_BPP24)
-        maxclock = cardspecs->maxPixelClock24bpp;
-    else if (modeinfo->bpp == VGA_BPP32)
-        maxclock = cardspecs->maxPixelClock32bpp;
-    else
-        maxclock = 0;
-
-    if (!besttiming)
-    {
-
-        besttiming = search_mode(timings, maxclock, modeinfo, cardspecs);
-
-        if (!besttiming)
-            return;
-
-    }
-
-    modetiming->flags = besttiming->flags;
-    modetiming->pixelClock = besttiming->pixelClock;
-    desiredclock = cardspecs->mapClock(modeinfo->bpp, besttiming->pixelClock);
+    modetiming->flags = timing->flags;
+    modetiming->pixelClock = timing->pixelClock;
+    desiredclock = cardspecs->mapClock(modeinfo->bpp, timing->pixelClock);
     modetiming->selectedClockNo = findclock(desiredclock, cardspecs);
 
     if (modetiming->selectedClockNo == PROGRAMMABLE_CLOCK_MAGIC_NUMBER)
@@ -573,18 +549,18 @@ void vga_initmodetiming(struct vga_modetiming *modetiming, struct vga_modeinfo *
 
     }
 
-    modetiming->HDisplay = besttiming->HDisplay;
-    modetiming->HSyncStart = besttiming->HSyncStart;
-    modetiming->HSyncEnd = besttiming->HSyncEnd;
-    modetiming->HTotal = besttiming->HTotal;
+    modetiming->HDisplay = timing->HDisplay;
+    modetiming->HSyncStart = timing->HSyncStart;
+    modetiming->HSyncEnd = timing->HSyncEnd;
+    modetiming->HTotal = timing->HTotal;
 
-    if (cardspecs->mapHorizontalCrtc(modeinfo->bpp, modetiming->programmedClock, besttiming->HTotal) != besttiming->HTotal)
+    if (cardspecs->mapHorizontalCrtc(modeinfo->bpp, modetiming->programmedClock, timing->HTotal) != timing->HTotal)
     {
 
-        modetiming->CrtcHDisplay = cardspecs->mapHorizontalCrtc(modeinfo->bpp, modetiming->programmedClock, besttiming->HDisplay);
-        modetiming->CrtcHSyncStart = cardspecs->mapHorizontalCrtc(modeinfo->bpp, modetiming->programmedClock, besttiming->HSyncStart);
-        modetiming->CrtcHSyncEnd = cardspecs->mapHorizontalCrtc(modeinfo->bpp, modetiming->programmedClock, besttiming->HSyncEnd);
-        modetiming->CrtcHTotal = cardspecs->mapHorizontalCrtc(modeinfo->bpp, modetiming->programmedClock, besttiming->HTotal);
+        modetiming->CrtcHDisplay = cardspecs->mapHorizontalCrtc(modeinfo->bpp, modetiming->programmedClock, timing->HDisplay);
+        modetiming->CrtcHSyncStart = cardspecs->mapHorizontalCrtc(modeinfo->bpp, modetiming->programmedClock, timing->HSyncStart);
+        modetiming->CrtcHSyncEnd = cardspecs->mapHorizontalCrtc(modeinfo->bpp, modetiming->programmedClock, timing->HSyncEnd);
+        modetiming->CrtcHTotal = cardspecs->mapHorizontalCrtc(modeinfo->bpp, modetiming->programmedClock, timing->HTotal);
         modetiming->flags |= HADJUSTED;
 
     }
@@ -592,17 +568,17 @@ void vga_initmodetiming(struct vga_modetiming *modetiming, struct vga_modeinfo *
     else
     {
 
-        modetiming->CrtcHDisplay = besttiming->HDisplay;
-        modetiming->CrtcHSyncStart = besttiming->HSyncStart;
-        modetiming->CrtcHSyncEnd = besttiming->HSyncEnd;
-        modetiming->CrtcHTotal = besttiming->HTotal;
+        modetiming->CrtcHDisplay = timing->HDisplay;
+        modetiming->CrtcHSyncStart = timing->HSyncStart;
+        modetiming->CrtcHSyncEnd = timing->HSyncEnd;
+        modetiming->CrtcHTotal = timing->HTotal;
 
     }
 
-    modetiming->VDisplay = besttiming->VDisplay;
-    modetiming->VSyncStart = besttiming->VSyncStart;
-    modetiming->VSyncEnd = besttiming->VSyncEnd;
-    modetiming->VTotal = besttiming->VTotal;
+    modetiming->VDisplay = timing->VDisplay;
+    modetiming->VSyncStart = timing->VSyncStart;
+    modetiming->VSyncEnd = timing->VSyncEnd;
+    modetiming->VTotal = timing->VTotal;
 
     if (modetiming->flags & DOUBLESCAN)
     {
