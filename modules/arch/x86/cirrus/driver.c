@@ -10,7 +10,7 @@
 #define CIRRUS_PCI_VENDOR               0x1013
 #define CIRRUS_PCI_DEVICE               0x00B8
 
-#define NU_FIXED_CLOCKS                 21
+#define CLOCKS                          21
 #define min(x, y)                       (((x) < (y)) ? (x) : (y))
 #define max(x, y)                       (((x) > (y)) ? (x) : (y))
 
@@ -32,39 +32,32 @@ enum
 
 };
 
-static int cirrus_fixed_clocks[NU_FIXED_CLOCKS] = {
-    12599, 18000, 19600,
-    25227, 28325, 31500, 36025, 37747, 39992, 41164,
-    45076, 49867, 64983, 72163, 75000, 80013, 85226, 89998,
-    95019, 100226, 108035
+static int clocks[CLOCKS] = {
+    12599, 18000, 19600, 25227, 28325, 31500, 36025, 37747,
+    39992, 41164, 45076, 49867, 64983, 72163, 75000, 80013,
+    85226, 89998, 95019, 100226, 108035
 };
 
-static int cirrus_memory;
-static int cirrus_chiptype;
-static int cirrus_chiprev;
-static int DRAMbandwidth, DRAMbandwidthLimit;
+static int chiptype;
+static int chiprev;
 
-static int cirrus_map_clock(int bpp, int pixelclock)
+static int map_clock(int bpp, int pixelclock)
 {
 
-    if (bpp == 24 && cirrus_chiptype < CLGD5436)
+    if (bpp == VGA_BPP24 && chiptype < CLGD5436)
         return pixelclock * 3;
 
-    if (bpp == 16 && cirrus_chiptype <= CLGD5424)
+    if (bpp == VGA_BPP16 && chiptype <= CLGD5424)
         return pixelclock * 2;
 
     return pixelclock;
 
 }
 
-static int cirrus_map_horizontal_crtc(int bpp, int pixelclock, int htiming)
+static int map_horizontal_crtc(int bpp, int pixelclock, int htiming)
 {
 
-#ifdef ALWAYS_USE_5434_PALETTE_CLOCK_DOUBLING
-    if (bpp == 8 && cirrus_chiptype >= CLGD5434)
-#else
-    if (bpp == 8 && cirrus_chiptype >= CLGD5434 && pixelclock > 86000)
-#endif
+    if (bpp == VGA_BPP8 && chiptype >= CLGD5434)
         return htiming / 2;
 
     return htiming;
@@ -78,31 +71,36 @@ static void mode(struct base_device *device)
     struct vga_modetiming modetiming;
     struct vga_modeinfo modeinfo;
     struct vga_cardspecs cardspecs;
-    int mclk = 0x22;
+    int mclk;
+    int DRAMbandwidth;
+    int DRAMbandwidthLimit;
 
-    cirrus_chiptype = CLGD5436;
-    cirrus_chiprev = 0;
+    /* Identify real values */
+    chiptype = CLGD5436;
+    chiprev = 0;
     cardspecs.videoMemory = 2048;
+    mclk = 0x22;
+
+    DRAMbandwidth = 14318 * mclk / 16;
+
+    if (cardspecs.videoMemory >= 512)
+        DRAMbandwidth *= 2;
+
+    if (cardspecs.videoMemory >= 1024)
+        DRAMbandwidth *= 2;
+
+    if (cardspecs.videoMemory >= 2048)
+        DRAMbandwidth *= 2;
+
+    DRAMbandwidthLimit = (DRAMbandwidth * 10) / 11;
+
     cardspecs.maxPixelClock4bpp = 75000;
     cardspecs.maxPixelClock8bpp = 45000;
     cardspecs.maxPixelClock16bpp = 0;
     cardspecs.maxPixelClock24bpp = 0; 
     cardspecs.maxPixelClock32bpp = 0;
 
-    DRAMbandwidth = 14318 * mclk / 16;
-
-    if (cirrus_memory >= 512)
-        DRAMbandwidth *= 2;
-
-    if (cirrus_memory >= 1024)
-        DRAMbandwidth *= 2;
-
-    if (cirrus_memory >= 2048)
-        DRAMbandwidth *= 2;
-
-    DRAMbandwidthLimit = (DRAMbandwidth * 10) / 11;
-
-    if (cirrus_chiptype == CLGD5420B)
+    if (chiptype == CLGD5420B)
     {
 
         cardspecs.maxPixelClock16bpp = 75000 / 2;
@@ -110,57 +108,53 @@ static void mode(struct base_device *device)
 
     }
 
-    if (cirrus_chiptype >= CLGD5422)
+    if (chiptype >= CLGD5422)
     {
 
         cardspecs.maxPixelClock4bpp = 80000;
         cardspecs.maxPixelClock8bpp = 80000;
 
-        if (cirrus_chiptype >= CLGD5426)
+        if (chiptype >= CLGD5426)
             cardspecs.maxPixelClock16bpp = 80000;
-        else if (cirrus_memory >= 1024)
+        else if (cardspecs.videoMemory >= 1024)
             cardspecs.maxPixelClock16bpp = 80000 / 2;
 
-        if (cirrus_memory >= 1024)
+        if (cardspecs.videoMemory >= 1024)
             cardspecs.maxPixelClock24bpp = 80000 / 3;
 
     }
 
-    if (cirrus_chiptype >= CLGD5429)
+    if (chiptype >= CLGD5429)
     {
 
         cardspecs.maxPixelClock4bpp = 86000;
         cardspecs.maxPixelClock8bpp = 86000;
-        cardspecs.maxPixelClock16bpp = 86000;
+        cardspecs.maxPixelClock16bpp = 60000;
 
-        if (cirrus_memory >= 1024)
+        if (cardspecs.videoMemory >= 1024)
             cardspecs.maxPixelClock24bpp = 86000 / 3;
 
     }
 
-    if (cirrus_chiptype == CLGD5434)
+    if (chiptype == CLGD5434)
     {
 
-#ifdef SUPPORT_5434_PALETTE_CLOCK_DOUBLING
         cardspecs.maxPixelClock8bpp = 108300;
 
-        if (cirrus_chiprev > 0)
+        if (chiprev > 0)
             cardspecs.maxPixelClock8bpp = 135300;
-#endif
 
-        if (cirrus_memory >= 2048)
+        if (cardspecs.videoMemory >= 2048)
             cardspecs.maxPixelClock32bpp = 86000;
 
     }
 
-    if (cirrus_chiptype >= CLGD5436)
+    if (chiptype >= CLGD5436)
     {
 
-#ifdef SUPPORT_5434_PALETTE_CLOCK_DOUBLING
         cardspecs.maxPixelClock8bpp = 135300;
-#endif
 
-        if (cirrus_memory >= 2048)
+        if (cardspecs.videoMemory >= 2048)
             cardspecs.maxPixelClock32bpp = 86000;
 
     }
@@ -170,10 +164,10 @@ static void mode(struct base_device *device)
     cardspecs.maxPixelClock24bpp = min(cardspecs.maxPixelClock24bpp, DRAMbandwidthLimit / 3);
     cardspecs.maxPixelClock32bpp = min(cardspecs.maxPixelClock32bpp, DRAMbandwidthLimit / 4);
     cardspecs.flags = INTERLACE_DIVIDE_VERT | GREATER_1024_DIVIDE_VERT;
-    cardspecs.nClocks = NU_FIXED_CLOCKS;
-    cardspecs.clocks = cirrus_fixed_clocks;
-    cardspecs.mapClock = cirrus_map_clock;
-    cardspecs.mapHorizontalCrtc = cirrus_map_horizontal_crtc;
+    cardspecs.nClocks = CLOCKS;
+    cardspecs.clocks = clocks;
+    cardspecs.mapClock = map_clock;
+    cardspecs.mapHorizontalCrtc = map_horizontal_crtc;
     cardspecs.maxHorizontalCrtc = 2040;
     cardspecs.maxPixelClock4bpp = 0;
 
