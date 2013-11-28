@@ -5,6 +5,52 @@
 #include "ps2.h"
 #include "mouse_driver.h"
 
+static unsigned int read_stream(struct ps2_mouse_stream *stream, unsigned int count, void *buffer)
+{
+
+    char *b = buffer;
+    unsigned int i;
+
+    for (i = 0; i < count; i++)
+    {
+
+        unsigned int tail = (stream->tail + 1) % 512;
+
+        if (stream->head == stream->tail)
+            break;
+
+        b[i] = stream->buffer[stream->tail];
+        stream->tail = tail;
+
+    }
+
+    return i;
+
+}
+
+static unsigned int write_stream(struct ps2_mouse_stream *stream, unsigned int count, void *buffer)
+{
+
+    char *b = buffer;
+    unsigned int i;
+
+    for (i = 0; i < count; i++)
+    {
+
+        unsigned int head = (stream->head + 1) % 512;
+
+        if (head == stream->tail)
+            break;
+
+        stream->buffer[stream->head] = b[i];
+        stream->head = head;
+
+    }
+
+    return i;
+
+}
+
 static void handle_irq(struct base_device *device)
 {
 
@@ -36,7 +82,10 @@ static void handle_irq(struct base_device *device)
 
             break;
 
+
     }
+
+    write_stream(&driver->stream, 1, &data);
 
 }
 
@@ -75,12 +124,21 @@ static unsigned int check(struct base_device *device)
 
 }
 
+static unsigned int read_data(struct base_device *device, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    struct ps2_mouse_driver *driver = (struct ps2_mouse_driver *)device->driver;
+
+    return count = read_stream(&driver->stream, count, buffer);
+
+}
+
 void ps2_init_mouse_driver(struct ps2_mouse_driver *driver)
 {
 
     memory_clear(driver, sizeof (struct ps2_mouse_driver));
     base_init_driver(&driver->base, "ps2mouse", check, attach);
-    base_mouse_init_interface(&driver->imouse);
+    base_mouse_init_interface(&driver->imouse, read_data);
 
     driver->cycle = 2;
 

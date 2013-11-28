@@ -10,6 +10,7 @@ static struct interface_node
     struct system_group base;
     struct base_mouse_interface *interface;
     struct base_device *device;
+    struct system_stream data;
     struct system_stream vx;
     struct system_stream vy;
 
@@ -79,7 +80,7 @@ static void init_snode(struct session_node *node, unsigned int id, struct interf
 
     memory_clear(node, sizeof (struct session_node));
     ascii_fromint(node->name, 8, id, 10);
-    system_init_group(&node->base, snode->name);
+    system_init_group(&node->base, node->name);
     system_init_group(&node->device, "device");
     system_init_stream(&node->control, "control");
 
@@ -104,6 +105,15 @@ static unsigned int clone_open(struct system_node *self)
     system_group_add(&snode[index].base, &snode[index].control.node);
 
     return (unsigned int)&snode[index].control;
+
+}
+
+static unsigned int data_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    struct interface_node *node = (struct interface_node *)self->parent;
+
+    return node->interface->read_data(node->device, offset, count, buffer);
 
 }
 
@@ -149,11 +159,13 @@ static void init_inode(struct interface_node *node, struct base_mouse_interface 
 
     memory_clear(node, sizeof (struct interface_node));
     system_init_group(&node->base, device->module.name);
+    system_init_stream(&node->data, "data");
     system_init_stream(&node->vx, "vx");
     system_init_stream(&node->vy, "vy");
 
     node->interface = interface;
     node->device = device;
+    node->data.node.read = data_read;
     node->vx.node.read = vx_read;
     node->vy.node.read = vy_read;
 
@@ -169,15 +181,18 @@ void base_mouse_register_interface(struct base_mouse_interface *interface, struc
 
     init_inode(&inode[index], interface, device);
     system_group_add(&dev, &inode[index].base.node);
+    system_group_add(&inode[index].base, &inode[index].data.node);
     system_group_add(&inode[index].base, &inode[index].vx.node);
     system_group_add(&inode[index].base, &inode[index].vy.node);
 
 }
 
-void base_mouse_init_interface(struct base_mouse_interface *interface)
+void base_mouse_init_interface(struct base_mouse_interface *interface, unsigned int (*read_data)(struct base_device *device, unsigned int offset, unsigned int count, void *buffer))
 {
 
     memory_clear(interface, sizeof (struct base_mouse_interface));
+
+    interface->read_data = read_data;
 
 }
 
