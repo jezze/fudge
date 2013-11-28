@@ -121,35 +121,6 @@ static const unsigned char g400x300x256X[60] = {
     0xA7
 };
 
-static void outar(unsigned char index, unsigned char value)
-{
-
-    io_outb(VGA_REGISTER_ARINDEX, index);
-    io_outb(VGA_REGISTER_ARINDEX, value);
-
-}
-
-static void outcrt1(unsigned char index, unsigned char value)
-{
-
-    io_outw(VGA_REGISTER_CRTINDEX1, (value << 8) | index);
-
-}
-
-static void outgr(unsigned char index, unsigned char value)
-{
-
-    io_outw(VGA_REGISTER_GRINDEX, (value << 8) | index);
-
-}
-
-static void outsr(unsigned char index, unsigned char value)
-{
-
-    io_outw(VGA_REGISTER_SRINDEX, (value << 8) | index);
-
-}
-
 static void set_regs(const unsigned char *regs)
 {
 

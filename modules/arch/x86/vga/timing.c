@@ -2,13 +2,16 @@
 #include <base/base.h>
 #include <base/terminal.h>
 #include <base/video.h>
+#include <arch/x86/io/io.h>
 #include "vga.h"
+#include "registers.h"
 #include "timing.h"
 
 #define VGA_CRTC_COUNT                  24
 #define VGA_ATC_COUNT                   21
 #define VGA_GRAPHICS_COUNT              9
 #define VGA_SEQUENCER_COUNT             5
+#define VGA_MISC_COUNT
 
 #define VGA_CRTC_OFFSET                 0
 #define VGA_ATC_OFFSET                  24
@@ -322,6 +325,40 @@ static struct vga_monitormodetiming timings[] = {
     /* 1072x600 at 100 Hz, 62.5 kHz hsync */
     {85000, 1072, 1088, 1160, 1360, 768, 603, 607, 625, 0},
 };
+
+void vga_setregisters(unsigned char *registers, unsigned int ega)
+{
+
+    unsigned int i;
+
+    if (ega)
+    {
+
+    }
+
+    io_outb(VGA_REGISTER_MISCWRITE, registers[VGA_MISCOUTPUT]);
+
+    outsr(0x00, 0x01);
+    outsr(0x01, registers[VGA_SEQUENCER_OFFSET + 1] | 0x20);
+
+    for (i = 2; i < VGA_SEQUENCER_COUNT; i++)
+        outsr(i, registers[VGA_SEQUENCER_OFFSET + i]);
+
+    outsr(0x00, 0x03);
+
+    if (ega)
+        outcrt1(0x11, incrt1(0x11) & 0x7f);
+
+    for (i = 0; i < VGA_CRTC_COUNT; i++)
+        outcrt1(i, registers[VGA_CRTC_OFFSET + i]);
+
+    for (i = 0; i < VGA_GRAPHICS_COUNT; i++)
+        outgr(i, registers[VGA_GRAPHICS_OFFSET + i]);
+
+    for (i = 0; i < VGA_ATC_COUNT; i++)
+        outar(i, registers[VGA_ATC_OFFSET + i]);
+
+}
 
 void vga_initregisters(unsigned char *registers, struct vga_modetiming *modetiming, struct vga_modeinfo *modeinfo)
 {

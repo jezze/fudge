@@ -301,3 +301,10 @@ enum vga_sr04
 
 };
 
+unsigned int inar(unsigned char index);
+unsigned int incrt1(unsigned char index);
+unsigned int insr(unsigned char index);
+void outar(unsigned char index, unsigned char value);
+void outcrt1(unsigned char index, unsigned char value);
+void outgr(unsigned char index, unsigned char value);
+void outsr(unsigned char index, unsigned char value);

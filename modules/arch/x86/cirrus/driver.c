@@ -3,7 +3,6 @@
 #include <base/terminal.h>
 #include <base/video.h>
 #include <arch/x86/pci/pci.h>
-#include <arch/x86/vga/vga.h>
 #include <arch/x86/vga/timing.h>
 #include "cirrus.h"
 
@@ -174,6 +173,7 @@ static void mode(struct base_device *device)
     vga_initmodeinfo(&modeinfo, 19);
     vga_initmodetiming(&modetiming, &modeinfo, &cardspecs);
     vga_initregisters(registers, &modetiming, &modeinfo);
+    vga_setregisters(registers, 0);
 
 }
 
