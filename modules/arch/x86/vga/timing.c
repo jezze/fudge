@@ -22,66 +22,6 @@
 #define VGA_SR_OFFSET                   54
 #define VGA_MR_OFFSET                   59
 
-#define VGAREG_CR(i)                    (i + VGA_CR_OFFSET)
-#define VGAREG_AR(i)                    (i + VGA_AR_OFFSET)
-#define VGAREG_GR(i)                    (i + VGA_GR_OFFSET)
-#define VGAREG_SR(i)                    (i + VGA_SR_OFFSET)
-#define VGAREG_MR(i)                    (i + VGA_MR_OFFSET)
-
-#define VGA_CR0                         VGAREG_CR(0x00)
-#define VGA_CR1                         VGAREG_CR(0x01)
-#define VGA_CR2                         VGAREG_CR(0x02)
-#define VGA_CR3                         VGAREG_CR(0x03)
-#define VGA_CR4                         VGAREG_CR(0x04)
-#define VGA_CR5                         VGAREG_CR(0x05)
-#define VGA_CR6                         VGAREG_CR(0x06)
-#define VGA_CR7                         VGAREG_CR(0x07)
-#define VGA_CR8                         VGAREG_CR(0x08)
-#define VGA_CR9                         VGAREG_CR(0x09)
-#define VGA_CRA                         VGAREG_CR(0x0A)
-#define VGA_CRB                         VGAREG_CR(0x0B)
-#define VGA_CRC                         VGAREG_CR(0x0C)
-#define VGA_CRD                         VGAREG_CR(0x0D)
-#define VGA_CRE                         VGAREG_CR(0x0E)
-#define VGA_CRF                         VGAREG_CR(0x0F)
-#define VGA_CR10                        VGAREG_CR(0x10)
-#define VGA_CR11                        VGAREG_CR(0x11)
-#define VGA_CR12                        VGAREG_CR(0x12)
-#define VGA_CR13                        VGAREG_CR(0x13)
-#define VGA_SCANLINEOFFSET              VGAREG_CR(0x13)
-#define VGA_CR14                        VGAREG_CR(0x14)
-#define VGA_CR15                        VGAREG_CR(0x15)
-#define VGA_CR16                        VGAREG_CR(0x16)
-#define VGA_CR17                        VGAREG_CR(0x17)
-#define VGA_CR18                        VGAREG_CR(0x18)
-#define VGA_AR0                         VGAREG_AR(0x00)
-#define VGA_AR10                        VGAREG_AR(0x10)
-#define VGA_AR11                        VGAREG_AR(0x11)
-#define VGA_AR12                        VGAREG_AR(0x12)
-#define VGA_AR13                        VGAREG_AR(0x13)
-#define VGA_AR14                        VGAREG_AR(0x14)
-#define VGA_AR0                         VGAREG_AR(0x00)
-#define VGA_AR10                        VGAREG_AR(0x10)
-#define VGA_AR11                        VGAREG_AR(0x11)
-#define VGA_AR12                        VGAREG_AR(0x12)
-#define VGA_AR13                        VGAREG_AR(0x13)
-#define VGA_AR14                        VGAREG_AR(0x14)
-#define VGA_GR0                         VGAREG_GR(0x00)
-#define VGA_GR1                         VGAREG_GR(0x01)
-#define VGA_GR2                         VGAREG_GR(0x02)
-#define VGA_GR3                         VGAREG_GR(0x03)
-#define VGA_GR4                         VGAREG_GR(0x04)
-#define VGA_GR5                         VGAREG_GR(0x05)
-#define VGA_GR6                         VGAREG_GR(0x06)
-#define VGA_GR7                         VGAREG_GR(0x07)
-#define VGA_GR8                         VGAREG_GR(0x08)
-#define VGA_SR0                         VGAREG_SR(0x00)
-#define VGA_SR1                         VGAREG_SR(0x01)
-#define VGA_SR2                         VGAREG_SR(0x02)
-#define VGA_SR3                         VGAREG_SR(0x03)
-#define VGA_SR4                         VGAREG_SR(0x04)
-#define VGA_MR0                         VGAREG_MR(0x00)
-
 static struct vga_info infos[] = {
     {80, 25, VGA_COLOR4, 160, 0},
     {320, 200, VGA_COLOR4, 40, 0},
@@ -366,16 +306,18 @@ void vga_init_registers(unsigned char *registers, struct vga_modetiming *modetim
 
     int i;
 
+    memory_clear(registers, sizeof (unsigned char) * 60);
+
     if ((modetiming->flags & (PHSYNC | NHSYNC)) && (modetiming->flags & (PVSYNC | NVSYNC)))
     {
 
-        registers[VGA_MR0] = 0x23;
+        registers[VGA_MR_OFFSET] = 0x23;
 
         if (modetiming->flags & NHSYNC)
-            registers[VGA_MR0] |= 0x40;
+            registers[VGA_MR_OFFSET] |= 0x40;
 
         if (modetiming->flags & NVSYNC)
-            registers[VGA_MR0] |= 0x80;
+            registers[VGA_MR_OFFSET] |= 0x80;
 
     }
 
@@ -383,88 +325,69 @@ void vga_init_registers(unsigned char *registers, struct vga_modetiming *modetim
     {
 
         if (modetiming->VDisplay < 400)
-            registers[VGA_MR0] = 0xA3;
+            registers[VGA_MR_OFFSET] = 0xA3;
         else if (modetiming->VDisplay < 480)
-            registers[VGA_MR0] = 0x63;
+            registers[VGA_MR_OFFSET] = 0x63;
         else if (modetiming->VDisplay < 768)
-            registers[VGA_MR0] = 0xE3;
+            registers[VGA_MR_OFFSET] = 0xE3;
         else
-            registers[VGA_MR0] = 0x23;
+            registers[VGA_MR_OFFSET] = 0x23;
 
     }
 
-    registers[VGA_SR0] = 0x00;
+    if (modeinfo->bpp == VGA_BPP4)
+        registers[VGA_SR_OFFSET] = 0x02;
+
+    registers[VGA_SR_OFFSET + 1] = 0x01;
+    registers[VGA_SR_OFFSET + 2] = 0x0F;
+    registers[VGA_SR_OFFSET + 4] = 0x0E;
 
     if (modeinfo->bpp == VGA_BPP4)
-        registers[VGA_SR0] = 0x02;
+        registers[VGA_SR_OFFSET + 4] = 0x06;
 
-    registers[VGA_SR1] = 0x01;
-    registers[VGA_SR2] = 0x0F;
-    registers[VGA_SR3] = 0x00;
-    registers[VGA_SR4] = 0x0E;
-
-    if (modeinfo->bpp == VGA_BPP4)
-        registers[VGA_SR4] = 0x06;
-
-    registers[VGA_CR0] = (modetiming->CrtcHTotal / 8) - 5;
-    registers[VGA_CR1] = (modetiming->CrtcHDisplay / 8) - 1;
-    registers[VGA_CR2] = (modetiming->CrtcHSyncStart / 8) - 1;
-    registers[VGA_CR3] = ((modetiming->CrtcHSyncEnd / 8) & 0x1F) | 0x80;
-    registers[VGA_CR4] = (modetiming->CrtcHSyncStart / 8);
-    registers[VGA_CR5] = (((modetiming->CrtcHSyncEnd / 8) & 0x20) << 2) | ((modetiming->CrtcHSyncEnd / 8) & 0x1F);
-    registers[VGA_CR6] = (modetiming->CrtcVTotal - 2) & 0xFF;
-    registers[VGA_CR7] = (((modetiming->CrtcVTotal - 2) & 0x100) >> 8) | (((modetiming->CrtcVDisplay - 1) & 0x100) >> 7) | ((modetiming->CrtcVSyncStart & 0x100) >> 6) | (((modetiming->CrtcVSyncStart) & 0x100) >> 5) | 0x10 | (((modetiming->CrtcVTotal - 2) & 0x200) >> 4) | (((modetiming->CrtcVDisplay - 1) & 0x200) >> 3) | ((modetiming->CrtcVSyncStart & 0x200) >> 2);
-    registers[VGA_CR8] = 0x00;
-    registers[VGA_CR9] = ((modetiming->CrtcVSyncStart & 0x200) >> 4) | 0x40;
+    registers[VGA_CR_OFFSET + 0] = (modetiming->CrtcHTotal / 8) - 5;
+    registers[VGA_CR_OFFSET + 1] = (modetiming->CrtcHDisplay / 8) - 1;
+    registers[VGA_CR_OFFSET + 2] = (modetiming->CrtcHSyncStart / 8) - 1;
+    registers[VGA_CR_OFFSET + 3] = ((modetiming->CrtcHSyncEnd / 8) & 0x1F) | 0x80;
+    registers[VGA_CR_OFFSET + 4] = (modetiming->CrtcHSyncStart / 8);
+    registers[VGA_CR_OFFSET + 5] = (((modetiming->CrtcHSyncEnd / 8) & 0x20) << 2) | ((modetiming->CrtcHSyncEnd / 8) & 0x1F);
+    registers[VGA_CR_OFFSET + 6] = (modetiming->CrtcVTotal - 2) & 0xFF;
+    registers[VGA_CR_OFFSET + 7] = (((modetiming->CrtcVTotal - 2) & 0x100) >> 8) | (((modetiming->CrtcVDisplay - 1) & 0x100) >> 7) | ((modetiming->CrtcVSyncStart & 0x100) >> 6) | (((modetiming->CrtcVSyncStart) & 0x100) >> 5) | 0x10 | (((modetiming->CrtcVTotal - 2) & 0x200) >> 4) | (((modetiming->CrtcVDisplay - 1) & 0x200) >> 3) | ((modetiming->CrtcVSyncStart & 0x200) >> 2);
+    registers[VGA_CR_OFFSET + 9] = ((modetiming->CrtcVSyncStart & 0x200) >> 4) | 0x40;
 
     if (modetiming->flags & DOUBLESCAN)
-        registers[VGA_CR9] |= 0x80;
+        registers[VGA_CR_OFFSET + 9] |= 0x80;
 
-    registers[VGA_CRA] = 0x00;
-    registers[VGA_CRB] = 0x00;
-    registers[VGA_CRC] = 0x00;
-    registers[VGA_CRD] = 0x00;
-    registers[VGA_CRE] = 0x00;
-    registers[VGA_CRF] = 0x00;
-    registers[VGA_CR10] = modetiming->CrtcVSyncStart & 0xFF;
-    registers[VGA_CR11] = (modetiming->CrtcVSyncEnd & 0x0F) | 0x20;
-    registers[VGA_CR12] = (modetiming->CrtcVDisplay - 1) & 0xFF;
-    registers[VGA_CR13] = modeinfo->lineWidth >> 4;
-    registers[VGA_CR14] = 0x00;
-    registers[VGA_CR15] = modetiming->CrtcVSyncStart & 0xFF;
-    registers[VGA_CR16] = (modetiming->CrtcVSyncStart + 1) & 0xFF;
-    registers[VGA_CR17] = 0xC3;
+    registers[VGA_CR_OFFSET + 16] = modetiming->CrtcVSyncStart & 0xFF;
+    registers[VGA_CR_OFFSET + 17] = (modetiming->CrtcVSyncEnd & 0x0F) | 0x20;
+    registers[VGA_CR_OFFSET + 18] = (modetiming->CrtcVDisplay - 1) & 0xFF;
+    registers[VGA_CR_OFFSET + 19] = modeinfo->lineWidth >> 4;
+    registers[VGA_CR_OFFSET + 21] = modetiming->CrtcVSyncStart & 0xFF;
+    registers[VGA_CR_OFFSET + 22] = (modetiming->CrtcVSyncStart + 1) & 0xFF;
+    registers[VGA_CR_OFFSET + 23] = 0xC3;
 
     if (modeinfo->bpp == VGA_BPP4)
-        registers[VGA_CR17] = 0xE3;
+        registers[VGA_CR_OFFSET + 23] = 0xE3;
 
-    registers[VGA_CR18] = 0xFF;
-    registers[VGA_GR0] = 0x00;
-    registers[VGA_GR1] = 0x00;
-    registers[VGA_GR2] = 0x00;
-    registers[VGA_GR3] = 0x00;
-    registers[VGA_GR4] = 0x00;
-    registers[VGA_GR5] = 0x40;
+    registers[VGA_CR_OFFSET + 24] = 0xFF;
+    registers[VGA_GR_OFFSET + 5] = 0x40;
 
     if (modeinfo->bpp == VGA_BPP4)
-        registers[VGA_GR5] = 0x02;
+        registers[VGA_GR_OFFSET + 5] = 0x02;
 
-    registers[VGA_GR6] = 0x05;
-    registers[VGA_GR7] = 0x0F;
-    registers[VGA_GR8] = 0xFF;
+    registers[VGA_GR_OFFSET + 6] = 0x05;
+    registers[VGA_GR_OFFSET + 7] = 0x0F;
+    registers[VGA_GR_OFFSET + 8] = 0xFF;
 
     for (i = 0; i < 16; i++)
-        registers[VGA_AR0 + i] = i;
+        registers[VGA_AR_OFFSET + i] = i;
 
-    registers[VGA_AR10] = 0x41;
+    registers[VGA_AR_OFFSET + 16] = 0x41;
 
     if (modeinfo->bpp == VGA_BPP4)
-        registers[VGA_AR10] = 0x01;
+        registers[VGA_AR_OFFSET + 16] = 0x01;
 
-    registers[VGA_AR11] = 0x00;
-    registers[VGA_AR12] = 0x0F;
-    registers[VGA_AR13] = 0x00;
-    registers[VGA_AR14] = 0x00;
+    registers[VGA_AR_OFFSET + 18] = 0x0F;
 
 }
 

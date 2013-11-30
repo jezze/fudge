@@ -37,7 +37,7 @@ void outar(unsigned char index, unsigned char value)
 {
 
     io_outb(VGA_REGISTER_ARINDEX, index);
-    io_outb(VGA_REGISTER_ARINDEX, value);
+    io_outb(VGA_REGISTER_ARWRITE, value);
 
 }
 
