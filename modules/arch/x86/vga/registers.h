@@ -48,6 +48,7 @@ enum vga_arindex
     VGA_ARINDEX_AR12                    = 0x12,
     VGA_ARINDEX_AR13                    = 0x13,
     VGA_ARINDEX_AR14                    = 0x14,
+    VGA_ARINDEX_DISABLE                 = (0 << 5),
     VGA_ARINDEX_ENABLE                  = (1 << 5)
 
 };

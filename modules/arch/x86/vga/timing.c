@@ -7,23 +7,26 @@
 #include "registers.h"
 #include "timing.h"
 
-#define VGA_CRTC_COUNT                  24
-#define VGA_ATC_COUNT                   21
-#define VGA_GRAPHICS_COUNT              9
-#define VGA_SEQUENCER_COUNT             5
-#define VGA_MISC_COUNT
+#define CLOCK_ALLOWANCE                 10
+#define CLOCK_MAGIC                     0x1234
 
-#define VGA_CRTC_OFFSET                 0
-#define VGA_ATC_OFFSET                  24
-#define VGA_GRAPHICS_OFFSET             45
-#define VGA_SEQUENCER_OFFSET            54
-#define VGA_MISCOUTPUT                  59
-#define VGA_TOTAL_REGS                  60
+#define VGA_CR_COUNT                    24
+#define VGA_AR_COUNT                    21
+#define VGA_GR_COUNT                    9
+#define VGA_SR_COUNT                    5
+#define VGA_MR_COUNT                    1
 
-#define VGAREG_CR(i)                    (i)
-#define VGAREG_AR(i)                    (i + VGA_ATC_OFFSET)
-#define VGAREG_GR(i)                    (i + VGA_GRAPHICS_OFFSET)
-#define VGAREG_SR(i)                    (i + VGA_SEQUENCER_OFFSET)
+#define VGA_CR_OFFSET                   0
+#define VGA_AR_OFFSET                   24
+#define VGA_GR_OFFSET                   45
+#define VGA_SR_OFFSET                   54
+#define VGA_MR_OFFSET                   59
+
+#define VGAREG_CR(i)                    (i + VGA_CR_OFFSET)
+#define VGAREG_AR(i)                    (i + VGA_AR_OFFSET)
+#define VGAREG_GR(i)                    (i + VGA_GR_OFFSET)
+#define VGAREG_SR(i)                    (i + VGA_SR_OFFSET)
+#define VGAREG_MR(i)                    (i + VGA_MR_OFFSET)
 
 #define VGA_CR0                         VGAREG_CR(0x00)
 #define VGA_CR1                         VGAREG_CR(0x01)
@@ -77,9 +80,7 @@
 #define VGA_SR2                         VGAREG_SR(0x02)
 #define VGA_SR3                         VGAREG_SR(0x03)
 #define VGA_SR4                         VGAREG_SR(0x04)
-
-#define CLOCK_ALLOWANCE                 10
-#define PROGRAMMABLE_CLOCK_MAGIC_NUMBER 0x1234
+#define VGA_MR0                         VGAREG_MR(0x00)
 
 static struct vga_info infos[] = {
     {80, 25, VGA_COLOR4, 160, 0},
@@ -326,7 +327,7 @@ static struct vga_monitormodetiming timings[] = {
     {85000, 1072, 1088, 1160, 1360, 768, 603, 607, 625, 0},
 };
 
-void vga_setregisters(unsigned char *registers, unsigned int ega)
+void vga_set_registers(unsigned char *registers, unsigned int ega)
 {
 
     unsigned int i;
@@ -336,31 +337,31 @@ void vga_setregisters(unsigned char *registers, unsigned int ega)
 
     }
 
-    io_outb(VGA_REGISTER_MISCWRITE, registers[VGA_MISCOUTPUT]);
+    io_outb(VGA_REGISTER_MISCWRITE, registers[VGA_MR_OFFSET]);
 
     outsr(0x00, 0x01);
-    outsr(0x01, registers[VGA_SEQUENCER_OFFSET + 1] | 0x20);
+    outsr(0x01, registers[VGA_SR_OFFSET + 1] | 0x20);
 
-    for (i = 2; i < VGA_SEQUENCER_COUNT; i++)
-        outsr(i, registers[VGA_SEQUENCER_OFFSET + i]);
+    for (i = 2; i < VGA_SR_COUNT; i++)
+        outsr(i, registers[VGA_SR_OFFSET + i]);
 
     outsr(0x00, 0x03);
 
     if (ega)
         outcrt1(0x11, incrt1(0x11) & 0x7f);
 
-    for (i = 0; i < VGA_CRTC_COUNT; i++)
-        outcrt1(i, registers[VGA_CRTC_OFFSET + i]);
+    for (i = 0; i < VGA_CR_COUNT; i++)
+        outcrt1(i, registers[VGA_CR_OFFSET + i]);
 
-    for (i = 0; i < VGA_GRAPHICS_COUNT; i++)
-        outgr(i, registers[VGA_GRAPHICS_OFFSET + i]);
+    for (i = 0; i < VGA_GR_COUNT; i++)
+        outgr(i, registers[VGA_GR_OFFSET + i]);
 
-    for (i = 0; i < VGA_ATC_COUNT; i++)
-        outar(i, registers[VGA_ATC_OFFSET + i]);
+    for (i = 0; i < VGA_AR_COUNT; i++)
+        outar(i, registers[VGA_AR_OFFSET + i]);
 
 }
 
-void vga_initregisters(unsigned char *registers, struct vga_modetiming *modetiming, struct vga_modeinfo *modeinfo)
+void vga_init_registers(unsigned char *registers, struct vga_modetiming *modetiming, struct vga_modeinfo *modeinfo)
 {
 
     int i;
@@ -368,13 +369,13 @@ void vga_initregisters(unsigned char *registers, struct vga_modetiming *modetimi
     if ((modetiming->flags & (PHSYNC | NHSYNC)) && (modetiming->flags & (PVSYNC | NVSYNC)))
     {
 
-        registers[VGA_MISCOUTPUT] = 0x23;
+        registers[VGA_MR0] = 0x23;
 
         if (modetiming->flags & NHSYNC)
-            registers[VGA_MISCOUTPUT] |= 0x40;
+            registers[VGA_MR0] |= 0x40;
 
         if (modetiming->flags & NVSYNC)
-            registers[VGA_MISCOUTPUT] |= 0x80;
+            registers[VGA_MR0] |= 0x80;
 
     }
 
@@ -382,13 +383,13 @@ void vga_initregisters(unsigned char *registers, struct vga_modetiming *modetimi
     {
 
         if (modetiming->VDisplay < 400)
-            registers[VGA_MISCOUTPUT] = 0xA3;
+            registers[VGA_MR0] = 0xA3;
         else if (modetiming->VDisplay < 480)
-            registers[VGA_MISCOUTPUT] = 0x63;
+            registers[VGA_MR0] = 0x63;
         else if (modetiming->VDisplay < 768)
-            registers[VGA_MISCOUTPUT] = 0xE3;
+            registers[VGA_MR0] = 0xE3;
         else
-            registers[VGA_MISCOUTPUT] = 0x23;
+            registers[VGA_MR0] = 0x23;
 
     }
 
@@ -494,7 +495,7 @@ static int findclock(int clock, struct vga_cardspecs *cardspecs)
             diff = -diff;
 
         if (diff * 1000 / clock < CLOCK_ALLOWANCE)
-            return PROGRAMMABLE_CLOCK_MAGIC_NUMBER;
+            return CLOCK_MAGIC;
 
     }
 
@@ -557,7 +558,7 @@ static struct vga_monitormodetiming *find_timing(struct vga_modeinfo *modeinfo, 
 
 }
 
-void vga_initmodetiming(struct vga_modetiming *modetiming, struct vga_modeinfo *modeinfo, struct vga_cardspecs *cardspecs)
+void vga_init_modetiming(struct vga_modetiming *modetiming, struct vga_modeinfo *modeinfo, struct vga_cardspecs *cardspecs)
 {
 
     struct vga_monitormodetiming *timing = find_timing(modeinfo, cardspecs);
@@ -571,7 +572,7 @@ void vga_initmodetiming(struct vga_modetiming *modetiming, struct vga_modeinfo *
     desiredclock = cardspecs->mapClock(modeinfo->bpp, timing->pixelClock);
     modetiming->selectedClockNo = findclock(desiredclock, cardspecs);
 
-    if (modetiming->selectedClockNo == PROGRAMMABLE_CLOCK_MAGIC_NUMBER)
+    if (modetiming->selectedClockNo == CLOCK_MAGIC)
     {
 
         modetiming->programmedClock = cardspecs->matchProgrammableClock(desiredclock);
@@ -645,7 +646,7 @@ void vga_initmodetiming(struct vga_modetiming *modetiming, struct vga_modeinfo *
 
 }
 
-void vga_initmodeinfo(struct vga_modeinfo *modeinfo, int mode)
+void vga_init_modeinfo(struct vga_modeinfo *modeinfo, int mode)
 {
 
     modeinfo->width = infos[mode].xdim;

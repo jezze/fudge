@@ -170,10 +170,10 @@ static void mode(struct base_device *device)
     cardspecs.maxHorizontalCrtc = 2040;
     cardspecs.maxPixelClock4bpp = 0;
 
-    vga_initmodeinfo(&modeinfo, 19);
-    vga_initmodetiming(&modetiming, &modeinfo, &cardspecs);
-    vga_initregisters(registers, &modetiming, &modeinfo);
-    vga_setregisters(registers, 0);
+    vga_init_modeinfo(&modeinfo, 19);
+    vga_init_modetiming(&modetiming, &modeinfo, &cardspecs);
+    vga_init_registers(registers, &modetiming, &modeinfo);
+    vga_set_registers(registers, 0);
 
 }
 

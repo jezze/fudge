@@ -125,12 +125,12 @@ static void mode(struct base_device *device)
 {
 
     io_inb(VGA_REGISTER_FCCCTRL);
-    io_outb(VGA_REGISTER_ARINDEX, 0x00);
+    io_outb(VGA_REGISTER_ARINDEX, VGA_ARINDEX_DISABLE);
 
-    vga_setregisters((unsigned char *)g320x200x256, 0);
+    vga_set_registers((unsigned char *)g320x200x256, 0);
 
     io_inb(VGA_REGISTER_FCCCTRL);
-    io_outb(VGA_REGISTER_ARINDEX, 0x20);
+    io_outb(VGA_REGISTER_ARINDEX, VGA_ARINDEX_ENABLE);
 
 }
 
