@@ -103,13 +103,3 @@
 
 #define I915_VGA_CONTROL_DISABLE        (0x01 << 31)
 #define I915_VGA_CONTROL_PIPE           (0x01 << 29)
-
-struct i915_driver
-{
-
-    struct base_driver base;
-    struct base_video_interface ivideo;
-
-};
-
-void i915_init_driver(struct i915_driver *driver);

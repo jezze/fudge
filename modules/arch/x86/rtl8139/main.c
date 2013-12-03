@@ -1,7 +1,7 @@
 #include <fudge/module.h>
 #include <base/base.h>
 #include <base/network.h>
-#include "rtl8139.h"
+#include "driver.h"
 
 static struct rtl8139_driver driver;
 

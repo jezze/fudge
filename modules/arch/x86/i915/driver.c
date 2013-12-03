@@ -4,6 +4,7 @@
 #include <arch/x86/pic/pic.h>
 #include <arch/x86/pci/pci.h>
 #include "i915.h"
+#include "driver.h"
 
 static unsigned int read(unsigned int reg)
 {

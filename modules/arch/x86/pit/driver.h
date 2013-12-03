@@ -1,6 +1,3 @@
-#define PIT_FREQUENCY                   1193182
-#define PIT_HERTZ                       1000
-
 struct pit_driver
 {
 

@@ -3,7 +3,7 @@
 #include <base/block.h>
 #include <arch/x86/ide/ide.h>
 #include <arch/x86/pic/pic.h>
-#include "ata.h"
+#include "driver.h"
 
 static void handle_irq(struct base_device *device)
 {

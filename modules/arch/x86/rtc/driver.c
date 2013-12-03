@@ -4,7 +4,7 @@
 #include <arch/x86/platform/platform.h>
 #include <arch/x86/pic/pic.h>
 #include <arch/x86/io/io.h>
-#include "rtc.h"
+#include "driver.h"
 
 enum rtc_register
 {

@@ -5,7 +5,7 @@
 #include <arch/x86/pic/pic.h>
 #include <arch/x86/io/io.h>
 #include <arch/x86/pci/pci.h>
-#include "rtl8139.h"
+#include "driver.h"
 
 #define RTL8139_PCI_VENDOR              0x10EC
 #define RTL8139_PCI_DEVICE              0x8139

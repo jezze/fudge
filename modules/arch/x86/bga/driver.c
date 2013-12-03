@@ -4,7 +4,7 @@
 #include <base/video.h>
 #include <arch/x86/io/io.h>
 #include <arch/x86/pci/pci.h>
-#include "bga.h"
+#include "driver.h"
 
 #define BGA_PCI_VENDOR                  0x1234
 #define BGA_PCI_DEVICE                  0x1111

@@ -1,7 +1,7 @@
 #include <fudge/module.h>
 #include <base/base.h>
 #include <base/terminal.h>
-#include "uart.h"
+#include "driver.h"
 
 static struct uart_driver driver;
 

@@ -4,7 +4,7 @@
 #include <base/video.h>
 #include <arch/x86/pci/pci.h>
 #include <arch/x86/vga/timing.h>
-#include "cirrus.h"
+#include "driver.h"
 
 #define CIRRUS_PCI_VENDOR               0x1013
 #define CIRRUS_PCI_DEVICE               0x00B8

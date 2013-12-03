@@ -1,7 +1,7 @@
 #include <fudge/module.h>
 #include <base/base.h>
 #include <base/block.h>
-#include "ata.h"
+#include "driver.h"
 
 static struct ata_driver driver;
 

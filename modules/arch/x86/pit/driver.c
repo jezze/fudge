@@ -6,7 +6,10 @@
 #include <arch/x86/pic/pic.h>
 #include <arch/x86/io/io.h>
 #include <arch/x86/platform/platform.h>
-#include "pit.h"
+#include "driver.h"
+
+#define PIT_FREQUENCY                   1193182
+#define PIT_HERTZ                       1000
 
 enum pit_register
 {

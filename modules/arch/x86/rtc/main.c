@@ -1,7 +1,7 @@
 #include <fudge/module.h>
 #include <base/base.h>
 #include <base/clock.h>
-#include "rtc.h"
+#include "driver.h"
 
 static struct rtc_driver driver;
 

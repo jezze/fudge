@@ -1,7 +1,7 @@
 #include <fudge/module.h>
 #include <base/base.h>
 #include <base/video.h>
-#include "bga.h"
+#include "driver.h"
 
 static struct bga_driver driver;
 

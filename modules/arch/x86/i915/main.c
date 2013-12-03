@@ -2,6 +2,7 @@
 #include <base/base.h>
 #include <base/video.h>
 #include "i915.h"
+#include "driver.h"
 
 static struct i915_driver driver;
 

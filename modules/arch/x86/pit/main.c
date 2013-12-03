@@ -3,7 +3,7 @@
 #include <kernel/kernel.h>
 #include <base/base.h>
 #include <base/timer.h>
-#include "pit.h"
+#include "driver.h"
 
 static struct pit_driver driver;
 

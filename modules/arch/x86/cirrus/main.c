@@ -2,7 +2,7 @@
 #include <base/base.h>
 #include <base/terminal.h>
 #include <base/video.h>
-#include "cirrus.h"
+#include "driver.h"
 
 static struct cirrus_driver driver;
 
