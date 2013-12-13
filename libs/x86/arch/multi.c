@@ -53,7 +53,7 @@ static struct multi_task *find_next_task()
 
 }
 
-static struct multi_task *find_free_task()
+static unsigned int find_free_task()
 {
 
     unsigned int i;
@@ -64,13 +64,21 @@ static struct multi_task *find_free_task()
         if (tasks[i].base.state & TASK_STATE_USED)
             continue;
 
-        tasks[i].index = i;
-
-        return &tasks[i];
+        return i;
 
     }
 
     return 0;
+
+}
+
+static void init_task(struct multi_task *task, unsigned int index)
+{
+
+    memory_clear(task, sizeof (struct multi_task));
+    task_init(&task->base, 0, TASK_STACKLIMIT, TASK_STACKLIMIT);
+
+    task->index = index;
 
 }
 
@@ -118,6 +126,8 @@ struct task *multi_schedule(struct task *running, struct cpu_general *general, s
     current->base.registers.sp = interrupt->esp;
     current->base.registers.fp = general->ebp;
     current->base.status = general->eax;
+
+    /* For C compatibility - REMOVE LATER */
     current->registers.ebx = general->ebx;
     current->registers.esi = general->esi;
     current->registers.edi = general->edi;
@@ -128,6 +138,8 @@ struct task *multi_schedule(struct task *running, struct cpu_general *general, s
     interrupt->esp = task->base.registers.sp;
     general->ebp = task->base.registers.fp;
     general->eax = task->base.status;
+
+    /* For C compatibility - REMOVE LATER */
     general->ebx = task->registers.ebx;
     general->esi = task->registers.esi;
     general->edi = task->registers.edi;
@@ -140,21 +152,20 @@ static unsigned int spawn(struct container *self, struct task *task, void *stack
 {
 
     struct parameters {void *caller; unsigned int index;} temp, *args = stack;
-    struct multi_task *parent = (struct multi_task *)task;
-    struct multi_task *child = find_free_task();
+    unsigned int c = find_free_task();
 
-    if (!child)
+    if (!c)
         return 0;
 
     memory_copy(&temp, args, sizeof (struct parameters));
 
-    task_init(&child->base, 0, TASK_STACKLIMIT, TASK_STACKLIMIT);
-    map_kernel(child);
-    mmu_load(&directories[child->index]);
+    init_task(&tasks[c], c);
+    map_kernel(&tasks[c]);
+    mmu_load(&directories[c]);
 
-    memory_copy(child->base.descriptors, parent->base.descriptors, sizeof (struct task_descriptor) * TASK_DESCRIPTORS);
+    memory_copy(tasks[c].base.descriptors, task->descriptors, sizeof (struct task_descriptor) * TASK_DESCRIPTORS);
 
-    child->base.status = self->calls[CONTAINER_CALL_EXECUTE](self, &child->base, &temp);
+    tasks[c].base.status = self->calls[CONTAINER_CALL_EXECUTE](self, &tasks[c].base, &temp);
 
     return 0;
 
@@ -163,13 +174,13 @@ static unsigned int spawn(struct container *self, struct task *task, void *stack
 struct task *multi_setup(struct container *container)
 {
 
-    struct multi_task *task = find_free_task();
+    struct multi_task *task = &tasks[1];
 
     container->calls[CONTAINER_CALL_SPAWN] = spawn;
 
-    task_init(&task->base, 0, TASK_STACKLIMIT, TASK_STACKLIMIT);
+    init_task(task, 1);
     map_kernel(task);
-    mmu_load(&directories[task->index]);
+    mmu_load(&directories[1]);
     mmu_enable();
 
     return &task->base;
