@@ -230,7 +230,7 @@ static void poll()
     for (;;)
     {
 
-        count = call_read(CALL_I0, 0, FUDGE_BSIZE, buffer);
+        while (!(count = call_read(CALL_I0, 0, FUDGE_BSIZE, buffer)));
 
         for (i = 0; i < count; i++)
             handle(&input, buffer[i]);
