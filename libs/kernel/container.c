@@ -255,7 +255,7 @@ static unsigned int execute(struct container *self, struct task *task, void *sta
 static unsigned int exit(struct container *self, struct task *task, void *stack)
 {
 
-    task->state &= ~TASK_STATE_USED;
+    task->state = 0;
     task->registers.ip = 0;
     task->registers.sp = 0;
     task->registers.fp = 0;
