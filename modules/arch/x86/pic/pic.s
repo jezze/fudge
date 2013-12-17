@@ -126,8 +126,8 @@ pic_common:
     movw %ax, %es
     movw %ax, %fs
     movw %ax, %gs
-    addl $4,%esp
+    addl $4, %esp
     popa
-    addl $8,%esp
+    addl $8, %esp
     iret
 
