@@ -125,7 +125,6 @@ struct task *multi_schedule(struct task *running, struct cpu_general *general, s
     current->base.registers.ip = interrupt->eip;
     current->base.registers.sp = interrupt->esp;
     current->base.registers.fp = general->ebp;
-    current->base.status = general->eax;
 
     /* For C compatibility - REMOVE LATER */
     current->registers.ebx = general->ebx;
@@ -137,7 +136,6 @@ struct task *multi_schedule(struct task *running, struct cpu_general *general, s
     interrupt->eip = task->base.registers.ip;
     interrupt->esp = task->base.registers.sp;
     general->ebp = task->base.registers.fp;
-    general->eax = task->base.status;
 
     /* For C compatibility - REMOVE LATER */
     general->ebx = task->registers.ebx;
@@ -165,9 +163,7 @@ static unsigned int spawn(struct container *self, struct task *task, void *stack
 
     memory_copy(tasks[c].base.descriptors, task->descriptors, sizeof (struct task_descriptor) * TASK_DESCRIPTORS);
 
-    tasks[c].base.status = self->calls[CONTAINER_CALL_EXECUTE](self, &tasks[c].base, &temp);
-
-    return 0;
+    return self->calls[CONTAINER_CALL_EXECUTE](self, &tasks[c].base, &temp);
 
 }
 

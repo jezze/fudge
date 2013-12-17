@@ -259,7 +259,6 @@ static unsigned int exit(struct container *self, struct task *task, void *stack)
     task->registers.ip = 0;
     task->registers.sp = 0;
     task->registers.fp = 0;
-    task->status = 0;
 
     return task->state;
 
