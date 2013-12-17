@@ -27,7 +27,7 @@ static struct multi_task
 
     struct task base;
     unsigned int index;
-    struct {unsigned int ebx; unsigned int esi; unsigned int edi;} registers;
+    struct cpu_general registers;
 
 } tasks[TASKS];
 
@@ -124,23 +124,17 @@ struct task *multi_schedule(struct task *running, struct cpu_general *general, s
 
     current->base.registers.ip = interrupt->eip;
     current->base.registers.sp = interrupt->esp;
-    current->base.registers.fp = general->ebp;
 
-    /* For C compatibility - REMOVE LATER */
-    current->registers.ebx = general->ebx;
-    current->registers.esi = general->esi;
-    current->registers.edi = general->edi;
+    /* For safety - REMOVE LATER */
+    memory_copy(&current->registers, general, sizeof (struct cpu_general));
 
     mmu_load(&directories[task->index]);
 
+    /* For safety - REMOVE LATER */
+    memory_copy(general, &task->registers, sizeof (struct cpu_general));
+
     interrupt->eip = task->base.registers.ip;
     interrupt->esp = task->base.registers.sp;
-    general->ebp = task->base.registers.fp;
-
-    /* For C compatibility - REMOVE LATER */
-    general->ebx = task->registers.ebx;
-    general->esi = task->registers.esi;
-    general->edi = task->registers.edi;
 
     return &task->base;
 
