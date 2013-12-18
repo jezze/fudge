@@ -21,7 +21,7 @@ struct system_node
     struct list_item item;
     struct system_node *parent;
     enum system_nodetype type;
-    char *name;
+    const char *name;
     unsigned int (*open)(struct system_node *self);
     unsigned int (*close)(struct system_node *self);
     unsigned int (*read)(struct system_node *self, unsigned int offset, unsigned int count, void *buffer);
