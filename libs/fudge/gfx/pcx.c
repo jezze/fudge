@@ -25,16 +25,14 @@ static unsigned int read(struct gfx_surface *self, unsigned int offset, unsigned
     unsigned int width = surface->header.xend - surface->header.xstart + 1;
     unsigned int rindex = 0;
     unsigned int oindex = 0;
-    unsigned int repeat;
-    unsigned char current;
 
     call_read(surface->id, offset + 128, count, raw);
 
     do
     {
 
-        repeat = 1;
-        current = raw[rindex];
+        unsigned int repeat = 1;
+        unsigned char current = raw[rindex];
         rindex++;
 
         if ((current & 0xC0) == 0xC0)

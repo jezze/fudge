@@ -89,7 +89,6 @@ static void complete(struct lifo_stack *stack)
     unsigned int count;
     unsigned int offset = stack->head;
     unsigned int offset2 = stack->head;
-    unsigned int i;
 
     call_open(CALL_L0, CALL_I0, 0, 0);
     call_open(CALL_L1, CALL_O0, 0, 0);
@@ -157,6 +156,7 @@ static void complete(struct lifo_stack *stack)
     {
 
         unsigned int head = stack->head;
+        unsigned int i;
 
         for (i = stack->head - offset2; i < count - 1; i++)
             lifo_stack_push(stack, buffer[i]);
@@ -221,16 +221,15 @@ static void poll()
 {
 
     struct lifo_stack input;
-    unsigned char buffer[FUDGE_BSIZE];
-    unsigned int count;
-    unsigned int i;
 
     lifo_stack_clear(&input);
 
     for (;;)
     {
 
-        while (!(count = call_read(CALL_I0, 0, FUDGE_BSIZE, buffer)));
+        unsigned char buffer[FUDGE_BSIZE];
+        unsigned int count = call_read(CALL_I0, 0, FUDGE_BSIZE, buffer);
+        unsigned int i;
 
         for (i = 0; i < count; i++)
             handle(&input, buffer[i]);
