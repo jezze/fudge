@@ -103,9 +103,6 @@ void multi_map(unsigned int address)
 
     struct multi_task *task = find_next_task();
 
-    if (!task)
-        return;
-
     map_user(task, address);
 
 }
@@ -115,9 +112,6 @@ struct task *multi_schedule(struct task *running, struct cpu_general *general, s
 
     struct multi_task *current = (struct multi_task *)running;
     struct multi_task *task = find_next_task();
-
-    if (!task)
-        return running;
 
     if (current == task)
         return running;
