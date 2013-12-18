@@ -145,7 +145,7 @@ unsigned int walk_group(struct system_node *self, unsigned int count, const char
 
 }
 
-static void system_init_node(struct system_node *node, unsigned int type, char *name)
+static void system_init_node(struct system_node *node, unsigned int type, const char *name)
 {
 
     memory_clear(node, sizeof (struct system_node));
@@ -161,7 +161,7 @@ static void system_init_node(struct system_node *node, unsigned int type, char *
 
 }
 
-void system_init_group(struct system_group *group, char *name)
+void system_init_group(struct system_group *group, const char *name)
 {
 
     memory_clear(group, sizeof (struct system_group));
@@ -173,7 +173,7 @@ void system_init_group(struct system_group *group, char *name)
 
 }
 
-void system_init_stream(struct system_stream *stream, char *name)
+void system_init_stream(struct system_stream *stream, const char *name)
 {
 
     memory_clear(stream, sizeof (struct system_stream));

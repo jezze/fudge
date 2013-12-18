@@ -49,5 +49,5 @@ void system_group_add(struct system_group *group, struct system_node *node);
 void system_group_remove(struct system_group *group, struct system_node *node);
 void system_register_node(struct system_node *node);
 void system_unregister_node(struct system_node *node);
-void system_init_group(struct system_group *group, char *name);
-void system_init_stream(struct system_stream *stream, char *name);
+void system_init_group(struct system_group *group, const char *name);
+void system_init_stream(struct system_stream *stream, const char *name);
