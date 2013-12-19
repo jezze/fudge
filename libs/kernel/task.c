@@ -2,7 +2,7 @@
 #include "vfs.h"
 #include "task.h"
 
-void task_init(struct task *task, unsigned int ip, unsigned int sp, unsigned int fp)
+void task_init(struct task *task, unsigned int ip, unsigned int sp)
 {
 
     memory_clear(task, sizeof (struct task));
@@ -10,7 +10,6 @@ void task_init(struct task *task, unsigned int ip, unsigned int sp, unsigned int
     task->state = TASK_STATE_USED;
     task->registers.ip = ip;
     task->registers.sp = sp;
-    task->registers.fp = fp;
 
 }
 

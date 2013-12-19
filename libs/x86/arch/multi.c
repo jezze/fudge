@@ -76,7 +76,7 @@ static void init_task(struct multi_task *task, unsigned int index)
 {
 
     memory_clear(task, sizeof (struct multi_task));
-    task_init(&task->base, 0, TASK_STACKLIMIT, TASK_STACKLIMIT);
+    task_init(&task->base, 0, TASK_STACKLIMIT);
 
     task->index = index;
 
