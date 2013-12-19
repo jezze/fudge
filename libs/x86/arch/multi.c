@@ -21,11 +21,15 @@ static struct mmu_directory *directories = (struct mmu_directory *)ARCH_DIRECTOR
 static struct mmu_table *kcode = (struct mmu_table *)ARCH_TABLE_KCODE_BASE;
 static struct mmu_table *ucode = (struct mmu_table *)ARCH_TABLE_UCODE_BASE;
 static struct mmu_table *ustack = (struct mmu_table *)ARCH_TABLE_USTACK_BASE;
+static struct list active;
+static struct list blocked;
+static struct list free;
 
 static struct multi_task
 {
 
     struct task base;
+    struct list_item item;
     unsigned int index;
     struct cpu_general registers;
 
@@ -76,7 +80,8 @@ static void init_task(struct multi_task *task, unsigned int index)
 {
 
     memory_clear(task, sizeof (struct multi_task));
-    task_init(&task->base, 0, TASK_STACKLIMIT);
+    task_init(&task->base, 0, 0, TASK_STACKLIMIT);
+    list_init_item(&task->item, task);
 
     task->index = index;
 
@@ -147,6 +152,9 @@ static unsigned int spawn(struct container *self, struct task *task, void *stack
     memory_copy(&temp, args, sizeof (struct parameters));
 
     init_task(&tasks[c], c);
+
+    tasks[c].base.state = TASK_STATE_USED;
+
     map_kernel(&tasks[c]);
     mmu_load(&directories[c]);
 
@@ -159,16 +167,29 @@ static unsigned int spawn(struct container *self, struct task *task, void *stack
 struct task *multi_setup(struct container *container)
 {
 
-    struct multi_task *task = &tasks[1];
+    unsigned int i;
 
     container->calls[CONTAINER_CALL_SPAWN] = spawn;
 
-    init_task(task, 1);
-    map_kernel(task);
+    list_init(&active);
+    list_init(&blocked);
+    list_init(&free);
+
+    for (i = 1; i < TASKS; i++)
+    {
+
+        init_task(&tasks[i], i);
+        list_add(&free, &tasks[i].item);
+
+    }
+
+    tasks[1].base.state = TASK_STATE_USED;
+
+    map_kernel(&tasks[1]);
     mmu_load(&directories[1]);
     mmu_enable();
 
-    return &task->base;
+    return &tasks[1].base;
 
 }
 

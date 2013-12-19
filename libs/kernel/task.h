@@ -26,4 +26,4 @@ struct task
 
 };
 
-void task_init(struct task *task, unsigned int ip, unsigned int sp);
+void task_init(struct task *task, enum task_state state, unsigned int ip, unsigned int sp);
