@@ -53,12 +53,12 @@ static struct multi_task *find_next_task()
 
 }
 
-static unsigned int find_free_task()
+static unsigned int find_free_task(struct multi_task *task)
 {
 
     unsigned int i;
 
-    for (i = 1; i < TASKS; i++)
+    for (i = task->index; i < TASKS; i++)
     {
 
         if (tasks[i].base.state & TASK_STATE_USED)
@@ -138,7 +138,8 @@ static unsigned int spawn(struct container *self, struct task *task, void *stack
 {
 
     struct parameters {void *caller; unsigned int index;} temp, *args = stack;
-    unsigned int c = find_free_task();
+    struct multi_task *current = (struct multi_task *)task;
+    unsigned int c = find_free_task(current);
 
     if (!c)
         return 0;
