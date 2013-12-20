@@ -21,6 +21,17 @@ void memory_copy(void *out, const void *in, unsigned int count)
 
 }
 
+unsigned int memory_findzero(const char *in)
+{
+
+    unsigned int offset;
+
+    for (offset = 0; in[offset]; offset++);
+
+    return offset;
+
+}
+
 unsigned int memory_findbyte(const void *in, unsigned int count, char value)
 {
 

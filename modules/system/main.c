@@ -92,7 +92,7 @@ static unsigned int read_group(struct system_node *self, unsigned int offset, un
     {
 
         struct system_node *node = current->self;
-        unsigned int l = string_length(node->name);
+        unsigned int l = memory_findzero(node->name);
 
         c += memory_read(b + c, count - c, node->name, l, offset);
         offset -= (offset > l) ? l : offset;
@@ -132,7 +132,7 @@ unsigned int walk_group(struct system_node *self, unsigned int count, const char
     {
 
         struct system_node *node = current->self;
-        unsigned int l = string_length(node->name);
+        unsigned int l = memory_findzero(node->name);
 
         if (!memory_match(node->name, path, l))
             continue;

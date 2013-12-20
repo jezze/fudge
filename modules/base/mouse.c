@@ -36,7 +36,7 @@ static unsigned int control_read(struct system_node *self, unsigned int offset, 
 
     struct session_node *node = (struct session_node *)self->parent;
 
-    return memory_read(buffer, count, node->name, string_length(node->name), offset);
+    return memory_read(buffer, count, node->name, memory_findzero(node->name), offset);
 
 }
 

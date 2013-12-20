@@ -95,15 +95,17 @@ static unsigned int resolve_symbols(unsigned int id, struct elf_section_header *
         unsigned int address;
         unsigned int value;
         char *symbol;
+        unsigned int count;
 
         if (symbols[index].shindex)
             continue;
 
         symbol = strings + symbols[index].name;
-        address = find_symbol_kernel(string_length(symbol), symbol);
+        count = memory_findzero(symbol);
+        address = find_symbol_kernel(count, symbol);
 
         if (!address)
-            address = find_symbol_module(string_length(symbol), symbol);
+            address = find_symbol_module(count, symbol);
 
         if (!address)
             return 0;
