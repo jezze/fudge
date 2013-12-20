@@ -82,6 +82,7 @@ static unsigned int write(struct vfs_backend *backend, unsigned int id, unsigned
 void system_init_protocol(struct vfs_protocol *protocol)
 {
 
+    memory_clear(protocol, sizeof (struct vfs_protocol));
     vfs_init_protocol(protocol, match, root, open, close, read, write, parent, walk, 0);
 
 }
