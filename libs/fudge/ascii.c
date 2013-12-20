@@ -29,9 +29,9 @@ unsigned int ascii_fromint(char *out, unsigned int count, unsigned int value, un
     if (current)
         i = ascii_fromint(out, count - 1, current, base);
 
-    out[i++] = "0123456789abcdef"[value % base];
+    out[i] = "0123456789abcdef"[value % base];
 
-    return i;
+    return ++i;
 
 }
 

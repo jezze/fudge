@@ -1,23 +1,6 @@
 #include <fudge.h>
 #include <format/elf.h>
 
-static unsigned int find(const void *in, unsigned int count, char x)
-{
-
-    const char *ip;
-
-    for (ip = in; count--; ip++)
-    {
-
-        if (*ip == x)
-            return (unsigned int)(ip - (char *)in);
-
-    }
-
-    return 0;
-
-}
-
 static unsigned int find_symbol(unsigned int id, unsigned int count, char *symbol)
 {
 
@@ -84,7 +67,7 @@ static unsigned int find_symbol_kernel(unsigned int count, char *symbol)
 static unsigned int find_symbol_module(unsigned int count, char *symbol)
 {
 
-    unsigned int length = find(symbol, count, '_');
+    unsigned int length = memory_findbyte(symbol, count, '_');
     unsigned int offset = 0;
     unsigned int address;
     char module[64];
