@@ -5,7 +5,7 @@ void memory_clear(void *out, unsigned int count)
 
     char *op = out;
 
-    for (; count; count--)
+    while (count--)
         *op++ = 0;
 
 }
@@ -16,7 +16,7 @@ void memory_copy(void *out, const void *in, unsigned int count)
     char *op = out;
     const char *ip = in;
 
-    for (; count; count--)
+    while (count--)
         *op++ = *ip++;
 
 }
@@ -39,7 +39,7 @@ unsigned int memory_match(const void *in1, const void *in2, unsigned int count)
     const char *ip1 = in1;
     const char *ip2 = in2;
 
-    for (; count; count--)
+    while (count--)
     {
 
         if (*ip1++ != *ip2++)
