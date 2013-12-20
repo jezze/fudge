@@ -1,3 +1,4 @@
+unsigned int ascii_length(const char *in);
 unsigned int ascii_toint(unsigned char c);
 unsigned int ascii_fromint(char *out, unsigned int count, unsigned int value, unsigned int base);
 unsigned int ascii_read_value(const char *in, unsigned int count, unsigned int base);

@@ -37,7 +37,7 @@ static unsigned int control_read(struct system_node *self, unsigned int offset, 
 
     struct session_node *node = (struct session_node *)self->parent;
 
-    return memory_read(buffer, count, node->name, memory_findzero(node->name), offset);
+    return memory_read(buffer, count, node->name, ascii_length(node->name), offset);
 
 }
 
@@ -153,7 +153,7 @@ static unsigned int info_read(struct system_node *self, unsigned int offset, uns
     unsigned int c = 0;
 
     c += memory_write(info, 256, "driver: ", 8, c);
-    c += memory_write(info, 256, node->device->driver->module.name, memory_findzero(node->device->driver->module.name), c);
+    c += memory_write(info, 256, node->device->driver->module.name, ascii_length(node->device->driver->module.name), c);
     c += memory_write(info, 256, "\n", 1, c);
 
     return memory_read(buffer, count, info, c, offset);

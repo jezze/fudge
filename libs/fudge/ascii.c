@@ -1,6 +1,17 @@
 #include "memory.h"
 #include "ascii.h"
 
+unsigned int ascii_length(const char *in)
+{
+
+    unsigned int offset;
+
+    for (offset = 0; in[offset]; offset++);
+
+    return offset;
+
+}
+
 unsigned int ascii_toint(unsigned char c)
 {
 

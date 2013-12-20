@@ -91,7 +91,7 @@ static unsigned int control_read(struct system_node *self, unsigned int offset, 
 
     struct pipe_session *session = (struct pipe_session *)self->parent;
 
-    return memory_read(buffer, count, session->name, memory_findzero(session->name), offset);
+    return memory_read(buffer, count, session->name, ascii_length(session->name), offset);
 
 }
 

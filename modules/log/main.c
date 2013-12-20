@@ -38,7 +38,7 @@ unsigned int log_write_number(unsigned int number, unsigned int base)
 unsigned int log_write_string(char *buffer)
 {
 
-    return log_write(memory_findzero(buffer), buffer);
+    return log_write(ascii_length(buffer), buffer);
 
 }
 

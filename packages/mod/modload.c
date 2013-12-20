@@ -101,7 +101,7 @@ static unsigned int resolve_symbols(unsigned int id, struct elf_section_header *
             continue;
 
         symbol = strings + symbols[index].name;
-        count = memory_findzero(symbol);
+        count = ascii_length(symbol);
         address = find_symbol_kernel(count, symbol);
 
         if (!address)
