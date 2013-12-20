@@ -192,6 +192,7 @@ void init()
 {
 
     system_init_backend(&backend);
+    vfs_register_backend(&backend.base);
     system_init_protocol(&protocol);
     vfs_register_protocol(&protocol);
 
