@@ -115,7 +115,7 @@ static unsigned int read(struct vfs_backend *backend, unsigned int id, unsigned 
     if (header->typeflag[0] == TAR_TYPEFLAG_REGULAR)
     {
 
-        unsigned int size = ascii_read_value(header->size, memory_findbyte(header->size, 12, '\0'), 8) - offset;
+        unsigned int size = tar_readvalue(header->size) - offset;
 
         return backend->read(backend, address + TAR_BLOCK_SIZE + offset, (count > size) ? size : count, buffer);
 
@@ -173,7 +173,7 @@ static unsigned int write(struct vfs_backend *backend, unsigned int id, unsigned
     if (header->typeflag[0] == TAR_TYPEFLAG_REGULAR)
     {
 
-        unsigned int size = ascii_read_value(header->size, memory_findbyte(header->size, 12, '\0'), 8) - offset;
+        unsigned int size = tar_readvalue(header->size) - offset;
 
         return backend->write(backend, address + TAR_BLOCK_SIZE + offset, (count > size) ? size : count, buffer);
 

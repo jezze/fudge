@@ -2,11 +2,18 @@
 #include "../memory.h"
 #include "tar.h"
 
+unsigned int tar_readvalue(char *attribute)
+{
+
+    return ascii_read_value(attribute, memory_findzero(attribute), 8);
+
+}
+
 unsigned int tar_validate(void *buffer)
 {
 
     struct tar_header *header = buffer;
-    unsigned int checksum = ascii_read_value(header->checksum, memory_findbyte(header->checksum, 8, '\0'), 8);
+    unsigned int checksum = tar_readvalue(header->checksum);
     unsigned char *address = buffer;
     unsigned int i = 0;
 
@@ -26,7 +33,7 @@ unsigned int tar_validate(void *buffer)
 unsigned int tar_next(struct tar_header *header, unsigned int offset)
 {
 
-    unsigned int size = ascii_read_value(header->size, memory_findbyte(header->size, 12, '\0'), 8);
+    unsigned int size = tar_readvalue(header->size);
 
     return offset + ((size / TAR_BLOCK_SIZE) + ((size % TAR_BLOCK_SIZE) ? 2 : 1)) * TAR_BLOCK_SIZE;
 
