@@ -1,22 +1,5 @@
 #include <fudge.h>
 
-static unsigned int nextline(unsigned int offset, unsigned int count, unsigned char *buffer)
-{
-
-    unsigned int i;
-
-    for (i = offset; i < count; i++)
-    {
-
-        if (buffer[i] == '\n')
-            return i - offset + 1;
-
-    }
-
-    return 0;
-
-}
-
 void main()
 {
 
@@ -40,13 +23,24 @@ void main()
 
         unsigned int count2;
 
-        for (loff = 0; (count2 = nextline(loff, count, buffer)); loff += count2)
+        for (loff = 0; (count2 = memory_findbyte(buffer + loff, count - loff, '\n')); loff += count2 + 1)
         {
 
             if (++lines <= total)
+            {
+
                 woff0 += call_write(CALL_O0, woff0, count2, buffer + loff);
+                woff0 += call_write(CALL_O0, woff0, 1, "\n");
+
+            }
+
             else
+            {
+
                 woff1 += call_write(CALL_O1, woff1, count2, buffer + loff);
+                woff1 += call_write(CALL_O1, woff1, 1, "\n");
+
+            }
 
         }
 
