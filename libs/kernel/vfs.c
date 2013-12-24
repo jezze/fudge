@@ -7,17 +7,9 @@ static struct list protocols;
 unsigned int vfs_findnext(unsigned int count, const char *path)
 {
 
-    unsigned int i;
+    unsigned int offset = memory_findbyte(path, count, '/');
 
-    for (i = 0; i < count; i++)
-    {
-
-        if (path[i] == '/')
-            return i + 1;
-
-    }
-
-    return count;
+    return offset == count ? offset : offset + 1;
 
 }
 
