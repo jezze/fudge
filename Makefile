@@ -15,7 +15,7 @@ CFLAGS_arm:=
 LDFLAGS_ARM:=
 
 ASFLAGS:=$(ASFLAGS_$(ARCH))
-CFLAGS:=-Wall -Werror -ffreestanding -nostdlib -std=c89 -pedantic -O2 $(CFLAGS_$(ARCH))
+CFLAGS:=-Wall -Werror -ffreestanding -nostdlib -mno-red-zone -std=c89 -pedantic -O2 $(CFLAGS_$(ARCH))
 LDFLAGS:=$(LDFLAGS_$(ARCH))
 ARFLAGS:=rs
 
