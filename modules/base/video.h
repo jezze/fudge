@@ -1,6 +1,7 @@
 struct base_video_interface
 {
 
+    struct base_interface base;
     unsigned int bpp;
     unsigned int xres;
     unsigned int yres;

@@ -1,6 +1,7 @@
 struct base_block_interface
 {
 
+    struct base_interface base;
     unsigned int (*read)(struct base_device *device, unsigned int offset, unsigned int count, void *buffer);
     unsigned int (*write)(struct base_device *device, unsigned int offset, unsigned int count, void *buffer);
 

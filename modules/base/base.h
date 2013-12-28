@@ -49,6 +49,20 @@ struct base_driver
 
 };
 
+enum base_interface_type
+{
+
+    BASE_INTERFACE_TYPE_OTHER           = 0xFF
+
+};
+
+struct base_interface
+{
+
+    unsigned int type;
+
+};
+
 void base_register_bus(struct base_bus *bus);
 void base_register_device(struct base_device *device);
 void base_register_driver(struct base_driver *driver);
@@ -58,3 +72,4 @@ void base_unregister_driver(struct base_driver *driver);
 void base_init_bus(struct base_bus *bus, unsigned int type, const char *name, void (*scan)(struct base_bus *self));
 void base_init_device(struct base_device *device, unsigned int type, unsigned int irq, const char *name, struct base_bus *bus);
 void base_init_driver(struct base_driver *driver, const char *name, unsigned int (*check)(struct base_device *device), void (*attach)(struct base_device *device));
+void base_init_interface(struct base_interface *interface, unsigned int type);

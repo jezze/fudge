@@ -1,6 +1,7 @@
 struct base_clock_interface
 {
 
+    struct base_interface base;
     unsigned char (*get_seconds)(struct base_device *device);
     unsigned char (*get_minutes)(struct base_device *device);
     unsigned char (*get_hours)(struct base_device *device);

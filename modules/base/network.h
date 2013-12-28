@@ -1,6 +1,7 @@
 struct base_network_interface
 {
 
+    struct base_interface base;
     unsigned int (*receive)(struct base_device *device, unsigned int count, void *buffer);
     unsigned int (*send)(struct base_device *device, unsigned int count, void *buffer);
     unsigned char mac[6];

@@ -1,7 +1,8 @@
 struct base_timer_interface
 {
 
-    unsigned short jiffies;
+    struct base_interface base;
+    unsigned int jiffies;
     void (*add_duration)(struct base_device *device, unsigned int duration);
 
 };

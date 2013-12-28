@@ -122,6 +122,15 @@ void base_init_driver(struct base_driver *driver, const char *name, unsigned int
 
 }
 
+void base_init_interface(struct base_interface *interface, unsigned int type)
+{
+
+    memory_clear(interface, sizeof (struct base_interface));
+
+    interface->type = type;
+
+}
+
 void init()
 {
 

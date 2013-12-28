@@ -179,6 +179,7 @@ void base_timer_init_interface(struct base_timer_interface *interface, void (*ad
 {
 
     memory_clear(interface, sizeof (struct base_timer_interface));
+    base_init_interface(&interface->base, BASE_INTERFACE_TYPE_OTHER);
 
     interface->add_duration = add_duration;
 

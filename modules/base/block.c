@@ -66,6 +66,7 @@ void base_block_init_interface(struct base_block_interface *interface, unsigned 
 {
 
     memory_clear(interface, sizeof (struct base_block_interface));
+    base_init_interface(&interface->base, BASE_INTERFACE_TYPE_OTHER);
 
     interface->read = read;
     interface->write = write;
