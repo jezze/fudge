@@ -21,9 +21,9 @@ struct task
 {
 
     enum task_state state;
-    struct {unsigned int ip; unsigned int sp;} registers;
+    struct {unsigned long ip; unsigned long sp;} registers;
     struct task_descriptor descriptors[TASK_DESCRIPTORS];
 
 };
 
-void task_init(struct task *task, enum task_state state, unsigned int ip, unsigned int sp);
+void task_init(struct task *task, enum task_state state, unsigned long ip, unsigned long sp);

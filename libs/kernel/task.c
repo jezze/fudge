@@ -2,7 +2,7 @@
 #include "vfs.h"
 #include "task.h"
 
-void task_init(struct task *task, enum task_state state, unsigned int ip, unsigned int sp)
+void task_init(struct task *task, enum task_state state, unsigned long ip, unsigned long sp)
 {
 
     memory_clear(task, sizeof (struct task));

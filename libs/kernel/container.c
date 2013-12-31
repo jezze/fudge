@@ -269,7 +269,7 @@ static unsigned int load(struct container *self, struct task *task, void *stack)
     struct {void *caller; unsigned int index;} *args = stack;
     struct task_descriptor *descriptor = get_descriptor(task, args->index);
     struct binary_protocol *protocol;
-    unsigned int physical;
+    unsigned long physical;
     void (*init)();
 
     if (!descriptor)
