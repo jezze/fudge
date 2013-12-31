@@ -14,7 +14,7 @@ static unsigned int match(struct vfs_session *session, unsigned int id)
 
 }
 
-static unsigned int find_symbol(struct vfs_session *session, unsigned int id, unsigned int count, const char *symbol)
+static unsigned long find_symbol(struct vfs_session *session, unsigned int id, unsigned int count, const char *symbol)
 {
 
     struct elf_header header;
@@ -33,7 +33,7 @@ static unsigned int find_symbol(struct vfs_session *session, unsigned int id, un
 
         struct elf_symbol symbols[1024];
         char strings[4096];
-        unsigned int address;
+        unsigned long address;
         struct elf_section_header *symbolheader;
         struct elf_section_header *stringheader;
 
@@ -63,7 +63,7 @@ static unsigned int find_symbol(struct vfs_session *session, unsigned int id, un
 
 }
 
-static unsigned int copy_program(struct vfs_session *session, unsigned int id)
+static unsigned long copy_program(struct vfs_session *session, unsigned int id)
 {
 
     struct elf_header header;

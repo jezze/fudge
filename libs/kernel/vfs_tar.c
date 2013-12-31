@@ -77,14 +77,14 @@ static unsigned int match(struct vfs_backend *backend)
 
 }
 
-static unsigned int get_physical(struct vfs_backend *backend, unsigned int id)
+static unsigned long get_physical(struct vfs_backend *backend, unsigned int id)
 {
 
     /* TEMPORARY FIX */
 
     struct kernel_module *module = (struct kernel_module *)backend;
 
-    return (unsigned int)module->address + decode(id) + TAR_BLOCK_SIZE;
+    return (unsigned long)module->address + decode(id) + TAR_BLOCK_SIZE;
 
 }
 

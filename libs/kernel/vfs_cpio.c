@@ -113,7 +113,7 @@ static unsigned int match(struct vfs_backend *backend)
 
 }
 
-static unsigned int get_physical(struct vfs_backend *backend, unsigned int id)
+static unsigned long get_physical(struct vfs_backend *backend, unsigned int id)
 {
 
     /* TEMPORARY FIX */
@@ -125,7 +125,7 @@ static unsigned int get_physical(struct vfs_backend *backend, unsigned int id)
     if (backend->read(backend, address, sizeof (struct cpio_header), &header) < sizeof (struct cpio_header))
         return 0;
 
-    return (unsigned int)module->address + address + sizeof (struct cpio_header) + header.namesize + (header.namesize & 1);
+    return (unsigned long)module->address + address + sizeof (struct cpio_header) + header.namesize + (header.namesize & 1);
 
 }
 

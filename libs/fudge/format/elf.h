@@ -77,9 +77,9 @@ struct elf_header
     unsigned short type;
     unsigned short machine;
     unsigned int version;
-    unsigned int entry;
-    unsigned int phoffset;
-    unsigned int shoffset;
+    unsigned long entry;
+    unsigned long phoffset;
+    unsigned long shoffset;
     unsigned int flags;
     unsigned short size;
     unsigned short phsize;
@@ -94,9 +94,9 @@ struct elf_program_header
 {
 
     unsigned int type;
-    unsigned int offset;
-    unsigned int vaddress;
-    unsigned int paddress;
+    unsigned long offset;
+    unsigned long vaddress;
+    unsigned long paddress;
     unsigned int fsize;
     unsigned int msize;
     unsigned int flags;
@@ -110,8 +110,8 @@ struct elf_section_header
     unsigned int name;
     unsigned int type;
     unsigned int flags;
-    unsigned int address;
-    unsigned int offset;
+    unsigned long address;
+    unsigned long offset;
     unsigned int size;
     unsigned int link;
     unsigned int info;
@@ -124,7 +124,7 @@ struct elf_symbol
 {
 
     unsigned int name;
-    unsigned int value;
+    unsigned long value;
     unsigned int size;
     unsigned char info;
     unsigned char other;
@@ -135,12 +135,12 @@ struct elf_symbol
 struct elf_relocation
 {
 
-    unsigned int offset;
+    unsigned long offset;
     unsigned int info;
 
 };
 
 unsigned int elf_validate(struct elf_header *header);
 unsigned int elf_find_symbol(struct elf_header *header, struct elf_section_header *sectionheader, struct elf_section_header *symbolheader, struct elf_symbol *symbols, char *strings, unsigned int count, const char *symbol);
-void elf_relocate_symbol(unsigned int address, unsigned int type, unsigned int addend);
+void elf_relocate_symbol(unsigned long address, unsigned int type, unsigned int addend);
 void elf_relocate_section(struct elf_section_header *sectionheader, struct elf_section_header *relocationheader, struct elf_section_header *dataheader, struct elf_relocation *relocations, struct elf_symbol *symbols, unsigned int address);

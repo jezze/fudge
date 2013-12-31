@@ -27,10 +27,10 @@ unsigned int elf_find_symbol(struct elf_header *header, struct elf_section_heade
 
 }
 
-void elf_relocate_symbol(unsigned int address, unsigned int type, unsigned int addend)
+void elf_relocate_symbol(unsigned long address, unsigned int type, unsigned int addend)
 {
 
-    unsigned int *entry = (unsigned int *)(address);
+    unsigned long *entry = (unsigned long *)(address);
 
     switch (type)
     {
