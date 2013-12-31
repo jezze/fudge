@@ -42,7 +42,7 @@ void system_unregister_node(struct system_node *node)
 static unsigned int open(struct system_node *self)
 {
 
-    return (unsigned int)self;
+    return (unsigned long)self;
 
 }
 
@@ -71,7 +71,7 @@ unsigned int walk(struct system_node *self, unsigned int count, const char *path
 {
 
     if (!count)
-        return (unsigned int)self;
+        return (unsigned long)self;
 
     return 0;
 
@@ -126,7 +126,7 @@ unsigned int walk_group(struct system_node *self, unsigned int count, const char
     struct list_item *current;
 
     if (!count)
-        return (unsigned int)self;
+        return (unsigned long)self;
 
     for (current = group->children.head; current; current = current->next)
     {

@@ -130,7 +130,7 @@ static void setup_interrupts(struct rtl8139_driver *self, unsigned short flags)
 static void setup_receiver(struct rtl8139_driver *self)
 {
 
-    io_outd(self->io + RTL8139_REGISTER_RBSTART, (unsigned int)self->rx);
+    io_outd(self->io + RTL8139_REGISTER_RBSTART, (unsigned long)self->rx);
     io_outd(self->io + RTL8139_REGISTER_RCR, 0x8F);
 
 }
@@ -138,10 +138,10 @@ static void setup_receiver(struct rtl8139_driver *self)
 static void setup_transmitter(struct rtl8139_driver *self)
 {
 
-    io_outd(self->io + RTL8139_REGISTER_TSAD0, (unsigned int)self->tx0);
-    io_outd(self->io + RTL8139_REGISTER_TSAD1, (unsigned int)self->tx1);
-    io_outd(self->io + RTL8139_REGISTER_TSAD2, (unsigned int)self->tx2);
-    io_outd(self->io + RTL8139_REGISTER_TSAD3, (unsigned int)self->tx3);
+    io_outd(self->io + RTL8139_REGISTER_TSAD0, (unsigned long)self->tx0);
+    io_outd(self->io + RTL8139_REGISTER_TSAD1, (unsigned long)self->tx1);
+    io_outd(self->io + RTL8139_REGISTER_TSAD2, (unsigned long)self->tx2);
+    io_outd(self->io + RTL8139_REGISTER_TSAD3, (unsigned long)self->tx3);
 
 }
 

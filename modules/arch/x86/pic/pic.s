@@ -1,3 +1,5 @@
+.code32
+
 .extern pic_interrupt
 
 .global pic_routine00

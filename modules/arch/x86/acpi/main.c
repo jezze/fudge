@@ -5,7 +5,7 @@
 static struct acpi_rsdp *find_rsdp()
 {
 
-    unsigned int rsdp;
+    unsigned long rsdp;
     unsigned int ebda;
     char *signature = "RSD PTR ";
 

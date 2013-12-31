@@ -1,3 +1,5 @@
+.code32
+
 .extern arch_generalfault
 .extern arch_pagefault
 .extern arch_syscall

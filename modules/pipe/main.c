@@ -181,7 +181,7 @@ static unsigned int clone_open(struct system_node *self)
     system_group_add(&session[index].base, &session[index].ipipe.node);
     system_group_add(&session[index].base, &session[index].opipe.node);
 
-    return (unsigned int)&session[index].control;
+    return (unsigned long)&session[index].control;
 
 }
 

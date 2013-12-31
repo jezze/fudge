@@ -2,7 +2,7 @@
 #include "cpu.h"
 #include "mmu.h"
 
-static void set_directory_table(struct mmu_directory *directory, unsigned int paddress, unsigned int vaddress, unsigned int tflags)
+static void set_directory_table(struct mmu_directory *directory, unsigned long paddress, unsigned long vaddress, unsigned int tflags)
 {
 
     unsigned int index = (vaddress / MMU_PAGESIZE) / MMU_TABLES;
@@ -11,7 +11,7 @@ static void set_directory_table(struct mmu_directory *directory, unsigned int pa
 
 }
 
-static void set_table_page(struct mmu_table *table, unsigned int paddress, unsigned int vaddress, unsigned int pflags)
+static void set_table_page(struct mmu_table *table, unsigned long paddress, unsigned long vaddress, unsigned int pflags)
 {
 
     unsigned int index = (vaddress / MMU_PAGESIZE) % MMU_PAGES;
@@ -20,7 +20,7 @@ static void set_table_page(struct mmu_table *table, unsigned int paddress, unsig
 
 }
 
-void mmu_map(struct mmu_directory *directory, struct mmu_table *table, unsigned int paddress, unsigned int vaddress, unsigned int size, unsigned int tflags, unsigned int pflags)
+void mmu_map(struct mmu_directory *directory, struct mmu_table *table, unsigned long paddress, unsigned long vaddress, unsigned int size, unsigned int tflags, unsigned int pflags)
 {
 
     unsigned int i;
@@ -28,7 +28,7 @@ void mmu_map(struct mmu_directory *directory, struct mmu_table *table, unsigned 
     for (i = 0; i < size; i += MMU_PAGESIZE)
         set_table_page(table, paddress + i, vaddress + i, pflags);
 
-    set_directory_table(directory, (unsigned int)table, vaddress, tflags);
+    set_directory_table(directory, (unsigned long)table, vaddress, tflags);
 
 }
 
@@ -49,7 +49,7 @@ void mmu_reload()
 void mmu_load(struct mmu_directory *directory)
 {
 
-    cpu_set_cr3((unsigned int)directory);
+    cpu_set_cr3((unsigned long)directory);
 
 }
 

@@ -4,7 +4,7 @@
 void idt_set_descriptor(struct idt_pointer *pointer, enum idt_index index, void (*callback)(), unsigned short selector, unsigned char flags)
 {
 
-    unsigned int base = (unsigned int)callback;
+    unsigned long base = (unsigned long)callback;
 
     pointer->descriptors[index].base0 = base;
     pointer->descriptors[index].base1 = base >> 16;

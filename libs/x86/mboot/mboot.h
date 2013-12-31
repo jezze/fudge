@@ -16,7 +16,7 @@ struct mboot_header_modules
 {
 
     unsigned int count;
-    void *address;
+    unsigned long address;
 
 };
 
@@ -25,7 +25,7 @@ struct mboot_header_elf
 
     unsigned int shcount;
     unsigned int shsize;
-    void *shaddress;
+    unsigned long shaddress;
     unsigned int shstringindex;
 
 };
@@ -34,7 +34,7 @@ struct mboot_header_mmap
 {
 
     unsigned int count;
-    void *address;
+    unsigned long address;
 
 };
 
@@ -42,7 +42,7 @@ struct mboot_header_drives
 {
 
     unsigned int count;
-    void *address;
+    unsigned long address;
 
 };
 
@@ -81,8 +81,8 @@ struct mboot_mmap
 {
 
     unsigned int size;
-    unsigned int address0;
-    unsigned int address1;
+    unsigned long address0;
+    unsigned long address1;
     unsigned int limit0;
     unsigned int limit1;
     unsigned int type;
@@ -92,7 +92,7 @@ struct mboot_mmap
 struct mboot_module
 {
 
-    unsigned int address;
+    unsigned long address;
     unsigned int limit;
     unsigned int name;
     unsigned int reserved;

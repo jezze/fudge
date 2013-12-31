@@ -81,7 +81,7 @@ void mboot_setup(struct mboot_header *header, unsigned int magic)
     if (header->flags & MBOOT_FLAG_MODULES)
     {
 
-        struct mboot_module *mods = header->modules.address;
+        struct mboot_module *mods = (struct mboot_module *)header->modules.address;
         unsigned int i;
 
         for (i = 0; i < header->modules.count; i++)

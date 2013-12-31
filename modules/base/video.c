@@ -105,7 +105,7 @@ static unsigned int clone_open(struct system_node *self)
     system_group_add(&snode[index].base, &snode[index].device.node);
     system_group_add(&snode[index].base, &snode[index].control.node);
 
-    return (unsigned int)&snode[index].control;
+    return (unsigned long)&snode[index].control;
 
 }
 

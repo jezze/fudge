@@ -1,3 +1,5 @@
+.code32
+
 .global cpuid_check_cpuid
 cpuid_check_cpuid:
     pushf

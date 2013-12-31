@@ -1,3 +1,5 @@
+.code32
+
 .global cpu_get_cr0
 cpu_get_cr0:
     movl %cr0, %eax

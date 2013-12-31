@@ -61,7 +61,7 @@ static void attach(struct base_device *device)
 
     base_video_register_interface(&driver->ivideo, device);
 
-    driver->lfb = (void *)pci_device_ind(pciDevice, PCI_CONFIG_BAR0);
+    driver->lfb = (void *)(unsigned long)pci_device_ind(pciDevice, PCI_CONFIG_BAR0);
 
 /*
     struct bga_driver *driver = (struct bga_driver *)self;

@@ -1,3 +1,5 @@
+.code32
+
 .global msr_get
 msr_get:
     pushl %ebp
