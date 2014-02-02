@@ -12,7 +12,7 @@ LDFLAGS_x86:=-melf_i386
 
 ASFLAGS_arm:=-mfpu=softfpa
 CFLAGS_arm:=
-LDFLAGS_ARM:=
+LDFLAGS_arm:=
 
 ASFLAGS:=$(ASFLAGS_$(ARCH))
 CFLAGS:=-Wall -Werror -ffreestanding -nostdlib -nostdinc -mno-red-zone -std=c89 -pedantic -O2 $(CFLAGS_$(ARCH))
