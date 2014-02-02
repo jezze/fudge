@@ -90,7 +90,7 @@ install:
 
 kernel: $(KERNEL_NAME)
 
-$(KERNEL_NAME): $(LIBKERNEL) $(LIBFUDGE)
+$(KERNEL_NAME): $(LIBBOOT) $(LIBARCH) $(LIBKERNEL) $(LIBFUDGE)
 	$(LD) $(LDFLAGS) -Tlibs/$(ARCH)/$(LOADER)/linker.ld -o $@ $^
 
 libs: $(LIBS)
