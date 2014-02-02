@@ -56,51 +56,41 @@ include $(LIBS_PATH)/rules.mk
 include $(MODULES_PATH)/rules.mk
 include $(PACKAGES_PATH)/rules.mk
 
+$(KERNEL_NAME): $(LIBLOADER) $(LIBARCH) $(LIBKERNEL) $(LIBFUDGE)
+	$(LD) $(LDFLAGS) -Tlibs/$(ARCH)/$(LOADER)/linker.ld -o $@ $^
+
+$(RAMDISK_PATH): $(KERNEL) $(MODULES) $(PACKAGES) $(PACKAGES_CONFIGS) $(PACKAGES_SHARES)
+	mkdir -p $@/bin
+	mkdir -p $@/boot
+	mkdir -p $@/boot/mod
+	mkdir -p $@/config
+	mkdir -p $@/home
+	mkdir -p $@/share
+	mkdir -p $@/system
+	cp $(KERNEL) $@/boot
+	cp $(MODULES) $@/boot/mod
+	cp $(PACKAGES) $@/bin
+	cp $(PACKAGES_CONFIGS) $@/config
+	cp $(PACKAGES_SHARES) $@/share
+
+$(RAMDISK_NAME).tar: $(RAMDISK_PATH)
+	tar -cf $@ $(RAMDISK_PATH)
+
+$(RAMDISK_NAME).cpio: $(RAMDISK_PATH)
+	find $(RAMDISK_PATH) -depth | cpio -o > $@
+
 clean:
+	rm -rf $(KERNEL)
 	rm -rf $(LIBS) $(LIBS_OBJECTS)
 	rm -rf $(MODULES) $(MODULES_OBJECTS)
 	rm -rf $(PACKAGES) $(PACKAGES_OBJECTS)
-	rm -rf $(KERNEL)
 	rm -rf $(RAMDISK_PATH) $(RAMDISK)
-
-$(RAMDISK_PATH)/bin: $(PACKAGES)
-	mkdir -p $@
-	cp $(PACKAGES) $@
-
-$(RAMDISK_PATH)/boot:
-	mkdir -p $@
-
-$(RAMDISK_PATH)/boot/fudge: $(RAMDISK_PATH)/boot $(KERNEL)
-	cp $(KERNEL) $@
-
-$(RAMDISK_PATH)/boot/mod: $(RAMDISK_PATH)/boot $(MODULES)
-	mkdir -p $@
-	cp $(MODULES) $@
-
-$(RAMDISK_PATH)/config: $(PACKAGES_CONFIGS)
-	mkdir -p $@
-	cp $(PACKAGES_CONFIGS) $@
-
-$(RAMDISK_PATH)/share: $(PACKAGES_SHARES)
-	mkdir -p $@
-	cp $(PACKAGES_SHARES) $@
-
-$(RAMDISK_PATH)/home:
-	mkdir -p $@
-
-$(RAMDISK_PATH)/system:
-	mkdir -p $@
-
-$(RAMDISK_PATH): $(RAMDISK_PATH)/bin $(RAMDISK_PATH)/boot $(RAMDISK_PATH)/boot/fudge $(RAMDISK_PATH)/boot/mod $(RAMDISK_PATH)/config $(RAMDISK_PATH)/home $(RAMDISK_PATH)/share $(RAMDISK_PATH)/system
 
 install:
 	install -m 644 $(KERNEL) $(INSTALL_PATH)
 	install -m 644 $(RAMDISK) $(INSTALL_PATH)
 
 kernel: $(KERNEL_NAME)
-
-$(KERNEL_NAME): $(LIBLOADER) $(LIBARCH) $(LIBKERNEL) $(LIBFUDGE)
-	$(LD) $(LDFLAGS) -Tlibs/$(ARCH)/$(LOADER)/linker.ld -o $@ $^
 
 libs: $(LIBS)
 
@@ -109,9 +99,3 @@ modules: $(MODULES)
 packages: $(PACKAGES)
 
 ramdisk: $(RAMDISK_NAME).$(RAMDISK_TYPE)
-
-$(RAMDISK_NAME).tar: $(RAMDISK_PATH)
-	tar -cf $@ $(RAMDISK_PATH)
-
-$(RAMDISK_NAME).cpio: $(RAMDISK_PATH)
-	find $(RAMDISK_PATH) -depth | cpio -o > $@
