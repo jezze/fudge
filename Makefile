@@ -61,7 +61,7 @@ clean:
 	rm -rf $(MODULES) $(MODULES_OBJECTS)
 	rm -rf $(PACKAGES) $(PACKAGES_OBJECTS)
 	rm -rf $(KERNEL)
-	rm -rf $(RAMDISK)
+	rm -rf $(RAMDISK_PATH) $(RAMDISK)
 
 $(RAMDISK_PATH)/bin: $(PACKAGES)
 	mkdir -p $@
@@ -112,8 +112,6 @@ ramdisk: $(RAMDISK_NAME).$(RAMDISK_TYPE)
 
 $(RAMDISK_NAME).tar: $(RAMDISK_PATH)
 	tar -cf $@ $(RAMDISK_PATH)
-	rm -rf $(RAMDISK_PATH)
 
 $(RAMDISK_NAME).cpio: $(RAMDISK_PATH)
 	find $(RAMDISK_PATH) -depth | cpio -o > $@
-	rm -rf $(RAMDISK_PATH)
