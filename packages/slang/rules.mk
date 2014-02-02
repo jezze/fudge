@@ -1,7 +1,5 @@
 BIN:=packages/slang/slang
-OBJ:=packages/slang/slang.o
-OBJ+=packages/slang/parse.o
-OBJ+=packages/slang/token.o
+OBJ:=packages/slang/slang.o packages/slang/parse.o packages/slang/token.o
 
 $(BIN): $(OBJ) $(USERLIBS)
 	$(LD) $(LDFLAGS) -o $@ $^

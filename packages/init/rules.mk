@@ -1,9 +1,7 @@
 INIT_BIN:=packages/init/init
 INIT_OBJ:=packages/init/init.o
-
 INITMOD_BIN:=packages/init/initmod
 INITMOD_OBJ:=packages/init/initmod.o
-
 INITFS_BIN:=packages/init/initfs
 INITFS_OBJ:=packages/init/initfs.o
 
