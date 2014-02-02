@@ -7,21 +7,6 @@ struct kernel_module
 
 };
 
-enum kernel_lock_state
-{
-
-    LOCK_STATE_UNLOCKED                 = 0,
-    LOCK_STATE_LOCKED                   = 1
-
-};
-
-struct kernel_lock
-{
-
-    enum kernel_lock_state state;
-
-};
-
 struct kernel_rendezvous
 {
 
