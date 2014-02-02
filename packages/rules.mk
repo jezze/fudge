@@ -1,6 +1,6 @@
 packages/%.o: CFLAGS+=-Ilibs/fudge
 
-USERLIBS:=$(LIBARCH) $(LIBFUDGE)
+USERLIBS:=$(LIBABI) $(LIBFUDGE)
 
 include packages/cat/rules.mk
 include packages/cconv/rules.mk

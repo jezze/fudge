@@ -1,8 +1,8 @@
-LIBBOOT:=libs/x86/mboot/libmboot.a
-LIBBOOT_OBJ:=libs/x86/mboot/init.o libs/x86/mboot/mboot.o
+LIBLOADER:=libs/x86/mboot/libmboot.a
+LIBLOADER_OBJ:=libs/x86/mboot/init.o libs/x86/mboot/mboot.o
 
-$(LIBBOOT): $(LIBBOOT_OBJ)
+$(LIBLOADER): $(LIBLOADER_OBJ)
 	$(AR) $(ARFLAGS) $@ $^
 
-LIBS+=$(LIBBOOT)
-LIBS_OBJECTS+=$(LIBBOOT_OBJ)
+LIBS+=$(LIBLOADER)
+LIBS_OBJECTS+=$(LIBLOADER_OBJ)
