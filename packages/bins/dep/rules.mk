@@ -1,0 +1,8 @@
+BIN:=$(PACKAGES_BINS_PATH)/dep/dep
+OBJ:=$(PACKAGES_BINS_PATH)/dep/dep.o $(PACKAGES_BINS_PATH)/dep/parse.o $(PACKAGES_BINS_PATH)/dep/token.o
+
+$(BIN): $(OBJ) $(USERLIBS)
+	$(LD) $(LDFLAGS) -o $@ $^
+
+PACKAGES+=$(BIN)
+PACKAGES_OBJECTS+=$(OBJ)

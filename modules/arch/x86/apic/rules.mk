@@ -1,5 +1,5 @@
-MOD:=modules/arch/x86/apic/apic.ko
-OBJ:=modules/arch/x86/apic/main.o
+MOD:=$(MODULES_ARCH_PATH)/apic/apic.ko
+OBJ:=$(MODULES_ARCH_PATH)/apic/main.o
 
 $(MOD): $(OBJ) $(LIBFUDGE)
 	$(LD) $(LDFLAGS) -o $@ $^

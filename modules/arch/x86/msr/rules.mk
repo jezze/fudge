@@ -1,5 +1,5 @@
-MOD:=modules/arch/x86/msr/msr.ko
-OBJ:=modules/arch/x86/msr/main.o modules/arch/x86/msr/msr.o
+MOD:=$(MODULES_ARCH_PATH)/msr/msr.ko
+OBJ:=$(MODULES_ARCH_PATH)/msr/main.o $(MODULES_ARCH_PATH)/msr/msr.o
 
 $(MOD): $(OBJ) $(LIBFUDGE)
 	$(LD) $(LDFLAGS) -o $@ $^

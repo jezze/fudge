@@ -1,5 +1,5 @@
-MOD:=modules/arch/x86/vga/vga.ko
-OBJ:=modules/arch/x86/vga/main.o modules/arch/x86/vga/driver.o modules/arch/x86/vga/timing.o modules/arch/x86/vga/registers.o
+MOD:=$(MODULES_ARCH_PATH)/vga/vga.ko
+OBJ:=$(MODULES_ARCH_PATH)/vga/main.o $(MODULES_ARCH_PATH)/vga/driver.o $(MODULES_ARCH_PATH)/vga/timing.o $(MODULES_ARCH_PATH)/vga/registers.o
 
 $(MOD): $(OBJ) $(LIBFUDGE)
 	$(LD) $(LDFLAGS) -o $@ $^

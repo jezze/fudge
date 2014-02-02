@@ -1,5 +1,5 @@
-MOD:=modules/arch/x86/ps2/ps2.ko
-OBJ:=modules/arch/x86/ps2/main.o modules/arch/x86/ps2/bus.o modules/arch/x86/ps2/device.o modules/arch/x86/ps2/keyboard_driver.o modules/arch/x86/ps2/mouse_driver.o
+MOD:=$(MODULES_ARCH_PATH)/ps2/ps2.ko
+OBJ:=$(MODULES_ARCH_PATH)/ps2/main.o $(MODULES_ARCH_PATH)/ps2/bus.o $(MODULES_ARCH_PATH)/ps2/device.o $(MODULES_ARCH_PATH)/ps2/keyboard_driver.o $(MODULES_ARCH_PATH)/ps2/mouse_driver.o
 
 $(MOD): $(OBJ) $(LIBFUDGE)
 	$(LD) $(LDFLAGS) -o $@ $^

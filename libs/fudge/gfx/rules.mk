@@ -1,1 +1,1 @@
-LIBFUDGE_OBJ+=libs/fudge/gfx/gfx.o libs/fudge/gfx/pcx.o libs/fudge/gfx/vga.o
+LIBFUDGE_OBJ+=$(LIBS_PATH)/fudge/gfx/gfx.o $(LIBS_PATH)/fudge/gfx/pcx.o $(LIBS_PATH)/fudge/gfx/vga.o

@@ -1,5 +1,5 @@
-MOD:=modules/arch/x86/pic/pic.ko
-OBJ:=modules/arch/x86/pic/main.o modules/arch/x86/pic/pic.o
+MOD:=$(MODULES_ARCH_PATH)/pic/pic.ko
+OBJ:=$(MODULES_ARCH_PATH)/pic/main.o $(MODULES_ARCH_PATH)/pic/pic.o
 
 $(MOD): $(OBJ) $(LIBFUDGE)
 	$(LD) $(LDFLAGS) -o $@ $^

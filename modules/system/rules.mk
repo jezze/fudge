@@ -1,5 +1,5 @@
-MOD:=modules/system/system.ko
-OBJ:=modules/system/main.o modules/system/backend.o modules/system/protocol.o
+MOD:=$(MODULES_PATH)/system/system.ko
+OBJ:=$(MODULES_PATH)/system/main.o $(MODULES_PATH)/system/backend.o $(MODULES_PATH)/system/protocol.o
 
 $(MOD): $(OBJ) $(LIBFUDGE)
 	$(LD) $(LDFLAGS) -o $@ $^

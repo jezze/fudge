@@ -1,5 +1,5 @@
-MOD:=modules/arch/x86/io/io.ko
-OBJ:=modules/arch/x86/io/main.o modules/arch/x86/io/io.o
+MOD:=$(MODULES_ARCH_PATH)/io/io.ko
+OBJ:=$(MODULES_ARCH_PATH)/io/main.o $(MODULES_ARCH_PATH)/io/io.o
 
 $(MOD): $(OBJ) $(LIBFUDGE)
 	$(LD) $(LDFLAGS) -o $@ $^

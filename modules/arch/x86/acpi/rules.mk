@@ -1,5 +1,5 @@
-MOD:=modules/arch/x86/acpi/acpi.ko
-OBJ:=modules/arch/x86/acpi/main.o
+MOD:=$(MODULES_ARCH_PATH)/acpi/acpi.ko
+OBJ:=$(MODULES_ARCH_PATH)/acpi/main.o
 
 $(MOD): $(OBJ) $(LIBFUDGE)
 	$(LD) $(LDFLAGS) -o $@ $^

@@ -1,5 +1,5 @@
-MOD:=modules/pipe/pipe.ko
-OBJ:=modules/pipe/main.o
+MOD:=$(MODULES_PATH)/pipe/pipe.ko
+OBJ:=$(MODULES_PATH)/pipe/main.o
 
 $(MOD): $(OBJ) $(LIBFUDGE)
 	$(LD) $(LDFLAGS) -o $@ $^

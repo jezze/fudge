@@ -1,5 +1,5 @@
-MOD:=modules/log/log.ko
-OBJ:=modules/log/main.o
+MOD:=$(MODULES_PATH)/log/log.ko
+OBJ:=$(MODULES_PATH)/log/main.o
 
 $(MOD): $(OBJ) $(LIBFUDGE)
 	$(LD) $(LDFLAGS) -o $@ $^

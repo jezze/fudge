@@ -1,5 +1,5 @@
-MOD:=modules/arch/x86/pci/pci.ko
-OBJ:=modules/arch/x86/pci/main.o modules/arch/x86/pci/bus.o modules/arch/x86/pci/device.o
+MOD:=$(MODULES_ARCH_PATH)/pci/pci.ko
+OBJ:=$(MODULES_ARCH_PATH)/pci/main.o $(MODULES_ARCH_PATH)/pci/bus.o $(MODULES_ARCH_PATH)/pci/device.o
 
 $(MOD): $(OBJ) $(LIBFUDGE)
 	$(LD) $(LDFLAGS) -o $@ $^

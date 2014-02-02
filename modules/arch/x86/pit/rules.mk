@@ -1,5 +1,5 @@
-MOD:=modules/arch/x86/pit/pit.ko
-OBJ:=modules/arch/x86/pit/main.o modules/arch/x86/pit/driver.o
+MOD:=$(MODULES_ARCH_PATH)/pit/pit.ko
+OBJ:=$(MODULES_ARCH_PATH)/pit/main.o $(MODULES_ARCH_PATH)/pit/driver.o
 
 $(MOD): $(OBJ) $(LIBFUDGE)
 	$(LD) $(LDFLAGS) -o $@ $^

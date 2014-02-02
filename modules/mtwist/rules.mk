@@ -1,5 +1,5 @@
-MOD:=modules/mtwist/mtwist.ko
-OBJ:=modules/mtwist/main.o
+MOD:=$(MODULES_PATH)/mtwist/mtwist.ko
+OBJ:=$(MODULES_PATH)/mtwist/main.o
 
 $(MOD): $(OBJ) $(LIBFUDGE)
 	$(LD) $(LDFLAGS) -o $@ $^

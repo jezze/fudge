@@ -1,0 +1,8 @@
+BIN:=$(PACKAGES_BINS_PATH)/ls/ls
+OBJ:=$(PACKAGES_BINS_PATH)/ls/ls.o
+
+$(BIN): $(OBJ) $(USERLIBS)
+	$(LD) $(LDFLAGS) -o $@ $^
+
+PACKAGES+=$(BIN)
+PACKAGES_OBJECTS+=$(OBJ)

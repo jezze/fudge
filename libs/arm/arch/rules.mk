@@ -1,5 +1,5 @@
-LIBARCH:=libs/arm/arch/libarch.a
-LIBARCH_OBJ:=libs/arm/arch/arch.o libs/arm/arch/cpu.o libs/arm/arch/init.o libs/arm/arch/kmi.o libs/arm/arch/reg.o libs/arm/arch/uart.o
+LIBARCH:=$(LIBS_PATH)/arm/arch/libarch.a
+LIBARCH_OBJ:=$(LIBS_PATH)/arm/arch/arch.o $(LIBS_PATH)/arm/arch/cpu.o $(LIBS_PATH)/arm/arch/init.o $(LIBS_PATH)/arm/arch/kmi.o $(LIBS_PATH)/arm/arch/reg.o $(LIBS_PATH)/arm/arch/uart.o
 
 $(LIBARCH): $(LIBARCH_OBJ)
 	$(AR) $(ARFLAGS) $@ $^

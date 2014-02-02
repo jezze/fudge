@@ -1,5 +1,5 @@
-MOD:=modules/arch/x86/rtc/rtc.ko
-OBJ:=modules/arch/x86/rtc/main.o modules/arch/x86/rtc/driver.o
+MOD:=$(MODULES_ARCH_PATH)/rtc/rtc.ko
+OBJ:=$(MODULES_ARCH_PATH)/rtc/main.o $(MODULES_ARCH_PATH)/rtc/driver.o
 
 $(MOD): $(OBJ) $(LIBFUDGE)
 	$(LD) $(LDFLAGS) -o $@ $^

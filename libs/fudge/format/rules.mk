@@ -1,1 +1,1 @@
-LIBFUDGE_OBJ+=libs/fudge/format/cpio.o libs/fudge/format/elf.o libs/fudge/format/tar.o
+LIBFUDGE_OBJ+=$(LIBS_PATH)/fudge/format/cpio.o $(LIBS_PATH)/fudge/format/elf.o $(LIBS_PATH)/fudge/format/tar.o

@@ -1,5 +1,5 @@
-LIBPOSIX:=libs/posix/libposix.a
-LIBPOSIX_OBJ:=libs/posix/posix.o
+LIBPOSIX:=$(LIBS_PATH)/posix/libposix.a
+LIBPOSIX_OBJ:=$(LIBS_PATH)/posix/posix.o
 
 $(LIBPOSIX): $(LIBPOSIX_OBJ)
 	$(AR) $(ARFLAGS) $@ $^

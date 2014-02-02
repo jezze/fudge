@@ -1,8 +1,8 @@
-libs/%.o: CFLAGS+=-Ilibs
+$(LIBS_PATH)/%.o: CFLAGS+=-I$(LIBS_PATH)
 
-include libs/fudge/rules.mk
-include libs/kernel/rules.mk
-include libs/posix/rules.mk
-include libs/$(ARCH)/arch/rules.mk
-include libs/$(ARCH)/abi/rules.mk
-include libs/$(ARCH)/$(LOADER)/rules.mk
+include $(LIBS_PATH)/fudge/rules.mk
+include $(LIBS_PATH)/kernel/rules.mk
+include $(LIBS_PATH)/posix/rules.mk
+include $(LIBS_ARCH_PATH)/arch/rules.mk
+include $(LIBS_ARCH_PATH)/abi/rules.mk
+include $(LIBS_ARCH_PATH)/$(LOADER)/rules.mk

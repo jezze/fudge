@@ -1,5 +1,5 @@
-MOD:=modules/arch/x86/cirrus/cirrus.ko
-OBJ:=modules/arch/x86/cirrus/main.o modules/arch/x86/cirrus/driver.o
+MOD:=$(MODULES_ARCH_PATH)/cirrus/cirrus.ko
+OBJ:=$(MODULES_ARCH_PATH)/cirrus/main.o $(MODULES_ARCH_PATH)/cirrus/driver.o
 
 $(MOD): $(OBJ) $(LIBFUDGE)
 	$(LD) $(LDFLAGS) -o $@ $^

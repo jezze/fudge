@@ -1,1 +1,1 @@
-LIBFUDGE_OBJ+=libs/fudge/data/circular.o libs/fudge/data/lifo.o
+LIBFUDGE_OBJ+=$(LIBS_PATH)/fudge/data/circular.o $(LIBS_PATH)/fudge/data/lifo.o

@@ -1,5 +1,5 @@
-MOD:=modules/base/base.ko
-OBJ:=modules/base/main.o modules/base/block.o modules/base/clock.o modules/base/keyboard.o modules/base/mouse.o modules/base/network.o modules/base/terminal.o modules/base/timer.o modules/base/video.o
+MOD:=$(MODULES_PATH)/base/base.ko
+OBJ:=$(MODULES_PATH)/base/main.o $(MODULES_PATH)/base/block.o $(MODULES_PATH)/base/clock.o $(MODULES_PATH)/base/keyboard.o $(MODULES_PATH)/base/mouse.o $(MODULES_PATH)/base/network.o $(MODULES_PATH)/base/terminal.o $(MODULES_PATH)/base/timer.o $(MODULES_PATH)/base/video.o
 
 $(MOD): $(OBJ) $(LIBFUDGE)
 	$(LD) $(LDFLAGS) -o $@ $^

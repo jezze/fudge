@@ -26,6 +26,14 @@ RAMDISK_NAME:=initrd
 RAMDISK_TYPE:=tar
 RAMDISK:=$(RAMDISK_NAME).$(RAMDISK_TYPE)
 
+LIBS_PATH:=libs
+LIBS_ARCH_PATH=$(LIBS_PATH)/$(ARCH)
+MODULES_PATH:=modules
+MODULES_ARCH_PATH:=$(MODULES_PATH)/arch/$(ARCH)
+PACKAGES_PATH:=packages
+PACKAGES_BINS_PATH=$(PACKAGES_PATH)/bins
+PACKAGES_DATA_PATH=$(PACKAGES_PATH)/data
+RAMDISK_PATH=image
 INSTALL_PATH:=/boot
 
 LIBS:=
@@ -34,6 +42,8 @@ MODULES:=
 MODULES_OBJECTS:=
 PACKAGES:=
 PACKAGES_OBJECTS:=
+PACKAGES_CONFIGS:=
+PACKAGES_SHARES:=
 
 .PHONY: all clean kernel libs modules packages
 
@@ -45,9 +55,9 @@ all: libs modules packages kernel ramdisk
 .c.o:
 	$(CC) -c $(CFLAGS) -o $@ $<
 
-include libs/rules.mk
-include modules/rules.mk
-include packages/rules.mk
+include $(LIBS_PATH)/rules.mk
+include $(MODULES_PATH)/rules.mk
+include $(PACKAGES_PATH)/rules.mk
 
 clean:
 	rm -rf $(LIBS) $(LIBS_OBJECTS)
@@ -56,33 +66,35 @@ clean:
 	rm -rf $(KERNEL)
 	rm -rf $(RAMDISK)
 
-image/bin: $(PACKAGES)
+$(RAMDISK_PATH)/bin: $(PACKAGES)
 	mkdir -p $@
 	cp $(PACKAGES) $@
 
-image/boot:
+$(RAMDISK_PATH)/boot:
 	mkdir -p $@
 
-image/boot/fudge: image/boot $(KERNEL)
+$(RAMDISK_PATH)/boot/fudge: $(RAMDISK_PATH)/boot $(KERNEL)
 	cp $(KERNEL) $@
 
-image/boot/mod: image/boot $(MODULES)
+$(RAMDISK_PATH)/boot/mod: $(RAMDISK_PATH)/boot $(MODULES)
 	mkdir -p $@
 	cp $(MODULES) $@
 
-image/config: system/config
-	cp -r $< $@
+$(RAMDISK_PATH)/config: $(PACKAGES_CONFIGS)
+	mkdir -p $@
+	cp $(PACKAGES_CONFIGS) $@
 
-image/home: system/home
-	cp -r $< $@
+$(RAMDISK_PATH)/share: $(PACKAGES_SHARES)
+	mkdir -p $@
+	cp $(PACKAGES_SHARES) $@
 
-image/share: system/share
-	cp -r $< $@
-
-image/system:
+$(RAMDISK_PATH)/home:
 	mkdir -p $@
 
-image: image/bin image/boot image/boot/fudge image/boot/mod image/config image/home image/share image/system
+$(RAMDISK_PATH)/system:
+	mkdir -p $@
+
+$(RAMDISK_PATH): $(RAMDISK_PATH)/bin $(RAMDISK_PATH)/boot $(RAMDISK_PATH)/boot/fudge $(RAMDISK_PATH)/boot/mod $(RAMDISK_PATH)/config $(RAMDISK_PATH)/home $(RAMDISK_PATH)/share $(RAMDISK_PATH)/system
 
 install:
 	install -m 644 $(KERNEL) $(INSTALL_PATH)
@@ -101,10 +113,10 @@ packages: $(PACKAGES)
 
 ramdisk: $(RAMDISK_NAME).$(RAMDISK_TYPE)
 
-$(RAMDISK_NAME).tar: image
-	tar -cf $@ image
-	rm -rf image
+$(RAMDISK_NAME).tar: $(RAMDISK_PATH)
+	tar -cf $@ $(RAMDISK_PATH)
+	rm -rf $(RAMDISK_PATH)
 
-$(RAMDISK_NAME).cpio: image
-	find image -depth | cpio -o > $@
-	rm -rf image
+$(RAMDISK_NAME).cpio: $(RAMDISK_PATH)
+	find $(RAMDISK_PATH) -depth | cpio -o > $@
+	rm -rf $(RAMDISK_PATH)
