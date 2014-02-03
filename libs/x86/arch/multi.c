@@ -76,17 +76,6 @@ static struct multi_task *find_free_task(struct multi_task *task)
 
 }
 
-static void init_task(struct multi_task *task, unsigned int index)
-{
-
-    memory_clear(task, sizeof (struct multi_task));
-    task_init(&task->base, 0, 0, TASK_STACKLIMIT);
-    list_init_item(&task->item, task);
-
-    task->index = index;
-
-}
-
 static void map_kernel(struct multi_task *task)
 {
 
@@ -139,7 +128,18 @@ struct task *multi_schedule(struct task *running, struct cpu_general *general, s
 
 }
 
-static void activate(struct multi_task *task)
+static void init_task(struct multi_task *task, unsigned int index)
+{
+
+    memory_clear(task, sizeof (struct multi_task));
+    task_init(&task->base, 0, 0, TASK_STACKLIMIT);
+    list_init_item(&task->item, task);
+
+    task->index = index;
+
+}
+
+static void activate_task(struct multi_task *task)
 {
 
     task->base.state = TASK_STATE_USED;
@@ -152,18 +152,18 @@ static void activate(struct multi_task *task)
 static unsigned int spawn(struct container *self, struct task *task, void *stack)
 {
 
-    struct parameters {void *caller; unsigned int index;} temp, *args = stack;
+    struct parameters {void *caller; unsigned int index;} args;
     struct multi_task *current = (struct multi_task *)task;
     struct multi_task *next = find_free_task(current);
 
     if (!next)
         return 0;
 
-    memory_copy(&temp, args, sizeof (struct parameters));
+    memory_copy(&args, stack, sizeof (struct parameters));
     memory_copy(next->base.descriptors, task->descriptors, sizeof (struct task_descriptor) * TASK_DESCRIPTORS);
-    activate(next);
+    activate_task(next);
 
-    return self->calls[CONTAINER_CALL_EXECUTE](self, &next->base, &temp);
+    return self->calls[CONTAINER_CALL_EXECUTE](self, &next->base, &args);
 
 }
 
@@ -186,7 +186,7 @@ struct task *multi_setup(struct container *container)
 
     }
 
-    activate(&tasks[1]);
+    activate_task(&tasks[1]);
     mmu_enable();
 
     return &tasks[1].base;
