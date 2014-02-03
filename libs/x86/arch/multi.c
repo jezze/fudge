@@ -139,6 +139,16 @@ struct task *multi_schedule(struct task *running, struct cpu_general *general, s
 
 }
 
+static void activate(struct multi_task *task)
+{
+
+    task->base.state = TASK_STATE_USED;
+
+    map_kernel(task);
+    mmu_load(&directories[task->index]);
+
+}
+
 static unsigned int spawn(struct container *self, struct task *task, void *stack)
 {
 
@@ -150,13 +160,8 @@ static unsigned int spawn(struct container *self, struct task *task, void *stack
         return 0;
 
     memory_copy(&temp, args, sizeof (struct parameters));
-
-    next->base.state = TASK_STATE_USED;
-
-    map_kernel(next);
-    mmu_load(&directories[next->index]);
-
     memory_copy(next->base.descriptors, task->descriptors, sizeof (struct task_descriptor) * TASK_DESCRIPTORS);
+    activate(next);
 
     return self->calls[CONTAINER_CALL_EXECUTE](self, &next->base, &temp);
 
@@ -181,10 +186,7 @@ struct task *multi_setup(struct container *container)
 
     }
 
-    tasks[1].base.state = TASK_STATE_USED;
-
-    map_kernel(&tasks[1]);
-    mmu_load(&directories[1]);
+    activate(&tasks[1]);
     mmu_enable();
 
     return &tasks[1].base;
