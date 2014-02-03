@@ -31,7 +31,7 @@ static struct multi_task
     struct task base;
     struct list_item item;
     unsigned int index;
-    struct cpu_general registers;
+    struct cpu_general general;
 
 } tasks[TASKS];
 
@@ -101,30 +101,26 @@ void multi_map(unsigned int address)
 
 }
 
-struct task *multi_schedule(struct task *running, struct cpu_general *general, struct cpu_interrupt *interrupt)
+struct task *multi_schedule(struct task *task, struct cpu_general *general, struct cpu_interrupt *interrupt)
 {
 
-    struct multi_task *current = (struct multi_task *)running;
-    struct multi_task *task = find_next_task();
+    struct multi_task *current = (struct multi_task *)task;
+    struct multi_task *next = find_next_task();
 
-    if (current == task)
-        return running;
+    if (current == next)
+        return &next->base;
 
     current->base.registers.ip = interrupt->eip;
     current->base.registers.sp = interrupt->esp;
 
-    /* For safety - REMOVE LATER */
-    memory_copy(&current->registers, general, sizeof (struct cpu_general));
+    memory_copy(&current->general, general, sizeof (struct cpu_general));
+    mmu_load(&directories[next->index]);
+    memory_copy(general, &next->general, sizeof (struct cpu_general));
 
-    mmu_load(&directories[task->index]);
+    interrupt->eip = next->base.registers.ip;
+    interrupt->esp = next->base.registers.sp;
 
-    /* For safety - REMOVE LATER */
-    memory_copy(general, &task->registers, sizeof (struct cpu_general));
-
-    interrupt->eip = task->base.registers.ip;
-    interrupt->esp = task->base.registers.sp;
-
-    return &task->base;
+    return &next->base;
 
 }
 
