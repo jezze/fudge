@@ -57,7 +57,7 @@ static struct multi_task *find_next_task()
 
 }
 
-static unsigned int find_free_task(struct multi_task *task)
+static struct multi_task *find_free_task(struct multi_task *task)
 {
 
     unsigned int i;
@@ -68,7 +68,7 @@ static unsigned int find_free_task(struct multi_task *task)
         if (tasks[i].base.state & TASK_STATE_USED)
             continue;
 
-        return i;
+        return &tasks[i];
 
     }
 
@@ -144,23 +144,21 @@ static unsigned int spawn(struct container *self, struct task *task, void *stack
 
     struct parameters {void *caller; unsigned int index;} temp, *args = stack;
     struct multi_task *current = (struct multi_task *)task;
-    unsigned int c = find_free_task(current);
+    struct multi_task *next = find_free_task(current);
 
-    if (!c)
+    if (!next)
         return 0;
 
     memory_copy(&temp, args, sizeof (struct parameters));
 
-    init_task(&tasks[c], c);
+    next->base.state = TASK_STATE_USED;
 
-    tasks[c].base.state = TASK_STATE_USED;
+    map_kernel(next);
+    mmu_load(&directories[next->index]);
 
-    map_kernel(&tasks[c]);
-    mmu_load(&directories[c]);
+    memory_copy(next->base.descriptors, task->descriptors, sizeof (struct task_descriptor) * TASK_DESCRIPTORS);
 
-    memory_copy(tasks[c].base.descriptors, task->descriptors, sizeof (struct task_descriptor) * TASK_DESCRIPTORS);
-
-    return self->calls[CONTAINER_CALL_EXECUTE](self, &tasks[c].base, &temp);
+    return self->calls[CONTAINER_CALL_EXECUTE](self, &next->base, &temp);
 
 }
 
