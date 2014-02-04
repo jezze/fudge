@@ -36,6 +36,9 @@ void list_remove(struct list *list, struct list_item *item)
 
     struct list_item *current;
 
+    if (!list->head)
+        return;
+
     if (list->head == item)
     {
 

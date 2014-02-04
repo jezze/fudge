@@ -21,9 +21,9 @@ static struct mmu_directory *directories = (struct mmu_directory *)ARCH_DIRECTOR
 static struct mmu_table *kcode = (struct mmu_table *)ARCH_TABLE_KCODE_BASE;
 static struct mmu_table *ucode = (struct mmu_table *)ARCH_TABLE_UCODE_BASE;
 static struct mmu_table *ustack = (struct mmu_table *)ARCH_TABLE_USTACK_BASE;
-static struct list active;
-static struct list blocked;
 static struct list free;
+static struct list used;
+static struct list blocked;
 
 static struct multi_task
 {
@@ -35,21 +35,18 @@ static struct multi_task
 
 } tasks[TASKS];
 
-static struct multi_task *find_next_task()
+struct list_item *get_item_with_state(struct list *list, int state)
 {
 
-    unsigned int i;
+    struct list_item *current;
 
-    for (i = TASKS - 1; i > 0; i--)
+    for (current = list->head; current; current = current->next)
     {
 
-        if (!task_test_flag(&tasks[i].base, TASK_STATE_USED))
-            continue;
+        struct multi_task *task = current->self;
 
-        if (task_test_flag(&tasks[i].base, TASK_STATE_BLOCKED))
-            continue;
-
-        return &tasks[i];
+        if (task_test_flag(&task->base, state))
+            return current;
 
     }
 
@@ -57,22 +54,93 @@ static struct multi_task *find_next_task()
 
 }
 
-static struct multi_task *find_free_task(struct multi_task *task)
+struct list_item *get_item_without_state(struct list *list, int state)
 {
 
-    unsigned int i;
+    struct list_item *current;
 
-    for (i = task->index; i < TASKS; i++)
+    for (current = list->head; current; current = current->next)
     {
 
-        if (task_test_flag(&tasks[i].base, TASK_STATE_USED))
-            continue;
+        struct multi_task *task = current->self;
 
-        return &tasks[i];
+        if (!task_test_flag(&task->base, state))
+            return current;
 
     }
 
     return 0;
+
+}
+
+void prepare()
+{
+
+    struct list_item *item;
+
+    while ((item = get_item_with_state(&free, TASK_STATE_USED)))
+    {
+
+        list_remove(&free, item);
+        list_init_item(item, item->self);
+        list_add(&used, item);
+
+    }
+
+    while ((item = get_item_without_state(&used, TASK_STATE_USED)))
+    {
+
+        list_remove(&used, item);
+        list_init_item(item, item->self);
+        list_add(&free, item);
+
+    }
+
+    while ((item = get_item_with_state(&used, TASK_STATE_BLOCKED)))
+    {
+
+        list_remove(&used, item);
+        list_init_item(item, item->self);
+        list_add(&blocked, item);
+
+    }
+
+    while ((item = get_item_without_state(&blocked, TASK_STATE_BLOCKED)))
+    {
+
+        list_remove(&blocked, item);
+        list_init_item(item, item->self);
+        list_add(&used, item);
+
+    }
+
+}
+
+static struct multi_task *find_next_task()
+{
+
+    struct list_item *current;
+
+    prepare();
+
+    if (!used.head)
+        return 0;
+
+    for (current = used.head; current->next; current = current->next);
+
+    return current->self;
+
+}
+
+static struct multi_task *find_free_task(struct multi_task *task)
+{
+
+    prepare();
+
+    if (!free.head)
+        return 0;
+
+    return free.head->self;
 
 }
 
@@ -186,9 +254,9 @@ struct task *multi_setup(struct container *container)
 
     container->calls[CONTAINER_CALL_SPAWN] = spawn;
 
-    list_init(&active);
-    list_init(&blocked);
     list_init(&free);
+    list_init(&used);
+    list_init(&blocked);
 
     for (i = 1; i < TASKS; i++)
     {
