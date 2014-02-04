@@ -21,9 +21,6 @@ static struct mmu_directory *directories = (struct mmu_directory *)ARCH_DIRECTOR
 static struct mmu_table *kcode = (struct mmu_table *)ARCH_TABLE_KCODE_BASE;
 static struct mmu_table *ucode = (struct mmu_table *)ARCH_TABLE_UCODE_BASE;
 static struct mmu_table *ustack = (struct mmu_table *)ARCH_TABLE_USTACK_BASE;
-static struct list free;
-static struct list used;
-static struct list blocked;
 
 static struct multi_task
 {
@@ -35,7 +32,11 @@ static struct multi_task
 
 } tasks[TASKS];
 
-struct list_item *get_item_with_state(struct list *list, int state)
+static struct list free;
+static struct list used;
+static struct list blocked;
+
+static struct list_item *get_item_with_state(struct list *list, int state)
 {
 
     struct list_item *current;
@@ -54,7 +55,7 @@ struct list_item *get_item_with_state(struct list *list, int state)
 
 }
 
-struct list_item *get_item_without_state(struct list *list, int state)
+static struct list_item *get_item_without_state(struct list *list, int state)
 {
 
     struct list_item *current;
@@ -73,7 +74,7 @@ struct list_item *get_item_without_state(struct list *list, int state)
 
 }
 
-void prepare()
+static void task_sched_prepare()
 {
 
     struct list_item *item;
@@ -116,12 +117,12 @@ void prepare()
 
 }
 
-static struct multi_task *find_next_task()
+static struct task *task_sched_find_next_task()
 {
 
     struct list_item *current;
 
-    prepare();
+    task_sched_prepare();
 
     if (!used.head)
         return 0;
@@ -132,15 +133,31 @@ static struct multi_task *find_next_task()
 
 }
 
-static struct multi_task *find_free_task(struct multi_task *task)
+static struct task *task_sched_find_free_task()
 {
 
-    prepare();
+    task_sched_prepare();
 
     if (!free.head)
         return 0;
 
     return free.head->self;
+
+}
+
+static void task_sched_add(struct list_item *item)
+{
+
+    list_add(&free, item);
+
+}
+
+static void task_sched_init()
+{
+
+    list_init(&free);
+    list_init(&used);
+    list_init(&blocked);
 
 }
 
@@ -163,7 +180,7 @@ static void map_user(struct multi_task *task, unsigned int address)
 void multi_map(unsigned int address)
 {
 
-    struct multi_task *task = find_next_task();
+    struct multi_task *task = (struct multi_task *)task_sched_find_next_task();
 
     map_user(task, address);
 
@@ -173,7 +190,7 @@ struct task *multi_schedule(struct task *task, struct cpu_general *general, stru
 {
 
     struct multi_task *current = (struct multi_task *)task;
-    struct multi_task *next = find_next_task();
+    struct multi_task *next = (struct multi_task *)task_sched_find_next_task();
 
     if (current)
     {
@@ -214,7 +231,7 @@ static void init_task(struct multi_task *task, unsigned int index)
 
     memory_clear(task, sizeof (struct multi_task));
     task_init(&task->base, 0, 0, TASK_STACKLIMIT);
-    list_init_item(&task->item, task);
+    list_init_item(&task->item, &task->base);
 
     task->index = index;
 
@@ -233,8 +250,7 @@ static unsigned int spawn(struct container *self, struct task *task, void *stack
 {
 
     struct parameters {void *caller; unsigned int index;} args;
-    struct multi_task *current = (struct multi_task *)task;
-    struct multi_task *next = find_free_task(current);
+    struct multi_task *next = (struct multi_task *)task_sched_find_free_task();
 
     if (!next)
         return 0;
@@ -251,25 +267,26 @@ struct task *multi_setup(struct container *container)
 {
 
     unsigned int i;
+    struct multi_task *task;
 
     container->calls[CONTAINER_CALL_SPAWN] = spawn;
 
-    list_init(&free);
-    list_init(&used);
-    list_init(&blocked);
+    task_sched_init();
 
     for (i = 1; i < TASKS; i++)
     {
 
         init_task(&tasks[i], i);
-        list_add(&free, &tasks[i].item);
+        task_sched_add(&tasks[i].item);
 
     }
 
-    activate_task(&tasks[1]);
+    task = (struct multi_task *)task_sched_find_free_task();
+
+    activate_task(task);
     mmu_enable();
 
-    return &tasks[1].base;
+    return &task->base;
 
 }
 
