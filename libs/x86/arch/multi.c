@@ -121,7 +121,14 @@ struct task *multi_schedule(struct task *task, struct cpu_general *general, stru
     }
 
     if (!next)
+    {
+
+        interrupt->eip = (unsigned int)arch_halt;
+        interrupt->esp = ARCH_KSTACK_LIMIT;
+
         return 0;
+
+    }
 
     interrupt->eip = next->base.registers.ip;
     interrupt->esp = next->base.registers.sp;

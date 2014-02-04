@@ -43,8 +43,6 @@ unsigned short arch_schedule(struct cpu_general *general, struct cpu_interrupt *
     }
 
     interrupt->code = state.kselector.code;
-    interrupt->eip = (unsigned int)arch_halt;
-    interrupt->esp = ARCH_KSTACK_LIMIT;
 
     return state.kselector.data;
 
