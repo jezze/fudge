@@ -33,7 +33,20 @@ unsigned short arch_schedule(struct cpu_general *general, struct cpu_interrupt *
 
     state.container->current = multi_schedule(state.container->current, general, interrupt);
 
-    return state.uselector.data;
+    if (state.container->current)
+    {
+
+        interrupt->code = state.uselector.code;
+
+        return state.uselector.data;
+
+    }
+
+    interrupt->code = state.kselector.code;
+    interrupt->eip = (unsigned int)arch_halt;
+    interrupt->esp = ARCH_KSTACK_LIMIT;
+
+    return state.kselector.data;
 
 }
 

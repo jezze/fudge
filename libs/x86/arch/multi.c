@@ -107,18 +107,27 @@ struct task *multi_schedule(struct task *task, struct cpu_general *general, stru
     struct multi_task *current = (struct multi_task *)task;
     struct multi_task *next = find_next_task();
 
-    if (current == next)
-        return &next->base;
+    if (current)
+    {
 
-    current->base.registers.ip = interrupt->eip;
-    current->base.registers.sp = interrupt->esp;
+        if (current == next)
+            return &current->base;
 
-    memory_copy(&current->general, general, sizeof (struct cpu_general));
-    mmu_load(&directories[next->index]);
-    memory_copy(general, &next->general, sizeof (struct cpu_general));
+        current->base.registers.ip = interrupt->eip;
+        current->base.registers.sp = interrupt->esp;
+
+        memory_copy(&current->general, general, sizeof (struct cpu_general));
+
+    }
+
+    if (!next)
+        return 0;
 
     interrupt->eip = next->base.registers.ip;
     interrupt->esp = next->base.registers.sp;
+
+    memory_copy(general, &next->general, sizeof (struct cpu_general));
+    mmu_load(&directories[next->index]);
 
     return &next->base;
 
