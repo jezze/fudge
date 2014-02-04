@@ -120,23 +120,24 @@ struct task *multi_schedule(struct task *task, struct cpu_general *general, stru
 
     }
 
-    if (!next)
+    if (next)
     {
 
-        interrupt->eip = (unsigned int)arch_halt;
-        interrupt->esp = ARCH_KSTACK_LIMIT;
+        mmu_load(&directories[next->index]);
 
-        return 0;
+        interrupt->eip = next->base.registers.ip;
+        interrupt->esp = next->base.registers.sp;
+
+        memory_copy(general, &next->general, sizeof (struct cpu_general));
+
+        return &next->base;
 
     }
 
-    interrupt->eip = next->base.registers.ip;
-    interrupt->esp = next->base.registers.sp;
+    interrupt->eip = (unsigned int)arch_halt;
+    interrupt->esp = ARCH_KSTACK_LIMIT;
 
-    memory_copy(general, &next->general, sizeof (struct cpu_general));
-    mmu_load(&directories[next->index]);
-
-    return &next->base;
+    return 0;
 
 }
 
