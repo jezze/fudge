@@ -26,7 +26,6 @@ static struct multi_task
 {
 
     struct task base;
-    struct list_item item;
     unsigned int index;
     struct cpu_general general;
 
@@ -102,7 +101,6 @@ static void init_task(struct multi_task *task, unsigned int index)
 
     memory_clear(task, sizeof (struct multi_task));
     task_init(&task->base, 0, 0, TASK_STACKLIMIT);
-    list_init_item(&task->item, &task->base);
 
     task->index = index;
 
@@ -148,7 +146,7 @@ struct task *multi_setup(struct container *container)
     {
 
         init_task(&tasks[i], i);
-        task_sched_add(&tasks[i].item);
+        task_sched_add(&tasks[i].base);
 
     }
 

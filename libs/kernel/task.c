@@ -115,10 +115,10 @@ struct task *task_sched_find_free_task()
 
 }
 
-void task_sched_add(struct list_item *item)
+void task_sched_add(struct task *task)
 {
 
-    list_add(&free, item);
+    list_add(&free, &task->item);
 
 }
 
@@ -156,6 +156,7 @@ void task_init(struct task *task, enum task_state state, unsigned long ip, unsig
 {
 
     memory_clear(task, sizeof (struct task));
+    list_init_item(&task->item, task);
 
     task->state = state;
     task->registers.ip = ip;
