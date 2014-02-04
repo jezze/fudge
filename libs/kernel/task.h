@@ -26,6 +26,10 @@ struct task
 
 };
 
+struct task *task_sched_find_next_task();
+struct task *task_sched_find_free_task();
+void task_sched_add(struct list_item *item);
+void task_sched_init();
 void task_set_flag(struct task *task, enum task_state state);
 void task_unset_flag(struct task *task, enum task_state state);
 unsigned int task_test_flag(struct task *task, enum task_state state);
