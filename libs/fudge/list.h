@@ -2,6 +2,7 @@ struct list_item
 {
 
     struct list_item *next;
+    struct list_item *prev;
     void *self;
 
 };
@@ -10,6 +11,7 @@ struct list
 {
 
     struct list_item *head;
+    struct list_item *tail;
 
 };
 

@@ -53,7 +53,6 @@ static void prepare()
     {
 
         list_remove(&free, item);
-        list_init_item(item, item->self);
         list_add(&used, item);
 
     }
@@ -62,7 +61,6 @@ static void prepare()
     {
 
         list_remove(&used, item);
-        list_init_item(item, item->self);
         list_add(&free, item);
 
     }
@@ -71,7 +69,6 @@ static void prepare()
     {
 
         list_remove(&used, item);
-        list_init_item(item, item->self);
         list_add(&blocked, item);
 
     }
@@ -80,7 +77,6 @@ static void prepare()
     {
 
         list_remove(&blocked, item);
-        list_init_item(item, item->self);
         list_add(&used, item);
 
     }
@@ -90,16 +86,12 @@ static void prepare()
 struct task *task_sched_find_next_task()
 {
 
-    struct list_item *current;
-
     prepare();
 
-    if (!used.head)
+    if (!used.tail)
         return 0;
 
-    for (current = used.head; current->next; current = current->next);
-
-    return current->self;
+    return used.tail->self;
 
 }
 

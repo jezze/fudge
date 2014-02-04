@@ -4,63 +4,72 @@
 void list_add(struct list *list, struct list_item *item)
 {
 
-    struct list_item *current;
-
     if (list->head == 0)
     {
 
         list->head = item;
+        list->tail = item;
+        item->next = 0;
+        item->prev = 0;
 
         return;
 
     }
 
-    for (current = list->head; current; current = current->next)
-    {
-
-        if (current->next == 0)
-        {
-
-            current->next = item;
-
-            break;
-
-        }
-
-    }
+    list->tail->next = item;
+    item->next = 0;
+    item->prev = list->tail;
+    list->tail = item;
 
 }
 
 void list_remove(struct list *list, struct list_item *item)
 {
 
-    struct list_item *current;
-
     if (!list->head)
         return;
+
+    if (list->head == list->tail && list->head == item)
+    {
+
+        list->head = 0;
+        list->tail = 0;
+        item->next = 0;
+        item->prev = 0;
+
+        return;
+
+    }
 
     if (list->head == item)
     {
 
         list->head = item->next;
-
-        return;
+        list->head->prev = 0;
 
     }
 
-    for (current = list->head; current; current = current->next)
+    else if (list->tail == item)
     {
 
-        if (current->next == item)
-        {
-
-            current->next = current->next->next;
-
-            break;
-
-        }
+        list->tail = list->tail->prev;
+        list->tail->next = 0;
 
     }
+
+    else
+    {
+
+        struct list_item *n = item->next;
+        struct list_item *p = item->prev;
+
+        n->prev = item->prev;
+        p->next = item->next;
+
+    }
+
+    item->next = 0;
+    item->prev = 0;
 
 }
 
