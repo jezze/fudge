@@ -26,4 +26,7 @@ struct task
 
 };
 
+void task_set_flag(struct task *task, enum task_state state);
+void task_unset_flag(struct task *task, enum task_state state);
+unsigned int task_test_flag(struct task *task, enum task_state state);
 void task_init(struct task *task, enum task_state state, unsigned long ip, unsigned long sp);

@@ -43,10 +43,10 @@ static struct multi_task *find_next_task()
     for (i = TASKS - 1; i > 0; i--)
     {
 
-        if (!(tasks[i].base.state & TASK_STATE_USED))
+        if (!task_test_flag(&tasks[i].base, TASK_STATE_USED))
             continue;
 
-        if (tasks[i].base.state & TASK_STATE_BLOCKED)
+        if (task_test_flag(&tasks[i].base, TASK_STATE_BLOCKED))
             continue;
 
         return &tasks[i];
@@ -65,7 +65,7 @@ static struct multi_task *find_free_task(struct multi_task *task)
     for (i = task->index; i < TASKS; i++)
     {
 
-        if (tasks[i].base.state & TASK_STATE_USED)
+        if (task_test_flag(&tasks[i].base, TASK_STATE_USED))
             continue;
 
         return &tasks[i];
@@ -155,8 +155,7 @@ static void init_task(struct multi_task *task, unsigned int index)
 static void activate_task(struct multi_task *task)
 {
 
-    task->base.state = TASK_STATE_USED;
-
+    task_set_flag(&task->base, TASK_STATE_USED);
     map_kernel(task);
     mmu_load(&directories[task->index]);
 
