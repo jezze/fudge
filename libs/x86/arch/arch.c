@@ -8,12 +8,20 @@
 #include "arch.h"
 #include "gdt.h"
 #include "idt.h"
-#include "multi.h"
 #include "tss.h"
+#include "mmu.h"
 
 #define ARCH_GDT_DESCRIPTORS            6
 #define ARCH_IDT_DESCRIPTORS            256
 #define ARCH_TSS_DESCRIPTORS            1
+#define ARCH_KSPACE_BASE                ARCH_BIOS_BASE
+#define ARCH_KSPACE_LIMIT               ARCH_TABLE_USTACK_LIMIT
+#define ARCH_KSPACE_SIZE                (ARCH_KSPACE_LIMIT - ARCH_KSPACE_BASE)
+#define ARCH_TASKS                      64
+#define ARCH_TASK_CODESIZE              (ARCH_UCODE_SIZE / ARCH_TASKS)
+#define ARCH_TASK_STACKSIZE             (ARCH_USTACK_SIZE / ARCH_TASKS)
+#define ARCH_TASK_STACKLIMIT            0x80000000
+#define ARCH_TASK_STACKBASE             (ARCH_TASK_STACKLIMIT - ARCH_TASK_STACKSIZE)
 
 static struct
 {
@@ -28,21 +36,119 @@ static struct
 
 } state;
 
+static struct arch_task
+{
+
+    struct task base;
+    unsigned int index;
+    struct cpu_general general;
+
+} tasks[ARCH_TASKS];
+
+static struct mmu_directory *directories = (struct mmu_directory *)ARCH_DIRECTORY_BASE;
+static struct mmu_table *kcode = (struct mmu_table *)ARCH_TABLE_KCODE_BASE;
+static struct mmu_table *ucode = (struct mmu_table *)ARCH_TABLE_UCODE_BASE;
+static struct mmu_table *ustack = (struct mmu_table *)ARCH_TABLE_USTACK_BASE;
+
+static void map_kernel(struct task *t)
+{
+
+    struct arch_task *task = (struct arch_task *)t;
+
+    memory_clear(&directories[task->index], sizeof (struct mmu_directory));
+    mmu_map(&directories[task->index], &kcode[0], ARCH_KSPACE_BASE, ARCH_KSPACE_BASE, ARCH_KSPACE_SIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
+
+}
+
+static void map_user(struct task *t, unsigned int address)
+{
+
+    struct arch_task *task = (struct arch_task *)t;
+
+    mmu_map(&directories[task->index], &ucode[task->index], ARCH_UCODE_BASE + (task->index * ARCH_TASK_CODESIZE), address, ARCH_TASK_CODESIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
+    mmu_map(&directories[task->index], &ustack[task->index], ARCH_USTACK_BASE + (task->index * ARCH_TASK_STACKSIZE), ARCH_TASK_STACKBASE, ARCH_TASK_STACKSIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
+
+}
+
+static void activate_task(struct task *t)
+{
+
+    struct arch_task *task = (struct arch_task *)t;
+
+    task_sched_use(t);
+    map_kernel(t);
+    mmu_load(&directories[task->index]);
+
+}
+
+static void init_task(struct arch_task *task, unsigned int index)
+{
+
+    memory_clear(task, sizeof (struct arch_task));
+    task_init(&task->base, 0, ARCH_TASK_STACKLIMIT);
+
+    task->index = index;
+
+}
+
+static unsigned int spawn(struct container *self, struct task *task, void *stack)
+{
+
+    struct parameters {void *caller; unsigned int index;} args;
+    struct task *next = task_sched_find_free_task();
+
+    if (!next)
+        return 0;
+
+    memory_copy(&args, stack, sizeof (struct parameters));
+    memory_copy(next->descriptors, task->descriptors, sizeof (struct task_descriptor) * TASK_DESCRIPTORS);
+    activate_task(next);
+
+    return self->calls[CONTAINER_CALL_EXECUTE](self, next, &args);
+
+}
+
 unsigned short arch_schedule(struct cpu_general *general, struct cpu_interrupt *interrupt)
 {
 
-    state.container->current = multi_schedule(state.container->current, general, interrupt);
+    struct arch_task *current = (struct arch_task *)state.container->current;
+    struct arch_task *next = (struct arch_task *)task_sched_find_next_task();
 
-    if (state.container->current)
+    if (current)
     {
 
+        if (current == next)
+            return state.uselector.data;
+
+        current->base.registers.ip = interrupt->eip;
+        current->base.registers.sp = interrupt->esp;
+
+        memory_copy(&current->general, general, sizeof (struct cpu_general));
+
+    }
+
+    if (next)
+    {
+
+        mmu_load(&directories[next->index]);
+
         interrupt->code = state.uselector.code;
+        interrupt->eip = next->base.registers.ip;
+        interrupt->esp = next->base.registers.sp;
+
+        memory_copy(general, &next->general, sizeof (struct cpu_general));
+
+        state.container->current = &next->base;
 
         return state.uselector.data;
 
     }
 
     interrupt->code = state.kselector.code;
+    interrupt->eip = (unsigned int)arch_halt;
+    interrupt->esp = ARCH_KSTACK_LIMIT;
+
+    state.container->current = 0;
 
     return state.kselector.data;
 
@@ -65,7 +171,9 @@ unsigned short arch_pagefault(void *stack)
     if (registers->interrupt.code == state.kselector.code)
     {
 
-        multi_map(cpu_get_cr2());
+        struct task *task = task_sched_find_next_task();
+
+        map_user(task, cpu_get_cr2());
 
         return state.kselector.data;
 
@@ -83,6 +191,23 @@ unsigned short arch_syscall(void *stack)
     registers->general.eax = (state.container->calls[registers->general.eax]) ? state.container->calls[registers->general.eax](state.container, state.container->current, (void *)registers->interrupt.esp) : 0;
 
     return arch_schedule(&registers->general, &registers->interrupt);
+
+}
+
+static struct task *arch_setup_tasks()
+{
+
+    unsigned int i;
+
+    for (i = 1; i < ARCH_TASKS; i++)
+    {
+
+        init_task(&tasks[i], i);
+        task_sched_add(&tasks[i].base);
+
+    }
+
+    return task_sched_find_free_task();
 
 }
 
@@ -108,8 +233,11 @@ void arch_setup(unsigned int count, struct kernel_module *modules)
     cpu_set_tss(state.tselector.info);
 
     state.container = kernel_setup();
-    state.container->current = multi_setup(state.container);
+    state.container->calls[CONTAINER_CALL_SPAWN] = spawn;
+    state.container->current = arch_setup_tasks();
 
+    activate_task(state.container->current);
+    mmu_enable();
     kernel_setup_modules(count, modules);
     arch_usermode(state.uselector.code, state.uselector.data, state.container->current->registers.ip, state.container->current->registers.sp);
 

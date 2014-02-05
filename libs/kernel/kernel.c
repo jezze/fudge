@@ -105,6 +105,7 @@ void kernel_setup_modules(unsigned int count, struct kernel_module *modules)
 struct container *kernel_setup()
 {
 
+    task_sched_init();
     vfs_setup();
     vfs_init_cpio(&state.vfs.protocols[0]);
     vfs_register_protocol(&state.vfs.protocols[0]);
