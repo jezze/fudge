@@ -248,18 +248,19 @@ static unsigned int execute(struct container *self, struct task *task, void *sta
     if (!task->registers.ip)
         return 0;
 
-    return task->state;
+    return task->registers.ip;
 
 }
 
 static unsigned int exit(struct container *self, struct task *task, void *stack)
 {
 
-    task->state = 0;
+    task_sched_unuse(task);
+
     task->registers.ip = 0;
     task->registers.sp = 0;
 
-    return task->state;
+    return 0;
 
 }
 

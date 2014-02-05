@@ -29,7 +29,7 @@ void kernel_rendezvous_sleep(struct kernel_rendezvous *rendezvous, unsigned int 
 
     rendezvous->task = state.container.current;
 
-    task_set_flag(rendezvous->task, TASK_STATE_BLOCKED);
+    task_sched_block(rendezvous->task);
 
 }
 
@@ -42,7 +42,7 @@ void kernel_rendezvous_unsleep(struct kernel_rendezvous *rendezvous, unsigned in
     if (!rendezvous->task)
         return;
 
-    task_unset_flag(rendezvous->task, TASK_STATE_BLOCKED);
+    task_sched_unblock(rendezvous->task);
 
     rendezvous->task = 0;
 

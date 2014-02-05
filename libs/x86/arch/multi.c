@@ -100,7 +100,7 @@ static void init_task(struct multi_task *task, unsigned int index)
 {
 
     memory_clear(task, sizeof (struct multi_task));
-    task_init(&task->base, 0, 0, TASK_STACKLIMIT);
+    task_init(&task->base, 0, TASK_STACKLIMIT);
 
     task->index = index;
 
@@ -109,7 +109,7 @@ static void init_task(struct multi_task *task, unsigned int index)
 static void activate_task(struct multi_task *task)
 {
 
-    task_set_flag(&task->base, TASK_STATE_USED);
+    task_sched_use(&task->base);
     map_kernel(task);
     mmu_load(&directories[task->index]);
 

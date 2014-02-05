@@ -6,87 +6,47 @@ static struct list free;
 static struct list used;
 static struct list blocked;
 
-static struct list_item *get_item_with_state(struct list *list, int state)
+void task_sched_block(struct task *task)
 {
 
-    struct list_item *current;
-
-    for (current = list->head; current; current = current->next)
-    {
-
-        struct task *task = current->self;
-
-        if (task_test_flag(task, state))
-            return current;
-
-    }
-
-    return 0;
+    list_remove(&used, &task->item);
+    list_add(&blocked, &task->item);
 
 }
 
-static struct list_item *get_item_without_state(struct list *list, int state)
+void task_sched_unblock(struct task *task)
 {
 
-    struct list_item *current;
-
-    for (current = list->head; current; current = current->next)
-    {
-
-        struct task *task = current->self;
-
-        if (!task_test_flag(task, state))
-            return current;
-
-    }
-
-    return 0;
+    list_remove(&blocked, &task->item);
+    list_add(&used, &task->item);
 
 }
 
-static void prepare()
+void task_sched_use(struct task *task)
 {
 
-    struct list_item *item;
+    list_remove(&free, &task->item);
+    list_add(&used, &task->item);
 
-    while ((item = get_item_with_state(&free, TASK_STATE_USED)))
-    {
+}
 
-        list_remove(&free, item);
-        list_add(&used, item);
+void task_sched_unuse(struct task *task)
+{
 
-    }
+    list_remove(&used, &task->item);
+    list_add(&free, &task->item);
 
-    while ((item = get_item_without_state(&used, TASK_STATE_USED)))
-    {
+}
 
-        list_remove(&used, item);
-        list_add(&free, item);
+void task_sched_add(struct task *task)
+{
 
-    }
-
-    while ((item = get_item_with_state(&used, TASK_STATE_BLOCKED)))
-    {
-
-        list_remove(&used, item);
-        list_add(&blocked, item);
-
-    }
-
-    while ((item = get_item_without_state(&blocked, TASK_STATE_BLOCKED)))
-    {
-
-        list_remove(&blocked, item);
-        list_add(&used, item);
-
-    }
+    list_add(&free, &task->item);
 
 }
 
 struct task *task_sched_find_next_task()
 {
-
-    prepare();
 
     if (!used.tail)
         return 0;
@@ -98,19 +58,10 @@ struct task *task_sched_find_next_task()
 struct task *task_sched_find_free_task()
 {
 
-    prepare();
-
     if (!free.head)
         return 0;
 
     return free.head->self;
-
-}
-
-void task_sched_add(struct task *task)
-{
-
-    list_add(&free, &task->item);
 
 }
 
@@ -123,34 +74,12 @@ void task_sched_init()
 
 }
 
-void task_set_flag(struct task *task, enum task_state state)
-{
-
-    task->state |= state;
-
-}
-
-void task_unset_flag(struct task *task, enum task_state state)
-{
-
-    task->state &= ~state;
-
-}
-
-unsigned int task_test_flag(struct task *task, enum task_state state)
-{
-
-    return task->state & state;
-
-}
-
-void task_init(struct task *task, enum task_state state, unsigned long ip, unsigned long sp)
+void task_init(struct task *task, unsigned long ip, unsigned long sp)
 {
 
     memory_clear(task, sizeof (struct task));
     list_init_item(&task->item, task);
 
-    task->state = state;
     task->registers.ip = ip;
     task->registers.sp = sp;
 
