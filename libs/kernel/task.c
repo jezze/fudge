@@ -58,10 +58,10 @@ struct task *task_sched_find_next_task()
 struct task *task_sched_find_free_task()
 {
 
-    if (!free.head)
+    if (!free.tail)
         return 0;
 
-    return free.head->self;
+    return free.tail->self;
 
 }
 
