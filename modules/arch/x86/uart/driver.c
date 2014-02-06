@@ -1,4 +1,6 @@
 #include <fudge/module.h>
+#include <kernel/vfs.h>
+#include <kernel/kernel.h>
 #include <base/base.h>
 #include <base/terminal.h>
 #include <arch/x86/platform/platform.h>
@@ -218,6 +220,7 @@ static void handle_irq(struct base_device *device)
     char data = read(platformDevice);
 
     write_stream(&driver->stream, 1, &data);
+    kernel_rendezvous_unsleep(&driver->rdata, 1);
 
 }
 
@@ -252,7 +255,11 @@ static unsigned int read_terminal_data(struct base_device *device, unsigned int 
 
     struct uart_driver *driver = (struct uart_driver *)device->driver;
 
-    return read_stream(&driver->stream, count, buffer);
+    count = read_stream(&driver->stream, count, buffer);
+
+    kernel_rendezvous_sleep(&driver->rdata, !count);
+
+    return count;
 
 }
 
