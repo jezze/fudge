@@ -12,7 +12,6 @@
 static struct
 {
 
-    struct container container;
     struct {struct binary_protocol protocols[KERNEL_BINARY_PROTOCOLS];} binary;
     struct {struct vfs_protocol protocols[KERNEL_VFS_PROTOCOLS];} vfs;
 
@@ -48,7 +47,7 @@ void kernel_rendezvous_unsleep(struct kernel_rendezvous *rendezvous, unsigned in
 
 }
 
-void kernel_setup_modules(struct task *task, unsigned int count, struct kernel_module *modules)
+void kernel_setup_modules(struct container *container, struct task *task, unsigned int count, struct kernel_module *modules)
 {
 
     unsigned int i;
@@ -81,12 +80,12 @@ void kernel_setup_modules(struct task *task, unsigned int count, struct kernel_m
         if (!protocol)
             continue;
 
-        state.container.mounts[0x01].parent.session.backend = session.backend;
-        state.container.mounts[0x01].parent.session.protocol = session.protocol;
-        state.container.mounts[0x01].parent.id = session.protocol->root(session.backend);
-        state.container.mounts[0x01].child.session.backend = session.backend;
-        state.container.mounts[0x01].child.session.protocol = session.protocol;
-        state.container.mounts[0x01].child.id = session.protocol->root(session.backend);
+        container->mounts[0x01].parent.session.backend = session.backend;
+        container->mounts[0x01].parent.session.protocol = session.protocol;
+        container->mounts[0x01].parent.id = session.protocol->root(session.backend);
+        container->mounts[0x01].child.session.backend = session.backend;
+        container->mounts[0x01].child.session.protocol = session.protocol;
+        container->mounts[0x01].child.id = session.protocol->root(session.backend);
         task->descriptors[0x01].session.backend = session.backend;
         task->descriptors[0x01].session.protocol = session.protocol;
         task->descriptors[0x01].id = session.protocol->root(session.backend);
@@ -102,7 +101,7 @@ void kernel_setup_modules(struct task *task, unsigned int count, struct kernel_m
 
 }
 
-struct container *kernel_setup()
+void kernel_setup()
 {
 
     task_sched_init();
@@ -114,9 +113,6 @@ struct container *kernel_setup()
     binary_setup();
     binary_init_elf(&state.binary.protocols[0]);
     binary_register_protocol(&state.binary.protocols[0]);
-    container_init(&state.container);
-
-    return &state.container;
 
 }
 

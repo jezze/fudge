@@ -17,6 +17,7 @@
 #define ARCH_KSPACE_BASE                ARCH_BIOS_BASE
 #define ARCH_KSPACE_LIMIT               ARCH_TABLE_USTACK_LIMIT
 #define ARCH_KSPACE_SIZE                (ARCH_KSPACE_LIMIT - ARCH_KSPACE_BASE)
+#define ARCH_CONTAINERS                 8
 #define ARCH_TASKS                      64
 #define ARCH_TASK_CODESIZE              (ARCH_UCODE_SIZE / ARCH_TASKS)
 #define ARCH_TASK_STACKSIZE             (ARCH_USTACK_SIZE / ARCH_TASKS)
@@ -26,8 +27,8 @@
 static struct
 {
 
-    struct task *task;
     struct container *container;
+    struct task *task;
     struct {struct gdt_pointer pointer; struct gdt_descriptor descriptors[ARCH_GDT_DESCRIPTORS];} gdt;
     struct {struct idt_pointer pointer; struct idt_descriptor descriptors[ARCH_IDT_DESCRIPTORS];} idt;
     struct {struct tss_pointer pointer; struct tss_descriptor descriptors[ARCH_TSS_DESCRIPTORS];} tss;
@@ -36,6 +37,13 @@ static struct
     struct {unsigned short info;} tselector;
 
 } state;
+
+static struct arch_container
+{
+
+    struct container base;
+
+} containers[ARCH_CONTAINERS];
 
 static struct arch_task
 {
@@ -50,6 +58,14 @@ static struct mmu_directory *directories = (struct mmu_directory *)ARCH_DIRECTOR
 static struct mmu_table *kcode = (struct mmu_table *)ARCH_TABLE_KCODE_BASE;
 static struct mmu_table *ucode = (struct mmu_table *)ARCH_TABLE_UCODE_BASE;
 static struct mmu_table *ustack = (struct mmu_table *)ARCH_TABLE_USTACK_BASE;
+
+static void init_container(struct arch_container *container)
+{
+
+    memory_clear(container, sizeof (struct arch_container));
+    container_init(&container->base);
+
+}
 
 static void activate_task(struct task *t)
 {
@@ -178,11 +194,28 @@ unsigned short arch_syscall(void *stack)
 
 }
 
+static struct container *arch_setup_containers()
+{
+
+    unsigned int i;
+
+    for (i = 1; i < ARCH_CONTAINERS; i++)
+    {
+
+        init_container(&containers[i]);
+
+        containers[i].base.calls[CONTAINER_CALL_SPAWN] = spawn;
+
+    }
+
+    return &containers[1].base;
+
+}
+
 static struct task *arch_setup_tasks()
 {
 
     unsigned int i;
-    struct task *task;
 
     for (i = 1; i < ARCH_TASKS; i++)
     {
@@ -192,11 +225,7 @@ static struct task *arch_setup_tasks()
 
     }
 
-    task = task_sched_find_free_task();
-
-    activate_task(task);
-
-    return task;
+    return &tasks[1].base;
 
 }
 
@@ -221,12 +250,14 @@ void arch_setup(unsigned int count, struct kernel_module *modules)
     cpu_set_idt(&state.idt.pointer);
     cpu_set_tss(state.tselector.info);
 
-    state.container = kernel_setup();
-    state.container->calls[CONTAINER_CALL_SPAWN] = spawn;
+    kernel_setup();
+
+    state.container = arch_setup_containers();
     state.task = arch_setup_tasks();
 
+    activate_task(state.task);
     mmu_enable();
-    kernel_setup_modules(state.task, count, modules);
+    kernel_setup_modules(state.container, state.task, count, modules);
     arch_usermode(state.uselector.code, state.uselector.data, state.task->registers.ip, state.task->registers.sp);
 
 }
