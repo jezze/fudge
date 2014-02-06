@@ -59,14 +59,6 @@ static struct mmu_table *kcode = (struct mmu_table *)ARCH_TABLE_KCODE_BASE;
 static struct mmu_table *ucode = (struct mmu_table *)ARCH_TABLE_UCODE_BASE;
 static struct mmu_table *ustack = (struct mmu_table *)ARCH_TABLE_USTACK_BASE;
 
-static void init_container(struct arch_container *container)
-{
-
-    memory_clear(container, sizeof (struct arch_container));
-    container_init(&container->base);
-
-}
-
 static void activate_task(struct task *t)
 {
 
@@ -76,16 +68,6 @@ static void activate_task(struct task *t)
     memory_clear(&directories[task->index], sizeof (struct mmu_directory));
     mmu_map(&directories[task->index], &kcode[0], ARCH_KSPACE_BASE, ARCH_KSPACE_BASE, ARCH_KSPACE_SIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
     mmu_load(&directories[task->index]);
-
-}
-
-static void init_task(struct arch_task *task, unsigned int index)
-{
-
-    memory_clear(task, sizeof (struct arch_task));
-    task_init(&task->base, 0, ARCH_TASK_STACKLIMIT);
-
-    task->index = index;
 
 }
 
@@ -194,43 +176,10 @@ unsigned short arch_syscall(void *stack)
 
 }
 
-static struct container *arch_setup_containers()
-{
-
-    unsigned int i;
-
-    for (i = 0; i < ARCH_CONTAINERS; i++)
-    {
-
-        init_container(&containers[i]);
-
-        containers[i].base.calls[CONTAINER_CALL_SPAWN] = spawn;
-
-    }
-
-    return &containers[0].base;
-
-}
-
-static struct task *arch_setup_tasks()
-{
-
-    unsigned int i;
-
-    for (i = 0; i < ARCH_TASKS; i++)
-    {
-
-        init_task(&tasks[i], i);
-        task_sched_add(&tasks[i].base);
-
-    }
-
-    return &tasks[0].base;
-
-}
-
 void arch_setup(unsigned int count, struct kernel_module *modules)
 {
+
+    unsigned int i;
 
     gdt_init_pointer(&state.gdt.pointer, ARCH_GDT_DESCRIPTORS, state.gdt.descriptors);
     idt_init_pointer(&state.idt.pointer, ARCH_IDT_DESCRIPTORS, state.idt.descriptors);
@@ -249,11 +198,29 @@ void arch_setup(unsigned int count, struct kernel_module *modules)
     cpu_set_gdt(&state.gdt.pointer);
     cpu_set_idt(&state.idt.pointer);
     cpu_set_tss(state.tselector.info);
-
     kernel_setup();
 
-    state.container = arch_setup_containers();
-    state.task = arch_setup_tasks();
+    for (i = 0; i < ARCH_CONTAINERS; i++)
+    {
+
+        container_init(&containers[i].base);
+
+        containers[i].base.calls[CONTAINER_CALL_SPAWN] = spawn;
+
+    }
+
+    for (i = 0; i < ARCH_TASKS; i++)
+    {
+
+        task_init(&tasks[i].base, 0, ARCH_TASK_STACKLIMIT);
+        task_sched_add(&tasks[i].base);
+
+        tasks[i].index = i;
+
+    }
+
+    state.container = &containers[0].base;
+    state.task = &tasks[0].base;
 
     activate_task(state.task);
     mmu_enable();
