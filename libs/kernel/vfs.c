@@ -28,7 +28,7 @@ struct vfs_protocol *vfs_find_protocol(struct vfs_backend *backend)
     for (current = protocols.head; current; current = current->next)
     {
 
-        struct vfs_protocol *protocol = current->self;
+        struct vfs_protocol *protocol = current->data;
 
         if (protocol->match(backend))
             return protocol;

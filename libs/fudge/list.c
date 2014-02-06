@@ -43,12 +43,12 @@ void list_remove(struct list *list, struct list_item *item)
 
 }
 
-void list_init_item(struct list_item *item, void *self)
+void list_init_item(struct list_item *item, void *data)
 {
 
     memory_clear(item, sizeof (struct list_item));
 
-    item->self = self;
+    item->data = data;
 
 }
 

@@ -51,7 +51,7 @@ struct task *task_sched_find_next_task()
     if (!used.tail)
         return 0;
 
-    return used.tail->self;
+    return used.tail->data;
 
 }
 
@@ -61,7 +61,7 @@ struct task *task_sched_find_free_task()
     if (!free.tail)
         return 0;
 
-    return free.tail->self;
+    return free.tail->data;
 
 }
 

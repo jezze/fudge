@@ -12,7 +12,7 @@ struct binary_protocol *binary_find_protocol(struct vfs_session *session, unsign
     for (current = protocols.head; current; current = current->next)
     {
 
-        struct binary_protocol *protocol = current->self;
+        struct binary_protocol *protocol = current->data;
 
         if (protocol->match(session, id))
             return protocol;

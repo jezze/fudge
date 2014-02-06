@@ -91,7 +91,7 @@ static unsigned int read_group(struct system_node *self, unsigned int offset, un
     for (current = group->children.head; current; current = current->next)
     {
 
-        struct system_node *node = current->self;
+        struct system_node *node = current->data;
         unsigned int l = ascii_length(node->name);
 
         c += memory_read(b + c, count - c, node->name, l, offset);
@@ -131,7 +131,7 @@ unsigned int walk_group(struct system_node *self, unsigned int count, const char
     for (current = group->children.head; current; current = current->next)
     {
 
-        struct system_node *node = current->self;
+        struct system_node *node = current->data;
         unsigned int l = ascii_length(node->name);
 
         if (!memory_match(node->name, path, l))

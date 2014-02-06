@@ -37,8 +37,8 @@ void base_register_driver(struct base_driver *driver)
     for (current = modules.head; current; current = current->next)
     {
 
-        struct base_module *module = current->self;
-        struct base_device *device = current->self;
+        struct base_module *module = current->data;
+        struct base_device *device = current->data;
 
         if (module->type != BASE_TYPE_DEVICE)
             continue;
