@@ -26,6 +26,7 @@
 static struct
 {
 
+    struct task *task;
     struct container *container;
     struct {struct gdt_pointer pointer; struct gdt_descriptor descriptors[ARCH_GDT_DESCRIPTORS];} gdt;
     struct {struct idt_pointer pointer; struct idt_descriptor descriptors[ARCH_IDT_DESCRIPTORS];} idt;
@@ -92,19 +93,19 @@ static unsigned int spawn(struct container *self, struct task *task, void *stack
 unsigned short arch_schedule(struct cpu_general *general, struct cpu_interrupt *interrupt)
 {
 
-    struct arch_task *current = (struct arch_task *)state.container->current;
+    struct arch_task *task = (struct arch_task *)state.task;
     struct arch_task *next = (struct arch_task *)task_sched_find_next_task();
 
-    if (current)
+    if (task)
     {
 
-        if (current == next)
+        if (task == next)
             return state.uselector.data;
 
-        current->base.registers.ip = interrupt->eip;
-        current->base.registers.sp = interrupt->esp;
+        task->base.registers.ip = interrupt->eip;
+        task->base.registers.sp = interrupt->esp;
 
-        memory_copy(&current->general, general, sizeof (struct cpu_general));
+        memory_copy(&task->general, general, sizeof (struct cpu_general));
 
     }
 
@@ -119,7 +120,7 @@ unsigned short arch_schedule(struct cpu_general *general, struct cpu_interrupt *
 
         memory_copy(general, &next->general, sizeof (struct cpu_general));
 
-        state.container->current = &next->base;
+        state.task = &next->base;
 
         return state.uselector.data;
 
@@ -129,7 +130,7 @@ unsigned short arch_schedule(struct cpu_general *general, struct cpu_interrupt *
     interrupt->eip = (unsigned int)arch_halt;
     interrupt->esp = ARCH_KSTACK_LIMIT;
 
-    state.container->current = 0;
+    state.task = 0;
 
     return state.kselector.data;
 
@@ -171,7 +172,7 @@ unsigned short arch_syscall(void *stack)
 
     struct {struct cpu_general general; struct cpu_interrupt interrupt;} *registers = stack;
 
-    registers->general.eax = (state.container->calls[registers->general.eax]) ? state.container->calls[registers->general.eax](state.container, state.container->current, (void *)registers->interrupt.esp) : 0;
+    registers->general.eax = (state.container->calls[registers->general.eax]) ? state.container->calls[registers->general.eax](state.container, state.task, (void *)registers->interrupt.esp) : 0;
 
     return arch_schedule(&registers->general, &registers->interrupt);
 
@@ -181,6 +182,7 @@ static struct task *arch_setup_tasks()
 {
 
     unsigned int i;
+    struct task *task;
 
     for (i = 1; i < ARCH_TASKS; i++)
     {
@@ -190,7 +192,11 @@ static struct task *arch_setup_tasks()
 
     }
 
-    return task_sched_find_free_task();
+    task = task_sched_find_free_task();
+
+    activate_task(task);
+
+    return task;
 
 }
 
@@ -217,12 +223,11 @@ void arch_setup(unsigned int count, struct kernel_module *modules)
 
     state.container = kernel_setup();
     state.container->calls[CONTAINER_CALL_SPAWN] = spawn;
-    state.container->current = arch_setup_tasks();
+    state.task = arch_setup_tasks();
 
-    activate_task(state.container->current);
     mmu_enable();
-    kernel_setup_modules(count, modules);
-    arch_usermode(state.uselector.code, state.uselector.data, state.container->current->registers.ip, state.container->current->registers.sp);
+    kernel_setup_modules(state.task, count, modules);
+    arch_usermode(state.uselector.code, state.uselector.data, state.task->registers.ip, state.task->registers.sp);
 
 }
 

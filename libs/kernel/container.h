@@ -29,7 +29,6 @@ struct container_mount
 struct container
 {
 
-    struct task *current;
     struct container_mount mounts[CONTAINER_MOUNTS];
     unsigned int (*calls[CONTAINER_CALLS])(struct container *self, struct task *task, void *stack);
 

@@ -27,7 +27,7 @@ void kernel_rendezvous_sleep(struct kernel_rendezvous *rendezvous, unsigned int 
     if (rendezvous->task)
         return;
 
-    rendezvous->task = state.container.current;
+    rendezvous->task = task_sched_find_next_task();
 
     task_sched_block(rendezvous->task);
 
@@ -48,7 +48,7 @@ void kernel_rendezvous_unsleep(struct kernel_rendezvous *rendezvous, unsigned in
 
 }
 
-void kernel_setup_modules(unsigned int count, struct kernel_module *modules)
+void kernel_setup_modules(struct task *task, unsigned int count, struct kernel_module *modules)
 {
 
     unsigned int i;
@@ -87,12 +87,12 @@ void kernel_setup_modules(unsigned int count, struct kernel_module *modules)
         state.container.mounts[0x01].child.session.backend = session.backend;
         state.container.mounts[0x01].child.session.protocol = session.protocol;
         state.container.mounts[0x01].child.id = session.protocol->root(session.backend);
-        state.container.current->descriptors[0x01].session.backend = session.backend;
-        state.container.current->descriptors[0x01].session.protocol = session.protocol;
-        state.container.current->descriptors[0x01].id = session.protocol->root(session.backend);
-        state.container.current->registers.ip = protocol->copy_program(&session, id);
+        task->descriptors[0x01].session.backend = session.backend;
+        task->descriptors[0x01].session.protocol = session.protocol;
+        task->descriptors[0x01].id = session.protocol->root(session.backend);
+        task->registers.ip = protocol->copy_program(&session, id);
 
-        error_assert(state.container.current->registers.ip != 0, "Failed to locate entry point", __FILE__, __LINE__);
+        error_assert(task->registers.ip != 0, "Failed to locate entry point", __FILE__, __LINE__);
 
         return;
 

@@ -16,5 +16,5 @@ struct kernel_rendezvous
 
 void kernel_rendezvous_sleep(struct kernel_rendezvous *rendezvous, unsigned int condition);
 void kernel_rendezvous_unsleep(struct kernel_rendezvous *rendezvous, unsigned int condition);
-void kernel_setup_modules(unsigned int count, struct kernel_module *modules);
+void kernel_setup_modules(struct task *task, unsigned int count, struct kernel_module *modules);
 struct container *kernel_setup();
