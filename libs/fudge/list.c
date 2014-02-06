@@ -14,8 +14,9 @@ void list_add(struct list *list, struct list_item *item)
 
     }
 
-    list->tail->next = item;
     item->prev = list->tail;
+    item->next = 0;
+    list->tail->next = item;
     list->tail = item;
 
 }
