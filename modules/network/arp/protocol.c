@@ -1,4 +1,4 @@
-#include <fudge/kernel.h>
+#include <fudge/module.h>
 #include <base/base.h>
 #include <base/network.h>
 #include "arp.h"
