@@ -199,7 +199,7 @@ static struct container *arch_setup_containers()
 
     unsigned int i;
 
-    for (i = 1; i < ARCH_CONTAINERS; i++)
+    for (i = 0; i < ARCH_CONTAINERS; i++)
     {
 
         init_container(&containers[i]);
@@ -208,7 +208,7 @@ static struct container *arch_setup_containers()
 
     }
 
-    return &containers[1].base;
+    return &containers[0].base;
 
 }
 
@@ -217,7 +217,7 @@ static struct task *arch_setup_tasks()
 
     unsigned int i;
 
-    for (i = 1; i < ARCH_TASKS; i++)
+    for (i = 0; i < ARCH_TASKS; i++)
     {
 
         init_task(&tasks[i], i);
@@ -225,7 +225,7 @@ static struct task *arch_setup_tasks()
 
     }
 
-    return &tasks[1].base;
+    return &tasks[0].base;
 
 }
 
