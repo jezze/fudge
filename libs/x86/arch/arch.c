@@ -50,33 +50,14 @@ static struct mmu_table *kcode = (struct mmu_table *)ARCH_TABLE_KCODE_BASE;
 static struct mmu_table *ucode = (struct mmu_table *)ARCH_TABLE_UCODE_BASE;
 static struct mmu_table *ustack = (struct mmu_table *)ARCH_TABLE_USTACK_BASE;
 
-static void map_kernel(struct task *t)
-{
-
-    struct arch_task *task = (struct arch_task *)t;
-
-    memory_clear(&directories[task->index], sizeof (struct mmu_directory));
-    mmu_map(&directories[task->index], &kcode[0], ARCH_KSPACE_BASE, ARCH_KSPACE_BASE, ARCH_KSPACE_SIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
-
-}
-
-static void map_user(struct task *t, unsigned int address)
-{
-
-    struct arch_task *task = (struct arch_task *)t;
-
-    mmu_map(&directories[task->index], &ucode[task->index], ARCH_UCODE_BASE + (task->index * ARCH_TASK_CODESIZE), address, ARCH_TASK_CODESIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
-    mmu_map(&directories[task->index], &ustack[task->index], ARCH_USTACK_BASE + (task->index * ARCH_TASK_STACKSIZE), ARCH_TASK_STACKBASE, ARCH_TASK_STACKSIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
-
-}
-
 static void activate_task(struct task *t)
 {
 
     struct arch_task *task = (struct arch_task *)t;
 
     task_sched_use(t);
-    map_kernel(t);
+    memory_clear(&directories[task->index], sizeof (struct mmu_directory));
+    mmu_map(&directories[task->index], &kcode[0], ARCH_KSPACE_BASE, ARCH_KSPACE_BASE, ARCH_KSPACE_SIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
     mmu_load(&directories[task->index]);
 
 }
@@ -171,9 +152,11 @@ unsigned short arch_pagefault(void *stack)
     if (registers->interrupt.code == state.kselector.code)
     {
 
-        struct task *task = task_sched_find_next_task();
+        struct arch_task *task = (struct arch_task *)task_sched_find_next_task();
+        unsigned int address = cpu_get_cr2();
 
-        map_user(task, cpu_get_cr2());
+        mmu_map(&directories[task->index], &ucode[task->index], ARCH_UCODE_BASE + (task->index * ARCH_TASK_CODESIZE), address, ARCH_TASK_CODESIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
+        mmu_map(&directories[task->index], &ustack[task->index], ARCH_USTACK_BASE + (task->index * ARCH_TASK_STACKSIZE), ARCH_TASK_STACKBASE, ARCH_TASK_STACKSIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
 
         return state.kselector.data;
 
