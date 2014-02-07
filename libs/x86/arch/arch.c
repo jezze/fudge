@@ -92,7 +92,7 @@ unsigned short arch_schedule(struct cpu_general *general, struct cpu_interrupt *
 {
 
     struct arch_task *task = (struct arch_task *)state.task;
-    struct arch_task *next = (struct arch_task *)task_sched_find_next_task();
+    struct arch_task *next = (struct arch_task *)task_sched_find_used_task();
 
     if (task)
     {
@@ -151,7 +151,7 @@ unsigned short arch_pagefault(void *stack)
     if (registers->interrupt.code == state.kselector.code)
     {
 
-        struct arch_task *task = (struct arch_task *)task_sched_find_next_task();
+        struct arch_task *task = (struct arch_task *)task_sched_find_used_task();
         unsigned int address = cpu_get_cr2();
 
         mmu_map(&directories[task->index], &ucode[task->index], ARCH_UCODE_BASE + (task->index * ARCH_TASK_CODESIZE), address, ARCH_TASK_CODESIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);

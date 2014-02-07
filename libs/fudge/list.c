@@ -44,6 +44,14 @@ void list_remove(struct list *list, struct list_item *item)
 
 }
 
+void list_move(struct list *out, struct list *in, struct list_item *item)
+{
+
+    list_remove(in, item);
+    list_add(out, item);
+
+}
+
 void list_init_item(struct list_item *item, void *data)
 {
 

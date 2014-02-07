@@ -26,7 +26,7 @@ void kernel_rendezvous_sleep(struct kernel_rendezvous *rendezvous, unsigned int 
     if (rendezvous->task)
         return;
 
-    rendezvous->task = task_sched_find_next_task();
+    rendezvous->task = task_sched_find_used_task();
 
     task_sched_block(rendezvous->task);
 

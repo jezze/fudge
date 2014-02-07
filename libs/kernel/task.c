@@ -9,32 +9,28 @@ static struct list blocked;
 void task_sched_block(struct task *task)
 {
 
-    list_remove(&used, &task->item);
-    list_add(&blocked, &task->item);
+    list_move(&blocked, &used, &task->item);
 
 }
 
 void task_sched_unblock(struct task *task)
 {
 
-    list_remove(&blocked, &task->item);
-    list_add(&used, &task->item);
+    list_move(&used, &blocked, &task->item);
 
 }
 
 void task_sched_use(struct task *task)
 {
 
-    list_remove(&free, &task->item);
-    list_add(&used, &task->item);
+    list_move(&used, &free, &task->item);
 
 }
 
 void task_sched_unuse(struct task *task)
 {
 
-    list_remove(&used, &task->item);
-    list_add(&free, &task->item);
+    list_move(&free, &used, &task->item);
 
 }
 
@@ -45,7 +41,7 @@ void task_sched_add(struct task *task)
 
 }
 
-struct task *task_sched_find_next_task()
+struct task *task_sched_find_used_task()
 {
 
     if (!used.tail)
