@@ -2,6 +2,7 @@
 #include <kernel/error.h>
 #include <kernel/vfs.h>
 #include <kernel/task.h>
+#include <kernel/scheduler.h>
 #include <kernel/container.h>
 #include <kernel/kernel.h>
 #include "cpu.h"
@@ -64,7 +65,7 @@ static void activate_task(struct task *t)
 
     struct arch_task *task = (struct arch_task *)t;
 
-    task_sched_use(t);
+    scheduler_use(t);
     memory_clear(&directories[task->index], sizeof (struct mmu_directory));
     mmu_map(&directories[task->index], &kcode[0], ARCH_KSPACE_BASE, ARCH_KSPACE_BASE, ARCH_KSPACE_SIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
     mmu_load(&directories[task->index]);
@@ -75,7 +76,7 @@ static unsigned int spawn(struct container *self, struct task *task, void *stack
 {
 
     struct parameters {void *caller; unsigned int index;} args;
-    struct task *next = task_sched_find_free_task();
+    struct task *next = scheduler_find_free_task();
 
     if (!next)
         return 0;
@@ -92,7 +93,7 @@ unsigned short arch_schedule(struct cpu_general *general, struct cpu_interrupt *
 {
 
     struct arch_task *task = (struct arch_task *)state.task;
-    struct arch_task *next = (struct arch_task *)task_sched_find_used_task();
+    struct arch_task *next = (struct arch_task *)scheduler_find_used_task();
 
     if (task)
     {
@@ -151,7 +152,7 @@ unsigned short arch_pagefault(void *stack)
     if (registers->interrupt.code == state.kselector.code)
     {
 
-        struct arch_task *task = (struct arch_task *)task_sched_find_used_task();
+        struct arch_task *task = (struct arch_task *)scheduler_find_used_task();
         unsigned int address = cpu_get_cr2();
 
         mmu_map(&directories[task->index], &ucode[task->index], ARCH_UCODE_BASE + (task->index * ARCH_TASK_CODESIZE), address, ARCH_TASK_CODESIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
@@ -213,7 +214,7 @@ void arch_setup(unsigned int count, struct kernel_module *modules)
     {
 
         task_init(&tasks[i].base, 0, ARCH_TASK_STACKLIMIT);
-        task_sched_add(&tasks[i].base);
+        scheduler_add(&tasks[i].base);
 
         tasks[i].index = i;
 

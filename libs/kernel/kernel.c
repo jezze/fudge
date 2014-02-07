@@ -3,6 +3,7 @@
 #include "vfs.h"
 #include "binary.h"
 #include "task.h"
+#include "scheduler.h"
 #include "container.h"
 #include "kernel.h"
 
@@ -26,9 +27,9 @@ void kernel_rendezvous_sleep(struct kernel_rendezvous *rendezvous, unsigned int 
     if (rendezvous->task)
         return;
 
-    rendezvous->task = task_sched_find_used_task();
+    rendezvous->task = scheduler_find_used_task();
 
-    task_sched_block(rendezvous->task);
+    scheduler_block(rendezvous->task);
 
 }
 
@@ -41,7 +42,7 @@ void kernel_rendezvous_unsleep(struct kernel_rendezvous *rendezvous, unsigned in
     if (!rendezvous->task)
         return;
 
-    task_sched_unblock(rendezvous->task);
+    scheduler_unblock(rendezvous->task);
 
     rendezvous->task = 0;
 
@@ -104,7 +105,7 @@ void kernel_setup_modules(struct container *container, struct task *task, unsign
 void kernel_setup()
 {
 
-    task_sched_init();
+    scheduler_init();
     vfs_setup();
     vfs_init_cpio(&state.vfs.protocols[0]);
     vfs_register_protocol(&state.vfs.protocols[0]);

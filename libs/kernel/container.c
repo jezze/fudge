@@ -2,6 +2,7 @@
 #include "vfs.h"
 #include "binary.h"
 #include "task.h"
+#include "scheduler.h"
 #include "container.h"
 
 static struct task_descriptor *get_descriptor(struct task *task, unsigned int index)
@@ -255,7 +256,7 @@ static unsigned int execute(struct container *self, struct task *task, void *sta
 static unsigned int exit(struct container *self, struct task *task, void *stack)
 {
 
-    task_sched_unuse(task);
+    scheduler_unuse(task);
 
     task->registers.ip = 0;
     task->registers.sp = 0;
