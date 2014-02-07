@@ -4,6 +4,7 @@
 #include "binary.h"
 #include "task.h"
 #include "scheduler.h"
+#include "rendezvous.h"
 #include "container.h"
 #include "kernel.h"
 
@@ -17,36 +18,6 @@ static struct
     struct {struct vfs_protocol protocols[KERNEL_VFS_PROTOCOLS];} vfs;
 
 } state;
-
-void kernel_rendezvous_sleep(struct kernel_rendezvous *rendezvous, unsigned int condition)
-{
-
-    if (!condition)
-        return;
-
-    if (rendezvous->task)
-        return;
-
-    rendezvous->task = scheduler_find_used_task();
-
-    scheduler_block(rendezvous->task);
-
-}
-
-void kernel_rendezvous_unsleep(struct kernel_rendezvous *rendezvous, unsigned int condition)
-{
-
-    if (!condition)
-        return;
-
-    if (!rendezvous->task)
-        return;
-
-    scheduler_unblock(rendezvous->task);
-
-    rendezvous->task = 0;
-
-}
 
 void kernel_setup_modules(struct container *container, struct task *task, unsigned int count, struct kernel_module *modules)
 {
@@ -106,6 +77,7 @@ void kernel_setup()
 {
 
     scheduler_init();
+    rendezvous_init();
     vfs_setup();
     vfs_init_cpio(&state.vfs.protocols[0]);
     vfs_register_protocol(&state.vfs.protocols[0]);

@@ -1,8 +1,5 @@
 #include <fudge/module.h>
-#include <kernel/vfs.h>
-#include <kernel/task.h>
-#include <kernel/container.h>
-#include <kernel/kernel.h>
+#include <kernel/rendezvous.h>
 #include <base/base.h>
 #include <base/terminal.h>
 #include <arch/x86/platform/platform.h>
@@ -222,7 +219,7 @@ static void handle_irq(struct base_device *device)
     char data = read(platformDevice);
 
     write_stream(&driver->stream, 1, &data);
-    kernel_rendezvous_unsleep(&driver->rdata, 1);
+    rendezvous_unsleep(&driver->rdata, 1);
 
 }
 
@@ -259,7 +256,7 @@ static unsigned int read_terminal_data(struct base_device *device, unsigned int 
 
     count = read_stream(&driver->stream, count, buffer);
 
-    kernel_rendezvous_sleep(&driver->rdata, !count);
+    rendezvous_sleep(&driver->rdata, !count);
 
     return count;
 

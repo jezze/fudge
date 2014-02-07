@@ -13,7 +13,7 @@ struct uart_driver
     struct base_driver base;
     struct base_terminal_interface iterminal;
     struct uart_driver_stream stream;
-    struct kernel_rendezvous rdata;
+    struct rendezvous rdata;
 
 };
 

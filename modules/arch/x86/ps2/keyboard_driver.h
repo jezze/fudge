@@ -13,7 +13,7 @@ struct ps2_keyboard_driver
     struct base_driver base;
     struct base_keyboard_interface ikeyboard;
     struct ps2_keyboard_stream stream;
-    struct kernel_rendezvous rdata;
+    struct rendezvous rdata;
     unsigned int escaped;
     unsigned int ctrl;
     unsigned int alt;

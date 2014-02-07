@@ -1,8 +1,5 @@
 #include <fudge/module.h>
-#include <kernel/vfs.h>
-#include <kernel/task.h>
-#include <kernel/container.h>
-#include <kernel/kernel.h>
+#include <kernel/rendezvous.h>
 #include <base/base.h>
 #include <base/timer.h>
 #include "driver.h"
