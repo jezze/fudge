@@ -1,5 +1,6 @@
 #include <fudge/module.h>
 #include <kernel/vfs.h>
+#include <kernel/rendezvous.h>
 #include <system/system.h>
 #include <base/base.h>
 
@@ -22,6 +23,8 @@ static struct pipe_session
     char name[8];
     struct pipe_stream istream;
     struct pipe_stream ostream;
+    struct rendezvous ridata;
+    struct rendezvous rodata;
 
 } session[8];
 
@@ -100,7 +103,11 @@ static unsigned int ipipe_read(struct system_node *self, unsigned int offset, un
 
     struct pipe_session *session = (struct pipe_session *)self->parent;
 
-    return read_stream(&session->ostream, count, buffer);
+    count = read_stream(&session->ostream, count, buffer);
+
+    rendezvous_sleep(&session->rodata, !count);
+
+    return count;
 
 }
 
@@ -109,7 +116,11 @@ static unsigned int ipipe_write(struct system_node *self, unsigned int offset, u
 
     struct pipe_session *session = (struct pipe_session *)self->parent;
 
-    return write_stream(&session->istream, count, buffer);
+    count = write_stream(&session->istream, count, buffer);
+
+    rendezvous_unsleep(&session->ridata, count);
+
+    return count;
 
 }
 
@@ -118,7 +129,11 @@ static unsigned int opipe_read(struct system_node *self, unsigned int offset, un
 
     struct pipe_session *session = (struct pipe_session *)self->parent;
 
-    return read_stream(&session->istream, count, buffer);
+    count = read_stream(&session->istream, count, buffer);
+
+    rendezvous_sleep(&session->ridata, !count);
+
+    return count;
 
 }
 
@@ -127,7 +142,11 @@ static unsigned int opipe_write(struct system_node *self, unsigned int offset, u
 
     struct pipe_session *session = (struct pipe_session *)self->parent;
 
-    return write_stream(&session->ostream, count, buffer);
+    count = write_stream(&session->ostream, count, buffer);
+
+    rendezvous_unsleep(&session->rodata, count);
+
+    return count;
 
 }
 
