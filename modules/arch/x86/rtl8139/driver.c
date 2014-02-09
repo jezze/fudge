@@ -1,7 +1,6 @@
 #include <fudge/module.h>
 #include <base/base.h>
 #include <base/network.h>
-#include <log/log.h>
 #include <arch/x86/pic/pic.h>
 #include <arch/x86/io/io.h>
 #include <arch/x86/pci/pci.h>
@@ -212,21 +211,11 @@ static unsigned int receive(struct base_device *device, unsigned int count, void
 
     header = (struct rtl8139_header *)(driver->rx + driver->rxp);
 
-    log_write_string("RXP: 0x");
-    log_write_number(driver->rxp, 16);
-    log_write_string(" ");
-    log_write_string("HEADER F: 0x");
-    log_write_number(header->flags, 16);
-    log_write_string(" ");
-    log_write_string("HEADER L: 0x");
-    log_write_number(header->length, 16);
-    log_write_string("\n");
-
     driver->rxp += (header->length + 4 + 3) & ~3;
 
     io_outw(driver->io + RTL8139_REGISTER_CAPR, driver->rxp - 0x10);
 
-    return memory_read(buffer, count, driver->rx, 64, 0);
+    return memory_read(buffer, count, 0, 64, 0);
 
 }
 
