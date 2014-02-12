@@ -268,9 +268,6 @@ static unsigned int exit(struct container *self, struct task *task, void *stack)
 
     scheduler_unuse(task);
 
-    task->registers.ip = 0;
-    task->registers.sp = 0;
-
     return 0;
 
 }
