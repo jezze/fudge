@@ -2,31 +2,31 @@
 #include "vfs.h"
 #include "binary.h"
 
-static unsigned int match(struct vfs_session *session, unsigned int id)
+static unsigned int match(struct vfs_channel *channel, unsigned int id)
 {
 
     struct elf_header header;
 
-    if (session->protocol->read(session->backend, id, 0, ELF_HEADER_SIZE, &header) < ELF_HEADER_SIZE)
+    if (channel->protocol->read(channel->backend, id, 0, ELF_HEADER_SIZE, &header) < ELF_HEADER_SIZE)
         return 0;
 
     return elf_validate(&header);
 
 }
 
-static unsigned long find_symbol(struct vfs_session *session, unsigned int id, unsigned int count, const char *symbol)
+static unsigned long find_symbol(struct vfs_channel *channel, unsigned int id, unsigned int count, const char *symbol)
 {
 
     struct elf_header header;
     struct elf_section_header sectionheader[32];
     unsigned int i;
 
-    session->protocol->read(session->backend, id, 0, ELF_HEADER_SIZE, &header);
+    channel->protocol->read(channel->backend, id, 0, ELF_HEADER_SIZE, &header);
 
     if (header.shcount > 32)
         return 0;
 
-    session->protocol->read(session->backend, id, header.shoffset, header.shsize * header.shcount, sectionheader);
+    channel->protocol->read(channel->backend, id, header.shoffset, header.shsize * header.shcount, sectionheader);
 
     for (i = 0; i < header.shcount; i++)
     {
@@ -49,8 +49,8 @@ static unsigned long find_symbol(struct vfs_session *session, unsigned int id, u
         if (stringheader->size > 4096)
             return 0;
 
-        session->protocol->read(session->backend, id, symbolheader->offset, symbolheader->size, symbols);
-        session->protocol->read(session->backend, id, stringheader->offset, stringheader->size, strings);
+        channel->protocol->read(channel->backend, id, symbolheader->offset, symbolheader->size, symbols);
+        channel->protocol->read(channel->backend, id, stringheader->offset, stringheader->size, strings);
 
         address = elf_find_symbol(&header, sectionheader, symbolheader, symbols, strings, count, symbol);
 
@@ -63,40 +63,40 @@ static unsigned long find_symbol(struct vfs_session *session, unsigned int id, u
 
 }
 
-static unsigned long copy_program(struct vfs_session *session, unsigned int id)
+static unsigned long copy_program(struct vfs_channel *channel, unsigned int id)
 {
 
     struct elf_header header;
     struct elf_program_header programheader[8];
     unsigned int i;
 
-    session->protocol->read(session->backend, id, 0, ELF_HEADER_SIZE, &header);
+    channel->protocol->read(channel->backend, id, 0, ELF_HEADER_SIZE, &header);
 
     if (header.phcount > 8)
         return 0;
 
-    session->protocol->read(session->backend, id, header.phoffset, header.phsize * header.phcount, programheader);
+    channel->protocol->read(channel->backend, id, header.phoffset, header.phsize * header.phcount, programheader);
 
     for (i = 0; i < header.phcount; i++)
-        session->protocol->read(session->backend, id, programheader[i].offset, programheader[i].fsize, (void *)programheader[i].vaddress);
+        channel->protocol->read(channel->backend, id, programheader[i].offset, programheader[i].fsize, (void *)programheader[i].vaddress);
 
     return header.entry;
 
 }
 
-static unsigned int relocate(struct vfs_session *session, unsigned int id, unsigned int address)
+static unsigned int relocate(struct vfs_channel *channel, unsigned int id, unsigned int address)
 {
 
     struct elf_header header;
     struct elf_section_header sectionheader[32];
     unsigned int i;
 
-    session->protocol->read(session->backend, id, 0, ELF_HEADER_SIZE, &header);
+    channel->protocol->read(channel->backend, id, 0, ELF_HEADER_SIZE, &header);
 
     if (header.shcount > 32)
         return 0;
 
-    session->protocol->read(session->backend, id, header.shoffset, header.shsize * header.shcount, sectionheader);
+    channel->protocol->read(channel->backend, id, header.shoffset, header.shsize * header.shcount, sectionheader);
 
     for (i = 0; i < header.shcount; i++)
     {
@@ -122,13 +122,13 @@ static unsigned int relocate(struct vfs_session *session, unsigned int id, unsig
         if (symbolheader->size > sizeof (struct elf_symbol) * 1024)
             return 0;
 
-        session->protocol->read(session->backend, id, relocationheader->offset, relocationheader->size, relocations);
-        session->protocol->read(session->backend, id, symbolheader->offset, symbolheader->size, symbols);
+        channel->protocol->read(channel->backend, id, relocationheader->offset, relocationheader->size, relocations);
+        channel->protocol->read(channel->backend, id, symbolheader->offset, symbolheader->size, symbols);
         elf_relocate_section(sectionheader, relocationheader, dataheader, relocations, symbols, address);
 
     }
 
-    session->protocol->write(session->backend, id, header.shoffset, header.shsize * header.shcount, sectionheader);
+    channel->protocol->write(channel->backend, id, header.shoffset, header.shsize * header.shcount, sectionheader);
 
     return 1;
 

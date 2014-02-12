@@ -23,7 +23,7 @@ struct vfs_protocol
 
 };
 
-struct vfs_session
+struct vfs_channel
 {
 
     struct vfs_backend *backend;

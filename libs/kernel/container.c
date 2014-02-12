@@ -38,7 +38,7 @@ static unsigned int open(struct container *self, struct task *task, void *stack)
     if (!descriptor || !pdescriptor)
         return 0;
 
-    if (!pdescriptor->id || !pdescriptor->session)
+    if (!pdescriptor->id || !pdescriptor->channel)
         return 0;
 
     memory_copy(&temp, pdescriptor, sizeof (struct task_descriptor));
@@ -56,10 +56,10 @@ static unsigned int open(struct container *self, struct task *task, void *stack)
 
                 struct container_mount *mount = &self->mounts[i];
 
-                if (temp.session == mount->child.session && temp.id == mount->child.id)
+                if (temp.channel == mount->child.channel && temp.id == mount->child.id)
                 {
 
-                    temp.session = mount->parent.session;
+                    temp.channel = mount->parent.channel;
                     temp.id = mount->parent.id;
 
                     break;
@@ -68,7 +68,7 @@ static unsigned int open(struct container *self, struct task *task, void *stack)
 
             }
 
-            temp.id = temp.session->protocol->parent(temp.session->backend, temp.id);
+            temp.id = temp.channel->protocol->parent(temp.channel->backend, temp.id);
 
             if (!temp.id)
                 return 0;
@@ -78,7 +78,7 @@ static unsigned int open(struct container *self, struct task *task, void *stack)
         else
         {
 
-            temp.id = temp.session->protocol->walk(temp.session->backend, temp.id, count, args->path + offset);
+            temp.id = temp.channel->protocol->walk(temp.channel->backend, temp.id, count, args->path + offset);
 
             if (!temp.id)
                 return 0;
@@ -88,10 +88,10 @@ static unsigned int open(struct container *self, struct task *task, void *stack)
 
                 struct container_mount *mount = &self->mounts[i];
 
-                if (temp.session == mount->parent.session && temp.id == mount->parent.id)
+                if (temp.channel == mount->parent.channel && temp.id == mount->parent.id)
                 {
 
-                    temp.session = mount->child.session;
+                    temp.channel = mount->child.channel;
                     temp.id = mount->child.id;
 
                     break;
@@ -106,7 +106,7 @@ static unsigned int open(struct container *self, struct task *task, void *stack)
 
     memory_copy(descriptor, &temp, sizeof (struct task_descriptor));
 
-    return descriptor->id = descriptor->session->protocol->open(descriptor->session->backend, descriptor->id);
+    return descriptor->id = descriptor->channel->protocol->open(descriptor->channel->backend, descriptor->id);
 
 }
 
@@ -119,10 +119,10 @@ static unsigned int close(struct container *self, struct task *task, void *stack
     if (!descriptor)
         return 0;
 
-    if (!descriptor->id || !descriptor->session)
+    if (!descriptor->id || !descriptor->channel)
         return 0;
 
-    return descriptor->id = descriptor->session->protocol->close(descriptor->session->backend, descriptor->id);
+    return descriptor->id = descriptor->channel->protocol->close(descriptor->channel->backend, descriptor->id);
 
 }
 
@@ -135,10 +135,10 @@ static unsigned int read(struct container *self, struct task *task, void *stack)
     if (!descriptor)
         return 0;
 
-    if (!descriptor->id || !descriptor->session)
+    if (!descriptor->id || !descriptor->channel)
         return 0;
 
-    return descriptor->session->protocol->read(descriptor->session->backend, descriptor->id, args->offset, args->count, args->buffer);
+    return descriptor->channel->protocol->read(descriptor->channel->backend, descriptor->id, args->offset, args->count, args->buffer);
 
 }
 
@@ -151,10 +151,10 @@ static unsigned int write(struct container *self, struct task *task, void *stack
     if (!descriptor)
         return 0;
 
-    if (!descriptor->id || !descriptor->session)
+    if (!descriptor->id || !descriptor->channel)
         return 0;
 
-    return descriptor->session->protocol->write(descriptor->session->backend, descriptor->id, args->offset, args->count, args->buffer);
+    return descriptor->channel->protocol->write(descriptor->channel->backend, descriptor->id, args->offset, args->count, args->buffer);
 
 }
 
@@ -162,7 +162,7 @@ static unsigned int mount(struct container *self, struct task *task, void *stack
 {
 
     struct {void *caller; unsigned int index; unsigned int pindex; unsigned int cindex;} *args = stack;
-    struct vfs_session *session = &self->sessions[0x02];
+    struct vfs_channel *channel = &self->channels[0x02];
     struct container_mount *mount = get_mount(self, args->index);
     struct task_descriptor *pdescriptor = get_descriptor(task, args->pindex);
     struct task_descriptor *cdescriptor = get_descriptor(task, args->cindex);
@@ -172,36 +172,36 @@ static unsigned int mount(struct container *self, struct task *task, void *stack
     if (!mount || !pdescriptor || !cdescriptor)
         return 0;
 
-    if (!pdescriptor->id || !pdescriptor->session)
+    if (!pdescriptor->id || !pdescriptor->channel)
         return 0;
 
-    if (!cdescriptor->id || !cdescriptor->session)
+    if (!cdescriptor->id || !cdescriptor->channel)
         return 0;
 
-    protocol = binary_find_protocol(cdescriptor->session, cdescriptor->id);
+    protocol = binary_find_protocol(cdescriptor->channel, cdescriptor->id);
 
     if (!protocol)
         return 0;
 
-    get_backend = (struct vfs_backend *(*)())(protocol->find_symbol(cdescriptor->session, cdescriptor->id, 11, "get_backend"));
+    get_backend = (struct vfs_backend *(*)())(protocol->find_symbol(cdescriptor->channel, cdescriptor->id, 11, "get_backend"));
 
     if (!get_backend)
         return 0;
 
-    session->backend = get_backend();
+    channel->backend = get_backend();
 
-    if (!session->backend)
+    if (!channel->backend)
         return 0;
 
-    session->protocol = vfs_find_protocol(session->backend);
+    channel->protocol = vfs_find_protocol(channel->backend);
 
-    if (!session->protocol)
+    if (!channel->protocol)
         return 0;
 
-    mount->parent.session = pdescriptor->session;
+    mount->parent.channel = pdescriptor->channel;
     mount->parent.id = pdescriptor->id;
-    mount->child.session = session;
-    mount->child.id = session->protocol->root(session->backend);
+    mount->child.channel = channel;
+    mount->child.id = channel->protocol->root(channel->backend);
 
     if (!mount->child.id)
         return 0;
@@ -221,15 +221,15 @@ static unsigned int bind(struct container *self, struct task *task, void *stack)
     if (!mount || !pdescriptor || !cdescriptor)
         return 0;
 
-    if (!pdescriptor->id || !pdescriptor->session)
+    if (!pdescriptor->id || !pdescriptor->channel)
         return 0;
 
-    if (!cdescriptor->id || !cdescriptor->session)
+    if (!cdescriptor->id || !cdescriptor->channel)
         return 0;
 
-    mount->parent.session = pdescriptor->session;
+    mount->parent.channel = pdescriptor->channel;
     mount->parent.id = pdescriptor->id;
-    mount->child.session = cdescriptor->session;
+    mount->child.channel = cdescriptor->channel;
     mount->child.id = cdescriptor->id;
 
     return 1;
@@ -246,15 +246,15 @@ static unsigned int execute(struct container *self, struct task *task, void *sta
     if (!descriptor)
         return 0;
 
-    if (!descriptor->id || !descriptor->session)
+    if (!descriptor->id || !descriptor->channel)
         return 0;
 
-    protocol = binary_find_protocol(descriptor->session, descriptor->id);
+    protocol = binary_find_protocol(descriptor->channel, descriptor->id);
 
     if (!protocol)
         return 0;
 
-    task->registers.ip = protocol->copy_program(descriptor->session, descriptor->id);
+    task->registers.ip = protocol->copy_program(descriptor->channel, descriptor->id);
 
     if (!task->registers.ip)
         return 0;
@@ -287,27 +287,27 @@ static unsigned int load(struct container *self, struct task *task, void *stack)
     if (!descriptor)
         return 0;
 
-    if (!descriptor->id || !descriptor->session)
+    if (!descriptor->id || !descriptor->channel)
         return 0;
 
-    if (!descriptor->session->protocol->get_physical)
+    if (!descriptor->channel->protocol->get_physical)
         return 0;
 
     /* Physical should be replaced with known address later on */
-    physical = descriptor->session->protocol->get_physical(descriptor->session->backend, descriptor->id);
+    physical = descriptor->channel->protocol->get_physical(descriptor->channel->backend, descriptor->id);
 
     if (!physical)
         return 0;
 
-    protocol = binary_find_protocol(descriptor->session, descriptor->id);
+    protocol = binary_find_protocol(descriptor->channel, descriptor->id);
 
     if (!protocol)
         return 0;
 
-    if (!protocol->relocate(descriptor->session, descriptor->id, physical))
+    if (!protocol->relocate(descriptor->channel, descriptor->id, physical))
         return 0;
 
-    init = (void (*)())(protocol->find_symbol(descriptor->session, descriptor->id, 4, "init"));
+    init = (void (*)())(protocol->find_symbol(descriptor->channel, descriptor->id, 4, "init"));
 
     if (!init)
         return 0;
@@ -329,15 +329,15 @@ static unsigned int unload(struct container *self, struct task *task, void *stac
     if (!descriptor)
         return 0;
 
-    if (!descriptor->id || !descriptor->session)
+    if (!descriptor->id || !descriptor->channel)
         return 0;
 
-    protocol = binary_find_protocol(descriptor->session, descriptor->id);
+    protocol = binary_find_protocol(descriptor->channel, descriptor->id);
 
     if (!protocol)
         return 0;
 
-    destroy = (void (*)())(protocol->find_symbol(descriptor->session, descriptor->id, 7, "destroy"));
+    destroy = (void (*)())(protocol->find_symbol(descriptor->channel, descriptor->id, 7, "destroy"));
 
     if (!destroy)
         return 0;

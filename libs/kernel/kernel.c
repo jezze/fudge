@@ -22,7 +22,7 @@ static struct
 void kernel_setup_modules(struct container *container, struct task *task, unsigned int count, struct kernel_module *modules)
 {
 
-    struct vfs_session *session = &container->sessions[0x01];
+    struct vfs_channel *channel = &container->channels[0x01];
     unsigned int i;
 
     for (i = 0; i < count; i++)
@@ -31,34 +31,34 @@ void kernel_setup_modules(struct container *container, struct task *task, unsign
         struct binary_protocol *protocol;
         unsigned int id;
 
-        session->backend = &modules[i].base;
-        session->protocol = vfs_find_protocol(session->backend);
+        channel->backend = &modules[i].base;
+        channel->protocol = vfs_find_protocol(channel->backend);
 
-        if (!session->protocol)
+        if (!channel->protocol)
             continue;
 
-        id = session->protocol->root(session->backend);
+        id = channel->protocol->root(channel->backend);
 
         if (!id)
             continue;
 
-        id = session->protocol->walk(session->backend, id, 8, "bin/init");
+        id = channel->protocol->walk(channel->backend, id, 8, "bin/init");
 
         if (!id)
             continue;
 
-        protocol = binary_find_protocol(session, id);
+        protocol = binary_find_protocol(channel, id);
 
         if (!protocol)
             continue;
 
-        container->mounts[0x01].parent.session = session;
-        container->mounts[0x01].parent.id = session->protocol->root(session->backend);
-        container->mounts[0x01].child.session = session;
-        container->mounts[0x01].child.id = session->protocol->root(session->backend);
-        task->descriptors[0x01].session = session;
-        task->descriptors[0x01].id = session->protocol->root(session->backend);
-        task->registers.ip = protocol->copy_program(session, id);
+        container->mounts[0x01].parent.channel = channel;
+        container->mounts[0x01].parent.id = channel->protocol->root(channel->backend);
+        container->mounts[0x01].child.channel = channel;
+        container->mounts[0x01].child.id = channel->protocol->root(channel->backend);
+        task->descriptors[0x01].channel = channel;
+        task->descriptors[0x01].id = channel->protocol->root(channel->backend);
+        task->registers.ip = protocol->copy_program(channel, id);
 
         error_assert(task->registers.ip != 0, "Failed to locate entry point", __FILE__, __LINE__);
 
