@@ -181,13 +181,6 @@ void system_init_stream(struct system_stream *stream, const char *name)
 
 }
 
-struct vfs_backend *get_backend()
-{
-
-    return &backend.base;
-
-}
-
 void init()
 {
 

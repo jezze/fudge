@@ -49,6 +49,7 @@ struct vfs_mount
 
 unsigned int vfs_findnext(unsigned int count, const char *path);
 unsigned int vfs_isparent(unsigned int count, const char *path);
+struct vfs_backend *vfs_find_backend();
 struct vfs_protocol *vfs_find_protocol(struct vfs_backend *backend);
 void vfs_register_backend(struct vfs_backend *backend);
 void vfs_register_protocol(struct vfs_protocol *protocol);

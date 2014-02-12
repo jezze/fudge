@@ -20,6 +20,24 @@ unsigned int vfs_isparent(unsigned int count, const char *path)
 
 }
 
+struct vfs_backend *vfs_find_backend()
+{
+
+    struct list_item *current;
+
+    for (current = backends.head; current; current = current->next)
+    {
+
+        struct vfs_backend *backend = current->data;
+
+        return backend;
+
+    }
+
+    return 0;
+
+}
+
 struct vfs_protocol *vfs_find_protocol(struct vfs_backend *backend)
 {
 

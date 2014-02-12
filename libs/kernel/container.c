@@ -167,7 +167,6 @@ static unsigned int mount(struct container *self, struct task *task, void *stack
     struct vfs_descriptor *pdescriptor = get_descriptor(task, args->pindex);
     struct vfs_descriptor *cdescriptor = get_descriptor(task, args->cindex);
     struct binary_protocol *protocol;
-    struct vfs_backend *(*get_backend)();
 
     if (!mount || !pdescriptor || !cdescriptor)
         return 0;
@@ -183,12 +182,7 @@ static unsigned int mount(struct container *self, struct task *task, void *stack
     if (!protocol)
         return 0;
 
-    get_backend = (struct vfs_backend *(*)())(protocol->find_symbol(cdescriptor->channel, cdescriptor->id, 11, "get_backend"));
-
-    if (!get_backend)
-        return 0;
-
-    channel->backend = get_backend();
+    channel->backend = vfs_find_backend();
 
     if (!channel->backend)
         return 0;
