@@ -31,6 +31,22 @@ struct vfs_channel
 
 };
 
+struct vfs_descriptor
+{
+
+    struct vfs_channel *channel;
+    unsigned int id;
+
+};
+
+struct vfs_mount
+{
+
+    struct vfs_descriptor parent;
+    struct vfs_descriptor child;
+
+};
+
 unsigned int vfs_findnext(unsigned int count, const char *path);
 unsigned int vfs_isparent(unsigned int count, const char *path);
 struct vfs_protocol *vfs_find_protocol(struct vfs_backend *backend);

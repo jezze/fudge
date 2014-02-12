@@ -1,19 +1,11 @@
 #define TASK_DESCRIPTORS                32
 
-struct task_descriptor
-{
-
-    struct vfs_channel *channel;
-    unsigned int id;
-
-};
-
 struct task
 {
 
     struct list_item item;
     struct {unsigned long ip; unsigned long sp;} registers;
-    struct task_descriptor descriptors[TASK_DESCRIPTORS];
+    struct vfs_descriptor descriptors[TASK_DESCRIPTORS];
 
 };
 

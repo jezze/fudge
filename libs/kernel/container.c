@@ -5,7 +5,7 @@
 #include "scheduler.h"
 #include "container.h"
 
-static struct task_descriptor *get_descriptor(struct task *task, unsigned int index)
+static struct vfs_descriptor *get_descriptor(struct task *task, unsigned int index)
 {
 
     if (!index || index >= TASK_DESCRIPTORS)
@@ -15,7 +15,7 @@ static struct task_descriptor *get_descriptor(struct task *task, unsigned int in
 
 }
 
-static struct container_mount *get_mount(struct container *container, unsigned int index)
+static struct vfs_mount *get_mount(struct container *container, unsigned int index)
 {
 
     if (!index || index >= CONTAINER_MOUNTS)
@@ -29,9 +29,9 @@ static unsigned int open(struct container *self, struct task *task, void *stack)
 {
 
     struct {void *caller; unsigned int index; unsigned int pindex; unsigned int count; const char *path;} *args = stack;
-    struct task_descriptor *descriptor = get_descriptor(task, args->index);
-    struct task_descriptor *pdescriptor = get_descriptor(task, args->pindex);
-    struct task_descriptor temp;
+    struct vfs_descriptor *descriptor = get_descriptor(task, args->index);
+    struct vfs_descriptor *pdescriptor = get_descriptor(task, args->pindex);
+    struct vfs_descriptor temp;
     unsigned int offset;
     unsigned int count;
 
@@ -41,7 +41,7 @@ static unsigned int open(struct container *self, struct task *task, void *stack)
     if (!pdescriptor->id || !pdescriptor->channel)
         return 0;
 
-    memory_copy(&temp, pdescriptor, sizeof (struct task_descriptor));
+    memory_copy(&temp, pdescriptor, sizeof (struct vfs_descriptor));
 
     for (offset = 0; (count = vfs_findnext(args->count - offset, args->path + offset)); offset += count)
     {
@@ -54,7 +54,7 @@ static unsigned int open(struct container *self, struct task *task, void *stack)
             for (i = 1; i < CONTAINER_MOUNTS; i++)
             {
 
-                struct container_mount *mount = &self->mounts[i];
+                struct vfs_mount *mount = &self->mounts[i];
 
                 if (temp.channel == mount->child.channel && temp.id == mount->child.id)
                 {
@@ -86,7 +86,7 @@ static unsigned int open(struct container *self, struct task *task, void *stack)
             for (i = 1; i < CONTAINER_MOUNTS; i++)
             {
 
-                struct container_mount *mount = &self->mounts[i];
+                struct vfs_mount *mount = &self->mounts[i];
 
                 if (temp.channel == mount->parent.channel && temp.id == mount->parent.id)
                 {
@@ -104,7 +104,7 @@ static unsigned int open(struct container *self, struct task *task, void *stack)
 
     }
 
-    memory_copy(descriptor, &temp, sizeof (struct task_descriptor));
+    memory_copy(descriptor, &temp, sizeof (struct vfs_descriptor));
 
     return descriptor->id = descriptor->channel->protocol->open(descriptor->channel->backend, descriptor->id);
 
@@ -114,7 +114,7 @@ static unsigned int close(struct container *self, struct task *task, void *stack
 {
 
     struct {void *caller; unsigned int index;} *args = stack;
-    struct task_descriptor *descriptor = get_descriptor(task, args->index);
+    struct vfs_descriptor *descriptor = get_descriptor(task, args->index);
 
     if (!descriptor)
         return 0;
@@ -130,7 +130,7 @@ static unsigned int read(struct container *self, struct task *task, void *stack)
 {
 
     struct {void *caller; unsigned int index; unsigned int offset; unsigned int count; void *buffer;} *args = stack;
-    struct task_descriptor *descriptor = get_descriptor(task, args->index);
+    struct vfs_descriptor *descriptor = get_descriptor(task, args->index);
 
     if (!descriptor)
         return 0;
@@ -146,7 +146,7 @@ static unsigned int write(struct container *self, struct task *task, void *stack
 {
 
     struct {void *caller; unsigned int index; unsigned int offset; unsigned int count; void *buffer;} *args = stack;
-    struct task_descriptor *descriptor = get_descriptor(task, args->index);
+    struct vfs_descriptor *descriptor = get_descriptor(task, args->index);
 
     if (!descriptor)
         return 0;
@@ -163,9 +163,9 @@ static unsigned int mount(struct container *self, struct task *task, void *stack
 
     struct {void *caller; unsigned int index; unsigned int pindex; unsigned int cindex;} *args = stack;
     struct vfs_channel *channel = &self->channels[0x02];
-    struct container_mount *mount = get_mount(self, args->index);
-    struct task_descriptor *pdescriptor = get_descriptor(task, args->pindex);
-    struct task_descriptor *cdescriptor = get_descriptor(task, args->cindex);
+    struct vfs_mount *mount = get_mount(self, args->index);
+    struct vfs_descriptor *pdescriptor = get_descriptor(task, args->pindex);
+    struct vfs_descriptor *cdescriptor = get_descriptor(task, args->cindex);
     struct binary_protocol *protocol;
     struct vfs_backend *(*get_backend)();
 
@@ -214,9 +214,9 @@ static unsigned int bind(struct container *self, struct task *task, void *stack)
 {
 
     struct {void *caller; unsigned int index; unsigned int pindex; unsigned int cindex;} *args = stack;
-    struct container_mount *mount = get_mount(self, args->index);
-    struct task_descriptor *pdescriptor = get_descriptor(task, args->pindex);
-    struct task_descriptor *cdescriptor = get_descriptor(task, args->cindex);
+    struct vfs_mount *mount = get_mount(self, args->index);
+    struct vfs_descriptor *pdescriptor = get_descriptor(task, args->pindex);
+    struct vfs_descriptor *cdescriptor = get_descriptor(task, args->cindex);
 
     if (!mount || !pdescriptor || !cdescriptor)
         return 0;
@@ -240,7 +240,7 @@ static unsigned int execute(struct container *self, struct task *task, void *sta
 {
 
     struct {void *caller; unsigned int index;} *args = stack;
-    struct task_descriptor *descriptor = get_descriptor(task, args->index);
+    struct vfs_descriptor *descriptor = get_descriptor(task, args->index);
     struct binary_protocol *protocol;
 
     if (!descriptor)
@@ -279,7 +279,7 @@ static unsigned int load(struct container *self, struct task *task, void *stack)
 {
 
     struct {void *caller; unsigned int index;} *args = stack;
-    struct task_descriptor *descriptor = get_descriptor(task, args->index);
+    struct vfs_descriptor *descriptor = get_descriptor(task, args->index);
     struct binary_protocol *protocol;
     unsigned long physical;
     void (*init)();
@@ -322,7 +322,7 @@ static unsigned int unload(struct container *self, struct task *task, void *stac
 {
 
     struct {void *caller; unsigned int index;} *args = stack;
-    struct task_descriptor *descriptor = get_descriptor(task, args->index);
+    struct vfs_descriptor *descriptor = get_descriptor(task, args->index);
     struct binary_protocol *protocol;
     void (*destroy)();
 

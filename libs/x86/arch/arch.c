@@ -82,7 +82,7 @@ static unsigned int spawn(struct container *self, struct task *task, void *stack
         return 0;
 
     memory_copy(&args, stack, sizeof (struct parameters));
-    memory_copy(next->descriptors, task->descriptors, sizeof (struct task_descriptor) * TASK_DESCRIPTORS);
+    memory_copy(next->descriptors, task->descriptors, sizeof (struct vfs_descriptor) * TASK_DESCRIPTORS);
     activate_task(next);
 
     return self->calls[CONTAINER_CALL_EXECUTE](self, next, &args);

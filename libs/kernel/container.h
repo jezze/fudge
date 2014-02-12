@@ -19,18 +19,11 @@ enum container_call
 
 };
 
-struct container_mount
-{
-
-    struct {struct vfs_channel *channel; unsigned int id;} parent, child;
-
-};
-
 struct container
 {
 
     struct vfs_channel channels[CONTAINER_CHANNELS];
-    struct container_mount mounts[CONTAINER_MOUNTS];
+    struct vfs_mount mounts[CONTAINER_MOUNTS];
     unsigned int (*calls[CONTAINER_CALLS])(struct container *self, struct task *task, void *stack);
 
 };
