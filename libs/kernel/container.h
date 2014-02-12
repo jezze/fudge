@@ -21,8 +21,7 @@ enum container_call
 struct container_mount
 {
 
-    struct task_descriptor parent;
-    struct task_descriptor child;
+    struct {struct vfs_session session; unsigned int id;} parent, child;
 
 };
 

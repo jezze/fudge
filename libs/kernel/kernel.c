@@ -58,9 +58,8 @@ void kernel_setup_modules(struct container *container, struct task *task, unsign
         container->mounts[0x01].child.session.backend = session.backend;
         container->mounts[0x01].child.session.protocol = session.protocol;
         container->mounts[0x01].child.id = session.protocol->root(session.backend);
-        task->descriptors[0x01].session.backend = session.backend;
-        task->descriptors[0x01].session.protocol = session.protocol;
-        task->descriptors[0x01].id = session.protocol->root(session.backend);
+        task->descriptors[0x01].session = &container->mounts[0x01].parent.session;
+        task->descriptors[0x01].id = container->mounts[0x01].parent.id;
         task->registers.ip = protocol->copy_program(&session, id);
 
         error_assert(task->registers.ip != 0, "Failed to locate entry point", __FILE__, __LINE__);

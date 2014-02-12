@@ -3,7 +3,7 @@
 struct task_descriptor
 {
 
-    struct vfs_session session;
+    struct vfs_session *session;
     unsigned int id;
 
 };
