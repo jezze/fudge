@@ -1,3 +1,4 @@
+#define CONTAINER_SESSIONS              16
 #define CONTAINER_MOUNTS                32
 #define CONTAINER_CALLS                 16
 
@@ -21,13 +22,14 @@ enum container_call
 struct container_mount
 {
 
-    struct {struct vfs_session session; unsigned int id;} parent, child;
+    struct {struct vfs_session *session; unsigned int id;} parent, child;
 
 };
 
 struct container
 {
 
+    struct vfs_session sessions[CONTAINER_SESSIONS];
     struct container_mount mounts[CONTAINER_MOUNTS];
     unsigned int (*calls[CONTAINER_CALLS])(struct container *self, struct task *task, void *stack);
 

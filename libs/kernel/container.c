@@ -56,10 +56,10 @@ static unsigned int open(struct container *self, struct task *task, void *stack)
 
                 struct container_mount *mount = &self->mounts[i];
 
-                if (temp.session->backend == mount->child.session.backend && temp.session->protocol == mount->child.session.protocol && temp.id == mount->child.id)
+                if (temp.session == mount->child.session && temp.id == mount->child.id)
                 {
 
-                    temp.session = &mount->parent.session;
+                    temp.session = mount->parent.session;
                     temp.id = mount->parent.id;
 
                     break;
@@ -88,10 +88,10 @@ static unsigned int open(struct container *self, struct task *task, void *stack)
 
                 struct container_mount *mount = &self->mounts[i];
 
-                if (temp.session->backend == mount->parent.session.backend && temp.session->protocol == mount->parent.session.protocol && temp.id == mount->parent.id)
+                if (temp.session == mount->parent.session && temp.id == mount->parent.id)
                 {
 
-                    temp.session = &mount->child.session;
+                    temp.session = mount->child.session;
                     temp.id = mount->child.id;
 
                     break;
@@ -162,6 +162,7 @@ static unsigned int mount(struct container *self, struct task *task, void *stack
 {
 
     struct {void *caller; unsigned int index; unsigned int pindex; unsigned int cindex;} *args = stack;
+    struct vfs_session *session = &self->sessions[0x02];
     struct container_mount *mount = get_mount(self, args->index);
     struct task_descriptor *pdescriptor = get_descriptor(task, args->pindex);
     struct task_descriptor *cdescriptor = get_descriptor(task, args->cindex);
@@ -187,24 +188,23 @@ static unsigned int mount(struct container *self, struct task *task, void *stack
     if (!get_backend)
         return 0;
 
-    mount->child.session.backend = get_backend();
+    session->backend = get_backend();
 
-    if (!mount->child.session.backend)
+    if (!session->backend)
         return 0;
 
-    mount->child.session.protocol = vfs_find_protocol(mount->child.session.backend);
+    session->protocol = vfs_find_protocol(session->backend);
 
-    if (!mount->child.session.protocol)
+    if (!session->protocol)
         return 0;
 
-    mount->child.id = mount->child.session.protocol->root(mount->child.session.backend);
+    mount->parent.session = pdescriptor->session;
+    mount->parent.id = pdescriptor->id;
+    mount->child.session = session;
+    mount->child.id = session->protocol->root(session->backend);
 
     if (!mount->child.id)
         return 0;
-
-    mount->parent.session.backend = pdescriptor->session->backend;
-    mount->parent.session.protocol = pdescriptor->session->protocol;
-    mount->parent.id = pdescriptor->id;
 
     return 1;
 
@@ -227,11 +227,9 @@ static unsigned int bind(struct container *self, struct task *task, void *stack)
     if (!cdescriptor->id || !cdescriptor->session)
         return 0;
 
-    mount->parent.session.backend = pdescriptor->session->backend;
-    mount->parent.session.protocol = pdescriptor->session->protocol;
+    mount->parent.session = pdescriptor->session;
     mount->parent.id = pdescriptor->id;
-    mount->child.session.backend = cdescriptor->session->backend;
-    mount->child.session.protocol = cdescriptor->session->protocol;
+    mount->child.session = cdescriptor->session;
     mount->child.id = cdescriptor->id;
 
     return 1;

@@ -22,45 +22,43 @@ static struct
 void kernel_setup_modules(struct container *container, struct task *task, unsigned int count, struct kernel_module *modules)
 {
 
+    struct vfs_session *session = &container->sessions[0x01];
     unsigned int i;
 
     for (i = 0; i < count; i++)
     {
 
-        struct vfs_session session;
         struct binary_protocol *protocol;
         unsigned int id;
 
-        session.backend = &modules[i].base;
-        session.protocol = vfs_find_protocol(session.backend);
+        session->backend = &modules[i].base;
+        session->protocol = vfs_find_protocol(session->backend);
 
-        if (!session.protocol)
+        if (!session->protocol)
             continue;
 
-        id = session.protocol->root(session.backend);
+        id = session->protocol->root(session->backend);
 
         if (!id)
             continue;
 
-        id = session.protocol->walk(session.backend, id, 8, "bin/init");
+        id = session->protocol->walk(session->backend, id, 8, "bin/init");
 
         if (!id)
             continue;
 
-        protocol = binary_find_protocol(&session, id);
+        protocol = binary_find_protocol(session, id);
 
         if (!protocol)
             continue;
 
-        container->mounts[0x01].parent.session.backend = session.backend;
-        container->mounts[0x01].parent.session.protocol = session.protocol;
-        container->mounts[0x01].parent.id = session.protocol->root(session.backend);
-        container->mounts[0x01].child.session.backend = session.backend;
-        container->mounts[0x01].child.session.protocol = session.protocol;
-        container->mounts[0x01].child.id = session.protocol->root(session.backend);
-        task->descriptors[0x01].session = &container->mounts[0x01].parent.session;
-        task->descriptors[0x01].id = container->mounts[0x01].parent.id;
-        task->registers.ip = protocol->copy_program(&session, id);
+        container->mounts[0x01].parent.session = session;
+        container->mounts[0x01].parent.id = session->protocol->root(session->backend);
+        container->mounts[0x01].child.session = session;
+        container->mounts[0x01].child.id = session->protocol->root(session->backend);
+        task->descriptors[0x01].session = session;
+        task->descriptors[0x01].id = session->protocol->root(session->backend);
+        task->registers.ip = protocol->copy_program(session, id);
 
         error_assert(task->registers.ip != 0, "Failed to locate entry point", __FILE__, __LINE__);
 
