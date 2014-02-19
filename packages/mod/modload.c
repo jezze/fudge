@@ -1,5 +1,5 @@
 #include <fudge.h>
-#include <format/elf.h>
+#include <elf.h>
 
 static unsigned int find_symbol(unsigned int id, unsigned int count, char *symbol)
 {

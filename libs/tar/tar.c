@@ -1,5 +1,5 @@
-#include "../ascii.h"
-#include "../memory.h"
+#include <fudge/ascii.h>
+#include <fudge/memory.h>
 #include "tar.h"
 
 unsigned int tar_readvalue(char *attribute)

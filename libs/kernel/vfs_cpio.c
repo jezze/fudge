@@ -1,4 +1,5 @@
 #include <fudge/kernel.h>
+#include <cpio/cpio.h>
 #include "vfs.h"
 #include "task.h"
 #include "container.h"

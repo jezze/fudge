@@ -1,0 +1,8 @@
+LIBELF:=$(LIBS_PATH)/elf/libelf.a
+LIBELF_OBJ:=$(LIBS_PATH)/elf/elf.o
+
+$(LIBELF): $(LIBELF_OBJ)
+	$(AR) $(ARFLAGS) $@ $^
+
+LIBS+=$(LIBELF)
+LIBS_OBJECTS+=$(LIBELF_OBJ)

@@ -1,0 +1,8 @@
+LIBTAR:=$(LIBS_PATH)/tar/libtar.a
+LIBTAR_OBJ:=$(LIBS_PATH)/tar/tar.o
+
+$(LIBTAR): $(LIBTAR_OBJ)
+	$(AR) $(ARFLAGS) $@ $^
+
+LIBS+=$(LIBTAR)
+LIBS_OBJECTS+=$(LIBTAR_OBJ)
