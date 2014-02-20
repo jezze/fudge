@@ -1,6 +1,6 @@
 #include "utf8.h"
 
-int utf8_decode(char *s, long *u)
+unsigned int utf8_decode(char *s, long *u)
 {
 
     unsigned char c;
@@ -75,7 +75,7 @@ invalid:
 
 }
 
-int utf8_encode(long *u, char *s)
+unsigned int utf8_encode(long *u, char *s)
 {
 
     unsigned char *sp = (unsigned char *)s;
@@ -137,7 +137,7 @@ invalid:
 
 }
 
-int utf8_isfull(char *s, int b)
+unsigned int utf8_isfull(char *s, int b)
 {
 
     unsigned char *c1 = (unsigned char *)s;
@@ -157,7 +157,7 @@ int utf8_isfull(char *s, int b)
 
 }
 
-int utf8_size(char *s)
+unsigned int utf8_size(char *s)
 {
 
     unsigned char c = *s;
