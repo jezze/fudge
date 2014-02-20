@@ -2,7 +2,7 @@ struct base_keyboard_interface
 {
 
     struct base_interface base;
-    unsigned int keymap[256];
+    struct keycode {unsigned char length; unsigned int value;} keymap[256];
     unsigned int (*read_data)(struct base_device *device, unsigned int offset, unsigned int count, void *buffer);
     unsigned int (*write_data)(struct base_device *device, unsigned int offset, unsigned int count, void *buffer);
 

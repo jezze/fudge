@@ -121,7 +121,7 @@ static unsigned int keymap_read(struct system_node *self, unsigned int offset, u
 
     struct interface_node *node = (struct interface_node *)self->parent;
 
-    return memory_read(buffer, count, node->interface->keymap, 1024, offset);
+    return memory_read(buffer, count, node->interface->keymap, 2048, offset);
 
 }
 
@@ -130,7 +130,7 @@ static unsigned int keymap_write(struct system_node *self, unsigned int offset, 
 
     struct interface_node *node = (struct interface_node *)self->parent;
 
-    return memory_write(node->interface->keymap, 1024, buffer, count, offset);
+    return memory_write(node->interface->keymap, 2048, buffer, count, offset);
 
 }
 
