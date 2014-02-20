@@ -2,6 +2,7 @@ ARCH:=x86
 LOADER:=mboot
 PREFIX:=
 
+INCLUDE_PATH:=include
 LIBS_PATH:=libs
 MODULES_PATH:=modules
 MODULES_ARCH_PATH:=$(MODULES_PATH)/arch/$(ARCH)
@@ -29,7 +30,7 @@ CFLAGS_arm:=
 LDFLAGS_arm:=
 
 ASFLAGS:=$(ASFLAGS_$(ARCH))
-CFLAGS:=-Wall -Werror -ffreestanding -nostdlib -nostdinc -mno-red-zone -std=c89 -pedantic -O2 -I$(LIBS_PATH) $(CFLAGS_$(ARCH))
+CFLAGS:=-Wall -Werror -ffreestanding -nostdlib -nostdinc -mno-red-zone -std=c89 -pedantic -O2 -I$(INCLUDE_PATH) -I$(LIBS_PATH) $(CFLAGS_$(ARCH))
 LDFLAGS:=$(LDFLAGS_$(ARCH))
 ARFLAGS:=rs
 

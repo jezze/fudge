@@ -1,4 +1,4 @@
-#include <fudge/module.h>
+#include <module.h>
 #include <kernel/vfs.h>
 #include <kernel/task.h>
 #include <kernel/container.h>

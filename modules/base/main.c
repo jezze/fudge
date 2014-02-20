@@ -1,4 +1,4 @@
-#include <fudge/module.h>
+#include <module.h>
 #include "base.h"
 #include "block.h"
 #include "clock.h"

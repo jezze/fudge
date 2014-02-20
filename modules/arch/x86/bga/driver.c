@@ -1,4 +1,4 @@
-#include <fudge/module.h>
+#include <module.h>
 #include <x86/arch/mmu.h>
 #include <base/base.h>
 #include <base/video.h>

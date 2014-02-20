@@ -1,4 +1,4 @@
-#include <fudge/kernel.h>
+#include <kernel.h>
 #include "idt.h"
 
 void idt_set_descriptor(struct idt_pointer *pointer, enum idt_index index, void (*callback)(), unsigned short selector, unsigned char flags)

@@ -1,4 +1,4 @@
-#include <fudge/module.h>
+#include <module.h>
 #include <base/base.h>
 #include "ps2.h"
 

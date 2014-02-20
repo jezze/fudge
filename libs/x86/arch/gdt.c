@@ -1,4 +1,4 @@
-#include <fudge/kernel.h>
+#include <kernel.h>
 #include "gdt.h"
 
 unsigned short gdt_set_descriptor(struct gdt_pointer *pointer, enum gdt_index index, unsigned int base, unsigned int limit, unsigned char access, unsigned char flags)

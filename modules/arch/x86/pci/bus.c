@@ -1,4 +1,4 @@
-#include <fudge/module.h>
+#include <module.h>
 #include <base/base.h>
 #include <arch/x86/io/io.h>
 #include "pci.h"

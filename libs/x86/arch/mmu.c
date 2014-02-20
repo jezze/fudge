@@ -1,4 +1,4 @@
-#include <fudge/kernel.h>
+#include <kernel.h>
 #include "cpu.h"
 #include "mmu.h"
 

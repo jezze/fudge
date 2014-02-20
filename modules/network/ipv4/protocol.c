@@ -1,4 +1,4 @@
-#include <fudge/module.h>
+#include <module.h>
 #include <base/base.h>
 #include <base/network.h>
 #include "ipv4.h"

@@ -1,4 +1,4 @@
-#include <fudge/module.h>
+#include <module.h>
 #include <kernel/vfs.h>
 #include "system.h"
 #include "protocol.h"

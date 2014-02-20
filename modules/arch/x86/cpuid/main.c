@@ -1,4 +1,4 @@
-#include <fudge/module.h>
+#include <module.h>
 #include "cpuid.h"
 
 void init()

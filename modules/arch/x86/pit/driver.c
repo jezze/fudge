@@ -1,4 +1,4 @@
-#include <fudge/module.h>
+#include <module.h>
 #include <kernel/rendezvous.h>
 #include <base/base.h>
 #include <base/timer.h>

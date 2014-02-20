@@ -1,4 +1,4 @@
-#include <fudge/module.h>
+#include <module.h>
 #include <kernel/vfs.h>
 #include <kernel/rendezvous.h>
 #include <system/system.h>
