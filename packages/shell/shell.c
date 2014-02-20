@@ -229,15 +229,18 @@ static void poll()
 
         char buffer[64];
         unsigned int count = call_read(CALL_I0, 0, 64, buffer);
-        unsigned int value;
-        unsigned int size = utf8_size(buffer);
+        unsigned int size;
+        unsigned int offset;
 
-        if (!count)
-            continue;
+        for (offset = 0; offset < count && (size = utf8_size(buffer + offset)); offset += size)
+        {
 
-        memory_copy(&value, buffer, size);
+            unsigned int value;
 
-        handle(&input, value, size);
+            memory_copy(&value, buffer + offset, size);
+            handle(&input, value, size);
+
+        }
 
     }
 
