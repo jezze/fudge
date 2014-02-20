@@ -102,7 +102,7 @@ static void handle_irq(struct base_device *device)
         if (driver->shift)
             scancode += 128;
 
-        write_stream(&driver->stream, 1, driver->ikeyboard.keymap + scancode);
+        write_stream(&driver->stream, 4, &driver->ikeyboard.keymap[scancode]);
         rendezvous_unsleep(&driver->rdata, 1);
 
     }
