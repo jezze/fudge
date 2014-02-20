@@ -2,6 +2,20 @@ ARCH:=x86
 LOADER:=mboot
 PREFIX:=
 
+LIBS_PATH:=libs
+MODULES_PATH:=modules
+MODULES_ARCH_PATH:=$(MODULES_PATH)/arch/$(ARCH)
+PACKAGES_PATH:=packages
+RAMDISK_PATH:=image
+INSTALL_PATH:=/boot
+
+KERNEL_NAME:=fudge
+KERNEL:=$(KERNEL_NAME)
+
+RAMDISK_NAME:=initrd
+RAMDISK_TYPE:=tar
+RAMDISK:=$(RAMDISK_NAME).$(RAMDISK_TYPE)
+
 AS:=$(PREFIX)$(AS)
 CC:=$(PREFIX)$(CC)
 LD:=$(PREFIX)$(LD)
@@ -15,23 +29,9 @@ CFLAGS_arm:=
 LDFLAGS_arm:=
 
 ASFLAGS:=$(ASFLAGS_$(ARCH))
-CFLAGS:=-Wall -Werror -ffreestanding -nostdlib -nostdinc -mno-red-zone -std=c89 -pedantic -O2 $(CFLAGS_$(ARCH))
+CFLAGS:=-Wall -Werror -ffreestanding -nostdlib -nostdinc -mno-red-zone -std=c89 -pedantic -O2 -I$(LIBS_PATH) $(CFLAGS_$(ARCH))
 LDFLAGS:=$(LDFLAGS_$(ARCH))
 ARFLAGS:=rs
-
-KERNEL_NAME:=fudge
-KERNEL:=$(KERNEL_NAME)
-
-RAMDISK_NAME:=initrd
-RAMDISK_TYPE:=tar
-RAMDISK:=$(RAMDISK_NAME).$(RAMDISK_TYPE)
-
-LIBS_PATH:=libs
-MODULES_PATH:=modules
-MODULES_ARCH_PATH:=$(MODULES_PATH)/arch/$(ARCH)
-PACKAGES_PATH:=packages
-RAMDISK_PATH:=image
-INSTALL_PATH:=/boot
 
 LIBS:=
 LIBS_OBJECTS:=

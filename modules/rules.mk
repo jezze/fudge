@@ -1,4 +1,4 @@
-$(MODULES_PATH)/%.o: CFLAGS+=-I$(LIBS_PATH) -I$(MODULES_PATH)
+$(MODULES_PATH)/%.o: CFLAGS+=-I$(MODULES_PATH)
 $(MODULES_PATH)/%.ko: LDFLAGS+=-T$(MODULES_PATH)/linker.ld -r
 
 include $(MODULES_PATH)/base/rules.mk

@@ -1,5 +1,3 @@
-$(LIBS_PATH)/%.o: CFLAGS+=-I$(LIBS_PATH)
-
 include $(LIBS_PATH)/fudge/rules.mk
 include $(LIBS_PATH)/kernel/rules.mk
 include $(LIBS_PATH)/posix/rules.mk
