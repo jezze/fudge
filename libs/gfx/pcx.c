@@ -1,6 +1,4 @@
-#include <abi.h>
-#include "../define.h"
-#include "../memory.h"
+#include <fudge.h>
 #include "gfx.h"
 #include "pcx.h"
 
