@@ -1,0 +1,8 @@
+LIBUTF8:=$(LIBS_PATH)/utf8/libutf8.a
+LIBUTF8_OBJ:=$(LIBS_PATH)/utf8/utf8.o
+
+$(LIBUTF8): $(LIBUTF8_OBJ)
+	$(AR) $(ARFLAGS) $@ $^
+
+LIBS+=$(LIBUTF8)
+LIBS_OBJECTS+=$(LIBUTF8_OBJ)

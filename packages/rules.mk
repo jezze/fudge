@@ -1,4 +1,4 @@
-USERLIBS:=$(LIBABI) $(LIBFUDGE)
+USERLIBS:=$(LIBABI) $(LIBFUDGE) $(LIBUTF8)
 
 include $(PACKAGES_PATH)/cat/rules.mk
 include $(PACKAGES_PATH)/cconv/rules.mk
