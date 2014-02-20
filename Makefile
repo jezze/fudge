@@ -43,7 +43,7 @@ PACKAGES_OBJECTS:=
 PACKAGES_CONFIGS:=
 PACKAGES_SHARES:=
 
-.PHONY: all clean kernel libs modules packages
+.PHONY: all clean install kernel libs modules packages ramdisk
 
 all: libs modules packages kernel ramdisk
 
