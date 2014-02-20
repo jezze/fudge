@@ -1,5 +1,3 @@
-$(PACKAGES_PATH)/%.o: CFLAGS+=-I$(LIBS_PATH)/$(ARCH)/abi -I$(LIBS_PATH)/fudge
-
 USERLIBS:=$(LIBABI) $(LIBFUDGE)
 
 include $(PACKAGES_PATH)/cat/rules.mk

@@ -1,6 +1,4 @@
 #include <fudge.h>
-#include <gfx/gfx.h>
-#include <gfx/pcx.h>
 
 static struct pcx_surface pcx;
 
