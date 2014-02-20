@@ -1,5 +1,5 @@
 #include <fudge.h>
-#include <cpio.h>
+#include <cpio/cpio.h>
 
 unsigned int find_top()
 {
