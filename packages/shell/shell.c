@@ -1,4 +1,5 @@
 #include <fudge.h>
+#include "lifo.h"
 
 static void open_pipe(unsigned int index, unsigned int index0, unsigned int index1)
 {
