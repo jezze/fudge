@@ -1,6 +1,6 @@
 #include <fudge.h>
 
-static char map[256] =
+static unsigned int map[256] =
 {
 
        0,   27,  '1',  '2',  '3',  '4',  '5',  '6',  '7',  '8',  '9',  '0',  '-',  '+', '\b', '\t',
@@ -25,7 +25,7 @@ static char map[256] =
 void main()
 {
 
-    call_write(CALL_O0, 0, 256, map);
+    call_write(CALL_O0, 0, 1024, map);
 
 }
 

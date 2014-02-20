@@ -166,7 +166,7 @@ static void complete(struct lifo_stack *stack)
 
 }
 
-static void handle(struct lifo_stack *stack, char c)
+static void handle(struct lifo_stack *stack, unsigned int c)
 {
 
     switch (c)
@@ -226,8 +226,8 @@ static void poll()
     for (;;)
     {
 
-        unsigned char buffer[FUDGE_BSIZE];
-        unsigned int count = call_read(CALL_I0, 0, FUDGE_BSIZE, buffer);
+        unsigned int buffer[64];
+        unsigned int count = call_read(CALL_I0, 0, 64, buffer);
         unsigned int i;
 
         for (i = 0; i < count; i++)
