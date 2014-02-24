@@ -184,6 +184,7 @@ static void handle(struct lifo_stack *stack, unsigned int c, unsigned int size)
             break;
 
         case '\b':
+        case 0x7F:
 
             if (!lifo_stack_pop(stack, 1))
                 break;
@@ -228,8 +229,8 @@ static void poll()
     for (;;)
     {
 
-        char buffer[64];
-        unsigned int count = call_read(CALL_I0, 0, 64, buffer);
+        char buffer[FUDGE_BSIZE];
+        unsigned int count = call_read(CALL_I0, 0, FUDGE_BSIZE, buffer);
         unsigned int size;
         unsigned int offset;
 
