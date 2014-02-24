@@ -7,113 +7,101 @@ static enum token_type tokenize(char c)
     switch (c)
     {
 
-        case '0':
-        case '1':
-        case '2':
-        case '3':
-        case '4':
-        case '5':
-        case '6':
-        case '7':
-        case '8':
-        case '9':
+    case '0':
+    case '1':
+    case '2':
+    case '3':
+    case '4':
+    case '5':
+    case '6':
+    case '7':
+    case '8':
+    case '9':
+        return TOKEN_TYPE_NUM;
 
-            return TOKEN_TYPE_NUM;
+    case 'a':
+    case 'b':
+    case 'c':
+    case 'd':
+    case 'e':
+    case 'f':
+    case 'g':
+    case 'h':
+    case 'i':
+    case 'j':
+    case 'k':
+    case 'l':
+    case 'm':
+    case 'n':
+    case 'o':
+    case 'p':
+    case 'q':
+    case 'r':
+    case 's':
+    case 't':
+    case 'u':
+    case 'v':
+    case 'w':
+    case 'x':
+    case 'y':
+    case 'z':
+    case 'A':
+    case 'B':
+    case 'C':
+    case 'D':
+    case 'E':
+    case 'F':
+    case 'G':
+    case 'H':
+    case 'I':
+    case 'J':
+    case 'K':
+    case 'L':
+    case 'M':
+    case 'N':
+    case 'O':
+    case 'P':
+    case 'Q':
+    case 'R':
+    case 'S':
+    case 'T':
+    case 'U':
+    case 'V':
+    case 'W':
+    case 'X':
+    case 'Y':
+    case 'Z':
+        return TOKEN_TYPE_ALPHA;
 
-        case 'a':
-        case 'b':
-        case 'c':
-        case 'd':
-        case 'e':
-        case 'f':
-        case 'g':
-        case 'h':
-        case 'i':
-        case 'j':
-        case 'k':
-        case 'l':
-        case 'm':
-        case 'n':
-        case 'o':
-        case 'p':
-        case 'q':
-        case 'r':
-        case 's':
-        case 't':
-        case 'u':
-        case 'v':
-        case 'w':
-        case 'x':
-        case 'y':
-        case 'z':
-        case 'A':
-        case 'B':
-        case 'C':
-        case 'D':
-        case 'E':
-        case 'F':
-        case 'G':
-        case 'H':
-        case 'I':
-        case 'J':
-        case 'K':
-        case 'L':
-        case 'M':
-        case 'N':
-        case 'O':
-        case 'P':
-        case 'Q':
-        case 'R':
-        case 'S':
-        case 'T':
-        case 'U':
-        case 'V':
-        case 'W':
-        case 'X':
-        case 'Y':
-        case 'Z':
+    case ' ':
+        return TOKEN_TYPE_SPACE;
 
-            return TOKEN_TYPE_ALPHA;
+    case '<':
+        return TOKEN_TYPE_LT;
 
-        case ' ':
+    case '>':
+        return TOKEN_TYPE_GT;
 
-            return TOKEN_TYPE_SPACE;
+    case '-':
+        return TOKEN_TYPE_MINUS;
 
-        case '<':
+    case ';':
+        return TOKEN_TYPE_SEMICOLON;
 
-            return TOKEN_TYPE_LT;
+    case '.':
+        return TOKEN_TYPE_DOT;
 
-        case '>':
+    case '/':
+        return TOKEN_TYPE_SLASH;
 
-            return TOKEN_TYPE_GT;
+    case '|':
+        return TOKEN_TYPE_PIPE;
 
-        case '-':
+    case '"':
+        return TOKEN_TYPE_QUOTE;
 
-            return TOKEN_TYPE_MINUS;
-
-        case ';':
-
-            return TOKEN_TYPE_SEMICOLON;
-
-        case '.':
-
-            return TOKEN_TYPE_DOT;
-
-        case '/':
-
-            return TOKEN_TYPE_SLASH;
-
-        case '|':
-
-            return TOKEN_TYPE_PIPE;
-
-        case '"':
-
-            return TOKEN_TYPE_QUOTE;
-
-        case '\n':
-
-            return TOKEN_TYPE_NEWLINE;
+    case '\n':
+        return TOKEN_TYPE_NEWLINE;
 
     }
 

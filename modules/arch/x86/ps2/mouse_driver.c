@@ -62,27 +62,23 @@ static void handle_irq(struct base_device *device)
     switch (driver->cycle)
     {
 
-        case 0:
+    case 0:
+        driver->status = data;
+        driver->cycle++;
 
-            driver->status = data;
-            driver->cycle++;
+        break;
 
-            break;
+    case 1:
+        driver->imouse.vx = data;
+        driver->cycle++;
 
-        case 1:
+        break;
 
-            driver->imouse.vx = data;
-            driver->cycle++;
+    case 2:
+        driver->imouse.vy = data;
+        driver->cycle = 0;
 
-            break;
-
-        case 2:
-
-            driver->imouse.vy = data;
-            driver->cycle = 0;
-
-            break;
-
+        break;
 
     }
 

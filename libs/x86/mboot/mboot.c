@@ -43,21 +43,17 @@ void mboot_setup(struct mboot_header *header, unsigned int magic)
         switch (deviceNumber)
         {
 
-            case 0xE0:
+        case 0xE0:
+            break;
 
-                break;
+        case 0x00:
+            break;
 
-            case 0x00:
+        case 0x80:
+            break;
 
-                break;
-
-            case 0x80:
-
-                break;
-
-            default:
-
-                break;
+        default:
+            break;
 
         }
 

@@ -35,17 +35,15 @@ void elf_relocate_symbol(unsigned long address, unsigned int type, unsigned int 
     switch (type)
     {
 
-        case ELF_RELOC_TYPE_32:
+    case ELF_RELOC_TYPE_32:
+        *entry += addend;
 
-            *entry += addend;
+        break;
 
-            break;
+    case ELF_RELOC_TYPE_PC32:
+        *entry += addend - address;
 
-        case ELF_RELOC_TYPE_PC32:
-
-            *entry += addend - address;
-
-            break;
+        break;
 
     }
 

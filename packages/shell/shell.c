@@ -173,46 +173,40 @@ static void handle(struct lifo_stack *stack, unsigned int c, unsigned int size)
     switch (c)
     {
 
-        case '\0':
+    case '\0':
+        break;
 
+    case '\t':
+        complete(stack);
+
+        break;
+
+    case '\b':
+    case 0x7F:
+        if (!lifo_stack_pop(stack, 1))
             break;
 
-        case '\t':
+        call_write(CALL_O0, 0, 3, "\b \b");
 
-            complete(stack);
+        break;
 
-            break;
+    case '\r':
+        c = '\n';
 
-        case '\b':
-        case 0x7F:
+    case '\n':
+        lifo_stack_push(stack, size, &c);
+        call_write(CALL_O0, 0, size, &c);
+        interpret(stack);
+        lifo_stack_clear(stack);
+        call_write(CALL_O0, 0, 2, "$ ");
 
-            if (!lifo_stack_pop(stack, 1))
-                break;
+        break;
 
-            call_write(CALL_O0, 0, 3, "\b \b");
+    default:
+        lifo_stack_push(stack, size, &c);
+        call_write(CALL_O0, 0, size, &c);
 
-            break;
-
-        case '\r':
-
-            c = '\n';
-
-        case '\n':
-
-            lifo_stack_push(stack, size, &c);
-            call_write(CALL_O0, 0, size, &c);
-            interpret(stack);
-            lifo_stack_clear(stack);
-            call_write(CALL_O0, 0, 2, "$ ");
-
-            break;
-
-        default:
-
-            lifo_stack_push(stack, size, &c);
-            call_write(CALL_O0, 0, size, &c);
-
-            break;
+        break;
 
     }
 

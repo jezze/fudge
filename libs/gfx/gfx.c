@@ -25,15 +25,13 @@ void gfx_fill(struct gfx_surface *self)
     switch (self->context.primitive)
     {
 
-        case GFX_RECTANGLE:
+    case GFX_RECTANGLE:
+        gfx_fill_rectangle(self);
 
-            gfx_fill_rectangle(self);
+        break;
 
-            break;
-
-        default:
-
-            break;
+    default:
+        break;
 
     }
 

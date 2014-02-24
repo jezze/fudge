@@ -228,33 +228,29 @@ static unsigned int send(struct base_device *device, unsigned int count, void *b
     switch (driver->txp)
     {
 
-        case 0:
+    case 0:
+        memory_write(driver->tx0, 0x800, buffer, count, 0);
+        io_outd(driver->io + RTL8139_REGISTER_TSD0, status);
 
-            memory_write(driver->tx0, 0x800, buffer, count, 0);
-            io_outd(driver->io + RTL8139_REGISTER_TSD0, status);
+        break;
 
-            break;
+    case 1:
+        memory_write(driver->tx1, 0x800, buffer, count, 0);
+        io_outd(driver->io + RTL8139_REGISTER_TSD1, status);
 
-        case 1:
+        break;
 
-            memory_write(driver->tx1, 0x800, buffer, count, 0);
-            io_outd(driver->io + RTL8139_REGISTER_TSD1, status);
+    case 2:
+        memory_write(driver->tx2, 0x800, buffer, count, 0);
+        io_outd(driver->io + RTL8139_REGISTER_TSD2, status);
 
-            break;
+        break;
 
-        case 2:
+    case 3:
+        memory_write(driver->tx3, 0x800, buffer, count, 0);
+        io_outd(driver->io + RTL8139_REGISTER_TSD3, status);
 
-            memory_write(driver->tx2, 0x800, buffer, count, 0);
-            io_outd(driver->io + RTL8139_REGISTER_TSD2, status);
-
-            break;
-
-        case 3:
-
-            memory_write(driver->tx3, 0x800, buffer, count, 0);
-            io_outd(driver->io + RTL8139_REGISTER_TSD3, status);
-
-            break;
+        break;
 
     }
 
