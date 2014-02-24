@@ -220,9 +220,10 @@ static void handle(struct lifo_stack *stack, unsigned int c, unsigned int size)
 static void poll()
 {
 
+    char inputbuffer[FUDGE_BSIZE];
     struct lifo_stack input;
 
-    lifo_stack_clear(&input);
+    lifo_stack_init(&input, FUDGE_BSIZE, inputbuffer);
 
     for (;;)
     {

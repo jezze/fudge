@@ -4,7 +4,7 @@
 unsigned int lifo_stack_push(struct lifo_stack *stack, unsigned int count, void *data)
 {
 
-    if (stack->head + count < FUDGE_BSIZE)
+    if (stack->head + count < stack->size)
     {
 
         memory_copy(stack->buffer + stack->head, data, count);
@@ -42,10 +42,13 @@ void lifo_stack_clear(struct lifo_stack *stack)
 
 }
 
-unsigned int lifo_stack_isempty(struct lifo_stack *stack)
+void lifo_stack_init(struct lifo_stack *stack, unsigned int size, void *buffer)
 {
 
-    return !stack->head;
+    memory_clear(stack, sizeof (struct lifo_stack));
+
+    stack->size = size;
+    stack->buffer = buffer;
 
 }
 
