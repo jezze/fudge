@@ -159,7 +159,7 @@ static void complete(struct lifo_stack *stack)
         unsigned int i;
 
         for (i = stack->head - offset2; i < count - 1; i++)
-            lifo_stack_push(stack, buffer[i]);
+            lifo_stack_push(stack, 1, buffer + i);
 
         call_write(CALL_O0, 0, stack->head - head, stack->buffer + head);
 
@@ -185,7 +185,7 @@ static void handle(struct lifo_stack *stack, unsigned int c, unsigned int size)
 
         case '\b':
 
-            if (!lifo_stack_pop(stack))
+            if (!lifo_stack_pop(stack, 1))
                 break;
 
             call_write(CALL_O0, 0, 3, "\b \b");
@@ -198,7 +198,7 @@ static void handle(struct lifo_stack *stack, unsigned int c, unsigned int size)
 
         case '\n':
 
-            lifo_stack_push(stack, c);
+            lifo_stack_push(stack, size, &c);
             call_write(CALL_O0, 0, size, &c);
             interpret(stack);
             lifo_stack_clear(stack);
@@ -208,7 +208,7 @@ static void handle(struct lifo_stack *stack, unsigned int c, unsigned int size)
 
         default:
 
-            lifo_stack_push(stack, c);
+            lifo_stack_push(stack, size, &c);
             call_write(CALL_O0, 0, size, &c);
 
             break;
@@ -235,7 +235,7 @@ static void poll()
         for (offset = 0; offset < count && (size = utf8_size(buffer + offset)); offset += size)
         {
 
-            unsigned int value;
+            unsigned int value = 0;
 
             memory_copy(&value, buffer + offset, size);
             handle(&input, value, size);

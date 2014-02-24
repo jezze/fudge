@@ -1,23 +1,37 @@
 #include <fudge.h>
 #include "lifo.h"
 
-void lifo_stack_push(struct lifo_stack *stack, char c)
+unsigned int lifo_stack_push(struct lifo_stack *stack, unsigned int count, void *data)
 {
 
-    if (stack->head < FUDGE_BSIZE)
+    if (stack->head + count < FUDGE_BSIZE)
     {
 
-        stack->buffer[stack->head] = c;
-        stack->head++;
+        memory_copy(stack->buffer + stack->head, data, count);
+
+        stack->head += count;
+
+        return count;
 
     }
 
+    return 0;
+
 }
 
-char lifo_stack_pop(struct lifo_stack *stack)
+unsigned int lifo_stack_pop(struct lifo_stack *stack, unsigned int count)
 {
 
-    return (stack->head > 0) ? stack->buffer[--stack->head] : 0;
+    if (stack->head >= count)
+    {
+
+        stack->head -= count;
+
+        return count;
+
+    }
+
+    return 0;
 
 }
 
