@@ -215,26 +215,20 @@ static void handle(struct lifo_stack *stack, unsigned char c)
 static void poll()
 {
 
+    char buffer[FUDGE_BSIZE];
+    unsigned int count, roff;
     char inputbuffer[FUDGE_BSIZE];
     struct lifo_stack input;
 
     lifo_stack_init(&input, FUDGE_BSIZE, inputbuffer);
 
-    for (;;)
+    for (roff = 0; (count = call_read(CALL_I0, roff, FUDGE_BSIZE, buffer)); roff += count)
     {
 
-        char buffer[FUDGE_BSIZE];
-        unsigned int count, roff;
+        unsigned int i;
 
-        for (roff = 0; (count = call_read(CALL_I0, roff, FUDGE_BSIZE, buffer)); roff += count)
-        {
-
-            unsigned int i;
-
-            for (i = 0; i < count; i++)
-                handle(&input, buffer[i]);
-
-        }
+        for (i = 0; i < count; i++)
+            handle(&input, buffer[i]);
 
     }
 
