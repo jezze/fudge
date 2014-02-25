@@ -20,7 +20,6 @@ include $(PACKAGES_PATH)/ls/rules.mk
 include $(PACKAGES_PATH)/mandelbrot/rules.mk
 include $(PACKAGES_PATH)/md5/rules.mk
 include $(PACKAGES_PATH)/mod/rules.mk
-include $(PACKAGES_PATH)/monitor/rules.mk
 include $(PACKAGES_PATH)/motd/rules.mk
 include $(PACKAGES_PATH)/mount/rules.mk
 include $(PACKAGES_PATH)/name/rules.mk
