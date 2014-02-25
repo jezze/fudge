@@ -167,7 +167,7 @@ static void complete(struct lifo_stack *stack)
 
 }
 
-static void handle(struct lifo_stack *stack, unsigned int c, unsigned int size)
+static void handle(struct lifo_stack *stack, unsigned char c)
 {
 
     switch (c)
@@ -194,8 +194,8 @@ static void handle(struct lifo_stack *stack, unsigned int c, unsigned int size)
         c = '\n';
 
     case '\n':
-        lifo_stack_push(stack, size, &c);
-        call_write(CALL_O0, 0, size, &c);
+        lifo_stack_push(stack, 1, &c);
+        call_write(CALL_O0, 0, 1, &c);
         interpret(stack);
         lifo_stack_clear(stack);
         call_write(CALL_O0, 0, 2, "$ ");
@@ -203,8 +203,8 @@ static void handle(struct lifo_stack *stack, unsigned int c, unsigned int size)
         break;
 
     default:
-        lifo_stack_push(stack, size, &c);
-        call_write(CALL_O0, 0, size, &c);
+        lifo_stack_push(stack, 1, &c);
+        call_write(CALL_O0, 0, 1, &c);
 
         break;
 
@@ -224,17 +224,15 @@ static void poll()
     {
 
         char buffer[FUDGE_BSIZE];
-        unsigned int count = call_read(CALL_I0, 0, FUDGE_BSIZE, buffer);
-        unsigned int size;
-        unsigned int offset;
+        unsigned int count, roff;
 
-        for (offset = 0; offset < count && (size = utf8_size(buffer + offset)); offset += size)
+        for (roff = 0; (count = call_read(CALL_I0, roff, FUDGE_BSIZE, buffer)); roff += count)
         {
 
-            unsigned int value = 0;
+            unsigned int i;
 
-            memory_copy(&value, buffer + offset, size);
-            handle(&input, value, size);
+            for (i = 0; i < count; i++)
+                handle(&input, buffer[i]);
 
         }
 
