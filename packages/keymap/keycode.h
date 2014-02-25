@@ -2,6 +2,6 @@ struct keycode
 {
 
     unsigned char length;
-    unsigned int value;
+    unsigned char value[4];
 
 };
