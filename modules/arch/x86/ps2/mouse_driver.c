@@ -136,13 +136,12 @@ static void attach(struct base_device *device)
 {
 
     struct ps2_bus *bus = (struct ps2_bus *)device->bus;
-    struct ps2_device *ps2Device = (struct ps2_device *)device;
     struct ps2_mouse_driver *driver = (struct ps2_mouse_driver *)device->driver;
 
     base_mouse_register_interface(&driver->imouse, device);
     pic_set_routine(device, handle_irq);
-    ps2_device_enable(ps2Device);
-    ps2_device_enable_interrupt(ps2Device);
+    ps2_device_enable(device);
+    ps2_device_enable_interrupt(device);
     disable_scanning(bus);
     reset(bus);
     set_defaults(bus);

@@ -54,9 +54,9 @@ void ps2_bus_reset(struct ps2_bus *bus)
 static void add_device(struct ps2_bus *bus, unsigned int irq)
 {
 
-    struct ps2_device *device = &bus->devices.item[bus->devices.count];
+    struct base_device *device = &bus->devices.item[bus->devices.count];
 
-    ps2_init_device(device, bus, irq);
+    base_init_device(device, PS2_DEVICE_TYPE, irq, "ps2", &bus->base);
 
     bus->devices.count++;
 

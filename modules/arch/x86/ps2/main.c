@@ -39,7 +39,7 @@ void init()
     base_register_bus(&bus.base);
 
     for (i = 0; i < bus.devices.count; i++)
-        base_register_device(&bus.devices.item[i].base);
+        base_register_device(&bus.devices.item[i]);
 
     ps2_init_keyboard_driver(&keyboard);
     base_register_driver(&keyboard.base);
@@ -62,7 +62,7 @@ void destroy()
     base_unregister_driver(&mouse.base);
 
     for (i = 0; i < bus.devices.count; i++)
-        base_unregister_device(&bus.devices.item[i].base);
+        base_unregister_device(&bus.devices.item[i]);
 
     base_unregister_bus(&bus.base);
 
