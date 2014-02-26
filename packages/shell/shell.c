@@ -215,9 +215,9 @@ static void handle(struct lifo_stack *stack, unsigned char c)
 static void poll()
 {
 
-    char buffer[FUDGE_BSIZE];
+    unsigned char buffer[FUDGE_BSIZE];
     unsigned int count, roff;
-    char inputbuffer[FUDGE_BSIZE];
+    unsigned char inputbuffer[FUDGE_BSIZE];
     struct lifo_stack input;
 
     lifo_stack_init(&input, FUDGE_BSIZE, inputbuffer);

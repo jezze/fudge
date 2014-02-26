@@ -3,7 +3,7 @@
 void main()
 {
 
-    char buffer[32];
+    unsigned char buffer[32];
     unsigned int count = call_read(CALL_I0, 0, 32, buffer);
 
     if (!count)

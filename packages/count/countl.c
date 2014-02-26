@@ -3,7 +3,7 @@
 void main()
 {
 
-    char buffer[FUDGE_BSIZE];
+    unsigned char buffer[FUDGE_BSIZE];
     unsigned int count, roff, loff;
     unsigned int lines = 0;
 

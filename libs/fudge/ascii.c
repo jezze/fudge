@@ -28,11 +28,12 @@ unsigned int ascii_toint(unsigned char c)
 
 }
 
-unsigned int ascii_fromint(char *out, unsigned int count, unsigned int value, unsigned int base)
+unsigned int ascii_fromint(void *out, unsigned int count, unsigned int value, unsigned int base)
 {
 
     unsigned int current = value / base;
     unsigned int i = 0;
+    unsigned char *o = out;
 
     if (!count)
         return 0;
@@ -40,7 +41,7 @@ unsigned int ascii_fromint(char *out, unsigned int count, unsigned int value, un
     if (current)
         i = ascii_fromint(out, count - 1, current, base);
 
-    out[i] = "0123456789abcdef"[value % base];
+    o[i] = "0123456789abcdef"[value % base];
 
     return ++i;
 

@@ -37,7 +37,7 @@ static unsigned int parse(unsigned int count, void *buffer)
 void main()
 {
 
-    char buffer[FUDGE_BSIZE];
+    unsigned char buffer[FUDGE_BSIZE];
     unsigned int count = call_read(CALL_I0, 0, FUDGE_BSIZE, buffer);
     unsigned int nargs = parse(count, buffer);
     unsigned int i;

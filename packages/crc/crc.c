@@ -38,7 +38,7 @@ static const unsigned int tab[256] = {
 void main()
 {
 
-    char buffer[FUDGE_BSIZE];
+    unsigned char buffer[FUDGE_BSIZE];
     unsigned int count, roff;
     unsigned int i;
     unsigned int crc = 0;

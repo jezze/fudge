@@ -1,13 +1,13 @@
 #include <fudge.h>
 #include "lifo.h"
 
-unsigned int lifo_stack_push(struct lifo_stack *stack, unsigned int count, void *data)
+unsigned int lifo_stack_push(struct lifo_stack *stack, unsigned int count, void *buffer)
 {
 
     if (stack->head + count < stack->size)
     {
 
-        memory_copy(stack->buffer + stack->head, data, count);
+        memory_copy(stack->buffer + stack->head, buffer, count);
 
         stack->head += count;
 
