@@ -31,7 +31,6 @@ static unsigned int open(struct container *self, struct task *task, void *stack)
     struct {void *caller; unsigned int index; unsigned int pindex; unsigned int count; const char *path;} *args = stack;
     struct vfs_descriptor *descriptor = get_descriptor(task, args->index);
     struct vfs_descriptor *pdescriptor = get_descriptor(task, args->pindex);
-    struct vfs_descriptor temp;
     unsigned int offset;
     unsigned int count;
 
@@ -41,7 +40,8 @@ static unsigned int open(struct container *self, struct task *task, void *stack)
     if (!pdescriptor->id || !pdescriptor->channel)
         return 0;
 
-    memory_copy(&temp, pdescriptor, sizeof (struct vfs_descriptor));
+    descriptor->channel = pdescriptor->channel;
+    descriptor->id = pdescriptor->id;
 
     for (offset = 0; (count = vfs_findnext(args->count - offset, args->path + offset)); offset += count)
     {
@@ -56,11 +56,11 @@ static unsigned int open(struct container *self, struct task *task, void *stack)
 
                 struct vfs_mount *mount = &self->mounts[i];
 
-                if (temp.channel == mount->child.channel && temp.id == mount->child.id)
+                if (descriptor->channel == mount->child.channel && descriptor->id == mount->child.id)
                 {
 
-                    temp.channel = mount->parent.channel;
-                    temp.id = mount->parent.id;
+                    descriptor->channel = mount->parent.channel;
+                    descriptor->id = mount->parent.id;
 
                     break;
 
@@ -68,9 +68,9 @@ static unsigned int open(struct container *self, struct task *task, void *stack)
 
             }
 
-            temp.id = temp.channel->protocol->parent(temp.channel->backend, temp.id);
+            descriptor->id = descriptor->channel->protocol->parent(descriptor->channel->backend, descriptor->id);
 
-            if (!temp.id)
+            if (!descriptor->id)
                 return 0;
 
         }
@@ -78,9 +78,9 @@ static unsigned int open(struct container *self, struct task *task, void *stack)
         else
         {
 
-            temp.id = temp.channel->protocol->walk(temp.channel->backend, temp.id, count, args->path + offset);
+            descriptor->id = descriptor->channel->protocol->walk(descriptor->channel->backend, descriptor->id, count, args->path + offset);
 
-            if (!temp.id)
+            if (!descriptor->id)
                 return 0;
 
             for (i = 1; i < CONTAINER_MOUNTS; i++)
@@ -88,11 +88,11 @@ static unsigned int open(struct container *self, struct task *task, void *stack)
 
                 struct vfs_mount *mount = &self->mounts[i];
 
-                if (temp.channel == mount->parent.channel && temp.id == mount->parent.id)
+                if (descriptor->channel == mount->parent.channel && descriptor->id == mount->parent.id)
                 {
 
-                    temp.channel = mount->child.channel;
-                    temp.id = mount->child.id;
+                    descriptor->channel = mount->child.channel;
+                    descriptor->id = mount->child.id;
 
                     break;
 
@@ -103,8 +103,6 @@ static unsigned int open(struct container *self, struct task *task, void *stack)
         }
 
     }
-
-    memory_copy(descriptor, &temp, sizeof (struct vfs_descriptor));
 
     return descriptor->id = descriptor->channel->protocol->open(descriptor->channel->backend, descriptor->id);
 
