@@ -87,28 +87,67 @@ static void handle_irq(struct base_device *device)
 
 }
 
+static void reset(struct ps2_bus *bus)
+{
+
+    ps2_bus_write_command(bus, 0xD4);
+    ps2_bus_write_data(bus, 0xFF);
+    ps2_bus_read_data(bus);
+
+}
+
+static void set_defaults(struct ps2_bus *bus)
+{
+
+    ps2_bus_write_command(bus, 0xD4);
+    ps2_bus_write_data(bus, 0xF6);
+    ps2_bus_read_data(bus);
+
+}
+
+static void identify(struct ps2_bus *bus)
+{
+
+    ps2_bus_write_command(bus, 0xD4);
+    ps2_bus_write_data(bus, 0xF2);
+    ps2_bus_read_data(bus);
+
+}
+
+static void enable_scanning(struct ps2_bus *bus)
+{
+
+    ps2_bus_write_command(bus, 0xD4);
+    ps2_bus_write_data(bus, 0xF4);
+    ps2_bus_read_data(bus);
+
+}
+
+static void disable_scanning(struct ps2_bus *bus)
+{
+
+    ps2_bus_write_command(bus, 0xD4);
+    ps2_bus_write_data(bus, 0xF5);
+    ps2_bus_read_data(bus);
+
+}
+
 static void attach(struct base_device *device)
 {
 
     struct ps2_bus *bus = (struct ps2_bus *)device->bus;
+    struct ps2_device *ps2Device = (struct ps2_device *)device;
     struct ps2_mouse_driver *driver = (struct ps2_mouse_driver *)device->driver;
-    unsigned char status;
 
     base_mouse_register_interface(&driver->imouse, device);
     pic_set_routine(device, handle_irq);
-    ps2_bus_write_command(bus, 0xA8);
-    ps2_bus_write_command(bus, 0x20);
-
-    status = ps2_bus_read_data(bus) | 2;
-
-    ps2_bus_write_command(bus, 0x60);
-    ps2_bus_write_data(bus, status);
-    ps2_bus_write_command(bus, 0xD4);
-    ps2_bus_write_data(bus, 0xF6);
-    ps2_bus_read_data(bus);
-    ps2_bus_write_command(bus, 0xD4);
-    ps2_bus_write_data(bus, 0xF4);
-    ps2_bus_read_data(bus);
+    ps2_device_enable(ps2Device);
+    ps2_device_enable_interrupt(ps2Device);
+    disable_scanning(bus);
+    reset(bus);
+    set_defaults(bus);
+    identify(bus);
+    enable_scanning(bus);
 
 }
 
@@ -141,8 +180,6 @@ void ps2_init_mouse_driver(struct ps2_mouse_driver *driver)
     memory_clear(driver, sizeof (struct ps2_mouse_driver));
     base_init_driver(&driver->base, "ps2mouse", check, attach);
     base_mouse_init_interface(&driver->imouse, read_data);
-
-    driver->cycle = 2;
 
 }
 

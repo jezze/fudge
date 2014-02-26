@@ -112,19 +112,13 @@ static void handle_irq(struct base_device *device)
 static void attach(struct base_device *device)
 {
 
-    struct ps2_bus *bus = (struct ps2_bus *)device->bus;
+    struct ps2_device *ps2Device = (struct ps2_device *)device;
     struct ps2_keyboard_driver *driver = (struct ps2_keyboard_driver *)device->driver;
-    unsigned char status;
 
     base_keyboard_register_interface(&driver->ikeyboard, device);
     pic_set_routine(device, handle_irq);
-    ps2_bus_write_command(bus, 0xAE);
-    ps2_bus_write_command(bus, 0x20);
-
-    status = ps2_bus_read_data(bus) | 1;
-
-    ps2_bus_write_command(bus, 0x60);
-    ps2_bus_write_data(bus, status);
+    ps2_device_enable(ps2Device);
+    ps2_device_enable_interrupt(ps2Device);
 
 }
 

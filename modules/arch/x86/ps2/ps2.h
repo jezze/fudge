@@ -20,6 +20,8 @@ struct ps2_bus
 
 };
 
+void ps2_device_enable(struct ps2_device *device);
+void ps2_device_enable_interrupt(struct ps2_device *device);
 unsigned char ps2_bus_read_status(struct ps2_bus *bus);
 unsigned char ps2_bus_read_data(struct ps2_bus *bus);
 unsigned char ps2_bus_read_data_async(struct ps2_bus *bus);
