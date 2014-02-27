@@ -89,6 +89,13 @@ static unsigned int spawn(struct container *self, struct task *task, void *stack
 
 }
 
+unsigned short arch_segment()
+{
+
+    return state.kselector.data;
+
+}
+
 unsigned short arch_schedule(struct cpu_general *general, struct cpu_interrupt *interrupt)
 {
 

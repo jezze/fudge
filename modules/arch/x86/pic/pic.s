@@ -1,5 +1,6 @@
 .code32
 
+.extern arch_segment
 .extern pic_interrupt
 
 .global pic_routine00
@@ -102,7 +103,7 @@ pic_common:
     pusha
     movl %esp, %eax
     pushl %eax
-    movw $0x10, %ax
+    call arch_segment
     movw %ax, %ds
     movw %ax, %es
     movw %ax, %fs
