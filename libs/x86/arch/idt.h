@@ -1,14 +1,19 @@
-#define IDT_FLAG_TYPE32TASK             (0x05 << 0)
-#define IDT_FLAG_TYPE16INT              (0x06 << 0)
-#define IDT_FLAG_TYPE16TRAP             (0x07 << 0)
-#define IDT_FLAG_TYPE32INT              (0x0E << 0)
-#define IDT_FLAG_TYPE32TRAP             (0x0F << 0)
-#define IDT_FLAG_STORAGE                (0x01 << 4)
-#define IDT_FLAG_RING0                  (0x00 << 5)
-#define IDT_FLAG_RING1                  (0x01 << 5)
-#define IDT_FLAG_RING2                  (0x02 << 5)
-#define IDT_FLAG_RING3                  (0x03 << 5)
-#define IDT_FLAG_PRESENT                (0x01 << 7)
+enum idt_flag
+{
+
+    IDT_FLAG_TYPE32TASK                 = (0x05 << 0),
+    IDT_FLAG_TYPE16INT                  = (0x06 << 0),
+    IDT_FLAG_TYPE16TRAP                 = (0x07 << 0),
+    IDT_FLAG_TYPE32INT                  = (0x0E << 0),
+    IDT_FLAG_TYPE32TRAP                 = (0x0F << 0),
+    IDT_FLAG_STORAGE                    = (0x01 << 4),
+    IDT_FLAG_RING0                      = (0x00 << 5),
+    IDT_FLAG_RING1                      = (0x01 << 5),
+    IDT_FLAG_RING2                      = (0x02 << 5),
+    IDT_FLAG_RING3                      = (0x03 << 5),
+    IDT_FLAG_PRESENT                    = (0x01 << 7)
+
+};
 
 enum idt_index
 {
@@ -55,5 +60,5 @@ struct idt_pointer
 
 } __attribute__((packed));
 
-void idt_set_descriptor(struct idt_pointer *pointer, enum idt_index index, void (*callback)(), unsigned short selector, unsigned char flags);
+void idt_set_descriptor(struct idt_pointer *pointer, enum idt_index index, void (*callback)(), unsigned short selector, enum idt_flag flags);
 void idt_init_pointer(struct idt_pointer *pointer, unsigned int count, struct idt_descriptor *descriptors);

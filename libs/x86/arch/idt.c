@@ -1,7 +1,7 @@
 #include <kernel.h>
 #include "idt.h"
 
-void idt_set_descriptor(struct idt_pointer *pointer, enum idt_index index, void (*callback)(), unsigned short selector, unsigned char flags)
+void idt_set_descriptor(struct idt_pointer *pointer, enum idt_index index, void (*callback)(), unsigned short selector, enum idt_flag flags)
 {
 
     unsigned long base = (unsigned long)callback;

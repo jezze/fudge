@@ -1,7 +1,7 @@
 #include <kernel.h>
 #include "gdt.h"
 
-unsigned short gdt_set_descriptor(struct gdt_pointer *pointer, enum gdt_index index, unsigned int base, unsigned int limit, unsigned char access, unsigned char flags)
+unsigned short gdt_set_descriptor(struct gdt_pointer *pointer, enum gdt_index index, unsigned int base, unsigned int limit, enum gdt_access access, enum gdt_flag flags)
 {
 
     pointer->descriptors[index].base0 = base;

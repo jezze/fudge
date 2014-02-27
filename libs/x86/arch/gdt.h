@@ -1,16 +1,26 @@
-#define GDT_ACCESS_ACCESSED             (0x01 << 0)
-#define GDT_ACCESS_RW                   (0x01 << 1)
-#define GDT_ACCESS_DC                   (0x01 << 2)
-#define GDT_ACCESS_EXECUTE              (0x01 << 3)
-#define GDT_ACCESS_ALWAYS1              (0x01 << 4)
-#define GDT_ACCESS_RING0                (0x00 << 5)
-#define GDT_ACCESS_RING1                (0x01 << 5)
-#define GDT_ACCESS_RING2                (0x02 << 5)
-#define GDT_ACCESS_RING3                (0x03 << 5)
-#define GDT_ACCESS_PRESENT              (0x01 << 7)
+enum gdt_access
+{
 
-#define GDT_FLAG_32BIT                  (0x01 << 6)
-#define GDT_FLAG_GRANULARITY            (0x01 << 7)
+    GDT_ACCESS_ACCESSED                 = (0x01 << 0),
+    GDT_ACCESS_RW                       = (0x01 << 1),
+    GDT_ACCESS_DC                       = (0x01 << 2),
+    GDT_ACCESS_EXECUTE                  = (0x01 << 3),
+    GDT_ACCESS_ALWAYS1                  = (0x01 << 4),
+    GDT_ACCESS_RING0                    = (0x00 << 5),
+    GDT_ACCESS_RING1                    = (0x01 << 5),
+    GDT_ACCESS_RING2                    = (0x02 << 5),
+    GDT_ACCESS_RING3                    = (0x03 << 5),
+    GDT_ACCESS_PRESENT                  = (0x01 << 7)
+
+};
+
+enum gdt_flag
+{
+
+    GDT_FLAG_32BIT                      = (0x01 << 6),
+    GDT_FLAG_GRANULARITY                = (0x01 << 7)
+
+};
 
 enum gdt_index
 {
@@ -43,5 +53,5 @@ struct gdt_pointer
 
 } __attribute__((packed));
 
-unsigned short gdt_set_descriptor(struct gdt_pointer *pointer, enum gdt_index index, unsigned int base, unsigned int limit, unsigned char access, unsigned char flags);
+unsigned short gdt_set_descriptor(struct gdt_pointer *pointer, enum gdt_index index, unsigned int base, unsigned int limit, enum gdt_access access, enum gdt_flag flags);
 void gdt_init_pointer(struct gdt_pointer *pointer, unsigned int count, struct gdt_descriptor *descriptors);
