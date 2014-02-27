@@ -203,7 +203,7 @@ void arch_setup(unsigned int count, struct kernel_module *modules)
     idt_set_descriptor(&state.idt.pointer, IDT_INDEX_PF, arch_isr_pagefault, state.kselector.code, IDT_FLAG_PRESENT | IDT_FLAG_RING0 | IDT_FLAG_TYPE32INT);
     idt_set_descriptor(&state.idt.pointer, IDT_INDEX_SYSCALL, arch_isr_syscall, state.kselector.code, IDT_FLAG_PRESENT | IDT_FLAG_RING3 | IDT_FLAG_TYPE32INT);
     tss_set_descriptor(&state.tss.pointer, TSS_INDEX_DEFAULT, state.kselector.data, ARCH_KSTACK_LIMIT);
-    cpu_set_gdt(&state.gdt.pointer);
+    cpu_set_gdt(&state.gdt.pointer, state.kselector.code, state.kselector.data);
     cpu_set_idt(&state.idt.pointer);
     cpu_set_tss(state.tselector.info);
     kernel_setup();
