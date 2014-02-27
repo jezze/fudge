@@ -31,7 +31,6 @@ arch_usermode:
 
 .global arch_isr_generalfault
 arch_isr_generalfault:
-    cli
     pusha
     movl %esp, %eax
     pushl %eax
@@ -52,7 +51,6 @@ arch_isr_generalfault:
 
 .global arch_isr_pagefault
 arch_isr_pagefault:
-    cli
     pusha
     movl %esp, %eax
     pushl %eax
@@ -73,7 +71,6 @@ arch_isr_pagefault:
 
 .global arch_isr_syscall
 arch_isr_syscall:
-    cli
     pusha
     movl %esp, %eax
     pushl %eax
