@@ -29,7 +29,7 @@ enum gdt_index
     GDT_INDEX_KDATA                     = 0x02,
     GDT_INDEX_UCODE                     = 0x03,
     GDT_INDEX_UDATA                     = 0x04,
-    GDT_INDEX_TSS                       = 0x05
+    GDT_INDEX_TLINK                     = 0x05
 
 };
 
