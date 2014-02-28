@@ -79,18 +79,17 @@ static void unredirect_output(struct output *output, unsigned int o)
 static void execute_command(struct command *command, char *buffer)
 {
 
+    call_open(CALL_L4, CALL_DR, 4, "bin/");
+
     if (!open_path(CALL_E0, CALL_L4, command->binary.count, buffer + command->binary.index))
         return;
 
-    redirect_input(&command->in0, buffer, CALL_I0, CALL_L5, CALL_L6);
-    redirect_input(&command->in1, buffer, CALL_I1, CALL_L7, CALL_L8);
-    redirect_output(&command->out0, buffer, CALL_O0);
-    redirect_output(&command->out1, buffer, CALL_O1);
+    call_close(CALL_L4);
+    redirect_input(&command->in, buffer, CALL_I1, CALL_L5, CALL_L6);
+    redirect_output(&command->out, buffer, CALL_O1);
     call_spawn(CALL_E0);
-    unredirect_input(&command->in0, CALL_I0, CALL_L5, CALL_L6);
-    unredirect_input(&command->in1, CALL_I1, CALL_L7, CALL_L8);
-    unredirect_output(&command->out0, CALL_O0);
-    unredirect_output(&command->out1, CALL_O1);
+    unredirect_input(&command->in, CALL_I1, CALL_L5, CALL_L6);
+    unredirect_output(&command->out, CALL_O1);
     call_close(CALL_E0);
 
 }
@@ -99,12 +98,6 @@ static void execute(struct token_state *state, struct expression *expression)
 {
 
     unsigned int pindex;
-
-    call_open(CALL_L0, CALL_I0, 0, 0);
-    call_open(CALL_L1, CALL_I1, 0, 0);
-    call_open(CALL_L2, CALL_O0, 0, 0);
-    call_open(CALL_L3, CALL_O1, 0, 0);
-    call_open(CALL_L4, CALL_DR, 4, "bin/");
 
     for (pindex = 0; pindex < expression->pipes; pindex++)
     {
@@ -119,25 +112,19 @@ static void execute(struct token_state *state, struct expression *expression)
         for (cindex = 0; cindex < clast; cindex++)
         {
 
-            call_open(CALL_O0, CALL_P0 + cindex, 4, "../0");
+            call_open(CALL_O1, CALL_P0 + cindex, 4, "../0");
             execute_command(&pipe->command[cindex], state->buffer);
-            call_open(CALL_I0, CALL_P0 + cindex, 4, "../1");
+            call_open(CALL_I1, CALL_P0 + cindex, 4, "../1");
 
         }
 
         for (cindex = 0; cindex < clast; cindex++)
             call_close(CALL_P0 + cindex);
 
-        call_open(CALL_O0, CALL_L2, 0, 0);
+        call_open(CALL_O1, CALL_O0, 0, 0);
         execute_command(&pipe->command[clast], state->buffer);
 
     }
-
-    call_close(CALL_L0);
-    call_close(CALL_L1);
-    call_close(CALL_L2);
-    call_close(CALL_L3);
-    call_close(CALL_L4);
 
 }
 

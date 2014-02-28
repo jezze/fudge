@@ -34,7 +34,7 @@ static unsigned int parse_data(struct token_state *state, struct string *string)
 
 }
 
-static unsigned int parse_in0(struct token_state *state, struct input *input)
+static unsigned int parse_in(struct token_state *state, struct input *input)
 {
 
     if (!token_accept(state, TOKEN_TYPE_LT))
@@ -46,38 +46,8 @@ static unsigned int parse_in0(struct token_state *state, struct input *input)
 
 }
 
-static unsigned int parse_in1(struct token_state *state, struct input *input)
+static unsigned int parse_out(struct token_state *state, struct output *output)
 {
-
-    if (!token_accept(state, TOKEN_TYPE_LT))
-        return 0;
-
-    if (!token_accept(state, TOKEN_TYPE_LT))
-        return 0;
-
-    token_skip(state, TOKEN_TYPE_SPACE);
-
-    return parse_path(state, &input->path) || parse_data(state, &input->data);
-
-}
-
-static unsigned int parse_out0(struct token_state *state, struct output *output)
-{
-
-    if (!token_accept(state, TOKEN_TYPE_GT))
-        return 0;
-
-    token_skip(state, TOKEN_TYPE_SPACE);
-
-    return parse_path(state, &output->path);
-
-}
-
-static unsigned int parse_out1(struct token_state *state, struct output *output)
-{
-
-    if (!token_accept(state, TOKEN_TYPE_GT))
-        return 0;
 
     if (!token_accept(state, TOKEN_TYPE_GT))
         return 0;
@@ -95,13 +65,9 @@ static unsigned int parse_command(struct token_state *state, struct command *com
         return 0;
 
     token_skip(state, TOKEN_TYPE_SPACE);
-    parse_in0(state, &command->in0);
+    parse_in(state, &command->in);
     token_skip(state, TOKEN_TYPE_SPACE);
-    parse_in1(state, &command->in1);
-    token_skip(state, TOKEN_TYPE_SPACE);
-    parse_out0(state, &command->out0);
-    token_skip(state, TOKEN_TYPE_SPACE);
-    parse_out1(state, &command->out1);
+    parse_out(state, &command->out);
 
     return 1;
 

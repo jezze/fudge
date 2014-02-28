@@ -25,10 +25,8 @@ struct command
 {
 
     struct string binary;
-    struct input in0;
-    struct input in1;
-    struct output out0;
-    struct output out1;
+    struct input in;
+    struct output out;
 
 };
 
