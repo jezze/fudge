@@ -20,8 +20,7 @@ arch_usermode:
     pushl %eax
     movl 20(%esp), %eax
     pushl %eax
-    pushf
-    popl %eax
+    call cpu_get_eflags
     orl $0x200, %eax
     pushl %eax
     movl 16(%esp), %eax
