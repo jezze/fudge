@@ -81,16 +81,16 @@ static void execute_command(struct command *command, char *buffer)
 
     call_open(CALL_L4, CALL_DR, 4, "bin/");
 
-    if (!open_path(CALL_E0, CALL_L4, command->binary.count, buffer + command->binary.index))
+    if (!open_path(CALL_L7, CALL_L4, command->binary.count, buffer + command->binary.index))
         return;
 
     call_close(CALL_L4);
     redirect_input(&command->in, buffer, CALL_I1, CALL_L5, CALL_L6);
     redirect_output(&command->out, buffer, CALL_O1);
-    call_spawn(CALL_E0);
+    call_spawn(CALL_L7);
     unredirect_input(&command->in, CALL_I1, CALL_L5, CALL_L6);
     unredirect_output(&command->out, CALL_O1);
-    call_close(CALL_E0);
+    call_close(CALL_L7);
 
 }
 
@@ -107,19 +107,19 @@ static void execute(struct token_state *state, struct expression *expression)
         unsigned int cindex;
 
         for (cindex = 0; cindex < clast; cindex++)
-            call_open(CALL_P0 + cindex, CALL_DR, 17, "system/pipe/clone");
+            call_open(CALL_L0 + cindex, CALL_DR, 17, "system/pipe/clone");
 
         for (cindex = 0; cindex < clast; cindex++)
         {
 
-            call_open(CALL_O1, CALL_P0 + cindex, 4, "../0");
+            call_open(CALL_O1, CALL_L0 + cindex, 4, "../0");
             execute_command(&pipe->command[cindex], state->buffer);
-            call_open(CALL_I1, CALL_P0 + cindex, 4, "../1");
+            call_open(CALL_I1, CALL_L0 + cindex, 4, "../1");
 
         }
 
         for (cindex = 0; cindex < clast; cindex++)
-            call_close(CALL_P0 + cindex);
+            call_close(CALL_L0 + cindex);
 
         call_open(CALL_O1, CALL_O0, 0, 0);
         execute_command(&pipe->command[clast], state->buffer);

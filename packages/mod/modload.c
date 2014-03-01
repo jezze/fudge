@@ -56,9 +56,9 @@ static unsigned int find_symbol(unsigned int id, unsigned int count, char *symbo
 static unsigned int find_symbol_kernel(unsigned int count, char *symbol)
 {
 
-    unsigned int address = (call_open(CALL_E0, CALL_DR, 10, "boot/fudge")) ? find_symbol(CALL_E0, count, symbol) : 0;
+    unsigned int address = (call_open(CALL_L0, CALL_DR, 10, "boot/fudge")) ? find_symbol(CALL_L0, count, symbol) : 0;
 
-    call_close(CALL_E0);
+    call_close(CALL_L0);
 
     return address;
 
@@ -75,9 +75,9 @@ static unsigned int find_symbol_module(unsigned int count, char *symbol)
     offset += memory_write(module, 64, "boot/mod/", 9, offset);
     offset += memory_write(module, 64, symbol, length, offset);
     offset += memory_write(module, 64, ".ko", 3, offset);
-    address = (call_open(CALL_E0, CALL_DR, offset, module)) ? find_symbol(CALL_E0, count, symbol) : 0;
+    address = (call_open(CALL_L0, CALL_DR, offset, module)) ? find_symbol(CALL_L0, count, symbol) : 0;
 
-    call_close(CALL_E0);
+    call_close(CALL_L0);
 
     return address;
 
