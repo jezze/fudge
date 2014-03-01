@@ -109,14 +109,14 @@ static unsigned int parse_pipe(struct token_state *state, struct pipe *pipe)
 
         token_skip(state, TOKEN_TYPE_SPACE);
 
-        if (!parse_command(state, &pipe->command[pipe->commands++]))
-            return 0;
+        if (parse_command(state, &pipe->command[pipe->commands]))
+            pipe->commands++;
 
         token_skip(state, TOKEN_TYPE_SPACE);
 
     } while (token_accept(state, TOKEN_TYPE_PIPE));
 
-    return 1;
+    return pipe->commands;
 
 }
 
@@ -128,14 +128,14 @@ unsigned int parse(struct token_state *state, struct expression *expression)
 
         token_skip(state, TOKEN_TYPE_SPACE);
 
-        if (!parse_pipe(state, &expression->pipe[expression->pipes++]))
-            return 0;
+        if (parse_pipe(state, &expression->pipe[expression->pipes]))
+            expression->pipes++;
 
         token_skip(state, TOKEN_TYPE_SPACE);
 
     } while (token_accept(state, TOKEN_TYPE_SEMICOLON | TOKEN_TYPE_NEWLINE));
 
-    return 1;
+    return expression->pipes;
 
 }
 

@@ -24,15 +24,15 @@ static unsigned int parse_rule(struct token_state *state, struct rule *rule)
     if (!token_accept(state, TOKEN_TYPE_COLON))
         return 0;
 
-    if (!token_accept(state, TOKEN_TYPE_SPACE))
-        return 1;
+    token_skip(state, TOKEN_TYPE_SPACE);
 
-    do
+    while (parse_path(state, &rule->prereq[rule->prereqs]))
     {
 
-        parse_path(state, &rule->prereq[rule->prereqs++]);
+        token_skip(state, TOKEN_TYPE_SPACE);
+        rule->prereqs++;
 
-    } while (token_accept(state, TOKEN_TYPE_SPACE));
+    }
 
     return 1;
 
@@ -44,12 +44,16 @@ unsigned int parse(struct token_state *state, struct expression *expression)
     do
     {
 
-        if (!parse_rule(state, &expression->rule[expression->rules++]))
-            return 0;
+        token_skip(state, TOKEN_TYPE_SPACE);
+
+        if (parse_rule(state, &expression->rule[expression->rules]))
+            expression->rules++;
+
+        token_skip(state, TOKEN_TYPE_SPACE);
 
     } while (token_accept(state, TOKEN_TYPE_NEWLINE));
 
-    return 1;
+    return expression->rules;
 
 }
 
