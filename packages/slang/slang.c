@@ -15,35 +15,26 @@ static unsigned int open_path(unsigned int index, unsigned int indexw, unsigned 
 static void execute_command(struct command *command, char *buffer, unsigned int pipe)
 {
 
-    if (call_open(CALL_L0, CALL_DR, 4, "bin/"))
-    {
+    unsigned int i = 0;
+    unsigned int o = 0;
 
-        if (open_path(CALL_L1, CALL_L0, command->binary.count, buffer + command->binary.index))
-        {
+    if (!open_path(CALL_L1, CALL_L0, command->binary.count, buffer + command->binary.index))
+        return;
 
-            unsigned int i = 0;
-            unsigned int o = 0;
+    if (command->in.path.count)
+        i = open_path(CALL_I1, CALL_DW, command->in.path.count, buffer + command->in.path.index);
 
-            if (command->in.path.count)
-                i = open_path(CALL_I1, CALL_DW, command->in.path.count, buffer + command->in.path.index);
+    if (command->out.path.count)
+        o = open_path(CALL_O1, CALL_DW, command->out.path.count, buffer + command->out.path.index);
 
-            if (command->out.path.count)
-                o = open_path(CALL_O1, CALL_DW, command->out.path.count, buffer + command->out.path.index);
+    call_spawn(CALL_L1);
+    call_close(CALL_L1);
 
-            call_spawn(CALL_L1);
-            call_close(CALL_L1);
+    if (i)
+        call_close(CALL_I1);
 
-            if (i)
-                call_close(CALL_I1);
-
-            if (o)
-                call_close(CALL_O1);
-
-        }
-
-        call_close(CALL_L0);
-
-    }
+    if (o)
+        call_close(CALL_O1);
 
 }
 
@@ -84,11 +75,16 @@ void main()
     struct token_state state;
     struct expression expression;
 
+    if (!call_open(CALL_L0, CALL_DR, 4, "bin/"))
+        return;
+
     memory_clear(&expression, sizeof (struct expression));
     token_init_state(&state, call_read(CALL_I0, 0, FUDGE_BSIZE, buffer), buffer);
 
     if (parse(&state, &expression))
         execute(&state, &expression);
+
+    call_close(CALL_L0);
 
 }
 
