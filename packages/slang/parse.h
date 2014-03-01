@@ -27,9 +27,9 @@ struct command
 {
 
     struct string binary;
-    struct input in[4];
+    struct input in[8];
     unsigned int ins;
-    struct output out[4];
+    struct output out[8];
     unsigned int outs;
 
 };
