@@ -60,19 +60,15 @@ static void execute(struct token_state *state, struct expression *expression)
         unsigned int cindex;
 
         for (cindex = 0; cindex < clast; cindex++)
-            call_open(CALL_L2 + cindex, CALL_DR, 17, "system/pipe/clone");
-
-        for (cindex = 0; cindex < clast; cindex++)
         {
 
+            call_open(CALL_L2 + cindex, CALL_DR, 17, "system/pipe/clone");
             call_open(CALL_O1, CALL_L2 + cindex, 4, "../0");
             execute_command(&pipe->command[cindex], state->buffer, CALL_L2 + cindex);
             call_open(CALL_I1, CALL_L2 + cindex, 4, "../1");
+            call_close(CALL_L2 + cindex);
 
         }
-
-        for (cindex = 0; cindex < clast; cindex++)
-            call_close(CALL_L2 + cindex);
 
         call_open(CALL_O1, CALL_O0, 0, 0);
         execute_command(&pipe->command[clast], state->buffer, CALL_L2);
