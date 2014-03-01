@@ -9,6 +9,7 @@ struct string
 struct input
 {
 
+    struct string index;
     struct string path;
     struct string data;
 
@@ -17,6 +18,7 @@ struct input
 struct output
 {
 
+    struct string index;
     struct string path;
 
 };
@@ -25,8 +27,10 @@ struct command
 {
 
     struct string binary;
-    struct input in;
-    struct output out;
+    struct input in[4];
+    unsigned int ins;
+    struct output out[4];
+    unsigned int outs;
 
 };
 
@@ -41,7 +45,7 @@ struct pipe
 struct expression
 {
 
-    struct pipe pipe[64];
+    struct pipe pipe[8];
     unsigned int pipes;
 
 };

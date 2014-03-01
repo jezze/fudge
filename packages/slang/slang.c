@@ -15,26 +15,65 @@ static unsigned int open_path(unsigned int index, unsigned int indexw, unsigned 
 static void execute_command(struct command *command, char *buffer, unsigned int pipe)
 {
 
-    unsigned int i = 0;
-    unsigned int o = 0;
+    unsigned int i;
 
     if (!open_path(CALL_L1, CALL_L0, command->binary.count, buffer + command->binary.index))
         return;
 
-    if (command->in.path.count)
-        i = open_path(CALL_I1, CALL_DW, command->in.path.count, buffer + command->in.path.index);
+    for (i = 0; i < command->ins; i++)
+    {
 
-    if (command->out.path.count)
-        o = open_path(CALL_O1, CALL_DW, command->out.path.count, buffer + command->out.path.index);
+        unsigned int index = CALL_I1 + i * 2;
+
+        if (command->in[i].index.count)
+            index = CALL_I1 + ascii_read_value(buffer + command->in[i].index.index, command->in[i].index.count, 10) * 2;
+
+        if (command->in[i].path.count)
+            open_path(index, CALL_DW, command->in[i].path.count, buffer + command->in[i].path.index);
+
+    }
+
+    for (i = 0; i < command->outs; i++)
+    {
+
+        unsigned int index = CALL_O1 + i * 2;
+
+        if (command->out[i].index.count)
+            index = CALL_O1 + ascii_read_value(buffer + command->out[i].index.index, command->out[i].index.count, 10) * 2;
+
+        if (command->out[i].path.count)
+            open_path(index, CALL_DW, command->out[i].path.count, buffer + command->out[i].path.index);
+
+    }
 
     call_spawn(CALL_L1);
     call_close(CALL_L1);
 
-    if (i)
-        call_close(CALL_I1);
+    for (i = 0; i < command->ins; i++)
+    {
 
-    if (o)
-        call_close(CALL_O1);
+        unsigned int index = CALL_I1 + i * 2;
+
+        if (command->in[i].index.count)
+            index = CALL_I1 + ascii_read_value(buffer + command->in[i].index.index, command->in[i].index.count, 10) * 2;
+
+        if (command->in[i].path.count)
+            call_close(index);
+
+    }
+
+    for (i = 0; i < command->outs; i++)
+    {
+
+        unsigned int index = CALL_O1 + i * 2;
+
+        if (command->out[i].index.count)
+            index = CALL_O1 + ascii_read_value(buffer + command->out[i].index.index, command->out[i].index.count, 10) * 2;
+
+        if (command->out[i].path.count)
+            call_close(index);
+
+    }
 
 }
 
