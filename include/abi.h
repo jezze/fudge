@@ -23,14 +23,15 @@ enum call_index
     CALL_O8                             = 0x14,
     CALL_I9                             = 0x15,
     CALL_O9                             = 0x16,
-    CALL_L0                             = 0x18,
-    CALL_L1                             = 0x19,
-    CALL_L2                             = 0x1A,
-    CALL_L3                             = 0x1B,
-    CALL_L4                             = 0x1C,
-    CALL_L5                             = 0x1D,
-    CALL_L6                             = 0x1E,
-    CALL_L7                             = 0x1F
+    CALL_L0                             = 0x17,
+    CALL_L1                             = 0x18,
+    CALL_L2                             = 0x19,
+    CALL_L3                             = 0x1A,
+    CALL_L4                             = 0x1B,
+    CALL_L5                             = 0x1C,
+    CALL_L6                             = 0x1D,
+    CALL_L7                             = 0x1E,
+    CALL_L8                             = 0x1F
 
 };
 
