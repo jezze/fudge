@@ -12,85 +12,38 @@ static unsigned int open_path(unsigned int index, unsigned int indexw, unsigned 
 
 }
 
-static void open_pipe(unsigned int index, unsigned int index0, unsigned int index1)
-{
-
-    call_open(index, CALL_DR, 17, "system/pipe/clone");
-    call_open(index0, index, 4, "../0");
-    call_open(index1, index, 4, "../1");
-
-}
-
-static void close_pipe(unsigned int index, unsigned int index0, unsigned int index1)
-{
-
-    call_close(index0);
-    call_close(index1);
-    call_close(index);
-
-}
-
-static void redirect_input(struct input *input, char *buffer, unsigned int i, unsigned int p, unsigned int p0)
-{
-
-    if (input->path.count)
-    {
-
-        open_path(i, CALL_DW, input->path.count, buffer + input->path.index);
-
-    }
-
-    else if (input->data.count)
-    {
-
-        open_pipe(p, p0, i);
-        call_write(p0, 0, input->data.count, buffer + input->data.index);
-
-    }
-
-}
-
-static void redirect_output(struct output *output, char *buffer, unsigned int o)
-{
-
-    if (output->path.count)
-        open_path(o, CALL_DW, output->path.count, buffer + output->path.index);
-
-}
-
-static void unredirect_input(struct input *input, unsigned int i, unsigned int p, unsigned int p0)
-{
-
-    if (input->path.count)
-        call_close(i);
-    else if (input->data.count)
-        close_pipe(p, p0, i);
-
-}
-
-static void unredirect_output(struct output *output, unsigned int o)
-{
-
-    if (output->path.count)
-        call_close(o);
-
-}
-
 static void execute_command(struct command *command, char *buffer)
 {
 
-    call_open(CALL_L4, CALL_DR, 4, "bin/");
+    if (call_open(CALL_L4, CALL_DR, 4, "bin/"))
+    {
 
-    if (!open_path(CALL_L7, CALL_L4, command->binary.count, buffer + command->binary.index))
-        return;
+        if (open_path(CALL_L7, CALL_L4, command->binary.count, buffer + command->binary.index))
+        {
 
-    call_close(CALL_L4);
-    redirect_input(&command->in, buffer, CALL_I1, CALL_L5, CALL_L6);
-    redirect_output(&command->out, buffer, CALL_O1);
-    call_spawn(CALL_L7);
-    unredirect_input(&command->in, CALL_I1, CALL_L5, CALL_L6);
-    unredirect_output(&command->out, CALL_O1);
-    call_close(CALL_L7);
+            unsigned int i = 0;
+            unsigned int o = 0;
+
+            if (command->in.path.count)
+                i = open_path(CALL_I1, CALL_DW, command->in.path.count, buffer + command->in.path.index);
+
+            if (command->out.path.count)
+                o = open_path(CALL_O1, CALL_DW, command->out.path.count, buffer + command->out.path.index);
+
+            call_spawn(CALL_L7);
+            call_close(CALL_L7);
+
+            if (i)
+                call_close(CALL_I1);
+
+            if (o)
+                call_close(CALL_O1);
+
+        }
+
+        call_close(CALL_L4);
+
+    }
 
 }
 

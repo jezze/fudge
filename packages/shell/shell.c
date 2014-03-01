@@ -20,17 +20,41 @@ static void interpret(struct lifo_stack *stack)
 
     }
 
-    call_open(CALL_L0, CALL_DR, 17, "system/pipe/clone");
-    call_open(CALL_L1, CALL_L0, 4, "../0");
-    call_write(CALL_L1, 0, stack->head, stack->buffer);
-    call_open(CALL_I1, CALL_L0, 4, "../1");
-    call_open(CALL_O1, CALL_O0, 0, 0);
-    call_open(CALL_L2, CALL_DR, 9, "bin/slang");
-    call_spawn(CALL_L2);
-    call_close(CALL_L2);
-    call_close(CALL_I1);
-    call_close(CALL_L1);
-    call_close(CALL_L0);
+    if (!call_open(CALL_O1, CALL_O0, 0, 0))
+        return;
+
+    if (call_open(CALL_L0, CALL_DR, 17, "system/pipe/clone"))
+    {
+
+        if (call_open(CALL_L1, CALL_L0, 4, "../0"))
+        {
+
+            call_write(CALL_L1, 0, stack->head, stack->buffer);
+
+            if (call_open(CALL_I1, CALL_L0, 4, "../1"))
+            {
+
+                if (call_open(CALL_L2, CALL_DR, 9, "bin/slang"))
+                {
+
+                    call_spawn(CALL_L2);
+                    call_close(CALL_L2);
+
+                }
+
+                call_close(CALL_I1);
+
+            }
+
+            call_close(CALL_L1);
+
+        }
+
+        call_close(CALL_L0);
+
+    }
+
+    call_close(CALL_O1);
 
 }
 

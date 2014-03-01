@@ -47,9 +47,20 @@ void main()
 
         unsigned int num = ascii_read_value(args[i].position, args[i].count, 10);
 
-        call_open(CALL_O0, CALL_DR, args[i + 1].count - 1, args[i + 1].position + 1);
-        call_open(CALL_I0, CALL_DR, args[i + 2].count - 1, args[i + 2].position + 1);
-        call_mount(num, CALL_O0, CALL_I0);
+        if (call_open(CALL_L0, CALL_DR, args[i + 1].count - 1, args[i + 1].position + 1))
+        {
+
+            if (call_open(CALL_L1, CALL_DR, args[i + 2].count - 1, args[i + 2].position + 1))
+            {
+
+                call_mount(num, CALL_L0, CALL_L1);
+                call_close(CALL_L1);
+
+            }
+
+            call_close(CALL_L0);
+
+        }
 
     }
 

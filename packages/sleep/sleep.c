@@ -9,14 +9,21 @@ void main()
     if (!count)
         return;
 
-    if (!call_open(CALL_L0, CALL_DR, 18, "system/timer/clone"))
-        return;
+    if (call_open(CALL_L0, CALL_DR, 18, "system/timer/clone"))
+    {
 
-    call_open(CALL_L1, CALL_L0, 8, "../sleep");
-    call_write(CALL_L1, 0, count, buffer);
-    call_read(CALL_L1, 0, 32, buffer);
-    call_close(CALL_L1);
-    call_close(CALL_L0);
+        if (call_open(CALL_L1, CALL_L0, 8, "../sleep"))
+        {
+
+            call_write(CALL_L1, 0, count, buffer);
+            call_read(CALL_L1, 0, 32, buffer);
+            call_close(CALL_L1);
+
+        }
+
+        call_close(CALL_L0);
+
+    }
 
 }
 
