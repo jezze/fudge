@@ -12,7 +12,7 @@ static unsigned int open_path(unsigned int index, unsigned int indexw, unsigned 
 
 }
 
-static void execute_command(struct command *command, char *buffer, unsigned int pipe)
+static void execute_command(struct command *command, char *buffer)
 {
 
     unsigned int i;
@@ -86,22 +86,26 @@ static void execute(struct token_state *state, struct expression *expression)
     {
 
         struct pipe *pipe = &expression->pipe[pindex];
-        unsigned int clast = pipe->commands - 1;
         unsigned int cindex;
 
-        for (cindex = 0; cindex < clast; cindex++)
+        for (cindex = 0; cindex < pipe->commands; cindex++)
+            call_open(CALL_L2 + cindex, CALL_DR, 17, "system/pipe/clone");
+
+        for (cindex = 0; cindex < pipe->commands; cindex++)
         {
 
-            call_open(CALL_L2 + cindex, CALL_DR, 17, "system/pipe/clone");
-            call_open(CALL_O1, CALL_L2 + cindex, 4, "../0");
-            execute_command(&pipe->command[cindex], state->buffer, CALL_L2 + cindex);
+            if (cindex != pipe->commands - 1)
+                call_open(CALL_O1, CALL_L2 + cindex, 4, "../0");
+            else
+                call_open(CALL_O1, CALL_O0, 0, 0);
+
+            execute_command(&pipe->command[cindex], state->buffer);
             call_open(CALL_I1, CALL_L2 + cindex, 4, "../1");
-            call_close(CALL_L2 + cindex);
 
         }
 
-        call_open(CALL_O1, CALL_O0, 0, 0);
-        execute_command(&pipe->command[clast], state->buffer, CALL_L2);
+        for (cindex = 0; cindex < pipe->commands; cindex++)
+            call_close(CALL_L2 + cindex);
 
     }
 
