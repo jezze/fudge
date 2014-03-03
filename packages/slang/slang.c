@@ -29,7 +29,30 @@ static void execute_command(struct command *command, char *buffer)
             index = CALL_I1 + ascii_read_value(buffer + command->in[i].index.index, command->in[i].index.count, 10) * 2;
 
         if (command->in[i].path.count)
+        {
+
             open_path(index, CALL_DW, command->in[i].path.count, buffer + command->in[i].path.index);
+
+        }
+
+        else if (command->in[i].data.count)
+        {
+
+            if (call_open(CALL_L6, CALL_DR, 17, "system/pipe/clone"))
+            {
+
+                if (call_open(CALL_L7, CALL_L6, 4, "../0"))
+                {
+
+                    call_write(CALL_L7, 0, command->in[i].data.count, buffer + command->in[i].data.index);
+                    call_close(CALL_L7);
+                    call_open(index, CALL_L6, 4, "../1");
+
+                }
+
+            }
+
+        }
 
     }
 
@@ -58,7 +81,19 @@ static void execute_command(struct command *command, char *buffer)
             index = CALL_I1 + ascii_read_value(buffer + command->in[i].index.index, command->in[i].index.count, 10) * 2;
 
         if (command->in[i].path.count)
+        {
+
             call_close(index);
+
+        }
+
+        else if (command->in[i].data.count)
+        {
+
+            call_close(index);
+            call_close(CALL_L6);
+
+        }
 
     }
 
