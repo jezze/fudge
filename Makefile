@@ -66,6 +66,7 @@ $(RAMDISK_PATH): $(KERNEL) $(MODULES) $(PACKAGES) $(PACKAGES_CONFIGS) $(PACKAGES
 	mkdir -p $@/boot/mod
 	mkdir -p $@/config
 	mkdir -p $@/home
+	mkdir -p $@/kernel
 	mkdir -p $@/share
 	mkdir -p $@/system
 	cp $(KERNEL) $@/boot

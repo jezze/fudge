@@ -160,7 +160,7 @@ static unsigned int mount(struct container *self, struct task *task, void *stack
 {
 
     struct {void *caller; unsigned int index; unsigned int pindex; unsigned int cindex;} *args = stack;
-    struct vfs_channel *channel = &self->channels[0x02];
+    struct vfs_channel *channel = &self->channels[0x04];
     struct vfs_mount *mount = get_mount(self, args->index);
     struct vfs_descriptor *pdescriptor = get_descriptor(task, args->pindex);
     struct vfs_descriptor *cdescriptor = get_descriptor(task, args->cindex);
