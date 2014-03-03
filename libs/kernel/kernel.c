@@ -1,5 +1,6 @@
 #include <kernel.h>
 #include "error.h"
+#include "resource.h"
 #include "vfs.h"
 #include "binary.h"
 #include "task.h"

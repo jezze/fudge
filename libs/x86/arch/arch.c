@@ -1,5 +1,6 @@
 #include <kernel.h>
 #include <kernel/error.h>
+#include <kernel/resource.h>
 #include <kernel/vfs.h>
 #include <kernel/task.h>
 #include <kernel/scheduler.h>
@@ -215,6 +216,7 @@ void arch_setup(unsigned int count, struct kernel_module *modules)
     {
 
         container_init(&containers[i].base);
+        resource_register_container(&containers[i].base.resource);
 
         containers[i].base.calls[CONTAINER_CALL_SPAWN] = spawn;
 
@@ -224,7 +226,8 @@ void arch_setup(unsigned int count, struct kernel_module *modules)
     {
 
         task_init(&tasks[i].base, 0, ARCH_TASK_STACKLIMIT);
-        scheduler_add(&tasks[i].base);
+        resource_register_task(&tasks[i].base.resource);
+        scheduler_register_task(&tasks[i].base);
 
         tasks[i].index = i;
 

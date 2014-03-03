@@ -1,5 +1,6 @@
 #include <kernel.h>
 #include <tar/tar.h>
+#include "resource.h"
 #include "vfs.h"
 #include "task.h"
 #include "container.h"

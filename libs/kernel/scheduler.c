@@ -1,4 +1,5 @@
 #include <kernel.h>
+#include "resource.h"
 #include "vfs.h"
 #include "task.h"
 
@@ -34,7 +35,7 @@ void scheduler_unuse(struct task *task)
 
 }
 
-void scheduler_add(struct task *task)
+void scheduler_register_task(struct task *task)
 {
 
     list_add(&free, &task->item);

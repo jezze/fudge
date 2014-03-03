@@ -1,4 +1,5 @@
 #include <kernel.h>
+#include "resource.h"
 #include "vfs.h"
 #include "task.h"
 #include "container.h"
