@@ -91,17 +91,22 @@ static unsigned int write(struct vfs_backend *backend, unsigned int id, unsigned
 static unsigned int walk(struct vfs_backend *backend, unsigned int id, unsigned int count, const char *path)
 {
 
+    unsigned int n = vfs_findnext(count, path);
+
+    if (!count)
+        return id;
+
     if (id == 1)
     {
 
         if (memory_match(path, "container/", 10))
-            return 2;
+            return walk(backend, 2, count - n, path + n);
 
         if (memory_match(path, "task/", 5))
-            return 3;
+            return walk(backend, 3, count - n, path + n);
 
         if (memory_match(path, "backend/", 8))
-            return 4;
+            return walk(backend, 4, count - n, path + n);
 
     }
 
