@@ -33,4 +33,4 @@ void resource_unregister_item(struct resource_item *item, enum resource_type typ
 void resource_unregister_list(struct resource_list *list);
 void resource_init_item(struct resource_item *item, void *data);
 void resource_init_list(struct resource_list *list, enum resource_type type, char *name);
-void resource_setup();
+struct list *resource_setup();

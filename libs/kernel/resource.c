@@ -1,14 +1,14 @@
 #include <kernel.h>
 #include "resource.h"
 
-static struct list lists;
+static struct list resources;
 
 struct resource_list *resource_find_list(enum resource_type type)
 {
 
     struct list_item *current;
 
-    for (current = lists.head; current; current = current->next)
+    for (current = resources.head; current; current = current->next)
     {
 
         struct resource_list *list = current->data;
@@ -37,7 +37,7 @@ void resource_register_item(struct resource_item *item, enum resource_type type)
 void resource_register_list(struct resource_list *list)
 {
 
-    list_add(&lists, &list->item);
+    list_add(&resources, &list->item);
 
 }
 
@@ -56,7 +56,7 @@ void resource_unregister_item(struct resource_item *item, enum resource_type typ
 void resource_unregister_list(struct resource_list *list)
 {
 
-    list_remove(&lists, &list->item);
+    list_remove(&resources, &list->item);
 
 }
 
@@ -80,10 +80,12 @@ void resource_init_list(struct resource_list *list, enum resource_type type, cha
 
 }
 
-void resource_setup()
+struct list *resource_setup()
 {
 
-    list_init(&lists);
+    list_init(&resources);
+
+    return &resources;
 
 }
 

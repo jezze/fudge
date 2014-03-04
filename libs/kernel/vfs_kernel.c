@@ -5,6 +5,8 @@
 #include "container.h"
 #include "kernel.h"
 
+static struct list *ref;
+
 static unsigned int backend_read(struct vfs_backend *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
@@ -115,8 +117,10 @@ static unsigned int walk(struct vfs_backend *backend, unsigned int id, unsigned 
 
 }
 
-void vfs_init_kernel(struct vfs_backend *backend, struct vfs_protocol *protocol)
+void vfs_init_kernel(struct list *resources, struct vfs_backend *backend, struct vfs_protocol *protocol)
 {
+
+    ref = resources;
 
     memory_clear(backend, sizeof (struct vfs_backend));
     vfs_init_backend(backend, backend_read, backend_write);
