@@ -52,7 +52,7 @@ void kernel_setup_modules(struct container *container, struct task *task, unsign
     struct vfs_descriptor *descriptor = &task->descriptors[0x01];
     struct vfs_mount *mount1 = &container->mounts[0x01];
     struct vfs_mount *mount4 = &container->mounts[0x04];
-    unsigned int entry;
+    unsigned int entry = 0;
     unsigned int i;
 
     channel2->backend = &state.vfs.backends[0];
