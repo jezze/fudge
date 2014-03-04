@@ -24,14 +24,14 @@ static unsigned int backend_write(struct vfs_backend *self, unsigned int offset,
 static unsigned int root(struct vfs_backend *backend)
 {
 
-    return 1;
+    return RESOURCE_TYPE_ALL;
 
 }
 
 static unsigned int parent(struct vfs_backend *backend, unsigned int id)
 {
 
-    return 1;
+    return RESOURCE_TYPE_ALL;
 
 }
 
@@ -66,14 +66,30 @@ static unsigned int close(struct vfs_backend *backend, unsigned int id)
 static unsigned int read(struct vfs_backend *backend, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    if (id == 1)
+    if (id == RESOURCE_TYPE_ALL)
     {
 
-        return memory_read(buffer, count, "../\ncontainer/\ntask/\nbackend/\n", 30, offset);
+        char temp[4096];
+        struct list_item *current;
+        unsigned int o = 0;
+
+        o = memory_write(temp, 4096, "../\n", 4, o);
+
+        for (current = ref->head; current; current = current->next)
+        {
+
+            struct resource_list *list = current->data;
+
+            o += memory_write(temp, 4096, list->name, ascii_length(list->name), o);
+            o += memory_write(temp, 4096, "/\n", 2, o);
+
+        }
+
+        return memory_read(buffer, count, temp, o, offset);
 
     }
 
-    if (id > 1)
+    if (id > RESOURCE_TYPE_ALL)
     {
 
         return memory_read(buffer, count, "../\n0/\n1/\n2/\n", 13, offset);
@@ -99,17 +115,21 @@ static unsigned int walk(struct vfs_backend *backend, unsigned int id, unsigned 
     if (!count)
         return id;
 
-    if (id == 1)
+    if (id == RESOURCE_TYPE_ALL)
     {
 
-        if (memory_match(path, "container/", 10))
-            return walk(backend, 2, count - n, path + n);
+        struct list_item *current;
 
-        if (memory_match(path, "task/", 5))
-            return walk(backend, 3, count - n, path + n);
+        for (current = ref->head; current; current = current->next)
+        {
 
-        if (memory_match(path, "backend/", 8))
-            return walk(backend, 4, count - n, path + n);
+            struct resource_list *list = current->data;
+            unsigned int l = ascii_length(list->name);
+
+            if (memory_match(path, list->name, l))
+                return walk(backend, list->type, count - n, path + n);
+
+        }
 
     }
 

@@ -1,11 +1,12 @@
 enum resource_type
 {
 
-    RESOURCE_TYPE_CONTAINER             = 1,
-    RESOURCE_TYPE_TASK                  = 2,
-    RESOURCE_TYPE_VFSBACKEND            = 3,
-    RESOURCE_TYPE_VFSPROTOCOL           = 4,
-    RESOURCE_TYPE_BINARYPROTOCOL        = 5
+    RESOURCE_TYPE_ALL                   = 1,
+    RESOURCE_TYPE_CONTAINER             = 2,
+    RESOURCE_TYPE_TASK                  = 3,
+    RESOURCE_TYPE_VFSBACKEND            = 4,
+    RESOURCE_TYPE_VFSPROTOCOL           = 5,
+    RESOURCE_TYPE_BINARYPROTOCOL        = 6
 
 };
 
