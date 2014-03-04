@@ -126,6 +126,9 @@ static unsigned int walk(struct vfs_backend *backend, unsigned int id, unsigned 
             struct resource_list *list = current->data;
             unsigned int l = ascii_length(list->name);
 
+            if (n != l + 1 || path[l] != '/')
+                continue;
+
             if (memory_match(path, list->name, l))
                 return walk(backend, list->type, count - n, path + n);
 
