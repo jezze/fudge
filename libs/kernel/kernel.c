@@ -47,11 +47,11 @@ static unsigned int kernel_find_init(struct vfs_channel *channel)
 void kernel_setup_modules(struct container *container, struct task *task, unsigned int count, struct kernel_module *modules)
 {
 
-    struct vfs_channel *channel1 = &container->channels[0x01];
-    struct vfs_channel *channel2 = &container->channels[0x02];
-    struct vfs_descriptor *descriptor = &task->descriptors[0x01];
-    struct vfs_mount *mount1 = &container->mounts[0x01];
-    struct vfs_mount *mount4 = &container->mounts[0x04];
+    struct vfs_channel *channel1 = &container->channels[1];
+    struct vfs_channel *channel2 = &container->channels[2];
+    struct vfs_descriptor *descriptor = &task->descriptors[1];
+    struct vfs_mount *mount1 = &container->mounts[1];
+    struct vfs_mount *mount4 = &container->mounts[4];
     unsigned int entry = 0;
     unsigned int i;
 
