@@ -42,8 +42,8 @@ struct vfs_descriptor
 struct vfs_mount
 {
 
-    struct vfs_descriptor parent;
-    struct vfs_descriptor child;
+    struct {struct vfs_channel *channel; unsigned int id;} parent;
+    struct {struct vfs_channel *channel; unsigned int id;} child;
 
 };
 
