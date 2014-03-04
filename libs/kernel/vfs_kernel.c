@@ -92,7 +92,29 @@ static unsigned int read(struct vfs_backend *backend, unsigned int id, unsigned 
     if (id > RESOURCE_TYPE_ALL)
     {
 
-        return memory_read(buffer, count, "../\n0/\n1/\n2/\n", 13, offset);
+        char temp[4096];
+        struct resource_list *parent = resource_find_list(id);
+        struct list_item *current;
+        unsigned int o = 0;
+        unsigned int i = 0;
+
+        o = memory_write(temp, 4096, "../\n", 4, o);
+
+        for (current = parent->list.head; current; current = current->next)
+        {
+
+            char num[32];
+            unsigned int c = ascii_write_value(num, 32, i, 10, 0);
+
+            o += memory_write(temp, 4096, num, c, o);
+            o += memory_write(temp, 4096, "/\n", 2, o);
+
+            i++;
+
+        }
+
+        return memory_read(buffer, count, temp, o, offset);
+
 
     }
 
