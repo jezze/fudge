@@ -94,7 +94,7 @@ void kernel_setup()
     vfs_register_protocol(&state.vfs.protocols[2]);
     binary_setup();
     binary_init_elf(&state.binary.protocols[0]);
-    binary_register_protocol(&state.binary.protocols[0]);
+    resource_register_item(&state.binary.protocols[0].resource, RESOURCE_TYPE_BINARYPROTOCOL);
 
 }
 

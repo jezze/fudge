@@ -2,7 +2,8 @@ enum resource_type
 {
 
     RESOURCE_TYPE_CONTAINER             = 1,
-    RESOURCE_TYPE_TASK                  = 2
+    RESOURCE_TYPE_TASK                  = 2,
+    RESOURCE_TYPE_BINARYPROTOCOL        = 3
 
 };
 

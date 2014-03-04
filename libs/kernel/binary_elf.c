@@ -1,5 +1,6 @@
 #include <kernel.h>
 #include <elf/elf.h>
+#include "resource.h"
 #include "vfs.h"
 #include "binary.h"
 
