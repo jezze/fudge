@@ -55,19 +55,19 @@ void kernel_setup_modules(struct container *container, struct task *task, unsign
     unsigned int entry;
     unsigned int i;
 
-    channel1->backend = &state.vfs.backends[0];
-    channel1->protocol = &state.vfs.protocols[0];
+    channel2->backend = &state.vfs.backends[0];
+    channel2->protocol = &state.vfs.protocols[0];
 
     for (i = 0; i < count; i++)
     {
 
-        channel2->backend = &modules[i].base;
-        channel2->protocol = vfs_find_protocol(channel2->backend);
+        channel1->backend = &modules[i].base;
+        channel1->protocol = vfs_find_protocol(channel1->backend);
 
-        if (!channel2->protocol)
+        if (!channel1->protocol)
             continue;
 
-        entry = kernel_find_init(channel2);
+        entry = kernel_find_init(channel1);
 
         if (entry)
             break;
@@ -78,16 +78,16 @@ void kernel_setup_modules(struct container *container, struct task *task, unsign
 
     error_assert(task->registers.ip != 0, "Failed to locate entry point", __FILE__, __LINE__);
 
-    descriptor->channel = channel2;
-    descriptor->id = channel2->protocol->root(channel2->backend);
-    mount1->parent.channel = channel2;
-    mount1->parent.id = channel2->protocol->root(channel2->backend);
-    mount1->child.channel = channel2;
-    mount1->child.id = channel2->protocol->root(channel2->backend);
-    mount4->parent.channel = channel2;
-    mount4->parent.id = channel2->protocol->walk(channel2->backend, channel2->protocol->root(channel2->backend), 7, "kernel/");
-    mount4->child.channel = channel1;
-    mount4->child.id = channel1->protocol->root(channel1->backend);
+    descriptor->channel = channel1;
+    descriptor->id = channel1->protocol->root(channel1->backend);
+    mount1->parent.channel = channel1;
+    mount1->parent.id = channel1->protocol->root(channel1->backend);
+    mount1->child.channel = channel1;
+    mount1->child.id = channel1->protocol->root(channel1->backend);
+    mount4->parent.channel = channel1;
+    mount4->parent.id = channel1->protocol->walk(channel1->backend, channel1->protocol->root(channel1->backend), 7, "kernel/");
+    mount4->child.channel = channel2;
+    mount4->child.id = channel2->protocol->root(channel2->backend);
 
 }
 
