@@ -64,7 +64,7 @@ struct task *scheduler_find_free_task()
 
 }
 
-void scheduler_init()
+void scheduler_setup()
 {
 
     list_init(&free);

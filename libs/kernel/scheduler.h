@@ -5,4 +5,4 @@ void scheduler_unblock(struct task *task);
 void scheduler_use(struct task *task);
 void scheduler_unuse(struct task *task);
 void scheduler_register_task(struct task *task);
-void scheduler_init();
+void scheduler_setup();

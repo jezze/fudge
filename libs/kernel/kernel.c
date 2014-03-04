@@ -94,13 +94,14 @@ void kernel_setup_modules(struct container *container, struct task *task, unsign
 void kernel_setup()
 {
 
-    scheduler_init();
-    rendezvous_init();
+    resource_setup();
+    scheduler_setup();
+    rendezvous_setup();
     vfs_setup();
+    binary_setup();
     vfs_init_kernel(&state.vfs.backends[0], &state.vfs.protocols[0]);
     vfs_init_cpio(&state.vfs.protocols[1]);
     vfs_init_tar(&state.vfs.protocols[2]);
-    binary_setup();
     binary_init_elf(&state.binary.protocols[0]);
     resource_register_item(&state.vfs.backends[0].resource, RESOURCE_TYPE_VFSBACKEND);
     resource_register_item(&state.vfs.protocols[0].resource, RESOURCE_TYPE_VFSPROTOCOL);

@@ -80,3 +80,10 @@ void resource_init_list(struct resource_list *list, enum resource_type type, cha
 
 }
 
+void resource_setup()
+{
+
+    list_init(&lists);
+
+}
+
