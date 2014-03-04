@@ -1,3 +1,11 @@
+enum resource_type
+{
+
+    RESOURCE_TYPE_CONTAINER             = 1,
+    RESOURCE_TYPE_TASK                  = 2
+
+};
+
 struct resource_item
 {
 
@@ -10,12 +18,13 @@ struct resource_list
 
     struct list_item item;
     struct list list;
+    enum resource_type type;
     char *name;
 
 };
 
-struct resource_list *resource_find_list(unsigned int count, char *name);
-void resource_register_item(struct resource_item *item, unsigned int count, char *name);
+struct resource_list *resource_find_list(enum resource_type type);
+void resource_register_item(struct resource_item *item, enum resource_type type);
 void resource_register_list(struct resource_list *list);
 void resource_init_item(struct resource_item *item, void *data);
-void resource_init_list(struct resource_list *list, char *name);
+void resource_init_list(struct resource_list *list, enum resource_type type, char *name);

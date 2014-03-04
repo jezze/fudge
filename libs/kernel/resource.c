@@ -3,7 +3,7 @@
 
 static struct list lists;
 
-struct resource_list *resource_find_list(unsigned int count, char *name)
+struct resource_list *resource_find_list(enum resource_type type)
 {
 
     struct list_item *current;
@@ -13,7 +13,7 @@ struct resource_list *resource_find_list(unsigned int count, char *name)
 
         struct resource_list *list = current->data;
 
-        if (memory_match(list->name, name, count))
+        if (list->type == type)
             return list;
 
     }
@@ -22,10 +22,10 @@ struct resource_list *resource_find_list(unsigned int count, char *name)
 
 }
 
-void resource_register_item(struct resource_item *item, unsigned int count, char *name)
+void resource_register_item(struct resource_item *item, enum resource_type type)
 {
 
-    struct resource_list *list = resource_find_list(count, name);
+    struct resource_list *list = resource_find_list(type);
 
     if (!list)
         return;
@@ -49,13 +49,14 @@ void resource_init_item(struct resource_item *item, void *data)
 
 }
 
-void resource_init_list(struct resource_list *list, char *name)
+void resource_init_list(struct resource_list *list, enum resource_type type, char *name)
 {
 
     memory_clear(list, sizeof (struct resource_list));
     list_init_item(&list->item, list);
     list_init(&list->list);
 
+    list->type = type;
     list->name = name;
 
 }
