@@ -1,4 +1,5 @@
 #include <module.h>
+#include <kernel/resource.h>
 #include <kernel/vfs.h>
 #include "system.h"
 #include "backend.h"
@@ -185,9 +186,9 @@ void init()
 {
 
     system_init_backend(&backend);
-    vfs_register_backend(&backend.base);
     system_init_protocol(&protocol);
-    vfs_register_protocol(&protocol);
+    resource_register_item(&backend.base.resource, RESOURCE_TYPE_VFSBACKEND);
+    resource_register_item(&protocol.resource, RESOURCE_TYPE_VFSPROTOCOL);
 
 }
 

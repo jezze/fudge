@@ -1,4 +1,5 @@
 #include <module.h>
+#include <kernel/resource.h>
 #include <kernel/vfs.h>
 #include <system/system.h>
 #include <base/base.h>

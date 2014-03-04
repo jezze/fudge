@@ -1,8 +1,9 @@
 #include <kernel.h>
+#include "resource.h"
 #include "vfs.h"
 
-static struct list backends;
-static struct list protocols;
+static struct resource_list backends;
+static struct resource_list protocols;
 
 unsigned int vfs_findnext(unsigned int count, const char *path)
 {
@@ -23,7 +24,7 @@ unsigned int vfs_isparent(unsigned int count, const char *path)
 struct vfs_backend *vfs_find_backend()
 {
 
-    return backends.tail->data;
+    return backends.list.tail->data;
 
 }
 
@@ -32,7 +33,7 @@ struct vfs_protocol *vfs_find_protocol(struct vfs_backend *backend)
 
     struct list_item *current;
 
-    for (current = protocols.head; current; current = current->next)
+    for (current = protocols.list.head; current; current = current->next)
     {
 
         struct vfs_protocol *protocol = current->data;
@@ -46,39 +47,11 @@ struct vfs_protocol *vfs_find_protocol(struct vfs_backend *backend)
 
 }
 
-void vfs_register_backend(struct vfs_backend *backend)
-{
-
-    list_add(&backends, &backend->item);
-
-}
-
-void vfs_register_protocol(struct vfs_protocol *protocol)
-{
-
-    list_add(&protocols, &protocol->item);
-
-}
-
-void vfs_unregister_backend(struct vfs_backend *backend)
-{
-
-    list_remove(&backends, &backend->item);
-
-}
-
-void vfs_unregister_protocol(struct vfs_protocol *protocol)
-{
-
-    list_remove(&protocols, &protocol->item);
-
-}
-
 void vfs_init_backend(struct vfs_backend *backend, unsigned int (*read)(struct vfs_backend *self, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write)(struct vfs_backend *self, unsigned int offset, unsigned int count, void *buffer))
 {
 
     memory_clear(backend, sizeof (struct vfs_backend));
-    list_init_item(&backend->item, backend);
+    resource_init_item(&backend->resource, backend);
 
     backend->read = read;
     backend->write = write;
@@ -89,7 +62,7 @@ void vfs_init_protocol(struct vfs_protocol *protocol, unsigned int (*match)(stru
 {
 
     memory_clear(protocol, sizeof (struct vfs_protocol));
-    list_init_item(&protocol->item, protocol);
+    resource_init_item(&protocol->resource, protocol);
 
     protocol->match = match;
     protocol->root = root;
@@ -106,8 +79,10 @@ void vfs_init_protocol(struct vfs_protocol *protocol, unsigned int (*match)(stru
 void vfs_setup()
 {
 
-    list_init(&backends);
-    list_init(&protocols);
+    resource_init_list(&backends, RESOURCE_TYPE_VFSBACKEND, "vfsbackends");
+    resource_register_list(&backends);
+    resource_init_list(&protocols, RESOURCE_TYPE_VFSPROTOCOL, "vfsprotocols");
+    resource_register_list(&protocols);
 
 }
 
