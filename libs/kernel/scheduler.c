@@ -3,6 +3,8 @@
 #include "vfs.h"
 #include "task.h"
 
+static struct resource_list containers;
+static struct resource_list tasks;
 static struct list free;
 static struct list used;
 static struct list blocked;
@@ -68,6 +70,10 @@ void scheduler_init()
     list_init(&free);
     list_init(&used);
     list_init(&blocked);
+    resource_init_list(&containers, "containers");
+    resource_register_list(&containers);
+    resource_init_list(&tasks, "tasks");
+    resource_register_list(&tasks);
 
 }
 

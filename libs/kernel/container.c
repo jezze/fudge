@@ -337,7 +337,7 @@ void container_init(struct container *container)
 
     memory_clear(container, sizeof (struct container));
     list_init_item(&container->item, container);
-    resource_init(&container->resource, container);
+    resource_init_item(&container->resource, container);
 
     container->calls[CONTAINER_CALL_OPEN] = open;
     container->calls[CONTAINER_CALL_CLOSE] = close;
