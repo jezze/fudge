@@ -29,5 +29,7 @@ struct resource_list
 struct resource_list *resource_find_list(enum resource_type type);
 void resource_register_item(struct resource_item *item, enum resource_type type);
 void resource_register_list(struct resource_list *list);
+void resource_unregister_item(struct resource_item *item, enum resource_type type);
+void resource_unregister_list(struct resource_list *list);
 void resource_init_item(struct resource_item *item, void *data);
 void resource_init_list(struct resource_list *list, enum resource_type type, char *name);

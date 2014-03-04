@@ -41,6 +41,25 @@ void resource_register_list(struct resource_list *list)
 
 }
 
+void resource_unregister_item(struct resource_item *item, enum resource_type type)
+{
+
+    struct resource_list *list = resource_find_list(type);
+
+    if (!list)
+        return;
+
+    list_remove(&list->list, &item->item);
+
+}
+
+void resource_unregister_list(struct resource_list *list)
+{
+
+    list_remove(&lists, &list->item);
+
+}
+
 void resource_init_item(struct resource_item *item, void *data)
 {
 
