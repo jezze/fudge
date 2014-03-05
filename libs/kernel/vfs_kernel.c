@@ -80,7 +80,7 @@ static unsigned int read(struct vfs_backend *backend, unsigned int id, unsigned 
 
             struct resource_list *list = current->data;
 
-            o += memory_write(temp, 4096, list->name, ascii_length(list->name), o);
+            o += memory_write(temp, 4096, list->id.text, list->id.size, o);
             o += memory_write(temp, 4096, "/\n", 2, o);
 
         }
@@ -146,13 +146,12 @@ static unsigned int walk(struct vfs_backend *backend, unsigned int id, unsigned 
         {
 
             struct resource_list *list = current->data;
-            unsigned int l = ascii_length(list->name);
 
-            if (n != l + 1 || path[l] != '/')
+            if (path[list->id.size] != '/')
                 continue;
 
-            if (memory_match(path, list->name, l))
-                return walk(backend, list->type, count - n, path + n);
+            if (memory_match(path, list->id.text, list->id.size))
+                return walk(backend, list->id.type, count - n, path + n);
 
         }
 

@@ -70,9 +70,9 @@ void scheduler_setup()
     list_init(&free);
     list_init(&used);
     list_init(&blocked);
-    resource_init_list(&containers, RESOURCE_TYPE_CONTAINER, "containers");
+    resource_init_list(&containers, RESOURCE_TYPE_CONTAINER, 10, "containers");
     resource_register_list(&containers);
-    resource_init_list(&tasks, RESOURCE_TYPE_TASK, "tasks");
+    resource_init_list(&tasks, RESOURCE_TYPE_TASK, 5, "tasks");
     resource_register_list(&tasks);
 
 }

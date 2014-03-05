@@ -13,7 +13,7 @@ struct resource_list *resource_find_list(enum resource_type type)
 
         struct resource_list *list = current->data;
 
-        if (list->type == type)
+        if (list->id.type == type)
             return list;
 
     }
@@ -68,15 +68,16 @@ void resource_init_item(struct resource_item *item, void *data)
 
 }
 
-void resource_init_list(struct resource_list *list, enum resource_type type, char *name)
+void resource_init_list(struct resource_list *list, enum resource_type type, unsigned int size, const char *text)
 {
 
     memory_clear(list, sizeof (struct resource_list));
     list_init_item(&list->item, list);
     list_init(&list->list);
 
-    list->type = type;
-    list->name = name;
+    list->id.type = type;
+    list->id.size = size;
+    list->id.text = text;
 
 }
 

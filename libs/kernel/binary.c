@@ -40,7 +40,7 @@ void binary_init_protocol(struct binary_protocol *protocol, unsigned int (*match
 void binary_setup()
 {
 
-    resource_init_list(&protocols, RESOURCE_TYPE_BINARYPROTOCOL, "binaryprotocols");
+    resource_init_list(&protocols, RESOURCE_TYPE_BINARYPROTOCOL, 15, "binaryprotocols");
     resource_register_list(&protocols);
 
 }

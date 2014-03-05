@@ -79,9 +79,9 @@ void vfs_init_protocol(struct vfs_protocol *protocol, unsigned int (*match)(stru
 void vfs_setup()
 {
 
-    resource_init_list(&backends, RESOURCE_TYPE_VFSBACKEND, "vfsbackends");
+    resource_init_list(&backends, RESOURCE_TYPE_VFSBACKEND, 11, "vfsbackends");
     resource_register_list(&backends);
-    resource_init_list(&protocols, RESOURCE_TYPE_VFSPROTOCOL, "vfsprotocols");
+    resource_init_list(&protocols, RESOURCE_TYPE_VFSPROTOCOL, 12, "vfsprotocols");
     resource_register_list(&protocols);
 
 }
