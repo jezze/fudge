@@ -29,7 +29,18 @@ struct resource_item
 
 };
 
+struct resource_iterator
+{
+
+    struct list_item item;
+    unsigned int (*read)(unsigned int offset, unsigned int count, void *buffer);
+
+};
+
 struct resource_item *resource_find_item(enum resource_type type);
+struct resource_iterator *resource_find_iterator(enum resource_type type);
 void resource_register_item(struct resource_item *item);
+void resource_register_iterator(struct resource_iterator *iterator);
 void resource_init_item(struct resource_item *item, void *data, enum resource_type type, unsigned int size, const char *text);
+void resource_init_iterator(struct resource_iterator *iterator, unsigned int (*read)(unsigned int offset, unsigned int count, void *buffer));
 void resource_setup();

@@ -22,14 +22,14 @@ static unsigned int backend_write(struct vfs_backend *self, unsigned int offset,
 static unsigned int root(struct vfs_backend *backend)
 {
 
-    return (unsigned int)resource_find_item(RESOURCE_TYPE_ALL);
+    return 1;
 
 }
 
 static unsigned int parent(struct vfs_backend *backend, unsigned int id)
 {
 
-    return (unsigned int)resource_find_item(RESOURCE_TYPE_ALL);
+    return 1;
 
 }
 
@@ -64,7 +64,9 @@ static unsigned int close(struct vfs_backend *backend, unsigned int id)
 static unsigned int read(struct vfs_backend *backend, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    return 0;
+    struct resource_iterator *iterator = resource_find_iterator(0);
+
+    return iterator->read(offset, count, buffer);
 
 }
 
