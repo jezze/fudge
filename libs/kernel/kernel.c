@@ -94,21 +94,20 @@ void kernel_setup_modules(struct container *container, struct task *task, unsign
 void kernel_setup()
 {
 
-    struct list *resources = resource_setup();
-
+    resource_setup();
     scheduler_setup();
     rendezvous_setup();
     vfs_setup();
     binary_setup();
-    vfs_init_kernel(resources, &state.vfs.backends[0], &state.vfs.protocols[0]);
+    vfs_init_kernel(&state.vfs.backends[0], &state.vfs.protocols[0]);
     vfs_init_cpio(&state.vfs.protocols[1]);
     vfs_init_tar(&state.vfs.protocols[2]);
     binary_init_elf(&state.binary.protocols[0]);
-    resource_register_item(&state.vfs.backends[0].resource, RESOURCE_TYPE_VFSBACKEND);
-    resource_register_item(&state.vfs.protocols[0].resource, RESOURCE_TYPE_VFSPROTOCOL);
-    resource_register_item(&state.vfs.protocols[1].resource, RESOURCE_TYPE_VFSPROTOCOL);
-    resource_register_item(&state.vfs.protocols[2].resource, RESOURCE_TYPE_VFSPROTOCOL);
-    resource_register_item(&state.binary.protocols[0].resource, RESOURCE_TYPE_BINARYPROTOCOL);
+    vfs_register_backend(&state.vfs.backends[0].resource);
+    vfs_register_protocol(&state.vfs.protocols[0].resource);
+    vfs_register_protocol(&state.vfs.protocols[1].resource);
+    vfs_register_protocol(&state.vfs.protocols[2].resource);
+    binary_register_protocol(&state.binary.protocols[0].resource);
 
 }
 

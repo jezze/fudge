@@ -216,7 +216,7 @@ void arch_setup(unsigned int count, struct kernel_module *modules)
     {
 
         container_init(&containers[i].base);
-        resource_register_item(&containers[i].base.resource, RESOURCE_TYPE_CONTAINER);
+        scheduler_register_container(&containers[i].base.resource);
 
         containers[i].base.calls[CONTAINER_CALL_SPAWN] = spawn;
 
@@ -226,7 +226,7 @@ void arch_setup(unsigned int count, struct kernel_module *modules)
     {
 
         task_init(&tasks[i].base, 0, ARCH_TASK_STACKLIMIT);
-        resource_register_item(&tasks[i].base.resource, RESOURCE_TYPE_TASK);
+        scheduler_register_task2(&tasks[i].base.resource);
         scheduler_register_task(&tasks[i].base);
 
         tasks[i].index = i;

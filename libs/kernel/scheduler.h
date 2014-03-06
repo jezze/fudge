@@ -6,3 +6,5 @@ void scheduler_use(struct task *task);
 void scheduler_unuse(struct task *task);
 void scheduler_register_task(struct task *task);
 void scheduler_setup();
+void scheduler_register_container(struct resource_item *item);
+void scheduler_register_task2(struct resource_item *item);

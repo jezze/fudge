@@ -2,8 +2,9 @@
 #include "resource.h"
 
 static struct list resources;
+static struct resource_item res;
 
-struct resource_list *resource_find_list(enum resource_type type)
+struct resource_item *resource_find_item(enum resource_type type)
 {
 
     struct list_item *current;
@@ -11,10 +12,10 @@ struct resource_list *resource_find_list(enum resource_type type)
     for (current = resources.head; current; current = current->next)
     {
 
-        struct resource_list *list = current->data;
+        struct resource_item *item = current->data;
 
-        if (list->id.type == type)
-            return list;
+        if (item->id.type == type)
+            return item;
 
     }
 
@@ -22,41 +23,10 @@ struct resource_list *resource_find_list(enum resource_type type)
 
 }
 
-void resource_register_item(struct resource_item *item, enum resource_type type)
+void resource_register_item(struct resource_item *item)
 {
 
-    struct resource_list *list = resource_find_list(type);
-
-    if (!list)
-        return;
-
-    list_add(&list->list, &item->item);
-
-}
-
-void resource_register_list(struct resource_list *list)
-{
-
-    list_add(&resources, &list->item);
-
-}
-
-void resource_unregister_item(struct resource_item *item, enum resource_type type)
-{
-
-    struct resource_list *list = resource_find_list(type);
-
-    if (!list)
-        return;
-
-    list_remove(&list->list, &item->item);
-
-}
-
-void resource_unregister_list(struct resource_list *list)
-{
-
-    list_remove(&resources, &list->item);
+    list_add(&resources, &item->item);
 
 }
 
@@ -72,25 +42,12 @@ void resource_init_item(struct resource_item *item, void *data, enum resource_ty
 
 }
 
-void resource_init_list(struct resource_list *list, enum resource_type type, unsigned int size, const char *text)
-{
-
-    memory_clear(list, sizeof (struct resource_list));
-    list_init_item(&list->item, list);
-    list_init(&list->list);
-
-    list->id.type = type;
-    list->id.size = size;
-    list->id.text = text;
-
-}
-
-struct list *resource_setup()
+void resource_setup()
 {
 
     list_init(&resources);
-
-    return &resources;
+    resource_init_item(&res, &resources, RESOURCE_TYPE_ALL, 4, "root");
+    resource_register_item(&res);
 
 }
 

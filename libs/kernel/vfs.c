@@ -2,8 +2,12 @@
 #include "resource.h"
 #include "vfs.h"
 
-static struct resource_list backends;
-static struct resource_list protocols;
+static struct list alllist;
+static struct list backendlist;
+static struct list protocollist;
+static struct resource_item all;
+static struct resource_item backends;
+static struct resource_item protocols;
 
 unsigned int vfs_findnext(unsigned int count, const char *path)
 {
@@ -24,7 +28,7 @@ unsigned int vfs_isparent(unsigned int count, const char *path)
 struct vfs_backend *vfs_find_backend()
 {
 
-    return backends.list.tail->data;
+    return backendlist.tail->data;
 
 }
 
@@ -33,7 +37,7 @@ struct vfs_protocol *vfs_find_protocol(struct vfs_backend *backend)
 
     struct list_item *current;
 
-    for (current = protocols.list.head; current; current = current->next)
+    for (current = protocollist.head; current; current = current->next)
     {
 
         struct vfs_protocol *protocol = current->data;
@@ -79,10 +83,29 @@ void vfs_init_protocol(struct vfs_protocol *protocol, unsigned int (*match)(stru
 void vfs_setup()
 {
 
-    resource_init_list(&backends, RESOURCE_TYPE_VFSBACKEND, 11, "vfsbackends");
-    resource_register_list(&backends);
-    resource_init_list(&protocols, RESOURCE_TYPE_VFSPROTOCOL, 12, "vfsprotocols");
-    resource_register_list(&protocols);
+    list_init(&alllist);
+    list_init(&backendlist);
+    list_init(&protocollist);
+    resource_init_item(&all, &alllist, RESOURCE_TYPE_VFS, 3, "vfs");
+    resource_register_item(&all);
+    resource_init_item(&backends, &backendlist, RESOURCE_TYPE_VFSBACKEND, 8, "backends");
+    resource_register_item(&backends);
+    resource_init_item(&protocols, &protocollist, RESOURCE_TYPE_VFSPROTOCOL, 9, "protocols");
+    resource_register_item(&protocols);
+
+}
+
+void vfs_register_backend(struct resource_item *item)
+{
+
+    list_add(&backendlist, &item->item);
+
+}
+
+void vfs_register_protocol(struct resource_item *item)
+{
+
+    list_add(&protocollist, &item->item);
 
 }
 
