@@ -23,6 +23,7 @@ struct resource_item
 {
 
     struct list_item item;
+    struct resource_id id;
 
 };
 
@@ -40,6 +41,6 @@ void resource_register_item(struct resource_item *item, enum resource_type type)
 void resource_register_list(struct resource_list *list);
 void resource_unregister_item(struct resource_item *item, enum resource_type type);
 void resource_unregister_list(struct resource_list *list);
-void resource_init_item(struct resource_item *item, void *data);
+void resource_init_item(struct resource_item *item, void *data, enum resource_type type, unsigned int size, const char *text);
 void resource_init_list(struct resource_list *list, enum resource_type type, unsigned int size, const char *text);
 struct list *resource_setup();

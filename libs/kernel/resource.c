@@ -60,11 +60,15 @@ void resource_unregister_list(struct resource_list *list)
 
 }
 
-void resource_init_item(struct resource_item *item, void *data)
+void resource_init_item(struct resource_item *item, void *data, enum resource_type type, unsigned int size, const char *text)
 {
 
     memory_clear(item, sizeof (struct resource_item));
     list_init_item(&item->item, data);
+
+    item->id.type = type;
+    item->id.size = size;
+    item->id.text = text;
 
 }
 

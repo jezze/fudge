@@ -51,7 +51,7 @@ void vfs_init_backend(struct vfs_backend *backend, unsigned int (*read)(struct v
 {
 
     memory_clear(backend, sizeof (struct vfs_backend));
-    resource_init_item(&backend->resource, backend);
+    resource_init_item(&backend->resource, backend, RESOURCE_TYPE_VFSBACKEND, 7, "backend");
 
     backend->read = read;
     backend->write = write;
@@ -62,7 +62,7 @@ void vfs_init_protocol(struct vfs_protocol *protocol, unsigned int (*match)(stru
 {
 
     memory_clear(protocol, sizeof (struct vfs_protocol));
-    resource_init_item(&protocol->resource, protocol);
+    resource_init_item(&protocol->resource, protocol, RESOURCE_TYPE_VFSPROTOCOL, 8, "protocol");
 
     protocol->match = match;
     protocol->root = root;
