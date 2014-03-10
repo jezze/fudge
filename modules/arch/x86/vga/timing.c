@@ -1,9 +1,5 @@
 #include <module.h>
-#include <base/base.h>
-#include <base/terminal.h>
-#include <base/video.h>
 #include <arch/x86/io/io.h>
-#include "vga.h"
 #include "registers.h"
 #include "timing.h"
 

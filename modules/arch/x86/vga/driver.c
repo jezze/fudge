@@ -4,9 +4,9 @@
 #include <base/video.h>
 #include <arch/x86/io/io.h>
 #include <arch/x86/pci/pci.h>
-#include "vga.h"
 #include "registers.h"
 #include "timing.h"
+#include "driver.h"
 
 #define VGA_ADDRESS                     0x000A0000
 #define VGA_TEXT_BASE                   0x000B8000
