@@ -9,7 +9,16 @@
 #include "timing.h"
 
 #define VGA_ADDRESS                     0x000A0000
-#define VGA_TEXT                        0x000B8000
+#define VGA_TEXT_BASE                   0x000B8000
+#define VGA_TEXT_LIMIT                  2000
+
+struct vga_character
+{
+
+    char character;
+    char color;
+
+};
 
 /* BIOS mode 0Dh - 320x200x16 */
 static const unsigned char g320x200x16[60] = {
@@ -145,6 +154,7 @@ static unsigned int write_terminal_data(struct base_device *device, unsigned int
 {
 
     struct vga_driver *driver = (struct vga_driver *)device->driver;
+    struct vga_character *memory = (struct vga_character *)VGA_TEXT_BASE;
     unsigned int i;
 
     for (i = 0; i < count; i++)
@@ -167,25 +177,24 @@ static unsigned int write_terminal_data(struct base_device *device, unsigned int
         if (c >= ' ')
         {
 
-            ((char *)VGA_TEXT)[driver->cursor.offset * 2] = c;
-            ((char *)VGA_TEXT)[driver->cursor.offset * 2 + 1] = driver->cursor.color;
-
+            memory[driver->cursor.offset].character = c;
+            memory[driver->cursor.offset].color = driver->cursor.color;
             driver->cursor.offset++;
 
         }
 
-        if (driver->cursor.offset >= 2000)
+        if (driver->cursor.offset >= VGA_TEXT_LIMIT)
         {
 
-            unsigned int a;
+            unsigned int j;
 
-            memory_copy((void *)VGA_TEXT, (void *)(VGA_TEXT + 80 * 2), 80 * 24 * 2);
+            memory_copy((void *)VGA_TEXT_BASE, (void *)(VGA_TEXT_BASE + 80 * 2), 80 * 24 * 2);
 
-            for (a = 80 * 24 * 2; a < 80 * 25 * 2; a += 2)
+            for (j = VGA_TEXT_LIMIT - 80; j < VGA_TEXT_LIMIT; j++)
             {
 
-                ((char *)VGA_TEXT)[a] = ' ';
-                ((char *)VGA_TEXT)[a + 1] = driver->cursor.color;
+                memory[j].character = ' ';
+                memory[j].color = driver->cursor.color;
 
             }
 
@@ -276,18 +285,19 @@ static void attach(struct base_device *device)
 {
 
     struct vga_driver *driver = (struct vga_driver *)device->driver;
-    unsigned int a;
+    struct vga_character *memory = (struct vga_character *)VGA_TEXT_BASE;
+    unsigned int i;
 
     base_terminal_register_interface(&driver->iterminal, device);
     base_video_register_interface(&driver->ivideo, device);
 
     driver->cursor.color = 0x0F;
 
-    for (a = 0; a < 80 * 25 * 2; a += 2)
+    for (i = 0; i < VGA_TEXT_LIMIT; i++)
     {
 
-        ((char *)VGA_TEXT)[a] = ' ';
-        ((char *)VGA_TEXT)[a + 1] = driver->cursor.color;
+        memory[i].character = ' ';
+        memory[i].color = driver->cursor.color;
 
     }
 
@@ -315,7 +325,7 @@ void vga_init_driver(struct vga_driver *driver)
 
     driver->ivideo.xres = 80;
     driver->ivideo.yres = 25;
-    driver->ivideo.bpp = 16;
+    driver->ivideo.bpp = 2;
 
 }
 
