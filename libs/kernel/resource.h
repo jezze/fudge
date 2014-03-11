@@ -4,11 +4,14 @@ enum resource_type
     RESOURCE_TYPE_ALL                   = 1,
     RESOURCE_TYPE_CONTAINER             = 2,
     RESOURCE_TYPE_TASK                  = 3,
-    RESOURCE_TYPE_VFS                   = 5,
-    RESOURCE_TYPE_VFSBACKEND            = 6,
-    RESOURCE_TYPE_VFSPROTOCOL           = 7,
-    RESOURCE_TYPE_BINARY                = 8,
-    RESOURCE_TYPE_BINARYPROTOCOL        = 9
+    RESOURCE_TYPE_VFS                   = 1000,
+    RESOURCE_TYPE_VFSBACKEND            = 1001,
+    RESOURCE_TYPE_VFSPROTOCOL           = 1002,
+    RESOURCE_TYPE_VFSCHANNEL            = 1003,
+    RESOURCE_TYPE_VFSDESCRIPTOR         = 1004,
+    RESOURCE_TYPE_VFSMOUNT              = 1005,
+    RESOURCE_TYPE_BINARY                = 2000,
+    RESOURCE_TYPE_BINARYPROTOCOL        = 2001
 
 };
 

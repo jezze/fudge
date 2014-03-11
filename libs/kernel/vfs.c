@@ -113,6 +113,28 @@ void vfs_init_protocol(struct vfs_protocol *protocol, unsigned int (*match)(stru
 
 }
 
+void vfs_init_channel(struct vfs_channel *channel, struct vfs_backend *backend, struct vfs_protocol *protocol)
+{
+
+    memory_clear(channel, sizeof (struct vfs_channel));
+    resource_init_item(&channel->resource, RESOURCE_TYPE_VFSCHANNEL, channel);
+
+    channel->backend = backend;
+    channel->protocol = protocol;
+
+}
+
+void vfs_init_descriptor(struct vfs_descriptor *descriptor, struct vfs_channel *channel, unsigned int id)
+{
+
+    memory_clear(descriptor, sizeof (struct vfs_descriptor));
+    resource_init_item(&descriptor->resource, RESOURCE_TYPE_VFSDESCRIPTOR, descriptor);
+
+    descriptor->channel = channel;
+    descriptor->id = id;
+
+}
+
 void vfs_setup()
 {
 
