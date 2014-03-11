@@ -30,7 +30,6 @@ struct resource_item
 struct resource_iterator
 {
 
-    struct list_item item;
     unsigned int (*match)(struct resource_item *item); 
     unsigned int (*read)(struct resource_item *item, unsigned int offset, unsigned int count, void *buffer);
 

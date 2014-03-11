@@ -1,7 +1,6 @@
 #include <kernel.h>
 #include "resource.h"
 
-static struct list iterators;
 static struct list resources;
 
 struct resource_item *resource_find_item(struct resource_iterator *iterator, struct resource_item *item)
@@ -32,7 +31,6 @@ void resource_init_iterator(struct resource_iterator *iterator, unsigned int (*m
 {
 
     memory_clear(iterator, sizeof (struct resource_iterator));
-    list_init_item(&iterator->item, iterator);
 
     iterator->match = match;
     iterator->read = read;
@@ -42,7 +40,6 @@ void resource_init_iterator(struct resource_iterator *iterator, unsigned int (*m
 void resource_setup()
 {
 
-    list_init(&iterators);
     list_init(&resources);
 
 }
