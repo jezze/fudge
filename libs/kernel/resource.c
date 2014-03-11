@@ -45,13 +45,12 @@ void resource_init_item(struct resource_item *item, enum resource_type type, voi
 
 }
 
-void resource_init_iterator(struct resource_iterator *iterator, unsigned int (*match)(struct resource_item *item), unsigned int (*read)(struct resource_item *item, unsigned int offset, unsigned int count, void *buffer))
+void resource_init_iterator(struct resource_iterator *iterator, unsigned int (*match)(struct resource_item *item))
 {
 
     memory_clear(iterator, sizeof (struct resource_iterator));
 
     iterator->match = match;
-    iterator->read = read;
 
 }
 

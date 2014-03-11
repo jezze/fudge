@@ -14,13 +14,6 @@ static unsigned int base_match(struct resource_item *item)
 
 }
 
-static unsigned int base_read(struct resource_item *item, unsigned int offset, unsigned int count, void *buffer)
-{
-
-    return 0;
-
-}
-
 static unsigned int backend_read(struct vfs_backend *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
@@ -106,7 +99,7 @@ void vfs_setup_kernel(struct vfs_backend *backend, struct vfs_protocol *protocol
 
     vfs_init_backend(backend, backend_read, backend_write);
     vfs_init_protocol(protocol, match, root, open, close, read, write, parent, walk, get_physical);
-    resource_init_iterator(&base, base_match, base_read);
+    resource_init_iterator(&base, base_match);
 
 }
 

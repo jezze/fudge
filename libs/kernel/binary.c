@@ -12,13 +12,6 @@ static unsigned int protocols_match(struct resource_item *item)
 
 }
 
-static unsigned int protocols_read(struct resource_item *item, unsigned int offset, unsigned int count, void *buffer)
-{
-
-    return 0;
-
-}
-
 struct binary_protocol *binary_find_protocol(struct vfs_channel *channel, unsigned int id)
 {
 
@@ -54,7 +47,7 @@ void binary_init_protocol(struct binary_protocol *protocol, unsigned int (*match
 void binary_setup()
 {
 
-    resource_init_iterator(&protocols, protocols_match, protocols_read);
+    resource_init_iterator(&protocols, protocols_match);
 
 }
 
