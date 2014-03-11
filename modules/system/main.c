@@ -187,8 +187,8 @@ void init()
 
     system_init_backend(&backend);
     system_init_protocol(&protocol);
-    vfs_register_backend(&backend.base.resource);
-    vfs_register_protocol(&protocol.resource);
+    resource_register_item(&backend.base.resource);
+    resource_register_item(&protocol.resource);
 
 }
 

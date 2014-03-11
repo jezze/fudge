@@ -24,6 +24,7 @@ struct resource_item
 
     struct list_item item;
     struct resource_id id;
+    void *data;
 
 };
 
@@ -37,6 +38,6 @@ struct resource_iterator
 
 struct resource_item *resource_find_item(struct resource_iterator *iterator, struct resource_item *item);
 void resource_register_item(struct resource_item *item);
-void resource_init_item(struct resource_item *item, enum resource_type type);
+void resource_init_item(struct resource_item *item, enum resource_type type, void *data);
 void resource_init_iterator(struct resource_iterator *iterator, unsigned int (*match)(struct resource_item *item), unsigned int (*read)(struct resource_item *item, unsigned int offset, unsigned int count, void *buffer));
 void resource_setup();

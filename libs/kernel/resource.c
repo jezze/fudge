@@ -6,6 +6,23 @@ static struct list resources;
 struct resource_item *resource_find_item(struct resource_iterator *iterator, struct resource_item *item)
 {
 
+    struct list_item *current;
+
+    if (item)
+        current = item->item.next;
+    else
+        current = resources.head;
+
+    for (; current; current = current->next)
+    {
+
+        struct resource_item *a = current->data;
+
+        if (iterator->match(a))
+            return a;
+
+    }
+
     return 0;
 
 }
@@ -17,13 +34,14 @@ void resource_register_item(struct resource_item *item)
 
 }
 
-void resource_init_item(struct resource_item *item, enum resource_type type)
+void resource_init_item(struct resource_item *item, enum resource_type type, void *data)
 {
 
     memory_clear(item, sizeof (struct resource_item));
     list_init_item(&item->item, item);
 
     item->id.type = type;
+    item->data = data;
 
 }
 

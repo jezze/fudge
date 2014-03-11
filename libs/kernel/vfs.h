@@ -57,5 +57,3 @@ void vfs_init_cpio(struct vfs_protocol *protocol);
 void vfs_init_kernel(struct vfs_backend *backend, struct vfs_protocol *protocol);
 void vfs_init_tar(struct vfs_protocol *protocol);
 void vfs_setup();
-void vfs_register_backend(struct resource_item *item);
-void vfs_register_protocol(struct resource_item *item);

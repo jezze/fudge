@@ -110,7 +110,6 @@ void vfs_init_kernel(struct vfs_backend *backend, struct vfs_protocol *protocol)
     memory_clear(protocol, sizeof (struct vfs_protocol));
     vfs_init_protocol(protocol, match, root, open, close, read, write, parent, walk, get_physical);
 
-    memory_clear(&base, sizeof (struct resource_iterator));
     resource_init_iterator(&base, base_match, base_read);
 
 }

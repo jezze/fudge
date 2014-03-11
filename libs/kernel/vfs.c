@@ -2,8 +2,36 @@
 #include "resource.h"
 #include "vfs.h"
 
-static struct list backends;
-static struct list protocols;
+static struct resource_iterator protocols;
+static struct resource_iterator backends;
+
+static unsigned int protocols_match(struct resource_item *item)
+{
+
+    return item->id.type == RESOURCE_TYPE_VFSPROTOCOL;
+
+}
+
+static unsigned int protocols_read(struct resource_item *item, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    return 0;
+
+}
+
+static unsigned int backends_match(struct resource_item *item)
+{
+
+    return item->id.type == RESOURCE_TYPE_VFSBACKEND;
+
+}
+
+static unsigned int backends_read(struct resource_item *item, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    return 0;
+
+}
 
 unsigned int vfs_findnext(unsigned int count, const char *path)
 {
@@ -24,16 +52,25 @@ unsigned int vfs_isparent(unsigned int count, const char *path)
 struct vfs_backend *vfs_find_backend()
 {
 
-    return backends.tail->data;
+    struct resource_item *current = 0;
+    struct resource_item *last = 0;
+    struct vfs_backend *backend = 0;
+
+    while ((current = resource_find_item(&backends, current)))
+        last = current;
+
+    backend = last->data;
+
+    return backend;
 
 }
 
 struct vfs_protocol *vfs_find_protocol(struct vfs_backend *backend)
 {
 
-    struct list_item *current;
+    struct resource_item *current = 0;
 
-    for (current = protocols.head; current; current = current->next)
+    while ((current = resource_find_item(&protocols, current)))
     {
 
         struct vfs_protocol *protocol = current->data;
@@ -51,7 +88,7 @@ void vfs_init_backend(struct vfs_backend *backend, unsigned int (*read)(struct v
 {
 
     memory_clear(backend, sizeof (struct vfs_backend));
-    resource_init_item(&backend->resource, RESOURCE_TYPE_VFSBACKEND);
+    resource_init_item(&backend->resource, RESOURCE_TYPE_VFSBACKEND, backend);
 
     backend->read = read;
     backend->write = write;
@@ -62,7 +99,7 @@ void vfs_init_protocol(struct vfs_protocol *protocol, unsigned int (*match)(stru
 {
 
     memory_clear(protocol, sizeof (struct vfs_protocol));
-    resource_init_item(&protocol->resource, RESOURCE_TYPE_VFSPROTOCOL);
+    resource_init_item(&protocol->resource, RESOURCE_TYPE_VFSPROTOCOL, protocol);
 
     protocol->match = match;
     protocol->root = root;
@@ -79,24 +116,8 @@ void vfs_init_protocol(struct vfs_protocol *protocol, unsigned int (*match)(stru
 void vfs_setup()
 {
 
-    list_init(&backends);
-    list_init(&protocols);
-
-}
-
-void vfs_register_backend(struct resource_item *item)
-{
-
-    list_add(&backends, &item->item);
-    resource_register_item(item);
-
-}
-
-void vfs_register_protocol(struct resource_item *item)
-{
-
-    list_add(&protocols, &item->item);
-    resource_register_item(item);
+    resource_init_iterator(&protocols, protocols_match, protocols_read);
+    resource_init_iterator(&backends, backends_match, backends_read);
 
 }
 

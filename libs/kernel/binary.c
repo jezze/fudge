@@ -3,14 +3,28 @@
 #include "vfs.h"
 #include "binary.h"
 
-static struct list protocols;
+static struct resource_iterator protocols;
+
+static unsigned int protocols_match(struct resource_item *item)
+{
+
+    return item->id.type == RESOURCE_TYPE_BINARYPROTOCOL;
+
+}
+
+static unsigned int protocols_read(struct resource_item *item, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    return 0;
+
+}
 
 struct binary_protocol *binary_find_protocol(struct vfs_channel *channel, unsigned int id)
 {
 
-    struct list_item *current;
+    struct resource_item *current = 0;
 
-    for (current = protocols.head; current; current = current->next)
+    while ((current = resource_find_item(&protocols, current)))
     {
 
         struct binary_protocol *protocol = current->data;
@@ -28,7 +42,7 @@ void binary_init_protocol(struct binary_protocol *protocol, unsigned int (*match
 {
 
     memory_clear(protocol, sizeof (struct binary_protocol));
-    resource_init_item(&protocol->resource, RESOURCE_TYPE_BINARYPROTOCOL);
+    resource_init_item(&protocol->resource, RESOURCE_TYPE_BINARYPROTOCOL, protocol);
 
     protocol->match = match;
     protocol->find_symbol = find_symbol;
@@ -40,15 +54,7 @@ void binary_init_protocol(struct binary_protocol *protocol, unsigned int (*match
 void binary_setup()
 {
 
-    list_init(&protocols);
-
-}
-
-void binary_register_protocol(struct resource_item *item)
-{
-
-    list_add(&protocols, &item->item);
-    resource_register_item(item);
+    resource_init_iterator(&protocols, protocols_match, protocols_read);
 
 }
 
