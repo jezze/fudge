@@ -8,7 +8,7 @@ static struct resource_iterator protocols;
 static unsigned int protocols_match(struct resource_item *item)
 {
 
-    return item->id.type == RESOURCE_TYPE_BINARYPROTOCOL;
+    return item->type == RESOURCE_TYPE_BINARYPROTOCOL;
 
 }
 

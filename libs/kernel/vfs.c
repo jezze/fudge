@@ -8,7 +8,7 @@ static struct resource_iterator protocols;
 static unsigned int backends_match(struct resource_item *item)
 {
 
-    return item->id.type == RESOURCE_TYPE_VFSBACKEND;
+    return item->type == RESOURCE_TYPE_VFSBACKEND;
 
 }
 
@@ -22,7 +22,7 @@ static unsigned int backends_read(struct resource_item *item, unsigned int offse
 static unsigned int protocols_match(struct resource_item *item)
 {
 
-    return item->id.type == RESOURCE_TYPE_VFSPROTOCOL;
+    return item->type == RESOURCE_TYPE_VFSPROTOCOL;
 
 }
 

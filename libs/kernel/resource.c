@@ -40,7 +40,7 @@ void resource_init_item(struct resource_item *item, enum resource_type type, voi
     memory_clear(item, sizeof (struct resource_item));
     list_init_item(&item->item, item);
 
-    item->id.type = type;
+    item->type = type;
     item->data = data;
 
 }

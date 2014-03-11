@@ -12,18 +12,11 @@ enum resource_type
 
 };
 
-struct resource_id
-{
-
-    enum resource_type type;
-
-};
-
 struct resource_item
 {
 
     struct list_item item;
-    struct resource_id id;
+    enum resource_type type;
     void *data;
 
 };
