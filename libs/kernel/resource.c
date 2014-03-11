@@ -36,13 +36,21 @@ void resource_init_item(struct resource_item *item, void *data, enum resource_ty
 
 }
 
-void resource_init_iterator(struct resource_iterator *iterator, unsigned int (*read)(struct resource_item *item, unsigned int offset, unsigned int count, void *buffer))
+void resource_init_iterator(struct resource_iterator *iterator, unsigned int (*match)(struct resource_item *item), unsigned int (*read)(struct resource_item *item, unsigned int offset, unsigned int count, void *buffer))
 {
 
     memory_clear(iterator, sizeof (struct resource_iterator));
     list_init_item(&iterator->item, iterator);
 
+    iterator->match = match;
     iterator->read = read;
+
+}
+
+static unsigned int match(struct resource_item *item)
+{
+
+    return 1;
 
 }
 
@@ -58,7 +66,7 @@ void resource_setup()
 
     list_init(&iterators);
     list_init(&resources);
-    resource_init_iterator(&root, read);
+    resource_init_iterator(&root, match, read);
     resource_register_iterator(&root);
 
 }
