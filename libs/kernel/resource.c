@@ -5,25 +5,6 @@ static struct list iterators;
 static struct list resources;
 static struct resource_iterator root;
 
-struct resource_item *resource_find_item(enum resource_type type)
-{
-
-    struct list_item *current;
-
-    for (current = resources.head; current; current = current->next)
-    {
-
-        struct resource_item *item = current->data;
-
-        if (item->id.type == type)
-            return item;
-
-    }
-
-    return 0;
-
-}
-
 struct resource_iterator *resource_find_iterator(enum resource_type type)
 {
 
@@ -45,19 +26,17 @@ void resource_register_iterator(struct resource_iterator *iterator)
 
 }
 
-void resource_init_item(struct resource_item *item, void *data, enum resource_type type, unsigned int size, const char *text)
+void resource_init_item(struct resource_item *item, void *data, enum resource_type type)
 {
 
     memory_clear(item, sizeof (struct resource_item));
     list_init_item(&item->item, data);
 
     item->id.type = type;
-    item->id.size = size;
-    item->id.text = text;
 
 }
 
-void resource_init_iterator(struct resource_iterator *iterator, unsigned int (*read)(unsigned int offset, unsigned int count, void *buffer))
+void resource_init_iterator(struct resource_iterator *iterator, unsigned int (*read)(struct resource_item *item, unsigned int offset, unsigned int count, void *buffer))
 {
 
     memory_clear(iterator, sizeof (struct resource_iterator));
@@ -67,7 +46,7 @@ void resource_init_iterator(struct resource_iterator *iterator, unsigned int (*r
 
 }
 
-static unsigned int read(unsigned int offset, unsigned int count, void *buffer)
+static unsigned int read(struct resource_item *item, unsigned int offset, unsigned int count, void *buffer)
 {
 
     return memory_read(buffer, count, "../\n", 4, offset);

@@ -66,7 +66,7 @@ static unsigned int read(struct vfs_backend *backend, unsigned int id, unsigned 
 
     struct resource_iterator *iterator = resource_find_iterator(0);
 
-    return iterator->read(offset, count, buffer);
+    return iterator->read(0, offset, count, buffer);
 
 }
 
