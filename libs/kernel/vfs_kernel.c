@@ -5,6 +5,14 @@
 #include "container.h"
 #include "kernel.h"
 
+enum
+{
+
+    VFS_KERNEL_ROOT                     = 1,
+    VFS_KERNEL_VFS                      = 2
+
+};
+
 static struct resource_iterator base;
 
 static unsigned int base_match(struct resource_item *item)
@@ -31,14 +39,14 @@ static unsigned int backend_write(struct vfs_backend *self, unsigned int offset,
 static unsigned int root(struct vfs_backend *backend)
 {
 
-    return (unsigned int)&base;
+    return VFS_KERNEL_ROOT;
 
 }
 
 static unsigned int parent(struct vfs_backend *backend, unsigned int id)
 {
 
-    return (unsigned int)&base;
+    return VFS_KERNEL_ROOT;
 
 }
 
@@ -59,7 +67,7 @@ static unsigned long get_physical(struct vfs_backend *backend, unsigned int id)
 static unsigned int open(struct vfs_backend *backend, unsigned int id)
 {
 
-    return (unsigned int)&base;
+    return id;
 
 }
 
@@ -72,6 +80,12 @@ static unsigned int close(struct vfs_backend *backend, unsigned int id)
 
 static unsigned int read(struct vfs_backend *backend, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
+
+    if (id == VFS_KERNEL_ROOT)
+        return memory_read(buffer, count, "../\nvfs/\n", 9, offset);
+
+    if (id == VFS_KERNEL_VFS)
+        return memory_read(buffer, count, "../\n", 4, offset);
 
     return 0;
 
@@ -89,6 +103,14 @@ static unsigned int walk(struct vfs_backend *backend, unsigned int id, unsigned 
 
     if (!count)
         return id;
+
+    if (id == VFS_KERNEL_ROOT)
+    {
+
+        if (memory_match(path, "vfs/", 4))
+            return walk(backend, VFS_KERNEL_VFS, count - 4, path + 4);
+
+    }
 
     return 0;
 
