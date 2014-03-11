@@ -28,7 +28,7 @@ void binary_init_protocol(struct binary_protocol *protocol, unsigned int (*match
 {
 
     memory_clear(protocol, sizeof (struct binary_protocol));
-    resource_init_item(&protocol->resource, protocol, RESOURCE_TYPE_BINARYPROTOCOL);
+    resource_init_item(&protocol->resource, RESOURCE_TYPE_BINARYPROTOCOL);
 
     protocol->match = match;
     protocol->find_symbol = find_symbol;

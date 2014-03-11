@@ -7,14 +7,14 @@
 
 static struct resource_iterator base;
 
-unsigned int base_match(struct resource_item *item)
+static unsigned int base_match(struct resource_item *item)
 {
 
     return 1;
 
 }
 
-unsigned int base_read(struct resource_item *item, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int base_read(struct resource_item *item, unsigned int offset, unsigned int count, void *buffer)
 {
 
     return 0;
@@ -79,15 +79,6 @@ static unsigned int close(struct vfs_backend *backend, unsigned int id)
 
 static unsigned int read(struct vfs_backend *backend, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
-
-    struct resource_iterator *iterator = (struct resource_iterator *)id;
-    struct resource_item *current = 0;
-
-    while ((current = resource_find_item(iterator, current)))
-    {
-
-
-    }
 
     return 0;
 
