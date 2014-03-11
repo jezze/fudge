@@ -4,6 +4,13 @@
 static struct list iterators;
 static struct list resources;
 
+struct resource_item *resource_find_item(struct resource_iterator *iterator, struct resource_item *item)
+{
+
+    return 0;
+
+}
+
 void resource_register_item(struct resource_item *item)
 {
 
