@@ -3,26 +3,11 @@
 
 static struct list iterators;
 static struct list resources;
-static struct resource_iterator root;
-
-struct resource_iterator *resource_find_iterator(enum resource_type type)
-{
-
-    return &root;
-
-}
 
 void resource_register_item(struct resource_item *item)
 {
 
     list_add(&resources, &item->item);
-
-}
-
-void resource_register_iterator(struct resource_iterator *iterator)
-{
-
-    list_add(&iterators, &iterator->item);
 
 }
 
@@ -47,27 +32,11 @@ void resource_init_iterator(struct resource_iterator *iterator, unsigned int (*m
 
 }
 
-static unsigned int match(struct resource_item *item)
-{
-
-    return 1;
-
-}
-
-static unsigned int read(struct resource_item *item, unsigned int offset, unsigned int count, void *buffer)
-{
-
-    return memory_read(buffer, count, "../\n", 4, offset);
-
-}
-
 void resource_setup()
 {
 
     list_init(&iterators);
     list_init(&resources);
-    resource_init_iterator(&root, match, read);
-    resource_register_iterator(&root);
 
 }
 

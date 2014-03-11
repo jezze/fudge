@@ -31,6 +31,17 @@ struct vfs_backend *vfs_find_backend()
 struct vfs_protocol *vfs_find_protocol(struct vfs_backend *backend)
 {
 
+    /*
+    struct resource_iterator *iterator;
+    struct resource_iterm *current = 0;
+
+    while ((current = resource_find_item(iterator, current)))
+    {
+
+
+    }
+    */
+
     struct list_item *current;
 
     for (current = protocols.head; current; current = current->next)
