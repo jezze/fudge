@@ -2,22 +2,8 @@
 #include "resource.h"
 #include "vfs.h"
 
-static struct resource_iterator protocols;
 static struct resource_iterator backends;
-
-static unsigned int protocols_match(struct resource_item *item)
-{
-
-    return item->id.type == RESOURCE_TYPE_VFSPROTOCOL;
-
-}
-
-static unsigned int protocols_read(struct resource_item *item, unsigned int offset, unsigned int count, void *buffer)
-{
-
-    return 0;
-
-}
+static struct resource_iterator protocols;
 
 static unsigned int backends_match(struct resource_item *item)
 {
@@ -27,6 +13,20 @@ static unsigned int backends_match(struct resource_item *item)
 }
 
 static unsigned int backends_read(struct resource_item *item, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    return 0;
+
+}
+
+static unsigned int protocols_match(struct resource_item *item)
+{
+
+    return item->id.type == RESOURCE_TYPE_VFSPROTOCOL;
+
+}
+
+static unsigned int protocols_read(struct resource_item *item, unsigned int offset, unsigned int count, void *buffer)
 {
 
     return 0;
@@ -116,8 +116,8 @@ void vfs_init_protocol(struct vfs_protocol *protocol, unsigned int (*match)(stru
 void vfs_setup()
 {
 
-    resource_init_iterator(&protocols, protocols_match, protocols_read);
     resource_init_iterator(&backends, backends_match, backends_read);
+    resource_init_iterator(&protocols, protocols_match, protocols_read);
 
 }
 
