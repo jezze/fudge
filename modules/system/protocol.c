@@ -28,8 +28,9 @@ static unsigned int match(struct vfs_backend *backend)
 {
 
     struct system_header header;
-
-    backend->read(backend, 0, sizeof (struct system_header), &header);
+    
+    if (backend->read(backend, 0, sizeof (struct system_header), &header) < sizeof (struct system_header))
+        return 0;
 
     return memory_match(header.id, "FUDGE_SYSTEM", 12);
 

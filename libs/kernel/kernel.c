@@ -55,8 +55,8 @@ void kernel_setup_modules(struct container *container, struct task *task, unsign
     unsigned int entry = 0;
     unsigned int i;
 
-    channel2->backend = &state.vfs.backends[0];
-    channel2->protocol = &state.vfs.protocols[0];
+    channel2->backend = vfs_find_backend();
+    channel2->protocol = vfs_find_protocol(channel2->backend);
 
     for (i = 0; i < count; i++)
     {

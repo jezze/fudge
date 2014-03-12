@@ -25,7 +25,7 @@ static unsigned int base_match(struct resource_item *item)
 static unsigned int backend_read(struct vfs_backend *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    return 0;
+    return memory_read(buffer, count, "FUDGE_INTERNAL", 14, offset);
 
 }
 
@@ -53,7 +53,12 @@ static unsigned int parent(struct vfs_backend *backend, unsigned int id)
 static unsigned int match(struct vfs_backend *backend)
 {
 
-    return 0;
+    char buffer[14];
+
+    if (backend->read(backend, 0, 14, buffer) < 14)
+        return 0;
+
+    return memory_match(buffer, "FUDGE_INTERNAL", 14);
 
 }
 
