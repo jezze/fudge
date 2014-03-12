@@ -26,11 +26,23 @@
 #define ARCH_TASK_STACKLIMIT            0x80000000
 #define ARCH_TASK_STACKBASE             (ARCH_TASK_STACKLIMIT - ARCH_TASK_STACKSIZE)
 
+struct arch_task
+{
+
+    struct task base;
+    unsigned int index;
+    struct cpu_general general;
+    struct {struct mmu_directory *directory; struct mmu_table *code; struct mmu_table *stack;} map;
+
+};
+
 static struct
 {
 
-    struct container *container;
     struct task *task;
+    struct arch_task tasks[ARCH_TASKS];
+    struct container *container;
+    struct container containers[ARCH_CONTAINERS];
     struct {struct gdt_pointer pointer; struct gdt_descriptor descriptors[ARCH_GDT_DESCRIPTORS];} gdt;
     struct {struct idt_pointer pointer; struct idt_descriptor descriptors[ARCH_IDT_DESCRIPTORS];} idt;
     struct {struct tss_pointer pointer; struct tss_descriptor descriptors[ARCH_TSS_DESCRIPTORS];} tss;
@@ -42,36 +54,16 @@ static struct
 
 } state;
 
-static struct arch_container
-{
-
-    struct container base;
-
-} containers[ARCH_CONTAINERS];
-
-static struct arch_task
-{
-
-    struct task base;
-    unsigned int index;
-    struct cpu_general general;
-
-} tasks[ARCH_TASKS];
-
-static struct mmu_directory *directories = (struct mmu_directory *)ARCH_DIRECTORY_BASE;
-static struct mmu_table *kcode = (struct mmu_table *)ARCH_TABLE_KCODE_BASE;
-static struct mmu_table *ucode = (struct mmu_table *)ARCH_TABLE_UCODE_BASE;
-static struct mmu_table *ustack = (struct mmu_table *)ARCH_TABLE_USTACK_BASE;
-
 static void activate_task(struct task *t)
 {
 
     struct arch_task *task = (struct arch_task *)t;
+    struct mmu_table *kerneltables = (struct mmu_table *)ARCH_TABLE_KCODE_BASE;
 
     scheduler_use(t);
-    memory_clear(&directories[task->index], sizeof (struct mmu_directory));
-    mmu_map(&directories[task->index], &kcode[0], ARCH_KSPACE_BASE, ARCH_KSPACE_BASE, ARCH_KSPACE_SIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
-    mmu_load(&directories[task->index]);
+    memory_clear(task->map.directory, sizeof (struct mmu_directory));
+    mmu_map(task->map.directory, &kerneltables[0], ARCH_KSPACE_BASE, ARCH_KSPACE_BASE, ARCH_KSPACE_SIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
+    mmu_load(task->map.directory);
 
 }
 
@@ -122,7 +114,7 @@ unsigned short arch_schedule(struct cpu_general *general, struct cpu_interrupt *
     if (next)
     {
 
-        mmu_load(&directories[next->index]);
+        mmu_load(next->map.directory);
 
         interrupt->code = state.ucode;
         interrupt->eip = next->base.registers.ip;
@@ -166,8 +158,8 @@ unsigned short arch_pagefault(void *stack)
         struct arch_task *task = (struct arch_task *)scheduler_find_used_task();
         unsigned int address = cpu_get_cr2();
 
-        mmu_map(&directories[task->index], &ucode[task->index], ARCH_UCODE_BASE + (task->index * ARCH_TASK_CODESIZE), address, ARCH_TASK_CODESIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
-        mmu_map(&directories[task->index], &ustack[task->index], ARCH_USTACK_BASE + (task->index * ARCH_TASK_STACKSIZE), ARCH_TASK_STACKBASE, ARCH_TASK_STACKSIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
+        mmu_map(task->map.directory, task->map.code, ARCH_UCODE_BASE + (task->index * ARCH_TASK_CODESIZE), address, ARCH_TASK_CODESIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
+        mmu_map(task->map.directory, task->map.stack, ARCH_USTACK_BASE + (task->index * ARCH_TASK_STACKSIZE), ARCH_TASK_STACKBASE, ARCH_TASK_STACKSIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
 
         return state.kdata;
 
@@ -210,19 +202,29 @@ static void arch_setup_task(struct task *task)
 static void arch_setup_entities()
 {
 
+    struct mmu_directory *directories = (struct mmu_directory *)ARCH_DIRECTORY_BASE;
+    struct mmu_table *codetables = (struct mmu_table *)ARCH_TABLE_UCODE_BASE;
+    struct mmu_table *stacktables = (struct mmu_table *)ARCH_TABLE_USTACK_BASE;
     unsigned int i;
 
     for (i = 0; i < ARCH_CONTAINERS; i++)
-        arch_setup_container(&containers[i].base);
+        arch_setup_container(&state.containers[i]);
 
     for (i = 0; i < ARCH_TASKS; i++)
-        arch_setup_task(&tasks[i].base);
+        arch_setup_task(&state.tasks[i].base);
 
     for (i = 0; i < ARCH_TASKS; i++)
-        tasks[i].index = i;
+    {
 
-    state.container = &containers[0].base;
-    state.task = &tasks[0].base;
+        state.tasks[i].index = i;
+        state.tasks[i].map.directory = &directories[i];
+        state.tasks[i].map.code = &codetables[i];
+        state.tasks[i].map.stack = &stacktables[i];
+
+    }
+
+    state.container = &state.containers[0];
+    state.task = &state.tasks[0].base;
 
     activate_task(state.task);
 
