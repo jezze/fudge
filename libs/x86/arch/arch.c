@@ -188,10 +188,48 @@ unsigned short arch_syscall(void *stack)
 
 }
 
-void arch_setup(unsigned int count, struct kernel_module *modules)
+static void arch_setup_container(struct container *container)
+{
+
+    container_init(container);
+    resource_register_item(&container->resource);
+
+    container->calls[CONTAINER_CALL_SPAWN] = spawn;
+
+}
+
+static void arch_setup_task(struct task *task)
+{
+
+    task_init(task, 0, ARCH_TASK_STACKLIMIT);
+    resource_register_item(&task->resource);
+    scheduler_register_task(task);
+
+}
+
+static void arch_setup_entities()
 {
 
     unsigned int i;
+
+    for (i = 0; i < ARCH_CONTAINERS; i++)
+        arch_setup_container(&containers[i].base);
+
+    for (i = 0; i < ARCH_TASKS; i++)
+        arch_setup_task(&tasks[i].base);
+
+    for (i = 0; i < ARCH_TASKS; i++)
+        tasks[i].index = i;
+
+    state.container = &containers[0].base;
+    state.task = &tasks[0].base;
+
+    activate_task(state.task);
+
+}
+
+void arch_setup(unsigned int count, struct kernel_module *modules)
+{
 
     gdt_init_pointer(&state.gdt.pointer, ARCH_GDT_DESCRIPTORS, state.gdt.descriptors);
     idt_init_pointer(&state.idt.pointer, ARCH_IDT_DESCRIPTORS, state.idt.descriptors);
@@ -211,32 +249,7 @@ void arch_setup(unsigned int count, struct kernel_module *modules)
     cpu_set_idt(&state.idt.pointer);
     cpu_set_tss(state.tlink);
     kernel_setup();
-
-    for (i = 0; i < ARCH_CONTAINERS; i++)
-    {
-
-        container_init(&containers[i].base);
-        resource_register_item(&containers[i].base.resource);
-
-        containers[i].base.calls[CONTAINER_CALL_SPAWN] = spawn;
-
-    }
-
-    for (i = 0; i < ARCH_TASKS; i++)
-    {
-
-        task_init(&tasks[i].base, 0, ARCH_TASK_STACKLIMIT);
-        resource_register_item(&tasks[i].base.resource);
-        scheduler_register_task(&tasks[i].base);
-
-        tasks[i].index = i;
-
-    }
-
-    state.container = &containers[0].base;
-    state.task = &tasks[0].base;
-
-    activate_task(state.task);
+    arch_setup_entities();
     mmu_enable();
     kernel_setup_modules(state.container, state.task, count, modules);
     arch_usermode(state.ucode, state.udata, state.task->registers.ip, state.task->registers.sp);
