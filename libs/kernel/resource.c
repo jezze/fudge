@@ -6,12 +6,7 @@ static struct list resources;
 struct resource_item *resource_find_item(struct resource_iterator *iterator, struct resource_item *item)
 {
 
-    struct list_item *current;
-
-    if (item)
-        current = item->item.next;
-    else
-        current = resources.head;
+    struct list_item *current = (item) ? item->item.next : resources.head;
 
     for (; current; current = current->next)
     {
