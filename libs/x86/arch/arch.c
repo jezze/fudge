@@ -30,9 +30,8 @@ struct arch_task
 {
 
     struct task base;
-    unsigned int index;
     struct cpu_general general;
-    struct {struct mmu_directory *directory; struct mmu_table *tables[2];} map;
+    struct {struct mmu_directory *directory; struct mmu_table *tables[2]; unsigned int physical[2];} map;
 
 };
 
@@ -158,8 +157,8 @@ unsigned short arch_pagefault(void *stack)
         struct arch_task *task = (struct arch_task *)scheduler_find_used_task();
         unsigned int address = cpu_get_cr2();
 
-        mmu_map(task->map.directory, task->map.tables[0], ARCH_UCODE_BASE + (task->index * ARCH_TASK_CODESIZE), address, ARCH_TASK_CODESIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
-        mmu_map(task->map.directory, task->map.tables[1], ARCH_USTACK_BASE + (task->index * ARCH_TASK_STACKSIZE), ARCH_TASK_STACKBASE, ARCH_TASK_STACKSIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
+        mmu_map(task->map.directory, task->map.tables[0], ARCH_UCODE_BASE + task->map.physical[0], address, ARCH_TASK_CODESIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
+        mmu_map(task->map.directory, task->map.tables[1], ARCH_USTACK_BASE + task->map.physical[1], ARCH_TASK_STACKBASE, ARCH_TASK_STACKSIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
 
         return state.kdata;
 
@@ -216,10 +215,11 @@ static void arch_setup_entities()
     for (i = 0; i < ARCH_TASKS; i++)
     {
 
-        state.tasks[i].index = i;
         state.tasks[i].map.directory = &directories[i];
         state.tasks[i].map.tables[0] = &codetables[i];
         state.tasks[i].map.tables[1] = &stacktables[i];
+        state.tasks[i].map.physical[0] = ARCH_TASK_CODESIZE * i;
+        state.tasks[i].map.physical[1] = ARCH_TASK_STACKSIZE * i;
 
     }
 
