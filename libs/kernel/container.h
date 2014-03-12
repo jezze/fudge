@@ -22,7 +22,6 @@ enum container_call
 struct container
 {
 
-    struct list_item item;
     struct resource_item resource;
     struct vfs_channel channels[CONTAINER_CHANNELS];
     struct vfs_mount mounts[CONTAINER_MOUNTS];
