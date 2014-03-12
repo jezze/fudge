@@ -103,11 +103,6 @@ void kernel_setup()
     vfs_setup_kernel(&state.vfs.backends[0], &state.vfs.protocols[0]);
     vfs_setup_cpio(&state.vfs.protocols[1]);
     vfs_setup_tar(&state.vfs.protocols[2]);
-    resource_register_item(&state.binary.protocols[0].resource);
-    resource_register_item(&state.vfs.backends[0].resource);
-    resource_register_item(&state.vfs.protocols[0].resource);
-    resource_register_item(&state.vfs.protocols[1].resource);
-    resource_register_item(&state.vfs.protocols[2].resource);
 
 }
 

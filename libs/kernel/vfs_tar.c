@@ -227,6 +227,7 @@ void vfs_setup_tar(struct vfs_protocol *protocol)
 {
 
     vfs_init_protocol(protocol, match, root, open, close, read, write, parent, walk, get_physical);
+    resource_register_item(&protocol->resource);
 
 }
 

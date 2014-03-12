@@ -121,6 +121,8 @@ void vfs_setup_kernel(struct vfs_backend *backend, struct vfs_protocol *protocol
 
     vfs_init_backend(backend, backend_read, backend_write);
     vfs_init_protocol(protocol, match, root, open, close, read, write, parent, walk, get_physical);
+    resource_register_item(&backend->resource);
+    resource_register_item(&protocol->resource);
     resource_init_iterator(&base, base_match);
 
 }

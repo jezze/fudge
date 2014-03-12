@@ -140,6 +140,7 @@ void binary_setup_elf(struct binary_protocol *protocol)
 {
 
     binary_init_protocol(protocol, match, find_symbol, copy_program, relocate);
+    resource_register_item(&protocol->resource);
 
 }
 
