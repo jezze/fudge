@@ -97,9 +97,7 @@ void kernel_setup()
     resource_setup();
     scheduler_setup();
     rendezvous_setup();
-    binary_setup();
     binary_setup_elf(&state.binary.protocols[0]);
-    vfs_setup();
     vfs_setup_kernel(&state.vfs.backends[0], &state.vfs.protocols[0]);
     vfs_setup_cpio(&state.vfs.protocols[1]);
     vfs_setup_tar(&state.vfs.protocols[2]);

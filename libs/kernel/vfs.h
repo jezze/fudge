@@ -61,4 +61,3 @@ void vfs_init_descriptor(struct vfs_descriptor *descriptor, struct vfs_channel *
 void vfs_setup_cpio(struct vfs_protocol *protocol);
 void vfs_setup_kernel(struct vfs_backend *backend, struct vfs_protocol *protocol);
 void vfs_setup_tar(struct vfs_protocol *protocol);
-void vfs_setup();

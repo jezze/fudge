@@ -24,15 +24,7 @@ struct resource_item
 
 };
 
-struct resource_iterator
-{
-
-    unsigned int (*match)(struct resource_item *item); 
-
-};
-
-struct resource_item *resource_find_item(struct resource_iterator *iterator, struct resource_item *item);
+struct resource_item *resource_find_item(struct resource_item *item);
 void resource_register_item(struct resource_item *item);
 void resource_init_item(struct resource_item *item, enum resource_type type, void *data);
-void resource_init_iterator(struct resource_iterator *iterator, unsigned int (*match)(struct resource_item *item));
 void resource_setup();

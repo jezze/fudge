@@ -3,24 +3,18 @@
 #include "vfs.h"
 #include "binary.h"
 
-static struct resource_iterator protocols;
-
-static unsigned int protocols_match(struct resource_item *item)
-{
-
-    return item->type == RESOURCE_TYPE_BINARYPROTOCOL;
-
-}
-
 struct binary_protocol *binary_find_protocol(struct vfs_channel *channel, unsigned int id)
 {
 
     struct resource_item *current = 0;
 
-    while ((current = resource_find_item(&protocols, current)))
+    while ((current = resource_find_item(current)))
     {
 
         struct binary_protocol *protocol = current->data;
+
+        if (current->type != RESOURCE_TYPE_BINARYPROTOCOL)
+            continue;
 
         if (protocol->match(channel, id))
             return protocol;
@@ -41,13 +35,6 @@ void binary_init_protocol(struct binary_protocol *protocol, unsigned int (*match
     protocol->find_symbol = find_symbol;
     protocol->copy_program = copy_program;
     protocol->relocate = relocate;
-
-}
-
-void binary_setup()
-{
-
-    resource_init_iterator(&protocols, protocols_match);
 
 }
 
