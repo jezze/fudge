@@ -5,7 +5,7 @@
 #include "container.h"
 #include "kernel.h"
 
-enum vfs_kernel_entry_type
+enum entry_type
 {
 
     ENTRY_TYPE_NULL                     = 0x00000000,
@@ -16,7 +16,7 @@ enum vfs_kernel_entry_type
 
 };
 
-struct vfs_kernel_entry
+struct entry
 {
 
     unsigned int (*read)(unsigned int offset, unsigned int count, void *buffer);
@@ -33,7 +33,7 @@ static unsigned int entry_vfsbackends_walk(unsigned int count, const char *path)
 static unsigned int entry_vfsprotocols_read(unsigned int offset, unsigned int count, void *buffer);
 static unsigned int entry_vfsprotocols_walk(unsigned int count, const char *path);
 
-static struct vfs_kernel_entry entries[] = {
+static struct entry entries[] = {
     {0, 0},
     {entry_root_read, entry_root_walk},
     {entry_vfs_read, entry_vfs_walk},
