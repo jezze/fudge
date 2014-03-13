@@ -9,10 +9,10 @@ enum entry_type
 {
 
     ENTRY_TYPE_NULL                     = 0x00000000,
-    ENTRY_TYPE_ROOT                     = 0x00010000,
-    ENTRY_TYPE_VFS                      = 0x00020000,
-    ENTRY_TYPE_VFSBACKENDS              = 0x00030000,
-    ENTRY_TYPE_VFSPROTOCOLS             = 0x00040000
+    ENTRY_TYPE_ROOT                     = 0x01010000,
+    ENTRY_TYPE_VFS                      = 0x01020000,
+    ENTRY_TYPE_VFSBACKENDS              = 0x02030000,
+    ENTRY_TYPE_VFSPROTOCOLS             = 0x02040000
 
 };
 
@@ -130,7 +130,7 @@ static unsigned int root(struct vfs_backend *backend)
 static unsigned int parent(struct vfs_backend *backend, unsigned int id)
 {
 
-    return ENTRY_TYPE_ROOT >> 16;
+    return id >> 8;
 
 }
 
@@ -170,7 +170,7 @@ static unsigned int close(struct vfs_backend *backend, unsigned int id)
 static unsigned int read(struct vfs_backend *backend, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    return entries[id].read(offset, count, buffer);
+    return entries[id & 0xFF].read(offset, count, buffer);
 
 }
 
@@ -187,7 +187,7 @@ static unsigned int walk(struct vfs_backend *backend, unsigned int id, unsigned 
     if (!count)
         return id;
 
-    return entries[id].walk(count, path);
+    return entries[id & 0xFF].walk(count, path);
 
 }
 
