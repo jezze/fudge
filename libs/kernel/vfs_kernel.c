@@ -8,8 +8,11 @@
 enum vfs_kernel_entry_type
 {
 
+    ENTRY_TYPE_NULL                     = 0,
     ENTRY_TYPE_ROOT                     = 1,
-    ENTRY_TYPE_VFS                      = 2
+    ENTRY_TYPE_VFS                      = 2,
+    ENTRY_TYPE_VFSBACKENDS              = 3,
+    ENTRY_TYPE_VFSPROTOCOLS             = 4
 
 };
 
@@ -22,14 +25,14 @@ struct vfs_kernel_entry
 
 };
 
-static unsigned int entry1_read(unsigned int offset, unsigned int count, void *buffer)
+static unsigned int entry_root_read(unsigned int offset, unsigned int count, void *buffer)
 {
 
     return memory_read(buffer, count, "../\nvfs/\n", 9, offset);
 
 }
 
-static unsigned int entry1_walk(unsigned int count, const char *path)
+static unsigned int entry_root_walk(unsigned int count, const char *path)
 {
 
     if (memory_match(path, "vfs/", count))
@@ -39,14 +42,48 @@ static unsigned int entry1_walk(unsigned int count, const char *path)
 
 }
 
-static unsigned int entry2_read(unsigned int offset, unsigned int count, void *buffer)
+static unsigned int entry_vfs_read(unsigned int offset, unsigned int count, void *buffer)
+{
+
+    return memory_read(buffer, count, "../\nbackends/\nprotocols/\n", 25, offset);
+
+}
+
+static unsigned int entry_vfs_walk(unsigned int count, const char *path)
+{
+
+    if (memory_match(path, "backends/", count))
+        return ENTRY_TYPE_VFSBACKENDS;
+
+    if (memory_match(path, "protocols/", count))
+        return ENTRY_TYPE_VFSPROTOCOLS;
+
+    return 0;
+
+}
+
+static unsigned int entry_vfsbackends_read(unsigned int offset, unsigned int count, void *buffer)
 {
 
     return memory_read(buffer, count, "../\n", 4, offset);
 
 }
 
-static unsigned int entry2_walk(unsigned int count, const char *path)
+static unsigned int entry_vfsbackends_walk(unsigned int count, const char *path)
+{
+
+    return 0;
+
+}
+
+static unsigned int entry_vfsprotocols_read(unsigned int offset, unsigned int count, void *buffer)
+{
+
+    return memory_read(buffer, count, "../\n", 4, offset);
+
+}
+
+static unsigned int entry_vfsprotocols_walk(unsigned int count, const char *path)
 {
 
     return 0;
@@ -55,8 +92,10 @@ static unsigned int entry2_walk(unsigned int count, const char *path)
 
 static struct vfs_kernel_entry entries[] = {
     {0, 0, 0},
-    {ENTRY_TYPE_ROOT, entry1_read, entry1_walk},
-    {ENTRY_TYPE_VFS, entry2_read, entry2_walk}
+    {ENTRY_TYPE_ROOT, entry_root_read, entry_root_walk},
+    {ENTRY_TYPE_VFS, entry_vfs_read, entry_vfs_walk},
+    {ENTRY_TYPE_VFSBACKENDS, entry_vfsbackends_read, entry_vfsbackends_walk},
+    {ENTRY_TYPE_VFSPROTOCOLS, entry_vfsprotocols_read, entry_vfsprotocols_walk}
 };
 
 static unsigned int backend_read(struct vfs_backend *self, unsigned int offset, unsigned int count, void *buffer)
