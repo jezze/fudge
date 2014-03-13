@@ -5,22 +5,59 @@
 #include "container.h"
 #include "kernel.h"
 
-enum
+enum vfs_kernel_entry_type
 {
 
-    VFS_KERNEL_ROOT                     = 1,
-    VFS_KERNEL_VFS                      = 2
+    ENTRY_TYPE_ROOT                     = 1,
+    ENTRY_TYPE_VFS                      = 2
 
 };
 
-static struct resource_iterator base;
-
-static unsigned int base_match(struct resource_item *item)
+struct vfs_kernel_entry
 {
 
-    return 1;
+    enum vfs_kernel_entry_type type;
+    unsigned int (*read)(unsigned int offset, unsigned int count, void *buffer);
+    unsigned int (*walk)(unsigned int count, const char *path);
+
+};
+
+static unsigned int entry1_read(unsigned int offset, unsigned int count, void *buffer)
+{
+
+    return memory_read(buffer, count, "../\nvfs/\n", 9, offset);
 
 }
+
+static unsigned int entry1_walk(unsigned int count, const char *path)
+{
+
+    if (memory_match(path, "vfs/", count))
+        return ENTRY_TYPE_VFS;
+
+    return 0;
+
+}
+
+static unsigned int entry2_read(unsigned int offset, unsigned int count, void *buffer)
+{
+
+    return memory_read(buffer, count, "../\n", 4, offset);
+
+}
+
+static unsigned int entry2_walk(unsigned int count, const char *path)
+{
+
+    return 0;
+
+}
+
+static struct vfs_kernel_entry entries[] = {
+    {0, 0, 0},
+    {ENTRY_TYPE_ROOT, entry1_read, entry1_walk},
+    {ENTRY_TYPE_VFS, entry2_read, entry2_walk}
+};
 
 static unsigned int backend_read(struct vfs_backend *self, unsigned int offset, unsigned int count, void *buffer)
 {
@@ -39,14 +76,14 @@ static unsigned int backend_write(struct vfs_backend *self, unsigned int offset,
 static unsigned int root(struct vfs_backend *backend)
 {
 
-    return VFS_KERNEL_ROOT;
+    return ENTRY_TYPE_ROOT;
 
 }
 
 static unsigned int parent(struct vfs_backend *backend, unsigned int id)
 {
 
-    return VFS_KERNEL_ROOT;
+    return ENTRY_TYPE_ROOT;
 
 }
 
@@ -86,13 +123,7 @@ static unsigned int close(struct vfs_backend *backend, unsigned int id)
 static unsigned int read(struct vfs_backend *backend, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    if (id == VFS_KERNEL_ROOT)
-        return memory_read(buffer, count, "../\nvfs/\n", 9, offset);
-
-    if (id == VFS_KERNEL_VFS)
-        return memory_read(buffer, count, "../\n", 4, offset);
-
-    return 0;
+    return entries[id].read(offset, count, buffer);
 
 }
 
@@ -109,15 +140,7 @@ static unsigned int walk(struct vfs_backend *backend, unsigned int id, unsigned 
     if (!count)
         return id;
 
-    if (id == VFS_KERNEL_ROOT)
-    {
-
-        if (memory_match(path, "vfs/", 4))
-            return walk(backend, VFS_KERNEL_VFS, count - 4, path + 4);
-
-    }
-
-    return 0;
+    return entries[id].walk(count, path);
 
 }
 
@@ -128,7 +151,6 @@ void vfs_setup_kernel(struct vfs_backend *backend, struct vfs_protocol *protocol
     vfs_init_protocol(protocol, match, root, open, close, read, write, parent, walk, get_physical);
     resource_register_item(&backend->resource);
     resource_register_item(&protocol->resource);
-    resource_init_iterator(&base, base_match);
 
 }
 
