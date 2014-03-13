@@ -59,7 +59,6 @@ static void activate_task(struct task *t)
     struct arch_task *task = (struct arch_task *)t;
     struct mmu_table *tables = (struct mmu_table *)ARCH_TABLE_KCODE_BASE;
 
-    scheduler_use(t);
     memory_clear(task->map.directory, sizeof (struct mmu_directory));
     mmu_map(task->map.directory, &tables[0], ARCH_KSPACE_BASE, ARCH_KSPACE_BASE, ARCH_KSPACE_SIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
     mmu_load(task->map.directory);
@@ -79,6 +78,7 @@ static unsigned int spawn(struct container *self, struct task *task, void *stack
     memory_copy(&next->descriptors[0], &task->descriptors[0], sizeof (struct vfs_descriptor) * TASK_DESCRIPTORS);
     memory_copy(&next->descriptors[4], &task->descriptors[6], sizeof (struct vfs_descriptor) * 18);
     activate_task(next);
+    scheduler_use(next);
 
     return self->calls[CONTAINER_CALL_EXECUTE](self, next, &args);
 
@@ -227,6 +227,7 @@ static void arch_setup_entities()
     state.task = &state.tasks[0].base;
 
     activate_task(state.task);
+    scheduler_use(state.task);
 
 }
 
