@@ -1,3 +1,5 @@
+#define BINARY_RESOURCE_PROTOCOL        2002
+
 struct binary_protocol
 {
 

@@ -13,7 +13,7 @@ struct binary_protocol *binary_find_protocol(struct vfs_channel *channel, unsign
 
         struct binary_protocol *protocol = current->data;
 
-        if (current->type != RESOURCE_TYPE_BINARYPROTOCOL)
+        if (current->type != BINARY_RESOURCE_PROTOCOL)
             continue;
 
         if (protocol->match(channel, id))
@@ -29,7 +29,7 @@ void binary_init_protocol(struct binary_protocol *protocol, unsigned int (*match
 {
 
     memory_clear(protocol, sizeof (struct binary_protocol));
-    resource_init_item(&protocol->resource, RESOURCE_TYPE_BINARYPROTOCOL, protocol);
+    resource_init_item(&protocol->resource, BINARY_RESOURCE_PROTOCOL, protocol);
 
     protocol->match = match;
     protocol->find_symbol = find_symbol;

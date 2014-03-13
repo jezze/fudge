@@ -28,7 +28,7 @@ struct vfs_backend *vfs_find_backend()
     while ((current = resource_find_item(current)))
     {
 
-        if (current->type != RESOURCE_TYPE_VFSBACKEND)
+        if (current->type != VFS_RESOURCE_BACKEND)
             continue;
 
         last = current;
@@ -51,7 +51,7 @@ struct vfs_protocol *vfs_find_protocol(struct vfs_backend *backend)
 
         struct vfs_protocol *protocol = current->data;
 
-        if (current->type != RESOURCE_TYPE_VFSPROTOCOL)
+        if (current->type != VFS_RESOURCE_PROTOCOL)
             continue;
 
         if (protocol->match(backend))
@@ -67,7 +67,7 @@ void vfs_init_backend(struct vfs_backend *backend, unsigned int (*read)(struct v
 {
 
     memory_clear(backend, sizeof (struct vfs_backend));
-    resource_init_item(&backend->resource, RESOURCE_TYPE_VFSBACKEND, backend);
+    resource_init_item(&backend->resource, VFS_RESOURCE_BACKEND, backend);
 
     backend->read = read;
     backend->write = write;
@@ -78,7 +78,7 @@ void vfs_init_protocol(struct vfs_protocol *protocol, unsigned int (*match)(stru
 {
 
     memory_clear(protocol, sizeof (struct vfs_protocol));
-    resource_init_item(&protocol->resource, RESOURCE_TYPE_VFSPROTOCOL, protocol);
+    resource_init_item(&protocol->resource, VFS_RESOURCE_PROTOCOL, protocol);
 
     protocol->match = match;
     protocol->root = root;
@@ -96,7 +96,7 @@ void vfs_init_channel(struct vfs_channel *channel, struct vfs_backend *backend, 
 {
 
     memory_clear(channel, sizeof (struct vfs_channel));
-    resource_init_item(&channel->resource, RESOURCE_TYPE_VFSCHANNEL, channel);
+    resource_init_item(&channel->resource, VFS_RESOURCE_CHANNEL, channel);
 
     channel->backend = backend;
     channel->protocol = protocol;
@@ -107,7 +107,7 @@ void vfs_init_descriptor(struct vfs_descriptor *descriptor, struct vfs_channel *
 {
 
     memory_clear(descriptor, sizeof (struct vfs_descriptor));
-    resource_init_item(&descriptor->resource, RESOURCE_TYPE_VFSDESCRIPTOR, descriptor);
+    resource_init_item(&descriptor->resource, VFS_RESOURCE_DESCRIPTOR, descriptor);
 
     descriptor->channel = channel;
     descriptor->id = id;

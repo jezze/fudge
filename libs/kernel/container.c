@@ -336,7 +336,7 @@ void container_init(struct container *container)
 {
 
     memory_clear(container, sizeof (struct container));
-    resource_init_item(&container->resource, RESOURCE_TYPE_CONTAINER, container);
+    resource_init_item(&container->resource, CONTAINER_RESOURCE, container);
 
     container->calls[CONTAINER_CALL_OPEN] = open;
     container->calls[CONTAINER_CALL_CLOSE] = close;

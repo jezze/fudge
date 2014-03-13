@@ -1,6 +1,7 @@
 #define CONTAINER_CHANNELS              16
 #define CONTAINER_MOUNTS                32
 #define CONTAINER_CALLS                 16
+#define CONTAINER_RESOURCE              2
 
 enum container_call
 {

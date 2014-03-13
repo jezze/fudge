@@ -22,7 +22,7 @@ void resource_register_item(struct resource_item *item)
 
 }
 
-void resource_init_item(struct resource_item *item, enum resource_type type, void *data)
+void resource_init_item(struct resource_item *item, unsigned int type, void *data)
 {
 
     memory_clear(item, sizeof (struct resource_item));
