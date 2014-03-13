@@ -19,10 +19,26 @@ enum vfs_kernel_entry_type
 struct vfs_kernel_entry
 {
 
-    char *name;
     unsigned int (*read)(unsigned int offset, unsigned int count, void *buffer);
     unsigned int (*walk)(unsigned int count, const char *path);
 
+};
+
+static unsigned int entry_root_read(unsigned int offset, unsigned int count, void *buffer);
+static unsigned int entry_root_walk(unsigned int count, const char *path);
+static unsigned int entry_vfs_read(unsigned int offset, unsigned int count, void *buffer);
+static unsigned int entry_vfs_walk(unsigned int count, const char *path);
+static unsigned int entry_vfsbackends_read(unsigned int offset, unsigned int count, void *buffer);
+static unsigned int entry_vfsbackends_walk(unsigned int count, const char *path);
+static unsigned int entry_vfsprotocols_read(unsigned int offset, unsigned int count, void *buffer);
+static unsigned int entry_vfsprotocols_walk(unsigned int count, const char *path);
+
+static struct vfs_kernel_entry entries[] = {
+    {0, 0},
+    {entry_root_read, entry_root_walk},
+    {entry_vfs_read, entry_vfs_walk},
+    {entry_vfsbackends_read, entry_vfsbackends_walk},
+    {entry_vfsprotocols_read, entry_vfsprotocols_walk}
 };
 
 static unsigned int entry_root_read(unsigned int offset, unsigned int count, void *buffer)
@@ -89,14 +105,6 @@ static unsigned int entry_vfsprotocols_walk(unsigned int count, const char *path
     return 0;
 
 }
-
-static struct vfs_kernel_entry entries[] = {
-    {"", 0, 0},
-    {"root/", entry_root_read, entry_root_walk},
-    {"vfs/", entry_vfs_read, entry_vfs_walk},
-    {"backends/", entry_vfsbackends_read, entry_vfsbackends_walk},
-    {"protocols/", entry_vfsprotocols_read, entry_vfsprotocols_walk}
-};
 
 static unsigned int backend_read(struct vfs_backend *self, unsigned int offset, unsigned int count, void *buffer)
 {
