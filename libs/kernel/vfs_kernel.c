@@ -82,7 +82,24 @@ static unsigned int entry_root_walk(unsigned int count, const char *path)
 static unsigned int entry_containers_read(unsigned int offset, unsigned int count, void *buffer)
 {
 
-    return memory_read(buffer, count, "../\n", 4, offset);
+    struct resource_item *current = 0;
+
+    if (offset)
+        return 0;
+
+    offset += memory_read(buffer, count, "../\n", 4, offset);
+
+    while ((current = resource_find_item(current)))
+    {
+
+        if (current->type != CONTAINER_RESOURCE)
+            continue;
+
+        offset += memory_read(buffer, count, "0/\n", 3, offset);
+
+    }
+
+    return offset;
 
 }
 
@@ -96,7 +113,24 @@ static unsigned int entry_containers_walk(unsigned int count, const char *path)
 static unsigned int entry_tasks_read(unsigned int offset, unsigned int count, void *buffer)
 {
 
-    return memory_read(buffer, count, "../\n", 4, offset);
+    struct resource_item *current = 0;
+
+    if (offset)
+        return 0;
+
+    offset += memory_read(buffer, count, "../\n", 4, offset);
+
+    while ((current = resource_find_item(current)))
+    {
+
+        if (current->type != TASK_RESOURCE)
+            continue;
+
+        offset += memory_read(buffer, count, "0/\n", 3, offset);
+
+    }
+
+    return offset;
 
 }
 
