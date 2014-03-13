@@ -8,18 +8,17 @@
 enum vfs_kernel_entry_type
 {
 
-    ENTRY_TYPE_NULL                     = 0,
-    ENTRY_TYPE_ROOT                     = 1,
-    ENTRY_TYPE_VFS                      = 2,
-    ENTRY_TYPE_VFSBACKENDS              = 3,
-    ENTRY_TYPE_VFSPROTOCOLS             = 4
+    ENTRY_TYPE_NULL                     = 0x00000000,
+    ENTRY_TYPE_ROOT                     = 0x00010000,
+    ENTRY_TYPE_VFS                      = 0x00020000,
+    ENTRY_TYPE_VFSBACKENDS              = 0x00030000,
+    ENTRY_TYPE_VFSPROTOCOLS             = 0x00040000
 
 };
 
 struct vfs_kernel_entry
 {
 
-    enum vfs_kernel_entry_type type;
     unsigned int (*read)(unsigned int offset, unsigned int count, void *buffer);
     unsigned int (*walk)(unsigned int count, const char *path);
 
@@ -36,7 +35,7 @@ static unsigned int entry_root_walk(unsigned int count, const char *path)
 {
 
     if (memory_match(path, "vfs/", count))
-        return ENTRY_TYPE_VFS;
+        return ENTRY_TYPE_VFS >> 16;
 
     return 0;
 
@@ -53,10 +52,10 @@ static unsigned int entry_vfs_walk(unsigned int count, const char *path)
 {
 
     if (memory_match(path, "backends/", count))
-        return ENTRY_TYPE_VFSBACKENDS;
+        return ENTRY_TYPE_VFSBACKENDS >> 16;
 
     if (memory_match(path, "protocols/", count))
-        return ENTRY_TYPE_VFSPROTOCOLS;
+        return ENTRY_TYPE_VFSPROTOCOLS >> 16;
 
     return 0;
 
@@ -91,11 +90,11 @@ static unsigned int entry_vfsprotocols_walk(unsigned int count, const char *path
 }
 
 static struct vfs_kernel_entry entries[] = {
-    {0, 0, 0},
-    {ENTRY_TYPE_ROOT, entry_root_read, entry_root_walk},
-    {ENTRY_TYPE_VFS, entry_vfs_read, entry_vfs_walk},
-    {ENTRY_TYPE_VFSBACKENDS, entry_vfsbackends_read, entry_vfsbackends_walk},
-    {ENTRY_TYPE_VFSPROTOCOLS, entry_vfsprotocols_read, entry_vfsprotocols_walk}
+    {0, 0},
+    {entry_root_read, entry_root_walk},
+    {entry_vfs_read, entry_vfs_walk},
+    {entry_vfsbackends_read, entry_vfsbackends_walk},
+    {entry_vfsprotocols_read, entry_vfsprotocols_walk}
 };
 
 static unsigned int backend_read(struct vfs_backend *self, unsigned int offset, unsigned int count, void *buffer)
@@ -115,14 +114,14 @@ static unsigned int backend_write(struct vfs_backend *self, unsigned int offset,
 static unsigned int root(struct vfs_backend *backend)
 {
 
-    return ENTRY_TYPE_ROOT;
+    return ENTRY_TYPE_ROOT >> 16;
 
 }
 
 static unsigned int parent(struct vfs_backend *backend, unsigned int id)
 {
 
-    return ENTRY_TYPE_ROOT;
+    return ENTRY_TYPE_ROOT >> 16;
 
 }
 
