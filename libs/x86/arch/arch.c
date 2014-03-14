@@ -84,6 +84,15 @@ static unsigned int spawn(struct container *self, struct task *task, void *stack
 
 }
 
+static unsigned int exit(struct container *self, struct task *task, void *stack)
+{
+
+    scheduler_unuse(task);
+
+    return 0;
+
+}
+
 unsigned short arch_segment()
 {
 
@@ -186,6 +195,7 @@ static void arch_setup_container(struct container *container)
     resource_register_item(&container->resource);
 
     container->calls[CONTAINER_CALL_SPAWN] = spawn;
+    container->calls[CONTAINER_CALL_EXIT] = exit;
 
 }
 

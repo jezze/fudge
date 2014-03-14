@@ -3,7 +3,6 @@
 #include "vfs.h"
 #include "binary.h"
 #include "task.h"
-#include "scheduler.h"
 #include "container.h"
 
 static struct vfs_descriptor *get_descriptor(struct task *task, unsigned int index)
@@ -281,15 +280,6 @@ static unsigned int execute(struct container *self, struct task *task, void *sta
 
 }
 
-static unsigned int exit(struct container *self, struct task *task, void *stack)
-{
-
-    scheduler_unuse(task);
-
-    return 0;
-
-}
-
 static unsigned int load(struct container *self, struct task *task, void *stack)
 {
 
@@ -377,7 +367,6 @@ void container_init(struct container *container)
     container->calls[CONTAINER_CALL_MOUNT] = mount;
     container->calls[CONTAINER_CALL_BIND] = bind;
     container->calls[CONTAINER_CALL_EXECUTE] = execute;
-    container->calls[CONTAINER_CALL_EXIT] = exit;
     container->calls[CONTAINER_CALL_LOAD] = load;
     container->calls[CONTAINER_CALL_UNLOAD] = unload;
 
