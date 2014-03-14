@@ -104,7 +104,9 @@ static void handle_irq(struct base_device *device)
 
         write_stream(&driver->stream, driver->ikeyboard.keymap[scancode].length, driver->ikeyboard.keymap[scancode].value);
         rendezvous_unsleep(&driver->rdata, driver->ikeyboard.keymap[scancode].length);
-        rendezvous_unlock(&driver->rdata);
+
+        if (driver->ikeyboard.keymap[scancode].length)
+            rendezvous_unlock(&driver->rdata);
 
     }
 
@@ -139,7 +141,9 @@ static unsigned int read_data(struct base_device *device, unsigned int offset, u
 
     count = read_stream(&driver->stream, count, buffer);
 
-    rendezvous_lock(&driver->rdata);
+    if (!count)
+        rendezvous_lock(&driver->rdata);
+
     rendezvous_sleep(&driver->rdata, !count);
 
     return count;

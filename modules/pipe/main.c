@@ -1,6 +1,7 @@
 #include <module.h>
 #include <kernel/resource.h>
 #include <kernel/vfs.h>
+#include <kernel/rendezvous.h>
 #include <system/system.h>
 #include <base/base.h>
 
@@ -23,6 +24,8 @@ static struct pipe_session
     char name[8];
     struct pipe_stream istream;
     struct pipe_stream ostream;
+    struct rendezvous iread;
+    struct rendezvous oread;
 
 } session[8];
 
@@ -96,12 +99,32 @@ static unsigned int control_read(struct system_node *self, unsigned int offset, 
 
 }
 
+static unsigned int ipipe_open(struct system_node *self)
+{
+
+    rendezvous_lock(&session->iread);
+
+    return (unsigned int)self;
+
+}
+
+static unsigned int ipipe_close(struct system_node *self)
+{
+
+    rendezvous_unlock(&session->iread);
+
+    return (unsigned int)self;
+
+}
+
 static unsigned int ipipe_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct pipe_session *session = (struct pipe_session *)self->parent;
 
     count = read_stream(&session->ostream, count, buffer);
+
+    rendezvous_sleep(&session->iread, !count);
 
     return count;
 
@@ -114,7 +137,27 @@ static unsigned int ipipe_write(struct system_node *self, unsigned int offset, u
 
     count = write_stream(&session->istream, count, buffer);
 
+    rendezvous_unsleep(&session->oread, count);
+
     return count;
+
+}
+
+static unsigned int opipe_open(struct system_node *self)
+{
+
+    rendezvous_lock(&session->oread);
+
+    return (unsigned int)self;
+
+}
+
+static unsigned int opipe_close(struct system_node *self)
+{
+
+    rendezvous_unlock(&session->oread);
+
+    return (unsigned int)self;
 
 }
 
@@ -124,6 +167,8 @@ static unsigned int opipe_read(struct system_node *self, unsigned int offset, un
     struct pipe_session *session = (struct pipe_session *)self->parent;
 
     count = read_stream(&session->istream, count, buffer);
+
+    rendezvous_sleep(&session->oread, !count);
 
     return count;
 
@@ -135,6 +180,8 @@ static unsigned int opipe_write(struct system_node *self, unsigned int offset, u
     struct pipe_session *session = (struct pipe_session *)self->parent;
 
     count = write_stream(&session->ostream, count, buffer);
+
+    rendezvous_unsleep(&session->iread, count);
 
     return count;
 
@@ -169,8 +216,12 @@ static void init_session(struct pipe_session *session, unsigned int id)
 
     session->control.node.close = control_close;
     session->control.node.read = control_read;
+    session->ipipe.node.open = ipipe_open;
+    session->ipipe.node.close = ipipe_close;
     session->ipipe.node.read = ipipe_read;
     session->ipipe.node.write = ipipe_write;
+    session->opipe.node.open = opipe_open;
+    session->opipe.node.close = opipe_close;
     session->opipe.node.read = opipe_read;
     session->opipe.node.write = opipe_write;
 

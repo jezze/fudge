@@ -168,7 +168,9 @@ static unsigned int read_data(struct base_device *device, unsigned int offset, u
 
     count = read_stream(&driver->stream, count, buffer);
 
-    rendezvous_lock(&driver->rdata);
+    if (!count)
+        rendezvous_lock(&driver->rdata);
+
     rendezvous_sleep(&driver->rdata, !count);
 
     return count;
