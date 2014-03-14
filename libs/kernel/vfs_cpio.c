@@ -228,12 +228,11 @@ static unsigned int write(struct vfs_backend *backend, unsigned int id, unsigned
 
 }
 
-static unsigned int walk(struct vfs_backend *backend, unsigned int id, unsigned int count, const char *path)
+static unsigned int child(struct vfs_backend *backend, unsigned int id, unsigned int count, const char *path)
 {
 
     struct cpio_header header;
     unsigned int address = decode(backend, id);
-    unsigned int n = vfs_findnext(count, path);
     unsigned int length;
 
     if (!count)
@@ -265,22 +264,22 @@ static unsigned int walk(struct vfs_backend *backend, unsigned int id, unsigned 
         if ((header.mode & 0xF000) == 0x8000)
         {
 
-            if ((header.namesize - 1) - length != n + 1)
+            if ((header.namesize - 1) - length != count + 1)
                 continue;
 
-            if (memory_match(name + length + 1, path, n))
-                return walk(backend, encode(address), count - n, path + n);
+            if (memory_match(name + length + 1, path, count))
+                return encode(address);
 
         }
 
         if ((header.mode & 0xF000) == 0x4000)
         {
 
-            if ((header.namesize - 1) - length != n)
+            if ((header.namesize - 1) - length != count)
                 continue;
 
-            if (memory_match(name + length + 1, path, n - 1))
-                return walk(backend, encode(address), count - n, path + n);
+            if (memory_match(name + length + 1, path, count - 1))
+                return encode(address);
 
         }
 
@@ -293,7 +292,7 @@ static unsigned int walk(struct vfs_backend *backend, unsigned int id, unsigned 
 void vfs_setup_cpio(struct vfs_protocol *protocol)
 {
 
-    vfs_init_protocol(protocol, match, root, open, close, read, write, parent, walk, get_physical);
+    vfs_init_protocol(protocol, match, root, open, close, read, write, parent, child, get_physical);
     resource_register_item(&protocol->resource);
 
 }

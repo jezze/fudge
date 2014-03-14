@@ -23,34 +23,34 @@ struct entry
 {
 
     unsigned int (*read)(unsigned int offset, unsigned int count, void *buffer);
-    unsigned int (*walk)(unsigned int count, const char *path);
+    unsigned int (*child)(unsigned int count, const char *path);
 
 };
 
 static unsigned int entry_root_read(unsigned int offset, unsigned int count, void *buffer);
-static unsigned int entry_root_walk(unsigned int count, const char *path);
+static unsigned int entry_root_child(unsigned int count, const char *path);
 static unsigned int entry_containers_read(unsigned int offset, unsigned int count, void *buffer);
-static unsigned int entry_containers_walk(unsigned int count, const char *path);
+static unsigned int entry_containers_child(unsigned int count, const char *path);
 static unsigned int entry_tasks_read(unsigned int offset, unsigned int count, void *buffer);
-static unsigned int entry_tasks_walk(unsigned int count, const char *path);
+static unsigned int entry_tasks_child(unsigned int count, const char *path);
 static unsigned int entry_filesystems_read(unsigned int offset, unsigned int count, void *buffer);
-static unsigned int entry_filesystems_walk(unsigned int count, const char *path);
+static unsigned int entry_filesystems_child(unsigned int count, const char *path);
 static unsigned int entry_filesystembackends_read(unsigned int offset, unsigned int count, void *buffer);
-static unsigned int entry_filesystembackends_walk(unsigned int count, const char *path);
+static unsigned int entry_filesystembackends_child(unsigned int count, const char *path);
 static unsigned int entry_filesystemprotocols_read(unsigned int offset, unsigned int count, void *buffer);
-static unsigned int entry_filesystemprotocols_walk(unsigned int count, const char *path);
+static unsigned int entry_filesystemprotocols_child(unsigned int count, const char *path);
 static unsigned int entry_binaries_read(unsigned int offset, unsigned int count, void *buffer);
-static unsigned int entry_binaries_walk(unsigned int count, const char *path);
+static unsigned int entry_binaries_child(unsigned int count, const char *path);
 
 static struct entry entries[] = {
     {0, 0},
-    {entry_root_read, entry_root_walk},
-    {entry_containers_read, entry_containers_walk},
-    {entry_tasks_read, entry_tasks_walk},
-    {entry_filesystems_read, entry_filesystems_walk},
-    {entry_filesystembackends_read, entry_filesystembackends_walk},
-    {entry_filesystemprotocols_read, entry_filesystemprotocols_walk},
-    {entry_binaries_read, entry_binaries_walk}
+    {entry_root_read, entry_root_child},
+    {entry_containers_read, entry_containers_child},
+    {entry_tasks_read, entry_tasks_child},
+    {entry_filesystems_read, entry_filesystems_child},
+    {entry_filesystembackends_read, entry_filesystembackends_child},
+    {entry_filesystemprotocols_read, entry_filesystemprotocols_child},
+    {entry_binaries_read, entry_binaries_child}
 };
 
 static unsigned int entry_root_read(unsigned int offset, unsigned int count, void *buffer)
@@ -60,7 +60,7 @@ static unsigned int entry_root_read(unsigned int offset, unsigned int count, voi
 
 }
 
-static unsigned int entry_root_walk(unsigned int count, const char *path)
+static unsigned int entry_root_child(unsigned int count, const char *path)
 {
 
     if (memory_match(path, "containers/", count))
@@ -103,7 +103,7 @@ static unsigned int entry_containers_read(unsigned int offset, unsigned int coun
 
 }
 
-static unsigned int entry_containers_walk(unsigned int count, const char *path)
+static unsigned int entry_containers_child(unsigned int count, const char *path)
 {
 
     return 0;
@@ -134,7 +134,7 @@ static unsigned int entry_tasks_read(unsigned int offset, unsigned int count, vo
 
 }
 
-static unsigned int entry_tasks_walk(unsigned int count, const char *path)
+static unsigned int entry_tasks_child(unsigned int count, const char *path)
 {
 
     return 0;
@@ -148,7 +148,7 @@ static unsigned int entry_filesystems_read(unsigned int offset, unsigned int cou
 
 }
 
-static unsigned int entry_filesystems_walk(unsigned int count, const char *path)
+static unsigned int entry_filesystems_child(unsigned int count, const char *path)
 {
 
     if (memory_match(path, "backends/", count))
@@ -168,7 +168,7 @@ static unsigned int entry_filesystembackends_read(unsigned int offset, unsigned 
 
 }
 
-static unsigned int entry_filesystembackends_walk(unsigned int count, const char *path)
+static unsigned int entry_filesystembackends_child(unsigned int count, const char *path)
 {
 
     return 0;
@@ -182,7 +182,7 @@ static unsigned int entry_filesystemprotocols_read(unsigned int offset, unsigned
 
 }
 
-static unsigned int entry_filesystemprotocols_walk(unsigned int count, const char *path)
+static unsigned int entry_filesystemprotocols_child(unsigned int count, const char *path)
 {
 
     return 0;
@@ -196,7 +196,7 @@ static unsigned int entry_binaries_read(unsigned int offset, unsigned int count,
 
 }
 
-static unsigned int entry_binaries_walk(unsigned int count, const char *path)
+static unsigned int entry_binaries_child(unsigned int count, const char *path)
 {
 
     return 0;
@@ -278,13 +278,13 @@ static unsigned int write(struct vfs_backend *backend, unsigned int id, unsigned
 
 }
 
-static unsigned int walk(struct vfs_backend *backend, unsigned int id, unsigned int count, const char *path)
+static unsigned int child(struct vfs_backend *backend, unsigned int id, unsigned int count, const char *path)
 {
 
     if (!count)
         return id;
 
-    return entries[id & 0xFF].walk(count, path);
+    return entries[id & 0xFF].child(count, path);
 
 }
 
@@ -292,7 +292,7 @@ void vfs_setup_kernel(struct vfs_backend *backend, struct vfs_protocol *protocol
 {
 
     vfs_init_backend(backend, backend_read, backend_write);
-    vfs_init_protocol(protocol, match, root, open, close, read, write, parent, walk, get_physical);
+    vfs_init_protocol(protocol, match, root, open, close, read, write, parent, child, get_physical);
     resource_register_item(&backend->resource);
     resource_register_item(&protocol->resource);
 

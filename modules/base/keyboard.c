@@ -49,12 +49,12 @@ static unsigned int device_open(struct system_node *self)
 
 }
 
-static unsigned int device_walk(struct system_node *self, unsigned int count, const char *path)
+static unsigned int device_child(struct system_node *self, unsigned int count, const char *path)
 {
 
     struct session_node *node = (struct session_node *)self->parent;
 
-    return node->inode->base.node.walk(&node->inode->base.node, count, path);
+    return node->inode->base.node.child(&node->inode->base.node, count, path);
 
 }
 
@@ -86,7 +86,7 @@ static void init_snode(struct session_node *node, unsigned int id, struct interf
 
     node->inode = inode;
     node->device.node.open = device_open;
-    node->device.node.walk = device_walk;
+    node->device.node.child = device_child;
     node->control.node.read = control_read;
 
 }

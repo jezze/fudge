@@ -79,7 +79,7 @@ static unsigned int open(struct container *self, struct task *task, void *stack)
         else
         {
 
-            descriptor->id = descriptor->channel->protocol->walk(descriptor->channel->backend, descriptor->id, count, args->path + offset);
+            descriptor->id = descriptor->channel->protocol->child(descriptor->channel->backend, descriptor->id, count, args->path + offset);
 
             if (!descriptor->id)
                 return 0;

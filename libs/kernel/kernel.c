@@ -30,7 +30,12 @@ static unsigned int kernel_find_init(struct vfs_channel *channel)
     if (!id)
         return 0;
 
-    id = channel->protocol->walk(channel->backend, id, 8, "bin/init");
+    id = channel->protocol->child(channel->backend, id, 4, "bin/");
+
+    if (!id)
+        return 0;
+
+    id = channel->protocol->child(channel->backend, id, 4, "init");
 
     if (!id)
         return 0;
@@ -85,7 +90,7 @@ void kernel_setup_modules(struct container *container, struct task *task, unsign
     mount1->child.channel = channel1;
     mount1->child.id = channel1->protocol->root(channel1->backend);
     mount4->parent.channel = channel1;
-    mount4->parent.id = channel1->protocol->walk(channel1->backend, channel1->protocol->root(channel1->backend), 7, "kernel/");
+    mount4->parent.id = channel1->protocol->child(channel1->backend, channel1->protocol->root(channel1->backend), 7, "kernel/");
     mount4->child.channel = channel2;
     mount4->child.id = channel2->protocol->root(channel2->backend);
 

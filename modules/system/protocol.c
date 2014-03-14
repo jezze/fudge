@@ -63,12 +63,12 @@ static unsigned int read(struct vfs_backend *backend, unsigned int id, unsigned 
 
 }
 
-static unsigned int walk(struct vfs_backend *backend, unsigned int id, unsigned int count, const char *path)
+static unsigned int child(struct vfs_backend *backend, unsigned int id, unsigned int count, const char *path)
 {
 
     struct system_node *node = (struct system_node *)(unsigned long)id;
 
-    return node->walk(node, count, path);
+    return node->child(node, count, path);
 
 }
 
@@ -85,7 +85,7 @@ void system_init_protocol(struct vfs_protocol *protocol)
 {
 
     memory_clear(protocol, sizeof (struct vfs_protocol));
-    vfs_init_protocol(protocol, match, root, open, close, read, write, parent, walk, 0);
+    vfs_init_protocol(protocol, match, root, open, close, read, write, parent, child, 0);
 
 }
 

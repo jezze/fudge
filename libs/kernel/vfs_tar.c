@@ -185,13 +185,12 @@ static unsigned int write(struct vfs_backend *backend, unsigned int id, unsigned
 
 }
 
-static unsigned int walk(struct vfs_backend *backend, unsigned int id, unsigned int count, const char *path)
+static unsigned int child(struct vfs_backend *backend, unsigned int id, unsigned int count, const char *path)
 {
 
     unsigned char block[TAR_BLOCK_SIZE];
     struct tar_header *header = (struct tar_header *)block;
     unsigned int address = decode(id);
-    unsigned int n = vfs_findnext(count, path);
     unsigned int length;
 
     if (!count)
@@ -211,11 +210,11 @@ static unsigned int walk(struct vfs_backend *backend, unsigned int id, unsigned 
         if (!tar_validate(block))
             break;
 
-        if (memory_findbyte(header->name, 100, '\0') != length + n)
+        if (memory_findbyte(header->name, 100, '\0') != length + count)
             continue;
 
-        if (memory_match(header->name + length, path, n))
-            return walk(backend, encode(address), count - n, path + n);
+        if (memory_match(header->name + length, path, count))
+            return encode(address);
 
     }
 
@@ -226,7 +225,7 @@ static unsigned int walk(struct vfs_backend *backend, unsigned int id, unsigned 
 void vfs_setup_tar(struct vfs_protocol *protocol)
 {
 
-    vfs_init_protocol(protocol, match, root, open, close, read, write, parent, walk, get_physical);
+    vfs_init_protocol(protocol, match, root, open, close, read, write, parent, child, get_physical);
     resource_register_item(&protocol->resource);
 
 }

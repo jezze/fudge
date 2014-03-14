@@ -68,7 +68,7 @@ static unsigned int write(struct system_node *self, unsigned int offset, unsigne
 
 }
 
-unsigned int walk(struct system_node *self, unsigned int count, const char *path)
+unsigned int child(struct system_node *self, unsigned int count, const char *path)
 {
 
     if (!count)
@@ -120,7 +120,7 @@ static unsigned int read_group(struct system_node *self, unsigned int offset, un
 
 }
 
-unsigned int walk_group(struct system_node *self, unsigned int count, const char *path)
+unsigned int child_group(struct system_node *self, unsigned int count, const char *path)
 {
 
     struct system_group *group = (struct system_group *)self;
@@ -138,7 +138,7 @@ unsigned int walk_group(struct system_node *self, unsigned int count, const char
         if (!memory_match(node->name, path, l))
             continue;
 
-        return (node->type == SYSTEM_NODETYPE_GROUP) ? node->walk(node, count - l - 1, path + l + 1) : node->walk(node, count - l, path + l);
+        return (node->type == SYSTEM_NODETYPE_GROUP) ? node->child(node, count - l - 1, path + l + 1) : node->child(node, count - l, path + l);
 
     }
 
@@ -158,7 +158,7 @@ static void system_init_node(struct system_node *node, unsigned int type, const 
     node->close = close;
     node->read = read;
     node->write = write;
-    node->walk = walk;
+    node->child = child;
 
 }
 
@@ -170,7 +170,7 @@ void system_init_group(struct system_group *group, const char *name)
     list_init(&group->children);
 
     group->node.read = read_group;
-    group->node.walk = walk_group;
+    group->node.child = child_group;
 
 }
 
