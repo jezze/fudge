@@ -47,7 +47,7 @@ static unsigned int walk(struct container *self, struct task *task, void *stack)
     if (!descriptor || !pdescriptor)
         return 0;
 
-    if (!pdescriptor->id || !pdescriptor->channel)
+    if (!pdescriptor->id || !pdescriptor->channel || !pdescriptor->active)
         return 0;
 
     descriptor->channel = pdescriptor->channel;
@@ -199,10 +199,10 @@ static unsigned int mount(struct container *self, struct task *task, void *stack
     if (!mount || !pdescriptor || !cdescriptor)
         return 0;
 
-    if (!pdescriptor->id || !pdescriptor->channel)
+    if (!pdescriptor->id || !pdescriptor->channel || !pdescriptor->active)
         return 0;
 
-    if (!cdescriptor->id || !cdescriptor->channel)
+    if (!cdescriptor->id || !cdescriptor->channel || !cdescriptor->active)
         return 0;
 
     channel->backend = vfs_find_backend();
@@ -238,10 +238,10 @@ static unsigned int bind(struct container *self, struct task *task, void *stack)
     if (!mount || !pdescriptor || !cdescriptor)
         return 0;
 
-    if (!pdescriptor->id || !pdescriptor->channel)
+    if (!pdescriptor->id || !pdescriptor->channel || !pdescriptor->active)
         return 0;
 
-    if (!cdescriptor->id || !cdescriptor->channel)
+    if (!cdescriptor->id || !cdescriptor->channel || !cdescriptor->active)
         return 0;
 
     mount->parent.channel = pdescriptor->channel;
@@ -263,7 +263,7 @@ static unsigned int execute(struct container *self, struct task *task, void *sta
     if (!descriptor)
         return 0;
 
-    if (!descriptor->id || !descriptor->channel)
+    if (!descriptor->id || !descriptor->channel || !descriptor->active)
         return 0;
 
     protocol = binary_find_protocol(descriptor->channel, descriptor->id);
@@ -301,7 +301,7 @@ static unsigned int load(struct container *self, struct task *task, void *stack)
     if (!descriptor)
         return 0;
 
-    if (!descriptor->id || !descriptor->channel)
+    if (!descriptor->id || !descriptor->channel || !descriptor->active)
         return 0;
 
     if (!descriptor->channel->protocol->get_physical)
@@ -343,7 +343,7 @@ static unsigned int unload(struct container *self, struct task *task, void *stac
     if (!descriptor)
         return 0;
 
-    if (!descriptor->id || !descriptor->channel)
+    if (!descriptor->id || !descriptor->channel || !descriptor->active)
         return 0;
 
     protocol = binary_find_protocol(descriptor->channel, descriptor->id);

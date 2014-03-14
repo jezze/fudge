@@ -85,6 +85,7 @@ void kernel_setup_modules(struct container *container, struct task *task, unsign
 
     descriptor->channel = channel1;
     descriptor->id = channel1->protocol->root(channel1->backend);
+    descriptor->active = 1;
     mount1->parent.channel = channel1;
     mount1->parent.id = channel1->protocol->root(channel1->backend);
     mount1->child.channel = channel1;
