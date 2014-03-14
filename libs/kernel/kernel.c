@@ -83,17 +83,11 @@ void kernel_setup_modules(struct container *container, struct task *task, unsign
 
     error_assert(task->registers.ip != 0, "Failed to locate entry point", __FILE__, __LINE__);
 
-    descriptor->channel = channel1;
-    descriptor->id = channel1->protocol->root(channel1->backend);
-    descriptor->active = 1;
-    mount1->parent.channel = channel1;
-    mount1->parent.id = channel1->protocol->root(channel1->backend);
-    mount1->child.channel = channel1;
-    mount1->child.id = channel1->protocol->root(channel1->backend);
-    mount4->parent.channel = channel1;
-    mount4->parent.id = channel1->protocol->child(channel1->backend, channel1->protocol->root(channel1->backend), 7, "kernel/");
-    mount4->child.channel = channel2;
-    mount4->child.id = channel2->protocol->root(channel2->backend);
+    vfs_init_descriptor(descriptor, channel1, channel1->protocol->root(channel1->backend));
+    vfs_init_mount(mount1, channel1, channel1->protocol->root(channel1->backend), channel1, channel1->protocol->root(channel1->backend));
+    vfs_init_mount(mount4, channel1, channel1->protocol->root(channel1->backend), channel2, channel2->protocol->root(channel2->backend));
+
+    mount4->parent.id = channel1->protocol->child(channel1->backend, mount4->parent.id, 7, "kernel/");
 
 }
 
