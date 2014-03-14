@@ -2,22 +2,6 @@
 #include "resource.h"
 #include "vfs.h"
 
-unsigned int vfs_findnext(unsigned int count, const char *path)
-{
-
-    unsigned int offset = memory_findbyte(path, count, '/');
-
-    return offset == count ? offset : offset + 1;
-
-}
-
-unsigned int vfs_isparent(unsigned int count, const char *path)
-{
-
-    return (count >= 3) ? memory_match(path, "../", 3) : 0;
-
-}
-
 struct vfs_backend *vfs_find_backend()
 {
 

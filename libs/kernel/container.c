@@ -26,6 +26,15 @@ static struct vfs_mount *get_mount(struct container *container, unsigned int ind
 
 }
 
+static unsigned int get_walkstep(unsigned int count, const char *path)
+{
+
+    unsigned int offset = memory_findbyte(path, count, '/');
+
+    return offset == count ? offset : offset + 1;
+
+}
+
 static unsigned int open(struct container *self, struct task *task, void *stack)
 {
 
@@ -44,12 +53,13 @@ static unsigned int open(struct container *self, struct task *task, void *stack)
     descriptor->channel = pdescriptor->channel;
     descriptor->id = pdescriptor->id;
 
-    for (offset = 0; (count = vfs_findnext(args->count - offset, args->path + offset)); offset += count)
+    for (offset = 0; (count = get_walkstep(args->count - offset, args->path + offset)); offset += count)
     {
 
+        const char *path = args->path + offset;
         unsigned int i;
 
-        if (vfs_isparent(count, args->path + offset))
+        if (count == 3 && memory_match(path, "../", 3))
         {
 
             for (i = 1; i < CONTAINER_MOUNTS; i++)
