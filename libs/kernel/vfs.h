@@ -44,6 +44,7 @@ struct vfs_descriptor
     struct resource_item resource;
     struct vfs_channel *channel;
     unsigned int id;
+    unsigned int active;
 
 };
 

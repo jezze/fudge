@@ -131,6 +131,8 @@ static unsigned int open(struct container *self, struct task *task, void *stack)
     if (!descriptor->id || !descriptor->channel)
         return 0;
 
+    descriptor->active = 1;
+
     return descriptor->id = descriptor->channel->protocol->open(descriptor->channel->backend, descriptor->id);
 
 }
@@ -147,6 +149,8 @@ static unsigned int close(struct container *self, struct task *task, void *stack
     if (!descriptor->id || !descriptor->channel)
         return 0;
 
+    descriptor->active = 0;
+
     return descriptor->id = descriptor->channel->protocol->close(descriptor->channel->backend, descriptor->id);
 
 }
@@ -160,7 +164,7 @@ static unsigned int read(struct container *self, struct task *task, void *stack)
     if (!descriptor)
         return 0;
 
-    if (!descriptor->id || !descriptor->channel)
+    if (!descriptor->id || !descriptor->channel || !descriptor->active)
         return 0;
 
     return descriptor->channel->protocol->read(descriptor->channel->backend, descriptor->id, args->offset, args->count, args->buffer);
@@ -176,7 +180,7 @@ static unsigned int write(struct container *self, struct task *task, void *stack
     if (!descriptor)
         return 0;
 
-    if (!descriptor->id || !descriptor->channel)
+    if (!descriptor->id || !descriptor->channel || !descriptor->active)
         return 0;
 
     return descriptor->channel->protocol->write(descriptor->channel->backend, descriptor->id, args->offset, args->count, args->buffer);
