@@ -17,6 +17,7 @@ static void parse()
             if (call_walk(CALL_I1, CALL_L1, count2, buffer + loff))
             {
 
+                call_open(CALL_I1);
                 call_spawn(CALL_L0);
                 call_close(CALL_I1);
 
@@ -37,12 +38,17 @@ void main()
     if (!call_walk(CALL_O1, CALL_O0, 0, 0))
         return;
 
+    call_open(CALL_O1);
+
     if (call_walk(CALL_L0, CALL_DR, 11, "bin/modload"))
     {
+
+        call_open(CALL_L0);
 
         if (call_walk(CALL_L1, CALL_DR, 9, "boot/mod/"))
         {
 
+            call_open(CALL_L1);
             parse();
             call_close(CALL_L1);
 

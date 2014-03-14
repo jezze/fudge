@@ -6,9 +6,11 @@ static unsigned int open_path(unsigned int index, unsigned int indexw, unsigned 
 {
 
     if (memory_match(buffer, "/", 1))
-        return call_walk(index, CALL_DR, count - 1, buffer + 1);
+        call_walk(index, CALL_DR, count - 1, buffer + 1);
+    else
+        call_walk(index, indexw, count, buffer);
 
-    return call_walk(index, indexw, count, buffer);
+    return call_open(index);
 
 }
 
@@ -32,25 +34,6 @@ static void execute_command(struct command *command, char *buffer)
         {
 
             open_path(index, CALL_DW, command->in[i].path.count, buffer + command->in[i].path.index);
-
-        }
-
-        else if (command->in[i].data.count)
-        {
-
-            if (call_walk(CALL_L6, CALL_DR, 17, "system/pipe/clone"))
-            {
-
-                if (call_walk(CALL_L7, CALL_L6, 4, "../0"))
-                {
-
-                    call_write(CALL_L7, 0, command->in[i].data.count, buffer + command->in[i].data.index);
-                    call_close(CALL_L7);
-                    call_walk(index, CALL_L6, 4, "../1");
-
-                }
-
-            }
 
         }
 
@@ -124,7 +107,12 @@ static void execute(struct token_state *state, struct expression *expression)
         unsigned int cindex;
 
         for (cindex = 0; cindex < pipe->commands; cindex++)
+        {
+
             call_walk(CALL_L2 + cindex, CALL_DR, 17, "system/pipe/clone");
+            call_open(CALL_L2 + cindex);
+
+        }
 
         for (cindex = 0; cindex < pipe->commands; cindex++)
         {
@@ -134,8 +122,10 @@ static void execute(struct token_state *state, struct expression *expression)
             else
                 call_walk(CALL_O1, CALL_O0, 0, 0);
 
+            call_open(CALL_O1);
             execute_command(&pipe->command[cindex], state->buffer);
             call_walk(CALL_I1, CALL_L2 + cindex, 4, "../1");
+            call_open(CALL_I1);
 
         }
 
@@ -155,6 +145,8 @@ void main()
 
     if (!call_walk(CALL_L0, CALL_DR, 4, "bin/"))
         return;
+
+    call_open(CALL_L0);
 
     memory_clear(&expression, sizeof (struct expression));
     token_init_state(&state, call_read(CALL_I0, 0, FUDGE_BSIZE, buffer), buffer);

@@ -115,7 +115,7 @@ static unsigned int walk(struct container *self, struct task *task, void *stack)
 
     }
 
-    return descriptor->id = descriptor->channel->protocol->open(descriptor->channel->backend, descriptor->id);
+    return 1;
 
 }
 

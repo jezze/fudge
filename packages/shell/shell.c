@@ -8,19 +8,20 @@ static void interpret(struct lifo_stack *stack)
     if (memory_match(stack->buffer, "cd ", 3))
     {
 
-        unsigned int id;
+        unsigned int ret;
 
         if (stack->head < 4)
             return;
 
         if (stack->buffer[3] == '/')
-            id = call_walk(CALL_DT, CALL_DR, stack->head - 5, stack->buffer + 4);
+            ret = call_walk(CALL_DT, CALL_DR, stack->head - 5, stack->buffer + 4);
         else
-            id = call_walk(CALL_DT, CALL_DW, stack->head - 4, stack->buffer + 3);
+            ret = call_walk(CALL_DT, CALL_DW, stack->head - 4, stack->buffer + 3);
 
-        if (id)
+        if (ret)
         {
 
+            call_open(CALL_DT);
             call_walk(CALL_DW, CALL_DT, 0, 0);
             call_close(CALL_DT);
 
@@ -33,20 +34,28 @@ static void interpret(struct lifo_stack *stack)
     if (!call_walk(CALL_O1, CALL_O0, 0, 0))
         return;
 
+    call_open(CALL_O1);
+
     if (call_walk(CALL_L0, CALL_DR, 17, "system/pipe/clone"))
     {
+
+        call_open(CALL_L0);
 
         if (call_walk(CALL_L1, CALL_L0, 4, "../0"))
         {
 
+            call_open(CALL_L1);
             call_write(CALL_L1, 0, stack->head, stack->buffer);
 
             if (call_walk(CALL_I1, CALL_L0, 4, "../1"))
             {
 
+                call_open(CALL_I1);
+
                 if (call_walk(CALL_L2, CALL_DR, 9, "bin/slang"))
                 {
 
+                    call_open(CALL_L2);
                     call_spawn(CALL_L2);
                     call_close(CALL_L2);
 
