@@ -22,7 +22,10 @@ static void interpret(struct lifo_stack *stack)
         {
 
             call_open(CALL_DT);
-            call_walk(CALL_DW, CALL_DT, 0, 0);
+
+            if (call_walk(CALL_DW, CALL_DT, 0, 0))
+                call_open(CALL_DW);
+
             call_close(CALL_DT);
 
         }

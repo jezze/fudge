@@ -52,6 +52,7 @@ static unsigned int walk(struct container *self, struct task *task, void *stack)
 
     descriptor->channel = pdescriptor->channel;
     descriptor->id = pdescriptor->id;
+    descriptor->active = 0;
 
     for (offset = 0; (count = get_walkstep(args->count - offset, args->path + offset)); offset += count)
     {
