@@ -58,7 +58,7 @@ static unsigned int find_symbol_kernel(unsigned int count, char *symbol)
 
     unsigned int address = 0;
 
-    if (call_open(CALL_L0, CALL_DR, 10, "boot/fudge"))
+    if (call_walk(CALL_L0, CALL_DR, 10, "boot/fudge"))
     {
 
         address = find_symbol(CALL_L0, count, symbol);
@@ -83,7 +83,7 @@ static unsigned int find_symbol_module(unsigned int count, char *symbol)
     offset += memory_write(module, 64, symbol, length, offset);
     offset += memory_write(module, 64, ".ko", 3, offset);
 
-    if (call_open(CALL_L0, CALL_DR, offset, module))
+    if (call_walk(CALL_L0, CALL_DR, offset, module))
     {
 
         address = find_symbol(CALL_L0, count, symbol);

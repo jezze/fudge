@@ -14,7 +14,7 @@ static void parse()
         for (loff = 0; (count2 = memory_findbyte(buffer + loff, count - loff, '\n')); loff += count2 + 1)
         {
 
-            if (call_open(CALL_I1, CALL_L1, count2, buffer + loff))
+            if (call_walk(CALL_I1, CALL_L1, count2, buffer + loff))
             {
 
                 call_spawn(CALL_L0);
@@ -34,13 +34,13 @@ static void parse()
 void main()
 {
 
-    if (!call_open(CALL_O1, CALL_O0, 0, 0))
+    if (!call_walk(CALL_O1, CALL_O0, 0, 0))
         return;
 
-    if (call_open(CALL_L0, CALL_DR, 11, "bin/modload"))
+    if (call_walk(CALL_L0, CALL_DR, 11, "bin/modload"))
     {
 
-        if (call_open(CALL_L1, CALL_DR, 9, "boot/mod/"))
+        if (call_walk(CALL_L1, CALL_DR, 9, "boot/mod/"))
         {
 
             parse();

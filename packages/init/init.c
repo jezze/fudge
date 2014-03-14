@@ -3,13 +3,13 @@
 void main()
 {
 
-    if (!call_open(CALL_DW, CALL_DR, 5, "home/"))
+    if (!call_walk(CALL_DW, CALL_DR, 5, "home/"))
         return;
 
-    if (call_open(CALL_I1, CALL_DR, 17, "config/init.slang"))
+    if (call_walk(CALL_I1, CALL_DR, 17, "config/init.slang"))
     {
 
-        if (call_open(CALL_L0, CALL_DR, 9, "bin/slang"))
+        if (call_walk(CALL_L0, CALL_DR, 9, "bin/slang"))
         {
 
             call_spawn(CALL_L0);

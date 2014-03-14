@@ -6,9 +6,9 @@ static unsigned int open_path(unsigned int index, unsigned int indexw, unsigned 
 {
 
     if (memory_match(buffer, "/", 1))
-        return call_open(index, CALL_DR, count - 1, buffer + 1);
+        return call_walk(index, CALL_DR, count - 1, buffer + 1);
 
-    return call_open(index, indexw, count, buffer);
+    return call_walk(index, indexw, count, buffer);
 
 }
 
@@ -38,15 +38,15 @@ static void execute_command(struct command *command, char *buffer)
         else if (command->in[i].data.count)
         {
 
-            if (call_open(CALL_L6, CALL_DR, 17, "system/pipe/clone"))
+            if (call_walk(CALL_L6, CALL_DR, 17, "system/pipe/clone"))
             {
 
-                if (call_open(CALL_L7, CALL_L6, 4, "../0"))
+                if (call_walk(CALL_L7, CALL_L6, 4, "../0"))
                 {
 
                     call_write(CALL_L7, 0, command->in[i].data.count, buffer + command->in[i].data.index);
                     call_close(CALL_L7);
-                    call_open(index, CALL_L6, 4, "../1");
+                    call_walk(index, CALL_L6, 4, "../1");
 
                 }
 
@@ -124,18 +124,18 @@ static void execute(struct token_state *state, struct expression *expression)
         unsigned int cindex;
 
         for (cindex = 0; cindex < pipe->commands; cindex++)
-            call_open(CALL_L2 + cindex, CALL_DR, 17, "system/pipe/clone");
+            call_walk(CALL_L2 + cindex, CALL_DR, 17, "system/pipe/clone");
 
         for (cindex = 0; cindex < pipe->commands; cindex++)
         {
 
             if (cindex != pipe->commands - 1)
-                call_open(CALL_O1, CALL_L2 + cindex, 4, "../0");
+                call_walk(CALL_O1, CALL_L2 + cindex, 4, "../0");
             else
-                call_open(CALL_O1, CALL_O0, 0, 0);
+                call_walk(CALL_O1, CALL_O0, 0, 0);
 
             execute_command(&pipe->command[cindex], state->buffer);
-            call_open(CALL_I1, CALL_L2 + cindex, 4, "../1");
+            call_walk(CALL_I1, CALL_L2 + cindex, 4, "../1");
 
         }
 
@@ -153,7 +153,7 @@ void main()
     struct token_state state;
     struct expression expression;
 
-    if (!call_open(CALL_L0, CALL_DR, 4, "bin/"))
+    if (!call_walk(CALL_L0, CALL_DR, 4, "bin/"))
         return;
 
     memory_clear(&expression, sizeof (struct expression));

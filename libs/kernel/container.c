@@ -35,7 +35,7 @@ static unsigned int get_walkstep(unsigned int count, const char *path)
 
 }
 
-static unsigned int open(struct container *self, struct task *task, void *stack)
+static unsigned int walk(struct container *self, struct task *task, void *stack)
 {
 
     struct {void *caller; unsigned int index; unsigned int pindex; unsigned int count; const char *path;} *args = stack;
@@ -114,6 +114,22 @@ static unsigned int open(struct container *self, struct task *task, void *stack)
         }
 
     }
+
+    return descriptor->id = descriptor->channel->protocol->open(descriptor->channel->backend, descriptor->id);
+
+}
+
+static unsigned int open(struct container *self, struct task *task, void *stack)
+{
+
+    struct {void *caller; unsigned int index;} *args = stack;
+    struct vfs_descriptor *descriptor = get_descriptor(task, args->index);
+
+    if (!descriptor)
+        return 0;
+
+    if (!descriptor->id || !descriptor->channel)
+        return 0;
 
     return descriptor->id = descriptor->channel->protocol->open(descriptor->channel->backend, descriptor->id);
 
@@ -348,6 +364,7 @@ void container_init(struct container *container)
     memory_clear(container, sizeof (struct container));
     resource_init_item(&container->resource, CONTAINER_RESOURCE, container);
 
+    container->calls[CONTAINER_CALL_WALK] = walk;
     container->calls[CONTAINER_CALL_OPEN] = open;
     container->calls[CONTAINER_CALL_CLOSE] = close;
     container->calls[CONTAINER_CALL_READ] = read;

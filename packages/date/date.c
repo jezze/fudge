@@ -7,10 +7,10 @@ void main()
     unsigned char time[FUDGE_BSIZE];
     unsigned int woff = 0;
 
-    if (call_open(CALL_L0, CALL_DR, 25, "system/clock/dev/rtc/date"))
+    if (call_walk(CALL_L0, CALL_DR, 25, "system/clock/dev/rtc/date"))
     {
 
-        if (call_open(CALL_L1, CALL_DR, 25, "system/clock/dev/rtc/time"))
+        if (call_walk(CALL_L1, CALL_DR, 25, "system/clock/dev/rtc/time"))
         {
 
             woff += call_write(CALL_O0, woff, call_read(CALL_L0, 0, FUDGE_BSIZE, date), date);

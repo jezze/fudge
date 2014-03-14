@@ -13,7 +13,7 @@ void main()
     woff += call_write(CALL_O0, woff, 8, __TIME__);
     woff += call_write(CALL_O0, woff, 2, "\n\n");
 
-    if (call_open(CALL_L0, CALL_DR, 14, "share/motd.txt"))
+    if (call_walk(CALL_L0, CALL_DR, 14, "share/motd.txt"))
     {
 
         for (roff = 0; (count = call_read(CALL_L0, roff, FUDGE_BSIZE, buffer)); roff += count)

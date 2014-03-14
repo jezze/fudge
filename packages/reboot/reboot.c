@@ -3,7 +3,7 @@
 void main()
 {
 
-    if (call_open(CALL_L0, CALL_DR, 12, "system/reset"))
+    if (call_walk(CALL_L0, CALL_DR, 12, "system/reset"))
     {
 
         call_write(CALL_O0, 0, 23, "System is rebooting...\n");
