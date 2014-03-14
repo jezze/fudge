@@ -49,9 +49,7 @@ static unsigned int walk(struct container *self, struct task *task, void *stack)
     if (!pdescriptor->id || !pdescriptor->channel || !pdescriptor->active)
         return 0;
 
-    descriptor->channel = pdescriptor->channel;
-    descriptor->id = pdescriptor->id;
-    descriptor->active = 0;
+    vfs_init_descriptor(descriptor, pdescriptor->channel, pdescriptor->id);
 
     for (offset = 0; (count = get_walkstep(args->count - offset, args->path + offset)); offset += count)
     {
@@ -70,8 +68,7 @@ static unsigned int walk(struct container *self, struct task *task, void *stack)
                 if (descriptor->channel == mount->child.channel && descriptor->id == mount->child.id)
                 {
 
-                    descriptor->channel = mount->parent.channel;
-                    descriptor->id = mount->parent.id;
+                    vfs_init_descriptor(descriptor, mount->parent.channel, mount->parent.id);
 
                     break;
 
@@ -102,8 +99,7 @@ static unsigned int walk(struct container *self, struct task *task, void *stack)
                 if (descriptor->channel == mount->parent.channel && descriptor->id == mount->parent.id)
                 {
 
-                    descriptor->channel = mount->child.channel;
-                    descriptor->id = mount->child.id;
+                    vfs_init_descriptor(descriptor, mount->child.channel, mount->child.id);
 
                     break;
 
@@ -215,13 +211,7 @@ static unsigned int mount(struct container *self, struct task *task, void *stack
     if (!channel->protocol)
         return 0;
 
-    mount->parent.channel = pdescriptor->channel;
-    mount->parent.id = pdescriptor->id;
-    mount->child.channel = channel;
-    mount->child.id = channel->protocol->root(channel->backend);
-
-    if (!mount->child.id)
-        return 0;
+    vfs_init_mount(mount, pdescriptor->channel, pdescriptor->id, channel, channel->protocol->root(channel->backend));
 
     return 1;
 
@@ -244,10 +234,7 @@ static unsigned int bind(struct container *self, struct task *task, void *stack)
     if (!cdescriptor->id || !cdescriptor->channel || !cdescriptor->active)
         return 0;
 
-    mount->parent.channel = pdescriptor->channel;
-    mount->parent.id = pdescriptor->id;
-    mount->child.channel = cdescriptor->channel;
-    mount->child.id = cdescriptor->id;
+    vfs_init_mount(mount, pdescriptor->channel, pdescriptor->id, cdescriptor->channel, cdescriptor->id);
 
     return 1;
 

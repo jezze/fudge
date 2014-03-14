@@ -95,7 +95,6 @@ void vfs_init_descriptor(struct vfs_descriptor *descriptor, struct vfs_channel *
 
     descriptor->channel = channel;
     descriptor->id = id;
-    descriptor->active = 1;
 
 }
 
