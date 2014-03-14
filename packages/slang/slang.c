@@ -2,15 +2,13 @@
 #include "token.h"
 #include "parse.h"
 
-static unsigned int open_path(unsigned int index, unsigned int indexw, unsigned int count, char *buffer)
+static unsigned int walk_path(unsigned int index, unsigned int indexw, unsigned int count, char *buffer)
 {
 
     if (memory_match(buffer, "/", 1))
-        call_walk(index, CALL_DR, count - 1, buffer + 1);
-    else
-        call_walk(index, indexw, count, buffer);
+        return call_walk(index, CALL_DR, count - 1, buffer + 1);
 
-    return call_open(index);
+    return call_walk(index, indexw, count, buffer);
 
 }
 
@@ -19,8 +17,10 @@ static void execute_command(struct command *command, char *buffer)
 
     unsigned int i;
 
-    if (!open_path(CALL_L1, CALL_L0, command->binary.count, buffer + command->binary.index))
+    if (!walk_path(CALL_L1, CALL_L0, command->binary.count, buffer + command->binary.index))
         return;
+
+    call_open(CALL_L1);
 
     for (i = 0; i < command->ins; i++)
     {
@@ -33,7 +33,8 @@ static void execute_command(struct command *command, char *buffer)
         if (command->in[i].path.count)
         {
 
-            open_path(index, CALL_DW, command->in[i].path.count, buffer + command->in[i].path.index);
+            walk_path(index, CALL_DW, command->in[i].path.count, buffer + command->in[i].path.index);
+            call_open(index);
 
         }
 
@@ -48,12 +49,16 @@ static void execute_command(struct command *command, char *buffer)
             index = CALL_O1 + ascii_read_value(buffer + command->out[i].index.index, command->out[i].index.count, 10) * 2;
 
         if (command->out[i].path.count)
-            open_path(index, CALL_DW, command->out[i].path.count, buffer + command->out[i].path.index);
+        {
+
+            walk_path(index, CALL_DW, command->out[i].path.count, buffer + command->out[i].path.index);
+            call_open(index);
+
+        }
 
     }
 
     call_spawn(CALL_L1);
-    call_close(CALL_L1);
 
     for (i = 0; i < command->ins; i++)
     {
@@ -64,19 +69,7 @@ static void execute_command(struct command *command, char *buffer)
             index = CALL_I1 + ascii_read_value(buffer + command->in[i].index.index, command->in[i].index.count, 10) * 2;
 
         if (command->in[i].path.count)
-        {
-
             call_close(index);
-
-        }
-
-        else if (command->in[i].data.count)
-        {
-
-            call_close(index);
-            call_close(CALL_L6);
-
-        }
 
     }
 
@@ -92,6 +85,8 @@ static void execute_command(struct command *command, char *buffer)
             call_close(index);
 
     }
+
+    call_close(CALL_L1);
 
 }
 
@@ -107,12 +102,10 @@ static void execute(struct token_state *state, struct expression *expression)
         unsigned int cindex;
 
         for (cindex = 0; cindex < pipe->commands; cindex++)
-        {
-
             call_walk(CALL_L2 + cindex, CALL_DR, 17, "system/pipe/clone");
-            call_open(CALL_L2 + cindex);
 
-        }
+        for (cindex = 0; cindex < pipe->commands; cindex++)
+            call_open(CALL_L2 + cindex);
 
         for (cindex = 0; cindex < pipe->commands; cindex++)
         {
