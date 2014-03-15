@@ -110,6 +110,8 @@ static void execute(struct token_state *state, struct expression *expression)
         for (cindex = 0; cindex < pipe->commands; cindex++)
         {
 
+            call_close(CALL_O1);
+
             if (cindex != pipe->commands - 1)
                 call_walk(CALL_O1, CALL_L2 + cindex, 4, "../0");
             else
@@ -117,6 +119,7 @@ static void execute(struct token_state *state, struct expression *expression)
 
             call_open(CALL_O1);
             execute_command(&pipe->command[cindex], state->buffer);
+            call_close(CALL_I1);
             call_walk(CALL_I1, CALL_L2 + cindex, 4, "../1");
             call_open(CALL_I1);
 
