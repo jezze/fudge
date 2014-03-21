@@ -56,7 +56,7 @@ void kernel_setup_modules(struct container *container, struct task *task, unsign
     struct vfs_channel *channel2 = &container->channels[2];
     struct vfs_descriptor *descriptor = &task->descriptors[1];
     struct vfs_mount *mount1 = &container->mounts[1];
-    struct vfs_mount *mount4 = &container->mounts[4];
+    struct vfs_mount *mount2 = &container->mounts[2];
     unsigned int entry = 0;
     unsigned int i;
 
@@ -85,10 +85,10 @@ void kernel_setup_modules(struct container *container, struct task *task, unsign
 
     vfs_init_descriptor(descriptor, channel1, channel1->protocol->root(channel1->backend));
     vfs_init_mount(mount1, channel1, channel1->protocol->root(channel1->backend), channel1, channel1->protocol->root(channel1->backend));
-    vfs_init_mount(mount4, channel1, channel1->protocol->root(channel1->backend), channel2, channel2->protocol->root(channel2->backend));
+    vfs_init_mount(mount2, channel1, channel1->protocol->root(channel1->backend), channel2, channel2->protocol->root(channel2->backend));
 
     descriptor->active = 1;
-    mount4->parent.id = channel1->protocol->child(channel1->backend, mount4->parent.id, 7, "kernel/");
+    mount2->parent.id = channel1->protocol->child(channel1->backend, mount2->parent.id, 7, "kernel/");
 
 }
 

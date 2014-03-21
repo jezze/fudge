@@ -42,20 +42,21 @@ void main()
     unsigned int nargs = parse(count, buffer);
     unsigned int i;
 
-    for (i = 0; i < nargs; i += 3)
+    for (i = 0; i < nargs; i += 4)
     {
 
-        unsigned int num = ascii_read_value(args[i].position, args[i].count, 10);
+        unsigned int channel = ascii_read_value(args[i].position, args[i].count, 10);
+        unsigned int mount = ascii_read_value(args[i + 1].position, args[i + 1].count, 10);
 
-        if (!call_walk(CALL_L0, CALL_DR, args[i + 1].count - 1, args[i + 1].position + 1))
+        if (!call_walk(CALL_L0, CALL_DR, args[i + 2].count - 1, args[i + 2].position + 1))
             continue;
 
-        if (!call_walk(CALL_L1, CALL_DR, args[i + 2].count - 1, args[i + 2].position + 1))
+        if (!call_walk(CALL_L1, CALL_DR, args[i + 3].count - 1, args[i + 3].position + 1))
             continue;
 
         call_open(CALL_L0);
         call_open(CALL_L1);
-        call_mount(num, CALL_L0, CALL_L1);
+        call_mount(channel, mount, CALL_L0, CALL_L1);
         call_close(CALL_L1);
         call_close(CALL_L0);
 

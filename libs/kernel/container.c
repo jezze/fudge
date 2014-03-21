@@ -15,6 +15,16 @@ static struct vfs_descriptor *get_descriptor(struct task *task, unsigned int ind
 
 }
 
+static struct vfs_channel *get_channel(struct container *container, unsigned int index)
+{
+
+    if (!index || index >= CONTAINER_CHANNELS)
+        return 0;
+
+    return &container->channels[index];
+
+}
+
 static struct vfs_mount *get_mount(struct container *container, unsigned int index)
 {
 
@@ -186,13 +196,13 @@ static unsigned int write(struct container *self, struct task *task, void *stack
 static unsigned int mount(struct container *self, struct task *task, void *stack)
 {
 
-    struct {void *caller; unsigned int index; unsigned int pindex; unsigned int cindex;} *args = stack;
-    struct vfs_channel *channel = &self->channels[0x04];
-    struct vfs_mount *mount = get_mount(self, args->index);
+    struct {void *caller; unsigned int channel; unsigned int mount; unsigned int pindex; unsigned int cindex;} *args = stack;
+    struct vfs_channel *channel = get_channel(self, args->channel);
+    struct vfs_mount *mount = get_mount(self, args->mount);
     struct vfs_descriptor *pdescriptor = get_descriptor(task, args->pindex);
     struct vfs_descriptor *cdescriptor = get_descriptor(task, args->cindex);
 
-    if (!mount || !pdescriptor || !cdescriptor)
+    if (!channel || !mount || !pdescriptor || !cdescriptor)
         return 0;
 
     if (!pdescriptor->id || !pdescriptor->channel || !pdescriptor->active)
@@ -220,8 +230,8 @@ static unsigned int mount(struct container *self, struct task *task, void *stack
 static unsigned int bind(struct container *self, struct task *task, void *stack)
 {
 
-    struct {void *caller; unsigned int index; unsigned int pindex; unsigned int cindex;} *args = stack;
-    struct vfs_mount *mount = get_mount(self, args->index);
+    struct {void *caller; unsigned int mount; unsigned int pindex; unsigned int cindex;} *args = stack;
+    struct vfs_mount *mount = get_mount(self, args->mount);
     struct vfs_descriptor *pdescriptor = get_descriptor(task, args->pindex);
     struct vfs_descriptor *cdescriptor = get_descriptor(task, args->cindex);
 
