@@ -12,13 +12,11 @@ void main()
     if (!call_walk(CALL_L0, CALL_DR, 9, "bin/slang"))
         return;
 
-    call_open(CALL_DW);
     call_open(CALL_I1);
     call_open(CALL_L0);
     call_spawn(CALL_L0);
     call_close(CALL_L0);
     call_close(CALL_I1);
-    call_close(CALL_DW);
 
 }
 

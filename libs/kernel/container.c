@@ -56,7 +56,7 @@ static unsigned int walk(struct container *self, struct task *task, void *stack)
     if (!descriptor || !pdescriptor)
         return 0;
 
-    if (!pdescriptor->id || !pdescriptor->channel || !pdescriptor->active)
+    if (!pdescriptor->id || !pdescriptor->channel)
         return 0;
 
     vfs_init_descriptor(descriptor, pdescriptor->channel, pdescriptor->id);

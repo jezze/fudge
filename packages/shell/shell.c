@@ -8,27 +8,13 @@ static void interpret(struct lifo_stack *stack)
     if (memory_match(stack->buffer, "cd ", 3))
     {
 
-        unsigned int ret;
-
         if (stack->head < 4)
             return;
 
         if (stack->buffer[3] == '/')
-            ret = call_walk(CALL_DT, CALL_DR, stack->head - 5, stack->buffer + 4);
+            call_walk(CALL_DW, CALL_DR, stack->head - 5, stack->buffer + 4);
         else
-            ret = call_walk(CALL_DT, CALL_DW, stack->head - 4, stack->buffer + 3);
-
-        if (ret)
-        {
-
-            call_open(CALL_DT);
-
-            if (call_walk(CALL_DW, CALL_DT, 0, 0))
-                call_open(CALL_DW);
-
-            call_close(CALL_DT);
-
-        }
+            call_walk(CALL_DW, CALL_DW, stack->head - 4, stack->buffer + 3);
 
         return;
 
