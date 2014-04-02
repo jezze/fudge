@@ -87,7 +87,6 @@ void kernel_setup_modules(struct container *container, struct task *task, unsign
     vfs_init_mount(mount1, channel1, channel1->protocol->root(channel1->backend), channel1, channel1->protocol->root(channel1->backend));
     vfs_init_mount(mount2, channel1, channel1->protocol->root(channel1->backend), channel2, channel2->protocol->root(channel2->backend));
 
-    descriptor->active = 1;
     mount2->parent.id = channel1->protocol->child(channel1->backend, mount2->parent.id, 7, "kernel/");
 
 }
