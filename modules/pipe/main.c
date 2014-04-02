@@ -27,7 +27,7 @@ static struct pipe_session
     struct rendezvous iread;
     struct rendezvous oread;
 
-} session[8];
+} sessions[8];
 
 static struct system_group root;
 static struct system_stream clone;
@@ -102,16 +102,12 @@ static unsigned int control_read(struct system_node *self, unsigned int offset, 
 static unsigned int ipipe_open(struct system_node *self)
 {
 
-    rendezvous_lock(&session->iread);
-
     return (unsigned int)self;
 
 }
 
 static unsigned int ipipe_close(struct system_node *self)
 {
-
-    rendezvous_unlock(&session->iread);
 
     return (unsigned int)self;
 
@@ -124,8 +120,6 @@ static unsigned int ipipe_read(struct system_node *self, unsigned int offset, un
 
     count = read_stream(&session->ostream, count, buffer);
 
-    rendezvous_sleep(&session->iread, !count);
-
     return count;
 
 }
@@ -137,8 +131,6 @@ static unsigned int ipipe_write(struct system_node *self, unsigned int offset, u
 
     count = write_stream(&session->istream, count, buffer);
 
-    rendezvous_unsleep(&session->oread, count);
-
     return count;
 
 }
@@ -146,16 +138,12 @@ static unsigned int ipipe_write(struct system_node *self, unsigned int offset, u
 static unsigned int opipe_open(struct system_node *self)
 {
 
-    rendezvous_lock(&session->oread);
-
     return (unsigned int)self;
 
 }
 
 static unsigned int opipe_close(struct system_node *self)
 {
-
-    rendezvous_unlock(&session->oread);
 
     return (unsigned int)self;
 
@@ -168,8 +156,6 @@ static unsigned int opipe_read(struct system_node *self, unsigned int offset, un
 
     count = read_stream(&session->istream, count, buffer);
 
-    rendezvous_sleep(&session->oread, !count);
-
     return count;
 
 }
@@ -180,8 +166,6 @@ static unsigned int opipe_write(struct system_node *self, unsigned int offset, u
     struct pipe_session *session = (struct pipe_session *)self->parent;
 
     count = write_stream(&session->ostream, count, buffer);
-
-    rendezvous_unsleep(&session->iread, count);
 
     return count;
 
@@ -195,7 +179,7 @@ static unsigned int find_session()
     for (i = 1; i < 8; i++)
     {
 
-        if (!session[i].base.node.parent)
+        if (!sessions[i].base.node.parent)
             return i;
 
     }
@@ -235,20 +219,20 @@ static unsigned int clone_open(struct system_node *self)
     if (!index)
         return 0;
 
-    init_session(&session[index], index);
-    system_group_add(&root, &session[index].base.node);
-    system_group_add(&session[index].base, &session[index].control.node);
-    system_group_add(&session[index].base, &session[index].ipipe.node);
-    system_group_add(&session[index].base, &session[index].opipe.node);
+    init_session(&sessions[index], index);
+    system_group_add(&root, &sessions[index].base.node);
+    system_group_add(&sessions[index].base, &sessions[index].control.node);
+    system_group_add(&sessions[index].base, &sessions[index].ipipe.node);
+    system_group_add(&sessions[index].base, &sessions[index].opipe.node);
 
-    return (unsigned long)&session[index].control;
+    return (unsigned long)&sessions[index].control;
 
 }
 
 void init()
 {
 
-    memory_clear(session, sizeof (struct pipe_session) * 8);
+    memory_clear(sessions, sizeof (struct pipe_session) * 8);
     system_init_group(&root, "pipe");
     system_register_node(&root.node);
     system_init_stream(&clone, "clone");
