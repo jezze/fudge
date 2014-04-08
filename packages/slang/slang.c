@@ -20,8 +20,6 @@ static void execute_command(struct command *command, char *buffer)
     if (!walk_path(CALL_L1, CALL_L0, command->binary.count, buffer + command->binary.index))
         return;
 
-    call_open(CALL_L1);
-
     for (i = 0; i < command->ins; i++)
     {
 
@@ -58,7 +56,9 @@ static void execute_command(struct command *command, char *buffer)
 
     }
 
+    call_open(CALL_L1);
     call_spawn(CALL_L1);
+    call_close(CALL_L1);
 
     for (i = 0; i < command->ins; i++)
     {
@@ -85,8 +85,6 @@ static void execute_command(struct command *command, char *buffer)
             call_close(index);
 
     }
-
-    call_close(CALL_L1);
 
 }
 
