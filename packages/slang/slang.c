@@ -155,15 +155,11 @@ void main()
     if (!call_walk(CALL_L0, CALL_DR, 4, "bin/"))
         return;
 
-    call_open(CALL_L0);
-
     memory_clear(&expression, sizeof (struct expression));
     token_init_state(&state, call_read(CALL_I0, 0, FUDGE_BSIZE, buffer), buffer);
 
     if (parse(&state, &expression))
         execute(&state, &expression);
-
-    call_close(CALL_L0);
 
 }
 
