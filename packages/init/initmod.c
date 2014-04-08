@@ -18,7 +18,9 @@ static void parse()
                 continue;
 
             call_open(CALL_I1);
+            call_open(CALL_O1);
             call_spawn(CALL_L0);
+            call_close(CALL_O1);
             call_close(CALL_I1);
 
         }
@@ -42,13 +44,9 @@ void main()
     if (!call_walk(CALL_L1, CALL_DR, 9, "boot/mod/"))
         return;
 
-    call_open(CALL_O1);
     call_open(CALL_L0);
-    call_open(CALL_L1);
     parse();
-    call_close(CALL_L1);
     call_close(CALL_L0);
-    call_close(CALL_O1);
 
 }
 
