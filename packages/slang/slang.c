@@ -102,31 +102,44 @@ static void execute(struct token_state *state, struct expression *expression)
         unsigned int cindex;
 
         for (cindex = 0; cindex < pipe->commands; cindex++)
-            call_walk(CALL_L2 + cindex, CALL_DR, 17, "system/pipe/clone");
-
-        for (cindex = 0; cindex < pipe->commands; cindex++)
-            call_open(CALL_L2 + cindex);
-
-        for (cindex = 0; cindex < pipe->commands; cindex++)
         {
 
-            call_close(CALL_O1);
+            if (pipe->commands > 1)
+            {
 
-            if (cindex != pipe->commands - 1)
-                call_walk(CALL_O1, CALL_L2 + cindex, 4, "../0");
+                if (cindex == 0)
+                {
+
+                    call_walk(CALL_I1, CALL_I0, 0, 0);
+                    call_walk(CALL_O1, CALL_DR, 15, "system/pipe/0/0");
+
+                }
+
+                else
+                {
+
+                    call_walk(CALL_I1, CALL_DR, 15, "system/pipe/0/1");
+                    call_walk(CALL_O1, CALL_O0, 0, 0);
+
+                }
+
+            }
+
             else
+            {
+
+                call_walk(CALL_I1, CALL_I0, 0, 0);
                 call_walk(CALL_O1, CALL_O0, 0, 0);
 
+            }
+
+            call_open(CALL_I1);
             call_open(CALL_O1);
             execute_command(&pipe->command[cindex], state->buffer);
+            call_close(CALL_O1);
             call_close(CALL_I1);
-            call_walk(CALL_I1, CALL_L2 + cindex, 4, "../1");
-            call_open(CALL_I1);
 
         }
-
-        for (cindex = 0; cindex < pipe->commands; cindex++)
-            call_close(CALL_L2 + cindex);
 
     }
 
