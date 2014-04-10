@@ -94,7 +94,7 @@ static unsigned int ipipe_close(struct system_node *self)
 
     rendezvous_unlock(&session->iread);
 
-    return (unsigned int)self;
+    return 0;
 
 }
 
@@ -142,7 +142,7 @@ static unsigned int opipe_close(struct system_node *self)
 
     rendezvous_unlock(&session->oread);
 
-    return (unsigned int)self;
+    return 0;
 
 }
 

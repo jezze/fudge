@@ -38,9 +38,14 @@ void main()
 {
 
     unsigned char buffer[FUDGE_BSIZE];
-    unsigned int count = call_read(CALL_I0, 0, FUDGE_BSIZE, buffer);
-    unsigned int nargs = parse(count, buffer);
+    unsigned int count;
+    unsigned int nargs;
     unsigned int i;
+
+    call_open(CALL_I0);
+    count = call_read(CALL_I0, 0, FUDGE_BSIZE, buffer);
+    nargs = parse(count, buffer);
+    call_close(CALL_I0);
 
     for (i = 0; i < nargs; i += 4)
     {

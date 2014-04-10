@@ -196,8 +196,12 @@ static unsigned int resolve(unsigned int id)
 void main()
 {
 
+    call_open(CALL_I0);
+
     if (resolve(CALL_I0))
         call_load(CALL_I0);
+
+    call_close(CALL_I0);
 
 }
 

@@ -48,6 +48,8 @@ static void execute(struct token_state *state, struct expression *expression)
 
     }
 
+    call_open(CALL_O0);
+
     for (rindex = 0; rindex < expression->rules; rindex++)
     {
 
@@ -57,6 +59,8 @@ static void execute(struct token_state *state, struct expression *expression)
         woff += call_write(CALL_O0, woff, 1, "\n");
 
     }
+
+    call_close(CALL_O0);
 
 }
 
@@ -68,7 +72,9 @@ void main()
     struct expression expression;
 
     memory_clear(&expression, sizeof (struct expression));
+    call_open(CALL_I0);
     token_init_state(&state, call_read(CALL_I0, 0, FUDGE_BSIZE, buffer), buffer);
+    call_close(CALL_I0);
 
     if (parse(&state, &expression))
         execute(&state, &expression);

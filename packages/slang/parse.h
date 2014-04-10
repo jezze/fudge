@@ -27,9 +27,9 @@ struct command
 {
 
     struct string binary;
-    struct input in[8];
+    struct input in[2];
     unsigned int ins;
-    struct output out[8];
+    struct output out[2];
     unsigned int outs;
 
 };
@@ -37,7 +37,7 @@ struct command
 struct pipe
 {
 
-    struct command command[8];
+    struct command command[4];
     unsigned int commands;
 
 };
@@ -45,7 +45,7 @@ struct pipe
 struct expression
 {
 
-    struct pipe pipe[8];
+    struct pipe pipe[32];
     unsigned int pipes;
 
 };

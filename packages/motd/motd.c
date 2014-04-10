@@ -6,6 +6,8 @@ void main()
     unsigned char buffer[FUDGE_BSIZE];
     unsigned int count, roff, woff = 0;
 
+    call_open(CALL_O0);
+
     woff += call_write(CALL_O0, woff, 23, "FUDGE OPERATING SYSTEM\n");
     woff += call_write(CALL_O0, woff, 12, "Build date: ");
     woff += call_write(CALL_O0, woff, 11, __DATE__);
@@ -22,6 +24,7 @@ void main()
         woff += call_write(CALL_O0, woff, count, buffer);
 
     call_close(CALL_L0);
+    call_close(CALL_O0);
 
 }
 

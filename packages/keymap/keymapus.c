@@ -263,7 +263,9 @@ static struct keycode map[256] = {
 void main()
 {
 
+    call_open(CALL_O0);
     call_write(CALL_O0, 0, sizeof (struct keycode) * 256, map);
+    call_close(CALL_O0);
 
 }
 
