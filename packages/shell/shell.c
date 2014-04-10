@@ -33,9 +33,7 @@ static void interpret(struct lifo_stack *stack)
     if (!call_walk(CALL_I1, CALL_DR, 15, "system/pipe/7/1"))
         return;
 
-    call_open(CALL_L0);
     call_spawn(CALL_L0);
-    call_close(CALL_L0);
 
 }
 

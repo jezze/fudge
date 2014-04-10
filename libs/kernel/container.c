@@ -260,7 +260,7 @@ static unsigned int execute(struct container *self, struct task *task, void *sta
     if (!descriptor)
         return 0;
 
-    if (!descriptor->id || !descriptor->channel || !descriptor->active)
+    if (!descriptor->id || !descriptor->channel)
         return 0;
 
     protocol = binary_find_protocol(descriptor->channel, descriptor->id);

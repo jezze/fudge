@@ -37,9 +37,7 @@ void main()
     if (!call_walk(CALL_L1, CALL_DR, 9, "boot/mod/"))
         return;
 
-    call_open(CALL_L0);
     parse();
-    call_close(CALL_L0);
 
 }
 

@@ -46,9 +46,7 @@ static void execute_command(struct command *command, char *buffer)
 
     }
 
-    call_open(CALL_L1);
     call_spawn(CALL_L1);
-    call_close(CALL_L1);
 
 }
 
