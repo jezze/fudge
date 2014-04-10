@@ -1,10 +1,18 @@
 #include <fudge.h>
 
-static void parse()
+void main()
 {
 
     char buffer[FUDGE_BSIZE];
     unsigned int count, roff, loff;
+
+    if (!call_walk(CALL_L0, CALL_DR, 11, "bin/modload"))
+        return;
+
+    if (!call_walk(CALL_L1, CALL_DR, 9, "boot/mod/"))
+        return;
+
+    call_open(CALL_I0);
 
     for (roff = 0; (count = call_read(CALL_I0, roff, FUDGE_BSIZE, buffer)); roff += loff)
     {
@@ -26,18 +34,7 @@ static void parse()
 
     }
 
-}
-
-void main()
-{
-
-    if (!call_walk(CALL_L0, CALL_DR, 11, "bin/modload"))
-        return;
-
-    if (!call_walk(CALL_L1, CALL_DR, 9, "boot/mod/"))
-        return;
-
-    parse();
+    call_close(CALL_I0);
 
 }
 

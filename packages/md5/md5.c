@@ -219,7 +219,6 @@ void main()
     struct md5 s;
 
     md5_init(&s);
-
     call_open(CALL_I0);
 
     for (roff = 0; (count = call_read(CALL_I0, roff, FUDGE_BSIZE, buffer)); roff += count)
