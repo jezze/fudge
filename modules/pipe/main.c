@@ -93,6 +93,7 @@ static unsigned int ipipe_close(struct system_node *self)
     struct pipe_session *session = (struct pipe_session *)self->parent;
 
     rendezvous_unlock(&session->iread);
+    rendezvous_unsleep(&session->oread, 1);
 
     return 0;
 
@@ -105,7 +106,7 @@ static unsigned int ipipe_read(struct system_node *self, unsigned int offset, un
 
     count = read_stream(&session->ostream, count, buffer);
 
-    rendezvous_sleep(&session->iread, 0);
+    rendezvous_sleep(&session->iread, !count && rendezvous_islocked(&session->oread));
 
     return count;
 
@@ -118,7 +119,7 @@ static unsigned int ipipe_write(struct system_node *self, unsigned int offset, u
 
     count = write_stream(&session->istream, count, buffer);
 
-    rendezvous_unsleep(&session->oread, 1);
+    rendezvous_unsleep(&session->oread, count);
 
     return count;
 
@@ -141,6 +142,7 @@ static unsigned int opipe_close(struct system_node *self)
     struct pipe_session *session = (struct pipe_session *)self->parent;
 
     rendezvous_unlock(&session->oread);
+    rendezvous_unsleep(&session->iread, 1);
 
     return 0;
 
@@ -153,7 +155,7 @@ static unsigned int opipe_read(struct system_node *self, unsigned int offset, un
 
     count = read_stream(&session->istream, count, buffer);
 
-    rendezvous_sleep(&session->oread, 0);
+    rendezvous_sleep(&session->oread, !count && rendezvous_islocked(&session->iread));
 
     return count;
 
@@ -166,7 +168,7 @@ static unsigned int opipe_write(struct system_node *self, unsigned int offset, u
 
     count = write_stream(&session->ostream, count, buffer);
 
-    rendezvous_unsleep(&session->iread, 1);
+    rendezvous_unsleep(&session->iread, count);
 
     return count;
 
