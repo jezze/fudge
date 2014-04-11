@@ -77,6 +77,9 @@ static unsigned int spawn(struct container *self, struct task *task, void *stack
 
     memory_copy(&args, stack, sizeof (struct parameters));
 
+    next->registers.ip = 0;
+    next->registers.sp = ARCH_TASK_STACKLIMIT;
+
     for (i = 0; i < TASK_DESCRIPTORS; i++)
         vfs_init_descriptor(&next->descriptors[i], 0, 0);
 
