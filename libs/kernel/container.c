@@ -356,6 +356,8 @@ static unsigned int unload(struct container *self, struct task *task, void *stac
 void container_init(struct container *container)
 {
 
+    unsigned int i;
+
     memory_clear(container, sizeof (struct container));
     resource_init_item(&container->resource, CONTAINER_RESOURCE, container);
 
@@ -369,6 +371,12 @@ void container_init(struct container *container)
     container->calls[CONTAINER_CALL_EXECUTE] = execute;
     container->calls[CONTAINER_CALL_LOAD] = load;
     container->calls[CONTAINER_CALL_UNLOAD] = unload;
+
+    for (i = 0; i < CONTAINER_CHANNELS; i++)
+        vfs_init_channel(&container->channels[i], 0, 0);
+
+    for (i = 0; i < CONTAINER_MOUNTS; i++)
+        vfs_init_mount(&container->mounts[i], 0, 0, 0, 0);
 
 }
 
