@@ -72,7 +72,7 @@ unsigned int child(struct system_node *self, unsigned int count, const char *pat
 {
 
     if (!count)
-        return (unsigned long)self;
+        return (unsigned int)self;
 
     return 0;
 
@@ -127,7 +127,7 @@ unsigned int child_group(struct system_node *self, unsigned int count, const cha
     struct list_item *current;
 
     if (!count)
-        return (unsigned long)self;
+        return (unsigned int)self;
 
     for (current = group->children.head; current; current = current->next)
     {
