@@ -70,13 +70,25 @@ static unsigned int spawn(struct container *self, struct task *task, void *stack
 
     struct parameters {void *caller; unsigned int index;} args;
     struct task *next = scheduler_find_free_task();
+    unsigned int i;
 
     if (!next)
         return 0;
 
     memory_copy(&args, stack, sizeof (struct parameters));
-    memory_copy(&next->descriptors[0], &task->descriptors[0], sizeof (struct vfs_descriptor) * TASK_DESCRIPTORS);
-    memory_copy(&next->descriptors[4], &task->descriptors[6], sizeof (struct vfs_descriptor) * 18);
+
+    for (i = 0; i < TASK_DESCRIPTORS; i++)
+        vfs_init_descriptor(&next->descriptors[i], 0, 0);
+
+    for (i = 0; i < TASK_DESCRIPTORS; i++)
+        vfs_init_descriptor(&next->descriptors[i], task->descriptors[i].channel, task->descriptors[i].id);
+
+    for (i = 0; i < 4; i++)
+        vfs_init_descriptor(&next->descriptors[i], task->descriptors[i].channel, task->descriptors[i].id);
+
+    for (i = 4; i < 22; i++)
+        vfs_init_descriptor(&next->descriptors[i], task->descriptors[i + 2].channel, task->descriptors[i + 2].id);
+
     activate_task(next);
     scheduler_use(next);
 
