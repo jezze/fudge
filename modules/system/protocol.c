@@ -11,16 +11,16 @@ static unsigned int root(struct vfs_backend *backend)
 
     backend->read(backend, 0, sizeof (struct system_header), &header);
 
-    return (unsigned long)header.root;
+    return (unsigned int)header.root;
 
 }
 
 static unsigned int parent(struct vfs_backend *backend, unsigned int id)
 {
 
-    struct system_node *node = (struct system_node *)(unsigned long)id;
+    struct system_node *node = (struct system_node *)(unsigned int)id;
 
-    return (unsigned long)node->parent;
+    return (unsigned int)node->parent;
 
 }
 
@@ -39,7 +39,7 @@ static unsigned int match(struct vfs_backend *backend)
 static unsigned int open(struct vfs_backend *backend, unsigned int id)
 {
 
-    struct system_node *node = (struct system_node *)(unsigned long)id;
+    struct system_node *node = (struct system_node *)(unsigned int)id;
 
     return node->open(node);
 
@@ -48,7 +48,7 @@ static unsigned int open(struct vfs_backend *backend, unsigned int id)
 static unsigned int close(struct vfs_backend *backend, unsigned int id)
 {
 
-    struct system_node *node = (struct system_node *)(unsigned long)id;
+    struct system_node *node = (struct system_node *)(unsigned int)id;
 
     return node->close(node);
 
@@ -57,7 +57,7 @@ static unsigned int close(struct vfs_backend *backend, unsigned int id)
 static unsigned int read(struct vfs_backend *backend, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct system_node *node = (struct system_node *)(unsigned long)id;
+    struct system_node *node = (struct system_node *)(unsigned int)id;
 
     return node->read(node, offset, count, buffer);
 
@@ -66,7 +66,7 @@ static unsigned int read(struct vfs_backend *backend, unsigned int id, unsigned 
 static unsigned int child(struct vfs_backend *backend, unsigned int id, unsigned int count, const char *path)
 {
 
-    struct system_node *node = (struct system_node *)(unsigned long)id;
+    struct system_node *node = (struct system_node *)(unsigned int)id;
 
     return node->child(node, count, path);
 
@@ -75,7 +75,7 @@ static unsigned int child(struct vfs_backend *backend, unsigned int id, unsigned
 static unsigned int write(struct vfs_backend *backend, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct system_node *node = (struct system_node *)(unsigned long)id;
+    struct system_node *node = (struct system_node *)(unsigned int)id;
 
     return node->write(node, offset, count, buffer);
 
