@@ -42,6 +42,13 @@ void scheduler_register_task(struct task *task)
 
 }
 
+void scheduler_unregister_task(struct task *task)
+{
+
+    list_remove(&free, &task->item);
+
+}
+
 struct task *scheduler_find_used_task()
 {
 
