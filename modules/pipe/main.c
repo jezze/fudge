@@ -95,7 +95,7 @@ static unsigned int ipipe_close(struct system_node *self)
     rendezvous_unlock(&session->iread);
     rendezvous_unsleep(&session->oread, 1);
 
-    return 0;
+    return (unsigned int)self;
 
 }
 

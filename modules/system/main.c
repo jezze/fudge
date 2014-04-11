@@ -43,14 +43,14 @@ void system_unregister_node(struct system_node *node)
 static unsigned int open(struct system_node *self)
 {
 
-    return (unsigned long)self;
+    return (unsigned int)self;
 
 }
 
 static unsigned int close(struct system_node *self)
 {
 
-    return 0;
+    return (unsigned int)self;
 
 }
 
