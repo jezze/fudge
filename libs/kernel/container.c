@@ -134,7 +134,7 @@ static unsigned int open(struct container *self, struct task *task, void *stack)
     if (!descriptor || !descriptor->id || !descriptor->channel)
         return 0;
 
-    descriptor->active = 1;
+    descriptor->active++;
 
     return descriptor->id = descriptor->channel->protocol->open(descriptor->channel->backend, descriptor->id);
 
@@ -149,7 +149,7 @@ static unsigned int close(struct container *self, struct task *task, void *stack
     if (!descriptor || !descriptor->id || !descriptor->channel)
         return 0;
 
-    descriptor->active = 0;
+    descriptor->active--;
 
     return descriptor->id = descriptor->channel->protocol->close(descriptor->channel->backend, descriptor->id);
 
