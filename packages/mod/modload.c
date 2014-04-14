@@ -59,20 +59,19 @@ static unsigned int find_symbol_module(unsigned int count, char *symbol)
     unsigned int length = memory_findbyte(symbol, count, '_');
     unsigned int offset = 0;
     unsigned int address;
-    char module[64];
+    char module[32];
 
-    offset += memory_write(module, 64, "boot/mod/", 9, offset);
-    offset += memory_write(module, 64, symbol, length, offset);
-    offset += memory_write(module, 64, ".ko", 3, offset);
+    offset += memory_write(module, 32, symbol, length, offset);
+    offset += memory_write(module, 32, ".ko", 3, offset);
 
-    if (!call_walk(CALL_L1, CALL_DR, offset, module))
+    if (!call_walk(CALL_L2, CALL_L1, offset, module))
         return 0;
 
-    call_open(CALL_L1);
+    call_open(CALL_L2);
 
-    address = find_symbol(CALL_L1, count, symbol);
+    address = find_symbol(CALL_L2, count, symbol);
 
-    call_close(CALL_L1);
+    call_close(CALL_L2);
 
     return address;
 
@@ -179,6 +178,9 @@ void main()
 {
 
     if (!call_walk(CALL_L0, CALL_DR, 10, "boot/fudge"))
+        return;
+
+    if (!call_walk(CALL_L1, CALL_DR, 9, "boot/mod/"))
         return;
 
     call_open(CALL_L0);
