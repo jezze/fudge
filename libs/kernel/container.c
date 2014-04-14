@@ -53,13 +53,10 @@ static unsigned int walk(struct container *self, struct task *task, void *stack)
     unsigned int offset;
     unsigned int count;
 
-    if (!descriptor || !pdescriptor)
+    if (!descriptor || descriptor->active)
         return 0;
 
-    if (descriptor->active)
-        return 0;
-
-    if (!pdescriptor->id || !pdescriptor->channel || pdescriptor->active)
+    if (!pdescriptor || !pdescriptor->id || !pdescriptor->channel || pdescriptor->active)
         return 0;
 
     vfs_init_descriptor(descriptor, pdescriptor->channel, pdescriptor->id);
@@ -134,10 +131,7 @@ static unsigned int open(struct container *self, struct task *task, void *stack)
     struct {void *caller; unsigned int index;} *args = stack;
     struct vfs_descriptor *descriptor = get_descriptor(task, args->index);
 
-    if (!descriptor)
-        return 0;
-
-    if (!descriptor->id || !descriptor->channel)
+    if (!descriptor || !descriptor->id || !descriptor->channel)
         return 0;
 
     descriptor->active = 1;
@@ -152,10 +146,7 @@ static unsigned int close(struct container *self, struct task *task, void *stack
     struct {void *caller; unsigned int index;} *args = stack;
     struct vfs_descriptor *descriptor = get_descriptor(task, args->index);
 
-    if (!descriptor)
-        return 0;
-
-    if (!descriptor->id || !descriptor->channel)
+    if (!descriptor || !descriptor->id || !descriptor->channel)
         return 0;
 
     descriptor->active = 0;
@@ -170,10 +161,7 @@ static unsigned int read(struct container *self, struct task *task, void *stack)
     struct {void *caller; unsigned int index; unsigned int offset; unsigned int count; void *buffer;} *args = stack;
     struct vfs_descriptor *descriptor = get_descriptor(task, args->index);
 
-    if (!descriptor)
-        return 0;
-
-    if (!descriptor->id || !descriptor->channel || !descriptor->active)
+    if (!descriptor || !descriptor->id || !descriptor->channel || !descriptor->active)
         return 0;
 
     return descriptor->channel->protocol->read(descriptor->channel->backend, descriptor->id, args->offset, args->count, args->buffer);
@@ -186,10 +174,7 @@ static unsigned int write(struct container *self, struct task *task, void *stack
     struct {void *caller; unsigned int index; unsigned int offset; unsigned int count; void *buffer;} *args = stack;
     struct vfs_descriptor *descriptor = get_descriptor(task, args->index);
 
-    if (!descriptor)
-        return 0;
-
-    if (!descriptor->id || !descriptor->channel || !descriptor->active)
+    if (!descriptor || !descriptor->id || !descriptor->channel || !descriptor->active)
         return 0;
 
     return descriptor->channel->protocol->write(descriptor->channel->backend, descriptor->id, args->offset, args->count, args->buffer);
@@ -205,13 +190,13 @@ static unsigned int mount(struct container *self, struct task *task, void *stack
     struct vfs_descriptor *pdescriptor = get_descriptor(task, args->pindex);
     struct vfs_descriptor *cdescriptor = get_descriptor(task, args->cindex);
 
-    if (!channel || !mount || !pdescriptor || !cdescriptor)
+    if (!mount || !channel)
         return 0;
 
-    if (!pdescriptor->id || !pdescriptor->channel || !pdescriptor->active)
+    if (!pdescriptor || !pdescriptor->id || !pdescriptor->channel || !pdescriptor->active)
         return 0;
 
-    if (!cdescriptor->id || !cdescriptor->channel || !cdescriptor->active)
+    if (!cdescriptor || !cdescriptor->id || !cdescriptor->channel || !cdescriptor->active)
         return 0;
 
     channel->backend = vfs_find_backend();
@@ -238,13 +223,13 @@ static unsigned int bind(struct container *self, struct task *task, void *stack)
     struct vfs_descriptor *pdescriptor = get_descriptor(task, args->pindex);
     struct vfs_descriptor *cdescriptor = get_descriptor(task, args->cindex);
 
-    if (!mount || !pdescriptor || !cdescriptor)
+    if (!mount)
         return 0;
 
-    if (!pdescriptor->id || !pdescriptor->channel || !pdescriptor->active)
+    if (!pdescriptor || !pdescriptor->id || !pdescriptor->channel || !pdescriptor->active)
         return 0;
 
-    if (!cdescriptor->id || !cdescriptor->channel || !cdescriptor->active)
+    if (!cdescriptor || !cdescriptor->id || !cdescriptor->channel || !cdescriptor->active)
         return 0;
 
     vfs_init_mount(mount, pdescriptor->channel, pdescriptor->id, cdescriptor->channel, cdescriptor->id);
@@ -260,10 +245,7 @@ static unsigned int execute(struct container *self, struct task *task, void *sta
     struct vfs_descriptor *descriptor = get_descriptor(task, args->index);
     struct binary_protocol *protocol;
 
-    if (!descriptor)
-        return 0;
-
-    if (!descriptor->id || !descriptor->channel)
+    if (!descriptor || !descriptor->id || !descriptor->channel)
         return 0;
 
     protocol = binary_find_protocol(descriptor->channel, descriptor->id);
@@ -289,10 +271,7 @@ static unsigned int load(struct container *self, struct task *task, void *stack)
     unsigned long physical;
     void (*init)();
 
-    if (!descriptor)
-        return 0;
-
-    if (!descriptor->id || !descriptor->channel || !descriptor->active)
+    if (!descriptor || !descriptor->id || !descriptor->channel || !descriptor->active)
         return 0;
 
     if (!descriptor->channel->protocol->get_physical)
@@ -331,10 +310,7 @@ static unsigned int unload(struct container *self, struct task *task, void *stac
     struct binary_protocol *protocol;
     void (*destroy)();
 
-    if (!descriptor)
-        return 0;
-
-    if (!descriptor->id || !descriptor->channel || !descriptor->active)
+    if (!descriptor || !descriptor->id || !descriptor->channel || !descriptor->active)
         return 0;
 
     protocol = binary_find_protocol(descriptor->channel, descriptor->id);
