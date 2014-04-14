@@ -60,8 +60,3 @@ void rendezvous_unsleep(struct rendezvous *rendezvous, unsigned int condition)
 
 }
 
-void rendezvous_setup()
-{
-
-}
-
