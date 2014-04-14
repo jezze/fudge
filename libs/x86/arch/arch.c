@@ -80,17 +80,15 @@ static unsigned int spawn(struct container *self, struct task *task, void *stack
     next->registers.ip = 0;
     next->registers.sp = ARCH_TASK_STACKLIMIT;
 
-    for (i = 0; i < TASK_DESCRIPTORS; i++)
-        vfs_init_descriptor(&next->descriptors[i], 0, 0);
-
-    for (i = 0; i < TASK_DESCRIPTORS; i++)
-        vfs_init_descriptor(&next->descriptors[i], task->descriptors[i].channel, task->descriptors[i].id);
-
     for (i = 0; i < 4; i++)
         vfs_init_descriptor(&next->descriptors[i], task->descriptors[i].channel, task->descriptors[i].id);
 
     for (i = 4; i < 22; i++)
         vfs_init_descriptor(&next->descriptors[i], task->descriptors[i + 2].channel, task->descriptors[i + 2].id);
+
+    /* these should be initialized with channel and id as zero but that does not seem to work for some reason */
+    for (i = 22; i < TASK_DESCRIPTORS; i++)
+        vfs_init_descriptor(&next->descriptors[i], task->descriptors[i].channel, task->descriptors[i].id);
 
     activate_task(next);
     scheduler_use(next);
