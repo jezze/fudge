@@ -53,24 +53,6 @@ static unsigned int find_symbol(unsigned int id, unsigned int count, char *symbo
 
 }
 
-static unsigned int find_symbol_kernel(unsigned int count, char *symbol)
-{
-
-    unsigned int address;
-
-    if (!call_walk(CALL_L0, CALL_DR, 10, "boot/fudge"))
-        return 0;
-
-    call_open(CALL_L0);
-
-    address = find_symbol(CALL_L0, count, symbol);
-
-    call_close(CALL_L0);
-
-    return address;
-
-}
-
 static unsigned int find_symbol_module(unsigned int count, char *symbol)
 {
 
@@ -83,14 +65,14 @@ static unsigned int find_symbol_module(unsigned int count, char *symbol)
     offset += memory_write(module, 64, symbol, length, offset);
     offset += memory_write(module, 64, ".ko", 3, offset);
 
-    if (!call_walk(CALL_L0, CALL_DR, offset, module))
+    if (!call_walk(CALL_L1, CALL_DR, offset, module))
         return 0;
 
-    call_open(CALL_L0);
+    call_open(CALL_L1);
 
-    address = find_symbol(CALL_L0, count, symbol);
+    address = find_symbol(CALL_L1, count, symbol);
 
-    call_close(CALL_L0);
+    call_close(CALL_L1);
 
     return address;
 
@@ -115,7 +97,7 @@ static unsigned int resolve_symbols(unsigned int id, struct elf_section_header *
 
         symbol = strings + symbols[index].name;
         count = ascii_length(symbol);
-        address = find_symbol_kernel(count, symbol);
+        address = find_symbol(CALL_L0, count, symbol);
 
         if (!address)
             address = find_symbol_module(count, symbol);
@@ -196,12 +178,17 @@ static unsigned int resolve(unsigned int id)
 void main()
 {
 
+    if (!call_walk(CALL_L0, CALL_DR, 10, "boot/fudge"))
+        return;
+
+    call_open(CALL_L0);
     call_open(CALL_I0);
 
     if (resolve(CALL_I0))
         call_load(CALL_I0);
 
     call_close(CALL_I0);
+    call_close(CALL_L0);
 
 }
 
