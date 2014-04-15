@@ -210,26 +210,6 @@ unsigned short arch_syscall(void *stack)
 
 }
 
-static void arch_setup_container(struct container *container)
-{
-
-    container_init(container);
-    resource_register_item(&container->resource);
-
-    container->calls[CONTAINER_CALL_SPAWN] = spawn;
-    container->calls[CONTAINER_CALL_EXIT] = exit;
-
-}
-
-static void arch_setup_task(struct task *task)
-{
-
-    task_init(task, 0, ARCH_TASK_STACKLIMIT);
-    resource_register_item(&task->resource);
-    scheduler_register_task(task);
-
-}
-
 static void arch_setup_entities()
 {
 
@@ -240,21 +220,24 @@ static void arch_setup_entities()
     unsigned int i;
 
     for (i = 0; i < ARCH_CONTAINERS; i++)
-        arch_setup_container(&state.containers[i].base);
-
-    for (i = 0; i < ARCH_CONTAINERS; i++)
     {
 
+        container_init(&state.containers[i].base);
+        resource_register_item(&state.containers[i].base.resource);
+
+        state.containers[i].base.calls[CONTAINER_CALL_SPAWN] = spawn;
+        state.containers[i].base.calls[CONTAINER_CALL_EXIT] = exit;
         state.containers[i].map.tables[0] = &kcodetables[i];
         state.containers[i].map.physical[0] = ARCH_KSPACE_BASE;
 
     }
 
     for (i = 0; i < ARCH_TASKS; i++)
-        arch_setup_task(&state.tasks[i].base);
-
-    for (i = 0; i < ARCH_TASKS; i++)
     {
+
+        task_init(&state.tasks[i].base, 0, ARCH_TASK_STACKLIMIT);
+        resource_register_item(&state.tasks[i].base.resource);
+        scheduler_register_task(&state.tasks[i].base);
 
         state.tasks[i].map.directory = &directories[i];
         state.tasks[i].map.tables[0] = &ucodetables[i];
