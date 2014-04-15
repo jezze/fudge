@@ -26,12 +26,22 @@
 #define ARCH_TASK_STACKLIMIT            0x80000000
 #define ARCH_TASK_STACKBASE             (ARCH_TASK_STACKLIMIT - ARCH_TASK_STACKSIZE)
 
+struct arch_mapping
+{
+
+    struct mmu_table *table;
+    unsigned int physical;
+    unsigned int size;
+
+};
+
 struct arch_task
 {
 
     struct task base;
     struct cpu_general general;
-    struct {struct mmu_directory *directory; struct mmu_table *tables[2]; unsigned int physical[2];} map;
+    struct mmu_directory *directory;
+    struct arch_mapping mapping[2];
 
 };
 
@@ -39,7 +49,7 @@ struct arch_container
 {
 
     struct container base;
-    struct {struct mmu_table *tables[2]; unsigned int physical[2];} map;
+    struct arch_mapping mapping[2];
 
 };
 
@@ -67,9 +77,9 @@ static void activate_task(struct container *c, struct task *t)
     struct arch_container *container = (struct arch_container *)c;
     struct arch_task *task = (struct arch_task *)t;
 
-    memory_clear(task->map.directory, sizeof (struct mmu_directory));
-    mmu_map(task->map.directory, container->map.tables[0], container->map.physical[0], container->map.physical[0], ARCH_KSPACE_SIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
-    mmu_load(task->map.directory);
+    memory_clear(task->directory, sizeof (struct mmu_directory));
+    mmu_map(task->directory, container->mapping[0].table, container->mapping[0].physical, container->mapping[0].physical, container->mapping[0].size, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
+    mmu_load(task->directory);
 
 }
 
@@ -144,7 +154,7 @@ unsigned short arch_schedule(struct cpu_general *general, struct cpu_interrupt *
     if (next)
     {
 
-        mmu_load(next->map.directory);
+        mmu_load(next->directory);
 
         interrupt->code = state.ucode;
         interrupt->eip = next->base.registers.ip;
@@ -188,8 +198,8 @@ unsigned short arch_pagefault(void *stack)
         struct arch_task *task = (struct arch_task *)scheduler_find_used_task();
         unsigned int address = cpu_get_cr2();
 
-        mmu_map(task->map.directory, task->map.tables[0], task->map.physical[0], address, ARCH_TASK_CODESIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
-        mmu_map(task->map.directory, task->map.tables[1], task->map.physical[1], ARCH_TASK_STACKBASE, ARCH_TASK_STACKSIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
+        mmu_map(task->directory, task->mapping[0].table, task->mapping[0].physical, address, task->mapping[0].size, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
+        mmu_map(task->directory, task->mapping[1].table, task->mapping[1].physical, ARCH_TASK_STACKBASE, task->mapping[1].size, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
 
         return state.kdata;
 
@@ -227,8 +237,9 @@ static void arch_setup_entities()
 
         state.containers[i].base.calls[CONTAINER_CALL_SPAWN] = spawn;
         state.containers[i].base.calls[CONTAINER_CALL_EXIT] = exit;
-        state.containers[i].map.tables[0] = &kcodetables[i];
-        state.containers[i].map.physical[0] = ARCH_KSPACE_BASE;
+        state.containers[i].mapping[0].table = &kcodetables[i];
+        state.containers[i].mapping[0].physical = ARCH_KSPACE_BASE;
+        state.containers[i].mapping[0].size = ARCH_KSPACE_SIZE;
 
     }
 
@@ -239,11 +250,13 @@ static void arch_setup_entities()
         resource_register_item(&state.tasks[i].base.resource);
         scheduler_register_task(&state.tasks[i].base);
 
-        state.tasks[i].map.directory = &directories[i];
-        state.tasks[i].map.tables[0] = &ucodetables[i];
-        state.tasks[i].map.tables[1] = &ustacktables[i];
-        state.tasks[i].map.physical[0] = ARCH_UCODE_BASE + ARCH_TASK_CODESIZE * i;
-        state.tasks[i].map.physical[1] = ARCH_USTACK_BASE + ARCH_TASK_STACKSIZE * i;
+        state.tasks[i].directory = &directories[i];
+        state.tasks[i].mapping[0].table = &ucodetables[i];
+        state.tasks[i].mapping[0].physical = ARCH_UCODE_BASE + ARCH_TASK_CODESIZE * i;
+        state.tasks[i].mapping[0].size = ARCH_TASK_CODESIZE;
+        state.tasks[i].mapping[1].table = &ustacktables[i];
+        state.tasks[i].mapping[1].physical = ARCH_USTACK_BASE + ARCH_TASK_STACKSIZE * i;
+        state.tasks[i].mapping[1].size = ARCH_TASK_STACKSIZE;
 
     }
 
