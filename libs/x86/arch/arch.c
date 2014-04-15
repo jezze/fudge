@@ -236,7 +236,7 @@ static void arch_setup_entities()
     struct mmu_directory *directories = (struct mmu_directory *)ARCH_DIRECTORY_BASE;
     struct mmu_table *kcodetables = (struct mmu_table *)ARCH_TABLE_KCODE_BASE;
     struct mmu_table *ucodetables = (struct mmu_table *)ARCH_TABLE_UCODE_BASE;
-    struct mmu_table *stacktables = (struct mmu_table *)ARCH_TABLE_USTACK_BASE;
+    struct mmu_table *ustacktables = (struct mmu_table *)ARCH_TABLE_USTACK_BASE;
     unsigned int i;
 
     for (i = 0; i < ARCH_CONTAINERS; i++)
@@ -258,7 +258,7 @@ static void arch_setup_entities()
 
         state.tasks[i].map.directory = &directories[i];
         state.tasks[i].map.tables[0] = &ucodetables[i];
-        state.tasks[i].map.tables[1] = &stacktables[i];
+        state.tasks[i].map.tables[1] = &ustacktables[i];
         state.tasks[i].map.physical[0] = ARCH_TASK_CODESIZE * i;
         state.tasks[i].map.physical[1] = ARCH_TASK_STACKSIZE * i;
 
