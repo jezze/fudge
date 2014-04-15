@@ -30,7 +30,8 @@ struct arch_mapping
 {
 
     struct mmu_table *table;
-    unsigned int physical;
+    unsigned int paddress;
+    unsigned int vaddress;
     unsigned int size;
 
 };
@@ -78,7 +79,7 @@ static void activate_task(struct container *c, struct task *t)
     struct arch_task *task = (struct arch_task *)t;
 
     memory_clear(task->directory, sizeof (struct mmu_directory));
-    mmu_map(task->directory, container->mapping[0].table, container->mapping[0].physical, container->mapping[0].physical, container->mapping[0].size, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
+    mmu_map(task->directory, container->mapping[0].table, container->mapping[0].paddress, container->mapping[0].vaddress, container->mapping[0].size, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
     mmu_load(task->directory);
 
 }
@@ -196,10 +197,11 @@ unsigned short arch_pagefault(void *stack)
     {
 
         struct arch_task *task = (struct arch_task *)scheduler_find_used_task();
-        unsigned int address = cpu_get_cr2();
 
-        mmu_map(task->directory, task->mapping[0].table, task->mapping[0].physical, address, task->mapping[0].size, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
-        mmu_map(task->directory, task->mapping[1].table, task->mapping[1].physical, ARCH_TASK_STACKBASE, task->mapping[1].size, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
+        task->mapping[0].vaddress = cpu_get_cr2();
+
+        mmu_map(task->directory, task->mapping[0].table, task->mapping[0].paddress, task->mapping[0].vaddress, task->mapping[0].size, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
+        mmu_map(task->directory, task->mapping[1].table, task->mapping[1].paddress, task->mapping[1].vaddress, task->mapping[1].size, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
 
         return state.kdata;
 
@@ -238,7 +240,8 @@ static void arch_setup_entities()
         state.containers[i].base.calls[CONTAINER_CALL_SPAWN] = spawn;
         state.containers[i].base.calls[CONTAINER_CALL_EXIT] = exit;
         state.containers[i].mapping[0].table = &kcodetables[i];
-        state.containers[i].mapping[0].physical = ARCH_KSPACE_BASE;
+        state.containers[i].mapping[0].paddress = ARCH_KSPACE_BASE;
+        state.containers[i].mapping[0].vaddress = ARCH_KSPACE_BASE;
         state.containers[i].mapping[0].size = ARCH_KSPACE_SIZE;
 
     }
@@ -252,10 +255,12 @@ static void arch_setup_entities()
 
         state.tasks[i].directory = &directories[i];
         state.tasks[i].mapping[0].table = &ucodetables[i];
-        state.tasks[i].mapping[0].physical = ARCH_UCODE_BASE + ARCH_TASK_CODESIZE * i;
+        state.tasks[i].mapping[0].paddress = ARCH_UCODE_BASE + ARCH_TASK_CODESIZE * i;
+        state.tasks[i].mapping[0].vaddress = 0;
         state.tasks[i].mapping[0].size = ARCH_TASK_CODESIZE;
         state.tasks[i].mapping[1].table = &ustacktables[i];
-        state.tasks[i].mapping[1].physical = ARCH_USTACK_BASE + ARCH_TASK_STACKSIZE * i;
+        state.tasks[i].mapping[1].paddress = ARCH_USTACK_BASE + ARCH_TASK_STACKSIZE * i;
+        state.tasks[i].mapping[1].vaddress = ARCH_TASK_STACKBASE;
         state.tasks[i].mapping[1].size = ARCH_TASK_STACKSIZE;
 
     }
