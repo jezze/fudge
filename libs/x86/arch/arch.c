@@ -47,8 +47,8 @@ static struct
 {
 
     struct task *task;
-    struct arch_task tasks[ARCH_TASKS];
     struct container *container;
+    struct arch_task tasks[ARCH_TASKS];
     struct arch_container containers[ARCH_CONTAINERS];
     struct {struct gdt_pointer pointer; struct gdt_descriptor descriptors[ARCH_GDT_DESCRIPTORS];} gdt;
     struct {struct idt_pointer pointer; struct idt_descriptor descriptors[ARCH_IDT_DESCRIPTORS];} idt;
@@ -68,7 +68,7 @@ static void activate_task(struct container *c, struct task *t)
     struct arch_task *task = (struct arch_task *)t;
 
     memory_clear(task->map.directory, sizeof (struct mmu_directory));
-    mmu_map(task->map.directory, container->map.tables[0], ARCH_KSPACE_BASE + container->map.physical[0], ARCH_KSPACE_BASE + container->map.physical[0], ARCH_KSPACE_SIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
+    mmu_map(task->map.directory, container->map.tables[0], container->map.physical[0], container->map.physical[0], ARCH_KSPACE_SIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
     mmu_load(task->map.directory);
 
 }
@@ -188,8 +188,8 @@ unsigned short arch_pagefault(void *stack)
         struct arch_task *task = (struct arch_task *)scheduler_find_used_task();
         unsigned int address = cpu_get_cr2();
 
-        mmu_map(task->map.directory, task->map.tables[0], ARCH_UCODE_BASE + task->map.physical[0], address, ARCH_TASK_CODESIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
-        mmu_map(task->map.directory, task->map.tables[1], ARCH_USTACK_BASE + task->map.physical[1], ARCH_TASK_STACKBASE, ARCH_TASK_STACKSIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
+        mmu_map(task->map.directory, task->map.tables[0], task->map.physical[0], address, ARCH_TASK_CODESIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
+        mmu_map(task->map.directory, task->map.tables[1], task->map.physical[1], ARCH_TASK_STACKBASE, ARCH_TASK_STACKSIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
 
         return state.kdata;
 
@@ -246,7 +246,7 @@ static void arch_setup_entities()
     {
 
         state.containers[i].map.tables[0] = &kcodetables[i];
-        state.containers[i].map.physical[0] = 0;
+        state.containers[i].map.physical[0] = ARCH_KSPACE_BASE;
 
     }
 
@@ -259,8 +259,8 @@ static void arch_setup_entities()
         state.tasks[i].map.directory = &directories[i];
         state.tasks[i].map.tables[0] = &ucodetables[i];
         state.tasks[i].map.tables[1] = &ustacktables[i];
-        state.tasks[i].map.physical[0] = ARCH_TASK_CODESIZE * i;
-        state.tasks[i].map.physical[1] = ARCH_TASK_STACKSIZE * i;
+        state.tasks[i].map.physical[0] = ARCH_UCODE_BASE + ARCH_TASK_CODESIZE * i;
+        state.tasks[i].map.physical[1] = ARCH_USTACK_BASE + ARCH_TASK_STACKSIZE * i;
 
     }
 
