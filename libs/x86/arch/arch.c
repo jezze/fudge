@@ -35,13 +35,21 @@ struct arch_task
 
 };
 
+struct arch_container
+{
+
+    struct container base;
+    struct {struct mmu_table *tables[2]; unsigned int physical[2];} map;
+
+};
+
 static struct
 {
 
     struct task *task;
     struct arch_task tasks[ARCH_TASKS];
     struct container *container;
-    struct container containers[ARCH_CONTAINERS];
+    struct arch_container containers[ARCH_CONTAINERS];
     struct {struct gdt_pointer pointer; struct gdt_descriptor descriptors[ARCH_GDT_DESCRIPTORS];} gdt;
     struct {struct idt_pointer pointer; struct idt_descriptor descriptors[ARCH_IDT_DESCRIPTORS];} idt;
     struct {struct tss_pointer pointer; struct tss_descriptor descriptors[ARCH_TSS_DESCRIPTORS];} tss;
@@ -53,14 +61,14 @@ static struct
 
 } state;
 
-static void activate_task(struct task *t)
+static void activate_task(struct container *c, struct task *t)
 {
 
+    struct arch_container *container = (struct arch_container *)c;
     struct arch_task *task = (struct arch_task *)t;
-    struct mmu_table *tables = (struct mmu_table *)ARCH_TABLE_KCODE_BASE;
 
     memory_clear(task->map.directory, sizeof (struct mmu_directory));
-    mmu_map(task->map.directory, &tables[0], ARCH_KSPACE_BASE, ARCH_KSPACE_BASE, ARCH_KSPACE_SIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
+    mmu_map(task->map.directory, container->map.tables[0], ARCH_KSPACE_BASE + container->map.physical[0], ARCH_KSPACE_BASE + container->map.physical[0], ARCH_KSPACE_SIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
     mmu_load(task->map.directory);
 
 }
@@ -80,7 +88,7 @@ static unsigned int spawn(struct container *self, struct task *task, void *stack
     next->registers.ip = 0;
     next->registers.sp = ARCH_TASK_STACKLIMIT;
 
-    activate_task(next);
+    activate_task(self, next);
     scheduler_use(next);
 
     for (i = 0; i < 4; i++)
@@ -226,12 +234,21 @@ static void arch_setup_entities()
 {
 
     struct mmu_directory *directories = (struct mmu_directory *)ARCH_DIRECTORY_BASE;
-    struct mmu_table *codetables = (struct mmu_table *)ARCH_TABLE_UCODE_BASE;
+    struct mmu_table *kcodetables = (struct mmu_table *)ARCH_TABLE_KCODE_BASE;
+    struct mmu_table *ucodetables = (struct mmu_table *)ARCH_TABLE_UCODE_BASE;
     struct mmu_table *stacktables = (struct mmu_table *)ARCH_TABLE_USTACK_BASE;
     unsigned int i;
 
     for (i = 0; i < ARCH_CONTAINERS; i++)
-        arch_setup_container(&state.containers[i]);
+        arch_setup_container(&state.containers[i].base);
+
+    for (i = 0; i < ARCH_CONTAINERS; i++)
+    {
+
+        state.containers[i].map.tables[0] = &kcodetables[i];
+        state.containers[i].map.physical[0] = 0;
+
+    }
 
     for (i = 0; i < ARCH_TASKS; i++)
         arch_setup_task(&state.tasks[i].base);
@@ -240,17 +257,17 @@ static void arch_setup_entities()
     {
 
         state.tasks[i].map.directory = &directories[i];
-        state.tasks[i].map.tables[0] = &codetables[i];
+        state.tasks[i].map.tables[0] = &ucodetables[i];
         state.tasks[i].map.tables[1] = &stacktables[i];
         state.tasks[i].map.physical[0] = ARCH_TASK_CODESIZE * i;
         state.tasks[i].map.physical[1] = ARCH_TASK_STACKSIZE * i;
 
     }
 
-    state.container = &state.containers[0];
+    state.container = &state.containers[0].base;
     state.task = &state.tasks[0].base;
 
-    activate_task(state.task);
+    activate_task(state.container, state.task);
     scheduler_use(state.task);
 
 }
