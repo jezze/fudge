@@ -43,11 +43,10 @@
 #define ARCH_GDT_DESCRIPTORS            6
 #define ARCH_IDT_DESCRIPTORS            256
 #define ARCH_TSS_DESCRIPTORS            1
-#define ARCH_KSPACE_BASE                ARCH_BIOS_BASE
-#define ARCH_KSPACE_LIMIT               ARCH_TABLE_USTACK_LIMIT
-#define ARCH_KSPACE_SIZE                (ARCH_KSPACE_LIMIT - ARCH_KSPACE_BASE)
 #define ARCH_CONTAINERS                 8
+#define ARCH_CONTAINER_MAPPINGS         2
 #define ARCH_TASKS                      64
+#define ARCH_TASK_MAPPINGS              2
 #define ARCH_TASK_CODESIZE              (ARCH_UCODE_SIZE / ARCH_TASKS)
 #define ARCH_TASK_STACKSIZE             (ARCH_USTACK_SIZE / ARCH_TASKS)
 #define ARCH_TASK_STACKLIMIT            0x80000000
@@ -63,31 +62,31 @@ struct arch_mapping
 
 };
 
+struct arch_container
+{
+
+    struct container base;
+    struct arch_mapping mapping[ARCH_CONTAINER_MAPPINGS];
+
+};
+
 struct arch_task
 {
 
     struct task base;
     struct cpu_general general;
     struct mmu_directory *directory;
-    struct arch_mapping mapping[2];
-
-};
-
-struct arch_container
-{
-
-    struct container base;
-    struct arch_mapping mapping[2];
+    struct arch_mapping mapping[ARCH_TASK_MAPPINGS];
 
 };
 
 static struct
 {
 
-    struct task *task;
     struct container *container;
-    struct arch_task tasks[ARCH_TASKS];
     struct arch_container containers[ARCH_CONTAINERS];
+    struct task *task;
+    struct arch_task tasks[ARCH_TASKS];
     struct {struct gdt_pointer pointer; struct gdt_descriptor descriptors[ARCH_GDT_DESCRIPTORS];} gdt;
     struct {struct idt_pointer pointer; struct idt_descriptor descriptors[ARCH_IDT_DESCRIPTORS];} idt;
     struct {struct tss_pointer pointer; struct tss_descriptor descriptors[ARCH_TSS_DESCRIPTORS];} tss;
@@ -253,7 +252,7 @@ static void arch_setup_entities()
 {
 
     struct mmu_directory *directories = (struct mmu_directory *)ARCH_DIRECTORY_BASE;
-    struct mmu_table *kcodetables = (struct mmu_table *)ARCH_TABLE_KCODE_BASE;
+    struct mmu_table *ktables = (struct mmu_table *)ARCH_TABLE_KCODE_BASE;
     struct mmu_table *ucodetables = (struct mmu_table *)ARCH_TABLE_UCODE_BASE;
     struct mmu_table *ustacktables = (struct mmu_table *)ARCH_TABLE_USTACK_BASE;
     unsigned int i;
@@ -266,10 +265,10 @@ static void arch_setup_entities()
 
         state.containers[i].base.calls[CONTAINER_CALL_SPAWN] = spawn;
         state.containers[i].base.calls[CONTAINER_CALL_EXIT] = exit;
-        state.containers[i].mapping[0].table = &kcodetables[i];
-        state.containers[i].mapping[0].paddress = ARCH_KSPACE_BASE;
-        state.containers[i].mapping[0].vaddress = ARCH_KSPACE_BASE;
-        state.containers[i].mapping[0].size = ARCH_KSPACE_SIZE;
+        state.containers[i].mapping[0].table = &ktables[i];
+        state.containers[i].mapping[0].paddress = ARCH_BIOS_BASE;
+        state.containers[i].mapping[0].vaddress = ARCH_BIOS_BASE;
+        state.containers[i].mapping[0].size = ARCH_TABLE_USTACK_LIMIT - ARCH_BIOS_BASE;
 
     }
 
