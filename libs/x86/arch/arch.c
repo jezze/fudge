@@ -186,13 +186,18 @@ unsigned short arch_schedule(struct cpu_general *general, struct cpu_interrupt *
 
     }
 
-    interrupt->code = state.kcode;
-    interrupt->eip = (unsigned int)arch_halt;
-    interrupt->esp = ARCH_KSTACK_LIMIT;
+    else
+    {
 
-    state.task = 0;
+        interrupt->code = state.kcode;
+        interrupt->eip = (unsigned int)arch_halt;
+        interrupt->esp = ARCH_KSTACK_LIMIT;
 
-    return state.kdata;
+        state.task = 0;
+
+        return state.kdata;
+
+    }
 
 }
 
