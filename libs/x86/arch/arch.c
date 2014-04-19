@@ -249,11 +249,9 @@ static void arch_setup_entities()
         struct mmu_directory *directories = (struct mmu_directory *)ARCH_DIRECTORY_KCODE_BASE;
         struct mmu_table *tables = (struct mmu_table *)ARCH_TABLE_KCODE_BASE;
 
-        container_init(&state.containers[i].base);
+        container_init(&state.containers[i].base, spawn, exit);
         resource_register_item(&state.containers[i].base.resource);
 
-        state.containers[i].base.calls[CONTAINER_CALL_SPAWN] = spawn;
-        state.containers[i].base.calls[CONTAINER_CALL_EXIT] = exit;
         state.containers[i].directory = directories + i;
         state.containers[i].table = tables + i * ARCH_CONTAINER_MAPPINGS;
 

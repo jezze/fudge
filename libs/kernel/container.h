@@ -31,4 +31,4 @@ struct container
 
 };
 
-void container_init(struct container *container);
+void container_init(struct container *container, unsigned int (*spawn)(struct container *self, struct task *task, void *stack), unsigned int (*exit)(struct container *self, struct task *task, void *stack));

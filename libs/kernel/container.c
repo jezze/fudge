@@ -329,7 +329,7 @@ static unsigned int unload(struct container *self, struct task *task, void *stac
 
 }
 
-void container_init(struct container *container)
+void container_init(struct container *container, unsigned int (*spawn)(struct container *self, struct task *task, void *stack), unsigned int (*exit)(struct container *self, struct task *task, void *stack))
 {
 
     unsigned int i;
@@ -347,6 +347,8 @@ void container_init(struct container *container)
     container->calls[CONTAINER_CALL_EXECUTE] = execute;
     container->calls[CONTAINER_CALL_LOAD] = load;
     container->calls[CONTAINER_CALL_UNLOAD] = unload;
+    container->calls[CONTAINER_CALL_SPAWN] = spawn;
+    container->calls[CONTAINER_CALL_EXIT] = exit;
 
     for (i = 0; i < CONTAINER_CHANNELS; i++)
         vfs_init_channel(&container->channels[i], 0, 0);
