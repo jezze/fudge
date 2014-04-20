@@ -14,10 +14,10 @@ enum container_call
     CONTAINER_CALL_MOUNT                = 0x06,
     CONTAINER_CALL_BIND                 = 0x07,
     CONTAINER_CALL_EXECUTE              = 0x08,
-    CONTAINER_CALL_EXIT                 = 0x09,
-    CONTAINER_CALL_LOAD                 = 0x0A,
-    CONTAINER_CALL_UNLOAD               = 0x0B,
-    CONTAINER_CALL_SPAWN                = 0x0C
+    CONTAINER_CALL_LOAD                 = 0x09,
+    CONTAINER_CALL_UNLOAD               = 0x0A,
+    CONTAINER_CALL_SPAWN                = 0x0B,
+    CONTAINER_CALL_EXIT                 = 0x0C
 
 };
 
