@@ -9,12 +9,11 @@ unsigned int tar_readvalue(char *attribute)
 
 }
 
-unsigned int tar_validate(void *buffer)
+unsigned int tar_validate(struct tar_header *header)
 {
 
-    struct tar_header *header = buffer;
     unsigned int checksum = tar_readvalue(header->checksum);
-    unsigned char *address = buffer;
+    unsigned char *address = (unsigned char *)header;
     unsigned int i = 0;
 
     for (; i < 148; i++)

@@ -27,9 +27,10 @@ struct tar_header
     char devmajor[8];
     char devminor[8];
     char prefix[155];
+    char zero[12];
 
 };
 
 unsigned int tar_readvalue(char *attribute);
-unsigned int tar_validate(void *buffer);
+unsigned int tar_validate(struct tar_header *header);
 unsigned int tar_next(struct tar_header *header, unsigned int offset);
