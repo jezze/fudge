@@ -13,7 +13,7 @@
 #define KERNEL_VFS_BACKENDS             1
 #define KERNEL_VFS_PROTOCOLS            3
 
-static struct
+static struct kernel_state
 {
 
     struct {struct binary_protocol protocols[KERNEL_BINARY_PROTOCOLS];} binary;
@@ -94,6 +94,7 @@ void kernel_setup_modules(struct container *container, struct task *task, unsign
 void kernel_setup()
 {
 
+    memory_clear(&state, sizeof (struct kernel_state));
     resource_setup();
     scheduler_setup();
     binary_setup_elf(&state.binary.protocols[0]);
