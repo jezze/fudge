@@ -7,8 +7,11 @@ void idt_set_descriptor(struct idt_pointer *pointer, enum idt_index index, void 
     unsigned long base = (unsigned long)callback;
 
     pointer->descriptors[index].base0 = base;
-    pointer->descriptors[index].base1 = base >> 16;
-    pointer->descriptors[index].selector = selector;
+    pointer->descriptors[index].base1 = base >> 8;
+    pointer->descriptors[index].base2 = base >> 16;
+    pointer->descriptors[index].base3 = base >> 24;
+    pointer->descriptors[index].selector0 = selector;
+    pointer->descriptors[index].selector1 = selector >> 8;
     pointer->descriptors[index].flags = flags;
 
 }

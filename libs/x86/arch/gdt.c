@@ -5,10 +5,12 @@ unsigned short gdt_set_descriptor(struct gdt_pointer *pointer, enum gdt_index in
 {
 
     pointer->descriptors[index].base0 = base;
-    pointer->descriptors[index].base1 = base >> 16;
-    pointer->descriptors[index].base2 = base >> 24;
+    pointer->descriptors[index].base1 = base >> 8;
+    pointer->descriptors[index].base2 = base >> 16;
+    pointer->descriptors[index].base3 = base >> 24;
     pointer->descriptors[index].limit0 = limit;
-    pointer->descriptors[index].limit1 = (flags & 0xF0) | ((limit >> 16) & 0x0F);
+    pointer->descriptors[index].limit1 = limit >> 8;
+    pointer->descriptors[index].limit2 = flags | ((limit >> 16) & 0x0F);
     pointer->descriptors[index].access = access;
 
     return (sizeof (struct gdt_descriptor) * index) | ((access >> 5) & 0x03);

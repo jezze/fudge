@@ -44,13 +44,16 @@ enum idt_index
 struct idt_descriptor
 {
 
-    unsigned short base0;
-    unsigned short selector;
+    unsigned char base0;
+    unsigned char base1;
+    unsigned char selector0;
+    unsigned char selector1;
     unsigned char zero;
     unsigned char flags;
-    unsigned short base1;
+    unsigned char base2;
+    unsigned char base3;
 
-} __attribute__((packed));
+};
 
 struct idt_pointer
 {

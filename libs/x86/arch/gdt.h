@@ -36,14 +36,16 @@ enum gdt_index
 struct gdt_descriptor
 {
 
-    unsigned short limit0;
-    unsigned short base0;
-    unsigned char base1;
-    unsigned char access;
+    unsigned char limit0;
     unsigned char limit1;
+    unsigned char base0;
+    unsigned char base1;
     unsigned char base2;
+    unsigned char access;
+    unsigned char limit2;
+    unsigned char base3;
 
-} __attribute__((packed));
+};
 
 struct gdt_pointer
 {
