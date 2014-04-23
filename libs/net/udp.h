@@ -6,4 +6,4 @@ struct udp_header
     unsigned short length;
     unsigned short checksum;
 
-} __attribute__((packed));
+};

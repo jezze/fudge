@@ -11,4 +11,4 @@ struct arp_header
     unsigned char tha[6];
     unsigned char tpa[4];
 
-} __attribute__((packed));
+};

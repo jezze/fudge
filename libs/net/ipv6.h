@@ -8,4 +8,4 @@ struct ipv6_header
     unsigned char sip[8];
     unsigned char tip[8];
 
-} __attribute__((packed));
+};

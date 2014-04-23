@@ -3,7 +3,7 @@ struct icmpv6_header
 
     unsigned char type;
     unsigned char code;
-    unsigned short checksum;
-    unsigned int data;
+    unsigned char checksum[2];
+    unsigned char data[4];
 
-} __attribute__((packed));
+};
