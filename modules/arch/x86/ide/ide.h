@@ -36,10 +36,10 @@ struct ide_partition
     unsigned char headlimit;
     unsigned char sectorlimit;
     unsigned char cylinderlimit;
-    unsigned int sectorlba;
-    unsigned int sectortotal;
+    unsigned char sectorlba[4];
+    unsigned char sectortotal[4];
 
-} __attribute__((packed));
+};
 
 struct ide_device
 {

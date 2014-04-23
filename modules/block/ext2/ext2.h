@@ -44,7 +44,7 @@ struct ext2_superblock
     unsigned int journalDevice;
     unsigned int firstOrphan;
 
-} __attribute__((packed));
+};
 
 struct ext2_blockgroup
 {
@@ -56,7 +56,7 @@ struct ext2_blockgroup
     unsigned short nodeCountUnalloc;
     unsigned short directoryCount;
 
-} __attribute__((packed));
+};
 
 struct ext2_node
 {
@@ -93,17 +93,17 @@ struct ext2_node
     unsigned int sizeHigh;
     unsigned int fragmentBlockAddress;
 
-} __attribute__((packed));
+};
 
 struct ext2_entry
 {
 
     unsigned int node;
-    unsigned short size;
+    unsigned char size[2];
     unsigned char length;
     unsigned char type;
 
-} __attribute__((packed));
+};
 
 struct ext2_protocol
 {
