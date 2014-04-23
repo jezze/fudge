@@ -58,10 +58,14 @@ struct idt_descriptor
 struct idt_pointer
 {
 
-    unsigned short limit;
-    struct idt_descriptor *descriptors;
+    unsigned char limit0;
+    unsigned char limit1;
+    unsigned char base0;
+    unsigned char base1;
+    unsigned char base2;
+    unsigned char base3;
 
-} __attribute__((packed));
+};
 
 void idt_set_descriptor(struct idt_pointer *pointer, enum idt_index index, void (*callback)(), unsigned short selector, enum idt_flag flags);
 void idt_init_pointer(struct idt_pointer *pointer, unsigned int count, struct idt_descriptor *descriptors);

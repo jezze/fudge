@@ -50,10 +50,14 @@ struct gdt_descriptor
 struct gdt_pointer
 {
 
-    unsigned short limit;
-    struct gdt_descriptor *descriptors;
+    unsigned char limit0;
+    unsigned char limit1;
+    unsigned char base0;
+    unsigned char base1;
+    unsigned char base2;
+    unsigned char base3;
 
-} __attribute__((packed));
+};
 
 unsigned short gdt_set_descriptor(struct gdt_pointer *pointer, enum gdt_index index, unsigned int base, unsigned int limit, enum gdt_access access, enum gdt_flag flags);
 void gdt_init_pointer(struct gdt_pointer *pointer, unsigned int count, struct gdt_descriptor *descriptors);
