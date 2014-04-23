@@ -72,7 +72,7 @@ struct arch_task
 
 };
 
-static struct arch_state
+static struct
 {
 
     struct container *container;
@@ -292,7 +292,6 @@ static void arch_setup_entities()
 void arch_setup(unsigned int count, struct kernel_module *modules)
 {
 
-    memory_clear(&state, sizeof (struct arch_state));
     gdt_init_pointer(&state.gdt.pointer, ARCH_GDT_DESCRIPTORS, state.gdt.descriptors);
     idt_init_pointer(&state.idt.pointer, ARCH_IDT_DESCRIPTORS, state.idt.descriptors);
     tss_init_pointer(&state.tss.pointer, ARCH_TSS_DESCRIPTORS, state.tss.descriptors);
