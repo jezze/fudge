@@ -1,24 +1,23 @@
 enum gdt_access
 {
 
-    GDT_ACCESS_ACCESSED                 = (0x01 << 0),
-    GDT_ACCESS_RW                       = (0x01 << 1),
-    GDT_ACCESS_DC                       = (0x01 << 2),
-    GDT_ACCESS_EXECUTE                  = (0x01 << 3),
-    GDT_ACCESS_ALWAYS1                  = (0x01 << 4),
-    GDT_ACCESS_RING0                    = (0x00 << 5),
-    GDT_ACCESS_RING1                    = (0x01 << 5),
-    GDT_ACCESS_RING2                    = (0x02 << 5),
-    GDT_ACCESS_RING3                    = (0x03 << 5),
-    GDT_ACCESS_PRESENT                  = (0x01 << 7)
+    GDT_ACCESS_ACCESSED                 = 0x01,
+    GDT_ACCESS_RW                       = 0x02,
+    GDT_ACCESS_DC                       = 0x04,
+    GDT_ACCESS_EXECUTE                  = 0x08,
+    GDT_ACCESS_ALWAYS1                  = 0x10,
+    GDT_ACCESS_RING1                    = 0x20,
+    GDT_ACCESS_RING2                    = 0x40,
+    GDT_ACCESS_RING3                    = 0x60,
+    GDT_ACCESS_PRESENT                  = 0x80
 
 };
 
 enum gdt_flag
 {
 
-    GDT_FLAG_32BIT                      = (0x01 << 6),
-    GDT_FLAG_GRANULARITY                = (0x01 << 7)
+    GDT_FLAG_32BIT                      = 0x40,
+    GDT_FLAG_GRANULARITY                = 0x80
 
 };
 

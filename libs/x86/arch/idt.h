@@ -1,17 +1,16 @@
 enum idt_flag
 {
 
-    IDT_FLAG_TYPE32TASK                 = (0x05 << 0),
-    IDT_FLAG_TYPE16INT                  = (0x06 << 0),
-    IDT_FLAG_TYPE16TRAP                 = (0x07 << 0),
-    IDT_FLAG_TYPE32INT                  = (0x0E << 0),
-    IDT_FLAG_TYPE32TRAP                 = (0x0F << 0),
-    IDT_FLAG_STORAGE                    = (0x01 << 4),
-    IDT_FLAG_RING0                      = (0x00 << 5),
-    IDT_FLAG_RING1                      = (0x01 << 5),
-    IDT_FLAG_RING2                      = (0x02 << 5),
-    IDT_FLAG_RING3                      = (0x03 << 5),
-    IDT_FLAG_PRESENT                    = (0x01 << 7)
+    IDT_FLAG_TYPE32TASK                 = 0x05,
+    IDT_FLAG_TYPE16INT                  = 0x06,
+    IDT_FLAG_TYPE16TRAP                 = 0x07,
+    IDT_FLAG_TYPE32INT                  = 0x0E,
+    IDT_FLAG_TYPE32TRAP                 = 0x0F,
+    IDT_FLAG_STORAGE                    = 0x10,
+    IDT_FLAG_RING1                      = 0x20,
+    IDT_FLAG_RING2                      = 0x40,
+    IDT_FLAG_RING3                      = 0x60,
+    IDT_FLAG_PRESENT                    = 0x80
 
 };
 
