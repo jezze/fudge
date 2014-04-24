@@ -1,16 +1,21 @@
 #define MBOOT_MAGIC                     0x2BADB002
 
-#define MBOOT_FLAG_MEMORY               (1 << 0)
-#define MBOOT_FLAG_DEVICE               (1 << 1)
-#define MBOOT_FLAG_CMDLINE              (1 << 2)
-#define MBOOT_FLAG_MODULES              (1 << 3)
-#define MBOOT_FLAG_AOUT                 (1 << 4)
-#define MBOOT_FLAG_ELF                  (1 << 5)
-#define MBOOT_FLAG_MMAP                 (1 << 6)
-#define MBOOT_FLAG_CONFIG               (1 << 7)
-#define MBOOT_FLAG_LOADER               (1 << 8)
-#define MBOOT_FLAG_APM                  (1 << 9)
-#define MBOOT_FLAG_VBE                  (1 << 10)
+enum mboot_flag
+{
+
+    MBOOT_FLAG_MEMORY                   = 0x00000001,
+    MBOOT_FLAG_DEVICE                   = 0x00000002,
+    MBOOT_FLAG_CMDLINE                  = 0x00000004,
+    MBOOT_FLAG_MODULES                  = 0x00000008,
+    MBOOT_FLAG_AOUT                     = 0x00000010,
+    MBOOT_FLAG_ELF                      = 0x00000020,
+    MBOOT_FLAG_MMAP                     = 0x00000040,
+    MBOOT_FLAG_CONFIG                   = 0x00000080,
+    MBOOT_FLAG_LOADER                   = 0x00000100,
+    MBOOT_FLAG_APM                      = 0x00000200,
+    MBOOT_FLAG_VBE                      = 0x00000400
+
+};
 
 struct mboot_header_modules
 {
