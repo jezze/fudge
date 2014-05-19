@@ -9,4 +9,5 @@ include $(MODULES_PATH)/network/rules.mk
 include $(MODULES_PATH)/null/rules.mk
 include $(MODULES_PATH)/pipe/rules.mk
 include $(MODULES_PATH)/system/rules.mk
+include $(MODULES_PATH)/kernelfs/rules.mk
 include $(MODULES_ARCH_PATH)/rules.mk
