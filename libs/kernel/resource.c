@@ -22,6 +22,13 @@ void resource_register_item(struct resource_item *item)
 
 }
 
+void resource_unregister_item(struct resource_item *item)
+{
+
+    list_remove(&resources, &item->item);
+
+}
+
 void resource_init_item(struct resource_item *item, unsigned int type, void *data)
 {
 
