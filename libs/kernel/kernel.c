@@ -10,14 +10,13 @@
 #include "kernel.h"
 
 #define KERNEL_BINARY_PROTOCOLS         1
-#define KERNEL_VFS_BACKENDS             1
-#define KERNEL_VFS_PROTOCOLS            3
+#define KERNEL_VFS_PROTOCOLS            2
 
 static struct
 {
 
     struct {struct binary_protocol protocols[KERNEL_BINARY_PROTOCOLS];} binary;
-    struct {struct vfs_backend backends[KERNEL_VFS_BACKENDS]; struct vfs_protocol protocols[KERNEL_VFS_PROTOCOLS];} vfs;
+    struct {struct vfs_protocol protocols[KERNEL_VFS_PROTOCOLS];} vfs;
 
 } state;
 
@@ -52,27 +51,22 @@ static unsigned int kernel_find_init(struct vfs_channel *channel)
 void kernel_setup_modules(struct container *container, struct task *task, unsigned int count, struct kernel_module *modules)
 {
 
-    struct vfs_channel *channel1 = &container->channels[1];
-    struct vfs_channel *channel2 = &container->channels[2];
+    struct vfs_channel *channel = &container->channels[1];
     struct vfs_descriptor *descriptor = &task->descriptors[1];
-    struct vfs_mount *mount1 = &container->mounts[1];
-    struct vfs_mount *mount2 = &container->mounts[2];
+    struct vfs_mount *mount = &container->mounts[1];
     unsigned int entry = 0;
     unsigned int i;
-
-    channel2->backend = vfs_find_backend();
-    channel2->protocol = vfs_find_protocol(channel2->backend);
 
     for (i = 0; i < count; i++)
     {
 
-        channel1->backend = &modules[i].base;
-        channel1->protocol = vfs_find_protocol(channel1->backend);
+        channel->backend = &modules[i].base;
+        channel->protocol = vfs_find_protocol(channel->backend);
 
-        if (!channel1->protocol)
+        if (!channel->protocol)
             continue;
 
-        entry = kernel_find_init(channel1);
+        entry = kernel_find_init(channel);
 
         if (entry)
             break;
@@ -83,11 +77,8 @@ void kernel_setup_modules(struct container *container, struct task *task, unsign
 
     error_assert(task->registers.ip != 0, "Failed to locate entry point", __FILE__, __LINE__);
 
-    vfs_init_descriptor(descriptor, channel1, channel1->protocol->root(channel1->backend));
-    vfs_init_mount(mount1, channel1, channel1->protocol->root(channel1->backend), channel1, channel1->protocol->root(channel1->backend));
-    vfs_init_mount(mount2, channel1, channel1->protocol->root(channel1->backend), channel2, channel2->protocol->root(channel2->backend));
-
-    mount2->parent.id = channel1->protocol->child(channel1->backend, mount2->parent.id, 7, "kernel/");
+    vfs_init_descriptor(descriptor, channel, channel->protocol->root(channel->backend));
+    vfs_init_mount(mount, channel, channel->protocol->root(channel->backend), channel, channel->protocol->root(channel->backend));
 
 }
 
@@ -97,9 +88,8 @@ void kernel_setup()
     resource_setup();
     scheduler_setup();
     binary_setup_elf(&state.binary.protocols[0]);
-    vfs_setup_kernel(&state.vfs.backends[0], &state.vfs.protocols[0]);
-    vfs_setup_cpio(&state.vfs.protocols[1]);
-    vfs_setup_tar(&state.vfs.protocols[2]);
+    vfs_setup_cpio(&state.vfs.protocols[0]);
+    vfs_setup_tar(&state.vfs.protocols[1]);
 
 }
 

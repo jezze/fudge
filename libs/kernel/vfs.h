@@ -65,5 +65,4 @@ void vfs_init_channel(struct vfs_channel *channel, struct vfs_backend *backend, 
 void vfs_init_descriptor(struct vfs_descriptor *descriptor, struct vfs_channel *channel, unsigned int id);
 void vfs_init_mount(struct vfs_mount *mount, struct vfs_channel *pchannel, unsigned int pid, struct vfs_channel *cchannel, unsigned int cid);
 void vfs_setup_cpio(struct vfs_protocol *protocol);
-void vfs_setup_kernel(struct vfs_backend *backend, struct vfs_protocol *protocol);
 void vfs_setup_tar(struct vfs_protocol *protocol);
