@@ -20,7 +20,11 @@ static unsigned int parent(struct vfs_backend *backend, unsigned int id)
 static unsigned int match(struct vfs_backend *backend)
 {
 
-    return 0;
+    unsigned char buffer[8];
+
+    backend->read(backend, 0, 8, buffer);
+
+    return memory_match(buffer, "KERNELFS", 8);
 
 }
 

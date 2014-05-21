@@ -6,7 +6,7 @@
 static unsigned int read(struct vfs_backend *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    return 0;
+    return memory_read(buffer, count, "KERNELFS", 8, offset);
 
 }
 
