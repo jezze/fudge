@@ -3,14 +3,70 @@
 #include <kernel/vfs.h>
 #include "protocol.h"
 
+#define KERNELFS_STATIC                 0x01
+#define KERNELFS_DYNAMIC                0x02
+
+struct kernelfs_ops
+{
+
+    void (*read)(struct kernelfs_ops *self, unsigned int index);
+
+};
+
+struct kernelfs_node
+{
+
+    struct kernelfs_node *child;
+    char *path;
+    unsigned char options;
+
+};
+
+static struct kernelfs_node id[] = {
+    {0, 0, 0}
+};
+
+static struct kernelfs_node memory[] = {
+    {0, 0, 0}
+};
+
+static struct kernelfs_node task[] = {
+    {id, "id/", KERNELFS_STATIC},
+    {memory, "memory/", KERNELFS_STATIC},
+    {0, 0, 0}
+};
+
+static struct kernelfs_node tasks[] = {
+    {task, 0, KERNELFS_DYNAMIC},
+    {0, 0, 0}
+};
+
+static struct kernelfs_node modules[] = {
+    {task, 0, KERNELFS_DYNAMIC},
+    {0, 0, 0}
+};
+
+static struct kernelfs_node kroot[] = {
+    {tasks, "task/", KERNELFS_STATIC},
+    {modules, "module/", KERNELFS_STATIC},
+    {0, 0, 0}
+};
+
 static unsigned int root(struct vfs_backend *backend)
+{
+
+    return (unsigned int)kroot;
+
+}
+
+static unsigned int parent(struct vfs_backend *backend, unsigned int id)
 {
 
     return 0;
 
 }
 
-static unsigned int parent(struct vfs_backend *backend, unsigned int id)
+static unsigned int child(struct vfs_backend *backend, unsigned int id, unsigned int count, const char *path)
 {
 
     return 0;
@@ -45,12 +101,16 @@ static unsigned int close(struct vfs_backend *backend, unsigned int id)
 static unsigned int read(struct vfs_backend *backend, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    return 0;
+    struct kernelfs_node *node = (struct kernelfs_node *)id;
+    unsigned int i;
 
-}
+    if (!node->child)
+        return 0; /* return read_ops */
 
-static unsigned int child(struct vfs_backend *backend, unsigned int id, unsigned int count, const char *path)
-{
+    for (i = 0; node[i].child; i++)
+    {
+
+    }
 
     return 0;
 
