@@ -181,27 +181,37 @@ static unsigned int write(struct container *self, struct task *task, void *stack
 
 }
 
+static unsigned int auth(struct container *self, struct task *task, void *stack)
+{
+
+    struct {void *caller; unsigned int channel;} *args = stack;
+    struct vfs_backend *backend = vfs_find_backend();
+    struct vfs_protocol *protocol = vfs_find_protocol(backend);
+    struct vfs_channel *channel = get_channel(self, args->channel);
+
+    if (!backend || !protocol || !channel)
+        return 0;
+
+    vfs_init_channel(channel, backend, protocol);
+
+    return args->channel;
+
+}
+
 static unsigned int mount(struct container *self, struct task *task, void *stack)
 {
 
     struct {void *caller; unsigned int channel; unsigned int mount; unsigned int pindex; unsigned int cindex;} *args = stack;
-    struct vfs_backend *backend = vfs_find_backend();
-    struct vfs_protocol *protocol = vfs_find_protocol(backend);
     struct vfs_channel *channel = get_channel(self, args->channel);
     struct vfs_mount *mount = get_mount(self, args->mount);
     struct vfs_descriptor *pdescriptor = get_descriptor(task, args->pindex);
-    struct vfs_descriptor *cdescriptor = get_descriptor(task, args->cindex);
 
-    if (!backend || !protocol || !channel || !mount)
+    if (!channel || !mount)
         return 0;
 
     if (!pdescriptor || !pdescriptor->id || !pdescriptor->channel || !pdescriptor->active)
         return 0;
 
-    if (!cdescriptor || !cdescriptor->id || !cdescriptor->channel || !cdescriptor->active)
-        return 0;
-
-    vfs_init_channel(channel, backend, protocol);
     vfs_init_mount(mount, pdescriptor->channel, pdescriptor->id, channel, channel->protocol->root(channel->backend));
 
     return args->mount;
@@ -333,6 +343,7 @@ void container_init(struct container *container, unsigned int (*spawn)(struct co
     container->calls[CONTAINER_CALL_CLOSE] = close;
     container->calls[CONTAINER_CALL_READ] = read;
     container->calls[CONTAINER_CALL_WRITE] = write;
+    container->calls[CONTAINER_CALL_AUTH] = auth;
     container->calls[CONTAINER_CALL_MOUNT] = mount;
     container->calls[CONTAINER_CALL_BIND] = bind;
     container->calls[CONTAINER_CALL_EXECUTE] = execute;

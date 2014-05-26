@@ -4,13 +4,20 @@
 .set CALL_INDEX_CLOSE,                  0x03
 .set CALL_INDEX_READ,                   0x04
 .set CALL_INDEX_WRITE,                  0x05
-.set CALL_INDEX_MOUNT,                  0x06
-.set CALL_INDEX_BIND,                   0x07
-.set CALL_INDEX_EXECUTE,                0x08
-.set CALL_INDEX_LOAD,                   0x09
-.set CALL_INDEX_UNLOAD,                 0x0A
-.set CALL_INDEX_SPAWN,                  0x0B
-.set CALL_INDEX_EXIT,                   0x0C
+.set CALL_INDEX_AUTH,                   0x06
+.set CALL_INDEX_MOUNT,                  0x07
+.set CALL_INDEX_BIND,                   0x08
+.set CALL_INDEX_EXECUTE,                0x09
+.set CALL_INDEX_LOAD,                   0x0A
+.set CALL_INDEX_UNLOAD,                 0x0B
+.set CALL_INDEX_SPAWN,                  0x0C
+.set CALL_INDEX_EXIT,                   0x0D
+
+.global call_auth
+call_auth:
+    movl $CALL_INDEX_AUTH, %eax
+    int $CALL_INTERRUPT
+    ret
 
 .global call_bind
 call_bind:
