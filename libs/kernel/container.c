@@ -204,15 +204,18 @@ static unsigned int mount(struct container *self, struct task *task, void *stack
     struct {void *caller; unsigned int channel; unsigned int mount; unsigned int pindex; unsigned int cindex;} *args = stack;
     struct vfs_mount *mount = get_mount(self, args->mount);
     struct vfs_channel *channel = get_channel(self, args->channel);
-    struct vfs_descriptor *pdescriptor = get_descriptor(task, args->pindex);
+    struct vfs_descriptor *descriptor = get_descriptor(task, args->pindex);
 
-    if (!mount || !channel)
+    if (!mount)
         return 0;
 
-    if (!pdescriptor || !pdescriptor->id || !pdescriptor->channel || !pdescriptor->active)
+    if (!channel || !channel->backend || !channel->protocol)
         return 0;
 
-    vfs_init_mount(mount, pdescriptor->channel, pdescriptor->id, channel, channel->protocol->root(channel->backend));
+    if (!descriptor || !descriptor->id || !descriptor->channel || !descriptor->active)
+        return 0;
+
+    vfs_init_mount(mount, descriptor->channel, descriptor->id, channel, channel->protocol->root(channel->backend));
 
     return args->mount;
 
