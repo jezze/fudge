@@ -201,10 +201,10 @@ static unsigned int auth(struct container *self, struct task *task, void *stack)
 static unsigned int mount(struct container *self, struct task *task, void *stack)
 {
 
-    struct {void *caller; unsigned int channel; unsigned int mount; unsigned int pindex; unsigned int cindex;} *args = stack;
+    struct {void *caller; unsigned int channel; unsigned int mount; unsigned int index;} *args = stack;
     struct vfs_mount *mount = get_mount(self, args->mount);
     struct vfs_channel *channel = get_channel(self, args->channel);
-    struct vfs_descriptor *descriptor = get_descriptor(task, args->pindex);
+    struct vfs_descriptor *descriptor = get_descriptor(task, args->index);
 
     if (!mount)
         return 0;
