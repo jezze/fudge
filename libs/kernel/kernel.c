@@ -56,17 +56,18 @@ void kernel_setup_modules(struct container *container, struct task *task, unsign
     for (i = 0; i < count; i++)
     {
 
+        struct vfs_backend *backend = &modules[i].base;
+        struct vfs_protocol *protocol = vfs_find_protocol(backend);
         struct vfs_channel *channel = &container->channels[i + 1];
         struct vfs_mount *mount = &container->mounts[i + 1];
         struct vfs_descriptor *descriptor = &task->descriptors[i + 1];
         unsigned int root = 0;
         unsigned int entry = 0;
 
-        channel->backend = &modules[i].base;
-        channel->protocol = vfs_find_protocol(channel->backend);
-
-        if (!channel->protocol)
+        if (!protocol)
             continue;
+
+        vfs_init_channel(channel, backend, protocol);
 
         root = channel->protocol->root(channel->backend);
 

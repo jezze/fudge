@@ -185,12 +185,14 @@ static unsigned int mount(struct container *self, struct task *task, void *stack
 {
 
     struct {void *caller; unsigned int channel; unsigned int mount; unsigned int pindex; unsigned int cindex;} *args = stack;
+    struct vfs_backend *backend = vfs_find_backend();
+    struct vfs_protocol *protocol = vfs_find_protocol(backend);
     struct vfs_channel *channel = get_channel(self, args->channel);
     struct vfs_mount *mount = get_mount(self, args->mount);
     struct vfs_descriptor *pdescriptor = get_descriptor(task, args->pindex);
     struct vfs_descriptor *cdescriptor = get_descriptor(task, args->cindex);
 
-    if (!mount || !channel)
+    if (!backend || !protocol || !channel || !mount)
         return 0;
 
     if (!pdescriptor || !pdescriptor->id || !pdescriptor->channel || !pdescriptor->active)
@@ -199,16 +201,7 @@ static unsigned int mount(struct container *self, struct task *task, void *stack
     if (!cdescriptor || !cdescriptor->id || !cdescriptor->channel || !cdescriptor->active)
         return 0;
 
-    channel->backend = vfs_find_backend();
-
-    if (!channel->backend)
-        return 0;
-
-    channel->protocol = vfs_find_protocol(channel->backend);
-
-    if (!channel->protocol)
-        return 0;
-
+    vfs_init_channel(channel, backend, protocol);
     vfs_init_mount(mount, pdescriptor->channel, pdescriptor->id, channel, channel->protocol->root(channel->backend));
 
     return args->mount;
@@ -332,8 +325,6 @@ static unsigned int unload(struct container *self, struct task *task, void *stac
 void container_init(struct container *container, unsigned int (*spawn)(struct container *self, struct task *task, void *stack), unsigned int (*exit)(struct container *self, struct task *task, void *stack))
 {
 
-    unsigned int i;
-
     memory_clear(container, sizeof (struct container));
     resource_init_item(&container->resource, CONTAINER_RESOURCE, container);
 
@@ -349,12 +340,6 @@ void container_init(struct container *container, unsigned int (*spawn)(struct co
     container->calls[CONTAINER_CALL_UNLOAD] = unload;
     container->calls[CONTAINER_CALL_SPAWN] = spawn;
     container->calls[CONTAINER_CALL_EXIT] = exit;
-
-    for (i = 0; i < CONTAINER_CHANNELS; i++)
-        vfs_init_channel(&container->channels[i], 0, 0);
-
-    for (i = 0; i < CONTAINER_MOUNTS; i++)
-        vfs_init_mount(&container->mounts[i], 0, 0, 0, 0);
 
 }
 
