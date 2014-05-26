@@ -121,7 +121,7 @@ static unsigned int walk(struct container *self, struct task *task, void *stack)
 
     }
 
-    return 1;
+    return descriptor->id;
 
 }
 
@@ -211,7 +211,7 @@ static unsigned int mount(struct container *self, struct task *task, void *stack
 
     vfs_init_mount(mount, pdescriptor->channel, pdescriptor->id, channel, channel->protocol->root(channel->backend));
 
-    return 1;
+    return args->mount;
 
 }
 
@@ -234,7 +234,7 @@ static unsigned int bind(struct container *self, struct task *task, void *stack)
 
     vfs_init_mount(mount, pdescriptor->channel, pdescriptor->id, cdescriptor->channel, cdescriptor->id);
 
-    return 1;
+    return args->mount;
 
 }
 
