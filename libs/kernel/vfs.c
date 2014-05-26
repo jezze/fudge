@@ -87,17 +87,6 @@ void vfs_init_channel(struct vfs_channel *channel, struct vfs_backend *backend, 
 
 }
 
-void vfs_init_descriptor(struct vfs_descriptor *descriptor, struct vfs_channel *channel, unsigned int id)
-{
-
-    memory_clear(descriptor, sizeof (struct vfs_descriptor));
-    resource_init_item(&descriptor->resource, VFS_RESOURCE_DESCRIPTOR, descriptor);
-
-    descriptor->channel = channel;
-    descriptor->id = id;
-
-}
-
 void vfs_init_mount(struct vfs_mount *mount, struct vfs_channel *pchannel, unsigned int pid, struct vfs_channel *cchannel, unsigned int cid)
 {
 
@@ -108,6 +97,17 @@ void vfs_init_mount(struct vfs_mount *mount, struct vfs_channel *pchannel, unsig
     mount->parent.id = pid;
     mount->child.channel = cchannel;
     mount->child.id = cid;
+
+}
+
+void vfs_init_descriptor(struct vfs_descriptor *descriptor, struct vfs_channel *channel, unsigned int id)
+{
+
+    memory_clear(descriptor, sizeof (struct vfs_descriptor));
+    resource_init_item(&descriptor->resource, VFS_RESOURCE_DESCRIPTOR, descriptor);
+
+    descriptor->channel = channel;
+    descriptor->id = id;
 
 }
 
