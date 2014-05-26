@@ -2,26 +2,25 @@
 #include "resource.h"
 #include "vfs.h"
 
-struct vfs_backend *vfs_find_backend()
+struct vfs_backend *vfs_find_backend(unsigned int id)
 {
 
     struct resource_item *current = 0;
-    struct resource_item *last = 0;
-    struct vfs_backend *backend = 0;
 
     while ((current = resource_find_item(current)))
     {
 
+        struct vfs_backend *backend = current->data;
+
         if (current->type != VFS_RESOURCE_BACKEND)
             continue;
 
-        last = current;
+        if (backend->id == id)
+            return backend;
 
     }
 
-    backend = last->data;
-
-    return backend;
+    return 0;
 
 }
 
@@ -47,12 +46,13 @@ struct vfs_protocol *vfs_find_protocol(struct vfs_backend *backend)
 
 }
 
-void vfs_init_backend(struct vfs_backend *backend, unsigned int (*read)(struct vfs_backend *self, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write)(struct vfs_backend *self, unsigned int offset, unsigned int count, void *buffer))
+void vfs_init_backend(struct vfs_backend *backend, unsigned int id, unsigned int (*read)(struct vfs_backend *self, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write)(struct vfs_backend *self, unsigned int offset, unsigned int count, void *buffer))
 {
 
     memory_clear(backend, sizeof (struct vfs_backend));
     resource_init_item(&backend->resource, VFS_RESOURCE_BACKEND, backend);
 
+    backend->id = id;
     backend->read = read;
     backend->write = write;
 

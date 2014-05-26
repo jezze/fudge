@@ -41,7 +41,7 @@ enum
 
 };
 
-unsigned int call_auth(unsigned int channel);
+unsigned int call_auth(unsigned int channel, unsigned int backend);
 unsigned int call_bind(unsigned int mount, unsigned int pindex, unsigned int cindex);
 unsigned int call_close(unsigned int index);
 unsigned int call_execute(unsigned int index);

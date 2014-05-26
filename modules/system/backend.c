@@ -34,7 +34,7 @@ void system_init_backend(struct system_backend *backend)
 {
 
     memory_clear(backend, sizeof (struct system_backend));
-    vfs_init_backend(&backend->base, backend_read, backend_write);
+    vfs_init_backend(&backend->base, 2000, backend_read, backend_write);
     system_init_group(&backend->root, "FUDGE_ROOT");
     system_init_header(&backend->header, &backend->root);
 

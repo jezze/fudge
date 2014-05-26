@@ -47,17 +47,18 @@ void main()
     nargs = parse(count, buffer);
     call_close(CALL_I0);
 
-    for (i = 0; i < nargs; i += 3)
+    for (i = 0; i < nargs; i += 4)
     {
 
         unsigned int channel = ascii_read_value(args[i].position, args[i].count, 10);
         unsigned int mount = ascii_read_value(args[i + 1].position, args[i + 1].count, 10);
+        unsigned int backend = ascii_read_value(args[i + 2].position, args[i + 2].count, 10);
 
-        if (!call_walk(CALL_L0, CALL_DR, args[i + 2].count - 1, args[i + 2].position + 1))
+        if (!call_walk(CALL_L0, CALL_DR, args[i + 3].count - 1, args[i + 3].position + 1))
             continue;
 
         call_open(CALL_L0);
-        call_auth(channel);
+        call_auth(channel, backend);
         call_mount(channel, mount, CALL_L0);
         call_close(CALL_L0);
 

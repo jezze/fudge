@@ -21,7 +21,7 @@ void kernelfs_init_backend(struct vfs_backend *backend)
 {
 
     memory_clear(backend, sizeof (struct vfs_backend));
-    vfs_init_backend(backend, read, write);
+    vfs_init_backend(backend, 3000, read, write);
 
 }
 
