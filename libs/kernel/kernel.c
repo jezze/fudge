@@ -20,31 +20,32 @@ static struct
 
 } state;
 
-static unsigned int find_init(struct vfs_channel *channel)
+static unsigned int find_entry(struct vfs_channel *channel, unsigned int id)
 {
 
-    unsigned int id = channel->protocol->root(channel->backend);
-    struct binary_protocol *protocol;
-
-    if (!id)
-        return 0;
-
-    id = channel->protocol->child(channel->backend, id, 4, "bin/");
-
-    if (!id)
-        return 0;
-
-    id = channel->protocol->child(channel->backend, id, 4, "init");
-
-    if (!id)
-        return 0;
-
-    protocol = binary_find_protocol(channel, id);
+    struct binary_protocol *protocol = binary_find_protocol(channel, id);
 
     if (!protocol)
         return 0;
 
     return protocol->copy_program(channel, id);
+
+}
+
+static unsigned int find_init(struct vfs_backend *backend, struct vfs_protocol *protocol)
+{
+
+    unsigned int id = protocol->root(backend);
+
+    if (!id)
+        return 0;
+
+    id = protocol->child(backend, id, 4, "bin/");
+
+    if (!id)
+        return 0;
+
+    return protocol->child(backend, id, 4, "init");
 
 }
 
@@ -61,21 +62,27 @@ void kernel_setup_modules(struct container *container, struct task *task, unsign
 
         struct vfs_backend *backend = &modules[i].base;
         struct vfs_protocol *protocol = vfs_find_protocol(backend);
-        unsigned int id;
+        unsigned int root;
+        unsigned int init;
 
         if (!protocol)
             continue;
 
-        id = protocol->root(backend);
+        root = protocol->root(backend);
 
-        if (!id)
+        if (!root)
+            continue;
+
+        init = find_init(backend, protocol);
+
+        if (!init)
             continue;
 
         vfs_init_channel(channel, backend, protocol);
-        vfs_init_mount(mount, channel, id, channel, id);
-        vfs_init_descriptor(descriptor, channel, id);
+        vfs_init_mount(mount, channel, root, channel, root);
+        vfs_init_descriptor(descriptor, channel, root);
 
-        task->registers.ip = find_init(channel);
+        task->registers.ip = find_entry(channel, init);
 
     }
 
