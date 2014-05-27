@@ -75,10 +75,9 @@ struct arch_task
 static struct
 {
 
-    struct container *container;
     struct arch_container containers[ARCH_CONTAINERS];
-    struct task *task;
     struct arch_task tasks[ARCH_TASKS];
+    struct {struct container *container; struct task *task;} current;
     struct {struct gdt_pointer pointer; struct gdt_descriptor descriptors[ARCH_GDT_DESCRIPTORS];} gdt;
     struct {struct idt_pointer pointer; struct idt_descriptor descriptors[ARCH_IDT_DESCRIPTORS];} idt;
     struct {struct tss_pointer pointer; struct tss_descriptor descriptors[ARCH_TSS_DESCRIPTORS];} tss;
@@ -153,7 +152,7 @@ unsigned short arch_segment()
 unsigned short arch_schedule(struct cpu_general *general, struct cpu_interrupt *interrupt)
 {
 
-    struct arch_task *task = (struct arch_task *)state.task;
+    struct arch_task *task = (struct arch_task *)state.current.task;
     struct arch_task *next = (struct arch_task *)scheduler_find_used_task();
 
     if (task)
@@ -180,7 +179,7 @@ unsigned short arch_schedule(struct cpu_general *general, struct cpu_interrupt *
 
         memory_copy(general, &next->general, sizeof (struct cpu_general));
 
-        state.task = &next->base;
+        state.current.task = &next->base;
 
         return state.udata;
 
@@ -193,7 +192,7 @@ unsigned short arch_schedule(struct cpu_general *general, struct cpu_interrupt *
         interrupt->eip = (unsigned int)arch_halt;
         interrupt->esp = ARCH_KSTACK_LIMIT;
 
-        state.task = 0;
+        state.current.task = 0;
 
         return state.kdata;
 
@@ -237,7 +236,7 @@ unsigned short arch_syscall(void *stack)
 
     struct {struct cpu_general general; struct cpu_interrupt interrupt;} *registers = stack;
 
-    registers->general.eax = (state.container->calls[registers->general.eax]) ? state.container->calls[registers->general.eax](state.container, state.task, (void *)registers->interrupt.esp) : 0;
+    registers->general.eax = (state.current.container->calls[registers->general.eax]) ? state.current.container->calls[registers->general.eax](state.current.container, state.current.task, (void *)registers->interrupt.esp) : 0;
 
     return arch_schedule(&registers->general, &registers->interrupt);
 
@@ -281,11 +280,11 @@ static void arch_setup_entities()
 
     }
 
-    state.container = &state.containers[0].base;
-    state.task = &state.tasks[0].base;
+    state.current.container = &state.containers[0].base;
+    state.current.task = &state.tasks[0].base;
 
-    activate_task(state.container, state.task);
-    scheduler_use(state.task);
+    activate_task(state.current.container, state.current.task);
+    scheduler_use(state.current.task);
 
 }
 
@@ -312,8 +311,8 @@ void arch_setup(unsigned int count, struct kernel_module *modules)
     kernel_setup();
     arch_setup_entities();
     mmu_enable();
-    kernel_setup_modules(state.container, state.task, count, modules);
-    arch_usermode(state.ucode, state.udata, state.task->registers.ip, state.task->registers.sp);
+    kernel_setup_modules(state.current.container, state.current.task, count, modules);
+    arch_usermode(state.ucode, state.udata, state.current.task->registers.ip, state.current.task->registers.sp);
 
 }
 
