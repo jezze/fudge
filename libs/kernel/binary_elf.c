@@ -4,6 +4,8 @@
 #include "vfs.h"
 #include "binary.h"
 
+static struct binary_protocol protocol;
+
 static unsigned int match(struct vfs_channel *channel, unsigned int id)
 {
 
@@ -136,11 +138,11 @@ static unsigned int relocate(struct vfs_channel *channel, unsigned int id, unsig
 
 }
 
-void binary_setup_elf(struct binary_protocol *protocol)
+void binary_setup_elf()
 {
 
-    binary_init_protocol(protocol, match, find_symbol, copy_program, relocate);
-    resource_register_item(&protocol->resource);
+    binary_init_protocol(&protocol, match, find_symbol, copy_program, relocate);
+    resource_register_item(&protocol.resource);
 
 }
 

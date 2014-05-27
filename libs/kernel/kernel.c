@@ -9,17 +9,6 @@
 #include "container.h"
 #include "kernel.h"
 
-#define KERNEL_BINARY_PROTOCOLS         1
-#define KERNEL_VFS_PROTOCOLS            2
-
-static struct
-{
-
-    struct {struct binary_protocol protocols[KERNEL_BINARY_PROTOCOLS];} binary;
-    struct {struct vfs_protocol protocols[KERNEL_VFS_PROTOCOLS];} vfs;
-
-} state;
-
 static unsigned int find_entry(struct vfs_channel *channel, unsigned int id)
 {
 
@@ -83,9 +72,9 @@ void kernel_setup()
 
     resource_setup();
     scheduler_setup();
-    binary_setup_elf(&state.binary.protocols[0]);
-    vfs_setup_cpio(&state.vfs.protocols[0]);
-    vfs_setup_tar(&state.vfs.protocols[1]);
+    binary_setup_elf();
+    vfs_setup_cpio();
+    vfs_setup_tar();
 
 }
 

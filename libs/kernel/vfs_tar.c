@@ -6,6 +6,8 @@
 #include "container.h"
 #include "kernel.h"
 
+static struct vfs_protocol protocol;
+
 static unsigned int root(struct vfs_backend *backend)
 {
 
@@ -227,11 +229,11 @@ static unsigned int child(struct vfs_backend *backend, unsigned int id, unsigned
 
 }
 
-void vfs_setup_tar(struct vfs_protocol *protocol)
+void vfs_setup_tar()
 {
 
-    vfs_init_protocol(protocol, match, root, open, close, read, write, parent, child, get_physical);
-    resource_register_item(&protocol->resource);
+    vfs_init_protocol(&protocol, match, root, open, close, read, write, parent, child, get_physical);
+    resource_register_item(&protocol.resource);
 
 }
 
