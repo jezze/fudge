@@ -17,7 +17,7 @@ static void execute_command(struct command *command, char *buffer)
 
     unsigned int i;
 
-    if (!walk_path(CALL_L1, CALL_L0, command->binary.count, buffer + command->binary.index))
+    if (!walk_path(CALL_DP, CALL_L0, command->binary.count, buffer + command->binary.index))
         return;
 
     for (i = 0; i < command->ins; i++)
@@ -46,7 +46,7 @@ static void execute_command(struct command *command, char *buffer)
 
     }
 
-    call_spawn(CALL_L1);
+    call_spawn(CALL_DP);
 
 }
 

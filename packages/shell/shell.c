@@ -20,7 +20,7 @@ static void interpret(struct lifo_stack *stack)
 
     }
 
-    if (!call_walk(CALL_L0, CALL_DR, 9, "bin/slang"))
+    if (!call_walk(CALL_DP, CALL_DR, 9, "bin/slang"))
         return;
 
     if (!call_walk(CALL_L1, CALL_DR, 15, "system/pipe/7/0"))
@@ -33,7 +33,7 @@ static void interpret(struct lifo_stack *stack)
     if (!call_walk(CALL_I1, CALL_DR, 15, "system/pipe/7/1"))
         return;
 
-    call_spawn(CALL_L0);
+    call_spawn(CALL_DP);
 
 }
 
