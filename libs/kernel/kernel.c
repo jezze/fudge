@@ -32,23 +32,6 @@ static unsigned int find_entry(struct vfs_channel *channel, unsigned int id)
 
 }
 
-static unsigned int find_init(struct vfs_backend *backend, struct vfs_protocol *protocol)
-{
-
-    unsigned int id = protocol->root(backend);
-
-    if (!id)
-        return 0;
-
-    id = protocol->child(backend, id, 4, "bin/");
-
-    if (!id)
-        return 0;
-
-    return protocol->child(backend, id, 4, "init");
-
-}
-
 void kernel_setup_modules(struct container *container, struct task *task, unsigned int count, struct kernel_module *modules)
 {
 
@@ -73,7 +56,12 @@ void kernel_setup_modules(struct container *container, struct task *task, unsign
         if (!root)
             continue;
 
-        init = find_init(backend, protocol);
+        init = protocol->child(backend, root, 4, "bin/");
+
+        if (!init)
+            continue;
+
+        init = protocol->child(backend, init, 4, "init");
 
         if (!init)
             continue;
