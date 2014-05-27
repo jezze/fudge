@@ -242,7 +242,30 @@ unsigned short arch_syscall(void *stack)
 
 }
 
-static void arch_setup_entities()
+static void arch_setup_tables()
+{
+
+    gdt_init_pointer(&state.gdt.pointer, ARCH_GDT_DESCRIPTORS, state.gdt.descriptors);
+    idt_init_pointer(&state.idt.pointer, ARCH_IDT_DESCRIPTORS, state.idt.descriptors);
+    tss_init_pointer(&state.tss.pointer, ARCH_TSS_DESCRIPTORS, state.tss.descriptors);
+
+    state.kcode = gdt_set_descriptor(&state.gdt.pointer, GDT_INDEX_KCODE, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW | GDT_ACCESS_EXECUTE, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
+    state.kdata = gdt_set_descriptor(&state.gdt.pointer, GDT_INDEX_KDATA, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
+    state.ucode = gdt_set_descriptor(&state.gdt.pointer, GDT_INDEX_UCODE, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_RING3 | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW | GDT_ACCESS_EXECUTE, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
+    state.udata = gdt_set_descriptor(&state.gdt.pointer, GDT_INDEX_UDATA, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_RING3 | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
+    state.tlink = gdt_set_descriptor(&state.gdt.pointer, GDT_INDEX_TLINK, (unsigned long)state.tss.pointer.descriptors, (unsigned long)state.tss.pointer.descriptors + state.tss.pointer.limit, GDT_ACCESS_PRESENT | GDT_ACCESS_EXECUTE | GDT_ACCESS_ACCESSED, GDT_FLAG_32BIT);
+
+    idt_set_descriptor(&state.idt.pointer, IDT_INDEX_GF, arch_isr_generalfault, state.kcode, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_set_descriptor(&state.idt.pointer, IDT_INDEX_PF, arch_isr_pagefault, state.kcode, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_set_descriptor(&state.idt.pointer, IDT_INDEX_SYSCALL, arch_isr_syscall, state.kcode, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT | IDT_FLAG_RING3);
+    tss_set_descriptor(&state.tss.pointer, TSS_INDEX_DEFAULT, state.kdata, ARCH_KSTACK_LIMIT);
+    cpu_set_gdt(&state.gdt.pointer, state.kcode, state.kdata);
+    cpu_set_idt(&state.idt.pointer);
+    cpu_set_tss(state.tlink);
+
+}
+
+static struct container *arch_setup_containers()
 {
 
     unsigned int i;
@@ -263,6 +286,15 @@ static void arch_setup_entities()
 
     }
 
+    return &state.containers[0].base;
+
+}
+
+static struct task *arch_setup_tasks()
+{
+
+    unsigned int i;
+
     for (i = 0; i < ARCH_TASKS; i++)
     {
 
@@ -280,36 +312,21 @@ static void arch_setup_entities()
 
     }
 
-    state.current.container = &state.containers[0].base;
-    state.current.task = &state.tasks[0].base;
-
-    activate_task(state.current.container, state.current.task);
-    scheduler_use(state.current.task);
+    return &state.tasks[0].base;
 
 }
 
 void arch_setup(unsigned int count, struct kernel_module *modules)
 {
 
-    gdt_init_pointer(&state.gdt.pointer, ARCH_GDT_DESCRIPTORS, state.gdt.descriptors);
-    idt_init_pointer(&state.idt.pointer, ARCH_IDT_DESCRIPTORS, state.idt.descriptors);
-    tss_init_pointer(&state.tss.pointer, ARCH_TSS_DESCRIPTORS, state.tss.descriptors);
-
-    state.kcode = gdt_set_descriptor(&state.gdt.pointer, GDT_INDEX_KCODE, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW | GDT_ACCESS_EXECUTE, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
-    state.kdata = gdt_set_descriptor(&state.gdt.pointer, GDT_INDEX_KDATA, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
-    state.ucode = gdt_set_descriptor(&state.gdt.pointer, GDT_INDEX_UCODE, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_RING3 | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW | GDT_ACCESS_EXECUTE, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
-    state.udata = gdt_set_descriptor(&state.gdt.pointer, GDT_INDEX_UDATA, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_RING3 | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
-    state.tlink = gdt_set_descriptor(&state.gdt.pointer, GDT_INDEX_TLINK, (unsigned long)state.tss.pointer.descriptors, (unsigned long)state.tss.pointer.descriptors + state.tss.pointer.limit, GDT_ACCESS_PRESENT | GDT_ACCESS_EXECUTE | GDT_ACCESS_ACCESSED, GDT_FLAG_32BIT);
-
-    idt_set_descriptor(&state.idt.pointer, IDT_INDEX_GF, arch_isr_generalfault, state.kcode, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    idt_set_descriptor(&state.idt.pointer, IDT_INDEX_PF, arch_isr_pagefault, state.kcode, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    idt_set_descriptor(&state.idt.pointer, IDT_INDEX_SYSCALL, arch_isr_syscall, state.kcode, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT | IDT_FLAG_RING3);
-    tss_set_descriptor(&state.tss.pointer, TSS_INDEX_DEFAULT, state.kdata, ARCH_KSTACK_LIMIT);
-    cpu_set_gdt(&state.gdt.pointer, state.kcode, state.kdata);
-    cpu_set_idt(&state.idt.pointer);
-    cpu_set_tss(state.tlink);
+    arch_setup_tables();
     kernel_setup();
-    arch_setup_entities();
+
+    state.current.container = arch_setup_containers();
+    state.current.task = arch_setup_tasks();
+
+    activate_task(state.current.container, state.current.task);
+    scheduler_use(state.current.task);
     mmu_enable();
     kernel_setup_modules(state.current.container, state.current.task, count, modules);
     arch_usermode(state.ucode, state.udata, state.current.task->registers.ip, state.current.task->registers.sp);
