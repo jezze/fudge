@@ -112,29 +112,23 @@ static unsigned int spawn(struct container *self, struct task *task, void *stack
 
     struct parameters {void *caller; unsigned int index;} args;
     struct task *next = scheduler_find_free_task();
-    unsigned int i;
 
     if (!next)
         return 0;
 
     memory_copy(&args, stack, sizeof (struct parameters));
 
-    next->registers.ip = 0;
-    next->registers.sp = ARCH_TASK_STACKLIMIT;
+    args.index -= 2;
 
     activate_task(self, next);
     scheduler_use(next);
 
-    for (i = 0; i < 4; i++)
-        vfs_init_descriptor(&next->descriptors[i], task->descriptors[i].channel, task->descriptors[i].id);
+    next->registers.ip = 0;
+    next->registers.sp = ARCH_TASK_STACKLIMIT;
 
-    for (i = 4; i < 22; i++)
-        vfs_init_descriptor(&next->descriptors[i], task->descriptors[i + 2].channel, task->descriptors[i + 2].id);
-
-    for (i = 22; i < TASK_DESCRIPTORS; i++)
-        vfs_init_descriptor(&next->descriptors[i], 0, 0);
-
-    vfs_init_descriptor(&next->descriptors[args.index], task->descriptors[args.index].channel, task->descriptors[args.index].id);
+    memory_clear(next->descriptors, sizeof (struct vfs_descriptor) * TASK_DESCRIPTORS);
+    memory_copy(next->descriptors, task->descriptors, sizeof (struct vfs_descriptor) * 4);
+    memory_copy(next->descriptors + 4, task->descriptors + 6, sizeof (struct vfs_descriptor) * 22);
 
     return self->calls[CONTAINER_CALL_EXECUTE](self, next, &args);
 
