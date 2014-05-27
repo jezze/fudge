@@ -20,7 +20,7 @@ static struct
 
 } state;
 
-static unsigned int kernel_find_init(struct vfs_channel *channel)
+static unsigned int find_init(struct vfs_channel *channel)
 {
 
     unsigned int id = channel->protocol->root(channel->backend);
@@ -51,6 +51,9 @@ static unsigned int kernel_find_init(struct vfs_channel *channel)
 void kernel_setup_modules(struct container *container, struct task *task, unsigned int count, struct kernel_module *modules)
 {
 
+    struct vfs_channel *channel = &container->channels[1];
+    struct vfs_mount *mount = &container->mounts[1];
+    struct vfs_descriptor *descriptor = &task->descriptors[1];
     unsigned int i;
 
     for (i = 0; i < count; i++)
@@ -58,31 +61,21 @@ void kernel_setup_modules(struct container *container, struct task *task, unsign
 
         struct vfs_backend *backend = &modules[i].base;
         struct vfs_protocol *protocol = vfs_find_protocol(backend);
-        struct vfs_channel *channel = &container->channels[i + 1];
-        struct vfs_mount *mount = &container->mounts[i + 1];
-        struct vfs_descriptor *descriptor = &task->descriptors[i + 1];
-        unsigned int root = 0;
-        unsigned int entry = 0;
+        unsigned int id;
 
         if (!protocol)
             continue;
 
+        id = protocol->root(backend);
+
+        if (!id)
+            continue;
+
         vfs_init_channel(channel, backend, protocol);
+        vfs_init_mount(mount, channel, id, channel, id);
+        vfs_init_descriptor(descriptor, channel, id);
 
-        root = channel->protocol->root(channel->backend);
-
-        if (!root)
-            continue;
-
-        vfs_init_mount(mount, channel, root, channel, root);
-        vfs_init_descriptor(descriptor, channel, root);
-
-        entry = kernel_find_init(channel);
-
-        if (!entry)
-            continue;
-
-        task->registers.ip = entry;
+        task->registers.ip = find_init(channel);
 
     }
 
