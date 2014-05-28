@@ -65,15 +65,40 @@ enum rtl8139_register
 
 };
 
-enum rtl8139_isr
+enum
 {
 
-    RTL8139_ISR_ROK                     = (1 << 0),
-    RTL8139_ISR_TOK                     = (1 << 2)
+    RTL8139_RCR_AAP                     = (1 << 0),
+    RTL8139_RCR_APM                     = (1 << 1),
+    RTL8139_RCR_AM                      = (1 << 2),
+    RTL8139_RCR_AB                      = (1 << 3),
+    RTL8139_RCR_AR                      = (1 << 4),
+    RTL8139_RCR_AER                     = (1 << 5),
+    RTL8139_RCR_WRAP                    = (1 << 7)
 
 };
 
-enum rtl8139_headerflag
+enum
+{
+
+    RTL8139_CR_REMPTY                   = (1 << 0),
+    RTL8139_CR_TENABLE                  = (1 << 2),
+    RTL8139_CR_RENABLE                  = (1 << 3),
+    RTL8139_CR_RESET                    = (1 << 4)
+
+};
+
+enum
+{
+
+    RTL8139_ISR_ROK                     = (1 << 0),
+    RTL8139_ISR_RER                     = (1 << 1),
+    RTL8139_ISR_TOK                     = (1 << 2),
+    RTL8139_ISR_TER                     = (1 << 3)
+
+};
+
+enum
 {
 
     RTL8139_HEADERFLAG_ROK              = (1 << 0),
@@ -106,16 +131,16 @@ static void poweron(struct rtl8139_driver *self)
 static void reset(struct rtl8139_driver *self)
 {
 
-    io_outb(self->io + RTL8139_REGISTER_CR, 0x10);
+    io_outb(self->io + RTL8139_REGISTER_CR, RTL8139_CR_RESET);
 
-    while (io_inb(self->io + RTL8139_REGISTER_CR) & 0x10);
+    while (io_inb(self->io + RTL8139_REGISTER_CR) & RTL8139_CR_RESET);
 
 }
 
 static void enable(struct rtl8139_driver *self)
 {
 
-    io_outb(self->io + RTL8139_REGISTER_CR, 0x0C);
+    io_outb(self->io + RTL8139_REGISTER_CR, RTL8139_CR_RENABLE | RTL8139_CR_TENABLE);
 
 }
 
@@ -130,7 +155,7 @@ static void setup_receiver(struct rtl8139_driver *self)
 {
 
     io_outd(self->io + RTL8139_REGISTER_RBSTART, (unsigned long)self->rx);
-    io_outd(self->io + RTL8139_REGISTER_RCR, 0x8F);
+    io_outd(self->io + RTL8139_REGISTER_RCR, RTL8139_RCR_AAP | RTL8139_RCR_APM | RTL8139_RCR_AM | RTL8139_RCR_AB | RTL8139_RCR_WRAP);
 
 }
 
@@ -192,7 +217,7 @@ static void attach(struct base_device *device)
     pic_set_routine(device, handle_irq);
     poweron(driver);
     reset(driver);
-    setup_interrupts(driver, 0x0005);
+    setup_interrupts(driver, RTL8139_ISR_ROK | RTL8139_ISR_TOK);
     setup_receiver(driver);
     setup_transmitter(driver);
     enable(driver);
