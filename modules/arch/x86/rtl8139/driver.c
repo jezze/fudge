@@ -144,6 +144,23 @@ static void setup_transmitter(struct rtl8139_driver *self)
 
 }
 
+/*
+static void log(char *text, unsigned int count)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < count; i++)
+    {
+
+        memory_copy((void *)(0xB8640 + i * 2 + 1), " ", 1);
+        memory_copy((void *)(0xB8640 + i * 2), text + i, 1);
+
+    }
+
+}
+*/
+
 static void handle_irq(struct base_device *device)
 {
 
@@ -205,17 +222,39 @@ static unsigned int receive(struct base_device *device, unsigned int count, void
 {
 
     struct rtl8139_driver *driver = (struct rtl8139_driver *)device->driver;
-    struct rtl8139_header *header;
+    struct rtl8139_header *header = (struct rtl8139_header *)(driver->rx + driver->rxp);
+    unsigned int k;
 
-    driver->rxp = io_inw(driver->io + RTL8139_REGISTER_CAPR) + 0x10;
+    /*
+    char b[1000];
+    unsigned int c = 0;
+    unsigned short total = io_inw(driver->io + RTL8139_REGISTER_CBR);
 
-    header = (struct rtl8139_header *)(driver->rx + driver->rxp);
+    c += memory_write(b, 1000, "rec", 3, c);
+    c += memory_write(b, 1000, " ", 1, c);
+    c += memory_write(b, 1000, "total: ", 7, c);
+    c += ascii_write_value(b, 1000, total, 16, c);
+    c += memory_write(b, 1000, " ", 1, c);
+    c += memory_write(b, 1000, "hf: ", 4, c);
+    c += ascii_write_value(b, 1000, header->flags, 16, c);
+    c += memory_write(b, 1000, " ", 1, c);
+    c += memory_write(b, 1000, "hl: ", 4, c);
+    c += ascii_write_value(b, 1000, header->length, 16, c);
+    c += memory_write(b, 1000, " ", 1, c);
+    c += memory_write(b, 1000, "rxp: ", 5, c);
+    c += ascii_write_value(b, 1000, driver->rxp, 16, c);
+
+    log(b, c);
+
+    */
+
+    k = memory_read(buffer, count, driver->rx + driver->rxp + sizeof (struct rtl8139_header), header->length, 0);
 
     driver->rxp += (header->length + 4 + 3) & ~3;
 
-    io_outw(driver->io + RTL8139_REGISTER_CAPR, driver->rxp - 0x10);
+    io_outw(driver->io + RTL8139_REGISTER_CAPR, driver->rxp);
 
-    return memory_read(buffer, count, 0, 64, 0);
+    return k;
 
 }
 
