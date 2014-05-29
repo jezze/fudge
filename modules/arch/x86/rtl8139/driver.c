@@ -243,11 +243,32 @@ static unsigned int check(struct base_device *device)
 
 }
 
+static void *get_packet(struct base_device *device)
+{
+
+    struct rtl8139_driver *driver = (struct rtl8139_driver *)device->driver;
+
+    return driver->rx + driver->rxp;
+
+}
+
+static void dump_packet(struct base_device *device)
+{
+
+    struct rtl8139_driver *driver = (struct rtl8139_driver *)device->driver;
+    struct rtl8139_header *header = get_packet(device);
+
+    driver->rxp += (header->length + 4 + 3) & ~3;
+
+    io_outw(driver->io + RTL8139_REGISTER_CAPR, driver->rxp);
+
+}
+
 static unsigned int receive(struct base_device *device, unsigned int count, void *buffer)
 {
 
     struct rtl8139_driver *driver = (struct rtl8139_driver *)device->driver;
-    struct rtl8139_header *header = (struct rtl8139_header *)(driver->rx + driver->rxp);
+    struct rtl8139_header *header = get_packet(device);
     unsigned int k;
 
     /*
@@ -275,9 +296,7 @@ static unsigned int receive(struct base_device *device, unsigned int count, void
 
     k = memory_read(buffer, count, driver->rx + driver->rxp + sizeof (struct rtl8139_header), header->length, 0);
 
-    driver->rxp += (header->length + 4 + 3) & ~3;
-
-    io_outw(driver->io + RTL8139_REGISTER_CAPR, driver->rxp);
+    dump_packet(device);
 
     return k;
 
@@ -330,7 +349,7 @@ void rtl8139_init_driver(struct rtl8139_driver *driver)
 
     memory_clear(driver, sizeof (struct rtl8139_driver));
     base_init_driver(&driver->base, "rtl8139", check, attach);
-    base_network_init_interface(&driver->inetwork, receive, send);
+    base_network_init_interface(&driver->inetwork, receive, send, get_packet, dump_packet);
 
 }
 
