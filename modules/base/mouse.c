@@ -1,6 +1,7 @@
 #include <module.h>
 #include <kernel/resource.h>
 #include <kernel/vfs.h>
+#include <kernel/rendezvous.h>
 #include <system/system.h>
 #include "base.h"
 #include "mouse.h"
@@ -19,6 +20,28 @@ static struct interface_node
 
 static struct system_group root;
 static struct system_group dev;
+
+static unsigned int data_open(struct system_node *self)
+{
+
+    struct interface_node *node = (struct interface_node *)self->parent;
+
+    rendezvous_lock(&node->interface->rdata);
+
+    return (unsigned int)self;
+
+}
+
+static unsigned int data_close(struct system_node *self)
+{
+
+    struct interface_node *node = (struct interface_node *)self->parent;
+
+    rendezvous_unlock(&node->interface->rdata);
+
+    return (unsigned int)self;
+
+}
 
 static unsigned int data_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
@@ -77,6 +100,8 @@ static void init_inode(struct interface_node *node, struct base_mouse_interface 
 
     node->interface = interface;
     node->device = device;
+    node->data.node.open = data_open;
+    node->data.node.close = data_close;
     node->data.node.read = data_read;
     node->vx.node.read = vx_read;
     node->vy.node.read = vy_read;

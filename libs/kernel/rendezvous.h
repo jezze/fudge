@@ -2,6 +2,7 @@ struct rendezvous
 {
 
     struct task *task;
+    unsigned int sleep;
 
 };
 

@@ -83,8 +83,7 @@ static void handle_irq(struct base_device *device)
     }
 
     write_stream(&driver->stream, 1, &data);
-    rendezvous_unsleep(&driver->rdata, 1);
-    rendezvous_unlock(&driver->rdata);
+    rendezvous_unsleep(&driver->imouse.rdata, 1);
 
 }
 
@@ -168,10 +167,7 @@ static unsigned int read_data(struct base_device *device, unsigned int offset, u
 
     count = read_stream(&driver->stream, count, buffer);
 
-    if (!count)
-        rendezvous_lock(&driver->rdata);
-
-    rendezvous_sleep(&driver->rdata, !count);
+    rendezvous_sleep(&driver->imouse.rdata, !count);
 
     return count;
 

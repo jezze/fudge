@@ -41,6 +41,10 @@ void rendezvous_sleep(struct rendezvous *rendezvous, unsigned int condition)
     if (!rendezvous_islocked(rendezvous))
         return;
 
+    if (rendezvous->sleep)
+        return;
+
+    rendezvous->sleep = 1;
     scheduler_block(rendezvous->task);
 
 }
@@ -54,6 +58,10 @@ void rendezvous_unsleep(struct rendezvous *rendezvous, unsigned int condition)
     if (!rendezvous_islocked(rendezvous))
         return;
 
+    if (!rendezvous->sleep)
+        return;
+
+    rendezvous->sleep = 0;
     scheduler_unblock(rendezvous->task);
 
     rendezvous->task->registers.ip -= 7;

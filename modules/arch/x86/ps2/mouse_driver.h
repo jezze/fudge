@@ -13,7 +13,6 @@ struct ps2_mouse_driver
     struct base_driver base;
     struct base_mouse_interface imouse;
     struct ps2_mouse_stream stream;
-    struct rendezvous rdata;
     unsigned char cycle;
     char status;
 
