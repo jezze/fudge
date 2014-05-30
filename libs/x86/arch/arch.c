@@ -157,9 +157,6 @@ unsigned short arch_schedule(struct cpu_general *general, struct cpu_interrupt *
     if (task)
     {
 
-        if (task == next)
-            return state.table.udata;
-
         task->base.registers.ip = interrupt->eip;
         task->base.registers.sp = interrupt->esp;
 
