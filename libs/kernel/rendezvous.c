@@ -12,59 +12,67 @@ unsigned int rendezvous_islocked(struct rendezvous *rendezvous)
 
 }
 
-void rendezvous_lock(struct rendezvous *rendezvous)
+unsigned int rendezvous_lock(struct rendezvous *rendezvous)
 {
 
     if (rendezvous_islocked(rendezvous))
-        return;
+        return 0;
 
     rendezvous->task = scheduler_find_used_task();
 
+    return 1;
+
 }
 
-void rendezvous_unlock(struct rendezvous *rendezvous)
+unsigned int rendezvous_unlock(struct rendezvous *rendezvous)
 {
 
     if (!rendezvous_islocked(rendezvous))
-        return;
+        return 0;
 
     rendezvous->task = 0;
 
+    return 1;
+
 }
 
-void rendezvous_sleep(struct rendezvous *rendezvous, unsigned int condition)
+unsigned int rendezvous_sleep(struct rendezvous *rendezvous, unsigned int condition)
 {
 
     if (!condition)
-        return;
+        return 0;
 
     if (!rendezvous_islocked(rendezvous))
-        return;
+        return 0;
 
     if (rendezvous->sleep)
-        return;
+        return 0;
 
     rendezvous->sleep = 1;
     scheduler_block(rendezvous->task);
 
+    return 1;
+
 }
 
-void rendezvous_unsleep(struct rendezvous *rendezvous, unsigned int condition)
+unsigned int rendezvous_unsleep(struct rendezvous *rendezvous, unsigned int condition)
 {
 
     if (!condition)
-        return;
+        return 0;
 
     if (!rendezvous_islocked(rendezvous))
-        return;
+        return 0;
 
     if (!rendezvous->sleep)
-        return;
+        return 0;
 
     rendezvous->sleep = 0;
     scheduler_unblock(rendezvous->task);
 
     rendezvous->task->registers.ip -= 7;
+
+    return 1;
 
 }
 
