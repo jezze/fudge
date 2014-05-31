@@ -1,5 +1,5 @@
 MOD:=$(MODULES_ARCH_PATH)/bga/bga.ko
-OBJ:=$(MODULES_ARCH_PATH)/bga/main.o $(MODULES_ARCH_PATH)/bga/driver.o
+OBJ:=$(MODULES_ARCH_PATH)/bga/main.o
 
 $(MOD): $(OBJ) $(LIBFUDGE)
 	$(LD) $(LDFLAGS) -o $@ $^

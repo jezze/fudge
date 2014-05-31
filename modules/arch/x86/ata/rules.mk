@@ -1,5 +1,5 @@
 MOD:=$(MODULES_ARCH_PATH)/ata/ata.ko
-OBJ:=$(MODULES_ARCH_PATH)/ata/main.o $(MODULES_ARCH_PATH)/ata/driver.o
+OBJ:=$(MODULES_ARCH_PATH)/ata/main.o
 
 $(MOD): $(OBJ) $(LIBFUDGE)
 	$(LD) $(LDFLAGS) -o $@ $^

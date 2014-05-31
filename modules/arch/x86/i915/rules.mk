@@ -1,5 +1,5 @@
 MOD:=$(MODULES_ARCH_PATH)/i915/i915.ko
-OBJ:=$(MODULES_ARCH_PATH)/i915/main.o $(MODULES_ARCH_PATH)/i915/driver.o
+OBJ:=$(MODULES_ARCH_PATH)/i915/main.o
 
 $(MOD): $(OBJ) $(LIBFUDGE)
 	$(LD) $(LDFLAGS) -o $@ $^
