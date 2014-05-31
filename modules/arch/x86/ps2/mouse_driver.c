@@ -67,40 +67,6 @@ static unsigned int write_stream(struct ps2_mouse_stream *stream, unsigned int c
 
 }
 
-static void handle_irq(struct base_device *device)
-{
-
-    struct ps2_bus *bus = (struct ps2_bus *)device->bus;
-    unsigned char data = ps2_bus_read_data_async(bus);
-
-    switch (cycle)
-    {
-
-    case 0:
-        status = data;
-        cycle++;
-
-        break;
-
-    case 1:
-        imouse.vx = data;
-        cycle++;
-
-        break;
-
-    case 2:
-        imouse.vy = data;
-        cycle = 0;
-
-        break;
-
-    }
-
-    write_stream(&stream, 1, &data);
-    rendezvous_unsleep(&imouse.rdata, 1);
-
-}
-
 static void reset(struct ps2_bus *bus)
 {
 
@@ -154,6 +120,40 @@ static unsigned int read_data(struct base_device *device, unsigned int offset, u
     rendezvous_sleep(&imouse.rdata, !count);
 
     return count;
+
+}
+
+static void handle_irq(struct base_device *device)
+{
+
+    struct ps2_bus *bus = (struct ps2_bus *)device->bus;
+    unsigned char data = ps2_bus_read_data_async(bus);
+
+    switch (cycle)
+    {
+
+    case 0:
+        status = data;
+        cycle++;
+
+        break;
+
+    case 1:
+        imouse.vx = data;
+        cycle++;
+
+        break;
+
+    case 2:
+        imouse.vy = data;
+        cycle = 0;
+
+        break;
+
+    }
+
+    write_stream(&stream, 1, &data);
+    rendezvous_unsleep(&imouse.rdata, 1);
 
 }
 

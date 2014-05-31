@@ -7,11 +7,6 @@
 static struct base_driver driver;
 static struct base_block_interface iblock;
 
-static void handle_irq(struct base_device *device)
-{
-
-}
-
 static unsigned int read_data(struct base_device *device, unsigned int offset, unsigned int count, void *buffer)
 {
 
@@ -33,6 +28,11 @@ static unsigned int write_data(struct base_device *device, unsigned int offset, 
         return 0;
 
     return ide_device_write_lba28(ideDevice, 0, 1, buffer);
+
+}
+
+static void handle_irq(struct base_device *device)
+{
 
 }
 
