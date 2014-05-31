@@ -49,7 +49,7 @@ static void init_inode(struct interface_node *node, struct base_timer_interface 
 {
 
     memory_clear(node, sizeof (struct interface_node));
-    system_init_group(&node->base, device->module.name);
+    system_init_group(&node->base, device->name);
     system_init_stream(&node->jiffies, "jiffies");
 
     node->interface = interface;

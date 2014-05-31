@@ -1,4 +1,5 @@
 #include <module.h>
+#include <kernel/resource.h>
 #include <base/base.h>
 #include <base/terminal.h>
 #include <base/video.h>

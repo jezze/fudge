@@ -1,29 +1,16 @@
+#define BASE_RESOURCE_BUS               8021
+#define BASE_RESOURCE_DEVICE            8022
+#define BASE_RESOURCE_DRIVER            8023
+
 struct base_bus;
 struct base_device;
 struct base_driver;
 
-enum base_type
-{
-
-    BASE_TYPE_BUS                       = 0x01,
-    BASE_TYPE_DEVICE                    = 0x02,
-    BASE_TYPE_DRIVER                    = 0x03
-
-};
-
-struct base_module
-{
-
-    struct list_item item;
-    enum base_type type;
-    const char *name;
-
-};
-
 struct base_bus
 {
 
-    struct base_module module;
+    struct resource_item resource;
+    const char *name;
     unsigned int type;
     void (*scan)(struct base_bus *self);
 
@@ -32,7 +19,8 @@ struct base_bus
 struct base_device
 {
 
-    struct base_module module;
+    struct resource_item resource;
+    const char *name;
     unsigned int type;
     unsigned int irq;
     struct base_bus *bus;
@@ -43,7 +31,8 @@ struct base_device
 struct base_driver
 {
 
-    struct base_module module;
+    struct resource_item resource;
+    const char *name;
     unsigned int (*check)(struct base_device *device);
     void (*attach)(struct base_device *device);
 

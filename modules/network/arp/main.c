@@ -1,4 +1,5 @@
 #include <module.h>
+#include <kernel/resource.h>
 #include <base/base.h>
 #include <base/network.h>
 #include "arp.h"

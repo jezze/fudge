@@ -1,4 +1,5 @@
 #include <module.h>
+#include <kernel/resource.h>
 #include <base/base.h>
 #include <arch/x86/io/io.h>
 #include "pci.h"

@@ -65,7 +65,7 @@ static unsigned int info_read(struct system_node *self, unsigned int offset, uns
     unsigned int c = 0;
 
     c += memory_write(info, 256, "driver: ", 8, c);
-    c += memory_write(info, 256, node->device->driver->module.name, ascii_length(node->device->driver->module.name), c);
+    c += memory_write(info, 256, node->device->driver->name, ascii_length(node->device->driver->name), c);
     c += memory_write(info, 256, "\n", 1, c);
 
     return memory_read(buffer, count, info, c, offset);
@@ -108,7 +108,7 @@ static void init_inode(struct interface_node *node, struct base_video_interface 
 {
 
     memory_clear(node, sizeof (struct interface_node));
-    system_init_group(&node->base, device->module.name);
+    system_init_group(&node->base, device->name);
     system_init_stream(&node->data, "data");
     system_init_stream(&node->colormap, "colormap");
     system_init_stream(&node->info, "info");

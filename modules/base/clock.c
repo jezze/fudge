@@ -103,7 +103,7 @@ static void init_inode(struct interface_node *node, struct base_clock_interface 
 {
 
     memory_clear(node, sizeof (struct interface_node));
-    system_init_group(&node->base, device->module.name);
+    system_init_group(&node->base, device->name);
     system_init_stream(&node->timestamp, "timestamp");
     system_init_stream(&node->date, "date");
     system_init_stream(&node->time, "time");

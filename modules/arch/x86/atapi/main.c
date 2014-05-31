@@ -1,4 +1,5 @@
 #include <module.h>
+#include <kernel/resource.h>
 #include <base/base.h>
 #include <base/block.h>
 #include <arch/x86/ide/ide.h>
