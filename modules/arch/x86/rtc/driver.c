@@ -26,6 +26,9 @@ enum rtc_flag
 
 };
 
+static struct base_driver driver;
+static struct base_clock_interface iclock;
+
 static unsigned char convert(unsigned char num)
 {
 
@@ -99,9 +102,8 @@ static void handle_irq(struct base_device *device)
 static void attach(struct base_device *device)
 {
 
-    struct rtc_driver *driver = (struct rtc_driver *)device->driver;
-
-    base_clock_register_interface(&driver->iclock, device);
+    base_clock_init_interface(&iclock, get_seconds, get_minutes, get_hours, get_weekday, get_day, get_month, get_year);
+    base_clock_register_interface(&iclock, device);
     pic_set_routine(device, handle_irq);
 
 }
@@ -113,12 +115,18 @@ static unsigned int check(struct base_device *device)
 
 }
 
-void rtc_init_driver(struct rtc_driver *driver)
+void rtc_driver_init()
 {
 
-    memory_clear(driver, sizeof (struct rtc_driver));
-    base_init_driver(&driver->base, "rtc", check, attach);
-    base_clock_init_interface(&driver->iclock, get_seconds, get_minutes, get_hours, get_weekday, get_day, get_month, get_year);
+    base_init_driver(&driver, "rtc", check, attach);
+    base_register_driver(&driver);
+
+}
+
+void rtc_driver_destroy()
+{
+
+    base_unregister_driver(&driver);
 
 }
 

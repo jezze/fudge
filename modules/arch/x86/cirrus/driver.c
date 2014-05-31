@@ -31,6 +31,9 @@ enum
 
 };
 
+static struct base_driver driver;
+static struct base_video_interface ivideo;
+
 static int clocks[CLOCKS] = {
     12599, 18000, 19600, 25227, 28325, 31500, 36025, 37747,
     39992, 41164, 45076, 49867, 64983, 72163, 75000, 80013,
@@ -208,9 +211,12 @@ static unsigned int write_video_colormap(struct base_device *device, unsigned in
 static void attach(struct base_device *device)
 {
 
-    struct cirrus_driver *driver = (struct cirrus_driver *)device->driver;
+    base_video_init_interface(&ivideo, mode, read_video_data, write_video_data, read_video_colormap, write_video_colormap);
+    base_video_register_interface(&ivideo, device);
 
-    base_video_register_interface(&driver->ivideo, device);
+    ivideo.xres = 80;
+    ivideo.yres = 25;
+    ivideo.bpp = 16;
 
 }
 
@@ -226,16 +232,18 @@ static unsigned int check(struct base_device *device)
 
 }
 
-void cirrus_init_driver(struct cirrus_driver *driver)
+void cirrus_driver_init()
 {
 
-    memory_clear(driver, sizeof (struct cirrus_driver));
-    base_init_driver(&driver->base, "cirrus", check, attach);
-    base_video_init_interface(&driver->ivideo, mode, read_video_data, write_video_data, read_video_colormap, write_video_colormap);
+    base_init_driver(&driver, "cirrus", check, attach);
+    base_register_driver(&driver);
 
-    driver->ivideo.xres = 80;
-    driver->ivideo.yres = 25;
-    driver->ivideo.bpp = 16;
+}
+
+void cirrus_driver_destroy()
+{
+
+    base_unregister_driver(&driver);
 
 }
 

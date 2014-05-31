@@ -20,6 +20,18 @@ struct vga_character
 
 };
 
+static struct
+{
+
+    unsigned char color;
+    unsigned short offset;
+
+} cursor;
+
+static struct base_driver driver;
+static struct base_terminal_interface iterminal;
+static struct base_video_interface ivideo;
+
 /* BIOS mode 0Dh - 320x200x16 */
 static const unsigned char g320x200x16[60] = {
     0x2D, 0x27, 0x28, 0x90, 0x2B, 0x80, 0xBF, 0x1F, 0x00, 0xC0, 0x00, 0x00,
@@ -153,7 +165,6 @@ static unsigned int read_terminal_data(struct base_device *device, unsigned int 
 static unsigned int write_terminal_data(struct base_device *device, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct vga_driver *driver = (struct vga_driver *)device->driver;
     struct vga_character *memory = (struct vga_character *)VGA_TEXT_BASE;
     unsigned int i;
 
@@ -163,27 +174,27 @@ static unsigned int write_terminal_data(struct base_device *device, unsigned int
         char c = ((char *)buffer)[i];
 
         if (c == '\b')
-            driver->cursor.offset--;
+            cursor.offset--;
 
         if (c == '\t')
-            driver->cursor.offset = (driver->cursor.offset + 8) & ~(8 - 1);
+            cursor.offset = (cursor.offset + 8) & ~(8 - 1);
 
         if (c == '\r')
-            driver->cursor.offset -= (driver->cursor.offset % 80);
+            cursor.offset -= (cursor.offset % 80);
 
         if (c == '\n')
-            driver->cursor.offset += 80 - (driver->cursor.offset % 80);
+            cursor.offset += 80 - (cursor.offset % 80);
 
         if (c >= ' ')
         {
 
-            memory[driver->cursor.offset].character = c;
-            memory[driver->cursor.offset].color = driver->cursor.color;
-            driver->cursor.offset++;
+            memory[cursor.offset].character = c;
+            memory[cursor.offset].color = cursor.color;
+            cursor.offset++;
 
         }
 
-        if (driver->cursor.offset >= VGA_TEXT_LIMIT)
+        if (cursor.offset >= VGA_TEXT_LIMIT)
         {
 
             unsigned int j;
@@ -194,16 +205,16 @@ static unsigned int write_terminal_data(struct base_device *device, unsigned int
             {
 
                 memory[j].character = ' ';
-                memory[j].color = driver->cursor.color;
+                memory[j].color = cursor.color;
 
             }
 
-            driver->cursor.offset -= 80;
+            cursor.offset -= 80;
 
         }
 
-        outcrt1(VGA_CRTINDEX_CRT0E, driver->cursor.offset >> 8);
-        outcrt1(VGA_CRTINDEX_CRT0F, driver->cursor.offset);
+        outcrt1(VGA_CRTINDEX_CRT0E, cursor.offset >> 8);
+        outcrt1(VGA_CRTINDEX_CRT0F, cursor.offset);
 
     }
 
@@ -214,18 +225,14 @@ static unsigned int write_terminal_data(struct base_device *device, unsigned int
 static unsigned int read_video_data(struct base_device *device, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct vga_driver *driver = (struct vga_driver *)device->driver;
-
-    return memory_read(buffer, count, (void *)VGA_ADDRESS, driver->ivideo.xres * driver->ivideo.yres * (driver->ivideo.bpp / 8), offset);
+    return memory_read(buffer, count, (void *)VGA_ADDRESS, ivideo.xres * ivideo.yres * (ivideo.bpp / 8), offset);
 
 }
 
 static unsigned int write_video_data(struct base_device *device, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct vga_driver *driver = (struct vga_driver *)device->driver;
-
-    return memory_write((void *)VGA_ADDRESS, driver->ivideo.xres * driver->ivideo.yres * (driver->ivideo.bpp / 8), buffer, count, offset);
+    return memory_write((void *)VGA_ADDRESS, ivideo.xres * ivideo.yres * (ivideo.bpp / 8), buffer, count, offset);
 
 }
 
@@ -284,20 +291,24 @@ static unsigned int write_video_colormap(struct base_device *device, unsigned in
 static void attach(struct base_device *device)
 {
 
-    struct vga_driver *driver = (struct vga_driver *)device->driver;
     struct vga_character *memory = (struct vga_character *)VGA_TEXT_BASE;
     unsigned int i;
 
-    base_terminal_register_interface(&driver->iterminal, device);
-    base_video_register_interface(&driver->ivideo, device);
+    base_terminal_init_interface(&iterminal, read_terminal_data, write_terminal_data);
+    base_terminal_register_interface(&iterminal, device);
+    base_video_init_interface(&ivideo, mode, read_video_data, write_video_data, read_video_colormap, write_video_colormap);
+    base_video_register_interface(&ivideo, device);
 
-    driver->cursor.color = 0x0F;
+    ivideo.xres = 80;
+    ivideo.yres = 25;
+    ivideo.bpp = 2;
+    cursor.color = 0x0F;
 
     for (i = 0; i < VGA_TEXT_LIMIT; i++)
     {
 
         memory[i].character = ' ';
-        memory[i].color = driver->cursor.color;
+        memory[i].color = cursor.color;
 
     }
 
@@ -315,17 +326,18 @@ static unsigned int check(struct base_device *device)
 
 }
 
-void vga_init_driver(struct vga_driver *driver)
+void vga_driver_init()
 {
 
-    memory_clear(driver, sizeof (struct vga_driver));
-    base_init_driver(&driver->base, "vga", check, attach);
-    base_terminal_init_interface(&driver->iterminal, read_terminal_data, write_terminal_data);
-    base_video_init_interface(&driver->ivideo, mode, read_video_data, write_video_data, read_video_colormap, write_video_colormap);
+    base_init_driver(&driver, "vga", check, attach);
+    base_register_driver(&driver);
 
-    driver->ivideo.xres = 80;
-    driver->ivideo.yres = 25;
-    driver->ivideo.bpp = 2;
+}
+
+void vga_driver_destroy()
+{
+
+    base_unregister_driver(&driver);
 
 }
 

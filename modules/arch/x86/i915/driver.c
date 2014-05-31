@@ -6,6 +6,9 @@
 #include "i915.h"
 #include "driver.h"
 
+static struct base_driver driver;
+static struct base_video_interface ivideo;
+
 static unsigned int read(unsigned int reg)
 {
 
@@ -112,6 +115,25 @@ static void set_pipe_mode(unsigned int width, unsigned int height)
 
 }
 
+static void enable(struct base_device *device)
+{
+
+}
+
+static unsigned int read_data(struct base_device *device, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    return 0;
+
+}
+
+static unsigned int write_data(struct base_device *device, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    return 0;
+
+}
+
 static void handle_irq(struct base_device *device)
 {
 
@@ -120,9 +142,8 @@ static void handle_irq(struct base_device *device)
 static void attach(struct base_device *device)
 {
 
-    struct i915_driver *driver = (struct i915_driver *)device->driver;
-
-    base_video_register_interface(&driver->ivideo, device);
+    base_video_init_interface(&ivideo, enable, read_data, write_data, 0, 0);
+    base_video_register_interface(&ivideo, device);
     pic_set_routine(device, handle_irq);
     enable_dpll();
     enable_pipe();
@@ -145,31 +166,18 @@ static unsigned int check(struct base_device *device)
 
 }
 
-static void enable(struct base_device *device)
+void i915_driver_init()
 {
+
+    base_init_driver(&driver, "i915", check, attach);
+    base_register_driver(&driver);
 
 }
 
-static unsigned int read_data(struct base_device *device, unsigned int offset, unsigned int count, void *buffer)
+void i915_driver_destroy()
 {
 
-    return 0;
-
-}
-
-static unsigned int write_data(struct base_device *device, unsigned int offset, unsigned int count, void *buffer)
-{
-
-    return 0;
-
-}
-
-void i915_init_driver(struct i915_driver *driver)
-{
-
-    memory_clear(driver, sizeof (struct i915_driver));
-    base_init_driver(&driver->base, "i915", check, attach);
-    base_video_init_interface(&driver->ivideo, enable, read_data, write_data, 0, 0);
+    base_unregister_driver(&driver);
 
 }
 

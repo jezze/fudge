@@ -6,6 +6,10 @@ struct base_keyboard_interface
     unsigned int (*read_data)(struct base_device *device, unsigned int offset, unsigned int count, void *buffer);
     unsigned int (*write_data)(struct base_device *device, unsigned int offset, unsigned int count, void *buffer);
     struct rendezvous rdata;
+    unsigned int escaped;
+    unsigned int ctrl;
+    unsigned int alt;
+    unsigned int shift;
 
 };
 

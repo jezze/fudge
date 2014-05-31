@@ -6,6 +6,19 @@
 #include "ps2.h"
 #include "keyboard_driver.h"
 
+struct ps2_keyboard_stream
+{
+
+    char buffer[512];
+    unsigned int head;
+    unsigned int tail;
+
+};
+
+static struct base_driver driver;
+static struct base_keyboard_interface ikeyboard;
+static struct ps2_keyboard_stream stream;
+
 static unsigned int read_stream(struct ps2_keyboard_stream *stream, unsigned int count, void *buffer)
 {
 
@@ -52,18 +65,35 @@ static unsigned int write_stream(struct ps2_keyboard_stream *stream, unsigned in
 
 }
 
+static unsigned int read_data(struct base_device *device, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    count = read_stream(&stream, count, buffer);
+
+    rendezvous_sleep(&ikeyboard.rdata, !count);
+
+    return count;
+
+}
+
+static unsigned int write_data(struct base_device *device, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    return write_stream(&stream, count, buffer);
+
+}
+
 static void handle_irq(struct base_device *device)
 {
 
     struct ps2_bus *bus = (struct ps2_bus *)device->bus;
-    struct ps2_keyboard_driver *driver = (struct ps2_keyboard_driver *)device->driver;
     unsigned char scancode = ps2_bus_read_data_async(bus);
 
-    if (driver->escaped)
-        driver->escaped = 0;
+    if (ikeyboard.escaped)
+        ikeyboard.escaped = 0;
 
     if (scancode == 0xE0)
-        driver->escaped = 1;
+        ikeyboard.escaped = 1;
 
     if (scancode & 0x80)
     {
@@ -71,13 +101,13 @@ static void handle_irq(struct base_device *device)
         scancode &= ~0x80;
 
         if (scancode == 0x1D)
-            driver->ctrl = 0;
+            ikeyboard.ctrl = 0;
 
         if (scancode == 0x2A)
-            driver->shift = 0;
+            ikeyboard.shift = 0;
 
         if (scancode == 0x38)
-            driver->alt = 0;
+            ikeyboard.alt = 0;
 
     }
 
@@ -85,37 +115,36 @@ static void handle_irq(struct base_device *device)
     {
 
         if (scancode == 0x1D)
-            driver->ctrl = 1;
+            ikeyboard.ctrl = 1;
 
         if (scancode == 0x2A)
-            driver->shift = 1;
+            ikeyboard.shift = 1;
 
         if (scancode == 0x38)
-            driver->alt = 1;
+            ikeyboard.alt = 1;
 
-        if (driver->ctrl)
+        if (ikeyboard.ctrl)
             scancode = 0;
 
-        if (driver->alt)
+        if (ikeyboard.alt)
             scancode = 0;
 
-        if (driver->shift)
+        if (ikeyboard.shift)
             scancode += 128;
 
-        write_stream(&driver->stream, driver->ikeyboard.keymap[scancode].length, driver->ikeyboard.keymap[scancode].value);
+        write_stream(&stream, ikeyboard.keymap[scancode].length, ikeyboard.keymap[scancode].value);
 
     }
 
-    rendezvous_unsleep(&driver->ikeyboard.rdata, driver->stream.tail < driver->stream.head);
+    rendezvous_unsleep(&ikeyboard.rdata, stream.tail < stream.head);
 
 }
 
 static void attach(struct base_device *device)
 {
 
-    struct ps2_keyboard_driver *driver = (struct ps2_keyboard_driver *)device->driver;
-
-    base_keyboard_register_interface(&driver->ikeyboard, device);
+    base_keyboard_init_interface(&ikeyboard, read_data, write_data);
+    base_keyboard_register_interface(&ikeyboard, device);
     pic_set_routine(device, handle_irq);
     ps2_device_enable(device);
     ps2_device_enable_interrupt(device);
@@ -132,34 +161,18 @@ static unsigned int check(struct base_device *device)
 
 }
 
-static unsigned int read_data(struct base_device *device, unsigned int offset, unsigned int count, void *buffer)
+void ps2_keyboard_driver_init()
 {
 
-    struct ps2_keyboard_driver *driver = (struct ps2_keyboard_driver *)device->driver;
-
-    count = read_stream(&driver->stream, count, buffer);
-
-    rendezvous_sleep(&driver->ikeyboard.rdata, !count);
-
-    return count;
+    base_init_driver(&driver, "ps2keyboard", check, attach);
+    base_register_driver(&driver);
 
 }
 
-static unsigned int write_data(struct base_device *device, unsigned int offset, unsigned int count, void *buffer)
+void ps2_keyboard_driver_destroy()
 {
 
-    struct ps2_keyboard_driver *driver = (struct ps2_keyboard_driver *)device->driver;
-
-    return write_stream(&driver->stream, count, buffer);
-
-}
-
-void ps2_init_keyboard_driver(struct ps2_keyboard_driver *driver)
-{
-
-    memory_clear(driver, sizeof (struct ps2_keyboard_driver));
-    base_init_driver(&driver->base, "ps2keyboard", check, attach);
-    base_keyboard_init_interface(&driver->ikeyboard, read_data, write_data);
+    base_unregister_driver(&driver);
 
 }
 

@@ -5,6 +5,9 @@
 #include <arch/x86/pic/pic.h>
 #include "driver.h"
 
+static struct base_driver driver;
+static struct base_block_interface iblock;
+
 static void handle_irq(struct base_device *device)
 {
 
@@ -37,9 +40,8 @@ static unsigned int write_data(struct base_device *device, unsigned int offset, 
 static void attach(struct base_device *device)
 {
 
-    struct ata_driver *driver = (struct ata_driver *)device->driver;
-
-    base_block_register_interface(&driver->iblock, device);
+    base_block_init_interface(&iblock, read_data, write_data);
+    base_block_register_interface(&iblock, device);
     pic_set_routine(device, handle_irq);
 
 }
@@ -56,12 +58,18 @@ static unsigned int check(struct base_device *device)
 
 }
 
-void ata_init_driver(struct ata_driver *driver)
+void ata_driver_init()
 {
 
-    memory_clear(driver, sizeof (struct ata_driver));
-    base_init_driver(&driver->base, "ata", check, attach);
-    base_block_init_interface(&driver->iblock, read_data, write_data);
+    base_init_driver(&driver, "ata", check, attach);
+    base_register_driver(&driver);
+
+}
+
+void ata_driver_destroy()
+{
+
+    base_unregister_driver(&driver);
 
 }
 

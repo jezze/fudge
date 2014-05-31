@@ -42,17 +42,31 @@ enum pit_command
 
 };
 
+static struct base_driver driver;
+static struct base_timer_interface itimer;
+static struct rendezvous rduration;
+static unsigned int duration;
+static unsigned short divisor;
+
+static void add_duration(struct base_device *device, unsigned int duration)
+{
+
+    rendezvous_lock(&rduration);
+    rendezvous_sleep(&rduration, 1);
+
+    duration = itimer.jiffies;
+
+}
+
 static void handle_irq(struct base_device *device)
 {
 
-    struct pit_driver *driver = (struct pit_driver *)device->driver;
+    itimer.jiffies += 1;
 
-    driver->itimer.jiffies += 1;
+    rendezvous_unsleep(&rduration, duration + 5000 < itimer.jiffies);
 
-    rendezvous_unsleep(&driver->rduration, driver->duration + 5000 < driver->itimer.jiffies);
-
-    if (driver->duration + 5000 < driver->itimer.jiffies)
-        rendezvous_unlock(&driver->rduration);
+    if (duration + 5000 < itimer.jiffies)
+        rendezvous_unlock(&rduration);
 
 }
 
@@ -60,13 +74,15 @@ static void attach(struct base_device *device)
 {
 
     struct platform_device *platformDevice = (struct platform_device *)device;
-    struct pit_driver *driver = (struct pit_driver *)device->driver;
 
-    base_timer_register_interface(&driver->itimer, device);
+    divisor = PIT_FREQUENCY / PIT_HERTZ;
+
+    base_timer_init_interface(&itimer, add_duration);
+    base_timer_register_interface(&itimer, device);
     pic_set_routine(device, handle_irq);
     io_outb(platformDevice->registers + PIT_REGISTER_COMMAND, PIT_COMMAND_COUNTER0 | PIT_COMMAND_BOTH | PIT_COMMAND_MODE3 | PIT_COMMAND_BINARY);
-    io_outb(platformDevice->registers + PIT_REGISTER_COUNTER0, driver->divisor >> 0);
-    io_outb(platformDevice->registers + PIT_REGISTER_COUNTER0, driver->divisor >> 8);
+    io_outb(platformDevice->registers + PIT_REGISTER_COUNTER0, divisor >> 0);
+    io_outb(platformDevice->registers + PIT_REGISTER_COUNTER0, divisor >> 8);
 
 }
 
@@ -77,26 +93,18 @@ static unsigned int check(struct base_device *device)
 
 }
 
-static void add_duration(struct base_device *device, unsigned int duration)
+void pit_driver_init()
 {
 
-    struct pit_driver *driver = (struct pit_driver *)device->driver;
-
-    rendezvous_lock(&driver->rduration);
-    rendezvous_sleep(&driver->rduration, 1);
-
-    driver->duration = driver->itimer.jiffies;
+    base_init_driver(&driver, "pit", check, attach);
+    base_register_driver(&driver);
 
 }
 
-void pit_init_driver(struct pit_driver *driver)
+void pit_driver_destroy()
 {
 
-    memory_clear(driver, sizeof (struct pit_driver));
-    base_init_driver(&driver->base, "pit", check, attach);
-    base_timer_init_interface(&driver->itimer, add_duration);
-
-    driver->divisor = PIT_FREQUENCY / PIT_HERTZ;
+    base_unregister_driver(&driver);
 
 }
 

@@ -6,6 +6,21 @@
 #include "ps2.h"
 #include "mouse_driver.h"
 
+struct ps2_mouse_stream
+{
+
+    char buffer[512];
+    unsigned int head;
+    unsigned int tail;
+
+};
+
+static struct base_driver driver;
+static struct base_mouse_interface imouse;
+static struct ps2_mouse_stream stream;
+static unsigned char cycle;
+static char status;
+
 static unsigned int read_stream(struct ps2_mouse_stream *stream, unsigned int count, void *buffer)
 {
 
@@ -56,34 +71,33 @@ static void handle_irq(struct base_device *device)
 {
 
     struct ps2_bus *bus = (struct ps2_bus *)device->bus;
-    struct ps2_mouse_driver *driver = (struct ps2_mouse_driver *)device->driver;
     unsigned char data = ps2_bus_read_data_async(bus);
 
-    switch (driver->cycle)
+    switch (cycle)
     {
 
     case 0:
-        driver->status = data;
-        driver->cycle++;
+        status = data;
+        cycle++;
 
         break;
 
     case 1:
-        driver->imouse.vx = data;
-        driver->cycle++;
+        imouse.vx = data;
+        cycle++;
 
         break;
 
     case 2:
-        driver->imouse.vy = data;
-        driver->cycle = 0;
+        imouse.vy = data;
+        cycle = 0;
 
         break;
 
     }
 
-    write_stream(&driver->stream, 1, &data);
-    rendezvous_unsleep(&driver->imouse.rdata, 1);
+    write_stream(&stream, 1, &data);
+    rendezvous_unsleep(&imouse.rdata, 1);
 
 }
 
@@ -132,13 +146,24 @@ static void disable_scanning(struct ps2_bus *bus)
 
 }
 
+static unsigned int read_data(struct base_device *device, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    count = read_stream(&stream, count, buffer);
+
+    rendezvous_sleep(&imouse.rdata, !count);
+
+    return count;
+
+}
+
 static void attach(struct base_device *device)
 {
 
     struct ps2_bus *bus = (struct ps2_bus *)device->bus;
-    struct ps2_mouse_driver *driver = (struct ps2_mouse_driver *)device->driver;
 
-    base_mouse_register_interface(&driver->imouse, device);
+    base_mouse_init_interface(&imouse, read_data);
+    base_mouse_register_interface(&imouse, device);
     pic_set_routine(device, handle_irq);
     ps2_device_enable(device);
     ps2_device_enable_interrupt(device);
@@ -160,25 +185,18 @@ static unsigned int check(struct base_device *device)
 
 }
 
-static unsigned int read_data(struct base_device *device, unsigned int offset, unsigned int count, void *buffer)
+void ps2_mouse_driver_init()
 {
 
-    struct ps2_mouse_driver *driver = (struct ps2_mouse_driver *)device->driver;
-
-    count = read_stream(&driver->stream, count, buffer);
-
-    rendezvous_sleep(&driver->imouse.rdata, !count);
-
-    return count;
+    base_init_driver(&driver, "ps2mouse", check, attach);
+    base_register_driver(&driver);
 
 }
 
-void ps2_init_mouse_driver(struct ps2_mouse_driver *driver)
+void ps2_mouse_driver_destroy()
 {
 
-    memory_clear(driver, sizeof (struct ps2_mouse_driver));
-    base_init_driver(&driver->base, "ps2mouse", check, attach);
-    base_mouse_init_interface(&driver->imouse, read_data);
+    base_unregister_driver(&driver);
 
 }
 

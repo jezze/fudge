@@ -4,20 +4,17 @@
 #include "i915.h"
 #include "driver.h"
 
-static struct i915_driver driver;
-
 void init()
 {
 
-    i915_init_driver(&driver);
-    base_register_driver(&driver.base);
+    i915_driver_init();
 
 }
 
 void destroy()
 {
 
-    base_unregister_driver(&driver.base);
+    i915_driver_destroy();
 
 }
 

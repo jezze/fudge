@@ -4,20 +4,17 @@
 #include <base/video.h>
 #include "driver.h"
 
-static struct cirrus_driver driver;
-
 void init()
 {
 
-    cirrus_init_driver(&driver);
-    base_register_driver(&driver.base);
+    cirrus_driver_init();
 
 }
 
 void destroy()
 {
 
-    base_unregister_driver(&driver.base);
+    cirrus_driver_destroy();
 
 }
 

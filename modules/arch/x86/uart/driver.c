@@ -147,6 +147,20 @@ enum uart_msr
 
 };
 
+struct uart_driver_stream
+{
+
+    char buffer[512];
+    unsigned int head;
+    unsigned int tail;
+
+};
+
+static struct base_driver driver;
+static struct base_terminal_interface iterminal;
+static struct uart_driver_stream stream;
+static struct rendezvous rdata;
+
 static unsigned int read_stream(struct uart_driver_stream *stream, unsigned int count, void *buffer)
 {
 
@@ -211,56 +225,15 @@ static void write(struct platform_device *device, char c)
 
 }
 
-static void handle_irq(struct base_device *device)
-{
-
-    struct platform_device *platformDevice = (struct platform_device *)device;
-    struct uart_driver *driver = (struct uart_driver *)device->driver;
-    char data = read(platformDevice);
-
-    write_stream(&driver->stream, 1, &data);
-    rendezvous_unsleep(&driver->rdata, 1);
-    rendezvous_unlock(&driver->rdata);
-
-}
-
-static void attach(struct base_device *device)
-{
-
-    struct platform_device *platformDevice = (struct platform_device *)device;
-    struct uart_driver *driver = (struct uart_driver *)device->driver;
-
-    base_terminal_register_interface(&driver->iterminal, device);
-    pic_set_routine(device, handle_irq);
-    io_outb(platformDevice->registers + UART_REGISTER_IER, UART_IER_NULL);
-    io_outb(platformDevice->registers + UART_REGISTER_LCR, UART_LCR_5BITS | UART_LCR_1STOP | UART_LCR_NOPARITY);
-    io_outb(platformDevice->registers + UART_REGISTER_THR, 0x03);
-    io_outb(platformDevice->registers + UART_REGISTER_IER, UART_IER_NULL);
-    io_outb(platformDevice->registers + UART_REGISTER_LCR, UART_LCR_8BITS | UART_LCR_1STOP | UART_LCR_NOPARITY);
-    io_outb(platformDevice->registers + UART_REGISTER_FCR, UART_FCR_ENABLE | UART_FCR_RECEIVE | UART_FCR_TRANSMIT | UART_FCR_SIZE3);
-    io_outb(platformDevice->registers + UART_REGISTER_MCR, UART_MCR_READY | UART_MCR_REQUEST | UART_MCR_AUX2);
-    io_outb(platformDevice->registers + UART_REGISTER_IER, UART_IER_RECEIVE);
-
-}
-
-static unsigned int check(struct base_device *device)
-{
-
-    return device->type == PLATFORM_UART_DEVICE_TYPE;
-
-}
-
 static unsigned int read_terminal_data(struct base_device *device, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct uart_driver *driver = (struct uart_driver *)device->driver;
-
-    count = read_stream(&driver->stream, count, buffer);
+    count = read_stream(&stream, count, buffer);
 
     if (!count)
-        rendezvous_lock(&driver->rdata);
+        rendezvous_lock(&rdata);
 
-    rendezvous_sleep(&driver->rdata, !count);
+    rendezvous_sleep(&rdata, !count);
 
     return count;
 
@@ -280,12 +253,56 @@ static unsigned int write_terminal_data(struct base_device *device, unsigned int
 
 }
 
-void uart_init_driver(struct uart_driver *driver)
+static void handle_irq(struct base_device *device)
 {
 
-    memory_clear(driver, sizeof (struct uart_driver));
-    base_init_driver(&driver->base, "uart", check, attach);
-    base_terminal_init_interface(&driver->iterminal, read_terminal_data, write_terminal_data);
+    struct platform_device *platformDevice = (struct platform_device *)device;
+    char data = read(platformDevice);
+
+    write_stream(&stream, 1, &data);
+    rendezvous_unsleep(&rdata, 1);
+    rendezvous_unlock(&rdata);
+
+}
+
+static void attach(struct base_device *device)
+{
+
+    struct platform_device *platformDevice = (struct platform_device *)device;
+
+    base_terminal_init_interface(&iterminal, read_terminal_data, write_terminal_data);
+    base_terminal_register_interface(&iterminal, device);
+    pic_set_routine(device, handle_irq);
+    io_outb(platformDevice->registers + UART_REGISTER_IER, UART_IER_NULL);
+    io_outb(platformDevice->registers + UART_REGISTER_LCR, UART_LCR_5BITS | UART_LCR_1STOP | UART_LCR_NOPARITY);
+    io_outb(platformDevice->registers + UART_REGISTER_THR, 0x03);
+    io_outb(platformDevice->registers + UART_REGISTER_IER, UART_IER_NULL);
+    io_outb(platformDevice->registers + UART_REGISTER_LCR, UART_LCR_8BITS | UART_LCR_1STOP | UART_LCR_NOPARITY);
+    io_outb(platformDevice->registers + UART_REGISTER_FCR, UART_FCR_ENABLE | UART_FCR_RECEIVE | UART_FCR_TRANSMIT | UART_FCR_SIZE3);
+    io_outb(platformDevice->registers + UART_REGISTER_MCR, UART_MCR_READY | UART_MCR_REQUEST | UART_MCR_AUX2);
+    io_outb(platformDevice->registers + UART_REGISTER_IER, UART_IER_RECEIVE);
+
+}
+
+static unsigned int check(struct base_device *device)
+{
+
+    return device->type == PLATFORM_UART_DEVICE_TYPE;
+
+}
+
+void uart_driver_init()
+{
+
+    base_init_driver(&driver, "uart", check, attach);
+    base_register_driver(&driver);
+
+}
+
+void uart_driver_destroy()
+{
+
+    base_unregister_driver(&driver);
 
 }
 
