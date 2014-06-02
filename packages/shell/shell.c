@@ -26,13 +26,15 @@ static void interpret(struct lifo_stack *stack)
     if (!call_walk(CALL_L1, CALL_DR, 15, "system/pipe/7/0"))
         return;
 
-    call_open(CALL_L1);
-    call_write(CALL_L1, 0, stack->head, stack->buffer);
-    call_close(CALL_L1);
-
     if (!call_walk(CALL_I1, CALL_DR, 15, "system/pipe/7/1"))
         return;
 
+    if (!call_walk(CALL_O1, CALL_O0, 0, 0))
+        return;
+
+    call_open(CALL_L1);
+    call_write(CALL_L1, 0, stack->head, stack->buffer);
+    call_close(CALL_L1);
     call_spawn(CALL_DP);
 
 }
@@ -97,6 +99,8 @@ static void poll()
 
     lifo_stack_init(&input, FUDGE_BSIZE, inputbuffer);
 
+    call_open(CALL_I0);
+
     for (roff = 0; (count = call_read(CALL_I0, roff, FUDGE_BSIZE, buffer)); roff += count)
     {
 
@@ -107,18 +111,17 @@ static void poll()
 
     }
 
+    call_close(CALL_I0);
+
 }
 
 void main()
 {
 
-    call_walk(CALL_O1, CALL_O0, 0, 0);
-    call_open(CALL_I0);
     call_open(CALL_O0);
     call_write(CALL_O0, 0, 2, "$ ");
     poll();
     call_close(CALL_O0);
-    call_close(CALL_I0);
 
 }
 
