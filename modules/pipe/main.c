@@ -144,7 +144,7 @@ static unsigned int opipe_close(struct system_node *self)
     rendezvous_unlock(&session->oread);
     rendezvous_unsleep(&session->iread, 1);
 
-    return 0;
+    return (unsigned int)self;
 
 }
 
