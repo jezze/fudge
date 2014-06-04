@@ -35,10 +35,10 @@
 #define ARCH_TABLE_UCODE_LIMIT          0x00400000
 #define ARCH_TABLE_UCODE_SIZE           (ARCH_TABLE_UCODE_LIMIT - ARCH_TABLE_UCODE_BASE)
 #define ARCH_UCODE_BASE                 0x01000000
-#define ARCH_UCODE_LIMIT                0x01400000
+#define ARCH_UCODE_LIMIT                0x03000000
 #define ARCH_UCODE_SIZE                 (ARCH_UCODE_LIMIT - ARCH_UCODE_BASE)
-#define ARCH_USTACK_BASE                0x01400000
-#define ARCH_USTACK_LIMIT               0x01800000
+#define ARCH_USTACK_BASE                0x03000000
+#define ARCH_USTACK_LIMIT               0x03400000
 #define ARCH_USTACK_SIZE                (ARCH_USTACK_LIMIT - ARCH_USTACK_BASE)
 #define ARCH_GDT_DESCRIPTORS            6
 #define ARCH_IDT_DESCRIPTORS            256
