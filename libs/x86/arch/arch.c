@@ -52,30 +52,51 @@
 #define ARCH_TASK_STACKLIMIT            0x80000000
 #define ARCH_TASK_STACKBASE             (ARCH_TASK_STACKLIMIT - ARCH_TASK_STACKSIZE)
 
-struct arch_table
+static struct
 {
 
-    struct {struct gdt_pointer pointer; struct gdt_descriptor descriptors[ARCH_GDT_DESCRIPTORS];} gdt;
-    struct {struct idt_pointer pointer; struct idt_descriptor descriptors[ARCH_IDT_DESCRIPTORS];} idt;
-    struct {struct tss_pointer pointer; struct tss_descriptor descriptors[ARCH_TSS_DESCRIPTORS];} tss;
+    struct gdt_pointer pointer;
+    struct gdt_descriptor descriptors[ARCH_GDT_DESCRIPTORS];
+
+} gdt;
+
+static struct
+{
+
+    struct idt_pointer pointer;
+    struct idt_descriptor descriptors[ARCH_IDT_DESCRIPTORS];
+
+} idt;
+
+static struct
+{
+
+    struct tss_pointer pointer;
+    struct tss_descriptor descriptors[ARCH_TSS_DESCRIPTORS];
+
+} tss;
+
+static struct
+{
+
     unsigned short kcode;
     unsigned short kdata;
     unsigned short ucode;
     unsigned short udata;
     unsigned short tlink;
 
-};
+} selector;
 
-struct arch_container
+static struct arch_container
 {
 
     struct container base;
     struct mmu_directory *directory;
     struct mmu_table *table;
 
-};
+} containers[ARCH_CONTAINERS];
 
-struct arch_task
+static struct arch_task
 {
 
     struct task base;
@@ -84,17 +105,15 @@ struct arch_task
     struct mmu_table *table;
     unsigned int mapping[ARCH_TASK_MAPPINGS];
 
-};
+} tasks[ARCH_TASKS];
 
 static struct
 {
 
-    struct arch_table table;
-    struct arch_container containers[ARCH_CONTAINERS];
-    struct arch_task tasks[ARCH_TASKS];
-    struct {struct container *container; struct task *task;} current;
+    struct container *container;
+    struct task *task;
 
-} state;
+} current;
 
 static void activate_task(struct container *c, struct task *t)
 {
@@ -141,17 +160,41 @@ static unsigned int exit(struct container *self, struct task *task, void *stack)
 
 }
 
+static void arch_init_container(struct arch_container *container, struct mmu_directory *directory, struct mmu_table *table)
+{
+
+    memory_clear(container, sizeof (struct arch_container));
+    container_init(&container->base, spawn, exit);
+
+    container->directory = directory;
+    container->table = table;
+
+}
+
+static void arch_init_task(struct arch_task *task, struct mmu_directory *directory, struct mmu_table *table, unsigned int code, unsigned int stack)
+{
+
+    memory_clear(task, sizeof (struct arch_task));
+    task_init(&task->base, 0, ARCH_TASK_STACKLIMIT);
+
+    task->directory = directory;
+    task->table = table;
+    task->mapping[0] = code;
+    task->mapping[1] = stack;
+
+}
+
 unsigned short arch_segment()
 {
 
-    return state.table.kdata;
+    return selector.kdata;
 
 }
 
 unsigned short arch_schedule(struct cpu_general *general, struct cpu_interrupt *interrupt)
 {
 
-    struct arch_task *task = (struct arch_task *)state.current.task;
+    struct arch_task *task = (struct arch_task *)current.task;
     struct arch_task *next = (struct arch_task *)scheduler_find_used_task();
 
     if (task)
@@ -169,28 +212,28 @@ unsigned short arch_schedule(struct cpu_general *general, struct cpu_interrupt *
 
         mmu_load(next->directory);
 
-        interrupt->code = state.table.ucode;
+        interrupt->code = selector.ucode;
         interrupt->eip = next->base.registers.ip;
         interrupt->esp = next->base.registers.sp;
 
         memory_copy(general, &next->general, sizeof (struct cpu_general));
 
-        state.current.task = &next->base;
+        current.task = &next->base;
 
-        return state.table.udata;
+        return selector.udata;
 
     }
 
     else
     {
 
-        interrupt->code = state.table.kcode;
+        interrupt->code = selector.kcode;
         interrupt->eip = (unsigned int)arch_halt;
         interrupt->esp = ARCH_KSTACK_LIMIT;
 
-        state.current.task = 0;
+        current.task = 0;
 
-        return state.table.kdata;
+        return selector.kdata;
 
     }
 
@@ -210,7 +253,7 @@ unsigned short arch_pagefault(void *stack)
 
     struct {struct cpu_general general; unsigned int type; struct cpu_interrupt interrupt;} *registers = stack;
 
-    if (registers->interrupt.code == state.table.kcode)
+    if (registers->interrupt.code == selector.kcode)
     {
 
         struct arch_task *task = (struct arch_task *)scheduler_find_used_task();
@@ -219,7 +262,7 @@ unsigned short arch_pagefault(void *stack)
         mmu_map(task->directory, &task->table[0], task->mapping[0], address, ARCH_TASK_CODESIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
         mmu_map(task->directory, &task->table[1], task->mapping[1], ARCH_TASK_STACKBASE, ARCH_TASK_STACKSIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
 
-        return state.table.kdata;
+        return selector.kdata;
 
     }
 
@@ -232,36 +275,36 @@ unsigned short arch_syscall(void *stack)
 
     struct {struct cpu_general general; struct cpu_interrupt interrupt;} *registers = stack;
 
-    registers->general.eax = (state.current.container->calls[registers->general.eax]) ? state.current.container->calls[registers->general.eax](state.current.container, state.current.task, (void *)registers->interrupt.esp) : 0;
+    registers->general.eax = (current.container->calls[registers->general.eax]) ? current.container->calls[registers->general.eax](current.container, current.task, (void *)registers->interrupt.esp) : 0;
 
     return arch_schedule(&registers->general, &registers->interrupt);
 
 }
 
-static void arch_setup_table(struct arch_table *table)
+static void arch_setup_basic()
 {
 
-    gdt_init_pointer(&table->gdt.pointer, ARCH_GDT_DESCRIPTORS, table->gdt.descriptors);
-    idt_init_pointer(&table->idt.pointer, ARCH_IDT_DESCRIPTORS, table->idt.descriptors);
-    tss_init_pointer(&table->tss.pointer, ARCH_TSS_DESCRIPTORS, table->tss.descriptors);
+    gdt_init_pointer(&gdt.pointer, ARCH_GDT_DESCRIPTORS, gdt.descriptors);
+    idt_init_pointer(&idt.pointer, ARCH_IDT_DESCRIPTORS, idt.descriptors);
+    tss_init_pointer(&tss.pointer, ARCH_TSS_DESCRIPTORS, tss.descriptors);
 
-    table->kcode = gdt_set_descriptor(&table->gdt.pointer, GDT_INDEX_KCODE, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW | GDT_ACCESS_EXECUTE, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
-    table->kdata = gdt_set_descriptor(&table->gdt.pointer, GDT_INDEX_KDATA, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
-    table->ucode = gdt_set_descriptor(&table->gdt.pointer, GDT_INDEX_UCODE, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_RING3 | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW | GDT_ACCESS_EXECUTE, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
-    table->udata = gdt_set_descriptor(&table->gdt.pointer, GDT_INDEX_UDATA, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_RING3 | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
-    table->tlink = gdt_set_descriptor(&table->gdt.pointer, GDT_INDEX_TLINK, (unsigned long)table->tss.pointer.descriptors, (unsigned long)table->tss.pointer.descriptors + table->tss.pointer.limit, GDT_ACCESS_PRESENT | GDT_ACCESS_EXECUTE | GDT_ACCESS_ACCESSED, GDT_FLAG_32BIT);
+    selector.kcode = gdt_set_descriptor(&gdt.pointer, GDT_INDEX_KCODE, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW | GDT_ACCESS_EXECUTE, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
+    selector.kdata = gdt_set_descriptor(&gdt.pointer, GDT_INDEX_KDATA, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
+    selector.ucode = gdt_set_descriptor(&gdt.pointer, GDT_INDEX_UCODE, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_RING3 | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW | GDT_ACCESS_EXECUTE, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
+    selector.udata = gdt_set_descriptor(&gdt.pointer, GDT_INDEX_UDATA, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_RING3 | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
+    selector.tlink = gdt_set_descriptor(&gdt.pointer, GDT_INDEX_TLINK, (unsigned long)tss.pointer.descriptors, (unsigned long)tss.pointer.descriptors + tss.pointer.limit, GDT_ACCESS_PRESENT | GDT_ACCESS_EXECUTE | GDT_ACCESS_ACCESSED, GDT_FLAG_32BIT);
 
-    idt_set_descriptor(&table->idt.pointer, IDT_INDEX_GF, arch_isr_generalfault, table->kcode, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    idt_set_descriptor(&table->idt.pointer, IDT_INDEX_PF, arch_isr_pagefault, table->kcode, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    idt_set_descriptor(&table->idt.pointer, IDT_INDEX_SYSCALL, arch_isr_syscall, table->kcode, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT | IDT_FLAG_RING3);
-    tss_set_descriptor(&table->tss.pointer, TSS_INDEX_DEFAULT, table->kdata, ARCH_KSTACK_LIMIT);
-    cpu_set_gdt(&table->gdt.pointer, table->kcode, table->kdata);
-    cpu_set_idt(&table->idt.pointer);
-    cpu_set_tss(table->tlink);
+    idt_set_descriptor(&idt.pointer, IDT_INDEX_GF, arch_isr_generalfault, selector.kcode, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_set_descriptor(&idt.pointer, IDT_INDEX_PF, arch_isr_pagefault, selector.kcode, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_set_descriptor(&idt.pointer, IDT_INDEX_SYSCALL, arch_isr_syscall, selector.kcode, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT | IDT_FLAG_RING3);
+    tss_set_descriptor(&tss.pointer, TSS_INDEX_DEFAULT, selector.kdata, ARCH_KSTACK_LIMIT);
+    cpu_set_gdt(&gdt.pointer, selector.kcode, selector.kdata);
+    cpu_set_idt(&idt.pointer);
+    cpu_set_tss(selector.tlink);
 
 }
 
-static struct container *arch_setup_containers(struct arch_container *containers)
+static void arch_setup_containers()
 {
 
     unsigned int i;
@@ -272,21 +315,15 @@ static struct container *arch_setup_containers(struct arch_container *containers
         struct mmu_directory *directories = (struct mmu_directory *)ARCH_DIRECTORY_KCODE_BASE;
         struct mmu_table *tables = (struct mmu_table *)ARCH_TABLE_KCODE_BASE;
 
-        container_init(&containers[i].base, spawn, exit);
+        arch_init_container(&containers[i], directories + i, tables + i * ARCH_CONTAINER_MAPPINGS);
         resource_register_item(&containers[i].base.resource);
-
-        containers[i].directory = directories + i;
-        containers[i].table = tables + i * ARCH_CONTAINER_MAPPINGS;
-
         mmu_map(containers[i].directory, &containers[i].table[0], ARCH_BIOS_BASE, ARCH_BIOS_BASE, ARCH_TABLE_UCODE_LIMIT - ARCH_BIOS_BASE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
 
     }
 
-    return &containers[0].base;
-
 }
 
-static struct task *arch_setup_tasks(struct arch_task *tasks)
+static void arch_setup_tasks()
 {
 
     unsigned int i;
@@ -297,35 +334,30 @@ static struct task *arch_setup_tasks(struct arch_task *tasks)
         struct mmu_directory *directories = (struct mmu_directory *)ARCH_DIRECTORY_UCODE_BASE;
         struct mmu_table *tables = (struct mmu_table *)ARCH_TABLE_UCODE_BASE;
 
-        task_init(&tasks[i].base, 0, ARCH_TASK_STACKLIMIT);
+        arch_init_task(&tasks[i], directories + i, tables + i * ARCH_TASK_MAPPINGS, ARCH_UCODE_BASE + ARCH_TASK_CODESIZE * i, ARCH_USTACK_BASE + ARCH_TASK_STACKSIZE * i);
         resource_register_item(&tasks[i].base.resource);
         scheduler_register_task(&tasks[i].base);
 
-        tasks[i].directory = directories + i;
-        tasks[i].table = tables + i * ARCH_TASK_MAPPINGS;
-        tasks[i].mapping[0] = ARCH_UCODE_BASE + ARCH_TASK_CODESIZE * i;
-        tasks[i].mapping[1] = ARCH_USTACK_BASE + ARCH_TASK_STACKSIZE * i;
-
     }
-
-    return &tasks[0].base;
 
 }
 
 void arch_setup(unsigned int count, struct kernel_module *modules)
 {
 
-    arch_setup_table(&state.table);
+    arch_setup_basic();
     kernel_setup();
+    arch_setup_containers();
+    arch_setup_tasks();
 
-    state.current.container = arch_setup_containers(state.containers);
-    state.current.task = arch_setup_tasks(state.tasks);
+    current.container = &containers[0].base;
+    current.task = &tasks[0].base;
 
-    activate_task(state.current.container, state.current.task);
-    scheduler_use(state.current.task);
+    activate_task(current.container, current.task);
+    scheduler_use(current.task);
     mmu_enable();
-    kernel_setup_modules(state.current.container, state.current.task, count, modules);
-    arch_usermode(state.table.ucode, state.table.udata, state.current.task->registers.ip, state.current.task->registers.sp);
+    kernel_setup_modules(current.container, current.task, count, modules);
+    arch_usermode(selector.ucode, selector.udata, current.task->registers.ip, current.task->registers.sp);
 
 }
 
