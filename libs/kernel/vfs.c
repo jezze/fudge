@@ -76,38 +76,27 @@ void vfs_init_protocol(struct vfs_protocol *protocol, unsigned int (*match)(stru
 
 }
 
-void vfs_init_channel(struct vfs_channel *channel, struct vfs_backend *backend, struct vfs_protocol *protocol)
+void vfs_init_channel(struct vfs_channel *channel)
 {
 
     memory_clear(channel, sizeof (struct vfs_channel));
     resource_init_item(&channel->resource, VFS_RESOURCE_CHANNEL, channel);
 
-    channel->backend = backend;
-    channel->protocol = protocol;
-
 }
 
-void vfs_init_mount(struct vfs_mount *mount, struct vfs_channel *pchannel, unsigned int pid, struct vfs_channel *cchannel, unsigned int cid)
+void vfs_init_mount(struct vfs_mount *mount)
 {
 
     memory_clear(mount, sizeof (struct vfs_mount));
     resource_init_item(&mount->resource, VFS_RESOURCE_MOUNT, mount);
 
-    mount->parent.channel = pchannel;
-    mount->parent.id = pid;
-    mount->child.channel = cchannel;
-    mount->child.id = cid;
-
 }
 
-void vfs_init_descriptor(struct vfs_descriptor *descriptor, struct vfs_channel *channel, unsigned int id)
+void vfs_init_descriptor(struct vfs_descriptor *descriptor)
 {
 
     memory_clear(descriptor, sizeof (struct vfs_descriptor));
     resource_init_item(&descriptor->resource, VFS_RESOURCE_DESCRIPTOR, descriptor);
-
-    descriptor->channel = channel;
-    descriptor->id = id;
 
 }
 

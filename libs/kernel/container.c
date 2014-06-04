@@ -59,7 +59,8 @@ static unsigned int walk(struct container *self, struct task *task, void *stack)
     if (!pdescriptor || !pdescriptor->id || !pdescriptor->channel)
         return 0;
 
-    vfs_init_descriptor(descriptor, pdescriptor->channel, pdescriptor->id);
+    descriptor->channel = pdescriptor->channel;
+    descriptor->id = pdescriptor->id;
 
     for (offset = 0; (count = get_walkstep(args->count - offset, args->path + offset)); offset += count)
     {
@@ -78,7 +79,8 @@ static unsigned int walk(struct container *self, struct task *task, void *stack)
                 if (descriptor->channel == mount->child.channel && descriptor->id == mount->child.id)
                 {
 
-                    vfs_init_descriptor(descriptor, mount->parent.channel, mount->parent.id);
+                    descriptor->channel = mount->parent.channel;
+                    descriptor->id = mount->parent.id;
 
                     break;
 
@@ -109,7 +111,8 @@ static unsigned int walk(struct container *self, struct task *task, void *stack)
                 if (descriptor->channel == mount->parent.channel && descriptor->id == mount->parent.id)
                 {
 
-                    vfs_init_descriptor(descriptor, mount->child.channel, mount->child.id);
+                    descriptor->channel = mount->child.channel;
+                    descriptor->id = mount->child.id;
 
                     break;
 
@@ -192,7 +195,8 @@ static unsigned int auth(struct container *self, struct task *task, void *stack)
     if (!channel || !backend || !protocol)
         return 0;
 
-    vfs_init_channel(channel, backend, protocol);
+    channel->backend = backend;
+    channel->protocol = protocol;
 
     return args->channel;
 
@@ -204,7 +208,7 @@ static unsigned int mount(struct container *self, struct task *task, void *stack
     struct {void *caller; unsigned int channel; unsigned int mount; unsigned int index;} *args = stack;
     struct vfs_mount *mount = get_mount(self, args->mount);
     struct vfs_channel *channel = get_channel(self, args->channel);
-    struct vfs_descriptor *descriptor = get_descriptor(task, args->index);
+    struct vfs_descriptor *pdescriptor = get_descriptor(task, args->index);
 
     if (!mount)
         return 0;
@@ -212,10 +216,13 @@ static unsigned int mount(struct container *self, struct task *task, void *stack
     if (!channel || !channel->backend || !channel->protocol)
         return 0;
 
-    if (!descriptor || !descriptor->id || !descriptor->channel || !descriptor->active)
+    if (!pdescriptor || !pdescriptor->id || !pdescriptor->channel || !pdescriptor->active)
         return 0;
 
-    vfs_init_mount(mount, descriptor->channel, descriptor->id, channel, channel->protocol->root(channel->backend));
+    mount->parent.channel = pdescriptor->channel;
+    mount->parent.id = pdescriptor->id;
+    mount->child.channel = channel;
+    mount->child.id = channel->protocol->root(channel->backend);
 
     return args->mount;
 
@@ -238,7 +245,10 @@ static unsigned int bind(struct container *self, struct task *task, void *stack)
     if (!cdescriptor || !cdescriptor->id || !cdescriptor->channel || !cdescriptor->active)
         return 0;
 
-    vfs_init_mount(mount, pdescriptor->channel, pdescriptor->id, cdescriptor->channel, cdescriptor->id);
+    mount->parent.channel = pdescriptor->channel;
+    mount->parent.id = pdescriptor->id;
+    mount->child.channel = cdescriptor->channel;
+    mount->child.id = cdescriptor->id;
 
     return args->mount;
 
@@ -338,8 +348,16 @@ static unsigned int unload(struct container *self, struct task *task, void *stac
 void container_init(struct container *container, unsigned int (*spawn)(struct container *self, struct task *task, void *stack), unsigned int (*exit)(struct container *self, struct task *task, void *stack))
 {
 
+    unsigned int i;
+
     memory_clear(container, sizeof (struct container));
     resource_init_item(&container->resource, CONTAINER_RESOURCE, container);
+
+    for (i = 0; i < CONTAINER_CHANNELS; i++)
+        vfs_init_channel(&container->channels[i]);
+
+    for (i = 0; i < CONTAINER_MOUNTS; i++)
+        vfs_init_mount(&container->mounts[i]);
 
     container->calls[CONTAINER_CALL_WALK] = walk;
     container->calls[CONTAINER_CALL_OPEN] = open;

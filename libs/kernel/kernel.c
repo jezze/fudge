@@ -55,10 +55,14 @@ void kernel_setup_modules(struct container *container, struct task *task, unsign
         if (!init)
             continue;
 
-        vfs_init_channel(channel, backend, protocol);
-        vfs_init_mount(mount, channel, root, channel, root);
-        vfs_init_descriptor(descriptor, channel, root);
-
+        channel->backend = backend;
+        channel->protocol = protocol;
+        mount->parent.channel = channel;
+        mount->parent.id = root;
+        mount->child.channel = channel;
+        mount->child.id = root;
+        descriptor->channel = channel;
+        descriptor->id = root;
         task->registers.ip = find_entry(channel, init);
 
     }
