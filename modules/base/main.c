@@ -43,8 +43,7 @@ void base_register_driver(struct base_driver *driver)
         if (!driver->check(device))
             continue;
 
-        device->driver = driver;
-        device->driver->attach(device);
+        driver->attach(device);
 
     }
 
@@ -79,11 +78,10 @@ void base_unregister_driver(struct base_driver *driver)
         if (current->type != BASE_RESOURCE_DEVICE)
             continue;
 
-        if (device->driver != driver)
+        if (!driver->check(device))
             continue;
 
-        device->driver->detach(device);
-        device->driver = 0;
+        driver->detach(device);
 
     }
 

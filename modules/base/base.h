@@ -2,10 +2,6 @@
 #define BASE_RESOURCE_DEVICE            8022
 #define BASE_RESOURCE_DRIVER            8023
 
-struct base_bus;
-struct base_device;
-struct base_driver;
-
 struct base_bus
 {
 
@@ -24,7 +20,6 @@ struct base_device
     unsigned int type;
     unsigned int irq;
     struct base_bus *bus;
-    struct base_driver *driver;
 
 };
 
