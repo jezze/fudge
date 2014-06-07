@@ -30,7 +30,7 @@ struct base_driver
     const char *name;
     unsigned int (*check)(struct base_device *device);
     void (*attach)(struct base_device *device);
-    void (*detach)();
+    void (*detach)(struct base_device *device);
 
 };
 
