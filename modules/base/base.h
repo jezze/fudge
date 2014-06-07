@@ -35,6 +35,7 @@ struct base_driver
     const char *name;
     unsigned int (*check)(struct base_device *device);
     void (*attach)(struct base_device *device);
+    void (*detach)();
 
 };
 
@@ -60,5 +61,5 @@ void base_unregister_device(struct base_device *device);
 void base_unregister_driver(struct base_driver *driver);
 void base_init_bus(struct base_bus *bus, unsigned int type, const char *name, void (*scan)(struct base_bus *self));
 void base_init_device(struct base_device *device, unsigned int type, unsigned int irq, const char *name, struct base_bus *bus);
-void base_init_driver(struct base_driver *driver, const char *name, unsigned int (*check)(struct base_device *device), void (*attach)(struct base_device *device));
+void base_init_driver(struct base_driver *driver, const char *name, unsigned int (*check)(struct base_device *device), void (*attach)(struct base_device *device), void (*detach)(struct base_device *device));
 void base_init_interface(struct base_interface *interface, unsigned int type);

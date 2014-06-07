@@ -110,6 +110,16 @@ void base_network_register_protocol(struct base_network_protocol *protocol)
 
 }
 
+void base_network_unregister_interface(struct base_network_interface *interface)
+{
+
+}
+
+void base_network_unregister_protocol(struct base_network_protocol *protocol)
+{
+
+}
+
 void base_network_init_interface(struct base_network_interface *interface, unsigned int (*receive)(struct base_device *device, unsigned int count, void *buffer), unsigned int (*send)(struct base_device *device, unsigned int count, void *buffer), void *(*get_packet)(struct base_device *device), void (*dump_packet)(struct base_device *device))
 {
 

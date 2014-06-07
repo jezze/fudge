@@ -152,6 +152,14 @@ static void attach(struct base_device *device)
 
 }
 
+static void detach(struct base_device *device)
+{
+
+    base_keyboard_unregister_interface(&ikeyboard);
+    pic_unset_routine(device);
+
+}
+
 static unsigned int check(struct base_device *device)
 {
 
@@ -165,7 +173,7 @@ static unsigned int check(struct base_device *device)
 void ps2_keyboard_driver_init()
 {
 
-    base_init_driver(&driver, "ps2keyboard", check, attach);
+    base_init_driver(&driver, "ps2keyboard", check, attach, detach);
     base_register_driver(&driver);
 
 }

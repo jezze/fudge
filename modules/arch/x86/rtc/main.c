@@ -108,6 +108,14 @@ static void attach(struct base_device *device)
 
 }
 
+static void detach(struct base_device *device)
+{
+
+    base_clock_unregister_interface(&iclock);
+    pic_unset_routine(device);
+
+}
+
 static unsigned int check(struct base_device *device)
 {
 
@@ -118,7 +126,7 @@ static unsigned int check(struct base_device *device)
 void init()
 {
 
-    base_init_driver(&driver, "rtc", check, attach);
+    base_init_driver(&driver, "rtc", check, attach, detach);
     base_register_driver(&driver);
 
 }

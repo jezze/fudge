@@ -32,8 +32,6 @@ void base_register_driver(struct base_driver *driver)
 
     struct resource_item *current = 0;
 
-    resource_register_item(&driver->resource);
-
     while ((current = resource_find_item(current)))
     {
 
@@ -49,6 +47,8 @@ void base_register_driver(struct base_driver *driver)
         device->driver->attach(device);
 
     }
+
+    resource_register_item(&driver->resource);
 
 }
 
@@ -68,6 +68,24 @@ void base_unregister_device(struct base_device *device)
 
 void base_unregister_driver(struct base_driver *driver)
 {
+
+    struct resource_item *current = 0;
+
+    while ((current = resource_find_item(current)))
+    {
+
+        struct base_device *device = current->data;
+
+        if (current->type != BASE_RESOURCE_DEVICE)
+            continue;
+
+        if (device->driver != driver)
+            continue;
+
+        device->driver->detach(device);
+        device->driver = 0;
+
+    }
 
     resource_unregister_item(&driver->resource);
 
@@ -98,7 +116,7 @@ void base_init_device(struct base_device *device, unsigned int type, unsigned in
 
 }
 
-void base_init_driver(struct base_driver *driver, const char *name, unsigned int (*check)(struct base_device *device), void (*attach)(struct base_device *device))
+void base_init_driver(struct base_driver *driver, const char *name, unsigned int (*check)(struct base_device *device), void (*attach)(struct base_device *device), void (*detach)(struct base_device *device))
 {
 
     memory_clear(driver, sizeof (struct base_driver));
@@ -107,6 +125,7 @@ void base_init_driver(struct base_driver *driver, const char *name, unsigned int
     driver->name = name;
     driver->check = check;
     driver->attach = attach;
+    driver->detach = detach;
 
 }
 

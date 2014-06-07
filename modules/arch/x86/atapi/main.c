@@ -22,6 +22,14 @@ static void attach(struct base_device *device)
 
 }
 
+static void detach(struct base_device *device)
+{
+
+    base_block_unregister_interface(&iblock);
+    pic_unset_routine(device);
+
+}
+
 static unsigned int check(struct base_device *device)
 {
 
@@ -37,7 +45,7 @@ static unsigned int check(struct base_device *device)
 void init()
 {
 
-    base_init_driver(&driver, "atapi", check, attach);
+    base_init_driver(&driver, "atapi", check, attach, detach);
     base_register_driver(&driver);
 
 }

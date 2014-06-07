@@ -176,6 +176,14 @@ static void attach(struct base_device *device)
 
 }
 
+static void detach(struct base_device *device)
+{
+
+    base_mouse_unregister_interface(&imouse);
+    pic_unset_routine(device);
+
+}
+
 static unsigned int check(struct base_device *device)
 {
 
@@ -189,7 +197,7 @@ static unsigned int check(struct base_device *device)
 void ps2_mouse_driver_init()
 {
 
-    base_init_driver(&driver, "ps2mouse", check, attach);
+    base_init_driver(&driver, "ps2mouse", check, attach, detach);
     base_register_driver(&driver);
 
 }

@@ -338,6 +338,14 @@ static void attach(struct base_device *device)
 
 }
 
+static void detach(struct base_device *device)
+{
+
+    base_network_unregister_interface(&inetwork);
+    pic_unset_routine(device);
+
+}
+
 static unsigned int check(struct base_device *device)
 {
 
@@ -353,7 +361,7 @@ static unsigned int check(struct base_device *device)
 void init()
 {
 
-    base_init_driver(&driver, "rtl8139", check, attach);
+    base_init_driver(&driver, "rtl8139", check, attach, detach);
     base_register_driver(&driver);
 
 }
