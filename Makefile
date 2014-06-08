@@ -30,7 +30,7 @@ CFLAGS_arm:=
 LDFLAGS_arm:=
 
 ASFLAGS:=$(ASFLAGS_$(ARCH))
-CFLAGS:=-Wall -Werror -ffreestanding -nostdlib -nostdinc -mno-red-zone -std=c89 -pedantic -O2 -I$(INCLUDE_PATH) -I$(LIBS_PATH) $(CFLAGS_$(ARCH))
+CFLAGS:=-Wall -Werror -ffreestanding -nostdlib -nostdinc -std=c89 -pedantic -O2 -I$(INCLUDE_PATH) -I$(LIBS_PATH) $(CFLAGS_$(ARCH))
 LDFLAGS:=$(LDFLAGS_$(ARCH))
 ARFLAGS:=rs
 

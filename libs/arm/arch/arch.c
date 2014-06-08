@@ -1,13 +1,19 @@
 #include <kernel.h>
+#include <kernel/error.h>
+#include <kernel/resource.h>
+#include <kernel/vfs.h>
+#include <kernel/task.h>
+#include <kernel/scheduler.h>
+#include <kernel/container.h>
 #include <kernel/kernel.h>
-#include "arch.h"
 #include "cpu.h"
+#include "arch.h"
 #include "kmi.h"
 #include "pic.h"
 #include "reg.h"
 #include "uart.h"
 
-static struct runtime_task task;
+static struct task task;
 
 /*
 static void enable_interrupts()
@@ -29,11 +35,11 @@ static void enter_usermode(unsigned int ip, unsigned int sp)
 
     uart_puts("USERMODE\n");
     uart_puts("IP: ");
-    string_write_num(num, ip, 16);
+    ascii_write_value(num, 32, ip, 16, 0);
     uart_puts(num);
     uart_puts(" ");
     uart_puts("SP: ");
-    string_write_num(num, sp, 16);
+    ascii_write_value(num, 32, sp, 16, 0);
     uart_puts(num);
     uart_puts("\n");
     kmi_setup();
