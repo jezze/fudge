@@ -142,7 +142,7 @@ void binary_setup_elf()
 {
 
     binary_init_protocol(&protocol, match, find_symbol, copy_program, relocate);
-    resource_register_item(&protocol.resource);
+    resource_register(&protocol.resource);
 
 }
 

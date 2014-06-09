@@ -1,4 +1,4 @@
-struct resource_item
+struct resource
 {
 
     struct list_item item;
@@ -7,8 +7,8 @@ struct resource_item
 
 };
 
-struct resource_item *resource_find_item(struct resource_item *item);
-void resource_register_item(struct resource_item *item);
-void resource_unregister_item(struct resource_item *item);
-void resource_init_item(struct resource_item *item, unsigned int type, void *data);
+struct resource *resource_find(struct resource *resource);
+void resource_register(struct resource *resource);
+void resource_unregister(struct resource *resource);
+void resource_init(struct resource *resource, unsigned int type, void *data);
 void resource_setup();

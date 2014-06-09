@@ -187,8 +187,8 @@ void init()
 
     system_init_backend(&backend);
     system_init_protocol(&protocol);
-    resource_register_item(&backend.base.resource);
-    resource_register_item(&protocol.resource);
+    resource_register(&backend.base.resource);
+    resource_register(&protocol.resource);
 
 }
 

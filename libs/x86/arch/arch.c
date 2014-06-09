@@ -316,7 +316,7 @@ static void arch_setup_containers()
         struct mmu_table *tables = (struct mmu_table *)ARCH_TABLE_KCODE_BASE;
 
         arch_init_container(&containers[i], directories + i, tables + i * ARCH_CONTAINER_MAPPINGS);
-        resource_register_item(&containers[i].base.resource);
+        resource_register(&containers[i].base.resource);
         mmu_map(containers[i].directory, &containers[i].table[0], ARCH_BIOS_BASE, ARCH_BIOS_BASE, ARCH_TABLE_UCODE_LIMIT - ARCH_BIOS_BASE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
 
     }
@@ -335,7 +335,7 @@ static void arch_setup_tasks()
         struct mmu_table *tables = (struct mmu_table *)ARCH_TABLE_UCODE_BASE;
 
         arch_init_task(&tasks[i], directories + i, tables + i * ARCH_TASK_MAPPINGS, ARCH_UCODE_BASE + ARCH_TASK_CODESIZE * i, ARCH_USTACK_BASE + ARCH_TASK_STACKSIZE * i);
-        resource_register_item(&tasks[i].base.resource);
+        resource_register(&tasks[i].base.resource);
         scheduler_register_task(&tasks[i].base);
 
     }

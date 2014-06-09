@@ -7,7 +7,7 @@
 struct vfs_backend
 {
 
-    struct resource_item resource;
+    struct resource resource;
     unsigned int id;
     unsigned int (*read)(struct vfs_backend *self, unsigned int offset, unsigned int count, void *buffer);
     unsigned int (*write)(struct vfs_backend *self, unsigned int offset, unsigned int count, void *buffer);
@@ -17,7 +17,7 @@ struct vfs_backend
 struct vfs_protocol
 {
 
-    struct resource_item resource;
+    struct resource resource;
     unsigned int (*match)(struct vfs_backend *backend);
     unsigned int (*root)(struct vfs_backend *backend);
     unsigned int (*open)(struct vfs_backend *backend, unsigned int id);
@@ -33,7 +33,7 @@ struct vfs_protocol
 struct vfs_channel
 {
 
-    struct resource_item resource;
+    struct resource resource;
     struct vfs_backend *backend;
     struct vfs_protocol *protocol;
 
@@ -42,7 +42,7 @@ struct vfs_channel
 struct vfs_mount
 {
 
-    struct resource_item resource;
+    struct resource resource;
     struct {struct vfs_channel *channel; unsigned int id;} parent;
     struct {struct vfs_channel *channel; unsigned int id;} child;
 
@@ -51,7 +51,7 @@ struct vfs_mount
 struct vfs_descriptor
 {
 
-    struct resource_item resource;
+    struct resource resource;
     struct vfs_channel *channel;
     unsigned int id;
     unsigned int active;

@@ -5,9 +5,9 @@
 struct vfs_backend *vfs_find_backend(unsigned int id)
 {
 
-    struct resource_item *current = 0;
+    struct resource *current = 0;
 
-    while ((current = resource_find_item(current)))
+    while ((current = resource_find(current)))
     {
 
         struct vfs_backend *backend = current->data;
@@ -27,9 +27,9 @@ struct vfs_backend *vfs_find_backend(unsigned int id)
 struct vfs_protocol *vfs_find_protocol(struct vfs_backend *backend)
 {
 
-    struct resource_item *current = 0;
+    struct resource *current = 0;
 
-    while ((current = resource_find_item(current)))
+    while ((current = resource_find(current)))
     {
 
         struct vfs_protocol *protocol = current->data;
@@ -50,7 +50,7 @@ void vfs_init_backend(struct vfs_backend *backend, unsigned int id, unsigned int
 {
 
     memory_clear(backend, sizeof (struct vfs_backend));
-    resource_init_item(&backend->resource, VFS_RESOURCE_BACKEND, backend);
+    resource_init(&backend->resource, VFS_RESOURCE_BACKEND, backend);
 
     backend->id = id;
     backend->read = read;
@@ -62,7 +62,7 @@ void vfs_init_protocol(struct vfs_protocol *protocol, unsigned int (*match)(stru
 {
 
     memory_clear(protocol, sizeof (struct vfs_protocol));
-    resource_init_item(&protocol->resource, VFS_RESOURCE_PROTOCOL, protocol);
+    resource_init(&protocol->resource, VFS_RESOURCE_PROTOCOL, protocol);
 
     protocol->match = match;
     protocol->root = root;
@@ -80,7 +80,7 @@ void vfs_init_channel(struct vfs_channel *channel)
 {
 
     memory_clear(channel, sizeof (struct vfs_channel));
-    resource_init_item(&channel->resource, VFS_RESOURCE_CHANNEL, channel);
+    resource_init(&channel->resource, VFS_RESOURCE_CHANNEL, channel);
 
 }
 
@@ -88,7 +88,7 @@ void vfs_init_mount(struct vfs_mount *mount)
 {
 
     memory_clear(mount, sizeof (struct vfs_mount));
-    resource_init_item(&mount->resource, VFS_RESOURCE_MOUNT, mount);
+    resource_init(&mount->resource, VFS_RESOURCE_MOUNT, mount);
 
 }
 
@@ -96,7 +96,7 @@ void vfs_init_descriptor(struct vfs_descriptor *descriptor)
 {
 
     memory_clear(descriptor, sizeof (struct vfs_descriptor));
-    resource_init_item(&descriptor->resource, VFS_RESOURCE_DESCRIPTOR, descriptor);
+    resource_init(&descriptor->resource, VFS_RESOURCE_DESCRIPTOR, descriptor);
 
 }
 

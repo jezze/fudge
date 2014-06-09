@@ -14,7 +14,7 @@
 void base_register_bus(struct base_bus *bus)
 {
 
-    resource_register_item(&bus->resource);
+    resource_register(&bus->resource);
 
     bus->scan(bus);
 
@@ -23,16 +23,16 @@ void base_register_bus(struct base_bus *bus)
 void base_register_device(struct base_device *device)
 {
 
-    resource_register_item(&device->resource);
+    resource_register(&device->resource);
 
 }
 
 void base_register_driver(struct base_driver *driver)
 {
 
-    struct resource_item *current = 0;
+    struct resource *current = 0;
 
-    while ((current = resource_find_item(current)))
+    while ((current = resource_find(current)))
     {
 
         struct base_device *device = current->data;
@@ -47,30 +47,30 @@ void base_register_driver(struct base_driver *driver)
 
     }
 
-    resource_register_item(&driver->resource);
+    resource_register(&driver->resource);
 
 }
 
 void base_unregister_bus(struct base_bus *bus)
 {
 
-    resource_unregister_item(&bus->resource);
+    resource_unregister(&bus->resource);
 
 }
 
 void base_unregister_device(struct base_device *device)
 {
 
-    resource_unregister_item(&device->resource);
+    resource_unregister(&device->resource);
 
 }
 
 void base_unregister_driver(struct base_driver *driver)
 {
 
-    struct resource_item *current = 0;
+    struct resource *current = 0;
 
-    while ((current = resource_find_item(current)))
+    while ((current = resource_find(current)))
     {
 
         struct base_device *device = current->data;
@@ -85,7 +85,7 @@ void base_unregister_driver(struct base_driver *driver)
 
     }
 
-    resource_unregister_item(&driver->resource);
+    resource_unregister(&driver->resource);
 
 }
 
@@ -93,7 +93,7 @@ void base_init_bus(struct base_bus *bus, unsigned int type, const char *name, vo
 {
 
     memory_clear(bus, sizeof (struct base_bus));
-    resource_init_item(&bus->resource, BASE_RESOURCE_BUS, bus);
+    resource_init(&bus->resource, BASE_RESOURCE_BUS, bus);
 
     bus->name = name;
     bus->type = type;
@@ -105,7 +105,7 @@ void base_init_device(struct base_device *device, unsigned int type, unsigned in
 {
 
     memory_clear(device, sizeof (struct base_device));
-    resource_init_item(&device->resource, BASE_RESOURCE_DEVICE, device);
+    resource_init(&device->resource, BASE_RESOURCE_DEVICE, device);
 
     device->name = name;
     device->type = type;
@@ -118,7 +118,7 @@ void base_init_driver(struct base_driver *driver, const char *name, unsigned int
 {
 
     memory_clear(driver, sizeof (struct base_driver));
-    resource_init_item(&driver->resource, BASE_RESOURCE_DRIVER, driver);
+    resource_init(&driver->resource, BASE_RESOURCE_DRIVER, driver);
 
     driver->name = name;
     driver->check = check;

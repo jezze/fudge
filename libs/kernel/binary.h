@@ -3,7 +3,7 @@
 struct binary_protocol
 {
 
-    struct resource_item resource;
+    struct resource resource;
     unsigned int (*match)(struct vfs_channel *channel, unsigned int id);
     unsigned long (*find_symbol)(struct vfs_channel *channel, unsigned int id, unsigned int count, const char *symbol);
     unsigned long (*copy_program)(struct vfs_channel *channel, unsigned int id);

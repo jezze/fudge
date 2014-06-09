@@ -346,7 +346,7 @@ void container_init(struct container *container, unsigned int (*spawn)(struct co
     unsigned int i;
 
     memory_clear(container, sizeof (struct container));
-    resource_init_item(&container->resource, CONTAINER_RESOURCE, container);
+    resource_init(&container->resource, CONTAINER_RESOURCE, container);
 
     for (i = 0; i < CONTAINER_CHANNELS; i++)
         vfs_init_channel(&container->channels[i]);

@@ -5,7 +5,7 @@ struct task
 {
 
     struct list_item item;
-    struct resource_item resource;
+    struct resource resource;
     struct {unsigned long ip; unsigned long sp;} registers;
     struct vfs_descriptor descriptors[TASK_DESCRIPTORS];
 

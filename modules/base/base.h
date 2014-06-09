@@ -5,7 +5,7 @@
 struct base_bus
 {
 
-    struct resource_item resource;
+    struct resource resource;
     const char *name;
     unsigned int type;
     void (*scan)(struct base_bus *self);
@@ -15,7 +15,7 @@ struct base_bus
 struct base_device
 {
 
-    struct resource_item resource;
+    struct resource resource;
     const char *name;
     unsigned int type;
     unsigned int irq;
@@ -26,7 +26,7 @@ struct base_device
 struct base_driver
 {
 
-    struct resource_item resource;
+    struct resource resource;
     const char *name;
     unsigned int (*check)(struct base_device *device);
     void (*attach)(struct base_device *device);

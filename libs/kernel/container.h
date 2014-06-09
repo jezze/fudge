@@ -25,7 +25,7 @@ enum container_call
 struct container
 {
 
-    struct resource_item resource;
+    struct resource resource;
     struct vfs_channel channels[CONTAINER_CHANNELS];
     struct vfs_mount mounts[CONTAINER_MOUNTS];
     unsigned int (*calls[CONTAINER_CALLS])(struct container *self, struct task *task, void *stack);

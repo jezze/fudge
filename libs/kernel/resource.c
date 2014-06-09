@@ -3,10 +3,10 @@
 
 static struct list resources;
 
-struct resource_item *resource_find_item(struct resource_item *item)
+struct resource *resource_find(struct resource *resource)
 {
 
-    struct list_item *current = (item) ? item->item.next : resources.head;
+    struct list_item *current = (resource) ? resource->item.next : resources.head;
 
     if (!current)
         return 0;
@@ -15,28 +15,28 @@ struct resource_item *resource_find_item(struct resource_item *item)
 
 }
 
-void resource_register_item(struct resource_item *item)
+void resource_register(struct resource *resource)
 {
 
-    list_add(&resources, &item->item);
+    list_add(&resources, &resource->item);
 
 }
 
-void resource_unregister_item(struct resource_item *item)
+void resource_unregister(struct resource *resource)
 {
 
-    list_remove(&resources, &item->item);
+    list_remove(&resources, &resource->item);
 
 }
 
-void resource_init_item(struct resource_item *item, unsigned int type, void *data)
+void resource_init(struct resource *resource, unsigned int type, void *data)
 {
 
-    memory_clear(item, sizeof (struct resource_item));
-    list_init_item(&item->item, item);
+    memory_clear(resource, sizeof (struct resource));
+    list_init_item(&resource->item, resource);
 
-    item->type = type;
-    item->data = data;
+    resource->type = type;
+    resource->data = data;
 
 }
 
