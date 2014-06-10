@@ -68,7 +68,7 @@ static unsigned int write_stream(struct ps2_mouse_stream *stream, unsigned int c
 
 }
 
-static void reset(struct ps2_bus *bus)
+static void reset(struct base_bus *bus)
 {
 
     ps2_bus_write_command(bus, 0xD4);
@@ -77,7 +77,7 @@ static void reset(struct ps2_bus *bus)
 
 }
 
-static void set_defaults(struct ps2_bus *bus)
+static void set_defaults(struct base_bus *bus)
 {
 
     ps2_bus_write_command(bus, 0xD4);
@@ -86,7 +86,7 @@ static void set_defaults(struct ps2_bus *bus)
 
 }
 
-static void identify(struct ps2_bus *bus)
+static void identify(struct base_bus *bus)
 {
 
     ps2_bus_write_command(bus, 0xD4);
@@ -95,7 +95,7 @@ static void identify(struct ps2_bus *bus)
 
 }
 
-static void enable_scanning(struct ps2_bus *bus)
+static void enable_scanning(struct base_bus *bus)
 {
 
     ps2_bus_write_command(bus, 0xD4);
@@ -104,7 +104,7 @@ static void enable_scanning(struct ps2_bus *bus)
 
 }
 
-static void disable_scanning(struct ps2_bus *bus)
+static void disable_scanning(struct base_bus *bus)
 {
 
     ps2_bus_write_command(bus, 0xD4);
@@ -127,8 +127,7 @@ static unsigned int read_data(struct base_device *device, unsigned int offset, u
 static void handle_irq(unsigned int irq, struct base_device *device)
 {
 
-    struct ps2_bus *bus = (struct ps2_bus *)device->bus;
-    unsigned char data = ps2_bus_read_data_async(bus);
+    unsigned char data = ps2_bus_read_data_async(device->bus);
 
     switch (cycle)
     {
@@ -161,19 +160,18 @@ static void handle_irq(unsigned int irq, struct base_device *device)
 static void attach(struct base_device *device)
 {
 
-    struct ps2_bus *ps2bus = (struct ps2_bus *)device->bus;
     unsigned short irq = device->bus->device_irq(device->bus, device);
 
     base_mouse_init_interface(&imouse, read_data);
     base_mouse_register_interface(&imouse, device);
     pic_set_routine(irq, device, handle_irq);
-    ps2_bus_enable_device(ps2bus, device->type);
-    ps2_bus_enable_interrupt(ps2bus, device->type);
-    disable_scanning(ps2bus);
-    reset(ps2bus);
-    set_defaults(ps2bus);
-    identify(ps2bus);
-    enable_scanning(ps2bus);
+    ps2_bus_enable_device(device->bus, device->type);
+    ps2_bus_enable_interrupt(device->bus, device->type);
+    disable_scanning(device->bus);
+    reset(device->bus);
+    set_defaults(device->bus);
+    identify(device->bus);
+    enable_scanning(device->bus);
 
 }
 

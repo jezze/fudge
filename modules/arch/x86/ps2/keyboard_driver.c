@@ -87,8 +87,7 @@ static unsigned int write_data(struct base_device *device, unsigned int offset, 
 static void handle_irq(unsigned int irq, struct base_device *device)
 {
 
-    struct ps2_bus *bus = (struct ps2_bus *)device->bus;
-    unsigned char scancode = ps2_bus_read_data_async(bus);
+    unsigned char scancode = ps2_bus_read_data_async(device->bus);
 
     if (ikeyboard.escaped)
         ikeyboard.escaped = 0;
@@ -144,14 +143,13 @@ static void handle_irq(unsigned int irq, struct base_device *device)
 static void attach(struct base_device *device)
 {
 
-    struct ps2_bus *ps2bus = (struct ps2_bus *)device->bus;
     unsigned short irq = device->bus->device_irq(device->bus, device);
 
     base_keyboard_init_interface(&ikeyboard, read_data, write_data);
     base_keyboard_register_interface(&ikeyboard, device);
     pic_set_routine(irq, device, handle_irq);
-    ps2_bus_enable_device(ps2bus, device->type);
-    ps2_bus_enable_interrupt(ps2bus, device->type);
+    ps2_bus_enable_device(device->bus, device->type);
+    ps2_bus_enable_interrupt(device->bus, device->type);
 
 }
 
