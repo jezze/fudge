@@ -242,8 +242,7 @@ static unsigned int read_terminal_data(struct base_device *device, unsigned int 
 static unsigned int write_terminal_data(struct base_device *device, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct platform_bus *platformBus = (struct platform_bus *)device->bus;
-    unsigned short io = platform_bus_get_base(platformBus, device->type);
+    unsigned short io = platform_bus_get_base(device->bus, device->type);
     unsigned char *b = buffer;
     unsigned int i;
 
@@ -257,8 +256,7 @@ static unsigned int write_terminal_data(struct base_device *device, unsigned int
 static void handle_irq(unsigned int irq, struct base_device *device)
 {
 
-    struct platform_bus *platformBus = (struct platform_bus *)device->bus;
-    unsigned short io = platform_bus_get_base(platformBus, device->type);
+    unsigned short io = platform_bus_get_base(device->bus, device->type);
     char data = read(io);
 
     write_stream(&stream, 1, &data);
@@ -270,9 +268,8 @@ static void handle_irq(unsigned int irq, struct base_device *device)
 static void attach(struct base_device *device)
 {
 
-    struct platform_bus *platformBus = (struct platform_bus *)device->bus;
     unsigned short irq = device->bus->device_irq(device->bus, device);
-    unsigned short io = platform_bus_get_base(platformBus, device->type);
+    unsigned short io = platform_bus_get_base(device->bus, device->type);
 
     base_terminal_init_interface(&iterminal, read_terminal_data, write_terminal_data);
     base_terminal_register_interface(&iterminal, device);

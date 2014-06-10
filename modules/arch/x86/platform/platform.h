@@ -1,22 +1,8 @@
-#define PLATFORM_PIT_IRQ                0x00
 #define PLATFORM_PIT_DEVICE_TYPE        0x8601
-#define PLATFORM_RTC_IRQ                0x08
 #define PLATFORM_RTC_DEVICE_TYPE        0x8602
-#define PLATFORM_UART1_IRQ              0x04
 #define PLATFORM_UART1_DEVICE_TYPE      0x8603
-#define PLATFORM_UART2_IRQ              0x03
 #define PLATFORM_UART2_DEVICE_TYPE      0x8604
-#define PLATFORM_UART3_IRQ              0x04
 #define PLATFORM_UART3_DEVICE_TYPE      0x8605
-#define PLATFORM_UART4_IRQ              0x03
 #define PLATFORM_UART4_DEVICE_TYPE      0x8606
 
-struct platform_bus
-{
-
-    struct base_bus base;
-
-};
-
-unsigned short platform_bus_get_base(struct platform_bus *bus, unsigned int type);
-void platform_init_bus(struct platform_bus *bus);
+unsigned short platform_bus_get_base(struct base_bus *bus, unsigned int type);
