@@ -207,21 +207,21 @@ static unsigned int write_stream(struct uart_driver_stream *stream, unsigned int
 
 }
 
-static char read(struct platform_device *device)
+static char read(unsigned short io)
 {
 
-    while (!(io_inb(device->registers + UART_REGISTER_LSR) & UART_LSR_READY));
+    while (!(io_inb(io + UART_REGISTER_LSR) & UART_LSR_READY));
 
-    return io_inb(device->registers);
+    return io_inb(io);
 
 }
 
-static void write(struct platform_device *device, char c)
+static void write(unsigned short io, char c)
 {
 
-    while (!(io_inb(device->registers + UART_REGISTER_LSR) & UART_LSR_TRANSMIT));
+    while (!(io_inb(io + UART_REGISTER_LSR) & UART_LSR_TRANSMIT));
 
-    io_outb(device->registers, c);
+    io_outb(io, c);
 
 }
 
@@ -242,12 +242,13 @@ static unsigned int read_terminal_data(struct base_device *device, unsigned int 
 static unsigned int write_terminal_data(struct base_device *device, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct platform_device *platformDevice = (struct platform_device *)device;
+    struct platform_bus *platformBus = (struct platform_bus *)device->bus;
+    unsigned short io = platform_bus_get_base(platformBus, device->type);
     unsigned char *b = buffer;
     unsigned int i;
 
     for (i = 0; i < count; i++)
-        write(platformDevice, b[i]);
+        write(io, b[i]);
 
     return count;
 
@@ -256,8 +257,9 @@ static unsigned int write_terminal_data(struct base_device *device, unsigned int
 static void handle_irq(unsigned int irq, struct base_device *device)
 {
 
-    struct platform_device *platformDevice = (struct platform_device *)device;
-    char data = read(platformDevice);
+    struct platform_bus *platformBus = (struct platform_bus *)device->bus;
+    unsigned short io = platform_bus_get_base(platformBus, device->type);
+    char data = read(io);
 
     write_stream(&stream, 1, &data);
     rendezvous_unsleep(&rdata, 1);
@@ -268,20 +270,21 @@ static void handle_irq(unsigned int irq, struct base_device *device)
 static void attach(struct base_device *device)
 {
 
-    struct platform_device *platformDevice = (struct platform_device *)device;
+    struct platform_bus *platformBus = (struct platform_bus *)device->bus;
     unsigned short irq = device->bus->device_irq(device->bus, device);
+    unsigned short io = platform_bus_get_base(platformBus, device->type);
 
     base_terminal_init_interface(&iterminal, read_terminal_data, write_terminal_data);
     base_terminal_register_interface(&iterminal, device);
     pic_set_routine(irq, device, handle_irq);
-    io_outb(platformDevice->registers + UART_REGISTER_IER, UART_IER_NULL);
-    io_outb(platformDevice->registers + UART_REGISTER_LCR, UART_LCR_5BITS | UART_LCR_1STOP | UART_LCR_NOPARITY);
-    io_outb(platformDevice->registers + UART_REGISTER_THR, 0x03);
-    io_outb(platformDevice->registers + UART_REGISTER_IER, UART_IER_NULL);
-    io_outb(platformDevice->registers + UART_REGISTER_LCR, UART_LCR_8BITS | UART_LCR_1STOP | UART_LCR_NOPARITY);
-    io_outb(platformDevice->registers + UART_REGISTER_FCR, UART_FCR_ENABLE | UART_FCR_RECEIVE | UART_FCR_TRANSMIT | UART_FCR_SIZE3);
-    io_outb(platformDevice->registers + UART_REGISTER_MCR, UART_MCR_READY | UART_MCR_REQUEST | UART_MCR_AUX2);
-    io_outb(platformDevice->registers + UART_REGISTER_IER, UART_IER_RECEIVE);
+    io_outb(io + UART_REGISTER_IER, UART_IER_NULL);
+    io_outb(io + UART_REGISTER_LCR, UART_LCR_5BITS | UART_LCR_1STOP | UART_LCR_NOPARITY);
+    io_outb(io + UART_REGISTER_THR, 0x03);
+    io_outb(io + UART_REGISTER_IER, UART_IER_NULL);
+    io_outb(io + UART_REGISTER_LCR, UART_LCR_8BITS | UART_LCR_1STOP | UART_LCR_NOPARITY);
+    io_outb(io + UART_REGISTER_FCR, UART_FCR_ENABLE | UART_FCR_RECEIVE | UART_FCR_TRANSMIT | UART_FCR_SIZE3);
+    io_outb(io + UART_REGISTER_MCR, UART_MCR_READY | UART_MCR_REQUEST | UART_MCR_AUX2);
+    io_outb(io + UART_REGISTER_IER, UART_IER_RECEIVE);
 
 }
 

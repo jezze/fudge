@@ -11,14 +11,6 @@
 #define PLATFORM_UART4_IRQ              0x03
 #define PLATFORM_UART4_DEVICE_TYPE      0x8606
 
-struct platform_device
-{
-
-    struct base_device base;
-    unsigned short registers;
-
-};
-
 struct platform_bus
 {
 
@@ -26,5 +18,5 @@ struct platform_bus
 
 };
 
+unsigned short platform_bus_get_base(struct platform_bus *bus, unsigned int type);
 void platform_init_bus(struct platform_bus *bus);
-void platform_init_device(struct platform_device *device, unsigned int type, char *name, struct platform_bus *bus, unsigned short registers);
