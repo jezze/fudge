@@ -24,4 +24,4 @@ struct platform_bus
 };
 
 void platform_init_bus(struct platform_bus *bus);
-void platform_init_device(struct platform_device *device, unsigned int type, unsigned int irq, char *name, struct platform_bus *bus, unsigned short registers);
+void platform_init_device(struct platform_device *device, unsigned int type, char *name, struct platform_bus *bus, unsigned short registers);

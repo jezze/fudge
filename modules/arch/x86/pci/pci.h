@@ -301,4 +301,4 @@ void pci_device_outd(struct pci_device *device, unsigned short offset, unsigned 
 void pci_device_outw(struct pci_device *device, unsigned short offset, unsigned short value);
 void pci_device_outb(struct pci_device *device, unsigned short offset, unsigned char value);
 void pci_init_bus(struct pci_bus *bus, unsigned short control, unsigned short data);
-void pci_init_device(struct pci_device *device, struct pci_bus *bus, unsigned int irq, unsigned int num, unsigned int slot, unsigned int function);
+void pci_init_device(struct pci_device *device, struct pci_bus *bus, unsigned int num, unsigned int slot, unsigned int function);

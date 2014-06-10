@@ -52,12 +52,12 @@ void ps2_bus_reset(struct ps2_bus *bus)
 
 }
 
-static void add_device(struct ps2_bus *bus, unsigned int irq)
+static void add_device(struct ps2_bus *bus, unsigned int type)
 {
 
     struct base_device *device = &bus->devices.item[bus->devices.count];
 
-    base_init_device(device, PS2_DEVICE_TYPE, irq, "ps2", &bus->base);
+    base_init_device(device, type, "ps2", &bus->base);
 
     bus->devices.count++;
 
@@ -95,7 +95,7 @@ static void scan(struct base_bus *self)
         ps2_bus_write_command(bus, 0xAB);
 
         if (!ps2_bus_read_data(bus))
-            add_device(bus, PS2_IRQ_KEYBOARD);
+            add_device(bus, PS2_KEYBOARD_DEVICE_TYPE);
 
     }
 
@@ -105,9 +105,27 @@ static void scan(struct base_bus *self)
         ps2_bus_write_command(bus, 0xA9);
 
         if (!ps2_bus_read_data(bus))
-            add_device(bus, PS2_IRQ_MOUSE);
+            add_device(bus, PS2_MOUSE_DEVICE_TYPE);
 
     }
+
+}
+
+static unsigned short device_irq(struct base_bus *self, struct base_device *device)
+{
+
+    switch (device->type)
+    {
+
+        case PS2_KEYBOARD_DEVICE_TYPE:
+            return PS2_KEYBOARD_IRQ;
+
+        case PS2_MOUSE_DEVICE_TYPE:
+            return PS2_MOUSE_IRQ;
+
+    }
+
+    return 0xFFFF;
 
 }
 
@@ -115,7 +133,7 @@ void ps2_init_bus(struct ps2_bus *bus, unsigned short control, unsigned short da
 {
 
     memory_clear(bus, sizeof (struct ps2_bus));
-    base_init_bus(&bus->base, PS2_BUS_TYPE, "ps2", scan);
+    base_init_bus(&bus->base, PS2_BUS_TYPE, "ps2", scan, device_irq);
 
     bus->control = control;
     bus->data = data;

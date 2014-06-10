@@ -294,7 +294,7 @@ static unsigned int send(struct base_device *device, unsigned int count, void *b
 
 }
 
-static void handle_irq(struct base_device *device)
+static void handle_irq(unsigned int irq, struct base_device *device)
 {
 
     unsigned short status = io_inw(io + RTL8139_REGISTER_ISR);
@@ -311,6 +311,7 @@ static void attach(struct base_device *device)
 {
 
     struct pci_device *pciDevice = (struct pci_device *)device;
+    unsigned short irq = device->bus->device_irq(device->bus, device);
     unsigned int bar0 = pci_device_ind(pciDevice, PCI_CONFIG_BAR0);
     unsigned int bar1 = pci_device_ind(pciDevice, PCI_CONFIG_BAR1);
     unsigned short command = pci_device_inw(pciDevice, PCI_CONFIG_COMMAND);
@@ -321,7 +322,7 @@ static void attach(struct base_device *device)
     base_network_init_interface(&inetwork, receive, send, get_packet, dump_packet);
     base_network_register_interface(&inetwork, device);
     pci_device_outw(pciDevice, PCI_CONFIG_COMMAND, command | (1 << 2));
-    pic_set_routine(device, handle_irq);
+    pic_set_routine(irq, device, handle_irq);
     poweron();
     reset();
     setup_interrupts(RTL8139_ISR_ROK | RTL8139_ISR_TOK);
@@ -341,8 +342,10 @@ static void attach(struct base_device *device)
 static void detach(struct base_device *device)
 {
 
+    unsigned short irq = device->bus->device_irq(device->bus, device);
+
     base_network_unregister_interface(&inetwork);
-    pic_unset_routine(device);
+    pic_unset_routine(irq, device);
 
 }
 

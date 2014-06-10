@@ -58,7 +58,7 @@ static void add_duration(struct base_device *device, unsigned int duration)
 
 }
 
-static void handle_irq(struct base_device *device)
+static void handle_irq(unsigned int irq, struct base_device *device)
 {
 
     itimer.jiffies += 1;
@@ -74,12 +74,13 @@ static void attach(struct base_device *device)
 {
 
     struct platform_device *platformDevice = (struct platform_device *)device;
+    unsigned short irq = device->bus->device_irq(device->bus, device);
 
     divisor = PIT_FREQUENCY / PIT_HERTZ;
 
     base_timer_init_interface(&itimer, add_duration);
     base_timer_register_interface(&itimer, device);
-    pic_set_routine(device, handle_irq);
+    pic_set_routine(irq, device, handle_irq);
     io_outb(platformDevice->registers + PIT_REGISTER_COMMAND, PIT_COMMAND_COUNTER0 | PIT_COMMAND_BOTH | PIT_COMMAND_MODE3 | PIT_COMMAND_BINARY);
     io_outb(platformDevice->registers + PIT_REGISTER_COUNTER0, divisor >> 0);
     io_outb(platformDevice->registers + PIT_REGISTER_COUNTER0, divisor >> 8);
@@ -89,8 +90,10 @@ static void attach(struct base_device *device)
 static void detach(struct base_device *device)
 {
 
+    unsigned short irq = device->bus->device_irq(device->bus, device);
+
     base_timer_unregister_interface(&itimer);
-    pic_unset_routine(device);
+    pic_unset_routine(irq, device);
 
 }
 

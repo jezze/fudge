@@ -1,7 +1,8 @@
-#define PS2_IRQ_KEYBOARD                0x01
-#define PS2_IRQ_MOUSE                   0x0C
 #define PS2_BUS_TYPE                    0x0006
-#define PS2_DEVICE_TYPE                 0x0006
+#define PS2_KEYBOARD_IRQ                0x01
+#define PS2_KEYBOARD_DEVICE_TYPE        0x0006
+#define PS2_MOUSE_IRQ                   0x0C
+#define PS2_MOUSE_DEVICE_TYPE           0x0007
 
 struct ps2_bus
 {

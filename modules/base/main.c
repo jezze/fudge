@@ -89,7 +89,7 @@ void base_unregister_driver(struct base_driver *driver)
 
 }
 
-void base_init_bus(struct base_bus *bus, unsigned int type, const char *name, void (*scan)(struct base_bus *self))
+void base_init_bus(struct base_bus *bus, unsigned int type, const char *name, void (*scan)(struct base_bus *self), unsigned short (*device_irq)(struct base_bus *self, struct base_device *device))
 {
 
     memory_clear(bus, sizeof (struct base_bus));
@@ -98,10 +98,11 @@ void base_init_bus(struct base_bus *bus, unsigned int type, const char *name, vo
     bus->name = name;
     bus->type = type;
     bus->scan = scan;
+    bus->device_irq = device_irq;
 
 }
 
-void base_init_device(struct base_device *device, unsigned int type, unsigned int irq, const char *name, struct base_bus *bus)
+void base_init_device(struct base_device *device, unsigned int type, const char *name, struct base_bus *bus)
 {
 
     memory_clear(device, sizeof (struct base_device));
@@ -109,7 +110,6 @@ void base_init_device(struct base_device *device, unsigned int type, unsigned in
 
     device->name = name;
     device->type = type;
-    device->irq = irq;
     device->bus = bus;
 
 }

@@ -8,7 +8,7 @@
 static struct base_driver driver;
 static struct base_block_interface iblock;
 
-static void handle_irq(struct base_device *device)
+static void handle_irq(unsigned int irq, struct base_device *device)
 {
 
 }
@@ -16,17 +16,21 @@ static void handle_irq(struct base_device *device)
 static void attach(struct base_device *device)
 {
 
+    unsigned short irq = device->bus->device_irq(device->bus, device);
+
     base_block_init_interface(&iblock, 0, 0);
     base_block_register_interface(&iblock, device);
-    pic_set_routine(device, handle_irq);
+    pic_set_routine(irq, device, handle_irq);
 
 }
 
 static void detach(struct base_device *device)
 {
 
+    unsigned short irq = device->bus->device_irq(device->bus, device);
+
     base_block_unregister_interface(&iblock);
-    pic_unset_routine(device);
+    pic_unset_routine(irq, device);
 
 }
 

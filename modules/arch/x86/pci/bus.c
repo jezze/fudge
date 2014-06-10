@@ -66,9 +66,8 @@ static void add_device(struct pci_bus *bus, unsigned int num, unsigned int slot,
 {
 
     struct pci_device *device = &bus->devices.item[bus->devices.count];
-    unsigned int irq = pci_bus_inb(bus, num, slot, function, PCI_CONFIG_LINE);
 
-    pci_init_device(device, bus, irq, num, slot, function);
+    pci_init_device(device, bus, num, slot, function);
 
     bus->devices.count++;
 
@@ -129,11 +128,21 @@ static void scan(struct base_bus *self)
 
 }
 
+static unsigned short device_irq(struct base_bus *self, struct base_device *device)
+{
+
+    struct pci_bus *bus = (struct pci_bus *)self;
+    struct pci_device *d = (struct pci_device *)device;
+
+    return pci_bus_inb(bus, d->num, d->slot, d->function, PCI_CONFIG_LINE);
+
+}
+
 void pci_init_bus(struct pci_bus *bus, unsigned short control, unsigned short data)
 {
 
     memory_clear(bus, sizeof (struct pci_bus));
-    base_init_bus(&bus->base, PCI_BUS_TYPE, "pci", scan);
+    base_init_bus(&bus->base, PCI_BUS_TYPE, "pci", scan, device_irq);
 
     bus->control = control;
     bus->data = data;

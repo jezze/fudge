@@ -124,7 +124,7 @@ static unsigned int read_data(struct base_device *device, unsigned int offset, u
 
 }
 
-static void handle_irq(struct base_device *device)
+static void handle_irq(unsigned int irq, struct base_device *device)
 {
 
     struct ps2_bus *bus = (struct ps2_bus *)device->bus;
@@ -162,10 +162,11 @@ static void attach(struct base_device *device)
 {
 
     struct ps2_bus *bus = (struct ps2_bus *)device->bus;
+    unsigned short irq = device->bus->device_irq(device->bus, device);
 
     base_mouse_init_interface(&imouse, read_data);
     base_mouse_register_interface(&imouse, device);
-    pic_set_routine(device, handle_irq);
+    pic_set_routine(irq, device, handle_irq);
     ps2_device_enable(device);
     ps2_device_enable_interrupt(device);
     disable_scanning(bus);
@@ -179,18 +180,17 @@ static void attach(struct base_device *device)
 static void detach(struct base_device *device)
 {
 
+    unsigned short irq = device->bus->device_irq(device->bus, device);
+
     base_mouse_unregister_interface(&imouse);
-    pic_unset_routine(device);
+    pic_unset_routine(irq, device);
 
 }
 
 static unsigned int check(struct base_device *device)
 {
 
-    if (device->type != PS2_DEVICE_TYPE)
-        return 0;
-
-    return device->irq == PS2_IRQ_MOUSE;
+    return device->type == PS2_MOUSE_DEVICE_TYPE;
 
 }
 

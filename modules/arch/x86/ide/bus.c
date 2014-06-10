@@ -164,9 +164,8 @@ static void add_device(struct ide_bus *bus, unsigned int slave, unsigned int typ
 {
 
     struct ide_device *device = &bus->devices.item[bus->devices.count];
-    unsigned int irq = (slave) ? IDE_IRQ_SECONDARY : IDE_IRQ_PRIMARY;
 
-    ide_init_device(device, bus, irq, slave, type);
+    ide_init_device(device, bus, slave, type);
 
     if (type == IDE_DEVICE_TYPE_ATA)
         device->configure_ata(device);
@@ -227,11 +226,20 @@ static void scan(struct base_bus *self)
 
 }
 
+static unsigned short device_irq(struct base_bus *self, struct base_device *device)
+{
+
+    struct ide_device *d = (struct ide_device *)device;
+
+    return (d->slave) ? IDE_IRQ_SECONDARY : IDE_IRQ_PRIMARY;
+
+}
+
 void ide_init_bus(struct ide_bus *bus, unsigned short control, unsigned short data)
 {
 
     memory_clear(bus, sizeof (struct ide_bus));
-    base_init_bus(&bus->base, IDE_BUS_TYPE, "ide", scan);
+    base_init_bus(&bus->base, IDE_BUS_TYPE, "ide", scan, device_irq);
 
     bus->control = control;
     bus->data = data;

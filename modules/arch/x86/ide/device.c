@@ -173,11 +173,11 @@ void ide_device_write_lba48_async(struct ide_device *device, unsigned int sector
 
 }
 
-void ide_init_device(struct ide_device *device, struct ide_bus *bus, unsigned int irq, unsigned int slave, unsigned int type)
+void ide_init_device(struct ide_device *device, struct ide_bus *bus, unsigned int slave, unsigned int type)
 {
 
     memory_clear(device, sizeof (struct ide_device));
-    base_init_device(&device->base, IDE_DEVICE_TYPE, irq, "ide", &bus->base);
+    base_init_device(&device->base, IDE_DEVICE_TYPE, "ide", &bus->base);
 
     device->type = type;
     device->slave = slave;

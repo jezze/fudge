@@ -57,11 +57,11 @@ void pci_device_outb(struct pci_device *device, unsigned short offset, unsigned 
 
 }
 
-void pci_init_device(struct pci_device *device, struct pci_bus *bus, unsigned int irq, unsigned int num, unsigned int slot, unsigned int function)
+void pci_init_device(struct pci_device *device, struct pci_bus *bus, unsigned int num, unsigned int slot, unsigned int function)
 {
 
     memory_clear(device, sizeof (struct pci_device));
-    base_init_device(&device->base, PCI_DEVICE_TYPE, irq, "pci", &bus->base);
+    base_init_device(&device->base, PCI_DEVICE_TYPE, "pci", &bus->base);
 
     device->num = num;
     device->slot = slot;

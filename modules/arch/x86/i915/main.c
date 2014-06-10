@@ -134,7 +134,7 @@ static unsigned int write_data(struct base_device *device, unsigned int offset, 
 
 }
 
-static void handle_irq(struct base_device *device)
+static void handle_irq(unsigned int irq, struct base_device *device)
 {
 
 }
@@ -142,9 +142,11 @@ static void handle_irq(struct base_device *device)
 static void attach(struct base_device *device)
 {
 
+    unsigned short irq = device->bus->device_irq(device->bus, device);
+
     base_video_init_interface(&ivideo, enable, read_data, write_data, 0, 0);
     base_video_register_interface(&ivideo, device);
-    pic_set_routine(device, handle_irq);
+    pic_set_routine(irq, device, handle_irq);
     enable_dpll();
     enable_pipe();
     enable_plane();
@@ -157,8 +159,10 @@ static void attach(struct base_device *device)
 static void detach(struct base_device *device)
 {
 
+    unsigned short irq = device->bus->device_irq(device->bus, device);
+
     base_video_unregister_interface(&ivideo);
-    pic_unset_routine(device);
+    pic_unset_routine(irq, device);
 
 }
 

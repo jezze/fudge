@@ -253,7 +253,7 @@ static unsigned int write_terminal_data(struct base_device *device, unsigned int
 
 }
 
-static void handle_irq(struct base_device *device)
+static void handle_irq(unsigned int irq, struct base_device *device)
 {
 
     struct platform_device *platformDevice = (struct platform_device *)device;
@@ -269,10 +269,11 @@ static void attach(struct base_device *device)
 {
 
     struct platform_device *platformDevice = (struct platform_device *)device;
+    unsigned short irq = device->bus->device_irq(device->bus, device);
 
     base_terminal_init_interface(&iterminal, read_terminal_data, write_terminal_data);
     base_terminal_register_interface(&iterminal, device);
-    pic_set_routine(device, handle_irq);
+    pic_set_routine(irq, device, handle_irq);
     io_outb(platformDevice->registers + UART_REGISTER_IER, UART_IER_NULL);
     io_outb(platformDevice->registers + UART_REGISTER_LCR, UART_LCR_5BITS | UART_LCR_1STOP | UART_LCR_NOPARITY);
     io_outb(platformDevice->registers + UART_REGISTER_THR, 0x03);
@@ -287,8 +288,10 @@ static void attach(struct base_device *device)
 static void detach(struct base_device *device)
 {
 
+    unsigned short irq = device->bus->device_irq(device->bus, device);
+
     base_terminal_unregister_interface(&iterminal);
-    pic_unset_routine(device);
+    pic_unset_routine(irq, device);
 
 }
 

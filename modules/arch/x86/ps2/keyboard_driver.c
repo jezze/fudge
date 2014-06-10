@@ -84,7 +84,7 @@ static unsigned int write_data(struct base_device *device, unsigned int offset, 
 
 }
 
-static void handle_irq(struct base_device *device)
+static void handle_irq(unsigned int irq, struct base_device *device)
 {
 
     struct ps2_bus *bus = (struct ps2_bus *)device->bus;
@@ -144,9 +144,11 @@ static void handle_irq(struct base_device *device)
 static void attach(struct base_device *device)
 {
 
+    unsigned short irq = device->bus->device_irq(device->bus, device);
+
     base_keyboard_init_interface(&ikeyboard, read_data, write_data);
     base_keyboard_register_interface(&ikeyboard, device);
-    pic_set_routine(device, handle_irq);
+    pic_set_routine(irq, device, handle_irq);
     ps2_device_enable(device);
     ps2_device_enable_interrupt(device);
 
@@ -155,18 +157,17 @@ static void attach(struct base_device *device)
 static void detach(struct base_device *device)
 {
 
+    unsigned short irq = device->bus->device_irq(device->bus, device);
+
     base_keyboard_unregister_interface(&ikeyboard);
-    pic_unset_routine(device);
+    pic_unset_routine(irq, device);
 
 }
 
 static unsigned int check(struct base_device *device)
 {
 
-    if (device->type != PS2_DEVICE_TYPE)
-        return 0;
-
-    return device->irq == PS2_IRQ_KEYBOARD;
+    return device->type == PS2_KEYBOARD_DEVICE_TYPE;
 
 }
 

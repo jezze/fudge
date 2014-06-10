@@ -83,7 +83,7 @@ unsigned short pic_interrupt(void *stack)
     if (!routines[registers->index].callback)
         return arch_schedule(&registers->general, &registers->interrupt);
 
-    routines[registers->index].callback(routines[registers->index].device);
+    routines[registers->index].callback(registers->index, routines[registers->index].device);
 
     if (registers->slave)
         io_outb(PIC_REGISTER_COMMAND1, PIC_COMMAND_EOI);
@@ -94,43 +94,43 @@ unsigned short pic_interrupt(void *stack)
 
 }
 
-unsigned int pic_set_routine(struct base_device *device, void (*callback)(struct base_device *device))
+unsigned int pic_set_routine(unsigned int irq, struct base_device *device, void (*callback)(unsigned int irq, struct base_device *device))
 {
 
-    if (device->irq > PIC_ROUTINES)
+    if (irq > PIC_ROUTINES)
         return 0;
 
-    if (routines[device->irq].device)
+    if (routines[irq].device)
         return 0;
 
-    routines[device->irq].device = device;
-    routines[device->irq].callback = callback;
+    routines[irq].device = device;
+    routines[irq].callback = callback;
 
-    if (device->irq >= 8)
-        pic_enable_line(PIC_REGISTER_DATA1, device->irq);
+    if (irq >= 8)
+        pic_enable_line(PIC_REGISTER_DATA1, irq);
     else
-        pic_enable_line(PIC_REGISTER_DATA0, device->irq);
+        pic_enable_line(PIC_REGISTER_DATA0, irq);
 
     return 1;
 
 }
 
-unsigned int pic_unset_routine(struct base_device *device)
+unsigned int pic_unset_routine(unsigned int irq, struct base_device *device)
 {
 
-    if (device->irq > PIC_ROUTINES)
+    if (irq > PIC_ROUTINES)
         return 0;
 
-    if (routines[device->irq].device != device)
+    if (routines[irq].device != device)
         return 0;
 
-    routines[device->irq].device = 0;
-    routines[device->irq].callback = 0;
+    routines[irq].device = 0;
+    routines[irq].callback = 0;
 
-    if (device->irq >= 8)
-        pic_disable_line(PIC_REGISTER_DATA1, device->irq);
+    if (irq >= 8)
+        pic_disable_line(PIC_REGISTER_DATA1, irq);
     else
-        pic_disable_line(PIC_REGISTER_DATA0, device->irq);
+        pic_disable_line(PIC_REGISTER_DATA0, irq);
 
     return 1;
 
