@@ -47,12 +47,6 @@ struct ide_device
     struct pci_device *pciDevice;
     unsigned int type;
     unsigned int slave;
-    unsigned char model[41];
-    unsigned int lba28Max;
-    unsigned int lba48MaxLow;
-    unsigned int lba48MaxHigh;
-    void (*configure_ata)(struct ide_device *self);
-    void (*configure_atapi)(struct ide_device *self);
 
 };
 
@@ -62,26 +56,20 @@ struct ide_bus
     struct base_bus base;
     unsigned short control;
     unsigned short data;
-    struct {struct ide_device item[8]; unsigned int count;} devices;
+    unsigned char model[41];
+    unsigned int lba28Max;
+    unsigned int lba48MaxLow;
+    unsigned int lba48MaxHigh;
 
 };
 
-unsigned int ide_device_read_lba28(struct ide_device *device, unsigned int sector, unsigned int count, void *buffer);
-void ide_device_read_lba28_async(struct ide_device *device, unsigned int sector, unsigned int count, void *buffer);
-unsigned int ide_device_write_lba28(struct ide_device *device, unsigned int sector, unsigned int count, void *buffer);
-void ide_device_write_lba28_async(struct ide_device *device, unsigned int sector, unsigned int count, void *buffer);
-unsigned int ide_device_read_lba48(struct ide_device *device, unsigned int sectorlow, unsigned int sectorhigh, unsigned int count, void *buffer);
-void ide_device_read_lba48_async(struct ide_device *device, unsigned int sectorlow, unsigned int sectorhigh, unsigned int count, void *buffer);
-unsigned int ide_device_write_lba48(struct ide_device *device, unsigned int sectorlow, unsigned int sectorhigh, unsigned int count, void *buffer);
-void ide_device_write_lba48_async(struct ide_device *device, unsigned int sectorlow, unsigned int sectorhigh, unsigned int count, void *buffer);
-void ide_bus_sleep(struct ide_bus *bus);
-void ide_bus_select(struct ide_bus *bus, unsigned char operation, unsigned int slave);
-void ide_bus_set_lba(struct ide_bus *bus, unsigned char count, unsigned char lba0, unsigned char lba1, unsigned char lba2);
-void ide_bus_set_lba2(struct ide_bus *bus, unsigned char count, unsigned char lba3, unsigned char lba4, unsigned char lba5);
-void ide_bus_set_command(struct ide_bus *bus, unsigned char command);
-unsigned int ide_bus_read_block(struct ide_bus *bus, unsigned int count, void *buffer);
-unsigned int ide_bus_read_blocks(struct ide_bus *bus, unsigned int count, void *buffer);
-unsigned int ide_bus_write_block(struct ide_bus *bus, unsigned int count, void *buffer);
-unsigned int ide_bus_write_blocks(struct ide_bus *bus, unsigned int count, void *buffer);
-void ide_init_device(struct ide_device *device, struct ide_bus *bus, unsigned int slave, unsigned int type);
-void ide_init_bus(struct ide_bus *bus, unsigned short control, unsigned short data);
+unsigned int ide_bus_read_lba28(struct ide_bus *bus, unsigned int slave, unsigned int sector, unsigned int count, void *buffer);
+void ide_bus_read_lba28_async(struct ide_bus *bus, unsigned int slave, unsigned int sector, unsigned int count, void *buffer);
+unsigned int ide_bus_write_lba28(struct ide_bus *bus, unsigned int slave, unsigned int sector, unsigned int count, void *buffer);
+void ide_bus_write_lba28_async(struct ide_bus *bus, unsigned int slave, unsigned int sector, unsigned int count, void *buffer);
+unsigned int ide_bus_read_lba48(struct ide_bus *bus, unsigned int slave, unsigned int sectorlow, unsigned int sectorhigh, unsigned int count, void *buffer);
+void ide_bus_read_lba48_async(struct ide_bus *bus, unsigned int slave, unsigned int sectorlow, unsigned int sectorhigh, unsigned int count, void *buffer);
+unsigned int ide_bus_write_lba48(struct ide_bus *bus, unsigned int slave, unsigned int sectorlow, unsigned int sectorhigh, unsigned int count, void *buffer);
+void ide_bus_write_lba48_async(struct ide_bus *bus, unsigned int slave, unsigned int sectorlow, unsigned int sectorhigh, unsigned int count, void *buffer);
+void ide_configure_ata(struct ide_bus *bus);
+void ide_configure_atapi(struct ide_bus *bus);

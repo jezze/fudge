@@ -11,24 +11,26 @@ static struct base_block_interface iblock;
 static unsigned int read_data(struct base_device *device, unsigned int offset, unsigned int count, void *buffer)
 {
 
+    struct ide_bus *bus = (struct ide_bus *)device->bus;
     struct ide_device *ideDevice = (struct ide_device *)device;
 
     if (offset > 0)
         return 0;
 
-    return ide_device_read_lba28(ideDevice, 0, 1, buffer);
+    return ide_bus_read_lba28(bus, ideDevice->slave, 0, 1, buffer);
 
 }
 
 static unsigned int write_data(struct base_device *device, unsigned int offset, unsigned int count, void *buffer)
 {
 
+    struct ide_bus *bus = (struct ide_bus *)device->bus;
     struct ide_device *ideDevice = (struct ide_device *)device;
 
     if (offset > 0)
         return 0;
 
-    return ide_device_write_lba28(ideDevice, 0, 1, buffer);
+    return ide_bus_write_lba28(bus, ideDevice->slave, 0, 1, buffer);
 
 }
 
