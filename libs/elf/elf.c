@@ -20,7 +20,7 @@ unsigned int elf_find_symbol(struct elf_header *header, struct elf_section_heade
 
         char *s = strings + symbols[i].name;
 
-        if (memory_match(symbol, s, count) && s[count] == '\0')
+        if (s[count] == '\0' && memory_match(symbol, s, count))
             return (header->type == ELF_TYPE_RELOCATABLE) ? sectionheader[symbols[i].shindex].address + sectionheader[symbols[i].shindex].offset + symbols[i].value : symbols[i].value;
 
     }
