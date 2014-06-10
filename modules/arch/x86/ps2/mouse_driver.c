@@ -161,19 +161,19 @@ static void handle_irq(unsigned int irq, struct base_device *device)
 static void attach(struct base_device *device)
 {
 
-    struct ps2_bus *bus = (struct ps2_bus *)device->bus;
+    struct ps2_bus *ps2bus = (struct ps2_bus *)device->bus;
     unsigned short irq = device->bus->device_irq(device->bus, device);
 
     base_mouse_init_interface(&imouse, read_data);
     base_mouse_register_interface(&imouse, device);
     pic_set_routine(irq, device, handle_irq);
-    ps2_device_enable(device);
-    ps2_device_enable_interrupt(device);
-    disable_scanning(bus);
-    reset(bus);
-    set_defaults(bus);
-    identify(bus);
-    enable_scanning(bus);
+    ps2_bus_enable_device(ps2bus, device->type);
+    ps2_bus_enable_interrupt(ps2bus, device->type);
+    disable_scanning(ps2bus);
+    reset(ps2bus);
+    set_defaults(ps2bus);
+    identify(ps2bus);
+    enable_scanning(ps2bus);
 
 }
 

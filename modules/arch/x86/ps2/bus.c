@@ -52,6 +52,30 @@ void ps2_bus_reset(struct ps2_bus *bus)
 
 }
 
+void ps2_bus_enable_device(struct ps2_bus *bus, unsigned int type)
+{
+
+    unsigned int command = (type == PS2_MOUSE_DEVICE_TYPE) ? 0xA8 : 0xAE;
+
+    ps2_bus_write_command(bus, command);
+
+}
+
+void ps2_bus_enable_interrupt(struct ps2_bus *bus, unsigned int type)
+{
+
+    unsigned char flag = (type == PS2_MOUSE_DEVICE_TYPE) ? 2 : 1;
+    unsigned char status;
+
+    ps2_bus_write_command(bus, 0x20);
+
+    status = ps2_bus_read_data(bus) | flag;
+
+    ps2_bus_write_command(bus, 0x60);
+    ps2_bus_write_data(bus, status);
+
+}
+
 static void add_device(struct ps2_bus *bus, unsigned int type)
 {
 

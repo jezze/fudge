@@ -144,13 +144,14 @@ static void handle_irq(unsigned int irq, struct base_device *device)
 static void attach(struct base_device *device)
 {
 
+    struct ps2_bus *ps2bus = (struct ps2_bus *)device->bus;
     unsigned short irq = device->bus->device_irq(device->bus, device);
 
     base_keyboard_init_interface(&ikeyboard, read_data, write_data);
     base_keyboard_register_interface(&ikeyboard, device);
     pic_set_routine(irq, device, handle_irq);
-    ps2_device_enable(device);
-    ps2_device_enable_interrupt(device);
+    ps2_bus_enable_device(ps2bus, device->type);
+    ps2_bus_enable_interrupt(ps2bus, device->type);
 
 }
 
