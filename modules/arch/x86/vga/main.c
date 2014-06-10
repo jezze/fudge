@@ -325,12 +325,13 @@ static void detach(struct base_device *device)
 static unsigned int check(struct base_device *device)
 {
 
+    struct pci_bus *pciBus = (struct pci_bus *)device->bus;
     struct pci_device *pciDevice = (struct pci_device *)device;
 
     if (device->type != PCI_DEVICE_TYPE)
         return 0;
 
-    return pci_device_inb(pciDevice, PCI_CONFIG_CLASS) == PCI_CLASS_DISPLAY && pci_device_inb(pciDevice, PCI_CONFIG_SUBCLASS) == PCI_CLASS_DISPLAY_VGA && pci_device_inb(pciDevice, PCI_CONFIG_INTERFACE) == 0x00;
+    return pci_bus_inb(pciBus, pciDevice->address, PCI_CONFIG_CLASS) == PCI_CLASS_DISPLAY && pci_bus_inb(pciBus, pciDevice->address, PCI_CONFIG_SUBCLASS) == PCI_CLASS_DISPLAY_VGA && pci_bus_inb(pciBus, pciDevice->address, PCI_CONFIG_INTERFACE) == 0x00;
 
 }
 
