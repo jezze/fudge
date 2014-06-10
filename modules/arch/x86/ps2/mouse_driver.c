@@ -160,7 +160,7 @@ static void handle_irq(unsigned int irq, struct base_device *device)
 static void attach(struct base_device *device)
 {
 
-    unsigned short irq = device->bus->device_irq(device->bus, device);
+    unsigned short irq = device->bus->device_irq(device->bus, device->type);
 
     base_mouse_init_interface(&imouse, read_data);
     base_mouse_register_interface(&imouse, device);
@@ -178,7 +178,7 @@ static void attach(struct base_device *device)
 static void detach(struct base_device *device)
 {
 
-    unsigned short irq = device->bus->device_irq(device->bus, device);
+    unsigned short irq = device->bus->device_irq(device->bus, device->type);
 
     base_mouse_unregister_interface(&imouse);
     pic_unset_routine(irq, device);

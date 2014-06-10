@@ -268,7 +268,7 @@ static void handle_irq(unsigned int irq, struct base_device *device)
 static void attach(struct base_device *device)
 {
 
-    unsigned short irq = device->bus->device_irq(device->bus, device);
+    unsigned short irq = device->bus->device_irq(device->bus, device->type);
     unsigned short io = platform_bus_get_base(device->bus, device->type);
 
     base_terminal_init_interface(&iterminal, read_terminal_data, write_terminal_data);
@@ -288,7 +288,7 @@ static void attach(struct base_device *device)
 static void detach(struct base_device *device)
 {
 
-    unsigned short irq = device->bus->device_irq(device->bus, device);
+    unsigned short irq = device->bus->device_irq(device->bus, device->type);
 
     base_terminal_unregister_interface(&iterminal);
     pic_unset_routine(irq, device);

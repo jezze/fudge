@@ -81,10 +81,10 @@ static void scan(struct base_bus *self)
 
 }
 
-static unsigned short device_irq(struct base_bus *self, struct base_device *device)
+static unsigned short device_irq(struct base_bus *self, unsigned int id)
 {
 
-    switch (device->type)
+    switch (id)
     {
 
         case PLATFORM_PIT_DEVICE_TYPE:

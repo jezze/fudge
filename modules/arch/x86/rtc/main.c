@@ -102,7 +102,7 @@ static void handle_irq(unsigned int irq, struct base_device *device)
 static void attach(struct base_device *device)
 {
 
-    unsigned short irq = device->bus->device_irq(device->bus, device);
+    unsigned short irq = device->bus->device_irq(device->bus, device->type);
 
     base_clock_init_interface(&iclock, get_seconds, get_minutes, get_hours, get_weekday, get_day, get_month, get_year);
     base_clock_register_interface(&iclock, device);
@@ -113,7 +113,7 @@ static void attach(struct base_device *device)
 static void detach(struct base_device *device)
 {
 
-    unsigned short irq = device->bus->device_irq(device->bus, device);
+    unsigned short irq = device->bus->device_irq(device->bus, device->type);
 
     base_clock_unregister_interface(&iclock);
     pic_unset_routine(irq, device);

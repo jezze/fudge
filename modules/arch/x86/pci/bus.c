@@ -128,13 +128,12 @@ static void scan(struct base_bus *self)
 
 }
 
-static unsigned short device_irq(struct base_bus *self, struct base_device *device)
+static unsigned short device_irq(struct base_bus *self, unsigned int id)
 {
 
     struct pci_bus *pciBus = (struct pci_bus *)self;
-    struct pci_device *pciDevice = (struct pci_device *)device;
 
-    return pci_bus_inb(pciBus, pciDevice->address, PCI_CONFIG_LINE);
+    return pci_bus_inb(pciBus, id, PCI_CONFIG_LINE);
 
 }
 

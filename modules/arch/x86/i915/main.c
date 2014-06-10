@@ -142,7 +142,8 @@ static void handle_irq(unsigned int irq, struct base_device *device)
 static void attach(struct base_device *device)
 {
 
-    unsigned short irq = device->bus->device_irq(device->bus, device);
+    struct pci_device *pciDevice = (struct pci_device *)device;
+    unsigned short irq = device->bus->device_irq(device->bus, pciDevice->address);
 
     base_video_init_interface(&ivideo, enable, read_data, write_data, 0, 0);
     base_video_register_interface(&ivideo, device);
@@ -159,7 +160,8 @@ static void attach(struct base_device *device)
 static void detach(struct base_device *device)
 {
 
-    unsigned short irq = device->bus->device_irq(device->bus, device);
+    struct pci_device *pciDevice = (struct pci_device *)device;
+    unsigned short irq = device->bus->device_irq(device->bus, pciDevice->address);
 
     base_video_unregister_interface(&ivideo);
     pic_unset_routine(irq, device);

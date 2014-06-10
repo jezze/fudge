@@ -401,12 +401,10 @@ static void scan(struct base_bus *self)
 
 }
 
-static unsigned short device_irq(struct base_bus *self, struct base_device *device)
+static unsigned short device_irq(struct base_bus *self, unsigned int id)
 {
 
-    struct ide_device *ideDevice = (struct ide_device *)device;
-
-    return (ideDevice->slave) ? IDE_IRQ_SECONDARY : IDE_IRQ_PRIMARY;
+    return (id) ? IDE_IRQ_SECONDARY : IDE_IRQ_PRIMARY;
 
 }
 

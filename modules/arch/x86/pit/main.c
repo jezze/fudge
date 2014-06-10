@@ -73,7 +73,7 @@ static void handle_irq(unsigned int irq, struct base_device *device)
 static void attach(struct base_device *device)
 {
 
-    unsigned short irq = device->bus->device_irq(device->bus, device);
+    unsigned short irq = device->bus->device_irq(device->bus, device->type);
     unsigned short io = platform_bus_get_base(device->bus, device->type);
 
     divisor = PIT_FREQUENCY / PIT_HERTZ;
@@ -90,7 +90,7 @@ static void attach(struct base_device *device)
 static void detach(struct base_device *device)
 {
 
-    unsigned short irq = device->bus->device_irq(device->bus, device);
+    unsigned short irq = device->bus->device_irq(device->bus, device->type);
 
     base_timer_unregister_interface(&itimer);
     pic_unset_routine(irq, device);

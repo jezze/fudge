@@ -312,7 +312,7 @@ static void attach(struct base_device *device)
 
     struct pci_bus *pciBus = (struct pci_bus *)device->bus;
     struct pci_device *pciDevice = (struct pci_device *)device;
-    unsigned short irq = device->bus->device_irq(device->bus, device);
+    unsigned short irq = device->bus->device_irq(device->bus, pciDevice->address);
     unsigned int bar0 = pci_bus_ind(pciBus, pciDevice->address, PCI_CONFIG_BAR0);
     unsigned int bar1 = pci_bus_ind(pciBus, pciDevice->address, PCI_CONFIG_BAR1);
     unsigned short command = pci_bus_inw(pciBus, pciDevice->address, PCI_CONFIG_COMMAND);
@@ -343,7 +343,8 @@ static void attach(struct base_device *device)
 static void detach(struct base_device *device)
 {
 
-    unsigned short irq = device->bus->device_irq(device->bus, device);
+    struct pci_device *pciDevice = (struct pci_device *)device;
+    unsigned short irq = device->bus->device_irq(device->bus, pciDevice->address);
 
     base_network_unregister_interface(&inetwork);
     pic_unset_routine(irq, device);

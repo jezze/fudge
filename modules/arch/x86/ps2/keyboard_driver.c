@@ -143,7 +143,7 @@ static void handle_irq(unsigned int irq, struct base_device *device)
 static void attach(struct base_device *device)
 {
 
-    unsigned short irq = device->bus->device_irq(device->bus, device);
+    unsigned short irq = device->bus->device_irq(device->bus, device->type);
 
     base_keyboard_init_interface(&ikeyboard, read_data, write_data);
     base_keyboard_register_interface(&ikeyboard, device);
@@ -156,7 +156,7 @@ static void attach(struct base_device *device)
 static void detach(struct base_device *device)
 {
 
-    unsigned short irq = device->bus->device_irq(device->bus, device);
+    unsigned short irq = device->bus->device_irq(device->bus, device->type);
 
     base_keyboard_unregister_interface(&ikeyboard);
     pic_unset_routine(irq, device);

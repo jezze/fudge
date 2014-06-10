@@ -42,7 +42,8 @@ static void handle_irq(unsigned int irq, struct base_device *device)
 static void attach(struct base_device *device)
 {
 
-    unsigned short irq = device->bus->device_irq(device->bus, device);
+    struct ide_device *ideDevice = (struct ide_device *)device;
+    unsigned short irq = device->bus->device_irq(device->bus, ideDevice->slave);
 
     base_block_init_interface(&iblock, read_data, write_data);
     base_block_register_interface(&iblock, device);
@@ -53,7 +54,8 @@ static void attach(struct base_device *device)
 static void detach(struct base_device *device)
 {
 
-    unsigned short irq = device->bus->device_irq(device->bus, device);
+    struct ide_device *ideDevice = (struct ide_device *)device;
+    unsigned short irq = device->bus->device_irq(device->bus, ideDevice->slave);
 
     base_block_unregister_interface(&iblock);
     pic_unset_routine(irq, device);
