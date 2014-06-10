@@ -6,6 +6,10 @@
 #define PLATFORM_UART1_DEVICE_TYPE      0x8603
 #define PLATFORM_UART2_IRQ              0x03
 #define PLATFORM_UART2_DEVICE_TYPE      0x8604
+#define PLATFORM_UART3_IRQ              0x04
+#define PLATFORM_UART3_DEVICE_TYPE      0x8605
+#define PLATFORM_UART4_IRQ              0x03
+#define PLATFORM_UART4_DEVICE_TYPE      0x8606
 
 struct platform_device
 {

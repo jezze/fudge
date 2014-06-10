@@ -26,6 +26,12 @@ static unsigned short device_irq(struct base_bus *self, struct base_device *devi
         case PLATFORM_UART2_DEVICE_TYPE:
             return PLATFORM_UART2_IRQ;
 
+        case PLATFORM_UART3_DEVICE_TYPE:
+            return PLATFORM_UART3_IRQ;
+
+        case PLATFORM_UART4_DEVICE_TYPE:
+            return PLATFORM_UART4_IRQ;
+
     }
 
     return 0xFFFF;
