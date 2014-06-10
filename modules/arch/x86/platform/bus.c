@@ -20,8 +20,11 @@ static unsigned short device_irq(struct base_bus *self, struct base_device *devi
         case PLATFORM_RTC_DEVICE_TYPE:
             return PLATFORM_RTC_IRQ;
 
-        case PLATFORM_UART_DEVICE_TYPE:
-            return PLATFORM_UART_IRQ1;
+        case PLATFORM_UART1_DEVICE_TYPE:
+            return PLATFORM_UART1_IRQ;
+
+        case PLATFORM_UART2_DEVICE_TYPE:
+            return PLATFORM_UART2_IRQ;
 
     }
 
@@ -33,7 +36,7 @@ void platform_init_bus(struct platform_bus *bus)
 {
 
     memory_clear(bus, sizeof (struct platform_bus));
-    base_init_bus(&bus->base, PLATFORM_BUS_TYPE, "platform", scan, device_irq);
+    base_init_bus(&bus->base, "platform", scan, device_irq);
 
 }
 

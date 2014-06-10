@@ -1,4 +1,3 @@
-#define IDE_BUS_TYPE                    0x0002
 #define IDE_DEVICE_TYPE                 0x0002
 #define IDE_DEVICE_TYPE_UNKNOWN         0x00
 #define IDE_DEVICE_TYPE_ATA             0x01

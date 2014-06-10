@@ -298,7 +298,7 @@ static void detach(struct base_device *device)
 static unsigned int check(struct base_device *device)
 {
 
-    return device->type == PLATFORM_UART_DEVICE_TYPE;
+    return device->type == PLATFORM_UART1_DEVICE_TYPE || device->type == PLATFORM_UART2_DEVICE_TYPE;
 
 }
 

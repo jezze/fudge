@@ -239,7 +239,7 @@ void ide_init_bus(struct ide_bus *bus, unsigned short control, unsigned short da
 {
 
     memory_clear(bus, sizeof (struct ide_bus));
-    base_init_bus(&bus->base, IDE_BUS_TYPE, "ide", scan, device_irq);
+    base_init_bus(&bus->base, "ide", scan, device_irq);
 
     bus->control = control;
     bus->data = data;

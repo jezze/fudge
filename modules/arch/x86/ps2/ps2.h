@@ -1,4 +1,3 @@
-#define PS2_BUS_TYPE                    0x0006
 #define PS2_KEYBOARD_IRQ                0x01
 #define PS2_KEYBOARD_DEVICE_TYPE        0x0006
 #define PS2_MOUSE_IRQ                   0x0C

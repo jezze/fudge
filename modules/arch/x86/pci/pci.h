@@ -1,4 +1,3 @@
-#define PCI_BUS_TYPE                    0x0004
 #define PCI_DEVICE_TYPE                 0x0004
 
 enum pci_class
