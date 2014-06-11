@@ -2,8 +2,6 @@
 #define BASE_RESOURCE_DEVICE            8022
 #define BASE_RESOURCE_DRIVER            8023
 
-struct base_device;
-
 struct base_bus
 {
 
