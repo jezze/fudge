@@ -8,29 +8,27 @@
 static struct base_driver driver;
 static struct base_block_interface iblock;
 
-static unsigned int read_data(struct base_device *device, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int read_data(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct ide_bus *bus = (struct ide_bus *)device->bus;
-    struct ide_device *ideDevice = (struct ide_device *)device;
+    struct ide_bus *ideBus = (struct ide_bus *)bus;
 
     if (offset > 0)
         return 0;
 
-    return ide_bus_read_lba28(bus, ideDevice->slave, 0, 1, buffer);
+    return ide_bus_read_lba28(ideBus, id, 0, 1, buffer);
 
 }
 
-static unsigned int write_data(struct base_device *device, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int write_data(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct ide_bus *bus = (struct ide_bus *)device->bus;
-    struct ide_device *ideDevice = (struct ide_device *)device;
+    struct ide_bus *ideBus = (struct ide_bus *)bus;
 
     if (offset > 0)
         return 0;
 
-    return ide_bus_write_lba28(bus, ideDevice->slave, 0, 1, buffer);
+    return ide_bus_write_lba28(ideBus, id, 0, 1, buffer);
 
 }
 
@@ -46,7 +44,7 @@ static void attach(struct base_bus *bus, struct base_device *device)
     unsigned short irq = bus->device_irq(bus, ideDevice->slave);
 
     base_block_init_interface(&iblock, read_data, write_data);
-    base_block_register_interface(&iblock, device);
+    base_block_register_interface(&iblock, bus, ideDevice->slave);
     pic_set_routine(irq, bus, ideDevice->slave, handle_irq);
 
 }

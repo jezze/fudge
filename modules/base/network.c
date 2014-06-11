@@ -10,7 +10,8 @@ static struct interface_node
 
     struct system_group base;
     struct base_network_interface *interface;
-    struct base_device *device;
+    struct base_bus *bus;
+    unsigned int id;
     struct system_stream data;
     struct system_stream mac;
 
@@ -27,7 +28,7 @@ static unsigned int data_read(struct system_node *self, unsigned int offset, uns
     if (offset)
         return 0;
 
-    return node->interface->receive(node->device, count, buffer);
+    return node->interface->receive(node->bus, node->id, count, buffer);
 
 }
 
@@ -39,7 +40,7 @@ static unsigned int data_write(struct system_node *self, unsigned int offset, un
     if (offset)
         return 0;
 
-    return node->interface->send(node->device, count, buffer);
+    return node->interface->send(node->bus, node->id, count, buffer);
 
 }
 
@@ -74,23 +75,24 @@ static unsigned int find_inode()
 
 }
 
-static void init_inode(struct interface_node *node, struct base_network_interface *interface, struct base_device *device)
+static void init_inode(struct interface_node *node, struct base_network_interface *interface, struct base_bus *bus, unsigned int id)
 {
 
     memory_clear(node, sizeof (struct interface_node));
-    system_init_group(&node->base, device->name);
+    system_init_group(&node->base, bus->name);
     system_init_stream(&node->data, "data");
     system_init_stream(&node->mac, "mac");
 
     node->interface = interface;
-    node->device = device;
+    node->bus = bus;
+    node->id = id;
     node->data.node.read = data_read;
     node->data.node.write = data_write;
     node->mac.node.read = mac_read;
 
 }
 
-void base_network_register_interface(struct base_network_interface *interface, struct base_device *device)
+void base_network_register_interface(struct base_network_interface *interface, struct base_bus *bus, unsigned int id)
 {
 
     unsigned int index = find_inode();
@@ -98,7 +100,7 @@ void base_network_register_interface(struct base_network_interface *interface, s
     if (!index)
         return;
 
-    init_inode(&inode[index], interface, device);
+    init_inode(&inode[index], interface, bus, id);
     system_group_add(&dev, &inode[index].base.node);
     system_group_add(&inode[index].base, &inode[index].data.node);
     system_group_add(&inode[index].base, &inode[index].mac.node);
@@ -120,7 +122,7 @@ void base_network_unregister_protocol(struct base_network_protocol *protocol)
 
 }
 
-void base_network_init_interface(struct base_network_interface *interface, unsigned int (*receive)(struct base_device *device, unsigned int count, void *buffer), unsigned int (*send)(struct base_device *device, unsigned int count, void *buffer), void *(*get_packet)(struct base_device *device), void (*dump_packet)(struct base_device *device))
+void base_network_init_interface(struct base_network_interface *interface, unsigned int (*receive)(struct base_bus *bus, unsigned int id, unsigned int count, void *buffer), unsigned int (*send)(struct base_bus *bus, unsigned int id, unsigned int count, void *buffer), void *(*get_packet)(struct base_bus *bus, unsigned int id), void (*dump_packet)(struct base_bus *bus, unsigned int id))
 {
 
     memory_clear(interface, sizeof (struct base_network_interface));

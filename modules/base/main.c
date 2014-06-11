@@ -16,7 +16,7 @@ void base_register_bus(struct base_bus *bus)
 
     resource_register(&bus->resource);
 
-    bus->scan(bus);
+    bus->setup(bus);
 
 }
 
@@ -89,14 +89,14 @@ void base_unregister_driver(struct base_driver *driver)
 
 }
 
-void base_init_bus(struct base_bus *bus, const char *name, void (*scan)(struct base_bus *self), unsigned short (*device_irq)(struct base_bus *self, unsigned int id))
+void base_init_bus(struct base_bus *bus, const char *name, void (*setup)(struct base_bus *self), unsigned short (*device_irq)(struct base_bus *self, unsigned int id))
 {
 
     memory_clear(bus, sizeof (struct base_bus));
     resource_init(&bus->resource, BASE_RESOURCE_BUS, bus);
 
     bus->name = name;
-    bus->scan = scan;
+    bus->setup = setup;
     bus->device_irq = device_irq;
 
 }

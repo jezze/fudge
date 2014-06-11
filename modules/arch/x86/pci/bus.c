@@ -119,7 +119,7 @@ static void detect(struct pci_bus *bus, unsigned int num)
 
 }
 
-static void scan(struct base_bus *self)
+static void setup(struct base_bus *self)
 {
 
     struct pci_bus *bus = (struct pci_bus *)self;
@@ -141,7 +141,7 @@ void pci_init_bus(struct pci_bus *bus, unsigned short control, unsigned short da
 {
 
     memory_clear(bus, sizeof (struct pci_bus));
-    base_init_bus(&bus->base, "pci", scan, device_irq);
+    base_init_bus(&bus->base, "pci", setup, device_irq);
 
     bus->control = control;
     bus->data = data;

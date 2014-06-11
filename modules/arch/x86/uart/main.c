@@ -225,7 +225,7 @@ static void write(unsigned short io, char c)
 
 }
 
-static unsigned int read_terminal_data(struct base_device *device, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int read_terminal_data(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     count = read_stream(&stream, count, buffer);
@@ -239,10 +239,10 @@ static unsigned int read_terminal_data(struct base_device *device, unsigned int 
 
 }
 
-static unsigned int write_terminal_data(struct base_device *device, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int write_terminal_data(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    unsigned short io = platform_bus_get_base(device->bus, device->type);
+    unsigned short io = platform_bus_get_base(bus, id);
     unsigned char *b = buffer;
     unsigned int i;
 
@@ -272,7 +272,7 @@ static void attach(struct base_bus *bus, struct base_device *device)
     unsigned short io = platform_bus_get_base(bus, device->type);
 
     base_terminal_init_interface(&iterminal, read_terminal_data, write_terminal_data);
-    base_terminal_register_interface(&iterminal, device);
+    base_terminal_register_interface(&iterminal, bus, device->type);
     pic_set_routine(irq, bus, device->type, handle_irq);
     io_outb(io + UART_REGISTER_IER, UART_IER_NULL);
     io_outb(io + UART_REGISTER_LCR, UART_LCR_5BITS | UART_LCR_1STOP | UART_LCR_NOPARITY);

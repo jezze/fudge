@@ -10,7 +10,8 @@ static struct interface_node
 
     struct system_group base;
     struct base_timer_interface *interface;
-    struct base_device *device;
+    struct base_bus *bus;
+    unsigned int id;
     struct system_stream jiffies;
 
 } inode[8];
@@ -45,20 +46,21 @@ static unsigned int find_inode()
 
 }
 
-static void init_inode(struct interface_node *node, struct base_timer_interface *interface, struct base_device *device)
+static void init_inode(struct interface_node *node, struct base_timer_interface *interface, struct base_bus *bus, unsigned int id)
 {
 
     memory_clear(node, sizeof (struct interface_node));
-    system_init_group(&node->base, device->name);
+    system_init_group(&node->base, bus->name);
     system_init_stream(&node->jiffies, "jiffies");
 
     node->interface = interface;
-    node->device = device;
+    node->bus = bus;
+    node->id = id;
     node->jiffies.node.read = jiffies_read;
 
 }
 
-void base_timer_register_interface(struct base_timer_interface *interface, struct base_device *device)
+void base_timer_register_interface(struct base_timer_interface *interface, struct base_bus *bus, unsigned int id)
 {
 
     unsigned int index = find_inode();
@@ -66,7 +68,7 @@ void base_timer_register_interface(struct base_timer_interface *interface, struc
     if (!index)
         return;
 
-    init_inode(&inode[index], interface, device);
+    init_inode(&inode[index], interface, bus, id);
     system_group_add(&dev, &inode[index].base.node);
     system_group_add(&inode[index].base, &inode[index].jiffies.node);
 
@@ -77,7 +79,7 @@ void base_timer_unregister_interface(struct base_timer_interface *interface)
 
 }
 
-void base_timer_init_interface(struct base_timer_interface *interface, void (*add_duration)(struct base_device *device, unsigned int duration))
+void base_timer_init_interface(struct base_timer_interface *interface, void (*add_duration)(struct base_bus *bus, unsigned int id, unsigned int duration))
 {
 
     memory_clear(interface, sizeof (struct base_timer_interface));

@@ -10,7 +10,8 @@ static struct interface_node
 
     struct system_group base;
     struct base_block_interface *interface;
-    struct base_device *device;
+    struct base_bus *bus;
+    unsigned int id;
     struct system_stream data;
 
 } inode[8];
@@ -23,7 +24,7 @@ static unsigned int data_read(struct system_node *self, unsigned int offset, uns
 
     struct interface_node *node = (struct interface_node *)self->parent;
 
-    return node->interface->read_data(node->device, offset, count, buffer);
+    return node->interface->read_data(node->bus, node->id, offset, count, buffer);
 
 }
 
@@ -44,20 +45,21 @@ static unsigned int find_inode()
 
 }
 
-static void init_inode(struct interface_node *node, struct base_block_interface *interface, struct base_device *device)
+static void init_inode(struct interface_node *node, struct base_block_interface *interface, struct base_bus *bus, unsigned int id)
 {
 
     memory_clear(node, sizeof (struct interface_node));
-    system_init_group(&node->base, device->name);
+    system_init_group(&node->base, node->bus->name);
     system_init_stream(&node->data, "data");
 
     node->interface = interface;
-    node->device = device;
+    node->bus = bus;
+    node->id = id;
     node->data.node.read = data_read;
 
 }
 
-void base_block_register_interface(struct base_block_interface *interface, struct base_device *device)
+void base_block_register_interface(struct base_block_interface *interface, struct base_bus *bus, unsigned int id)
 {
 
     unsigned int index = find_inode();
@@ -65,7 +67,7 @@ void base_block_register_interface(struct base_block_interface *interface, struc
     if (!index)
         return;
 
-    init_inode(&inode[index], interface, device);
+    init_inode(&inode[index], interface, bus, id);
     system_group_add(&dev, &inode[index].base.node);
     system_group_add(&inode[index].base, &inode[index].data.node);
 
@@ -86,7 +88,7 @@ void base_block_unregister_protocol(struct base_block_protocol *protocol)
 
 }
 
-void base_block_init_interface(struct base_block_interface *interface, unsigned int (*read_data)(struct base_device *device, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write_data)(struct base_device *device, unsigned int offset, unsigned int count, void *buffer))
+void base_block_init_interface(struct base_block_interface *interface, unsigned int (*read_data)(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write_data)(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer))
 {
 
     memory_clear(interface, sizeof (struct base_block_interface));

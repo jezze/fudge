@@ -113,7 +113,7 @@ static void disable_scanning(struct base_bus *bus)
 
 }
 
-static unsigned int read_data(struct base_device *device, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int read_data(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     count = read_stream(&stream, count, buffer);
@@ -163,7 +163,7 @@ static void attach(struct base_bus *bus, struct base_device *device)
     unsigned short irq = bus->device_irq(bus, device->type);
 
     base_mouse_init_interface(&imouse, read_data);
-    base_mouse_register_interface(&imouse, device);
+    base_mouse_register_interface(&imouse, bus, device->type);
     pic_set_routine(irq, bus, device->type, handle_irq);
     ps2_bus_enable_device(bus, device->type);
     ps2_bus_enable_interrupt(bus, device->type);

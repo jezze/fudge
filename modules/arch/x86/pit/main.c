@@ -48,7 +48,7 @@ static struct rendezvous rduration;
 static unsigned int duration;
 static unsigned short divisor;
 
-static void add_duration(struct base_device *device, unsigned int duration)
+static void add_duration(struct base_bus *bus, unsigned int id, unsigned int duration)
 {
 
     rendezvous_lock(&rduration);
@@ -79,7 +79,7 @@ static void attach(struct base_bus *bus, struct base_device *device)
     divisor = PIT_FREQUENCY / PIT_HERTZ;
 
     base_timer_init_interface(&itimer, add_duration);
-    base_timer_register_interface(&itimer, device);
+    base_timer_register_interface(&itimer, bus, device->type);
     pic_set_routine(irq, bus, device->type, handle_irq);
     io_outb(io + PIT_REGISTER_COMMAND, PIT_COMMAND_COUNTER0 | PIT_COMMAND_BOTH | PIT_COMMAND_MODE3 | PIT_COMMAND_BINARY);
     io_outb(io + PIT_REGISTER_COUNTER0, divisor >> 0);

@@ -387,7 +387,7 @@ static unsigned int detect(struct ide_bus *bus, unsigned int slave)
 
 }
 
-static void scan(struct base_bus *self)
+static void setup(struct base_bus *self)
 {
 
     unsigned int type;
@@ -412,7 +412,7 @@ static void init_bus(struct ide_bus *bus, unsigned short control, unsigned short
 {
 
     memory_clear(bus, sizeof (struct ide_bus));
-    base_init_bus(&bus->base, "ide", scan, device_irq);
+    base_init_bus(&bus->base, "ide", setup, device_irq);
 
     bus->control = control;
     bus->data = data;

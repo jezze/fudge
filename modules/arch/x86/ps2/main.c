@@ -103,7 +103,7 @@ void ps2_bus_enable_interrupt(struct base_bus *bus, unsigned int type)
 
 }
 
-static void scan(struct base_bus *self)
+static void setup(struct base_bus *self)
 {
 
     unsigned char config;
@@ -190,7 +190,7 @@ static unsigned int reset_write(struct system_node *self, unsigned int offset, u
 void init()
 {
 
-    base_init_bus(&bus, "ps2", scan, device_irq);
+    base_init_bus(&bus, "ps2", setup, device_irq);
     base_register_bus(&bus);
     ps2_keyboard_driver_init();
     ps2_mouse_driver_init();

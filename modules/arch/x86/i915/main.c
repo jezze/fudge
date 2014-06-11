@@ -115,19 +115,19 @@ static void set_pipe_mode(unsigned int width, unsigned int height)
 
 }
 
-static void enable(struct base_device *device)
+static void enable(struct base_bus *bus, unsigned int id)
 {
 
 }
 
-static unsigned int read_data(struct base_device *device, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int read_data(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     return 0;
 
 }
 
-static unsigned int write_data(struct base_device *device, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int write_data(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     return 0;
@@ -146,7 +146,7 @@ static void attach(struct base_bus *bus, struct base_device *device)
     unsigned short irq = bus->device_irq(bus, pciDevice->address);
 
     base_video_init_interface(&ivideo, enable, read_data, write_data, 0, 0);
-    base_video_register_interface(&ivideo, device);
+    base_video_register_interface(&ivideo, bus, pciDevice->address);
     pic_set_routine(irq, bus, pciDevice->address, handle_irq);
     enable_dpll();
     enable_pipe();

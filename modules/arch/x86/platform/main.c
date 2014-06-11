@@ -63,7 +63,7 @@ unsigned short platform_bus_get_base(struct base_bus *bus, unsigned int type)
 
 }
 
-static void scan(struct base_bus *self)
+static void setup(struct base_bus *self)
 {
 
     base_init_device(&pit, PLATFORM_PIT_DEVICE_TYPE, "pit", self);
@@ -114,7 +114,7 @@ static unsigned short device_irq(struct base_bus *self, unsigned int id)
 void init()
 {
 
-    base_init_bus(&bus, "platform", scan, device_irq);
+    base_init_bus(&bus, "platform", setup, device_irq);
     base_register_bus(&bus);
 
 }

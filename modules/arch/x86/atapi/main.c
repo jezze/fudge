@@ -20,7 +20,7 @@ static void attach(struct base_bus *bus, struct base_device *device)
     unsigned short irq = bus->device_irq(bus, ideDevice->slave);
 
     base_block_init_interface(&iblock, 0, 0);
-    base_block_register_interface(&iblock, device);
+    base_block_register_interface(&iblock, bus, ideDevice->slave);
     pic_set_routine(irq, bus, ideDevice->slave, handle_irq);
 
 }

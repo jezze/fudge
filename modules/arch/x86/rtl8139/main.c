@@ -198,17 +198,17 @@ static void log(char *text, unsigned int count)
 }
 */
 
-static void *get_packet(struct base_device *device)
+static void *get_packet(struct base_bus *bus, unsigned int id)
 {
 
     return rx + rxp;
 
 }
 
-static void dump_packet(struct base_device *device)
+static void dump_packet(struct base_bus *bus, unsigned int id)
 {
 
-    struct rtl8139_header *header = get_packet(device);
+    struct rtl8139_header *header = get_packet(bus, id);
 
     rxp += (header->length + 4 + 3) & ~3;
 
@@ -216,10 +216,10 @@ static void dump_packet(struct base_device *device)
 
 }
 
-static unsigned int receive(struct base_device *device, unsigned int count, void *buffer)
+static unsigned int receive(struct base_bus *bus, unsigned int id, unsigned int count, void *buffer)
 {
 
-    struct rtl8139_header *header = get_packet(device);
+    struct rtl8139_header *header = get_packet(bus, id);
     unsigned int k;
 
     /*
@@ -247,13 +247,13 @@ static unsigned int receive(struct base_device *device, unsigned int count, void
 
     k = memory_read(buffer, count, rx + rxp + sizeof (struct rtl8139_header), header->length, 0);
 
-    dump_packet(device);
+    dump_packet(bus, id);
 
     return k;
 
 }
 
-static unsigned int send(struct base_device *device, unsigned int count, void *buffer)
+static unsigned int send(struct base_bus *bus, unsigned int id, unsigned int count, void *buffer)
 {
 
     unsigned int status = (0x3F << 16) | (count & 0x1FFF);
@@ -321,7 +321,7 @@ static void attach(struct base_bus *bus, struct base_device *device)
     mmio = bar1;
 
     base_network_init_interface(&inetwork, receive, send, get_packet, dump_packet);
-    base_network_register_interface(&inetwork, device);
+    base_network_register_interface(&inetwork, bus, pciDevice->address);
     pci_bus_outw(pciBus, pciDevice->address, PCI_CONFIG_COMMAND, command | (1 << 2));
     pic_set_routine(irq, bus, pciDevice->address, handle_irq);
     poweron();

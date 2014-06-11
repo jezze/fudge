@@ -45,49 +45,49 @@ static unsigned char get_value(unsigned int type)
 
 }
 
-static unsigned char get_seconds(struct base_device *device)
+static unsigned char get_seconds(struct base_bus *bus, unsigned int id)
 {
 
     return get_value(0x00);
 
 }
 
-static unsigned char get_minutes(struct base_device *device)
+static unsigned char get_minutes(struct base_bus *bus, unsigned int id)
 {
 
     return get_value(0x02);
 
 }
 
-static unsigned char get_hours(struct base_device *device)
+static unsigned char get_hours(struct base_bus *bus, unsigned int id)
 {
 
     return get_value(0x04);
 
 }
 
-static unsigned char get_weekday(struct base_device *device)
+static unsigned char get_weekday(struct base_bus *bus, unsigned int id)
 {
 
     return get_value(0x06);
 
 }
 
-static unsigned char get_day(struct base_device *device)
+static unsigned char get_day(struct base_bus *bus, unsigned int id)
 {
 
     return get_value(0x07);
 
 }
 
-static unsigned char get_month(struct base_device *device)
+static unsigned char get_month(struct base_bus *bus, unsigned int id)
 {
 
     return get_value(0x08);
 
 }
 
-static unsigned short get_year(struct base_device *device)
+static unsigned short get_year(struct base_bus *bus, unsigned int id)
 {
 
     return 2000 + get_value(0x09);
@@ -105,7 +105,7 @@ static void attach(struct base_bus *bus, struct base_device *device)
     unsigned short irq = bus->device_irq(bus, device->type);
 
     base_clock_init_interface(&iclock, get_seconds, get_minutes, get_hours, get_weekday, get_day, get_month, get_year);
-    base_clock_register_interface(&iclock, device);
+    base_clock_register_interface(&iclock, bus, device->type);
     pic_set_routine(irq, bus, device->type, handle_irq);
 
 }

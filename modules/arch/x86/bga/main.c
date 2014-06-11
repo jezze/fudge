@@ -58,7 +58,7 @@ static void write_register(unsigned short index, unsigned short data)
 
 }
 
-static void mode(struct base_device *device)
+static void mode(struct base_bus *bus, unsigned int id)
 {
 
     write_register(BGA_COMMAND_ENABLE, 0x00);
@@ -69,7 +69,7 @@ static void mode(struct base_device *device)
 
 }
 
-static unsigned int read_data(struct base_device *device, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int read_data(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     unsigned int size = ivideo.xres * ivideo.yres * ivideo.bpp / 4;
@@ -78,7 +78,7 @@ static unsigned int read_data(struct base_device *device, unsigned int offset, u
 
 }
 
-static unsigned int write_data(struct base_device *device, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int write_data(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     unsigned int size = ivideo.xres * ivideo.yres * ivideo.bpp / 4;
@@ -94,7 +94,7 @@ static void attach(struct base_bus *bus, struct base_device *device)
     struct pci_device *pciDevice = (struct pci_device *)device;
 
     base_video_init_interface(&ivideo, mode, read_data, write_data, 0, 0);
-    base_video_register_interface(&ivideo, device);
+    base_video_register_interface(&ivideo, bus, pciDevice->address);
 
     ivideo.xres = 800;
     ivideo.yres = 600;

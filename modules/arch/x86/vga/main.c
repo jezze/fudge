@@ -142,7 +142,7 @@ static const unsigned char g400x300x256X[60] = {
     0xA7
 };
 
-static void mode(struct base_device *device)
+static void mode(struct base_bus *bus, unsigned int id)
 {
 
     io_inb(VGA_REGISTER_FCCCTRL);
@@ -155,14 +155,14 @@ static void mode(struct base_device *device)
 
 }
 
-static unsigned int read_terminal_data(struct base_device *device, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int read_terminal_data(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     return 0;
 
 }
 
-static unsigned int write_terminal_data(struct base_device *device, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int write_terminal_data(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct vga_character *memory = (struct vga_character *)VGA_TEXT_BASE;
@@ -222,21 +222,21 @@ static unsigned int write_terminal_data(struct base_device *device, unsigned int
 
 }
 
-static unsigned int read_video_data(struct base_device *device, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int read_video_data(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     return memory_read(buffer, count, (void *)VGA_ADDRESS, ivideo.xres * ivideo.yres * (ivideo.bpp / 8), offset);
 
 }
 
-static unsigned int write_video_data(struct base_device *device, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int write_video_data(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     return memory_write((void *)VGA_ADDRESS, ivideo.xres * ivideo.yres * (ivideo.bpp / 8), buffer, count, offset);
 
 }
 
-static unsigned int read_video_colormap(struct base_device *device, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int read_video_colormap(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     char *c = buffer;
@@ -262,7 +262,7 @@ static unsigned int read_video_colormap(struct base_device *device, unsigned int
 
 }
 
-static unsigned int write_video_colormap(struct base_device *device, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int write_video_colormap(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     char *c = buffer;
@@ -291,13 +291,14 @@ static unsigned int write_video_colormap(struct base_device *device, unsigned in
 static void attach(struct base_bus *bus, struct base_device *device)
 {
 
+    struct pci_device *pciDevice = (struct pci_device *)device;
     struct vga_character *memory = (struct vga_character *)VGA_TEXT_BASE;
     unsigned int i;
 
     base_terminal_init_interface(&iterminal, read_terminal_data, write_terminal_data);
-    base_terminal_register_interface(&iterminal, device);
+    base_terminal_register_interface(&iterminal, bus, pciDevice->address);
     base_video_init_interface(&ivideo, mode, read_video_data, write_video_data, read_video_colormap, write_video_colormap);
-    base_video_register_interface(&ivideo, device);
+    base_video_register_interface(&ivideo, bus, pciDevice->address);
 
     ivideo.xres = 80;
     ivideo.yres = 25;

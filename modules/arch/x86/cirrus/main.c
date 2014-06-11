@@ -66,7 +66,7 @@ static int map_horizontal_crtc(int bpp, int pixelclock, int htiming)
 
 }
 
-static void mode(struct base_device *device)
+static void mode(struct base_bus *bus, unsigned int id)
 {
 
     unsigned char registers[60];
@@ -180,28 +180,28 @@ static void mode(struct base_device *device)
 
 }
 
-static unsigned int read_video_data(struct base_device *device, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int read_video_data(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     return 0;
 
 }
 
-static unsigned int write_video_data(struct base_device *device, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int write_video_data(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     return 0;
 
 }
 
-static unsigned int read_video_colormap(struct base_device *device, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int read_video_colormap(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     return 0;
 
 }
 
-static unsigned int write_video_colormap(struct base_device *device, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int write_video_colormap(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     return 0;
@@ -211,8 +211,10 @@ static unsigned int write_video_colormap(struct base_device *device, unsigned in
 static void attach(struct base_bus *bus, struct base_device *device)
 {
 
+    struct pci_device *pciDevice = (struct pci_device *)device;
+
     base_video_init_interface(&ivideo, mode, read_video_data, write_video_data, read_video_colormap, write_video_colormap);
-    base_video_register_interface(&ivideo, device);
+    base_video_register_interface(&ivideo, bus, pciDevice->address);
 
     ivideo.xres = 80;
     ivideo.yres = 25;
