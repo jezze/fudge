@@ -288,7 +288,7 @@ static unsigned int write_video_colormap(struct base_device *device, unsigned in
 
 }
 
-static void attach(struct base_device *device)
+static void attach(struct base_bus *bus, struct base_device *device)
 {
 
     struct vga_character *memory = (struct vga_character *)VGA_TEXT_BASE;
@@ -314,7 +314,7 @@ static void attach(struct base_device *device)
 
 }
 
-static void detach(struct base_device *device)
+static void detach(struct base_bus *bus, struct base_device *device)
 {
 
     base_terminal_unregister_interface(&iterminal);
@@ -322,10 +322,10 @@ static void detach(struct base_device *device)
 
 }
 
-static unsigned int check(struct base_device *device)
+static unsigned int check(struct base_bus *bus, struct base_device *device)
 {
 
-    struct pci_bus *pciBus = (struct pci_bus *)device->bus;
+    struct pci_bus *pciBus = (struct pci_bus *)bus;
     struct pci_device *pciDevice = (struct pci_device *)device;
 
     if (device->type != PCI_DEVICE_TYPE)

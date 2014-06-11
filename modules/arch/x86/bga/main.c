@@ -87,10 +87,10 @@ static unsigned int write_data(struct base_device *device, unsigned int offset, 
 
 }
 
-static void attach(struct base_device *device)
+static void attach(struct base_bus *bus, struct base_device *device)
 {
 
-    struct pci_bus *pciBus = (struct pci_bus *)device->bus;
+    struct pci_bus *pciBus = (struct pci_bus *)bus;
     struct pci_device *pciDevice = (struct pci_device *)device;
 
     base_video_init_interface(&ivideo, mode, read_data, write_data, 0, 0);
@@ -111,17 +111,17 @@ static void attach(struct base_device *device)
 
 }
 
-static void detach(struct base_device *device)
+static void detach(struct base_bus *bus, struct base_device *device)
 {
 
     base_video_unregister_interface(&ivideo);
 
 }
 
-static unsigned int check(struct base_device *device)
+static unsigned int check(struct base_bus *bus, struct base_device *device)
 {
 
-    struct pci_bus *pciBus = (struct pci_bus *)device->bus;
+    struct pci_bus *pciBus = (struct pci_bus *)bus;
     struct pci_device *pciDevice = (struct pci_device *)device;
 
     if (device->type != PCI_DEVICE_TYPE)

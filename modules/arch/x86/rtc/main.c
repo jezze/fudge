@@ -94,33 +94,33 @@ static unsigned short get_year(struct base_device *device)
 
 }
 
-static void handle_irq(unsigned int irq, struct base_device *device)
+static void handle_irq(unsigned int irq, struct base_bus *bus, unsigned int id)
 {
 
 }
 
-static void attach(struct base_device *device)
+static void attach(struct base_bus *bus, struct base_device *device)
 {
 
-    unsigned short irq = device->bus->device_irq(device->bus, device->type);
+    unsigned short irq = bus->device_irq(bus, device->type);
 
     base_clock_init_interface(&iclock, get_seconds, get_minutes, get_hours, get_weekday, get_day, get_month, get_year);
     base_clock_register_interface(&iclock, device);
-    pic_set_routine(irq, device, handle_irq);
+    pic_set_routine(irq, bus, device->type, handle_irq);
 
 }
 
-static void detach(struct base_device *device)
+static void detach(struct base_bus *bus, struct base_device *device)
 {
 
-    unsigned short irq = device->bus->device_irq(device->bus, device->type);
+    unsigned short irq = bus->device_irq(bus, device->type);
 
     base_clock_unregister_interface(&iclock);
-    pic_unset_routine(irq, device);
+    pic_unset_routine(irq, bus, device->type);
 
 }
 
-static unsigned int check(struct base_device *device)
+static unsigned int check(struct base_bus *bus, struct base_device *device)
 {
 
     return device->type == PLATFORM_RTC_DEVICE_TYPE;

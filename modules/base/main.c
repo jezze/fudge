@@ -40,10 +40,10 @@ void base_register_driver(struct base_driver *driver)
         if (current->type != BASE_RESOURCE_DEVICE)
             continue;
 
-        if (!driver->check(device))
+        if (!driver->check(device->bus, device))
             continue;
 
-        driver->attach(device);
+        driver->attach(device->bus, device);
 
     }
 
@@ -78,10 +78,10 @@ void base_unregister_driver(struct base_driver *driver)
         if (current->type != BASE_RESOURCE_DEVICE)
             continue;
 
-        if (!driver->check(device))
+        if (!driver->check(device->bus, device))
             continue;
 
-        driver->detach(device);
+        driver->detach(device->bus, device);
 
     }
 
@@ -113,7 +113,7 @@ void base_init_device(struct base_device *device, unsigned int type, const char 
 
 }
 
-void base_init_driver(struct base_driver *driver, const char *name, unsigned int (*check)(struct base_device *device), void (*attach)(struct base_device *device), void (*detach)(struct base_device *device))
+void base_init_driver(struct base_driver *driver, const char *name, unsigned int (*check)(struct base_bus *bus, struct base_device *device), void (*attach)(struct base_bus *bus, struct base_device *device), void (*detach)(struct base_bus *bus, struct base_device *device))
 {
 
     memory_clear(driver, sizeof (struct base_driver));

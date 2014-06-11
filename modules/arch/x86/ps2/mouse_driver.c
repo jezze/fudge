@@ -124,10 +124,10 @@ static unsigned int read_data(struct base_device *device, unsigned int offset, u
 
 }
 
-static void handle_irq(unsigned int irq, struct base_device *device)
+static void handle_irq(unsigned int irq, struct base_bus *bus, unsigned int id)
 {
 
-    unsigned char data = ps2_bus_read_data_async(device->bus);
+    unsigned char data = ps2_bus_read_data_async(bus);
 
     switch (cycle)
     {
@@ -157,35 +157,35 @@ static void handle_irq(unsigned int irq, struct base_device *device)
 
 }
 
-static void attach(struct base_device *device)
+static void attach(struct base_bus *bus, struct base_device *device)
 {
 
-    unsigned short irq = device->bus->device_irq(device->bus, device->type);
+    unsigned short irq = bus->device_irq(bus, device->type);
 
     base_mouse_init_interface(&imouse, read_data);
     base_mouse_register_interface(&imouse, device);
-    pic_set_routine(irq, device, handle_irq);
-    ps2_bus_enable_device(device->bus, device->type);
-    ps2_bus_enable_interrupt(device->bus, device->type);
-    disable_scanning(device->bus);
-    reset(device->bus);
-    set_defaults(device->bus);
-    identify(device->bus);
-    enable_scanning(device->bus);
+    pic_set_routine(irq, bus, device->type, handle_irq);
+    ps2_bus_enable_device(bus, device->type);
+    ps2_bus_enable_interrupt(bus, device->type);
+    disable_scanning(bus);
+    reset(bus);
+    set_defaults(bus);
+    identify(bus);
+    enable_scanning(bus);
 
 }
 
-static void detach(struct base_device *device)
+static void detach(struct base_bus *bus, struct base_device *device)
 {
 
-    unsigned short irq = device->bus->device_irq(device->bus, device->type);
+    unsigned short irq = bus->device_irq(bus, device->type);
 
     base_mouse_unregister_interface(&imouse);
-    pic_unset_routine(irq, device);
+    pic_unset_routine(irq, bus, device->type);
 
 }
 
-static unsigned int check(struct base_device *device)
+static unsigned int check(struct base_bus *bus, struct base_device *device)
 {
 
     return device->type == PS2_MOUSE_DEVICE_TYPE;

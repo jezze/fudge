@@ -83,7 +83,7 @@ unsigned short pic_interrupt(void *stack)
     if (!routines[registers->index].callback)
         return arch_schedule(&registers->general, &registers->interrupt);
 
-    routines[registers->index].callback(registers->index, routines[registers->index].device);
+    routines[registers->index].callback(registers->index, routines[registers->index].bus, routines[registers->index].id);
 
     if (registers->slave)
         io_outb(PIC_REGISTER_COMMAND1, PIC_COMMAND_EOI);
@@ -94,16 +94,17 @@ unsigned short pic_interrupt(void *stack)
 
 }
 
-unsigned int pic_set_routine(unsigned int irq, struct base_device *device, void (*callback)(unsigned int irq, struct base_device *device))
+unsigned int pic_set_routine(unsigned int irq, struct base_bus *bus, unsigned int id, void (*callback)(unsigned int irq, struct base_bus *bus, unsigned int id))
 {
 
     if (irq > PIC_ROUTINES)
         return 0;
 
-    if (routines[irq].device)
+    if (routines[irq].bus || routines[irq].id)
         return 0;
 
-    routines[irq].device = device;
+    routines[irq].bus = bus;
+    routines[irq].id = id;
     routines[irq].callback = callback;
 
     if (irq >= 8)
@@ -115,16 +116,17 @@ unsigned int pic_set_routine(unsigned int irq, struct base_device *device, void 
 
 }
 
-unsigned int pic_unset_routine(unsigned int irq, struct base_device *device)
+unsigned int pic_unset_routine(unsigned int irq, struct base_bus *bus, unsigned int id)
 {
 
     if (irq > PIC_ROUTINES)
         return 0;
 
-    if (routines[irq].device != device)
+    if (routines[irq].bus != bus || routines[irq].id != id)
         return 0;
 
-    routines[irq].device = 0;
+    routines[irq].bus = 0;
+    routines[irq].id = 0;
     routines[irq].callback = 0;
 
     if (irq >= 8)

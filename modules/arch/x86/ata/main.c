@@ -34,35 +34,35 @@ static unsigned int write_data(struct base_device *device, unsigned int offset, 
 
 }
 
-static void handle_irq(unsigned int irq, struct base_device *device)
+static void handle_irq(unsigned int irq, struct base_bus *bus, unsigned int id)
 {
 
 }
 
-static void attach(struct base_device *device)
+static void attach(struct base_bus *bus, struct base_device *device)
 {
 
     struct ide_device *ideDevice = (struct ide_device *)device;
-    unsigned short irq = device->bus->device_irq(device->bus, ideDevice->slave);
+    unsigned short irq = bus->device_irq(bus, ideDevice->slave);
 
     base_block_init_interface(&iblock, read_data, write_data);
     base_block_register_interface(&iblock, device);
-    pic_set_routine(irq, device, handle_irq);
+    pic_set_routine(irq, bus, ideDevice->slave, handle_irq);
 
 }
 
-static void detach(struct base_device *device)
+static void detach(struct base_bus *bus, struct base_device *device)
 {
 
     struct ide_device *ideDevice = (struct ide_device *)device;
-    unsigned short irq = device->bus->device_irq(device->bus, ideDevice->slave);
+    unsigned short irq = bus->device_irq(bus, ideDevice->slave);
 
     base_block_unregister_interface(&iblock);
-    pic_unset_routine(irq, device);
+    pic_unset_routine(irq, bus, ideDevice->slave);
 
 }
 
-static unsigned int check(struct base_device *device)
+static unsigned int check(struct base_bus *bus, struct base_device *device)
 {
 
     struct ide_device *ideDevice = (struct ide_device *)device;
