@@ -232,13 +232,12 @@ static void detach(struct base_bus *bus, struct base_device *device)
 static unsigned int check(struct base_bus *bus, struct base_device *device)
 {
 
-    struct pci_bus *pciBus = (struct pci_bus *)bus;
     struct pci_device *pciDevice = (struct pci_device *)device;
 
     if (device->type != PCI_DEVICE_TYPE)
         return 0;
 
-    return pci_bus_inw(pciBus, pciDevice->address, PCI_CONFIG_VENDOR) == CIRRUS_PCI_VENDOR && pci_bus_inw(pciBus, pciDevice->address, PCI_CONFIG_DEVICE) == CIRRUS_PCI_DEVICE;
+    return pci_bus_inw(bus, pciDevice->address, PCI_CONFIG_VENDOR) == CIRRUS_PCI_VENDOR && pci_bus_inw(bus, pciDevice->address, PCI_CONFIG_DEVICE) == CIRRUS_PCI_DEVICE;
 
 }
 
