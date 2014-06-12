@@ -1,4 +1,4 @@
-#define PCI_BUS_TYPE                    0x9002
+#define PCI_BUS_TYPE                    0x0002
 
 enum pci_class
 {

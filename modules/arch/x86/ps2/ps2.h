@@ -1,4 +1,4 @@
-#define PS2_BUS_TYPE                    0x9004
+#define PS2_BUS_TYPE                    0x0003
 #define PS2_KEYBOARD_DEVICE_TYPE        0x0006
 #define PS2_MOUSE_DEVICE_TYPE           0x0007
 
