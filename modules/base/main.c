@@ -20,13 +20,6 @@ void base_register_bus(struct base_bus *bus)
 
 }
 
-void base_register_device(struct base_device *device)
-{
-
-    resource_register(&device->resource);
-
-}
-
 void base_register_driver(struct base_driver *driver)
 {
 
@@ -36,47 +29,18 @@ void base_register_driver(struct base_driver *driver)
     {
 
         struct base_bus *bus = current->data;
+        unsigned int id = 0;
 
         if (current->type != BASE_RESOURCE_BUS)
             continue;
 
-        /* temp workaround for pci */
-        if (bus->type == 0x0002)
+        while ((id = bus->device_next(bus, id)))
         {
 
-            struct resource *temp = 0;
+            if (!driver->check(bus, id))
+                continue;
 
-            while ((temp = resource_find(temp)))
-            {
-
-                struct base_device *device = temp->data;
-
-                if (temp->type != BASE_RESOURCE_DEVICE)
-                    continue;
-
-                if (!driver->check(device->bus, device->type))
-                    continue;
-
-                driver->attach(device->bus, device->type);
-
-            }
-
-        }
-
-        else
-        {
-
-            unsigned int id = 0;
-
-            while ((id = bus->device_next(bus, id)))
-            {
-
-                if (!driver->check(bus, id))
-                    continue;
-
-                driver->attach(bus, id);
-
-            }
+            driver->attach(bus, id);
 
         }
 
@@ -90,13 +54,6 @@ void base_unregister_bus(struct base_bus *bus)
 {
 
     resource_unregister(&bus->resource);
-
-}
-
-void base_unregister_device(struct base_device *device)
-{
-
-    resource_unregister(&device->resource);
 
 }
 
@@ -141,18 +98,6 @@ void base_init_bus(struct base_bus *bus, unsigned int type, const char *name, vo
     bus->setup = setup;
     bus->device_next = device_next;
     bus->device_irq = device_irq;
-
-}
-
-void base_init_device(struct base_device *device, unsigned int type, const char *name, struct base_bus *bus)
-{
-
-    memory_clear(device, sizeof (struct base_device));
-    resource_init(&device->resource, BASE_RESOURCE_DEVICE, device);
-
-    device->type = type;
-    device->name = name;
-    device->bus = bus;
 
 }
 
