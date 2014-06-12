@@ -40,16 +40,6 @@ struct ide_partition
 
 };
 
-struct ide_device
-{
-
-    struct base_device base;
-    struct pci_device *pciDevice;
-    unsigned int type;
-    unsigned int slave;
-
-};
-
 struct ide_bus
 {
 
