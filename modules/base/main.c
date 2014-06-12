@@ -35,15 +35,50 @@ void base_register_driver(struct base_driver *driver)
     while ((current = resource_find(current)))
     {
 
-        struct base_device *device = current->data;
+        struct base_bus *bus = current->data;
 
-        if (current->type != BASE_RESOURCE_DEVICE)
+        if (current->type != BASE_RESOURCE_BUS)
             continue;
 
-        if (!driver->check(device->bus, device->type))
-            continue;
+        /* temp workaround for pci */
+        if (bus->type == 0x0002)
+        {
 
-        driver->attach(device->bus, device->type);
+            struct resource *temp = 0;
+
+            while ((temp = resource_find(temp)))
+            {
+
+                struct base_device *device = temp->data;
+
+                if (temp->type != BASE_RESOURCE_DEVICE)
+                    continue;
+
+                if (!driver->check(device->bus, device->type))
+                    continue;
+
+                driver->attach(device->bus, device->type);
+
+            }
+
+        }
+
+        else
+        {
+
+            unsigned int id = 0;
+
+            while ((id = bus->device_next(bus, id)))
+            {
+
+                if (!driver->check(bus, id))
+                    continue;
+
+                driver->attach(bus, id);
+
+            }
+
+        }
 
     }
 
@@ -73,15 +108,21 @@ void base_unregister_driver(struct base_driver *driver)
     while ((current = resource_find(current)))
     {
 
-        struct base_device *device = current->data;
+        struct base_bus *bus = current->data;
+        unsigned int id = 0;
 
-        if (current->type != BASE_RESOURCE_DEVICE)
+        if (current->type != BASE_RESOURCE_BUS)
             continue;
 
-        if (!driver->check(device->bus, device->type))
-            continue;
+        while ((id = bus->device_next(bus, id)))
+        {
 
-        driver->detach(device->bus, device->type);
+            if (!driver->check(bus, id))
+                continue;
+
+            driver->detach(bus, id);
+
+        }
 
     }
 

@@ -71,7 +71,6 @@ enum ide_id
 
 static struct ide_bus primary;
 static struct ide_bus secondary;
-static struct {struct base_device item[64]; unsigned int count;} devices;
 
 static void wait(struct ide_bus *bus)
 {
@@ -341,13 +340,6 @@ void ide_bus_write_lba48_async(struct ide_bus *bus, unsigned int slave, unsigned
 
 static void add_device(struct ide_bus *bus, unsigned int slave, unsigned int type)
 {
-
-    struct base_device *device = &devices.item[devices.count];
-
-    base_init_device(device, type, "id", &bus->base);
-    base_register_device(device);
-
-    devices.count++;
 
 }
 

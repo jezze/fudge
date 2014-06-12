@@ -26,12 +26,6 @@ enum platform_irq
 };
 
 static struct base_bus bus;
-static struct base_device pit;
-static struct base_device rtc;
-static struct base_device uart1;
-static struct base_device uart2;
-static struct base_device uart3;
-static struct base_device uart4;
 
 unsigned short platform_bus_get_base(struct base_bus *bus, unsigned int type)
 {
@@ -65,19 +59,6 @@ unsigned short platform_bus_get_base(struct base_bus *bus, unsigned int type)
 
 static void setup(struct base_bus *self)
 {
-
-    base_init_device(&pit, PLATFORM_PIT_DEVICE_TYPE, "pit", self);
-    base_register_device(&pit);
-    base_init_device(&rtc, PLATFORM_RTC_DEVICE_TYPE, "rtc", self);
-    base_register_device(&rtc);
-    base_init_device(&uart1, PLATFORM_UART1_DEVICE_TYPE, "uart0", self);
-    base_register_device(&uart1);
-    base_init_device(&uart2, PLATFORM_UART2_DEVICE_TYPE, "uart1", self);
-    base_register_device(&uart2);
-    base_init_device(&uart3, PLATFORM_UART3_DEVICE_TYPE, "uart2", self);
-    base_register_device(&uart3);
-    base_init_device(&uart4, PLATFORM_UART4_DEVICE_TYPE, "uart3", self);
-    base_register_device(&uart4);
 
 }
 

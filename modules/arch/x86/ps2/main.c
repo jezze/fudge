@@ -27,9 +27,9 @@ enum ps2_irq
 };
 
 static struct base_bus bus;
-static struct base_device keyboard;
-static struct base_device mouse;
 static struct system_stream reset;
+static unsigned int ps2_have_keyboard;
+static unsigned int ps2_have_mouse;
 
 unsigned char ps2_bus_read_status(struct base_bus *bus)
 {
@@ -136,8 +136,7 @@ static void setup(struct base_bus *self)
         if (!ps2_bus_read_data(self))
         {
 
-            base_init_device(&keyboard, PS2_KEYBOARD_DEVICE_TYPE, "ps2", self);
-            base_register_device(&keyboard);
+            ps2_have_keyboard = 1;
 
         }
 
@@ -151,8 +150,7 @@ static void setup(struct base_bus *self)
         if (!ps2_bus_read_data(self))
         {
 
-            base_init_device(&mouse, PS2_MOUSE_DEVICE_TYPE, "ps2", self);
-            base_register_device(&mouse);
+            ps2_have_mouse = 1;
 
         }
 
