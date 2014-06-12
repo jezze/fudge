@@ -307,22 +307,31 @@ static void handle_irq(unsigned int irq, struct base_bus *bus, unsigned int id)
 
 }
 
-static void attach(struct base_bus *bus, struct base_device *device)
+static unsigned int check(struct base_bus *bus, unsigned int id)
 {
 
-    struct pci_device *pciDevice = (struct pci_device *)device;
-    unsigned short irq = bus->device_irq(bus, pciDevice->address);
-    unsigned int bar0 = pci_bus_ind(bus, pciDevice->address, PCI_CONFIG_BAR0);
-    unsigned int bar1 = pci_bus_ind(bus, pciDevice->address, PCI_CONFIG_BAR1);
-    unsigned short command = pci_bus_inw(bus, pciDevice->address, PCI_CONFIG_COMMAND);
+    if (bus->type != PCI_BUS_TYPE)
+        return 0;
+
+    return pci_bus_inw(bus, id, PCI_CONFIG_VENDOR) == RTL8139_PCI_VENDOR && pci_bus_inw(bus, id, PCI_CONFIG_DEVICE) == RTL8139_PCI_DEVICE;
+
+}
+
+static void attach(struct base_bus *bus, unsigned int id)
+{
+
+    unsigned short irq = bus->device_irq(bus, id);
+    unsigned int bar0 = pci_bus_ind(bus, id, PCI_CONFIG_BAR0);
+    unsigned int bar1 = pci_bus_ind(bus, id, PCI_CONFIG_BAR1);
+    unsigned short command = pci_bus_inw(bus, id, PCI_CONFIG_COMMAND);
 
     io = bar0 & ~1;
     mmio = bar1;
 
     base_network_init_interface(&inetwork, receive, send, get_packet, dump_packet);
-    base_network_register_interface(&inetwork, bus, pciDevice->address);
-    pci_bus_outw(bus, pciDevice->address, PCI_CONFIG_COMMAND, command | (1 << 2));
-    pic_set_routine(irq, bus, pciDevice->address, handle_irq);
+    base_network_register_interface(&inetwork, bus, id);
+    pci_bus_outw(bus, id, PCI_CONFIG_COMMAND, command | (1 << 2));
+    pic_set_routine(irq, bus, id, handle_irq);
     poweron();
     reset();
     setup_interrupts(RTL8139_ISR_ROK | RTL8139_ISR_TOK);
@@ -339,26 +348,13 @@ static void attach(struct base_bus *bus, struct base_device *device)
 
 }
 
-static void detach(struct base_bus *bus, struct base_device *device)
+static void detach(struct base_bus *bus, unsigned int id)
 {
 
-    struct pci_device *pciDevice = (struct pci_device *)device;
-    unsigned short irq = bus->device_irq(bus, pciDevice->address);
+    unsigned short irq = bus->device_irq(bus, id);
 
     base_network_unregister_interface(&inetwork);
-    pic_unset_routine(irq, bus, pciDevice->address);
-
-}
-
-static unsigned int check(struct base_bus *bus, struct base_device *device)
-{
-
-    struct pci_device *pciDevice = (struct pci_device *)device;
-
-    if (device->type != PCI_DEVICE_TYPE)
-        return 0;
-
-    return pci_bus_inw(bus, pciDevice->address, PCI_CONFIG_VENDOR) == RTL8139_PCI_VENDOR && pci_bus_inw(bus, pciDevice->address, PCI_CONFIG_DEVICE) == RTL8139_PCI_DEVICE;
+    pic_unset_routine(irq, bus, id);
 
 }
 

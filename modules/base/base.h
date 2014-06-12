@@ -6,8 +6,10 @@ struct base_bus
 {
 
     struct resource resource;
+    unsigned int type;
     const char *name;
     void (*setup)(struct base_bus *self);
+    unsigned int (*device_next)(struct base_bus *self, unsigned int id);
     unsigned short (*device_irq)(struct base_bus *self, unsigned int id);
 
 };
@@ -16,8 +18,8 @@ struct base_device
 {
 
     struct resource resource;
-    const char *name;
     unsigned int type;
+    const char *name;
     struct base_bus *bus;
 
 };
@@ -27,9 +29,9 @@ struct base_driver
 
     struct resource resource;
     const char *name;
-    unsigned int (*check)(struct base_bus *bus, struct base_device *device);
-    void (*attach)(struct base_bus *bus, struct base_device *device);
-    void (*detach)(struct base_bus *bus, struct base_device *device);
+    unsigned int (*check)(struct base_bus *bus, unsigned int id);
+    void (*attach)(struct base_bus *bus, unsigned int id);
+    void (*detach)(struct base_bus *bus, unsigned int id);
 
 };
 
@@ -53,7 +55,7 @@ void base_register_driver(struct base_driver *driver);
 void base_unregister_bus(struct base_bus *bus);
 void base_unregister_device(struct base_device *device);
 void base_unregister_driver(struct base_driver *driver);
-void base_init_bus(struct base_bus *bus, const char *name, void (*setup)(struct base_bus *self), unsigned short (*device_irq)(struct base_bus *self, unsigned int id));
+void base_init_bus(struct base_bus *bus, unsigned int type, const char *name, void (*setup)(struct base_bus *self), unsigned int (*device_next)(struct base_bus *self, unsigned int id), unsigned short (*device_irq)(struct base_bus *self, unsigned int id));
 void base_init_device(struct base_device *device, unsigned int type, const char *name, struct base_bus *bus);
-void base_init_driver(struct base_driver *driver, const char *name, unsigned int (*check)(struct base_bus *bus, struct base_device *device), void (*attach)(struct base_bus *bus, struct base_device *device), void (*detach)(struct base_bus *bus, struct base_device *device));
+void base_init_driver(struct base_driver *driver, const char *name, unsigned int (*check)(struct base_bus *bus, unsigned int id), void (*attach)(struct base_bus *bus, unsigned int id), void (*detach)(struct base_bus *bus, unsigned int id));
 void base_init_interface(struct base_interface *interface, unsigned int type);

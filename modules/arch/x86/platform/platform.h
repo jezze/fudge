@@ -1,3 +1,4 @@
+#define PLATFORM_BUS_TYPE               0x9003
 #define PLATFORM_PIT_DEVICE_TYPE        0x8601
 #define PLATFORM_RTC_DEVICE_TYPE        0x8602
 #define PLATFORM_UART1_DEVICE_TYPE      0x8603

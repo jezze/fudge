@@ -140,33 +140,36 @@ static void handle_irq(unsigned int irq, struct base_bus *bus, unsigned int id)
 
 }
 
-static void attach(struct base_bus *bus, struct base_device *device)
+static unsigned int check(struct base_bus *bus, unsigned int id)
 {
 
-    unsigned short irq = bus->device_irq(bus, device->type);
+    if (bus->type != PS2_BUS_TYPE)
+        return 0;
+
+    return id == PS2_KEYBOARD_DEVICE_TYPE;
+
+}
+
+static void attach(struct base_bus *bus, unsigned int id)
+{
+
+    unsigned short irq = bus->device_irq(bus, id);
 
     base_keyboard_init_interface(&ikeyboard, read_data, write_data);
-    base_keyboard_register_interface(&ikeyboard, bus, device->type);
-    pic_set_routine(irq, bus, device->type, handle_irq);
-    ps2_bus_enable_device(bus, device->type);
-    ps2_bus_enable_interrupt(bus, device->type);
+    base_keyboard_register_interface(&ikeyboard, bus, id);
+    pic_set_routine(irq, bus, id, handle_irq);
+    ps2_bus_enable_device(bus, id);
+    ps2_bus_enable_interrupt(bus, id);
 
 }
 
-static void detach(struct base_bus *bus, struct base_device *device)
+static void detach(struct base_bus *bus, unsigned int id)
 {
 
-    unsigned short irq = bus->device_irq(bus, device->type);
+    unsigned short irq = bus->device_irq(bus, id);
 
     base_keyboard_unregister_interface(&ikeyboard);
-    pic_unset_routine(irq, bus, device->type);
-
-}
-
-static unsigned int check(struct base_bus *bus, struct base_device *device)
-{
-
-    return device->type == PS2_KEYBOARD_DEVICE_TYPE;
+    pic_unset_routine(irq, bus, id);
 
 }
 

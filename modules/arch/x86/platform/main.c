@@ -81,6 +81,36 @@ static void setup(struct base_bus *self)
 
 }
 
+static unsigned int device_next(struct base_bus *self, unsigned int id)
+{
+
+    switch (id)
+    {
+
+        case 0:
+            return PLATFORM_PIT_DEVICE_TYPE;
+
+        case PLATFORM_PIT_DEVICE_TYPE:
+            return PLATFORM_RTC_DEVICE_TYPE;
+
+        case PLATFORM_RTC_DEVICE_TYPE:
+            return PLATFORM_UART1_DEVICE_TYPE;
+
+        case PLATFORM_UART1_DEVICE_TYPE:
+            return PLATFORM_UART2_DEVICE_TYPE;
+
+        case PLATFORM_UART2_DEVICE_TYPE:
+            return PLATFORM_UART3_DEVICE_TYPE;
+
+        case PLATFORM_UART3_DEVICE_TYPE:
+            return PLATFORM_UART4_DEVICE_TYPE;
+
+    }
+
+    return 0;
+
+}
+
 static unsigned short device_irq(struct base_bus *self, unsigned int id)
 {
 
@@ -114,7 +144,7 @@ static unsigned short device_irq(struct base_bus *self, unsigned int id)
 void init()
 {
 
-    base_init_bus(&bus, "platform", setup, device_irq);
+    base_init_bus(&bus, PLATFORM_BUS_TYPE, "platform", setup, device_next, device_irq);
     base_register_bus(&bus);
 
 }

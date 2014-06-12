@@ -40,10 +40,10 @@ void base_register_driver(struct base_driver *driver)
         if (current->type != BASE_RESOURCE_DEVICE)
             continue;
 
-        if (!driver->check(device->bus, device))
+        if (!driver->check(device->bus, device->type))
             continue;
 
-        driver->attach(device->bus, device);
+        driver->attach(device->bus, device->type);
 
     }
 
@@ -78,10 +78,10 @@ void base_unregister_driver(struct base_driver *driver)
         if (current->type != BASE_RESOURCE_DEVICE)
             continue;
 
-        if (!driver->check(device->bus, device))
+        if (!driver->check(device->bus, device->type))
             continue;
 
-        driver->detach(device->bus, device);
+        driver->detach(device->bus, device->type);
 
     }
 
@@ -89,14 +89,16 @@ void base_unregister_driver(struct base_driver *driver)
 
 }
 
-void base_init_bus(struct base_bus *bus, const char *name, void (*setup)(struct base_bus *self), unsigned short (*device_irq)(struct base_bus *self, unsigned int id))
+void base_init_bus(struct base_bus *bus, unsigned int type, const char *name, void (*setup)(struct base_bus *self), unsigned int (*device_next)(struct base_bus *self, unsigned int id), unsigned short (*device_irq)(struct base_bus *self, unsigned int id))
 {
 
     memory_clear(bus, sizeof (struct base_bus));
     resource_init(&bus->resource, BASE_RESOURCE_BUS, bus);
 
+    bus->type = type;
     bus->name = name;
     bus->setup = setup;
+    bus->device_next = device_next;
     bus->device_irq = device_irq;
 
 }
@@ -107,13 +109,13 @@ void base_init_device(struct base_device *device, unsigned int type, const char 
     memory_clear(device, sizeof (struct base_device));
     resource_init(&device->resource, BASE_RESOURCE_DEVICE, device);
 
-    device->name = name;
     device->type = type;
+    device->name = name;
     device->bus = bus;
 
 }
 
-void base_init_driver(struct base_driver *driver, const char *name, unsigned int (*check)(struct base_bus *bus, struct base_device *device), void (*attach)(struct base_bus *bus, struct base_device *device), void (*detach)(struct base_bus *bus, struct base_device *device))
+void base_init_driver(struct base_driver *driver, const char *name, unsigned int (*check)(struct base_bus *bus, unsigned int id), void (*attach)(struct base_bus *bus, unsigned int id), void (*detach)(struct base_bus *bus, unsigned int id))
 {
 
     memory_clear(driver, sizeof (struct base_driver));

@@ -13,7 +13,7 @@ enum pci_register
 };
 
 static struct base_bus bus;
-static struct {struct pci_device item[64]; unsigned int count;} devices;
+static struct {struct base_device item[64]; unsigned int count;} devices;
 
 static unsigned int calculate_address(unsigned int num, unsigned int slot, unsigned int function)
 {
@@ -76,12 +76,10 @@ void pci_bus_outb(struct base_bus *bus, unsigned int address, unsigned short off
 static void add_device(struct base_bus *bus, unsigned int address)
 {
 
-    struct pci_device *device = &devices.item[devices.count];
+    struct base_device *device = &devices.item[devices.count];
 
-    base_init_device(&device->base, PCI_DEVICE_TYPE, "pci", bus);
-    base_register_device(&device->base);
-
-    device->address = address;
+    base_init_device(device, address, "pci", bus);
+    base_register_device(device);
 
     devices.count++;
 
@@ -140,6 +138,13 @@ static void setup(struct base_bus *self)
 
 }
 
+static unsigned int device_next(struct base_bus *self, unsigned int id)
+{
+
+    return 0;
+
+}
+
 static unsigned short device_irq(struct base_bus *self, unsigned int id)
 {
 
@@ -150,7 +155,7 @@ static unsigned short device_irq(struct base_bus *self, unsigned int id)
 void init()
 {
 
-    base_init_bus(&bus, "pci", setup, device_irq);
+    base_init_bus(&bus, PCI_BUS_TYPE, "pci", setup, device_next, device_irq);
     base_register_bus(&bus);
 
 }

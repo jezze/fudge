@@ -99,31 +99,34 @@ static void handle_irq(unsigned int irq, struct base_bus *bus, unsigned int id)
 
 }
 
-static void attach(struct base_bus *bus, struct base_device *device)
+static unsigned int check(struct base_bus *bus, unsigned int id)
 {
 
-    unsigned short irq = bus->device_irq(bus, device->type);
+    if (bus->type != PLATFORM_BUS_TYPE)
+        return 0;
+
+    return id == PLATFORM_RTC_DEVICE_TYPE;
+
+}
+
+static void attach(struct base_bus *bus, unsigned int id)
+{
+
+    unsigned short irq = bus->device_irq(bus, id);
 
     base_clock_init_interface(&iclock, get_seconds, get_minutes, get_hours, get_weekday, get_day, get_month, get_year);
-    base_clock_register_interface(&iclock, bus, device->type);
-    pic_set_routine(irq, bus, device->type, handle_irq);
+    base_clock_register_interface(&iclock, bus, id);
+    pic_set_routine(irq, bus, id, handle_irq);
 
 }
 
-static void detach(struct base_bus *bus, struct base_device *device)
+static void detach(struct base_bus *bus, unsigned int id)
 {
 
-    unsigned short irq = bus->device_irq(bus, device->type);
+    unsigned short irq = bus->device_irq(bus, id);
 
     base_clock_unregister_interface(&iclock);
-    pic_unset_routine(irq, bus, device->type);
-
-}
-
-static unsigned int check(struct base_bus *bus, struct base_device *device)
-{
-
-    return device->type == PLATFORM_RTC_DEVICE_TYPE;
+    pic_unset_routine(irq, bus, id);
 
 }
 

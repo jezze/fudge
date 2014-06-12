@@ -160,6 +160,24 @@ static void setup(struct base_bus *self)
 
 }
 
+static unsigned int device_next(struct base_bus *self, unsigned int id)
+{
+
+    switch (id)
+    {
+
+        case 0:
+            return PS2_KEYBOARD_DEVICE_TYPE;
+
+        case PS2_KEYBOARD_DEVICE_TYPE:
+            return PS2_MOUSE_DEVICE_TYPE;
+
+    }
+
+    return 0;
+
+}
+
 static unsigned short device_irq(struct base_bus *self, unsigned int id)
 {
 
@@ -190,7 +208,7 @@ static unsigned int reset_write(struct system_node *self, unsigned int offset, u
 void init()
 {
 
-    base_init_bus(&bus, "ps2", setup, device_irq);
+    base_init_bus(&bus, PS2_BUS_TYPE, "ps2", setup, device_next, device_irq);
     base_register_bus(&bus);
     ps2_keyboard_driver_init();
     ps2_mouse_driver_init();

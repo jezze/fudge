@@ -1,4 +1,4 @@
-#define PCI_DEVICE_TYPE                 0x0004
+#define PCI_BUS_TYPE                    0x9002
 
 enum pci_class
 {
@@ -264,14 +264,6 @@ enum pci_config
     PCI_CONFIG_PIN                      = 0x3D,
     PCI_CONFIG_GRANT                    = 0x3E,
     PCI_CONFIG_LATENCY                  = 0x3F
-
-};
-
-struct pci_device
-{
-
-    struct base_device base;
-    unsigned int address;
 
 };
 

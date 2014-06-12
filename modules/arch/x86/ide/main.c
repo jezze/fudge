@@ -344,7 +344,7 @@ static void add_device(struct ide_bus *bus, unsigned int slave, unsigned int typ
 
     struct ide_device *device = &devices[slave];
 
-    base_init_device(&device->base, IDE_DEVICE_TYPE, "ide", &bus->base);
+    base_init_device(&device->base, type, "ide", &bus->base);
     base_register_device(&device->base);
 
     device->type = type;
@@ -401,6 +401,13 @@ static void setup(struct base_bus *self)
 
 }
 
+static unsigned int device_next(struct base_bus *self, unsigned int id)
+{
+
+    return 0;
+
+}
+
 static unsigned short device_irq(struct base_bus *self, unsigned int id)
 {
 
@@ -412,7 +419,7 @@ static void init_bus(struct ide_bus *bus, unsigned short control, unsigned short
 {
 
     memory_clear(bus, sizeof (struct ide_bus));
-    base_init_bus(&bus->base, "ide", setup, device_irq);
+    base_init_bus(&bus->base, IDE_BUS_TYPE, "ide", setup, device_next, device_irq);
 
     bus->control = control;
     bus->data = data;

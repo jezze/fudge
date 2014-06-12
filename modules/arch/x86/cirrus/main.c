@@ -208,13 +208,21 @@ static unsigned int write_video_colormap(struct base_bus *bus, unsigned int id, 
 
 }
 
-static void attach(struct base_bus *bus, struct base_device *device)
+static unsigned int check(struct base_bus *bus, unsigned int id)
 {
 
-    struct pci_device *pciDevice = (struct pci_device *)device;
+    if (bus->type != PCI_BUS_TYPE)
+        return 0;
+
+    return pci_bus_inw(bus, id, PCI_CONFIG_VENDOR) == CIRRUS_PCI_VENDOR && pci_bus_inw(bus, id, PCI_CONFIG_DEVICE) == CIRRUS_PCI_DEVICE;
+
+}
+
+static void attach(struct base_bus *bus, unsigned int id)
+{
 
     base_video_init_interface(&ivideo, mode, read_video_data, write_video_data, read_video_colormap, write_video_colormap);
-    base_video_register_interface(&ivideo, bus, pciDevice->address);
+    base_video_register_interface(&ivideo, bus, id);
 
     ivideo.xres = 80;
     ivideo.yres = 25;
@@ -222,22 +230,10 @@ static void attach(struct base_bus *bus, struct base_device *device)
 
 }
 
-static void detach(struct base_bus *bus, struct base_device *device)
+static void detach(struct base_bus *bus, unsigned int id)
 {
 
     base_video_unregister_interface(&ivideo);
-
-}
-
-static unsigned int check(struct base_bus *bus, struct base_device *device)
-{
-
-    struct pci_device *pciDevice = (struct pci_device *)device;
-
-    if (device->type != PCI_DEVICE_TYPE)
-        return 0;
-
-    return pci_bus_inw(bus, pciDevice->address, PCI_CONFIG_VENDOR) == CIRRUS_PCI_VENDOR && pci_bus_inw(bus, pciDevice->address, PCI_CONFIG_DEVICE) == CIRRUS_PCI_DEVICE;
 
 }
 

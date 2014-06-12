@@ -139,15 +139,24 @@ static void handle_irq(unsigned int irq, struct base_bus *bus, unsigned int id)
 
 }
 
-static void attach(struct base_bus *bus, struct base_device *device)
+static unsigned int check(struct base_bus *bus, unsigned int id)
 {
 
-    struct pci_device *pciDevice = (struct pci_device *)device;
-    unsigned short irq = bus->device_irq(bus, pciDevice->address);
+    if (bus->type != PCI_BUS_TYPE)
+        return 0;
+
+    return pci_bus_inw(bus, id, PCI_CONFIG_VENDOR) == 0x8086 && pci_bus_inw(bus, id, PCI_CONFIG_DEVICE) == 0x27AE;
+
+}
+
+static void attach(struct base_bus *bus, unsigned int id)
+{
+
+    unsigned short irq = bus->device_irq(bus, id);
 
     base_video_init_interface(&ivideo, enable, read_data, write_data, 0, 0);
-    base_video_register_interface(&ivideo, bus, pciDevice->address);
-    pic_set_routine(irq, bus, pciDevice->address, handle_irq);
+    base_video_register_interface(&ivideo, bus, id);
+    pic_set_routine(irq, bus, id, handle_irq);
     enable_dpll();
     enable_pipe();
     enable_plane();
@@ -157,26 +166,13 @@ static void attach(struct base_bus *bus, struct base_device *device)
 
 }
 
-static void detach(struct base_bus *bus, struct base_device *device)
+static void detach(struct base_bus *bus, unsigned int id)
 {
 
-    struct pci_device *pciDevice = (struct pci_device *)device;
-    unsigned short irq = bus->device_irq(bus, pciDevice->address);
+    unsigned short irq = bus->device_irq(bus, id);
 
     base_video_unregister_interface(&ivideo);
-    pic_unset_routine(irq, bus, pciDevice->address);
-
-}
-
-static unsigned int check(struct base_bus *bus, struct base_device *device)
-{
-
-    struct pci_device *pciDevice = (struct pci_device *)device;
-
-    if (device->type != PCI_DEVICE_TYPE)
-        return 0;
-
-    return pci_bus_inw(bus, pciDevice->address, PCI_CONFIG_VENDOR) == 0x8086 && pci_bus_inw(bus, pciDevice->address, PCI_CONFIG_DEVICE) == 0x27AE;
+    pic_unset_routine(irq, bus, id);
 
 }
 

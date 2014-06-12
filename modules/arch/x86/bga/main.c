@@ -87,19 +87,27 @@ static unsigned int write_data(struct base_bus *bus, unsigned int id, unsigned i
 
 }
 
-static void attach(struct base_bus *bus, struct base_device *device)
+static unsigned int check(struct base_bus *bus, unsigned int id)
 {
 
-    struct pci_device *pciDevice = (struct pci_device *)device;
+    if (bus->type != PCI_BUS_TYPE)
+        return 0;
+
+    return pci_bus_inw(bus, id, PCI_CONFIG_VENDOR) == BGA_PCI_VENDOR && pci_bus_inw(bus, id, PCI_CONFIG_DEVICE) == BGA_PCI_DEVICE;
+
+}
+
+static void attach(struct base_bus *bus, unsigned int id)
+{
 
     base_video_init_interface(&ivideo, mode, read_data, write_data, 0, 0);
-    base_video_register_interface(&ivideo, bus, pciDevice->address);
+    base_video_register_interface(&ivideo, bus, id);
 
     ivideo.xres = 800;
     ivideo.yres = 600;
     ivideo.bpp = BGA_BPP_32;
     bank = (void *)0xA0000;
-    lfb = (void *)(unsigned long)pci_bus_ind(bus, pciDevice->address, PCI_CONFIG_BAR0);
+    lfb = (void *)(unsigned long)pci_bus_ind(bus, id, PCI_CONFIG_BAR0);
 
 /*
     struct bga_driver *driver = (struct bga_driver *)self;
@@ -110,22 +118,10 @@ static void attach(struct base_bus *bus, struct base_device *device)
 
 }
 
-static void detach(struct base_bus *bus, struct base_device *device)
+static void detach(struct base_bus *bus, unsigned int id)
 {
 
     base_video_unregister_interface(&ivideo);
-
-}
-
-static unsigned int check(struct base_bus *bus, struct base_device *device)
-{
-
-    struct pci_device *pciDevice = (struct pci_device *)device;
-
-    if (device->type != PCI_DEVICE_TYPE)
-        return 0;
-
-    return pci_bus_inw(bus, pciDevice->address, PCI_CONFIG_VENDOR) == BGA_PCI_VENDOR && pci_bus_inw(bus, pciDevice->address, PCI_CONFIG_DEVICE) == BGA_PCI_DEVICE;
 
 }
 

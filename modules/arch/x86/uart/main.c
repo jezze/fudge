@@ -265,15 +265,25 @@ static void handle_irq(unsigned int irq, struct base_bus *bus, unsigned int id)
 
 }
 
-static void attach(struct base_bus *bus, struct base_device *device)
+static unsigned int check(struct base_bus *bus, unsigned int id)
 {
 
-    unsigned short irq = bus->device_irq(bus, device->type);
-    unsigned short io = platform_bus_get_base(bus, device->type);
+    if (bus->type != PLATFORM_BUS_TYPE)
+        return 0;
+
+    return id == PLATFORM_UART1_DEVICE_TYPE || id == PLATFORM_UART2_DEVICE_TYPE;
+
+}
+
+static void attach(struct base_bus *bus, unsigned int id)
+{
+
+    unsigned short irq = bus->device_irq(bus, id);
+    unsigned short io = platform_bus_get_base(bus, id);
 
     base_terminal_init_interface(&iterminal, read_terminal_data, write_terminal_data);
-    base_terminal_register_interface(&iterminal, bus, device->type);
-    pic_set_routine(irq, bus, device->type, handle_irq);
+    base_terminal_register_interface(&iterminal, bus, id);
+    pic_set_routine(irq, bus, id, handle_irq);
     io_outb(io + UART_REGISTER_IER, UART_IER_NULL);
     io_outb(io + UART_REGISTER_LCR, UART_LCR_5BITS | UART_LCR_1STOP | UART_LCR_NOPARITY);
     io_outb(io + UART_REGISTER_THR, 0x03);
@@ -285,20 +295,13 @@ static void attach(struct base_bus *bus, struct base_device *device)
 
 }
 
-static void detach(struct base_bus *bus, struct base_device *device)
+static void detach(struct base_bus *bus, unsigned int id)
 {
 
-    unsigned short irq = bus->device_irq(bus, device->type);
+    unsigned short irq = bus->device_irq(bus, id);
 
     base_terminal_unregister_interface(&iterminal);
-    pic_unset_routine(irq, bus, device->type);
-
-}
-
-static unsigned int check(struct base_bus *bus, struct base_device *device)
-{
-
-    return device->type == PLATFORM_UART1_DEVICE_TYPE || device->type == PLATFORM_UART2_DEVICE_TYPE;
+    pic_unset_routine(irq, bus, id);
 
 }
 
