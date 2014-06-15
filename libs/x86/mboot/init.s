@@ -22,7 +22,3 @@ init:
     call mboot_setup
     hlt
 
-.section .data
-
-.section .bss
-
