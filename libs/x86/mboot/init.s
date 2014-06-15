@@ -16,7 +16,6 @@
 
 .global init
 init:
-    cli
     pushl %eax
     pushl %ebx
     call mboot_setup
