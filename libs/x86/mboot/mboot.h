@@ -1,5 +1,3 @@
-#define MBOOT_MAGIC                     0x2BADB002
-
 enum mboot_flag
 {
 

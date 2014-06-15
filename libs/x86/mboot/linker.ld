@@ -1,4 +1,4 @@
-ENTRY (init)
+ENTRY (mboot_init)
 
 SECTIONS
 {

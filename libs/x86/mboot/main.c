@@ -8,6 +8,8 @@
 #include <x86/arch/arch.h>
 #include "mboot.h"
 
+#define MBOOT_MAGIC                     0x2BADB002
+
 static struct kernel_module modules[4];
 
 static unsigned int read(struct vfs_backend *self, unsigned int offset, unsigned int count, void *buffer)

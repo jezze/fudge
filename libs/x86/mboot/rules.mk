@@ -1,5 +1,5 @@
 LIBLOADER:=$(LIBS_PATH)/x86/mboot/libmboot.a
-LIBLOADER_OBJ:=$(LIBS_PATH)/x86/mboot/init.o $(LIBS_PATH)/x86/mboot/mboot.o
+LIBLOADER_OBJ:=$(LIBS_PATH)/x86/mboot/main.o $(LIBS_PATH)/x86/mboot/mboot.o
 
 $(LIBLOADER): $(LIBLOADER_OBJ)
 	$(AR) $(ARFLAGS) $@ $^
