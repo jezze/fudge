@@ -3,7 +3,7 @@
 void memory_clear(void *out, unsigned int count)
 {
 
-    char *op = out;
+    unsigned char *op = out;
 
     while (count--)
         *op++ = 0;
@@ -13,8 +13,8 @@ void memory_clear(void *out, unsigned int count)
 void memory_copy(void *out, const void *in, unsigned int count)
 {
 
-    char *op = out;
-    const char *ip = in;
+    unsigned char *op = out;
+    const unsigned char *ip = in;
 
     while (count--)
         *op++ = *ip++;
@@ -24,7 +24,7 @@ void memory_copy(void *out, const void *in, unsigned int count)
 unsigned int memory_findbyte(const void *in, unsigned int count, char value)
 {
 
-    const char *ip = in;
+    const unsigned char *ip = in;
     unsigned int offset;
 
     for (offset = 0; offset < count && ip[offset] != value; offset++);
@@ -36,8 +36,8 @@ unsigned int memory_findbyte(const void *in, unsigned int count, char value)
 unsigned int memory_match(const void *in1, const void *in2, unsigned int count)
 {
 
-    const char *ip1 = in1;
-    const char *ip2 = in2;
+    const unsigned char *ip1 = in1;
+    const unsigned char *ip2 = in2;
 
     while (count--)
     {
@@ -54,8 +54,8 @@ unsigned int memory_match(const void *in1, const void *in2, unsigned int count)
 unsigned int memory_read(void *out, unsigned int ocount, const void *in, unsigned int icount, unsigned int offset)
 {
 
-    char *op = out;
-    const char *ip = in;
+    unsigned char *op = out;
+    const unsigned char *ip = in;
 
     if (offset >= icount)
         return 0;
@@ -75,8 +75,8 @@ unsigned int memory_read(void *out, unsigned int ocount, const void *in, unsigne
 unsigned int memory_write(void *out, unsigned int ocount, const void *in, unsigned int icount, unsigned int offset)
 {
 
-    char *op = out;
-    const char *ip = in;
+    unsigned char *op = out;
+    const unsigned char *ip = in;
 
     if (offset >= ocount)
         return 0;
