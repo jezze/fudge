@@ -11,9 +11,4 @@ SECTIONS
         *(.text)
     }
 
-    .data :
-    {
-        *(.data)
-    }
-
 }
