@@ -76,6 +76,7 @@ void kernel_setup()
 
     resource_setup();
     scheduler_setup();
+    rendezvous_setup();
     binary_setup_elf();
     vfs_setup_cpio();
     vfs_setup_tar();

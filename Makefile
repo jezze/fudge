@@ -1,6 +1,5 @@
 ARCH:=x86
 LOADER:=mboot
-PREFIX:=
 
 INCLUDE_PATH:=include
 LIBS_PATH:=libs
@@ -17,21 +16,21 @@ RAMDISK_NAME:=initrd
 RAMDISK_TYPE:=tar
 RAMDISK:=$(RAMDISK_NAME).$(RAMDISK_TYPE)
 
-AS:=$(PREFIX)$(AS)
-CC:=$(PREFIX)$(CC)
-LD:=$(PREFIX)$(LD)
+AS:=clang
+CC:=clang
+LD:=clang
 
-ASFLAGS_x86:=-32
-CFLAGS_x86:=-m32
-LDFLAGS_x86:=-melf_i386
+ASFLAGS_x86:=-target i386-pc-none-elf -msoft-float
+CFLAGS_x86:=-target i386-pc-none-elf -msoft-float
+LDFLAGS_x86:=-target i386-pc-none-elf -msoft-float
 
-ASFLAGS_arm:=-mfpu=softfpa
-CFLAGS_arm:=
-LDFLAGS_arm:=
+ASFLAGS_arm:=-target arm-none-eabi -msoft-float
+CFLAGS_arm:=-target arm-none-eabi -msoft-float
+LDFLAGS_arm:=-target arm-none-eabi -msoft-float
 
-ASFLAGS:=$(ASFLAGS_$(ARCH))
+ASFLAGS:=-ffreestanding -nostdlib -nostdinc -std=c89 -pedantic -O2 -I$(INCLUDE_PATH) -I$(LIBS_PATH) $(ASFLAGS_$(ARCH))
 CFLAGS:=-Wall -Werror -ffreestanding -nostdlib -nostdinc -std=c89 -pedantic -O2 -I$(INCLUDE_PATH) -I$(LIBS_PATH) $(CFLAGS_$(ARCH))
-LDFLAGS:=$(LDFLAGS_$(ARCH))
+LDFLAGS:=-Wall -Werror -ffreestanding -nostdlib -nostdinc -std=c89 -pedantic -O2 -I$(INCLUDE_PATH) -I$(LIBS_PATH) $(LDFLAGS_$(ARCH))
 ARFLAGS:=rs
 
 LIBS:=
@@ -48,7 +47,7 @@ PACKAGES_SHARES:=
 all: libs modules packages kernel ramdisk
 
 .s.o:
-	$(AS) $(ASFLAGS) -o $@ $<
+	$(AS) -c $(ASFLAGS) -o $@ $<
 
 .c.o:
 	$(CC) -c $(CFLAGS) -o $@ $<
@@ -58,7 +57,7 @@ include $(MODULES_PATH)/rules.mk
 include $(PACKAGES_PATH)/rules.mk
 
 $(KERNEL_NAME): $(LIBLOADER) $(LIBARCH) $(LIBKERNEL) $(LIBELF) $(LIBTAR) $(LIBCPIO) $(LIBFUDGE)
-	$(LD) $(LDFLAGS) -Tlibs/$(ARCH)/$(LOADER)/linker.ld -o $@ --whole-archive $^
+	$(LD) $(LDFLAGS) -Tlibs/$(ARCH)/$(LOADER)/linker.ld -o $@ $^
 
 $(RAMDISK_PATH): $(KERNEL) $(MODULES) $(PACKAGES) $(PACKAGES_CONFIGS) $(PACKAGES_SHARES)
 	mkdir -p $@/bin

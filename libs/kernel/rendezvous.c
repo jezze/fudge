@@ -76,3 +76,8 @@ unsigned int rendezvous_unsleep(struct rendezvous *rendezvous, unsigned int cond
 
 }
 
+void rendezvous_setup()
+{
+
+}
+
