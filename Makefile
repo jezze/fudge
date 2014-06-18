@@ -6,13 +6,14 @@ LIBS_PATH:=libs
 MODULES_PATH:=modules
 MODULES_ARCH_PATH:=$(MODULES_PATH)/arch/$(ARCH)
 PACKAGES_PATH:=packages
-RAMDISK_PATH:=image
-RAMDISK_CONFIG_PATH:=$(RAMDISK_PATH)/config
-RAMDISK_BIN_PATH:=$(RAMDISK_PATH)/bin
-RAMDISK_BOOT_PATH:=$(RAMDISK_PATH)/boot
-RAMDISK_LIB_PATH:=$(RAMDISK_PATH)/lib
-RAMDISK_MOD_PATH:=$(RAMDISK_BOOT_PATH)/mod
-RAMDISK_SHARE_PATH:=$(RAMDISK_PATH)/share
+BUILD_PATH:=build
+BUILD_PATH_BIN:=$(BUILD_PATH)/bin
+BUILD_PATH_BOOT:=$(BUILD_PATH)/boot
+BUILD_PATH_CONFIG:=$(BUILD_PATH)/config
+BUILD_PATH_HOME:=$(BUILD_PATH)/home
+BUILD_PATH_LIB:=$(BUILD_PATH)/lib
+BUILD_PATH_MOD:=$(BUILD_PATH)/boot/mod
+BUILD_PATH_SHARE:=$(BUILD_PATH)/share
 INSTALL_PATH:=/boot
 
 KERNEL_NAME:=fudge
@@ -50,7 +51,7 @@ PACKAGES_SHARES:=
 
 .PHONY: all clean install kernel libs modules packages ramdisk
 
-all: kernel libs modules packages ramdisk
+all: $(BUILD_PATH) kernel libs modules packages ramdisk
 
 .s.o:
 	$(AS) -c $(ASFLAGS) -o $@ $<
@@ -65,49 +66,49 @@ include $(PACKAGES_PATH)/rules.mk
 $(KERNEL_NAME): $(LIBLOADER) $(LIBARCH) $(LIBKERNEL) $(LIBELF) $(LIBTAR) $(LIBCPIO) $(LIBFUDGE)
 	$(LD) $(LDFLAGS) -Tlibs/$(ARCH)/$(LOADER)/linker.ld -o $@ $^
 
-$(RAMDISK_PATH): kernel libs modules packages
-	mkdir -p $(RAMDISK_PATH)
-	mkdir -p $(RAMDISK_PATH)/home
-	mkdir -p $(RAMDISK_PATH)/kernel
-	mkdir -p $(RAMDISK_PATH)/system
+$(BUILD_PATH):
+	mkdir -p $(BUILD_PATH)
+	mkdir -p $(BUILD_PATH_BIN)
+	mkdir -p $(BUILD_PATH_BOOT)
+	mkdir -p $(BUILD_PATH_CONFIG)
+	mkdir -p $(BUILD_PATH_HOME)
+	mkdir -p $(BUILD_PATH_LIB)
+	mkdir -p $(BUILD_PATH_MOD)
+	mkdir -p $(BUILD_PATH_SHARE)
+	mkdir -p $(BUILD_PATH)/kernel
+	mkdir -p $(BUILD_PATH)/system
 
-$(RAMDISK_NAME).tar: $(RAMDISK_PATH)
-	tar -cf $@ $<
+$(RAMDISK_NAME).tar: $(BUILD_PATH)
+	tar -cf $@ $(BUILD_PATH)
 
-$(RAMDISK_NAME).cpio: $(RAMDISK_PATH)
-	find $< -depth | cpio -o > $@
+$(RAMDISK_NAME).cpio: $(BUILD_PATH)
+	find $(BUILD_PATH) -depth | cpio -o > $@
 
 clean:
+	rm -rf $(BUILD_PATH)
 	rm -rf $(LIBS) $(LIBS_OBJECTS)
 	rm -rf $(MODULES) $(MODULES_OBJECTS)
 	rm -rf $(PACKAGES) $(PACKAGES_OBJECTS)
 	rm -rf $(KERNEL)
 	rm -rf $(RAMDISK)
-	rm -rf $(RAMDISK_PATH)
 
-install:
+install: $(KERNEL) $(RAMDISK)
 	install -m 644 $(KERNEL) $(INSTALL_PATH)
 	install -m 644 $(RAMDISK) $(INSTALL_PATH)
 
-kernel: $(KERNEL)
-	mkdir -p $(RAMDISK_BOOT_PATH)
-	cp $(KERNEL) $(RAMDISK_BOOT_PATH)
+kernel: $(BUILD_PATH) $(KERNEL)
+	cp $(KERNEL) $(BUILD_PATH_BOOT)
 
-libs: $(LIBS)
-	mkdir -p $(RAMDISK_LIB_PATH)
-	cp $(LIBS) $(RAMDISK_LIB_PATH)
+libs: $(BUILD_PATH) $(LIBS)
+	cp $(LIBS) $(BUILD_PATH_LIB)
 
-modules: $(MODULES)
-	mkdir -p $(RAMDISK_MOD_PATH)
-	cp $(MODULES) $(RAMDISK_MOD_PATH)
+modules: $(BUILD_PATH) $(MODULES)
+	cp $(MODULES) $(BUILD_PATH_MOD)
 
-packages: $(PACKAGES) $(PACKAGES_CONFIGS) $(PACKAGES_SHARES)
-	mkdir -p $(RAMDISK_BIN_PATH)
-	mkdir -p $(RAMDISK_CONFIG_PATH)
-	mkdir -p $(RAMDISK_SHARE_PATH)
-	cp $(PACKAGES) $(RAMDISK_BIN_PATH)
-	cp $(PACKAGES_CONFIGS) $(RAMDISK_CONFIG_PATH)
-	cp $(PACKAGES_SHARES) $(RAMDISK_SHARE_PATH)
+packages: $(BUILD_PATH) $(PACKAGES) $(PACKAGES_CONFIGS) $(PACKAGES_SHARES)
+	cp $(PACKAGES) $(BUILD_PATH_BIN)
+	cp $(PACKAGES_CONFIGS) $(BUILD_PATH_CONFIG)
+	cp $(PACKAGES_SHARES) $(BUILD_PATH_SHARE)
 
-ramdisk: $(RAMDISK)
+ramdisk: $(BUILD_PATH) kernel libs modules packages $(RAMDISK)
 
