@@ -44,7 +44,7 @@ PACKAGES_SHARES:=
 
 .PHONY: all clean install kernel libs modules packages ramdisk
 
-all: libs modules packages kernel ramdisk
+all: kernel libs modules packages ramdisk
 
 .s.o:
 	$(AS) -c $(ASFLAGS) -o $@ $<
@@ -59,44 +59,49 @@ include $(PACKAGES_PATH)/rules.mk
 $(KERNEL_NAME): $(LIBLOADER) $(LIBARCH) $(LIBKERNEL) $(LIBELF) $(LIBTAR) $(LIBCPIO) $(LIBFUDGE)
 	$(LD) $(LDFLAGS) -Tlibs/$(ARCH)/$(LOADER)/linker.ld -o $@ $^
 
-$(RAMDISK_PATH): $(KERNEL) $(MODULES) $(PACKAGES) $(PACKAGES_CONFIGS) $(PACKAGES_SHARES)
-	mkdir -p $@/bin
-	mkdir -p $@/boot
-	mkdir -p $@/boot/mod
-	mkdir -p $@/config
-	mkdir -p $@/home
-	mkdir -p $@/kernel
-	mkdir -p $@/share
-	mkdir -p $@/system
-	cp $(KERNEL) $@/boot
-	cp $(MODULES) $@/boot/mod
-	cp $(PACKAGES) $@/bin
-	cp $(PACKAGES_CONFIGS) $@/config
-	cp $(PACKAGES_SHARES) $@/share
+$(RAMDISK_PATH): kernel libs modules packages
+	mkdir -p $(RAMDISK_PATH)
+	mkdir -p $(RAMDISK_PATH)/home
+	mkdir -p $(RAMDISK_PATH)/kernel
+	mkdir -p $(RAMDISK_PATH)/system
 
 $(RAMDISK_NAME).tar: $(RAMDISK_PATH)
-	tar -cf $@ $(RAMDISK_PATH)
+	tar -cf $@ $<
 
 $(RAMDISK_NAME).cpio: $(RAMDISK_PATH)
-	find $(RAMDISK_PATH) -depth | cpio -o > $@
+	find $< -depth | cpio -o > $@
 
 clean:
-	rm -rf $(KERNEL)
 	rm -rf $(LIBS) $(LIBS_OBJECTS)
 	rm -rf $(MODULES) $(MODULES_OBJECTS)
 	rm -rf $(PACKAGES) $(PACKAGES_OBJECTS)
-	rm -rf $(RAMDISK_PATH) $(RAMDISK)
+	rm -rf $(KERNEL)
+	rm -rf $(RAMDISK)
+	rm -rf $(RAMDISK_PATH)
 
 install:
 	install -m 644 $(KERNEL) $(INSTALL_PATH)
 	install -m 644 $(RAMDISK) $(INSTALL_PATH)
 
-kernel: $(KERNEL_NAME)
+kernel: $(KERNEL)
+	mkdir -p $(RAMDISK_PATH)/boot
+	cp $(KERNEL) $(RAMDISK_PATH)/boot
 
 libs: $(LIBS)
+	mkdir -p $(RAMDISK_PATH)/lib
+	cp $(LIBS) $(RAMDISK_PATH)/lib
 
 modules: $(MODULES)
+	mkdir -p $(RAMDISK_PATH)/boot/mod
+	cp $(MODULES) $(RAMDISK_PATH)/boot/mod
 
-packages: $(PACKAGES)
+packages: $(PACKAGES) $(PACKAGES_CONFIGS) $(PACKAGES_SHARES)
+	mkdir -p $(RAMDISK_PATH)/bin
+	mkdir -p $(RAMDISK_PATH)/config
+	mkdir -p $(RAMDISK_PATH)/share
+	cp $(PACKAGES) $(RAMDISK_PATH)/bin
+	cp $(PACKAGES_CONFIGS) $(RAMDISK_PATH)/config
+	cp $(PACKAGES_SHARES) $(RAMDISK_PATH)/share
 
-ramdisk: $(RAMDISK_NAME).$(RAMDISK_TYPE)
+ramdisk: $(RAMDISK)
+
