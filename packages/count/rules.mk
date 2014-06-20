@@ -4,8 +4,8 @@ OBJ_$(DIR):=$(DIR)/countb.o
 $(BIN_$(DIR)): $(OBJ_$(DIR))
 	$(LD) -o $@ $^ $(LDFLAGS)
 
-PACKAGES_BUILD:=$(PACKAGES_BUILD) $(BIN_$(DIR))
-PACKAGES_CLEAN:=$(PACKAGES_CLEAN) $(BIN_$(DIR)) $(OBJ_$(DIR))
+BINS:=$(BINS) $(BIN_$(DIR))
+CLEAN:=$(CLEAN) $(BIN_$(DIR)) $(OBJ_$(DIR))
 
 BIN_$(DIR):=$(DIR)/countl
 OBJ_$(DIR):=$(DIR)/countl.o
@@ -13,5 +13,5 @@ OBJ_$(DIR):=$(DIR)/countl.o
 $(BIN_$(DIR)): $(OBJ_$(DIR))
 	$(LD) -o $@ $^ $(LDFLAGS)
 
-PACKAGES_BUILD:=$(PACKAGES_BUILD) $(BIN_$(DIR))
-PACKAGES_CLEAN:=$(PACKAGES_CLEAN) $(BIN_$(DIR)) $(OBJ_$(DIR))
+BINS:=$(BINS) $(BIN_$(DIR))
+CLEAN:=$(CLEAN) $(BIN_$(DIR)) $(OBJ_$(DIR))

@@ -1,13 +1,22 @@
 ARCH:=x86
 LOADER:=mboot
 
+INSTALL_PATH:=/boot
 INCLUDE_PATH:=include
+BUILD_PATH:=build
 LIBS_PATH:=libs
 MODULES_PATH:=modules
 MODULES_ARCH_PATH:=$(MODULES_PATH)/arch/$(ARCH)
 PACKAGES_PATH:=packages
-BUILD_PATH:=build
-INSTALL_PATH:=/boot
+
+MODULES:=
+MODULES_OBJECTS:=
+
+BINS:=
+CONFS:=
+LIBS:=
+SHARES:=
+CLEAN:=
 
 KERNEL_NAME:=fudge
 KERNEL:=$(KERNEL_NAME)
@@ -32,15 +41,6 @@ ASFLAGS:=-c -ffreestanding -nostdlib -nostdinc -std=c89 -pedantic -O2 -I$(INCLUD
 CFLAGS:=-c -Wall -Werror -ffreestanding -nostdlib -nostdinc -std=c89 -pedantic -O2 -I$(INCLUDE_PATH) -I$(LIBS_PATH) $(CFLAGS_$(ARCH))
 LDFLAGS:=-Wall -Werror -ffreestanding -nostdlib -nostdinc -std=c89 -pedantic -O2 -I$(INCLUDE_PATH) -I$(LIBS_PATH) $(LDFLAGS_$(ARCH))
 ARFLAGS:=rs
-
-LIBS_BUILD:=
-LIBS_CLEAN:=
-MODULES:=
-MODULES_OBJECTS:=
-PACKAGES_BUILD:=
-PACKAGES_CLEAN:=
-PACKAGES_CONFIGS:=
-PACKAGES_SHARES:=
 
 .PHONY: all clean install kernel libs modules packages ramdisk
 
@@ -82,9 +82,8 @@ $(RAMDISK_NAME).cpio: $(BUILD_PATH)
 
 clean:
 	rm -rf $(BUILD_PATH)
-	rm -rf $(LIBS_CLEAN)
+	rm -rf $(CLEAN)
 	rm -rf $(MODULES) $(MODULES_OBJECTS)
-	rm -rf $(PACKAGES_CLEAN)
 	rm -rf $(KERNEL)
 	rm -rf $(RAMDISK)
 
@@ -95,16 +94,16 @@ install: $(KERNEL) $(RAMDISK)
 kernel: $(BUILD_PATH) $(KERNEL)
 	cp $(KERNEL) $(BUILD_PATH)/boot
 
-libs: $(BUILD_PATH) $(LIBS_BUILD)
-	cp $(LIBS_BUILD) $(BUILD_PATH)/lib
+libs: $(BUILD_PATH) $(LIBS)
+	cp $(LIBS) $(BUILD_PATH)/lib
 
 modules: $(BUILD_PATH) $(MODULES)
 	cp $(MODULES) $(BUILD_PATH)/boot/mod
 
-packages: $(BUILD_PATH) $(PACKAGES_BUILD) $(PACKAGES_CONFIGS) $(PACKAGES_SHARES)
-	cp $(PACKAGES_BUILD) $(BUILD_PATH)/bin
-	cp $(PACKAGES_CONFIGS) $(BUILD_PATH)/config
-	cp $(PACKAGES_SHARES) $(BUILD_PATH)/share
+packages: $(BUILD_PATH) $(BINS) $(CONFS) $(SHARES)
+	cp $(BINS) $(BUILD_PATH)/bin
+	cp $(CONFS) $(BUILD_PATH)/config
+	cp $(SHARES) $(BUILD_PATH)/share
 
 ramdisk: $(RAMDISK)
 
