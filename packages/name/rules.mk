@@ -1,13 +1,17 @@
-NAMED_BIN:=$(PACKAGES_PATH)/name/named
-NAMED_OBJ:=$(PACKAGES_PATH)/name/named.o
-NAMEF_BIN:=$(PACKAGES_PATH)/name/namef
-NAMEF_OBJ:=$(PACKAGES_PATH)/name/namef.o
+BIN_$(DIR):=$(DIR)/named
+OBJ_$(DIR):=$(DIR)/named.o
 
-$(NAMED_BIN): $(NAMED_OBJ) $(USERLIBS)
-	$(LD) $(LDFLAGS) -o $@ $^
+$(BIN_$(DIR)): $(OBJ_$(DIR))
+	$(LD) -o $@ $^ $(LDFLAGS)
 
-$(NAMEF_BIN): $(NAMEF_OBJ) $(USERLIBS)
-	$(LD) $(LDFLAGS) -o $@ $^
+PACKAGES_BUILD:=$(PACKAGES_BUILD) $(BIN_$(DIR))
+PACKAGES_CLEAN:=$(PACKAGES_CLEAN) $(BIN_$(DIR)) $(OBJ_$(DIR))
 
-PACKAGES+=$(NAMED_BIN) $(NAMEF_BIN)
-PACKAGES_OBJECTS+=$(NAMED_OBJ) $(NAMEF_OBJ)
+BIN_$(DIR):=$(DIR)/namef
+OBJ_$(DIR):=$(DIR)/namef.o
+
+$(BIN_$(DIR)): $(OBJ_$(DIR))
+	$(LD) -o $@ $^ $(LDFLAGS)
+
+PACKAGES_BUILD:=$(PACKAGES_BUILD) $(BIN_$(DIR))
+PACKAGES_CLEAN:=$(PACKAGES_CLEAN) $(BIN_$(DIR)) $(OBJ_$(DIR))

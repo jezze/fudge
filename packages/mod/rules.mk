@@ -1,13 +1,17 @@
-MODLOAD_BIN:=$(PACKAGES_PATH)/mod/modload
-MODLOAD_OBJ:=$(PACKAGES_PATH)/mod/modload.o
-MODUNLOAD_BIN:=$(PACKAGES_PATH)/mod/modunload
-MODUNLOAD_OBJ:=$(PACKAGES_PATH)/mod/modunload.o
+BIN_$(DIR):=$(DIR)/modload
+OBJ_$(DIR):=$(DIR)/modload.o
 
-$(MODLOAD_BIN): $(MODLOAD_OBJ) $(LIB_libs/elf) $(USERLIBS)
-	$(LD) $(LDFLAGS) -o $@ $^
+$(BIN_$(DIR)): $(OBJ_$(DIR))
+	$(LD) -o $@ $^ $(LDFLAGS) -lelf
 
-$(MODUNLOAD_BIN): $(MODUNLOAD_OBJ) $(LIB_libs/elf) $(USERLIBS)
-	$(LD) $(LDFLAGS) -o $@ $^
+PACKAGES_BUILD:=$(PACKAGES_BUILD) $(BIN_$(DIR))
+PACKAGES_CLEAN:=$(PACKAGES_CLEAN) $(BIN_$(DIR)) $(OBJ_$(DIR))
 
-PACKAGES+=$(MODLOAD_BIN) $(MODUNLOAD_BIN)
-PACKAGES_OBJECTS+=$(MODLOAD_OBJ) $(MODUNLOAD_OBJ)
+BIN_$(DIR):=$(DIR)/modunload
+OBJ_$(DIR):=$(DIR)/modunload.o
+
+$(BIN_$(DIR)): $(OBJ_$(DIR))
+	$(LD) -o $@ $^ $(LDFLAGS)
+
+PACKAGES_BUILD:=$(PACKAGES_BUILD) $(BIN_$(DIR))
+PACKAGES_CLEAN:=$(PACKAGES_CLEAN) $(BIN_$(DIR)) $(OBJ_$(DIR))

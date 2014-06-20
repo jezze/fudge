@@ -1,8 +1,8 @@
-BIN:=$(PACKAGES_PATH)/sleep/sleep
-OBJ:=$(PACKAGES_PATH)/sleep/sleep.o
+BIN_$(DIR):=$(DIR)/sleep
+OBJ_$(DIR):=$(DIR)/sleep.o
 
-$(BIN): $(OBJ) $(USERLIBS)
-	$(LD) $(LDFLAGS) -o $@ $^
+$(BIN_$(DIR)): $(OBJ_$(DIR))
+	$(LD) -o $@ $^ $(LDFLAGS)
 
-PACKAGES+=$(BIN)
-PACKAGES_OBJECTS+=$(OBJ)
+PACKAGES_BUILD:=$(PACKAGES_BUILD) $(BIN_$(DIR))
+PACKAGES_CLEAN:=$(PACKAGES_CLEAN) $(BIN_$(DIR)) $(OBJ_$(DIR))

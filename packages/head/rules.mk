@@ -1,13 +1,17 @@
-HEADB_BIN:=$(PACKAGES_PATH)/head/headb
-HEADB_OBJ:=$(PACKAGES_PATH)/head/headb.o
-HEADL_BIN:=$(PACKAGES_PATH)/head/headl
-HEADL_OBJ:=$(PACKAGES_PATH)/head/headl.o
+BIN_$(DIR):=$(DIR)/headb
+OBJ_$(DIR):=$(DIR)/headb.o
 
-$(HEADB_BIN): $(HEADB_OBJ) $(USERLIBS)
-	$(LD) $(LDFLAGS) -o $@ $^
+$(BIN_$(DIR)): $(OBJ_$(DIR))
+	$(LD) -o $@ $^ $(LDFLAGS)
 
-$(HEADL_BIN): $(HEADL_OBJ) $(USERLIBS)
-	$(LD) $(LDFLAGS) -o $@ $^
+PACKAGES_BUILD:=$(PACKAGES_BUILD) $(BIN_$(DIR))
+PACKAGES_CLEAN:=$(PACKAGES_CLEAN) $(BIN_$(DIR)) $(OBJ_$(DIR))
 
-PACKAGES+=$(HEADB_BIN) $(HEADL_BIN)
-PACKAGES_OBJECTS+=$(HEADB_OBJ) $(HEADL_OBJ)
+BIN_$(DIR):=$(DIR)/headl
+OBJ_$(DIR):=$(DIR)/headl.o
+
+$(BIN_$(DIR)): $(OBJ_$(DIR))
+	$(LD) -o $@ $^ $(LDFLAGS)
+
+PACKAGES_BUILD:=$(PACKAGES_BUILD) $(BIN_$(DIR))
+PACKAGES_CLEAN:=$(PACKAGES_CLEAN) $(BIN_$(DIR)) $(OBJ_$(DIR))

@@ -1,8 +1,8 @@
-BIN:=$(PACKAGES_PATH)/nl/nl
-OBJ:=$(PACKAGES_PATH)/nl/nl.o
+BIN_$(DIR):=$(DIR)/nl
+OBJ_$(DIR):=$(DIR)/nl.o
 
-$(BIN): $(OBJ) $(USERLIBS)
-	$(LD) $(LDFLAGS) -o $@ $^
+$(BIN_$(DIR)): $(OBJ_$(DIR))
+	$(LD) -o $@ $^ $(LDFLAGS)
 
-PACKAGES+=$(BIN)
-PACKAGES_OBJECTS+=$(OBJ)
+PACKAGES_BUILD:=$(PACKAGES_BUILD) $(BIN_$(DIR))
+PACKAGES_CLEAN:=$(PACKAGES_CLEAN) $(BIN_$(DIR)) $(OBJ_$(DIR))

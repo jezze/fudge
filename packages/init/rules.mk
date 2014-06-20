@@ -1,22 +1,32 @@
-INIT_BIN:=$(PACKAGES_PATH)/init/init
-INIT_OBJ:=$(PACKAGES_PATH)/init/init.o
-INIT_CONF:=$(PACKAGES_PATH)/init/init.slang $(PACKAGES_PATH)/init/base.slang $(PACKAGES_PATH)/init/user.slang
-INITMOD_BIN:=$(PACKAGES_PATH)/init/initmod
-INITMOD_OBJ:=$(PACKAGES_PATH)/init/initmod.o
-INITMOD_CONF:=$(PACKAGES_PATH)/init/initmod.conf
-INITFS_BIN:=$(PACKAGES_PATH)/init/initfs
-INITFS_OBJ:=$(PACKAGES_PATH)/init/initfs.o
-INITFS_CONF:=$(PACKAGES_PATH)/init/initfs.conf
+BIN_$(DIR):=$(DIR)/init
+OBJ_$(DIR):=$(DIR)/init.o
+CFG_$(DIR):=$(DIR)/init.slang $(DIR)/base.slang $(DIR)/user.slang
 
-$(INIT_BIN): $(INIT_OBJ) $(USERLIBS)
-	$(LD) $(LDFLAGS) -o $@ $^
+$(BIN_$(DIR)): $(OBJ_$(DIR))
+	$(LD) -o $@ $^ $(LDFLAGS)
 
-$(INITMOD_BIN): $(INITMOD_OBJ) $(USERLIBS)
-	$(LD) $(LDFLAGS) -o $@ $^
+PACKAGES_BUILD:=$(PACKAGES_BUILD) $(BIN_$(DIR))
+PACKAGES_CLEAN:=$(PACKAGES_CLEAN) $(BIN_$(DIR)) $(OBJ_$(DIR))
+PACKAGES_CONFIGS:=$(PACKAGES_CONFIGS) $(CFG_$(DIR))
 
-$(INITFS_BIN): $(INITFS_OBJ) $(USERLIBS)
-	$(LD) $(LDFLAGS) -o $@ $^
+BIN_$(DIR):=$(DIR)/initmod
+OBJ_$(DIR):=$(DIR)/initmod.o
+CFG_$(DIR):=$(DIR)/initmod.conf
 
-PACKAGES+=$(INIT_BIN) $(INITMOD_BIN) $(INITFS_BIN)
-PACKAGES_OBJECTS+=$(INIT_OBJ) $(INITMOD_OBJ) $(INITFS_OBJ)
-PACKAGES_CONFIGS+=$(INIT_CONF) $(INITMOD_CONF) $(INITFS_CONF)
+$(BIN_$(DIR)): $(OBJ_$(DIR))
+	$(LD) -o $@ $^ $(LDFLAGS)
+
+PACKAGES_BUILD:=$(PACKAGES_BUILD) $(BIN_$(DIR))
+PACKAGES_CLEAN:=$(PACKAGES_CLEAN) $(BIN_$(DIR)) $(OBJ_$(DIR))
+PACKAGES_CONFIGS:=$(PACKAGES_CONFIGS) $(CFG_$(DIR))
+
+BIN_$(DIR):=$(DIR)/initfs
+OBJ_$(DIR):=$(DIR)/initfs.o
+CFG_$(DIR):=$(DIR)/initfs.conf
+
+$(BIN_$(DIR)): $(OBJ_$(DIR))
+	$(LD) -o $@ $^ $(LDFLAGS)
+
+PACKAGES_BUILD:=$(PACKAGES_BUILD) $(BIN_$(DIR))
+PACKAGES_CLEAN:=$(PACKAGES_CLEAN) $(BIN_$(DIR)) $(OBJ_$(DIR))
+PACKAGES_CONFIGS:=$(PACKAGES_CONFIGS) $(CFG_$(DIR))

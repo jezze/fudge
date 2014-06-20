@@ -1,8 +1,8 @@
-BIN:=$(PACKAGES_PATH)/slang/slang
-OBJ:=$(PACKAGES_PATH)/slang/slang.o $(PACKAGES_PATH)/slang/parse.o $(PACKAGES_PATH)/slang/token.o
+BIN_$(DIR):=$(DIR)/slang
+OBJ_$(DIR):=$(DIR)/slang.o $(DIR)/parse.o $(DIR)/token.o
 
-$(BIN): $(OBJ) $(USERLIBS)
-	$(LD) $(LDFLAGS) -o $@ $^
+$(BIN_$(DIR)): $(OBJ_$(DIR))
+	$(LD) -o $@ $^ $(LDFLAGS)
 
-PACKAGES+=$(BIN)
-PACKAGES_OBJECTS+=$(OBJ)
+PACKAGES_BUILD:=$(PACKAGES_BUILD) $(BIN_$(DIR))
+PACKAGES_CLEAN:=$(PACKAGES_CLEAN) $(BIN_$(DIR)) $(OBJ_$(DIR))

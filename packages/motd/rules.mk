@@ -1,8 +1,8 @@
-BIN:=$(PACKAGES_PATH)/motd/motd
-OBJ:=$(PACKAGES_PATH)/motd/motd.o
+BIN_$(DIR):=$(DIR)/motd
+OBJ_$(DIR):=$(DIR)/motd.o
 
-$(BIN): $(OBJ) $(USERLIBS)
-	$(LD) $(LDFLAGS) -o $@ $^
+$(BIN_$(DIR)): $(OBJ_$(DIR))
+	$(LD) -o $@ $^ $(LDFLAGS)
 
-PACKAGES+=$(BIN)
-PACKAGES_OBJECTS+=$(OBJ)
+PACKAGES_BUILD:=$(PACKAGES_BUILD) $(BIN_$(DIR))
+PACKAGES_CLEAN:=$(PACKAGES_CLEAN) $(BIN_$(DIR)) $(OBJ_$(DIR))

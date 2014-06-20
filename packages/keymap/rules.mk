@@ -1,13 +1,17 @@
-KEYMAPSE_BIN:=$(PACKAGES_PATH)/keymap/keymapse
-KEYMAPSE_OBJ:=$(PACKAGES_PATH)/keymap/keymapse.o
-KEYMAPUS_BIN:=$(PACKAGES_PATH)/keymap/keymapus
-KEYMAPUS_OBJ:=$(PACKAGES_PATH)/keymap/keymapus.o
+BIN_$(DIR):=$(DIR)/keymapse
+OBJ_$(DIR):=$(DIR)/keymapse.o
 
-$(KEYMAPSE_BIN): $(KEYMAPSE_OBJ) $(USERLIBS)
-	$(LD) $(LDFLAGS) -o $@ $^
+$(BIN_$(DIR)): $(OBJ_$(DIR))
+	$(LD) -o $@ $^ $(LDFLAGS)
 
-$(KEYMAPUS_BIN): $(KEYMAPUS_OBJ) $(USERLIBS)
-	$(LD) $(LDFLAGS) -o $@ $^
+PACKAGES_BUILD:=$(PACKAGES_BUILD) $(BIN_$(DIR))
+PACKAGES_CLEAN:=$(PACKAGES_CLEAN) $(BIN_$(DIR)) $(OBJ_$(DIR))
 
-PACKAGES+=$(KEYMAPSE_BIN) $(KEYMAPUS_BIN)
-PACKAGES_OBJECTS+=$(KEYMAPSE_OBJ) $(KEYMAPUS_OBJ)
+BIN_$(DIR):=$(DIR)/keymapus
+OBJ_$(DIR):=$(DIR)/keymapus.o
+
+$(BIN_$(DIR)): $(OBJ_$(DIR))
+	$(LD) -o $@ $^ $(LDFLAGS)
+
+PACKAGES_BUILD:=$(PACKAGES_BUILD) $(BIN_$(DIR))
+PACKAGES_CLEAN:=$(PACKAGES_CLEAN) $(BIN_$(DIR)) $(OBJ_$(DIR))

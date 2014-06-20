@@ -1,8 +1,8 @@
-BIN:=$(PACKAGES_PATH)/reboot/reboot
-OBJ:=$(PACKAGES_PATH)/reboot/reboot.o
+BIN_$(DIR):=$(DIR)/reboot
+OBJ_$(DIR):=$(DIR)/reboot.o
 
-$(BIN): $(OBJ) $(USERLIBS)
-	$(LD) $(LDFLAGS) -o $@ $^
+$(BIN_$(DIR)): $(OBJ_$(DIR))
+	$(LD) -o $@ $^ $(LDFLAGS)
 
-PACKAGES+=$(BIN)
-PACKAGES_OBJECTS+=$(OBJ)
+PACKAGES_BUILD:=$(PACKAGES_BUILD) $(BIN_$(DIR))
+PACKAGES_CLEAN:=$(PACKAGES_CLEAN) $(BIN_$(DIR)) $(OBJ_$(DIR))

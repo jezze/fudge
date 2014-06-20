@@ -1,3 +1,3 @@
-SHARES:=$(PACKAGES_PATH)/share/design.png $(PACKAGES_PATH)/share/executive-en.png $(PACKAGES_PATH)/share/font2.png $(PACKAGES_PATH)/share/fontall.png $(PACKAGES_PATH)/share/font.png $(PACKAGES_PATH)/share/help.txt $(PACKAGES_PATH)/share/icons.pcx $(PACKAGES_PATH)/share/lorem.txt $(PACKAGES_PATH)/share/mi.pcx $(PACKAGES_PATH)/share/motd.txt $(PACKAGES_PATH)/share/test.slang $(PACKAGES_PATH)/share/vancouver-en.png
+SHARES_$(DIR):=$(DIR)/design.png $(DIR)/executive-en.png $(DIR)/font2.png $(DIR)/fontall.png $(DIR)/font.png $(DIR)/help.txt $(DIR)/icons.pcx $(DIR)/lorem.txt $(DIR)/mi.pcx $(DIR)/motd.txt $(DIR)/test.slang $(DIR)/vancouver-en.png
 
-PACKAGES_SHARES+=$(SHARES)
+PACKAGES_SHARES:=$(PACKAGES_SHARES) $(SHARES_$(DIR))

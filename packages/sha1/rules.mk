@@ -1,8 +1,8 @@
-BIN:=$(PACKAGES_PATH)/sha1/sha1
-OBJ:=$(PACKAGES_PATH)/sha1/sha1.o
+BIN_$(DIR):=$(DIR)/sha1
+OBJ_$(DIR):=$(DIR)/sha1.o
 
-$(BIN): $(OBJ) $(USERLIBS)
-	$(LD) $(LDFLAGS) -o $@ $^
+$(BIN_$(DIR)): $(OBJ_$(DIR))
+	$(LD) -o $@ $^ $(LDFLAGS)
 
-PACKAGES+=$(BIN)
-PACKAGES_OBJECTS+=$(OBJ)
+PACKAGES_BUILD:=$(PACKAGES_BUILD) $(BIN_$(DIR))
+PACKAGES_CLEAN:=$(PACKAGES_CLEAN) $(BIN_$(DIR)) $(OBJ_$(DIR))

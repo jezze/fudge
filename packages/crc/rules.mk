@@ -1,8 +1,8 @@
-BIN:=$(PACKAGES_PATH)/crc/crc
-OBJ:=$(PACKAGES_PATH)/crc/crc.o
+BIN_$(DIR):=$(DIR)/crc
+OBJ_$(DIR):=$(DIR)/crc.o
 
-$(BIN): $(OBJ) $(USERLIBS)
-	$(LD) $(LDFLAGS) -o $@ $^
+$(BIN_$(DIR)): $(OBJ_$(DIR))
+	$(LD) -o $@ $^ $(LDFLAGS)
 
-PACKAGES+=$(BIN)
-PACKAGES_OBJECTS+=$(OBJ)
+PACKAGES_BUILD:=$(PACKAGES_BUILD) $(BIN_$(DIR))
+PACKAGES_CLEAN:=$(PACKAGES_CLEAN) $(BIN_$(DIR)) $(OBJ_$(DIR))

@@ -1,8 +1,8 @@
-BIN:=$(PACKAGES_PATH)/cpio/cpio
-OBJ:=$(PACKAGES_PATH)/cpio/cpio.o
+BIN_$(DIR):=$(DIR)/cpio
+OBJ_$(DIR):=$(DIR)/cpio.o
 
-$(BIN): $(OBJ) $(LIB_libs/cpio) $(USERLIBS)
-	$(LD) $(LDFLAGS) -o $@ $^
+$(BIN_$(DIR)): $(OBJ_$(DIR))
+	$(LD) -o $@ $^ $(LDFLAGS) -lcpio
 
-PACKAGES+=$(BIN)
-PACKAGES_OBJECTS+=$(OBJ)
+PACKAGES_BUILD:=$(PACKAGES_BUILD) $(BIN_$(DIR))
+PACKAGES_CLEAN:=$(PACKAGES_CLEAN) $(BIN_$(DIR)) $(OBJ_$(DIR))

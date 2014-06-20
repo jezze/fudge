@@ -1,4 +1,4 @@
-USERLIBS:=$(LIB_libs/$(ARCH)/abi) $(LIB_libs/fudge) $(LIB_libs/utf8)
+$(PACKAGES_PATH)/%: LDFLAGS+=-static -L $(BUILD_PATH)/lib -labi -lfudge
 
 CUR:=$(DIR)
 DIR:=$(CUR)/cat

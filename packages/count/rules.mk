@@ -1,13 +1,17 @@
-COUNTB_BIN:=$(PACKAGES_PATH)/count/countb
-COUNTB_OBJ:=$(PACKAGES_PATH)/count/countb.o
-COUNTL_BIN:=$(PACKAGES_PATH)/count/countl
-COUNTL_OBJ:=$(PACKAGES_PATH)/count/countl.o
+BIN_$(DIR):=$(DIR)/countb
+OBJ_$(DIR):=$(DIR)/countb.o
 
-$(COUNTB_BIN): $(COUNTB_OBJ) $(USERLIBS)
-	$(LD) $(LDFLAGS) -o $@ $^
+$(BIN_$(DIR)): $(OBJ_$(DIR))
+	$(LD) -o $@ $^ $(LDFLAGS)
 
-$(COUNTL_BIN): $(COUNTL_OBJ) $(USERLIBS)
-	$(LD) $(LDFLAGS) -o $@ $^
+PACKAGES_BUILD:=$(PACKAGES_BUILD) $(BIN_$(DIR))
+PACKAGES_CLEAN:=$(PACKAGES_CLEAN) $(BIN_$(DIR)) $(OBJ_$(DIR))
 
-PACKAGES+=$(COUNTB_BIN) $(COUNTL_BIN)
-PACKAGES_OBJECTS+=$(COUNTB_OBJ) $(COUNTL_OBJ)
+BIN_$(DIR):=$(DIR)/countl
+OBJ_$(DIR):=$(DIR)/countl.o
+
+$(BIN_$(DIR)): $(OBJ_$(DIR))
+	$(LD) -o $@ $^ $(LDFLAGS)
+
+PACKAGES_BUILD:=$(PACKAGES_BUILD) $(BIN_$(DIR))
+PACKAGES_CLEAN:=$(PACKAGES_CLEAN) $(BIN_$(DIR)) $(OBJ_$(DIR))

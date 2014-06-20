@@ -1,8 +1,8 @@
-BIN:=$(PACKAGES_PATH)/echo/echo
-OBJ:=$(PACKAGES_PATH)/echo/echo.o
+BIN_$(DIR):=$(DIR)/echo
+OBJ_$(DIR):=$(DIR)/echo.o
 
-$(BIN): $(OBJ) $(USERLIBS)
-	$(LD) $(LDFLAGS) -o $@ $^
+$(BIN_$(DIR)): $(OBJ_$(DIR))
+	$(LD) -o $@ $^ $(LDFLAGS)
 
-PACKAGES+=$(BIN)
-PACKAGES_OBJECTS+=$(OBJ)
+PACKAGES_BUILD:=$(PACKAGES_BUILD) $(BIN_$(DIR))
+PACKAGES_CLEAN:=$(PACKAGES_CLEAN) $(BIN_$(DIR)) $(OBJ_$(DIR))
