@@ -1,7 +1,7 @@
 BIN:=$(PACKAGES_PATH)/cpio/cpio
 OBJ:=$(PACKAGES_PATH)/cpio/cpio.o
 
-$(BIN): $(OBJ) $(LIBCPIO) $(USERLIBS)
+$(BIN): $(OBJ) $(LIB_libs/cpio) $(USERLIBS)
 	$(LD) $(LDFLAGS) -o $@ $^
 
 PACKAGES+=$(BIN)

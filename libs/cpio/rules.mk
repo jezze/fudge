@@ -1,8 +1,8 @@
-LIBCPIO:=$(LIBS_PATH)/cpio/libcpio.a
-LIBCPIO_OBJ:=$(LIBS_PATH)/cpio/cpio.o
+LIB_$(DIR):=$(LIBS_PATH)/cpio/libcpio.a
+OBJ_$(DIR):=$(LIBS_PATH)/cpio/cpio.o
 
-$(LIBCPIO): $(LIBCPIO_OBJ)
+$(LIB_$(DIR)): $(OBJ_$(DIR))
 	$(AR) $(ARFLAGS) $@ $^
 
-LIBS+=$(LIBCPIO)
-LIBS_OBJECTS+=$(LIBCPIO_OBJ)
+LIBS_BUILD:=$(LIBS_BUILD) $(LIB_$(DIR))
+LIBS_CLEAN:=$(LIBS_CLEAN) $(LIB_$(DIR)) $(OBJ_$(DIR))

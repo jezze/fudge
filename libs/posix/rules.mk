@@ -1,8 +1,8 @@
-LIBPOSIX:=$(LIBS_PATH)/posix/libposix.a
-LIBPOSIX_OBJ:=$(LIBS_PATH)/posix/posix.o
+LIB_$(DIR):=$(DIR)/libposix.a
+OBJ_$(DIR):=$(DIR)/posix.o
 
-$(LIBPOSIX): $(LIBPOSIX_OBJ)
+$(LIB_$(DIR)): $(OBJ_$(DIR))
 	$(AR) $(ARFLAGS) $@ $^
 
-LIBS+=$(LIBPOSIX)
-LIBS_OBJECTS+=$(LIBPOSIX_OBJ)
+LIBS_BUILD:=$(LIBS_BUILD) $(LIB_$(DIR))
+LIBS_CLEAN:=$(LIBS_CLEAN) $(LIB_$(DIR)) $(OBJ_$(DIR))

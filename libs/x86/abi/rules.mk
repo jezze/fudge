@@ -1,8 +1,8 @@
-LIBABI:=$(LIBS_PATH)/x86/abi/libabi.a
-LIBABI_OBJ:=$(LIBS_PATH)/x86/abi/call.o $(LIBS_PATH)/x86/abi/crt0.o
+LIB_$(DIR):=$(DIR)/libabi.a
+OBJ_$(DIR):=$(DIR)/call.o $(DIR)/crt0.o
 
-$(LIBABI): $(LIBABI_OBJ)
+$(LIB_$(DIR)): $(OBJ_$(DIR))
 	$(AR) $(ARFLAGS) $@ $^
 
-LIBS+=$(LIBABI)
-LIBS_OBJECTS+=$(LIBABI_OBJ)
+LIBS_BUILD:=$(LIBS_BUILD) $(LIB_$(DIR))
+LIBS_CLEAN:=$(LIBS_CLEAN) $(LIB_$(DIR)) $(OBJ_$(DIR))

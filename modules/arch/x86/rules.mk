@@ -1,22 +1,45 @@
-include $(MODULES_ARCH_PATH)/acpi/rules.mk
-include $(MODULES_ARCH_PATH)/apic/rules.mk
-include $(MODULES_ARCH_PATH)/ata/rules.mk
-include $(MODULES_ARCH_PATH)/atapi/rules.mk
-include $(MODULES_ARCH_PATH)/bga/rules.mk
-include $(MODULES_ARCH_PATH)/cirrus/rules.mk
-include $(MODULES_ARCH_PATH)/cpuid/rules.mk
-include $(MODULES_ARCH_PATH)/fpu/rules.mk
-include $(MODULES_ARCH_PATH)/i915/rules.mk
-include $(MODULES_ARCH_PATH)/ide/rules.mk
-include $(MODULES_ARCH_PATH)/io/rules.mk
-include $(MODULES_ARCH_PATH)/msr/rules.mk
-include $(MODULES_ARCH_PATH)/pci/rules.mk
-include $(MODULES_ARCH_PATH)/pic/rules.mk
-include $(MODULES_ARCH_PATH)/pit/rules.mk
-include $(MODULES_ARCH_PATH)/platform/rules.mk
-include $(MODULES_ARCH_PATH)/ps2/rules.mk
-include $(MODULES_ARCH_PATH)/rtc/rules.mk
-include $(MODULES_ARCH_PATH)/rtl8139/rules.mk
-include $(MODULES_ARCH_PATH)/smp/rules.mk
-include $(MODULES_ARCH_PATH)/uart/rules.mk
-include $(MODULES_ARCH_PATH)/vga/rules.mk
+CUR:=$(DIR)
+DIR:=$(CUR)/acpi
+include $(DIR)/rules.mk
+DIR:=$(CUR)/apic
+include $(DIR)/rules.mk
+DIR:=$(CUR)/ata
+include $(DIR)/rules.mk
+DIR:=$(CUR)/atapi
+include $(DIR)/rules.mk
+DIR:=$(CUR)/bga
+include $(DIR)/rules.mk
+DIR:=$(CUR)/cirrus
+include $(DIR)/rules.mk
+DIR:=$(CUR)/cpuid
+include $(DIR)/rules.mk
+DIR:=$(CUR)/fpu
+include $(DIR)/rules.mk
+DIR:=$(CUR)/i915
+include $(DIR)/rules.mk
+DIR:=$(CUR)/ide
+include $(DIR)/rules.mk
+DIR:=$(CUR)/io
+include $(DIR)/rules.mk
+DIR:=$(CUR)/msr
+include $(DIR)/rules.mk
+DIR:=$(CUR)/pci
+include $(DIR)/rules.mk
+DIR:=$(CUR)/pic
+include $(DIR)/rules.mk
+DIR:=$(CUR)/pit
+include $(DIR)/rules.mk
+DIR:=$(CUR)/platform
+include $(DIR)/rules.mk
+DIR:=$(CUR)/ps2
+include $(DIR)/rules.mk
+DIR:=$(CUR)/rtc
+include $(DIR)/rules.mk
+DIR:=$(CUR)/rtl8139
+include $(DIR)/rules.mk
+DIR:=$(CUR)/smp
+include $(DIR)/rules.mk
+DIR:=$(CUR)/uart
+include $(DIR)/rules.mk
+DIR:=$(CUR)/vga
+include $(DIR)/rules.mk

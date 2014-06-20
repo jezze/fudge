@@ -1,8 +1,8 @@
-LIBELF:=$(LIBS_PATH)/elf/libelf.a
-LIBELF_OBJ:=$(LIBS_PATH)/elf/elf.o
+LIB_$(DIR):=$(DIR)/libelf.a
+OBJ_$(DIR):=$(DIR)/elf.o
 
-$(LIBELF): $(LIBELF_OBJ)
+$(LIB_$(DIR)): $(OBJ_$(DIR))
 	$(AR) $(ARFLAGS) $@ $^
 
-LIBS+=$(LIBELF)
-LIBS_OBJECTS+=$(LIBELF_OBJ)
+LIBS_BUILD:=$(LIBS_BUILD) $(LIB_$(DIR))
+LIBS_CLEAN:=$(LIBS_CLEAN) $(LIB_$(DIR)) $(OBJ_$(DIR))

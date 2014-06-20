@@ -1,8 +1,8 @@
-LIBKERNEL:=$(LIBS_PATH)/kernel/libkernel.a
-LIBKERNEL_OBJ:=$(LIBS_PATH)/kernel/binary.o $(LIBS_PATH)/kernel/binary_elf.o $(LIBS_PATH)/kernel/container.o $(LIBS_PATH)/kernel/error.o $(LIBS_PATH)/kernel/kernel.o $(LIBS_PATH)/kernel/rendezvous.o $(LIBS_PATH)/kernel/resource.o $(LIBS_PATH)/kernel/scheduler.o $(LIBS_PATH)/kernel/task.o $(LIBS_PATH)/kernel/vfs.o $(LIBS_PATH)/kernel/vfs_cpio.o $(LIBS_PATH)/kernel/vfs_tar.o
+LIB_$(DIR):=$(DIR)/libkernel.a
+OBJ_$(DIR):=$(DIR)/binary.o $(DIR)/binary_elf.o $(DIR)/container.o $(DIR)/error.o $(DIR)/kernel.o $(DIR)/rendezvous.o $(DIR)/resource.o $(DIR)/scheduler.o $(DIR)/task.o $(DIR)/vfs.o $(DIR)/vfs_cpio.o $(DIR)/vfs_tar.o
 
-$(LIBKERNEL): $(LIBKERNEL_OBJ)
+$(LIB_$(DIR)): $(OBJ_$(DIR))
 	$(AR) $(ARFLAGS) $@ $^
 
-LIBS+=$(LIBKERNEL)
-LIBS_OBJECTS+=$(LIBKERNEL_OBJ)
+LIBS_BUILD:=$(LIBS_BUILD) $(LIB_$(DIR))
+LIBS_CLEAN:=$(LIBS_CLEAN) $(LIB_$(DIR)) $(OBJ_$(DIR))

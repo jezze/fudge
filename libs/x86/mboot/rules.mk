@@ -1,8 +1,8 @@
-LIBLOADER:=$(LIBS_PATH)/x86/mboot/libmboot.a
-LIBLOADER_OBJ:=$(LIBS_PATH)/x86/mboot/main.o $(LIBS_PATH)/x86/mboot/mboot.o
+LIB_$(DIR):=$(DIR)/libmboot.a
+OBJ_$(DIR):=$(DIR)/main.o $(DIR)/mboot.o
 
-$(LIBLOADER): $(LIBLOADER_OBJ)
+$(LIB_$(DIR)): $(OBJ_$(DIR))
 	$(AR) $(ARFLAGS) $@ $^
 
-LIBS+=$(LIBLOADER)
-LIBS_OBJECTS+=$(LIBLOADER_OBJ)
+LIBS_BUILD:=$(LIBS_BUILD) $(LIB_$(DIR))
+LIBS_CLEAN:=$(LIBS_CLEAN) $(LIB_$(DIR)) $(OBJ_$(DIR))

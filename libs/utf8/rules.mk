@@ -1,8 +1,8 @@
-LIBUTF8:=$(LIBS_PATH)/utf8/libutf8.a
-LIBUTF8_OBJ:=$(LIBS_PATH)/utf8/utf8.o
+LIB_$(DIR):=$(DIR)/libutf8.a
+OBJ_$(DIR):=$(DIR)/utf8.o
 
-$(LIBUTF8): $(LIBUTF8_OBJ)
+$(LIB_$(DIR)): $(OBJ_$(DIR))
 	$(AR) $(ARFLAGS) $@ $^
 
-LIBS+=$(LIBUTF8)
-LIBS_OBJECTS+=$(LIBUTF8_OBJ)
+LIBS_BUILD:=$(LIBS_BUILD) $(LIB_$(DIR))
+LIBS_CLEAN:=$(LIBS_CLEAN) $(LIB_$(DIR)) $(OBJ_$(DIR))

@@ -1,8 +1,8 @@
-LIBARCH:=$(LIBS_PATH)/x86/arch/libarch.a
-LIBARCH_OBJ:=$(LIBS_PATH)/x86/arch/arch.o $(LIBS_PATH)/x86/arch/archs.o $(LIBS_PATH)/x86/arch/cpu.o $(LIBS_PATH)/x86/arch/gdt.o $(LIBS_PATH)/x86/arch/idt.o $(LIBS_PATH)/x86/arch/mmu.o $(LIBS_PATH)/x86/arch/tss.o
+LIB_$(DIR):=$(DIR)/libarch.a
+OBJ_$(DIR):=$(DIR)/arch.o $(DIR)/archs.o $(DIR)/cpu.o $(DIR)/gdt.o $(DIR)/idt.o $(DIR)/mmu.o $(DIR)/tss.o
 
-$(LIBARCH): $(LIBARCH_OBJ)
+$(LIB_$(DIR)): $(OBJ_$(DIR))
 	$(AR) $(ARFLAGS) $@ $^
 
-LIBS+=$(LIBARCH)
-LIBS_OBJECTS+=$(LIBARCH_OBJ)
+LIBS_BUILD:=$(LIBS_BUILD) $(LIB_$(DIR))
+LIBS_CLEAN:=$(LIBS_CLEAN) $(LIB_$(DIR)) $(OBJ_$(DIR))

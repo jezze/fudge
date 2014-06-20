@@ -28,13 +28,13 @@ ASFLAGS_arm:=-target arm-none-eabi -msoft-float
 CFLAGS_arm:=-target arm-none-eabi -msoft-float
 LDFLAGS_arm:=-target arm-none-eabi -msoft-float
 
-ASFLAGS:=-ffreestanding -nostdlib -nostdinc -std=c89 -pedantic -O2 -I$(INCLUDE_PATH) -I$(LIBS_PATH) $(ASFLAGS_$(ARCH))
-CFLAGS:=-Wall -Werror -ffreestanding -nostdlib -nostdinc -std=c89 -pedantic -O2 -I$(INCLUDE_PATH) -I$(LIBS_PATH) $(CFLAGS_$(ARCH))
+ASFLAGS:=-c -ffreestanding -nostdlib -nostdinc -std=c89 -pedantic -O2 -I$(INCLUDE_PATH) -I$(LIBS_PATH) $(ASFLAGS_$(ARCH))
+CFLAGS:=-c -Wall -Werror -ffreestanding -nostdlib -nostdinc -std=c89 -pedantic -O2 -I$(INCLUDE_PATH) -I$(LIBS_PATH) $(CFLAGS_$(ARCH))
 LDFLAGS:=-Wall -Werror -ffreestanding -nostdlib -nostdinc -std=c89 -pedantic -O2 -I$(INCLUDE_PATH) -I$(LIBS_PATH) $(LDFLAGS_$(ARCH))
 ARFLAGS:=rs
 
-LIBS:=
-LIBS_OBJECTS:=
+LIBS_BUILD:=
+LIBS_CLEAN:=
 MODULES:=
 MODULES_OBJECTS:=
 PACKAGES:=
@@ -47,17 +47,20 @@ PACKAGES_SHARES:=
 all: kernel libs modules packages ramdisk
 
 .s.o:
-	$(AS) -c $(ASFLAGS) -o $@ $<
+	$(AS) -o $@ $(ASFLAGS) $<
 
 .c.o:
-	$(CC) -c $(CFLAGS) -o $@ $<
+	$(CC) -o $@ $(CFLAGS) $<
 
-include $(LIBS_PATH)/rules.mk
-include $(MODULES_PATH)/rules.mk
-include $(PACKAGES_PATH)/rules.mk
+DIR:=$(LIBS_PATH)
+include $(DIR)/rules.mk
+DIR:=$(MODULES_PATH)
+include $(DIR)/rules.mk
+DIR:=$(PACKAGES_PATH)
+include $(DIR)/rules.mk
 
-$(KERNEL_NAME): $(LIBLOADER) $(LIBARCH) $(LIBKERNEL) $(LIBELF) $(LIBTAR) $(LIBCPIO) $(LIBFUDGE)
-	$(LD) $(LDFLAGS) -Tlibs/$(ARCH)/$(LOADER)/linker.ld -o $@ $^
+$(KERNEL_NAME): libs
+	$(LD) -o $@ $(LDFLAGS) -Tlibs/$(ARCH)/$(LOADER)/linker.ld -L$(BUILD_PATH)/lib -static -lmboot -larch -lkernel -lelf -ltar -lcpio -lfudge
 
 $(BUILD_PATH):
 	mkdir -p $(BUILD_PATH)
@@ -79,7 +82,7 @@ $(RAMDISK_NAME).cpio: $(BUILD_PATH)
 
 clean:
 	rm -rf $(BUILD_PATH)
-	rm -rf $(LIBS) $(LIBS_OBJECTS)
+	rm -rf $(LIBS_CLEAN)
 	rm -rf $(MODULES) $(MODULES_OBJECTS)
 	rm -rf $(PACKAGES) $(PACKAGES_OBJECTS)
 	rm -rf $(KERNEL)
@@ -92,8 +95,8 @@ install: $(KERNEL) $(RAMDISK)
 kernel: $(BUILD_PATH) $(KERNEL)
 	cp $(KERNEL) $(BUILD_PATH)/boot
 
-libs: $(BUILD_PATH) $(LIBS)
-	cp $(LIBS) $(BUILD_PATH)/lib
+libs: $(BUILD_PATH) $(LIBS_BUILD)
+	cp $(LIBS_BUILD) $(BUILD_PATH)/lib
 
 modules: $(BUILD_PATH) $(MODULES)
 	cp $(MODULES) $(BUILD_PATH)/boot/mod

@@ -1,8 +1,8 @@
-LIBFUDGE:=$(LIBS_PATH)/fudge/libfudge.a
-LIBFUDGE_OBJ:=$(LIBS_PATH)/fudge/ascii.o $(LIBS_PATH)/fudge/memory.o $(LIBS_PATH)/fudge/list.o
+LIB_$(DIR):=$(DIR)/libfudge.a
+OBJ_$(DIR):=$(DIR)/ascii.o $(DIR)/memory.o $(DIR)/list.o
 
-$(LIBFUDGE): $(LIBFUDGE_OBJ)
+$(LIB_$(DIR)): $(OBJ_$(DIR))
 	$(AR) $(ARFLAGS) $@ $^
 
-LIBS+=$(LIBFUDGE)
-LIBS_OBJECTS+=$(LIBFUDGE_OBJ)
+LIBS_BUILD:=$(LIBS_BUILD) $(LIB_$(DIR))
+LIBS_CLEAN:=$(LIBS_CLEAN) $(LIB_$(DIR)) $(OBJ_$(DIR))

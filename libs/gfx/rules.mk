@@ -1,8 +1,8 @@
-LIBGFX:=$(LIBS_PATH)/gfx/libgfx.a
-LIBGFX_OBJ:=$(LIBS_PATH)/gfx/gfx.o $(LIBS_PATH)/gfx/pcx.o $(LIBS_PATH)/gfx/vga.o
+LIB_$(DIR):=$(DIR)/libgfx.a
+OBJ_$(DIR):=$(DIR)/gfx.o $(DIR)/pcx.o $(DIR)/vga.o
 
-$(LIBGFX): $(LIBGFX_OBJ)
+$(LIB_$(DIR)): $(OBJ_$(DIR))
 	$(AR) $(ARFLAGS) $@ $^
 
-LIBS+=$(LIBGFX)
-LIBS_OBJECTS+=$(LIBGFX_OBJ)
+LIBS_BUILD:=$(LIBS_BUILD) $(LIB_$(DIR))
+LIBS_CLEAN:=$(LIBS_CLEAN) $(LIB_$(DIR)) $(OBJ_$(DIR))

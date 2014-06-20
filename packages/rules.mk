@@ -1,33 +1,65 @@
-USERLIBS:=$(LIBABI) $(LIBFUDGE) $(LIBUTF8)
+USERLIBS:=$(LIB_libs/$(ARCH)/abi) $(LIB_libs/fudge) $(LIB_libs/utf8)
 
-include $(PACKAGES_PATH)/cat/rules.mk
-include $(PACKAGES_PATH)/cconv/rules.mk
-include $(PACKAGES_PATH)/col/rules.mk
-include $(PACKAGES_PATH)/complete/rules.mk
-include $(PACKAGES_PATH)/count/rules.mk
-include $(PACKAGES_PATH)/cpio/rules.mk
-include $(PACKAGES_PATH)/crc/rules.mk
-include $(PACKAGES_PATH)/date/rules.mk
-include $(PACKAGES_PATH)/dep/rules.mk
-include $(PACKAGES_PATH)/dump/rules.mk
-include $(PACKAGES_PATH)/echo/rules.mk
-include $(PACKAGES_PATH)/head/rules.mk
-include $(PACKAGES_PATH)/hello/rules.mk
-include $(PACKAGES_PATH)/help/rules.mk
-include $(PACKAGES_PATH)/init/rules.mk
-include $(PACKAGES_PATH)/keymap/rules.mk
-include $(PACKAGES_PATH)/ls/rules.mk
-include $(PACKAGES_PATH)/mandelbrot/rules.mk
-include $(PACKAGES_PATH)/md5/rules.mk
-include $(PACKAGES_PATH)/mod/rules.mk
-include $(PACKAGES_PATH)/motd/rules.mk
-include $(PACKAGES_PATH)/mount/rules.mk
-include $(PACKAGES_PATH)/name/rules.mk
-include $(PACKAGES_PATH)/nl/rules.mk
-include $(PACKAGES_PATH)/pcx/rules.mk
-include $(PACKAGES_PATH)/reboot/rules.mk
-include $(PACKAGES_PATH)/sha1/rules.mk
-include $(PACKAGES_PATH)/share/rules.mk
-include $(PACKAGES_PATH)/shell/rules.mk
-include $(PACKAGES_PATH)/slang/rules.mk
-include $(PACKAGES_PATH)/sleep/rules.mk
+CUR:=$(DIR)
+DIR:=$(CUR)/cat
+include $(DIR)/rules.mk
+DIR:=$(CUR)/cconv
+include $(DIR)/rules.mk
+DIR:=$(CUR)/col
+include $(DIR)/rules.mk
+DIR:=$(CUR)/complete
+include $(DIR)/rules.mk
+DIR:=$(CUR)/count
+include $(DIR)/rules.mk
+DIR:=$(CUR)/cpio
+include $(DIR)/rules.mk
+DIR:=$(CUR)/crc
+include $(DIR)/rules.mk
+DIR:=$(CUR)/date
+include $(DIR)/rules.mk
+DIR:=$(CUR)/dep
+include $(DIR)/rules.mk
+DIR:=$(CUR)/dump
+include $(DIR)/rules.mk
+DIR:=$(CUR)/echo
+include $(DIR)/rules.mk
+DIR:=$(CUR)/head
+include $(DIR)/rules.mk
+DIR:=$(CUR)/hello
+include $(DIR)/rules.mk
+DIR:=$(CUR)/help
+include $(DIR)/rules.mk
+DIR:=$(CUR)/init
+include $(DIR)/rules.mk
+DIR:=$(CUR)/keymap
+include $(DIR)/rules.mk
+DIR:=$(CUR)/ls
+include $(DIR)/rules.mk
+DIR:=$(CUR)/mandelbrot
+include $(DIR)/rules.mk
+DIR:=$(CUR)/md5
+include $(DIR)/rules.mk
+DIR:=$(CUR)/mod
+include $(DIR)/rules.mk
+DIR:=$(CUR)/motd
+include $(DIR)/rules.mk
+DIR:=$(CUR)/mount
+include $(DIR)/rules.mk
+DIR:=$(CUR)/name
+include $(DIR)/rules.mk
+DIR:=$(CUR)/nl
+include $(DIR)/rules.mk
+DIR:=$(CUR)/pcx
+include $(DIR)/rules.mk
+DIR:=$(CUR)/reboot
+include $(DIR)/rules.mk
+DIR:=$(CUR)/sha1
+include $(DIR)/rules.mk
+DIR:=$(CUR)/share
+include $(DIR)/rules.mk
+DIR:=$(CUR)/shell
+include $(DIR)/rules.mk
+DIR:=$(CUR)/slang
+include $(DIR)/rules.mk
+DIR:=$(CUR)/sleep
+include $(DIR)/rules.mk

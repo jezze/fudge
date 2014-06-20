@@ -1,11 +1,23 @@
-include $(LIBS_PATH)/fudge/rules.mk
-include $(LIBS_PATH)/kernel/rules.mk
-include $(LIBS_PATH)/posix/rules.mk
-include $(LIBS_PATH)/cpio/rules.mk
-include $(LIBS_PATH)/elf/rules.mk
-include $(LIBS_PATH)/tar/rules.mk
-include $(LIBS_PATH)/gfx/rules.mk
-include $(LIBS_PATH)/utf8/rules.mk
-include $(LIBS_PATH)/$(ARCH)/arch/rules.mk
-include $(LIBS_PATH)/$(ARCH)/abi/rules.mk
-include $(LIBS_PATH)/$(ARCH)/$(LOADER)/rules.mk
+CUR:=$(DIR)
+DIR:=$(CUR)/fudge
+include $(DIR)/rules.mk
+DIR:=$(CUR)/kernel
+include $(DIR)/rules.mk
+DIR:=$(CUR)/posix
+include $(DIR)/rules.mk
+DIR:=$(CUR)/cpio
+include $(DIR)/rules.mk
+DIR:=$(CUR)/elf
+include $(DIR)/rules.mk
+DIR:=$(CUR)/tar
+include $(DIR)/rules.mk
+DIR:=$(CUR)/gfx
+include $(DIR)/rules.mk
+DIR:=$(CUR)/utf8
+include $(DIR)/rules.mk
+DIR:=$(CUR)/$(ARCH)/arch
+include $(DIR)/rules.mk
+DIR:=$(CUR)/$(ARCH)/abi
+include $(DIR)/rules.mk
+DIR:=$(CUR)/$(ARCH)/$(LOADER)
+include $(DIR)/rules.mk

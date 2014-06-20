@@ -1,8 +1,8 @@
-LIBTAR:=$(LIBS_PATH)/tar/libtar.a
-LIBTAR_OBJ:=$(LIBS_PATH)/tar/tar.o
+LIB_$(DIR):=$(DIR)/libtar.a
+OBJ_$(DIR):=$(DIR)/tar.o
 
-$(LIBTAR): $(LIBTAR_OBJ)
+$(LIB_$(DIR)): $(OBJ_$(DIR))
 	$(AR) $(ARFLAGS) $@ $^
 
-LIBS+=$(LIBTAR)
-LIBS_OBJECTS+=$(LIBTAR_OBJ)
+LIBS_BUILD:=$(LIBS_BUILD) $(LIB_$(DIR))
+LIBS_CLEAN:=$(LIBS_CLEAN) $(LIB_$(DIR)) $(OBJ_$(DIR))
