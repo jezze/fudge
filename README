@@ -43,8 +43,7 @@ on Windows if you have cygwin installed but this has not been tested.
 
 To compile and run Fudge you need to have the following tools installed.
 
-    * binutils (assembly linker)
-    * gcc or clang (compile c)
+    * clang (compile and link)
     * qemu or bochs (emulator)
 
 ### FETCHING
@@ -68,13 +67,13 @@ To clean for x86 you write:
 
 To compile for ARM you write:
 
-    $ make ARCH=arm LOADER=versatilepb PREFIX=arm-eabi-
+    $ make ARCH=arm LOADER=versatilepb
 
 To clean for ARM you write:
 
     $ make ARCH=arm LOADER=versatilepb clean
 
-It is possible to edit the Makefile and set the ARCH, LOADER and PREFIX variable
+It is possible to edit the Makefile and set the ARCH and LOADER variable
 directly so you don't need to supply it every time you compile.
 
 ## RUNNING IN QEMU
