@@ -6,15 +6,7 @@ INCLUDE_PATH:=include
 BUILD_PATH:=build
 LIBS_PATH:=libs
 MODULES_PATH:=modules
-MODULES_ARCH_PATH:=$(MODULES_PATH)/arch/$(ARCH)
 PACKAGES_PATH:=packages
-
-BINS:=
-CONFS:=
-LIBS:=
-MODULES:=
-SHARES:=
-CLEAN:=
 
 KERNEL_NAME:=fudge
 KERNEL:=$(KERNEL_NAME)
@@ -61,19 +53,13 @@ include $(DIR)/rules.mk
 DIR:=$(PACKAGES_PATH)
 include $(DIR)/rules.mk
 
-$(KERNEL_NAME): libs
+$(KERNEL_NAME): $(BUILD_PATH) libs
 	$(LD) -o $@ $(LDFLAGS) -Tlibs/$(ARCH)/$(LOADER)/linker.ld -L$(BUILD_PATH)/lib -static -lmboot -larch -lkernel -lelf -ltar -lcpio -lfudge
 
 $(BUILD_PATH):
 	mkdir -p $(BUILD_PATH)
-	mkdir -p $(BUILD_PATH)/bin
-	mkdir -p $(BUILD_PATH)/boot
-	mkdir -p $(BUILD_PATH)/boot/mod
-	mkdir -p $(BUILD_PATH)/config
 	mkdir -p $(BUILD_PATH)/home
 	mkdir -p $(BUILD_PATH)/kernel
-	mkdir -p $(BUILD_PATH)/lib
-	mkdir -p $(BUILD_PATH)/share
 	mkdir -p $(BUILD_PATH)/system
 
 $(RAMDISK_NAME).tar: $(BUILD_PATH)
@@ -93,17 +79,23 @@ install: $(KERNEL) $(RAMDISK)
 	install -m 644 $(RAMDISK) $(INSTALL_PATH)
 
 kernel: $(BUILD_PATH) $(KERNEL)
+	mkdir -p $(BUILD_PATH)/boot
 	cp $(KERNEL) $(BUILD_PATH)/boot
 
 libs: $(BUILD_PATH) $(LIBS)
+	mkdir -p $(BUILD_PATH)/lib
 	cp $(LIBS) $(BUILD_PATH)/lib
 
 modules: $(BUILD_PATH) $(MODULES)
+	mkdir -p $(BUILD_PATH)/boot/mod
 	cp $(MODULES) $(BUILD_PATH)/boot/mod
 
-packages: $(BUILD_PATH) $(BINS) $(CONFS) $(SHARES)
+packages: $(BUILD_PATH) libs $(BINS) $(CONFS) $(SHARES)
+	mkdir -p $(BUILD_PATH)/bin
 	cp $(BINS) $(BUILD_PATH)/bin
+	mkdir -p $(BUILD_PATH)/config
 	cp $(CONFS) $(BUILD_PATH)/config
+	mkdir -p $(BUILD_PATH)/share
 	cp $(SHARES) $(BUILD_PATH)/share
 
 ramdisk: $(RAMDISK)
