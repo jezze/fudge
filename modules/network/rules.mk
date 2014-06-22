@@ -1,3 +1,13 @@
-include $(MODULES_PATH)/network/arp/rules.mk
-include $(MODULES_PATH)/network/ipv4/rules.mk
-include $(MODULES_PATH)/network/ipv6/rules.mk
+PAR:=$(PAR).x
+TMP_$(PAR):=$(CUR)
+CUR:=$(DIR)
+
+DIR:=$(CUR)/arp
+include $(DIR)/rules.mk
+DIR:=$(CUR)/ipv4
+include $(DIR)/rules.mk
+DIR:=$(CUR)/ipv6
+include $(DIR)/rules.mk
+
+CUR:=$(TMP_$(PAR))
+PAR:=$(basename $(PAR))

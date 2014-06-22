@@ -52,6 +52,10 @@ all: kernel libs modules packages ramdisk
 .c.o:
 	$(CC) -o $@ $(CFLAGS) $<
 
+$(MODULES_PATH)/%.o: CFLAGS+=-I$(MODULES_PATH)
+$(MODULES_PATH)/%.ko: LDFLAGS+=-T$(MODULES_PATH)/linker.ld -r
+$(PACKAGES_PATH)/%: LDFLAGS+=-static -L $(BUILD_PATH)/lib -labi -lfudge
+
 DIR:=$(LIBS_PATH)
 include $(DIR)/rules.mk
 DIR:=$(MODULES_PATH)

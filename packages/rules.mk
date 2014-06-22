@@ -1,6 +1,7 @@
-$(PACKAGES_PATH)/%: LDFLAGS+=-static -L $(BUILD_PATH)/lib -labi -lfudge
-
+PAR:=$(PAR).x
+TMP_$(PAR):=$(CUR)
 CUR:=$(DIR)
+
 DIR:=$(CUR)/cat
 include $(DIR)/rules.mk
 DIR:=$(CUR)/cconv
@@ -63,3 +64,6 @@ DIR:=$(CUR)/slang
 include $(DIR)/rules.mk
 DIR:=$(CUR)/sleep
 include $(DIR)/rules.mk
+
+CUR:=$(TMP_$(PAR))
+PAR:=$(basename $(PAR))

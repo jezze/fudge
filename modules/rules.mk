@@ -1,7 +1,7 @@
-$(MODULES_PATH)/%.o: CFLAGS+=-I$(MODULES_PATH)
-$(MODULES_PATH)/%.ko: LDFLAGS+=-T$(MODULES_PATH)/linker.ld -r
-
+PAR:=$(PAR).x
+TMP_$(PAR):=$(CUR)
 CUR:=$(DIR)
+
 DIR:=$(CUR)/base
 include $(DIR)/rules.mk
 DIR:=$(CUR)/block
@@ -22,3 +22,6 @@ DIR:=$(CUR)/kernelfs
 include $(DIR)/rules.mk
 DIR:=$(CUR)/arch/$(ARCH)
 include $(DIR)/rules.mk
+
+CUR:=$(TMP_$(PAR))
+PAR:=$(basename $(PAR))

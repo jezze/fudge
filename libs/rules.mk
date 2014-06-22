@@ -1,4 +1,7 @@
+PAR:=$(PAR).x
+TMP_$(PAR):=$(CUR)
 CUR:=$(DIR)
+
 DIR:=$(CUR)/fudge
 include $(DIR)/rules.mk
 DIR:=$(CUR)/kernel
@@ -21,3 +24,6 @@ DIR:=$(CUR)/$(ARCH)/abi
 include $(DIR)/rules.mk
 DIR:=$(CUR)/$(ARCH)/$(LOADER)
 include $(DIR)/rules.mk
+
+CUR:=$(TMP_$(PAR))
+PAR:=$(basename $(PAR))
