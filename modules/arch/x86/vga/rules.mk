@@ -1,8 +1,8 @@
-MOD:=$(MODULES_ARCH_PATH)/vga/vga.ko
-OBJ:=$(MODULES_ARCH_PATH)/vga/main.o $(MODULES_ARCH_PATH)/vga/timing.o $(MODULES_ARCH_PATH)/vga/registers.o
+MOD_$(DIR):=$(DIR)/vga.ko
+OBJ_$(DIR):=$(DIR)/main.o $(DIR)/timing.o $(DIR)/registers.o
 
-$(MOD): $(OBJ) $(LIBFUDGE)
+$(MOD_$(DIR)): $(OBJ_$(DIR))
 	$(LD) $(LDFLAGS) -o $@ $^
 
-MODULES+=$(MOD)
-MODULES_OBJECTS+=$(OBJ)
+MODULES:=$(MODULES) $(MOD_$(DIR))
+CLEAN:=$(CLEAN) $(MOD_$(DIR)) $(OBJ_$(DIR))

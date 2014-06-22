@@ -1,8 +1,8 @@
-MOD:=$(MODULES_PATH)/system/system.ko
-OBJ:=$(MODULES_PATH)/system/main.o $(MODULES_PATH)/system/backend.o $(MODULES_PATH)/system/protocol.o
+MOD_$(DIR):=$(DIR)/system.ko
+OBJ_$(DIR):=$(DIR)/main.o $(DIR)/backend.o $(DIR)/protocol.o
 
-$(MOD): $(OBJ) $(LIBFUDGE)
+$(MOD_$(DIR)): $(OBJ_$(DIR))
 	$(LD) $(LDFLAGS) -o $@ $^
 
-MODULES+=$(MOD)
-MODULES_OBJECTS+=$(OBJ)
+MODULES:=$(MODULES) $(MOD_$(DIR))
+CLEAN:=$(CLEAN) $(MOD_$(DIR)) $(OBJ_$(DIR))

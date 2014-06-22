@@ -1,8 +1,8 @@
-MOD:=$(MODULES_PATH)/kernelfs/kernelfs.ko
-OBJ:=$(MODULES_PATH)/kernelfs/main.o $(MODULES_PATH)/kernelfs/backend.o $(MODULES_PATH)/kernelfs/protocol.o
+MOD_$(DIR):=$(DIR)/kernelfs.ko
+OBJ_$(DIR):=$(DIR)/main.o $(DIR)/backend.o $(DIR)/protocol.o
 
-$(MOD): $(OBJ) $(LIBFUDGE)
+$(MOD_$(DIR)): $(OBJ_$(DIR))
 	$(LD) $(LDFLAGS) -o $@ $^
 
-MODULES+=$(MOD)
-MODULES_OBJECTS+=$(OBJ)
+MODULES:=$(MODULES) $(MOD_$(DIR))
+CLEAN:=$(CLEAN) $(MOD_$(DIR)) $(OBJ_$(DIR))

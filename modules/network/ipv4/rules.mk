@@ -1,8 +1,8 @@
-MOD:=modules/network/ipv4/ipv4.ko
-OBJ:=modules/network/ipv4/main.o modules/network/ipv4/protocol.o
+MOD_$(DIR):=$(DIR)/ipv4.ko
+OBJ_$(DIR):=$(DIR)/main.o $(DIR)/protocol.o
 
-$(MOD): $(OBJ) $(LIBFUDGE)
+$(MOD_$(DIR)): $(OBJ_$(DIR))
 	$(LD) $(LDFLAGS) -o $@ $^
 
-MODULES+=$(MOD)
-MODULES_OBJECTS+=$(OBJ)
+MODULES:=$(MODULES) $(MOD_$(DIR))
+CLEAN:=$(CLEAN) $(MOD_$(DIR)) $(OBJ_$(DIR))

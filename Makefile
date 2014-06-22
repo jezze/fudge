@@ -9,12 +9,10 @@ MODULES_PATH:=modules
 MODULES_ARCH_PATH:=$(MODULES_PATH)/arch/$(ARCH)
 PACKAGES_PATH:=packages
 
-MODULES:=
-MODULES_OBJECTS:=
-
 BINS:=
 CONFS:=
 LIBS:=
+MODULES:=
 SHARES:=
 CLEAN:=
 
@@ -87,7 +85,6 @@ $(RAMDISK_NAME).cpio: $(BUILD_PATH)
 clean:
 	rm -rf $(BUILD_PATH)
 	rm -rf $(CLEAN)
-	rm -rf $(MODULES) $(MODULES_OBJECTS)
 	rm -rf $(KERNEL)
 	rm -rf $(RAMDISK)
 

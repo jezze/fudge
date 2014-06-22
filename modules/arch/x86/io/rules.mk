@@ -1,8 +1,8 @@
-MOD:=$(MODULES_ARCH_PATH)/io/io.ko
-OBJ:=$(MODULES_ARCH_PATH)/io/main.o $(MODULES_ARCH_PATH)/io/io.o
+MOD_$(DIR):=$(DIR)/io.ko
+OBJ_$(DIR):=$(DIR)/main.o $(DIR)/io.o
 
-$(MOD): $(OBJ) $(LIBFUDGE)
+$(MOD_$(DIR)): $(OBJ_$(DIR))
 	$(LD) $(LDFLAGS) -o $@ $^
 
-MODULES+=$(MOD)
-MODULES_OBJECTS+=$(OBJ)
+MODULES:=$(MODULES) $(MOD_$(DIR))
+CLEAN:=$(CLEAN) $(MOD_$(DIR)) $(OBJ_$(DIR))

@@ -1,8 +1,8 @@
-MOD:=modules/network/ipv6/ipv6.ko
-OBJ:=modules/network/ipv6/main.o modules/network/ipv6/protocol.o
+MOD_$(DIR):=$(DIR)/ipv6.ko
+OBJ_$(DIR):=$(DIR)/main.o $(DIR)/protocol.o
 
-$(MOD): $(OBJ) $(LIBFUDGE)
+$(MOD_$(DIR)): $(OBJ_$(DIR))
 	$(LD) $(LDFLAGS) -o $@ $^
 
-MODULES+=$(MOD)
-MODULES_OBJECTS+=$(OBJ)
+MODULES:=$(MODULES) $(MOD_$(DIR))
+CLEAN:=$(CLEAN) $(MOD_$(DIR)) $(OBJ_$(DIR))

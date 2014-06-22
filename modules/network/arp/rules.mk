@@ -1,8 +1,8 @@
-MOD:=modules/network/arp/arp.ko
-OBJ:=modules/network/arp/main.o modules/network/arp/protocol.o
+MOD_$(DIR):=$(DIR)/arp.ko
+OBJ_$(DIR):=$(DIR)/main.o $(DIR)/protocol.o
 
-$(MOD): $(OBJ) $(LIBFUDGE)
+$(MOD_$(DIR)): $(OBJ_$(DIR))
 	$(LD) $(LDFLAGS) -o $@ $^
 
-MODULES+=$(MOD)
-MODULES_OBJECTS+=$(OBJ)
+MODULES:=$(MODULES) $(MOD_$(DIR))
+CLEAN:=$(CLEAN) $(MOD_$(DIR)) $(OBJ_$(DIR))

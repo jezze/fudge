@@ -1,8 +1,8 @@
-MOD:=modules/block/ext2/ext2.ko
-OBJ:=modules/block/ext2/main.o modules/block/ext2/protocol.o modules/block/ext2/filesystem.o
+MOD_$(DIR):=$(DIR)/ext2.ko
+OBJ_$(DIR):=$(DIR)/main.o $(DIR)/filesystem.o $(DIR)/protocol.o
 
-$(MOD): $(OBJ) $(LIBFUDGE)
+$(MOD_$(DIR)): $(OBJ_$(DIR))
 	$(LD) $(LDFLAGS) -o $@ $^
 
-MODULES+=$(MOD)
-MODULES_OBJECTS+=$(OBJ)
+MODULES:=$(MODULES) $(MOD_$(DIR))
+CLEAN:=$(CLEAN) $(MOD_$(DIR)) $(OBJ_$(DIR))

@@ -1,8 +1,8 @@
-MOD:=$(MODULES_ARCH_PATH)/pic/pic.ko
-OBJ:=$(MODULES_ARCH_PATH)/pic/main.o $(MODULES_ARCH_PATH)/pic/pic.o
+MOD_$(DIR):=$(DIR)/pic.ko
+OBJ_$(DIR):=$(DIR)/main.o $(DIR)/pic.o
 
-$(MOD): $(OBJ) $(LIBFUDGE)
+$(MOD_$(DIR)): $(OBJ_$(DIR))
 	$(LD) $(LDFLAGS) -o $@ $^
 
-MODULES+=$(MOD)
-MODULES_OBJECTS+=$(OBJ)
+MODULES:=$(MODULES) $(MOD_$(DIR))
+CLEAN:=$(CLEAN) $(MOD_$(DIR)) $(OBJ_$(DIR))

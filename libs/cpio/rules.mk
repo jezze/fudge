@@ -1,5 +1,5 @@
-LIB_$(DIR):=$(LIBS_PATH)/cpio/libcpio.a
-OBJ_$(DIR):=$(LIBS_PATH)/cpio/cpio.o
+LIB_$(DIR):=$(DIR)/libcpio.a
+OBJ_$(DIR):=$(DIR)/cpio.o
 
 $(LIB_$(DIR)): $(OBJ_$(DIR))
 	$(AR) $(ARFLAGS) $@ $^

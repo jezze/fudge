@@ -1,8 +1,8 @@
-MOD:=$(MODULES_PATH)/mtwist/mtwist.ko
-OBJ:=$(MODULES_PATH)/mtwist/main.o
+MOD_$(DIR):=$(DIR)/mtwist.ko
+OBJ_$(DIR):=$(DIR)/main.o
 
-$(MOD): $(OBJ) $(LIBFUDGE)
+$(MOD_$(DIR)): $(OBJ_$(DIR))
 	$(LD) $(LDFLAGS) -o $@ $^
 
-MODULES+=$(MOD)
-MODULES_OBJECTS+=$(OBJ)
+MODULES:=$(MODULES) $(MOD_$(DIR))
+CLEAN:=$(CLEAN) $(MOD_$(DIR)) $(OBJ_$(DIR))

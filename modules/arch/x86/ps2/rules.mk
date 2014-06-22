@@ -1,8 +1,8 @@
-MOD:=$(MODULES_ARCH_PATH)/ps2/ps2.ko
-OBJ:=$(MODULES_ARCH_PATH)/ps2/main.o $(MODULES_ARCH_PATH)/ps2/keyboard_driver.o $(MODULES_ARCH_PATH)/ps2/mouse_driver.o
+MOD_$(DIR):=$(DIR)/ps2.ko
+OBJ_$(DIR):=$(DIR)/main.o $(DIR)/keyboard_driver.o $(DIR)/mouse_driver.o
 
-$(MOD): $(OBJ) $(LIBFUDGE)
+$(MOD_$(DIR)): $(OBJ_$(DIR))
 	$(LD) $(LDFLAGS) -o $@ $^
 
-MODULES+=$(MOD)
-MODULES_OBJECTS+=$(OBJ)
+MODULES:=$(MODULES) $(MOD_$(DIR))
+CLEAN:=$(CLEAN) $(MOD_$(DIR)) $(OBJ_$(DIR))

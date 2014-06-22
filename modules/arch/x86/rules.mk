@@ -1,4 +1,7 @@
+PAR:=$(PAR).x
+TMP_$(PAR):=$(CUR)
 CUR:=$(DIR)
+
 DIR:=$(CUR)/acpi
 include $(DIR)/rules.mk
 DIR:=$(CUR)/apic
@@ -43,3 +46,6 @@ DIR:=$(CUR)/uart
 include $(DIR)/rules.mk
 DIR:=$(CUR)/vga
 include $(DIR)/rules.mk
+
+CUR:=$(TMP_$(PAR))
+PAR:=$(basename $(PAR))
