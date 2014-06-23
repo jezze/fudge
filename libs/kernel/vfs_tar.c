@@ -11,21 +11,21 @@ static struct vfs_protocol protocol;
 static unsigned int root(struct vfs_backend *backend)
 {
 
-    return 0xFFFFFFFF;
+    return TAR_BLOCK_SIZE;
 
 }
 
 static unsigned int decode(unsigned int id)
 {
 
-    return (id == 0xFFFFFFFF) ? 0 : id;
+    return id - TAR_BLOCK_SIZE;
 
 }
 
 static unsigned int encode(unsigned int address)
 {
 
-    return (address) ? address : 0xFFFFFFFF;
+    return address + TAR_BLOCK_SIZE;
 
 }
 
@@ -50,7 +50,7 @@ static unsigned int parent(struct vfs_backend *backend, unsigned int id)
     {
 
         if (backend->read(backend, address, TAR_BLOCK_SIZE, &pheader) < TAR_BLOCK_SIZE)
-            return 0;
+            break;
 
         if (!tar_validate(&pheader))
             break;
@@ -86,7 +86,7 @@ static unsigned long get_physical(struct vfs_backend *backend, unsigned int id)
 
     struct kernel_module *module = (struct kernel_module *)backend;
 
-    return (unsigned long)module->address + decode(id) + TAR_BLOCK_SIZE;
+    return (unsigned long)module->address + id;
 
 }
 
@@ -142,7 +142,7 @@ static unsigned int read(struct vfs_backend *backend, unsigned int id, unsigned 
             unsigned int l;
 
             if (backend->read(backend, address, TAR_BLOCK_SIZE, &header) < TAR_BLOCK_SIZE)
-                return 0;
+                break;
 
             if (!tar_validate(&header))
                 break;
@@ -212,7 +212,7 @@ static unsigned int child(struct vfs_backend *backend, unsigned int id, unsigned
     {
 
         if (backend->read(backend, address, TAR_BLOCK_SIZE, &header) < TAR_BLOCK_SIZE)
-            return 0;
+            break;
 
         if (!tar_validate(&header))
             break;
