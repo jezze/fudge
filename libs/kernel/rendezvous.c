@@ -45,13 +45,12 @@ unsigned int rendezvous_sleep(struct rendezvous *rendezvous, unsigned int condit
     if (!rendezvous_islocked(rendezvous))
         return 0;
 
-    if (rendezvous->sleep)
+    if (!task_sleep(rendezvous->task))
         return 0;
 
-    rendezvous->sleep = 1;
     scheduler_block(rendezvous->task);
 
-    return 1;
+    return condition;
 
 }
 
@@ -64,15 +63,14 @@ unsigned int rendezvous_unsleep(struct rendezvous *rendezvous, unsigned int cond
     if (!rendezvous_islocked(rendezvous))
         return 0;
 
-    if (!rendezvous->sleep)
+    if (!task_unsleep(rendezvous->task))
         return 0;
 
-    rendezvous->sleep = 0;
     scheduler_unblock(rendezvous->task);
 
     rendezvous->task->registers.ip -= 7;
 
-    return 1;
+    return condition;
 
 }
 

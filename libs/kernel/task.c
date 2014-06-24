@@ -3,6 +3,30 @@
 #include "vfs.h"
 #include "task.h"
 
+unsigned int task_sleep(struct task *task)
+{
+
+    if (task->sleep == 1)
+        return 0;
+
+    task->sleep = 1;
+
+    return task->sleep == 1;
+
+}
+
+unsigned int task_unsleep(struct task *task)
+{
+
+    if (task->sleep == 0)
+        return 0;
+
+    task->sleep = 0;
+
+    return task->sleep == 0;
+
+}
+
 void task_init(struct task *task, unsigned long ip, unsigned long sp)
 {
 
