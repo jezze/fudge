@@ -14,17 +14,22 @@ struct pipe_stream
 
 };
 
+struct pipe_endpoint
+{
+
+    struct system_stream pipe;
+    struct pipe_stream stream;
+    struct rendezvous rread;
+
+};
+
 static struct pipe_session
 {
 
     struct system_group base;
-    struct system_stream ipipe;
-    struct system_stream opipe;
     char name[8];
-    struct pipe_stream istream;
-    struct pipe_stream ostream;
-    struct rendezvous iread;
-    struct rendezvous oread;
+    struct pipe_endpoint pipe0;
+    struct pipe_endpoint pipe1;
 
 } sessions[8];
 
@@ -76,99 +81,99 @@ static unsigned int write_stream(struct pipe_stream *stream, unsigned int count,
 
 }
 
-static unsigned int ipipe_open(struct system_node *self)
+static unsigned int pipe0_open(struct system_node *self)
 {
 
     struct pipe_session *session = (struct pipe_session *)self->parent;
 
-    rendezvous_lock(&session->iread);
+    rendezvous_lock(&session->pipe0.rread);
 
     return (unsigned int)self;
 
 }
 
-static unsigned int ipipe_close(struct system_node *self)
+static unsigned int pipe0_close(struct system_node *self)
 {
 
     struct pipe_session *session = (struct pipe_session *)self->parent;
 
-    rendezvous_unlock(&session->iread);
-    rendezvous_unsleep(&session->oread, 1);
+    rendezvous_unlock(&session->pipe0.rread);
+    rendezvous_unsleep(&session->pipe1.rread, 1);
 
     return (unsigned int)self;
 
 }
 
-static unsigned int ipipe_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int pipe0_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct pipe_session *session = (struct pipe_session *)self->parent;
 
-    count = read_stream(&session->ostream, count, buffer);
+    count = read_stream(&session->pipe1.stream, count, buffer);
 
-    rendezvous_sleep(&session->iread, !count && rendezvous_islocked(&session->oread));
+    rendezvous_sleep(&session->pipe0.rread, !count && rendezvous_islocked(&session->pipe1.rread));
 
     return count;
 
 }
 
-static unsigned int ipipe_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int pipe0_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct pipe_session *session = (struct pipe_session *)self->parent;
 
-    count = write_stream(&session->istream, count, buffer);
+    count = write_stream(&session->pipe0.stream, count, buffer);
 
-    rendezvous_unsleep(&session->oread, count);
+    rendezvous_unsleep(&session->pipe1.rread, count);
 
     return count;
 
 }
 
-static unsigned int opipe_open(struct system_node *self)
+static unsigned int pipe1_open(struct system_node *self)
 {
 
     struct pipe_session *session = (struct pipe_session *)self->parent;
 
-    rendezvous_lock(&session->oread);
+    rendezvous_lock(&session->pipe1.rread);
 
     return (unsigned int)self;
 
 }
 
-static unsigned int opipe_close(struct system_node *self)
+static unsigned int pipe1_close(struct system_node *self)
 {
 
     struct pipe_session *session = (struct pipe_session *)self->parent;
 
-    rendezvous_unlock(&session->oread);
-    rendezvous_unsleep(&session->iread, 1);
+    rendezvous_unlock(&session->pipe1.rread);
+    rendezvous_unsleep(&session->pipe0.rread, 1);
 
     return (unsigned int)self;
 
 }
 
-static unsigned int opipe_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int pipe1_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct pipe_session *session = (struct pipe_session *)self->parent;
 
-    count = read_stream(&session->istream, count, buffer);
+    count = read_stream(&session->pipe0.stream, count, buffer);
 
-    rendezvous_sleep(&session->oread, !count && rendezvous_islocked(&session->iread));
+    rendezvous_sleep(&session->pipe1.rread, !count && rendezvous_islocked(&session->pipe0.rread));
 
     return count;
 
 }
 
-static unsigned int opipe_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int pipe1_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct pipe_session *session = (struct pipe_session *)self->parent;
 
-    count = write_stream(&session->ostream, count, buffer);
+    count = write_stream(&session->pipe1.stream, count, buffer);
 
-    rendezvous_unsleep(&session->iread, count);
+    rendezvous_unsleep(&session->pipe0.rread, count);
 
     return count;
 
@@ -180,17 +185,17 @@ static void init_session(struct pipe_session *session, unsigned int id)
     memory_clear(session, sizeof (struct pipe_session));
     ascii_fromint(session->name, 8, id, 10);
     system_init_group(&session->base, session->name);
-    system_init_stream(&session->ipipe, "0");
-    system_init_stream(&session->opipe, "1");
+    system_init_stream(&session->pipe0.pipe, "0");
+    system_init_stream(&session->pipe1.pipe, "1");
 
-    session->ipipe.node.open = ipipe_open;
-    session->ipipe.node.close = ipipe_close;
-    session->ipipe.node.read = ipipe_read;
-    session->ipipe.node.write = ipipe_write;
-    session->opipe.node.open = opipe_open;
-    session->opipe.node.close = opipe_close;
-    session->opipe.node.read = opipe_read;
-    session->opipe.node.write = opipe_write;
+    session->pipe0.pipe.node.open = pipe0_open;
+    session->pipe0.pipe.node.close = pipe0_close;
+    session->pipe0.pipe.node.read = pipe0_read;
+    session->pipe0.pipe.node.write = pipe0_write;
+    session->pipe1.pipe.node.open = pipe1_open;
+    session->pipe1.pipe.node.close = pipe1_close;
+    session->pipe1.pipe.node.read = pipe1_read;
+    session->pipe1.pipe.node.write = pipe1_write;
 
 }
 
@@ -208,8 +213,8 @@ void init()
 
         init_session(&sessions[i], i);
         system_group_add(&root, &sessions[i].base.node);
-        system_group_add(&sessions[i].base, &sessions[i].ipipe.node);
-        system_group_add(&sessions[i].base, &sessions[i].opipe.node);
+        system_group_add(&sessions[i].base, &sessions[i].pipe0.pipe.node);
+        system_group_add(&sessions[i].base, &sessions[i].pipe1.pipe.node);
 
     }
 
