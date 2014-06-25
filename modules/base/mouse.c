@@ -22,7 +22,7 @@ static struct interface_node
 static struct system_group root;
 static struct system_group dev;
 
-static unsigned int data_open(struct system_node *self)
+static unsigned int data_open(struct system_node *self, unsigned int flags)
 {
 
     struct interface_node *node = (struct interface_node *)self->parent;

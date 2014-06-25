@@ -40,7 +40,7 @@ void system_unregister_node(struct system_node *node)
 
 }
 
-static unsigned int open(struct system_node *self)
+static unsigned int open(struct system_node *self, unsigned int flags)
 {
 
     return (unsigned int)self;

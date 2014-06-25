@@ -48,7 +48,7 @@ static void execute(struct token_state *state, struct expression *expression)
 
     }
 
-    call_open(CALL_O0);
+    call_open(CALL_O0, CALL_OPEN_WRITE);
 
     for (rindex = 0; rindex < expression->rules; rindex++)
     {
@@ -72,7 +72,7 @@ void main()
     struct expression expression;
 
     memory_clear(&expression, sizeof (struct expression));
-    call_open(CALL_I0);
+    call_open(CALL_I0, CALL_OPEN_READ);
     token_init_state(&state, call_read(CALL_I0, 0, FUDGE_BSIZE, buffer), buffer);
     call_close(CALL_I0);
 

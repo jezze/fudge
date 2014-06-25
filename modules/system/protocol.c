@@ -36,12 +36,12 @@ static unsigned int match(struct vfs_backend *backend)
 
 }
 
-static unsigned int open(struct vfs_backend *backend, unsigned int id)
+static unsigned int open(struct vfs_backend *backend, unsigned int id, unsigned int flags)
 {
 
     struct system_node *node = (struct system_node *)(unsigned int)id;
 
-    return node->open(node);
+    return node->open(node, flags);
 
 }
 

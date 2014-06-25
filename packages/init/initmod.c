@@ -12,7 +12,7 @@ void main()
     if (!call_walk(CALL_L1, CALL_DR, 9, "boot/mod/"))
         return;
 
-    call_open(CALL_I0);
+    call_open(CALL_I0, CALL_OPEN_READ);
 
     for (roff = 0; (count = call_read(CALL_I0, roff, FUDGE_BSIZE, buffer)); roff += loff)
     {

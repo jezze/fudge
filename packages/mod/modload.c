@@ -67,7 +67,7 @@ static unsigned int find_symbol_module(unsigned int count, char *symbol)
     if (!call_walk(CALL_L2, CALL_L1, offset, module))
         return 0;
 
-    call_open(CALL_L2);
+    call_open(CALL_L2, CALL_OPEN_READ | CALL_OPEN_WRITE);
 
     address = find_symbol(CALL_L2, count, symbol);
 
@@ -183,8 +183,8 @@ void main()
     if (!call_walk(CALL_L1, CALL_DR, 9, "boot/mod/"))
         return;
 
-    call_open(CALL_L0);
-    call_open(CALL_I0);
+    call_open(CALL_L0, CALL_OPEN_READ | CALL_OPEN_WRITE);
+    call_open(CALL_I0, CALL_OPEN_READ | CALL_OPEN_WRITE);
 
     if (resolve(CALL_I0))
         call_load(CALL_I0);

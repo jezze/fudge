@@ -131,7 +131,7 @@ static unsigned int walk(struct container *self, struct task *task, void *stack)
 static unsigned int open(struct container *self, struct task *task, void *stack)
 {
 
-    struct {void *caller; unsigned int index;} *args = stack;
+    struct {void *caller; unsigned int index; unsigned int flags;} *args = stack;
     struct vfs_descriptor *descriptor = get_descriptor(task, args->index);
 
     if (!descriptor || !descriptor->id || !descriptor->channel)
@@ -139,7 +139,7 @@ static unsigned int open(struct container *self, struct task *task, void *stack)
 
     descriptor->active++;
 
-    return descriptor->id = descriptor->channel->protocol->open(descriptor->channel->backend, descriptor->id);
+    return descriptor->id = descriptor->channel->protocol->open(descriptor->channel->backend, descriptor->id, args->flags);
 
 }
 

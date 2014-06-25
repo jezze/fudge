@@ -81,7 +81,7 @@ void main()
     call_walk(CALL_I1, CALL_I0, 0, 0);
     call_walk(CALL_O1, CALL_O0, 0, 0);
     memory_clear(&expression, sizeof (struct expression));
-    call_open(CALL_I0);
+    call_open(CALL_I0, CALL_OPEN_READ);
     token_init_state(&state, call_read(CALL_I0, 0, FUDGE_BSIZE, buffer), buffer);
     call_close(CALL_I0);
 

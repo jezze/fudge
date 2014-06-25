@@ -81,7 +81,7 @@ static unsigned int write_stream(struct pipe_stream *stream, unsigned int count,
 
 }
 
-static unsigned int pipe0_open(struct system_node *self)
+static unsigned int pipe0_open(struct system_node *self, unsigned int flags)
 {
 
     struct pipe_session *session = (struct pipe_session *)self->parent;
@@ -130,7 +130,7 @@ static unsigned int pipe0_write(struct system_node *self, unsigned int offset, u
 
 }
 
-static unsigned int pipe1_open(struct system_node *self)
+static unsigned int pipe1_open(struct system_node *self, unsigned int flags)
 {
 
     struct pipe_session *session = (struct pipe_session *)self->parent;
