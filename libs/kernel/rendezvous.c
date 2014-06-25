@@ -12,8 +12,11 @@ unsigned int rendezvous_islocked(struct rendezvous *rendezvous)
 
 }
 
-unsigned int rendezvous_lock(struct rendezvous *rendezvous)
+unsigned int rendezvous_lock(struct rendezvous *rendezvous, unsigned int condition)
 {
+
+    if (!condition)
+        return 0;
 
     if (rendezvous_islocked(rendezvous))
         return 0;
@@ -24,8 +27,11 @@ unsigned int rendezvous_lock(struct rendezvous *rendezvous)
 
 }
 
-unsigned int rendezvous_unlock(struct rendezvous *rendezvous)
+unsigned int rendezvous_unlock(struct rendezvous *rendezvous, unsigned int condition)
 {
+
+    if (!condition)
+        return 0;
 
     if (!rendezvous_islocked(rendezvous))
         return 0;

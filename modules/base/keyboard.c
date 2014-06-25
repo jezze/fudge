@@ -26,7 +26,7 @@ static unsigned int data_open(struct system_node *self, unsigned int flags)
 
     struct interface_node *node = (struct interface_node *)self->parent;
 
-    if (rendezvous_lock(&node->interface->rdata))
+    if (rendezvous_lock(&node->interface->rdata, flags & 0x01))
         return (unsigned int)self;
     else
         return 0;
@@ -38,7 +38,7 @@ static unsigned int data_close(struct system_node *self)
 
     struct interface_node *node = (struct interface_node *)self->parent;
 
-    if (rendezvous_unlock(&node->interface->rdata))
+    if (rendezvous_unlock(&node->interface->rdata, 1))
         return (unsigned int)self;
     else
         return 0;

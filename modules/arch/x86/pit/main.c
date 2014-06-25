@@ -51,7 +51,7 @@ static unsigned short divisor;
 static void add_duration(struct base_bus *bus, unsigned int id, unsigned int duration)
 {
 
-    rendezvous_lock(&rduration);
+    rendezvous_lock(&rduration, 1);
     rendezvous_sleep(&rduration, 1);
 
     duration = itimer.jiffies;
@@ -66,7 +66,7 @@ static void handle_irq(unsigned int irq, struct base_bus *bus, unsigned int id)
     rendezvous_unsleep(&rduration, duration + 5000 < itimer.jiffies);
 
     if (duration + 5000 < itimer.jiffies)
-        rendezvous_unlock(&rduration);
+        rendezvous_unlock(&rduration, 1);
 
 }
 

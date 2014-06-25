@@ -86,7 +86,7 @@ static unsigned int pipe0_open(struct system_node *self, unsigned int flags)
 
     struct pipe_session *session = (struct pipe_session *)self->parent;
 
-    rendezvous_lock(&session->pipe0.rread);
+    rendezvous_lock(&session->pipe0.rread, flags & 0x01);
 
     return (unsigned int)self;
 
@@ -97,7 +97,7 @@ static unsigned int pipe0_close(struct system_node *self)
 
     struct pipe_session *session = (struct pipe_session *)self->parent;
 
-    rendezvous_unlock(&session->pipe0.rread);
+    rendezvous_unlock(&session->pipe0.rread, 1);
     rendezvous_unsleep(&session->pipe1.rread, 1);
 
     return (unsigned int)self;
@@ -135,7 +135,7 @@ static unsigned int pipe1_open(struct system_node *self, unsigned int flags)
 
     struct pipe_session *session = (struct pipe_session *)self->parent;
 
-    rendezvous_lock(&session->pipe1.rread);
+    rendezvous_lock(&session->pipe1.rread, flags & 0x01);
 
     return (unsigned int)self;
 
@@ -146,7 +146,7 @@ static unsigned int pipe1_close(struct system_node *self)
 
     struct pipe_session *session = (struct pipe_session *)self->parent;
 
-    rendezvous_unlock(&session->pipe1.rread);
+    rendezvous_unlock(&session->pipe1.rread, 1);
     rendezvous_unsleep(&session->pipe0.rread, 1);
 
     return (unsigned int)self;

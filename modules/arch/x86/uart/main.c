@@ -231,7 +231,7 @@ static unsigned int read_terminal_data(struct base_bus *bus, unsigned int id, un
     count = read_stream(&stream, count, buffer);
 
     if (!count)
-        rendezvous_lock(&rdata);
+        rendezvous_lock(&rdata, 1);
 
     rendezvous_sleep(&rdata, !count);
 
@@ -261,7 +261,7 @@ static void handle_irq(unsigned int irq, struct base_bus *bus, unsigned int id)
 
     write_stream(&stream, 1, &data);
     rendezvous_unsleep(&rdata, 1);
-    rendezvous_unlock(&rdata);
+    rendezvous_unlock(&rdata, 1);
 
 }
 
