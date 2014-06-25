@@ -20,6 +20,7 @@ struct pipe_endpoint
     struct system_stream pipe;
     struct pipe_stream stream;
     struct rendezvous rread;
+    struct rendezvous rwrite;
 
 };
 
@@ -86,9 +87,10 @@ static unsigned int pipe0_open(struct system_node *self, unsigned int flags)
 
     struct pipe_session *session = (struct pipe_session *)self->parent;
 
-    rendezvous_lock(&session->pipe0.rread, flags & 0x01);
-
-    return (unsigned int)self;
+    if (rendezvous_lock(&session->pipe0.rread, flags & 0x01) || rendezvous_lock(&session->pipe0.rwrite, flags & 0x02))
+        return (unsigned int)self;
+    else
+        return 0;
 
 }
 
@@ -98,6 +100,7 @@ static unsigned int pipe0_close(struct system_node *self)
     struct pipe_session *session = (struct pipe_session *)self->parent;
 
     rendezvous_unlock(&session->pipe0.rread, 1);
+    rendezvous_unlock(&session->pipe0.rwrite, 1);
     rendezvous_unsleep(&session->pipe1.rread, 1);
 
     return (unsigned int)self;
@@ -111,7 +114,7 @@ static unsigned int pipe0_read(struct system_node *self, unsigned int offset, un
 
     count = read_stream(&session->pipe1.stream, count, buffer);
 
-    rendezvous_sleep(&session->pipe0.rread, !count && rendezvous_islocked(&session->pipe1.rread));
+    rendezvous_sleep(&session->pipe0.rread, !count && rendezvous_islocked(&session->pipe1.rwrite));
 
     return count;
 
@@ -135,9 +138,10 @@ static unsigned int pipe1_open(struct system_node *self, unsigned int flags)
 
     struct pipe_session *session = (struct pipe_session *)self->parent;
 
-    rendezvous_lock(&session->pipe1.rread, flags & 0x01);
-
-    return (unsigned int)self;
+    if (rendezvous_lock(&session->pipe1.rread, flags & 0x01) || rendezvous_lock(&session->pipe1.rwrite, flags & 0x02))
+        return (unsigned int)self;
+    else
+        return 0;
 
 }
 
@@ -147,6 +151,7 @@ static unsigned int pipe1_close(struct system_node *self)
     struct pipe_session *session = (struct pipe_session *)self->parent;
 
     rendezvous_unlock(&session->pipe1.rread, 1);
+    rendezvous_unlock(&session->pipe1.rwrite, 1);
     rendezvous_unsleep(&session->pipe0.rread, 1);
 
     return (unsigned int)self;
@@ -160,7 +165,7 @@ static unsigned int pipe1_read(struct system_node *self, unsigned int offset, un
 
     count = read_stream(&session->pipe0.stream, count, buffer);
 
-    rendezvous_sleep(&session->pipe1.rread, !count && rendezvous_islocked(&session->pipe0.rread));
+    rendezvous_sleep(&session->pipe1.rread, !count && rendezvous_islocked(&session->pipe0.rwrite));
 
     return count;
 
