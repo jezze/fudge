@@ -4,6 +4,9 @@
 static void interpret(struct lifo_stack *stack)
 {
 
+    char buffer[4096];
+    unsigned int count;
+
     /* This is a temporary fix */
     if (memory_match(stack->buffer, "cd ", 3))
     {
@@ -34,13 +37,18 @@ static void interpret(struct lifo_stack *stack)
     if (!call_walk(CALL_I1, CALL_DR, 15, "system/pipe/7/1"))
         return;
 
-    if (!call_walk(CALL_O1, CALL_O0, 0, 0))
+    if (!call_walk(CALL_O1, CALL_I1, 0, 0))
         return;
 
     call_open(CALL_L1, CALL_OPEN_WRITE);
     call_write(CALL_L1, 0, stack->head, stack->buffer);
     call_close(CALL_L1);
     call_spawn(CALL_DP);
+    call_open(CALL_L1, CALL_OPEN_READ);
+    count = call_read(CALL_L1, 0, 4096, buffer);
+    call_close(CALL_L1);
+    call_write(CALL_O0, 0, count, buffer);
+
 
 }
 

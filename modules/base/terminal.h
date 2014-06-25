@@ -4,6 +4,8 @@ struct base_terminal_interface
     struct base_interface base;
     unsigned int (*read_data)(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer);
     unsigned int (*write_data)(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer);
+    struct rendezvous rdata;
+    struct rendezvous wdata;
 
 };
 

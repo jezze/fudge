@@ -1,6 +1,7 @@
 #include <module.h>
 #include <kernel/resource.h>
 #include <kernel/vfs.h>
+#include <kernel/rendezvous.h>
 #include <system/system.h>
 #include "base.h"
 #include "terminal.h"
@@ -18,6 +19,30 @@ static struct interface_node
 
 static struct system_group root;
 static struct system_group dev;
+
+static unsigned int data_open(struct system_node *self, unsigned int flags)
+{
+
+    struct interface_node *node = (struct interface_node *)self->parent;
+
+    if (rendezvous_lock(&node->interface->rdata, flags & 0x01) || rendezvous_lock(&node->interface->wdata, flags & 0x02))
+        return (unsigned int)self;
+    else
+        return 0;
+
+}
+
+static unsigned int data_close(struct system_node *self)
+{
+
+    struct interface_node *node = (struct interface_node *)self->parent;
+
+    if (rendezvous_unlock(&node->interface->rdata, 1) || rendezvous_unlock(&node->interface->wdata, 1))
+        return (unsigned int)self;
+    else
+        return 0;
+
+}
 
 static unsigned int data_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
@@ -64,6 +89,8 @@ static void init_inode(struct interface_node *node, struct base_terminal_interfa
     node->interface = interface;
     node->bus = bus;
     node->id = id;
+    node->data.node.open = data_open;
+    node->data.node.close = data_close;
     node->data.node.read = data_read;
     node->data.node.write = data_write;
 
