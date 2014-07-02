@@ -191,34 +191,51 @@ unsigned short arch_segment()
 
 }
 
-unsigned short arch_schedule(struct cpu_general *general, struct cpu_interrupt *interrupt)
+/* Should be removed */
+static void arch_task_save(struct cpu_general *general)
 {
 
     struct arch_task *task = (struct arch_task *)current.task;
-    struct arch_task *next = (struct arch_task *)scheduler_find_used_task();
 
-    if (task)
+    memory_copy(&task->general, general, sizeof (struct cpu_general));
+
+}
+
+/* Should be removed */
+static void arch_task_load(struct cpu_general *general)
+{
+
+    struct arch_task *task = (struct arch_task *)current.task;
+
+    /* This mmu_load should be handled by a page fault */
+    mmu_load(task->directory);
+    memory_copy(general, &task->general, sizeof (struct cpu_general));
+
+}
+
+unsigned short arch_schedule(struct cpu_general *general, struct cpu_interrupt *interrupt)
+{
+
+    if (current.task)
     {
 
-        task->base.registers.ip = interrupt->eip;
-        task->base.registers.sp = interrupt->esp;
+        current.task->registers.ip = interrupt->eip;
+        current.task->registers.sp = interrupt->esp;
 
-        memory_copy(&task->general, general, sizeof (struct cpu_general));
+        arch_task_save(general);
 
     }
 
-    if (next)
+    current.task = scheduler_find_used_task();
+
+    if (current.task)
     {
 
-        mmu_load(next->directory);
-
         interrupt->code = selector.ucode;
-        interrupt->eip = next->base.registers.ip;
-        interrupt->esp = next->base.registers.sp;
+        interrupt->eip = current.task->registers.ip;
+        interrupt->esp = current.task->registers.sp;
 
-        memory_copy(general, &next->general, sizeof (struct cpu_general));
-
-        current.task = &next->base;
+        arch_task_load(general);
 
         return selector.udata;
 
@@ -230,8 +247,6 @@ unsigned short arch_schedule(struct cpu_general *general, struct cpu_interrupt *
         interrupt->code = selector.kcode;
         interrupt->eip = (unsigned int)arch_halt;
         interrupt->esp = ARCH_KSTACK_LIMIT;
-
-        current.task = 0;
 
         return selector.kdata;
 
