@@ -136,18 +136,16 @@ static unsigned int spawn(struct container *self, struct task *task, void *stack
         return 0;
 
     memory_copy(&args, stack, sizeof (struct parameters));
-
-    activate_task(self, next);
-    scheduler_use(next);
-
-    next->registers.ip = 0;
-    next->registers.sp = ARCH_TASK_STACKLIMIT;
-
     memory_copy(next->descriptors, task->descriptors, sizeof (struct vfs_descriptor) * 4);
     memory_copy(next->descriptors + 4, task->descriptors + 6, sizeof (struct vfs_descriptor) * 18);
     memory_clear(next->descriptors + 22, sizeof (struct vfs_descriptor) * 10);
+    activate_task(self, next);
+    scheduler_use(next);
 
-    return self->calls[CONTAINER_CALL_EXECUTE](self, next, &args);
+    next->registers.ip = self->calls[CONTAINER_CALL_EXECUTE](self, next, &args);
+    next->registers.sp = ARCH_TASK_STACKLIMIT;
+
+    return 1;
 
 }
 

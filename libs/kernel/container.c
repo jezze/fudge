@@ -274,7 +274,7 @@ static unsigned int execute(struct container *self, struct task *task, void *sta
     if (!protocol)
         return 0;
 
-    return task->registers.ip = protocol->copy_program(descriptor->channel, descriptor->id);
+    return protocol->copy_program(descriptor->channel, descriptor->id);
 
 }
 
