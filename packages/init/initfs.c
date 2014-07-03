@@ -59,7 +59,7 @@ void main()
 
         call_open(CALL_L0, CALL_OPEN_READ | CALL_OPEN_WRITE);
         call_auth(channel, backend);
-        call_mount(channel, mount, CALL_L0);
+        call_mount(mount, channel, CALL_L0);
         call_close(CALL_L0);
 
     }
