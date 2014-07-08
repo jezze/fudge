@@ -49,7 +49,7 @@ static void init_inode(struct interface_node *node, struct base_block_interface 
 {
 
     memory_clear(node, sizeof (struct interface_node));
-    system_init_group(&node->base, node->bus->name);
+    system_init_group(&node->base, bus->name);
     system_init_stream(&node->data, "data");
 
     node->interface = interface;

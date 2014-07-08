@@ -395,6 +395,13 @@ static void setup(struct base_bus *self)
 static unsigned int device_next(struct base_bus *self, unsigned int id)
 {
 
+    /* Only detect hda right now */
+    if (self == &secondary.base)
+        return 0;
+
+    if (id == 0)
+        return IDE_DEVICE_TYPE_ATA;
+
     return 0;
 
 }
