@@ -16,7 +16,7 @@ static unsigned int read_data(struct base_bus *bus, unsigned int id, unsigned in
     if (offset > 0)
         return 0;
 
-    return ide_bus_read_lba28(ideBus, id, 0, 1, buffer);
+    return ide_bus_read_lba28(ideBus, 0, 0, 1, buffer);
 
 }
 
@@ -28,12 +28,14 @@ static unsigned int write_data(struct base_bus *bus, unsigned int id, unsigned i
     if (offset > 0)
         return 0;
 
-    return ide_bus_write_lba28(ideBus, id, 0, 1, buffer);
+    return ide_bus_write_lba28(ideBus, 0, 0, 1, buffer);
 
 }
 
 static void handle_irq(unsigned int irq, struct base_bus *bus, unsigned int id)
 {
+
+    memory_copy((void *)0xB8000, "i n t ", 6);
 
 }
 
