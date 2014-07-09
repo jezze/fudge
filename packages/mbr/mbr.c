@@ -19,8 +19,9 @@ struct partition
 struct mbr
 {
 
-    unsigned char boot[436];
-    unsigned char id[10];
+    unsigned char boot[440];
+    unsigned char id[4];
+    unsigned char protected[2];
     struct partition partition[4];
     unsigned char signature[2];
 
@@ -42,7 +43,7 @@ void main()
 
     call_open(CALL_O0, CALL_OPEN_WRITE);
     woff += call_write(CALL_O0, woff, 4, "Id: ");
-    woff += call_write(CALL_O0, woff, 10, &mbr.id);
+    woff += call_write(CALL_O0, woff, 4, &mbr.id);
     woff += call_write(CALL_O0, woff, 1, "\n");
 
     for (i = 0; i < 4; i++)
@@ -50,6 +51,9 @@ void main()
 
         char num[32];
         unsigned int count;
+
+        if (mbr.partition[i].systemid == 0)
+            continue;
 
         woff += call_write(CALL_O0, woff, 10, "Partition ");
         count = ascii_write_value(num, 32, i, 10, 0);
