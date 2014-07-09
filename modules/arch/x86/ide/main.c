@@ -18,23 +18,22 @@ enum ide_register
 
 };
 
-enum ide_irq
+enum ide_control
 {
 
-    IDE_IRQ_PRIMARY                     = 0x0E,
-    IDE_IRQ_SECONDARY                   = 0x0F
-
-};
-
-enum ide_status
-{
-
-    IDE_STATUS_ERROR                    = 0x01,
-    IDE_STATUS_DRQ                      = 0x08,
-    IDE_STATUS_SRV                      = 0x10,
-    IDE_STATUS_DF                       = 0x20,
-    IDE_STATUS_RDY                      = 0x40,
-    IDE_STATUS_BUSY                     = 0x80
+    IDE_CONTROL_ATAPIEJECT              = 0x1B,
+    IDE_CONTROL_PIO28READ               = 0x20,
+    IDE_CONTROL_PIO48READ               = 0x24,
+    IDE_CONTROL_DMA48READ               = 0x25,
+    IDE_CONTROL_PIO28WRITE              = 0x30,
+    IDE_CONTROL_PIO48WRITE              = 0x34,
+    IDE_CONTROL_DMA48WRITE              = 0x35,
+    IDE_CONTROL_ATAPI                   = 0xA0,
+    IDE_CONTROL_IDATAPI                 = 0xA1,
+    IDE_CONTROL_ATAPIREAD               = 0xA8,
+    IDE_CONTROL_DMA28READ               = 0xC8,
+    IDE_CONTROL_DMA28WRITE              = 0xCA,
+    IDE_CONTROL_IDATA                   = 0xEC
 
 };
 
@@ -52,6 +51,26 @@ enum ide_data
     IDE_DATA_LBA3                       = 0x09,
     IDE_DATA_LBA4                       = 0x0A,
     IDE_DATA_LBA5                       = 0x0B
+
+};
+
+enum ide_irq
+{
+
+    IDE_IRQ_PRIMARY                     = 0x0E,
+    IDE_IRQ_SECONDARY                   = 0x0F
+
+};
+
+enum ide_status
+{
+
+    IDE_STATUS_ERROR                    = 0x01,
+    IDE_STATUS_DRQ                      = 0x08,
+    IDE_STATUS_SRV                      = 0x10,
+    IDE_STATUS_DF                       = 0x20,
+    IDE_STATUS_RDY                      = 0x40,
+    IDE_STATUS_BUSY                     = 0x80
 
 };
 

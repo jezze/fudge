@@ -52,13 +52,14 @@ void main()
         char num[32];
         unsigned int count;
 
-        if (mbr.partition[i].systemid == 0)
-            continue;
-
         woff += call_write(CALL_O0, woff, 10, "Partition ");
         count = ascii_write_value(num, 32, i, 10, 0);
         woff += call_write(CALL_O0, woff, count, num);
         woff += call_write(CALL_O0, woff, 2, ":\n");
+
+        if (mbr.partition[i].systemid == 0)
+            continue;
+
         woff += call_write(CALL_O0, woff, 11, "    Boot 0x");
         count = ascii_write_value(num, 32, mbr.partition[i].boot, 16, 0);
         woff += call_write(CALL_O0, woff, count, num);
