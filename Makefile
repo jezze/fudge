@@ -1,5 +1,7 @@
 ARCH:=x86
 LOADER:=mboot
+TARGET_x86:=i386-pc-none-elf
+TARGET_arm:=arm-none-eabi
 
 INSTALL_PATH:=/boot
 INCLUDE_PATH:=include
@@ -19,17 +21,9 @@ AS:=clang
 CC:=clang
 LD:=clang
 
-ASFLAGS_x86:=-target i386-pc-none-elf -msoft-float
-CFLAGS_x86:=-target i386-pc-none-elf -msoft-float
-LDFLAGS_x86:=-target i386-pc-none-elf -msoft-float
-
-ASFLAGS_arm:=-target arm-none-eabi -msoft-float
-CFLAGS_arm:=-target arm-none-eabi -msoft-float
-LDFLAGS_arm:=-target arm-none-eabi -msoft-float
-
-ASFLAGS:=-c -ffreestanding -nostdlib -nostdinc -std=c89 -pedantic -O2 -I$(INCLUDE_PATH) -I$(LIBS_PATH) $(ASFLAGS_$(ARCH))
-CFLAGS:=-c -Wall -Werror -ffreestanding -nostdlib -nostdinc -std=c89 -pedantic -O2 -I$(INCLUDE_PATH) -I$(LIBS_PATH) $(CFLAGS_$(ARCH))
-LDFLAGS:=-Wall -Werror -ffreestanding -nostdlib -nostdinc -std=c89 -pedantic -O2 -I$(INCLUDE_PATH) -I$(LIBS_PATH) $(LDFLAGS_$(ARCH))
+ASFLAGS:=-target $(TARGET_$(ARCH)) -msoft-float -c -ffreestanding -nostdlib -nostdinc -std=c89 -pedantic -O2 -I$(INCLUDE_PATH) -I$(LIBS_PATH)
+CFLAGS:=-target $(TARGET_$(ARCH)) -msoft-float -c -Wall -Werror -ffreestanding -nostdlib -nostdinc -std=c89 -pedantic -O2 -I$(INCLUDE_PATH) -I$(LIBS_PATH)
+LDFLAGS:=-target $(TARGET_$(ARCH)) -msoft-float -Wall -Werror -ffreestanding -nostdlib -nostdinc -std=c89 -pedantic -O2 -I$(INCLUDE_PATH) -I$(LIBS_PATH)
 ARFLAGS:=rs
 
 .PHONY: all clean install kernel libs modules packages ramdisk
