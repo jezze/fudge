@@ -42,7 +42,7 @@ void main()
     unsigned int nargs;
     unsigned int i;
 
-    call_open(CALL_I0, CALL_OPEN_READ);
+    call_open(CALL_I0);
     count = call_read(CALL_I0, 0, FUDGE_BSIZE, buffer);
     nargs = parse(count, buffer);
     call_close(CALL_I0);
@@ -57,7 +57,7 @@ void main()
         if (!call_walk(CALL_L0, CALL_DR, args[i + 3].count - 1, args[i + 3].position + 1))
             continue;
 
-        call_open(CALL_L0, CALL_OPEN_READ | CALL_OPEN_WRITE);
+        call_open(CALL_L0);
         call_auth(channel, backend);
         call_mount(mount, channel, CALL_L0);
         call_close(CALL_L0);

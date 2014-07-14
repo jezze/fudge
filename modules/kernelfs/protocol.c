@@ -84,7 +84,7 @@ static unsigned int match(struct vfs_backend *backend)
 
 }
 
-static unsigned int open(struct vfs_backend *backend, unsigned int id, unsigned int flags)
+static unsigned int open(struct vfs_backend *backend, unsigned int id)
 {
 
     return 0;

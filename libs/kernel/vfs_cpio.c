@@ -133,7 +133,7 @@ static unsigned long get_physical(struct vfs_backend *backend, unsigned int id)
 
 }
 
-static unsigned int open(struct vfs_backend *backend, unsigned int id, unsigned int flags)
+static unsigned int open(struct vfs_backend *backend, unsigned int id)
 {
 
     return id;

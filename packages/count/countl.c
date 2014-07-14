@@ -7,7 +7,7 @@ void main()
     unsigned int count, roff, loff;
     unsigned int lines = 0;
 
-    call_open(CALL_I0, CALL_OPEN_READ);
+    call_open(CALL_I0);
 
     for (roff = 0; (count = call_read(CALL_I0, roff, FUDGE_BSIZE, buffer)); roff += loff)
     {
@@ -23,7 +23,7 @@ void main()
     }
 
     call_close(CALL_I0);
-    call_open(CALL_O0, CALL_OPEN_WRITE);
+    call_open(CALL_O0);
     call_write(CALL_O0, 0, ascii_fromint(buffer, FUDGE_BSIZE, lines, 10), buffer);
     call_close(CALL_O0);
 

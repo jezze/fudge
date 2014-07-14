@@ -34,14 +34,14 @@ void main()
     unsigned int i;
     unsigned int woff = 0;
 
-    call_open(CALL_I0, CALL_OPEN_READ);
+    call_open(CALL_I0);
     call_read(CALL_I0, 0, 512, &mbr);
     call_close(CALL_I0);
 
     if (mbr.signature[0] != 0x55 || mbr.signature[1] != 0xAA)
         return;
 
-    call_open(CALL_O0, CALL_OPEN_WRITE);
+    call_open(CALL_O0);
     woff += call_write(CALL_O0, woff, 4, "Id: ");
     woff += call_write(CALL_O0, woff, 4, &mbr.id);
     woff += call_write(CALL_O0, woff, 1, "\n");
