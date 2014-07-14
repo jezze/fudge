@@ -21,6 +21,7 @@ static struct base_mouse_interface imouse;
 static struct ps2_mouse_stream stream;
 static unsigned char cycle;
 static char status;
+static struct rendezvous rdata;
 
 static unsigned int read_stream(struct ps2_mouse_stream *stream, unsigned int count, void *buffer)
 {
@@ -118,7 +119,7 @@ static unsigned int read_data(struct base_bus *bus, unsigned int id, unsigned in
 
     count = read_stream(&stream, count, buffer);
 
-    rendezvous_sleep(&imouse.rdata, !count);
+    rendezvous_sleep(&rdata, !count);
 
     return count;
 
@@ -153,7 +154,7 @@ static void handle_irq(unsigned int irq, struct base_bus *bus, unsigned int id)
     }
 
     if (write_stream(&stream, 1, &data))
-        rendezvous_unsleep(&imouse.rdata);
+        rendezvous_unsleep(&rdata);
 
 }
 

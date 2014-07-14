@@ -159,6 +159,7 @@ struct uart_driver_stream
 static struct base_driver driver;
 static struct base_terminal_interface iterminal;
 static struct uart_driver_stream stream;
+static struct rendezvous rdata;
 
 static unsigned int read_stream(struct uart_driver_stream *stream, unsigned int count, void *buffer)
 {
@@ -229,7 +230,7 @@ static unsigned int read_terminal_data(struct base_bus *bus, unsigned int id, un
 
     count = read_stream(&stream, count, buffer);
 
-    rendezvous_sleep(&iterminal.rdata, !count);
+    rendezvous_sleep(&rdata, !count);
 
     return count;
 
@@ -256,7 +257,7 @@ static void handle_irq(unsigned int irq, struct base_bus *bus, unsigned int id)
     char data = read(io);
 
     if (write_stream(&stream, 1, &data))
-        rendezvous_unsleep(&iterminal.rdata);
+        rendezvous_unsleep(&rdata);
 
 }
 

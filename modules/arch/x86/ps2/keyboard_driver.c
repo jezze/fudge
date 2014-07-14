@@ -19,6 +19,7 @@ struct ps2_keyboard_stream
 static struct base_driver driver;
 static struct base_keyboard_interface ikeyboard;
 static struct ps2_keyboard_stream stream;
+static struct rendezvous rdata;
 
 static unsigned int read_stream(struct ps2_keyboard_stream *stream, unsigned int count, void *buffer)
 {
@@ -71,7 +72,7 @@ static unsigned int read_data(struct base_bus *bus, unsigned int id, unsigned in
 
     count = read_stream(&stream, count, buffer);
 
-    rendezvous_sleep(&ikeyboard.rdata, !count);
+    rendezvous_sleep(&rdata, !count);
 
     return count;
 
@@ -133,7 +134,7 @@ static void handle_irq(unsigned int irq, struct base_bus *bus, unsigned int id)
             scancode += 128;
 
         if (write_stream(&stream, ikeyboard.keymap[scancode].length, ikeyboard.keymap[scancode].value))
-            rendezvous_unsleep(&ikeyboard.rdata);
+            rendezvous_unsleep(&rdata);
 
     }
 

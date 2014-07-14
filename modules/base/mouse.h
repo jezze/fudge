@@ -5,7 +5,6 @@ struct base_mouse_interface
     char vx;
     char vy;
     unsigned int (*read_data)(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer);
-    struct rendezvous rdata;
 
 };
 

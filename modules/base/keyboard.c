@@ -1,7 +1,6 @@
 #include <module.h>
 #include <kernel/resource.h>
 #include <kernel/vfs.h>
-#include <kernel/rendezvous.h>
 #include <system/system.h>
 #include "base.h"
 #include "keyboard.h"
