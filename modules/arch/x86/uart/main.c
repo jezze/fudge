@@ -255,8 +255,8 @@ static void handle_irq(unsigned int irq, struct base_bus *bus, unsigned int id)
     unsigned short io = platform_bus_get_base(bus, id);
     char data = read(io);
 
-    write_stream(&stream, 1, &data);
-    rendezvous_unsleep(&iterminal.rdata, 1);
+    if (write_stream(&stream, 1, &data))
+        rendezvous_unsleep(&iterminal.rdata);
 
 }
 

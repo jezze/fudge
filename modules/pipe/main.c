@@ -20,7 +20,6 @@ struct pipe_endpoint
     struct system_stream pipe;
     struct pipe_stream stream;
     struct rendezvous rread;
-    struct rendezvous rwrite;
 
 };
 
@@ -82,26 +81,12 @@ static unsigned int write_stream(struct pipe_stream *stream, unsigned int count,
 
 }
 
-static unsigned int pipe0_open(struct system_node *self, unsigned int flags)
-{
-
-    struct pipe_session *session = (struct pipe_session *)self->parent;
-
-    if (rendezvous_lock(&session->pipe0.rread, flags & 0x01) || rendezvous_lock(&session->pipe0.rwrite, flags & 0x02))
-        return (unsigned int)self;
-    else
-        return 0;
-
-}
-
 static unsigned int pipe0_close(struct system_node *self)
 {
 
     struct pipe_session *session = (struct pipe_session *)self->parent;
 
-    rendezvous_unlock(&session->pipe0.rread, 1);
-    rendezvous_unlock(&session->pipe0.rwrite, 1);
-    rendezvous_unsleep(&session->pipe1.rread, 1);
+    rendezvous_unsleep(&session->pipe0.rread);
 
     return (unsigned int)self;
 
@@ -114,7 +99,7 @@ static unsigned int pipe0_read(struct system_node *self, unsigned int offset, un
 
     count = read_stream(&session->pipe1.stream, count, buffer);
 
-    rendezvous_sleep(&session->pipe0.rread, !count && rendezvous_islocked(&session->pipe1.rwrite));
+    rendezvous_sleep(&session->pipe1.rread, !count && session->pipe0.rread.task);
 
     return count;
 
@@ -127,21 +112,10 @@ static unsigned int pipe0_write(struct system_node *self, unsigned int offset, u
 
     count = write_stream(&session->pipe0.stream, count, buffer);
 
-    rendezvous_unsleep(&session->pipe1.rread, count);
+    if (count)
+        rendezvous_unsleep(&session->pipe0.rread);
 
     return count;
-
-}
-
-static unsigned int pipe1_open(struct system_node *self, unsigned int flags)
-{
-
-    struct pipe_session *session = (struct pipe_session *)self->parent;
-
-    if (rendezvous_lock(&session->pipe1.rread, flags & 0x01) || rendezvous_lock(&session->pipe1.rwrite, flags & 0x02))
-        return (unsigned int)self;
-    else
-        return 0;
 
 }
 
@@ -150,9 +124,7 @@ static unsigned int pipe1_close(struct system_node *self)
 
     struct pipe_session *session = (struct pipe_session *)self->parent;
 
-    rendezvous_unlock(&session->pipe1.rread, 1);
-    rendezvous_unlock(&session->pipe1.rwrite, 1);
-    rendezvous_unsleep(&session->pipe0.rread, 1);
+    rendezvous_unsleep(&session->pipe1.rread);
 
     return (unsigned int)self;
 
@@ -165,7 +137,7 @@ static unsigned int pipe1_read(struct system_node *self, unsigned int offset, un
 
     count = read_stream(&session->pipe0.stream, count, buffer);
 
-    rendezvous_sleep(&session->pipe1.rread, !count && rendezvous_islocked(&session->pipe0.rwrite));
+    rendezvous_sleep(&session->pipe0.rread, !count && session->pipe1.rread.task);
 
     return count;
 
@@ -178,7 +150,8 @@ static unsigned int pipe1_write(struct system_node *self, unsigned int offset, u
 
     count = write_stream(&session->pipe1.stream, count, buffer);
 
-    rendezvous_unsleep(&session->pipe0.rread, count);
+    if (count)
+        rendezvous_unsleep(&session->pipe1.rread);
 
     return count;
 
@@ -193,11 +166,9 @@ static void init_session(struct pipe_session *session, unsigned int id)
     system_init_stream(&session->pipe0.pipe, "0");
     system_init_stream(&session->pipe1.pipe, "1");
 
-    session->pipe0.pipe.node.open = pipe0_open;
     session->pipe0.pipe.node.close = pipe0_close;
     session->pipe0.pipe.node.read = pipe0_read;
     session->pipe0.pipe.node.write = pipe0_write;
-    session->pipe1.pipe.node.open = pipe1_open;
     session->pipe1.pipe.node.close = pipe1_close;
     session->pipe1.pipe.node.read = pipe1_read;
     session->pipe1.pipe.node.write = pipe1_write;

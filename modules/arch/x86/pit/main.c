@@ -44,15 +44,10 @@ enum pit_command
 
 static struct base_driver driver;
 static struct base_timer_interface itimer;
-static struct rendezvous rduration;
-static unsigned int duration;
 static unsigned short divisor;
 
 static void add_duration(struct base_bus *bus, unsigned int id, unsigned int duration)
 {
-
-    rendezvous_lock(&rduration, 1);
-    rendezvous_sleep(&rduration, 1);
 
     duration = itimer.jiffies;
 
@@ -62,11 +57,6 @@ static void handle_irq(unsigned int irq, struct base_bus *bus, unsigned int id)
 {
 
     itimer.jiffies += 1;
-
-    rendezvous_unsleep(&rduration, duration + 5000 < itimer.jiffies);
-
-    if (duration + 5000 < itimer.jiffies)
-        rendezvous_unlock(&rduration, 1);
 
 }
 

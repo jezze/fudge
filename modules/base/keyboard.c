@@ -24,18 +24,14 @@ static struct system_group dev;
 static unsigned int data_open(struct system_node *self, unsigned int flags)
 {
 
-    struct interface_node *node = (struct interface_node *)self->parent;
-
-    return rendezvous_lock(&node->interface->rdata, flags & 0x01) ? (unsigned int)self : 0;
+    return (unsigned int)self;
 
 }
 
 static unsigned int data_close(struct system_node *self)
 {
 
-    struct interface_node *node = (struct interface_node *)self->parent;
-
-    return rendezvous_unlock(&node->interface->rdata, 1) ? (unsigned int)self : 0;
+    return (unsigned int)self;
 
 }
 
