@@ -99,7 +99,7 @@ static unsigned int pipe0_read(struct system_node *self, unsigned int offset, un
 
     count = read_stream(&session->pipe1.stream, count, buffer);
 
-    rendezvous_sleep(&session->pipe1.rread, !count && session->pipe0.rread.task);
+    rendezvous_sleep(&session->pipe1.rread, !count && rendezvous_asleep(&session->pipe0.rread));
 
     return count;
 
@@ -137,7 +137,7 @@ static unsigned int pipe1_read(struct system_node *self, unsigned int offset, un
 
     count = read_stream(&session->pipe0.stream, count, buffer);
 
-    rendezvous_sleep(&session->pipe0.rread, !count && session->pipe1.rread.task);
+    rendezvous_sleep(&session->pipe0.rread, !count && rendezvous_asleep(&session->pipe1.rread));
 
     return count;
 

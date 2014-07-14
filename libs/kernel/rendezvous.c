@@ -5,6 +5,13 @@
 #include "scheduler.h"
 #include "rendezvous.h"
 
+unsigned int rendezvous_asleep(struct rendezvous *rendezvous)
+{
+
+    return rendezvous->task != 0;
+
+}
+
 void rendezvous_sleep(struct rendezvous *rendezvous, unsigned int condition)
 {
 
