@@ -20,20 +20,6 @@ static struct interface_node
 static struct system_group root;
 static struct system_group dev;
 
-static unsigned int data_open(struct system_node *self, unsigned int flags)
-{
-
-    return (unsigned int)self;
-
-}
-
-static unsigned int data_close(struct system_node *self)
-{
-
-    return (unsigned int)self;
-
-}
-
 static unsigned int data_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
@@ -79,8 +65,6 @@ static void init_inode(struct interface_node *node, struct base_terminal_interfa
     node->interface = interface;
     node->bus = bus;
     node->id = id;
-    node->data.node.open = data_open;
-    node->data.node.close = data_close;
     node->data.node.read = data_read;
     node->data.node.write = data_write;
 
