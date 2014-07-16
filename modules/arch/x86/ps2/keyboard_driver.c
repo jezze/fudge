@@ -133,10 +133,11 @@ static void handle_irq(unsigned int irq, struct base_bus *bus, unsigned int id)
         if (ikeyboard.shift)
             scancode += 128;
 
-        if (write_stream(&stream, ikeyboard.keymap[scancode].length, ikeyboard.keymap[scancode].value))
-            rendezvous_unsleep(&rdata);
+        write_stream(&stream, ikeyboard.keymap[scancode].length, ikeyboard.keymap[scancode].value);
 
     }
+
+    rendezvous_unsleep(&rdata);
 
 }
 

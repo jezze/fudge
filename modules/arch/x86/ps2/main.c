@@ -1,6 +1,5 @@
 #include <module.h>
 #include <kernel/resource.h>
-#include <kernel/rendezvous.h>
 #include <system/system.h>
 #include <base/base.h>
 #include <base/keyboard.h>

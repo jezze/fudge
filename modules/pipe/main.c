@@ -112,8 +112,7 @@ static unsigned int pipe0_write(struct system_node *self, unsigned int offset, u
 
     count = write_stream(&session->pipe0.stream, count, buffer);
 
-    if (count)
-        rendezvous_unsleep(&session->pipe0.rread);
+    rendezvous_unsleep(&session->pipe0.rread);
 
     return count;
 
@@ -150,8 +149,7 @@ static unsigned int pipe1_write(struct system_node *self, unsigned int offset, u
 
     count = write_stream(&session->pipe1.stream, count, buffer);
 
-    if (count)
-        rendezvous_unsleep(&session->pipe1.rread);
+    rendezvous_unsleep(&session->pipe1.rread);
 
     return count;
 

@@ -153,8 +153,8 @@ static void handle_irq(unsigned int irq, struct base_bus *bus, unsigned int id)
 
     }
 
-    if (write_stream(&stream, 1, &data))
-        rendezvous_unsleep(&rdata);
+    write_stream(&stream, 1, &data);
+    rendezvous_unsleep(&rdata);
 
 }
 
