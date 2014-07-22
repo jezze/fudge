@@ -24,14 +24,11 @@ void base_register_driver(struct base_driver *driver)
 
     struct resource *current = 0;
 
-    while ((current = resource_find(current)))
+    while ((current = resource_findtype(current, BASE_RESOURCE_BUS)))
     {
 
         struct base_bus *bus = current->data;
         unsigned int id = 0;
-
-        if (current->type != BASE_RESOURCE_BUS)
-            continue;
 
         while ((id = bus->device_next(bus, id)))
         {
@@ -61,14 +58,11 @@ void base_unregister_driver(struct base_driver *driver)
 
     struct resource *current = 0;
 
-    while ((current = resource_find(current)))
+    while ((current = resource_findtype(current, BASE_RESOURCE_BUS)))
     {
 
         struct base_bus *bus = current->data;
         unsigned int id = 0;
-
-        if (current->type != BASE_RESOURCE_BUS)
-            continue;
 
         while ((id = bus->device_next(bus, id)))
         {

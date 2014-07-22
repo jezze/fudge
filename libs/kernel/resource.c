@@ -15,6 +15,23 @@ struct resource *resource_find(struct resource *resource)
 
 }
 
+struct resource *resource_findtype(struct resource *resource, unsigned int type)
+{
+
+    struct resource *current = resource;
+
+    while ((current = resource_find(current)))
+    {
+
+        if (current->type == type)
+            return current;
+
+    }
+
+    return 0;
+
+}
+
 void resource_register(struct resource *resource)
 {
 

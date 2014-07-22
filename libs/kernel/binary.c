@@ -8,13 +8,10 @@ struct binary_protocol *binary_find_protocol(struct vfs_channel *channel, unsign
 
     struct resource *current = 0;
 
-    while ((current = resource_find(current)))
+    while ((current = resource_findtype(current, BINARY_RESOURCE_PROTOCOL)))
     {
 
         struct binary_protocol *protocol = current->data;
-
-        if (current->type != BINARY_RESOURCE_PROTOCOL)
-            continue;
 
         if (protocol->match(channel, id))
             return protocol;

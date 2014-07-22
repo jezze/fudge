@@ -8,6 +8,7 @@ struct resource
 };
 
 struct resource *resource_find(struct resource *resource);
+struct resource *resource_findtype(struct resource *resource, unsigned int type);
 void resource_register(struct resource *resource);
 void resource_unregister(struct resource *resource);
 void resource_init(struct resource *resource, unsigned int type, void *data);

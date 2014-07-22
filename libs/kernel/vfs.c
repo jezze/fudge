@@ -7,13 +7,10 @@ struct vfs_backend *vfs_find_backend(unsigned int id)
 
     struct resource *current = 0;
 
-    while ((current = resource_find(current)))
+    while ((current = resource_findtype(current, VFS_RESOURCE_BACKEND)))
     {
 
         struct vfs_backend *backend = current->data;
-
-        if (current->type != VFS_RESOURCE_BACKEND)
-            continue;
 
         if (backend->id == id)
             return backend;
@@ -29,13 +26,10 @@ struct vfs_protocol *vfs_find_protocol(struct vfs_backend *backend)
 
     struct resource *current = 0;
 
-    while ((current = resource_find(current)))
+    while ((current = resource_findtype(current, VFS_RESOURCE_PROTOCOL)))
     {
 
         struct vfs_protocol *protocol = current->data;
-
-        if (current->type != VFS_RESOURCE_PROTOCOL)
-            continue;
 
         if (protocol->match(backend))
             return protocol;
