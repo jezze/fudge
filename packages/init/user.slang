@@ -11,8 +11,8 @@
 /bin/modload < /boot/mod/vga.ko
 /bin/modload < /boot/mod/uart.ko
 /bin/modload < /boot/mod/rtl8139.ko
-/bin/keymapus > /system/keyboard/dev/ps2/keymap
-/bin/motd > /system/terminal/dev/pci/data
-/bin/shell < /system/keyboard/dev/ps2/data > /system/terminal/dev/pci/data
-/bin/motd > /system/terminal/dev/platform/data
-/bin/shell < /system/terminal/dev/platform/data > /system/terminal/dev/platform/data
+/bin/keymapus > /system/keyboard/ps2/keymap
+/bin/motd > /system/terminal/pci/data
+/bin/shell < /system/keyboard/ps2/data > /system/terminal/pci/data
+/bin/motd > /system/terminal/platform/data
+/bin/shell < /system/terminal/platform/data > /system/terminal/platform/data

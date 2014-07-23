@@ -18,7 +18,6 @@ static struct interface_node
 } inode[8];
 
 static struct system_group root;
-static struct system_group dev;
 
 static unsigned int data_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
@@ -90,7 +89,7 @@ void base_keyboard_register_interface(struct base_keyboard_interface *interface,
         return;
 
     init_inode(&inode[index], interface, bus, id);
-    system_group_add(&dev, &inode[index].base.node);
+    system_group_add(&root, &inode[index].base.node);
     system_group_add(&inode[index].base, &inode[index].data.node);
     system_group_add(&inode[index].base, &inode[index].keymap.node);
 
@@ -118,8 +117,6 @@ void base_keyboard_setup()
     memory_clear(inode, sizeof (struct interface_node) * 8);
     system_init_group(&root, "keyboard");
     system_register_node(&root.node);
-    system_init_group(&dev, "dev");
-    system_group_add(&root, &dev.node);
 
 }
 

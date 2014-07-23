@@ -19,7 +19,6 @@ static struct interface_node
 } inode[8];
 
 static struct system_group root;
-static struct system_group dev;
 static unsigned int dotm365[13] = {0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365};
 static unsigned int dotm366[13] = {0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 365};
 
@@ -127,7 +126,7 @@ void base_clock_register_interface(struct base_clock_interface *interface, struc
         return;
 
     init_inode(&inode[index], interface, bus, id);
-    system_group_add(&dev, &inode[index].base.node);
+    system_group_add(&root, &inode[index].base.node);
     system_group_add(&inode[index].base, &inode[index].timestamp.node);
     system_group_add(&inode[index].base, &inode[index].date.node);
     system_group_add(&inode[index].base, &inode[index].time.node);
@@ -161,8 +160,6 @@ void base_clock_setup()
     memory_clear(inode, sizeof (struct interface_node) * 8);
     system_init_group(&root, "clock");
     system_register_node(&root.node);
-    system_init_group(&dev, "dev");
-    system_group_add(&root, &dev.node);
 
 }
 

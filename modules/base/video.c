@@ -20,7 +20,6 @@ static struct interface_node
 } inode[8];
 
 static struct system_group root;
-static struct system_group dev;
 
 static unsigned int data_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
@@ -128,7 +127,7 @@ void base_video_register_interface(struct base_video_interface *interface, struc
         return;
 
     init_inode(&inode[index], interface, bus, id);
-    system_group_add(&dev, &inode[index].base.node);
+    system_group_add(&root, &inode[index].base.node);
     system_group_add(&inode[index].base, &inode[index].data.node);
     system_group_add(&inode[index].base, &inode[index].colormap.node);
     system_group_add(&inode[index].base, &inode[index].info.node);
@@ -161,8 +160,6 @@ void base_video_setup()
     memory_clear(inode, sizeof (struct interface_node) * 8);
     system_init_group(&root, "video");
     system_register_node(&root.node);
-    system_init_group(&dev, "dev");
-    system_group_add(&root, &dev.node);
 
 }
 
