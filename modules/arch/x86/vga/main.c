@@ -363,6 +363,8 @@ void init()
 void destroy()
 {
 
+    base_terminal_unregister_interface(&iterminal);
+    base_video_unregister_interface(&ivideo);
     base_unregister_driver(&driver);
 
 }

@@ -82,6 +82,7 @@ void init()
 void destroy()
 {
 
+    base_block_unregister_interface(&iblock);
     base_unregister_driver(&driver);
 
 }

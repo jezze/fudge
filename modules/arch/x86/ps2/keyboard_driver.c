@@ -186,6 +186,7 @@ void ps2_keyboard_driver_init()
 void ps2_keyboard_driver_destroy()
 {
 
+    base_keyboard_unregister_interface(&ikeyboard);
     base_unregister_driver(&driver);
 
 }

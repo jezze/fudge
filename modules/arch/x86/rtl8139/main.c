@@ -370,6 +370,7 @@ void init()
 void destroy()
 {
 
+    base_network_unregister_interface(&inetwork);
     base_unregister_driver(&driver);
 
 }

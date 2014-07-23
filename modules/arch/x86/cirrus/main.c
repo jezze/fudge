@@ -249,6 +249,7 @@ void init()
 void destroy()
 {
 
+    base_video_unregister_interface(&ivideo);
     base_unregister_driver(&driver);
 
 }

@@ -142,6 +142,7 @@ void init()
 void destroy()
 {
 
+    base_clock_unregister_interface(&iclock);
     base_unregister_driver(&driver);
 
 }

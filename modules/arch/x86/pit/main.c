@@ -108,6 +108,7 @@ void init()
 void destroy()
 {
 
+    base_timer_unregister_interface(&itimer);
     base_unregister_driver(&driver);
 
 }

@@ -313,6 +313,7 @@ void init()
 void destroy()
 {
 
+    base_terminal_unregister_interface(&iterminal);
     base_unregister_driver(&driver);
 
 }

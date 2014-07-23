@@ -208,6 +208,7 @@ void ps2_mouse_driver_init()
 void ps2_mouse_driver_destroy()
 {
 
+    base_mouse_unregister_interface(&imouse);
     base_unregister_driver(&driver);
 
 }
