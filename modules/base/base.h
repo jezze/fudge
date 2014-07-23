@@ -49,8 +49,10 @@ struct base_interface
 
 void base_register_bus(struct base_bus *bus);
 void base_register_driver(struct base_driver *driver);
+void base_register_interface(struct base_interface *interface);
 void base_unregister_bus(struct base_bus *bus);
 void base_unregister_driver(struct base_driver *driver);
+void base_unregister_interface(struct base_interface *interface);
 void base_init_bus(struct base_bus *bus, unsigned int type, const char *name, void (*setup)(struct base_bus *self), unsigned int (*device_next)(struct base_bus *self, unsigned int id), unsigned short (*device_irq)(struct base_bus *self, unsigned int id));
 void base_init_driver(struct base_driver *driver, const char *name, unsigned int (*check)(struct base_bus *bus, unsigned int id), void (*attach)(struct base_bus *bus, unsigned int id), void (*detach)(struct base_bus *bus, unsigned int id));
 void base_init_interface(struct base_interface *interface, unsigned int type);

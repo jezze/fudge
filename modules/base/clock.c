@@ -117,7 +117,7 @@ static void init_inode(struct interface_node *node, struct base_clock_interface 
 
 }
 
-void base_clock_register_interface(struct base_clock_interface *interface, struct base_bus *bus, unsigned int id)
+void base_clock_connect_interface(struct base_clock_interface *interface, struct base_bus *bus, unsigned int id)
 {
 
     unsigned int index = find_inode();
@@ -133,8 +133,17 @@ void base_clock_register_interface(struct base_clock_interface *interface, struc
 
 }
 
+void base_clock_register_interface(struct base_clock_interface *interface)
+{
+
+    base_register_interface(&interface->base);
+
+}
+
 void base_clock_unregister_interface(struct base_clock_interface *interface)
 {
+
+    base_unregister_interface(&interface->base);
 
 }
 

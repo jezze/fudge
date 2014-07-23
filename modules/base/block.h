@@ -14,7 +14,8 @@ struct base_block_protocol
 
 };
 
-void base_block_register_interface(struct base_block_interface *interface, struct base_bus *bus, unsigned int id);
+void base_block_connect_interface(struct base_block_interface *interface, struct base_bus *bus, unsigned int id);
+void base_block_register_interface(struct base_block_interface *interface);
 void base_block_register_protocol(struct base_block_protocol *protocol);
 void base_block_unregister_interface(struct base_block_interface *interface);
 void base_block_unregister_protocol(struct base_block_protocol *protocol);

@@ -154,8 +154,7 @@ static void attach(struct base_bus *bus, unsigned int id)
 
     unsigned short irq = bus->device_irq(bus, id);
 
-    base_video_init_interface(&ivideo, enable, read_data, write_data, 0, 0);
-    base_video_register_interface(&ivideo, bus, id);
+    base_video_connect_interface(&ivideo, bus, id);
     pic_set_routine(irq, bus, id, handle_irq);
     enable_dpll();
     enable_pipe();
@@ -179,6 +178,8 @@ static void detach(struct base_bus *bus, unsigned int id)
 void init()
 {
 
+    base_video_init_interface(&ivideo, enable, read_data, write_data, 0, 0);
+    base_video_register_interface(&ivideo);
     base_init_driver(&driver, "i915", check, attach, detach);
     base_register_driver(&driver);
 

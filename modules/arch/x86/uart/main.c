@@ -277,8 +277,7 @@ static void attach(struct base_bus *bus, unsigned int id)
     unsigned short irq = bus->device_irq(bus, id);
     unsigned short io = platform_bus_get_base(bus, id);
 
-    base_terminal_init_interface(&iterminal, read_terminal_data, write_terminal_data);
-    base_terminal_register_interface(&iterminal, bus, id);
+    base_terminal_connect_interface(&iterminal, bus, id);
     pic_set_routine(irq, bus, id, handle_irq);
     io_outb(io + UART_REGISTER_IER, UART_IER_NULL);
     io_outb(io + UART_REGISTER_LCR, UART_LCR_5BITS | UART_LCR_1STOP | UART_LCR_NOPARITY);
@@ -304,6 +303,8 @@ static void detach(struct base_bus *bus, unsigned int id)
 void init()
 {
 
+    base_terminal_init_interface(&iterminal, read_terminal_data, write_terminal_data);
+    base_terminal_register_interface(&iterminal);
     base_init_driver(&driver, "uart", check, attach, detach);
     base_register_driver(&driver);
 

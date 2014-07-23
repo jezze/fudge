@@ -221,8 +221,7 @@ static unsigned int check(struct base_bus *bus, unsigned int id)
 static void attach(struct base_bus *bus, unsigned int id)
 {
 
-    base_video_init_interface(&ivideo, mode, read_video_data, write_video_data, read_video_colormap, write_video_colormap);
-    base_video_register_interface(&ivideo, bus, id);
+    base_video_connect_interface(&ivideo, bus, id);
 
     ivideo.xres = 80;
     ivideo.yres = 25;
@@ -240,6 +239,8 @@ static void detach(struct base_bus *bus, unsigned int id)
 void init()
 {
 
+    base_video_init_interface(&ivideo, mode, read_video_data, write_video_data, read_video_colormap, write_video_colormap);
+    base_video_register_interface(&ivideo);
     base_init_driver(&driver, "cirrus", check, attach, detach);
     base_register_driver(&driver);
 

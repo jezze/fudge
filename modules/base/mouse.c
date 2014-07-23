@@ -84,7 +84,7 @@ static void init_inode(struct interface_node *node, struct base_mouse_interface 
 
 }
 
-void base_mouse_register_interface(struct base_mouse_interface *interface, struct base_bus *bus, unsigned int id)
+void base_mouse_connect_interface(struct base_mouse_interface *interface, struct base_bus *bus, unsigned int id)
 {
 
     unsigned int index = find_inode();
@@ -100,8 +100,17 @@ void base_mouse_register_interface(struct base_mouse_interface *interface, struc
 
 }
 
+void base_mouse_register_interface(struct base_mouse_interface *interface)
+{
+
+    base_register_interface(&interface->base);
+
+}
+
 void base_mouse_unregister_interface(struct base_mouse_interface *interface)
 {
+
+    base_unregister_interface(&interface->base);
 
 }
 

@@ -91,7 +91,7 @@ static void init_inode(struct interface_node *node, struct base_network_interfac
 
 }
 
-void base_network_register_interface(struct base_network_interface *interface, struct base_bus *bus, unsigned int id)
+void base_network_connect_interface(struct base_network_interface *interface, struct base_bus *bus, unsigned int id)
 {
 
     unsigned int index = find_inode();
@@ -106,6 +106,13 @@ void base_network_register_interface(struct base_network_interface *interface, s
 
 }
 
+void base_network_register_interface(struct base_network_interface *interface)
+{
+
+    base_register_interface(&interface->base);
+
+}
+
 void base_network_register_protocol(struct base_network_protocol *protocol)
 {
 
@@ -113,6 +120,8 @@ void base_network_register_protocol(struct base_network_protocol *protocol)
 
 void base_network_unregister_interface(struct base_network_interface *interface)
 {
+
+    base_unregister_interface(&interface->base);
 
 }
 

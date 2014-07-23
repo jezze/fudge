@@ -118,7 +118,7 @@ static void init_inode(struct interface_node *node, struct base_video_interface 
 
 }
 
-void base_video_register_interface(struct base_video_interface *interface, struct base_bus *bus, unsigned int id)
+void base_video_connect_interface(struct base_video_interface *interface, struct base_bus *bus, unsigned int id)
 {
 
     unsigned int index = find_inode();
@@ -135,8 +135,17 @@ void base_video_register_interface(struct base_video_interface *interface, struc
 
 }
 
+void base_video_register_interface(struct base_video_interface *interface)
+{
+
+    base_register_interface(&interface->base);
+
+}
+
 void base_video_unregister_interface(struct base_video_interface *interface)
 {
+
+    base_unregister_interface(&interface->base);
 
 }
 

@@ -46,6 +46,13 @@ void base_register_driver(struct base_driver *driver)
 
 }
 
+void base_register_interface(struct base_interface *interface)
+{
+
+    resource_register(&interface->resource);
+
+}
+
 void base_unregister_bus(struct base_bus *bus)
 {
 
@@ -77,6 +84,13 @@ void base_unregister_driver(struct base_driver *driver)
     }
 
     resource_unregister(&driver->resource);
+
+}
+
+void base_unregister_interface(struct base_interface *interface)
+{
+
+    resource_unregister(&interface->resource);
 
 }
 

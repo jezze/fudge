@@ -322,10 +322,8 @@ static void attach(struct base_bus *bus, unsigned int id)
     struct vga_character *memory = (struct vga_character *)VGA_TEXT_BASE;
     unsigned int i;
 
-    base_terminal_init_interface(&iterminal, read_terminal_data, write_terminal_data);
-    base_terminal_register_interface(&iterminal, bus, id);
-    base_video_init_interface(&ivideo, mode, read_video_data, write_video_data, read_video_colormap, write_video_colormap);
-    base_video_register_interface(&ivideo, bus, id);
+    base_terminal_connect_interface(&iterminal, bus, id);
+    base_video_connect_interface(&ivideo, bus, id);
 
     ivideo.xres = 80;
     ivideo.yres = 25;
@@ -353,6 +351,10 @@ static void detach(struct base_bus *bus, unsigned int id)
 void init()
 {
 
+    base_terminal_init_interface(&iterminal, read_terminal_data, write_terminal_data);
+    base_terminal_register_interface(&iterminal);
+    base_video_init_interface(&ivideo, mode, read_video_data, write_video_data, read_video_colormap, write_video_colormap);
+    base_video_register_interface(&ivideo);
     base_init_driver(&driver, "vga", check, attach, detach);
     base_register_driver(&driver);
 

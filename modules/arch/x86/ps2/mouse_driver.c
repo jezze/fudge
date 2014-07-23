@@ -173,8 +173,7 @@ static void attach(struct base_bus *bus, unsigned int id)
 
     unsigned short irq = bus->device_irq(bus, id);
 
-    base_mouse_init_interface(&imouse, read_data);
-    base_mouse_register_interface(&imouse, bus, id);
+    base_mouse_connect_interface(&imouse, bus, id);
     pic_set_routine(irq, bus, id, handle_irq);
     ps2_bus_enable_device(bus, id);
     ps2_bus_enable_interrupt(bus, id);
@@ -199,6 +198,8 @@ static void detach(struct base_bus *bus, unsigned int id)
 void ps2_mouse_driver_init()
 {
 
+    base_mouse_init_interface(&imouse, read_data);
+    base_mouse_register_interface(&imouse);
     base_init_driver(&driver, "ps2mouse", check, attach, detach);
     base_register_driver(&driver);
 

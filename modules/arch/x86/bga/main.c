@@ -100,8 +100,7 @@ static unsigned int check(struct base_bus *bus, unsigned int id)
 static void attach(struct base_bus *bus, unsigned int id)
 {
 
-    base_video_init_interface(&ivideo, mode, read_data, write_data, 0, 0);
-    base_video_register_interface(&ivideo, bus, id);
+    base_video_connect_interface(&ivideo, bus, id);
 
     ivideo.xres = 800;
     ivideo.yres = 600;
@@ -128,6 +127,8 @@ static void detach(struct base_bus *bus, unsigned int id)
 void init()
 {
 
+    base_video_init_interface(&ivideo, mode, read_data, write_data, 0, 0);
+    base_video_register_interface(&ivideo);
     base_init_driver(&driver, "bga", check, attach, detach);
     base_register_driver(&driver);
 

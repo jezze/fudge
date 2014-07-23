@@ -156,8 +156,7 @@ static void attach(struct base_bus *bus, unsigned int id)
 
     unsigned short irq = bus->device_irq(bus, id);
 
-    base_keyboard_init_interface(&ikeyboard, read_data, write_data);
-    base_keyboard_register_interface(&ikeyboard, bus, id);
+    base_keyboard_connect_interface(&ikeyboard, bus, id);
     pic_set_routine(irq, bus, id, handle_irq);
     ps2_bus_enable_device(bus, id);
     ps2_bus_enable_interrupt(bus, id);
@@ -177,6 +176,8 @@ static void detach(struct base_bus *bus, unsigned int id)
 void ps2_keyboard_driver_init()
 {
 
+    base_keyboard_init_interface(&ikeyboard, read_data, write_data);
+    base_keyboard_register_interface(&ikeyboard);
     base_init_driver(&driver, "ps2keyboard", check, attach, detach);
     base_register_driver(&driver);
 

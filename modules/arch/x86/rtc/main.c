@@ -114,8 +114,7 @@ static void attach(struct base_bus *bus, unsigned int id)
 
     unsigned short irq = bus->device_irq(bus, id);
 
-    base_clock_init_interface(&iclock, get_seconds, get_minutes, get_hours, get_weekday, get_day, get_month, get_year);
-    base_clock_register_interface(&iclock, bus, id);
+    base_clock_connect_interface(&iclock, bus, id);
     pic_set_routine(irq, bus, id, handle_irq);
 
 }
@@ -133,6 +132,8 @@ static void detach(struct base_bus *bus, unsigned int id)
 void init()
 {
 
+    base_clock_init_interface(&iclock, get_seconds, get_minutes, get_hours, get_weekday, get_day, get_month, get_year);
+    base_clock_register_interface(&iclock);
     base_init_driver(&driver, "rtc", check, attach, detach);
     base_register_driver(&driver);
 

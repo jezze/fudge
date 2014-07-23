@@ -54,8 +54,7 @@ static void attach(struct base_bus *bus, unsigned int id)
 
     unsigned short irq = bus->device_irq(bus, id);
 
-    base_block_init_interface(&iblock, read_data, write_data);
-    base_block_register_interface(&iblock, bus, id);
+    base_block_connect_interface(&iblock, bus, id);
     pic_set_routine(irq, bus, id, handle_irq);
 
 }
@@ -73,6 +72,8 @@ static void detach(struct base_bus *bus, unsigned int id)
 void init()
 {
 
+    base_block_init_interface(&iblock, read_data, write_data);
+    base_block_register_interface(&iblock);
     base_init_driver(&driver, "ata", check, attach, detach);
     base_register_driver(&driver);
 

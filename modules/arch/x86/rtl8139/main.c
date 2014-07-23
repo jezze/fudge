@@ -328,8 +328,7 @@ static void attach(struct base_bus *bus, unsigned int id)
     io = bar0 & ~1;
     mmio = bar1;
 
-    base_network_init_interface(&inetwork, receive, send, get_packet, dump_packet);
-    base_network_register_interface(&inetwork, bus, id);
+    base_network_connect_interface(&inetwork, bus, id);
     pci_bus_outw(bus, id, PCI_CONFIG_COMMAND, command | (1 << 2));
     pic_set_routine(irq, bus, id, handle_irq);
     poweron();
@@ -361,6 +360,8 @@ static void detach(struct base_bus *bus, unsigned int id)
 void init()
 {
 
+    base_network_init_interface(&inetwork, receive, send, get_packet, dump_packet);
+    base_network_register_interface(&inetwork);
     base_init_driver(&driver, "rtl8139", check, attach, detach);
     base_register_driver(&driver);
 
