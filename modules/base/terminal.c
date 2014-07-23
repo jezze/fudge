@@ -91,7 +91,7 @@ void base_terminal_init_interface(struct base_terminal_interface *interface, uns
 {
 
     memory_clear(interface, sizeof (struct base_terminal_interface));
-    base_init_interface(&interface->base, BASE_INTERFACE_TYPE_OTHER);
+    base_init_interface(&interface->base, BASE_INTERFACE_TYPE_TERMINAL);
 
     interface->read_data = read_data;
     interface->write_data = write_data;

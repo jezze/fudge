@@ -1,5 +1,6 @@
 #define BASE_RESOURCE_BUS               8021
 #define BASE_RESOURCE_DRIVER            8022
+#define BASE_RESOURCE_INTERFACE         8023
 
 struct base_bus
 {
@@ -27,13 +28,21 @@ struct base_driver
 enum base_interface_type
 {
 
-    BASE_INTERFACE_TYPE_OTHER           = 0xFF
+    BASE_INTERFACE_TYPE_BLOCK           = 0x01,
+    BASE_INTERFACE_TYPE_CLOCK           = 0x02,
+    BASE_INTERFACE_TYPE_KEYBOARD        = 0x03,
+    BASE_INTERFACE_TYPE_MOUSE           = 0x04,
+    BASE_INTERFACE_TYPE_NETWORK         = 0x05,
+    BASE_INTERFACE_TYPE_TERMINAL        = 0x06,
+    BASE_INTERFACE_TYPE_TIMER           = 0x07,
+    BASE_INTERFACE_TYPE_VIDEO           = 0x08
 
 };
 
 struct base_interface
 {
 
+    struct resource resource;
     unsigned int type;
 
 };

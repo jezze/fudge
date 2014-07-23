@@ -144,7 +144,7 @@ void base_video_init_interface(struct base_video_interface *interface, void (*mo
 {
 
     memory_clear(interface, sizeof (struct base_video_interface));
-    base_init_interface(&interface->base, BASE_INTERFACE_TYPE_OTHER);
+    base_init_interface(&interface->base, BASE_INTERFACE_TYPE_VIDEO);
 
     interface->mode = mode;
     interface->read_data = read_data;

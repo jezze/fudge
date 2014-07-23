@@ -111,6 +111,7 @@ void base_init_interface(struct base_interface *interface, unsigned int type)
 {
 
     memory_clear(interface, sizeof (struct base_interface));
+    resource_init(&interface->resource, BASE_RESOURCE_INTERFACE, interface);
 
     interface->type = type;
 

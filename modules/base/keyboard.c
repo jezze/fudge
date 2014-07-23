@@ -104,7 +104,7 @@ void base_keyboard_init_interface(struct base_keyboard_interface *interface, uns
 {
 
     memory_clear(interface, sizeof (struct base_keyboard_interface));
-    base_init_interface(&interface->base, BASE_INTERFACE_TYPE_OTHER);
+    base_init_interface(&interface->base, BASE_INTERFACE_TYPE_KEYBOARD);
 
     interface->read_data = read_data;
     interface->write_data = write_data;

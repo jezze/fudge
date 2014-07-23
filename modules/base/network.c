@@ -125,7 +125,7 @@ void base_network_init_interface(struct base_network_interface *interface, unsig
 {
 
     memory_clear(interface, sizeof (struct base_network_interface));
-    base_init_interface(&interface->base, BASE_INTERFACE_TYPE_OTHER);
+    base_init_interface(&interface->base, BASE_INTERFACE_TYPE_NETWORK);
 
     interface->receive = receive;
     interface->send = send;
