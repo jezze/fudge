@@ -138,19 +138,22 @@ static unsigned int pipe1_write(struct system_node *self, unsigned int offset, u
 void init()
 {
 
-    system_init_group(&root, "pipe");
-    system_register_node(&root.node);
     system_init_stream(&pipe0.pipe, "0");
-    system_group_add(&root, &pipe0.pipe.node);
-    system_init_stream(&pipe1.pipe, "1");
-    system_group_add(&root, &pipe1.pipe.node);
 
     pipe0.pipe.node.close = pipe0_close;
     pipe0.pipe.node.read = pipe0_read;
     pipe0.pipe.node.write = pipe0_write;
+
+    system_init_stream(&pipe1.pipe, "1");
+
     pipe1.pipe.node.close = pipe1_close;
     pipe1.pipe.node.read = pipe1_read;
     pipe1.pipe.node.write = pipe1_write;
+
+    system_init_group(&root, "pipe");
+    system_group_add(&root, &pipe0.pipe.node);
+    system_group_add(&root, &pipe1.pipe.node);
+    system_register_node(&root.node);
 
 }
 

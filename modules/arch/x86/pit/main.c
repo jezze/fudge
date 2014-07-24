@@ -90,7 +90,6 @@ static void detach(struct base_bus *bus, unsigned int id)
 
     unsigned short irq = bus->device_irq(bus, id);
 
-    base_timer_unregister_interface(&itimer);
     pic_unset_routine(irq, bus, id);
 
 }

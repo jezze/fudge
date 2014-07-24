@@ -120,8 +120,6 @@ static void attach(struct base_bus *bus, unsigned int id)
 static void detach(struct base_bus *bus, unsigned int id)
 {
 
-    base_video_unregister_interface(&ivideo);
-
 }
 
 void init()

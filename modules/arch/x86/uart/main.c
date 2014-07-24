@@ -295,7 +295,6 @@ static void detach(struct base_bus *bus, unsigned int id)
 
     unsigned short irq = bus->device_irq(bus, id);
 
-    base_terminal_unregister_interface(&iterminal);
     pic_unset_routine(irq, bus, id);
 
 }
