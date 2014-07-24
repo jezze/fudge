@@ -90,6 +90,20 @@ static unsigned long get_physical(struct vfs_backend *backend, unsigned int id)
 
 }
 
+static unsigned int create(struct vfs_backend *backend, unsigned int id, unsigned int count, const char *name)
+{
+
+    return 0;
+
+}
+
+static unsigned int destroy(struct vfs_backend *backend, unsigned int id, unsigned int count, const char *name)
+{
+
+    return 0;
+
+}
+
 static unsigned int open(struct vfs_backend *backend, unsigned int id)
 {
 
@@ -232,7 +246,7 @@ static unsigned int child(struct vfs_backend *backend, unsigned int id, unsigned
 void vfs_setup_tar()
 {
 
-    vfs_init_protocol(&protocol, match, root, open, close, read, write, parent, child, get_physical);
+    vfs_init_protocol(&protocol, match, root, create, destroy, open, close, read, write, parent, child, get_physical);
     resource_register(&protocol.resource);
 
 }

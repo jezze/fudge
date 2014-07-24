@@ -128,6 +128,32 @@ static unsigned int walk(struct container *self, struct task *task, void *stack)
 
 }
 
+static unsigned int create(struct container *self, struct task *task, void *stack)
+{
+
+    struct {void *caller; unsigned int pdescriptor; unsigned int count; const char *name;} *args = stack;
+    struct vfs_descriptor *pdescriptor = get_descriptor(task, args->pdescriptor);
+
+    if (!pdescriptor || !pdescriptor->id || !pdescriptor->channel)
+        return 0;
+
+    return pdescriptor->channel->protocol->create(pdescriptor->channel->backend, pdescriptor->id, args->count, args->name);
+
+}
+
+static unsigned int destroy(struct container *self, struct task *task, void *stack)
+{
+
+    struct {void *caller; unsigned int pdescriptor; unsigned int count; const char *name;} *args = stack;
+    struct vfs_descriptor *pdescriptor = get_descriptor(task, args->pdescriptor);
+
+    if (!pdescriptor || !pdescriptor->id || !pdescriptor->channel)
+        return 0;
+
+    return pdescriptor->channel->protocol->destroy(pdescriptor->channel->backend, pdescriptor->id, args->count, args->name);
+
+}
+
 static unsigned int open(struct container *self, struct task *task, void *stack)
 {
 
@@ -360,6 +386,8 @@ void container_init(struct container *container, unsigned int (*spawn)(struct co
         vfs_init_mount(&container->mounts[i]);
 
     container->calls[CONTAINER_CALL_WALK] = walk;
+    container->calls[CONTAINER_CALL_CREATE] = create;
+    container->calls[CONTAINER_CALL_DESTROY] = destroy;
     container->calls[CONTAINER_CALL_OPEN] = open;
     container->calls[CONTAINER_CALL_CLOSE] = close;
     container->calls[CONTAINER_CALL_READ] = read;

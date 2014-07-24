@@ -7,18 +7,20 @@ enum container_call
 {
 
     CONTAINER_CALL_WALK                 = 0x01,
-    CONTAINER_CALL_OPEN                 = 0x02,
-    CONTAINER_CALL_CLOSE                = 0x03,
-    CONTAINER_CALL_READ                 = 0x04,
-    CONTAINER_CALL_WRITE                = 0x05,
-    CONTAINER_CALL_AUTH                 = 0x06,
-    CONTAINER_CALL_MOUNT                = 0x07,
-    CONTAINER_CALL_BIND                 = 0x08,
-    CONTAINER_CALL_EXECUTE              = 0x09,
-    CONTAINER_CALL_LOAD                 = 0x0A,
-    CONTAINER_CALL_UNLOAD               = 0x0B,
-    CONTAINER_CALL_SPAWN                = 0x0C,
-    CONTAINER_CALL_EXIT                 = 0x0D
+    CONTAINER_CALL_CREATE               = 0x02,
+    CONTAINER_CALL_DESTROY              = 0x03,
+    CONTAINER_CALL_OPEN                 = 0x04,
+    CONTAINER_CALL_CLOSE                = 0x05,
+    CONTAINER_CALL_READ                 = 0x06,
+    CONTAINER_CALL_WRITE                = 0x07,
+    CONTAINER_CALL_AUTH                 = 0x08,
+    CONTAINER_CALL_MOUNT                = 0x09,
+    CONTAINER_CALL_BIND                 = 0x0A,
+    CONTAINER_CALL_EXECUTE              = 0x0B,
+    CONTAINER_CALL_LOAD                 = 0x0C,
+    CONTAINER_CALL_UNLOAD               = 0x0D,
+    CONTAINER_CALL_SPAWN                = 0x0E,
+    CONTAINER_CALL_EXIT                 = 0x0F
 
 };
 

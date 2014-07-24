@@ -36,6 +36,20 @@ static unsigned int match(struct vfs_backend *backend)
 
 }
 
+static unsigned int create(struct vfs_backend *backend, unsigned int id, unsigned int count, const char *name)
+{
+
+    return 0;
+
+}
+
+static unsigned int destroy(struct vfs_backend *backend, unsigned int id, unsigned int count, const char *name)
+{
+
+    return 0;
+
+}
+
 static unsigned int open(struct vfs_backend *backend, unsigned int id)
 {
 
@@ -85,7 +99,7 @@ void system_init_protocol(struct vfs_protocol *protocol)
 {
 
     memory_clear(protocol, sizeof (struct vfs_protocol));
-    vfs_init_protocol(protocol, match, root, open, close, read, write, parent, child, 0);
+    vfs_init_protocol(protocol, match, root, create, destroy, open, close, read, write, parent, child, 0);
 
 }
 
