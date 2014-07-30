@@ -7,67 +7,13 @@
 #include "ps2.h"
 #include "mouse_driver.h"
 
-struct ps2_mouse_stream
-{
-
-    char buffer[512];
-    unsigned int head;
-    unsigned int tail;
-
-};
-
 static struct base_driver driver;
 static struct base_mouse_interface imouse;
-static struct ps2_mouse_stream stream;
+static unsigned char buffer[512];
+static struct buffer_cfifo cfifo;
 static unsigned char cycle;
 static char status;
 static struct rendezvous rdata;
-
-static unsigned int read_stream(struct ps2_mouse_stream *stream, unsigned int count, void *buffer)
-{
-
-    char *b = buffer;
-    unsigned int i;
-
-    for (i = 0; i < count; i++)
-    {
-
-        unsigned int tail = (stream->tail + 1) % 512;
-
-        if (stream->head == stream->tail)
-            break;
-
-        b[i] = stream->buffer[stream->tail];
-        stream->tail = tail;
-
-    }
-
-    return i;
-
-}
-
-static unsigned int write_stream(struct ps2_mouse_stream *stream, unsigned int count, void *buffer)
-{
-
-    char *b = buffer;
-    unsigned int i;
-
-    for (i = 0; i < count; i++)
-    {
-
-        unsigned int head = (stream->head + 1) % 512;
-
-        if (head == stream->tail)
-            break;
-
-        stream->buffer[stream->head] = b[i];
-        stream->head = head;
-
-    }
-
-    return i;
-
-}
 
 static void reset(struct base_bus *bus)
 {
@@ -117,7 +63,7 @@ static void disable_scanning(struct base_bus *bus)
 static unsigned int read_data(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    count = read_stream(&stream, count, buffer);
+    count = buffer_read_cfifo(&cfifo, count, buffer);
 
     rendezvous_sleep(&rdata, !count);
 
@@ -153,7 +99,7 @@ static void handle_irq(unsigned int irq, struct base_bus *bus, unsigned int id)
 
     }
 
-    write_stream(&stream, 1, &data);
+    buffer_write_cfifo(&cfifo, 1, &data);
     rendezvous_unsleep(&rdata);
 
 }
@@ -174,6 +120,7 @@ static void attach(struct base_bus *bus, unsigned int id)
     unsigned short irq = bus->device_irq(bus, id);
 
     base_mouse_connect_interface(&imouse, bus, id);
+    buffer_init_cfifo(&cfifo, 512, &buffer);
     pic_set_routine(irq, bus, id, handle_irq);
     ps2_bus_enable_device(bus, id);
     ps2_bus_enable_interrupt(bus, id);

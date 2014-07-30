@@ -37,8 +37,8 @@ all: kernel libs modules packages ramdisk
 	$(CC) -o $@ $(CFLAGS) $<
 
 $(MODULES_PATH)/%.o: CFLAGS+=-I$(MODULES_PATH)
-$(MODULES_PATH)/%.ko: LDFLAGS+=-T$(MODULES_PATH)/linker.ld -r
-$(PACKAGES_PATH)/%: LDFLAGS+=-static -L $(BUILD_PATH)/lib -labi -lfudge
+$(MODULES_PATH)/%.ko: LDFLAGS+=-T$(MODULES_PATH)/linker.ld -r -L$(BUILD_PATH)/lib -lfudge
+$(PACKAGES_PATH)/%: LDFLAGS+=-L$(BUILD_PATH)/lib -labi -lfudge
 
 DIR:=$(LIBS_PATH)
 include $(DIR)/rules.mk
@@ -48,7 +48,7 @@ DIR:=$(PACKAGES_PATH)
 include $(DIR)/rules.mk
 
 $(KERNEL_NAME): $(BUILD_PATH) libs
-	$(LD) -o $@ $(LDFLAGS) -Tlibs/$(ARCH)/$(LOADER)/linker.ld -L$(BUILD_PATH)/lib -static -lmboot -larch -lkernel -lelf -ltar -lcpio -lfudge
+	$(LD) -o $@ $(LDFLAGS) -Tlibs/$(ARCH)/$(LOADER)/linker.ld -L$(BUILD_PATH)/lib -lmboot -larch -lkernel -lelf -ltar -lcpio -lfudge
 
 $(BUILD_PATH):
 	mkdir -p $(BUILD_PATH)

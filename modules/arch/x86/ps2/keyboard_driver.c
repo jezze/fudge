@@ -7,70 +7,16 @@
 #include "ps2.h"
 #include "keyboard_driver.h"
 
-struct ps2_keyboard_stream
-{
-
-    char buffer[512];
-    unsigned int head;
-    unsigned int tail;
-
-};
-
 static struct base_driver driver;
 static struct base_keyboard_interface ikeyboard;
-static struct ps2_keyboard_stream stream;
+static unsigned char buffer[512];
+static struct buffer_cfifo cfifo;
 static struct rendezvous rdata;
-
-static unsigned int read_stream(struct ps2_keyboard_stream *stream, unsigned int count, void *buffer)
-{
-
-    char *b = buffer;
-    unsigned int i;
-
-    for (i = 0; i < count; i++)
-    {
-
-        unsigned int tail = (stream->tail + 1) % 512;
-
-        if (stream->head == stream->tail)
-            break;
-
-        b[i] = stream->buffer[stream->tail];
-        stream->tail = tail;
-
-    }
-
-    return i;
-
-}
-
-static unsigned int write_stream(struct ps2_keyboard_stream *stream, unsigned int count, void *buffer)
-{
-
-    char *b = buffer;
-    unsigned int i;
-
-    for (i = 0; i < count; i++)
-    {
-
-        unsigned int head = (stream->head + 1) % 512;
-
-        if (head == stream->tail)
-            break;
-
-        stream->buffer[stream->head] = b[i];
-        stream->head = head;
-
-    }
-
-    return i;
-
-}
 
 static unsigned int read_data(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    count = read_stream(&stream, count, buffer);
+    count = buffer_read_cfifo(&cfifo, count, buffer);
 
     rendezvous_sleep(&rdata, !count);
 
@@ -81,7 +27,7 @@ static unsigned int read_data(struct base_bus *bus, unsigned int id, unsigned in
 static unsigned int write_data(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    return write_stream(&stream, count, buffer);
+    return buffer_write_cfifo(&cfifo, count, buffer);
 
 }
 
@@ -133,7 +79,7 @@ static void handle_irq(unsigned int irq, struct base_bus *bus, unsigned int id)
         if (ikeyboard.shift)
             scancode += 128;
 
-        write_stream(&stream, ikeyboard.keymap[scancode].length, ikeyboard.keymap[scancode].value);
+        buffer_write_cfifo(&cfifo, ikeyboard.keymap[scancode].length, ikeyboard.keymap[scancode].value);
 
     }
 
@@ -157,6 +103,7 @@ static void attach(struct base_bus *bus, unsigned int id)
     unsigned short irq = bus->device_irq(bus, id);
 
     base_keyboard_connect_interface(&ikeyboard, bus, id);
+    buffer_init_cfifo(&cfifo, 512, &buffer);
     pic_set_routine(irq, bus, id, handle_irq);
     ps2_bus_enable_device(bus, id);
     ps2_bus_enable_interrupt(bus, id);

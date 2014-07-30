@@ -147,65 +147,11 @@ enum uart_msr
 
 };
 
-struct uart_driver_stream
-{
-
-    char buffer[512];
-    unsigned int head;
-    unsigned int tail;
-
-};
-
 static struct base_driver driver;
 static struct base_terminal_interface iterminal;
-static struct uart_driver_stream stream;
+static unsigned char buffer[512];
+static struct buffer_cfifo cfifo;
 static struct rendezvous rdata;
-
-static unsigned int read_stream(struct uart_driver_stream *stream, unsigned int count, void *buffer)
-{
-
-    char *b = buffer;
-    unsigned int i;
-
-    for (i = 0; i < count; i++)
-    {
-
-        unsigned int tail = (stream->tail + 1) % 512;
-
-        if (stream->head == stream->tail)
-            break;
-
-        b[i] = stream->buffer[stream->tail];
-        stream->tail = tail;
-
-    }
-
-    return i;
-
-}
-
-static unsigned int write_stream(struct uart_driver_stream *stream, unsigned int count, void *buffer)
-{
-
-    char *b = buffer;
-    unsigned int i;
-
-    for (i = 0; i < count; i++)
-    {
-
-        unsigned int head = (stream->head + 1) % 512;
-
-        if (head == stream->tail)
-            break;
-
-        stream->buffer[stream->head] = b[i];
-        stream->head = head;
-
-    }
-
-    return i;
-
-}
 
 static char read(unsigned short io)
 {
@@ -228,7 +174,7 @@ static void write(unsigned short io, char c)
 static unsigned int read_terminal_data(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    count = read_stream(&stream, count, buffer);
+    count = buffer_read_cfifo(&cfifo, count, buffer);
 
     rendezvous_sleep(&rdata, !count);
 
@@ -256,7 +202,7 @@ static void handle_irq(unsigned int irq, struct base_bus *bus, unsigned int id)
     unsigned short io = platform_bus_get_base(bus, id);
     char data = read(io);
 
-    write_stream(&stream, 1, &data);
+    buffer_write_cfifo(&cfifo, 1, &data);
     rendezvous_unsleep(&rdata);
 
 }
@@ -278,6 +224,7 @@ static void attach(struct base_bus *bus, unsigned int id)
     unsigned short io = platform_bus_get_base(bus, id);
 
     base_terminal_connect_interface(&iterminal, bus, id);
+    buffer_init_cfifo(&cfifo, 512, &buffer);
     pic_set_routine(irq, bus, id, handle_irq);
     io_outb(io + UART_REGISTER_IER, UART_IER_NULL);
     io_outb(io + UART_REGISTER_LCR, UART_LCR_5BITS | UART_LCR_1STOP | UART_LCR_NOPARITY);
