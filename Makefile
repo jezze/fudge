@@ -26,9 +26,12 @@ CFLAGS:=-target $(TARGET_$(ARCH)) -msoft-float -c -Wall -Werror -ffreestanding -
 LDFLAGS:=-target $(TARGET_$(ARCH)) -msoft-float -Wall -Werror -ffreestanding -nostdlib -nostdinc -std=c89 -pedantic -O2 -I$(INCLUDE_PATH) -I$(LIBS_PATH)
 ARFLAGS:=rs
 
-.PHONY: all clean install kernel libs modules packages ramdisk
+ALL:=libs kernel modules packages ramdisk
+CLEAN:=$(KERNEL) $(RAMDISK) $(BUILD_PATH)
 
-all: kernel libs modules packages ramdisk
+.PHONY: all clean install $(ALL)
+
+all: $(ALL)
 
 .s.o:
 	$(AS) -o $@ $(ASFLAGS) $<
@@ -47,14 +50,32 @@ include $(DIR)/rules.mk
 DIR:=$(PACKAGES_PATH)
 include $(DIR)/rules.mk
 
-$(KERNEL_NAME): $(BUILD_PATH) libs
-	$(LD) -o $@ $(LDFLAGS) -Tlibs/$(ARCH)/$(LOADER)/linker.ld -L$(BUILD_PATH)/lib -lmboot -larch -lkernel -lelf -ltar -lcpio -lfudge
-
 $(BUILD_PATH):
-	mkdir -p $(BUILD_PATH)
-	mkdir -p $(BUILD_PATH)/home
-	mkdir -p $(BUILD_PATH)/kernel
-	mkdir -p $(BUILD_PATH)/system
+	mkdir -p $@
+	mkdir -p $@/home
+	mkdir -p $@/kernel
+	mkdir -p $@/system
+
+$(BUILD_PATH)/bin: $(BUILD_PATH)
+	mkdir -p $@
+
+$(BUILD_PATH)/boot: $(BUILD_PATH)
+	mkdir -p $@
+
+$(BUILD_PATH)/boot/mod: $(BUILD_PATH)/boot
+	mkdir -p $@
+
+$(BUILD_PATH)/config: $(BUILD_PATH)
+	mkdir -p $@
+
+$(BUILD_PATH)/lib: $(BUILD_PATH)
+	mkdir -p $@
+
+$(BUILD_PATH)/share: $(BUILD_PATH)
+	mkdir -p $@
+
+$(KERNEL_NAME):
+	$(LD) -o $@ $(LDFLAGS) -Tlibs/$(ARCH)/$(LOADER)/linker.ld -L$(BUILD_PATH)/lib -lmboot -larch -lkernel -lelf -ltar -lcpio -lfudge
 
 $(RAMDISK_NAME).tar: $(BUILD_PATH)
 	tar -cf $@ $^
@@ -63,33 +84,24 @@ $(RAMDISK_NAME).cpio: $(BUILD_PATH)
 	find $^ -depth | cpio -o > $@
 
 clean:
-	rm -rf $(BUILD_PATH)
 	rm -rf $(CLEAN)
-	rm -rf $(KERNEL)
-	rm -rf $(RAMDISK)
 
 install: $(KERNEL) $(RAMDISK)
 	install -m 644 $(KERNEL) $(INSTALL_PATH)
 	install -m 644 $(RAMDISK) $(INSTALL_PATH)
 
-kernel: $(BUILD_PATH) $(KERNEL)
-	mkdir -p $(BUILD_PATH)/boot
+kernel: $(KERNEL) $(BUILD_PATH)/boot
 	cp $(KERNEL) $(BUILD_PATH)/boot
 
-libs: $(BUILD_PATH) $(LIBS)
-	mkdir -p $(BUILD_PATH)/lib
+libs: $(LIBS) $(BUILD_PATH)/lib
 	cp $(LIBS) $(BUILD_PATH)/lib
 
-modules: $(BUILD_PATH) $(MODULES)
-	mkdir -p $(BUILD_PATH)/boot/mod
+modules: $(MODULES) $(BUILD_PATH)/boot/mod
 	cp $(MODULES) $(BUILD_PATH)/boot/mod
 
-packages: $(BUILD_PATH) libs $(BINS) $(CONFS) $(SHARES)
-	mkdir -p $(BUILD_PATH)/bin
+packages: $(BINS) $(CONFS) $(SHARES) $(BUILD_PATH)/bin $(BUILD_PATH)/config $(BUILD_PATH)/share
 	cp $(BINS) $(BUILD_PATH)/bin
-	mkdir -p $(BUILD_PATH)/config
 	cp $(CONFS) $(BUILD_PATH)/config
-	mkdir -p $(BUILD_PATH)/share
 	cp $(SHARES) $(BUILD_PATH)/share
 
 ramdisk: $(RAMDISK)
