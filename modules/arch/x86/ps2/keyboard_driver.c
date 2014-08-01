@@ -1,6 +1,6 @@
 #include <module.h>
 #include <kernel/resource.h>
-#include <kernel/rendezvous.h>
+#include <kernel/scheduler.h>
 #include <base/base.h>
 #include <base/keyboard.h>
 #include <arch/x86/pic/pic.h>
@@ -11,7 +11,7 @@ static struct base_driver driver;
 static struct base_keyboard_interface ikeyboard;
 static unsigned char buffer[512];
 static struct buffer_cfifo cfifo;
-static struct rendezvous rdata;
+static struct scheduler_rendezvous rdata;
 static struct keycode {unsigned char length; unsigned char value[4];} keymap[256];
 static unsigned int escaped;
 static unsigned int ctrl;
@@ -23,7 +23,7 @@ static unsigned int read_data(struct base_bus *bus, unsigned int id, unsigned in
 
     count = buffer_read_cfifo(&cfifo, count, buffer);
 
-    rendezvous_sleep(&rdata, !count);
+    scheduler_rendezvous_sleep(&rdata, !count);
 
     return count;
 
@@ -102,7 +102,7 @@ static void handle_irq(unsigned int irq, struct base_bus *bus, unsigned int id)
 
     }
 
-    rendezvous_unsleep(&rdata);
+    scheduler_rendezvous_unsleep(&rdata);
 
 }
 

@@ -1,6 +1,6 @@
 #include <module.h>
 #include <kernel/resource.h>
-#include <kernel/rendezvous.h>
+#include <kernel/scheduler.h>
 #include <base/base.h>
 #include <base/mouse.h>
 #include <arch/x86/pic/pic.h>
@@ -12,7 +12,7 @@ static struct base_mouse_interface imouse;
 static unsigned char buffer[512];
 static struct buffer_cfifo cfifo;
 static unsigned char cycle;
-static struct rendezvous rdata;
+static struct scheduler_rendezvous rdata;
 
 static void reset(struct base_bus *bus)
 {
@@ -64,7 +64,7 @@ static unsigned int read_data(struct base_bus *bus, unsigned int id, unsigned in
 
     count = buffer_read_cfifo(&cfifo, count, buffer);
 
-    rendezvous_sleep(&rdata, !count);
+    scheduler_rendezvous_sleep(&rdata, !count);
 
     return count;
 
@@ -96,7 +96,7 @@ static void handle_irq(unsigned int irq, struct base_bus *bus, unsigned int id)
     }
 
     buffer_write_cfifo(&cfifo, 1, &data);
-    rendezvous_unsleep(&rdata);
+    scheduler_rendezvous_unsleep(&rdata);
 
 }
 

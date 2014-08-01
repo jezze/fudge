@@ -1,6 +1,6 @@
 #include <module.h>
 #include <kernel/resource.h>
-#include <kernel/rendezvous.h>
+#include <kernel/scheduler.h>
 #include <base/base.h>
 #include <base/terminal.h>
 #include <arch/x86/platform/platform.h>
@@ -151,7 +151,7 @@ static struct base_driver driver;
 static struct base_terminal_interface iterminal;
 static unsigned char buffer[512];
 static struct buffer_cfifo cfifo;
-static struct rendezvous rdata;
+static struct scheduler_rendezvous rdata;
 
 static char read(unsigned short io)
 {
@@ -176,7 +176,7 @@ static unsigned int read_terminal_data(struct base_bus *bus, unsigned int id, un
 
     count = buffer_read_cfifo(&cfifo, count, buffer);
 
-    rendezvous_sleep(&rdata, !count);
+    scheduler_rendezvous_sleep(&rdata, !count);
 
     return count;
 
@@ -203,7 +203,7 @@ static void handle_irq(unsigned int irq, struct base_bus *bus, unsigned int id)
     char data = read(io);
 
     buffer_write_cfifo(&cfifo, 1, &data);
-    rendezvous_unsleep(&rdata);
+    scheduler_rendezvous_unsleep(&rdata);
 
 }
 
