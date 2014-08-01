@@ -9,13 +9,13 @@ static struct interface_node
 {
 
     struct system_group base;
-    struct base_video_interface *interface;
-    struct base_bus *bus;
-    unsigned int id;
     struct system_stream data;
     struct system_stream colormap;
     struct system_stream info;
     struct system_stream mode;
+    struct base_video_interface *interface;
+    struct base_bus *bus;
+    unsigned int id;
 
 } inode[8];
 
@@ -69,11 +69,7 @@ static unsigned int mode_write(struct system_node *self, unsigned int offset, un
 
     struct interface_node *node = (struct interface_node *)self->parent;
 
-    node->interface->xres = 320;
-    node->interface->yres = 200;
-    node->interface->bpp = 8;
-
-    node->interface->mode(node->bus, node->id);
+    node->interface->set_mode(node->bus, node->id, 320, 200, 8);
 
     return count;
 
@@ -149,13 +145,13 @@ void base_video_unregister_interface(struct base_video_interface *interface)
 
 }
 
-void base_video_init_interface(struct base_video_interface *interface, void (*mode)(struct base_bus *bus, unsigned int id), unsigned int (*read_data)(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write_data)(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer), unsigned int (*read_colormap)(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write_colormap)(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer))
+void base_video_init_interface(struct base_video_interface *interface, void (*set_mode)(struct base_bus *bus, unsigned int id, unsigned int xres, unsigned int yres, unsigned int bpp), unsigned int (*read_data)(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write_data)(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer), unsigned int (*read_colormap)(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write_colormap)(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer))
 {
 
     memory_clear(interface, sizeof (struct base_video_interface));
     base_init_interface(&interface->base, BASE_INTERFACE_TYPE_VIDEO);
 
-    interface->mode = mode;
+    interface->set_mode = set_mode;
     interface->read_data = read_data;
     interface->write_data = write_data;
     interface->read_colormap = read_colormap;

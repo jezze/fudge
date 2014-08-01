@@ -2,7 +2,6 @@ struct base_timer_interface
 {
 
     struct base_interface base;
-    unsigned int jiffies;
     void (*add_duration)(struct base_bus *bus, unsigned int id, unsigned int duration);
 
 };

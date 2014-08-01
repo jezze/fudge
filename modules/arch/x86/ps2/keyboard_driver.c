@@ -12,6 +12,11 @@ static struct base_keyboard_interface ikeyboard;
 static unsigned char buffer[512];
 static struct buffer_cfifo cfifo;
 static struct rendezvous rdata;
+static struct keycode {unsigned char length; unsigned char value[4];} keymap[256];
+static unsigned int escaped;
+static unsigned int ctrl;
+static unsigned int alt;
+static unsigned int shift;
 
 static unsigned int read_data(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
@@ -31,16 +36,30 @@ static unsigned int write_data(struct base_bus *bus, unsigned int id, unsigned i
 
 }
 
+static unsigned int read_keymap(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    return memory_read(buffer, count, keymap, 2048, offset);
+
+}
+
+static unsigned int write_keymap(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    return memory_write(keymap, 2048, buffer, count, offset);
+
+}
+
 static void handle_irq(unsigned int irq, struct base_bus *bus, unsigned int id)
 {
 
     unsigned char scancode = ps2_bus_read_data_async(bus);
 
-    if (ikeyboard.escaped)
-        ikeyboard.escaped = 0;
+    if (escaped)
+        escaped = 0;
 
     if (scancode == 0xE0)
-        ikeyboard.escaped = 1;
+        escaped = 1;
 
     if (scancode & 0x80)
     {
@@ -48,13 +67,13 @@ static void handle_irq(unsigned int irq, struct base_bus *bus, unsigned int id)
         scancode &= ~0x80;
 
         if (scancode == 0x1D)
-            ikeyboard.ctrl = 0;
+            ctrl = 0;
 
         if (scancode == 0x2A)
-            ikeyboard.shift = 0;
+            shift = 0;
 
         if (scancode == 0x38)
-            ikeyboard.alt = 0;
+            alt = 0;
 
     }
 
@@ -62,24 +81,24 @@ static void handle_irq(unsigned int irq, struct base_bus *bus, unsigned int id)
     {
 
         if (scancode == 0x1D)
-            ikeyboard.ctrl = 1;
+            ctrl = 1;
 
         if (scancode == 0x2A)
-            ikeyboard.shift = 1;
+            shift = 1;
 
         if (scancode == 0x38)
-            ikeyboard.alt = 1;
+            alt = 1;
 
-        if (ikeyboard.ctrl)
+        if (ctrl)
             scancode = 0;
 
-        if (ikeyboard.alt)
+        if (alt)
             scancode = 0;
 
-        if (ikeyboard.shift)
+        if (shift)
             scancode += 128;
 
-        buffer_write_cfifo(&cfifo, ikeyboard.keymap[scancode].length, ikeyboard.keymap[scancode].value);
+        buffer_write_cfifo(&cfifo, keymap[scancode].length, keymap[scancode].value);
 
     }
 
@@ -122,7 +141,7 @@ static void detach(struct base_bus *bus, unsigned int id)
 void ps2_keyboard_driver_init()
 {
 
-    base_keyboard_init_interface(&ikeyboard, read_data, write_data);
+    base_keyboard_init_interface(&ikeyboard, read_data, write_data, read_keymap, write_keymap);
     base_keyboard_register_interface(&ikeyboard);
     base_init_driver(&driver, "ps2keyboard", check, attach, detach);
     base_register_driver(&driver);

@@ -12,7 +12,6 @@ static struct base_mouse_interface imouse;
 static unsigned char buffer[512];
 static struct buffer_cfifo cfifo;
 static unsigned char cycle;
-static char status;
 static struct rendezvous rdata;
 
 static void reset(struct base_bus *bus)
@@ -80,19 +79,16 @@ static void handle_irq(unsigned int irq, struct base_bus *bus, unsigned int id)
     {
 
     case 0:
-        status = data;
         cycle++;
 
         break;
 
     case 1:
-        imouse.vx = data;
         cycle++;
 
         break;
 
     case 2:
-        imouse.vy = data;
         cycle = 0;
 
         break;

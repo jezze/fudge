@@ -58,13 +58,13 @@ static void write_register(unsigned short index, unsigned short data)
 
 }
 
-static void mode(struct base_bus *bus, unsigned int id)
+static void set_mode(struct base_bus *bus, unsigned int id, unsigned int xres, unsigned int yres, unsigned int bpp)
 {
 
     write_register(BGA_COMMAND_ENABLE, 0x00);
-    write_register(BGA_COMMAND_XRES, ivideo.xres);
-    write_register(BGA_COMMAND_YRES, ivideo.yres);
-    write_register(BGA_COMMAND_BPP, ivideo.bpp);
+    write_register(BGA_COMMAND_XRES, xres);
+    write_register(BGA_COMMAND_YRES, yres);
+    write_register(BGA_COMMAND_BPP, bpp);
     write_register(BGA_COMMAND_ENABLE, 0x40 | 0x01);
 
 }
@@ -72,18 +72,26 @@ static void mode(struct base_bus *bus, unsigned int id)
 static unsigned int read_data(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
+/*
     unsigned int size = ivideo.xres * ivideo.yres * ivideo.bpp / 4;
 
     return memory_read(buffer, count, lfb, size, offset);
+*/
+
+    return 0;
 
 }
 
 static unsigned int write_data(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
+/*
     unsigned int size = ivideo.xres * ivideo.yres * ivideo.bpp / 4;
 
     return memory_write(lfb, size, buffer, count, offset);
+*/
+
+    return 0;
 
 }
 
@@ -102,9 +110,6 @@ static void attach(struct base_bus *bus, unsigned int id)
 
     base_video_connect_interface(&ivideo, bus, id);
 
-    ivideo.xres = 800;
-    ivideo.yres = 600;
-    ivideo.bpp = BGA_BPP_32;
     bank = (void *)0xA0000;
     lfb = (void *)(unsigned long)pci_bus_ind(bus, id, PCI_CONFIG_BAR0);
 
@@ -125,7 +130,7 @@ static void detach(struct base_bus *bus, unsigned int id)
 void init()
 {
 
-    base_video_init_interface(&ivideo, mode, read_data, write_data, 0, 0);
+    base_video_init_interface(&ivideo, set_mode, read_data, write_data, 0, 0);
     base_video_register_interface(&ivideo);
     base_init_driver(&driver, "bga", check, attach, detach);
     base_register_driver(&driver);

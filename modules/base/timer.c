@@ -12,21 +12,10 @@ static struct interface_node
     struct base_timer_interface *interface;
     struct base_bus *bus;
     unsigned int id;
-    struct system_stream jiffies;
 
 } inode[8];
 
 static struct system_group root;
-
-static unsigned int jiffies_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
-{
-
-    struct interface_node *node = (struct interface_node *)self->parent;
-    char num[32];
-
-    return memory_read(buffer, count, num, ascii_write_value(num, 32, node->interface->jiffies, 10, 0), offset);
-
-}
 
 static unsigned int find_inode()
 {
@@ -50,12 +39,10 @@ static void init_inode(struct interface_node *node, struct base_timer_interface 
 
     memory_clear(node, sizeof (struct interface_node));
     system_init_group(&node->base, bus->name);
-    system_init_stream(&node->jiffies, "jiffies");
 
     node->interface = interface;
     node->bus = bus;
     node->id = id;
-    node->jiffies.node.read = jiffies_read;
 
 }
 
@@ -69,7 +56,6 @@ void base_timer_connect_interface(struct base_timer_interface *interface, struct
 
     init_inode(&inode[index], interface, bus, id);
     system_group_add(&root, &inode[index].base.node);
-    system_group_add(&inode[index].base, &inode[index].jiffies.node);
 
 }
 

@@ -160,7 +160,7 @@ static const unsigned char g400x300x256X[60] = {
 };
 */
 
-static void mode(struct base_bus *bus, unsigned int id)
+static void set_mode(struct base_bus *bus, unsigned int id, unsigned int xres, unsigned int yres, unsigned int bpp)
 {
 
     io_inb(VGA_REGISTER_FCCCTRL);
@@ -243,14 +243,14 @@ static unsigned int write_terminal_data(struct base_bus *bus, unsigned int id, u
 static unsigned int read_video_data(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    return memory_read(buffer, count, (void *)VGA_ADDRESS, ivideo.xres * ivideo.yres * (ivideo.bpp / 8), offset);
+    return memory_read(buffer, count, (void *)VGA_ADDRESS, 320 * 200 * (8 / 8), offset);
 
 }
 
 static unsigned int write_video_data(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    return memory_write((void *)VGA_ADDRESS, ivideo.xres * ivideo.yres * (ivideo.bpp / 8), buffer, count, offset);
+    return memory_write((void *)VGA_ADDRESS, 320 * 200 * (8 / 8), buffer, count, offset);
 
 }
 
@@ -325,9 +325,6 @@ static void attach(struct base_bus *bus, unsigned int id)
     base_terminal_connect_interface(&iterminal, bus, id);
     base_video_connect_interface(&ivideo, bus, id);
 
-    ivideo.xres = 80;
-    ivideo.yres = 25;
-    ivideo.bpp = 2;
     cursor.color = 0x0F;
 
     for (i = 0; i < VGA_TEXT_LIMIT; i++)
@@ -350,7 +347,7 @@ void init()
 
     base_terminal_init_interface(&iterminal, read_terminal_data, write_terminal_data);
     base_terminal_register_interface(&iterminal);
-    base_video_init_interface(&ivideo, mode, read_video_data, write_video_data, read_video_colormap, write_video_colormap);
+    base_video_init_interface(&ivideo, set_mode, read_video_data, write_video_data, read_video_colormap, write_video_colormap);
     base_video_register_interface(&ivideo);
     base_init_driver(&driver, "vga", check, attach, detach);
     base_register_driver(&driver);

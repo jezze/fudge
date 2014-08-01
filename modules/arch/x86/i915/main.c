@@ -115,7 +115,7 @@ static void set_pipe_mode(unsigned int width, unsigned int height)
 
 }
 
-static void enable(struct base_bus *bus, unsigned int id)
+static void set_mode(struct base_bus *bus, unsigned int id, unsigned int xres, unsigned int yres, unsigned int bpp)
 {
 
 }
@@ -177,7 +177,7 @@ static void detach(struct base_bus *bus, unsigned int id)
 void init()
 {
 
-    base_video_init_interface(&ivideo, enable, read_data, write_data, 0, 0);
+    base_video_init_interface(&ivideo, set_mode, read_data, write_data, 0, 0);
     base_video_register_interface(&ivideo);
     base_init_driver(&driver, "i915", check, attach, detach);
     base_register_driver(&driver);

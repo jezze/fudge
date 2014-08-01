@@ -44,18 +44,19 @@ enum pit_command
 static struct base_driver driver;
 static struct base_timer_interface itimer;
 static unsigned short divisor;
+static unsigned int jiffies;
 
 static void add_duration(struct base_bus *bus, unsigned int id, unsigned int duration)
 {
 
-    duration = itimer.jiffies;
+    duration = jiffies;
 
 }
 
 static void handle_irq(unsigned int irq, struct base_bus *bus, unsigned int id)
 {
 
-    itimer.jiffies += 1;
+    jiffies += 1;
 
 }
 

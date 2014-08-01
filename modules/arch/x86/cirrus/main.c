@@ -66,7 +66,7 @@ static int map_horizontal_crtc(int bpp, int pixelclock, int htiming)
 
 }
 
-static void mode(struct base_bus *bus, unsigned int id)
+static void set_mode(struct base_bus *bus, unsigned int id, unsigned int xres, unsigned int yres, unsigned int bpp)
 {
 
     unsigned char registers[60];
@@ -223,10 +223,6 @@ static void attach(struct base_bus *bus, unsigned int id)
 
     base_video_connect_interface(&ivideo, bus, id);
 
-    ivideo.xres = 80;
-    ivideo.yres = 25;
-    ivideo.bpp = 16;
-
 }
 
 static void detach(struct base_bus *bus, unsigned int id)
@@ -237,7 +233,7 @@ static void detach(struct base_bus *bus, unsigned int id)
 void init()
 {
 
-    base_video_init_interface(&ivideo, mode, read_video_data, write_video_data, read_video_colormap, write_video_colormap);
+    base_video_init_interface(&ivideo, set_mode, read_video_data, write_video_data, read_video_colormap, write_video_colormap);
     base_video_register_interface(&ivideo);
     base_init_driver(&driver, "cirrus", check, attach, detach);
     base_register_driver(&driver);

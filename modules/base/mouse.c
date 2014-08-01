@@ -9,12 +9,10 @@ static struct interface_node
 {
 
     struct system_group base;
+    struct system_stream data;
     struct base_mouse_interface *interface;
     struct base_bus *bus;
     unsigned int id;
-    struct system_stream data;
-    struct system_stream vx;
-    struct system_stream vy;
 
 } inode[8];
 
@@ -26,26 +24,6 @@ static unsigned int data_read(struct system_node *self, unsigned int offset, uns
     struct interface_node *node = (struct interface_node *)self->parent;
 
     return node->interface->read_data(node->bus, node->id, offset, count, buffer);
-
-}
-
-static unsigned int vx_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
-{
-
-    struct interface_node *node = (struct interface_node *)self->parent;
-    unsigned char num[32];
-
-    return memory_read(buffer, count, num, ascii_write_value(num, 32, node->interface->vx, 10, 0), offset);
-
-}
-
-static unsigned int vy_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
-{
-
-    struct interface_node *node = (struct interface_node *)self->parent;
-    unsigned char num[32];
-
-    return memory_read(buffer, count, num, ascii_write_value(num, 32, node->interface->vy, 10, 0), offset);
 
 }
 
@@ -72,15 +50,11 @@ static void init_inode(struct interface_node *node, struct base_mouse_interface 
     memory_clear(node, sizeof (struct interface_node));
     system_init_group(&node->base, bus->name);
     system_init_stream(&node->data, "data");
-    system_init_stream(&node->vx, "vx");
-    system_init_stream(&node->vy, "vy");
 
     node->interface = interface;
     node->bus = bus;
     node->id = id;
     node->data.node.read = data_read;
-    node->vx.node.read = vx_read;
-    node->vy.node.read = vy_read;
 
 }
 
@@ -95,8 +69,6 @@ void base_mouse_connect_interface(struct base_mouse_interface *interface, struct
     init_inode(&inode[index], interface, bus, id);
     system_group_add(&root, &inode[index].base.node);
     system_group_add(&inode[index].base, &inode[index].data.node);
-    system_group_add(&inode[index].base, &inode[index].vx.node);
-    system_group_add(&inode[index].base, &inode[index].vy.node);
 
 }
 

@@ -9,12 +9,12 @@ static struct interface_node
 {
 
     struct system_group base;
-    struct base_clock_interface *interface;
-    struct base_bus *bus;
-    unsigned int id;
     struct system_stream timestamp;
     struct system_stream date;
     struct system_stream time;
+    struct base_clock_interface *interface;
+    struct base_bus *bus;
+    unsigned int id;
 
 } inode[8];
 

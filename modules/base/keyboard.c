@@ -9,11 +9,11 @@ static struct interface_node
 {
 
     struct system_group base;
+    struct system_stream data;
+    struct system_stream keymap;
     struct base_keyboard_interface *interface;
     struct base_bus *bus;
     unsigned int id;
-    struct system_stream data;
-    struct system_stream keymap;
 
 } inode[8];
 
@@ -33,7 +33,7 @@ static unsigned int keymap_read(struct system_node *self, unsigned int offset, u
 
     struct interface_node *node = (struct interface_node *)self->parent;
 
-    return memory_read(buffer, count, node->interface->keymap, 2048, offset);
+    return node->interface->read_keymap(node->bus, node->id, offset, count, buffer);
 
 }
 
@@ -42,7 +42,7 @@ static unsigned int keymap_write(struct system_node *self, unsigned int offset, 
 
     struct interface_node *node = (struct interface_node *)self->parent;
 
-    return memory_write(node->interface->keymap, 2048, buffer, count, offset);
+    return node->interface->write_keymap(node->bus, node->id, offset, count, buffer);
 
 }
 
@@ -109,7 +109,7 @@ void base_keyboard_unregister_interface(struct base_keyboard_interface *interfac
 
 }
 
-void base_keyboard_init_interface(struct base_keyboard_interface *interface, unsigned int (*read_data)(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write_data)(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer))
+void base_keyboard_init_interface(struct base_keyboard_interface *interface, unsigned int (*read_data)(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write_data)(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer), unsigned int (*read_keymap)(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write_keymap)(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer))
 {
 
     memory_clear(interface, sizeof (struct base_keyboard_interface));
@@ -117,6 +117,8 @@ void base_keyboard_init_interface(struct base_keyboard_interface *interface, uns
 
     interface->read_data = read_data;
     interface->write_data = write_data;
+    interface->read_keymap = read_keymap;
+    interface->write_keymap = write_keymap;
 
 }
 

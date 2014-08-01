@@ -9,10 +9,10 @@ static struct interface_node
 {
 
     struct system_group base;
+    struct system_stream data;
     struct base_terminal_interface *interface;
     struct base_bus *bus;
     unsigned int id;
-    struct system_stream data;
 
 } inode[8];
 
