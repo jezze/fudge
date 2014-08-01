@@ -28,7 +28,7 @@ static void attach(struct base_bus *bus, unsigned int id)
 
     unsigned short irq = bus->device_irq(bus, id);
 
-    base_block_connect_interface(&iblock, bus, id);
+    base_block_connect_interface(&iblock.base, bus, id);
     pic_set_routine(irq, bus, id, handle_irq);
 
 }

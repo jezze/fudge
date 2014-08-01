@@ -9,9 +9,7 @@ static struct interface_node
 {
 
     struct system_group base;
-    struct base_timer_interface *interface;
-    struct base_bus *bus;
-    unsigned int id;
+    struct base_device device;
 
 } inode[8];
 
@@ -34,19 +32,16 @@ static unsigned int find_inode()
 
 }
 
-static void init_inode(struct interface_node *node, struct base_timer_interface *interface, struct base_bus *bus, unsigned int id)
+static void init_inode(struct interface_node *node, struct base_interface *interface, struct base_bus *bus, unsigned int id)
 {
 
     memory_clear(node, sizeof (struct interface_node));
     system_init_group(&node->base, bus->name);
-
-    node->interface = interface;
-    node->bus = bus;
-    node->id = id;
+    base_init_device(&node->device, interface, bus, id);
 
 }
 
-void base_timer_connect_interface(struct base_timer_interface *interface, struct base_bus *bus, unsigned int id)
+void base_timer_connect_interface(struct base_interface *interface, struct base_bus *bus, unsigned int id)
 {
 
     unsigned int index = find_inode();

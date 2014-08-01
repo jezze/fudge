@@ -78,7 +78,7 @@ static void attach(struct base_bus *bus, unsigned int id)
 
     divisor = PIT_FREQUENCY / PIT_HERTZ;
 
-    base_timer_connect_interface(&itimer, bus, id);
+    base_timer_connect_interface(&itimer.base, bus, id);
     pic_set_routine(irq, bus, id, handle_irq);
     io_outb(io + PIT_REGISTER_COMMAND, PIT_COMMAND_COUNTER0 | PIT_COMMAND_BOTH | PIT_COMMAND_MODE3 | PIT_COMMAND_BINARY);
     io_outb(io + PIT_REGISTER_COUNTER0, divisor >> 0);

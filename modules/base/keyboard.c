@@ -11,9 +11,7 @@ static struct interface_node
     struct system_group base;
     struct system_stream data;
     struct system_stream keymap;
-    struct base_keyboard_interface *interface;
-    struct base_bus *bus;
-    unsigned int id;
+    struct base_device device;
 
 } inode[8];
 
@@ -23,8 +21,9 @@ static unsigned int data_read(struct system_node *self, unsigned int offset, uns
 {
 
     struct interface_node *node = (struct interface_node *)self->parent;
+    struct base_keyboard_interface *interface = (struct base_keyboard_interface *)node->device.interface;
 
-    return node->interface->read_data(node->bus, node->id, offset, count, buffer);
+    return interface->read_data(node->device.bus, node->device.id, offset, count, buffer);
 
 }
 
@@ -32,8 +31,9 @@ static unsigned int keymap_read(struct system_node *self, unsigned int offset, u
 {
 
     struct interface_node *node = (struct interface_node *)self->parent;
+    struct base_keyboard_interface *interface = (struct base_keyboard_interface *)node->device.interface;
 
-    return node->interface->read_keymap(node->bus, node->id, offset, count, buffer);
+    return interface->read_keymap(node->device.bus, node->device.id, offset, count, buffer);
 
 }
 
@@ -41,8 +41,9 @@ static unsigned int keymap_write(struct system_node *self, unsigned int offset, 
 {
 
     struct interface_node *node = (struct interface_node *)self->parent;
+    struct base_keyboard_interface *interface = (struct base_keyboard_interface *)node->device.interface;
 
-    return node->interface->write_keymap(node->bus, node->id, offset, count, buffer);
+    return interface->write_keymap(node->device.bus, node->device.id, offset, count, buffer);
 
 }
 
@@ -63,24 +64,22 @@ static unsigned int find_inode()
 
 }
 
-static void init_inode(struct interface_node *node, struct base_keyboard_interface *interface, struct base_bus *bus, unsigned int id)
+static void init_inode(struct interface_node *node, struct base_interface *interface, struct base_bus *bus, unsigned int id)
 {
 
     memory_clear(node, sizeof (struct interface_node));
     system_init_group(&node->base, bus->name);
     system_init_stream(&node->data, "data");
     system_init_stream(&node->keymap, "keymap");
+    base_init_device(&node->device, interface, bus, id);
 
-    node->interface = interface;
-    node->bus = bus;
-    node->id = id;
     node->data.node.read = data_read;
     node->keymap.node.read = keymap_read;
     node->keymap.node.write = keymap_write;
 
 }
 
-void base_keyboard_connect_interface(struct base_keyboard_interface *interface, struct base_bus *bus, unsigned int id)
+void base_keyboard_connect_interface(struct base_interface *interface, struct base_bus *bus, unsigned int id)
 {
 
     unsigned int index = find_inode();

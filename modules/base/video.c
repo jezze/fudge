@@ -13,9 +13,7 @@ static struct interface_node
     struct system_stream colormap;
     struct system_stream info;
     struct system_stream mode;
-    struct base_video_interface *interface;
-    struct base_bus *bus;
-    unsigned int id;
+    struct base_device device;
 
 } inode[8];
 
@@ -25,8 +23,9 @@ static unsigned int data_read(struct system_node *self, unsigned int offset, uns
 {
 
     struct interface_node *node = (struct interface_node *)self->parent;
+    struct base_video_interface *interface = (struct base_video_interface *)node->device.interface;
 
-    return node->interface->read_data(node->bus, node->id, offset, count, buffer);
+    return interface->read_data(node->device.bus, node->device.id, offset, count, buffer);
 
 }
 
@@ -34,8 +33,9 @@ static unsigned int data_write(struct system_node *self, unsigned int offset, un
 {
 
     struct interface_node *node = (struct interface_node *)self->parent;
+    struct base_video_interface *interface = (struct base_video_interface *)node->device.interface;
 
-    return node->interface->write_data(node->bus, node->id, offset, count, buffer);
+    return interface->write_data(node->device.bus, node->device.id, offset, count, buffer);
 
 }
 
@@ -43,8 +43,9 @@ static unsigned int colormap_read(struct system_node *self, unsigned int offset,
 {
 
     struct interface_node *node = (struct interface_node *)self->parent;
+    struct base_video_interface *interface = (struct base_video_interface *)node->device.interface;
 
-    return node->interface->read_colormap(node->bus, node->id, offset, count, buffer);
+    return interface->read_colormap(node->device.bus, node->device.id, offset, count, buffer);
 
 }
 
@@ -52,8 +53,9 @@ static unsigned int colormap_write(struct system_node *self, unsigned int offset
 {
 
     struct interface_node *node = (struct interface_node *)self->parent;
+    struct base_video_interface *interface = (struct base_video_interface *)node->device.interface;
 
-    return node->interface->write_colormap(node->bus, node->id, offset, count, buffer);
+    return interface->write_colormap(node->device.bus, node->device.id, offset, count, buffer);
 
 }
 
@@ -68,8 +70,9 @@ static unsigned int mode_write(struct system_node *self, unsigned int offset, un
 {
 
     struct interface_node *node = (struct interface_node *)self->parent;
+    struct base_video_interface *interface = (struct base_video_interface *)node->device.interface;
 
-    node->interface->set_mode(node->bus, node->id, 320, 200, 8);
+    interface->set_mode(node->device.bus, node->device.id, 320, 200, 8);
 
     return count;
 
@@ -92,7 +95,7 @@ static unsigned int find_inode()
 
 }
 
-static void init_inode(struct interface_node *node, struct base_video_interface *interface, struct base_bus *bus, unsigned int id)
+static void init_inode(struct interface_node *node, struct base_interface *interface, struct base_bus *bus, unsigned int id)
 {
 
     memory_clear(node, sizeof (struct interface_node));
@@ -101,10 +104,8 @@ static void init_inode(struct interface_node *node, struct base_video_interface 
     system_init_stream(&node->colormap, "colormap");
     system_init_stream(&node->info, "info");
     system_init_stream(&node->mode, "mode");
+    base_init_device(&node->device, interface, bus, id);
 
-    node->interface = interface;
-    node->bus = bus;
-    node->id = id;
     node->data.node.read = data_read;
     node->data.node.write = data_write;
     node->colormap.node.read = colormap_read;
@@ -114,7 +115,7 @@ static void init_inode(struct interface_node *node, struct base_video_interface 
 
 }
 
-void base_video_connect_interface(struct base_video_interface *interface, struct base_bus *bus, unsigned int id)
+void base_video_connect_interface(struct base_interface *interface, struct base_bus *bus, unsigned int id)
 {
 
     unsigned int index = find_inode();

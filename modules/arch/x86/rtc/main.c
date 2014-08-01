@@ -114,7 +114,7 @@ static void attach(struct base_bus *bus, unsigned int id)
 
     unsigned short irq = bus->device_irq(bus, id);
 
-    base_clock_connect_interface(&iclock, bus, id);
+    base_clock_connect_interface(&iclock.base, bus, id);
     pic_set_routine(irq, bus, id, handle_irq);
 
 }

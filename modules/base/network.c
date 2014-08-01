@@ -11,9 +11,7 @@ static struct interface_node
     struct system_group base;
     struct system_stream data;
     struct system_stream mac;
-    struct base_network_interface *interface;
-    struct base_bus *bus;
-    unsigned int id;
+    struct base_device device;
 
 } inode[8];
 
@@ -23,11 +21,12 @@ static unsigned int data_read(struct system_node *self, unsigned int offset, uns
 {
 
     struct interface_node *node = (struct interface_node *)self->parent;
+    struct base_network_interface *interface = (struct base_network_interface *)node->device.interface;
  
     if (offset)
         return 0;
 
-    return node->interface->receive(node->bus, node->id, count, buffer);
+    return interface->receive(node->device.bus, node->device.id, count, buffer);
 
 }
 
@@ -35,11 +34,12 @@ static unsigned int data_write(struct system_node *self, unsigned int offset, un
 {
 
     struct interface_node *node = (struct interface_node *)self->parent;
+    struct base_network_interface *interface = (struct base_network_interface *)node->device.interface;
  
     if (offset)
         return 0;
 
-    return node->interface->send(node->bus, node->id, count, buffer);
+    return interface->send(node->device.bus, node->device.id, count, buffer);
 
 }
 
@@ -47,11 +47,12 @@ static unsigned int mac_read(struct system_node *self, unsigned int offset, unsi
 {
 
     struct interface_node *node = (struct interface_node *)self->parent;
+    struct base_network_interface *interface = (struct base_network_interface *)node->device.interface;
     char *mac = "00:00:00:00:00:00";
     unsigned int i;
 
     for (i = 0; i < 6; i++)
-        ascii_write_zerovalue(mac, 17, node->interface->mac[i], 16, 2, i * 3);
+        ascii_write_zerovalue(mac, 17, interface->mac[i], 16, 2, i * 3);
 
     return memory_read(buffer, count, mac, 17, offset); 
 
@@ -74,24 +75,22 @@ static unsigned int find_inode()
 
 }
 
-static void init_inode(struct interface_node *node, struct base_network_interface *interface, struct base_bus *bus, unsigned int id)
+static void init_inode(struct interface_node *node, struct base_interface *interface, struct base_bus *bus, unsigned int id)
 {
 
     memory_clear(node, sizeof (struct interface_node));
     system_init_group(&node->base, bus->name);
     system_init_stream(&node->data, "data");
     system_init_stream(&node->mac, "mac");
+    base_init_device(&node->device, interface, bus, id);
 
-    node->interface = interface;
-    node->bus = bus;
-    node->id = id;
     node->data.node.read = data_read;
     node->data.node.write = data_write;
     node->mac.node.read = mac_read;
 
 }
 
-void base_network_connect_interface(struct base_network_interface *interface, struct base_bus *bus, unsigned int id)
+void base_network_connect_interface(struct base_interface *interface, struct base_bus *bus, unsigned int id)
 {
 
     unsigned int index = find_inode();

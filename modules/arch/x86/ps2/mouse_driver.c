@@ -115,7 +115,7 @@ static void attach(struct base_bus *bus, unsigned int id)
 
     unsigned short irq = bus->device_irq(bus, id);
 
-    base_mouse_connect_interface(&imouse, bus, id);
+    base_mouse_connect_interface(&imouse.base, bus, id);
     buffer_init_cfifo(&cfifo, 512, &buffer);
     pic_set_routine(irq, bus, id, handle_irq);
     ps2_bus_enable_device(bus, id);

@@ -328,7 +328,7 @@ static void attach(struct base_bus *bus, unsigned int id)
     io = bar0 & ~1;
     mmio = bar1;
 
-    base_network_connect_interface(&inetwork, bus, id);
+    base_network_connect_interface(&inetwork.base, bus, id);
     pci_bus_outw(bus, id, PCI_CONFIG_COMMAND, command | (1 << 2));
     pic_set_routine(irq, bus, id, handle_irq);
     poweron();

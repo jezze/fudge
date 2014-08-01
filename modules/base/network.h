@@ -19,7 +19,7 @@ struct base_network_protocol
 
 };
 
-void base_network_connect_interface(struct base_network_interface *interface, struct base_bus *bus, unsigned int id);
+void base_network_connect_interface(struct base_interface *interface, struct base_bus *bus, unsigned int id);
 void base_network_register_interface(struct base_network_interface *interface);
 void base_network_register_protocol(struct base_network_protocol *protocol);
 void base_network_unregister_interface(struct base_network_interface *interface);

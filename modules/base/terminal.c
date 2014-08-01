@@ -10,9 +10,7 @@ static struct interface_node
 
     struct system_group base;
     struct system_stream data;
-    struct base_terminal_interface *interface;
-    struct base_bus *bus;
-    unsigned int id;
+    struct base_device device;
 
 } inode[8];
 
@@ -22,8 +20,9 @@ static unsigned int data_read(struct system_node *self, unsigned int offset, uns
 {
 
     struct interface_node *node = (struct interface_node *)self->parent;
+    struct base_terminal_interface *interface = (struct base_terminal_interface *)node->device.interface;
  
-    return node->interface->read_data(node->bus, node->id, offset, count, buffer);
+    return interface->read_data(node->device.bus, node->device.id, offset, count, buffer);
 
 }
 
@@ -31,8 +30,9 @@ static unsigned int data_write(struct system_node *self, unsigned int offset, un
 {
 
     struct interface_node *node = (struct interface_node *)self->parent;
+    struct base_terminal_interface *interface = (struct base_terminal_interface *)node->device.interface;
 
-    return node->interface->write_data(node->bus, node->id, offset, count, buffer);
+    return interface->write_data(node->device.bus, node->device.id, offset, count, buffer);
 
 }
 
@@ -53,22 +53,20 @@ static unsigned int find_inode()
 
 }
 
-static void init_inode(struct interface_node *node, struct base_terminal_interface *interface, struct base_bus *bus, unsigned int id)
+static void init_inode(struct interface_node *node, struct base_interface *interface, struct base_bus *bus, unsigned int id)
 {
 
     memory_clear(node, sizeof (struct interface_node));
     system_init_group(&node->base, bus->name);
     system_init_stream(&node->data, "data");
+    base_init_device(&node->device, interface, bus, id);
 
-    node->interface = interface;
-    node->bus = bus;
-    node->id = id;
     node->data.node.read = data_read;
     node->data.node.write = data_write;
 
 }
 
-void base_terminal_connect_interface(struct base_terminal_interface *interface, struct base_bus *bus, unsigned int id)
+void base_terminal_connect_interface(struct base_interface *interface, struct base_bus *bus, unsigned int id)
 {
 
     unsigned int index = find_inode();

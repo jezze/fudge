@@ -322,8 +322,8 @@ static void attach(struct base_bus *bus, unsigned int id)
     struct vga_character *memory = (struct vga_character *)VGA_TEXT_BASE;
     unsigned int i;
 
-    base_terminal_connect_interface(&iterminal, bus, id);
-    base_video_connect_interface(&ivideo, bus, id);
+    base_terminal_connect_interface(&iterminal.base, bus, id);
+    base_video_connect_interface(&ivideo.base, bus, id);
 
     cursor.color = 0x0F;
 

@@ -108,7 +108,7 @@ static unsigned int check(struct base_bus *bus, unsigned int id)
 static void attach(struct base_bus *bus, unsigned int id)
 {
 
-    base_video_connect_interface(&ivideo, bus, id);
+    base_video_connect_interface(&ivideo.base, bus, id);
 
     bank = (void *)0xA0000;
     lfb = (void *)(unsigned long)pci_bus_ind(bus, id, PCI_CONFIG_BAR0);

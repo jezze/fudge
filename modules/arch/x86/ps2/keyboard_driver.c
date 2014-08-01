@@ -121,7 +121,7 @@ static void attach(struct base_bus *bus, unsigned int id)
 
     unsigned short irq = bus->device_irq(bus, id);
 
-    base_keyboard_connect_interface(&ikeyboard, bus, id);
+    base_keyboard_connect_interface(&ikeyboard.base, bus, id);
     buffer_init_cfifo(&cfifo, 512, &buffer);
     pic_set_routine(irq, bus, id, handle_irq);
     ps2_bus_enable_device(bus, id);

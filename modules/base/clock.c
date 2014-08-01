@@ -12,9 +12,7 @@ static struct interface_node
     struct system_stream timestamp;
     struct system_stream date;
     struct system_stream time;
-    struct base_clock_interface *interface;
-    struct base_bus *bus;
-    unsigned int id;
+    struct base_device device;
 
 } inode[8];
 
@@ -39,12 +37,13 @@ static unsigned int timestamp_read(struct system_node *self, unsigned int offset
 {
 
     struct interface_node *node = (struct interface_node *)self->parent;
-    unsigned int year = node->interface->get_year(node->bus, node->id) - 1970;
-    unsigned int month = node->interface->get_month(node->bus, node->id);
-    unsigned int day = node->interface->get_day(node->bus, node->id);
-    unsigned int hour = node->interface->get_hours(node->bus, node->id);
-    unsigned int minute = node->interface->get_minutes(node->bus, node->id);
-    unsigned int second = node->interface->get_seconds(node->bus, node->id);
+    struct base_clock_interface *interface = (struct base_clock_interface *)node->device.interface;
+    unsigned int year = interface->get_year(node->device.bus, node->device.id) - 1970;
+    unsigned int month = interface->get_month(node->device.bus, node->device.id);
+    unsigned int day = interface->get_day(node->device.bus, node->device.id);
+    unsigned int hour = interface->get_hours(node->device.bus, node->device.id);
+    unsigned int minute = interface->get_minutes(node->device.bus, node->device.id);
+    unsigned int second = interface->get_seconds(node->device.bus, node->device.id);
     unsigned int dyear = ((((365 * year) + (year / 4)) - (year / 100)) + (year / 400));
     unsigned int dmonth = isleapyear(year) ? dotm366[month - 1] : dotm365[month - 1];
     unsigned int timestamp = ((dyear + dmonth + day) * 86400) + ((hour * 3600) + (minute * 60) + second);
@@ -58,11 +57,12 @@ static unsigned int date_read(struct system_node *self, unsigned int offset, uns
 {
 
     struct interface_node *node = (struct interface_node *)self->parent;
+    struct base_clock_interface *interface = (struct base_clock_interface *)node->device.interface;
     char *num = "0000-00-00";
 
-    ascii_write_zerovalue(num, 10, node->interface->get_year(node->bus, node->id), 10, 4, 0);
-    ascii_write_zerovalue(num, 10, node->interface->get_month(node->bus, node->id), 10, 2, 5);
-    ascii_write_zerovalue(num, 10, node->interface->get_day(node->bus, node->id), 10, 2, 8);
+    ascii_write_zerovalue(num, 10, interface->get_year(node->device.bus, node->device.id), 10, 4, 0);
+    ascii_write_zerovalue(num, 10, interface->get_month(node->device.bus, node->device.id), 10, 2, 5);
+    ascii_write_zerovalue(num, 10, interface->get_day(node->device.bus, node->device.id), 10, 2, 8);
 
     return memory_read(buffer, count, num, 10, offset);
 
@@ -72,11 +72,12 @@ static unsigned int time_read(struct system_node *self, unsigned int offset, uns
 {
 
     struct interface_node *node = (struct interface_node *)self->parent;
+    struct base_clock_interface *interface = (struct base_clock_interface *)node->device.interface;
     char *num = "00:00:00";
 
-    ascii_write_zerovalue(num, 8, node->interface->get_hours(node->bus, node->id), 10, 2, 0);
-    ascii_write_zerovalue(num, 8, node->interface->get_minutes(node->bus, node->id), 10, 2, 3);
-    ascii_write_zerovalue(num, 8, node->interface->get_seconds(node->bus, node->id), 10, 2, 6);
+    ascii_write_zerovalue(num, 8, interface->get_hours(node->device.bus, node->device.id), 10, 2, 0);
+    ascii_write_zerovalue(num, 8, interface->get_minutes(node->device.bus, node->device.id), 10, 2, 3);
+    ascii_write_zerovalue(num, 8, interface->get_seconds(node->device.bus, node->device.id), 10, 2, 6);
 
     return memory_read(buffer, count, num, 8, offset);
 
@@ -99,7 +100,7 @@ static unsigned int find_inode()
 
 }
 
-static void init_inode(struct interface_node *node, struct base_clock_interface *interface, struct base_bus *bus, unsigned int id)
+static void init_inode(struct interface_node *node, struct base_interface *interface, struct base_bus *bus, unsigned int id)
 {
 
     memory_clear(node, sizeof (struct interface_node));
@@ -107,17 +108,15 @@ static void init_inode(struct interface_node *node, struct base_clock_interface 
     system_init_stream(&node->timestamp, "timestamp");
     system_init_stream(&node->date, "date");
     system_init_stream(&node->time, "time");
+    base_init_device(&node->device, interface, bus, id);
 
-    node->interface = interface;
-    node->bus = bus;
-    node->id = id;
     node->timestamp.node.read = timestamp_read;
     node->date.node.read = date_read;
     node->time.node.read = time_read;
 
 }
 
-void base_clock_connect_interface(struct base_clock_interface *interface, struct base_bus *bus, unsigned int id)
+void base_clock_connect_interface(struct base_interface *interface, struct base_bus *bus, unsigned int id)
 {
 
     unsigned int index = find_inode();

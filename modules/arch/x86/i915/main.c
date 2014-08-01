@@ -154,7 +154,7 @@ static void attach(struct base_bus *bus, unsigned int id)
 
     unsigned short irq = bus->device_irq(bus, id);
 
-    base_video_connect_interface(&ivideo, bus, id);
+    base_video_connect_interface(&ivideo.base, bus, id);
     pic_set_routine(irq, bus, id, handle_irq);
     enable_dpll();
     enable_pipe();
