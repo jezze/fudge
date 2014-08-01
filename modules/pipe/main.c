@@ -11,7 +11,7 @@ struct pipe_endpoint
     struct system_stream pipe;
     unsigned char buffer[4096];
     struct buffer_cfifo cfifo;
-    struct scheduler_rendezvous rread;
+    struct scheduler_rendezvous rdata;
 
 };
 
@@ -22,7 +22,7 @@ static struct system_group root;
 static unsigned int pipe0_close(struct system_node *self)
 {
 
-    scheduler_rendezvous_unsleep(&pipe0.rread);
+    scheduler_rendezvous_unsleep(&pipe0.rdata);
 
     return (unsigned int)self;
 
@@ -33,7 +33,7 @@ static unsigned int pipe0_read(struct system_node *self, unsigned int offset, un
 
     count = buffer_read_cfifo(&pipe1.cfifo, count, buffer);
 
-    scheduler_rendezvous_sleep(&pipe1.rread, !count && scheduler_rendezvous_asleep(&pipe0.rread));
+    scheduler_rendezvous_sleep(&pipe1.rdata, !count && scheduler_rendezvous_asleep(&pipe0.rdata));
 
     return count;
 
@@ -44,7 +44,7 @@ static unsigned int pipe0_write(struct system_node *self, unsigned int offset, u
 
     count = buffer_write_cfifo(&pipe0.cfifo, count, buffer);
 
-    scheduler_rendezvous_unsleep(&pipe0.rread);
+    scheduler_rendezvous_unsleep(&pipe0.rdata);
 
     return count;
 
@@ -53,7 +53,7 @@ static unsigned int pipe0_write(struct system_node *self, unsigned int offset, u
 static unsigned int pipe1_close(struct system_node *self)
 {
 
-    scheduler_rendezvous_unsleep(&pipe1.rread);
+    scheduler_rendezvous_unsleep(&pipe1.rdata);
 
     return (unsigned int)self;
 
@@ -64,7 +64,7 @@ static unsigned int pipe1_read(struct system_node *self, unsigned int offset, un
 
     count = buffer_read_cfifo(&pipe0.cfifo, count, buffer);
 
-    scheduler_rendezvous_sleep(&pipe0.rread, !count && scheduler_rendezvous_asleep(&pipe1.rread));
+    scheduler_rendezvous_sleep(&pipe0.rdata, !count && scheduler_rendezvous_asleep(&pipe1.rdata));
 
     return count;
 
@@ -75,7 +75,7 @@ static unsigned int pipe1_write(struct system_node *self, unsigned int offset, u
 
     count = buffer_write_cfifo(&pipe1.cfifo, count, buffer);
 
-    scheduler_rendezvous_unsleep(&pipe1.rread);
+    scheduler_rendezvous_unsleep(&pipe1.rdata);
 
     return count;
 
