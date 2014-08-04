@@ -1,5 +1,6 @@
 #include <module.h>
 #include <kernel/resource.h>
+#include <system/system.h>
 #include <base/base.h>
 #include <base/timer.h>
 #include <arch/x86/pic/pic.h>
@@ -43,20 +44,47 @@ enum pit_command
 
 static struct base_driver driver;
 static struct base_timer_interface itimer;
-static unsigned short divisor;
-static unsigned int jiffies;
+
+static struct instance
+{
+
+    struct base_device device;
+    struct base_timer_node node;
+    unsigned short divisor;
+    unsigned int jiffies;
+
+} instances[2];
+
+static struct instance *find_instance(struct base_bus *bus, unsigned int id)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < 2; i++)
+    {
+
+        struct instance *instance = &instances[i];
+
+        if (instance->device.bus == bus && instance->device.id == id)
+            return instance;
+
+    }
+
+    return 0;
+
+}
 
 static void add_duration(struct base_bus *bus, unsigned int id, unsigned int duration)
 {
-
-    duration = jiffies;
 
 }
 
 static void handle_irq(unsigned int irq, struct base_bus *bus, unsigned int id)
 {
 
-    jiffies += 1;
+    struct instance *instance = find_instance(bus, id);
+
+    instance->jiffies += 1;
 
 }
 
@@ -73,15 +101,16 @@ static unsigned int check(struct base_bus *bus, unsigned int id)
 static void attach(struct base_bus *bus, unsigned int id)
 {
 
+    struct instance *instance = find_instance(0, 0);
     unsigned short io = platform_bus_get_base(bus, id);
 
-    divisor = PIT_FREQUENCY / PIT_HERTZ;
-
-    base_timer_connect_interface(&itimer.base, bus, id);
+    base_init_device(&instance->device, bus, id);
+    base_timer_init_node(&instance->node, &instance->device, &itimer);
+    base_timer_register_node(&instance->node);
     pic_set_routine(bus, id, handle_irq);
     io_outb(io + PIT_REGISTER_COMMAND, PIT_COMMAND_COUNTER0 | PIT_COMMAND_BOTH | PIT_COMMAND_MODE3 | PIT_COMMAND_BINARY);
-    io_outb(io + PIT_REGISTER_COUNTER0, divisor >> 0);
-    io_outb(io + PIT_REGISTER_COUNTER0, divisor >> 8);
+    io_outb(io + PIT_REGISTER_COUNTER0, instance->divisor >> 0);
+    io_outb(io + PIT_REGISTER_COUNTER0, instance->divisor >> 8);
 
 }
 
@@ -95,6 +124,7 @@ static void detach(struct base_bus *bus, unsigned int id)
 void init()
 {
 
+    memory_clear(instances, sizeof (struct instance) * 2);
     base_timer_init_interface(&itimer, add_duration);
     base_timer_register_interface(&itimer);
     base_init_driver(&driver, "pit", check, attach, detach);

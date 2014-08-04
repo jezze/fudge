@@ -9,8 +9,21 @@ struct base_keyboard_interface
 
 };
 
-void base_keyboard_connect_interface(struct base_interface *interface, struct base_bus *bus, unsigned int id);
+struct base_keyboard_node
+{
+
+    struct system_group base;
+    struct system_stream data;
+    struct system_stream keymap;
+    struct base_device *device;
+    struct base_keyboard_interface *interface;
+
+};
+
 void base_keyboard_register_interface(struct base_keyboard_interface *interface);
+void base_keyboard_register_node(struct base_keyboard_node *node);
 void base_keyboard_unregister_interface(struct base_keyboard_interface *interface);
+void base_keyboard_unregister_node(struct base_keyboard_node *node);
 void base_keyboard_init_interface(struct base_keyboard_interface *interface, unsigned int (*read_data)(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write_data)(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer), unsigned int (*read_keymap)(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write_keymap)(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer));
+void base_keyboard_init_node(struct base_keyboard_node *node, struct base_device *device, struct base_keyboard_interface *interface);
 void base_keyboard_setup();

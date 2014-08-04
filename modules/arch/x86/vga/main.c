@@ -1,5 +1,6 @@
 #include <module.h>
 #include <kernel/resource.h>
+#include <system/system.h>
 #include <base/base.h>
 #include <base/terminal.h>
 #include <base/video.h>
@@ -20,17 +21,38 @@ struct vga_character
 
 };
 
-static struct
-{
-
-    unsigned char color;
-    unsigned short offset;
-
-} cursor;
-
 static struct base_driver driver;
 static struct base_terminal_interface iterminal;
 static struct base_video_interface ivideo;
+
+static struct instance
+{
+
+    struct base_device device;
+    struct base_terminal_node tnode;
+    struct base_video_node vnode;
+    struct {unsigned char color; unsigned short offset;} cursor;
+
+} instances[2];
+
+static struct instance *find_instance(struct base_bus *bus, unsigned int id)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < 2; i++)
+    {
+
+        struct instance *instance = &instances[i];
+
+        if (instance->device.bus == bus && instance->device.id == id)
+            return instance;
+
+    }
+
+    return 0;
+
+}
 
 /* BIOS mode 0Dh - 320x200x16 */
 /*
@@ -183,6 +205,7 @@ static unsigned int read_terminal_data(struct base_bus *bus, unsigned int id, un
 static unsigned int write_terminal_data(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
+    struct instance *instance = find_instance(bus, id);
     struct vga_character *memory = (struct vga_character *)VGA_TEXT_BASE;
     unsigned int i;
 
@@ -192,27 +215,27 @@ static unsigned int write_terminal_data(struct base_bus *bus, unsigned int id, u
         char c = ((char *)buffer)[i];
 
         if (c == '\b')
-            cursor.offset--;
+            instance->cursor.offset--;
 
         if (c == '\t')
-            cursor.offset = (cursor.offset + 8) & ~(8 - 1);
+            instance->cursor.offset = (instance->cursor.offset + 8) & ~(8 - 1);
 
         if (c == '\r')
-            cursor.offset -= (cursor.offset % 80);
+            instance->cursor.offset -= (instance->cursor.offset % 80);
 
         if (c == '\n')
-            cursor.offset += 80 - (cursor.offset % 80);
+            instance->cursor.offset += 80 - (instance->cursor.offset % 80);
 
         if (c >= ' ')
         {
 
-            memory[cursor.offset].character = c;
-            memory[cursor.offset].color = cursor.color;
-            cursor.offset++;
+            memory[instance->cursor.offset].character = c;
+            memory[instance->cursor.offset].color = instance->cursor.color;
+            instance->cursor.offset++;
 
         }
 
-        if (cursor.offset >= VGA_TEXT_LIMIT)
+        if (instance->cursor.offset >= VGA_TEXT_LIMIT)
         {
 
             unsigned int j;
@@ -223,16 +246,16 @@ static unsigned int write_terminal_data(struct base_bus *bus, unsigned int id, u
             {
 
                 memory[j].character = ' ';
-                memory[j].color = cursor.color;
+                memory[j].color = instance->cursor.color;
 
             }
 
-            cursor.offset -= 80;
+            instance->cursor.offset -= 80;
 
         }
 
-        outcrt1(VGA_CRTINDEX_CRT0E, cursor.offset >> 8);
-        outcrt1(VGA_CRTINDEX_CRT0F, cursor.offset);
+        outcrt1(VGA_CRTINDEX_CRT0E, instance->cursor.offset >> 8);
+        outcrt1(VGA_CRTINDEX_CRT0F, instance->cursor.offset);
 
     }
 
@@ -319,19 +342,23 @@ static unsigned int check(struct base_bus *bus, unsigned int id)
 static void attach(struct base_bus *bus, unsigned int id)
 {
 
+    struct instance *instance = find_instance(0, 0);
     struct vga_character *memory = (struct vga_character *)VGA_TEXT_BASE;
     unsigned int i;
 
-    base_terminal_connect_interface(&iterminal.base, bus, id);
-    base_video_connect_interface(&ivideo.base, bus, id);
+    base_init_device(&instance->device, bus, id);
+    base_terminal_init_node(&instance->tnode, &instance->device, &iterminal);
+    base_terminal_register_node(&instance->tnode);
+    base_video_init_node(&instance->vnode, &instance->device, &ivideo);
+    base_video_register_node(&instance->vnode);
 
-    cursor.color = 0x0F;
+    instance->cursor.color = 0x0F;
 
     for (i = 0; i < VGA_TEXT_LIMIT; i++)
     {
 
         memory[i].character = ' ';
-        memory[i].color = cursor.color;
+        memory[i].color = instance->cursor.color;
 
     }
 
@@ -345,6 +372,7 @@ static void detach(struct base_bus *bus, unsigned int id)
 void init()
 {
 
+    memory_clear(instances, sizeof (struct instance) * 2);
     base_terminal_init_interface(&iterminal, read_terminal_data, write_terminal_data);
     base_terminal_register_interface(&iterminal);
     base_video_init_interface(&ivideo, set_mode, read_video_data, write_video_data, read_video_colormap, write_video_colormap);

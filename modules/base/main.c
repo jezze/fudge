@@ -1,5 +1,6 @@
 #include <module.h>
 #include <kernel/resource.h>
+#include <system/system.h>
 #include "base.h"
 #include "block.h"
 #include "clock.h"
@@ -131,13 +132,12 @@ void base_init_interface(struct base_interface *interface, unsigned int type)
 
 }
 
-void base_init_device(struct base_device *device, struct base_interface *interface, struct base_bus *bus, unsigned int id)
+void base_init_device(struct base_device *device, struct base_bus *bus, unsigned int id)
 {
 
     memory_clear(device, sizeof (struct base_device));
     resource_init(&device->resource, BASE_RESOURCE_DEVICE, device);
 
-    device->interface = interface;
     device->bus = bus;
     device->id = id;
 

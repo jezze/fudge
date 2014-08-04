@@ -6,8 +6,20 @@ struct base_mouse_interface
 
 };
 
-void base_mouse_connect_interface(struct base_interface *interface, struct base_bus *bus, unsigned int id);
+struct base_mouse_node
+{
+
+    struct system_group base;
+    struct system_stream data;
+    struct base_device *device;
+    struct base_mouse_interface *interface;
+
+};
+
 void base_mouse_register_interface(struct base_mouse_interface *interface);
+void base_mouse_register_node(struct base_mouse_node *node);
 void base_mouse_unregister_interface(struct base_mouse_interface *interface);
+void base_mouse_unregister_node(struct base_mouse_node *node);
 void base_mouse_init_interface(struct base_mouse_interface *interface, unsigned int (*read_data)(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer));
+void base_mouse_init_node(struct base_mouse_node *node, struct base_device *device, struct base_mouse_interface *interface);
 void base_mouse_setup();

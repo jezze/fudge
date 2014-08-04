@@ -5,67 +5,14 @@
 #include "base.h"
 #include "mouse.h"
 
-static struct interface_node
-{
-
-    struct system_group base;
-    struct system_stream data;
-    struct base_device device;
-
-} inode[8];
-
 static struct system_group root;
 
 static unsigned int data_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct interface_node *node = (struct interface_node *)self->parent;
-    struct base_mouse_interface *interface = (struct base_mouse_interface *)node->device.interface;
+    struct base_mouse_node *node = (struct base_mouse_node *)self->parent;
 
-    return interface->read_data(node->device.bus, node->device.id, offset, count, buffer);
-
-}
-
-static unsigned int find_inode()
-{
-
-    unsigned int i;
-
-    for (i = 1; i < 8; i++)
-    {
-
-        if (!inode[i].base.node.parent)
-            return i;
-
-    }
-
-    return 0;
-
-}
-
-static void init_inode(struct interface_node *node, struct base_interface *interface, struct base_bus *bus, unsigned int id)
-{
-
-    memory_clear(node, sizeof (struct interface_node));
-    system_init_group(&node->base, bus->name);
-    system_init_stream(&node->data, "data");
-    base_init_device(&node->device, interface, bus, id);
-
-    node->data.node.read = data_read;
-
-}
-
-void base_mouse_connect_interface(struct base_interface *interface, struct base_bus *bus, unsigned int id)
-{
-
-    unsigned int index = find_inode();
-
-    if (!index)
-        return;
-
-    init_inode(&inode[index], interface, bus, id);
-    system_group_add(&root, &inode[index].base.node);
-    system_group_add(&inode[index].base, &inode[index].data.node);
+    return node->interface->read_data(node->device->bus, node->device->id, offset, count, buffer);
 
 }
 
@@ -76,10 +23,23 @@ void base_mouse_register_interface(struct base_mouse_interface *interface)
 
 }
 
+void base_mouse_register_node(struct base_mouse_node *node)
+{
+
+    system_group_add(&root, &node->base.node);
+    system_group_add(&node->base, &node->data.node);
+
+}
+
 void base_mouse_unregister_interface(struct base_mouse_interface *interface)
 {
 
     base_unregister_interface(&interface->base);
+
+}
+
+void base_mouse_unregister_node(struct base_mouse_node *node)
+{
 
 }
 
@@ -93,10 +53,22 @@ void base_mouse_init_interface(struct base_mouse_interface *interface, unsigned 
 
 }
 
+void base_mouse_init_node(struct base_mouse_node *node, struct base_device *device, struct base_mouse_interface *interface)
+{
+
+    memory_clear(node, sizeof (struct base_mouse_node));
+    system_init_group(&node->base, device->bus->name);
+    system_init_stream(&node->data, "data");
+
+    node->device = device;
+    node->interface = interface;
+    node->data.node.read = data_read;
+
+}
+
 void base_mouse_setup()
 {
 
-    memory_clear(inode, sizeof (struct interface_node) * 8);
     system_init_group(&root, "mouse");
     system_register_node(&root.node);
 

@@ -5,67 +5,14 @@
 #include "base.h"
 #include "block.h"
 
-static struct interface_node
-{
-
-    struct system_group base;
-    struct system_stream data;
-    struct base_device device;
-
-} inode[8];
-
 static struct system_group root;
 
 static unsigned int data_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct interface_node *node = (struct interface_node *)self->parent;
-    struct base_block_interface *interface = (struct base_block_interface *)node->device.interface;
+    struct base_block_node *node = (struct base_block_node *)self->parent;
 
-    return interface->read_data(node->device.bus, node->device.id, offset, count, buffer);
-
-}
-
-static unsigned int find_inode()
-{
-
-    unsigned int i;
-
-    for (i = 1; i < 8; i++)
-    {
-
-        if (!inode[i].base.node.parent)
-            return i;
-
-    }
-
-    return 0;
-
-}
-
-static void init_inode(struct interface_node *node, struct base_interface *interface, struct base_bus *bus, unsigned int id)
-{
-
-    memory_clear(node, sizeof (struct interface_node));
-    system_init_group(&node->base, bus->name);
-    system_init_stream(&node->data, "data");
-    base_init_device(&node->device, interface, bus, id);
-
-    node->data.node.read = data_read;
-
-}
-
-void base_block_connect_interface(struct base_interface *interface, struct base_bus *bus, unsigned int id)
-{
-
-    unsigned int index = find_inode();
-
-    if (!index)
-        return;
-
-    init_inode(&inode[index], interface, bus, id);
-    system_group_add(&root, &inode[index].base.node);
-    system_group_add(&inode[index].base, &inode[index].data.node);
+    return node->interface->read_data(node->device->bus, node->device->id, offset, count, buffer);
 
 }
 
@@ -81,6 +28,14 @@ void base_block_register_protocol(struct base_block_protocol *protocol)
 
 }
 
+void base_block_register_node(struct base_block_node *node)
+{
+
+    system_group_add(&root, &node->base.node);
+    system_group_add(&node->base, &node->data.node);
+
+}
+
 void base_block_unregister_interface(struct base_block_interface *interface)
 {
 
@@ -89,6 +44,11 @@ void base_block_unregister_interface(struct base_block_interface *interface)
 }
 
 void base_block_unregister_protocol(struct base_block_protocol *protocol)
+{
+
+}
+
+void base_block_unregister_node(struct base_block_node *node)
 {
 
 }
@@ -113,10 +73,22 @@ void base_block_init_protocol(struct base_block_protocol *protocol, char *name)
 
 }
 
+void base_block_init_node(struct base_block_node *node, struct base_device *device, struct base_block_interface *interface)
+{
+
+    memory_clear(node, sizeof (struct base_block_node));
+    system_init_group(&node->base, device->bus->name);
+    system_init_stream(&node->data, "data");
+
+    node->device = device;
+    node->interface = interface;
+    node->data.node.read = data_read;
+
+}
+
 void base_block_setup()
 {
 
-    memory_clear(inode, sizeof (struct interface_node) * 8);
     system_init_group(&root, "block");
     system_register_node(&root.node);
 

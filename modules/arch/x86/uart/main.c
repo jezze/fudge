@@ -1,6 +1,7 @@
 #include <module.h>
 #include <kernel/resource.h>
 #include <kernel/scheduler.h>
+#include <system/system.h>
 #include <base/base.h>
 #include <base/terminal.h>
 #include <arch/x86/platform/platform.h>
@@ -149,9 +150,36 @@ enum uart_msr
 
 static struct base_driver driver;
 static struct base_terminal_interface iterminal;
-static unsigned char buffer[512];
-static struct buffer_cfifo cfifo;
-static struct scheduler_rendezvous rdata;
+
+static struct instance
+{
+
+    struct base_device device;
+    struct base_terminal_node node;
+    unsigned char buffer[512];
+    struct buffer_cfifo cfifo;
+    struct scheduler_rendezvous rdata;
+
+} instances[4];
+
+static struct instance *find_instance(struct base_bus *bus, unsigned int id)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < 4; i++)
+    {
+
+        struct instance *instance = &instances[i];
+
+        if (instance->device.bus == bus && instance->device.id == id)
+            return instance;
+
+    }
+
+    return 0;
+
+}
 
 static char read(unsigned short io)
 {
@@ -174,9 +202,11 @@ static void write(unsigned short io, char c)
 static unsigned int read_terminal_data(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    count = buffer_read_cfifo(&cfifo, count, buffer);
+    struct instance *instance = find_instance(bus, id);
 
-    scheduler_rendezvous_sleep(&rdata, !count);
+    count = buffer_read_cfifo(&instance->cfifo, count, buffer);
+
+    scheduler_rendezvous_sleep(&instance->rdata, !count);
 
     return count;
 
@@ -199,11 +229,12 @@ static unsigned int write_terminal_data(struct base_bus *bus, unsigned int id, u
 static void handle_irq(unsigned int irq, struct base_bus *bus, unsigned int id)
 {
 
+    struct instance *instance = find_instance(bus, id);
     unsigned short io = platform_bus_get_base(bus, id);
     char data = read(io);
 
-    buffer_write_cfifo(&cfifo, 1, &data);
-    scheduler_rendezvous_unsleep(&rdata);
+    buffer_write_cfifo(&instance->cfifo, 1, &data);
+    scheduler_rendezvous_unsleep(&instance->rdata);
 
 }
 
@@ -220,10 +251,13 @@ static unsigned int check(struct base_bus *bus, unsigned int id)
 static void attach(struct base_bus *bus, unsigned int id)
 {
 
+    struct instance *instance = find_instance(0, 0);
     unsigned short io = platform_bus_get_base(bus, id);
 
-    base_terminal_connect_interface(&iterminal.base, bus, id);
-    buffer_init_cfifo(&cfifo, 512, &buffer);
+    base_init_device(&instance->device, bus, id);
+    base_terminal_init_node(&instance->node, &instance->device, &iterminal);
+    base_terminal_register_node(&instance->node);
+    buffer_init_cfifo(&instance->cfifo, 512, &instance->buffer);
     pic_set_routine(bus, id, handle_irq);
     io_outb(io + UART_REGISTER_IER, UART_IER_NULL);
     io_outb(io + UART_REGISTER_LCR, UART_LCR_5BITS | UART_LCR_1STOP | UART_LCR_NOPARITY);
@@ -246,6 +280,7 @@ static void detach(struct base_bus *bus, unsigned int id)
 void init()
 {
 
+    memory_clear(instances, sizeof (struct instance) * 4);
     base_terminal_init_interface(&iterminal, read_terminal_data, write_terminal_data);
     base_terminal_register_interface(&iterminal);
     base_init_driver(&driver, "uart", check, attach, detach);

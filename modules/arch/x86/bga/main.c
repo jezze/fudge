@@ -1,6 +1,7 @@
 #include <module.h>
 #include <kernel/resource.h>
 #include <x86/arch/mmu.h>
+#include <system/system.h>
 #include <base/base.h>
 #include <base/video.h>
 #include <arch/x86/io/io.h>
@@ -47,8 +48,35 @@ enum bga_bpp
 
 static struct base_driver driver;
 static struct base_video_interface ivideo;
-static void *bank;
-static void *lfb;
+
+static struct instance
+{
+
+    struct base_device device;
+    struct base_video_node node;
+    void *bank;
+    void *lfb;
+
+} instances[2];
+
+static struct instance *find_instance(struct base_bus *bus, unsigned int id)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < 2; i++)
+    {
+
+        struct instance *instance = &instances[i];
+
+        if (instance->device.bus == bus && instance->device.id == id)
+            return instance;
+
+    }
+
+    return 0;
+
+}
 
 static void write_register(unsigned short index, unsigned short data)
 {
@@ -108,10 +136,14 @@ static unsigned int check(struct base_bus *bus, unsigned int id)
 static void attach(struct base_bus *bus, unsigned int id)
 {
 
-    base_video_connect_interface(&ivideo.base, bus, id);
+    struct instance *instance = find_instance(0, 0);
 
-    bank = (void *)0xA0000;
-    lfb = (void *)(unsigned long)pci_bus_ind(bus, id, PCI_CONFIG_BAR0);
+    base_init_device(&instance->device, bus, id);
+    base_video_init_node(&instance->node, &instance->device, &ivideo);
+    base_video_register_node(&instance->node);
+
+    instance->bank = (void *)0xA0000;
+    instance->lfb = (void *)(unsigned long)pci_bus_ind(bus, id, PCI_CONFIG_BAR0);
 
 /*
     struct bga_driver *driver = (struct bga_driver *)self;
@@ -130,6 +162,7 @@ static void detach(struct base_bus *bus, unsigned int id)
 void init()
 {
 
+    memory_clear(instances, sizeof (struct instance) * 2);
     base_video_init_interface(&ivideo, set_mode, read_data, write_data, 0, 0);
     base_video_register_interface(&ivideo);
     base_init_driver(&driver, "bga", check, attach, detach);
