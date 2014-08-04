@@ -94,8 +94,10 @@ unsigned short pic_interrupt(void *stack)
 
 }
 
-unsigned int pic_set_routine(unsigned int irq, struct base_bus *bus, unsigned int id, void (*callback)(unsigned int irq, struct base_bus *bus, unsigned int id))
+unsigned int pic_set_routine(struct base_bus *bus, unsigned int id, void (*callback)(unsigned int irq, struct base_bus *bus, unsigned int id))
 {
+
+    unsigned short irq = bus->device_irq(bus, id);
 
     if (irq > PIC_ROUTINES)
         return 0;
@@ -116,8 +118,10 @@ unsigned int pic_set_routine(unsigned int irq, struct base_bus *bus, unsigned in
 
 }
 
-unsigned int pic_unset_routine(unsigned int irq, struct base_bus *bus, unsigned int id)
+unsigned int pic_unset_routine(struct base_bus *bus, unsigned int id)
 {
+
+    unsigned short irq = bus->device_irq(bus, id);
 
     if (irq > PIC_ROUTINES)
         return 0;

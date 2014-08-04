@@ -113,11 +113,9 @@ static unsigned int check(struct base_bus *bus, unsigned int id)
 static void attach(struct base_bus *bus, unsigned int id)
 {
 
-    unsigned short irq = bus->device_irq(bus, id);
-
     base_mouse_connect_interface(&imouse.base, bus, id);
     buffer_init_cfifo(&cfifo, 512, &buffer);
-    pic_set_routine(irq, bus, id, handle_irq);
+    pic_set_routine(bus, id, handle_irq);
     ps2_bus_enable_device(bus, id);
     ps2_bus_enable_interrupt(bus, id);
     disable_scanning(bus);
@@ -131,9 +129,7 @@ static void attach(struct base_bus *bus, unsigned int id)
 static void detach(struct base_bus *bus, unsigned int id)
 {
 
-    unsigned short irq = bus->device_irq(bus, id);
-
-    pic_unset_routine(irq, bus, id);
+    pic_unset_routine(bus, id);
 
 }
 

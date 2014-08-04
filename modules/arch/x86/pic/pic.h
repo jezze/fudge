@@ -25,5 +25,5 @@ void pic_routine0E();
 void pic_routine0F();
 void pic_enable_line(unsigned short port, unsigned char line);
 void pic_disable_line(unsigned short port, unsigned char line);
-unsigned int pic_set_routine(unsigned int irq, struct base_bus *bus, unsigned int id, void (*callback)(unsigned int irq, struct base_bus *bus, unsigned int id));
-unsigned int pic_unset_routine(unsigned int irq, struct base_bus *bus, unsigned int id);
+unsigned int pic_set_routine(struct base_bus *bus, unsigned int id, void (*callback)(unsigned int irq, struct base_bus *bus, unsigned int id));
+unsigned int pic_unset_routine(struct base_bus *bus, unsigned int id);

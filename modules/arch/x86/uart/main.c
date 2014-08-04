@@ -220,12 +220,11 @@ static unsigned int check(struct base_bus *bus, unsigned int id)
 static void attach(struct base_bus *bus, unsigned int id)
 {
 
-    unsigned short irq = bus->device_irq(bus, id);
     unsigned short io = platform_bus_get_base(bus, id);
 
     base_terminal_connect_interface(&iterminal.base, bus, id);
     buffer_init_cfifo(&cfifo, 512, &buffer);
-    pic_set_routine(irq, bus, id, handle_irq);
+    pic_set_routine(bus, id, handle_irq);
     io_outb(io + UART_REGISTER_IER, UART_IER_NULL);
     io_outb(io + UART_REGISTER_LCR, UART_LCR_5BITS | UART_LCR_1STOP | UART_LCR_NOPARITY);
     io_outb(io + UART_REGISTER_THR, 0x03);
@@ -240,9 +239,7 @@ static void attach(struct base_bus *bus, unsigned int id)
 static void detach(struct base_bus *bus, unsigned int id)
 {
 
-    unsigned short irq = bus->device_irq(bus, id);
-
-    pic_unset_routine(irq, bus, id);
+    pic_unset_routine(bus, id);
 
 }
 

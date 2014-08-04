@@ -320,7 +320,6 @@ static unsigned int check(struct base_bus *bus, unsigned int id)
 static void attach(struct base_bus *bus, unsigned int id)
 {
 
-    unsigned short irq = bus->device_irq(bus, id);
     unsigned int bar0 = pci_bus_ind(bus, id, PCI_CONFIG_BAR0);
     unsigned int bar1 = pci_bus_ind(bus, id, PCI_CONFIG_BAR1);
     unsigned short command = pci_bus_inw(bus, id, PCI_CONFIG_COMMAND);
@@ -330,7 +329,7 @@ static void attach(struct base_bus *bus, unsigned int id)
 
     base_network_connect_interface(&inetwork.base, bus, id);
     pci_bus_outw(bus, id, PCI_CONFIG_COMMAND, command | (1 << 2));
-    pic_set_routine(irq, bus, id, handle_irq);
+    pic_set_routine(bus, id, handle_irq);
     poweron();
     reset();
     setup_interrupts(RTL8139_ISR_ROK | RTL8139_ISR_TOK);
@@ -350,9 +349,7 @@ static void attach(struct base_bus *bus, unsigned int id)
 static void detach(struct base_bus *bus, unsigned int id)
 {
 
-    unsigned short irq = bus->device_irq(bus, id);
-
-    pic_unset_routine(irq, bus, id);
+    pic_unset_routine(bus, id);
 
 }
 
