@@ -9,9 +9,8 @@
 #include "registers.h"
 #include "timing.h"
 
-#define VGA_ADDRESS                     0x000A0000
-#define VGA_TEXT_BASE                   0x000B8000
 #define VGA_TEXT_LIMIT                  2000
+#define VGA_COLORMAP_LIMIT              256
 
 struct vga_character
 {
@@ -32,6 +31,9 @@ static struct instance
     struct base_terminal_node tnode;
     struct base_video_node vnode;
     struct {unsigned char color; unsigned short offset;} cursor;
+    struct {unsigned int x; unsigned int y; unsigned int bpp;} resolution;
+    void *taddress;
+    void *gaddress;
 
 } instances[2];
 
@@ -182,6 +184,23 @@ static const unsigned char g400x300x256X[60] = {
 };
 */
 
+static void clear(struct base_bus *bus, unsigned int id, unsigned int offset)
+{
+
+    struct instance *instance = find_instance(bus, id);
+    struct vga_character *memory = instance->taddress;
+    unsigned int i;
+
+    for (i = offset; i < VGA_TEXT_LIMIT; i++)
+    {
+
+        memory[i].character = ' ';
+        memory[i].color = instance->cursor.color;
+
+    }
+
+}
+
 static void set_mode(struct base_bus *bus, unsigned int id, unsigned int xres, unsigned int yres, unsigned int bpp)
 {
 
@@ -206,7 +225,10 @@ static unsigned int write_terminal_data(struct base_bus *bus, unsigned int id, u
 {
 
     struct instance *instance = find_instance(bus, id);
-    struct vga_character *memory = (struct vga_character *)VGA_TEXT_BASE;
+    struct vga_character *memory = instance->taddress;
+    unsigned int bytespp = instance->resolution.bpp / 8;
+    unsigned int linesize = instance->resolution.x * bytespp;
+    unsigned int fullsize = instance->resolution.y * linesize;
     unsigned int i;
 
     for (i = 0; i < count; i++)
@@ -238,26 +260,16 @@ static unsigned int write_terminal_data(struct base_bus *bus, unsigned int id, u
         if (instance->cursor.offset >= VGA_TEXT_LIMIT)
         {
 
-            unsigned int j;
-
-            memory_copy((void *)VGA_TEXT_BASE, (void *)(VGA_TEXT_BASE + 80 * 2), 80 * 24 * 2);
-
-            for (j = VGA_TEXT_LIMIT - 80; j < VGA_TEXT_LIMIT; j++)
-            {
-
-                memory[j].character = ' ';
-                memory[j].color = instance->cursor.color;
-
-            }
-
+            memory_read(instance->taddress, fullsize, instance->taddress, fullsize, linesize);
+            clear(bus, id, 80 * 24);
             instance->cursor.offset -= 80;
 
         }
 
-        outcrt1(VGA_CRTINDEX_CRT0E, instance->cursor.offset >> 8);
-        outcrt1(VGA_CRTINDEX_CRT0F, instance->cursor.offset);
-
     }
+
+    outcrt1(VGA_CRTINDEX_CRT0E, instance->cursor.offset >> 8);
+    outcrt1(VGA_CRTINDEX_CRT0F, instance->cursor.offset);
 
     return count;
 
@@ -266,14 +278,24 @@ static unsigned int write_terminal_data(struct base_bus *bus, unsigned int id, u
 static unsigned int read_video_data(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    return memory_read(buffer, count, (void *)VGA_ADDRESS, 320 * 200 * (8 / 8), offset);
+    struct instance *instance = find_instance(bus, id);
+    unsigned int bytespp = instance->resolution.bpp / 8;
+    unsigned int linesize = instance->resolution.x * bytespp;
+    unsigned int fullsize = instance->resolution.y * linesize;
+
+    return memory_read(buffer, count, instance->gaddress, fullsize, offset);
 
 }
 
 static unsigned int write_video_data(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    return memory_write((void *)VGA_ADDRESS, 320 * 200 * (8 / 8), buffer, count, offset);
+    struct instance *instance = find_instance(bus, id);
+    unsigned int bytespp = instance->resolution.bpp / 8;
+    unsigned int linesize = instance->resolution.x * bytespp;
+    unsigned int fullsize = instance->resolution.y * linesize;
+
+    return memory_write(instance->gaddress, fullsize, buffer, count, offset);
 
 }
 
@@ -283,8 +305,8 @@ static unsigned int read_video_colormap(struct base_bus *bus, unsigned int id, u
     char *c = buffer;
     unsigned int i;
 
-    if (count > 256)
-        count = 256;
+    if (count > VGA_COLORMAP_LIMIT)
+        count = VGA_COLORMAP_LIMIT;
 
     if (offset > count)
         return 0;
@@ -309,8 +331,8 @@ static unsigned int write_video_colormap(struct base_bus *bus, unsigned int id, 
     char *c = buffer;
     unsigned int i;
 
-    if (count > 256)
-        count = 256;
+    if (count > VGA_COLORMAP_LIMIT)
+        count = VGA_COLORMAP_LIMIT;
 
     if (offset > count)
         return 0;
@@ -343,8 +365,6 @@ static void attach(struct base_bus *bus, unsigned int id)
 {
 
     struct instance *instance = find_instance(0, 0);
-    struct vga_character *memory = (struct vga_character *)VGA_TEXT_BASE;
-    unsigned int i;
 
     base_init_device(&instance->device, bus, id);
     base_terminal_init_node(&instance->tnode, &instance->device, &iterminal);
@@ -352,15 +372,14 @@ static void attach(struct base_bus *bus, unsigned int id)
     base_video_init_node(&instance->vnode, &instance->device, &ivideo);
     base_video_register_node(&instance->vnode);
 
+    instance->taddress = (void *)0x000B8000;
+    instance->gaddress = (void *)0x000A0000;
+    instance->resolution.x = 80;
+    instance->resolution.y = 25;
+    instance->resolution.bpp = 16;
     instance->cursor.color = 0x0F;
 
-    for (i = 0; i < VGA_TEXT_LIMIT; i++)
-    {
-
-        memory[i].character = ' ';
-        memory[i].color = instance->cursor.color;
-
-    }
+    clear(bus, id, 0);
 
 }
 
