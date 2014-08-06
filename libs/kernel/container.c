@@ -8,30 +8,21 @@
 static struct vfs_descriptor *get_descriptor(struct task *task, unsigned int descriptor)
 {
 
-    if (!descriptor || descriptor >= TASK_DESCRIPTORS)
-        return 0;
-
-    return &task->descriptors[descriptor];
+    return (descriptor && descriptor < TASK_DESCRIPTORS) ? &task->descriptors[descriptor] : 0;
 
 }
 
 static struct vfs_channel *get_channel(struct container *container, unsigned int channel)
 {
 
-    if (!channel || channel >= CONTAINER_CHANNELS)
-        return 0;
-
-    return &container->channels[channel];
+    return (channel && channel < CONTAINER_CHANNELS) ? &container->channels[channel] : 0;
 
 }
 
 static struct vfs_mount *get_mount(struct container *container, unsigned int mount)
 {
 
-    if (!mount || mount >= CONTAINER_MOUNTS)
-        return 0;
-
-    return &container->mounts[mount];
+    return (mount && mount < CONTAINER_MOUNTS) ? &container->mounts[mount] : 0;
 
 }
 
