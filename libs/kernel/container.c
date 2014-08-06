@@ -62,7 +62,7 @@ static unsigned int walk(struct container *self, struct task *task, void *stack)
         if (count == 3 && memory_match(path, "../", 3))
         {
 
-            for (i = 1; i < CONTAINER_MOUNTS; i++)
+            for (i = 0; i < CONTAINER_MOUNTS; i++)
             {
 
                 struct vfs_mount *mount = &self->mounts[i];
@@ -94,7 +94,7 @@ static unsigned int walk(struct container *self, struct task *task, void *stack)
             if (!descriptor->id)
                 return 0;
 
-            for (i = 1; i < CONTAINER_MOUNTS; i++)
+            for (i = 0; i < CONTAINER_MOUNTS; i++)
             {
 
                 struct vfs_mount *mount = &self->mounts[i];
@@ -220,7 +220,7 @@ static unsigned int auth(struct container *self, struct task *task, void *stack)
     channel->backend = backend;
     channel->protocol = protocol;
 
-    return args->channel;
+    return 1;
 
 }
 
@@ -246,7 +246,7 @@ static unsigned int mount(struct container *self, struct task *task, void *stack
     mount->child.channel = channel;
     mount->child.id = channel->protocol->root(channel->backend);
 
-    return args->mount;
+    return 1;
 
 }
 
@@ -272,7 +272,7 @@ static unsigned int bind(struct container *self, struct task *task, void *stack)
     mount->child.channel = cdescriptor->channel;
     mount->child.id = cdescriptor->id;
 
-    return args->mount;
+    return 1;
 
 }
 
