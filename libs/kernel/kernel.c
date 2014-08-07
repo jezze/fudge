@@ -23,9 +23,9 @@ static unsigned int find_entry(struct vfs_channel *channel, unsigned int id)
 void kernel_setup_modules(struct container *container, struct task *task, unsigned int count, struct kernel_module *modules)
 {
 
-    struct vfs_channel *channel = &container->channels[1];
-    struct vfs_mount *mount = &container->mounts[1];
-    struct vfs_descriptor *descriptor = &task->descriptors[1];
+    struct vfs_channel *channel = &container->channels[0];
+    struct vfs_mount *mount = &container->mounts[0];
+    struct vfs_descriptor *descriptor = &task->descriptors[0];
     unsigned int i;
 
     for (i = 0; i < count; i++)

@@ -7,9 +7,9 @@
 enum
 {
 
-    CALL_DR                             = 0x01,
-    CALL_DW                             = 0x02,
-    CALL_DP                             = 0x03,
+    CALL_DR                             = 0x00,
+    CALL_DW                             = 0x01,
+    CALL_DP                             = 0x02,
     CALL_I0                             = 0x04,
     CALL_O0                             = 0x05,
     CALL_I1                             = 0x06,
