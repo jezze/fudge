@@ -115,14 +115,40 @@ static struct
 
 } current;
 
-static void activate_task(struct container *c, struct task *t)
+static void taskconnect(struct container *container, struct task *task)
 {
 
-    struct arch_container *container = (struct arch_container *)c;
-    struct arch_task *task = (struct arch_task *)t;
+    struct arch_container *acontainer = (struct arch_container *)container;
+    struct arch_task *atask = (struct arch_task *)task;
 
-    memory_copy(task->directory, container->directory, sizeof (struct mmu_directory));
-    mmu_load(task->directory);
+    memory_copy(atask->directory, acontainer->directory, sizeof (struct mmu_directory));
+
+}
+
+static void taskactivate(struct task *task)
+{
+
+    struct arch_task *atask = (struct arch_task *)task;
+
+    mmu_load(atask->directory);
+
+}
+
+static void tasksave(struct task *task, struct cpu_general *general)
+{
+
+    struct arch_task *atask = (struct arch_task *)task;
+
+    memory_copy(&atask->general, general, sizeof (struct cpu_general));
+
+}
+
+static void taskload(struct task *task, struct cpu_general *general)
+{
+
+    struct arch_task *atask = (struct arch_task *)task;
+
+    memory_copy(general, &atask->general, sizeof (struct cpu_general));
 
 }
 
@@ -139,7 +165,8 @@ static unsigned int spawn(struct container *self, struct task *task, void *stack
     memory_copy(next->descriptors, task->descriptors, sizeof (struct vfs_descriptor) * 4);
     memory_copy(next->descriptors + 4, task->descriptors + 6, sizeof (struct vfs_descriptor) * 18);
     memory_clear(next->descriptors + 22, sizeof (struct vfs_descriptor) * 10);
-    activate_task(self, next);
+    taskconnect(self, next);
+    taskactivate(next);
     scheduler_use(next);
 
     next->registers.ip = self->calls[CONTAINER_CALL_EXECUTE](self, next, &args);
@@ -158,56 +185,10 @@ static unsigned int exit(struct container *self, struct task *task, void *stack)
 
 }
 
-static void arch_init_container(struct arch_container *container, struct mmu_directory *directory, struct mmu_table *table)
-{
-
-    memory_clear(container, sizeof (struct arch_container));
-    container_init(&container->base, spawn, exit);
-
-    container->directory = directory;
-    container->table = table;
-
-}
-
-static void arch_init_task(struct arch_task *task, struct mmu_directory *directory, struct mmu_table *table, unsigned int code, unsigned int stack)
-{
-
-    memory_clear(task, sizeof (struct arch_task));
-    task_init(&task->base, 0, ARCH_TASK_STACKLIMIT);
-
-    task->directory = directory;
-    task->table = table;
-    task->mapping[0] = code;
-    task->mapping[1] = stack;
-
-}
-
 unsigned short arch_segment()
 {
 
     return selector.kdata;
-
-}
-
-/* Should be removed */
-static void arch_task_save(struct cpu_general *general)
-{
-
-    struct arch_task *task = (struct arch_task *)current.task;
-
-    memory_copy(&task->general, general, sizeof (struct cpu_general));
-
-}
-
-/* Should be removed */
-static void arch_task_load(struct cpu_general *general)
-{
-
-    struct arch_task *task = (struct arch_task *)current.task;
-
-    /* This mmu_load should be handled by a page fault */
-    mmu_load(task->directory);
-    memory_copy(general, &task->general, sizeof (struct cpu_general));
 
 }
 
@@ -220,7 +201,7 @@ unsigned short arch_schedule(struct cpu_general *general, struct cpu_interrupt *
         current.task->registers.ip = interrupt->eip;
         current.task->registers.sp = interrupt->esp;
 
-        arch_task_save(general);
+        tasksave(current.task, general);
 
     }
 
@@ -233,7 +214,8 @@ unsigned short arch_schedule(struct cpu_general *general, struct cpu_interrupt *
         interrupt->eip = current.task->registers.ip;
         interrupt->esp = current.task->registers.sp;
 
-        arch_task_load(general);
+        taskload(current.task, general);
+        taskactivate(current.task);
 
         return selector.udata;
 
@@ -323,7 +305,11 @@ static void arch_setup_container(struct arch_container *container, unsigned int 
     struct mmu_directory *directories = (struct mmu_directory *)ARCH_DIRECTORY_KCODE_BASE;
     struct mmu_table *tables = (struct mmu_table *)ARCH_TABLE_KCODE_BASE;
 
-    arch_init_container(container, directories + i, tables + i * ARCH_CONTAINER_MAPPINGS);
+    container_init(&container->base, spawn, exit);
+
+    container->directory = directories + i;
+    container->table = tables + i * ARCH_CONTAINER_MAPPINGS;
+
     mmu_map(container->directory, &container->table[0], ARCH_BIOS_BASE, ARCH_BIOS_BASE, ARCH_TABLE_UCODE_LIMIT - ARCH_BIOS_BASE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
 
 }
@@ -346,7 +332,13 @@ static void arch_setup_task(struct arch_task *task, unsigned int i)
     struct mmu_directory *directories = (struct mmu_directory *)ARCH_DIRECTORY_UCODE_BASE;
     struct mmu_table *tables = (struct mmu_table *)ARCH_TABLE_UCODE_BASE;
 
-    arch_init_task(task, directories + i, tables + i * ARCH_TASK_MAPPINGS, ARCH_UCODE_BASE + ARCH_TASK_CODESIZE * i, ARCH_USTACK_BASE + ARCH_TASK_STACKSIZE * i);
+    task_init(&task->base, 0, ARCH_TASK_STACKLIMIT);
+
+    task->directory = directories + i;
+    task->table = tables + i * ARCH_TASK_MAPPINGS;
+    task->mapping[0] = ARCH_UCODE_BASE + ARCH_TASK_CODESIZE * i;
+    task->mapping[1] = ARCH_USTACK_BASE + ARCH_TASK_STACKSIZE * i;
+
     scheduler_register_task(&task->base);
 
 }
@@ -366,11 +358,8 @@ static struct task *arch_setup_tasks()
 static void arch_setup_mmu(struct container *container, struct task *task)
 {
 
-    struct arch_container *acontainer = (struct arch_container *)container;
-    struct arch_task *atask = (struct arch_task *)task;
-
-    memory_copy(atask->directory, acontainer->directory, sizeof (struct mmu_directory));
-    mmu_load(atask->directory);
+    taskconnect(container, task);
+    taskactivate(task);
     mmu_enable();
 
 }
