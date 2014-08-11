@@ -324,7 +324,6 @@ static void arch_setup_container(struct arch_container *container, unsigned int 
     struct mmu_table *tables = (struct mmu_table *)ARCH_TABLE_KCODE_BASE;
 
     arch_init_container(container, directories + i, tables + i * ARCH_CONTAINER_MAPPINGS);
-    resource_register(&container->base.resource);
     mmu_map(container->directory, &container->table[0], ARCH_BIOS_BASE, ARCH_BIOS_BASE, ARCH_TABLE_UCODE_LIMIT - ARCH_BIOS_BASE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
 
 }
@@ -348,7 +347,6 @@ static void arch_setup_task(struct arch_task *task, unsigned int i)
     struct mmu_table *tables = (struct mmu_table *)ARCH_TABLE_UCODE_BASE;
 
     arch_init_task(task, directories + i, tables + i * ARCH_TASK_MAPPINGS, ARCH_UCODE_BASE + ARCH_TASK_CODESIZE * i, ARCH_USTACK_BASE + ARCH_TASK_STACKSIZE * i);
-    resource_register(&task->base.resource);
     scheduler_register_task(&task->base);
 
 }
@@ -365,6 +363,18 @@ static struct task *arch_setup_tasks()
 
 }
 
+static void arch_setup_mmu(struct container *container, struct task *task)
+{
+
+    struct arch_container *acontainer = (struct arch_container *)container;
+    struct arch_task *atask = (struct arch_task *)task;
+
+    memory_copy(atask->directory, acontainer->directory, sizeof (struct mmu_directory));
+    mmu_load(atask->directory);
+    mmu_enable();
+
+}
+
 void arch_setup(unsigned int count, struct kernel_module *modules)
 {
 
@@ -374,9 +384,8 @@ void arch_setup(unsigned int count, struct kernel_module *modules)
     current.container = arch_setup_containers();
     current.task = arch_setup_tasks();
 
-    activate_task(current.container, current.task);
     scheduler_use(current.task);
-    mmu_enable();
+    arch_setup_mmu(current.container, current.task);
     kernel_setup_modules(current.container, current.task, count, modules);
     arch_usermode(selector.ucode, selector.udata, current.task->registers.ip, current.task->registers.sp);
 
