@@ -317,41 +317,51 @@ static void arch_setup_basic()
 
 }
 
-static void arch_setup_containers()
+static void arch_setup_container(struct arch_container *container, unsigned int i)
+{
+
+    struct mmu_directory *directories = (struct mmu_directory *)ARCH_DIRECTORY_KCODE_BASE;
+    struct mmu_table *tables = (struct mmu_table *)ARCH_TABLE_KCODE_BASE;
+
+    arch_init_container(container, directories + i, tables + i * ARCH_CONTAINER_MAPPINGS);
+    resource_register(&container->base.resource);
+    mmu_map(container->directory, &container->table[0], ARCH_BIOS_BASE, ARCH_BIOS_BASE, ARCH_TABLE_UCODE_LIMIT - ARCH_BIOS_BASE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
+
+}
+
+static struct container *arch_setup_containers()
 {
 
     unsigned int i;
 
     for (i = 0; i < ARCH_CONTAINERS; i++)
-    {
+        arch_setup_container(&containers[i], i);
 
-        struct mmu_directory *directories = (struct mmu_directory *)ARCH_DIRECTORY_KCODE_BASE;
-        struct mmu_table *tables = (struct mmu_table *)ARCH_TABLE_KCODE_BASE;
-
-        arch_init_container(&containers[i], directories + i, tables + i * ARCH_CONTAINER_MAPPINGS);
-        resource_register(&containers[i].base.resource);
-        mmu_map(containers[i].directory, &containers[i].table[0], ARCH_BIOS_BASE, ARCH_BIOS_BASE, ARCH_TABLE_UCODE_LIMIT - ARCH_BIOS_BASE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
-
-    }
+    return &containers[0].base;
 
 }
 
-static void arch_setup_tasks()
+static void arch_setup_task(struct arch_task *task, unsigned int i)
+{
+
+    struct mmu_directory *directories = (struct mmu_directory *)ARCH_DIRECTORY_UCODE_BASE;
+    struct mmu_table *tables = (struct mmu_table *)ARCH_TABLE_UCODE_BASE;
+
+    arch_init_task(task, directories + i, tables + i * ARCH_TASK_MAPPINGS, ARCH_UCODE_BASE + ARCH_TASK_CODESIZE * i, ARCH_USTACK_BASE + ARCH_TASK_STACKSIZE * i);
+    resource_register(&task->base.resource);
+    scheduler_register_task(&task->base);
+
+}
+
+static struct task *arch_setup_tasks()
 {
 
     unsigned int i;
 
     for (i = 0; i < ARCH_TASKS; i++)
-    {
+        arch_setup_task(&tasks[i], i);
 
-        struct mmu_directory *directories = (struct mmu_directory *)ARCH_DIRECTORY_UCODE_BASE;
-        struct mmu_table *tables = (struct mmu_table *)ARCH_TABLE_UCODE_BASE;
-
-        arch_init_task(&tasks[i], directories + i, tables + i * ARCH_TASK_MAPPINGS, ARCH_UCODE_BASE + ARCH_TASK_CODESIZE * i, ARCH_USTACK_BASE + ARCH_TASK_STACKSIZE * i);
-        resource_register(&tasks[i].base.resource);
-        scheduler_register_task(&tasks[i].base);
-
-    }
+    return &tasks[0].base;
 
 }
 
@@ -360,11 +370,9 @@ void arch_setup(unsigned int count, struct kernel_module *modules)
 
     arch_setup_basic();
     kernel_setup();
-    arch_setup_containers();
-    arch_setup_tasks();
 
-    current.container = &containers[0].base;
-    current.task = &tasks[0].base;
+    current.container = arch_setup_containers();
+    current.task = arch_setup_tasks();
 
     activate_task(current.container, current.task);
     scheduler_use(current.task);
