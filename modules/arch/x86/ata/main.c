@@ -39,24 +39,20 @@ static struct instance *find_instance(struct base_bus *bus, unsigned int id)
 static unsigned int read_data(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct ide_bus *ideBus = (struct ide_bus *)bus;
-
     if (offset > 0)
         return 0;
 
-    return ide_bus_read_lba28(ideBus, 0, 0, 1, buffer);
+    return ide_bus_read_lba28(bus, 0, 0, 1, buffer);
 
 }
 
 static unsigned int write_data(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct ide_bus *ideBus = (struct ide_bus *)bus;
-
     if (offset > 0)
         return 0;
 
-    return ide_bus_write_lba28(ideBus, 0, 0, 1, buffer);
+    return ide_bus_write_lba28(bus, 0, 0, 1, buffer);
 
 }
 
