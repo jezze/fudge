@@ -2,6 +2,7 @@
 #include <kernel/resource.h>
 #include <base/base.h>
 #include <arch/x86/io/io.h>
+#include <arch/x86/pci/pci.h>
 #include "ide.h"
 
 enum ide_register
@@ -88,8 +89,35 @@ enum ide_id
 
 };
 
-static struct ide_bus primary;
-static struct ide_bus secondary;
+static struct base_driver driver;
+
+static struct instance
+{
+
+    struct base_device device;
+    struct ide_bus p;
+    struct ide_bus s;
+
+} instances[2];
+
+static struct instance *find_instance(struct base_bus *bus, unsigned int id)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < 2; i++)
+    {
+
+        struct instance *instance = &instances[i];
+
+        if (instance->device.bus == bus && instance->device.id == id)
+            return instance;
+
+    }
+
+    return 0;
+
+}
 
 static void wait(struct ide_bus *bus)
 {
@@ -143,8 +171,14 @@ static void ide_bus_set_command(struct ide_bus *bus, unsigned char command)
 
 }
 
-/*
-static unsigned int ide_bus_read_block(struct ide_bus *bus, unsigned int count, void *buffer)
+unsigned int ide_bus_get_status(struct ide_bus *bus)
+{
+
+    return io_inb(bus->data + IDE_DATA_COMMAND);
+
+}
+
+unsigned int ide_bus_read_block(struct ide_bus *bus, unsigned int count, void *buffer)
 {
 
     unsigned int i;
@@ -156,7 +190,6 @@ static unsigned int ide_bus_read_block(struct ide_bus *bus, unsigned int count, 
     return 512;
 
 }
-*/
 
 static unsigned int ide_bus_read_blocks(struct ide_bus *bus, unsigned int count, void *buffer)
 {
@@ -181,8 +214,7 @@ static unsigned int ide_bus_read_blocks(struct ide_bus *bus, unsigned int count,
 
 }
 
-/*
-static unsigned int ide_bus_write_block(struct ide_bus *bus, unsigned int count, void *buffer)
+unsigned int ide_bus_write_block(struct ide_bus *bus, unsigned int count, void *buffer)
 {
 
     unsigned int i;
@@ -194,7 +226,6 @@ static unsigned int ide_bus_write_block(struct ide_bus *bus, unsigned int count,
     return 512;
 
 }
-*/
 
 static unsigned int ide_bus_write_blocks(struct ide_bus *bus, unsigned int count, void *buffer)
 {
@@ -219,56 +250,6 @@ static unsigned int ide_bus_write_blocks(struct ide_bus *bus, unsigned int count
 
 }
 
-void ide_configure_ata(struct ide_bus *bus)
-{
-
-    unsigned short buffer[256];
-    unsigned int lba48;
-    char *model;
-    unsigned int i;
-
-    ide_bus_read_blocks(bus, 1, buffer);
-
-    lba48 = buffer[IDE_ID_SUPPORT] & (1 << 10);
-    bus->lba28Max = (buffer[IDE_ID_LBA28MAX] << 16) | buffer[IDE_ID_LBA28MAX + 1];
-
-    if (lba48)
-    {
-
-        bus->lba48MaxLow = (buffer[IDE_ID_LBA48MAX + 0] << 16) | buffer[IDE_ID_LBA48MAX + 1];
-        bus->lba48MaxHigh = (buffer[IDE_ID_LBA48MAX + 2] << 16) | buffer[IDE_ID_LBA48MAX + 3];
-
-    }
-
-    model = (char *)&buffer[IDE_ID_MODEL];
-
-    for (i = 0; i < 40; i++)
-        bus->model[i] = model[i + 1 - ((i & 1) << 1)];
-
-    bus->model[40] = '\0';
-
-    for (i = 39; i > 0; i--)
-    {
-
-        if (bus->model[i] == ' ')
-            bus->model[i] = '\0';
-        else
-            break;
-
-    }
-
-}
-
-void ide_configure_atapi(struct ide_bus *bus)
-{
-
-    unsigned short buffer[256];
-
-    ide_bus_set_command(bus, IDE_CONTROL_IDATAPI);
-    ide_bus_read_blocks(bus, 1, buffer);
-
-}
-
 unsigned int ide_bus_read_lba28(struct ide_bus *bus, unsigned int slave, unsigned int sector, unsigned int count, void *buffer)
 {
 
@@ -286,7 +267,6 @@ void ide_bus_read_lba28_async(struct ide_bus *bus, unsigned int slave, unsigned 
     ide_bus_select(bus, 0xE0 | ((sector >> 24) & 0x0F), slave);
     ide_bus_set_lba(bus, count, sector, sector >> 8, sector >> 16);
     ide_bus_set_command(bus, IDE_CONTROL_PIO28READ);
-    ide_bus_sleep(bus);
 
 }
 
@@ -307,7 +287,6 @@ void ide_bus_write_lba28_async(struct ide_bus *bus, unsigned int slave, unsigned
     ide_bus_select(bus, 0xE0 | ((sector >> 24) & 0x0F), slave);
     ide_bus_set_lba(bus, count, sector, sector >> 8, sector >> 16);
     ide_bus_set_command(bus, IDE_CONTROL_PIO28WRITE);
-    ide_bus_sleep(bus);
 
 }
 
@@ -357,11 +336,7 @@ void ide_bus_write_lba48_async(struct ide_bus *bus, unsigned int slave, unsigned
 
 }
 
-static void add_device(struct ide_bus *bus, unsigned int slave, unsigned int type)
-{
-
-}
-
+/*
 static unsigned int detect(struct ide_bus *bus, unsigned int slave)
 {
 
@@ -398,30 +373,25 @@ static unsigned int detect(struct ide_bus *bus, unsigned int slave)
     return 0;
 
 }
+*/
 
 static void setup(struct base_bus *self)
 {
 
-    unsigned int type;
-    struct ide_bus *bus = (struct ide_bus *)self;
-
-    if ((type = detect(bus, 0)))
-        add_device(bus, 0, type);
-
-    if ((type = detect(bus, 1)))
-        add_device(bus, 1, type);
-
 }
 
-static unsigned int device_next(struct base_bus *self, unsigned int id)
+static unsigned int device_next_p(struct base_bus *self, unsigned int id)
 {
-
-    /* Only detect hda right now */
-    if (self == &secondary.base)
-        return 0;
 
     if (id == 0)
         return IDE_DEVICE_TYPE_ATA;
+
+    return 0;
+
+}
+
+static unsigned int device_next_s(struct base_bus *self, unsigned int id)
+{
 
     return 0;
 
@@ -434,32 +404,58 @@ static unsigned short device_irq(struct base_bus *self, unsigned int id)
 
 }
 
-static void init_bus(struct ide_bus *bus, unsigned short control, unsigned short data)
+static unsigned int check(struct base_bus *bus, unsigned int id)
 {
 
-    memory_clear(bus, sizeof (struct ide_bus));
-    base_init_bus(&bus->base, IDE_BUS_TYPE, "ide", setup, device_next, device_irq);
+    if (bus->type != PCI_BUS_TYPE)
+        return 0;
 
-    bus->control = control;
-    bus->data = data;
+    return pci_bus_inb(bus, id, PCI_CONFIG_CLASS) == PCI_CLASS_STORAGE && pci_bus_inb(bus, id, PCI_CONFIG_SUBCLASS) == PCI_CLASS_STORAGE_IDE;
+
+}
+
+static void attach(struct base_bus *bus, unsigned int id)
+{
+
+    struct instance *instance = find_instance(0, 0);
+    unsigned int bar0 = pci_bus_ind(bus, id, PCI_CONFIG_BAR0);
+    unsigned int bar1 = pci_bus_ind(bus, id, PCI_CONFIG_BAR1);
+    unsigned int bar2 = pci_bus_ind(bus, id, PCI_CONFIG_BAR2);
+    unsigned int bar3 = pci_bus_ind(bus, id, PCI_CONFIG_BAR3);
+    unsigned int bar4 = pci_bus_ind(bus, id, PCI_CONFIG_BAR4);
+
+    base_init_device(&instance->device, bus, id);
+    base_init_bus(&instance->p.base, IDE_BUS_TYPE, "ide0", setup, device_next_p, device_irq);
+    base_init_bus(&instance->s.base, IDE_BUS_TYPE, "ide1", setup, device_next_s, device_irq);
+
+    instance->p.data = (bar0 & 0xFFFFFFFC) + 0x1F0 * (!bar0);
+    instance->p.control = (bar1 & 0xFFFFFFFC) + 0x3F6 * (!bar1);
+    instance->p.busmaster = (bar4 & 0xFFFFFFFC) + 0;
+    instance->s.data = (bar2 & 0xFFFFFFFC) + 0x170 * (!bar2);
+    instance->s.control = (bar3 & 0xFFFFFFFC) + 0x376 * (!bar3);
+    instance->s.busmaster = (bar4 & 0xFFFFFFFC) + 8;
+
+    base_register_bus(&instance->p.base);
+    base_register_bus(&instance->s.base);
+
+}
+
+static void detach(struct base_bus *bus, unsigned int id)
+{
 
 }
 
 void init()
 {
 
-    init_bus(&primary, IDE_REGISTER_BUS0CONTROL0, IDE_REGISTER_BUS0DATA0);
-    base_register_bus(&primary.base);
-    init_bus(&secondary, IDE_REGISTER_BUS0CONTROL1, IDE_REGISTER_BUS0DATA1);
-    base_register_bus(&secondary.base);
+    memory_clear(instances, sizeof (struct instance) * 2);
+    base_init_driver(&driver, "ide", check, attach, detach);
+    base_register_driver(&driver);
 
 }
 
 void destroy()
 {
-
-    base_unregister_bus(&primary.base);
-    base_unregister_bus(&secondary.base);
 
 }
 
