@@ -429,6 +429,11 @@ static void attach(struct base_bus *bus, unsigned int id)
 static void detach(struct base_bus *bus, unsigned int id)
 {
 
+    struct instance *instance = find_instance(bus, id);
+
+    base_unregister_bus(&instance->p.base);
+    base_unregister_bus(&instance->s.base);
+
 }
 
 void init()
