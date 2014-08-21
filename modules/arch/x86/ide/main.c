@@ -5,20 +5,6 @@
 #include <arch/x86/pci/pci.h>
 #include "ide.h"
 
-enum ide_register
-{
-
-    IDE_REGISTER_BUS0CONTROL0           = 0x03F6,
-    IDE_REGISTER_BUS0CONTROL1           = 0x0376,
-    IDE_REGISTER_BUS0DATA0              = 0x01F0,
-    IDE_REGISTER_BUS0DATA1              = 0x0170,
-    IDE_REGISTER_BUS1CONTROL0           = 0x03E6,
-    IDE_REGISTER_BUS1CONTROL1           = 0x0366,
-    IDE_REGISTER_BUS1DATA0              = 0x01E8,
-    IDE_REGISTER_BUS1DATA1              = 0x0168
-
-};
-
 enum ide_control
 {
 
