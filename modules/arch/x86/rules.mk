@@ -16,6 +16,8 @@ DIR:=$(CUR)/cirrus
 include $(DIR)/rules.mk
 DIR:=$(CUR)/cpuid
 include $(DIR)/rules.mk
+DIR:=$(CUR)/ehci
+include $(DIR)/rules.mk
 DIR:=$(CUR)/fpu
 include $(DIR)/rules.mk
 DIR:=$(CUR)/i915

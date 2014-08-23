@@ -478,5 +478,7 @@ void init()
 void destroy()
 {
 
+    base_unregister_driver(&driver);
+
 }
 
