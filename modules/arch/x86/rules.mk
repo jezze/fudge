@@ -28,6 +28,8 @@ DIR:=$(CUR)/io
 include $(DIR)/rules.mk
 DIR:=$(CUR)/msr
 include $(DIR)/rules.mk
+DIR:=$(CUR)/ohci
+include $(DIR)/rules.mk
 DIR:=$(CUR)/pci
 include $(DIR)/rules.mk
 DIR:=$(CUR)/pic
@@ -45,6 +47,8 @@ include $(DIR)/rules.mk
 DIR:=$(CUR)/smp
 include $(DIR)/rules.mk
 DIR:=$(CUR)/uart
+include $(DIR)/rules.mk
+DIR:=$(CUR)/uhci
 include $(DIR)/rules.mk
 DIR:=$(CUR)/vga
 include $(DIR)/rules.mk
