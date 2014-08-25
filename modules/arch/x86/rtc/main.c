@@ -29,33 +29,8 @@ enum rtc_flag
 
 static struct base_driver driver;
 static struct base_clock_interface iclock;
-
-static struct instance
-{
-
-    struct base_device device;
-    struct base_clock_node node;
-
-} instances[2];
-
-static struct instance *find_instance(struct base_bus *bus, unsigned int id)
-{
-
-    unsigned int i;
-
-    for (i = 0; i < 2; i++)
-    {
-
-        struct instance *instance = &instances[i];
-
-        if (instance->device.bus == bus && instance->device.id == id)
-            return instance;
-
-    }
-
-    return 0;
-
-}
+static struct base_device device;
+static struct base_clock_node node;
 
 static unsigned char convert(unsigned char num)
 {
@@ -140,11 +115,9 @@ static unsigned int check(struct base_bus *bus, unsigned int id)
 static void attach(struct base_bus *bus, unsigned int id)
 {
 
-    struct instance *instance = find_instance(0, 0);
-
-    base_init_device(&instance->device, bus, id);
-    base_clock_init_node(&instance->node, &instance->device, &iclock);
-    base_clock_register_node(&instance->node);
+    base_init_device(&device, bus, id);
+    base_clock_init_node(&node, &device, &iclock);
+    base_clock_register_node(&node);
     pic_set_routine(bus, id, handle_irq);
 
 }
@@ -159,7 +132,6 @@ static void detach(struct base_bus *bus, unsigned int id)
 void init()
 {
 
-    memory_clear(instances, sizeof (struct instance) * 2);
     base_clock_init_interface(&iclock, get_seconds, get_minutes, get_hours, get_weekday, get_day, get_month, get_year);
     base_clock_register_interface(&iclock);
     base_init_driver(&driver, "rtc", check, attach, detach);

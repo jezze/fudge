@@ -23,38 +23,13 @@ struct vga_character
 static struct base_driver driver;
 static struct base_terminal_interface iterminal;
 static struct base_video_interface ivideo;
-
-static struct instance
-{
-
-    struct base_device device;
-    struct base_terminal_node tnode;
-    struct base_video_node vnode;
-    struct {unsigned char color; unsigned short offset;} cursor;
-    struct {unsigned int x; unsigned int y; unsigned int bpp;} resolution;
-    void *taddress;
-    void *gaddress;
-
-} instances[2];
-
-static struct instance *find_instance(struct base_bus *bus, unsigned int id)
-{
-
-    unsigned int i;
-
-    for (i = 0; i < 2; i++)
-    {
-
-        struct instance *instance = &instances[i];
-
-        if (instance->device.bus == bus && instance->device.id == id)
-            return instance;
-
-    }
-
-    return 0;
-
-}
+static struct base_device device;
+static struct base_terminal_node tnode;
+static struct base_video_node vnode;
+static struct {unsigned char color; unsigned short offset;} cursor;
+static struct {unsigned int x; unsigned int y; unsigned int bpp;} resolution;
+static void *taddress;
+static void *gaddress;
 
 /* BIOS mode 0Dh - 320x200x16 */
 /*
@@ -187,15 +162,14 @@ static const unsigned char g400x300x256X[60] = {
 static void clear(struct base_bus *bus, unsigned int id, unsigned int offset)
 {
 
-    struct instance *instance = find_instance(bus, id);
-    struct vga_character *memory = instance->taddress;
+    struct vga_character *memory = taddress;
     unsigned int i;
 
     for (i = offset; i < VGA_TEXT_LIMIT; i++)
     {
 
         memory[i].character = ' ';
-        memory[i].color = instance->cursor.color;
+        memory[i].color = cursor.color;
 
     }
 
@@ -224,11 +198,10 @@ static unsigned int read_terminal_data(struct base_bus *bus, unsigned int id, un
 static unsigned int write_terminal_data(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct instance *instance = find_instance(bus, id);
-    struct vga_character *memory = instance->taddress;
-    unsigned int bytespp = instance->resolution.bpp / 8;
-    unsigned int linesize = instance->resolution.x * bytespp;
-    unsigned int fullsize = instance->resolution.y * linesize;
+    struct vga_character *memory = taddress;
+    unsigned int bytespp = resolution.bpp / 8;
+    unsigned int linesize = resolution.x * bytespp;
+    unsigned int fullsize = resolution.y * linesize;
     unsigned int i;
 
     for (i = 0; i < count; i++)
@@ -237,39 +210,39 @@ static unsigned int write_terminal_data(struct base_bus *bus, unsigned int id, u
         char c = ((char *)buffer)[i];
 
         if (c == '\b')
-            instance->cursor.offset--;
+            cursor.offset--;
 
         if (c == '\t')
-            instance->cursor.offset = (instance->cursor.offset + 8) & ~(8 - 1);
+            cursor.offset = (cursor.offset + 8) & ~(8 - 1);
 
         if (c == '\r')
-            instance->cursor.offset -= (instance->cursor.offset % 80);
+            cursor.offset -= (cursor.offset % 80);
 
         if (c == '\n')
-            instance->cursor.offset += 80 - (instance->cursor.offset % 80);
+            cursor.offset += 80 - (cursor.offset % 80);
 
         if (c >= ' ')
         {
 
-            memory[instance->cursor.offset].character = c;
-            memory[instance->cursor.offset].color = instance->cursor.color;
-            instance->cursor.offset++;
+            memory[cursor.offset].character = c;
+            memory[cursor.offset].color = cursor.color;
+            cursor.offset++;
 
         }
 
-        if (instance->cursor.offset >= VGA_TEXT_LIMIT)
+        if (cursor.offset >= VGA_TEXT_LIMIT)
         {
 
-            memory_read(instance->taddress, fullsize, instance->taddress, fullsize, linesize);
+            memory_read(taddress, fullsize, taddress, fullsize, linesize);
             clear(bus, id, 80 * 24);
-            instance->cursor.offset -= 80;
+            cursor.offset -= 80;
 
         }
 
     }
 
-    outcrt1(VGA_CRTINDEX_CRT0E, instance->cursor.offset >> 8);
-    outcrt1(VGA_CRTINDEX_CRT0F, instance->cursor.offset);
+    outcrt1(VGA_CRTINDEX_CRT0E, cursor.offset >> 8);
+    outcrt1(VGA_CRTINDEX_CRT0F, cursor.offset);
 
     return count;
 
@@ -278,24 +251,22 @@ static unsigned int write_terminal_data(struct base_bus *bus, unsigned int id, u
 static unsigned int read_video_data(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct instance *instance = find_instance(bus, id);
-    unsigned int bytespp = instance->resolution.bpp / 8;
-    unsigned int linesize = instance->resolution.x * bytespp;
-    unsigned int fullsize = instance->resolution.y * linesize;
+    unsigned int bytespp = resolution.bpp / 8;
+    unsigned int linesize = resolution.x * bytespp;
+    unsigned int fullsize = resolution.y * linesize;
 
-    return memory_read(buffer, count, instance->gaddress, fullsize, offset);
+    return memory_read(buffer, count, gaddress, fullsize, offset);
 
 }
 
 static unsigned int write_video_data(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct instance *instance = find_instance(bus, id);
-    unsigned int bytespp = instance->resolution.bpp / 8;
-    unsigned int linesize = instance->resolution.x * bytespp;
-    unsigned int fullsize = instance->resolution.y * linesize;
+    unsigned int bytespp = resolution.bpp / 8;
+    unsigned int linesize = resolution.x * bytespp;
+    unsigned int fullsize = resolution.y * linesize;
 
-    return memory_write(instance->gaddress, fullsize, buffer, count, offset);
+    return memory_write(gaddress, fullsize, buffer, count, offset);
 
 }
 
@@ -364,20 +335,18 @@ static unsigned int check(struct base_bus *bus, unsigned int id)
 static void attach(struct base_bus *bus, unsigned int id)
 {
 
-    struct instance *instance = find_instance(0, 0);
+    base_init_device(&device, bus, id);
+    base_terminal_init_node(&tnode, &device, &iterminal);
+    base_terminal_register_node(&tnode);
+    base_video_init_node(&vnode, &device, &ivideo);
+    base_video_register_node(&vnode);
 
-    base_init_device(&instance->device, bus, id);
-    base_terminal_init_node(&instance->tnode, &instance->device, &iterminal);
-    base_terminal_register_node(&instance->tnode);
-    base_video_init_node(&instance->vnode, &instance->device, &ivideo);
-    base_video_register_node(&instance->vnode);
-
-    instance->taddress = (void *)0x000B8000;
-    instance->gaddress = (void *)0x000A0000;
-    instance->resolution.x = 80;
-    instance->resolution.y = 25;
-    instance->resolution.bpp = 16;
-    instance->cursor.color = 0x0F;
+    taddress = (void *)0x000B8000;
+    gaddress = (void *)0x000A0000;
+    resolution.x = 80;
+    resolution.y = 25;
+    resolution.bpp = 16;
+    cursor.color = 0x0F;
 
     clear(bus, id, 0);
 
@@ -391,7 +360,6 @@ static void detach(struct base_bus *bus, unsigned int id)
 void init()
 {
 
-    memory_clear(instances, sizeof (struct instance) * 2);
     base_terminal_init_interface(&iterminal, read_terminal_data, write_terminal_data);
     base_terminal_register_interface(&iterminal);
     base_video_init_interface(&ivideo, set_mode, read_video_data, write_video_data, read_video_colormap, write_video_colormap);

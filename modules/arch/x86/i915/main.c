@@ -9,33 +9,8 @@
 
 static struct base_driver driver;
 static struct base_video_interface ivideo;
-
-static struct instance
-{
-
-    struct base_device device;
-    struct base_video_node node;
-
-} instances[2];
-
-static struct instance *find_instance(struct base_bus *bus, unsigned int id)
-{
-
-    unsigned int i;
-
-    for (i = 0; i < 2; i++)
-    {
-
-        struct instance *instance = &instances[i];
-
-        if (instance->device.bus == bus && instance->device.id == id)
-            return instance;
-
-    }
-
-    return 0;
-
-}
+static struct base_device device;
+static struct base_video_node node;
 
 static unsigned int read(unsigned int reg)
 {
@@ -180,11 +155,9 @@ static unsigned int check(struct base_bus *bus, unsigned int id)
 static void attach(struct base_bus *bus, unsigned int id)
 {
 
-    struct instance *instance = find_instance(0, 0);
-
-    base_init_device(&instance->device, bus, id);
-    base_video_init_node(&instance->node, &instance->device, &ivideo);
-    base_video_register_node(&instance->node);
+    base_init_device(&device, bus, id);
+    base_video_init_node(&node, &device, &ivideo);
+    base_video_register_node(&node);
     pic_set_routine(bus, id, handle_irq);
     enable_dpll();
     enable_pipe();
@@ -205,7 +178,6 @@ static void detach(struct base_bus *bus, unsigned int id)
 void init()
 {
 
-    memory_clear(instances, sizeof (struct instance) * 2);
     base_video_init_interface(&ivideo, set_mode, read_data, write_data, 0, 0);
     base_video_register_interface(&ivideo);
     base_init_driver(&driver, "i915", check, attach, detach);

@@ -124,128 +124,87 @@ struct rtl8139_header
 
 static struct base_driver driver;
 static struct base_network_interface inetwork;
-
-static struct instance
-{
-
-    struct base_device device;
-    struct base_network_node node;
-    unsigned short io;
-    unsigned int mmio;
-    unsigned char rx[0x2600];
-    unsigned char tx0[0x800];
-    unsigned char tx1[0x800];
-    unsigned char tx2[0x800];
-    unsigned char tx3[0x800];
-    unsigned short rxp;
-    unsigned short txp;
-
-} instances[2];
-
-static struct instance *find_instance(struct base_bus *bus, unsigned int id)
-{
-
-    unsigned int i;
-
-    for (i = 0; i < 2; i++)
-    {
-
-        struct instance *instance = &instances[i];
-
-        if (instance->device.bus == bus && instance->device.id == id)
-            return instance;
-
-    }
-
-    return 0;
-
-}
+static struct base_device device;
+static struct base_network_node node;
+static unsigned short io;
+static unsigned int mmio;
+static unsigned char rx[0x2600];
+static unsigned char tx0[0x800];
+static unsigned char tx1[0x800];
+static unsigned char tx2[0x800];
+static unsigned char tx3[0x800];
+static unsigned short rxp;
+static unsigned short txp;
 
 static void poweron(struct base_bus *bus, unsigned int id)
 {
 
-    struct instance *instance = find_instance(bus, id);
-
-    io_outb(instance->io + RTL8139_REGISTER_CONFIG1, 0x00);
+    io_outb(io + RTL8139_REGISTER_CONFIG1, 0x00);
 
 }
 
 static void reset(struct base_bus *bus, unsigned int id)
 {
 
-    struct instance *instance = find_instance(bus, id);
+    io_outb(io + RTL8139_REGISTER_CR, RTL8139_CR_RESET);
 
-    io_outb(instance->io + RTL8139_REGISTER_CR, RTL8139_CR_RESET);
-
-    while (io_inb(instance->io + RTL8139_REGISTER_CR) & RTL8139_CR_RESET);
+    while (io_inb(io + RTL8139_REGISTER_CR) & RTL8139_CR_RESET);
 
 }
 
 static void enable(struct base_bus *bus, unsigned int id)
 {
 
-    struct instance *instance = find_instance(bus, id);
-
-    io_outb(instance->io + RTL8139_REGISTER_CR, RTL8139_CR_RENABLE | RTL8139_CR_TENABLE);
+    io_outb(io + RTL8139_REGISTER_CR, RTL8139_CR_RENABLE | RTL8139_CR_TENABLE);
 
 }
 
 static void setup_interrupts(struct base_bus *bus, unsigned int id, unsigned short flags)
 {
 
-    struct instance *instance = find_instance(bus, id);
-
-    io_outw(instance->io + RTL8139_REGISTER_IMR, flags);
+    io_outw(io + RTL8139_REGISTER_IMR, flags);
 
 }
 
 static void setup_receiver(struct base_bus *bus, unsigned int id)
 {
 
-    struct instance *instance = find_instance(bus, id);
-
-    io_outd(instance->io + RTL8139_REGISTER_RBSTART, (unsigned long)instance->rx);
-    io_outd(instance->io + RTL8139_REGISTER_RCR, RTL8139_RCR_AAP | RTL8139_RCR_APM | RTL8139_RCR_AM | RTL8139_RCR_AB | RTL8139_RCR_WRAP);
+    io_outd(io + RTL8139_REGISTER_RBSTART, (unsigned long)rx);
+    io_outd(io + RTL8139_REGISTER_RCR, RTL8139_RCR_AAP | RTL8139_RCR_APM | RTL8139_RCR_AM | RTL8139_RCR_AB | RTL8139_RCR_WRAP);
 
 }
 
 static void setup_transmitter(struct base_bus *bus, unsigned int id)
 {
 
-    struct instance *instance = find_instance(bus, id);
-
-    io_outd(instance->io + RTL8139_REGISTER_TSAD0, (unsigned long)instance->tx0);
-    io_outd(instance->io + RTL8139_REGISTER_TSAD1, (unsigned long)instance->tx1);
-    io_outd(instance->io + RTL8139_REGISTER_TSAD2, (unsigned long)instance->tx2);
-    io_outd(instance->io + RTL8139_REGISTER_TSAD3, (unsigned long)instance->tx3);
+    io_outd(io + RTL8139_REGISTER_TSAD0, (unsigned long)tx0);
+    io_outd(io + RTL8139_REGISTER_TSAD1, (unsigned long)tx1);
+    io_outd(io + RTL8139_REGISTER_TSAD2, (unsigned long)tx2);
+    io_outd(io + RTL8139_REGISTER_TSAD3, (unsigned long)tx3);
 
 }
 
 static void *get_packet(struct base_bus *bus, unsigned int id)
 {
 
-    struct instance *instance = find_instance(bus, id);
-
-    return instance->rx + instance->rxp;
+    return rx + rxp;
 
 }
 
 static void dump_packet(struct base_bus *bus, unsigned int id)
 {
 
-    struct instance *instance = find_instance(bus, id);
     struct rtl8139_header *header = get_packet(bus, id);
 
-    instance->rxp += (header->length + 4 + 3) & ~3;
+    rxp += (header->length + 4 + 3) & ~3;
 
-    io_outw(instance->io + RTL8139_REGISTER_CAPR, instance->rxp);
+    io_outw(io + RTL8139_REGISTER_CAPR, rxp);
 
 }
 
 static unsigned int receive(struct base_bus *bus, unsigned int id, unsigned int count, void *buffer)
 {
 
-    struct instance *instance = find_instance(bus, id);
     struct rtl8139_header *header = get_packet(bus, id);
     unsigned int k;
 
@@ -272,7 +231,7 @@ static unsigned int receive(struct base_bus *bus, unsigned int id, unsigned int 
 
     */
 
-    k = memory_read(buffer, count, instance->rx + instance->rxp + sizeof (struct rtl8139_header), header->length, 0);
+    k = memory_read(buffer, count, rx + rxp + sizeof (struct rtl8139_header), header->length, 0);
 
     dump_packet(bus, id);
 
@@ -283,40 +242,39 @@ static unsigned int receive(struct base_bus *bus, unsigned int id, unsigned int 
 static unsigned int send(struct base_bus *bus, unsigned int id, unsigned int count, void *buffer)
 {
 
-    struct instance *instance = find_instance(bus, id);
     unsigned int status = (0x3F << 16) | (count & 0x1FFF);
 
-    switch (instance->txp)
+    switch (txp)
     {
 
     case 0:
-        memory_write(instance->tx0, 0x800, buffer, count, 0);
-        io_outd(instance->io + RTL8139_REGISTER_TSD0, status);
+        memory_write(tx0, 0x800, buffer, count, 0);
+        io_outd(io + RTL8139_REGISTER_TSD0, status);
 
         break;
 
     case 1:
-        memory_write(instance->tx1, 0x800, buffer, count, 0);
-        io_outd(instance->io + RTL8139_REGISTER_TSD1, status);
+        memory_write(tx1, 0x800, buffer, count, 0);
+        io_outd(io + RTL8139_REGISTER_TSD1, status);
 
         break;
 
     case 2:
-        memory_write(instance->tx2, 0x800, buffer, count, 0);
-        io_outd(instance->io + RTL8139_REGISTER_TSD2, status);
+        memory_write(tx2, 0x800, buffer, count, 0);
+        io_outd(io + RTL8139_REGISTER_TSD2, status);
 
         break;
 
     case 3:
-        memory_write(instance->tx3, 0x800, buffer, count, 0);
-        io_outd(instance->io + RTL8139_REGISTER_TSD3, status);
+        memory_write(tx3, 0x800, buffer, count, 0);
+        io_outd(io + RTL8139_REGISTER_TSD3, status);
 
         break;
 
     }
 
-    instance->txp++;
-    instance->txp %= 4;
+    txp++;
+    txp %= 4;
 
     return count;
 
@@ -325,14 +283,13 @@ static unsigned int send(struct base_bus *bus, unsigned int id, unsigned int cou
 static void handle_irq(unsigned int irq, struct base_bus *bus, unsigned int id)
 {
 
-    struct instance *instance = find_instance(bus, id);
-    unsigned short status = io_inw(instance->io + RTL8139_REGISTER_ISR);
+    unsigned short status = io_inw(io + RTL8139_REGISTER_ISR);
 
     if (status & RTL8139_ISR_ROK)
-        io_outw(instance->io + RTL8139_REGISTER_ISR, RTL8139_ISR_ROK);
+        io_outw(io + RTL8139_REGISTER_ISR, RTL8139_ISR_ROK);
 
     if (status & RTL8139_ISR_TOK)
-        io_outw(instance->io + RTL8139_REGISTER_ISR, RTL8139_ISR_TOK);
+        io_outw(io + RTL8139_REGISTER_ISR, RTL8139_ISR_TOK);
 
 }
 
@@ -349,17 +306,16 @@ static unsigned int check(struct base_bus *bus, unsigned int id)
 static void attach(struct base_bus *bus, unsigned int id)
 {
 
-    struct instance *instance = find_instance(0, 0);
     unsigned int bar0 = pci_bus_ind(bus, id, PCI_CONFIG_BAR0);
     unsigned int bar1 = pci_bus_ind(bus, id, PCI_CONFIG_BAR1);
     unsigned short command = pci_bus_inw(bus, id, PCI_CONFIG_COMMAND);
 
-    instance->io = bar0 & ~1;
-    instance->mmio = bar1;
+    io = bar0 & ~1;
+    mmio = bar1;
 
-    base_init_device(&instance->device, bus, id);
-    base_network_init_node(&instance->node, &instance->device, &inetwork);
-    base_network_register_node(&instance->node);
+    base_init_device(&device, bus, id);
+    base_network_init_node(&node, &device, &inetwork);
+    base_network_register_node(&node);
     pci_bus_outw(bus, id, PCI_CONFIG_COMMAND, command | (1 << 2));
     pic_set_routine(bus, id, handle_irq);
     poweron(bus, id);
@@ -369,12 +325,12 @@ static void attach(struct base_bus *bus, unsigned int id)
     setup_transmitter(bus, id);
     enable(bus, id);
 
-    inetwork.mac[0] = io_inb(instance->io + RTL8139_REGISTER_IDR0);
-    inetwork.mac[1] = io_inb(instance->io + RTL8139_REGISTER_IDR1);
-    inetwork.mac[2] = io_inb(instance->io + RTL8139_REGISTER_IDR2);
-    inetwork.mac[3] = io_inb(instance->io + RTL8139_REGISTER_IDR3);
-    inetwork.mac[4] = io_inb(instance->io + RTL8139_REGISTER_IDR4);
-    inetwork.mac[5] = io_inb(instance->io + RTL8139_REGISTER_IDR5);
+    inetwork.mac[0] = io_inb(io + RTL8139_REGISTER_IDR0);
+    inetwork.mac[1] = io_inb(io + RTL8139_REGISTER_IDR1);
+    inetwork.mac[2] = io_inb(io + RTL8139_REGISTER_IDR2);
+    inetwork.mac[3] = io_inb(io + RTL8139_REGISTER_IDR3);
+    inetwork.mac[4] = io_inb(io + RTL8139_REGISTER_IDR4);
+    inetwork.mac[5] = io_inb(io + RTL8139_REGISTER_IDR5);
 
 }
 
@@ -388,7 +344,6 @@ static void detach(struct base_bus *bus, unsigned int id)
 void init()
 {
 
-    memory_clear(instances, sizeof (struct instance) * 2);
     base_network_init_interface(&inetwork, receive, send, get_packet, dump_packet);
     base_network_register_interface(&inetwork);
     base_init_driver(&driver, "rtl8139", check, attach, detach);

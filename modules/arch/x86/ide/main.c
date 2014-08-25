@@ -86,34 +86,9 @@ struct ide_bus
 };
 
 static struct base_driver driver;
-
-static struct instance
-{
-
-    struct base_device device;
-    struct ide_bus p;
-    struct ide_bus s;
-
-} instances[2];
-
-static struct instance *find_instance(struct base_bus *bus, unsigned int id)
-{
-
-    unsigned int i;
-
-    for (i = 0; i < 2; i++)
-    {
-
-        struct instance *instance = &instances[i];
-
-        if (instance->device.bus == bus && instance->device.id == id)
-            return instance;
-
-    }
-
-    return 0;
-
-}
+static struct base_device device;
+static struct ide_bus p;
+static struct ide_bus s;
 
 static void wait(struct ide_bus *bus)
 {
@@ -433,43 +408,39 @@ static unsigned int check(struct base_bus *bus, unsigned int id)
 static void attach(struct base_bus *bus, unsigned int id)
 {
 
-    struct instance *instance = find_instance(0, 0);
     unsigned int bar0 = pci_bus_ind(bus, id, PCI_CONFIG_BAR0);
     unsigned int bar1 = pci_bus_ind(bus, id, PCI_CONFIG_BAR1);
     unsigned int bar2 = pci_bus_ind(bus, id, PCI_CONFIG_BAR2);
     unsigned int bar3 = pci_bus_ind(bus, id, PCI_CONFIG_BAR3);
     unsigned int bar4 = pci_bus_ind(bus, id, PCI_CONFIG_BAR4);
 
-    base_init_device(&instance->device, bus, id);
-    base_init_bus(&instance->p.base, IDE_BUS_TYPE, "ide0", setup, device_next_p, device_irq);
-    base_init_bus(&instance->s.base, IDE_BUS_TYPE, "ide1", setup, device_next_s, device_irq);
+    base_init_device(&device, bus, id);
+    base_init_bus(&p.base, IDE_BUS_TYPE, "ide0", setup, device_next_p, device_irq);
+    base_init_bus(&s.base, IDE_BUS_TYPE, "ide1", setup, device_next_s, device_irq);
 
-    instance->p.data = (bar0 & 0xFFFFFFFC) + 0x1F0 * (!bar0);
-    instance->p.control = (bar1 & 0xFFFFFFFC) + 0x3F6 * (!bar1);
-    instance->p.busmaster = (bar4 & 0xFFFFFFFC) + 0;
-    instance->s.data = (bar2 & 0xFFFFFFFC) + 0x170 * (!bar2);
-    instance->s.control = (bar3 & 0xFFFFFFFC) + 0x376 * (!bar3);
-    instance->s.busmaster = (bar4 & 0xFFFFFFFC) + 8;
+    p.data = (bar0 & 0xFFFFFFFC) + 0x1F0 * (!bar0);
+    p.control = (bar1 & 0xFFFFFFFC) + 0x3F6 * (!bar1);
+    p.busmaster = (bar4 & 0xFFFFFFFC) + 0;
+    s.data = (bar2 & 0xFFFFFFFC) + 0x170 * (!bar2);
+    s.control = (bar3 & 0xFFFFFFFC) + 0x376 * (!bar3);
+    s.busmaster = (bar4 & 0xFFFFFFFC) + 8;
 
-    base_register_bus(&instance->p.base);
-    base_register_bus(&instance->s.base);
+    base_register_bus(&p.base);
+    base_register_bus(&s.base);
 
 }
 
 static void detach(struct base_bus *bus, unsigned int id)
 {
 
-    struct instance *instance = find_instance(bus, id);
-
-    base_unregister_bus(&instance->p.base);
-    base_unregister_bus(&instance->s.base);
+    base_unregister_bus(&p.base);
+    base_unregister_bus(&s.base);
 
 }
 
 void init()
 {
 
-    memory_clear(instances, sizeof (struct instance) * 2);
     base_init_driver(&driver, "ide", check, attach, detach);
     base_register_driver(&driver);
 
