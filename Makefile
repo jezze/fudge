@@ -40,7 +40,7 @@ all: $(ALL)
 	$(CC) -o $@ $(CFLAGS) $<
 
 $(MODULES_PATH)/%.o: CFLAGS+=-I$(MODULES_PATH)
-$(MODULES_PATH)/%.ko: LDFLAGS+=-T$(MODULES_PATH)/linker.ld -r -L$(BUILD_PATH)/lib -lfudge
+$(MODULES_PATH)/%.ko.0: LDFLAGS+=-T$(MODULES_PATH)/linker.ld -r -L$(BUILD_PATH)/lib -lfudge
 $(PACKAGES_PATH)/%: LDFLAGS+=-L$(BUILD_PATH)/lib -labi -lfudge
 
 DIR:=$(LIBS_PATH)

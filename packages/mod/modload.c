@@ -62,7 +62,7 @@ static unsigned int find_symbol_module(unsigned int count, char *symbol)
     char module[32];
 
     offset += memory_write(module, 32, symbol, length, offset);
-    offset += memory_write(module, 32, ".ko", 3, offset);
+    offset += memory_write(module, 32, ".ko.0", 5, offset);
 
     if (!call_walk(CALL_L2, CALL_L1, offset, module))
         return 0;

@@ -1,4 +1,4 @@
-MOD_$(DIR):=$(DIR)/io.ko
+MOD_$(DIR):=$(DIR)/io.ko.0
 OBJ_$(DIR):=$(DIR)/main.o $(DIR)/io.o
 
 $(MOD_$(DIR)): $(OBJ_$(DIR))

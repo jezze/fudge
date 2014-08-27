@@ -1,4 +1,4 @@
-MOD_$(DIR):=$(DIR)/cpuid.ko
+MOD_$(DIR):=$(DIR)/cpuid.ko.0
 OBJ_$(DIR):=$(DIR)/main.o $(DIR)/cpuid.o
 
 $(MOD_$(DIR)): $(OBJ_$(DIR))

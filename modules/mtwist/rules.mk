@@ -1,4 +1,4 @@
-MOD_$(DIR):=$(DIR)/mtwist.ko
+MOD_$(DIR):=$(DIR)/mtwist.ko.0
 OBJ_$(DIR):=$(DIR)/main.o
 
 $(MOD_$(DIR)): $(OBJ_$(DIR))

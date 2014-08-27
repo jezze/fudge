@@ -1,4 +1,4 @@
-MOD_$(DIR):=$(DIR)/ipv6.ko
+MOD_$(DIR):=$(DIR)/ipv6.ko.0
 OBJ_$(DIR):=$(DIR)/main.o $(DIR)/protocol.o
 
 $(MOD_$(DIR)): $(OBJ_$(DIR))

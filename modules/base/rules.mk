@@ -1,4 +1,4 @@
-MOD_$(DIR):=$(DIR)/base.ko
+MOD_$(DIR):=$(DIR)/base.ko.0
 OBJ_$(DIR):=$(DIR)/main.o $(DIR)/block.o $(DIR)/clock.o $(DIR)/keyboard.o $(DIR)/mouse.o $(DIR)/network.o $(DIR)/terminal.o $(DIR)/timer.o $(DIR)/video.o
 
 $(MOD_$(DIR)): $(OBJ_$(DIR))

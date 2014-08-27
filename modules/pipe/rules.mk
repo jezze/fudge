@@ -1,4 +1,4 @@
-MOD_$(DIR):=$(DIR)/pipe.ko
+MOD_$(DIR):=$(DIR)/pipe.ko.0
 OBJ_$(DIR):=$(DIR)/main.o
 
 $(MOD_$(DIR)): $(OBJ_$(DIR))

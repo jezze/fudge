@@ -1,4 +1,4 @@
-MOD_$(DIR):=$(DIR)/vga.ko
+MOD_$(DIR):=$(DIR)/vga.ko.0
 OBJ_$(DIR):=$(DIR)/main.o $(DIR)/timing.o $(DIR)/registers.o
 
 $(MOD_$(DIR)): $(OBJ_$(DIR))

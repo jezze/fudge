@@ -1,4 +1,4 @@
-MOD_$(DIR):=$(DIR)/rtl8139.ko
+MOD_$(DIR):=$(DIR)/rtl8139.ko.0
 OBJ_$(DIR):=$(DIR)/main.o
 
 $(MOD_$(DIR)): $(OBJ_$(DIR))
