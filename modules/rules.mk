@@ -18,8 +18,6 @@ DIR:=$(CUR)/pipe
 include $(DIR)/rules.mk
 DIR:=$(CUR)/system
 include $(DIR)/rules.mk
-DIR:=$(CUR)/kernelfs
-include $(DIR)/rules.mk
 DIR:=$(CUR)/arch/$(ARCH)
 include $(DIR)/rules.mk
 

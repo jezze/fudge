@@ -62,7 +62,6 @@ include $(DIR)/rules.mk
 $(BUILD_PATH):
 	mkdir -p $@
 	mkdir -p $@/home
-	mkdir -p $@/kernel
 	mkdir -p $@/system
 
 $(BUILD_PATH)/bin: $(BUILD_PATH)
