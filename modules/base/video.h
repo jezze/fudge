@@ -13,11 +13,11 @@ struct base_video_interface
 struct base_video_node
 {
 
-    struct system_group base;
-    struct system_stream data;
-    struct system_stream colormap;
-    struct system_stream info;
-    struct system_stream mode;
+    struct system_node base;
+    struct system_node data;
+    struct system_node colormap;
+    struct system_node info;
+    struct system_node mode;
     struct base_device *device;
     struct base_video_interface *interface;
 

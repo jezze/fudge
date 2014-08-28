@@ -4,20 +4,20 @@
 #include <system/system.h>
 #include <base/base.h>
 
-static struct system_stream root;
+static struct system_node root;
 
 void init()
 {
 
     system_init_stream(&root, "null");
-    system_register_node(&root.node);
+    system_register_node(&root);
 
 }
 
 void destroy()
 {
 
-    system_unregister_node(&root.node);
+    system_unregister_node(&root);
 
 }
 

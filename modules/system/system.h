@@ -11,7 +11,7 @@ struct system_header
 {
 
     char id[12];
-    struct system_group *root;
+    struct system_node *root;
 
 };
 
@@ -33,23 +33,10 @@ struct system_node
 
 };
 
-struct system_group
-{
-
-    struct system_node node;
-
-};
-
-struct system_stream
-{
-
-    struct system_node node;
-
-};
-
-void system_group_add(struct system_group *group, struct system_node *node);
-void system_group_remove(struct system_group *group, struct system_node *node);
+void system_add_child(struct system_node *group, struct system_node *node);
+void system_remove_child(struct system_node *group, struct system_node *node);
 void system_register_node(struct system_node *node);
 void system_unregister_node(struct system_node *node);
-void system_init_group(struct system_group *group, const char *name);
-void system_init_stream(struct system_stream *stream, const char *name);
+void system_init_node(struct system_node *node, unsigned int type, const char *name);
+void system_init_group(struct system_node *group, const char *name);
+void system_init_stream(struct system_node *stream, const char *name);

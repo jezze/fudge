@@ -5,7 +5,7 @@
 #include "base.h"
 #include "mouse.h"
 
-static struct system_group root;
+static struct system_node root;
 
 static unsigned int data_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
@@ -26,8 +26,8 @@ void base_mouse_register_interface(struct base_mouse_interface *interface)
 void base_mouse_register_node(struct base_mouse_node *node)
 {
 
-    system_group_add(&root, &node->base.node);
-    system_group_add(&node->base, &node->data.node);
+    system_add_child(&root, &node->base);
+    system_add_child(&node->base, &node->data);
 
 }
 
@@ -62,7 +62,7 @@ void base_mouse_init_node(struct base_mouse_node *node, struct base_device *devi
 
     node->device = device;
     node->interface = interface;
-    node->data.node.read = data_read;
+    node->data.read = data_read;
 
 }
 
@@ -70,7 +70,7 @@ void base_mouse_setup()
 {
 
     system_init_group(&root, "mouse");
-    system_register_node(&root.node);
+    system_register_node(&root);
 
 }
 

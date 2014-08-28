@@ -15,10 +15,10 @@ struct base_clock_interface
 struct base_clock_node
 {
 
-    struct system_group base;
-    struct system_stream timestamp;
-    struct system_stream date;
-    struct system_stream time;
+    struct system_node base;
+    struct system_node timestamp;
+    struct system_node date;
+    struct system_node time;
     struct base_device *device;
     struct base_clock_interface *interface;
 

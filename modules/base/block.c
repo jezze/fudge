@@ -5,7 +5,7 @@
 #include "base.h"
 #include "block.h"
 
-static struct system_group root;
+static struct system_node root;
 
 static unsigned int data_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
@@ -31,8 +31,8 @@ void base_block_register_protocol(struct base_block_protocol *protocol)
 void base_block_register_node(struct base_block_node *node)
 {
 
-    system_group_add(&root, &node->base.node);
-    system_group_add(&node->base, &node->data.node);
+    system_add_child(&root, &node->base);
+    system_add_child(&node->base, &node->data);
 
 }
 
@@ -82,7 +82,7 @@ void base_block_init_node(struct base_block_node *node, struct base_device *devi
 
     node->device = device;
     node->interface = interface;
-    node->data.node.read = data_read;
+    node->data.read = data_read;
 
 }
 
@@ -90,7 +90,7 @@ void base_block_setup()
 {
 
     system_init_group(&root, "block");
-    system_register_node(&root.node);
+    system_register_node(&root);
 
 }
 

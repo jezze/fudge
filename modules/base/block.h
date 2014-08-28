@@ -17,8 +17,8 @@ struct base_block_protocol
 struct base_block_node
 {
 
-    struct system_group base;
-    struct system_stream data;
+    struct system_node base;
+    struct system_node data;
     struct base_device *device;
     struct base_block_interface *interface;
 

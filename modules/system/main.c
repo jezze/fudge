@@ -8,7 +8,7 @@
 static struct system_backend backend;
 static struct vfs_protocol protocol;
 
-void system_group_add(struct system_group *group, struct system_node *node)
+void system_add_child(struct system_node *group, struct system_node *node)
 {
 
     struct list_item *current;
@@ -18,7 +18,7 @@ void system_group_add(struct system_group *group, struct system_node *node)
 
         unsigned int length0 = ascii_length(node->name);
 
-        for (current = group->node.children.head; current; current = current->next)
+        for (current = group->children.head; current; current = current->next)
         {
 
             struct system_node *n = current->data;
@@ -33,16 +33,16 @@ void system_group_add(struct system_group *group, struct system_node *node)
 
     }
 
-    list_add(&group->node.children, &node->item);
+    list_add(&group->children, &node->item);
 
-    node->parent = &group->node;
+    node->parent = group;
 
 }
 
-void system_group_remove(struct system_group *group, struct system_node *node)
+void system_remove_child(struct system_node *group, struct system_node *node)
 {
 
-    list_remove(&group->node.children, &node->item);
+    list_remove(&group->children, &node->item);
 
     node->parent = 0;
 
@@ -51,14 +51,14 @@ void system_group_remove(struct system_group *group, struct system_node *node)
 void system_register_node(struct system_node *node)
 {
 
-    system_group_add(&backend.root, node);
+    system_add_child(&backend.root, node);
 
 }
 
 void system_unregister_node(struct system_node *node)
 {
 
-    system_group_remove(&backend.root, node);
+    system_remove_child(&backend.root, node);
 
 }
 
@@ -103,7 +103,6 @@ unsigned int child(struct system_node *self, unsigned int count, const char *pat
 static unsigned int read_group(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct system_group *group = (struct system_group *)self;
     struct list_item *current;
     unsigned char *b = buffer;
     unsigned int c = 0;
@@ -111,7 +110,7 @@ static unsigned int read_group(struct system_node *self, unsigned int offset, un
     c += memory_read(b + c, count - c, "../\n", 4, offset);
     offset -= (offset > 4) ? 4 : offset;
 
-    for (current = group->node.children.head; current; current = current->next)
+    for (current = self->children.head; current; current = current->next)
     {
 
         struct system_node *node = current->data;
@@ -152,13 +151,12 @@ static unsigned int read_group(struct system_node *self, unsigned int offset, un
 unsigned int child_group(struct system_node *self, unsigned int count, const char *path)
 {
 
-    struct system_group *group = (struct system_group *)self;
     struct list_item *current;
 
     if (!count)
         return (unsigned int)self;
 
-    for (current = group->node.children.head; current; current = current->next)
+    for (current = self->children.head; current; current = current->next)
     {
 
         struct system_node *node = current->data;
@@ -190,11 +188,12 @@ unsigned int child_group(struct system_node *self, unsigned int count, const cha
 
 }
 
-static void system_init_node(struct system_node *node, unsigned int type, const char *name)
+void system_init_node(struct system_node *node, unsigned int type, const char *name)
 {
 
     memory_clear(node, sizeof (struct system_node));
     list_init_item(&node->item, node);
+    list_init(&node->children);
 
     node->type = type;
     node->name = name;
@@ -206,23 +205,20 @@ static void system_init_node(struct system_node *node, unsigned int type, const 
 
 }
 
-void system_init_group(struct system_group *group, const char *name)
+void system_init_group(struct system_node *group, const char *name)
 {
 
-    memory_clear(group, sizeof (struct system_group));
-    system_init_node(&group->node, SYSTEM_NODETYPE_GROUP, name);
-    list_init(&group->node.children);
+    system_init_node(group, SYSTEM_NODETYPE_GROUP, name);
 
-    group->node.read = read_group;
-    group->node.child = child_group;
+    group->read = read_group;
+    group->child = child_group;
 
 }
 
-void system_init_stream(struct system_stream *stream, const char *name)
+void system_init_stream(struct system_node *stream, const char *name)
 {
 
-    memory_clear(stream, sizeof (struct system_stream));
-    system_init_node(&stream->node, SYSTEM_NODETYPE_STREAM, name);
+    system_init_node(stream, SYSTEM_NODETYPE_STREAM, name);
 
 }
 

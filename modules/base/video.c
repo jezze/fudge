@@ -5,7 +5,7 @@
 #include "base.h"
 #include "video.h"
 
-static struct system_group root;
+static struct system_node root;
 
 static unsigned int data_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
@@ -71,11 +71,11 @@ void base_video_register_interface(struct base_video_interface *interface)
 void base_video_register_node(struct base_video_node *node)
 {
 
-    system_group_add(&root, &node->base.node);
-    system_group_add(&node->base, &node->data.node);
-    system_group_add(&node->base, &node->colormap.node);
-    system_group_add(&node->base, &node->info.node);
-    system_group_add(&node->base, &node->mode.node);
+    system_add_child(&root, &node->base);
+    system_add_child(&node->base, &node->data);
+    system_add_child(&node->base, &node->colormap);
+    system_add_child(&node->base, &node->info);
+    system_add_child(&node->base, &node->mode);
 
 }
 
@@ -117,12 +117,12 @@ void base_video_init_node(struct base_video_node *node, struct base_device *devi
 
     node->device = device;
     node->interface = interface;
-    node->data.node.read = data_read;
-    node->data.node.write = data_write;
-    node->colormap.node.read = colormap_read;
-    node->colormap.node.write = colormap_write;
-    node->info.node.read = info_read;
-    node->mode.node.write = mode_write;
+    node->data.read = data_read;
+    node->data.write = data_write;
+    node->colormap.read = colormap_read;
+    node->colormap.write = colormap_write;
+    node->info.read = info_read;
+    node->mode.write = mode_write;
 
 }
 
@@ -130,7 +130,7 @@ void base_video_setup()
 {
 
     system_init_group(&root, "video");
-    system_register_node(&root.node);
+    system_register_node(&root);
 
 }
 

@@ -12,9 +12,9 @@ struct base_keyboard_interface
 struct base_keyboard_node
 {
 
-    struct system_group base;
-    struct system_stream data;
-    struct system_stream keymap;
+    struct system_node base;
+    struct system_node data;
+    struct system_node keymap;
     struct base_device *device;
     struct base_keyboard_interface *interface;
 

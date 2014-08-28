@@ -9,7 +9,7 @@ struct base_timer_interface
 struct base_timer_node
 {
 
-    struct system_group base;
+    struct system_node base;
     struct base_device *device;
     struct base_timer_interface *interface;
 

@@ -5,7 +5,7 @@
 #include "base.h"
 #include "timer.h"
 
-static struct system_group root;
+static struct system_node root;
 
 void base_timer_register_interface(struct base_timer_interface *interface)
 {
@@ -17,7 +17,7 @@ void base_timer_register_interface(struct base_timer_interface *interface)
 void base_timer_register_node(struct base_timer_node *node)
 {
 
-    system_group_add(&root, &node->base.node);
+    system_add_child(&root, &node->base);
 
 }
 
@@ -58,7 +58,7 @@ void base_timer_setup()
 {
 
     system_init_group(&root, "timer");
-    system_register_node(&root.node);
+    system_register_node(&root);
 
 }
 

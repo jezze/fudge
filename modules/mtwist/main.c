@@ -12,7 +12,7 @@
 
 static unsigned int decider[2] = {0x00000000, 0x9908B0DF};
 static struct mtwist_state normal;
-static struct system_stream root;
+static struct system_node root;
 
 static void refresh(struct mtwist_state *state)
 {
@@ -151,16 +151,16 @@ void init()
     mtwist_seed1(&normal, MTWIST_SEED);
 
     system_init_stream(&root, "mtwist");
-    system_register_node(&root.node);
+    system_register_node(&root);
 
-    root.node.read = read;
+    root.read = read;
 
 }
 
 void destroy()
 {
 
-    system_unregister_node(&root.node);
+    system_unregister_node(&root);
 
 }
 

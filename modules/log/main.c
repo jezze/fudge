@@ -7,7 +7,7 @@
 
 static char dbuffer[0x1000];
 static unsigned int doffset;
-static struct system_stream messages;
+static struct system_node messages;
 
 static unsigned int messages_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
@@ -49,16 +49,16 @@ void init()
     doffset = 0;
 
     system_init_stream(&messages, "messages");
-    system_register_node(&messages.node);
+    system_register_node(&messages);
 
-    messages.node.read = messages_read;
+    messages.read = messages_read;
 
 }
 
 void destroy()
 {
 
-    system_unregister_node(&messages.node);
+    system_unregister_node(&messages);
 
 }
 

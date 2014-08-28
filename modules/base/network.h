@@ -22,9 +22,9 @@ struct base_network_protocol
 struct base_network_node
 {
 
-    struct system_group base;
-    struct system_stream data;
-    struct system_stream mac;
+    struct system_node base;
+    struct system_node data;
+    struct system_node mac;
     struct base_device *device;
     struct base_network_interface *interface;
 

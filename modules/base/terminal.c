@@ -5,7 +5,7 @@
 #include "base.h"
 #include "terminal.h"
 
-static struct system_group root;
+static struct system_node root;
 
 static unsigned int data_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
@@ -35,8 +35,8 @@ void base_terminal_register_interface(struct base_terminal_interface *interface)
 void base_terminal_register_node(struct base_terminal_node *node)
 {
 
-    system_group_add(&root, &node->base.node);
-    system_group_add(&node->base, &node->data.node);
+    system_add_child(&root, &node->base);
+    system_add_child(&node->base, &node->data);
 
 }
 
@@ -72,8 +72,8 @@ void base_terminal_init_node(struct base_terminal_node *node, struct base_device
 
     node->device = device;
     node->interface = interface;
-    node->data.node.read = data_read;
-    node->data.node.write = data_write;
+    node->data.read = data_read;
+    node->data.write = data_write;
 
 }
 
@@ -81,7 +81,7 @@ void base_terminal_setup()
 {
 
     system_init_group(&root, "terminal");
-    system_register_node(&root.node);
+    system_register_node(&root);
 
 }
 

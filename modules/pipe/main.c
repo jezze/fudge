@@ -8,7 +8,7 @@
 struct pipe_endpoint
 {
 
-    struct system_stream pipe;
+    struct system_node pipe;
     unsigned char buffer[4096];
     struct buffer_cfifo cfifo;
     struct scheduler_rendezvous rdata;
@@ -17,7 +17,7 @@ struct pipe_endpoint
 
 static struct pipe_endpoint pipe0;
 static struct pipe_endpoint pipe1;
-static struct system_group root;
+static struct system_node root;
 
 static unsigned int pipe0_close(struct system_node *self)
 {
@@ -88,32 +88,32 @@ void init()
     buffer_init_cfifo(&pipe0.cfifo, 4096, pipe0.buffer);
     system_init_stream(&pipe0.pipe, "0");
 
-    pipe0.pipe.node.close = pipe0_close;
-    pipe0.pipe.node.read = pipe0_read;
-    pipe0.pipe.node.write = pipe0_write;
+    pipe0.pipe.close = pipe0_close;
+    pipe0.pipe.read = pipe0_read;
+    pipe0.pipe.write = pipe0_write;
 
     memory_clear(&pipe1, sizeof (struct pipe_endpoint));
     buffer_init_cfifo(&pipe1.cfifo, 4096, pipe1.buffer);
     system_init_stream(&pipe1.pipe, "1");
 
-    pipe1.pipe.node.close = pipe1_close;
-    pipe1.pipe.node.read = pipe1_read;
-    pipe1.pipe.node.write = pipe1_write;
+    pipe1.pipe.close = pipe1_close;
+    pipe1.pipe.read = pipe1_read;
+    pipe1.pipe.write = pipe1_write;
 
     system_init_group(&root, "pipe");
 
-    root.node.multi = 1;
+    root.multi = 1;
 
-    system_group_add(&root, &pipe0.pipe.node);
-    system_group_add(&root, &pipe1.pipe.node);
-    system_register_node(&root.node);
+    system_add_child(&root, &pipe0.pipe);
+    system_add_child(&root, &pipe1.pipe);
+    system_register_node(&root);
 
 }
 
 void destroy()
 {
 
-    system_unregister_node(&root.node);
+    system_unregister_node(&root);
 
 }
 

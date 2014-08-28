@@ -26,7 +26,7 @@ enum ps2_irq
 };
 
 static struct base_bus bus;
-static struct system_stream reset;
+static struct system_node reset;
 static unsigned int ps2_have_keyboard;
 static unsigned int ps2_have_mouse;
 
@@ -210,16 +210,16 @@ void init()
     ps2_keyboard_driver_init();
     ps2_mouse_driver_init();
     system_init_stream(&reset, "reset");
-    system_register_node(&reset.node);
+    system_register_node(&reset);
 
-    reset.node.write = reset_write;
+    reset.write = reset_write;
 
 }
 
 void destroy()
 {
 
-    system_unregister_node(&reset.node);
+    system_unregister_node(&reset);
     ps2_keyboard_driver_destroy();
     ps2_mouse_driver_destroy();
     base_unregister_bus(&bus);

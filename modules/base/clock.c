@@ -5,7 +5,7 @@
 #include "base.h"
 #include "clock.h"
 
-static struct system_group root;
+static struct system_node root;
 static unsigned int dotm365[13] = {0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365};
 static unsigned int dotm366[13] = {0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 365};
 
@@ -79,10 +79,10 @@ void base_clock_register_interface(struct base_clock_interface *interface)
 void base_clock_register_node(struct base_clock_node *node)
 {
 
-    system_group_add(&root, &node->base.node);
-    system_group_add(&node->base, &node->timestamp.node);
-    system_group_add(&node->base, &node->date.node);
-    system_group_add(&node->base, &node->time.node);
+    system_add_child(&root, &node->base);
+    system_add_child(&node->base, &node->timestamp);
+    system_add_child(&node->base, &node->date);
+    system_add_child(&node->base, &node->time);
 
 }
 
@@ -125,9 +125,9 @@ void base_clock_init_node(struct base_clock_node *node, struct base_device *devi
 
     node->device = device;
     node->interface = interface;
-    node->timestamp.node.read = timestamp_read;
-    node->date.node.read = date_read;
-    node->time.node.read = time_read;
+    node->timestamp.read = timestamp_read;
+    node->date.read = date_read;
+    node->time.read = time_read;
 
 }
 
@@ -135,7 +135,7 @@ void base_clock_setup()
 {
 
     system_init_group(&root, "clock");
-    system_register_node(&root.node);
+    system_register_node(&root);
 
 }
 
