@@ -20,8 +20,11 @@ struct system_node
 
     struct list_item item;
     struct system_node *parent;
+    struct list children;
     enum system_nodetype type;
     const char *name;
+    unsigned int multi;
+    unsigned int index;
     unsigned int (*open)(struct system_node *self);
     unsigned int (*close)(struct system_node *self);
     unsigned int (*read)(struct system_node *self, unsigned int offset, unsigned int count, void *buffer);
@@ -34,7 +37,6 @@ struct system_group
 {
 
     struct system_node node;
-    struct list children;
 
 };
 

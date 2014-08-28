@@ -101,6 +101,9 @@ void init()
     pipe1.pipe.node.write = pipe1_write;
 
     system_init_group(&root, "pipe");
+
+    root.node.multi = 1;
+
     system_group_add(&root, &pipe0.pipe.node);
     system_group_add(&root, &pipe1.pipe.node);
     system_register_node(&root.node);

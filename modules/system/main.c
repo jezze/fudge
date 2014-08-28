@@ -11,7 +11,29 @@ static struct vfs_protocol protocol;
 void system_group_add(struct system_group *group, struct system_node *node)
 {
 
-    list_add(&group->children, &node->item);
+    struct list_item *current;
+
+    if (node->multi)
+    {
+
+        unsigned int length0 = ascii_length(node->name);
+
+        for (current = group->node.children.head; current; current = current->next)
+        {
+
+            struct system_node *n = current->data;
+            unsigned int length1 = ascii_length(n->name);
+
+            if (length0 != length1 || !memory_match(n->name, node->name, length0))
+                continue;
+
+            node->index++;
+
+        }
+
+    }
+
+    list_add(&group->node.children, &node->item);
 
     node->parent = &group->node;
 
@@ -20,7 +42,7 @@ void system_group_add(struct system_group *group, struct system_node *node)
 void system_group_remove(struct system_group *group, struct system_node *node)
 {
 
-    list_remove(&group->children, &node->item);
+    list_remove(&group->node.children, &node->item);
 
     node->parent = 0;
 
@@ -89,7 +111,7 @@ static unsigned int read_group(struct system_node *self, unsigned int offset, un
     c += memory_read(b + c, count - c, "../\n", 4, offset);
     offset -= (offset > 4) ? 4 : offset;
 
-    for (current = group->children.head; current; current = current->next)
+    for (current = group->node.children.head; current; current = current->next)
     {
 
         struct system_node *node = current->data;
@@ -98,21 +120,28 @@ static unsigned int read_group(struct system_node *self, unsigned int offset, un
         c += memory_read(b + c, count - c, node->name, l, offset);
         offset -= (offset > l) ? l : offset;
 
-        if (node->type == SYSTEM_NODETYPE_GROUP)
+        if (node->multi)
         {
 
-            c += memory_read(b + c, count - c, "/\n", 2, offset);
+            char *x = ":0";
+
+            x[1] = '0' + node->index;
+
+            c += memory_read(b + c, count - c, x, 2, offset);
             offset -= (offset > 2) ? 2 : offset;
 
         }
 
-        else
+        if (node->type == SYSTEM_NODETYPE_GROUP)
         {
 
-            c += memory_read(b + c, count - c, "\n", 1, offset);
+            c += memory_read(b + c, count - c, "/", 1, offset);
             offset -= (offset > 1) ? 1 : offset;
 
         }
+
+        c += memory_read(b + c, count - c, "\n", 1, offset);
+        offset -= (offset > 1) ? 1 : offset;
 
     }
 
@@ -129,16 +158,31 @@ unsigned int child_group(struct system_node *self, unsigned int count, const cha
     if (!count)
         return (unsigned int)self;
 
-    for (current = group->children.head; current; current = current->next)
+    for (current = group->node.children.head; current; current = current->next)
     {
 
         struct system_node *node = current->data;
-        unsigned int l = ascii_length(node->name);
+        unsigned int length = ascii_length(node->name);
 
-        if (!memory_match(node->name, path, l))
+        if (!memory_match(node->name, path, length))
             continue;
 
-        return (node->type == SYSTEM_NODETYPE_GROUP) ? node->child(node, count - l - 1, path + l + 1) : node->child(node, count - l, path + l);
+        if (node->multi)
+        {
+
+            unsigned int val = path[length + 1] - '0';
+
+            if (val != node->index)
+                continue;
+
+            length += 2;
+
+        }
+
+        if (node->type == SYSTEM_NODETYPE_GROUP)
+            length += 1;
+
+        return node->child(node, count - length, path + length);
 
     }
 
@@ -167,7 +211,7 @@ void system_init_group(struct system_group *group, const char *name)
 
     memory_clear(group, sizeof (struct system_group));
     system_init_node(&group->node, SYSTEM_NODETYPE_GROUP, name);
-    list_init(&group->children);
+    list_init(&group->node.children);
 
     group->node.read = read_group;
     group->node.child = child_group;
@@ -194,6 +238,9 @@ void init()
 
 void destroy()
 {
+
+    resource_unregister(&backend.base.resource);
+    resource_unregister(&protocol.resource);
 
 }
 

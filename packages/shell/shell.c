@@ -31,10 +31,10 @@ static void interpret(struct lifo_stack *stack)
     if (!call_walk(CALL_DP, CALL_DR, 9, "bin/slang"))
         return;
 
-    if (!call_walk(CALL_L1, CALL_DR, 13, "system/pipe/0"))
+    if (!call_walk(CALL_L1, CALL_DR, 15, "system/pipe:0/0"))
         return;
 
-    if (!call_walk(CALL_I1, CALL_DR, 13, "system/pipe/1"))
+    if (!call_walk(CALL_I1, CALL_DR, 15, "system/pipe:0/1"))
         return;
 
     if (!call_walk(CALL_O1, CALL_I1, 0, 0))

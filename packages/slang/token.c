@@ -85,6 +85,9 @@ static enum token_type tokenize(char c)
     case '-':
         return TOKEN_TYPE_MINUS;
 
+    case ':':
+        return TOKEN_TYPE_COLON;
+
     case ';':
         return TOKEN_TYPE_SEMICOLON;
 
