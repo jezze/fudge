@@ -109,7 +109,7 @@ void base_video_init_node(struct base_video_node *node, struct base_device *devi
 {
 
     memory_clear(node, sizeof (struct base_video_node));
-    system_init_group(&node->base, device->bus->name);
+    system_init_multigroup(&node->base, device->bus->name);
     system_init_stream(&node->data, "data");
     system_init_stream(&node->colormap, "colormap");
     system_init_stream(&node->info, "info");

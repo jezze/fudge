@@ -57,7 +57,7 @@ void base_mouse_init_node(struct base_mouse_node *node, struct base_device *devi
 {
 
     memory_clear(node, sizeof (struct base_mouse_node));
-    system_init_group(&node->base, device->bus->name);
+    system_init_multigroup(&node->base, device->bus->name);
     system_init_stream(&node->data, "data");
 
     node->device = device;

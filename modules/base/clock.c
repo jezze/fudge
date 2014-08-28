@@ -118,7 +118,7 @@ void base_clock_init_node(struct base_clock_node *node, struct base_device *devi
 {
 
     memory_clear(node, sizeof (struct base_clock_node));
-    system_init_group(&node->base, device->bus->name);
+    system_init_multigroup(&node->base, device->bus->name);
     system_init_stream(&node->timestamp, "timestamp");
     system_init_stream(&node->date, "date");
     system_init_stream(&node->time, "time");

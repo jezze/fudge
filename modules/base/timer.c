@@ -47,7 +47,7 @@ void base_timer_init_node(struct base_timer_node *node, struct base_device *devi
 {
 
     memory_clear(node, sizeof (struct base_timer_node));
-    system_init_group(&node->base, device->bus->name);
+    system_init_multigroup(&node->base, device->bus->name);
 
     node->device = device;
     node->interface = interface;

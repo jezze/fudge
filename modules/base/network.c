@@ -111,7 +111,7 @@ void base_network_init_node(struct base_network_node *node, struct base_device *
 {
 
     memory_clear(node, sizeof (struct base_network_node));
-    system_init_group(&node->base, device->bus->name);
+    system_init_multigroup(&node->base, device->bus->name);
     system_init_stream(&node->data, "data");
     system_init_stream(&node->mac, "mac");
 
