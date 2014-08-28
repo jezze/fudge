@@ -38,5 +38,7 @@ void system_remove_child(struct system_node *group, struct system_node *node);
 void system_register_node(struct system_node *node);
 void system_unregister_node(struct system_node *node);
 void system_init_node(struct system_node *node, unsigned int type, const char *name);
-void system_init_group(struct system_node *group, const char *name);
 void system_init_stream(struct system_node *stream, const char *name);
+void system_init_multistream(struct system_node *stream, const char *name);
+void system_init_group(struct system_node *group, const char *name);
+void system_init_multigroup(struct system_node *group, const char *name);

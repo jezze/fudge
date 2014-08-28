@@ -205,6 +205,22 @@ void system_init_node(struct system_node *node, unsigned int type, const char *n
 
 }
 
+void system_init_stream(struct system_node *stream, const char *name)
+{
+
+    system_init_node(stream, SYSTEM_NODETYPE_STREAM, name);
+
+}
+
+void system_init_multistream(struct system_node *stream, const char *name)
+{
+
+    system_init_stream(stream, name);
+
+    stream->multi = 1;
+
+}
+
 void system_init_group(struct system_node *group, const char *name)
 {
 
@@ -215,10 +231,12 @@ void system_init_group(struct system_node *group, const char *name)
 
 }
 
-void system_init_stream(struct system_node *stream, const char *name)
+void system_init_multigroup(struct system_node *group, const char *name)
 {
 
-    system_init_node(stream, SYSTEM_NODETYPE_STREAM, name);
+    system_init_group(group, name);
+
+    group->multi = 1;
 
 }
 

@@ -100,10 +100,7 @@ void init()
     pipe1.pipe.read = pipe1_read;
     pipe1.pipe.write = pipe1_write;
 
-    system_init_group(&root, "pipe");
-
-    root.multi = 1;
-
+    system_init_multigroup(&root, "pipe");
     system_add_child(&root, &pipe0.pipe);
     system_add_child(&root, &pipe1.pipe);
     system_register_node(&root);
