@@ -90,6 +90,7 @@ static void detach(struct base_bus *bus, unsigned int id)
 {
 
     pic_unset_routine(bus, id);
+    base_timer_unregister_node(&node);
 
 }
 

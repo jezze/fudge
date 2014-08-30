@@ -135,6 +135,7 @@ static void detach(struct base_bus *bus, unsigned int id)
 {
 
     pic_unset_routine(bus, id);
+    base_mouse_unregister_node(&node);
 
 }
 

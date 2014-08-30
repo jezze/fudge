@@ -355,6 +355,9 @@ static void attach(struct base_bus *bus, unsigned int id)
 static void detach(struct base_bus *bus, unsigned int id)
 {
 
+    base_terminal_unregister_node(&tnode);
+    base_video_unregister_node(&vnode);
+
 }
 
 void init()
