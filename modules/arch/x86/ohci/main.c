@@ -2,7 +2,6 @@
 #include <kernel/resource.h>
 #include <base/base.h>
 #include <arch/x86/pci/pci.h>
-#include "ohci.h"
 
 enum ohci_register
 {

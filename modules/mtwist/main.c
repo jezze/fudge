@@ -3,12 +3,20 @@
 #include <kernel/vfs.h>
 #include <system/system.h>
 #include <base/base.h>
-#include "mtwist.h"
 
+#define MTWIST_VECTORS                  624
 #define MTWIST_SEED                     4357
 #define MTWIST_RECURRENCE               397
 #define MTWIST_COMBINE_BITS(x, y)       (((x) & 0x80000000) | ((y) & 0x7FFFFFFF))
 #define MTWIST_MATRIX_MULTIPLY(x, y)    ((x) ^ ((y) >> 1) ^ decider[(y) & 1])
+
+struct mtwist_state
+{
+
+    unsigned int vectors[MTWIST_VECTORS];
+    int current;
+
+};
 
 static unsigned int decider[2] = {0x00000000, 0x9908B0DF};
 static struct mtwist_state normal;
@@ -61,7 +69,7 @@ static void refresh(struct mtwist_state *state)
 
 }
 
-void mtwist_seed1(struct mtwist_state *state, unsigned int seed)
+static void mtwist_seed1(struct mtwist_state *state, unsigned int seed)
 {
 
     int i;
@@ -77,7 +85,8 @@ void mtwist_seed1(struct mtwist_state *state, unsigned int seed)
 
 }
 
-void mtwist_seed2(struct mtwist_state *state, unsigned int seed)
+/*
+static void mtwist_seed2(struct mtwist_state *state, unsigned int seed)
 {
 
     int i;
@@ -101,8 +110,9 @@ void mtwist_seed2(struct mtwist_state *state, unsigned int seed)
     refresh(state);
 
 }
+*/
 
-unsigned int mtwist_rand(struct mtwist_state *state)
+static unsigned int mtwist_rand(struct mtwist_state *state)
 {
 
     unsigned int value = state->vectors[--state->current];
@@ -116,7 +126,8 @@ unsigned int mtwist_rand(struct mtwist_state *state)
 
 }
 
-double mtwist_drand(struct mtwist_state *state)
+/*
+static double mtwist_drand(struct mtwist_state *state)
 {
 
     double conv = 1.0;
@@ -128,8 +139,9 @@ double mtwist_drand(struct mtwist_state *state)
     return mtwist_rand(state) * conv;
 
 }
+*/
 
-unsigned int read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     unsigned int o = 0;
