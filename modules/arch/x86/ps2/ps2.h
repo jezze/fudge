@@ -13,3 +13,4 @@ void ps2_bus_reset(struct base_bus *bus, unsigned int id);
 void ps2_bus_identify(struct base_bus *bus, unsigned int id);
 void ps2_bus_enable_scanning(struct base_bus *bus, unsigned int id);
 void ps2_bus_disable_scanning(struct base_bus *bus, unsigned int id);
+void ps2_bus_default(struct base_bus *bus, unsigned int id);

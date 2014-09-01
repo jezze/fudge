@@ -17,15 +17,6 @@ static struct buffer_cfifo cfifo;
 static unsigned char cycle;
 static struct scheduler_rendezvous rdata;
 
-static void set_defaults(struct base_bus *bus)
-{
-
-    ps2_bus_write_command(bus, 0xD4);
-    ps2_bus_write_data(bus, 0xF6);
-    ps2_bus_read_data(bus);
-
-}
-
 static unsigned int read_data(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
@@ -86,12 +77,12 @@ static void attach(struct base_bus *bus, unsigned int id)
     buffer_init_cfifo(&cfifo, 512, &buffer);
     pic_set_routine(bus, id, handle_irq);
     ps2_bus_enable_device(bus, id);
-    ps2_bus_enable_interrupt(bus, id);
-    ps2_bus_disable_scanning(bus, id);
     ps2_bus_reset(bus, id);
-    set_defaults(bus);
+    ps2_bus_disable_scanning(bus, id);
+    ps2_bus_default(bus, id);
     ps2_bus_identify(bus, id);
     ps2_bus_enable_scanning(bus, id);
+    ps2_bus_enable_interrupt(bus, id);
 
 }
 

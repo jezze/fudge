@@ -128,6 +128,11 @@ static void attach(struct base_bus *bus, unsigned int id)
     buffer_init_cfifo(&cfifo, 512, &buffer);
     pic_set_routine(bus, id, handle_irq);
     ps2_bus_enable_device(bus, id);
+    ps2_bus_reset(bus, id);
+    ps2_bus_disable_scanning(bus, id);
+    ps2_bus_default(bus, id);
+    ps2_bus_identify(bus, id);
+    ps2_bus_enable_scanning(bus, id);
     ps2_bus_enable_interrupt(bus, id);
 
 }

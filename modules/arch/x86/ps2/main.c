@@ -46,6 +46,7 @@ enum ps2_command
     PS2_COMMAND_DEVIDENTIFY             = 0xF2,
     PS2_COMMAND_DEVENABLESCAN           = 0xF4,
     PS2_COMMAND_DEVDISABLESCAN          = 0xF5,
+    PS2_COMMAND_DEVDEFAULT              = 0xF6,
     PS2_COMMAND_DEVRESET                = 0xFF
 
 };
@@ -197,6 +198,7 @@ void ps2_bus_identify(struct base_bus *bus, unsigned int id)
 
     ps2_bus_write_data(bus, PS2_COMMAND_DEVIDENTIFY);
     ps2_bus_read_data(bus);
+    ps2_bus_read_data(bus);
 
 }
 
@@ -218,6 +220,17 @@ void ps2_bus_disable_scanning(struct base_bus *bus, unsigned int id)
         ps2_bus_write_command(bus, devices[id].write);
 
     ps2_bus_write_data(bus, PS2_COMMAND_DEVDISABLESCAN);
+    ps2_bus_read_data(bus);
+
+}
+
+void ps2_bus_default(struct base_bus *bus, unsigned int id)
+{
+
+    if (devices[id].write)
+        ps2_bus_write_command(bus, devices[id].write);
+
+    ps2_bus_write_data(bus, PS2_COMMAND_DEVDEFAULT);
     ps2_bus_read_data(bus);
 
 }
