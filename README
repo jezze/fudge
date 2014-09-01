@@ -92,12 +92,20 @@ If you have built for ARM just replace x86 with arm.
 
 ## RUNNING ON REAL HARDWARE
 
-If you already are using Grub just add an entry in the menu.lst like:
+If you use Grub add an entry to menu.lst:
 
     title  Fudge
     root   (hd0,0)
     kernel /fudge
     module /initrd.tar
+
+If you use Grub 2 add an entry to grub.cfg:
+
+    menuentry "Fudge" {
+        multiboot /fudge
+        module /initrd.tar
+        boot
+    }
 
 Then as root you can execute:
 
