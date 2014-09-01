@@ -42,14 +42,14 @@ static unsigned int write_data(struct base_bus *bus, unsigned int id, unsigned i
 static unsigned int read_keymap(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    return memory_read(buffer, count, keymap, 2048, offset);
+    return memory_read(buffer, count, keymap, sizeof (struct keycode) * 256, offset);
 
 }
 
 static unsigned int write_keymap(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    return memory_write(keymap, 2048, buffer, count, offset);
+    return memory_write(keymap, sizeof (struct keycode) * 256, buffer, count, offset);
 
 }
 
