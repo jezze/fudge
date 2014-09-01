@@ -17,47 +17,11 @@ static struct buffer_cfifo cfifo;
 static unsigned char cycle;
 static struct scheduler_rendezvous rdata;
 
-static void reset(struct base_bus *bus)
-{
-
-    ps2_bus_write_command(bus, 0xD4);
-    ps2_bus_write_data(bus, 0xFF);
-    ps2_bus_read_data(bus);
-
-}
-
 static void set_defaults(struct base_bus *bus)
 {
 
     ps2_bus_write_command(bus, 0xD4);
     ps2_bus_write_data(bus, 0xF6);
-    ps2_bus_read_data(bus);
-
-}
-
-static void identify(struct base_bus *bus)
-{
-
-    ps2_bus_write_command(bus, 0xD4);
-    ps2_bus_write_data(bus, 0xF2);
-    ps2_bus_read_data(bus);
-
-}
-
-static void enable_scanning(struct base_bus *bus)
-{
-
-    ps2_bus_write_command(bus, 0xD4);
-    ps2_bus_write_data(bus, 0xF4);
-    ps2_bus_read_data(bus);
-
-}
-
-static void disable_scanning(struct base_bus *bus)
-{
-
-    ps2_bus_write_command(bus, 0xD4);
-    ps2_bus_write_data(bus, 0xF5);
     ps2_bus_read_data(bus);
 
 }
@@ -123,11 +87,11 @@ static void attach(struct base_bus *bus, unsigned int id)
     pic_set_routine(bus, id, handle_irq);
     ps2_bus_enable_device(bus, id);
     ps2_bus_enable_interrupt(bus, id);
-    disable_scanning(bus);
-    reset(bus);
+    ps2_bus_disable_scanning(bus, id);
+    ps2_bus_reset(bus, id);
     set_defaults(bus);
-    identify(bus);
-    enable_scanning(bus);
+    ps2_bus_identify(bus, id);
+    ps2_bus_enable_scanning(bus, id);
 
 }
 
