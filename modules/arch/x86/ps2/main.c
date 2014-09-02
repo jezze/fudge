@@ -117,121 +117,121 @@ static struct device devices[] = {
     {0, PS2_IRQ_MOUSE, PS2_COMMAND_DEV2DISABLE, PS2_COMMAND_DEV2ENABLE, PS2_COMMAND_DEV2TEST, PS2_COMMAND_DEV2WI, PS2_CONFIGFLAG_DEV2INT, PS2_CONFIGFLAG_DEV2CLOCK}
 };
 
-unsigned char ps2_bus_read_status(struct base_bus *bus)
+unsigned char ps2_read_status(struct base_bus *bus)
 {
 
     return io_inb(PS2_REGISTER_CONTROL);
 
 }
 
-unsigned char ps2_bus_read_data(struct base_bus *bus)
+unsigned char ps2_read_data(struct base_bus *bus)
 {
 
-    while ((ps2_bus_read_status(bus) & PS2_STATUS_OFULL) != 1);
+    while ((ps2_read_status(bus) & PS2_STATUS_OFULL) != 1);
 
     return io_inb(PS2_REGISTER_DATA);
 
 }
 
-unsigned char ps2_bus_read_data_async(struct base_bus *bus)
+unsigned char ps2_read_data_async(struct base_bus *bus)
 {
 
     return io_inb(PS2_REGISTER_DATA);
 
 }
 
-void ps2_bus_write_command(struct base_bus *bus, unsigned char value)
+void ps2_write_command(struct base_bus *bus, unsigned char value)
 {
 
-    while ((ps2_bus_read_status(bus) & PS2_STATUS_IFULL) != 0);
+    while ((ps2_read_status(bus) & PS2_STATUS_IFULL) != 0);
 
     io_outb(PS2_REGISTER_CONTROL, value);
 
 }
 
-void ps2_bus_write_data(struct base_bus *bus, unsigned char value)
+void ps2_write_data(struct base_bus *bus, unsigned char value)
 {
 
-    while ((ps2_bus_read_status(bus) & PS2_STATUS_IFULL) != 0);
+    while ((ps2_read_status(bus) & PS2_STATUS_IFULL) != 0);
 
     io_outb(PS2_REGISTER_DATA, value);
 
 }
 
-void ps2_bus_enable_device(struct base_bus *bus, unsigned int id)
+void ps2_enable(struct base_bus *bus, unsigned int id)
 {
 
-    ps2_bus_write_command(bus, devices[id].enable);
+    ps2_write_command(bus, devices[id].enable);
 
 }
 
-void ps2_bus_enable_interrupt(struct base_bus *bus, unsigned int id)
+void ps2_enable_interrupt(struct base_bus *bus, unsigned int id)
 {
 
     unsigned char config;
 
-    ps2_bus_write_command(bus, PS2_COMMAND_CONFIGR);
+    ps2_write_command(bus, PS2_COMMAND_CONFIGR);
 
-    config = ps2_bus_read_data(bus) | devices[id].interrupt;
+    config = ps2_read_data(bus) | devices[id].interrupt;
 
-    ps2_bus_write_command(bus, PS2_COMMAND_CONFIGW);
-    ps2_bus_write_data(bus, config);
-
-}
-
-void ps2_bus_reset(struct base_bus *bus, unsigned int id)
-{
-
-    if (devices[id].write)
-        ps2_bus_write_command(bus, devices[id].write);
-
-    ps2_bus_write_data(bus, PS2_COMMAND_DEVRESET);
-    ps2_bus_read_data(bus);
+    ps2_write_command(bus, PS2_COMMAND_CONFIGW);
+    ps2_write_data(bus, config);
 
 }
 
-void ps2_bus_identify(struct base_bus *bus, unsigned int id)
+void ps2_reset(struct base_bus *bus, unsigned int id)
 {
 
     if (devices[id].write)
-        ps2_bus_write_command(bus, devices[id].write);
+        ps2_write_command(bus, devices[id].write);
 
-    ps2_bus_write_data(bus, PS2_COMMAND_DEVIDENTIFY);
-    ps2_bus_read_data(bus);
-    ps2_bus_read_data(bus);
+    ps2_write_data(bus, PS2_COMMAND_DEVRESET);
+    ps2_read_data(bus);
 
 }
 
-void ps2_bus_enable_scanning(struct base_bus *bus, unsigned int id)
+void ps2_identify(struct base_bus *bus, unsigned int id)
 {
 
     if (devices[id].write)
-        ps2_bus_write_command(bus, devices[id].write);
+        ps2_write_command(bus, devices[id].write);
 
-    ps2_bus_write_data(bus, PS2_COMMAND_DEVENABLESCAN);
-    ps2_bus_read_data(bus);
+    ps2_write_data(bus, PS2_COMMAND_DEVIDENTIFY);
+    ps2_read_data(bus);
+    ps2_read_data(bus);
 
 }
 
-void ps2_bus_disable_scanning(struct base_bus *bus, unsigned int id)
+void ps2_enable_scanning(struct base_bus *bus, unsigned int id)
 {
 
     if (devices[id].write)
-        ps2_bus_write_command(bus, devices[id].write);
+        ps2_write_command(bus, devices[id].write);
 
-    ps2_bus_write_data(bus, PS2_COMMAND_DEVDISABLESCAN);
-    ps2_bus_read_data(bus);
+    ps2_write_data(bus, PS2_COMMAND_DEVENABLESCAN);
+    ps2_read_data(bus);
 
 }
 
-void ps2_bus_default(struct base_bus *bus, unsigned int id)
+void ps2_disable_scanning(struct base_bus *bus, unsigned int id)
 {
 
     if (devices[id].write)
-        ps2_bus_write_command(bus, devices[id].write);
+        ps2_write_command(bus, devices[id].write);
 
-    ps2_bus_write_data(bus, PS2_COMMAND_DEVDEFAULT);
-    ps2_bus_read_data(bus);
+    ps2_write_data(bus, PS2_COMMAND_DEVDISABLESCAN);
+    ps2_read_data(bus);
+
+}
+
+void ps2_default(struct base_bus *bus, unsigned int id)
+{
+
+    if (devices[id].write)
+        ps2_write_command(bus, devices[id].write);
+
+    ps2_write_data(bus, PS2_COMMAND_DEVDEFAULT);
+    ps2_read_data(bus);
 
 }
 
@@ -241,21 +241,21 @@ static void setup(struct base_bus *self)
     unsigned char config;
     unsigned char status;
 
-    ps2_bus_write_command(self, devices[PS2_KEYBOARD_DEVICE_TYPE].disable);
-    ps2_bus_write_command(self, devices[PS2_MOUSE_DEVICE_TYPE].disable);
+    ps2_write_command(self, devices[PS2_KEYBOARD_DEVICE_TYPE].disable);
+    ps2_write_command(self, devices[PS2_MOUSE_DEVICE_TYPE].disable);
 
-    while (ps2_bus_read_status(self) & 1)
-        ps2_bus_read_data_async(self);
+    while (ps2_read_status(self) & 1)
+        ps2_read_data_async(self);
 
-    ps2_bus_write_command(self, PS2_COMMAND_CONFIGR);
+    ps2_write_command(self, PS2_COMMAND_CONFIGR);
 
-    config = ps2_bus_read_data(self) & 0xDC;
+    config = ps2_read_data(self) & 0xDC;
 
-    ps2_bus_write_command(self, PS2_COMMAND_CONFIGW);
-    ps2_bus_write_data(self, config);
-    ps2_bus_write_command(self, PS2_COMMAND_CTEST);
+    ps2_write_command(self, PS2_COMMAND_CONFIGW);
+    ps2_write_data(self, config);
+    ps2_write_command(self, PS2_COMMAND_CTEST);
 
-    status = ps2_bus_read_data(self);
+    status = ps2_read_data(self);
 
     if (status != PS2_CTEST_OK)
         return;
@@ -263,9 +263,9 @@ static void setup(struct base_bus *self)
     if (config & devices[PS2_KEYBOARD_DEVICE_TYPE].clock)
     {
 
-        ps2_bus_write_command(self, devices[PS2_KEYBOARD_DEVICE_TYPE].test);
+        ps2_write_command(self, devices[PS2_KEYBOARD_DEVICE_TYPE].test);
 
-        if (ps2_bus_read_data(self) == PS2_PTEST_OK)
+        if (ps2_read_data(self) == PS2_PTEST_OK)
             devices[PS2_KEYBOARD_DEVICE_TYPE].present = 1;
 
     }
@@ -273,9 +273,9 @@ static void setup(struct base_bus *self)
     if (config & devices[PS2_MOUSE_DEVICE_TYPE].clock)
     {
 
-        ps2_bus_write_command(self, devices[PS2_MOUSE_DEVICE_TYPE].test);
+        ps2_write_command(self, devices[PS2_MOUSE_DEVICE_TYPE].test);
 
-        if (ps2_bus_read_data(self) == PS2_PTEST_OK)
+        if (ps2_read_data(self) == PS2_PTEST_OK)
             devices[PS2_MOUSE_DEVICE_TYPE].present = 1;
 
     }
@@ -299,7 +299,7 @@ static unsigned short device_irq(struct base_bus *self, unsigned int id)
 static unsigned int reset_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    ps2_bus_write_command(&bus, PS2_COMMAND_CTRLRESET);
+    ps2_write_command(&bus, PS2_COMMAND_CTRLRESET);
 
     return 0;
 

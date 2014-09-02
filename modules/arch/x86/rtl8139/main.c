@@ -299,16 +299,16 @@ static unsigned int check(struct base_bus *bus, unsigned int id)
     if (bus->type != PCI_BUS_TYPE)
         return 0;
 
-    return pci_bus_inw(bus, id, PCI_CONFIG_VENDOR) == RTL8139_PCI_VENDOR && pci_bus_inw(bus, id, PCI_CONFIG_DEVICE) == RTL8139_PCI_DEVICE;
+    return pci_inw(bus, id, PCI_CONFIG_VENDOR) == RTL8139_PCI_VENDOR && pci_inw(bus, id, PCI_CONFIG_DEVICE) == RTL8139_PCI_DEVICE;
 
 }
 
 static void attach(struct base_bus *bus, unsigned int id)
 {
 
-    unsigned int bar0 = pci_bus_ind(bus, id, PCI_CONFIG_BAR0);
-    unsigned int bar1 = pci_bus_ind(bus, id, PCI_CONFIG_BAR1);
-    unsigned short command = pci_bus_inw(bus, id, PCI_CONFIG_COMMAND);
+    unsigned int bar0 = pci_ind(bus, id, PCI_CONFIG_BAR0);
+    unsigned int bar1 = pci_ind(bus, id, PCI_CONFIG_BAR1);
+    unsigned short command = pci_inw(bus, id, PCI_CONFIG_COMMAND);
 
     io = bar0 & ~1;
     mmio = bar1;
@@ -316,7 +316,7 @@ static void attach(struct base_bus *bus, unsigned int id)
     base_init_device(&device, bus, id);
     base_network_init_node(&node, &device, &inetwork);
     base_network_register_node(&node);
-    pci_bus_outw(bus, id, PCI_CONFIG_COMMAND, command | (1 << 2));
+    pci_outw(bus, id, PCI_CONFIG_COMMAND, command | (1 << 2));
     pic_set_routine(bus, id, handle_irq);
     poweron(bus, id);
     reset(bus, id);

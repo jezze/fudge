@@ -215,7 +215,7 @@ static unsigned int check(struct base_bus *bus, unsigned int id)
     if (bus->type != PCI_BUS_TYPE)
         return 0;
 
-    return pci_bus_inw(bus, id, PCI_CONFIG_VENDOR) == CIRRUS_PCI_VENDOR && pci_bus_inw(bus, id, PCI_CONFIG_DEVICE) == CIRRUS_PCI_DEVICE;
+    return pci_inw(bus, id, PCI_CONFIG_VENDOR) == CIRRUS_PCI_VENDOR && pci_inw(bus, id, PCI_CONFIG_DEVICE) == CIRRUS_PCI_DEVICE;
 
 }
 

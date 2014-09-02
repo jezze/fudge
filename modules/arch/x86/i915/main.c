@@ -148,7 +148,7 @@ static unsigned int check(struct base_bus *bus, unsigned int id)
     if (bus->type != PCI_BUS_TYPE)
         return 0;
 
-    return pci_bus_inw(bus, id, PCI_CONFIG_VENDOR) == 0x8086 && pci_bus_inw(bus, id, PCI_CONFIG_DEVICE) == 0x27AE;
+    return pci_inw(bus, id, PCI_CONFIG_VENDOR) == 0x8086 && pci_inw(bus, id, PCI_CONFIG_DEVICE) == 0x27AE;
 
 }
 

@@ -45,7 +45,7 @@ static struct device devices[] = {
     {PLATFORM_REGISTER_UART4, PLATFORM_IRQ_UART2}
 };
 
-unsigned short platform_bus_get_base(struct base_bus *bus, unsigned int id)
+unsigned short platform_get_base(struct base_bus *bus, unsigned int id)
 {
 
     return (id < 7) ? devices[id].base : 0;

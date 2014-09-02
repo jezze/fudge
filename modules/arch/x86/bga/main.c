@@ -104,7 +104,7 @@ static unsigned int check(struct base_bus *bus, unsigned int id)
     if (bus->type != PCI_BUS_TYPE)
         return 0;
 
-    return pci_bus_inw(bus, id, PCI_CONFIG_VENDOR) == BGA_PCI_VENDOR && pci_bus_inw(bus, id, PCI_CONFIG_DEVICE) == BGA_PCI_DEVICE;
+    return pci_inw(bus, id, PCI_CONFIG_VENDOR) == BGA_PCI_VENDOR && pci_inw(bus, id, PCI_CONFIG_DEVICE) == BGA_PCI_DEVICE;
 
 }
 
@@ -116,7 +116,7 @@ static void attach(struct base_bus *bus, unsigned int id)
     base_video_register_node(&node);
 
     bank = (void *)0xA0000;
-    lfb = (void *)(unsigned long)pci_bus_ind(bus, id, PCI_CONFIG_BAR0);
+    lfb = (void *)(unsigned long)pci_ind(bus, id, PCI_CONFIG_BAR0);
 
 /*
     struct bga_driver *driver = (struct bga_driver *)self;

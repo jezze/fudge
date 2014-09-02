@@ -328,7 +328,7 @@ static unsigned int check(struct base_bus *bus, unsigned int id)
     if (bus->type != PCI_BUS_TYPE)
         return 0;
 
-    return pci_bus_inb(bus, id, PCI_CONFIG_CLASS) == PCI_CLASS_DISPLAY && pci_bus_inb(bus, id, PCI_CONFIG_SUBCLASS) == PCI_CLASS_DISPLAY_VGA && pci_bus_inb(bus, id, PCI_CONFIG_INTERFACE) == 0x00;
+    return pci_inb(bus, id, PCI_CONFIG_CLASS) == PCI_CLASS_DISPLAY && pci_inb(bus, id, PCI_CONFIG_SUBCLASS) == PCI_CLASS_DISPLAY_VGA && pci_inb(bus, id, PCI_CONFIG_INTERFACE) == 0x00;
 
 }
 

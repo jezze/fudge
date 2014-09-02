@@ -48,6 +48,7 @@ static struct base_device device;
 static struct base_timer_node node;
 static unsigned short divisor;
 static unsigned int jiffies;
+static unsigned short io;
 
 static void add_duration(struct base_bus *bus, unsigned int id, unsigned int duration)
 {
@@ -74,12 +75,13 @@ static unsigned int check(struct base_bus *bus, unsigned int id)
 static void attach(struct base_bus *bus, unsigned int id)
 {
 
-    unsigned short io = platform_bus_get_base(bus, id);
-
     base_init_device(&device, bus, id);
     base_timer_init_node(&node, &device, &itimer);
     base_timer_register_node(&node);
     pic_set_routine(bus, id, handle_irq);
+
+    io = platform_get_base(bus, id);
+
     io_outb(io + PIT_REGISTER_COMMAND, PIT_COMMAND_COUNTER0 | PIT_COMMAND_BOTH | PIT_COMMAND_MODE3 | PIT_COMMAND_BINARY);
     io_outb(io + PIT_REGISTER_COUNTER0, divisor >> 0);
     io_outb(io + PIT_REGISTER_COUNTER0, divisor >> 8);

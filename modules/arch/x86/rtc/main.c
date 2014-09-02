@@ -10,8 +10,8 @@
 enum rtc_register
 {
 
-    RTC_REGISTER_COMMAND                = 0x0070,
-    RTC_REGISTER_DATA                   = 0x0071
+    RTC_REGISTER_COMMAND                = 0x0000,
+    RTC_REGISTER_DATA                   = 0x0001
 
 };
 
@@ -31,6 +31,7 @@ static struct base_driver driver;
 static struct base_clock_interface iclock;
 static struct base_device device;
 static struct base_clock_node node;
+static unsigned short io;
 
 static unsigned char convert(unsigned char num)
 {
@@ -39,61 +40,61 @@ static unsigned char convert(unsigned char num)
 
 }
 
-static unsigned char get_value(unsigned int type)
+static unsigned char read(unsigned int type)
 {
 
-    io_outb(RTC_REGISTER_COMMAND, type);
+    io_outb(io + RTC_REGISTER_COMMAND, type);
 
-    return convert(io_inb(RTC_REGISTER_DATA));
+    return convert(io_inb(io + RTC_REGISTER_DATA));
 
 }
 
 static unsigned char get_seconds(struct base_bus *bus, unsigned int id)
 {
 
-    return get_value(0x00);
+    return read(0x00);
 
 }
 
 static unsigned char get_minutes(struct base_bus *bus, unsigned int id)
 {
 
-    return get_value(0x02);
+    return read(0x02);
 
 }
 
 static unsigned char get_hours(struct base_bus *bus, unsigned int id)
 {
 
-    return get_value(0x04);
+    return read(0x04);
 
 }
 
 static unsigned char get_weekday(struct base_bus *bus, unsigned int id)
 {
 
-    return get_value(0x06);
+    return read(0x06);
 
 }
 
 static unsigned char get_day(struct base_bus *bus, unsigned int id)
 {
 
-    return get_value(0x07);
+    return read(0x07);
 
 }
 
 static unsigned char get_month(struct base_bus *bus, unsigned int id)
 {
 
-    return get_value(0x08);
+    return read(0x08);
 
 }
 
 static unsigned short get_year(struct base_bus *bus, unsigned int id)
 {
 
-    return 2000 + get_value(0x09);
+    return 2000 + read(0x09);
 
 }
 
@@ -119,6 +120,8 @@ static void attach(struct base_bus *bus, unsigned int id)
     base_clock_init_node(&node, &device, &iclock);
     base_clock_register_node(&node);
     pic_set_routine(bus, id, handle_irq);
+
+    io = platform_get_base(bus, id);
 
 }
 

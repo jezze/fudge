@@ -25,7 +25,7 @@ static unsigned int check(struct base_bus *bus, unsigned int id)
     if (bus->type != PCI_BUS_TYPE)
         return 0;
 
-    return pci_bus_inb(bus, id, PCI_CONFIG_CLASS) == PCI_CLASS_SERIAL && pci_bus_inb(bus, id, PCI_CONFIG_SUBCLASS) == PCI_CLASS_SERIAL_USB && pci_bus_inb(bus, id, PCI_CONFIG_INTERFACE) == 0x00;
+    return pci_inb(bus, id, PCI_CONFIG_CLASS) == PCI_CLASS_SERIAL && pci_inb(bus, id, PCI_CONFIG_SUBCLASS) == PCI_CLASS_SERIAL_USB && pci_inb(bus, id, PCI_CONFIG_INTERFACE) == 0x00;
 
 }
 
@@ -33,7 +33,7 @@ static void attach(struct base_bus *bus, unsigned int id)
 {
 
     /*
-    unsigned int bar0 = pci_bus_ind(bus, id, PCI_CONFIG_BAR4);
+    unsigned int bar0 = pci_ind(bus, id, PCI_CONFIG_BAR4);
     */
 
 }

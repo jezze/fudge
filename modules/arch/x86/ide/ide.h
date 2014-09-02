@@ -5,14 +5,14 @@
 #define IDE_DEVICE_TYPE_SATA            0x03
 #define IDE_DEVICE_TYPE_SATAPI          0x04
 
-unsigned int ide_bus_get_status(struct base_bus *bus);
-unsigned int ide_bus_read_lba28(struct base_bus *bus, unsigned int slave, unsigned int sector, unsigned int count, void *buffer);
-void ide_bus_read_lba28_async(struct base_bus *bus, unsigned int slave, unsigned int sector, unsigned int count, void *buffer);
-unsigned int ide_bus_write_lba28(struct base_bus *bus, unsigned int slave, unsigned int sector, unsigned int count, void *buffer);
-void ide_bus_write_lba28_async(struct base_bus *bus, unsigned int slave, unsigned int sector, unsigned int count, void *buffer);
-unsigned int ide_bus_read_lba48(struct base_bus *bus, unsigned int slave, unsigned int sectorlow, unsigned int sectorhigh, unsigned int count, void *buffer);
-void ide_bus_read_lba48_async(struct base_bus *bus, unsigned int slave, unsigned int sectorlow, unsigned int sectorhigh, unsigned int count, void *buffer);
-unsigned int ide_bus_write_lba48(struct base_bus *bus, unsigned int slave, unsigned int sectorlow, unsigned int sectorhigh, unsigned int count, void *buffer);
-void ide_bus_write_lba48_async(struct base_bus *bus, unsigned int slave, unsigned int sectorlow, unsigned int sectorhigh, unsigned int count, void *buffer);
-unsigned int ide_bus_read_block(struct base_bus *bus, unsigned int count, void *buffer);
-unsigned int ide_bus_write_block(struct base_bus *bus, unsigned int count, void *buffer);
+unsigned int ide_get_status(struct base_bus *bus);
+unsigned int ide_read_lba28(struct base_bus *bus, unsigned int slave, unsigned int sector, unsigned int count, void *buffer);
+void ide_read_lba28_async(struct base_bus *bus, unsigned int slave, unsigned int sector, unsigned int count, void *buffer);
+unsigned int ide_write_lba28(struct base_bus *bus, unsigned int slave, unsigned int sector, unsigned int count, void *buffer);
+void ide_write_lba28_async(struct base_bus *bus, unsigned int slave, unsigned int sector, unsigned int count, void *buffer);
+unsigned int ide_read_lba48(struct base_bus *bus, unsigned int slave, unsigned int sectorlow, unsigned int sectorhigh, unsigned int count, void *buffer);
+void ide_read_lba48_async(struct base_bus *bus, unsigned int slave, unsigned int sectorlow, unsigned int sectorhigh, unsigned int count, void *buffer);
+unsigned int ide_write_lba48(struct base_bus *bus, unsigned int slave, unsigned int sectorlow, unsigned int sectorhigh, unsigned int count, void *buffer);
+void ide_write_lba48_async(struct base_bus *bus, unsigned int slave, unsigned int sectorlow, unsigned int sectorhigh, unsigned int count, void *buffer);
+unsigned int ide_read_block(struct base_bus *bus, unsigned int count, void *buffer);
+unsigned int ide_write_block(struct base_bus *bus, unsigned int count, void *buffer);

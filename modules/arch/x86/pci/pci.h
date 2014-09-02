@@ -267,9 +267,9 @@ enum pci_config
 
 };
 
-unsigned int pci_bus_ind(struct base_bus *bus, unsigned int address, unsigned short offset);
-unsigned short pci_bus_inw(struct base_bus *bus, unsigned int address, unsigned short offset);
-unsigned char pci_bus_inb(struct base_bus *bus, unsigned int address, unsigned short offset);
-void pci_bus_outd(struct base_bus *bus, unsigned int address, unsigned short offset, unsigned int value);
-void pci_bus_outw(struct base_bus *bus, unsigned int address, unsigned short offset, unsigned short value);
-void pci_bus_outb(struct base_bus *bus, unsigned int address, unsigned short offset, unsigned char value);
+unsigned int pci_ind(struct base_bus *bus, unsigned int address, unsigned short offset);
+unsigned short pci_inw(struct base_bus *bus, unsigned int address, unsigned short offset);
+unsigned char pci_inb(struct base_bus *bus, unsigned int address, unsigned short offset);
+void pci_outd(struct base_bus *bus, unsigned int address, unsigned short offset, unsigned int value);
+void pci_outw(struct base_bus *bus, unsigned int address, unsigned short offset, unsigned short value);
+void pci_outb(struct base_bus *bus, unsigned int address, unsigned short offset, unsigned char value);

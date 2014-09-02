@@ -17,7 +17,7 @@ static unsigned int read_data(struct base_bus *bus, unsigned int id, unsigned in
     if (offset > 0)
         return 0;
 
-    return ide_bus_read_lba28(bus, 0, 0, 1, buffer);
+    return ide_read_lba28(bus, 0, 0, 1, buffer);
 
 }
 
@@ -27,7 +27,7 @@ static unsigned int write_data(struct base_bus *bus, unsigned int id, unsigned i
     if (offset > 0)
         return 0;
 
-    return ide_bus_write_lba28(bus, 0, 0, 1, buffer);
+    return ide_write_lba28(bus, 0, 0, 1, buffer);
 
 }
 
