@@ -53,7 +53,7 @@ static struct base_video_node node;
 static void *bank;
 static void *lfb;
 
-static void write_register(unsigned short index, unsigned short data)
+static void setreg(unsigned short index, unsigned short data)
 {
 
     io_outw(BGA_REGISTER_COMMAND, index);
@@ -61,18 +61,18 @@ static void write_register(unsigned short index, unsigned short data)
 
 }
 
-static void set_mode(struct base_bus *bus, unsigned int id, unsigned int xres, unsigned int yres, unsigned int bpp)
+static void ivideo_setmode(struct base_bus *bus, unsigned int id, unsigned int xres, unsigned int yres, unsigned int bpp)
 {
 
-    write_register(BGA_COMMAND_ENABLE, 0x00);
-    write_register(BGA_COMMAND_XRES, xres);
-    write_register(BGA_COMMAND_YRES, yres);
-    write_register(BGA_COMMAND_BPP, bpp);
-    write_register(BGA_COMMAND_ENABLE, 0x40 | 0x01);
+    setreg(BGA_COMMAND_ENABLE, 0x00);
+    setreg(BGA_COMMAND_XRES, xres);
+    setreg(BGA_COMMAND_YRES, yres);
+    setreg(BGA_COMMAND_BPP, bpp);
+    setreg(BGA_COMMAND_ENABLE, 0x40 | 0x01);
 
 }
 
-static unsigned int read_data(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int ivideo_rdata(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
 /*
@@ -85,7 +85,7 @@ static unsigned int read_data(struct base_bus *bus, unsigned int id, unsigned in
 
 }
 
-static unsigned int write_data(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int ivideo_wdata(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
 /*
@@ -98,7 +98,7 @@ static unsigned int write_data(struct base_bus *bus, unsigned int id, unsigned i
 
 }
 
-static unsigned int check(struct base_bus *bus, unsigned int id)
+static unsigned int driver_check(struct base_bus *bus, unsigned int id)
 {
 
     if (bus->type != PCI_BUS_TYPE)
@@ -108,7 +108,7 @@ static unsigned int check(struct base_bus *bus, unsigned int id)
 
 }
 
-static void attach(struct base_bus *bus, unsigned int id)
+static void driver_attach(struct base_bus *bus, unsigned int id)
 {
 
     base_init_device(&device, bus, id);
@@ -127,7 +127,7 @@ static void attach(struct base_bus *bus, unsigned int id)
 
 }
 
-static void detach(struct base_bus *bus, unsigned int id)
+static void driver_detach(struct base_bus *bus, unsigned int id)
 {
 
     base_video_unregister_node(&node);
@@ -137,9 +137,9 @@ static void detach(struct base_bus *bus, unsigned int id)
 void init()
 {
 
-    base_video_init_interface(&ivideo, set_mode, read_data, write_data, 0, 0);
+    base_video_init_interface(&ivideo, ivideo_setmode, ivideo_rdata, ivideo_wdata, 0, 0);
     base_video_register_interface(&ivideo);
-    base_init_driver(&driver, "bga", check, attach, detach);
+    base_init_driver(&driver, "bga", driver_check, driver_attach, driver_detach);
     base_register_driver(&driver);
 
 }

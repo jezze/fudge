@@ -159,14 +159,14 @@ static void enable(struct base_bus *bus, unsigned int id)
 
 }
 
-static void setup_interrupts(struct base_bus *bus, unsigned int id, unsigned short flags)
+static void setintflags(struct base_bus *bus, unsigned int id, unsigned short flags)
 {
 
     io_outw(io + RTL8139_REGISTER_IMR, flags);
 
 }
 
-static void setup_receiver(struct base_bus *bus, unsigned int id)
+static void setrx(struct base_bus *bus, unsigned int id)
 {
 
     io_outd(io + RTL8139_REGISTER_RBSTART, (unsigned long)rx);
@@ -174,7 +174,7 @@ static void setup_receiver(struct base_bus *bus, unsigned int id)
 
 }
 
-static void setup_transmitter(struct base_bus *bus, unsigned int id)
+static void settx(struct base_bus *bus, unsigned int id)
 {
 
     io_outd(io + RTL8139_REGISTER_TSAD0, (unsigned long)tx0);
@@ -184,17 +184,30 @@ static void setup_transmitter(struct base_bus *bus, unsigned int id)
 
 }
 
-static void *get_packet(struct base_bus *bus, unsigned int id)
+static void handleirq(unsigned int irq, struct base_bus *bus, unsigned int id)
+{
+
+    unsigned short status = io_inw(io + RTL8139_REGISTER_ISR);
+
+    if (status & RTL8139_ISR_ROK)
+        io_outw(io + RTL8139_REGISTER_ISR, RTL8139_ISR_ROK);
+
+    if (status & RTL8139_ISR_TOK)
+        io_outw(io + RTL8139_REGISTER_ISR, RTL8139_ISR_TOK);
+
+}
+
+static void *inetwork_getpacket(struct base_bus *bus, unsigned int id)
 {
 
     return rx + rxp;
 
 }
 
-static void dump_packet(struct base_bus *bus, unsigned int id)
+static void inetwork_dumppacket(struct base_bus *bus, unsigned int id)
 {
 
-    struct rtl8139_header *header = get_packet(bus, id);
+    struct rtl8139_header *header = inetwork_getpacket(bus, id);
 
     rxp += (header->length + 4 + 3) & ~3;
 
@@ -202,10 +215,10 @@ static void dump_packet(struct base_bus *bus, unsigned int id)
 
 }
 
-static unsigned int receive(struct base_bus *bus, unsigned int id, unsigned int count, void *buffer)
+static unsigned int inetwork_receive(struct base_bus *bus, unsigned int id, unsigned int count, void *buffer)
 {
 
-    struct rtl8139_header *header = get_packet(bus, id);
+    struct rtl8139_header *header = inetwork_getpacket(bus, id);
     unsigned int k;
 
     /*
@@ -233,13 +246,13 @@ static unsigned int receive(struct base_bus *bus, unsigned int id, unsigned int 
 
     k = memory_read(buffer, count, rx + rxp + sizeof (struct rtl8139_header), header->length, 0);
 
-    dump_packet(bus, id);
+    inetwork_dumppacket(bus, id);
 
     return k;
 
 }
 
-static unsigned int send(struct base_bus *bus, unsigned int id, unsigned int count, void *buffer)
+static unsigned int inetwork_send(struct base_bus *bus, unsigned int id, unsigned int count, void *buffer)
 {
 
     unsigned int status = (0x3F << 16) | (count & 0x1FFF);
@@ -280,20 +293,7 @@ static unsigned int send(struct base_bus *bus, unsigned int id, unsigned int cou
 
 }
 
-static void handle_irq(unsigned int irq, struct base_bus *bus, unsigned int id)
-{
-
-    unsigned short status = io_inw(io + RTL8139_REGISTER_ISR);
-
-    if (status & RTL8139_ISR_ROK)
-        io_outw(io + RTL8139_REGISTER_ISR, RTL8139_ISR_ROK);
-
-    if (status & RTL8139_ISR_TOK)
-        io_outw(io + RTL8139_REGISTER_ISR, RTL8139_ISR_TOK);
-
-}
-
-static unsigned int check(struct base_bus *bus, unsigned int id)
+static unsigned int driver_check(struct base_bus *bus, unsigned int id)
 {
 
     if (bus->type != PCI_BUS_TYPE)
@@ -303,7 +303,7 @@ static unsigned int check(struct base_bus *bus, unsigned int id)
 
 }
 
-static void attach(struct base_bus *bus, unsigned int id)
+static void driver_attach(struct base_bus *bus, unsigned int id)
 {
 
     unsigned int bar0 = pci_ind(bus, id, PCI_CONFIG_BAR0);
@@ -317,12 +317,12 @@ static void attach(struct base_bus *bus, unsigned int id)
     base_network_init_node(&node, &device, &inetwork);
     base_network_register_node(&node);
     pci_outw(bus, id, PCI_CONFIG_COMMAND, command | (1 << 2));
-    pic_set_routine(bus, id, handle_irq);
+    pic_set_routine(bus, id, handleirq);
     poweron(bus, id);
     reset(bus, id);
-    setup_interrupts(bus, id, RTL8139_ISR_ROK | RTL8139_ISR_TOK);
-    setup_receiver(bus, id);
-    setup_transmitter(bus, id);
+    setintflags(bus, id, RTL8139_ISR_ROK | RTL8139_ISR_TOK);
+    setrx(bus, id);
+    settx(bus, id);
     enable(bus, id);
 
     inetwork.mac[0] = io_inb(io + RTL8139_REGISTER_IDR0);
@@ -334,7 +334,7 @@ static void attach(struct base_bus *bus, unsigned int id)
 
 }
 
-static void detach(struct base_bus *bus, unsigned int id)
+static void driver_detach(struct base_bus *bus, unsigned int id)
 {
 
     pic_unset_routine(bus, id);
@@ -345,9 +345,9 @@ static void detach(struct base_bus *bus, unsigned int id)
 void init()
 {
 
-    base_network_init_interface(&inetwork, receive, send, get_packet, dump_packet);
+    base_network_init_interface(&inetwork, inetwork_receive, inetwork_send, inetwork_getpacket, inetwork_dumppacket);
     base_network_register_interface(&inetwork);
-    base_init_driver(&driver, "rtl8139", check, attach, detach);
+    base_init_driver(&driver, "rtl8139", driver_check, driver_attach, driver_detach);
     base_register_driver(&driver);
 
 }

@@ -11,34 +11,34 @@ static struct base_block_interface iblock;
 static struct base_device device;
 static struct base_block_node node;
 
-static unsigned int read_data(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
-{
-
-    if (offset > 0)
-        return 0;
-
-    return ide_read_lba28(bus, 0, 0, 1, buffer);
-
-}
-
-static unsigned int write_data(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
-{
-
-    if (offset > 0)
-        return 0;
-
-    return ide_write_lba28(bus, 0, 0, 1, buffer);
-
-}
-
-static void handle_irq(unsigned int irq, struct base_bus *bus, unsigned int id)
+static void handleirq(unsigned int irq, struct base_bus *bus, unsigned int id)
 {
 
     memory_copy((void *)0xB8000, "i n t ", 6);
 
 }
 
-static unsigned int check(struct base_bus *bus, unsigned int id)
+static unsigned int iblock_rdata(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    if (offset > 0)
+        return 0;
+
+    return ide_rlba28(bus, 0, 0, 1, buffer);
+
+}
+
+static unsigned int iblock_wdata(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    if (offset > 0)
+        return 0;
+
+    return ide_wlba28(bus, 0, 0, 1, buffer);
+
+}
+
+static unsigned int driver_check(struct base_bus *bus, unsigned int id)
 {
 
     if (bus->type != IDE_BUS_TYPE)
@@ -48,17 +48,17 @@ static unsigned int check(struct base_bus *bus, unsigned int id)
 
 }
 
-static void attach(struct base_bus *bus, unsigned int id)
+static void driver_attach(struct base_bus *bus, unsigned int id)
 {
 
     base_init_device(&device, bus, id);
     base_block_init_node(&node, &device, &iblock);
     base_block_register_node(&node);
-    pic_set_routine(bus, id, handle_irq);
+    pic_set_routine(bus, id, handleirq);
 
 }
 
-static void detach(struct base_bus *bus, unsigned int id)
+static void driver_detach(struct base_bus *bus, unsigned int id)
 {
 
     pic_unset_routine(bus, id);
@@ -69,9 +69,9 @@ static void detach(struct base_bus *bus, unsigned int id)
 void init()
 {
 
-    base_block_init_interface(&iblock, read_data, write_data);
+    base_block_init_interface(&iblock, iblock_rdata, iblock_wdata);
     base_block_register_interface(&iblock);
-    base_init_driver(&driver, "ata", check, attach, detach);
+    base_init_driver(&driver, "ata", driver_check, driver_attach, driver_detach);
     base_register_driver(&driver);
 
 }

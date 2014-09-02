@@ -45,7 +45,7 @@ static void wait(unsigned int num)
 
 }
 
-static void wait_vblank()
+static void waitvblank()
 {
 
     write(I915_PIPEB_STATUS, I915_PIPE_STATUS_VBLANK);
@@ -54,14 +54,14 @@ static void wait_vblank()
 
 }
 
-static void disable_vga()
+static void disablevga()
 {
 
     write(I915_VGA_CONTROL, I915_VGA_CONTROL_DISABLE);
 
 }
 
-static void enable_dpll()
+static void enabledpll()
 {
 
     unsigned int pllb = read(I915_DPLLB_CONTROL);
@@ -83,21 +83,21 @@ static void enable_dpll()
 
 }
 
-static void enable_pipe()
+static void enablepipe()
 {
 
     write(I915_PIPEB_CONFIG, read(I915_PIPEB_CONFIG) & I915_PIPE_CONFIG_ENABLE);
 
 }
 
-static void enable_plane()
+static void enableplane()
 {
 
     write(I915_DISPLAYB_CONTROL, read(I915_DISPLAYB_CONTROL) & I915_DISPLAY_CONTROL_ENPLANE);
 
 }
 
-static void set_pipe_mode(unsigned int width, unsigned int height)
+static void setpipemode(unsigned int width, unsigned int height)
 {
 
     unsigned int htotal = (read(I915_DISPLAYB_HTOTAL) >> 16) + 1;
@@ -118,31 +118,31 @@ static void set_pipe_mode(unsigned int width, unsigned int height)
 
 }
 
-static void set_mode(struct base_bus *bus, unsigned int id, unsigned int xres, unsigned int yres, unsigned int bpp)
+static void handleirq(unsigned int irq, struct base_bus *bus, unsigned int id)
 {
 
 }
 
-static unsigned int read_data(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static void ivideo_setmode(struct base_bus *bus, unsigned int id, unsigned int xres, unsigned int yres, unsigned int bpp)
+{
+
+}
+
+static unsigned int ivideo_rdata(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     return 0;
 
 }
 
-static unsigned int write_data(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int ivideo_wdata(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     return 0;
 
 }
 
-static void handle_irq(unsigned int irq, struct base_bus *bus, unsigned int id)
-{
-
-}
-
-static unsigned int check(struct base_bus *bus, unsigned int id)
+static unsigned int driver_check(struct base_bus *bus, unsigned int id)
 {
 
     if (bus->type != PCI_BUS_TYPE)
@@ -152,23 +152,23 @@ static unsigned int check(struct base_bus *bus, unsigned int id)
 
 }
 
-static void attach(struct base_bus *bus, unsigned int id)
+static void driver_attach(struct base_bus *bus, unsigned int id)
 {
 
     base_init_device(&device, bus, id);
     base_video_init_node(&node, &device, &ivideo);
     base_video_register_node(&node);
-    pic_set_routine(bus, id, handle_irq);
-    enable_dpll();
-    enable_pipe();
-    enable_plane();
-    wait_vblank();
-    disable_vga();
-    set_pipe_mode(640, 480);
+    pic_set_routine(bus, id, handleirq);
+    enabledpll();
+    enablepipe();
+    enableplane();
+    waitvblank();
+    disablevga();
+    setpipemode(640, 480);
 
 }
 
-static void detach(struct base_bus *bus, unsigned int id)
+static void driver_detach(struct base_bus *bus, unsigned int id)
 {
 
     pic_unset_routine(bus, id);
@@ -179,9 +179,9 @@ static void detach(struct base_bus *bus, unsigned int id)
 void init()
 {
 
-    base_video_init_interface(&ivideo, set_mode, read_data, write_data, 0, 0);
+    base_video_init_interface(&ivideo, ivideo_setmode, ivideo_rdata, ivideo_wdata, 0, 0);
     base_video_register_interface(&ivideo);
-    base_init_driver(&driver, "i915", check, attach, detach);
+    base_init_driver(&driver, "i915", driver_check, driver_attach, driver_detach);
     base_register_driver(&driver);
 
 }

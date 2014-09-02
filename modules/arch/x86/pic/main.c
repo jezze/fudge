@@ -45,14 +45,24 @@ enum pic_data
 
 static struct pic_routine routines[PIC_ROUTINES];
 
-static void pic_set_mask(unsigned short port, unsigned char mask)
+static void setchip(unsigned char command, unsigned char data, unsigned char vector, unsigned char wire)
+{
+
+    io_outb(command, PIC_COMMAND_CONFIG);
+    io_outb(data, vector);
+    io_outb(data, wire);
+    io_outb(data, PIC_DATA_8086);
+
+}
+
+static void setmask(unsigned short port, unsigned char mask)
 {
 
     io_outb(port, mask);
 
 }
 
-static unsigned char pic_get_status(unsigned short port, unsigned char type)
+static unsigned char getstatus(unsigned short port, unsigned char type)
 {
 
     io_outb(port, type);
@@ -61,14 +71,14 @@ static unsigned char pic_get_status(unsigned short port, unsigned char type)
 
 }
 
-void pic_enable_line(unsigned short port, unsigned char line)
+static void enableline(unsigned short port, unsigned char line)
 {
 
     io_outb(port, io_inb(port) & ~(1 << (line % 8)));
 
 }
 
-void pic_disable_line(unsigned short port, unsigned char line)
+static void disableline(unsigned short port, unsigned char line)
 {
 
     io_outb(port, io_inb(port) | (1 << (line % 8)));
@@ -110,9 +120,9 @@ unsigned int pic_set_routine(struct base_bus *bus, unsigned int id, void (*callb
     routines[irq].callback = callback;
 
     if (irq >= 8)
-        pic_enable_line(PIC_REGISTER_DATA1, irq);
+        enableline(PIC_REGISTER_DATA1, irq);
     else
-        pic_enable_line(PIC_REGISTER_DATA0, irq);
+        enableline(PIC_REGISTER_DATA0, irq);
 
     return 1;
 
@@ -134,21 +144,11 @@ unsigned int pic_unset_routine(struct base_bus *bus, unsigned int id)
     routines[irq].callback = 0;
 
     if (irq >= 8)
-        pic_disable_line(PIC_REGISTER_DATA1, irq);
+        disableline(PIC_REGISTER_DATA1, irq);
     else
-        pic_disable_line(PIC_REGISTER_DATA0, irq);
+        disableline(PIC_REGISTER_DATA0, irq);
 
     return 1;
-
-}
-
-void setup_chip(unsigned char command, unsigned char data, unsigned char vector, unsigned char wire)
-{
-
-    io_outb(command, PIC_COMMAND_CONFIG);
-    io_outb(data, vector);
-    io_outb(data, wire);
-    io_outb(data, PIC_DATA_8086);
 
 }
 
@@ -159,8 +159,8 @@ void init()
     unsigned short selector = sizeof (struct gdt_descriptor) * GDT_INDEX_KCODE;
 
     memory_clear(routines, sizeof (struct pic_routine) * PIC_ROUTINES);
-    setup_chip(PIC_REGISTER_COMMAND0, PIC_REGISTER_DATA0, PIC_DATA_VECTOR0, 0x04);
-    setup_chip(PIC_REGISTER_COMMAND1, PIC_REGISTER_DATA1, PIC_DATA_VECTOR1, 0x02);
+    setchip(PIC_REGISTER_COMMAND0, PIC_REGISTER_DATA0, PIC_DATA_VECTOR0, 0x04);
+    setchip(PIC_REGISTER_COMMAND1, PIC_REGISTER_DATA1, PIC_DATA_VECTOR1, 0x02);
     idt_set_descriptor(pointer, PIC_DATA_VECTOR0 + 0x00, pic_routine00, selector, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
     idt_set_descriptor(pointer, PIC_DATA_VECTOR0 + 0x01, pic_routine01, selector, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
     idt_set_descriptor(pointer, PIC_DATA_VECTOR0 + 0x02, pic_routine02, selector, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
@@ -177,10 +177,10 @@ void init()
     idt_set_descriptor(pointer, PIC_DATA_VECTOR1 + 0x05, pic_routine0D, selector, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
     idt_set_descriptor(pointer, PIC_DATA_VECTOR1 + 0x06, pic_routine0E, selector, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
     idt_set_descriptor(pointer, PIC_DATA_VECTOR1 + 0x07, pic_routine0F, selector, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    pic_set_mask(PIC_REGISTER_DATA0, 0xFB);
-    pic_set_mask(PIC_REGISTER_DATA1, 0xFF);
+    setmask(PIC_REGISTER_DATA0, 0xFB);
+    setmask(PIC_REGISTER_DATA1, 0xFF);
 
-    while (pic_get_status(PIC_REGISTER_COMMAND1, PIC_COMMAND_ISR))
+    while (getstatus(PIC_REGISTER_COMMAND1, PIC_COMMAND_ISR))
     {
 
         io_outb(PIC_REGISTER_COMMAND1, PIC_COMMAND_EOI);
@@ -188,7 +188,7 @@ void init()
 
     }
 
-    while (pic_get_status(PIC_REGISTER_COMMAND0, PIC_COMMAND_ISR))
+    while (getstatus(PIC_REGISTER_COMMAND0, PIC_COMMAND_ISR))
         io_outb(PIC_REGISTER_COMMAND0, PIC_COMMAND_EOI);
 
 }

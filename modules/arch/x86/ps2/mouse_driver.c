@@ -17,21 +17,10 @@ static struct buffer_cfifo cfifo;
 static unsigned char cycle;
 static struct scheduler_rendezvous rdata;
 
-static unsigned int read_data(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static void handleirq(unsigned int irq, struct base_bus *bus, unsigned int id)
 {
 
-    count = buffer_read_cfifo(&cfifo, count, buffer);
-
-    scheduler_rendezvous_sleep(&rdata, !count);
-
-    return count;
-
-}
-
-static void handle_irq(unsigned int irq, struct base_bus *bus, unsigned int id)
-{
-
-    unsigned char data = ps2_read_data_async(bus);
+    unsigned char data = ps2_getdata(bus);
 
     switch (cycle)
     {
@@ -58,7 +47,18 @@ static void handle_irq(unsigned int irq, struct base_bus *bus, unsigned int id)
 
 }
 
-static unsigned int check(struct base_bus *bus, unsigned int id)
+static unsigned int imouse_rdata(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    count = buffer_read_cfifo(&cfifo, count, buffer);
+
+    scheduler_rendezvous_sleep(&rdata, !count);
+
+    return count;
+
+}
+
+static unsigned int driver_check(struct base_bus *bus, unsigned int id)
 {
 
     if (bus->type != PS2_BUS_TYPE)
@@ -68,25 +68,25 @@ static unsigned int check(struct base_bus *bus, unsigned int id)
 
 }
 
-static void attach(struct base_bus *bus, unsigned int id)
+static void driver_attach(struct base_bus *bus, unsigned int id)
 {
 
     base_init_device(&device, bus, id);
     base_mouse_init_node(&node, &device, &imouse);
     base_mouse_register_node(&node);
     buffer_init_cfifo(&cfifo, 512, &buffer);
-    pic_set_routine(bus, id, handle_irq);
+    pic_set_routine(bus, id, handleirq);
     ps2_enable(bus, id);
     ps2_reset(bus, id);
-    ps2_disable_scanning(bus, id);
+    ps2_disablescanning(bus, id);
     ps2_default(bus, id);
     ps2_identify(bus, id);
-    ps2_enable_scanning(bus, id);
-    ps2_enable_interrupt(bus, id);
+    ps2_enablescanning(bus, id);
+    ps2_enableinterrupt(bus, id);
 
 }
 
-static void detach(struct base_bus *bus, unsigned int id)
+static void driver_detach(struct base_bus *bus, unsigned int id)
 {
 
     pic_unset_routine(bus, id);
@@ -97,9 +97,9 @@ static void detach(struct base_bus *bus, unsigned int id)
 void ps2_mouse_driver_init()
 {
 
-    base_mouse_init_interface(&imouse, read_data);
+    base_mouse_init_interface(&imouse, imouse_rdata);
     base_mouse_register_interface(&imouse);
-    base_init_driver(&driver, "ps2mouse", check, attach, detach);
+    base_init_driver(&driver, "ps2mouse", driver_check, driver_attach, driver_detach);
     base_register_driver(&driver);
 
 }

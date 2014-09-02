@@ -5,12 +5,12 @@
 
 static struct smp_architecture architecture;
 
-static void setup_madt()
+static void setmadt()
 {
 
     unsigned long madttable;
     unsigned long madtend;
-    struct acpi_madt *madt = (struct acpi_madt *)acpi_find_header("APIC");
+    struct acpi_madt *madt = (struct acpi_madt *)acpi_findheader("APIC");
 
     if (!madt)
         return;
@@ -39,12 +39,12 @@ static void setup_madt()
 
 }
 
-static void setup_srat()
+static void setsrat()
 {
 
     unsigned long srattable;
     unsigned long sratend;
-    struct acpi_srat *srat = (struct acpi_srat *)acpi_find_header("SRAT");
+    struct acpi_srat *srat = (struct acpi_srat *)acpi_findheader("SRAT");
 
     if (!srat)
         return;
@@ -85,8 +85,8 @@ void init()
 
     }
 
-    setup_madt();
-    setup_srat();
+    setmadt();
+    setsrat();
 
     for (i = 0; i < architecture.count; i++)
     {

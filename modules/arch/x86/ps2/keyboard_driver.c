@@ -21,42 +21,10 @@ static unsigned int ctrl;
 static unsigned int alt;
 static unsigned int shift;
 
-static unsigned int read_data(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static void handleirq(unsigned int irq, struct base_bus *bus, unsigned int id)
 {
 
-    count = buffer_read_cfifo(&cfifo, count, buffer);
-
-    scheduler_rendezvous_sleep(&rdata, !count);
-
-    return count;
-
-}
-
-static unsigned int write_data(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
-{
-
-    return buffer_write_cfifo(&cfifo, count, buffer);
-
-}
-
-static unsigned int read_keymap(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
-{
-
-    return memory_read(buffer, count, keymap, sizeof (struct keycode) * 256, offset);
-
-}
-
-static unsigned int write_keymap(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
-{
-
-    return memory_write(keymap, sizeof (struct keycode) * 256, buffer, count, offset);
-
-}
-
-static void handle_irq(unsigned int irq, struct base_bus *bus, unsigned int id)
-{
-
-    unsigned char scancode = ps2_read_data_async(bus);
+    unsigned char scancode = ps2_getdata(bus);
 
     if (escaped)
         escaped = 0;
@@ -109,7 +77,39 @@ static void handle_irq(unsigned int irq, struct base_bus *bus, unsigned int id)
 
 }
 
-static unsigned int check(struct base_bus *bus, unsigned int id)
+static unsigned int ikeyboard_rdata(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    count = buffer_read_cfifo(&cfifo, count, buffer);
+
+    scheduler_rendezvous_sleep(&rdata, !count);
+
+    return count;
+
+}
+
+static unsigned int ikeyboard_wdata(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    return buffer_write_cfifo(&cfifo, count, buffer);
+
+}
+
+static unsigned int ikeyboard_rkeymap(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    return memory_read(buffer, count, keymap, sizeof (struct keycode) * 256, offset);
+
+}
+
+static unsigned int ikeyboard_wkeymap(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    return memory_write(keymap, sizeof (struct keycode) * 256, buffer, count, offset);
+
+}
+
+static unsigned int driver_check(struct base_bus *bus, unsigned int id)
 {
 
     if (bus->type != PS2_BUS_TYPE)
@@ -119,25 +119,25 @@ static unsigned int check(struct base_bus *bus, unsigned int id)
 
 }
 
-static void attach(struct base_bus *bus, unsigned int id)
+static void driver_attach(struct base_bus *bus, unsigned int id)
 {
 
     base_init_device(&device, bus, id);
     base_keyboard_init_node(&node, &device, &ikeyboard);
     base_keyboard_register_node(&node);
     buffer_init_cfifo(&cfifo, 512, &buffer);
-    pic_set_routine(bus, id, handle_irq);
+    pic_set_routine(bus, id, handleirq);
     ps2_enable(bus, id);
     ps2_reset(bus, id);
-    ps2_disable_scanning(bus, id);
+    ps2_disablescanning(bus, id);
     ps2_default(bus, id);
     ps2_identify(bus, id);
-    ps2_enable_scanning(bus, id);
-    ps2_enable_interrupt(bus, id);
+    ps2_enablescanning(bus, id);
+    ps2_enableinterrupt(bus, id);
 
 }
 
-static void detach(struct base_bus *bus, unsigned int id)
+static void driver_detach(struct base_bus *bus, unsigned int id)
 {
 
     pic_unset_routine(bus, id);
@@ -148,9 +148,9 @@ static void detach(struct base_bus *bus, unsigned int id)
 void ps2_keyboard_driver_init()
 {
 
-    base_keyboard_init_interface(&ikeyboard, read_data, write_data, read_keymap, write_keymap);
+    base_keyboard_init_interface(&ikeyboard, ikeyboard_rdata, ikeyboard_wdata, ikeyboard_rkeymap, ikeyboard_wkeymap);
     base_keyboard_register_interface(&ikeyboard);
-    base_init_driver(&driver, "ps2keyboard", check, attach, detach);
+    base_init_driver(&driver, "ps2keyboard", driver_check, driver_attach, driver_detach);
     base_register_driver(&driver);
 
 }

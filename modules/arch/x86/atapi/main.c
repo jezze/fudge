@@ -11,12 +11,12 @@ static struct base_block_interface iblock;
 static struct base_device device;
 static struct base_block_node node;
 
-static void handle_irq(unsigned int irq, struct base_bus *bus, unsigned int id)
+static void handleirq(unsigned int irq, struct base_bus *bus, unsigned int id)
 {
 
 }
 
-static unsigned int check(struct base_bus *bus, unsigned int id)
+static unsigned int driver_check(struct base_bus *bus, unsigned int id)
 {
 
     if (bus->type != IDE_BUS_TYPE)
@@ -26,17 +26,17 @@ static unsigned int check(struct base_bus *bus, unsigned int id)
 
 }
 
-static void attach(struct base_bus *bus, unsigned int id)
+static void driver_attach(struct base_bus *bus, unsigned int id)
 {
 
     base_init_device(&device, bus, id);
     base_block_init_node(&node, &device, &iblock);
     base_block_register_node(&node);
-    pic_set_routine(bus, id, handle_irq);
+    pic_set_routine(bus, id, handleirq);
 
 }
 
-static void detach(struct base_bus *bus, unsigned int id)
+static void driver_detach(struct base_bus *bus, unsigned int id)
 {
 
     pic_unset_routine(bus, id);
@@ -49,7 +49,7 @@ void init()
 
     base_block_init_interface(&iblock, 0, 0);
     base_block_register_interface(&iblock);
-    base_init_driver(&driver, "atapi", check, attach, detach);
+    base_init_driver(&driver, "atapi", driver_check, driver_attach, driver_detach);
     base_register_driver(&driver);
 
 }

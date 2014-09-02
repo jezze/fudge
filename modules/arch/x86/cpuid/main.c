@@ -4,7 +4,7 @@
 void init()
 {
 
-    if (!cpuid_check_cpuid())
+    if (!cpuid_check())
         return;
 
 }

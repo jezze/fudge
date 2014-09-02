@@ -44,7 +44,7 @@ static struct base_video_node node;
 static int chiptype;
 static int chiprev;
 
-static int map_clock(int bpp, int pixelclock)
+static int mapclock(int bpp, int pixelclock)
 {
 
     if (bpp == VGA_BPP24 && chiptype < CLGD5436)
@@ -57,7 +57,7 @@ static int map_clock(int bpp, int pixelclock)
 
 }
 
-static int map_horizontal_crtc(int bpp, int pixelclock, int htiming)
+static int maphorizontalcrtc(int bpp, int pixelclock, int htiming)
 {
 
     if (bpp == VGA_BPP8 && chiptype >= CLGD5434)
@@ -67,7 +67,7 @@ static int map_horizontal_crtc(int bpp, int pixelclock, int htiming)
 
 }
 
-static void set_mode(struct base_bus *bus, unsigned int id, unsigned int xres, unsigned int yres, unsigned int bpp)
+static void ivideo_setmode(struct base_bus *bus, unsigned int id, unsigned int xres, unsigned int yres, unsigned int bpp)
 {
 
     unsigned char registers[60];
@@ -169,8 +169,8 @@ static void set_mode(struct base_bus *bus, unsigned int id, unsigned int xres, u
     cardspecs.flags = INTERLACE_DIVIDE_VERT | GREATER_1024_DIVIDE_VERT;
     cardspecs.nClocks = CLOCKS;
     cardspecs.clocks = clocks;
-    cardspecs.mapClock = map_clock;
-    cardspecs.mapHorizontalCrtc = map_horizontal_crtc;
+    cardspecs.mapClock = mapclock;
+    cardspecs.mapHorizontalCrtc = maphorizontalcrtc;
     cardspecs.maxHorizontalCrtc = 2040;
     cardspecs.maxPixelClock4bpp = 0;
 
@@ -181,35 +181,35 @@ static void set_mode(struct base_bus *bus, unsigned int id, unsigned int xres, u
 
 }
 
-static unsigned int read_video_data(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int ivideo_rdata(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     return 0;
 
 }
 
-static unsigned int write_video_data(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int ivideo_wdata(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     return 0;
 
 }
 
-static unsigned int read_video_colormap(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int ivideo_rcolormap(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     return 0;
 
 }
 
-static unsigned int write_video_colormap(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int ivideo_wcolormap(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     return 0;
 
 }
 
-static unsigned int check(struct base_bus *bus, unsigned int id)
+static unsigned int driver_check(struct base_bus *bus, unsigned int id)
 {
 
     if (bus->type != PCI_BUS_TYPE)
@@ -219,7 +219,7 @@ static unsigned int check(struct base_bus *bus, unsigned int id)
 
 }
 
-static void attach(struct base_bus *bus, unsigned int id)
+static void driver_attach(struct base_bus *bus, unsigned int id)
 {
 
     base_init_device(&device, bus, id);
@@ -228,7 +228,7 @@ static void attach(struct base_bus *bus, unsigned int id)
 
 }
 
-static void detach(struct base_bus *bus, unsigned int id)
+static void driver_detach(struct base_bus *bus, unsigned int id)
 {
 
     base_video_unregister_node(&node);
@@ -238,9 +238,9 @@ static void detach(struct base_bus *bus, unsigned int id)
 void init()
 {
 
-    base_video_init_interface(&ivideo, set_mode, read_video_data, write_video_data, read_video_colormap, write_video_colormap);
+    base_video_init_interface(&ivideo, ivideo_setmode, ivideo_rdata, ivideo_wdata, ivideo_rcolormap, ivideo_wcolormap);
     base_video_register_interface(&ivideo);
-    base_init_driver(&driver, "cirrus", check, attach, detach);
+    base_init_driver(&driver, "cirrus", driver_check, driver_attach, driver_detach);
     base_register_driver(&driver);
 
 }

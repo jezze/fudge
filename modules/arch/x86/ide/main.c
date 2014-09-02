@@ -97,7 +97,7 @@ static void wait(struct ide_bus *bus)
 
 }
 
-static void ide_sleep(struct ide_bus *bus)
+static void sleep(struct ide_bus *bus)
 {
 
     io_inb(bus->control);
@@ -107,15 +107,15 @@ static void ide_sleep(struct ide_bus *bus)
 
 }
 
-static void ide_select(struct ide_bus *bus, unsigned char operation, unsigned int slave)
+static void select(struct ide_bus *bus, unsigned char operation, unsigned int slave)
 {
 
     io_outb(bus->data + IDE_DATA_SELECT, operation | slave << 4);
-    ide_sleep(bus);
+    sleep(bus);
 
 }
 
-static void ide_set_lba(struct ide_bus *bus, unsigned char count, unsigned char lba0, unsigned char lba1, unsigned char lba2)
+static void setlba(struct ide_bus *bus, unsigned char count, unsigned char lba0, unsigned char lba1, unsigned char lba2)
 {
 
     io_outb(bus->data + IDE_DATA_COUNT0, count);
@@ -125,7 +125,7 @@ static void ide_set_lba(struct ide_bus *bus, unsigned char count, unsigned char 
 
 }
 
-static void ide_set_lba2(struct ide_bus *bus, unsigned char count, unsigned char lba3, unsigned char lba4, unsigned char lba5)
+static void setlba2(struct ide_bus *bus, unsigned char count, unsigned char lba3, unsigned char lba4, unsigned char lba5)
 {
 
     io_outb(bus->data + IDE_DATA_COUNT1, count);
@@ -135,14 +135,14 @@ static void ide_set_lba2(struct ide_bus *bus, unsigned char count, unsigned char
 
 }
 
-static void ide_set_command(struct ide_bus *bus, unsigned char command)
+static void setcommand(struct ide_bus *bus, unsigned char command)
 {
 
     io_outb(bus->data + IDE_DATA_COMMAND, command);
 
 }
 
-unsigned int ide_get_status(struct base_bus *bus)
+unsigned int ide_getstatus(struct base_bus *bus)
 {
 
     struct ide_bus *b = (struct ide_bus *)bus;
@@ -151,7 +151,53 @@ unsigned int ide_get_status(struct base_bus *bus)
 
 }
 
-unsigned int ide_read_block(struct base_bus *bus, unsigned int count, void *buffer)
+static unsigned int rblocks(struct ide_bus *bus, unsigned int count, void *buffer)
+{
+
+    unsigned int i;
+    unsigned short *out = buffer;
+
+    for (i = 0; i < count; i++)
+    {
+
+        unsigned int j;
+
+        sleep(bus);
+        wait(bus);
+
+        for (j = 0; j < 256; j++)
+            *out++ = io_inw(bus->data);
+
+    }
+
+    return i;
+
+}
+
+static unsigned int wblocks(struct ide_bus *bus, unsigned int count, void *buffer)
+{
+
+    unsigned int i;
+    unsigned short *out = buffer;
+
+    for (i = 0; i < count; i++)
+    {
+
+        unsigned int j;
+
+        sleep(bus);
+        wait(bus);
+
+        for (j = 0; j < 256; j++)
+            io_outw(bus->data, *out++);
+
+    }
+
+    return i;
+
+}
+
+unsigned int ide_rblock(struct base_bus *bus, unsigned int count, void *buffer)
 {
 
     struct ide_bus *b = (struct ide_bus *)bus;
@@ -165,30 +211,7 @@ unsigned int ide_read_block(struct base_bus *bus, unsigned int count, void *buff
 
 }
 
-static unsigned int ide_read_blocks(struct ide_bus *bus, unsigned int count, void *buffer)
-{
-
-    unsigned int i;
-    unsigned short *out = buffer;
-
-    for (i = 0; i < count; i++)
-    {
-
-        unsigned int j;
-
-        ide_sleep(bus);
-        wait(bus);
-
-        for (j = 0; j < 256; j++)
-            *out++ = io_inw(bus->data);
-
-    }
-
-    return i;
-
-}
-
-unsigned int ide_write_block(struct base_bus *bus, unsigned int count, void *buffer)
+unsigned int ide_wblock(struct base_bus *bus, unsigned int count, void *buffer)
 {
 
     struct ide_bus *b = (struct ide_bus *)bus;
@@ -202,128 +225,105 @@ unsigned int ide_write_block(struct base_bus *bus, unsigned int count, void *buf
 
 }
 
-static unsigned int ide_write_blocks(struct ide_bus *bus, unsigned int count, void *buffer)
-{
-
-    unsigned int i;
-    unsigned short *out = buffer;
-
-    for (i = 0; i < count; i++)
-    {
-
-        unsigned int j;
-
-        ide_sleep(bus);
-        wait(bus);
-
-        for (j = 0; j < 256; j++)
-            io_outw(bus->data, *out++);
-
-    }
-
-    return i;
-
-}
-
-unsigned int ide_read_lba28(struct base_bus *bus, unsigned int slave, unsigned int sector, unsigned int count, void *buffer)
+unsigned int ide_rlba28(struct base_bus *bus, unsigned int slave, unsigned int sector, unsigned int count, void *buffer)
 {
 
     struct ide_bus *b = (struct ide_bus *)bus;
 
-    ide_select(b, 0xE0 | ((sector >> 24) & 0x0F), slave);
-    ide_set_lba(b, count, sector, sector >> 8, sector >> 16);
-    ide_set_command(b, IDE_CONTROL_PIO28READ);
+    select(b, 0xE0 | ((sector >> 24) & 0x0F), slave);
+    setlba(b, count, sector, sector >> 8, sector >> 16);
+    setcommand(b, IDE_CONTROL_PIO28READ);
 
-    return ide_read_blocks(b, count, buffer) * 512;
+    return rblocks(b, count, buffer) * 512;
 
 }
 
-void ide_read_lba28_async(struct base_bus *bus, unsigned int slave, unsigned int sector, unsigned int count, void *buffer)
+void ide_rlba28a(struct base_bus *bus, unsigned int slave, unsigned int sector, unsigned int count, void *buffer)
 {
 
     struct ide_bus *b = (struct ide_bus *)bus;
 
-    ide_select(b, 0xE0 | ((sector >> 24) & 0x0F), slave);
-    ide_set_lba(b, count, sector, sector >> 8, sector >> 16);
-    ide_set_command(b, IDE_CONTROL_PIO28READ);
+    select(b, 0xE0 | ((sector >> 24) & 0x0F), slave);
+    setlba(b, count, sector, sector >> 8, sector >> 16);
+    setcommand(b, IDE_CONTROL_PIO28READ);
 
 }
 
-unsigned int ide_write_lba28(struct base_bus *bus, unsigned int slave, unsigned int sector, unsigned int count, void *buffer)
+unsigned int ide_wlba28(struct base_bus *bus, unsigned int slave, unsigned int sector, unsigned int count, void *buffer)
 {
 
     struct ide_bus *b = (struct ide_bus *)bus;
 
-    ide_select(b, 0xE0 | ((sector >> 24) & 0x0F), slave);
-    ide_set_lba(b, count, sector, sector >> 8, sector >> 16);
-    ide_set_command(b, IDE_CONTROL_PIO28WRITE);
+    select(b, 0xE0 | ((sector >> 24) & 0x0F), slave);
+    setlba(b, count, sector, sector >> 8, sector >> 16);
+    setcommand(b, IDE_CONTROL_PIO28WRITE);
 
-    return ide_write_blocks(b, count, buffer) * 512;
+    return wblocks(b, count, buffer) * 512;
 
 }
 
-void ide_write_lba28_async(struct base_bus *bus, unsigned int slave, unsigned int sector, unsigned int count, void *buffer)
+void ide_wlba28a(struct base_bus *bus, unsigned int slave, unsigned int sector, unsigned int count, void *buffer)
 {
 
     struct ide_bus *b = (struct ide_bus *)bus;
 
-    ide_select(b, 0xE0 | ((sector >> 24) & 0x0F), slave);
-    ide_set_lba(b, count, sector, sector >> 8, sector >> 16);
-    ide_set_command(b, IDE_CONTROL_PIO28WRITE);
+    select(b, 0xE0 | ((sector >> 24) & 0x0F), slave);
+    setlba(b, count, sector, sector >> 8, sector >> 16);
+    setcommand(b, IDE_CONTROL_PIO28WRITE);
 
 }
 
-unsigned int ide_read_lba48(struct base_bus *bus, unsigned int slave, unsigned int sectorlow, unsigned int sectorhigh, unsigned int count, void *buffer)
+unsigned int ide_rlba48(struct base_bus *bus, unsigned int slave, unsigned int sectorlow, unsigned int sectorhigh, unsigned int count, void *buffer)
 {
 
     struct ide_bus *b = (struct ide_bus *)bus;
 
-    ide_select(b, 0x40, slave);
-    ide_set_lba2(b, count >> 8, sectorhigh, sectorhigh >> 8, sectorhigh >> 16);
-    ide_set_lba(b, count, sectorlow, sectorlow >> 8, sectorlow >> 16);
-    ide_set_command(b, IDE_CONTROL_PIO48READ);
+    select(b, 0x40, slave);
+    setlba2(b, count >> 8, sectorhigh, sectorhigh >> 8, sectorhigh >> 16);
+    setlba(b, count, sectorlow, sectorlow >> 8, sectorlow >> 16);
+    setcommand(b, IDE_CONTROL_PIO48READ);
 
-    return ide_read_blocks(b, count, buffer) * 512;
+    return rblocks(b, count, buffer) * 512;
 
 }
 
-void ide_read_lba48_async(struct base_bus *bus, unsigned int slave, unsigned int sectorlow, unsigned int sectorhigh, unsigned int count, void *buffer)
+void ide_rlba48a(struct base_bus *bus, unsigned int slave, unsigned int sectorlow, unsigned int sectorhigh, unsigned int count, void *buffer)
 {
 
     struct ide_bus *b = (struct ide_bus *)bus;
 
-    ide_select(b, 0x40, slave);
-    ide_set_lba2(b, count >> 8, sectorhigh, sectorhigh >> 8, sectorhigh >> 16);
-    ide_set_lba(b, count, sectorlow, sectorlow >> 8, sectorlow >> 16);
-    ide_set_command(b, IDE_CONTROL_PIO48READ);
-    ide_sleep(b);
+    select(b, 0x40, slave);
+    setlba2(b, count >> 8, sectorhigh, sectorhigh >> 8, sectorhigh >> 16);
+    setlba(b, count, sectorlow, sectorlow >> 8, sectorlow >> 16);
+    setcommand(b, IDE_CONTROL_PIO48READ);
+    sleep(b);
 
 }
 
-unsigned int ide_write_lba48(struct base_bus *bus, unsigned int slave, unsigned int sectorlow, unsigned int sectorhigh, unsigned int count, void *buffer)
+unsigned int ide_wlba48(struct base_bus *bus, unsigned int slave, unsigned int sectorlow, unsigned int sectorhigh, unsigned int count, void *buffer)
 {
 
     struct ide_bus *b = (struct ide_bus *)bus;
 
-    ide_select(b, 0x40, slave);
-    ide_set_lba2(b, count >> 8, sectorhigh, sectorhigh >> 8, sectorhigh >> 16);
-    ide_set_lba(b, count, sectorlow, sectorlow >> 8, sectorlow >> 16);
-    ide_set_command(b, IDE_CONTROL_PIO48WRITE);
+    select(b, 0x40, slave);
+    setlba2(b, count >> 8, sectorhigh, sectorhigh >> 8, sectorhigh >> 16);
+    setlba(b, count, sectorlow, sectorlow >> 8, sectorlow >> 16);
+    setcommand(b, IDE_CONTROL_PIO48WRITE);
 
-    return ide_write_blocks(b, count, buffer) * 512;
+    return wblocks(b, count, buffer) * 512;
 
 }
 
-void ide_write_lba48_async(struct base_bus *bus, unsigned int slave, unsigned int sectorlow, unsigned int sectorhigh, unsigned int count, void *buffer)
+void ide_wlba48a(struct base_bus *bus, unsigned int slave, unsigned int sectorlow, unsigned int sectorhigh, unsigned int count, void *buffer)
 {
 
     struct ide_bus *b = (struct ide_bus *)bus;
 
-    ide_select(b, 0x40, slave);
-    ide_set_lba2(b, count >> 8, sectorhigh, sectorhigh >> 8, sectorhigh >> 16);
-    ide_set_lba(b, count, sectorlow, sectorlow >> 8, sectorlow >> 16);
-    ide_set_command(b, IDE_CONTROL_PIO48WRITE);
-    ide_sleep(b);
+    select(b, 0x40, slave);
+    setlba2(b, count >> 8, sectorhigh, sectorhigh >> 8, sectorhigh >> 16);
+    setlba(b, count, sectorlow, sectorlow >> 8, sectorlow >> 16);
+    setcommand(b, IDE_CONTROL_PIO48WRITE);
+    sleep(b);
 
 }
 
@@ -335,10 +335,10 @@ static unsigned int detect(struct ide_bus *bus, unsigned int slave)
     unsigned char status;
     unsigned short lba;
 
-    ide_select(bus, 0xA0, slave);
-    ide_set_lba(bus, 0, 0, 0, 0);
-    ide_set_command(bus, IDE_CONTROL_IDATA);
-    ide_read_blocks(bus, 1, buffer);
+    select(bus, 0xA0, slave);
+    setlba(bus, 0, 0, 0, 0);
+    setcommand(bus, IDE_CONTROL_IDATA);
+    rblocks(bus, 1, buffer);
 
     status = io_inb(bus->data + IDE_DATA_COMMAND);
 
@@ -366,12 +366,12 @@ static unsigned int detect(struct ide_bus *bus, unsigned int slave)
 }
 */
 
-static void setup(struct base_bus *self)
+static void bus_setup(struct base_bus *self)
 {
 
 }
 
-static unsigned int device_next_p(struct base_bus *self, unsigned int id)
+static unsigned int bus_next_p(struct base_bus *self, unsigned int id)
 {
 
     if (id == 0)
@@ -381,21 +381,21 @@ static unsigned int device_next_p(struct base_bus *self, unsigned int id)
 
 }
 
-static unsigned int device_next_s(struct base_bus *self, unsigned int id)
+static unsigned int bus_next_s(struct base_bus *self, unsigned int id)
 {
 
     return 0;
 
 }
 
-static unsigned short device_irq(struct base_bus *self, unsigned int id)
+static unsigned short bus_irq(struct base_bus *self, unsigned int id)
 {
 
     return (id) ? IDE_IRQ_SECONDARY : IDE_IRQ_PRIMARY;
 
 }
 
-static unsigned int check(struct base_bus *bus, unsigned int id)
+static unsigned int driver_check(struct base_bus *bus, unsigned int id)
 {
 
     if (bus->type != PCI_BUS_TYPE)
@@ -405,7 +405,7 @@ static unsigned int check(struct base_bus *bus, unsigned int id)
 
 }
 
-static void attach(struct base_bus *bus, unsigned int id)
+static void driver_attach(struct base_bus *bus, unsigned int id)
 {
 
     unsigned int bar0 = pci_ind(bus, id, PCI_CONFIG_BAR0);
@@ -415,8 +415,8 @@ static void attach(struct base_bus *bus, unsigned int id)
     unsigned int bar4 = pci_ind(bus, id, PCI_CONFIG_BAR4);
 
     base_init_device(&device, bus, id);
-    base_init_bus(&p.base, IDE_BUS_TYPE, "ide0", setup, device_next_p, device_irq);
-    base_init_bus(&s.base, IDE_BUS_TYPE, "ide1", setup, device_next_s, device_irq);
+    base_init_bus(&p.base, IDE_BUS_TYPE, "ide0", bus_setup, bus_next_p, bus_irq);
+    base_init_bus(&s.base, IDE_BUS_TYPE, "ide1", bus_setup, bus_next_s, bus_irq);
 
     p.data = (bar0 & 0xFFFFFFFC) + 0x1F0 * (!bar0);
     p.control = (bar1 & 0xFFFFFFFC) + 0x3F6 * (!bar1);
@@ -430,7 +430,7 @@ static void attach(struct base_bus *bus, unsigned int id)
 
 }
 
-static void detach(struct base_bus *bus, unsigned int id)
+static void driver_detach(struct base_bus *bus, unsigned int id)
 {
 
     base_unregister_bus(&p.base);
@@ -441,7 +441,7 @@ static void detach(struct base_bus *bus, unsigned int id)
 void init()
 {
 
-    base_init_driver(&driver, "ide", check, attach, detach);
+    base_init_driver(&driver, "ide", driver_check, driver_attach, driver_detach);
     base_register_driver(&driver);
 
 }

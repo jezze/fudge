@@ -175,7 +175,17 @@ static void write(char c)
 
 }
 
-static unsigned int read_terminal_data(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static void handleirq(unsigned int irq, struct base_bus *bus, unsigned int id)
+{
+
+    char data = read();
+
+    buffer_write_cfifo(&cfifo, 1, &data);
+    scheduler_rendezvous_unsleep(&rdata);
+
+}
+
+static unsigned int iterminal_rdata(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     count = buffer_read_cfifo(&cfifo, count, buffer);
@@ -186,7 +196,7 @@ static unsigned int read_terminal_data(struct base_bus *bus, unsigned int id, un
 
 }
 
-static unsigned int write_terminal_data(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int iterminal_wdata(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     unsigned char *b = buffer;
@@ -199,17 +209,7 @@ static unsigned int write_terminal_data(struct base_bus *bus, unsigned int id, u
 
 }
 
-static void handle_irq(unsigned int irq, struct base_bus *bus, unsigned int id)
-{
-
-    char data = read();
-
-    buffer_write_cfifo(&cfifo, 1, &data);
-    scheduler_rendezvous_unsleep(&rdata);
-
-}
-
-static unsigned int check(struct base_bus *bus, unsigned int id)
+static unsigned int driver_check(struct base_bus *bus, unsigned int id)
 {
 
     if (bus->type != PLATFORM_BUS_TYPE)
@@ -219,16 +219,16 @@ static unsigned int check(struct base_bus *bus, unsigned int id)
 
 }
 
-static void attach(struct base_bus *bus, unsigned int id)
+static void driver_attach(struct base_bus *bus, unsigned int id)
 {
 
     base_init_device(&device, bus, id);
     base_terminal_init_node(&node, &device, &iterminal);
     base_terminal_register_node(&node);
     buffer_init_cfifo(&cfifo, 512, &buffer);
-    pic_set_routine(bus, id, handle_irq);
+    pic_set_routine(bus, id, handleirq);
 
-    io = platform_get_base(bus, id);
+    io = platform_getbase(bus, id);
 
     io_outb(io + UART_REGISTER_IER, UART_IER_NULL);
     io_outb(io + UART_REGISTER_LCR, UART_LCR_5BITS | UART_LCR_1STOP | UART_LCR_NOPARITY);
@@ -241,7 +241,7 @@ static void attach(struct base_bus *bus, unsigned int id)
 
 }
 
-static void detach(struct base_bus *bus, unsigned int id)
+static void driver_detach(struct base_bus *bus, unsigned int id)
 {
 
     pic_unset_routine(bus, id);
@@ -252,9 +252,9 @@ static void detach(struct base_bus *bus, unsigned int id)
 void init()
 {
 
-    base_terminal_init_interface(&iterminal, read_terminal_data, write_terminal_data);
+    base_terminal_init_interface(&iterminal, iterminal_rdata, iterminal_wdata);
     base_terminal_register_interface(&iterminal);
-    base_init_driver(&driver, "uart", check, attach, detach);
+    base_init_driver(&driver, "uart", driver_check, driver_attach, driver_detach);
     base_register_driver(&driver);
 
 }

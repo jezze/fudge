@@ -2,7 +2,7 @@
 #include <x86/arch/mmu.h>
 #include "acpi.h"
 
-static struct acpi_rsdp *find_rsdp()
+static struct acpi_rsdp *findrsdp()
 {
 
     unsigned long rsdp;
@@ -32,11 +32,11 @@ static struct acpi_rsdp *find_rsdp()
 
 }
 
-struct acpi_sdth *acpi_find_header(char *name)
+struct acpi_sdth *acpi_findheader(char *name)
 {
 
     unsigned int i;
-    struct acpi_rsdp *rsdp = find_rsdp();
+    struct acpi_rsdp *rsdp = findrsdp();
     unsigned int entries = (rsdp->rsdt->base.length - sizeof (struct acpi_sdth)) / 4;
 
     for (i = 0; i < entries; i++)
@@ -54,7 +54,7 @@ struct acpi_sdth *acpi_find_header(char *name)
 void init()
 {
 
-    struct acpi_rsdp *rsdp = find_rsdp();
+    struct acpi_rsdp *rsdp = findrsdp();
 
     if (!rsdp)
         return;

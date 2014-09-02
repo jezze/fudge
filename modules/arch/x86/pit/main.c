@@ -50,19 +50,19 @@ static unsigned short divisor;
 static unsigned int jiffies;
 static unsigned short io;
 
-static void add_duration(struct base_bus *bus, unsigned int id, unsigned int duration)
-{
-
-}
-
-static void handle_irq(unsigned int irq, struct base_bus *bus, unsigned int id)
+static void handleirq(unsigned int irq, struct base_bus *bus, unsigned int id)
 {
 
     jiffies += 1;
 
 }
 
-static unsigned int check(struct base_bus *bus, unsigned int id)
+static void itimer_addduration(struct base_bus *bus, unsigned int id, unsigned int duration)
+{
+
+}
+
+static unsigned int driver_check(struct base_bus *bus, unsigned int id)
 {
 
     if (bus->type != PLATFORM_BUS_TYPE)
@@ -72,15 +72,15 @@ static unsigned int check(struct base_bus *bus, unsigned int id)
 
 }
 
-static void attach(struct base_bus *bus, unsigned int id)
+static void driver_attach(struct base_bus *bus, unsigned int id)
 {
 
     base_init_device(&device, bus, id);
     base_timer_init_node(&node, &device, &itimer);
     base_timer_register_node(&node);
-    pic_set_routine(bus, id, handle_irq);
+    pic_set_routine(bus, id, handleirq);
 
-    io = platform_get_base(bus, id);
+    io = platform_getbase(bus, id);
 
     io_outb(io + PIT_REGISTER_COMMAND, PIT_COMMAND_COUNTER0 | PIT_COMMAND_BOTH | PIT_COMMAND_MODE3 | PIT_COMMAND_BINARY);
     io_outb(io + PIT_REGISTER_COUNTER0, divisor >> 0);
@@ -88,7 +88,7 @@ static void attach(struct base_bus *bus, unsigned int id)
 
 }
 
-static void detach(struct base_bus *bus, unsigned int id)
+static void driver_detach(struct base_bus *bus, unsigned int id)
 {
 
     pic_unset_routine(bus, id);
@@ -99,9 +99,9 @@ static void detach(struct base_bus *bus, unsigned int id)
 void init()
 {
 
-    base_timer_init_interface(&itimer, add_duration);
+    base_timer_init_interface(&itimer, itimer_addduration);
     base_timer_register_interface(&itimer);
-    base_init_driver(&driver, "pit", check, attach, detach);
+    base_init_driver(&driver, "pit", driver_check, driver_attach, driver_detach);
     base_register_driver(&driver);
 
 }

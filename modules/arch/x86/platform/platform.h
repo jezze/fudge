@@ -6,4 +6,4 @@
 #define PLATFORM_UART3_DEVICE_TYPE      0x0005
 #define PLATFORM_UART4_DEVICE_TYPE      0x0006
 
-unsigned short platform_get_base(struct base_bus *bus, unsigned int id);
+unsigned short platform_getbase(struct base_bus *bus, unsigned int id);

@@ -92,4 +92,4 @@ struct acpi_rsdp
 
 };
 
-struct acpi_sdth *acpi_find_header(char *name);
+struct acpi_sdth *acpi_findheader(char *name);

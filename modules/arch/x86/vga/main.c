@@ -175,27 +175,14 @@ static void clear(struct base_bus *bus, unsigned int id, unsigned int offset)
 
 }
 
-static void set_mode(struct base_bus *bus, unsigned int id, unsigned int xres, unsigned int yres, unsigned int bpp)
-{
-
-    io_inb(VGA_REGISTER_FCCCTRL);
-    io_outb(VGA_REGISTER_ARINDEX, VGA_ARINDEX_DISABLE);
-
-    vga_set_registers((unsigned char *)g320x200x256, 0);
-
-    io_inb(VGA_REGISTER_FCCCTRL);
-    io_outb(VGA_REGISTER_ARINDEX, VGA_ARINDEX_ENABLE);
-
-}
-
-static unsigned int read_terminal_data(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int iterminal_rdata(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     return 0;
 
 }
 
-static unsigned int write_terminal_data(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int iterminal_wdata(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct vga_character *memory = taddress;
@@ -248,7 +235,20 @@ static unsigned int write_terminal_data(struct base_bus *bus, unsigned int id, u
 
 }
 
-static unsigned int read_video_data(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static void ivideo_setmode(struct base_bus *bus, unsigned int id, unsigned int xres, unsigned int yres, unsigned int bpp)
+{
+
+    io_inb(VGA_REGISTER_FCCCTRL);
+    io_outb(VGA_REGISTER_ARINDEX, VGA_ARINDEX_DISABLE);
+
+    vga_set_registers((unsigned char *)g320x200x256, 0);
+
+    io_inb(VGA_REGISTER_FCCCTRL);
+    io_outb(VGA_REGISTER_ARINDEX, VGA_ARINDEX_ENABLE);
+
+}
+
+static unsigned int ivideo_rdata(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     unsigned int bytespp = resolution.bpp / 8;
@@ -259,7 +259,7 @@ static unsigned int read_video_data(struct base_bus *bus, unsigned int id, unsig
 
 }
 
-static unsigned int write_video_data(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int ivideo_wdata(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     unsigned int bytespp = resolution.bpp / 8;
@@ -270,7 +270,7 @@ static unsigned int write_video_data(struct base_bus *bus, unsigned int id, unsi
 
 }
 
-static unsigned int read_video_colormap(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int ivideo_rcolormap(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     char *c = buffer;
@@ -296,7 +296,7 @@ static unsigned int read_video_colormap(struct base_bus *bus, unsigned int id, u
 
 }
 
-static unsigned int write_video_colormap(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int ivideo_wcolormap(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     char *c = buffer;
@@ -322,7 +322,7 @@ static unsigned int write_video_colormap(struct base_bus *bus, unsigned int id, 
 
 }
 
-static unsigned int check(struct base_bus *bus, unsigned int id)
+static unsigned int driver_check(struct base_bus *bus, unsigned int id)
 {
 
     if (bus->type != PCI_BUS_TYPE)
@@ -332,7 +332,7 @@ static unsigned int check(struct base_bus *bus, unsigned int id)
 
 }
 
-static void attach(struct base_bus *bus, unsigned int id)
+static void driver_attach(struct base_bus *bus, unsigned int id)
 {
 
     base_init_device(&device, bus, id);
@@ -352,7 +352,7 @@ static void attach(struct base_bus *bus, unsigned int id)
 
 }
 
-static void detach(struct base_bus *bus, unsigned int id)
+static void driver_detach(struct base_bus *bus, unsigned int id)
 {
 
     base_terminal_unregister_node(&tnode);
@@ -363,11 +363,11 @@ static void detach(struct base_bus *bus, unsigned int id)
 void init()
 {
 
-    base_terminal_init_interface(&iterminal, read_terminal_data, write_terminal_data);
+    base_terminal_init_interface(&iterminal, iterminal_rdata, iterminal_wdata);
     base_terminal_register_interface(&iterminal);
-    base_video_init_interface(&ivideo, set_mode, read_video_data, write_video_data, read_video_colormap, write_video_colormap);
+    base_video_init_interface(&ivideo, ivideo_setmode, ivideo_rdata, ivideo_wdata, ivideo_rcolormap, ivideo_wcolormap);
     base_video_register_interface(&ivideo);
-    base_init_driver(&driver, "vga", check, attach, detach);
+    base_init_driver(&driver, "vga", driver_check, driver_attach, driver_detach);
     base_register_driver(&driver);
 
 }

@@ -1,7 +1,7 @@
 .code32
 
-.global cpuid_check_cpuid
-cpuid_check_cpuid:
+.global cpuid_check
+cpuid_check:
     pushf
     popl %eax
     movl %eax, %ecx
@@ -15,8 +15,8 @@ cpuid_check_cpuid:
     andl $1, %eax
     ret
 
-.global cpuid_get_data
-cpuid_get_data:
+.global cpuid_getdata
+cpuid_getdata:
     pushl %ebp
     movl %esp, %ebp
     pusha
@@ -31,8 +31,8 @@ cpuid_get_data:
     popl %ebp
     ret
 
-.global cpuid_get_vendor
-cpuid_get_vendor:
+.global cpuid_getvendor
+cpuid_getvendor:
     pushl %ebp
     movl %esp, %ebp
     pusha
@@ -46,8 +46,8 @@ cpuid_get_vendor:
     popl %ebp
     ret
 
-.global cpuid_get_brand
-cpuid_get_brand:
+.global cpuid_getbrand
+cpuid_getbrand:
     pushl %ebp
     movl %esp, %ebp
     pusha
