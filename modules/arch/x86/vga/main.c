@@ -238,6 +238,10 @@ static unsigned int iterminal_wdata(struct base_bus *bus, unsigned int id, unsig
 static void ivideo_setmode(struct base_bus *bus, unsigned int id, unsigned int xres, unsigned int yres, unsigned int bpp)
 {
 
+    resolution.x = 320;
+    resolution.y = 200;
+    resolution.bpp = 8;
+
     io_inb(VGA_REGISTER_FCCCTRL);
     io_outb(VGA_REGISTER_ARINDEX, VGA_ARINDEX_DISABLE);
 
