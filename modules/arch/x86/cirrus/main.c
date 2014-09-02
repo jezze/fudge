@@ -174,10 +174,10 @@ static void ivideo_setmode(struct base_bus *bus, unsigned int id, unsigned int x
     cardspecs.maxHorizontalCrtc = 2040;
     cardspecs.maxPixelClock4bpp = 0;
 
-    vga_init_modeinfo(&modeinfo, 19);
-    vga_init_modetiming(&modetiming, &modeinfo, &cardspecs);
-    vga_init_registers(registers, &modetiming, &modeinfo);
-    vga_set_registers(registers, 0);
+    vga_initmodeinfo(&modeinfo, 19);
+    vga_initmodetiming(&modetiming, &modeinfo, &cardspecs);
+    vga_initregisters(registers, &modetiming, &modeinfo);
+    vga_setregisters(registers, 0);
 
 }
 
@@ -222,34 +222,34 @@ static unsigned int driver_check(struct base_bus *bus, unsigned int id)
 static void driver_attach(struct base_bus *bus, unsigned int id)
 {
 
-    base_init_device(&device, bus, id);
-    base_video_init_node(&node, &device, &ivideo);
-    base_video_register_node(&node);
+    base_initdevice(&device, bus, id);
+    base_video_initnode(&node, &device, &ivideo);
+    base_video_registernode(&node);
 
 }
 
 static void driver_detach(struct base_bus *bus, unsigned int id)
 {
 
-    base_video_unregister_node(&node);
+    base_video_unregisternode(&node);
 
 }
 
 void init()
 {
 
-    base_video_init_interface(&ivideo, ivideo_setmode, ivideo_rdata, ivideo_wdata, ivideo_rcolormap, ivideo_wcolormap);
-    base_video_register_interface(&ivideo);
-    base_init_driver(&driver, "cirrus", driver_check, driver_attach, driver_detach);
-    base_register_driver(&driver);
+    base_video_initinterface(&ivideo, ivideo_setmode, ivideo_rdata, ivideo_wdata, ivideo_rcolormap, ivideo_wcolormap);
+    base_video_registerinterface(&ivideo);
+    base_initdriver(&driver, "cirrus", driver_check, driver_attach, driver_detach);
+    base_registerdriver(&driver);
 
 }
 
 void destroy()
 {
 
-    base_video_unregister_interface(&ivideo);
-    base_unregister_driver(&driver);
+    base_video_unregisterinterface(&ivideo);
+    base_unregisterdriver(&driver);
 
 }
 

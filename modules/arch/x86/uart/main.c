@@ -180,7 +180,7 @@ static void handleirq(unsigned int irq, struct base_bus *bus, unsigned int id)
 
     char data = read();
 
-    buffer_write_cfifo(&cfifo, 1, &data);
+    buffer_wcfifo(&cfifo, 1, &data);
     scheduler_rendezvous_unsleep(&rdata);
 
 }
@@ -188,7 +188,7 @@ static void handleirq(unsigned int irq, struct base_bus *bus, unsigned int id)
 static unsigned int iterminal_rdata(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    count = buffer_read_cfifo(&cfifo, count, buffer);
+    count = buffer_rcfifo(&cfifo, count, buffer);
 
     scheduler_rendezvous_sleep(&rdata, !count);
 
@@ -222,11 +222,11 @@ static unsigned int driver_check(struct base_bus *bus, unsigned int id)
 static void driver_attach(struct base_bus *bus, unsigned int id)
 {
 
-    base_init_device(&device, bus, id);
-    base_terminal_init_node(&node, &device, &iterminal);
-    base_terminal_register_node(&node);
-    buffer_init_cfifo(&cfifo, 512, &buffer);
-    pic_set_routine(bus, id, handleirq);
+    base_initdevice(&device, bus, id);
+    base_terminal_initnode(&node, &device, &iterminal);
+    base_terminal_registernode(&node);
+    buffer_initcfifo(&cfifo, 512, &buffer);
+    pic_setroutine(bus, id, handleirq);
 
     io = platform_getbase(bus, id);
 
@@ -244,26 +244,26 @@ static void driver_attach(struct base_bus *bus, unsigned int id)
 static void driver_detach(struct base_bus *bus, unsigned int id)
 {
 
-    pic_unset_routine(bus, id);
-    base_terminal_unregister_node(&node);
+    pic_unsetroutine(bus, id);
+    base_terminal_unregisternode(&node);
 
 }
 
 void init()
 {
 
-    base_terminal_init_interface(&iterminal, iterminal_rdata, iterminal_wdata);
-    base_terminal_register_interface(&iterminal);
-    base_init_driver(&driver, "uart", driver_check, driver_attach, driver_detach);
-    base_register_driver(&driver);
+    base_terminal_initinterface(&iterminal, iterminal_rdata, iterminal_wdata);
+    base_terminal_registerinterface(&iterminal);
+    base_initdriver(&driver, "uart", driver_check, driver_attach, driver_detach);
+    base_registerdriver(&driver);
 
 }
 
 void destroy()
 {
 
-    base_terminal_unregister_interface(&iterminal);
-    base_unregister_driver(&driver);
+    base_terminal_unregisterinterface(&iterminal);
+    base_unregisterdriver(&driver);
 
 }
 

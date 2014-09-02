@@ -74,15 +74,15 @@ static unsigned short bus_irq(struct base_bus *self, unsigned int id)
 void init()
 {
 
-    base_init_bus(&bus, PLATFORM_BUS_TYPE, "platform", bus_setup, bus_next, bus_irq);
-    base_register_bus(&bus);
+    base_initbus(&bus, PLATFORM_BUS_TYPE, "platform", bus_setup, bus_next, bus_irq);
+    base_registerbus(&bus);
 
 }
 
 void destroy()
 {
 
-    base_unregister_bus(&bus);
+    base_unregisterbus(&bus);
 
 }
 

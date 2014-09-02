@@ -15,7 +15,7 @@ static unsigned int size(unsigned int id)
 
 }
 
-static unsigned int read(struct gfx_surface *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int surface_read(struct gfx_surface *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct pcx_surface *surface = (struct pcx_surface *)self;
@@ -56,7 +56,7 @@ static unsigned int read(struct gfx_surface *self, unsigned int offset, unsigned
 
 }
 
-static unsigned int write(struct gfx_surface *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int surface_write(struct gfx_surface *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     return 0;
@@ -83,11 +83,11 @@ void pcx_load(struct pcx_surface *surface)
 
 }
 
-void pcx_init_surface(struct pcx_surface *surface, unsigned int id)
+void pcx_initsurface(struct pcx_surface *surface, unsigned int id)
 {
 
     memory_clear(surface, sizeof (struct pcx_surface));
-    gfx_init_surface(&surface->base, read, write);
+    gfx_initsurface(&surface->base, surface_read, surface_write);
 
     surface->id = id;
 

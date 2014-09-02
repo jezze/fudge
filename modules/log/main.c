@@ -26,7 +26,7 @@ unsigned int log_write(unsigned int count, char *buffer)
 
 }
 
-unsigned int log_write_number(unsigned int number, unsigned int base)
+unsigned int log_writenumber(unsigned int number, unsigned int base)
 {
 
     char n[32];
@@ -36,7 +36,7 @@ unsigned int log_write_number(unsigned int number, unsigned int base)
 
 }
 
-unsigned int log_write_string(char *buffer)
+unsigned int log_writestring(char *buffer)
 {
 
     return log_write(ascii_length(buffer), buffer);
@@ -48,8 +48,8 @@ void init()
 
     doffset = 0;
 
-    system_init_stream(&messages, "messages");
-    system_register_node(&messages);
+    system_initstream(&messages, "messages");
+    system_registernode(&messages);
 
     messages.read = messages_read;
 
@@ -58,7 +58,7 @@ void init()
 void destroy()
 {
 
-    system_unregister_node(&messages);
+    system_unregisternode(&messages);
 
 }
 

@@ -8,26 +8,6 @@ static struct list free;
 static struct list used;
 static struct list blocked;
 
-struct task *scheduler_find_used_task()
-{
-
-    if (!used.tail)
-        return 0;
-
-    return used.tail->data;
-
-}
-
-struct task *scheduler_find_free_task()
-{
-
-    if (!free.tail)
-        return 0;
-
-    return free.tail->data;
-
-}
-
 unsigned int scheduler_rendezvous_asleep(struct scheduler_rendezvous *rendezvous)
 {
 
@@ -44,7 +24,7 @@ void scheduler_rendezvous_sleep(struct scheduler_rendezvous *rendezvous, unsigne
     if (!condition)
         return;
 
-    rendezvous->task = scheduler_find_used_task();
+    rendezvous->task = scheduler_findusedtask();
 
     scheduler_block(rendezvous->task);
 
@@ -60,6 +40,26 @@ void scheduler_rendezvous_unsleep(struct scheduler_rendezvous *rendezvous)
 
     rendezvous->task->registers.ip -= 7;
     rendezvous->task = 0;
+
+}
+
+struct task *scheduler_findusedtask()
+{
+
+    if (!used.tail)
+        return 0;
+
+    return used.tail->data;
+
+}
+
+struct task *scheduler_findfreetask()
+{
+
+    if (!free.tail)
+        return 0;
+
+    return free.tail->data;
 
 }
 

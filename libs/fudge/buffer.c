@@ -1,7 +1,7 @@
 #include "memory.h"
 #include "buffer.h"
 
-unsigned int buffer_read_cfifo(struct buffer_cfifo *cfifo, unsigned int count, void *buffer)
+unsigned int buffer_rcfifo(struct buffer_cfifo *cfifo, unsigned int count, void *buffer)
 {
 
     unsigned char *b = buffer;
@@ -24,7 +24,7 @@ unsigned int buffer_read_cfifo(struct buffer_cfifo *cfifo, unsigned int count, v
 
 }
 
-unsigned int buffer_write_cfifo(struct buffer_cfifo *cfifo, unsigned int count, void *buffer)
+unsigned int buffer_wcfifo(struct buffer_cfifo *cfifo, unsigned int count, void *buffer)
 {
 
     unsigned char *b = buffer;
@@ -47,7 +47,7 @@ unsigned int buffer_write_cfifo(struct buffer_cfifo *cfifo, unsigned int count, 
 
 }
 
-void buffer_init_cfifo(struct buffer_cfifo *cfifo, unsigned int size, void *buffer)
+void buffer_initcfifo(struct buffer_cfifo *cfifo, unsigned int size, void *buffer)
 {
 
     memory_clear(cfifo, sizeof (struct buffer_cfifo));

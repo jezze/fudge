@@ -111,9 +111,9 @@ static unsigned int driver_check(struct base_bus *bus, unsigned int id)
 static void driver_attach(struct base_bus *bus, unsigned int id)
 {
 
-    base_init_device(&device, bus, id);
-    base_video_init_node(&node, &device, &ivideo);
-    base_video_register_node(&node);
+    base_initdevice(&device, bus, id);
+    base_video_initnode(&node, &device, &ivideo);
+    base_video_registernode(&node);
 
     bank = (void *)0xA0000;
     lfb = (void *)(unsigned long)pci_ind(bus, id, PCI_CONFIG_BAR0);
@@ -130,25 +130,25 @@ static void driver_attach(struct base_bus *bus, unsigned int id)
 static void driver_detach(struct base_bus *bus, unsigned int id)
 {
 
-    base_video_unregister_node(&node);
+    base_video_unregisternode(&node);
 
 }
 
 void init()
 {
 
-    base_video_init_interface(&ivideo, ivideo_setmode, ivideo_rdata, ivideo_wdata, 0, 0);
-    base_video_register_interface(&ivideo);
-    base_init_driver(&driver, "bga", driver_check, driver_attach, driver_detach);
-    base_register_driver(&driver);
+    base_video_initinterface(&ivideo, ivideo_setmode, ivideo_rdata, ivideo_wdata, 0, 0);
+    base_video_registerinterface(&ivideo);
+    base_initdriver(&driver, "bga", driver_check, driver_attach, driver_detach);
+    base_registerdriver(&driver);
 
 }
 
 void destroy()
 {
 
-    base_video_unregister_interface(&ivideo);
-    base_unregister_driver(&driver);
+    base_video_unregisterinterface(&ivideo);
+    base_unregisterdriver(&driver);
 
 }
 

@@ -2,7 +2,7 @@
 #include "gfx.h"
 #include "vga.h"
 
-static unsigned int read(struct gfx_surface *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int surface_read(struct gfx_surface *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct vga_surface *surface = (struct vga_surface *)self;
@@ -11,7 +11,7 @@ static unsigned int read(struct gfx_surface *self, unsigned int offset, unsigned
 
 }
 
-static unsigned int write(struct gfx_surface *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int surface_write(struct gfx_surface *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct vga_surface *surface = (struct vga_surface *)self;
@@ -25,11 +25,11 @@ void vga_load(struct vga_surface *surface)
 
 }
 
-void vga_init_surface(struct vga_surface *surface, unsigned int id)
+void vga_initsurface(struct vga_surface *surface, unsigned int id)
 {
 
     memory_clear(surface, sizeof (struct vga_surface));
-    gfx_init_surface(&surface->base, read, write);
+    gfx_initsurface(&surface->base, surface_read, surface_write);
 
     surface->id = id;
 

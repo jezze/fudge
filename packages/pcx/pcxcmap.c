@@ -8,7 +8,7 @@ void main()
 {
 
     call_open(CALL_I0);
-    pcx_init_surface(&pcx, CALL_I0);
+    pcx_initsurface(&pcx, CALL_I0);
     call_close(CALL_I0);
     pcx_load(&pcx);
     call_open(CALL_O0);

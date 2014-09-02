@@ -414,9 +414,9 @@ static void driver_attach(struct base_bus *bus, unsigned int id)
     unsigned int bar3 = pci_ind(bus, id, PCI_CONFIG_BAR3);
     unsigned int bar4 = pci_ind(bus, id, PCI_CONFIG_BAR4);
 
-    base_init_device(&device, bus, id);
-    base_init_bus(&p.base, IDE_BUS_TYPE, "ide0", bus_setup, bus_next_p, bus_irq);
-    base_init_bus(&s.base, IDE_BUS_TYPE, "ide1", bus_setup, bus_next_s, bus_irq);
+    base_initdevice(&device, bus, id);
+    base_initbus(&p.base, IDE_BUS_TYPE, "ide0", bus_setup, bus_next_p, bus_irq);
+    base_initbus(&s.base, IDE_BUS_TYPE, "ide1", bus_setup, bus_next_s, bus_irq);
 
     p.data = (bar0 & 0xFFFFFFFC) + 0x1F0 * (!bar0);
     p.control = (bar1 & 0xFFFFFFFC) + 0x3F6 * (!bar1);
@@ -425,31 +425,31 @@ static void driver_attach(struct base_bus *bus, unsigned int id)
     s.control = (bar3 & 0xFFFFFFFC) + 0x376 * (!bar3);
     s.busmaster = (bar4 & 0xFFFFFFFC) + 8;
 
-    base_register_bus(&p.base);
-    base_register_bus(&s.base);
+    base_registerbus(&p.base);
+    base_registerbus(&s.base);
 
 }
 
 static void driver_detach(struct base_bus *bus, unsigned int id)
 {
 
-    base_unregister_bus(&p.base);
-    base_unregister_bus(&s.base);
+    base_unregisterbus(&p.base);
+    base_unregisterbus(&s.base);
 
 }
 
 void init()
 {
 
-    base_init_driver(&driver, "ide", driver_check, driver_attach, driver_detach);
-    base_register_driver(&driver);
+    base_initdriver(&driver, "ide", driver_check, driver_attach, driver_detach);
+    base_registerdriver(&driver);
 
 }
 
 void destroy()
 {
 
-    base_unregister_driver(&driver);
+    base_unregisterdriver(&driver);
 
 }
 

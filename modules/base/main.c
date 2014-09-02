@@ -11,7 +11,7 @@
 #include "timer.h"
 #include "video.h"
 
-void base_register_bus(struct base_bus *bus)
+void base_registerbus(struct base_bus *bus)
 {
 
     resource_register(&bus->resource);
@@ -20,7 +20,7 @@ void base_register_bus(struct base_bus *bus)
 
 }
 
-void base_register_driver(struct base_driver *driver)
+void base_registerdriver(struct base_driver *driver)
 {
 
     struct resource *current = 0;
@@ -31,7 +31,7 @@ void base_register_driver(struct base_driver *driver)
         struct base_bus *bus = current->data;
         unsigned int id = 0;
 
-        while ((id = bus->device_next(bus, id)))
+        while ((id = bus->next(bus, id)))
         {
 
             if (!driver->check(bus, id))
@@ -47,21 +47,21 @@ void base_register_driver(struct base_driver *driver)
 
 }
 
-void base_register_interface(struct base_interface *interface)
+void base_registerinterface(struct base_interface *interface)
 {
 
     resource_register(&interface->resource);
 
 }
 
-void base_unregister_bus(struct base_bus *bus)
+void base_unregisterbus(struct base_bus *bus)
 {
 
     resource_unregister(&bus->resource);
 
 }
 
-void base_unregister_driver(struct base_driver *driver)
+void base_unregisterdriver(struct base_driver *driver)
 {
 
     struct resource *current = 0;
@@ -72,7 +72,7 @@ void base_unregister_driver(struct base_driver *driver)
         struct base_bus *bus = current->data;
         unsigned int id = 0;
 
-        while ((id = bus->device_next(bus, id)))
+        while ((id = bus->next(bus, id)))
         {
 
             if (!driver->check(bus, id))
@@ -88,14 +88,14 @@ void base_unregister_driver(struct base_driver *driver)
 
 }
 
-void base_unregister_interface(struct base_interface *interface)
+void base_unregisterinterface(struct base_interface *interface)
 {
 
     resource_unregister(&interface->resource);
 
 }
 
-void base_init_bus(struct base_bus *bus, unsigned int type, const char *name, void (*setup)(struct base_bus *self), unsigned int (*device_next)(struct base_bus *self, unsigned int id), unsigned short (*device_irq)(struct base_bus *self, unsigned int id))
+void base_initbus(struct base_bus *bus, unsigned int type, const char *name, void (*setup)(struct base_bus *self), unsigned int (*next)(struct base_bus *self, unsigned int id), unsigned short (*irq)(struct base_bus *self, unsigned int id))
 {
 
     memory_clear(bus, sizeof (struct base_bus));
@@ -104,12 +104,12 @@ void base_init_bus(struct base_bus *bus, unsigned int type, const char *name, vo
     bus->type = type;
     bus->name = name;
     bus->setup = setup;
-    bus->device_next = device_next;
-    bus->device_irq = device_irq;
+    bus->next = next;
+    bus->irq = irq;
 
 }
 
-void base_init_driver(struct base_driver *driver, const char *name, unsigned int (*check)(struct base_bus *bus, unsigned int id), void (*attach)(struct base_bus *bus, unsigned int id), void (*detach)(struct base_bus *bus, unsigned int id))
+void base_initdriver(struct base_driver *driver, const char *name, unsigned int (*check)(struct base_bus *bus, unsigned int id), void (*attach)(struct base_bus *bus, unsigned int id), void (*detach)(struct base_bus *bus, unsigned int id))
 {
 
     memory_clear(driver, sizeof (struct base_driver));
@@ -122,7 +122,7 @@ void base_init_driver(struct base_driver *driver, const char *name, unsigned int
 
 }
 
-void base_init_interface(struct base_interface *interface, unsigned int type)
+void base_initinterface(struct base_interface *interface, unsigned int type)
 {
 
     memory_clear(interface, sizeof (struct base_interface));
@@ -132,7 +132,7 @@ void base_init_interface(struct base_interface *interface, unsigned int type)
 
 }
 
-void base_init_device(struct base_device *device, struct base_bus *bus, unsigned int id)
+void base_initdevice(struct base_device *device, struct base_bus *bus, unsigned int id)
 {
 
     memory_clear(device, sizeof (struct base_device));

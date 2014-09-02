@@ -26,7 +26,7 @@ static void execute_command(struct command *command, char *buffer)
         unsigned int index = CALL_I1 + i * 2;
 
         if (command->in[i].index.count)
-            index = CALL_I1 + ascii_read_value(buffer + command->in[i].index.index, command->in[i].index.count, 10) * 2;
+            index = CALL_I1 + ascii_rvalue(buffer + command->in[i].index.index, command->in[i].index.count, 10) * 2;
 
         if (command->in[i].path.count)
             walk_path(index, CALL_DW, command->in[i].path.count, buffer + command->in[i].path.index);
@@ -39,7 +39,7 @@ static void execute_command(struct command *command, char *buffer)
         unsigned int index = CALL_O1 + i * 2;
 
         if (command->out[i].index.count)
-            index = CALL_O1 + ascii_read_value(buffer + command->out[i].index.index, command->out[i].index.count, 10) * 2;
+            index = CALL_O1 + ascii_rvalue(buffer + command->out[i].index.index, command->out[i].index.count, 10) * 2;
 
         if (command->out[i].path.count)
             walk_path(index, CALL_DW, command->out[i].path.count, buffer + command->out[i].path.index);

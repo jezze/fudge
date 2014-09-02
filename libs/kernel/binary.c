@@ -3,7 +3,7 @@
 #include "vfs.h"
 #include "binary.h"
 
-struct binary_protocol *binary_find_protocol(struct vfs_channel *channel, unsigned int id)
+struct binary_protocol *binary_findprotocol(struct vfs_channel *channel, unsigned int id)
 {
 
     struct resource *current = 0;
@@ -22,15 +22,15 @@ struct binary_protocol *binary_find_protocol(struct vfs_channel *channel, unsign
 
 }
 
-void binary_init_protocol(struct binary_protocol *protocol, unsigned int (*match)(struct vfs_channel *channel, unsigned int id), unsigned long (*find_symbol)(struct vfs_channel *channel, unsigned int id, unsigned int count, const char *symbol), unsigned long (*copy_program)(struct vfs_channel *channel, unsigned int id), unsigned int (*relocate)(struct vfs_channel *channel, unsigned int id, unsigned int address))
+void binary_initprotocol(struct binary_protocol *protocol, unsigned int (*match)(struct vfs_channel *channel, unsigned int id), unsigned long (*findsymbol)(struct vfs_channel *channel, unsigned int id, unsigned int count, const char *symbol), unsigned long (*copyprogram)(struct vfs_channel *channel, unsigned int id), unsigned int (*relocate)(struct vfs_channel *channel, unsigned int id, unsigned int address))
 {
 
     memory_clear(protocol, sizeof (struct binary_protocol));
     resource_init(&protocol->resource, BINARY_RESOURCE_PROTOCOL, protocol);
 
     protocol->match = match;
-    protocol->find_symbol = find_symbol;
-    protocol->copy_program = copy_program;
+    protocol->findsymbol = findsymbol;
+    protocol->copyprogram = copyprogram;
     protocol->relocate = relocate;
 
 }

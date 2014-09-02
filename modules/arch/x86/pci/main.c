@@ -167,15 +167,15 @@ void init()
     devices.count = 0;
     memory_clear(devices.address, sizeof (unsigned int) * 64);
 
-    base_init_bus(&bus, PCI_BUS_TYPE, "pci", bus_setup, bus_next, bus_irq);
-    base_register_bus(&bus);
+    base_initbus(&bus, PCI_BUS_TYPE, "pci", bus_setup, bus_next, bus_irq);
+    base_registerbus(&bus);
 
 }
 
 void destroy()
 {
 
-    base_unregister_bus(&bus);
+    base_unregisterbus(&bus);
 
 }
 

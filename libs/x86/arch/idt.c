@@ -1,7 +1,7 @@
 #include <kernel.h>
 #include "idt.h"
 
-void idt_set_descriptor(struct idt_pointer *pointer, enum idt_index index, void (*callback)(), unsigned short selector, enum idt_flag flags)
+void idt_setdescriptor(struct idt_pointer *pointer, enum idt_index index, void (*callback)(), unsigned short selector, enum idt_flag flags)
 {
 
     struct idt_descriptor *descriptor = (struct idt_descriptor *)(pointer->base0 | pointer->base1 << 8 | pointer->base2 << 16 | pointer->base3 << 24) + index;
@@ -17,7 +17,7 @@ void idt_set_descriptor(struct idt_pointer *pointer, enum idt_index index, void 
 
 }
 
-void idt_init_pointer(struct idt_pointer *pointer, unsigned int count, struct idt_descriptor *descriptors)
+void idt_initpointer(struct idt_pointer *pointer, unsigned int count, struct idt_descriptor *descriptors)
 {
 
     unsigned long base = (unsigned long)descriptors;

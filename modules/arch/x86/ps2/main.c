@@ -308,12 +308,12 @@ static unsigned int reset_write(struct system_node *self, unsigned int offset, u
 void init()
 {
 
-    base_init_bus(&bus, PS2_BUS_TYPE, "ps2", bus_setup, bus_next, bus_irq);
-    base_register_bus(&bus);
+    base_initbus(&bus, PS2_BUS_TYPE, "ps2", bus_setup, bus_next, bus_irq);
+    base_registerbus(&bus);
     ps2_keyboard_driver_init();
     ps2_mouse_driver_init();
-    system_init_stream(&reset, "reset");
-    system_register_node(&reset);
+    system_initstream(&reset, "reset");
+    system_registernode(&reset);
 
     reset.write = reset_write;
 
@@ -322,10 +322,10 @@ void init()
 void destroy()
 {
 
-    system_unregister_node(&reset);
+    system_unregisternode(&reset);
     ps2_keyboard_driver_destroy();
     ps2_mouse_driver_destroy();
-    base_unregister_bus(&bus);
+    base_unregisterbus(&bus);
 
 }
 

@@ -1,7 +1,7 @@
 #include <fudge.h>
 #include "gfx.h"
 
-static void gfx_fill_rectangle(struct gfx_surface *self)
+static void fillrectangle(struct gfx_surface *self)
 {
 
     char buffer[FUDGE_BSIZE];
@@ -26,7 +26,7 @@ void gfx_fill(struct gfx_surface *self)
     {
 
     case GFX_RECTANGLE:
-        gfx_fill_rectangle(self);
+        fillrectangle(self);
 
         break;
 
@@ -37,28 +37,28 @@ void gfx_fill(struct gfx_surface *self)
 
 }
 
-void gfx_set_color(struct gfx_surface *self, unsigned int color)
+void gfx_setcolor(struct gfx_surface *self, unsigned int color)
 {
 
     self->context.color = color;
 
 }
 
-void gfx_set_color_rgb(struct gfx_surface *self, unsigned char red, unsigned char green, unsigned char blue)
+void gfx_setcolorrgb(struct gfx_surface *self, unsigned char red, unsigned char green, unsigned char blue)
 {
 
     self->context.color = (red << 24) | (green << 16) | (blue << 8) | 0xFF;
 
 }
 
-void gfx_set_color_rgba(struct gfx_surface *self, unsigned char red, unsigned char green, unsigned char blue, unsigned char alpha)
+void gfx_setcolorrgba(struct gfx_surface *self, unsigned char red, unsigned char green, unsigned char blue, unsigned char alpha)
 {
 
     self->context.color = (red << 24) | (green << 16) | (blue << 8) | alpha;
 
 }
 
-void gfx_set_rectangle(struct gfx_surface *surface, unsigned int x, unsigned int y, unsigned int width, unsigned int height)
+void gfx_setrectangle(struct gfx_surface *surface, unsigned int x, unsigned int y, unsigned int width, unsigned int height)
 {
 
     surface->context.primitive = GFX_RECTANGLE;
@@ -69,7 +69,7 @@ void gfx_set_rectangle(struct gfx_surface *surface, unsigned int x, unsigned int
 
 }
 
-void gfx_write_surface(unsigned int id, struct gfx_surface *in)
+void gfx_wsurface(unsigned int id, struct gfx_surface *in)
 {
 
     unsigned int offset = 0;
@@ -91,7 +91,7 @@ void gfx_write_surface(unsigned int id, struct gfx_surface *in)
 
 }
 
-void gfx_init_context(struct gfx_context *context)
+void gfx_initcontext(struct gfx_context *context)
 {
 
     memory_clear(context, sizeof (struct gfx_context));
@@ -101,11 +101,11 @@ void gfx_init_context(struct gfx_context *context)
 
 }
 
-void gfx_init_surface(struct gfx_surface *surface, unsigned int (*read)(struct gfx_surface *self, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write)(struct gfx_surface *self, unsigned int offset, unsigned int count, void *buffer))
+void gfx_initsurface(struct gfx_surface *surface, unsigned int (*read)(struct gfx_surface *self, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write)(struct gfx_surface *self, unsigned int offset, unsigned int count, void *buffer))
 {
 
     memory_clear(surface, sizeof (struct gfx_surface));
-    gfx_init_context(&surface->context);
+    gfx_initcontext(&surface->context);
 
     surface->read = read;
     surface->write = write;

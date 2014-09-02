@@ -69,7 +69,7 @@ static void refresh(struct mtwist_state *state)
 
 }
 
-static void mtwist_seed1(struct mtwist_state *state, unsigned int seed)
+static void seed1(struct mtwist_state *state, unsigned int seed)
 {
 
     int i;
@@ -86,7 +86,7 @@ static void mtwist_seed1(struct mtwist_state *state, unsigned int seed)
 }
 
 /*
-static void mtwist_seed2(struct mtwist_state *state, unsigned int seed)
+static void seed2(struct mtwist_state *state, unsigned int seed)
 {
 
     int i;
@@ -112,7 +112,7 @@ static void mtwist_seed2(struct mtwist_state *state, unsigned int seed)
 }
 */
 
-static unsigned int mtwist_rand(struct mtwist_state *state)
+static unsigned int rand(struct mtwist_state *state)
 {
 
     unsigned int value = state->vectors[--state->current];
@@ -136,12 +136,12 @@ static double mtwist_drand(struct mtwist_state *state)
     for (i = 0; i < 32; i++)
         conv /= 2.0;
 
-    return mtwist_rand(state) * conv;
+    return rand(state) * conv;
 
 }
 */
 
-static unsigned int read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int root_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     unsigned int o = 0;
@@ -151,7 +151,7 @@ static unsigned int read(struct system_node *self, unsigned int offset, unsigned
         return 0;
 
     for (i = 0; i < count / 4; i += 4)
-        o += ascii_write_value(buffer, count, mtwist_rand(&normal), 16, o);
+        o += ascii_wvalue(buffer, count, rand(&normal), 16, o);
 
     return o;
 
@@ -160,19 +160,19 @@ static unsigned int read(struct system_node *self, unsigned int offset, unsigned
 void init()
 {
 
-    mtwist_seed1(&normal, MTWIST_SEED);
+    seed1(&normal, MTWIST_SEED);
 
-    system_init_stream(&root, "mtwist");
-    system_register_node(&root);
+    system_initstream(&root, "mtwist");
+    system_registernode(&root);
 
-    root.read = read;
+    root.read = root_read;
 
 }
 
 void destroy()
 {
 
-    system_unregister_node(&root);
+    system_unregisternode(&root);
 
 }
 

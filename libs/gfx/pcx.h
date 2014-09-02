@@ -39,4 +39,4 @@ struct pcx_surface
 };
 
 void pcx_load(struct pcx_surface *surface);
-void pcx_init_surface(struct pcx_surface *surface, unsigned int id);
+void pcx_initsurface(struct pcx_surface *surface, unsigned int id);

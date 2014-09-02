@@ -52,7 +52,7 @@ void list_move(struct list *out, struct list *in, struct list_item *item)
 
 }
 
-void list_init_item(struct list_item *item, void *data)
+void list_inititem(struct list_item *item, void *data)
 {
 
     memory_clear(item, sizeof (struct list_item));

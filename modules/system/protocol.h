@@ -1,1 +1,1 @@
-void system_init_protocol(struct vfs_protocol *protocol);
+void system_initprotocol(struct vfs_protocol *protocol);

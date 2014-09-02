@@ -116,10 +116,10 @@ static unsigned int driver_check(struct base_bus *bus, unsigned int id)
 static void driver_attach(struct base_bus *bus, unsigned int id)
 {
 
-    base_init_device(&device, bus, id);
-    base_clock_init_node(&node, &device, &iclock);
-    base_clock_register_node(&node);
-    pic_set_routine(bus, id, handleirq);
+    base_initdevice(&device, bus, id);
+    base_clock_initnode(&node, &device, &iclock);
+    base_clock_registernode(&node);
+    pic_setroutine(bus, id, handleirq);
 
     io = platform_getbase(bus, id);
 
@@ -128,26 +128,26 @@ static void driver_attach(struct base_bus *bus, unsigned int id)
 static void driver_detach(struct base_bus *bus, unsigned int id)
 {
 
-    pic_unset_routine(bus, id);
-    base_clock_unregister_node(&node);
+    pic_unsetroutine(bus, id);
+    base_clock_unregisternode(&node);
 
 }
 
 void init()
 {
 
-    base_clock_init_interface(&iclock, iclock_getseconds, iclock_getminutes, iclock_gethours, iclock_getweekday, iclock_getday, iclock_getmonth, iclock_getyear);
-    base_clock_register_interface(&iclock);
-    base_init_driver(&driver, "rtc", driver_check, driver_attach, driver_detach);
-    base_register_driver(&driver);
+    base_clock_initinterface(&iclock, iclock_getseconds, iclock_getminutes, iclock_gethours, iclock_getweekday, iclock_getday, iclock_getmonth, iclock_getyear);
+    base_clock_registerinterface(&iclock);
+    base_initdriver(&driver, "rtc", driver_check, driver_attach, driver_detach);
+    base_registerdriver(&driver);
 
 }
 
 void destroy()
 {
 
-    base_clock_unregister_interface(&iclock);
-    base_unregister_driver(&driver);
+    base_clock_unregisterinterface(&iclock);
+    base_unregisterdriver(&driver);
 
 }
 

@@ -8,7 +8,7 @@
 static struct system_backend backend;
 static struct vfs_protocol protocol;
 
-void system_add_child(struct system_node *group, struct system_node *node)
+void system_addchild(struct system_node *group, struct system_node *node)
 {
 
     struct list_item *current;
@@ -39,7 +39,7 @@ void system_add_child(struct system_node *group, struct system_node *node)
 
 }
 
-void system_remove_child(struct system_node *group, struct system_node *node)
+void system_removechild(struct system_node *group, struct system_node *node)
 {
 
     list_remove(&group->children, &node->item);
@@ -48,17 +48,17 @@ void system_remove_child(struct system_node *group, struct system_node *node)
 
 }
 
-void system_register_node(struct system_node *node)
+void system_registernode(struct system_node *node)
 {
 
-    system_add_child(&backend.root, node);
+    system_addchild(&backend.root, node);
 
 }
 
-void system_unregister_node(struct system_node *node)
+void system_unregisternode(struct system_node *node)
 {
 
-    system_remove_child(&backend.root, node);
+    system_removechild(&backend.root, node);
 
 }
 
@@ -188,11 +188,11 @@ unsigned int child_group(struct system_node *self, unsigned int count, const cha
 
 }
 
-void system_init_node(struct system_node *node, unsigned int type, const char *name)
+void system_initnode(struct system_node *node, unsigned int type, const char *name)
 {
 
     memory_clear(node, sizeof (struct system_node));
-    list_init_item(&node->item, node);
+    list_inititem(&node->item, node);
     list_init(&node->children);
 
     node->type = type;
@@ -205,36 +205,36 @@ void system_init_node(struct system_node *node, unsigned int type, const char *n
 
 }
 
-void system_init_stream(struct system_node *stream, const char *name)
+void system_initstream(struct system_node *stream, const char *name)
 {
 
-    system_init_node(stream, SYSTEM_NODETYPE_STREAM, name);
+    system_initnode(stream, SYSTEM_NODETYPE_STREAM, name);
 
 }
 
-void system_init_multistream(struct system_node *stream, const char *name)
+void system_initmultistream(struct system_node *stream, const char *name)
 {
 
-    system_init_stream(stream, name);
+    system_initstream(stream, name);
 
     stream->multi = 1;
 
 }
 
-void system_init_group(struct system_node *group, const char *name)
+void system_initgroup(struct system_node *group, const char *name)
 {
 
-    system_init_node(group, SYSTEM_NODETYPE_GROUP, name);
+    system_initnode(group, SYSTEM_NODETYPE_GROUP, name);
 
     group->read = read_group;
     group->child = child_group;
 
 }
 
-void system_init_multigroup(struct system_node *group, const char *name)
+void system_initmultigroup(struct system_node *group, const char *name)
 {
 
-    system_init_group(group, name);
+    system_initgroup(group, name);
 
     group->multi = 1;
 
@@ -243,8 +243,8 @@ void system_init_multigroup(struct system_node *group, const char *name)
 void init()
 {
 
-    system_init_backend(&backend);
-    system_init_protocol(&protocol);
+    system_initbackend(&backend);
+    system_initprotocol(&protocol);
     resource_register(&backend.base.resource);
     resource_register(&protocol.resource);
 

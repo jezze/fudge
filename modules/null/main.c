@@ -9,15 +9,15 @@ static struct system_node root;
 void init()
 {
 
-    system_init_stream(&root, "null");
-    system_register_node(&root);
+    system_initstream(&root, "null");
+    system_registernode(&root);
 
 }
 
 void destroy()
 {
 
-    system_unregister_node(&root);
+    system_unregisternode(&root);
 
 }
 

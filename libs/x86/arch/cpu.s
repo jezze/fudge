@@ -1,74 +1,74 @@
 .code32
 
-.global cpu_get_cr0
-cpu_get_cr0:
+.global cpu_getcr0
+cpu_getcr0:
     movl %cr0, %eax
     ret
 
-.global cpu_get_cr2
-cpu_get_cr2:
+.global cpu_getcr2
+cpu_getcr2:
     movl %cr2, %eax
     ret
 
-.global cpu_get_cr3
-cpu_get_cr3:
+.global cpu_getcr3
+cpu_getcr3:
     movl %cr3, %eax
     ret
 
-.global cpu_get_cr4
-cpu_get_cr4:
+.global cpu_getcr4
+cpu_getcr4:
     movl %cr4, %eax
     ret
 
-.global cpu_get_eflags
-cpu_get_eflags:
+.global cpu_geteflags
+cpu_geteflags:
     pushf
     popl %eax
     ret
 
-.global cpu_get_gdt
-cpu_get_gdt:
+.global cpu_getgdt
+cpu_getgdt:
     sgdt (%eax)
     ret
 
-.global cpu_get_idt
-cpu_get_idt:
+.global cpu_getidt
+cpu_getidt:
     sidt (%eax)
     ret
 
-.global cpu_set_cr0
-cpu_set_cr0:
+.global cpu_setcr0
+cpu_setcr0:
     movl 4(%esp), %eax
     movl %eax, %cr0
     ret
 
-.global cpu_set_cr2
-cpu_set_cr2:
+.global cpu_setcr2
+cpu_setcr2:
     movl 4(%esp), %eax
     movl %eax, %cr2
     ret
 
-.global cpu_set_cr3
-cpu_set_cr3:
+.global cpu_setcr3
+cpu_setcr3:
     movl 4(%esp), %eax
     movl %eax, %cr3
     ret
 
-.global cpu_set_cr4
-cpu_set_cr4:
+.global cpu_setcr4
+cpu_setcr4:
     movl 4(%esp), %eax
     movl %eax, %cr4
     ret
 
-.global cpu_set_eflags
-cpu_set_eflags:
+.global cpu_seteflags
+cpu_seteflags:
     movl 4(%esp), %eax
     pushl %eax
     popf
     ret
 
-.global cpu_set_gdt
-cpu_set_gdt:
+.global cpu_setgdt
+cpu_setgdt:
     movl 4(%esp), %eax
     lgdt (%eax)
     movw 12(%esp), %ax
@@ -81,14 +81,14 @@ cpu_set_gdt:
     pushl (%esp)
     retf
 
-.global cpu_set_idt
-cpu_set_idt:
+.global cpu_setidt
+cpu_setidt:
     movl 4(%esp), %eax
     lidt (%eax)
     ret
 
-.global cpu_set_tss
-cpu_set_tss:
+.global cpu_settss
+cpu_settss:
     movw 4(%esp), %ax
     ltrw %ax
     ret

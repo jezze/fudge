@@ -5,7 +5,7 @@ static unsigned int find_symbol(unsigned int id, unsigned int count, char *symbo
 {
 
     struct elf_header header;
-    struct elf_section_header sectionheader[32];
+    struct elf_sectionheader sectionheader[32];
     unsigned int i;
 
     call_read(id, 0, ELF_HEADER_SIZE, &header);
@@ -24,8 +24,8 @@ static unsigned int find_symbol(unsigned int id, unsigned int count, char *symbo
         struct elf_symbol symbols[1024];
         char strings[4096];
         unsigned int address;
-        struct elf_section_header *symbolheader;
-        struct elf_section_header *stringheader;
+        struct elf_sectionheader *symbolheader;
+        struct elf_sectionheader *stringheader;
 
         if (sectionheader[i].type != ELF_SECTION_TYPE_SYMTAB)
             continue;
@@ -42,7 +42,7 @@ static unsigned int find_symbol(unsigned int id, unsigned int count, char *symbo
         call_read(id, symbolheader->offset, symbolheader->size, symbols);
         call_read(id, stringheader->offset, stringheader->size, strings);
 
-        address = elf_find_symbol(&header, sectionheader, symbolheader, symbols, strings, count, symbol);
+        address = elf_findsymbol(&header, sectionheader, symbolheader, symbols, strings, count, symbol);
 
         if (address)
             return address;
@@ -77,7 +77,7 @@ static unsigned int find_symbol_module(unsigned int count, char *symbol)
 
 }
 
-static unsigned int resolve_symbols(unsigned int id, struct elf_section_header *relocationheader, struct elf_relocation *relocations, struct elf_symbol *symbols, char *strings, unsigned int offset)
+static unsigned int resolve_symbols(unsigned int id, struct elf_sectionheader *relocationheader, struct elf_relocation *relocations, struct elf_symbol *symbols, char *strings, unsigned int offset)
 {
 
     unsigned int i;
@@ -120,7 +120,7 @@ static unsigned int resolve(unsigned int id)
 {
 
     struct elf_header header;
-    struct elf_section_header sectionheader[32];
+    struct elf_sectionheader sectionheader[32];
     struct elf_relocation relocations[1024];
     struct elf_symbol symbols[1024];
     char strings[4096];
@@ -139,10 +139,10 @@ static unsigned int resolve(unsigned int id)
     for (i = 0; i < header.shcount; i++)
     {
 
-        struct elf_section_header *relocationheader;
-        struct elf_section_header *dataheader;
-        struct elf_section_header *symbolheader;
-        struct elf_section_header *stringheader;
+        struct elf_sectionheader *relocationheader;
+        struct elf_sectionheader *dataheader;
+        struct elf_sectionheader *symbolheader;
+        struct elf_sectionheader *stringheader;
 
         if (sectionheader[i].type != ELF_SECTION_TYPE_REL)
             continue;

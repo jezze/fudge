@@ -1,1 +1,1 @@
-void ipv6_init_protocol(struct base_network_protocol *protocol);
+void ipv6_initprotocol(struct base_network_protocol *protocol);

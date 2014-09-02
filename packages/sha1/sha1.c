@@ -232,7 +232,7 @@ void main()
     call_open(CALL_O0);
 
     for (roff = 0; roff < 20; roff++)
-        woff += call_write(CALL_O0, woff, ascii_write_zerovalue(buffer, 32, digest[roff], 16, 2, 0), buffer);
+        woff += call_write(CALL_O0, woff, ascii_wzerovalue(buffer, 32, digest[roff], 16, 2, 0), buffer);
 
     call_close(CALL_O0);
 

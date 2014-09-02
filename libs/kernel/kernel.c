@@ -8,15 +8,15 @@
 #include "container.h"
 #include "kernel.h"
 
-static unsigned int find_entry(struct vfs_channel *channel, unsigned int id)
+static unsigned int findentry(struct vfs_channel *channel, unsigned int id)
 {
 
-    struct binary_protocol *protocol = binary_find_protocol(channel, id);
+    struct binary_protocol *protocol = binary_findprotocol(channel, id);
 
     if (!protocol)
         return 0;
 
-    return protocol->copy_program(channel, id);
+    return protocol->copyprogram(channel, id);
 
 }
 
@@ -32,7 +32,7 @@ void kernel_setup_modules(struct container *container, struct task *task, unsign
     {
 
         struct vfs_backend *backend = &modules[i].base;
-        struct vfs_protocol *protocol = vfs_find_protocol(backend);
+        struct vfs_protocol *protocol = vfs_findprotocol(backend);
         unsigned int root;
         unsigned int init;
 
@@ -62,7 +62,7 @@ void kernel_setup_modules(struct container *container, struct task *task, unsign
         mount->child.id = root;
         descriptor->channel = channel;
         descriptor->id = root;
-        task->registers.ip = find_entry(channel, init);
+        task->registers.ip = findentry(channel, init);
 
     }
 
@@ -75,9 +75,9 @@ void kernel_setup()
 
     resource_setup();
     scheduler_setup();
-    binary_setup_elf();
-    vfs_setup_cpio();
-    vfs_setup_tar();
+    binary_setupelf();
+    vfs_setupcpio();
+    vfs_setuptar();
 
 }
 

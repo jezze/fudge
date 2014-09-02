@@ -20,7 +20,7 @@ arch_usermode:
     pushl %eax
     movl 20(%esp), %eax
     pushl %eax
-    call cpu_get_eflags
+    call cpu_geteflags
     orl $0x200, %eax
     pushl %eax
     movl 16(%esp), %eax
@@ -29,8 +29,8 @@ arch_usermode:
     pushl %eax
     iret
 
-.global arch_isr_generalfault
-arch_isr_generalfault:
+.global arch_isrgeneralfault
+arch_isrgeneralfault:
     pusha
     movl %esp, %eax
     pushl %eax
@@ -49,8 +49,8 @@ arch_isr_generalfault:
     addl $4, %esp
     iret
 
-.global arch_isr_pagefault
-arch_isr_pagefault:
+.global arch_isrpagefault
+arch_isrpagefault:
     pusha
     movl %esp, %eax
     pushl %eax
@@ -69,8 +69,8 @@ arch_isr_pagefault:
     addl $4, %esp
     iret
 
-.global arch_isr_syscall
-arch_isr_syscall:
+.global arch_isrsyscall
+arch_isrsyscall:
     pusha
     movl %esp, %eax
     pushl %eax

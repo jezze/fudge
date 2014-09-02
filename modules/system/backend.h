@@ -7,4 +7,4 @@ struct system_backend
 
 };
 
-void system_init_backend(struct system_backend *backend);
+void system_initbackend(struct system_backend *backend);

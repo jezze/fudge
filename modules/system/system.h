@@ -33,12 +33,12 @@ struct system_node
 
 };
 
-void system_add_child(struct system_node *group, struct system_node *node);
-void system_remove_child(struct system_node *group, struct system_node *node);
-void system_register_node(struct system_node *node);
-void system_unregister_node(struct system_node *node);
-void system_init_node(struct system_node *node, unsigned int type, const char *name);
-void system_init_stream(struct system_node *stream, const char *name);
-void system_init_multistream(struct system_node *stream, const char *name);
-void system_init_group(struct system_node *group, const char *name);
-void system_init_multigroup(struct system_node *group, const char *name);
+void system_addchild(struct system_node *group, struct system_node *node);
+void system_removechild(struct system_node *group, struct system_node *node);
+void system_registernode(struct system_node *node);
+void system_unregisternode(struct system_node *node);
+void system_initnode(struct system_node *node, unsigned int type, const char *name);
+void system_initstream(struct system_node *stream, const char *name);
+void system_initmultistream(struct system_node *stream, const char *name);
+void system_initgroup(struct system_node *group, const char *name);
+void system_initmultigroup(struct system_node *group, const char *name);

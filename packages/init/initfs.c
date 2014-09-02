@@ -50,9 +50,9 @@ void main()
     for (i = 0; i < nargs; i += 4)
     {
 
-        unsigned int channel = ascii_read_value(args[i].position, args[i].count, 10);
-        unsigned int mount = ascii_read_value(args[i + 1].position, args[i + 1].count, 10);
-        unsigned int backend = ascii_read_value(args[i + 2].position, args[i + 2].count, 10);
+        unsigned int channel = ascii_rvalue(args[i].position, args[i].count, 10);
+        unsigned int mount = ascii_rvalue(args[i + 1].position, args[i + 1].count, 10);
+        unsigned int backend = ascii_rvalue(args[i + 2].position, args[i + 2].count, 10);
 
         if (!call_walk(CALL_L0, CALL_DR, args[i + 3].count - 1, args[i + 3].position + 1))
             continue;

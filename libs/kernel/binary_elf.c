@@ -6,7 +6,7 @@
 
 static struct binary_protocol protocol;
 
-static unsigned int match(struct vfs_channel *channel, unsigned int id)
+static unsigned int protocol_match(struct vfs_channel *channel, unsigned int id)
 {
 
     struct elf_header header;
@@ -18,11 +18,11 @@ static unsigned int match(struct vfs_channel *channel, unsigned int id)
 
 }
 
-static unsigned long find_symbol(struct vfs_channel *channel, unsigned int id, unsigned int count, const char *symbol)
+static unsigned long protocol_findsymbol(struct vfs_channel *channel, unsigned int id, unsigned int count, const char *symbol)
 {
 
     struct elf_header header;
-    struct elf_section_header sectionheader[32];
+    struct elf_sectionheader sectionheader[32];
     unsigned int i;
 
     channel->protocol->read(channel->backend, id, 0, ELF_HEADER_SIZE, &header);
@@ -38,8 +38,8 @@ static unsigned long find_symbol(struct vfs_channel *channel, unsigned int id, u
         struct elf_symbol symbols[1024];
         char strings[4096];
         unsigned long address;
-        struct elf_section_header *symbolheader;
-        struct elf_section_header *stringheader;
+        struct elf_sectionheader *symbolheader;
+        struct elf_sectionheader *stringheader;
 
         if (sectionheader[i].type != ELF_SECTION_TYPE_SYMTAB)
             continue;
@@ -56,7 +56,7 @@ static unsigned long find_symbol(struct vfs_channel *channel, unsigned int id, u
         channel->protocol->read(channel->backend, id, symbolheader->offset, symbolheader->size, symbols);
         channel->protocol->read(channel->backend, id, stringheader->offset, stringheader->size, strings);
 
-        address = elf_find_symbol(&header, sectionheader, symbolheader, symbols, strings, count, symbol);
+        address = elf_findsymbol(&header, sectionheader, symbolheader, symbols, strings, count, symbol);
 
         if (address)
             return address;
@@ -67,11 +67,11 @@ static unsigned long find_symbol(struct vfs_channel *channel, unsigned int id, u
 
 }
 
-static unsigned long copy_program(struct vfs_channel *channel, unsigned int id)
+static unsigned long protocol_copyprogram(struct vfs_channel *channel, unsigned int id)
 {
 
     struct elf_header header;
-    struct elf_program_header programheader[8];
+    struct elf_programheader programheader[8];
     unsigned int i;
 
     channel->protocol->read(channel->backend, id, 0, ELF_HEADER_SIZE, &header);
@@ -88,11 +88,11 @@ static unsigned long copy_program(struct vfs_channel *channel, unsigned int id)
 
 }
 
-static unsigned int relocate(struct vfs_channel *channel, unsigned int id, unsigned int address)
+static unsigned int protocol_relocate(struct vfs_channel *channel, unsigned int id, unsigned int address)
 {
 
     struct elf_header header;
-    struct elf_section_header sectionheader[32];
+    struct elf_sectionheader sectionheader[32];
     unsigned int i;
 
     channel->protocol->read(channel->backend, id, 0, ELF_HEADER_SIZE, &header);
@@ -107,9 +107,9 @@ static unsigned int relocate(struct vfs_channel *channel, unsigned int id, unsig
 
         struct elf_relocation relocations[1024];
         struct elf_symbol symbols[1024];
-        struct elf_section_header *relocationheader;
-        struct elf_section_header *dataheader;
-        struct elf_section_header *symbolheader;
+        struct elf_sectionheader *relocationheader;
+        struct elf_sectionheader *dataheader;
+        struct elf_sectionheader *symbolheader;
 
         sectionheader[i].address += address;
 
@@ -128,7 +128,7 @@ static unsigned int relocate(struct vfs_channel *channel, unsigned int id, unsig
 
         channel->protocol->read(channel->backend, id, relocationheader->offset, relocationheader->size, relocations);
         channel->protocol->read(channel->backend, id, symbolheader->offset, symbolheader->size, symbols);
-        elf_relocate_section(sectionheader, relocationheader, dataheader, relocations, symbols, address);
+        elf_relocatesection(sectionheader, relocationheader, dataheader, relocations, symbols, address);
 
     }
 
@@ -138,10 +138,10 @@ static unsigned int relocate(struct vfs_channel *channel, unsigned int id, unsig
 
 }
 
-void binary_setup_elf()
+void binary_setupelf()
 {
 
-    binary_init_protocol(&protocol, match, find_symbol, copy_program, relocate);
+    binary_initprotocol(&protocol, protocol_match, protocol_findsymbol, protocol_copyprogram, protocol_relocate);
     resource_register(&protocol.resource);
 
 }

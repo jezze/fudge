@@ -66,5 +66,5 @@ struct idt_pointer
 
 };
 
-void idt_set_descriptor(struct idt_pointer *pointer, enum idt_index index, void (*callback)(), unsigned short selector, enum idt_flag flags);
-void idt_init_pointer(struct idt_pointer *pointer, unsigned int count, struct idt_descriptor *descriptors);
+void idt_setdescriptor(struct idt_pointer *pointer, enum idt_index index, void (*callback)(), unsigned short selector, enum idt_flag flags);
+void idt_initpointer(struct idt_pointer *pointer, unsigned int count, struct idt_descriptor *descriptors);

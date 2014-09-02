@@ -48,10 +48,10 @@ struct gfx_surface
 };
 
 void gfx_fill(struct gfx_surface *surface);
-void gfx_set_color(struct gfx_surface *surface, unsigned int color);
-void gfx_set_color_rgb(struct gfx_surface *self, unsigned char red, unsigned char green, unsigned char blue);
-void gfx_set_color_rgba(struct gfx_surface *self, unsigned char red, unsigned char green, unsigned char blue, unsigned char alpha);
-void gfx_set_rectangle(struct gfx_surface *surface, unsigned int x, unsigned int y, unsigned int width, unsigned int height);
-void gfx_write_surface(unsigned int id, struct gfx_surface *in);
-void gfx_init_context(struct gfx_context *context);
-void gfx_init_surface(struct gfx_surface *surface, unsigned int (*read)(struct gfx_surface *self, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write)(struct gfx_surface *self, unsigned int offset, unsigned int count, void *buffer));
+void gfx_setcolor(struct gfx_surface *surface, unsigned int color);
+void gfx_setcolorrgb(struct gfx_surface *self, unsigned char red, unsigned char green, unsigned char blue);
+void gfx_setcolorrgba(struct gfx_surface *self, unsigned char red, unsigned char green, unsigned char blue, unsigned char alpha);
+void gfx_setrectangle(struct gfx_surface *surface, unsigned int x, unsigned int y, unsigned int width, unsigned int height);
+void gfx_wsurface(unsigned int id, struct gfx_surface *in);
+void gfx_initcontext(struct gfx_context *context);
+void gfx_initsurface(struct gfx_surface *surface, unsigned int (*read)(struct gfx_surface *self, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write)(struct gfx_surface *self, unsigned int offset, unsigned int count, void *buffer));

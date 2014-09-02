@@ -241,7 +241,7 @@ static void ivideo_setmode(struct base_bus *bus, unsigned int id, unsigned int x
     io_inb(VGA_REGISTER_FCCCTRL);
     io_outb(VGA_REGISTER_ARINDEX, VGA_ARINDEX_DISABLE);
 
-    vga_set_registers((unsigned char *)g320x200x256, 0);
+    vga_setregisters((unsigned char *)g320x200x256, 0);
 
     io_inb(VGA_REGISTER_FCCCTRL);
     io_outb(VGA_REGISTER_ARINDEX, VGA_ARINDEX_ENABLE);
@@ -335,11 +335,11 @@ static unsigned int driver_check(struct base_bus *bus, unsigned int id)
 static void driver_attach(struct base_bus *bus, unsigned int id)
 {
 
-    base_init_device(&device, bus, id);
-    base_terminal_init_node(&tnode, &device, &iterminal);
-    base_terminal_register_node(&tnode);
-    base_video_init_node(&vnode, &device, &ivideo);
-    base_video_register_node(&vnode);
+    base_initdevice(&device, bus, id);
+    base_terminal_initnode(&tnode, &device, &iterminal);
+    base_terminal_registernode(&tnode);
+    base_video_initnode(&vnode, &device, &ivideo);
+    base_video_registernode(&vnode);
 
     taddress = (void *)0x000B8000;
     gaddress = (void *)0x000A0000;
@@ -355,29 +355,29 @@ static void driver_attach(struct base_bus *bus, unsigned int id)
 static void driver_detach(struct base_bus *bus, unsigned int id)
 {
 
-    base_terminal_unregister_node(&tnode);
-    base_video_unregister_node(&vnode);
+    base_terminal_unregisternode(&tnode);
+    base_video_unregisternode(&vnode);
 
 }
 
 void init()
 {
 
-    base_terminal_init_interface(&iterminal, iterminal_rdata, iterminal_wdata);
-    base_terminal_register_interface(&iterminal);
-    base_video_init_interface(&ivideo, ivideo_setmode, ivideo_rdata, ivideo_wdata, ivideo_rcolormap, ivideo_wcolormap);
-    base_video_register_interface(&ivideo);
-    base_init_driver(&driver, "vga", driver_check, driver_attach, driver_detach);
-    base_register_driver(&driver);
+    base_terminal_initinterface(&iterminal, iterminal_rdata, iterminal_wdata);
+    base_terminal_registerinterface(&iterminal);
+    base_video_initinterface(&ivideo, ivideo_setmode, ivideo_rdata, ivideo_wdata, ivideo_rcolormap, ivideo_wcolormap);
+    base_video_registerinterface(&ivideo);
+    base_initdriver(&driver, "vga", driver_check, driver_attach, driver_detach);
+    base_registerdriver(&driver);
 
 }
 
 void destroy()
 {
 
-    base_terminal_unregister_interface(&iterminal);
-    base_video_unregister_interface(&ivideo);
-    base_unregister_driver(&driver);
+    base_terminal_unregisterinterface(&iterminal);
+    base_video_unregisterinterface(&ivideo);
+    base_unregisterdriver(&driver);
 
 }
 

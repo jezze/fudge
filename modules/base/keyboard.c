@@ -12,7 +12,7 @@ static unsigned int data_read(struct system_node *self, unsigned int offset, uns
 
     struct base_keyboard_node *node = (struct base_keyboard_node *)self->parent;
 
-    return node->interface->read_data(node->device->bus, node->device->id, offset, count, buffer);
+    return node->interface->rdata(node->device->bus, node->device->id, offset, count, buffer);
 
 }
 
@@ -21,7 +21,7 @@ static unsigned int keymap_read(struct system_node *self, unsigned int offset, u
 
     struct base_keyboard_node *node = (struct base_keyboard_node *)self->parent;
 
-    return node->interface->read_keymap(node->device->bus, node->device->id, offset, count, buffer);
+    return node->interface->rkeymap(node->device->bus, node->device->id, offset, count, buffer);
 
 }
 
@@ -30,58 +30,58 @@ static unsigned int keymap_write(struct system_node *self, unsigned int offset, 
 
     struct base_keyboard_node *node = (struct base_keyboard_node *)self->parent;
 
-    return node->interface->write_keymap(node->device->bus, node->device->id, offset, count, buffer);
+    return node->interface->wkeymap(node->device->bus, node->device->id, offset, count, buffer);
 
 }
 
-void base_keyboard_register_interface(struct base_keyboard_interface *interface)
+void base_keyboard_registerinterface(struct base_keyboard_interface *interface)
 {
 
-    base_register_interface(&interface->base);
+    base_registerinterface(&interface->base);
 
 }
 
-void base_keyboard_register_node(struct base_keyboard_node *node)
+void base_keyboard_registernode(struct base_keyboard_node *node)
 {
 
-    system_add_child(&root, &node->base);
-    system_add_child(&node->base, &node->data);
-    system_add_child(&node->base, &node->keymap);
+    system_addchild(&root, &node->base);
+    system_addchild(&node->base, &node->data);
+    system_addchild(&node->base, &node->keymap);
 
 }
 
-void base_keyboard_unregister_interface(struct base_keyboard_interface *interface)
+void base_keyboard_unregisterinterface(struct base_keyboard_interface *interface)
 {
 
-    base_unregister_interface(&interface->base);
+    base_unregisterinterface(&interface->base);
 
 }
 
-void base_keyboard_unregister_node(struct base_keyboard_node *node)
+void base_keyboard_unregisternode(struct base_keyboard_node *node)
 {
 
 }
 
-void base_keyboard_init_interface(struct base_keyboard_interface *interface, unsigned int (*read_data)(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write_data)(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer), unsigned int (*read_keymap)(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write_keymap)(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer))
+void base_keyboard_initinterface(struct base_keyboard_interface *interface, unsigned int (*rdata)(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer), unsigned int (*wdata)(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer), unsigned int (*rkeymap)(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer), unsigned int (*wkeymap)(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer))
 {
 
     memory_clear(interface, sizeof (struct base_keyboard_interface));
-    base_init_interface(&interface->base, BASE_INTERFACE_TYPE_KEYBOARD);
+    base_initinterface(&interface->base, BASE_INTERFACE_TYPE_KEYBOARD);
 
-    interface->read_data = read_data;
-    interface->write_data = write_data;
-    interface->read_keymap = read_keymap;
-    interface->write_keymap = write_keymap;
+    interface->rdata = rdata;
+    interface->wdata = wdata;
+    interface->rkeymap = rkeymap;
+    interface->wkeymap = wkeymap;
 
 }
 
-void base_keyboard_init_node(struct base_keyboard_node *node, struct base_device *device, struct base_keyboard_interface *interface)
+void base_keyboard_initnode(struct base_keyboard_node *node, struct base_device *device, struct base_keyboard_interface *interface)
 {
 
     memory_clear(node, sizeof (struct base_keyboard_node));
-    system_init_multigroup(&node->base, device->bus->name);
-    system_init_stream(&node->data, "data");
-    system_init_stream(&node->keymap, "keymap");
+    system_initmultigroup(&node->base, device->bus->name);
+    system_initstream(&node->data, "data");
+    system_initstream(&node->keymap, "keymap");
 
     node->device = device;
     node->interface = interface;
@@ -94,8 +94,8 @@ void base_keyboard_init_node(struct base_keyboard_node *node, struct base_device
 void base_keyboard_setup()
 {
 
-    system_init_group(&root, "keyboard");
-    system_register_node(&root);
+    system_initgroup(&root, "keyboard");
+    system_registernode(&root);
 
 }
 

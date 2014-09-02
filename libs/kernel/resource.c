@@ -50,7 +50,7 @@ void resource_init(struct resource *resource, unsigned int type, void *data)
 {
 
     memory_clear(resource, sizeof (struct resource));
-    list_init_item(&resource->item, resource);
+    list_inititem(&resource->item, resource);
 
     resource->type = type;
     resource->data = data;

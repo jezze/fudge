@@ -86,7 +86,7 @@ void mboot_setup(struct mboot_header *header, unsigned int magic)
         for (i = 0; i < header->modules.count; i++)
         {
 
-            vfs_init_backend(&modules[i].base, 1000 + i, read, write);
+            vfs_initbackend(&modules[i].base, 1000 + i, read, write);
 
             modules[i].address = (void *)mods[i].address;
             modules[i].limit = mods[i].limit;

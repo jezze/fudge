@@ -90,7 +90,7 @@ struct elf_header
 
 };
 
-struct elf_program_header
+struct elf_programheader
 {
 
     unsigned int type;
@@ -104,7 +104,7 @@ struct elf_program_header
 
 };
 
-struct elf_section_header
+struct elf_sectionheader
 {
 
     unsigned int name;
@@ -141,6 +141,6 @@ struct elf_relocation
 };
 
 unsigned int elf_validate(struct elf_header *header);
-unsigned int elf_find_symbol(struct elf_header *header, struct elf_section_header *sectionheader, struct elf_section_header *symbolheader, struct elf_symbol *symbols, char *strings, unsigned int count, const char *symbol);
-void elf_relocate_symbol(unsigned long address, unsigned int type, unsigned int addend);
-void elf_relocate_section(struct elf_section_header *sectionheader, struct elf_section_header *relocationheader, struct elf_section_header *dataheader, struct elf_relocation *relocations, struct elf_symbol *symbols, unsigned int address);
+unsigned int elf_findsymbol(struct elf_header *header, struct elf_sectionheader *sectionheader, struct elf_sectionheader *symbolheader, struct elf_symbol *symbols, char *strings, unsigned int count, const char *symbol);
+void elf_relocatesymbol(unsigned long address, unsigned int type, unsigned int addend);
+void elf_relocatesection(struct elf_sectionheader *sectionheader, struct elf_sectionheader *relocationheader, struct elf_sectionheader *dataheader, struct elf_relocation *relocations, struct elf_symbol *symbols, unsigned int address);

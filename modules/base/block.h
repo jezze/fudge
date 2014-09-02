@@ -2,8 +2,8 @@ struct base_block_interface
 {
 
     struct base_interface base;
-    unsigned int (*read_data)(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer);
-    unsigned int (*write_data)(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer);
+    unsigned int (*rdata)(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer);
+    unsigned int (*wdata)(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer);
 
 };
 
@@ -24,13 +24,13 @@ struct base_block_node
 
 };
 
-void base_block_register_interface(struct base_block_interface *interface);
-void base_block_register_protocol(struct base_block_protocol *protocol);
-void base_block_register_node(struct base_block_node *node);
-void base_block_unregister_interface(struct base_block_interface *interface);
-void base_block_unregister_protocol(struct base_block_protocol *protocol);
-void base_block_unregister_node(struct base_block_node *node);
-void base_block_init_interface(struct base_block_interface *interface, unsigned int (*read_data)(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write_data)(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer));
-void base_block_init_protocol(struct base_block_protocol *protocol, char *name);
-void base_block_init_node(struct base_block_node *node, struct base_device *device, struct base_block_interface *interface);
+void base_block_registerinterface(struct base_block_interface *interface);
+void base_block_registerprotocol(struct base_block_protocol *protocol);
+void base_block_registernode(struct base_block_node *node);
+void base_block_unregisterinterface(struct base_block_interface *interface);
+void base_block_unregisterprotocol(struct base_block_protocol *protocol);
+void base_block_unregisternode(struct base_block_node *node);
+void base_block_initinterface(struct base_block_interface *interface, unsigned int (*rdata)(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer), unsigned int (*wdata)(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer));
+void base_block_initprotocol(struct base_block_protocol *protocol, char *name);
+void base_block_initnode(struct base_block_node *node, struct base_device *device, struct base_block_interface *interface);
 void base_block_setup();

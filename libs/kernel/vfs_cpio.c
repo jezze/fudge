@@ -8,7 +8,7 @@
 
 static struct vfs_protocol protocol;
 
-static unsigned int root(struct vfs_backend *backend)
+static unsigned int protocol_root(struct vfs_backend *backend)
 {
 
     struct cpio_header header;
@@ -45,7 +45,7 @@ static unsigned int root(struct vfs_backend *backend)
 static unsigned int decode(struct vfs_backend *backend, unsigned int id)
 {
 
-    return (id == 0xFFFFFFFF) ? root(backend) : id;
+    return (id == 0xFFFFFFFF) ? protocol_root(backend) : id;
 
 }
 
@@ -56,7 +56,7 @@ static unsigned int encode(unsigned int address)
 
 }
 
-static unsigned int parent(struct vfs_backend *backend, unsigned int id)
+static unsigned int protocol_parent(struct vfs_backend *backend, unsigned int id)
 {
 
     struct cpio_header header;
@@ -105,7 +105,7 @@ static unsigned int parent(struct vfs_backend *backend, unsigned int id)
 
 }
 
-static unsigned int match(struct vfs_backend *backend)
+static unsigned int protocol_match(struct vfs_backend *backend)
 {
 
     struct cpio_header header;
@@ -117,7 +117,7 @@ static unsigned int match(struct vfs_backend *backend)
 
 }
 
-static unsigned long get_physical(struct vfs_backend *backend, unsigned int id)
+static unsigned long protocol_getphysical(struct vfs_backend *backend, unsigned int id)
 {
 
     /* TEMPORARY FIX */
@@ -133,35 +133,35 @@ static unsigned long get_physical(struct vfs_backend *backend, unsigned int id)
 
 }
 
-static unsigned int create(struct vfs_backend *backend, unsigned int id, unsigned int count, const char *name)
+static unsigned int protocol_create(struct vfs_backend *backend, unsigned int id, unsigned int count, const char *name)
 {
 
     return 0;
 
 }
 
-static unsigned int destroy(struct vfs_backend *backend, unsigned int id, unsigned int count, const char *name)
+static unsigned int protocol_destroy(struct vfs_backend *backend, unsigned int id, unsigned int count, const char *name)
 {
 
     return 0;
 
 }
 
-static unsigned int open(struct vfs_backend *backend, unsigned int id)
+static unsigned int protocol_open(struct vfs_backend *backend, unsigned int id)
 {
 
     return id;
 
 }
 
-static unsigned int close(struct vfs_backend *backend, unsigned int id)
+static unsigned int protocol_close(struct vfs_backend *backend, unsigned int id)
 {
 
     return id;
 
 }
 
-static unsigned int read(struct vfs_backend *backend, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int protocol_read(struct vfs_backend *backend, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct cpio_header header;
@@ -203,7 +203,7 @@ static unsigned int read(struct vfs_backend *backend, unsigned int id, unsigned 
             if (backend->read(backend, address + sizeof (struct cpio_header), header.namesize, name) < header.namesize)
                 break;
 
-            if (parent(backend, encode(address)) != id)
+            if (protocol_parent(backend, encode(address)) != id)
                 continue;
 
             l = header.namesize - length;
@@ -222,7 +222,7 @@ static unsigned int read(struct vfs_backend *backend, unsigned int id, unsigned 
 
 }
 
-static unsigned int write(struct vfs_backend *backend, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int protocol_write(struct vfs_backend *backend, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct cpio_header header;
@@ -244,7 +244,7 @@ static unsigned int write(struct vfs_backend *backend, unsigned int id, unsigned
 
 }
 
-static unsigned int child(struct vfs_backend *backend, unsigned int id, unsigned int count, const char *path)
+static unsigned int protocol_child(struct vfs_backend *backend, unsigned int id, unsigned int count, const char *path)
 {
 
     struct cpio_header header;
@@ -305,10 +305,10 @@ static unsigned int child(struct vfs_backend *backend, unsigned int id, unsigned
 
 }
 
-void vfs_setup_cpio()
+void vfs_setupcpio()
 {
 
-    vfs_init_protocol(&protocol, match, root, create, destroy, open, close, read, write, parent, child, get_physical);
+    vfs_initprotocol(&protocol, protocol_match, protocol_root, protocol_create, protocol_destroy, protocol_open, protocol_close, protocol_read, protocol_write, protocol_parent, protocol_child, protocol_getphysical);
     resource_register(&protocol.resource);
 
 }

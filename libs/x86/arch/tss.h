@@ -64,5 +64,5 @@ struct tss_pointer
 
 };
 
-void tss_set_descriptor(struct tss_pointer *pointer, enum tss_index index, unsigned int selector, unsigned int stack);
-void tss_init_pointer(struct tss_pointer *pointer, unsigned int count, struct tss_descriptor *descriptors);
+void tss_setdescriptor(struct tss_pointer *pointer, enum tss_index index, unsigned int selector, unsigned int stack);
+void tss_initpointer(struct tss_pointer *pointer, unsigned int count, struct tss_descriptor *descriptors);

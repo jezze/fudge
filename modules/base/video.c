@@ -12,7 +12,7 @@ static unsigned int data_read(struct system_node *self, unsigned int offset, uns
 
     struct base_video_node *node = (struct base_video_node *)self->parent;
 
-    return node->interface->read_data(node->device->bus, node->device->id, offset, count, buffer);
+    return node->interface->rdata(node->device->bus, node->device->id, offset, count, buffer);
 
 }
 
@@ -21,7 +21,7 @@ static unsigned int data_write(struct system_node *self, unsigned int offset, un
 
     struct base_video_node *node = (struct base_video_node *)self->parent;
 
-    return node->interface->write_data(node->device->bus, node->device->id, offset, count, buffer);
+    return node->interface->wdata(node->device->bus, node->device->id, offset, count, buffer);
 
 }
 
@@ -30,7 +30,7 @@ static unsigned int colormap_read(struct system_node *self, unsigned int offset,
 
     struct base_video_node *node = (struct base_video_node *)self->parent;
 
-    return node->interface->read_colormap(node->device->bus, node->device->id, offset, count, buffer);
+    return node->interface->rcolormap(node->device->bus, node->device->id, offset, count, buffer);
 
 }
 
@@ -39,7 +39,7 @@ static unsigned int colormap_write(struct system_node *self, unsigned int offset
 
     struct base_video_node *node = (struct base_video_node *)self->parent;
 
-    return node->interface->write_colormap(node->device->bus, node->device->id, offset, count, buffer);
+    return node->interface->wcolormap(node->device->bus, node->device->id, offset, count, buffer);
 
 }
 
@@ -55,65 +55,65 @@ static unsigned int mode_write(struct system_node *self, unsigned int offset, un
 
     struct base_video_node *node = (struct base_video_node *)self->parent;
 
-    node->interface->set_mode(node->device->bus, node->device->id, 320, 200, 8);
+    node->interface->setmode(node->device->bus, node->device->id, 320, 200, 8);
 
     return count;
 
 }
 
-void base_video_register_interface(struct base_video_interface *interface)
+void base_video_registerinterface(struct base_video_interface *interface)
 {
 
-    base_register_interface(&interface->base);
+    base_registerinterface(&interface->base);
 
 }
 
-void base_video_register_node(struct base_video_node *node)
+void base_video_registernode(struct base_video_node *node)
 {
 
-    system_add_child(&root, &node->base);
-    system_add_child(&node->base, &node->data);
-    system_add_child(&node->base, &node->colormap);
-    system_add_child(&node->base, &node->info);
-    system_add_child(&node->base, &node->mode);
+    system_addchild(&root, &node->base);
+    system_addchild(&node->base, &node->data);
+    system_addchild(&node->base, &node->colormap);
+    system_addchild(&node->base, &node->info);
+    system_addchild(&node->base, &node->mode);
 
 }
 
-void base_video_unregister_interface(struct base_video_interface *interface)
+void base_video_unregisterinterface(struct base_video_interface *interface)
 {
 
-    base_unregister_interface(&interface->base);
+    base_unregisterinterface(&interface->base);
 
 }
 
-void base_video_unregister_node(struct base_video_node *node)
+void base_video_unregisternode(struct base_video_node *node)
 {
 
 }
 
-void base_video_init_interface(struct base_video_interface *interface, void (*set_mode)(struct base_bus *bus, unsigned int id, unsigned int xres, unsigned int yres, unsigned int bpp), unsigned int (*read_data)(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write_data)(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer), unsigned int (*read_colormap)(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write_colormap)(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer))
+void base_video_initinterface(struct base_video_interface *interface, void (*setmode)(struct base_bus *bus, unsigned int id, unsigned int xres, unsigned int yres, unsigned int bpp), unsigned int (*rdata)(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer), unsigned int (*wdata)(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer), unsigned int (*rcolormap)(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer), unsigned int (*wcolormap)(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer))
 {
 
     memory_clear(interface, sizeof (struct base_video_interface));
-    base_init_interface(&interface->base, BASE_INTERFACE_TYPE_VIDEO);
+    base_initinterface(&interface->base, BASE_INTERFACE_TYPE_VIDEO);
 
-    interface->set_mode = set_mode;
-    interface->read_data = read_data;
-    interface->write_data = write_data;
-    interface->read_colormap = read_colormap;
-    interface->write_colormap = write_colormap;
+    interface->setmode = setmode;
+    interface->rdata = rdata;
+    interface->wdata = wdata;
+    interface->rcolormap = rcolormap;
+    interface->wcolormap = wcolormap;
 
 }
 
-void base_video_init_node(struct base_video_node *node, struct base_device *device, struct base_video_interface *interface)
+void base_video_initnode(struct base_video_node *node, struct base_device *device, struct base_video_interface *interface)
 {
 
     memory_clear(node, sizeof (struct base_video_node));
-    system_init_multigroup(&node->base, device->bus->name);
-    system_init_stream(&node->data, "data");
-    system_init_stream(&node->colormap, "colormap");
-    system_init_stream(&node->info, "info");
-    system_init_stream(&node->mode, "mode");
+    system_initmultigroup(&node->base, device->bus->name);
+    system_initstream(&node->data, "data");
+    system_initstream(&node->colormap, "colormap");
+    system_initstream(&node->info, "info");
+    system_initstream(&node->mode, "mode");
 
     node->device = device;
     node->interface = interface;
@@ -129,8 +129,8 @@ void base_video_init_node(struct base_video_node *node, struct base_device *devi
 void base_video_setup()
 {
 
-    system_init_group(&root, "video");
-    system_register_node(&root);
+    system_initgroup(&root, "video");
+    system_registernode(&root);
 
 }
 

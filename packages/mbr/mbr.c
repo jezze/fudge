@@ -53,7 +53,7 @@ void main()
         unsigned int count;
 
         woff += call_write(CALL_O0, woff, 10, "Partition ");
-        count = ascii_write_value(num, 32, i, 10, 0);
+        count = ascii_wvalue(num, 32, i, 10, 0);
         woff += call_write(CALL_O0, woff, count, num);
         woff += call_write(CALL_O0, woff, 2, ":\n");
 
@@ -61,11 +61,11 @@ void main()
             continue;
 
         woff += call_write(CALL_O0, woff, 11, "    Boot 0x");
-        count = ascii_write_value(num, 32, mbr.partition[i].boot, 16, 0);
+        count = ascii_wvalue(num, 32, mbr.partition[i].boot, 16, 0);
         woff += call_write(CALL_O0, woff, count, num);
         woff += call_write(CALL_O0, woff, 1, "\n");
         woff += call_write(CALL_O0, woff, 15, "    Systemid 0x");
-        count = ascii_write_value(num, 32, mbr.partition[i].systemid, 16, 0);
+        count = ascii_wvalue(num, 32, mbr.partition[i].systemid, 16, 0);
         woff += call_write(CALL_O0, woff, count, num);
         woff += call_write(CALL_O0, woff, 1, "\n");
 

@@ -23,18 +23,18 @@ struct cpu_interrupt
 
 };
 
-unsigned int cpu_get_cr0();
-unsigned int cpu_get_cr2();
-unsigned int cpu_get_cr3();
-unsigned int cpu_get_cr4();
-unsigned int cpu_get_eflags();
-void *cpu_get_gdt();
-void *cpu_get_idt();
-void cpu_set_cr0(unsigned int value);
-void cpu_set_cr2(unsigned int value);
-void cpu_set_cr3(unsigned int value);
-void cpu_set_cr4(unsigned int value);
-void cpu_set_eflags(unsigned int value);
-void cpu_set_gdt(void *pointer, unsigned int code, unsigned int data);
-void cpu_set_idt(void *pointer);
-void cpu_set_tss(unsigned int value);
+unsigned int cpu_getcr0();
+unsigned int cpu_getcr2();
+unsigned int cpu_getcr3();
+unsigned int cpu_getcr4();
+unsigned int cpu_geteflags();
+void *cpu_getgdt();
+void *cpu_getidt();
+void cpu_setcr0(unsigned int value);
+void cpu_setcr2(unsigned int value);
+void cpu_setcr3(unsigned int value);
+void cpu_setcr4(unsigned int value);
+void cpu_seteflags(unsigned int value);
+void cpu_setgdt(void *pointer, unsigned int code, unsigned int data);
+void cpu_setidt(void *pointer);
+void cpu_settss(unsigned int value);

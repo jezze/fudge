@@ -69,7 +69,7 @@ static void handleirq(unsigned int irq, struct base_bus *bus, unsigned int id)
         if (shift)
             scancode += 128;
 
-        buffer_write_cfifo(&cfifo, keymap[scancode].length, keymap[scancode].value);
+        buffer_wcfifo(&cfifo, keymap[scancode].length, keymap[scancode].value);
 
     }
 
@@ -80,7 +80,7 @@ static void handleirq(unsigned int irq, struct base_bus *bus, unsigned int id)
 static unsigned int ikeyboard_rdata(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    count = buffer_read_cfifo(&cfifo, count, buffer);
+    count = buffer_rcfifo(&cfifo, count, buffer);
 
     scheduler_rendezvous_sleep(&rdata, !count);
 
@@ -91,7 +91,7 @@ static unsigned int ikeyboard_rdata(struct base_bus *bus, unsigned int id, unsig
 static unsigned int ikeyboard_wdata(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    return buffer_write_cfifo(&cfifo, count, buffer);
+    return buffer_wcfifo(&cfifo, count, buffer);
 
 }
 
@@ -122,11 +122,11 @@ static unsigned int driver_check(struct base_bus *bus, unsigned int id)
 static void driver_attach(struct base_bus *bus, unsigned int id)
 {
 
-    base_init_device(&device, bus, id);
-    base_keyboard_init_node(&node, &device, &ikeyboard);
-    base_keyboard_register_node(&node);
-    buffer_init_cfifo(&cfifo, 512, &buffer);
-    pic_set_routine(bus, id, handleirq);
+    base_initdevice(&device, bus, id);
+    base_keyboard_initnode(&node, &device, &ikeyboard);
+    base_keyboard_registernode(&node);
+    buffer_initcfifo(&cfifo, 512, &buffer);
+    pic_setroutine(bus, id, handleirq);
     ps2_enable(bus, id);
     ps2_reset(bus, id);
     ps2_disablescanning(bus, id);
@@ -140,26 +140,26 @@ static void driver_attach(struct base_bus *bus, unsigned int id)
 static void driver_detach(struct base_bus *bus, unsigned int id)
 {
 
-    pic_unset_routine(bus, id);
-    base_keyboard_unregister_node(&node);
+    pic_unsetroutine(bus, id);
+    base_keyboard_unregisternode(&node);
 
 }
 
 void ps2_keyboard_driver_init()
 {
 
-    base_keyboard_init_interface(&ikeyboard, ikeyboard_rdata, ikeyboard_wdata, ikeyboard_rkeymap, ikeyboard_wkeymap);
-    base_keyboard_register_interface(&ikeyboard);
-    base_init_driver(&driver, "ps2keyboard", driver_check, driver_attach, driver_detach);
-    base_register_driver(&driver);
+    base_keyboard_initinterface(&ikeyboard, ikeyboard_rdata, ikeyboard_wdata, ikeyboard_rkeymap, ikeyboard_wkeymap);
+    base_keyboard_registerinterface(&ikeyboard);
+    base_initdriver(&driver, "ps2keyboard", driver_check, driver_attach, driver_detach);
+    base_registerdriver(&driver);
 
 }
 
 void ps2_keyboard_driver_destroy()
 {
 
-    base_keyboard_unregister_interface(&ikeyboard);
-    base_unregister_driver(&driver);
+    base_keyboard_unregisterinterface(&ikeyboard);
+    base_unregisterdriver(&driver);
 
 }
 

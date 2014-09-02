@@ -263,7 +263,7 @@ static struct vga_monitormodetiming timings[] = {
     {85000, 1072, 1088, 1160, 1360, 768, 603, 607, 625, 0},
 };
 
-void vga_set_registers(unsigned char *registers, unsigned int ega)
+void vga_setregisters(unsigned char *registers, unsigned int ega)
 {
 
     unsigned int i;
@@ -297,7 +297,7 @@ void vga_set_registers(unsigned char *registers, unsigned int ega)
 
 }
 
-void vga_init_registers(unsigned char *registers, struct vga_modetiming *modetiming, struct vga_modeinfo *modeinfo)
+void vga_initregisters(unsigned char *registers, struct vga_modetiming *modetiming, struct vga_modeinfo *modeinfo)
 {
 
     int i;
@@ -477,7 +477,7 @@ static struct vga_monitormodetiming *find_timing(struct vga_modeinfo *modeinfo, 
 
 }
 
-void vga_init_modetiming(struct vga_modetiming *modetiming, struct vga_modeinfo *modeinfo, struct vga_cardspecs *cardspecs)
+void vga_initmodetiming(struct vga_modetiming *modetiming, struct vga_modeinfo *modeinfo, struct vga_cardspecs *cardspecs)
 {
 
     struct vga_monitormodetiming *timing = find_timing(modeinfo, cardspecs);
@@ -565,7 +565,7 @@ void vga_init_modetiming(struct vga_modetiming *modetiming, struct vga_modeinfo 
 
 }
 
-void vga_init_modeinfo(struct vga_modeinfo *modeinfo, int mode)
+void vga_initmodeinfo(struct vga_modeinfo *modeinfo, int mode)
 {
 
     modeinfo->width = infos[mode].xdim;

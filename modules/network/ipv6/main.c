@@ -10,8 +10,8 @@ static struct base_network_protocol protocol;
 void init()
 {
 
-    ipv6_init_protocol(&protocol);
-    base_network_register_protocol(&protocol);
+    ipv6_initprotocol(&protocol);
+    base_network_registerprotocol(&protocol);
 
 }
 

@@ -46,15 +46,15 @@ static void driver_detach(struct base_bus *bus, unsigned int id)
 void init()
 {
 
-    base_init_driver(&driver, "ehci", driver_check, driver_attach, driver_detach);
-    base_register_driver(&driver);
+    base_initdriver(&driver, "ehci", driver_check, driver_attach, driver_detach);
+    base_registerdriver(&driver);
 
 }
 
 void destroy()
 {
 
-    base_unregister_driver(&driver);
+    base_unregisterdriver(&driver);
 
 }
 

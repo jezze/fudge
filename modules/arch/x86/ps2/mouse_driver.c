@@ -42,7 +42,7 @@ static void handleirq(unsigned int irq, struct base_bus *bus, unsigned int id)
 
     }
 
-    buffer_write_cfifo(&cfifo, 1, &data);
+    buffer_wcfifo(&cfifo, 1, &data);
     scheduler_rendezvous_unsleep(&rdata);
 
 }
@@ -50,7 +50,7 @@ static void handleirq(unsigned int irq, struct base_bus *bus, unsigned int id)
 static unsigned int imouse_rdata(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    count = buffer_read_cfifo(&cfifo, count, buffer);
+    count = buffer_rcfifo(&cfifo, count, buffer);
 
     scheduler_rendezvous_sleep(&rdata, !count);
 
@@ -71,11 +71,11 @@ static unsigned int driver_check(struct base_bus *bus, unsigned int id)
 static void driver_attach(struct base_bus *bus, unsigned int id)
 {
 
-    base_init_device(&device, bus, id);
-    base_mouse_init_node(&node, &device, &imouse);
-    base_mouse_register_node(&node);
-    buffer_init_cfifo(&cfifo, 512, &buffer);
-    pic_set_routine(bus, id, handleirq);
+    base_initdevice(&device, bus, id);
+    base_mouse_initnode(&node, &device, &imouse);
+    base_mouse_registernode(&node);
+    buffer_initcfifo(&cfifo, 512, &buffer);
+    pic_setroutine(bus, id, handleirq);
     ps2_enable(bus, id);
     ps2_reset(bus, id);
     ps2_disablescanning(bus, id);
@@ -89,26 +89,26 @@ static void driver_attach(struct base_bus *bus, unsigned int id)
 static void driver_detach(struct base_bus *bus, unsigned int id)
 {
 
-    pic_unset_routine(bus, id);
-    base_mouse_unregister_node(&node);
+    pic_unsetroutine(bus, id);
+    base_mouse_unregisternode(&node);
 
 }
 
 void ps2_mouse_driver_init()
 {
 
-    base_mouse_init_interface(&imouse, imouse_rdata);
-    base_mouse_register_interface(&imouse);
-    base_init_driver(&driver, "ps2mouse", driver_check, driver_attach, driver_detach);
-    base_register_driver(&driver);
+    base_mouse_initinterface(&imouse, imouse_rdata);
+    base_mouse_registerinterface(&imouse);
+    base_initdriver(&driver, "ps2mouse", driver_check, driver_attach, driver_detach);
+    base_registerdriver(&driver);
 
 }
 
 void ps2_mouse_driver_destroy()
 {
 
-    base_mouse_unregister_interface(&imouse);
-    base_unregister_driver(&driver);
+    base_mouse_unregisterinterface(&imouse);
+    base_unregisterdriver(&driver);
 
 }
 
