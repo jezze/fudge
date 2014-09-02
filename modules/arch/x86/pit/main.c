@@ -13,10 +13,10 @@
 enum pit_register
 {
 
-    PIT_REGISTER_COUNTER0               = 0x00,
-    PIT_REGISTER_COUNTER1               = 0x01,
-    PIT_REGISTER_COUNTER2               = 0x02,
-    PIT_REGISTER_COMMAND                = 0x03
+    PIT_REGISTER_COUNTER0               = 0x0000,
+    PIT_REGISTER_COUNTER1               = 0x0001,
+    PIT_REGISTER_COUNTER2               = 0x0002,
+    PIT_REGISTER_COMMAND                = 0x0003
 
 };
 
