@@ -1,5 +1,6 @@
 #include <module.h>
 #include <kernel/resource.h>
+#include <kernel/scheduler.h>
 #include <system/system.h>
 #include <base/base.h>
 #include <base/network.h>
@@ -135,6 +136,7 @@ static unsigned char tx2[0x800];
 static unsigned char tx3[0x800];
 static unsigned short rxp;
 static unsigned short txp;
+static struct scheduler_rendezvous rdata;
 
 static void poweron(struct base_bus *bus, unsigned int id)
 {
@@ -190,7 +192,12 @@ static void handleirq(unsigned int irq, struct base_bus *bus, unsigned int id)
     unsigned short status = io_inw(io + RTL8139_REGISTER_ISR);
 
     if (status & RTL8139_ISR_ROK)
+    {
+
+        scheduler_rendezvous_unsleep(&rdata);
         io_outw(io + RTL8139_REGISTER_ISR, RTL8139_ISR_ROK);
+
+    }
 
     if (status & RTL8139_ISR_TOK)
         io_outw(io + RTL8139_REGISTER_ISR, RTL8139_ISR_TOK);
@@ -211,7 +218,9 @@ static void inetwork_dumppacket(struct base_bus *bus, unsigned int id)
 
     rxp += (header->length + 4 + 3) & ~3;
 
+/*
     io_outw(io + RTL8139_REGISTER_CAPR, rxp);
+*/
 
 }
 
@@ -219,32 +228,20 @@ static unsigned int inetwork_receive(struct base_bus *bus, unsigned int id, unsi
 {
 
     struct rtl8139_header *header = inetwork_getpacket(bus, id);
+    unsigned int l = (header->length + 4 + 3) & ~3;
+    unsigned short cbr = io_inw(io + RTL8139_REGISTER_CBR);
     unsigned int k;
 
-    /*
-    char b[1000];
-    unsigned int c = 0;
-    unsigned short total = io_inw(io + RTL8139_REGISTER_CBR);
+    if (cbr == rxp)
+    {
 
-    c += memory_write(b, 1000, "rec", 3, c);
-    c += memory_write(b, 1000, " ", 1, c);
-    c += memory_write(b, 1000, "total: ", 7, c);
-    c += ascii_write_value(b, 1000, total, 16, c);
-    c += memory_write(b, 1000, " ", 1, c);
-    c += memory_write(b, 1000, "hf: ", 4, c);
-    c += ascii_write_value(b, 1000, header->flags, 16, c);
-    c += memory_write(b, 1000, " ", 1, c);
-    c += memory_write(b, 1000, "hl: ", 4, c);
-    c += ascii_write_value(b, 1000, header->length, 16, c);
-    c += memory_write(b, 1000, " ", 1, c);
-    c += memory_write(b, 1000, "rxp: ", 5, c);
-    c += ascii_write_value(b, 1000, rxp, 16, c);
+        scheduler_rendezvous_sleep(&rdata, 1);
 
-    log(b, c);
+        return 0;
 
-    */
+    }
 
-    k = memory_read(buffer, count, rx + rxp + sizeof (struct rtl8139_header), header->length, 0);
+    k = memory_read(buffer, count, rx + rxp, l, 0);
 
     inetwork_dumppacket(bus, id);
 

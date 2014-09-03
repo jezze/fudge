@@ -12,9 +12,6 @@ static unsigned int data_read(struct system_node *self, unsigned int offset, uns
 
     struct base_network_node *node = (struct base_network_node *)self->parent;
  
-    if (offset)
-        return 0;
-
     return node->interface->receive(node->device->bus, node->device->id, count, buffer);
 
 }
@@ -24,9 +21,6 @@ static unsigned int data_write(struct system_node *self, unsigned int offset, un
 
     struct base_network_node *node = (struct base_network_node *)self->parent;
  
-    if (offset)
-        return 0;
-
     return node->interface->send(node->device->bus, node->device->id, count, buffer);
 
 }
