@@ -1,5 +1,5 @@
 MOD_$(DIR):=$(DIR)/arp.ko.0
-OBJ_$(DIR):=$(DIR)/main.o $(DIR)/protocol.o
+OBJ_$(DIR):=$(DIR)/main.o
 
 $(MOD_$(DIR)): $(OBJ_$(DIR))
 	$(LD) $(LDFLAGS) -o $@ $^
