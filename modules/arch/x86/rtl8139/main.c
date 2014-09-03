@@ -137,6 +137,7 @@ static unsigned char tx3[0x800];
 static unsigned short rxp;
 static unsigned short txp;
 static struct scheduler_rendezvous rdata;
+static struct scheduler_rendezvous wdata;
 
 static void poweron(struct base_bus *bus, unsigned int id)
 {
@@ -200,7 +201,12 @@ static void handleirq(unsigned int irq, struct base_bus *bus, unsigned int id)
     }
 
     if (status & RTL8139_ISR_TOK)
+    {
+
+        scheduler_rendezvous_unsleep(&wdata);
         io_outw(io + RTL8139_REGISTER_ISR, RTL8139_ISR_TOK);
+
+    }
 
 }
 
@@ -218,19 +224,14 @@ static void inetwork_dumppacket(struct base_bus *bus, unsigned int id)
 
     rxp += (header->length + 4 + 3) & ~3;
 
-/*
-    io_outw(io + RTL8139_REGISTER_CAPR, rxp);
-*/
-
 }
 
 static unsigned int inetwork_receive(struct base_bus *bus, unsigned int id, unsigned int count, void *buffer)
 {
 
     struct rtl8139_header *header = inetwork_getpacket(bus, id);
-    unsigned int l = (header->length + 4 + 3) & ~3;
     unsigned short cbr = io_inw(io + RTL8139_REGISTER_CBR);
-    unsigned int k;
+    unsigned int c;
 
     if (cbr == rxp)
     {
@@ -241,11 +242,11 @@ static unsigned int inetwork_receive(struct base_bus *bus, unsigned int id, unsi
 
     }
 
-    k = memory_read(buffer, count, rx + rxp, l, 0);
+    c = memory_read(buffer, count, rx + rxp + 4, header->length, 0);
 
     inetwork_dumppacket(bus, id);
 
-    return k;
+    return c;
 
 }
 
