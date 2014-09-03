@@ -209,7 +209,7 @@ static unsigned int iterminal_wdata(struct base_bus *bus, unsigned int id, unsig
 
 }
 
-static unsigned int driver_check(struct base_bus *bus, unsigned int id)
+static unsigned int driver_match(struct base_bus *bus, unsigned int id)
 {
 
     if (bus->type != PLATFORM_BUS_TYPE)
@@ -254,7 +254,7 @@ void init()
 
     base_terminal_initinterface(&iterminal, iterminal_rdata, iterminal_wdata);
     base_terminal_registerinterface(&iterminal);
-    base_initdriver(&driver, "uart", driver_check, driver_attach, driver_detach);
+    base_initdriver(&driver, "uart", driver_match, driver_attach, driver_detach);
     base_registerdriver(&driver);
 
 }

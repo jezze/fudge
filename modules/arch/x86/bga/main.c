@@ -98,7 +98,7 @@ static unsigned int ivideo_wdata(struct base_bus *bus, unsigned int id, unsigned
 
 }
 
-static unsigned int driver_check(struct base_bus *bus, unsigned int id)
+static unsigned int driver_match(struct base_bus *bus, unsigned int id)
 {
 
     if (bus->type != PCI_BUS_TYPE)
@@ -139,7 +139,7 @@ void init()
 
     base_video_initinterface(&ivideo, ivideo_setmode, ivideo_rdata, ivideo_wdata, 0, 0);
     base_video_registerinterface(&ivideo);
-    base_initdriver(&driver, "bga", driver_check, driver_attach, driver_detach);
+    base_initdriver(&driver, "bga", driver_match, driver_attach, driver_detach);
     base_registerdriver(&driver);
 
 }

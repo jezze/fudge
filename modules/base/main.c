@@ -34,7 +34,7 @@ void base_registerdriver(struct base_driver *driver)
         while ((id = bus->next(bus, id)))
         {
 
-            if (!driver->check(bus, id))
+            if (!driver->match(bus, id))
                 continue;
 
             driver->attach(bus, id);
@@ -75,7 +75,7 @@ void base_unregisterdriver(struct base_driver *driver)
         while ((id = bus->next(bus, id)))
         {
 
-            if (!driver->check(bus, id))
+            if (!driver->match(bus, id))
                 continue;
 
             driver->detach(bus, id);
@@ -109,14 +109,14 @@ void base_initbus(struct base_bus *bus, unsigned int type, const char *name, voi
 
 }
 
-void base_initdriver(struct base_driver *driver, const char *name, unsigned int (*check)(struct base_bus *bus, unsigned int id), void (*attach)(struct base_bus *bus, unsigned int id), void (*detach)(struct base_bus *bus, unsigned int id))
+void base_initdriver(struct base_driver *driver, const char *name, unsigned int (*match)(struct base_bus *bus, unsigned int id), void (*attach)(struct base_bus *bus, unsigned int id), void (*detach)(struct base_bus *bus, unsigned int id))
 {
 
     memory_clear(driver, sizeof (struct base_driver));
     resource_init(&driver->resource, BASE_RESOURCE_DRIVER, driver);
 
     driver->name = name;
-    driver->check = check;
+    driver->match = match;
     driver->attach = attach;
     driver->detach = detach;
 

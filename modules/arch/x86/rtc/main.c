@@ -103,7 +103,7 @@ static unsigned short iclock_getyear(struct base_bus *bus, unsigned int id)
 
 }
 
-static unsigned int driver_check(struct base_bus *bus, unsigned int id)
+static unsigned int driver_match(struct base_bus *bus, unsigned int id)
 {
 
     if (bus->type != PLATFORM_BUS_TYPE)
@@ -138,7 +138,7 @@ void init()
 
     base_clock_initinterface(&iclock, iclock_getseconds, iclock_getminutes, iclock_gethours, iclock_getweekday, iclock_getday, iclock_getmonth, iclock_getyear);
     base_clock_registerinterface(&iclock);
-    base_initdriver(&driver, "rtc", driver_check, driver_attach, driver_detach);
+    base_initdriver(&driver, "rtc", driver_match, driver_attach, driver_detach);
     base_registerdriver(&driver);
 
 }

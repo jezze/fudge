@@ -291,7 +291,7 @@ static unsigned int inetwork_send(struct base_bus *bus, unsigned int id, unsigne
 
 }
 
-static unsigned int driver_check(struct base_bus *bus, unsigned int id)
+static unsigned int driver_match(struct base_bus *bus, unsigned int id)
 {
 
     if (bus->type != PCI_BUS_TYPE)
@@ -345,7 +345,7 @@ void init()
 
     base_network_initinterface(&inetwork, inetwork_receive, inetwork_send, inetwork_getpacket, inetwork_dumppacket);
     base_network_registerinterface(&inetwork);
-    base_initdriver(&driver, "rtl8139", driver_check, driver_attach, driver_detach);
+    base_initdriver(&driver, "rtl8139", driver_match, driver_attach, driver_detach);
     base_registerdriver(&driver);
 
 }

@@ -38,7 +38,7 @@ static unsigned int iblock_wdata(struct base_bus *bus, unsigned int id, unsigned
 
 }
 
-static unsigned int driver_check(struct base_bus *bus, unsigned int id)
+static unsigned int driver_match(struct base_bus *bus, unsigned int id)
 {
 
     if (bus->type != IDE_BUS_TYPE)
@@ -71,7 +71,7 @@ void init()
 
     base_block_initinterface(&iblock, iblock_rdata, iblock_wdata);
     base_block_registerinterface(&iblock);
-    base_initdriver(&driver, "ata", driver_check, driver_attach, driver_detach);
+    base_initdriver(&driver, "ata", driver_match, driver_attach, driver_detach);
     base_registerdriver(&driver);
 
 }

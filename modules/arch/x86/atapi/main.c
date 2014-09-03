@@ -16,7 +16,7 @@ static void handleirq(unsigned int irq, struct base_bus *bus, unsigned int id)
 
 }
 
-static unsigned int driver_check(struct base_bus *bus, unsigned int id)
+static unsigned int driver_match(struct base_bus *bus, unsigned int id)
 {
 
     if (bus->type != IDE_BUS_TYPE)
@@ -49,7 +49,7 @@ void init()
 
     base_block_initinterface(&iblock, 0, 0);
     base_block_registerinterface(&iblock);
-    base_initdriver(&driver, "atapi", driver_check, driver_attach, driver_detach);
+    base_initdriver(&driver, "atapi", driver_match, driver_attach, driver_detach);
     base_registerdriver(&driver);
 
 }

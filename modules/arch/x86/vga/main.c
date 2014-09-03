@@ -326,7 +326,7 @@ static unsigned int ivideo_wcolormap(struct base_bus *bus, unsigned int id, unsi
 
 }
 
-static unsigned int driver_check(struct base_bus *bus, unsigned int id)
+static unsigned int driver_match(struct base_bus *bus, unsigned int id)
 {
 
     if (bus->type != PCI_BUS_TYPE)
@@ -371,7 +371,7 @@ void init()
     base_terminal_registerinterface(&iterminal);
     base_video_initinterface(&ivideo, ivideo_setmode, ivideo_rdata, ivideo_wdata, ivideo_rcolormap, ivideo_wcolormap);
     base_video_registerinterface(&ivideo);
-    base_initdriver(&driver, "vga", driver_check, driver_attach, driver_detach);
+    base_initdriver(&driver, "vga", driver_match, driver_attach, driver_detach);
     base_registerdriver(&driver);
 
 }

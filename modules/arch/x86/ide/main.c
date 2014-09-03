@@ -395,7 +395,7 @@ static unsigned short bus_irq(struct base_bus *self, unsigned int id)
 
 }
 
-static unsigned int driver_check(struct base_bus *bus, unsigned int id)
+static unsigned int driver_match(struct base_bus *bus, unsigned int id)
 {
 
     if (bus->type != PCI_BUS_TYPE)
@@ -441,7 +441,7 @@ static void driver_detach(struct base_bus *bus, unsigned int id)
 void init()
 {
 
-    base_initdriver(&driver, "ide", driver_check, driver_attach, driver_detach);
+    base_initdriver(&driver, "ide", driver_match, driver_attach, driver_detach);
     base_registerdriver(&driver);
 
 }

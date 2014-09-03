@@ -62,7 +62,7 @@ static void itimer_addduration(struct base_bus *bus, unsigned int id, unsigned i
 
 }
 
-static unsigned int driver_check(struct base_bus *bus, unsigned int id)
+static unsigned int driver_match(struct base_bus *bus, unsigned int id)
 {
 
     if (bus->type != PLATFORM_BUS_TYPE)
@@ -101,7 +101,7 @@ void init()
 
     base_timer_initinterface(&itimer, itimer_addduration);
     base_timer_registerinterface(&itimer);
-    base_initdriver(&driver, "pit", driver_check, driver_attach, driver_detach);
+    base_initdriver(&driver, "pit", driver_match, driver_attach, driver_detach);
     base_registerdriver(&driver);
 
 }

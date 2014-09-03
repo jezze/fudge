@@ -58,7 +58,7 @@ static unsigned int imouse_rdata(struct base_bus *bus, unsigned int id, unsigned
 
 }
 
-static unsigned int driver_check(struct base_bus *bus, unsigned int id)
+static unsigned int driver_match(struct base_bus *bus, unsigned int id)
 {
 
     if (bus->type != PS2_BUS_TYPE)
@@ -99,7 +99,7 @@ void ps2_mouse_driver_init()
 
     base_mouse_initinterface(&imouse, imouse_rdata);
     base_mouse_registerinterface(&imouse);
-    base_initdriver(&driver, "ps2mouse", driver_check, driver_attach, driver_detach);
+    base_initdriver(&driver, "ps2mouse", driver_match, driver_attach, driver_detach);
     base_registerdriver(&driver);
 
 }

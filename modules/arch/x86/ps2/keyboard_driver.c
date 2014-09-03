@@ -109,7 +109,7 @@ static unsigned int ikeyboard_wkeymap(struct base_bus *bus, unsigned int id, uns
 
 }
 
-static unsigned int driver_check(struct base_bus *bus, unsigned int id)
+static unsigned int driver_match(struct base_bus *bus, unsigned int id)
 {
 
     if (bus->type != PS2_BUS_TYPE)
@@ -150,7 +150,7 @@ void ps2_keyboard_driver_init()
 
     base_keyboard_initinterface(&ikeyboard, ikeyboard_rdata, ikeyboard_wdata, ikeyboard_rkeymap, ikeyboard_wkeymap);
     base_keyboard_registerinterface(&ikeyboard);
-    base_initdriver(&driver, "ps2keyboard", driver_check, driver_attach, driver_detach);
+    base_initdriver(&driver, "ps2keyboard", driver_match, driver_attach, driver_detach);
     base_registerdriver(&driver);
 
 }
