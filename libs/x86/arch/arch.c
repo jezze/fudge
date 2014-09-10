@@ -276,7 +276,7 @@ unsigned short arch_syscall(void *stack)
 
 }
 
-static void arch_setup_basic()
+static void setupbasic()
 {
 
     gdt_initpointer(&gdt.pointer, ARCH_GDT_DESCRIPTORS, gdt.descriptors);
@@ -299,7 +299,7 @@ static void arch_setup_basic()
 
 }
 
-static void arch_setup_container(struct arch_container *container, unsigned int i)
+static void setupcontainer(struct arch_container *container, unsigned int i)
 {
 
     struct mmu_directory *directories = (struct mmu_directory *)ARCH_DIRECTORY_KCODE_BASE;
@@ -314,19 +314,19 @@ static void arch_setup_container(struct arch_container *container, unsigned int 
 
 }
 
-static struct container *arch_setup_containers()
+static struct container *setupcontainers()
 {
 
     unsigned int i;
 
     for (i = 0; i < ARCH_CONTAINERS; i++)
-        arch_setup_container(&containers[i], i);
+        setupcontainer(&containers[i], i);
 
     return &containers[0].base;
 
 }
 
-static void arch_setup_task(struct arch_task *task, unsigned int i)
+static void setuptask(struct arch_task *task, unsigned int i)
 {
 
     struct mmu_directory *directories = (struct mmu_directory *)ARCH_DIRECTORY_UCODE_BASE;
@@ -343,19 +343,19 @@ static void arch_setup_task(struct arch_task *task, unsigned int i)
 
 }
 
-static struct task *arch_setup_tasks()
+static struct task *setuptasks()
 {
 
     unsigned int i;
 
     for (i = 0; i < ARCH_TASKS; i++)
-        arch_setup_task(&tasks[i], i);
+        setuptask(&tasks[i], i);
 
     return &tasks[0].base;
 
 }
 
-static void arch_setup_mmu(struct container *container, struct task *task)
+static void setupmmu(struct container *container, struct task *task)
 {
 
     taskconnect(container, task);
@@ -367,15 +367,15 @@ static void arch_setup_mmu(struct container *container, struct task *task)
 void arch_setup(unsigned int count, struct kernel_module *modules)
 {
 
-    arch_setup_basic();
+    setupbasic();
     kernel_setup();
 
-    current.container = arch_setup_containers();
-    current.task = arch_setup_tasks();
+    current.container = setupcontainers();
+    current.task = setuptasks();
 
     scheduler_use(current.task);
-    arch_setup_mmu(current.container, current.task);
-    kernel_setup_modules(current.container, current.task, count, modules);
+    setupmmu(current.container, current.task);
+    kernel_setupmodules(current.container, current.task, count, modules);
     arch_usermode(selector.ucode, selector.udata, current.task->registers.ip, current.task->registers.sp);
 
 }

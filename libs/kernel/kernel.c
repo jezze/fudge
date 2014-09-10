@@ -20,7 +20,7 @@ static unsigned int findentry(struct vfs_channel *channel, unsigned int id)
 
 }
 
-void kernel_setup_modules(struct container *container, struct task *task, unsigned int count, struct kernel_module *modules)
+void kernel_setupmodules(struct container *container, struct task *task, unsigned int count, struct kernel_module *modules)
 {
 
     struct vfs_channel *channel = &container->channels[0];
