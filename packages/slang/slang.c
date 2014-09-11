@@ -21,13 +21,13 @@ struct token
 
 static unsigned char input[4096];
 static unsigned int ninput;
-static struct token infix[128];
+static struct token infix[512];
 static unsigned int ninfix;
-static struct token postfix[128];
+static struct token postfix[512];
 static unsigned int npostfix;
 static struct token stack[8];
 static unsigned int nstack;
-static char strtbl[1024];
+static char strtbl[4096];
 static unsigned int nstrtbl;
 static unsigned int ident;
 static unsigned int identstart;
