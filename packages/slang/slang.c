@@ -337,6 +337,9 @@ static void parse()
                 break;
 
             case END:
+                call_walk(CALL_I1, CALL_I0, 0, 0);
+                call_walk(CALL_O1, CALL_O0, 0, 0);
+
                 break;
 
         }
