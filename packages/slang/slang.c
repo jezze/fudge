@@ -22,6 +22,7 @@ struct token
 struct tokenlist
 {
 
+    unsigned int head;
     unsigned int size;
     struct token *table;
 
@@ -37,11 +38,12 @@ static unsigned int walk_path(unsigned int index, unsigned int indexw, unsigned 
 
 }
 
-static void tokenlist_init(struct tokenlist *list, struct token *table)
+static void tokenlist_init(struct tokenlist *list, unsigned int size, struct token *table)
 {
 
     memory_clear(list, sizeof (struct tokenlist));
 
+    list->size = size;
     list->table = table;
 
 }
@@ -49,30 +51,34 @@ static void tokenlist_init(struct tokenlist *list, struct token *table)
 static void tokenlist_add(struct tokenlist *list, unsigned int type, char *str)
 {
 
-    list->table[list->size].type = type;
-    list->table[list->size].str = str;
-    list->size++;
+    list->table[list->head].type = type;
+    list->table[list->head].str = str;
+
+    if (list->head < list->size)
+        list->head++;
 
 }
 
 static void tokenlist_copy(struct tokenlist *list, struct token *tok)
 {
 
-    list->table[list->size].type = tok->type;
-    list->table[list->size].str = tok->str;
-    list->size++;
+    list->table[list->head].type = tok->type;
+    list->table[list->head].str = tok->str;
+
+    if (list->head < list->size)
+        list->head++;
 
 }
 
 static struct token *tokenlist_pop(struct tokenlist *list)
 {
 
-    if (!list->size)
+    if (!list->head)
         return 0;
 
-    list->size--;
+    list->head--;
 
-    return &list->table[list->size];
+    return &list->table[list->head];
 
 }
 
@@ -158,7 +164,7 @@ static void translate(struct tokenlist *postfix, struct tokenlist *infix, struct
 
     unsigned int i;
 
-    for (i = 0; i < infix->size; i++)
+    for (i = 0; i < infix->head; i++)
         infixtbl2postfixtbl(postfix, &infix->table[i], stack);
 
 }
@@ -274,7 +280,7 @@ static void parse(struct tokenlist *postfix, struct tokenlist *stack)
     call_walk(CALL_I1, CALL_I0, 0, 0);
     call_walk(CALL_O1, CALL_O0, 0, 0);
 
-    for (i = 0; i < postfix->size; i++)
+    for (i = 0; i < postfix->head; i++)
     {
 
         struct token *t = &postfix->table[i];
@@ -348,9 +354,9 @@ void main()
     struct tokenlist stack;
     char strtbl[4096];
 
-    tokenlist_init(&infix, infixtbl);
-    tokenlist_init(&postfix, postfixtbl);
-    tokenlist_init(&stack, stacktbl);
+    tokenlist_init(&infix, 512, infixtbl);
+    tokenlist_init(&postfix, 512, postfixtbl);
+    tokenlist_init(&stack, 8, stacktbl);
 
     if (!call_walk(CALL_L0, CALL_DR, 4, "bin/"))
         return;
@@ -363,12 +369,12 @@ void main()
 
     tokenize(&infix, strtbl, count, buffer);
 
-    if (stack.size)
+    if (stack.head)
         return;
 
     translate(&postfix, &infix, &stack);
 
-    if (stack.size)
+    if (stack.head)
         return;
 
     parse(&postfix, &stack);
