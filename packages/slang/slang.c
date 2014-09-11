@@ -241,59 +241,57 @@ static void tokenize(struct tokenlist *infix, struct stringtable *table, unsigne
 
 }
 
-static void translatetoken(struct tokenlist *postfix, struct token *token, struct tokenlist *stack)
-{
-
-    struct token *t;
-
-    if (token->type == IDENT)
-    {
-
-        tokenlist_copy(postfix, token);
-
-        return;
-
-    }
-
-    if (token->type == END)
-    {
-
-        while ((t = tokenlist_pop(stack)))
-            tokenlist_copy(postfix, t);
-
-        tokenlist_copy(postfix, token);
-
-        return;
-
-    }
-
-    while ((t = tokenlist_pop(stack)))
-    {
-
-        if (precedence(token) > precedence(t))
-        {
-
-            tokenlist_copy(stack, t);
-
-            break;
-
-        }
-
-        tokenlist_copy(postfix, t);
-
-    }
-
-    tokenlist_copy(stack, token);
-
-}
-
 static void translate(struct tokenlist *postfix, struct tokenlist *infix, struct tokenlist *stack)
 {
 
     unsigned int i;
 
     for (i = 0; i < infix->head; i++)
-        translatetoken(postfix, &infix->table[i], stack);
+    {
+
+        struct token *token = &infix->table[i];
+        struct token *t;
+
+        if (token->type == IDENT)
+        {
+
+            tokenlist_copy(postfix, token);
+
+            continue;
+
+        }
+
+        if (token->type == END)
+        {
+
+            while ((t = tokenlist_pop(stack)))
+                tokenlist_copy(postfix, t);
+
+            tokenlist_copy(postfix, token);
+
+            continue;
+
+        }
+
+        while ((t = tokenlist_pop(stack)))
+        {
+
+            if (precedence(token) > precedence(t))
+            {
+
+                tokenlist_copy(stack, t);
+
+                break;
+
+            }
+
+            tokenlist_copy(postfix, t);
+
+        }
+
+        tokenlist_copy(stack, token);
+
+    }
 
 }
 
@@ -308,46 +306,46 @@ static void parse(struct tokenlist *postfix, struct tokenlist *stack)
     for (i = 0; i < postfix->head; i++)
     {
 
-        struct token *t = &postfix->table[i];
-        struct token *a;
+        struct token *token = &postfix->table[i];
+        struct token *t;
 
-        switch (t->type)
+        switch (token->type)
         {
 
         case IDENT:
-            tokenlist_copy(stack, t);
+            tokenlist_copy(stack, token);
 
             break;
 
         case IN:
-            a = tokenlist_pop(stack);
+            t = tokenlist_pop(stack);
 
-            if (!a)
+            if (!t)
                 return;
 
-            if (!walk_path(CALL_I1, CALL_DW, ascii_length(a->str), a->str))
+            if (!walk_path(CALL_I1, CALL_DW, ascii_length(t->str), t->str))
                 return;
 
             break;
 
         case OUT:
-            a = tokenlist_pop(stack);
+            t = tokenlist_pop(stack);
 
-            if (!a)
+            if (!t)
                 return;
 
-            if (!walk_path(CALL_O1, CALL_DW, ascii_length(a->str), a->str))
+            if (!walk_path(CALL_O1, CALL_DW, ascii_length(t->str), t->str))
                 return;
 
             break;
 
         case PIPE:
-            a = tokenlist_pop(stack);
+            t = tokenlist_pop(stack);
 
-            if (!a)
+            if (!t)
                 return;
 
-            if (!walk_path(CALL_DP, CALL_L0, ascii_length(a->str), a->str))
+            if (!walk_path(CALL_DP, CALL_L0, ascii_length(t->str), t->str))
                 return;
 
             call_spawn(CALL_DP);
