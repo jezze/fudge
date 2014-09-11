@@ -99,15 +99,15 @@ static unsigned int precedence(struct token *tok)
     switch (tok->type)
     {
 
-        case PIPE:
-            return 1;
+    case PIPE:
+        return 1;
 
-        case IN:
-        case OUT:
-            return 2;
+    case IN:
+    case OUT:
+        return 2;
 
-        case END:
-            return 3;
+    case END:
+        return 3;
 
     }
 
@@ -296,51 +296,51 @@ static void parse()
         switch (t->type)
         {
 
-            case IDENT:
-                stack_push(t);
+        case IDENT:
+            stack_push(t);
 
-                break;
+            break;
 
-            case IN:
-                a = stack_pop();
+        case IN:
+            a = stack_pop();
 
-                if (!a)
-                    return;
+            if (!a)
+                return;
 
-                if (!walk_path(CALL_I1, CALL_DW, ascii_length(a->str), a->str))
-                    return;
+            if (!walk_path(CALL_I1, CALL_DW, ascii_length(a->str), a->str))
+                return;
 
-                break;
+            break;
 
-            case OUT:
-                a = stack_pop();
+        case OUT:
+            a = stack_pop();
 
-                if (!a)
-                    return;
+            if (!a)
+                return;
 
-                if (!walk_path(CALL_O1, CALL_DW, ascii_length(a->str), a->str))
-                    return;
+            if (!walk_path(CALL_O1, CALL_DW, ascii_length(a->str), a->str))
+                return;
 
-                break;
+            break;
 
-            case PIPE:
-                a = stack_pop();
+        case PIPE:
+            a = stack_pop();
 
-                if (!a)
-                    return;
+            if (!a)
+                return;
 
-                if (!walk_path(CALL_DP, CALL_L0, ascii_length(a->str), a->str))
-                    return;
+            if (!walk_path(CALL_DP, CALL_L0, ascii_length(a->str), a->str))
+                return;
 
-                call_spawn(CALL_DP);
+            call_spawn(CALL_DP);
 
-                break;
+            break;
 
-            case END:
-                call_walk(CALL_I1, CALL_I0, 0, 0);
-                call_walk(CALL_O1, CALL_O0, 0, 0);
+        case END:
+            call_walk(CALL_I1, CALL_I0, 0, 0);
+            call_walk(CALL_O1, CALL_O0, 0, 0);
 
-                break;
+            break;
 
         }
 
@@ -361,12 +361,12 @@ void main()
     identcount = 0;
     identcurrent = 0;
 
-    if (!call_walk(CALL_L0, CALL_DR, 4, "bin/"))
-        return;
-
     call_open(CALL_I0);
     call_read(CALL_I0, 0, FUDGE_BSIZE, input);
     call_close(CALL_I0);
+
+    if (!call_walk(CALL_L0, CALL_DR, 4, "bin/"))
+        return;
 
     tokenize();
 
