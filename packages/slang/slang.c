@@ -19,20 +19,13 @@ struct token
 
 };
 
-static unsigned char input[4096];
-static unsigned int ninput;
-static struct token infix[512];
-static unsigned int ninfix;
-static struct token postfix[512];
-static unsigned int npostfix;
-static struct token stack[8];
-static unsigned int nstack;
-static char strtbl[4096];
-static unsigned int nstrtbl;
-static unsigned int ident;
-static unsigned int identstart;
-static unsigned int identcount;
-static unsigned int identcurrent;
+struct tokenlist
+{
+
+    unsigned int size;
+    struct token *table;
+
+};
 
 static unsigned int walk_path(unsigned int index, unsigned int indexw, unsigned int count, char *buffer)
 {
@@ -44,52 +37,51 @@ static unsigned int walk_path(unsigned int index, unsigned int indexw, unsigned 
 
 }
 
-static unsigned int strtbl_push(char c)
+static void tokenlist_init(struct tokenlist *list, struct token *table)
 {
 
-    strtbl[nstrtbl] = c;
-    nstrtbl++;
+    memory_clear(list, sizeof (struct tokenlist));
 
-    return nstrtbl - 1;
+    list->table = table;
 
 }
 
-static void infix_push(unsigned int type, char *str)
+static void tokenlist_add(struct tokenlist *list, unsigned int type, char *str)
 {
 
-    infix[ninfix].type = type;
-    infix[ninfix].str = str;
-    ninfix++;
+    list->table[list->size].type = type;
+    list->table[list->size].str = str;
+    list->size++;
 
 }
 
-static void postfix_push(struct token *tok)
+static void tokenlist_copy(struct tokenlist *list, struct token *tok)
 {
 
-    postfix[npostfix].type = tok->type;
-    postfix[npostfix].str = tok->str;
-    npostfix++;
+    list->table[list->size].type = tok->type;
+    list->table[list->size].str = tok->str;
+    list->size++;
 
 }
 
-static void stack_push(struct token *tok)
+static struct token *tokenlist_pop(struct tokenlist *list)
 {
 
-    stack[nstack].type = tok->type;
-    stack[nstack].str = tok->str;
-    nstack++;
-
-}
-
-static struct token *stack_pop()
-{
-
-    if (!nstack)
+    if (!list->size)
         return 0;
 
-    nstack--;
+    list->size--;
 
-    return &stack[nstack];
+    return &list->table[list->size];
+
+}
+
+static unsigned int strtbl_push(char *strtbl, unsigned int offset, char c)
+{
+
+    strtbl[offset] = c;
+
+    return offset + 1;
 
 }
 
@@ -115,7 +107,7 @@ static unsigned int precedence(struct token *tok)
 
 }
 
-static void infix2postfix(struct token *tok)
+static void infixtbl2postfixtbl(struct tokenlist *postfix, struct token *tok, struct tokenlist *stack)
 {
 
     struct token *t;
@@ -123,7 +115,7 @@ static void infix2postfix(struct token *tok)
     if (tok->type == IDENT)
     {
 
-        postfix_push(tok);
+        tokenlist_copy(postfix, tok);
 
         return;
 
@@ -132,83 +124,60 @@ static void infix2postfix(struct token *tok)
     if (tok->type == END)
     {
 
-        while ((t = stack_pop()))
-            postfix_push(t);
+        while ((t = tokenlist_pop(stack)))
+            tokenlist_copy(postfix, t);
 
-        postfix_push(tok);
+        tokenlist_copy(postfix, tok);
 
         return;
 
     }
 
-    while ((t = stack_pop()))
+    while ((t = tokenlist_pop(stack)))
     {
 
         if (precedence(tok) > precedence(t))
         {
 
-            stack_push(t);
+            tokenlist_copy(stack, t);
 
             break;
 
         }
 
-        postfix_push(t);
+        tokenlist_copy(postfix, t);
 
     }
 
-    stack_push(tok);
+    tokenlist_copy(stack, tok);
 
 }
 
-static void translate()
+static void translate(struct tokenlist *postfix, struct tokenlist *infix, struct tokenlist *stack)
 {
 
     unsigned int i;
 
-    for (i = 0; i < ninfix; i++)
-        infix2postfix(&infix[i]);
+    for (i = 0; i < infix->size; i++)
+        infixtbl2postfixtbl(postfix, &infix->table[i], stack);
 
 }
 
-static char next()
+static void tokenize(struct tokenlist *infix, char *strtbl, unsigned int count, char *buffer)
 {
 
-    char x = input[ninput];
+    unsigned int i;
+    unsigned int ident;
+    unsigned int identstart = 0;
+    unsigned int identcount = 0;
+    unsigned int identcurrent = 0;
 
-    ninput++;
+    tokenlist_add(infix, PIPE, 0);
 
-    return x;
-
-}
-
-static void ident_begin()
-{
-
-    identstart = identcurrent;
-    identcount = 1;
-
-}
-
-static void ident_end()
-{
-
-    infix_push(IDENT, strtbl + identstart);
-
-    identcurrent = strtbl_push('\0');
-    identcount = 0;
-
-}
-
-static void tokenize()
-{
-
-    char c;
-
-    infix_push(PIPE, 0);
-
-    while ((c = next()))
+    for (i = 0; i < count; i++)
     {
+
+        char c = buffer[i];
 
         ident = 0;
 
@@ -220,33 +189,39 @@ static void tokenize()
             break;
 
         case '<':
-            infix_push(IN, 0);
+            tokenlist_add(infix, IN, 0);
 
             break;
 
         case '>':
-            infix_push(OUT, 0);
+            tokenlist_add(infix, OUT, 0);
 
             break;
 
         case '|':
-            infix_push(PIPE, 0);
+            tokenlist_add(infix, PIPE, 0);
 
             break;
 
         case ';':
         case '\n':
             if (identcount)
-                ident_end();
+            {
 
-            infix_push(END, 0);
-            infix_push(PIPE, 0);
+                tokenlist_add(infix, IDENT, strtbl + identstart);
+                identcurrent = strtbl_push(strtbl, identcurrent, '\0');
+                identcount = 0;
+
+            }
+
+            tokenlist_add(infix, END, 0);
+            tokenlist_add(infix, PIPE, 0);
 
             break;
 
         default:
             ident = 1;
-            identcurrent = strtbl_push(c);
+            identcurrent = strtbl_push(strtbl, identcurrent, c);
 
             break;
 
@@ -255,10 +230,10 @@ static void tokenize()
         if (ident)
         {
 
-            if (identcount)
-                identcount++;
-            else
-                ident_begin();
+            if (!identcount)
+                identstart = identcurrent - 1;
+
+            identcount++;
 
         }
 
@@ -266,20 +241,32 @@ static void tokenize()
         {
 
             if (identcount)
-                ident_end();
+            {
+
+                tokenlist_add(infix, IDENT, strtbl + identstart);
+                identcurrent = strtbl_push(strtbl, identcurrent, '\0');
+                identcount = 0;
+
+            }
 
         }
 
     }
 
     if (identcount)
-        ident_end();
+    {
 
-    infix_push(END, 0);
+        tokenlist_add(infix, IDENT, strtbl + identstart);
+        identcurrent = strtbl_push(strtbl, identcurrent, '\0');
+        identcount = 0;
+
+    }
+
+    tokenlist_add(infix, END, 0);
 
 }
 
-static void parse()
+static void parse(struct tokenlist *postfix, struct tokenlist *stack)
 {
 
     unsigned int i;
@@ -287,22 +274,22 @@ static void parse()
     call_walk(CALL_I1, CALL_I0, 0, 0);
     call_walk(CALL_O1, CALL_O0, 0, 0);
 
-    for (i = 0; i < npostfix; i++)
+    for (i = 0; i < postfix->size; i++)
     {
 
-        struct token *t = &postfix[i];
+        struct token *t = &postfix->table[i];
         struct token *a;
 
         switch (t->type)
         {
 
         case IDENT:
-            stack_push(t);
+            tokenlist_copy(stack, t);
 
             break;
 
         case IN:
-            a = stack_pop();
+            a = tokenlist_pop(stack);
 
             if (!a)
                 return;
@@ -313,7 +300,7 @@ static void parse()
             break;
 
         case OUT:
-            a = stack_pop();
+            a = tokenlist_pop(stack);
 
             if (!a)
                 return;
@@ -324,7 +311,7 @@ static void parse()
             break;
 
         case PIPE:
-            a = stack_pop();
+            a = tokenlist_pop(stack);
 
             if (!a)
                 return;
@@ -351,34 +338,40 @@ static void parse()
 void main()
 {
 
-    ninput = 0;
-    ninfix = 0;
-    npostfix = 0;
-    nstack = 0;
-    nstrtbl = 0;
-    ident = 0;
-    identstart = 0;
-    identcount = 0;
-    identcurrent = 0;
+    char buffer[4096];
+    unsigned int count;
+    struct token infixtbl[512];
+    struct token postfixtbl[512];
+    struct token stacktbl[8];
+    struct tokenlist infix;
+    struct tokenlist postfix;
+    struct tokenlist stack;
+    char strtbl[4096];
 
-    call_open(CALL_I0);
-    call_read(CALL_I0, 0, FUDGE_BSIZE, input);
-    call_close(CALL_I0);
+    tokenlist_init(&infix, infixtbl);
+    tokenlist_init(&postfix, postfixtbl);
+    tokenlist_init(&stack, stacktbl);
 
     if (!call_walk(CALL_L0, CALL_DR, 4, "bin/"))
         return;
 
-    tokenize();
+    call_open(CALL_I0);
 
-    if (nstack)
+    count = call_read(CALL_I0, 0, FUDGE_BSIZE, buffer);
+
+    call_close(CALL_I0);
+
+    tokenize(&infix, strtbl, count, buffer);
+
+    if (stack.size)
         return;
 
-    translate();
+    translate(&postfix, &infix, &stack);
 
-    if (nstack)
+    if (stack.size)
         return;
 
-    parse();
+    parse(&postfix, &stack);
 
 }
 
