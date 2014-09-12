@@ -119,15 +119,15 @@ static unsigned int precedence(struct token *token)
     switch (token->type)
     {
 
+    case END:
+        return 0;
+
     case PIPE:
         return 1;
 
     case IN:
     case OUT:
         return 2;
-
-    case END:
-        return 3;
 
     }
 
@@ -140,10 +140,7 @@ static void tokenize(struct tokenlist *infix, struct stringtable *table, unsigne
 
     unsigned int i;
     unsigned int ident;
-    unsigned int identstart = 0;
     unsigned int identcount = 0;
-
-    tokenlist_add(infix, PIPE, 0);
 
     for (i = 0; i < count; i++)
     {
@@ -176,25 +173,15 @@ static void tokenize(struct tokenlist *infix, struct stringtable *table, unsigne
 
         case ';':
         case '\n':
-            if (identcount)
-            {
-
-                tokenlist_add(infix, IDENT, table->buffer + identstart);
-                stringtable_push(table, '\0');
-
-                identcount = 0;
-
-            }
-
             tokenlist_add(infix, END, 0);
-            tokenlist_add(infix, PIPE, 0);
 
             break;
 
         default:
             ident = 1;
 
-            stringtable_push(table, c);
+            if (!identcount)
+                tokenlist_add(infix, IDENT, table->buffer + table->head);
 
             break;
 
@@ -203,8 +190,7 @@ static void tokenize(struct tokenlist *infix, struct stringtable *table, unsigne
         if (ident)
         {
 
-            if (!identcount)
-                identstart = table->head - 1;
+            stringtable_push(table, c);
 
             identcount++;
 
@@ -216,7 +202,6 @@ static void tokenize(struct tokenlist *infix, struct stringtable *table, unsigne
             if (identcount)
             {
 
-                tokenlist_add(infix, IDENT, table->buffer + identstart);
                 stringtable_push(table, '\0');
 
                 identcount = 0;
@@ -226,18 +211,6 @@ static void tokenize(struct tokenlist *infix, struct stringtable *table, unsigne
         }
 
     }
-
-    if (identcount)
-    {
-
-        tokenlist_add(infix, IDENT, table->buffer + identstart);
-        stringtable_push(table, '\0');
-
-        identcount = 0;
-
-    }
-
-    tokenlist_add(infix, END, 0);
 
 }
 
@@ -261,7 +234,7 @@ static void translate(struct tokenlist *postfix, struct tokenlist *infix, struct
 
         }
 
-        if (token->type == END)
+        if (token->type == END || token->type == PIPE)
         {
 
             while ((t = tokenlist_pop(stack)))
@@ -339,6 +312,7 @@ static void parse(struct tokenlist *postfix, struct tokenlist *stack)
 
             break;
 
+        case END:
         case PIPE:
             t = tokenlist_pop(stack);
 
@@ -349,10 +323,6 @@ static void parse(struct tokenlist *postfix, struct tokenlist *stack)
                 return;
 
             call_spawn(CALL_DP);
-
-            break;
-
-        case END:
             call_walk(CALL_I1, CALL_I0, 0, 0);
             call_walk(CALL_O1, CALL_O0, 0, 0);
 
