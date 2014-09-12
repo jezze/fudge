@@ -21,7 +21,7 @@ AS:=clang
 CC:=clang
 LD:=clang
 
-ASFLAGS:=-target $(TARGET_$(ARCH)) -msoft-float -c -ffreestanding -nostdlib -nostdinc -std=c89 -pedantic -O2 -I$(INCLUDE_PATH) -I$(LIBS_PATH)
+ASFLAGS:=-target $(TARGET_$(ARCH)) -c -nostdlib -O2
 CFLAGS:=-target $(TARGET_$(ARCH)) -msoft-float -c -Wall -Werror -ffreestanding -nostdlib -nostdinc -std=c89 -pedantic -O2 -I$(INCLUDE_PATH) -I$(LIBS_PATH)
 LDFLAGS:=-target $(TARGET_$(ARCH)) -msoft-float -Wall -Werror -ffreestanding -nostdlib -nostdinc -std=c89 -pedantic -O2 -I$(INCLUDE_PATH) -I$(LIBS_PATH)
 ARFLAGS:=rs
