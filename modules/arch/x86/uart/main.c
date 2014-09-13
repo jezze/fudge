@@ -153,7 +153,7 @@ static struct base_terminal_interface iterminal;
 static struct base_device device;
 static struct base_terminal_node node;
 static unsigned char buffer[512];
-static struct buffer_cfifo cfifo;
+static struct buffer cfifo;
 static struct scheduler_rendezvous rdata;
 static unsigned short io;
 
@@ -225,7 +225,7 @@ static void driver_attach(struct base_bus *bus, unsigned int id)
     base_initdevice(&device, bus, id);
     base_terminal_initnode(&node, &device, &iterminal);
     base_terminal_registernode(&node);
-    buffer_initcfifo(&cfifo, 512, &buffer);
+    buffer_init(&cfifo, 512, &buffer);
     pic_setroutine(bus, id, handleirq);
 
     io = platform_getbase(bus, id);

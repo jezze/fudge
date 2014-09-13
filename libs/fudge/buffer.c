@@ -1,29 +1,56 @@
 #include "memory.h"
 #include "buffer.h"
 
-unsigned int buffer_cfifofull(struct buffer_cfifo *cfifo)
+unsigned int buffer_pushlifo(struct buffer *buffer, unsigned int count, void *memory)
 {
 
-    return cfifo->head == cfifo->tail;
+    if (buffer->head + count < buffer->size)
+    {
+
+        memory_copy(buffer->memory + buffer->head, memory, count);
+
+        buffer->head += count;
+
+        return count;
+
+    }
+
+    return 0;
 
 }
 
-unsigned int buffer_rcfifo(struct buffer_cfifo *cfifo, unsigned int count, void *buffer)
+unsigned int buffer_poplifo(struct buffer *buffer, unsigned int count)
 {
 
-    unsigned char *b = buffer;
+    if (buffer->head >= count)
+    {
+
+        buffer->head -= count;
+
+        return count;
+
+    }
+
+    return 0;
+
+}
+
+unsigned int buffer_rcfifo(struct buffer *buffer, unsigned int count, void *memory)
+{
+
+    unsigned char *b = memory;
     unsigned int i;
 
     for (i = 0; i < count; i++)
     {
 
-        unsigned int tail = (cfifo->tail + 1) % cfifo->size;
+        unsigned int tail = (buffer->tail + 1) % buffer->size;
 
-        if (cfifo->head == cfifo->tail)
+        if (buffer->head == buffer->tail)
             break;
 
-        b[i] = cfifo->buffer[cfifo->tail];
-        cfifo->tail = tail;
+        b[i] = buffer->memory[buffer->tail];
+        buffer->tail = tail;
 
     }
 
@@ -31,22 +58,22 @@ unsigned int buffer_rcfifo(struct buffer_cfifo *cfifo, unsigned int count, void 
 
 }
 
-unsigned int buffer_wcfifo(struct buffer_cfifo *cfifo, unsigned int count, void *buffer)
+unsigned int buffer_wcfifo(struct buffer *buffer, unsigned int count, void *memory)
 {
 
-    unsigned char *b = buffer;
+    unsigned char *b = memory;
     unsigned int i;
 
     for (i = 0; i < count; i++)
     {
 
-        unsigned int head = (cfifo->head + 1) % cfifo->size;
+        unsigned int head = (buffer->head + 1) % buffer->size;
 
-        if (head == cfifo->tail)
+        if (head == buffer->tail)
             break;
 
-        cfifo->buffer[cfifo->head] = b[i];
-        cfifo->head = head;
+        buffer->memory[buffer->head] = b[i];
+        buffer->head = head;
 
     }
 
@@ -54,13 +81,21 @@ unsigned int buffer_wcfifo(struct buffer_cfifo *cfifo, unsigned int count, void 
 
 }
 
-void buffer_initcfifo(struct buffer_cfifo *cfifo, unsigned int size, void *buffer)
+void buffer_clear(struct buffer *buffer)
 {
 
-    memory_clear(cfifo, sizeof (struct buffer_cfifo));
+    buffer->head = 0;
+    buffer->tail = 0;
 
-    cfifo->size = size;
-    cfifo->buffer = buffer;
+}
+
+void buffer_init(struct buffer *buffer, unsigned int size, void *memory)
+{
+
+    memory_clear(buffer, sizeof (struct buffer));
+
+    buffer->size = size;
+    buffer->memory = memory;
 
 }
 

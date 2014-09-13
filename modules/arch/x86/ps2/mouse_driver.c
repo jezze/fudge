@@ -13,7 +13,7 @@ static struct base_mouse_interface imouse;
 static struct base_device device;
 static struct base_mouse_node node;
 static unsigned char buffer[512];
-static struct buffer_cfifo cfifo;
+static struct buffer cfifo;
 static unsigned char cycle;
 static struct scheduler_rendezvous rdata;
 
@@ -74,7 +74,7 @@ static void driver_attach(struct base_bus *bus, unsigned int id)
     base_initdevice(&device, bus, id);
     base_mouse_initnode(&node, &device, &imouse);
     base_mouse_registernode(&node);
-    buffer_initcfifo(&cfifo, 512, &buffer);
+    buffer_init(&cfifo, 512, &buffer);
     pic_setroutine(bus, id, handleirq);
     ps2_enable(bus, id);
     ps2_reset(bus, id);

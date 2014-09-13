@@ -13,7 +13,7 @@ static struct base_keyboard_interface ikeyboard;
 static struct base_device device;
 static struct base_keyboard_node node;
 static unsigned char buffer[512];
-static struct buffer_cfifo cfifo;
+static struct buffer cfifo;
 static struct scheduler_rendezvous rdata;
 static struct keycode {unsigned char length; unsigned char value[4];} keymap[256];
 static unsigned int escaped;
@@ -125,7 +125,7 @@ static void driver_attach(struct base_bus *bus, unsigned int id)
     base_initdevice(&device, bus, id);
     base_keyboard_initnode(&node, &device, &ikeyboard);
     base_keyboard_registernode(&node);
-    buffer_initcfifo(&cfifo, 512, &buffer);
+    buffer_init(&cfifo, 512, &buffer);
     pic_setroutine(bus, id, handleirq);
     ps2_enable(bus, id);
     ps2_reset(bus, id);

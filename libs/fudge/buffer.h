@@ -1,14 +1,16 @@
-struct buffer_cfifo
+struct buffer
 {
 
-    unsigned char *buffer;
     unsigned int head;
     unsigned int tail;
     unsigned int size;
+    unsigned char *memory;
 
 };
 
-unsigned int buffer_cfifofull(struct buffer_cfifo *cfifo);
-unsigned int buffer_rcfifo(struct buffer_cfifo *cfifo, unsigned int count, void *buffer);
-unsigned int buffer_wcfifo(struct buffer_cfifo *cfifo, unsigned int count, void *buffer);
-void buffer_initcfifo(struct buffer_cfifo *cfifo, unsigned int size, void *buffer);
+unsigned int buffer_pushlifo(struct buffer *buffer, unsigned int count, void *memory);
+unsigned int buffer_poplifo(struct buffer *buffer, unsigned int count);
+unsigned int buffer_rcfifo(struct buffer *buffer, unsigned int count, void *memory);
+unsigned int buffer_wcfifo(struct buffer *buffer, unsigned int count, void *memory);
+void buffer_clear(struct buffer *buffer);
+void buffer_init(struct buffer *buffer, unsigned int size, void *memory);

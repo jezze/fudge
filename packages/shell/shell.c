@@ -1,22 +1,25 @@
 #include <fudge.h>
-#include "lifo.h"
 
-static void interpret(struct lifo_stack *stack)
+static void interpret(struct buffer *buffer)
 {
 
     /* This is a temporary fix */
-    if (memory_match(stack->buffer, "cd ", 3))
+    if (memory_match(buffer->memory, "cd ", 3))
     {
 
         unsigned int ok;
+        char temp[FUDGE_BSIZE];
+        unsigned int count;
 
-        if (stack->head < 4)
+        if (buffer->head < 4)
             return;
 
-        if (stack->buffer[3] == '/')
-            ok = call_walk(CALL_L0, CALL_DR, stack->head - 5, stack->buffer + 4);
+        count = buffer_rcfifo(buffer, FUDGE_BSIZE, temp);
+
+        if (temp[3] == '/')
+            ok = call_walk(CALL_L0, CALL_DR, count - 5, temp + 4);
         else
-            ok = call_walk(CALL_L0, CALL_DW, stack->head - 4, stack->buffer + 3);
+            ok = call_walk(CALL_L0, CALL_DW, count - 4, temp + 3);
 
         if (ok)
             call_walk(CALL_DW, CALL_L0, 0, 0);
@@ -38,18 +41,18 @@ static void interpret(struct lifo_stack *stack)
         return;
 
     call_open(CALL_L1);
-    call_write(CALL_L1, 0, stack->head, stack->buffer);
+    call_write(CALL_L1, 0, buffer->head, buffer->memory);
     call_close(CALL_L1);
     call_spawn(CALL_DP);
 
 }
 
-static void complete(struct lifo_stack *stack)
+static void complete(struct buffer *buffer)
 {
 
 }
 
-static void handle(struct lifo_stack *stack, unsigned char c)
+static void handle(struct buffer *buffer, unsigned char c)
 {
 
     switch (c)
@@ -59,13 +62,13 @@ static void handle(struct lifo_stack *stack, unsigned char c)
         break;
 
     case '\t':
-        complete(stack);
+        complete(buffer);
 
         break;
 
     case '\b':
     case 0x7F:
-        if (!lifo_stack_pop(stack, 1))
+        if (!buffer_poplifo(buffer, 1))
             break;
 
         call_write(CALL_O0, 0, 3, "\b \b");
@@ -76,16 +79,16 @@ static void handle(struct lifo_stack *stack, unsigned char c)
         c = '\n';
 
     case '\n':
-        lifo_stack_push(stack, 1, &c);
+        buffer_pushlifo(buffer, 1, &c);
         call_write(CALL_O0, 0, 1, &c);
-        interpret(stack);
-        lifo_stack_clear(stack);
+        interpret(buffer);
+        buffer_clear(buffer);
         call_write(CALL_O0, 0, 2, "$ ");
 
         break;
 
     default:
-        lifo_stack_push(stack, 1, &c);
+        buffer_pushlifo(buffer, 1, &c);
         call_write(CALL_O0, 0, 1, &c);
 
         break;
@@ -100,9 +103,9 @@ static void poll()
     unsigned char buffer[FUDGE_BSIZE];
     unsigned int count, roff;
     unsigned char inputbuffer[FUDGE_BSIZE];
-    struct lifo_stack input;
+    struct buffer input;
 
-    lifo_stack_init(&input, FUDGE_BSIZE, inputbuffer);
+    buffer_init(&input, FUDGE_BSIZE, inputbuffer);
 
     call_open(CALL_I0);
 

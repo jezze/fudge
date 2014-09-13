@@ -1,5 +1,5 @@
 BIN_$(DIR):=$(DIR)/shell
-OBJ_$(DIR):=$(DIR)/shell.o $(DIR)/lifo.o
+OBJ_$(DIR):=$(DIR)/shell.o
 
 $(BIN_$(DIR)): $(OBJ_$(DIR))
 	$(LD) -o $@ $^ $(LDFLAGS)
