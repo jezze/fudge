@@ -358,20 +358,20 @@ static void parse(struct tokenlist *postfix, struct tokenlist *stack)
 void main()
 {
 
-    char buffer[4096];
-    unsigned int count;
-    char strtbl[4096];
+    char buffer[FUDGE_BSIZE];
+    unsigned int count, roff;
+    char strtbl[32768];
     struct stringtable table;
-    struct token infixtbl[512];
-    struct token postfixtbl[512];
+    struct token infixtbl[1024];
+    struct token postfixtbl[1024];
     struct token stacktbl[8];
     struct tokenlist infix;
     struct tokenlist postfix;
     struct tokenlist stack;
 
-    stringtable_init(&table, 4096, strtbl);
-    tokenlist_init(&infix, 512, infixtbl);
-    tokenlist_init(&postfix, 512, postfixtbl);
+    stringtable_init(&table, 32768, strtbl);
+    tokenlist_init(&infix, 1024, infixtbl);
+    tokenlist_init(&postfix, 1024, postfixtbl);
     tokenlist_init(&stack, 8, stacktbl);
 
     if (!call_walk(CALL_L0, CALL_DR, 4, "bin/"))
@@ -379,14 +379,10 @@ void main()
 
     call_open(CALL_I0);
 
-    count = call_read(CALL_I0, 0, FUDGE_BSIZE, buffer);
+    for (roff = 0; (count = call_read(CALL_I0, roff, FUDGE_BSIZE, buffer)); roff += count)
+        tokenize(&infix, &table, count, buffer);
 
     call_close(CALL_I0);
-
-    if (count < 2)
-        return;
-
-    tokenize(&infix, &table, count, buffer);
 
     if (stack.head)
         return;
