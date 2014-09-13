@@ -4,17 +4,15 @@ void main()
 {
 
     unsigned char buffer[FUDGE_BSIZE];
-    unsigned int count, roff, loff;
+    unsigned int count0, count1, roff0, roff1;
     unsigned int lines = 0;
 
     call_open(CALL_I0);
 
-    for (roff = 0; (count = call_read(CALL_I0, roff, FUDGE_BSIZE, buffer)); roff += loff)
+    for (roff0 = 0; (count0 = call_read(CALL_I0, roff0, FUDGE_BSIZE, buffer)); roff0 += roff1)
     {
 
-        unsigned int count2;
-
-        for (loff = 0; (count2 = memory_findbyte(buffer + loff, count - loff, '\n')); loff += count2)
+        for (roff1 = 0; (count1 = memory_findbyte(buffer + roff1, count0 - roff1, '\n')); roff1 += count1)
             lines++;
 
     }

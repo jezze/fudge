@@ -5,35 +5,41 @@ void main()
 
     char num[32];
     unsigned char buffer[FUDGE_BSIZE];
-    unsigned int count, roff, loff, woff0 = 0, woff1 = 0;
+    unsigned int count0, count1, roff0, roff1, woff0 = 0, woff1 = 0;
     unsigned int lines = 0;
     unsigned int total;
 
-    memory_clear(num, 32);
+    call_open(CALL_I1);
 
-    count = call_read(CALL_I1, 0, 32, num);
+    count0 = call_read(CALL_I1, 0, 32, num);
 
-    if (count == 32)
+    call_close(CALL_I1);
+
+    if (count0 == 32)
         return;
 
-    total = ascii_rvalue(num, count, 10);
+    total = ascii_rvalue(num, count0, 10);
 
-    for (roff = 0; (count = call_read(CALL_I0, roff, FUDGE_BSIZE, buffer)); roff += loff)
+    call_open(CALL_O0);
+    call_open(CALL_I0);
+
+    for (roff0 = 0; (count0 = call_read(CALL_I0, roff0, FUDGE_BSIZE, buffer)); roff0 += roff1)
     {
 
-        unsigned int count2;
-
-        for (loff = 0; (count2 = memory_findbyte(buffer + loff, count - loff, '\n')); loff += count2)
+        for (roff1 = 0; (count1 = memory_findbyte(buffer + roff1, count0 - roff1, '\n')); roff1 += count1)
         {
 
             if (++lines <= total)
-                woff0 += call_write(CALL_O0, woff0, count2, buffer + loff);
+                woff0 += call_write(CALL_O0, woff0, count1, buffer + roff1);
             else
-                woff1 += call_write(CALL_O1, woff1, count2, buffer + loff);
+                woff1 += call_write(CALL_O1, woff1, count1, buffer + roff1);
 
         }
 
     }
+
+    call_close(CALL_I0);
+    call_close(CALL_O0);
 
 }
 

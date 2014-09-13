@@ -8,14 +8,19 @@ void main()
     unsigned int count, roff, woff = 0;
     unsigned int total;
 
-    memory_clear(num, 32);
+    call_open(CALL_I1);
 
     count = call_read(CALL_I1, 0, 32, num);
+
+    call_close(CALL_I1);
 
     if (count == 32)
         return;
 
     total = ascii_rvalue(num, count, 10);
+
+    call_open(CALL_O0);
+    call_open(CALL_I0);
 
     for (roff = 0; (count = call_read(CALL_I0, roff, FUDGE_BSIZE, buffer)); roff += count)
     {
@@ -26,6 +31,9 @@ void main()
             break;
 
     }
+
+    call_close(CALL_I0);
+    call_close(CALL_O0);
 
 }
 
