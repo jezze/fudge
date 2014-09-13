@@ -42,6 +42,7 @@ void main()
         return;
 
     call_open(CALL_O0);
+
     woff += call_write(CALL_O0, woff, 4, "Id: ");
     woff += call_write(CALL_O0, woff, 4, &mbr.id);
     woff += call_write(CALL_O0, woff, 1, "\n");
