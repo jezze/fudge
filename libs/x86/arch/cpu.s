@@ -79,7 +79,7 @@ cpu_setgdt:
     movw %ax, %ss
     pushl 8(%esp)
     pushl (%esp)
-    retf
+    lret
 
 .global cpu_setidt
 cpu_setidt:
