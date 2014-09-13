@@ -1,6 +1,6 @@
 BIN_$(DIR):=$(DIR)/init
 OBJ_$(DIR):=$(DIR)/init.o
-CFG_$(DIR):=$(DIR)/init.slang $(DIR)/base.slang $(DIR)/user.slang
+CFG_$(DIR):=$(DIR)/init.slang $(DIR)/user.slang
 
 $(BIN_$(DIR)): $(OBJ_$(DIR))
 	$(LD) -o $@ $^ $(LDFLAGS)
