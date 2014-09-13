@@ -225,7 +225,7 @@ static void driver_attach(struct base_bus *bus, unsigned int id)
     base_initdevice(&device, bus, id);
     base_terminal_initnode(&node, &device, &iterminal);
     base_terminal_registernode(&node);
-    buffer_init(&cfifo, 512, &buffer);
+    buffer_init(&cfifo, 1, 512, &buffer);
     pic_setroutine(bus, id, handleirq);
 
     io = platform_getbase(bus, id);

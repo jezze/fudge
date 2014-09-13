@@ -105,7 +105,7 @@ static void poll()
     unsigned char inputbuffer[FUDGE_BSIZE];
     struct buffer input;
 
-    buffer_init(&input, FUDGE_BSIZE, inputbuffer);
+    buffer_init(&input, 1, FUDGE_BSIZE, inputbuffer);
 
     call_open(CALL_I0);
 

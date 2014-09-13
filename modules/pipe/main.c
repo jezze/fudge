@@ -72,14 +72,14 @@ void init()
 {
 
     memory_clear(&pipe0, sizeof (struct pipe_endpoint));
-    buffer_init(&pipe0.cfifo, 4096, pipe0.buffer);
+    buffer_init(&pipe0.cfifo, 1, 4096, pipe0.buffer);
     system_initstream(&pipe0.pipe, "0");
 
     pipe0.pipe.read = pipe0_read;
     pipe0.pipe.write = pipe0_write;
 
     memory_clear(&pipe1, sizeof (struct pipe_endpoint));
-    buffer_init(&pipe1.cfifo, 4096, pipe1.buffer);
+    buffer_init(&pipe1.cfifo, 1, 4096, pipe1.buffer);
     system_initstream(&pipe1.pipe, "1");
 
     pipe1.pipe.read = pipe1_read;

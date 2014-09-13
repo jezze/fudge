@@ -125,7 +125,7 @@ static void driver_attach(struct base_bus *bus, unsigned int id)
     base_initdevice(&device, bus, id);
     base_keyboard_initnode(&node, &device, &ikeyboard);
     base_keyboard_registernode(&node);
-    buffer_init(&cfifo, 512, &buffer);
+    buffer_init(&cfifo, 1, 512, &buffer);
     pic_setroutine(bus, id, handleirq);
     ps2_enable(bus, id);
     ps2_reset(bus, id);
