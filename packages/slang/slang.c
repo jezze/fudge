@@ -303,6 +303,9 @@ static void parse(struct tokenlist *postfix, struct tokenlist *stack)
         case IN:
             t = tokenlist_pop(stack);
 
+            if (!t)
+                return;
+
             if (!walk_path(CALL_I1, CALL_DW, ascii_length(t->str), t->str))
                 return;
 
@@ -311,6 +314,9 @@ static void parse(struct tokenlist *postfix, struct tokenlist *stack)
         case OUT:
             t = tokenlist_pop(stack);
 
+            if (!t)
+                return;
+
             if (!walk_path(CALL_O1, CALL_DW, ascii_length(t->str), t->str))
                 return;
 
@@ -318,6 +324,9 @@ static void parse(struct tokenlist *postfix, struct tokenlist *stack)
 
         case PIPE:
             t = tokenlist_pop(stack);
+
+            if (!t)
+                return;
 
             if (!walk_path(CALL_DP, CALL_L0, ascii_length(t->str), t->str))
                 return;
@@ -337,6 +346,9 @@ static void parse(struct tokenlist *postfix, struct tokenlist *stack)
 
         case END:
             t = tokenlist_pop(stack);
+
+            if (!t)
+                return;
 
             if (!walk_path(CALL_DP, CALL_L0, ascii_length(t->str), t->str))
                 return;
