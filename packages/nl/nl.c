@@ -28,7 +28,7 @@ void main()
         }
 
         if (!loff)
-            return;
+            break;
 
     }
 

@@ -18,7 +18,7 @@ void main()
             lines++;
 
         if (!loff)
-            return;
+            break;
 
     }
 
