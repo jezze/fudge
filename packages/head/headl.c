@@ -23,29 +23,15 @@ void main()
 
         unsigned int count2;
 
-        for (loff = 0; (count2 = memory_findbyte(buffer + loff, count - loff, '\n')); loff += count2 + 1)
+        for (loff = 0; (count2 = memory_findbyte(buffer + loff, count - loff, '\n')); loff += count2)
         {
 
             if (++lines <= total)
-            {
-
                 woff0 += call_write(CALL_O0, woff0, count2, buffer + loff);
-                woff0 += call_write(CALL_O0, woff0, 1, "\n");
-
-            }
-
             else
-            {
-
                 woff1 += call_write(CALL_O1, woff1, count2, buffer + loff);
-                woff1 += call_write(CALL_O1, woff1, 1, "\n");
-
-            }
 
         }
-
-        if (!loff)
-            break;
 
     }
 

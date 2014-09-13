@@ -14,23 +14,19 @@ void main()
 
         unsigned int count2;
 
-        for (loff = 0; (count2 = memory_findbyte(buffer + loff, count - loff, '\n')); loff += count2 + 1)
+        for (loff = 0; (count2 = memory_findbyte(buffer + loff, count - loff, '\n')); loff += count2)
         {
 
-            unsigned int length = (count2 > 14) ? 14 : count2;
+            unsigned int length = (count2 > 14) ? 14 : count2 - 1;
 
             woff += call_write(CALL_O0, woff, length, buffer + loff);
             woff += call_write(CALL_O0, woff, 16 - length, "                ");
 
         }
 
-        if (!loff)
-            break;
-
     }
 
     call_close(CALL_I0);
-    call_write(CALL_O0, woff, 1, "\n");
     call_close(CALL_O0);
 
 }

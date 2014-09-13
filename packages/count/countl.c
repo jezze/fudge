@@ -14,11 +14,8 @@ void main()
 
         unsigned int count2;
 
-        for (loff = 0; (count2 = memory_findbyte(buffer + loff, count - loff, '\n')); loff += count2 + 1)
+        for (loff = 0; (count2 = memory_findbyte(buffer + loff, count - loff, '\n')); loff += count2)
             lines++;
-
-        if (!loff)
-            break;
 
     }
 

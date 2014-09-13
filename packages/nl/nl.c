@@ -15,7 +15,7 @@ void main()
 
         unsigned int count2;
 
-        for (loff = 0; (count2 = memory_findbyte(buffer + loff, count - loff, '\n')); loff += count2 + 1)
+        for (loff = 0; (count2 = memory_findbyte(buffer + loff, count - loff, '\n')); loff += count2)
         {
 
             char num[32];
@@ -23,12 +23,8 @@ void main()
             woff += call_write(CALL_O0, woff, ascii_fromint(num, 32, lines++, 10), num);
             woff += call_write(CALL_O0, woff, 2, ": ");
             woff += call_write(CALL_O0, woff, count2, buffer + loff);
-            woff += call_write(CALL_O0, woff, 1, "\n");
 
         }
-
-        if (!loff)
-            break;
 
     }
 

@@ -40,7 +40,7 @@ static unsigned int protocol_parent(struct vfs_backend *backend, unsigned int id
     if (backend->read(backend, address, TAR_BLOCK_SIZE, &header) < TAR_BLOCK_SIZE)
         return 0;
 
-    length = memory_findbyte(header.name, 100, '\0');
+    length = memory_findbyte(header.name, 100, '\0') - 1;
 
     while (--length && header.name[length - 1] != '/');
 
@@ -146,7 +146,7 @@ static unsigned int protocol_read(struct vfs_backend *backend, unsigned int id, 
 
         unsigned char *b = buffer;
         unsigned int c = memory_read(b, count, "../\n", 4, offset);
-        unsigned int length = memory_findbyte(header.name, 100, '\0');
+        unsigned int length = memory_findbyte(header.name, 100, '\0') - 1;
 
         offset -= (offset > 4) ? 4 : offset;
 
@@ -164,7 +164,7 @@ static unsigned int protocol_read(struct vfs_backend *backend, unsigned int id, 
             if (protocol_parent(backend, encode(address)) != id)
                 continue;
 
-            l = memory_findbyte(header.name, 100, '\0') - length;
+            l = (memory_findbyte(header.name, 100, '\0') - 1) - length;
             c += memory_read(b + c, count - c, header.name + length, l, offset);
             offset -= (offset > l) ? l : offset;
             c += memory_read(b + c, count - c, "\n", 1, offset);
@@ -220,7 +220,7 @@ static unsigned int protocol_child(struct vfs_backend *backend, unsigned int id,
     if (backend->read(backend, address, TAR_BLOCK_SIZE, &header) < TAR_BLOCK_SIZE)
         return 0;
 
-    length = memory_findbyte(header.name, 100, '\0');
+    length = memory_findbyte(header.name, 100, '\0') - 1;
 
     while ((address = tar_next(&header, address)))
     {
@@ -231,7 +231,7 @@ static unsigned int protocol_child(struct vfs_backend *backend, unsigned int id,
         if (!tar_validate(&header))
             break;
 
-        if (memory_findbyte(header.name, 100, '\0') != length + count)
+        if ((memory_findbyte(header.name, 100, '\0') - 1) != length + count)
             continue;
 
         if (memory_match(header.name + length, path, count))

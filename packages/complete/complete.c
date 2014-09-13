@@ -13,7 +13,7 @@ void main()
 
         unsigned int count2;
 
-        for (loff = 0; (count2 = memory_findbyte(buffer + loff, count - loff, '\n')); loff += count2 + 1)
+        for (loff = 0; (count2 = memory_findbyte(buffer + loff, count - loff, '\n')); loff += count2)
         {
 
             if (count2 < kcount)
@@ -23,12 +23,8 @@ void main()
                 continue;
 
             woff += call_write(CALL_O0, woff, count2, buffer + loff);
-            woff += call_write(CALL_O0, woff, 1, "\n");
 
         }
-
-        if (!loff)
-            break;
 
     }
 

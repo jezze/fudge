@@ -19,18 +19,15 @@ void main()
 
         unsigned int count2;
 
-        for (loff = 0; (count2 = memory_findbyte(buffer + loff, count - loff, '\n')); loff += count2 + 1)
+        for (loff = 0; (count2 = memory_findbyte(buffer + loff, count - loff, '\n')); loff += count2)
         {
 
-            if (!call_walk(CALL_I1, CALL_L1, count2, buffer + loff))
+            if (!call_walk(CALL_I1, CALL_L1, count2 - 1, buffer + loff))
                 continue;
 
             call_spawn(CALL_DP);
 
         }
-
-        if (!loff)
-            break;
 
     }
 

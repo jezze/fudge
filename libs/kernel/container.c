@@ -29,9 +29,7 @@ static struct vfs_mount *getmount(struct container *container, unsigned int moun
 static unsigned int getwalkstep(unsigned int count, const char *path)
 {
 
-    unsigned int offset = memory_findbyte(path, count, '/');
-
-    return offset == count ? offset : offset + 1;
+    return memory_findbyte(path, count, '/');
 
 }
 
