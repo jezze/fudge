@@ -26,13 +26,6 @@ static struct vfs_mount *getmount(struct container *container, unsigned int moun
 
 }
 
-static unsigned int getwalkstep(unsigned int count, const char *path)
-{
-
-    return memory_findbyte(path, count, '/');
-
-}
-
 static unsigned int walk(struct container *self, struct task *task, void *stack)
 {
 
@@ -51,7 +44,7 @@ static unsigned int walk(struct container *self, struct task *task, void *stack)
     descriptor->channel = pdescriptor->channel;
     descriptor->id = pdescriptor->id;
 
-    for (offset = 0; (count = getwalkstep(args->count - offset, args->path + offset)); offset += count)
+    for (offset = 0; (count = memory_findbyte(args->path + offset, args->count - offset, '/')); offset += count)
     {
 
         const char *path = args->path + offset;
