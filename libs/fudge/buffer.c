@@ -1,6 +1,13 @@
 #include "memory.h"
 #include "buffer.h"
 
+unsigned int buffer_cfifofull(struct buffer_cfifo *cfifo)
+{
+
+    return cfifo->head == cfifo->tail;
+
+}
+
 unsigned int buffer_rcfifo(struct buffer_cfifo *cfifo, unsigned int count, void *buffer)
 {
 

@@ -8,6 +8,7 @@ struct buffer_cfifo
 
 };
 
+unsigned int buffer_cfifofull(struct buffer_cfifo *cfifo);
 unsigned int buffer_rcfifo(struct buffer_cfifo *cfifo, unsigned int count, void *buffer);
 unsigned int buffer_wcfifo(struct buffer_cfifo *cfifo, unsigned int count, void *buffer);
 void buffer_initcfifo(struct buffer_cfifo *cfifo, unsigned int size, void *buffer);
