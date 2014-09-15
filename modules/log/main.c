@@ -48,7 +48,7 @@ void init()
 
     doffset = 0;
 
-    system_initstream(&messages, "messages");
+    system_initnode(&messages, SYSTEM_NODETYPE_NORMAL, "messages");
     system_registernode(&messages);
 
     messages.read = messages_read;

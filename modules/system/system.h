@@ -1,9 +1,10 @@
 enum system_nodetype
 {
 
-    SYSTEM_NODETYPE_NONE                = 0,
+    SYSTEM_NODETYPE_NORMAL              = 0,
     SYSTEM_NODETYPE_GROUP               = 1,
-    SYSTEM_NODETYPE_STREAM              = 2
+    SYSTEM_NODETYPE_MULTI               = 2,
+    SYSTEM_NODETYPE_HIDDEN              = 4
 
 };
 
@@ -23,8 +24,8 @@ struct system_node
     struct list children;
     enum system_nodetype type;
     const char *name;
-    unsigned int multi;
     unsigned int index;
+    unsigned int used;
     unsigned int (*open)(struct system_node *self);
     unsigned int (*close)(struct system_node *self);
     unsigned int (*read)(struct system_node *self, unsigned int offset, unsigned int count, void *buffer);
@@ -38,7 +39,3 @@ void system_removechild(struct system_node *group, struct system_node *node);
 void system_registernode(struct system_node *node);
 void system_unregisternode(struct system_node *node);
 void system_initnode(struct system_node *node, unsigned int type, const char *name);
-void system_initstream(struct system_node *stream, const char *name);
-void system_initmultistream(struct system_node *stream, const char *name);
-void system_initgroup(struct system_node *group, const char *name);
-void system_initmultigroup(struct system_node *group, const char *name);

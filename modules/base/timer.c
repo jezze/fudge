@@ -47,7 +47,7 @@ void base_timer_initnode(struct base_timer_node *node, struct base_device *devic
 {
 
     memory_clear(node, sizeof (struct base_timer_node));
-    system_initmultigroup(&node->base, device->bus->name);
+    system_initnode(&node->base, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, device->bus->name);
 
     node->device = device;
     node->interface = interface;
@@ -57,7 +57,7 @@ void base_timer_initnode(struct base_timer_node *node, struct base_device *devic
 void base_timer_setup()
 {
 
-    system_initgroup(&root, "timer");
+    system_initnode(&root, SYSTEM_NODETYPE_GROUP, "timer");
     system_registernode(&root);
 
 }

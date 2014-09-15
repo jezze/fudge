@@ -9,7 +9,7 @@ static struct system_node root;
 void init()
 {
 
-    system_initstream(&root, "null");
+    system_initnode(&root, SYSTEM_NODETYPE_NORMAL, "null");
     system_registernode(&root);
 
 }

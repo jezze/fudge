@@ -106,9 +106,9 @@ void base_network_initinterfacenode(struct base_network_interfacenode *interface
 {
 
     memory_clear(interfacenode, sizeof (struct base_network_interfacenode));
-    system_initmultigroup(&interfacenode->base, device->bus->name);
-    system_initstream(&interfacenode->data, "data");
-    system_initstream(&interfacenode->mac, "mac");
+    system_initnode(&interfacenode->base, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, device->bus->name);
+    system_initnode(&interfacenode->data, SYSTEM_NODETYPE_NORMAL, "data");
+    system_initnode(&interfacenode->mac, SYSTEM_NODETYPE_NORMAL, "mac");
 
     interfacenode->device = device;
     interfacenode->interface = interface;
@@ -133,7 +133,7 @@ void base_network_initprotocolnode(struct base_network_protocolnode *protocolnod
 {
 
     memory_clear(protocolnode, sizeof (struct base_network_protocolnode));
-    system_initmultigroup(&protocolnode->base, protocol->name);
+    system_initnode(&protocolnode->base, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, protocol->name);
 
     protocolnode->protocol = protocol;
 
@@ -142,7 +142,7 @@ void base_network_initprotocolnode(struct base_network_protocolnode *protocolnod
 void base_network_setup()
 {
 
-    system_initgroup(&root, "network");
+    system_initnode(&root, SYSTEM_NODETYPE_GROUP, "network");
     system_registernode(&root);
 
 }

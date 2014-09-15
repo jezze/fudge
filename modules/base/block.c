@@ -77,8 +77,8 @@ void base_block_initnode(struct base_block_node *node, struct base_device *devic
 {
 
     memory_clear(node, sizeof (struct base_block_node));
-    system_initmultigroup(&node->base, device->bus->name);
-    system_initstream(&node->data, "data");
+    system_initnode(&node->base, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, device->bus->name);
+    system_initnode(&node->data, SYSTEM_NODETYPE_NORMAL, "data");
 
     node->device = device;
     node->interface = interface;
@@ -89,7 +89,7 @@ void base_block_initnode(struct base_block_node *node, struct base_device *devic
 void base_block_setup()
 {
 
-    system_initgroup(&root, "block");
+    system_initnode(&root, SYSTEM_NODETYPE_GROUP, "block");
     system_registernode(&root);
 
 }

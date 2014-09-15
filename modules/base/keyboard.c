@@ -79,9 +79,9 @@ void base_keyboard_initnode(struct base_keyboard_node *node, struct base_device 
 {
 
     memory_clear(node, sizeof (struct base_keyboard_node));
-    system_initmultigroup(&node->base, device->bus->name);
-    system_initstream(&node->data, "data");
-    system_initstream(&node->keymap, "keymap");
+    system_initnode(&node->base, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, device->bus->name);
+    system_initnode(&node->data, SYSTEM_NODETYPE_NORMAL, "data");
+    system_initnode(&node->keymap, SYSTEM_NODETYPE_NORMAL, "keymap");
 
     node->device = device;
     node->interface = interface;
@@ -94,7 +94,7 @@ void base_keyboard_initnode(struct base_keyboard_node *node, struct base_device 
 void base_keyboard_setup()
 {
 
-    system_initgroup(&root, "keyboard");
+    system_initnode(&root, SYSTEM_NODETYPE_GROUP, "keyboard");
     system_registernode(&root);
 
 }

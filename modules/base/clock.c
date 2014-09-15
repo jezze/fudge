@@ -118,10 +118,10 @@ void base_clock_initnode(struct base_clock_node *node, struct base_device *devic
 {
 
     memory_clear(node, sizeof (struct base_clock_node));
-    system_initmultigroup(&node->base, device->bus->name);
-    system_initstream(&node->timestamp, "timestamp");
-    system_initstream(&node->date, "date");
-    system_initstream(&node->time, "time");
+    system_initnode(&node->base, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, device->bus->name);
+    system_initnode(&node->timestamp, SYSTEM_NODETYPE_NORMAL, "timestamp");
+    system_initnode(&node->date, SYSTEM_NODETYPE_NORMAL, "date");
+    system_initnode(&node->time, SYSTEM_NODETYPE_NORMAL, "time");
 
     node->device = device;
     node->interface = interface;
@@ -134,7 +134,7 @@ void base_clock_initnode(struct base_clock_node *node, struct base_device *devic
 void base_clock_setup()
 {
 
-    system_initgroup(&root, "clock");
+    system_initnode(&root, SYSTEM_NODETYPE_GROUP, "clock");
     system_registernode(&root);
 
 }

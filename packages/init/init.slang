@@ -4,6 +4,10 @@
 /bin/modload < /boot/mod/pipe.ko.1
 /bin/modload < /boot/mod/pipe.ko.2
 /bin/modload < /boot/mod/pipe.ko.3
+/bin/modload < /boot/mod/pipe.ko.4
+/bin/modload < /boot/mod/pipe.ko.5
+/bin/modload < /boot/mod/pipe.ko.6
+/bin/modload < /boot/mod/pipe.ko.7
 /bin/modload < /boot/mod/log.ko.0
 /bin/modload < /boot/mod/mtwist.ko.0
 /bin/modload < /boot/mod/io.ko.0

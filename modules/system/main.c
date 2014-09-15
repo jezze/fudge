@@ -13,7 +13,7 @@ void system_addchild(struct system_node *group, struct system_node *node)
 
     struct list_item *current;
 
-    if (node->multi)
+    if (node->type & SYSTEM_NODETYPE_MULTI)
     {
 
         unsigned int length0 = ascii_length(node->name);
@@ -76,25 +76,8 @@ static unsigned int close(struct system_node *self)
 
 }
 
-static unsigned int read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int read_normal(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
-
-    return 0;
-
-}
-
-static unsigned int write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
-{
-
-    return 0;
-
-}
-
-unsigned int child(struct system_node *self, unsigned int count, const char *path)
-{
-
-    if (!count)
-        return (unsigned int)self;
 
     return 0;
 
@@ -119,7 +102,7 @@ static unsigned int read_group(struct system_node *self, unsigned int offset, un
         c += memory_read(b + c, count - c, node->name, l, offset);
         offset -= (offset > l) ? l : offset;
 
-        if (node->multi)
+        if (node->type & SYSTEM_NODETYPE_MULTI)
         {
 
             char *x = ":0";
@@ -131,7 +114,7 @@ static unsigned int read_group(struct system_node *self, unsigned int offset, un
 
         }
 
-        if (node->type == SYSTEM_NODETYPE_GROUP)
+        if (node->type & SYSTEM_NODETYPE_GROUP)
         {
 
             c += memory_read(b + c, count - c, "/", 1, offset);
@@ -145,6 +128,33 @@ static unsigned int read_group(struct system_node *self, unsigned int offset, un
     }
 
     return c;
+
+}
+
+static unsigned int read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    if (self->type & SYSTEM_NODETYPE_GROUP)
+        return read_group(self, offset, count, buffer);
+    else
+        return read_normal(self, offset, count, buffer);
+
+}
+
+static unsigned int write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    return 0;
+
+}
+
+unsigned int child_normal(struct system_node *self, unsigned int count, const char *path)
+{
+
+    if (!count)
+        return (unsigned int)self;
+
+    return 0;
 
 }
 
@@ -165,7 +175,7 @@ unsigned int child_group(struct system_node *self, unsigned int count, const cha
         if (!memory_match(node->name, path, length))
             continue;
 
-        if (node->multi)
+        if (node->type & SYSTEM_NODETYPE_MULTI)
         {
 
             unsigned int val = path[length + 1] - '0';
@@ -177,7 +187,7 @@ unsigned int child_group(struct system_node *self, unsigned int count, const cha
 
         }
 
-        if (node->type == SYSTEM_NODETYPE_GROUP)
+        if (node->type & SYSTEM_NODETYPE_GROUP)
             length += 1;
 
         return node->child(node, count - length, path + length);
@@ -185,6 +195,16 @@ unsigned int child_group(struct system_node *self, unsigned int count, const cha
     }
 
     return 0;
+
+}
+
+unsigned int child(struct system_node *self, unsigned int count, const char *path)
+{
+
+    if (self->type & SYSTEM_NODETYPE_GROUP)
+        return child_group(self, count, path);
+    else
+        return child_normal(self, count, path);
 
 }
 
@@ -202,41 +222,6 @@ void system_initnode(struct system_node *node, unsigned int type, const char *na
     node->read = read;
     node->write = write;
     node->child = child;
-
-}
-
-void system_initstream(struct system_node *stream, const char *name)
-{
-
-    system_initnode(stream, SYSTEM_NODETYPE_STREAM, name);
-
-}
-
-void system_initmultistream(struct system_node *stream, const char *name)
-{
-
-    system_initstream(stream, name);
-
-    stream->multi = 1;
-
-}
-
-void system_initgroup(struct system_node *group, const char *name)
-{
-
-    system_initnode(group, SYSTEM_NODETYPE_GROUP, name);
-
-    group->read = read_group;
-    group->child = child_group;
-
-}
-
-void system_initmultigroup(struct system_node *group, const char *name)
-{
-
-    system_initgroup(group, name);
-
-    group->multi = 1;
 
 }
 

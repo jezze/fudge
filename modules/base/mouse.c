@@ -57,8 +57,8 @@ void base_mouse_initnode(struct base_mouse_node *node, struct base_device *devic
 {
 
     memory_clear(node, sizeof (struct base_mouse_node));
-    system_initmultigroup(&node->base, device->bus->name);
-    system_initstream(&node->data, "data");
+    system_initnode(&node->base, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, device->bus->name);
+    system_initnode(&node->data, SYSTEM_NODETYPE_NORMAL, "data");
 
     node->device = device;
     node->interface = interface;
@@ -69,7 +69,7 @@ void base_mouse_initnode(struct base_mouse_node *node, struct base_device *devic
 void base_mouse_setup()
 {
 
-    system_initgroup(&root, "mouse");
+    system_initnode(&root, SYSTEM_NODETYPE_GROUP, "mouse");
     system_registernode(&root);
 
 }

@@ -73,19 +73,19 @@ void init()
 
     memory_clear(&pipe0, sizeof (struct pipe_endpoint));
     buffer_init(&pipe0.cfifo, 1, 4096, pipe0.buffer);
-    system_initstream(&pipe0.pipe, "0");
+    system_initnode(&pipe0.pipe, SYSTEM_NODETYPE_NORMAL, "0");
 
     pipe0.pipe.read = pipe0_read;
     pipe0.pipe.write = pipe0_write;
 
     memory_clear(&pipe1, sizeof (struct pipe_endpoint));
     buffer_init(&pipe1.cfifo, 1, 4096, pipe1.buffer);
-    system_initstream(&pipe1.pipe, "1");
+    system_initnode(&pipe1.pipe, SYSTEM_NODETYPE_NORMAL, "1");
 
     pipe1.pipe.read = pipe1_read;
     pipe1.pipe.write = pipe1_write;
 
-    system_initmultigroup(&root, "pipe");
+    system_initnode(&root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, "pipe");
     system_addchild(&root, &pipe0.pipe);
     system_addchild(&root, &pipe1.pipe);
     system_registernode(&root);

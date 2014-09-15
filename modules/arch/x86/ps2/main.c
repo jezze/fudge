@@ -312,7 +312,7 @@ void init()
     base_registerbus(&bus);
     ps2_keyboard_driver_init();
     ps2_mouse_driver_init();
-    system_initstream(&reset, "reset");
+    system_initnode(&reset, SYSTEM_NODETYPE_NORMAL, "reset");
     system_registernode(&reset);
 
     reset.write = reset_write;
