@@ -25,7 +25,7 @@ struct system_node
     enum system_nodetype type;
     const char *name;
     unsigned int index;
-    unsigned int used;
+    unsigned int refcount;
     unsigned int (*open)(struct system_node *self);
     unsigned int (*close)(struct system_node *self);
     unsigned int (*read)(struct system_node *self, unsigned int offset, unsigned int count, void *buffer);

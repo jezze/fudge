@@ -25,7 +25,7 @@ static unsigned int pipe0_read(struct system_node *self, unsigned int offset, un
 
     count = buffer_rcfifo(&pipe1.cfifo, count, buffer);
 
-    scheduler_rendezvous_sleep(&pipe0.rdata, !count && scheduler_rendezvous_asleep(&pipe1.wdata));
+    scheduler_rendezvous_sleep(&pipe0.rdata, !count && pipe1.pipe.refcount);
     scheduler_rendezvous_unsleep(&pipe1.wdata);
 
     return count;
@@ -49,7 +49,7 @@ static unsigned int pipe1_read(struct system_node *self, unsigned int offset, un
 
     count = buffer_rcfifo(&pipe0.cfifo, count, buffer);
 
-    scheduler_rendezvous_sleep(&pipe1.rdata, !count && scheduler_rendezvous_asleep(&pipe0.wdata));
+    scheduler_rendezvous_sleep(&pipe1.rdata, !count && pipe0.pipe.refcount);
     scheduler_rendezvous_unsleep(&pipe0.wdata);
 
     return count;

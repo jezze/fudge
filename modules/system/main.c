@@ -65,12 +65,16 @@ void system_unregisternode(struct system_node *node)
 static unsigned int open(struct system_node *self)
 {
 
+    self->refcount++;
+
     return (unsigned int)self;
 
 }
 
 static unsigned int close(struct system_node *self)
 {
+
+    self->refcount--;
 
     return (unsigned int)self;
 
