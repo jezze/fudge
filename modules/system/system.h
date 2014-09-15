@@ -4,7 +4,7 @@ enum system_nodetype
     SYSTEM_NODETYPE_NORMAL              = 0,
     SYSTEM_NODETYPE_GROUP               = 1,
     SYSTEM_NODETYPE_MULTI               = 2,
-    SYSTEM_NODETYPE_HIDDEN              = 4
+    SYSTEM_NODETYPE_MERGE               = 4
 
 };
 

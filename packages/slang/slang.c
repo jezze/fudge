@@ -1,12 +1,10 @@
 #include <fudge.h>
 
 static char *pipes[] = {
-    "/system/pipe:1/0",
-    "/system/pipe:1/1",
-    "/system/pipe:2/0",
-    "/system/pipe:2/1",
-    "/system/pipe:3/0",
-    "/system/pipe:3/1"
+    "/system/pipe:1/",
+    "/system/pipe:2/",
+    "/system/pipe:3/",
+    "/system/pipe:4/"
 };
 
 static unsigned int walk_path(unsigned int index, unsigned int indexw, unsigned int count, char *buffer)
@@ -331,10 +329,13 @@ static void parse(struct tokenlist *postfix, struct tokenlist *stack)
             if (!walk_path(CALL_DP, CALL_L0, ascii_length(t->str), t->str))
                 return;
 
-            if (!walk_path(CALL_O1, CALL_DW, 16, pipes[npipes * 2]))
+            if (!walk_path(CALL_L1, CALL_DW, 15, pipes[npipes]))
                 return;
 
-            if (!walk_path(CALL_I2, CALL_DW, 16, pipes[npipes * 2 + 1]))
+            if (!walk_path(CALL_O1, CALL_L1, 1, "0"))
+                return;
+
+            if (!walk_path(CALL_I2, CALL_L1, 1, "1"))
                 return;
 
             call_walk(CALL_O2, CALL_O0, 0, 0);
