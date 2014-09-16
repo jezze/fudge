@@ -182,12 +182,25 @@ unsigned int child_group(struct system_node *self, unsigned int count, const cha
         if (node->type & SYSTEM_NODETYPE_MULTI)
         {
 
-            unsigned int val = path[length + 1] - '0';
+            if (path[length] == ':')
+            {
 
-            if (val != node->index)
-                continue;
+                unsigned int val = path[length + 1] - '0';
 
-            length += 2;
+                if (val != node->index)
+                    continue;
+
+                length += 2;
+
+            }
+
+            else
+            {
+
+                if (node->refcount)
+                    continue;
+
+            }
 
         }
 
