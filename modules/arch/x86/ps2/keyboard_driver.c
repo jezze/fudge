@@ -25,6 +25,7 @@ static void handleirq(unsigned int irq, struct base_bus *bus, unsigned int id)
 {
 
     unsigned char scancode = ps2_getdata(bus);
+    unsigned int count;
 
     if (escaped)
         escaped = 0;
@@ -69,11 +70,12 @@ static void handleirq(unsigned int irq, struct base_bus *bus, unsigned int id)
         if (shift)
             scancode += 128;
 
-        buffer_wcfifo(&cfifo, keymap[scancode].length, keymap[scancode].value);
+        count = buffer_wcfifo(&cfifo, keymap[scancode].length, keymap[scancode].value);
+
+        if (count)
+            scheduler_rendezvous_unsleep(&rdata);
 
     }
-
-    scheduler_rendezvous_unsleep(&rdata);
 
 }
 

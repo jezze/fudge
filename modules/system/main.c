@@ -66,6 +66,7 @@ static unsigned int open(struct system_node *self)
 {
 
     self->refcount++;
+    self->parent->refcount++;
 
     return (unsigned int)self;
 
@@ -75,6 +76,7 @@ static unsigned int close(struct system_node *self)
 {
 
     self->refcount--;
+    self->parent->refcount--;
 
     return (unsigned int)self;
 

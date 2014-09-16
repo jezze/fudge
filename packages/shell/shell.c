@@ -31,8 +31,10 @@ static void interpret(struct buffer *buffer)
     if (!call_walk(CALL_DP, CALL_DR, 9, "bin/slang"))
         return;
 
-    if (!call_walk(CALL_L1, CALL_DR, 14, "system/pipe:7/"))
+    if (!call_walk(CALL_L1, CALL_DR, 12, "system/pipe/"))
         return;
+
+    call_open(CALL_L1);
 
     if (!call_walk(CALL_L2, CALL_L1, 1, "0"))
         return;
@@ -47,6 +49,7 @@ static void interpret(struct buffer *buffer)
     call_write(CALL_L2, 0, buffer->head, buffer->memory);
     call_close(CALL_L2);
     call_spawn(CALL_DP);
+    call_close(CALL_L1);
 
 }
 

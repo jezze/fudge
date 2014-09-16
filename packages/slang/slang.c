@@ -1,12 +1,5 @@
 #include <fudge.h>
 
-static char *pipes[] = {
-    "/system/pipe:1/",
-    "/system/pipe:2/",
-    "/system/pipe:3/",
-    "/system/pipe:4/"
-};
-
 static unsigned int walk_path(unsigned int index, unsigned int indexw, unsigned int count, char *buffer)
 {
 
@@ -279,7 +272,6 @@ static void parse(struct tokenlist *postfix, struct tokenlist *stack)
 {
 
     unsigned int i;
-    unsigned int npipes = 0;
 
     call_walk(CALL_I1, CALL_I0, 0, 0);
     call_walk(CALL_O1, CALL_O0, 0, 0);
@@ -329,8 +321,10 @@ static void parse(struct tokenlist *postfix, struct tokenlist *stack)
             if (!walk_path(CALL_DP, CALL_L0, ascii_length(t->str), t->str))
                 return;
 
-            if (!walk_path(CALL_L1, CALL_DW, 15, pipes[npipes]))
+            if (!walk_path(CALL_L1, CALL_DW, 13, "/system/pipe/"))
                 return;
+
+            call_open(CALL_L1);
 
             if (!walk_path(CALL_O1, CALL_L1, 1, "0"))
                 return;
@@ -340,8 +334,7 @@ static void parse(struct tokenlist *postfix, struct tokenlist *stack)
 
             call_walk(CALL_O2, CALL_O0, 0, 0);
             call_spawn(CALL_DP);
-
-            npipes++;
+            call_close(CALL_L1);
 
             break;
 
@@ -357,8 +350,6 @@ static void parse(struct tokenlist *postfix, struct tokenlist *stack)
             call_spawn(CALL_DP);
             call_walk(CALL_I1, CALL_I0, 0, 0);
             call_walk(CALL_O1, CALL_O0, 0, 0);
-
-            npipes = 0;
 
             break;
 

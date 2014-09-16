@@ -179,9 +179,10 @@ static void handleirq(unsigned int irq, struct base_bus *bus, unsigned int id)
 {
 
     char data = read();
+    unsigned int count = buffer_wcfifo(&cfifo, 1, &data);
 
-    buffer_wcfifo(&cfifo, 1, &data);
-    scheduler_rendezvous_unsleep(&rdata);
+    if (count)
+        scheduler_rendezvous_unsleep(&rdata);
 
 }
 
