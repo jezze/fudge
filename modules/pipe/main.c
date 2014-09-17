@@ -12,7 +12,6 @@ struct pipe_endpoint
     unsigned char buffer[4096];
     struct buffer cfifo;
     struct scheduler_rendezvous rdata;
-    struct scheduler_rendezvous wdata;
 
 };
 
@@ -23,10 +22,10 @@ static struct system_node root;
 static unsigned int pipe0_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    count = buffer_rcfifo(&pipe1.cfifo, count, buffer);
+    count = buffer_rcfifo(&pipe0.cfifo, count, buffer);
 
+    scheduler_rendezvous_unsleep(&pipe0.rdata);
     scheduler_rendezvous_sleep(&pipe0.rdata, !count && pipe1.pipe.refcount);
-    scheduler_rendezvous_unsleep(&pipe1.wdata);
 
     return count;
 
@@ -35,10 +34,10 @@ static unsigned int pipe0_read(struct system_node *self, unsigned int offset, un
 static unsigned int pipe0_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    unsigned int c = buffer_wcfifo(&pipe0.cfifo, count, buffer);
+    unsigned int c = buffer_wcfifo(&pipe1.cfifo, count, buffer);
 
-    scheduler_rendezvous_sleep(&pipe0.wdata, !c && count);
     scheduler_rendezvous_unsleep(&pipe1.rdata);
+    scheduler_rendezvous_sleep(&pipe1.rdata, !c && count);
 
     return c;
 
@@ -47,10 +46,10 @@ static unsigned int pipe0_write(struct system_node *self, unsigned int offset, u
 static unsigned int pipe1_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    count = buffer_rcfifo(&pipe0.cfifo, count, buffer);
+    count = buffer_rcfifo(&pipe1.cfifo, count, buffer);
 
+    scheduler_rendezvous_unsleep(&pipe1.rdata);
     scheduler_rendezvous_sleep(&pipe1.rdata, !count && pipe0.pipe.refcount);
-    scheduler_rendezvous_unsleep(&pipe0.wdata);
 
     return count;
 
@@ -59,10 +58,10 @@ static unsigned int pipe1_read(struct system_node *self, unsigned int offset, un
 static unsigned int pipe1_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    unsigned int c = buffer_wcfifo(&pipe1.cfifo, count, buffer);
+    unsigned int c = buffer_wcfifo(&pipe0.cfifo, count, buffer);
 
-    scheduler_rendezvous_sleep(&pipe1.wdata, !c && count);
     scheduler_rendezvous_unsleep(&pipe0.rdata);
+    scheduler_rendezvous_sleep(&pipe0.rdata, !c && count);
 
     return c;
 
