@@ -63,12 +63,10 @@ static struct keyset map[256] = {
 };
 
 static unsigned int escaped;
-static unsigned int shift;
+static unsigned int modifier;
 
 static struct keycode *scancode2keycode(unsigned char scancode)
 {
-
-    unsigned int index;
 
     switch (scancode)
     {
@@ -80,27 +78,28 @@ static struct keycode *scancode2keycode(unsigned char scancode)
 
     case 0x2A:
     case 0x36:
-        shift = 1;
+        modifier |= KEYMOD_SHIFT;
 
         return 0;
+
+    case 0x38:
+        modifier |= KEYMOD_ALT;
 
     case 0xAA:
     case 0xB6:
-        shift = 0;
+        modifier &= ~KEYMOD_SHIFT;
 
         return 0;
+
+    case 0xB8:
+        modifier &= ~KEYMOD_ALT;
 
     }
 
     if (scancode & 0x80)
         return 0;
 
-    if (shift)
-        index = 1;
-    else
-        index = 0;
-
-    return &map[scancode].keycode[index];
+    return &map[scancode].keycode[modifier];
 
 }
 
