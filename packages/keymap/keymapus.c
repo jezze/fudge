@@ -85,6 +85,8 @@ static struct keycode *scancode2keycode(unsigned char scancode)
     case 0x38:
         modifier |= KEYMOD_ALT;
 
+        return 0;
+
     case 0xAA:
     case 0xB6:
         modifier &= ~KEYMOD_SHIFT;
@@ -93,6 +95,8 @@ static struct keycode *scancode2keycode(unsigned char scancode)
 
     case 0xB8:
         modifier &= ~KEYMOD_ALT;
+
+        return 0;
 
     }
 
