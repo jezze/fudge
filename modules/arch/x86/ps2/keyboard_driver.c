@@ -15,67 +15,15 @@ static struct base_keyboard_node node;
 static unsigned char buffer[512];
 static struct buffer cfifo;
 static struct scheduler_rendezvous rdata;
-static struct keycode {unsigned char length; unsigned char value[4];} keymap[256];
-static unsigned int escaped;
-static unsigned int ctrl;
-static unsigned int alt;
-static unsigned int shift;
 
 static void handleirq(unsigned int irq, struct base_bus *bus, unsigned int id)
 {
 
     unsigned char scancode = ps2_getdata(bus);
-    unsigned int count;
+    unsigned int count = buffer_wcfifo(&cfifo, 1, &scancode);
 
-    if (escaped)
-        escaped = 0;
-
-    if (scancode == 0xE0)
-        escaped = 1;
-
-    if (scancode & 0x80)
-    {
-
-        scancode &= ~0x80;
-
-        if (scancode == 0x1D)
-            ctrl = 0;
-
-        if (scancode == 0x2A)
-            shift = 0;
-
-        if (scancode == 0x38)
-            alt = 0;
-
-    }
-
-    else
-    {
-
-        if (scancode == 0x1D)
-            ctrl = 1;
-
-        if (scancode == 0x2A)
-            shift = 1;
-
-        if (scancode == 0x38)
-            alt = 1;
-
-        if (ctrl)
-            scancode = 0;
-
-        if (alt)
-            scancode = 0;
-
-        if (shift)
-            scancode += 128;
-
-        count = buffer_wcfifo(&cfifo, keymap[scancode].length, keymap[scancode].value);
-
-        if (count)
-            scheduler_rendezvous_unsleep(&rdata);
-
-    }
+    if (count)
+        scheduler_rendezvous_unsleep(&rdata);
 
 }
 
@@ -94,20 +42,6 @@ static unsigned int ikeyboard_wdata(struct base_bus *bus, unsigned int id, unsig
 {
 
     return buffer_wcfifo(&cfifo, count, buffer);
-
-}
-
-static unsigned int ikeyboard_rkeymap(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
-{
-
-    return memory_read(buffer, count, keymap, sizeof (struct keycode) * 256, offset);
-
-}
-
-static unsigned int ikeyboard_wkeymap(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
-{
-
-    return memory_write(keymap, sizeof (struct keycode) * 256, buffer, count, offset);
 
 }
 
@@ -150,7 +84,7 @@ static void driver_detach(struct base_bus *bus, unsigned int id)
 void ps2_keyboard_driver_init()
 {
 
-    base_keyboard_initinterface(&ikeyboard, ikeyboard_rdata, ikeyboard_wdata, ikeyboard_rkeymap, ikeyboard_wkeymap);
+    base_keyboard_initinterface(&ikeyboard, ikeyboard_rdata, ikeyboard_wdata);
     base_keyboard_registerinterface(&ikeyboard);
     base_initdriver(&driver, "ps2keyboard", driver_match, driver_attach, driver_detach);
     base_registerdriver(&driver);

@@ -260,11 +260,74 @@ static struct keycode map[256] = {
     {0, {0, 0, 0, 0}}
 };
 
+static unsigned int escaped;
+static unsigned int shift;
+
+static struct keycode *scancode2keycode(unsigned char scancode)
+{
+
+    unsigned int index;
+
+    switch (scancode)
+    {
+
+    case 0xE0:
+        escaped = 1;
+
+        return 0;
+
+    case 0x2A:
+    case 0x36:
+        shift = 1;
+
+        return 0;
+
+    case 0xAA:
+    case 0xB6:
+        shift = 0;
+
+        return 0;
+
+    }
+
+    if (scancode & 0x80)
+        return 0;
+
+    index = scancode + 128 * shift;
+
+    return &map[index];
+
+}
+
 void main()
 {
 
+    unsigned char buffer[FUDGE_BSIZE];
+    unsigned int count, roff, woff = 0;
+
     call_open(CALL_O0);
-    call_write(CALL_O0, 0, sizeof (struct keycode) * 256, map);
+    call_open(CALL_I0);
+
+    for (roff = 0; (count = call_read(CALL_I0, roff, FUDGE_BSIZE, buffer)); roff += count)
+    {
+
+        unsigned int i;
+
+        for (i = 0; i < count; i++)
+        {
+
+            struct keycode *keycode = scancode2keycode(buffer[i]);
+
+            if (!keycode)
+                continue;
+
+            woff += call_write(CALL_O0, woff, keycode->length, keycode->value);
+
+        }
+
+    }
+
+    call_close(CALL_I0);
     call_close(CALL_O0);
 
 }
