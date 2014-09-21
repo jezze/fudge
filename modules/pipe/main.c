@@ -19,6 +19,18 @@ static struct pipe_endpoint pipe0;
 static struct pipe_endpoint pipe1;
 static struct system_node root;
 
+static unsigned int pipe0_close(struct system_node *self)
+{
+
+    self->refcount--;
+    self->parent->refcount--;
+
+    scheduler_rendezvous_unsleep(&pipe1.rdata);
+
+    return (unsigned int)self;
+
+}
+
 static unsigned int pipe0_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
@@ -40,6 +52,18 @@ static unsigned int pipe0_write(struct system_node *self, unsigned int offset, u
     scheduler_rendezvous_sleep(&pipe1.rdata, !c && count);
 
     return c;
+
+}
+
+static unsigned int pipe1_close(struct system_node *self)
+{
+
+    self->refcount--;
+    self->parent->refcount--;
+
+    scheduler_rendezvous_unsleep(&pipe0.rdata);
+
+    return (unsigned int)self;
 
 }
 
@@ -74,6 +98,7 @@ void init()
     buffer_init(&pipe0.cfifo, 1, 4096, pipe0.buffer);
     system_initnode(&pipe0.pipe, SYSTEM_NODETYPE_NORMAL, "0");
 
+    pipe0.pipe.close = pipe0_close;
     pipe0.pipe.read = pipe0_read;
     pipe0.pipe.write = pipe0_write;
 
@@ -81,6 +106,7 @@ void init()
     buffer_init(&pipe1.cfifo, 1, 4096, pipe1.buffer);
     system_initnode(&pipe1.pipe, SYSTEM_NODETYPE_NORMAL, "1");
 
+    pipe1.pipe.close = pipe1_close;
     pipe1.pipe.read = pipe1_read;
     pipe1.pipe.write = pipe1_write;
 

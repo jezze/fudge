@@ -47,8 +47,8 @@ static void interpret(struct buffer *buffer)
 
     call_open(CALL_L2);
     call_write(CALL_L2, 0, buffer->head, buffer->memory);
-    call_close(CALL_L2);
     call_spawn(CALL_DP);
+    call_close(CALL_L2);
     call_close(CALL_L1);
 
 }
