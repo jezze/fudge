@@ -325,16 +325,11 @@ static void parse(struct tokenlist *postfix, struct tokenlist *stack)
                 return;
 
             call_open(CALL_L1);
-
-            if (!walk_path(CALL_O1, CALL_L1, 1, "0"))
-                return;
-
-            if (!walk_path(CALL_I2, CALL_L1, 1, "1"))
-                return;
-
-            call_walk(CALL_O2, CALL_O0, 0, 0);
+            call_walk(CALL_O1, CALL_L1, 1, "0");
             call_spawn(CALL_DP);
+            call_walk(CALL_I1, CALL_L1, 1, "1");
             call_close(CALL_L1);
+            call_walk(CALL_O1, CALL_O0, 0, 0);
 
             break;
 

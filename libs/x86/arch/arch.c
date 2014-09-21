@@ -165,8 +165,6 @@ static unsigned int spawn(struct container *self, struct task *task, void *stack
     memory_copy(next->descriptors, task->descriptors, sizeof (struct vfs_descriptor) * 4);
     memory_copy(next->descriptors + 4, task->descriptors + 6, sizeof (struct vfs_descriptor) * 16);
     memory_clear(next->descriptors + 20, sizeof (struct vfs_descriptor) * 12);
-    memory_copy(task->descriptors + 6, task->descriptors + 8, sizeof (struct vfs_descriptor) * 14);
-    memory_clear(task->descriptors + 20, sizeof (struct vfs_descriptor) * 2);
     taskconnect(self, next);
     taskactivate(next);
     scheduler_use(next);
