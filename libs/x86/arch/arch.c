@@ -164,6 +164,15 @@ static unsigned int spawn(struct container *self, struct task *task, void *stack
 
     memory_copy(&args, stack, sizeof (struct parameters));
 
+    for (i = 0; i < 32; i++)
+    {
+
+        next->descriptors[i].channel = 0;
+        next->descriptors[i].id = 0;
+        next->descriptors[i].active = 0;
+
+    }
+
     for (i = 0; i < 4; i++)
     {
 
@@ -177,14 +186,6 @@ static unsigned int spawn(struct container *self, struct task *task, void *stack
 
         next->descriptors[i].channel = task->descriptors[i + 2].channel;
         next->descriptors[i].id = task->descriptors[i + 2].id;
-
-    }
-
-    for (i = 20; i < 32; i++)
-    {
-
-        next->descriptors[i].channel = 0;
-        next->descriptors[i].id = 0;
 
     }
 
