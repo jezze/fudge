@@ -7,6 +7,13 @@
 static struct base_network_protocol protocol;
 static struct base_network_protocolnode protocolnode;
 
+static unsigned int protocol_match(struct base_network_interface *interface)
+{
+
+    return 0;
+
+}
+
 static unsigned int protocol_read(struct base_network_interface *interface, unsigned int offset, unsigned int count, void *buffer)
 {
 
@@ -24,7 +31,7 @@ static unsigned int protocol_write(struct base_network_interface *interface, uns
 void init()
 {
 
-    base_network_initprotocol(&protocol, "ipv4", protocol_read, protocol_write);
+    base_network_initprotocol(&protocol, "ipv4", protocol_read, protocol_write, protocol_match);
     base_network_initprotocolnode(&protocolnode, &protocol);
     base_network_registerprotocol(&protocol);
     base_network_registerprotocolnode(&protocolnode);

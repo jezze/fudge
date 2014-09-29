@@ -39,6 +39,23 @@ static unsigned int mac_read(struct system_node *self, unsigned int offset, unsi
 
 }
 
+void base_network_notify(struct base_network_interface *interface)
+{
+
+    struct resource *current = 0;
+
+    while ((current = resource_findtype(current, BASE_NETWORK_RESOURCE_PROTOCOL)))
+    {
+
+        struct base_network_protocol *protocol = current->data;
+
+        if (protocol->match(interface))
+            return;
+
+    }
+
+}
+
 void base_network_registerinterface(struct base_network_interface *interface)
 {
 
@@ -57,6 +74,8 @@ void base_network_registerinterfacenode(struct base_network_interfacenode *inter
 
 void base_network_registerprotocol(struct base_network_protocol *protocol)
 {
+
+    resource_register(&protocol->resource);
 
 }
 
@@ -81,6 +100,8 @@ void base_network_unregisterinterfacenode(struct base_network_interfacenode *int
 
 void base_network_unregisterprotocol(struct base_network_protocol *protocol)
 {
+
+    resource_unregister(&protocol->resource);
 
 }
 
@@ -118,12 +139,14 @@ void base_network_initinterfacenode(struct base_network_interfacenode *interface
 
 }
 
-void base_network_initprotocol(struct base_network_protocol *protocol, char *name, unsigned int (*read)(struct base_network_interface *interface, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write)(struct base_network_interface *interface, unsigned int offset, unsigned int count, void *buffer))
+void base_network_initprotocol(struct base_network_protocol *protocol, char *name, unsigned int (*read)(struct base_network_interface *interface, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write)(struct base_network_interface *interface, unsigned int offset, unsigned int count, void *buffer), unsigned int (*match)(struct base_network_interface *interface))
 {
 
     memory_clear(protocol, sizeof (struct base_network_protocol));
+    resource_init(&protocol->resource, BASE_NETWORK_RESOURCE_PROTOCOL, protocol);
 
     protocol->name = name;
+    protocol->match = match;
     protocol->read = read;
     protocol->write = write;
 

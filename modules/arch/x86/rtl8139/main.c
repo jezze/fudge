@@ -197,6 +197,7 @@ static void handleirq(unsigned int irq, struct base_bus *bus, unsigned int id)
 
         scheduler_rendezvous_unsleep(&rdata);
         io_outw(io + RTL8139_REGISTER_ISR, RTL8139_ISR_ROK);
+        base_network_notify(&inetwork);
 
     }
 
