@@ -224,6 +224,8 @@ static void driver_attach(struct base_bus *bus, unsigned int id)
 {
 
     base_initdevice(&device, bus, id);
+    base_terminal_initinterface(&iterminal, iterminal_rdata, iterminal_wdata);
+    base_terminal_registerinterface(&iterminal);
     base_terminal_initnode(&node, &device, &iterminal);
     base_terminal_registernode(&node);
     buffer_init(&cfifo, 1, 512, &buffer);
@@ -246,6 +248,7 @@ static void driver_detach(struct base_bus *bus, unsigned int id)
 {
 
     pic_unsetroutine(bus, id);
+    base_terminal_unregisterinterface(&iterminal);
     base_terminal_unregisternode(&node);
 
 }
@@ -253,8 +256,6 @@ static void driver_detach(struct base_bus *bus, unsigned int id)
 void init()
 {
 
-    base_terminal_initinterface(&iterminal, iterminal_rdata, iterminal_wdata);
-    base_terminal_registerinterface(&iterminal);
     base_initdriver(&driver, "uart", driver_match, driver_attach, driver_detach);
     base_registerdriver(&driver);
 
@@ -263,7 +264,6 @@ void init()
 void destroy()
 {
 
-    base_terminal_unregisterinterface(&iterminal);
     base_unregisterdriver(&driver);
 
 }

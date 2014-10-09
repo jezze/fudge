@@ -30,6 +30,8 @@ static void driver_attach(struct base_bus *bus, unsigned int id)
 {
 
     base_initdevice(&device, bus, id);
+    base_block_initinterface(&iblock, 0, 0);
+    base_block_registerinterface(&iblock);
     base_block_initnode(&node, &device, &iblock);
     base_block_registernode(&node);
     pic_setroutine(bus, id, handleirq);
@@ -40,6 +42,7 @@ static void driver_detach(struct base_bus *bus, unsigned int id)
 {
 
     pic_unsetroutine(bus, id);
+    base_block_unregisterinterface(&iblock);
     base_block_unregisternode(&node);
 
 }
@@ -47,8 +50,6 @@ static void driver_detach(struct base_bus *bus, unsigned int id)
 void init()
 {
 
-    base_block_initinterface(&iblock, 0, 0);
-    base_block_registerinterface(&iblock);
     base_initdriver(&driver, "atapi", driver_match, driver_attach, driver_detach);
     base_registerdriver(&driver);
 
@@ -57,7 +58,6 @@ void init()
 void destroy()
 {
 
-    base_block_unregisterinterface(&iblock);
     base_unregisterdriver(&driver);
 
 }

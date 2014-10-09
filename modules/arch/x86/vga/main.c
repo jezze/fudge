@@ -340,8 +340,12 @@ static void driver_attach(struct base_bus *bus, unsigned int id)
 {
 
     base_initdevice(&device, bus, id);
+    base_terminal_initinterface(&iterminal, iterminal_rdata, iterminal_wdata);
+    base_terminal_registerinterface(&iterminal);
     base_terminal_initnode(&tnode, &device, &iterminal);
     base_terminal_registernode(&tnode);
+    base_video_initinterface(&ivideo, ivideo_setmode, ivideo_rdata, ivideo_wdata, ivideo_rcolormap, ivideo_wcolormap);
+    base_video_registerinterface(&ivideo);
     base_video_initnode(&vnode, &device, &ivideo);
     base_video_registernode(&vnode);
 
@@ -359,7 +363,9 @@ static void driver_attach(struct base_bus *bus, unsigned int id)
 static void driver_detach(struct base_bus *bus, unsigned int id)
 {
 
+    base_terminal_unregisterinterface(&iterminal);
     base_terminal_unregisternode(&tnode);
+    base_video_unregisterinterface(&ivideo);
     base_video_unregisternode(&vnode);
 
 }
@@ -367,10 +373,6 @@ static void driver_detach(struct base_bus *bus, unsigned int id)
 void init()
 {
 
-    base_terminal_initinterface(&iterminal, iterminal_rdata, iterminal_wdata);
-    base_terminal_registerinterface(&iterminal);
-    base_video_initinterface(&ivideo, ivideo_setmode, ivideo_rdata, ivideo_wdata, ivideo_rcolormap, ivideo_wcolormap);
-    base_video_registerinterface(&ivideo);
     base_initdriver(&driver, "vga", driver_match, driver_attach, driver_detach);
     base_registerdriver(&driver);
 
@@ -379,8 +381,6 @@ void init()
 void destroy()
 {
 
-    base_terminal_unregisterinterface(&iterminal);
-    base_video_unregisterinterface(&ivideo);
     base_unregisterdriver(&driver);
 
 }

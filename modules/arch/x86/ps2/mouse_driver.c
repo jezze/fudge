@@ -72,6 +72,8 @@ static void driver_attach(struct base_bus *bus, unsigned int id)
 {
 
     base_initdevice(&device, bus, id);
+    base_mouse_initinterface(&imouse, imouse_rdata);
+    base_mouse_registerinterface(&imouse);
     base_mouse_initnode(&node, &device, &imouse);
     base_mouse_registernode(&node);
     buffer_init(&cfifo, 1, 512, &buffer);
@@ -90,6 +92,7 @@ static void driver_detach(struct base_bus *bus, unsigned int id)
 {
 
     pic_unsetroutine(bus, id);
+    base_mouse_unregisterinterface(&imouse);
     base_mouse_unregisternode(&node);
 
 }
@@ -97,8 +100,6 @@ static void driver_detach(struct base_bus *bus, unsigned int id)
 void ps2_mouse_driver_init()
 {
 
-    base_mouse_initinterface(&imouse, imouse_rdata);
-    base_mouse_registerinterface(&imouse);
     base_initdriver(&driver, "ps2mouse", driver_match, driver_attach, driver_detach);
     base_registerdriver(&driver);
 
@@ -107,7 +108,6 @@ void ps2_mouse_driver_init()
 void ps2_mouse_driver_destroy()
 {
 
-    base_mouse_unregisterinterface(&imouse);
     base_unregisterdriver(&driver);
 
 }

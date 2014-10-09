@@ -59,6 +59,8 @@ static void driver_attach(struct base_bus *bus, unsigned int id)
 {
 
     base_initdevice(&device, bus, id);
+    base_keyboard_initinterface(&ikeyboard, ikeyboard_rdata, ikeyboard_wdata);
+    base_keyboard_registerinterface(&ikeyboard);
     base_keyboard_initnode(&node, &device, &ikeyboard);
     base_keyboard_registernode(&node);
     buffer_init(&cfifo, 1, 512, &buffer);
@@ -77,6 +79,7 @@ static void driver_detach(struct base_bus *bus, unsigned int id)
 {
 
     pic_unsetroutine(bus, id);
+    base_keyboard_unregisterinterface(&ikeyboard);
     base_keyboard_unregisternode(&node);
 
 }
@@ -84,8 +87,6 @@ static void driver_detach(struct base_bus *bus, unsigned int id)
 void ps2_keyboard_driver_init()
 {
 
-    base_keyboard_initinterface(&ikeyboard, ikeyboard_rdata, ikeyboard_wdata);
-    base_keyboard_registerinterface(&ikeyboard);
     base_initdriver(&driver, "ps2keyboard", driver_match, driver_attach, driver_detach);
     base_registerdriver(&driver);
 
@@ -94,7 +95,6 @@ void ps2_keyboard_driver_init()
 void ps2_keyboard_driver_destroy()
 {
 
-    base_keyboard_unregisterinterface(&ikeyboard);
     base_unregisterdriver(&driver);
 
 }

@@ -313,6 +313,8 @@ static void driver_attach(struct base_bus *bus, unsigned int id)
     mmio = bar1;
 
     base_initdevice(&device, bus, id);
+    base_network_initinterface(&inetwork, inetwork_receive, inetwork_send, inetwork_getpacket, inetwork_dumppacket);
+    base_network_registerinterface(&inetwork);
     base_network_initinterfacenode(&inetworknode, &device, &inetwork);
     base_network_registerinterfacenode(&inetworknode);
     pci_outw(bus, id, PCI_CONFIG_COMMAND, command | (1 << 2));
@@ -337,6 +339,7 @@ static void driver_detach(struct base_bus *bus, unsigned int id)
 {
 
     pic_unsetroutine(bus, id);
+    base_network_unregisterinterface(&inetwork);
     base_network_unregisterinterfacenode(&inetworknode);
 
 }
@@ -344,8 +347,6 @@ static void driver_detach(struct base_bus *bus, unsigned int id)
 void init()
 {
 
-    base_network_initinterface(&inetwork, inetwork_receive, inetwork_send, inetwork_getpacket, inetwork_dumppacket);
-    base_network_registerinterface(&inetwork);
     base_initdriver(&driver, "rtl8139", driver_match, driver_attach, driver_detach);
     base_registerdriver(&driver);
 
@@ -354,7 +355,6 @@ void init()
 void destroy()
 {
 
-    base_network_unregisterinterface(&inetwork);
     base_unregisterdriver(&driver);
 
 }

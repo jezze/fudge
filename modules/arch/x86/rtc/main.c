@@ -117,6 +117,8 @@ static void driver_attach(struct base_bus *bus, unsigned int id)
 {
 
     base_initdevice(&device, bus, id);
+    base_clock_initinterface(&iclock, iclock_getseconds, iclock_getminutes, iclock_gethours, iclock_getweekday, iclock_getday, iclock_getmonth, iclock_getyear);
+    base_clock_registerinterface(&iclock);
     base_clock_initnode(&node, &device, &iclock);
     base_clock_registernode(&node);
     pic_setroutine(bus, id, handleirq);
@@ -129,6 +131,7 @@ static void driver_detach(struct base_bus *bus, unsigned int id)
 {
 
     pic_unsetroutine(bus, id);
+    base_clock_unregisterinterface(&iclock);
     base_clock_unregisternode(&node);
 
 }
@@ -136,8 +139,6 @@ static void driver_detach(struct base_bus *bus, unsigned int id)
 void init()
 {
 
-    base_clock_initinterface(&iclock, iclock_getseconds, iclock_getminutes, iclock_gethours, iclock_getweekday, iclock_getday, iclock_getmonth, iclock_getyear);
-    base_clock_registerinterface(&iclock);
     base_initdriver(&driver, "rtc", driver_match, driver_attach, driver_detach);
     base_registerdriver(&driver);
 
@@ -146,7 +147,6 @@ void init()
 void destroy()
 {
 
-    base_clock_unregisterinterface(&iclock);
     base_unregisterdriver(&driver);
 
 }

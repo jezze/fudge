@@ -223,6 +223,8 @@ static void driver_attach(struct base_bus *bus, unsigned int id)
 {
 
     base_initdevice(&device, bus, id);
+    base_video_initinterface(&ivideo, ivideo_setmode, ivideo_rdata, ivideo_wdata, ivideo_rcolormap, ivideo_wcolormap);
+    base_video_registerinterface(&ivideo);
     base_video_initnode(&node, &device, &ivideo);
     base_video_registernode(&node);
 
@@ -231,6 +233,7 @@ static void driver_attach(struct base_bus *bus, unsigned int id)
 static void driver_detach(struct base_bus *bus, unsigned int id)
 {
 
+    base_video_unregisterinterface(&ivideo);
     base_video_unregisternode(&node);
 
 }
@@ -238,8 +241,6 @@ static void driver_detach(struct base_bus *bus, unsigned int id)
 void init()
 {
 
-    base_video_initinterface(&ivideo, ivideo_setmode, ivideo_rdata, ivideo_wdata, ivideo_rcolormap, ivideo_wcolormap);
-    base_video_registerinterface(&ivideo);
     base_initdriver(&driver, "cirrus", driver_match, driver_attach, driver_detach);
     base_registerdriver(&driver);
 
@@ -248,7 +249,6 @@ void init()
 void destroy()
 {
 
-    base_video_unregisterinterface(&ivideo);
     base_unregisterdriver(&driver);
 
 }
