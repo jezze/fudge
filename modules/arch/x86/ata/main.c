@@ -18,23 +18,23 @@ static void handleirq(unsigned int irq, struct base_bus *bus, unsigned int id)
 
 }
 
-static unsigned int iblock_rdata(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int iblock_rdata(unsigned int offset, unsigned int count, void *buffer)
 {
 
     if (offset > 0)
         return 0;
 
-    return ide_rlba28(bus, 0, 0, 1, buffer);
+    return ide_rlba28(device.bus, 0, 0, 1, buffer);
 
 }
 
-static unsigned int iblock_wdata(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int iblock_wdata(unsigned int offset, unsigned int count, void *buffer)
 {
 
     if (offset > 0)
         return 0;
 
-    return ide_wlba28(bus, 0, 0, 1, buffer);
+    return ide_wlba28(device.bus, 0, 0, 1, buffer);
 
 }
 

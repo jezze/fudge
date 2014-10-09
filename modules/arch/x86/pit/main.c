@@ -57,7 +57,7 @@ static void handleirq(unsigned int irq, struct base_bus *bus, unsigned int id)
 
 }
 
-static void itimer_addduration(struct base_bus *bus, unsigned int id, unsigned int duration)
+static void itimer_addduration(unsigned int duration)
 {
 
 }

@@ -27,7 +27,7 @@ static void handleirq(unsigned int irq, struct base_bus *bus, unsigned int id)
 
 }
 
-static unsigned int ikeyboard_rdata(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int ikeyboard_rdata(unsigned int offset, unsigned int count, void *buffer)
 {
 
     count = buffer_rcfifo(&cfifo, count, buffer);
@@ -38,7 +38,7 @@ static unsigned int ikeyboard_rdata(struct base_bus *bus, unsigned int id, unsig
 
 }
 
-static unsigned int ikeyboard_wdata(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int ikeyboard_wdata(unsigned int offset, unsigned int count, void *buffer)
 {
 
     return buffer_wcfifo(&cfifo, count, buffer);

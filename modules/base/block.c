@@ -12,7 +12,7 @@ static unsigned int data_read(struct system_node *self, unsigned int offset, uns
 
     struct base_block_node *node = (struct base_block_node *)self->parent;
 
-    return node->interface->rdata(node->device->bus, node->device->id, offset, count, buffer);
+    return node->interface->rdata(offset, count, buffer);
 
 }
 
@@ -53,7 +53,7 @@ void base_block_unregisternode(struct base_block_node *node)
 
 }
 
-void base_block_initinterface(struct base_block_interface *interface, unsigned int (*rdata)(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer), unsigned int (*wdata)(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer))
+void base_block_initinterface(struct base_block_interface *interface, unsigned int (*rdata)(unsigned int offset, unsigned int count, void *buffer), unsigned int (*wdata)(unsigned int offset, unsigned int count, void *buffer))
 {
 
     memory_clear(interface, sizeof (struct base_block_interface));
@@ -80,7 +80,6 @@ void base_block_initnode(struct base_block_node *node, struct base_device *devic
     system_initnode(&node->base, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, device->bus->name);
     system_initnode(&node->data, SYSTEM_NODETYPE_NORMAL, "data");
 
-    node->device = device;
     node->interface = interface;
     node->data.read = data_read;
 

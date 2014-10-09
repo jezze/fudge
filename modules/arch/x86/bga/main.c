@@ -61,7 +61,7 @@ static void setreg(unsigned short index, unsigned short data)
 
 }
 
-static void ivideo_setmode(struct base_bus *bus, unsigned int id, unsigned int xres, unsigned int yres, unsigned int bpp)
+static void ivideo_setmode(unsigned int xres, unsigned int yres, unsigned int bpp)
 {
 
     setreg(BGA_COMMAND_ENABLE, 0x00);
@@ -72,7 +72,7 @@ static void ivideo_setmode(struct base_bus *bus, unsigned int id, unsigned int x
 
 }
 
-static unsigned int ivideo_rdata(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int ivideo_rdata(unsigned int offset, unsigned int count, void *buffer)
 {
 
 /*
@@ -85,7 +85,7 @@ static unsigned int ivideo_rdata(struct base_bus *bus, unsigned int id, unsigned
 
 }
 
-static unsigned int ivideo_wdata(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int ivideo_wdata(unsigned int offset, unsigned int count, void *buffer)
 {
 
 /*

@@ -26,12 +26,12 @@ static unsigned int timestamp_read(struct system_node *self, unsigned int offset
 {
 
     struct base_clock_node *node = (struct base_clock_node *)self->parent;
-    unsigned int year = node->interface->getyear(node->device->bus, node->device->id) - 1970;
-    unsigned int month = node->interface->getmonth(node->device->bus, node->device->id);
-    unsigned int day = node->interface->getday(node->device->bus, node->device->id);
-    unsigned int hour = node->interface->gethours(node->device->bus, node->device->id);
-    unsigned int minute = node->interface->getminutes(node->device->bus, node->device->id);
-    unsigned int second = node->interface->getseconds(node->device->bus, node->device->id);
+    unsigned int year = node->interface->getyear() - 1970;
+    unsigned int month = node->interface->getmonth();
+    unsigned int day = node->interface->getday();
+    unsigned int hour = node->interface->gethours();
+    unsigned int minute = node->interface->getminutes();
+    unsigned int second = node->interface->getseconds();
     unsigned int dyear = ((((365 * year) + (year / 4)) - (year / 100)) + (year / 400));
     unsigned int dmonth = isleapyear(year) ? dotm366[month - 1] : dotm365[month - 1];
     unsigned int timestamp = ((dyear + dmonth + day) * 86400) + ((hour * 3600) + (minute * 60) + second);
@@ -47,9 +47,9 @@ static unsigned int date_read(struct system_node *self, unsigned int offset, uns
     struct base_clock_node *node = (struct base_clock_node *)self->parent;
     char *num = "0000-00-00";
 
-    ascii_wzerovalue(num, 10, node->interface->getyear(node->device->bus, node->device->id), 10, 4, 0);
-    ascii_wzerovalue(num, 10, node->interface->getmonth(node->device->bus, node->device->id), 10, 2, 5);
-    ascii_wzerovalue(num, 10, node->interface->getday(node->device->bus, node->device->id), 10, 2, 8);
+    ascii_wzerovalue(num, 10, node->interface->getyear(), 10, 4, 0);
+    ascii_wzerovalue(num, 10, node->interface->getmonth(), 10, 2, 5);
+    ascii_wzerovalue(num, 10, node->interface->getday(), 10, 2, 8);
 
     return memory_read(buffer, count, num, 10, offset);
 
@@ -61,9 +61,9 @@ static unsigned int time_read(struct system_node *self, unsigned int offset, uns
     struct base_clock_node *node = (struct base_clock_node *)self->parent;
     char *num = "00:00:00";
 
-    ascii_wzerovalue(num, 8, node->interface->gethours(node->device->bus, node->device->id), 10, 2, 0);
-    ascii_wzerovalue(num, 8, node->interface->getminutes(node->device->bus, node->device->id), 10, 2, 3);
-    ascii_wzerovalue(num, 8, node->interface->getseconds(node->device->bus, node->device->id), 10, 2, 6);
+    ascii_wzerovalue(num, 8, node->interface->gethours(), 10, 2, 0);
+    ascii_wzerovalue(num, 8, node->interface->getminutes(), 10, 2, 3);
+    ascii_wzerovalue(num, 8, node->interface->getseconds(), 10, 2, 6);
 
     return memory_read(buffer, count, num, 8, offset);
 
@@ -98,7 +98,7 @@ void base_clock_unregisternode(struct base_clock_node *node)
 
 }
 
-void base_clock_initinterface(struct base_clock_interface *interface, unsigned char (*getseconds)(struct base_bus *bus, unsigned int id), unsigned char (*getminutes)(struct base_bus *bus, unsigned int id), unsigned char (*gethours)(struct base_bus *bus, unsigned int id), unsigned char (*getweekday)(struct base_bus *bus, unsigned int id), unsigned char (*getday)(struct base_bus *bus, unsigned int id), unsigned char (*getmonth)(struct base_bus *bus, unsigned int id), unsigned short (*getyear)(struct base_bus *bus, unsigned int id))
+void base_clock_initinterface(struct base_clock_interface *interface, unsigned char (*getseconds)(), unsigned char (*getminutes)(), unsigned char (*gethours)(), unsigned char (*getweekday)(), unsigned char (*getday)(), unsigned char (*getmonth)(), unsigned short (*getyear)())
 {
 
     memory_clear(interface, sizeof (struct base_clock_interface));
@@ -123,7 +123,6 @@ void base_clock_initnode(struct base_clock_node *node, struct base_device *devic
     system_initnode(&node->date, SYSTEM_NODETYPE_NORMAL, "date");
     system_initnode(&node->time, SYSTEM_NODETYPE_NORMAL, "time");
 
-    node->device = device;
     node->interface = interface;
     node->timestamp.read = timestamp_read;
     node->date.read = date_read;

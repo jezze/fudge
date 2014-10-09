@@ -159,7 +159,7 @@ static const unsigned char g400x300x256X[60] = {
 };
 */
 
-static void clear(struct base_bus *bus, unsigned int id, unsigned int offset)
+static void clear(unsigned int offset)
 {
 
     struct vga_character *memory = taddress;
@@ -175,14 +175,14 @@ static void clear(struct base_bus *bus, unsigned int id, unsigned int offset)
 
 }
 
-static unsigned int iterminal_rdata(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int iterminal_rdata(unsigned int offset, unsigned int count, void *buffer)
 {
 
     return 0;
 
 }
 
-static unsigned int iterminal_wdata(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int iterminal_wdata(unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct vga_character *memory = taddress;
@@ -221,7 +221,7 @@ static unsigned int iterminal_wdata(struct base_bus *bus, unsigned int id, unsig
         {
 
             memory_read(taddress, fullsize, taddress, fullsize, linesize);
-            clear(bus, id, 80 * 24);
+            clear(80 * 24);
             cursor.offset -= 80;
 
         }
@@ -235,7 +235,7 @@ static unsigned int iterminal_wdata(struct base_bus *bus, unsigned int id, unsig
 
 }
 
-static void ivideo_setmode(struct base_bus *bus, unsigned int id, unsigned int xres, unsigned int yres, unsigned int bpp)
+static void ivideo_setmode(unsigned int xres, unsigned int yres, unsigned int bpp)
 {
 
     resolution.x = 320;
@@ -252,7 +252,7 @@ static void ivideo_setmode(struct base_bus *bus, unsigned int id, unsigned int x
 
 }
 
-static unsigned int ivideo_rdata(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int ivideo_rdata(unsigned int offset, unsigned int count, void *buffer)
 {
 
     unsigned int bytespp = resolution.bpp / 8;
@@ -263,7 +263,7 @@ static unsigned int ivideo_rdata(struct base_bus *bus, unsigned int id, unsigned
 
 }
 
-static unsigned int ivideo_wdata(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int ivideo_wdata(unsigned int offset, unsigned int count, void *buffer)
 {
 
     unsigned int bytespp = resolution.bpp / 8;
@@ -274,7 +274,7 @@ static unsigned int ivideo_wdata(struct base_bus *bus, unsigned int id, unsigned
 
 }
 
-static unsigned int ivideo_rcolormap(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int ivideo_rcolormap(unsigned int offset, unsigned int count, void *buffer)
 {
 
     char *c = buffer;
@@ -300,7 +300,7 @@ static unsigned int ivideo_rcolormap(struct base_bus *bus, unsigned int id, unsi
 
 }
 
-static unsigned int ivideo_wcolormap(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int ivideo_wcolormap(unsigned int offset, unsigned int count, void *buffer)
 {
 
     char *c = buffer;
@@ -352,7 +352,7 @@ static void driver_attach(struct base_bus *bus, unsigned int id)
     resolution.bpp = 16;
     cursor.color = 0x0F;
 
-    clear(bus, id, 0);
+    clear(0);
 
 }
 

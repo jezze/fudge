@@ -139,14 +139,14 @@ static unsigned short txp;
 static struct scheduler_rendezvous rdata;
 static struct scheduler_rendezvous wdata;
 
-static void poweron(struct base_bus *bus, unsigned int id)
+static void poweron()
 {
 
     io_outb(io + RTL8139_REGISTER_CONFIG1, 0x00);
 
 }
 
-static void reset(struct base_bus *bus, unsigned int id)
+static void reset()
 {
 
     io_outb(io + RTL8139_REGISTER_CR, RTL8139_CR_RESET);
@@ -155,21 +155,21 @@ static void reset(struct base_bus *bus, unsigned int id)
 
 }
 
-static void enable(struct base_bus *bus, unsigned int id)
+static void enable()
 {
 
     io_outb(io + RTL8139_REGISTER_CR, RTL8139_CR_RENABLE | RTL8139_CR_TENABLE);
 
 }
 
-static void setintflags(struct base_bus *bus, unsigned int id, unsigned short flags)
+static void setintflags(unsigned short flags)
 {
 
     io_outw(io + RTL8139_REGISTER_IMR, flags);
 
 }
 
-static void setrx(struct base_bus *bus, unsigned int id)
+static void setrx()
 {
 
     io_outd(io + RTL8139_REGISTER_RBSTART, (unsigned long)rx);
@@ -177,7 +177,7 @@ static void setrx(struct base_bus *bus, unsigned int id)
 
 }
 
-static void settx(struct base_bus *bus, unsigned int id)
+static void settx()
 {
 
     io_outd(io + RTL8139_REGISTER_TSAD0, (unsigned long)tx0);
@@ -211,26 +211,26 @@ static void handleirq(unsigned int irq, struct base_bus *bus, unsigned int id)
 
 }
 
-static void *inetwork_getpacket(struct base_bus *bus, unsigned int id)
+static void *inetwork_getpacket()
 {
 
     return rx + rxp;
 
 }
 
-static void inetwork_dumppacket(struct base_bus *bus, unsigned int id)
+static void inetwork_dumppacket()
 {
 
-    struct rtl8139_header *header = inetwork_getpacket(bus, id);
+    struct rtl8139_header *header = inetwork_getpacket();
 
     rxp += (header->length + 4 + 3) & ~3;
 
 }
 
-static unsigned int inetwork_receive(struct base_bus *bus, unsigned int id, unsigned int count, void *buffer)
+static unsigned int inetwork_receive(unsigned int count, void *buffer)
 {
 
-    struct rtl8139_header *header = inetwork_getpacket(bus, id);
+    struct rtl8139_header *header = inetwork_getpacket();
     unsigned short cbr = io_inw(io + RTL8139_REGISTER_CBR);
     unsigned int c;
 
@@ -245,13 +245,13 @@ static unsigned int inetwork_receive(struct base_bus *bus, unsigned int id, unsi
 
     c = memory_read(buffer, count, rx + rxp + 4, header->length, 0);
 
-    inetwork_dumppacket(bus, id);
+    inetwork_dumppacket();
 
     return c;
 
 }
 
-static unsigned int inetwork_send(struct base_bus *bus, unsigned int id, unsigned int count, void *buffer)
+static unsigned int inetwork_send(unsigned int count, void *buffer)
 {
 
     unsigned int status = (0x3F << 16) | (count & 0x1FFF);
@@ -317,12 +317,12 @@ static void driver_attach(struct base_bus *bus, unsigned int id)
     base_network_registerinterfacenode(&inetworknode);
     pci_outw(bus, id, PCI_CONFIG_COMMAND, command | (1 << 2));
     pic_setroutine(bus, id, handleirq);
-    poweron(bus, id);
-    reset(bus, id);
-    setintflags(bus, id, RTL8139_ISR_ROK | RTL8139_ISR_TOK);
-    setrx(bus, id);
-    settx(bus, id);
-    enable(bus, id);
+    poweron();
+    reset();
+    setintflags(RTL8139_ISR_ROK | RTL8139_ISR_TOK);
+    setrx();
+    settx();
+    enable();
 
     inetwork.mac[0] = io_inb(io + RTL8139_REGISTER_IDR0);
     inetwork.mac[1] = io_inb(io + RTL8139_REGISTER_IDR1);

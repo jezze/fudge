@@ -12,7 +12,7 @@ static unsigned int data_read(struct system_node *self, unsigned int offset, uns
 
     struct base_video_node *node = (struct base_video_node *)self->parent;
 
-    return node->interface->rdata(node->device->bus, node->device->id, offset, count, buffer);
+    return node->interface->rdata(offset, count, buffer);
 
 }
 
@@ -21,7 +21,7 @@ static unsigned int data_write(struct system_node *self, unsigned int offset, un
 
     struct base_video_node *node = (struct base_video_node *)self->parent;
 
-    return node->interface->wdata(node->device->bus, node->device->id, offset, count, buffer);
+    return node->interface->wdata(offset, count, buffer);
 
 }
 
@@ -30,7 +30,7 @@ static unsigned int colormap_read(struct system_node *self, unsigned int offset,
 
     struct base_video_node *node = (struct base_video_node *)self->parent;
 
-    return node->interface->rcolormap(node->device->bus, node->device->id, offset, count, buffer);
+    return node->interface->rcolormap(offset, count, buffer);
 
 }
 
@@ -39,7 +39,7 @@ static unsigned int colormap_write(struct system_node *self, unsigned int offset
 
     struct base_video_node *node = (struct base_video_node *)self->parent;
 
-    return node->interface->wcolormap(node->device->bus, node->device->id, offset, count, buffer);
+    return node->interface->wcolormap(offset, count, buffer);
 
 }
 
@@ -55,7 +55,7 @@ static unsigned int mode_write(struct system_node *self, unsigned int offset, un
 
     struct base_video_node *node = (struct base_video_node *)self->parent;
 
-    node->interface->setmode(node->device->bus, node->device->id, 320, 200, 8);
+    node->interface->setmode(320, 200, 8);
 
     return count;
 
@@ -91,7 +91,7 @@ void base_video_unregisternode(struct base_video_node *node)
 
 }
 
-void base_video_initinterface(struct base_video_interface *interface, void (*setmode)(struct base_bus *bus, unsigned int id, unsigned int xres, unsigned int yres, unsigned int bpp), unsigned int (*rdata)(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer), unsigned int (*wdata)(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer), unsigned int (*rcolormap)(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer), unsigned int (*wcolormap)(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer))
+void base_video_initinterface(struct base_video_interface *interface, void (*setmode)(unsigned int xres, unsigned int yres, unsigned int bpp), unsigned int (*rdata)(unsigned int offset, unsigned int count, void *buffer), unsigned int (*wdata)(unsigned int offset, unsigned int count, void *buffer), unsigned int (*rcolormap)(unsigned int offset, unsigned int count, void *buffer), unsigned int (*wcolormap)(unsigned int offset, unsigned int count, void *buffer))
 {
 
     memory_clear(interface, sizeof (struct base_video_interface));
@@ -115,7 +115,6 @@ void base_video_initnode(struct base_video_node *node, struct base_device *devic
     system_initnode(&node->info, SYSTEM_NODETYPE_NORMAL, "info");
     system_initnode(&node->mode, SYSTEM_NODETYPE_NORMAL, "mode");
 
-    node->device = device;
     node->interface = interface;
     node->data.read = data_read;
     node->data.write = data_write;

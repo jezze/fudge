@@ -4,10 +4,10 @@ struct base_network_interface
 {
 
     struct base_interface base;
-    unsigned int (*receive)(struct base_bus *bus, unsigned int id, unsigned int count, void *buffer);
-    unsigned int (*send)(struct base_bus *bus, unsigned int id, unsigned int count, void *buffer);
-    void *(*getpacket)(struct base_bus *bus, unsigned int id);
-    void (*dumppacket)(struct base_bus *bus, unsigned int id);
+    unsigned int (*receive)(unsigned int count, void *buffer);
+    unsigned int (*send)(unsigned int count, void *buffer);
+    void *(*getpacket)();
+    void (*dumppacket)();
     unsigned char mac[6];
 
 };
@@ -18,7 +18,6 @@ struct base_network_interfacenode
     struct system_node base;
     struct system_node data;
     struct system_node mac;
-    struct base_device *device;
     struct base_network_interface *interface;
 
 };
@@ -51,7 +50,7 @@ void base_network_unregisterinterface(struct base_network_interface *interface);
 void base_network_unregisterinterfacenode(struct base_network_interfacenode *interfacenode);
 void base_network_unregisterprotocol(struct base_network_protocol *protocol);
 void base_network_unregisterprotocolnode(struct base_network_protocolnode *protocolnode);
-void base_network_initinterface(struct base_network_interface *interface, unsigned int (*receive)(struct base_bus *bus, unsigned int id, unsigned int count, void *buffer), unsigned int (*send)(struct base_bus *bus, unsigned int id, unsigned int count, void *buffer), void *(*getpacket)(struct base_bus *bus, unsigned int id), void (*dumppacket)(struct base_bus *bus, unsigned int id));
+void base_network_initinterface(struct base_network_interface *interface, unsigned int (*receive)(unsigned int count, void *buffer), unsigned int (*send)(unsigned int count, void *buffer), void *(*getpacket)(), void (*dumppacket)());
 void base_network_initinterfacenode(struct base_network_interfacenode *interfacenode, struct base_device *device, struct base_network_interface *interface);
 void base_network_initprotocol(struct base_network_protocol *protocol, char *name, unsigned int (*read)(struct base_network_interface *interface, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write)(struct base_network_interface *interface, unsigned int offset, unsigned int count, void *buffer), unsigned int (*match)(struct base_network_interface *interface));
 void base_network_initprotocolnode(struct base_network_protocolnode *protocolnode, struct base_network_protocol *protocol);

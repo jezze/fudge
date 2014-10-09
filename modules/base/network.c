@@ -12,7 +12,7 @@ static unsigned int data_read(struct system_node *self, unsigned int offset, uns
 
     struct base_network_interfacenode *interfacenode = (struct base_network_interfacenode *)self->parent;
  
-    return interfacenode->interface->receive(interfacenode->device->bus, interfacenode->device->id, count, buffer);
+    return interfacenode->interface->receive(count, buffer);
 
 }
 
@@ -21,7 +21,7 @@ static unsigned int data_write(struct system_node *self, unsigned int offset, un
 
     struct base_network_interfacenode *interfacenode = (struct base_network_interfacenode *)self->parent;
  
-    return interfacenode->interface->send(interfacenode->device->bus, interfacenode->device->id, count, buffer);
+    return interfacenode->interface->send(count, buffer);
 
 }
 
@@ -110,7 +110,7 @@ void base_network_unregisterprotocolnode(struct base_network_protocolnode *proto
 
 }
 
-void base_network_initinterface(struct base_network_interface *interface, unsigned int (*receive)(struct base_bus *bus, unsigned int id, unsigned int count, void *buffer), unsigned int (*send)(struct base_bus *bus, unsigned int id, unsigned int count, void *buffer), void *(*getpacket)(struct base_bus *bus, unsigned int id), void (*dumppacket)(struct base_bus *bus, unsigned int id))
+void base_network_initinterface(struct base_network_interface *interface, unsigned int (*receive)(unsigned int count, void *buffer), unsigned int (*send)(unsigned int count, void *buffer), void *(*getpacket)(), void (*dumppacket)())
 {
 
     memory_clear(interface, sizeof (struct base_network_interface));
@@ -131,7 +131,6 @@ void base_network_initinterfacenode(struct base_network_interfacenode *interface
     system_initnode(&interfacenode->data, SYSTEM_NODETYPE_NORMAL, "data");
     system_initnode(&interfacenode->mac, SYSTEM_NODETYPE_NORMAL, "mac");
 
-    interfacenode->device = device;
     interfacenode->interface = interface;
     interfacenode->data.read = data_read;
     interfacenode->data.write = data_write;

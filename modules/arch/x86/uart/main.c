@@ -186,7 +186,7 @@ static void handleirq(unsigned int irq, struct base_bus *bus, unsigned int id)
 
 }
 
-static unsigned int iterminal_rdata(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int iterminal_rdata(unsigned int offset, unsigned int count, void *buffer)
 {
 
     count = buffer_rcfifo(&cfifo, count, buffer);
@@ -197,7 +197,7 @@ static unsigned int iterminal_rdata(struct base_bus *bus, unsigned int id, unsig
 
 }
 
-static unsigned int iterminal_wdata(struct base_bus *bus, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int iterminal_wdata(unsigned int offset, unsigned int count, void *buffer)
 {
 
     unsigned char *b = buffer;
