@@ -56,7 +56,7 @@ void base_terminal_initinterface(struct base_terminal_interface *interface, stru
 {
 
     memory_clear(interface, sizeof (struct base_terminal_interface));
-    base_initinterface(&interface->base, BASE_INTERFACE_TYPE_TERMINAL, bus, id);
+    base_initinterface(&interface->base, bus, id);
 
     interface->rdata = rdata;
     interface->wdata = wdata;

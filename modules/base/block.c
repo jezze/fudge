@@ -57,7 +57,7 @@ void base_block_initinterface(struct base_block_interface *interface, struct bas
 {
 
     memory_clear(interface, sizeof (struct base_block_interface));
-    base_initinterface(&interface->base, BASE_INTERFACE_TYPE_BLOCK, bus, id);
+    base_initinterface(&interface->base, bus, id);
 
     interface->rdata = rdata;
     interface->wdata = wdata;

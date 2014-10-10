@@ -102,7 +102,7 @@ void base_clock_initinterface(struct base_clock_interface *interface, struct bas
 {
 
     memory_clear(interface, sizeof (struct base_clock_interface));
-    base_initinterface(&interface->base, BASE_INTERFACE_TYPE_CLOCK, bus, id);
+    base_initinterface(&interface->base, bus, id);
 
     interface->getseconds = getseconds;
     interface->getminutes = getminutes;

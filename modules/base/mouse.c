@@ -47,7 +47,7 @@ void base_mouse_initinterface(struct base_mouse_interface *interface, struct bas
 {
 
     memory_clear(interface, sizeof (struct base_mouse_interface));
-    base_initinterface(&interface->base, BASE_INTERFACE_TYPE_MOUSE, bus, id);
+    base_initinterface(&interface->base, bus, id);
 
     interface->rdata = rdata;
 

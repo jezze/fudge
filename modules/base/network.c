@@ -114,7 +114,7 @@ void base_network_initinterface(struct base_network_interface *interface, struct
 {
 
     memory_clear(interface, sizeof (struct base_network_interface));
-    base_initinterface(&interface->base, BASE_INTERFACE_TYPE_NETWORK, bus, id);
+    base_initinterface(&interface->base, bus, id);
 
     interface->receive = receive;
     interface->send = send;

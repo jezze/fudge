@@ -95,7 +95,7 @@ void base_video_initinterface(struct base_video_interface *interface, struct bas
 {
 
     memory_clear(interface, sizeof (struct base_video_interface));
-    base_initinterface(&interface->base, BASE_INTERFACE_TYPE_VIDEO, bus, id);
+    base_initinterface(&interface->base, bus, id);
 
     interface->setmode = setmode;
     interface->rdata = rdata;

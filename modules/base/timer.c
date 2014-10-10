@@ -37,7 +37,7 @@ void base_timer_initinterface(struct base_timer_interface *interface, struct bas
 {
 
     memory_clear(interface, sizeof (struct base_timer_interface));
-    base_initinterface(&interface->base, BASE_INTERFACE_TYPE_TIMER, bus, id);
+    base_initinterface(&interface->base, bus, id);
 
     interface->addduration = addduration;
 
