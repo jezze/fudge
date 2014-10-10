@@ -124,7 +124,6 @@ struct rtl8139_header
 };
 
 static struct base_driver driver;
-static struct base_device device;
 static struct base_network_interface inetwork;
 static struct base_network_interfacenode inetworknode;
 static unsigned short io;
@@ -312,10 +311,9 @@ static void driver_attach(struct base_bus *bus, unsigned int id)
     io = bar0 & ~1;
     mmio = bar1;
 
-    base_initdevice(&device, bus, id);
-    base_network_initinterface(&inetwork, inetwork_receive, inetwork_send, inetwork_getpacket, inetwork_dumppacket);
+    base_network_initinterface(&inetwork, bus, id, inetwork_receive, inetwork_send, inetwork_getpacket, inetwork_dumppacket);
     base_network_registerinterface(&inetwork);
-    base_network_initinterfacenode(&inetworknode, &device, &inetwork);
+    base_network_initinterfacenode(&inetworknode, &inetwork);
     base_network_registerinterfacenode(&inetworknode);
     pci_outw(bus, id, PCI_CONFIG_COMMAND, command | (1 << 2));
     pic_setroutine(bus, id, handleirq);

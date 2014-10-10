@@ -98,11 +98,11 @@ void base_clock_unregisternode(struct base_clock_node *node)
 
 }
 
-void base_clock_initinterface(struct base_clock_interface *interface, unsigned char (*getseconds)(), unsigned char (*getminutes)(), unsigned char (*gethours)(), unsigned char (*getweekday)(), unsigned char (*getday)(), unsigned char (*getmonth)(), unsigned short (*getyear)())
+void base_clock_initinterface(struct base_clock_interface *interface, struct base_bus *bus, unsigned int id, unsigned char (*getseconds)(), unsigned char (*getminutes)(), unsigned char (*gethours)(), unsigned char (*getweekday)(), unsigned char (*getday)(), unsigned char (*getmonth)(), unsigned short (*getyear)())
 {
 
     memory_clear(interface, sizeof (struct base_clock_interface));
-    base_initinterface(&interface->base, BASE_INTERFACE_TYPE_CLOCK);
+    base_initinterface(&interface->base, BASE_INTERFACE_TYPE_CLOCK, bus, id);
 
     interface->getseconds = getseconds;
     interface->getminutes = getminutes;
@@ -114,11 +114,11 @@ void base_clock_initinterface(struct base_clock_interface *interface, unsigned c
 
 }
 
-void base_clock_initnode(struct base_clock_node *node, struct base_device *device, struct base_clock_interface *interface)
+void base_clock_initnode(struct base_clock_node *node, struct base_clock_interface *interface)
 {
 
     memory_clear(node, sizeof (struct base_clock_node));
-    system_initnode(&node->base, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, device->bus->name);
+    system_initnode(&node->base, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, interface->base.bus->name);
     system_initnode(&node->timestamp, SYSTEM_NODETYPE_NORMAL, "timestamp");
     system_initnode(&node->date, SYSTEM_NODETYPE_NORMAL, "date");
     system_initnode(&node->time, SYSTEM_NODETYPE_NORMAL, "time");

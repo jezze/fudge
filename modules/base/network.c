@@ -110,11 +110,11 @@ void base_network_unregisterprotocolnode(struct base_network_protocolnode *proto
 
 }
 
-void base_network_initinterface(struct base_network_interface *interface, unsigned int (*receive)(unsigned int count, void *buffer), unsigned int (*send)(unsigned int count, void *buffer), void *(*getpacket)(), void (*dumppacket)())
+void base_network_initinterface(struct base_network_interface *interface, struct base_bus *bus, unsigned int id, unsigned int (*receive)(unsigned int count, void *buffer), unsigned int (*send)(unsigned int count, void *buffer), void *(*getpacket)(), void (*dumppacket)())
 {
 
     memory_clear(interface, sizeof (struct base_network_interface));
-    base_initinterface(&interface->base, BASE_INTERFACE_TYPE_NETWORK);
+    base_initinterface(&interface->base, BASE_INTERFACE_TYPE_NETWORK, bus, id);
 
     interface->receive = receive;
     interface->send = send;
@@ -123,11 +123,11 @@ void base_network_initinterface(struct base_network_interface *interface, unsign
 
 }
 
-void base_network_initinterfacenode(struct base_network_interfacenode *interfacenode, struct base_device *device, struct base_network_interface *interface)
+void base_network_initinterfacenode(struct base_network_interfacenode *interfacenode, struct base_network_interface *interface)
 {
 
     memory_clear(interfacenode, sizeof (struct base_network_interfacenode));
-    system_initnode(&interfacenode->base, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, device->bus->name);
+    system_initnode(&interfacenode->base, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, interface->base.bus->name);
     system_initnode(&interfacenode->data, SYSTEM_NODETYPE_NORMAL, "data");
     system_initnode(&interfacenode->mac, SYSTEM_NODETYPE_NORMAL, "mac");
 

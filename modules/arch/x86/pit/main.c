@@ -44,7 +44,6 @@ enum pit_command
 
 static struct base_driver driver;
 static struct base_timer_interface itimer;
-static struct base_device device;
 static struct base_timer_node node;
 static unsigned short divisor;
 static unsigned int jiffies;
@@ -75,10 +74,9 @@ static unsigned int driver_match(struct base_bus *bus, unsigned int id)
 static void driver_attach(struct base_bus *bus, unsigned int id)
 {
 
-    base_initdevice(&device, bus, id);
-    base_timer_initinterface(&itimer, itimer_addduration);
+    base_timer_initinterface(&itimer, bus, id, itimer_addduration);
     base_timer_registerinterface(&itimer);
-    base_timer_initnode(&node, &device, &itimer);
+    base_timer_initnode(&node, &itimer);
     base_timer_registernode(&node);
     pic_setroutine(bus, id, handleirq);
 

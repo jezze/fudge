@@ -122,24 +122,15 @@ void base_initdriver(struct base_driver *driver, const char *name, unsigned int 
 
 }
 
-void base_initinterface(struct base_interface *interface, unsigned int type)
+void base_initinterface(struct base_interface *interface, unsigned int type, struct base_bus *bus, unsigned int id)
 {
 
     memory_clear(interface, sizeof (struct base_interface));
     resource_init(&interface->resource, BASE_RESOURCE_INTERFACE, interface);
 
     interface->type = type;
-
-}
-
-void base_initdevice(struct base_device *device, struct base_bus *bus, unsigned int id)
-{
-
-    memory_clear(device, sizeof (struct base_device));
-    resource_init(&device->resource, BASE_RESOURCE_DEVICE, device);
-
-    device->bus = bus;
-    device->id = id;
+    interface->bus = bus;
+    interface->id = id;
 
 }
 

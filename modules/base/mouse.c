@@ -43,21 +43,21 @@ void base_mouse_unregisternode(struct base_mouse_node *node)
 
 }
 
-void base_mouse_initinterface(struct base_mouse_interface *interface, unsigned int (*rdata)(unsigned int offset, unsigned int count, void *buffer))
+void base_mouse_initinterface(struct base_mouse_interface *interface, struct base_bus *bus, unsigned int id, unsigned int (*rdata)(unsigned int offset, unsigned int count, void *buffer))
 {
 
     memory_clear(interface, sizeof (struct base_mouse_interface));
-    base_initinterface(&interface->base, BASE_INTERFACE_TYPE_MOUSE);
+    base_initinterface(&interface->base, BASE_INTERFACE_TYPE_MOUSE, bus, id);
 
     interface->rdata = rdata;
 
 }
 
-void base_mouse_initnode(struct base_mouse_node *node, struct base_device *device, struct base_mouse_interface *interface)
+void base_mouse_initnode(struct base_mouse_node *node, struct base_mouse_interface *interface)
 {
 
     memory_clear(node, sizeof (struct base_mouse_node));
-    system_initnode(&node->base, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, device->bus->name);
+    system_initnode(&node->base, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, interface->base.bus->name);
     system_initnode(&node->data, SYSTEM_NODETYPE_NORMAL, "data");
 
     node->interface = interface;

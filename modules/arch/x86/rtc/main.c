@@ -29,7 +29,6 @@ enum rtc_flag
 
 static struct base_driver driver;
 static struct base_clock_interface iclock;
-static struct base_device device;
 static struct base_clock_node node;
 static unsigned short io;
 
@@ -116,10 +115,9 @@ static unsigned int driver_match(struct base_bus *bus, unsigned int id)
 static void driver_attach(struct base_bus *bus, unsigned int id)
 {
 
-    base_initdevice(&device, bus, id);
-    base_clock_initinterface(&iclock, iclock_getseconds, iclock_getminutes, iclock_gethours, iclock_getweekday, iclock_getday, iclock_getmonth, iclock_getyear);
+    base_clock_initinterface(&iclock, bus, id, iclock_getseconds, iclock_getminutes, iclock_gethours, iclock_getweekday, iclock_getday, iclock_getmonth, iclock_getyear);
     base_clock_registerinterface(&iclock);
-    base_clock_initnode(&node, &device, &iclock);
+    base_clock_initnode(&node, &iclock);
     base_clock_registernode(&node);
     pic_setroutine(bus, id, handleirq);
 

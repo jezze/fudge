@@ -43,22 +43,22 @@ void base_keyboard_unregisternode(struct base_keyboard_node *node)
 
 }
 
-void base_keyboard_initinterface(struct base_keyboard_interface *interface, unsigned int (*rdata)(unsigned int offset, unsigned int count, void *buffer), unsigned int (*wdata)(unsigned int offset, unsigned int count, void *buffer))
+void base_keyboard_initinterface(struct base_keyboard_interface *interface, struct base_bus *bus, unsigned int id, unsigned int (*rdata)(unsigned int offset, unsigned int count, void *buffer), unsigned int (*wdata)(unsigned int offset, unsigned int count, void *buffer))
 {
 
     memory_clear(interface, sizeof (struct base_keyboard_interface));
-    base_initinterface(&interface->base, BASE_INTERFACE_TYPE_KEYBOARD);
+    base_initinterface(&interface->base, BASE_INTERFACE_TYPE_KEYBOARD, bus, id);
 
     interface->rdata = rdata;
     interface->wdata = wdata;
 
 }
 
-void base_keyboard_initnode(struct base_keyboard_node *node, struct base_device *device, struct base_keyboard_interface *interface)
+void base_keyboard_initnode(struct base_keyboard_node *node, struct base_keyboard_interface *interface)
 {
 
     memory_clear(node, sizeof (struct base_keyboard_node));
-    system_initnode(&node->base, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, device->bus->name);
+    system_initnode(&node->base, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, interface->base.bus->name);
     system_initnode(&node->data, SYSTEM_NODETYPE_NORMAL, "data");
 
     node->interface = interface;

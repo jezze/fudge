@@ -9,7 +9,6 @@
 
 static struct base_driver driver;
 static struct base_video_interface ivideo;
-static struct base_device device;
 static struct base_video_node node;
 
 static unsigned int read(unsigned int reg)
@@ -155,10 +154,9 @@ static unsigned int driver_match(struct base_bus *bus, unsigned int id)
 static void driver_attach(struct base_bus *bus, unsigned int id)
 {
 
-    base_initdevice(&device, bus, id);
-    base_video_initinterface(&ivideo, ivideo_setmode, ivideo_rdata, ivideo_wdata, 0, 0);
+    base_video_initinterface(&ivideo, bus, id, ivideo_setmode, ivideo_rdata, ivideo_wdata, 0, 0);
     base_video_registerinterface(&ivideo);
-    base_video_initnode(&node, &device, &ivideo);
+    base_video_initnode(&node, &ivideo);
     base_video_registernode(&node);
     pic_setroutine(bus, id, handleirq);
     enabledpll();

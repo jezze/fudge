@@ -86,7 +86,6 @@ struct ide_bus
 };
 
 static struct base_driver driver;
-static struct base_device device;
 static struct ide_bus p;
 static struct ide_bus s;
 
@@ -414,7 +413,6 @@ static void driver_attach(struct base_bus *bus, unsigned int id)
     unsigned int bar3 = pci_ind(bus, id, PCI_CONFIG_BAR3);
     unsigned int bar4 = pci_ind(bus, id, PCI_CONFIG_BAR4);
 
-    base_initdevice(&device, bus, id);
     base_initbus(&p.base, IDE_BUS_TYPE, "ide0", bus_setup, bus_next_p, bus_irq);
     base_initbus(&s.base, IDE_BUS_TYPE, "ide1", bus_setup, bus_next_s, bus_irq);
 

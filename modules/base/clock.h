@@ -27,6 +27,6 @@ void base_clock_registerinterface(struct base_clock_interface *interface);
 void base_clock_registernode(struct base_clock_node *node);
 void base_clock_unregisterinterface(struct base_clock_interface *interface);
 void base_clock_unregisternode(struct base_clock_node *node);
-void base_clock_initinterface(struct base_clock_interface *interface, unsigned char (*getseconds)(), unsigned char (*getminutes)(), unsigned char (*gethours)(), unsigned char (*getweekday)(), unsigned char (*getday)(), unsigned char (*getmonth)(), unsigned short (*getyear)());
-void base_clock_initnode(struct base_clock_node *node, struct base_device *device, struct base_clock_interface *interface);
+void base_clock_initinterface(struct base_clock_interface *interface, struct base_bus *bus, unsigned int id, unsigned char (*getseconds)(), unsigned char (*getminutes)(), unsigned char (*gethours)(), unsigned char (*getweekday)(), unsigned char (*getday)(), unsigned char (*getmonth)(), unsigned short (*getyear)());
+void base_clock_initnode(struct base_clock_node *node, struct base_clock_interface *interface);
 void base_clock_setup();

@@ -52,22 +52,22 @@ void base_terminal_unregisternode(struct base_terminal_node *node)
 
 }
 
-void base_terminal_initinterface(struct base_terminal_interface *interface, unsigned int (*rdata)(unsigned int offset, unsigned int count, void *buffer), unsigned int (*wdata)(unsigned int offset, unsigned int count, void *buffer))
+void base_terminal_initinterface(struct base_terminal_interface *interface, struct base_bus *bus, unsigned int id, unsigned int (*rdata)(unsigned int offset, unsigned int count, void *buffer), unsigned int (*wdata)(unsigned int offset, unsigned int count, void *buffer))
 {
 
     memory_clear(interface, sizeof (struct base_terminal_interface));
-    base_initinterface(&interface->base, BASE_INTERFACE_TYPE_TERMINAL);
+    base_initinterface(&interface->base, BASE_INTERFACE_TYPE_TERMINAL, bus, id);
 
     interface->rdata = rdata;
     interface->wdata = wdata;
 
 }
 
-void base_terminal_initnode(struct base_terminal_node *node, struct base_device *device, struct base_terminal_interface *interface)
+void base_terminal_initnode(struct base_terminal_node *node, struct base_terminal_interface *interface)
 {
 
     memory_clear(node, sizeof (struct base_terminal_node));
-    system_initnode(&node->base, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, device->bus->name);
+    system_initnode(&node->base, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, interface->base.bus->name);
     system_initnode(&node->data, SYSTEM_NODETYPE_NORMAL, "data");
 
     node->interface = interface;

@@ -150,7 +150,6 @@ enum uart_msr
 
 static struct base_driver driver;
 static struct base_terminal_interface iterminal;
-static struct base_device device;
 static struct base_terminal_node node;
 static unsigned char buffer[512];
 static struct buffer cfifo;
@@ -223,10 +222,9 @@ static unsigned int driver_match(struct base_bus *bus, unsigned int id)
 static void driver_attach(struct base_bus *bus, unsigned int id)
 {
 
-    base_initdevice(&device, bus, id);
-    base_terminal_initinterface(&iterminal, iterminal_rdata, iterminal_wdata);
+    base_terminal_initinterface(&iterminal, bus, id, iterminal_rdata, iterminal_wdata);
     base_terminal_registerinterface(&iterminal);
-    base_terminal_initnode(&node, &device, &iterminal);
+    base_terminal_initnode(&node, &iterminal);
     base_terminal_registernode(&node);
     buffer_init(&cfifo, 1, 512, &buffer);
     pic_setroutine(bus, id, handleirq);

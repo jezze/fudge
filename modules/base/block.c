@@ -53,11 +53,11 @@ void base_block_unregisternode(struct base_block_node *node)
 
 }
 
-void base_block_initinterface(struct base_block_interface *interface, unsigned int (*rdata)(unsigned int offset, unsigned int count, void *buffer), unsigned int (*wdata)(unsigned int offset, unsigned int count, void *buffer))
+void base_block_initinterface(struct base_block_interface *interface, struct base_bus *bus, unsigned int id, unsigned int (*rdata)(unsigned int offset, unsigned int count, void *buffer), unsigned int (*wdata)(unsigned int offset, unsigned int count, void *buffer))
 {
 
     memory_clear(interface, sizeof (struct base_block_interface));
-    base_initinterface(&interface->base, BASE_INTERFACE_TYPE_BLOCK);
+    base_initinterface(&interface->base, BASE_INTERFACE_TYPE_BLOCK, bus, id);
 
     interface->rdata = rdata;
     interface->wdata = wdata;
@@ -73,11 +73,11 @@ void base_block_initprotocol(struct base_block_protocol *protocol, char *name)
 
 }
 
-void base_block_initnode(struct base_block_node *node, struct base_device *device, struct base_block_interface *interface)
+void base_block_initnode(struct base_block_node *node, struct base_block_interface *interface)
 {
 
     memory_clear(node, sizeof (struct base_block_node));
-    system_initnode(&node->base, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, device->bus->name);
+    system_initnode(&node->base, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, interface->base.bus->name);
     system_initnode(&node->data, SYSTEM_NODETYPE_NORMAL, "data");
 
     node->interface = interface;

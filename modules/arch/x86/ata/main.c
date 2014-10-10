@@ -8,7 +8,6 @@
 
 static struct base_driver driver;
 static struct base_block_interface iblock;
-static struct base_device device;
 static struct base_block_node node;
 
 static void handleirq(unsigned int irq, struct base_bus *bus, unsigned int id)
@@ -24,7 +23,7 @@ static unsigned int iblock_rdata(unsigned int offset, unsigned int count, void *
     if (offset > 0)
         return 0;
 
-    return ide_rlba28(device.bus, 0, 0, 1, buffer);
+    return ide_rlba28(iblock.base.bus, 0, 0, 1, buffer);
 
 }
 
@@ -34,7 +33,7 @@ static unsigned int iblock_wdata(unsigned int offset, unsigned int count, void *
     if (offset > 0)
         return 0;
 
-    return ide_wlba28(device.bus, 0, 0, 1, buffer);
+    return ide_wlba28(iblock.base.bus, 0, 0, 1, buffer);
 
 }
 
@@ -51,10 +50,9 @@ static unsigned int driver_match(struct base_bus *bus, unsigned int id)
 static void driver_attach(struct base_bus *bus, unsigned int id)
 {
 
-    base_initdevice(&device, bus, id);
-    base_block_initinterface(&iblock, iblock_rdata, iblock_wdata);
+    base_block_initinterface(&iblock, bus, id, iblock_rdata, iblock_wdata);
     base_block_registerinterface(&iblock);
-    base_block_initnode(&node, &device, &iblock);
+    base_block_initnode(&node, &iblock);
     base_block_registernode(&node);
     pic_setroutine(bus, id, handleirq);
 

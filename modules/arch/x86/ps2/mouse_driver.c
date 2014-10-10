@@ -10,7 +10,6 @@
 
 static struct base_driver driver;
 static struct base_mouse_interface imouse;
-static struct base_device device;
 static struct base_mouse_node node;
 static unsigned char buffer[512];
 static struct buffer cfifo;
@@ -71,10 +70,9 @@ static unsigned int driver_match(struct base_bus *bus, unsigned int id)
 static void driver_attach(struct base_bus *bus, unsigned int id)
 {
 
-    base_initdevice(&device, bus, id);
-    base_mouse_initinterface(&imouse, imouse_rdata);
+    base_mouse_initinterface(&imouse, bus, id, imouse_rdata);
     base_mouse_registerinterface(&imouse);
-    base_mouse_initnode(&node, &device, &imouse);
+    base_mouse_initnode(&node, &imouse);
     base_mouse_registernode(&node);
     buffer_init(&cfifo, 1, 512, &buffer);
     pic_setroutine(bus, id, handleirq);

@@ -33,21 +33,21 @@ void base_timer_unregisternode(struct base_timer_node *node)
 
 }
 
-void base_timer_initinterface(struct base_timer_interface *interface, void (*addduration)(unsigned int duration))
+void base_timer_initinterface(struct base_timer_interface *interface, struct base_bus *bus, unsigned int id, void (*addduration)(unsigned int duration))
 {
 
     memory_clear(interface, sizeof (struct base_timer_interface));
-    base_initinterface(&interface->base, BASE_INTERFACE_TYPE_TIMER);
+    base_initinterface(&interface->base, BASE_INTERFACE_TYPE_TIMER, bus, id);
 
     interface->addduration = addduration;
 
 }
 
-void base_timer_initnode(struct base_timer_node *node, struct base_device *device, struct base_timer_interface *interface)
+void base_timer_initnode(struct base_timer_node *node, struct base_timer_interface *interface)
 {
 
     memory_clear(node, sizeof (struct base_timer_node));
-    system_initnode(&node->base, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, device->bus->name);
+    system_initnode(&node->base, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, interface->base.bus->name);
 
     node->interface = interface;
 
