@@ -124,8 +124,8 @@ struct rtl8139_header
 };
 
 static struct base_driver driver;
-static struct base_network_interface inetwork;
-static struct base_network_interfacenode inetworknode;
+static struct base_network_interface networkinterface;
+static struct base_network_node networknode;
 static unsigned short io;
 static unsigned int mmio;
 static unsigned char rx[0x2600];
@@ -196,7 +196,7 @@ static void handleirq(unsigned int irq, struct base_bus *bus, unsigned int id)
 
         scheduler_rendezvous_unsleep(&rdata);
         io_outw(io + RTL8139_REGISTER_ISR, RTL8139_ISR_ROK);
-        base_network_notify(&inetwork);
+        base_network_notify(&networkinterface);
 
     }
 
@@ -210,26 +210,26 @@ static void handleirq(unsigned int irq, struct base_bus *bus, unsigned int id)
 
 }
 
-static void *inetwork_getpacket()
+static void *networkinterface_getpacket()
 {
 
     return rx + rxp;
 
 }
 
-static void inetwork_dumppacket()
+static void networkinterface_dumppacket()
 {
 
-    struct rtl8139_header *header = inetwork_getpacket();
+    struct rtl8139_header *header = networkinterface_getpacket();
 
     rxp += (header->length + 4 + 3) & ~3;
 
 }
 
-static unsigned int inetwork_receive(unsigned int count, void *buffer)
+static unsigned int networkinterface_receive(unsigned int count, void *buffer)
 {
 
-    struct rtl8139_header *header = inetwork_getpacket();
+    struct rtl8139_header *header = networkinterface_getpacket();
     unsigned short cbr = io_inw(io + RTL8139_REGISTER_CBR);
     unsigned int c;
 
@@ -244,13 +244,13 @@ static unsigned int inetwork_receive(unsigned int count, void *buffer)
 
     c = memory_read(buffer, count, rx + rxp + 4, header->length, 0);
 
-    inetwork_dumppacket();
+    networkinterface_dumppacket();
 
     return c;
 
 }
 
-static unsigned int inetwork_send(unsigned int count, void *buffer)
+static unsigned int networkinterface_send(unsigned int count, void *buffer)
 {
 
     unsigned int status = (0x3F << 16) | (count & 0x1FFF);
@@ -311,10 +311,10 @@ static void driver_attach(struct base_bus *bus, unsigned int id)
     io = bar0 & ~1;
     mmio = bar1;
 
-    base_network_initinterface(&inetwork, bus, id, inetwork_receive, inetwork_send, inetwork_getpacket, inetwork_dumppacket);
-    base_network_registerinterface(&inetwork);
-    base_network_initinterfacenode(&inetworknode, &inetwork);
-    base_network_registerinterfacenode(&inetworknode);
+    base_network_initinterface(&networkinterface, bus, id, networkinterface_receive, networkinterface_send, networkinterface_getpacket, networkinterface_dumppacket);
+    base_network_registerinterface(&networkinterface);
+    base_network_initnode(&networknode, &networkinterface);
+    base_network_registernode(&networknode);
     pci_outw(bus, id, PCI_CONFIG_COMMAND, command | (1 << 2));
     pic_setroutine(bus, id, handleirq);
     poweron();
@@ -324,12 +324,12 @@ static void driver_attach(struct base_bus *bus, unsigned int id)
     settx();
     enable();
 
-    inetwork.mac[0] = io_inb(io + RTL8139_REGISTER_IDR0);
-    inetwork.mac[1] = io_inb(io + RTL8139_REGISTER_IDR1);
-    inetwork.mac[2] = io_inb(io + RTL8139_REGISTER_IDR2);
-    inetwork.mac[3] = io_inb(io + RTL8139_REGISTER_IDR3);
-    inetwork.mac[4] = io_inb(io + RTL8139_REGISTER_IDR4);
-    inetwork.mac[5] = io_inb(io + RTL8139_REGISTER_IDR5);
+    networkinterface.mac[0] = io_inb(io + RTL8139_REGISTER_IDR0);
+    networkinterface.mac[1] = io_inb(io + RTL8139_REGISTER_IDR1);
+    networkinterface.mac[2] = io_inb(io + RTL8139_REGISTER_IDR2);
+    networkinterface.mac[3] = io_inb(io + RTL8139_REGISTER_IDR3);
+    networkinterface.mac[4] = io_inb(io + RTL8139_REGISTER_IDR4);
+    networkinterface.mac[5] = io_inb(io + RTL8139_REGISTER_IDR5);
 
 }
 
@@ -337,8 +337,8 @@ static void driver_detach(struct base_bus *bus, unsigned int id)
 {
 
     pic_unsetroutine(bus, id);
-    base_network_unregisterinterface(&inetwork);
-    base_network_unregisterinterfacenode(&inetworknode);
+    base_network_unregisterinterface(&networkinterface);
+    base_network_unregisternode(&networknode);
 
 }
 

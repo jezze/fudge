@@ -9,8 +9,8 @@
 #include "keyboard_driver.h"
 
 static struct base_driver driver;
-static struct base_keyboard_interface ikeyboard;
-static struct base_keyboard_node node;
+static struct base_keyboard_interface keyboardinterface;
+static struct base_keyboard_node keyboardnode;
 static unsigned char buffer[512];
 static struct buffer cfifo;
 static struct scheduler_rendezvous rdata;
@@ -26,7 +26,7 @@ static void handleirq(unsigned int irq, struct base_bus *bus, unsigned int id)
 
 }
 
-static unsigned int ikeyboard_rdata(unsigned int offset, unsigned int count, void *buffer)
+static unsigned int keyboardinterface_rdata(unsigned int offset, unsigned int count, void *buffer)
 {
 
     count = buffer_rcfifo(&cfifo, count, buffer);
@@ -37,7 +37,7 @@ static unsigned int ikeyboard_rdata(unsigned int offset, unsigned int count, voi
 
 }
 
-static unsigned int ikeyboard_wdata(unsigned int offset, unsigned int count, void *buffer)
+static unsigned int keyboardinterface_wdata(unsigned int offset, unsigned int count, void *buffer)
 {
 
     return buffer_wcfifo(&cfifo, count, buffer);
@@ -57,10 +57,10 @@ static unsigned int driver_match(struct base_bus *bus, unsigned int id)
 static void driver_attach(struct base_bus *bus, unsigned int id)
 {
 
-    base_keyboard_initinterface(&ikeyboard, bus, id, ikeyboard_rdata, ikeyboard_wdata);
-    base_keyboard_registerinterface(&ikeyboard);
-    base_keyboard_initnode(&node, &ikeyboard);
-    base_keyboard_registernode(&node);
+    base_keyboard_initinterface(&keyboardinterface, bus, id, keyboardinterface_rdata, keyboardinterface_wdata);
+    base_keyboard_registerinterface(&keyboardinterface);
+    base_keyboard_initnode(&keyboardnode, &keyboardinterface);
+    base_keyboard_registernode(&keyboardnode);
     buffer_init(&cfifo, 1, 512, &buffer);
     pic_setroutine(bus, id, handleirq);
     ps2_enable(bus, id);
@@ -77,8 +77,8 @@ static void driver_detach(struct base_bus *bus, unsigned int id)
 {
 
     pic_unsetroutine(bus, id);
-    base_keyboard_unregisterinterface(&ikeyboard);
-    base_keyboard_unregisternode(&node);
+    base_keyboard_unregisterinterface(&keyboardinterface);
+    base_keyboard_unregisternode(&keyboardnode);
 
 }
 

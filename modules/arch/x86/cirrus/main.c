@@ -38,8 +38,8 @@ static int clocks[CLOCKS] = {
 };
 
 static struct base_driver driver;
-static struct base_video_interface ivideo;
-static struct base_video_node node;
+static struct base_video_interface videointerface;
+static struct base_video_node videonode;
 static int chiptype;
 static int chiprev;
 
@@ -66,7 +66,7 @@ static int maphorizontalcrtc(int bpp, int pixelclock, int htiming)
 
 }
 
-static void ivideo_setmode(unsigned int xres, unsigned int yres, unsigned int bpp)
+static void videointerface_setmode(unsigned int xres, unsigned int yres, unsigned int bpp)
 {
 
     unsigned char registers[60];
@@ -180,28 +180,28 @@ static void ivideo_setmode(unsigned int xres, unsigned int yres, unsigned int bp
 
 }
 
-static unsigned int ivideo_rdata(unsigned int offset, unsigned int count, void *buffer)
+static unsigned int videointerface_rdata(unsigned int offset, unsigned int count, void *buffer)
 {
 
     return 0;
 
 }
 
-static unsigned int ivideo_wdata(unsigned int offset, unsigned int count, void *buffer)
+static unsigned int videointerface_wdata(unsigned int offset, unsigned int count, void *buffer)
 {
 
     return 0;
 
 }
 
-static unsigned int ivideo_rcolormap(unsigned int offset, unsigned int count, void *buffer)
+static unsigned int videointerface_rcolormap(unsigned int offset, unsigned int count, void *buffer)
 {
 
     return 0;
 
 }
 
-static unsigned int ivideo_wcolormap(unsigned int offset, unsigned int count, void *buffer)
+static unsigned int videointerface_wcolormap(unsigned int offset, unsigned int count, void *buffer)
 {
 
     return 0;
@@ -221,18 +221,18 @@ static unsigned int driver_match(struct base_bus *bus, unsigned int id)
 static void driver_attach(struct base_bus *bus, unsigned int id)
 {
 
-    base_video_initinterface(&ivideo, bus, id, ivideo_setmode, ivideo_rdata, ivideo_wdata, ivideo_rcolormap, ivideo_wcolormap);
-    base_video_registerinterface(&ivideo);
-    base_video_initnode(&node, &ivideo);
-    base_video_registernode(&node);
+    base_video_initinterface(&videointerface, bus, id, videointerface_setmode, videointerface_rdata, videointerface_wdata, videointerface_rcolormap, videointerface_wcolormap);
+    base_video_registerinterface(&videointerface);
+    base_video_initnode(&videonode, &videointerface);
+    base_video_registernode(&videonode);
 
 }
 
 static void driver_detach(struct base_bus *bus, unsigned int id)
 {
 
-    base_video_unregisterinterface(&ivideo);
-    base_video_unregisternode(&node);
+    base_video_unregisterinterface(&videointerface);
+    base_video_unregisternode(&videonode);
 
 }
 

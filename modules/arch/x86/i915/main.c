@@ -8,8 +8,8 @@
 #include "i915.h"
 
 static struct base_driver driver;
-static struct base_video_interface ivideo;
-static struct base_video_node node;
+static struct base_video_interface videointerface;
+static struct base_video_node videonode;
 
 static unsigned int read(unsigned int reg)
 {
@@ -122,19 +122,19 @@ static void handleirq(unsigned int irq, struct base_bus *bus, unsigned int id)
 
 }
 
-static void ivideo_setmode(unsigned int xres, unsigned int yres, unsigned int bpp)
+static void videointerface_setmode(unsigned int xres, unsigned int yres, unsigned int bpp)
 {
 
 }
 
-static unsigned int ivideo_rdata(unsigned int offset, unsigned int count, void *buffer)
+static unsigned int videointerface_rdata(unsigned int offset, unsigned int count, void *buffer)
 {
 
     return 0;
 
 }
 
-static unsigned int ivideo_wdata(unsigned int offset, unsigned int count, void *buffer)
+static unsigned int videointerface_wdata(unsigned int offset, unsigned int count, void *buffer)
 {
 
     return 0;
@@ -154,10 +154,10 @@ static unsigned int driver_match(struct base_bus *bus, unsigned int id)
 static void driver_attach(struct base_bus *bus, unsigned int id)
 {
 
-    base_video_initinterface(&ivideo, bus, id, ivideo_setmode, ivideo_rdata, ivideo_wdata, 0, 0);
-    base_video_registerinterface(&ivideo);
-    base_video_initnode(&node, &ivideo);
-    base_video_registernode(&node);
+    base_video_initinterface(&videointerface, bus, id, videointerface_setmode, videointerface_rdata, videointerface_wdata, 0, 0);
+    base_video_registerinterface(&videointerface);
+    base_video_initnode(&videonode, &videointerface);
+    base_video_registernode(&videonode);
     pic_setroutine(bus, id, handleirq);
     enabledpll();
     enablepipe();
@@ -172,8 +172,8 @@ static void driver_detach(struct base_bus *bus, unsigned int id)
 {
 
     pic_unsetroutine(bus, id);
-    base_video_unregisterinterface(&ivideo);
-    base_video_unregisternode(&node);
+    base_video_unregisterinterface(&videointerface);
+    base_video_unregisternode(&videonode);
 
 }
 

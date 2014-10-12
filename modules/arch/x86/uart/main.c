@@ -149,8 +149,8 @@ enum uart_msr
 };
 
 static struct base_driver driver;
-static struct base_terminal_interface iterminal;
-static struct base_terminal_node node;
+static struct base_terminal_interface terminalinterface;
+static struct base_terminal_node terminalnode;
 static unsigned char buffer[512];
 static struct buffer cfifo;
 static struct scheduler_rendezvous rdata;
@@ -185,7 +185,7 @@ static void handleirq(unsigned int irq, struct base_bus *bus, unsigned int id)
 
 }
 
-static unsigned int iterminal_rdata(unsigned int offset, unsigned int count, void *buffer)
+static unsigned int terminalinterface_rdata(unsigned int offset, unsigned int count, void *buffer)
 {
 
     count = buffer_rcfifo(&cfifo, count, buffer);
@@ -196,7 +196,7 @@ static unsigned int iterminal_rdata(unsigned int offset, unsigned int count, voi
 
 }
 
-static unsigned int iterminal_wdata(unsigned int offset, unsigned int count, void *buffer)
+static unsigned int terminalinterface_wdata(unsigned int offset, unsigned int count, void *buffer)
 {
 
     unsigned char *b = buffer;
@@ -222,10 +222,10 @@ static unsigned int driver_match(struct base_bus *bus, unsigned int id)
 static void driver_attach(struct base_bus *bus, unsigned int id)
 {
 
-    base_terminal_initinterface(&iterminal, bus, id, iterminal_rdata, iterminal_wdata);
-    base_terminal_registerinterface(&iterminal);
-    base_terminal_initnode(&node, &iterminal);
-    base_terminal_registernode(&node);
+    base_terminal_initinterface(&terminalinterface, bus, id, terminalinterface_rdata, terminalinterface_wdata);
+    base_terminal_registerinterface(&terminalinterface);
+    base_terminal_initnode(&terminalnode, &terminalinterface);
+    base_terminal_registernode(&terminalnode);
     buffer_init(&cfifo, 1, 512, &buffer);
     pic_setroutine(bus, id, handleirq);
 
@@ -246,8 +246,8 @@ static void driver_detach(struct base_bus *bus, unsigned int id)
 {
 
     pic_unsetroutine(bus, id);
-    base_terminal_unregisterinterface(&iterminal);
-    base_terminal_unregisternode(&node);
+    base_terminal_unregisterinterface(&terminalinterface);
+    base_terminal_unregisternode(&terminalnode);
 
 }
 

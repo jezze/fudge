@@ -9,8 +9,8 @@
 #include "mouse_driver.h"
 
 static struct base_driver driver;
-static struct base_mouse_interface imouse;
-static struct base_mouse_node node;
+static struct base_mouse_interface mouseinterface;
+static struct base_mouse_node mousenode;
 static unsigned char buffer[512];
 static struct buffer cfifo;
 static unsigned char cycle;
@@ -46,7 +46,7 @@ static void handleirq(unsigned int irq, struct base_bus *bus, unsigned int id)
 
 }
 
-static unsigned int imouse_rdata(unsigned int offset, unsigned int count, void *buffer)
+static unsigned int mouseinterface_rdata(unsigned int offset, unsigned int count, void *buffer)
 {
 
     count = buffer_rcfifo(&cfifo, count, buffer);
@@ -70,10 +70,10 @@ static unsigned int driver_match(struct base_bus *bus, unsigned int id)
 static void driver_attach(struct base_bus *bus, unsigned int id)
 {
 
-    base_mouse_initinterface(&imouse, bus, id, imouse_rdata);
-    base_mouse_registerinterface(&imouse);
-    base_mouse_initnode(&node, &imouse);
-    base_mouse_registernode(&node);
+    base_mouse_initinterface(&mouseinterface, bus, id, mouseinterface_rdata);
+    base_mouse_registerinterface(&mouseinterface);
+    base_mouse_initnode(&mousenode, &mouseinterface);
+    base_mouse_registernode(&mousenode);
     buffer_init(&cfifo, 1, 512, &buffer);
     pic_setroutine(bus, id, handleirq);
     ps2_enable(bus, id);
@@ -90,8 +90,8 @@ static void driver_detach(struct base_bus *bus, unsigned int id)
 {
 
     pic_unsetroutine(bus, id);
-    base_mouse_unregisterinterface(&imouse);
-    base_mouse_unregisternode(&node);
+    base_mouse_unregisterinterface(&mouseinterface);
+    base_mouse_unregisternode(&mousenode);
 
 }
 

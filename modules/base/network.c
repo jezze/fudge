@@ -10,30 +10,30 @@ static struct system_node root;
 static unsigned int data_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct base_network_interfacenode *interfacenode = (struct base_network_interfacenode *)self->parent;
+    struct base_network_node *node = (struct base_network_node *)self->parent;
  
-    return interfacenode->interface->receive(count, buffer);
+    return node->interface->receive(count, buffer);
 
 }
 
 static unsigned int data_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct base_network_interfacenode *interfacenode = (struct base_network_interfacenode *)self->parent;
+    struct base_network_node *node = (struct base_network_node *)self->parent;
  
-    return interfacenode->interface->send(count, buffer);
+    return node->interface->send(count, buffer);
 
 }
 
 static unsigned int mac_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct base_network_interfacenode *interfacenode = (struct base_network_interfacenode *)self->parent;
+    struct base_network_node *node = (struct base_network_node *)self->parent;
     char *mac = "00:00:00:00:00:00";
     unsigned int i;
 
     for (i = 0; i < 6; i++)
-        ascii_wzerovalue(mac, 17, interfacenode->interface->mac[i], 16, 2, i * 3);
+        ascii_wzerovalue(mac, 17, node->interface->mac[i], 16, 2, i * 3);
 
     return memory_read(buffer, count, mac, 17, offset); 
 
@@ -63,12 +63,12 @@ void base_network_registerinterface(struct base_network_interface *interface)
 
 }
 
-void base_network_registerinterfacenode(struct base_network_interfacenode *interfacenode)
+void base_network_registernode(struct base_network_node *node)
 {
 
-    system_addchild(&root, &interfacenode->base);
-    system_addchild(&interfacenode->base, &interfacenode->data);
-    system_addchild(&interfacenode->base, &interfacenode->mac);
+    system_addchild(&root, &node->base);
+    system_addchild(&node->base, &node->data);
+    system_addchild(&node->base, &node->mac);
 
 }
 
@@ -79,13 +79,6 @@ void base_network_registerprotocol(struct base_network_protocol *protocol)
 
 }
 
-void base_network_registerprotocolnode(struct base_network_protocolnode *protocolnode)
-{
-
-    system_addchild(&root, &protocolnode->base);
-
-}
-
 void base_network_unregisterinterface(struct base_network_interface *interface)
 {
 
@@ -93,7 +86,7 @@ void base_network_unregisterinterface(struct base_network_interface *interface)
 
 }
 
-void base_network_unregisterinterfacenode(struct base_network_interfacenode *interfacenode)
+void base_network_unregisternode(struct base_network_node *node)
 {
 
 }
@@ -102,11 +95,6 @@ void base_network_unregisterprotocol(struct base_network_protocol *protocol)
 {
 
     resource_unregister(&protocol->resource);
-
-}
-
-void base_network_unregisterprotocolnode(struct base_network_protocolnode *protocolnode)
-{
 
 }
 
@@ -123,18 +111,18 @@ void base_network_initinterface(struct base_network_interface *interface, struct
 
 }
 
-void base_network_initinterfacenode(struct base_network_interfacenode *interfacenode, struct base_network_interface *interface)
+void base_network_initnode(struct base_network_node *node, struct base_network_interface *interface)
 {
 
-    memory_clear(interfacenode, sizeof (struct base_network_interfacenode));
-    system_initnode(&interfacenode->base, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, interface->base.bus->name);
-    system_initnode(&interfacenode->data, SYSTEM_NODETYPE_NORMAL, "data");
-    system_initnode(&interfacenode->mac, SYSTEM_NODETYPE_NORMAL, "mac");
+    memory_clear(node, sizeof (struct base_network_node));
+    system_initnode(&node->base, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, interface->base.bus->name);
+    system_initnode(&node->data, SYSTEM_NODETYPE_NORMAL, "data");
+    system_initnode(&node->mac, SYSTEM_NODETYPE_NORMAL, "mac");
 
-    interfacenode->interface = interface;
-    interfacenode->data.read = data_read;
-    interfacenode->data.write = data_write;
-    interfacenode->mac.read = mac_read;
+    node->interface = interface;
+    node->data.read = data_read;
+    node->data.write = data_write;
+    node->mac.read = mac_read;
 
 }
 
@@ -148,16 +136,6 @@ void base_network_initprotocol(struct base_network_protocol *protocol, char *nam
     protocol->match = match;
     protocol->read = read;
     protocol->write = write;
-
-}
-
-void base_network_initprotocolnode(struct base_network_protocolnode *protocolnode, struct base_network_protocol *protocol)
-{
-
-    memory_clear(protocolnode, sizeof (struct base_network_protocolnode));
-    system_initnode(&protocolnode->base, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, protocol->name);
-
-    protocolnode->protocol = protocol;
 
 }
 

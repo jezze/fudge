@@ -7,8 +7,8 @@
 #include <arch/x86/pic/pic.h>
 
 static struct base_driver driver;
-static struct base_block_interface iblock;
-static struct base_block_node node;
+static struct base_block_interface blockinterface;
+static struct base_block_node blocknode;
 
 static void handleirq(unsigned int irq, struct base_bus *bus, unsigned int id)
 {
@@ -28,10 +28,10 @@ static unsigned int driver_match(struct base_bus *bus, unsigned int id)
 static void driver_attach(struct base_bus *bus, unsigned int id)
 {
 
-    base_block_initinterface(&iblock, bus, id, 0, 0);
-    base_block_registerinterface(&iblock);
-    base_block_initnode(&node, &iblock);
-    base_block_registernode(&node);
+    base_block_initinterface(&blockinterface, bus, id, 0, 0);
+    base_block_registerinterface(&blockinterface);
+    base_block_initnode(&blocknode, &blockinterface);
+    base_block_registernode(&blocknode);
     pic_setroutine(bus, id, handleirq);
 
 }
@@ -40,8 +40,8 @@ static void driver_detach(struct base_bus *bus, unsigned int id)
 {
 
     pic_unsetroutine(bus, id);
-    base_block_unregisterinterface(&iblock);
-    base_block_unregisternode(&node);
+    base_block_unregisterinterface(&blockinterface);
+    base_block_unregisternode(&blocknode);
 
 }
 

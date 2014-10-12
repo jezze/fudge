@@ -28,8 +28,8 @@ enum rtc_flag
 };
 
 static struct base_driver driver;
-static struct base_clock_interface iclock;
-static struct base_clock_node node;
+static struct base_clock_interface clockinterface;
+static struct base_clock_node clocknode;
 static unsigned short io;
 
 static unsigned char convert(unsigned char num)
@@ -53,49 +53,49 @@ static void handleirq(unsigned int irq, struct base_bus *bus, unsigned int id)
 
 }
 
-static unsigned char iclock_getseconds(struct base_bus *bus, unsigned int id)
+static unsigned char clockinterface_getseconds(struct base_bus *bus, unsigned int id)
 {
 
     return read(0x00);
 
 }
 
-static unsigned char iclock_getminutes(struct base_bus *bus, unsigned int id)
+static unsigned char clockinterface_getminutes(struct base_bus *bus, unsigned int id)
 {
 
     return read(0x02);
 
 }
 
-static unsigned char iclock_gethours(struct base_bus *bus, unsigned int id)
+static unsigned char clockinterface_gethours(struct base_bus *bus, unsigned int id)
 {
 
     return read(0x04);
 
 }
 
-static unsigned char iclock_getweekday(struct base_bus *bus, unsigned int id)
+static unsigned char clockinterface_getweekday(struct base_bus *bus, unsigned int id)
 {
 
     return read(0x06);
 
 }
 
-static unsigned char iclock_getday(struct base_bus *bus, unsigned int id)
+static unsigned char clockinterface_getday(struct base_bus *bus, unsigned int id)
 {
 
     return read(0x07);
 
 }
 
-static unsigned char iclock_getmonth(struct base_bus *bus, unsigned int id)
+static unsigned char clockinterface_getmonth(struct base_bus *bus, unsigned int id)
 {
 
     return read(0x08);
 
 }
 
-static unsigned short iclock_getyear(struct base_bus *bus, unsigned int id)
+static unsigned short clockinterface_getyear(struct base_bus *bus, unsigned int id)
 {
 
     return 2000 + read(0x09);
@@ -115,10 +115,10 @@ static unsigned int driver_match(struct base_bus *bus, unsigned int id)
 static void driver_attach(struct base_bus *bus, unsigned int id)
 {
 
-    base_clock_initinterface(&iclock, bus, id, iclock_getseconds, iclock_getminutes, iclock_gethours, iclock_getweekday, iclock_getday, iclock_getmonth, iclock_getyear);
-    base_clock_registerinterface(&iclock);
-    base_clock_initnode(&node, &iclock);
-    base_clock_registernode(&node);
+    base_clock_initinterface(&clockinterface, bus, id, clockinterface_getseconds, clockinterface_getminutes, clockinterface_gethours, clockinterface_getweekday, clockinterface_getday, clockinterface_getmonth, clockinterface_getyear);
+    base_clock_registerinterface(&clockinterface);
+    base_clock_initnode(&clocknode, &clockinterface);
+    base_clock_registernode(&clocknode);
     pic_setroutine(bus, id, handleirq);
 
     io = platform_getbase(bus, id);
@@ -129,8 +129,8 @@ static void driver_detach(struct base_bus *bus, unsigned int id)
 {
 
     pic_unsetroutine(bus, id);
-    base_clock_unregisterinterface(&iclock);
-    base_clock_unregisternode(&node);
+    base_clock_unregisterinterface(&clockinterface);
+    base_clock_unregisternode(&clocknode);
 
 }
 

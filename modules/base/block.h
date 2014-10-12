@@ -7,19 +7,19 @@ struct base_block_interface
 
 };
 
-struct base_block_protocol
-{
-
-    char *name;
-
-};
-
 struct base_block_node
 {
 
     struct system_node base;
     struct system_node data;
     struct base_block_interface *interface;
+
+};
+
+struct base_block_protocol
+{
+
+    char *name;
 
 };
 

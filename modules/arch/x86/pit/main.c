@@ -43,8 +43,8 @@ enum pit_command
 };
 
 static struct base_driver driver;
-static struct base_timer_interface itimer;
-static struct base_timer_node node;
+static struct base_timer_interface timerinterface;
+static struct base_timer_node timernode;
 static unsigned short divisor;
 static unsigned int jiffies;
 static unsigned short io;
@@ -56,7 +56,7 @@ static void handleirq(unsigned int irq, struct base_bus *bus, unsigned int id)
 
 }
 
-static void itimer_addduration(unsigned int duration)
+static void timerinterface_addduration(unsigned int duration)
 {
 
 }
@@ -74,10 +74,10 @@ static unsigned int driver_match(struct base_bus *bus, unsigned int id)
 static void driver_attach(struct base_bus *bus, unsigned int id)
 {
 
-    base_timer_initinterface(&itimer, bus, id, itimer_addduration);
-    base_timer_registerinterface(&itimer);
-    base_timer_initnode(&node, &itimer);
-    base_timer_registernode(&node);
+    base_timer_initinterface(&timerinterface, bus, id, timerinterface_addduration);
+    base_timer_registerinterface(&timerinterface);
+    base_timer_initnode(&timernode, &timerinterface);
+    base_timer_registernode(&timernode);
     pic_setroutine(bus, id, handleirq);
 
     io = platform_getbase(bus, id);
@@ -92,8 +92,8 @@ static void driver_detach(struct base_bus *bus, unsigned int id)
 {
 
     pic_unsetroutine(bus, id);
-    base_timer_unregisterinterface(&itimer);
-    base_timer_unregisternode(&node);
+    base_timer_unregisterinterface(&timerinterface);
+    base_timer_unregisternode(&timernode);
 
 }
 

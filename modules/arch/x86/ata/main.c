@@ -7,8 +7,8 @@
 #include <arch/x86/pic/pic.h>
 
 static struct base_driver driver;
-static struct base_block_interface iblock;
-static struct base_block_node node;
+static struct base_block_interface blockinterface;
+static struct base_block_node blocknode;
 
 static void handleirq(unsigned int irq, struct base_bus *bus, unsigned int id)
 {
@@ -17,23 +17,23 @@ static void handleirq(unsigned int irq, struct base_bus *bus, unsigned int id)
 
 }
 
-static unsigned int iblock_rdata(unsigned int offset, unsigned int count, void *buffer)
+static unsigned int blockinterface_rdata(unsigned int offset, unsigned int count, void *buffer)
 {
 
     if (offset > 0)
         return 0;
 
-    return ide_rlba28(iblock.base.bus, 0, 0, 1, buffer);
+    return ide_rlba28(blockinterface.base.bus, 0, 0, 1, buffer);
 
 }
 
-static unsigned int iblock_wdata(unsigned int offset, unsigned int count, void *buffer)
+static unsigned int blockinterface_wdata(unsigned int offset, unsigned int count, void *buffer)
 {
 
     if (offset > 0)
         return 0;
 
-    return ide_wlba28(iblock.base.bus, 0, 0, 1, buffer);
+    return ide_wlba28(blockinterface.base.bus, 0, 0, 1, buffer);
 
 }
 
@@ -50,10 +50,10 @@ static unsigned int driver_match(struct base_bus *bus, unsigned int id)
 static void driver_attach(struct base_bus *bus, unsigned int id)
 {
 
-    base_block_initinterface(&iblock, bus, id, iblock_rdata, iblock_wdata);
-    base_block_registerinterface(&iblock);
-    base_block_initnode(&node, &iblock);
-    base_block_registernode(&node);
+    base_block_initinterface(&blockinterface, bus, id, blockinterface_rdata, blockinterface_wdata);
+    base_block_registerinterface(&blockinterface);
+    base_block_initnode(&blocknode, &blockinterface);
+    base_block_registernode(&blocknode);
     pic_setroutine(bus, id, handleirq);
 
 }
@@ -62,8 +62,8 @@ static void driver_detach(struct base_bus *bus, unsigned int id)
 {
 
     pic_unsetroutine(bus, id);
-    base_block_unregisterinterface(&iblock);
-    base_block_unregisternode(&node);
+    base_block_unregisterinterface(&blockinterface);
+    base_block_unregisternode(&blocknode);
 
 }
 

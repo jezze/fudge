@@ -21,10 +21,10 @@ struct vga_character
 };
 
 static struct base_driver driver;
-static struct base_terminal_interface iterminal;
-static struct base_video_interface ivideo;
-static struct base_terminal_node tnode;
-static struct base_video_node vnode;
+static struct base_terminal_interface terminalinterface;
+static struct base_video_interface videointerface;
+static struct base_terminal_node terminalnode;
+static struct base_video_node videonode;
 static struct {unsigned char color; unsigned short offset;} cursor;
 static struct {unsigned int x; unsigned int y; unsigned int bpp;} resolution;
 static void *taddress;
@@ -174,14 +174,14 @@ static void clear(unsigned int offset)
 
 }
 
-static unsigned int iterminal_rdata(unsigned int offset, unsigned int count, void *buffer)
+static unsigned int terminalinterface_rdata(unsigned int offset, unsigned int count, void *buffer)
 {
 
     return 0;
 
 }
 
-static unsigned int iterminal_wdata(unsigned int offset, unsigned int count, void *buffer)
+static unsigned int terminalinterface_wdata(unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct vga_character *memory = taddress;
@@ -234,7 +234,7 @@ static unsigned int iterminal_wdata(unsigned int offset, unsigned int count, voi
 
 }
 
-static void ivideo_setmode(unsigned int xres, unsigned int yres, unsigned int bpp)
+static void videointerface_setmode(unsigned int xres, unsigned int yres, unsigned int bpp)
 {
 
     resolution.x = 320;
@@ -251,7 +251,7 @@ static void ivideo_setmode(unsigned int xres, unsigned int yres, unsigned int bp
 
 }
 
-static unsigned int ivideo_rdata(unsigned int offset, unsigned int count, void *buffer)
+static unsigned int videointerface_rdata(unsigned int offset, unsigned int count, void *buffer)
 {
 
     unsigned int bytespp = resolution.bpp / 8;
@@ -262,7 +262,7 @@ static unsigned int ivideo_rdata(unsigned int offset, unsigned int count, void *
 
 }
 
-static unsigned int ivideo_wdata(unsigned int offset, unsigned int count, void *buffer)
+static unsigned int videointerface_wdata(unsigned int offset, unsigned int count, void *buffer)
 {
 
     unsigned int bytespp = resolution.bpp / 8;
@@ -273,7 +273,7 @@ static unsigned int ivideo_wdata(unsigned int offset, unsigned int count, void *
 
 }
 
-static unsigned int ivideo_rcolormap(unsigned int offset, unsigned int count, void *buffer)
+static unsigned int videointerface_rcolormap(unsigned int offset, unsigned int count, void *buffer)
 {
 
     char *c = buffer;
@@ -299,7 +299,7 @@ static unsigned int ivideo_rcolormap(unsigned int offset, unsigned int count, vo
 
 }
 
-static unsigned int ivideo_wcolormap(unsigned int offset, unsigned int count, void *buffer)
+static unsigned int videointerface_wcolormap(unsigned int offset, unsigned int count, void *buffer)
 {
 
     char *c = buffer;
@@ -338,14 +338,14 @@ static unsigned int driver_match(struct base_bus *bus, unsigned int id)
 static void driver_attach(struct base_bus *bus, unsigned int id)
 {
 
-    base_terminal_initinterface(&iterminal, bus, id, iterminal_rdata, iterminal_wdata);
-    base_terminal_registerinterface(&iterminal);
-    base_terminal_initnode(&tnode, &iterminal);
-    base_terminal_registernode(&tnode);
-    base_video_initinterface(&ivideo, bus, id, ivideo_setmode, ivideo_rdata, ivideo_wdata, ivideo_rcolormap, ivideo_wcolormap);
-    base_video_registerinterface(&ivideo);
-    base_video_initnode(&vnode, &ivideo);
-    base_video_registernode(&vnode);
+    base_terminal_initinterface(&terminalinterface, bus, id, terminalinterface_rdata, terminalinterface_wdata);
+    base_terminal_registerinterface(&terminalinterface);
+    base_terminal_initnode(&terminalnode, &terminalinterface);
+    base_terminal_registernode(&terminalnode);
+    base_video_initinterface(&videointerface, bus, id, videointerface_setmode, videointerface_rdata, videointerface_wdata, videointerface_rcolormap, videointerface_wcolormap);
+    base_video_registerinterface(&videointerface);
+    base_video_initnode(&videonode, &videointerface);
+    base_video_registernode(&videonode);
 
     taddress = (void *)0x000B8000;
     gaddress = (void *)0x000A0000;
@@ -361,10 +361,10 @@ static void driver_attach(struct base_bus *bus, unsigned int id)
 static void driver_detach(struct base_bus *bus, unsigned int id)
 {
 
-    base_terminal_unregisterinterface(&iterminal);
-    base_terminal_unregisternode(&tnode);
-    base_video_unregisterinterface(&ivideo);
-    base_video_unregisternode(&vnode);
+    base_terminal_unregisterinterface(&terminalinterface);
+    base_terminal_unregisternode(&terminalnode);
+    base_video_unregisterinterface(&videointerface);
+    base_video_unregisternode(&videonode);
 
 }
 

@@ -47,8 +47,8 @@ enum bga_bpp
 };
 
 static struct base_driver driver;
-static struct base_video_interface ivideo;
-static struct base_video_node node;
+static struct base_video_interface videointerface;
+static struct base_video_node videonode;
 static void *bank;
 static void *lfb;
 
@@ -60,7 +60,7 @@ static void setreg(unsigned short index, unsigned short data)
 
 }
 
-static void ivideo_setmode(unsigned int xres, unsigned int yres, unsigned int bpp)
+static void videointerface_setmode(unsigned int xres, unsigned int yres, unsigned int bpp)
 {
 
     setreg(BGA_COMMAND_ENABLE, 0x00);
@@ -71,11 +71,11 @@ static void ivideo_setmode(unsigned int xres, unsigned int yres, unsigned int bp
 
 }
 
-static unsigned int ivideo_rdata(unsigned int offset, unsigned int count, void *buffer)
+static unsigned int videointerface_rdata(unsigned int offset, unsigned int count, void *buffer)
 {
 
 /*
-    unsigned int size = ivideo.xres * ivideo.yres * ivideo.bpp / 4;
+    unsigned int size = videointerface.xres * videointerface.yres * videointerface.bpp / 4;
 
     return memory_read(buffer, count, lfb, size, offset);
 */
@@ -84,11 +84,11 @@ static unsigned int ivideo_rdata(unsigned int offset, unsigned int count, void *
 
 }
 
-static unsigned int ivideo_wdata(unsigned int offset, unsigned int count, void *buffer)
+static unsigned int videointerface_wdata(unsigned int offset, unsigned int count, void *buffer)
 {
 
 /*
-    unsigned int size = ivideo.xres * ivideo.yres * ivideo.bpp / 4;
+    unsigned int size = videointerface.xres * videointerface.yres * videointerface.bpp / 4;
 
     return memory_write(lfb, size, buffer, count, offset);
 */
@@ -110,10 +110,10 @@ static unsigned int driver_match(struct base_bus *bus, unsigned int id)
 static void driver_attach(struct base_bus *bus, unsigned int id)
 {
 
-    base_video_initinterface(&ivideo, bus, id, ivideo_setmode, ivideo_rdata, ivideo_wdata, 0, 0);
-    base_video_registerinterface(&ivideo);
-    base_video_initnode(&node, &ivideo);
-    base_video_registernode(&node);
+    base_video_initinterface(&videointerface, bus, id, videointerface_setmode, videointerface_rdata, videointerface_wdata, 0, 0);
+    base_video_registerinterface(&videointerface);
+    base_video_initnode(&videonode, &videointerface);
+    base_video_registernode(&videonode);
 
     bank = (void *)0xA0000;
     lfb = (void *)(unsigned long)pci_ind(bus, id, PCI_CONFIG_BAR0);
@@ -130,8 +130,8 @@ static void driver_attach(struct base_bus *bus, unsigned int id)
 static void driver_detach(struct base_bus *bus, unsigned int id)
 {
 
-    base_video_unregisterinterface(&ivideo);
-    base_video_unregisternode(&node);
+    base_video_unregisterinterface(&videointerface);
+    base_video_unregisternode(&videonode);
 
 }
 
