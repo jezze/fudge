@@ -48,6 +48,7 @@ static struct base_timer_node timernode;
 static struct scheduler_rendezvous rdata;
 static unsigned short io;
 static unsigned int wait;
+static unsigned int wakeup;
 static unsigned short divisor;
 static unsigned int jiffies;
 
@@ -71,9 +72,20 @@ static void handleirq(unsigned int irq, struct base_bus *bus, unsigned int id)
 static void timerinterface_sleep(unsigned int duration)
 {
 
+    if (wakeup)
+    {
+
+        wakeup = 0;
+
+        return;
+
+    }
+
     wait = jiffies + duration;
 
     scheduler_rendezvous_sleep(&rdata, 1);
+
+    wakeup = 1;
 
 }
 
@@ -117,6 +129,7 @@ static void driver_detach(struct base_bus *bus, unsigned int id)
 void init()
 {
 
+    wakeup = 0;
     jiffies = 0;
     wait = 0;
     divisor = 10000;
