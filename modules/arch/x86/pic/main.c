@@ -109,7 +109,7 @@ unsigned int pic_setroutine(struct base_bus *bus, unsigned int id, void (*callba
 
     unsigned short irq = bus->irq(bus, id);
 
-    if (irq > PIC_ROUTINES)
+    if (irq >= PIC_ROUTINES)
         return 0;
 
     if (routines[irq].bus || routines[irq].id)
@@ -133,7 +133,7 @@ unsigned int pic_unsetroutine(struct base_bus *bus, unsigned int id)
 
     unsigned short irq = bus->irq(bus, id);
 
-    if (irq > PIC_ROUTINES)
+    if (irq >= PIC_ROUTINES)
         return 0;
 
     if (routines[irq].bus != bus || routines[irq].id != id)

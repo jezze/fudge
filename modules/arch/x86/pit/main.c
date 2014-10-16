@@ -1,5 +1,6 @@
 #include <module.h>
 #include <kernel/resource.h>
+#include <kernel/scheduler.h>
 #include <system/system.h>
 #include <base/base.h>
 #include <base/timer.h>
@@ -8,14 +9,13 @@
 #include <arch/x86/platform/platform.h>
 
 #define PIT_FREQUENCY                   1193182
-#define PIT_HERTZ                       1000
 
 enum pit_register
 {
 
-    PIT_REGISTER_COUNTER0               = 0x0000,
-    PIT_REGISTER_COUNTER1               = 0x0001,
-    PIT_REGISTER_COUNTER2               = 0x0002,
+    PIT_REGISTER_CHANNEL0               = 0x0000,
+    PIT_REGISTER_CHANNEL1               = 0x0001,
+    PIT_REGISTER_CHANNEL2               = 0x0002,
     PIT_REGISTER_COMMAND                = 0x0003
 
 };
@@ -35,9 +35,9 @@ enum pit_command
     PIT_COMMAND_LOW                     = 0x10,
     PIT_COMMAND_HIGH                    = 0x20,
     PIT_COMMAND_BOTH                    = 0x30,
-    PIT_COMMAND_COUNTER0                = 0x00,
-    PIT_COMMAND_COUNTER1                = 0x40,
-    PIT_COMMAND_COUNTER2                = 0x80,
+    PIT_COMMAND_CHANNEL0                = 0x00,
+    PIT_COMMAND_CHANNEL1                = 0x40,
+    PIT_COMMAND_CHANNEL2                = 0x80,
     PIT_COMMAND_READBACK                = 0xC0
 
 };
@@ -45,19 +45,35 @@ enum pit_command
 static struct base_driver driver;
 static struct base_timer_interface timerinterface;
 static struct base_timer_node timernode;
+static struct scheduler_rendezvous rdata;
+static unsigned short io;
+static unsigned int wait;
 static unsigned short divisor;
 static unsigned int jiffies;
-static unsigned short io;
 
 static void handleirq(unsigned int irq, struct base_bus *bus, unsigned int id)
 {
 
     jiffies += 1;
 
+    if (wait && jiffies >= wait)
+    {
+
+        memory_copy((void *)0xB8000, "t i c k ", 8);
+        scheduler_rendezvous_unsleep(&rdata);
+
+        wait = 0;
+
+    }
+
 }
 
-static void timerinterface_addduration(unsigned int duration)
+static void timerinterface_sleep(unsigned int duration)
 {
+
+    wait = jiffies + duration;
+
+    scheduler_rendezvous_sleep(&rdata, 1);
 
 }
 
@@ -74,17 +90,18 @@ static unsigned int driver_match(struct base_bus *bus, unsigned int id)
 static void driver_attach(struct base_bus *bus, unsigned int id)
 {
 
-    base_timer_initinterface(&timerinterface, bus, id, timerinterface_addduration);
+    base_timer_initinterface(&timerinterface, bus, id, timerinterface_sleep);
     base_timer_registerinterface(&timerinterface);
     base_timer_initnode(&timernode, &timerinterface);
     base_timer_registernode(&timernode);
-    pic_setroutine(bus, id, handleirq);
 
     io = platform_getbase(bus, id);
 
-    io_outb(io + PIT_REGISTER_COMMAND, PIT_COMMAND_COUNTER0 | PIT_COMMAND_BOTH | PIT_COMMAND_MODE3 | PIT_COMMAND_BINARY);
-    io_outb(io + PIT_REGISTER_COUNTER0, divisor >> 0);
-    io_outb(io + PIT_REGISTER_COUNTER0, divisor >> 8);
+    io_outb(io + PIT_REGISTER_COMMAND, PIT_COMMAND_CHANNEL0 | PIT_COMMAND_BOTH | PIT_COMMAND_MODE3 | PIT_COMMAND_BINARY);
+    io_outb(io + PIT_REGISTER_CHANNEL0, divisor);
+    io_outb(io + PIT_REGISTER_CHANNEL0, divisor >> 8);
+
+    pic_setroutine(bus, id, handleirq);
 
 }
 
@@ -99,6 +116,10 @@ static void driver_detach(struct base_bus *bus, unsigned int id)
 
 void init()
 {
+
+    jiffies = 0;
+    wait = 0;
+    divisor = 10000;
 
     base_initdriver(&driver, "pit", driver_match, driver_attach, driver_detach);
     base_registerdriver(&driver);
