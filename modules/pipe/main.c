@@ -25,6 +25,7 @@ static unsigned int pipe0_close(struct system_node *self)
     self->refcount--;
     self->parent->refcount--;
 
+    scheduler_rendezvous_unsleep(&pipe0.rdata);
     scheduler_rendezvous_unsleep(&pipe1.rdata);
 
     return (unsigned int)self;
@@ -46,12 +47,12 @@ static unsigned int pipe0_read(struct system_node *self, unsigned int offset, un
 static unsigned int pipe0_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    unsigned int c = buffer_wcfifo(&pipe1.cfifo, count, buffer);
+    count = buffer_wcfifo(&pipe1.cfifo, count, buffer);
 
     scheduler_rendezvous_unsleep(&pipe1.rdata);
-    scheduler_rendezvous_sleep(&pipe1.rdata, !c && count);
+    scheduler_rendezvous_sleep(&pipe1.rdata, !count && pipe0.pipe.refcount);
 
-    return c;
+    return count;
 
 }
 
@@ -61,6 +62,7 @@ static unsigned int pipe1_close(struct system_node *self)
     self->refcount--;
     self->parent->refcount--;
 
+    scheduler_rendezvous_unsleep(&pipe1.rdata);
     scheduler_rendezvous_unsleep(&pipe0.rdata);
 
     return (unsigned int)self;
@@ -82,12 +84,12 @@ static unsigned int pipe1_read(struct system_node *self, unsigned int offset, un
 static unsigned int pipe1_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    unsigned int c = buffer_wcfifo(&pipe0.cfifo, count, buffer);
+    count = buffer_wcfifo(&pipe0.cfifo, count, buffer);
 
     scheduler_rendezvous_unsleep(&pipe0.rdata);
-    scheduler_rendezvous_sleep(&pipe0.rdata, !c && count);
+    scheduler_rendezvous_sleep(&pipe0.rdata, !count && pipe1.pipe.refcount);
 
-    return c;
+    return count;
 
 }
 
