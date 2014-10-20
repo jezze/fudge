@@ -10,37 +10,6 @@ static unsigned int walk_path(unsigned int index, unsigned int indexw, unsigned 
 
 }
 
-struct stringtable
-{
-
-    unsigned int head;
-    unsigned int size;
-    char *buffer;
-
-};
-
-static void stringtable_init(struct stringtable *table, unsigned int size, char *buffer)
-{
-
-    memory_clear(table, sizeof (struct stringtable));
-
-    table->size = size;
-    table->buffer = buffer;
-
-}
-
-static unsigned int stringtable_push(struct stringtable *table, char c)
-{
-
-    table->buffer[table->head] = c;
-
-    if (table->head < table->size)
-        table->head++;
-
-    return table->head;
-
-}
-
 enum token_type
 {
 
@@ -79,18 +48,7 @@ static void tokenlist_init(struct tokenlist *list, unsigned int size, struct tok
 
 }
 
-static void tokenlist_add(struct tokenlist *list, unsigned int type, char *str)
-{
-
-    list->table[list->head].type = type;
-    list->table[list->head].str = str;
-
-    if (list->head < list->size)
-        list->head++;
-
-}
-
-static void tokenlist_copy(struct tokenlist *list, struct token *token)
+static void tokenlist_push(struct tokenlist *list, struct token *token)
 {
 
     list->table[list->head].type = token->type;
@@ -110,6 +68,18 @@ static struct token *tokenlist_pop(struct tokenlist *list)
     list->head--;
 
     return &list->table[list->head];
+
+}
+
+static void tokenlist_add(struct tokenlist *list, unsigned int type, char *str)
+{
+
+    struct token token;
+
+    token.type = type;
+    token.str = str;
+
+    tokenlist_push(list, &token);
 
 }
 
@@ -135,7 +105,7 @@ static unsigned int precedence(struct token *token)
 
 }
 
-static void tokenize(struct tokenlist *infix, struct stringtable *table, unsigned int count, char *buffer)
+static void tokenize(struct tokenlist *infix, struct buffer *stringtable, unsigned int count, char *buffer)
 {
 
     unsigned int i;
@@ -181,7 +151,7 @@ static void tokenize(struct tokenlist *infix, struct stringtable *table, unsigne
             ident = 1;
 
             if (!identcount)
-                tokenlist_add(infix, IDENT, table->buffer + table->head);
+                tokenlist_add(infix, IDENT, (char *)stringtable->memory + stringtable->head);
 
             break;
 
@@ -190,7 +160,7 @@ static void tokenize(struct tokenlist *infix, struct stringtable *table, unsigne
         if (ident)
         {
 
-            stringtable_push(table, c);
+            buffer_pushlifo(stringtable, 1, &c);
 
             identcount++;
 
@@ -202,7 +172,9 @@ static void tokenize(struct tokenlist *infix, struct stringtable *table, unsigne
             if (identcount)
             {
 
-                stringtable_push(table, '\0');
+                c = '\0';
+
+                buffer_pushlifo(stringtable, 1, &c);
 
                 identcount = 0;
 
@@ -228,7 +200,7 @@ static void translate(struct tokenlist *postfix, struct tokenlist *infix, struct
         if (token->type == IDENT)
         {
 
-            tokenlist_copy(postfix, token);
+            tokenlist_push(postfix, token);
 
             continue;
 
@@ -238,9 +210,9 @@ static void translate(struct tokenlist *postfix, struct tokenlist *infix, struct
         {
 
             while ((t = tokenlist_pop(stack)))
-                tokenlist_copy(postfix, t);
+                tokenlist_push(postfix, t);
 
-            tokenlist_copy(postfix, token);
+            tokenlist_push(postfix, token);
 
             continue;
 
@@ -252,17 +224,17 @@ static void translate(struct tokenlist *postfix, struct tokenlist *infix, struct
             if (precedence(token) > precedence(t))
             {
 
-                tokenlist_copy(stack, t);
+                tokenlist_push(stack, t);
 
                 break;
 
             }
 
-            tokenlist_copy(postfix, t);
+            tokenlist_push(postfix, t);
 
         }
 
-        tokenlist_copy(stack, token);
+        tokenlist_push(stack, token);
 
     }
 
@@ -286,7 +258,7 @@ static void parse(struct tokenlist *postfix, struct tokenlist *stack)
         {
 
         case IDENT:
-            tokenlist_copy(stack, token);
+            tokenlist_push(stack, token);
 
             break;
 
@@ -359,19 +331,19 @@ void main()
 
     char buffer[FUDGE_BSIZE];
     unsigned int count, roff;
-    char strtbl[32768];
-    struct stringtable table;
-    struct token infixtbl[1024];
-    struct token postfixtbl[1024];
-    struct token stacktbl[8];
+    char stringdata[32768];
+    struct buffer stringtable;
+    struct token infixdata[1024];
+    struct token postfixdata[1024];
+    struct token stackdata[8];
     struct tokenlist infix;
     struct tokenlist postfix;
     struct tokenlist stack;
 
-    stringtable_init(&table, 32768, strtbl);
-    tokenlist_init(&infix, 1024, infixtbl);
-    tokenlist_init(&postfix, 1024, postfixtbl);
-    tokenlist_init(&stack, 8, stacktbl);
+    buffer_init(&stringtable, 1, 32768, stringdata);
+    tokenlist_init(&infix, 1024, infixdata);
+    tokenlist_init(&postfix, 1024, postfixdata);
+    tokenlist_init(&stack, 8, stackdata);
 
     if (!call_walk(CALL_L0, CALL_DR, 4, "bin/"))
         return;
@@ -379,7 +351,7 @@ void main()
     call_open(CALL_I0);
 
     for (roff = 0; (count = call_read(CALL_I0, roff, FUDGE_BSIZE, buffer)); roff += count)
-        tokenize(&infix, &table, count, buffer);
+        tokenize(&infix, &stringtable, count, buffer);
 
     call_close(CALL_I0);
 
