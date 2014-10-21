@@ -7,7 +7,7 @@ struct vfs_backend *vfs_findbackend(unsigned int id)
 
     struct resource *current = 0;
 
-    while ((current = resource_findtype(current, VFS_RESOURCE_BACKEND)))
+    while ((current = resource_findtype(current, RESOURCE_TYPE_BACKEND)))
     {
 
         struct vfs_backend *backend = current->data;
@@ -26,7 +26,7 @@ struct vfs_protocol *vfs_findprotocol(struct vfs_backend *backend)
 
     struct resource *current = 0;
 
-    while ((current = resource_findtype(current, VFS_RESOURCE_PROTOCOL)))
+    while ((current = resource_findtype(current, RESOURCE_TYPE_PROTOFS)))
     {
 
         struct vfs_protocol *protocol = current->data;
@@ -44,7 +44,7 @@ void vfs_initbackend(struct vfs_backend *backend, unsigned int id, unsigned int 
 {
 
     memory_clear(backend, sizeof (struct vfs_backend));
-    resource_init(&backend->resource, VFS_RESOURCE_BACKEND, backend);
+    resource_init(&backend->resource, RESOURCE_TYPE_BACKEND, backend);
 
     backend->id = id;
     backend->read = read;
@@ -56,7 +56,7 @@ void vfs_initprotocol(struct vfs_protocol *protocol, unsigned int (*match)(struc
 {
 
     memory_clear(protocol, sizeof (struct vfs_protocol));
-    resource_init(&protocol->resource, VFS_RESOURCE_PROTOCOL, protocol);
+    resource_init(&protocol->resource, RESOURCE_TYPE_PROTOFS, protocol);
 
     protocol->match = match;
     protocol->root = root;
@@ -76,7 +76,7 @@ void vfs_initchannel(struct vfs_channel *channel)
 {
 
     memory_clear(channel, sizeof (struct vfs_channel));
-    resource_init(&channel->resource, VFS_RESOURCE_CHANNEL, channel);
+    resource_init(&channel->resource, RESOURCE_TYPE_CHANNEL, channel);
 
 }
 
@@ -84,7 +84,7 @@ void vfs_initmount(struct vfs_mount *mount)
 {
 
     memory_clear(mount, sizeof (struct vfs_mount));
-    resource_init(&mount->resource, VFS_RESOURCE_MOUNT, mount);
+    resource_init(&mount->resource, RESOURCE_TYPE_MOUNT, mount);
 
 }
 
@@ -92,7 +92,7 @@ void vfs_initdescriptor(struct vfs_descriptor *descriptor)
 {
 
     memory_clear(descriptor, sizeof (struct vfs_descriptor));
-    resource_init(&descriptor->resource, VFS_RESOURCE_DESCRIPTOR, descriptor);
+    resource_init(&descriptor->resource, RESOURCE_TYPE_DESCRIPTOR, descriptor);
 
 }
 

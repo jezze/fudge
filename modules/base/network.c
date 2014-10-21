@@ -44,7 +44,7 @@ void base_network_notify(struct base_network_interface *interface)
 
     struct resource *current = 0;
 
-    while ((current = resource_findtype(current, BASE_NETWORK_RESOURCE_PROTOCOL)))
+    while ((current = resource_findtype(current, RESOURCE_TYPE_PROTONET)))
     {
 
         struct base_network_protocol *protocol = current->data;
@@ -134,7 +134,7 @@ void base_network_initprotocol(struct base_network_protocol *protocol, char *nam
 {
 
     memory_clear(protocol, sizeof (struct base_network_protocol));
-    resource_init(&protocol->resource, BASE_NETWORK_RESOURCE_PROTOCOL, protocol);
+    resource_init(&protocol->resource, RESOURCE_TYPE_PROTONET, protocol);
 
     protocol->name = name;
     protocol->match = match;

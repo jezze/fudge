@@ -1,5 +1,3 @@
-#define BASE_NETWORK_RESOURCE_PROTOCOL  0x8101
-
 struct base_network_interface
 {
 

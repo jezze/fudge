@@ -1,9 +1,3 @@
-#define VFS_RESOURCE_BACKEND            1001
-#define VFS_RESOURCE_PROTOCOL           1002
-#define VFS_RESOURCE_CHANNEL            1003
-#define VFS_RESOURCE_DESCRIPTOR         1004
-#define VFS_RESOURCE_MOUNT              1005
-
 struct vfs_backend
 {
 

@@ -1,7 +1,3 @@
-#define BASE_RESOURCE_BUS               8021
-#define BASE_RESOURCE_DRIVER            8022
-#define BASE_RESOURCE_INTERFACE         8023
-
 struct base_bus
 {
 

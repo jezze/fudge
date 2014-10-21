@@ -1,5 +1,4 @@
 #define TASK_DESCRIPTORS                32
-#define TASK_RESOURCE                   3
 
 struct task
 {
