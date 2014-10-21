@@ -8,80 +8,6 @@
 static struct system_backend backend;
 static struct vfs_protocol protocol;
 
-void system_addchild(struct system_node *group, struct system_node *node)
-{
-
-    struct list_item *current;
-
-    if (node->type & SYSTEM_NODETYPE_MULTI)
-    {
-
-        unsigned int length0 = ascii_length(node->name);
-
-        for (current = group->children.head; current; current = current->next)
-        {
-
-            struct system_node *n = current->data;
-            unsigned int length1 = ascii_length(n->name);
-
-            if (length0 != length1 || !memory_match(n->name, node->name, length0))
-                continue;
-
-            node->index++;
-
-        }
-
-    }
-
-    list_add(&group->children, &node->item);
-
-    node->parent = group;
-
-}
-
-void system_removechild(struct system_node *group, struct system_node *node)
-{
-
-    list_remove(&group->children, &node->item);
-
-    node->parent = 0;
-
-}
-
-void system_registernode(struct system_node *node)
-{
-
-    system_addchild(&backend.root, node);
-
-}
-
-void system_unregisternode(struct system_node *node)
-{
-
-    system_removechild(&backend.root, node);
-
-}
-
-static unsigned int open(struct system_node *self)
-{
-
-    self->refcount++;
-    self->parent->refcount++;
-
-    return (unsigned int)self;
-
-}
-
-static unsigned int close(struct system_node *self)
-{
-
-    self->refcount--;
-    self->parent->refcount--;
-
-    return (unsigned int)self;
-
-}
-
 static unsigned int read_normal(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
@@ -227,6 +153,80 @@ unsigned int child(struct system_node *self, unsigned int count, const char *pat
 
 }
 
+unsigned int system_open(struct system_node *node)
+{
+
+    node->refcount++;
+    node->parent->refcount++;
+
+    return (unsigned int)node;
+
+}
+
+unsigned int system_close(struct system_node *node)
+{
+
+    node->refcount--;
+    node->parent->refcount--;
+
+    return (unsigned int)node;
+
+}
+
+void system_addchild(struct system_node *group, struct system_node *node)
+{
+
+    struct list_item *current;
+
+    if (node->type & SYSTEM_NODETYPE_MULTI)
+    {
+
+        unsigned int length0 = ascii_length(node->name);
+
+        for (current = group->children.head; current; current = current->next)
+        {
+
+            struct system_node *n = current->data;
+            unsigned int length1 = ascii_length(n->name);
+
+            if (length0 != length1 || !memory_match(n->name, node->name, length0))
+                continue;
+
+            node->index++;
+
+        }
+
+    }
+
+    list_add(&group->children, &node->item);
+
+    node->parent = group;
+
+}
+
+void system_removechild(struct system_node *group, struct system_node *node)
+{
+
+    list_remove(&group->children, &node->item);
+
+    node->parent = 0;
+
+}
+
+void system_registernode(struct system_node *node)
+{
+
+    system_addchild(&backend.root, node);
+
+}
+
+void system_unregisternode(struct system_node *node)
+{
+
+    system_removechild(&backend.root, node);
+
+}
+
 void system_initnode(struct system_node *node, unsigned int type, const char *name)
 {
 
@@ -236,8 +236,8 @@ void system_initnode(struct system_node *node, unsigned int type, const char *na
 
     node->type = type;
     node->name = name;
-    node->open = open;
-    node->close = close;
+    node->open = system_open;
+    node->close = system_close;
     node->read = read;
     node->write = write;
     node->child = child;

@@ -22,13 +22,10 @@ static struct system_node root;
 static unsigned int pipe0_close(struct system_node *self)
 {
 
-    self->refcount--;
-    self->parent->refcount--;
-
     scheduler_rendezvous_unsleep(&pipe0.rdata);
     scheduler_rendezvous_unsleep(&pipe1.rdata);
 
-    return (unsigned int)self;
+    return system_close(self);
 
 }
 
@@ -59,13 +56,10 @@ static unsigned int pipe0_write(struct system_node *self, unsigned int offset, u
 static unsigned int pipe1_close(struct system_node *self)
 {
 
-    self->refcount--;
-    self->parent->refcount--;
-
     scheduler_rendezvous_unsleep(&pipe1.rdata);
     scheduler_rendezvous_unsleep(&pipe0.rdata);
 
-    return (unsigned int)self;
+    return system_close(self);
 
 }
 
