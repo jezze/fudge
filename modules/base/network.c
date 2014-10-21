@@ -89,6 +89,10 @@ void base_network_unregisterinterface(struct base_network_interface *interface)
 void base_network_unregisternode(struct base_network_node *node)
 {
 
+    system_removechild(&node->base, &node->data);
+    system_removechild(&node->base, &node->mac);
+    system_removechild(&root, &node->base);
+
 }
 
 void base_network_unregisterprotocol(struct base_network_protocol *protocol)

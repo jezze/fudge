@@ -23,11 +23,6 @@ void base_block_registerinterface(struct base_block_interface *interface)
 
 }
 
-void base_block_registerprotocol(struct base_block_protocol *protocol)
-{
-
-}
-
 void base_block_registernode(struct base_block_node *node)
 {
 
@@ -43,13 +38,11 @@ void base_block_unregisterinterface(struct base_block_interface *interface)
 
 }
 
-void base_block_unregisterprotocol(struct base_block_protocol *protocol)
-{
-
-}
-
 void base_block_unregisternode(struct base_block_node *node)
 {
+
+    system_removechild(&node->base, &node->data);
+    system_removechild(&root, &node->base);
 
 }
 
@@ -61,15 +54,6 @@ void base_block_initinterface(struct base_block_interface *interface, struct bas
 
     interface->rdata = rdata;
     interface->wdata = wdata;
-
-}
-
-void base_block_initprotocol(struct base_block_protocol *protocol, char *name)
-{
-
-    memory_clear(protocol, sizeof (struct base_block_protocol));
-
-    protocol->name = name;
 
 }
 

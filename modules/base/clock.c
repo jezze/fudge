@@ -96,6 +96,11 @@ void base_clock_unregisterinterface(struct base_clock_interface *interface)
 void base_clock_unregisternode(struct base_clock_node *node)
 {
 
+    system_removechild(&node->base, &node->timestamp);
+    system_removechild(&node->base, &node->date);
+    system_removechild(&node->base, &node->time);
+    system_removechild(&root, &node->base);
+
 }
 
 void base_clock_initinterface(struct base_clock_interface *interface, struct base_bus *bus, unsigned int id, unsigned char (*getseconds)(), unsigned char (*getminutes)(), unsigned char (*gethours)(), unsigned char (*getweekday)(), unsigned char (*getday)(), unsigned char (*getmonth)(), unsigned short (*getyear)())

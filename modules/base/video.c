@@ -89,6 +89,12 @@ void base_video_unregisterinterface(struct base_video_interface *interface)
 void base_video_unregisternode(struct base_video_node *node)
 {
 
+    system_removechild(&node->base, &node->data);
+    system_removechild(&node->base, &node->colormap);
+    system_removechild(&node->base, &node->info);
+    system_removechild(&node->base, &node->mode);
+    system_removechild(&root, &node->base);
+
 }
 
 void base_video_initinterface(struct base_video_interface *interface, struct base_bus *bus, unsigned int id, void (*setmode)(unsigned int xres, unsigned int yres, unsigned int bpp), unsigned int (*rdata)(unsigned int offset, unsigned int count, void *buffer), unsigned int (*wdata)(unsigned int offset, unsigned int count, void *buffer), unsigned int (*rcolormap)(unsigned int offset, unsigned int count, void *buffer), unsigned int (*wcolormap)(unsigned int offset, unsigned int count, void *buffer))

@@ -44,6 +44,9 @@ void base_timer_unregisterinterface(struct base_timer_interface *interface)
 void base_timer_unregisternode(struct base_timer_node *node)
 {
 
+    system_removechild(&node->base, &node->sleep);
+    system_removechild(&root, &node->base);
+
 }
 
 void base_timer_initinterface(struct base_timer_interface *interface, struct base_bus *bus, unsigned int id, void (*sleep)(unsigned int duration))
