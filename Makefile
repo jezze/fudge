@@ -63,6 +63,15 @@ $(BUILD_PATH):
 	mkdir -p $@
 	mkdir -p $@/home
 	mkdir -p $@/system
+	mkdir -p $@/mount
+	mkdir -p $@/mount/0
+	mkdir -p $@/mount/1
+	mkdir -p $@/mount/2
+	mkdir -p $@/mount/3
+	mkdir -p $@/mount/4
+	mkdir -p $@/mount/5
+	mkdir -p $@/mount/6
+	mkdir -p $@/mount/7
 
 $(BUILD_PATH)/bin: $(BUILD_PATH)
 	mkdir -p $@
