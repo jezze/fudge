@@ -17,32 +17,26 @@ static void interpret(struct buffer *buffer)
         count = buffer_rcfifo(buffer, FUDGE_BSIZE, temp);
 
         if (temp[3] == '/')
-            ok = call_walk(CALL_L0, CALL_DR, count - 5, temp + 4);
+            ok = call_walk(CALL_L1, CALL_DR, count - 5, temp + 4);
         else
-            ok = call_walk(CALL_L0, CALL_DW, count - 4, temp + 3);
+            ok = call_walk(CALL_L1, CALL_DW, count - 4, temp + 3);
 
         if (ok)
-            call_walk(CALL_DW, CALL_L0, 0, 0);
+            call_walk(CALL_DW, CALL_L1, 0, 0);
 
         return;
 
     }
 
-    if (!call_walk(CALL_P0, CALL_DR, 9, "bin/slang"))
-        return;
-
-    if (!call_walk(CALL_L1, CALL_DR, 12, "system/pipe/"))
-        return;
-
-    call_open(CALL_L1);
-    call_walk(CALL_L2, CALL_L1, 1, "0");
-    call_walk(CALL_I1, CALL_L1, 1, "1");
+    call_open(CALL_L0);
+    call_walk(CALL_L1, CALL_L0, 1, "0");
+    call_walk(CALL_I1, CALL_L0, 1, "1");
     call_walk(CALL_O1, CALL_O0, 0, 0);
-    call_open(CALL_L2);
-    call_write(CALL_L2, 0, buffer->head, buffer->memory);
-    call_close(CALL_L2);
-    call_spawn(CALL_P0);
+    call_open(CALL_L1);
+    call_write(CALL_L1, 0, buffer->head, buffer->memory);
     call_close(CALL_L1);
+    call_spawn(CALL_P0);
+    call_close(CALL_L0);
 
 }
 
@@ -124,6 +118,12 @@ static void poll()
 
 void main()
 {
+
+    if (!call_walk(CALL_P0, CALL_DR, 9, "bin/slang"))
+        return;
+
+    if (!call_walk(CALL_L0, CALL_DR, 12, "system/pipe/"))
+        return;
 
     call_open(CALL_O0);
     call_write(CALL_O0, 0, 2, "$ ");
