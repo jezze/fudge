@@ -90,7 +90,7 @@ static void handle(struct buffer *buffer, unsigned char c)
 
 }
 
-static void poll()
+void main()
 {
 
     unsigned char buffer[FUDGE_BSIZE];
@@ -100,7 +100,15 @@ static void poll()
 
     buffer_init(&input, 1, FUDGE_BSIZE, inputbuffer);
 
+    if (!call_walk(CALL_P0, CALL_DR, 9, "bin/slang"))
+        return;
+
+    if (!call_walk(CALL_L0, CALL_DR, 12, "system/pipe/"))
+        return;
+
     call_open(CALL_I0);
+    call_open(CALL_O0);
+    call_write(CALL_O0, 0, 2, "$ ");
 
     for (roff = 0; (count = call_read(CALL_I0, roff, FUDGE_BSIZE, buffer)); roff += count)
     {
@@ -112,23 +120,8 @@ static void poll()
 
     }
 
-    call_close(CALL_I0);
-
-}
-
-void main()
-{
-
-    if (!call_walk(CALL_P0, CALL_DR, 9, "bin/slang"))
-        return;
-
-    if (!call_walk(CALL_L0, CALL_DR, 12, "system/pipe/"))
-        return;
-
-    call_open(CALL_O0);
-    call_write(CALL_O0, 0, 2, "$ ");
-    poll();
     call_close(CALL_O0);
+    call_close(CALL_I0);
 
 }
 
