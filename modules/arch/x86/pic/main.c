@@ -6,8 +6,6 @@
 #include <kernel/kernel.h>
 #include <x86/arch/cpu.h>
 #include <x86/arch/arch.h>
-#include <x86/arch/idt.h>
-#include <x86/arch/gdt.h>
 #include <base/base.h>
 #include <arch/x86/io/io.h>
 #include "pic.h"
@@ -155,28 +153,9 @@ unsigned int pic_unsetroutine(struct base_bus *bus, unsigned int id)
 void init()
 {
 
-    struct idt_pointer *pointer = cpu_getidt();
-    unsigned short selector = sizeof (struct gdt_descriptor) * GDT_INDEX_KCODE;
-
     memory_clear(routines, sizeof (struct pic_routine) * PIC_ROUTINES);
     setchip(PIC_REGISTER_COMMAND0, PIC_REGISTER_DATA0, PIC_DATA_VECTOR0, 0x04);
     setchip(PIC_REGISTER_COMMAND1, PIC_REGISTER_DATA1, PIC_DATA_VECTOR1, 0x02);
-    idt_setdescriptor(pointer, PIC_DATA_VECTOR0 + 0x00, pic_routine00, selector, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    idt_setdescriptor(pointer, PIC_DATA_VECTOR0 + 0x01, pic_routine01, selector, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    idt_setdescriptor(pointer, PIC_DATA_VECTOR0 + 0x02, pic_routine02, selector, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    idt_setdescriptor(pointer, PIC_DATA_VECTOR0 + 0x03, pic_routine03, selector, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    idt_setdescriptor(pointer, PIC_DATA_VECTOR0 + 0x04, pic_routine04, selector, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    idt_setdescriptor(pointer, PIC_DATA_VECTOR0 + 0x05, pic_routine05, selector, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    idt_setdescriptor(pointer, PIC_DATA_VECTOR0 + 0x06, pic_routine06, selector, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    idt_setdescriptor(pointer, PIC_DATA_VECTOR0 + 0x07, pic_routine07, selector, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    idt_setdescriptor(pointer, PIC_DATA_VECTOR1 + 0x00, pic_routine08, selector, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    idt_setdescriptor(pointer, PIC_DATA_VECTOR1 + 0x01, pic_routine09, selector, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    idt_setdescriptor(pointer, PIC_DATA_VECTOR1 + 0x02, pic_routine0A, selector, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    idt_setdescriptor(pointer, PIC_DATA_VECTOR1 + 0x03, pic_routine0B, selector, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    idt_setdescriptor(pointer, PIC_DATA_VECTOR1 + 0x04, pic_routine0C, selector, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    idt_setdescriptor(pointer, PIC_DATA_VECTOR1 + 0x05, pic_routine0D, selector, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    idt_setdescriptor(pointer, PIC_DATA_VECTOR1 + 0x06, pic_routine0E, selector, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    idt_setdescriptor(pointer, PIC_DATA_VECTOR1 + 0x07, pic_routine0F, selector, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
     setmask(PIC_REGISTER_DATA0, 0xFB);
     setmask(PIC_REGISTER_DATA1, 0xFF);
 
@@ -190,6 +169,23 @@ void init()
 
     while (getstatus(PIC_REGISTER_COMMAND0, PIC_COMMAND_ISR))
         io_outb(PIC_REGISTER_COMMAND0, PIC_COMMAND_EOI);
+
+    arch_setinterrupt(PIC_DATA_VECTOR0 + 0x00, pic_routine00);
+    arch_setinterrupt(PIC_DATA_VECTOR0 + 0x01, pic_routine01);
+    arch_setinterrupt(PIC_DATA_VECTOR0 + 0x02, pic_routine02);
+    arch_setinterrupt(PIC_DATA_VECTOR0 + 0x03, pic_routine03);
+    arch_setinterrupt(PIC_DATA_VECTOR0 + 0x04, pic_routine04);
+    arch_setinterrupt(PIC_DATA_VECTOR0 + 0x05, pic_routine05);
+    arch_setinterrupt(PIC_DATA_VECTOR0 + 0x06, pic_routine06);
+    arch_setinterrupt(PIC_DATA_VECTOR0 + 0x07, pic_routine07);
+    arch_setinterrupt(PIC_DATA_VECTOR1 + 0x00, pic_routine08);
+    arch_setinterrupt(PIC_DATA_VECTOR1 + 0x01, pic_routine09);
+    arch_setinterrupt(PIC_DATA_VECTOR1 + 0x02, pic_routine0A);
+    arch_setinterrupt(PIC_DATA_VECTOR1 + 0x03, pic_routine0B);
+    arch_setinterrupt(PIC_DATA_VECTOR1 + 0x04, pic_routine0C);
+    arch_setinterrupt(PIC_DATA_VECTOR1 + 0x05, pic_routine0D);
+    arch_setinterrupt(PIC_DATA_VECTOR1 + 0x06, pic_routine0E);
+    arch_setinterrupt(PIC_DATA_VECTOR1 + 0x07, pic_routine0F);
 
 }
 

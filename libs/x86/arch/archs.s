@@ -1,6 +1,6 @@
 .code32
 
-.extern arch_segment
+.extern arch_getsegment
 .extern arch_generalfault
 .extern arch_pagefault
 .extern arch_syscall
@@ -34,7 +34,7 @@ arch_isrgeneralfault:
     pusha
     movl %esp, %eax
     pushl %eax
-    call arch_segment
+    call arch_getsegment
     movw %ax, %ds
     movw %ax, %es
     movw %ax, %fs
@@ -54,7 +54,7 @@ arch_isrpagefault:
     pusha
     movl %esp, %eax
     pushl %eax
-    call arch_segment
+    call arch_getsegment
     movw %ax, %ds
     movw %ax, %es
     movw %ax, %fs
@@ -74,7 +74,7 @@ arch_isrsyscall:
     pusha
     movl %esp, %eax
     pushl %eax
-    call arch_segment
+    call arch_getsegment
     movw %ax, %ds
     movw %ax, %es
     movw %ax, %fs

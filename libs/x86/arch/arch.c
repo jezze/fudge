@@ -209,10 +209,17 @@ static unsigned int exit(struct container *self, struct task *task, void *stack)
 
 }
 
-unsigned short arch_segment()
+unsigned short arch_getsegment()
 {
 
     return selector.kdata;
+
+}
+
+void arch_setinterrupt(unsigned int index, void (*callback)())
+{
+
+    idt_setdescriptor(&idt.pointer, index, callback, selector.kcode, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
 
 }
 
