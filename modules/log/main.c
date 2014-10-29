@@ -5,53 +5,40 @@
 #include <base/base.h>
 #include "log.h"
 
-static char dbuffer[0x1000];
-static unsigned int doffset;
+static unsigned char databuffer[4096];
+static struct buffer data;
 static struct system_node messages;
 
 static unsigned int messages_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    return memory_read(buffer, count, dbuffer, 0x1000, offset);
+    return buffer_rcfifo(&data, count, databuffer);
+
+}
+
+static unsigned int messages_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    return buffer_wcfifo(&data, count, databuffer);
 
 }
 
 unsigned int log_write(unsigned int count, char *buffer)
 {
 
-    count = memory_write(dbuffer, 0x1000, buffer, count, doffset);
-    doffset += count;
-
-    return count;
-
-}
-
-unsigned int log_writenumber(unsigned int number, unsigned int base)
-{
-
-    char n[32];
-    unsigned int count = ascii_fromint(n, 32, number, base);
-
-    return log_write(count, n);
-
-}
-
-unsigned int log_writestring(char *buffer)
-{
-
-    return log_write(ascii_length(buffer), buffer);
+    return buffer_wcfifo(&data, count, databuffer);
 
 }
 
 void init()
 {
 
-    doffset = 0;
-
+    buffer_init(&data, 1, 4096, databuffer);
     system_initnode(&messages, SYSTEM_NODETYPE_NORMAL, "messages");
     system_registernode(&messages);
 
     messages.read = messages_read;
+    messages.write = messages_write;
 
 }
 
