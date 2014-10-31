@@ -15,9 +15,9 @@ struct base_video_node
 {
 
     struct system_node base;
+    struct system_node ctrl;
     struct system_node data;
     struct system_node colormap;
-    struct system_node ctrl;
     struct base_video_interface *interface;
 
 };

@@ -7,24 +7,6 @@
 
 static struct system_node root;
 
-static unsigned int data_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
-{
-
-    struct base_network_node *node = (struct base_network_node *)self->parent;
- 
-    return node->interface->receive(count, buffer);
-
-}
-
-static unsigned int data_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
-{
-
-    struct base_network_node *node = (struct base_network_node *)self->parent;
- 
-    return node->interface->send(count, buffer);
-
-}
-
 static unsigned int ctrl_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
@@ -40,6 +22,24 @@ static unsigned int ctrl_write(struct system_node *self, unsigned int offset, un
     struct base_network_node *node = (struct base_network_node *)self->parent;
 
     return memory_write(&node->interface->ctrl, sizeof (struct ctrl_networkctrl), buffer, count, offset);
+
+}
+
+static unsigned int data_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    struct base_network_node *node = (struct base_network_node *)self->parent;
+ 
+    return node->interface->receive(count, buffer);
+
+}
+
+static unsigned int data_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    struct base_network_node *node = (struct base_network_node *)self->parent;
+ 
+    return node->interface->send(count, buffer);
 
 }
 
@@ -71,8 +71,8 @@ void base_network_registernode(struct base_network_node *node)
 {
 
     system_addchild(&root, &node->base);
-    system_addchild(&node->base, &node->data);
     system_addchild(&node->base, &node->ctrl);
+    system_addchild(&node->base, &node->data);
 
 }
 
@@ -93,8 +93,8 @@ void base_network_unregisterinterface(struct base_network_interface *interface)
 void base_network_unregisternode(struct base_network_node *node)
 {
 
-    system_removechild(&node->base, &node->data);
     system_removechild(&node->base, &node->ctrl);
+    system_removechild(&node->base, &node->data);
     system_removechild(&root, &node->base);
 
 }
@@ -124,14 +124,14 @@ void base_network_initnode(struct base_network_node *node, struct base_network_i
 
     memory_clear(node, sizeof (struct base_network_node));
     system_initnode(&node->base, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, interface->base.bus->name);
-    system_initnode(&node->data, SYSTEM_NODETYPE_NORMAL, "data");
     system_initnode(&node->ctrl, SYSTEM_NODETYPE_NORMAL, "ctrl");
+    system_initnode(&node->data, SYSTEM_NODETYPE_NORMAL, "data");
 
     node->interface = interface;
-    node->data.read = data_read;
-    node->data.write = data_write;
     node->ctrl.read = ctrl_read;
     node->ctrl.write = ctrl_write;
+    node->data.read = data_read;
+    node->data.write = data_write;
 
 }
 
