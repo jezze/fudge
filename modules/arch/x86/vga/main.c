@@ -26,7 +26,6 @@ static struct base_video_interface videointerface;
 static struct base_terminal_node terminalnode;
 static struct base_video_node videonode;
 static struct {unsigned char color; unsigned short offset;} cursor;
-static struct {unsigned int x; unsigned int y; unsigned int bpp;} resolution;
 static void *taddress;
 static void *gaddress;
 
@@ -185,9 +184,9 @@ static unsigned int terminalinterface_wdata(unsigned int offset, unsigned int co
 {
 
     struct vga_character *memory = taddress;
-    unsigned int bytespp = resolution.bpp / 8;
-    unsigned int linesize = resolution.x * bytespp;
-    unsigned int fullsize = resolution.y * linesize;
+    unsigned int bytespp = videointerface.ctrl.bpp / 8;
+    unsigned int linesize = videointerface.ctrl.w * bytespp;
+    unsigned int fullsize = videointerface.ctrl.h * linesize;
     unsigned int i;
 
     for (i = 0; i < count; i++)
@@ -237,9 +236,9 @@ static unsigned int terminalinterface_wdata(unsigned int offset, unsigned int co
 static void videointerface_setmode(unsigned int xres, unsigned int yres, unsigned int bpp)
 {
 
-    resolution.x = 320;
-    resolution.y = 200;
-    resolution.bpp = 8;
+    videointerface.ctrl.w = 320;
+    videointerface.ctrl.h = 200;
+    videointerface.ctrl.bpp = 8;
 
     io_inb(VGA_REGISTER_FCCCTRL);
     io_outb(VGA_REGISTER_ARINDEX, VGA_ARINDEX_DISABLE);
@@ -254,9 +253,9 @@ static void videointerface_setmode(unsigned int xres, unsigned int yres, unsigne
 static unsigned int videointerface_rdata(unsigned int offset, unsigned int count, void *buffer)
 {
 
-    unsigned int bytespp = resolution.bpp / 8;
-    unsigned int linesize = resolution.x * bytespp;
-    unsigned int fullsize = resolution.y * linesize;
+    unsigned int bytespp = videointerface.ctrl.bpp / 8;
+    unsigned int linesize = videointerface.ctrl.w * bytespp;
+    unsigned int fullsize = videointerface.ctrl.h * linesize;
 
     return memory_read(buffer, count, gaddress, fullsize, offset);
 
@@ -265,9 +264,9 @@ static unsigned int videointerface_rdata(unsigned int offset, unsigned int count
 static unsigned int videointerface_wdata(unsigned int offset, unsigned int count, void *buffer)
 {
 
-    unsigned int bytespp = resolution.bpp / 8;
-    unsigned int linesize = resolution.x * bytespp;
-    unsigned int fullsize = resolution.y * linesize;
+    unsigned int bytespp = videointerface.ctrl.bpp / 8;
+    unsigned int linesize = videointerface.ctrl.w * bytespp;
+    unsigned int fullsize = videointerface.ctrl.h * linesize;
 
     return memory_write(gaddress, fullsize, buffer, count, offset);
 
@@ -349,11 +348,9 @@ static void driver_attach(struct base_bus *bus, unsigned int id)
 
     taddress = (void *)0x000B8000;
     gaddress = (void *)0x000A0000;
-    resolution.x = 80;
-    resolution.y = 25;
-    resolution.bpp = 16;
     cursor.color = 0x0F;
 
+    ctrl_init_videoctrl(&videointerface.ctrl, 80, 25, 16);
     clear(0);
 
 }

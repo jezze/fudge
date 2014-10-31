@@ -16,6 +16,8 @@ DIR:=$(CUR)/cpio
 include $(DIR)/rules.mk
 DIR:=$(CUR)/crc
 include $(DIR)/rules.mk
+DIR:=$(CUR)/ctrl
+include $(DIR)/rules.mk
 DIR:=$(CUR)/date
 include $(DIR)/rules.mk
 DIR:=$(CUR)/dep

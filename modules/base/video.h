@@ -2,6 +2,7 @@ struct base_video_interface
 {
 
     struct base_interface base;
+    struct ctrl_videoctrl ctrl;
     void (*setmode)(unsigned int xres, unsigned int yres, unsigned int bpp);
     unsigned int (*rdata)(unsigned int offset, unsigned int count, void *buffer);
     unsigned int (*wdata)(unsigned int offset, unsigned int count, void *buffer);
@@ -16,8 +17,7 @@ struct base_video_node
     struct system_node base;
     struct system_node data;
     struct system_node colormap;
-    struct system_node info;
-    struct system_node mode;
+    struct system_node ctrl;
     struct base_video_interface *interface;
 
 };

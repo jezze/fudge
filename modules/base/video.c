@@ -43,17 +43,21 @@ static unsigned int colormap_write(struct system_node *self, unsigned int offset
 
 }
 
-static unsigned int info_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
-{
-
-    return 0;
-
-}
-
-static unsigned int mode_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int ctrl_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct base_video_node *node = (struct base_video_node *)self->parent;
+
+    return memory_read(buffer, count, &node->interface->ctrl, sizeof (struct ctrl_videoctrl), offset);
+
+}
+
+static unsigned int ctrl_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    struct base_video_node *node = (struct base_video_node *)self->parent;
+
+    count = memory_write(&node->interface->ctrl, sizeof (struct ctrl_videoctrl), buffer, count, offset);
 
     node->interface->setmode(320, 200, 8);
 
@@ -74,8 +78,7 @@ void base_video_registernode(struct base_video_node *node)
     system_addchild(&root, &node->base);
     system_addchild(&node->base, &node->data);
     system_addchild(&node->base, &node->colormap);
-    system_addchild(&node->base, &node->info);
-    system_addchild(&node->base, &node->mode);
+    system_addchild(&node->base, &node->ctrl);
 
 }
 
@@ -91,8 +94,7 @@ void base_video_unregisternode(struct base_video_node *node)
 
     system_removechild(&node->base, &node->data);
     system_removechild(&node->base, &node->colormap);
-    system_removechild(&node->base, &node->info);
-    system_removechild(&node->base, &node->mode);
+    system_removechild(&node->base, &node->ctrl);
     system_removechild(&root, &node->base);
 
 }
@@ -118,16 +120,15 @@ void base_video_initnode(struct base_video_node *node, struct base_video_interfa
     system_initnode(&node->base, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, interface->base.bus->name);
     system_initnode(&node->data, SYSTEM_NODETYPE_NORMAL, "data");
     system_initnode(&node->colormap, SYSTEM_NODETYPE_NORMAL, "colormap");
-    system_initnode(&node->info, SYSTEM_NODETYPE_NORMAL, "info");
-    system_initnode(&node->mode, SYSTEM_NODETYPE_NORMAL, "mode");
+    system_initnode(&node->ctrl, SYSTEM_NODETYPE_NORMAL, "ctrl");
 
     node->interface = interface;
     node->data.read = data_read;
     node->data.write = data_write;
     node->colormap.read = colormap_read;
     node->colormap.write = colormap_write;
-    node->info.read = info_read;
-    node->mode.write = mode_write;
+    node->ctrl.read = ctrl_read;
+    node->ctrl.write = ctrl_write;
 
 }
 
