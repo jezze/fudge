@@ -25,17 +25,21 @@ static unsigned int data_write(struct system_node *self, unsigned int offset, un
 
 }
 
-static unsigned int mac_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int ctrl_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct base_network_node *node = (struct base_network_node *)self->parent;
-    char *mac = "00:00:00:00:00:00";
-    unsigned int i;
 
-    for (i = 0; i < 6; i++)
-        ascii_wzerovalue(mac, 17, node->interface->mac[i], 16, 2, i * 3);
+    return memory_read(buffer, count, &node->interface->ctrl, sizeof (struct ctrl_networkctrl), offset);
 
-    return memory_read(buffer, count, mac, 17, offset); 
+}
+
+static unsigned int ctrl_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    struct base_network_node *node = (struct base_network_node *)self->parent;
+
+    return memory_write(&node->interface->ctrl, sizeof (struct ctrl_networkctrl), buffer, count, offset);
 
 }
 
@@ -68,7 +72,7 @@ void base_network_registernode(struct base_network_node *node)
 
     system_addchild(&root, &node->base);
     system_addchild(&node->base, &node->data);
-    system_addchild(&node->base, &node->mac);
+    system_addchild(&node->base, &node->ctrl);
 
 }
 
@@ -90,7 +94,7 @@ void base_network_unregisternode(struct base_network_node *node)
 {
 
     system_removechild(&node->base, &node->data);
-    system_removechild(&node->base, &node->mac);
+    system_removechild(&node->base, &node->ctrl);
     system_removechild(&root, &node->base);
 
 }
@@ -121,12 +125,13 @@ void base_network_initnode(struct base_network_node *node, struct base_network_i
     memory_clear(node, sizeof (struct base_network_node));
     system_initnode(&node->base, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, interface->base.bus->name);
     system_initnode(&node->data, SYSTEM_NODETYPE_NORMAL, "data");
-    system_initnode(&node->mac, SYSTEM_NODETYPE_NORMAL, "mac");
+    system_initnode(&node->ctrl, SYSTEM_NODETYPE_NORMAL, "ctrl");
 
     node->interface = interface;
     node->data.read = data_read;
     node->data.write = data_write;
-    node->mac.read = mac_read;
+    node->ctrl.read = ctrl_read;
+    node->ctrl.write = ctrl_write;
 
 }
 

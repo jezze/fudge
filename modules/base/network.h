@@ -2,11 +2,11 @@ struct base_network_interface
 {
 
     struct base_interface base;
+    struct ctrl_networkctrl ctrl;
     unsigned int (*receive)(unsigned int count, void *buffer);
     unsigned int (*send)(unsigned int count, void *buffer);
     void *(*getpacket)();
     void (*dumppacket)();
-    unsigned char mac[6];
 
 };
 
@@ -15,7 +15,7 @@ struct base_network_node
 
     struct system_node base;
     struct system_node data;
-    struct system_node mac;
+    struct system_node ctrl;
     struct base_network_interface *interface;
 
 };

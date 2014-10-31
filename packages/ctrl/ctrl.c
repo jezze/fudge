@@ -5,6 +5,7 @@ union ctrl
 
     unsigned char raw[FUDGE_BSIZE];
     struct ctrl_header header;
+    struct ctrl_networkctrl networkctrl;
     struct ctrl_videoctrl videoctrl;
 
 };
@@ -21,6 +22,11 @@ void writeheader(struct ctrl_header *header)
     switch (header->type)
     {
 
+    case CTRL_TYPE_NETWORKCTRL:
+        woff += call_write(CALL_O0, woff, 11, "networkctrl");
+
+        break;
+
     case CTRL_TYPE_VIDEOCTRL:
         woff += call_write(CALL_O0, woff, 9, "videoctrl");
 
@@ -33,6 +39,39 @@ void writeheader(struct ctrl_header *header)
 
     }
 
+    woff += call_write(CALL_O0, woff, 1, "\n");
+
+    call_close(CALL_O0);
+
+}
+
+void writenetworkctrl(struct ctrl_networkctrl *networkctrl)
+{
+
+    char num[32];
+    unsigned int count;
+    unsigned int woff = 0;
+
+    call_open(CALL_O0);
+
+    woff += call_write(CALL_O0, woff, 5, "mac: ");
+    count = ascii_wzerovalue(num, 32, networkctrl->mac[0], 16, 2, 0);
+    woff += call_write(CALL_O0, woff, count, num);
+    woff += call_write(CALL_O0, woff, 1, ":");
+    count = ascii_wzerovalue(num, 32, networkctrl->mac[1], 16, 2, 0);
+    woff += call_write(CALL_O0, woff, count, num);
+    woff += call_write(CALL_O0, woff, 1, ":");
+    count = ascii_wzerovalue(num, 32, networkctrl->mac[2], 16, 2, 0);
+    woff += call_write(CALL_O0, woff, count, num);
+    woff += call_write(CALL_O0, woff, 1, ":");
+    count = ascii_wzerovalue(num, 32, networkctrl->mac[3], 16, 2, 0);
+    woff += call_write(CALL_O0, woff, count, num);
+    woff += call_write(CALL_O0, woff, 1, ":");
+    count = ascii_wzerovalue(num, 32, networkctrl->mac[4], 16, 2, 0);
+    woff += call_write(CALL_O0, woff, count, num);
+    woff += call_write(CALL_O0, woff, 1, ":");
+    count = ascii_wzerovalue(num, 32, networkctrl->mac[5], 16, 2, 0);
+    woff += call_write(CALL_O0, woff, count, num);
     woff += call_write(CALL_O0, woff, 1, "\n");
 
     call_close(CALL_O0);
@@ -79,6 +118,12 @@ void main()
 
     switch (buffer.header.type)
     {
+
+    case CTRL_TYPE_NETWORKCTRL:
+        writeheader(&buffer.header);
+        writenetworkctrl(&buffer.networkctrl);
+
+        break;
 
     case CTRL_TYPE_VIDEOCTRL:
         writeheader(&buffer.header);

@@ -350,7 +350,11 @@ static void driver_attach(struct base_bus *bus, unsigned int id)
     gaddress = (void *)0x000A0000;
     cursor.color = 0x0F;
 
-    ctrl_init_videoctrl(&videointerface.ctrl, 80, 25, 16);
+    ctrl_init_videoctrl(&videointerface.ctrl);
+    videointerface.ctrl.w = 80;
+    videointerface.ctrl.h = 25;
+    videointerface.ctrl.bpp = 16;
+
     clear(0);
 
 }
