@@ -144,16 +144,9 @@ static double mtwist_drand(struct mtwist_state *state)
 static unsigned int root_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    unsigned int o = 0;
-    unsigned int i;
+    unsigned int x = rand(&normal);
 
-    if (offset > 0)
-        return 0;
-
-    for (i = 0; i < count / 4; i += 4)
-        o += ascii_wvalue(buffer, count, rand(&normal), 16, o);
-
-    return o;
+    return memory_read(buffer, count, &x, 4, offset);
 
 }
 
