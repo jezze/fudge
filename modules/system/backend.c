@@ -24,7 +24,7 @@ static void setupheader(struct system_header *header, struct system_node *root)
 {
 
     memory_clear(header, sizeof (struct system_header));
-    memory_copy(header->id, "FUDGE_SYSTEM", 12);
+    memory_write(header->id, 12, "FUDGE_SYSTEM", 12, 0);
 
     header->root = root;
 

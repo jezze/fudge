@@ -13,8 +13,6 @@ static struct base_block_node blocknode;
 static void handleirq(unsigned int irq, struct base_bus *bus, unsigned int id)
 {
 
-    memory_copy((void *)0xB8000, "i n t ", 6);
-
 }
 
 static unsigned int blockinterface_rdata(unsigned int offset, unsigned int count, void *buffer)

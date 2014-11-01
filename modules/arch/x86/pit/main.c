@@ -60,7 +60,6 @@ static void handleirq(unsigned int irq, struct base_bus *bus, unsigned int id)
     if (wait && jiffies >= wait)
     {
 
-        memory_copy((void *)0xB8000, "t i c k ", 8);
         scheduler_rendezvous_unsleep(&rdata);
 
         wait = 0;
