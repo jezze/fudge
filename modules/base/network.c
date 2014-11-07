@@ -7,7 +7,7 @@
 
 static struct system_node root;
 
-static unsigned int ctrl_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int interfacenode_ctrlread(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct base_network_interfacenode *node = (struct base_network_interfacenode *)self->parent;
@@ -16,7 +16,7 @@ static unsigned int ctrl_read(struct system_node *self, unsigned int offset, uns
 
 }
 
-static unsigned int ctrl_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int interfacenode_ctrlwrite(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct base_network_interfacenode *node = (struct base_network_interfacenode *)self->parent;
@@ -25,7 +25,7 @@ static unsigned int ctrl_write(struct system_node *self, unsigned int offset, un
 
 }
 
-static unsigned int data_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int interfacenode_dataread(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct base_network_interfacenode *node = (struct base_network_interfacenode *)self->parent;
@@ -34,12 +34,30 @@ static unsigned int data_read(struct system_node *self, unsigned int offset, uns
 
 }
 
-static unsigned int data_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int interfacenode_datawrite(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct base_network_interfacenode *node = (struct base_network_interfacenode *)self->parent;
  
     return node->interface->send(count, buffer);
+
+}
+
+static unsigned int channelnode_dataread(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    struct base_network_channelnode *node = (struct base_network_channelnode *)self->parent;
+ 
+    return node->channel->rdata(offset, count, buffer);
+
+}
+
+static unsigned int channelnode_datawrite(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    struct base_network_channelnode *node = (struct base_network_channelnode *)self->parent;
+ 
+    return node->channel->wdata(offset, count, buffer);
 
 }
 
@@ -90,6 +108,14 @@ void base_network_registerchannel(struct base_network_channel *channel)
 
 }
 
+void base_network_registerchannelnode(struct base_network_channelnode *node)
+{
+
+    system_addchild(&root, &node->base);
+    system_addchild(&node->base, &node->data);
+
+}
+
 void base_network_unregisterinterface(struct base_network_interface *interface)
 {
 
@@ -120,6 +146,14 @@ void base_network_unregisterchannel(struct base_network_channel *channel)
 
 }
 
+void base_network_unregisterchannelnode(struct base_network_channelnode *node)
+{
+
+    system_removechild(&node->base, &node->data);
+    system_removechild(&root, &node->base);
+
+}
+
 void base_network_initinterface(struct base_network_interface *interface, struct base_bus *bus, unsigned int id, unsigned int (*receive)(unsigned int count, void *buffer), unsigned int (*send)(unsigned int count, void *buffer), void *(*getpacket)(), void (*dumppacket)())
 {
 
@@ -142,10 +176,10 @@ void base_network_initinterfacenode(struct base_network_interfacenode *node, str
     system_initnode(&node->data, SYSTEM_NODETYPE_NORMAL, "data");
 
     node->interface = interface;
-    node->ctrl.read = ctrl_read;
-    node->ctrl.write = ctrl_write;
-    node->data.read = data_read;
-    node->data.write = data_write;
+    node->ctrl.read = interfacenode_ctrlread;
+    node->ctrl.write = interfacenode_ctrlwrite;
+    node->data.read = interfacenode_dataread;
+    node->data.write = interfacenode_datawrite;
 
 }
 
@@ -162,7 +196,7 @@ void base_network_initprotocol(struct base_network_protocol *protocol, char *nam
 
 }
 
-void base_network_initchannel(struct base_network_channel *channel, unsigned int (*match)(struct base_network_interface *interface), void (*notify)(struct base_network_interface *interface))
+void base_network_initchannel(struct base_network_channel *channel, unsigned int (*match)(struct base_network_interface *interface), void (*notify)(struct base_network_interface *interface), unsigned int (*rdata)(unsigned int offset, unsigned int count, void *buffer), unsigned int (*wdata)(unsigned int offset, unsigned int count, void *buffer))
 {
 
     memory_clear(channel, sizeof (struct base_network_channel));
@@ -170,6 +204,21 @@ void base_network_initchannel(struct base_network_channel *channel, unsigned int
 
     channel->match = match;
     channel->notify = notify;
+    channel->rdata = rdata;
+    channel->wdata = wdata;
+
+}
+
+void base_network_initchannelnode(struct base_network_channelnode *node, struct base_network_channel *channel)
+{
+
+    memory_clear(node, sizeof (struct base_network_channelnode));
+    system_initnode(&node->base, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, "channel");
+    system_initnode(&node->data, SYSTEM_NODETYPE_NORMAL, "data");
+
+    node->channel = channel;
+    node->data.read = channelnode_dataread;
+    node->data.write = channelnode_datawrite;
 
 }
 
