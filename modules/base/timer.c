@@ -10,7 +10,7 @@ static struct system_node root;
 static unsigned int sleep_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct base_timer_node *node = (struct base_timer_node *)self->parent;
+    struct base_timer_interfacenode *node = (struct base_timer_interfacenode *)self->parent;
 
     /* 10s */
     node->interface->sleep(1000);
@@ -26,7 +26,7 @@ void base_timer_registerinterface(struct base_timer_interface *interface)
 
 }
 
-void base_timer_registernode(struct base_timer_node *node)
+void base_timer_registerinterfacenode(struct base_timer_interfacenode *node)
 {
 
     system_addchild(&root, &node->base);
@@ -41,7 +41,7 @@ void base_timer_unregisterinterface(struct base_timer_interface *interface)
 
 }
 
-void base_timer_unregisternode(struct base_timer_node *node)
+void base_timer_unregisterinterfacenode(struct base_timer_interfacenode *node)
 {
 
     system_removechild(&node->base, &node->sleep);
@@ -59,10 +59,10 @@ void base_timer_initinterface(struct base_timer_interface *interface, struct bas
 
 }
 
-void base_timer_initnode(struct base_timer_node *node, struct base_timer_interface *interface)
+void base_timer_initinterfacenode(struct base_timer_interfacenode *node, struct base_timer_interface *interface)
 {
 
-    memory_clear(node, sizeof (struct base_timer_node));
+    memory_clear(node, sizeof (struct base_timer_interfacenode));
     system_initnode(&node->base, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, interface->base.bus->name);
     system_initnode(&node->sleep, SYSTEM_NODETYPE_NORMAL, "sleep");
 

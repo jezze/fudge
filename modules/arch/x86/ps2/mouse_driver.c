@@ -10,7 +10,7 @@
 
 static struct base_driver driver;
 static struct base_mouse_interface mouseinterface;
-static struct base_mouse_node mousenode;
+static struct base_mouse_interfacenode mouseinterfacenode;
 static unsigned char buffer[512];
 static struct buffer cfifo;
 static unsigned char cycle;
@@ -72,8 +72,8 @@ static void driver_attach(struct base_bus *bus, unsigned int id)
 
     base_mouse_initinterface(&mouseinterface, bus, id, mouseinterface_rdata);
     base_mouse_registerinterface(&mouseinterface);
-    base_mouse_initnode(&mousenode, &mouseinterface);
-    base_mouse_registernode(&mousenode);
+    base_mouse_initinterfacenode(&mouseinterfacenode, &mouseinterface);
+    base_mouse_registerinterfacenode(&mouseinterfacenode);
     buffer_init(&cfifo, 1, 512, &buffer);
     pic_setroutine(bus, id, handleirq);
     ps2_enable(bus, id);
@@ -91,7 +91,7 @@ static void driver_detach(struct base_bus *bus, unsigned int id)
 
     pic_unsetroutine(bus, id);
     base_mouse_unregisterinterface(&mouseinterface);
-    base_mouse_unregisternode(&mousenode);
+    base_mouse_unregisterinterfacenode(&mouseinterfacenode);
 
 }
 

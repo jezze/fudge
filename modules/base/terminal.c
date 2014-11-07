@@ -10,7 +10,7 @@ static struct system_node root;
 static unsigned int data_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct base_terminal_node *node = (struct base_terminal_node *)self->parent;
+    struct base_terminal_interfacenode *node = (struct base_terminal_interfacenode *)self->parent;
  
     return node->interface->rdata(offset, count, buffer);
 
@@ -19,7 +19,7 @@ static unsigned int data_read(struct system_node *self, unsigned int offset, uns
 static unsigned int data_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct base_terminal_node *node = (struct base_terminal_node *)self->parent;
+    struct base_terminal_interfacenode *node = (struct base_terminal_interfacenode *)self->parent;
 
     return node->interface->wdata(offset, count, buffer);
 
@@ -32,7 +32,7 @@ void base_terminal_registerinterface(struct base_terminal_interface *interface)
 
 }
 
-void base_terminal_registernode(struct base_terminal_node *node)
+void base_terminal_registerinterfacenode(struct base_terminal_interfacenode *node)
 {
 
     system_addchild(&root, &node->base);
@@ -47,7 +47,7 @@ void base_terminal_unregisterinterface(struct base_terminal_interface *interface
 
 }
 
-void base_terminal_unregisternode(struct base_terminal_node *node)
+void base_terminal_unregisterinterfacenode(struct base_terminal_interfacenode *node)
 {
 
     system_removechild(&node->base, &node->data);
@@ -66,10 +66,10 @@ void base_terminal_initinterface(struct base_terminal_interface *interface, stru
 
 }
 
-void base_terminal_initnode(struct base_terminal_node *node, struct base_terminal_interface *interface)
+void base_terminal_initinterfacenode(struct base_terminal_interfacenode *node, struct base_terminal_interface *interface)
 {
 
-    memory_clear(node, sizeof (struct base_terminal_node));
+    memory_clear(node, sizeof (struct base_terminal_interfacenode));
     system_initnode(&node->base, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, interface->base.bus->name);
     system_initnode(&node->data, SYSTEM_NODETYPE_NORMAL, "data");
 

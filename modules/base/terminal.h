@@ -7,7 +7,7 @@ struct base_terminal_interface
 
 };
 
-struct base_terminal_node
+struct base_terminal_interfacenode
 {
 
     struct system_node base;
@@ -17,9 +17,9 @@ struct base_terminal_node
 };
 
 void base_terminal_registerinterface(struct base_terminal_interface *interface);
-void base_terminal_registernode(struct base_terminal_node *node);
+void base_terminal_registerinterfacenode(struct base_terminal_interfacenode *node);
 void base_terminal_unregisterinterface(struct base_terminal_interface *interface);
-void base_terminal_unregisternode(struct base_terminal_node *node);
+void base_terminal_unregisterinterfacenode(struct base_terminal_interfacenode *node);
 void base_terminal_initinterface(struct base_terminal_interface *interface, struct base_bus *bus, unsigned int id, unsigned int (*rdata)(unsigned int offset, unsigned int count, void *buffer), unsigned int (*wdata)(unsigned int offset, unsigned int count, void *buffer));
-void base_terminal_initnode(struct base_terminal_node *node, struct base_terminal_interface *interface);
+void base_terminal_initinterfacenode(struct base_terminal_interfacenode *node, struct base_terminal_interface *interface);
 void base_terminal_setup();

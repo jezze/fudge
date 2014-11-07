@@ -10,7 +10,7 @@ static struct system_node root;
 static unsigned int data_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct base_block_node *node = (struct base_block_node *)self->parent;
+    struct base_block_interfacenode *node = (struct base_block_interfacenode *)self->parent;
 
     return node->interface->rdata(offset, count, buffer);
 
@@ -23,7 +23,7 @@ void base_block_registerinterface(struct base_block_interface *interface)
 
 }
 
-void base_block_registernode(struct base_block_node *node)
+void base_block_registerinterfacenode(struct base_block_interfacenode *node)
 {
 
     system_addchild(&root, &node->base);
@@ -38,7 +38,7 @@ void base_block_unregisterinterface(struct base_block_interface *interface)
 
 }
 
-void base_block_unregisternode(struct base_block_node *node)
+void base_block_unregisterinterfacenode(struct base_block_interfacenode *node)
 {
 
     system_removechild(&node->base, &node->data);
@@ -57,10 +57,10 @@ void base_block_initinterface(struct base_block_interface *interface, struct bas
 
 }
 
-void base_block_initnode(struct base_block_node *node, struct base_block_interface *interface)
+void base_block_initinterfacenode(struct base_block_interfacenode *node, struct base_block_interface *interface)
 {
 
-    memory_clear(node, sizeof (struct base_block_node));
+    memory_clear(node, sizeof (struct base_block_interfacenode));
     system_initnode(&node->base, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, interface->base.bus->name);
     system_initnode(&node->data, SYSTEM_NODETYPE_NORMAL, "data");
 

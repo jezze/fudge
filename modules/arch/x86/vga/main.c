@@ -23,8 +23,8 @@ struct vga_character
 static struct base_driver driver;
 static struct base_terminal_interface terminalinterface;
 static struct base_video_interface videointerface;
-static struct base_terminal_node terminalnode;
-static struct base_video_node videonode;
+static struct base_terminal_interfacenode terminalinterfacenode;
+static struct base_video_interfacenode videointerfacenode;
 static struct {unsigned char color; unsigned short offset;} cursor;
 static void *taddress;
 static void *gaddress;
@@ -339,12 +339,12 @@ static void driver_attach(struct base_bus *bus, unsigned int id)
 
     base_terminal_initinterface(&terminalinterface, bus, id, terminalinterface_rdata, terminalinterface_wdata);
     base_terminal_registerinterface(&terminalinterface);
-    base_terminal_initnode(&terminalnode, &terminalinterface);
-    base_terminal_registernode(&terminalnode);
+    base_terminal_initinterfacenode(&terminalinterfacenode, &terminalinterface);
+    base_terminal_registerinterfacenode(&terminalinterfacenode);
     base_video_initinterface(&videointerface, bus, id, videointerface_setmode, videointerface_rdata, videointerface_wdata, videointerface_rcolormap, videointerface_wcolormap);
     base_video_registerinterface(&videointerface);
-    base_video_initnode(&videonode, &videointerface);
-    base_video_registernode(&videonode);
+    base_video_initinterfacenode(&videointerfacenode, &videointerface);
+    base_video_registerinterfacenode(&videointerfacenode);
 
     taddress = (void *)0x000B8000;
     gaddress = (void *)0x000A0000;
@@ -363,9 +363,9 @@ static void driver_detach(struct base_bus *bus, unsigned int id)
 {
 
     base_terminal_unregisterinterface(&terminalinterface);
-    base_terminal_unregisternode(&terminalnode);
+    base_terminal_unregisterinterfacenode(&terminalinterfacenode);
     base_video_unregisterinterface(&videointerface);
-    base_video_unregisternode(&videonode);
+    base_video_unregisterinterfacenode(&videointerfacenode);
 
 }
 

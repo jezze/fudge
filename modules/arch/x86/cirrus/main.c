@@ -39,7 +39,7 @@ static int clocks[CLOCKS] = {
 
 static struct base_driver driver;
 static struct base_video_interface videointerface;
-static struct base_video_node videonode;
+static struct base_video_interfacenode videointerfacenode;
 static int chiptype;
 static int chiprev;
 
@@ -223,8 +223,8 @@ static void driver_attach(struct base_bus *bus, unsigned int id)
 
     base_video_initinterface(&videointerface, bus, id, videointerface_setmode, videointerface_rdata, videointerface_wdata, videointerface_rcolormap, videointerface_wcolormap);
     base_video_registerinterface(&videointerface);
-    base_video_initnode(&videonode, &videointerface);
-    base_video_registernode(&videonode);
+    base_video_initinterfacenode(&videointerfacenode, &videointerface);
+    base_video_registerinterfacenode(&videointerfacenode);
 
 }
 
@@ -232,7 +232,7 @@ static void driver_detach(struct base_bus *bus, unsigned int id)
 {
 
     base_video_unregisterinterface(&videointerface);
-    base_video_unregisternode(&videonode);
+    base_video_unregisterinterfacenode(&videointerfacenode);
 
 }
 

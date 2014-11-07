@@ -44,7 +44,7 @@ enum pit_command
 
 static struct base_driver driver;
 static struct base_timer_interface timerinterface;
-static struct base_timer_node timernode;
+static struct base_timer_interfacenode timerinterfacenode;
 static struct scheduler_rendezvous rdata;
 static unsigned short io;
 static unsigned int wait;
@@ -103,8 +103,8 @@ static void driver_attach(struct base_bus *bus, unsigned int id)
 
     base_timer_initinterface(&timerinterface, bus, id, timerinterface_sleep);
     base_timer_registerinterface(&timerinterface);
-    base_timer_initnode(&timernode, &timerinterface);
-    base_timer_registernode(&timernode);
+    base_timer_initinterfacenode(&timerinterfacenode, &timerinterface);
+    base_timer_registerinterfacenode(&timerinterfacenode);
 
     io = platform_getbase(bus, id);
 
@@ -121,7 +121,7 @@ static void driver_detach(struct base_bus *bus, unsigned int id)
 
     pic_unsetroutine(bus, id);
     base_timer_unregisterinterface(&timerinterface);
-    base_timer_unregisternode(&timernode);
+    base_timer_unregisterinterfacenode(&timerinterfacenode);
 
 }
 

@@ -12,7 +12,8 @@ enum resource_type
     RESOURCE_TYPE_INTERFACE             = 9,
     RESOURCE_TYPE_PROTOFS               = 10,
     RESOURCE_TYPE_PROTOBINARY           = 11,
-    RESOURCE_TYPE_PROTONET              = 12
+    RESOURCE_TYPE_PROTONET              = 12,
+    RESOURCE_TYPE_CHANNELNET            = 13
 
 };
 

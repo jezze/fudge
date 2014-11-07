@@ -150,7 +150,7 @@ enum uart_msr
 
 static struct base_driver driver;
 static struct base_terminal_interface terminalinterface;
-static struct base_terminal_node terminalnode;
+static struct base_terminal_interfacenode terminalinterfacenode;
 static unsigned char buffer[512];
 static struct buffer cfifo;
 static struct scheduler_rendezvous rdata;
@@ -224,8 +224,8 @@ static void driver_attach(struct base_bus *bus, unsigned int id)
 
     base_terminal_initinterface(&terminalinterface, bus, id, terminalinterface_rdata, terminalinterface_wdata);
     base_terminal_registerinterface(&terminalinterface);
-    base_terminal_initnode(&terminalnode, &terminalinterface);
-    base_terminal_registernode(&terminalnode);
+    base_terminal_initinterfacenode(&terminalinterfacenode, &terminalinterface);
+    base_terminal_registerinterfacenode(&terminalinterfacenode);
     buffer_init(&cfifo, 1, 512, &buffer);
     pic_setroutine(bus, id, handleirq);
 
@@ -247,7 +247,7 @@ static void driver_detach(struct base_bus *bus, unsigned int id)
 
     pic_unsetroutine(bus, id);
     base_terminal_unregisterinterface(&terminalinterface);
-    base_terminal_unregisternode(&terminalnode);
+    base_terminal_unregisterinterfacenode(&terminalinterfacenode);
 
 }
 

@@ -10,7 +10,7 @@ static struct system_node root;
 static unsigned int data_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct base_keyboard_node *node = (struct base_keyboard_node *)self->parent;
+    struct base_keyboard_interfacenode *node = (struct base_keyboard_interfacenode *)self->parent;
 
     return node->interface->rdata(offset, count, buffer);
 
@@ -23,7 +23,7 @@ void base_keyboard_registerinterface(struct base_keyboard_interface *interface)
 
 }
 
-void base_keyboard_registernode(struct base_keyboard_node *node)
+void base_keyboard_registerinterfacenode(struct base_keyboard_interfacenode *node)
 {
 
     system_addchild(&root, &node->base);
@@ -38,7 +38,7 @@ void base_keyboard_unregisterinterface(struct base_keyboard_interface *interface
 
 }
 
-void base_keyboard_unregisternode(struct base_keyboard_node *node)
+void base_keyboard_unregisterinterfacenode(struct base_keyboard_interfacenode *node)
 {
 
     system_removechild(&node->base, &node->data);
@@ -57,10 +57,10 @@ void base_keyboard_initinterface(struct base_keyboard_interface *interface, stru
 
 }
 
-void base_keyboard_initnode(struct base_keyboard_node *node, struct base_keyboard_interface *interface)
+void base_keyboard_initinterfacenode(struct base_keyboard_interfacenode *node, struct base_keyboard_interface *interface)
 {
 
-    memory_clear(node, sizeof (struct base_keyboard_node));
+    memory_clear(node, sizeof (struct base_keyboard_interfacenode));
     system_initnode(&node->base, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, interface->base.bus->name);
     system_initnode(&node->data, SYSTEM_NODETYPE_NORMAL, "data");
 

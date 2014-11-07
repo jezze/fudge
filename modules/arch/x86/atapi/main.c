@@ -8,7 +8,7 @@
 
 static struct base_driver driver;
 static struct base_block_interface blockinterface;
-static struct base_block_node blocknode;
+static struct base_block_interfacenode blockinterfacenode;
 
 static void handleirq(unsigned int irq, struct base_bus *bus, unsigned int id)
 {
@@ -30,8 +30,8 @@ static void driver_attach(struct base_bus *bus, unsigned int id)
 
     base_block_initinterface(&blockinterface, bus, id, 0, 0);
     base_block_registerinterface(&blockinterface);
-    base_block_initnode(&blocknode, &blockinterface);
-    base_block_registernode(&blocknode);
+    base_block_initinterfacenode(&blockinterfacenode, &blockinterface);
+    base_block_registerinterfacenode(&blockinterfacenode);
     pic_setroutine(bus, id, handleirq);
 
 }
@@ -41,7 +41,7 @@ static void driver_detach(struct base_bus *bus, unsigned int id)
 
     pic_unsetroutine(bus, id);
     base_block_unregisterinterface(&blockinterface);
-    base_block_unregisternode(&blocknode);
+    base_block_unregisterinterfacenode(&blockinterfacenode);
 
 }
 

@@ -48,7 +48,7 @@ enum bga_bpp
 
 static struct base_driver driver;
 static struct base_video_interface videointerface;
-static struct base_video_node videonode;
+static struct base_video_interfacenode videointerfacenode;
 static void *bank;
 static void *lfb;
 
@@ -112,8 +112,8 @@ static void driver_attach(struct base_bus *bus, unsigned int id)
 
     base_video_initinterface(&videointerface, bus, id, videointerface_setmode, videointerface_rdata, videointerface_wdata, 0, 0);
     base_video_registerinterface(&videointerface);
-    base_video_initnode(&videonode, &videointerface);
-    base_video_registernode(&videonode);
+    base_video_initinterfacenode(&videointerfacenode, &videointerface);
+    base_video_registerinterfacenode(&videointerfacenode);
 
     bank = (void *)0xA0000;
     lfb = (void *)(unsigned long)pci_ind(bus, id, PCI_CONFIG_BAR0);
@@ -131,7 +131,7 @@ static void driver_detach(struct base_bus *bus, unsigned int id)
 {
 
     base_video_unregisterinterface(&videointerface);
-    base_video_unregisternode(&videonode);
+    base_video_unregisterinterfacenode(&videointerfacenode);
 
 }
 
