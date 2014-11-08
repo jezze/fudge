@@ -273,3 +273,4 @@ unsigned char pci_inb(struct base_bus *bus, unsigned int address, unsigned short
 void pci_outd(struct base_bus *bus, unsigned int address, unsigned short offset, unsigned int value);
 void pci_outw(struct base_bus *bus, unsigned int address, unsigned short offset, unsigned short value);
 void pci_outb(struct base_bus *bus, unsigned int address, unsigned short offset, unsigned char value);
+void pci_setmaster(struct base_bus *bus, unsigned int id);

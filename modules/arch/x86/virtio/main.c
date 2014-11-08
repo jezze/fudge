@@ -41,7 +41,7 @@ enum
 };
 
 static struct base_driver driver;
-static unsigned int io;
+static unsigned short io;
 
 static void reset()
 {
@@ -69,9 +69,10 @@ static unsigned int driver_match(struct base_bus *bus, unsigned int id)
 static void driver_attach(struct base_bus *bus, unsigned int id)
 {
 
-    io = pci_ind(bus, id, PCI_CONFIG_BAR0) & ~1;
+    io = pci_inw(bus, id, PCI_CONFIG_BAR0) & ~1;
 
     memory_copy((void *)0xB8000, "a ", 2);
+    pci_setmaster(bus, id);
     reset();
 
     pic_setroutine(bus, id, handleirq);

@@ -304,18 +304,14 @@ static unsigned int driver_match(struct base_bus *bus, unsigned int id)
 static void driver_attach(struct base_bus *bus, unsigned int id)
 {
 
-    unsigned int bar0 = pci_ind(bus, id, PCI_CONFIG_BAR0);
-    unsigned int bar1 = pci_ind(bus, id, PCI_CONFIG_BAR1);
-    unsigned short command = pci_inw(bus, id, PCI_CONFIG_COMMAND);
-
-    io = bar0 & ~1;
-    mmio = bar1;
+    io = pci_inw(bus, id, PCI_CONFIG_BAR0) & ~1;
+    mmio = pci_ind(bus, id, PCI_CONFIG_BAR1);
 
     base_network_initinterface(&networkinterface, bus, id, networkinterface_receive, networkinterface_send, networkinterface_getpacket, networkinterface_dumppacket);
     base_network_registerinterface(&networkinterface);
     base_network_initinterfacenode(&networkinterfacenode, &networkinterface);
     base_network_registerinterfacenode(&networkinterfacenode);
-    pci_outw(bus, id, PCI_CONFIG_COMMAND, command | (1 << 2));
+    pci_setmaster(bus, id);
     pic_setroutine(bus, id, handleirq);
     poweron();
     reset();

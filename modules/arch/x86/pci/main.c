@@ -66,6 +66,15 @@ void pci_outb(struct base_bus *bus, unsigned int address, unsigned short offset,
 
 }
 
+void pci_setmaster(struct base_bus *bus, unsigned int id)
+{
+
+    unsigned short command = pci_inw(bus, id, PCI_CONFIG_COMMAND);
+
+    pci_outw(bus, id, PCI_CONFIG_COMMAND, command | (1 << 2));
+
+}
+
 static void add(struct base_bus *bus, unsigned int address)
 {
 
