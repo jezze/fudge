@@ -9,7 +9,6 @@
 #include <arch/x86/pci/pci.h>
 
 #define VIRTIO_PCI_VENDOR               0x1AF4
-#define VIRTIO_PCI_DEVICE               0x1000
 
 enum
 {
@@ -63,14 +62,14 @@ static unsigned int driver_match(struct base_bus *bus, unsigned int id)
     if (bus->type != PCI_BUS_TYPE)
         return 0;
 
-    return pci_inw(bus, id, PCI_CONFIG_VENDOR) == VIRTIO_PCI_VENDOR && pci_inw(bus, id, PCI_CONFIG_DEVICE) == VIRTIO_PCI_DEVICE;
+    return pci_inw(bus, id, PCI_CONFIG_VENDOR) == VIRTIO_PCI_VENDOR;
 
 }
 
 static void driver_attach(struct base_bus *bus, unsigned int id)
 {
 
-    io = pci_ind(bus, id, PCI_CONFIG_BAR0);
+    io = pci_ind(bus, id, PCI_CONFIG_BAR0) & ~1;
 
     memory_copy((void *)0xB8000, "a ", 2);
     reset();
