@@ -50,6 +50,8 @@ DIR:=$(CUR)/uart
 include $(DIR)/rules.mk
 DIR:=$(CUR)/uhci
 include $(DIR)/rules.mk
+DIR:=$(CUR)/virtio
+include $(DIR)/rules.mk
 DIR:=$(CUR)/vga
 include $(DIR)/rules.mk
 
