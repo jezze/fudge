@@ -18,6 +18,8 @@
 /bin/modload < /boot/mod/platform.ko.0
 /bin/modload < /boot/mod/pci.ko.0
 /bin/modload < /boot/mod/ps2.ko.0
+/bin/modload < /boot/mod/ps2keyboard.ko.0
+/bin/modload < /boot/mod/ps2mouse.ko.0
 /bin/modload < /boot/mod/pit.ko.0
 /bin/modload < /boot/mod/rtc.ko.0
 /bin/modload < /boot/mod/vga.ko.0

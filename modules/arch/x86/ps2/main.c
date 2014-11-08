@@ -2,12 +2,8 @@
 #include <kernel/resource.h>
 #include <system/system.h>
 #include <base/base.h>
-#include <base/keyboard.h>
-#include <base/mouse.h>
 #include <arch/x86/io/io.h>
 #include "ps2.h"
-#include "keyboard_driver.h"
-#include "mouse_driver.h"
 
 enum ps2_register
 {
@@ -310,8 +306,6 @@ void init()
 
     base_initbus(&bus, PS2_BUS_TYPE, "ps2", bus_setup, bus_next, bus_irq);
     base_registerbus(&bus);
-    ps2_keyboard_driver_init();
-    ps2_mouse_driver_init();
     system_initnode(&reset, SYSTEM_NODETYPE_NORMAL, "reset");
     system_registernode(&reset);
 
@@ -323,8 +317,6 @@ void destroy()
 {
 
     system_unregisternode(&reset);
-    ps2_keyboard_driver_destroy();
-    ps2_mouse_driver_destroy();
     base_unregisterbus(&bus);
 
 }

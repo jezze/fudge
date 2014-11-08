@@ -5,8 +5,7 @@
 #include <base/base.h>
 #include <base/keyboard.h>
 #include <arch/x86/pic/pic.h>
-#include "ps2.h"
-#include "keyboard_driver.h"
+#include <arch/x86/ps2/ps2.h>
 
 static struct base_driver driver;
 static struct base_keyboard_interface keyboardinterface;
@@ -82,7 +81,7 @@ static void driver_detach(struct base_bus *bus, unsigned int id)
 
 }
 
-void ps2_keyboard_driver_init()
+void init()
 {
 
     base_initdriver(&driver, "ps2keyboard", driver_match, driver_attach, driver_detach);
@@ -90,7 +89,7 @@ void ps2_keyboard_driver_init()
 
 }
 
-void ps2_keyboard_driver_destroy()
+void destroy()
 {
 
     base_unregisterdriver(&driver);

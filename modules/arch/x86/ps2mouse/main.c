@@ -5,8 +5,7 @@
 #include <base/base.h>
 #include <base/mouse.h>
 #include <arch/x86/pic/pic.h>
-#include "ps2.h"
-#include "mouse_driver.h"
+#include <arch/x86/ps2/ps2.h>
 
 static struct base_driver driver;
 static struct base_mouse_interface mouseinterface;
@@ -95,7 +94,7 @@ static void driver_detach(struct base_bus *bus, unsigned int id)
 
 }
 
-void ps2_mouse_driver_init()
+void init()
 {
 
     base_initdriver(&driver, "ps2mouse", driver_match, driver_attach, driver_detach);
@@ -103,7 +102,7 @@ void ps2_mouse_driver_init()
 
 }
 
-void ps2_mouse_driver_destroy()
+void destroy()
 {
 
     base_unregisterdriver(&driver);

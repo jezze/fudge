@@ -129,7 +129,8 @@ void main()
             if (!keycode)
                 continue;
 
-            woff += call_write(CALL_O0, woff, keycode->length, keycode->value);
+            if (keycode->length)
+                woff += call_write(CALL_O0, woff, keycode->length, keycode->value);
 
         }
 

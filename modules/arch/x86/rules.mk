@@ -40,6 +40,10 @@ DIR:=$(CUR)/platform
 include $(DIR)/rules.mk
 DIR:=$(CUR)/ps2
 include $(DIR)/rules.mk
+DIR:=$(CUR)/ps2keyboard
+include $(DIR)/rules.mk
+DIR:=$(CUR)/ps2mouse
+include $(DIR)/rules.mk
 DIR:=$(CUR)/rtc
 include $(DIR)/rules.mk
 DIR:=$(CUR)/rtl8139
