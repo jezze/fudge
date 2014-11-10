@@ -115,13 +115,40 @@ static struct
 
 } current;
 
-static void taskconnect(struct container *container, struct task *task)
+static void containermaptext(struct container *container)
 {
 
     struct arch_container *acontainer = (struct arch_container *)container;
+
+    mmu_map(acontainer->directory, &acontainer->table[0], ARCH_BIOS_BASE, ARCH_BIOS_BASE, ARCH_TABLE_UCODE_LIMIT - ARCH_BIOS_BASE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
+
+}
+
+static void taskmapcontainer(struct task *task, struct container *container)
+{
+
     struct arch_task *atask = (struct arch_task *)task;
+    struct arch_container *acontainer = (struct arch_container *)container;
 
     memory_copy(atask->directory, acontainer->directory, sizeof (struct mmu_directory));
+
+}
+
+static void taskmaptext(struct task *task, unsigned int address)
+{
+
+    struct arch_task *atask = (struct arch_task *)task;
+
+    mmu_map(atask->directory, &atask->table[0], atask->mapping[0], address, ARCH_TASK_CODESIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
+
+}
+
+static void taskmapstack(struct task *task)
+{
+
+    struct arch_task *atask = (struct arch_task *)task;
+
+    mmu_map(atask->directory, &atask->table[1], atask->mapping[1], ARCH_TASK_STACKBASE, ARCH_TASK_STACKSIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
 
 }
 
@@ -164,7 +191,7 @@ static unsigned int spawn(struct container *self, struct task *task, void *stack
 
     memory_copy(&args, stack, sizeof (struct parameters));
 
-    for (i = 0; i < 32; i++)
+    for (i = 0; i < TASK_DESCRIPTORS; i++)
     {
 
         next->descriptors[i].channel = 0;
@@ -189,9 +216,9 @@ static unsigned int spawn(struct container *self, struct task *task, void *stack
 
     }
 
-    taskconnect(self, next);
-    taskactivate(next);
+    taskmapcontainer(next, self);
     scheduler_use(next);
+    taskactivate(next);
 
     next->registers.ip = self->calls[CONTAINER_CALL_EXECUTE](self, next, &args);
     next->registers.sp = ARCH_TASK_STACKLIMIT;
@@ -203,6 +230,18 @@ static unsigned int spawn(struct container *self, struct task *task, void *stack
 static unsigned int exit(struct container *self, struct task *task, void *stack)
 {
 
+    unsigned int i;
+
+    for (i = 0; i < TASK_DESCRIPTORS; i++)
+    {
+
+        task->descriptors[i].channel = 0;
+        task->descriptors[i].id = 0;
+        task->descriptors[i].active = 0;
+
+    }
+
+    taskmapcontainer(task, self);
     scheduler_unuse(task);
 
     return 0;
@@ -278,17 +317,25 @@ unsigned short arch_pagefault(void *stack)
 {
 
     struct {struct cpu_general general; unsigned int type; struct cpu_interrupt interrupt;} *registers = stack;
+    unsigned int address = cpu_getcr2();
 
     if (registers->interrupt.code == selector.kcode)
     {
 
-        struct arch_task *task = (struct arch_task *)scheduler_findusedtask();
-        unsigned int address = cpu_getcr2();
+        struct task *task = scheduler_findusedtask();
 
-        mmu_map(task->directory, &task->table[0], task->mapping[0], address, ARCH_TASK_CODESIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
-        mmu_map(task->directory, &task->table[1], task->mapping[1], ARCH_TASK_STACKBASE, ARCH_TASK_STACKSIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
+        taskmaptext(task, address);
+        taskmapstack(task);
 
         return selector.kdata;
+
+    }
+
+    if (registers->interrupt.code == selector.ucode)
+    {
+
+        taskmapcontainer(current.task, current.container);
+        scheduler_unuse(current.task);
 
     }
 
@@ -341,8 +388,6 @@ static void setupcontainer(struct arch_container *container, unsigned int i)
     container->directory = directories + i;
     container->table = tables + i * ARCH_CONTAINER_MAPPINGS;
 
-    mmu_map(container->directory, &container->table[0], ARCH_BIOS_BASE, ARCH_BIOS_BASE, ARCH_TABLE_UCODE_LIMIT - ARCH_BIOS_BASE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
-
 }
 
 static struct container *setupcontainers()
@@ -389,7 +434,8 @@ static struct task *setuptasks()
 static void setupmmu(struct container *container, struct task *task)
 {
 
-    taskconnect(container, task);
+    containermaptext(container);
+    taskmapcontainer(task, container);
     taskactivate(task);
     mmu_enable();
 
