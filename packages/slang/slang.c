@@ -293,7 +293,7 @@ static void parse(struct tokenlist *postfix, struct tokenlist *stack)
             if (!walk_path(CALL_P0, CALL_L0, ascii_length(t->str), t->str))
                 return;
 
-            if (!walk_path(CALL_L1, CALL_DW, 13, "/system/pipe/"))
+            if (!call_walk(CALL_L1, CALL_DR, 12, "system/pipe/"))
                 return;
 
             call_walk(CALL_O1, CALL_L1, 1, "0");
