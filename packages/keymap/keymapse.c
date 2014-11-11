@@ -113,6 +113,9 @@ void main()
     unsigned char buffer[FUDGE_BSIZE];
     unsigned int count, roff, woff = 0;
 
+    escaped = 0;
+    modifier = 0;
+
     call_open(CALL_O0);
     call_open(CALL_I0);
 
