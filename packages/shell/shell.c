@@ -28,15 +28,16 @@ static void interpret(struct buffer *buffer)
 
     }
 
-    call_open(CALL_L0);
+    if (!call_walk(CALL_L0, CALL_DR, 12, "system/pipe/"))
+        return;
+
     call_walk(CALL_L1, CALL_L0, 1, "0");
-    call_walk(CALL_I1, CALL_L0, 1, "1");
-    call_walk(CALL_O1, CALL_O0, 0, 0);
     call_open(CALL_L1);
     call_write(CALL_L1, 0, buffer->head, buffer->memory);
     call_close(CALL_L1);
+    call_walk(CALL_I1, CALL_L0, 1, "1");
+    call_walk(CALL_O1, CALL_O0, 0, 0);
     call_spawn(CALL_P0);
-    call_close(CALL_L0);
 
 }
 
@@ -101,9 +102,6 @@ void main()
     buffer_init(&input, 1, FUDGE_BSIZE, inputbuffer);
 
     if (!call_walk(CALL_P0, CALL_DR, 9, "bin/slang"))
-        return;
-
-    if (!call_walk(CALL_L0, CALL_DR, 12, "system/pipe/"))
         return;
 
     call_open(CALL_I0);
