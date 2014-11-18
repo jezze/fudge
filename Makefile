@@ -27,8 +27,8 @@ CC:=clang
 LD:=clang
 
 ASFLAGS:=-target $(TARGET) -c -nostdlib -O2
-CFLAGS:=-target $(TARGET) -msoft-float -c -Wall -Werror -ffreestanding -nostdlib -nostdinc -std=c89 -pedantic -O2 -I$(INCLUDE_PATH) -I$(LIBS_PATH)
-LDFLAGS:=-target $(TARGET) -msoft-float -Wall -Werror -ffreestanding -nostdlib -nostdinc -std=c89 -pedantic -O2 -I$(INCLUDE_PATH) -I$(LIBS_PATH)
+CFLAGS:=-target $(TARGET) -msoft-float -c -Wall -Werror -ffreestanding -nostdlib -nostdinc -std=c89 -pedantic -O2
+LDFLAGS:=-target $(TARGET) -msoft-float -Wall -Werror -ffreestanding -nostdlib -nostdinc -std=c89 -pedantic -O2
 
 ALL:=libs kernel modules packages ramdisk
 CLEAN:=$(KERNEL) $(RAMDISK) $(BUILD_PATH)
@@ -43,7 +43,8 @@ all: $(ALL)
 .c.o:
 	$(CC) -o $@ $(CFLAGS) $<
 
-$(MODULES_PATH)/%.o: CFLAGS+=-I$(MODULES_PATH)
+$(LIBS_PATH)/%.o: CFLAGS+=-I$(INCLUDE_PATH) -I$(LIBS_PATH)
+$(MODULES_PATH)/%.o: CFLAGS+=-I$(INCLUDE_PATH) -I$(LIBS_PATH) -I$(MODULES_PATH)
 $(MODULES_PATH)/%.ko.0: LDFLAGS+=-T$(MODULES_PATH)/linker.ld -r -L$(BUILD_PATH)/lib -lfudge
 $(MODULES_PATH)/%.ko.1: LDFLAGS+=-T$(MODULES_PATH)/linker.ld -r -L$(BUILD_PATH)/lib -lfudge
 $(MODULES_PATH)/%.ko.2: LDFLAGS+=-T$(MODULES_PATH)/linker.ld -r -L$(BUILD_PATH)/lib -lfudge
@@ -54,6 +55,7 @@ $(MODULES_PATH)/%.ko.6: LDFLAGS+=-T$(MODULES_PATH)/linker.ld -r -L$(BUILD_PATH)/
 $(MODULES_PATH)/%.ko.7: LDFLAGS+=-T$(MODULES_PATH)/linker.ld -r -L$(BUILD_PATH)/lib -lfudge
 $(MODULES_PATH)/%.ko.8: LDFLAGS+=-T$(MODULES_PATH)/linker.ld -r -L$(BUILD_PATH)/lib -lfudge
 $(MODULES_PATH)/%.ko.9: LDFLAGS+=-T$(MODULES_PATH)/linker.ld -r -L$(BUILD_PATH)/lib -lfudge
+$(PACKAGES_PATH)/%.o: CFLAGS+=-I$(INCLUDE_PATH) -I$(LIBS_PATH) -I$(PACKAGES_PATH)
 $(PACKAGES_PATH)/%: LDFLAGS+=-L$(BUILD_PATH)/lib -labi -lfudge
 
 DIR:=$(LIBS_PATH)

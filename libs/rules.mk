@@ -14,8 +14,6 @@ DIR:=$(CUR)/elf
 include $(DIR)/rules.mk
 DIR:=$(CUR)/tar
 include $(DIR)/rules.mk
-DIR:=$(CUR)/gfx
-include $(DIR)/rules.mk
 DIR:=$(CUR)/utf8
 include $(DIR)/rules.mk
 DIR:=$(CUR)/$(ARCH)/arch

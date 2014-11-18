@@ -26,6 +26,8 @@ DIR:=$(CUR)/dump
 include $(DIR)/rules.mk
 DIR:=$(CUR)/echo
 include $(DIR)/rules.mk
+DIR:=$(CUR)/gfx
+include $(DIR)/rules.mk
 DIR:=$(CUR)/head
 include $(DIR)/rules.mk
 DIR:=$(CUR)/hello
