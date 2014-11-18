@@ -67,14 +67,14 @@ To clean for x86 you write:
 
 To compile for ARM you write:
 
-    $ make ARCH=arm LOADER=versatilepb
+    $ make ARCH=arm
 
 To clean for ARM you write:
 
-    $ make ARCH=arm LOADER=versatilepb clean
+    $ make ARCH=arm clean
 
-It is possible to edit the Makefile and set the ARCH and LOADER variable
-directly so you don't need to supply it every time you compile.
+It is possible to edit the Makefile and set the ARCH variable directly so you
+don't need to supply it every time you compile.
 
 ## RUNNING IN QEMU
 
