@@ -35,11 +35,11 @@ static void enter_usermode(unsigned int ip, unsigned int sp)
 
     uart_puts("USERMODE\n");
     uart_puts("IP: ");
-    ascii_write_value(num, 32, ip, 16, 0);
+    ascii_wvalue(num, 32, ip, 16, 0);
     uart_puts(num);
     uart_puts(" ");
     uart_puts("SP: ");
-    ascii_write_value(num, 32, sp, 16, 0);
+    ascii_wvalue(num, 32, sp, 16, 0);
     uart_puts(num);
     uart_puts("\n");
     kmi_setup();

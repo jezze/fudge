@@ -1,7 +1,12 @@
 ARCH:=x86
-LOADER:=mboot
+
+LOADER_x86:=mboot
+LOADER_arm:=versatilepb
+LOADER:=$(LOADER_$(ARCH))
+
 TARGET_x86:=i386-pc-none-elf
 TARGET_arm:=arm-none-eabi
+TARGET:=$(TARGET_$(ARCH))
 
 INSTALL_PATH:=/boot
 INCLUDE_PATH:=include
@@ -21,10 +26,9 @@ AS:=clang
 CC:=clang
 LD:=clang
 
-ASFLAGS:=-target $(TARGET_$(ARCH)) -c -nostdlib -O2
-CFLAGS:=-target $(TARGET_$(ARCH)) -msoft-float -c -Wall -Werror -ffreestanding -nostdlib -nostdinc -std=c89 -pedantic -O2 -I$(INCLUDE_PATH) -I$(LIBS_PATH)
-LDFLAGS:=-target $(TARGET_$(ARCH)) -msoft-float -Wall -Werror -ffreestanding -nostdlib -nostdinc -std=c89 -pedantic -O2 -I$(INCLUDE_PATH) -I$(LIBS_PATH)
-ARFLAGS:=rs
+ASFLAGS:=-target $(TARGET) -c -nostdlib -O2
+CFLAGS:=-target $(TARGET) -msoft-float -c -Wall -Werror -ffreestanding -nostdlib -nostdinc -std=c89 -pedantic -O2 -I$(INCLUDE_PATH) -I$(LIBS_PATH)
+LDFLAGS:=-target $(TARGET) -msoft-float -Wall -Werror -ffreestanding -nostdlib -nostdinc -std=c89 -pedantic -O2 -I$(INCLUDE_PATH) -I$(LIBS_PATH)
 
 ALL:=libs kernel modules packages ramdisk
 CLEAN:=$(KERNEL) $(RAMDISK) $(BUILD_PATH)
@@ -92,7 +96,7 @@ $(BUILD_PATH)/share: $(BUILD_PATH)
 	mkdir -p $@
 
 $(KERNEL_NAME):
-	$(LD) -o $@ $(LDFLAGS) -Tlibs/$(ARCH)/$(LOADER)/linker.ld -L$(BUILD_PATH)/lib -lmboot -larch -lkernel -lelf -ltar -lcpio -lfudge
+	$(LD) -o $@ $(LDFLAGS) -Tlibs/$(ARCH)/$(LOADER)/linker.ld -L$(BUILD_PATH)/lib -l$(LOADER) -larch -lkernel -lelf -ltar -lcpio -lfudge
 
 $(RAMDISK_NAME).tar: $(BUILD_PATH)
 	tar -cf $@ $^
