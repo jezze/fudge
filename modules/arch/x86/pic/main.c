@@ -4,8 +4,8 @@
 #include <kernel/task.h>
 #include <kernel/container.h>
 #include <kernel/kernel.h>
-#include <x86/arch/cpu.h>
-#include <x86/arch/arch.h>
+#include <arch/x86/cpu.h>
+#include <arch/x86/arch.h>
 #include <base/base.h>
 #include <arch/x86/io/io.h>
 #include "pic.h"

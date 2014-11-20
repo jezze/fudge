@@ -1,6 +1,6 @@
 #include <module.h>
 #include <kernel/resource.h>
-#include <x86/arch/mmu.h>
+#include <arch/x86/mmu.h>
 #include <system/system.h>
 #include <base/base.h>
 #include <base/video.h>

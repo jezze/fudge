@@ -98,7 +98,7 @@ $(BUILD_PATH)/share: $(BUILD_PATH)
 	mkdir -p $@
 
 $(KERNEL_NAME):
-	$(LD) -o $@ $(LDFLAGS) -Tlibs/$(ARCH)/$(LOADER)/linker.ld -L$(BUILD_PATH)/lib -l$(LOADER) -larch -lkernel -lelf -ltar -lcpio -lfudge
+	$(LD) -o $@ $(LDFLAGS) -Tlibs/$(LOADER)/linker.ld -L$(BUILD_PATH)/lib -l$(LOADER) -larch -lkernel -lelf -ltar -lcpio -lfudge
 
 $(RAMDISK_NAME).tar: $(BUILD_PATH)
 	tar -cf $@ $^
