@@ -270,8 +270,7 @@ static unsigned int bind(struct container *self, struct task *task, void *stack)
 static unsigned int execute(struct container *self, struct task *task, void *stack)
 {
 
-    struct {void *caller; unsigned int descriptor;} *args = stack;
-    struct vfs_descriptor *descriptor = getdescriptor(task, args->descriptor);
+    struct vfs_descriptor *descriptor = getdescriptor(task, 2);
     struct binary_protocol *protocol;
 
     if (!descriptor || !descriptor->id || !descriptor->channel)

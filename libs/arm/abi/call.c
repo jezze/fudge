@@ -19,7 +19,7 @@ unsigned int call_close(unsigned int index)
 
 }
 
-unsigned int call_execute(unsigned int index)
+unsigned int call_execute()
 {
 
     return 0;
@@ -61,7 +61,7 @@ unsigned int call_read(unsigned int index, unsigned int offset, unsigned int cou
 
 }
 
-unsigned int call_spawn(unsigned int index)
+unsigned int call_spawn()
 {
 
     return 0;

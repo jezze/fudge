@@ -12,7 +12,7 @@ void main()
     if (!call_walk(CALL_I1, CALL_DR, 17, "config/init.slang"))
         return;
 
-    call_spawn(CALL_P0);
+    call_spawn();
 
 }
 

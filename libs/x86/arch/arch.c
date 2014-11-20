@@ -183,14 +183,11 @@ static void taskload(struct task *task, struct cpu_general *general)
 static unsigned int spawn(struct container *self, struct task *task, void *stack)
 {
 
-    struct parameters {void *caller; unsigned int index;} args;
     struct task *next = scheduler_findfreetask();
     unsigned int i;
 
     if (!next)
         return 0;
-
-    memory_copy(&args, stack, sizeof (struct parameters));
 
     for (i = 0; i < TASK_DESCRIPTORS; i++)
     {
@@ -221,7 +218,7 @@ static unsigned int spawn(struct container *self, struct task *task, void *stack
     scheduler_use(next);
     taskactivate(next);
 
-    next->registers.ip = self->calls[CONTAINER_CALL_EXECUTE](self, next, &args);
+    next->registers.ip = self->calls[CONTAINER_CALL_EXECUTE](self, next, 0);
     next->registers.sp = ARCH_TASK_STACKLIMIT;
 
     return 1;
