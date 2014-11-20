@@ -28,7 +28,7 @@ static void interpret(struct buffer *buffer)
 
     }
 
-    if (!call_walk(CALL_P0, CALL_DR, 9, "bin/slang"))
+    if (!call_walk(CALL_PC, CALL_DR, 9, "bin/slang"))
         return;
 
     if (!call_walk(CALL_L0, CALL_DR, 12, "system/pipe/"))

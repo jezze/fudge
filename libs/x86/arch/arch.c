@@ -198,13 +198,12 @@ static unsigned int spawn(struct container *self, struct task *task, void *stack
 
     }
 
-    for (i = 0; i < 4; i++)
-    {
-
-        next->descriptors[i].channel = task->descriptors[i].channel;
-        next->descriptors[i].id = task->descriptors[i].id;
-
-    }
+    next->descriptors[0].channel = task->descriptors[0].channel;
+    next->descriptors[0].id = task->descriptors[0].id;
+    next->descriptors[1].channel = task->descriptors[1].channel;
+    next->descriptors[1].id = task->descriptors[1].id;
+    next->descriptors[2].channel = task->descriptors[3].channel;
+    next->descriptors[2].id = task->descriptors[3].id;
 
     for (i = 4; i < 20; i++)
     {

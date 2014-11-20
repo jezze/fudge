@@ -6,7 +6,7 @@ void main()
     char buffer[FUDGE_BSIZE];
     unsigned int count0, count1, roff0, roff1;
 
-    if (!call_walk(CALL_P0, CALL_DR, 11, "bin/modload"))
+    if (!call_walk(CALL_PC, CALL_DR, 11, "bin/modload"))
         return;
 
     if (!call_walk(CALL_L1, CALL_DR, 9, "boot/mod/"))

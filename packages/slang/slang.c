@@ -290,7 +290,7 @@ static void parse(struct tokenlist *postfix, struct tokenlist *stack)
             if (!t)
                 return;
 
-            if (!walk_path(CALL_P0, CALL_L0, ascii_length(t->str), t->str))
+            if (!walk_path(CALL_PC, CALL_L0, ascii_length(t->str), t->str))
                 return;
 
             if (!call_walk(CALL_L1, CALL_DR, 12, "system/pipe/"))
@@ -309,7 +309,7 @@ static void parse(struct tokenlist *postfix, struct tokenlist *stack)
             if (!t)
                 return;
 
-            if (!walk_path(CALL_P0, CALL_L0, ascii_length(t->str), t->str))
+            if (!walk_path(CALL_PC, CALL_L0, ascii_length(t->str), t->str))
                 return;
 
             call_spawn();
