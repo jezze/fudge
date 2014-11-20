@@ -183,6 +183,7 @@ static void taskload(struct task *task, struct cpu_general *general)
 static unsigned int spawn(struct container *self, struct task *task, void *stack)
 {
 
+    struct {void *caller; unsigned int shift;} *args = stack;
     struct task *next = scheduler_findfreetask();
     unsigned int i;
 
@@ -208,8 +209,8 @@ static unsigned int spawn(struct container *self, struct task *task, void *stack
     for (i = 4; i < 20; i++)
     {
 
-        next->descriptors[i].channel = task->descriptors[i + 2].channel;
-        next->descriptors[i].id = task->descriptors[i + 2].id;
+        next->descriptors[i].channel = task->descriptors[i + args->shift].channel;
+        next->descriptors[i].id = task->descriptors[i + args->shift].id;
 
     }
 

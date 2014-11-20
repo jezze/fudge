@@ -40,7 +40,7 @@ static void interpret(struct buffer *buffer)
     call_close(CALL_L1);
     call_walk(CALL_I1, CALL_L0, 1, "1");
     call_walk(CALL_O1, CALL_O0, 0, 0);
-    call_spawn();
+    call_spawn(2);
 
 }
 

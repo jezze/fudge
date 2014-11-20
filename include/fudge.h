@@ -55,7 +55,7 @@ unsigned int call_load(unsigned int descriptor);
 unsigned int call_mount(unsigned int mount, unsigned int channel, unsigned int descriptor);
 unsigned int call_open(unsigned int descriptor);
 unsigned int call_read(unsigned int descriptor, unsigned int offset, unsigned int count, void *buffer);
-unsigned int call_spawn();
+unsigned int call_spawn(unsigned int shift);
 unsigned int call_unload(unsigned int descriptor);
 unsigned int call_walk(unsigned int descriptor, unsigned int pdescriptor, unsigned int count, const char *path);
 unsigned int call_write(unsigned int descriptor, unsigned int offset, unsigned int count, void *buffer);

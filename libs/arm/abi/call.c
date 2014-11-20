@@ -61,7 +61,7 @@ unsigned int call_read(unsigned int index, unsigned int offset, unsigned int cou
 
 }
 
-unsigned int call_spawn()
+unsigned int call_spawn(unsigned int shift)
 {
 
     return 0;

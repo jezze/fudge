@@ -23,7 +23,7 @@ void main()
             if (!call_walk(CALL_I1, CALL_L1, count1 - 1, buffer + roff1))
                 continue;
 
-            call_spawn();
+            call_spawn(2);
 
         }
 
