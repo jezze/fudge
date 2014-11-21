@@ -3,7 +3,7 @@
 #include <kernel/scheduler.h>
 #include <system/system.h>
 #include <base/base.h>
-#include <base/network.h>
+#include <network/network.h>
 #include <arch/x86/pic/pic.h>
 #include <arch/x86/io/io.h>
 #include <arch/x86/pci/pci.h>
@@ -124,8 +124,8 @@ struct rtl8139_header
 };
 
 static struct base_driver driver;
-static struct base_network_interface networkinterface;
-static struct base_network_interfacenode networkinterfacenode;
+static struct network_interface networkinterface;
+static struct network_interfacenode networkinterfacenode;
 static unsigned short io;
 static unsigned int mmio;
 static unsigned char rx[0x2600];
@@ -196,7 +196,7 @@ static void handleirq(unsigned int irq, struct base_bus *bus, unsigned int id)
 
         scheduler_rendezvous_unsleep(&rdata);
         io_outw(io + RTL8139_REGISTER_ISR, RTL8139_ISR_ROK);
-        base_network_notify(&networkinterface);
+        network_notify(&networkinterface);
 
     }
 
@@ -307,10 +307,10 @@ static void driver_attach(struct base_bus *bus, unsigned int id)
     io = pci_inw(bus, id, PCI_CONFIG_BAR0) & ~1;
     mmio = pci_ind(bus, id, PCI_CONFIG_BAR1);
 
-    base_network_initinterface(&networkinterface, bus, id, networkinterface_receive, networkinterface_send, networkinterface_getpacket, networkinterface_dumppacket);
-    base_network_registerinterface(&networkinterface);
-    base_network_initinterfacenode(&networkinterfacenode, &networkinterface);
-    base_network_registerinterfacenode(&networkinterfacenode);
+    network_initinterface(&networkinterface, bus, id, networkinterface_receive, networkinterface_send, networkinterface_getpacket, networkinterface_dumppacket);
+    network_registerinterface(&networkinterface);
+    network_initinterfacenode(&networkinterfacenode, &networkinterface);
+    network_registerinterfacenode(&networkinterfacenode);
     pci_setmaster(bus, id);
     pic_setroutine(bus, id, handleirq);
     poweron();
@@ -334,8 +334,8 @@ static void driver_detach(struct base_bus *bus, unsigned int id)
 {
 
     pic_unsetroutine(bus, id);
-    base_network_unregisterinterface(&networkinterface);
-    base_network_unregisterinterfacenode(&networkinterfacenode);
+    network_unregisterinterface(&networkinterface);
+    network_unregisterinterfacenode(&networkinterfacenode);
 
 }
 

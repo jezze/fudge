@@ -3,7 +3,7 @@
 #include <kernel/scheduler.h>
 #include <system/system.h>
 #include <base/base.h>
-#include <base/terminal.h>
+#include <terminal/terminal.h>
 #include <arch/x86/platform/platform.h>
 #include <arch/x86/pic/pic.h>
 #include <arch/x86/io/io.h>
@@ -149,8 +149,8 @@ enum uart_msr
 };
 
 static struct base_driver driver;
-static struct base_terminal_interface terminalinterface;
-static struct base_terminal_interfacenode terminalinterfacenode;
+static struct terminal_interface terminalinterface;
+static struct terminal_interfacenode terminalinterfacenode;
 static unsigned char buffer[512];
 static struct buffer cfifo;
 static struct scheduler_rendezvous rdata;
@@ -222,10 +222,10 @@ static unsigned int driver_match(struct base_bus *bus, unsigned int id)
 static void driver_attach(struct base_bus *bus, unsigned int id)
 {
 
-    base_terminal_initinterface(&terminalinterface, bus, id, terminalinterface_rdata, terminalinterface_wdata);
-    base_terminal_registerinterface(&terminalinterface);
-    base_terminal_initinterfacenode(&terminalinterfacenode, &terminalinterface);
-    base_terminal_registerinterfacenode(&terminalinterfacenode);
+    terminal_initinterface(&terminalinterface, bus, id, terminalinterface_rdata, terminalinterface_wdata);
+    terminal_registerinterface(&terminalinterface);
+    terminal_initinterfacenode(&terminalinterfacenode, &terminalinterface);
+    terminal_registerinterfacenode(&terminalinterfacenode);
     buffer_init(&cfifo, 1, 512, &buffer);
     pic_setroutine(bus, id, handleirq);
 
@@ -246,8 +246,8 @@ static void driver_detach(struct base_bus *bus, unsigned int id)
 {
 
     pic_unsetroutine(bus, id);
-    base_terminal_unregisterinterface(&terminalinterface);
-    base_terminal_unregisterinterfacenode(&terminalinterfacenode);
+    terminal_unregisterinterface(&terminalinterface);
+    terminal_unregisterinterfacenode(&terminalinterfacenode);
 
 }
 

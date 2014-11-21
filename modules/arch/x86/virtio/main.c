@@ -3,7 +3,7 @@
 #include <kernel/scheduler.h>
 #include <system/system.h>
 #include <base/base.h>
-#include <base/block.h>
+#include <block/block.h>
 #include <arch/x86/pic/pic.h>
 #include <arch/x86/io/io.h>
 #include <arch/x86/pci/pci.h>

@@ -2,14 +2,14 @@
 #include <kernel/resource.h>
 #include <system/system.h>
 #include <base/base.h>
-#include <base/video.h>
+#include <video/video.h>
 #include <arch/x86/pic/pic.h>
 #include <arch/x86/pci/pci.h>
 #include "i915.h"
 
 static struct base_driver driver;
-static struct base_video_interface videointerface;
-static struct base_video_interfacenode videointerfacenode;
+static struct video_interface videointerface;
+static struct video_interfacenode videointerfacenode;
 
 static unsigned int read(unsigned int reg)
 {
@@ -154,10 +154,10 @@ static unsigned int driver_match(struct base_bus *bus, unsigned int id)
 static void driver_attach(struct base_bus *bus, unsigned int id)
 {
 
-    base_video_initinterface(&videointerface, bus, id, videointerface_setmode, videointerface_rdata, videointerface_wdata, 0, 0);
-    base_video_registerinterface(&videointerface);
-    base_video_initinterfacenode(&videointerfacenode, &videointerface);
-    base_video_registerinterfacenode(&videointerfacenode);
+    video_initinterface(&videointerface, bus, id, videointerface_setmode, videointerface_rdata, videointerface_wdata, 0, 0);
+    video_registerinterface(&videointerface);
+    video_initinterfacenode(&videointerfacenode, &videointerface);
+    video_registerinterfacenode(&videointerfacenode);
     pic_setroutine(bus, id, handleirq);
     enabledpll();
     enablepipe();
@@ -172,8 +172,8 @@ static void driver_detach(struct base_bus *bus, unsigned int id)
 {
 
     pic_unsetroutine(bus, id);
-    base_video_unregisterinterface(&videointerface);
-    base_video_unregisterinterfacenode(&videointerfacenode);
+    video_unregisterinterface(&videointerface);
+    video_unregisterinterfacenode(&videointerfacenode);
 
 }
 

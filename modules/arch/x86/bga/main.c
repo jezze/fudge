@@ -3,7 +3,7 @@
 #include <arch/x86/mmu.h>
 #include <system/system.h>
 #include <base/base.h>
-#include <base/video.h>
+#include <video/video.h>
 #include <arch/x86/io/io.h>
 #include <arch/x86/pci/pci.h>
 
@@ -47,8 +47,8 @@ enum bga_bpp
 };
 
 static struct base_driver driver;
-static struct base_video_interface videointerface;
-static struct base_video_interfacenode videointerfacenode;
+static struct video_interface videointerface;
+static struct video_interfacenode videointerfacenode;
 static void *bank;
 static void *lfb;
 
@@ -110,10 +110,10 @@ static unsigned int driver_match(struct base_bus *bus, unsigned int id)
 static void driver_attach(struct base_bus *bus, unsigned int id)
 {
 
-    base_video_initinterface(&videointerface, bus, id, videointerface_setmode, videointerface_rdata, videointerface_wdata, 0, 0);
-    base_video_registerinterface(&videointerface);
-    base_video_initinterfacenode(&videointerfacenode, &videointerface);
-    base_video_registerinterfacenode(&videointerfacenode);
+    video_initinterface(&videointerface, bus, id, videointerface_setmode, videointerface_rdata, videointerface_wdata, 0, 0);
+    video_registerinterface(&videointerface);
+    video_initinterfacenode(&videointerfacenode, &videointerface);
+    video_registerinterfacenode(&videointerfacenode);
 
     bank = (void *)0xA0000;
     lfb = (void *)(unsigned long)pci_ind(bus, id, PCI_CONFIG_BAR0);
@@ -130,8 +130,8 @@ static void driver_attach(struct base_bus *bus, unsigned int id)
 static void driver_detach(struct base_bus *bus, unsigned int id)
 {
 
-    base_video_unregisterinterface(&videointerface);
-    base_video_unregisterinterfacenode(&videointerfacenode);
+    video_unregisterinterface(&videointerface);
+    video_unregisterinterfacenode(&videointerfacenode);
 
 }
 

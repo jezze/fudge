@@ -3,13 +3,13 @@
 #include <kernel/scheduler.h>
 #include <system/system.h>
 #include <base/base.h>
-#include <base/mouse.h>
+#include <mouse/mouse.h>
 #include <arch/x86/pic/pic.h>
 #include <arch/x86/ps2/ps2.h>
 
 static struct base_driver driver;
-static struct base_mouse_interface mouseinterface;
-static struct base_mouse_interfacenode mouseinterfacenode;
+static struct mouse_interface mouseinterface;
+static struct mouse_interfacenode mouseinterfacenode;
 static unsigned char buffer[512];
 static struct buffer cfifo;
 static unsigned char cycle;
@@ -69,10 +69,10 @@ static unsigned int driver_match(struct base_bus *bus, unsigned int id)
 static void driver_attach(struct base_bus *bus, unsigned int id)
 {
 
-    base_mouse_initinterface(&mouseinterface, bus, id, mouseinterface_rdata);
-    base_mouse_registerinterface(&mouseinterface);
-    base_mouse_initinterfacenode(&mouseinterfacenode, &mouseinterface);
-    base_mouse_registerinterfacenode(&mouseinterfacenode);
+    mouse_initinterface(&mouseinterface, bus, id, mouseinterface_rdata);
+    mouse_registerinterface(&mouseinterface);
+    mouse_initinterfacenode(&mouseinterfacenode, &mouseinterface);
+    mouse_registerinterfacenode(&mouseinterfacenode);
     buffer_init(&cfifo, 1, 512, &buffer);
     pic_setroutine(bus, id, handleirq);
     ps2_enable(bus, id);
@@ -89,8 +89,8 @@ static void driver_detach(struct base_bus *bus, unsigned int id)
 {
 
     pic_unsetroutine(bus, id);
-    base_mouse_unregisterinterface(&mouseinterface);
-    base_mouse_unregisterinterfacenode(&mouseinterfacenode);
+    mouse_unregisterinterface(&mouseinterface);
+    mouse_unregisterinterfacenode(&mouseinterfacenode);
 
 }
 

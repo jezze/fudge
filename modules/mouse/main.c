@@ -2,7 +2,7 @@
 #include <kernel/resource.h>
 #include <kernel/vfs.h>
 #include <system/system.h>
-#include "base.h"
+#include <base/base.h>
 #include "mouse.h"
 
 static struct system_node root;
@@ -10,20 +10,20 @@ static struct system_node root;
 static unsigned int data_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct base_mouse_interfacenode *node = (struct base_mouse_interfacenode *)self->parent;
+    struct mouse_interfacenode *node = (struct mouse_interfacenode *)self->parent;
 
     return node->interface->rdata(offset, count, buffer);
 
 }
 
-void base_mouse_registerinterface(struct base_mouse_interface *interface)
+void mouse_registerinterface(struct mouse_interface *interface)
 {
 
     base_registerinterface(&interface->base);
 
 }
 
-void base_mouse_registerinterfacenode(struct base_mouse_interfacenode *node)
+void mouse_registerinterfacenode(struct mouse_interfacenode *node)
 {
 
     system_addchild(&root, &node->base);
@@ -31,14 +31,14 @@ void base_mouse_registerinterfacenode(struct base_mouse_interfacenode *node)
 
 }
 
-void base_mouse_unregisterinterface(struct base_mouse_interface *interface)
+void mouse_unregisterinterface(struct mouse_interface *interface)
 {
 
     base_unregisterinterface(&interface->base);
 
 }
 
-void base_mouse_unregisterinterfacenode(struct base_mouse_interfacenode *node)
+void mouse_unregisterinterfacenode(struct mouse_interfacenode *node)
 {
 
     system_removechild(&node->base, &node->data);
@@ -46,20 +46,20 @@ void base_mouse_unregisterinterfacenode(struct base_mouse_interfacenode *node)
 
 }
 
-void base_mouse_initinterface(struct base_mouse_interface *interface, struct base_bus *bus, unsigned int id, unsigned int (*rdata)(unsigned int offset, unsigned int count, void *buffer))
+void mouse_initinterface(struct mouse_interface *interface, struct base_bus *bus, unsigned int id, unsigned int (*rdata)(unsigned int offset, unsigned int count, void *buffer))
 {
 
-    memory_clear(interface, sizeof (struct base_mouse_interface));
+    memory_clear(interface, sizeof (struct mouse_interface));
     base_initinterface(&interface->base, bus, id);
 
     interface->rdata = rdata;
 
 }
 
-void base_mouse_initinterfacenode(struct base_mouse_interfacenode *node, struct base_mouse_interface *interface)
+void mouse_initinterfacenode(struct mouse_interfacenode *node, struct mouse_interface *interface)
 {
 
-    memory_clear(node, sizeof (struct base_mouse_interfacenode));
+    memory_clear(node, sizeof (struct mouse_interfacenode));
     system_initnode(&node->base, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, interface->base.bus->name);
     system_initnode(&node->data, SYSTEM_NODETYPE_NORMAL, "data");
 
@@ -68,11 +68,18 @@ void base_mouse_initinterfacenode(struct base_mouse_interfacenode *node, struct 
 
 }
 
-void base_mouse_setup()
+void init()
 {
 
     system_initnode(&root, SYSTEM_NODETYPE_GROUP, "mouse");
     system_registernode(&root);
+
+}
+
+void destroy()
+{
+
+    system_unregisternode(&root);
 
 }
 

@@ -3,7 +3,7 @@
 #include <kernel/scheduler.h>
 #include <system/system.h>
 #include <base/base.h>
-#include <base/timer.h>
+#include <timer/timer.h>
 #include <arch/x86/pic/pic.h>
 #include <arch/x86/io/io.h>
 #include <arch/x86/platform/platform.h>
@@ -43,8 +43,8 @@ enum pit_command
 };
 
 static struct base_driver driver;
-static struct base_timer_interface timerinterface;
-static struct base_timer_interfacenode timerinterfacenode;
+static struct timer_interface timerinterface;
+static struct timer_interfacenode timerinterfacenode;
 static struct scheduler_rendezvous rdata;
 static unsigned short io;
 static unsigned int wait;
@@ -101,10 +101,10 @@ static unsigned int driver_match(struct base_bus *bus, unsigned int id)
 static void driver_attach(struct base_bus *bus, unsigned int id)
 {
 
-    base_timer_initinterface(&timerinterface, bus, id, timerinterface_sleep);
-    base_timer_registerinterface(&timerinterface);
-    base_timer_initinterfacenode(&timerinterfacenode, &timerinterface);
-    base_timer_registerinterfacenode(&timerinterfacenode);
+    timer_initinterface(&timerinterface, bus, id, timerinterface_sleep);
+    timer_registerinterface(&timerinterface);
+    timer_initinterfacenode(&timerinterfacenode, &timerinterface);
+    timer_registerinterfacenode(&timerinterfacenode);
 
     io = platform_getbase(bus, id);
 
@@ -120,8 +120,8 @@ static void driver_detach(struct base_bus *bus, unsigned int id)
 {
 
     pic_unsetroutine(bus, id);
-    base_timer_unregisterinterface(&timerinterface);
-    base_timer_unregisterinterfacenode(&timerinterfacenode);
+    timer_unregisterinterface(&timerinterface);
+    timer_unregisterinterfacenode(&timerinterfacenode);
 
 }
 

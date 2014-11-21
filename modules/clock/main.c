@@ -2,7 +2,7 @@
 #include <kernel/resource.h>
 #include <kernel/vfs.h>
 #include <system/system.h>
-#include "base.h"
+#include <base/base.h>
 #include "clock.h"
 
 static struct system_node root;
@@ -25,7 +25,7 @@ static unsigned int isleapyear(unsigned short year)
 static unsigned int timestamp_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct base_clock_interfacenode *node = (struct base_clock_interfacenode *)self->parent;
+    struct clock_interfacenode *node = (struct clock_interfacenode *)self->parent;
     unsigned int year = node->interface->getyear() - 1970;
     unsigned int month = node->interface->getmonth();
     unsigned int day = node->interface->getday();
@@ -44,7 +44,7 @@ static unsigned int timestamp_read(struct system_node *self, unsigned int offset
 static unsigned int date_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct base_clock_interfacenode *node = (struct base_clock_interfacenode *)self->parent;
+    struct clock_interfacenode *node = (struct clock_interfacenode *)self->parent;
     char *num = "0000-00-00";
 
     ascii_wzerovalue(num, 10, node->interface->getyear(), 10, 4, 0);
@@ -58,7 +58,7 @@ static unsigned int date_read(struct system_node *self, unsigned int offset, uns
 static unsigned int time_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct base_clock_interfacenode *node = (struct base_clock_interfacenode *)self->parent;
+    struct clock_interfacenode *node = (struct clock_interfacenode *)self->parent;
     char *num = "00:00:00";
 
     ascii_wzerovalue(num, 8, node->interface->gethours(), 10, 2, 0);
@@ -69,14 +69,14 @@ static unsigned int time_read(struct system_node *self, unsigned int offset, uns
 
 }
 
-void base_clock_registerinterface(struct base_clock_interface *interface)
+void clock_registerinterface(struct clock_interface *interface)
 {
 
     base_registerinterface(&interface->base);
 
 }
 
-void base_clock_registerinterfacenode(struct base_clock_interfacenode *node)
+void clock_registerinterfacenode(struct clock_interfacenode *node)
 {
 
     system_addchild(&root, &node->base);
@@ -86,14 +86,14 @@ void base_clock_registerinterfacenode(struct base_clock_interfacenode *node)
 
 }
 
-void base_clock_unregisterinterface(struct base_clock_interface *interface)
+void clock_unregisterinterface(struct clock_interface *interface)
 {
 
     base_unregisterinterface(&interface->base);
 
 }
 
-void base_clock_unregisterinterfacenode(struct base_clock_interfacenode *node)
+void clock_unregisterinterfacenode(struct clock_interfacenode *node)
 {
 
     system_removechild(&node->base, &node->timestamp);
@@ -103,10 +103,10 @@ void base_clock_unregisterinterfacenode(struct base_clock_interfacenode *node)
 
 }
 
-void base_clock_initinterface(struct base_clock_interface *interface, struct base_bus *bus, unsigned int id, unsigned char (*getseconds)(), unsigned char (*getminutes)(), unsigned char (*gethours)(), unsigned char (*getweekday)(), unsigned char (*getday)(), unsigned char (*getmonth)(), unsigned short (*getyear)())
+void clock_initinterface(struct clock_interface *interface, struct base_bus *bus, unsigned int id, unsigned char (*getseconds)(), unsigned char (*getminutes)(), unsigned char (*gethours)(), unsigned char (*getweekday)(), unsigned char (*getday)(), unsigned char (*getmonth)(), unsigned short (*getyear)())
 {
 
-    memory_clear(interface, sizeof (struct base_clock_interface));
+    memory_clear(interface, sizeof (struct clock_interface));
     base_initinterface(&interface->base, bus, id);
 
     interface->getseconds = getseconds;
@@ -119,10 +119,10 @@ void base_clock_initinterface(struct base_clock_interface *interface, struct bas
 
 }
 
-void base_clock_initinterfacenode(struct base_clock_interfacenode *node, struct base_clock_interface *interface)
+void clock_initinterfacenode(struct clock_interfacenode *node, struct clock_interface *interface)
 {
 
-    memory_clear(node, sizeof (struct base_clock_interfacenode));
+    memory_clear(node, sizeof (struct clock_interfacenode));
     system_initnode(&node->base, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, interface->base.bus->name);
     system_initnode(&node->timestamp, SYSTEM_NODETYPE_NORMAL, "timestamp");
     system_initnode(&node->date, SYSTEM_NODETYPE_NORMAL, "date");
@@ -135,11 +135,18 @@ void base_clock_initinterfacenode(struct base_clock_interfacenode *node, struct 
 
 }
 
-void base_clock_setup()
+void init()
 {
 
     system_initnode(&root, SYSTEM_NODETYPE_GROUP, "clock");
     system_registernode(&root);
+
+}
+
+void destroy()
+{
+
+    system_unregisternode(&root);
 
 }
 

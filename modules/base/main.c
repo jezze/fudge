@@ -2,14 +2,6 @@
 #include <kernel/resource.h>
 #include <system/system.h>
 #include "base.h"
-#include "block.h"
-#include "clock.h"
-#include "keyboard.h"
-#include "mouse.h"
-#include "network.h"
-#include "terminal.h"
-#include "timer.h"
-#include "video.h"
 
 void base_registerbus(struct base_bus *bus)
 {
@@ -135,15 +127,6 @@ void base_initinterface(struct base_interface *interface, struct base_bus *bus, 
 
 void init()
 {
-
-    base_block_setup();
-    base_clock_setup();
-    base_keyboard_setup();
-    base_mouse_setup();
-    base_network_setup();
-    base_terminal_setup();
-    base_timer_setup();
-    base_video_setup();
 
 }
 

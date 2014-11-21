@@ -2,7 +2,7 @@
 #include <kernel/resource.h>
 #include <kernel/vfs.h>
 #include <system/system.h>
-#include "base.h"
+#include <base/base.h>
 #include "terminal.h"
 
 static struct system_node root;
@@ -10,7 +10,7 @@ static struct system_node root;
 static unsigned int data_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct base_terminal_interfacenode *node = (struct base_terminal_interfacenode *)self->parent;
+    struct terminal_interfacenode *node = (struct terminal_interfacenode *)self->parent;
  
     return node->interface->rdata(offset, count, buffer);
 
@@ -19,20 +19,20 @@ static unsigned int data_read(struct system_node *self, unsigned int offset, uns
 static unsigned int data_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct base_terminal_interfacenode *node = (struct base_terminal_interfacenode *)self->parent;
+    struct terminal_interfacenode *node = (struct terminal_interfacenode *)self->parent;
 
     return node->interface->wdata(offset, count, buffer);
 
 }
 
-void base_terminal_registerinterface(struct base_terminal_interface *interface)
+void terminal_registerinterface(struct terminal_interface *interface)
 {
 
     base_registerinterface(&interface->base);
 
 }
 
-void base_terminal_registerinterfacenode(struct base_terminal_interfacenode *node)
+void terminal_registerinterfacenode(struct terminal_interfacenode *node)
 {
 
     system_addchild(&root, &node->base);
@@ -40,14 +40,14 @@ void base_terminal_registerinterfacenode(struct base_terminal_interfacenode *nod
 
 }
 
-void base_terminal_unregisterinterface(struct base_terminal_interface *interface)
+void terminal_unregisterinterface(struct terminal_interface *interface)
 {
 
     base_unregisterinterface(&interface->base);
 
 }
 
-void base_terminal_unregisterinterfacenode(struct base_terminal_interfacenode *node)
+void terminal_unregisterinterfacenode(struct terminal_interfacenode *node)
 {
 
     system_removechild(&node->base, &node->data);
@@ -55,10 +55,10 @@ void base_terminal_unregisterinterfacenode(struct base_terminal_interfacenode *n
 
 }
 
-void base_terminal_initinterface(struct base_terminal_interface *interface, struct base_bus *bus, unsigned int id, unsigned int (*rdata)(unsigned int offset, unsigned int count, void *buffer), unsigned int (*wdata)(unsigned int offset, unsigned int count, void *buffer))
+void terminal_initinterface(struct terminal_interface *interface, struct base_bus *bus, unsigned int id, unsigned int (*rdata)(unsigned int offset, unsigned int count, void *buffer), unsigned int (*wdata)(unsigned int offset, unsigned int count, void *buffer))
 {
 
-    memory_clear(interface, sizeof (struct base_terminal_interface));
+    memory_clear(interface, sizeof (struct terminal_interface));
     base_initinterface(&interface->base, bus, id);
 
     interface->rdata = rdata;
@@ -66,10 +66,10 @@ void base_terminal_initinterface(struct base_terminal_interface *interface, stru
 
 }
 
-void base_terminal_initinterfacenode(struct base_terminal_interfacenode *node, struct base_terminal_interface *interface)
+void terminal_initinterfacenode(struct terminal_interfacenode *node, struct terminal_interface *interface)
 {
 
-    memory_clear(node, sizeof (struct base_terminal_interfacenode));
+    memory_clear(node, sizeof (struct terminal_interfacenode));
     system_initnode(&node->base, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, interface->base.bus->name);
     system_initnode(&node->data, SYSTEM_NODETYPE_NORMAL, "data");
 
@@ -79,11 +79,18 @@ void base_terminal_initinterfacenode(struct base_terminal_interfacenode *node, s
 
 }
 
-void base_terminal_setup()
+void init()
 {
 
     system_initnode(&root, SYSTEM_NODETYPE_GROUP, "terminal");
     system_registernode(&root);
+
+}
+
+void destroy()
+{
+
+    system_unregisternode(&root);
 
 }
 

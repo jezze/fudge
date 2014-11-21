@@ -2,7 +2,7 @@
 #include <kernel/resource.h>
 #include <system/system.h>
 #include <base/base.h>
-#include <base/clock.h>
+#include <clock/clock.h>
 #include <arch/x86/platform/platform.h>
 #include <arch/x86/pic/pic.h>
 #include <arch/x86/io/io.h>
@@ -28,8 +28,8 @@ enum rtc_flag
 };
 
 static struct base_driver driver;
-static struct base_clock_interface clockinterface;
-static struct base_clock_interfacenode clockinterfacenode;
+static struct clock_interface clockinterface;
+static struct clock_interfacenode clockinterfacenode;
 static unsigned short io;
 
 static unsigned char convert(unsigned char num)
@@ -115,10 +115,10 @@ static unsigned int driver_match(struct base_bus *bus, unsigned int id)
 static void driver_attach(struct base_bus *bus, unsigned int id)
 {
 
-    base_clock_initinterface(&clockinterface, bus, id, clockinterface_getseconds, clockinterface_getminutes, clockinterface_gethours, clockinterface_getweekday, clockinterface_getday, clockinterface_getmonth, clockinterface_getyear);
-    base_clock_registerinterface(&clockinterface);
-    base_clock_initinterfacenode(&clockinterfacenode, &clockinterface);
-    base_clock_registerinterfacenode(&clockinterfacenode);
+    clock_initinterface(&clockinterface, bus, id, clockinterface_getseconds, clockinterface_getminutes, clockinterface_gethours, clockinterface_getweekday, clockinterface_getday, clockinterface_getmonth, clockinterface_getyear);
+    clock_registerinterface(&clockinterface);
+    clock_initinterfacenode(&clockinterfacenode, &clockinterface);
+    clock_registerinterfacenode(&clockinterfacenode);
     pic_setroutine(bus, id, handleirq);
 
     io = platform_getbase(bus, id);
@@ -129,8 +129,8 @@ static void driver_detach(struct base_bus *bus, unsigned int id)
 {
 
     pic_unsetroutine(bus, id);
-    base_clock_unregisterinterface(&clockinterface);
-    base_clock_unregisterinterfacenode(&clockinterfacenode);
+    clock_unregisterinterface(&clockinterface);
+    clock_unregisterinterfacenode(&clockinterfacenode);
 
 }
 
