@@ -2,6 +2,7 @@ enum
 {
 
     CTRL_TYPE_NULL,
+    CTRL_TYPE_CONSOLECTRL,
     CTRL_TYPE_NETWORKCTRL,
     CTRL_TYPE_VIDEOCTRL
 
@@ -11,6 +12,14 @@ struct ctrl_header
 {
 
     unsigned int type;
+
+};
+
+struct ctrl_consolectrl
+{
+
+    struct ctrl_header header;
+    unsigned char scroll;
 
 };
 
@@ -33,5 +42,6 @@ struct ctrl_videoctrl
 };
 
 void ctrl_init_header(struct ctrl_header *header, unsigned int type);
+void ctrl_init_consolectrl(struct ctrl_consolectrl *consolectrl);
 void ctrl_init_networkctrl(struct ctrl_networkctrl *networkctrl);
 void ctrl_init_videoctrl(struct ctrl_videoctrl *videoctrl);

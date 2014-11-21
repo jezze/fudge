@@ -2,6 +2,7 @@ struct console_interface
 {
 
     struct base_interface base;
+    struct ctrl_consolectrl ctrl;
     unsigned int (*rdata)(unsigned int offset, unsigned int count, void *buffer);
     unsigned int (*wdata)(unsigned int offset, unsigned int count, void *buffer);
 
@@ -11,6 +12,7 @@ struct console_interfacenode
 {
 
     struct system_node base;
+    struct system_node ctrl;
     struct system_node data;
     struct console_interface *interface;
 

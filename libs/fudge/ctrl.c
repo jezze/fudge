@@ -10,6 +10,14 @@ void ctrl_init_header(struct ctrl_header *header, unsigned int type)
 
 }
 
+void ctrl_init_consolectrl(struct ctrl_consolectrl *consolectrl)
+{
+
+    memory_clear(consolectrl, sizeof (struct ctrl_consolectrl));
+    ctrl_init_header(&consolectrl->header, CTRL_TYPE_CONSOLECTRL);
+
+}
+
 void ctrl_init_networkctrl(struct ctrl_networkctrl *networkctrl)
 {
 

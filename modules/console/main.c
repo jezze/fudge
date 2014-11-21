@@ -7,6 +7,22 @@
 
 static struct system_node root;
 
+static unsigned int ctrl_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    struct console_interfacenode *node = (struct console_interfacenode *)self->parent;
+
+    return memory_read(buffer, count, &node->interface->ctrl, sizeof (struct ctrl_consolectrl), offset);
+
+}
+
+static unsigned int ctrl_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    return 0;
+
+}
+
 static unsigned int data_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
@@ -36,6 +52,7 @@ void console_registerinterfacenode(struct console_interfacenode *node)
 {
 
     system_addchild(&root, &node->base);
+    system_addchild(&node->base, &node->ctrl);
     system_addchild(&node->base, &node->data);
 
 }
@@ -50,6 +67,7 @@ void console_unregisterinterface(struct console_interface *interface)
 void console_unregisterinterfacenode(struct console_interfacenode *node)
 {
 
+    system_removechild(&node->base, &node->ctrl);
     system_removechild(&node->base, &node->data);
     system_removechild(&root, &node->base);
 
@@ -71,9 +89,12 @@ void console_initinterfacenode(struct console_interfacenode *node, struct consol
 
     memory_clear(node, sizeof (struct console_interfacenode));
     system_initnode(&node->base, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, interface->base.bus->name);
+    system_initnode(&node->ctrl, SYSTEM_NODETYPE_NORMAL, "ctrl");
     system_initnode(&node->data, SYSTEM_NODETYPE_NORMAL, "data");
 
     node->interface = interface;
+    node->ctrl.read = ctrl_read;
+    node->ctrl.write = ctrl_write;
     node->data.read = data_read;
     node->data.write = data_write;
 
