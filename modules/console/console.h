@@ -2,7 +2,7 @@ struct console_interface
 {
 
     struct base_interface base;
-    struct ctrl_consolectrl ctrl;
+    struct ctrl_consolesettings settings;
     unsigned int (*rdata)(unsigned int offset, unsigned int count, void *buffer);
     unsigned int (*wdata)(unsigned int offset, unsigned int count, void *buffer);
 

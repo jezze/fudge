@@ -12,7 +12,7 @@ static unsigned int interfacenode_ctrlread(struct system_node *self, unsigned in
 
     struct network_interfacenode *node = (struct network_interfacenode *)self->parent;
 
-    return memory_read(buffer, count, &node->interface->ctrl, sizeof (struct ctrl_networkctrl), offset);
+    return memory_read(buffer, count, &node->interface->settings, sizeof (struct ctrl_networksettings), offset);
 
 }
 
@@ -21,7 +21,7 @@ static unsigned int interfacenode_ctrlwrite(struct system_node *self, unsigned i
 
     struct network_interfacenode *node = (struct network_interfacenode *)self->parent;
 
-    return memory_write(&node->interface->ctrl, sizeof (struct ctrl_networkctrl), buffer, count, offset);
+    return memory_write(&node->interface->settings, sizeof (struct ctrl_networksettings), buffer, count, offset);
 
 }
 
@@ -159,7 +159,7 @@ void network_initinterface(struct network_interface *interface, struct base_driv
 
     memory_clear(interface, sizeof (struct network_interface));
     base_initinterface(&interface->base, driver, bus, id);
-    ctrl_init_networkctrl(&interface->ctrl);
+    ctrl_init_networksettings(&interface->settings);
 
     interface->receive = receive;
     interface->send = send;

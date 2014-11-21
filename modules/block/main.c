@@ -7,7 +7,7 @@
 
 static struct system_node root;
 
-static unsigned int data_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int interfacenode_dataread(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct block_interfacenode *node = (struct block_interfacenode *)self->parent;
@@ -65,7 +65,7 @@ void block_initinterfacenode(struct block_interfacenode *node, struct block_inte
     system_initnode(&node->data, SYSTEM_NODETYPE_NORMAL, "data");
 
     node->interface = interface;
-    node->data.read = data_read;
+    node->data.read = interfacenode_dataread;
 
 }
 

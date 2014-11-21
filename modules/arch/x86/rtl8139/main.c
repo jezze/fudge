@@ -320,12 +320,12 @@ static void driver_attach(struct base_bus *bus, unsigned int id)
     settx();
     enable();
 
-    networkinterface.ctrl.mac[0] = io_inb(io + RTL8139_REGISTER_IDR0);
-    networkinterface.ctrl.mac[1] = io_inb(io + RTL8139_REGISTER_IDR1);
-    networkinterface.ctrl.mac[2] = io_inb(io + RTL8139_REGISTER_IDR2);
-    networkinterface.ctrl.mac[3] = io_inb(io + RTL8139_REGISTER_IDR3);
-    networkinterface.ctrl.mac[4] = io_inb(io + RTL8139_REGISTER_IDR4);
-    networkinterface.ctrl.mac[5] = io_inb(io + RTL8139_REGISTER_IDR5);
+    networkinterface.settings.mac[0] = io_inb(io + RTL8139_REGISTER_IDR0);
+    networkinterface.settings.mac[1] = io_inb(io + RTL8139_REGISTER_IDR1);
+    networkinterface.settings.mac[2] = io_inb(io + RTL8139_REGISTER_IDR2);
+    networkinterface.settings.mac[3] = io_inb(io + RTL8139_REGISTER_IDR3);
+    networkinterface.settings.mac[4] = io_inb(io + RTL8139_REGISTER_IDR4);
+    networkinterface.settings.mac[5] = io_inb(io + RTL8139_REGISTER_IDR5);
 
 }
 

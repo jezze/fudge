@@ -10,27 +10,27 @@ void ctrl_init_header(struct ctrl_header *header, unsigned int type)
 
 }
 
-void ctrl_init_consolectrl(struct ctrl_consolectrl *consolectrl)
+void ctrl_init_consolesettings(struct ctrl_consolesettings *settings)
 {
 
-    memory_clear(consolectrl, sizeof (struct ctrl_consolectrl));
-    ctrl_init_header(&consolectrl->header, CTRL_TYPE_CONSOLECTRL);
+    memory_clear(settings, sizeof (struct ctrl_consolesettings));
+    ctrl_init_header(&settings->header, CTRL_TYPE_CONSOLE);
 
 }
 
-void ctrl_init_networkctrl(struct ctrl_networkctrl *networkctrl)
+void ctrl_init_networksettings(struct ctrl_networksettings *settings)
 {
 
-    memory_clear(networkctrl, sizeof (struct ctrl_networkctrl));
-    ctrl_init_header(&networkctrl->header, CTRL_TYPE_NETWORKCTRL);
+    memory_clear(settings, sizeof (struct ctrl_networksettings));
+    ctrl_init_header(&settings->header, CTRL_TYPE_NETWORK);
 
 }
 
-void ctrl_init_videoctrl(struct ctrl_videoctrl *videoctrl)
+void ctrl_init_videosettings(struct ctrl_videosettings *settings)
 {
 
-    memory_clear(videoctrl, sizeof (struct ctrl_videoctrl));
-    ctrl_init_header(&videoctrl->header, CTRL_TYPE_VIDEOCTRL);
+    memory_clear(settings, sizeof (struct ctrl_videosettings));
+    ctrl_init_header(&settings->header, CTRL_TYPE_VIDEO);
 
 }
 

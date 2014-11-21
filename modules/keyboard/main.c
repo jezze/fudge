@@ -7,7 +7,7 @@
 
 static struct system_node root;
 
-static unsigned int data_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int interfacenode_dataread(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct keyboard_interfacenode *node = (struct keyboard_interfacenode *)self->parent;
@@ -64,7 +64,7 @@ void keyboard_initinterfacenode(struct keyboard_interfacenode *node, struct keyb
     system_initnode(&node->data, SYSTEM_NODETYPE_NORMAL, "data");
 
     node->interface = interface;
-    node->data.read = data_read;
+    node->data.read = interfacenode_dataread;
 
 }
 

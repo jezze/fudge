@@ -240,7 +240,7 @@ static void driver_attach(struct base_bus *bus, unsigned int id)
     io_outb(io + UART_REGISTER_MCR, UART_MCR_READY | UART_MCR_REQUEST | UART_MCR_AUX2);
     io_outb(io + UART_REGISTER_IER, UART_IER_RECEIVE);
 
-    consoleinterface.ctrl.scroll = 1;
+    consoleinterface.settings.scroll = 1;
 
 }
 

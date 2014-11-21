@@ -1,13 +1,13 @@
 #include <fudge.h>
 
-union ctrl
+union settings
 {
 
     unsigned char raw[FUDGE_BSIZE];
     struct ctrl_header header;
-    struct ctrl_consolectrl consolectrl;
-    struct ctrl_networkctrl networkctrl;
-    struct ctrl_videoctrl videoctrl;
+    struct ctrl_consolesettings consolesettings;
+    struct ctrl_networksettings networksettings;
+    struct ctrl_videosettings videosettings;
 
 };
 
@@ -56,18 +56,18 @@ static unsigned int writeheader(unsigned int offset, struct ctrl_header *header)
     switch (header->type)
     {
 
-    case CTRL_TYPE_CONSOLECTRL:
-        offset += writestring(offset, "consolectrl");
+    case CTRL_TYPE_CONSOLE:
+        offset += writestring(offset, "consolesettings");
 
         break;
 
-    case CTRL_TYPE_NETWORKCTRL:
-        offset += writestring(offset, "networkctrl");
+    case CTRL_TYPE_NETWORK:
+        offset += writestring(offset, "networksettings");
 
         break;
 
-    case CTRL_TYPE_VIDEOCTRL:
-        offset += writestring(offset, "videoctrl");
+    case CTRL_TYPE_VIDEO:
+        offset += writestring(offset, "videosettings");
 
         break;
 
@@ -84,49 +84,49 @@ static unsigned int writeheader(unsigned int offset, struct ctrl_header *header)
 
 }
 
-static unsigned int writeconsolectrl(unsigned int offset, struct ctrl_consolectrl *consolectrl)
+static unsigned int writeconsolesettings(unsigned int offset, struct ctrl_consolesettings *settings)
 {
 
     offset += writestring(offset, "scroll: ");
-    offset += writeboolean(offset, consolectrl->scroll);
+    offset += writeboolean(offset, settings->scroll);
     offset += writestring(offset, "\n");
 
     return offset;
 
 }
 
-static unsigned int writenetworkctrl(unsigned int offset, struct ctrl_networkctrl *networkctrl)
+static unsigned int writenetworksettings(unsigned int offset, struct ctrl_networksettings *settings)
 {
 
     offset += writestring(offset, "mac: ");
-    offset += writehex2(offset, networkctrl->mac[0]);
+    offset += writehex2(offset, settings->mac[0]);
     offset += writestring(offset, ":");
-    offset += writehex2(offset, networkctrl->mac[1]);
+    offset += writehex2(offset, settings->mac[1]);
     offset += writestring(offset, ":");
-    offset += writehex2(offset, networkctrl->mac[2]);
+    offset += writehex2(offset, settings->mac[2]);
     offset += writestring(offset, ":");
-    offset += writehex2(offset, networkctrl->mac[3]);
+    offset += writehex2(offset, settings->mac[3]);
     offset += writestring(offset, ":");
-    offset += writehex2(offset, networkctrl->mac[4]);
+    offset += writehex2(offset, settings->mac[4]);
     offset += writestring(offset, ":");
-    offset += writehex2(offset, networkctrl->mac[5]);
+    offset += writehex2(offset, settings->mac[5]);
     offset += writestring(offset, "\n");
 
     return offset;
 
 }
 
-static unsigned int writevideoctrl(unsigned int offset, struct ctrl_videoctrl *videoctrl)
+static unsigned int writevideosettings(unsigned int offset, struct ctrl_videosettings *settings)
 {
 
     offset += writestring(offset, "width: ");
-    offset += writedec(offset, videoctrl->w);
+    offset += writedec(offset, settings->w);
     offset += writestring(offset, "\n");
     offset += writestring(offset, "height: ");
-    offset += writedec(offset, videoctrl->h);
+    offset += writedec(offset, settings->h);
     offset += writestring(offset, "\n");
     offset += writestring(offset, "bpp: ");
-    offset += writedec(offset, videoctrl->bpp);
+    offset += writedec(offset, settings->bpp);
     offset += writestring(offset, "\n");
 
     return offset;
@@ -136,7 +136,7 @@ static unsigned int writevideoctrl(unsigned int offset, struct ctrl_videoctrl *v
 void main()
 {
 
-    union ctrl buffer;
+    union settings buffer;
     unsigned int count, roff, woff;
 
     call_open(CALL_I0);
@@ -151,18 +151,18 @@ void main()
     switch (buffer.header.type)
     {
 
-    case CTRL_TYPE_CONSOLECTRL:
-        writeconsolectrl(woff, &buffer.consolectrl);
+    case CTRL_TYPE_CONSOLE:
+        writeconsolesettings(woff, &buffer.consolesettings);
 
         break;
 
-    case CTRL_TYPE_NETWORKCTRL:
-        writenetworkctrl(woff, &buffer.networkctrl);
+    case CTRL_TYPE_NETWORK:
+        writenetworksettings(woff, &buffer.networksettings);
 
         break;
 
-    case CTRL_TYPE_VIDEOCTRL:
-        writevideoctrl(woff, &buffer.videoctrl);
+    case CTRL_TYPE_VIDEO:
+        writevideosettings(woff, &buffer.videosettings);
 
         break;
 

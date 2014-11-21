@@ -2,7 +2,7 @@ struct video_interface
 {
 
     struct base_interface base;
-    struct ctrl_videoctrl ctrl;
+    struct ctrl_videosettings settings;
     void (*setmode)(unsigned int xres, unsigned int yres, unsigned int bpp);
     unsigned int (*rdata)(unsigned int offset, unsigned int count, void *buffer);
     unsigned int (*wdata)(unsigned int offset, unsigned int count, void *buffer);

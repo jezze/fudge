@@ -7,7 +7,7 @@
 
 static struct system_node root;
 
-static unsigned int sleep_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int interfacenode_sleepread(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct timer_interfacenode *node = (struct timer_interfacenode *)self->parent;
@@ -67,7 +67,7 @@ void timer_initinterfacenode(struct timer_interfacenode *node, struct timer_inte
     system_initnode(&node->sleep, SYSTEM_NODETYPE_NORMAL, "sleep");
 
     node->interface = interface;
-    node->sleep.read = sleep_read;
+    node->sleep.read = interfacenode_sleepread;
 
 }
 

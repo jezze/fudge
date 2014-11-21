@@ -2,7 +2,7 @@ struct network_interface
 {
 
     struct base_interface base;
-    struct ctrl_networkctrl ctrl;
+    struct ctrl_networksettings settings;
     unsigned int (*receive)(unsigned int count, void *buffer);
     unsigned int (*send)(unsigned int count, void *buffer);
     void *(*getpacket)();

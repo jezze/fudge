@@ -22,7 +22,7 @@ static unsigned int isleapyear(unsigned short year)
 
 }
 
-static unsigned int timestamp_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int interfacenode_timestampread(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct clock_interfacenode *node = (struct clock_interfacenode *)self->parent;
@@ -41,7 +41,7 @@ static unsigned int timestamp_read(struct system_node *self, unsigned int offset
 
 }
 
-static unsigned int date_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int interfacenode_dateread(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct clock_interfacenode *node = (struct clock_interfacenode *)self->parent;
@@ -55,7 +55,7 @@ static unsigned int date_read(struct system_node *self, unsigned int offset, uns
 
 }
 
-static unsigned int time_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int interfacenode_timeread(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct clock_interfacenode *node = (struct clock_interfacenode *)self->parent;
@@ -129,9 +129,9 @@ void clock_initinterfacenode(struct clock_interfacenode *node, struct clock_inte
     system_initnode(&node->time, SYSTEM_NODETYPE_NORMAL, "time");
 
     node->interface = interface;
-    node->timestamp.read = timestamp_read;
-    node->date.read = date_read;
-    node->time.read = time_read;
+    node->timestamp.read = interfacenode_timestampread;
+    node->date.read = interfacenode_dateread;
+    node->time.read = interfacenode_timeread;
 
 }
 

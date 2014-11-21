@@ -7,21 +7,21 @@
 
 static struct system_node root;
 
-static unsigned int ctrl_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int interfacenode_ctrlread(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct video_interfacenode *node = (struct video_interfacenode *)self->parent;
 
-    return memory_read(buffer, count, &node->interface->ctrl, sizeof (struct ctrl_videoctrl), offset);
+    return memory_read(buffer, count, &node->interface->settings, sizeof (struct ctrl_videosettings), offset);
 
 }
 
-static unsigned int ctrl_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int interfacenode_ctrlwrite(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct video_interfacenode *node = (struct video_interfacenode *)self->parent;
 
-    count = memory_write(&node->interface->ctrl, sizeof (struct ctrl_videoctrl), buffer, count, offset);
+    count = memory_write(&node->interface->settings, sizeof (struct ctrl_videosettings), buffer, count, offset);
 
     node->interface->setmode(320, 200, 8);
 
@@ -29,7 +29,7 @@ static unsigned int ctrl_write(struct system_node *self, unsigned int offset, un
 
 }
 
-static unsigned int data_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int interfacenode_dataread(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct video_interfacenode *node = (struct video_interfacenode *)self->parent;
@@ -38,7 +38,7 @@ static unsigned int data_read(struct system_node *self, unsigned int offset, uns
 
 }
 
-static unsigned int data_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int interfacenode_datawrite(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct video_interfacenode *node = (struct video_interfacenode *)self->parent;
@@ -47,7 +47,7 @@ static unsigned int data_write(struct system_node *self, unsigned int offset, un
 
 }
 
-static unsigned int colormap_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int interfacenode_colormapread(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct video_interfacenode *node = (struct video_interfacenode *)self->parent;
@@ -56,7 +56,7 @@ static unsigned int colormap_read(struct system_node *self, unsigned int offset,
 
 }
 
-static unsigned int colormap_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int interfacenode_colormapwrite(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct video_interfacenode *node = (struct video_interfacenode *)self->parent;
@@ -104,7 +104,7 @@ void video_initinterface(struct video_interface *interface, struct base_driver *
 
     memory_clear(interface, sizeof (struct video_interface));
     base_initinterface(&interface->base, driver, bus, id);
-    ctrl_init_videoctrl(&interface->ctrl);
+    ctrl_init_videosettings(&interface->settings);
 
     interface->setmode = setmode;
     interface->rdata = rdata;
@@ -124,12 +124,12 @@ void video_initinterfacenode(struct video_interfacenode *node, struct video_inte
     system_initnode(&node->colormap, SYSTEM_NODETYPE_NORMAL, "colormap");
 
     node->interface = interface;
-    node->ctrl.read = ctrl_read;
-    node->ctrl.write = ctrl_write;
-    node->data.read = data_read;
-    node->data.write = data_write;
-    node->colormap.read = colormap_read;
-    node->colormap.write = colormap_write;
+    node->ctrl.read = interfacenode_ctrlread;
+    node->ctrl.write = interfacenode_ctrlwrite;
+    node->data.read = interfacenode_dataread;
+    node->data.write = interfacenode_datawrite;
+    node->colormap.read = interfacenode_colormapread;
+    node->colormap.write = interfacenode_colormapwrite;
 
 }
 

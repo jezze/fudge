@@ -184,9 +184,9 @@ static unsigned int consoleinterface_wdata(unsigned int offset, unsigned int cou
 {
 
     struct vga_character *memory = taddress;
-    unsigned int bytespp = videointerface.ctrl.bpp / 8;
-    unsigned int linesize = videointerface.ctrl.w * bytespp;
-    unsigned int fullsize = videointerface.ctrl.h * linesize;
+    unsigned int bytespp = videointerface.settings.bpp / 8;
+    unsigned int linesize = videointerface.settings.w * bytespp;
+    unsigned int fullsize = videointerface.settings.h * linesize;
     unsigned int i;
 
     for (i = 0; i < count; i++)
@@ -236,9 +236,9 @@ static unsigned int consoleinterface_wdata(unsigned int offset, unsigned int cou
 static void videointerface_setmode(unsigned int xres, unsigned int yres, unsigned int bpp)
 {
 
-    videointerface.ctrl.w = 320;
-    videointerface.ctrl.h = 200;
-    videointerface.ctrl.bpp = 8;
+    videointerface.settings.w = 320;
+    videointerface.settings.h = 200;
+    videointerface.settings.bpp = 8;
 
     io_inb(VGA_REGISTER_FCCCTRL);
     io_outb(VGA_REGISTER_ARINDEX, VGA_ARINDEX_DISABLE);
@@ -253,9 +253,9 @@ static void videointerface_setmode(unsigned int xres, unsigned int yres, unsigne
 static unsigned int videointerface_rdata(unsigned int offset, unsigned int count, void *buffer)
 {
 
-    unsigned int bytespp = videointerface.ctrl.bpp / 8;
-    unsigned int linesize = videointerface.ctrl.w * bytespp;
-    unsigned int fullsize = videointerface.ctrl.h * linesize;
+    unsigned int bytespp = videointerface.settings.bpp / 8;
+    unsigned int linesize = videointerface.settings.w * bytespp;
+    unsigned int fullsize = videointerface.settings.h * linesize;
 
     return memory_read(buffer, count, gaddress, fullsize, offset);
 
@@ -264,9 +264,9 @@ static unsigned int videointerface_rdata(unsigned int offset, unsigned int count
 static unsigned int videointerface_wdata(unsigned int offset, unsigned int count, void *buffer)
 {
 
-    unsigned int bytespp = videointerface.ctrl.bpp / 8;
-    unsigned int linesize = videointerface.ctrl.w * bytespp;
-    unsigned int fullsize = videointerface.ctrl.h * linesize;
+    unsigned int bytespp = videointerface.settings.bpp / 8;
+    unsigned int linesize = videointerface.settings.w * bytespp;
+    unsigned int fullsize = videointerface.settings.h * linesize;
 
     return memory_write(gaddress, fullsize, buffer, count, offset);
 
@@ -349,10 +349,10 @@ static void driver_attach(struct base_bus *bus, unsigned int id)
     taddress = (void *)0x000B8000;
     gaddress = (void *)0x000A0000;
     cursor.color = 0x0F;
-    consoleinterface.ctrl.scroll = 1;
-    videointerface.ctrl.w = 80;
-    videointerface.ctrl.h = 25;
-    videointerface.ctrl.bpp = 16;
+    consoleinterface.settings.scroll = 1;
+    videointerface.settings.w = 80;
+    videointerface.settings.h = 25;
+    videointerface.settings.bpp = 16;
 
     clear(0);
 

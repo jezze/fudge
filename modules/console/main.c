@@ -7,23 +7,25 @@
 
 static struct system_node root;
 
-static unsigned int ctrl_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int interfacenode_ctrlread(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct console_interfacenode *node = (struct console_interfacenode *)self->parent;
 
-    return memory_read(buffer, count, &node->interface->ctrl, sizeof (struct ctrl_consolectrl), offset);
+    return memory_read(buffer, count, &node->interface->settings, sizeof (struct ctrl_consolesettings), offset);
 
 }
 
-static unsigned int ctrl_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int interfacenode_ctrlwrite(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    return 0;
+    struct console_interfacenode *node = (struct console_interfacenode *)self->parent;
+
+    return memory_write(&node->interface->settings, sizeof (struct ctrl_consolesettings), buffer, count, offset);
 
 }
 
-static unsigned int data_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int interfacenode_dataread(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct console_interfacenode *node = (struct console_interfacenode *)self->parent;
@@ -32,7 +34,7 @@ static unsigned int data_read(struct system_node *self, unsigned int offset, uns
 
 }
 
-static unsigned int data_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int interfacenode_datawrite(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct console_interfacenode *node = (struct console_interfacenode *)self->parent;
@@ -78,7 +80,7 @@ void console_initinterface(struct console_interface *interface, struct base_driv
 
     memory_clear(interface, sizeof (struct console_interface));
     base_initinterface(&interface->base, driver, bus, id);
-    ctrl_init_consolectrl(&interface->ctrl);
+    ctrl_init_consolesettings(&interface->settings);
 
     interface->rdata = rdata;
     interface->wdata = wdata;
@@ -94,10 +96,10 @@ void console_initinterfacenode(struct console_interfacenode *node, struct consol
     system_initnode(&node->data, SYSTEM_NODETYPE_NORMAL, "data");
 
     node->interface = interface;
-    node->ctrl.read = ctrl_read;
-    node->ctrl.write = ctrl_write;
-    node->data.read = data_read;
-    node->data.write = data_write;
+    node->ctrl.read = interfacenode_ctrlread;
+    node->ctrl.write = interfacenode_ctrlwrite;
+    node->data.read = interfacenode_dataread;
+    node->data.write = interfacenode_datawrite;
 
 }
 
