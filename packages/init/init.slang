@@ -16,10 +16,10 @@
 /bin/modload < /boot/mod/base.ko.0
 /bin/modload < /boot/mod/block.ko.0
 /bin/modload < /boot/mod/clock.ko.0
+/bin/modload < /boot/mod/console.ko.0
 /bin/modload < /boot/mod/keyboard.ko.0
 /bin/modload < /boot/mod/mouse.ko.0
 /bin/modload < /boot/mod/network.ko.0
-/bin/modload < /boot/mod/terminal.ko.0
 /bin/modload < /boot/mod/timer.ko.0
 /bin/modload < /boot/mod/video.ko.0
 /bin/modload < /boot/mod/pic.ko.0

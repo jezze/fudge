@@ -24,7 +24,7 @@ DIR:=$(CUR)/pipe
 include $(DIR)/rules.mk
 DIR:=$(CUR)/system
 include $(DIR)/rules.mk
-DIR:=$(CUR)/terminal
+DIR:=$(CUR)/console
 include $(DIR)/rules.mk
 DIR:=$(CUR)/timer
 include $(DIR)/rules.mk

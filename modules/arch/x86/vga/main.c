@@ -2,7 +2,7 @@
 #include <kernel/resource.h>
 #include <system/system.h>
 #include <base/base.h>
-#include <terminal/terminal.h>
+#include <console/console.h>
 #include <video/video.h>
 #include <arch/x86/io/io.h>
 #include <arch/x86/pci/pci.h>
@@ -21,9 +21,9 @@ struct vga_character
 };
 
 static struct base_driver driver;
-static struct terminal_interface terminalinterface;
+static struct console_interface consoleinterface;
 static struct video_interface videointerface;
-static struct terminal_interfacenode terminalinterfacenode;
+static struct console_interfacenode consoleinterfacenode;
 static struct video_interfacenode videointerfacenode;
 static struct {unsigned char color; unsigned short offset;} cursor;
 static void *taddress;
@@ -173,14 +173,14 @@ static void clear(unsigned int offset)
 
 }
 
-static unsigned int terminalinterface_rdata(unsigned int offset, unsigned int count, void *buffer)
+static unsigned int consoleinterface_rdata(unsigned int offset, unsigned int count, void *buffer)
 {
 
     return 0;
 
 }
 
-static unsigned int terminalinterface_wdata(unsigned int offset, unsigned int count, void *buffer)
+static unsigned int consoleinterface_wdata(unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct vga_character *memory = taddress;
@@ -337,10 +337,10 @@ static unsigned int driver_match(struct base_bus *bus, unsigned int id)
 static void driver_attach(struct base_bus *bus, unsigned int id)
 {
 
-    terminal_initinterface(&terminalinterface, &driver, bus, id, terminalinterface_rdata, terminalinterface_wdata);
-    terminal_registerinterface(&terminalinterface);
-    terminal_initinterfacenode(&terminalinterfacenode, &terminalinterface);
-    terminal_registerinterfacenode(&terminalinterfacenode);
+    console_initinterface(&consoleinterface, &driver, bus, id, consoleinterface_rdata, consoleinterface_wdata);
+    console_registerinterface(&consoleinterface);
+    console_initinterfacenode(&consoleinterfacenode, &consoleinterface);
+    console_registerinterfacenode(&consoleinterfacenode);
     video_initinterface(&videointerface, &driver, bus, id, videointerface_setmode, videointerface_rdata, videointerface_wdata, videointerface_rcolormap, videointerface_wcolormap);
     video_registerinterface(&videointerface);
     video_initinterfacenode(&videointerfacenode, &videointerface);
@@ -362,8 +362,8 @@ static void driver_attach(struct base_bus *bus, unsigned int id)
 static void driver_detach(struct base_bus *bus, unsigned int id)
 {
 
-    terminal_unregisterinterface(&terminalinterface);
-    terminal_unregisterinterfacenode(&terminalinterfacenode);
+    console_unregisterinterface(&consoleinterface);
+    console_unregisterinterfacenode(&consoleinterfacenode);
     video_unregisterinterface(&videointerface);
     video_unregisterinterfacenode(&videointerfacenode);
 

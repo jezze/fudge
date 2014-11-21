@@ -3,7 +3,7 @@
 #include <kernel/scheduler.h>
 #include <system/system.h>
 #include <base/base.h>
-#include <terminal/terminal.h>
+#include <console/console.h>
 #include <arch/x86/platform/platform.h>
 #include <arch/x86/pic/pic.h>
 #include <arch/x86/io/io.h>
@@ -149,8 +149,8 @@ enum uart_msr
 };
 
 static struct base_driver driver;
-static struct terminal_interface terminalinterface;
-static struct terminal_interfacenode terminalinterfacenode;
+static struct console_interface consoleinterface;
+static struct console_interfacenode consoleinterfacenode;
 static unsigned char buffer[512];
 static struct buffer cfifo;
 static struct scheduler_rendezvous rdata;
@@ -185,7 +185,7 @@ static void handleirq(unsigned int irq, struct base_bus *bus, unsigned int id)
 
 }
 
-static unsigned int terminalinterface_rdata(unsigned int offset, unsigned int count, void *buffer)
+static unsigned int consoleinterface_rdata(unsigned int offset, unsigned int count, void *buffer)
 {
 
     count = buffer_rcfifo(&cfifo, count, buffer);
@@ -196,7 +196,7 @@ static unsigned int terminalinterface_rdata(unsigned int offset, unsigned int co
 
 }
 
-static unsigned int terminalinterface_wdata(unsigned int offset, unsigned int count, void *buffer)
+static unsigned int consoleinterface_wdata(unsigned int offset, unsigned int count, void *buffer)
 {
 
     unsigned char *b = buffer;
@@ -222,10 +222,10 @@ static unsigned int driver_match(struct base_bus *bus, unsigned int id)
 static void driver_attach(struct base_bus *bus, unsigned int id)
 {
 
-    terminal_initinterface(&terminalinterface, &driver, bus, id, terminalinterface_rdata, terminalinterface_wdata);
-    terminal_registerinterface(&terminalinterface);
-    terminal_initinterfacenode(&terminalinterfacenode, &terminalinterface);
-    terminal_registerinterfacenode(&terminalinterfacenode);
+    console_initinterface(&consoleinterface, &driver, bus, id, consoleinterface_rdata, consoleinterface_wdata);
+    console_registerinterface(&consoleinterface);
+    console_initinterfacenode(&consoleinterfacenode, &consoleinterface);
+    console_registerinterfacenode(&consoleinterfacenode);
     buffer_init(&cfifo, 1, 512, &buffer);
     pic_setroutine(bus, id, handleirq);
 
@@ -246,8 +246,8 @@ static void driver_detach(struct base_bus *bus, unsigned int id)
 {
 
     pic_unsetroutine(bus, id);
-    terminal_unregisterinterface(&terminalinterface);
-    terminal_unregisterinterfacenode(&terminalinterfacenode);
+    console_unregisterinterface(&consoleinterface);
+    console_unregisterinterfacenode(&consoleinterfacenode);
 
 }
 
