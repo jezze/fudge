@@ -104,6 +104,7 @@ void video_initinterface(struct video_interface *interface, struct base_driver *
 
     memory_clear(interface, sizeof (struct video_interface));
     base_initinterface(&interface->base, driver, bus, id);
+    ctrl_init_videoctrl(&interface->ctrl);
 
     interface->setmode = setmode;
     interface->rdata = rdata;

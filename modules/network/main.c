@@ -159,6 +159,7 @@ void network_initinterface(struct network_interface *interface, struct base_driv
 
     memory_clear(interface, sizeof (struct network_interface));
     base_initinterface(&interface->base, driver, bus, id);
+    ctrl_init_networkctrl(&interface->ctrl);
 
     interface->receive = receive;
     interface->send = send;

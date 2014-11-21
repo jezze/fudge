@@ -78,6 +78,7 @@ void console_initinterface(struct console_interface *interface, struct base_driv
 
     memory_clear(interface, sizeof (struct console_interface));
     base_initinterface(&interface->base, driver, bus, id);
+    ctrl_init_consolectrl(&interface->ctrl);
 
     interface->rdata = rdata;
     interface->wdata = wdata;

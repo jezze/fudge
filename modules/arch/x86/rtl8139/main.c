@@ -320,8 +320,6 @@ static void driver_attach(struct base_bus *bus, unsigned int id)
     settx();
     enable();
 
-    ctrl_init_networkctrl(&networkinterface.ctrl);
-
     networkinterface.ctrl.mac[0] = io_inb(io + RTL8139_REGISTER_IDR0);
     networkinterface.ctrl.mac[1] = io_inb(io + RTL8139_REGISTER_IDR1);
     networkinterface.ctrl.mac[2] = io_inb(io + RTL8139_REGISTER_IDR2);
