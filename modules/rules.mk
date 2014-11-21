@@ -8,6 +8,8 @@ DIR:=$(CUR)/block
 include $(DIR)/rules.mk
 DIR:=$(CUR)/clock
 include $(DIR)/rules.mk
+DIR:=$(CUR)/console
+include $(DIR)/rules.mk
 DIR:=$(CUR)/keyboard
 include $(DIR)/rules.mk
 DIR:=$(CUR)/log
@@ -23,8 +25,6 @@ include $(DIR)/rules.mk
 DIR:=$(CUR)/pipe
 include $(DIR)/rules.mk
 DIR:=$(CUR)/system
-include $(DIR)/rules.mk
-DIR:=$(CUR)/console
 include $(DIR)/rules.mk
 DIR:=$(CUR)/timer
 include $(DIR)/rules.mk
