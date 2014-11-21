@@ -221,7 +221,7 @@ static unsigned int driver_match(struct base_bus *bus, unsigned int id)
 static void driver_attach(struct base_bus *bus, unsigned int id)
 {
 
-    video_initinterface(&videointerface, bus, id, videointerface_setmode, videointerface_rdata, videointerface_wdata, videointerface_rcolormap, videointerface_wcolormap);
+    video_initinterface(&videointerface, &driver, bus, id, videointerface_setmode, videointerface_rdata, videointerface_wdata, videointerface_rcolormap, videointerface_wcolormap);
     video_registerinterface(&videointerface);
     video_initinterfacenode(&videointerfacenode, &videointerface);
     video_registerinterfacenode(&videointerfacenode);

@@ -46,11 +46,11 @@ void mouse_unregisterinterfacenode(struct mouse_interfacenode *node)
 
 }
 
-void mouse_initinterface(struct mouse_interface *interface, struct base_bus *bus, unsigned int id, unsigned int (*rdata)(unsigned int offset, unsigned int count, void *buffer))
+void mouse_initinterface(struct mouse_interface *interface, struct base_driver *driver, struct base_bus *bus, unsigned int id, unsigned int (*rdata)(unsigned int offset, unsigned int count, void *buffer))
 {
 
     memory_clear(interface, sizeof (struct mouse_interface));
-    base_initinterface(&interface->base, bus, id);
+    base_initinterface(&interface->base, driver, bus, id);
 
     interface->rdata = rdata;
 

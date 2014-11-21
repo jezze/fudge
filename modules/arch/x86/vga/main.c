@@ -337,11 +337,11 @@ static unsigned int driver_match(struct base_bus *bus, unsigned int id)
 static void driver_attach(struct base_bus *bus, unsigned int id)
 {
 
-    terminal_initinterface(&terminalinterface, bus, id, terminalinterface_rdata, terminalinterface_wdata);
+    terminal_initinterface(&terminalinterface, &driver, bus, id, terminalinterface_rdata, terminalinterface_wdata);
     terminal_registerinterface(&terminalinterface);
     terminal_initinterfacenode(&terminalinterfacenode, &terminalinterface);
     terminal_registerinterfacenode(&terminalinterfacenode);
-    video_initinterface(&videointerface, bus, id, videointerface_setmode, videointerface_rdata, videointerface_wdata, videointerface_rcolormap, videointerface_wcolormap);
+    video_initinterface(&videointerface, &driver, bus, id, videointerface_setmode, videointerface_rdata, videointerface_wdata, videointerface_rcolormap, videointerface_wcolormap);
     video_registerinterface(&videointerface);
     video_initinterfacenode(&videointerfacenode, &videointerface);
     video_registerinterfacenode(&videointerfacenode);

@@ -55,11 +55,11 @@ void terminal_unregisterinterfacenode(struct terminal_interfacenode *node)
 
 }
 
-void terminal_initinterface(struct terminal_interface *interface, struct base_bus *bus, unsigned int id, unsigned int (*rdata)(unsigned int offset, unsigned int count, void *buffer), unsigned int (*wdata)(unsigned int offset, unsigned int count, void *buffer))
+void terminal_initinterface(struct terminal_interface *interface, struct base_driver *driver, struct base_bus *bus, unsigned int id, unsigned int (*rdata)(unsigned int offset, unsigned int count, void *buffer), unsigned int (*wdata)(unsigned int offset, unsigned int count, void *buffer))
 {
 
     memory_clear(interface, sizeof (struct terminal_interface));
-    base_initinterface(&interface->base, bus, id);
+    base_initinterface(&interface->base, driver, bus, id);
 
     interface->rdata = rdata;
     interface->wdata = wdata;

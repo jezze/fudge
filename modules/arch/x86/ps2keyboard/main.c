@@ -49,7 +49,7 @@ static unsigned int driver_match(struct base_bus *bus, unsigned int id)
 static void driver_attach(struct base_bus *bus, unsigned int id)
 {
 
-    keyboard_initinterface(&keyboardinterface, bus, id, keyboardinterface_rdata);
+    keyboard_initinterface(&keyboardinterface, &driver, bus, id, keyboardinterface_rdata);
     keyboard_registerinterface(&keyboardinterface);
     keyboard_initinterfacenode(&keyboardinterfacenode, &keyboardinterface);
     keyboard_registerinterfacenode(&keyboardinterfacenode);

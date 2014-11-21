@@ -154,11 +154,11 @@ void network_unregisterchannelnode(struct network_channelnode *node)
 
 }
 
-void network_initinterface(struct network_interface *interface, struct base_bus *bus, unsigned int id, unsigned int (*receive)(unsigned int count, void *buffer), unsigned int (*send)(unsigned int count, void *buffer), void *(*getpacket)(), void (*dumppacket)())
+void network_initinterface(struct network_interface *interface, struct base_driver *driver, struct base_bus *bus, unsigned int id, unsigned int (*receive)(unsigned int count, void *buffer), unsigned int (*send)(unsigned int count, void *buffer), void *(*getpacket)(), void (*dumppacket)())
 {
 
     memory_clear(interface, sizeof (struct network_interface));
-    base_initinterface(&interface->base, bus, id);
+    base_initinterface(&interface->base, driver, bus, id);
 
     interface->receive = receive;
     interface->send = send;

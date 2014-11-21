@@ -99,11 +99,11 @@ void video_unregisterinterfacenode(struct video_interfacenode *node)
 
 }
 
-void video_initinterface(struct video_interface *interface, struct base_bus *bus, unsigned int id, void (*setmode)(unsigned int xres, unsigned int yres, unsigned int bpp), unsigned int (*rdata)(unsigned int offset, unsigned int count, void *buffer), unsigned int (*wdata)(unsigned int offset, unsigned int count, void *buffer), unsigned int (*rcolormap)(unsigned int offset, unsigned int count, void *buffer), unsigned int (*wcolormap)(unsigned int offset, unsigned int count, void *buffer))
+void video_initinterface(struct video_interface *interface, struct base_driver *driver, struct base_bus *bus, unsigned int id, void (*setmode)(unsigned int xres, unsigned int yres, unsigned int bpp), unsigned int (*rdata)(unsigned int offset, unsigned int count, void *buffer), unsigned int (*wdata)(unsigned int offset, unsigned int count, void *buffer), unsigned int (*rcolormap)(unsigned int offset, unsigned int count, void *buffer), unsigned int (*wcolormap)(unsigned int offset, unsigned int count, void *buffer))
 {
 
     memory_clear(interface, sizeof (struct video_interface));
-    base_initinterface(&interface->base, bus, id);
+    base_initinterface(&interface->base, driver, bus, id);
 
     interface->setmode = setmode;
     interface->rdata = rdata;

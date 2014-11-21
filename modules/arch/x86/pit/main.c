@@ -101,7 +101,7 @@ static unsigned int driver_match(struct base_bus *bus, unsigned int id)
 static void driver_attach(struct base_bus *bus, unsigned int id)
 {
 
-    timer_initinterface(&timerinterface, bus, id, timerinterface_sleep);
+    timer_initinterface(&timerinterface, &driver, bus, id, timerinterface_sleep);
     timer_registerinterface(&timerinterface);
     timer_initinterfacenode(&timerinterfacenode, &timerinterface);
     timer_registerinterfacenode(&timerinterfacenode);

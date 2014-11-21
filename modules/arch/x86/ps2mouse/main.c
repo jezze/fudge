@@ -69,7 +69,7 @@ static unsigned int driver_match(struct base_bus *bus, unsigned int id)
 static void driver_attach(struct base_bus *bus, unsigned int id)
 {
 
-    mouse_initinterface(&mouseinterface, bus, id, mouseinterface_rdata);
+    mouse_initinterface(&mouseinterface, &driver, bus, id, mouseinterface_rdata);
     mouse_registerinterface(&mouseinterface);
     mouse_initinterfacenode(&mouseinterfacenode, &mouseinterface);
     mouse_registerinterfacenode(&mouseinterfacenode);

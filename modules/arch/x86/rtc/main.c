@@ -115,7 +115,7 @@ static unsigned int driver_match(struct base_bus *bus, unsigned int id)
 static void driver_attach(struct base_bus *bus, unsigned int id)
 {
 
-    clock_initinterface(&clockinterface, bus, id, clockinterface_getseconds, clockinterface_getminutes, clockinterface_gethours, clockinterface_getweekday, clockinterface_getday, clockinterface_getmonth, clockinterface_getyear);
+    clock_initinterface(&clockinterface, &driver, bus, id, clockinterface_getseconds, clockinterface_getminutes, clockinterface_gethours, clockinterface_getweekday, clockinterface_getday, clockinterface_getmonth, clockinterface_getyear);
     clock_registerinterface(&clockinterface);
     clock_initinterfacenode(&clockinterfacenode, &clockinterface);
     clock_registerinterfacenode(&clockinterfacenode);

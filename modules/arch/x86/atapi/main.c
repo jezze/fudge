@@ -28,7 +28,7 @@ static unsigned int driver_match(struct base_bus *bus, unsigned int id)
 static void driver_attach(struct base_bus *bus, unsigned int id)
 {
 
-    block_initinterface(&blockinterface, bus, id, 0, 0);
+    block_initinterface(&blockinterface, &driver, bus, id, 0, 0);
     block_registerinterface(&blockinterface);
     block_initinterfacenode(&blockinterfacenode, &blockinterface);
     block_registerinterfacenode(&blockinterfacenode);

@@ -46,11 +46,11 @@ void block_unregisterinterfacenode(struct block_interfacenode *node)
 
 }
 
-void block_initinterface(struct block_interface *interface, struct base_bus *bus, unsigned int id, unsigned int (*rdata)(unsigned int offset, unsigned int count, void *buffer), unsigned int (*wdata)(unsigned int offset, unsigned int count, void *buffer))
+void block_initinterface(struct block_interface *interface, struct base_driver *driver, struct base_bus *bus, unsigned int id, unsigned int (*rdata)(unsigned int offset, unsigned int count, void *buffer), unsigned int (*wdata)(unsigned int offset, unsigned int count, void *buffer))
 {
 
     memory_clear(interface, sizeof (struct block_interface));
-    base_initinterface(&interface->base, bus, id);
+    base_initinterface(&interface->base, driver, bus, id);
 
     interface->rdata = rdata;
     interface->wdata = wdata;

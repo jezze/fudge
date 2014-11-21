@@ -103,11 +103,11 @@ void clock_unregisterinterfacenode(struct clock_interfacenode *node)
 
 }
 
-void clock_initinterface(struct clock_interface *interface, struct base_bus *bus, unsigned int id, unsigned char (*getseconds)(), unsigned char (*getminutes)(), unsigned char (*gethours)(), unsigned char (*getweekday)(), unsigned char (*getday)(), unsigned char (*getmonth)(), unsigned short (*getyear)())
+void clock_initinterface(struct clock_interface *interface, struct base_driver *driver, struct base_bus *bus, unsigned int id, unsigned char (*getseconds)(), unsigned char (*getminutes)(), unsigned char (*gethours)(), unsigned char (*getweekday)(), unsigned char (*getday)(), unsigned char (*getmonth)(), unsigned short (*getyear)())
 {
 
     memory_clear(interface, sizeof (struct clock_interface));
-    base_initinterface(&interface->base, bus, id);
+    base_initinterface(&interface->base, driver, bus, id);
 
     interface->getseconds = getseconds;
     interface->getminutes = getminutes;

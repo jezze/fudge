@@ -49,11 +49,11 @@ void timer_unregisterinterfacenode(struct timer_interfacenode *node)
 
 }
 
-void timer_initinterface(struct timer_interface *interface, struct base_bus *bus, unsigned int id, void (*sleep)(unsigned int duration))
+void timer_initinterface(struct timer_interface *interface, struct base_driver *driver, struct base_bus *bus, unsigned int id, void (*sleep)(unsigned int duration))
 {
 
     memory_clear(interface, sizeof (struct timer_interface));
-    base_initinterface(&interface->base, bus, id);
+    base_initinterface(&interface->base, driver, bus, id);
 
     interface->sleep = sleep;
 
