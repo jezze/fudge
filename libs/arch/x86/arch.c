@@ -192,32 +192,16 @@ static unsigned int spawn(struct container *self, struct task *task, void *stack
 
     next->descriptors[0].channel = task->descriptors[0].channel;
     next->descriptors[0].id = task->descriptors[0].id;
-    next->descriptors[0].active = 0;
     next->descriptors[1].channel = task->descriptors[1].channel;
     next->descriptors[1].id = task->descriptors[1].id;
-    next->descriptors[1].active = 0;
     next->descriptors[2].channel = task->descriptors[3].channel;
     next->descriptors[2].id = task->descriptors[3].id;
-    next->descriptors[2].active = 0;
-    next->descriptors[3].channel = 0;
-    next->descriptors[3].id = 0;
-    next->descriptors[3].active = 0;
 
     for (i = 4; i < 20; i++)
     {
 
         next->descriptors[i].channel = task->descriptors[i + args->shift].channel;
         next->descriptors[i].id = task->descriptors[i + args->shift].id;
-        next->descriptors[i].active = 0;
-
-    }
-
-    for (i = 20; i < TASK_DESCRIPTORS; i++)
-    {
-
-        next->descriptors[i].channel = 0;
-        next->descriptors[i].id = 0;
-        next->descriptors[i].active = 0;
 
     }
 
@@ -242,7 +226,6 @@ static unsigned int exit(struct container *self, struct task *task, void *stack)
 
         task->descriptors[i].channel = 0;
         task->descriptors[i].id = 0;
-        task->descriptors[i].active = 0;
 
     }
 

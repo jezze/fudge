@@ -35,7 +35,7 @@ static unsigned int walk(struct container *self, struct task *task, void *stack)
     unsigned int offset;
     unsigned int count;
 
-    if (!descriptor || descriptor->active)
+    if (!descriptor)
         return 0;
 
     if (!pdescriptor || !pdescriptor->id || !pdescriptor->channel)
@@ -145,8 +145,6 @@ static unsigned int open(struct container *self, struct task *task, void *stack)
     if (!descriptor || !descriptor->id || !descriptor->channel)
         return 0;
 
-    descriptor->active++;
-
     return descriptor->id = descriptor->channel->protocol->open(descriptor->channel->backend, descriptor->id);
 
 }
@@ -160,8 +158,6 @@ static unsigned int close(struct container *self, struct task *task, void *stack
     if (!descriptor || !descriptor->id || !descriptor->channel)
         return 0;
 
-    descriptor->active--;
-
     return descriptor->id = descriptor->channel->protocol->close(descriptor->channel->backend, descriptor->id);
 
 }
@@ -172,7 +168,7 @@ static unsigned int read(struct container *self, struct task *task, void *stack)
     struct {void *caller; unsigned int descriptor; unsigned int offset; unsigned int count; void *buffer;} *args = stack;
     struct vfs_descriptor *descriptor = getdescriptor(task, args->descriptor);
 
-    if (!descriptor || !descriptor->id || !descriptor->channel || !descriptor->active)
+    if (!descriptor || !descriptor->id || !descriptor->channel)
         return 0;
 
     return descriptor->channel->protocol->read(descriptor->channel->backend, descriptor->id, args->offset, args->count, args->buffer);
@@ -185,7 +181,7 @@ static unsigned int write(struct container *self, struct task *task, void *stack
     struct {void *caller; unsigned int descriptor; unsigned int offset; unsigned int count; void *buffer;} *args = stack;
     struct vfs_descriptor *descriptor = getdescriptor(task, args->descriptor);
 
-    if (!descriptor || !descriptor->id || !descriptor->channel || !descriptor->active)
+    if (!descriptor || !descriptor->id || !descriptor->channel)
         return 0;
 
     return descriptor->channel->protocol->write(descriptor->channel->backend, descriptor->id, args->offset, args->count, args->buffer);
@@ -229,7 +225,7 @@ static unsigned int mount(struct container *self, struct task *task, void *stack
     if (!channel || !channel->backend || !channel->protocol)
         return 0;
 
-    if (!pdescriptor || !pdescriptor->id || !pdescriptor->channel || !pdescriptor->active)
+    if (!pdescriptor || !pdescriptor->id || !pdescriptor->channel)
         return 0;
 
     mount->parent.channel = pdescriptor->channel;
@@ -252,10 +248,10 @@ static unsigned int bind(struct container *self, struct task *task, void *stack)
     if (!mount)
         return 0;
 
-    if (!pdescriptor || !pdescriptor->id || !pdescriptor->channel || !pdescriptor->active)
+    if (!pdescriptor || !pdescriptor->id || !pdescriptor->channel)
         return 0;
 
-    if (!cdescriptor || !cdescriptor->id || !cdescriptor->channel || !cdescriptor->active)
+    if (!cdescriptor || !cdescriptor->id || !cdescriptor->channel)
         return 0;
 
     mount->parent.channel = pdescriptor->channel;
@@ -294,7 +290,7 @@ static unsigned int load(struct container *self, struct task *task, void *stack)
     unsigned long physical;
     void (*init)();
 
-    if (!descriptor || !descriptor->id || !descriptor->channel || !descriptor->active)
+    if (!descriptor || !descriptor->id || !descriptor->channel)
         return 0;
 
     if (!descriptor->channel->protocol->getphysical)
@@ -333,7 +329,7 @@ static unsigned int unload(struct container *self, struct task *task, void *stac
     struct binary_protocol *protocol;
     void (*destroy)();
 
-    if (!descriptor || !descriptor->id || !descriptor->channel || !descriptor->active)
+    if (!descriptor || !descriptor->id || !descriptor->channel)
         return 0;
 
     protocol = binary_findprotocol(descriptor->channel, descriptor->id);
