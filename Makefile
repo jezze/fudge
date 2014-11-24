@@ -1,11 +1,11 @@
 ARCH:=x86
 
 LOADER_x86:=mboot
-LOADER_arm:=versatilepb
+LOADER_arm:=integratorcp
 LOADER:=$(LOADER_$(ARCH))
 
-TARGET_x86:=i386-pc-none-elf
-TARGET_arm:=arm-none-eabi
+TARGET_x86:=i386-unknown-elf
+TARGET_arm:=arm-unknown-eabi
 TARGET:=$(TARGET_$(ARCH))
 
 INSTALL_PATH:=/boot
