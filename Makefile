@@ -16,6 +16,14 @@ KERNEL_LIBS_x86:=-lmboot -larch -lkernel -lelf -ltar -lcpio -lfudge
 KERNEL_LIBS_arm:=-larch -lkernel -lelf -ltar -lcpio -lfudge -lstd
 KERNEL_LIBS:=$(KERNEL_LIBS_$(ARCH))
 
+MODULES_LIBS_x86:=-lfudge
+MODULES_LIBS_arm:=-lfudge -lstd
+MODULES_LIBS:=$(MODULES_LIBS_$(ARCH))
+
+PACKAGES_LIBS_x86:=-labi -lfudge
+PACKAGES_LIBS_arm:=-labi -lfudge -lstd
+PACKAGES_LIBS:=$(PACKAGES_LIBS_$(ARCH))
+
 INSTALL_PATH:=/boot
 INCLUDE_PATH:=include
 BUILD_PATH:=build
@@ -53,18 +61,18 @@ all: $(ALL)
 
 $(LIBS_PATH)/%.o: CFLAGS+=-I$(INCLUDE_PATH) -I$(LIBS_PATH)
 $(MODULES_PATH)/%.o: CFLAGS+=-I$(INCLUDE_PATH) -I$(LIBS_PATH) -I$(MODULES_PATH)
-$(MODULES_PATH)/%.ko.0: LDFLAGS+=-T$(MODULES_PATH)/linker.ld -r -L$(BUILD_PATH)/lib -lfudge
-$(MODULES_PATH)/%.ko.1: LDFLAGS+=-T$(MODULES_PATH)/linker.ld -r -L$(BUILD_PATH)/lib -lfudge
-$(MODULES_PATH)/%.ko.2: LDFLAGS+=-T$(MODULES_PATH)/linker.ld -r -L$(BUILD_PATH)/lib -lfudge
-$(MODULES_PATH)/%.ko.3: LDFLAGS+=-T$(MODULES_PATH)/linker.ld -r -L$(BUILD_PATH)/lib -lfudge
-$(MODULES_PATH)/%.ko.4: LDFLAGS+=-T$(MODULES_PATH)/linker.ld -r -L$(BUILD_PATH)/lib -lfudge
-$(MODULES_PATH)/%.ko.5: LDFLAGS+=-T$(MODULES_PATH)/linker.ld -r -L$(BUILD_PATH)/lib -lfudge
-$(MODULES_PATH)/%.ko.6: LDFLAGS+=-T$(MODULES_PATH)/linker.ld -r -L$(BUILD_PATH)/lib -lfudge
-$(MODULES_PATH)/%.ko.7: LDFLAGS+=-T$(MODULES_PATH)/linker.ld -r -L$(BUILD_PATH)/lib -lfudge
-$(MODULES_PATH)/%.ko.8: LDFLAGS+=-T$(MODULES_PATH)/linker.ld -r -L$(BUILD_PATH)/lib -lfudge
-$(MODULES_PATH)/%.ko.9: LDFLAGS+=-T$(MODULES_PATH)/linker.ld -r -L$(BUILD_PATH)/lib -lfudge
+$(MODULES_PATH)/%.ko.0: LDFLAGS+=-T$(MODULES_PATH)/linker.ld -r -L$(BUILD_PATH)/lib $(MODULES_LIBS)
+$(MODULES_PATH)/%.ko.1: LDFLAGS+=-T$(MODULES_PATH)/linker.ld -r -L$(BUILD_PATH)/lib $(MODULES_LIBS)
+$(MODULES_PATH)/%.ko.2: LDFLAGS+=-T$(MODULES_PATH)/linker.ld -r -L$(BUILD_PATH)/lib $(MODULES_LIBS)
+$(MODULES_PATH)/%.ko.3: LDFLAGS+=-T$(MODULES_PATH)/linker.ld -r -L$(BUILD_PATH)/lib $(MODULES_LIBS)
+$(MODULES_PATH)/%.ko.4: LDFLAGS+=-T$(MODULES_PATH)/linker.ld -r -L$(BUILD_PATH)/lib $(MODULES_LIBS)
+$(MODULES_PATH)/%.ko.5: LDFLAGS+=-T$(MODULES_PATH)/linker.ld -r -L$(BUILD_PATH)/lib $(MODULES_LIBS)
+$(MODULES_PATH)/%.ko.6: LDFLAGS+=-T$(MODULES_PATH)/linker.ld -r -L$(BUILD_PATH)/lib $(MODULES_LIBS)
+$(MODULES_PATH)/%.ko.7: LDFLAGS+=-T$(MODULES_PATH)/linker.ld -r -L$(BUILD_PATH)/lib $(MODULES_LIBS)
+$(MODULES_PATH)/%.ko.8: LDFLAGS+=-T$(MODULES_PATH)/linker.ld -r -L$(BUILD_PATH)/lib $(MODULES_LIBS)
+$(MODULES_PATH)/%.ko.9: LDFLAGS+=-T$(MODULES_PATH)/linker.ld -r -L$(BUILD_PATH)/lib $(MODULES_LIBS)
 $(PACKAGES_PATH)/%.o: CFLAGS+=-I$(INCLUDE_PATH) -I$(LIBS_PATH) -I$(PACKAGES_PATH)
-$(PACKAGES_PATH)/%: LDFLAGS+=-L$(BUILD_PATH)/lib -labi -lfudge
+$(PACKAGES_PATH)/%: LDFLAGS+=-L$(BUILD_PATH)/lib $(PACKAGES_LIBS)
 
 DIR:=$(LIBS_PATH)
 include $(DIR)/rules.mk
