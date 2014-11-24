@@ -40,8 +40,6 @@ DIR:=$(CUR)/keymap
 include $(DIR)/rules.mk
 DIR:=$(CUR)/ls
 include $(DIR)/rules.mk
-DIR:=$(CUR)/mandelbrot
-include $(DIR)/rules.mk
 DIR:=$(CUR)/mbr
 include $(DIR)/rules.mk
 DIR:=$(CUR)/md5

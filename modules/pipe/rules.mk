@@ -9,28 +9,28 @@ MOD7_$(DIR):=$(DIR)/pipe.ko.7
 OBJ_$(DIR):=$(DIR)/main.o
 
 $(MOD0_$(DIR)): $(OBJ_$(DIR))
-	$(LD) -o $@ $^ $(LDFLAGS)
+	$(LD) -o $@ $(LDFLAGS) $^ $(MODULES_LIBS)
 
 $(MOD1_$(DIR)): $(OBJ_$(DIR))
-	$(LD) -o $@ $^ $(LDFLAGS)
+	$(LD) -o $@ $(LDFLAGS) $^ $(MODULES_LIBS)
 
 $(MOD2_$(DIR)): $(OBJ_$(DIR))
-	$(LD) -o $@ $^ $(LDFLAGS)
+	$(LD) -o $@ $(LDFLAGS) $^ $(MODULES_LIBS)
 
 $(MOD3_$(DIR)): $(OBJ_$(DIR))
-	$(LD) -o $@ $^ $(LDFLAGS)
+	$(LD) -o $@ $(LDFLAGS) $^ $(MODULES_LIBS)
 
 $(MOD4_$(DIR)): $(OBJ_$(DIR))
-	$(LD) -o $@ $^ $(LDFLAGS)
+	$(LD) -o $@ $(LDFLAGS) $^ $(MODULES_LIBS)
 
 $(MOD5_$(DIR)): $(OBJ_$(DIR))
-	$(LD) -o $@ $^ $(LDFLAGS)
+	$(LD) -o $@ $(LDFLAGS) $^ $(MODULES_LIBS)
 
 $(MOD6_$(DIR)): $(OBJ_$(DIR))
-	$(LD) -o $@ $^ $(LDFLAGS)
+	$(LD) -o $@ $(LDFLAGS) $^ $(MODULES_LIBS)
 
 $(MOD7_$(DIR)): $(OBJ_$(DIR))
-	$(LD) -o $@ $^ $(LDFLAGS)
+	$(LD) -o $@ $(LDFLAGS) $^ $(MODULES_LIBS)
 
 MODULES:=$(MODULES) $(MOD0_$(DIR)) $(MOD1_$(DIR)) $(MOD2_$(DIR)) $(MOD3_$(DIR)) $(MOD4_$(DIR)) $(MOD5_$(DIR)) $(MOD6_$(DIR)) $(MOD7_$(DIR))
 CLEAN:=$(CLEAN) $(MOD0_$(DIR)) $(MOD1_$(DIR)) $(MOD2_$(DIR)) $(MOD3_$(DIR)) $(MOD4_$(DIR)) $(MOD5_$(DIR)) $(MOD6_$(DIR)) $(MOD7_$(DIR)) $(OBJ_$(DIR))
