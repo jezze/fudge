@@ -1,12 +1,20 @@
 ARCH:=x86
 
 LOADER_x86:=mboot
-LOADER_arm:=integratorcp
+LOADER_arm:=std
 LOADER:=$(LOADER_$(ARCH))
 
 TARGET_x86:=i386-unknown-elf
 TARGET_arm:=arm-unknown-eabi
 TARGET:=$(TARGET_$(ARCH))
+
+PLATFORM_x86:=pc
+PLATFORM_arm:=integratorcp
+PLATFORM:=$(PLATFORM_$(ARCH))
+
+KERNEL_LIBS_x86:=-lmboot -larch -lkernel -lelf -ltar -lcpio -lfudge
+KERNEL_LIBS_arm:=-larch -lkernel -lelf -ltar -lcpio -lfudge -lstd
+KERNEL_LIBS:=$(KERNEL_LIBS_$(ARCH))
 
 INSTALL_PATH:=/boot
 INCLUDE_PATH:=include
@@ -98,7 +106,7 @@ $(BUILD_PATH)/share: $(BUILD_PATH)
 	mkdir -p $@
 
 $(KERNEL_NAME):
-	$(LD) -o $@ $(LDFLAGS) -Tlibs/$(LOADER)/linker.ld -L$(BUILD_PATH)/lib -l$(LOADER) -larch -lkernel -lelf -ltar -lcpio -lfudge
+	$(LD) -o $@ $(LDFLAGS) -Tplatform/$(PLATFORM)/linker.ld -L$(BUILD_PATH)/lib $(KERNEL_LIBS)
 
 $(RAMDISK_NAME).tar: $(BUILD_PATH)
 	tar -cf $@ $^
