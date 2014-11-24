@@ -10,11 +10,11 @@ DIR:=$(CUR)/fudge
 include $(DIR)/rules.mk
 DIR:=$(CUR)/kernel
 include $(DIR)/rules.mk
-DIR:=$(CUR)/posix
-include $(DIR)/rules.mk
 DIR:=$(CUR)/cpio
 include $(DIR)/rules.mk
 DIR:=$(CUR)/elf
+include $(DIR)/rules.mk
+DIR:=$(CUR)/std
 include $(DIR)/rules.mk
 DIR:=$(CUR)/tar
 include $(DIR)/rules.mk
