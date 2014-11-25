@@ -1,6 +1,10 @@
-# FUDGE
+# FUDGE OPERATING SYSTEM
 
-## ABOUT
+A lot of information regarding Fudge can be found at the website:
+
+http://www.fudgeos.com/
+
+## OVERVIEW
 
 Fudge is a small and elegant operating system. It started as a project to see if
 it would be possible to create an operating system that came as close as
@@ -34,81 +38,21 @@ should always take the exact same time as any previous. The kernel is not even
 aware of the fact there can be many tasks running because it can only see the
 current running one.
 
-## BUILDING
+## BUILDING FUDGE
 
-### PREREQUISITIES
+Please see the building instructions on the website:
 
-To try Fudge you need a Unix compatible system like Linux or *BSD. It might work
-on Windows if you have cygwin installed but this has not been tested.
+http://www.fudgeos.com/building.html
 
-To compile and run Fudge you need to have the following tools installed.
+## LICENCE
 
-    * clang (compile and link)
-    * qemu or bochs (emulator)
+Please see the LICENCE file included in the source or at the website:
 
-### FETCHING
+http://www.fudgeos.com/licence.html
 
-Download the source using git.
+## COMMUNITY
 
-    $ git clone git://github.com/Jezze/fudge.git fudge
+Come talk to us on irc.
 
-### BUILDING
-
-At the moment Fudge only runs properly on x86 using a multiboot compliant loader
-but there are other loaders and architectures under development.
-
-To compile for x86 you write:
-
-    $ make
-
-To clean for x86 you write:
-
-    $ make clean
-
-To compile for ARM you write:
-
-    $ make ARCH=arm
-
-To clean for ARM you write:
-
-    $ make ARCH=arm clean
-
-It is possible to edit the Makefile and set the ARCH variable directly so you
-don't need to supply it every time you compile.
-
-## RUNNING IN QEMU
-
-The simplest way is to run it inside qemu:
-
-    $ qemu-system-x86 -kernel fudge -initrd initrd.tar
-
-Possible extra options that fudge supports:
-
-    -serial stdio
-    -vga std
-    -net nic,model=rtl8139 -net tap,script=no,downscript=no,ifname=tap0
-
-If you have built for ARM just replace x86 with arm.
-
-## RUNNING ON REAL HARDWARE
-
-If you use Grub add an entry to menu.lst:
-
-    title  Fudge
-    root   (hd0,0)
-    kernel /fudge
-    module /initrd.tar
-
-If you use Grub 2 add an entry to grub.cfg:
-
-    menuentry "Fudge" {
-        multiboot /fudge
-        module /initrd.tar
-        boot
-    }
-
-Then as root you can execute:
-
-    $ make install [ INSTALL_PATH=/boot ]
-
-This will copy fudge and initrd.tar to your /boot folder
+Server: irc.freenode.net
+Channel: #fudge

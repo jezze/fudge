@@ -34,13 +34,13 @@ RAMDISK_NAME:=initrd
 RAMDISK_TYPE:=tar
 RAMDISK:=$(RAMDISK_NAME).$(RAMDISK_TYPE)
 
-AS:=clang
-CC:=clang
-LD:=clang
+AS:=$(TARGET)-gcc
+CC:=$(TARGET)-gcc
+LD:=$(TARGET)-gcc
 
-ASFLAGS:=-target $(TARGET) -c -nostdlib -O2
-CFLAGS:=-target $(TARGET) -msoft-float -c -Wall -Werror -ffreestanding -nostdlib -nostdinc -std=c89 -pedantic -O2
-LDFLAGS:=-target $(TARGET) -msoft-float -Wall -Werror -ffreestanding -nostdlib -nostdinc -std=c89 -pedantic -O2
+ASFLAGS:=-c -nostdlib -O2
+CFLAGS:=-c -msoft-float -Wall -Werror -ffreestanding -nostdlib -nostdinc -std=c89 -pedantic -O2
+LDFLAGS:=-msoft-float -Wall -Werror -ffreestanding -nostdlib -nostdinc -std=c89 -pedantic -O2
 
 ALL:=libs kernel modules packages ramdisk
 CLEAN:=$(KERNEL) $(RAMDISK) $(BUILD_PATH)
