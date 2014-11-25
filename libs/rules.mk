@@ -2,6 +2,8 @@ PAR:=$(PAR).x
 TMP_$(PAR):=$(CUR)
 CUR:=$(DIR)
 
+include $(CUR)/rules.$(ARCH).mk
+
 DIR:=$(CUR)/abi
 include $(DIR)/rules.mk
 DIR:=$(CUR)/arch
@@ -19,8 +21,6 @@ include $(DIR)/rules.mk
 DIR:=$(CUR)/tar
 include $(DIR)/rules.mk
 DIR:=$(CUR)/utf8
-include $(DIR)/rules.mk
-DIR:=$(CUR)/$(LOADER)
 include $(DIR)/rules.mk
 
 CUR:=$(TMP_$(PAR))
