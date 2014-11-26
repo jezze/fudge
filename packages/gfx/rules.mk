@@ -1,4 +1,4 @@
-LIB_$(DIR):=$(DIR)/libgfx.a
+LIB_$(DIR):=$(BUILD_LIB)/libgfx.a
 OBJ_$(DIR):=$(DIR)/gfx.o $(DIR)/pcx.o $(DIR)/vga.o
 
 $(LIB_$(DIR)): $(OBJ_$(DIR))

@@ -1,4 +1,4 @@
-BIN_$(DIR):=$(DIR)/mbr
+BIN_$(DIR):=$(BUILD_BIN)/mbr
 OBJ_$(DIR):=$(DIR)/mbr.o
 
 $(BIN_$(DIR)): $(OBJ_$(DIR))

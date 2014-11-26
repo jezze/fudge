@@ -1,4 +1,4 @@
-BIN_$(DIR):=$(DIR)/reboot
+BIN_$(DIR):=$(BUILD_BIN)/reboot
 OBJ_$(DIR):=$(DIR)/reboot.o
 
 $(BIN_$(DIR)): $(OBJ_$(DIR))

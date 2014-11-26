@@ -22,10 +22,17 @@ PACKAGES_LIBS:=$(PACKAGES_LIBS_$(ARCH))
 
 INSTALL_PATH:=/boot
 INCLUDE_PATH:=include
-BUILD_PATH:=build
 LIBS_PATH:=libs
 MODULES_PATH:=modules
 PACKAGES_PATH:=packages
+
+BUILD_ROOT:=build
+BUILD_BIN:=$(BUILD_ROOT)/bin
+BUILD_BOOT:=$(BUILD_ROOT)/boot
+BUILD_CONFIG:=$(BUILD_ROOT)/config
+BUILD_LIB:=$(BUILD_ROOT)/lib
+BUILD_MODULE:=$(BUILD_BOOT)/mod
+BUILD_SHARE:=$(BUILD_ROOT)/share
 
 KERNEL_NAME:=fudge
 KERNEL:=$(KERNEL_NAME)
@@ -43,7 +50,7 @@ CFLAGS:=-c -msoft-float -Wall -Werror -ffreestanding -nostdlib -nostdinc -std=c8
 LDFLAGS:=-msoft-float -Wall -Werror -ffreestanding -nostdlib -nostdinc -std=c89 -pedantic -O2
 
 ALL:=libs kernel modules packages ramdisk
-CLEAN:=$(KERNEL) $(RAMDISK) $(BUILD_PATH)
+CLEAN:=$(KERNEL) $(RAMDISK) $(BUILD_ROOT)
 
 .PHONY: all clean install $(ALL)
 
@@ -57,18 +64,19 @@ all: $(ALL)
 
 $(LIBS_PATH)/%.o: CFLAGS+=-I$(INCLUDE_PATH) -I$(LIBS_PATH)
 $(MODULES_PATH)/%.o: CFLAGS+=-I$(INCLUDE_PATH) -I$(LIBS_PATH) -I$(MODULES_PATH)
-$(MODULES_PATH)/%.ko.0: LDFLAGS+=-T$(MODULES_PATH)/linker.ld -r -L$(BUILD_PATH)/lib
-$(MODULES_PATH)/%.ko.1: LDFLAGS+=-T$(MODULES_PATH)/linker.ld -r -L$(BUILD_PATH)/lib
-$(MODULES_PATH)/%.ko.2: LDFLAGS+=-T$(MODULES_PATH)/linker.ld -r -L$(BUILD_PATH)/lib
-$(MODULES_PATH)/%.ko.3: LDFLAGS+=-T$(MODULES_PATH)/linker.ld -r -L$(BUILD_PATH)/lib
-$(MODULES_PATH)/%.ko.4: LDFLAGS+=-T$(MODULES_PATH)/linker.ld -r -L$(BUILD_PATH)/lib
-$(MODULES_PATH)/%.ko.5: LDFLAGS+=-T$(MODULES_PATH)/linker.ld -r -L$(BUILD_PATH)/lib
-$(MODULES_PATH)/%.ko.6: LDFLAGS+=-T$(MODULES_PATH)/linker.ld -r -L$(BUILD_PATH)/lib
-$(MODULES_PATH)/%.ko.7: LDFLAGS+=-T$(MODULES_PATH)/linker.ld -r -L$(BUILD_PATH)/lib
-$(MODULES_PATH)/%.ko.8: LDFLAGS+=-T$(MODULES_PATH)/linker.ld -r -L$(BUILD_PATH)/lib
-$(MODULES_PATH)/%.ko.9: LDFLAGS+=-T$(MODULES_PATH)/linker.ld -r -L$(BUILD_PATH)/lib
 $(PACKAGES_PATH)/%.o: CFLAGS+=-I$(INCLUDE_PATH) -I$(LIBS_PATH) -I$(PACKAGES_PATH)
-$(PACKAGES_PATH)/%: LDFLAGS+=-L$(BUILD_PATH)/lib
+
+$(BUILD_BIN)/%: LDFLAGS+=-L$(BUILD_LIB)
+$(BUILD_MODULE)/%.ko.0: LDFLAGS+=-T$(MODULES_PATH)/linker.ld -r -L$(BUILD_LIB)
+$(BUILD_MODULE)/%.ko.1: LDFLAGS+=-T$(MODULES_PATH)/linker.ld -r -L$(BUILD_LIB)
+$(BUILD_MODULE)/%.ko.2: LDFLAGS+=-T$(MODULES_PATH)/linker.ld -r -L$(BUILD_LIB)
+$(BUILD_MODULE)/%.ko.3: LDFLAGS+=-T$(MODULES_PATH)/linker.ld -r -L$(BUILD_LIB)
+$(BUILD_MODULE)/%.ko.4: LDFLAGS+=-T$(MODULES_PATH)/linker.ld -r -L$(BUILD_LIB)
+$(BUILD_MODULE)/%.ko.5: LDFLAGS+=-T$(MODULES_PATH)/linker.ld -r -L$(BUILD_LIB)
+$(BUILD_MODULE)/%.ko.6: LDFLAGS+=-T$(MODULES_PATH)/linker.ld -r -L$(BUILD_LIB)
+$(BUILD_MODULE)/%.ko.7: LDFLAGS+=-T$(MODULES_PATH)/linker.ld -r -L$(BUILD_LIB)
+$(BUILD_MODULE)/%.ko.8: LDFLAGS+=-T$(MODULES_PATH)/linker.ld -r -L$(BUILD_LIB)
+$(BUILD_MODULE)/%.ko.9: LDFLAGS+=-T$(MODULES_PATH)/linker.ld -r -L$(BUILD_LIB)
 
 DIR:=$(LIBS_PATH)
 include $(DIR)/rules.mk
@@ -77,10 +85,9 @@ include $(DIR)/rules.mk
 DIR:=$(PACKAGES_PATH)
 include $(DIR)/rules.mk
 
-$(BUILD_PATH):
+$(BUILD_ROOT):
 	mkdir -p $@
 	mkdir -p $@/home
-	mkdir -p $@/system
 	mkdir -p $@/mount
 	mkdir -p $@/mount/0
 	mkdir -p $@/mount/1
@@ -90,32 +97,33 @@ $(BUILD_PATH):
 	mkdir -p $@/mount/5
 	mkdir -p $@/mount/6
 	mkdir -p $@/mount/7
+	mkdir -p $@/system
 
-$(BUILD_PATH)/bin: $(BUILD_PATH)
+$(BUILD_BIN): $(BUILD_ROOT)
 	mkdir -p $@
 
-$(BUILD_PATH)/boot: $(BUILD_PATH)
+$(BUILD_BOOT): $(BUILD_ROOT)
 	mkdir -p $@
 
-$(BUILD_PATH)/boot/mod: $(BUILD_PATH)/boot
+$(BUILD_MODULE): $(BUILD_BOOT)
 	mkdir -p $@
 
-$(BUILD_PATH)/config: $(BUILD_PATH)
+$(BUILD_CONFIG): $(BUILD_ROOT)
 	mkdir -p $@
 
-$(BUILD_PATH)/lib: $(BUILD_PATH)
+$(BUILD_LIB): $(BUILD_ROOT)
 	mkdir -p $@
 
-$(BUILD_PATH)/share: $(BUILD_PATH)
+$(BUILD_SHARE): $(BUILD_ROOT)
 	mkdir -p $@
 
 $(KERNEL_NAME):
-	$(LD) -o $@ $(LDFLAGS) -Tplatform/$(PLATFORM)/linker.ld -L$(BUILD_PATH)/lib $(KERNEL_LIBS)
+	$(LD) -o $@ $(LDFLAGS) -Tplatform/$(PLATFORM)/linker.ld -L$(BUILD_ROOT)/lib $(KERNEL_LIBS)
 
-$(RAMDISK_NAME).tar: $(BUILD_PATH)
+$(RAMDISK_NAME).tar: $(BUILD_ROOT)
 	tar -cf $@ $^
 
-$(RAMDISK_NAME).cpio: $(BUILD_PATH)
+$(RAMDISK_NAME).cpio: $(BUILD_ROOT)
 	find $^ -depth | cpio -o > $@
 
 clean:
@@ -125,19 +133,16 @@ install: $(KERNEL) $(RAMDISK)
 	install -m 644 $(KERNEL) $(INSTALL_PATH)
 	install -m 644 $(RAMDISK) $(INSTALL_PATH)
 
-kernel: $(KERNEL) $(BUILD_PATH)/boot
-	cp $(KERNEL) $(BUILD_PATH)/boot
+kernel: libs $(BUILD_BOOT) $(KERNEL)
+	cp $(KERNEL) $(BUILD_BOOT)
 
-libs: $(LIBS) $(BUILD_PATH)/lib
-	cp $(LIBS) $(BUILD_PATH)/lib
+libs: $(BUILD_LIB) $(LIBS)
 
-modules: $(MODULES) $(BUILD_PATH)/boot/mod
-	cp $(MODULES) $(BUILD_PATH)/boot/mod
+modules: libs $(BUILD_MODULE) $(MODULES)
 
-packages: $(BINS) $(CONFS) $(SHARES) $(BUILD_PATH)/bin $(BUILD_PATH)/config $(BUILD_PATH)/share
-	cp $(BINS) $(BUILD_PATH)/bin
-	cp $(CONFS) $(BUILD_PATH)/config
-	cp $(SHARES) $(BUILD_PATH)/share
+packages: libs $(BUILD_BIN) $(BINS) $(BUILD_CONFIG) $(CONFIGS) $(BUILD_SHARE) $(SHARES)
+	cp $(CONFIGS) $(BUILD_CONFIG)
+	cp $(SHARES) $(BUILD_SHARE)
 
 ramdisk: $(RAMDISK)
 

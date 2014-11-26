@@ -1,4 +1,4 @@
-BIN_$(DIR):=$(DIR)/date
+BIN_$(DIR):=$(BUILD_BIN)/date
 OBJ_$(DIR):=$(DIR)/date.o
 
 $(BIN_$(DIR)): $(OBJ_$(DIR))

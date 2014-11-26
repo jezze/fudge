@@ -1,4 +1,4 @@
-BIN_$(DIR):=$(DIR)/motd
+BIN_$(DIR):=$(BUILD_BIN)/motd
 OBJ_$(DIR):=$(DIR)/motd.o
 
 $(BIN_$(DIR)): $(OBJ_$(DIR))

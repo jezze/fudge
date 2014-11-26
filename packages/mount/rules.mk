@@ -1,4 +1,4 @@
-BIN_$(DIR):=$(DIR)/mount
+BIN_$(DIR):=$(BUILD_BIN)/mount
 OBJ_$(DIR):=$(DIR)/mount.o
 
 $(BIN_$(DIR)): $(OBJ_$(DIR))

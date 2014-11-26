@@ -1,4 +1,4 @@
-LIB_$(DIR):=$(DIR)/libmboot.a
+LIB_$(DIR):=$(BUILD_LIB)/libmboot.a
 OBJ_$(DIR):=$(DIR)/main.o $(DIR)/mboot.o
 
 $(LIB_$(DIR)): $(OBJ_$(DIR))

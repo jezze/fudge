@@ -1,4 +1,4 @@
-LIB_$(DIR):=$(DIR)/libtar.a
+LIB_$(DIR):=$(BUILD_LIB)/libtar.a
 OBJ_$(DIR):=$(DIR)/tar.o
 
 $(LIB_$(DIR)): $(OBJ_$(DIR))

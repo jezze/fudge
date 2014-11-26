@@ -1,4 +1,4 @@
-BIN_$(DIR):=$(DIR)/pcxdata
+BIN_$(DIR):=$(BUILD_BIN)/pcxdata
 OBJ_$(DIR):=$(DIR)/pcxdata.o
 
 $(BIN_$(DIR)): $(OBJ_$(DIR))
@@ -7,7 +7,7 @@ $(BIN_$(DIR)): $(OBJ_$(DIR))
 BINS:=$(BINS) $(BIN_$(DIR))
 CLEAN:=$(CLEAN) $(BIN_$(DIR)) $(OBJ_$(DIR))
 
-BIN_$(DIR):=$(DIR)/pcxcmap
+BIN_$(DIR):=$(BUILD_BIN)/pcxcmap
 OBJ_$(DIR):=$(DIR)/pcxcmap.o
 
 $(BIN_$(DIR)): $(OBJ_$(DIR))

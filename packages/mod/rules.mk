@@ -1,4 +1,4 @@
-BIN_$(DIR):=$(DIR)/modload
+BIN_$(DIR):=$(BUILD_BIN)/modload
 OBJ_$(DIR):=$(DIR)/modload.o
 
 $(BIN_$(DIR)): $(OBJ_$(DIR))
@@ -7,7 +7,7 @@ $(BIN_$(DIR)): $(OBJ_$(DIR))
 BINS:=$(BINS) $(BIN_$(DIR))
 CLEAN:=$(CLEAN) $(BIN_$(DIR)) $(OBJ_$(DIR))
 
-BIN_$(DIR):=$(DIR)/modunload
+BIN_$(DIR):=$(BUILD_BIN)/modunload
 OBJ_$(DIR):=$(DIR)/modunload.o
 
 $(BIN_$(DIR)): $(OBJ_$(DIR))

@@ -1,4 +1,4 @@
-LIB_$(DIR):=$(DIR)/libcpio.a
+LIB_$(DIR):=$(BUILD_LIB)/libcpio.a
 OBJ_$(DIR):=$(DIR)/cpio.o
 
 $(LIB_$(DIR)): $(OBJ_$(DIR))

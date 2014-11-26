@@ -1,4 +1,4 @@
-BIN_$(DIR):=$(DIR)/sleep
+BIN_$(DIR):=$(BUILD_BIN)/sleep
 OBJ_$(DIR):=$(DIR)/sleep.o
 
 $(BIN_$(DIR)): $(OBJ_$(DIR))

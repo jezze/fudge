@@ -1,4 +1,4 @@
-BIN_$(DIR):=$(DIR)/mandelbrot
+BIN_$(DIR):=$(BUILD_BIN)/mandelbrot
 OBJ_$(DIR):=$(DIR)/mandelbrot.o
 
 $(BIN_$(DIR)): $(OBJ_$(DIR))

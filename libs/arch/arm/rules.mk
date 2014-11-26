@@ -1,4 +1,4 @@
-LIB_$(DIR):=$(DIR)/libarch.a
+LIB_$(DIR):=$(BUILD_LIB)/libarch.a
 OBJ_$(DIR):=$(DIR)/arch.o $(DIR)/cpu.o $(DIR)/init.o $(DIR)/kmi.o $(DIR)/reg.o $(DIR)/uart.o
 
 $(LIB_$(DIR)): $(OBJ_$(DIR))

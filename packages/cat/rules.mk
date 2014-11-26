@@ -1,4 +1,4 @@
-BIN_$(DIR):=$(DIR)/cat
+BIN_$(DIR):=$(BUILD_BIN)/cat
 OBJ_$(DIR):=$(DIR)/cat.o
 
 $(BIN_$(DIR)): $(OBJ_$(DIR))

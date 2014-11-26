@@ -1,4 +1,4 @@
-BIN_$(DIR):=$(DIR)/col
+BIN_$(DIR):=$(BUILD_BIN)/col
 OBJ_$(DIR):=$(DIR)/col.o
 
 $(BIN_$(DIR)): $(OBJ_$(DIR))
