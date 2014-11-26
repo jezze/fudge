@@ -1,3 +1,13 @@
+.global cpu_get_cpsr
+cpu_get_cpsr:
+    mrs r0, cpsr
+    bx lr
+
+.global cpu_set_cpsr
+cpu_set_cpsr:
+    msr cpsr, r0
+    bx lr
+
 .global cpu_disable_interrupts
 cpu_disable_interrupts:
     mrs r0, cpsr

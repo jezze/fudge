@@ -1,5 +1,5 @@
-#include <kernel.h>
 #include "reg.h"
+#include "pic.h"
 #include "uart.h"
 
 void uart_putc(char c)
@@ -21,6 +21,8 @@ void uart_puts(const char *s)
 
 void uart_setup()
 {
+
+    pic_enableirq(PIC_IRQ_UART0);
 
 }
 

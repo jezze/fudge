@@ -1,4 +1,3 @@
-#include <kernel.h>
 #include "reg.h"
 
 unsigned int reg_read8(unsigned int address)

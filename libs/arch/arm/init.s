@@ -1,12 +1,12 @@
 interrupt_vector_table:
-    b isr_undefined
-    b isr_undefined
-    b isr_undefined
-    b isr_undefined
-    b isr_undefined
-    b isr_undefined
-    b isr_undefined
-    b isr_undefined
+    b arch_reset
+    b arch_undefined
+    b arch_syscall
+    b arch_undefined
+    b arch_undefined
+    b arch_undefined
+    b arch_irq
+    b arch_fiq
 
 .comm stack, 0x10000
 
