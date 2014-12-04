@@ -154,7 +154,7 @@ void network_unregisterchannelnode(struct network_channelnode *node)
 
 }
 
-void network_initinterface(struct network_interface *interface, struct base_driver *driver, struct base_bus *bus, unsigned int id, unsigned int (*receive)(unsigned int count, void *buffer), unsigned int (*send)(unsigned int count, void *buffer), void *(*getpacket)(), void (*dumppacket)())
+void network_initinterface(struct network_interface *interface, struct base_driver *driver, struct base_bus *bus, unsigned int id, unsigned int (*receive)(unsigned int count, void *buffer), unsigned int (*send)(unsigned int count, void *buffer), void *(*getpacket)(), unsigned int (*copypacket)(unsigned int count, void *buffer), void (*dumppacket)())
 {
 
     memory_clear(interface, sizeof (struct network_interface));
@@ -164,6 +164,7 @@ void network_initinterface(struct network_interface *interface, struct base_driv
     interface->receive = receive;
     interface->send = send;
     interface->getpacket = getpacket;
+    interface->copypacket = copypacket;
     interface->dumppacket = dumppacket;
 
 }
