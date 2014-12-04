@@ -7,14 +7,14 @@
 static struct network_channel channel;
 static struct network_channelnode channelnode;
 
-static unsigned int channel_match(struct network_interface *interface)
+static unsigned int channel_match(struct network_interface *interface, void *packet, unsigned int count)
 {
 
     return 1;
 
 }
 
-static void channel_notify(struct network_interface *interface)
+static void channel_notify(struct network_interface *interface, void *packet, unsigned int count)
 {
 
 }

@@ -61,7 +61,7 @@ static unsigned int channelnode_datawrite(struct system_node *self, unsigned int
 
 }
 
-void network_notify(struct network_interface *interface)
+void network_notify(struct network_interface *interface, void *packet, unsigned int count)
 {
 
     struct resource *current = 0;
@@ -71,8 +71,8 @@ void network_notify(struct network_interface *interface)
 
         struct network_channel *channel = current->data;
 
-        if (channel->match(interface))
-            channel->notify(interface);
+        if (channel->match(interface, packet, count))
+            channel->notify(interface, packet, count);
 
     }
 
@@ -185,20 +185,17 @@ void network_initinterfacenode(struct network_interfacenode *node, struct networ
 
 }
 
-void network_initprotocol(struct network_protocol *protocol, char *name, unsigned int (*read)(struct network_interface *interface, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write)(struct network_interface *interface, unsigned int offset, unsigned int count, void *buffer), unsigned int (*match)(struct network_interface *interface))
+void network_initprotocol(struct network_protocol *protocol, char *name)
 {
 
     memory_clear(protocol, sizeof (struct network_protocol));
     resource_init(&protocol->resource, RESOURCE_TYPE_PROTONET, protocol);
 
     protocol->name = name;
-    protocol->match = match;
-    protocol->read = read;
-    protocol->write = write;
 
 }
 
-void network_initchannel(struct network_channel *channel, unsigned int (*match)(struct network_interface *interface), void (*notify)(struct network_interface *interface), unsigned int (*rdata)(unsigned int offset, unsigned int count, void *buffer), unsigned int (*wdata)(unsigned int offset, unsigned int count, void *buffer))
+void network_initchannel(struct network_channel *channel, unsigned int (*match)(struct network_interface *interface, void *packet, unsigned int count), void (*notify)(struct network_interface *interface, void *packet, unsigned int count), unsigned int (*rdata)(unsigned int offset, unsigned int count, void *buffer), unsigned int (*wdata)(unsigned int offset, unsigned int count, void *buffer))
 {
 
     memory_clear(channel, sizeof (struct network_channel));

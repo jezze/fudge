@@ -33,5 +33,14 @@
 /bin/modload < /boot/mod/vga.ko.0
 /bin/modload < /boot/mod/uart.ko.0
 /bin/modload < /boot/mod/rtl8139.ko.0
+/bin/modload < /boot/mod/ethernet.ko.0
+/bin/modload < /boot/mod/ethernet.ko.1
+/bin/modload < /boot/mod/ethernet.ko.2
+/bin/modload < /boot/mod/ethernet.ko.3
+/bin/modload < /boot/mod/ethernet.ko.4
+/bin/modload < /boot/mod/ethernet.ko.5
+/bin/modload < /boot/mod/ethernet.ko.6
+/bin/modload < /boot/mod/ethernet.ko.7
+/bin/modload < /boot/mod/arp.ko.0
 /bin/initfs < /config/initfs.conf
 /bin/slang < /config/user.slang

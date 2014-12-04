@@ -194,9 +194,14 @@ static void handleirq(unsigned int irq, struct base_bus *bus, unsigned int id)
     if (status & RTL8139_ISR_ROK)
     {
 
+        /* This value should come from a register */
+        void *packet = (void *)(rx + rxp);
+        char *ppacket = packet;
+        struct rtl8139_header *header = packet;
+
         scheduler_rendezvous_unsleep(&rdata);
         io_outw(io + RTL8139_REGISTER_ISR, RTL8139_ISR_ROK);
-        network_notify(&networkinterface);
+        network_notify(&networkinterface, ppacket + 4, header->length);
 
     }
 
