@@ -110,6 +110,7 @@ static void tokenize(struct tokenlist *infix, struct buffer *stringtable, unsign
 
     unsigned int i;
     unsigned int ident;
+    unsigned int identquote = 0;
     unsigned int identcount = 0;
 
     for (i = 0; i < count; i++)
@@ -121,10 +122,6 @@ static void tokenize(struct tokenlist *infix, struct buffer *stringtable, unsign
 
         switch (c)
         {
-
-        case ' ':
-        case '\t':
-            break;
 
         case '<':
             tokenlist_add(infix, IN, 0);
@@ -150,15 +147,21 @@ static void tokenize(struct tokenlist *infix, struct buffer *stringtable, unsign
         default:
             ident = 1;
 
-            if (!identcount)
-                tokenlist_add(infix, IDENT, (char *)stringtable->memory + stringtable->head);
-
             break;
 
         }
 
+        if (c == '"')
+            identquote = !identquote;
+
+        if (!identquote && (c == ' ' || c == '\t'))
+            continue;
+
         if (ident)
         {
+
+            if (!identcount)
+                tokenlist_add(infix, IDENT, (char *)stringtable->memory + stringtable->head);
 
             buffer_pushlifo(stringtable, 1, &c);
 
@@ -268,8 +271,25 @@ static void parse(struct tokenlist *postfix, struct tokenlist *stack)
             if (!t)
                 return;
 
-            if (!walk_path(CALL_I1, CALL_DW, ascii_length(t->str), t->str))
-                return;
+            if (ascii_length(t->str) >= 2 && t->str[0] == '"')
+            {
+
+                if (!call_walk(CALL_L1, CALL_DR, 12, "system/pipe/"))
+                    return;
+
+                call_walk(CALL_L2, CALL_L1, 1, "0");
+                call_walk(CALL_I1, CALL_L1, 1, "1");
+                call_write(CALL_L2, 0, ascii_length(t->str) - 2, t->str + 1);
+
+            }
+
+            else
+            {
+
+                if (!walk_path(CALL_I1, CALL_DW, ascii_length(t->str), t->str))
+                    return;
+
+            }
 
             break;
 
