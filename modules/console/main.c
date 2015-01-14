@@ -47,15 +47,9 @@ void console_registerinterface(struct console_interface *interface)
 {
 
     base_registerinterface(&interface->base);
-
-}
-
-void console_registerinterfacenode(struct console_interfacenode *node)
-{
-
-    system_addchild(&root, &node->base);
-    system_addchild(&node->base, &node->ctrl);
-    system_addchild(&node->base, &node->data);
+    system_addchild(&root, &interface->node.base);
+    system_addchild(&interface->node.base, &interface->node.ctrl);
+    system_addchild(&interface->node.base, &interface->node.data);
 
 }
 
@@ -63,15 +57,9 @@ void console_unregisterinterface(struct console_interface *interface)
 {
 
     base_unregisterinterface(&interface->base);
-
-}
-
-void console_unregisterinterfacenode(struct console_interfacenode *node)
-{
-
-    system_removechild(&node->base, &node->ctrl);
-    system_removechild(&node->base, &node->data);
-    system_removechild(&root, &node->base);
+    system_removechild(&interface->node.base, &interface->node.ctrl);
+    system_removechild(&interface->node.base, &interface->node.data);
+    system_removechild(&root, &interface->node.base);
 
 }
 
@@ -80,26 +68,18 @@ void console_initinterface(struct console_interface *interface, struct base_driv
 
     memory_clear(interface, sizeof (struct console_interface));
     base_initinterface(&interface->base, driver, bus, id);
+    system_initnode(&interface->node.base, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, interface->base.bus->name);
+    system_initnode(&interface->node.ctrl, SYSTEM_NODETYPE_NORMAL, "ctrl");
+    system_initnode(&interface->node.data, SYSTEM_NODETYPE_NORMAL, "data");
     ctrl_init_consolesettings(&interface->settings);
 
     interface->rdata = rdata;
     interface->wdata = wdata;
-
-}
-
-void console_initinterfacenode(struct console_interfacenode *node, struct console_interface *interface)
-{
-
-    memory_clear(node, sizeof (struct console_interfacenode));
-    system_initnode(&node->base, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, interface->base.bus->name);
-    system_initnode(&node->ctrl, SYSTEM_NODETYPE_NORMAL, "ctrl");
-    system_initnode(&node->data, SYSTEM_NODETYPE_NORMAL, "data");
-
-    node->interface = interface;
-    node->ctrl.read = interfacenode_ctrlread;
-    node->ctrl.write = interfacenode_ctrlwrite;
-    node->data.read = interfacenode_dataread;
-    node->data.write = interfacenode_datawrite;
+    interface->node.interface = interface;
+    interface->node.ctrl.read = interfacenode_ctrlread;
+    interface->node.ctrl.write = interfacenode_ctrlwrite;
+    interface->node.data.read = interfacenode_dataread;
+    interface->node.data.write = interfacenode_datawrite;
 
 }
 

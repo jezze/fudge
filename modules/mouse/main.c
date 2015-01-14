@@ -20,14 +20,9 @@ void mouse_registerinterface(struct mouse_interface *interface)
 {
 
     base_registerinterface(&interface->base);
+    system_addchild(&root, &interface->node.base);
+    system_addchild(&interface->node.base, &interface->node.data);
 
-}
-
-void mouse_registerinterfacenode(struct mouse_interfacenode *node)
-{
-
-    system_addchild(&root, &node->base);
-    system_addchild(&node->base, &node->data);
 
 }
 
@@ -35,14 +30,8 @@ void mouse_unregisterinterface(struct mouse_interface *interface)
 {
 
     base_unregisterinterface(&interface->base);
-
-}
-
-void mouse_unregisterinterfacenode(struct mouse_interfacenode *node)
-{
-
-    system_removechild(&node->base, &node->data);
-    system_removechild(&root, &node->base);
+    system_removechild(&interface->node.base, &interface->node.data);
+    system_removechild(&root, &interface->node.base);
 
 }
 
@@ -51,20 +40,12 @@ void mouse_initinterface(struct mouse_interface *interface, struct base_driver *
 
     memory_clear(interface, sizeof (struct mouse_interface));
     base_initinterface(&interface->base, driver, bus, id);
+    system_initnode(&interface->node.base, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, interface->base.bus->name);
+    system_initnode(&interface->node.data, SYSTEM_NODETYPE_NORMAL, "data");
 
     interface->rdata = rdata;
-
-}
-
-void mouse_initinterfacenode(struct mouse_interfacenode *node, struct mouse_interface *interface)
-{
-
-    memory_clear(node, sizeof (struct mouse_interfacenode));
-    system_initnode(&node->base, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, interface->base.bus->name);
-    system_initnode(&node->data, SYSTEM_NODETYPE_NORMAL, "data");
-
-    node->interface = interface;
-    node->data.read = interfacenode_dataread;
+    interface->node.interface = interface;
+    interface->node.data.read = interfacenode_dataread;
 
 }
 

@@ -20,14 +20,8 @@ void keyboard_registerinterface(struct keyboard_interface *interface)
 {
 
     base_registerinterface(&interface->base);
-
-}
-
-void keyboard_registerinterfacenode(struct keyboard_interfacenode *node)
-{
-
-    system_addchild(&root, &node->base);
-    system_addchild(&node->base, &node->data);
+    system_addchild(&root, &interface->node.base);
+    system_addchild(&interface->node.base, &interface->node.data);
 
 }
 
@@ -35,14 +29,8 @@ void keyboard_unregisterinterface(struct keyboard_interface *interface)
 {
 
     base_unregisterinterface(&interface->base);
-
-}
-
-void keyboard_unregisterinterfacenode(struct keyboard_interfacenode *node)
-{
-
-    system_removechild(&node->base, &node->data);
-    system_removechild(&root, &node->base);
+    system_removechild(&interface->node.base, &interface->node.data);
+    system_removechild(&root, &interface->node.base);
 
 }
 
@@ -51,20 +39,12 @@ void keyboard_initinterface(struct keyboard_interface *interface, struct base_dr
 
     memory_clear(interface, sizeof (struct keyboard_interface));
     base_initinterface(&interface->base, driver, bus, id);
+    system_initnode(&interface->node.base, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, interface->base.bus->name);
+    system_initnode(&interface->node.data, SYSTEM_NODETYPE_NORMAL, "data");
 
     interface->rdata = rdata;
-
-}
-
-void keyboard_initinterfacenode(struct keyboard_interfacenode *node, struct keyboard_interface *interface)
-{
-
-    memory_clear(node, sizeof (struct keyboard_interfacenode));
-    system_initnode(&node->base, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, interface->base.bus->name);
-    system_initnode(&node->data, SYSTEM_NODETYPE_NORMAL, "data");
-
-    node->interface = interface;
-    node->data.read = interfacenode_dataread;
+    interface->node.interface = interface;
+    interface->node.data.read = interfacenode_dataread;
 
 }
 

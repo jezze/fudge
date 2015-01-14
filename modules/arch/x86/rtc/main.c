@@ -29,7 +29,6 @@ enum rtc_flag
 
 static struct base_driver driver;
 static struct clock_interface clockinterface;
-static struct clock_interfacenode clockinterfacenode;
 static unsigned short io;
 
 static unsigned char convert(unsigned char num)
@@ -117,8 +116,6 @@ static void driver_attach(struct base_bus *bus, unsigned int id)
 
     clock_initinterface(&clockinterface, &driver, bus, id, clockinterface_getseconds, clockinterface_getminutes, clockinterface_gethours, clockinterface_getweekday, clockinterface_getday, clockinterface_getmonth, clockinterface_getyear);
     clock_registerinterface(&clockinterface);
-    clock_initinterfacenode(&clockinterfacenode, &clockinterface);
-    clock_registerinterfacenode(&clockinterfacenode);
     pic_setroutine(bus, id, handleirq);
 
     io = platform_getbase(bus, id);
@@ -130,7 +127,6 @@ static void driver_detach(struct base_bus *bus, unsigned int id)
 
     pic_unsetroutine(bus, id);
     clock_unregisterinterface(&clockinterface);
-    clock_unregisterinterfacenode(&clockinterfacenode);
 
 }
 

@@ -150,7 +150,6 @@ enum uart_msr
 
 static struct base_driver driver;
 static struct console_interface consoleinterface;
-static struct console_interfacenode consoleinterfacenode;
 static unsigned char buffer[512];
 static struct buffer cfifo;
 static struct scheduler_rendezvous rdata;
@@ -224,8 +223,6 @@ static void driver_attach(struct base_bus *bus, unsigned int id)
 
     console_initinterface(&consoleinterface, &driver, bus, id, consoleinterface_rdata, consoleinterface_wdata);
     console_registerinterface(&consoleinterface);
-    console_initinterfacenode(&consoleinterfacenode, &consoleinterface);
-    console_registerinterfacenode(&consoleinterfacenode);
     buffer_init(&cfifo, 1, 512, &buffer);
     pic_setroutine(bus, id, handleirq);
 
@@ -249,7 +246,6 @@ static void driver_detach(struct base_bus *bus, unsigned int id)
 
     pic_unsetroutine(bus, id);
     console_unregisterinterface(&consoleinterface);
-    console_unregisterinterfacenode(&consoleinterfacenode);
 
 }
 

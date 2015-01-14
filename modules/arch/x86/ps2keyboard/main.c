@@ -9,7 +9,6 @@
 
 static struct base_driver driver;
 static struct keyboard_interface keyboardinterface;
-static struct keyboard_interfacenode keyboardinterfacenode;
 static unsigned char buffer[512];
 static struct buffer cfifo;
 static struct scheduler_rendezvous rdata;
@@ -51,8 +50,6 @@ static void driver_attach(struct base_bus *bus, unsigned int id)
 
     keyboard_initinterface(&keyboardinterface, &driver, bus, id, keyboardinterface_rdata);
     keyboard_registerinterface(&keyboardinterface);
-    keyboard_initinterfacenode(&keyboardinterfacenode, &keyboardinterface);
-    keyboard_registerinterfacenode(&keyboardinterfacenode);
     buffer_init(&cfifo, 1, 512, &buffer);
     pic_setroutine(bus, id, handleirq);
     ps2_enable(bus, id);
@@ -70,7 +67,6 @@ static void driver_detach(struct base_bus *bus, unsigned int id)
 
     pic_unsetroutine(bus, id);
     keyboard_unregisterinterface(&keyboardinterface);
-    keyboard_unregisterinterfacenode(&keyboardinterfacenode);
 
 }
 

@@ -69,16 +69,10 @@ void video_registerinterface(struct video_interface *interface)
 {
 
     base_registerinterface(&interface->base);
-
-}
-
-void video_registerinterfacenode(struct video_interfacenode *node)
-{
-
-    system_addchild(&root, &node->base);
-    system_addchild(&node->base, &node->ctrl);
-    system_addchild(&node->base, &node->data);
-    system_addchild(&node->base, &node->colormap);
+    system_addchild(&root, &interface->node.base);
+    system_addchild(&interface->node.base, &interface->node.ctrl);
+    system_addchild(&interface->node.base, &interface->node.data);
+    system_addchild(&interface->node.base, &interface->node.colormap);
 
 }
 
@@ -86,16 +80,10 @@ void video_unregisterinterface(struct video_interface *interface)
 {
 
     base_unregisterinterface(&interface->base);
-
-}
-
-void video_unregisterinterfacenode(struct video_interfacenode *node)
-{
-
-    system_removechild(&node->base, &node->ctrl);
-    system_removechild(&node->base, &node->data);
-    system_removechild(&node->base, &node->colormap);
-    system_removechild(&root, &node->base);
+    system_removechild(&interface->node.base, &interface->node.ctrl);
+    system_removechild(&interface->node.base, &interface->node.data);
+    system_removechild(&interface->node.base, &interface->node.colormap);
+    system_removechild(&root, &interface->node.base);
 
 }
 
@@ -104,6 +92,10 @@ void video_initinterface(struct video_interface *interface, struct base_driver *
 
     memory_clear(interface, sizeof (struct video_interface));
     base_initinterface(&interface->base, driver, bus, id);
+    system_initnode(&interface->node.base, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, interface->base.bus->name);
+    system_initnode(&interface->node.ctrl, SYSTEM_NODETYPE_NORMAL, "ctrl");
+    system_initnode(&interface->node.data, SYSTEM_NODETYPE_NORMAL, "data");
+    system_initnode(&interface->node.colormap, SYSTEM_NODETYPE_NORMAL, "colormap");
     ctrl_init_videosettings(&interface->settings);
 
     interface->setmode = setmode;
@@ -111,25 +103,13 @@ void video_initinterface(struct video_interface *interface, struct base_driver *
     interface->wdata = wdata;
     interface->rcolormap = rcolormap;
     interface->wcolormap = wcolormap;
-
-}
-
-void video_initinterfacenode(struct video_interfacenode *node, struct video_interface *interface)
-{
-
-    memory_clear(node, sizeof (struct video_interfacenode));
-    system_initnode(&node->base, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, interface->base.bus->name);
-    system_initnode(&node->ctrl, SYSTEM_NODETYPE_NORMAL, "ctrl");
-    system_initnode(&node->data, SYSTEM_NODETYPE_NORMAL, "data");
-    system_initnode(&node->colormap, SYSTEM_NODETYPE_NORMAL, "colormap");
-
-    node->interface = interface;
-    node->ctrl.read = interfacenode_ctrlread;
-    node->ctrl.write = interfacenode_ctrlwrite;
-    node->data.read = interfacenode_dataread;
-    node->data.write = interfacenode_datawrite;
-    node->colormap.read = interfacenode_colormapread;
-    node->colormap.write = interfacenode_colormapwrite;
+    interface->node.interface = interface;
+    interface->node.ctrl.read = interfacenode_ctrlread;
+    interface->node.ctrl.write = interfacenode_ctrlwrite;
+    interface->node.data.read = interfacenode_dataread;
+    interface->node.data.write = interfacenode_datawrite;
+    interface->node.colormap.read = interfacenode_colormapread;
+    interface->node.colormap.write = interfacenode_colormapwrite;
 
 }
 

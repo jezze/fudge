@@ -20,14 +20,8 @@ void block_registerinterface(struct block_interface *interface)
 {
 
     base_registerinterface(&interface->base);
-
-}
-
-void block_registerinterfacenode(struct block_interfacenode *node)
-{
-
-    system_addchild(&root, &node->base);
-    system_addchild(&node->base, &node->data);
+    system_addchild(&root, &interface->node.base);
+    system_addchild(&interface->node.base, &interface->node.data);
 
 }
 
@@ -35,14 +29,8 @@ void block_unregisterinterface(struct block_interface *interface)
 {
 
     base_unregisterinterface(&interface->base);
-
-}
-
-void block_unregisterinterfacenode(struct block_interfacenode *node)
-{
-
-    system_removechild(&node->base, &node->data);
-    system_removechild(&root, &node->base);
+    system_removechild(&interface->node.base, &interface->node.data);
+    system_removechild(&root, &interface->node.base);
 
 }
 
@@ -51,21 +39,13 @@ void block_initinterface(struct block_interface *interface, struct base_driver *
 
     memory_clear(interface, sizeof (struct block_interface));
     base_initinterface(&interface->base, driver, bus, id);
+    system_initnode(&interface->node.base, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, interface->base.bus->name);
+    system_initnode(&interface->node.data, SYSTEM_NODETYPE_NORMAL, "data");
 
     interface->rdata = rdata;
     interface->wdata = wdata;
-
-}
-
-void block_initinterfacenode(struct block_interfacenode *node, struct block_interface *interface)
-{
-
-    memory_clear(node, sizeof (struct block_interfacenode));
-    system_initnode(&node->base, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, interface->base.bus->name);
-    system_initnode(&node->data, SYSTEM_NODETYPE_NORMAL, "data");
-
-    node->interface = interface;
-    node->data.read = interfacenode_dataread;
+    interface->node.interface = interface;
+    interface->node.data.read = interfacenode_dataread;
 
 }
 

@@ -23,14 +23,8 @@ void timer_registerinterface(struct timer_interface *interface)
 {
 
     base_registerinterface(&interface->base);
-
-}
-
-void timer_registerinterfacenode(struct timer_interfacenode *node)
-{
-
-    system_addchild(&root, &node->base);
-    system_addchild(&node->base, &node->sleep);
+    system_addchild(&root, &interface->node.base);
+    system_addchild(&interface->node.base, &interface->node.sleep);
 
 }
 
@@ -38,14 +32,8 @@ void timer_unregisterinterface(struct timer_interface *interface)
 {
 
     base_unregisterinterface(&interface->base);
-
-}
-
-void timer_unregisterinterfacenode(struct timer_interfacenode *node)
-{
-
-    system_removechild(&node->base, &node->sleep);
-    system_removechild(&root, &node->base);
+    system_removechild(&interface->node.base, &interface->node.sleep);
+    system_removechild(&root, &interface->node.base);
 
 }
 
@@ -54,20 +42,12 @@ void timer_initinterface(struct timer_interface *interface, struct base_driver *
 
     memory_clear(interface, sizeof (struct timer_interface));
     base_initinterface(&interface->base, driver, bus, id);
+    system_initnode(&interface->node.base, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, interface->base.bus->name);
+    system_initnode(&interface->node.sleep, SYSTEM_NODETYPE_NORMAL, "sleep");
 
     interface->sleep = sleep;
-
-}
-
-void timer_initinterfacenode(struct timer_interfacenode *node, struct timer_interface *interface)
-{
-
-    memory_clear(node, sizeof (struct timer_interfacenode));
-    system_initnode(&node->base, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, interface->base.bus->name);
-    system_initnode(&node->sleep, SYSTEM_NODETYPE_NORMAL, "sleep");
-
-    node->interface = interface;
-    node->sleep.read = interfacenode_sleepread;
+    interface->node.interface = interface;
+    interface->node.sleep.read = interfacenode_sleepread;
 
 }
 

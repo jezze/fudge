@@ -125,7 +125,6 @@ struct rtl8139_header
 
 static struct base_driver driver;
 static struct network_interface networkinterface;
-static struct network_interfacenode networkinterfacenode;
 static unsigned short io;
 static unsigned int mmio;
 static unsigned char rx[0x2600];
@@ -321,8 +320,6 @@ static void driver_attach(struct base_bus *bus, unsigned int id)
 
     network_initinterface(&networkinterface, &driver, bus, id, networkinterface_receive, networkinterface_send, networkinterface_getpacket, networkinterface_copypacket, networkinterface_dumppacket);
     network_registerinterface(&networkinterface);
-    network_initinterfacenode(&networkinterfacenode, &networkinterface);
-    network_registerinterfacenode(&networkinterfacenode);
     pci_setmaster(bus, id);
     pic_setroutine(bus, id, handleirq);
     poweron();
@@ -346,7 +343,6 @@ static void driver_detach(struct base_bus *bus, unsigned int id)
 
     pic_unsetroutine(bus, id);
     network_unregisterinterface(&networkinterface);
-    network_unregisterinterfacenode(&networkinterfacenode);
 
 }
 

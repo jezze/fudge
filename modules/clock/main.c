@@ -73,16 +73,10 @@ void clock_registerinterface(struct clock_interface *interface)
 {
 
     base_registerinterface(&interface->base);
-
-}
-
-void clock_registerinterfacenode(struct clock_interfacenode *node)
-{
-
-    system_addchild(&root, &node->base);
-    system_addchild(&node->base, &node->timestamp);
-    system_addchild(&node->base, &node->date);
-    system_addchild(&node->base, &node->time);
+    system_addchild(&root, &interface->node.base);
+    system_addchild(&interface->node.base, &interface->node.timestamp);
+    system_addchild(&interface->node.base, &interface->node.date);
+    system_addchild(&interface->node.base, &interface->node.time);
 
 }
 
@@ -90,16 +84,10 @@ void clock_unregisterinterface(struct clock_interface *interface)
 {
 
     base_unregisterinterface(&interface->base);
-
-}
-
-void clock_unregisterinterfacenode(struct clock_interfacenode *node)
-{
-
-    system_removechild(&node->base, &node->timestamp);
-    system_removechild(&node->base, &node->date);
-    system_removechild(&node->base, &node->time);
-    system_removechild(&root, &node->base);
+    system_removechild(&interface->node.base, &interface->node.timestamp);
+    system_removechild(&interface->node.base, &interface->node.date);
+    system_removechild(&interface->node.base, &interface->node.time);
+    system_removechild(&root, &interface->node.base);
 
 }
 
@@ -108,6 +96,10 @@ void clock_initinterface(struct clock_interface *interface, struct base_driver *
 
     memory_clear(interface, sizeof (struct clock_interface));
     base_initinterface(&interface->base, driver, bus, id);
+    system_initnode(&interface->node.base, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, interface->base.bus->name);
+    system_initnode(&interface->node.timestamp, SYSTEM_NODETYPE_NORMAL, "timestamp");
+    system_initnode(&interface->node.date, SYSTEM_NODETYPE_NORMAL, "date");
+    system_initnode(&interface->node.time, SYSTEM_NODETYPE_NORMAL, "time");
 
     interface->getseconds = getseconds;
     interface->getminutes = getminutes;
@@ -116,22 +108,10 @@ void clock_initinterface(struct clock_interface *interface, struct base_driver *
     interface->getday = getday;
     interface->getmonth = getmonth;
     interface->getyear = getyear;
-
-}
-
-void clock_initinterfacenode(struct clock_interfacenode *node, struct clock_interface *interface)
-{
-
-    memory_clear(node, sizeof (struct clock_interfacenode));
-    system_initnode(&node->base, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, interface->base.bus->name);
-    system_initnode(&node->timestamp, SYSTEM_NODETYPE_NORMAL, "timestamp");
-    system_initnode(&node->date, SYSTEM_NODETYPE_NORMAL, "date");
-    system_initnode(&node->time, SYSTEM_NODETYPE_NORMAL, "time");
-
-    node->interface = interface;
-    node->timestamp.read = interfacenode_timestampread;
-    node->date.read = interfacenode_dateread;
-    node->time.read = interfacenode_timeread;
+    interface->node.interface = interface;
+    interface->node.timestamp.read = interfacenode_timestampread;
+    interface->node.date.read = interfacenode_dateread;
+    interface->node.time.read = interfacenode_timeread;
 
 }
 

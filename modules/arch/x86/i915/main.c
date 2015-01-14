@@ -9,7 +9,6 @@
 
 static struct base_driver driver;
 static struct video_interface videointerface;
-static struct video_interfacenode videointerfacenode;
 
 static unsigned int read(unsigned int reg)
 {
@@ -156,8 +155,6 @@ static void driver_attach(struct base_bus *bus, unsigned int id)
 
     video_initinterface(&videointerface, &driver, bus, id, videointerface_setmode, videointerface_rdata, videointerface_wdata, 0, 0);
     video_registerinterface(&videointerface);
-    video_initinterfacenode(&videointerfacenode, &videointerface);
-    video_registerinterfacenode(&videointerfacenode);
     pic_setroutine(bus, id, handleirq);
     enabledpll();
     enablepipe();
@@ -173,7 +170,6 @@ static void driver_detach(struct base_bus *bus, unsigned int id)
 
     pic_unsetroutine(bus, id);
     video_unregisterinterface(&videointerface);
-    video_unregisterinterfacenode(&videointerfacenode);
 
 }
 
