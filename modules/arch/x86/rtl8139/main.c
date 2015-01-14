@@ -247,7 +247,7 @@ static unsigned int networkinterface_receive(unsigned int count, void *buffer)
     if (cbr == rxp)
     {
 
-        scheduler_rendezvous_sleep(&rdata, 1);
+        scheduler_rendezvous_sleep(&rdata);
 
         return 0;
 

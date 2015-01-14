@@ -39,7 +39,8 @@ static unsigned int channel_rdata(unsigned int offset, unsigned int count, void 
 
     count = buffer_rcfifo(&cfifo, count, buffer);
 
-    scheduler_rendezvous_sleep(&rdata, !count);
+    if (!count)
+        scheduler_rendezvous_sleep(&rdata);
 
     return count;
 

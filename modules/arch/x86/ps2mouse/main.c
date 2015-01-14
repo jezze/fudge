@@ -28,7 +28,8 @@ static unsigned int mouseinterface_rdata(unsigned int offset, unsigned int count
 
     count = buffer_rcfifo(&cfifo, count, buffer);
 
-    scheduler_rendezvous_sleep(&rdata, !count);
+    if (!count)
+        scheduler_rendezvous_sleep(&rdata);
 
     return count;
 

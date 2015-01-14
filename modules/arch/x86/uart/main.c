@@ -189,7 +189,8 @@ static unsigned int consoleinterface_rdata(unsigned int offset, unsigned int cou
 
     count = buffer_rcfifo(&cfifo, count, buffer);
 
-    scheduler_rendezvous_sleep(&rdata, !count);
+    if (!count)
+        scheduler_rendezvous_sleep(&rdata);
 
     return count;
 

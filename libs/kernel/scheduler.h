@@ -6,7 +6,7 @@ struct scheduler_rendezvous
 };
 
 unsigned int scheduler_rendezvous_asleep(struct scheduler_rendezvous *rendezvous);
-void scheduler_rendezvous_sleep(struct scheduler_rendezvous *rendezvous, unsigned int condition);
+void scheduler_rendezvous_sleep(struct scheduler_rendezvous *rendezvous);
 void scheduler_rendezvous_unsleep(struct scheduler_rendezvous *rendezvous);
 struct task *scheduler_findusedtask();
 struct task *scheduler_findfreetask();

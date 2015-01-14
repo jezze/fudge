@@ -25,7 +25,9 @@ static unsigned int endpoint0_read(struct system_node *self, unsigned int offset
     count = buffer_rcfifo(&endpoint0.cfifo, count, buffer);
 
     scheduler_rendezvous_unsleep(&endpoint0.rdata);
-    scheduler_rendezvous_sleep(&endpoint0.rdata, !count && endpoint1.node.refcount);
+
+    if (!count && endpoint1.node.refcount)
+        scheduler_rendezvous_sleep(&endpoint0.rdata);
 
     return count;
 
@@ -37,7 +39,9 @@ static unsigned int endpoint0_write(struct system_node *self, unsigned int offse
     count = buffer_wcfifo(&endpoint1.cfifo, count, buffer);
 
     scheduler_rendezvous_unsleep(&endpoint1.rdata);
-    scheduler_rendezvous_sleep(&endpoint1.rdata, !count && endpoint0.node.refcount);
+
+    if (!count && endpoint0.node.refcount)
+        scheduler_rendezvous_sleep(&endpoint1.rdata);
 
     return count;
 
@@ -49,7 +53,9 @@ static unsigned int endpoint1_read(struct system_node *self, unsigned int offset
     count = buffer_rcfifo(&endpoint1.cfifo, count, buffer);
 
     scheduler_rendezvous_unsleep(&endpoint1.rdata);
-    scheduler_rendezvous_sleep(&endpoint1.rdata, !count && endpoint0.node.refcount);
+
+    if (!count && endpoint0.node.refcount)
+        scheduler_rendezvous_sleep(&endpoint1.rdata);
 
     return count;
 
@@ -61,7 +67,9 @@ static unsigned int endpoint1_write(struct system_node *self, unsigned int offse
     count = buffer_wcfifo(&endpoint0.cfifo, count, buffer);
 
     scheduler_rendezvous_unsleep(&endpoint0.rdata);
-    scheduler_rendezvous_sleep(&endpoint0.rdata, !count && endpoint1.node.refcount);
+
+    if (!count && endpoint1.node.refcount)
+        scheduler_rendezvous_sleep(&endpoint0.rdata);
 
     return count;
 

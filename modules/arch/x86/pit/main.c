@@ -81,7 +81,7 @@ static void timerinterface_sleep(unsigned int duration)
 
     wait = jiffies + duration;
 
-    scheduler_rendezvous_sleep(&rdata, 1);
+    scheduler_rendezvous_sleep(&rdata);
 
     wakeup = 1;
 

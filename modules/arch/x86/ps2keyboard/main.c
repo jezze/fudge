@@ -29,7 +29,8 @@ static unsigned int keyboardinterface_rdata(unsigned int offset, unsigned int co
 
     count = buffer_rcfifo(&cfifo, count, buffer);
 
-    scheduler_rendezvous_sleep(&rdata, !count);
+    if (!count)
+        scheduler_rendezvous_sleep(&rdata);
 
     return count;
 
