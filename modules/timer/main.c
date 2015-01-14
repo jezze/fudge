@@ -19,10 +19,10 @@ static unsigned int interfacenode_sleepread(struct system_node *self, unsigned i
 
 }
 
-void timer_registerinterface(struct timer_interface *interface)
+void timer_registerinterface(struct timer_interface *interface, struct base_bus *bus, unsigned int id)
 {
 
-    base_registerinterface(&interface->base);
+    base_registerinterface(&interface->base, bus, id);
     system_addchild(&root, &interface->node.base);
     system_addchild(&interface->node.base, &interface->node.sleep);
 
@@ -37,12 +37,12 @@ void timer_unregisterinterface(struct timer_interface *interface)
 
 }
 
-void timer_initinterface(struct timer_interface *interface, struct base_driver *driver, struct base_bus *bus, unsigned int id, void (*sleep)(unsigned int duration))
+void timer_initinterface(struct timer_interface *interface, struct base_driver *driver, void (*sleep)(unsigned int duration))
 {
 
     memory_clear(interface, sizeof (struct timer_interface));
-    base_initinterface(&interface->base, driver, bus, id);
-    system_initnode(&interface->node.base, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, interface->base.bus->name);
+    base_initinterface(&interface->base, driver);
+    system_initnode(&interface->node.base, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, driver->name);
     system_initnode(&interface->node.sleep, SYSTEM_NODETYPE_NORMAL, "sleep");
 
     interface->sleep = sleep;

@@ -47,8 +47,7 @@ static unsigned int driver_match(struct base_bus *bus, unsigned int id)
 static void driver_attach(struct base_bus *bus, unsigned int id)
 {
 
-    block_initinterface(&blockinterface, &driver, bus, id, blockinterface_rdata, blockinterface_wdata);
-    block_registerinterface(&blockinterface);
+    block_registerinterface(&blockinterface, bus, id);
     pic_setroutine(bus, id, handleirq);
 
 }
@@ -65,6 +64,7 @@ void init()
 {
 
     base_initdriver(&driver, "ata", driver_match, driver_attach, driver_detach);
+    block_initinterface(&blockinterface, &driver, blockinterface_rdata, blockinterface_wdata);
     base_registerdriver(&driver);
 
 }

@@ -78,10 +78,10 @@ void network_notify(struct network_interface *interface, void *packet, unsigned 
 
 }
 
-void network_registerinterface(struct network_interface *interface)
+void network_registerinterface(struct network_interface *interface, struct base_bus *bus, unsigned int id)
 {
 
-    base_registerinterface(&interface->base);
+    base_registerinterface(&interface->base, bus, id);
     system_addchild(&root, &interface->node.base);
     system_addchild(&interface->node.base, &interface->node.ctrl);
     system_addchild(&interface->node.base, &interface->node.data);
@@ -142,12 +142,12 @@ void network_unregisterchannelnode(struct network_channelnode *node)
 
 }
 
-void network_initinterface(struct network_interface *interface, struct base_driver *driver, struct base_bus *bus, unsigned int id, unsigned int (*receive)(unsigned int count, void *buffer), unsigned int (*send)(unsigned int count, void *buffer), void *(*getpacket)(), unsigned int (*copypacket)(unsigned int count, void *buffer), void (*dumppacket)())
+void network_initinterface(struct network_interface *interface, struct base_driver *driver, unsigned int (*receive)(unsigned int count, void *buffer), unsigned int (*send)(unsigned int count, void *buffer), void *(*getpacket)(), unsigned int (*copypacket)(unsigned int count, void *buffer), void (*dumppacket)())
 {
 
     memory_clear(interface, sizeof (struct network_interface));
-    base_initinterface(&interface->base, driver, bus, id);
-    system_initnode(&interface->node.base, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, interface->base.bus->name);
+    base_initinterface(&interface->base, driver);
+    system_initnode(&interface->node.base, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, driver->name);
     system_initnode(&interface->node.ctrl, SYSTEM_NODETYPE_NORMAL, "ctrl");
     system_initnode(&interface->node.data, SYSTEM_NODETYPE_NORMAL, "data");
     ctrl_init_networksettings(&interface->settings);

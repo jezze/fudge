@@ -19,6 +19,6 @@ struct console_interface
 
 };
 
-void console_registerinterface(struct console_interface *interface);
+void console_registerinterface(struct console_interface *interface, struct base_bus *bus, unsigned int id);
 void console_unregisterinterface(struct console_interface *interface);
-void console_initinterface(struct console_interface *interface, struct base_driver *driver, struct base_bus *bus, unsigned int id, unsigned int (*rdata)(unsigned int offset, unsigned int count, void *buffer), unsigned int (*wdata)(unsigned int offset, unsigned int count, void *buffer));
+void console_initinterface(struct console_interface *interface, struct base_driver *driver, unsigned int (*rdata)(unsigned int offset, unsigned int count, void *buffer), unsigned int (*wdata)(unsigned int offset, unsigned int count, void *buffer));

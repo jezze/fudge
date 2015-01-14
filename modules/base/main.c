@@ -39,10 +39,13 @@ void base_registerdriver(struct base_driver *driver)
 
 }
 
-void base_registerinterface(struct base_interface *interface)
+void base_registerinterface(struct base_interface *interface, struct base_bus *bus, unsigned int id)
 {
 
     resource_register(&interface->resource);
+
+    interface->bus = bus;
+    interface->id = id;
 
 }
 
@@ -114,15 +117,13 @@ void base_initdriver(struct base_driver *driver, const char *name, unsigned int 
 
 }
 
-void base_initinterface(struct base_interface *interface, struct base_driver *driver, struct base_bus *bus, unsigned int id)
+void base_initinterface(struct base_interface *interface, struct base_driver *driver)
 {
 
     memory_clear(interface, sizeof (struct base_interface));
     resource_init(&interface->resource, RESOURCE_TYPE_INTERFACE, interface);
 
     interface->driver = driver;
-    interface->bus = bus;
-    interface->id = id;
 
 }
 

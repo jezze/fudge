@@ -16,6 +16,6 @@ struct keyboard_interface
 
 };
 
-void keyboard_registerinterface(struct keyboard_interface *interface);
+void keyboard_registerinterface(struct keyboard_interface *interface, struct base_bus *bus, unsigned int id);
 void keyboard_unregisterinterface(struct keyboard_interface *interface);
-void keyboard_initinterface(struct keyboard_interface *interface, struct base_driver *driver, struct base_bus *bus, unsigned int id, unsigned int (*rdata)(unsigned int offset, unsigned int count, void *buffer));
+void keyboard_initinterface(struct keyboard_interface *interface, struct base_driver *driver, unsigned int (*rdata)(unsigned int offset, unsigned int count, void *buffer));

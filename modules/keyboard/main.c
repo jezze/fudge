@@ -16,10 +16,10 @@ static unsigned int interfacenode_dataread(struct system_node *self, unsigned in
 
 }
 
-void keyboard_registerinterface(struct keyboard_interface *interface)
+void keyboard_registerinterface(struct keyboard_interface *interface, struct base_bus *bus, unsigned int id)
 {
 
-    base_registerinterface(&interface->base);
+    base_registerinterface(&interface->base, bus, id);
     system_addchild(&root, &interface->node.base);
     system_addchild(&interface->node.base, &interface->node.data);
 
@@ -34,12 +34,12 @@ void keyboard_unregisterinterface(struct keyboard_interface *interface)
 
 }
 
-void keyboard_initinterface(struct keyboard_interface *interface, struct base_driver *driver, struct base_bus *bus, unsigned int id, unsigned int (*rdata)(unsigned int offset, unsigned int count, void *buffer))
+void keyboard_initinterface(struct keyboard_interface *interface, struct base_driver *driver, unsigned int (*rdata)(unsigned int offset, unsigned int count, void *buffer))
 {
 
     memory_clear(interface, sizeof (struct keyboard_interface));
-    base_initinterface(&interface->base, driver, bus, id);
-    system_initnode(&interface->node.base, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, interface->base.bus->name);
+    base_initinterface(&interface->base, driver);
+    system_initnode(&interface->node.base, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, driver->name);
     system_initnode(&interface->node.data, SYSTEM_NODETYPE_NORMAL, "data");
 
     interface->rdata = rdata;

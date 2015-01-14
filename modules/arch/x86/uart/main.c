@@ -221,8 +221,7 @@ static unsigned int driver_match(struct base_bus *bus, unsigned int id)
 static void driver_attach(struct base_bus *bus, unsigned int id)
 {
 
-    console_initinterface(&consoleinterface, &driver, bus, id, consoleinterface_rdata, consoleinterface_wdata);
-    console_registerinterface(&consoleinterface);
+    console_registerinterface(&consoleinterface, bus, id);
     buffer_init(&cfifo, 1, 512, &buffer);
     pic_setroutine(bus, id, handleirq);
 
@@ -253,6 +252,7 @@ void init()
 {
 
     base_initdriver(&driver, "uart", driver_match, driver_attach, driver_detach);
+    console_initinterface(&consoleinterface, &driver, consoleinterface_rdata, consoleinterface_wdata);
     base_registerdriver(&driver);
 
 }

@@ -100,8 +100,7 @@ static unsigned int driver_match(struct base_bus *bus, unsigned int id)
 static void driver_attach(struct base_bus *bus, unsigned int id)
 {
 
-    timer_initinterface(&timerinterface, &driver, bus, id, timerinterface_sleep);
-    timer_registerinterface(&timerinterface);
+    timer_registerinterface(&timerinterface, bus, id);
 
     io = platform_getbase(bus, id);
 
@@ -130,6 +129,7 @@ void init()
     divisor = 10000;
 
     base_initdriver(&driver, "pit", driver_match, driver_attach, driver_detach);
+    timer_initinterface(&timerinterface, &driver, timerinterface_sleep);
     base_registerdriver(&driver);
 
 }

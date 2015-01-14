@@ -16,6 +16,6 @@ struct timer_interface
 
 };
 
-void timer_registerinterface(struct timer_interface *interface);
+void timer_registerinterface(struct timer_interface *interface, struct base_bus *bus, unsigned int id);
 void timer_unregisterinterface(struct timer_interface *interface);
-void timer_initinterface(struct timer_interface *interface, struct base_driver *driver, struct base_bus *bus, unsigned int id, void (*sleep)(unsigned int duration));
+void timer_initinterface(struct timer_interface *interface, struct base_driver *driver, void (*sleep)(unsigned int duration));

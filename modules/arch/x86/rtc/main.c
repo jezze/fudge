@@ -114,8 +114,7 @@ static unsigned int driver_match(struct base_bus *bus, unsigned int id)
 static void driver_attach(struct base_bus *bus, unsigned int id)
 {
 
-    clock_initinterface(&clockinterface, &driver, bus, id, clockinterface_getseconds, clockinterface_getminutes, clockinterface_gethours, clockinterface_getweekday, clockinterface_getday, clockinterface_getmonth, clockinterface_getyear);
-    clock_registerinterface(&clockinterface);
+    clock_registerinterface(&clockinterface, bus, id);
     pic_setroutine(bus, id, handleirq);
 
     io = platform_getbase(bus, id);
@@ -134,6 +133,7 @@ void init()
 {
 
     base_initdriver(&driver, "rtc", driver_match, driver_attach, driver_detach);
+    clock_initinterface(&clockinterface, &driver, clockinterface_getseconds, clockinterface_getminutes, clockinterface_gethours, clockinterface_getweekday, clockinterface_getday, clockinterface_getmonth, clockinterface_getyear);
     base_registerdriver(&driver);
 
 }

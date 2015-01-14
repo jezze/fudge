@@ -318,8 +318,7 @@ static void driver_attach(struct base_bus *bus, unsigned int id)
     io = pci_inw(bus, id, PCI_CONFIG_BAR0) & ~1;
     mmio = pci_ind(bus, id, PCI_CONFIG_BAR1);
 
-    network_initinterface(&networkinterface, &driver, bus, id, networkinterface_receive, networkinterface_send, networkinterface_getpacket, networkinterface_copypacket, networkinterface_dumppacket);
-    network_registerinterface(&networkinterface);
+    network_registerinterface(&networkinterface, bus, id);
     pci_setmaster(bus, id);
     pic_setroutine(bus, id, handleirq);
     poweron();
@@ -350,6 +349,7 @@ void init()
 {
 
     base_initdriver(&driver, "rtl8139", driver_match, driver_attach, driver_detach);
+    network_initinterface(&networkinterface, &driver, networkinterface_receive, networkinterface_send, networkinterface_getpacket, networkinterface_copypacket, networkinterface_dumppacket);
     base_registerdriver(&driver);
 
 }

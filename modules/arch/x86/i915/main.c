@@ -153,8 +153,7 @@ static unsigned int driver_match(struct base_bus *bus, unsigned int id)
 static void driver_attach(struct base_bus *bus, unsigned int id)
 {
 
-    video_initinterface(&videointerface, &driver, bus, id, videointerface_setmode, videointerface_rdata, videointerface_wdata, 0, 0);
-    video_registerinterface(&videointerface);
+    video_registerinterface(&videointerface, bus, id);
     pic_setroutine(bus, id, handleirq);
     enabledpll();
     enablepipe();
@@ -177,6 +176,7 @@ void init()
 {
 
     base_initdriver(&driver, "i915", driver_match, driver_attach, driver_detach);
+    video_initinterface(&videointerface, &driver, videointerface_setmode, videointerface_rdata, videointerface_wdata, 0, 0);
     base_registerdriver(&driver);
 
 }

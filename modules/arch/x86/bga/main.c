@@ -109,8 +109,7 @@ static unsigned int driver_match(struct base_bus *bus, unsigned int id)
 static void driver_attach(struct base_bus *bus, unsigned int id)
 {
 
-    video_initinterface(&videointerface, &driver, bus, id, videointerface_setmode, videointerface_rdata, videointerface_wdata, 0, 0);
-    video_registerinterface(&videointerface);
+    video_registerinterface(&videointerface, bus, id);
 
     bank = (void *)0xA0000;
     lfb = (void *)(unsigned long)pci_ind(bus, id, PCI_CONFIG_BAR0);
@@ -135,6 +134,7 @@ void init()
 {
 
     base_initdriver(&driver, "bga", driver_match, driver_attach, driver_detach);
+    video_initinterface(&videointerface, &driver, videointerface_setmode, videointerface_rdata, videointerface_wdata, 0, 0);
     base_registerdriver(&driver);
 
 }

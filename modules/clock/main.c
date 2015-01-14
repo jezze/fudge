@@ -69,10 +69,10 @@ static unsigned int interfacenode_timeread(struct system_node *self, unsigned in
 
 }
 
-void clock_registerinterface(struct clock_interface *interface)
+void clock_registerinterface(struct clock_interface *interface, struct base_bus *bus, unsigned int id)
 {
 
-    base_registerinterface(&interface->base);
+    base_registerinterface(&interface->base, bus, id);
     system_addchild(&root, &interface->node.base);
     system_addchild(&interface->node.base, &interface->node.timestamp);
     system_addchild(&interface->node.base, &interface->node.date);
@@ -91,12 +91,12 @@ void clock_unregisterinterface(struct clock_interface *interface)
 
 }
 
-void clock_initinterface(struct clock_interface *interface, struct base_driver *driver, struct base_bus *bus, unsigned int id, unsigned char (*getseconds)(), unsigned char (*getminutes)(), unsigned char (*gethours)(), unsigned char (*getweekday)(), unsigned char (*getday)(), unsigned char (*getmonth)(), unsigned short (*getyear)())
+void clock_initinterface(struct clock_interface *interface, struct base_driver *driver, unsigned char (*getseconds)(), unsigned char (*getminutes)(), unsigned char (*gethours)(), unsigned char (*getweekday)(), unsigned char (*getday)(), unsigned char (*getmonth)(), unsigned short (*getyear)())
 {
 
     memory_clear(interface, sizeof (struct clock_interface));
-    base_initinterface(&interface->base, driver, bus, id);
-    system_initnode(&interface->node.base, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, interface->base.bus->name);
+    base_initinterface(&interface->base, driver);
+    system_initnode(&interface->node.base, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, driver->name);
     system_initnode(&interface->node.timestamp, SYSTEM_NODETYPE_NORMAL, "timestamp");
     system_initnode(&interface->node.date, SYSTEM_NODETYPE_NORMAL, "date");
     system_initnode(&interface->node.time, SYSTEM_NODETYPE_NORMAL, "time");

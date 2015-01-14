@@ -335,10 +335,8 @@ static unsigned int driver_match(struct base_bus *bus, unsigned int id)
 static void driver_attach(struct base_bus *bus, unsigned int id)
 {
 
-    console_initinterface(&consoleinterface, &driver, bus, id, consoleinterface_rdata, consoleinterface_wdata);
-    console_registerinterface(&consoleinterface);
-    video_initinterface(&videointerface, &driver, bus, id, videointerface_setmode, videointerface_rdata, videointerface_wdata, videointerface_rcolormap, videointerface_wcolormap);
-    video_registerinterface(&videointerface);
+    console_registerinterface(&consoleinterface, bus, id);
+    video_registerinterface(&videointerface, bus, id);
 
     taddress = (void *)0x000B8000;
     gaddress = (void *)0x000A0000;
@@ -364,6 +362,8 @@ void init()
 {
 
     base_initdriver(&driver, "vga", driver_match, driver_attach, driver_detach);
+    console_initinterface(&consoleinterface, &driver, consoleinterface_rdata, consoleinterface_wdata);
+    video_initinterface(&videointerface, &driver, videointerface_setmode, videointerface_rdata, videointerface_wdata, videointerface_rcolormap, videointerface_wcolormap);
     base_registerdriver(&driver);
 
 }
