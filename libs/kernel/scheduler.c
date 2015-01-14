@@ -8,13 +8,6 @@ static struct list free;
 static struct list used;
 static struct list blocked;
 
-unsigned int scheduler_rendezvous_asleep(struct scheduler_rendezvous *rendezvous)
-{
-
-    return rendezvous->task != 0;
-
-}
-
 void scheduler_rendezvous_sleep(struct scheduler_rendezvous *rendezvous)
 {
 
@@ -35,7 +28,6 @@ void scheduler_rendezvous_unsleep(struct scheduler_rendezvous *rendezvous)
 
     scheduler_unblock(rendezvous->task);
 
-    rendezvous->task->registers.ip -= 7;
     rendezvous->task = 0;
 
 }
@@ -71,6 +63,8 @@ void scheduler_unblock(struct task *task)
 {
 
     list_move(&used, &blocked, &task->item);
+
+    task->registers.ip -= 7;
 
 }
 
