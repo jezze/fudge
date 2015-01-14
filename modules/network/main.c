@@ -99,14 +99,8 @@ void network_registerchannel(struct network_channel *channel)
 {
 
     resource_register(&channel->resource);
-
-}
-
-void network_registerchannelnode(struct network_channelnode *node)
-{
-
-    system_addchild(&root, &node->base);
-    system_addchild(&node->base, &node->data);
+    system_addchild(&root, &channel->node.base);
+    system_addchild(&channel->node.base, &channel->node.data);
 
 }
 
@@ -131,14 +125,8 @@ void network_unregisterchannel(struct network_channel *channel)
 {
 
     resource_unregister(&channel->resource);
-
-}
-
-void network_unregisterchannelnode(struct network_channelnode *node)
-{
-
-    system_removechild(&node->base, &node->data);
-    system_removechild(&root, &node->base);
+    system_removechild(&channel->node.base, &channel->node.data);
+    system_removechild(&root, &channel->node.base);
 
 }
 
@@ -180,24 +168,16 @@ void network_initchannel(struct network_channel *channel, unsigned int (*match)(
 
     memory_clear(channel, sizeof (struct network_channel));
     resource_init(&channel->resource, RESOURCE_TYPE_CHANNELNET, channel);
+    system_initnode(&channel->node.base, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, "channel");
+    system_initnode(&channel->node.data, SYSTEM_NODETYPE_NORMAL, "data");
 
     channel->match = match;
     channel->notify = notify;
     channel->rdata = rdata;
     channel->wdata = wdata;
-
-}
-
-void network_initchannelnode(struct network_channelnode *node, struct network_channel *channel)
-{
-
-    memory_clear(node, sizeof (struct network_channelnode));
-    system_initnode(&node->base, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, "channel");
-    system_initnode(&node->data, SYSTEM_NODETYPE_NORMAL, "data");
-
-    node->channel = channel;
-    node->data.read = channelnode_dataread;
-    node->data.write = channelnode_datawrite;
+    channel->node.channel = channel;
+    channel->node.data.read = channelnode_dataread;
+    channel->node.data.write = channelnode_datawrite;
 
 }
 

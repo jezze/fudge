@@ -7,7 +7,6 @@
 #include <network/network.h>
 
 static struct network_channel channel;
-static struct network_channelnode channelnode;
 static unsigned char buffer[4096];
 static struct buffer cfifo;
 static struct scheduler_rendezvous rdata;
@@ -59,15 +58,12 @@ void init()
     buffer_init(&cfifo, 1, 4096, buffer);
     network_initchannel(&channel, channel_match, channel_notify, channel_rdata, channel_wdata);
     network_registerchannel(&channel);
-    network_initchannelnode(&channelnode, &channel);
-    network_registerchannelnode(&channelnode);
 
 }
 
 void destroy()
 {
 
-    network_unregisterchannelnode(&channelnode);
     network_unregisterchannel(&channel);
 
 }
