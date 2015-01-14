@@ -23,7 +23,6 @@ void mouse_registerinterface(struct mouse_interface *interface, struct base_bus 
     system_addchild(&root, &interface->node.base);
     system_addchild(&interface->node.base, &interface->node.data);
 
-
 }
 
 void mouse_unregisterinterface(struct mouse_interface *interface)
