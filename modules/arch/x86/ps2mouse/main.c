@@ -11,33 +11,12 @@ static struct base_driver driver;
 static struct mouse_interface mouseinterface;
 static unsigned char buffer[512];
 static struct buffer cfifo;
-static unsigned char cycle;
 static struct scheduler_rendezvous rdata;
 
 static void handleirq(unsigned int irq, struct base_bus *bus, unsigned int id)
 {
 
     unsigned char data = ps2_getdata(bus);
-
-    switch (cycle)
-    {
-
-    case 0:
-        cycle++;
-
-        break;
-
-    case 1:
-        cycle++;
-
-        break;
-
-    case 2:
-        cycle = 0;
-
-        break;
-
-    }
 
     buffer_wcfifo(&cfifo, 1, &data);
     scheduler_rendezvous_unsleep(&rdata);
