@@ -93,7 +93,6 @@ void base_unregisterinterface(struct base_interface *interface)
 void base_initbus(struct base_bus *bus, unsigned int type, const char *name, void (*setup)(struct base_bus *self), unsigned int (*next)(struct base_bus *self, unsigned int id), unsigned short (*irq)(struct base_bus *self, unsigned int id))
 {
 
-    memory_clear(bus, sizeof (struct base_bus));
     resource_init(&bus->resource, RESOURCE_TYPE_BUS, bus);
 
     bus->type = type;
@@ -107,7 +106,6 @@ void base_initbus(struct base_bus *bus, unsigned int type, const char *name, voi
 void base_initdriver(struct base_driver *driver, const char *name, unsigned int (*match)(struct base_bus *bus, unsigned int id), void (*attach)(struct base_bus *bus, unsigned int id), void (*detach)(struct base_bus *bus, unsigned int id))
 {
 
-    memory_clear(driver, sizeof (struct base_driver));
     resource_init(&driver->resource, RESOURCE_TYPE_DRIVER, driver);
 
     driver->name = name;
@@ -120,7 +118,6 @@ void base_initdriver(struct base_driver *driver, const char *name, unsigned int 
 void base_initinterface(struct base_interface *interface, struct base_driver *driver)
 {
 
-    memory_clear(interface, sizeof (struct base_interface));
     resource_init(&interface->resource, RESOURCE_TYPE_INTERFACE, interface);
 
     interface->driver = driver;

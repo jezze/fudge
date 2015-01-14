@@ -43,7 +43,6 @@ struct vfs_protocol *vfs_findprotocol(struct vfs_backend *backend)
 void vfs_initbackend(struct vfs_backend *backend, unsigned int id, unsigned int (*read)(struct vfs_backend *self, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write)(struct vfs_backend *self, unsigned int offset, unsigned int count, void *buffer))
 {
 
-    memory_clear(backend, sizeof (struct vfs_backend));
     resource_init(&backend->resource, RESOURCE_TYPE_BACKEND, backend);
 
     backend->id = id;
@@ -55,7 +54,6 @@ void vfs_initbackend(struct vfs_backend *backend, unsigned int id, unsigned int 
 void vfs_initprotocol(struct vfs_protocol *protocol, unsigned int (*match)(struct vfs_backend *backend), unsigned int (*root)(struct vfs_backend *backend), unsigned int (*create)(struct vfs_backend *backend, unsigned int id, unsigned int count, const char *name), unsigned int (*destroy)(struct vfs_backend *backend, unsigned int id, unsigned int count, const char *name), unsigned int (*open)(struct vfs_backend *backend, unsigned int id), unsigned int (*close)(struct vfs_backend *backend, unsigned int id), unsigned int (*read)(struct vfs_backend *backend, unsigned int id, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write)(struct vfs_backend *backend, unsigned int id, unsigned int offset, unsigned int count, void *buffer), unsigned int (*parent)(struct vfs_backend *backend, unsigned int id), unsigned int (*child)(struct vfs_backend *backend, unsigned int id, unsigned int count, const char *path), unsigned long (*getphysical)(struct vfs_backend *backend, unsigned int id))
 {
 
-    memory_clear(protocol, sizeof (struct vfs_protocol));
     resource_init(&protocol->resource, RESOURCE_TYPE_PROTOFS, protocol);
 
     protocol->match = match;
@@ -75,7 +73,6 @@ void vfs_initprotocol(struct vfs_protocol *protocol, unsigned int (*match)(struc
 void vfs_initchannel(struct vfs_channel *channel)
 {
 
-    memory_clear(channel, sizeof (struct vfs_channel));
     resource_init(&channel->resource, RESOURCE_TYPE_CHANNEL, channel);
 
 }
@@ -83,7 +80,6 @@ void vfs_initchannel(struct vfs_channel *channel)
 void vfs_initmount(struct vfs_mount *mount)
 {
 
-    memory_clear(mount, sizeof (struct vfs_mount));
     resource_init(&mount->resource, RESOURCE_TYPE_MOUNT, mount);
 
 }
@@ -91,7 +87,6 @@ void vfs_initmount(struct vfs_mount *mount)
 void vfs_initdescriptor(struct vfs_descriptor *descriptor)
 {
 
-    memory_clear(descriptor, sizeof (struct vfs_descriptor));
     resource_init(&descriptor->resource, RESOURCE_TYPE_DESCRIPTOR, descriptor);
 
 }

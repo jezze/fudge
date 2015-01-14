@@ -37,7 +37,6 @@ void block_unregisterinterface(struct block_interface *interface)
 void block_initinterface(struct block_interface *interface, struct base_driver *driver, unsigned int (*rdata)(unsigned int offset, unsigned int count, void *buffer), unsigned int (*wdata)(unsigned int offset, unsigned int count, void *buffer))
 {
 
-    memory_clear(interface, sizeof (struct block_interface));
     base_initinterface(&interface->base, driver);
     system_initnode(&interface->node.base, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, driver->name);
     system_initnode(&interface->node.data, SYSTEM_NODETYPE_NORMAL, "data");

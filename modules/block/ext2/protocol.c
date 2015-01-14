@@ -93,7 +93,6 @@ static unsigned int validate(struct base_block *interface, struct base_device *d
 void ext2_init_protocol(struct ext2_protocol *protocol)
 {
 
-    memory_clear(protocol, sizeof (struct ext2_protocol));
     block_init_protocol(&protocol->base, "ext2");
 
     protocol->validate = validate;

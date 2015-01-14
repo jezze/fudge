@@ -94,7 +94,6 @@ void clock_unregisterinterface(struct clock_interface *interface)
 void clock_initinterface(struct clock_interface *interface, struct base_driver *driver, unsigned char (*getseconds)(), unsigned char (*getminutes)(), unsigned char (*gethours)(), unsigned char (*getweekday)(), unsigned char (*getday)(), unsigned char (*getmonth)(), unsigned short (*getyear)())
 {
 
-    memory_clear(interface, sizeof (struct clock_interface));
     base_initinterface(&interface->base, driver);
     system_initnode(&interface->node.base, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, driver->name);
     system_initnode(&interface->node.timestamp, SYSTEM_NODETYPE_NORMAL, "timestamp");

@@ -49,7 +49,6 @@ void resource_unregister(struct resource *resource)
 void resource_init(struct resource *resource, unsigned int type, void *data)
 {
 
-    memory_clear(resource, sizeof (struct resource));
     list_inititem(&resource->item, resource);
 
     resource->type = type;

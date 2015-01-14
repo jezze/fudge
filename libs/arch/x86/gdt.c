@@ -25,8 +25,6 @@ void gdt_initpointer(struct gdt_pointer *pointer, unsigned int count, struct gdt
     unsigned long base = (unsigned long)descriptors;
     unsigned short limit = (sizeof (struct gdt_descriptor) * count) - 1;
 
-    memory_clear(pointer, sizeof (struct gdt_pointer));
-
     pointer->base0 = base;
     pointer->base1 = base >> 8;
     pointer->base2 = base >> 16;

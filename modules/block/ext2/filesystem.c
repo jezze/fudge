@@ -174,7 +174,6 @@ static unsigned int walk(struct vfs_backend *backend, unsigned int id, unsigned 
 void ext2_init_filesystem(struct ext2_filesystem *filesystem, struct ext2_protocol *protocol, struct base_block *interface)
 {
 
-    memory_clear(filesystem, sizeof (struct ext2_filesystem));
     vfs_init_protocol(&filesystem->base, 2, 0, open, close, read, write, 0, walk, 0);
 
     filesystem->protocol = protocol;

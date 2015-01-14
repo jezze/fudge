@@ -133,7 +133,6 @@ void network_unregisterchannel(struct network_channel *channel)
 void network_initinterface(struct network_interface *interface, struct base_driver *driver, unsigned int (*receive)(unsigned int count, void *buffer), unsigned int (*send)(unsigned int count, void *buffer), void *(*getpacket)(), unsigned int (*copypacket)(unsigned int count, void *buffer), void (*dumppacket)())
 {
 
-    memory_clear(interface, sizeof (struct network_interface));
     base_initinterface(&interface->base, driver);
     system_initnode(&interface->node.base, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, driver->name);
     system_initnode(&interface->node.ctrl, SYSTEM_NODETYPE_NORMAL, "ctrl");
@@ -156,7 +155,6 @@ void network_initinterface(struct network_interface *interface, struct base_driv
 void network_initprotocol(struct network_protocol *protocol, char *name)
 {
 
-    memory_clear(protocol, sizeof (struct network_protocol));
     resource_init(&protocol->resource, RESOURCE_TYPE_PROTONET, protocol);
 
     protocol->name = name;
@@ -166,7 +164,6 @@ void network_initprotocol(struct network_protocol *protocol, char *name)
 void network_initchannel(struct network_channel *channel, unsigned int (*match)(struct network_interface *interface, void *packet, unsigned int count), void (*notify)(struct network_interface *interface, void *packet, unsigned int count), unsigned int (*rdata)(unsigned int offset, unsigned int count, void *buffer), unsigned int (*wdata)(unsigned int offset, unsigned int count, void *buffer))
 {
 
-    memory_clear(channel, sizeof (struct network_channel));
     resource_init(&channel->resource, RESOURCE_TYPE_CHANNELNET, channel);
     system_initnode(&channel->node.base, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, "channel");
     system_initnode(&channel->node.data, SYSTEM_NODETYPE_NORMAL, "data");

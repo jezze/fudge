@@ -12,8 +12,6 @@ void tss_setdescriptor(struct tss_pointer *pointer, enum tss_index index, unsign
 void tss_initpointer(struct tss_pointer *pointer, unsigned int count, struct tss_descriptor *descriptors)
 {
 
-    memory_clear(pointer, sizeof (struct tss_pointer));
-
     pointer->descriptors = descriptors;
     pointer->limit = sizeof (struct tss_descriptor) * count;
 

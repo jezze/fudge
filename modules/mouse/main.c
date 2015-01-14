@@ -37,7 +37,6 @@ void mouse_unregisterinterface(struct mouse_interface *interface)
 void mouse_initinterface(struct mouse_interface *interface, struct base_driver *driver, unsigned int (*rdata)(unsigned int offset, unsigned int count, void *buffer))
 {
 
-    memory_clear(interface, sizeof (struct mouse_interface));
     base_initinterface(&interface->base, driver);
     system_initnode(&interface->node.base, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, driver->name);
     system_initnode(&interface->node.data, SYSTEM_NODETYPE_NORMAL, "data");

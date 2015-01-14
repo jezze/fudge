@@ -23,7 +23,6 @@ static unsigned int backend_write(struct vfs_backend *self, unsigned int offset,
 static void setupheader(struct system_header *header, struct system_node *root)
 {
 
-    memory_clear(header, sizeof (struct system_header));
     memory_write(header->id, 12, "FUDGE_SYSTEM", 12, 0);
 
     header->root = root;
@@ -33,7 +32,6 @@ static void setupheader(struct system_header *header, struct system_node *root)
 void system_initbackend(struct system_backend *backend)
 {
 
-    memory_clear(backend, sizeof (struct system_backend));
     vfs_initbackend(&backend->base, 2000, backend_read, backend_write);
     system_initnode(&backend->root, SYSTEM_NODETYPE_GROUP, "FUDGE_ROOT");
     setupheader(&backend->header, &backend->root);

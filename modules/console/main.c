@@ -66,7 +66,6 @@ void console_unregisterinterface(struct console_interface *interface)
 void console_initinterface(struct console_interface *interface, struct base_driver *driver, unsigned int (*rdata)(unsigned int offset, unsigned int count, void *buffer), unsigned int (*wdata)(unsigned int offset, unsigned int count, void *buffer))
 {
 
-    memory_clear(interface, sizeof (struct console_interface));
     base_initinterface(&interface->base, driver);
     system_initnode(&interface->node.base, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, driver->name);
     system_initnode(&interface->node.ctrl, SYSTEM_NODETYPE_NORMAL, "ctrl");

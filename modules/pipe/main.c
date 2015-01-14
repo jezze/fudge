@@ -78,14 +78,12 @@ static unsigned int endpoint1_write(struct system_node *self, unsigned int offse
 void init()
 {
 
-    memory_clear(&endpoint0, sizeof (struct pipe_endpoint));
     buffer_init(&endpoint0.cfifo, 1, 4096, endpoint0.buffer);
     system_initnode(&endpoint0.node, SYSTEM_NODETYPE_NORMAL, "0");
 
     endpoint0.node.read = endpoint0_read;
     endpoint0.node.write = endpoint0_write;
 
-    memory_clear(&endpoint1, sizeof (struct pipe_endpoint));
     buffer_init(&endpoint1.cfifo, 1, 4096, endpoint1.buffer);
     system_initnode(&endpoint1.node, SYSTEM_NODETYPE_NORMAL, "1");
 

@@ -40,7 +40,6 @@ void timer_unregisterinterface(struct timer_interface *interface)
 void timer_initinterface(struct timer_interface *interface, struct base_driver *driver, void (*sleep)(unsigned int duration))
 {
 
-    memory_clear(interface, sizeof (struct timer_interface));
     base_initinterface(&interface->base, driver);
     system_initnode(&interface->node.base, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, driver->name);
     system_initnode(&interface->node.sleep, SYSTEM_NODETYPE_NORMAL, "sleep");

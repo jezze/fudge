@@ -230,7 +230,6 @@ void system_unregisternode(struct system_node *node)
 void system_initnode(struct system_node *node, unsigned int type, const char *name)
 {
 
-    memory_clear(node, sizeof (struct system_node));
     list_inititem(&node->item, node);
     list_init(&node->children);
 

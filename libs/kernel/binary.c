@@ -25,7 +25,6 @@ struct binary_protocol *binary_findprotocol(struct vfs_channel *channel, unsigne
 void binary_initprotocol(struct binary_protocol *protocol, unsigned int (*match)(struct vfs_channel *channel, unsigned int id), unsigned long (*findsymbol)(struct vfs_channel *channel, unsigned int id, unsigned int count, const char *symbol), unsigned long (*copyprogram)(struct vfs_channel *channel, unsigned int id), unsigned int (*relocate)(struct vfs_channel *channel, unsigned int id, unsigned int address))
 {
 
-    memory_clear(protocol, sizeof (struct binary_protocol));
     resource_init(&protocol->resource, RESOURCE_TYPE_PROTOBINARY, protocol);
 
     protocol->match = match;
