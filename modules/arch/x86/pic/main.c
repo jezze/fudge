@@ -153,7 +153,6 @@ unsigned int pic_unsetroutine(struct base_bus *bus, unsigned int id)
 void init()
 {
 
-    memory_clear(routines, sizeof (struct pic_routine) * PIC_ROUTINES);
     setchip(PIC_REGISTER_COMMAND0, PIC_REGISTER_DATA0, PIC_DATA_VECTOR0, 0x04);
     setchip(PIC_REGISTER_COMMAND1, PIC_REGISTER_DATA1, PIC_DATA_VECTOR1, 0x02);
     setmask(PIC_REGISTER_DATA0, 0xFB);

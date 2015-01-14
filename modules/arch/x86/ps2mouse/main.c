@@ -69,7 +69,6 @@ static void driver_attach(struct base_bus *bus, unsigned int id)
 {
 
     mouse_registerinterface(&mouseinterface, bus, id);
-    buffer_init(&cfifo, 1, 512, &buffer);
     pic_setroutine(bus, id, handleirq);
     ps2_enable(bus, id);
     ps2_reset(bus, id);
@@ -84,14 +83,15 @@ static void driver_attach(struct base_bus *bus, unsigned int id)
 static void driver_detach(struct base_bus *bus, unsigned int id)
 {
 
-    pic_unsetroutine(bus, id);
     mouse_unregisterinterface(&mouseinterface);
+    pic_unsetroutine(bus, id);
 
 }
 
 void init()
 {
 
+    buffer_init(&cfifo, 1, 512, &buffer);
     base_initdriver(&driver, "ps2mouse", driver_match, driver_attach, driver_detach);
     mouse_initinterface(&mouseinterface, &driver, mouseinterface_rdata);
     base_registerdriver(&driver);

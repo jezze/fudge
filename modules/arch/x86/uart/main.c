@@ -222,7 +222,6 @@ static void driver_attach(struct base_bus *bus, unsigned int id)
 {
 
     console_registerinterface(&consoleinterface, bus, id);
-    buffer_init(&cfifo, 1, 512, &buffer);
     pic_setroutine(bus, id, handleirq);
 
     io = platform_getbase(bus, id);
@@ -243,14 +242,15 @@ static void driver_attach(struct base_bus *bus, unsigned int id)
 static void driver_detach(struct base_bus *bus, unsigned int id)
 {
 
-    pic_unsetroutine(bus, id);
     console_unregisterinterface(&consoleinterface);
+    pic_unsetroutine(bus, id);
 
 }
 
 void init()
 {
 
+    buffer_init(&cfifo, 1, 512, &buffer);
     base_initdriver(&driver, "uart", driver_match, driver_attach, driver_detach);
     console_initinterface(&consoleinterface, &driver, consoleinterface_rdata, consoleinterface_wdata);
     base_registerdriver(&driver);

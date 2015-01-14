@@ -49,7 +49,6 @@ static void driver_attach(struct base_bus *bus, unsigned int id)
 {
 
     keyboard_registerinterface(&keyboardinterface, bus, id);
-    buffer_init(&cfifo, 1, 512, &buffer);
     pic_setroutine(bus, id, handleirq);
     ps2_enable(bus, id);
     ps2_reset(bus, id);
@@ -64,14 +63,15 @@ static void driver_attach(struct base_bus *bus, unsigned int id)
 static void driver_detach(struct base_bus *bus, unsigned int id)
 {
 
-    pic_unsetroutine(bus, id);
     keyboard_unregisterinterface(&keyboardinterface);
+    pic_unsetroutine(bus, id);
 
 }
 
 void init()
 {
 
+    buffer_init(&cfifo, 1, 512, &buffer);
     base_initdriver(&driver, "ps2keyboard", driver_match, driver_attach, driver_detach);
     keyboard_initinterface(&keyboardinterface, &driver, keyboardinterface_rdata);
     base_registerdriver(&driver);

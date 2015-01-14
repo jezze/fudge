@@ -55,8 +55,8 @@ static void driver_attach(struct base_bus *bus, unsigned int id)
 static void driver_detach(struct base_bus *bus, unsigned int id)
 {
 
-    pic_unsetroutine(bus, id);
     block_unregisterinterface(&blockinterface);
+    pic_unsetroutine(bus, id);
 
 }
 

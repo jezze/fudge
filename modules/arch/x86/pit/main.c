@@ -101,6 +101,7 @@ static void driver_attach(struct base_bus *bus, unsigned int id)
 {
 
     timer_registerinterface(&timerinterface, bus, id);
+    pic_setroutine(bus, id, handleirq);
 
     io = platform_getbase(bus, id);
 
@@ -108,15 +109,13 @@ static void driver_attach(struct base_bus *bus, unsigned int id)
     io_outb(io + PIT_REGISTER_CHANNEL0, divisor);
     io_outb(io + PIT_REGISTER_CHANNEL0, divisor >> 8);
 
-    pic_setroutine(bus, id, handleirq);
-
 }
 
 static void driver_detach(struct base_bus *bus, unsigned int id)
 {
 
-    pic_unsetroutine(bus, id);
     timer_unregisterinterface(&timerinterface);
+    pic_unsetroutine(bus, id);
 
 }
 

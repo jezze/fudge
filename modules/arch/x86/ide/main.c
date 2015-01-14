@@ -413,9 +413,6 @@ static void driver_attach(struct base_bus *bus, unsigned int id)
     unsigned int bar3 = pci_ind(bus, id, PCI_CONFIG_BAR3);
     unsigned int bar4 = pci_ind(bus, id, PCI_CONFIG_BAR4);
 
-    base_initbus(&p.base, IDE_BUS_TYPE, "ide0", bus_setup, bus_next_p, bus_irq);
-    base_initbus(&s.base, IDE_BUS_TYPE, "ide1", bus_setup, bus_next_s, bus_irq);
-
     p.data = (bar0 & 0xFFFFFFFC) + 0x1F0 * (!bar0);
     p.control = (bar1 & 0xFFFFFFFC) + 0x3F6 * (!bar1);
     p.busmaster = (bar4 & 0xFFFFFFFC) + 0;
@@ -440,6 +437,8 @@ void init()
 {
 
     base_initdriver(&driver, "ide", driver_match, driver_attach, driver_detach);
+    base_initbus(&p.base, IDE_BUS_TYPE, "ide0", bus_setup, bus_next_p, bus_irq);
+    base_initbus(&s.base, IDE_BUS_TYPE, "ide1", bus_setup, bus_next_s, bus_irq);
     base_registerdriver(&driver);
 
 }
