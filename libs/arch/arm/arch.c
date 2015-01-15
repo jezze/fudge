@@ -46,7 +46,7 @@ static unsigned int spawn(struct container *self, struct task *task, void *stack
 
 }
 
-static unsigned int exit(struct container *self, struct task *task, void *stack)
+static unsigned int despawn(struct container *self, struct task *task, void *stack)
 {
 
     return 0;
@@ -106,7 +106,7 @@ static void setupbasic()
 static void setupcontainer(struct arch_container *container, unsigned int i)
 {
 
-    container_init(&container->base, spawn, exit);
+    container_init(&container->base, spawn, despawn);
 
 }
 

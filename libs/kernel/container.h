@@ -19,7 +19,7 @@ enum container_call
     CONTAINER_CALL_LOAD                 = 0x0C,
     CONTAINER_CALL_UNLOAD               = 0x0D,
     CONTAINER_CALL_SPAWN                = 0x0E,
-    CONTAINER_CALL_EXIT                 = 0x0F
+    CONTAINER_CALL_DESPAWN              = 0x0F
 
 };
 
@@ -33,4 +33,4 @@ struct container
 
 };
 
-void container_init(struct container *container, unsigned int (*spawn)(struct container *self, struct task *task, void *stack), unsigned int (*exit)(struct container *self, struct task *task, void *stack));
+void container_init(struct container *container, unsigned int (*spawn)(struct container *self, struct task *task, void *stack), unsigned int (*despawn)(struct container *self, struct task *task, void *stack));

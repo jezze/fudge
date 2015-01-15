@@ -216,7 +216,7 @@ static unsigned int spawn(struct container *self, struct task *task, void *stack
 
 }
 
-static unsigned int exit(struct container *self, struct task *task, void *stack)
+static unsigned int despawn(struct container *self, struct task *task, void *stack)
 {
 
     unsigned int i;
@@ -371,7 +371,7 @@ static void setupcontainer(struct arch_container *container, unsigned int i)
     struct mmu_directory *directories = (struct mmu_directory *)ARCH_DIRECTORY_KCODE_BASE;
     struct mmu_table *tables = (struct mmu_table *)ARCH_TABLE_KCODE_BASE;
 
-    container_init(&container->base, spawn, exit);
+    container_init(&container->base, spawn, despawn);
 
     container->directory = directories + i;
     container->table = tables + i * ARCH_CONTAINER_MAPPINGS;

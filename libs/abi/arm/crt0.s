@@ -1,8 +1,8 @@
 .extern main
-.extern call_exit
+.extern call_despawn
 
 .globl _start
 _start:
     bl main
-    bl call_exit
+    bl call_despawn
 

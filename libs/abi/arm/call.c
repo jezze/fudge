@@ -26,7 +26,7 @@ unsigned int call_execute()
 
 }
 
-unsigned int call_exit()
+unsigned int call_despawn()
 {
 
     return 0;

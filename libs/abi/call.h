@@ -41,8 +41,8 @@ unsigned int call_bind(unsigned int mount, unsigned int pdescriptor, unsigned in
 unsigned int call_close(unsigned int descriptor);
 unsigned int call_create(unsigned int pdescriptor, unsigned int count, const char *name);
 unsigned int call_destroy(unsigned int pdescriptor, unsigned int count, const char *name);
+unsigned int call_despawn();
 unsigned int call_execute();
-unsigned int call_exit();
 unsigned int call_load(unsigned int descriptor);
 unsigned int call_mount(unsigned int mount, unsigned int channel, unsigned int descriptor);
 unsigned int call_open(unsigned int descriptor);

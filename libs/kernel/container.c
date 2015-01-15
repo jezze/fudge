@@ -348,7 +348,7 @@ static unsigned int unload(struct container *self, struct task *task, void *stac
 
 }
 
-void container_init(struct container *container, unsigned int (*spawn)(struct container *self, struct task *task, void *stack), unsigned int (*exit)(struct container *self, struct task *task, void *stack))
+void container_init(struct container *container, unsigned int (*spawn)(struct container *self, struct task *task, void *stack), unsigned int (*despawn)(struct container *self, struct task *task, void *stack))
 {
 
     unsigned int i;
@@ -375,7 +375,7 @@ void container_init(struct container *container, unsigned int (*spawn)(struct co
     container->calls[CONTAINER_CALL_LOAD] = load;
     container->calls[CONTAINER_CALL_UNLOAD] = unload;
     container->calls[CONTAINER_CALL_SPAWN] = spawn;
-    container->calls[CONTAINER_CALL_EXIT] = exit;
+    container->calls[CONTAINER_CALL_DESPAWN] = despawn;
 
 }
 

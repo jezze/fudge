@@ -13,7 +13,7 @@
 .set CALL_INDEX_LOAD,                   0x0C
 .set CALL_INDEX_UNLOAD,                 0x0D
 .set CALL_INDEX_SPAWN,                  0x0E
-.set CALL_INDEX_EXIT,                   0x0F
+.set CALL_INDEX_DESPAWN,                0x0F
 
 .global call_auth
 call_auth:
@@ -45,15 +45,15 @@ call_destroy:
     int $CALL_INTERRUPT
     ret
 
-.global call_execute
-call_execute:
-    movl $CALL_INDEX_EXECUTE, %eax
+.global call_despawn
+call_despawn:
+    movl $CALL_INDEX_DESPAWN, %eax
     int $CALL_INTERRUPT
     ret
 
-.global call_exit
-call_exit:
-    movl $CALL_INDEX_EXIT, %eax
+.global call_execute
+call_execute:
+    movl $CALL_INDEX_EXECUTE, %eax
     int $CALL_INTERRUPT
     ret
 

@@ -1,8 +1,8 @@
 .extern main
-.extern call_exit
+.extern call_despawn
 
 .global _start
 _start:
     call main
-    call call_exit
+    call call_despawn
 
