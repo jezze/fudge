@@ -68,6 +68,8 @@ DIR:=$(CUR)/slang
 include $(DIR)/rules.mk
 DIR:=$(CUR)/sleep
 include $(DIR)/rules.mk
+DIR:=$(CUR)/wm
+include $(DIR)/rules.mk
 
 CUR:=$(TMP_$(PAR))
 PAR:=$(basename $(PAR))
