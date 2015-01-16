@@ -8,23 +8,32 @@ PLATFORM_x86:=pc
 PLATFORM_arm:=integratorcp
 PLATFORM:=$(PLATFORM_$(ARCH))
 
-KERNEL_LIBS_x86:=-lmboot -larch -lkernel -lelf -ltar -lcpio -lfudge
-KERNEL_LIBS_arm:=-larch -lkernel -lelf -ltar -lcpio -lfudge -lstd
-KERNEL_LIBS:=$(KERNEL_LIBS_$(ARCH))
+DEFAULT_LIBS_x86:=-lfudge
+DEFAULT_LIBS_arm:=-lfudge -lstd
+DEFAULT_LIBS:=$(DEFAULT_LIBS_$(ARCH))
 
-MODULES_LIBS_x86:=-lfudge
-MODULES_LIBS_arm:=-lfudge -lstd
-MODULES_LIBS:=$(MODULES_LIBS_$(ARCH))
-
-PACKAGES_LIBS_x86:=-labi -lfudge
-PACKAGES_LIBS_arm:=-labi -lfudge -lstd
-PACKAGES_LIBS:=$(PACKAGES_LIBS_$(ARCH))
+LOADER_LIBS_x86:=-lmboot
+LOADER_LIBS_arm:=
+LOADER_LIBS:=$(LOADER_LIBS_$(ARCH))
 
 INSTALL_PATH:=/boot
 INCLUDE_PATH:=include
+
 LIBS_PATH:=libs
+
+KERNEL_NAME:=fudge
+KERNEL:=$(KERNEL_NAME)
+KERNEL_LIBS:=$(LOADER_LIBS) -larch -lkernel -lelf -ltar -lcpio $(DEFAULT_LIBS)
+
 MODULES_PATH:=modules
+MODULES_LIBS:=$(DEFAULT_LIBS)
+
 PACKAGES_PATH:=packages
+PACKAGES_LIBS:=-labi $(DEFAULT_LIBS)
+
+RAMDISK_NAME:=initrd
+RAMDISK_TYPE:=tar
+RAMDISK:=$(RAMDISK_NAME).$(RAMDISK_TYPE)
 
 BUILD_ROOT:=build
 BUILD_BIN:=$(BUILD_ROOT)/bin
@@ -33,13 +42,6 @@ BUILD_CONFIG:=$(BUILD_ROOT)/config
 BUILD_LIB:=$(BUILD_ROOT)/lib
 BUILD_MODULE:=$(BUILD_BOOT)/mod
 BUILD_SHARE:=$(BUILD_ROOT)/share
-
-KERNEL_NAME:=fudge
-KERNEL:=$(KERNEL_NAME)
-
-RAMDISK_NAME:=initrd
-RAMDISK_TYPE:=tar
-RAMDISK:=$(RAMDISK_NAME).$(RAMDISK_TYPE)
 
 AS:=$(TARGET)-gcc
 CC:=$(TARGET)-gcc
