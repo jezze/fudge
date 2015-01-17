@@ -10,6 +10,23 @@ struct box
 
 };
 
+struct glyph
+{
+
+    struct box size;
+    const char c;
+    const unsigned char *buffer;
+
+};
+
+struct text
+{
+
+    struct box size;
+    const char *content;
+
+};
+
 struct panel
 {
 
@@ -18,6 +35,7 @@ struct panel
     struct box border;
     struct box frame;
     struct box frametitle;
+    struct text title;
 
 };
 
@@ -31,6 +49,7 @@ struct window
     struct box frametitle;
     struct box bodyborder;
     struct box body;
+    struct text title;
 
 };
 
@@ -44,7 +63,65 @@ static unsigned char colormap[] = {
     0x1C, 0x14, 0x24
 };
 
-static unsigned char buffer[4096];
+static const unsigned char letter_[] = {
+    0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00
+};
+
+static const unsigned char letter0[] = {
+    0x00, 0x01, 0x01, 0x01, 0x00,
+    0x01, 0x00, 0x00, 0x00, 0x01,
+    0x01, 0x00, 0x00, 0x01, 0x01,
+    0x01, 0x00, 0x01, 0x00, 0x01,
+    0x01, 0x01, 0x00, 0x00, 0x01,
+    0x01, 0x00, 0x00, 0x00, 0x01,
+    0x00, 0x01, 0x01, 0x01, 0x00
+};
+
+static const unsigned char letter1[] = {
+    0x00, 0x00, 0x01, 0x00, 0x00,
+    0x00, 0x01, 0x01, 0x00, 0x00,
+    0x00, 0x00, 0x01, 0x00, 0x00,
+    0x00, 0x00, 0x01, 0x00, 0x00,
+    0x00, 0x00, 0x01, 0x00, 0x00,
+    0x00, 0x00, 0x01, 0x00, 0x00,
+    0x00, 0x01, 0x01, 0x01, 0x00
+};
+
+static const unsigned char letter2[] = {
+    0x00, 0x01, 0x01, 0x01, 0x00,
+    0x01, 0x00, 0x00, 0x00, 0x01,
+    0x00, 0x00, 0x00, 0x00, 0x01,
+    0x00, 0x00, 0x00, 0x01, 0x00,
+    0x00, 0x00, 0x01, 0x00, 0x00,
+    0x00, 0x01, 0x00, 0x00, 0x00,
+    0x01, 0x01, 0x01, 0x01, 0x01
+};
+
+static const unsigned char letter3[] = {
+    0x00, 0x01, 0x01, 0x01, 0x00,
+    0x01, 0x00, 0x00, 0x00, 0x01,
+    0x00, 0x00, 0x00, 0x00, 0x01,
+    0x00, 0x00, 0x00, 0x01, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x01,
+    0x01, 0x00, 0x00, 0x00, 0x01,
+    0x00, 0x01, 0x01, 0x01, 0x00
+};
+
+struct glyph font[] = {
+    {{0, 0, 5, 7}, '_', letter_},
+    {{0, 0, 5, 7}, '0', letter0},
+    {{7, 7, 5, 7}, '1', letter1},
+    {{24, 7, 5, 7}, '2', letter2},
+    {{0, 0, 5, 7}, '3', letter3}
+};
+
+static unsigned char backbuffer[4096];
 
 void setmode()
 {
@@ -74,10 +151,30 @@ void draw_begin()
 
 }
 
-void draw_line(unsigned int offset, unsigned int count)
+void draw_backbuffer(unsigned int offset, unsigned int count, unsigned int o)
 {
 
-    call_write(CALL_L0, offset, count, buffer);
+    call_write(CALL_L0, offset, count, backbuffer + o);
+
+}
+
+void draw_normal(struct box *box)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < box->h; i++)
+        draw_backbuffer(box->y * 320 + box->x + 320 * i, box->w, box->w * i);
+
+}
+
+void draw_repeated(struct box *box)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < box->h; i++)
+        draw_backbuffer(box->y * 320 + box->x + 320 * i, box->w, 0);
 
 }
 
@@ -88,29 +185,57 @@ void draw_end()
 
 }
 
-void fillbuffer(unsigned int color, unsigned int count)
+void backbuffer_fill(unsigned char color, unsigned int count)
 {
 
     unsigned int i;
 
     for (i = 0; i < count; i++)
-        buffer[i] = color;
+        backbuffer[i] = color;
 
 }
 
-void fill(struct box *box, char color)
+void backbuffer_blitbuffer(const unsigned char *buffer, unsigned int count)
+{
+
+    memory_copy(backbuffer, buffer, count);
+
+}
+
+void backbuffer_blitglyph(struct glyph *glyph, unsigned char bgcolor, unsigned char fgcolor)
 {
 
     unsigned int i;
 
-    fillbuffer(color, box->w);
+    for (i = 0; i < glyph->size.w * glyph->size.h; i++)
+    {
 
-    for (i = 0; i < box->h; i++)
-        draw_line(box->y * 320 + box->x + 320 * i, box->w);
+        if (glyph->buffer[i])
+            backbuffer[i] = fgcolor;
+         else
+            backbuffer[i] = bgcolor;
+
+    }
 
 }
 
-static void box_setsize(struct box *box, unsigned int x, unsigned int y, unsigned int w, unsigned int h)
+void box_draw(struct box *box, unsigned char color)
+{
+
+    backbuffer_fill(color, box->w);
+    draw_repeated(box);
+
+}
+
+void glyph_draw(struct glyph *glyph)
+{
+
+    backbuffer_blitglyph(glyph, 0, 1);
+    draw_normal(&glyph->size);
+
+}
+
+void box_setsize(struct box *box, unsigned int x, unsigned int y, unsigned int w, unsigned int h)
 {
 
     box->x = x;
@@ -120,7 +245,14 @@ static void box_setsize(struct box *box, unsigned int x, unsigned int y, unsigne
 
 }
 
-static void panel_setsize(struct panel *panel, unsigned int x, unsigned int y, unsigned int w, unsigned int h)
+void glyph_setsize(struct glyph *glyph, unsigned int x, unsigned int y, unsigned int w, unsigned int h)
+{
+
+    box_setsize(&glyph->size, x, y, w, h);
+
+}
+
+void panel_setsize(struct panel *panel, unsigned int x, unsigned int y, unsigned int w, unsigned int h)
 {
 
     panel->active = 0;
@@ -132,30 +264,30 @@ static void panel_setsize(struct panel *panel, unsigned int x, unsigned int y, u
 
 }
 
-static void panel_draw(struct panel *panel)
+void panel_draw(struct panel *panel)
 {
 
-    fill(&panel->border, 0);
+    box_draw(&panel->border, 0);
 
     if (panel->active)
     {
 
-        fill(&panel->frame, 6);
-        fill(&panel->frametitle, 5);
+        box_draw(&panel->frame, 6);
+        box_draw(&panel->frametitle, 5);
 
     }
 
     else
     {
 
-        fill(&panel->frame, 4);
-        fill(&panel->frametitle, 3);
+        box_draw(&panel->frame, 4);
+        box_draw(&panel->frametitle, 3);
 
     }
 
 }
 
-static void window_setsize(struct window *window, unsigned int x, unsigned int y, unsigned int w, unsigned int h)
+void window_setsize(struct window *window, unsigned int x, unsigned int y, unsigned int w, unsigned int h)
 {
 
     window->active = 0;
@@ -169,29 +301,29 @@ static void window_setsize(struct window *window, unsigned int x, unsigned int y
 
 }
 
-static void window_draw(struct window *window)
+void window_draw(struct window *window)
 {
 
-    fill(&window->border, 0);
+    box_draw(&window->border, 0);
 
     if (window->active)
     {
 
-        fill(&window->frame, 6);
-        fill(&window->frametitle, 5);
+        box_draw(&window->frame, 6);
+        box_draw(&window->frametitle, 5);
 
     }
 
     else
     {
 
-        fill(&window->frame, 4);
-        fill(&window->frametitle, 3);
+        box_draw(&window->frame, 4);
+        box_draw(&window->frametitle, 3);
 
     }
 
-    fill(&window->bodyborder, 0);
-    fill(&window->body, 2);
+    box_draw(&window->bodyborder, 0);
+    box_draw(&window->body, 2);
 
 }
 
@@ -226,7 +358,7 @@ void main()
     setmode();
     setcolormap();
     draw_begin();
-    fill(&back, 0);
+    box_draw(&back, 0);
     panel_draw(&panel1);
     panel_draw(&panel2);
     panel_draw(&panel3);
@@ -236,6 +368,8 @@ void main()
     window_draw(&win1);
     window_draw(&win2);
     window_draw(&win3);
+    glyph_draw(&font[2]);
+    glyph_draw(&font[3]);
     draw_end();
 
 }
