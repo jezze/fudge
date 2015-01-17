@@ -123,6 +123,23 @@ struct glyph font[] = {
 
 static unsigned char backbuffer[4096];
 
+struct glyph *glyph_find(char c)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < 5; i++)
+    {
+
+        if (font[i].c == c)
+            return &font[i];
+
+    }
+
+    return 0;
+
+}
+
 void setmode()
 {
 
@@ -252,15 +269,16 @@ void glyph_setsize(struct glyph *glyph, unsigned int x, unsigned int y, unsigned
 
 }
 
-void panel_setsize(struct panel *panel, unsigned int x, unsigned int y, unsigned int w, unsigned int h)
+void panel_init(struct panel *panel, unsigned int x, unsigned int y, unsigned int w, unsigned int h, char *text, unsigned int active)
 {
-
-    panel->active = 0;
 
     box_setsize(&panel->size, x, y, w, h);
     box_setsize(&panel->border, panel->size.x, panel->size.y, panel->size.w, panel->size.h);
     box_setsize(&panel->frame, panel->border.x + 1, panel->border.y + 1, panel->border.w - 2, panel->border.h - 2);
     box_setsize(&panel->frametitle, panel->frame.x + 1, panel->frame.y + 1, panel->frame.w - 2, panel->frame.h - 2);
+
+    panel->active = active;
+    panel->title.content = text;
 
 }
 
@@ -287,10 +305,8 @@ void panel_draw(struct panel *panel)
 
 }
 
-void window_setsize(struct window *window, unsigned int x, unsigned int y, unsigned int w, unsigned int h)
+void window_init(struct window *window, unsigned int x, unsigned int y, unsigned int w, unsigned int h, char *text, unsigned int active)
 {
-
-    window->active = 0;
 
     box_setsize(&window->size, x, y, w, h);
     box_setsize(&window->border, window->size.x, window->size.y, window->size.w, window->size.h);
@@ -298,6 +314,9 @@ void window_setsize(struct window *window, unsigned int x, unsigned int y, unsig
     box_setsize(&window->frametitle, window->frame.x + 1, window->frame.y + 1, window->frame.w - 2, 16);
     box_setsize(&window->bodyborder, window->frame.x + 1, window->frame.y + 18, window->frame.w - 2, window->frame.h - 19);
     box_setsize(&window->body, window->bodyborder.x + 1, window->bodyborder.y + 1, window->bodyborder.w - 2, window->bodyborder.h - 2);
+
+    window->active = active;
+    window->title.content = text;
 
 }
 
@@ -342,18 +361,15 @@ void main()
     struct window win3;
 
     box_setsize(&back, 0, 0, 320, 200);
-    panel_setsize(&panel1, 1, 1, 17, 17);
-    panel_setsize(&panel2, 18, 1, 17, 17);
-    panel_setsize(&panel3, 35, 1, 17, 17);
-    panel_setsize(&panel4, 52, 1, 17, 17);
-    panel_setsize(&panel5, 69, 1, 212, 17);
-    panel_setsize(&panel6, 281, 1, 38, 17);
-    window_setsize(&win1, 1, 18, 160, 181);
-    window_setsize(&win2, 161, 18, 158, 100);
-    window_setsize(&win3, 161, 118, 158, 81);
-
-    panel2.active = 1;
-    win1.active = 1;
+    panel_init(&panel1, 1, 1, 17, 17, "1", 0);
+    panel_init(&panel2, 18, 1, 17, 17, "2", 1);
+    panel_init(&panel3, 35, 1, 17, 17, "3", 0);
+    panel_init(&panel4, 52, 1, 17, 17, "1", 0);
+    panel_init(&panel5, 69, 1, 212, 17, "1", 0);
+    panel_init(&panel6, 281, 1, 38, 17, "1", 0);
+    window_init(&win1, 1, 18, 160, 181, "1212", 1);
+    window_init(&win2, 161, 18, 158, 100, "1211", 0);
+    window_init(&win3, 161, 118, 158, 81, "2121", 0);
 
     setmode();
     setcolormap();
@@ -368,8 +384,8 @@ void main()
     window_draw(&win1);
     window_draw(&win2);
     window_draw(&win3);
-    glyph_draw(&font[2]);
-    glyph_draw(&font[3]);
+    glyph_draw(glyph_find('1'));
+    glyph_draw(glyph_find('2'));
     draw_end();
 
 }
