@@ -398,8 +398,6 @@ void draw(struct box *bb)
     unsigned int i;
 
     draw_begin();
-    box_draw(&back, 0);
-    box_draw(&empty, 2);
     panel_draw(&field);
     panel_draw(&clock);
 
@@ -419,6 +417,13 @@ void draw(struct box *bb)
             struct window *w = v->windows.head->data;
 
             window_draw(w);
+
+        }
+
+        else
+        {
+
+            box_draw(&empty, 2);
 
         }
 
@@ -558,6 +563,9 @@ void main()
 
     setmode();
     setcolormap();
+    draw_begin();
+    box_draw(&back, 0);
+    draw_end();
     draw(&back);
     poll();
 
