@@ -1,5 +1,9 @@
 #include <fudge.h>
 
+#define SCREEN_WIDTH                    320
+#define SCREEN_HEIGHT                   200
+#define VIEW_WIDTH                      160
+
 struct box
 {
 
@@ -52,6 +56,26 @@ struct window
     struct text title;
 
 };
+
+struct event
+{
+
+    unsigned int type;
+    unsigned int count;
+    unsigned char buffer[FUDGE_BSIZE];
+
+};
+
+static struct box back;
+static struct box empty;
+static struct panel view[4];
+static struct panel field;
+static struct panel clock;
+static struct window win[32];
+static unsigned int wins;
+static unsigned int winactive;
+static unsigned int views;
+static unsigned int viewactive;
 
 static unsigned char colormap[] = {
     0x00, 0x00, 0x00,
@@ -181,7 +205,7 @@ void draw_normal(struct box *box)
     unsigned int i;
 
     for (i = 0; i < box->h; i++)
-        draw_backbuffer(box->y * 320 + box->x + 320 * i, box->w, box->w * i);
+        draw_backbuffer(box->y * SCREEN_WIDTH + box->x + SCREEN_WIDTH * i, box->w, box->w * i);
 
 }
 
@@ -191,7 +215,7 @@ void draw_repeated(struct box *box)
     unsigned int i;
 
     for (i = 0; i < box->h; i++)
-        draw_backbuffer(box->y * 320 + box->x + 320 * i, box->w, 0);
+        draw_backbuffer(box->y * SCREEN_WIDTH + box->x + SCREEN_WIDTH * i, box->w, 0);
 
 }
 
@@ -346,26 +370,49 @@ void window_draw(struct window *window)
 
 }
 
-struct event
+static void view_activate(unsigned int index)
 {
 
-    unsigned int type;
-    unsigned int count;
-    unsigned char buffer[FUDGE_BSIZE];
+    view[viewactive].active = 0;
 
-};
+    viewactive = index;
 
-struct box back;
-struct box empty;
-struct panel panel1;
-struct panel panel2;
-struct panel panel3;
-struct panel panel4;
-struct panel panel5;
-struct panel panel6;
-struct window win1;
-struct window win2;
-struct window win3;
+    view[viewactive].active = 1;
+
+}
+
+static void window_activate(unsigned int index)
+{
+
+    win[winactive].active = 0;
+
+    winactive = index;
+
+    win[winactive].active = 1;
+
+}
+
+void draw()
+{
+
+    unsigned int i;
+
+    draw_begin();
+    box_draw(&back, 0);
+    box_draw(&empty, 2);
+
+    for (i = 0; i < views; i++)
+        panel_draw(&view[i]);
+
+    panel_draw(&field);
+    panel_draw(&clock);
+
+    for (i = 0; i < wins; i++)
+        window_draw(&win[i]);
+
+    draw_end();
+
+}
 
 void poll()
 {
@@ -383,28 +430,32 @@ void poll()
         {
 
         case 1:
-            if (event.buffer[0] == 0x1e)
-            {
+            if (event.buffer[0] == 0x02)
+                view_activate(0);
 
-                draw_begin();
-                glyph_draw(glyph_find('1'));
-                glyph_draw(glyph_find('2'));
-                draw_end();
+            if (event.buffer[0] == 0x03)
+                view_activate(1);
 
-            }
+            if (event.buffer[0] == 0x04)
+                view_activate(2);
+
+            if (event.buffer[0] == 0x05)
+                view_activate(3);
 
             break;
 
         case 4:
-            draw_begin();
-            window_draw(&win1);
-            window_draw(&win2);
-            window_draw(&win3);
-            draw_end();
+            window_init(&win[wins], 1, 18, 318, 181, "1212", 0);
+
+            window_activate(wins);
+
+            wins++;
 
             break;
 
         }
+
+        draw();
 
     }
 
@@ -415,30 +466,23 @@ void poll()
 void main()
 {
 
-    box_setsize(&back, 0, 0, 320, 200);
+    wins = 0;
+    winactive = 0;
+    views = 4;
+    viewactive = 0;
+
+    box_setsize(&back, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
     box_setsize(&empty, 2, 19, 316, 179);
-    panel_init(&panel1, 1, 1, 17, 17, "1", 0);
-    panel_init(&panel2, 18, 1, 17, 17, "2", 1);
-    panel_init(&panel3, 35, 1, 17, 17, "3", 0);
-    panel_init(&panel4, 52, 1, 17, 17, "1", 0);
-    panel_init(&panel5, 69, 1, 212, 17, "1", 0);
-    panel_init(&panel6, 281, 1, 38, 17, "1", 0);
-    window_init(&win1, 1, 18, 160, 181, "1212", 1);
-    window_init(&win2, 161, 18, 158, 100, "1211", 0);
-    window_init(&win3, 161, 118, 158, 81, "2121", 0);
+    panel_init(&view[0], 1, 1, 17, 17, "1", 1);
+    panel_init(&view[1], 18, 1, 17, 17, "2", 0);
+    panel_init(&view[2], 35, 1, 17, 17, "3", 0);
+    panel_init(&view[3], 52, 1, 17, 17, "1", 0);
+    panel_init(&field, 69, 1, 212, 17, "1", 0);
+    panel_init(&clock, 281, 1, 38, 17, "1", 0);
 
     setmode();
     setcolormap();
-    draw_begin();
-    box_draw(&back, 0);
-    box_draw(&empty, 2);
-    panel_draw(&panel1);
-    panel_draw(&panel2);
-    panel_draw(&panel3);
-    panel_draw(&panel4);
-    panel_draw(&panel5);
-    panel_draw(&panel6);
-    draw_end();
+    draw();
     poll();
 
 }
