@@ -79,11 +79,11 @@ struct event
 
 static struct box back;
 static struct box empty;
-static struct view view[4];
 static struct panel field;
 static struct panel clock;
-static struct window window[32];
+struct window window[32];
 static unsigned int windows;
+static struct view view[4];
 static unsigned int views;
 static struct view *viewactive;
 
@@ -385,6 +385,7 @@ void view_init(struct view *view, unsigned int x, unsigned int y, unsigned int w
 {
 
     panel_init(&view->panel, x, y, w, h, text, active);
+    list_init(&view->windows);
 
     view->active = active;
     view->windowactive = 0;
@@ -441,11 +442,11 @@ static struct window *event_newwindow()
 static void event_activateview(struct view *v)
 {
 
-    if (viewactive == v)
-        return;
-
     if (viewactive)
     {
+
+        if (viewactive == v)
+            return;
 
         viewactive->active = 0;
         viewactive->panel.active = 0;
@@ -472,7 +473,6 @@ static void event_addwindow(struct view *v, struct window *w)
 
 static void event_activatewindow(struct view *v, struct window *w)
 {
-
     if (v->windowactive == w)
         return;
 
@@ -488,8 +488,7 @@ static void event_activatewindow(struct view *v, struct window *w)
     v->windowactive = w;
 
     v->windowactive->active = 1;
-
-    draw(&v->windowactive->size);
+    draw(&w->size);
 
 }
 
@@ -529,9 +528,9 @@ void poll()
 
             event_addwindow(viewactive, w);
             event_activatewindow(viewactive, w);
+            }
 
             break;
-            }
 
         }
 
