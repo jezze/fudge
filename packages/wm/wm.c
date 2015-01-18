@@ -380,16 +380,30 @@ void poll()
 
         struct event *e = (struct event *)buffer;
 
-        if (e->type == 1 && buffer[8] == 0x1e)
+        switch (e->type)
         {
 
+        case 1:
+            if (buffer[8] == 0x1e)
+            {
+
+                draw_begin();
+                glyph_draw(glyph_find('1'));
+                glyph_draw(glyph_find('2'));
+                draw_end();
+
+            }
+
+            break;
+
+        case 4:
             draw_begin();
-            glyph_draw(glyph_find('1'));
-            glyph_draw(glyph_find('2'));
             window_draw(&win1);
             window_draw(&win2);
             window_draw(&win3);
             draw_end();
+
+            break;
 
         }
 
@@ -427,5 +441,6 @@ void main()
     panel_draw(&panel6);
     draw_end();
     poll();
+
 }
 
