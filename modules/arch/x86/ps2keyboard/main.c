@@ -2,6 +2,7 @@
 #include <kernel/resource.h>
 #include <kernel/scheduler.h>
 #include <system/system.h>
+#include <event/event.h>
 #include <base/base.h>
 #include <keyboard/keyboard.h>
 #include <arch/x86/pic/pic.h>
@@ -18,6 +19,8 @@ static void handleirq(unsigned int irq, struct base_bus *bus, unsigned int id)
 
     unsigned char scancode = ps2_getdata(bus);
     unsigned int count = buffer_wcfifo(&cfifo, 1, &scancode);
+
+    event_notify(EVENT_TYPE_KEYBOARD, 1, &scancode);
 
     if (count)
         scheduler_rendezvous_unsleep(&rdata);

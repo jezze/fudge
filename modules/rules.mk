@@ -10,6 +10,8 @@ DIR:=$(CUR)/clock
 include $(DIR)/rules.mk
 DIR:=$(CUR)/console
 include $(DIR)/rules.mk
+DIR:=$(CUR)/event
+include $(DIR)/rules.mk
 DIR:=$(CUR)/keyboard
 include $(DIR)/rules.mk
 DIR:=$(CUR)/log

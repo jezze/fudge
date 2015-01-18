@@ -1,4 +1,5 @@
 /bin/modload < /boot/mod/system.ko.0
+/bin/modload < /boot/mod/event.ko.0
 /bin/modload < /boot/mod/null.ko.0
 /bin/modload < /boot/mod/pipe.ko.0
 /bin/modload < /boot/mod/pipe.ko.1

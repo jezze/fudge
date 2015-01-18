@@ -346,6 +346,44 @@ void window_draw(struct window *window)
 
 }
 
+struct event
+{
+
+    unsigned int type;
+    unsigned int count;
+
+};
+
+void poll()
+{
+
+    unsigned char buffer[FUDGE_BSIZE];
+    unsigned int count, roff;
+
+    call_walk(CALL_L1, CALL_DR, 14, "system/event/0");
+    call_open(CALL_L1);
+
+    for (roff = 0; (count = call_read(CALL_L1, roff, FUDGE_BSIZE, buffer)); roff += count)
+    {
+
+        struct event *e = (struct event *)buffer;
+
+        if (e->type == 1 && buffer[8] == 0x1e)
+        {
+
+            draw_begin();
+            glyph_draw(glyph_find('1'));
+            glyph_draw(glyph_find('2'));
+            draw_end();
+
+        }
+
+    }
+
+    call_close(CALL_L1);
+
+}
+
 void main()
 {
 
@@ -384,9 +422,7 @@ void main()
     window_draw(&win1);
     window_draw(&win2);
     window_draw(&win3);
-    glyph_draw(glyph_find('1'));
-    glyph_draw(glyph_find('2'));
     draw_end();
-
+    poll();
 }
 
