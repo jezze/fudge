@@ -354,6 +354,18 @@ struct event
 
 };
 
+struct box back;
+struct box empty;
+struct panel panel1;
+struct panel panel2;
+struct panel panel3;
+struct panel panel4;
+struct panel panel5;
+struct panel panel6;
+struct window win1;
+struct window win2;
+struct window win3;
+
 void poll()
 {
 
@@ -374,6 +386,9 @@ void poll()
             draw_begin();
             glyph_draw(glyph_find('1'));
             glyph_draw(glyph_find('2'));
+            window_draw(&win1);
+            window_draw(&win2);
+            window_draw(&win3);
             draw_end();
 
         }
@@ -387,18 +402,8 @@ void poll()
 void main()
 {
 
-    struct box back;
-    struct panel panel1;
-    struct panel panel2;
-    struct panel panel3;
-    struct panel panel4;
-    struct panel panel5;
-    struct panel panel6;
-    struct window win1;
-    struct window win2;
-    struct window win3;
-
     box_setsize(&back, 0, 0, 320, 200);
+    box_setsize(&empty, 2, 19, 316, 179);
     panel_init(&panel1, 1, 1, 17, 17, "1", 0);
     panel_init(&panel2, 18, 1, 17, 17, "2", 1);
     panel_init(&panel3, 35, 1, 17, 17, "3", 0);
@@ -413,15 +418,13 @@ void main()
     setcolormap();
     draw_begin();
     box_draw(&back, 0);
+    box_draw(&empty, 2);
     panel_draw(&panel1);
     panel_draw(&panel2);
     panel_draw(&panel3);
     panel_draw(&panel4);
     panel_draw(&panel5);
     panel_draw(&panel6);
-    window_draw(&win1);
-    window_draw(&win2);
-    window_draw(&win3);
     draw_end();
     poll();
 }
