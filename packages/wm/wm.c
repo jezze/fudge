@@ -46,6 +46,7 @@ struct panel
 struct window
 {
 
+    struct list_item item;
     unsigned int active;
     struct box size;
     struct box border;
@@ -54,6 +55,16 @@ struct window
     struct box bodyborder;
     struct box body;
     struct text title;
+
+};
+
+struct view
+{
+
+    unsigned int active;
+    struct panel panel;
+    struct list windows;
+    struct window *windowactive;
 
 };
 
@@ -68,14 +79,13 @@ struct event
 
 static struct box back;
 static struct box empty;
-static struct panel view[4];
+static struct view view[4];
 static struct panel field;
 static struct panel clock;
-static struct window win[32];
-static unsigned int wins;
-static unsigned int winactive;
+static struct window window[32];
+static unsigned int windows;
 static unsigned int views;
-static unsigned int viewactive;
+static struct view *viewactive;
 
 static unsigned char colormap[] = {
     0x00, 0x00, 0x00,
@@ -332,6 +342,7 @@ void panel_draw(struct panel *panel)
 void window_init(struct window *window, unsigned int x, unsigned int y, unsigned int w, unsigned int h, char *text, unsigned int active)
 {
 
+    list_inititem(&window->item, window);
     box_setsize(&window->size, x, y, w, h);
     box_setsize(&window->border, window->size.x, window->size.y, window->size.w, window->size.h);
     box_setsize(&window->frame, window->border.x + 1, window->border.y + 1, window->border.w - 2, window->border.h - 2);
@@ -370,29 +381,17 @@ void window_draw(struct window *window)
 
 }
 
-static void view_activate(unsigned int index)
+void view_init(struct view *view, unsigned int x, unsigned int y, unsigned int w, unsigned int h, char *text, unsigned int active)
 {
 
-    view[viewactive].active = 0;
+    panel_init(&view->panel, x, y, w, h, text, active);
 
-    viewactive = index;
-
-    view[viewactive].active = 1;
+    view->active = active;
+    view->windowactive = 0;
 
 }
 
-static void window_activate(unsigned int index)
-{
-
-    win[winactive].active = 0;
-
-    winactive = index;
-
-    win[winactive].active = 1;
-
-}
-
-void draw()
+void draw(struct box *bb)
 {
 
     unsigned int i;
@@ -400,17 +399,97 @@ void draw()
     draw_begin();
     box_draw(&back, 0);
     box_draw(&empty, 2);
-
-    for (i = 0; i < views; i++)
-        panel_draw(&view[i]);
-
     panel_draw(&field);
     panel_draw(&clock);
 
-    for (i = 0; i < wins; i++)
-        window_draw(&win[i]);
+    for (i = 0; i < views; i++)
+    {
+
+        struct view *v = &view[i];
+
+        panel_draw(&v->panel);
+
+        if (!v->active)
+            continue;
+
+        if (v->windows.head)
+        {
+
+            struct window *w = v->windows.head->data;
+
+            window_draw(w);
+
+        }
+
+    }
 
     draw_end();
+
+}
+
+static struct window *event_newwindow()
+{
+
+    window_init(&window[windows], 1, 18, 318, 181, "1212", 0);
+
+    windows++;
+
+    return &window[windows - 1];
+
+}
+
+static void event_activateview(struct view *v)
+{
+
+    if (viewactive == v)
+        return;
+
+    if (viewactive)
+    {
+
+        viewactive->active = 0;
+        viewactive->panel.active = 0;
+
+        draw(&viewactive->panel.size);
+
+    }
+
+    viewactive = v;
+
+    viewactive->active = 1;
+    viewactive->panel.active = 1;
+
+    draw(&viewactive->panel.size);
+
+}
+
+static void event_addwindow(struct view *v, struct window *w)
+{
+
+    list_add(&v->windows, &w->item);
+
+}
+
+static void event_activatewindow(struct view *v, struct window *w)
+{
+
+    if (v->windowactive == w)
+        return;
+
+    if (v->windowactive)
+    {
+
+        v->windowactive->active = 0;
+
+        draw(&v->windowactive->size);
+
+    }
+
+    v->windowactive = w;
+
+    v->windowactive->active = 1;
+
+    draw(&v->windowactive->size);
 
 }
 
@@ -431,31 +510,30 @@ void poll()
 
         case 1:
             if (event.buffer[0] == 0x02)
-                view_activate(0);
+                event_activateview(&view[0]);
 
             if (event.buffer[0] == 0x03)
-                view_activate(1);
+                event_activateview(&view[1]);
 
             if (event.buffer[0] == 0x04)
-                view_activate(2);
+                event_activateview(&view[2]);
 
             if (event.buffer[0] == 0x05)
-                view_activate(3);
+                event_activateview(&view[3]);
 
             break;
 
         case 4:
-            window_init(&win[wins], 1, 18, 318, 181, "1212", 0);
+            {
+            struct window *w = event_newwindow();
 
-            window_activate(wins);
-
-            wins++;
+            event_addwindow(viewactive, w);
+            event_activatewindow(viewactive, w);
 
             break;
+            }
 
         }
-
-        draw();
 
     }
 
@@ -466,23 +544,22 @@ void poll()
 void main()
 {
 
-    wins = 0;
-    winactive = 0;
+    windows = 0;
     views = 4;
-    viewactive = 0;
+    viewactive = &view[0];
 
     box_setsize(&back, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
     box_setsize(&empty, 2, 19, 316, 179);
-    panel_init(&view[0], 1, 1, 17, 17, "1", 1);
-    panel_init(&view[1], 18, 1, 17, 17, "2", 0);
-    panel_init(&view[2], 35, 1, 17, 17, "3", 0);
-    panel_init(&view[3], 52, 1, 17, 17, "1", 0);
+    view_init(&view[0], 1, 1, 17, 17, "1", 1);
+    view_init(&view[1], 18, 1, 17, 17, "2", 0);
+    view_init(&view[2], 35, 1, 17, 17, "3", 0);
+    view_init(&view[3], 52, 1, 17, 17, "4", 0);
     panel_init(&field, 69, 1, 212, 17, "1", 0);
     panel_init(&clock, 281, 1, 38, 17, "1", 0);
 
     setmode();
     setcolormap();
-    draw();
+    draw(&back);
     poll();
 
 }
