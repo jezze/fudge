@@ -68,12 +68,11 @@ struct view
 
 };
 
-struct event
+struct event_header
 {
 
     unsigned int type;
     unsigned int count;
-    unsigned char buffer[FUDGE_BSIZE];
 
 };
 
@@ -497,45 +496,68 @@ static void event_activatewindow(struct view *v, struct window *w)
 
 }
 
+unsigned int event_next(void *buffer)
+{
+
+    struct event_header *header = buffer;
+
+    return header->count + sizeof (struct event_header);
+
+}
+
 void poll()
 {
 
-    struct event event;
+    unsigned char buffer[FUDGE_BSIZE];
     unsigned int count, roff;
 
     call_walk(CALL_L1, CALL_DR, 14, "system/event/0");
     call_open(CALL_L1);
 
-    for (roff = 0; (count = call_read(CALL_L1, roff, FUDGE_BSIZE, &event)); roff += count)
+    for (roff = 0; (count = call_read(CALL_L1, roff, FUDGE_BSIZE, buffer)); roff += count)
     {
 
-        switch (event.type)
+        unsigned int i;
+
+        for (i = 0; i < count; i += event_next(buffer + i))
         {
 
-        case 1:
-            if (event.buffer[0] == 0x02)
-                event_activateview(&view[0]);
 
-            if (event.buffer[0] == 0x03)
-                event_activateview(&view[1]);
+            unsigned char *temp = buffer + i;
+            struct event_header *header = (struct event_header *)temp;
+            unsigned char *data = temp + sizeof (struct event_header);
 
-            if (event.buffer[0] == 0x04)
-                event_activateview(&view[2]);
-
-            if (event.buffer[0] == 0x05)
-                event_activateview(&view[3]);
-
-            break;
-
-        case 4:
+            switch (header->type)
             {
-            struct window *w = event_newwindow();
 
-            event_addwindow(viewactive, w);
-            event_activatewindow(viewactive, w);
+            case 1:
+                if (data[0] == 0x02)
+                    event_activateview(&view[0]);
+
+                if (data[0] == 0x03)
+                    event_activateview(&view[1]);
+
+                if (data[0] == 0x04)
+                    event_activateview(&view[2]);
+
+                if (data[0] == 0x05)
+                    event_activateview(&view[3]);
+
+                break;
+
+            case 4:
+                {
+
+                    struct window *w = event_newwindow();
+
+                    event_addwindow(viewactive, w);
+                    event_activatewindow(viewactive, w);
+
+                }
+
+                break;
+
             }
-
-            break;
 
         }
 

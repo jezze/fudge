@@ -22,15 +22,10 @@ static struct system_node root;
 static unsigned int endpoint0_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct event_header *header = buffer;
-
-    count = buffer_rcfifo(&endpoint0.cfifo, 8, buffer);
+    count = buffer_rcfifo(&endpoint0.cfifo, count, buffer);
 
     if (!count)
         scheduler_rendezvous_sleep(&endpoint0.rdata);
-
-    if (header->count)
-        count += buffer_rcfifo(&endpoint0.cfifo, header->count, (unsigned char *)buffer + 8);
 
     return count;
 
