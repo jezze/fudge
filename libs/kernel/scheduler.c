@@ -55,15 +55,24 @@ struct task *scheduler_findinactivetask()
 void scheduler_block(struct task *task)
 {
 
+    if (task->blocked)
+        return;
+
     list_move(&blocked, &active, &task->item);
+
+    task->blocked = 1;
 
 }
 
 void scheduler_unblock(struct task *task)
 {
 
+    if (!task->blocked)
+        return;
+
     list_move(&active, &blocked, &task->item);
 
+    task->blocked = 0;
     task->registers.ip -= 7;
 
 }

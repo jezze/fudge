@@ -10,7 +10,6 @@
 static struct system_node root;
 static struct system_node send;
 static struct system_node wm;
-static struct scheduler_rendezvous rdata;
 static struct list mailboxes;
 
 void event_notify(unsigned int type, unsigned int count, void *buffer)
@@ -26,11 +25,11 @@ void event_notify(unsigned int type, unsigned int count, void *buffer)
     {
 
         struct task_mailbox *mailbox = current->data;
+        struct task *task = mailbox->owner;
 
-        count = buffer_wcfifo(&mailbox->buffer, sizeof (struct event_header), &header) + buffer_wcfifo(&mailbox->buffer, count, buffer);
-
-        if (count)
-            scheduler_rendezvous_unsleep(&rdata);
+        buffer_wcfifo(&mailbox->buffer, sizeof (struct event_header), &header);
+        buffer_wcfifo(&mailbox->buffer, count, buffer);
+        scheduler_unblock(task);
 
     }
 
@@ -45,11 +44,10 @@ static unsigned int send_write(struct system_node *self, unsigned int offset, un
     {
 
         struct task_mailbox *mailbox = current->data;
+        struct task *task = mailbox->owner;
 
-        count = buffer_wcfifo(&mailbox->buffer, count, buffer);
-
-        if (count)
-            scheduler_rendezvous_unsleep(&rdata);
+        buffer_wcfifo(&mailbox->buffer, count, buffer);
+        scheduler_unblock(task);
 
     }
 
@@ -87,7 +85,7 @@ static unsigned int wm_read(struct system_node *self, unsigned int offset, unsig
     count = buffer_rcfifo(&task->mailbox.buffer, count, buffer);
 
     if (!count)
-        scheduler_rendezvous_sleep(&rdata);
+        scheduler_block(task);
 
     return count;
 
