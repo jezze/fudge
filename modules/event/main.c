@@ -1,74 +1,113 @@
 #include <module.h>
 #include <kernel/resource.h>
 #include <kernel/vfs.h>
+#include <kernel/task.h>
 #include <kernel/scheduler.h>
 #include <system/system.h>
 #include <base/base.h>
 #include "event.h"
 
-struct event_endpoint
-{
-
-    struct system_node node;
-    unsigned char buffer[4096];
-    struct buffer cfifo;
-    struct scheduler_rendezvous rdata;
-
-};
-
-static struct event_endpoint endpoint0;
 static struct system_node root;
-
-static unsigned int endpoint0_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
-{
-
-    count = buffer_rcfifo(&endpoint0.cfifo, count, buffer);
-
-    if (!count)
-        scheduler_rendezvous_sleep(&endpoint0.rdata);
-
-    return count;
-
-}
-
-static unsigned int endpoint0_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
-{
-
-    count = buffer_wcfifo(&endpoint0.cfifo, count, buffer);
-
-    if (count)
-        scheduler_rendezvous_unsleep(&endpoint0.rdata);
-
-    return count;
-
-}
+static struct system_node send;
+static struct system_node wm;
+static struct scheduler_rendezvous rdata;
+static struct list mailboxes;
 
 void event_notify(unsigned int type, unsigned int count, void *buffer)
 {
 
+    struct list_item *current;
     struct event_header header;
 
     header.type = type;
     header.count = count;
 
-    buffer_wcfifo(&endpoint0.cfifo, sizeof (struct event_header), &header);
-    buffer_wcfifo(&endpoint0.cfifo, count, buffer);
+    for (current = mailboxes.head; current; current = current->next)
+    {
 
-    scheduler_rendezvous_unsleep(&endpoint0.rdata);
+        struct task_mailbox *mailbox = current->data;
+
+        buffer_wcfifo(&mailbox->buffer, sizeof (struct event_header), &header);
+        buffer_wcfifo(&mailbox->buffer, count, buffer);
+
+        scheduler_rendezvous_unsleep(&rdata);
+
+    }
+
+}
+
+static unsigned int send_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    struct list_item *current;
+
+    for (current = mailboxes.head; current; current = current->next)
+    {
+
+        struct task_mailbox *mailbox = current->data;
+
+        buffer_wcfifo(&mailbox->buffer, count, buffer);
+
+        scheduler_rendezvous_unsleep(&rdata);
+
+    }
+
+    return count;
+
+}
+
+static unsigned int wm_open(struct system_node *self)
+{
+
+    struct task *task = scheduler_findusedtask();
+
+    list_add(&mailboxes, &task->mailbox.item);
+
+    return system_open(self);
+
+}
+
+static unsigned int wm_close(struct system_node *self)
+{
+
+    struct task *task = scheduler_findusedtask();
+
+    list_remove(&mailboxes, &task->mailbox.item);
+
+    return system_close(self);
+
+}
+
+static unsigned int wm_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    struct task *task = scheduler_findusedtask();
+
+    count = buffer_rcfifo(&task->mailbox.buffer, count, buffer);
+
+    if (!count)
+        scheduler_rendezvous_sleep(&rdata);
+
+    return count;
 
 }
 
 void init()
 {
 
-    buffer_init(&endpoint0.cfifo, 1, 4096, endpoint0.buffer);
-    system_initnode(&endpoint0.node, SYSTEM_NODETYPE_NORMAL, "0");
+    system_initnode(&send, SYSTEM_NODETYPE_NORMAL, "send");
 
-    endpoint0.node.read = endpoint0_read;
-    endpoint0.node.write = endpoint0_write;
+    send.write = send_write;
+
+    system_initnode(&wm, SYSTEM_NODETYPE_NORMAL, "wm");
+
+    wm.open = wm_open;
+    wm.close = wm_close;
+    wm.read = wm_read;
 
     system_initnode(&root, SYSTEM_NODETYPE_GROUP, "event");
-    system_addchild(&root, &endpoint0.node);
+    system_addchild(&root, &send);
+    system_addchild(&root, &wm);
     system_registernode(&root);
 
 }

@@ -511,7 +511,7 @@ void poll()
     unsigned char buffer[FUDGE_BSIZE];
     unsigned int count, roff;
 
-    call_walk(CALL_L1, CALL_DR, 14, "system/event/0");
+    call_walk(CALL_L1, CALL_DR, 15, "system/event/wm");
     call_open(CALL_L1);
 
     for (roff = 0; (count = call_read(CALL_L1, roff, FUDGE_BSIZE, buffer)); roff += count)
