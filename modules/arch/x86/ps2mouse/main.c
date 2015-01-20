@@ -20,10 +20,13 @@ static void handleirq(unsigned int irq, struct base_bus *bus, unsigned int id)
     unsigned char data = ps2_getdata(bus);
     unsigned int count = buffer_wcfifo(&cfifo, 1, &data);
 
-    event_notify(EVENT_TYPE_MOUSE, 1, &data);
-
     if (count)
+    {
+
         scheduler_rendezvous_unsleep(&rdata);
+        event_notify(EVENT_TYPE_MOUSE, 1, &data);
+
+    }
 
 }
 
