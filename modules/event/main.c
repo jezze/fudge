@@ -27,10 +27,10 @@ void event_notify(unsigned int type, unsigned int count, void *buffer)
 
         struct task_mailbox *mailbox = current->data;
 
-        buffer_wcfifo(&mailbox->buffer, sizeof (struct event_header), &header);
-        buffer_wcfifo(&mailbox->buffer, count, buffer);
+        count = buffer_wcfifo(&mailbox->buffer, sizeof (struct event_header), &header) + buffer_wcfifo(&mailbox->buffer, count, buffer);
 
-        scheduler_rendezvous_unsleep(&rdata);
+        if (count)
+            scheduler_rendezvous_unsleep(&rdata);
 
     }
 
@@ -46,9 +46,10 @@ static unsigned int send_write(struct system_node *self, unsigned int offset, un
 
         struct task_mailbox *mailbox = current->data;
 
-        buffer_wcfifo(&mailbox->buffer, count, buffer);
+        count = buffer_wcfifo(&mailbox->buffer, count, buffer);
 
-        scheduler_rendezvous_unsleep(&rdata);
+        if (count)
+            scheduler_rendezvous_unsleep(&rdata);
 
     }
 
