@@ -60,7 +60,7 @@ static unsigned int send_write(struct system_node *self, unsigned int offset, un
 static unsigned int wm_open(struct system_node *self)
 {
 
-    struct task *task = scheduler_findusedtask();
+    struct task *task = scheduler_findactivetask();
 
     list_add(&mailboxes, &task->mailbox.item);
 
@@ -71,7 +71,7 @@ static unsigned int wm_open(struct system_node *self)
 static unsigned int wm_close(struct system_node *self)
 {
 
-    struct task *task = scheduler_findusedtask();
+    struct task *task = scheduler_findactivetask();
 
     list_remove(&mailboxes, &task->mailbox.item);
 
@@ -82,7 +82,7 @@ static unsigned int wm_close(struct system_node *self)
 static unsigned int wm_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct task *task = scheduler_findusedtask();
+    struct task *task = scheduler_findactivetask();
 
     count = buffer_rcfifo(&task->mailbox.buffer, count, buffer);
 

@@ -4,8 +4,8 @@
 #include "task.h"
 #include "scheduler.h"
 
-static struct list free;
-static struct list used;
+static struct list active;
+static struct list inactive;
 static struct list blocked;
 
 void scheduler_rendezvous_sleep(struct scheduler_rendezvous *rendezvous)
@@ -14,7 +14,7 @@ void scheduler_rendezvous_sleep(struct scheduler_rendezvous *rendezvous)
     if (rendezvous->task)
         return;
 
-    rendezvous->task = scheduler_findusedtask();
+    rendezvous->task = scheduler_findactivetask();
 
     scheduler_block(rendezvous->task);
 
@@ -32,37 +32,37 @@ void scheduler_rendezvous_unsleep(struct scheduler_rendezvous *rendezvous)
 
 }
 
-struct task *scheduler_findusedtask()
+struct task *scheduler_findactivetask()
 {
 
-    if (!used.tail)
+    if (!active.tail)
         return 0;
 
-    return used.tail->data;
+    return active.tail->data;
 
 }
 
-struct task *scheduler_findfreetask()
+struct task *scheduler_findinactivetask()
 {
 
-    if (!free.tail)
+    if (!inactive.tail)
         return 0;
 
-    return free.tail->data;
+    return inactive.tail->data;
 
 }
 
 void scheduler_block(struct task *task)
 {
 
-    list_move(&blocked, &used, &task->item);
+    list_move(&blocked, &active, &task->item);
 
 }
 
 void scheduler_unblock(struct task *task)
 {
 
-    list_move(&used, &blocked, &task->item);
+    list_move(&active, &blocked, &task->item);
 
     task->registers.ip -= 7;
 
@@ -71,36 +71,36 @@ void scheduler_unblock(struct task *task)
 void scheduler_use(struct task *task)
 {
 
-    list_move(&used, &free, &task->item);
+    list_move(&active, &inactive, &task->item);
 
 }
 
 void scheduler_unuse(struct task *task)
 {
 
-    list_move(&free, &used, &task->item);
+    list_move(&inactive, &active, &task->item);
 
 }
 
 void scheduler_register_task(struct task *task)
 {
 
-    list_add(&free, &task->item);
+    list_add(&inactive, &task->item);
 
 }
 
 void scheduler_unregister_task(struct task *task)
 {
 
-    list_remove(&free, &task->item);
+    list_remove(&inactive, &task->item);
 
 }
 
 void scheduler_setup()
 {
 
-    list_init(&free);
-    list_init(&used);
+    list_init(&active);
+    list_init(&inactive);
     list_init(&blocked);
 
 }
