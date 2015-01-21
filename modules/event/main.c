@@ -18,6 +18,8 @@ void event_notify(unsigned int type, unsigned int count, void *buffer)
     struct list_item *current;
     struct event_header header;
 
+    header.destination = 0xFFFFFFFF;
+    header.source = 0;
     header.type = type;
     header.count = count;
 
