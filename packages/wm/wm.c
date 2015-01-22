@@ -548,7 +548,7 @@ void poll()
 
                 break;
 
-            case 4:
+            case 1000:
                 {
 
                     struct window *w = event_newwindow();

@@ -16,7 +16,7 @@ void sendevent()
 
     struct event_header header;
 
-    header.type = 4;
+    header.type = 1000;
     header.count = 0;
 
     call_walk(CALL_L0, CALL_DR, 17, "system/event/send");
