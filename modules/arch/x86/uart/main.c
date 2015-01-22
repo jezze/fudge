@@ -149,12 +149,9 @@ enum uart_msr
 
 static struct base_driver driver;
 static struct console_interface consoleinterface;
-static unsigned char buffer[512];
-static struct buffer cfifo;
-static struct scheduler_rendezvous rdata;
 static unsigned short io;
 
-static char read()
+static unsigned char read()
 {
 
     while (!(io_inb(io + UART_REGISTER_LSR) & UART_LSR_READY));
@@ -163,7 +160,7 @@ static char read()
 
 }
 
-static void write(char c)
+static void write(unsigned char c)
 {
 
     while (!(io_inb(io + UART_REGISTER_LSR) & UART_LSR_TRANSMIT));
@@ -175,23 +172,9 @@ static void write(char c)
 static void handleirq(unsigned int irq, struct base_bus *bus, unsigned int id)
 {
 
-    char data = read();
-    unsigned int count = buffer_wcfifo(&cfifo, 1, &data);
+    unsigned char data = read();
 
-    if (count)
-        scheduler_rendezvous_unsleep(&rdata);
-
-}
-
-static unsigned int consoleinterface_rdata(unsigned int offset, unsigned int count, void *buffer)
-{
-
-    count = buffer_rcfifo(&cfifo, count, buffer);
-
-    if (!count)
-        scheduler_rendezvous_sleep(&rdata);
-
-    return count;
+    console_notify(1, &data);
 
 }
 
@@ -250,9 +233,8 @@ static void driver_detach(struct base_bus *bus, unsigned int id)
 void init()
 {
 
-    buffer_init(&cfifo, 1, 512, &buffer);
     base_initdriver(&driver, "uart", driver_match, driver_attach, driver_detach);
-    console_initinterface(&consoleinterface, &driver, consoleinterface_rdata, consoleinterface_wdata);
+    console_initinterface(&consoleinterface, &driver, consoleinterface_wdata);
     base_registerdriver(&driver);
 
 }

@@ -171,13 +171,6 @@ static void clear(unsigned int offset)
 
 }
 
-static unsigned int consoleinterface_rdata(unsigned int offset, unsigned int count, void *buffer)
-{
-
-    return 0;
-
-}
-
 static unsigned int consoleinterface_wdata(unsigned int offset, unsigned int count, void *buffer)
 {
 
@@ -362,7 +355,7 @@ void init()
 {
 
     base_initdriver(&driver, "vga", driver_match, driver_attach, driver_detach);
-    console_initinterface(&consoleinterface, &driver, consoleinterface_rdata, consoleinterface_wdata);
+    console_initinterface(&consoleinterface, &driver, consoleinterface_wdata);
     video_initinterface(&videointerface, &driver, videointerface_setmode, videointerface_rdata, videointerface_wdata, videointerface_rcolormap, videointerface_wcolormap);
     base_registerdriver(&driver);
 
