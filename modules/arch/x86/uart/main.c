@@ -204,9 +204,6 @@ static unsigned int driver_match(struct base_bus *bus, unsigned int id)
 static void driver_attach(struct base_bus *bus, unsigned int id)
 {
 
-    console_registerinterface(&consoleinterface, bus, id);
-    pic_setroutine(bus, id, handleirq);
-
     io = platform_getbase(bus, id);
 
     io_outb(io + UART_REGISTER_IER, UART_IER_NULL);
@@ -219,6 +216,9 @@ static void driver_attach(struct base_bus *bus, unsigned int id)
     io_outb(io + UART_REGISTER_IER, UART_IER_RECEIVE);
 
     consoleinterface.settings.scroll = 1;
+
+    console_registerinterface(&consoleinterface, bus, id);
+    pic_setroutine(bus, id, handleirq);
 
 }
 

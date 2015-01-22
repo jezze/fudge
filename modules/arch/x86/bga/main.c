@@ -109,8 +109,6 @@ static unsigned int driver_match(struct base_bus *bus, unsigned int id)
 static void driver_attach(struct base_bus *bus, unsigned int id)
 {
 
-    video_registerinterface(&videointerface, bus, id);
-
     bank = (void *)0xA0000;
     lfb = (void *)(unsigned long)pci_ind(bus, id, PCI_CONFIG_BAR0);
 
@@ -120,6 +118,8 @@ static void driver_attach(struct base_bus *bus, unsigned int id)
     mmu_map_kernel_memory(3, (unsigned int)driver->lfb, (unsigned int)driver->lfb, 0x00400000);
     mmu_reload_memory();
 */
+
+    video_registerinterface(&videointerface, bus, id);
 
 }
 

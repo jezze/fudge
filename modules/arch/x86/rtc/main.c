@@ -114,10 +114,10 @@ static unsigned int driver_match(struct base_bus *bus, unsigned int id)
 static void driver_attach(struct base_bus *bus, unsigned int id)
 {
 
+    io = platform_getbase(bus, id);
+
     clock_registerinterface(&clockinterface, bus, id);
     pic_setroutine(bus, id, handleirq);
-
-    io = platform_getbase(bus, id);
 
 }
 

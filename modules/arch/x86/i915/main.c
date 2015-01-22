@@ -153,22 +153,22 @@ static unsigned int driver_match(struct base_bus *bus, unsigned int id)
 static void driver_attach(struct base_bus *bus, unsigned int id)
 {
 
-    video_registerinterface(&videointerface, bus, id);
-    pic_setroutine(bus, id, handleirq);
     enabledpll();
     enablepipe();
     enableplane();
     waitvblank();
     disablevga();
     setpipemode(640, 480);
+    video_registerinterface(&videointerface, bus, id);
+    pic_setroutine(bus, id, handleirq);
 
 }
 
 static void driver_detach(struct base_bus *bus, unsigned int id)
 {
 
-    pic_unsetroutine(bus, id);
     video_unregisterinterface(&videointerface);
+    pic_unsetroutine(bus, id);
 
 }
 

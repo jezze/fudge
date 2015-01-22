@@ -317,15 +317,13 @@ static void driver_attach(struct base_bus *bus, unsigned int id)
     io = pci_inw(bus, id, PCI_CONFIG_BAR0) & ~1;
     mmio = pci_ind(bus, id, PCI_CONFIG_BAR1);
 
-    network_registerinterface(&networkinterface, bus, id);
-    pci_setmaster(bus, id);
-    pic_setroutine(bus, id, handleirq);
     poweron();
     reset();
     setintflags(RTL8139_ISR_ROK | RTL8139_ISR_TOK);
     setrx();
     settx();
     enable();
+    pci_setmaster(bus, id);
 
     networkinterface.settings.mac[0] = io_inb(io + RTL8139_REGISTER_IDR0);
     networkinterface.settings.mac[1] = io_inb(io + RTL8139_REGISTER_IDR1);
@@ -333,6 +331,9 @@ static void driver_attach(struct base_bus *bus, unsigned int id)
     networkinterface.settings.mac[3] = io_inb(io + RTL8139_REGISTER_IDR3);
     networkinterface.settings.mac[4] = io_inb(io + RTL8139_REGISTER_IDR4);
     networkinterface.settings.mac[5] = io_inb(io + RTL8139_REGISTER_IDR5);
+
+    network_registerinterface(&networkinterface, bus, id);
+    pic_setroutine(bus, id, handleirq);
 
 }
 

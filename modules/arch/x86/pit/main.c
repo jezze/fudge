@@ -72,14 +72,13 @@ static unsigned int driver_match(struct base_bus *bus, unsigned int id)
 static void driver_attach(struct base_bus *bus, unsigned int id)
 {
 
-    timer_registerinterface(&timerinterface, bus, id);
-    pic_setroutine(bus, id, handleirq);
-
     io = platform_getbase(bus, id);
 
     io_outb(io + PIT_REGISTER_COMMAND, PIT_COMMAND_CHANNEL0 | PIT_COMMAND_BOTH | PIT_COMMAND_MODE3 | PIT_COMMAND_BINARY);
     io_outb(io + PIT_REGISTER_CHANNEL0, divisor);
     io_outb(io + PIT_REGISTER_CHANNEL0, divisor >> 8);
+    timer_registerinterface(&timerinterface, bus, id);
+    pic_setroutine(bus, id, handleirq);
 
 }
 

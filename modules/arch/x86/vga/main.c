@@ -328,9 +328,6 @@ static unsigned int driver_match(struct base_bus *bus, unsigned int id)
 static void driver_attach(struct base_bus *bus, unsigned int id)
 {
 
-    console_registerinterface(&consoleinterface, bus, id);
-    video_registerinterface(&videointerface, bus, id);
-
     taddress = (void *)0x000B8000;
     gaddress = (void *)0x000A0000;
     cursor.color = 0x0F;
@@ -340,6 +337,8 @@ static void driver_attach(struct base_bus *bus, unsigned int id)
     videointerface.settings.bpp = 16;
 
     clear(0);
+    console_registerinterface(&consoleinterface, bus, id);
+    video_registerinterface(&videointerface, bus, id);
 
 }
 

@@ -31,8 +31,6 @@ static unsigned int driver_match(struct base_bus *bus, unsigned int id)
 static void driver_attach(struct base_bus *bus, unsigned int id)
 {
 
-    keyboard_registerinterface(&keyboardinterface, bus, id);
-    pic_setroutine(bus, id, handleirq);
     ps2_enable(bus, id);
     ps2_reset(bus, id);
     ps2_disablescanning(bus, id);
@@ -40,6 +38,8 @@ static void driver_attach(struct base_bus *bus, unsigned int id)
     ps2_identify(bus, id);
     ps2_enablescanning(bus, id);
     ps2_enableinterrupt(bus, id);
+    keyboard_registerinterface(&keyboardinterface, bus, id);
+    pic_setroutine(bus, id, handleirq);
 
 }
 
