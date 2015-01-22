@@ -133,8 +133,6 @@ static unsigned char tx2[0x800];
 static unsigned char tx3[0x800];
 static unsigned short rxp;
 static unsigned short txp;
-static struct scheduler_rendezvous rdata;
-static struct scheduler_rendezvous wdata;
 
 static void poweron()
 {
@@ -197,70 +195,35 @@ static void handleirq(unsigned int irq, struct base_bus *bus, unsigned int id)
         char *ppacket = packet;
         struct rtl8139_header *header = packet;
 
-        scheduler_rendezvous_unsleep(&rdata);
+        network_notify(header->length, ppacket + 4);
+
+        rxp += (header->length + 4 + 3) & ~3;
+
         io_outw(io + RTL8139_REGISTER_ISR, RTL8139_ISR_ROK);
-        network_notify(&networkinterface, ppacket + 4, header->length);
 
     }
 
     if (status & RTL8139_ISR_TOK)
     {
 
-        scheduler_rendezvous_unsleep(&wdata);
         io_outw(io + RTL8139_REGISTER_ISR, RTL8139_ISR_TOK);
 
     }
 
 }
 
-static void *networkinterface_getpacket()
+static unsigned int networkinterface_rdata(unsigned int count, void *buffer)
 {
 
-    return rx + rxp;
-
-}
-
-static unsigned int networkinterface_copypacket(unsigned int count, void *buffer)
-{
-
-    struct rtl8139_header *header = networkinterface_getpacket();
-
-    return memory_read(buffer, count, rx + rxp + 4, header->length, 0);
-
-}
-
-static void networkinterface_dumppacket()
-{
-
-    struct rtl8139_header *header = networkinterface_getpacket();
-
-    rxp += (header->length + 4 + 3) & ~3;
-
-}
-
-static unsigned int networkinterface_receive(unsigned int count, void *buffer)
-{
-
+    /*
     unsigned short cbr = io_inw(io + RTL8139_REGISTER_CBR);
+    */
 
-    if (cbr == rxp)
-    {
-
-        scheduler_rendezvous_sleep(&rdata);
-
-        return 0;
-
-    }
-
-    count = networkinterface_copypacket(count, buffer);
-
-    networkinterface_dumppacket();
-
-    return count;
+    return 0;
 
 }
 
-static unsigned int networkinterface_send(unsigned int count, void *buffer)
+static unsigned int networkinterface_wdata(unsigned int count, void *buffer)
 {
 
     unsigned int status = (0x3F << 16) | (count & 0x1FFF);
@@ -349,7 +312,7 @@ void init()
 {
 
     base_initdriver(&driver, "rtl8139", driver_match, driver_attach, driver_detach);
-    network_initinterface(&networkinterface, &driver, networkinterface_receive, networkinterface_send, networkinterface_getpacket, networkinterface_copypacket, networkinterface_dumppacket);
+    network_initinterface(&networkinterface, &driver, networkinterface_rdata, networkinterface_wdata);
     base_registerdriver(&driver);
 
 }
