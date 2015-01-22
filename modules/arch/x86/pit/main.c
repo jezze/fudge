@@ -43,10 +43,7 @@ enum pit_command
 
 static struct base_driver driver;
 static struct timer_interface timerinterface;
-static struct scheduler_rendezvous rdata;
 static unsigned short io;
-static unsigned int wait;
-static unsigned int wakeup;
 static unsigned short divisor;
 static unsigned int jiffies;
 
@@ -55,34 +52,10 @@ static void handleirq(unsigned int irq, struct base_bus *bus, unsigned int id)
 
     jiffies += 1;
 
-    if (wait && jiffies >= wait)
-    {
-
-        scheduler_rendezvous_unsleep(&rdata);
-
-        wait = 0;
-
-    }
-
 }
 
 static void timerinterface_sleep(unsigned int duration)
 {
-
-    if (wakeup)
-    {
-
-        wakeup = 0;
-
-        return;
-
-    }
-
-    wait = jiffies + duration;
-
-    scheduler_rendezvous_sleep(&rdata);
-
-    wakeup = 1;
 
 }
 
@@ -121,9 +94,7 @@ static void driver_detach(struct base_bus *bus, unsigned int id)
 void init()
 {
 
-    wakeup = 0;
     jiffies = 0;
-    wait = 0;
     divisor = 10000;
 
     base_initdriver(&driver, "pit", driver_match, driver_attach, driver_detach);
