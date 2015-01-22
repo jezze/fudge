@@ -6,3 +6,19 @@ $(MOD_$(DIR)): $(OBJ_$(DIR))
 
 MODULES:=$(MODULES) $(MOD_$(DIR))
 CLEAN:=$(CLEAN) $(MOD_$(DIR)) $(OBJ_$(DIR))
+
+PAR:=$(PAR).x
+TMP_$(PAR):=$(CUR)
+CUR:=$(DIR)
+
+DIR:=$(CUR)/arp
+include $(DIR)/rules.mk
+DIR:=$(CUR)/ethernet
+include $(DIR)/rules.mk
+DIR:=$(CUR)/ipv4
+include $(DIR)/rules.mk
+DIR:=$(CUR)/ipv6
+include $(DIR)/rules.mk
+
+CUR:=$(TMP_$(PAR))
+PAR:=$(basename $(PAR))
