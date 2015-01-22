@@ -4,7 +4,6 @@
 #include <kernel/task.h>
 #include <kernel/scheduler.h>
 #include <system/system.h>
-#include <event/event.h>
 #include <base/base.h>
 #include <mouse/mouse.h>
 #include <arch/x86/pic/pic.h>
@@ -12,35 +11,13 @@
 
 static struct base_driver driver;
 static struct mouse_interface mouseinterface;
-static unsigned char buffer[512];
-static struct buffer cfifo;
-static struct scheduler_rendezvous rdata;
 
 static void handleirq(unsigned int irq, struct base_bus *bus, unsigned int id)
 {
 
     unsigned char data = ps2_getdata(bus);
-    unsigned int count = buffer_wcfifo(&cfifo, 1, &data);
 
-    if (count)
-    {
-
-        scheduler_rendezvous_unsleep(&rdata);
-        event_notify(EVENT_TYPE_MOUSE, 1, &data);
-
-    }
-
-}
-
-static unsigned int mouseinterface_rdata(unsigned int offset, unsigned int count, void *buffer)
-{
-
-    count = buffer_rcfifo(&cfifo, count, buffer);
-
-    if (!count)
-        scheduler_rendezvous_sleep(&rdata);
-
-    return count;
+    mouse_notify(1, &data);
 
 }
 
@@ -80,9 +57,8 @@ static void driver_detach(struct base_bus *bus, unsigned int id)
 void init()
 {
 
-    buffer_init(&cfifo, 1, 512, &buffer);
     base_initdriver(&driver, "ps2mouse", driver_match, driver_attach, driver_detach);
-    mouse_initinterface(&mouseinterface, &driver, mouseinterface_rdata);
+    mouse_initinterface(&mouseinterface, &driver);
     base_registerdriver(&driver);
 
 }

@@ -7,10 +7,10 @@
 #include <base/base.h>
 #include "event.h"
 
+static struct list mailboxes;
 static struct system_node root;
 static struct system_node send;
 static struct system_node wm;
-static struct list mailboxes;
 
 void event_notify(unsigned int type, unsigned int count, void *buffer)
 {
