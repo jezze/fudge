@@ -1,4 +1,4 @@
-#include <kernel.h>
+#include <fudge.h>
 #include "tss.h"
 
 void tss_setdescriptor(struct tss_pointer *pointer, enum tss_index index, unsigned int selector, unsigned int stack)

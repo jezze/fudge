@@ -1,3 +1,4 @@
+#include <abi.h>
 #include <fudge.h>
 #include "gfx.h"
 #include "vga.h"

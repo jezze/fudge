@@ -1,3 +1,4 @@
+#include <abi.h>
 #include <fudge.h>
 
 static unsigned int walk_path(unsigned int index, unsigned int indexw, unsigned int count, char *buffer)

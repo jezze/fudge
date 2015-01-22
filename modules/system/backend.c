@@ -1,6 +1,5 @@
-#include <module.h>
-#include <kernel/resource.h>
-#include <kernel/vfs.h>
+#include <fudge.h>
+#include <kernel.h>
 #include "system.h"
 #include "backend.h"
 

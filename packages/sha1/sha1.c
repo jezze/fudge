@@ -1,3 +1,4 @@
+#include <abi.h>
 #include <fudge.h>
 
 #define F0(b, c, d)                     (d ^ (b & (c ^ d)))

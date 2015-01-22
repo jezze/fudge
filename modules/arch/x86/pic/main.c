@@ -1,8 +1,5 @@
-#include <module.h>
-#include <kernel/resource.h>
-#include <kernel/vfs.h>
-#include <kernel/task.h>
-#include <kernel/container.h>
+#include <fudge.h>
+#include <kernel.h>
 #include <kernel/kernel.h>
 #include <arch/x86/cpu.h>
 #include <arch/x86/arch.h>

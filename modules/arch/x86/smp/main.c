@@ -1,4 +1,4 @@
-#include <module.h>
+#include <fudge.h>
 #include <arch/x86/acpi/acpi.h>
 #include <arch/x86/cpuid/cpuid.h>
 #include "smp.h"

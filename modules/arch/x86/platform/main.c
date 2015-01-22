@@ -1,5 +1,5 @@
-#include <module.h>
-#include <kernel/resource.h>
+#include <fudge.h>
+#include <kernel.h>
 #include <base/base.h>
 #include "platform.h"
 

@@ -1,4 +1,4 @@
-#include <kernel.h>
+#include <fudge.h>
 #include "error.h"
 
 #define ERROR_REGISTERS                 8

@@ -1,4 +1,4 @@
-#include <module.h>
+#include <fudge.h>
 #include "io.h"
 
 void init()

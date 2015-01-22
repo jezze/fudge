@@ -1,5 +1,5 @@
-#include <module.h>
-#include <kernel/resource.h>
+#include <fudge.h>
+#include <kernel.h>
 #include <system/system.h>
 #include <base/base.h>
 #include <video/video.h>

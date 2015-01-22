@@ -1,4 +1,4 @@
-#include <kernel.h>
+#include <fudge.h>
 #include "gdt.h"
 
 unsigned short gdt_setdescriptor(struct gdt_pointer *pointer, enum gdt_index index, unsigned int base, unsigned int limit, enum gdt_access access, enum gdt_flag flags)

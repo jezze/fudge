@@ -1,4 +1,4 @@
-#include <kernel.h>
+#include <fudge.h>
 #include "resource.h"
 
 static struct list resources;

@@ -1,5 +1,4 @@
 #include <fudge/module.h>
-#include <kernel/vfs.h>
 #include <base/base.h>
 #include <base/block.h>
 #include <block/block.h>

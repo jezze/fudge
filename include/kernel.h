@@ -1,4 +1,5 @@
-#include <fudge/memory.h>
-#include <fudge/list.h>
-#include <fudge/ascii.h>
-#include <fudge/buffer.h>
+#include <kernel/resource.h>
+#include <kernel/vfs.h>
+#include <kernel/task.h>
+#include <kernel/container.h>
+#include <kernel/scheduler.h>

@@ -1,4 +1,4 @@
-#include <module.h>
+#include <fudge.h>
 #include <arch/x86/cpuid/cpuid.h>
 #include "fpu.h"
 

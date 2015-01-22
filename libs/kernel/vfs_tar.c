@@ -1,4 +1,4 @@
-#include <kernel.h>
+#include <fudge.h>
 #include <tar/tar.h>
 #include "resource.h"
 #include "vfs.h"

@@ -1,4 +1,4 @@
-#include <module.h>
+#include <fudge.h>
 #include <arch/x86/mmu.h>
 #include "acpi.h"
 

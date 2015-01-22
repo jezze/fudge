@@ -1,3 +1,4 @@
+#include <abi.h>
 #include <fudge.h>
 #include <gfx/gfx.h>
 #include <gfx/pcx.h>
