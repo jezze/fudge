@@ -8,6 +8,70 @@ static struct list active;
 static struct list inactive;
 static struct list blocked;
 
+unsigned int scheduler_mailbox_write(struct task_mailbox *mailbox, unsigned int count, void *buffer)
+{
+
+    struct task *task = mailbox->owner;
+
+    count = buffer_wcfifo(&mailbox->buffer, count, buffer);
+
+    if (count)
+        scheduler_unblock(task);
+
+    return count;
+
+}
+
+unsigned int scheduler_mailbox_read(struct task_mailbox *mailbox, unsigned int count, void *buffer)
+{
+
+    struct task *task = mailbox->owner;
+
+    count = buffer_rcfifo(&mailbox->buffer, count, buffer);
+
+    if (!count)
+        scheduler_block(task);
+
+    return count;
+
+}
+
+void scheduler_activetask_addmailbox(struct list *l)
+{
+
+    struct task *task = scheduler_findactivetask();
+
+    list_add(l, &task->mailbox.item);
+
+}
+
+void scheduler_activetask_removemailbox(struct list *l)
+{
+
+    struct task *task = scheduler_findactivetask();
+
+    list_remove(l, &task->mailbox.item);
+
+}
+
+unsigned int scheduler_activetask_readmailbox(unsigned int count, void *buffer)
+{
+
+    struct task *task = scheduler_findactivetask();
+
+    return scheduler_mailbox_read(&task->mailbox, count, buffer);
+
+}
+
+unsigned int scheduler_activetask_writemailbox(unsigned int count, void *buffer)
+{
+
+    struct task *task = scheduler_findactivetask();
+
+    return scheduler_mailbox_write(&task->mailbox, count, buffer);
+
+}
+
 void scheduler_rendezvous_sleep(struct scheduler_rendezvous *rendezvous)
 {
 

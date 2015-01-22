@@ -27,11 +27,9 @@ void event_notify(unsigned int type, unsigned int count, void *buffer)
     {
 
         struct task_mailbox *mailbox = current->data;
-        struct task *task = mailbox->owner;
 
-        buffer_wcfifo(&mailbox->buffer, sizeof (struct event_header), &header);
-        buffer_wcfifo(&mailbox->buffer, count, buffer);
-        scheduler_unblock(task);
+        scheduler_mailbox_write(mailbox, sizeof (struct event_header), &header);
+        scheduler_mailbox_write(mailbox, count, buffer);
 
     }
 
@@ -42,14 +40,19 @@ static unsigned int send_write(struct system_node *self, unsigned int offset, un
 
     struct list_item *current;
 
+/*
+    struct event_header *header = buffer;
+
+    if (!header->destination)
+        return 0;
+*/
+
     for (current = mailboxes.head; current; current = current->next)
     {
 
         struct task_mailbox *mailbox = current->data;
-        struct task *task = mailbox->owner;
 
-        buffer_wcfifo(&mailbox->buffer, count, buffer);
-        scheduler_unblock(task);
+        scheduler_mailbox_write(mailbox, count, buffer);
 
     }
 
@@ -60,9 +63,7 @@ static unsigned int send_write(struct system_node *self, unsigned int offset, un
 static unsigned int wm_open(struct system_node *self)
 {
 
-    struct task *task = scheduler_findactivetask();
-
-    list_add(&mailboxes, &task->mailbox.item);
+    scheduler_activetask_addmailbox(&mailboxes);
 
     return system_open(self);
 
@@ -71,9 +72,7 @@ static unsigned int wm_open(struct system_node *self)
 static unsigned int wm_close(struct system_node *self)
 {
 
-    struct task *task = scheduler_findactivetask();
-
-    list_remove(&mailboxes, &task->mailbox.item);
+    scheduler_activetask_removemailbox(&mailboxes);
 
     return system_close(self);
 
@@ -82,20 +81,14 @@ static unsigned int wm_close(struct system_node *self)
 static unsigned int wm_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct task *task = scheduler_findactivetask();
-
-    count = buffer_rcfifo(&task->mailbox.buffer, count, buffer);
-
-    if (!count)
-        scheduler_block(task);
-
-    return count;
+    return scheduler_activetask_readmailbox(count, buffer);
 
 }
 
 void init()
 {
 
+    list_init(&mailboxes);
     system_initnode(&send, SYSTEM_NODETYPE_NORMAL, "send");
 
     send.write = send_write;

@@ -1,6 +1,8 @@
 #include <module.h>
 #include <net/ethernet.h>
 #include <kernel/resource.h>
+#include <kernel/vfs.h>
+#include <kernel/task.h>
 #include <kernel/scheduler.h>
 #include <system/system.h>
 #include <base/base.h>

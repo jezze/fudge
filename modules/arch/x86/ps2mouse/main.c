@@ -1,5 +1,7 @@
 #include <module.h>
 #include <kernel/resource.h>
+#include <kernel/vfs.h>
+#include <kernel/task.h>
 #include <kernel/scheduler.h>
 #include <system/system.h>
 #include <event/event.h>

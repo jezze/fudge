@@ -5,6 +5,12 @@ struct scheduler_rendezvous
 
 };
 
+unsigned int scheduler_mailbox_write(struct task_mailbox *mailbox, unsigned int count, void *buffer);
+unsigned int scheduler_mailbox_read(struct task_mailbox *mailbox, unsigned int count, void *buffer);
+void scheduler_activetask_addmailbox(struct list *l);
+void scheduler_activetask_removemailbox(struct list *l);
+unsigned int scheduler_activetask_readmailbox(unsigned int count, void *buffer);
+unsigned int scheduler_activetask_writemailbox(unsigned int count, void *buffer);
 void scheduler_rendezvous_sleep(struct scheduler_rendezvous *rendezvous);
 void scheduler_rendezvous_unsleep(struct scheduler_rendezvous *rendezvous);
 struct task *scheduler_findactivetask();
