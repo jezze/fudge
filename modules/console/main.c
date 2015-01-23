@@ -44,7 +44,7 @@ static unsigned int interfacenode_ctrlwrite(struct system_node *self, unsigned i
 
 }
 
-static unsigned int interfacenode_dataopen(struct system_node *self)
+static unsigned int interfacenode_inopen(struct system_node *self)
 {
 
     scheduler_activetask_addmailbox(&mailboxes);
@@ -53,7 +53,7 @@ static unsigned int interfacenode_dataopen(struct system_node *self)
 
 }
 
-static unsigned int interfacenode_dataclose(struct system_node *self)
+static unsigned int interfacenode_inclose(struct system_node *self)
 {
 
     scheduler_activetask_removemailbox(&mailboxes);
@@ -62,19 +62,19 @@ static unsigned int interfacenode_dataclose(struct system_node *self)
 
 }
 
-static unsigned int interfacenode_dataread(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int interfacenode_inread(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     return scheduler_activetask_readmailbox(count, buffer);
 
 }
 
-static unsigned int interfacenode_datawrite(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int interfacenode_outwrite(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct console_interfacenode *node = (struct console_interfacenode *)self->parent;
 
-    return node->interface->wdata(offset, count, buffer);
+    return node->interface->wout(offset, count, buffer);
 
 }
 
@@ -84,7 +84,8 @@ void console_registerinterface(struct console_interface *interface, struct base_
     base_registerinterface(&interface->base, bus, id);
     system_addchild(&root, &interface->node.base);
     system_addchild(&interface->node.base, &interface->node.ctrl);
-    system_addchild(&interface->node.base, &interface->node.data);
+    system_addchild(&interface->node.base, &interface->node.in);
+    system_addchild(&interface->node.base, &interface->node.out);
 
 }
 
@@ -93,28 +94,30 @@ void console_unregisterinterface(struct console_interface *interface)
 
     base_unregisterinterface(&interface->base);
     system_removechild(&interface->node.base, &interface->node.ctrl);
-    system_removechild(&interface->node.base, &interface->node.data);
+    system_removechild(&interface->node.base, &interface->node.in);
+    system_removechild(&interface->node.base, &interface->node.out);
     system_removechild(&root, &interface->node.base);
 
 }
 
-void console_initinterface(struct console_interface *interface, struct base_driver *driver, unsigned int (*wdata)(unsigned int offset, unsigned int count, void *buffer))
+void console_initinterface(struct console_interface *interface, struct base_driver *driver, unsigned int (*wout)(unsigned int offset, unsigned int count, void *buffer))
 {
 
     base_initinterface(&interface->base, driver);
     system_initnode(&interface->node.base, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, driver->name);
     system_initnode(&interface->node.ctrl, SYSTEM_NODETYPE_NORMAL, "ctrl");
-    system_initnode(&interface->node.data, SYSTEM_NODETYPE_NORMAL, "data");
+    system_initnode(&interface->node.in, SYSTEM_NODETYPE_NORMAL, "in");
+    system_initnode(&interface->node.out, SYSTEM_NODETYPE_NORMAL, "out");
     ctrl_init_consolesettings(&interface->settings);
 
-    interface->wdata = wdata;
+    interface->wout = wout;
     interface->node.interface = interface;
     interface->node.ctrl.read = interfacenode_ctrlread;
     interface->node.ctrl.write = interfacenode_ctrlwrite;
-    interface->node.data.open = interfacenode_dataopen;
-    interface->node.data.close = interfacenode_dataclose;
-    interface->node.data.read = interfacenode_dataread;
-    interface->node.data.write = interfacenode_datawrite;
+    interface->node.in.open = interfacenode_inopen;
+    interface->node.in.close = interfacenode_inclose;
+    interface->node.in.read = interfacenode_inread;
+    interface->node.out.write = interfacenode_outwrite;
 
 }
 
