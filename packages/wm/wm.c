@@ -435,7 +435,7 @@ void draw(struct box *bb)
 
 }
 
-static struct window *event_newwindow()
+static struct window *createwindow()
 {
 
     window_init(&window[windows], 1, 18, 318, 181, "1212", 0);
@@ -446,7 +446,7 @@ static struct window *event_newwindow()
 
 }
 
-static void event_activateview(struct view *v)
+static void activateview(struct view *v)
 {
 
     if (viewactive)
@@ -471,14 +471,14 @@ static void event_activateview(struct view *v)
 
 }
 
-static void event_addwindow(struct view *v, struct window *w)
+static void addwindow(struct view *v, struct window *w)
 {
 
     list_add(&v->windows, &w->item);
 
 }
 
-static void event_activatewindow(struct view *v, struct window *w)
+static void activatewindow(struct view *v, struct window *w)
 {
     if (v->windowactive == w)
         return;
@@ -535,26 +535,26 @@ void poll()
 
             case 1:
                 if (data[0] == 0x02)
-                    event_activateview(&view[0]);
+                    activateview(&view[0]);
 
                 if (data[0] == 0x03)
-                    event_activateview(&view[1]);
+                    activateview(&view[1]);
 
                 if (data[0] == 0x04)
-                    event_activateview(&view[2]);
+                    activateview(&view[2]);
 
                 if (data[0] == 0x05)
-                    event_activateview(&view[3]);
+                    activateview(&view[3]);
 
                 break;
 
             case 1000:
                 {
 
-                    struct window *w = event_newwindow();
+                    struct window *w = createwindow();
 
-                    event_addwindow(viewactive, w);
-                    event_activatewindow(viewactive, w);
+                    addwindow(viewactive, w);
+                    activatewindow(viewactive, w);
 
                 }
 

@@ -11,25 +11,25 @@ struct event_header
 
 };
 
-void sendevent()
+void sendevent(unsigned int type)
 {
 
     struct event_header header;
 
-    header.type = 1000;
+    header.type = type;
     header.count = 0;
 
-    call_walk(CALL_L0, CALL_DR, 17, "system/event/send");
-    call_open(CALL_L0);
-    call_write(CALL_L0, 0, sizeof (struct event_header), &header);
-    call_close(CALL_L0);
+    call_walk(CALL_L1, CALL_DR, 17, "system/event/send");
+    call_open(CALL_L1);
+    call_write(CALL_L1, 0, sizeof (struct event_header), &header);
+    call_close(CALL_L1);
 
 }
 
 void main()
 {
 
-    sendevent();
+    sendevent(1000);
 
 }
 
