@@ -508,6 +508,21 @@ unsigned int event_next(void *buffer)
 
 }
 
+void sendevent(unsigned int type)
+{
+
+    struct event_header header;
+
+    header.type = type;
+    header.count = 0;
+
+    call_walk(CALL_L2, CALL_DR, 17, "system/event/send");
+    call_open(CALL_L2);
+    call_write(CALL_L2, 0, sizeof (struct event_header), &header);
+    call_close(CALL_L2);
+
+}
+
 void poll()
 {
 
@@ -524,7 +539,6 @@ void poll()
 
         for (i = 0; i < count; i += event_next(buffer + i))
         {
-
 
             unsigned char *temp = buffer + i;
             struct event_header *header = (struct event_header *)temp;
@@ -545,6 +559,9 @@ void poll()
 
                 if (data[0] == 0x05)
                     activateview(&view[3]);
+
+                if (data[0] == 0x10)
+                    sendevent(1001);
 
                 break;
 

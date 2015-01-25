@@ -18,11 +18,12 @@ void network_notify(unsigned int count, void *buffer)
 
         struct task_mailbox *mailbox = current->data;
 
-        scheduler_mailbox_write(mailbox, count, buffer);
+        buffer_wcfifo(&mailbox->buffer, count, buffer);
 
     }
 
     event_notify(EVENT_TYPE_NETWORK, count, buffer);
+    scheduler_mailboxes_unblock(&mailboxes);
 
 }
 
@@ -47,7 +48,7 @@ static unsigned int interfacenode_ctrlwrite(struct system_node *self, unsigned i
 static unsigned int interfacenode_dataopen(struct system_node *self)
 {
 
-    scheduler_activetask_addmailbox(&mailboxes);
+    scheduler_mailboxes_addactive(&mailboxes);
 
     return system_open(self);
 
@@ -56,7 +57,7 @@ static unsigned int interfacenode_dataopen(struct system_node *self)
 static unsigned int interfacenode_dataclose(struct system_node *self)
 {
 
-    scheduler_activetask_removemailbox(&mailboxes);
+    scheduler_mailboxes_removeactive(&mailboxes);
 
     return system_close(self);
 
@@ -65,7 +66,7 @@ static unsigned int interfacenode_dataclose(struct system_node *self)
 static unsigned int interfacenode_dataread(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    return scheduler_activetask_readmailbox(count, buffer);
+    return scheduler_readactive(count, buffer);
 
 }
 

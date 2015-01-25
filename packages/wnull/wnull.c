@@ -11,6 +11,15 @@ struct event_header
 
 };
 
+unsigned int event_next(void *buffer)
+{
+
+    struct event_header *header = buffer;
+
+    return header->count + sizeof (struct event_header);
+
+}
+
 void sendevent(unsigned int type)
 {
 
@@ -19,9 +28,48 @@ void sendevent(unsigned int type)
     header.type = type;
     header.count = 0;
 
-    call_walk(CALL_L1, CALL_DR, 17, "system/event/send");
+    call_walk(CALL_L2, CALL_DR, 17, "system/event/send");
+    call_open(CALL_L2);
+    call_write(CALL_L2, 0, sizeof (struct event_header), &header);
+    call_close(CALL_L2);
+
+}
+
+void poll()
+{
+
+    unsigned char buffer[FUDGE_BSIZE];
+    unsigned int count, roff;
+    unsigned int running = 1;
+
+    call_walk(CALL_L1, CALL_DR, 15, "system/event/wm");
     call_open(CALL_L1);
-    call_write(CALL_L1, 0, sizeof (struct event_header), &header);
+
+    for (roff = 0; running && (count = call_read(CALL_L1, roff, FUDGE_BSIZE, buffer)); roff += count)
+    {
+
+        unsigned int i;
+
+        for (i = 0; i < count; i += event_next(buffer + i))
+        {
+
+            unsigned char *temp = buffer + i;
+            struct event_header *header = (struct event_header *)temp;
+
+            switch (header->type)
+            {
+
+            case 1001:
+                running = 0;
+
+                break;
+
+            }
+
+        }
+
+    }
+
     call_close(CALL_L1);
 
 }
@@ -30,6 +78,11 @@ void main()
 {
 
     sendevent(1000);
+    poll();
+
+    call_open(CALL_O0);
+    call_write(CALL_O0, 0, 10, "Good bye!\n");
+    call_close(CALL_O0);
 
 }
 

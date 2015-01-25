@@ -9,7 +9,6 @@ struct pipe_endpoint
     struct system_node node;
     unsigned char buffer[4096];
     struct buffer cfifo;
-    struct scheduler_rendezvous rdata;
 
 };
 
@@ -20,56 +19,28 @@ static struct system_node root;
 static unsigned int endpoint0_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    count = buffer_rcfifo(&endpoint0.cfifo, count, buffer);
-
-    scheduler_rendezvous_unsleep(&endpoint0.rdata);
-
-    if (!count && endpoint1.node.refcount)
-        scheduler_rendezvous_sleep(&endpoint0.rdata);
-
-    return count;
+    return buffer_rcfifo(&endpoint0.cfifo, count, buffer);
 
 }
 
 static unsigned int endpoint0_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    count = buffer_wcfifo(&endpoint1.cfifo, count, buffer);
-
-    scheduler_rendezvous_unsleep(&endpoint1.rdata);
-
-    if (!count && endpoint0.node.refcount)
-        scheduler_rendezvous_sleep(&endpoint1.rdata);
-
-    return count;
+    return buffer_wcfifo(&endpoint1.cfifo, count, buffer);
 
 }
 
 static unsigned int endpoint1_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    count = buffer_rcfifo(&endpoint1.cfifo, count, buffer);
-
-    scheduler_rendezvous_unsleep(&endpoint1.rdata);
-
-    if (!count && endpoint0.node.refcount)
-        scheduler_rendezvous_sleep(&endpoint1.rdata);
-
-    return count;
+    return buffer_rcfifo(&endpoint1.cfifo, count, buffer);
 
 }
 
 static unsigned int endpoint1_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    count = buffer_wcfifo(&endpoint0.cfifo, count, buffer);
-
-    scheduler_rendezvous_unsleep(&endpoint0.rdata);
-
-    if (!count && endpoint1.node.refcount)
-        scheduler_rendezvous_sleep(&endpoint0.rdata);
-
-    return count;
+    return buffer_wcfifo(&endpoint0.cfifo, count, buffer);
 
 }
 

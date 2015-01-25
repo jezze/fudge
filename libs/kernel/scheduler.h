@@ -1,22 +1,9 @@
-struct scheduler_rendezvous
-{
-
-    struct task *task;
-
-};
-
-unsigned int scheduler_mailbox_write(struct task_mailbox *mailbox, unsigned int count, void *buffer);
-unsigned int scheduler_mailbox_read(struct task_mailbox *mailbox, unsigned int count, void *buffer);
-void scheduler_activetask_addmailbox(struct list *l);
-void scheduler_activetask_removemailbox(struct list *l);
-unsigned int scheduler_activetask_readmailbox(unsigned int count, void *buffer);
-unsigned int scheduler_activetask_writemailbox(unsigned int count, void *buffer);
-void scheduler_rendezvous_sleep(struct scheduler_rendezvous *rendezvous);
-void scheduler_rendezvous_unsleep(struct scheduler_rendezvous *rendezvous);
-struct task *scheduler_findactivetask();
-struct task *scheduler_findinactivetask();
-void scheduler_block(struct task *task);
-void scheduler_unblock(struct task *task);
+struct task *scheduler_findactive();
+struct task *scheduler_findinactive();
+unsigned int scheduler_readactive(unsigned int count, void *buffer);
+void scheduler_mailboxes_addactive(struct list *mailboxes);
+void scheduler_mailboxes_removeactive(struct list *mailboxes);
+void scheduler_mailboxes_unblock(struct list *mailboxes);
 void scheduler_use(struct task *task);
 void scheduler_unuse(struct task *task);
 void scheduler_register_task(struct task *task);

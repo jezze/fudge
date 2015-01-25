@@ -184,7 +184,7 @@ static unsigned int spawn(struct container *self, struct task *task, void *stack
 {
 
     struct {void *caller; unsigned int shift;} *args = stack;
-    struct task *next = scheduler_findinactivetask();
+    struct task *next = scheduler_findinactive();
     unsigned int i;
 
     if (!next)
@@ -263,7 +263,7 @@ unsigned short arch_schedule(struct cpu_general *general, struct cpu_interrupt *
 
     }
 
-    current.task = scheduler_findactivetask();
+    current.task = scheduler_findactive();
 
     if (current.task)
     {
@@ -310,7 +310,7 @@ unsigned short arch_pagefault(void *stack)
     if (registers->interrupt.code == selector.kcode)
     {
 
-        struct task *task = scheduler_findactivetask();
+        struct task *task = scheduler_findactive();
 
         taskmaptext(task, address);
         taskmapstack(task);
