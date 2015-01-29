@@ -11,19 +11,9 @@ static struct system_node root;
 void keyboard_notify(unsigned int count, void *buffer)
 {
 
-    struct list_item *current;
-
-    for (current = mailboxes.head; current; current = current->next)
-    {
-
-        struct task_mailbox *mailbox = current->data;
-
-        buffer_wcfifo(&mailbox->buffer, count, buffer);
-
-    }
-
-    event_notify(EVENT_TYPE_KEYBOARD, count, buffer);
+    scheduler_mailboxes_send(&mailboxes, count, buffer);
     scheduler_mailboxes_unblock(&mailboxes);
+    event_notify(EVENT_TYPE_KEYBOARD, count, buffer);
 
 }
 

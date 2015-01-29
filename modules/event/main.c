@@ -12,7 +12,6 @@ static struct system_node wm;
 void event_notify(unsigned int type, unsigned int count, void *buffer)
 {
 
-    struct list_item *current;
     struct event_header header;
 
     header.destination = 0xFFFFFFFF;
@@ -20,16 +19,8 @@ void event_notify(unsigned int type, unsigned int count, void *buffer)
     header.type = type;
     header.count = count;
 
-    for (current = mailboxes.head; current; current = current->next)
-    {
-
-        struct task_mailbox *mailbox = current->data;
-
-        buffer_wcfifo(&mailbox->buffer, sizeof (struct event_header), &header);
-        buffer_wcfifo(&mailbox->buffer, count, buffer);
-
-    }
-
+    scheduler_mailboxes_send(&mailboxes, sizeof (struct event_header), &header);
+    scheduler_mailboxes_send(&mailboxes, count, buffer);
     scheduler_mailboxes_unblock(&mailboxes);
 
 }
@@ -37,24 +28,7 @@ void event_notify(unsigned int type, unsigned int count, void *buffer)
 static unsigned int send_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct list_item *current;
-
-/*
-    struct event_header *header = buffer;
-
-    if (!header->destination)
-        return 0;
-*/
-
-    for (current = mailboxes.head; current; current = current->next)
-    {
-
-        struct task_mailbox *mailbox = current->data;
-
-        buffer_wcfifo(&mailbox->buffer, count, buffer);
-
-    }
-
+    scheduler_mailboxes_send(&mailboxes, count, buffer);
     scheduler_mailboxes_unblock(&mailboxes);
 
     return count;

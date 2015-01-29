@@ -85,12 +85,44 @@ void scheduler_mailboxes_removeactive(struct list *mailboxes)
 
 }
 
-void scheduler_mailboxes_unblock(struct list *mailboxes)
+void scheduler_mailboxes_removeall(struct list *mailboxes)
 {
 
     struct list_item *current;
 
     for (current = mailboxes->head; current; current = current->next)
+    {
+
+        struct task_mailbox *mailbox = current->data;
+
+        list_remove(mailboxes, &mailbox->item);
+
+    }
+
+}
+
+void scheduler_mailboxes_send(struct list *mailboxes, unsigned int count, void *buffer)
+{
+
+    struct list_item *current;
+
+    for (current = mailboxes->head; current; current = current->next)
+    {
+
+        struct task_mailbox *mailbox = current->data;
+
+        buffer_wcfifo(&mailbox->buffer, count, buffer);
+
+    }
+
+}
+
+void scheduler_mailboxes_unblock(struct list *mailboxes)
+{
+
+    struct list_item *current;
+
+    for (current = mailboxes->tail; current; current = current->prev)
     {
 
         struct task_mailbox *mailbox = current->data;

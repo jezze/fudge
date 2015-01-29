@@ -36,12 +36,12 @@ static void interpret(struct buffer *buffer)
         return;
 
     call_walk(CALL_L1, CALL_L0, 1, "0");
-    call_open(CALL_L1);
-    call_write(CALL_L1, 0, buffer->head, buffer->memory);
-    call_close(CALL_L1);
     call_walk(CALL_I1, CALL_L0, 1, "1");
     call_walk(CALL_O1, CALL_O0, 0, 0);
     call_spawn(2);
+    call_open(CALL_L1);
+    call_write(CALL_L1, 0, buffer->head, buffer->memory);
+    call_close(CALL_L1);
 
 }
 
