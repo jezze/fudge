@@ -7,7 +7,7 @@ void task_initmailbox(struct task_mailbox *mailbox, void *owner)
 {
 
     list_inititem(&mailbox->item, mailbox);
-    buffer_init(&mailbox->buffer, 1, 4096, mailbox->data);
+    buffer_init(&mailbox->buffer, 1, TASK_MAILBOXSIZE, mailbox->data);
 
     mailbox->owner = owner;
 
