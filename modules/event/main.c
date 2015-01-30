@@ -27,9 +27,7 @@ void event_notify(unsigned int type, unsigned int count, void *buffer)
 static unsigned int send_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    scheduler_mailboxes_send(&mailboxes, count, buffer);
-
-    return count;
+    return scheduler_mailboxes_send(&mailboxes, count, buffer);
 
 }
 

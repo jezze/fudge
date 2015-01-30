@@ -53,20 +53,6 @@ struct task *scheduler_findinactive()
 
 }
 
-unsigned int scheduler_mailboxes_readactive(struct list *mailboxes, unsigned int count, void *buffer)
-{
-
-    struct task *task = scheduler_findactive();
-
-    count = buffer_rcfifo(&task->mailbox.buffer, count, buffer);
-
-    if (!count && mailboxes->head != 0)
-        block(task);
-
-    return count;
-
-}
-
 void scheduler_mailboxes_addactive(struct list *mailboxes)
 {
 
@@ -103,7 +89,21 @@ void scheduler_mailboxes_removeall(struct list *mailboxes)
 
 }
 
-void scheduler_mailboxes_send(struct list *mailboxes, unsigned int count, void *buffer)
+unsigned int scheduler_mailboxes_readactive(struct list *mailboxes, unsigned int count, void *buffer)
+{
+
+    struct task *task = scheduler_findactive();
+
+    count = buffer_rcfifo(&task->mailbox.buffer, count, buffer);
+
+    if (!count && mailboxes->head != 0)
+        block(task);
+
+    return count;
+
+}
+
+unsigned int scheduler_mailboxes_send(struct list *mailboxes, unsigned int count, void *buffer)
 {
 
     struct list_item *current;
@@ -118,6 +118,8 @@ void scheduler_mailboxes_send(struct list *mailboxes, unsigned int count, void *
         unblock(task);
 
     }
+
+    return count;
 
 }
 

@@ -44,9 +44,7 @@ static unsigned int endpoint0_read(struct system_node *self, unsigned int offset
 static unsigned int endpoint0_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    scheduler_mailboxes_send(&endpoint1.mailboxes, count, buffer);
-
-    return count;
+    return scheduler_mailboxes_send(&endpoint1.mailboxes, count, buffer);
 
 }
 
@@ -79,9 +77,7 @@ static unsigned int endpoint1_read(struct system_node *self, unsigned int offset
 static unsigned int endpoint1_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    scheduler_mailboxes_send(&endpoint0.mailboxes, count, buffer);
-
-    return count;
+    return scheduler_mailboxes_send(&endpoint0.mailboxes, count, buffer);
 
 }
 
