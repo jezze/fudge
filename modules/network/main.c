@@ -12,7 +12,6 @@ void network_notify(unsigned int count, void *buffer)
 {
 
     scheduler_mailboxes_send(&mailboxes, count, buffer);
-    scheduler_mailboxes_unblock(&mailboxes);
     event_notify(EVENT_TYPE_NETWORK, count, buffer);
 
 }
@@ -56,7 +55,7 @@ static unsigned int interfacenode_dataclose(struct system_node *self)
 static unsigned int interfacenode_dataread(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    return scheduler_readactive(count, buffer);
+    return scheduler_mailboxes_readactive(&mailboxes, count, buffer);
 
 }
 

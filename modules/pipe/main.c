@@ -18,7 +18,6 @@ static struct system_node root;
 static unsigned int endpoint0_close(struct system_node *self)
 {
 
-    scheduler_mailboxes_unblock(&mailboxes);
     scheduler_mailboxes_removeall(&mailboxes);
 
     return system_close(self);
@@ -29,7 +28,6 @@ static unsigned int endpoint0_write(struct system_node *self, unsigned int offse
 {
 
     scheduler_mailboxes_send(&mailboxes, count, buffer);
-    scheduler_mailboxes_unblock(&mailboxes);
 
     return count;
 
@@ -56,10 +54,7 @@ static unsigned int endpoint1_close(struct system_node *self)
 static unsigned int endpoint1_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    if (!mailboxes.head)
-        return 0;
-
-    return scheduler_readactive(count, buffer);
+    return scheduler_mailboxes_readactive(&mailboxes, count, buffer);
 
 }
 
