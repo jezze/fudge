@@ -12,6 +12,7 @@ void console_notify(unsigned int count, void *buffer)
 {
 
     scheduler_mailboxes_send(&mailboxes, count, buffer);
+    event_notify(EVENT_TYPE_CONSOLE, count, buffer);
 
 }
 

@@ -108,7 +108,7 @@ unsigned int scheduler_mailboxes_send(struct list *mailboxes, unsigned int count
 
     struct list_item *current;
 
-    for (current = mailboxes->tail; current; current = current->prev)
+    for (current = mailboxes->head; current; current = current->next)
     {
 
         struct task_mailbox *mailbox = current->data;
