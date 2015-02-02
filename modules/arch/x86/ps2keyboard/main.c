@@ -14,7 +14,7 @@ static void handleirq(unsigned int irq, struct base_bus *bus, unsigned int id)
 
     unsigned char data = ps2_getdata(bus);
 
-    keyboard_notify(1, &data);
+    keyboard_notify(&keyboardinterface, 1, &data);
 
 }
 

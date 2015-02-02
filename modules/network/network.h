@@ -12,6 +12,7 @@ struct network_interface
 {
 
     struct base_interface base;
+    struct list mailboxes;
     struct network_interfacenode node;
     struct ctrl_networksettings settings;
     unsigned int (*rdata)(unsigned int count, void *buffer);
@@ -48,7 +49,7 @@ struct network_channel
 
 };
 
-void network_notify(unsigned int count, void *buffer);
+void network_notify(struct network_interface *interface, unsigned int count, void *buffer);
 void network_registerinterface(struct network_interface *interface, struct base_bus *bus, unsigned int id);
 void network_registerprotocol(struct network_protocol *protocol);
 void network_registerchannel(struct network_channel *channel);

@@ -195,7 +195,7 @@ static void handleirq(unsigned int irq, struct base_bus *bus, unsigned int id)
         char *ppacket = packet;
         struct rtl8139_header *header = packet;
 
-        network_notify(header->length, ppacket + 4);
+        network_notify(&networkinterface, header->length, ppacket + 4);
 
         rxp += (header->length + 4 + 3) & ~3;
 

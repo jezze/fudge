@@ -174,7 +174,7 @@ static void handleirq(unsigned int irq, struct base_bus *bus, unsigned int id)
 
     unsigned char data = read();
 
-    console_notify(1, &data);
+    console_notify(&consoleinterface, 1, &data);
 
 }
 

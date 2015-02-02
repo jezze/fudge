@@ -5,13 +5,12 @@
 #include <event/event.h>
 #include "keyboard.h"
 
-static struct list mailboxes;
 static struct system_node root;
 
-void keyboard_notify(unsigned int count, void *buffer)
+void keyboard_notify(struct keyboard_interface *interface, unsigned int count, void *buffer)
 {
 
-    scheduler_mailboxes_send(&mailboxes, count, buffer);
+    scheduler_mailboxes_send(&interface->mailboxes, count, buffer);
     event_notify(EVENT_TYPE_KEYBOARD, count, buffer);
 
 }
@@ -19,7 +18,9 @@ void keyboard_notify(unsigned int count, void *buffer)
 static unsigned int interfacenode_dataopen(struct system_node *self)
 {
 
-    scheduler_mailboxes_addactive(&mailboxes);
+    struct keyboard_interfacenode *node = (struct keyboard_interfacenode *)self->parent;
+
+    scheduler_mailboxes_addactive(&node->interface->mailboxes);
 
     return system_open(self);
 
@@ -28,7 +29,9 @@ static unsigned int interfacenode_dataopen(struct system_node *self)
 static unsigned int interfacenode_dataclose(struct system_node *self)
 {
 
-    scheduler_mailboxes_removeactive(&mailboxes);
+    struct keyboard_interfacenode *node = (struct keyboard_interfacenode *)self->parent;
+
+    scheduler_mailboxes_removeactive(&node->interface->mailboxes);
 
     return system_close(self);
 
@@ -37,7 +40,9 @@ static unsigned int interfacenode_dataclose(struct system_node *self)
 static unsigned int interfacenode_dataread(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    return scheduler_mailboxes_readactive(&mailboxes, count, buffer);
+    struct keyboard_interfacenode *node = (struct keyboard_interfacenode *)self->parent;
+
+    return scheduler_mailboxes_readactive(&node->interface->mailboxes, count, buffer);
 
 }
 
@@ -65,6 +70,7 @@ void keyboard_initinterface(struct keyboard_interface *interface, struct base_dr
     base_initinterface(&interface->base, driver);
     system_initnode(&interface->node.base, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, driver->name);
     system_initnode(&interface->node.data, SYSTEM_NODETYPE_NORMAL, "data");
+    list_init(&interface->mailboxes);
 
     interface->node.interface = interface;
     interface->node.data.open = interfacenode_dataopen;
@@ -76,7 +82,6 @@ void keyboard_initinterface(struct keyboard_interface *interface, struct base_dr
 void init()
 {
 
-    list_init(&mailboxes);
     system_initnode(&root, SYSTEM_NODETYPE_GROUP, "keyboard");
     system_registernode(&root);
 

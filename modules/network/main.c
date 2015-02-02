@@ -5,13 +5,12 @@
 #include <event/event.h>
 #include "network.h"
 
-static struct list mailboxes;
 static struct system_node root;
 
-void network_notify(unsigned int count, void *buffer)
+void network_notify(struct network_interface *interface, unsigned int count, void *buffer)
 {
 
-    scheduler_mailboxes_send(&mailboxes, count, buffer);
+    scheduler_mailboxes_send(&interface->mailboxes, count, buffer);
     event_notify(EVENT_TYPE_NETWORK, count, buffer);
 
 }
@@ -37,7 +36,9 @@ static unsigned int interfacenode_ctrlwrite(struct system_node *self, unsigned i
 static unsigned int interfacenode_dataopen(struct system_node *self)
 {
 
-    scheduler_mailboxes_addactive(&mailboxes);
+    struct network_interfacenode *node = (struct network_interfacenode *)self->parent;
+
+    scheduler_mailboxes_addactive(&node->interface->mailboxes);
 
     return system_open(self);
 
@@ -46,7 +47,9 @@ static unsigned int interfacenode_dataopen(struct system_node *self)
 static unsigned int interfacenode_dataclose(struct system_node *self)
 {
 
-    scheduler_mailboxes_removeactive(&mailboxes);
+    struct network_interfacenode *node = (struct network_interfacenode *)self->parent;
+
+    scheduler_mailboxes_removeactive(&node->interface->mailboxes);
 
     return system_close(self);
 
@@ -55,7 +58,9 @@ static unsigned int interfacenode_dataclose(struct system_node *self)
 static unsigned int interfacenode_dataread(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    return scheduler_mailboxes_readactive(&mailboxes, count, buffer);
+    struct network_interfacenode *node = (struct network_interfacenode *)self->parent;
+
+    return scheduler_mailboxes_readactive(&node->interface->mailboxes, count, buffer);
 
 }
 
@@ -127,6 +132,7 @@ void network_initinterface(struct network_interface *interface, struct base_driv
     system_initnode(&interface->node.base, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, driver->name);
     system_initnode(&interface->node.ctrl, SYSTEM_NODETYPE_NORMAL, "ctrl");
     system_initnode(&interface->node.data, SYSTEM_NODETYPE_NORMAL, "data");
+    list_init(&interface->mailboxes);
     ctrl_init_networksettings(&interface->settings);
 
     interface->rdata = rdata;
@@ -168,7 +174,6 @@ void network_initchannel(struct network_channel *channel, unsigned int (*match)(
 void init()
 {
 
-    list_init(&mailboxes);
     system_initnode(&root, SYSTEM_NODETYPE_GROUP, "network");
     system_registernode(&root);
 

@@ -5,13 +5,12 @@
 #include <event/event.h>
 #include "console.h"
 
-static struct list mailboxes;
 static struct system_node root;
 
-void console_notify(unsigned int count, void *buffer)
+void console_notify(struct console_interface *interface, unsigned int count, void *buffer)
 {
 
-    scheduler_mailboxes_send(&mailboxes, count, buffer);
+    scheduler_mailboxes_send(&interface->mailboxes, count, buffer);
     event_notify(EVENT_TYPE_CONSOLE, count, buffer);
 
 }
@@ -37,7 +36,9 @@ static unsigned int interfacenode_ctrlwrite(struct system_node *self, unsigned i
 static unsigned int interfacenode_inopen(struct system_node *self)
 {
 
-    scheduler_mailboxes_addactive(&mailboxes);
+    struct console_interfacenode *node = (struct console_interfacenode *)self->parent;
+
+    scheduler_mailboxes_addactive(&node->interface->mailboxes);
 
     return system_open(self);
 
@@ -46,7 +47,9 @@ static unsigned int interfacenode_inopen(struct system_node *self)
 static unsigned int interfacenode_inclose(struct system_node *self)
 {
 
-    scheduler_mailboxes_removeactive(&mailboxes);
+    struct console_interfacenode *node = (struct console_interfacenode *)self->parent;
+
+    scheduler_mailboxes_removeactive(&node->interface->mailboxes);
 
     return system_close(self);
 
@@ -55,7 +58,9 @@ static unsigned int interfacenode_inclose(struct system_node *self)
 static unsigned int interfacenode_inread(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    return scheduler_mailboxes_readactive(&mailboxes, count, buffer);
+    struct console_interfacenode *node = (struct console_interfacenode *)self->parent;
+
+    return scheduler_mailboxes_readactive(&node->interface->mailboxes, count, buffer);
 
 }
 
@@ -98,6 +103,7 @@ void console_initinterface(struct console_interface *interface, struct base_driv
     system_initnode(&interface->node.ctrl, SYSTEM_NODETYPE_NORMAL, "ctrl");
     system_initnode(&interface->node.in, SYSTEM_NODETYPE_NORMAL, "in");
     system_initnode(&interface->node.out, SYSTEM_NODETYPE_NORMAL, "out");
+    list_init(&interface->mailboxes);
     ctrl_init_consolesettings(&interface->settings);
 
     interface->wout = wout;
@@ -114,7 +120,6 @@ void console_initinterface(struct console_interface *interface, struct base_driv
 void init()
 {
 
-    list_init(&mailboxes);
     system_initnode(&root, SYSTEM_NODETYPE_GROUP, "console");
     system_registernode(&root);
 
