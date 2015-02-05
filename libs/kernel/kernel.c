@@ -8,31 +8,20 @@
 #include "container.h"
 #include "kernel.h"
 
-static unsigned int findentry(struct vfs_channel *channel, unsigned int id)
-{
-
-    struct binary_protocol *protocol = binary_findprotocol(channel, id);
-
-    if (!protocol)
-        return 0;
-
-    return protocol->copyprogram(channel, id);
-
-}
-
 void kernel_setupmodules(struct container *container, struct task *task, unsigned int count, struct kernel_module *modules)
 {
 
     struct vfs_channel *channel = &container->channels[0];
     struct vfs_mount *mount = &container->mounts[0];
-    struct vfs_descriptor *descriptor = &task->descriptors[0];
+    struct vfs_descriptor *root = &task->descriptors[0];
+    struct vfs_descriptor *work = &task->descriptors[1];
+    struct vfs_descriptor *init = &task->descriptors[2];
     unsigned int i;
 
     for (i = 0; i < count; i++)
     {
 
-        unsigned int root;
-        unsigned int init;
+        struct binary_protocol *protocol;
 
         channel->backend = &modules[i].base;
         channel->protocol = vfs_findprotocol(channel->backend);
@@ -40,28 +29,35 @@ void kernel_setupmodules(struct container *container, struct task *task, unsigne
         if (!channel->protocol)
             continue;
 
-        root = channel->protocol->root(channel->backend);
-
-        if (!root)
-            continue;
-
-        init = channel->protocol->child(channel->backend, root, 4, "bin/");
-
-        if (!init)
-            continue;
-
-        init = channel->protocol->child(channel->backend, init, 4, "init");
-
-        if (!init)
-            continue;
-
         mount->parent.channel = channel;
-        mount->parent.id = root;
-        mount->child.channel = channel;
-        mount->child.id = root;
-        descriptor->channel = channel;
-        descriptor->id = root;
-        task->registers.ip = findentry(channel, init);
+        mount->parent.id = channel->protocol->root(channel->backend);
+        mount->child.channel = mount->parent.channel;
+        mount->child.id = mount->parent.id;
+
+        if (!mount->parent.id)
+            continue;
+
+        root->channel = mount->parent.channel;
+        root->id = mount->parent.id;
+        work->channel = root->channel;
+        work->id = root->id;
+        init->channel = work->channel;
+        init->id = work->channel->protocol->child(work->channel->backend, work->id, 4, "bin/");
+
+        if (!init->id)
+            continue;
+
+        init->id = init->channel->protocol->child(init->channel->backend, init->id, 4, "init");
+
+        if (!init->id)
+            continue;
+
+        protocol = binary_findprotocol(init->channel, init->id);
+
+        if (!protocol)
+            continue;
+
+        task->registers.ip = protocol->copyprogram(init->channel, init->id);
 
     }
 
