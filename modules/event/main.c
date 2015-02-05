@@ -12,7 +12,6 @@ static struct system_node wm;
 void event_notify(unsigned int type, unsigned int count, void *buffer)
 {
 
-/*
     struct event_header header;
 
     header.destination = 0xFFFFFFFF;
@@ -22,18 +21,13 @@ void event_notify(unsigned int type, unsigned int count, void *buffer)
 
     scheduler_mailboxes_send(&mailboxes, sizeof (struct event_header), &header);
     scheduler_mailboxes_send(&mailboxes, count, buffer);
-*/
 
 }
 
 static unsigned int send_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-/*
     return scheduler_mailboxes_send(&mailboxes, count, buffer);
-*/
-
-    return 0;
 
 }
 

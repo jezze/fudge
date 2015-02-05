@@ -39,6 +39,12 @@ void list_remove(struct list *list, struct list_item *item)
     if (list->tail)
         list->tail->next = 0;
 
+    if (item->next)
+        item->next->prev = item->prev;
+
+    if (item->prev)
+        item->prev->next = item->next;
+
     item->next = 0;
     item->prev = 0;
 

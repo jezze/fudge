@@ -24,7 +24,13 @@ static void unblock(struct task *task)
 {
 
     if (!task->blocked)
+    {
+
+        list_move(&active, &active, &task->item);
+
         return;
+
+    }
 
     list_move(&active, &blocked, &task->item);
 
