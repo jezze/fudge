@@ -31,31 +31,30 @@ void kernel_setupmodules(struct container *container, struct task *task, unsigne
     for (i = 0; i < count; i++)
     {
 
-        struct vfs_backend *backend = &modules[i].base;
-        struct vfs_protocol *protocol = vfs_findprotocol(backend);
         unsigned int root;
         unsigned int init;
 
-        if (!protocol)
+        channel->backend = &modules[i].base;
+        channel->protocol = vfs_findprotocol(channel->backend);
+
+        if (!channel->protocol)
             continue;
 
-        root = protocol->root(backend);
+        root = channel->protocol->root(channel->backend);
 
         if (!root)
             continue;
 
-        init = protocol->child(backend, root, 4, "bin/");
+        init = channel->protocol->child(channel->backend, root, 4, "bin/");
 
         if (!init)
             continue;
 
-        init = protocol->child(backend, init, 4, "init");
+        init = channel->protocol->child(channel->backend, init, 4, "init");
 
         if (!init)
             continue;
 
-        channel->backend = backend;
-        channel->protocol = protocol;
         mount->parent.channel = channel;
         mount->parent.id = root;
         mount->child.channel = channel;
