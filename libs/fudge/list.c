@@ -58,6 +58,19 @@ void list_move(struct list *out, struct list *in, struct list_item *item)
 
 }
 
+unsigned int list_count(struct list *list)
+{
+
+    struct list_item *current;
+    unsigned int count = 0;
+
+    for (current = list->head; current; current = current->next)
+        count++;
+ 
+    return count;
+
+}
+
 void list_inititem(struct list_item *item, void *data)
 {
 

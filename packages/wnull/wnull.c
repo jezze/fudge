@@ -11,7 +11,7 @@ struct event_header
 
 };
 
-unsigned int event_next(void *buffer)
+static unsigned int event_next(void *buffer)
 {
 
     struct event_header *header = buffer;
@@ -20,7 +20,7 @@ unsigned int event_next(void *buffer)
 
 }
 
-void sendevent(unsigned int type)
+static void sendevent(unsigned int type)
 {
 
     struct event_header header;
@@ -35,7 +35,7 @@ void sendevent(unsigned int type)
 
 }
 
-void poll()
+static void pollevent()
 {
 
     unsigned char buffer[FUDGE_BSIZE];
@@ -78,7 +78,7 @@ void main()
 {
 
     sendevent(1000);
-    poll();
+    pollevent();
 
     call_open(CALL_O0);
     call_write(CALL_O0, 0, 10, "Good bye!\n");
