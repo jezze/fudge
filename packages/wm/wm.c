@@ -107,15 +107,15 @@ static void arrangewindows(struct view *view)
     if (count == 1)
     {
 
-        box_setsize(&window->size, 2, 18, 316, 180);
+        box_setsize(&window->size, SCREEN_BORDER, 16 + SCREEN_BORDER, SCREEN_WIDTH - 2 * SCREEN_BORDER, SCREEN_HEIGHT - 16 - 2 * SCREEN_BORDER);
 
         return;
 
     }
 
-    box_setsize(&window->size, 2, 18, 158, 180);
+    box_setsize(&window->size, SCREEN_BORDER, 16 + SCREEN_BORDER, SCREEN_WIDTH / 2 - SCREEN_BORDER, SCREEN_HEIGHT - 16 - 2 * SCREEN_BORDER);
 
-    a = 180 / (count - 1);
+    a = (SCREEN_HEIGHT - 16 - 2 * SCREEN_BORDER) / (count - 1);
     i = 0;
 
     for (current = current->next; current; current = current->next)
@@ -123,7 +123,7 @@ static void arrangewindows(struct view *view)
 
         window = current->data;
 
-        box_setsize(&window->size, 160, 18 + i * a, 158, a);
+        box_setsize(&window->size, SCREEN_WIDTH / 2, (16 + SCREEN_BORDER) + i * a, SCREEN_WIDTH / 2 - SCREEN_BORDER, a);
 
         i++;
 
@@ -325,7 +325,7 @@ void setupviews()
     {
 
         view_init(&view[i], "0", 0);
-        box_setsize(&view[i].panel.size, 2 + i * 16, 2, 16, 16);
+        box_setsize(&view[i].panel.size, SCREEN_BORDER + i * 16, SCREEN_BORDER, 16, 16);
         list_add(&views, &view[i].item);
 
     }
@@ -342,11 +342,11 @@ void main()
     setupwindows();
     setupviews();
     box_setsize(&back, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-    box_setsize(&empty, 2 + 1, 18 + 1, 316 - 2, 180 - 2);
+    box_setsize(&empty, SCREEN_BORDER + 1, 16 + SCREEN_BORDER + 1, SCREEN_WIDTH - 2 * SCREEN_BORDER - 2, SCREEN_HEIGHT - 16 - 2 * SCREEN_BORDER - 2);
     panel_init(&field, "1", 0);
     panel_init(&clock, "1", 0);
-    box_setsize(&field.size, 66, 2, 214, 16);
-    box_setsize(&clock.size, 280, 2, 38, 16);
+    box_setsize(&field.size, 64 + SCREEN_BORDER, SCREEN_BORDER, 216 - SCREEN_BORDER, 16);
+    box_setsize(&clock.size, 280, SCREEN_BORDER, 40 - SCREEN_BORDER, 16);
     draw_setmode();
     draw_setcolormap();
     draw_begin();
