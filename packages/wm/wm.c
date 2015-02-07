@@ -107,15 +107,15 @@ static void arrangewindows(struct view *view)
     if (count == 1)
     {
 
-        box_setsize(&window->size, 1, 18, 318, 181);
+        box_setsize(&window->size, 2, 18, 316, 180);
 
         return;
 
     }
 
-    box_setsize(&window->size, 1, 18, 159, 181);
+    box_setsize(&window->size, 2, 18, 158, 180);
 
-    a = 181 / (count - 1);
+    a = 180 / (count - 1);
     i = 0;
 
     for (current = current->next; current; current = current->next)
@@ -123,7 +123,7 @@ static void arrangewindows(struct view *view)
 
         window = current->data;
 
-        box_setsize(&window->size, 160, 18 + i * a, 159, a);
+        box_setsize(&window->size, 160, 18 + i * a, 158, a);
 
         i++;
 
@@ -325,7 +325,7 @@ void setupviews()
     {
 
         view_init(&view[i], "0", 0);
-        box_setsize(&view[i].panel.size, 1 + i * 17, 1, 17, 17);
+        box_setsize(&view[i].panel.size, 2 + i * 16, 2, 16, 16);
         list_add(&views, &view[i].item);
 
     }
@@ -342,11 +342,11 @@ void main()
     setupwindows();
     setupviews();
     box_setsize(&back, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-    box_setsize(&empty, 2, 19, 316, 179);
+    box_setsize(&empty, 2 + 1, 18 + 1, 316 - 2, 180 - 2);
     panel_init(&field, "1", 0);
     panel_init(&clock, "1", 0);
-    box_setsize(&field.size, 69, 1, 212, 17);
-    box_setsize(&clock.size, 281, 1, 38, 17);
+    box_setsize(&field.size, 66, 2, 214, 16);
+    box_setsize(&clock.size, 280, 2, 38, 16);
     draw_setmode();
     draw_setcolormap();
     draw_begin();
