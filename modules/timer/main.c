@@ -6,15 +6,41 @@
 
 static struct system_node root;
 
+void timer_notify(struct timer_interface *interface, unsigned int count, void *buffer)
+{
+
+    scheduler_mailboxes_send(&interface->mailboxes, count, buffer);
+
+}
+
+static unsigned int interfacenode_sleepopen(struct system_node *self)
+{
+
+    struct timer_interfacenode *node = (struct timer_interfacenode *)self->parent;
+
+    scheduler_mailboxes_addactive(&node->interface->mailboxes);
+
+    return system_open(self);
+
+}
+
+static unsigned int interfacenode_sleepclose(struct system_node *self)
+{
+
+    struct timer_interfacenode *node = (struct timer_interfacenode *)self->parent;
+
+    scheduler_mailboxes_removeactive(&node->interface->mailboxes);
+
+    return system_close(self);
+
+}
+
 static unsigned int interfacenode_sleepread(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct timer_interfacenode *node = (struct timer_interfacenode *)self->parent;
 
-    /* 10s */
-    node->interface->sleep(1000);
-
-    return 0;
+    return scheduler_mailboxes_readactive(&node->interface->mailboxes, count, buffer);
 
 }
 
@@ -36,15 +62,17 @@ void timer_unregisterinterface(struct timer_interface *interface)
 
 }
 
-void timer_initinterface(struct timer_interface *interface, struct base_driver *driver, void (*sleep)(unsigned int duration))
+void timer_initinterface(struct timer_interface *interface, struct base_driver *driver)
 {
 
     base_initinterface(&interface->base, driver);
     system_initnode(&interface->node.base, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, driver->name);
     system_initnode(&interface->node.sleep, SYSTEM_NODETYPE_NORMAL, "sleep");
+    list_init(&interface->mailboxes);
 
-    interface->sleep = sleep;
     interface->node.interface = interface;
+    interface->node.sleep.open = interfacenode_sleepopen;
+    interface->node.sleep.close = interfacenode_sleepclose;
     interface->node.sleep.read = interfacenode_sleepread;
 
 }

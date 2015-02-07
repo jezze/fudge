@@ -52,10 +52,12 @@ static void handleirq(unsigned int irq, struct base_bus *bus, unsigned int id)
 
     jiffies += 1;
 
-}
+    if (jiffies < 1000)
+        return;
 
-static void timerinterface_sleep(unsigned int duration)
-{
+    timer_notify(&timerinterface, 4, &jiffies);
+
+    jiffies = 0;
 
 }
 
@@ -94,10 +96,10 @@ void init()
 {
 
     jiffies = 0;
-    divisor = 10000;
+    divisor = 1000;
 
     base_initdriver(&driver, "pit", driver_match, driver_attach, driver_detach);
-    timer_initinterface(&timerinterface, &driver, timerinterface_sleep);
+    timer_initinterface(&timerinterface, &driver);
     base_registerdriver(&driver);
 
 }
