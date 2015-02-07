@@ -25,9 +25,9 @@ static struct box empty;
 static struct panel field;
 static struct panel clock;
 static struct window window[WINDOWS];
-static unsigned int windows;
+static struct list windows;
 static struct view view[VIEWS];
-static unsigned int views;
+static struct list views;
 static struct view *viewactive;
 
 static void drawwindows(struct list *windows)
@@ -46,53 +46,58 @@ static void drawwindows(struct list *windows)
 
 }
 
-static void draw()
+static void drawviews(struct list *views)
 {
 
-    unsigned int i;
+    struct list_item *current;
 
-    draw_begin();
-    panel_draw(&field);
-    panel_draw(&clock);
-
-    for (i = 0; i < views; i++)
+    for (current = views->head; current; current = current->next)
     {
 
-        struct view *v = &view[i];
+        struct view * view = current->data;
 
-        panel_draw(&v->panel);
+        panel_draw(&view->panel);
 
-        if (!v->active)
+        if (!view->active)
             continue;
 
-        if (v->windows.head)
-            drawwindows(&v->windows);
+        if (view->windows.head)
+            drawwindows(&view->windows);
         else
             backbuffer_fillbox(&empty, WM_COLOR_BODY);
 
     }
 
+}
+
+static void draw()
+{
+
+    draw_begin();
+    panel_draw(&field);
+    panel_draw(&clock);
+    drawviews(&views);
     draw_end();
 
 }
 
-static struct window *createwindow()
+static void spawn()
 {
 
-    window_init(&window[windows], "1212", 0);
-
-    windows++;
-
-    return &window[windows - 1];
+    call_walk(CALL_PC, CALL_DR, 9, "bin/wnull");
+    call_walk(CALL_I1, CALL_I0, 0, 0);
+    call_walk(CALL_O1, CALL_O0, 0, 0);
+    call_spawn(2);
 
 }
 
-static void sortwindows(struct view *view)
+static void arrangewindows(struct view *view)
 {
 
     unsigned int count = list_count(&view->windows);
     struct list_item *current = view->windows.head;
     struct window *window;
+    unsigned int a, i;
 
     if (!count)
         return;
@@ -110,34 +115,77 @@ static void sortwindows(struct view *view)
 
     box_setsize(&window->size, 1, 18, 159, 181);
 
-    current = current->next;
-    window = current->data;
+    a = 181 / (count - 1);
+    i = 0;
 
-    box_setsize(&window->size, 160, 18, 159, 181);
-
-}
-
-static void activatewindow()
-{
-
-    struct window *window = createwindow();
-
-    view_addwindow(viewactive, window);
-    sortwindows(viewactive);
-
-    if (viewactive->windowactive == window)
-        return;
-
-    if (viewactive->windowactive)
+    for (current = current->next; current; current = current->next)
     {
 
-        viewactive->windowactive->active = 0;
+        window = current->data;
+
+        box_setsize(&window->size, 160, 18 + i * a, 159, a);
+
+        i++;
 
     }
 
-    viewactive->windowactive = window;
-    viewactive->windowactive->active = 1;
+}
 
+static void activatewindow(struct view *view, struct window *window)
+{
+
+    if (!view->windowactive)
+        view->windowactive = window;
+
+    view->windowactive->active = 0;
+    view->windowactive = window;
+    view->windowactive->active = 1;
+
+}
+
+static void nextwindow(struct view *view)
+{
+
+    if (!view->windowactive)
+        return;
+
+    if (view->windowactive->item.next)
+        activatewindow(view, view->windowactive->item.next->data);
+    else
+        activatewindow(view, view->windows.head->data);
+
+    draw();
+
+}
+
+static void prevwindow(struct view *view)
+{
+
+    if (!view->windowactive)
+        return;
+
+    if (view->windowactive->item.prev)
+        activatewindow(view, view->windowactive->item.prev->data);
+    else
+        activatewindow(view, view->windows.tail->data);
+
+    draw();
+
+}
+
+static void mapwindow(struct view *view)
+{
+
+    struct window *window;
+
+    if (!windows.head)
+        return;
+
+    window = windows.head->data;
+
+    list_move(&view->windows, &windows, &window->item);
+    arrangewindows(view);
+    activatewindow(view, window);
     draw();
 
 }
@@ -148,14 +196,8 @@ static void activateview(struct view *v)
     if (viewactive == v)
         return;
 
-    if (viewactive)
-    {
-
-        viewactive->active = 0;
-        viewactive->panel.active = 0;
-
-    }
-
+    viewactive->active = 0;
+    viewactive->panel.active = 0;
     viewactive = v;
     viewactive->active = 1;
     viewactive->panel.active = 1;
@@ -228,14 +270,24 @@ static void pollevent()
                 if (data[0] == 0x10)
                     sendevent(1001);
 
+                if (data[0] == 0x19)
+                    spawn();
+
+                if (data[0] == 0x24)
+                    nextwindow(viewactive);
+
+                if (data[0] == 0x25)
+                    prevwindow(viewactive);
+
                 break;
 
             case 1000:
-                    activatewindow();
+                    mapwindow(viewactive);
 
                 break;
 
             }
+
 
         }
 
@@ -245,25 +297,54 @@ static void pollevent()
 
 }
 
+void setupwindows()
+{
+
+    unsigned int i;
+
+    list_init(&windows);
+
+    for (i = 0; i < WINDOWS; i++)
+    {
+
+        window_init(&window[i], "0", 0);
+        list_add(&windows, &window[i].item);
+
+    }
+
+}
+
+void setupviews()
+{
+
+    unsigned int i;
+
+    list_init(&views);
+
+    for (i = 0; i < VIEWS; i++)
+    {
+
+        view_init(&view[i], "0", 0);
+        box_setsize(&view[i].panel.size, 1 + i * 17, 1, 17, 17);
+        list_add(&views, &view[i].item);
+
+    }
+
+    viewactive = views.head->data;
+    viewactive->active = 1;
+    viewactive->panel.active = 1;
+
+}
+
 void main()
 {
 
-    windows = 0;
-    views = 4;
-    viewactive = &view[0];
-
-    view_init(&view[0], "1", 1);
-    view_init(&view[1], "2", 0);
-    view_init(&view[2], "3", 0);
-    view_init(&view[3], "4", 0);
-    panel_init(&field, "1", 0);
-    panel_init(&clock, "1", 0);
+    setupwindows();
+    setupviews();
     box_setsize(&back, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
     box_setsize(&empty, 2, 19, 316, 179);
-    box_setsize(&view[0].panel.size, 1, 1, 17, 17);
-    box_setsize(&view[1].panel.size, 18, 1, 17, 17);
-    box_setsize(&view[2].panel.size, 35, 1, 17, 17);
-    box_setsize(&view[3].panel.size, 52, 1, 17, 17);
+    panel_init(&field, "1", 0);
+    panel_init(&clock, "1", 0);
     box_setsize(&field.size, 69, 1, 212, 17);
     box_setsize(&clock.size, 281, 1, 38, 17);
     draw_setmode();
@@ -271,7 +352,7 @@ void main()
     draw_begin();
     backbuffer_fillbox(&back, 0);
     draw_end();
-    draw(&back);
+    draw();
     pollevent();
 
 }

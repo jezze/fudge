@@ -1,6 +1,7 @@
 struct view
 {
 
+    struct list_item item;
     unsigned int active;
     struct panel panel;
     struct list windows;

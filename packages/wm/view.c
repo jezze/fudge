@@ -7,16 +7,10 @@
 #include "window.h"
 #include "view.h"
 
-void view_addwindow(struct view *v, struct window *w)
-{
-
-    list_add(&v->windows, &w->item);
-
-}
-
 void view_init(struct view *view, char *text, unsigned int active)
 {
 
+    list_inititem(&view->item, view);
     panel_init(&view->panel, text, active);
     list_init(&view->windows);
 
