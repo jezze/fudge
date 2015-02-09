@@ -57,11 +57,11 @@ void kernel_setupmodules(struct container *container, struct task *task, unsigne
         if (!protocol)
             continue;
 
-        task->registers.ip = protocol->copyprogram(init->channel, init->id);
+        task->state.registers.ip = protocol->copyprogram(init->channel, init->id);
 
     }
 
-    error_assert(task->registers.ip != 0, "Failed to locate entry point", __FILE__, __LINE__);
+    error_assert(task->state.registers.ip != 0, "Failed to locate entry point", __FILE__, __LINE__);
 
 }
 

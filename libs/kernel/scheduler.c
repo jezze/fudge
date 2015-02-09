@@ -11,31 +11,31 @@ static struct list blocked;
 static void block(struct task *task)
 {
 
-    if (task->blocked)
+    if (task->state.blocked)
         return;
 
-    list_move(&blocked, &active, &task->item);
+    list_move(&blocked, &active, &task->state.item);
 
-    task->blocked = 1;
+    task->state.blocked = 1;
 
 }
 
 static void unblock(struct task *task)
 {
 
-    if (!task->blocked)
+    if (!task->state.blocked)
     {
 
-        list_move(&active, &active, &task->item);
+        list_move(&active, &active, &task->state.item);
 
         return;
 
     }
 
-    list_move(&active, &blocked, &task->item);
+    list_move(&active, &blocked, &task->state.item);
 
-    task->blocked = 0;
-    task->registers.ip -= 7;
+    task->state.blocked = 0;
+    task->state.registers.ip -= 7;
 
 }
 
@@ -85,10 +85,9 @@ void scheduler_mailboxes_removeall(struct list *mailboxes)
     for (current = mailboxes->head; current; current = current->next)
     {
 
-        struct task_mailbox *mailbox = current->data;
-        struct task *task = mailbox->owner;
+        struct task *task = current->data;
 
-        list_remove(mailboxes, &mailbox->item);
+        list_remove(mailboxes, &task->mailbox.item);
         unblock(task);
 
     }
@@ -117,10 +116,9 @@ unsigned int scheduler_mailboxes_send(struct list *mailboxes, unsigned int count
     for (current = mailboxes->head; current; current = current->next)
     {
 
-        struct task_mailbox *mailbox = current->data;
-        struct task *task = mailbox->owner;
+        struct task *task = current->data;
 
-        buffer_wcfifo(&mailbox->buffer, count, buffer);
+        buffer_wcfifo(&task->mailbox.buffer, count, buffer);
         unblock(task);
 
     }
@@ -132,28 +130,28 @@ unsigned int scheduler_mailboxes_send(struct list *mailboxes, unsigned int count
 void scheduler_use(struct task *task)
 {
 
-    list_move(&active, &inactive, &task->item);
+    list_move(&active, &inactive, &task->state.item);
 
 }
 
 void scheduler_unuse(struct task *task)
 {
 
-    list_move(&inactive, &active, &task->item);
+    list_move(&inactive, &active, &task->state.item);
 
 }
 
 void scheduler_register_task(struct task *task)
 {
 
-    list_add(&inactive, &task->item);
+    list_add(&inactive, &task->state.item);
 
 }
 
 void scheduler_unregister_task(struct task *task)
 {
 
-    list_remove(&inactive, &task->item);
+    list_remove(&inactive, &task->state.item);
 
 }
 

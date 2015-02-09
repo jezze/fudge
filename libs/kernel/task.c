@@ -3,31 +3,22 @@
 #include "vfs.h"
 #include "task.h"
 
-void task_initmailbox(struct task_mailbox *mailbox, void *owner)
-{
-
-    list_inititem(&mailbox->item, mailbox);
-    buffer_init(&mailbox->buffer, 1, TASK_MAILBOXSIZE, mailbox->data);
-
-    mailbox->owner = owner;
-
-}
-
 void task_init(struct task *task, unsigned long ip, unsigned long sp)
 {
 
     unsigned int i;
 
-    list_inititem(&task->item, task);
     resource_init(&task->resource, RESOURCE_TYPE_TASK, task);
-    task_initmailbox(&task->mailbox, task);
+    list_inititem(&task->state.item, task);
+    list_inititem(&task->mailbox.item, task);
+    buffer_init(&task->mailbox.buffer, 1, TASK_MAILBOXSIZE, task->mailbox.data);
 
     for (i = 0; i < TASK_DESCRIPTORS; i++)
         vfs_initdescriptor(&task->descriptors[i]);
 
-    task->registers.ip = ip;
-    task->registers.sp = sp;
-    task->blocked = 0;
+    task->state.registers.ip = ip;
+    task->state.registers.sp = sp;
+    task->state.blocked = 0;
 
 }
 

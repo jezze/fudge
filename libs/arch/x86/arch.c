@@ -209,8 +209,8 @@ static unsigned int spawn(struct container *self, struct task *task, void *stack
     scheduler_use(next);
     taskactivate(next);
 
-    next->registers.ip = self->calls[CONTAINER_CALL_EXECUTE](self, next, 0);
-    next->registers.sp = ARCH_TASK_STACKLIMIT;
+    next->state.registers.ip = self->calls[CONTAINER_CALL_EXECUTE](self, next, 0);
+    next->state.registers.sp = ARCH_TASK_STACKLIMIT;
 
     return 1;
 
@@ -256,8 +256,8 @@ unsigned short arch_schedule(struct cpu_general *general, struct cpu_interrupt *
     if (current.task)
     {
 
-        current.task->registers.ip = interrupt->eip;
-        current.task->registers.sp = interrupt->esp;
+        current.task->state.registers.ip = interrupt->eip;
+        current.task->state.registers.sp = interrupt->esp;
 
         tasksave(current.task, general);
 
@@ -269,8 +269,8 @@ unsigned short arch_schedule(struct cpu_general *general, struct cpu_interrupt *
     {
 
         interrupt->code = selector.ucode;
-        interrupt->eip = current.task->registers.ip;
-        interrupt->esp = current.task->registers.sp;
+        interrupt->eip = current.task->state.registers.ip;
+        interrupt->esp = current.task->state.registers.sp;
 
         taskload(current.task, general);
         taskactivate(current.task);
@@ -441,7 +441,7 @@ void arch_setup(unsigned int count, struct kernel_module *modules)
     scheduler_use(current.task);
     setupmmu(current.container, current.task);
     kernel_setupmodules(current.container, current.task, count, modules);
-    arch_usermode(selector.ucode, selector.udata, current.task->registers.ip, current.task->registers.sp);
+    arch_usermode(selector.ucode, selector.udata, current.task->state.registers.ip, current.task->state.registers.sp);
 
 }
 
