@@ -18,7 +18,6 @@ void task_init(struct task *task, unsigned long ip, unsigned long sp)
 
     task->state.registers.ip = ip;
     task->state.registers.sp = sp;
-    task->state.blocked = 0;
 
 }
 
