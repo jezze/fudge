@@ -6,10 +6,17 @@
 
 static struct network_protocol protocol;
 
+void protocol_notify(unsigned int count, void *buffer)
+{
+
+    scheduler_mailboxes_send(&protocol.mailboxes, count, buffer);
+
+}
+
 void init()
 {
 
-    network_initprotocol(&protocol, "ipv4");
+    network_initprotocol(&protocol, "ipv4", 0x0800, protocol_notify);
     network_registerprotocol(&protocol);
 
 }

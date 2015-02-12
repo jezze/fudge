@@ -13,8 +13,6 @@ CUR:=$(DIR)
 
 DIR:=$(CUR)/arp
 include $(DIR)/rules.mk
-DIR:=$(CUR)/ethernet
-include $(DIR)/rules.mk
 DIR:=$(CUR)/ipv4
 include $(DIR)/rules.mk
 DIR:=$(CUR)/ipv6

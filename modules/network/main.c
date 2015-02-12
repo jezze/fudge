@@ -1,14 +1,30 @@
 #include <fudge.h>
 #include <kernel.h>
+#include <net/ethernet.h>
 #include <system/system.h>
 #include <base/base.h>
 #include <event/event.h>
 #include "network.h"
 
 static struct system_node root;
+static struct list protocols;
 
 void network_notify(struct network_interface *interface, unsigned int count, void *buffer)
 {
+
+    struct ethernet_header *header = buffer;
+    unsigned short type = (header->type[0] << 8) | header->type[1];
+    struct list_item *current;
+
+    for (current = protocols.head; current; current = current->next)
+    {
+
+        struct network_protocol *protocol = current->data;
+
+        if (protocol->type == type)
+            protocol->notify(count, buffer);
+
+    }
 
     scheduler_mailboxes_send(&interface->mailboxes, count, buffer);
     event_notify(EVENT_TYPE_NETWORK, count, buffer);
@@ -73,6 +89,44 @@ static unsigned int interfacenode_datawrite(struct system_node *self, unsigned i
 
 }
 
+static unsigned int protocolnode_dataopen(struct system_node *self)
+{
+
+    struct network_protocolnode *node = (struct network_protocolnode *)self->parent;
+
+    scheduler_mailboxes_addactive(&node->protocol->mailboxes);
+
+    return system_open(self);
+
+}
+
+static unsigned int protocolnode_dataclose(struct system_node *self)
+{
+
+    struct network_protocolnode *node = (struct network_protocolnode *)self->parent;
+
+    scheduler_mailboxes_removeactive(&node->protocol->mailboxes);
+
+    return system_close(self);
+
+}
+
+static unsigned int protocolnode_dataread(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    struct network_protocolnode *node = (struct network_protocolnode *)self->parent;
+
+    return scheduler_mailboxes_readactive(&node->protocol->mailboxes, count, buffer);
+
+}
+
+static unsigned int protocolnode_datawrite(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    return 0;
+
+}
+
 void network_registerinterface(struct network_interface *interface, struct base_bus *bus, unsigned int id)
 {
 
@@ -87,15 +141,9 @@ void network_registerprotocol(struct network_protocol *protocol)
 {
 
     resource_register(&protocol->resource);
-
-}
-
-void network_registerchannel(struct network_channel *channel)
-{
-
-    resource_register(&channel->resource);
-    system_addchild(&root, &channel->node.base);
-    system_addchild(&channel->node.base, &channel->node.data);
+    list_add(&protocols, &protocol->item);
+    system_addchild(&root, &protocol->node.base);
+    system_addchild(&protocol->node.base, &protocol->node.data);
 
 }
 
@@ -113,15 +161,9 @@ void network_unregisterprotocol(struct network_protocol *protocol)
 {
 
     resource_unregister(&protocol->resource);
-
-}
-
-void network_unregisterchannel(struct network_channel *channel)
-{
-
-    resource_unregister(&channel->resource);
-    system_removechild(&channel->node.base, &channel->node.data);
-    system_removechild(&root, &channel->node.base);
+    list_remove(&protocols, &protocol->item);
+    system_removechild(&protocol->node.base, &protocol->node.data);
+    system_removechild(&root, &protocol->node.base);
 
 }
 
@@ -147,33 +189,29 @@ void network_initinterface(struct network_interface *interface, struct base_driv
 
 }
 
-void network_initprotocol(struct network_protocol *protocol, char *name)
+void network_initprotocol(struct network_protocol *protocol, char *name, unsigned short type, void (*notify)(unsigned int count, void *buffer))
 {
 
     resource_init(&protocol->resource, RESOURCE_TYPE_PROTONET, protocol);
+    system_initnode(&protocol->node.base, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, name);
+    system_initnode(&protocol->node.data, SYSTEM_NODETYPE_NORMAL, "data");
+    list_init(&protocol->mailboxes);
+    list_inititem(&protocol->item, protocol);
 
-    protocol->name = name;
-
-}
-
-void network_initchannel(struct network_channel *channel, unsigned int (*match)(struct network_interface *interface, void *packet, unsigned int count), void (*notify)(struct network_interface *interface, void *packet, unsigned int count), unsigned int (*rdata)(unsigned int offset, unsigned int count, void *buffer), unsigned int (*wdata)(unsigned int offset, unsigned int count, void *buffer))
-{
-
-    resource_init(&channel->resource, RESOURCE_TYPE_CHANNELNET, channel);
-    system_initnode(&channel->node.base, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, "channel");
-    system_initnode(&channel->node.data, SYSTEM_NODETYPE_NORMAL, "data");
-
-    channel->match = match;
-    channel->notify = notify;
-    channel->rdata = rdata;
-    channel->wdata = wdata;
-    channel->node.channel = channel;
+    protocol->type = type;
+    protocol->notify = notify;
+    protocol->node.protocol = protocol;
+    protocol->node.data.open = protocolnode_dataopen;
+    protocol->node.data.close = protocolnode_dataclose;
+    protocol->node.data.read = protocolnode_dataread;
+    protocol->node.data.write = protocolnode_datawrite;
 
 }
 
 void init()
 {
 
+    list_init(&protocols);
     system_initnode(&root, SYSTEM_NODETYPE_GROUP, "network");
     system_registernode(&root);
 

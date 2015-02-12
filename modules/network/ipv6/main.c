@@ -6,10 +6,17 @@
 
 static struct network_protocol protocol;
 
+void protocol_notify(unsigned int count, void *buffer)
+{
+
+    scheduler_mailboxes_send(&protocol.mailboxes, count, buffer);
+
+}
+
 void init()
 {
 
-    network_initprotocol(&protocol, "ipv6");
+    network_initprotocol(&protocol, "ipv6", 0x86DD, protocol_notify);
     network_registerprotocol(&protocol);
 
 }

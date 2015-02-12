@@ -12,50 +12,39 @@ struct network_interface
 {
 
     struct base_interface base;
-    struct list mailboxes;
     struct network_interfacenode node;
     struct ctrl_networksettings settings;
+    struct list mailboxes;
     unsigned int (*rdata)(unsigned int count, void *buffer);
     unsigned int (*wdata)(unsigned int count, void *buffer);
+
+};
+
+struct network_protocolnode
+{
+
+    struct system_node base;
+    struct system_node data;
+    struct network_protocol *protocol;
 
 };
 
 struct network_protocol
 {
 
-    char *name;
     struct resource resource;
-
-};
-
-struct network_channelnode
-{
-
-    struct system_node base;
-    struct system_node data;
-    struct network_channel *channel;
-
-};
-
-struct network_channel
-{
-
-    struct resource resource;
-    struct network_channelnode node;
-    unsigned int (*match)(struct network_interface *interface, void *packet, unsigned int count);
-    void (*notify)(struct network_interface *interface, void *packet, unsigned int count);
-    unsigned int (*rdata)(unsigned int offset, unsigned int count, void *buffer);
-    unsigned int (*wdata)(unsigned int offset, unsigned int count, void *buffer);
+    struct network_protocolnode node;
+    struct list_item item;
+    struct list mailboxes;
+    unsigned int type;
+    void (*notify)(unsigned int count, void *buffer);
 
 };
 
 void network_notify(struct network_interface *interface, unsigned int count, void *buffer);
 void network_registerinterface(struct network_interface *interface, struct base_bus *bus, unsigned int id);
 void network_registerprotocol(struct network_protocol *protocol);
-void network_registerchannel(struct network_channel *channel);
 void network_unregisterinterface(struct network_interface *interface);
 void network_unregisterprotocol(struct network_protocol *protocol);
-void network_unregisterchannel(struct network_channel *channel);
 void network_initinterface(struct network_interface *interface, struct base_driver *driver, unsigned int (*rdata)(unsigned int count, void *buffer), unsigned int (*wdata)(unsigned int count, void *buffer));
-void network_initprotocol(struct network_protocol *protocol, char *name);
-void network_initchannel(struct network_channel *channel, unsigned int (*match)(struct network_interface *interface, void *packet, unsigned int count), void (*notify)(struct network_interface *interface, void *packet, unsigned int count), unsigned int (*rdata)(unsigned int offset, unsigned int count, void *buffer), unsigned int (*wdata)(unsigned int offset, unsigned int count, void *buffer));
+void network_initprotocol(struct network_protocol *protocol, char *name, unsigned short type, void (*notify)(unsigned int count, void *buffer));

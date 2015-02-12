@@ -13,11 +13,3 @@ struct ethernet_footer
     unsigned char crc[4];
 
 };
-
-struct ethernet_interface
-{
-
-    unsigned char mac[6];
-    unsigned char ip[4];
-
-};
