@@ -22,7 +22,7 @@ void network_notify(struct network_interface *interface, unsigned int count, voi
         struct network_protocol *protocol = current->data;
 
         if (protocol->type == type)
-            protocol->notify(count, buffer);
+            protocol->notify(count - 18, header + 1);
 
     }
 
