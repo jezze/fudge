@@ -11,9 +11,9 @@ struct block_interface
 {
 
     struct base_interface base;
-    struct block_interfacenode node;
     unsigned int (*rdata)(unsigned int offset, unsigned int count, void *buffer);
     unsigned int (*wdata)(unsigned int offset, unsigned int count, void *buffer);
+    struct block_interfacenode node;
 
 };
 

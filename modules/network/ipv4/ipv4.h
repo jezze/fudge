@@ -10,11 +10,11 @@ struct ipv4_protocolnode
 struct ipv4_protocol
 {
 
-    struct ipv4_protocolnode node;
-    struct list_item item;
     struct list mailboxes;
+    struct list_item item;
     unsigned char id;
     void (*notify)(struct ethernet_interface *interface, unsigned int count, void *buffer);
+    struct ipv4_protocolnode node;
 
 };
 

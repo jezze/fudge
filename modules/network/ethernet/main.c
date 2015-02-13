@@ -171,13 +171,15 @@ void ethernet_initinterface(struct ethernet_interface *interface, struct base_dr
 {
 
     base_initinterface(&interface->base, driver);
-    system_initnode(&interface->node.base, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, driver->name);
-    system_initnode(&interface->node.ctrl, SYSTEM_NODETYPE_NORMAL, "ctrl");
-    system_initnode(&interface->node.data, SYSTEM_NODETYPE_NORMAL, "data");
     list_init(&interface->mailboxes);
     ctrl_init_networksettings(&interface->settings);
 
     interface->send = send;
+
+    system_initnode(&interface->node.base, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, driver->name);
+    system_initnode(&interface->node.ctrl, SYSTEM_NODETYPE_NORMAL, "ctrl");
+    system_initnode(&interface->node.data, SYSTEM_NODETYPE_NORMAL, "data");
+
     interface->node.interface = interface;
     interface->node.ctrl.read = interfacenode_ctrlread;
     interface->node.ctrl.write = interfacenode_ctrlwrite;
@@ -192,13 +194,15 @@ void ethernet_initprotocol(struct ethernet_protocol *protocol, char *name, unsig
 {
 
     resource_init(&protocol->resource, RESOURCE_TYPE_PROTONET, protocol);
-    system_initnode(&protocol->node.base, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, name);
-    system_initnode(&protocol->node.data, SYSTEM_NODETYPE_NORMAL, "data");
-    list_init(&protocol->mailboxes);
     list_inititem(&protocol->item, protocol);
+    list_init(&protocol->mailboxes);
 
     protocol->type = type;
     protocol->notify = notify;
+
+    system_initnode(&protocol->node.base, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, name);
+    system_initnode(&protocol->node.data, SYSTEM_NODETYPE_NORMAL, "data");
+
     protocol->node.protocol = protocol;
     protocol->node.data.open = protocolnode_dataopen;
     protocol->node.data.close = protocolnode_dataclose;

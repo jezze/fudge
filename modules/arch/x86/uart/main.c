@@ -178,7 +178,7 @@ static void handleirq(unsigned int irq, struct base_bus *bus, unsigned int id)
 
 }
 
-static unsigned int consoleinterface_wout(unsigned int offset, unsigned int count, void *buffer)
+static unsigned int consoleinterface_send(unsigned int offset, unsigned int count, void *buffer)
 {
 
     unsigned char *b = buffer;
@@ -234,7 +234,7 @@ void init()
 {
 
     base_initdriver(&driver, "uart", driver_match, driver_attach, driver_detach);
-    console_initinterface(&consoleinterface, &driver, consoleinterface_wout);
+    console_initinterface(&consoleinterface, &driver, consoleinterface_send);
     base_registerdriver(&driver);
 
 }

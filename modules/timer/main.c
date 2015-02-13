@@ -66,9 +66,10 @@ void timer_initinterface(struct timer_interface *interface, struct base_driver *
 {
 
     base_initinterface(&interface->base, driver);
+    list_init(&interface->mailboxes);
+
     system_initnode(&interface->node.base, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, driver->name);
     system_initnode(&interface->node.sleep, SYSTEM_NODETYPE_NORMAL, "sleep");
-    list_init(&interface->mailboxes);
 
     interface->node.interface = interface;
     interface->node.sleep.open = interfacenode_sleepopen;

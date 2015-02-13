@@ -122,13 +122,15 @@ void ipv4_unregisterprotocol(struct ipv4_protocol *p)
 void ipv4_initprotocol(struct ipv4_protocol *protocol, char *name, unsigned char id, void (*notify)(struct ethernet_interface *interface, unsigned int count, void *buffer))
 {
 
-    system_initnode(&protocol->node.base, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, name);
-    system_initnode(&protocol->node.data, SYSTEM_NODETYPE_NORMAL, "data");
-    list_inititem(&protocol->item, protocol);
     list_init(&protocol->mailboxes);
+    list_inititem(&protocol->item, protocol);
 
     protocol->id = id;
     protocol->notify = notify;
+
+    system_initnode(&protocol->node.base, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, name);
+    system_initnode(&protocol->node.data, SYSTEM_NODETYPE_NORMAL, "data");
+
     protocol->node.protocol = protocol;
     protocol->node.data.open = protocolnode_dataopen;
     protocol->node.data.close = protocolnode_dataclose;

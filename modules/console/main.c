@@ -69,7 +69,7 @@ static unsigned int interfacenode_outwrite(struct system_node *self, unsigned in
 
     struct console_interfacenode *node = (struct console_interfacenode *)self->parent;
 
-    return node->interface->wout(offset, count, buffer);
+    return node->interface->send(offset, count, buffer);
 
 }
 
@@ -95,18 +95,20 @@ void console_unregisterinterface(struct console_interface *interface)
 
 }
 
-void console_initinterface(struct console_interface *interface, struct base_driver *driver, unsigned int (*wout)(unsigned int offset, unsigned int count, void *buffer))
+void console_initinterface(struct console_interface *interface, struct base_driver *driver, unsigned int (*send)(unsigned int offset, unsigned int count, void *buffer))
 {
 
     base_initinterface(&interface->base, driver);
+    list_init(&interface->mailboxes);
+    ctrl_init_consolesettings(&interface->settings);
+
+    interface->send = send;
+
     system_initnode(&interface->node.base, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, driver->name);
     system_initnode(&interface->node.ctrl, SYSTEM_NODETYPE_NORMAL, "ctrl");
     system_initnode(&interface->node.in, SYSTEM_NODETYPE_NORMAL, "in");
     system_initnode(&interface->node.out, SYSTEM_NODETYPE_NORMAL, "out");
-    list_init(&interface->mailboxes);
-    ctrl_init_consolesettings(&interface->settings);
 
-    interface->wout = wout;
     interface->node.interface = interface;
     interface->node.ctrl.read = interfacenode_ctrlread;
     interface->node.ctrl.write = interfacenode_ctrlwrite;

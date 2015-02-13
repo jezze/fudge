@@ -68,9 +68,10 @@ void keyboard_initinterface(struct keyboard_interface *interface, struct base_dr
 {
 
     base_initinterface(&interface->base, driver);
+    list_init(&interface->mailboxes);
+
     system_initnode(&interface->node.base, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, driver->name);
     system_initnode(&interface->node.data, SYSTEM_NODETYPE_NORMAL, "data");
-    list_init(&interface->mailboxes);
 
     interface->node.interface = interface;
     interface->node.data.open = interfacenode_dataopen;

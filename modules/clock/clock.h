@@ -13,7 +13,6 @@ struct clock_interface
 {
 
     struct base_interface base;
-    struct clock_interfacenode node;
     unsigned char (*getseconds)();
     unsigned char (*getminutes)();
     unsigned char (*gethours)();
@@ -21,6 +20,7 @@ struct clock_interface
     unsigned char (*getday)();
     unsigned char (*getmonth)();
     unsigned short (*getyear)();
+    struct clock_interfacenode node;
 
 };
 

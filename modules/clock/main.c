@@ -94,10 +94,6 @@ void clock_initinterface(struct clock_interface *interface, struct base_driver *
 {
 
     base_initinterface(&interface->base, driver);
-    system_initnode(&interface->node.base, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, driver->name);
-    system_initnode(&interface->node.timestamp, SYSTEM_NODETYPE_NORMAL, "timestamp");
-    system_initnode(&interface->node.date, SYSTEM_NODETYPE_NORMAL, "date");
-    system_initnode(&interface->node.time, SYSTEM_NODETYPE_NORMAL, "time");
 
     interface->getseconds = getseconds;
     interface->getminutes = getminutes;
@@ -106,6 +102,12 @@ void clock_initinterface(struct clock_interface *interface, struct base_driver *
     interface->getday = getday;
     interface->getmonth = getmonth;
     interface->getyear = getyear;
+
+    system_initnode(&interface->node.base, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, driver->name);
+    system_initnode(&interface->node.timestamp, SYSTEM_NODETYPE_NORMAL, "timestamp");
+    system_initnode(&interface->node.date, SYSTEM_NODETYPE_NORMAL, "date");
+    system_initnode(&interface->node.time, SYSTEM_NODETYPE_NORMAL, "time");
+
     interface->node.interface = interface;
     interface->node.timestamp.read = interfacenode_timestampread;
     interface->node.date.read = interfacenode_dateread;

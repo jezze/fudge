@@ -12,10 +12,10 @@ struct ethernet_interface
 {
 
     struct base_interface base;
-    struct ethernet_interfacenode node;
     struct ctrl_networksettings settings;
     struct list mailboxes;
     unsigned int (*send)(unsigned int count, void *buffer);
+    struct ethernet_interfacenode node;
 
 };
 
@@ -32,11 +32,11 @@ struct ethernet_protocol
 {
 
     struct resource resource;
-    struct ethernet_protocolnode node;
-    struct list_item item;
     struct list mailboxes;
+    struct list_item item;
     unsigned int type;
     void (*notify)(struct ethernet_interface *interface, unsigned int count, void *buffer);
+    struct ethernet_protocolnode node;
 
 };
 

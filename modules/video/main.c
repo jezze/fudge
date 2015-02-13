@@ -90,10 +90,6 @@ void video_initinterface(struct video_interface *interface, struct base_driver *
 {
 
     base_initinterface(&interface->base, driver);
-    system_initnode(&interface->node.base, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, driver->name);
-    system_initnode(&interface->node.ctrl, SYSTEM_NODETYPE_NORMAL, "ctrl");
-    system_initnode(&interface->node.data, SYSTEM_NODETYPE_NORMAL, "data");
-    system_initnode(&interface->node.colormap, SYSTEM_NODETYPE_NORMAL, "colormap");
     ctrl_init_videosettings(&interface->settings);
 
     interface->setmode = setmode;
@@ -101,6 +97,12 @@ void video_initinterface(struct video_interface *interface, struct base_driver *
     interface->wdata = wdata;
     interface->rcolormap = rcolormap;
     interface->wcolormap = wcolormap;
+
+    system_initnode(&interface->node.base, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, driver->name);
+    system_initnode(&interface->node.ctrl, SYSTEM_NODETYPE_NORMAL, "ctrl");
+    system_initnode(&interface->node.data, SYSTEM_NODETYPE_NORMAL, "data");
+    system_initnode(&interface->node.colormap, SYSTEM_NODETYPE_NORMAL, "colormap");
+
     interface->node.interface = interface;
     interface->node.ctrl.read = interfacenode_ctrlread;
     interface->node.ctrl.write = interfacenode_ctrlwrite;

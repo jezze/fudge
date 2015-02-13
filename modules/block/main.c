@@ -37,11 +37,13 @@ void block_initinterface(struct block_interface *interface, struct base_driver *
 {
 
     base_initinterface(&interface->base, driver);
-    system_initnode(&interface->node.base, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, driver->name);
-    system_initnode(&interface->node.data, SYSTEM_NODETYPE_NORMAL, "data");
 
     interface->rdata = rdata;
     interface->wdata = wdata;
+
+    system_initnode(&interface->node.base, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, driver->name);
+    system_initnode(&interface->node.data, SYSTEM_NODETYPE_NORMAL, "data");
+
     interface->node.interface = interface;
     interface->node.data.read = interfacenode_dataread;
 
