@@ -1,12 +1,13 @@
 #include <fudge.h>
+#include <net/ipv6.h>
 #include <kernel.h>
 #include <system/system.h>
 #include <base/base.h>
-#include <network/network.h>
+#include <network/ethernet/ethernet.h>
 
-static struct network_protocol protocol;
+static struct ethernet_protocol protocol;
 
-void protocol_notify(unsigned int count, void *buffer)
+void protocol_notify(struct ethernet_interface *interface, unsigned int count, void *buffer)
 {
 
     scheduler_mailboxes_send(&protocol.mailboxes, count, buffer);
@@ -16,15 +17,15 @@ void protocol_notify(unsigned int count, void *buffer)
 void init()
 {
 
-    network_initprotocol(&protocol, "ipv6", 0x86DD, protocol_notify);
-    network_registerprotocol(&protocol);
+    ethernet_initprotocol(&protocol, "ipv6", 0x86DD, protocol_notify);
+    ethernet_registerprotocol(&protocol);
 
 }
 
 void destroy()
 {
 
-    network_unregisterprotocol(&protocol);
+    ethernet_unregisterprotocol(&protocol);
 
 }
 

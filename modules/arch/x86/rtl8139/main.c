@@ -2,7 +2,7 @@
 #include <kernel.h>
 #include <system/system.h>
 #include <base/base.h>
-#include <network/network.h>
+#include <network/ethernet/ethernet.h>
 #include <arch/x86/pic/pic.h>
 #include <arch/x86/io/io.h>
 #include <arch/x86/pci/pci.h>
@@ -123,7 +123,7 @@ struct rtl8139_header
 };
 
 static struct base_driver driver;
-static struct network_interface networkinterface;
+static struct ethernet_interface ethernetinterface;
 static unsigned short io;
 static unsigned int mmio;
 static unsigned char rx[0x2600];
@@ -195,7 +195,7 @@ static void handleirq(unsigned int irq, struct base_bus *bus, unsigned int id)
         char *ppacket = packet;
         struct rtl8139_header *header = packet;
 
-        network_notify(&networkinterface, header->length, ppacket + 4);
+        ethernet_notify(&ethernetinterface, header->length, ppacket + 4);
 
         rxp += (header->length + 4 + 3) & ~3;
 
@@ -212,18 +212,7 @@ static void handleirq(unsigned int irq, struct base_bus *bus, unsigned int id)
 
 }
 
-static unsigned int networkinterface_rdata(unsigned int count, void *buffer)
-{
-
-    /*
-    unsigned short cbr = io_inw(io + RTL8139_REGISTER_CBR);
-    */
-
-    return 0;
-
-}
-
-static unsigned int networkinterface_wdata(unsigned int count, void *buffer)
+static unsigned int ethernetinterface_send(unsigned int count, void *buffer)
 {
 
     unsigned int status = (0x3F << 16) | (count & 0x1FFF);
@@ -288,14 +277,14 @@ static void driver_attach(struct base_bus *bus, unsigned int id)
     enable();
     pci_setmaster(bus, id);
 
-    networkinterface.settings.mac[0] = io_inb(io + RTL8139_REGISTER_IDR0);
-    networkinterface.settings.mac[1] = io_inb(io + RTL8139_REGISTER_IDR1);
-    networkinterface.settings.mac[2] = io_inb(io + RTL8139_REGISTER_IDR2);
-    networkinterface.settings.mac[3] = io_inb(io + RTL8139_REGISTER_IDR3);
-    networkinterface.settings.mac[4] = io_inb(io + RTL8139_REGISTER_IDR4);
-    networkinterface.settings.mac[5] = io_inb(io + RTL8139_REGISTER_IDR5);
+    ethernetinterface.settings.mac[0] = io_inb(io + RTL8139_REGISTER_IDR0);
+    ethernetinterface.settings.mac[1] = io_inb(io + RTL8139_REGISTER_IDR1);
+    ethernetinterface.settings.mac[2] = io_inb(io + RTL8139_REGISTER_IDR2);
+    ethernetinterface.settings.mac[3] = io_inb(io + RTL8139_REGISTER_IDR3);
+    ethernetinterface.settings.mac[4] = io_inb(io + RTL8139_REGISTER_IDR4);
+    ethernetinterface.settings.mac[5] = io_inb(io + RTL8139_REGISTER_IDR5);
 
-    network_registerinterface(&networkinterface, bus, id);
+    ethernet_registerinterface(&ethernetinterface, bus, id);
     pic_setroutine(bus, id, handleirq);
 
 }
@@ -303,7 +292,7 @@ static void driver_attach(struct base_bus *bus, unsigned int id)
 static void driver_detach(struct base_bus *bus, unsigned int id)
 {
 
-    network_unregisterinterface(&networkinterface);
+    ethernet_unregisterinterface(&ethernetinterface);
     pic_unsetroutine(bus, id);
 
 }
@@ -312,7 +301,7 @@ void init()
 {
 
     base_initdriver(&driver, "rtl8139", driver_match, driver_attach, driver_detach);
-    network_initinterface(&networkinterface, &driver, networkinterface_rdata, networkinterface_wdata);
+    ethernet_initinterface(&ethernetinterface, &driver, ethernetinterface_send);
     base_registerdriver(&driver);
 
 }

@@ -1,4 +1,4 @@
-struct arp_header
+struct arp_message
 {
 
     unsigned char htype[2];

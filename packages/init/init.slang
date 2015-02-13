@@ -20,7 +20,6 @@
 /bin/modload < /boot/mod/console.ko.0
 /bin/modload < /boot/mod/keyboard.ko.0
 /bin/modload < /boot/mod/mouse.ko.0
-/bin/modload < /boot/mod/network.ko.0
 /bin/modload < /boot/mod/timer.ko.0
 /bin/modload < /boot/mod/video.ko.0
 /bin/modload < /boot/mod/pic.ko.0
@@ -33,9 +32,11 @@
 /bin/modload < /boot/mod/rtc.ko.0
 /bin/modload < /boot/mod/vga.ko.0
 /bin/modload < /boot/mod/uart.ko.0
+/bin/modload < /boot/mod/ethernet.ko.0
 /bin/modload < /boot/mod/rtl8139.ko.0
 /bin/modload < /boot/mod/arp.ko.0
 /bin/modload < /boot/mod/ipv4.ko.0
 /bin/modload < /boot/mod/ipv6.ko.0
+/bin/modload < /boot/mod/udp.ko.0
 /bin/initfs < /config/initfs.conf
 /bin/slang < /config/user.slang

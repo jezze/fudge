@@ -4,12 +4,12 @@
 #include <system/system.h>
 #include <base/base.h>
 #include <event/event.h>
-#include "network.h"
+#include "ethernet.h"
 
 static struct system_node root;
 static struct list protocols;
 
-void network_notify(struct network_interface *interface, unsigned int count, void *buffer)
+void ethernet_notify(struct ethernet_interface *interface, unsigned int count, void *buffer)
 {
 
     struct ethernet_header *header = buffer;
@@ -19,10 +19,10 @@ void network_notify(struct network_interface *interface, unsigned int count, voi
     for (current = protocols.head; current; current = current->next)
     {
 
-        struct network_protocol *protocol = current->data;
+        struct ethernet_protocol *protocol = current->data;
 
         if (protocol->type == type)
-            protocol->notify(count - 18, header + 1);
+            protocol->notify(interface, count - 18, header + 1);
 
     }
 
@@ -34,7 +34,7 @@ void network_notify(struct network_interface *interface, unsigned int count, voi
 static unsigned int interfacenode_ctrlread(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct network_interfacenode *node = (struct network_interfacenode *)self->parent;
+    struct ethernet_interfacenode *node = (struct ethernet_interfacenode *)self->parent;
 
     return memory_read(buffer, count, &node->interface->settings, sizeof (struct ctrl_networksettings), offset);
 
@@ -43,7 +43,7 @@ static unsigned int interfacenode_ctrlread(struct system_node *self, unsigned in
 static unsigned int interfacenode_ctrlwrite(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct network_interfacenode *node = (struct network_interfacenode *)self->parent;
+    struct ethernet_interfacenode *node = (struct ethernet_interfacenode *)self->parent;
 
     return memory_write(&node->interface->settings, sizeof (struct ctrl_networksettings), buffer, count, offset);
 
@@ -52,7 +52,7 @@ static unsigned int interfacenode_ctrlwrite(struct system_node *self, unsigned i
 static unsigned int interfacenode_dataopen(struct system_node *self)
 {
 
-    struct network_interfacenode *node = (struct network_interfacenode *)self->parent;
+    struct ethernet_interfacenode *node = (struct ethernet_interfacenode *)self->parent;
 
     scheduler_mailboxes_addactive(&node->interface->mailboxes);
 
@@ -63,7 +63,7 @@ static unsigned int interfacenode_dataopen(struct system_node *self)
 static unsigned int interfacenode_dataclose(struct system_node *self)
 {
 
-    struct network_interfacenode *node = (struct network_interfacenode *)self->parent;
+    struct ethernet_interfacenode *node = (struct ethernet_interfacenode *)self->parent;
 
     scheduler_mailboxes_removeactive(&node->interface->mailboxes);
 
@@ -74,7 +74,7 @@ static unsigned int interfacenode_dataclose(struct system_node *self)
 static unsigned int interfacenode_dataread(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct network_interfacenode *node = (struct network_interfacenode *)self->parent;
+    struct ethernet_interfacenode *node = (struct ethernet_interfacenode *)self->parent;
 
     return scheduler_mailboxes_readactive(&node->interface->mailboxes, count, buffer);
 
@@ -83,16 +83,16 @@ static unsigned int interfacenode_dataread(struct system_node *self, unsigned in
 static unsigned int interfacenode_datawrite(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct network_interfacenode *node = (struct network_interfacenode *)self->parent;
+    struct ethernet_interfacenode *node = (struct ethernet_interfacenode *)self->parent;
 
-    return node->interface->wdata(count, buffer);
+    return node->interface->send(count, buffer);
 
 }
 
 static unsigned int protocolnode_dataopen(struct system_node *self)
 {
 
-    struct network_protocolnode *node = (struct network_protocolnode *)self->parent;
+    struct ethernet_protocolnode *node = (struct ethernet_protocolnode *)self->parent;
 
     scheduler_mailboxes_addactive(&node->protocol->mailboxes);
 
@@ -103,7 +103,7 @@ static unsigned int protocolnode_dataopen(struct system_node *self)
 static unsigned int protocolnode_dataclose(struct system_node *self)
 {
 
-    struct network_protocolnode *node = (struct network_protocolnode *)self->parent;
+    struct ethernet_protocolnode *node = (struct ethernet_protocolnode *)self->parent;
 
     scheduler_mailboxes_removeactive(&node->protocol->mailboxes);
 
@@ -114,7 +114,7 @@ static unsigned int protocolnode_dataclose(struct system_node *self)
 static unsigned int protocolnode_dataread(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct network_protocolnode *node = (struct network_protocolnode *)self->parent;
+    struct ethernet_protocolnode *node = (struct ethernet_protocolnode *)self->parent;
 
     return scheduler_mailboxes_readactive(&node->protocol->mailboxes, count, buffer);
 
@@ -127,7 +127,7 @@ static unsigned int protocolnode_datawrite(struct system_node *self, unsigned in
 
 }
 
-void network_registerinterface(struct network_interface *interface, struct base_bus *bus, unsigned int id)
+void ethernet_registerinterface(struct ethernet_interface *interface, struct base_bus *bus, unsigned int id)
 {
 
     base_registerinterface(&interface->base, bus, id);
@@ -137,7 +137,7 @@ void network_registerinterface(struct network_interface *interface, struct base_
 
 }
 
-void network_registerprotocol(struct network_protocol *protocol)
+void ethernet_registerprotocol(struct ethernet_protocol *protocol)
 {
 
     resource_register(&protocol->resource);
@@ -147,7 +147,7 @@ void network_registerprotocol(struct network_protocol *protocol)
 
 }
 
-void network_unregisterinterface(struct network_interface *interface)
+void ethernet_unregisterinterface(struct ethernet_interface *interface)
 {
 
     base_unregisterinterface(&interface->base);
@@ -157,7 +157,7 @@ void network_unregisterinterface(struct network_interface *interface)
 
 }
 
-void network_unregisterprotocol(struct network_protocol *protocol)
+void ethernet_unregisterprotocol(struct ethernet_protocol *protocol)
 {
 
     resource_unregister(&protocol->resource);
@@ -167,7 +167,7 @@ void network_unregisterprotocol(struct network_protocol *protocol)
 
 }
 
-void network_initinterface(struct network_interface *interface, struct base_driver *driver, unsigned int (*rdata)(unsigned int count, void *buffer), unsigned int (*wdata)(unsigned int count, void *buffer))
+void ethernet_initinterface(struct ethernet_interface *interface, struct base_driver *driver, unsigned int (*send)(unsigned int count, void *buffer))
 {
 
     base_initinterface(&interface->base, driver);
@@ -177,8 +177,7 @@ void network_initinterface(struct network_interface *interface, struct base_driv
     list_init(&interface->mailboxes);
     ctrl_init_networksettings(&interface->settings);
 
-    interface->rdata = rdata;
-    interface->wdata = wdata;
+    interface->send = send;
     interface->node.interface = interface;
     interface->node.ctrl.read = interfacenode_ctrlread;
     interface->node.ctrl.write = interfacenode_ctrlwrite;
@@ -189,7 +188,7 @@ void network_initinterface(struct network_interface *interface, struct base_driv
 
 }
 
-void network_initprotocol(struct network_protocol *protocol, char *name, unsigned short type, void (*notify)(unsigned int count, void *buffer))
+void ethernet_initprotocol(struct ethernet_protocol *protocol, char *name, unsigned short type, void (*notify)(struct ethernet_interface *interface, unsigned int count, void *buffer))
 {
 
     resource_init(&protocol->resource, RESOURCE_TYPE_PROTONET, protocol);
@@ -212,7 +211,7 @@ void init()
 {
 
     list_init(&protocols);
-    system_initnode(&root, SYSTEM_NODETYPE_GROUP, "network");
+    system_initnode(&root, SYSTEM_NODETYPE_GROUP, "ethernet");
     system_registernode(&root);
 
 }
