@@ -1,4 +1,4 @@
-MOD_$(DIR):=$(BUILD_MODULE)/ethernet.ko.0
+MOD_$(DIR):=$(BUILD_MODULE)/ethernet.ko
 OBJ_$(DIR):=$(DIR)/main.o
 
 $(MOD_$(DIR)): $(OBJ_$(DIR))

@@ -1,4 +1,4 @@
-MOD_$(DIR):=$(BUILD_MODULE)/base.ko.0
+MOD_$(DIR):=$(BUILD_MODULE)/base.ko
 OBJ_$(DIR):=$(DIR)/main.o
 
 $(MOD_$(DIR)): $(OBJ_$(DIR))
