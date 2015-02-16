@@ -191,7 +191,16 @@ static unsigned int consoleinterface_send(unsigned int offset, unsigned int coun
 
 }
 
-static unsigned int driver_match(struct base_bus *bus, unsigned int id)
+static void driver_init(struct base_driver *self)
+{
+
+    console_initinterface(&consoleinterface, self, consoleinterface_send);
+
+    consoleinterface.settings.scroll = 1;
+
+}
+
+static unsigned int driver_match(struct base_driver *self, struct base_bus *bus, unsigned int id)
 {
 
     if (bus->type != PLATFORM_BUS_TYPE)
@@ -201,7 +210,7 @@ static unsigned int driver_match(struct base_bus *bus, unsigned int id)
 
 }
 
-static void driver_attach(struct base_bus *bus, unsigned int id)
+static void driver_attach(struct base_driver *self, struct base_bus *bus, unsigned int id)
 {
 
     io = platform_getbase(bus, id);
@@ -215,14 +224,12 @@ static void driver_attach(struct base_bus *bus, unsigned int id)
     io_outb(io + UART_REGISTER_MCR, UART_MCR_READY | UART_MCR_REQUEST | UART_MCR_AUX2);
     io_outb(io + UART_REGISTER_IER, UART_IER_RECEIVE);
 
-    consoleinterface.settings.scroll = 1;
-
     console_registerinterface(&consoleinterface, bus, id);
     pic_setroutine(bus, id, handleirq);
 
 }
 
-static void driver_detach(struct base_bus *bus, unsigned int id)
+static void driver_detach(struct base_driver *self, struct base_bus *bus, unsigned int id)
 {
 
     console_unregisterinterface(&consoleinterface);
@@ -233,8 +240,7 @@ static void driver_detach(struct base_bus *bus, unsigned int id)
 void init()
 {
 
-    base_initdriver(&driver, "uart", driver_match, driver_attach, driver_detach);
-    console_initinterface(&consoleinterface, &driver, consoleinterface_send);
+    base_initdriver(&driver, "uart", driver_init, driver_match, driver_attach, driver_detach);
     base_registerdriver(&driver);
 
 }

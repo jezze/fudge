@@ -19,7 +19,12 @@ enum ehci_register
 
 static struct base_driver driver;
 
-static unsigned int driver_match(struct base_bus *bus, unsigned int id)
+static void driver_init(struct base_driver *self)
+{
+
+}
+
+static unsigned int driver_match(struct base_driver *self, struct base_bus *bus, unsigned int id)
 {
 
     if (bus->type != PCI_BUS_TYPE)
@@ -29,7 +34,7 @@ static unsigned int driver_match(struct base_bus *bus, unsigned int id)
 
 }
 
-static void driver_attach(struct base_bus *bus, unsigned int id)
+static void driver_attach(struct base_driver *self, struct base_bus *bus, unsigned int id)
 {
 
     /*
@@ -38,7 +43,7 @@ static void driver_attach(struct base_bus *bus, unsigned int id)
 
 }
 
-static void driver_detach(struct base_bus *bus, unsigned int id)
+static void driver_detach(struct base_driver *self, struct base_bus *bus, unsigned int id)
 {
 
 }
@@ -46,7 +51,7 @@ static void driver_detach(struct base_bus *bus, unsigned int id)
 void init()
 {
 
-    base_initdriver(&driver, "ehci", driver_match, driver_attach, driver_detach);
+    base_initdriver(&driver, "ehci", driver_init, driver_match, driver_attach, driver_detach);
     base_registerdriver(&driver);
 
 }

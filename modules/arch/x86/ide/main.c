@@ -394,7 +394,15 @@ static unsigned short bus_irq(struct base_bus *self, unsigned int id)
 
 }
 
-static unsigned int driver_match(struct base_bus *bus, unsigned int id)
+static void driver_init(struct base_driver *self)
+{
+
+    base_initbus(&p.base, IDE_BUS_TYPE, "ide0", bus_setup, bus_next_p, bus_irq);
+    base_initbus(&s.base, IDE_BUS_TYPE, "ide1", bus_setup, bus_next_s, bus_irq);
+
+}
+
+static unsigned int driver_match(struct base_driver *self, struct base_bus *bus, unsigned int id)
 {
 
     if (bus->type != PCI_BUS_TYPE)
@@ -404,7 +412,7 @@ static unsigned int driver_match(struct base_bus *bus, unsigned int id)
 
 }
 
-static void driver_attach(struct base_bus *bus, unsigned int id)
+static void driver_attach(struct base_driver *self, struct base_bus *bus, unsigned int id)
 {
 
     unsigned int bar0 = pci_ind(bus, id, PCI_CONFIG_BAR0);
@@ -425,7 +433,7 @@ static void driver_attach(struct base_bus *bus, unsigned int id)
 
 }
 
-static void driver_detach(struct base_bus *bus, unsigned int id)
+static void driver_detach(struct base_driver *self, struct base_bus *bus, unsigned int id)
 {
 
     base_unregisterbus(&p.base);
@@ -436,9 +444,7 @@ static void driver_detach(struct base_bus *bus, unsigned int id)
 void init()
 {
 
-    base_initdriver(&driver, "ide", driver_match, driver_attach, driver_detach);
-    base_initbus(&p.base, IDE_BUS_TYPE, "ide0", bus_setup, bus_next_p, bus_irq);
-    base_initbus(&s.base, IDE_BUS_TYPE, "ide1", bus_setup, bus_next_s, bus_irq);
+    base_initdriver(&driver, "ide", driver_init, driver_match, driver_attach, driver_detach);
     base_registerdriver(&driver);
 
 }

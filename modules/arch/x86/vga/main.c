@@ -315,7 +315,28 @@ static unsigned int videointerface_wcolormap(unsigned int offset, unsigned int c
 
 }
 
-static unsigned int driver_match(struct base_bus *bus, unsigned int id)
+static void driver_init(struct base_driver *self)
+{
+
+    taddress = (void *)0x000B8000;
+    gaddress = (void *)0x000A0000;
+    cursor.color = 0x0F;
+
+    console_initinterface(&consoleinterface, self, consoleinterface_wout);
+
+    consoleinterface.settings.scroll = 1;
+
+    video_initinterface(&videointerface, self, videointerface_setmode, videointerface_rdata, videointerface_wdata, videointerface_rcolormap, videointerface_wcolormap);
+
+    videointerface.settings.w = 80;
+    videointerface.settings.h = 25;
+    videointerface.settings.bpp = 16;
+
+    clear(0);
+
+}
+
+static unsigned int driver_match(struct base_driver *self, struct base_bus *bus, unsigned int id)
 {
 
     if (bus->type != PCI_BUS_TYPE)
@@ -325,24 +346,15 @@ static unsigned int driver_match(struct base_bus *bus, unsigned int id)
 
 }
 
-static void driver_attach(struct base_bus *bus, unsigned int id)
+static void driver_attach(struct base_driver *self, struct base_bus *bus, unsigned int id)
 {
 
-    taddress = (void *)0x000B8000;
-    gaddress = (void *)0x000A0000;
-    cursor.color = 0x0F;
-    consoleinterface.settings.scroll = 1;
-    videointerface.settings.w = 80;
-    videointerface.settings.h = 25;
-    videointerface.settings.bpp = 16;
-
-    clear(0);
     console_registerinterface(&consoleinterface, bus, id);
     video_registerinterface(&videointerface, bus, id);
 
 }
 
-static void driver_detach(struct base_bus *bus, unsigned int id)
+static void driver_detach(struct base_driver *self, struct base_bus *bus, unsigned int id)
 {
 
     console_unregisterinterface(&consoleinterface);
@@ -353,9 +365,7 @@ static void driver_detach(struct base_bus *bus, unsigned int id)
 void init()
 {
 
-    base_initdriver(&driver, "vga", driver_match, driver_attach, driver_detach);
-    console_initinterface(&consoleinterface, &driver, consoleinterface_wout);
-    video_initinterface(&videointerface, &driver, videointerface_setmode, videointerface_rdata, videointerface_wdata, videointerface_rcolormap, videointerface_wcolormap);
+    base_initdriver(&driver, "vga", driver_init, driver_match, driver_attach, driver_detach);
     base_registerdriver(&driver);
 
 }

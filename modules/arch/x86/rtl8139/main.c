@@ -253,7 +253,14 @@ static unsigned int ethernetinterface_send(unsigned int count, void *buffer)
 
 }
 
-static unsigned int driver_match(struct base_bus *bus, unsigned int id)
+static void driver_init(struct base_driver *self)
+{
+
+    ethernet_initinterface(&ethernetinterface, self, ethernetinterface_send);
+
+}
+
+static unsigned int driver_match(struct base_driver *self, struct base_bus *bus, unsigned int id)
 {
 
     if (bus->type != PCI_BUS_TYPE)
@@ -263,7 +270,7 @@ static unsigned int driver_match(struct base_bus *bus, unsigned int id)
 
 }
 
-static void driver_attach(struct base_bus *bus, unsigned int id)
+static void driver_attach(struct base_driver *self, struct base_bus *bus, unsigned int id)
 {
 
     io = pci_inw(bus, id, PCI_CONFIG_BAR0) & ~1;
@@ -289,7 +296,7 @@ static void driver_attach(struct base_bus *bus, unsigned int id)
 
 }
 
-static void driver_detach(struct base_bus *bus, unsigned int id)
+static void driver_detach(struct base_driver *self, struct base_bus *bus, unsigned int id)
 {
 
     ethernet_unregisterinterface(&ethernetinterface);
@@ -300,8 +307,7 @@ static void driver_detach(struct base_bus *bus, unsigned int id)
 void init()
 {
 
-    base_initdriver(&driver, "rtl8139", driver_match, driver_attach, driver_detach);
-    ethernet_initinterface(&ethernetinterface, &driver, ethernetinterface_send);
+    base_initdriver(&driver, "rtl8139", driver_init, driver_match, driver_attach, driver_detach);
     base_registerdriver(&driver);
 
 }
