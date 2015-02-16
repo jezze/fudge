@@ -200,7 +200,7 @@ void ethernet_initprotocol(struct ethernet_protocol *protocol, char *name, unsig
     protocol->type = type;
     protocol->notify = notify;
 
-    system_initnode(&protocol->node.base, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, name);
+    system_initnode(&protocol->node.base, SYSTEM_NODETYPE_GROUP, name);
     system_initnode(&protocol->node.data, SYSTEM_NODETYPE_NORMAL, "data");
 
     protocol->node.protocol = protocol;

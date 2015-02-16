@@ -8,7 +8,7 @@ static struct system_node root;
 void init()
 {
 
-    system_initnode(&root, SYSTEM_NODETYPE_NORMAL, "null");
+    system_initnode(&root, SYSTEM_NODETYPE_NORMAL | SYSTEM_NODETYPE_MULTI, "null");
     system_registernode(&root);
 
 }

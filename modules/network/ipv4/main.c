@@ -128,7 +128,7 @@ void ipv4_initprotocol(struct ipv4_protocol *protocol, char *name, unsigned char
     protocol->id = id;
     protocol->notify = notify;
 
-    system_initnode(&protocol->node.base, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, name);
+    system_initnode(&protocol->node.base, SYSTEM_NODETYPE_GROUP, name);
     system_initnode(&protocol->node.data, SYSTEM_NODETYPE_NORMAL, "data");
 
     protocol->node.protocol = protocol;
