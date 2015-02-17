@@ -12,7 +12,7 @@ void base_registerbus(struct base_bus *bus)
 
 }
 
-void base_registerdriver(struct base_driver *driver)
+void base_registerdriver(struct base_driver *driver, unsigned int type)
 {
 
     struct resource *current = 0;
@@ -23,10 +23,13 @@ void base_registerdriver(struct base_driver *driver)
         struct base_bus *bus = current->data;
         unsigned int id = 0;
 
+        if (bus->type != type)
+            continue;
+
         while ((id = bus->next(id)))
         {
 
-            if (!driver->match(bus->type, id))
+            if (!driver->match(id))
                 continue;
 
             driver->init();
@@ -56,7 +59,7 @@ void base_unregisterbus(struct base_bus *bus)
 
 }
 
-void base_unregisterdriver(struct base_driver *driver)
+void base_unregisterdriver(struct base_driver *driver, unsigned int type)
 {
 
     struct resource *current = 0;
@@ -67,10 +70,13 @@ void base_unregisterdriver(struct base_driver *driver)
         struct base_bus *bus = current->data;
         unsigned int id = 0;
 
+        if (bus->type != type)
+            continue;
+
         while ((id = bus->next(id)))
         {
 
-            if (!driver->match(bus->type, id))
+            if (!driver->match(id))
                 continue;
 
             driver->detach(id);
@@ -102,7 +108,7 @@ void base_initbus(struct base_bus *bus, unsigned int type, const char *name, voi
 
 }
 
-void base_initdriver(struct base_driver *driver, const char *name, void (*init)(), unsigned int (*match)(unsigned int type, unsigned int id), void (*attach)(unsigned int id), void (*detach)(unsigned int id))
+void base_initdriver(struct base_driver *driver, const char *name, void (*init)(), unsigned int (*match)(unsigned int id), void (*attach)(unsigned int id), void (*detach)(unsigned int id))
 {
 
     resource_init(&driver->resource, RESOURCE_TYPE_DRIVER, driver);

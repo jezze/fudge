@@ -214,11 +214,8 @@ static void driver_init()
 
 }
 
-static unsigned int driver_match(unsigned int type, unsigned int id)
+static unsigned int driver_match(unsigned int id)
 {
-
-    if (type != PCI_BUS_TYPE)
-        return 0;
 
     return pci_inw(id, PCI_CONFIG_VENDOR) == CIRRUS_PCI_VENDOR && pci_inw(id, PCI_CONFIG_DEVICE) == CIRRUS_PCI_DEVICE;
 
@@ -248,14 +245,14 @@ void module_init()
 void module_register()
 {
 
-    base_registerdriver(&driver);
+    base_registerdriver(&driver, PCI_BUS_TYPE);
 
 }
 
 void module_unregister()
 {
 
-    base_unregisterdriver(&driver);
+    base_unregisterdriver(&driver, PCI_BUS_TYPE);
 
 }
 
