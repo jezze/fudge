@@ -18,14 +18,14 @@ static void handleirq(unsigned int irq, struct base_bus *bus, unsigned int id)
 
 }
 
-static void driver_init(struct base_driver *self)
+static void driver_init()
 {
 
-    keyboard_initinterface(&keyboardinterface, self);
+    keyboard_initinterface(&keyboardinterface, &driver);
 
 }
 
-static unsigned int driver_match(struct base_driver *self, struct base_bus *bus, unsigned int id)
+static unsigned int driver_match(struct base_bus *bus, unsigned int id)
 {
 
     if (bus->type != PS2_BUS_TYPE)
@@ -35,7 +35,7 @@ static unsigned int driver_match(struct base_driver *self, struct base_bus *bus,
 
 }
 
-static void driver_attach(struct base_driver *self, struct base_bus *bus, unsigned int id)
+static void driver_attach(struct base_bus *bus, unsigned int id)
 {
 
     ps2_enable(bus, id);
@@ -50,7 +50,7 @@ static void driver_attach(struct base_driver *self, struct base_bus *bus, unsign
 
 }
 
-static void driver_detach(struct base_driver *self, struct base_bus *bus, unsigned int id)
+static void driver_detach(struct base_bus *bus, unsigned int id)
 {
 
     keyboard_unregisterinterface(&keyboardinterface);

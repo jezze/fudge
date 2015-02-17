@@ -191,16 +191,16 @@ static unsigned int consoleinterface_send(unsigned int offset, unsigned int coun
 
 }
 
-static void driver_init(struct base_driver *self)
+static void driver_init()
 {
 
-    console_initinterface(&consoleinterface, self, consoleinterface_send);
+    console_initinterface(&consoleinterface, &driver, consoleinterface_send);
 
     consoleinterface.settings.scroll = 1;
 
 }
 
-static unsigned int driver_match(struct base_driver *self, struct base_bus *bus, unsigned int id)
+static unsigned int driver_match(struct base_bus *bus, unsigned int id)
 {
 
     if (bus->type != PLATFORM_BUS_TYPE)
@@ -210,7 +210,7 @@ static unsigned int driver_match(struct base_driver *self, struct base_bus *bus,
 
 }
 
-static void driver_attach(struct base_driver *self, struct base_bus *bus, unsigned int id)
+static void driver_attach(struct base_bus *bus, unsigned int id)
 {
 
     io = platform_getbase(bus, id);
@@ -229,7 +229,7 @@ static void driver_attach(struct base_driver *self, struct base_bus *bus, unsign
 
 }
 
-static void driver_detach(struct base_driver *self, struct base_bus *bus, unsigned int id)
+static void driver_detach(struct base_bus *bus, unsigned int id)
 {
 
     console_unregisterinterface(&consoleinterface);

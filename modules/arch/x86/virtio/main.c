@@ -55,12 +55,12 @@ static void handleirq(unsigned int irq, struct base_bus *bus, unsigned int id)
 
 }
 
-static void driver_init(struct base_driver *self)
+static void driver_init()
 {
 
 }
 
-static unsigned int driver_match(struct base_driver *self, struct base_bus *bus, unsigned int id)
+static unsigned int driver_match(struct base_bus *bus, unsigned int id)
 {
 
     if (bus->type != PCI_BUS_TYPE)
@@ -70,7 +70,7 @@ static unsigned int driver_match(struct base_driver *self, struct base_bus *bus,
 
 }
 
-static void driver_attach(struct base_driver *self, struct base_bus *bus, unsigned int id)
+static void driver_attach(struct base_bus *bus, unsigned int id)
 {
 
     io = pci_inw(bus, id, PCI_CONFIG_BAR0) & ~1;
@@ -83,7 +83,7 @@ static void driver_attach(struct base_driver *self, struct base_bus *bus, unsign
 
 }
 
-static void driver_detach(struct base_driver *self, struct base_bus *bus, unsigned int id)
+static void driver_detach(struct base_bus *bus, unsigned int id)
 {
 
     pic_unsetroutine(bus, id);

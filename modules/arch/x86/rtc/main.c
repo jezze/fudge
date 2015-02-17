@@ -101,14 +101,14 @@ static unsigned short clockinterface_getyear(struct base_bus *bus, unsigned int 
 
 }
 
-static void driver_init(struct base_driver *self)
+static void driver_init()
 {
 
-    clock_initinterface(&clockinterface, self, clockinterface_getseconds, clockinterface_getminutes, clockinterface_gethours, clockinterface_getweekday, clockinterface_getday, clockinterface_getmonth, clockinterface_getyear);
+    clock_initinterface(&clockinterface, &driver, clockinterface_getseconds, clockinterface_getminutes, clockinterface_gethours, clockinterface_getweekday, clockinterface_getday, clockinterface_getmonth, clockinterface_getyear);
 
 }
 
-static unsigned int driver_match(struct base_driver *self, struct base_bus *bus, unsigned int id)
+static unsigned int driver_match(struct base_bus *bus, unsigned int id)
 {
 
     if (bus->type != PLATFORM_BUS_TYPE)
@@ -118,7 +118,7 @@ static unsigned int driver_match(struct base_driver *self, struct base_bus *bus,
 
 }
 
-static void driver_attach(struct base_driver *self, struct base_bus *bus, unsigned int id)
+static void driver_attach(struct base_bus *bus, unsigned int id)
 {
 
     io = platform_getbase(bus, id);
@@ -128,7 +128,7 @@ static void driver_attach(struct base_driver *self, struct base_bus *bus, unsign
 
 }
 
-static void driver_detach(struct base_driver *self, struct base_bus *bus, unsigned int id)
+static void driver_detach(struct base_bus *bus, unsigned int id)
 {
 
     clock_unregisterinterface(&clockinterface);

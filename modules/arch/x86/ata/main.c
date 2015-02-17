@@ -34,14 +34,14 @@ static unsigned int blockinterface_wdata(unsigned int offset, unsigned int count
 
 }
 
-static void driver_init(struct base_driver *self)
+static void driver_init()
 {
 
-    block_initinterface(&blockinterface, self, blockinterface_rdata, blockinterface_wdata);
+    block_initinterface(&blockinterface, &driver, blockinterface_rdata, blockinterface_wdata);
 
 }
 
-static unsigned int driver_match(struct base_driver *self, struct base_bus *bus, unsigned int id)
+static unsigned int driver_match(struct base_bus *bus, unsigned int id)
 {
 
     if (bus->type != IDE_BUS_TYPE)
@@ -51,7 +51,7 @@ static unsigned int driver_match(struct base_driver *self, struct base_bus *bus,
 
 }
 
-static void driver_attach(struct base_driver *self, struct base_bus *bus, unsigned int id)
+static void driver_attach(struct base_bus *bus, unsigned int id)
 {
 
     block_registerinterface(&blockinterface, bus, id);
@@ -59,7 +59,7 @@ static void driver_attach(struct base_driver *self, struct base_bus *bus, unsign
 
 }
 
-static void driver_detach(struct base_driver *self, struct base_bus *bus, unsigned int id)
+static void driver_detach(struct base_bus *bus, unsigned int id)
 {
 
     block_unregisterinterface(&blockinterface);

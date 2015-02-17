@@ -61,17 +61,17 @@ static void handleirq(unsigned int irq, struct base_bus *bus, unsigned int id)
 
 }
 
-static void driver_init(struct base_driver *self)
+static void driver_init()
 {
 
     jiffies = 0;
     divisor = 1000;
 
-    timer_initinterface(&timerinterface, self);
+    timer_initinterface(&timerinterface, &driver);
 
 }
 
-static unsigned int driver_match(struct base_driver *self, struct base_bus *bus, unsigned int id)
+static unsigned int driver_match(struct base_bus *bus, unsigned int id)
 {
 
     if (bus->type != PLATFORM_BUS_TYPE)
@@ -81,7 +81,7 @@ static unsigned int driver_match(struct base_driver *self, struct base_bus *bus,
 
 }
 
-static void driver_attach(struct base_driver *self, struct base_bus *bus, unsigned int id)
+static void driver_attach(struct base_bus *bus, unsigned int id)
 {
 
     io = platform_getbase(bus, id);
@@ -94,7 +94,7 @@ static void driver_attach(struct base_driver *self, struct base_bus *bus, unsign
 
 }
 
-static void driver_detach(struct base_driver *self, struct base_bus *bus, unsigned int id)
+static void driver_detach(struct base_bus *bus, unsigned int id)
 {
 
     timer_unregisterinterface(&timerinterface);

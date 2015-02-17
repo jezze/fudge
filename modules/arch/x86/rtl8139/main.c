@@ -253,14 +253,14 @@ static unsigned int ethernetinterface_send(unsigned int count, void *buffer)
 
 }
 
-static void driver_init(struct base_driver *self)
+static void driver_init()
 {
 
-    ethernet_initinterface(&ethernetinterface, self, ethernetinterface_send);
+    ethernet_initinterface(&ethernetinterface, &driver, ethernetinterface_send);
 
 }
 
-static unsigned int driver_match(struct base_driver *self, struct base_bus *bus, unsigned int id)
+static unsigned int driver_match(struct base_bus *bus, unsigned int id)
 {
 
     if (bus->type != PCI_BUS_TYPE)
@@ -270,7 +270,7 @@ static unsigned int driver_match(struct base_driver *self, struct base_bus *bus,
 
 }
 
-static void driver_attach(struct base_driver *self, struct base_bus *bus, unsigned int id)
+static void driver_attach(struct base_bus *bus, unsigned int id)
 {
 
     io = pci_inw(bus, id, PCI_CONFIG_BAR0) & ~1;
@@ -296,7 +296,7 @@ static void driver_attach(struct base_driver *self, struct base_bus *bus, unsign
 
 }
 
-static void driver_detach(struct base_driver *self, struct base_bus *bus, unsigned int id)
+static void driver_detach(struct base_bus *bus, unsigned int id)
 {
 
     ethernet_unregisterinterface(&ethernetinterface);
