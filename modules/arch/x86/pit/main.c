@@ -81,25 +81,21 @@ static unsigned int driver_match(unsigned int id)
 static void driver_attach(unsigned int id)
 {
 
-    unsigned short irq = platform_getirq(id);
-
     io = platform_getbase(id);
 
     io_outb(io + PIT_REGISTER_COMMAND, PIT_COMMAND_CHANNEL0 | PIT_COMMAND_BOTH | PIT_COMMAND_MODE3 | PIT_COMMAND_BINARY);
     io_outb(io + PIT_REGISTER_CHANNEL0, divisor);
     io_outb(io + PIT_REGISTER_CHANNEL0, divisor >> 8);
     timer_registerinterface(&timerinterface, id);
-    pic_setroutine(irq, id, handleirq);
+    pic_setroutine(platform_getirq(id), id, handleirq);
 
 }
 
 static void driver_detach(unsigned int id)
 {
 
-    unsigned short irq = platform_getirq(id);
-
     timer_unregisterinterface(&timerinterface);
-    pic_unsetroutine(irq, id);
+    pic_unsetroutine(platform_getirq(id), id);
 
 }
 

@@ -118,22 +118,18 @@ static unsigned int driver_match(unsigned int id)
 static void driver_attach(unsigned int id)
 {
 
-    unsigned short irq = platform_getirq(id);
-
     io = platform_getbase(id);
 
     clock_registerinterface(&clockinterface, id);
-    pic_setroutine(irq, id, handleirq);
+    pic_setroutine(platform_getirq(id), id, handleirq);
 
 }
 
 static void driver_detach(unsigned int id)
 {
 
-    unsigned short irq = platform_getirq(id);
-
     clock_unregisterinterface(&clockinterface);
-    pic_unsetroutine(irq, id);
+    pic_unsetroutine(platform_getirq(id), id);
 
 }
 

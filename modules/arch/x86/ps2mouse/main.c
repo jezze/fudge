@@ -35,8 +35,6 @@ static unsigned int driver_match(unsigned int id)
 static void driver_attach(unsigned int id)
 {
 
-    unsigned short irq = ps2_getirq(id);
-
     ps2_enable(id);
     ps2_reset(id);
     ps2_disablescanning(id);
@@ -45,17 +43,15 @@ static void driver_attach(unsigned int id)
     ps2_enablescanning(id);
     ps2_enableinterrupt(id);
     mouse_registerinterface(&mouseinterface, id);
-    pic_setroutine(irq, id, handleirq);
+    pic_setroutine(ps2_getirq(id), id, handleirq);
 
 }
 
 static void driver_detach(unsigned int id)
 {
 
-    unsigned short irq = ps2_getirq(id);
-
     mouse_unregisterinterface(&mouseinterface);
-    pic_unsetroutine(irq, id);
+    pic_unsetroutine(ps2_getirq(id), id);
 
 }
 

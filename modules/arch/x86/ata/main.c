@@ -51,20 +51,16 @@ static unsigned int driver_match(unsigned int id)
 static void driver_attach(unsigned int id)
 {
 
-    unsigned short irq = ide_getirq(id);
-
     block_registerinterface(&blockinterface, id);
-    pic_setroutine(irq, id, handleirq);
+    pic_setroutine(ide_getirq(id), id, handleirq);
 
 }
 
 static void driver_detach(unsigned int id)
 {
 
-    unsigned short irq = ide_getirq(id);
-
     block_unregisterinterface(&blockinterface);
-    pic_unsetroutine(irq, id);
+    pic_unsetroutine(ide_getirq(id), id);
 
 }
 

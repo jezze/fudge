@@ -210,8 +210,6 @@ static unsigned int driver_match(unsigned int id)
 static void driver_attach(unsigned int id)
 {
 
-    unsigned short irq = platform_getirq(id);
-
     io = platform_getbase(id);
 
     io_outb(io + UART_REGISTER_IER, UART_IER_NULL);
@@ -224,17 +222,15 @@ static void driver_attach(unsigned int id)
     io_outb(io + UART_REGISTER_IER, UART_IER_RECEIVE);
 
     console_registerinterface(&consoleinterface, id);
-    pic_setroutine(irq, id, handleirq);
+    pic_setroutine(platform_getirq(id), id, handleirq);
 
 }
 
 static void driver_detach(unsigned int id)
 {
 
-    unsigned short irq = platform_getirq(id);
-
     console_unregisterinterface(&consoleinterface);
-    pic_unsetroutine(irq, id);
+    pic_unsetroutine(platform_getirq(id), id);
 
 }
 

@@ -270,8 +270,6 @@ static unsigned int driver_match(unsigned int id)
 static void driver_attach(unsigned int id)
 {
 
-    unsigned short irq = pci_getirq(id);
-
     io = pci_inw(id, PCI_CONFIG_BAR0) & ~1;
     mmio = pci_ind(id, PCI_CONFIG_BAR1);
 
@@ -291,17 +289,15 @@ static void driver_attach(unsigned int id)
     ethernetinterface.settings.mac[5] = io_inb(io + RTL8139_REGISTER_IDR5);
 
     ethernet_registerinterface(&ethernetinterface, id);
-    pic_setroutine(irq, id, handleirq);
+    pic_setroutine(pci_getirq(id), id, handleirq);
 
 }
 
 static void driver_detach(unsigned int id)
 {
 
-    unsigned short irq = pci_getirq(id);
-
     ethernet_unregisterinterface(&ethernetinterface);
-    pic_unsetroutine(irq, id);
+    pic_unsetroutine(pci_getirq(id), id);
 
 }
 

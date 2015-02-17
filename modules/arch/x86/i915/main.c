@@ -157,8 +157,6 @@ static unsigned int driver_match(unsigned int id)
 static void driver_attach(unsigned int id)
 {
 
-    unsigned short irq = pci_getirq(id);
-
     enabledpll();
     enablepipe();
     enableplane();
@@ -166,17 +164,15 @@ static void driver_attach(unsigned int id)
     disablevga();
     setpipemode(640, 480);
     video_registerinterface(&videointerface, id);
-    pic_setroutine(irq, id, handleirq);
+    pic_setroutine(pci_getirq(id), id, handleirq);
 
 }
 
 static void driver_detach(unsigned int id)
 {
 
-    unsigned short irq = pci_getirq(id);
-
     video_unregisterinterface(&videointerface);
-    pic_unsetroutine(irq, id);
+    pic_unsetroutine(pci_getirq(id), id);
 
 }
 
