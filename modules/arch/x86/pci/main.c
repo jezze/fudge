@@ -13,7 +13,6 @@ enum pci_register
 };
 
 static struct base_bus bus;
-static struct {unsigned int address[64]; unsigned int count;} devices;
 
 unsigned int pci_ind(unsigned int id, unsigned short offset)
 {
@@ -82,14 +81,6 @@ unsigned short pci_getirq(unsigned int id)
 
 }
 
-static void add(unsigned int address)
-{
-
-    devices.address[devices.count] = address;
-    devices.count++;
-
-}
-
 static unsigned int calcaddress(unsigned int num, unsigned int slot, unsigned int function)
 {
 
@@ -97,72 +88,58 @@ static unsigned int calcaddress(unsigned int num, unsigned int slot, unsigned in
 
 }
 
-static void detect(unsigned int num)
-{
-
-    unsigned int slot;
-
-    for (slot = 0; slot < 32; slot++)
-    {
-
-        unsigned int header;
-
-        if (pci_inw(calcaddress(num, slot, 0), 0x00) == 0xFFFF)
-            continue;
-
-        header = pci_inb(calcaddress(num, slot, 0), 0x0E);
-
-        if ((header & 0x01))
-            detect(pci_inb(calcaddress(num, slot, 0), 0x19));
-
-        if ((header & 0x02))
-            detect(pci_inb(calcaddress(num, slot, 0), 0x18));
-
-        if ((header & 0x80))
-        {
-
-            unsigned int function;
-
-            for (function = 0; function < 8; function++)
-            {
-
-                if (pci_inw(calcaddress(num, slot, function), 0x00) == 0xFFFF)
-                    continue;
-
-                add(calcaddress(num, slot, function));
-
-            }
-
-            continue;
-
-        }
-
-        add(calcaddress(num, slot, 0));
-
-    }
-
-}
-
 static void bus_setup()
 {
-
-    detect(0);
 
 }
 
 static unsigned int bus_next(unsigned int id)
 {
 
-    unsigned int i;
+    unsigned int cnum;
+    unsigned int cslot;
+    unsigned int cfunction;
 
-    if (!id)
-        return devices.address[0];
-
-    for (i = 0; i < devices.count; i++)
+    for (cnum = 0; cnum < 256; cnum++)
     {
 
-        if (devices.address[i] == id)
-            return devices.address[i + 1];
+        for (cslot = 0; cslot < 32; cslot++)
+        {
+
+            unsigned int x = calcaddress(cnum, cslot, 0x00);
+            unsigned char header;
+
+            if (x <= id)
+                continue;
+
+            if (pci_inw(x, 0x00) == 0xFFFF)
+                continue;
+
+            header = pci_inb(x, 0x0E);
+
+            if (header & 0x80)
+            {
+
+                for (cfunction = 0; cfunction < 8; cfunction++)
+                {
+
+                    unsigned int y = calcaddress(cnum, cslot, cfunction);
+
+                    if (y <= id)
+                        continue;
+
+                    if (pci_inw(y, 0x00) == 0xFFFF)
+                        continue;
+
+                    return y;
+
+                }
+
+            }
+
+            return x;
+
+        }
 
     }
 
@@ -172,9 +149,6 @@ static unsigned int bus_next(unsigned int id)
 
 void module_init()
 {
-
-    devices.count = 0;
-    memory_clear(devices.address, sizeof (unsigned int) * 64);
 
     base_initbus(&bus, PCI_BUS_TYPE, "pci", bus_setup, bus_next);
 
