@@ -103,21 +103,21 @@ static void driver_init()
 
 }
 
-static unsigned int driver_match(struct base_bus *bus, unsigned int id)
+static unsigned int driver_match(unsigned int type, unsigned int id)
 {
 
-    if (bus->type != PCI_BUS_TYPE)
+    if (type != PCI_BUS_TYPE)
         return 0;
 
-    return pci_inw(bus, id, PCI_CONFIG_VENDOR) == BGA_PCI_VENDOR && pci_inw(bus, id, PCI_CONFIG_DEVICE) == BGA_PCI_DEVICE;
+    return pci_inw(id, PCI_CONFIG_VENDOR) == BGA_PCI_VENDOR && pci_inw(id, PCI_CONFIG_DEVICE) == BGA_PCI_DEVICE;
 
 }
 
-static void driver_attach(struct base_bus *bus, unsigned int id)
+static void driver_attach(unsigned int id)
 {
 
     bank = (void *)0xA0000;
-    lfb = (void *)(unsigned long)pci_ind(bus, id, PCI_CONFIG_BAR0);
+    lfb = (void *)(unsigned long)pci_ind(id, PCI_CONFIG_BAR0);
 
 /*
     struct bga_driver *driver = (struct bga_driver *)self;
@@ -126,11 +126,11 @@ static void driver_attach(struct base_bus *bus, unsigned int id)
     mmu_reload_memory();
 */
 
-    video_registerinterface(&videointerface, bus, id);
+    video_registerinterface(&videointerface, id);
 
 }
 
-static void driver_detach(struct base_bus *bus, unsigned int id)
+static void driver_detach(unsigned int id)
 {
 
     video_unregisterinterface(&videointerface);

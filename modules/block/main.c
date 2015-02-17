@@ -15,10 +15,10 @@ static unsigned int interfacenode_dataread(struct system_node *self, unsigned in
 
 }
 
-void block_registerinterface(struct block_interface *interface, struct base_bus *bus, unsigned int id)
+void block_registerinterface(struct block_interface *interface, unsigned int id)
 {
 
-    base_registerinterface(&interface->base, bus, id);
+    base_registerinterface(&interface->base, id);
     system_addchild(&root, &interface->node.base);
     system_addchild(&interface->node.base, &interface->node.data);
 

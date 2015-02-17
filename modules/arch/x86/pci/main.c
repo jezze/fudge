@@ -15,67 +15,74 @@ enum pci_register
 static struct base_bus bus;
 static struct {unsigned int address[64]; unsigned int count;} devices;
 
-unsigned int pci_ind(struct base_bus *bus, unsigned int address, unsigned short offset)
+unsigned int pci_ind(unsigned int id, unsigned short offset)
 {
 
-    io_outd(PCI_REGISTER_CONTROL, address | (offset & 0xFC));
+    io_outd(PCI_REGISTER_CONTROL, id | (offset & 0xFC));
 
     return io_ind(PCI_REGISTER_DATA);
 
 }
 
-unsigned short pci_inw(struct base_bus *bus, unsigned int address, unsigned short offset)
+unsigned short pci_inw(unsigned int id, unsigned short offset)
 {
 
-    io_outd(PCI_REGISTER_CONTROL, address | (offset & 0xFC));
+    io_outd(PCI_REGISTER_CONTROL, id | (offset & 0xFC));
 
     return io_ind(PCI_REGISTER_DATA) >> ((offset & 2) * 8);
 
 }
 
-unsigned char pci_inb(struct base_bus *bus, unsigned int address, unsigned short offset)
+unsigned char pci_inb(unsigned int id, unsigned short offset)
 {
 
-    io_outd(PCI_REGISTER_CONTROL, address | (offset & 0xFC));
+    io_outd(PCI_REGISTER_CONTROL, id | (offset & 0xFC));
 
     return io_ind(PCI_REGISTER_DATA) >> ((offset & 3) * 8);
 
 }
 
-void pci_outd(struct base_bus *bus, unsigned int address, unsigned short offset, unsigned int value)
+void pci_outd(unsigned int id, unsigned short offset, unsigned int value)
 {
 
-    io_outd(PCI_REGISTER_CONTROL, address | (offset & 0xFC));
+    io_outd(PCI_REGISTER_CONTROL, id | (offset & 0xFC));
     io_outd(PCI_REGISTER_DATA, value);
 
 }
 
-void pci_outw(struct base_bus *bus, unsigned int address, unsigned short offset, unsigned short value)
+void pci_outw(unsigned int id, unsigned short offset, unsigned short value)
 {
 
-    io_outd(PCI_REGISTER_CONTROL, address | (offset & 0xFC));
+    io_outd(PCI_REGISTER_CONTROL, id | (offset & 0xFC));
     io_outw(PCI_REGISTER_DATA, value);
 
 }
 
-void pci_outb(struct base_bus *bus, unsigned int address, unsigned short offset, unsigned char value)
+void pci_outb(unsigned int id, unsigned short offset, unsigned char value)
 {
 
-    io_outd(PCI_REGISTER_CONTROL, address | (offset & 0xFC));
+    io_outd(PCI_REGISTER_CONTROL, id | (offset & 0xFC));
     io_outb(PCI_REGISTER_DATA, value);
 
 }
 
-void pci_setmaster(struct base_bus *bus, unsigned int id)
+void pci_setmaster(unsigned int id)
 {
 
-    unsigned short command = pci_inw(bus, id, PCI_CONFIG_COMMAND);
+    unsigned short command = pci_inw(id, PCI_CONFIG_COMMAND);
 
-    pci_outw(bus, id, PCI_CONFIG_COMMAND, command | (1 << 2));
+    pci_outw(id, PCI_CONFIG_COMMAND, command | (1 << 2));
 
 }
 
-static void add(struct base_bus *bus, unsigned int address)
+unsigned short pci_getirq(unsigned int id)
+{
+
+    return pci_inb(id, PCI_CONFIG_LINE);
+
+}
+
+static void add(unsigned int address)
 {
 
     devices.address[devices.count] = address;
@@ -90,7 +97,7 @@ static unsigned int calcaddress(unsigned int num, unsigned int slot, unsigned in
 
 }
 
-static void detect(struct base_bus *bus, unsigned int num)
+static void detect(unsigned int num)
 {
 
     unsigned int slot;
@@ -100,16 +107,16 @@ static void detect(struct base_bus *bus, unsigned int num)
 
         unsigned int header;
 
-        if (pci_inw(bus, calcaddress(num, slot, 0), 0x00) == 0xFFFF)
+        if (pci_inw(calcaddress(num, slot, 0), 0x00) == 0xFFFF)
             continue;
 
-        header = pci_inb(bus, calcaddress(num, slot, 0), 0x0E);
+        header = pci_inb(calcaddress(num, slot, 0), 0x0E);
 
         if ((header & 0x01))
-            detect(bus, pci_inb(bus, calcaddress(num, slot, 0), 0x19));
+            detect(pci_inb(calcaddress(num, slot, 0), 0x19));
 
         if ((header & 0x02))
-            detect(bus, pci_inb(bus, calcaddress(num, slot, 0), 0x18));
+            detect(pci_inb(calcaddress(num, slot, 0), 0x18));
 
         if ((header & 0x80))
         {
@@ -119,10 +126,10 @@ static void detect(struct base_bus *bus, unsigned int num)
             for (function = 0; function < 8; function++)
             {
 
-                if (pci_inw(bus, calcaddress(num, slot, function), 0x00) == 0xFFFF)
+                if (pci_inw(calcaddress(num, slot, function), 0x00) == 0xFFFF)
                     continue;
 
-                add(bus, calcaddress(num, slot, function));
+                add(calcaddress(num, slot, function));
 
             }
 
@@ -130,20 +137,20 @@ static void detect(struct base_bus *bus, unsigned int num)
 
         }
 
-        add(bus, calcaddress(num, slot, 0));
+        add(calcaddress(num, slot, 0));
 
     }
 
 }
 
-static void bus_setup(struct base_bus *self)
+static void bus_setup()
 {
 
-    detect(self, 0);
+    detect(0);
 
 }
 
-static unsigned int bus_next(struct base_bus *self, unsigned int id)
+static unsigned int bus_next(unsigned int id)
 {
 
     unsigned int i;
@@ -163,20 +170,13 @@ static unsigned int bus_next(struct base_bus *self, unsigned int id)
 
 }
 
-static unsigned short bus_irq(struct base_bus *self, unsigned int id)
-{
-
-    return pci_inb(self, id, PCI_CONFIG_LINE);
-
-}
-
 void module_init()
 {
 
     devices.count = 0;
     memory_clear(devices.address, sizeof (unsigned int) * 64);
 
-    base_initbus(&bus, PCI_BUS_TYPE, "pci", bus_setup, bus_next, bus_irq);
+    base_initbus(&bus, PCI_BUS_TYPE, "pci", bus_setup, bus_next);
 
 }
 

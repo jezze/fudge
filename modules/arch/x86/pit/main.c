@@ -47,7 +47,7 @@ static unsigned short io;
 static unsigned short divisor;
 static unsigned int jiffies;
 
-static void handleirq(unsigned int irq, struct base_bus *bus, unsigned int id)
+static void handleirq(unsigned int irq, unsigned int id)
 {
 
     jiffies += 1;
@@ -71,34 +71,38 @@ static void driver_init()
 
 }
 
-static unsigned int driver_match(struct base_bus *bus, unsigned int id)
+static unsigned int driver_match(unsigned int type, unsigned int id)
 {
 
-    if (bus->type != PLATFORM_BUS_TYPE)
+    if (type != PLATFORM_BUS_TYPE)
         return 0;
 
     return id == PLATFORM_PIT_DEVICE_TYPE;
 
 }
 
-static void driver_attach(struct base_bus *bus, unsigned int id)
+static void driver_attach(unsigned int id)
 {
 
-    io = platform_getbase(bus, id);
+    unsigned short irq = platform_getirq(id);
+
+    io = platform_getbase(id);
 
     io_outb(io + PIT_REGISTER_COMMAND, PIT_COMMAND_CHANNEL0 | PIT_COMMAND_BOTH | PIT_COMMAND_MODE3 | PIT_COMMAND_BINARY);
     io_outb(io + PIT_REGISTER_CHANNEL0, divisor);
     io_outb(io + PIT_REGISTER_CHANNEL0, divisor >> 8);
-    timer_registerinterface(&timerinterface, bus, id);
-    pic_setroutine(bus, id, handleirq);
+    timer_registerinterface(&timerinterface, id);
+    pic_setroutine(irq, id, handleirq);
 
 }
 
-static void driver_detach(struct base_bus *bus, unsigned int id)
+static void driver_detach(unsigned int id)
 {
 
+    unsigned short irq = platform_getirq(id);
+
     timer_unregisterinterface(&timerinterface);
-    pic_unsetroutine(bus, id);
+    pic_unsetroutine(irq, id);
 
 }
 

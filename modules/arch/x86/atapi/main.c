@@ -9,7 +9,7 @@
 static struct base_driver driver;
 static struct block_interface blockinterface;
 
-static void handleirq(unsigned int irq, struct base_bus *bus, unsigned int id)
+static void handleirq(unsigned int irq, unsigned int id)
 {
 
 }
@@ -21,29 +21,33 @@ static void driver_init()
 
 }
 
-static unsigned int driver_match(struct base_bus *bus, unsigned int id)
+static unsigned int driver_match(unsigned int type, unsigned int id)
 {
 
-    if (bus->type != IDE_BUS_TYPE)
+    if (type != IDE_BUS_TYPE)
         return 0;
 
     return id == IDE_DEVICE_TYPE_ATAPI;
 
 }
 
-static void driver_attach(struct base_bus *bus, unsigned int id)
+static void driver_attach(unsigned int id)
 {
 
-    block_registerinterface(&blockinterface, bus, id);
-    pic_setroutine(bus, id, handleirq);
+    unsigned short irq = ide_getirq(id);
+
+    block_registerinterface(&blockinterface, id);
+    pic_setroutine(irq, id, handleirq);
 
 }
 
-static void driver_detach(struct base_bus *bus, unsigned int id)
+static void driver_detach(unsigned int id)
 {
 
+    unsigned short irq = ide_getirq(id);
+
     block_unregisterinterface(&blockinterface);
-    pic_unsetroutine(bus, id);
+    pic_unsetroutine(irq, id);
 
 }
 

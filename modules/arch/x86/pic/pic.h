@@ -1,9 +1,8 @@
 struct pic_routine
 {
 
-    struct base_bus *bus;
     unsigned int id;
-    void (*callback)(unsigned int irq, struct base_bus *bus, unsigned int id);
+    void (*callback)(unsigned int irq, unsigned int id);
 
 };
 
@@ -23,5 +22,5 @@ void pic_routine0C();
 void pic_routine0D();
 void pic_routine0E();
 void pic_routine0F();
-unsigned int pic_setroutine(struct base_bus *bus, unsigned int id, void (*callback)(unsigned int irq, struct base_bus *bus, unsigned int id));
-unsigned int pic_unsetroutine(struct base_bus *bus, unsigned int id);
+unsigned int pic_setroutine(unsigned int irq, unsigned int id, void (*callback)(unsigned int irq, unsigned int id));
+unsigned int pic_unsetroutine(unsigned int irq, unsigned int id);

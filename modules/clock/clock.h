@@ -24,6 +24,6 @@ struct clock_interface
 
 };
 
-void clock_registerinterface(struct clock_interface *interface, struct base_bus *bus, unsigned int id);
+void clock_registerinterface(struct clock_interface *interface, unsigned int id);
 void clock_unregisterinterface(struct clock_interface *interface);
 void clock_initinterface(struct clock_interface *interface, struct base_driver *driver, unsigned char (*getseconds)(), unsigned char (*getminutes)(), unsigned char (*gethours)(), unsigned char (*getweekday)(), unsigned char (*getday)(), unsigned char (*getmonth)(), unsigned short (*getyear)());

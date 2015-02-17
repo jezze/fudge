@@ -214,24 +214,24 @@ static void driver_init()
 
 }
 
-static unsigned int driver_match(struct base_bus *bus, unsigned int id)
+static unsigned int driver_match(unsigned int type, unsigned int id)
 {
 
-    if (bus->type != PCI_BUS_TYPE)
+    if (type != PCI_BUS_TYPE)
         return 0;
 
-    return pci_inw(bus, id, PCI_CONFIG_VENDOR) == CIRRUS_PCI_VENDOR && pci_inw(bus, id, PCI_CONFIG_DEVICE) == CIRRUS_PCI_DEVICE;
+    return pci_inw(id, PCI_CONFIG_VENDOR) == CIRRUS_PCI_VENDOR && pci_inw(id, PCI_CONFIG_DEVICE) == CIRRUS_PCI_DEVICE;
 
 }
 
-static void driver_attach(struct base_bus *bus, unsigned int id)
+static void driver_attach(unsigned int id)
 {
 
-    video_registerinterface(&videointerface, bus, id);
+    video_registerinterface(&videointerface, id);
 
 }
 
-static void driver_detach(struct base_bus *bus, unsigned int id)
+static void driver_detach(unsigned int id)
 {
 
     video_unregisterinterface(&videointerface);

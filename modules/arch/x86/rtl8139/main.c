@@ -182,7 +182,7 @@ static void settx()
 
 }
 
-static void handleirq(unsigned int irq, struct base_bus *bus, unsigned int id)
+static void handleirq(unsigned int irq, unsigned int id)
 {
 
     unsigned short status = io_inw(io + RTL8139_REGISTER_ISR);
@@ -260,21 +260,23 @@ static void driver_init()
 
 }
 
-static unsigned int driver_match(struct base_bus *bus, unsigned int id)
+static unsigned int driver_match(unsigned int type, unsigned int id)
 {
 
-    if (bus->type != PCI_BUS_TYPE)
+    if (type != PCI_BUS_TYPE)
         return 0;
 
-    return pci_inw(bus, id, PCI_CONFIG_VENDOR) == RTL8139_PCI_VENDOR && pci_inw(bus, id, PCI_CONFIG_DEVICE) == RTL8139_PCI_DEVICE;
+    return pci_inw(id, PCI_CONFIG_VENDOR) == RTL8139_PCI_VENDOR && pci_inw(id, PCI_CONFIG_DEVICE) == RTL8139_PCI_DEVICE;
 
 }
 
-static void driver_attach(struct base_bus *bus, unsigned int id)
+static void driver_attach(unsigned int id)
 {
 
-    io = pci_inw(bus, id, PCI_CONFIG_BAR0) & ~1;
-    mmio = pci_ind(bus, id, PCI_CONFIG_BAR1);
+    unsigned short irq = pci_getirq(id);
+
+    io = pci_inw(id, PCI_CONFIG_BAR0) & ~1;
+    mmio = pci_ind(id, PCI_CONFIG_BAR1);
 
     poweron();
     reset();
@@ -282,7 +284,7 @@ static void driver_attach(struct base_bus *bus, unsigned int id)
     setrx();
     settx();
     enable();
-    pci_setmaster(bus, id);
+    pci_setmaster(id);
 
     ethernetinterface.settings.mac[0] = io_inb(io + RTL8139_REGISTER_IDR0);
     ethernetinterface.settings.mac[1] = io_inb(io + RTL8139_REGISTER_IDR1);
@@ -291,16 +293,18 @@ static void driver_attach(struct base_bus *bus, unsigned int id)
     ethernetinterface.settings.mac[4] = io_inb(io + RTL8139_REGISTER_IDR4);
     ethernetinterface.settings.mac[5] = io_inb(io + RTL8139_REGISTER_IDR5);
 
-    ethernet_registerinterface(&ethernetinterface, bus, id);
-    pic_setroutine(bus, id, handleirq);
+    ethernet_registerinterface(&ethernetinterface, id);
+    pic_setroutine(irq, id, handleirq);
 
 }
 
-static void driver_detach(struct base_bus *bus, unsigned int id)
+static void driver_detach(unsigned int id)
 {
 
+    unsigned short irq = pci_getirq(id);
+
     ethernet_unregisterinterface(&ethernetinterface);
-    pic_unsetroutine(bus, id);
+    pic_unsetroutine(irq, id);
 
 }
 

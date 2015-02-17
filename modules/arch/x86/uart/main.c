@@ -169,7 +169,7 @@ static void write(unsigned char c)
 
 }
 
-static void handleirq(unsigned int irq, struct base_bus *bus, unsigned int id)
+static void handleirq(unsigned int irq, unsigned int id)
 {
 
     unsigned char data = read();
@@ -200,20 +200,22 @@ static void driver_init()
 
 }
 
-static unsigned int driver_match(struct base_bus *bus, unsigned int id)
+static unsigned int driver_match(unsigned int type, unsigned int id)
 {
 
-    if (bus->type != PLATFORM_BUS_TYPE)
+    if (type != PLATFORM_BUS_TYPE)
         return 0;
 
     return id == PLATFORM_UART1_DEVICE_TYPE;
 
 }
 
-static void driver_attach(struct base_bus *bus, unsigned int id)
+static void driver_attach(unsigned int id)
 {
 
-    io = platform_getbase(bus, id);
+    unsigned short irq = platform_getirq(id);
+
+    io = platform_getbase(id);
 
     io_outb(io + UART_REGISTER_IER, UART_IER_NULL);
     io_outb(io + UART_REGISTER_LCR, UART_LCR_5BITS | UART_LCR_1STOP | UART_LCR_NOPARITY);
@@ -224,16 +226,18 @@ static void driver_attach(struct base_bus *bus, unsigned int id)
     io_outb(io + UART_REGISTER_MCR, UART_MCR_READY | UART_MCR_REQUEST | UART_MCR_AUX2);
     io_outb(io + UART_REGISTER_IER, UART_IER_RECEIVE);
 
-    console_registerinterface(&consoleinterface, bus, id);
-    pic_setroutine(bus, id, handleirq);
+    console_registerinterface(&consoleinterface, id);
+    pic_setroutine(irq, id, handleirq);
 
 }
 
-static void driver_detach(struct base_bus *bus, unsigned int id)
+static void driver_detach(unsigned int id)
 {
 
+    unsigned short irq = platform_getirq(id);
+
     console_unregisterinterface(&consoleinterface);
-    pic_unsetroutine(bus, id);
+    pic_unsetroutine(irq, id);
 
 }
 

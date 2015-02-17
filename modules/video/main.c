@@ -64,10 +64,10 @@ static unsigned int interfacenode_colormapwrite(struct system_node *self, unsign
 
 }
 
-void video_registerinterface(struct video_interface *interface, struct base_bus *bus, unsigned int id)
+void video_registerinterface(struct video_interface *interface, unsigned int id)
 {
 
-    base_registerinterface(&interface->base, bus, id);
+    base_registerinterface(&interface->base, id);
     system_addchild(&root, &interface->node.base);
     system_addchild(&interface->node.base, &interface->node.ctrl);
     system_addchild(&interface->node.base, &interface->node.data);

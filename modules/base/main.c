@@ -8,7 +8,7 @@ void base_registerbus(struct base_bus *bus)
 
     resource_register(&bus->resource);
 
-    bus->setup(bus);
+    bus->setup();
 
 }
 
@@ -23,14 +23,14 @@ void base_registerdriver(struct base_driver *driver)
         struct base_bus *bus = current->data;
         unsigned int id = 0;
 
-        while ((id = bus->next(bus, id)))
+        while ((id = bus->next(id)))
         {
 
-            if (!driver->match(bus, id))
+            if (!driver->match(bus->type, id))
                 continue;
 
             driver->init();
-            driver->attach(bus, id);
+            driver->attach(id);
 
         }
 
@@ -40,12 +40,11 @@ void base_registerdriver(struct base_driver *driver)
 
 }
 
-void base_registerinterface(struct base_interface *interface, struct base_bus *bus, unsigned int id)
+void base_registerinterface(struct base_interface *interface, unsigned int id)
 {
 
     resource_register(&interface->resource);
 
-    interface->bus = bus;
     interface->id = id;
 
 }
@@ -68,13 +67,13 @@ void base_unregisterdriver(struct base_driver *driver)
         struct base_bus *bus = current->data;
         unsigned int id = 0;
 
-        while ((id = bus->next(bus, id)))
+        while ((id = bus->next(id)))
         {
 
-            if (!driver->match(bus, id))
+            if (!driver->match(bus->type, id))
                 continue;
 
-            driver->detach(bus, id);
+            driver->detach(id);
 
         }
 
@@ -91,7 +90,7 @@ void base_unregisterinterface(struct base_interface *interface)
 
 }
 
-void base_initbus(struct base_bus *bus, unsigned int type, const char *name, void (*setup)(struct base_bus *self), unsigned int (*next)(struct base_bus *self, unsigned int id), unsigned short (*irq)(struct base_bus *self, unsigned int id))
+void base_initbus(struct base_bus *bus, unsigned int type, const char *name, void (*setup)(), unsigned int (*next)(unsigned int id))
 {
 
     resource_init(&bus->resource, RESOURCE_TYPE_BUS, bus);
@@ -100,11 +99,10 @@ void base_initbus(struct base_bus *bus, unsigned int type, const char *name, voi
     bus->name = name;
     bus->setup = setup;
     bus->next = next;
-    bus->irq = irq;
 
 }
 
-void base_initdriver(struct base_driver *driver, const char *name, void (*init)(), unsigned int (*match)(struct base_bus *bus, unsigned int id), void (*attach)(struct base_bus *bus, unsigned int id), void (*detach)(struct base_bus *bus, unsigned int id))
+void base_initdriver(struct base_driver *driver, const char *name, void (*init)(), unsigned int (*match)(unsigned int type, unsigned int id), void (*attach)(unsigned int id), void (*detach)(unsigned int id))
 {
 
     resource_init(&driver->resource, RESOURCE_TYPE_DRIVER, driver);

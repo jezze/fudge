@@ -45,36 +45,36 @@ static struct device devices[] = {
     {PLATFORM_REGISTER_UART4, PLATFORM_IRQ_UART2}
 };
 
-unsigned short platform_getbase(struct base_bus *bus, unsigned int id)
+unsigned short platform_getbase(unsigned int id)
 {
 
     return (id < 7) ? devices[id].base : 0;
 
 }
 
-static void bus_setup(struct base_bus *self)
-{
-
-}
-
-static unsigned int bus_next(struct base_bus *self, unsigned int id)
-{
-
-    return (id < 6) ? id + 1 : 0;
-
-}
-
-static unsigned short bus_irq(struct base_bus *self, unsigned int id)
+unsigned short platform_getirq(unsigned int id)
 {
 
     return (id < 7) ? devices[id].irq : 0xFFFF;
 
 }
 
+static void bus_setup()
+{
+
+}
+
+static unsigned int bus_next(unsigned int id)
+{
+
+    return (id < 6) ? id + 1 : 0;
+
+}
+
 void module_init()
 {
 
-    base_initbus(&bus, PLATFORM_BUS_TYPE, "platform", bus_setup, bus_next, bus_irq);
+    base_initbus(&bus, PLATFORM_BUS_TYPE, "platform", bus_setup, bus_next);
 
 }
 

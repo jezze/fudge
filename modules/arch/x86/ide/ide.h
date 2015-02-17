@@ -5,14 +5,14 @@
 #define IDE_DEVICE_TYPE_SATA            0x03
 #define IDE_DEVICE_TYPE_SATAPI          0x04
 
-unsigned int ide_getstatus(struct base_bus *bus);
-unsigned int ide_rlba28(struct base_bus *bus, unsigned int slave, unsigned int sector, unsigned int count, void *buffer);
-void ide_rlba28a(struct base_bus *bus, unsigned int slave, unsigned int sector, unsigned int count, void *buffer);
-unsigned int ide_wlba28(struct base_bus *bus, unsigned int slave, unsigned int sector, unsigned int count, void *buffer);
-void ide_wlba28a(struct base_bus *bus, unsigned int slave, unsigned int sector, unsigned int count, void *buffer);
-unsigned int ide_rlba48(struct base_bus *bus, unsigned int slave, unsigned int sectorlow, unsigned int sectorhigh, unsigned int count, void *buffer);
-void ide_rlba48a(struct base_bus *bus, unsigned int slave, unsigned int sectorlow, unsigned int sectorhigh, unsigned int count, void *buffer);
-unsigned int ide_wlba48(struct base_bus *bus, unsigned int slave, unsigned int sectorlow, unsigned int sectorhigh, unsigned int count, void *buffer);
-void ide_wlba48a(struct base_bus *bus, unsigned int slave, unsigned int sectorlow, unsigned int sectorhigh, unsigned int count, void *buffer);
-unsigned int ide_rblock(struct base_bus *bus, unsigned int count, void *buffer);
-unsigned int ide_wblock(struct base_bus *bus, unsigned int count, void *buffer);
+unsigned short ide_getirq(unsigned int id);
+unsigned int ide_rblock(unsigned int id, unsigned int count, void *buffer);
+unsigned int ide_wblock(unsigned int id, unsigned int count, void *buffer);
+unsigned int ide_rlba28(unsigned int id, unsigned int slave, unsigned int sector, unsigned int count, void *buffer);
+void ide_rlba28a(unsigned int id, unsigned int slave, unsigned int sector, unsigned int count, void *buffer);
+unsigned int ide_wlba28(unsigned int id, unsigned int slave, unsigned int sector, unsigned int count, void *buffer);
+void ide_wlba28a(unsigned int id, unsigned int slave, unsigned int sector, unsigned int count, void *buffer);
+unsigned int ide_rlba48(unsigned int id, unsigned int slave, unsigned int sectorlow, unsigned int sectorhigh, unsigned int count, void *buffer);
+void ide_rlba48a(unsigned int id, unsigned int slave, unsigned int sectorlow, unsigned int sectorhigh, unsigned int count, void *buffer);
+unsigned int ide_wlba48(unsigned int id, unsigned int slave, unsigned int sectorlow, unsigned int sectorhigh, unsigned int count, void *buffer);
+void ide_wlba48a(unsigned int id, unsigned int slave, unsigned int sectorlow, unsigned int sectorhigh, unsigned int count, void *buffer);

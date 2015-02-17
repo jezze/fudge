@@ -47,7 +47,7 @@ static unsigned char read(unsigned int type)
 
 }
 
-static void handleirq(unsigned int irq, struct base_bus *bus, unsigned int id)
+static void handleirq(unsigned int irq, unsigned int id)
 {
 
 }
@@ -108,31 +108,35 @@ static void driver_init()
 
 }
 
-static unsigned int driver_match(struct base_bus *bus, unsigned int id)
+static unsigned int driver_match(unsigned int type, unsigned int id)
 {
 
-    if (bus->type != PLATFORM_BUS_TYPE)
+    if (type != PLATFORM_BUS_TYPE)
         return 0;
 
     return id == PLATFORM_RTC_DEVICE_TYPE;
 
 }
 
-static void driver_attach(struct base_bus *bus, unsigned int id)
+static void driver_attach(unsigned int id)
 {
 
-    io = platform_getbase(bus, id);
+    unsigned short irq = platform_getirq(id);
 
-    clock_registerinterface(&clockinterface, bus, id);
-    pic_setroutine(bus, id, handleirq);
+    io = platform_getbase(id);
+
+    clock_registerinterface(&clockinterface, id);
+    pic_setroutine(irq, id, handleirq);
 
 }
 
-static void driver_detach(struct base_bus *bus, unsigned int id)
+static void driver_detach(unsigned int id)
 {
 
+    unsigned short irq = platform_getirq(id);
+
     clock_unregisterinterface(&clockinterface);
-    pic_unsetroutine(bus, id);
+    pic_unsetroutine(irq, id);
 
 }
 

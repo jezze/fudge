@@ -336,25 +336,25 @@ static void driver_init()
 
 }
 
-static unsigned int driver_match(struct base_bus *bus, unsigned int id)
+static unsigned int driver_match(unsigned int type, unsigned int id)
 {
 
-    if (bus->type != PCI_BUS_TYPE)
+    if (type != PCI_BUS_TYPE)
         return 0;
 
-    return pci_inb(bus, id, PCI_CONFIG_CLASS) == PCI_CLASS_DISPLAY && pci_inb(bus, id, PCI_CONFIG_SUBCLASS) == PCI_CLASS_DISPLAY_VGA && pci_inb(bus, id, PCI_CONFIG_INTERFACE) == 0x00;
+    return pci_inb(id, PCI_CONFIG_CLASS) == PCI_CLASS_DISPLAY && pci_inb(id, PCI_CONFIG_SUBCLASS) == PCI_CLASS_DISPLAY_VGA && pci_inb(id, PCI_CONFIG_INTERFACE) == 0x00;
 
 }
 
-static void driver_attach(struct base_bus *bus, unsigned int id)
+static void driver_attach(unsigned int id)
 {
 
-    console_registerinterface(&consoleinterface, bus, id);
-    video_registerinterface(&videointerface, bus, id);
+    console_registerinterface(&consoleinterface, id);
+    video_registerinterface(&videointerface, id);
 
 }
 
-static void driver_detach(struct base_bus *bus, unsigned int id)
+static void driver_detach(unsigned int id)
 {
 
     console_unregisterinterface(&consoleinterface);

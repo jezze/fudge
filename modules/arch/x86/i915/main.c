@@ -116,7 +116,7 @@ static void setpipemode(unsigned int width, unsigned int height)
 
 }
 
-static void handleirq(unsigned int irq, struct base_bus *bus, unsigned int id)
+static void handleirq(unsigned int irq, unsigned int id)
 {
 
 }
@@ -147,18 +147,20 @@ static void driver_init()
 
 }
 
-static unsigned int driver_match(struct base_bus *bus, unsigned int id)
+static unsigned int driver_match(unsigned int type, unsigned int id)
 {
 
-    if (bus->type != PCI_BUS_TYPE)
+    if (type != PCI_BUS_TYPE)
         return 0;
 
-    return pci_inw(bus, id, PCI_CONFIG_VENDOR) == 0x8086 && pci_inw(bus, id, PCI_CONFIG_DEVICE) == 0x27AE;
+    return pci_inw(id, PCI_CONFIG_VENDOR) == 0x8086 && pci_inw(id, PCI_CONFIG_DEVICE) == 0x27AE;
 
 }
 
-static void driver_attach(struct base_bus *bus, unsigned int id)
+static void driver_attach(unsigned int id)
 {
+
+    unsigned short irq = pci_getirq(id);
 
     enabledpll();
     enablepipe();
@@ -166,16 +168,18 @@ static void driver_attach(struct base_bus *bus, unsigned int id)
     waitvblank();
     disablevga();
     setpipemode(640, 480);
-    video_registerinterface(&videointerface, bus, id);
-    pic_setroutine(bus, id, handleirq);
+    video_registerinterface(&videointerface, id);
+    pic_setroutine(irq, id, handleirq);
 
 }
 
-static void driver_detach(struct base_bus *bus, unsigned int id)
+static void driver_detach(unsigned int id)
 {
 
+    unsigned short irq = pci_getirq(id);
+
     video_unregisterinterface(&videointerface);
-    pic_unsetroutine(bus, id);
+    pic_unsetroutine(irq, id);
 
 }
 

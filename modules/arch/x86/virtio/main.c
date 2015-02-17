@@ -50,7 +50,7 @@ static void reset()
 
 }
 
-static void handleirq(unsigned int irq, struct base_bus *bus, unsigned int id)
+static void handleirq(unsigned int irq, unsigned int id)
 {
 
 }
@@ -60,33 +60,37 @@ static void driver_init()
 
 }
 
-static unsigned int driver_match(struct base_bus *bus, unsigned int id)
+static unsigned int driver_match(unsigned int type, unsigned int id)
 {
 
-    if (bus->type != PCI_BUS_TYPE)
+    if (type != PCI_BUS_TYPE)
         return 0;
 
-    return pci_inw(bus, id, PCI_CONFIG_VENDOR) == VIRTIO_PCI_VENDOR;
+    return pci_inw(id, PCI_CONFIG_VENDOR) == VIRTIO_PCI_VENDOR;
 
 }
 
-static void driver_attach(struct base_bus *bus, unsigned int id)
+static void driver_attach(unsigned int id)
 {
 
-    io = pci_inw(bus, id, PCI_CONFIG_BAR0) & ~1;
+    unsigned short irq = pci_getirq(id);
+
+    io = pci_inw(id, PCI_CONFIG_BAR0) & ~1;
 
     memory_copy((void *)0xB8000, "a ", 2);
-    pci_setmaster(bus, id);
+    pci_setmaster(id);
     reset();
 
-    pic_setroutine(bus, id, handleirq);
+    pic_setroutine(irq, id, handleirq);
 
 }
 
-static void driver_detach(struct base_bus *bus, unsigned int id)
+static void driver_detach(unsigned int id)
 {
 
-    pic_unsetroutine(bus, id);
+    unsigned short irq = pci_getirq(id);
+
+    pic_unsetroutine(irq, id);
 
 }
 

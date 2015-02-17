@@ -17,6 +17,6 @@ struct block_interface
 
 };
 
-void block_registerinterface(struct block_interface *interface, struct base_bus *bus, unsigned int id);
+void block_registerinterface(struct block_interface *interface, unsigned int id);
 void block_unregisterinterface(struct block_interface *interface);
 void block_initinterface(struct block_interface *interface, struct base_driver *driver, unsigned int (*rdata)(unsigned int offset, unsigned int count, void *buffer), unsigned int (*wdata)(unsigned int offset, unsigned int count, void *buffer));
