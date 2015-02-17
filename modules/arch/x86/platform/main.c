@@ -71,15 +71,21 @@ static unsigned short bus_irq(struct base_bus *self, unsigned int id)
 
 }
 
-void init()
+void module_init()
 {
 
     base_initbus(&bus, PLATFORM_BUS_TYPE, "platform", bus_setup, bus_next, bus_irq);
+
+}
+
+void module_register()
+{
+
     base_registerbus(&bus);
 
 }
 
-void destroy()
+void module_unregister()
 {
 
     base_unregisterbus(&bus);

@@ -79,15 +79,21 @@ void mouse_initinterface(struct mouse_interface *interface, struct base_driver *
 
 }
 
-void init()
+void module_init()
 {
 
     system_initnode(&root, SYSTEM_NODETYPE_GROUP, "mouse");
+
+}
+
+void module_register()
+{
+
     system_registernode(&root);
 
 }
 
-void destroy()
+void module_unregister()
 {
 
     system_unregisternode(&root);

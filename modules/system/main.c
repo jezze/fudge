@@ -242,17 +242,23 @@ void system_initnode(struct system_node *node, unsigned int type, const char *na
 
 }
 
-void init()
+void module_init()
 {
 
     system_initbackend(&backend);
     system_initprotocol(&protocol);
+
+}
+
+void module_register()
+{
+
     resource_register(&backend.base.resource);
     resource_register(&protocol.resource);
 
 }
 
-void destroy()
+void module_unregister()
 {
 
     resource_unregister(&backend.base.resource);

@@ -56,7 +56,7 @@ static unsigned int wm_read(struct system_node *self, unsigned int offset, unsig
 
 }
 
-void init()
+void module_init()
 {
 
     list_init(&mailboxes);
@@ -73,11 +73,17 @@ void init()
     system_initnode(&root, SYSTEM_NODETYPE_GROUP, "event");
     system_addchild(&root, &send);
     system_addchild(&root, &wm);
+
+}
+
+void module_register()
+{
+
     system_registernode(&root);
 
 }
 
-void destroy()
+void module_unregister()
 {
 
     system_unregisternode(&root);

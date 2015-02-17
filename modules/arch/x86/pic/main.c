@@ -147,7 +147,7 @@ unsigned int pic_unsetroutine(struct base_bus *bus, unsigned int id)
 
 }
 
-void init()
+void module_init()
 {
 
     setchip(PIC_REGISTER_COMMAND0, PIC_REGISTER_DATA0, PIC_DATA_VECTOR0, 0x04);
@@ -185,7 +185,12 @@ void init()
 
 }
 
-void destroy()
+void module_register()
+{
+
+}
+
+void module_unregister()
 {
 
 }

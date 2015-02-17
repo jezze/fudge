@@ -2,7 +2,7 @@
 #include <arch/x86/cpuid/cpuid.h>
 #include "fpu.h"
 
-void init()
+void module_init()
 {
 
     struct cpuid_data data;
@@ -16,7 +16,12 @@ void init()
 
 }
 
-void destroy()
+void module_register()
+{
+
+}
+
+void module_unregister()
 {
 
 }

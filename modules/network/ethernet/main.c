@@ -211,16 +211,22 @@ void ethernet_initprotocol(struct ethernet_protocol *protocol, char *name, unsig
 
 }
 
-void init()
+void module_init()
 {
 
     list_init(&protocols);
     system_initnode(&root, SYSTEM_NODETYPE_GROUP, "ethernet");
+
+}
+
+void module_register()
+{
+
     system_registernode(&root);
 
 }
 
-void destroy()
+void module_unregister()
 {
 
     system_unregisternode(&root);

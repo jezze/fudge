@@ -113,15 +113,21 @@ void video_initinterface(struct video_interface *interface, struct base_driver *
 
 }
 
-void init()
+void module_init()
 {
 
     system_initnode(&root, SYSTEM_NODETYPE_GROUP, "video");
+
+}
+
+void module_register()
+{
+
     system_registernode(&root);
 
 }
 
-void destroy()
+void module_unregister()
 {
 
     system_unregisternode(&root);

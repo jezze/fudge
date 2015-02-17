@@ -68,7 +68,7 @@ static void setsrat()
 
 }
 
-void init()
+void module_init()
 {
 
     unsigned int i;
@@ -95,7 +95,12 @@ void init()
 
 }
 
-void destroy()
+void module_register()
+{
+
+}
+
+void module_unregister()
 {
 
 }

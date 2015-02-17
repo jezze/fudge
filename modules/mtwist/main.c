@@ -149,19 +149,24 @@ static unsigned int root_read(struct system_node *self, unsigned int offset, uns
 
 }
 
-void init()
+void module_init()
 {
 
     seed1(&normal, MTWIST_SEED);
-
     system_initnode(&root, SYSTEM_NODETYPE_NORMAL | SYSTEM_NODETYPE_MULTI, "mtwist");
-    system_registernode(&root);
 
     root.read = root_read;
 
 }
 
-void destroy()
+void module_register()
+{
+
+    system_registernode(&root);
+
+}
+
+void module_unregister()
 {
 
     system_unregisternode(&root);

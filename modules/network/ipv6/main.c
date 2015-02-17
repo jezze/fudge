@@ -14,15 +14,21 @@ void protocol_notify(struct ethernet_interface *interface, unsigned int count, v
 
 }
 
-void init()
+void module_init()
 {
 
     ethernet_initprotocol(&protocol, "ipv6", 0x86DD, protocol_notify);
+
+}
+
+void module_register()
+{
+
     ethernet_registerprotocol(&protocol);
 
 }
 
-void destroy()
+void module_unregister()
 {
 
     ethernet_unregisterprotocol(&protocol);

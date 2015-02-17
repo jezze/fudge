@@ -51,7 +51,7 @@ struct acpi_sdth *acpi_findheader(char *name)
 
 }
 
-void init()
+void module_init()
 {
 
     struct acpi_rsdp *rsdp = findrsdp();
@@ -66,7 +66,12 @@ void init()
 
 }
 
-void destroy()
+void module_register()
+{
+
+}
+
+void module_unregister()
 {
 
 }

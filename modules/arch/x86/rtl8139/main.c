@@ -304,15 +304,21 @@ static void driver_detach(struct base_driver *self, struct base_bus *bus, unsign
 
 }
 
-void init()
+void module_init()
 {
 
     base_initdriver(&driver, "rtl8139", driver_init, driver_match, driver_attach, driver_detach);
+
+}
+
+void module_register()
+{
+
     base_registerdriver(&driver);
 
 }
 
-void destroy()
+void module_unregister()
 {
 
     base_unregisterdriver(&driver);

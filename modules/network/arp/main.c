@@ -59,16 +59,22 @@ void arp_inithook(struct arp_hook *hook, unsigned short ptype, void (*notify)(st
 
 }
 
-void init()
+void module_init()
 {
 
     list_init(&hooks);
     ethernet_initprotocol(&protocol, "arp", 0x0806, protocol_notify);
+
+}
+
+void module_register()
+{
+
     ethernet_registerprotocol(&protocol);
 
 }
 
-void destroy()
+void module_unregister()
 {
 
     ethernet_unregisterprotocol(&protocol);

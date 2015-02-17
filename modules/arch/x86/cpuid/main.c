@@ -1,7 +1,7 @@
 #include <fudge.h>
 #include "cpuid.h"
 
-void init()
+void module_init()
 {
 
     if (!cpuid_check())
@@ -9,7 +9,12 @@ void init()
 
 }
 
-void destroy()
+void module_register()
+{
+
+}
+
+void module_unregister()
 {
 
 }

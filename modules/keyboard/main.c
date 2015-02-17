@@ -80,15 +80,21 @@ void keyboard_initinterface(struct keyboard_interface *interface, struct base_dr
 
 }
 
-void init()
+void module_init()
 {
 
     system_initnode(&root, SYSTEM_NODETYPE_GROUP, "keyboard");
+
+}
+
+void module_register()
+{
+
     system_registernode(&root);
 
 }
 
-void destroy()
+void module_unregister()
 {
 
     system_unregisternode(&root);

@@ -301,23 +301,29 @@ static unsigned int reset_write(struct system_node *self, unsigned int offset, u
 
 }
 
-void init()
+void module_init()
 {
 
     base_initbus(&bus, PS2_BUS_TYPE, "ps2", bus_setup, bus_next, bus_irq);
-    base_registerbus(&bus);
     system_initnode(&reset, SYSTEM_NODETYPE_NORMAL, "reset");
-    system_registernode(&reset);
 
     reset.write = reset_write;
 
 }
 
-void destroy()
+void module_register()
 {
 
-    system_unregisternode(&reset);
+    base_registerbus(&bus);
+    system_registernode(&reset);
+
+}
+
+void module_unregister()
+{
+
     base_unregisterbus(&bus);
+    system_unregisternode(&reset);
 
 }
 

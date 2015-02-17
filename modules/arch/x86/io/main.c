@@ -1,12 +1,17 @@
 #include <fudge.h>
 #include "io.h"
 
-void init()
+void module_init()
 {
 
 }
 
-void destroy()
+void module_register()
+{
+
+}
+
+void module_unregister()
 {
 
 }

@@ -49,15 +49,21 @@ void block_initinterface(struct block_interface *interface, struct base_driver *
 
 }
 
-void init()
+void module_init()
 {
 
     system_initnode(&root, SYSTEM_NODETYPE_GROUP, "block");
+
+}
+
+void module_register()
+{
+
     system_registernode(&root);
 
 }
 
-void destroy()
+void module_unregister()
 {
 
     system_unregisternode(&root);

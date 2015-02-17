@@ -288,7 +288,8 @@ static unsigned int load(struct container *self, struct task *task, void *stack)
     struct vfs_descriptor *descriptor = getdescriptor(task, args->descriptor);
     struct binary_protocol *protocol;
     unsigned long physical;
-    void (*init)();
+    void (*module_init)();
+    void (*module_register)();
 
     if (!descriptor || !descriptor->id || !descriptor->channel)
         return 0;
@@ -310,12 +311,14 @@ static unsigned int load(struct container *self, struct task *task, void *stack)
     if (!protocol->relocate(descriptor->channel, descriptor->id, physical))
         return 0;
 
-    init = (void (*)())(protocol->findsymbol(descriptor->channel, descriptor->id, 4, "init"));
+    module_init = (void (*)())(protocol->findsymbol(descriptor->channel, descriptor->id, 11, "module_init"));
+    module_register = (void (*)())(protocol->findsymbol(descriptor->channel, descriptor->id, 15, "module_register"));
 
-    if (!init)
+    if (!module_init || !module_register)
         return 0;
 
-    init();
+    module_init();
+    module_register();
 
     return 1;
 
@@ -327,7 +330,7 @@ static unsigned int unload(struct container *self, struct task *task, void *stac
     struct {void *caller; unsigned int descriptor;} *args = stack;
     struct vfs_descriptor *descriptor = getdescriptor(task, args->descriptor);
     struct binary_protocol *protocol;
-    void (*destroy)();
+    void (*module_unregister)();
 
     if (!descriptor || !descriptor->id || !descriptor->channel)
         return 0;
@@ -337,12 +340,12 @@ static unsigned int unload(struct container *self, struct task *task, void *stac
     if (!protocol)
         return 0;
 
-    destroy = (void (*)())(protocol->findsymbol(descriptor->channel, descriptor->id, 7, "destroy"));
+    module_unregister = (void (*)())(protocol->findsymbol(descriptor->channel, descriptor->id, 17, "module_unregister"));
 
-    if (!destroy)
+    if (!module_unregister)
         return 0;
 
-    destroy();
+    module_unregister();
 
     return 1;
 

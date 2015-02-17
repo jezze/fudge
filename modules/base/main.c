@@ -126,12 +126,17 @@ void base_initinterface(struct base_interface *interface, struct base_driver *dr
 
 }
 
-void init()
+void module_init()
 {
 
 }
 
-void destroy()
+void module_register()
+{
+
+}
+
+void module_unregister()
 {
 
 }

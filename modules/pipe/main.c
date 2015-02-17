@@ -81,7 +81,7 @@ static unsigned int endpoint1_write(struct system_node *self, unsigned int offse
 
 }
 
-void init()
+void module_init()
 {
 
     list_init(&endpoint0.mailboxes);
@@ -103,11 +103,17 @@ void init()
     system_initnode(&root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, "pipe");
     system_addchild(&root, &endpoint0.node);
     system_addchild(&root, &endpoint1.node);
+
+}
+
+void module_register()
+{
+
     system_registernode(&root);
 
 }
 
-void destroy()
+void module_unregister()
 {
 
     system_unregisternode(&root);

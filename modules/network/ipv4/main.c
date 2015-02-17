@@ -139,17 +139,23 @@ void ipv4_initprotocol(struct ipv4_protocol *protocol, char *name, unsigned char
 
 }
 
-void init()
+void module_init()
 {
 
     ethernet_initprotocol(&protocol, "ipv4", 0x0800, protocol_notify);
-    ethernet_registerprotocol(&protocol);
     arp_inithook(&arphook, protocol.type, arphook_notify);
+
+}
+
+void module_register()
+{
+
+    ethernet_registerprotocol(&protocol);
     arp_registerhook(&arphook);
 
 }
 
-void destroy()
+void module_unregister()
 {
 
     ethernet_unregisterprotocol(&protocol);

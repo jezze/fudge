@@ -170,18 +170,24 @@ static unsigned short bus_irq(struct base_bus *self, unsigned int id)
 
 }
 
-void init()
+void module_init()
 {
 
     devices.count = 0;
     memory_clear(devices.address, sizeof (unsigned int) * 64);
 
     base_initbus(&bus, PCI_BUS_TYPE, "pci", bus_setup, bus_next, bus_irq);
+
+}
+
+void module_register()
+{
+
     base_registerbus(&bus);
 
 }
 
-void destroy()
+void module_unregister()
 {
 
     base_unregisterbus(&bus);
