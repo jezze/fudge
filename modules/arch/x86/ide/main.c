@@ -340,45 +340,6 @@ void ide_wlba48a(unsigned int id, unsigned int slave, unsigned int sectorlow, un
 
 }
 
-/*
-static unsigned int detect(struct ide_bus *bus, unsigned int slave)
-{
-
-    unsigned char buffer[512];
-    unsigned char status;
-    unsigned short lba;
-
-    select(bus, 0xA0, slave);
-    setlba(bus, 0, 0, 0, 0);
-    setcommand(bus, IDE_CONTROL_IDATA);
-    rblocks(bus, 1, buffer);
-
-    status = io_inb(bus->data + IDE_DATA_COMMAND);
-
-    if (!status)
-        return 0;
-
-    wait(bus->data);
-
-    lba = (io_inb(bus->data + IDE_DATA_LBA2) << 8) | io_inb(bus->data + IDE_DATA_LBA1);
-
-    if (lba == 0x0000)
-        return IDE_DEVICE_TYPE_ATA;
-
-    if (lba == 0xEB14)
-        return IDE_DEVICE_TYPE_ATAPI;
-
-    if (lba == 0xC33C)
-        return IDE_DEVICE_TYPE_SATA;
-
-    if (lba == 0x9669)
-        return IDE_DEVICE_TYPE_SATAPI;
-
-    return 0;
-
-}
-*/
-
 static void bus_setup()
 {
 

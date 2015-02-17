@@ -52,49 +52,49 @@ static void handleirq(unsigned int irq, unsigned int id)
 
 }
 
-static unsigned char clockinterface_getseconds(struct base_bus *bus, unsigned int id)
+static unsigned char clockinterface_getseconds()
 {
 
     return read(0x00);
 
 }
 
-static unsigned char clockinterface_getminutes(struct base_bus *bus, unsigned int id)
+static unsigned char clockinterface_getminutes()
 {
 
     return read(0x02);
 
 }
 
-static unsigned char clockinterface_gethours(struct base_bus *bus, unsigned int id)
+static unsigned char clockinterface_gethours()
 {
 
     return read(0x04);
 
 }
 
-static unsigned char clockinterface_getweekday(struct base_bus *bus, unsigned int id)
+static unsigned char clockinterface_getweekday()
 {
 
     return read(0x06);
 
 }
 
-static unsigned char clockinterface_getday(struct base_bus *bus, unsigned int id)
+static unsigned char clockinterface_getday()
 {
 
     return read(0x07);
 
 }
 
-static unsigned char clockinterface_getmonth(struct base_bus *bus, unsigned int id)
+static unsigned char clockinterface_getmonth()
 {
 
     return read(0x08);
 
 }
 
-static unsigned short clockinterface_getyear(struct base_bus *bus, unsigned int id)
+static unsigned short clockinterface_getyear()
 {
 
     return 2000 + read(0x09);
