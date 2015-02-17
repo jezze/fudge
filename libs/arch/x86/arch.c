@@ -6,6 +6,7 @@
 #include <kernel/scheduler.h>
 #include <kernel/container.h>
 #include <kernel/kernel.h>
+#include <kernel/request.h>
 #include "cpu.h"
 #include "arch.h"
 #include "gdt.h"
@@ -180,7 +181,7 @@ static void taskload(struct task *task, struct cpu_general *general)
 
 }
 
-static unsigned int spawn(struct container *self, struct task *task, void *stack)
+static unsigned int spawn(struct container *container, struct task *task, void *stack)
 {
 
     struct {void *caller; unsigned int shift;} *args = stack;
@@ -205,18 +206,18 @@ static unsigned int spawn(struct container *self, struct task *task, void *stack
 
     }
 
-    taskmapcontainer(next, self);
+    taskmapcontainer(next, container);
     scheduler_use(next);
     taskactivate(next);
 
-    next->state.registers.ip = self->calls[CONTAINER_CALL_EXECUTE](self, next, 0);
+    next->state.registers.ip = request_call(REQUEST_EXECUTE, container, next, 0);
     next->state.registers.sp = ARCH_TASK_STACKLIMIT;
 
     return 1;
 
 }
 
-static unsigned int despawn(struct container *self, struct task *task, void *stack)
+static unsigned int despawn(struct container *container, struct task *task, void *stack)
 {
 
     unsigned int i;
@@ -229,7 +230,7 @@ static unsigned int despawn(struct container *self, struct task *task, void *sta
 
     }
 
-    taskmapcontainer(task, self);
+    taskmapcontainer(task, container);
     scheduler_unuse(task);
 
     return 0;
@@ -336,7 +337,7 @@ unsigned short arch_syscall(void *stack)
 
     struct {struct cpu_general general; struct cpu_interrupt interrupt;} *registers = stack;
 
-    registers->general.eax = (current.container->calls[registers->general.eax]) ? current.container->calls[registers->general.eax](current.container, current.task, (void *)registers->interrupt.esp) : 0;
+    registers->general.eax = request_call(registers->general.eax, current.container, current.task, (void *)registers->interrupt.esp);
 
     return arch_schedule(&registers->general, &registers->interrupt);
 
@@ -371,7 +372,7 @@ static void setupcontainer(struct arch_container *container, unsigned int i)
     struct mmu_directory *directories = (struct mmu_directory *)ARCH_DIRECTORY_KCODE_BASE;
     struct mmu_table *tables = (struct mmu_table *)ARCH_TABLE_KCODE_BASE;
 
-    container_init(&container->base, spawn, despawn);
+    container_init(&container->base);
 
     container->directory = directories + i;
     container->table = tables + i * ARCH_CONTAINER_MAPPINGS;
@@ -434,6 +435,7 @@ void arch_setup(unsigned int count, struct kernel_module *modules)
 
     setupbasic();
     kernel_setup();
+    request_setup(spawn, despawn);
 
     current.container = setupcontainers();
     current.task = setuptasks();

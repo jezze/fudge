@@ -6,6 +6,7 @@
 #include <kernel/scheduler.h>
 #include <kernel/container.h>
 #include <kernel/kernel.h>
+#include <kernel/request.h>
 #include "cpu.h"
 #include "arch.h"
 #include "kmi.h"
@@ -39,14 +40,14 @@ static struct
 
 } current;
 
-static unsigned int spawn(struct container *self, struct task *task, void *stack)
+static unsigned int spawn(struct container *container, struct task *task, void *stack)
 {
 
     return 0;
 
 }
 
-static unsigned int despawn(struct container *self, struct task *task, void *stack)
+static unsigned int despawn(struct container *container, struct task *task, void *stack)
 {
 
     return 0;
@@ -106,7 +107,7 @@ static void setupbasic()
 static void setupcontainer(struct arch_container *container, unsigned int i)
 {
 
-    container_init(&container->base, spawn, despawn);
+    container_init(&container->base);
 
 }
 
@@ -148,6 +149,7 @@ void arch_setup()
 
     setupbasic();
     kernel_setup();
+    request_setup(spawn, despawn);
 
     current.container = setupcontainers();
     current.task = setuptasks();
