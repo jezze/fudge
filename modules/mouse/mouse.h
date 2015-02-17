@@ -3,7 +3,6 @@ struct mouse_interfacenode
 
     struct system_node base;
     struct system_node data;
-    struct mouse_interface *interface;
 
 };
 
@@ -11,7 +10,6 @@ struct mouse_interface
 {
 
     struct base_interface base;
-    struct list mailboxes;
     struct mouse_interfacenode node;
 
 };

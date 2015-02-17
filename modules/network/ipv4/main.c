@@ -15,45 +15,7 @@ static struct arp_hook arphook;
 static void protocol_notify(struct ethernet_interface *interface, unsigned int count, void *buffer)
 {
 
-    scheduler_mailboxes_send(&protocol.mailboxes, count, buffer);
-
-}
-
-static unsigned int protocolnode_dataopen(struct system_node *self)
-{
-
-    struct ipv4_protocolnode *node = (struct ipv4_protocolnode *)self->parent;
-
-    scheduler_mailboxes_addactive(&node->protocol->mailboxes);
-
-    return system_open(self);
-
-}
-
-static unsigned int protocolnode_dataclose(struct system_node *self)
-{
-
-    struct ipv4_protocolnode *node = (struct ipv4_protocolnode *)self->parent;
-
-    scheduler_mailboxes_removeactive(&node->protocol->mailboxes);
-
-    return system_close(self);
-
-}
-
-static unsigned int protocolnode_dataread(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
-{
-
-    struct ipv4_protocolnode *node = (struct ipv4_protocolnode *)self->parent;
-
-    return scheduler_mailboxes_readactive(&node->protocol->mailboxes, count, buffer);
-
-}
-
-static unsigned int protocolnode_datawrite(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
-{
-
-    return 0;
+    scheduler_mailboxes_send(&protocol.node.data.mailboxes, count, buffer);
 
 }
 
@@ -122,20 +84,15 @@ void ipv4_unregisterprotocol(struct ipv4_protocol *p)
 void ipv4_initprotocol(struct ipv4_protocol *protocol, char *name, unsigned char id, void (*notify)(struct ethernet_interface *interface, unsigned int count, void *buffer))
 {
 
-    list_init(&protocol->mailboxes);
     list_inititem(&protocol->item, protocol);
 
     protocol->id = id;
     protocol->notify = notify;
 
     system_initnode(&protocol->node.base, SYSTEM_NODETYPE_GROUP, name);
-    system_initnode(&protocol->node.data, SYSTEM_NODETYPE_NORMAL, "data");
+    system_initnode(&protocol->node.data, SYSTEM_NODETYPE_MAILBOX, "data");
 
     protocol->node.protocol = protocol;
-    protocol->node.data.open = protocolnode_dataopen;
-    protocol->node.data.close = protocolnode_dataclose;
-    protocol->node.data.read = protocolnode_dataread;
-    protocol->node.data.write = protocolnode_datawrite;
 
 }
 

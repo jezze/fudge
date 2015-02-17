@@ -31,7 +31,7 @@ void protocol_notify(struct ethernet_interface *interface, unsigned int count, v
 
     }
 
-    scheduler_mailboxes_send(&protocol.mailboxes, count, buffer);
+    scheduler_mailboxes_send(&protocol.node.data.mailboxes, count, buffer);
 
 }
 

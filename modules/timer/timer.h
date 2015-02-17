@@ -3,7 +3,6 @@ struct timer_interfacenode
 
     struct system_node base;
     struct system_node sleep;
-    struct timer_interface *interface;
 
 };
 
@@ -11,7 +10,6 @@ struct timer_interface
 {
 
     struct base_interface base;
-    struct list mailboxes;
     struct timer_interfacenode node;
 
 };

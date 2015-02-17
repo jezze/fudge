@@ -4,7 +4,8 @@ enum system_nodetype
     SYSTEM_NODETYPE_NORMAL              = 0,
     SYSTEM_NODETYPE_GROUP               = 1,
     SYSTEM_NODETYPE_MULTI               = 2,
-    SYSTEM_NODETYPE_MERGE               = 4
+    SYSTEM_NODETYPE_MERGE               = 4,
+    SYSTEM_NODETYPE_MAILBOX             = 8
 
 };
 
@@ -22,6 +23,7 @@ struct system_node
     struct list_item item;
     struct system_node *parent;
     struct list children;
+    struct list mailboxes;
     enum system_nodetype type;
     const char *name;
     unsigned int index;

@@ -10,7 +10,7 @@ static struct ethernet_protocol protocol;
 void protocol_notify(struct ethernet_interface *interface, unsigned int count, void *buffer)
 {
 
-    scheduler_mailboxes_send(&protocol.mailboxes, count, buffer);
+    scheduler_mailboxes_send(&protocol.node.data.mailboxes, count, buffer);
 
 }
 

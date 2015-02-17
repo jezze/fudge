@@ -14,7 +14,6 @@ struct console_interface
 
     struct base_interface base;
     struct ctrl_consolesettings settings;
-    struct list mailboxes;
     unsigned int (*send)(unsigned int offset, unsigned int count, void *buffer);
     struct console_interfacenode node;
 

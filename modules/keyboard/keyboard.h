@@ -3,7 +3,6 @@ struct keyboard_interfacenode
 
     struct system_node base;
     struct system_node data;
-    struct keyboard_interface *interface;
 
 };
 
@@ -11,7 +10,6 @@ struct keyboard_interface
 {
 
     struct base_interface base;
-    struct list mailboxes;
     struct keyboard_interfacenode node;
 
 };
