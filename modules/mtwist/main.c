@@ -1,7 +1,6 @@
 #include <fudge.h>
 #include <kernel.h>
 #include <system/system.h>
-#include <base/base.h>
 
 #define MTWIST_VECTORS                  624
 #define MTWIST_SEED                     4357

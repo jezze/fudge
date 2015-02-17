@@ -3,7 +3,6 @@
 #include <kernel/kernel.h>
 #include <arch/x86/cpu.h>
 #include <arch/x86/arch.h>
-#include <base/base.h>
 #include <arch/x86/io/io.h>
 #include "pic.h"
 
