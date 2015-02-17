@@ -76,7 +76,7 @@ enum ide_id
 };
 
 static struct base_driver driver;
-static struct base_bus idebus;
+static struct base_bus bus;
 static unsigned short pcontrol;
 static unsigned short scontrol;
 static unsigned short pdata;
@@ -358,7 +358,7 @@ static unsigned int bus_next(unsigned int id)
 static void driver_init()
 {
 
-    base_initbus(&idebus, IDE_BUS_TYPE, "ide", bus_setup, bus_next);
+    base_initbus(&bus, IDE_BUS_TYPE, "ide", bus_setup, bus_next);
 
 }
 
@@ -384,14 +384,14 @@ static void driver_attach(unsigned int id)
     scontrol = (bar3 & 0xFFFFFFFC) + 0x376 * (!bar3);
     busmaster = (bar4 & 0xFFFFFFFC) + 8;
 
-    base_registerbus(&idebus);
+    base_registerbus(&bus);
 
 }
 
 static void driver_detach(unsigned int id)
 {
 
-    base_unregisterbus(&idebus);
+    base_unregisterbus(&bus);
 
 }
 
