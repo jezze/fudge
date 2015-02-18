@@ -438,7 +438,6 @@ void arch_setup(unsigned int count, struct kernel_module *modules)
     current.container = setupcontainers();
     current.task = setuptasks();
 
-    scheduler_use(current.task);
     setupmmu(current.container, current.task);
     kernel_setupmodules(current.container, current.task, count, modules);
     arch_usermode(selector.ucode, selector.udata, current.task->state.registers.ip, current.task->state.registers.sp);

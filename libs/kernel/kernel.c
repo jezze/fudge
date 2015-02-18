@@ -414,6 +414,8 @@ void kernel_setupmodules(struct container *container, struct task *task, unsigne
         if (!protocol)
             continue;
 
+        scheduler_use(task);
+
         task->state.registers.ip = protocol->copyprogram(init->channel, init->id);
 
     }

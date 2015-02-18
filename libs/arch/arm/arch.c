@@ -165,8 +165,6 @@ void arch_setup()
     uart_puts("\n");
 */
 
-    scheduler_use(current.task);
-
     uart_puts("Loop forever...\n");
 
     for (;;);
