@@ -1,18 +1,10 @@
-struct clock_interfacenode
-{
-
-    struct system_node base;
-    struct system_node timestamp;
-    struct system_node date;
-    struct system_node time;
-    struct clock_interface *interface;
-
-};
-
 struct clock_interface
 {
 
-    struct base_interface base;
+    struct system_interface base;
+    struct system_node timestamp;
+    struct system_node date;
+    struct system_node time;
     unsigned char (*getseconds)();
     unsigned char (*getminutes)();
     unsigned char (*gethours)();
@@ -20,7 +12,6 @@ struct clock_interface
     unsigned char (*getday)();
     unsigned char (*getmonth)();
     unsigned short (*getyear)();
-    struct clock_interfacenode node;
 
 };
 

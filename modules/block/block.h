@@ -1,19 +1,10 @@
-struct block_interfacenode
-{
-
-    struct system_node base;
-    struct system_node data;
-    struct block_interface *interface;
-
-};
-
 struct block_interface
 {
 
-    struct base_interface base;
+    struct system_interface base;
+    struct system_node data;
     unsigned int (*rdata)(unsigned int offset, unsigned int count, void *buffer);
     unsigned int (*wdata)(unsigned int offset, unsigned int count, void *buffer);
-    struct block_interfacenode node;
 
 };
 

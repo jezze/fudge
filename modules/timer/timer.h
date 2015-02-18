@@ -1,16 +1,8 @@
-struct timer_interfacenode
-{
-
-    struct system_node base;
-    struct system_node sleep;
-
-};
-
 struct timer_interface
 {
 
-    struct base_interface base;
-    struct timer_interfacenode node;
+    struct system_interface base;
+    struct system_node sleep;
 
 };
 

@@ -1,21 +1,12 @@
-struct console_interfacenode
-{
-
-    struct system_node base;
-    struct system_node ctrl;
-    struct system_node in;
-    struct system_node out;
-    struct console_interface *interface;
-
-};
-
 struct console_interface
 {
 
-    struct base_interface base;
+    struct system_interface base;
+    struct system_node ctrl;
+    struct system_node in;
+    struct system_node out;
     struct ctrl_consolesettings settings;
     unsigned int (*send)(unsigned int offset, unsigned int count, void *buffer);
-    struct console_interfacenode node;
 
 };
 

@@ -1,19 +1,11 @@
-struct ipv4_protocolnode
-{
-
-    struct system_node base;
-    struct system_node data;
-    struct ipv4_protocol *protocol;
-
-};
-
 struct ipv4_protocol
 {
 
     struct list_item item;
     unsigned char id;
     void (*notify)(struct ethernet_interface *interface, unsigned int count, void *buffer);
-    struct ipv4_protocolnode node;
+    struct system_node root;
+    struct system_node data;
 
 };
 

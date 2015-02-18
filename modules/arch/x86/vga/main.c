@@ -1,7 +1,7 @@
 #include <fudge.h>
 #include <kernel.h>
-#include <system/system.h>
 #include <base/base.h>
+#include <system/system.h>
 #include <console/console.h>
 #include <video/video.h>
 #include <arch/x86/io/io.h>

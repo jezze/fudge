@@ -1,29 +1,11 @@
-struct ethernet_interfacenode
-{
-
-    struct system_node base;
-    struct system_node ctrl;
-    struct system_node data;
-    struct ethernet_interface *interface;
-
-};
-
 struct ethernet_interface
 {
 
-    struct base_interface base;
+    struct system_interface base;
+    struct system_node ctrl;
+    struct system_node data;
     struct ctrl_networksettings settings;
     unsigned int (*send)(unsigned int count, void *buffer);
-    struct ethernet_interfacenode node;
-
-};
-
-struct ethernet_protocolnode
-{
-
-    struct system_node base;
-    struct system_node data;
-    struct ethernet_protocol *protocol;
 
 };
 
@@ -34,7 +16,8 @@ struct ethernet_protocol
     struct list_item item;
     unsigned int type;
     void (*notify)(struct ethernet_interface *interface, unsigned int count, void *buffer);
-    struct ethernet_protocolnode node;
+    struct system_node root;
+    struct system_node data;
 
 };
 

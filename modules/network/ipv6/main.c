@@ -2,7 +2,6 @@
 #include <net/ipv6.h>
 #include <kernel.h>
 #include <system/system.h>
-#include <base/base.h>
 #include <network/ethernet/ethernet.h>
 
 static struct ethernet_protocol protocol;
@@ -10,7 +9,7 @@ static struct ethernet_protocol protocol;
 void protocol_notify(struct ethernet_interface *interface, unsigned int count, void *buffer)
 {
 
-    scheduler_mailboxes_send(&protocol.node.data.mailboxes, count, buffer);
+    scheduler_mailboxes_send(&protocol.data.mailboxes, count, buffer);
 
 }
 

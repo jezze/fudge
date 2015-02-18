@@ -1,6 +1,7 @@
 #include <fudge.h>
 #include <kernel.h>
 #include <base/base.h>
+#include <system/system.h>
 #include <arch/x86/io/io.h>
 #include <arch/x86/pci/pci.h>
 #include "ide.h"

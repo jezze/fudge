@@ -1,10 +1,10 @@
+/bin/modload < /boot/mod/base.ko
 /bin/modload < /boot/mod/system.ko
 /bin/modload < /boot/mod/event.ko
 /bin/modload < /boot/mod/log.ko
 /bin/modload < /boot/mod/io.ko
 /bin/modload < /boot/mod/cpuid.ko
 /bin/modload < /boot/mod/msr.ko
-/bin/modload < /boot/mod/base.ko
 /bin/modload < /boot/mod/block.ko
 /bin/modload < /boot/mod/clock.ko
 /bin/modload < /boot/mod/console.ko

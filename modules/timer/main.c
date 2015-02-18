@@ -1,7 +1,7 @@
 #include <fudge.h>
 #include <kernel.h>
-#include <system/system.h>
 #include <base/base.h>
+#include <system/system.h>
 #include "timer.h"
 
 static struct system_node root;
@@ -9,34 +9,33 @@ static struct system_node root;
 void timer_notify(struct timer_interface *interface, unsigned int count, void *buffer)
 {
 
-    scheduler_mailboxes_send(&interface->node.sleep.mailboxes, count, buffer);
+    scheduler_mailboxes_send(&interface->sleep.mailboxes, count, buffer);
 
 }
 
 void timer_registerinterface(struct timer_interface *interface, unsigned int id)
 {
 
-    base_registerinterface(&interface->base, id);
-    system_addchild(&root, &interface->node.base);
-    system_addchild(&interface->node.base, &interface->node.sleep);
+    system_registerinterface(&interface->base, id);
+    system_addchild(&interface->base.root, &interface->sleep);
+    system_addchild(&root, &interface->base.root);
 
 }
 
 void timer_unregisterinterface(struct timer_interface *interface)
 {
 
-    base_unregisterinterface(&interface->base);
-    system_removechild(&interface->node.base, &interface->node.sleep);
-    system_removechild(&root, &interface->node.base);
+    system_unregisterinterface(&interface->base);
+    system_removechild(&interface->base.root, &interface->sleep);
+    system_removechild(&root, &interface->base.root);
 
 }
 
 void timer_initinterface(struct timer_interface *interface, struct base_driver *driver)
 {
 
-    base_initinterface(&interface->base, driver);
-    system_initnode(&interface->node.base, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, driver->name);
-    system_initnode(&interface->node.sleep, SYSTEM_NODETYPE_MAILBOX, "sleep");
+    system_initinterface(&interface->base, driver);
+    system_initnode(&interface->sleep, SYSTEM_NODETYPE_MAILBOX, "sleep");
 
 }
 

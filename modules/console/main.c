@@ -1,7 +1,7 @@
 #include <fudge.h>
 #include <kernel.h>
-#include <system/system.h>
 #include <base/base.h>
+#include <system/system.h>
 #include <event/event.h>
 #include "console.h"
 
@@ -10,7 +10,7 @@ static struct system_node root;
 void console_notify(struct console_interface *interface, unsigned int count, void *buffer)
 {
 
-    scheduler_mailboxes_send(&interface->node.in.mailboxes, count, buffer);
+    scheduler_mailboxes_send(&interface->in.mailboxes, count, buffer);
     event_notify(EVENT_TYPE_CONSOLE, count, buffer);
 
 }
@@ -18,69 +18,65 @@ void console_notify(struct console_interface *interface, unsigned int count, voi
 static unsigned int interfacenode_ctrlread(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct console_interfacenode *node = (struct console_interfacenode *)self->parent;
+    struct console_interface *interface = (struct console_interface *)self->parent;
 
-    return memory_read(buffer, count, &node->interface->settings, sizeof (struct ctrl_consolesettings), offset);
+    return memory_read(buffer, count, &interface->settings, sizeof (struct ctrl_consolesettings), offset);
 
 }
 
 static unsigned int interfacenode_ctrlwrite(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct console_interfacenode *node = (struct console_interfacenode *)self->parent;
+    struct console_interface *interface = (struct console_interface *)self->parent;
 
-    return memory_write(&node->interface->settings, sizeof (struct ctrl_consolesettings), buffer, count, offset);
+    return memory_write(&interface->settings, sizeof (struct ctrl_consolesettings), buffer, count, offset);
 
 }
 
 static unsigned int interfacenode_outwrite(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct console_interfacenode *node = (struct console_interfacenode *)self->parent;
+    struct console_interface *interface = (struct console_interface *)self->parent;
 
-    return node->interface->send(offset, count, buffer);
+    return interface->send(offset, count, buffer);
 
 }
 
 void console_registerinterface(struct console_interface *interface, unsigned int id)
 {
 
-    base_registerinterface(&interface->base, id);
-    system_addchild(&root, &interface->node.base);
-    system_addchild(&interface->node.base, &interface->node.ctrl);
-    system_addchild(&interface->node.base, &interface->node.in);
-    system_addchild(&interface->node.base, &interface->node.out);
+    system_registerinterface(&interface->base, id);
+    system_addchild(&interface->base.root, &interface->ctrl);
+    system_addchild(&interface->base.root, &interface->in);
+    system_addchild(&interface->base.root, &interface->out);
+    system_addchild(&root, &interface->base.root);
 
 }
 
 void console_unregisterinterface(struct console_interface *interface)
 {
 
-    base_unregisterinterface(&interface->base);
-    system_removechild(&interface->node.base, &interface->node.ctrl);
-    system_removechild(&interface->node.base, &interface->node.in);
-    system_removechild(&interface->node.base, &interface->node.out);
-    system_removechild(&root, &interface->node.base);
+    system_unregisterinterface(&interface->base);
+    system_removechild(&interface->base.root, &interface->ctrl);
+    system_removechild(&interface->base.root, &interface->in);
+    system_removechild(&interface->base.root, &interface->out);
+    system_removechild(&root, &interface->base.root);
 
 }
 
 void console_initinterface(struct console_interface *interface, struct base_driver *driver, unsigned int (*send)(unsigned int offset, unsigned int count, void *buffer))
 {
 
-    base_initinterface(&interface->base, driver);
+    system_initinterface(&interface->base, driver);
+    system_initnode(&interface->ctrl, SYSTEM_NODETYPE_NORMAL, "ctrl");
+    system_initnode(&interface->in, SYSTEM_NODETYPE_MAILBOX, "in");
+    system_initnode(&interface->out, SYSTEM_NODETYPE_NORMAL, "out");
     ctrl_init_consolesettings(&interface->settings);
 
     interface->send = send;
-
-    system_initnode(&interface->node.base, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, driver->name);
-    system_initnode(&interface->node.ctrl, SYSTEM_NODETYPE_NORMAL, "ctrl");
-    system_initnode(&interface->node.in, SYSTEM_NODETYPE_MAILBOX, "in");
-    system_initnode(&interface->node.out, SYSTEM_NODETYPE_NORMAL, "out");
-
-    interface->node.interface = interface;
-    interface->node.ctrl.read = interfacenode_ctrlread;
-    interface->node.ctrl.write = interfacenode_ctrlwrite;
-    interface->node.out.write = interfacenode_outwrite;
+    interface->ctrl.read = interfacenode_ctrlread;
+    interface->ctrl.write = interfacenode_ctrlwrite;
+    interface->out.write = interfacenode_outwrite;
 
 }
 

@@ -1,7 +1,7 @@
 #include <fudge.h>
 #include <kernel.h>
-#include <system/system.h>
 #include <base/base.h>
+#include <system/system.h>
 #include <timer/timer.h>
 #include <arch/x86/pic/pic.h>
 #include <arch/x86/io/io.h>

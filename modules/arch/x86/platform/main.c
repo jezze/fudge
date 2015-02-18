@@ -1,6 +1,7 @@
 #include <fudge.h>
 #include <kernel.h>
 #include <base/base.h>
+#include <system/system.h>
 #include "platform.h"
 
 enum platform_register

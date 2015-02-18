@@ -1,7 +1,7 @@
 #include <fudge.h>
 #include <kernel.h>
-#include <system/system.h>
 #include <base/base.h>
+#include <system/system.h>
 #include <keyboard/keyboard.h>
 #include <arch/x86/pic/pic.h>
 #include <arch/x86/ps2/ps2.h>

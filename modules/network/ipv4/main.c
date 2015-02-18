@@ -3,7 +3,6 @@
 #include <net/ipv4.h>
 #include <kernel.h>
 #include <system/system.h>
-#include <base/base.h>
 #include <network/ethernet/ethernet.h>
 #include <network/arp/arp.h>
 #include "ipv4.h"
@@ -15,7 +14,7 @@ static struct arp_hook arphook;
 static void protocol_notify(struct ethernet_interface *interface, unsigned int count, void *buffer)
 {
 
-    scheduler_mailboxes_send(&protocol.node.data.mailboxes, count, buffer);
+    scheduler_mailboxes_send(&protocol.data.mailboxes, count, buffer);
 
 }
 
@@ -67,8 +66,8 @@ void ipv4_registerprotocol(struct ipv4_protocol *p)
 {
 
     list_add(&protocols, &p->item);
-    system_addchild(&protocol.node.base, &p->node.base);
-    system_addchild(&p->node.base, &p->node.data);
+    system_addchild(&p->root, &p->data);
+    system_addchild(&protocol.root, &p->root);
 
 }
 
@@ -76,8 +75,8 @@ void ipv4_unregisterprotocol(struct ipv4_protocol *p)
 {
 
     list_remove(&protocols, &p->item);
-    system_removechild(&p->node.base, &p->node.data);
-    system_removechild(&protocol.node.base, &p->node.base);
+    system_removechild(&p->root, &p->data);
+    system_removechild(&protocol.root, &p->root);
 
 }
 
@@ -89,10 +88,8 @@ void ipv4_initprotocol(struct ipv4_protocol *protocol, char *name, unsigned char
     protocol->id = id;
     protocol->notify = notify;
 
-    system_initnode(&protocol->node.base, SYSTEM_NODETYPE_GROUP, name);
-    system_initnode(&protocol->node.data, SYSTEM_NODETYPE_MAILBOX, "data");
-
-    protocol->node.protocol = protocol;
+    system_initnode(&protocol->root, SYSTEM_NODETYPE_GROUP, name);
+    system_initnode(&protocol->data, SYSTEM_NODETYPE_MAILBOX, "data");
 
 }
 

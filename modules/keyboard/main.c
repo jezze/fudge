@@ -1,7 +1,7 @@
 #include <fudge.h>
 #include <kernel.h>
-#include <system/system.h>
 #include <base/base.h>
+#include <system/system.h>
 #include <event/event.h>
 #include "keyboard.h"
 
@@ -10,7 +10,7 @@ static struct system_node root;
 void keyboard_notify(struct keyboard_interface *interface, unsigned int count, void *buffer)
 {
 
-    scheduler_mailboxes_send(&interface->node.data.mailboxes, count, buffer);
+    scheduler_mailboxes_send(&interface->data.mailboxes, count, buffer);
     event_notify(EVENT_TYPE_KEYBOARD, count, buffer);
 
 }
@@ -18,27 +18,26 @@ void keyboard_notify(struct keyboard_interface *interface, unsigned int count, v
 void keyboard_registerinterface(struct keyboard_interface *interface, unsigned int id)
 {
 
-    base_registerinterface(&interface->base, id);
-    system_addchild(&root, &interface->node.base);
-    system_addchild(&interface->node.base, &interface->node.data);
+    system_registerinterface(&interface->base, id);
+    system_addchild(&interface->base.root, &interface->data);
+    system_addchild(&root, &interface->base.root);
 
 }
 
 void keyboard_unregisterinterface(struct keyboard_interface *interface)
 {
 
-    base_unregisterinterface(&interface->base);
-    system_removechild(&interface->node.base, &interface->node.data);
-    system_removechild(&root, &interface->node.base);
+    system_unregisterinterface(&interface->base);
+    system_removechild(&interface->base.root, &interface->data);
+    system_removechild(&root, &interface->base.root);
 
 }
 
 void keyboard_initinterface(struct keyboard_interface *interface, struct base_driver *driver)
 {
 
-    base_initinterface(&interface->base, driver);
-    system_initnode(&interface->node.base, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, driver->name);
-    system_initnode(&interface->node.data, SYSTEM_NODETYPE_MAILBOX, "data");
+    system_initinterface(&interface->base, driver);
+    system_initnode(&interface->data, SYSTEM_NODETYPE_MAILBOX, "data");
 
 }
 
