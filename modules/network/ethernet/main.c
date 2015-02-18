@@ -110,7 +110,7 @@ void ethernet_initinterface(struct ethernet_interface *interface, struct base_dr
 void ethernet_initprotocol(struct ethernet_protocol *protocol, char *name, unsigned short type, void (*notify)(struct ethernet_interface *interface, unsigned int count, void *buffer))
 {
 
-    resource_init(&protocol->resource, RESOURCE_TYPE_PROTONET, protocol);
+    resource_init(&protocol->resource, RESOURCE_PROTONET, protocol);
     list_inititem(&protocol->item, protocol);
 
     protocol->type = type;

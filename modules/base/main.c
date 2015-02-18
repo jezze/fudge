@@ -17,7 +17,7 @@ void base_registerdriver(struct base_driver *driver, unsigned int type)
 
     struct resource *current = 0;
 
-    while ((current = resource_findtype(current, RESOURCE_TYPE_BUS)))
+    while ((current = resource_findtype(current, RESOURCE_BUS)))
     {
 
         struct base_bus *bus = current->data;
@@ -64,7 +64,7 @@ void base_unregisterdriver(struct base_driver *driver, unsigned int type)
 
     struct resource *current = 0;
 
-    while ((current = resource_findtype(current, RESOURCE_TYPE_BUS)))
+    while ((current = resource_findtype(current, RESOURCE_BUS)))
     {
 
         struct base_bus *bus = current->data;
@@ -99,7 +99,7 @@ void base_unregisterinterface(struct base_interface *interface)
 void base_initbus(struct base_bus *bus, unsigned int type, const char *name, void (*setup)(), unsigned int (*next)(unsigned int id))
 {
 
-    resource_init(&bus->resource, RESOURCE_TYPE_BUS, bus);
+    resource_init(&bus->resource, RESOURCE_BUS, bus);
 
     bus->type = type;
     bus->name = name;
@@ -111,7 +111,7 @@ void base_initbus(struct base_bus *bus, unsigned int type, const char *name, voi
 void base_initdriver(struct base_driver *driver, const char *name, void (*init)(), unsigned int (*match)(unsigned int id), void (*attach)(unsigned int id), void (*detach)(unsigned int id))
 {
 
-    resource_init(&driver->resource, RESOURCE_TYPE_DRIVER, driver);
+    resource_init(&driver->resource, RESOURCE_DRIVER, driver);
 
     driver->name = name;
     driver->init = init;
@@ -124,7 +124,7 @@ void base_initdriver(struct base_driver *driver, const char *name, void (*init)(
 void base_initinterface(struct base_interface *interface, struct base_driver *driver)
 {
 
-    resource_init(&interface->resource, RESOURCE_TYPE_INTERFACE, interface);
+    resource_init(&interface->resource, RESOURCE_INTERFACE, interface);
 
     interface->driver = driver;
 

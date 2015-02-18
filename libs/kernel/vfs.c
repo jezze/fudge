@@ -7,7 +7,7 @@ struct vfs_backend *vfs_findbackend(unsigned int id)
 
     struct resource *current = 0;
 
-    while ((current = resource_findtype(current, RESOURCE_TYPE_BACKEND)))
+    while ((current = resource_findtype(current, RESOURCE_BACKEND)))
     {
 
         struct vfs_backend *backend = current->data;
@@ -26,7 +26,7 @@ struct vfs_protocol *vfs_findprotocol(struct vfs_backend *backend)
 
     struct resource *current = 0;
 
-    while ((current = resource_findtype(current, RESOURCE_TYPE_PROTOFS)))
+    while ((current = resource_findtype(current, RESOURCE_PROTOFS)))
     {
 
         struct vfs_protocol *protocol = current->data;
@@ -43,7 +43,7 @@ struct vfs_protocol *vfs_findprotocol(struct vfs_backend *backend)
 void vfs_initbackend(struct vfs_backend *backend, unsigned int id, unsigned int (*read)(struct vfs_backend *self, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write)(struct vfs_backend *self, unsigned int offset, unsigned int count, void *buffer))
 {
 
-    resource_init(&backend->resource, RESOURCE_TYPE_BACKEND, backend);
+    resource_init(&backend->resource, RESOURCE_BACKEND, backend);
 
     backend->id = id;
     backend->read = read;
@@ -54,7 +54,7 @@ void vfs_initbackend(struct vfs_backend *backend, unsigned int id, unsigned int 
 void vfs_initprotocol(struct vfs_protocol *protocol, unsigned int (*match)(struct vfs_backend *backend), unsigned int (*root)(struct vfs_backend *backend), unsigned int (*create)(struct vfs_backend *backend, unsigned int id, unsigned int count, const char *name), unsigned int (*destroy)(struct vfs_backend *backend, unsigned int id, unsigned int count, const char *name), unsigned int (*open)(struct vfs_backend *backend, unsigned int id), unsigned int (*close)(struct vfs_backend *backend, unsigned int id), unsigned int (*read)(struct vfs_backend *backend, unsigned int id, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write)(struct vfs_backend *backend, unsigned int id, unsigned int offset, unsigned int count, void *buffer), unsigned int (*parent)(struct vfs_backend *backend, unsigned int id), unsigned int (*child)(struct vfs_backend *backend, unsigned int id, unsigned int count, const char *path), unsigned long (*getphysical)(struct vfs_backend *backend, unsigned int id))
 {
 
-    resource_init(&protocol->resource, RESOURCE_TYPE_PROTOFS, protocol);
+    resource_init(&protocol->resource, RESOURCE_PROTOFS, protocol);
 
     protocol->match = match;
     protocol->root = root;
@@ -73,21 +73,21 @@ void vfs_initprotocol(struct vfs_protocol *protocol, unsigned int (*match)(struc
 void vfs_initchannel(struct vfs_channel *channel)
 {
 
-    resource_init(&channel->resource, RESOURCE_TYPE_CHANNEL, channel);
+    resource_init(&channel->resource, RESOURCE_CHANNEL, channel);
 
 }
 
 void vfs_initmount(struct vfs_mount *mount)
 {
 
-    resource_init(&mount->resource, RESOURCE_TYPE_MOUNT, mount);
+    resource_init(&mount->resource, RESOURCE_MOUNT, mount);
 
 }
 
 void vfs_initdescriptor(struct vfs_descriptor *descriptor)
 {
 
-    resource_init(&descriptor->resource, RESOURCE_TYPE_DESCRIPTOR, descriptor);
+    resource_init(&descriptor->resource, RESOURCE_DESCRIPTOR, descriptor);
 
 }
 

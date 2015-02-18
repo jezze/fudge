@@ -8,7 +8,7 @@ void container_init(struct container *container)
 
     unsigned int i;
 
-    resource_init(&container->resource, RESOURCE_TYPE_CONTAINER, container);
+    resource_init(&container->resource, RESOURCE_CONTAINER, container);
 
     for (i = 0; i < CONTAINER_CHANNELS; i++)
         vfs_initchannel(&container->channels[i]);

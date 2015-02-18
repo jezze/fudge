@@ -8,7 +8,7 @@ void task_init(struct task *task, unsigned long ip, unsigned long sp)
 
     unsigned int i;
 
-    resource_init(&task->resource, RESOURCE_TYPE_TASK, task);
+    resource_init(&task->resource, RESOURCE_TASK, task);
     list_inititem(&task->state.item, task);
     list_inititem(&task->mailbox.item, task);
     buffer_init(&task->mailbox.buffer, 1, TASK_MAILBOXSIZE, task->mailbox.data);
