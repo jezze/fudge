@@ -36,7 +36,7 @@ void keyboard_unregisterinterface(struct keyboard_interface *interface)
 void keyboard_initinterface(struct keyboard_interface *interface, struct base_driver *driver)
 {
 
-    system_initinterface(&interface->base, driver);
+    system_initinterface(&interface->base, driver->name);
     system_initnode(&interface->data, SYSTEM_NODETYPE_MAILBOX, "data");
 
 }

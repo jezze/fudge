@@ -34,7 +34,7 @@ void timer_unregisterinterface(struct timer_interface *interface)
 void timer_initinterface(struct timer_interface *interface, struct base_driver *driver)
 {
 
-    system_initinterface(&interface->base, driver);
+    system_initinterface(&interface->base, driver->name);
     system_initnode(&interface->sleep, SYSTEM_NODETYPE_MAILBOX, "sleep");
 
 }

@@ -92,7 +92,7 @@ void ethernet_unregisterprotocol(struct ethernet_protocol *protocol)
 void ethernet_initinterface(struct ethernet_interface *interface, struct base_driver *driver, unsigned int (*send)(unsigned int count, void *buffer))
 {
 
-    system_initinterface(&interface->base, driver);
+    system_initinterface(&interface->base, driver->name);
     system_initnode(&interface->ctrl, SYSTEM_NODETYPE_NORMAL, "ctrl");
     system_initnode(&interface->data, SYSTEM_NODETYPE_MAILBOX, "data");
     ctrl_init_networksettings(&interface->settings);

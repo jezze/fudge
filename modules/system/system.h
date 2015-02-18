@@ -40,7 +40,6 @@ struct system_interface
 {
 
     struct system_node root;
-    struct base_driver *driver;
     unsigned int id;
 
 };
@@ -54,4 +53,4 @@ void system_registerinterface(struct system_interface *interface, unsigned int i
 void system_unregisternode(struct system_node *node);
 void system_unregisterinterface(struct system_interface *interface);
 void system_initnode(struct system_node *node, unsigned int type, const char *name);
-void system_initinterface(struct system_interface *interface, struct base_driver *driver);
+void system_initinterface(struct system_interface *interface, const char *name);

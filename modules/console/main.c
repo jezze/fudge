@@ -67,7 +67,7 @@ void console_unregisterinterface(struct console_interface *interface)
 void console_initinterface(struct console_interface *interface, struct base_driver *driver, unsigned int (*send)(unsigned int offset, unsigned int count, void *buffer))
 {
 
-    system_initinterface(&interface->base, driver);
+    system_initinterface(&interface->base, driver->name);
     system_initnode(&interface->ctrl, SYSTEM_NODETYPE_NORMAL, "ctrl");
     system_initnode(&interface->in, SYSTEM_NODETYPE_MAILBOX, "in");
     system_initnode(&interface->out, SYSTEM_NODETYPE_NORMAL, "out");

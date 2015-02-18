@@ -3,6 +3,7 @@
 #include <net/ipv4.h>
 #include <kernel.h>
 #include <system/system.h>
+#include <base/base.h>
 #include <network/ethernet/ethernet.h>
 #include <network/arp/arp.h>
 #include "ipv4.h"

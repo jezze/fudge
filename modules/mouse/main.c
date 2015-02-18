@@ -36,7 +36,7 @@ void mouse_unregisterinterface(struct mouse_interface *interface)
 void mouse_initinterface(struct mouse_interface *interface, struct base_driver *driver)
 {
 
-    system_initinterface(&interface->base, driver);
+    system_initinterface(&interface->base, driver->name);
     system_initnode(&interface->data, SYSTEM_NODETYPE_MAILBOX, "data");
 
 }

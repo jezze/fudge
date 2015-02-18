@@ -1,6 +1,5 @@
 #include <fudge.h>
 #include <kernel.h>
-#include <base/base.h>
 #include "system.h"
 #include "backend.h"
 #include "protocol.h"
@@ -280,12 +279,10 @@ void system_initnode(struct system_node *node, unsigned int type, const char *na
 
 }
 
-void system_initinterface(struct system_interface *interface, struct base_driver *driver)
+void system_initinterface(struct system_interface *interface, const char *name)
 {
 
-    system_initnode(&interface->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, driver->name);
-
-    interface->driver = driver;
+    system_initnode(&interface->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, name);
 
 }
 
