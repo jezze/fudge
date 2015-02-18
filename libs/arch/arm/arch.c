@@ -6,7 +6,6 @@
 #include <kernel/scheduler.h>
 #include <kernel/container.h>
 #include <kernel/kernel.h>
-#include <kernel/request.h>
 #include "cpu.h"
 #include "arch.h"
 #include "kmi.h"
@@ -148,8 +147,7 @@ void arch_setup()
 {
 
     setupbasic();
-    kernel_setup();
-    request_setup(spawn, despawn);
+    kernel_setup(spawn, despawn);
 
     current.container = setupcontainers();
     current.task = setuptasks();

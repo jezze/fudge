@@ -6,7 +6,6 @@
 #include <kernel/scheduler.h>
 #include <kernel/container.h>
 #include <kernel/kernel.h>
-#include <kernel/request.h>
 #include "cpu.h"
 #include "arch.h"
 #include "gdt.h"
@@ -210,7 +209,7 @@ static unsigned int spawn(struct container *container, struct task *task, void *
     scheduler_use(next);
     taskactivate(next);
 
-    next->state.registers.ip = request_call(REQUEST_EXECUTE, container, next, 0);
+    next->state.registers.ip = kernel_call(KERNEL_EXECUTE, container, next, 0);
     next->state.registers.sp = ARCH_TASK_STACKLIMIT;
 
     return 1;
@@ -337,7 +336,7 @@ unsigned short arch_syscall(void *stack)
 
     struct {struct cpu_general general; struct cpu_interrupt interrupt;} *registers = stack;
 
-    registers->general.eax = request_call(registers->general.eax, current.container, current.task, (void *)registers->interrupt.esp);
+    registers->general.eax = kernel_call(registers->general.eax, current.container, current.task, (void *)registers->interrupt.esp);
 
     return arch_schedule(&registers->general, &registers->interrupt);
 
@@ -434,8 +433,7 @@ void arch_setup(unsigned int count, struct kernel_module *modules)
 {
 
     setupbasic();
-    kernel_setup();
-    request_setup(spawn, despawn);
+    kernel_setup(spawn, despawn);
 
     current.container = setupcontainers();
     current.task = setuptasks();
