@@ -104,7 +104,7 @@ static unsigned short clockinterface_getyear()
 static void driver_init()
 {
 
-    clock_initinterface(&clockinterface, &driver, clockinterface_getseconds, clockinterface_getminutes, clockinterface_gethours, clockinterface_getweekday, clockinterface_getday, clockinterface_getmonth, clockinterface_getyear);
+    clock_initinterface(&clockinterface, driver.name, clockinterface_getseconds, clockinterface_getminutes, clockinterface_gethours, clockinterface_getweekday, clockinterface_getday, clockinterface_getmonth, clockinterface_getyear);
 
 }
 

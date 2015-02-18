@@ -256,7 +256,7 @@ static unsigned int ethernetinterface_send(unsigned int count, void *buffer)
 static void driver_init()
 {
 
-    ethernet_initinterface(&ethernetinterface, &driver, ethernetinterface_send);
+    ethernet_initinterface(&ethernetinterface, driver.name, ethernetinterface_send);
 
 }
 

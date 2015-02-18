@@ -1,7 +1,6 @@
 #include <fudge.h>
 #include <kernel.h>
 #include <net/ethernet.h>
-#include <base/base.h>
 #include <system/system.h>
 #include <event/event.h>
 #include "ethernet.h"
@@ -52,10 +51,11 @@ static unsigned int interfacenode_ctrlwrite(struct system_node *self, unsigned i
 void ethernet_registerinterface(struct ethernet_interface *interface, unsigned int id)
 {
 
-    system_registerinterface(&interface->base, id);
-    system_addchild(&interface->base.root, &interface->ctrl);
-    system_addchild(&interface->base.root, &interface->data);
-    system_addchild(&root, &interface->base.root);
+    system_addchild(&interface->root, &interface->ctrl);
+    system_addchild(&interface->root, &interface->data);
+    system_addchild(&root, &interface->root);
+
+    interface->id = id;
 
 }
 
@@ -72,10 +72,9 @@ void ethernet_registerprotocol(struct ethernet_protocol *protocol)
 void ethernet_unregisterinterface(struct ethernet_interface *interface)
 {
 
-    system_unregisterinterface(&interface->base);
-    system_removechild(&interface->base.root, &interface->ctrl);
-    system_removechild(&interface->base.root, &interface->data);
-    system_removechild(&root, &interface->base.root);
+    system_removechild(&interface->root, &interface->ctrl);
+    system_removechild(&interface->root, &interface->data);
+    system_removechild(&root, &interface->root);
 
 }
 
@@ -89,10 +88,10 @@ void ethernet_unregisterprotocol(struct ethernet_protocol *protocol)
 
 }
 
-void ethernet_initinterface(struct ethernet_interface *interface, struct base_driver *driver, unsigned int (*send)(unsigned int count, void *buffer))
+void ethernet_initinterface(struct ethernet_interface *interface, const char *name, unsigned int (*send)(unsigned int count, void *buffer))
 {
 
-    system_initinterface(&interface->base, driver->name);
+    system_initnode(&interface->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, name);
     system_initnode(&interface->ctrl, SYSTEM_NODETYPE_NORMAL, "ctrl");
     system_initnode(&interface->data, SYSTEM_NODETYPE_MAILBOX, "data");
     ctrl_init_networksettings(&interface->settings);
@@ -103,7 +102,7 @@ void ethernet_initinterface(struct ethernet_interface *interface, struct base_dr
 
 }
 
-void ethernet_initprotocol(struct ethernet_protocol *protocol, char *name, unsigned short type, void (*notify)(struct ethernet_interface *interface, unsigned int count, void *buffer))
+void ethernet_initprotocol(struct ethernet_protocol *protocol, const char *name, unsigned short type, void (*notify)(struct ethernet_interface *interface, unsigned int count, void *buffer))
 {
 
     resource_init(&protocol->resource, RESOURCE_PROTONET, protocol);

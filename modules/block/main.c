@@ -1,6 +1,5 @@
 #include <fudge.h>
 #include <kernel.h>
-#include <base/base.h>
 #include <system/system.h>
 #include "block.h"
 
@@ -18,25 +17,25 @@ static unsigned int interfacenode_dataread(struct system_node *self, unsigned in
 void block_registerinterface(struct block_interface *interface, unsigned int id)
 {
 
-    system_registerinterface(&interface->base, id);
-    system_addchild(&interface->base.root, &interface->data);
-    system_addchild(&root, &interface->base.root);
+    system_addchild(&interface->root, &interface->data);
+    system_addchild(&root, &interface->root);
+
+    interface->id = id;
 
 }
 
 void block_unregisterinterface(struct block_interface *interface)
 {
 
-    system_unregisterinterface(&interface->base);
-    system_removechild(&interface->base.root, &interface->data);
-    system_removechild(&root, &interface->base.root);
+    system_removechild(&interface->root, &interface->data);
+    system_removechild(&root, &interface->root);
 
 }
 
-void block_initinterface(struct block_interface *interface, struct base_driver *driver, unsigned int (*rdata)(unsigned int offset, unsigned int count, void *buffer), unsigned int (*wdata)(unsigned int offset, unsigned int count, void *buffer))
+void block_initinterface(struct block_interface *interface, const char *name, unsigned int (*rdata)(unsigned int offset, unsigned int count, void *buffer), unsigned int (*wdata)(unsigned int offset, unsigned int count, void *buffer))
 {
 
-    system_initinterface(&interface->base, driver->name);
+    system_initnode(&interface->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, name);
     system_initnode(&interface->data, SYSTEM_NODETYPE_NORMAL, "data");
 
     interface->rdata = rdata;

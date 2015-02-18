@@ -2,7 +2,6 @@
 #include <net/arp.h>
 #include <kernel.h>
 #include <system/system.h>
-#include <base/base.h>
 #include <network/ethernet/ethernet.h>
 #include "arp.h"
 

@@ -143,7 +143,7 @@ static unsigned int videointerface_wdata(unsigned int offset, unsigned int count
 static void driver_init()
 {
 
-    video_initinterface(&videointerface, &driver, videointerface_setmode, videointerface_rdata, videointerface_wdata, 0, 0);
+    video_initinterface(&videointerface, driver.name, videointerface_setmode, videointerface_rdata, videointerface_wdata, 0, 0);
 
 }
 

@@ -224,22 +224,10 @@ void system_registernode(struct system_node *node)
 
 }
 
-void system_registerinterface(struct system_interface *interface, unsigned int id)
-{
-
-    interface->id = id;
-
-}
-
 void system_unregisternode(struct system_node *node)
 {
 
     system_removechild(&backend.root, node);
-
-}
-
-void system_unregisterinterface(struct system_interface *interface)
-{
 
 }
 
@@ -276,13 +264,6 @@ void system_initnode(struct system_node *node, unsigned int type, const char *na
         node->child = child_group;
     else
         node->child = child_normal;
-
-}
-
-void system_initinterface(struct system_interface *interface, const char *name)
-{
-
-    system_initnode(&interface->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, name);
 
 }
 

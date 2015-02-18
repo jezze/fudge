@@ -1,6 +1,5 @@
 #include <fudge.h>
 #include <kernel.h>
-#include <base/base.h>
 #include <system/system.h>
 #include "video.h"
 
@@ -67,29 +66,29 @@ static unsigned int interfacenode_colormapwrite(struct system_node *self, unsign
 void video_registerinterface(struct video_interface *interface, unsigned int id)
 {
 
-    system_registerinterface(&interface->base, id);
-    system_addchild(&interface->base.root, &interface->ctrl);
-    system_addchild(&interface->base.root, &interface->data);
-    system_addchild(&interface->base.root, &interface->colormap);
-    system_addchild(&root, &interface->base.root);
+    system_addchild(&interface->root, &interface->ctrl);
+    system_addchild(&interface->root, &interface->data);
+    system_addchild(&interface->root, &interface->colormap);
+    system_addchild(&root, &interface->root);
+
+    interface->id = id;
 
 }
 
 void video_unregisterinterface(struct video_interface *interface)
 {
 
-    system_unregisterinterface(&interface->base);
-    system_removechild(&interface->base.root, &interface->ctrl);
-    system_removechild(&interface->base.root, &interface->data);
-    system_removechild(&interface->base.root, &interface->colormap);
-    system_removechild(&root, &interface->base.root);
+    system_removechild(&interface->root, &interface->ctrl);
+    system_removechild(&interface->root, &interface->data);
+    system_removechild(&interface->root, &interface->colormap);
+    system_removechild(&root, &interface->root);
 
 }
 
-void video_initinterface(struct video_interface *interface, struct base_driver *driver, void (*setmode)(unsigned int xres, unsigned int yres, unsigned int bpp), unsigned int (*rdata)(unsigned int offset, unsigned int count, void *buffer), unsigned int (*wdata)(unsigned int offset, unsigned int count, void *buffer), unsigned int (*rcolormap)(unsigned int offset, unsigned int count, void *buffer), unsigned int (*wcolormap)(unsigned int offset, unsigned int count, void *buffer))
+void video_initinterface(struct video_interface *interface, const char *name, void (*setmode)(unsigned int xres, unsigned int yres, unsigned int bpp), unsigned int (*rdata)(unsigned int offset, unsigned int count, void *buffer), unsigned int (*wdata)(unsigned int offset, unsigned int count, void *buffer), unsigned int (*rcolormap)(unsigned int offset, unsigned int count, void *buffer), unsigned int (*wcolormap)(unsigned int offset, unsigned int count, void *buffer))
 {
 
-    system_initinterface(&interface->base, driver->name);
+    system_initnode(&interface->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, name);
     system_initnode(&interface->ctrl, SYSTEM_NODETYPE_NORMAL, "ctrl");
     system_initnode(&interface->data, SYSTEM_NODETYPE_NORMAL, "data");
     system_initnode(&interface->colormap, SYSTEM_NODETYPE_NORMAL, "colormap");

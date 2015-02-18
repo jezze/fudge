@@ -36,21 +36,10 @@ struct system_node
 
 };
 
-struct system_interface
-{
-
-    struct system_node root;
-    unsigned int id;
-
-};
-
 unsigned int system_open(struct system_node *node);
 unsigned int system_close(struct system_node *node);
 void system_addchild(struct system_node *group, struct system_node *node);
 void system_removechild(struct system_node *group, struct system_node *node);
 void system_registernode(struct system_node *node);
-void system_registerinterface(struct system_interface *interface, unsigned int id);
 void system_unregisternode(struct system_node *node);
-void system_unregisterinterface(struct system_interface *interface);
 void system_initnode(struct system_node *node, unsigned int type, const char *name);
-void system_initinterface(struct system_interface *interface, const char *name);

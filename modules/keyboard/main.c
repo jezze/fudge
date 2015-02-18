@@ -1,6 +1,5 @@
 #include <fudge.h>
 #include <kernel.h>
-#include <base/base.h>
 #include <system/system.h>
 #include <event/event.h>
 #include "keyboard.h"
@@ -18,25 +17,25 @@ void keyboard_notify(struct keyboard_interface *interface, unsigned int count, v
 void keyboard_registerinterface(struct keyboard_interface *interface, unsigned int id)
 {
 
-    system_registerinterface(&interface->base, id);
-    system_addchild(&interface->base.root, &interface->data);
-    system_addchild(&root, &interface->base.root);
+    system_addchild(&interface->root, &interface->data);
+    system_addchild(&root, &interface->root);
+
+    interface->id = id;
 
 }
 
 void keyboard_unregisterinterface(struct keyboard_interface *interface)
 {
 
-    system_unregisterinterface(&interface->base);
-    system_removechild(&interface->base.root, &interface->data);
-    system_removechild(&root, &interface->base.root);
+    system_removechild(&interface->root, &interface->data);
+    system_removechild(&root, &interface->root);
 
 }
 
-void keyboard_initinterface(struct keyboard_interface *interface, struct base_driver *driver)
+void keyboard_initinterface(struct keyboard_interface *interface, const char *name)
 {
 
-    system_initinterface(&interface->base, driver->name);
+    system_initnode(&interface->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, name);
     system_initnode(&interface->data, SYSTEM_NODETYPE_MAILBOX, "data");
 
 }

@@ -17,7 +17,7 @@ static void handleirq(unsigned int irq, unsigned int id)
 static void driver_init()
 {
 
-    block_initinterface(&blockinterface, &driver, 0, 0);
+    block_initinterface(&blockinterface, driver.name, 0, 0);
 
 }
 

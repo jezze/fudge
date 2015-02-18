@@ -1,6 +1,5 @@
 #include <fudge.h>
 #include <kernel.h>
-#include <base/base.h>
 #include <system/system.h>
 #include <event/event.h>
 #include "mouse.h"
@@ -18,25 +17,25 @@ void mouse_notify(struct mouse_interface *interface, unsigned int count, void *b
 void mouse_registerinterface(struct mouse_interface *interface, unsigned int id)
 {
 
-    system_registerinterface(&interface->base, id);
-    system_addchild(&interface->base.root, &interface->data);
-    system_addchild(&root, &interface->base.root);
+    system_addchild(&interface->root, &interface->data);
+    system_addchild(&root, &interface->root);
+
+    interface->id = id;
 
 }
 
 void mouse_unregisterinterface(struct mouse_interface *interface)
 {
 
-    system_unregisterinterface(&interface->base);
-    system_removechild(&interface->base.root, &interface->data);
-    system_removechild(&root, &interface->base.root);
+    system_removechild(&interface->root, &interface->data);
+    system_removechild(&root, &interface->root);
 
 }
 
-void mouse_initinterface(struct mouse_interface *interface, struct base_driver *driver)
+void mouse_initinterface(struct mouse_interface *interface, const char *name)
 {
 
-    system_initinterface(&interface->base, driver->name);
+    system_initnode(&interface->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, name);
     system_initnode(&interface->data, SYSTEM_NODETYPE_MAILBOX, "data");
 
 }

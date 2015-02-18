@@ -20,7 +20,7 @@ static unsigned int blockinterface_rdata(unsigned int offset, unsigned int count
     if (offset > 0)
         return 0;
 
-    return ide_rlba28(blockinterface.base.id, 0, 0, 1, buffer);
+    return ide_rlba28(blockinterface.id, 0, 0, 1, buffer);
 
 }
 
@@ -30,14 +30,14 @@ static unsigned int blockinterface_wdata(unsigned int offset, unsigned int count
     if (offset > 0)
         return 0;
 
-    return ide_wlba28(blockinterface.base.id, 0, 0, 1, buffer);
+    return ide_wlba28(blockinterface.id, 0, 0, 1, buffer);
 
 }
 
 static void driver_init()
 {
 
-    block_initinterface(&blockinterface, &driver, blockinterface_rdata, blockinterface_wdata);
+    block_initinterface(&blockinterface, driver.name, blockinterface_rdata, blockinterface_wdata);
 
 }
 

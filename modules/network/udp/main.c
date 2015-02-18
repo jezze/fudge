@@ -1,7 +1,6 @@
 #include <fudge.h>
 #include <kernel.h>
 #include <system/system.h>
-#include <base/base.h>
 #include <network/ethernet/ethernet.h>
 #include <network/ipv4/ipv4.h>
 

@@ -210,7 +210,7 @@ static unsigned int videointerface_wcolormap(unsigned int offset, unsigned int c
 static void driver_init()
 {
 
-    video_initinterface(&videointerface, &driver, videointerface_setmode, videointerface_rdata, videointerface_wdata, videointerface_rcolormap, videointerface_wcolormap);
+    video_initinterface(&videointerface, driver.name, videointerface_setmode, videointerface_rdata, videointerface_wdata, videointerface_rcolormap, videointerface_wcolormap);
 
 }
 
