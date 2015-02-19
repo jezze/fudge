@@ -1,3 +1,11 @@
+struct ipv4_ethernetentry
+{
+
+    unsigned char ha[6];
+    unsigned char pa[4];
+
+};
+
 struct ipv4_protocol
 {
 

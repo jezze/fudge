@@ -5,32 +5,47 @@
 #include <network/ethernet/ethernet.h>
 #include "arp.h"
 
-static struct ethernet_protocol protocol;
+static struct ethernet_protocol ethernetprotocol;
 static struct list hooks;
 
-void protocol_notify(struct ethernet_interface *interface, unsigned int count, void *buffer)
+void ethernetprotocol_notify(struct ethernet_interface *interface, unsigned int count, void *buffer)
 {
 
-    struct arp_message *message = buffer;
+    struct arp_header *header = buffer;
+    unsigned short htype;
     unsigned short ptype;
+    unsigned short operation;
     struct list_item *current;
 
-    if (count < sizeof (struct arp_message))
+    if (count < sizeof (struct arp_header))
         return;
 
-    ptype = (message->ptype[0] << 8) | message->ptype[1];
+    htype = (header->htype[0] << 8) | header->htype[1];
+    ptype = (header->ptype[0] << 8) | header->ptype[1];
+    operation = (header->operation[0] << 8) | header->operation[1];
 
     for (current = hooks.head; current; current = current->next)
     {
 
         struct arp_hook *hook = current->data;
 
-        if (hook->ptype == ptype)
-            hook->notify(interface, message);
+        if (hook->htype != htype || hook->ptype != ptype)
+            continue;
+
+        switch (operation)
+        {
+
+        case 1:
+        case 2:
+            hook->notify(count, buffer);
+
+            break;
+
+        }
 
     }
 
-    scheduler_mailboxes_send(&protocol.data.mailboxes, count, buffer);
+    scheduler_mailboxes_send(&ethernetprotocol.data.mailboxes, count, buffer);
 
 }
 
@@ -48,11 +63,12 @@ void arp_unregisterhook(struct arp_hook *hook)
 
 }
 
-void arp_inithook(struct arp_hook *hook, unsigned short ptype, void (*notify)(struct ethernet_interface *interface, struct arp_message *message))
+void arp_inithook(struct arp_hook *hook, unsigned short htype, unsigned short ptype, void (*notify)(unsigned int count, void *buffer))
 {
 
     list_inititem(&hook->item, hook);
 
+    hook->htype = htype;
     hook->ptype = ptype;
     hook->notify = notify;
 
@@ -62,21 +78,21 @@ void module_init()
 {
 
     list_init(&hooks);
-    ethernet_initprotocol(&protocol, "arp", 0x0806, protocol_notify);
+    ethernet_initprotocol(&ethernetprotocol, "arp", 0x0806, ethernetprotocol_notify);
 
 }
 
 void module_register()
 {
 
-    ethernet_registerprotocol(&protocol);
+    ethernet_registerprotocol(&ethernetprotocol);
 
 }
 
 void module_unregister()
 {
 
-    ethernet_unregisterprotocol(&protocol);
+    ethernet_unregisterprotocol(&ethernetprotocol);
 
 }
 

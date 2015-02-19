@@ -7,76 +7,57 @@
 #include <network/arp/arp.h>
 #include "ipv4.h"
 
-static struct ethernet_protocol protocol;
+#define LOCALS                          8
+#define REMOTES                         64
+
+static struct ethernet_protocol ethernetprotocol;
 static struct list protocols;
 static struct arp_hook arphook;
+static struct ipv4_ethernetentry localbuffer[LOCALS];
+static struct ipv4_ethernetentry remotebuffer[REMOTES];
+static struct buffer local;
+static struct buffer remote;
 
-static void protocol_notify(struct ethernet_interface *interface, unsigned int count, void *buffer)
+static void ethernetprotocol_notify(struct ethernet_interface *interface, unsigned int count, void *buffer)
 {
 
-    scheduler_mailboxes_send(&protocol.data.mailboxes, count, buffer);
+    scheduler_mailboxes_send(&ethernetprotocol.data.mailboxes, count, buffer);
 
 }
 
-static void arphook_handlerequest(struct ethernet_interface *interface, struct arp_message *message)
+static void arphook_notify(unsigned int count, void *buffer)
 {
 
-    unsigned char mcast[6] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
+    struct {struct arp_header header; struct ipv4_ethernetentry sender; struct ipv4_ethernetentry target;} *message = buffer;
+    unsigned int i;
 
-    if (memory_match(message->tha, interface->settings.mac, 6))
+    for (i = 0; i < LOCALS; i++)
     {
+
+        if (memory_match(&localbuffer[i], &message->target, 10))
+            return;
 
     }
 
-    if (memory_match(message->tha, mcast, 6))
-    {
-
-    }
+    return;
 
 }
 
-static void arphook_handlereply(struct ethernet_interface *interface, struct arp_message *message)
+void ipv4_registerprotocol(struct ipv4_protocol *protocol)
 {
+
+    list_add(&protocols, &protocol->item);
+    system_addchild(&protocol->root, &protocol->data);
+    system_addchild(&ethernetprotocol.root, &protocol->root);
 
 }
 
-static void arphook_notify(struct ethernet_interface *interface, struct arp_message *message)
+void ipv4_unregisterprotocol(struct ipv4_protocol *protocol)
 {
 
-    unsigned short operation = (message->operation[0] << 8) | message->operation[1];
-
-    switch (operation)
-    {
-
-    case 1:
-        arphook_handlerequest(interface, message);
-
-        break;
-
-    case 2:
-        arphook_handlereply(interface, message);
-
-        break;
-
-    }
-
-}
-
-void ipv4_registerprotocol(struct ipv4_protocol *p)
-{
-
-    list_add(&protocols, &p->item);
-    system_addchild(&p->root, &p->data);
-    system_addchild(&protocol.root, &p->root);
-
-}
-
-void ipv4_unregisterprotocol(struct ipv4_protocol *p)
-{
-
-    list_remove(&protocols, &p->item);
-    system_removechild(&p->root, &p->data);
-    system_removechild(&protocol.root, &p->root);
+    list_remove(&protocols, &protocol->item);
+    system_removechild(&protocol->root, &protocol->data);
+    system_removechild(&ethernetprotocol.root, &protocol->root);
 
 }
 
@@ -96,15 +77,17 @@ void ipv4_initprotocol(struct ipv4_protocol *protocol, char *name, unsigned char
 void module_init()
 {
 
-    ethernet_initprotocol(&protocol, "ipv4", 0x0800, protocol_notify);
-    arp_inithook(&arphook, protocol.type, arphook_notify);
+    buffer_init(&local, sizeof (struct ipv4_ethernetentry), sizeof (struct ipv4_ethernetentry) * LOCALS, &localbuffer);
+    buffer_init(&remote, sizeof (struct ipv4_ethernetentry), sizeof (struct ipv4_ethernetentry) * REMOTES, &remotebuffer);
+    ethernet_initprotocol(&ethernetprotocol, "ipv4", 0x0800, ethernetprotocol_notify);
+    arp_inithook(&arphook, 0x0001, ethernetprotocol.type, arphook_notify);
 
 }
 
 void module_register()
 {
 
-    ethernet_registerprotocol(&protocol);
+    ethernet_registerprotocol(&ethernetprotocol);
     arp_registerhook(&arphook);
 
 }
@@ -112,7 +95,7 @@ void module_register()
 void module_unregister()
 {
 
-    ethernet_unregisterprotocol(&protocol);
+    ethernet_unregisterprotocol(&ethernetprotocol);
     arp_unregisterhook(&arphook);
 
 }

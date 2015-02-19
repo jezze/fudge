@@ -4,33 +4,33 @@
 #include <system/system.h>
 #include <network/ethernet/ethernet.h>
 
-static struct ethernet_protocol protocol;
+static struct ethernet_protocol ethernetprotocol;
 
-void protocol_notify(struct ethernet_interface *interface, unsigned int count, void *buffer)
+void ethernetprotocol_notify(struct ethernet_interface *interface, unsigned int count, void *buffer)
 {
 
-    scheduler_mailboxes_send(&protocol.data.mailboxes, count, buffer);
+    scheduler_mailboxes_send(&ethernetprotocol.data.mailboxes, count, buffer);
 
 }
 
 void module_init()
 {
 
-    ethernet_initprotocol(&protocol, "ipv6", 0x86DD, protocol_notify);
+    ethernet_initprotocol(&ethernetprotocol, "ipv6", 0x86DD, ethernetprotocol_notify);
 
 }
 
 void module_register()
 {
 
-    ethernet_registerprotocol(&protocol);
+    ethernet_registerprotocol(&ethernetprotocol);
 
 }
 
 void module_unregister()
 {
 
-    ethernet_unregisterprotocol(&protocol);
+    ethernet_unregisterprotocol(&ethernetprotocol);
 
 }
 
