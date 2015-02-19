@@ -15,13 +15,19 @@ static void interpret(struct buffer *buffer)
         if (buffer->head < 4)
             return;
 
-        count = buffer_rcfifo(buffer, FUDGE_BSIZE, temp);
+        count = buffer_rcfifo(buffer, FUDGE_BSIZE - 1, temp);
 
         if (temp[3] == '/')
             ok = call_walk(CALL_L1, CALL_DR, count - 5, temp + 4);
         else
+        {
+            if(temp[count - 2] != '/')
+            {
+                temp[count - 1] = '/';
+                count++;
+            }
             ok = call_walk(CALL_L1, CALL_DW, count - 4, temp + 3);
-
+        }
         if (ok)
             call_walk(CALL_DW, CALL_L1, 0, 0);
 
