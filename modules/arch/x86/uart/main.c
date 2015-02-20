@@ -196,7 +196,7 @@ static void driver_init()
 
     console_initinterface(&consoleinterface, driver.name, consoleinterface_send);
 
-    consoleinterface.settings.scroll = 1;
+    consoleinterface.scroll = 1;
 
 }
 

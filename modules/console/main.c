@@ -17,18 +17,14 @@ void console_notify(struct console_interface *interface, unsigned int count, voi
 static unsigned int interfacenode_ctrlread(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct console_interface *interface = (struct console_interface *)self->parent;
-
-    return memory_read(buffer, count, &interface->settings, sizeof (struct ctrl_consolesettings), offset);
+    return 0;
 
 }
 
 static unsigned int interfacenode_ctrlwrite(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct console_interface *interface = (struct console_interface *)self->parent;
-
-    return memory_write(&interface->settings, sizeof (struct ctrl_consolesettings), buffer, count, offset);
+    return 0;
 
 }
 
@@ -70,7 +66,6 @@ void console_initinterface(struct console_interface *interface, const char *name
     system_initnode(&interface->ctrl, SYSTEM_NODETYPE_NORMAL, "ctrl");
     system_initnode(&interface->in, SYSTEM_NODETYPE_MAILBOX, "in");
     system_initnode(&interface->out, SYSTEM_NODETYPE_NORMAL, "out");
-    ctrl_init_consolesettings(&interface->settings);
 
     interface->send = send;
     interface->ctrl.read = interfacenode_ctrlread;

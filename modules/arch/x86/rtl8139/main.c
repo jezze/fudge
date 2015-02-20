@@ -281,12 +281,12 @@ static void driver_attach(unsigned int id)
     enable();
     pci_setmaster(id);
 
-    ethernetinterface.settings.mac[0] = io_inb(io + RTL8139_REGISTER_IDR0);
-    ethernetinterface.settings.mac[1] = io_inb(io + RTL8139_REGISTER_IDR1);
-    ethernetinterface.settings.mac[2] = io_inb(io + RTL8139_REGISTER_IDR2);
-    ethernetinterface.settings.mac[3] = io_inb(io + RTL8139_REGISTER_IDR3);
-    ethernetinterface.settings.mac[4] = io_inb(io + RTL8139_REGISTER_IDR4);
-    ethernetinterface.settings.mac[5] = io_inb(io + RTL8139_REGISTER_IDR5);
+    ethernetinterface.mac[0] = io_inb(io + RTL8139_REGISTER_IDR0);
+    ethernetinterface.mac[1] = io_inb(io + RTL8139_REGISTER_IDR1);
+    ethernetinterface.mac[2] = io_inb(io + RTL8139_REGISTER_IDR2);
+    ethernetinterface.mac[3] = io_inb(io + RTL8139_REGISTER_IDR3);
+    ethernetinterface.mac[4] = io_inb(io + RTL8139_REGISTER_IDR4);
+    ethernetinterface.mac[5] = io_inb(io + RTL8139_REGISTER_IDR5);
 
     ethernet_registerinterface(&ethernetinterface, id);
     pic_setroutine(pci_getirq(id), id, handleirq);

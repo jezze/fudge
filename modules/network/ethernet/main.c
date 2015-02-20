@@ -33,18 +33,14 @@ void ethernet_notify(struct ethernet_interface *interface, unsigned int count, v
 static unsigned int interfacenode_ctrlread(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct ethernet_interface *interface = (struct ethernet_interface *)self->parent;
-
-    return memory_read(buffer, count, &interface->settings, sizeof (struct ctrl_networksettings), offset);
+    return 0;
 
 }
 
 static unsigned int interfacenode_ctrlwrite(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct ethernet_interface *interface = (struct ethernet_interface *)self->parent;
-
-    return memory_write(&interface->settings, sizeof (struct ctrl_networksettings), buffer, count, offset);
+    return 0;
 
 }
 
@@ -94,7 +90,6 @@ void ethernet_initinterface(struct ethernet_interface *interface, const char *na
     system_initnode(&interface->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, name);
     system_initnode(&interface->ctrl, SYSTEM_NODETYPE_NORMAL, "ctrl");
     system_initnode(&interface->data, SYSTEM_NODETYPE_MAILBOX, "data");
-    ctrl_init_networksettings(&interface->settings);
 
     interface->send = send;
     interface->ctrl.read = interfacenode_ctrlread;

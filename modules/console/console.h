@@ -6,7 +6,7 @@ struct console_interface
     struct system_node in;
     struct system_node out;
     unsigned int id;
-    struct ctrl_consolesettings settings;
+    unsigned char scroll;
     unsigned int (*send)(unsigned int offset, unsigned int count, void *buffer);
 
 };

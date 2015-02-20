@@ -8,9 +8,7 @@ static struct system_node root;
 static unsigned int interfacenode_ctrlread(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct video_interface *interface = (struct video_interface *)self->parent;
-
-    return memory_read(buffer, count, &interface->settings, sizeof (struct ctrl_videosettings), offset);
+    return 0;
 
 }
 
@@ -19,11 +17,9 @@ static unsigned int interfacenode_ctrlwrite(struct system_node *self, unsigned i
 
     struct video_interface *interface = (struct video_interface *)self->parent;
 
-    count = memory_write(&interface->settings, sizeof (struct ctrl_videosettings), buffer, count, offset);
-
     interface->setmode(320, 200, 8);
 
-    return count;
+    return 0;
 
 }
 
@@ -92,7 +88,6 @@ void video_initinterface(struct video_interface *interface, const char *name, vo
     system_initnode(&interface->ctrl, SYSTEM_NODETYPE_NORMAL, "ctrl");
     system_initnode(&interface->data, SYSTEM_NODETYPE_NORMAL, "data");
     system_initnode(&interface->colormap, SYSTEM_NODETYPE_NORMAL, "colormap");
-    ctrl_init_videosettings(&interface->settings);
 
     interface->setmode = setmode;
     interface->rdata = rdata;

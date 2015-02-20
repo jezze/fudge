@@ -5,7 +5,7 @@ struct ethernet_interface
     struct system_node ctrl;
     struct system_node data;
     unsigned int id;
-    struct ctrl_networksettings settings;
+    unsigned char mac[6];
     unsigned int (*send)(unsigned int count, void *buffer);
 
 };

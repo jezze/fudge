@@ -6,7 +6,9 @@ struct video_interface
     struct system_node data;
     struct system_node colormap;
     unsigned int id;
-    struct ctrl_videosettings settings;
+    unsigned int w;
+    unsigned int h;
+    unsigned int bpp;
     void (*setmode)(unsigned int xres, unsigned int yres, unsigned int bpp);
     unsigned int (*rdata)(unsigned int offset, unsigned int count, void *buffer);
     unsigned int (*wdata)(unsigned int offset, unsigned int count, void *buffer);
