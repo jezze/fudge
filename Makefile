@@ -8,28 +8,28 @@ PLATFORM_x86:=pc
 PLATFORM_arm:=integratorcp
 PLATFORM:=$(PLATFORM_$(ARCH))
 
-DEFAULT_LIBS_x86:=-lfudge
-DEFAULT_LIBS_arm:=-lfudge -lstd
-DEFAULT_LIBS:=$(DEFAULT_LIBS_$(ARCH))
+DEFAULT_LDFLAGS_x86:=-lfudge
+DEFAULT_LDFLAGS_arm:=-lfudge -lstd
+DEFAULT_LDFLAGS:=$(DEFAULT_LDFLAGS_$(ARCH))
 
-LOADER_LIBS_x86:=-lmboot
-LOADER_LIBS_arm:=
-LOADER_LIBS:=$(LOADER_LIBS_$(ARCH))
+LOADER_LDFLAGS_x86:=-lmboot
+LOADER_LDFLAGS_arm:=
+LOADER_LDFLAGS:=$(LOADER_LDFLAGS_$(ARCH))
 
 INSTALL_PATH:=/boot
 
 INCLUDE_PATH:=include
 
 KERNEL_NAME:=fudge
-KERNEL_LIBS:=$(LOADER_LIBS) -larch -lkernel -lelf -ltar -lcpio $(DEFAULT_LIBS)
+KERNEL_LDFLAGS:=$(LOADER_LDFLAGS) -larch -lkernel -lelf -ltar -lcpio $(DEFAULT_LDFLAGS)
 
 LIBS_PATH:=libs
 
 MODULES_PATH:=modules
-MODULES_LIBS:=$(DEFAULT_LIBS)
+MODULES_LDFLAGS:=$(DEFAULT_LDFLAGS)
 
 PACKAGES_PATH:=packages
-PACKAGES_LIBS:=-labi $(DEFAULT_LIBS)
+PACKAGES_LDFLAGS:=-labi $(DEFAULT_LDFLAGS)
 
 RAMDISK_NAME:=initrd
 RAMDISK_TYPE:=tar
@@ -50,8 +50,8 @@ ASFLAGS:=-c -nostdlib -O2
 CFLAGS:=-c -msoft-float -Wall -Werror -ffreestanding -nostdlib -nostdinc -std=c89 -pedantic -O2
 LDFLAGS:=-msoft-float -Wall -Werror -ffreestanding -nostdlib -nostdinc -std=c89 -pedantic -O2
 
-ALL:=libs kernel modules packages ramdisk
-CLEAN:=$(KERNEL_NAME) $(RAMDISK_NAME).$(RAMDISK_TYPE) $(BUILD_ROOT)
+ALL:=$(LIBS_PATH) $(MODULES_PATH) $(PACKAGES_PATH) $(KERNEL_NAME) $(RAMDISK_NAME).$(RAMDISK_TYPE)
+CLEAN:=$(BUILD_ROOT) $(KERNEL_NAME) $(RAMDISK_NAME).$(RAMDISK_TYPE)
 
 .PHONY: all clean install $(ALL)
 
@@ -110,8 +110,8 @@ $(BUILD_ROOT):
 	cp $(SHARES) $@/share
 	mkdir -p $@/system
 
-$(BUILD_BOOT)/$(KERNEL_NAME): $(BUILD_ROOT)
-	$(LD) -o $@ $(LDFLAGS) $(KERNEL_LIBS)
+$(BUILD_BOOT)/$(KERNEL_NAME): $(BUILD_ROOT) $(LIBS)
+	$(LD) -o $@ $(LDFLAGS) $(KERNEL_LDFLAGS)
 
 $(KERNEL_NAME): $(BUILD_BOOT)/$(KERNEL_NAME)
 	cp $^ $@
@@ -128,18 +128,13 @@ $(INSTALL_PATH)/$(KERNEL_NAME): $(KERNEL_NAME)
 $(INSTALL_PATH)/$(RAMDISK_NAME).$(RAMDISK_TYPE): $(RAMDISK_NAME).$(RAMDISK_TYPE)
 	install -m 644 $^ $@
 
+$(LIBS_PATH): $(BUILD_ROOT) $(LIBS)
+
+$(MODULES_PATH): $(BUILD_ROOT) $(LIBS) $(MODULES)
+
+$(PACKAGES_PATH): $(BUILD_ROOT) $(LIBS) $(BINS)
+
 clean:
 	rm -rf $(CLEAN)
 
 install: $(INSTALL_PATH)/$(KERNEL_NAME) $(INSTALL_PATH)/$(RAMDISK_NAME).$(RAMDISK_TYPE)
-
-kernel: libs $(KERNEL_NAME)
-
-libs: $(BUILD_ROOT) $(LIBS)
-
-modules: libs $(BUILD_ROOT) $(MODULES)
-
-packages: libs $(BUILD_ROOT) $(BINS)
-
-ramdisk: $(RAMDISK_NAME).$(RAMDISK_TYPE)
-
