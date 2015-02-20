@@ -68,6 +68,7 @@ $(MODULES_PATH)/%.o: CFLAGS+=-I$(INCLUDE_PATH) -I$(LIBS_PATH) -I$(MODULES_PATH)
 $(PACKAGES_PATH)/%.o: CFLAGS+=-I$(INCLUDE_PATH) -I$(LIBS_PATH) -I$(PACKAGES_PATH)
 
 $(BUILD_BIN)/%: LDFLAGS+=-L$(BUILD_LIB)
+$(BUILD_BOOT)/$(KERNEL_NAME): LDFLAGS+=-L$(BUILD_LIB) -Tplatform/$(PLATFORM)/linker.ld
 $(BUILD_MODULE)/%.ko: LDFLAGS+=-L$(BUILD_LIB) -T$(MODULES_PATH)/linker.ld -r
 $(BUILD_MODULE)/%.ko.0: LDFLAGS+=-L$(BUILD_LIB) -T$(MODULES_PATH)/linker.ld -r
 $(BUILD_MODULE)/%.ko.1: LDFLAGS+=-L$(BUILD_LIB) -T$(MODULES_PATH)/linker.ld -r
@@ -93,6 +94,7 @@ $(BUILD_ROOT):
 	mkdir -p $@/boot
 	mkdir -p $@/boot/mod
 	mkdir -p $@/config
+	cp $(CONFIGS) $@/config
 	mkdir -p $@/home
 	mkdir -p $@/lib
 	mkdir -p $@/mount
@@ -105,10 +107,11 @@ $(BUILD_ROOT):
 	mkdir -p $@/mount/6
 	mkdir -p $@/mount/7
 	mkdir -p $@/share
+	cp $(SHARES) $@/share
 	mkdir -p $@/system
 
 $(BUILD_BOOT)/$(KERNEL_NAME): $(BUILD_ROOT)
-	$(LD) -o $@ $(LDFLAGS) -Tplatform/$(PLATFORM)/linker.ld -L$(BUILD_ROOT)/lib $(KERNEL_LIBS)
+	$(LD) -o $@ $(LDFLAGS) $(KERNEL_LIBS)
 
 $(KERNEL_NAME): $(BUILD_BOOT)/$(KERNEL_NAME)
 	cp $^ $@
@@ -136,9 +139,7 @@ libs: $(BUILD_ROOT) $(LIBS)
 
 modules: libs $(BUILD_ROOT) $(MODULES)
 
-packages: libs $(BUILD_ROOT) $(BINS) $(CONFIGS) $(SHARES)
-	cp $(CONFIGS) $(BUILD_CONFIG)
-	cp $(SHARES) $(BUILD_SHARE)
+packages: libs $(BUILD_ROOT) $(BINS)
 
 ramdisk: $(RAMDISK_NAME).$(RAMDISK_TYPE)
 
