@@ -3,17 +3,17 @@ enum
 
     RESOURCE_CONTAINER                  = 1,
     RESOURCE_TASK                       = 2,
-    RESOURCE_BACKEND                    = 3,
-    RESOURCE_CHANNEL                    = 4,
-    RESOURCE_DESCRIPTOR                 = 5,
-    RESOURCE_MOUNT                      = 6,
-    RESOURCE_BUS                        = 7,
-    RESOURCE_DRIVER                     = 8,
-    RESOURCE_INTERFACE                  = 9,
-    RESOURCE_PROTOFS                    = 10,
-    RESOURCE_PROTOBINARY                = 11,
-    RESOURCE_PROTONET                   = 12,
-    RESOURCE_CHANNELNET                 = 13
+    RESOURCE_VFSBACKEND                 = 3,
+    RESOURCE_VFSPROTOCOL                = 4,
+    RESOURCE_VFSCHANNEL                 = 5,
+    RESOURCE_VFSMOUNT                   = 6,
+    RESOURCE_VFSDESCRIPTOR              = 7,
+    RESOURCE_BINARYPROTOCOL             = 8,
+    RESOURCE_BUS                        = 9,
+    RESOURCE_DRIVER                     = 10,
+    RESOURCE_ETHERNETINTERFACE          = 11,
+    RESOURCE_ETHERNETPROTOCOL           = 12,
+    RESOURCE_IPV4PROTOCOL               = 13
 
 };
 

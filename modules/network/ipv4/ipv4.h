@@ -9,11 +9,11 @@ struct ipv4_ethernetentry
 struct ipv4_protocol
 {
 
-    struct list_item item;
-    unsigned char id;
-    void (*notify)(struct ethernet_interface *interface, unsigned int count, void *buffer);
+    struct resource resource;
     struct system_node root;
     struct system_node data;
+    unsigned char id;
+    void (*notify)(struct ethernet_interface *interface, unsigned int count, void *buffer);
 
 };
 

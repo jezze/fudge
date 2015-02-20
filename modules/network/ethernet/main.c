@@ -6,16 +6,15 @@
 #include "ethernet.h"
 
 static struct system_node root;
-static struct list protocols;
 
 void ethernet_notify(struct ethernet_interface *interface, unsigned int count, void *buffer)
 {
 
     struct ethernet_header *header = buffer;
     unsigned short type = (header->type[0] << 8) | header->type[1];
-    struct list_item *current;
+    struct resource *current = 0;
 
-    for (current = protocols.head; current; current = current->next)
+    while ((current = resource_findtype(current, RESOURCE_ETHERNETPROTOCOL)))
     {
 
         struct ethernet_protocol *protocol = current->data;
@@ -47,6 +46,7 @@ static unsigned int interfacenode_ctrlwrite(struct system_node *self, unsigned i
 void ethernet_registerinterface(struct ethernet_interface *interface, unsigned int id)
 {
 
+    resource_register(&interface->resource);
     system_addchild(&interface->root, &interface->ctrl);
     system_addchild(&interface->root, &interface->data);
     system_addchild(&root, &interface->root);
@@ -59,7 +59,6 @@ void ethernet_registerprotocol(struct ethernet_protocol *protocol)
 {
 
     resource_register(&protocol->resource);
-    list_add(&protocols, &protocol->item);
     system_addchild(&protocol->root, &protocol->data);
     system_addchild(&root, &protocol->root);
 
@@ -68,6 +67,7 @@ void ethernet_registerprotocol(struct ethernet_protocol *protocol)
 void ethernet_unregisterinterface(struct ethernet_interface *interface)
 {
 
+    resource_unregister(&interface->resource);
     system_removechild(&interface->root, &interface->ctrl);
     system_removechild(&interface->root, &interface->data);
     system_removechild(&root, &interface->root);
@@ -78,7 +78,6 @@ void ethernet_unregisterprotocol(struct ethernet_protocol *protocol)
 {
 
     resource_unregister(&protocol->resource);
-    list_remove(&protocols, &protocol->item);
     system_removechild(&protocol->root, &protocol->data);
     system_removechild(&root, &protocol->root);
 
@@ -87,6 +86,7 @@ void ethernet_unregisterprotocol(struct ethernet_protocol *protocol)
 void ethernet_initinterface(struct ethernet_interface *interface, const char *name, unsigned int (*send)(unsigned int count, void *buffer))
 {
 
+    resource_init(&interface->resource, RESOURCE_ETHERNETINTERFACE, interface);
     system_initnode(&interface->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, name);
     system_initnode(&interface->ctrl, SYSTEM_NODETYPE_NORMAL, "ctrl");
     system_initnode(&interface->data, SYSTEM_NODETYPE_MAILBOX, "data");
@@ -100,21 +100,18 @@ void ethernet_initinterface(struct ethernet_interface *interface, const char *na
 void ethernet_initprotocol(struct ethernet_protocol *protocol, const char *name, unsigned short type, void (*notify)(struct ethernet_interface *interface, unsigned int count, void *buffer))
 {
 
-    resource_init(&protocol->resource, RESOURCE_PROTONET, protocol);
-    list_inititem(&protocol->item, protocol);
+    resource_init(&protocol->resource, RESOURCE_ETHERNETPROTOCOL, protocol);
+    system_initnode(&protocol->root, SYSTEM_NODETYPE_GROUP, name);
+    system_initnode(&protocol->data, SYSTEM_NODETYPE_MAILBOX, "data");
 
     protocol->type = type;
     protocol->notify = notify;
-
-    system_initnode(&protocol->root, SYSTEM_NODETYPE_GROUP, name);
-    system_initnode(&protocol->data, SYSTEM_NODETYPE_MAILBOX, "data");
 
 }
 
 void module_init()
 {
 
-    list_init(&protocols);
     system_initnode(&root, SYSTEM_NODETYPE_GROUP, "ethernet");
 
 }

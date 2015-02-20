@@ -8,7 +8,7 @@ struct binary_protocol *binary_findprotocol(struct vfs_channel *channel, unsigne
 
     struct resource *current = 0;
 
-    while ((current = resource_findtype(current, RESOURCE_PROTOBINARY)))
+    while ((current = resource_findtype(current, RESOURCE_BINARYPROTOCOL)))
     {
 
         struct binary_protocol *protocol = current->data;
@@ -25,7 +25,7 @@ struct binary_protocol *binary_findprotocol(struct vfs_channel *channel, unsigne
 void binary_initprotocol(struct binary_protocol *protocol, unsigned int (*match)(struct vfs_channel *channel, unsigned int id), unsigned long (*findsymbol)(struct vfs_channel *channel, unsigned int id, unsigned int count, const char *symbol), unsigned long (*copyprogram)(struct vfs_channel *channel, unsigned int id), unsigned int (*relocate)(struct vfs_channel *channel, unsigned int id, unsigned int address))
 {
 
-    resource_init(&protocol->resource, RESOURCE_PROTOBINARY, protocol);
+    resource_init(&protocol->resource, RESOURCE_BINARYPROTOCOL, protocol);
 
     protocol->match = match;
     protocol->findsymbol = findsymbol;

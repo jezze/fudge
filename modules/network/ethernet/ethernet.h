@@ -1,6 +1,7 @@
 struct ethernet_interface
 {
 
+    struct resource resource;
     struct system_node root;
     struct system_node ctrl;
     struct system_node data;
@@ -14,11 +15,10 @@ struct ethernet_protocol
 {
 
     struct resource resource;
-    struct list_item item;
-    unsigned int type;
-    void (*notify)(struct ethernet_interface *interface, unsigned int count, void *buffer);
     struct system_node root;
     struct system_node data;
+    unsigned int type;
+    void (*notify)(struct ethernet_interface *interface, unsigned int count, void *buffer);
 
 };
 

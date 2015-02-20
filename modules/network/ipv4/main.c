@@ -11,7 +11,6 @@
 #define REMOTES                         64
 
 static struct ethernet_protocol ethernetprotocol;
-static struct list protocols;
 static struct arp_hook arphook;
 static struct ipv4_ethernetentry localbuffer[LOCALS];
 static struct ipv4_ethernetentry remotebuffer[REMOTES];
@@ -46,7 +45,7 @@ static void arphook_notify(unsigned int count, void *buffer)
 void ipv4_registerprotocol(struct ipv4_protocol *protocol)
 {
 
-    list_add(&protocols, &protocol->item);
+    resource_register(&protocol->resource);
     system_addchild(&protocol->root, &protocol->data);
     system_addchild(&ethernetprotocol.root, &protocol->root);
 
@@ -55,7 +54,7 @@ void ipv4_registerprotocol(struct ipv4_protocol *protocol)
 void ipv4_unregisterprotocol(struct ipv4_protocol *protocol)
 {
 
-    list_remove(&protocols, &protocol->item);
+    resource_unregister(&protocol->resource);
     system_removechild(&protocol->root, &protocol->data);
     system_removechild(&ethernetprotocol.root, &protocol->root);
 
@@ -64,13 +63,12 @@ void ipv4_unregisterprotocol(struct ipv4_protocol *protocol)
 void ipv4_initprotocol(struct ipv4_protocol *protocol, char *name, unsigned char id, void (*notify)(struct ethernet_interface *interface, unsigned int count, void *buffer))
 {
 
-    list_inititem(&protocol->item, protocol);
+    resource_init(&protocol->resource, RESOURCE_IPV4PROTOCOL, protocol);
+    system_initnode(&protocol->root, SYSTEM_NODETYPE_GROUP, name);
+    system_initnode(&protocol->data, SYSTEM_NODETYPE_MAILBOX, "data");
 
     protocol->id = id;
     protocol->notify = notify;
-
-    system_initnode(&protocol->root, SYSTEM_NODETYPE_GROUP, name);
-    system_initnode(&protocol->data, SYSTEM_NODETYPE_MAILBOX, "data");
 
 }
 
