@@ -13,7 +13,7 @@ struct system_header
 {
 
     char id[12];
-    struct system_node *root;
+    unsigned int root;
 
 };
 

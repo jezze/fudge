@@ -3,12 +3,27 @@
 #include "system.h"
 #include "backend.h"
 
+static struct system_node root;
+static struct system_header header;
+
+void system_registernode(struct system_node *node)
+{
+
+    system_addchild(&root, node);
+
+}
+
+void system_unregisternode(struct system_node *node)
+{
+
+    system_removechild(&root, node);
+
+}
+
 static unsigned int backend_read(struct vfs_backend *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct system_backend *backend = (struct system_backend *)self;
-
-    return memory_read(buffer, count, &backend->header, sizeof (struct system_header), offset);
+    return memory_read(buffer, count, &header, sizeof (struct system_header), offset);
 
 }
 
@@ -19,23 +34,15 @@ static unsigned int backend_write(struct vfs_backend *self, unsigned int offset,
 
 }
 
-static void setupheader(struct system_header *header, struct system_node *root)
+void system_initbackend(struct vfs_backend *backend)
 {
 
-    memory_write(header->id, 12, "FUDGE_SYSTEM", 12, 0);
+    vfs_initbackend(backend, 2000, backend_read, backend_write);
+    system_initnode(&root, SYSTEM_NODETYPE_GROUP, "FUDGE_ROOT");
+    memory_write(header.id, 12, "FUDGE_SYSTEM", 12, 0);
 
-    header->root = root;
-
-}
-
-void system_initbackend(struct system_backend *backend)
-{
-
-    vfs_initbackend(&backend->base, 2000, backend_read, backend_write);
-    system_initnode(&backend->root, SYSTEM_NODETYPE_GROUP, "FUDGE_ROOT");
-    setupheader(&backend->header, &backend->root);
-
-    backend->root.parent = &backend->root;
+    root.parent = &root;
+    header.root = (unsigned int )&root;
 
 }
 

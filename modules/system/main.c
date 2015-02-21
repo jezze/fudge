@@ -4,7 +4,7 @@
 #include "backend.h"
 #include "protocol.h"
 
-static struct system_backend backend;
+static struct vfs_backend backend;
 static struct vfs_protocol protocol;
 
 static unsigned int read_normal(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
@@ -217,20 +217,6 @@ void system_removechild(struct system_node *group, struct system_node *node)
 
 }
 
-void system_registernode(struct system_node *node)
-{
-
-    system_addchild(&backend.root, node);
-
-}
-
-void system_unregisternode(struct system_node *node)
-{
-
-    system_removechild(&backend.root, node);
-
-}
-
 void system_initnode(struct system_node *node, unsigned int type, const char *name)
 {
 
@@ -278,7 +264,7 @@ void module_init()
 void module_register()
 {
 
-    resource_register(&backend.base.resource);
+    resource_register(&backend.resource);
     resource_register(&protocol.resource);
 
 }
@@ -286,7 +272,7 @@ void module_register()
 void module_unregister()
 {
 
-    resource_unregister(&backend.base.resource);
+    resource_unregister(&backend.resource);
     resource_unregister(&protocol.resource);
 
 }
