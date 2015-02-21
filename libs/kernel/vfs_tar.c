@@ -8,6 +8,18 @@
 
 static struct vfs_protocol protocol;
 
+static unsigned int protocol_match(struct vfs_backend *backend)
+{
+
+    struct tar_header header;
+
+    if (backend->read(backend, 0, TAR_BLOCK_SIZE, &header) < TAR_BLOCK_SIZE)
+        return 0;
+
+    return tar_validate(&header);
+
+}
+
 static unsigned int protocol_root(struct vfs_backend *backend)
 {
 
@@ -67,26 +79,39 @@ static unsigned int protocol_parent(struct vfs_backend *backend, unsigned int id
 
 }
 
-static unsigned int protocol_match(struct vfs_backend *backend)
+static unsigned int protocol_child(struct vfs_backend *backend, unsigned int id, unsigned int count, const char *path)
 {
 
     struct tar_header header;
+    unsigned int address = decode(id);
+    unsigned int length;
 
-    if (backend->read(backend, 0, TAR_BLOCK_SIZE, &header) < TAR_BLOCK_SIZE)
+    if (!count)
+        return id;
+
+    if (backend->read(backend, address, TAR_BLOCK_SIZE, &header) < TAR_BLOCK_SIZE)
         return 0;
 
-    return tar_validate(&header);
+    length = ascii_length(header.name);
 
-}
+    while ((address = tar_next(&header, address)))
+    {
 
-static unsigned long protocol_getphysical(struct vfs_backend *backend, unsigned int id)
-{
+        if (backend->read(backend, address, TAR_BLOCK_SIZE, &header) < TAR_BLOCK_SIZE)
+            break;
 
-    /* TEMPORARY FIX */
+        if (!tar_validate(&header))
+            break;
 
-    struct kernel_module *module = (struct kernel_module *)backend;
+        if ((ascii_length(header.name)) != length + count)
+            continue;
 
-    return (unsigned long)module->address + id;
+        if (memory_match(header.name + length, path, count))
+            return encode(address);
+
+    }
+
+    return 0;
 
 }
 
@@ -207,46 +232,21 @@ static unsigned int protocol_write(struct vfs_backend *backend, unsigned int id,
 
 }
 
-static unsigned int protocol_child(struct vfs_backend *backend, unsigned int id, unsigned int count, const char *path)
+static unsigned long protocol_getphysical(struct vfs_backend *backend, unsigned int id)
 {
 
-    struct tar_header header;
-    unsigned int address = decode(id);
-    unsigned int length;
+    /* TEMPORARY FIX */
 
-    if (!count)
-        return id;
+    struct kernel_module *module = (struct kernel_module *)backend;
 
-    if (backend->read(backend, address, TAR_BLOCK_SIZE, &header) < TAR_BLOCK_SIZE)
-        return 0;
-
-    length = ascii_length(header.name);
-
-    while ((address = tar_next(&header, address)))
-    {
-
-        if (backend->read(backend, address, TAR_BLOCK_SIZE, &header) < TAR_BLOCK_SIZE)
-            break;
-
-        if (!tar_validate(&header))
-            break;
-
-        if ((ascii_length(header.name)) != length + count)
-            continue;
-
-        if (memory_match(header.name + length, path, count))
-            return encode(address);
-
-    }
-
-    return 0;
+    return (unsigned long)module->address + id;
 
 }
 
 void vfs_setuptar()
 {
 
-    vfs_initprotocol(&protocol, protocol_match, protocol_root, protocol_create, protocol_destroy, protocol_open, protocol_close, protocol_read, protocol_write, protocol_parent, protocol_child, protocol_getphysical);
+    vfs_initprotocol(&protocol, protocol_match, protocol_root, protocol_parent, protocol_child, protocol_create, protocol_destroy, protocol_open, protocol_close, protocol_read, protocol_write, protocol_getphysical);
     resource_register(&protocol.resource);
 
 }

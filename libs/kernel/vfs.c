@@ -51,21 +51,21 @@ void vfs_initbackend(struct vfs_backend *backend, unsigned int id, unsigned int 
 
 }
 
-void vfs_initprotocol(struct vfs_protocol *protocol, unsigned int (*match)(struct vfs_backend *backend), unsigned int (*root)(struct vfs_backend *backend), unsigned int (*create)(struct vfs_backend *backend, unsigned int id, unsigned int count, const char *name), unsigned int (*destroy)(struct vfs_backend *backend, unsigned int id, unsigned int count, const char *name), unsigned int (*open)(struct vfs_backend *backend, unsigned int id), unsigned int (*close)(struct vfs_backend *backend, unsigned int id), unsigned int (*read)(struct vfs_backend *backend, unsigned int id, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write)(struct vfs_backend *backend, unsigned int id, unsigned int offset, unsigned int count, void *buffer), unsigned int (*parent)(struct vfs_backend *backend, unsigned int id), unsigned int (*child)(struct vfs_backend *backend, unsigned int id, unsigned int count, const char *path), unsigned long (*getphysical)(struct vfs_backend *backend, unsigned int id))
+void vfs_initprotocol(struct vfs_protocol *protocol, unsigned int (*match)(struct vfs_backend *backend), unsigned int (*root)(struct vfs_backend *backend), unsigned int (*parent)(struct vfs_backend *backend, unsigned int id), unsigned int (*child)(struct vfs_backend *backend, unsigned int id, unsigned int count, const char *path), unsigned int (*create)(struct vfs_backend *backend, unsigned int id, unsigned int count, const char *name), unsigned int (*destroy)(struct vfs_backend *backend, unsigned int id, unsigned int count, const char *name), unsigned int (*open)(struct vfs_backend *backend, unsigned int id), unsigned int (*close)(struct vfs_backend *backend, unsigned int id), unsigned int (*read)(struct vfs_backend *backend, unsigned int id, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write)(struct vfs_backend *backend, unsigned int id, unsigned int offset, unsigned int count, void *buffer), unsigned long (*getphysical)(struct vfs_backend *backend, unsigned int id))
 {
 
     resource_init(&protocol->resource, RESOURCE_VFSPROTOCOL, protocol);
 
     protocol->match = match;
     protocol->root = root;
+    protocol->parent = parent;
+    protocol->child = child;
     protocol->create = create;
     protocol->destroy = destroy;
     protocol->open = open;
     protocol->close = close;
     protocol->read = read;
     protocol->write = write;
-    protocol->parent = parent;
-    protocol->child = child;
     protocol->getphysical = getphysical;
 
 }

@@ -33,6 +33,24 @@ static unsigned int protocol_root(struct vfs_backend *backend)
 
 }
 
+static unsigned int protocol_parent(struct vfs_backend *backend, unsigned int id)
+{
+
+    struct system_node *node = getnode(id);
+
+    return (unsigned int)node->parent;
+
+}
+
+static unsigned int protocol_child(struct vfs_backend *backend, unsigned int id, unsigned int count, const char *path)
+{
+
+    struct system_node *node = getnode(id);
+
+    return node->child(node, count, path);
+
+}
+
 static unsigned int protocol_create(struct vfs_backend *backend, unsigned int id, unsigned int count, const char *name)
 {
 
@@ -83,28 +101,10 @@ static unsigned int protocol_write(struct vfs_backend *backend, unsigned int id,
 
 }
 
-static unsigned int protocol_parent(struct vfs_backend *backend, unsigned int id)
-{
-
-    struct system_node *node = getnode(id);
-
-    return (unsigned int)node->parent;
-
-}
-
-static unsigned int protocol_child(struct vfs_backend *backend, unsigned int id, unsigned int count, const char *path)
-{
-
-    struct system_node *node = getnode(id);
-
-    return node->child(node, count, path);
-
-}
-
 void system_initprotocol(struct vfs_protocol *protocol)
 {
 
-    vfs_initprotocol(protocol, protocol_match, protocol_root, protocol_create, protocol_destroy, protocol_open, protocol_close, protocol_read, protocol_write, protocol_parent, protocol_child, 0);
+    vfs_initprotocol(protocol, protocol_match, protocol_root, protocol_parent, protocol_child, protocol_create, protocol_destroy, protocol_open, protocol_close, protocol_read, protocol_write, 0);
 
 }
 
