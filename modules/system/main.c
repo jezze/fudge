@@ -76,7 +76,7 @@ static unsigned int write(struct system_node *self, unsigned int offset, unsigne
 
 }
 
-unsigned int child_normal(struct system_node *self, unsigned int count, const char *path)
+static unsigned int child_normal(struct system_node *self, unsigned int count, const char *path)
 {
 
     if (!count)
@@ -86,7 +86,7 @@ unsigned int child_normal(struct system_node *self, unsigned int count, const ch
 
 }
 
-unsigned int child_group(struct system_node *self, unsigned int count, const char *path)
+static unsigned int child_group(struct system_node *self, unsigned int count, const char *path)
 {
 
     struct list_item *current;
