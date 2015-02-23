@@ -29,16 +29,16 @@ static void interpret(struct buffer *buffer)
 
     }
 
-    if (!call_walk(CALL_PC, CALL_DR, 9, "bin/slang"))
+    if (!call_walk(CALL_CPP, CALL_DR, 9, "bin/slang"))
         return;
 
     if (!call_walk(CALL_L0, CALL_DR, 12, "system/pipe/"))
         return;
 
     call_walk(CALL_L1, CALL_L0, 1, "0");
-    call_walk(CALL_I1, CALL_L0, 1, "1");
-    call_walk(CALL_O1, CALL_O0, 0, 0);
-    call_spawn(2);
+    call_walk(CALL_CI0, CALL_L0, 1, "1");
+    call_walk(CALL_CO0, CALL_O0, 0, 0);
+    call_spawn();
     call_open(CALL_L1);
     call_write(CALL_L1, 0, buffer->head, buffer->memory);
     call_close(CALL_L1);

@@ -184,8 +184,7 @@ static void taskload(struct task *task, struct cpu_general *general)
 static unsigned int spawn(struct container *container, struct task *task, void *stack)
 {
 
-    struct {void *caller; unsigned int shift;} *args = stack;
-    struct vfs_descriptor *descriptor = &task->descriptors[3];
+    struct vfs_descriptor *descriptor = &task->descriptors[0x0D];
     struct binary_protocol *protocol;
     struct task *next;
     unsigned int i;
@@ -203,18 +202,16 @@ static unsigned int spawn(struct container *container, struct task *task, void *
     if (!next)
         return 0;
 
-    next->descriptors[0].channel = task->descriptors[0].channel;
-    next->descriptors[0].id = task->descriptors[0].id;
-    next->descriptors[1].channel = task->descriptors[1].channel;
-    next->descriptors[1].id = task->descriptors[1].id;
-    next->descriptors[2].channel = task->descriptors[3].channel;
-    next->descriptors[2].id = task->descriptors[3].id;
+    next->descriptors[0x00].channel = task->descriptors[0x00].channel;
+    next->descriptors[0x00].id = task->descriptors[0x00].id;
+    next->descriptors[0x01].channel = task->descriptors[0x01].channel;
+    next->descriptors[0x01].id = task->descriptors[0x01].id;
 
-    for (i = 4; i < 20; i++)
+    for (i = 0x02; i < 0x0D; i++)
     {
 
-        next->descriptors[i].channel = task->descriptors[i + args->shift].channel;
-        next->descriptors[i].id = task->descriptors[i + args->shift].id;
+        next->descriptors[i].channel = task->descriptors[i + 0x0B].channel;
+        next->descriptors[i].id = task->descriptors[i + 0x0B].id;
 
     }
 
@@ -230,7 +227,7 @@ static unsigned int spawn(struct container *container, struct task *task, void *
     taskmapcontainer(next, container);
     taskactivate(next);
 
-    next->state.registers.ip = protocol->copyprogram(next->descriptors[2].channel, next->descriptors[2].id);
+    next->state.registers.ip = protocol->copyprogram(next->descriptors[0x02].channel, next->descriptors[0x02].id);
     next->state.registers.sp = ARCH_TASK_STACKLIMIT;
 
     return 1;

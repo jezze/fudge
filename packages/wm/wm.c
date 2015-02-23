@@ -84,10 +84,10 @@ static void draw()
 static void spawn()
 {
 
-    call_walk(CALL_PC, CALL_DR, 9, "bin/wnull");
-    call_walk(CALL_I1, CALL_I0, 0, 0);
-    call_walk(CALL_O1, CALL_O0, 0, 0);
-    call_spawn(2);
+    call_walk(CALL_CPP, CALL_DR, 9, "bin/wnull");
+    call_walk(CALL_CI0, CALL_I0, 0, 0);
+    call_walk(CALL_CO0, CALL_O0, 0, 0);
+    call_spawn();
 
 }
 

@@ -6,7 +6,7 @@ void main()
 
     char num[32];
     unsigned char buffer[FUDGE_BSIZE];
-    unsigned int count0, count1, roff0, roff1, woff0 = 0, woff1 = 0;
+    unsigned int count0, count1, roff0, roff1, woff0 = 0;
     unsigned int lines = 0;
     unsigned int total;
 
@@ -32,8 +32,6 @@ void main()
 
             if (++lines <= total)
                 woff0 += call_write(CALL_O0, woff0, count1, buffer + roff1);
-            else
-                woff1 += call_write(CALL_O1, woff1, count1, buffer + roff1);
 
         }
 
