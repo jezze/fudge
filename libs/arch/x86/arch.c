@@ -215,7 +215,7 @@ static unsigned int spawn(struct container *container, struct task *task, void *
 
     }
 
-    for (i = 20; i < TASK_DESCRIPTORS; i++)
+    for (i = 0x18; i < TASK_DESCRIPTORS; i++)
     {
 
         next->descriptors[i].channel = 0;
