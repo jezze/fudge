@@ -2,6 +2,7 @@
 #include <kernel/error.h>
 #include <kernel/resource.h>
 #include <kernel/vfs.h>
+#include <kernel/binary.h>
 #include <kernel/task.h>
 #include <kernel/scheduler.h>
 #include <kernel/container.h>
@@ -184,8 +185,20 @@ static unsigned int spawn(struct container *container, struct task *task, void *
 {
 
     struct {void *caller; unsigned int shift;} *args = stack;
-    struct task *next = scheduler_findinactive();
+    struct vfs_descriptor *descriptor = &task->descriptors[3];
+    struct binary_protocol *protocol;
+    struct task *next;
     unsigned int i;
+
+    if (!descriptor->id || !descriptor->channel)
+        return 0;
+
+    protocol = binary_findprotocol(descriptor->channel, descriptor->id);
+
+    if (!protocol)
+        return 0;
+
+    next = scheduler_findinactive();
 
     if (!next)
         return 0;
@@ -205,11 +218,19 @@ static unsigned int spawn(struct container *container, struct task *task, void *
 
     }
 
-    taskmapcontainer(next, container);
+    for (i = 20; i < TASK_DESCRIPTORS; i++)
+    {
+
+        next->descriptors[i].channel = 0;
+        next->descriptors[i].id = 0;
+
+    }
+
     scheduler_use(next);
+    taskmapcontainer(next, container);
     taskactivate(next);
 
-    next->state.registers.ip = kernel_call(KERNEL_EXECUTE, container, next, 0);
+    next->state.registers.ip = protocol->copyprogram(next->descriptors[2].channel, next->descriptors[2].id);
     next->state.registers.sp = ARCH_TASK_STACKLIMIT;
 
     return 1;
@@ -219,17 +240,6 @@ static unsigned int spawn(struct container *container, struct task *task, void *
 static unsigned int despawn(struct container *container, struct task *task, void *stack)
 {
 
-    unsigned int i;
-
-    for (i = 0; i < TASK_DESCRIPTORS; i++)
-    {
-
-        task->descriptors[i].channel = 0;
-        task->descriptors[i].id = 0;
-
-    }
-
-    taskmapcontainer(task, container);
     scheduler_unuse(task);
 
     return 0;

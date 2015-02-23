@@ -19,13 +19,6 @@ unsigned int call_close(unsigned int index)
 
 }
 
-unsigned int call_execute()
-{
-
-    return 0;
-
-}
-
 unsigned int call_despawn()
 {
 

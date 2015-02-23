@@ -270,24 +270,6 @@ static unsigned int bind(struct container *container, struct task *task, void *s
 
 }
 
-static unsigned int execute(struct container *container, struct task *task, void *stack)
-{
-
-    struct vfs_descriptor *descriptor = getdescriptor(task, 2);
-    struct binary_protocol *protocol;
-
-    if (!descriptor || !descriptor->id || !descriptor->channel)
-        return 0;
-
-    protocol = binary_findprotocol(descriptor->channel, descriptor->id);
-
-    if (!protocol)
-        return 0;
-
-    return protocol->copyprogram(descriptor->channel, descriptor->id);
-
-}
-
 static unsigned int load(struct container *container, struct task *task, void *stack)
 {
 
@@ -443,7 +425,6 @@ void kernel_setup(unsigned int (*spawn)(struct container *container, struct task
     calls[KERNEL_AUTH] = auth;
     calls[KERNEL_MOUNT] = mount;
     calls[KERNEL_BIND] = bind;
-    calls[KERNEL_EXECUTE] = execute;
     calls[KERNEL_LOAD] = load;
     calls[KERNEL_UNLOAD] = unload;
     calls[KERNEL_SPAWN] = spawn;
