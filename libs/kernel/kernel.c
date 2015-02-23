@@ -8,7 +8,7 @@
 #include "container.h"
 #include "kernel.h"
 
-#define CALLS                           16
+#define CALLS                           14
 
 static unsigned int (*calls[CALLS])(struct container *container, struct task *task, void *stack);
 
@@ -30,6 +30,29 @@ static struct vfs_mount *getmount(struct container *container, unsigned int moun
 {
 
     return (mount < CONTAINER_MOUNTS) ? &container->mounts[mount] : 0;
+
+}
+
+static unsigned int auth(struct container *container, struct task *task, void *stack)
+{
+
+    struct {void *caller; unsigned int channel; unsigned int backend;} *args = stack;
+    struct vfs_channel *channel = getchannel(container, args->channel);
+    struct vfs_backend *backend = vfs_findbackend(args->backend);
+    struct vfs_protocol *protocol;
+
+    if (!channel || !backend)
+        return 0;
+
+    protocol = vfs_findprotocol(backend);
+
+    if (!protocol)
+        return 0;
+
+    channel->backend = backend;
+    channel->protocol = protocol;
+
+    return 1;
 
 }
 
@@ -192,29 +215,6 @@ static unsigned int write(struct container *container, struct task *task, void *
         return 0;
 
     return descriptor->channel->protocol->write(descriptor->channel->backend, descriptor->id, args->offset, args->count, args->buffer);
-
-}
-
-static unsigned int auth(struct container *container, struct task *task, void *stack)
-{
-
-    struct {void *caller; unsigned int channel; unsigned int backend;} *args = stack;
-    struct vfs_channel *channel = getchannel(container, args->channel);
-    struct vfs_backend *backend = vfs_findbackend(args->backend);
-    struct vfs_protocol *protocol;
-
-    if (!channel || !backend)
-        return 0;
-
-    protocol = vfs_findprotocol(backend);
-
-    if (!protocol)
-        return 0;
-
-    channel->backend = backend;
-    channel->protocol = protocol;
-
-    return 1;
 
 }
 
@@ -414,6 +414,7 @@ void kernel_setup(unsigned int (*spawn)(struct container *container, struct task
     vfs_setupcpio();
     vfs_setuptar();
 
+    calls[KERNEL_AUTH] = auth;
     calls[KERNEL_WALK] = walk;
     calls[KERNEL_CREATE] = create;
     calls[KERNEL_DESTROY] = destroy;
@@ -421,7 +422,6 @@ void kernel_setup(unsigned int (*spawn)(struct container *container, struct task
     calls[KERNEL_CLOSE] = close;
     calls[KERNEL_READ] = read;
     calls[KERNEL_WRITE] = write;
-    calls[KERNEL_AUTH] = auth;
     calls[KERNEL_MOUNT] = mount;
     calls[KERNEL_BIND] = bind;
     calls[KERNEL_LOAD] = load;
