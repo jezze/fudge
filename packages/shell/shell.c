@@ -23,7 +23,12 @@ static void interpret(struct buffer *buffer)
             ok = call_walk(CALL_L1, CALL_DW, count - 4, temp + 3);
 
         if (ok)
+        {
+
             call_walk(CALL_DW, CALL_L1, 0, 0);
+            call_walk(CALL_CDW, CALL_L1, 0, 0);
+
+        }
 
         return;
 

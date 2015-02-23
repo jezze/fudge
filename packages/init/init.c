@@ -4,7 +4,7 @@
 void main()
 {
 
-    if (!call_walk(CALL_DW, CALL_DR, 5, "home/"))
+    if (!call_walk(CALL_CDW, CALL_DR, 5, "home/"))
         return;
 
     if (!call_walk(CALL_CPP, CALL_DR, 9, "bin/slang"))

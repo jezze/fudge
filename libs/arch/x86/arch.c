@@ -184,7 +184,7 @@ static void taskload(struct task *task, struct cpu_general *general)
 static unsigned int spawn(struct container *container, struct task *task, void *stack)
 {
 
-    struct vfs_descriptor *descriptor = &task->descriptors[0x02 + 0x0A];
+    struct vfs_descriptor *descriptor = &task->descriptors[0x0C];
     struct binary_protocol *protocol;
     struct task *next;
     unsigned int i;
@@ -202,22 +202,17 @@ static unsigned int spawn(struct container *container, struct task *task, void *
     if (!next)
         return 0;
 
-    next->descriptors[0x00].channel = task->descriptors[0x00].channel;
-    next->descriptors[0x00].id = task->descriptors[0x00].id;
-    next->descriptors[0x01].channel = task->descriptors[0x01].channel;
-    next->descriptors[0x01].id = task->descriptors[0x01].id;
-
-    for (i = 0x02; i < (0x02 + 0x0A); i++)
+    for (i = 0x00; i < 0x0C; i++)
     {
 
-        next->descriptors[i].channel = task->descriptors[i + 0x0A].channel;
-        next->descriptors[i].id = task->descriptors[i + 0x0A].id;
-        next->descriptors[i + 0x0A].channel = task->descriptors[i + 0x0A].channel;
-        next->descriptors[i + 0x0A].id = task->descriptors[i + 0x0A].id;
+        next->descriptors[i].channel = task->descriptors[i + 0x0C].channel;
+        next->descriptors[i].id = task->descriptors[i + 0x0C].id;
+        next->descriptors[i + 0x0C].channel = task->descriptors[i + 0x0C].channel;
+        next->descriptors[i + 0x0C].id = task->descriptors[i + 0x0C].id;
 
     }
 
-    for (i = (0x02 + 0x0A) + 0x0A; i < TASK_DESCRIPTORS; i++)
+    for (i = 0x18; i < TASK_DESCRIPTORS; i++)
     {
 
         next->descriptors[i].channel = 0;
@@ -229,7 +224,7 @@ static unsigned int spawn(struct container *container, struct task *task, void *
     taskmapcontainer(next, container);
     taskactivate(next);
 
-    next->state.registers.ip = protocol->copyprogram(next->descriptors[0x02].channel, next->descriptors[0x02].id);
+    next->state.registers.ip = protocol->copyprogram(next->descriptors[0x00].channel, next->descriptors[0x00].id);
     next->state.registers.sp = ARCH_TASK_STACKLIMIT;
 
     return 1;
