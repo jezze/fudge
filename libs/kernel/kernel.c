@@ -414,20 +414,20 @@ void kernel_setup(unsigned int (*spawn)(struct container *container, struct task
     vfs_setupcpio();
     vfs_setuptar();
 
-    calls[KERNEL_AUTH] = auth;
-    calls[KERNEL_WALK] = walk;
-    calls[KERNEL_CREATE] = create;
-    calls[KERNEL_DESTROY] = destroy;
-    calls[KERNEL_OPEN] = open;
-    calls[KERNEL_CLOSE] = close;
-    calls[KERNEL_READ] = read;
-    calls[KERNEL_WRITE] = write;
-    calls[KERNEL_MOUNT] = mount;
-    calls[KERNEL_BIND] = bind;
-    calls[KERNEL_LOAD] = load;
-    calls[KERNEL_UNLOAD] = unload;
-    calls[KERNEL_SPAWN] = spawn;
-    calls[KERNEL_DESPAWN] = despawn;
+    calls[0x00] = auth;
+    calls[0x01] = walk;
+    calls[0x02] = create;
+    calls[0x03] = destroy;
+    calls[0x04] = open;
+    calls[0x05] = close;
+    calls[0x06] = read;
+    calls[0x07] = write;
+    calls[0x08] = mount;
+    calls[0x09] = bind;
+    calls[0x0A] = load;
+    calls[0x0B] = unload;
+    calls[0x0C] = spawn;
+    calls[0x0D] = despawn;
 
 }
 
