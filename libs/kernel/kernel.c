@@ -37,19 +37,16 @@ static unsigned int auth(struct container *container, struct task *task, void *s
 
     struct {void *caller; unsigned int channel; unsigned int backend;} *args = stack;
     struct vfs_channel *channel = getchannel(container, args->channel);
-    struct vfs_backend *backend = vfs_findbackend(args->backend);
-    struct vfs_protocol *protocol;
 
-    if (!backend)
+    channel->backend = vfs_findbackend(args->backend);
+
+    if (!channel->backend)
         return 0;
 
-    protocol = vfs_findprotocol(backend);
+    channel->protocol = vfs_findprotocol(channel->backend);
 
-    if (!protocol)
+    if (!channel->protocol)
         return 0;
-
-    channel->backend = backend;
-    channel->protocol = protocol;
 
     return 1;
 
