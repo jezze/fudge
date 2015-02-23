@@ -1,5 +1,4 @@
 #include <fudge.h>
-#include <kernel/error.h>
 #include <kernel/resource.h>
 #include <kernel/vfs.h>
 #include <kernel/binary.h>

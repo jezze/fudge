@@ -1,5 +1,4 @@
 #include <fudge.h>
-#include "error.h"
 #include "resource.h"
 #include "vfs.h"
 #include "binary.h"
@@ -400,8 +399,6 @@ void kernel_setupmodules(struct container *container, struct task *task, unsigne
         task->state.registers.ip = protocol->copyprogram(init->channel, init->id);
 
     }
-
-    error_assert(task->state.registers.ip != 0, "Failed to locate entry point", __FILE__, __LINE__);
 
 }
 
