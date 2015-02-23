@@ -7,28 +7,28 @@
 #include "container.h"
 #include "kernel.h"
 
-#define CALLS                           14
+#define CALLS                           16
 
 static unsigned int (*calls[CALLS])(struct container *container, struct task *task, void *stack);
 
 static struct vfs_descriptor *getdescriptor(struct task *task, unsigned int descriptor)
 {
 
-    return (descriptor < TASK_DESCRIPTORS) ? &task->descriptors[descriptor] : 0;
+    return &task->descriptors[descriptor & (TASK_DESCRIPTORS - 1)];
 
 }
 
 static struct vfs_channel *getchannel(struct container *container, unsigned int channel)
 {
 
-    return (channel < CONTAINER_CHANNELS) ? &container->channels[channel] : 0;
+    return &container->channels[channel & (CONTAINER_CHANNELS - 1)];
 
 }
 
 static struct vfs_mount *getmount(struct container *container, unsigned int mount)
 {
 
-    return (mount < CONTAINER_MOUNTS) ? &container->mounts[mount] : 0;
+    return &container->mounts[mount & (CONTAINER_MOUNTS - 1)];
 
 }
 
@@ -339,10 +339,17 @@ static unsigned int unload(struct container *container, struct task *task, void 
 
 }
 
+static unsigned int undefined(struct container *container, struct task *task, void *stack)
+{
+
+    return 0;
+
+}
+
 unsigned int kernel_call(unsigned int index, struct container *container, struct task *task, void *stack)
 {
 
-    return (index < CALLS) ? calls[index](container, task, stack) : 0;
+    return calls[index & (CALLS - 1)](container, task, stack);
 
 }
 
@@ -425,6 +432,8 @@ void kernel_setup(unsigned int (*spawn)(struct container *container, struct task
     calls[0x0B] = unload;
     calls[0x0C] = spawn;
     calls[0x0D] = despawn;
+    calls[0x0E] = undefined;
+    calls[0x0F] = undefined;
 
 }
 
