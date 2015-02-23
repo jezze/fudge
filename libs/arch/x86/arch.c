@@ -184,7 +184,7 @@ static void taskload(struct task *task, struct cpu_general *general)
 static unsigned int spawn(struct container *container, struct task *task, void *stack)
 {
 
-    struct vfs_descriptor *descriptor = &task->descriptors[0x0D];
+    struct vfs_descriptor *descriptor = &task->descriptors[0x02 + 0x0A];
     struct binary_protocol *protocol;
     struct task *next;
     unsigned int i;
@@ -207,15 +207,15 @@ static unsigned int spawn(struct container *container, struct task *task, void *
     next->descriptors[0x01].channel = task->descriptors[0x01].channel;
     next->descriptors[0x01].id = task->descriptors[0x01].id;
 
-    for (i = 0x02; i < 0x0D; i++)
+    for (i = 0x02; i < (0x02 + 0x0A); i++)
     {
 
-        next->descriptors[i].channel = task->descriptors[i + 0x0B].channel;
-        next->descriptors[i].id = task->descriptors[i + 0x0B].id;
+        next->descriptors[i].channel = task->descriptors[i + 0x0A].channel;
+        next->descriptors[i].id = task->descriptors[i + 0x0A].id;
 
     }
 
-    for (i = 0x18; i < TASK_DESCRIPTORS; i++)
+    for (i = (0x02 + 0x0A) + 0x0A; i < TASK_DESCRIPTORS; i++)
     {
 
         next->descriptors[i].channel = 0;
