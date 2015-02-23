@@ -343,7 +343,7 @@ static unsigned int unload(struct container *container, struct task *task, void 
 unsigned int kernel_call(unsigned int index, struct container *container, struct task *task, void *stack)
 {
 
-    return calls[index](container, task, stack);
+    return (index < CALLS) ? calls[index](container, task, stack) : 0;
 
 }
 
