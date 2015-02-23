@@ -249,9 +249,6 @@ static void parse(struct tokenlist *postfix, struct tokenlist *stack)
 
     unsigned int i;
 
-    call_walk(CALL_CI0, CALL_I0, 0, 0);
-    call_walk(CALL_CO0, CALL_O0, 0, 0);
-
     for (i = 0; i < postfix->head; i++)
     {
 

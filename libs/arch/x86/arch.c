@@ -212,6 +212,8 @@ static unsigned int spawn(struct container *container, struct task *task, void *
 
         next->descriptors[i].channel = task->descriptors[i + 0x0A].channel;
         next->descriptors[i].id = task->descriptors[i + 0x0A].id;
+        next->descriptors[i + 0x0A].channel = task->descriptors[i + 0x0A].channel;
+        next->descriptors[i + 0x0A].id = task->descriptors[i + 0x0A].id;
 
     }
 
