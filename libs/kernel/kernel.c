@@ -219,10 +219,7 @@ static unsigned int mount(struct container *container, struct task *task, void *
     struct vfs_channel *channel = getchannel(container, args->channel);
     struct vfs_descriptor *pdescriptor = getdescriptor(task, args->descriptor);
 
-    if (!channel->backend || !channel->protocol)
-        return 0;
-
-    if (!pdescriptor->id || !pdescriptor->channel)
+    if (!channel->backend || !channel->protocol || !pdescriptor->id || !pdescriptor->channel)
         return 0;
 
     mount->parent.channel = pdescriptor->channel;
@@ -242,10 +239,7 @@ static unsigned int bind(struct container *container, struct task *task, void *s
     struct vfs_descriptor *pdescriptor = getdescriptor(task, args->pdescriptor);
     struct vfs_descriptor *cdescriptor = getdescriptor(task, args->cdescriptor);
 
-    if (!pdescriptor->id || !pdescriptor->channel)
-        return 0;
-
-    if (!cdescriptor->id || !cdescriptor->channel)
+    if (!pdescriptor->id || !pdescriptor->channel || !cdescriptor->id || !cdescriptor->channel)
         return 0;
 
     mount->parent.channel = pdescriptor->channel;
@@ -267,10 +261,7 @@ static unsigned int load(struct container *container, struct task *task, void *s
     void (*module_init)();
     void (*module_register)();
 
-    if (!descriptor->id || !descriptor->channel)
-        return 0;
-
-    if (!descriptor->channel->protocol->getphysical)
+    if (!descriptor->id || !descriptor->channel || !descriptor->channel->protocol->getphysical)
         return 0;
 
     /* Physical should be replaced with known address later on */
@@ -281,10 +272,7 @@ static unsigned int load(struct container *container, struct task *task, void *s
 
     protocol = binary_findprotocol(descriptor->channel, descriptor->id);
 
-    if (!protocol)
-        return 0;
-
-    if (!protocol->relocate(descriptor->channel, descriptor->id, physical))
+    if (!protocol || !protocol->relocate(descriptor->channel, descriptor->id, physical))
         return 0;
 
     module_init = (void (*)())(protocol->findsymbol(descriptor->channel, descriptor->id, 11, "module_init"));
