@@ -346,10 +346,8 @@ unsigned int kernel_setupmodules(struct container *container, struct task *task,
 
     struct vfs_channel *channel = &container->channels[0x00];
     struct vfs_mount *mount = &container->mounts[0x00];
-    struct vfs_descriptor *init = &task->descriptors[0x00];
-    struct vfs_descriptor *root = &task->descriptors[0x01];
-    struct vfs_descriptor *cinit = &task->descriptors[0x08];
-    struct vfs_descriptor *croot = &task->descriptors[0x09];
+    struct vfs_descriptor *init = &task->descriptors[0x08];
+    struct vfs_descriptor *root = &task->descriptors[0x09];
     unsigned int i;
 
     for (i = 0; i < count; i++)
@@ -369,15 +367,15 @@ unsigned int kernel_setupmodules(struct container *container, struct task *task,
         if (!mount->parent.id)
             continue;
 
-        root->channel = croot->channel = mount->parent.channel;
-        root->id = croot->id = mount->parent.id;
-        init->channel = cinit->channel = root->channel;
-        init->id = cinit->id = root->channel->protocol->child(root->channel->backend, root->id, 4, "bin/");
+        root->channel = mount->parent.channel;
+        root->id = mount->parent.id;
+        init->channel = root->channel;
+        init->id = root->channel->protocol->child(root->channel->backend, root->id, 4, "bin/");
 
         if (!init->id)
             continue;
 
-        return init->id = cinit->id = init->channel->protocol->child(init->channel->backend, init->id, 4, "init");
+        return init->id = init->channel->protocol->child(init->channel->backend, init->id, 4, "init");
 
     }
 

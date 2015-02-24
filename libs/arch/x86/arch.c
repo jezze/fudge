@@ -208,14 +208,10 @@ static void taskload(struct task *task, struct cpu_general *general)
 
 }
 
-static unsigned int spawn(struct container *container, struct task *task, void *stack)
+static void copydescriptors(struct task *next, struct task *task)
 {
 
-    struct task *next = scheduler_findinactive();
     unsigned int i;
-
-    if (!next)
-        return 0;
 
     for (i = 0x00; i < 0x08; i++)
     {
@@ -231,6 +227,17 @@ static unsigned int spawn(struct container *container, struct task *task, void *
 
     }
 
+}
+
+static unsigned int spawn(struct container *container, struct task *task, void *stack)
+{
+
+    struct task *next = scheduler_findinactive();
+
+    if (!next)
+        return 0;
+
+    copydescriptors(next, task);
     scheduler_use(next);
     taskmapcontainer(next, container);
     taskactivate(next);
@@ -446,11 +453,14 @@ void arch_setup(unsigned int count, struct kernel_module *modules)
 
     current.task = setuptasks();
 
+    kernel_setupmodules(current.container, current.task, count, modules);
+
+    copydescriptors(current.task, current.task);
+    scheduler_use(current.task);
     taskmapcontainer(current.task, current.container);
     taskactivate(current.task);
-    kernel_setupmodules(current.container, current.task, count, modules);
-    scheduler_use(current.task);
     taskprep(current.task);
+
     arch_usermode(selector.ucode, selector.udata, current.task->state.registers.ip, current.task->state.registers.sp);
 
 }
