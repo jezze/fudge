@@ -346,16 +346,9 @@ unsigned short arch_pagefault(void *stack)
     struct {struct cpu_general general; unsigned int type; struct cpu_interrupt interrupt;} *registers = stack;
     unsigned int address = cpu_getcr2();
 
-    if (registers->interrupt.code == selector.ucode)
-    {
-
-        taskmaptext(current.task, address);
-        taskmapstack(current.task, ARCH_TASK_STACKBASE);
-        taskcopyprogram(current.task);
-
-        return selector.udata;
-
-    }
+    taskmaptext(current.task, address);
+    taskmapstack(current.task, ARCH_TASK_STACKBASE);
+    taskcopyprogram(current.task);
 
     return arch_schedule(&registers->general, &registers->interrupt);
 
