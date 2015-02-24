@@ -125,7 +125,7 @@ static struct container *setupcontainers()
 static void setuptask(struct arch_task *task, unsigned int i)
 {
 
-    task_init(&task->base, 0, ARCH_TASK_STACKLIMIT);
+    task_init(&task->base);
 
     scheduler_register_task(&task->base);
 

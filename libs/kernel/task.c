@@ -3,7 +3,7 @@
 #include "vfs.h"
 #include "task.h"
 
-void task_init(struct task *task, unsigned long ip, unsigned long sp)
+void task_init(struct task *task)
 {
 
     unsigned int i;
@@ -15,9 +15,6 @@ void task_init(struct task *task, unsigned long ip, unsigned long sp)
 
     for (i = 0; i < TASK_DESCRIPTORS; i++)
         vfs_initdescriptor(&task->descriptors[i]);
-
-    task->state.registers.ip = ip;
-    task->state.registers.sp = sp;
 
 }
 

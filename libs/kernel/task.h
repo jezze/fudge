@@ -29,4 +29,4 @@ struct task
 
 };
 
-void task_init(struct task *task, unsigned long ip, unsigned long sp);
+void task_init(struct task *task);

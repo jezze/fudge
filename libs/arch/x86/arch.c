@@ -396,7 +396,7 @@ static void setuptask(struct arch_task *task, unsigned int i)
     struct mmu_directory *directories = (struct mmu_directory *)ARCH_TASK_DIRECTORY_BASE;
     struct mmu_table *tables = (struct mmu_table *)ARCH_TASK_TABLE_BASE;
 
-    task_init(&task->base, 0, ARCH_TASK_STACKLIMIT);
+    task_init(&task->base);
 
     task->directory = directories + i;
     task->table = tables + i * ARCH_TASK_MAPPINGS;
