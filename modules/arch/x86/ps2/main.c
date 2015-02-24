@@ -108,7 +108,7 @@ static struct base_bus bus;
 static struct system_node reset;
 
 static struct device devices[] = {
-    {0, 0, 0, 0, 0, 0, 0},
+    {0},
     {0, PS2_IRQ_KEYBOARD, PS2_COMMAND_DEV1DISABLE, PS2_COMMAND_DEV1ENABLE, PS2_COMMAND_DEV1TEST, 0x00, PS2_CONFIGFLAG_DEV1INT, PS2_CONFIGFLAG_DEV1CLOCK},
     {0, PS2_IRQ_MOUSE, PS2_COMMAND_DEV2DISABLE, PS2_COMMAND_DEV2ENABLE, PS2_COMMAND_DEV2TEST, PS2_COMMAND_DEV2WI, PS2_CONFIGFLAG_DEV2INT, PS2_CONFIGFLAG_DEV2CLOCK}
 };
@@ -139,7 +139,7 @@ unsigned char ps2_getdata()
 unsigned short ps2_getirq(unsigned int id)
 {
 
-    return (id < 3) ? devices[id].irq : 0xFFFF;
+    return devices[id].irq;
 
 }
 

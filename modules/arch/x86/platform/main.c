@@ -37,7 +37,7 @@ struct device
 static struct base_bus bus;
 
 static struct device devices[] = {
-    {0, 0},
+    {0},
     {PLATFORM_REGISTER_PIT, PLATFORM_IRQ_PIT},
     {PLATFORM_REGISTER_RTC, PLATFORM_IRQ_RTC},
     {PLATFORM_REGISTER_UART1, PLATFORM_IRQ_UART1},
@@ -49,14 +49,14 @@ static struct device devices[] = {
 unsigned short platform_getbase(unsigned int id)
 {
 
-    return (id < 7) ? devices[id].base : 0;
+    return devices[id].base;
 
 }
 
 unsigned short platform_getirq(unsigned int id)
 {
 
-    return (id < 7) ? devices[id].irq : 0xFFFF;
+    return devices[id].irq;
 
 }
 
