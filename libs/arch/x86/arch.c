@@ -162,6 +162,21 @@ static void taskactivate(struct task *task)
 
 }
 
+static void taskprep(struct task *task)
+{
+
+    struct vfs_descriptor *descriptor = &task->descriptors[0x00];
+    struct binary_protocol *protocol = binary_findprotocol(descriptor->channel, descriptor->id);
+
+    if (!protocol)
+        return;
+
+    task->state.registers.ip = protocol->copyprogram(descriptor->channel, descriptor->id);
+    task->state.registers.sp = ARCH_TASK_STACKLIMIT;
+
+}
+
+
 static void tasksave(struct task *task, struct cpu_general *general)
 {
 
@@ -439,6 +454,8 @@ void arch_setup(unsigned int count, struct kernel_module *modules)
 
     setupmmu(current.container, current.task);
     kernel_setupmodules(current.container, current.task, count, modules);
+    scheduler_use(current.task);
+    taskprep(current.task);
     arch_usermode(selector.ucode, selector.udata, current.task->state.registers.ip, current.task->state.registers.sp);
 
 }

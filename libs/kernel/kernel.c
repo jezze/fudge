@@ -341,7 +341,7 @@ unsigned int kernel_call(unsigned int index, struct container *container, struct
 
 }
 
-void kernel_setupmodules(struct container *container, struct task *task, unsigned int count, struct kernel_module *modules)
+unsigned int kernel_setupmodules(struct container *container, struct task *task, unsigned int count, struct kernel_module *modules)
 {
 
     struct vfs_channel *channel = &container->channels[0x00];
@@ -354,8 +354,6 @@ void kernel_setupmodules(struct container *container, struct task *task, unsigne
 
     for (i = 0; i < count; i++)
     {
-
-        struct binary_protocol *protocol;
 
         channel->backend = &modules[i].base;
         channel->protocol = vfs_findprotocol(channel->backend);
@@ -379,21 +377,11 @@ void kernel_setupmodules(struct container *container, struct task *task, unsigne
         if (!init->id)
             continue;
 
-        init->id = cinit->id = init->channel->protocol->child(init->channel->backend, init->id, 4, "init");
-
-        if (!init->id)
-            continue;
-
-        protocol = binary_findprotocol(init->channel, init->id);
-
-        if (!protocol)
-            continue;
-
-        scheduler_use(task);
-
-        task->state.registers.ip = protocol->copyprogram(init->channel, init->id);
+        return init->id = cinit->id = init->channel->protocol->child(init->channel->backend, init->id, 4, "init");
 
     }
+
+    return 0;
 
 }
 
