@@ -17,23 +17,23 @@
 #define ARCH_BIOS_LIMIT                 0x00100000
 #define ARCH_BIOS_SIZE                  (ARCH_BIOS_LIMIT - ARCH_BIOS_BASE)
 #define ARCH_KCODE_BASE                 0x00100000
-#define ARCH_KCODE_LIMIT                0x00280000
+#define ARCH_KCODE_LIMIT                0x00380000
 #define ARCH_KCODE_SIZE                 (ARCH_KCODE_LIMIT - ARCH_KCODE_BASE)
 #define ARCH_KSTACK_BASE                0x00380000
 #define ARCH_KSTACK_LIMIT               0x00400000
 #define ARCH_KSTACK_SIZE                (ARCH_KSTACK_LIMIT - ARCH_KSTACK_BASE)
-#define ARCH_DIRECTORY_KCODE_BASE       0x00400000
-#define ARCH_DIRECTORY_KCODE_LIMIT      0x00420000
-#define ARCH_DIRECTORY_KCODE_SIZE       (ARCH_DIRECTORY_KCODE_LIMIT - ARCH_DIRECTORY_KCODE_BASE)
-#define ARCH_TABLE_KCODE_BASE           0x00420000
-#define ARCH_TABLE_KCODE_LIMIT          0x00500000
-#define ARCH_TABLE_KCODE_SIZE           (ARCH_TABLE_KCODE_LIMIT - ARCH_TABLE_KCODE_BASE)
-#define ARCH_DIRECTORY_UCODE_BASE       0x00500000
-#define ARCH_DIRECTORY_UCODE_LIMIT      0x00540000
-#define ARCH_DIRECTORY_UCODE_SIZE       (ARCH_DIRECTORY_UCODE_LIMIT - ARCH_DIRECTORY_UCODE_BASE)
-#define ARCH_TABLE_UCODE_BASE           0x00540000
-#define ARCH_TABLE_UCODE_LIMIT          0x00620000
-#define ARCH_TABLE_UCODE_SIZE           (ARCH_TABLE_UCODE_LIMIT - ARCH_TABLE_UCODE_BASE)
+#define ARCH_CONTAINER_DIRECTORY_BASE   0x00400000
+#define ARCH_CONTAINER_DIRECTORY_LIMIT  0x00420000
+#define ARCH_CONTAINER_DIRECTORY_SIZE   (ARCH_CONTAINER_DIRECTORY_LIMIT - ARCH_CONTAINER_DIRECTORY_BASE)
+#define ARCH_CONTAINER_TABLE_BASE       0x00420000
+#define ARCH_CONTAINER_TABLE_LIMIT      0x00500000
+#define ARCH_CONTAINER_TABLE_SIZE       (ARCH_CONTAINER_TABLE_LIMIT - ARCH_CONTAINER_TABLE_BASE)
+#define ARCH_TASK_DIRECTORY_BASE        0x00500000
+#define ARCH_TASK_DIRECTORY_LIMIT       0x00540000
+#define ARCH_TASK_DIRECTORY_SIZE        (ARCH_TASK_DIRECTORY_LIMIT - ARCH_TASK_DIRECTORY_BASE)
+#define ARCH_TASK_TABLE_BASE            0x00540000
+#define ARCH_TASK_TABLE_LIMIT           0x00620000
+#define ARCH_TASK_TABLE_SIZE            (ARCH_TASK_TABLE_LIMIT - ARCH_TASK_TABLE_BASE)
 #define ARCH_UCODE_BASE                 0x01000000
 #define ARCH_UCODE_LIMIT                0x03000000
 #define ARCH_UCODE_SIZE                 (ARCH_UCODE_LIMIT - ARCH_UCODE_BASE)
@@ -121,7 +121,7 @@ static void containermaptext(struct container *container)
     struct arch_container *acontainer = (struct arch_container *)container;
 
     mmu_map(acontainer->directory, &acontainer->table[0], ARCH_BIOS_BASE, ARCH_BIOS_BASE, 0x00400000, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
-    mmu_map(acontainer->directory, &acontainer->table[1], ARCH_DIRECTORY_KCODE_BASE, ARCH_DIRECTORY_KCODE_BASE, 0x00400000, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
+    mmu_map(acontainer->directory, &acontainer->table[1], ARCH_CONTAINER_DIRECTORY_BASE, ARCH_CONTAINER_DIRECTORY_BASE, 0x00400000, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
 
 }
 
@@ -368,8 +368,8 @@ unsigned short arch_syscall(void *stack)
 static void setupcontainer(struct arch_container *container, unsigned int i)
 {
 
-    struct mmu_directory *directories = (struct mmu_directory *)ARCH_DIRECTORY_KCODE_BASE;
-    struct mmu_table *tables = (struct mmu_table *)ARCH_TABLE_KCODE_BASE;
+    struct mmu_directory *directories = (struct mmu_directory *)ARCH_CONTAINER_DIRECTORY_BASE;
+    struct mmu_table *tables = (struct mmu_table *)ARCH_CONTAINER_TABLE_BASE;
 
     container_init(&container->base);
 
@@ -393,8 +393,8 @@ static struct container *setupcontainers()
 static void setuptask(struct arch_task *task, unsigned int i)
 {
 
-    struct mmu_directory *directories = (struct mmu_directory *)ARCH_DIRECTORY_UCODE_BASE;
-    struct mmu_table *tables = (struct mmu_table *)ARCH_TABLE_UCODE_BASE;
+    struct mmu_directory *directories = (struct mmu_directory *)ARCH_TASK_DIRECTORY_BASE;
+    struct mmu_table *tables = (struct mmu_table *)ARCH_TASK_TABLE_BASE;
 
     task_init(&task->base, 0, ARCH_TASK_STACKLIMIT);
 
