@@ -67,6 +67,17 @@ static unsigned long protocol_findsymbol(struct vfs_channel *channel, unsigned i
 
 }
 
+static unsigned long protocol_findentry(struct vfs_channel *channel, unsigned int id)
+{
+
+    struct elf_header header;
+
+    channel->protocol->read(channel->backend, id, 0, ELF_HEADER_SIZE, &header);
+
+    return header.entry;
+
+}
+
 static unsigned long protocol_copyprogram(struct vfs_channel *channel, unsigned int id)
 {
 
@@ -141,7 +152,7 @@ static unsigned int protocol_relocate(struct vfs_channel *channel, unsigned int 
 void binary_setupelf()
 {
 
-    binary_initprotocol(&protocol, protocol_match, protocol_findsymbol, protocol_copyprogram, protocol_relocate);
+    binary_initprotocol(&protocol, protocol_match, protocol_findsymbol, protocol_findentry, protocol_copyprogram, protocol_relocate);
     resource_register(&protocol.resource);
 
 }

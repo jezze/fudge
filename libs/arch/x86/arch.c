@@ -185,8 +185,26 @@ static void taskprep(struct task *task)
     if (!protocol)
         return;
 
-    task->state.registers.ip = protocol->copyprogram(descriptor->channel, descriptor->id);
+    task->state.registers.ip = protocol->findentry(descriptor->channel, descriptor->id);
     task->state.registers.sp = ARCH_TASK_STACKLIMIT;
+
+}
+
+static void taskprep2(struct task *task)
+{
+
+    struct vfs_descriptor *descriptor = &task->descriptors[0x00];
+    struct binary_protocol *protocol;
+
+    if (!descriptor->id || !descriptor->channel)
+        return;
+
+    protocol = binary_findprotocol(descriptor->channel, descriptor->id);
+
+    if (!protocol)
+        return;
+
+    protocol->copyprogram(descriptor->channel, descriptor->id);
 
 }
 
@@ -328,23 +346,14 @@ unsigned short arch_pagefault(void *stack)
     struct {struct cpu_general general; unsigned int type; struct cpu_interrupt interrupt;} *registers = stack;
     unsigned int address = cpu_getcr2();
 
-    if (registers->interrupt.code == selector.kcode)
-    {
-
-        struct task *task = scheduler_findactive();
-
-        taskmaptext(task, address);
-        taskmapstack(task);
-
-        return selector.kdata;
-
-    }
-
     if (registers->interrupt.code == selector.ucode)
     {
 
-        taskmapcontainer(current.task, current.container);
-        scheduler_unuse(current.task);
+        taskmaptext(current.task, address);
+        taskmapstack(current.task);
+        taskprep2(current.task);
+
+        return selector.udata;
 
     }
 
