@@ -183,7 +183,7 @@ static void taskload(struct task *task, struct cpu_general *general)
 static unsigned int spawn(struct container *container, struct task *task, void *stack)
 {
 
-    struct vfs_descriptor *descriptor = &task->descriptors[0x0C];
+    struct vfs_descriptor *descriptor = &task->descriptors[0x08];
     struct binary_protocol *protocol;
     struct task *next;
     unsigned int i;
@@ -201,21 +201,17 @@ static unsigned int spawn(struct container *container, struct task *task, void *
     if (!next)
         return 0;
 
-    for (i = 0x00; i < 0x0C; i++)
+    for (i = 0x00; i < 0x08; i++)
     {
 
-        next->descriptors[i].channel = task->descriptors[i + 0x0C].channel;
-        next->descriptors[i].id = task->descriptors[i + 0x0C].id;
-        next->descriptors[i + 0x0C].channel = task->descriptors[i + 0x0C].channel;
-        next->descriptors[i + 0x0C].id = task->descriptors[i + 0x0C].id;
-
-    }
-
-    for (i = 0x18; i < TASK_DESCRIPTORS; i++)
-    {
-
-        next->descriptors[i].channel = 0;
-        next->descriptors[i].id = 0;
+        next->descriptors[i + 0x00].channel = task->descriptors[i + 0x08].channel;
+        next->descriptors[i + 0x00].id = task->descriptors[i + 0x08].id;
+        next->descriptors[i + 0x08].channel = task->descriptors[i + 0x08].channel;
+        next->descriptors[i + 0x08].id = task->descriptors[i + 0x08].id;
+        next->descriptors[i + 0x10].channel = 0;
+        next->descriptors[i + 0x10].id = 0;
+        next->descriptors[i + 0x18].channel = 0;
+        next->descriptors[i + 0x18].id = 0;
 
     }
 

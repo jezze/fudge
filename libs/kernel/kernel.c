@@ -348,8 +348,8 @@ void kernel_setupmodules(struct container *container, struct task *task, unsigne
     struct vfs_mount *mount = &container->mounts[0x00];
     struct vfs_descriptor *init = &task->descriptors[0x00];
     struct vfs_descriptor *root = &task->descriptors[0x01];
-    struct vfs_descriptor *cinit = &task->descriptors[0x0C];
-    struct vfs_descriptor *croot = &task->descriptors[0x0D];
+    struct vfs_descriptor *cinit = &task->descriptors[0x08];
+    struct vfs_descriptor *croot = &task->descriptors[0x09];
     unsigned int i;
 
     for (i = 0; i < count; i++)
