@@ -166,7 +166,12 @@ static void taskprep(struct task *task)
 {
 
     struct vfs_descriptor *descriptor = &task->descriptors[0x00];
-    struct binary_protocol *protocol = binary_findprotocol(descriptor->channel, descriptor->id);
+    struct binary_protocol *protocol;
+
+    if (!descriptor->id || !descriptor->channel)
+        return;
+
+    protocol = binary_findprotocol(descriptor->channel, descriptor->id);
 
     if (!protocol)
         return;
@@ -175,7 +180,6 @@ static void taskprep(struct task *task)
     task->state.registers.sp = ARCH_TASK_STACKLIMIT;
 
 }
-
 
 static void tasksave(struct task *task, struct cpu_general *general)
 {
@@ -198,20 +202,8 @@ static void taskload(struct task *task, struct cpu_general *general)
 static unsigned int spawn(struct container *container, struct task *task, void *stack)
 {
 
-    struct vfs_descriptor *descriptor = &task->descriptors[0x08];
-    struct binary_protocol *protocol;
-    struct task *next;
+    struct task *next = scheduler_findinactive();
     unsigned int i;
-
-    if (!descriptor->id || !descriptor->channel)
-        return 0;
-
-    protocol = binary_findprotocol(descriptor->channel, descriptor->id);
-
-    if (!protocol)
-        return 0;
-
-    next = scheduler_findinactive();
 
     if (!next)
         return 0;
@@ -233,9 +225,7 @@ static unsigned int spawn(struct container *container, struct task *task, void *
     scheduler_use(next);
     taskmapcontainer(next, container);
     taskactivate(next);
-
-    next->state.registers.ip = protocol->copyprogram(next->descriptors[0x00].channel, next->descriptors[0x00].id);
-    next->state.registers.sp = ARCH_TASK_STACKLIMIT;
+    taskprep(next);
 
     return 1;
 
