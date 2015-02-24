@@ -125,6 +125,15 @@ static void containermaptext(struct container *container)
 
 }
 
+static void containeractivate(struct container *container)
+{
+
+    struct arch_container *acontainer = (struct arch_container *)container;
+
+    mmu_load(acontainer->directory);
+
+}
+
 static void taskmapcontainer(struct task *task, struct container *container)
 {
 
@@ -423,16 +432,6 @@ static struct task *setuptasks()
 
 }
 
-static void setupmmu(struct container *container, struct task *task)
-{
-
-    containermaptext(container);
-    taskmapcontainer(task, container);
-    taskactivate(task);
-    mmu_enable();
-
-}
-
 void arch_setup(unsigned int count, struct kernel_module *modules)
 {
 
@@ -440,9 +439,15 @@ void arch_setup(unsigned int count, struct kernel_module *modules)
     kernel_setup(spawn, despawn);
 
     current.container = setupcontainers();
+
+    containermaptext(current.container);
+    containeractivate(current.container);
+    mmu_enable();
+
     current.task = setuptasks();
 
-    setupmmu(current.container, current.task);
+    taskmapcontainer(current.task, current.container);
+    taskactivate(current.task);
     kernel_setupmodules(current.container, current.task, count, modules);
     scheduler_use(current.task);
     taskprep(current.task);
