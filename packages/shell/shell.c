@@ -18,15 +18,15 @@ static void interpret(struct buffer *buffer)
         count = buffer_rcfifo(buffer, FUDGE_BSIZE, temp);
 
         if (temp[3] == '/')
-            ok = call_walk(CALL_L1, CALL_DR, count - 5, temp + 4);
+            ok = call_walk(CALL_L1, CALL_PR, count - 5, temp + 4);
         else
-            ok = call_walk(CALL_L1, CALL_DW, count - 4, temp + 3);
+            ok = call_walk(CALL_L1, CALL_PW, count - 4, temp + 3);
 
         if (ok)
         {
 
-            call_walk(CALL_DW, CALL_L1, 0, 0);
-            call_walk(CALL_CDW, CALL_L1, 0, 0);
+            call_walk(CALL_PW, CALL_L1, 0, 0);
+            call_walk(CALL_CW, CALL_L1, 0, 0);
 
         }
 
@@ -34,14 +34,14 @@ static void interpret(struct buffer *buffer)
 
     }
 
-    if (!call_walk(CALL_CPP, CALL_DR, 9, "bin/slang"))
+    if (!call_walk(CALL_CP, CALL_PR, 9, "bin/slang"))
         return;
 
-    if (!call_walk(CALL_L0, CALL_DR, 12, "system/pipe/"))
+    if (!call_walk(CALL_L0, CALL_PR, 12, "system/pipe/"))
         return;
 
     call_walk(CALL_L1, CALL_L0, 1, "0");
-    call_walk(CALL_CI0, CALL_L0, 1, "1");
+    call_walk(CALL_C0, CALL_L0, 1, "1");
     call_spawn();
     call_open(CALL_L1);
     call_write(CALL_L1, 0, buffer->head, buffer->memory);
@@ -73,7 +73,7 @@ static void handle(struct buffer *buffer, unsigned char c)
         if (!buffer_poplifo(buffer, 1))
             break;
 
-        call_write(CALL_O0, 0, 3, "\b \b");
+        call_write(CALL_PO, 0, 3, "\b \b");
 
         break;
 
@@ -82,16 +82,16 @@ static void handle(struct buffer *buffer, unsigned char c)
 
     case '\n':
         buffer_pushlifo(buffer, 1, &c);
-        call_write(CALL_O0, 0, 1, &c);
+        call_write(CALL_PO, 0, 1, &c);
         interpret(buffer);
         buffer_clear(buffer);
-        call_write(CALL_O0, 0, 2, "$ ");
+        call_write(CALL_PO, 0, 2, "$ ");
 
         break;
 
     default:
         buffer_pushlifo(buffer, 1, &c);
-        call_write(CALL_O0, 0, 1, &c);
+        call_write(CALL_PO, 0, 1, &c);
 
         break;
 
@@ -109,11 +109,11 @@ void main()
 
     buffer_init(&input, 1, FUDGE_BSIZE, inputbuffer);
 
-    call_open(CALL_I0);
-    call_open(CALL_O0);
-    call_write(CALL_O0, 0, 2, "$ ");
+    call_open(CALL_P0);
+    call_open(CALL_PO);
+    call_write(CALL_PO, 0, 2, "$ ");
 
-    for (roff = 0; (count = call_read(CALL_I0, roff, FUDGE_BSIZE, buffer)); roff += count)
+    for (roff = 0; (count = call_read(CALL_P0, roff, FUDGE_BSIZE, buffer)); roff += count)
     {
 
         unsigned int i;
@@ -123,8 +123,8 @@ void main()
 
     }
 
-    call_close(CALL_O0);
-    call_close(CALL_I0);
+    call_close(CALL_PO);
+    call_close(CALL_P0);
 
 }
 

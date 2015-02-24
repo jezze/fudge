@@ -5,7 +5,7 @@ static unsigned int walk_path(unsigned int index, unsigned int indexw, unsigned 
 {
 
     if (memory_match(buffer, "/", 1))
-        return call_walk(index, CALL_DR, count - 1, buffer + 1);
+        return call_walk(index, CALL_PR, count - 1, buffer + 1);
 
     return call_walk(index, indexw, count, buffer);
 
@@ -272,11 +272,11 @@ static void parse(struct tokenlist *postfix, struct tokenlist *stack)
             if (ascii_length(t->str) >= 2 && t->str[0] == '"')
             {
 
-                if (!call_walk(CALL_L1, CALL_DR, 12, "system/pipe/"))
+                if (!call_walk(CALL_L1, CALL_PR, 12, "system/pipe/"))
                     return;
 
                 call_walk(CALL_L2, CALL_L1, 1, "0");
-                call_walk(CALL_CI0, CALL_L1, 1, "1");
+                call_walk(CALL_C0, CALL_L1, 1, "1");
                 call_write(CALL_L2, 0, ascii_length(t->str) - 2, t->str + 1);
 
             }
@@ -284,7 +284,7 @@ static void parse(struct tokenlist *postfix, struct tokenlist *stack)
             else
             {
 
-                if (!walk_path(CALL_CI0, CALL_DW, ascii_length(t->str), t->str))
+                if (!walk_path(CALL_C0, CALL_PW, ascii_length(t->str), t->str))
                     return;
 
             }
@@ -297,7 +297,7 @@ static void parse(struct tokenlist *postfix, struct tokenlist *stack)
             if (!t)
                 return;
 
-            if (!walk_path(CALL_CO0, CALL_DW, ascii_length(t->str), t->str))
+            if (!walk_path(CALL_CO, CALL_PW, ascii_length(t->str), t->str))
                 return;
 
             break;
@@ -308,16 +308,16 @@ static void parse(struct tokenlist *postfix, struct tokenlist *stack)
             if (!t)
                 return;
 
-            if (!walk_path(CALL_CPP, CALL_L0, ascii_length(t->str), t->str))
+            if (!walk_path(CALL_CP, CALL_L0, ascii_length(t->str), t->str))
                 return;
 
-            if (!call_walk(CALL_L1, CALL_DR, 12, "system/pipe/"))
+            if (!call_walk(CALL_L1, CALL_PR, 12, "system/pipe/"))
                 return;
 
-            call_walk(CALL_CI0, CALL_L1, 1, "1");
+            call_walk(CALL_C0, CALL_L1, 1, "1");
             call_spawn();
-            call_walk(CALL_CI0, CALL_I0, 0, 0);
-            call_walk(CALL_CO0, CALL_L1, 1, "0");
+            call_walk(CALL_C0, CALL_P0, 0, 0);
+            call_walk(CALL_CO, CALL_L1, 1, "0");
 
             break;
 
@@ -327,12 +327,12 @@ static void parse(struct tokenlist *postfix, struct tokenlist *stack)
             if (!t)
                 return;
 
-            if (!walk_path(CALL_CPP, CALL_L0, ascii_length(t->str), t->str))
+            if (!walk_path(CALL_CP, CALL_L0, ascii_length(t->str), t->str))
                 return;
 
             call_spawn();
-            call_walk(CALL_CI0, CALL_I0, 0, 0);
-            call_walk(CALL_CO0, CALL_O0, 0, 0);
+            call_walk(CALL_C0, CALL_P0, 0, 0);
+            call_walk(CALL_CO, CALL_PO, 0, 0);
 
             break;
 
@@ -361,15 +361,15 @@ void main()
     tokenlist_init(&postfix, 1024, postfixdata);
     tokenlist_init(&stack, 8, stackdata);
 
-    if (!call_walk(CALL_L0, CALL_DR, 4, "bin/"))
+    if (!call_walk(CALL_L0, CALL_PR, 4, "bin/"))
         return;
 
-    call_open(CALL_I0);
+    call_open(CALL_P0);
 
-    for (roff = 0; (count = call_read(CALL_I0, roff, FUDGE_BSIZE, buffer)); roff += count)
+    for (roff = 0; (count = call_read(CALL_P0, roff, FUDGE_BSIZE, buffer)); roff += count)
         tokenize(&infix, &stringtable, count, buffer);
 
-    call_close(CALL_I0);
+    call_close(CALL_P0);
 
     if (stack.head)
         return;

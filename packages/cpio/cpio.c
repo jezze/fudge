@@ -13,7 +13,7 @@ unsigned int find_top()
     do
     {
 
-        if (call_read(CALL_I0, offset, sizeof (struct cpio_header), &header) < sizeof (struct cpio_header))
+        if (call_read(CALL_P0, offset, sizeof (struct cpio_header), &header) < sizeof (struct cpio_header))
             break;
 
         if (!cpio_validate(&header))
@@ -48,7 +48,7 @@ unsigned int parent(unsigned int count, char *path)
     do
     {
 
-        if (call_read(CALL_I0, offset, sizeof (struct cpio_header), &header) < sizeof (struct cpio_header))
+        if (call_read(CALL_P0, offset, sizeof (struct cpio_header), &header) < sizeof (struct cpio_header))
             break;
 
         if (!cpio_validate(&header))
@@ -57,7 +57,7 @@ unsigned int parent(unsigned int count, char *path)
         if ((header.mode & 0xF000) == 0x4000)
         {
 
-            if (call_read(CALL_I0, offset + sizeof (struct cpio_header), header.namesize, name) < header.namesize)
+            if (call_read(CALL_P0, offset + sizeof (struct cpio_header), header.namesize, name) < header.namesize)
                 break;
 
             if (memory_match(name, path, count - 1))
@@ -101,13 +101,13 @@ unsigned int walk(unsigned int id, unsigned int count, const char *path)
     if (id == 0xFFFFFFFF)
         id = find_top();
 
-    if (call_read(CALL_I0, id, sizeof (struct cpio_header), &header) < sizeof (struct cpio_header))
+    if (call_read(CALL_P0, id, sizeof (struct cpio_header), &header) < sizeof (struct cpio_header))
         return 0;
 
     if (!cpio_validate(&header))
         return 0;
 
-    if (call_read(CALL_I0, id + sizeof (struct cpio_header), header.namesize, name) < header.namesize)
+    if (call_read(CALL_P0, id + sizeof (struct cpio_header), header.namesize, name) < header.namesize)
         return 0;
 
     length = header.namesize;
@@ -122,7 +122,7 @@ unsigned int walk(unsigned int id, unsigned int count, const char *path)
 
         unsigned int c;
 
-        if (call_read(CALL_I0, id, sizeof (struct cpio_header), &header) < sizeof (struct cpio_header))
+        if (call_read(CALL_P0, id, sizeof (struct cpio_header), &header) < sizeof (struct cpio_header))
             break;
 
         if (!cpio_validate(&header))
@@ -134,7 +134,7 @@ unsigned int walk(unsigned int id, unsigned int count, const char *path)
         if (header.namesize - length == 0)
             continue;
 
-        if (call_read(CALL_I0, id + sizeof (struct cpio_header), header.namesize, name) < header.namesize)
+        if (call_read(CALL_P0, id + sizeof (struct cpio_header), header.namesize, name) < header.namesize)
             break;
 
         c = getslash(count, path);
@@ -145,8 +145,8 @@ unsigned int walk(unsigned int id, unsigned int count, const char *path)
         if (memory_match(name + length, path, c))
         {
 
-            call_write(CALL_O0, 0, header.namesize - length, name + length);
-            call_write(CALL_O0, 0, 1, "\n");
+            call_write(CALL_PO, 0, header.namesize - length, name + length);
+            call_write(CALL_PO, 0, 1, "\n");
 
             if (c == count)
                 return walk(id, count - c, path + c);
@@ -168,21 +168,21 @@ void print_name(unsigned int offset)
     unsigned char buffer[512];
     unsigned int count;
 
-    call_read(CALL_I0, offset, sizeof (struct cpio_header), &header);
+    call_read(CALL_P0, offset, sizeof (struct cpio_header), &header);
 
     if (!cpio_validate(&header))
         return;
 
     if ((header.mode & 0xF000) == 0x8000)
-        call_write(CALL_O0, 0, 2, "D ");
+        call_write(CALL_PO, 0, 2, "D ");
     else if ((header.mode & 0xF000) == 0x4000)
-        call_write(CALL_O0, 0, 2, "F ");
+        call_write(CALL_PO, 0, 2, "F ");
     else
-        call_write(CALL_O0, 0, 2, "X ");
+        call_write(CALL_PO, 0, 2, "X ");
 
-    count = call_read(CALL_I0, offset + sizeof (struct cpio_header), header.namesize, buffer);
-    call_write(CALL_O0, 0, count, buffer);
-    call_write(CALL_O0, 0, 1, "\n");
+    count = call_read(CALL_P0, offset + sizeof (struct cpio_header), header.namesize, buffer);
+    call_write(CALL_PO, 0, count, buffer);
+    call_write(CALL_PO, 0, 1, "\n");
 
 }
 
@@ -196,21 +196,21 @@ void print_names(unsigned int offset)
     do
     {
 
-        call_read(CALL_I0, offset, sizeof (struct cpio_header), &header);
+        call_read(CALL_P0, offset, sizeof (struct cpio_header), &header);
 
         if (!cpio_validate(&header))
             break;
 
         if ((header.mode & 0xF000) == 0x8000)
-            call_write(CALL_O0, 0, 2, "D ");
+            call_write(CALL_PO, 0, 2, "D ");
         else if ((header.mode & 0xF000) == 0x4000)
-            call_write(CALL_O0, 0, 2, "F ");
+            call_write(CALL_PO, 0, 2, "F ");
         else
-            call_write(CALL_O0, 0, 2, "X ");
+            call_write(CALL_PO, 0, 2, "X ");
 
-        count = call_read(CALL_I0, offset + sizeof (struct cpio_header), header.namesize, buffer);
-        call_write(CALL_O0, 0, count, buffer);
-        call_write(CALL_O0, 0, 1, "\n");
+        count = call_read(CALL_P0, offset + sizeof (struct cpio_header), header.namesize, buffer);
+        call_write(CALL_PO, 0, count, buffer);
+        call_write(CALL_PO, 0, 1, "\n");
 
     } while ((offset = cpio_next(&header, offset)));
 
@@ -224,14 +224,14 @@ void print_content(unsigned int offset)
     unsigned int count;
     unsigned int size;
 
-    call_read(CALL_I0, offset, sizeof (struct cpio_header), &header);
+    call_read(CALL_P0, offset, sizeof (struct cpio_header), &header);
 
     if (!cpio_validate(&header))
         return;
 
     size = ((header.filesize[0] << 16) | header.filesize[1]);
-    count = call_read(CALL_I0, offset + sizeof (struct cpio_header) + header.namesize + (header.namesize & 1), size, buffer);
-    call_write(CALL_O0, 0, count, buffer);
+    count = call_read(CALL_P0, offset + sizeof (struct cpio_header) + header.namesize + (header.namesize & 1), size, buffer);
+    call_write(CALL_PO, 0, count, buffer);
 
 }
 

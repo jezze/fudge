@@ -15,7 +15,7 @@ union settings
 static unsigned int writestring(unsigned int offset, char *value)
 {
 
-    return call_write(CALL_O0, offset, ascii_length(value), value);
+    return call_write(CALL_PO, offset, ascii_length(value), value);
 
 }
 
@@ -35,7 +35,7 @@ static unsigned int writedec(unsigned int offset, unsigned char value)
     char num[32];
     unsigned int count = ascii_wvalue(num, 32, value, 10, 0);
 
-    return call_write(CALL_O0, offset, count, num);
+    return call_write(CALL_PO, offset, count, num);
 
 }
 
@@ -45,7 +45,7 @@ static unsigned int writehex2(unsigned int offset, unsigned char value)
     char num[32];
     unsigned int count = ascii_wzerovalue(num, 32, value, 16, 2, 0);
 
-    return call_write(CALL_O0, offset, count, num);
+    return call_write(CALL_PO, offset, count, num);
 
 }
 
@@ -140,12 +140,12 @@ void main()
     union settings buffer;
     unsigned int count, roff, woff;
 
-    call_open(CALL_I0);
+    call_open(CALL_P0);
 
-    for (roff = 0; (count = call_read(CALL_I0, roff, FUDGE_BSIZE, buffer.raw)); roff += count)
+    for (roff = 0; (count = call_read(CALL_P0, roff, FUDGE_BSIZE, buffer.raw)); roff += count)
 
-    call_close(CALL_I0);
-    call_open(CALL_O0);
+    call_close(CALL_P0);
+    call_open(CALL_PO);
 
     woff = writeheader(0, &buffer.header);
 
@@ -169,7 +169,7 @@ void main()
 
     }
 
-    call_close(CALL_O0);
+    call_close(CALL_PO);
 
 }
 

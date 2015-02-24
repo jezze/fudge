@@ -8,19 +8,19 @@ void main()
     unsigned int count;
     unsigned int offset;
 
-    call_open(CALL_I0);
+    call_open(CALL_P0);
 
-    count = call_read(CALL_I0, 0, FUDGE_BSIZE, buffer);
+    count = call_read(CALL_P0, 0, FUDGE_BSIZE, buffer);
 
-    call_close(CALL_I0);
+    call_close(CALL_P0);
 
     offset = count;
 
     while (--offset && buffer[offset - 1] != '/');
 
-    call_open(CALL_O0);
-    call_write(CALL_O0, 0, count - offset, buffer + offset);
-    call_close(CALL_O0);
+    call_open(CALL_PO);
+    call_write(CALL_PO, 0, count - offset, buffer + offset);
+    call_close(CALL_PO);
 
 }
 

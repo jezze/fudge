@@ -84,7 +84,7 @@ static void draw()
 static void spawn()
 {
 
-    call_walk(CALL_CPP, CALL_DR, 9, "bin/wnull");
+    call_walk(CALL_CP, CALL_PR, 9, "bin/wnull");
     call_spawn();
 
 }
@@ -221,7 +221,7 @@ static void sendevent(unsigned int type)
     header.type = type;
     header.count = 0;
 
-    call_walk(CALL_L2, CALL_DR, 17, "system/event/send");
+    call_walk(CALL_L2, CALL_PR, 17, "system/event/send");
     call_open(CALL_L2);
     call_write(CALL_L2, 0, sizeof (struct event_header), &header);
     call_close(CALL_L2);
@@ -234,7 +234,7 @@ static void pollevent()
     unsigned char buffer[FUDGE_BSIZE];
     unsigned int count, roff;
 
-    call_walk(CALL_L1, CALL_DR, 15, "system/event/wm");
+    call_walk(CALL_L1, CALL_PR, 15, "system/event/wm");
     call_open(CALL_L1);
 
     for (roff = 0; (count = call_read(CALL_L1, roff, FUDGE_BSIZE, buffer)); roff += count)

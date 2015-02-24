@@ -223,19 +223,19 @@ void main()
     struct sha1 s;
 
     sha1_init(&s);
-    call_open(CALL_I0);
+    call_open(CALL_P0);
 
-    for (roff = 0; (count = call_read(CALL_I0, roff, FUDGE_BSIZE, buffer)); roff += count)
+    for (roff = 0; (count = call_read(CALL_P0, roff, FUDGE_BSIZE, buffer)); roff += count)
         sha1_read(&s, count, buffer);
 
-    call_close(CALL_I0);
+    call_close(CALL_P0);
     sha1_write(&s, digest);
-    call_open(CALL_O0);
+    call_open(CALL_PO);
 
     for (roff = 0; roff < 20; roff++)
-        woff += call_write(CALL_O0, woff, ascii_wzerovalue(buffer, 32, digest[roff], 16, 2, 0), buffer);
+        woff += call_write(CALL_PO, woff, ascii_wzerovalue(buffer, 32, digest[roff], 16, 2, 0), buffer);
 
-    call_close(CALL_O0);
+    call_close(CALL_PO);
 
 }
 

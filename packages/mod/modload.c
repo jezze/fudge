@@ -178,19 +178,19 @@ static unsigned int resolve(unsigned int id)
 void main()
 {
 
-    if (!call_walk(CALL_L0, CALL_DR, 10, "boot/fudge"))
+    if (!call_walk(CALL_L0, CALL_PR, 10, "boot/fudge"))
         return;
 
-    if (!call_walk(CALL_L1, CALL_DR, 9, "boot/mod/"))
+    if (!call_walk(CALL_L1, CALL_PR, 9, "boot/mod/"))
         return;
 
     call_open(CALL_L0);
-    call_open(CALL_I0);
+    call_open(CALL_P0);
 
-    if (resolve(CALL_I0))
-        call_load(CALL_I0);
+    if (resolve(CALL_P0))
+        call_load(CALL_P0);
 
-    call_close(CALL_I0);
+    call_close(CALL_P0);
     call_close(CALL_L0);
 
 }

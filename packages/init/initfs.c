@@ -43,10 +43,10 @@ void main()
     unsigned int nargs;
     unsigned int i;
 
-    call_open(CALL_I0);
-    count = call_read(CALL_I0, 0, FUDGE_BSIZE, buffer);
+    call_open(CALL_P0);
+    count = call_read(CALL_P0, 0, FUDGE_BSIZE, buffer);
     nargs = parse(count, buffer);
-    call_close(CALL_I0);
+    call_close(CALL_P0);
 
     for (i = 0; i < nargs; i += 4)
     {
@@ -55,7 +55,7 @@ void main()
         unsigned int mount = ascii_rvalue(args[i + 1].position, args[i + 1].count, 10);
         unsigned int backend = ascii_rvalue(args[i + 2].position, args[i + 2].count, 10);
 
-        if (!call_walk(CALL_L0, CALL_DR, args[i + 3].count - 1, args[i + 3].position + 1))
+        if (!call_walk(CALL_L0, CALL_PR, args[i + 3].count - 1, args[i + 3].position + 1))
             continue;
 
         call_open(CALL_L0);

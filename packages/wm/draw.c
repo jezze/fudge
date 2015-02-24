@@ -16,7 +16,7 @@ static unsigned char colormap[] = {
 void draw_setmode()
 {
 
-    call_walk(CALL_L0, CALL_DR, 23, "system/video/vga:0/ctrl");
+    call_walk(CALL_L0, CALL_PR, 23, "system/video/vga:0/ctrl");
     call_open(CALL_L0);
     call_write(CALL_L0, 0, 0, 0);
     call_close(CALL_L0);
@@ -26,7 +26,7 @@ void draw_setmode()
 void draw_setcolormap()
 {
 
-    call_walk(CALL_L0, CALL_DR, 27, "system/video/vga:0/colormap");
+    call_walk(CALL_L0, CALL_PR, 27, "system/video/vga:0/colormap");
     call_open(CALL_L0);
     call_write(CALL_L0, 0, 21, colormap);
     call_close(CALL_L0);
@@ -36,7 +36,7 @@ void draw_setcolormap()
 void draw_begin()
 {
 
-    call_walk(CALL_L0, CALL_DR, 23, "system/video/vga:0/data");
+    call_walk(CALL_L0, CALL_PR, 23, "system/video/vga:0/data");
     call_open(CALL_L0);
 
 }

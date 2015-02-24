@@ -137,7 +137,7 @@ static void render(double rcenter, double icenter, unsigned int iterations, doub
 
         }
 
-        call_write(CALL_O0, y * WIDTH, WIDTH, buffer);
+        call_write(CALL_PO, y * WIDTH, WIDTH, buffer);
 
     }
 
@@ -173,7 +173,7 @@ static void poll()
     for (;;)
     {
 
-        count = call_read(CALL_I0, 0, FUDGE_BSIZE, buffer);
+        count = call_read(CALL_P0, 0, FUDGE_BSIZE, buffer);
 
         for (i = 0; i < count; i++)
             handle(buffer[i]);

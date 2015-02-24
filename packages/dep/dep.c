@@ -49,19 +49,19 @@ static void execute(struct token_state *state, struct expression *expression)
 
     }
 
-    call_open(CALL_O0);
+    call_open(CALL_PO);
 
     for (rindex = 0; rindex < expression->rules; rindex++)
     {
 
         struct string *target = &expression->rule[rindex].target;
 
-        woff += call_write(CALL_O0, woff, target->count, state->buffer + target->index);
-        woff += call_write(CALL_O0, woff, 1, "\n");
+        woff += call_write(CALL_PO, woff, target->count, state->buffer + target->index);
+        woff += call_write(CALL_PO, woff, 1, "\n");
 
     }
 
-    call_close(CALL_O0);
+    call_close(CALL_PO);
 
 }
 
@@ -73,9 +73,9 @@ void main()
     struct expression expression;
 
     memory_clear(&expression, sizeof (struct expression));
-    call_open(CALL_I0);
-    token_init_state(&state, call_read(CALL_I0, 0, FUDGE_BSIZE, buffer), buffer);
-    call_close(CALL_I0);
+    call_open(CALL_P0);
+    token_init_state(&state, call_read(CALL_P0, 0, FUDGE_BSIZE, buffer), buffer);
+    call_close(CALL_P0);
 
     if (parse(&state, &expression))
         execute(&state, &expression);
