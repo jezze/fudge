@@ -153,12 +153,12 @@ static void taskmaptext(struct task *task, unsigned int address)
 
 }
 
-static void taskmapstack(struct task *task)
+static void taskmapstack(struct task *task, unsigned int address)
 {
 
     struct arch_task *atask = (struct arch_task *)task;
 
-    mmu_map(atask->directory, &atask->table[1], atask->mapping[1], ARCH_TASK_STACKBASE, ARCH_TASK_STACKSIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
+    mmu_map(atask->directory, &atask->table[1], atask->mapping[1], address, ARCH_TASK_STACKSIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
 
 }
 
@@ -171,7 +171,7 @@ static void taskactivate(struct task *task)
 
 }
 
-static void taskprep(struct task *task)
+static void taskprepare(struct task *task)
 {
 
     struct vfs_descriptor *descriptor = &task->descriptors[0x00];
@@ -190,7 +190,7 @@ static void taskprep(struct task *task)
 
 }
 
-static void taskprep2(struct task *task)
+static void taskcopyprogram(struct task *task)
 {
 
     struct vfs_descriptor *descriptor = &task->descriptors[0x00];
@@ -248,7 +248,7 @@ static void copytask(struct container *container, struct task *next, struct task
     scheduler_use(next);
     taskmapcontainer(next, container);
     taskactivate(next);
-    taskprep(next);
+    taskprepare(next);
 
 }
 
@@ -350,8 +350,8 @@ unsigned short arch_pagefault(void *stack)
     {
 
         taskmaptext(current.task, address);
-        taskmapstack(current.task);
-        taskprep2(current.task);
+        taskmapstack(current.task, ARCH_TASK_STACKBASE);
+        taskcopyprogram(current.task);
 
         return selector.udata;
 
