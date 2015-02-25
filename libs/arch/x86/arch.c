@@ -7,39 +7,38 @@
 #include "tss.h"
 #include "mmu.h"
 
-#define ARCH_CONTAINERS                 8
-#define ARCH_TASKS                      64
-#define ARCH_GDT_DESCRIPTORS            6
-#define ARCH_IDT_DESCRIPTORS            256
-#define ARCH_TSS_DESCRIPTORS            1
-#define ARCH_DIRECTORY_SIZE             0x1000
-#define ARCH_TABLE_SIZE                 0x1000
-#define ARCH_KERNEL_BASE                0x00000000
-#define ARCH_KERNEL_SIZE                0x00400000
-#define ARCH_KERNEL_LIMIT               (ARCH_KERNEL_BASE + ARCH_KERNEL_SIZE)
-#define ARCH_CONTAINER_DIRECTORY_COUNT  1
-#define ARCH_CONTAINER_DIRECTORY_BASE   ARCH_KERNEL_LIMIT
-#define ARCH_CONTAINER_DIRECTORY_LIMIT  (ARCH_CONTAINER_DIRECTORY_BASE + ARCH_CONTAINERS * (ARCH_DIRECTORY_SIZE * ARCH_CONTAINER_DIRECTORY_COUNT))
-#define ARCH_CONTAINER_TABLE_COUNT      8
-#define ARCH_CONTAINER_TABLE_BASE       ARCH_CONTAINER_DIRECTORY_LIMIT
-#define ARCH_CONTAINER_TABLE_LIMIT      (ARCH_CONTAINER_TABLE_BASE + ARCH_CONTAINERS * (ARCH_TABLE_SIZE * ARCH_CONTAINER_TABLE_COUNT))
-#define ARCH_TASK_DIRECTORY_COUNT       1
-#define ARCH_TASK_DIRECTORY_BASE        ARCH_CONTAINER_TABLE_LIMIT
-#define ARCH_TASK_DIRECTORY_LIMIT       (ARCH_TASK_DIRECTORY_BASE + ARCH_TASKS * (ARCH_DIRECTORY_SIZE * ARCH_TASK_DIRECTORY_COUNT))
-#define ARCH_TASK_TABLE_COUNT           2
-#define ARCH_TASK_TABLE_BASE            ARCH_TASK_DIRECTORY_LIMIT
-#define ARCH_TASK_TABLE_LIMIT           (ARCH_TASK_TABLE_BASE + ARCH_TASKS * (ARCH_TABLE_SIZE * ARCH_TASK_TABLE_COUNT))
-#define ARCH_TASK_CODE_BASE             0x01000000
-#define ARCH_TASK_CODE_SIZE             0x00080000
-#define ARCH_TASK_STACK_BASE            (ARCH_TASK_CODE_BASE + ARCH_TASKS * ARCH_TASK_CODE_SIZE)
-#define ARCH_TASK_STACK_SIZE            0x00010000
-#define ARCH_TASK_VSTACK_LIMIT          0x80000000
+#define CONTAINERS                      8
+#define TASKS                           64
+#define GDTDESCRIPTORS                  6
+#define IDTDESCRIPTORS                  256
+#define TSSDESCRIPTORS                  1
+#define KERNELBASE                      0x00000000
+#define KERNELSIZE                      0x00400000
+#define KERNELLIMIT                     (KERNELBASE + KERNELSIZE)
+#define MMUALIGN                        0x1000
+#define CONTAINERDIRECTORYCOUNT         1
+#define CONTAINERDIRECTORYBASE          KERNELLIMIT
+#define CONTAINERDIRECTORYLIMIT         (CONTAINERDIRECTORYBASE + CONTAINERS * (MMUALIGN * CONTAINERDIRECTORYCOUNT))
+#define CONTAINERTABLECOUNT             8
+#define CONTAINERTABLEBASE              CONTAINERDIRECTORYLIMIT
+#define CONTAINERTABLELIMIT             (CONTAINERTABLEBASE + CONTAINERS * (MMUALIGN * CONTAINERTABLECOUNT))
+#define TASKDIRECTORYCOUNT              1
+#define TASKDIRECTORYBASE               CONTAINERTABLELIMIT
+#define TASKDIRECTORYLIMIT              (TASKDIRECTORYBASE + TASKS * (MMUALIGN * TASKDIRECTORYCOUNT))
+#define TASKTABLECOUNT                  2
+#define TASKTABLEBASE                   TASKDIRECTORYLIMIT
+#define TASKTABLELIMIT                  (TASKTABLEBASE + TASKS * (MMUALIGN * TASKTABLECOUNT))
+#define TASKCODEBASE                    0x01000000
+#define TASKCODESIZE                    0x00080000
+#define TASKSTACKBASE                   (TASKCODEBASE + TASKS * TASKCODESIZE)
+#define TASKSTACKSIZE                   0x00010000
+#define TASKVSTACKLIMIT                 0x80000000
 
 static struct
 {
 
     struct gdt_pointer pointer;
-    struct gdt_descriptor descriptors[ARCH_GDT_DESCRIPTORS];
+    struct gdt_descriptor descriptors[GDTDESCRIPTORS];
 
 } gdt;
 
@@ -47,7 +46,7 @@ static struct
 {
 
     struct idt_pointer pointer;
-    struct idt_descriptor descriptors[ARCH_IDT_DESCRIPTORS];
+    struct idt_descriptor descriptors[IDTDESCRIPTORS];
 
 } idt;
 
@@ -55,7 +54,7 @@ static struct
 {
 
     struct tss_pointer pointer;
-    struct tss_descriptor descriptors[ARCH_TSS_DESCRIPTORS];
+    struct tss_descriptor descriptors[TSSDESCRIPTORS];
 
 } tss;
 
@@ -77,7 +76,7 @@ static struct arch_container
     struct mmu_directory *directory;
     struct mmu_table *table;
 
-} containers[ARCH_CONTAINERS];
+} containers[CONTAINERS];
 
 static struct arch_task
 {
@@ -86,9 +85,9 @@ static struct arch_task
     struct cpu_general general;
     struct mmu_directory *directory;
     struct mmu_table *table;
-    unsigned int mapping[ARCH_TASK_TABLE_COUNT];
+    unsigned int mapping[TASKTABLECOUNT];
 
-} tasks[ARCH_TASKS];
+} tasks[TASKS];
 
 static struct
 {
@@ -103,7 +102,7 @@ static void containermaptext(struct container *container)
 
     struct arch_container *acontainer = (struct arch_container *)container;
 
-    mmu_map(acontainer->directory, &acontainer->table[0], ARCH_KERNEL_BASE, ARCH_KERNEL_BASE, ARCH_KERNEL_SIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
+    mmu_map(acontainer->directory, &acontainer->table[0], KERNELBASE, KERNELBASE, KERNELSIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
     mmu_map(acontainer->directory, &acontainer->table[1], 0x00400000, 0x00400000, 0x00400000, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
     mmu_map(acontainer->directory, &acontainer->table[2], 0x00800000, 0x00800000, 0x00400000, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
 
@@ -133,7 +132,7 @@ static void taskmaptext(struct task *task, unsigned int address)
 
     struct arch_task *atask = (struct arch_task *)task;
 
-    mmu_map(atask->directory, &atask->table[0], atask->mapping[0], address, ARCH_TASK_CODE_SIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
+    mmu_map(atask->directory, &atask->table[0], atask->mapping[0], address, TASKCODESIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
 
 }
 
@@ -142,7 +141,7 @@ static void taskmapstack(struct task *task, unsigned int address)
 
     struct arch_task *atask = (struct arch_task *)task;
 
-    mmu_map(atask->directory, &atask->table[1], atask->mapping[1], address, ARCH_TASK_STACK_SIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
+    mmu_map(atask->directory, &atask->table[1], atask->mapping[1], address, TASKSTACKSIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
 
 }
 
@@ -170,7 +169,7 @@ static void taskprepare(struct task *task)
         return;
 
     task->state.registers.ip = protocol->findentry(descriptor->channel, descriptor->id);
-    task->state.registers.sp = ARCH_TASK_VSTACK_LIMIT;
+    task->state.registers.sp = TASKVSTACKLIMIT;
 
 }
 
@@ -307,7 +306,7 @@ unsigned short arch_schedule(struct cpu_general *general, struct cpu_interrupt *
 
         interrupt->code = selector.kcode;
         interrupt->eip = (unsigned int)arch_halt;
-        interrupt->esp = ARCH_KERNEL_LIMIT;
+        interrupt->esp = KERNELLIMIT;
 
         return selector.kdata;
 
@@ -331,7 +330,7 @@ unsigned short arch_pagefault(void *stack)
     unsigned int address = cpu_getcr2();
 
     taskmaptext(current.task, address);
-    taskmapstack(current.task, ARCH_TASK_VSTACK_LIMIT - ARCH_TASK_STACK_SIZE);
+    taskmapstack(current.task, TASKVSTACKLIMIT - TASKSTACKSIZE);
     taskcopyprogram(current.task);
 
     return arch_schedule(&registers->general, &registers->interrupt);
@@ -354,8 +353,8 @@ static void setupcontainer(struct arch_container *container, unsigned int i, str
 
     container_init(&container->base);
 
-    container->directory = directories + i * ARCH_CONTAINER_DIRECTORY_COUNT;
-    container->table = tables + i * ARCH_CONTAINER_TABLE_COUNT;
+    container->directory = directories + i * CONTAINERDIRECTORYCOUNT;
+    container->table = tables + i * CONTAINERTABLECOUNT;
 
 }
 
@@ -364,8 +363,8 @@ static struct container *setupcontainers()
 
     unsigned int i;
 
-    for (i = 0; i < ARCH_CONTAINERS; i++)
-        setupcontainer(&containers[i], i, (struct mmu_directory *)ARCH_CONTAINER_DIRECTORY_BASE, (struct mmu_table *)ARCH_CONTAINER_TABLE_BASE);
+    for (i = 0; i < CONTAINERS; i++)
+        setupcontainer(&containers[i], i, (struct mmu_directory *)CONTAINERDIRECTORYBASE, (struct mmu_table *)CONTAINERTABLEBASE);
 
     return &containers[0].base;
 
@@ -376,10 +375,10 @@ static void setuptask(struct arch_task *task, unsigned int i, struct mmu_directo
 
     task_init(&task->base);
 
-    task->directory = directories + i * ARCH_TASK_DIRECTORY_COUNT;
-    task->table = tables + i * ARCH_TASK_TABLE_COUNT;
-    task->mapping[0] = ARCH_TASK_CODE_BASE + ARCH_TASK_CODE_SIZE * i;
-    task->mapping[1] = ARCH_TASK_STACK_BASE + ARCH_TASK_STACK_SIZE * i;
+    task->directory = directories + i * TASKDIRECTORYCOUNT;
+    task->table = tables + i * TASKTABLECOUNT;
+    task->mapping[0] = TASKCODEBASE + TASKCODESIZE * i;
+    task->mapping[1] = TASKSTACKBASE + TASKSTACKSIZE * i;
 
     scheduler_register_task(&task->base);
 
@@ -390,8 +389,8 @@ static struct task *setuptasks()
 
     unsigned int i;
 
-    for (i = 0; i < ARCH_TASKS; i++)
-        setuptask(&tasks[i], i, (struct mmu_directory *)ARCH_TASK_DIRECTORY_BASE, (struct mmu_table *)ARCH_TASK_TABLE_BASE);
+    for (i = 0; i < TASKS; i++)
+        setuptask(&tasks[i], i, (struct mmu_directory *)TASKDIRECTORYBASE, (struct mmu_table *)TASKTABLEBASE);
 
     return &tasks[0].base;
 
@@ -400,9 +399,9 @@ static struct task *setuptasks()
 void arch_setup(struct vfs_backend *backend)
 {
 
-    gdt_initpointer(&gdt.pointer, ARCH_GDT_DESCRIPTORS, gdt.descriptors);
-    idt_initpointer(&idt.pointer, ARCH_IDT_DESCRIPTORS, idt.descriptors);
-    tss_initpointer(&tss.pointer, ARCH_TSS_DESCRIPTORS, tss.descriptors);
+    gdt_initpointer(&gdt.pointer, GDTDESCRIPTORS, gdt.descriptors);
+    idt_initpointer(&idt.pointer, IDTDESCRIPTORS, idt.descriptors);
+    tss_initpointer(&tss.pointer, TSSDESCRIPTORS, tss.descriptors);
 
     selector.kcode = gdt_setdescriptor(&gdt.pointer, GDT_INDEX_KCODE, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW | GDT_ACCESS_EXECUTE, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
     selector.kdata = gdt_setdescriptor(&gdt.pointer, GDT_INDEX_KDATA, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
@@ -413,7 +412,7 @@ void arch_setup(struct vfs_backend *backend)
     idt_setdescriptor(&idt.pointer, IDT_INDEX_GF, arch_isrgeneralfault, selector.kcode, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
     idt_setdescriptor(&idt.pointer, IDT_INDEX_PF, arch_isrpagefault, selector.kcode, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
     idt_setdescriptor(&idt.pointer, IDT_INDEX_SYSCALL, arch_isrsyscall, selector.kcode, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT | IDT_FLAG_RING3);
-    tss_setdescriptor(&tss.pointer, TSS_INDEX_DEFAULT, selector.kdata, ARCH_KERNEL_LIMIT);
+    tss_setdescriptor(&tss.pointer, TSS_INDEX_DEFAULT, selector.kdata, KERNELLIMIT);
     cpu_setgdt(&gdt.pointer, selector.kcode, selector.kdata);
     cpu_setidt(&idt.pointer);
     cpu_settss(selector.tlink);
