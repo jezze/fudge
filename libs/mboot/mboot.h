@@ -1,19 +1,14 @@
-enum mboot_flag
-{
-
-    MBOOT_FLAG_MEMORY                   = 0x00000001,
-    MBOOT_FLAG_DEVICE                   = 0x00000002,
-    MBOOT_FLAG_CMDLINE                  = 0x00000004,
-    MBOOT_FLAG_MODULES                  = 0x00000008,
-    MBOOT_FLAG_AOUT                     = 0x00000010,
-    MBOOT_FLAG_ELF                      = 0x00000020,
-    MBOOT_FLAG_MMAP                     = 0x00000040,
-    MBOOT_FLAG_CONFIG                   = 0x00000080,
-    MBOOT_FLAG_LOADER                   = 0x00000100,
-    MBOOT_FLAG_APM                      = 0x00000200,
-    MBOOT_FLAG_VBE                      = 0x00000400
-
-};
+#define MBOOT_FLAG_MEMORY               0x00000001
+#define MBOOT_FLAG_DEVICE               0x00000002
+#define MBOOT_FLAG_CMDLINE              0x00000004
+#define MBOOT_FLAG_MODULES              0x00000008
+#define MBOOT_FLAG_AOUT                 0x00000010
+#define MBOOT_FLAG_ELF                  0x00000020
+#define MBOOT_FLAG_MMAP                 0x00000040
+#define MBOOT_FLAG_CONFIG               0x00000080
+#define MBOOT_FLAG_LOADER               0x00000100
+#define MBOOT_FLAG_APM                  0x00000200
+#define MBOOT_FLAG_VBE                  0x00000400
 
 struct mboot_header_modules
 {

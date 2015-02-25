@@ -7,39 +7,27 @@
 #include <arch/x86/io/io.h>
 #include <arch/x86/platform/platform.h>
 
-#define PIT_FREQUENCY                   1193182
-
-enum pit_register
-{
-
-    PIT_REGISTER_CHANNEL0               = 0x0000,
-    PIT_REGISTER_CHANNEL1               = 0x0001,
-    PIT_REGISTER_CHANNEL2               = 0x0002,
-    PIT_REGISTER_COMMAND                = 0x0003
-
-};
-
-enum pit_command
-{
-
-    PIT_COMMAND_BINARY                  = 0x00,
-    PIT_COMMAND_BCD                     = 0x01,
-    PIT_COMMAND_MODE0                   = 0x00,
-    PIT_COMMAND_MODE1                   = 0x02,
-    PIT_COMMAND_MODE2                   = 0x04,
-    PIT_COMMAND_MODE3                   = 0x06,
-    PIT_COMMAND_MODE4                   = 0x08,
-    PIT_COMMAND_MODE5                   = 0x0A,
-    PIT_COMMAND_LATCH                   = 0x00,
-    PIT_COMMAND_LOW                     = 0x10,
-    PIT_COMMAND_HIGH                    = 0x20,
-    PIT_COMMAND_BOTH                    = 0x30,
-    PIT_COMMAND_CHANNEL0                = 0x00,
-    PIT_COMMAND_CHANNEL1                = 0x40,
-    PIT_COMMAND_CHANNEL2                = 0x80,
-    PIT_COMMAND_READBACK                = 0xC0
-
-};
+#define FREQUENCY                       1193182
+#define REGISTERCHANNEL0                0x0000
+#define REGISTERCHANNEL1                0x0001
+#define REGISTERCHANNEL2                0x0002
+#define REGISTERCOMMAND                 0x0003
+#define COMMANDBINARY                   0x00
+#define COMMANDBCD                      0x01
+#define COMMANDMODE0                    0x00
+#define COMMANDMODE1                    0x02
+#define COMMANDMODE2                    0x04
+#define COMMANDMODE3                    0x06
+#define COMMANDMODE4                    0x08
+#define COMMANDMODE5                    0x0A
+#define COMMANDLATCH                    0x00
+#define COMMANDLOW                      0x10
+#define COMMANDHIGH                     0x20
+#define COMMANDBOTH                     0x30
+#define COMMANDCHANNEL0                 0x00
+#define COMMANDCHANNEL1                 0x40
+#define COMMANDCHANNEL2                 0x80
+#define COMMANDREADBACK                 0xC0
 
 static struct base_driver driver;
 static struct timer_interface timerinterface;
@@ -83,9 +71,9 @@ static void driver_attach(unsigned int id)
 
     io = platform_getbase(id);
 
-    io_outb(io + PIT_REGISTER_COMMAND, PIT_COMMAND_CHANNEL0 | PIT_COMMAND_BOTH | PIT_COMMAND_MODE3 | PIT_COMMAND_BINARY);
-    io_outb(io + PIT_REGISTER_CHANNEL0, divisor);
-    io_outb(io + PIT_REGISTER_CHANNEL0, divisor >> 8);
+    io_outb(io + REGISTERCOMMAND, COMMANDCHANNEL0 | COMMANDBOTH | COMMANDMODE3 | COMMANDBINARY);
+    io_outb(io + REGISTERCHANNEL0, divisor);
+    io_outb(io + REGISTERCHANNEL0, divisor >> 8);
     timer_registerinterface(&timerinterface, id);
     pic_setroutine(platform_getirq(id), id, handleirq);
 

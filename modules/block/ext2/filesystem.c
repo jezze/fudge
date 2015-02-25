@@ -4,46 +4,23 @@
 #include <block/block.h>
 #include "ext2.h"
 
-enum ext2_state
-{
-
-    EXT2_STATE_CLEAN                    = 1,
-    EXT2_STATE_DIRTY                    = 2
-
-};
-
-enum ext2_error
-{
-
-    EXT2_ERROR_IGNORE                   = 1,
-    EXT2_ERROR_RO                       = 2,
-    EXT2_ERROR_PANIC                    = 3
-
-};
-
-enum ext2_osid
-{
-
-    EXT2_OSID_LINUX                     = 0,
-    EXT2_OSID_HURD                      = 1,
-    EXT2_OSID_MASIX                     = 2,
-    EXT2_OSID_FREEBSD                   = 3,
-    EXT2_OSID_OTHERBSD                  = 4
-
-};
-
-enum ext2_nodetype
-{
-
-    EXT2_NODETYPE_FIFO                  = 0x1000,
-    EXT2_NODETYPE_CHAR                  = 0x2000,
-    EXT2_NODETYPE_DIR                   = 0x4000,
-    EXT2_NODETYPE_BLOCK                 = 0x6000,
-    EXT2_NODETYPE_REGULAR               = 0x8000,
-    EXT2_NODETYPE_SYM                   = 0xA000,
-    EXT2_NODETYPE_SOCKET                = 0xC000
-
-};
+#define STATECLEAN                      1
+#define STATEDIRTY                      2
+#define ERRORIGNORE                     1
+#define ERRORRO                         2
+#define ERRORPANIC                      3
+#define OSIDLINUX                       0
+#define OSIDHURD                        1
+#define OSIDMASIX                       2
+#define OSIDFREEBSD                     3
+#define OSIDOTHERBSD                    4
+#define NODETYPEFIFO                    0x1000
+#define NODETYPECHAR                    0x2000
+#define NODETYPEDIR                     0x4000
+#define NODETYPEBLOCK                   0x6000
+#define NODETYPEREGULAR                 0x8000
+#define NODETYPESYM                     0xA000
+#define NODETYPESOCKET                  0xC000
 
 static unsigned int open(struct vfs_backend *backend, unsigned int id)
 {
@@ -73,7 +50,7 @@ static unsigned int read(struct vfs_backend *backend, unsigned int id, unsigned 
     protocol->read_node(filesystem->interface, id, &bg, &node);
     protocol->read_content(filesystem->interface, &node, content);
 
-    if ((node.type & 0xF000) == EXT2_NODETYPE_DIR)
+    if ((node.type & 0xF000) == NODETYPEDIR)
     {
 
         unsigned char *out = buffer;
@@ -97,7 +74,7 @@ static unsigned int read(struct vfs_backend *backend, unsigned int id, unsigned 
 
     }
 
-    if ((node.type & 0xF000) == EXT2_NODETYPE_REGULAR)
+    if ((node.type & 0xF000) == NODETYPEREGULAR)
         return memory_read(buffer, count, content, node.sizeLow, offset);
 
     return 0;
@@ -126,7 +103,7 @@ static struct ext2_entry *finddir(struct vfs_backend *backend, unsigned int id, 
     protocol->read_node(filesystem->interface, id, &bg, &node);
     protocol->read_content(filesystem->interface, &node, private);
 
-    if ((node.type & 0xF000) == EXT2_NODETYPE_DIR)
+    if ((node.type & 0xF000) == NODETYPEDIR)
     {
 
         for (;;)

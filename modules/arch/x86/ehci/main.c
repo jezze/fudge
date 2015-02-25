@@ -4,19 +4,14 @@
 #include <system/system.h>
 #include <arch/x86/pci/pci.h>
 
-enum ehci_register
-{
-
-    EHCI_REGISTER_COMMAND               = 0x00,
-    EHCI_REGISTER_STATUS                = 0x04,
-    EHCI_REGISTER_INTERRUPT             = 0x08,
-    EHCI_REGISTER_FRAMEINDEX            = 0x0C,
-    EHCI_REGISTER_SEGMENT               = 0x10,
-    EHCI_REGISTER_LISTBASE              = 0x14,
-    EHCI_REGISTER_LISTNEXT              = 0x18,
-    EHCI_REGISTER_FLAG                  = 0x40
-
-};
+#define REGISTERCOMMAND                 0x00
+#define REGISTERSTATUS                  0x04
+#define REGISTERINTERRUPT               0x08
+#define REGISTERFRAMEINDEX              0x0C
+#define REGISTERSEGMENT                 0x10
+#define REGISTERLISTBASE                0x14
+#define REGISTERLISTNEXT                0x18
+#define REGISTERFLAG                    0x40
 
 static struct base_driver driver;
 

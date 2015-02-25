@@ -6,30 +6,23 @@
 #include <arch/x86/pci/pci.h>
 #include <arch/x86/vga/timing.h>
 
-#define CIRRUS_PCI_VENDOR               0x1013
-#define CIRRUS_PCI_DEVICE               0x00B8
-
+#define PCIVENDOR                       0x1013
+#define PCIDEVICE                       0x00B8
 #define CLOCKS                          21
-#define min(x, y)                       (((x) < (y)) ? (x) : (y))
-#define max(x, y)                       (((x) > (y)) ? (x) : (y))
-
-enum
-{
-
-    CLGD5420 = 0,
-    CLGD7548,
-    CLGD5420B,
-    CLGD5422,
-    CLGD5422C,
-    CLGD5424,
-    CLGD5426,
-    CLGD5428,
-    CLGD5429,
-    CLGD5430,
-    CLGD5434,
-    CLGD5436
-
-};
+#define CLGD5420                        0
+#define CLGD7548                        1
+#define CLGD5420B                       2
+#define CLGD5422                        3
+#define CLGD5422C                       4
+#define CLGD5424                        5
+#define CLGD5426                        6
+#define CLGD5428                        7
+#define CLGD5429                        8
+#define CLGD5430                        9
+#define CLGD5434                        10
+#define CLGD5436                        11
+#define MIN(x, y)                       (((x) < (y)) ? (x) : (y))
+#define MAX(x, y)                       (((x) > (y)) ? (x) : (y))
 
 static int clocks[CLOCKS] = {
     12599, 18000, 19600, 25227, 28325, 31500, 36025, 37747,
@@ -160,10 +153,10 @@ static void videointerface_setmode(unsigned int xres, unsigned int yres, unsigne
 
     }
 
-    cardspecs.maxPixelClock8bpp = min(cardspecs.maxPixelClock8bpp, DRAMbandwidthLimit);
-    cardspecs.maxPixelClock16bpp = min(cardspecs.maxPixelClock16bpp, DRAMbandwidthLimit / 2);
-    cardspecs.maxPixelClock24bpp = min(cardspecs.maxPixelClock24bpp, DRAMbandwidthLimit / 3);
-    cardspecs.maxPixelClock32bpp = min(cardspecs.maxPixelClock32bpp, DRAMbandwidthLimit / 4);
+    cardspecs.maxPixelClock8bpp = MIN(cardspecs.maxPixelClock8bpp, DRAMbandwidthLimit);
+    cardspecs.maxPixelClock16bpp = MIN(cardspecs.maxPixelClock16bpp, DRAMbandwidthLimit / 2);
+    cardspecs.maxPixelClock24bpp = MIN(cardspecs.maxPixelClock24bpp, DRAMbandwidthLimit / 3);
+    cardspecs.maxPixelClock32bpp = MIN(cardspecs.maxPixelClock32bpp, DRAMbandwidthLimit / 4);
     cardspecs.flags = INTERLACE_DIVIDE_VERT | GREATER_1024_DIVIDE_VERT;
     cardspecs.nClocks = CLOCKS;
     cardspecs.clocks = clocks;
@@ -217,7 +210,7 @@ static void driver_init()
 static unsigned int driver_match(unsigned int id)
 {
 
-    return pci_inw(id, PCI_CONFIG_VENDOR) == CIRRUS_PCI_VENDOR && pci_inw(id, PCI_CONFIG_DEVICE) == CIRRUS_PCI_DEVICE;
+    return pci_inw(id, PCI_CONFIG_VENDOR) == PCIVENDOR && pci_inw(id, PCI_CONFIG_DEVICE) == PCIDEVICE;
 
 }
 

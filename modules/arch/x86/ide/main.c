@@ -6,75 +6,46 @@
 #include <arch/x86/pci/pci.h>
 #include "ide.h"
 
-enum ide_control
-{
-
-    IDE_CONTROL_ATAPIEJECT              = 0x1B,
-    IDE_CONTROL_PIO28READ               = 0x20,
-    IDE_CONTROL_PIO48READ               = 0x24,
-    IDE_CONTROL_DMA48READ               = 0x25,
-    IDE_CONTROL_PIO28WRITE              = 0x30,
-    IDE_CONTROL_PIO48WRITE              = 0x34,
-    IDE_CONTROL_DMA48WRITE              = 0x35,
-    IDE_CONTROL_ATAPI                   = 0xA0,
-    IDE_CONTROL_IDATAPI                 = 0xA1,
-    IDE_CONTROL_ATAPIREAD               = 0xA8,
-    IDE_CONTROL_DMA28READ               = 0xC8,
-    IDE_CONTROL_DMA28WRITE              = 0xCA,
-    IDE_CONTROL_IDATA                   = 0xEC
-
-};
-
-enum ide_data
-{
-
-    IDE_DATA_FEATURE                    = 0x01,
-    IDE_DATA_COUNT0                     = 0x02,
-    IDE_DATA_LBA0                       = 0x03,
-    IDE_DATA_LBA1                       = 0x04,
-    IDE_DATA_LBA2                       = 0x05,
-    IDE_DATA_SELECT                     = 0x06,
-    IDE_DATA_COMMAND                    = 0x07,
-    IDE_DATA_COUNT1                     = 0x08,
-    IDE_DATA_LBA3                       = 0x09,
-    IDE_DATA_LBA4                       = 0x0A,
-    IDE_DATA_LBA5                       = 0x0B
-
-};
-
-enum ide_irq
-{
-
-    IDE_IRQ_PRIMARY                     = 0x0E,
-    IDE_IRQ_SECONDARY                   = 0x0F
-
-};
-
-enum ide_status
-{
-
-    IDE_STATUS_ERROR                    = 0x01,
-    IDE_STATUS_DRQ                      = 0x08,
-    IDE_STATUS_SRV                      = 0x10,
-    IDE_STATUS_DF                       = 0x20,
-    IDE_STATUS_RDY                      = 0x40,
-    IDE_STATUS_BUSY                     = 0x80
-
-};
-
-enum ide_id
-{
-
-    IDE_ID_TYPE                         = 0x00,
-    IDE_ID_SERIAL                       = 0x0A,
-    IDE_ID_MODEL                        = 0x1B,
-    IDE_ID_CAP                          = 0x31,
-    IDE_ID_VALID                        = 0x35,
-    IDE_ID_LBA28MAX                     = 0x3C,
-    IDE_ID_SUPPORT                      = 0x53,
-    IDE_ID_LBA48MAX                     = 0x64
-
-};
+#define CONTROLATAPIEJECT               0x1B
+#define CONTROLPIO28READ                0x20
+#define CONTROLPIO48READ                0x24
+#define CONTROLDMA48READ                0x25
+#define CONTROLPIO28WRITE               0x30
+#define CONTROLPIO48WRITE               0x34
+#define CONTROLDMA48WRITE               0x35
+#define CONTROLATAPI                    0xA0
+#define CONTROLIDATAPI                  0xA1
+#define CONTROLATAPIREAD                0xA8
+#define CONTROLDMA28READ                0xC8
+#define CONTROLDMA28WRITE               0xCA
+#define CONTROLIDATA                    0xEC
+#define DATAFEATURE                     0x01
+#define DATACOUNT0                      0x02
+#define DATALBA0                        0x03
+#define DATALBA1                        0x04
+#define DATALBA2                        0x05
+#define DATASELECT                      0x06
+#define DATACOMMAND                     0x07
+#define DATACOUNT1                      0x08
+#define DATALBA3                        0x09
+#define DATALBA4                        0x0A
+#define DATALBA5                        0x0B
+#define IRQPRIMARY                      0x0E
+#define IRQSECONDARY                    0x0F
+#define STATUSERROR                     0x01
+#define STATUSDRQ                       0x08
+#define STATUSSRV                       0x10
+#define STATUSDF                        0x20
+#define STATUSRDY                       0x40
+#define STATUSBUSY                      0x80
+#define IDTYPE                          0x00
+#define IDSERIAL                        0x0A
+#define IDMODEL                         0x1B
+#define IDCAP                           0x31
+#define IDVALID                         0x35
+#define IDLBA28MAX                      0x3C
+#define IDSUPPORT                       0x53
+#define IDLBA48MAX                      0x64
 
 static struct base_driver driver;
 static struct base_bus bus;
@@ -101,7 +72,7 @@ static unsigned short getdata(unsigned int id)
 static void wait(unsigned short data)
 {
 
-    while (io_inb(data + IDE_DATA_COMMAND) & IDE_STATUS_BUSY);
+    while (io_inb(data + DATACOMMAND) & STATUSBUSY);
 
 }
 
@@ -118,7 +89,7 @@ static void sleep(unsigned short control)
 static void select(unsigned short data, unsigned short control, unsigned char operation, unsigned int slave)
 {
 
-    io_outb(data + IDE_DATA_SELECT, operation | slave << 4);
+    io_outb(data + DATASELECT, operation | slave << 4);
     sleep(control);
 
 }
@@ -126,27 +97,27 @@ static void select(unsigned short data, unsigned short control, unsigned char op
 static void setlba(unsigned short data, unsigned char count, unsigned char lba0, unsigned char lba1, unsigned char lba2)
 {
 
-    io_outb(data + IDE_DATA_COUNT0, count);
-    io_outb(data + IDE_DATA_LBA0, lba0);
-    io_outb(data + IDE_DATA_LBA1, lba1);
-    io_outb(data + IDE_DATA_LBA2, lba2);
+    io_outb(data + DATACOUNT0, count);
+    io_outb(data + DATALBA0, lba0);
+    io_outb(data + DATALBA1, lba1);
+    io_outb(data + DATALBA2, lba2);
 
 }
 
 static void setlba2(unsigned short data, unsigned char count, unsigned char lba3, unsigned char lba4, unsigned char lba5)
 {
 
-    io_outb(data + IDE_DATA_COUNT1, count);
-    io_outb(data + IDE_DATA_LBA3, lba3);
-    io_outb(data + IDE_DATA_LBA4, lba4);
-    io_outb(data + IDE_DATA_LBA5, lba5);
+    io_outb(data + DATACOUNT1, count);
+    io_outb(data + DATALBA3, lba3);
+    io_outb(data + DATALBA4, lba4);
+    io_outb(data + DATALBA5, lba5);
 
 }
 
 static void setcommand(unsigned short data, unsigned char command)
 {
 
-    io_outb(data + IDE_DATA_COMMAND, command);
+    io_outb(data + DATACOMMAND, command);
 
 }
 
@@ -199,7 +170,7 @@ static unsigned int wblocks(unsigned short data, unsigned short control, unsigne
 unsigned short ide_getirq(unsigned int id)
 {
 
-    return (id) ? IDE_IRQ_SECONDARY : IDE_IRQ_PRIMARY;
+    return (id) ? IRQSECONDARY : IRQPRIMARY;
 
 }
 
@@ -239,7 +210,7 @@ unsigned int ide_rlba28(unsigned int id, unsigned int slave, unsigned int sector
 
     select(data, control, 0xE0 | ((sector >> 24) & 0x0F), slave);
     setlba(data, count, sector, sector >> 8, sector >> 16);
-    setcommand(data, IDE_CONTROL_PIO28READ);
+    setcommand(data, CONTROLPIO28READ);
 
     return rblocks(data, control, count, buffer) * 512;
 
@@ -253,7 +224,7 @@ void ide_rlba28a(unsigned int id, unsigned int slave, unsigned int sector, unsig
 
     select(data, control, 0xE0 | ((sector >> 24) & 0x0F), slave);
     setlba(data, count, sector, sector >> 8, sector >> 16);
-    setcommand(data, IDE_CONTROL_PIO28READ);
+    setcommand(data, CONTROLPIO28READ);
 
 }
 
@@ -265,7 +236,7 @@ unsigned int ide_wlba28(unsigned int id, unsigned int slave, unsigned int sector
 
     select(data, control, 0xE0 | ((sector >> 24) & 0x0F), slave);
     setlba(data, count, sector, sector >> 8, sector >> 16);
-    setcommand(data, IDE_CONTROL_PIO28WRITE);
+    setcommand(data, CONTROLPIO28WRITE);
 
     return wblocks(data, control, count, buffer) * 512;
 
@@ -279,7 +250,7 @@ void ide_wlba28a(unsigned int id, unsigned int slave, unsigned int sector, unsig
 
     select(data, control, 0xE0 | ((sector >> 24) & 0x0F), slave);
     setlba(data, count, sector, sector >> 8, sector >> 16);
-    setcommand(data, IDE_CONTROL_PIO28WRITE);
+    setcommand(data, CONTROLPIO28WRITE);
 
 }
 
@@ -292,7 +263,7 @@ unsigned int ide_rlba48(unsigned int id, unsigned int slave, unsigned int sector
     select(data, control, 0x40, slave);
     setlba2(data, count >> 8, sectorhigh, sectorhigh >> 8, sectorhigh >> 16);
     setlba(data, count, sectorlow, sectorlow >> 8, sectorlow >> 16);
-    setcommand(data, IDE_CONTROL_PIO48READ);
+    setcommand(data, CONTROLPIO48READ);
 
     return rblocks(data, control, count, buffer) * 512;
 
@@ -307,7 +278,7 @@ void ide_rlba48a(unsigned int id, unsigned int slave, unsigned int sectorlow, un
     select(data, control, 0x40, slave);
     setlba2(data, count >> 8, sectorhigh, sectorhigh >> 8, sectorhigh >> 16);
     setlba(data, count, sectorlow, sectorlow >> 8, sectorlow >> 16);
-    setcommand(data, IDE_CONTROL_PIO48READ);
+    setcommand(data, CONTROLPIO48READ);
     sleep(control);
 
 }
@@ -321,7 +292,7 @@ unsigned int ide_wlba48(unsigned int id, unsigned int slave, unsigned int sector
     select(data, control, 0x40, slave);
     setlba2(data, count >> 8, sectorhigh, sectorhigh >> 8, sectorhigh >> 16);
     setlba(data, count, sectorlow, sectorlow >> 8, sectorlow >> 16);
-    setcommand(data, IDE_CONTROL_PIO48WRITE);
+    setcommand(data, CONTROLPIO48WRITE);
 
     return wblocks(data, control, count, buffer) * 512;
 
@@ -336,7 +307,7 @@ void ide_wlba48a(unsigned int id, unsigned int slave, unsigned int sectorlow, un
     select(data, control, 0x40, slave);
     setlba2(data, count >> 8, sectorhigh, sectorhigh >> 8, sectorhigh >> 16);
     setlba(data, count, sectorlow, sectorlow >> 8, sectorlow >> 16);
-    setcommand(data, IDE_CONTROL_PIO48WRITE);
+    setcommand(data, CONTROLPIO48WRITE);
     sleep(control);
 
 }

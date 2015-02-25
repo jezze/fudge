@@ -4,32 +4,27 @@
 #include <system/system.h>
 #include <arch/x86/pci/pci.h>
 
-enum ohci_register
-{
-
-    OHCI_REGISTER_REVISION              = 0x00,
-    OHCI_REGISTER_CONTROL               = 0x04,
-    OHCI_REGISTER_STATUS                = 0x08,
-    OHCI_REGISTER_INTSTATUS             = 0x0C,
-    OHCI_REGISTER_INTENABLE             = 0x10,
-    OHCI_REGISTER_INTDISABLE            = 0x14,
-    OHCI_REGISTER_HCCA                  = 0x18,
-    OHCI_REGISTER_PERIODCURRENT         = 0x1C,
-    OHCI_REGISTER_CONTROLHEAD           = 0x20,
-    OHCI_REGISTER_CONTROLCURRENT        = 0x24,
-    OHCI_REGISTER_BULKHEAD              = 0x28,
-    OHCI_REGISTER_BULKCURRENT           = 0x2C,
-    OHCI_REGISTER_DONEHEAD              = 0x30,
-    OHCI_REGISTER_FMINTERVAL            = 0x34,
-    OHCI_REGISTER_FMREMAINING           = 0x38,
-    OHCI_REGISTER_FMNUMBER              = 0x3C,
-    OHCI_REGISTER_PERIODICSTART         = 0x40,
-    OHCI_REGISTER_THRESHOLD             = 0x44,
-    OHCI_REGISTER_RHDESCRIPTORA         = 0x48,
-    OHCI_REGISTER_RHDESCRIPTORB         = 0x4C,
-    OHCI_REGISTER_RHSTATUS              = 0x50
-
-};
+#define REGISTERREVISION                0x00
+#define REGISTERCONTROL                 0x04
+#define REGISTERSTATUS                  0x08
+#define REGISTERINTSTATUS               0x0C
+#define REGISTERINTENABLE               0x10
+#define REGISTERINTDISABLE              0x14
+#define REGISTERHCCA                    0x18
+#define REGISTERPERIODCURRENT           0x1C
+#define REGISTERCONTROLHEAD             0x20
+#define REGISTERCONTROLCURRENT          0x24
+#define REGISTERBULKHEAD                0x28
+#define REGISTERBULKCURRENT             0x2C
+#define REGISTERDONEHEAD                0x30
+#define REGISTERFMINTERVAL              0x34
+#define REGISTERFMREMAINING             0x38
+#define REGISTERFMNUMBER                0x3C
+#define REGISTERPERIODICSTART           0x40
+#define REGISTERTHRESHOLD               0x44
+#define REGISTERRHDESCRIPTORA           0x48
+#define REGISTERRHDESCRIPTORB           0x4C
+#define REGISTERRHSTATUS                0x50
 
 static struct base_driver driver;
 

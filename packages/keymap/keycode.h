@@ -1,11 +1,6 @@
-enum keymod
-{
-
-    KEYMOD_NONE                         = 0,
-    KEYMOD_SHIFT                        = 1,
-    KEYMOD_ALT                          = 2
-
-};
+#define KEYMOD_NONE                     0
+#define KEYMOD_SHIFT                    1
+#define KEYMOD_ALT                      2
 
 struct keycode
 {

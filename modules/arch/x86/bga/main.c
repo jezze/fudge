@@ -7,44 +7,26 @@
 #include <arch/x86/io/io.h>
 #include <arch/x86/pci/pci.h>
 
-#define BGA_PCI_VENDOR                  0x1234
-#define BGA_PCI_DEVICE                  0x1111
-
-enum bga_register
-{
-
-    BGA_REGISTER_COMMAND                = 0x01CE,
-    BGA_REGISTER_DATA                   = 0x01CF
-
-};
-
-enum bga_command
-{
-
-    BGA_COMMAND_ID                      = 0x0000,
-    BGA_COMMAND_XRES                    = 0x0001,
-    BGA_COMMAND_YRES                    = 0x0002,
-    BGA_COMMAND_BPP                     = 0x0003,
-    BGA_COMMAND_ENABLE                  = 0x0004,
-    BGA_COMMAND_BANK                    = 0x0005,
-    BGA_COMMAND_VIRT_WIDTH              = 0x0006,
-    BGA_COMMAND_VIRT_HEIGHT             = 0x0007,
-    BGA_COMMAND_XOFF                    = 0x0008,
-    BGA_COMMAND_YOFF                    = 0x0009
-
-};
-
-enum bga_bpp
-{
-
-    BGA_BPP_4                           = 0x04,
-    BGA_BPP_8                           = 0x08,
-    BGA_BPP_15                          = 0x0F,
-    BGA_BPP_16                          = 0x10,
-    BGA_BPP_24                          = 0x18,
-    BGA_BPP_32                          = 0x20
-
-};
+#define PCIVENDOR                       0x1234
+#define PCIDEVICE                       0x1111
+#define REGISTERCOMMAND                 0x01CE
+#define REGISTERDATA                    0x01CF
+#define COMMANDID                       0x0000
+#define COMMANDXRES                     0x0001
+#define COMMANDYRES                     0x0002
+#define COMMANDBPP                      0x0003
+#define COMMANDENABLE                   0x0004
+#define COMMANDBANK                     0x0005
+#define COMMANDVIRTWIDTH                0x0006
+#define COMMANDVIRTHEIGHT               0x0007
+#define COMMANDXOFF                     0x0008
+#define COMMANDYOFF                     0x0009
+#define BPP4                            0x04
+#define BPP8                            0x08
+#define BPP15                           0x0F
+#define BPP16                           0x10
+#define BPP24                           0x18
+#define BPP32                           0x20
 
 static struct base_driver driver;
 static struct video_interface videointerface;
@@ -54,19 +36,19 @@ static void *lfb;
 static void setreg(unsigned short index, unsigned short data)
 {
 
-    io_outw(BGA_REGISTER_COMMAND, index);
-    io_outw(BGA_REGISTER_DATA, data);
+    io_outw(REGISTERCOMMAND, index);
+    io_outw(REGISTERDATA, data);
 
 }
 
 static void videointerface_setmode(unsigned int xres, unsigned int yres, unsigned int bpp)
 {
 
-    setreg(BGA_COMMAND_ENABLE, 0x00);
-    setreg(BGA_COMMAND_XRES, xres);
-    setreg(BGA_COMMAND_YRES, yres);
-    setreg(BGA_COMMAND_BPP, bpp);
-    setreg(BGA_COMMAND_ENABLE, 0x40 | 0x01);
+    setreg(COMMANDENABLE, 0x00);
+    setreg(COMMANDXRES, xres);
+    setreg(COMMANDYRES, yres);
+    setreg(COMMANDBPP, bpp);
+    setreg(COMMANDENABLE, 0x40 | 0x01);
 
 }
 
@@ -106,7 +88,7 @@ static void driver_init()
 static unsigned int driver_match(unsigned int id)
 {
 
-    return pci_inw(id, PCI_CONFIG_VENDOR) == BGA_PCI_VENDOR && pci_inw(id, PCI_CONFIG_DEVICE) == BGA_PCI_DEVICE;
+    return pci_inw(id, PCI_CONFIG_VENDOR) == PCIVENDOR && pci_inw(id, PCI_CONFIG_DEVICE) == PCIDEVICE;
 
 }
 

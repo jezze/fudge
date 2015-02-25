@@ -1,7 +1,7 @@
 #include <fudge.h>
 #include "gdt.h"
 
-unsigned short gdt_setdescriptor(struct gdt_pointer *pointer, enum gdt_index index, unsigned int base, unsigned int limit, enum gdt_access access, enum gdt_flag flags)
+unsigned short gdt_setdescriptor(struct gdt_pointer *pointer, unsigned char index, unsigned int base, unsigned int limit, unsigned char access, unsigned char flags)
 {
 
     struct gdt_descriptor *descriptor = (struct gdt_descriptor *)(pointer->base0 | pointer->base1 << 8 | pointer->base2 << 16 | pointer->base3 << 24) + index;

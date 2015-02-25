@@ -7,145 +7,92 @@
 #include <arch/x86/pic/pic.h>
 #include <arch/x86/io/io.h>
 
-enum uart_register
-{
-
-    UART_REGISTER_RBR                   = 0x0000,
-    UART_REGISTER_THR                   = 0x0000,
-    UART_REGISTER_DLL                   = 0x0000,
-    UART_REGISTER_DLM                   = 0x0000,
-    UART_REGISTER_IER                   = 0x0001,
-    UART_REGISTER_IIR                   = 0x0002,
-    UART_REGISTER_FCR                   = 0x0002,
-    UART_REGISTER_LCR                   = 0x0003,
-    UART_REGISTER_MCR                   = 0x0004,
-    UART_REGISTER_LSR                   = 0x0005,
-    UART_REGISTER_MSR                   = 0x0006,
-    UART_REGISTER_SCR                   = 0x0007
-
-};
-
-enum uart_baudrate
-{
-
-    UART_BAUDRATE_50                    = 0x0900,
-    UART_BAUDRATE_110                   = 0x0417,
-    UART_BAUDRATE_220                   = 0x020C,
-    UART_BAUDRATE_300                   = 0x0180,
-    UART_BAUDRATE_600                   = 0x00C0,
-    UART_BAUDRATE_1200                  = 0x0060,
-    UART_BAUDRATE_2400                  = 0x0030,
-    UART_BAUDRATE_4800                  = 0x0018,
-    UART_BAUDRATE_9600                  = 0x000C,
-    UART_BAUDRATE_19200                 = 0x0006,
-    UART_BAUDRATE_38400                 = 0x0003,
-    UART_BAUDRATE_57600                 = 0x0002,
-    UART_BAUDRATE_115200                = 0x0001
-
-};
-
-enum uart_ier
-{
-
-    UART_IER_NULL                       = 0,
-    UART_IER_RECEIVE                    = (1 << 0),
-    UART_IER_TRANSMIT                   = (1 << 1),
-    UART_IER_LINE                       = (1 << 2),
-    UART_IER_MODEM                      = (1 << 3),
-    UART_IER_SLEEP                      = (1 << 4),
-    UART_IER_POWER                      = (1 << 5)
-
-};
-
-enum uart_iir
-{
-
-    UART_IIR_PENDING                    = (1 << 0),
-    UART_IIR_MODEMSTATUS                = (0 << 1),
-    UART_IIR_TRANSMIT                   = (1 << 1),
-    UART_IIR_RECEIVE                    = (2 << 1),
-    UART_IIR_LINE                       = (3 << 1),
-    UART_IIR_TIMEOUT                    = (6 << 1),
-    UART_IIR_LARGE                      = (1 << 5),
-    UART_IIR_NOFIFO                     = (1 << 6),
-    UART_IIR_ERRORFIFO                  = (2 << 6),
-    UART_IIR_FIFO                       = (3 << 6)
-
-};
-
-enum uart_fcr
-{
-
-    UART_FCR_ENABLE                     = (1 << 0),
-    UART_FCR_RECEIVE                    = (1 << 1),
-    UART_FCR_TRANSMIT                   = (1 << 2),
-    UART_FCR_SELECT                     = (1 << 3),
-    UART_FCR_LARGE                      = (1 << 5),
-    UART_FCR_SIZE0                      = (0 << 6),
-    UART_FCR_SIZE1                      = (1 << 6),
-    UART_FCR_SIZE2                      = (2 << 6),
-    UART_FCR_SIZE3                      = (3 << 6)
-
-};
-
-enum uart_lcr
-{
-
-    UART_LCR_5BITS                      = (0 << 0),
-    UART_LCR_6BITS                      = (1 << 0),
-    UART_LCR_7BITS                      = (2 << 0),
-    UART_LCR_8BITS                      = (3 << 0),
-    UART_LCR_1STOP                      = (0 << 2),
-    UART_LCR_2STOP                      = (1 << 2),
-    UART_LCR_NOPARITY                   = (0 << 3),
-    UART_LCR_ODDPARITY                  = (1 << 3),
-    UART_LCR_EVENPARITY                 = (3 << 3),
-    UART_LCR_MARKPARITY                 = (5 << 3),
-    UART_LCR_SPACEPARITY                = (7 << 3),
-    UART_LCR_BREAK                      = (1 << 6),
-    UART_LCR_LATCH                      = (1 << 7)
-
-};
-
-enum uart_mcr
-{
-
-    UART_MCR_READY                      = (1 << 0),
-    UART_MCR_REQUEST                    = (1 << 1),
-    UART_MCR_AUX1                       = (1 << 2),
-    UART_MCR_AUX2                       = (1 << 3),
-    UART_MCR_LOOPBACK                   = (1 << 4),
-    UART_MCR_AUTOFLOW                   = (1 << 5)
-
-};
-
-enum uart_lsr
-{
-
-    UART_LSR_READY                      = (1 << 0),
-    UART_LSR_OVERRUN                    = (1 << 1),
-    UART_LSR_PARITY                     = (1 << 2),
-    UART_LSR_FRAMING                    = (1 << 3),
-    UART_LSR_BREAK                      = (1 << 4),
-    UART_LSR_TRANSMIT                   = (1 << 5),
-    UART_LSR_RECEIVE                    = (1 << 6),
-    UART_LSR_FIFO                       = (1 << 7)
-
-};
-
-enum uart_msr
-{
-
-    UART_MSR_DELTACLEAR                 = (1 << 0),
-    UART_MSR_DELTAREADY                 = (1 << 1),
-    UART_MSR_EDGERING                   = (1 << 2),
-    UART_MSR_DELTADETECT                = (1 << 3),
-    UART_MSR_CLEAR                      = (1 << 4),
-    UART_MSR_READY                      = (1 << 5),
-    UART_MSR_RING                       = (1 << 6),
-    UART_MSR_DETECT                     = (1 << 7)
-
-};
+#define REGISTERRBR                     0x0000
+#define REGISTERTHR                     0x0000
+#define REGISTERDLL                     0x0000
+#define REGISTERDLM                     0x0000
+#define REGISTERIER                     0x0001
+#define REGISTERIIR                     0x0002
+#define REGISTERFCR                     0x0002
+#define REGISTERLCR                     0x0003
+#define REGISTERMCR                     0x0004
+#define REGISTERLSR                     0x0005
+#define REGISTERMSR                     0x0006
+#define REGISTERSCR                     0x0007
+#define BAUDRATE50                      0x0900
+#define BAUDRATE110                     0x0417
+#define BAUDRATE220                     0x020C
+#define BAUDRATE300                     0x0180
+#define BAUDRATE600                     0x00C0
+#define BAUDRATE1200                    0x0060
+#define BAUDRATE2400                    0x0030
+#define BAUDRATE4800                    0x0018
+#define BAUDRATE9600                    0x000C
+#define BAUDRATE19200                   0x0006
+#define BAUDRATE38400                   0x0003
+#define BAUDRATE57600                   0x0002
+#define BAUDRATE115200                  0x0001
+#define IERNULL                         0
+#define IERRECEIVE                      (1 << 0)
+#define IERTRANSMIT                     (1 << 1)
+#define IERLINE                         (1 << 2)
+#define IERMODEM                        (1 << 3)
+#define IERSLEEP                        (1 << 4)
+#define IERPOWER                        (1 << 5)
+#define IIRPENDING                      (1 << 0)
+#define IIRMODEMSTATUS                  (0 << 1)
+#define IIRTRANSMIT                     (1 << 1)
+#define IIRRECEIVE                      (2 << 1)
+#define IIRLINE                         (3 << 1)
+#define IIRTIMEOUT                      (6 << 1)
+#define IIRLARGE                        (1 << 5)
+#define IIRNOFIFO                       (1 << 6)
+#define IIRERRORFIFO                    (2 << 6)
+#define IIRFIFO                         (3 << 6)
+#define FCRENABLE                       (1 << 0)
+#define FCRRECEIVE                      (1 << 1)
+#define FCRTRANSMIT                     (1 << 2)
+#define FCRSELECT                       (1 << 3)
+#define FCRLARGE                        (1 << 5)
+#define FCRSIZE0                        (0 << 6)
+#define FCRSIZE1                        (1 << 6)
+#define FCRSIZE2                        (2 << 6)
+#define FCRSIZE3                        (3 << 6)
+#define LCR5BITS                        (0 << 0)
+#define LCR6BITS                        (1 << 0)
+#define LCR7BITS                        (2 << 0)
+#define LCR8BITS                        (3 << 0)
+#define LCR1STOP                        (0 << 2)
+#define LCR2STOP                        (1 << 2)
+#define LCRNOPARITY                     (0 << 3)
+#define LCRODDPARITY                    (1 << 3)
+#define LCREVENPARITY                   (3 << 3)
+#define LCRMARKPARITY                   (5 << 3)
+#define LCRSPACEPARITY                  (7 << 3)
+#define LCRBREAK                        (1 << 6)
+#define LCRLATCH                        (1 << 7)
+#define MCRREADY                        (1 << 0)
+#define MCRREQUEST                      (1 << 1)
+#define MCRAUX1                         (1 << 2)
+#define MCRAUX2                         (1 << 3)
+#define MCRLOOPBACK                     (1 << 4)
+#define MCRAUTOFLOW                     (1 << 5)
+#define LSRREADY                        (1 << 0)
+#define LSROVERRUN                      (1 << 1)
+#define LSRPARITY                       (1 << 2)
+#define LSRFRAMING                      (1 << 3)
+#define LSRBREAK                        (1 << 4)
+#define LSRTRANSMIT                     (1 << 5)
+#define LSRRECEIVE                      (1 << 6)
+#define LSRFIFO                         (1 << 7)
+#define MSRDELTACLEAR                   (1 << 0)
+#define MSRDELTAREADY                   (1 << 1)
+#define MSREDGERING                     (1 << 2)
+#define MSRDELTADETECT                  (1 << 3)
+#define MSRCLEAR                        (1 << 4)
+#define MSRREADY                        (1 << 5)
+#define MSRRING                         (1 << 6)
+#define MSRDETECT                       (1 << 7)
 
 static struct base_driver driver;
 static struct console_interface consoleinterface;
@@ -154,7 +101,7 @@ static unsigned short io;
 static unsigned char read()
 {
 
-    while (!(io_inb(io + UART_REGISTER_LSR) & UART_LSR_READY));
+    while (!(io_inb(io + REGISTERLSR) & LSRREADY));
 
     return io_inb(io);
 
@@ -163,7 +110,7 @@ static unsigned char read()
 static void write(unsigned char c)
 {
 
-    while (!(io_inb(io + UART_REGISTER_LSR) & UART_LSR_TRANSMIT));
+    while (!(io_inb(io + REGISTERLSR) & LSRTRANSMIT));
 
     io_outb(io, c);
 
@@ -212,14 +159,14 @@ static void driver_attach(unsigned int id)
 
     io = platform_getbase(id);
 
-    io_outb(io + UART_REGISTER_IER, UART_IER_NULL);
-    io_outb(io + UART_REGISTER_LCR, UART_LCR_5BITS | UART_LCR_1STOP | UART_LCR_NOPARITY);
-    io_outb(io + UART_REGISTER_THR, 0x03);
-    io_outb(io + UART_REGISTER_IER, UART_IER_NULL);
-    io_outb(io + UART_REGISTER_LCR, UART_LCR_8BITS | UART_LCR_1STOP | UART_LCR_NOPARITY);
-    io_outb(io + UART_REGISTER_FCR, UART_FCR_ENABLE | UART_FCR_RECEIVE | UART_FCR_TRANSMIT | UART_FCR_SIZE3);
-    io_outb(io + UART_REGISTER_MCR, UART_MCR_READY | UART_MCR_REQUEST | UART_MCR_AUX2);
-    io_outb(io + UART_REGISTER_IER, UART_IER_RECEIVE);
+    io_outb(io + REGISTERIER, IERNULL);
+    io_outb(io + REGISTERLCR, LCR5BITS | LCR1STOP | LCRNOPARITY);
+    io_outb(io + REGISTERTHR, 0x03);
+    io_outb(io + REGISTERIER, IERNULL);
+    io_outb(io + REGISTERLCR, LCR8BITS | LCR1STOP | LCRNOPARITY);
+    io_outb(io + REGISTERFCR, FCRENABLE | FCRRECEIVE | FCRTRANSMIT | FCRSIZE3);
+    io_outb(io + REGISTERMCR, MCRREADY | MCRREQUEST | MCRAUX2);
+    io_outb(io + REGISTERIER, IERRECEIVE);
 
     console_registerinterface(&consoleinterface, id);
     pic_setroutine(platform_getirq(id), id, handleirq);

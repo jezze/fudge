@@ -1,9 +1,4 @@
-enum tss_index
-{
-
-    TSS_INDEX_DEFAULT                   = 0x00
-
-};
+#define TSS_INDEX_DEFAULT               0x00
 
 struct tss_descriptor_ring
 {
@@ -64,5 +59,5 @@ struct tss_pointer
 
 };
 
-void tss_setdescriptor(struct tss_pointer *pointer, enum tss_index index, unsigned int selector, unsigned int stack);
+void tss_setdescriptor(struct tss_pointer *pointer, unsigned char index, unsigned int selector, unsigned int stack);
 void tss_initpointer(struct tss_pointer *pointer, unsigned int count, struct tss_descriptor *descriptors);

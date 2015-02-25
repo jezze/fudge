@@ -7,25 +7,14 @@
 #include <arch/x86/pic/pic.h>
 #include <arch/x86/io/io.h>
 
-enum rtc_register
-{
-
-    RTC_REGISTER_COMMAND                = 0x0000,
-    RTC_REGISTER_DATA                   = 0x0001
-
-};
-
-enum rtc_flag
-{
-
-    RTC_FLAG_SECONDS                    = 0x00,
-    RTC_FLAG_MINUTES                    = 0x02,
-    RTC_FLAG_HOURS                      = 0x04,
-    RTC_FLAG_DAY                        = 0x07,
-    RTC_FLAG_MONTH                      = 0x08,
-    RTC_FLAG_YEAR                       = 0x09
-
-};
+#define REGISTERCOMMAND                 0x0000
+#define REGISTERDATA                    0x0001
+#define FLAGSECONDS                     0x00
+#define FLAGMINUTES                     0x02
+#define FLAGHOURS                       0x04
+#define FLAGDAY                         0x07
+#define FLAGMONTH                       0x08
+#define FLAGYEAR                        0x09
 
 static struct base_driver driver;
 static struct clock_interface clockinterface;
@@ -41,9 +30,9 @@ static unsigned char convert(unsigned char num)
 static unsigned char read(unsigned int type)
 {
 
-    io_outb(io + RTC_REGISTER_COMMAND, type);
+    io_outb(io + REGISTERCOMMAND, type);
 
-    return convert(io_inb(io + RTC_REGISTER_DATA));
+    return convert(io_inb(io + REGISTERDATA));
 
 }
 

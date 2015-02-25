@@ -26,7 +26,7 @@ void gfx_fill(struct gfx_surface *self)
     switch (self->context.primitive)
     {
 
-    case GFX_RECTANGLE:
+    case GFX_PRIMITIVE_RECTANGLE:
         fillrectangle(self);
 
         break;
@@ -62,7 +62,7 @@ void gfx_setcolorrgba(struct gfx_surface *self, unsigned char red, unsigned char
 void gfx_setrectangle(struct gfx_surface *surface, unsigned int x, unsigned int y, unsigned int width, unsigned int height)
 {
 
-    surface->context.primitive = GFX_RECTANGLE;
+    surface->context.primitive = GFX_PRIMITIVE_RECTANGLE;
     surface->context.x = x;
     surface->context.y = y;
     surface->context.width = width;
@@ -98,7 +98,7 @@ void gfx_initcontext(struct gfx_context *context)
     memory_clear(context, sizeof (struct gfx_context));
 
     context->color = 0xFFFFFF;
-    context->primitive = GFX_NONE;
+    context->primitive = GFX_PRIMITIVE_NONE;
 
 }
 

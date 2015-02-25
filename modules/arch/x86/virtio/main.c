@@ -7,37 +7,25 @@
 #include <arch/x86/io/io.h>
 #include <arch/x86/pci/pci.h>
 
-#define VIRTIO_PCI_VENDOR               0x1AF4
-
-enum
-{
-
-    VIRTIO_TYPE_NETWORK                 = 1,
-    VIRTIO_TYPE_BLOCK                   = 2,
-    VIRTIO_TYPE_TERMINAL                = 3,
-    VIRTIO_TYPE_ENTROPY                 = 4,
-    VIRTIO_TYPE_BALLOON                 = 5,
-    VIRTIO_TYPE_IOMEM                   = 6,
-    VIRTIO_TYPE_RPMSG                   = 7,
-    VIRTIO_TYPE_SCSI                    = 8,
-    VIRTIO_TYPE_9P                      = 9,
-    VIRTIO_TYPE_WLAN                    = 10
-
-};
-
-enum
-{
-
-    VIRTIO_REGISTER_DEVFEATURES         = 0x00,
-    VIRTIO_REGISTER_GUESTFEATURES       = 0x04,
-    VIRTIO_REGISTER_QADDRESS            = 0x08,
-    VIRTIO_REGISTER_QSIZE               = 0x0C,
-    VIRTIO_REGISTER_QSELECT             = 0x0E,
-    VIRTIO_REGISTER_QNOTIFY             = 0x10,
-    VIRTIO_REGISTER_STATUS              = 0x12,
-    VIRTIO_REGISTER_ISR                 = 0x13
-
-};
+#define PCIVENDOR                       0x1AF4
+#define TYPENETWORK                     1
+#define TYPEBLOCK                       2
+#define TYPETERMINAL                    3
+#define TYPEENTROPY                     4
+#define TYPEBALLOON                     5
+#define TYPEIOMEM                       6
+#define TYPERPMSG                       7
+#define TYPESCSI                        8
+#define TYPE9P                          9
+#define TYPEWLAN                        10
+#define REGISTERDEVFEATURES             0x00
+#define REGISTERGUESTFEATURES           0x04
+#define REGISTERQADDRESS                0x08
+#define REGISTERQSIZE                   0x0C
+#define REGISTERQSELECT                 0x0E
+#define REGISTERQNOTIFY                 0x10
+#define REGISTERSTATUS                  0x12
+#define REGISTERISR                     0x13
 
 static struct base_driver driver;
 static unsigned short io;
@@ -45,8 +33,8 @@ static unsigned short io;
 static void reset()
 {
 
-    io_outb(io + VIRTIO_REGISTER_STATUS, 0); 
-    io_inb(io + VIRTIO_REGISTER_STATUS); 
+    io_outb(io + REGISTERSTATUS, 0); 
+    io_inb(io + REGISTERSTATUS); 
 
 }
 
@@ -63,7 +51,7 @@ static void driver_init()
 static unsigned int driver_match(unsigned int id)
 {
 
-    return pci_inw(id, PCI_CONFIG_VENDOR) == VIRTIO_PCI_VENDOR;
+    return pci_inw(id, PCI_CONFIG_VENDOR) == PCIVENDOR;
 
 }
 

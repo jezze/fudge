@@ -5,64 +5,59 @@
 #include <arch/x86/io/io.h>
 #include "pci.h"
 
-enum pci_register
-{
-
-    PCI_REGISTER_CONTROL                = 0x0CF8,
-    PCI_REGISTER_DATA                   = 0x0CFC
-
-};
+#define REGISTERCONTROL                 0x0CF8
+#define REGISTERDATA                    0x0CFC
 
 static struct base_bus bus;
 
 unsigned int pci_ind(unsigned int id, unsigned short offset)
 {
 
-    io_outd(PCI_REGISTER_CONTROL, id | (offset & 0xFC));
+    io_outd(REGISTERCONTROL, id | (offset & 0xFC));
 
-    return io_ind(PCI_REGISTER_DATA);
+    return io_ind(REGISTERDATA);
 
 }
 
 unsigned short pci_inw(unsigned int id, unsigned short offset)
 {
 
-    io_outd(PCI_REGISTER_CONTROL, id | (offset & 0xFC));
+    io_outd(REGISTERCONTROL, id | (offset & 0xFC));
 
-    return io_ind(PCI_REGISTER_DATA) >> ((offset & 2) * 8);
+    return io_ind(REGISTERDATA) >> ((offset & 2) * 8);
 
 }
 
 unsigned char pci_inb(unsigned int id, unsigned short offset)
 {
 
-    io_outd(PCI_REGISTER_CONTROL, id | (offset & 0xFC));
+    io_outd(REGISTERCONTROL, id | (offset & 0xFC));
 
-    return io_ind(PCI_REGISTER_DATA) >> ((offset & 3) * 8);
+    return io_ind(REGISTERDATA) >> ((offset & 3) * 8);
 
 }
 
 void pci_outd(unsigned int id, unsigned short offset, unsigned int value)
 {
 
-    io_outd(PCI_REGISTER_CONTROL, id | (offset & 0xFC));
-    io_outd(PCI_REGISTER_DATA, value);
+    io_outd(REGISTERCONTROL, id | (offset & 0xFC));
+    io_outd(REGISTERDATA, value);
 
 }
 
 void pci_outw(unsigned int id, unsigned short offset, unsigned short value)
 {
 
-    io_outd(PCI_REGISTER_CONTROL, id | (offset & 0xFC));
-    io_outw(PCI_REGISTER_DATA, value);
+    io_outd(REGISTERCONTROL, id | (offset & 0xFC));
+    io_outw(REGISTERDATA, value);
 
 }
 
 void pci_outb(unsigned int id, unsigned short offset, unsigned char value)
 {
 
-    io_outd(PCI_REGISTER_CONTROL, id | (offset & 0xFC));
-    io_outb(PCI_REGISTER_DATA, value);
+    io_outd(REGISTERCONTROL, id | (offset & 0xFC));
+    io_outb(REGISTERDATA, value);
 
 }
 

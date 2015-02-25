@@ -1,33 +1,22 @@
-enum gfx_surface_bpp
-{
-
-    GFX_R01G01B01                       = 0x00010101,
-    GFX_R02G02B02                       = 0x00020202,
-    GFX_R04G04B04                       = 0x00040404,
-    GFX_R06G06B06                       = 0x00060606,
-    GFX_R08G08B08                       = 0x00080808,
-    GFX_R12G12B12                       = 0x000C0C0C,
-    GFX_R16G16B16                       = 0x000F0F0F,
-    GFX_R24G24B24                       = 0x00181818,
-    GFX_R32G32B32                       = 0x00FFFFFF
-
-};
-
-enum gfx_primitive_type
-{
-
-    GFX_NONE,
-    GFX_RECTANGLE,
-    GFX_CIRCLE,
-    GFX_TRIANGLE
-
-};
+#define GFX_R01G01B01                   0x00010101
+#define GFX_R02G02B02                   0x00020202
+#define GFX_R04G04B04                   0x00040404
+#define GFX_R06G06B06                   0x00060606
+#define GFX_R08G08B08                   0x00080808
+#define GFX_R12G12B12                   0x000C0C0C
+#define GFX_R16G16B16                   0x000F0F0F
+#define GFX_R24G24B24                   0x00181818
+#define GFX_R32G32B32                   0x00FFFFFF
+#define GFX_PRIMITIVE_NONE              0
+#define GFX_PRIMITIVE_RECTANGLE         1
+#define GFX_PRIMITIVE_CIRCLE            2
+#define GFX_PRIMITIVE_TRIANGLE          3
 
 struct gfx_context
 {
 
     unsigned int color;
-    enum gfx_primitive_type primitive;
+    unsigned int primitive;
     unsigned int x;
     unsigned int y;
     unsigned int width;
@@ -40,7 +29,7 @@ struct gfx_surface
 
     unsigned int width;
     unsigned int height;
-    enum gfx_surface_bpp bpp;
+    unsigned int bpp;
     struct gfx_context context;
     unsigned int (*read)(struct gfx_surface *self, unsigned int offset, unsigned int count, void *buffer);
     unsigned int (*write)(struct gfx_surface *self, unsigned int offset, unsigned int count, void *buffer);

@@ -6,46 +6,28 @@
 #include <arch/x86/io/io.h>
 #include "pic.h"
 
-#define PIC_ROUTINES                    16
+#define ROUTINES                        16
+#define REGISTERCOMMAND0                0x0020
+#define REGISTERDATA0                   0x0021
+#define REGISTERCOMMAND1                0x00A0
+#define REGISTERDATA1                   0x00A1
+#define COMMANDIRR                      0x0A
+#define COMMANDISR                      0x0B
+#define COMMANDCONFIG                   0x11
+#define COMMANDEOI                      0x20
+#define DATA8086                        0x01
+#define DATAVECTOR0                     0x20
+#define DATAVECTOR1                     0x28
 
-enum pic_register
-{
-
-    PIC_REGISTER_COMMAND0               = 0x0020,
-    PIC_REGISTER_DATA0                  = 0x0021,
-    PIC_REGISTER_COMMAND1               = 0x00A0,
-    PIC_REGISTER_DATA1                  = 0x00A1
-
-};
-
-enum pic_command
-{
-
-    PIC_COMMAND_IRR                     = 0x0A,
-    PIC_COMMAND_ISR                     = 0x0B,
-    PIC_COMMAND_CONFIG                  = 0x11,
-    PIC_COMMAND_EOI                     = 0x20
-
-};
-
-enum pic_data
-{
-
-    PIC_DATA_8086                       = 0x01,
-    PIC_DATA_VECTOR0                    = 0x20,
-    PIC_DATA_VECTOR1                    = 0x28
-
-};
-
-static struct pic_routine routines[PIC_ROUTINES];
+static struct pic_routine routines[ROUTINES];
 
 static void setchip(unsigned char command, unsigned char data, unsigned char vector, unsigned char wire)
 {
 
-    io_outb(command, PIC_COMMAND_CONFIG);
+    io_outb(command, COMMANDCONFIG);
     io_outb(data, vector);
     io_outb(data, wire);
-    io_outb(data, PIC_DATA_8086);
+    io_outb(data, DATA8086);
 
 }
 
@@ -90,9 +72,9 @@ unsigned short pic_interrupt(void *stack)
     routines[registers->index].callback(registers->index, routines[registers->index].id);
 
     if (registers->slave)
-        io_outb(PIC_REGISTER_COMMAND1, PIC_COMMAND_EOI);
+        io_outb(REGISTERCOMMAND1, COMMANDEOI);
 
-    io_outb(PIC_REGISTER_COMMAND0, PIC_COMMAND_EOI);
+    io_outb(REGISTERCOMMAND0, COMMANDEOI);
 
     return arch_schedule(&registers->general, &registers->interrupt);
 
@@ -101,7 +83,7 @@ unsigned short pic_interrupt(void *stack)
 unsigned int pic_setroutine(unsigned int irq, unsigned int id, void (*callback)(unsigned int irq, unsigned int id))
 {
 
-    if (irq >= PIC_ROUTINES)
+    if (irq >= ROUTINES)
         return 0;
 
     if (routines[irq].id)
@@ -111,9 +93,9 @@ unsigned int pic_setroutine(unsigned int irq, unsigned int id, void (*callback)(
     routines[irq].callback = callback;
 
     if (irq >= 8)
-        enableline(PIC_REGISTER_DATA1, irq);
+        enableline(REGISTERDATA1, irq);
     else
-        enableline(PIC_REGISTER_DATA0, irq);
+        enableline(REGISTERDATA0, irq);
 
     return 1;
 
@@ -122,7 +104,7 @@ unsigned int pic_setroutine(unsigned int irq, unsigned int id, void (*callback)(
 unsigned int pic_unsetroutine(unsigned int irq, unsigned int id)
 {
 
-    if (irq >= PIC_ROUTINES)
+    if (irq >= ROUTINES)
         return 0;
 
     if (routines[irq].id != id)
@@ -132,9 +114,9 @@ unsigned int pic_unsetroutine(unsigned int irq, unsigned int id)
     routines[irq].callback = 0;
 
     if (irq >= 8)
-        disableline(PIC_REGISTER_DATA1, irq);
+        disableline(REGISTERDATA1, irq);
     else
-        disableline(PIC_REGISTER_DATA0, irq);
+        disableline(REGISTERDATA0, irq);
 
     return 1;
 
@@ -143,38 +125,38 @@ unsigned int pic_unsetroutine(unsigned int irq, unsigned int id)
 void module_init()
 {
 
-    setchip(PIC_REGISTER_COMMAND0, PIC_REGISTER_DATA0, PIC_DATA_VECTOR0, 0x04);
-    setchip(PIC_REGISTER_COMMAND1, PIC_REGISTER_DATA1, PIC_DATA_VECTOR1, 0x02);
-    setmask(PIC_REGISTER_DATA0, 0xFB);
-    setmask(PIC_REGISTER_DATA1, 0xFF);
+    setchip(REGISTERCOMMAND0, REGISTERDATA0, DATAVECTOR0, 0x04);
+    setchip(REGISTERCOMMAND1, REGISTERDATA1, DATAVECTOR1, 0x02);
+    setmask(REGISTERDATA0, 0xFB);
+    setmask(REGISTERDATA1, 0xFF);
 
-    while (getstatus(PIC_REGISTER_COMMAND1, PIC_COMMAND_ISR))
+    while (getstatus(REGISTERCOMMAND1, COMMANDISR))
     {
 
-        io_outb(PIC_REGISTER_COMMAND1, PIC_COMMAND_EOI);
-        io_outb(PIC_REGISTER_COMMAND0, PIC_COMMAND_EOI);
+        io_outb(REGISTERCOMMAND1, COMMANDEOI);
+        io_outb(REGISTERCOMMAND0, COMMANDEOI);
 
     }
 
-    while (getstatus(PIC_REGISTER_COMMAND0, PIC_COMMAND_ISR))
-        io_outb(PIC_REGISTER_COMMAND0, PIC_COMMAND_EOI);
+    while (getstatus(REGISTERCOMMAND0, COMMANDISR))
+        io_outb(REGISTERCOMMAND0, COMMANDEOI);
 
-    arch_setinterrupt(PIC_DATA_VECTOR0 + 0x00, pic_routine00);
-    arch_setinterrupt(PIC_DATA_VECTOR0 + 0x01, pic_routine01);
-    arch_setinterrupt(PIC_DATA_VECTOR0 + 0x02, pic_routine02);
-    arch_setinterrupt(PIC_DATA_VECTOR0 + 0x03, pic_routine03);
-    arch_setinterrupt(PIC_DATA_VECTOR0 + 0x04, pic_routine04);
-    arch_setinterrupt(PIC_DATA_VECTOR0 + 0x05, pic_routine05);
-    arch_setinterrupt(PIC_DATA_VECTOR0 + 0x06, pic_routine06);
-    arch_setinterrupt(PIC_DATA_VECTOR0 + 0x07, pic_routine07);
-    arch_setinterrupt(PIC_DATA_VECTOR1 + 0x00, pic_routine08);
-    arch_setinterrupt(PIC_DATA_VECTOR1 + 0x01, pic_routine09);
-    arch_setinterrupt(PIC_DATA_VECTOR1 + 0x02, pic_routine0A);
-    arch_setinterrupt(PIC_DATA_VECTOR1 + 0x03, pic_routine0B);
-    arch_setinterrupt(PIC_DATA_VECTOR1 + 0x04, pic_routine0C);
-    arch_setinterrupt(PIC_DATA_VECTOR1 + 0x05, pic_routine0D);
-    arch_setinterrupt(PIC_DATA_VECTOR1 + 0x06, pic_routine0E);
-    arch_setinterrupt(PIC_DATA_VECTOR1 + 0x07, pic_routine0F);
+    arch_setinterrupt(DATAVECTOR0 + 0x00, pic_routine00);
+    arch_setinterrupt(DATAVECTOR0 + 0x01, pic_routine01);
+    arch_setinterrupt(DATAVECTOR0 + 0x02, pic_routine02);
+    arch_setinterrupt(DATAVECTOR0 + 0x03, pic_routine03);
+    arch_setinterrupt(DATAVECTOR0 + 0x04, pic_routine04);
+    arch_setinterrupt(DATAVECTOR0 + 0x05, pic_routine05);
+    arch_setinterrupt(DATAVECTOR0 + 0x06, pic_routine06);
+    arch_setinterrupt(DATAVECTOR0 + 0x07, pic_routine07);
+    arch_setinterrupt(DATAVECTOR1 + 0x00, pic_routine08);
+    arch_setinterrupt(DATAVECTOR1 + 0x01, pic_routine09);
+    arch_setinterrupt(DATAVECTOR1 + 0x02, pic_routine0A);
+    arch_setinterrupt(DATAVECTOR1 + 0x03, pic_routine0B);
+    arch_setinterrupt(DATAVECTOR1 + 0x04, pic_routine0C);
+    arch_setinterrupt(DATAVECTOR1 + 0x05, pic_routine0D);
+    arch_setinterrupt(DATAVECTOR1 + 0x06, pic_routine0E);
+    arch_setinterrupt(DATAVECTOR1 + 0x07, pic_routine0F);
 
 }
 

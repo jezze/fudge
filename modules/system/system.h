@@ -1,13 +1,8 @@
-enum system_nodetype
-{
-
-    SYSTEM_NODETYPE_NORMAL              = 0,
-    SYSTEM_NODETYPE_GROUP               = 1,
-    SYSTEM_NODETYPE_MULTI               = 2,
-    SYSTEM_NODETYPE_MERGE               = 4,
-    SYSTEM_NODETYPE_MAILBOX             = 8
-
-};
+#define SYSTEM_NODETYPE_NORMAL          0
+#define SYSTEM_NODETYPE_GROUP           1
+#define SYSTEM_NODETYPE_MULTI           2
+#define SYSTEM_NODETYPE_MERGE           4
+#define SYSTEM_NODETYPE_MAILBOX         8
 
 struct system_header
 {
@@ -24,7 +19,7 @@ struct system_node
     struct system_node *parent;
     struct list children;
     struct list mailboxes;
-    enum system_nodetype type;
+    unsigned int type;
     const char *name;
     unsigned int index;
     unsigned int refcount;

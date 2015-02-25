@@ -7,112 +7,82 @@
 #include <arch/x86/io/io.h>
 #include <arch/x86/pci/pci.h>
 
-#define RTL8139_PCI_VENDOR              0x10EC
-#define RTL8139_PCI_DEVICE              0x8139
-
-enum rtl8139_register
-{
-
-    RTL8139_REGISTER_IDR0               = 0x00,
-    RTL8139_REGISTER_IDR1               = 0x01,
-    RTL8139_REGISTER_IDR2               = 0x02,
-    RTL8139_REGISTER_IDR3               = 0x03,
-    RTL8139_REGISTER_IDR4               = 0x04,
-    RTL8139_REGISTER_IDR5               = 0x05,
-    RTL8139_REGISTER_MAR0               = 0x08,
-    RTL8139_REGISTER_MAR1               = 0x09,
-    RTL8139_REGISTER_MAR2               = 0x0A,
-    RTL8139_REGISTER_MAR3               = 0x0B,
-    RTL8139_REGISTER_MAR4               = 0x0C,
-    RTL8139_REGISTER_MAR5               = 0x0D,
-    RTL8139_REGISTER_MAR6               = 0x0E,
-    RTL8139_REGISTER_MAR7               = 0x0F,
-    RTL8139_REGISTER_TSD0               = 0x10,
-    RTL8139_REGISTER_TSD1               = 0x14,
-    RTL8139_REGISTER_TSD2               = 0x18,
-    RTL8139_REGISTER_TSD3               = 0x1C,
-    RTL8139_REGISTER_TSAD0              = 0x20,
-    RTL8139_REGISTER_TSAD1              = 0x24,
-    RTL8139_REGISTER_TSAD2              = 0x28,
-    RTL8139_REGISTER_TSAD3              = 0x2C,
-    RTL8139_REGISTER_RBSTART            = 0x30,
-    RTL8139_REGISTER_ERBCR              = 0x34,
-    RTL8139_REGISTER_ERSR               = 0x36,
-    RTL8139_REGISTER_CR                 = 0x37,
-    RTL8139_REGISTER_CAPR               = 0x38,
-    RTL8139_REGISTER_CBR                = 0x3A,
-    RTL8139_REGISTER_IMR                = 0x3C,
-    RTL8139_REGISTER_ISR                = 0x3E,
-    RTL8139_REGISTER_TCR                = 0x40,
-    RTL8139_REGISTER_RCR                = 0x44,
-    RTL8139_REGISTER_TCTR               = 0x48,
-    RTL8139_REGISTER_MPC                = 0x4C,
-    RTL8139_REGISTER_9346CR             = 0x50,
-    RTL8139_REGISTER_CONFIG0            = 0x51,
-    RTL8139_REGISTER_CONFIG1            = 0x52,
-    RTL8139_REGISTER_TIMERINT           = 0x54,
-    RTL8139_REGISTER_MSR                = 0x58,
-    RTL8139_REGISTER_CONFIG3            = 0x59,
-    RTL8139_REGISTER_CONFIG4            = 0x5A,
-    RTL8139_REGISTER_MULINT             = 0x5C,
-    RTL8139_REGISTER_RERID              = 0x5E,
-    RTL8139_REGISTER_TSAD               = 0x60,
-    RTL8139_REGISTER_BMCR               = 0x62,
-    RTL8139_REGISTER_BMSR               = 0x64,
-    RTL8139_REGISTER_ANAR               = 0x66,
-    RTL8139_REGISTER_ANLPAR             = 0x68,
-    RTL8139_REGISTER_ANER               = 0x6A,
-    RTL8139_REGISTER_DIS                = 0x6C
-
-};
-
-enum
-{
-
-    RTL8139_RCR_AAP                     = (1 << 0),
-    RTL8139_RCR_APM                     = (1 << 1),
-    RTL8139_RCR_AM                      = (1 << 2),
-    RTL8139_RCR_AB                      = (1 << 3),
-    RTL8139_RCR_AR                      = (1 << 4),
-    RTL8139_RCR_AER                     = (1 << 5),
-    RTL8139_RCR_WRAP                    = (1 << 7)
-
-};
-
-enum
-{
-
-    RTL8139_CR_REMPTY                   = (1 << 0),
-    RTL8139_CR_TENABLE                  = (1 << 2),
-    RTL8139_CR_RENABLE                  = (1 << 3),
-    RTL8139_CR_RESET                    = (1 << 4)
-
-};
-
-enum
-{
-
-    RTL8139_ISR_ROK                     = (1 << 0),
-    RTL8139_ISR_RER                     = (1 << 1),
-    RTL8139_ISR_TOK                     = (1 << 2),
-    RTL8139_ISR_TER                     = (1 << 3)
-
-};
-
-enum
-{
-
-    RTL8139_HEADERFLAG_ROK              = (1 << 0),
-    RTL8139_HEADERFLAG_FAE              = (1 << 1),
-    RTL8139_HEADERFLAG_CRC              = (1 << 2),
-    RTL8139_HEADERFLAG_LONG             = (1 << 3),
-    RTL8139_HEADERFLAG_RUNT             = (1 << 4),
-    RTL8139_HEADERFLAG_ISE              = (1 << 5),
-    RTL8139_HEADERFLAG_BAR              = (1 << 13),
-    RTL8139_HEADERFLAG_PAM              = (1 << 14),
-    RTL8139_HEADERFLAG_MAR              = (1 << 15)
-
-};
+#define PCIVENDOR                       0x10EC
+#define PCIDEVICE                       0x8139
+#define REGISTERIDR0                    0x00
+#define REGISTERIDR1                    0x01
+#define REGISTERIDR2                    0x02
+#define REGISTERIDR3                    0x03
+#define REGISTERIDR4                    0x04
+#define REGISTERIDR5                    0x05
+#define REGISTERMAR0                    0x08
+#define REGISTERMAR1                    0x09
+#define REGISTERMAR2                    0x0A
+#define REGISTERMAR3                    0x0B
+#define REGISTERMAR4                    0x0C
+#define REGISTERMAR5                    0x0D
+#define REGISTERMAR6                    0x0E
+#define REGISTERMAR7                    0x0F
+#define REGISTERTSD0                    0x10
+#define REGISTERTSD1                    0x14
+#define REGISTERTSD2                    0x18
+#define REGISTERTSD3                    0x1C
+#define REGISTERTSAD0                   0x20
+#define REGISTERTSAD1                   0x24
+#define REGISTERTSAD2                   0x28
+#define REGISTERTSAD3                   0x2C
+#define REGISTERRBSTART                 0x30
+#define REGISTERERBCR                   0x34
+#define REGISTERERSR                    0x36
+#define REGISTERCR                      0x37
+#define REGISTERCAPR                    0x38
+#define REGISTERCBR                     0x3A
+#define REGISTERIMR                     0x3C
+#define REGISTERISR                     0x3E
+#define REGISTERTCR                     0x40
+#define REGISTERRCR                     0x44
+#define REGISTERTCTR                    0x48
+#define REGISTERMPC                     0x4C
+#define REGISTER9346CR                  0x50
+#define REGISTERCONFIG0                 0x51
+#define REGISTERCONFIG1                 0x52
+#define REGISTERTIMERINT                0x54
+#define REGISTERMSR                     0x58
+#define REGISTERCONFIG3                 0x59
+#define REGISTERCONFIG4                 0x5A
+#define REGISTERMULINT                  0x5C
+#define REGISTERRERID                   0x5E
+#define REGISTERTSAD                    0x60
+#define REGISTERBMCR                    0x62
+#define REGISTERBMSR                    0x64
+#define REGISTERANAR                    0x66
+#define REGISTERANLPAR                  0x68
+#define REGISTERANER                    0x6A
+#define REGISTERDIS                     0x6C
+#define RCRAAP                          (1 << 0)
+#define RCRAPM                          (1 << 1)
+#define RCRAM                           (1 << 2)
+#define RCRAB                           (1 << 3)
+#define RCRAR                           (1 << 4)
+#define RCRAER                          (1 << 5)
+#define RCRWRAP                         (1 << 7)
+#define CRREMPTY                        (1 << 0)
+#define CRTENABLE                       (1 << 2)
+#define CRRENABLE                       (1 << 3)
+#define CRRESET                         (1 << 4)
+#define ISRROK                          (1 << 0)
+#define ISRRER                          (1 << 1)
+#define ISRTOK                          (1 << 2)
+#define ISRTER                          (1 << 3)
+#define HEADERFLAGROK                   (1 << 0)
+#define HEADERFLAGFAE                   (1 << 1)
+#define HEADERFLAGCRC                   (1 << 2)
+#define HEADERFLAGLONG                  (1 << 3)
+#define HEADERFLAGRUNT                  (1 << 4)
+#define HEADERFLAGISE                   (1 << 5)
+#define HEADERFLAGBAR                   (1 << 13)
+#define HEADERFLAGPAM                   (1 << 14)
+#define HEADERFLAGMAR                   (1 << 15)
 
 struct rtl8139_header
 {
@@ -137,57 +107,57 @@ static unsigned short txp;
 static void poweron()
 {
 
-    io_outb(io + RTL8139_REGISTER_CONFIG1, 0x00);
+    io_outb(io + REGISTERCONFIG1, 0x00);
 
 }
 
 static void reset()
 {
 
-    io_outb(io + RTL8139_REGISTER_CR, RTL8139_CR_RESET);
+    io_outb(io + REGISTERCR, CRRESET);
 
-    while (io_inb(io + RTL8139_REGISTER_CR) & RTL8139_CR_RESET);
+    while (io_inb(io + REGISTERCR) & CRRESET);
 
 }
 
 static void enable()
 {
 
-    io_outb(io + RTL8139_REGISTER_CR, RTL8139_CR_RENABLE | RTL8139_CR_TENABLE);
+    io_outb(io + REGISTERCR, CRRENABLE | CRTENABLE);
 
 }
 
 static void setintflags(unsigned short flags)
 {
 
-    io_outw(io + RTL8139_REGISTER_IMR, flags);
+    io_outw(io + REGISTERIMR, flags);
 
 }
 
 static void setrx()
 {
 
-    io_outd(io + RTL8139_REGISTER_RBSTART, (unsigned long)rx);
-    io_outd(io + RTL8139_REGISTER_RCR, RTL8139_RCR_AAP | RTL8139_RCR_APM | RTL8139_RCR_AM | RTL8139_RCR_AB | RTL8139_RCR_WRAP);
+    io_outd(io + REGISTERRBSTART, (unsigned long)rx);
+    io_outd(io + REGISTERRCR, RCRAAP | RCRAPM | RCRAM | RCRAB | RCRWRAP);
 
 }
 
 static void settx()
 {
 
-    io_outd(io + RTL8139_REGISTER_TSAD0, (unsigned long)tx0);
-    io_outd(io + RTL8139_REGISTER_TSAD1, (unsigned long)tx1);
-    io_outd(io + RTL8139_REGISTER_TSAD2, (unsigned long)tx2);
-    io_outd(io + RTL8139_REGISTER_TSAD3, (unsigned long)tx3);
+    io_outd(io + REGISTERTSAD0, (unsigned long)tx0);
+    io_outd(io + REGISTERTSAD1, (unsigned long)tx1);
+    io_outd(io + REGISTERTSAD2, (unsigned long)tx2);
+    io_outd(io + REGISTERTSAD3, (unsigned long)tx3);
 
 }
 
 static void handleirq(unsigned int irq, unsigned int id)
 {
 
-    unsigned short status = io_inw(io + RTL8139_REGISTER_ISR);
+    unsigned short status = io_inw(io + REGISTERISR);
 
-    if (status & RTL8139_ISR_ROK)
+    if (status & ISRROK)
     {
 
         /* This value should come from a register */
@@ -199,14 +169,14 @@ static void handleirq(unsigned int irq, unsigned int id)
 
         rxp += (header->length + 4 + 3) & ~3;
 
-        io_outw(io + RTL8139_REGISTER_ISR, RTL8139_ISR_ROK);
+        io_outw(io + REGISTERISR, ISRROK);
 
     }
 
-    if (status & RTL8139_ISR_TOK)
+    if (status & ISRTOK)
     {
 
-        io_outw(io + RTL8139_REGISTER_ISR, RTL8139_ISR_TOK);
+        io_outw(io + REGISTERISR, ISRTOK);
 
     }
 
@@ -222,25 +192,25 @@ static unsigned int ethernetinterface_send(unsigned int count, void *buffer)
 
     case 0:
         memory_write(tx0, 0x800, buffer, count, 0);
-        io_outd(io + RTL8139_REGISTER_TSD0, status);
+        io_outd(io + REGISTERTSD0, status);
 
         break;
 
     case 1:
         memory_write(tx1, 0x800, buffer, count, 0);
-        io_outd(io + RTL8139_REGISTER_TSD1, status);
+        io_outd(io + REGISTERTSD1, status);
 
         break;
 
     case 2:
         memory_write(tx2, 0x800, buffer, count, 0);
-        io_outd(io + RTL8139_REGISTER_TSD2, status);
+        io_outd(io + REGISTERTSD2, status);
 
         break;
 
     case 3:
         memory_write(tx3, 0x800, buffer, count, 0);
-        io_outd(io + RTL8139_REGISTER_TSD3, status);
+        io_outd(io + REGISTERTSD3, status);
 
         break;
 
@@ -263,7 +233,7 @@ static void driver_init()
 static unsigned int driver_match(unsigned int id)
 {
 
-    return pci_inw(id, PCI_CONFIG_VENDOR) == RTL8139_PCI_VENDOR && pci_inw(id, PCI_CONFIG_DEVICE) == RTL8139_PCI_DEVICE;
+    return pci_inw(id, PCI_CONFIG_VENDOR) == PCIVENDOR && pci_inw(id, PCI_CONFIG_DEVICE) == PCIDEVICE;
 
 }
 
@@ -275,18 +245,18 @@ static void driver_attach(unsigned int id)
 
     poweron();
     reset();
-    setintflags(RTL8139_ISR_ROK | RTL8139_ISR_TOK);
+    setintflags(ISRROK | ISRTOK);
     setrx();
     settx();
     enable();
     pci_setmaster(id);
 
-    ethernetinterface.mac[0] = io_inb(io + RTL8139_REGISTER_IDR0);
-    ethernetinterface.mac[1] = io_inb(io + RTL8139_REGISTER_IDR1);
-    ethernetinterface.mac[2] = io_inb(io + RTL8139_REGISTER_IDR2);
-    ethernetinterface.mac[3] = io_inb(io + RTL8139_REGISTER_IDR3);
-    ethernetinterface.mac[4] = io_inb(io + RTL8139_REGISTER_IDR4);
-    ethernetinterface.mac[5] = io_inb(io + RTL8139_REGISTER_IDR5);
+    ethernetinterface.mac[0] = io_inb(io + REGISTERIDR0);
+    ethernetinterface.mac[1] = io_inb(io + REGISTERIDR1);
+    ethernetinterface.mac[2] = io_inb(io + REGISTERIDR2);
+    ethernetinterface.mac[3] = io_inb(io + REGISTERIDR3);
+    ethernetinterface.mac[4] = io_inb(io + REGISTERIDR4);
+    ethernetinterface.mac[5] = io_inb(io + REGISTERIDR5);
 
     ethernet_registerinterface(&ethernetinterface, id);
     pic_setroutine(pci_getirq(id), id, handleirq);

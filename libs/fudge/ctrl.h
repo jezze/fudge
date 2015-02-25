@@ -1,12 +1,7 @@
-enum
-{
-
-    CTRL_TYPE_NULL,
-    CTRL_TYPE_CONSOLE,
-    CTRL_TYPE_NETWORK,
-    CTRL_TYPE_VIDEO
-
-};
+#define CTRL_TYPE_NULL                  0
+#define CTRL_TYPE_CONSOLE               1
+#define CTRL_TYPE_NETWORK               2
+#define CTRL_TYPE_VIDEO                 3
 
 struct ctrl_header
 {

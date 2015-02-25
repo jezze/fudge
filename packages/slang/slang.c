@@ -1,6 +1,12 @@
 #include <abi.h>
 #include <fudge.h>
 
+#define TOKENEND                        1
+#define TOKENIDENT                      2
+#define TOKENIN                         3
+#define TOKENOUT                        4
+#define TOKENPIPE                       5
+
 static unsigned int walk_path(unsigned int index, unsigned int indexw, unsigned int count, char *buffer)
 {
 
@@ -10,17 +16,6 @@ static unsigned int walk_path(unsigned int index, unsigned int indexw, unsigned 
     return call_walk(index, indexw, count, buffer);
 
 }
-
-enum token_type
-{
-
-    END,
-    IDENT,
-    IN,
-    OUT,
-    PIPE
-
-};
 
 struct token
 {
@@ -90,14 +85,14 @@ static unsigned int precedence(struct token *token)
     switch (token->type)
     {
 
-    case END:
+    case TOKENEND:
         return 0;
 
-    case PIPE:
+    case TOKENPIPE:
         return 1;
 
-    case IN:
-    case OUT:
+    case TOKENIN:
+    case TOKENOUT:
         return 2;
 
     }
@@ -125,23 +120,23 @@ static void tokenize(struct tokenlist *infix, struct buffer *stringtable, unsign
         {
 
         case '<':
-            tokenlist_add(infix, IN, 0);
+            tokenlist_add(infix, TOKENIN, 0);
 
             break;
 
         case '>':
-            tokenlist_add(infix, OUT, 0);
+            tokenlist_add(infix, TOKENOUT, 0);
 
             break;
 
         case '|':
-            tokenlist_add(infix, PIPE, 0);
+            tokenlist_add(infix, TOKENPIPE, 0);
 
             break;
 
         case ';':
         case '\n':
-            tokenlist_add(infix, END, 0);
+            tokenlist_add(infix, TOKENEND, 0);
 
             break;
 
@@ -162,7 +157,7 @@ static void tokenize(struct tokenlist *infix, struct buffer *stringtable, unsign
         {
 
             if (!identcount)
-                tokenlist_add(infix, IDENT, (char *)stringtable->memory + stringtable->head);
+                tokenlist_add(infix, TOKENIDENT, (char *)stringtable->memory + stringtable->head);
 
             buffer_pushlifo(stringtable, 1, &c);
 
@@ -201,7 +196,7 @@ static void translate(struct tokenlist *postfix, struct tokenlist *infix, struct
         struct token *token = &infix->table[i];
         struct token *t;
 
-        if (token->type == IDENT)
+        if (token->type == TOKENIDENT)
         {
 
             tokenlist_push(postfix, token);
@@ -210,7 +205,7 @@ static void translate(struct tokenlist *postfix, struct tokenlist *infix, struct
 
         }
 
-        if (token->type == END || token->type == PIPE)
+        if (token->type == TOKENEND || token->type == TOKENPIPE)
         {
 
             while ((t = tokenlist_pop(stack)))
@@ -258,12 +253,12 @@ static void parse(struct tokenlist *postfix, struct tokenlist *stack)
         switch (token->type)
         {
 
-        case IDENT:
+        case TOKENIDENT:
             tokenlist_push(stack, token);
 
             break;
 
-        case IN:
+        case TOKENIN:
             t = tokenlist_pop(stack);
 
             if (!t)
@@ -291,7 +286,7 @@ static void parse(struct tokenlist *postfix, struct tokenlist *stack)
 
             break;
 
-        case OUT:
+        case TOKENOUT:
             t = tokenlist_pop(stack);
 
             if (!t)
@@ -302,7 +297,7 @@ static void parse(struct tokenlist *postfix, struct tokenlist *stack)
 
             break;
 
-        case PIPE:
+        case TOKENPIPE:
             t = tokenlist_pop(stack);
 
             if (!t)
@@ -321,7 +316,7 @@ static void parse(struct tokenlist *postfix, struct tokenlist *stack)
 
             break;
 
-        case END:
+        case TOKENEND:
             t = tokenlist_pop(stack);
 
             if (!t)

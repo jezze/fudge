@@ -4,6 +4,6 @@ void arch_isrgeneralfault();
 void arch_isrpagefault();
 void arch_isrsyscall();
 unsigned short arch_getsegment();
-void arch_setinterrupt(unsigned int index, void (*callback)());
+void arch_setinterrupt(unsigned char index, void (*callback)());
 unsigned short arch_schedule(struct cpu_general *general, struct cpu_interrupt *interrupt);
 void arch_setup(struct vfs_backend *backend);

@@ -1,20 +1,34 @@
-enum vga_modetiming_flags
-{
-
-    PHSYNC                              = 0x0001,
-    NHSYNC                              = 0x0002,
-    PVSYNC                              = 0x0004,
-    NVSYNC                              = 0x0008,
-    INTERLACED                          = 0x0010,
-    DOUBLESCAN                          = 0x0020,
-    HADJUSTED                           = 0x0040,
-    VADJUSTED                           = 0x0080,
-    USEPROGRCLOCK                       = 0x0100,
-    TVMODE                              = 0x0200,
-    TVPAL                               = 0x0400,
-    TVNTSC                              = 0x0800
-
-};
+#define PHSYNC                          0x0001
+#define NHSYNC                          0x0002
+#define PVSYNC                          0x0004
+#define NVSYNC                          0x0008
+#define INTERLACED                      0x0010
+#define DOUBLESCAN                      0x0020
+#define HADJUSTED                       0x0040
+#define VADJUSTED                       0x0080
+#define USEPROGRCLOCK                   0x0100
+#define TVMODE                          0x0200
+#define TVPAL                           0x0400
+#define TVNTSC                          0x0800
+#define CLOCK_PROGRAMMABLE              0x0001
+#define INTERLACE_DIVIDE_VERT           0x0002
+#define GREATER_1024_DIVIDE_VERT        0x0004
+#define NO_RGB16_565                    0x0008
+#define NO_INTERLACE                    0x0010
+#define EMULATE_BANK                    0x0020
+#define VGA_BPP2                        2
+#define VGA_BPP4                        4
+#define VGA_BPP8                        8
+#define VGA_BPP15                       15
+#define VGA_BPP16                       16
+#define VGA_BPP24                       24
+#define VGA_BPP32                       32
+#define VGA_COLOR1                      (1 << 1)
+#define VGA_COLOR4                      (1 << 4)
+#define VGA_COLOR8                      (1 << 8)
+#define VGA_COLOR15                     (1 << 15)
+#define VGA_COLOR16                     (1 << 16)
+#define VGA_COLOR24                     (1 << 24)
 
 struct vga_monitormodetiming
 {
@@ -59,18 +73,6 @@ struct vga_modetiming
 
 };
 
-enum vga_cardspecs_flags
-{
-
-    CLOCK_PROGRAMMABLE                  = 0x0001,
-    INTERLACE_DIVIDE_VERT               = 0x0002,
-    GREATER_1024_DIVIDE_VERT            = 0x0004,
-    NO_RGB16_565                        = 0x0008,
-    NO_INTERLACE                        = 0x0010,
-    EMULATE_BANK                        = 0x0020
-
-};
-
 struct vga_cardspecs
 {
 
@@ -87,19 +89,6 @@ struct vga_cardspecs
     int (*mapClock) (int bpp, int pixelclock);
     int (*matchProgrammableClock) (int desiredclock);
     int (*mapHorizontalCrtc) (int bpp, int pixelclock, int htiming);
-
-};
-
-enum
-{
-
-    VGA_BPP2                            = 2,
-    VGA_BPP4                            = 4,
-    VGA_BPP8                            = 8,
-    VGA_BPP15                           = 15,
-    VGA_BPP16                           = 16,
-    VGA_BPP24                           = 24,
-    VGA_BPP32                           = 32
 
 };
 
@@ -124,18 +113,6 @@ struct vga_modeinfo
     unsigned short realWidth;
     unsigned short realHeight;
     unsigned int flags;
-
-};
-
-enum vga_info_colors
-{
-
-    VGA_COLOR1                          = (1 << 1),
-    VGA_COLOR4                          = (1 << 4),
-    VGA_COLOR8                          = (1 << 8),
-    VGA_COLOR15                         = (1 << 15),
-    VGA_COLOR16                         = (1 << 16),
-    VGA_COLOR24                         = (1 << 24)
 
 };
 

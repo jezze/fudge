@@ -1,7 +1,7 @@
 #include <fudge.h>
 #include "token.h"
 
-static enum token_type tokenize(char c)
+static unsigned int tokenize(char c)
 {
 
     switch (c)
@@ -98,7 +98,7 @@ unsigned int token_next(struct token_state *state)
 
 }
 
-unsigned int token_accept(struct token_state *state, enum token_type type)
+unsigned int token_accept(struct token_state *state, unsigned int type)
 {
 
     if (tokenize(state->buffer[state->current]) & type)
@@ -108,7 +108,7 @@ unsigned int token_accept(struct token_state *state, enum token_type type)
 
 }
 
-void token_skip(struct token_state *state, enum token_type type)
+void token_skip(struct token_state *state, unsigned int type)
 {
 
     while (token_accept(state, type));

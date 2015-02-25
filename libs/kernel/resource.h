@@ -1,21 +1,16 @@
-enum
-{
-
-    RESOURCE_CONTAINER                  = 1,
-    RESOURCE_TASK                       = 2,
-    RESOURCE_VFSBACKEND                 = 3,
-    RESOURCE_VFSPROTOCOL                = 4,
-    RESOURCE_VFSCHANNEL                 = 5,
-    RESOURCE_VFSMOUNT                   = 6,
-    RESOURCE_VFSDESCRIPTOR              = 7,
-    RESOURCE_BINARYPROTOCOL             = 8,
-    RESOURCE_BUS                        = 9,
-    RESOURCE_DRIVER                     = 10,
-    RESOURCE_ETHERNETINTERFACE          = 11,
-    RESOURCE_ETHERNETPROTOCOL           = 12,
-    RESOURCE_IPV4PROTOCOL               = 13
-
-};
+#define RESOURCE_CONTAINER              1
+#define RESOURCE_TASK                   2
+#define RESOURCE_VFSBACKEND             3
+#define RESOURCE_VFSPROTOCOL            4
+#define RESOURCE_VFSCHANNEL             5
+#define RESOURCE_VFSMOUNT               6
+#define RESOURCE_VFSDESCRIPTOR          7
+#define RESOURCE_BINARYPROTOCOL         8
+#define RESOURCE_BUS                    9
+#define RESOURCE_DRIVER                 10
+#define RESOURCE_ETHERNETINTERFACE      11
+#define RESOURCE_ETHERNETPROTOCOL       12
+#define RESOURCE_IPV4PROTOCOL           13
 
 struct resource
 {

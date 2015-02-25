@@ -265,7 +265,7 @@ unsigned short arch_getsegment()
 
 }
 
-void arch_setinterrupt(unsigned int index, void (*callback)())
+void arch_setinterrupt(unsigned char index, void (*callback)())
 {
 
     idt_setdescriptor(&idt.pointer, index, callback, selector.kcode, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
