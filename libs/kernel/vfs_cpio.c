@@ -2,9 +2,6 @@
 #include <cpio/cpio.h>
 #include "resource.h"
 #include "vfs.h"
-#include "task.h"
-#include "container.h"
-#include "kernel.h"
 
 static struct vfs_protocol protocol;
 
@@ -293,15 +290,13 @@ static unsigned long protocol_getphysical(struct vfs_backend *backend, unsigned 
 {
 
     /* TEMPORARY FIX */
-
-    struct kernel_module *module = (struct kernel_module *)backend;
     struct cpio_header header;
     unsigned int address = decode(backend, id);
 
     if (backend->read(backend, address, sizeof (struct cpio_header), &header) < sizeof (struct cpio_header))
         return 0;
 
-    return (unsigned long)module->address + address + sizeof (struct cpio_header) + header.namesize + (header.namesize & 1);
+    return backend->getphysical(backend) + address + sizeof (struct cpio_header) + header.namesize + (header.namesize & 1);
 
 }
 

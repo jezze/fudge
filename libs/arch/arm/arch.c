@@ -1,11 +1,5 @@
+#include <fudge.h>
 #include <kernel.h>
-#include <kernel/error.h>
-#include <kernel/resource.h>
-#include <kernel/vfs.h>
-#include <kernel/task.h>
-#include <kernel/scheduler.h>
-#include <kernel/container.h>
-#include <kernel/kernel.h>
 #include "cpu.h"
 #include "arch.h"
 #include "kmi.h"

@@ -2,9 +2,6 @@
 #include <tar/tar.h>
 #include "resource.h"
 #include "vfs.h"
-#include "task.h"
-#include "container.h"
-#include "kernel.h"
 
 static struct vfs_protocol protocol;
 
@@ -236,10 +233,7 @@ static unsigned long protocol_getphysical(struct vfs_backend *backend, unsigned 
 {
 
     /* TEMPORARY FIX */
-
-    struct kernel_module *module = (struct kernel_module *)backend;
-
-    return (unsigned long)module->address + id;
+    return backend->getphysical(backend) + id;
 
 }
 

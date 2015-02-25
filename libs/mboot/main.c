@@ -10,23 +10,28 @@
 
 #define MBOOT_MAGIC                     0x2BADB002
 
-static struct kernel_module modules[4];
+static struct vfs_backend backend;
+static unsigned long address;
+static unsigned int limit;
 
 static unsigned int read(struct vfs_backend *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct kernel_module *module = (struct kernel_module *)self;
-
-    return memory_read(buffer, count, module->address, module->limit, offset);
+    return memory_read(buffer, count, (void *)address, limit, offset);
 
 }
 
 static unsigned int write(struct vfs_backend *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct kernel_module *module = (struct kernel_module *)self;
+    return memory_write((void *)address, limit, buffer, count, offset);
 
-    return memory_write(module->address, module->limit, buffer, count, offset);
+}
+
+static unsigned long getphysical(struct vfs_backend *self)
+{
+
+    return address;
 
 }
 
@@ -80,18 +85,12 @@ void mboot_setup(struct mboot_header *header, unsigned int magic)
     if (header->flags & MBOOT_FLAG_MODULES)
     {
 
-        struct mboot_module *mods = (struct mboot_module *)header->modules.address;
-        unsigned int i;
+        struct mboot_module *modules = (struct mboot_module *)header->modules.address;
 
-        for (i = 0; i < header->modules.count; i++)
-        {
+        vfs_initbackend(&backend, 1000, read, write, getphysical);
 
-            vfs_initbackend(&modules[i].base, 1000 + i, read, write);
-
-            modules[i].address = (void *)mods[i].address;
-            modules[i].limit = mods[i].limit;
-
-        }
+        address = modules[0].address;
+        limit = modules[0].limit;
 
     }
 
@@ -115,7 +114,7 @@ void mboot_setup(struct mboot_header *header, unsigned int magic)
 
     }
 
-    arch_setup(header->modules.count, modules);
+    arch_setup(&backend);
 
 }
 

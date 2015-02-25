@@ -1,11 +1,5 @@
 #include <fudge.h>
-#include <kernel/resource.h>
-#include <kernel/vfs.h>
-#include <kernel/binary.h>
-#include <kernel/task.h>
-#include <kernel/scheduler.h>
-#include <kernel/container.h>
-#include <kernel/kernel.h>
+#include <kernel.h>
 #include "cpu.h"
 #include "arch.h"
 #include "gdt.h"
@@ -13,44 +7,33 @@
 #include "tss.h"
 #include "mmu.h"
 
-#define ARCH_BIOS_BASE                  0x00000000
-#define ARCH_BIOS_LIMIT                 0x00100000
-#define ARCH_BIOS_SIZE                  (ARCH_BIOS_LIMIT - ARCH_BIOS_BASE)
-#define ARCH_KCODE_BASE                 0x00100000
-#define ARCH_KCODE_LIMIT                0x00380000
-#define ARCH_KCODE_SIZE                 (ARCH_KCODE_LIMIT - ARCH_KCODE_BASE)
-#define ARCH_KSTACK_BASE                0x00380000
-#define ARCH_KSTACK_LIMIT               0x00400000
-#define ARCH_KSTACK_SIZE                (ARCH_KSTACK_LIMIT - ARCH_KSTACK_BASE)
-#define ARCH_CONTAINER_DIRECTORY_BASE   0x00400000
-#define ARCH_CONTAINER_DIRECTORY_LIMIT  0x00420000
-#define ARCH_CONTAINER_DIRECTORY_SIZE   (ARCH_CONTAINER_DIRECTORY_LIMIT - ARCH_CONTAINER_DIRECTORY_BASE)
-#define ARCH_CONTAINER_TABLE_BASE       0x00420000
-#define ARCH_CONTAINER_TABLE_LIMIT      0x00500000
-#define ARCH_CONTAINER_TABLE_SIZE       (ARCH_CONTAINER_TABLE_LIMIT - ARCH_CONTAINER_TABLE_BASE)
-#define ARCH_TASK_DIRECTORY_BASE        0x00500000
-#define ARCH_TASK_DIRECTORY_LIMIT       0x00540000
-#define ARCH_TASK_DIRECTORY_SIZE        (ARCH_TASK_DIRECTORY_LIMIT - ARCH_TASK_DIRECTORY_BASE)
-#define ARCH_TASK_TABLE_BASE            0x00540000
-#define ARCH_TASK_TABLE_LIMIT           0x00620000
-#define ARCH_TASK_TABLE_SIZE            (ARCH_TASK_TABLE_LIMIT - ARCH_TASK_TABLE_BASE)
-#define ARCH_UCODE_BASE                 0x01000000
-#define ARCH_UCODE_LIMIT                0x03000000
-#define ARCH_UCODE_SIZE                 (ARCH_UCODE_LIMIT - ARCH_UCODE_BASE)
-#define ARCH_USTACK_BASE                0x03000000
-#define ARCH_USTACK_LIMIT               0x03400000
-#define ARCH_USTACK_SIZE                (ARCH_USTACK_LIMIT - ARCH_USTACK_BASE)
+#define ARCH_CONTAINERS                 8
+#define ARCH_TASKS                      64
 #define ARCH_GDT_DESCRIPTORS            6
 #define ARCH_IDT_DESCRIPTORS            256
 #define ARCH_TSS_DESCRIPTORS            1
-#define ARCH_CONTAINERS                 32
-#define ARCH_CONTAINER_MAPPINGS         4
-#define ARCH_TASKS                      64
-#define ARCH_TASK_MAPPINGS              2
-#define ARCH_TASK_CODESIZE              (ARCH_UCODE_SIZE / ARCH_TASKS)
-#define ARCH_TASK_STACKSIZE             (ARCH_USTACK_SIZE / ARCH_TASKS)
-#define ARCH_TASK_STACKLIMIT            0x80000000
-#define ARCH_TASK_STACKBASE             (ARCH_TASK_STACKLIMIT - ARCH_TASK_STACKSIZE)
+#define ARCH_DIRECTORY_SIZE             0x1000
+#define ARCH_TABLE_SIZE                 0x1000
+#define ARCH_KERNEL_BASE                0x00000000
+#define ARCH_KERNEL_SIZE                0x00400000
+#define ARCH_KERNEL_LIMIT               (ARCH_KERNEL_BASE + ARCH_KERNEL_SIZE)
+#define ARCH_CONTAINER_DIRECTORY_COUNT  1
+#define ARCH_CONTAINER_DIRECTORY_BASE   ARCH_KERNEL_LIMIT
+#define ARCH_CONTAINER_DIRECTORY_LIMIT  (ARCH_CONTAINER_DIRECTORY_BASE + ARCH_CONTAINERS * (ARCH_DIRECTORY_SIZE * ARCH_CONTAINER_DIRECTORY_COUNT))
+#define ARCH_CONTAINER_TABLE_COUNT      8
+#define ARCH_CONTAINER_TABLE_BASE       ARCH_CONTAINER_DIRECTORY_LIMIT
+#define ARCH_CONTAINER_TABLE_LIMIT      (ARCH_CONTAINER_TABLE_BASE + ARCH_CONTAINERS * (ARCH_TABLE_SIZE * ARCH_CONTAINER_TABLE_COUNT))
+#define ARCH_TASK_DIRECTORY_COUNT       1
+#define ARCH_TASK_DIRECTORY_BASE        ARCH_CONTAINER_TABLE_LIMIT
+#define ARCH_TASK_DIRECTORY_LIMIT       (ARCH_TASK_DIRECTORY_BASE + ARCH_TASKS * (ARCH_DIRECTORY_SIZE * ARCH_TASK_DIRECTORY_COUNT))
+#define ARCH_TASK_TABLE_COUNT           2
+#define ARCH_TASK_TABLE_BASE            ARCH_TASK_DIRECTORY_LIMIT
+#define ARCH_TASK_TABLE_LIMIT           (ARCH_TASK_TABLE_BASE + ARCH_TASKS * (ARCH_TABLE_SIZE * ARCH_TASK_TABLE_COUNT))
+#define ARCH_TASK_CODE_BASE             0x01000000
+#define ARCH_TASK_CODE_SIZE             0x00080000
+#define ARCH_TASK_STACK_BASE            (ARCH_TASK_CODE_BASE + ARCH_TASKS * ARCH_TASK_CODE_SIZE)
+#define ARCH_TASK_STACK_SIZE            0x00010000
+#define ARCH_TASK_VSTACK_LIMIT          0x80000000
 
 static struct
 {
@@ -103,7 +86,7 @@ static struct arch_task
     struct cpu_general general;
     struct mmu_directory *directory;
     struct mmu_table *table;
-    unsigned int mapping[ARCH_TASK_MAPPINGS];
+    unsigned int mapping[ARCH_TASK_TABLE_COUNT];
 
 } tasks[ARCH_TASKS];
 
@@ -120,8 +103,9 @@ static void containermaptext(struct container *container)
 
     struct arch_container *acontainer = (struct arch_container *)container;
 
-    mmu_map(acontainer->directory, &acontainer->table[0], ARCH_BIOS_BASE, ARCH_BIOS_BASE, 0x00400000, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
-    mmu_map(acontainer->directory, &acontainer->table[1], ARCH_CONTAINER_DIRECTORY_BASE, ARCH_CONTAINER_DIRECTORY_BASE, 0x00400000, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
+    mmu_map(acontainer->directory, &acontainer->table[0], ARCH_KERNEL_BASE, ARCH_KERNEL_BASE, ARCH_KERNEL_SIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
+    mmu_map(acontainer->directory, &acontainer->table[1], 0x00400000, 0x00400000, 0x00400000, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
+    mmu_map(acontainer->directory, &acontainer->table[2], 0x00800000, 0x00800000, 0x00400000, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
 
 }
 
@@ -149,7 +133,7 @@ static void taskmaptext(struct task *task, unsigned int address)
 
     struct arch_task *atask = (struct arch_task *)task;
 
-    mmu_map(atask->directory, &atask->table[0], atask->mapping[0], address, ARCH_TASK_CODESIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
+    mmu_map(atask->directory, &atask->table[0], atask->mapping[0], address, ARCH_TASK_CODE_SIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
 
 }
 
@@ -158,7 +142,7 @@ static void taskmapstack(struct task *task, unsigned int address)
 
     struct arch_task *atask = (struct arch_task *)task;
 
-    mmu_map(atask->directory, &atask->table[1], atask->mapping[1], address, ARCH_TASK_STACKSIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
+    mmu_map(atask->directory, &atask->table[1], atask->mapping[1], address, ARCH_TASK_STACK_SIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
 
 }
 
@@ -186,7 +170,7 @@ static void taskprepare(struct task *task)
         return;
 
     task->state.registers.ip = protocol->findentry(descriptor->channel, descriptor->id);
-    task->state.registers.sp = ARCH_TASK_STACKLIMIT;
+    task->state.registers.sp = ARCH_TASK_VSTACK_LIMIT;
 
 }
 
@@ -323,7 +307,7 @@ unsigned short arch_schedule(struct cpu_general *general, struct cpu_interrupt *
 
         interrupt->code = selector.kcode;
         interrupt->eip = (unsigned int)arch_halt;
-        interrupt->esp = ARCH_KSTACK_LIMIT;
+        interrupt->esp = ARCH_KERNEL_LIMIT;
 
         return selector.kdata;
 
@@ -347,7 +331,7 @@ unsigned short arch_pagefault(void *stack)
     unsigned int address = cpu_getcr2();
 
     taskmaptext(current.task, address);
-    taskmapstack(current.task, ARCH_TASK_STACKBASE);
+    taskmapstack(current.task, ARCH_TASK_VSTACK_LIMIT - ARCH_TASK_STACK_SIZE);
     taskcopyprogram(current.task);
 
     return arch_schedule(&registers->general, &registers->interrupt);
@@ -365,16 +349,13 @@ unsigned short arch_syscall(void *stack)
 
 }
 
-static void setupcontainer(struct arch_container *container, unsigned int i)
+static void setupcontainer(struct arch_container *container, unsigned int i, struct mmu_directory *directories, struct mmu_table *tables)
 {
-
-    struct mmu_directory *directories = (struct mmu_directory *)ARCH_CONTAINER_DIRECTORY_BASE;
-    struct mmu_table *tables = (struct mmu_table *)ARCH_CONTAINER_TABLE_BASE;
 
     container_init(&container->base);
 
-    container->directory = directories + i;
-    container->table = tables + i * ARCH_CONTAINER_MAPPINGS;
+    container->directory = directories + i * ARCH_CONTAINER_DIRECTORY_COUNT;
+    container->table = tables + i * ARCH_CONTAINER_TABLE_COUNT;
 
 }
 
@@ -384,24 +365,21 @@ static struct container *setupcontainers()
     unsigned int i;
 
     for (i = 0; i < ARCH_CONTAINERS; i++)
-        setupcontainer(&containers[i], i);
+        setupcontainer(&containers[i], i, (struct mmu_directory *)ARCH_CONTAINER_DIRECTORY_BASE, (struct mmu_table *)ARCH_CONTAINER_TABLE_BASE);
 
     return &containers[0].base;
 
 }
 
-static void setuptask(struct arch_task *task, unsigned int i)
+static void setuptask(struct arch_task *task, unsigned int i, struct mmu_directory *directories, struct mmu_table *tables)
 {
-
-    struct mmu_directory *directories = (struct mmu_directory *)ARCH_TASK_DIRECTORY_BASE;
-    struct mmu_table *tables = (struct mmu_table *)ARCH_TASK_TABLE_BASE;
 
     task_init(&task->base);
 
-    task->directory = directories + i;
-    task->table = tables + i * ARCH_TASK_MAPPINGS;
-    task->mapping[0] = ARCH_UCODE_BASE + ARCH_TASK_CODESIZE * i;
-    task->mapping[1] = ARCH_USTACK_BASE + ARCH_TASK_STACKSIZE * i;
+    task->directory = directories + i * ARCH_TASK_DIRECTORY_COUNT;
+    task->table = tables + i * ARCH_TASK_TABLE_COUNT;
+    task->mapping[0] = ARCH_TASK_CODE_BASE + ARCH_TASK_CODE_SIZE * i;
+    task->mapping[1] = ARCH_TASK_STACK_BASE + ARCH_TASK_STACK_SIZE * i;
 
     scheduler_register_task(&task->base);
 
@@ -413,13 +391,13 @@ static struct task *setuptasks()
     unsigned int i;
 
     for (i = 0; i < ARCH_TASKS; i++)
-        setuptask(&tasks[i], i);
+        setuptask(&tasks[i], i, (struct mmu_directory *)ARCH_TASK_DIRECTORY_BASE, (struct mmu_table *)ARCH_TASK_TABLE_BASE);
 
     return &tasks[0].base;
 
 }
 
-void arch_setup(unsigned int count, struct kernel_module *modules)
+void arch_setup(struct vfs_backend *backend)
 {
 
     gdt_initpointer(&gdt.pointer, ARCH_GDT_DESCRIPTORS, gdt.descriptors);
@@ -435,7 +413,7 @@ void arch_setup(unsigned int count, struct kernel_module *modules)
     idt_setdescriptor(&idt.pointer, IDT_INDEX_GF, arch_isrgeneralfault, selector.kcode, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
     idt_setdescriptor(&idt.pointer, IDT_INDEX_PF, arch_isrpagefault, selector.kcode, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
     idt_setdescriptor(&idt.pointer, IDT_INDEX_SYSCALL, arch_isrsyscall, selector.kcode, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT | IDT_FLAG_RING3);
-    tss_setdescriptor(&tss.pointer, TSS_INDEX_DEFAULT, selector.kdata, ARCH_KSTACK_LIMIT);
+    tss_setdescriptor(&tss.pointer, TSS_INDEX_DEFAULT, selector.kdata, ARCH_KERNEL_LIMIT);
     cpu_setgdt(&gdt.pointer, selector.kcode, selector.kdata);
     cpu_setidt(&idt.pointer);
     cpu_settss(selector.tlink);
@@ -449,7 +427,7 @@ void arch_setup(unsigned int count, struct kernel_module *modules)
 
     current.task = setuptasks();
 
-    kernel_setupmodules(current.container, current.task, count, modules);
+    kernel_setupramdisk(current.container, current.task, backend);
     copytask(current.container, current.task, current.task);
     arch_usermode(selector.ucode, selector.udata, current.task->state.registers.ip, current.task->state.registers.sp);
 
