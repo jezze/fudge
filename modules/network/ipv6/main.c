@@ -6,7 +6,12 @@
 
 static struct ethernet_protocol ethernetprotocol;
 
-void ethernetprotocol_notify(struct ethernet_interface *interface, unsigned int count, void *buffer)
+static void ethernetprotocol_addinterface(struct ethernet_interface *interface)
+{
+
+}
+
+static void ethernetprotocol_notify(struct ethernet_interface *interface, unsigned int count, void *buffer)
 {
 
     scheduler_mailboxes_send(&ethernetprotocol.data.mailboxes, count, buffer);
@@ -16,7 +21,7 @@ void ethernetprotocol_notify(struct ethernet_interface *interface, unsigned int 
 void module_init()
 {
 
-    ethernet_initprotocol(&ethernetprotocol, "ipv6", 0x86DD, ethernetprotocol_notify);
+    ethernet_initprotocol(&ethernetprotocol, "ipv6", 0x86DD, ethernetprotocol_addinterface, ethernetprotocol_notify);
 
 }
 

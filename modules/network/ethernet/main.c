@@ -29,6 +29,22 @@ void ethernet_notify(struct ethernet_interface *interface, unsigned int count, v
 
 }
 
+static void notifyaddinterface(struct ethernet_interface *interface)
+{
+
+    struct resource *current = 0;
+
+    while ((current = resource_findtype(current, RESOURCE_ETHERNETPROTOCOL)))
+    {
+
+        struct ethernet_protocol *protocol = current->data;
+
+        protocol->addinterface(interface);
+
+    }
+
+}
+
 static unsigned int interfacenode_ctrlread(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
@@ -52,6 +68,8 @@ void ethernet_registerinterface(struct ethernet_interface *interface, unsigned i
     system_addchild(&root, &interface->root);
 
     interface->id = id;
+
+    notifyaddinterface(interface);
 
 }
 
@@ -99,7 +117,7 @@ void ethernet_initinterface(struct ethernet_interface *interface, const char *na
 
 }
 
-void ethernet_initprotocol(struct ethernet_protocol *protocol, const char *name, unsigned short type, void (*notify)(struct ethernet_interface *interface, unsigned int count, void *buffer))
+void ethernet_initprotocol(struct ethernet_protocol *protocol, const char *name, unsigned short type, void (*addinterface)(struct ethernet_interface *interface), void (*notify)(struct ethernet_interface *interface, unsigned int count, void *buffer))
 {
 
     resource_init(&protocol->resource, RESOURCE_ETHERNETPROTOCOL, protocol);
@@ -107,6 +125,7 @@ void ethernet_initprotocol(struct ethernet_protocol *protocol, const char *name,
     system_initnode(&protocol->data, SYSTEM_NODETYPE_MAILBOX, "data");
 
     protocol->type = type;
+    protocol->addinterface = addinterface;
     protocol->notify = notify;
     protocol->data.resource = &protocol->resource;
 

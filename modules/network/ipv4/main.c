@@ -16,11 +16,37 @@ static struct ipv4_ethernetentry localbuffer[LOCALS];
 static struct ipv4_ethernetentry remotebuffer[REMOTES];
 static struct buffer local;
 static struct buffer remote;
+static struct system_node localnode;
+static struct system_node remotenode;
+
+static void ethernetprotocol_addinterface(struct ethernet_interface *interface)
+{
+
+    unsigned char ip[4] = {192, 168, 0, 100};
+
+    memory_copy(localbuffer[0].ha, interface->mac, 6);
+    memory_copy(localbuffer[0].pa, ip, 4);
+
+}
 
 static void ethernetprotocol_notify(struct ethernet_interface *interface, unsigned int count, void *buffer)
 {
 
     scheduler_mailboxes_send(&ethernetprotocol.data.mailboxes, count, buffer);
+
+}
+
+static unsigned int localnode_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    return memory_read(buffer, count, localbuffer, sizeof (struct ipv4_ethernetentry) * LOCALS, offset);
+
+}
+
+static unsigned int remotenode_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    return memory_read(buffer, count, remotebuffer, sizeof (struct ipv4_ethernetentry) * REMOTES, offset);
 
 }
 
@@ -78,8 +104,13 @@ void module_init()
 
     buffer_init(&local, sizeof (struct ipv4_ethernetentry), sizeof (struct ipv4_ethernetentry) * LOCALS, &localbuffer);
     buffer_init(&remote, sizeof (struct ipv4_ethernetentry), sizeof (struct ipv4_ethernetentry) * REMOTES, &remotebuffer);
-    ethernet_initprotocol(&ethernetprotocol, "ipv4", 0x0800, ethernetprotocol_notify);
+    ethernet_initprotocol(&ethernetprotocol, "ipv4", 0x0800, ethernetprotocol_addinterface, ethernetprotocol_notify);
     arp_inithook(&arphook, 0x0001, ethernetprotocol.type, arphook_notify);
+    system_initnode(&localnode, SYSTEM_NODETYPE_NORMAL, "local");
+    system_initnode(&remotenode, SYSTEM_NODETYPE_NORMAL, "remote");
+
+    localnode.read = localnode_read;
+    remotenode.read = remotenode_read;
 
 }
 
@@ -88,6 +119,8 @@ void module_register()
 
     ethernet_registerprotocol(&ethernetprotocol);
     arp_registerhook(&arphook);
+    system_addchild(&ethernetprotocol.root, &localnode);
+    system_addchild(&ethernetprotocol.root, &remotenode);
 
 }
 
@@ -96,6 +129,8 @@ void module_unregister()
 
     ethernet_unregisterprotocol(&ethernetprotocol);
     arp_unregisterhook(&arphook);
+    system_removechild(&ethernetprotocol.root, &localnode);
+    system_removechild(&ethernetprotocol.root, &remotenode);
 
 }
 

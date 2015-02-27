@@ -8,7 +8,12 @@
 static struct ethernet_protocol ethernetprotocol;
 static struct list hooks;
 
-void ethernetprotocol_notify(struct ethernet_interface *interface, unsigned int count, void *buffer)
+static void ethernetprotocol_addinterface(struct ethernet_interface *interface)
+{
+
+}
+
+static void ethernetprotocol_notify(struct ethernet_interface *interface, unsigned int count, void *buffer)
 {
 
     struct arp_header *header = buffer;
@@ -78,7 +83,7 @@ void module_init()
 {
 
     list_init(&hooks);
-    ethernet_initprotocol(&ethernetprotocol, "arp", 0x0806, ethernetprotocol_notify);
+    ethernet_initprotocol(&ethernetprotocol, "arp", 0x0806, ethernetprotocol_addinterface, ethernetprotocol_notify);
 
 }
 
