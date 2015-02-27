@@ -8,24 +8,45 @@
 #include "ipv4.h"
 
 #define LOCALS                          8
-#define REMOTES                         64
+#define REMOTES                         32
 
 static struct ethernet_protocol ethernetprotocol;
 static struct arp_hook arphook;
 static struct ipv4_ethernetentry localbuffer[LOCALS];
+static unsigned int localbuffercount;
 static struct ipv4_ethernetentry remotebuffer[REMOTES];
+static unsigned int remotebuffercount;
 static struct buffer local;
 static struct buffer remote;
 static struct system_node localnode;
 static struct system_node remotenode;
 
+static void addlocalentry(unsigned char *ha, unsigned char *pa)
+{
+
+    memory_copy(localbuffer[localbuffercount].ha, ha, 6);
+    memory_copy(localbuffer[localbuffercount].pa, pa, 4);
+
+    localbuffercount++;
+
+}
+
+static void addremoteentry(unsigned char *ha, unsigned char *pa)
+{
+
+    memory_copy(remotebuffer[remotebuffercount].ha, ha, 6);
+    memory_copy(remotebuffer[remotebuffercount].pa, pa, 4);
+
+    remotebuffercount++;
+
+}
+
 static void ethernetprotocol_addinterface(struct ethernet_interface *interface)
 {
 
-    unsigned char ip[4] = {192, 168, 0, 100};
+    unsigned char pa[4] = {192, 168, 0, 100};
 
-    memory_copy(localbuffer[0].ha, interface->mac, 6);
-    memory_copy(localbuffer[0].pa, ip, 4);
+    addlocalentry(interface->mac, pa);
 
 }
 
@@ -53,8 +74,12 @@ static unsigned int remotenode_read(struct system_node *self, unsigned int offse
 static void arphook_notify(unsigned int count, void *buffer)
 {
 
-    struct {struct arp_header header; struct ipv4_ethernetentry sender; struct ipv4_ethernetentry target;} *message = buffer;
+    struct {struct arp_header header; struct ipv4_ethernetentry source; struct ipv4_ethernetentry target;} *message = buffer;
     unsigned int i;
+
+    /* ugly workaround */
+    if (!remotebuffercount)
+        addremoteentry(message->source.ha, message->source.pa);
 
     for (i = 0; i < LOCALS; i++)
     {
