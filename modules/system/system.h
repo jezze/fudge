@@ -21,6 +21,7 @@ struct system_node
     struct list mailboxes;
     unsigned int type;
     const char *name;
+    struct resource *resource;
     unsigned int index;
     unsigned int refcount;
     unsigned int (*open)(struct system_node *self);

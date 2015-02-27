@@ -69,6 +69,7 @@ void ipv4_initprotocol(struct ipv4_protocol *protocol, char *name, unsigned char
 
     protocol->id = id;
     protocol->notify = notify;
+    protocol->data.resource = &protocol->resource;
 
 }
 

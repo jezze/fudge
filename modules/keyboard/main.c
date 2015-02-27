@@ -35,8 +35,11 @@ void keyboard_unregisterinterface(struct keyboard_interface *interface)
 void keyboard_initinterface(struct keyboard_interface *interface, const char *name)
 {
 
+    resource_init(&interface->resource, 0, interface);
     system_initnode(&interface->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, name);
     system_initnode(&interface->data, SYSTEM_NODETYPE_MAILBOX, "data");
+
+    interface->data.resource = &interface->resource;
 
 }
 

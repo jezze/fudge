@@ -31,8 +31,11 @@ void timer_unregisterinterface(struct timer_interface *interface)
 void timer_initinterface(struct timer_interface *interface, const char *name)
 {
 
+    resource_init(&interface->resource, 0, interface);
     system_initnode(&interface->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, name);
     system_initnode(&interface->sleep, SYSTEM_NODETYPE_MAILBOX, "sleep");
+
+    interface->sleep.resource = &interface->resource;
 
 }
 

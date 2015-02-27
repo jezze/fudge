@@ -1,6 +1,7 @@
 struct mouse_interface
 {
 
+    struct resource resource;
     struct system_node root;
     struct system_node data;
     unsigned int id;

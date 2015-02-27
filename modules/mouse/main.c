@@ -35,8 +35,11 @@ void mouse_unregisterinterface(struct mouse_interface *interface)
 void mouse_initinterface(struct mouse_interface *interface, const char *name)
 {
 
+    resource_init(&interface->resource, 0, interface);
     system_initnode(&interface->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, name);
     system_initnode(&interface->data, SYSTEM_NODETYPE_MAILBOX, "data");
+
+    interface->data.resource = &interface->resource;
 
 }
 

@@ -8,7 +8,7 @@ static struct system_node root;
 static unsigned int interfacenode_dataread(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct block_interface *interface = (struct block_interface *)self->parent;
+    struct block_interface *interface = self->resource->data;
 
     return interface->rdata(offset, count, buffer);
 
@@ -35,11 +35,13 @@ void block_unregisterinterface(struct block_interface *interface)
 void block_initinterface(struct block_interface *interface, const char *name, unsigned int (*rdata)(unsigned int offset, unsigned int count, void *buffer), unsigned int (*wdata)(unsigned int offset, unsigned int count, void *buffer))
 {
 
+    resource_init(&interface->resource, 0, interface);
     system_initnode(&interface->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, name);
     system_initnode(&interface->data, SYSTEM_NODETYPE_NORMAL, "data");
 
     interface->rdata = rdata;
     interface->wdata = wdata;
+    interface->data.resource = &interface->resource;
     interface->data.read = interfacenode_dataread;
 
 }

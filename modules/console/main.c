@@ -31,7 +31,7 @@ static unsigned int interfacenode_ctrlwrite(struct system_node *self, unsigned i
 static unsigned int interfacenode_outwrite(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct console_interface *interface = (struct console_interface *)self->parent;
+    struct console_interface *interface = self->resource->data;
 
     return interface->send(offset, count, buffer);
 
@@ -62,14 +62,18 @@ void console_unregisterinterface(struct console_interface *interface)
 void console_initinterface(struct console_interface *interface, const char *name, unsigned int (*send)(unsigned int offset, unsigned int count, void *buffer))
 {
 
+    resource_init(&interface->resource, 0, interface);
     system_initnode(&interface->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, name);
     system_initnode(&interface->ctrl, SYSTEM_NODETYPE_NORMAL, "ctrl");
     system_initnode(&interface->in, SYSTEM_NODETYPE_MAILBOX, "in");
     system_initnode(&interface->out, SYSTEM_NODETYPE_NORMAL, "out");
 
     interface->send = send;
+    interface->ctrl.resource = &interface->resource;
     interface->ctrl.read = interfacenode_ctrlread;
     interface->ctrl.write = interfacenode_ctrlwrite;
+    interface->in.resource = &interface->resource;
+    interface->out.resource = &interface->resource;
     interface->out.write = interfacenode_outwrite;
 
 }

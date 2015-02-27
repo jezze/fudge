@@ -23,7 +23,7 @@ static unsigned int isleapyear(unsigned short year)
 static unsigned int interfacenode_timestampread(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct clock_interface *interface = (struct clock_interface *)self->parent;
+    struct clock_interface *interface = self->resource->data;
     unsigned int year = interface->getyear() - 1970;
     unsigned int month = interface->getmonth();
     unsigned int day = interface->getday();
@@ -42,7 +42,7 @@ static unsigned int interfacenode_timestampread(struct system_node *self, unsign
 static unsigned int interfacenode_dateread(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct clock_interface *interface = (struct clock_interface *)self->parent;
+    struct clock_interface *interface = self->resource->data;
     char *num = "0000-00-00";
 
     ascii_wzerovalue(num, 10, interface->getyear(), 10, 4, 0);
@@ -56,7 +56,7 @@ static unsigned int interfacenode_dateread(struct system_node *self, unsigned in
 static unsigned int interfacenode_timeread(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct clock_interface *interface = (struct clock_interface *)self->parent;
+    struct clock_interface *interface = self->resource->data;
     char *num = "00:00:00";
 
     ascii_wzerovalue(num, 8, interface->gethours(), 10, 2, 0);
@@ -92,6 +92,7 @@ void clock_unregisterinterface(struct clock_interface *interface)
 void clock_initinterface(struct clock_interface *interface, const char *name, unsigned char (*getseconds)(), unsigned char (*getminutes)(), unsigned char (*gethours)(), unsigned char (*getweekday)(), unsigned char (*getday)(), unsigned char (*getmonth)(), unsigned short (*getyear)())
 {
 
+    resource_init(&interface->resource, 0, interface);
     system_initnode(&interface->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, name);
     system_initnode(&interface->timestamp, SYSTEM_NODETYPE_NORMAL, "timestamp");
     system_initnode(&interface->date, SYSTEM_NODETYPE_NORMAL, "date");
@@ -104,8 +105,11 @@ void clock_initinterface(struct clock_interface *interface, const char *name, un
     interface->getday = getday;
     interface->getmonth = getmonth;
     interface->getyear = getyear;
+    interface->timestamp.resource = &interface->resource;
     interface->timestamp.read = interfacenode_timestampread;
+    interface->date.resource = &interface->resource;
     interface->date.read = interfacenode_dateread;
+    interface->time.resource = &interface->resource;
     interface->time.read = interfacenode_timeread;
 
 }

@@ -92,8 +92,10 @@ void ethernet_initinterface(struct ethernet_interface *interface, const char *na
     system_initnode(&interface->data, SYSTEM_NODETYPE_MAILBOX, "data");
 
     interface->send = send;
+    interface->ctrl.resource = &interface->resource;
     interface->ctrl.read = interfacenode_ctrlread;
     interface->ctrl.write = interfacenode_ctrlwrite;
+    interface->data.resource = &interface->resource;
 
 }
 
@@ -106,6 +108,7 @@ void ethernet_initprotocol(struct ethernet_protocol *protocol, const char *name,
 
     protocol->type = type;
     protocol->notify = notify;
+    protocol->data.resource = &protocol->resource;
 
 }
 

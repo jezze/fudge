@@ -1,6 +1,7 @@
 struct clock_interface
 {
 
+    struct resource resource;
     struct system_node root;
     struct system_node timestamp;
     struct system_node date;
