@@ -45,6 +45,22 @@ static void notifyaddinterface(struct ethernet_interface *interface)
 
 }
 
+static void notifyremoveinterface(struct ethernet_interface *interface)
+{
+
+    struct resource *current = 0;
+
+    while ((current = resource_findtype(current, RESOURCE_ETHERNETPROTOCOL)))
+    {
+
+        struct ethernet_protocol *protocol = current->data;
+
+        protocol->removeinterface(interface);
+
+    }
+
+}
+
 static unsigned int interfacenode_ctrlread(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
@@ -89,6 +105,7 @@ void ethernet_unregisterinterface(struct ethernet_interface *interface)
     system_removechild(&interface->root, &interface->ctrl);
     system_removechild(&interface->root, &interface->data);
     system_removechild(&root, &interface->root);
+    notifyremoveinterface(interface);
 
 }
 
@@ -117,7 +134,7 @@ void ethernet_initinterface(struct ethernet_interface *interface, const char *na
 
 }
 
-void ethernet_initprotocol(struct ethernet_protocol *protocol, const char *name, unsigned short type, void (*addinterface)(struct ethernet_interface *interface), void (*notify)(struct ethernet_interface *interface, unsigned int count, void *buffer))
+void ethernet_initprotocol(struct ethernet_protocol *protocol, const char *name, unsigned short type, void (*addinterface)(struct ethernet_interface *interface), void (*removeinterface)(struct ethernet_interface *interface), void (*notify)(struct ethernet_interface *interface, unsigned int count, void *buffer))
 {
 
     resource_init(&protocol->resource, RESOURCE_ETHERNETPROTOCOL, protocol);
@@ -126,6 +143,7 @@ void ethernet_initprotocol(struct ethernet_protocol *protocol, const char *name,
 
     protocol->type = type;
     protocol->addinterface = addinterface;
+    protocol->removeinterface = removeinterface;
     protocol->notify = notify;
     protocol->data.resource = &protocol->resource;
 

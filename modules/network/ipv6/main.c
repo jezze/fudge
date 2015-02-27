@@ -11,6 +11,11 @@ static void ethernetprotocol_addinterface(struct ethernet_interface *interface)
 
 }
 
+static void ethernetprotocol_removeinterface(struct ethernet_interface *interface)
+{
+
+}
+
 static void ethernetprotocol_notify(struct ethernet_interface *interface, unsigned int count, void *buffer)
 {
 
@@ -21,7 +26,7 @@ static void ethernetprotocol_notify(struct ethernet_interface *interface, unsign
 void module_init()
 {
 
-    ethernet_initprotocol(&ethernetprotocol, "ipv6", 0x86DD, ethernetprotocol_addinterface, ethernetprotocol_notify);
+    ethernet_initprotocol(&ethernetprotocol, "ipv6", 0x86DD, ethernetprotocol_addinterface, ethernetprotocol_removeinterface, ethernetprotocol_notify);
 
 }
 

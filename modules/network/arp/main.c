@@ -13,6 +13,11 @@ static void ethernetprotocol_addinterface(struct ethernet_interface *interface)
 
 }
 
+static void ethernetprotocol_removeinterface(struct ethernet_interface *interface)
+{
+
+}
+
 static void ethernetprotocol_notify(struct ethernet_interface *interface, unsigned int count, void *buffer)
 {
 
@@ -33,6 +38,7 @@ static void ethernetprotocol_notify(struct ethernet_interface *interface, unsign
     {
 
         struct arp_hook *hook = current->data;
+        unsigned char *mac;
 
         if (hook->htype != htype || hook->ptype != ptype)
             continue;
@@ -41,8 +47,12 @@ static void ethernetprotocol_notify(struct ethernet_interface *interface, unsign
         {
 
         case 1:
-        case 2:
-            hook->notify(count, buffer);
+            mac = hook->getmac(header->plength, (unsigned char *)buffer + sizeof (struct arp_header) + header->hlength + header->plength + header->hlength);
+
+            if (!mac)
+                continue;
+
+            /* SEND RESPONSE */
 
             break;
 
@@ -68,14 +78,14 @@ void arp_unregisterhook(struct arp_hook *hook)
 
 }
 
-void arp_inithook(struct arp_hook *hook, unsigned short htype, unsigned short ptype, void (*notify)(unsigned int count, void *buffer))
+void arp_inithook(struct arp_hook *hook, unsigned short htype, unsigned short ptype, unsigned char *(*getmac)(unsigned int count, void *pa))
 {
 
     list_inititem(&hook->item, hook);
 
     hook->htype = htype;
     hook->ptype = ptype;
-    hook->notify = notify;
+    hook->getmac = getmac;
 
 }
 
@@ -83,7 +93,7 @@ void module_init()
 {
 
     list_init(&hooks);
-    ethernet_initprotocol(&ethernetprotocol, "arp", 0x0806, ethernetprotocol_addinterface, ethernetprotocol_notify);
+    ethernet_initprotocol(&ethernetprotocol, "arp", 0x0806, ethernetprotocol_addinterface, ethernetprotocol_removeinterface, ethernetprotocol_notify);
 
 }
 
