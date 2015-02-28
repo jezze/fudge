@@ -160,15 +160,13 @@ static void handleirq(unsigned int irq, unsigned int id)
     if (status & ISRROK)
     {
 
-        /* This value should come from a register */
-        void *packet = (void *)(rx + rxp);
-        char *ppacket = packet;
-        struct rtl8139_header *header = packet;
+        struct rtl8139_header *header = (struct rtl8139_header *)(rx + rxp);
 
-        ethernet_notify(&ethernetinterface, header->length, ppacket + 4);
+        ethernet_notify(&ethernetinterface, header->length, header + 1);
 
         rxp += (header->length + 4 + 3) & ~3;
 
+        io_outw(io + REGISTERCAPR, rxp - 16);
         io_outw(io + REGISTERISR, ISRROK);
 
     }

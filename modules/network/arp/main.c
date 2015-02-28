@@ -25,7 +25,10 @@ static void ethernetprotocol_notify(struct ethernet_interface *interface, unsign
     unsigned short htype;
     unsigned short ptype;
     unsigned short operation;
+    unsigned int length;
     struct list_item *current;
+    unsigned char response[512];
+    struct arp_header *responseheader = (struct arp_header *)response;
 
     if (count < sizeof (struct arp_header))
         return;
@@ -33,6 +36,7 @@ static void ethernetprotocol_notify(struct ethernet_interface *interface, unsign
     htype = (header->htype[0] << 8) | header->htype[1];
     ptype = (header->ptype[0] << 8) | header->ptype[1];
     operation = (header->operation[0] << 8) | header->operation[1];
+    length = header->hlength + header->plength;
 
     for (current = hooks.head; current; current = current->next)
     {
@@ -47,12 +51,19 @@ static void ethernetprotocol_notify(struct ethernet_interface *interface, unsign
         {
 
         case 1:
-            hardwareaddress = hook->gethardwareaddress(header->plength, (unsigned char *)buffer + sizeof (struct arp_header) + header->hlength + header->plength + header->hlength);
+            hardwareaddress = hook->gethardwareaddress(header->plength, (unsigned char *)buffer + sizeof (struct arp_header) + length + header->hlength);
 
             if (!hardwareaddress)
                 continue;
 
-            /* SEND RESPONSE */
+            memory_write(response, 512, header, sizeof (struct arp_header), 0);
+            memory_write(response, 512, (unsigned char *)buffer + sizeof (struct arp_header), length, sizeof (struct arp_header) + length);
+            memory_write(response, 512, (unsigned char *)buffer + sizeof (struct arp_header) + length, length, sizeof (struct arp_header));
+            memory_write(response, 512, hardwareaddress, header->hlength, sizeof (struct arp_header));
+
+            responseheader->operation[1] = 2;
+
+            interface->send(count, response);
 
             break;
 
