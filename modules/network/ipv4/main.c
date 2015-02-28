@@ -16,11 +16,11 @@ static unsigned int localbuffercount;
 static struct buffer local;
 static struct system_node localnode;
 
-static void addlocalentry(unsigned char *ha, unsigned char *pa)
+static void addlocalentry(unsigned char *hardwareaddress, unsigned char *protocoladdress)
 {
 
-    memory_copy(localbuffer[localbuffercount].ha, ha, 6);
-    memory_copy(localbuffer[localbuffercount].pa, pa, 4);
+    memory_copy(localbuffer[localbuffercount].hardwareaddress, hardwareaddress, 6);
+    memory_copy(localbuffer[localbuffercount].protocoladdress, protocoladdress, 4);
 
     localbuffercount++;
 
@@ -29,9 +29,9 @@ static void addlocalentry(unsigned char *ha, unsigned char *pa)
 static void ethernetprotocol_addinterface(struct ethernet_interface *interface)
 {
 
-    unsigned char pa[4] = {192, 168, 0, 100};
+    unsigned char protocoladdress[4] = {192, 168, 0, 100};
 
-    addlocalentry(interface->mac, pa);
+    addlocalentry(interface->hardwareaddress, protocoladdress);
 
 }
 
@@ -54,7 +54,7 @@ static unsigned int localnode_read(struct system_node *self, unsigned int offset
 
 }
 
-static unsigned char *arphook_getmac(unsigned int count, void *pa)
+static unsigned char *arphook_gethardwareaddress(unsigned int count, void *protocoladdress)
 {
 
     unsigned int i;
@@ -62,8 +62,8 @@ static unsigned char *arphook_getmac(unsigned int count, void *pa)
     for (i = 0; i < LOCALS; i++)
     {
 
-        if (memory_match(localbuffer[i].pa, pa, count))
-            return localbuffer[i].ha;
+        if (memory_match(localbuffer[i].protocoladdress, protocoladdress, count))
+            return localbuffer[i].hardwareaddress;
 
     }
 
@@ -107,7 +107,7 @@ void module_init()
 
     buffer_init(&local, sizeof (struct ipv4_ethernetentry), sizeof (struct ipv4_ethernetentry) * LOCALS, &localbuffer);
     ethernet_initprotocol(&ethernetprotocol, "ipv4", 0x0800, ethernetprotocol_addinterface, ethernetprotocol_removeinterface, ethernetprotocol_notify);
-    arp_inithook(&arphook, 0x0001, ethernetprotocol.type, arphook_getmac);
+    arp_inithook(&arphook, 0x0001, ethernetprotocol.type, arphook_gethardwareaddress);
     system_initnode(&localnode, SYSTEM_NODETYPE_NORMAL, "local");
 
     localnode.read = localnode_read;

@@ -38,7 +38,7 @@ static void ethernetprotocol_notify(struct ethernet_interface *interface, unsign
     {
 
         struct arp_hook *hook = current->data;
-        unsigned char *mac;
+        unsigned char *hardwareaddress;
 
         if (hook->htype != htype || hook->ptype != ptype)
             continue;
@@ -47,9 +47,9 @@ static void ethernetprotocol_notify(struct ethernet_interface *interface, unsign
         {
 
         case 1:
-            mac = hook->getmac(header->plength, (unsigned char *)buffer + sizeof (struct arp_header) + header->hlength + header->plength + header->hlength);
+            hardwareaddress = hook->gethardwareaddress(header->plength, (unsigned char *)buffer + sizeof (struct arp_header) + header->hlength + header->plength + header->hlength);
 
-            if (!mac)
+            if (!hardwareaddress)
                 continue;
 
             /* SEND RESPONSE */
@@ -78,14 +78,14 @@ void arp_unregisterhook(struct arp_hook *hook)
 
 }
 
-void arp_inithook(struct arp_hook *hook, unsigned short htype, unsigned short ptype, unsigned char *(*getmac)(unsigned int count, void *pa))
+void arp_inithook(struct arp_hook *hook, unsigned short htype, unsigned short ptype, unsigned char *(*gethardwareaddress)(unsigned int count, void *protocoladdress))
 {
 
     list_inititem(&hook->item, hook);
 
     hook->htype = htype;
     hook->ptype = ptype;
-    hook->getmac = getmac;
+    hook->gethardwareaddress = gethardwareaddress;
 
 }
 

@@ -1,8 +1,8 @@
 struct ipv4_ethernetentry
 {
 
-    unsigned char ha[6];
-    unsigned char pa[4];
+    unsigned char hardwareaddress[6];
+    unsigned char protocoladdress[4];
 
 };
 

@@ -6,7 +6,7 @@ struct ethernet_interface
     struct system_node ctrl;
     struct system_node data;
     unsigned int id;
-    unsigned char mac[6];
+    unsigned char hardwareaddress[6];
     unsigned int (*send)(unsigned int count, void *buffer);
 
 };
