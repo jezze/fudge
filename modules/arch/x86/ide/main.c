@@ -69,15 +69,6 @@ static unsigned short getdata(unsigned int id)
 
 }
 
-unsigned char ide_getstatus(unsigned int id)
-{
-
-    unsigned short data = getdata(id);
-
-    return io_inb(data + DATACOMMAND);
-
-}
-
 static void sleep(unsigned short control)
 {
 
@@ -120,6 +111,15 @@ static void setcommand(unsigned short data, unsigned char command)
 {
 
     io_outb(data + DATACOMMAND, command);
+
+}
+
+unsigned char ide_getstatus(unsigned int id)
+{
+
+    unsigned short data = getdata(id);
+
+    return io_inb(data + DATACOMMAND);
 
 }
 
