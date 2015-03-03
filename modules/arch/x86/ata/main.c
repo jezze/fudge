@@ -30,7 +30,7 @@ static unsigned int blockinterface_rdata(unsigned int offset, unsigned int count
     if (offset > 0)
         return 0;
 
-    ide_rlba28(blockinterface.id, 0, 0, 1);
+    ide_rpio28(blockinterface.id, 0, 0, 1);
 
     return 0;
 
