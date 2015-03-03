@@ -2,6 +2,7 @@
 #include <kernel.h>
 #include <base/base.h>
 #include <system/system.h>
+#include <log/log.h>
 #include <block/block.h>
 #include <arch/x86/ide/ide.h>
 #include <arch/x86/pic/pic.h>
@@ -12,6 +13,15 @@ static struct block_interface blockinterface;
 static void handleirq(unsigned int irq, unsigned int id)
 {
 
+    unsigned char status = ide_getstatus(id);
+    unsigned char data[512];
+
+    ide_rblock(id, 1, data);
+    log_notify(0, 8, "ATA IRQ\n");
+
+    if (status & 1)
+        log_notify(0, 8, "ATA ERR\n");
+
 }
 
 static unsigned int blockinterface_rdata(unsigned int offset, unsigned int count, void *buffer)
@@ -20,17 +30,16 @@ static unsigned int blockinterface_rdata(unsigned int offset, unsigned int count
     if (offset > 0)
         return 0;
 
-    return ide_rlba28(blockinterface.id, 0, 0, 1, buffer);
+    ide_rlba28(blockinterface.id, 0, 0, 1);
+
+    return 0;
 
 }
 
 static unsigned int blockinterface_wdata(unsigned int offset, unsigned int count, void *buffer)
 {
 
-    if (offset > 0)
-        return 0;
-
-    return ide_wlba28(blockinterface.id, 0, 0, 1, buffer);
+    return 0;
 
 }
 

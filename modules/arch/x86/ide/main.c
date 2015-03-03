@@ -69,10 +69,12 @@ static unsigned short getdata(unsigned int id)
 
 }
 
-static void wait(unsigned short data)
+unsigned char ide_getstatus(unsigned int id)
 {
 
-    while (io_inb(data + DATACOMMAND) & STATUSBUSY);
+    unsigned short data = getdata(id);
+
+    return io_inb(data + DATACOMMAND);
 
 }
 
@@ -121,56 +123,10 @@ static void setcommand(unsigned short data, unsigned char command)
 
 }
 
-static unsigned int rblocks(unsigned short data, unsigned short control, unsigned int count, void *buffer)
-{
-
-    unsigned int i;
-    unsigned short *out = buffer;
-
-    for (i = 0; i < count; i++)
-    {
-
-        unsigned int j;
-
-        sleep(control);
-        wait(data);
-
-        for (j = 0; j < 256; j++)
-            *out++ = io_inw(data);
-
-    }
-
-    return i;
-
-}
-
-static unsigned int wblocks(unsigned short data, unsigned short control, unsigned int count, void *buffer)
-{
-
-    unsigned int i;
-    unsigned short *out = buffer;
-
-    for (i = 0; i < count; i++)
-    {
-
-        unsigned int j;
-
-        sleep(control);
-        wait(data);
-
-        for (j = 0; j < 256; j++)
-            io_outw(data, *out++);
-
-    }
-
-    return i;
-
-}
-
 unsigned short ide_getirq(unsigned int id)
 {
 
-    return (id) ? IRQSECONDARY : IRQPRIMARY;
+    return IRQPRIMARY;
 
 }
 
@@ -202,21 +158,7 @@ unsigned int ide_wblock(unsigned int id, unsigned int count, void *buffer)
 
 }
 
-unsigned int ide_rlba28(unsigned int id, unsigned int slave, unsigned int sector, unsigned int count, void *buffer)
-{
-
-    unsigned short data = getdata(id);
-    unsigned short control = getcontrol(id);
-
-    select(data, control, 0xE0 | ((sector >> 24) & 0x0F), slave);
-    setlba(data, count, sector, sector >> 8, sector >> 16);
-    setcommand(data, CONTROLPIO28READ);
-
-    return rblocks(data, control, count, buffer) * 512;
-
-}
-
-void ide_rlba28a(unsigned int id, unsigned int slave, unsigned int sector, unsigned int count, void *buffer)
+void ide_rlba28(unsigned int id, unsigned int slave, unsigned int sector, unsigned int count)
 {
 
     unsigned short data = getdata(id);
@@ -228,21 +170,7 @@ void ide_rlba28a(unsigned int id, unsigned int slave, unsigned int sector, unsig
 
 }
 
-unsigned int ide_wlba28(unsigned int id, unsigned int slave, unsigned int sector, unsigned int count, void *buffer)
-{
-
-    unsigned short data = getdata(id);
-    unsigned short control = getcontrol(id);
-
-    select(data, control, 0xE0 | ((sector >> 24) & 0x0F), slave);
-    setlba(data, count, sector, sector >> 8, sector >> 16);
-    setcommand(data, CONTROLPIO28WRITE);
-
-    return wblocks(data, control, count, buffer) * 512;
-
-}
-
-void ide_wlba28a(unsigned int id, unsigned int slave, unsigned int sector, unsigned int count, void *buffer)
+void ide_wlba28(unsigned int id, unsigned int slave, unsigned int sector, unsigned int count)
 {
 
     unsigned short data = getdata(id);
@@ -254,61 +182,29 @@ void ide_wlba28a(unsigned int id, unsigned int slave, unsigned int sector, unsig
 
 }
 
-unsigned int ide_rlba48(unsigned int id, unsigned int slave, unsigned int sectorlow, unsigned int sectorhigh, unsigned int count, void *buffer)
+void ide_rlba48(unsigned int id, unsigned int slave, unsigned int sectorlow, unsigned int sectorhigh, unsigned int count)
 {
 
     unsigned short data = getdata(id);
     unsigned short control = getcontrol(id);
 
     select(data, control, 0x40, slave);
-    setlba2(data, count >> 8, sectorhigh, sectorhigh >> 8, sectorhigh >> 16);
     setlba(data, count, sectorlow, sectorlow >> 8, sectorlow >> 16);
+    setlba2(data, count >> 8, sectorhigh, sectorhigh >> 8, sectorhigh >> 16);
     setcommand(data, CONTROLPIO48READ);
 
-    return rblocks(data, control, count, buffer) * 512;
-
 }
 
-void ide_rlba48a(unsigned int id, unsigned int slave, unsigned int sectorlow, unsigned int sectorhigh, unsigned int count, void *buffer)
+void ide_wlba48(unsigned int id, unsigned int slave, unsigned int sectorlow, unsigned int sectorhigh, unsigned int count)
 {
 
     unsigned short data = getdata(id);
     unsigned short control = getcontrol(id);
 
     select(data, control, 0x40, slave);
-    setlba2(data, count >> 8, sectorhigh, sectorhigh >> 8, sectorhigh >> 16);
     setlba(data, count, sectorlow, sectorlow >> 8, sectorlow >> 16);
-    setcommand(data, CONTROLPIO48READ);
-    sleep(control);
-
-}
-
-unsigned int ide_wlba48(unsigned int id, unsigned int slave, unsigned int sectorlow, unsigned int sectorhigh, unsigned int count, void *buffer)
-{
-
-    unsigned short data = getdata(id);
-    unsigned short control = getcontrol(id);
-
-    select(data, control, 0x40, slave);
     setlba2(data, count >> 8, sectorhigh, sectorhigh >> 8, sectorhigh >> 16);
-    setlba(data, count, sectorlow, sectorlow >> 8, sectorlow >> 16);
     setcommand(data, CONTROLPIO48WRITE);
-
-    return wblocks(data, control, count, buffer) * 512;
-
-}
-
-void ide_wlba48a(unsigned int id, unsigned int slave, unsigned int sectorlow, unsigned int sectorhigh, unsigned int count, void *buffer)
-{
-
-    unsigned short data = getdata(id);
-    unsigned short control = getcontrol(id);
-
-    select(data, control, 0x40, slave);
-    setlba2(data, count >> 8, sectorhigh, sectorhigh >> 8, sectorhigh >> 16);
-    setlba(data, count, sectorlow, sectorlow >> 8, sectorlow >> 16);
-    setcommand(data, CONTROLPIO48WRITE);
-    sleep(control);
 
 }
 
