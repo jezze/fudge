@@ -16,21 +16,21 @@ static void handleirq(unsigned int irq, unsigned int id)
     unsigned char status = ide_getstatus(id);
     unsigned char data[512];
 
-    ide_rblock(id, 1, data);
-    log_notify(0, 8, "ATA IRQ\n");
-
     if (status & 1)
-        log_notify(0, 8, "ATA ERR\n");
+        return;
+
+    ide_rblock(id, 1, data);
+    block_notify(&blockinterface, 512, data);
 
 }
 
 static unsigned int blockinterface_rdata(unsigned int offset, unsigned int count, void *buffer)
 {
 
-    if (offset > 0)
-        return 0;
+    offset = offset / 512;
+    count = count / 512;
 
-    ide_rpio28(blockinterface.id, 0, 0, 1);
+    ide_rpio28(blockinterface.id, 0, offset, count);
 
     return 0;
 
