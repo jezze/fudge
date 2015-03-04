@@ -2,14 +2,32 @@
 #include <kernel.h>
 #include <base/base.h>
 #include <system/system.h>
-#include <arch/x86/io/io.h>
+#include <log/log.h>
 #include <arch/x86/pci/pci.h>
 #include "ahci.h"
 
 static struct base_driver driver;
+static struct base_bus bus;
+static unsigned int mmio;
+
+static void bus_setup()
+{
+
+    log_notify(LOG_INFO, 10, "AHCI INIT\n");
+
+}
+
+static unsigned int bus_next(unsigned int id)
+{
+
+    return 0;
+
+}
 
 static void driver_init()
 {
+
+    base_initbus(&bus, AHCI_BUS_TYPE, "ahci", bus_setup, bus_next);
 
 }
 
@@ -23,10 +41,16 @@ static unsigned int driver_match(unsigned int id)
 static void driver_attach(unsigned int id)
 {
 
+    mmio = pci_ind(id, PCI_CONFIG_BAR5);
+
+    base_registerbus(&bus);
+
 }
 
 static void driver_detach(unsigned int id)
 {
+
+    base_unregisterbus(&bus);
 
 }
 

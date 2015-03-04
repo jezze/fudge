@@ -1,3 +1,4 @@
+#define AHCI_BUS_TYPE                   0x0005
 #define AHCI_TYPE_H2D                   0x27
 #define AHCI_TYPE_D2H                   0x34
 #define AHCI_TYPE_DMAACT                0x39
