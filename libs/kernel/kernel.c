@@ -329,6 +329,43 @@ unsigned int kernel_call(unsigned int index, struct container *container, struct
 
 }
 
+void kernel_copyprogram(struct task *task)
+{
+
+    struct vfs_descriptor *descriptor = &task->descriptors[0x00];
+    struct binary_protocol *protocol;
+
+    if (!descriptor->id || !descriptor->channel)
+        return;
+
+    protocol = binary_findprotocol(descriptor->channel, descriptor->id);
+
+    if (!protocol)
+        return;
+
+    protocol->copyprogram(descriptor->channel, descriptor->id);
+
+}
+
+void kernel_setuptask(struct task *task, unsigned int sp)
+{
+
+    struct vfs_descriptor *descriptor = &task->descriptors[0x00];
+    struct binary_protocol *protocol;
+
+    if (!descriptor->id || !descriptor->channel)
+        return;
+
+    protocol = binary_findprotocol(descriptor->channel, descriptor->id);
+
+    if (!protocol)
+        return;
+
+    task->state.registers.ip = protocol->findentry(descriptor->channel, descriptor->id);
+    task->state.registers.sp = sp;
+
+}
+
 unsigned int kernel_setupramdisk(struct container *container, struct task *task, struct vfs_backend *backend)
 {
 

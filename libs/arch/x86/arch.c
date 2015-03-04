@@ -108,15 +108,6 @@ static void containermaptext(struct container *container)
 
 }
 
-static void containeractivate(struct container *container)
-{
-
-    struct arch_container *acontainer = (struct arch_container *)container;
-
-    mmu_load(acontainer->directory);
-
-}
-
 static void taskmapcontainer(struct task *task, struct container *container)
 {
 
@@ -154,43 +145,6 @@ static void taskactivate(struct task *task)
 
 }
 
-static void taskprepare(struct task *task)
-{
-
-    struct vfs_descriptor *descriptor = &task->descriptors[0x00];
-    struct binary_protocol *protocol;
-
-    if (!descriptor->id || !descriptor->channel)
-        return;
-
-    protocol = binary_findprotocol(descriptor->channel, descriptor->id);
-
-    if (!protocol)
-        return;
-
-    task->state.registers.ip = protocol->findentry(descriptor->channel, descriptor->id);
-    task->state.registers.sp = TASKVSTACKLIMIT;
-
-}
-
-static void taskcopyprogram(struct task *task)
-{
-
-    struct vfs_descriptor *descriptor = &task->descriptors[0x00];
-    struct binary_protocol *protocol;
-
-    if (!descriptor->id || !descriptor->channel)
-        return;
-
-    protocol = binary_findprotocol(descriptor->channel, descriptor->id);
-
-    if (!protocol)
-        return;
-
-    protocol->copyprogram(descriptor->channel, descriptor->id);
-
-}
-
 static void tasksave(struct task *task, struct cpu_general *general)
 {
 
@@ -209,31 +163,6 @@ static void taskload(struct task *task, struct cpu_general *general)
 
 }
 
-static void copytask(struct container *container, struct task *task, struct task *next)
-{
-
-    unsigned int i;
-
-    for (i = 0x00; i < 0x08; i++)
-    {
-
-        next->descriptors[i + 0x00].channel = task->descriptors[i + 0x08].channel;
-        next->descriptors[i + 0x00].id = task->descriptors[i + 0x08].id;
-        next->descriptors[i + 0x08].channel = task->descriptors[i + 0x08].channel;
-        next->descriptors[i + 0x08].id = task->descriptors[i + 0x08].id;
-        next->descriptors[i + 0x10].channel = 0;
-        next->descriptors[i + 0x10].id = 0;
-        next->descriptors[i + 0x18].channel = 0;
-        next->descriptors[i + 0x18].id = 0;
-
-    }
-
-    taskmapcontainer(next, container);
-    taskprepare(next);
-    scheduler_use(next);
-
-}
-
 static unsigned int spawn(struct container *container, struct task *task, void *stack)
 {
 
@@ -242,7 +171,10 @@ static unsigned int spawn(struct container *container, struct task *task, void *
     if (!next)
         return 0;
 
-    copytask(container, task, next);
+    task_copy(task, next);
+    kernel_setuptask(next, TASKVSTACKLIMIT);
+    scheduler_use(next);
+    taskmapcontainer(next, container);
 
     return 1;
 
@@ -253,7 +185,7 @@ static unsigned int despawn(struct container *container, struct task *task, void
 
     scheduler_unuse(task);
 
-    return 0;
+    return 1;
 
 }
 
@@ -330,7 +262,7 @@ unsigned short arch_pagefault(void *stack)
 
     taskmaptext(current.task, address);
     taskmapstack(current.task, TASKVSTACKLIMIT - TASKSTACKSIZE);
-    taskcopyprogram(current.task);
+    kernel_copyprogram(current.task);
 
     return arch_schedule(&registers->general, &registers->interrupt);
 
@@ -418,16 +350,16 @@ void arch_setup(struct vfs_backend *backend)
     kernel_setup(spawn, despawn);
 
     current.container = setupcontainers();
-
-    containermaptext(current.container);
-    containeractivate(current.container);
-    mmu_enable();
-
     current.task = setuptasks();
 
     kernel_setupramdisk(current.container, current.task, backend);
-    copytask(current.container, current.task, current.task);
+    task_copy(current.task, current.task);
+    kernel_setuptask(current.task, TASKVSTACKLIMIT);
+    scheduler_use(current.task);
+    containermaptext(current.container);
+    taskmapcontainer(current.task, current.container);
     taskactivate(current.task);
+    mmu_enable();
     arch_usermode(selector.ucode, selector.udata, current.task->state.registers.ip, current.task->state.registers.sp);
 
 }

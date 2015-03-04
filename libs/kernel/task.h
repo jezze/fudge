@@ -29,4 +29,5 @@ struct task
 
 };
 
+void task_copy(struct task *task, struct task *next);
 void task_init(struct task *task);
