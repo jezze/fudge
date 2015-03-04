@@ -209,7 +209,7 @@ static void taskload(struct task *task, struct cpu_general *general)
 
 }
 
-static void copytask(struct container *container, struct task *next, struct task *task)
+static void copytask(struct container *container, struct task *task, struct task *next)
 {
 
     unsigned int i;
@@ -228,10 +228,9 @@ static void copytask(struct container *container, struct task *next, struct task
 
     }
 
-    scheduler_use(next);
     taskmapcontainer(next, container);
-    taskactivate(next);
     taskprepare(next);
+    scheduler_use(next);
 
 }
 
@@ -243,7 +242,7 @@ static unsigned int spawn(struct container *container, struct task *task, void *
     if (!next)
         return 0;
 
-    copytask(container, next, task);
+    copytask(container, task, next);
 
     return 1;
 
@@ -428,6 +427,7 @@ void arch_setup(struct vfs_backend *backend)
 
     kernel_setupramdisk(current.container, current.task, backend);
     copytask(current.container, current.task, current.task);
+    taskactivate(current.task);
     arch_usermode(selector.ucode, selector.udata, current.task->state.registers.ip, current.task->state.registers.sp);
 
 }
