@@ -171,10 +171,10 @@ static unsigned int spawn(struct container *container, struct task *task, void *
     if (!next)
         return 0;
 
-    task_copy(task, next);
+    kernel_copytask(task, next);
     kernel_setuptask(next, TASKVSTACKLIMIT);
-    scheduler_use(next);
     taskmapcontainer(next, container);
+    scheduler_use(next);
 
     return 1;
 
@@ -353,7 +353,7 @@ void arch_setup(struct vfs_backend *backend)
     current.task = setuptasks();
 
     kernel_setupramdisk(current.container, current.task, backend);
-    task_copy(current.task, current.task);
+    kernel_copytask(current.task, current.task);
     kernel_setuptask(current.task, TASKVSTACKLIMIT);
     scheduler_use(current.task);
     containermaptext(current.container);

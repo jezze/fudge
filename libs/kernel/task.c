@@ -3,27 +3,6 @@
 #include "vfs.h"
 #include "task.h"
 
-void task_copy(struct task *task, struct task *next)
-{
-
-    unsigned int i;
-
-    for (i = 0x00; i < 0x08; i++)
-    {
-
-        next->descriptors[i + 0x00].channel = task->descriptors[i + 0x08].channel;
-        next->descriptors[i + 0x00].id = task->descriptors[i + 0x08].id;
-        next->descriptors[i + 0x08].channel = task->descriptors[i + 0x08].channel;
-        next->descriptors[i + 0x08].id = task->descriptors[i + 0x08].id;
-        next->descriptors[i + 0x10].channel = 0;
-        next->descriptors[i + 0x10].id = 0;
-        next->descriptors[i + 0x18].channel = 0;
-        next->descriptors[i + 0x18].id = 0;
-
-    }
-
-}
-
 void task_init(struct task *task)
 {
 
