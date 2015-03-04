@@ -4,6 +4,8 @@ CUR:=$(DIR)
 
 DIR:=$(CUR)/acpi
 include $(DIR)/rules.mk
+DIR:=$(CUR)/ahci
+include $(DIR)/rules.mk
 DIR:=$(CUR)/apic
 include $(DIR)/rules.mk
 DIR:=$(CUR)/ata
