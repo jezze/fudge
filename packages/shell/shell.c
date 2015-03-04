@@ -4,23 +4,22 @@
 static void interpret(struct buffer *buffer)
 {
 
+    char command[FUDGE_BSIZE];
+    unsigned int count = buffer_rcfifo(buffer, FUDGE_BSIZE, command);
+
     /* This is a temporary fix */
     if (memory_match(buffer->memory, "cd ", 3))
     {
 
         unsigned int ok;
-        char temp[FUDGE_BSIZE];
-        unsigned int count;
 
-        if (buffer->head < 4)
+        if (count < 4)
             return;
 
-        count = buffer_rcfifo(buffer, FUDGE_BSIZE, temp);
-
-        if (temp[3] == '/')
-            ok = call_walk(CALL_L1, CALL_PR, count - 5, temp + 4);
+        if (command[3] == '/')
+            ok = call_walk(CALL_L1, CALL_PR, count - 5, command + 4);
         else
-            ok = call_walk(CALL_L1, CALL_PW, count - 4, temp + 3);
+            ok = call_walk(CALL_L1, CALL_PW, count - 4, command + 3);
 
         if (ok)
         {
@@ -44,7 +43,7 @@ static void interpret(struct buffer *buffer)
     call_walk(CALL_C0, CALL_L0, 1, "1");
     call_spawn();
     call_open(CALL_L1);
-    call_write(CALL_L1, 0, buffer->head, buffer->memory);
+    call_write(CALL_L1, 0, count, command);
     call_close(CALL_L1);
 
 }
