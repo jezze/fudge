@@ -1,40 +1,6 @@
 #include "memory.h"
 #include "buffer.h"
 
-unsigned int buffer_pushlifo(struct buffer *buffer, unsigned int count, void *memory)
-{
-
-    if (buffer->head + count < buffer->size)
-    {
-
-        memory_copy(buffer->memory + buffer->head, memory, count);
-
-        buffer->head += count;
-
-        return count;
-
-    }
-
-    return 0;
-
-}
-
-unsigned int buffer_poplifo(struct buffer *buffer, unsigned int count)
-{
-
-    if (buffer->head >= count)
-    {
-
-        buffer->head -= count;
-
-        return count;
-
-    }
-
-    return 0;
-
-}
-
 unsigned int buffer_rcfifo(struct buffer *buffer, unsigned int count, void *memory)
 {
 
@@ -81,11 +47,24 @@ unsigned int buffer_wcfifo(struct buffer *buffer, unsigned int count, void *memo
 
 }
 
-void buffer_clear(struct buffer *buffer)
+unsigned int buffer_ecfifo(struct buffer *buffer, unsigned int count)
 {
 
-    buffer->head = 0;
-    buffer->tail = 0;
+    unsigned int i;
+
+    for (i = 0; i < count; i++)
+    {
+
+        unsigned int head = (buffer->head - buffer->step) % buffer->size;
+
+        if (buffer->head == buffer->tail)
+            break;
+
+        buffer->head = head;
+
+    }
+
+    return i;
 
 }
 
