@@ -279,37 +279,37 @@ unsigned short arch_syscall(void *stack)
 
 }
 
-static void setupcontainer(struct arch_container *container, unsigned int i, struct mmu_directory *directories, struct mmu_table *tables)
+static void setupcontainer(struct arch_container *container, unsigned int index)
 {
 
     container_init(&container->base);
 
-    container->directory = directories + i * CONTAINERDIRECTORYCOUNT;
-    container->table = tables + i * CONTAINERTABLECOUNT;
+    container->directory = (struct mmu_directory *)CONTAINERDIRECTORYBASE + index * CONTAINERDIRECTORYCOUNT;
+    container->table = (struct mmu_table *)CONTAINERTABLEBASE + index * CONTAINERTABLECOUNT;
 
 }
 
 static struct container *setupcontainers()
 {
 
-    unsigned int i;
+    unsigned int index;
 
-    for (i = 0; i < CONTAINERS; i++)
-        setupcontainer(&containers[i], i, (struct mmu_directory *)CONTAINERDIRECTORYBASE, (struct mmu_table *)CONTAINERTABLEBASE);
+    for (index = 0; index < CONTAINERS; index++)
+        setupcontainer(&containers[index], index);
 
     return &containers[0].base;
 
 }
 
-static void setuptask(struct arch_task *task, unsigned int i, struct mmu_directory *directories, struct mmu_table *tables)
+static void setuptask(struct arch_task *task, unsigned int index)
 {
 
     task_init(&task->base);
 
-    task->directory = directories + i * TASKDIRECTORYCOUNT;
-    task->table = tables + i * TASKTABLECOUNT;
-    task->mapping[0] = TASKCODEBASE + TASKCODESIZE * i;
-    task->mapping[1] = TASKSTACKBASE + TASKSTACKSIZE * i;
+    task->directory = (struct mmu_directory *)TASKDIRECTORYBASE + index * TASKDIRECTORYCOUNT;
+    task->table = (struct mmu_table *)TASKTABLEBASE + index * TASKTABLECOUNT;
+    task->mapping[0] = TASKCODEBASE + index * TASKCODESIZE;
+    task->mapping[1] = TASKSTACKBASE + index * TASKSTACKSIZE;
 
     scheduler_register_task(&task->base);
 
@@ -318,10 +318,10 @@ static void setuptask(struct arch_task *task, unsigned int i, struct mmu_directo
 static struct task *setuptasks()
 {
 
-    unsigned int i;
+    unsigned int index;
 
-    for (i = 0; i < TASKS; i++)
-        setuptask(&tasks[i], i, (struct mmu_directory *)TASKDIRECTORYBASE, (struct mmu_table *)TASKTABLEBASE);
+    for (index = 0; index < TASKS; index++)
+        setuptask(&tasks[index], index);
 
     return &tasks[0].base;
 
