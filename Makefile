@@ -119,10 +119,10 @@ $(BUILD_BOOT)/$(KERNEL): $(BUILD_ROOT) $(LIBS)
 $(KERNEL): $(BUILD_BOOT)/$(KERNEL)
 	cp $^ $@
 
-$(RAMDISK_NAME).tar: $(BUILD_ROOT) $(LIBS) $(MODULES) $(BINS)
+$(RAMDISK_NAME).tar: $(BUILD_ROOT)
 	tar -cf $@ $^
 
-$(RAMDISK_NAME).cpio: $(BUILD_ROOT) $(LIBS) $(MODULES) $(BINS)
+$(RAMDISK_NAME).cpio: $(BUILD_ROOT)
 	find $^ -depth | cpio -o > $@
 
 $(INSTALL_PATH)/$(KERNEL): $(KERNEL)
