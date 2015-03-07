@@ -14,6 +14,9 @@ interrupt_vector_table:
 init:
     ldr sp, =stack+0x10000
     bl arch_setup
-1:
-    b 1b
+
+.global halt
+halt:
+    wfi
+    b halt
 

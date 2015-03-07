@@ -7,23 +7,33 @@
 #include "reg.h"
 #include "uart.h"
 
-#define ARCH_CONTAINERS                 32
-#define ARCH_TASKS                      64
-#define ARCH_TASK_STACKLIMIT            0x80000000
+#define CONTAINERS                      8
+#define TASKS                           64
+#define TASKVSTACKLIMIT                 0x80000000
+
+extern void halt();
+
+struct atag_header
+{
+
+    unsigned int size;
+    unsigned int tag;
+
+};
 
 static struct arch_container
 {
 
     struct container base;
 
-} containers[ARCH_CONTAINERS];
+} containers[CONTAINERS];
 
 static struct arch_task
 {
 
     struct task base;
 
-} tasks[ARCH_TASKS];
+} tasks[TASKS];
 
 static struct
 {
@@ -32,6 +42,29 @@ static struct
     struct task *task;
 
 } current;
+
+static struct vfs_backend backend;
+
+static unsigned int backend_read(struct vfs_backend *self, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    return 0;
+
+}
+
+static unsigned int backend_write(struct vfs_backend *self, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    return 0;
+
+}
+
+static unsigned long backend_getphysical(struct vfs_backend *self)
+{
+
+    return 0;
+
+}
 
 static unsigned int spawn(struct container *container, struct task *task, void *stack)
 {
@@ -92,11 +125,6 @@ void arch_fiq()
 
 }
 
-static void setupbasic()
-{
-
-}
-
 static void setupcontainer(struct arch_container *container, unsigned int i)
 {
 
@@ -109,7 +137,7 @@ static struct container *setupcontainers()
 
     unsigned int i;
 
-    for (i = 0; i < ARCH_CONTAINERS; i++)
+    for (i = 0; i < CONTAINERS; i++)
         setupcontainer(&containers[i], i);
 
     return &containers[0].base;
@@ -130,38 +158,43 @@ static struct task *setuptasks()
 
     unsigned int i;
 
-    for (i = 0; i < ARCH_TASKS; i++)
+    for (i = 0; i < TASKS; i++)
         setuptask(&tasks[i], i);
 
     return &tasks[0].base;
 
 }
 
+static void debugnum(unsigned int value, unsigned int base)
+{
+
+    char num[32];
+
+    memory_clear(num, 32);
+    ascii_wvalue(num, 32, value, base, 0);
+    uart_puts(num);
+    uart_puts("\n");
+
+}
+
 void arch_setup()
 {
 
-    setupbasic();
+    pic_setup();
+    uart_setup();
+    uart_puts("Fudge Console\n");
+    debugnum(0x123456, 16);
+    vfs_initbackend(&backend, 1000, backend_read, backend_write, backend_getphysical);
     kernel_setup(spawn, despawn);
 
     current.container = setupcontainers();
     current.task = setuptasks();
 
-    pic_setup();
-    uart_setup();
-    uart_puts("Fudge Console\n");
-
-/*
-    memory_clear(num, 32);
-    uart_puts(num);
-    x = cpu_get_cpsr();
-    ascii_wvalue(num, 32, x, 16, 0);
-    uart_puts(num);
-    uart_puts("\n");
-*/
-
+    kernel_setupramdisk(current.container, current.task, &backend);
+    kernel_copytask(current.task, current.task);
+    kernel_setuptask(current.task, TASKVSTACKLIMIT);
     uart_puts("Loop forever...\n");
-
-    for (;;);
+    halt();
 
 }
 
