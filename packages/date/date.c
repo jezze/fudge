@@ -8,10 +8,10 @@ void main()
     unsigned char time[FUDGE_BSIZE];
     unsigned int woff = 0;
 
-    if (!call_walk(CALL_L0, CALL_PR, 25, "system/clock/dev/rtc/date"))
+    if (!call_walk(CALL_L0, CALL_PR, 21, "system/clock/rtc/date"))
         return;
 
-    if (!call_walk(CALL_L1, CALL_PR, 25, "system/clock/dev/rtc/time"))
+    if (!call_walk(CALL_L1, CALL_PR, 21, "system/clock/rtc/time"))
         return;
 
     call_open(CALL_PO);

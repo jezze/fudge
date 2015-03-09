@@ -4,23 +4,18 @@
 void main()
 {
 
-    unsigned char buffer[FUDGE_BSIZE];
-    unsigned int count, roff, woff = 0;
+    if (!call_walk(CALL_CP, CALL_PR, 8, "bin/echo"))
+        return;
 
-    call_open(CALL_PO);
-    call_open(CALL_P0);
+    if (!call_walk(CALL_C0, CALL_P0, 0, 0))
+        return;
 
-    for (roff = 0; (count = call_read(CALL_P0, roff, FUDGE_BSIZE, buffer)); roff += count)
-        woff += call_write(CALL_PO, woff, count, buffer);
+    call_spawn();
 
-    call_close(CALL_P0);
-    call_open(CALL_P1);
+    if (!call_walk(CALL_C0, CALL_P1, 0, 0))
+        return;
 
-    for (roff = 0; (count = call_read(CALL_P1, roff, FUDGE_BSIZE, buffer)); roff += count)
-        woff += call_write(CALL_PO, woff, count, buffer);
-
-    call_close(CALL_P1);
-    call_close(CALL_PO);
+    call_spawn();
 
 }
 

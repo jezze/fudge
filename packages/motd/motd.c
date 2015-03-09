@@ -4,8 +4,7 @@
 void main()
 {
 
-    unsigned char buffer[FUDGE_BSIZE];
-    unsigned int count, roff, woff = 0;
+    unsigned int woff = 0;
 
     call_open(CALL_PO);
 
@@ -18,17 +17,13 @@ void main()
 
     call_close(CALL_PO);
 
-    if (!call_walk(CALL_L0, CALL_PR, 14, "share/motd.txt"))
+    if (!call_walk(CALL_CP, CALL_PR, 8, "bin/echo"))
         return;
 
-    call_open(CALL_PO);
-    call_open(CALL_L0);
+    if (!call_walk(CALL_C0, CALL_PR, 14, "share/motd.txt"))
+        return;
 
-    for (roff = 0; (count = call_read(CALL_L0, roff, FUDGE_BSIZE, buffer)); roff += count)
-        woff += call_write(CALL_PO, woff, count, buffer);
-
-    call_close(CALL_L0);
-    call_close(CALL_PO);
+    call_spawn();
 
 }
 

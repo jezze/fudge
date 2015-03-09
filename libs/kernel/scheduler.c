@@ -118,7 +118,8 @@ unsigned int scheduler_mailboxes_send(struct list *mailboxes, unsigned int count
 
         struct task *task = current->data;
 
-        buffer_wcfifo(&task->mailbox.buffer, count, buffer);
+        count = buffer_wcfifo(&task->mailbox.buffer, count, buffer);
+
         unblock(task);
 
     }
