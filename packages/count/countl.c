@@ -5,16 +5,23 @@ void main()
 {
 
     unsigned char buffer[FUDGE_BSIZE];
-    unsigned int count0, count1, roff0, roff1;
+    unsigned int offset, count;
     unsigned int lines = 0;
 
     call_open(CALL_P0);
 
-    for (roff0 = 0; (count0 = call_read(CALL_P0, roff0, FUDGE_BSIZE, buffer)); roff0 += roff1)
+    for (offset = 0; (count = call_read(CALL_P0, offset, FUDGE_BSIZE, buffer)); offset += count)
     {
 
-        for (roff1 = 0; (count1 = memory_findbyte(buffer + roff1, count0 - roff1, '\n')); roff1 += count1)
-            lines++;
+        unsigned int i;
+
+        for (i = 0; i < count; i++)
+        {
+
+            if (buffer[i] == '\n')
+                lines++;
+
+        }
 
     }
 

@@ -101,7 +101,7 @@ void main()
 {
 
     unsigned char buffer[FUDGE_BSIZE];
-    unsigned int count, roff;
+    unsigned int offset, count;
     unsigned char inputbuffer[FUDGE_BSIZE];
     struct buffer input;
 
@@ -111,7 +111,7 @@ void main()
     call_open(CALL_PO);
     call_write(CALL_PO, 0, 2, "$ ");
 
-    for (roff = 0; (count = call_read(CALL_P0, roff, FUDGE_BSIZE, buffer)); roff += count)
+    for (offset = 0; (count = call_read(CALL_P0, offset, FUDGE_BSIZE, buffer)); offset += count)
     {
 
         unsigned int i;

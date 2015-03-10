@@ -101,83 +101,75 @@ static unsigned int precedence(struct token *token)
 
 }
 
-static void tokenize(struct tokenlist *infix, struct buffer *stringtable, unsigned int count, char *buffer)
+static unsigned int ident;
+static unsigned int identquote;
+static unsigned int identcount;
+
+static void tokenize(struct tokenlist *infix, struct buffer *stringtable, unsigned char c)
 {
 
-    unsigned int i;
-    unsigned int ident;
-    unsigned int identquote = 0;
-    unsigned int identcount = 0;
+    ident = 0;
 
-    for (i = 0; i < count; i++)
+    switch (c)
     {
 
-        char c = buffer[i];
+    case '<':
+        tokenlist_add(infix, TOKENIN, 0);
 
-        ident = 0;
+        break;
 
-        switch (c)
+    case '>':
+        tokenlist_add(infix, TOKENOUT, 0);
+
+        break;
+
+    case '|':
+        tokenlist_add(infix, TOKENPIPE, 0);
+
+        break;
+
+    case ';':
+    case '\n':
+        tokenlist_add(infix, TOKENEND, 0);
+
+        break;
+
+    default:
+        ident = 1;
+
+        break;
+
+    }
+
+    if (c == '"')
+        identquote = !identquote;
+
+    if (!identquote && (c == ' ' || c == '\t'))
+        return;
+
+    if (ident)
+    {
+
+        if (!identcount)
+            tokenlist_add(infix, TOKENIDENT, (char *)stringtable->memory + stringtable->head);
+
+        buffer_wcfifo(stringtable, 1, &c);
+
+        identcount++;
+
+    }
+
+    else
+    {
+
+        if (identcount)
         {
 
-        case '<':
-            tokenlist_add(infix, TOKENIN, 0);
-
-            break;
-
-        case '>':
-            tokenlist_add(infix, TOKENOUT, 0);
-
-            break;
-
-        case '|':
-            tokenlist_add(infix, TOKENPIPE, 0);
-
-            break;
-
-        case ';':
-        case '\n':
-            tokenlist_add(infix, TOKENEND, 0);
-
-            break;
-
-        default:
-            ident = 1;
-
-            break;
-
-        }
-
-        if (c == '"')
-            identquote = !identquote;
-
-        if (!identquote && (c == ' ' || c == '\t'))
-            continue;
-
-        if (ident)
-        {
-
-            if (!identcount)
-                tokenlist_add(infix, TOKENIDENT, (char *)stringtable->memory + stringtable->head);
+            c = '\0';
 
             buffer_wcfifo(stringtable, 1, &c);
 
-            identcount++;
-
-        }
-
-        else
-        {
-
-            if (identcount)
-            {
-
-                c = '\0';
-
-                buffer_wcfifo(stringtable, 1, &c);
-
-                identcount = 0;
-
-            }
+            identcount = 0;
 
         }
 
@@ -340,8 +332,8 @@ static void parse(struct tokenlist *postfix, struct tokenlist *stack)
 void main()
 {
 
-    char buffer[FUDGE_BSIZE];
-    unsigned int count, roff;
+    unsigned char buffer[FUDGE_BSIZE];
+    unsigned int offset, count;
     char stringdata[32768];
     struct buffer stringtable;
     struct token infixdata[1024];
@@ -361,8 +353,15 @@ void main()
 
     call_open(CALL_P0);
 
-    for (roff = 0; (count = call_read(CALL_P0, roff, FUDGE_BSIZE, buffer)); roff += count)
-        tokenize(&infix, &stringtable, count, buffer);
+    for (offset = 0; (count = call_read(CALL_P0, offset, FUDGE_BSIZE, buffer)); offset += count)
+    {
+
+        unsigned int i;
+
+        for (i = 0; i < count; i++)
+            tokenize(&infix, &stringtable, buffer[i]);
+
+    }
 
     call_close(CALL_P0);
 
