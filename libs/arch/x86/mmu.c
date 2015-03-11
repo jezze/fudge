@@ -32,24 +32,17 @@ void mmu_map(struct mmu_directory *directory, struct mmu_table *table, unsigned 
 
 }
 
-void mmu_enable()
-{
-
-    cpu_setcr0(cpu_getcr0() | 0x80000000);
-
-}
-
-void mmu_reload()
-{
-
-    cpu_setcr3(cpu_getcr3());
-
-}
-
-void mmu_load(struct mmu_directory *directory)
+void mmu_setdirectory(struct mmu_directory *directory)
 {
 
     cpu_setcr3((unsigned long)directory);
+
+}
+
+void mmu_setup()
+{
+
+    cpu_setcr0(cpu_getcr0() | 0x80000000);
 
 }
 

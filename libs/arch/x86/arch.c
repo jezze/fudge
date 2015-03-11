@@ -133,7 +133,7 @@ static void taskactivate(struct task *task)
 
     struct arch_task *atask = (struct arch_task *)task;
 
-    mmu_load(atask->directory);
+    mmu_setdirectory(atask->directory);
 
 }
 
@@ -350,7 +350,7 @@ void arch_setup(struct vfs_backend *backend)
     containermaptext(current.container);
     taskmapcontainer(current.task, current.container);
     taskactivate(current.task);
-    mmu_enable();
+    mmu_setup();
     arch_usermode(selector.ucode, selector.udata, current.task->state.registers.ip, current.task->state.registers.sp);
 
 }
