@@ -124,15 +124,7 @@ static void taskmaptext(struct task *task, unsigned int address)
     struct arch_task *atask = (struct arch_task *)task;
 
     mmu_map(atask->directory, &atask->table[0], atask->mapping[0], address, TASKCODESIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
-
-}
-
-static void taskmapstack(struct task *task, unsigned int address)
-{
-
-    struct arch_task *atask = (struct arch_task *)task;
-
-    mmu_map(atask->directory, &atask->table[1], atask->mapping[1], address, TASKSTACKSIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
+    mmu_map(atask->directory, &atask->table[1], atask->mapping[1], TASKVSTACKLIMIT - TASKSTACKSIZE, TASKSTACKSIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
 
 }
 
@@ -261,7 +253,6 @@ unsigned short arch_pagefault(void *stack)
     unsigned int address = cpu_getcr2();
 
     taskmaptext(current.task, address);
-    taskmapstack(current.task, TASKVSTACKLIMIT - TASKSTACKSIZE);
     kernel_copyprogram(current.task);
 
     return arch_schedule(&registers->general, &registers->interrupt);
