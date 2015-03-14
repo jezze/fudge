@@ -322,11 +322,11 @@ static void driver_init()
     gaddress = (void *)0x000A0000;
     cursor.color = 0x0F;
 
-    console_initinterface(&consoleinterface, driver.name, consoleinterface_wout);
+    console_initinterface(&consoleinterface, consoleinterface_wout);
 
     consoleinterface.scroll = 1;
 
-    video_initinterface(&videointerface, driver.name, videointerface_setmode, videointerface_rdata, videointerface_wdata, videointerface_rcolormap, videointerface_wcolormap);
+    video_initinterface(&videointerface, videointerface_setmode, videointerface_rdata, videointerface_wdata, videointerface_rcolormap, videointerface_wcolormap);
 
     videointerface.w = 80;
     videointerface.h = 25;

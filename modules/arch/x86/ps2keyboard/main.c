@@ -21,7 +21,7 @@ static void handleirq(unsigned int irq, unsigned int id)
 static void driver_init()
 {
 
-    keyboard_initinterface(&keyboardinterface, driver.name);
+    keyboard_initinterface(&keyboardinterface);
 
 }
 

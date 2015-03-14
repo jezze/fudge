@@ -45,7 +45,7 @@ static unsigned int blockinterface_wdata(unsigned int offset, unsigned int count
 static void driver_init()
 {
 
-    block_initinterface(&blockinterface, driver.name, blockinterface_rdata, blockinterface_wdata);
+    block_initinterface(&blockinterface, blockinterface_rdata, blockinterface_wdata);
 
 }
 

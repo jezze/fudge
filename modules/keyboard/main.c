@@ -4,8 +4,6 @@
 #include <event/event.h>
 #include "keyboard.h"
 
-static struct system_node root;
-
 void keyboard_notify(struct keyboard_interface *interface, unsigned int count, void *buffer)
 {
 
@@ -18,7 +16,7 @@ void keyboard_registerinterface(struct keyboard_interface *interface, unsigned i
 {
 
     system_addchild(&interface->root, &interface->data);
-    system_addchild(&root, &interface->root);
+    system_registernode(&interface->root);
 
     interface->id = id;
 
@@ -28,15 +26,15 @@ void keyboard_unregisterinterface(struct keyboard_interface *interface)
 {
 
     system_removechild(&interface->root, &interface->data);
-    system_removechild(&root, &interface->root);
+    system_unregisternode(&interface->root);
 
 }
 
-void keyboard_initinterface(struct keyboard_interface *interface, const char *name)
+void keyboard_initinterface(struct keyboard_interface *interface)
 {
 
     resource_init(&interface->resource, 0, interface);
-    system_initnode(&interface->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, name);
+    system_initnode(&interface->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, "keyboard");
     system_initnode(&interface->data, SYSTEM_NODETYPE_MAILBOX, "data");
 
     interface->data.resource = &interface->resource;
@@ -46,21 +44,15 @@ void keyboard_initinterface(struct keyboard_interface *interface, const char *na
 void module_init()
 {
 
-    system_initnode(&root, SYSTEM_NODETYPE_GROUP, "keyboard");
-
 }
 
 void module_register()
 {
 
-    system_registernode(&root);
-
 }
 
 void module_unregister()
 {
-
-    system_unregisternode(&root);
 
 }
 

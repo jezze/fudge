@@ -3,8 +3,6 @@
 #include <system/system.h>
 #include "video.h"
 
-static struct system_node root;
-
 static unsigned int interfacenode_ctrlread(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
@@ -65,7 +63,7 @@ void video_registerinterface(struct video_interface *interface, unsigned int id)
     system_addchild(&interface->root, &interface->ctrl);
     system_addchild(&interface->root, &interface->data);
     system_addchild(&interface->root, &interface->colormap);
-    system_addchild(&root, &interface->root);
+    system_registernode(&interface->root);
 
     interface->id = id;
 
@@ -77,15 +75,15 @@ void video_unregisterinterface(struct video_interface *interface)
     system_removechild(&interface->root, &interface->ctrl);
     system_removechild(&interface->root, &interface->data);
     system_removechild(&interface->root, &interface->colormap);
-    system_removechild(&root, &interface->root);
+    system_unregisternode(&interface->root);
 
 }
 
-void video_initinterface(struct video_interface *interface, const char *name, void (*setmode)(unsigned int xres, unsigned int yres, unsigned int bpp), unsigned int (*rdata)(unsigned int offset, unsigned int count, void *buffer), unsigned int (*wdata)(unsigned int offset, unsigned int count, void *buffer), unsigned int (*rcolormap)(unsigned int offset, unsigned int count, void *buffer), unsigned int (*wcolormap)(unsigned int offset, unsigned int count, void *buffer))
+void video_initinterface(struct video_interface *interface, void (*setmode)(unsigned int xres, unsigned int yres, unsigned int bpp), unsigned int (*rdata)(unsigned int offset, unsigned int count, void *buffer), unsigned int (*wdata)(unsigned int offset, unsigned int count, void *buffer), unsigned int (*rcolormap)(unsigned int offset, unsigned int count, void *buffer), unsigned int (*wcolormap)(unsigned int offset, unsigned int count, void *buffer))
 {
 
     resource_init(&interface->resource, 0, interface);
-    system_initnode(&interface->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, name);
+    system_initnode(&interface->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, "video");
     system_initnode(&interface->ctrl, SYSTEM_NODETYPE_NORMAL, "ctrl");
     system_initnode(&interface->data, SYSTEM_NODETYPE_NORMAL, "data");
     system_initnode(&interface->colormap, SYSTEM_NODETYPE_NORMAL, "colormap");
@@ -110,21 +108,15 @@ void video_initinterface(struct video_interface *interface, const char *name, vo
 void module_init()
 {
 
-    system_initnode(&root, SYSTEM_NODETYPE_GROUP, "video");
-
 }
 
 void module_register()
 {
 
-    system_registernode(&root);
-
 }
 
 void module_unregister()
 {
-
-    system_unregisternode(&root);
 
 }
 

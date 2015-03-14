@@ -55,7 +55,7 @@ static void driver_init()
     jiffies = 0;
     divisor = 1000;
 
-    timer_initinterface(&timerinterface, driver.name);
+    timer_initinterface(&timerinterface);
 
 }
 

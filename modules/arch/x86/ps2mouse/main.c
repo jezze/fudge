@@ -21,7 +21,7 @@ static void handleirq(unsigned int irq, unsigned int id)
 static void driver_init()
 {
 
-    mouse_initinterface(&mouseinterface, driver.name);
+    mouse_initinterface(&mouseinterface);
 
 }
 

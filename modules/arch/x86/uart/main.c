@@ -141,7 +141,7 @@ static unsigned int consoleinterface_send(unsigned int offset, unsigned int coun
 static void driver_init()
 {
 
-    console_initinterface(&consoleinterface, driver.name, consoleinterface_send);
+    console_initinterface(&consoleinterface, consoleinterface_send);
 
     consoleinterface.scroll = 1;
 

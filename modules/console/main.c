@@ -4,8 +4,6 @@
 #include <event/event.h>
 #include "console.h"
 
-static struct system_node root;
-
 void console_notify(struct console_interface *interface, unsigned int count, void *buffer)
 {
 
@@ -43,7 +41,7 @@ void console_registerinterface(struct console_interface *interface, unsigned int
     system_addchild(&interface->root, &interface->ctrl);
     system_addchild(&interface->root, &interface->in);
     system_addchild(&interface->root, &interface->out);
-    system_addchild(&root, &interface->root);
+    system_registernode(&interface->root);
 
     interface->id = id;
 
@@ -55,15 +53,15 @@ void console_unregisterinterface(struct console_interface *interface)
     system_removechild(&interface->root, &interface->ctrl);
     system_removechild(&interface->root, &interface->in);
     system_removechild(&interface->root, &interface->out);
-    system_removechild(&root, &interface->root);
+    system_unregisternode(&interface->root);
 
 }
 
-void console_initinterface(struct console_interface *interface, const char *name, unsigned int (*send)(unsigned int offset, unsigned int count, void *buffer))
+void console_initinterface(struct console_interface *interface, unsigned int (*send)(unsigned int offset, unsigned int count, void *buffer))
 {
 
     resource_init(&interface->resource, 0, interface);
-    system_initnode(&interface->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, name);
+    system_initnode(&interface->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, "console");
     system_initnode(&interface->ctrl, SYSTEM_NODETYPE_NORMAL, "ctrl");
     system_initnode(&interface->in, SYSTEM_NODETYPE_MAILBOX, "in");
     system_initnode(&interface->out, SYSTEM_NODETYPE_NORMAL, "out");
@@ -81,21 +79,15 @@ void console_initinterface(struct console_interface *interface, const char *name
 void module_init()
 {
 
-    system_initnode(&root, SYSTEM_NODETYPE_GROUP, "console");
-
 }
 
 void module_register()
 {
 
-    system_registernode(&root);
-
 }
 
 void module_unregister()
 {
-
-    system_unregisternode(&root);
 
 }
 

@@ -3,7 +3,6 @@
 #include <system/system.h>
 #include "clock.h"
 
-static struct system_node root;
 static unsigned int dotm365[13] = {0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365};
 static unsigned int dotm366[13] = {0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 365};
 
@@ -73,7 +72,7 @@ void clock_registerinterface(struct clock_interface *interface, unsigned int id)
     system_addchild(&interface->root, &interface->timestamp);
     system_addchild(&interface->root, &interface->date);
     system_addchild(&interface->root, &interface->time);
-    system_addchild(&root, &interface->root);
+    system_registernode(&interface->root);
 
     interface->id = id;
 
@@ -85,15 +84,15 @@ void clock_unregisterinterface(struct clock_interface *interface)
     system_removechild(&interface->root, &interface->timestamp);
     system_removechild(&interface->root, &interface->date);
     system_removechild(&interface->root, &interface->time);
-    system_removechild(&root, &interface->root);
+    system_unregisternode(&interface->root);
 
 }
 
-void clock_initinterface(struct clock_interface *interface, const char *name, unsigned char (*getseconds)(), unsigned char (*getminutes)(), unsigned char (*gethours)(), unsigned char (*getweekday)(), unsigned char (*getday)(), unsigned char (*getmonth)(), unsigned short (*getyear)())
+void clock_initinterface(struct clock_interface *interface, unsigned char (*getseconds)(), unsigned char (*getminutes)(), unsigned char (*gethours)(), unsigned char (*getweekday)(), unsigned char (*getday)(), unsigned char (*getmonth)(), unsigned short (*getyear)())
 {
 
     resource_init(&interface->resource, 0, interface);
-    system_initnode(&interface->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, name);
+    system_initnode(&interface->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, "clock");
     system_initnode(&interface->timestamp, SYSTEM_NODETYPE_NORMAL, "timestamp");
     system_initnode(&interface->date, SYSTEM_NODETYPE_NORMAL, "date");
     system_initnode(&interface->time, SYSTEM_NODETYPE_NORMAL, "time");
@@ -117,21 +116,15 @@ void clock_initinterface(struct clock_interface *interface, const char *name, un
 void module_init()
 {
 
-    system_initnode(&root, SYSTEM_NODETYPE_GROUP, "clock");
-
 }
 
 void module_register()
 {
 
-    system_registernode(&root);
-
 }
 
 void module_unregister()
 {
-
-    system_unregisternode(&root);
 
 }
 

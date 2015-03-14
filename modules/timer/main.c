@@ -3,8 +3,6 @@
 #include <system/system.h>
 #include "timer.h"
 
-static struct system_node root;
-
 void timer_notify(struct timer_interface *interface, unsigned int count, void *buffer)
 {
 
@@ -16,7 +14,7 @@ void timer_registerinterface(struct timer_interface *interface, unsigned int id)
 {
 
     system_addchild(&interface->root, &interface->sleep);
-    system_addchild(&root, &interface->root);
+    system_registernode(&interface->root);
 
 }
 
@@ -24,15 +22,15 @@ void timer_unregisterinterface(struct timer_interface *interface)
 {
 
     system_removechild(&interface->root, &interface->sleep);
-    system_removechild(&root, &interface->root);
+    system_unregisternode(&interface->root);
 
 }
 
-void timer_initinterface(struct timer_interface *interface, const char *name)
+void timer_initinterface(struct timer_interface *interface)
 {
 
     resource_init(&interface->resource, 0, interface);
-    system_initnode(&interface->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, name);
+    system_initnode(&interface->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, "timer");
     system_initnode(&interface->sleep, SYSTEM_NODETYPE_MAILBOX, "sleep");
 
     interface->sleep.resource = &interface->resource;
@@ -42,21 +40,15 @@ void timer_initinterface(struct timer_interface *interface, const char *name)
 void module_init()
 {
 
-    system_initnode(&root, SYSTEM_NODETYPE_GROUP, "timer");
-
 }
 
 void module_register()
 {
 
-    system_registernode(&root);
-
 }
 
 void module_unregister()
 {
-
-    system_unregisternode(&root);
 
 }
 
