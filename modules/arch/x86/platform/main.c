@@ -64,7 +64,7 @@ static unsigned int bus_next(unsigned int id)
 void module_init()
 {
 
-    base_initbus(&bus, PLATFORM_BUS_TYPE, "platform", bus_setup, bus_next);
+    base_initbus(&bus, PLATFORM_BUS, "platform", bus_setup, bus_next);
 
 }
 

@@ -1,6 +1,6 @@
-#define PS2_BUS_TYPE                    0x0003
-#define PS2_KEYBOARD_DEVICE_TYPE        0x0001
-#define PS2_MOUSE_DEVICE_TYPE           0x0002
+#define PS2_BUS                         0x0003
+#define PS2_KEYBOARD                    0x0001
+#define PS2_MOUSE                       0x0002
 
 unsigned char ps2_getdata();
 unsigned short ps2_getirq(unsigned int id);

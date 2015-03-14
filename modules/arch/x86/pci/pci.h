@@ -1,4 +1,4 @@
-#define PCI_BUS_TYPE                    0x0002
+#define PCI_BUS                         0x0002
 #define PCI_CLASS_LEGACY                0x00
 #define PCI_CLASS_STORAGE               0x01
 #define PCI_CLASS_NETWORK               0x02

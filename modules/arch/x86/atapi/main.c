@@ -24,7 +24,7 @@ static void driver_init()
 static unsigned int driver_match(unsigned int id)
 {
 
-    return id == IDE_DEVICE_TYPE_ATAPI;
+    return id == IDE_ATAPI;
 
 }
 
@@ -54,14 +54,14 @@ void module_init()
 void module_register()
 {
 
-    base_registerdriver(&driver, IDE_BUS_TYPE);
+    base_registerdriver(&driver, IDE_BUS);
 
 }
 
 void module_unregister()
 {
 
-    base_unregisterdriver(&driver, IDE_BUS_TYPE);
+    base_unregisterdriver(&driver, IDE_BUS);
 
 }
 

@@ -369,14 +369,14 @@ void module_init()
 void module_register()
 {
 
-    base_registerdriver(&driver, PCI_BUS_TYPE);
+    base_registerdriver(&driver, PCI_BUS);
 
 }
 
 void module_unregister()
 {
 
-    base_unregisterdriver(&driver, PCI_BUS_TYPE);
+    base_unregisterdriver(&driver, PCI_BUS);
 
 }
 

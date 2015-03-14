@@ -226,7 +226,7 @@ static unsigned int bus_next(unsigned int id)
 {
 
     if (id == 0)
-        return IDE_DEVICE_TYPE_ATA;
+        return IDE_ATA;
 
     return 0;
 
@@ -235,7 +235,7 @@ static unsigned int bus_next(unsigned int id)
 static void driver_init()
 {
 
-    base_initbus(&bus, IDE_BUS_TYPE, "ide", bus_setup, bus_next);
+    base_initbus(&bus, IDE_BUS, "ide", bus_setup, bus_next);
 
 }
 
@@ -282,14 +282,14 @@ void module_init()
 void module_register()
 {
 
-    base_registerdriver(&driver, PCI_BUS_TYPE);
+    base_registerdriver(&driver, PCI_BUS);
 
 }
 
 void module_unregister()
 {
 
-    base_unregisterdriver(&driver, PCI_BUS_TYPE);
+    base_unregisterdriver(&driver, PCI_BUS);
 
 }
 

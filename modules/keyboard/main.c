@@ -8,7 +8,7 @@ void keyboard_notify(struct keyboard_interface *interface, unsigned int count, v
 {
 
     scheduler_mailboxes_send(&interface->data.mailboxes, count, buffer);
-    event_notify(EVENT_TYPE_KEYBOARD, count, buffer);
+    event_notify(EVENT_KEYBOARD, count, buffer);
 
 }
 

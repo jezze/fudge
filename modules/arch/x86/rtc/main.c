@@ -100,7 +100,7 @@ static void driver_init()
 static unsigned int driver_match(unsigned int id)
 {
 
-    return id == PLATFORM_RTC_DEVICE_TYPE;
+    return id == PLATFORM_RTC;
 
 }
 
@@ -132,14 +132,14 @@ void module_init()
 void module_register()
 {
 
-    base_registerdriver(&driver, PLATFORM_BUS_TYPE);
+    base_registerdriver(&driver, PLATFORM_BUS);
 
 }
 
 void module_unregister()
 {
 
-    base_unregisterdriver(&driver, PLATFORM_BUS_TYPE);
+    base_unregisterdriver(&driver, PLATFORM_BUS);
 
 }
 

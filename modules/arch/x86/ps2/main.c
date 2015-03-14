@@ -203,8 +203,8 @@ static void bus_setup()
     unsigned char config;
     unsigned char status;
 
-    ps2_setcommand(devices[PS2_KEYBOARD_DEVICE_TYPE].disable);
-    ps2_setcommand(devices[PS2_MOUSE_DEVICE_TYPE].disable);
+    ps2_setcommand(devices[PS2_KEYBOARD].disable);
+    ps2_setcommand(devices[PS2_MOUSE].disable);
 
     while (getstatus() & 1)
         ps2_getdata();
@@ -222,23 +222,23 @@ static void bus_setup()
     if (status != CTESTOK)
         return;
 
-    if (config & devices[PS2_KEYBOARD_DEVICE_TYPE].clock)
+    if (config & devices[PS2_KEYBOARD].clock)
     {
 
-        ps2_setcommand(devices[PS2_KEYBOARD_DEVICE_TYPE].test);
+        ps2_setcommand(devices[PS2_KEYBOARD].test);
 
         if (polldata() == PTESTOK)
-            devices[PS2_KEYBOARD_DEVICE_TYPE].present = 1;
+            devices[PS2_KEYBOARD].present = 1;
 
     }
 
-    if (config & devices[PS2_MOUSE_DEVICE_TYPE].clock)
+    if (config & devices[PS2_MOUSE].clock)
     {
 
-        ps2_setcommand(devices[PS2_MOUSE_DEVICE_TYPE].test);
+        ps2_setcommand(devices[PS2_MOUSE].test);
 
         if (polldata() == PTESTOK)
-            devices[PS2_MOUSE_DEVICE_TYPE].present = 1;
+            devices[PS2_MOUSE].present = 1;
 
     }
 
@@ -263,7 +263,7 @@ static unsigned int reset_write(struct system_node *self, unsigned int offset, u
 void module_init()
 {
 
-    base_initbus(&bus, PS2_BUS_TYPE, "ps2", bus_setup, bus_next);
+    base_initbus(&bus, PS2_BUS, "ps2", bus_setup, bus_next);
     system_initnode(&reset, SYSTEM_NODETYPE_NORMAL, "reset");
 
     reset.write = reset_write;

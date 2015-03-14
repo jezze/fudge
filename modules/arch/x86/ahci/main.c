@@ -27,7 +27,7 @@ static unsigned int bus_next(unsigned int id)
 static void driver_init()
 {
 
-    base_initbus(&bus, AHCI_BUS_TYPE, "ahci", bus_setup, bus_next);
+    base_initbus(&bus, AHCI_BUS, "ahci", bus_setup, bus_next);
 
 }
 
@@ -64,14 +64,14 @@ void module_init()
 void module_register()
 {
 
-    base_registerdriver(&driver, PCI_BUS_TYPE);
+    base_registerdriver(&driver, PCI_BUS);
 
 }
 
 void module_unregister()
 {
 
-    base_unregisterdriver(&driver, PCI_BUS_TYPE);
+    base_unregisterdriver(&driver, PCI_BUS);
 
 }
 

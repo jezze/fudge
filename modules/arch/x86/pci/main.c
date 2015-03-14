@@ -230,7 +230,7 @@ static unsigned int bus_next(unsigned int id)
 void module_init()
 {
 
-    base_initbus(&bus, PCI_BUS_TYPE, "pci", bus_setup, bus_next);
+    base_initbus(&bus, PCI_BUS, "pci", bus_setup, bus_next);
 
 }
 

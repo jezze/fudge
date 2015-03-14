@@ -1,9 +1,9 @@
-#define IDE_BUS_TYPE                    0x0004
-#define IDE_DEVICE_TYPE_UNKNOWN         0x00
-#define IDE_DEVICE_TYPE_ATA             0x01
-#define IDE_DEVICE_TYPE_ATAPI           0x02
-#define IDE_DEVICE_TYPE_SATA            0x03
-#define IDE_DEVICE_TYPE_SATAPI          0x04
+#define IDE_BUS                         0x0004
+#define IDE_UNKNOWN                     0x00
+#define IDE_ATA                         0x01
+#define IDE_ATAPI                       0x02
+#define IDE_SATA                        0x03
+#define IDE_SATAPI                      0x04
 
 unsigned char ide_getstatus(unsigned int id);
 unsigned short ide_getirq(unsigned int id);

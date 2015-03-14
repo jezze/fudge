@@ -28,7 +28,7 @@ static void driver_init()
 static unsigned int driver_match(unsigned int id)
 {
 
-    return id == PS2_KEYBOARD_DEVICE_TYPE;
+    return id == PS2_KEYBOARD;
 
 }
 
@@ -65,14 +65,14 @@ void module_init()
 void module_register()
 {
 
-    base_registerdriver(&driver, PS2_BUS_TYPE);
+    base_registerdriver(&driver, PS2_BUS);
 
 }
 
 void module_unregister()
 {
 
-    base_unregisterdriver(&driver, PS2_BUS_TYPE);
+    base_unregisterdriver(&driver, PS2_BUS);
 
 }
 

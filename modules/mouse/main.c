@@ -8,7 +8,7 @@ void mouse_notify(struct mouse_interface *interface, unsigned int count, void *b
 {
 
     scheduler_mailboxes_send(&interface->data.mailboxes, count, buffer);
-    event_notify(EVENT_TYPE_MOUSE, count, buffer);
+    event_notify(EVENT_MOUSE, count, buffer);
 
 }
 
