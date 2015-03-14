@@ -247,7 +247,7 @@ static void bus_setup()
 static unsigned int bus_next(unsigned int id)
 {
 
-    return (id < 2) ? id + 1 : 0;
+    return (id + 1) % 3;
 
 }
 
