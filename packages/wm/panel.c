@@ -13,8 +13,8 @@ void panel_draw(struct panel *panel)
     struct box frametitle;
 
     box_setsize(&frameborder, panel->size.x, panel->size.y, panel->size.w, panel->size.h);
-    box_setsize(&frame, frameborder.x + 1, frameborder.y + 1, frameborder.w - 2, frameborder.h - 2);
-    box_setsize(&frametitle, frame.x + 1, frame.y + 1, frame.w - 2, frame.h - 2);
+    box_setsize(&frame, frameborder.x + panel->border, frameborder.y + panel->border, frameborder.w - (2 * panel->border), frameborder.h - (2 * panel->border));
+    box_setsize(&frametitle, frame.x + panel->border, frame.y + panel->border, frame.w - (2 * panel->border), frame.h - (2 * panel->border));
     backbuffer_fillbox(&frameborder, WM_COLOR_DARK);
 
     if (panel->active)
@@ -35,13 +35,14 @@ void panel_draw(struct panel *panel)
 
 }
 
-void panel_init(struct panel *panel, char *text, unsigned int active)
+void panel_init(struct panel *panel, char *text, unsigned int active, unsigned int border)
 {
 
     box_setsize(&panel->size, 0, 0, 0, 0);
 
     panel->active = active;
     panel->title.content = text;
+    panel->border = border;
 
 }
 

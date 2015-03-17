@@ -48,24 +48,14 @@ void draw_end()
 
 }
 
-void draw_buffer(unsigned int offset, unsigned int count, unsigned int o, unsigned char *buffer)
+static void draw_buffer(unsigned int offset, unsigned int count, unsigned char *buffer)
 {
 
-    call_write(CALL_L0, offset, count, buffer + o);
+    call_write(CALL_L0, offset * SCREEN_BPP, count * SCREEN_BPP, buffer);
 
 }
 
 static unsigned char backbuffer[4096];
-
-void backbuffer_drawnormal(struct box *box)
-{
-
-    unsigned int i;
-
-    for (i = 0; i < box->h; i++)
-        draw_buffer(box->y * SCREEN_WIDTH + box->x + SCREEN_WIDTH * i, box->w, box->w * i, backbuffer);
-
-}
 
 void backbuffer_drawrepeated(struct box *box)
 {
@@ -73,28 +63,21 @@ void backbuffer_drawrepeated(struct box *box)
     unsigned int i;
 
     for (i = 0; i < box->h; i++)
-        draw_buffer(box->y * SCREEN_WIDTH + box->x + SCREEN_WIDTH * i, box->w, 0, backbuffer);
+        draw_buffer(box->y * SCREEN_WIDTH + box->x + SCREEN_WIDTH * i, box->w, backbuffer);
 
 }
 
-void backbuffer_fill(unsigned char color, unsigned int count)
+void backbuffer_fill(unsigned int color, unsigned int count)
 {
 
     unsigned int i;
 
     for (i = 0; i < count; i++)
-        backbuffer[i] = color;
+        memory_copy(&backbuffer[i * SCREEN_BPP], &color, SCREEN_BPP);
 
 }
 
-void backbuffer_blitbuffer(const unsigned char *buffer, unsigned int count)
-{
-
-    memory_copy(backbuffer, buffer, count);
-
-}
-
-void backbuffer_fillbox(struct box *box, unsigned char color)
+void backbuffer_fillbox(struct box *box, unsigned int color)
 {
 
     backbuffer_fill(color, box->w);

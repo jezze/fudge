@@ -1,5 +1,7 @@
 #include <fudge.h>
-#include <arch/x86/mmu.h>
+#include <kernel.h>
+#include <arch/x86/cpu.h>
+#include <arch/x86/arch.h>
 #include "acpi.h"
 
 static struct acpi_rsdp *findrsdp()
@@ -59,10 +61,7 @@ void module_init()
     if (!rsdp)
         return;
 
-/*
-    mmu_map_kernel_memory(2, (unsigned int)rsdp->rsdt, (unsigned int)rsdp->rsdt, 0x00100000);
-    mmu_reload_memory();
-*/
+    arch_setmap(3, (unsigned int)rsdp->rsdt, (unsigned int)rsdp->rsdt, 0x00100000);
 
 }
 

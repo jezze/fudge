@@ -195,6 +195,16 @@ void arch_setinterrupt(unsigned char index, void (*callback)())
 
 }
 
+void arch_setmap(unsigned char index, unsigned int paddress, unsigned int vaddress, unsigned int size)
+{
+
+    struct arch_container *acontainer = (struct arch_container *)current.container;
+
+    mmu_map(acontainer->directory, &acontainer->table[index], paddress, vaddress, size, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
+    mmu_setdirectory(acontainer->directory);
+
+}
+
 unsigned short arch_schedule(struct cpu_general *general, struct cpu_interrupt *interrupt)
 {
 

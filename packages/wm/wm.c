@@ -8,7 +8,7 @@
 #include "view.h"
 
 #define WINDOWS                         64
-#define VIEWS                           4
+#define VIEWS                           8
 
 struct event_header
 {
@@ -21,9 +21,11 @@ struct event_header
 };
 
 static struct box back;
-static struct box empty;
+static struct box full;
+static struct box menu;
+static struct box desktop;
+static struct box background;
 static struct panel field;
-static struct panel clock;
 static struct window window[WINDOWS];
 static struct list windows;
 static struct view view[VIEWS];
@@ -64,7 +66,7 @@ static void drawviews(struct list *views)
         if (view->windows.head)
             drawwindows(&view->windows);
         else
-            backbuffer_fillbox(&empty, WM_COLOR_BODY);
+            backbuffer_fillbox(&background, WM_COLOR_BODY);
 
     }
 
@@ -75,7 +77,6 @@ static void draw()
 
     draw_begin();
     panel_draw(&field);
-    panel_draw(&clock);
     drawviews(&views);
     draw_end();
 
@@ -105,15 +106,15 @@ static void arrangewindows(struct view *view)
     if (count == 1)
     {
 
-        box_setsize(&window->size, SCREEN_BORDER, 16 + SCREEN_BORDER, SCREEN_WIDTH - 2 * SCREEN_BORDER, SCREEN_HEIGHT - 16 - 2 * SCREEN_BORDER);
+        box_setsize(&window->size, desktop.x, desktop.y, desktop.w, desktop.h);
 
         return;
 
     }
 
-    box_setsize(&window->size, SCREEN_BORDER, 16 + SCREEN_BORDER, SCREEN_WIDTH / 2 - SCREEN_BORDER, SCREEN_HEIGHT - 16 - 2 * SCREEN_BORDER);
+    box_setsize(&window->size, desktop.x, desktop.y, desktop.w / 2, desktop.h);
 
-    a = (SCREEN_HEIGHT - 16 - 2 * SCREEN_BORDER) / (count - 1);
+    a = desktop.h / (count - 1);
     i = 0;
 
     for (current = current->next; current; current = current->next)
@@ -121,7 +122,7 @@ static void arrangewindows(struct view *view)
 
         window = current->data;
 
-        box_setsize(&window->size, SCREEN_WIDTH / 2, (16 + SCREEN_BORDER) + i * a, SCREEN_WIDTH / 2 - SCREEN_BORDER, a);
+        box_setsize(&window->size, desktop.x + desktop.w / 2, desktop.y + i * a, desktop.w / 2, a);
 
         i++;
 
@@ -265,6 +266,18 @@ static void pollevent()
                 if (data[0] == 0x05)
                     activateview(&view[3]);
 
+                if (data[0] == 0x06)
+                    activateview(&view[4]);
+
+                if (data[0] == 0x07)
+                    activateview(&view[5]);
+
+                if (data[0] == 0x08)
+                    activateview(&view[6]);
+
+                if (data[0] == 0x09)
+                    activateview(&view[7]);
+
                 if (data[0] == 0x10)
                     sendevent(1001);
 
@@ -305,7 +318,7 @@ void setupwindows()
     for (i = 0; i < WINDOWS; i++)
     {
 
-        window_init(&window[i], "0", 0);
+        window_init(&window[i], "0", 0, BORDERSIZE);
         list_add(&windows, &window[i].item);
 
     }
@@ -323,7 +336,7 @@ void setupviews()
     {
 
         view_init(&view[i], "0", 0);
-        box_setsize(&view[i].panel.size, SCREEN_BORDER + i * 16, SCREEN_BORDER, 16, 16);
+        box_setsize(&view[i].panel.size, full.x + i * BOXSIZE, full.y, BOXSIZE, BOXSIZE);
         list_add(&views, &view[i].item);
 
     }
@@ -337,14 +350,15 @@ void setupviews()
 void main()
 {
 
+    box_setsize(&back, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+    box_setsize(&full, back.x + BORDERSIZE, back.y + BORDERSIZE, back.w - (2 * BORDERSIZE), back.h - (2 * BORDERSIZE));
+    box_setsize(&menu, full.x, full.y, full.w, BOXSIZE);
+    box_setsize(&desktop, full.x, full.y + BOXSIZE, full.w, full.h - BOXSIZE);
+    box_setsize(&background, desktop.x + BORDERSIZE, desktop.y + BORDERSIZE, desktop.w - (2 * BORDERSIZE), desktop.h - (2 * BORDERSIZE));
     setupwindows();
     setupviews();
-    box_setsize(&back, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-    box_setsize(&empty, SCREEN_BORDER + 1, 16 + SCREEN_BORDER + 1, SCREEN_WIDTH - 2 * SCREEN_BORDER - 2, SCREEN_HEIGHT - 16 - 2 * SCREEN_BORDER - 2);
-    panel_init(&field, "1", 0);
-    panel_init(&clock, "1", 0);
-    box_setsize(&field.size, 64 + SCREEN_BORDER, SCREEN_BORDER, 216 - SCREEN_BORDER, 16);
-    box_setsize(&clock.size, 280, SCREEN_BORDER, 40 - SCREEN_BORDER, 16);
+    panel_init(&field, "1", 0, BORDERSIZE);
+    box_setsize(&field.size, menu.x + (BOXSIZE * VIEWS), menu.y, menu.w - (BOXSIZE * VIEWS), BOXSIZE);
     draw_setmode();
     draw_setcolormap();
     draw_begin();

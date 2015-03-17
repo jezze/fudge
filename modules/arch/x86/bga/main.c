@@ -1,6 +1,7 @@
 #include <fudge.h>
 #include <kernel.h>
-#include <arch/x86/mmu.h>
+#include <arch/x86/cpu.h>
+#include <arch/x86/arch.h>
 #include <base/base.h>
 #include <system/system.h>
 #include <video/video.h>
@@ -44,35 +45,56 @@ static void setreg(unsigned short index, unsigned short data)
 static void videointerface_setmode(unsigned int xres, unsigned int yres, unsigned int bpp)
 {
 
+    unsigned int i;
+
+    videointerface.w = 1024;
+    videointerface.h = 768;
+    videointerface.bpp = 32;
+
     setreg(COMMANDENABLE, 0x00);
-    setreg(COMMANDXRES, xres);
-    setreg(COMMANDYRES, yres);
-    setreg(COMMANDBPP, bpp);
+    setreg(COMMANDXRES, videointerface.w);
+    setreg(COMMANDYRES, videointerface.h);
+    setreg(COMMANDBPP, videointerface.bpp);
     setreg(COMMANDENABLE, 0x40 | 0x01);
+
+    for (i = 0; i < videointerface.w * videointerface.h * videointerface.bpp / 8; i++)
+    {
+
+        unsigned char *data = lfb;
+
+        data[i] = 0x80;
+
+    }
 
 }
 
 static unsigned int videointerface_rdata(unsigned int offset, unsigned int count, void *buffer)
 {
 
-/*
-    unsigned int size = videointerface.xres * videointerface.yres * videointerface.bpp / 4;
+    unsigned int size = videointerface.w * videointerface.h * videointerface.bpp / 8;
 
     return memory_read(buffer, count, lfb, size, offset);
-*/
-
-    return 0;
 
 }
 
 static unsigned int videointerface_wdata(unsigned int offset, unsigned int count, void *buffer)
 {
 
-/*
-    unsigned int size = videointerface.xres * videointerface.yres * videointerface.bpp / 4;
+    unsigned int size = videointerface.w * videointerface.h * videointerface.bpp / 8;
 
     return memory_write(lfb, size, buffer, count, offset);
-*/
+
+}
+
+static unsigned int videointerface_rcolormap(unsigned int offset, unsigned int count, void *buffer)
+{
+
+    return 0;
+
+}
+
+static unsigned int videointerface_wcolormap(unsigned int offset, unsigned int count, void *buffer)
+{
 
     return 0;
 
@@ -81,7 +103,7 @@ static unsigned int videointerface_wdata(unsigned int offset, unsigned int count
 static void driver_init()
 {
 
-    video_initinterface(&videointerface, videointerface_setmode, videointerface_rdata, videointerface_wdata, 0, 0);
+    video_initinterface(&videointerface, videointerface_setmode, videointerface_rdata, videointerface_wdata, videointerface_rcolormap, videointerface_wcolormap);
 
 }
 
@@ -98,13 +120,7 @@ static void driver_attach(unsigned int id)
     bank = (void *)0xA0000;
     lfb = (void *)(unsigned long)pci_ind(id, PCI_CONFIG_BAR0);
 
-/*
-    struct bga_driver *driver = (struct bga_driver *)self;
-
-    mmu_map_kernel_memory(3, (unsigned int)driver->lfb, (unsigned int)driver->lfb, 0x00400000);
-    mmu_reload_memory();
-*/
-
+    arch_setmap(4, (unsigned int)lfb, (unsigned int)lfb, 0x00400000);
     video_registerinterface(&videointerface, id);
 
 }

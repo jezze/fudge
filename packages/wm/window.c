@@ -14,9 +14,9 @@ void window_draw(struct window *window)
     struct box body;
 
     box_setsize(&frameborder, window->size.x, window->size.y, window->size.w, window->size.h);
-    box_setsize(&frame, frameborder.x + 1, frameborder.y + 1, frameborder.w - 2, frameborder.h - 2);
-    box_setsize(&bodyborder, frame.x + 1, frame.y + 1, frame.w - 2, frame.h - 2);
-    box_setsize(&body, bodyborder.x + 1, bodyborder.y + 1, bodyborder.w - 2, bodyborder.h - 2);
+    box_setsize(&frame, frameborder.x + window->border, frameborder.y + window->border, frameborder.w - (2 * window->border), frameborder.h - (2 * window->border));
+    box_setsize(&bodyborder, frame.x + window->border, frame.y + window->border, frame.w - (2 * window->border), frame.h - (2 * window->border));
+    box_setsize(&body, bodyborder.x + window->border, bodyborder.y + window->border, bodyborder.w - (2 * window->border), bodyborder.h - (2 * window->border));
     backbuffer_fillbox(&frameborder, WM_COLOR_DARK);
 
     if (window->active)
@@ -29,7 +29,7 @@ void window_draw(struct window *window)
 
 }
 
-void window_init(struct window *window, char *text, unsigned int active)
+void window_init(struct window *window, char *text, unsigned int active, unsigned int border)
 {
 
     list_inititem(&window->item, window);
@@ -37,6 +37,7 @@ void window_init(struct window *window, char *text, unsigned int active)
 
     window->active = active;
     window->title.content = text;
+    window->border = border;
 
 }
 
