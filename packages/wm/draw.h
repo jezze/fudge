@@ -3,15 +3,15 @@
 #define SCREEN_WIDTH                    1024
 #define SCREEN_HEIGHT                   768
 #define SCREEN_BPP                      4
-#define BORDERSIZE                      2
+#define BORDERSIZE                      1
 #define BOXSIZE                         24
 #define WM_COLOR_DARK                   0x000000
 #define WM_COLOR_LIGHT                  0xFFFFFF
-#define WM_COLOR_BODY                   0x101010
-#define WM_COLOR_PASSIVEFRAMETITLE      0x181818
-#define WM_COLOR_PASSIVEFRAME           0x202020
-#define WM_COLOR_ACTIVEFRAMETITLE       0x306090
-#define WM_COLOR_ACTIVEFRAME            0x6090C0
+#define WM_COLOR_BODY                   0x181014
+#define WM_COLOR_PASSIVEFRAMETITLE      0x20181C
+#define WM_COLOR_PASSIVEFRAME           0x282024
+#define WM_COLOR_ACTIVEFRAMETITLE       0x206080
+#define WM_COLOR_ACTIVEFRAME            0x286888
 
 #else
 
