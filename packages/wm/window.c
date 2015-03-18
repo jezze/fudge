@@ -8,28 +8,45 @@
 void window_draw(struct window *window, unsigned int line)
 {
 
-    unsigned int color;
-
     if (line < window->size.y || line >= window->size.y + window->size.h)
         return;
 
-    if (window->active)
-        color = WM_COLOR_ACTIVEFRAME;
-    else
-        color = WM_COLOR_PASSIVEFRAME;
-
-    if (line < window->size.y + 2 || line >= window->size.y + window->size.h - 2)
+    if (line == window->size.y + 0 || line >= window->size.y + window->size.h - 1)
     {
 
-        backbuffer_fillcount(color, window->size.x, window->size.w);
+        backbuffer_fillcount(WM_COLOR_DARK, window->size.x, window->size.w);
+
+    }
+
+    else if (line == window->size.y + 1 || line >= window->size.y + window->size.h - 2)
+    {
+
+        backbuffer_fillcount(WM_COLOR_DARK, window->size.x + 0, 1);
+        backbuffer_fillcount(WM_COLOR_DARK, window->size.x + window->size.w - 1, 1);
+        backbuffer_fillcount(window->active ? WM_COLOR_ACTIVEFRAME : WM_COLOR_PASSIVEFRAME, window->size.x + 1, window->size.w - 2);
+
+    }
+
+    else if (line == window->size.y + 2 || line >= window->size.y + window->size.h - 3)
+    {
+
+        backbuffer_fillcount(WM_COLOR_DARK, window->size.x + 0, 1);
+        backbuffer_fillcount(WM_COLOR_DARK, window->size.x + window->size.w - 1, 1);
+        backbuffer_fillcount(window->active ? WM_COLOR_ACTIVEFRAME : WM_COLOR_PASSIVEFRAME, window->size.x + 1, 1);
+        backbuffer_fillcount(window->active ? WM_COLOR_ACTIVEFRAME : WM_COLOR_PASSIVEFRAME, window->size.x + window->size.w - 2, 1);
+        backbuffer_fillcount(WM_COLOR_DARK, window->size.x + 2, window->size.w - 4);
 
     }
 
     else
     {
 
-        backbuffer_fillcount(color, window->size.x, 2);
-        backbuffer_fillcount(color, window->size.x + window->size.w - 2, 2);
+        backbuffer_fillcount(WM_COLOR_DARK, window->size.x + 0, 1);
+        backbuffer_fillcount(WM_COLOR_DARK, window->size.x + window->size.w - 1, 1);
+        backbuffer_fillcount(window->active ? WM_COLOR_ACTIVEFRAME : WM_COLOR_PASSIVEFRAME, window->size.x + 1, 1);
+        backbuffer_fillcount(window->active ? WM_COLOR_ACTIVEFRAME : WM_COLOR_PASSIVEFRAME, window->size.x + window->size.w - 2, 1);
+        backbuffer_fillcount(WM_COLOR_DARK, window->size.x + 2, 1);
+        backbuffer_fillcount(WM_COLOR_DARK, window->size.x + window->size.w - 3, 1);
 
     }
 
