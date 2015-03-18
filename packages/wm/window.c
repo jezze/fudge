@@ -5,31 +5,37 @@
 #include "text.h"
 #include "window.h"
 
-void window_draw(struct window *window)
+void window_draw(struct window *window, unsigned int line)
 {
 
-    struct box frameborder;
-    struct box frame;
-    struct box bodyborder;
-    struct box body;
+    unsigned int color;
 
-    box_setsize(&frameborder, window->size.x, window->size.y, window->size.w, window->size.h);
-    box_setsize(&frame, frameborder.x + window->border, frameborder.y + window->border, frameborder.w - (2 * window->border), frameborder.h - (2 * window->border));
-    box_setsize(&bodyborder, frame.x + window->border, frame.y + window->border, frame.w - (2 * window->border), frame.h - (2 * window->border));
-    box_setsize(&body, bodyborder.x + window->border, bodyborder.y + window->border, bodyborder.w - (2 * window->border), bodyborder.h - (2 * window->border));
-    backbuffer_fillbox(&frameborder, WM_COLOR_DARK);
+    if (line < window->size.y || line >= window->size.y + window->size.h)
+        return;
 
     if (window->active)
-        backbuffer_fillbox(&frame, WM_COLOR_ACTIVEFRAME);
+        color = WM_COLOR_ACTIVEFRAME;
     else
-        backbuffer_fillbox(&frame, WM_COLOR_PASSIVEFRAME);
+        color = WM_COLOR_PASSIVEFRAME;
 
-    backbuffer_fillbox(&bodyborder, WM_COLOR_DARK);
-    backbuffer_fillbox(&body, WM_COLOR_BODY);
+    if (line < window->size.y + 2 || line >= window->size.y + window->size.h - 2)
+    {
+
+        backbuffer_fillcount(color, window->size.x, window->size.w);
+
+    }
+
+    else
+    {
+
+        backbuffer_fillcount(color, window->size.x, 2);
+        backbuffer_fillcount(color, window->size.x + window->size.w - 2, 2);
+
+    }
 
 }
 
-void window_init(struct window *window, char *text, unsigned int active, unsigned int border)
+void window_init(struct window *window, char *text, unsigned int active)
 {
 
     list_inititem(&window->item, window);
@@ -37,7 +43,6 @@ void window_init(struct window *window, char *text, unsigned int active, unsigne
 
     window->active = active;
     window->title.content = text;
-    window->border = border;
 
 }
 

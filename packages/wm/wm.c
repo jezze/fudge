@@ -20,19 +20,16 @@ struct event_header
 
 };
 
-static struct box back;
-static struct box full;
+static struct box screen;
 static struct box menu;
 static struct box desktop;
-static struct box background;
-static struct panel field;
 static struct window window[WINDOWS];
 static struct list windows;
 static struct view view[VIEWS];
 static struct list views;
 static struct view *viewactive;
 
-static void drawwindows(struct list *windows)
+static void drawwindows(struct list *windows, unsigned int line)
 {
 
     struct list_item *current;
@@ -42,13 +39,13 @@ static void drawwindows(struct list *windows)
 
         struct window *window = current->data;
 
-        window_draw(window);
+        window_draw(window, line);
 
     }
 
 }
 
-static void drawviews(struct list *views)
+static void drawviews(struct list *views, unsigned int line)
 {
 
     struct list_item *current;
@@ -58,15 +55,12 @@ static void drawviews(struct list *views)
 
         struct view * view = current->data;
 
-        panel_draw(&view->panel);
+        panel_draw(&view->panel, line);
 
         if (!view->active)
             continue;
 
-        if (view->windows.head)
-            drawwindows(&view->windows);
-        else
-            backbuffer_fillbox(&background, WM_COLOR_BODY);
+        drawwindows(&view->windows, line);
 
     }
 
@@ -75,9 +69,20 @@ static void drawviews(struct list *views)
 static void draw()
 {
 
+    unsigned int i;
+
     draw_begin();
-    panel_draw(&field);
-    drawviews(&views);
+
+    for (i = 0; i < SCREEN_HEIGHT; i++)
+    {
+
+        backbuffer_fillbox(&menu, WM_COLOR_DARK, i);
+        backbuffer_fillbox(&desktop, WM_COLOR_BODY, i);
+        drawviews(&views, i);
+        backbuffer_drawline(i);
+
+    }
+
     draw_end();
 
 }
@@ -318,7 +323,7 @@ void setupwindows()
     for (i = 0; i < WINDOWS; i++)
     {
 
-        window_init(&window[i], "0", 0, BORDERSIZE);
+        window_init(&window[i], "0", 0);
         list_add(&windows, &window[i].item);
 
     }
@@ -336,7 +341,7 @@ void setupviews()
     {
 
         view_init(&view[i], "0", 0);
-        box_setsize(&view[i].panel.size, full.x + i * BOXSIZE, full.y, BOXSIZE, BOXSIZE);
+        box_setsize(&view[i].panel.size, menu.x + i * BOXSIZE, menu.y, BOXSIZE, BOXSIZE);
         list_add(&views, &view[i].item);
 
     }
@@ -350,19 +355,14 @@ void setupviews()
 void main()
 {
 
-    box_setsize(&back, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-    box_setsize(&full, back.x + BORDERSIZE, back.y + BORDERSIZE, back.w - (2 * BORDERSIZE), back.h - (2 * BORDERSIZE));
-    box_setsize(&menu, full.x, full.y, full.w, BOXSIZE);
-    box_setsize(&desktop, full.x, full.y + BOXSIZE, full.w, full.h - BOXSIZE);
-    box_setsize(&background, desktop.x + BORDERSIZE, desktop.y + BORDERSIZE, desktop.w - (2 * BORDERSIZE), desktop.h - (2 * BORDERSIZE));
+    box_setsize(&screen, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+    box_setsize(&menu, screen.x, screen.y, screen.w, BOXSIZE);
+    box_setsize(&desktop, screen.x, screen.y + BOXSIZE, screen.w, screen.h - BOXSIZE);
     setupwindows();
     setupviews();
-    panel_init(&field, "1", 0, BORDERSIZE);
-    box_setsize(&field.size, menu.x + (BOXSIZE * VIEWS), menu.y, menu.w - (BOXSIZE * VIEWS), BOXSIZE);
     draw_setmode();
     draw_setcolormap();
     draw_begin();
-    backbuffer_fillbox(&back, 0);
     draw_end();
     draw();
     pollevent();

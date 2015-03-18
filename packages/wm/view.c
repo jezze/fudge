@@ -11,7 +11,7 @@ void view_init(struct view *view, char *text, unsigned int active)
 {
 
     list_inititem(&view->item, view);
-    panel_init(&view->panel, text, active, BORDERSIZE);
+    panel_init(&view->panel, text, active);
     list_init(&view->windows);
 
     view->active = active;

@@ -48,40 +48,76 @@ void draw_end()
 
 }
 
-static void draw_buffer(unsigned int offset, unsigned int count, unsigned char *buffer)
-{
-
-    call_write(CALL_L0, offset * SCREEN_BPP, count * SCREEN_BPP, buffer);
-
-}
-
 static unsigned char backbuffer[4096];
 
-void backbuffer_drawrepeated(struct box *box)
+void backbuffer_drawline(unsigned int line)
+{
+
+    call_write(CALL_L0, line * SCREEN_WIDTH * SCREEN_BPP, SCREEN_WIDTH * SCREEN_BPP, backbuffer);
+
+}
+
+static void backbuffer_fill1(unsigned int color, unsigned int offset, unsigned int count)
 {
 
     unsigned int i;
 
-    for (i = 0; i < box->h; i++)
-        draw_buffer(box->y * SCREEN_WIDTH + box->x + SCREEN_WIDTH * i, box->w, backbuffer);
+    for (i = offset; i < count + offset; i++)
+        backbuffer[i] = (color >> 0) & 0xFF;
 
 }
 
-void backbuffer_fill(unsigned int color, unsigned int count)
+static void backbuffer_fill4(unsigned int color, unsigned int offset, unsigned int count)
 {
 
     unsigned int i;
 
-    for (i = 0; i < count; i++)
-        memory_copy(&backbuffer[i * SCREEN_BPP], &color, SCREEN_BPP);
+    for (i = offset * SCREEN_BPP; i < count * SCREEN_BPP + offset * SCREEN_BPP; i += SCREEN_BPP)
+    {
+
+        backbuffer[i + 0] = (color >> 0) & 0xFF;
+        backbuffer[i + 1] = (color >> 8) & 0xFF;
+        backbuffer[i + 2] = (color >> 16) & 0xFF;
+        backbuffer[i + 3] = (color >> 24) & 0xFF;
+
+    }
 
 }
 
-void backbuffer_fillbox(struct box *box, unsigned int color)
+static void backbuffer_fill(unsigned int color, unsigned int offset, unsigned int count)
 {
 
-    backbuffer_fill(color, box->w);
-    backbuffer_drawrepeated(box);
+    switch (SCREEN_BPP)
+    {
+
+    case 1:
+        backbuffer_fill1(color, offset, count);
+
+        break;
+
+    case 4:
+        backbuffer_fill4(color, offset, count);
+
+        break;
+
+    }
+
+}
+
+void backbuffer_fillbox(struct box *box, unsigned int color, unsigned int line)
+{
+
+    if (line < box->y || line >= box->y + box->h)
+        return;
+
+    backbuffer_fill(color, box->x, box->w);
+
+}
+
+void backbuffer_fillcount(unsigned int color, unsigned int offset, unsigned int count)
+{
+
+    backbuffer_fill(color, offset, count);
 
 }
 

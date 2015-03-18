@@ -3,7 +3,6 @@
 #define SCREEN_WIDTH                    1024
 #define SCREEN_HEIGHT                   768
 #define SCREEN_BPP                      4
-#define BORDERSIZE                      1
 #define BOXSIZE                         24
 #define WM_COLOR_DARK                   0x000000
 #define WM_COLOR_LIGHT                  0xFFFFFF
@@ -18,7 +17,6 @@
 #define SCREEN_WIDTH                    320
 #define SCREEN_HEIGHT                   200
 #define SCREEN_BPP                      1
-#define BORDERSIZE                      1
 #define BOXSIZE                         16
 #define WM_COLOR_DARK                   0x00
 #define WM_COLOR_LIGHT                  0x01
@@ -34,6 +32,6 @@ void draw_setmode();
 void draw_setcolormap();
 void draw_begin();
 void draw_end();
-void backbuffer_drawrepeated(struct box *box);
-void backbuffer_fill(unsigned int color, unsigned int count);
-void backbuffer_fillbox(struct box *box, unsigned int color);
+void backbuffer_drawline(unsigned int line);
+void backbuffer_fillbox(struct box *box, unsigned int color, unsigned int line);
+void backbuffer_fillcount(unsigned int color, unsigned int offset, unsigned int count);
