@@ -23,6 +23,7 @@ struct event_header
 static struct box screen;
 static struct box menu;
 static struct box desktop;
+static struct box mouse;
 static struct window window[WINDOWS];
 static struct list windows;
 static struct view view[VIEWS];
@@ -66,19 +67,20 @@ static void drawviews(struct list *views, unsigned int line)
 
 }
 
-static void draw()
+static void draw(unsigned int start, unsigned int stop)
 {
 
     unsigned int i;
 
     draw_begin();
 
-    for (i = 0; i < SCREEN_HEIGHT; i++)
+    for (i = start; i < stop; i++)
     {
 
         backbuffer_fillbox(&menu, WM_COLOR_DARK, i);
         backbuffer_fillbox(&desktop, WM_COLOR_BODY, i);
         drawviews(&views, i);
+        backbuffer_fillbox(&mouse, WM_COLOR_LIGHT, i);
         backbuffer_drawline(i);
 
     }
@@ -158,7 +160,7 @@ static void nextwindow(struct view *view)
     else
         activatewindow(view, view->windows.head->data);
 
-    draw();
+    draw(0, SCREEN_HEIGHT);
 
 }
 
@@ -173,7 +175,7 @@ static void prevwindow(struct view *view)
     else
         activatewindow(view, view->windows.tail->data);
 
-    draw();
+    draw(0, SCREEN_HEIGHT);
 
 }
 
@@ -190,7 +192,7 @@ static void mapwindow(struct view *view)
     list_move(&view->windows, &windows, &window->item);
     arrangewindows(view);
     activatewindow(view, window);
-    draw();
+    draw(0, SCREEN_HEIGHT);
 
 }
 
@@ -206,7 +208,50 @@ static void activateview(struct view *v)
     viewactive->active = 1;
     viewactive->panel.active = 1;
 
-    draw();
+    draw(0, SCREEN_HEIGHT);
+
+}
+
+static unsigned int mp = 0;
+static unsigned char state;
+static unsigned int oldx;
+static unsigned int oldy;
+
+static void mouseinput(unsigned char value)
+{
+
+    char relx;
+    char rely;
+
+    switch (mp)
+    {
+
+    case 0:
+        state = value;
+        mp = 1;
+
+        break;
+
+    case 1:
+        relx = value - ((state << 4) & 0x100);
+        oldx = mouse.x;
+        mouse.x += relx / 2;
+        mp = 2;
+
+        break;
+
+    case 2:
+        rely = value - ((state << 3) & 0x100);
+        oldy = mouse.y;
+        mouse.y -= rely / 2;
+        mp = 0;
+
+        break;
+
+    }
+
+    draw(oldy, oldy + mouse.h);
+    draw(mouse.y, mouse.y + mouse.h);
 
 }
 
@@ -297,8 +342,13 @@ static void pollevent()
 
                 break;
 
+            case 2:
+                mouseinput(data[0]);
+
+                break;
+
             case 1000:
-                    mapwindow(viewactive);
+                mapwindow(viewactive);
 
                 break;
 
@@ -358,13 +408,14 @@ void main()
     box_setsize(&screen, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
     box_setsize(&menu, screen.x, screen.y, screen.w, BOXSIZE);
     box_setsize(&desktop, screen.x, screen.y + BOXSIZE, screen.w, screen.h - BOXSIZE);
+    box_setsize(&mouse, screen.x + SCREEN_WIDTH / 4, screen.y + SCREEN_HEIGHT / 4, 16, 16);
     setupwindows();
     setupviews();
     draw_setmode();
     draw_setcolormap();
     draw_begin();
     draw_end();
-    draw();
+    draw(0, SCREEN_HEIGHT);
     pollevent();
 
 }
