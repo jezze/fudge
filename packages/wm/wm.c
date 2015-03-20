@@ -2,6 +2,7 @@
 #include <fudge.h>
 #include "box.h"
 #include "draw.h"
+#include "mouse.h"
 #include "text.h"
 #include "panel.h"
 #include "window.h"
@@ -23,28 +24,13 @@ struct event_header
 static struct box screen;
 static struct box menu;
 static struct box desktop;
-static struct box mouse;
+static struct mouse mouse;
+static struct panel field;
 static struct window window[WINDOWS];
 static struct list windows;
 static struct view view[VIEWS];
 static struct list views;
 static struct view *viewactive;
-
-static void drawwindows(struct list *windows, unsigned int line)
-{
-
-    struct list_item *current;
-
-    for (current = windows->head; current; current = current->next)
-    {
-
-        struct window *window = current->data;
-
-        window_draw(window, line);
-
-    }
-
-}
 
 static void drawviews(struct list *views, unsigned int line)
 {
@@ -54,14 +40,9 @@ static void drawviews(struct list *views, unsigned int line)
     for (current = views->head; current; current = current->next)
     {
 
-        struct view * view = current->data;
+        struct view *view = current->data;
 
-        panel_draw(&view->panel, line);
-
-        if (!view->active)
-            continue;
-
-        drawwindows(&view->windows, line);
+        view_draw(view, line);
 
     }
 
@@ -77,10 +58,10 @@ static void draw(unsigned int start, unsigned int stop)
     for (i = start; i < stop; i++)
     {
 
-        backbuffer_fillbox(&menu, WM_COLOR_DARK, i);
         backbuffer_fillbox(&desktop, WM_COLOR_BODY, i);
+        panel_draw(&field, i);
         drawviews(&views, i);
-        backbuffer_fillbox(&mouse, WM_COLOR_LIGHT, i);
+        mouse_draw(&mouse, i);
         backbuffer_drawline(i);
 
     }
@@ -101,7 +82,7 @@ static void arrangewindows(struct view *view)
 {
 
     unsigned int count = list_count(&view->windows);
-    struct list_item *current = view->windows.head;
+    struct list_item *current = view->windows.tail;
     struct window *window;
     unsigned int a, i;
 
@@ -124,7 +105,7 @@ static void arrangewindows(struct view *view)
     a = desktop.h / (count - 1);
     i = 0;
 
-    for (current = current->next; current; current = current->next)
+    for (current = current->prev; current; current = current->prev)
     {
 
         window = current->data;
@@ -209,49 +190,6 @@ static void activateview(struct view *v)
     viewactive->panel.active = 1;
 
     draw(0, SCREEN_HEIGHT);
-
-}
-
-static unsigned int mp = 0;
-static unsigned char state;
-static unsigned int oldx;
-static unsigned int oldy;
-
-static void mouseinput(unsigned char value)
-{
-
-    char relx;
-    char rely;
-
-    switch (mp)
-    {
-
-    case 0:
-        state = value;
-        mp = 1;
-
-        break;
-
-    case 1:
-        relx = value - ((state << 4) & 0x100);
-        oldx = mouse.x;
-        mouse.x += relx / 2;
-        mp = 2;
-
-        break;
-
-    case 2:
-        rely = value - ((state << 3) & 0x100);
-        oldy = mouse.y;
-        mouse.y -= rely / 2;
-        mp = 0;
-
-        break;
-
-    }
-
-    draw(oldy, oldy + mouse.h);
-    draw(mouse.y, mouse.y + mouse.h);
 
 }
 
@@ -343,7 +281,20 @@ static void pollevent()
                 break;
 
             case 2:
-                mouseinput(data[0]);
+                {
+
+                    struct box old;
+
+                    old.x = mouse.size.x;
+                    old.y = mouse.size.y;
+                    old.w = mouse.size.w;
+                    old.h = mouse.size.h;
+
+                    mouse_handle(&mouse, data[0]);
+                    draw(old.y, old.y + old.h);
+                    draw(mouse.size.y, mouse.size.y + mouse.size.h);
+
+                }
 
                 break;
 
@@ -405,12 +356,15 @@ void setupviews()
 void main()
 {
 
+    mouse_init(&mouse);
     box_setsize(&screen, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
     box_setsize(&menu, screen.x, screen.y, screen.w, BOXSIZE);
     box_setsize(&desktop, screen.x, screen.y + BOXSIZE, screen.w, screen.h - BOXSIZE);
-    box_setsize(&mouse, screen.x + SCREEN_WIDTH / 4, screen.y + SCREEN_HEIGHT / 4, 16, 16);
+    box_setsize(&mouse.size, screen.x + SCREEN_WIDTH / 4, screen.y + SCREEN_HEIGHT / 4, mouse.size.w, mouse.size.h);
     setupwindows();
     setupviews();
+    panel_init(&field, "0", 0);
+    box_setsize(&field.size, menu.x + VIEWS * BOXSIZE, menu.y, menu.w - VIEWS * BOXSIZE, BOXSIZE);
     draw_setmode();
     draw_setcolormap();
     draw_begin();

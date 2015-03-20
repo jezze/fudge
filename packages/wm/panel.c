@@ -34,7 +34,7 @@ void panel_draw(struct panel *panel, unsigned int line)
         backbuffer_fillcount(WM_COLOR_DARK, panel->size.x + panel->size.w - 1, 1);
         backbuffer_fillcount(panel->active ? WM_COLOR_ACTIVEFRAME : WM_COLOR_PASSIVEFRAME, panel->size.x + 1, 1);
         backbuffer_fillcount(panel->active ? WM_COLOR_ACTIVEFRAME : WM_COLOR_PASSIVEFRAME, panel->size.x + panel->size.w - 2, 1);
-        backbuffer_fillcount(panel->active ? WM_COLOR_ACTIVEFRAMETITLE : WM_COLOR_PASSIVEFRAMETITLE, panel->size.x + 2, panel->size.w - 4);
+        backbuffer_fillcount(panel->active ? WM_COLOR_ACTIVEBACK : WM_COLOR_PASSIVEBACK, panel->size.x + 2, panel->size.w - 4);
 
     }
 

@@ -9,5 +9,5 @@ struct view
 
 };
 
-void view_addwindow(struct view *v, struct window *w);
+void view_draw(struct view *view, unsigned int line);
 void view_init(struct view *view, char *text, unsigned int active);

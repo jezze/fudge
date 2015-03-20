@@ -7,6 +7,34 @@
 #include "window.h"
 #include "view.h"
 
+static void drawwindows(struct list *windows, unsigned int line)
+{
+
+    struct list_item *current;
+
+    for (current = windows->head; current; current = current->next)
+    {
+
+        struct window *window = current->data;
+
+        window_draw(window, line);
+
+    }
+
+}
+
+void view_draw(struct view *view, unsigned int line)
+{
+
+    panel_draw(&view->panel, line);
+
+    if (!view->active)
+        return;
+
+    drawwindows(&view->windows, line);
+
+}
+
 void view_init(struct view *view, char *text, unsigned int active)
 {
 
