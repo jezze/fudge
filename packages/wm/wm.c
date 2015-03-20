@@ -11,16 +11,6 @@
 #define WINDOWS                         64
 #define VIEWS                           8
 
-struct event_header
-{
-
-    unsigned int destination;
-    unsigned int source;
-    unsigned int type;
-    unsigned int count;
-
-};
-
 static struct box screen;
 static struct box menu;
 static struct box desktop;
@@ -241,7 +231,7 @@ static void pollevent()
             switch (header->type)
             {
 
-            case 1:
+            case EVENT_KEYBOARD:
                 if (data[0] == 0x02)
                     activateview(&view[0]);
 
@@ -280,7 +270,7 @@ static void pollevent()
 
                 break;
 
-            case 2:
+            case EVENT_MOUSE:
                 {
 
                     struct box old;

@@ -1,16 +1,6 @@
 #include <abi.h>
 #include <fudge.h>
 
-struct event_header
-{
-
-    unsigned int destination;
-    unsigned int source;
-    unsigned int type;
-    unsigned int count;
-
-};
-
 static unsigned int event_next(void *buffer)
 {
 
