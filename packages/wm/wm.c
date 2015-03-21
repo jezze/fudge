@@ -52,7 +52,7 @@ static void draw(unsigned int start, unsigned int stop)
         panel_draw(&field, i);
         drawviews(&views, i);
         mouse_draw(&mouse, i);
-        backbuffer_drawline(i);
+        backbuffer_drawline(i, screen.w * SCREEN_BPP);
 
     }
 
@@ -131,7 +131,7 @@ static void nextwindow(struct view *view)
     else
         activatewindow(view, view->windows.head->data);
 
-    draw(0, SCREEN_HEIGHT);
+    draw(0, screen.h);
 
 }
 
@@ -146,7 +146,7 @@ static void prevwindow(struct view *view)
     else
         activatewindow(view, view->windows.tail->data);
 
-    draw(0, SCREEN_HEIGHT);
+    draw(0, screen.h);
 
 }
 
@@ -163,7 +163,7 @@ static void mapwindow(struct view *view)
     list_move(&view->windows, &windows, &window->item);
     arrangewindows(view);
     activatewindow(view, window);
-    draw(0, SCREEN_HEIGHT);
+    draw(0, screen.h);
 
 }
 
@@ -179,7 +179,7 @@ static void activateview(struct view *v)
     viewactive->active = 1;
     viewactive->panel.active = 1;
 
-    draw(0, SCREEN_HEIGHT);
+    draw(0, screen.h);
 
 }
 
@@ -350,7 +350,7 @@ void main()
     box_setsize(&screen, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
     box_setsize(&menu, screen.x, screen.y, screen.w, BOXSIZE);
     box_setsize(&desktop, screen.x, screen.y + BOXSIZE, screen.w, screen.h - BOXSIZE);
-    box_setsize(&mouse.size, screen.x + SCREEN_WIDTH / 4, screen.y + SCREEN_HEIGHT / 4, mouse.size.w, mouse.size.h);
+    box_setsize(&mouse.size, screen.x + screen.w / 4, screen.y + screen.h / 4, mouse.size.w, mouse.size.h);
     setupwindows();
     setupviews();
     panel_init(&field, "0", 0);
@@ -359,7 +359,7 @@ void main()
     draw_setcolormap();
     draw_begin();
     draw_end();
-    draw(0, SCREEN_HEIGHT);
+    draw(0, screen.h);
     pollevent();
 
 }

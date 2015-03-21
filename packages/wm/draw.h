@@ -27,6 +27,6 @@ void draw_setmode();
 void draw_setcolormap();
 void draw_begin();
 void draw_end();
-void backbuffer_drawline(unsigned int line);
+void backbuffer_drawline(unsigned int line, unsigned int count);
 void backbuffer_fillbox(struct box *box, unsigned int color, unsigned int line);
 void backbuffer_fillcount(unsigned int color, unsigned int offset, unsigned int count);
