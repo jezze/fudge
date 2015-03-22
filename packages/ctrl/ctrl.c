@@ -7,7 +7,6 @@ union settings
     unsigned char raw[FUDGE_BSIZE];
     struct ctrl_header header;
     struct ctrl_consolesettings consolesettings;
-    struct ctrl_networksettings networksettings;
     struct ctrl_videosettings videosettings;
 
 };
@@ -39,6 +38,7 @@ static unsigned int writedec(unsigned int offset, unsigned char value)
 
 }
 
+/*
 static unsigned int writehex2(unsigned int offset, unsigned char value)
 {
 
@@ -48,6 +48,7 @@ static unsigned int writehex2(unsigned int offset, unsigned char value)
     return call_write(CALL_PO, offset, count, num);
 
 }
+*/
 
 static unsigned int writeheader(unsigned int offset, struct ctrl_header *header)
 {
@@ -59,11 +60,6 @@ static unsigned int writeheader(unsigned int offset, struct ctrl_header *header)
 
     case CTRL_TYPE_CONSOLE:
         offset += writestring(offset, "consolesettings");
-
-        break;
-
-    case CTRL_TYPE_NETWORK:
-        offset += writestring(offset, "networksettings");
 
         break;
 
@@ -90,27 +86,6 @@ static unsigned int writeconsolesettings(unsigned int offset, struct ctrl_consol
 
     offset += writestring(offset, "scroll: ");
     offset += writeboolean(offset, settings->scroll);
-    offset += writestring(offset, "\n");
-
-    return offset;
-
-}
-
-static unsigned int writenetworksettings(unsigned int offset, struct ctrl_networksettings *settings)
-{
-
-    offset += writestring(offset, "mac: ");
-    offset += writehex2(offset, settings->mac[0]);
-    offset += writestring(offset, ":");
-    offset += writehex2(offset, settings->mac[1]);
-    offset += writestring(offset, ":");
-    offset += writehex2(offset, settings->mac[2]);
-    offset += writestring(offset, ":");
-    offset += writehex2(offset, settings->mac[3]);
-    offset += writestring(offset, ":");
-    offset += writehex2(offset, settings->mac[4]);
-    offset += writestring(offset, ":");
-    offset += writehex2(offset, settings->mac[5]);
     offset += writestring(offset, "\n");
 
     return offset;
@@ -154,11 +129,6 @@ void main()
 
     case CTRL_TYPE_CONSOLE:
         writeconsolesettings(woff, &buffer.consolesettings);
-
-        break;
-
-    case CTRL_TYPE_NETWORK:
-        writenetworksettings(woff, &buffer.networksettings);
 
         break;
 

@@ -15,7 +15,13 @@ void console_notify(struct console_interface *interface, unsigned int count, voi
 static unsigned int interfacenode_ctrlread(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    return 0;
+    struct console_interface *interface = self->resource->data;
+    struct ctrl_consolesettings settings;
+
+    settings.header.type = CTRL_TYPE_CONSOLE;
+    settings.scroll = interface->scroll;
+
+    return memory_read(buffer, count, &settings, sizeof (struct ctrl_consolesettings), offset);
 
 }
 

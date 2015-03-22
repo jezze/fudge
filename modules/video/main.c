@@ -6,7 +6,15 @@
 static unsigned int interfacenode_ctrlread(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    return 0;
+    struct video_interface *interface = self->resource->data;
+    struct ctrl_videosettings settings;
+
+    settings.header.type = CTRL_TYPE_VIDEO;
+    settings.w = interface->w;
+    settings.h = interface->h;
+    settings.bpp = interface->bpp;
+
+    return memory_read(buffer, count, &settings, sizeof (struct ctrl_videosettings), offset);
 
 }
 
