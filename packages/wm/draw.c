@@ -64,10 +64,10 @@ void draw_end()
 
 static unsigned char backbuffer[4096];
 
-void backbuffer_drawline(unsigned int line, unsigned int count)
+void backbuffer_drawline(unsigned int line, unsigned int offset, unsigned int count)
 {
 
-    call_write(CALL_L0, line * count, count, backbuffer);
+    call_write(CALL_L0, line * SCREEN_WIDTH * SCREEN_BPP + offset * SCREEN_BPP, count * SCREEN_BPP, backbuffer + offset * SCREEN_BPP);
 
 }
 

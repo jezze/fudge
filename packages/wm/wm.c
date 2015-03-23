@@ -62,7 +62,7 @@ static void draw(struct box *bb)
         panel_draw(&field, i);
         drawviews(&views, i);
         mouse_draw(&mouse, i);
-        backbuffer_drawline(i, screen.w * SCREEN_BPP);
+        backbuffer_drawline(i, bb->x, bb->w);
 
     }
 

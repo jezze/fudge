@@ -27,5 +27,5 @@ void draw_setmode();
 void draw_setcolormap();
 void draw_begin();
 void draw_end();
-void backbuffer_drawline(unsigned int line, unsigned int count);
+void backbuffer_drawline(unsigned int line, unsigned int offset, unsigned int count);
 void backbuffer_fill(unsigned int color, unsigned int offset, unsigned int count);
