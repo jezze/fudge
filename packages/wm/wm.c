@@ -6,6 +6,7 @@
 #include "text.h"
 #include "panel.h"
 #include "window.h"
+#include "video.h"
 #include "view.h"
 
 #define WINDOWS                         64
@@ -22,13 +23,25 @@ static struct view view[VIEWS];
 static struct list views;
 static struct view *viewactive;
 
+static unsigned char colormap[] = {
+    0x00, 0x00, 0x00,
+    0xFF, 0xFF, 0xFF,
+    0x03, 0x02, 0x02,
+    0x05, 0x04, 0x04,
+    0x07, 0x06, 0x06,
+    0x08, 0x10, 0x18,
+    0x0C, 0x14, 0x1C,
+    0x28, 0x10, 0x18,
+    0x38, 0x20, 0x28
+};
+
 static void drawdesktop(unsigned int line)
 {
 
     if (line < desktop.y || line >= desktop.y + desktop.h)
         return;
 
-    backbuffer_fill(WM_COLOR_BODY, desktop.x, desktop.w);
+    draw_fill(WM_COLOR_BODY, desktop.x, desktop.w);
 
 }
 
@@ -51,22 +64,22 @@ static void drawviews(struct list *views, unsigned int line)
 static void draw(struct box *bb)
 {
 
-    unsigned int i;
+    unsigned int line;
 
-    draw_begin();
+    video_open();
 
-    for (i = bb->y; i < bb->y + bb->h; i++)
+    for (line = bb->y; line < bb->y + bb->h; line++)
     {
 
-        drawdesktop(i);
-        panel_draw(&field, i);
-        drawviews(&views, i);
-        mouse_draw(&mouse, i);
-        backbuffer_drawline(i, bb->x, bb->w);
+        drawdesktop(line);
+        panel_draw(&field, line);
+        drawviews(&views, line);
+        mouse_draw(&mouse, line);
+        draw_flush(line, bb->x, bb->w);
 
     }
 
-    draw_end();
+    video_close();
 
 }
 
@@ -365,8 +378,8 @@ void main()
     setupviews();
     panel_init(&field, "0", 0);
     box_setsize(&field.size, menu.x + VIEWS * BOXSIZE, menu.y, menu.w - VIEWS * BOXSIZE, BOXSIZE);
-    draw_setmode();
-    draw_setcolormap();
+    video_setmode();
+    video_setcolormap(colormap);
     draw(&screen);
     pollevent();
 

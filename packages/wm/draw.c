@@ -1,6 +1,7 @@
 #include <abi.h>
 #include <fudge.h>
 #include "box.h"
+#include "video.h"
 #include "draw.h"
 
 static unsigned int colormap4[] = {
@@ -15,63 +16,16 @@ static unsigned int colormap4[] = {
     0xF898B8
 };
 
-static unsigned char colormap[] = {
-    0x00, 0x00, 0x00,
-    0xFF, 0xFF, 0xFF,
-    0x03, 0x02, 0x02,
-    0x05, 0x04, 0x04,
-    0x07, 0x06, 0x06,
-    0x08, 0x10, 0x18,
-    0x0C, 0x14, 0x1C,
-    0x28, 0x10, 0x18,
-    0x38, 0x20, 0x28
-};
-
-void draw_setmode()
-{
-
-    call_walk(CALL_L0, CALL_PR, 19, "system/video:0/ctrl");
-    call_open(CALL_L0);
-    call_write(CALL_L0, 0, 0, 0);
-    call_close(CALL_L0);
-
-}
-
-void draw_setcolormap()
-{
-
-    call_walk(CALL_L0, CALL_PR, 23, "system/video:0/colormap");
-    call_open(CALL_L0);
-    call_write(CALL_L0, 0, 27, colormap);
-    call_close(CALL_L0);
-
-}
-
-void draw_begin()
-{
-
-    call_walk(CALL_L0, CALL_PR, 19, "system/video:0/data");
-    call_open(CALL_L0);
-
-}
-
-void draw_end()
-{
-
-    call_close(CALL_L0);
-
-}
-
 static unsigned char backbuffer[4096];
 
-void backbuffer_drawline(unsigned int line, unsigned int offset, unsigned int count)
+void draw_flush(unsigned int line, unsigned int offset, unsigned int count)
 {
 
-    call_write(CALL_L0, line * SCREEN_WIDTH * SCREEN_BPP + offset * SCREEN_BPP, count * SCREEN_BPP, backbuffer + offset * SCREEN_BPP);
+    video_draw(line * SCREEN_WIDTH * SCREEN_BPP + offset * SCREEN_BPP, count * SCREEN_BPP, backbuffer + offset * SCREEN_BPP);
 
 }
 
-static void backbuffer_fill1(unsigned int color, unsigned int offset, unsigned int count)
+static void draw_fill1(unsigned int color, unsigned int offset, unsigned int count)
 {
 
     unsigned int i;
@@ -81,7 +35,7 @@ static void backbuffer_fill1(unsigned int color, unsigned int offset, unsigned i
 
 }
 
-static void backbuffer_fill4(unsigned int color, unsigned int offset, unsigned int count)
+static void draw_fill4(unsigned int color, unsigned int offset, unsigned int count)
 {
 
     unsigned int i;
@@ -98,19 +52,19 @@ static void backbuffer_fill4(unsigned int color, unsigned int offset, unsigned i
 
 }
 
-void backbuffer_fill(unsigned int color, unsigned int offset, unsigned int count)
+void draw_fill(unsigned int color, unsigned int offset, unsigned int count)
 {
 
     switch (SCREEN_BPP)
     {
 
     case 1:
-        backbuffer_fill1(color, offset, count);
+        draw_fill1(color, offset, count);
 
         break;
 
     case 4:
-        backbuffer_fill4(color, offset, count);
+        draw_fill4(color, offset, count);
 
         break;
 

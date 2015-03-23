@@ -80,7 +80,7 @@ void mouse_draw(struct mouse *mouse, unsigned int line)
     {
 
         if (pointer[off + i] != 0xFF)
-            backbuffer_fill(pointer[off + i], mouse->size.x + i, 1);
+            draw_fill(pointer[off + i], mouse->size.x + i, 1);
 
     }
 

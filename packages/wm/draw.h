@@ -23,9 +23,5 @@
 #define WM_COLOR_POINTERBACK            0x07
 #define WM_COLOR_POINTERFRAME           0x08
 
-void draw_setmode();
-void draw_setcolormap();
-void draw_begin();
-void draw_end();
-void backbuffer_drawline(unsigned int line, unsigned int offset, unsigned int count);
-void backbuffer_fill(unsigned int color, unsigned int offset, unsigned int count);
+void draw_flush(unsigned int line, unsigned int offset, unsigned int count);
+void draw_fill(unsigned int color, unsigned int offset, unsigned int count);
