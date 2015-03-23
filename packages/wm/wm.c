@@ -38,14 +38,14 @@ static void drawviews(struct list *views, unsigned int line)
 
 }
 
-static void draw(unsigned int start, unsigned int stop)
+static void draw(struct box *bb)
 {
 
     unsigned int i;
 
     draw_begin();
 
-    for (i = start; i < stop; i++)
+    for (i = bb->y; i < bb->y + bb->h; i++)
     {
 
         backbuffer_fillbox(&desktop, WM_COLOR_BODY, i);
@@ -131,7 +131,7 @@ static void nextwindow(struct view *view)
     else
         activatewindow(view, view->windows.head->data);
 
-    draw(0, screen.h);
+    draw(&desktop);
 
 }
 
@@ -146,7 +146,7 @@ static void prevwindow(struct view *view)
     else
         activatewindow(view, view->windows.tail->data);
 
-    draw(0, screen.h);
+    draw(&desktop);
 
 }
 
@@ -163,7 +163,7 @@ static void mapwindow(struct view *view)
     list_move(&view->windows, &windows, &window->item);
     arrangewindows(view);
     activatewindow(view, window);
-    draw(0, screen.h);
+    draw(&desktop);
 
 }
 
@@ -179,7 +179,7 @@ static void activateview(struct view *v)
     viewactive->active = 1;
     viewactive->panel.active = 1;
 
-    draw(0, screen.h);
+    draw(&screen);
 
 }
 
@@ -281,8 +281,8 @@ static void pollevent()
                     old.h = mouse.size.h;
 
                     mouse_handle(&mouse, data[0]);
-                    draw(old.y, old.y + old.h);
-                    draw(mouse.size.y, mouse.size.y + mouse.size.h);
+                    draw(&old);
+                    draw(&mouse.size);
 
                 }
 
@@ -357,9 +357,7 @@ void main()
     box_setsize(&field.size, menu.x + VIEWS * BOXSIZE, menu.y, menu.w - VIEWS * BOXSIZE, BOXSIZE);
     draw_setmode();
     draw_setcolormap();
-    draw_begin();
-    draw_end();
-    draw(0, screen.h);
+    draw(&screen);
     pollevent();
 
 }
