@@ -14,27 +14,27 @@ void panel_draw(struct panel *panel, unsigned int line)
     if (line == panel->size.y + 0 || line >= panel->size.y + panel->size.h - 1)
     {
 
-        backbuffer_fillcount(WM_COLOR_DARK, panel->size.x, panel->size.w);
+        backbuffer_fill(WM_COLOR_DARK, panel->size.x, panel->size.w);
 
     }
 
     else if (line == panel->size.y + 1 || line >= panel->size.y + panel->size.h - 2)
     {
 
-        backbuffer_fillcount(WM_COLOR_DARK, panel->size.x + 0, 1);
-        backbuffer_fillcount(WM_COLOR_DARK, panel->size.x + panel->size.w - 1, 1);
-        backbuffer_fillcount(panel->active ? WM_COLOR_ACTIVEFRAME : WM_COLOR_PASSIVEFRAME, panel->size.x + 1, panel->size.w - 2);
+        backbuffer_fill(WM_COLOR_DARK, panel->size.x + 0, 1);
+        backbuffer_fill(WM_COLOR_DARK, panel->size.x + panel->size.w - 1, 1);
+        backbuffer_fill(panel->active ? WM_COLOR_ACTIVEFRAME : WM_COLOR_PASSIVEFRAME, panel->size.x + 1, panel->size.w - 2);
 
     }
 
     else
     {
 
-        backbuffer_fillcount(WM_COLOR_DARK, panel->size.x + 0, 1);
-        backbuffer_fillcount(WM_COLOR_DARK, panel->size.x + panel->size.w - 1, 1);
-        backbuffer_fillcount(panel->active ? WM_COLOR_ACTIVEFRAME : WM_COLOR_PASSIVEFRAME, panel->size.x + 1, 1);
-        backbuffer_fillcount(panel->active ? WM_COLOR_ACTIVEFRAME : WM_COLOR_PASSIVEFRAME, panel->size.x + panel->size.w - 2, 1);
-        backbuffer_fillcount(panel->active ? WM_COLOR_ACTIVEBACK : WM_COLOR_PASSIVEBACK, panel->size.x + 2, panel->size.w - 4);
+        backbuffer_fill(WM_COLOR_DARK, panel->size.x + 0, 1);
+        backbuffer_fill(WM_COLOR_DARK, panel->size.x + panel->size.w - 1, 1);
+        backbuffer_fill(panel->active ? WM_COLOR_ACTIVEFRAME : WM_COLOR_PASSIVEFRAME, panel->size.x + 1, 1);
+        backbuffer_fill(panel->active ? WM_COLOR_ACTIVEFRAME : WM_COLOR_PASSIVEFRAME, panel->size.x + panel->size.w - 2, 1);
+        backbuffer_fill(panel->active ? WM_COLOR_ACTIVEBACK : WM_COLOR_PASSIVEBACK, panel->size.x + 2, panel->size.w - 4);
 
     }
 

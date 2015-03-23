@@ -22,6 +22,16 @@ static struct view view[VIEWS];
 static struct list views;
 static struct view *viewactive;
 
+static void drawdesktop(unsigned int line)
+{
+
+    if (line < desktop.y || line >= desktop.y + desktop.h)
+        return;
+
+    backbuffer_fill(WM_COLOR_BODY, desktop.x, desktop.w);
+
+}
+
 static void drawviews(struct list *views, unsigned int line)
 {
 
@@ -48,7 +58,7 @@ static void draw(struct box *bb)
     for (i = bb->y; i < bb->y + bb->h; i++)
     {
 
-        backbuffer_fillbox(&desktop, WM_COLOR_BODY, i);
+        drawdesktop(i);
         panel_draw(&field, i);
         drawviews(&views, i);
         mouse_draw(&mouse, i);

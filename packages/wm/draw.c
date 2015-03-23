@@ -98,7 +98,7 @@ static void backbuffer_fill4(unsigned int color, unsigned int offset, unsigned i
 
 }
 
-static void backbuffer_fill(unsigned int color, unsigned int offset, unsigned int count)
+void backbuffer_fill(unsigned int color, unsigned int offset, unsigned int count)
 {
 
     switch (SCREEN_BPP)
@@ -115,23 +115,6 @@ static void backbuffer_fill(unsigned int color, unsigned int offset, unsigned in
         break;
 
     }
-
-}
-
-void backbuffer_fillbox(struct box *box, unsigned int color, unsigned int line)
-{
-
-    if (line < box->y || line >= box->y + box->h)
-        return;
-
-    backbuffer_fill(color, box->x, box->w);
-
-}
-
-void backbuffer_fillcount(unsigned int color, unsigned int offset, unsigned int count)
-{
-
-    backbuffer_fill(color, offset, count);
 
 }
 
