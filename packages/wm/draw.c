@@ -21,7 +21,7 @@ static unsigned char backbuffer[4096];
 void draw_flush(unsigned int line, unsigned int offset, unsigned int count)
 {
 
-    video_draw(line * SCREEN_WIDTH * SCREEN_BPP + offset * SCREEN_BPP, count * SCREEN_BPP, backbuffer + offset * SCREEN_BPP);
+    video_draw(line * SCREEN_BPP + offset * SCREEN_BPP, count * SCREEN_BPP, backbuffer + offset * SCREEN_BPP);
 
 }
 

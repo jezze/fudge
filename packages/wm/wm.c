@@ -75,7 +75,7 @@ static void draw(struct box *bb)
         panel_draw(&field, line);
         drawviews(&views, line);
         mouse_draw(&mouse, line);
-        draw_flush(line, bb->x, bb->w);
+        draw_flush(screen.w * line, bb->x, bb->w);
 
     }
 
