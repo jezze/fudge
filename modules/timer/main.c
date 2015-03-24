@@ -6,7 +6,7 @@
 void timer_notify(struct timer_interface *interface, unsigned int count, void *buffer)
 {
 
-    scheduler_mailboxes_send(&interface->sleep.mailboxes, count, buffer);
+    scheduler_sendlist(&interface->sleep.mailboxes, count, buffer);
 
 }
 

@@ -9,7 +9,7 @@ static struct ipv4_protocol ipv4protocol;
 void ipv4protocol_notify(struct ethernet_interface *interface, unsigned int count, void *buffer)
 {
 
-    scheduler_mailboxes_send(&ipv4protocol.data.mailboxes, count, buffer);
+    scheduler_sendlist(&ipv4protocol.data.mailboxes, count, buffer);
 
 }
 

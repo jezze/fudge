@@ -312,7 +312,7 @@ static void setuptask(struct arch_task *task, unsigned int index)
     task->mapping[0] = TASKCODEBASE + index * TASKCODESIZE;
     task->mapping[1] = TASKSTACKBASE + index * TASKSTACKSIZE;
 
-    scheduler_register_task(&task->base);
+    scheduler_registertask(&task->base);
 
 }
 

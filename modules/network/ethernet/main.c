@@ -24,7 +24,7 @@ void ethernet_notify(struct ethernet_interface *interface, unsigned int count, v
 
     }
 
-    scheduler_mailboxes_send(&interface->data.mailboxes, count, buffer);
+    scheduler_sendlist(&interface->data.mailboxes, count, buffer);
     event_notify(EVENT_NETWORK, count, buffer);
 
 }

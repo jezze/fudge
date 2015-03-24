@@ -7,7 +7,7 @@
 void console_notify(struct console_interface *interface, unsigned int count, void *buffer)
 {
 
-    scheduler_mailboxes_send(&interface->in.mailboxes, count, buffer);
+    scheduler_sendlist(&interface->in.mailboxes, count, buffer);
     event_notify(EVENT_CONSOLE, count, buffer);
 
 }

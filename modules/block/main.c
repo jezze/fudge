@@ -8,7 +8,7 @@ static unsigned int wait;
 void block_notify(struct block_interface *interface, unsigned int count, void *buffer)
 {
 
-    scheduler_mailboxes_send(&interface->data.mailboxes, count, buffer);
+    scheduler_sendlist(&interface->data.mailboxes, count, buffer);
 
     wait = 0;
 
@@ -30,7 +30,7 @@ static unsigned int interfacenode_dataread(struct system_node *self, unsigned in
 
     }
 
-    return scheduler_mailboxes_readactive(&self->mailboxes, count, buffer);
+    return scheduler_readactive(count, buffer);
 
 }
 

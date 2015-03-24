@@ -71,7 +71,7 @@ static void ethernetprotocol_notify(struct ethernet_interface *interface, unsign
 
     }
 
-    scheduler_mailboxes_send(&ethernetprotocol.data.mailboxes, count, buffer);
+    scheduler_sendlist(&ethernetprotocol.data.mailboxes, count, buffer);
 
 }
 

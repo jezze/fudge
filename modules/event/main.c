@@ -17,15 +17,17 @@ void event_notify(unsigned int type, unsigned int count, void *buffer)
     header.type = type;
     header.count = count;
 
-    scheduler_mailboxes_send(&wm.mailboxes, sizeof (struct event_header), &header);
-    scheduler_mailboxes_send(&wm.mailboxes, count, buffer);
+    scheduler_sendlist(&wm.mailboxes, sizeof (struct event_header), &header);
+    scheduler_sendlist(&wm.mailboxes, count, buffer);
 
 }
 
 static unsigned int send_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    return scheduler_mailboxes_send(&wm.mailboxes, count, buffer);
+    scheduler_sendlist(&wm.mailboxes, count, buffer);
+
+    return count;
 
 }
 
