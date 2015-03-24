@@ -210,8 +210,8 @@ static void mapwindow(struct view *view, unsigned int source)
     window->source = source;
 
     list_move(&view->windows, &windows, &window->item);
-    arrangewindows(view);
     activatewindow(view, window);
+    arrangewindows(view);
     draw(&desktop);
 
 }
@@ -223,8 +223,13 @@ static void unmapwindow(struct view *view)
         return;
 
     sendevent(view->windowactive->source, 1001);
-    list_remove(&view->windows, &view->windowactive->item);
-    activatewindow(view, view->windows.tail->data);
+    list_move(&windows, &view->windows, &view->windowactive->item);
+
+    if (view->windows.tail)
+        activatewindow(view, view->windows.tail->data);
+    else
+        activatewindow(view, 0);
+
     arrangewindows(view);
     draw(&desktop);
 
