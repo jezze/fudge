@@ -4,8 +4,8 @@
 #include "event.h"
 
 static struct system_node root;
+static struct system_node poll;
 static struct system_node send;
-static struct system_node wm;
 
 void event_notify(unsigned int type, unsigned int count, void *buffer)
 {
@@ -17,8 +17,8 @@ void event_notify(unsigned int type, unsigned int count, void *buffer)
     header.type = type;
     header.count = count;
 
-    scheduler_sendlist(&wm.mailboxes, sizeof (struct event_header), &header);
-    scheduler_sendlist(&wm.mailboxes, count, buffer);
+    scheduler_sendlist(&poll.mailboxes, sizeof (struct event_header), &header);
+    scheduler_sendlist(&poll.mailboxes, count, buffer);
 
 }
 
@@ -35,7 +35,7 @@ static unsigned int send_write(struct system_node *self, unsigned int offset, un
     if (header->destination == 0xFFFFFFFF)
     {
 
-        scheduler_sendlist(&wm.mailboxes, count, buffer);
+        scheduler_sendlist(&poll.mailboxes, count, buffer);
 
         return count;
 
@@ -48,14 +48,14 @@ static unsigned int send_write(struct system_node *self, unsigned int offset, un
 void module_init()
 {
 
+    system_initnode(&poll, SYSTEM_NODETYPE_MAILBOX, "poll");
     system_initnode(&send, SYSTEM_NODETYPE_NORMAL, "send");
 
     send.write = send_write;
 
-    system_initnode(&wm, SYSTEM_NODETYPE_MAILBOX, "wm");
     system_initnode(&root, SYSTEM_NODETYPE_GROUP, "event");
+    system_addchild(&root, &poll);
     system_addchild(&root, &send);
-    system_addchild(&root, &wm);
 
 }
 

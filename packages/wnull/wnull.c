@@ -33,7 +33,7 @@ static void pollevent()
     unsigned int count, roff;
     unsigned int running = 1;
 
-    call_walk(CALL_L1, CALL_PR, 15, "system/event/wm");
+    call_walk(CALL_L1, CALL_PR, 17, "system/event/poll");
     call_open(CALL_L1);
 
     for (roff = 0; running && (count = call_read(CALL_L1, roff, FUDGE_BSIZE, buffer)); roff += count)
