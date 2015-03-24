@@ -16,7 +16,7 @@ static struct box screen;
 static struct box menu;
 static struct box desktop;
 static struct mouse mouse;
-static struct panel field;
+static struct panel title;
 static struct window window[WINDOWS];
 static struct list windows;
 static struct view view[VIEWS];
@@ -72,7 +72,7 @@ static void draw(struct box *bb)
     {
 
         drawdesktop(line);
-        panel_draw(&field, line);
+        panel_draw(&title, line);
         drawviews(&views, line);
         mouse_draw(&mouse, line);
         draw_flush(screen.w * line, bb->x, bb->w);
@@ -219,7 +219,7 @@ static void mapwindow(struct view *view, unsigned int source)
 static void unmapwindow(struct view *view)
 {
 
-    if (!viewactive->windowactive)
+    if (!view->windowactive)
         return;
 
     sendevent(view->windowactive->source, 1001);
@@ -409,8 +409,8 @@ void main()
     setupwindows();
     setupviews();
     activateview(views.head->data);
-    panel_init(&field, "0", 0);
-    box_setsize(&field.size, menu.x + VIEWS * BOXSIZE, menu.y, menu.w - VIEWS * BOXSIZE, BOXSIZE);
+    panel_init(&title, "0", 0);
+    box_setsize(&title.size, menu.x + VIEWS * BOXSIZE, menu.y, menu.w - VIEWS * BOXSIZE, BOXSIZE);
     video_setmode();
     video_setcolormap(colormap);
     draw(&screen);
