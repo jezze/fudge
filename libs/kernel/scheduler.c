@@ -94,6 +94,15 @@ void scheduler_detachall(struct list *mailboxes)
 
 }
 
+unsigned int scheduler_getactiveid()
+{
+
+    struct task *task = active.tail->data;
+
+    return (unsigned int)&task->mailbox;
+
+}
+
 unsigned int scheduler_readactive(unsigned int count, void *buffer)
 {
 

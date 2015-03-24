@@ -25,9 +25,20 @@ void event_notify(unsigned int type, unsigned int count, void *buffer)
 static unsigned int send_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    scheduler_sendlist(&wm.mailboxes, count, buffer);
+    struct event_header *header = buffer;
 
-    return count;
+    header->source = scheduler_getactiveid();
+
+    if (header->destination == 0xFFFFFFFF)
+    {
+
+        scheduler_sendlist(&wm.mailboxes, count, buffer);
+
+        return count;
+
+    }
+
+    return 0;
 
 }
 

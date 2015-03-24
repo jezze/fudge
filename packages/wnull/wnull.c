@@ -10,11 +10,12 @@ static unsigned int event_next(void *buffer)
 
 }
 
-static void sendevent(unsigned int type)
+static void sendevent(unsigned int destination, unsigned int type)
 {
 
     struct event_header header;
 
+    header.destination = destination;
     header.type = type;
     header.count = 0;
 
@@ -67,7 +68,7 @@ static void pollevent()
 void main()
 {
 
-    sendevent(1000);
+    sendevent(0xFFFFFFFF, 1000);
     pollevent();
 
     call_open(CALL_PO);
