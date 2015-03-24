@@ -27,6 +27,9 @@ static unsigned int send_write(struct system_node *self, unsigned int offset, un
 
     struct event_header *header = buffer;
 
+    if (count < sizeof (struct event_header))
+        return 0;
+
     header->source = scheduler_getactiveid();
 
     if (header->destination == 0xFFFFFFFF)
@@ -38,7 +41,7 @@ static unsigned int send_write(struct system_node *self, unsigned int offset, un
 
     }
 
-    return 0;
+    return scheduler_sendid(header->destination, count, buffer);
 
 }
 

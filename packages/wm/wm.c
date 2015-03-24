@@ -91,6 +91,22 @@ static void spawn()
 
 }
 
+static void sendevent(unsigned int destination, unsigned int type)
+{
+
+    struct event_header header;
+
+    header.destination = destination;
+    header.type = type;
+    header.count = 0;
+
+    call_walk(CALL_L2, CALL_PR, 17, "system/event/send");
+    call_open(CALL_L2);
+    call_write(CALL_L2, 0, sizeof (struct event_header), &header);
+    call_close(CALL_L2);
+
+}
+
 static void arrangewindows(struct view *view)
 {
 
@@ -134,12 +150,21 @@ static void arrangewindows(struct view *view)
 static void activatewindow(struct view *view, struct window *window)
 {
 
-    if (!view->windowactive)
-        view->windowactive = window;
+    if (view->windowactive)
+    {
 
-    view->windowactive->active = 0;
+        view->windowactive->active = 0;
+
+    }
+
     view->windowactive = window;
-    view->windowactive->active = 1;
+
+    if (view->windowactive)
+    {
+
+        view->windowactive->active = 1;
+
+    }
 
 }
 
@@ -173,7 +198,7 @@ static void prevwindow(struct view *view)
 
 }
 
-static void mapwindow(struct view *view)
+static void mapwindow(struct view *view, unsigned int source)
 {
 
     struct window *window;
@@ -182,10 +207,25 @@ static void mapwindow(struct view *view)
         return;
 
     window = windows.head->data;
+    window->source = source;
 
     list_move(&view->windows, &windows, &window->item);
     arrangewindows(view);
     activatewindow(view, window);
+    draw(&desktop);
+
+}
+
+static void unmapwindow(struct view *view)
+{
+
+    if (!viewactive->windowactive)
+        return;
+
+    sendevent(view->windowactive->source, 1001);
+    list_remove(&view->windows, &view->windowactive->item);
+    activatewindow(view, view->windows.tail->data);
+    arrangewindows(view);
     draw(&desktop);
 
 }
@@ -196,8 +236,14 @@ static void activateview(struct view *v)
     if (viewactive == v)
         return;
 
-    viewactive->active = 0;
-    viewactive->panel.active = 0;
+    if (viewactive)
+    {
+
+        viewactive->active = 0;
+        viewactive->panel.active = 0;
+
+    }
+
     viewactive = v;
     viewactive->active = 1;
     viewactive->panel.active = 1;
@@ -212,22 +258,6 @@ static unsigned int event_next(void *buffer)
     struct event_header *header = buffer;
 
     return header->count + sizeof (struct event_header);
-
-}
-
-static void sendevent(unsigned int destination, unsigned int type)
-{
-
-    struct event_header header;
-
-    header.destination = destination;
-    header.type = type;
-    header.count = 0;
-
-    call_walk(CALL_L2, CALL_PR, 17, "system/event/send");
-    call_open(CALL_L2);
-    call_write(CALL_L2, 0, sizeof (struct event_header), &header);
-    call_close(CALL_L2);
 
 }
 
@@ -281,7 +311,7 @@ static void pollevent()
                     activateview(&view[7]);
 
                 if (data[0] == 0x10)
-                    sendevent(0xFFFFFFFF, 1001);
+                    unmapwindow(viewactive);
 
                 if (data[0] == 0x19)
                     spawn();
@@ -313,7 +343,7 @@ static void pollevent()
                 break;
 
             case 1000:
-                mapwindow(viewactive);
+                mapwindow(viewactive, header->source);
 
                 break;
 
@@ -361,10 +391,6 @@ void setupviews()
 
     }
 
-    viewactive = views.head->data;
-    viewactive->active = 1;
-    viewactive->panel.active = 1;
-
 }
 
 void main()
@@ -377,6 +403,7 @@ void main()
     box_setsize(&mouse.size, screen.x + screen.w / 4, screen.y + screen.h / 4, mouse.size.w, mouse.size.h);
     setupwindows();
     setupviews();
+    activateview(views.head->data);
     panel_init(&field, "0", 0);
     box_setsize(&field.size, menu.x + VIEWS * BOXSIZE, menu.y, menu.w - VIEWS * BOXSIZE, BOXSIZE);
     video_setmode();

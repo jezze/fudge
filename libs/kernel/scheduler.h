@@ -5,6 +5,7 @@ void scheduler_detach(struct list *mailboxes);
 void scheduler_detachall(struct list *mailboxes);
 unsigned int scheduler_getactiveid();
 unsigned int scheduler_readactive(unsigned int count, void *buffer);
+unsigned int scheduler_sendid(unsigned int id, unsigned int count, void *buffer);
 void scheduler_sendlist(struct list *mailboxes, unsigned int count, void *buffer);
 unsigned int scheduler_readpipe(struct list *mailboxes, unsigned int count, void *buffer);
 unsigned int scheduler_sendpipe(struct list *mailboxes, unsigned int count, void *buffer);

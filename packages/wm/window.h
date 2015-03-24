@@ -5,6 +5,7 @@ struct window
     unsigned int active;
     struct box size;
     struct text title;
+    unsigned int source;
 
 };
 

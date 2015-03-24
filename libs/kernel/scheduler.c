@@ -97,9 +97,7 @@ void scheduler_detachall(struct list *mailboxes)
 unsigned int scheduler_getactiveid()
 {
 
-    struct task *task = active.tail->data;
-
-    return (unsigned int)&task->mailbox;
+    return (unsigned int)active.tail->data;
 
 }
 
@@ -114,6 +112,17 @@ unsigned int scheduler_readactive(unsigned int count, void *buffer)
         block(task);
 
     return count;
+
+}
+
+unsigned int scheduler_sendid(unsigned int id, unsigned int count, void *buffer)
+{
+
+    struct task *task = (struct task *)id;
+
+    unblock(task);
+
+    return buffer_wcfifo(&task->mailbox.buffer, count, buffer);
 
 }
 
