@@ -25,30 +25,25 @@ void draw_flush(unsigned int line, unsigned int offset, unsigned int count)
 
 }
 
-static void draw_fill1(unsigned int color, unsigned int offset, unsigned int count)
+static void draw_fill1(void *bb, unsigned int color, unsigned int offset, unsigned int count)
 {
 
+    unsigned char *b = bb;
     unsigned int i;
 
     for (i = offset; i < count + offset; i++)
-        backbuffer[i] = (color >> 0) & 0xFF;
+        b[i] = color;
 
 }
 
-static void draw_fill4(unsigned int color, unsigned int offset, unsigned int count)
+static void draw_fill4(void *bb, unsigned int color, unsigned int offset, unsigned int count)
 {
 
+    unsigned int *b = bb;
     unsigned int i;
 
-    for (i = offset * SCREEN_BPP; i < count * SCREEN_BPP + offset * SCREEN_BPP; i += SCREEN_BPP)
-    {
-
-        backbuffer[i + 0] = (colormap4[color] >> 0) & 0xFF;
-        backbuffer[i + 1] = (colormap4[color] >> 8) & 0xFF;
-        backbuffer[i + 2] = (colormap4[color] >> 16) & 0xFF;
-        backbuffer[i + 3] = (colormap4[color] >> 24) & 0xFF;
-
-    }
+    for (i = offset; i < count + offset; i++)
+        b[i] = colormap4[color];
 
 }
 
@@ -59,12 +54,12 @@ void draw_fill(unsigned int color, unsigned int offset, unsigned int count)
     {
 
     case 1:
-        draw_fill1(color, offset, count);
+        draw_fill1(backbuffer, color, offset, count);
 
         break;
 
     case 4:
-        draw_fill4(color, offset, count);
+        draw_fill4(backbuffer, color, offset, count);
 
         break;
 
