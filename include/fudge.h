@@ -4,3 +4,4 @@
 #include <fudge/buffer.h>
 #include <fudge/event.h>
 #include <fudge/ctrl.h>
+#include <fudge/record.h>

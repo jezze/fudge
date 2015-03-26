@@ -166,16 +166,22 @@ static unsigned int protocol_read(struct vfs_backend *backend, unsigned int id, 
     if (header.typeflag[0] == TAR_TYPEFLAG_DIRECTORY)
     {
 
-        unsigned char *b = buffer;
-        unsigned int c = memory_read(b, count, "../\n", 4, offset);
+        struct record *records = buffer;
         unsigned int length = ascii_length(header.name);
+        unsigned int i = 0;
 
-        offset -= (offset > 4) ? 4 : offset;
+        if (offset > 0)
+            return 0;
+
+        records[i].length = 3;
+        records[i].size = 0;
+
+        memory_read(records[i].name, 120, "../", 3, 0);
+
+        i++;
 
         while ((address = tar_next(&header, address)))
         {
-
-            unsigned int l;
 
             if (backend->read(backend, address, TAR_BLOCK_SIZE, &header) < TAR_BLOCK_SIZE)
                 break;
@@ -186,15 +192,16 @@ static unsigned int protocol_read(struct vfs_backend *backend, unsigned int id, 
             if (protocol_parent(backend, encode(address)) != id)
                 continue;
 
-            l = ascii_length(header.name) - length;
-            c += memory_read(b + c, count - c, header.name + length, l, offset);
-            offset -= (offset > l) ? l : offset;
-            c += memory_read(b + c, count - c, "\n", 1, offset);
-            offset -= (offset > 1) ? 1 : offset;
+            records[i].length = ascii_length(header.name) - length;
+            records[i].size = tar_readvalue(header.size);
+
+            memory_read(records[i].name, 120, header.name + length, records[i].length, 0);
+
+            i++;
 
         }
 
-        return c;
+        return i;
 
     }
 

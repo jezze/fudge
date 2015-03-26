@@ -18,47 +18,48 @@ static unsigned int read_group(struct system_node *self, unsigned int offset, un
 {
 
     struct list_item *current;
-    unsigned char *b = buffer;
-    unsigned int c = 0;
+    struct record *records = buffer;
+    unsigned int i = 0;
 
-    c += memory_read(b + c, count - c, "../\n", 4, offset);
-    offset -= (offset > 4) ? 4 : offset;
+    if (offset > 0)
+        return 0;
+
+    records[i].length = 3;
+    records[i].size = 0;
+
+    memory_read(records[i].name, 120, "../", 3, 0);
+
+    i++;
 
     for (current = self->children.head; current; current = current->next)
     {
 
         struct system_node *node = current->data;
-        unsigned int l = ascii_length(node->name);
 
-        c += memory_read(b + c, count - c, node->name, l, offset);
-        offset -= (offset > l) ? l : offset;
+        records[i].length = ascii_length(node->name);
+        records[i].size = 0;
+
+        memory_read(records[i].name, 120, node->name, records[i].length, 0);
 
         if (node->type & SYSTEM_NODETYPE_MULTI)
         {
 
-            char *x = ":0";
+            char *index = ":0";
 
-            x[1] = '0' + node->index;
+            index[1] = '0' + node->index;
 
-            c += memory_read(b + c, count - c, x, 2, offset);
-            offset -= (offset > 2) ? 2 : offset;
+            records[i].length += memory_read(records[i].name + records[i].length, 120, index, 2, 0);
 
         }
 
         if (node->type & SYSTEM_NODETYPE_GROUP)
-        {
+            records[i].length += memory_read(records[i].name + records[i].length, 120, "/", 1, 0);
 
-            c += memory_read(b + c, count - c, "/", 1, offset);
-            offset -= (offset > 1) ? 1 : offset;
-
-        }
-
-        c += memory_read(b + c, count - c, "\n", 1, offset);
-        offset -= (offset > 1) ? 1 : offset;
+        i++;
 
     }
 
-    return c;
+    return i;
 
 }
 
