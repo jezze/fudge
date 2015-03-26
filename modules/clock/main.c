@@ -19,7 +19,7 @@ static unsigned int isleapyear(unsigned short year)
 
 }
 
-static unsigned int interfacenode_timestampread(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int interfacenode_timestampread(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
 {
 
     struct clock_interface *interface = self->resource->data;
@@ -34,11 +34,11 @@ static unsigned int interfacenode_timestampread(struct system_node *self, unsign
     unsigned int timestamp = ((dyear + dmonth + day) * 86400) + ((hour * 3600) + (minute * 60) + second);
     char num[32];
 
-    return memory_read(buffer, count, num, ascii_wvalue(num, 32, timestamp, 10, 0), offset);
+    return memory_read(buffer, size * count, num, ascii_wvalue(num, 32, timestamp, 10, 0), offset);
 
 }
 
-static unsigned int interfacenode_dateread(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int interfacenode_dateread(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
 {
 
     struct clock_interface *interface = self->resource->data;
@@ -48,11 +48,11 @@ static unsigned int interfacenode_dateread(struct system_node *self, unsigned in
     ascii_wzerovalue(num, 10, interface->getmonth(), 10, 2, 5);
     ascii_wzerovalue(num, 10, interface->getday(), 10, 2, 8);
 
-    return memory_read(buffer, count, num, 10, offset);
+    return memory_read(buffer, size * count, num, 10, offset);
 
 }
 
-static unsigned int interfacenode_timeread(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int interfacenode_timeread(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
 {
 
     struct clock_interface *interface = self->resource->data;
@@ -62,7 +62,7 @@ static unsigned int interfacenode_timeread(struct system_node *self, unsigned in
     ascii_wzerovalue(num, 8, interface->getminutes(), 10, 2, 3);
     ascii_wzerovalue(num, 8, interface->getseconds(), 10, 2, 6);
 
-    return memory_read(buffer, count, num, 8, offset);
+    return memory_read(buffer, size * count, num, 8, offset);
 
 }
 

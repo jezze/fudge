@@ -194,7 +194,7 @@ static unsigned int read(struct container *container, struct task *task, void *s
     if (!descriptor->id || !descriptor->channel)
         return 0;
 
-    return descriptor->channel->protocol->read(descriptor->channel->backend, descriptor->id, args->offset, args->count, args->buffer);
+    return descriptor->channel->protocol->read(descriptor->channel->backend, descriptor->id, args->offset, 1, args->count, args->buffer);
 
 }
 
@@ -207,7 +207,7 @@ static unsigned int write(struct container *container, struct task *task, void *
     if (!descriptor->id || !descriptor->channel)
         return 0;
 
-    return descriptor->channel->protocol->write(descriptor->channel->backend, descriptor->id, args->offset, args->count, args->buffer);
+    return descriptor->channel->protocol->write(descriptor->channel->backend, descriptor->id, args->offset, 1, args->count, args->buffer);
 
 }
 

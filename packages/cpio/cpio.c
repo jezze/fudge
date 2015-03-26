@@ -13,7 +13,7 @@ unsigned int find_top()
     do
     {
 
-        if (call_read(CALL_P0, offset, sizeof (struct cpio_header), &header) < sizeof (struct cpio_header))
+        if (!call_read(CALL_P0, offset, sizeof (struct cpio_header), &header))
             break;
 
         if (!cpio_validate(&header))
@@ -48,7 +48,7 @@ unsigned int parent(unsigned int count, char *path)
     do
     {
 
-        if (call_read(CALL_P0, offset, sizeof (struct cpio_header), &header) < sizeof (struct cpio_header))
+        if (!call_read(CALL_P0, offset, sizeof (struct cpio_header), &header))
             break;
 
         if (!cpio_validate(&header))
@@ -57,7 +57,7 @@ unsigned int parent(unsigned int count, char *path)
         if ((header.mode & 0xF000) == 0x4000)
         {
 
-            if (call_read(CALL_P0, offset + sizeof (struct cpio_header), header.namesize, name) < header.namesize)
+            if (!call_read(CALL_P0, offset + sizeof (struct cpio_header), header.namesize, name))
                 break;
 
             if (memory_match(name, path, count - 1))
@@ -101,13 +101,13 @@ unsigned int walk(unsigned int id, unsigned int count, const char *path)
     if (id == 0xFFFFFFFF)
         id = find_top();
 
-    if (call_read(CALL_P0, id, sizeof (struct cpio_header), &header) < sizeof (struct cpio_header))
+    if (!call_read(CALL_P0, id, sizeof (struct cpio_header), &header))
         return 0;
 
     if (!cpio_validate(&header))
         return 0;
 
-    if (call_read(CALL_P0, id + sizeof (struct cpio_header), header.namesize, name) < header.namesize)
+    if (!call_read(CALL_P0, id + sizeof (struct cpio_header), header.namesize, name))
         return 0;
 
     length = header.namesize;
@@ -122,7 +122,7 @@ unsigned int walk(unsigned int id, unsigned int count, const char *path)
 
         unsigned int c;
 
-        if (call_read(CALL_P0, id, sizeof (struct cpio_header), &header) < sizeof (struct cpio_header))
+        if (!call_read(CALL_P0, id, sizeof (struct cpio_header), &header))
             break;
 
         if (!cpio_validate(&header))
@@ -134,7 +134,7 @@ unsigned int walk(unsigned int id, unsigned int count, const char *path)
         if (header.namesize - length == 0)
             continue;
 
-        if (call_read(CALL_P0, id + sizeof (struct cpio_header), header.namesize, name) < header.namesize)
+        if (!call_read(CALL_P0, id + sizeof (struct cpio_header), header.namesize, name))
             break;
 
         c = getslash(count, path);

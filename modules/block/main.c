@@ -14,7 +14,7 @@ void block_notify(struct block_interface *interface, unsigned int count, void *b
 
 }
 
-static unsigned int interfacenode_dataread(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int interfacenode_dataread(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
 {
 
     struct block_interface *interface = self->resource->data;
@@ -25,12 +25,12 @@ static unsigned int interfacenode_dataread(struct system_node *self, unsigned in
     if (wait == 0)
     {
 
-        interface->rdata(offset, count, buffer);
+        interface->rdata(offset, size * count, buffer);
         wait = 1;
 
     }
 
-    return scheduler_readactive(count, buffer);
+    return scheduler_readactive(size * count, buffer);
 
 }
 

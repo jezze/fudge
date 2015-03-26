@@ -7,14 +7,14 @@
 static struct vfs_backend backend;
 static struct vfs_protocol protocol;
 
-static unsigned int read_normal(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int read_normal(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
 {
 
     return 0;
 
 }
 
-static unsigned int read_group(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int read_group(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
 {
 
     struct list_item *current;
@@ -63,14 +63,14 @@ static unsigned int read_group(struct system_node *self, unsigned int offset, un
 
 }
 
-static unsigned int read_mailboxes(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int read_mailboxes(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
 {
 
-    return scheduler_readactive(count, buffer);
+    return scheduler_readactive(size * count, buffer);
 
 }
 
-static unsigned int write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int write(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
 {
 
     return 0;

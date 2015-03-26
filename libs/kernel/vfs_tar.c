@@ -140,7 +140,7 @@ static unsigned int protocol_close(struct vfs_backend *backend, unsigned int id)
 
 }
 
-static unsigned int protocol_read(struct vfs_backend *backend, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int protocol_read(struct vfs_backend *backend, unsigned int id, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
 {
 
     struct tar_header header;
@@ -152,14 +152,15 @@ static unsigned int protocol_read(struct vfs_backend *backend, unsigned int id, 
     if (header.typeflag[0] == TAR_TYPEFLAG_REGULAR)
     {
 
-        unsigned int size = tar_readvalue(header.size);
+        unsigned int s = tar_readvalue(header.size);
 
-        if (offset >= size)
+        if (offset >= s)
             return 0;
 
-        size -= offset;
+        count = size * count;
+        s -= offset;
 
-        return backend->read(backend, address + TAR_BLOCK_SIZE + offset, (count > size) ? size : count, buffer);
+        return backend->read(backend, address + TAR_BLOCK_SIZE + offset, (count > s) ? s : count, buffer);
 
     }
 
@@ -209,7 +210,7 @@ static unsigned int protocol_read(struct vfs_backend *backend, unsigned int id, 
 
 }
 
-static unsigned int protocol_write(struct vfs_backend *backend, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int protocol_write(struct vfs_backend *backend, unsigned int id, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
 {
 
     struct tar_header header;
@@ -221,14 +222,15 @@ static unsigned int protocol_write(struct vfs_backend *backend, unsigned int id,
     if (header.typeflag[0] == TAR_TYPEFLAG_REGULAR)
     {
 
-        unsigned int size = tar_readvalue(header.size);
+        unsigned int s = tar_readvalue(header.size);
 
-        if (offset >= size)
+        if (offset >= s)
             return 0;
 
-        size -= offset;
+        count = size * count;
+        s -= offset;
 
-        return backend->write(backend, address + TAR_BLOCK_SIZE + offset, (count > size) ? size : count, buffer);
+        return backend->write(backend, address + TAR_BLOCK_SIZE + offset, (count > s) ? s : count, buffer);
 
     }
 

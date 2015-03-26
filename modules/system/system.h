@@ -26,8 +26,8 @@ struct system_node
     unsigned int refcount;
     unsigned int (*open)(struct system_node *self);
     unsigned int (*close)(struct system_node *self);
-    unsigned int (*read)(struct system_node *self, unsigned int offset, unsigned int count, void *buffer);
-    unsigned int (*write)(struct system_node *self, unsigned int offset, unsigned int count, void *buffer);
+    unsigned int (*read)(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer);
+    unsigned int (*write)(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer);
     unsigned int (*child)(struct system_node *self, unsigned int count, const char *path);
 
 };

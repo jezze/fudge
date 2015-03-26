@@ -22,7 +22,7 @@ void event_notify(unsigned int type, unsigned int count, void *buffer)
 
 }
 
-static unsigned int send_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int send_write(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
 {
 
     struct event_header *header = buffer;
@@ -35,13 +35,13 @@ static unsigned int send_write(struct system_node *self, unsigned int offset, un
     if (header->destination == 0xFFFFFFFF)
     {
 
-        scheduler_sendlist(&poll.mailboxes, count, buffer);
+        scheduler_sendlist(&poll.mailboxes, size * count, buffer);
 
-        return count;
+        return size * count;
 
     }
 
-    return scheduler_sendid(header->destination, count, buffer);
+    return scheduler_sendid(header->destination, size * count, buffer);
 
 }
 

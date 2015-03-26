@@ -203,7 +203,7 @@ static unsigned int protocol_close(struct vfs_backend *backend, unsigned int id)
 
 }
 
-static unsigned int protocol_read(struct vfs_backend *backend, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int protocol_read(struct vfs_backend *backend, unsigned int id, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
 {
 
     struct cpio_header header;
@@ -264,7 +264,7 @@ static unsigned int protocol_read(struct vfs_backend *backend, unsigned int id, 
 
 }
 
-static unsigned int protocol_write(struct vfs_backend *backend, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int protocol_write(struct vfs_backend *backend, unsigned int id, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
 {
 
     struct cpio_header header;

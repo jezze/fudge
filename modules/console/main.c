@@ -12,7 +12,7 @@ void console_notify(struct console_interface *interface, unsigned int count, voi
 
 }
 
-static unsigned int interfacenode_ctrlread(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int interfacenode_ctrlread(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
 {
 
     struct console_interface *interface = self->resource->data;
@@ -21,23 +21,23 @@ static unsigned int interfacenode_ctrlread(struct system_node *self, unsigned in
     settings.header.type = CTRL_TYPE_CONSOLE;
     settings.scroll = interface->scroll;
 
-    return memory_read(buffer, count, &settings, sizeof (struct ctrl_consolesettings), offset);
+    return memory_read(buffer, size * count, &settings, sizeof (struct ctrl_consolesettings), offset);
 
 }
 
-static unsigned int interfacenode_ctrlwrite(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int interfacenode_ctrlwrite(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
 {
 
     return 0;
 
 }
 
-static unsigned int interfacenode_outwrite(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int interfacenode_outwrite(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
 {
 
     struct console_interface *interface = self->resource->data;
 
-    return interface->send(offset, count, buffer);
+    return interface->send(offset, size * count, buffer);
 
 }
 
