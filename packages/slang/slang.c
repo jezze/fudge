@@ -153,7 +153,7 @@ static void tokenize(struct tokenlist *infix, struct buffer *stringtable, unsign
         if (!identcount)
             tokenlist_add(infix, TOKENIDENT, (char *)stringtable->memory + stringtable->head);
 
-        buffer_wcfifo(stringtable, 1, &c);
+        buffer_wcfifo(stringtable, 1, 1, &c);
 
         identcount++;
 
@@ -167,7 +167,7 @@ static void tokenize(struct tokenlist *infix, struct buffer *stringtable, unsign
 
             c = '\0';
 
-            buffer_wcfifo(stringtable, 1, &c);
+            buffer_wcfifo(stringtable, 1, 1, &c);
 
             identcount = 0;
 
@@ -343,7 +343,7 @@ void main()
     struct tokenlist postfix;
     struct tokenlist stack;
 
-    buffer_init(&stringtable, 1, 32768, stringdata);
+    buffer_init(&stringtable, 32768, stringdata);
     tokenlist_init(&infix, 1024, infixdata);
     tokenlist_init(&postfix, 1024, postfixdata);
     tokenlist_init(&stack, 8, stackdata);

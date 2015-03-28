@@ -5,10 +5,10 @@
 
 static unsigned int wait;
 
-void block_notify(struct block_interface *interface, unsigned int count, void *buffer)
+void block_notify(struct block_interface *interface, unsigned int size, unsigned int count, void *buffer)
 {
 
-    scheduler_sendlist(&interface->data.mailboxes, count, buffer);
+    scheduler_sendlist(&interface->data.mailboxes, size, count, buffer);
 
     wait = 0;
 

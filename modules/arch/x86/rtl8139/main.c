@@ -162,7 +162,7 @@ static void handleirq(unsigned int irq, unsigned int id)
 
         struct rtl8139_header *header = (struct rtl8139_header *)(rx + rxp);
 
-        ethernet_notify(&ethernetinterface, header->length, header + 1);
+        ethernet_notify(&ethernetinterface, header->length, 1, header + 1);
 
         rxp += (header->length + 4 + 3) & ~3;
 

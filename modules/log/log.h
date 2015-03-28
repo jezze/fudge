@@ -3,4 +3,4 @@
 #define LOG_WARNING                     2
 #define LOG_INFO                        3
 
-void log_notify(unsigned int level, unsigned int count, void *buffer);
+void log_notify(unsigned int level, unsigned int size, unsigned int count, void *buffer);

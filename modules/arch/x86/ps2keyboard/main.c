@@ -14,7 +14,7 @@ static void handleirq(unsigned int irq, unsigned int id)
 
     unsigned char data = ps2_getdata();
 
-    keyboard_notify(&keyboardinterface, 1, &data);
+    keyboard_notify(&keyboardinterface, 1, 1, &data);
 
 }
 

@@ -121,7 +121,7 @@ static void handleirq(unsigned int irq, unsigned int id)
 
     unsigned char data = read();
 
-    console_notify(&consoleinterface, 1, &data);
+    console_notify(&consoleinterface, 1, 1, &data);
 
 }
 

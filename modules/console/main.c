@@ -4,11 +4,11 @@
 #include <event/event.h>
 #include "console.h"
 
-void console_notify(struct console_interface *interface, unsigned int count, void *buffer)
+void console_notify(struct console_interface *interface, unsigned int size, unsigned int count, void *buffer)
 {
 
-    scheduler_sendlist(&interface->in.mailboxes, count, buffer);
-    event_notify(EVENT_CONSOLE, count, buffer);
+    scheduler_sendlist(&interface->in.mailboxes, size, count, buffer);
+    event_notify(EVENT_CONSOLE, size, count, buffer);
 
 }
 

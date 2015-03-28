@@ -9,20 +9,20 @@ static struct system_node error;
 static struct system_node warning;
 static struct system_node info;
 
-void log_notify(unsigned int level, unsigned int count, void *buffer)
+void log_notify(unsigned int level, unsigned int size, unsigned int count, void *buffer)
 {
 
     if (level <= LOG_CRITICAL)
-        scheduler_sendlist(&critical.mailboxes, count, buffer);
+        scheduler_sendlist(&critical.mailboxes, size, count, buffer);
 
     if (level <= LOG_ERROR)
-        scheduler_sendlist(&error.mailboxes, count, buffer);
+        scheduler_sendlist(&error.mailboxes, size, count, buffer);
 
     if (level <= LOG_WARNING)
-        scheduler_sendlist(&warning.mailboxes, count, buffer);
+        scheduler_sendlist(&warning.mailboxes, size, count, buffer);
 
     if (level <= LOG_INFO)
-        scheduler_sendlist(&info.mailboxes, count, buffer);
+        scheduler_sendlist(&info.mailboxes, size, count, buffer);
 
 }
 

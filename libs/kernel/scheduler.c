@@ -106,7 +106,7 @@ unsigned int scheduler_readactive(unsigned int size, unsigned int count, void *b
 
     struct task *task = active.tail->data;
 
-    count = buffer_rcfifo(&task->mailbox.buffer, size * count, buffer);
+    count = buffer_rcfifo(&task->mailbox.buffer, size, count, buffer);
 
     if (!count)
         block(task);
@@ -115,18 +115,18 @@ unsigned int scheduler_readactive(unsigned int size, unsigned int count, void *b
 
 }
 
-unsigned int scheduler_sendid(unsigned int id, unsigned int count, void *buffer)
+unsigned int scheduler_sendid(unsigned int id, unsigned int size, unsigned int count, void *buffer)
 {
 
     struct task *task = (struct task *)id;
 
     unblock(task);
 
-    return buffer_wcfifo(&task->mailbox.buffer, count, buffer);
+    return buffer_wcfifo(&task->mailbox.buffer, size, count, buffer);
 
 }
 
-void scheduler_sendlist(struct list *mailboxes, unsigned int count, void *buffer)
+void scheduler_sendlist(struct list *mailboxes, unsigned int size, unsigned int count, void *buffer)
 {
 
     struct list_item *current;
@@ -136,7 +136,7 @@ void scheduler_sendlist(struct list *mailboxes, unsigned int count, void *buffer
 
         struct task *task = current->data;
 
-        buffer_wcfifo(&task->mailbox.buffer, count, buffer);
+        buffer_wcfifo(&task->mailbox.buffer, size, count, buffer);
 
         unblock(task);
 
@@ -149,7 +149,7 @@ unsigned int scheduler_readpipe(struct list *mailboxes, unsigned int size, unsig
 
     struct task *task = active.tail->data;
 
-    count = buffer_rcfifo(&task->mailbox.buffer, size * count, buffer);
+    count = buffer_rcfifo(&task->mailbox.buffer, size, count, buffer);
 
     if (!count && mailboxes->head != 0)
         block(task);
@@ -168,7 +168,7 @@ unsigned int scheduler_sendpipe(struct list *mailboxes, unsigned int size, unsig
 
         struct task *task = current->data;
 
-        count = buffer_wcfifo(&task->mailbox.buffer, size * count, buffer);
+        count = buffer_wcfifo(&task->mailbox.buffer, size, count, buffer);
 
         unblock(task);
 

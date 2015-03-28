@@ -14,7 +14,7 @@ static void handleirq(unsigned int irq, unsigned int id)
 
     unsigned char data = ps2_getdata();
 
-    mouse_notify(&mouseinterface, 1, &data);
+    mouse_notify(&mouseinterface, 1, 1, &data);
 
 }
 

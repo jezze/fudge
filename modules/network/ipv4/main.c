@@ -40,10 +40,10 @@ static void ethernetprotocol_removeinterface(struct ethernet_interface *interfac
 
 }
 
-static void ethernetprotocol_notify(struct ethernet_interface *interface, unsigned int count, void *buffer)
+static void ethernetprotocol_notify(struct ethernet_interface *interface, unsigned int size, unsigned int count, void *buffer)
 {
 
-    scheduler_sendlist(&ethernetprotocol.data.mailboxes, count, buffer);
+    scheduler_sendlist(&ethernetprotocol.data.mailboxes, size, count, buffer);
 
 }
 
@@ -89,7 +89,7 @@ void ipv4_unregisterprotocol(struct ipv4_protocol *protocol)
 
 }
 
-void ipv4_initprotocol(struct ipv4_protocol *protocol, char *name, unsigned char id, void (*notify)(struct ethernet_interface *interface, unsigned int count, void *buffer))
+void ipv4_initprotocol(struct ipv4_protocol *protocol, char *name, unsigned char id, void (*notify)(struct ethernet_interface *interface, unsigned int size, unsigned int count, void *buffer))
 {
 
     resource_init(&protocol->resource, RESOURCE_IPV4PROTOCOL, protocol);
@@ -105,7 +105,7 @@ void ipv4_initprotocol(struct ipv4_protocol *protocol, char *name, unsigned char
 void module_init()
 {
 
-    buffer_init(&local, sizeof (struct ipv4_ethernetentry), sizeof (struct ipv4_ethernetentry) * LOCALS, &localbuffer);
+    buffer_init(&local, sizeof (struct ipv4_ethernetentry) * LOCALS, &localbuffer);
     ethernet_initprotocol(&ethernetprotocol, "ipv4", 0x0800, ethernetprotocol_addinterface, ethernetprotocol_removeinterface, ethernetprotocol_notify);
     arp_inithook(&arphook, 0x0001, ethernetprotocol.type, arphook_gethardwareaddress);
     system_initnode(&localnode, SYSTEM_NODETYPE_NORMAL, "local");

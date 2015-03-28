@@ -5,7 +5,7 @@ static void interpret(struct buffer *buffer)
 {
 
     char command[FUDGE_BSIZE];
-    unsigned int count = buffer_rcfifo(buffer, FUDGE_BSIZE, command);
+    unsigned int count = buffer_rcfifo(buffer, 1, FUDGE_BSIZE, command);
 
     /* This is a temporary fix */
     if (memory_match(command, "cd ", 3))
@@ -43,7 +43,7 @@ static void interpret(struct buffer *buffer)
     call_walk(CALL_C0, CALL_L0, 1, "1");
     call_spawn();
     call_open(CALL_L1);
-    call_write(CALL_L1, 0, count, 1, command);
+    call_write(CALL_L1, 0, 1, count, command);
     call_close(CALL_L1);
 
 }
@@ -69,7 +69,7 @@ static void handle(struct buffer *buffer, unsigned char c)
 
     case '\b':
     case 0x7F:
-        if (!buffer_ecfifo(buffer, 1))
+        if (!buffer_ecfifo(buffer, 1, 1))
             break;
 
         call_write(CALL_PO, 0, 3, 1, "\b \b");
@@ -81,14 +81,14 @@ static void handle(struct buffer *buffer, unsigned char c)
 
     case '\n':
         call_write(CALL_PO, 0, 1, 1, &c);
-        buffer_wcfifo(buffer, 1, &c);
+        buffer_wcfifo(buffer, 1, 1, &c);
         interpret(buffer);
         call_write(CALL_PO, 0, 2, 1, "$ ");
 
         break;
 
     default:
-        buffer_wcfifo(buffer, 1, &c);
+        buffer_wcfifo(buffer, 1, 1, &c);
         call_write(CALL_PO, 0, 1, 1, &c);
 
         break;
@@ -105,7 +105,7 @@ void main()
     unsigned char inputbuffer[FUDGE_BSIZE];
     struct buffer input;
 
-    buffer_init(&input, 1, FUDGE_BSIZE, inputbuffer);
+    buffer_init(&input, FUDGE_BSIZE, inputbuffer);
 
     call_open(CALL_P0);
     call_open(CALL_PO);

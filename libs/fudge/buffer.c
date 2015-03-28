@@ -1,7 +1,7 @@
 #include "memory.h"
 #include "buffer.h"
 
-unsigned int buffer_rcfifo(struct buffer *buffer, unsigned int count, void *memory)
+unsigned int buffer_rcfifo(struct buffer *buffer, unsigned int size, unsigned int count, void *memory)
 {
 
     unsigned char *b = memory;
@@ -10,21 +10,22 @@ unsigned int buffer_rcfifo(struct buffer *buffer, unsigned int count, void *memo
     for (i = 0; i < count; i++)
     {
 
-        unsigned int tail = (buffer->tail + buffer->size) % buffer->count;
+        unsigned int tail = (buffer->tail + size) % buffer->count;
 
         if (buffer->head == buffer->tail)
             break;
 
-        b[i] = buffer->memory[buffer->tail];
+        memory_copy(b + i * size, buffer->memory + buffer->tail * size, size);
+
         buffer->tail = tail;
 
     }
 
-    return i;
+    return i * size;
 
 }
 
-unsigned int buffer_wcfifo(struct buffer *buffer, unsigned int count, void *memory)
+unsigned int buffer_wcfifo(struct buffer *buffer, unsigned int size, unsigned int count, void *memory)
 {
 
     unsigned char *b = memory;
@@ -33,21 +34,22 @@ unsigned int buffer_wcfifo(struct buffer *buffer, unsigned int count, void *memo
     for (i = 0; i < count; i++)
     {
 
-        unsigned int head = (buffer->head + buffer->size) % buffer->count;
+        unsigned int head = (buffer->head + size) % buffer->count;
 
         if (head == buffer->tail)
             break;
 
-        buffer->memory[buffer->head] = b[i];
+        memory_copy(buffer->memory + buffer->head * size, b + i * size, size);
+
         buffer->head = head;
 
     }
 
-    return i;
+    return i * size;
 
 }
 
-unsigned int buffer_ecfifo(struct buffer *buffer, unsigned int count)
+unsigned int buffer_ecfifo(struct buffer *buffer, unsigned int size, unsigned int count)
 {
 
     unsigned int i;
@@ -55,7 +57,7 @@ unsigned int buffer_ecfifo(struct buffer *buffer, unsigned int count)
     for (i = 0; i < count; i++)
     {
 
-        unsigned int head = (buffer->head - buffer->size) % buffer->count;
+        unsigned int head = (buffer->head - size) % buffer->count;
 
         if (buffer->head == buffer->tail)
             break;
@@ -64,16 +66,15 @@ unsigned int buffer_ecfifo(struct buffer *buffer, unsigned int count)
 
     }
 
-    return i;
+    return i * size;
 
 }
 
-void buffer_init(struct buffer *buffer, unsigned int size, unsigned int count, void *memory)
+void buffer_init(struct buffer *buffer, unsigned int count, void *memory)
 {
 
     memory_clear(buffer, sizeof (struct buffer));
 
-    buffer->size = size;
     buffer->count = count;
     buffer->memory = memory;
 
