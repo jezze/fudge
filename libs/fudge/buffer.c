@@ -4,7 +4,6 @@
 unsigned int buffer_rcfifo(struct buffer *buffer, unsigned int size, unsigned int count, void *memory)
 {
 
-    unsigned char *b = memory;
     unsigned int i;
 
     for (i = 0; i < count; i++)
@@ -15,7 +14,7 @@ unsigned int buffer_rcfifo(struct buffer *buffer, unsigned int size, unsigned in
         if (buffer->head == buffer->tail)
             break;
 
-        memory_copy(b + i * size, buffer->memory + buffer->tail * size, size);
+        memory_write(memory, count, buffer->memory + buffer->tail, size, 1, i);
 
         buffer->tail = tail;
 
@@ -28,7 +27,6 @@ unsigned int buffer_rcfifo(struct buffer *buffer, unsigned int size, unsigned in
 unsigned int buffer_wcfifo(struct buffer *buffer, unsigned int size, unsigned int count, void *memory)
 {
 
-    unsigned char *b = memory;
     unsigned int i;
 
     for (i = 0; i < count; i++)
@@ -39,7 +37,7 @@ unsigned int buffer_wcfifo(struct buffer *buffer, unsigned int size, unsigned in
         if (head == buffer->tail)
             break;
 
-        memory_copy(buffer->memory + buffer->head * size, b + i * size, size);
+        memory_read(buffer->memory + buffer->head, size, memory, count, 1, i);
 
         buffer->head = head;
 
