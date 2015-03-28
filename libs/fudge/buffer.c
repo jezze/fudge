@@ -10,7 +10,7 @@ unsigned int buffer_rcfifo(struct buffer *buffer, unsigned int count, void *memo
     for (i = 0; i < count; i++)
     {
 
-        unsigned int tail = (buffer->tail + buffer->step) % buffer->size;
+        unsigned int tail = (buffer->tail + buffer->size) % buffer->count;
 
         if (buffer->head == buffer->tail)
             break;
@@ -33,7 +33,7 @@ unsigned int buffer_wcfifo(struct buffer *buffer, unsigned int count, void *memo
     for (i = 0; i < count; i++)
     {
 
-        unsigned int head = (buffer->head + buffer->step) % buffer->size;
+        unsigned int head = (buffer->head + buffer->size) % buffer->count;
 
         if (head == buffer->tail)
             break;
@@ -55,7 +55,7 @@ unsigned int buffer_ecfifo(struct buffer *buffer, unsigned int count)
     for (i = 0; i < count; i++)
     {
 
-        unsigned int head = (buffer->head - buffer->step) % buffer->size;
+        unsigned int head = (buffer->head - buffer->size) % buffer->count;
 
         if (buffer->head == buffer->tail)
             break;
@@ -68,13 +68,13 @@ unsigned int buffer_ecfifo(struct buffer *buffer, unsigned int count)
 
 }
 
-void buffer_init(struct buffer *buffer, unsigned int step, unsigned int size, void *memory)
+void buffer_init(struct buffer *buffer, unsigned int size, unsigned int count, void *memory)
 {
 
     memory_clear(buffer, sizeof (struct buffer));
 
-    buffer->step = step;
     buffer->size = size;
+    buffer->count = count;
     buffer->memory = memory;
 
 }
