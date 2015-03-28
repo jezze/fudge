@@ -26,7 +26,7 @@ void main()
     for (roff = 0; (count = call_read(CALL_P0, roff, 1, FUDGE_BSIZE, buffer)); roff += count)
     {
 
-        woff += call_write(CALL_PO, woff, 1, (total < woff + count) ? total : woff + count, buffer);
+        woff += call_write(CALL_PO, woff, (total < woff + count) ? total : woff + count, 1, buffer);
 
         if (woff >= total)
             break;

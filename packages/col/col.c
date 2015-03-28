@@ -18,8 +18,8 @@ void main()
 
             unsigned int length = (count1 > 14) ? 14 : count1 - 1;
 
-            woff += call_write(CALL_PO, woff, 1, length, buffer + roff1);
-            woff += call_write(CALL_PO, woff, 1, 16 - length, "                ");
+            woff += call_write(CALL_PO, woff, length, 1, buffer + roff1);
+            woff += call_write(CALL_PO, woff, 16 - length, 1, "                ");
 
         }
 

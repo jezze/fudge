@@ -72,7 +72,7 @@ static void handle(struct buffer *buffer, unsigned char c)
         if (!buffer_ecfifo(buffer, 1))
             break;
 
-        call_write(CALL_PO, 0, 1, 3, "\b \b");
+        call_write(CALL_PO, 0, 3, 1, "\b \b");
 
         break;
 
@@ -83,7 +83,7 @@ static void handle(struct buffer *buffer, unsigned char c)
         call_write(CALL_PO, 0, 1, 1, &c);
         buffer_wcfifo(buffer, 1, &c);
         interpret(buffer);
-        call_write(CALL_PO, 0, 1, 2, "$ ");
+        call_write(CALL_PO, 0, 2, 1, "$ ");
 
         break;
 
@@ -109,7 +109,7 @@ void main()
 
     call_open(CALL_P0);
     call_open(CALL_PO);
-    call_write(CALL_PO, 0, 1, 2, "$ ");
+    call_write(CALL_PO, 0, 2, 1, "$ ");
 
     for (offset = 0; (count = call_read(CALL_P0, offset, 1, FUDGE_BSIZE, buffer)); offset += count)
     {

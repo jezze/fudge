@@ -19,7 +19,7 @@ void main()
     while (--offset && buffer[offset - 1] != '/');
 
     call_open(CALL_PO);
-    call_write(CALL_PO, 0, 1, count - offset, buffer + offset);
+    call_write(CALL_PO, 0, count - offset, 1, buffer + offset);
     call_close(CALL_PO);
 
 }

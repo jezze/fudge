@@ -20,8 +20,8 @@ void main()
 
             unsigned char num[32];
 
-            woff += call_write(CALL_PO, woff, 1, ascii_wzerovalue(num, 32, buffer[i], 16, 2, 0), num);
-            woff += call_write(CALL_PO, woff, 1, 2, "  ");
+            woff += call_write(CALL_PO, woff, ascii_wzerovalue(num, 32, buffer[i], 16, 2, 0), 1, num);
+            woff += call_write(CALL_PO, woff, 2, 1, "  ");
 
         }
 

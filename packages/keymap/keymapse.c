@@ -134,7 +134,7 @@ void main()
                 continue;
 
             if (keycode->length)
-                woff += call_write(CALL_PO, woff, 1, keycode->length, keycode->value);
+                woff += call_write(CALL_PO, woff, keycode->length, 1, keycode->value);
 
         }
 

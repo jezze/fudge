@@ -56,7 +56,7 @@ static void execute(struct token_state *state, struct expression *expression)
 
         struct string *target = &expression->rule[rindex].target;
 
-        woff += call_write(CALL_PO, woff, 1, target->count, state->buffer + target->index);
+        woff += call_write(CALL_PO, woff, target->count, 1, state->buffer + target->index);
         woff += call_write(CALL_PO, woff, 1, 1, "\n");
 
     }

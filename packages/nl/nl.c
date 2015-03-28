@@ -19,9 +19,9 @@ void main()
 
             char num[32];
 
-            woff += call_write(CALL_PO, woff, 1, ascii_fromint(num, 32, lines++, 10), num);
-            woff += call_write(CALL_PO, woff, 1, 2, ": ");
-            woff += call_write(CALL_PO, woff, 1, count1, buffer + roff1);
+            woff += call_write(CALL_PO, woff, ascii_fromint(num, 32, lines++, 10), 1, num);
+            woff += call_write(CALL_PO, woff, 2, 1, ": ");
+            woff += call_write(CALL_PO, woff, count1, 1, buffer + roff1);
 
         }
 

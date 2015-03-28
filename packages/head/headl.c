@@ -31,7 +31,7 @@ void main()
         {
 
             if (++lines <= total)
-                woff0 += call_write(CALL_PO, woff0, 1, count1, buffer + roff1);
+                woff0 += call_write(CALL_PO, woff0, count1, 1, buffer + roff1);
 
         }
 

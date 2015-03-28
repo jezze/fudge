@@ -29,7 +29,7 @@ void main()
             if (!memory_match(buffer + roff1, kbuffer, kcount))
                 continue;
 
-            woff += call_write(CALL_PO, woff, 1, count1, buffer + roff1);
+            woff += call_write(CALL_PO, woff, count1, 1, buffer + roff1);
 
         }
 

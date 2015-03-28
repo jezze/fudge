@@ -8,12 +8,12 @@ void main()
 
     call_open(CALL_PO);
 
-    woff += call_write(CALL_PO, woff, 1, 23, "FUDGE OPERATING SYSTEM\n");
-    woff += call_write(CALL_PO, woff, 1, 12, "Build date: ");
-    woff += call_write(CALL_PO, woff, 1, 11, __DATE__);
+    woff += call_write(CALL_PO, woff, 23, 1, "FUDGE OPERATING SYSTEM\n");
+    woff += call_write(CALL_PO, woff, 12, 1, "Build date: ");
+    woff += call_write(CALL_PO, woff, 11, 1, __DATE__);
     woff += call_write(CALL_PO, woff, 1, 1, " ");
-    woff += call_write(CALL_PO, woff, 1, 8, __TIME__);
-    woff += call_write(CALL_PO, woff, 1, 2, "\n\n");
+    woff += call_write(CALL_PO, woff, 8, 1, __TIME__);
+    woff += call_write(CALL_PO, woff, 2, 1, "\n\n");
 
     call_close(CALL_PO);
 

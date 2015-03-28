@@ -14,7 +14,7 @@ union settings
 static unsigned int writestring(unsigned int offset, char *value)
 {
 
-    return call_write(CALL_PO, offset, 1, ascii_length(value), value);
+    return call_write(CALL_PO, offset, ascii_length(value), 1, value);
 
 }
 
@@ -34,7 +34,7 @@ static unsigned int writedec(unsigned int offset, unsigned char value)
     char num[32];
     unsigned int count = ascii_wvalue(num, 32, value, 10, 0);
 
-    return call_write(CALL_PO, offset, 1, count, num);
+    return call_write(CALL_PO, offset, count, 1, num);
 
 }
 
@@ -45,7 +45,7 @@ static unsigned int writehex2(unsigned int offset, unsigned char value)
     char num[32];
     unsigned int count = ascii_wzerovalue(num, 32, value, 16, 2, 0);
 
-    return call_write(CALL_PO, offset, 1, count, num);
+    return call_write(CALL_PO, offset, count, 1, num);
 
 }
 */

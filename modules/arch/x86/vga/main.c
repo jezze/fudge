@@ -269,6 +269,8 @@ static unsigned int videointerface_rcolormap(unsigned int offset, unsigned int s
     char *c = buffer;
     unsigned int i;
 
+    count = count * size;
+
     if (count > VGA_COLORMAP_LIMIT)
         count = VGA_COLORMAP_LIMIT;
 
@@ -294,6 +296,8 @@ static unsigned int videointerface_wcolormap(unsigned int offset, unsigned int s
 
     char *c = buffer;
     unsigned int i;
+
+    count = count * size;
 
     if (count > VGA_COLORMAP_LIMIT)
         count = VGA_COLORMAP_LIMIT;

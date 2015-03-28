@@ -5,7 +5,7 @@ void main()
 {
 
     call_open(CALL_PO);
-    call_write(CALL_PO, 0, 1, 13, "Hello world!\n");
+    call_write(CALL_PO, 0, 13, 1, "Hello world!\n");
     call_close(CALL_PO);
 
 }

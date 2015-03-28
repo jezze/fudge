@@ -44,8 +44,8 @@ void main()
 
     call_open(CALL_PO);
 
-    woff += call_write(CALL_PO, woff, 1, 4, "Id: ");
-    woff += call_write(CALL_PO, woff, 1, 4, &mbr.id);
+    woff += call_write(CALL_PO, woff, 4, 1, "Id: ");
+    woff += call_write(CALL_PO, woff, 4, 1, &mbr.id);
     woff += call_write(CALL_PO, woff, 1, 1, "\n");
 
     for (i = 0; i < 4; i++)
@@ -54,21 +54,21 @@ void main()
         char num[32];
         unsigned int count;
 
-        woff += call_write(CALL_PO, woff, 1, 10, "Partition ");
+        woff += call_write(CALL_PO, woff, 10, 1, "Partition ");
         count = ascii_wvalue(num, 32, i, 10, 0);
-        woff += call_write(CALL_PO, woff, 1, count, num);
-        woff += call_write(CALL_PO, woff, 1, 2, ":\n");
+        woff += call_write(CALL_PO, woff, count, 1, num);
+        woff += call_write(CALL_PO, woff, 2, 1, ":\n");
 
         if (mbr.partition[i].systemid == 0)
             continue;
 
-        woff += call_write(CALL_PO, woff, 1, 11, "    Boot 0x");
+        woff += call_write(CALL_PO, woff, 11, 1, "    Boot 0x");
         count = ascii_wvalue(num, 32, mbr.partition[i].boot, 16, 0);
-        woff += call_write(CALL_PO, woff, 1, count, num);
+        woff += call_write(CALL_PO, woff, count, 1, num);
         woff += call_write(CALL_PO, woff, 1, 1, "\n");
-        woff += call_write(CALL_PO, woff, 1, 15, "    Systemid 0x");
+        woff += call_write(CALL_PO, woff, 15, 1, "    Systemid 0x");
         count = ascii_wvalue(num, 32, mbr.partition[i].systemid, 16, 0);
-        woff += call_write(CALL_PO, woff, 1, count, num);
+        woff += call_write(CALL_PO, woff, count, 1, num);
         woff += call_write(CALL_PO, woff, 1, 1, "\n");
 
     }

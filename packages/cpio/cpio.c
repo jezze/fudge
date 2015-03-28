@@ -145,7 +145,7 @@ unsigned int walk(unsigned int id, unsigned int count, const char *path)
         if (memory_match(name + length, path, c))
         {
 
-            call_write(CALL_PO, 0, 1, header.namesize - length, name + length);
+            call_write(CALL_PO, 0, header.namesize - length, 1, name + length);
             call_write(CALL_PO, 0, 1, 1, "\n");
 
             if (c == count)
@@ -174,14 +174,14 @@ void print_name(unsigned int offset)
         return;
 
     if ((header.mode & 0xF000) == 0x8000)
-        call_write(CALL_PO, 0, 1, 2, "D ");
+        call_write(CALL_PO, 0, 2, 1, "D ");
     else if ((header.mode & 0xF000) == 0x4000)
-        call_write(CALL_PO, 0, 1, 2, "F ");
+        call_write(CALL_PO, 0, 2, 1, "F ");
     else
-        call_write(CALL_PO, 0, 1, 2, "X ");
+        call_write(CALL_PO, 0, 2, 1, "X ");
 
     count = call_read(CALL_P0, offset + sizeof (struct cpio_header), header.namesize, 1, buffer);
-    call_write(CALL_PO, 0, 1, count, buffer);
+    call_write(CALL_PO, 0, count, 1, buffer);
     call_write(CALL_PO, 0, 1, 1, "\n");
 
 }
@@ -202,14 +202,14 @@ void print_names(unsigned int offset)
             break;
 
         if ((header.mode & 0xF000) == 0x8000)
-            call_write(CALL_PO, 0, 1, 2, "D ");
+            call_write(CALL_PO, 0, 2, 1, "D ");
         else if ((header.mode & 0xF000) == 0x4000)
-            call_write(CALL_PO, 0, 1, 2, "F ");
+            call_write(CALL_PO, 0, 2, 1, "F ");
         else
-            call_write(CALL_PO, 0, 1, 2, "X ");
+            call_write(CALL_PO, 0, 2, 1, "X ");
 
         count = call_read(CALL_P0, offset + sizeof (struct cpio_header), header.namesize, 1, buffer);
-        call_write(CALL_PO, 0, 1, count, buffer);
+        call_write(CALL_PO, 0, count, 1, buffer);
         call_write(CALL_PO, 0, 1, 1, "\n");
 
     } while ((offset = cpio_next(&header, offset)));
@@ -231,7 +231,7 @@ void print_content(unsigned int offset)
 
     size = ((header.filesize[0] << 16) | header.filesize[1]);
     count = call_read(CALL_P0, offset + sizeof (struct cpio_header) + header.namesize + (header.namesize & 1), size, 1, buffer);
-    call_write(CALL_PO, 0, 1, count, buffer);
+    call_write(CALL_PO, 0, count, 1, buffer);
 
 }
 

@@ -24,7 +24,7 @@ void main()
     call_open(CALL_P0);
 
     for (roff = 0; (count = call_read(CALL_P0, roff, 1, FUDGE_BSIZE, in)); roff += count)
-        woff += call_write(CALL_PO, woff, 1, convert(out, FUDGE_BSIZE, in, count), out);
+        woff += call_write(CALL_PO, woff, convert(out, FUDGE_BSIZE, in, count), 1, out);
 
     call_close(CALL_P0);
     call_close(CALL_PO);

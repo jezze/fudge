@@ -137,7 +137,7 @@ static void render(double rcenter, double icenter, unsigned int iterations, doub
 
         }
 
-        call_write(CALL_PO, y * WIDTH, WIDTH, buffer);
+        call_write(CALL_PO, y * WIDTH, WIDTH, 1, buffer);
 
     }
 

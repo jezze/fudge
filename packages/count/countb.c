@@ -13,7 +13,7 @@ void main()
 
     call_close(CALL_P0);
     call_open(CALL_PO);
-    call_write(CALL_PO, 0, 1, ascii_fromint(buffer, FUDGE_BSIZE, offset + count, 10), buffer);
+    call_write(CALL_PO, 0, ascii_fromint(buffer, FUDGE_BSIZE, offset + count, 10), 1, buffer);
     call_close(CALL_PO);
 
 }

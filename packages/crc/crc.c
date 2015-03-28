@@ -60,7 +60,7 @@ void main()
         crc = (crc << 8) ^ tab[(crc >> 24) ^ (i & 0xFF)];
 
     call_open(CALL_PO);
-    call_write(CALL_PO, 0, 1, ascii_fromint(buffer, 32, ~crc, 10), buffer);
+    call_write(CALL_PO, 0, ascii_fromint(buffer, 32, ~crc, 10), 1, buffer);
     call_close(CALL_PO);
 
 }

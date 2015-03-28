@@ -16,7 +16,7 @@ void main()
     while (--count && buffer[count - 1] != '/');
 
     call_open(CALL_PO);
-    call_write(CALL_PO, 0, 1, count, buffer);
+    call_write(CALL_PO, 0, count, 1, buffer);
     call_close(CALL_PO);
 
 }
