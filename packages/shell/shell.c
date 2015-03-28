@@ -43,7 +43,7 @@ static void interpret(struct buffer *buffer)
     call_walk(CALL_C0, CALL_L0, 1, "1");
     call_spawn();
     call_open(CALL_L1);
-    call_write(CALL_L1, 0, count, command);
+    call_write(CALL_L1, 0, count, 1, command);
     call_close(CALL_L1);
 
 }
@@ -72,7 +72,7 @@ static void handle(struct buffer *buffer, unsigned char c)
         if (!buffer_ecfifo(buffer, 1))
             break;
 
-        call_write(CALL_PO, 0, 3, "\b \b");
+        call_write(CALL_PO, 0, 1, 3, "\b \b");
 
         break;
 
@@ -80,16 +80,16 @@ static void handle(struct buffer *buffer, unsigned char c)
         c = '\n';
 
     case '\n':
-        call_write(CALL_PO, 0, 1, &c);
+        call_write(CALL_PO, 0, 1, 1, &c);
         buffer_wcfifo(buffer, 1, &c);
         interpret(buffer);
-        call_write(CALL_PO, 0, 2, "$ ");
+        call_write(CALL_PO, 0, 1, 2, "$ ");
 
         break;
 
     default:
         buffer_wcfifo(buffer, 1, &c);
-        call_write(CALL_PO, 0, 1, &c);
+        call_write(CALL_PO, 0, 1, 1, &c);
 
         break;
 
@@ -109,9 +109,9 @@ void main()
 
     call_open(CALL_P0);
     call_open(CALL_PO);
-    call_write(CALL_PO, 0, 2, "$ ");
+    call_write(CALL_PO, 0, 1, 2, "$ ");
 
-    for (offset = 0; (count = call_read(CALL_P0, offset, FUDGE_BSIZE, buffer)); offset += count)
+    for (offset = 0; (count = call_read(CALL_P0, offset, 1, FUDGE_BSIZE, buffer)); offset += count)
     {
 
         unsigned int i;

@@ -102,7 +102,7 @@ static void sendevent(unsigned int destination, unsigned int type)
 
     call_walk(CALL_L2, CALL_PR, 17, "system/event/send");
     call_open(CALL_L2);
-    call_write(CALL_L2, 0, sizeof (struct event_header), &header);
+    call_write(CALL_L2, 0, 1, sizeof (struct event_header), &header);
     call_close(CALL_L2);
 
 }
@@ -275,7 +275,7 @@ static void pollevent()
     call_walk(CALL_L1, CALL_PR, 17, "system/event/poll");
     call_open(CALL_L1);
 
-    for (roff = 0; (count = call_read(CALL_L1, roff, FUDGE_BSIZE, buffer)); roff += count)
+    for (roff = 0; (count = call_read(CALL_L1, roff, 1, FUDGE_BSIZE, buffer)); roff += count)
     {
 
         unsigned int i;

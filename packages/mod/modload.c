@@ -9,7 +9,7 @@ static unsigned int find_symbol(unsigned int id, unsigned int count, char *symbo
     struct elf_sectionheader sectionheader[32];
     unsigned int i;
 
-    call_read(id, 0, ELF_HEADER_SIZE, &header);
+    call_read(id, 0, ELF_HEADER_SIZE, 1, &header);
 
     if (!elf_validate(&header))
         return 0;
@@ -17,7 +17,7 @@ static unsigned int find_symbol(unsigned int id, unsigned int count, char *symbo
     if (header.shcount > 32)
         return 0;
 
-    call_read(id, header.shoffset, header.shsize * header.shcount, sectionheader);
+    call_read(id, header.shoffset, header.shsize, header.shcount, sectionheader);
 
     for (i = 0; i < header.shcount; i++)
     {
@@ -40,8 +40,8 @@ static unsigned int find_symbol(unsigned int id, unsigned int count, char *symbo
         if (stringheader->size > 4096)
             return 0;
 
-        call_read(id, symbolheader->offset, symbolheader->size, symbols);
-        call_read(id, stringheader->offset, stringheader->size, strings);
+        call_read(id, symbolheader->offset, 1, symbolheader->size, symbols);
+        call_read(id, stringheader->offset, 1, stringheader->size, strings);
 
         address = elf_findsymbol(&header, sectionheader, symbolheader, symbols, strings, count, symbol);
 
@@ -62,8 +62,8 @@ static unsigned int find_symbol_module(unsigned int count, char *symbol)
     unsigned int address;
     char module[32];
 
-    offset += memory_write(module, 32, symbol, length, offset);
-    offset += memory_write(module, 32, ".ko", 3, offset);
+    offset += memory_write(module, 32, symbol, length, 1, offset);
+    offset += memory_write(module, 32, ".ko", 3, 1, offset);
 
     if (!call_walk(CALL_L2, CALL_L1, offset, module))
         return 0;
@@ -105,11 +105,11 @@ static unsigned int resolve_symbols(unsigned int id, struct elf_sectionheader *r
         if (!address)
             return 0;
 
-        call_read(id, offset + relocations[i].offset, 4, &value);
+        call_read(id, offset + relocations[i].offset, 1, 4, &value);
 
         value += address;
 
-        call_write(id, offset + relocations[i].offset, 4, &value);
+        call_write(id, offset + relocations[i].offset, 1, 4, &value);
 
     }
 
@@ -127,7 +127,7 @@ static unsigned int resolve(unsigned int id)
     char strings[4096];
     unsigned int i;
 
-    call_read(id, 0, ELF_HEADER_SIZE, &header);
+    call_read(id, 0, ELF_HEADER_SIZE, 1, &header);
 
     if (!elf_validate(&header))
         return 0;
@@ -135,7 +135,7 @@ static unsigned int resolve(unsigned int id)
     if (header.shcount > 32)
         return 0;
 
-    call_read(id, header.shoffset, header.shsize * header.shcount, sectionheader);
+    call_read(id, header.shoffset, header.shsize, header.shcount, sectionheader);
 
     for (i = 0; i < header.shcount; i++)
     {
@@ -162,9 +162,9 @@ static unsigned int resolve(unsigned int id)
         if (stringheader->size > 4096)
             return 0;
 
-        call_read(id, relocationheader->offset, relocationheader->size, relocations);
-        call_read(id, symbolheader->offset, symbolheader->size, symbols);
-        call_read(id, stringheader->offset, stringheader->size, strings);
+        call_read(id, relocationheader->offset, 1, relocationheader->size, relocations);
+        call_read(id, symbolheader->offset, 1, symbolheader->size, symbols);
+        call_read(id, stringheader->offset, 1, stringheader->size, strings);
 
         if (!resolve_symbols(id, relocationheader, relocations, symbols, strings, dataheader->offset))
             return 0;

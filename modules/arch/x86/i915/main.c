@@ -126,14 +126,14 @@ static void videointerface_setmode(unsigned int xres, unsigned int yres, unsigne
 
 }
 
-static unsigned int videointerface_rdata(unsigned int offset, unsigned int count, void *buffer)
+static unsigned int videointerface_rdata(unsigned int offset, unsigned int size, unsigned int count, void *buffer)
 {
 
     return 0;
 
 }
 
-static unsigned int videointerface_wdata(unsigned int offset, unsigned int count, void *buffer)
+static unsigned int videointerface_wdata(unsigned int offset, unsigned int size, unsigned int count, void *buffer)
 {
 
     return 0;

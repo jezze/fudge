@@ -222,7 +222,7 @@ void main()
     md5_init(&s);
     call_open(CALL_P0);
 
-    for (roff = 0; (count = call_read(CALL_P0, roff, FUDGE_BSIZE, buffer)); roff += count)
+    for (roff = 0; (count = call_read(CALL_P0, roff, 1, FUDGE_BSIZE, buffer)); roff += count)
         md5_read(&s, count, buffer);
 
     call_close(CALL_P0);
@@ -230,7 +230,7 @@ void main()
     call_open(CALL_PO);
 
     for (roff = 0; roff < 16; roff++)
-        woff += call_write(CALL_PO, woff, ascii_wzerovalue(buffer, 32, digest[roff], 16, 2, 0), buffer);
+        woff += call_write(CALL_PO, woff, 1, ascii_wzerovalue(buffer, 32, digest[roff], 16, 2, 0), buffer);
 
     call_close(CALL_PO);
 

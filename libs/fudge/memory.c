@@ -54,11 +54,14 @@ unsigned int memory_match(const void *in1, const void *in2, unsigned int count)
 
 }
 
-unsigned int memory_read(void *out, unsigned int ocount, const void *in, unsigned int icount, unsigned int offset)
+unsigned int memory_read(void *out, unsigned int ocount, const void *in, unsigned int icount, unsigned int size, unsigned int offset)
 {
 
     unsigned char *op = out;
     const unsigned char *ip = in;
+
+    icount = icount * size;
+    ocount = ocount * size;
 
     if (offset >= icount)
         return 0;
@@ -75,11 +78,14 @@ unsigned int memory_read(void *out, unsigned int ocount, const void *in, unsigne
 
 }
 
-unsigned int memory_write(void *out, unsigned int ocount, const void *in, unsigned int icount, unsigned int offset)
+unsigned int memory_write(void *out, unsigned int ocount, const void *in, unsigned int icount, unsigned int size, unsigned int offset)
 {
 
     unsigned char *op = out;
     const unsigned char *ip = in;
+
+    icount = icount * size;
+    ocount = ocount * size;
 
     if (offset >= ocount)
         return 0;

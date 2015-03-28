@@ -8,10 +8,10 @@ void main()
         return;
 
     call_open(CALL_PO);
-    call_write(CALL_PO, 0, 23, "System is rebooting...\n");
+    call_write(CALL_PO, 0, 1, 23, "System is rebooting...\n");
     call_close(CALL_PO);
     call_open(CALL_L0);
-    call_write(CALL_L0, 0, 1, "1");
+    call_write(CALL_L0, 0, 1, 1, "1");
     call_close(CALL_L0);
 
 }

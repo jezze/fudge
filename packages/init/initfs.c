@@ -44,7 +44,7 @@ void main()
     unsigned int i;
 
     call_open(CALL_P0);
-    count = call_read(CALL_P0, 0, FUDGE_BSIZE, buffer);
+    count = call_read(CALL_P0, 0, 1, FUDGE_BSIZE, buffer);
     nargs = parse(count, buffer);
     call_close(CALL_P0);
 

@@ -173,7 +173,7 @@ static void poll()
     for (;;)
     {
 
-        count = call_read(CALL_P0, 0, FUDGE_BSIZE, buffer);
+        count = call_read(CALL_P0, 0, 1, FUDGE_BSIZE, buffer);
 
         for (i = 0; i < count; i++)
             handle(buffer[i]);

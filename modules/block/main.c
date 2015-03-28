@@ -25,12 +25,12 @@ static unsigned int interfacenode_dataread(struct system_node *self, unsigned in
     if (wait == 0)
     {
 
-        interface->rdata(offset, size * count, buffer);
+        interface->rdata(offset, size, count, buffer);
         wait = 1;
 
     }
 
-    return scheduler_readactive(size * count, buffer);
+    return scheduler_readactive(size, count, buffer);
 
 }
 
@@ -52,7 +52,7 @@ void block_unregisterinterface(struct block_interface *interface)
 
 }
 
-void block_initinterface(struct block_interface *interface, unsigned int (*rdata)(unsigned int offset, unsigned int count, void *buffer), unsigned int (*wdata)(unsigned int offset, unsigned int count, void *buffer))
+void block_initinterface(struct block_interface *interface, unsigned int (*rdata)(unsigned int offset, unsigned int size, unsigned int count, void *buffer), unsigned int (*wdata)(unsigned int offset, unsigned int size, unsigned int count, void *buffer))
 {
 
     resource_init(&interface->resource, 0, interface);

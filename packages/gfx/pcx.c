@@ -10,7 +10,7 @@ static unsigned int size(unsigned int id)
     unsigned int offset;
     unsigned int count;
 
-    for (offset = 0; (count = call_read(id, offset, FUDGE_BSIZE, buffer)); offset += count);
+    for (offset = 0; (count = call_read(id, offset, 1, FUDGE_BSIZE, buffer)); offset += count);
 
     return offset;
 
@@ -25,7 +25,7 @@ static unsigned int surface_read(struct gfx_surface *self, unsigned int offset, 
     unsigned int rindex = 0;
     unsigned int oindex = 0;
 
-    call_read(surface->id, offset + 128, count, raw);
+    call_read(surface->id, offset + 128, 1, count, raw);
 
     do
     {
@@ -69,18 +69,18 @@ void pcx_load(struct pcx_surface *surface)
 
     unsigned char magic;
 
-    call_read(surface->id, 0, sizeof (struct pcx_header), &surface->header);
+    call_read(surface->id, 0, sizeof (struct pcx_header), 1, &surface->header);
 
     surface->base.width = surface->header.xend - surface->header.xstart + 1;
     surface->base.height = surface->header.yend - surface->header.ystart + 1;
     surface->base.bpp = GFX_R24G24B24;
 
-    call_read(surface->id, size(surface->id) - 768 - 1, 1, &magic);
+    call_read(surface->id, size(surface->id) - 768 - 1, 1, 1, &magic);
 
     if (magic != PCX_COLORMAP_MAGIC)
         return;
 
-    call_read(surface->id, size(surface->id) - 768, 768, surface->colormap);
+    call_read(surface->id, size(surface->id) - 768, 768, 1, surface->colormap);
 
 }
 

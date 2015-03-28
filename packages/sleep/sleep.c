@@ -5,7 +5,7 @@ void main()
 {
 
     unsigned char buffer[32];
-    unsigned int count = call_read(CALL_P0, 0, 32, buffer);
+    unsigned int count = call_read(CALL_P0, 0, 1, 32, buffer);
 
     if (!count)
         return;
@@ -17,8 +17,8 @@ void main()
     {
 
         call_open(CALL_L1);
-        call_write(CALL_L1, 0, count, buffer);
-        call_read(CALL_L1, 0, 32, buffer);
+        call_write(CALL_L1, 0, 1, count, buffer);
+        call_read(CALL_L1, 0, 1, 32, buffer);
         call_close(CALL_L1);
 
     }

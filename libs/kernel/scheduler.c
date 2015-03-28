@@ -101,12 +101,12 @@ unsigned int scheduler_getactiveid()
 
 }
 
-unsigned int scheduler_readactive(unsigned int count, void *buffer)
+unsigned int scheduler_readactive(unsigned int size, unsigned int count, void *buffer)
 {
 
     struct task *task = active.tail->data;
 
-    count = buffer_rcfifo(&task->mailbox.buffer, count, buffer);
+    count = buffer_rcfifo(&task->mailbox.buffer, size * count, buffer);
 
     if (!count)
         block(task);
@@ -144,12 +144,12 @@ void scheduler_sendlist(struct list *mailboxes, unsigned int count, void *buffer
 
 }
 
-unsigned int scheduler_readpipe(struct list *mailboxes, unsigned int count, void *buffer)
+unsigned int scheduler_readpipe(struct list *mailboxes, unsigned int size, unsigned int count, void *buffer)
 {
 
     struct task *task = active.tail->data;
 
-    count = buffer_rcfifo(&task->mailbox.buffer, count, buffer);
+    count = buffer_rcfifo(&task->mailbox.buffer, size * count, buffer);
 
     if (!count && mailboxes->head != 0)
         block(task);
@@ -158,7 +158,7 @@ unsigned int scheduler_readpipe(struct list *mailboxes, unsigned int count, void
 
 }
 
-unsigned int scheduler_sendpipe(struct list *mailboxes, unsigned int count, void *buffer)
+unsigned int scheduler_sendpipe(struct list *mailboxes, unsigned int size, unsigned int count, void *buffer)
 {
 
     struct list_item *current;
@@ -168,7 +168,7 @@ unsigned int scheduler_sendpipe(struct list *mailboxes, unsigned int count, void
 
         struct task *task = current->data;
 
-        count = buffer_wcfifo(&task->mailbox.buffer, count, buffer);
+        count = buffer_wcfifo(&task->mailbox.buffer, size * count, buffer);
 
         unblock(task);
 

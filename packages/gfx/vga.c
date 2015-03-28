@@ -8,7 +8,7 @@ static unsigned int surface_read(struct gfx_surface *self, unsigned int offset, 
 
     struct vga_surface *surface = (struct vga_surface *)self;
 
-    return call_read(surface->id, offset, count, buffer);
+    return call_read(surface->id, offset, 1, count, buffer);
 
 }
 
@@ -17,7 +17,7 @@ static unsigned int surface_write(struct gfx_surface *self, unsigned int offset,
 
     struct vga_surface *surface = (struct vga_surface *)self;
 
-    return call_write(surface->id, offset, count, buffer);
+    return call_write(surface->id, offset, 1, count, buffer);
 
 }
 

@@ -13,8 +13,8 @@ void main()
     call_open(CALL_PO);
     call_open(CALL_L0);
 
-    for (roff = 0; (count = call_read(CALL_L0, roff, FUDGE_BSIZE, buffer)); roff += count)
-        woff += call_write(CALL_PO, woff, count, buffer);
+    for (roff = 0; (count = call_read(CALL_L0, roff, 1, FUDGE_BSIZE, buffer)); roff += count)
+        woff += call_write(CALL_PO, woff, 1, count, buffer);
 
     call_close(CALL_L0);
     call_close(CALL_PO);

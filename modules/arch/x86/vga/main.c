@@ -209,7 +209,7 @@ static unsigned int consoleinterface_wout(unsigned int offset, unsigned int coun
         if (cursor.offset >= VGA_TEXT_LIMIT)
         {
 
-            memory_read(taddress, fullsize, taddress, fullsize, linesize);
+            memory_read(taddress, fullsize, taddress, fullsize, 1, linesize);
             clear(80 * 24);
             cursor.offset -= 80;
 
@@ -241,29 +241,29 @@ static void videointerface_setmode(unsigned int xres, unsigned int yres, unsigne
 
 }
 
-static unsigned int videointerface_rdata(unsigned int offset, unsigned int count, void *buffer)
+static unsigned int videointerface_rdata(unsigned int offset, unsigned int size, unsigned int count, void *buffer)
 {
 
     unsigned int bytespp = videointerface.bpp / 8;
     unsigned int linesize = videointerface.w * bytespp;
     unsigned int fullsize = videointerface.h * linesize;
 
-    return memory_read(buffer, count, gaddress, fullsize, offset);
+    return memory_read(buffer, count, gaddress, fullsize, size, offset);
 
 }
 
-static unsigned int videointerface_wdata(unsigned int offset, unsigned int count, void *buffer)
+static unsigned int videointerface_wdata(unsigned int offset, unsigned int size, unsigned int count, void *buffer)
 {
 
     unsigned int bytespp = videointerface.bpp / 8;
     unsigned int linesize = videointerface.w * bytespp;
     unsigned int fullsize = videointerface.h * linesize;
 
-    return memory_write(gaddress, fullsize, buffer, count, offset);
+    return memory_write(gaddress, fullsize, buffer, count, size, offset);
 
 }
 
-static unsigned int videointerface_rcolormap(unsigned int offset, unsigned int count, void *buffer)
+static unsigned int videointerface_rcolormap(unsigned int offset, unsigned int size, unsigned int count, void *buffer)
 {
 
     char *c = buffer;
@@ -289,7 +289,7 @@ static unsigned int videointerface_rcolormap(unsigned int offset, unsigned int c
 
 }
 
-static unsigned int videointerface_wcolormap(unsigned int offset, unsigned int count, void *buffer)
+static unsigned int videointerface_wcolormap(unsigned int offset, unsigned int size, unsigned int count, void *buffer)
 {
 
     char *c = buffer;

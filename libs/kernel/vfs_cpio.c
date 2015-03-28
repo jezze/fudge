@@ -225,7 +225,7 @@ static unsigned int protocol_read(struct vfs_backend *backend, unsigned int id, 
     {
 
         unsigned char *b = buffer;
-        unsigned int c = memory_read(b, count, "../\n", 4, offset);
+        unsigned int c = memory_read(b, count, "../\n", 4, 1, offset);
         unsigned int length = header.namesize;
 
         offset -= (offset > 4) ? 4 : offset;
@@ -249,9 +249,9 @@ static unsigned int protocol_read(struct vfs_backend *backend, unsigned int id, 
                 continue;
 
             l = header.namesize - length;
-            c += memory_read(b + c, count - c, name + length, l, offset);
+            c += memory_read(b + c, count - c, name + length, l, 1, offset);
             offset -= (offset > l) ? l : offset;
-            c += memory_read(b + c, count - c, "\n", 1, offset);
+            c += memory_read(b + c, count - c, "\n", 1, 1, offset);
             offset -= (offset > 1) ? 1 : offset;
 
         }

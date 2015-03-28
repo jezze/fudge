@@ -46,7 +46,7 @@ void main()
 
     call_open(CALL_P0);
 
-    for (roff = 0; (count = call_read(CALL_P0, roff, FUDGE_BSIZE, buffer)); roff += count)
+    for (roff = 0; (count = call_read(CALL_P0, roff, 1, FUDGE_BSIZE, buffer)); roff += count)
     {
 
         for (i = 0; i < count; i++)
@@ -60,7 +60,7 @@ void main()
         crc = (crc << 8) ^ tab[(crc >> 24) ^ (i & 0xFF)];
 
     call_open(CALL_PO);
-    call_write(CALL_PO, 0, ascii_fromint(buffer, 32, ~crc, 10), buffer);
+    call_write(CALL_PO, 0, 1, ascii_fromint(buffer, 32, ~crc, 10), buffer);
     call_close(CALL_PO);
 
 }

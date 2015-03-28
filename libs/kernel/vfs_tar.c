@@ -177,7 +177,7 @@ static unsigned int protocol_read(struct vfs_backend *backend, unsigned int id, 
         records[i].length = 3;
         records[i].size = 0;
 
-        memory_read(records[i].name, 120, "../", 3, 0);
+        memory_read(records[i].name, 120, "../", 3, 1, 0);
 
         i++;
 
@@ -196,7 +196,7 @@ static unsigned int protocol_read(struct vfs_backend *backend, unsigned int id, 
             records[i].length = ascii_length(header.name) - length;
             records[i].size = tar_readvalue(header.size);
 
-            memory_read(records[i].name, 120, header.name + length, records[i].length, 0);
+            memory_read(records[i].name, 120, header.name + length, records[i].length, 1, 0);
 
             i++;
 

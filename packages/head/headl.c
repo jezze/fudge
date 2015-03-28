@@ -12,7 +12,7 @@ void main()
 
     call_open(CALL_P1);
 
-    count0 = call_read(CALL_P1, 0, 32, num);
+    count0 = call_read(CALL_P1, 0, 1, 32, num);
 
     call_close(CALL_P1);
 
@@ -24,14 +24,14 @@ void main()
     call_open(CALL_PO);
     call_open(CALL_P0);
 
-    for (roff0 = 0; (count0 = call_read(CALL_P0, roff0, FUDGE_BSIZE, buffer)); roff0 += roff1)
+    for (roff0 = 0; (count0 = call_read(CALL_P0, roff0, 1, FUDGE_BSIZE, buffer)); roff0 += roff1)
     {
 
         for (roff1 = 0; (count1 = memory_findbyte(buffer + roff1, count0 - roff1, '\n')); roff1 += count1)
         {
 
             if (++lines <= total)
-                woff0 += call_write(CALL_PO, woff0, count1, buffer + roff1);
+                woff0 += call_write(CALL_PO, woff0, 1, count1, buffer + roff1);
 
         }
 

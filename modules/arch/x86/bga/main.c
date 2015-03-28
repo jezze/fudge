@@ -68,32 +68,32 @@ static void videointerface_setmode(unsigned int xres, unsigned int yres, unsigne
 
 }
 
-static unsigned int videointerface_rdata(unsigned int offset, unsigned int count, void *buffer)
+static unsigned int videointerface_rdata(unsigned int offset, unsigned int size, unsigned int count, void *buffer)
 {
 
-    unsigned int size = videointerface.w * videointerface.h * videointerface.bpp / 8;
+    unsigned int s = videointerface.w * videointerface.h * videointerface.bpp / 8;
 
-    return memory_read(buffer, count, lfb, size, offset);
+    return memory_read(buffer, count, lfb, s, size, offset);
 
 }
 
-static unsigned int videointerface_wdata(unsigned int offset, unsigned int count, void *buffer)
+static unsigned int videointerface_wdata(unsigned int offset, unsigned int size, unsigned int count, void *buffer)
 {
 
-    unsigned int size = videointerface.w * videointerface.h * videointerface.bpp / 8;
+    unsigned int s = videointerface.w * videointerface.h * videointerface.bpp / 8;
 
-    return memory_write(lfb, size, buffer, count, offset);
+    return memory_write(lfb, s, buffer, count, size, offset);
 
 }
 
-static unsigned int videointerface_rcolormap(unsigned int offset, unsigned int count, void *buffer)
+static unsigned int videointerface_rcolormap(unsigned int offset, unsigned int size, unsigned int count, void *buffer)
 {
 
     return 0;
 
 }
 
-static unsigned int videointerface_wcolormap(unsigned int offset, unsigned int count, void *buffer)
+static unsigned int videointerface_wcolormap(unsigned int offset, unsigned int size, unsigned int count, void *buffer)
 {
 
     return 0;

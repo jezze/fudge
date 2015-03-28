@@ -17,14 +17,14 @@ void main()
     call_open(CALL_PO);
     call_open(CALL_L0);
 
-    woff += call_write(CALL_PO, woff, call_read(CALL_L0, 0, FUDGE_BSIZE, date), date);
-    woff += call_write(CALL_PO, woff, 1, " ");
+    woff += call_write(CALL_PO, woff, 1, call_read(CALL_L0, 0, 1, FUDGE_BSIZE, date), date);
+    woff += call_write(CALL_PO, woff, 1, 1, " ");
 
     call_close(CALL_L0);
     call_open(CALL_L1);
 
-    woff += call_write(CALL_PO, woff, call_read(CALL_L1, 0, FUDGE_BSIZE, time), time);
-    woff += call_write(CALL_PO, woff, 1, "\n");
+    woff += call_write(CALL_PO, woff, 1, call_read(CALL_L1, 0, 1, FUDGE_BSIZE, time), time);
+    woff += call_write(CALL_PO, woff, 1, 1, "\n");
 
     call_close(CALL_L1);
     call_close(CALL_PO);

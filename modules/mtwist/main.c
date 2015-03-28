@@ -144,7 +144,7 @@ static unsigned int root_read(struct system_node *self, unsigned int offset, uns
 
     unsigned int x = rand(&normal);
 
-    return memory_read(buffer, size * count, &x, 4, offset);
+    return memory_read(buffer, count, &x, 4, size, offset);
 
 }
 
