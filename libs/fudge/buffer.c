@@ -21,7 +21,7 @@ unsigned int buffer_rcfifo(struct buffer *buffer, unsigned int size, unsigned in
 
     }
 
-    return i * size;
+    return i;
 
 }
 
@@ -45,7 +45,7 @@ unsigned int buffer_wcfifo(struct buffer *buffer, unsigned int size, unsigned in
 
     }
 
-    return i * size;
+    return i;
 
 }
 
@@ -66,7 +66,7 @@ unsigned int buffer_ecfifo(struct buffer *buffer, unsigned int size, unsigned in
 
     }
 
-    return i * size;
+    return i;
 
 }
 

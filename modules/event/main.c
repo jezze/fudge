@@ -34,7 +34,7 @@ static unsigned int send_write(struct system_node *self, unsigned int offset, un
 
         scheduler_sendlist(&poll.mailboxes, size, count, buffer);
 
-        return size * count;
+        return count;
 
     }
 
