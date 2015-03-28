@@ -27,6 +27,8 @@ static unsigned int send_write(struct system_node *self, unsigned int offset, un
 
     struct event_header *header = buffer;
 
+    count = count * size;
+
     if (count < sizeof (struct event_header))
         return 0;
 
@@ -35,13 +37,13 @@ static unsigned int send_write(struct system_node *self, unsigned int offset, un
     if (header->destination == 0xFFFFFFFF)
     {
 
-        scheduler_sendlist(&poll.mailboxes, size * count, buffer);
+        scheduler_sendlist(&poll.mailboxes, count, buffer);
 
-        return size * count;
+        return count;
 
     }
 
-    return scheduler_sendid(header->destination, size * count, buffer);
+    return scheduler_sendid(header->destination, count, buffer);
 
 }
 
