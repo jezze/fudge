@@ -14,7 +14,7 @@ static unsigned int interfacenode_ctrlread(struct system_node *self, unsigned in
     settings.h = interface->h;
     settings.bpp = interface->bpp;
 
-    return memory_read(buffer, count, &settings, sizeof (struct ctrl_videosettings), size, offset);
+    return memory_read(buffer, count, &settings, 1, sizeof (struct ctrl_videosettings), offset);
 
 }
 
@@ -22,8 +22,9 @@ static unsigned int interfacenode_ctrlwrite(struct system_node *self, unsigned i
 {
 
     struct video_interface *interface = self->resource->data;
+    struct ctrl_videosettings *settings = buffer;
 
-    interface->setmode(320, 200, 8);
+    interface->setmode(settings);
 
     return 0;
 
@@ -87,7 +88,7 @@ void video_unregisterinterface(struct video_interface *interface)
 
 }
 
-void video_initinterface(struct video_interface *interface, void (*setmode)(unsigned int xres, unsigned int yres, unsigned int bpp), unsigned int (*rdata)(unsigned int offset, unsigned int size, unsigned int count, void *buffer), unsigned int (*wdata)(unsigned int offset, unsigned int size, unsigned int count, void *buffer), unsigned int (*rcolormap)(unsigned int offset, unsigned int size, unsigned int count, void *buffer), unsigned int (*wcolormap)(unsigned int offset, unsigned int size, unsigned int count, void *buffer))
+void video_initinterface(struct video_interface *interface, void (*setmode)(struct ctrl_videosettings *settings), unsigned int (*rdata)(unsigned int offset, unsigned int size, unsigned int count, void *buffer), unsigned int (*wdata)(unsigned int offset, unsigned int size, unsigned int count, void *buffer), unsigned int (*rcolormap)(unsigned int offset, unsigned int size, unsigned int count, void *buffer), unsigned int (*wcolormap)(unsigned int offset, unsigned int size, unsigned int count, void *buffer))
 {
 
     resource_init(&interface->resource, 0, interface);

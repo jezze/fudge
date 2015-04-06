@@ -35,6 +35,7 @@
 /bin/modload < /boot/mod/ps2mouse.ko.0
 /bin/modload < /boot/mod/pit.ko.0
 /bin/modload < /boot/mod/rtc.ko.0
+/bin/modload < /boot/mod/bga.ko.0
 /bin/modload < /boot/mod/vga.ko.0
 /bin/modload < /boot/mod/uart.ko.0
 /bin/modload < /boot/mod/rtl8139.ko.0

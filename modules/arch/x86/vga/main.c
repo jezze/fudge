@@ -224,7 +224,7 @@ static unsigned int consoleinterface_wout(unsigned int offset, unsigned int coun
 
 }
 
-static void videointerface_setmode(unsigned int xres, unsigned int yres, unsigned int bpp)
+static void videointerface_setmode(struct ctrl_videosettings *settings)
 {
 
     videointerface.w = 320;

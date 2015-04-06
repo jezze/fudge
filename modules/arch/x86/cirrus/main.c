@@ -58,7 +58,7 @@ static int maphorizontalcrtc(int bpp, int pixelclock, int htiming)
 
 }
 
-static void videointerface_setmode(unsigned int xres, unsigned int yres, unsigned int bpp)
+static void videointerface_setmode(struct ctrl_videosettings *settings)
 {
 
     unsigned char registers[60];
@@ -68,6 +68,10 @@ static void videointerface_setmode(unsigned int xres, unsigned int yres, unsigne
     int mclk;
     int DRAMbandwidth;
     int DRAMbandwidthLimit;
+
+    videointerface.w = settings->w;
+    videointerface.h = settings->h;
+    videointerface.bpp = settings->bpp;
 
     /* Identify real values */
     chiptype = CLGD5436;

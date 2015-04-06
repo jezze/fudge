@@ -42,29 +42,18 @@ static void setreg(unsigned short index, unsigned short data)
 
 }
 
-static void videointerface_setmode(unsigned int xres, unsigned int yres, unsigned int bpp)
+static void videointerface_setmode(struct ctrl_videosettings *settings)
 {
 
-    unsigned int i;
-
-    videointerface.w = 1024;
-    videointerface.h = 768;
-    videointerface.bpp = 32;
+    videointerface.w = settings->w;
+    videointerface.h = settings->h;
+    videointerface.bpp = settings->bpp;
 
     setreg(COMMANDENABLE, 0x00);
     setreg(COMMANDXRES, videointerface.w);
     setreg(COMMANDYRES, videointerface.h);
     setreg(COMMANDBPP, videointerface.bpp);
     setreg(COMMANDENABLE, 0x40 | 0x01);
-
-    for (i = 0; i < videointerface.w * videointerface.h * videointerface.bpp / 8; i++)
-    {
-
-        unsigned char *data = lfb;
-
-        data[i] = 0x80;
-
-    }
 
 }
 

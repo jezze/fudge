@@ -12,6 +12,7 @@
 #define WINDOWS                         64
 #define VIEWS                           8
 
+static struct ctrl_videosettings settings;
 static struct box screen;
 static struct box menu;
 static struct box desktop;
@@ -22,6 +23,7 @@ static struct list windows;
 static struct view view[VIEWS];
 static struct list views;
 static struct view *viewactive;
+static unsigned char backbuffer[4096];
 
 static unsigned char colormap[] = {
     0x00, 0x00, 0x00,
@@ -35,13 +37,76 @@ static unsigned char colormap[] = {
     0x38, 0x20, 0x28
 };
 
+static unsigned int colormap4[] = {
+    0x000000,
+    0xFFFFFF,
+    0x181014,
+    0x20181C,
+    0x30282C,
+    0x105070,
+    0x307090,
+    0xB05070,
+    0xF898B8
+};
+
+static void flush(unsigned int line, unsigned int offset, unsigned int count)
+{
+
+    unsigned int bpp = settings.bpp / 8;
+
+    video_draw(line * bpp + offset * bpp, count * bpp, backbuffer + offset * bpp);
+
+}
+
+static void fill8(void *bb, unsigned int color, unsigned int offset, unsigned int count)
+{
+
+    unsigned char *b = bb;
+    unsigned int i;
+
+    for (i = offset; i < count + offset; i++)
+        b[i] = color;
+
+}
+
+static void fill32(void *bb, unsigned int color, unsigned int offset, unsigned int count)
+{
+
+    unsigned int *b = bb;
+    unsigned int i;
+
+    for (i = offset; i < count + offset; i++)
+        b[i] = colormap4[color];
+
+}
+
+void fill(unsigned int color, unsigned int offset, unsigned int count)
+{
+
+    switch (settings.bpp)
+    {
+
+    case 8:
+        fill8(backbuffer, color, offset, count);
+
+        break;
+
+    case 32:
+        fill32(backbuffer, color, offset, count);
+
+        break;
+
+    }
+
+}
+
 static void drawdesktop(unsigned int line)
 {
 
     if (line < desktop.y || line >= desktop.y + desktop.h)
         return;
 
-    draw_fill(WM_COLOR_BODY, desktop.x, desktop.w);
+    fill(WM_COLOR_BODY, desktop.x, desktop.w);
 
 }
 
@@ -75,7 +140,7 @@ static void draw(struct box *bb)
         panel_draw(&title, line);
         drawviews(&views, line);
         mouse_draw(&mouse, line);
-        draw_flush(screen.w * line, bb->x, bb->w);
+        flush(screen.w * line, bb->x, bb->w);
 
     }
 
@@ -401,8 +466,15 @@ void setupviews()
 void main()
 {
 
+    settings.w = 1024;
+    settings.h = 768;
+    settings.bpp = 32;
+
+    video_setmode(&settings);
+    video_setcolormap(colormap);
+
     mouse_init(&mouse);
-    box_setsize(&screen, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+    box_setsize(&screen, 0, 0, settings.w, settings.h);
     box_setsize(&menu, screen.x, screen.y, screen.w, BOXSIZE);
     box_setsize(&desktop, screen.x, screen.y + BOXSIZE, screen.w, screen.h - BOXSIZE);
     box_setsize(&mouse.size, screen.x + screen.w / 4, screen.y + screen.h / 4, mouse.size.w, mouse.size.h);
@@ -411,8 +483,6 @@ void main()
     activateview(views.head->data);
     panel_init(&title, "0", 0);
     box_setsize(&title.size, menu.x + VIEWS * BOXSIZE, menu.y, menu.w - VIEWS * BOXSIZE, BOXSIZE);
-    video_setmode();
-    video_setcolormap(colormap);
     draw(&screen);
     pollevent();
 

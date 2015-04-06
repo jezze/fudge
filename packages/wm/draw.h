@@ -1,17 +1,3 @@
-#ifdef HIRES
-
-#define SCREEN_WIDTH                    1024
-#define SCREEN_HEIGHT                   768
-#define SCREEN_BPP                      4
-
-#else
-
-#define SCREEN_WIDTH                    320
-#define SCREEN_HEIGHT                   200
-#define SCREEN_BPP                      1
-
-#endif
-
 #define BOXSIZE                         32
 #define WM_COLOR_DARK                   0x00
 #define WM_COLOR_LIGHT                  0x01
@@ -23,5 +9,4 @@
 #define WM_COLOR_POINTERBACK            0x07
 #define WM_COLOR_POINTERFRAME           0x08
 
-void draw_flush(unsigned int line, unsigned int offset, unsigned int count);
-void draw_fill(unsigned int color, unsigned int offset, unsigned int count);
+void fill(unsigned int color, unsigned int offset, unsigned int count);
