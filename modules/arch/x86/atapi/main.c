@@ -9,7 +9,7 @@
 static struct base_driver driver;
 static struct block_interface blockinterface;
 
-static void handleirq(unsigned int irq, unsigned int id)
+static void handleirq(unsigned int irq)
 {
 
 }
@@ -32,7 +32,7 @@ static void driver_attach(unsigned int id)
 {
 
     block_registerinterface(&blockinterface, id);
-    pic_setroutine(ide_getirq(id), id, handleirq);
+    pic_setroutine(ide_getirq(id), handleirq);
 
 }
 
@@ -40,7 +40,7 @@ static void driver_detach(unsigned int id)
 {
 
     block_unregisterinterface(&blockinterface);
-    pic_unsetroutine(ide_getirq(id), id);
+    pic_unsetroutine(ide_getirq(id));
 
 }
 

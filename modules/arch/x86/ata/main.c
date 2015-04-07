@@ -9,16 +9,16 @@
 static struct base_driver driver;
 static struct block_interface blockinterface;
 
-static void handleirq(unsigned int irq, unsigned int id)
+static void handleirq(unsigned int irq)
 {
 
-    unsigned char status = ide_getstatus(id);
+    unsigned char status = ide_getstatus(blockinterface.id);
     unsigned char data[512];
 
     if (status & 1)
         return;
 
-    ide_rblock(id, 1, data);
+    ide_rblock(blockinterface.id, 1, data);
     block_notify(&blockinterface, 512, 1, data);
 
 }
@@ -60,7 +60,7 @@ static void driver_attach(unsigned int id)
 {
 
     block_registerinterface(&blockinterface, id);
-    pic_setroutine(ide_getirq(id), id, handleirq);
+    pic_setroutine(ide_getirq(id), handleirq);
 
 }
 
@@ -68,7 +68,7 @@ static void driver_detach(unsigned int id)
 {
 
     block_unregisterinterface(&blockinterface);
-    pic_unsetroutine(ide_getirq(id), id);
+    pic_unsetroutine(ide_getirq(id));
 
 }
 

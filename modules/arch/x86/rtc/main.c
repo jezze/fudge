@@ -36,7 +36,7 @@ static unsigned char read(unsigned int type)
 
 }
 
-static void handleirq(unsigned int irq, unsigned int id)
+static void handleirq(unsigned int irq)
 {
 
 }
@@ -110,7 +110,7 @@ static void driver_attach(unsigned int id)
     io = platform_getbase(id);
 
     clock_registerinterface(&clockinterface, id);
-    pic_setroutine(platform_getirq(id), id, handleirq);
+    pic_setroutine(platform_getirq(id), handleirq);
 
 }
 
@@ -118,7 +118,7 @@ static void driver_detach(unsigned int id)
 {
 
     clock_unregisterinterface(&clockinterface);
-    pic_unsetroutine(platform_getirq(id), id);
+    pic_unsetroutine(platform_getirq(id));
 
 }
 

@@ -116,7 +116,7 @@ static void write(unsigned char c)
 
 }
 
-static void handleirq(unsigned int irq, unsigned int id)
+static void handleirq(unsigned int irq)
 {
 
     unsigned char data = read();
@@ -169,7 +169,7 @@ static void driver_attach(unsigned int id)
     io_outb(io + REGISTERIER, IERRECEIVE);
 
     console_registerinterface(&consoleinterface, id);
-    pic_setroutine(platform_getirq(id), id, handleirq);
+    pic_setroutine(platform_getirq(id), handleirq);
 
 }
 
@@ -177,7 +177,7 @@ static void driver_detach(unsigned int id)
 {
 
     console_unregisterinterface(&consoleinterface);
-    pic_unsetroutine(platform_getirq(id), id);
+    pic_unsetroutine(platform_getirq(id));
 
 }
 

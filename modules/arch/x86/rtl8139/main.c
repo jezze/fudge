@@ -152,7 +152,7 @@ static void settx()
 
 }
 
-static void handleirq(unsigned int irq, unsigned int id)
+static void handleirq(unsigned int irq)
 {
 
     unsigned short status = io_inw(io + REGISTERISR);
@@ -257,7 +257,7 @@ static void driver_attach(unsigned int id)
     ethernetinterface.hardwareaddress[5] = io_inb(io + REGISTERIDR5);
 
     ethernet_registerinterface(&ethernetinterface, id);
-    pic_setroutine(pci_getirq(id), id, handleirq);
+    pic_setroutine(pci_getirq(id), handleirq);
 
 }
 
@@ -265,7 +265,7 @@ static void driver_detach(unsigned int id)
 {
 
     ethernet_unregisterinterface(&ethernetinterface);
-    pic_unsetroutine(pci_getirq(id), id);
+    pic_unsetroutine(pci_getirq(id));
 
 }
 

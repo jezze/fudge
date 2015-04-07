@@ -116,7 +116,7 @@ static void setpipemode(unsigned int width, unsigned int height)
 
 }
 
-static void handleirq(unsigned int irq, unsigned int id)
+static void handleirq(unsigned int irq)
 {
 
 }
@@ -168,7 +168,7 @@ static void driver_attach(unsigned int id)
     disablevga();
     setpipemode(640, 480);
     video_registerinterface(&videointerface, id);
-    pic_setroutine(pci_getirq(id), id, handleirq);
+    pic_setroutine(pci_getirq(id), handleirq);
 
 }
 
@@ -176,7 +176,7 @@ static void driver_detach(unsigned int id)
 {
 
     video_unregisterinterface(&videointerface);
-    pic_unsetroutine(pci_getirq(id), id);
+    pic_unsetroutine(pci_getirq(id));
 
 }
 

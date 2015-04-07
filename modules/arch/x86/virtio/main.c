@@ -38,7 +38,7 @@ static void reset()
 
 }
 
-static void handleirq(unsigned int irq, unsigned int id)
+static void handleirq(unsigned int irq)
 {
 
 }
@@ -64,14 +64,14 @@ static void driver_attach(unsigned int id)
     pci_setmaster(id);
     reset();
 
-    pic_setroutine(pci_getirq(id), id, handleirq);
+    pic_setroutine(pci_getirq(id), handleirq);
 
 }
 
 static void driver_detach(unsigned int id)
 {
 
-    pic_unsetroutine(pci_getirq(id), id);
+    pic_unsetroutine(pci_getirq(id));
 
 }
 

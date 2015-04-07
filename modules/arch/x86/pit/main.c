@@ -35,7 +35,7 @@ static unsigned short io;
 static unsigned short divisor;
 static unsigned int jiffies;
 
-static void handleirq(unsigned int irq, unsigned int id)
+static void handleirq(unsigned int irq)
 {
 
     jiffies += 1;
@@ -75,7 +75,7 @@ static void driver_attach(unsigned int id)
     io_outb(io + REGISTERCHANNEL0, divisor);
     io_outb(io + REGISTERCHANNEL0, divisor >> 8);
     timer_registerinterface(&timerinterface, id);
-    pic_setroutine(platform_getirq(id), id, handleirq);
+    pic_setroutine(platform_getirq(id), handleirq);
 
 }
 
@@ -83,7 +83,7 @@ static void driver_detach(unsigned int id)
 {
 
     timer_unregisterinterface(&timerinterface);
-    pic_unsetroutine(platform_getirq(id), id);
+    pic_unsetroutine(platform_getirq(id));
 
 }
 

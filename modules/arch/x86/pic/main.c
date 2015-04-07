@@ -19,7 +19,7 @@
 #define DATAVECTOR0                     0x20
 #define DATAVECTOR1                     0x28
 
-static struct pic_routine routines[ROUTINES];
+static void (*routines[ROUTINES])(unsigned int irq);
 
 static void setchip(unsigned char command, unsigned char data, unsigned char vector, unsigned char wire)
 {
@@ -66,10 +66,7 @@ unsigned short pic_interrupt(void *stack)
 
     struct {struct cpu_general general; unsigned int index; unsigned int slave; struct cpu_interrupt interrupt;} *registers = stack;
 
-    if (!routines[registers->index].callback)
-        return arch_schedule(&registers->general, &registers->interrupt);
-
-    routines[registers->index].callback(registers->index, routines[registers->index].id);
+    routines[registers->index](registers->index);
 
     if (registers->slave)
         io_outb(REGISTERCOMMAND1, COMMANDEOI);
@@ -80,17 +77,13 @@ unsigned short pic_interrupt(void *stack)
 
 }
 
-unsigned int pic_setroutine(unsigned int irq, unsigned int id, void (*callback)(unsigned int irq, unsigned int id))
+unsigned int pic_setroutine(unsigned int irq, void (*routine)(unsigned int irq))
 {
 
     if (irq >= ROUTINES)
         return 0;
 
-    if (routines[irq].id)
-        return 0;
-
-    routines[irq].id = id;
-    routines[irq].callback = callback;
+    routines[irq] = routine;
 
     if (irq >= 8)
         enableline(REGISTERDATA1, irq);
@@ -101,17 +94,13 @@ unsigned int pic_setroutine(unsigned int irq, unsigned int id, void (*callback)(
 
 }
 
-unsigned int pic_unsetroutine(unsigned int irq, unsigned int id)
+unsigned int pic_unsetroutine(unsigned int irq)
 {
 
     if (irq >= ROUTINES)
         return 0;
 
-    if (routines[irq].id != id)
-        return 0;
-
-    routines[irq].id = 0;
-    routines[irq].callback = 0;
+    routines[irq] = 0;
 
     if (irq >= 8)
         disableline(REGISTERDATA1, irq);

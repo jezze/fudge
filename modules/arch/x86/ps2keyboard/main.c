@@ -9,7 +9,7 @@
 static struct base_driver driver;
 static struct keyboard_interface keyboardinterface;
 
-static void handleirq(unsigned int irq, unsigned int id)
+static void handleirq(unsigned int irq)
 {
 
     unsigned char data = ps2_getdata();
@@ -43,7 +43,7 @@ static void driver_attach(unsigned int id)
     ps2_enablescanning(id);
     ps2_enableinterrupt(id);
     keyboard_registerinterface(&keyboardinterface, id);
-    pic_setroutine(ps2_getirq(id), id, handleirq);
+    pic_setroutine(ps2_getirq(id), handleirq);
 
 }
 
@@ -51,7 +51,7 @@ static void driver_detach(unsigned int id)
 {
 
     keyboard_unregisterinterface(&keyboardinterface);
-    pic_unsetroutine(ps2_getirq(id), id);
+    pic_unsetroutine(ps2_getirq(id));
 
 }
 
