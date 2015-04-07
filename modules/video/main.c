@@ -114,18 +114,3 @@ void video_initinterface(struct video_interface *interface, void (*setmode)(stru
 
 }
 
-void module_init()
-{
-
-}
-
-void module_register()
-{
-
-}
-
-void module_unregister()
-{
-
-}
-

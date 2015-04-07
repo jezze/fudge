@@ -113,18 +113,3 @@ void clock_initinterface(struct clock_interface *interface, unsigned char (*gets
 
 }
 
-void module_init()
-{
-
-}
-
-void module_register()
-{
-
-}
-
-void module_unregister()
-{
-
-}
-

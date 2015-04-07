@@ -1,5 +1,5 @@
 MOD_$(DIR):=$(BUILD_MODULE)/io.ko
-OBJ_$(DIR):=$(DIR)/main.o $(DIR)/io.o
+OBJ_$(DIR):=$(DIR)/io.o
 
 $(MOD_$(DIR)): $(OBJ_$(DIR))
 	$(LD) -o $@ $(LDFLAGS) $^

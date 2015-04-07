@@ -276,13 +276,14 @@ static unsigned int load(struct container *container, struct task *task, void *s
         return 0;
 
     module_init = (void (*)())(protocol->findsymbol(descriptor->channel, descriptor->id, 11, "module_init"));
+
+    if (module_init)
+        module_init();
+
     module_register = (void (*)())(protocol->findsymbol(descriptor->channel, descriptor->id, 15, "module_register"));
 
-    if (!module_init || !module_register)
-        return 0;
-
-    module_init();
-    module_register();
+    if (module_register)
+        module_register();
 
     return 1;
 
@@ -306,10 +307,8 @@ static unsigned int unload(struct container *container, struct task *task, void 
 
     module_unregister = (void (*)())(protocol->findsymbol(descriptor->channel, descriptor->id, 17, "module_unregister"));
 
-    if (!module_unregister)
-        return 0;
-
-    module_unregister();
+    if (module_unregister)
+        module_unregister();
 
     return 1;
 

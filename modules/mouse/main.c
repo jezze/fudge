@@ -41,18 +41,3 @@ void mouse_initinterface(struct mouse_interface *interface)
 
 }
 
-void module_init()
-{
-
-}
-
-void module_register()
-{
-
-}
-
-void module_unregister()
-{
-
-}
-

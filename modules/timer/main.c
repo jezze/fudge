@@ -37,18 +37,3 @@ void timer_initinterface(struct timer_interface *interface)
 
 }
 
-void module_init()
-{
-
-}
-
-void module_register()
-{
-
-}
-
-void module_unregister()
-{
-
-}
-

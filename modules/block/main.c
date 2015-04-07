@@ -66,18 +66,3 @@ void block_initinterface(struct block_interface *interface, unsigned int (*rdata
 
 }
 
-void module_init()
-{
-
-}
-
-void module_register()
-{
-
-}
-
-void module_unregister()
-{
-
-}
-

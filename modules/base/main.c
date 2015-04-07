@@ -104,18 +104,3 @@ void base_initdriver(struct base_driver *driver, const char *name, void (*init)(
 
 }
 
-void module_init()
-{
-
-}
-
-void module_register()
-{
-
-}
-
-void module_unregister()
-{
-
-}
-
