@@ -24,6 +24,7 @@ static struct view view[VIEWS];
 static struct list views;
 static struct view *viewactive;
 static unsigned char backbuffer[4096];
+static unsigned int splitter;
 
 static unsigned char colormap[] = {
     0x00, 0x00, 0x00,
@@ -194,7 +195,7 @@ static void arrangewindows(struct view *view)
 
     }
 
-    box_setsize(&window->size, desktop.x, desktop.y, desktop.w / 2, desktop.h);
+    box_setsize(&window->size, desktop.x, desktop.y, splitter, desktop.h);
 
     a = desktop.h / (count - 1);
     i = 0;
@@ -204,7 +205,7 @@ static void arrangewindows(struct view *view)
 
         window = current->data;
 
-        box_setsize(&window->size, desktop.x + desktop.w / 2, desktop.y + i * a, desktop.w / 2, a);
+        box_setsize(&window->size, desktop.x + splitter, desktop.y + i * a, desktop.w - splitter, a);
 
         i++;
 
@@ -259,6 +260,16 @@ static void prevwindow(struct view *view)
     else
         activatewindow(view, view->windows.tail->data);
 
+    draw(&desktop);
+
+}
+
+static void movesplitter(int direction)
+{
+
+    splitter += direction * (desktop.w / 32);
+
+    arrangewindows(view);
     draw(&desktop);
 
 }
@@ -386,11 +397,17 @@ static void pollevent()
                 if (data[0] == 0x19)
                     spawn();
 
+                if (data[0] == 0x23)
+                    movesplitter(-1);
+
                 if (data[0] == 0x24)
                     nextwindow(viewactive);
 
                 if (data[0] == 0x25)
                     prevwindow(viewactive);
+
+                if (data[0] == 0x26)
+                    movesplitter(1);
 
                 break;
 
@@ -478,6 +495,9 @@ void main()
     box_setsize(&menu, screen.x, screen.y, screen.w, BOXSIZE);
     box_setsize(&desktop, screen.x, screen.y + BOXSIZE, screen.w, screen.h - BOXSIZE);
     box_setsize(&mouse.size, screen.x + screen.w / 4, screen.y + screen.h / 4, mouse.size.w, mouse.size.h);
+
+    splitter = desktop.w / 2;
+
     setupwindows();
     setupviews();
     activateview(views.head->data);
