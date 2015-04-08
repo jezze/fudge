@@ -149,7 +149,7 @@ static void setuptask(struct arch_task *task, unsigned int i)
 
     task_init(&task->base);
 
-    scheduler_register_task(&task->base);
+    scheduler_registertask(&task->base);
 
 }
 
