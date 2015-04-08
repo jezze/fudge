@@ -1,6 +1,6 @@
 BIN_$(DIR):=$(BUILD_BIN)/init
 OBJ_$(DIR):=$(DIR)/init.o
-CONFIG_$(DIR):=$(DIR)/init.slang $(DIR)/user.slang
+CONFIG_$(DIR):=$(DIR)/init.slang $(DIR)/base.slang $(DIR)/arch.slang $(DIR)/user.slang
 
 $(BIN_$(DIR)): $(OBJ_$(DIR))
 	$(LD) -o $@ $(LDFLAGS) $^ $(PACKAGES_LDFLAGS)
