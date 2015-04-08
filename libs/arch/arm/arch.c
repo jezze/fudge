@@ -80,6 +80,20 @@ static unsigned int despawn(struct container *container, struct task *task, void
 
 }
 
+/*
+static void debugnum(unsigned int value, unsigned int base)
+{
+
+    char num[32];
+
+    memory_clear(num, 32);
+    ascii_wvalue(num, 32, value, base, 0);
+    uart_puts(num);
+    uart_puts("\n");
+
+}
+*/
+
 void arch_undefined()
 {
 
@@ -98,30 +112,24 @@ void arch_reset()
 
 }
 
-void arch_syscall()
+__attribute__ ((interrupt ("SWI"))) void arch_swi()
 {
 
     uart_puts("ISR SYSCALL\n");
 
-    for (;;);
-
 }
 
-void arch_irq()
+__attribute__ ((interrupt ("IRQ"))) void arch_irq()
 {
 
     uart_puts("ISR IRQ\n");
 
-    for (;;);
-
 }
 
-void arch_fiq()
+__attribute__ ((interrupt ("FIQ"))) void arch_fiq()
 {
 
     uart_puts("ISR FIQ\n");
-
-    for (;;);
 
 }
 
@@ -165,15 +173,24 @@ static struct task *setuptasks()
 
 }
 
-static void debugnum(unsigned int value, unsigned int base)
+void pic_do()
 {
 
-    char num[32];
+    unsigned int *mmio = (unsigned int *)0x14000000;
 
-    memory_clear(num, 32);
-    ascii_wvalue(num, 32, value, base, 0);
-    uart_puts(num);
-    uart_puts("\n");
+    mmio[0x02] = (1 << 5) | (1 << 6) | (1 << 7);
+
+}
+
+void timer_do()
+{
+
+    unsigned int *mmio = (unsigned int *)0x13000000;
+
+    mmio[0x00] = 0xffffff;
+    mmio[0x06] = 0xffffff;
+    mmio[0x02] = 0x80 | 0x40 | 0x02 | 0x00 | (1 << 5);
+    mmio[0x02] = ~0;
 
 }
 
@@ -181,9 +198,15 @@ void arch_setup()
 {
 
     pic_setup();
-    uart_setup();
+    pic_do();
+
+    /*
+    timer_do();
+    */
+
     uart_puts("Fudge Console\n");
-    debugnum(0x123456, 16);
+    swi_test();
+
     vfs_initbackend(&backend, 1000, backend_read, backend_write, backend_getphysical);
     kernel_setup(spawn, despawn);
 
@@ -193,8 +216,10 @@ void arch_setup()
     kernel_setupramdisk(current.container, current.task, &backend);
     kernel_copytask(current.task, current.task);
     kernel_setuptask(current.task, TASKVSTACKLIMIT);
+
     uart_puts("Loop forever...\n");
-    halt();
+
+    for (;;);
 
 }
 

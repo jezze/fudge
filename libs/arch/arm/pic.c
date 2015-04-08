@@ -20,12 +20,14 @@ static void enableirq()
 
 }
 
+/*
 static void enablefiq()
 {
 
     cpu_set_cpsr(cpu_get_cpsr() & ~(1 << 6));
 
 }
+*/
 
 void pic_enableirq(unsigned int irq)
 {
@@ -59,7 +61,6 @@ void pic_setup()
 {
 
     enableirq();
-    enablefiq();
 
 }
 

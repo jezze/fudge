@@ -54,8 +54,12 @@ RAMDISK_NAME:=initrd
 RAMDISK_TYPE:=tar
 RAMDISK:=$(RAMDISK_NAME).$(RAMDISK_TYPE)
 
+IMAGE_NAME:=$(KERNEL)
+IMAGE_TYPE:=img
+IMAGE=$(IMAGE_NAME).$(IMAGE_TYPE)
+
 ALL:=$(LIBS_PATH) $(MODULES_PATH) $(PACKAGES_PATH) $(KERNEL) $(RAMDISK)
-CLEAN:=$(BUILD_ROOT) $(KERNEL) $(RAMDISK)
+CLEAN:=$(BUILD_ROOT) $(KERNEL) $(RAMDISK) $(IMAGE)
 
 .PHONY: all clean install
 
@@ -124,6 +128,11 @@ $(RAMDISK_NAME).tar: $(BUILD_ROOT)
 
 $(RAMDISK_NAME).cpio: $(BUILD_ROOT)
 	find $^ -depth | cpio -o > $@
+
+$(IMAGE): $(KERNEL) $(RAMDISK)
+	dd if=/dev/zero of=$@ count=65536
+	dd if=$(KERNEL) of=$@ conv=notrunc
+	dd if=$(RAMDISK) of=$@ skip=4096 conv=notrunc
 
 $(INSTALL_PATH)/$(KERNEL): $(KERNEL)
 	install -m 644 $^ $@
