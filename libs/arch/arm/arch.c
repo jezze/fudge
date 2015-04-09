@@ -80,7 +80,6 @@ static unsigned int despawn(struct container *container, struct task *task, void
 
 }
 
-/*
 static void debugnum(unsigned int value, unsigned int base)
 {
 
@@ -92,7 +91,6 @@ static void debugnum(unsigned int value, unsigned int base)
     uart_puts("\n");
 
 }
-*/
 
 void arch_undefined()
 {
@@ -112,21 +110,26 @@ void arch_reset()
 
 }
 
-__attribute__ ((interrupt ("SWI"))) void arch_swi()
+__attribute__ ((interrupt("SWI"))) void arch_swi()
 {
 
-    uart_puts("ISR SYSCALL\n");
+    register unsigned int addr __asm__ ("r14");
+
+    addr -= 4;
+
+    uart_puts("ISR SWI: ");
+    debugnum(*((unsigned int *)(addr)) & 0x00FFFFFF, 10);
 
 }
 
-__attribute__ ((interrupt ("IRQ"))) void arch_irq()
+__attribute__ ((interrupt("IRQ"))) void arch_irq()
 {
 
     uart_puts("ISR IRQ\n");
 
 }
 
-__attribute__ ((interrupt ("FIQ"))) void arch_fiq()
+__attribute__ ((interrupt("FIQ"))) void arch_fiq()
 {
 
     uart_puts("ISR FIQ\n");
