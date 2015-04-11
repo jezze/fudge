@@ -2,7 +2,6 @@
 #include <fudge.h>
 #include "box.h"
 #include "draw.h"
-#include "text.h"
 #include "panel.h"
 
 void panel_draw(struct panel *panel, unsigned int line)
@@ -46,7 +45,6 @@ void panel_init(struct panel *panel, char *text, unsigned int active)
     box_setsize(&panel->size, 0, 0, 0, 0);
 
     panel->active = active;
-    panel->title.content = text;
 
 }
 

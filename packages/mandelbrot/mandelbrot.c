@@ -1,6 +1,6 @@
 #include <abi.h>
 #include <fudge.h>
-#include "video.h"
+#include <video/video.h>
 
 #define fpshift                         10
 #define tofp(_a)                        ((_a) << fpshift)
@@ -16,7 +16,7 @@ void setup(struct ctrl_videosettings *settings)
     for (i = 0; i < 256; i++)
         colormap[i] = i;
 
-    video_setcolormap(colormap);
+    video_setcolormap(0, 256, colormap);
 
 }
 

@@ -2,7 +2,6 @@
 #include <fudge.h>
 #include "box.h"
 #include "draw.h"
-#include "text.h"
 #include "mouse.h"
 
 static unsigned char pointer[] = {

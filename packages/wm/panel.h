@@ -3,7 +3,6 @@ struct panel
 
     unsigned int active;
     struct box size;
-    struct text title;
 
 };
 

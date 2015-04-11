@@ -2,7 +2,6 @@
 #include <fudge.h>
 #include "box.h"
 #include "draw.h"
-#include "text.h"
 #include "panel.h"
 #include "window.h"
 #include "view.h"

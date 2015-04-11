@@ -70,6 +70,8 @@ DIR:=$(CUR)/slang
 include $(DIR)/rules.mk
 DIR:=$(CUR)/sleep
 include $(DIR)/rules.mk
+DIR:=$(CUR)/video
+include $(DIR)/rules.mk
 DIR:=$(CUR)/wm
 include $(DIR)/rules.mk
 DIR:=$(CUR)/wnull

@@ -1,12 +1,11 @@
 #include <abi.h>
 #include <fudge.h>
+#include <video/video.h>
 #include "box.h"
 #include "draw.h"
 #include "mouse.h"
-#include "text.h"
 #include "panel.h"
 #include "window.h"
-#include "video.h"
 #include "view.h"
 
 #define WINDOWS                         64
@@ -488,7 +487,7 @@ void main()
     settings.bpp = 32;
 
     video_setmode(&settings);
-    video_setcolormap(colormap);
+    video_setcolormap(0, 27, colormap);
 
     mouse_init(&mouse);
     box_setsize(&screen, 0, 0, settings.w, settings.h);
