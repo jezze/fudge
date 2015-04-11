@@ -5,7 +5,7 @@
 #define fpshift                         10
 #define tofp(_a)                        ((_a) << fpshift)
 #define fpabs(_a)                       ((_a < 0) ? -_a : _a)
-#define mulfp(_a,_b)                    (((_a) * (_b)) >> fpshift)
+#define mulfp(_a)                       (((_a) * (_a)) >> fpshift)
 
 void draw(struct ctrl_videosettings *settings, int x1, int y1, int x2, int y2, unsigned int iterations)
 {
@@ -32,7 +32,7 @@ void draw(struct ctrl_videosettings *settings, int x1, int y1, int x2, int y2, u
             for (c = 0; (c < iterations) && (fpabs(r) < tofp(2)) && (fpabs(i) < tofp(2)); c++)
             {
 
-                int t = (mulfp(r, r) - mulfp(i, i)) + xx;
+                int t = mulfp(r) - mulfp(i) + xx;
 
                 i = ((r * i) >> (fpshift - 1)) + yy;
                 r = t;
