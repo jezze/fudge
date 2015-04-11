@@ -17,7 +17,7 @@ void event_notify(unsigned int type, unsigned int size, unsigned int count, void
     header.type = type;
     header.count = count;
 
-    scheduler_sendlist(&poll.mailboxes, 1, sizeof (struct event_header), &header);
+    scheduler_sendlist(&poll.mailboxes, sizeof (struct event_header), 1, &header);
     scheduler_sendlist(&poll.mailboxes, size, count, buffer);
 
 }

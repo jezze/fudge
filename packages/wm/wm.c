@@ -168,7 +168,7 @@ static void sendevent(unsigned int destination, unsigned int type)
 
     call_walk(CALL_L2, CALL_PR, 17, "system/event/send");
     call_open(CALL_L2);
-    call_write(CALL_L2, 0, 1, sizeof (struct event_header), &header);
+    call_write(CALL_L2, 0, sizeof (struct event_header), 1, &header);
     call_close(CALL_L2);
 
 }
