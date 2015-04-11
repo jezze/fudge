@@ -63,7 +63,5 @@ void main()
     draw(&settings, tofp(-2), tofp(-1), tofp(1), tofp(1), 64);
     video_close();
 
-    for (;;);
-
 }
 
