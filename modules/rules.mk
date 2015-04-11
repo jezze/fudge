@@ -2,6 +2,8 @@ PAR:=$(PAR).x
 TMP_$(PAR):=$(CUR)
 CUR:=$(DIR)
 
+DIR:=$(CUR)/audio
+include $(DIR)/rules.mk
 DIR:=$(CUR)/base
 include $(DIR)/rules.mk
 DIR:=$(CUR)/block
@@ -25,8 +27,6 @@ include $(DIR)/rules.mk
 DIR:=$(CUR)/null
 include $(DIR)/rules.mk
 DIR:=$(CUR)/pipe
-include $(DIR)/rules.mk
-DIR:=$(CUR)/sound
 include $(DIR)/rules.mk
 DIR:=$(CUR)/system
 include $(DIR)/rules.mk

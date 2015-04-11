@@ -1,4 +1,4 @@
-MOD_$(DIR):=$(BUILD_MODULE)/sound.ko
+MOD_$(DIR):=$(BUILD_MODULE)/audio.ko
 OBJ_$(DIR):=$(DIR)/main.o
 
 $(MOD_$(DIR)): $(OBJ_$(DIR))
