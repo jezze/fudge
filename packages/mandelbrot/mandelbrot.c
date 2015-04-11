@@ -7,6 +7,19 @@
 #define fpabs(_a)                       ((_a < 0) ? -_a : _a)
 #define mulfp(_a)                       (((_a) * (_a)) >> fpshift)
 
+void setup(struct ctrl_videosettings *settings)
+{
+
+    unsigned char colormap[256];
+    unsigned int i;
+
+    for (i = 0; i < 256; i++)
+        colormap[i] = i;
+
+    video_setcolormap(colormap);
+
+}
+
 void draw(struct ctrl_videosettings *settings, int x1, int y1, int x2, int y2, unsigned int iterations)
 {
 
@@ -59,6 +72,7 @@ void main()
     settings.bpp = 8;
 
     video_setmode(&settings);
+    setup(&settings);
     video_open();
     draw(&settings, tofp(-2), tofp(-1), tofp(1), tofp(1), 64);
     video_close();

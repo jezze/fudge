@@ -18,7 +18,7 @@ void video_setcolormap(void *colormap)
 
     call_walk(CALL_L0, CALL_PR, 23, "system/video:0/colormap");
     call_open(CALL_L0);
-    call_write(CALL_L0, 0, 27, 1, colormap);
+    call_write(CALL_L0, 0, 1, 256, colormap);
     call_close(CALL_L0);
 
 }
