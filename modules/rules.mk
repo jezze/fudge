@@ -26,6 +26,8 @@ DIR:=$(CUR)/null
 include $(DIR)/rules.mk
 DIR:=$(CUR)/pipe
 include $(DIR)/rules.mk
+DIR:=$(CUR)/sound
+include $(DIR)/rules.mk
 DIR:=$(CUR)/system
 include $(DIR)/rules.mk
 DIR:=$(CUR)/timer

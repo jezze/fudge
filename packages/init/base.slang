@@ -8,6 +8,7 @@
 /bin/modload < /boot/mod/keyboard.ko
 /bin/modload < /boot/mod/mouse.ko
 /bin/modload < /boot/mod/timer.ko
+/bin/modload < /boot/mod/sound.ko
 /bin/modload < /boot/mod/video.ko
 /bin/modload < /boot/mod/ethernet.ko
 /bin/modload < /boot/mod/arp.ko
